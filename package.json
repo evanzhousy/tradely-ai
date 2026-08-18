@@ -1,0 +1,43 @@
+{
+	"name": "tradely",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"dev": "pnpm -r dev",
+		"build": "pnpm -r --if-present build",
+		"check-types": "pnpm -r check-types",
+		"test": "pnpm --filter web test",
+		"dev:web": "pnpm --filter web dev",
+		"db:push": "pnpm --filter @tradely/db db:push",
+		"db:studio": "pnpm --filter @tradely/db db:studio",
+		"db:generate": "pnpm --filter @tradely/db db:generate",
+		"db:migrate": "pnpm --filter @tradely/db db:migrate",
+		"media:import": "node scripts/import-course-media.mjs",
+		"check": "biome check .",
+		"check:fix": "biome check --write .",
+		"prepare": "husky"
+	},
+	"packageManager": "pnpm@11.1.2",
+	"dependencies": {
+		"dotenv": "catalog:",
+		"zod": "catalog:",
+		"@tradely/env": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"@types/node": "catalog:",
+		"@tradely/config": "workspace:*",
+		"@biomejs/biome": "^2.5.6",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.2.0"
+	},
+	"lint-staged": {
+		"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+			"biome check --write ."
+		]
+	}
+}

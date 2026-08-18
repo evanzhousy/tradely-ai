@@ -1,0 +1,55 @@
+import "@tanstack/react-start/server-only";
+
+import type { Lesson } from "@/content/course";
+import { resolveLessonAccess } from "@/domain/access";
+import { getCurrentClerkUserId } from "./auth.server";
+import { getStripeBillingState } from "./billing.server";
+import { findAppUser, hasManualAllAccess } from "./users.server";
+
+export async function getCurrentCourseAccess() {
+	const userId = await getCurrentClerkUserId();
+	if (!userId) {
+		return {
+			userId: null,
+			isSignedIn: false as const,
+			billingState: "inactive" as const,
+			hasManualGrant: false,
+			canAccessPaid: false,
+		};
+	}
+	try {
+		const user = await findAppUser(userId);
+		const hasManualGrant = hasManualAllAccess(user);
+		const billingState = await getStripeBillingState(
+			user?.stripeCustomerId ?? null,
+		);
+		return {
+			userId,
+			isSignedIn: true as const,
+			billingState,
+			hasManualGrant,
+			canAccessPaid: hasManualGrant || billingState === "active",
+		};
+	} catch {
+		return {
+			userId,
+			isSignedIn: true as const,
+			billingState: "unavailable" as const,
+			hasManualGrant: false,
+			canAccessPaid: false,
+		};
+	}
+}
+
+export async function resolveCurrentLessonAccess(lesson: Lesson) {
+	const courseAccess = await getCurrentCourseAccess();
+	return {
+		courseAccess,
+		access: resolveLessonAccess({
+			access: lesson.access,
+			isSignedIn: courseAccess.isSignedIn,
+			billingState: courseAccess.billingState,
+			hasManualGrant: courseAccess.hasManualGrant,
+		}),
+	};
+}

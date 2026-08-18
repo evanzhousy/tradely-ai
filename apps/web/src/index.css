@@ -1,0 +1,76 @@
+@import "@tradely/ui/globals.css";
+
+@layer components {
+	.lesson-prose {
+		color: var(--foreground);
+		font-size: 1rem;
+		line-height: 1.8;
+	}
+
+	.lesson-prose h2 {
+		margin-block: 2.5rem 0.75rem;
+		font-family: var(--font-heading);
+		font-size: 1.75rem;
+		font-weight: 600;
+		letter-spacing: -0.025em;
+		line-height: 1.2;
+	}
+
+	.lesson-prose h3 {
+		margin-block: 2rem 0.6rem;
+		font-family: var(--font-heading);
+		font-size: 1.25rem;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+
+	.lesson-prose p,
+	.lesson-prose ul,
+	.lesson-prose ol {
+		margin-block: 0.9rem;
+	}
+
+	.lesson-prose ul,
+	.lesson-prose ol {
+		padding-inline-start: 1.4rem;
+	}
+
+	.lesson-prose ul {
+		list-style: disc;
+	}
+
+	.lesson-prose ol {
+		list-style: decimal;
+	}
+
+	.lesson-prose li {
+		padding-inline-start: 0.25rem;
+	}
+
+	.lesson-prose strong {
+		font-weight: 600;
+	}
+
+	.lesson-prose a {
+		color: var(--primary);
+		font-weight: 500;
+		text-decoration: underline;
+		text-decoration-thickness: 0.08em;
+		text-underline-offset: 0.18em;
+	}
+
+	.lesson-prose code {
+		border-radius: 0.35rem;
+		background: var(--muted);
+		padding: 0.12rem 0.35rem;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	.lesson-prose blockquote {
+		margin-block: 1.5rem;
+		border-inline-start: 1px solid var(--border);
+		padding-inline-start: 1rem;
+		color: var(--muted-foreground);
+	}
+}
