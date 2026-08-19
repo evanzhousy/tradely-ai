@@ -2,6 +2,9 @@
 	"name": "web",
 	"private": true,
 	"type": "module",
+	"engines": {
+		"node": "24.x"
+	},
 	"scripts": {
 		"build": "vite build",
 		"check-types": "tsr generate && tsc --noEmit",
