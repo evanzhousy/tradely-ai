@@ -17,7 +17,7 @@ export const env = createEnv({
 		MEDIA_S3_ACCESS_KEY_ID: z.string().min(1).optional(),
 		MEDIA_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
 		MEDIA_S3_KEY_PREFIX: z.string().min(1).default("tradingflow-foundations"),
-		APP_URL: z.string().url().default("http://localhost:3001"),
+		APP_URL: z.string().url().default("http://localhost:8250"),
 		NODE_ENV: z
 			.enum(["development", "production", "test"])
 			.default("development"),

@@ -29,12 +29,11 @@ import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { PracticeCard } from "@/components/practice-card";
 import { LessonVideo } from "@/components/video-player";
-import {
-	getLesson,
-	getNextLesson,
-	getPreviousLesson,
-	tradingFlowCourse,
-} from "@/content/course";
+import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
+import { completedLessonIds } from "@/domain/progress";
+import { localizeCourse, localizeLesson } from "@/i18n/catalog";
+import { categoryLabel, t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 import { getLessonPageData } from "@/server/lesson";
 import { getCourseProgress } from "@/server/progress";
 
@@ -54,7 +53,7 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 				{
 					title: lesson
 						? `${lesson.title} — Tradely`
-						: "Lesson not found — Tradely",
+						: `${t("en", "lessonNotFound")} — Tradely`,
 				},
 			],
 		};
@@ -63,26 +62,31 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 });
 
 function LessonPage() {
+	const locale = useLocale();
+	const course = localizeCourse(locale);
 	const { lessonSlug } = Route.useParams();
 	const { page, progress } = Route.useLoaderData();
-	const lesson = getLesson(lessonSlug);
+	const sourceLesson = getLesson(lessonSlug);
+	const lesson = sourceLesson
+		? localizeLesson(sourceLesson, locale)
+		: undefined;
 	if (!lesson || !page.found) {
 		return (
 			<main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-start justify-center gap-4 px-4">
-				<h1 className="font-semibold text-3xl">Lesson not found</h1>
+				<h1 className="font-semibold text-3xl">
+					{t(locale, "lessonNotFound")}
+				</h1>
 				<Link
 					to="/courses/tradingflow-foundations"
 					className={buttonVariants({ variant: "outline" })}
 				>
-					Return to the course
+					{t(locale, "returnToCourse")}
 				</Link>
 			</main>
 		);
 	}
 
-	const completedIds = progress.records
-		.filter((record) => record.completedAt)
-		.map((record) => record.lessonId);
+	const completedIds = completedLessonIds(progress.records);
 	const lessonProgress = progress.records.find(
 		(record) => record.lessonId === lesson.id,
 	);
@@ -92,6 +96,8 @@ function LessonPage() {
 			: 0;
 	const previous = getPreviousLesson(lesson.slug);
 	const next = getNextLesson(lesson.slug);
+	const previousView = previous ? localizeLesson(previous, locale) : undefined;
+	const nextView = next ? localizeLesson(next, locale) : undefined;
 
 	return (
 		<main className="mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[330px_1fr]">
@@ -105,11 +111,12 @@ function LessonPage() {
 					/>
 					<div className="max-h-[calc(100svh-12rem)] overflow-y-auto pr-1">
 						<CourseList
-							lessons={tradingFlowCourse.lessons}
+							lessons={course.lessons}
 							completedIds={completedIds}
 							currentLessonId={lesson.id}
 							canAccessPaid={page.canAccessPaid}
 							accessUnavailable={progress.accessUnavailable}
+							compact
 						/>
 					</div>
 				</div>
@@ -120,7 +127,7 @@ function LessonPage() {
 					<Accordion className="lg:hidden">
 						<AccordionItem value="course-navigation">
 							<AccordionTrigger>
-								Course navigation · {progress.percentage}% complete
+								{t(locale, "courseNav", { percent: progress.percentage })}
 							</AccordionTrigger>
 							<AccordionContent>
 								<div className="flex flex-col gap-5 py-2">
@@ -131,11 +138,12 @@ function LessonPage() {
 										compact
 									/>
 									<CourseList
-										lessons={tradingFlowCourse.lessons}
+										lessons={course.lessons}
 										completedIds={completedIds}
 										currentLessonId={lesson.id}
 										canAccessPaid={page.canAccessPaid}
 										accessUnavailable={progress.accessUnavailable}
+										compact
 									/>
 								</div>
 							</AccordionContent>
@@ -145,20 +153,26 @@ function LessonPage() {
 					<header className="flex flex-col gap-5">
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">
-								Lesson {lesson.order + 1} of {tradingFlowCourse.lessons.length}
+								{t(locale, "lessonIndex", {
+									n: lesson.order + 1,
+									total: course.lessons.length,
+								})}
 							</Badge>
 							<Badge
 								variant={lesson.access === "preview" ? "secondary" : "outline"}
 							>
-								{lesson.access === "preview" ? "Free preview" : "Membership"}
+								{lesson.access === "preview"
+									? t(locale, "freePreview")
+									: t(locale, "membership")}
 							</Badge>
 							<span className="inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
-								<Clock3Icon className="size-3.5" /> {lesson.minutes} min
+								<Clock3Icon className="size-3.5" />{" "}
+								{t(locale, "minutes", { n: lesson.minutes })}
 							</span>
 						</div>
 						<div className="flex flex-col gap-3">
 							<p className="font-medium text-primary text-sm">
-								{lesson.category}
+								{categoryLabel(locale, lesson.category)}
 							</p>
 							<h1 className="font-semibold text-4xl text-display sm:text-5xl">
 								{lesson.title}
@@ -180,10 +194,9 @@ function LessonPage() {
 							) : (
 								<Alert>
 									<VideoOffIcon />
-									<AlertTitle>Video is temporarily unavailable</AlertTitle>
+									<AlertTitle>{t(locale, "videoUnavailableTitle")}</AlertTitle>
 									<AlertDescription>
-										The written lesson remains available. Tradely could not
-										issue a protected media URL.
+										{t(locale, "videoUnavailableBody")}
 									</AlertDescription>
 								</Alert>
 							)}
@@ -198,31 +211,33 @@ function LessonPage() {
 								<Separator />
 								<nav
 									className="flex items-center justify-between gap-4"
-									aria-label="Lesson navigation"
+									aria-label={t(locale, "lessonNav")}
 								>
-									{previous ? (
+									{previousView ? (
 										<Link
 											to="/learn/$lessonSlug"
-											params={{ lessonSlug: previous.slug }}
+											params={{ lessonSlug: previousView.slug }}
 											className={buttonVariants({ variant: "ghost" })}
 										>
 											<ArrowLeftIcon data-icon="inline-start" />
-											<span className="hidden sm:inline">{previous.title}</span>
-											<span className="sm:hidden">Previous</span>
+											<span className="hidden sm:inline">
+												{previousView.title}
+											</span>
+											<span className="sm:hidden">{t(locale, "previous")}</span>
 										</Link>
 									) : (
 										<span />
 									)}
-									{next ? (
+									{nextView ? (
 										<Link
 											to="/learn/$lessonSlug"
-											params={{ lessonSlug: next.slug }}
+											params={{ lessonSlug: nextView.slug }}
 											className={cn(
 												buttonVariants({ variant: "outline" }),
 												"max-w-[55%]",
 											)}
 										>
-											<span className="truncate">{next.title}</span>
+											<span className="truncate">{nextView.title}</span>
 											<ArrowRightIcon data-icon="inline-end" />
 										</Link>
 									) : null}

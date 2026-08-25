@@ -1,191 +1,307 @@
 ---
+# DESIGN.md. Google Labs spec (alpha) + shadcn/ui Luma preset.
+# Tokens are normative. Prose is how to apply them.
+# Source: https://ui.shadcn.com/create?preset=b1aIaoaxs
+# Style:  official shadcn Base Luma (March 2026). Not "Luna".
+version: alpha
 name: Tradely
-description: An evidence-led learning desk for option traders.
+description: >
+  An editorial options-learning hub. Visual identity is official shadcn/ui
+  Base Luma (preset b1aIaoaxs). Apply the preset for colors, fonts, and
+  radius. Product rules below keep Tradely a reading desk, not a dashboard
+  or course marketplace.
+
+preset:
+  code: b1aIaoaxs
+  url: https://ui.shadcn.com/create?preset=b1aIaoaxs
+  apply: pnpm dlx shadcn@latest apply b1aIaoaxs --only theme,font -y -c apps/web
+  style: luma
+  base: base
+  baseColor: neutral
+  theme: neutral
+  chartColor: blue
+  iconLibrary: lucide
+  font: inter
+  fontHeading: inherit
+  radius: default
+  menuAccent: subtle
+  menuColor: default
+
 colors:
-  evidence-blue: "#1e4d7b"
-  paper: "oklch(1 0 0)"
-  ink: "oklch(0.145 0 0)"
-  muted-surface: "oklch(0.97 0 0)"
-  muted-ink: "oklch(0.556 0 0)"
-  divider: "oklch(0.922 0 0)"
+  background: "oklch(1 0 0)"
+  foreground: "oklch(0.145 0 0)"
+  card: "oklch(1 0 0)"
+  card-foreground: "oklch(0.145 0 0)"
+  popover: "oklch(1 0 0)"
+  popover-foreground: "oklch(0.145 0 0)"
+  primary: "oklch(0.205 0 0)"
+  primary-foreground: "oklch(0.985 0 0)"
+  secondary: "oklch(0.97 0 0)"
+  secondary-foreground: "oklch(0.205 0 0)"
+  muted: "oklch(0.97 0 0)"
+  muted-foreground: "oklch(0.556 0 0)"
+  accent: "oklch(0.97 0 0)"
+  accent-foreground: "oklch(0.205 0 0)"
+  destructive: "oklch(0.577 0.245 27.325)"
+  border: "oklch(0.922 0 0)"
+  input: "oklch(0.922 0 0)"
+  ring: "oklch(0.708 0 0)"
+  sidebar: "oklch(0.985 0 0)"
+  sidebar-foreground: "oklch(0.145 0 0)"
+  sidebar-primary: "oklch(0.205 0 0)"
+  sidebar-primary-foreground: "oklch(0.985 0 0)"
+  chart-1: "oklch(0.809 0.105 251.813)"
+  chart-2: "oklch(0.623 0.214 259.815)"
+  chart-3: "oklch(0.546 0.245 262.881)"
+  chart-4: "oklch(0.488 0.243 264.376)"
+  chart-5: "oklch(0.424 0.199 265.638)"
   night: "oklch(0.145 0 0)"
-  night-surface: "oklch(0.205 0 0)"
-  light-ink: "oklch(0.985 0 0)"
+  night-card: "oklch(0.205 0 0)"
+  night-foreground: "oklch(0.985 0 0)"
+  night-primary: "oklch(0.922 0 0)"
+  night-primary-foreground: "oklch(0.205 0 0)"
+  night-border: "oklch(1 0 0 / 10%)"
+
 typography:
   display:
-    fontFamily: "Inter Variable, sans-serif"
-    fontSize: "clamp(3rem, 5vw, 4.5rem)"
+    fontFamily: Inter Variable, PingFang SC, Hiragino Sans GB, Noto Sans SC, Microsoft YaHei, sans-serif
+    fontSize: clamp(3rem, 5vw, 4.5rem)
     fontWeight: 600
     lineHeight: 1.02
     letterSpacing: "-0.025em"
+  headline:
+    fontFamily: Inter Variable, PingFang SC, Hiragino Sans GB, Noto Sans SC, Microsoft YaHei, sans-serif
+    fontSize: 1.875rem
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: "-0.025em"
   title:
-    fontFamily: "Inter Variable, sans-serif"
-    fontSize: "1.25rem"
+    fontFamily: Inter Variable, PingFang SC, Hiragino Sans GB, Noto Sans SC, Microsoft YaHei, sans-serif
+    fontSize: 1.25rem
     fontWeight: 600
     lineHeight: 1.35
   body:
-    fontFamily: "Inter Variable, sans-serif"
-    fontSize: "1rem"
+    fontFamily: Inter Variable, PingFang SC, Hiragino Sans GB, Noto Sans SC, Microsoft YaHei, sans-serif
+    fontSize: 1rem
     fontWeight: 400
     lineHeight: 1.8
   label:
-    fontFamily: "JetBrains Mono Variable, ui-monospace, monospace"
-    fontSize: "0.75rem"
+    fontFamily: JetBrains Mono Variable, ui-monospace, SFMono-Regular, monospace
+    fontSize: 0.75rem
     fontWeight: 500
     lineHeight: 1.4
+
 rounded:
-  base: "0.625rem"
-  panel: "1.625rem"
-  capsule: "1.625rem"
+  sm: "calc(0.625rem - 4px)"
+  md: "calc(0.625rem - 2px)"
+  lg: "0.625rem"
+  xl: "calc(0.625rem + 4px)"
+  2xl: "calc(0.625rem + 8px)"
+  3xl: "calc(0.625rem + 12px)"
+  4xl: "calc(0.625rem + 16px)"
+  full: "9999px"
+
 spacing:
   xs: "0.5rem"
   sm: "1rem"
   md: "1.5rem"
   lg: "2rem"
   xl: "3rem"
+  section: "4rem"
+
 components:
   button-primary:
-    backgroundColor: "{colors.evidence-blue}"
-    textColor: "{colors.light-ink}"
-    rounded: "{rounded.capsule}"
-    padding: "0.625rem 1rem"
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.primary-foreground}"
+    rounded: "{rounded.4xl}"
+    padding: "0.625rem 0.75rem"
     typography: "{typography.body}"
+  button-secondary:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.secondary-foreground}"
+    rounded: "{rounded.4xl}"
+    padding: "0.625rem 0.75rem"
   card:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.panel}"
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.card-foreground}"
+    rounded: "{rounded.4xl}"
     padding: "{spacing.md}"
   badge:
-    backgroundColor: "{colors.muted-surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.capsule}"
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.secondary-foreground}"
+    rounded: "{rounded.3xl}"
     padding: "0.125rem 0.5rem"
     typography: "{typography.label}"
+  input:
+    backgroundColor: "color-mix(in oklch, var(--input) 50%, transparent)"
+    textColor: "{colors.foreground}"
+    rounded: "{rounded.3xl}"
+    padding: "0.25rem 0.75rem"
 ---
 
 # Design System: Tradely
 
 ## Overview
 
-**Creative North Star: "The Evidence Desk"**
+Tradely uses **shadcn/ui Base Luma**. Luma is the official style (March 2026): rounded geometry, soft elevation, breathable layout, inspired by macOS Tahoe without glass. The named preset in this repo is `b1aIaoaxs` (`style: luma`, `theme: neutral`, `font: inter`, `iconLibrary: lucide`, `radius: default`). Components live in `packages/ui` on Base UI, not Radix.
 
-Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The system inherits TradingFlow's authorized Luma geometry, semantic surfaces, disciplined typography, and deep blue action color while keeping a separate Tradely identity.
+The product is an editorial learning hub, not a dashboard and not a course marketplace. It should feel like a calm research desk: one thesis, one next action, real lesson media, then an ordered curriculum. TradingFlow appears only in practice, partnership, and the header tool action.
 
-The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The interface avoids course-marketplace spectacle, simulated trading imagery, and generic grids of video thumbnails.
+Luma supplies the component geometry. Tradely supplies the reading voice.
 
-**Key Characteristics:**
+**Principles, in order:**
 
-- Evidence-first hierarchy with one dominant reading path.
-- Borderless, deeply rounded surfaces over neutral light or night canvases.
-- Restrained evidence blue for action and navigation, never for invented market meaning.
-- Inter for readable structure and JetBrains Mono for compact metadata.
-- Real TradingFlow media appears only inside explicit partner and practice contexts.
+1. Clarity over decoration. Type and layout carry hierarchy before color does.
+2. Semantic tokens, not raw colors. Use `bg-primary`, never `bg-blue-500` or `#1e4d7b`.
+3. Composition over invention. Prefer shadcn primitives (`Button`, `Card`, `Sheet`, `Alert`) over custom chrome.
+4. One thesis per viewport. Supporting sections step down instead of competing with it.
+5. Accessibility is a floor. WCAG AA, visible focus, captions, reduced motion, 44px coarse-pointer targets.
+
+Apply or re-apply the preset from the app workspace; do not paste OKLCH into components:
+
+```bash
+pnpm dlx shadcn@latest apply b1aIaoaxs --only theme,font -y -c apps/web
+pnpm dlx shadcn@latest info --json -c packages/ui
+pnpm dlx shadcn@latest docs button
+```
+
+`--only theme,font` updates `packages/ui/src/styles/globals.css` and leaves installed Luma components in place. Full `apply` without `--only` reinstalls UI source; do that only when the user asks to overwrite.
+
+Tradely overlays on top of the preset, in `globals.css` only:
+
+- CJK fallbacks on `--font-sans` (`PingFang SC`, `Hiragino Sans GB`, `Noto Sans SC`, `Microsoft YaHei`).
+- JetBrains Mono for metadata (`--font-mono`).
+- Luma radius ramp through `--radius-4xl` (cards and primary buttons use `rounded-4xl`).
+- `material-chrome`, `text-display`, `press-scale`, reduced-motion, reduced-transparency, and 44px coarse-pointer targets.
 
 ## Colors
 
-The palette combines a single sober blue accent with high-clarity neutral surfaces that work in both paper and night modes.
+The palette is official Luma **neutral**: near-black primary on paper in light mode, inverted near-white primary in dark mode. Chart tokens stay blue (`chartColor: blue`). Do not restore TradingFlow evidence-blue `#1e4d7b` as `--primary`.
 
-### Primary
+Live values live in `packages/ui/src/styles/globals.css`. The YAML tokens above match that file. Re-apply the preset to change them.
 
-- **Evidence Blue** (`#1e4d7b`): Primary actions, progress, links, and small orientation labels.
+| Token | Use |
+| --- | --- |
+| `background` / `foreground` | Page canvas and default text |
+| `card` / `card-foreground` | Elevated panels, lesson rows, membership card |
+| `primary` / `primary-foreground` | The single most important action on a screen |
+| `secondary` | Quiet chips, secondary controls |
+| `muted` / `muted-foreground` | Captions, duration, category, helper copy |
+| `accent` | Hover and selected-row wash |
+| `destructive` | Errors and irreversible actions only |
+| `border` / `input` / `ring` | Hairline chrome and focus |
+| `chart-1`…`chart-5` | Categorical marks if a chart appears |
+| `sidebar-*` | Only if a Sidebar primitive is introduced |
 
-### Neutral
+**Rules.**
 
-- **Paper** (`oklch(1 0 0)`): Light canvas and light card surface.
-- **Ink** (`oklch(0.145 0 0)`): Primary light-mode text.
-- **Muted Surface** (`oklch(0.97 0 0)`): Chips, secondary controls, and quiet grouping.
-- **Muted Ink** (`oklch(0.556 0 0)`): Supporting copy and metadata.
-- **Divider** (`oklch(0.922 0 0)`): Fine separators and low-contrast rings.
-- **Night** (`oklch(0.145 0 0)`): Dark canvas.
-- **Night Surface** (`oklch(0.205 0 0)`): Dark cards and sheets.
-- **Light Ink** (`oklch(0.985 0 0)`): Primary text on dark surfaces.
-
-**The Semantic Color Rule.** Evidence blue communicates interaction and progress. Green and red are reserved for genuine market data or success/error state; they never decorate lessons.
+- Never hard-code hex or Tailwind palette classes (`bg-blue-500`, `text-emerald-600`).
+- Never author `dark:` color utilities. The `.dark` class redefines the same variables. Primary inverts in dark mode; the role stays.
+- Green and red are reserved for genuine success/error or actual market data. They never decorate lessons.
+- Dark borders use alpha (`oklch(1 0 0 / 10%)`) so chrome stays quiet on both `background` and `card`.
 
 ## Typography
 
-**Display Font:** Inter Variable (sans-serif fallback)  
-**Body Font:** Inter Variable (sans-serif fallback)  
-**Label/Mono Font:** JetBrains Mono Variable (system monospace fallback)
+**Sans / heading:** Inter Variable, with CJK system fallbacks.  
+**Mono:** JetBrains Mono Variable, for sequence numbers, duration, category, locale labels, and code.
 
-**Character:** Inter keeps the reading voice contemporary and low-friction. JetBrains Mono makes lesson counts, time, categories, and workflow labels feel measured rather than ornamental.
+Maximum two font weights on one screen (400 and 600). Optical sizing is on for display type.
 
-### Hierarchy
+| Role | Size | Weight | Tracking | Use |
+| --- | --- | --- | --- | --- |
+| Display | `clamp(3rem, 5vw, 4.5rem)` | 600 | `-0.025em` | One thesis per primary surface (`text-display`) |
+| Headline | `1.875–2.25rem` | 600 | `-0.025em` | Section breaks, course title |
+| Title | `1–1.25rem` | 500–600 | 0 | Cards, lesson names, practice assignment |
+| Body | `1rem` / line-height `1.8` | 400 | 0 | Lesson prose, ~68–72ch |
+| Label | `0.75rem` mono | 500 | wide caps ok | Counts, time, stage, access state |
 
-- **Display** (600, 3–4.5rem, 1.02): One thesis-level heading per primary surface.
-- **Headline** (600, 1.875–2.25rem, 1.1): Section transitions and course framing.
-- **Title** (500–600, 1–1.25rem, 1.35): Cards, lessons, and practice assignments.
-- **Body** (400, 1rem, 1.8): Lesson prose with a target width of 68–72 characters.
-- **Label** (500, 0.75rem, 1.4): Counts, duration, category, and small all-caps wayfinding.
-
-**The One Thesis Rule.** A viewport gets one display-scale claim. Supporting sections step down sharply instead of competing with it.
+Chinese editions keep the same scale. Do not shrink type to “fit more CJK.” Line length may run shorter; size does not.
 
 ## Layout
 
-The widest shell is 1480px with 16px mobile gutters, 24px tablet gutters, and 32px desktop gutters. Marketing and course-overview surfaces use split grids; reading surfaces use a 330px curriculum rail and a centered lesson column capped near 920px. Prose itself stays near 72ch.
+Widest shell is **1480px**. Gutters: 16px mobile, 24px tablet, 32px desktop. Marketing and course-overview surfaces use split grids. Reading surfaces use a ~330px curriculum rail and a lesson column capped near 920px. Prose itself stays near 72ch.
 
-The responsive sequence is preserved rather than compressed: thesis, action, media, progress, then curriculum. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs stack without centering the reading voice.
+The landing sequence is preserved, not compressed: thesis, one start/continue action, opening-lesson media, how the hub works, grouped curriculum, membership. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand `Sheet`. CTAs stack; they do not center the reading voice.
 
-Spacing follows an 8px base rhythm, with 16–24px inside components, 32–48px between local groups, and 64–96px between major story sections.
+Spacing uses an 8px base. Inside components: 16–24px. Between local groups: 32–48px. Between major story sections: 64–96px. Use `flex` + `gap-*`, never `space-y-*` / `space-x-*`. Equal width and height use `size-*`.
+
+Breakpoints match Tailwind: `sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536`.
 
 ## Elevation & Depth
 
-Depth is hybrid and quiet. Cards use tonal separation, a low ambient shadow, and a 5–10% foreground ring. The sticky header uses translucent material with 20px blur and saturation, but becomes opaque when reduced transparency or increased contrast is requested.
+Luma elevation is quiet: a tonal step, a low `shadow-md`, and a 5–10% foreground ring (`ring-1 ring-foreground/5`, `dark:ring-foreground/10`). Cards sit on `background` without a heavy stroke.
 
-**The Borderless Surface Rule.** Use fill, ambient shadow, and a hairline ring to establish containers. Avoid thick strokes, colored side tabs, and nested boxes.
+The sticky header uses `material-chrome` (translucent fill, 20px blur, saturation). It becomes opaque under `prefers-reduced-transparency` or `prefers-contrast: more`.
+
+Overlays (`Dialog`, `Sheet`, `Drawer`, `Popover`) get one soft shadow plus a ring. Do not stack shadows. Focus is always `ring`.
+
+**Borderless surface rule.** Establish containers with fill, ambient shadow, and a hairline ring. Avoid thick strokes, colored side tabs, and nested rounded boxes.
 
 ## Shapes
 
-The base radius is 10px. Buttons, chips, cards, media frames, and sheets extend that base into soft capsules and 26px panels. Circles are reserved for sequence numbers, completion marks, and icon-only controls. Straight dividers may separate list rows, but they do not outline every element.
+`--radius` is `0.625rem`. Luma components derive a long ramp from it; buttons, cards, media frames, and sheets use `rounded-4xl` (26px). Inputs and chips use `rounded-3xl`. Tabs and switches are capsules (`rounded-full`). Circles are for sequence numbers, completion marks, and icon-only controls.
+
+Do not mix sharp 4px corners with Luma capsules on the same view.
 
 ## Components
 
-### Buttons
+Search existing registries before writing markup: `pnpm dlx shadcn@latest search <intent>`. Installed primitives today: accordion, alert, badge, button, card, progress, separator, sheet, sonner, tooltip. Add with the CLI; do not copy GitHub files by hand.
 
-- **Shape:** Soft capsule (26px radius) with 36–40px desktop height and 44px coarse-pointer minimum.
-- **Primary:** Evidence Blue with light text; large CTAs use 16px horizontal padding.
-- **Hover / Focus:** Background darkens or softens; focus adds a semantic ring; press scales to 0.97 with a short ease-out.
-- **Secondary / Ghost:** Neutral fill or transparent surface. Outline is quiet and never the page's focal action.
+This project is **Base UI** (`base: base`). Custom triggers use `render`, not Radix `asChild`. Confirm with `pnpm dlx shadcn@latest info -c packages/ui`.
 
-### Chips
+**Compose first**
 
-- **Style:** Compact neutral fill, capsule silhouette, 12px text; mono is used when the chip conveys measured metadata.
-- **State:** Primary fill is reserved for real active emphasis. Most taxonomy chips remain neutral.
+| Need | Use |
+| --- | --- |
+| Primary action | `Button` (default). One per viewport. |
+| Quiet action | `Button variant="outline"` or `ghost` |
+| Callout | `Alert` |
+| Empty | `Empty` (add if missing; do not fake it with a dashed `div`) |
+| Loading | `Skeleton`; buttons compose `Spinner` + `disabled` |
+| Side nav on small screens | `Sheet` with required `SheetTitle` |
+| Status | `Badge` variants, not colored spans |
+| Toast | `sonner` |
 
-### Cards / Containers
+**Buttons.** Soft capsule (`rounded-4xl`), height 36px default / 40px `lg` / 44px coarse-pointer minimum. Primary is near-black (light) or near-white (dark). Hover uses `bg-primary/80`. Press may scale to `0.97`. Icons inside buttons use `data-icon="inline-start"` or `inline-end` with no sizing classes.
 
-- **Corner Style:** 26px panels.
-- **Background:** Paper or Night Surface.
-- **Shadow Strategy:** Low ambient shadow plus subtle foreground ring.
-- **Border:** No heavy border; separators are internal and low contrast.
-- **Internal Padding:** 16px compact, 24px standard.
+**Cards.** `rounded-4xl`, `shadow-md`, hairline ring, `--card-spacing` 24px (16px at `size="sm"`). Use `CardHeader` / `CardTitle` / `CardDescription` / `CardContent` / `CardFooter`. Do not dump everything into `CardContent`.
 
-### Navigation
+**Chips / badges.** Neutral fill, capsule, 12px. Mono when the chip is measured metadata (duration, sequence). Primary fill is for real active emphasis only.
 
-The 64px sticky header uses a text wordmark, low-contrast links, one partnered-tool action, theme control, and account state. Active links become foreground rather than gaining a decorative underline. Mobile navigation is a right-side sheet with the same order and language.
+**Navigation.** 64px sticky header: wordmark, low-contrast links, one partnered-tool action, language, theme, account. Active links become `foreground`. Mobile: right `Sheet`, same order.
 
-### Lesson Path
+**Lesson path.** One ordered list grouped by research stage, not a thumbnail gallery. Stage label above each group. Each row: two-digit sequence, title, access state, bounded summary, duration. Completed, unavailable, and locked stay distinct. Members do not get an extra “unlocked” badge.
 
-Lessons appear as one ordered list, not a thumbnail gallery. Each row combines a two-digit sequence, title, access state, bounded summary, duration, and category. Completed, unavailable, locked, and unlocked states remain semantically distinct.
+**Practice with TradingFlow.** The only intentionally saturated partner panel. Authorized TradingFlow mark, one bounded goal, one deep link, independent-service disclosure. Never Tradely’s primary brand.
 
-### Practice with TradingFlow
+**Forms.** `FieldGroup` + `Field`. Validation: `data-invalid` on `Field`, `aria-invalid` on the control. Option sets of 2–7 use `ToggleGroup`. Destructive confirmation uses `AlertDialog`, not `Dialog`.
 
-The practice card is the only intentionally saturated panel. It pairs the authorized TradingFlow mark with one bounded goal, one deep link, and an explicit independent-service disclosure.
+**Styling contract (shadcn skill).** `className` is for layout, not recoloring primitives. No manual `dark:` colors. No `z-index` on overlays. Conditional classes go through `cn()`. Items belong in their `*Group`. Overlays require a title (`SheetTitle`, `DialogTitle`); hide with `sr-only` if needed.
 
 ## Do's and Don'ts
 
-### Do:
+### Do
 
-- **Do** make the next learning action and the next evidence question obvious.
-- **Do** keep lesson prose within 68–72ch and use generous line height.
-- **Do** use real course media, synchronized text tracks, and explicit partner labeling.
-- **Do** preserve separate visual language for access unavailable, payment required, and signed out.
-- **Do** support light, dark, reduced-motion, reduced-transparency, and coarse-pointer modes.
+- Apply preset `b1aIaoaxs` when tokens need to change. Do not paste OKLCH into components.
+- Reserve `primary` for the single most important action on the screen.
+- Keep lesson prose in 68–72ch with line-height 1.8.
+- Use real course media, synchronized text tracks, and explicit partner labeling.
+- Keep unavailable, payment-required, and signed-out states visually distinct.
+- Support light, dark, reduced-motion, reduced-transparency, and coarse-pointer.
+- Check `shadcn search` before inventing chrome.
+- Maintain WCAG AA (4.5:1 body text, 3:1 large text and UI chrome).
 
-### Don't:
+### Don't
 
-- **Don't** turn the curriculum into a generic marketplace of thumbnail cards.
-- **Don't** use gradients, glow, or decorative finance imagery in place of real instructional evidence.
-- **Don't** use green or red as lifestyle accents or imply trading outcomes.
-- **Don't** present TradingFlow as Tradely's shared account, infrastructure, or primary brand.
-- **Don't** add heavy borders, colored side tabs, or nested rounded containers without a functional hierarchy.
+- Don't name this style Luna. The official shadcn style is **Luma**.
+- Don't reintroduce `#1e4d7b` or other TradingFlow brand blue as `--primary`.
+- Don't turn the curriculum into a marketplace of thumbnail cards.
+- Don't use gradients, glow, or decorative finance imagery in place of real instructional evidence.
+- Don't use green or red as lifestyle accents, or imply trading outcomes.
+- Don't present TradingFlow as Tradely’s shared account, infrastructure, or primary brand.
+- Don't fabricate testimonials, outcome claims, or Chinese caption tracks.
+- Don't use raw Tailwind palette colors or `dark:` color overrides.
+- Don't use `space-y-*`, `w-* h-*` for equal sizes, or extra `z-index` on overlays.
+- Don't mix icon libraries. Lucide only.
+- Don't mix sharp and Luma-round corners in one view.
+- Don't use more than two font weights on one screen.

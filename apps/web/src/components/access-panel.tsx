@@ -1,4 +1,4 @@
-import { SignInButton } from "@clerk/tanstack-react-start";
+import { SignInButton, SignUpButton } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
 import {
 	Alert,
@@ -9,6 +9,9 @@ import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { LockKeyholeIcon, RefreshCwIcon, UserRoundIcon } from "lucide-react";
 
 import type { LessonAccessDecision } from "@/domain/access";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
+
 import { clerkIsConfigured } from "./app-providers";
 
 export function AccessPanel({
@@ -16,19 +19,17 @@ export function AccessPanel({
 }: {
 	access: Extract<LessonAccessDecision, { allowed: false }>;
 }) {
+	const locale = useLocale();
 	if (access.reason === "billing-unavailable") {
 		return (
 			<Alert>
 				<RefreshCwIcon />
-				<AlertTitle>Access could not be refreshed</AlertTitle>
+				<AlertTitle>{t(locale, "accessRefreshTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
-					<p>
-						Tradely could not confirm the current billing state. Retry before
-						assuming this account needs to upgrade.
-					</p>
+					<p>{t(locale, "accessRefreshBody")}</p>
 					<Button onClick={() => window.location.reload()}>
 						<RefreshCwIcon data-icon="inline-start" />
-						Retry
+						{t(locale, "retry")}
 					</Button>
 				</AlertDescription>
 			</Alert>
@@ -39,18 +40,20 @@ export function AccessPanel({
 		return (
 			<Alert>
 				<UserRoundIcon />
-				<AlertTitle>Sign in to continue</AlertTitle>
+				<AlertTitle>{t(locale, "signInToContinueTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
-					<p>
-						This member lesson is tied to an individual Tradely account and
-						learning record.
-					</p>
+					<p>{t(locale, "signInToContinueBody")}</p>
 					{clerkIsConfigured ? (
-						<SignInButton mode="modal">
-							<Button>Sign in</Button>
-						</SignInButton>
+						<div className="flex flex-wrap gap-2">
+							<SignInButton mode="modal">
+								<Button variant="outline">{t(locale, "signIn")}</Button>
+							</SignInButton>
+							<SignUpButton mode="modal">
+								<Button>{t(locale, "signUp")}</Button>
+							</SignUpButton>
+						</div>
 					) : (
-						<Button disabled>Clerk is not configured locally</Button>
+						<Button disabled>{t(locale, "clerkNotConfigured")}</Button>
 					)}
 				</AlertDescription>
 			</Alert>
@@ -60,14 +63,11 @@ export function AccessPanel({
 	return (
 		<Alert>
 			<LockKeyholeIcon />
-			<AlertTitle>Membership lesson</AlertTitle>
+			<AlertTitle>{t(locale, "membershipLessonTitle")}</AlertTitle>
 			<AlertDescription className="flex flex-col items-start gap-4">
-				<p>
-					Unlock the complete curriculum, persistent progress, and every future
-					course update.
-				</p>
+				<p>{t(locale, "membershipLessonBody")}</p>
 				<Link to="/pricing" className={buttonVariants()}>
-					View membership
+					{t(locale, "viewMembership")}
 				</Link>
 			</AlertDescription>
 		</Alert>

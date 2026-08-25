@@ -280,6 +280,42 @@ export const tradingFlowCourse = {
 
 export type Course = typeof tradingFlowCourse;
 
+export type LessonGroup = {
+	category: string;
+	lessons: Lesson[];
+};
+
+export function getOpeningLesson(): Lesson {
+	const lesson = tradingFlowCourse.lessons[0];
+	if (!lesson) {
+		throw new Error("Course manifest is missing an opening lesson");
+	}
+	return lesson;
+}
+
+export function getPublicLessonMedia(lesson: Lesson): LessonMedia {
+	return {
+		video: `${MEDIA_ROOT}/${lesson.mediaKey}.mp4`,
+		poster: lesson.poster,
+		captions: `${MEDIA_ROOT}/captions/${lesson.mediaKey}.vtt`,
+	};
+}
+
+export function groupLessonsByCategory(
+	lessons: readonly Lesson[],
+): LessonGroup[] {
+	const groups: LessonGroup[] = [];
+	for (const lesson of lessons) {
+		const current = groups.at(-1);
+		if (current?.category === lesson.category) {
+			current.lessons.push(lesson);
+		} else {
+			groups.push({ category: lesson.category, lessons: [lesson] });
+		}
+	}
+	return groups;
+}
+
 export function getLesson(slug: string): Lesson | undefined {
 	return tradingFlowCourse.lessons.find((lesson) => lesson.slug === slug);
 }

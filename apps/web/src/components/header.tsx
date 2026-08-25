@@ -10,19 +10,18 @@ import {
 } from "@tradely/ui/components/sheet";
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 
 import { AuthControls } from "./auth-controls";
 import { TradelyBrand } from "./brand";
+import { LanguageSwitcher } from "./language-switcher";
+import { primaryNavigation } from "./site-nav";
 import { ThemeToggle } from "./theme-toggle";
 
-const navigation = [
-	{ to: "/", label: "Learn" },
-	{ to: "/courses/tradingflow-foundations", label: "Course" },
-	{ to: "/pricing", label: "Pricing" },
-] as const;
-
 function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
-	return navigation.map((item) => (
+	const locale = useLocale();
+	return primaryNavigation.map((item) => (
 		<Link
 			key={item.to}
 			to={item.to}
@@ -32,12 +31,13 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
 			)}
 			activeProps={{ className: "text-foreground" }}
 		>
-			{item.label}
+			{t(locale, item.labelKey)}
 		</Link>
 	));
 }
 
 export default function Header() {
+	const locale = useLocale();
 	return (
 		<header className="material-chrome sticky top-0 z-40 border-border/60 border-b">
 			<div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -45,7 +45,7 @@ export default function Header() {
 					<TradelyBrand />
 					<nav
 						className="hidden items-center gap-6 md:flex"
-						aria-label="Primary navigation"
+						aria-label={t(locale, "primaryNav")}
 					>
 						<NavigationLinks />
 					</nav>
@@ -59,9 +59,10 @@ export default function Header() {
 							"hidden sm:inline-flex",
 						)}
 					>
-						Open TradingFlow
+						{t(locale, "openTradingFlow")}
 						<ExternalLinkIcon data-icon="inline-end" />
 					</a>
+					<LanguageSwitcher />
 					<ThemeToggle />
 					<AuthControls />
 					<Sheet>
@@ -71,7 +72,7 @@ export default function Header() {
 									variant="ghost"
 									size="icon"
 									className="md:hidden"
-									aria-label="Open menu"
+									aria-label={t(locale, "openMenu")}
 								/>
 							}
 						>
@@ -81,19 +82,19 @@ export default function Header() {
 							<SheetHeader>
 								<SheetTitle>Tradely</SheetTitle>
 								<SheetDescription>
-									Options learning with TradingFlow practice.
+									{t(locale, "sheetDescription")}
 								</SheetDescription>
 							</SheetHeader>
 							<nav
 								className="flex flex-col gap-1 px-3"
-								aria-label="Mobile navigation"
+								aria-label={t(locale, "mobileNav")}
 							>
 								<NavigationLinks mobile />
 								<a
 									href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=mobile-menu"
 									className={cn(buttonVariants({ variant: "outline" }), "mt-4")}
 								>
-									Open TradingFlow
+									{t(locale, "openTradingFlow")}
 									<ExternalLinkIcon data-icon="inline-end" />
 								</a>
 							</nav>

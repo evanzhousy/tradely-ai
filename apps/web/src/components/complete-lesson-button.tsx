@@ -6,9 +6,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import type { Lesson } from "@/content/course";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 import { saveLessonProgress } from "@/server/progress";
 
 export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
+	const locale = useLocale();
 	const saveProgress = useServerFn(saveLessonProgress);
 	const router = useRouter();
 	const [pending, setPending] = useState(false);
@@ -28,22 +31,22 @@ export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 					if (!result.saved) {
 						toast.error(
 							result.reason === "signed-out"
-								? "Sign in to save progress"
-								: "This lesson could not be saved",
+								? t(locale, "signInToSave")
+								: t(locale, "lessonNotSaved"),
 						);
 						return;
 					}
-					toast.success("Lesson completed");
+					toast.success(t(locale, "lessonCompleted"));
 					await router.invalidate();
 				} catch {
-					toast.error("Progress is unavailable. Your lesson remains open.");
+					toast.error(t(locale, "progressUnavailable"));
 				} finally {
 					setPending(false);
 				}
 			}}
 		>
 			<CheckIcon data-icon="inline-start" />
-			{pending ? "Saving…" : "Complete lesson"}
+			{pending ? t(locale, "saving") : t(locale, "completeLesson")}
 		</Button>
 	);
 }

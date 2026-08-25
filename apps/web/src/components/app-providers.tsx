@@ -4,7 +4,15 @@ import { TooltipProvider } from "@tradely/ui/components/tooltip";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 
-export function AppProviders({ children }: { children: ReactNode }) {
+import type { Locale } from "@/i18n/locale";
+
+export function AppProviders({
+	children,
+	locale: _locale,
+}: {
+	children: ReactNode;
+	locale: Locale;
+}) {
 	const content = (
 		<ThemeProvider
 			attribute="class"

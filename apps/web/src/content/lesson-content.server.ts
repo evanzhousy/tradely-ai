@@ -1,5 +1,9 @@
 import "@tanstack/react-start/server-only";
 
+import type { Locale } from "@/i18n/locale";
+
+import { zhHansLessonContent } from "./lesson-content.zh-Hans.server";
+
 const lessonContent: Record<string, string> = {
 	"audited-boundary": `## Begin with a research contract
 
@@ -111,6 +115,12 @@ Review chart axes, date, denominator, source, and missingness—not only whether
 Run the documented challenge path. If the evidence fails, rerun the packet or lower the claim; do not repair the narrative around it. Final signoff should state what is supported, what remains unresolved, who reviewed it, and what new evidence would trigger another review.`,
 };
 
-export function getLessonBody(slug: string): string | undefined {
+export function getLessonBody(
+	slug: string,
+	locale: Locale = "en",
+): string | undefined {
+	if (locale === "zh-Hans") {
+		return zhHansLessonContent[slug] ?? lessonContent[slug];
+	}
 	return lessonContent[slug];
 }

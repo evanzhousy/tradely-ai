@@ -12,8 +12,11 @@ import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon } from "lucide-react";
 
 import type { TradingFlowPractice } from "@/content/course";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 
 export function PracticeCard({ practice }: { practice: TradingFlowPractice }) {
+	const locale = useLocale();
 	return (
 		<Card className="bg-primary text-primary-foreground ring-0">
 			<CardHeader>
@@ -24,7 +27,7 @@ export function PracticeCard({ practice }: { practice: TradingFlowPractice }) {
 						className="size-7 rounded-lg bg-white object-contain p-1"
 					/>
 					<Badge className="bg-primary-foreground/12 text-primary-foreground">
-						Official practice tool
+						{t(locale, "officialPractice")}
 					</Badge>
 					<span className="font-mono text-primary-foreground/70 text-xs">
 						TradingFlow · {practice.tool}
@@ -44,21 +47,20 @@ export function PracticeCard({ practice }: { practice: TradingFlowPractice }) {
 							"hidden sm:inline-flex",
 						)}
 					>
-						Open TradingFlow
+						{t(locale, "openTradingFlow")}
 						<ExternalLinkIcon data-icon="inline-end" />
 					</a>
 				</CardAction>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-3">
 				<p className="text-primary-foreground/65 text-xs">
-					TradingFlow is a separate partnered service. An account or
-					subscription may be required.
+					{t(locale, "practiceDisclosure")}
 				</p>
 				<a
 					href={practice.href}
 					className={cn(buttonVariants({ variant: "secondary" }), "sm:hidden")}
 				>
-					Open TradingFlow
+					{t(locale, "openTradingFlow")}
 					<ExternalLinkIcon data-icon="inline-end" />
 				</a>
 			</CardContent>

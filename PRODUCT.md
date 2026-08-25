@@ -25,7 +25,7 @@ Tradely connects options education to an actual analysis workflow. Lessons do no
 - Canonical production domain: `tradely.ai`.
 - Tradely and TradingFlow are independent products with separate domains, customers, authentication, billing, databases, and infrastructure.
 - TradingFlow is a design reference and official partnered practice tool, not a shared account system.
-- Course videos and source lesson material are available in `/Users/evansmacbookpro/Desktop/Projects/tradingflow-web-landingpage` under the partnership.
+- Course videos and source lesson material are owned by this repository under `videos/tradingflow-academy/` and its related concept-media directories.
 - TradingFlow application and design-system source are available in `/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack` for authorized reference.
 
 ## Capabilities and Constraints
@@ -47,15 +47,16 @@ Tradely connects options education to an actual analysis workflow. Lessons do no
 - Product name: Tradely.
 - Domain: `tradely.ai`.
 - Tradely has its own logo and primary identity.
-- The application adapts TradingFlow's authorized base-luma component language, semantic token architecture, typography discipline, borderless elevated surfaces, data-encoding colors, and critically damped motion.
+- The interface uses official shadcn/ui Base Luma (`base-luma`, preset `b1aIaoaxs`): rounded geometry, soft elevation, Inter, Lucide, and semantic OKLCH tokens. See `DESIGN.md`.
 - TradingFlow branding appears only in explicit partner/practice contexts, never as Tradely's main identity.
 
 ## Evidence on Hand
 
-- TradingFlow design contract: `/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/DESIGN.md`.
+- Tradely interface contract: `DESIGN.md` (official shadcn/ui Base Luma, preset `b1aIaoaxs`).
+- TradingFlow design contract (partner product, not Tradely's visual source of truth): `/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/DESIGN.md`.
 - TradingFlow theme tokens and primitives: `/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/index.css` and `src/components/ui/`.
-- Existing English and Chinese tutorial series: `/Users/evansmacbookpro/Desktop/Projects/tradingflow-web-landingpage/content/series/tradingflow-docs/`.
-- Existing videos, chapter cards, posters, app captures, and illustrations: `/Users/evansmacbookpro/Desktop/Projects/tradingflow-web-landingpage/public/` and `video/`.
+- Existing English and Chinese tutorial articles remain in the TradingFlow landing repository as free product documentation.
+- Tradely owns the Academy videos, concept cards, posters, app captures, and illustrations used by the paid learning hub.
 - No Tradely customer testimonials, outcome claims, pricing, or deployment evidence has been supplied. The product must not fabricate them.
 
 ## Product Principles

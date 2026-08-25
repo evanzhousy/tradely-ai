@@ -7,13 +7,17 @@ import {
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 
 export function ThemeToggle() {
+	const locale = useLocale();
 	const { resolvedTheme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
 	if (!mounted) return <span className="size-9" aria-hidden />;
 	const dark = resolvedTheme === "dark";
+	const label = dark ? t(locale, "useLightTheme") : t(locale, "useDarkTheme");
 	return (
 		<Tooltip>
 			<TooltipTrigger
@@ -22,15 +26,13 @@ export function ThemeToggle() {
 						variant="ghost"
 						size="icon"
 						onClick={() => setTheme(dark ? "light" : "dark")}
-						aria-label={dark ? "Use light theme" : "Use dark theme"}
+						aria-label={label}
 					/>
 				}
 			>
 				{dark ? <SunIcon /> : <MoonIcon />}
 			</TooltipTrigger>
-			<TooltipContent>
-				{dark ? "Use light theme" : "Use dark theme"}
-			</TooltipContent>
+			<TooltipContent>{label}</TooltipContent>
 		</Tooltip>
 	);
 }

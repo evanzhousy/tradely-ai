@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { tradingFlowCourse } from "./course";
+import {
+	getOpeningLesson,
+	getPublicLessonMedia,
+	groupLessonsByCategory,
+	tradingFlowCourse,
+} from "./course";
 
 describe("tradingFlowCourse manifest", () => {
 	it("uses unique, contiguous lesson identities", () => {
@@ -29,5 +34,28 @@ describe("tradingFlowCourse manifest", () => {
 				expect(orderById.get(prerequisite)).toBeLessThan(lesson.order);
 			}
 		}
+	});
+
+	it("opens on a free public lesson and groups stages in path order", () => {
+		const opening = getOpeningLesson();
+		expect(opening.access).toBe("preview");
+		expect(getPublicLessonMedia(opening)).toEqual({
+			video: "/media/tradingflow/00-audited-boundary.mp4",
+			poster: opening.poster,
+			captions: "/media/tradingflow/captions/00-audited-boundary.vtt",
+		});
+
+		const groups = groupLessonsByCategory(tradingFlowCourse.lessons);
+		expect(groups.map((group) => group.category)).toEqual([
+			"Method",
+			"Discovery",
+			"Inspection",
+			"Validation",
+			"Structure",
+			"Research output",
+		]);
+		expect(groups.flatMap((group) => group.lessons)).toEqual([
+			...tradingFlowCourse.lessons,
+		]);
 	});
 });

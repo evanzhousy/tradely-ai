@@ -9,6 +9,10 @@ describe("lesson content", () => {
 			expect(getLessonBody(lesson.slug)?.length, lesson.slug).toBeGreaterThan(
 				300,
 			);
+			expect(
+				getLessonBody(lesson.slug, "zh-Hans")?.length,
+				`${lesson.slug} zh-Hans`,
+			).toBeGreaterThan(200);
 		}
 	});
 });

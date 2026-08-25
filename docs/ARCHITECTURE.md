@@ -32,6 +32,12 @@ The preferred production path is a private S3-compatible bucket. After access su
 
 Posters are public because they reveal no paid lesson body. Caption tracks follow the same protection as their video.
 
+## Locale contract
+
+Locale is a chrome and content edition, not a persisted user or billing concept. Supported editions are `en` (source) and `zh-Hans`. The selection is stored in the `tradely_locale` cookie, with `Accept-Language` used only when the cookie is absent.
+
+Lesson IDs, slugs, access, media keys, progress, and Stripe identity stay locale-invariant. Translated titles, summaries, practice copy, UI chrome, and lesson bodies are version-controlled overlays. Missing Chinese lesson bodies fall back to English. Caption tracks remain English until a Chinese VTT exists for that lesson.
+
 ## Progress contract
 
 The client submits only the lesson ID, playback position, and completion intent. The server resolves the lesson, its content version, and its current access rule from source control. A signed-in user cannot write progress for a paid lesson without current access.

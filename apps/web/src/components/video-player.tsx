@@ -2,6 +2,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRef } from "react";
 
 import type { Lesson, LessonMedia } from "@/content/course";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 import { saveLessonProgress } from "@/server/progress";
 
 export function LessonVideo({
@@ -13,6 +15,7 @@ export function LessonVideo({
 	media: LessonMedia;
 	initialPositionSeconds?: number;
 }) {
+	const locale = useLocale();
 	const saveProgress = useServerFn(saveLessonProgress);
 	const lastSavedSecond = useRef(initialPositionSeconds);
 
@@ -59,17 +62,16 @@ export function LessonVideo({
 					kind="captions"
 					src={media.captions}
 					srcLang="en"
-					label="English"
+					label={t(locale, "captionEnglish")}
 					default
 				/>
-				Your browser does not support HTML video.
+				{t(locale, "videoUnsupported")}
 			</video>
 			<p
 				id="lesson-video-description"
 				className="px-5 py-3 text-muted-foreground text-xs"
 			>
-				The written lesson below provides the complete accessible explanation
-				and practice instructions.
+				{t(locale, "videoDescription")}
 			</p>
 		</div>
 	);

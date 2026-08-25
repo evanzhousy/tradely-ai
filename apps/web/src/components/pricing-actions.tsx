@@ -3,10 +3,12 @@ import { Button } from "@tradely/ui/components/button";
 import { ArrowRightIcon, CreditCardIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 import { beginCheckout, openCustomerPortal } from "@/server/billing";
 
 export function PricingActions({ configured }: { configured: boolean }) {
+	const locale = useLocale();
 	const checkout = useServerFn(beginCheckout);
 	const portal = useServerFn(openCustomerPortal);
 	const [pending, setPending] = useState<"checkout" | "portal" | null>(null);
@@ -18,7 +20,9 @@ export function PricingActions({ configured }: { configured: boolean }) {
 			window.location.assign(result.url);
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Billing is unavailable",
+				error instanceof Error
+					? error.message
+					: t(locale, "billingUnavailable"),
 			);
 			setPending(null);
 		}
@@ -30,7 +34,9 @@ export function PricingActions({ configured }: { configured: boolean }) {
 				disabled={!configured || pending !== null}
 				onClick={() => void navigate("checkout")}
 			>
-				{pending === "checkout" ? "Opening checkout…" : "Unlock the curriculum"}
+				{pending === "checkout"
+					? t(locale, "openingCheckout")
+					: t(locale, "unlockCurriculum")}
 				<ArrowRightIcon data-icon="inline-end" />
 			</Button>
 			<Button
@@ -39,7 +45,7 @@ export function PricingActions({ configured }: { configured: boolean }) {
 				onClick={() => void navigate("portal")}
 			>
 				<CreditCardIcon data-icon="inline-start" />
-				Manage billing
+				{t(locale, "manageBilling")}
 			</Button>
 		</div>
 	);

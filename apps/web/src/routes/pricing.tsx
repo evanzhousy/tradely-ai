@@ -10,27 +10,31 @@ import {
 import { CheckIcon } from "lucide-react";
 
 import { PricingActions } from "@/components/pricing-actions";
+import { t } from "@/i18n/ui";
+import { useLocale } from "@/i18n/use-locale";
 import { getPlanSummary } from "@/server/billing";
 
 export const Route = createFileRoute("/pricing")({
 	loader: () => getPlanSummary(),
 	head: () => ({
 		meta: [
-			{ title: "Tradely membership" },
+			{ title: t("en", "metaPricingTitle") },
 			{
 				name: "description",
-				content:
-					"Unlock the complete Tradely options-learning curriculum with Stripe-hosted checkout.",
+				content: t("en", "metaPricingDescription"),
 			},
 		],
 	}),
 	component: PricingPage,
 });
 
-function formatPlanPrice(plan: Awaited<ReturnType<typeof getPlanSummary>>) {
+function formatPlanPrice(
+	plan: Awaited<ReturnType<typeof getPlanSummary>>,
+	locale: ReturnType<typeof useLocale>,
+) {
 	if (!plan.configured || plan.unitAmount === null)
-		return "Configured in Stripe";
-	return new Intl.NumberFormat("en-US", {
+		return t(locale, "configuredInStripe");
+	return new Intl.NumberFormat(locale === "zh-Hans" ? "zh-CN" : "en-US", {
 		style: "currency",
 		currency: plan.currency.toUpperCase(),
 		maximumFractionDigits: 2,
@@ -38,45 +42,44 @@ function formatPlanPrice(plan: Awaited<ReturnType<typeof getPlanSummary>>) {
 }
 
 function PricingPage() {
+	const locale = useLocale();
 	const plan = Route.useLoaderData();
 	const features = [
-		"Complete Evidence-Led Options Research curriculum",
-		"Persistent lesson progress across devices",
-		"Every future lesson and course update while active",
-		"TradingFlow practice assignments and direct tool links",
+		t(locale, "pricingFeature1"),
+		t(locale, "pricingFeature2"),
+		t(locale, "pricingFeature3"),
+		t(locale, "pricingFeature4"),
 	];
 	return (
-		<main className="mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-[1080px] items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
+		<main className="mx-auto grid h-full w-full max-w-[1080px] items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
 			<section className="flex flex-col gap-6">
-				<Badge variant="secondary">Tradely membership</Badge>
+				<Badge variant="secondary">{t(locale, "membershipBadge")}</Badge>
 				<div className="flex flex-col gap-4">
 					<h1 className="font-semibold text-5xl text-display sm:text-6xl">
-						Keep the whole learning path open.
+						{t(locale, "pricingTitle")}
 					</h1>
 					<p className="max-w-[58ch] text-lg text-muted-foreground leading-8">
-						One Tradely membership unlocks the paid curriculum and your learning
-						record. TradingFlow remains a separate partnered service.
+						{t(locale, "pricingBody")}
 					</p>
 				</div>
 				<p className="text-muted-foreground text-sm">
-					Taxes are not enabled automatically. Tradely will configure collection
-					only after applicable registrations and tax treatment are confirmed.
+					{t(locale, "pricingTax")}
 				</p>
 			</section>
 
 			<Card>
 				<CardHeader>
 					<CardTitle className="text-2xl">
-						{plan.configured ? plan.productName : "Tradely membership"}
+						{t(locale, "membershipBadge")}
 					</CardTitle>
 					<CardDescription>
-						Stripe-hosted checkout and self-service billing management.
+						{t(locale, "pricingCardDescription")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-7">
 					<div className="flex items-end gap-2">
 						<span className="font-semibold text-4xl text-display">
-							{formatPlanPrice(plan)}
+							{formatPlanPrice(plan, locale)}
 						</span>
 						{plan.configured && plan.interval ? (
 							<span className="pb-1 text-muted-foreground">
@@ -97,7 +100,7 @@ function PricingPage() {
 					<PricingActions configured={plan.configured} />
 					{!plan.configured ? (
 						<p className="text-muted-foreground text-xs">
-							Local preview: add Stripe API and Price IDs to enable checkout.
+							{t(locale, "localStripePreview")}
 						</p>
 					) : null}
 				</CardContent>
