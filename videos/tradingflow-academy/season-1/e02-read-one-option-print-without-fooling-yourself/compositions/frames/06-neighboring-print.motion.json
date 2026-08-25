@@ -1,0 +1,48 @@
+{
+  "duration": 55,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-7ru6\"]",
+      "bySec": 1.8
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-lpkz\"]",
+      "bySec": 4.3
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-e02-06-match-stack\"]",
+      "bySec": 8.4
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-pw6h\"]",
+      "bySec": 18.7
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-7vg8\"]",
+      "bySec": 34.5
+    },
+    {
+      "kind": "before",
+      "a": "[data-hf-id=\"hf-7ru6\"]",
+      "b": "[data-hf-id=\"hf-lpkz\"]"
+    },
+    {
+      "kind": "before",
+      "a": "[data-hf-id=\"hf-lpkz\"]",
+      "b": "[data-hf-id=\"hf-pw6h\"]"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": ".leg"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": ".freeze-annotation"
+    }
+  ]
+}

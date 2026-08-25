@@ -1,0 +1,57 @@
+{
+  "source": {
+    "surface": "TradingFlow Option Trades Historical",
+    "sessionDate": "2026-07-24",
+    "timezone": "America/New_York",
+    "dataStatus": "Historical",
+    "screenshot": "assets/app/01-option-trades-2026-07-24.png"
+  },
+  "sharedContext": {
+    "symbol": "SPX",
+    "time": "17:06:38",
+    "expiry": "2026-09-18",
+    "dte": 56,
+    "strike": 7445,
+    "spot": 7408.3,
+    "size": 4
+  },
+  "prints": [
+    {
+      "type": "CALL",
+      "side": "AAsk",
+      "moneyness": "OTM",
+      "price": 175,
+      "premium": 70000,
+      "openInterest": 2785,
+      "volOi": 1.28,
+      "delta": 0.52
+    },
+    {
+      "type": "PUT",
+      "side": "BBid",
+      "moneyness": "ITM",
+      "price": 173,
+      "premium": 69200,
+      "openInterest": 3076,
+      "volOi": 1.17,
+      "delta": -0.48
+    }
+  ],
+  "interpretation": {
+    "observed": [
+      "Two rows share the same timestamp, expiry, strike, spot, and size.",
+      "The call printed above the ask and the put printed below the bid.",
+      "The call premium is $70.0K and the put premium is $69.2K."
+    ],
+    "inferred": [
+      "The call row is consistent with aggressive call buying.",
+      "The put row is consistent with aggressive put selling.",
+      "If the rows are linked, the pair is consistent with a synthetic-long or risk-reversal-like structure."
+    ],
+    "unknown": [
+      "Whether the rows belong to the same participant or order.",
+      "Whether either leg opened, closed, rolled, or hedged another position.",
+      "The participant's complete portfolio and future price path."
+    ]
+  }
+}

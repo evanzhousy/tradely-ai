@@ -1,0 +1,10 @@
+{
+  "name": "s4e09-build-a-repeatable-research-packet-in-cookbooks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.87 preview",
+    "check": "npx --yes hyperframes@0.7.87 check",
+    "render": "npx --yes hyperframes@0.7.87 render"
+  }
+}

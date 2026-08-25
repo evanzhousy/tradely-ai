@@ -20,13 +20,15 @@ This repo expects Node 24+ and pnpm 11+.
 ```bash
 pnpm install
 cp apps/web/.env.example apps/web/.env
-pnpm media:import /absolute/path/to/tradingflow-web-landingpage
+pnpm media:import
 pnpm dev:web
 ```
 
-Open [http://localhost:3001](http://localhost:3001).
+Open [http://localhost:8250](http://localhost:8250).
 
-`media:import` copies the three free lesson videos and course overview into the public development directory. Paid lesson videos and caption tracks go into ignored `apps/web/private-media/` storage and are served only through short-lived, user-bound URLs. Posters remain public. The import uses the full 7–8 minute TradingFlow Academy masters, not the 15-second chapter cards.
+`media:import` copies the three free lesson videos into the public development directory. Paid lesson videos and caption tracks go into ignored `apps/web/private-media/` storage and are served only through short-lived, user-bound URLs. Posters remain public. The import reads the Tradely-owned `videos/tradingflow-academy/` source tree and uses the full 7–8 minute Academy masters, not the 15-second Landing chapter cards.
+
+Media ownership and source/access invariants are checked with `pnpm media:assert`. Use `pnpm media:assert:local` after `pnpm media:import` to require every local Academy/caption source before a media operation. Use `pnpm media:verify` for a read-only checksum/size check against the configured Tradely R2 bucket. `pnpm media:upload` is the explicit mutating command; it uploads only the private assets listed in `scripts/media-manifest.json` and verifies every object after upload.
 
 ## Service configuration
 

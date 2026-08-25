@@ -1,0 +1,48 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Magnitude and direction</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{font-size:62px;max-width:1250px}
+.split{position:absolute;left:84px;right:84px;top:286px;height:424px;display:grid;grid-template-columns:1fr 1fr;gap:28px;perspective:1600px}
+.panel{position:relative;padding:28px 30px}
+.panel h2{margin:0;font-size:29px}.panel p{margin:10px 0 0;color:var(--color-muted);font-size:17px;line-height:1.35}
+.metric-name{position:absolute;right:28px;top:24px;padding:9px 11px;border-radius:var(--radius-xs);font:700 13px/1 var(--font-mono)}
+.dei .metric-name{background:var(--color-accent-soft);color:var(--color-accent)}.dex .metric-name{background:var(--color-positive-soft);color:var(--color-positive-ink)}
+.magnitude-chart{position:absolute;left:30px;right:30px;bottom:56px}
+.mag-row{display:grid;grid-template-columns:70px 1fr 72px;gap:12px;align-items:center;height:52px}.mag-row b{font-size:17px}.mag-row span:last-child{text-align:right;font:400 12px/1 var(--font-mono)}
+.bar{height:16px;border-radius:3px;background:var(--color-surface-muted);overflow:hidden}.bar i{display:block;height:100%;transform-origin:left;background:linear-gradient(90deg,oklch(77% .085 245),var(--color-accent))}
+.axis{position:absolute;left:54px;right:54px;bottom:142px;height:6px;background:var(--color-rule)}.axis:before{content:"";position:absolute;left:50%;top:-24px;bottom:-24px;width:2px;background:var(--color-ink-soft)}
+.axis-label{position:absolute;bottom:98px;font:400 11px/1 var(--font-mono);color:var(--color-muted)}.bear{left:52px}.bull{right:52px}
+.dex-mark{position:absolute;left:50%;bottom:126px;width:168px;height:38px;border-radius:4px;background:linear-gradient(90deg,oklch(78% .09 145),var(--color-positive));transform-origin:left}
+.dex-value{position:absolute;right:54px;bottom:182px;color:var(--color-positive-ink);font:700 38px/1 var(--font-display)}
+.support{position:absolute;left:84px;right:84px;bottom:38px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.support span{padding:13px 14px;border-radius:var(--radius-xs);background:var(--color-surface-muted);font:700 12px/1 var(--font-body);text-align:center}
+.blocked{position:absolute;right:100px;top:134px;color:var(--color-negative-ink);font:700 12px/1 var(--font-body);text-decoration:line-through;text-decoration-thickness:2px}
+</style>
+<div id="root" data-hf-id="hf-e03-05-root" data-composition-id="05-magnitude-direction" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-u6b0" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>WORKFLOW STEP 02 · ASK ONE QUESTION</div>
+  <h1 data-hf-id="hf-tm2a" class="title">Separate how unusual the activity is from which way it leaned.</h1>
+  <div data-hf-id="hf-hgc8" class="split">
+    <section data-hf-id="hf-e03-05-dei" class="panel dei card"><span data-hf-id="hf-2zqc" class="metric-name">NET DEI</span><h2 data-hf-id="hf-xla3">Magnitude</h2><p data-hf-id="hf-fzul">Directional flow relative to the name’s average stock volume.</p>
+      <div data-hf-id="hf-j1x1" class="magnitude-chart"><div data-hf-id="hf-w9q6" class="mag-row"><b data-hf-id="hf-75uo">XYZ</b><span data-hf-id="hf-flu0" class="bar"><i data-hf-id="hf-iy4w" style="width:88%"></i></span><span data-hf-id="hf-igqa">4.8×</span></div><div data-hf-id="hf-mnfm" class="mag-row"><b data-hf-id="hf-fnjq">NVDA</b><span data-hf-id="hf-78ow" class="bar"><i data-hf-id="hf-ygod" style="width:61%"></i></span><span data-hf-id="hf-f8my">2.6×</span></div><div data-hf-id="hf-n1qn" class="mag-row"><b data-hf-id="hf-0bfh">SPY</b><span data-hf-id="hf-61rt" class="bar"><i data-hf-id="hf-ev00" style="width:35%"></i></span><span data-hf-id="hf-nqia">1.1×</span></div></div>
+    </section>
+    <section data-hf-id="hf-e03-05-dex" class="panel dex card"><span data-hf-id="hf-w8iv" class="metric-name">NET DEX</span><h2 data-hf-id="hf-mjeg">Direction</h2><p data-hf-id="hf-dxeu">Signed direction of classified trade-tape flow in the selected session.</p><span data-hf-id="hf-a68m" class="blocked">DEALER INVENTORY</span>
+      <div data-hf-id="hf-dzks" class="dex-value">+2.7M</div><div data-hf-id="hf-2hmb" class="axis"></div><div data-hf-id="hf-e03-05-dex-mark" class="dex-mark"></div><span data-hf-id="hf-812v" class="axis-label bear">BEARISH</span><span data-hf-id="hf-w9y9" class="axis-label bull">BULLISH</span>
+    </section>
+  </div>
+  <div data-hf-id="hf-e03-05-support" class="support"><span data-hf-id="hf-cllw">TOTAL PREMIUM</span><span data-hf-id="hf-9hgm">TRADE COUNT</span><span data-hf-id="hf-25bw">TRADED CONTRACTS</span><span data-hf-id="hf-i0la">SENTIMENT</span></div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.title",{y:28,opacity:0},{y:0,opacity:1,duration:.7,stagger:.14,ease:"power3.out"},.1);
+tl.fromTo(".dei",{x:-130,opacity:0,rotateY:4},{x:0,opacity:1,rotateY:0,duration:.9,ease:"power3.out"},.9);
+tl.fromTo(".dex",{x:130,opacity:0,rotateY:-4},{x:0,opacity:1,rotateY:0,duration:.9,ease:"power3.out"},3.6);
+tl.fromTo(".magnitude-chart .bar i",{scaleX:0},{scaleX:1,duration:.8,stagger:.42,ease:"power2.out"},5);
+tl.fromTo(".dex-mark",{scaleX:0},{scaleX:1,duration:1.1,ease:"power2.out"},11);
+tl.fromTo(".dex-value",{opacity:0,y:12},{opacity:1,y:0,duration:.55,ease:"power2.out"},11.8);
+tl.fromTo(".blocked",{opacity:0},{opacity:1,duration:.5,ease:"power2.out"},20);
+tl.fromTo(".support span",{y:14,opacity:0},{y:0,opacity:1,duration:.4,stagger:.3,ease:"power2.out"},29);
+tl.to(".dei,.dex",{scale:1.012,duration:.7,ease:"power2.inOut"},41).to(".dei,.dex",{scale:1,duration:.7,ease:"power2.inOut"},41.7);
+var anchor={v:0};tl.to(anchor,{v:1,duration:52,ease:"none"},0);window.__timelines["05-magnitude-direction"]=tl;
+</script>
+</template></body></html>

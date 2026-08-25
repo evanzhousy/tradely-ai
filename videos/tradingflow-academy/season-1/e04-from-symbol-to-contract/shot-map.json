@@ -1,0 +1,10 @@
+[
+  {"scene":"01-gap","card":"spotlight-hero-card","style":"spotlight-hero-card","primaryMotion":"single contract row rises after spotlight lock"},
+  {"scene":"02-expiry","card":"type-and-filter","style":"type-and-filter","primaryMotion":"expiry filter narrows the result set"},
+  {"scene":"03-strike","card":"row-embed","style":"row-embed","primaryMotion":"neighboring strikes embed into real table slots"},
+  {"scene":"04-repetition","card":"list-stack-press","style":"list-stack-press","primaryMotion":"repeated prints stack with weight"},
+  {"scene":"05-vol-oi","card":"gauge-readout-moves","style":"tape-scroll-fixed-pointer","primaryMotion":"turnover tape moves behind a fixed pointer"},
+  {"scene":"06-drawer","card":"graze-face-tour","style":"graze-face-tour","primaryMotion":"camera grazes authentic drawer regions"},
+  {"scene":"07-workflow","card":"line-carry-transition","style":"line-carry-transition","primaryMotion":"evidence line carries Rank into Option Trades"},
+  {"scene":"08-outro","card":"ui-to-brand-morph","style":"icon-flip-bloom","primaryMotion":"contract chip flips into TradingFlow brand mark"}
+]

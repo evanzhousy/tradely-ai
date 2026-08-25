@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "projectId": "s3e14-publish-the-blind-review-result-without-rewriting-history",
+  "composition": "index.html",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 480,
+  "autoProxy": true
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tradely Market Recap Case Study"
+  short_description: "Build a verified Tradely case study from a TradingFlow recap"
+  default_prompt: "Use $create-tradingflow-market-recap-video to turn a TradingFlow daily recap into a verified 60-second Tradely case-study video."

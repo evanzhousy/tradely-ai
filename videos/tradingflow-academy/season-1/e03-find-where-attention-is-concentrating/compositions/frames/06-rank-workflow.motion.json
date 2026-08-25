@@ -1,0 +1,10 @@
+{
+  "duration": 48,
+  "assertions": [
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-06-window\"]","bySec":2},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-06-workflow\"]","bySec":2.8},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-06-candidates\"]","bySec":32},
+    {"kind":"before","a":"[data-hf-id=\"hf-e03-06-window\"]","b":"[data-hf-id=\"hf-e03-06-candidates\"]"},
+    {"kind":"staysInFrame","selector":".window"}
+  ]
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Practice the method</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{font-size:60px;max-width:1320px}
+.sheet{position:absolute;left:84px;right:84px;top:292px;height:430px;padding:24px}
+.header,.candidate{display:grid;grid-template-columns:70px 112px 136px 150px 120px 120px 1fr;gap:10px;align-items:center}
+.header{height:42px;color:var(--color-muted);font:400 10px/1 var(--font-mono);letter-spacing:.06em}
+.candidate{height:94px;border-top:1px solid var(--color-rule)}
+.candidate .num{color:var(--color-accent);font:700 13px/1 var(--font-mono)}.candidate b{font-size:22px}.candidate span{font-size:14px;color:var(--color-ink-soft)}
+.answer{padding:13px 14px;border-radius:var(--radius-xs);background:var(--color-surface-muted);color:var(--color-ink)!important;font-weight:700;line-height:1.3}
+.rule{position:absolute;left:340px;right:340px;bottom:34px;padding:16px 20px;border-radius:var(--radius-sm);background:var(--color-accent);color:white;text-align:center;font:700 17px/1 var(--font-body);letter-spacing:.02em}
+.teaser{position:absolute;right:84px;top:104px;padding:9px 12px;border-radius:var(--radius-xs);background:var(--color-accent-soft);color:var(--color-accent);font:700 11px/1 var(--font-body);letter-spacing:.05em}
+</style>
+<div id="root" data-hf-id="hf-e03-08-root" data-composition-id="08-practice" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-jyno" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>PRACTICE · BUILD A SHORTLIST</div>
+  <h1 data-hf-id="hf-z4zy" class="title">Record why each name earned inspection.</h1>
+  <div data-hf-id="hf-e03-08-teaser" class="teaser">NEXT · FROM SYMBOL TO CONTRACT</div>
+  <section data-hf-id="hf-e03-08-sheet" class="sheet card">
+    <div data-hf-id="hf-4y7z" class="header"><span data-hf-id="hf-o4yu">#</span><span data-hf-id="hf-gzjp">SYMBOL</span><span data-hf-id="hf-cmyr">SESSION</span><span data-hf-id="hf-s5sx">MAGNITUDE</span><span data-hf-id="hf-fpp2">DIRECTION</span><span data-hf-id="hf-dia5">BREADTH</span><span data-hf-id="hf-sbqw">NEXT QUESTION</span></div>
+    <div data-hf-id="hf-e03-08-row-1" class="candidate"><span data-hf-id="hf-cshg" class="num">01</span><b data-hf-id="hf-fnjq">NVDA</b><span data-hf-id="hf-3kpg">2026-07-28</span><span data-hf-id="hf-3pve">NET DEI · 2.6×</span><span data-hf-id="hf-nnjq">DEX · +</span><span data-hf-id="hf-7ot8">128 / 43</span><span data-hf-id="hf-wy5z" class="answer">Which expiries and strikes carry the activity?</span></div>
+    <div data-hf-id="hf-e03-08-row-2" class="candidate"><span data-hf-id="hf-blkd" class="num">02</span><b data-hf-id="hf-hvf3">TSLA</b><span data-hf-id="hf-fu7g">2026-07-28</span><span data-hf-id="hf-morq">NET DEI · 2.2×</span><span data-hf-id="hf-6v6k">DEX · MIXED</span><span data-hf-id="hf-kvil">96 / 31</span><span data-hf-id="hf-ake4" class="answer">Is direction coherent across repeated prints?</span></div>
+    <div data-hf-id="hf-e03-08-row-3" class="candidate"><span data-hf-id="hf-bzve" class="num">03</span><b data-hf-id="hf-j9dk">META</b><span data-hf-id="hf-enad">2026-07-28</span><span data-hf-id="hf-ms16">NET DEI · 1.9×</span><span data-hf-id="hf-ae1d">DEX · −</span><span data-hf-id="hf-nbjx">74 / 26</span><span data-hf-id="hf-phb8" class="answer">Does chain structure support further inspection?</span></div>
+  </section>
+  <div data-hf-id="hf-e03-08-rule" class="rule">RANK TELLS YOU WHERE TO LOOK · RESEARCH BUILDS THE THESIS</div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.title",{y:28,opacity:0},{y:0,opacity:1,duration:.7,stagger:.14,ease:"power3.out"},.1);
+tl.fromTo(".sheet",{y:42,opacity:0},{y:0,opacity:1,duration:.85,ease:"power3.out"},.8);
+tl.fromTo(".candidate",{x:28,opacity:0},{x:0,opacity:1,duration:.5,stagger:3.8,ease:"power2.out"},2);
+tl.fromTo(".answer",{backgroundColor:"var(--color-surface)",boxShadow:"0 0 0 0 var(--color-accent)"},{backgroundColor:"var(--color-accent-soft)",boxShadow:"0 0 0 1px var(--color-accent)",duration:.55,stagger:3.8,ease:"power2.out"},4);
+tl.fromTo(".rule",{y:18,opacity:0},{y:0,opacity:1,duration:.6,ease:"power3.out"},23);
+tl.fromTo(".teaser",{opacity:0},{opacity:1,duration:.5,ease:"power2.out"},30);
+var anchor={v:0};tl.to(anchor,{v:1,duration:38,ease:"none"},0);window.__timelines["08-practice"]=tl;
+</script>
+</template></body></html>

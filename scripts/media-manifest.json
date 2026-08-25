@@ -1,0 +1,239 @@
+{
+	"bucket": "tradely-media",
+	"assets": [
+		{
+			"id": "03-symbol-drawer-video",
+			"source": "videos/tradingflow-academy/season-4/s4e04-open-a-symbol-drawer-with-freshness-checks/renders/s4e04-video.mp4",
+			"key": "tradingflow-foundations/03-symbol-drawer.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/symbol-drawer"]
+		},
+		{
+			"id": "03-symbol-drawer-captions",
+			"source": "apps/web/private-media/tradingflow/captions/03-symbol-drawer.vtt",
+			"key": "tradingflow-foundations/captions/03-symbol-drawer.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/symbol-drawer"]
+		},
+		{
+			"id": "04-rank-contracts-video",
+			"source": "videos/tradingflow-academy/season-4/s4e05-rank-contracts-without-redefining-the-universe/renders/s4e05-video.mp4",
+			"key": "tradingflow-foundations/04-rank-contracts.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/rank-contracts"]
+		},
+		{
+			"id": "04-rank-contracts-captions",
+			"source": "apps/web/private-media/tradingflow/captions/04-rank-contracts.vtt",
+			"key": "tradingflow-foundations/captions/04-rank-contracts.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/rank-contracts"]
+		},
+		{
+			"id": "05-option-trades-video",
+			"source": "videos/tradingflow-academy/season-4/s4e06-validate-one-print-in-option-trades/renders/s4e06-video.mp4",
+			"key": "tradingflow-foundations/05-option-trades.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/validate-option-print"]
+		},
+		{
+			"id": "05-option-trades-captions",
+			"source": "apps/web/private-media/tradingflow/captions/05-option-trades.vtt",
+			"key": "tradingflow-foundations/captions/05-option-trades.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/validate-option-print"]
+		},
+		{
+			"id": "06-session-flow-structure-video",
+			"source": "videos/tradingflow-academy/season-4/s4e07-separate-session-flow-from-standing-structure/renders/s4e07-video.mp4",
+			"key": "tradingflow-foundations/06-session-flow-structure.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/session-flow-vs-structure"]
+		},
+		{
+			"id": "06-session-flow-structure-captions",
+			"source": "apps/web/private-media/tradingflow/captions/06-session-flow-structure.vtt",
+			"key": "tradingflow-foundations/captions/06-session-flow-structure.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/session-flow-vs-structure"]
+		},
+		{
+			"id": "07-dex-dei-gex-video",
+			"source": "videos/tradingflow-academy/season-4/s4e08-compare-dex-dei-and-gex-without-collapsing-horizons/renders/s4e08-video.mp4",
+			"key": "tradingflow-foundations/07-dex-dei-gex.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/dex-dei-gex"]
+		},
+		{
+			"id": "07-dex-dei-gex-captions",
+			"source": "apps/web/private-media/tradingflow/captions/07-dex-dei-gex.vtt",
+			"key": "tradingflow-foundations/captions/07-dex-dei-gex.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/dex-dei-gex"]
+		},
+		{
+			"id": "08-cookbooks-packet-video",
+			"source": "videos/tradingflow-academy/season-4/s4e09-build-a-repeatable-research-packet-in-cookbooks/renders/s4e09-video.mp4",
+			"key": "tradingflow-foundations/08-cookbooks-packet.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/cookbook-research-packet"]
+		},
+		{
+			"id": "08-cookbooks-packet-captions",
+			"source": "apps/web/private-media/tradingflow/captions/08-cookbooks-packet.vtt",
+			"key": "tradingflow-foundations/captions/08-cookbooks-packet.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/cookbook-research-packet"]
+		},
+		{
+			"id": "09-market-recap-video",
+			"source": "videos/tradingflow-academy/season-4/s4e10-turn-a-completed-packet-into-a-market-recap/renders/s4e10-video.mp4",
+			"key": "tradingflow-foundations/09-market-recap.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/market-recap"]
+		},
+		{
+			"id": "09-market-recap-captions",
+			"source": "apps/web/private-media/tradingflow/captions/09-market-recap.vtt",
+			"key": "tradingflow-foundations/captions/09-market-recap.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/market-recap"]
+		},
+		{
+			"id": "10-recap-audit-video",
+			"source": "videos/tradingflow-academy/season-4/s4e11-audit-a-market-recap-before-publishing/renders/s4e11-video.mp4",
+			"key": "tradingflow-foundations/10-recap-audit.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/audit-market-recap"]
+		},
+		{
+			"id": "10-recap-audit-captions",
+			"source": "apps/web/private-media/tradingflow/captions/10-recap-audit.vtt",
+			"key": "tradingflow-foundations/captions/10-recap-audit.vtt",
+			"contentType": "text/vtt; charset=utf-8",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["course:tradingflow-foundations/audit-market-recap"]
+		},
+		{
+			"id": "concept-options-flow-card",
+			"source": "videos/tradingflow-concept-cards/07-options-and-flow-concepts.mp4",
+			"key": "tradingflow-concepts/cards/07-options-and-flow-concepts.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/options-and-flow"]
+		},
+		{
+			"id": "concept-options-flow-poster",
+			"source": "videos/tradingflow-concept-cards/posters/07-options-and-flow-concepts.jpg",
+			"key": "tradingflow-concepts/cards/posters/07-options-and-flow-concepts.jpg",
+			"contentType": "image/jpeg",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/options-and-flow"]
+		},
+		{
+			"id": "concept-greeks-gex-card",
+			"source": "videos/tradingflow-concept-cards/08-greeks-and-gex.mp4",
+			"key": "tradingflow-concepts/cards/08-greeks-and-gex.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/greeks-and-gex"]
+		},
+		{
+			"id": "concept-greeks-gex-poster",
+			"source": "videos/tradingflow-concept-cards/posters/08-greeks-and-gex.jpg",
+			"key": "tradingflow-concepts/cards/posters/08-greeks-and-gex.jpg",
+			"contentType": "image/jpeg",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/greeks-and-gex"]
+		},
+		{
+			"id": "concept-option-chain-card",
+			"source": "videos/tradingflow-concept-cards/09-option-chain-and-oi.mp4",
+			"key": "tradingflow-concepts/cards/09-option-chain-and-oi.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/option-chain-and-oi"]
+		},
+		{
+			"id": "concept-option-chain-poster",
+			"source": "videos/tradingflow-concept-cards/posters/09-option-chain-and-oi.jpg",
+			"key": "tradingflow-concepts/cards/posters/09-option-chain-and-oi.jpg",
+			"contentType": "image/jpeg",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/option-chain-and-oi"]
+		},
+		{
+			"id": "concept-gex-paper-collage",
+			"source": "videos/gex-screener-paper-collage/renders/gex-screener-tutorial-animated.mp4",
+			"key": "tradingflow-concepts/gex-screener-tutorial-paper-collage.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/gex-screener"]
+		},
+		{
+			"id": "concept-gex-paper-collage-poster",
+			"source": "videos/gex-screener-paper-collage/posters/gex-screener-tutorial-paper-collage.jpg",
+			"key": "tradingflow-concepts/posters/gex-screener-tutorial-paper-collage.jpg",
+			"contentType": "image/jpeg",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["concept-archive/gex-screener"]
+		},
+		{
+			"id": "concept-market-recap-video",
+			"source": "videos/market-recap/renders/tradingflow-market-recap-2026-07-24.mp4",
+			"key": "tradingflow-concepts/market-recap/2026-07-24-market-recap.mp4",
+			"contentType": "video/mp4",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["case-study/market-recap/2026-07-24"]
+		},
+		{
+			"id": "concept-market-recap-poster",
+			"source": "videos/market-recap/posters/2026-07-24-market-recap-poster.jpg",
+			"key": "tradingflow-concepts/market-recap/2026-07-24-market-recap-poster.jpg",
+			"contentType": "image/jpeg",
+			"cacheControl": "private, no-store",
+			"visibility": "private",
+			"requiredBy": ["case-study/market-recap/2026-07-24"]
+		}
+	]
+}

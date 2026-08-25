@@ -1,0 +1,10 @@
+{
+  "name": "s3e20-run-a-season-level-audit-of-method-changes-and-unresolved-gaps",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.87 preview",
+    "check": "npx --yes hyperframes@0.7.87 check",
+    "render": "npx --yes hyperframes@0.7.87 render"
+  }
+}

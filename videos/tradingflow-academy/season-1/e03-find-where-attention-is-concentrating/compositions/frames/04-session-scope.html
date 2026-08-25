@@ -1,0 +1,60 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Session scope</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{font-size:64px;max-width:1180px}
+.workspace{position:absolute;left:84px;right:84px;top:292px;height:470px;padding:28px}
+.toolbar{display:grid;grid-template-columns:1.05fr 1.25fr 1.15fr 1fr;gap:14px}
+.control{position:relative;padding:17px 18px;border-radius:var(--radius-sm);background:var(--color-surface-muted);box-shadow:var(--shadow-hairline)}
+.control b{display:block;color:var(--color-muted);font:400 11px/1 var(--font-mono);letter-spacing:.07em}
+.control strong{display:flex;justify-content:space-between;margin-top:11px;font-size:19px}.control strong:after{content:"⌄";color:var(--color-accent)}
+.control.active{background:var(--color-accent-soft);box-shadow:0 0 0 2px var(--color-accent)}
+.definition{position:absolute;left:28px;right:28px;top:128px;height:104px;padding:22px 24px;border-radius:var(--radius-sm);background:var(--color-surface);box-shadow:var(--shadow-hairline)}
+.definition h2{margin:0 0 10px;font-size:22px}.definition p{margin:0;color:var(--color-muted);font-size:16px;line-height:1.4}
+.calendar{position:absolute;left:28px;right:28px;top:252px;height:134px;display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--radius-sm);background:var(--color-surface-muted);color:var(--color-muted);font:400 12px/1 var(--font-mono)}
+.day strong{margin-top:9px;color:var(--color-ink);font-size:23px}.day.muted{opacity:.38}.day.selected{background:var(--color-accent);color:var(--color-on-accent);box-shadow:var(--shadow-raised)}.day.selected strong{color:var(--color-on-accent)}
+.status{position:absolute;left:28px;right:28px;bottom:24px;display:flex;justify-content:space-between;align-items:center}
+.status-copy{color:var(--color-ink-soft);font:400 13px/1 var(--font-mono)}
+.cursor{position:absolute;z-index:5;width:32px;height:42px;left:314px;top:102px;filter:var(--shadow-cursor)}
+.cursor svg{display:block;width:100%;height:100%}.cursor circle{fill:var(--color-accent-mid);opacity:.35}
+.ripple{position:absolute;left:307px;top:92px;width:46px;height:46px;border:2px solid var(--color-accent);border-radius:50%;opacity:0}
+.incomplete{padding:9px 12px;border-radius:var(--radius-xs);background:var(--color-negative-soft);color:var(--color-negative-ink);font:700 11px/1 var(--font-body);letter-spacing:.05em}
+</style>
+<div id="root" data-hf-id="hf-e03-04-root" data-composition-id="04-session-scope" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-da8a" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>WORKFLOW STEP 01 · SCOPE FIRST</div>
+  <h1 data-hf-id="hf-3jul" class="title">A rank without a session and universe is incomplete evidence.</h1>
+  <section data-hf-id="hf-e03-04-workspace" class="workspace card">
+    <div data-hf-id="hf-6uyx" class="toolbar">
+      <div data-hf-id="hf-e03-04-session" class="control active"><b data-hf-id="hf-ngjm">SESSION MODE</b><strong data-hf-id="hf-ebc1">Latest</strong></div>
+      <div data-hf-id="hf-sxh3" class="control"><b data-hf-id="hf-rg31">MARKET SESSION</b><strong data-hf-id="hf-dszf">2026-07-28</strong></div>
+      <div data-hf-id="hf-opyv" class="control"><b data-hf-id="hf-ww9i">UNIVERSE</b><strong data-hf-id="hf-6fc8">Default catalog</strong></div>
+      <div data-hf-id="hf-obnu" class="control"><b data-hf-id="hf-fwdt">SORT</b><strong data-hf-id="hf-3rl8">Locked</strong></div>
+    </div>
+    <div data-hf-id="hf-e03-04-definition" class="definition"><h2 data-hf-id="hf-lu07">Latest ≠ current calendar date</h2><p data-hf-id="hf-3zmv">It resolves to the most recent completed or active trading session. Pre-open, weekend, and holiday dates do not manufacture a new session.</p></div>
+    <div data-hf-id="hf-uere" class="calendar">
+      <div data-hf-id="hf-g4ni" class="day"><span data-hf-id="hf-nfyl">MON</span><strong data-hf-id="hf-r74d">27</strong></div><div data-hf-id="hf-4yud" class="day selected"><span data-hf-id="hf-08i9">TUE</span><strong data-hf-id="hf-x5ps">28</strong></div><div data-hf-id="hf-mujf" class="day muted"><span data-hf-id="hf-xn0z">WED</span><strong data-hf-id="hf-wrer">29</strong></div><div data-hf-id="hf-bazf" class="day muted"><span data-hf-id="hf-dsuo">THU</span><strong data-hf-id="hf-uqxd">30</strong></div><div data-hf-id="hf-awoe" class="day muted"><span data-hf-id="hf-z8yc">FRI</span><strong data-hf-id="hf-v58e">31</strong></div><div data-hf-id="hf-aidd" class="day muted"><span data-hf-id="hf-gdeb">SAT</span><strong data-hf-id="hf-c73h">01</strong></div><div data-hf-id="hf-a42c" class="day muted"><span data-hf-id="hf-8cmt">SUN</span><strong data-hf-id="hf-de0k">02</strong></div>
+    </div>
+    <div data-hf-id="hf-8kim" class="status"><span data-hf-id="hf-e03-04-status" class="status-copy">SESSION 2026-07-28 · DEFAULT CATALOG · STRUCTURE + FLOW PROVENANCE VISIBLE</span><span data-hf-id="hf-d39r" class="incomplete">NO SILENT FALLBACK</span></div>
+    <div data-hf-id="hf-e03-04-ripple" class="ripple"></div>
+    <div data-hf-id="hf-e03-04-cursor" class="cursor"><svg data-hf-id="hf-xjwr" viewBox="0 0 32 42" aria-hidden="true"><circle data-hf-id="hf-zv1a" cx="10" cy="11" r="9" /><path data-hf-id="hf-lg95" d="M4 2 L4 31 L12 23 L18 37 L23 34 L17 21 L29 21 Z" fill="var(--color-ink)" stroke="white" stroke-width="2" /></svg></div>
+  </section>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.title",{y:28,opacity:0},{y:0,opacity:1,duration:.7,stagger:.14,ease:"power3.out"},.1);
+tl.fromTo(".workspace",{y:52,opacity:0},{y:0,opacity:1,duration:.85,ease:"power3.out"},.9);
+tl.fromTo(".cursor",{x:640,y:230,opacity:0},{x:0,y:0,opacity:1,duration:1.2,ease:"power2.inOut"},2.4);
+tl.fromTo(".ripple",{scale:.2,opacity:.7},{scale:1.8,opacity:0,duration:.6,ease:"power2.out"},3.55);
+tl.fromTo(".definition",{y:16,opacity:0},{y:0,opacity:1,duration:.6,ease:"power2.out"},4.1);
+tl.fromTo(".day",{y:12,opacity:0},{y:0,opacity:1,duration:.38,stagger:.22,ease:"power2.out"},10);
+tl.to(".cursor",{x:226,y:278,duration:1.1,ease:"power2.inOut"},15);
+tl.fromTo(".day.selected",{scale:.96},{scale:1.04,duration:.35,yoyo:true,repeat:1,ease:"power2.inOut"},16.05);
+tl.to(".cursor",{x:780,y:0,duration:1.25,ease:"power2.inOut"},24);
+tl.to(".control:nth-child(3)",{backgroundColor:"var(--color-accent-soft)",boxShadow:"0 0 0 2px var(--color-accent)",duration:.4},25.1);
+tl.fromTo(".status",{opacity:0},{opacity:1,duration:.55,ease:"power2.out"},31);
+tl.to(".control:nth-child(4) strong",{opacity:.35,duration:.25},39).to(".control:nth-child(4) strong",{opacity:1,duration:.25},39.25);
+var anchor={v:0};tl.to(anchor,{v:1,duration:52,ease:"none"},0);window.__timelines["04-session-scope"]=tl;
+</script>
+</template></body></html>

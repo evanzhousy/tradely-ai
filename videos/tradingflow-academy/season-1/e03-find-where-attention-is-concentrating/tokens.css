@@ -1,0 +1,60 @@
+/* Hallmark · macrostructure: Workbench · genre: modern-minimal · tone: technical + austere · theme: Cobalt · anchor hue: 245 · source: TradingFlow app system */
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4 · contrast: pass · tokens: pass · chrome: pass · fixed-canvas video gates: pass */
+:root {
+  --font-display: Inter, ui-sans-serif, sans-serif;
+  --font-body: Inter, ui-sans-serif, sans-serif;
+  --font-mono: Mono, ui-monospace, monospace;
+
+  --color-paper: oklch(98.5% 0.006 245);
+  --color-surface: oklch(99.4% 0.003 245);
+  --color-surface-muted: oklch(96.8% 0.009 245);
+  --color-rule: oklch(89.5% 0.012 245);
+  --color-neutral: oklch(58% 0.012 245);
+  --color-muted: oklch(49% 0.015 245);
+  --color-ink-soft: oklch(39% 0.014 245);
+  --color-ink: oklch(22% 0.014 245);
+  --color-accent: oklch(42% 0.105 245);
+  --color-accent-mid: oklch(77% 0.09 240);
+  --color-accent-soft: oklch(95.5% 0.025 245);
+  --color-on-accent: oklch(98% 0.006 245);
+
+  --color-positive: oklch(51% 0.14 145);
+  --color-positive-ink: oklch(42% 0.13 145);
+  --color-positive-soft: oklch(95% 0.045 145);
+  --color-negative: oklch(53% 0.17 25);
+  --color-negative-ink: oklch(44% 0.16 25);
+  --color-negative-soft: oklch(96% 0.035 25);
+  --color-inference: oklch(61% 0.13 72);
+  --color-inference-ink: oklch(48% 0.12 65);
+  --color-inference-soft: oklch(96% 0.045 78);
+  --color-warning-ink: oklch(43% 0.105 70);
+
+  --shadow-whisper: 0 1px 2px oklch(22% 0.014 245 / 0.06);
+  --shadow-hairline: 0 0 0 1px oklch(32% 0.014 245 / 0.08);
+  --shadow-raised: 0 12px 28px oklch(30% 0.045 245 / 0.08);
+  --shadow-overlay: 0 18px 42px oklch(22% 0.03 245 / 0.14);
+  --shadow-cursor: drop-shadow(0 5px 5px oklch(22% 0.014 245 / 0.22));
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-overlay: 100;
+  --z-caption: 200;
+  --z-brand: 400;
+}

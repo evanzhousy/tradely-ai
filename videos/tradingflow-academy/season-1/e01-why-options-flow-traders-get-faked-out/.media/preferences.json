@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "preferences": {
+    "destination": {
+      "value": "youtube",
+      "confirmed_in": [
+        "e01-why-options-flow-traders-get-faked-out"
+      ],
+      "updated_at": "2026-07-26T16:18:43.695Z"
+    },
+    "aspect": {
+      "value": "1920x1080",
+      "confirmed_in": [
+        "e01-why-options-flow-traders-get-faked-out"
+      ],
+      "updated_at": "2026-07-26T16:18:43.916Z"
+    },
+    "language": {
+      "value": "en",
+      "confirmed_in": [
+        "e01-why-options-flow-traders-get-faked-out"
+      ],
+      "updated_at": "2026-07-26T16:18:44.131Z"
+    },
+    "voice": {
+      "value": "frederick",
+      "confirmed_in": [
+        "e01-why-options-flow-traders-get-faked-out"
+      ],
+      "updated_at": "2026-07-26T16:18:44.352Z"
+    },
+    "style_preset.general-video": {
+      "value": "tradingflow-evidence-white",
+      "confirmed_in": [
+        "e01-why-options-flow-traders-get-faked-out"
+      ],
+      "updated_at": "2026-07-26T16:18:44.567Z"
+    }
+  },
+  "sightings": {}
+}

@@ -1,0 +1,34 @@
+{
+  "duration": 38,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": ".source-row-live",
+      "bySec": 1.5
+    },
+    {
+      "kind": "appearsBy",
+      "selector": ".materializing-row",
+      "bySec": 1.9
+    },
+    {
+      "kind": "appearsBy",
+      "selector": ".facts",
+      "bySec": 3.3
+    },
+    {
+      "kind": "before",
+      "a": ".source-row-live",
+      "b": ".materializing-row"
+    },
+    {
+      "kind": "before",
+      "a": ".materializing-row",
+      "b": ".facts"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": ".materializing-row"
+    }
+  ]
+}

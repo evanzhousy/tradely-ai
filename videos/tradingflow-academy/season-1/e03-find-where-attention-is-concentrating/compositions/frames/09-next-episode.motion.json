@@ -1,0 +1,11 @@
+{
+  "duration": 14,
+  "assertions": [
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-09-logo\"]","bySec":1},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-09-next\"]","bySec":1.5},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-09-preview-3\"]","bySec":5},
+    {"kind":"before","a":"[data-hf-id=\"hf-e03-09-logo\"]","b":"[data-hf-id=\"hf-e03-09-preview-3\"]"},
+    {"kind":"staysInFrame","selector":".next"},
+    {"kind":"keepsMoving","withinSelector":".next","maxStaticSec":3}
+  ]
+}
