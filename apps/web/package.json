@@ -27,6 +27,7 @@
 		"drizzle-orm": "^0.45.2",
 		"lucide-react": "catalog:",
 		"next-themes": "catalog:",
+		"nitro": "3.0.260610-beta",
 		"react": "catalog:",
 		"react-dom": "catalog:",
 		"react-markdown": "^10.1.0",
