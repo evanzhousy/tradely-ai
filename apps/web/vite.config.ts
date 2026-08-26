@@ -11,5 +11,8 @@ export default defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
-	plugins: [tailwindcss(), tanstackStart(), nitro(), viteReact()],
+	ssr: {
+		noExternal: true,
+	},
+	plugins: [tailwindcss(), tanstackStart(), nitro({ preset: "vercel" }), viteReact()],
 });
