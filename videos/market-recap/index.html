@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Inter";
+        src: url("fonts/Inter-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Inter";
+        src: url("fonts/Inter-Bold.woff2") format("woff2");
+        font-weight: 600 800;
+        font-style: normal;
+        font-display: block;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+      .visual-stage {
+        position: absolute;
+        inset: 0 0 auto;
+        width: 1920px;
+        height: 900px;
+        overflow: hidden;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 1080px;
+      }
+      .caption-rail {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 180px;
+        z-index: 90;
+        border-top: 2px solid #1f2be0;
+        background-color: #ffffff;
+        background-image:
+          linear-gradient(rgba(31, 43, 224, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(31, 43, 224, 0.1) 1px, transparent 1px);
+        background-size: 38.4px 38.4px;
+      }
+      .caption-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        pointer-events: none;
+      }
+      .caption-card {
+        position: absolute;
+        left: 180px;
+        right: 180px;
+        bottom: 32px;
+        min-height: 116px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 32px 12px;
+        color: #111111;
+        font-family: "Inter", sans-serif;
+        font-size: 46px;
+        font-weight: 600;
+        line-height: 1.12;
+        letter-spacing: 0.01em;
+        text-align: center;
+        text-wrap: balance;
+      }
+      .brand-bug {
+        position: absolute;
+        inset: 0;
+        z-index: 120;
+        pointer-events: none;
+      }
+      .brand-bug img {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 172px;
+        height: auto;
+        transform: translateX(-50%);
+        mix-blend-mode: multiply;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-la9c" id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-vstage" id="visual-stage" class="visual-stage">
+        <div data-hf-id="hf-0nte" id="el-01-flat-was-not-calm" class="scene clip" data-composition-id="01-flat-was-not-calm" data-composition-src="compositions/frames/01-flat-was-not-calm.html" data-start="0" data-duration="10.5" data-track-index="0" data-layout-allow-overflow data-layout-allow-occlusion></div>
+
+        <div data-hf-id="hf-p5nd" id="el-02-rotation-day" class="scene clip" data-composition-id="02-rotation-day" data-composition-src="compositions/frames/02-rotation-day.html" data-start="10" data-duration="9.5" data-track-index="1" data-layout-allow-overflow data-layout-allow-occlusion></div>
+
+        <div data-hf-id="hf-z1ph" id="el-03-tech-drag" class="scene clip" data-composition-id="03-tech-drag" data-composition-src="compositions/frames/03-tech-drag.html" data-start="19" data-duration="14" data-track-index="0" data-layout-allow-overflow data-layout-allow-occlusion></div>
+
+        <div data-hf-id="hf-b1vr" id="el-04-macro-relief" class="scene clip" data-composition-id="04-macro-relief" data-composition-src="compositions/frames/04-macro-relief.html" data-start="32.5" data-duration="8.5" data-track-index="1" data-layout-allow-overflow data-layout-allow-occlusion></div>
+
+        <div data-hf-id="hf-peu7" id="el-05-weekly-ledger" class="scene clip" data-composition-id="05-weekly-ledger" data-composition-src="compositions/frames/05-weekly-ledger.html" data-start="40.5" data-duration="11.5" data-track-index="0" data-layout-allow-overflow data-layout-allow-occlusion></div>
+
+        <div data-hf-id="hf-dn0v" id="el-06-next-watch" class="scene clip" data-composition-id="06-next-watch" data-composition-src="compositions/frames/06-next-watch.html" data-start="51.5" data-duration="8.5" data-track-index="1" data-layout-allow-overflow data-layout-allow-occlusion></div>
+      </div>
+
+      <audio data-hf-id="hf-bgm1" id="market-recap-audio-mix" class="clip" src=".media/audio/bgm/bgm_004.mp3" data-start="0" data-duration="60" data-track-index="20" data-volume="1"></audio>
+
+      <div data-hf-id="hf-caprail" id="caption-rail" class="caption-rail clip" data-start="0" data-duration="60" data-track-index="29" data-layout-ignore></div>
+
+      <div data-hf-id="hf-caplayer" id="caption-layer" class="caption-layer clip" data-start="0" data-duration="60" data-track-index="30">
+        <div data-hf-id="hf-cap01" id="caption-01-close" class="caption-card">Friday's close was not calm.</div>
+        <div data-hf-id="hf-cap02" id="caption-02-spx" class="caption-card">Modeled SPX net gamma exposure (GEX)</div>
+        <div data-hf-id="hf-cap03" id="caption-03-gex" class="caption-card">ended at −$6.56 billion.</div>
+        <div data-hf-id="hf-cap04" id="caption-04-dealer-hedging" class="caption-card">Short gamma can make dealer hedging amplify market moves.</div>
+        <div data-hf-id="hf-cap05" id="caption-05-spy-qqq" class="caption-card">SPY and QQQ also remained short gamma.</div>
+        <div data-hf-id="hf-cap06" id="caption-06-semiconductors" class="caption-card">Semiconductors led classified premium at $6.8 billion.</div>
+        <div data-hf-id="hf-cap07" id="caption-07-micron" class="caption-card">Micron (MU) reached $1.99 billion.</div>
+        <div data-hf-id="hf-cap08" id="caption-08-sandisk-nvidia" class="caption-card">SanDisk (SNDK) followed at $1.85 billion, with Nvidia (NVDA) at $885 million.</div>
+        <div data-hf-id="hf-cap09" id="caption-09-total-premium" class="caption-card">Options premium cooled to $18 billion.</div>
+        <div data-hf-id="hf-cap10" id="caption-10-call-share" class="caption-card">Call share recovered to 52%, but tagged sentiment still leaned bearish.</div>
+        <div data-hf-id="hf-cap11" id="caption-11-tesla" class="caption-card">Tesla (TSLA) led modeled DEI magnitude—a measure of footprint size, not direction.</div>
+        <div data-hf-id="hf-cap12" id="caption-12-nvidia-dex" class="caption-card">Nvidia (NVDA) led positive net DEX at +126 million share equivalents.</div>
+        <div data-hf-id="hf-cap13" id="caption-13-next-week" class="caption-card">Next: the Fed, then Microsoft (MSFT), Meta (META), Amazon (AMZN), and Apple (AAPL) earnings.</div>
+        <div data-hf-id="hf-cap14" id="caption-14-cta" class="caption-card">Read the full daily market recap at TradingFlow.com.</div>
+      </div>
+
+      <div data-hf-id="hf-brandbug" id="brand-bug" class="brand-bug clip" data-start="0" data-duration="60" data-track-index="40" data-layout-ignore>
+        <img data-hf-id="hf-brandbug-image" src=".media/images/logo_001.png" alt="TradingFlow">
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── frame transitions (injected by transitions.mjs) ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to("#el-01-flat-was-not-calm", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 10);
+        tl.fromTo("#el-02-rotation-day", { x: 1920, opacity: 1 }, { x: 0, duration: 0.5, ease: "power3.inOut" }, 10);
+        tl.to("#el-02-rotation-day", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 19);
+        tl.fromTo("#el-03-tech-drag", { x: 1920, opacity: 1 }, { x: 0, duration: 0.5, ease: "power3.inOut" }, 19);
+        tl.to("#el-03-tech-drag", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 32.5);
+        tl.fromTo("#el-04-macro-relief", { x: 1920, opacity: 1 }, { x: 0, duration: 0.5, ease: "power3.inOut" }, 32.5);
+        tl.to("#el-04-macro-relief", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 40.5);
+        tl.fromTo("#el-05-weekly-ledger", { x: 1920, opacity: 1 }, { x: 0, duration: 0.5, ease: "power3.inOut" }, 40.5);
+        tl.to("#el-05-weekly-ledger", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 51.5);
+        tl.fromTo("#el-06-next-watch", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 51.5);
+
+        var captionCues = [
+          ["#caption-01-close", 0.6, 2.4],
+          ["#caption-02-spx", 2.4, 5.8],
+          ["#caption-03-gex", 5.8, 8.98],
+          ["#caption-04-dealer-hedging", 10.6, 15.0],
+          ["#caption-05-spy-qqq", 15.0, 18.4],
+          ["#caption-06-semiconductors", 19.1, 23.5],
+          ["#caption-07-micron", 23.5, 27.0],
+          ["#caption-08-sandisk-nvidia", 27.0, 32.58],
+          ["#caption-09-total-premium", 32.7, 36.3],
+          ["#caption-10-call-share", 36.3, 40.43],
+          ["#caption-11-tesla", 40.5, 46.2],
+          ["#caption-12-nvidia-dex", 46.2, 51.9],
+          ["#caption-13-next-week", 51.9, 56.2],
+          ["#caption-14-cta", 56.2, 59.97],
+        ];
+        tl.set(".caption-card", { autoAlpha: 0 }, 0);
+        captionCues.forEach(function (cue) {
+          tl.set(cue[0], { autoAlpha: 1 }, cue[1]);
+          tl.set(cue[0], { autoAlpha: 0 }, cue[2]);
+        });
+
+        tl.fromTo("#brand-bug img", { opacity: 0.92 }, { opacity: 1, duration: 6.4, ease: "sine.inOut" }, 51.5);
+        var mainDurationAnchor = { value: 0 };
+        tl.to(mainDurationAnchor, { value: 1, duration: 60, ease: "none" }, 0); // full-span anchor — main.duration() == composition total
+      })();
+    </script>
+  </body>
+</html>

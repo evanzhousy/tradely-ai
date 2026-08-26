@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>02 Negative Across Benchmarks</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face {
+          font-family: "Newsreader";
+          src: url("fonts/LibreBaskerville-Regular.ttf") format("truetype");
+          font-weight: 400;
+        }
+
+        @font-face {
+          font-family: "Hanken Grotesk";
+          src: url("fonts/Inter-Regular.woff2") format("woff2");
+          font-weight: 400 700;
+        }
+
+        @font-face {
+          font-family: "DM Mono";
+          src: url("fonts/JetBrainsMono-400.woff2") format("woff2");
+          font-weight: 400;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          color: #1f2be0;
+          container-type: size;
+        }
+
+        .clip {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        .ground {
+          background-color: #ffffff;
+          background-image:
+            linear-gradient(rgba(31, 43, 224, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(31, 43, 224, 0.1) 1px, transparent 1px);
+          background-size: 2cqw 2cqw;
+        }
+
+        .hairline {
+          position: absolute;
+          left: 4cqw;
+          right: 4cqw;
+          height: 0;
+          border-top: 0.12cqw solid #1f2be0;
+        }
+
+        .hairline.top {
+          top: 3cqw;
+        }
+
+        .hairline.bottom {
+          top: 81.9cqh;
+        }
+
+        .chrome {
+          position: absolute;
+          top: 78.3cqh;
+          font-family: "DM Mono";
+          font-size: 0.74cqw;
+          letter-spacing: 0.06em;
+        }
+
+        .chrome.left {
+          left: 4cqw;
+        }
+
+        .chrome.right {
+          right: 4cqw;
+        }
+
+        .stage {
+          font-family: "Hanken Grotesk";
+        }
+
+        .headline {
+          position: absolute;
+          left: 4cqw;
+          top: 9.6cqh;
+          font-family: "Newsreader";
+          font-size: 4.25cqw;
+          line-height: 0.95;
+          letter-spacing: -0.008em;
+        }
+
+        .subhead {
+          position: absolute;
+          right: 4cqw;
+          top: 12.2cqh;
+          width: 31cqw;
+          font-size: 1.04cqw;
+          line-height: 1.45;
+          text-align: right;
+        }
+
+        .legend {
+          position: absolute;
+          left: 31cqw;
+          top: 23cqh;
+          display: flex;
+          gap: 2.4cqw;
+          align-items: center;
+          font-family: "DM Mono";
+          font-size: 0.75cqw;
+          letter-spacing: 0.05em;
+        }
+
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.55cqw;
+        }
+
+        .legend-current {
+          width: 2.3cqw;
+          height: 0.48cqw;
+          background: linear-gradient(90deg, #4c1d95 0%, #7b2cbf 58%, #b79ced 100%);
+        }
+
+        .legend-prior {
+          width: 2.3cqw;
+          height: 0.48cqw;
+          background: linear-gradient(90deg, #b79ced 0%, #7b2cbf 100%);
+          opacity: 0.58;
+        }
+
+        .rows {
+          position: absolute;
+          left: 4cqw;
+          top: 28cqh;
+          width: 92cqw;
+        }
+
+        .row {
+          position: relative;
+          display: grid;
+          grid-template-columns: 24cqw 1fr;
+          align-items: center;
+          height: 14.4cqh;
+          border-top: 0.08cqw solid rgba(31, 43, 224, 0.18);
+        }
+
+        .row:last-child {
+          border-bottom: 0.08cqw solid rgba(31, 43, 224, 0.18);
+        }
+
+        .identity {
+          display: grid;
+          grid-template-columns: 2.5cqw 5cqw 1fr;
+          align-items: center;
+          column-gap: 0.8cqw;
+          padding-right: 2cqw;
+        }
+
+        .identity img {
+          width: 2.15cqw;
+          height: 2.15cqw;
+          object-fit: contain;
+        }
+
+        .ticker {
+          font-family: "Newsreader";
+          font-size: 2.35cqw;
+          line-height: 1;
+        }
+
+        .change {
+          font-family: "DM Mono";
+          font-size: 0.8cqw;
+          line-height: 1.35;
+          letter-spacing: 0.04em;
+          text-align: right;
+        }
+
+        .change span {
+          display: block;
+        }
+
+        .plot {
+          position: relative;
+          height: 10.5cqh;
+          --current: 50%;
+          --prior: 50%;
+        }
+
+        .bar-lane {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 2.25cqh;
+          background: rgba(31, 43, 224, 0.08);
+          overflow: hidden;
+        }
+
+        .bar-lane.current {
+          top: 1.2cqh;
+        }
+
+        .bar-lane.prior {
+          top: 5.25cqh;
+        }
+
+        .series-bar {
+          position: absolute;
+          right: 0;
+          width: var(--width);
+          height: 100%;
+          transform-origin: right center;
+        }
+
+        .series-bar.current-bar {
+          background: linear-gradient(90deg, #4c1d95 0%, #7b2cbf 58%, #b79ced 100%);
+        }
+
+        .series-bar.prior-bar {
+          background: linear-gradient(90deg, #b79ced 0%, #7b2cbf 100%);
+          opacity: 0.58;
+        }
+
+        .zero-marker {
+          position: absolute;
+          right: 0;
+          top: 0.45cqh;
+          height: 8.4cqh;
+          border-left: 0.13cqw solid #1f2be0;
+        }
+
+        .value-label {
+          position: absolute;
+          transform: translateX(0.42cqw);
+          font-family: "DM Mono";
+          font-size: 0.76cqw;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+        }
+
+        .value-label.current {
+          left: var(--current);
+          top: 3.63cqh;
+        }
+
+        .value-label.prior {
+          left: var(--prior);
+          top: 7.68cqh;
+        }
+
+        .axis {
+          position: absolute;
+          left: 28cqw;
+          right: 0;
+          top: 73.2cqh;
+          display: flex;
+          justify-content: space-between;
+          font-family: "DM Mono";
+          font-size: 0.72cqw;
+          letter-spacing: 0.04em;
+        }
+      </style>
+
+      <script src="gsap.min.js"></script>
+
+      <div data-hf-id="hf-f02-root" id="root" data-composition-id="02-rotation-day" data-start="0" data-duration="9.5" data-width="1920" data-height="1080">
+        <section data-hf-id="hf-f02-ground" id="f02-ground" class="clip ground" data-start="0" data-duration="9.5" data-track-index="0">
+          <div data-hf-id="hf-f02-top-line" class="hairline top"></div>
+          <div data-hf-id="hf-f02-bottom-line" class="hairline bottom"></div>
+          <div data-hf-id="hf-f02-chrome-left" class="chrome left">FIG 02 / BENCHMARK MAP</div>
+          <div data-hf-id="hf-f02-chrome-right" class="chrome right">GROUPED NEGATIVE BARS · −$18B TO $0</div>
+        </section>
+
+        <section data-hf-id="hf-f02-stage" id="f02-stage" class="clip stage" data-start="0" data-duration="9.5" data-track-index="1">
+          <div data-hf-id="hf-f02-headline" id="f02-headline" class="headline">SHORT GAMMA HELD</div>
+          <div data-hf-id="hf-f02-subhead" id="f02-subhead" class="subhead">
+            Friday versus Thursday, on one signed axis. More left means more negative modeled net GEX.
+          </div>
+
+          <div data-hf-id="hf-f02-legend" id="f02-legend" class="legend">
+            <div data-hf-id="hf-f02-legend-current-item" class="legend-item">
+              <span data-hf-id="hf-f02-legend-current" class="legend-current"></span>FRIDAY
+            </div>
+            <div data-hf-id="hf-f02-legend-prior-item" class="legend-item">
+              <span data-hf-id="hf-f02-legend-prior" class="legend-prior"></span>THURSDAY
+            </div>
+          </div>
+
+          <div data-hf-id="hf-f02-rows" class="rows">
+            <div data-hf-id="hf-f02-row-spx" class="row">
+              <div data-hf-id="hf-f02-id-spx" class="identity">
+                <img data-hf-id="hf-f02-logo-spx" src=".media/images/logo_011.ico" alt="S&P Global">
+                <span data-hf-id="hf-f02-ticker-spx" class="ticker">SPX</span>
+                <span data-hf-id="hf-f02-change-spx" class="change"><span data-hf-id="hf-i0e2">−$1.08B</span><span data-hf-id="hf-4msb">MORE NEGATIVE</span></span>
+              </div>
+              <div data-hf-id="hf-f02-plot-spx" class="plot" data-chart-pattern="shadcn-chart-bar-negative-multiple" style="--current:63.56%; --prior:69.56%">
+                <div data-hf-id="hf-f02-current-lane-spx" class="bar-lane current">
+                  <div data-hf-id="hf-f02-bar-spx" class="series-bar current-bar" style="--width:36.44%"></div>
+                </div>
+                <div data-hf-id="hf-f02-prior-lane-spx" class="bar-lane prior">
+                  <div data-hf-id="hf-f02-prior-bar-spx" class="series-bar prior-bar" style="--width:30.44%"></div>
+                </div>
+                <div data-hf-id="hf-f02-zero-spx" class="zero-marker"></div>
+                <div data-hf-id="hf-f02-label-current-spx" class="value-label current">FRI −$6.56B</div>
+                <div data-hf-id="hf-f02-label-prior-spx" class="value-label prior">THU −$5.48B</div>
+              </div>
+            </div>
+
+            <div data-hf-id="hf-f02-row-spy" class="row">
+              <div data-hf-id="hf-f02-id-spy" class="identity">
+                <img data-hf-id="hf-f02-logo-spy" src=".media/images/logo_013.ico" alt="State Street">
+                <span data-hf-id="hf-f02-ticker-spy" class="ticker">SPY</span>
+                <span data-hf-id="hf-f02-change-spy" class="change"><span data-hf-id="hf-4vrg">+$5.63B</span><span data-hf-id="hf-kfzf">LESS NEGATIVE</span></span>
+              </div>
+              <div data-hf-id="hf-f02-plot-spy" class="plot" data-chart-pattern="shadcn-chart-bar-negative-multiple" style="--current:38.50%; --prior:7.22%">
+                <div data-hf-id="hf-f02-current-lane-spy" class="bar-lane current">
+                  <div data-hf-id="hf-f02-bar-spy" class="series-bar current-bar" style="--width:61.50%"></div>
+                </div>
+                <div data-hf-id="hf-f02-prior-lane-spy" class="bar-lane prior">
+                  <div data-hf-id="hf-f02-prior-bar-spy" class="series-bar prior-bar" style="--width:92.78%"></div>
+                </div>
+                <div data-hf-id="hf-f02-zero-spy" class="zero-marker"></div>
+                <div data-hf-id="hf-f02-label-current-spy" class="value-label current">FRI −$11.07B</div>
+                <div data-hf-id="hf-f02-label-prior-spy" class="value-label prior">THU −$16.70B</div>
+              </div>
+            </div>
+
+            <div data-hf-id="hf-f02-row-qqq" class="row">
+              <div data-hf-id="hf-f02-id-qqq" class="identity">
+                <img data-hf-id="hf-f02-logo-qqq" src=".media/images/logo_012.ico" alt="Invesco">
+                <span data-hf-id="hf-f02-ticker-qqq" class="ticker">QQQ</span>
+                <span data-hf-id="hf-f02-change-qqq" class="change"><span data-hf-id="hf-kqm8">−$1.46B</span><span data-hf-id="hf-1uor">MORE NEGATIVE</span></span>
+              </div>
+              <div data-hf-id="hf-f02-plot-qqq" class="plot" data-chart-pattern="shadcn-chart-bar-negative-multiple" style="--current:52.17%; --prior:60.28%">
+                <div data-hf-id="hf-f02-current-lane-qqq" class="bar-lane current">
+                  <div data-hf-id="hf-f02-bar-qqq" class="series-bar current-bar" style="--width:47.83%"></div>
+                </div>
+                <div data-hf-id="hf-f02-prior-lane-qqq" class="bar-lane prior">
+                  <div data-hf-id="hf-f02-prior-bar-qqq" class="series-bar prior-bar" style="--width:39.72%"></div>
+                </div>
+                <div data-hf-id="hf-f02-zero-qqq" class="zero-marker"></div>
+                <div data-hf-id="hf-f02-label-current-qqq" class="value-label current">FRI −$8.61B</div>
+                <div data-hf-id="hf-f02-label-prior-qqq" class="value-label prior">THU −$7.15B</div>
+              </div>
+            </div>
+          </div>
+
+          <div data-hf-id="hf-f02-axis" id="f02-axis" class="axis">
+            <span data-hf-id="hf-f02-axis-18">−$18B</span>
+            <span data-hf-id="hf-f02-axis-12">−$12B</span>
+            <span data-hf-id="hf-f02-axis-6">−$6B</span>
+            <span data-hf-id="hf-f02-axis-0">$0</span>
+          </div>
+        </section>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        const tl = gsap.timeline({ paused: true });
+        const durationAnchor = { value: 0 };
+        const rows = Array.from(document.querySelectorAll(".row"));
+
+        gsap.set(["#f02-headline", "#f02-subhead", "#f02-legend", "#f02-axis"], { opacity: 0 });
+        gsap.set(rows, { opacity: 0, x: 34 });
+        gsap.set(".series-bar", { scaleX: 0 });
+        gsap.set([".zero-marker", ".value-label"], { opacity: 0 });
+
+        tl.fromTo("#f02-headline", { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.58, ease: "power3.out" }, 0.08);
+        tl.fromTo("#f02-subhead", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.48, ease: "power2.out" }, 0.28);
+        tl.fromTo("#f02-legend", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "none" }, 0.68);
+        tl.fromTo(rows, { opacity: 0, x: 34 }, { opacity: 1, x: 0, duration: 0.52, ease: "power3.out", stagger: 0.34 }, 0.9);
+        tl.fromTo(".zero-marker", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.36, ease: "power2.out", stagger: 0.12 }, 1.35);
+        tl.fromTo(".prior-bar", { scaleX: 0 }, { scaleX: 1, duration: 0.72, ease: "power3.out", stagger: 0.24 }, 1.65);
+        tl.fromTo(".value-label.prior", { opacity: 0, x: 8 }, { opacity: 1, x: 0, duration: 0.34, ease: "power2.out", stagger: 0.24 }, 1.82);
+        tl.fromTo(".current-bar", { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "power3.out", stagger: 0.28 }, 2.2);
+        tl.fromTo(".value-label.current", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.34, ease: "power2.out", stagger: 0.28 }, 2.86);
+        tl.fromTo("#f02-axis", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "none" }, 3.65);
+        tl.to(durationAnchor, { value: 1, duration: 9.5, ease: "none" }, 0);
+
+        window.__timelines["02-rotation-day"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

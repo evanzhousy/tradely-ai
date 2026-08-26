@@ -1,0 +1,14 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "crf": 18,
+  "audio": "../assets/audio/final-mix.wav",
+  "scenes": [
+    {"image":"../assets/keyframes/scene-01-final.png","duration":7,"transition":"fade","transitionDuration":0.4,"zoomPerFrame":0.0002,"maxZoom":1.025},
+    {"image":"../assets/keyframes/scene-02-final.png","duration":8,"transition":"slideleft","transitionDuration":0.4,"zoomPerFrame":0.00018,"maxZoom":1.02},
+    {"image":"../assets/keyframes/scene-03-final.png","duration":8,"transition":"fade","transitionDuration":0.35,"zoomPerFrame":0.00018,"maxZoom":1.02},
+    {"image":"../assets/keyframes/scene-04-final.png","duration":9,"transition":"slideleft","transitionDuration":0.4,"zoomPerFrame":0.00016,"maxZoom":1.02},
+    {"image":"../assets/keyframes/scene-05-final.png","duration":6,"transition":"fade","transitionDuration":0.35,"zoomPerFrame":0.00014,"maxZoom":1.018}
+  ]
+}

@@ -1,0 +1,55 @@
+1
+00:00:00,600 --> 00:00:02,400
+Friday's close was not calm.
+
+2
+00:00:02,400 --> 00:00:05,800
+Modeled SPX net gamma exposure (GEX)
+
+3
+00:00:05,800 --> 00:00:08,980
+ended at −$6.56 billion.
+
+4
+00:00:10,600 --> 00:00:15,000
+Short gamma can make dealer hedging amplify market moves.
+
+5
+00:00:15,000 --> 00:00:18,400
+SPY and QQQ also remained short gamma.
+
+6
+00:00:19,100 --> 00:00:23,500
+Semiconductors led classified premium at $6.8 billion.
+
+7
+00:00:23,500 --> 00:00:27,000
+Micron (MU) reached $1.99 billion.
+
+8
+00:00:27,000 --> 00:00:32,580
+SanDisk (SNDK) followed at $1.85 billion, with Nvidia (NVDA) at $885 million.
+
+9
+00:00:32,700 --> 00:00:36,300
+Options premium cooled to $18 billion.
+
+10
+00:00:36,300 --> 00:00:40,430
+Call share recovered to 52%, but tagged sentiment still leaned bearish.
+
+11
+00:00:40,500 --> 00:00:46,200
+Tesla (TSLA) led modeled DEI magnitude—a measure of footprint size, not direction.
+
+12
+00:00:46,200 --> 00:00:51,900
+Nvidia (NVDA) led positive net DEX at +126 million share equivalents.
+
+13
+00:00:51,900 --> 00:00:56,200
+Next: the Fed, then Microsoft (MSFT), Meta (META), Amazon (AMZN), and Apple (AAPL) earnings.
+
+14
+00:00:56,200 --> 00:00:59,970
+Read the full daily market recap at TradingFlow.com.

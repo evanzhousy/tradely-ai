@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>05 DEI Magnitude and Signed DEX</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face {
+          font-family: "Newsreader";
+          src: url("fonts/LibreBaskerville-Regular.ttf") format("truetype");
+          font-weight: 400;
+        }
+
+        @font-face {
+          font-family: "Hanken Grotesk";
+          src: url("fonts/Inter-Regular.woff2") format("woff2");
+          font-weight: 400 700;
+        }
+
+        @font-face {
+          font-family: "DM Mono";
+          src: url("fonts/JetBrainsMono-400.woff2") format("woff2");
+          font-weight: 400;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          color: #1f2be0;
+          container-type: size;
+        }
+
+        .clip {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        .ground {
+          background-color: #ffffff;
+          background-image:
+            linear-gradient(rgba(31, 43, 224, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(31, 43, 224, 0.1) 1px, transparent 1px);
+          background-size: 2cqw 2cqw;
+        }
+
+        .hairline {
+          position: absolute;
+          left: 4cqw;
+          right: 4cqw;
+          height: 0;
+          border-top: 0.12cqw solid #1f2be0;
+        }
+
+        .hairline.top {
+          top: 3cqw;
+        }
+
+        .hairline.bottom {
+          top: 81.9cqh;
+        }
+
+        .chrome {
+          position: absolute;
+          top: 78.3cqh;
+          font-family: "DM Mono";
+          font-size: 0.74cqw;
+          letter-spacing: 0.06em;
+        }
+
+        .chrome.left {
+          left: 4cqw;
+        }
+
+        .chrome.right {
+          right: 4cqw;
+        }
+
+        .stage {
+          font-family: "Hanken Grotesk";
+        }
+
+        .phase {
+          position: absolute;
+          inset: 0;
+        }
+
+        .phase-header {
+          position: absolute;
+          left: 4cqw;
+          right: 4cqw;
+          top: 8.4cqh;
+          display: grid;
+          grid-template-columns: 1fr 34cqw;
+          column-gap: 4cqw;
+          align-items: end;
+        }
+
+        .eyebrow {
+          margin-bottom: 1.1cqh;
+          font-family: "DM Mono";
+          font-size: 0.74cqw;
+          letter-spacing: 0.07em;
+        }
+
+        .headline {
+          font-family: "Newsreader";
+          font-size: 3.8cqw;
+          line-height: 0.92;
+          letter-spacing: -0.012em;
+        }
+
+        .headline span {
+          display: block;
+        }
+
+        .definition {
+          padding-top: 1.5cqh;
+          border-top: 0.12cqw solid #1f2be0;
+          font-family: "DM Mono";
+          font-size: 0.82cqw;
+          line-height: 1.5;
+          letter-spacing: 0.04em;
+          text-align: right;
+        }
+
+        .definition strong {
+          display: block;
+          margin-bottom: 0.5cqh;
+          font-family: "Newsreader";
+          font-size: 1.55cqw;
+          line-height: 1;
+          letter-spacing: 0;
+        }
+
+        .evidence-grid {
+          position: absolute;
+          left: 4cqw;
+          right: 4cqw;
+          top: 26cqh;
+          display: grid;
+          grid-template-columns: 55cqw 1fr;
+          column-gap: 4cqw;
+        }
+
+        .chart-panel,
+        .metric-panel {
+          position: relative;
+          height: 42cqh;
+          padding-top: 1.7cqh;
+          border-top: 0.12cqw solid #1f2be0;
+        }
+
+        .chart-panel {
+          padding-right: 3cqw;
+          border-right: 0.08cqw solid rgba(31, 43, 224, 0.18);
+        }
+
+        .panel-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: "DM Mono";
+          font-size: 0.72cqw;
+          letter-spacing: 0.055em;
+        }
+
+        .ohlc-strip {
+          position: absolute;
+          left: 0;
+          right: 3cqw;
+          top: 5.4cqh;
+          display: flex;
+          align-items: center;
+          gap: 1.15cqw;
+          height: 3.7cqh;
+          padding: 0 0.7cqw;
+          border-left: 0.16cqw solid #4f46e5;
+          background: rgba(224, 231, 255, 0.48);
+          font-family: "DM Mono";
+          font-size: 0.61cqw;
+          letter-spacing: 0.025em;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+
+        .ohlc-strip strong {
+          font-size: 0.66cqw;
+          font-weight: 700;
+        }
+
+        .plot {
+          position: absolute;
+          left: 0;
+          right: 5.2cqw;
+          top: 11.4cqh;
+          height: 23cqh;
+          border-top: 0.08cqw solid rgba(31, 43, 224, 0.24);
+          border-bottom: 0.08cqw solid rgba(31, 43, 224, 0.24);
+          overflow: hidden;
+        }
+
+        .tv-chart {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          transform-origin: center bottom;
+        }
+
+        .context-note {
+          position: absolute;
+          left: 0;
+          top: 37.8cqh;
+          font-family: "DM Mono";
+          font-size: 0.58cqw;
+          letter-spacing: 0.035em;
+        }
+
+        .candle-key {
+          position: absolute;
+          right: 3cqw;
+          top: 37.8cqh;
+          font-family: "DM Mono";
+          font-size: 0.58cqw;
+          letter-spacing: 0.035em;
+        }
+
+        .metric-label {
+          font-family: "DM Mono";
+          font-size: 0.72cqw;
+          letter-spacing: 0.055em;
+        }
+
+        .ranking {
+          margin-top: 2.2cqh;
+        }
+
+        .rank-row {
+          display: grid;
+          grid-template-columns: 10.8cqw 1fr 3.8cqw;
+          align-items: center;
+          height: 7.15cqh;
+          border-bottom: 0.08cqw solid rgba(31, 43, 224, 0.18);
+        }
+
+        .identity {
+          display: flex;
+          align-items: center;
+          gap: 0.7cqw;
+          font-family: "DM Mono";
+          font-size: 0.58cqw;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+        }
+
+        .identity img {
+          width: 1.7cqw;
+          height: 1.7cqw;
+          object-fit: contain;
+        }
+
+        .dex-logo {
+          width: 1.7cqw;
+          height: 1.7cqw;
+          background: url(".media/images/logo_006.svg") center / contain no-repeat;
+        }
+
+        .rank-track {
+          height: 2.25cqh;
+          background: rgba(79, 70, 229, 0.1);
+        }
+
+        .rank-bar {
+          width: var(--value);
+          height: 100%;
+          background: linear-gradient(90deg, #3730a3 0%, #6366f1 56%, #c7d2fe 100%);
+          transform-origin: left center;
+        }
+
+        .rank-value {
+          font-family: "Newsreader";
+          font-size: 1.55cqw;
+          line-height: 1;
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .rank-axis {
+          display: flex;
+          justify-content: space-between;
+          margin: 1.1cqh 0 0 10.8cqw;
+          font-family: "DM Mono";
+          font-size: 0.62cqw;
+          letter-spacing: 0.04em;
+        }
+
+        .dex-hero {
+          margin-top: 4.6cqh;
+          font-family: "Newsreader";
+          font-size: 5.65cqw;
+          line-height: 0.86;
+          letter-spacing: -0.018em;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .dex-identity {
+          display: flex;
+          align-items: center;
+          gap: 0.8cqw;
+          margin-top: 1.8cqh;
+          font-family: "DM Mono";
+          font-size: 0.76cqw;
+          letter-spacing: 0.05em;
+        }
+
+        .dex-plot {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 25cqh;
+          height: 10cqh;
+        }
+
+        .dex-axis-line {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 3.2cqh;
+          height: 0.12cqw;
+          background: rgba(31, 43, 224, 0.2);
+        }
+
+        .dex-zero {
+          position: absolute;
+          left: 50%;
+          top: 0.5cqh;
+          height: 5.6cqh;
+          border-left: 0.14cqw solid #1f2be0;
+        }
+
+        .dex-bar {
+          position: absolute;
+          left: 50%;
+          top: 1.35cqh;
+          width: 42%;
+          height: 3.7cqh;
+          background: linear-gradient(90deg, #3730a3 0%, #6366f1 58%, #c7d2fe 100%);
+          transform-origin: left center;
+        }
+
+        .dex-marker {
+          position: absolute;
+          left: 92%;
+          top: 0.5cqh;
+          height: 5.6cqh;
+          border-left: 0.13cqw solid #4338ca;
+        }
+
+        .dex-axis-labels {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 7cqh;
+          display: flex;
+          justify-content: space-between;
+          font-family: "DM Mono";
+          font-size: 0.63cqw;
+          letter-spacing: 0.04em;
+        }
+
+        .contract {
+          position: absolute;
+          left: 4cqw;
+          right: 4cqw;
+          top: 70.5cqh;
+          padding-top: 1.5cqh;
+          border-top: 0.12cqw solid #1f2be0;
+          font-family: "Newsreader";
+          font-size: 1.45cqw;
+          line-height: 1.15;
+          text-align: center;
+        }
+      </style>
+
+      <script src="lightweight-charts.standalone.production.js"></script>
+      <script src="lightweight-chart-theme.js"></script>
+      <script src="gsap.min.js"></script>
+
+      <div data-hf-id="hf-f05-root" id="root" data-composition-id="05-weekly-ledger" data-start="0" data-duration="11.5" data-width="1920" data-height="1080">
+        <section data-hf-id="hf-f05-ground" id="f05-ground" class="clip ground" data-start="0" data-duration="11.5" data-track-index="0">
+          <div data-hf-id="hf-f05-top-line" class="hairline top"></div>
+          <div data-hf-id="hf-f05-bottom-line" class="hairline bottom"></div>
+          <div data-hf-id="hf-f05-chrome-left" class="chrome left">FIG 05 / OPTIONS POSITIONING</div>
+          <div data-hf-id="hf-f05-chrome-right" class="chrome right" data-layout-allow-overlap>MAGNITUDE ≠ SIGN</div>
+        </section>
+
+        <section data-hf-id="hf-f05-stage" id="f05-stage" class="clip stage" data-start="0" data-duration="11.5" data-track-index="1">
+          <div data-hf-id="hf-f05-phase-tsla" id="f05-phase-tsla" class="phase phase-a" data-layout-allow-occlusion data-layout-allow-overlap>
+            <div data-hf-id="hf-f05-tsla-header" class="phase-header">
+              <div data-hf-id="hf-f05-tsla-title-block">
+                <div data-hf-id="hf-f05-tsla-eyebrow" class="eyebrow">BEAT 01 / FOOTPRINT SIZE</div>
+                <div data-hf-id="hf-f05-tsla-headline" class="headline">
+                  <span data-hf-id="hf-f05-tsla-headline-a">TESLA (TSLA) LED</span>
+                  <span data-hf-id="hf-f05-tsla-headline-b">DEI MAGNITUDE</span>
+                </div>
+              </div>
+              <div data-hf-id="hf-f05-tsla-definition" class="definition">
+                <strong data-hf-id="hf-f05-tsla-definition-strong">DEI = FOOTPRINT SIZE</strong>
+                NON-DIRECTIONAL · MODELED ESTIMATE
+              </div>
+            </div>
+
+            <div data-hf-id="hf-f05-tsla-grid" class="evidence-grid">
+              <div data-hf-id="hf-f05-tsla-chart" class="chart-panel">
+                <div data-hf-id="hf-f05-tsla-panel-head" class="panel-head">
+                  <span data-hf-id="hf-f05-tsla-chart-title">TESLA (TSLA) · 5D DAILY K-LINE</span>
+                  <span data-hf-id="hf-f05-tsla-scale">INDEPENDENT PRICE SCALE</span>
+                </div>
+                <div data-hf-id="hf-f05-tsla-ohlc" class="ohlc-strip">
+                  <strong data-hf-id="hf-f05-tsla-ohlc-date">JUL 24</strong>
+                  <span data-hf-id="hf-f05-tsla-open">O 320.70</span>
+                  <span data-hf-id="hf-f05-tsla-high">H 323.00</span>
+                  <span data-hf-id="hf-f05-tsla-low">L 306.50</span>
+                  <span data-hf-id="hf-f05-tsla-close">C 313.00</span>
+                  <strong data-hf-id="hf-f05-tsla-change">−2.10%</strong>
+                </div>
+                <div data-hf-id="hf-f05-tsla-plot" class="plot">
+                  <div data-hf-id="hf-f05-tsla-tv-chart" id="f05-tsla-tv-chart" class="tv-chart" aria-label="Tesla five-session candlestick chart"></div>
+                </div>
+                <div data-hf-id="hf-f05-tsla-context" class="context-note">TRADINGFLOW DAILY OHLC · PRICE CONTEXT ONLY</div>
+                <div data-hf-id="hf-f05-tsla-key" class="candle-key">LIGHTWEIGHT CHARTS · HOLLOW ↑ · FILLED ↓</div>
+              </div>
+
+              <div data-hf-id="hf-f05-dei-panel" class="metric-panel">
+                <div data-hf-id="hf-f05-dei-label" class="metric-label">MODELED DEI MAGNITUDE · COMMON 0–300 SCALE</div>
+                <div data-hf-id="hf-f05-ranking" class="ranking" data-chart-pattern="shadcn-chart-bar-horizontal-label">
+                  <div data-hf-id="hf-f05-rank-tsla" class="rank-row">
+                    <div data-hf-id="hf-f05-id-tsla" class="identity"><img data-hf-id="hf-f05-logo-tsla" src=".media/images/logo_007.svg" alt="Tesla"><span data-hf-id="hf-f05-name-tsla">TESLA (TSLA)</span></div>
+                    <div data-hf-id="hf-f05-track-tsla" class="rank-track"><div data-hf-id="hf-f05-bar-tsla" class="rank-bar" style="--value:88.67%"></div></div>
+                    <div data-hf-id="hf-f05-value-tsla" class="rank-value">266</div>
+                  </div>
+                  <div data-hf-id="hf-f05-rank-aapl" class="rank-row">
+                    <div data-hf-id="hf-f05-id-aapl" class="identity"><img data-hf-id="hf-f05-logo-aapl" src=".media/images/logo_008.svg" alt="Apple"><span data-hf-id="hf-f05-name-aapl">APPLE (AAPL)</span></div>
+                    <div data-hf-id="hf-f05-track-aapl" class="rank-track"><div data-hf-id="hf-f05-bar-aapl" class="rank-bar" style="--value:37.33%"></div></div>
+                    <div data-hf-id="hf-f05-value-aapl" class="rank-value">112</div>
+                  </div>
+                  <div data-hf-id="hf-f05-rank-nvda" class="rank-row">
+                    <div data-hf-id="hf-f05-id-nvda" class="identity"><img data-hf-id="hf-f05-logo-nvda" src=".media/images/logo_006.svg" alt="Nvidia"><span data-hf-id="hf-f05-name-nvda">NVIDIA (NVDA)</span></div>
+                    <div data-hf-id="hf-f05-track-nvda" class="rank-track"><div data-hf-id="hf-f05-bar-nvda" class="rank-bar" style="--value:31.33%"></div></div>
+                    <div data-hf-id="hf-f05-value-nvda" class="rank-value">94</div>
+                  </div>
+                  <div data-hf-id="hf-f05-rank-meta" class="rank-row">
+                    <div data-hf-id="hf-f05-id-meta" class="identity"><img data-hf-id="hf-f05-logo-meta" src=".media/images/logo_009.svg" alt="Meta"><span data-hf-id="hf-f05-name-meta">META PLATFORMS (META)</span></div>
+                    <div data-hf-id="hf-f05-track-meta" class="rank-track"><div data-hf-id="hf-f05-bar-meta" class="rank-bar" style="--value:26%"></div></div>
+                    <div data-hf-id="hf-f05-value-meta" class="rank-value">78</div>
+                  </div>
+                </div>
+                <div data-hf-id="hf-f05-rank-axis" class="rank-axis"><span data-hf-id="hf-f05-rank-axis-0">0</span><span data-hf-id="hf-f05-rank-axis-150">150</span><span data-hf-id="hf-f05-rank-axis-300">300</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div data-hf-id="hf-f05-phase-nvda" id="f05-phase-nvda" class="phase phase-b" data-layout-allow-occlusion data-layout-allow-overlap>
+            <div data-hf-id="hf-f05-nvda-header" class="phase-header">
+              <div data-hf-id="hf-f05-nvda-title-block">
+                <div data-hf-id="hf-f05-nvda-eyebrow" class="eyebrow">BEAT 02 / SIGNED DIRECTION</div>
+                <div data-hf-id="hf-f05-nvda-headline" class="headline">
+                  <span data-hf-id="hf-f05-nvda-headline-a">NVIDIA (NVDA) LED</span>
+                  <span data-hf-id="hf-f05-nvda-headline-b">POSITIVE NET DEX</span>
+                </div>
+              </div>
+              <div data-hf-id="hf-f05-nvda-definition" class="definition">
+                <strong data-hf-id="hf-f05-nvda-definition-strong">SIGNED DEX = DIRECTION</strong>
+                POSITIVE EXTENDS RIGHT OF ZERO
+              </div>
+            </div>
+
+            <div data-hf-id="hf-f05-nvda-grid" class="evidence-grid">
+              <div data-hf-id="hf-f05-nvda-chart" class="chart-panel">
+                <div data-hf-id="hf-f05-nvda-panel-head" class="panel-head">
+                  <span data-hf-id="hf-f05-nvda-chart-title">NVIDIA (NVDA) · 5D DAILY K-LINE</span>
+                  <span data-hf-id="hf-f05-nvda-scale">INDEPENDENT PRICE SCALE</span>
+                </div>
+                <div data-hf-id="hf-f05-nvda-ohlc" class="ohlc-strip">
+                  <strong data-hf-id="hf-f05-nvda-ohlc-date">JUL 24</strong>
+                  <span data-hf-id="hf-f05-nvda-open">O 207.40</span>
+                  <span data-hf-id="hf-f05-nvda-high">H 211.90</span>
+                  <span data-hf-id="hf-f05-nvda-low">L 204.80</span>
+                  <span data-hf-id="hf-f05-nvda-close">C 206.80</span>
+                  <strong data-hf-id="hf-f05-nvda-change">−0.96%</strong>
+                </div>
+                <div data-hf-id="hf-f05-nvda-plot" class="plot">
+                  <div data-hf-id="hf-f05-nvda-tv-chart" id="f05-nvda-tv-chart" class="tv-chart" aria-label="Nvidia five-session candlestick chart"></div>
+                </div>
+                <div data-hf-id="hf-f05-nvda-context" class="context-note">TRADINGFLOW DAILY OHLC · PRICE CONTEXT ONLY</div>
+                <div data-hf-id="hf-f05-nvda-key" class="candle-key">LIGHTWEIGHT CHARTS · HOLLOW ↑ · FILLED ↓</div>
+              </div>
+
+              <div data-hf-id="hf-f05-dex-panel" class="metric-panel">
+                <div data-hf-id="hf-f05-dex-label" class="metric-label">SIGNED NET DEX · SHARE EQUIVALENTS</div>
+                <div data-hf-id="hf-f05-dex-hero" class="dex-hero">+126M</div>
+                <div data-hf-id="hf-f05-dex-identity" class="dex-identity"><span data-hf-id="hf-f05-dex-logo" class="dex-logo" role="img" aria-label="Nvidia"></span><span data-hf-id="hf-f05-dex-name">NVIDIA (NVDA) · POSITIVE TILT</span></div>
+                <div data-hf-id="hf-f05-dex-plot" class="dex-plot" data-chart-pattern="shadcn-chart-bar-negative">
+                  <div data-hf-id="hf-f05-dex-axis-line" class="dex-axis-line"></div>
+                  <div data-hf-id="hf-f05-dex-zero" class="dex-zero"></div>
+                  <div data-hf-id="hf-f05-dex-bar" id="f05-dex-bar" class="dex-bar"></div>
+                  <div data-hf-id="hf-f05-dex-marker" id="f05-dex-marker" class="dex-marker"></div>
+                  <div data-hf-id="hf-f05-dex-axis-labels" class="dex-axis-labels"><span data-hf-id="hf-f05-dex-neg">−150M</span><span data-hf-id="hf-f05-dex-zero-label">0</span><span data-hf-id="hf-f05-dex-pos">+150M</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div data-hf-id="hf-f05-contract" id="f05-contract" class="contract">DEI RANKS FOOTPRINT SIZE. SIGNED DEX CARRIES DIRECTION. PRICE USES A SEPARATE SCALE.</div>
+        </section>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        TradingFlowCharts.createCandlestick({
+          containerId: "f05-tsla-tv-chart",
+          fallbackWidth: 956,
+          fallbackHeight: 248,
+          precision: 2,
+          minMove: 0.01,
+          lastPrice: 313.0,
+          marker: {
+            time: "2026-07-23",
+            text: "GAP −8.8%",
+            position: "aboveBar",
+            shape: "arrowDown",
+          },
+          data: [
+            { time: "2026-07-20", open: 386.0, high: 386.6, low: 369.4, close: 369.6 },
+            { time: "2026-07-21", open: 371.2, high: 384.1, low: 370.0, close: 378.9 },
+            { time: "2026-07-22", open: 375.5, high: 380.2, low: 372.9, close: 374.0 },
+            { time: "2026-07-23", open: 341.0, high: 342.1, low: 315.7, close: 319.7 },
+            { time: "2026-07-24", open: 320.7, high: 323.0, low: 306.5, close: 313.0 },
+          ],
+        });
+
+        TradingFlowCharts.createCandlestick({
+          containerId: "f05-nvda-tv-chart",
+          fallbackWidth: 956,
+          fallbackHeight: 248,
+          precision: 2,
+          minMove: 0.01,
+          lastPrice: 206.8,
+          data: [
+            { time: "2026-07-20", open: 205.9, high: 207.7, low: 202.3, close: 203.3 },
+            { time: "2026-07-21", open: 207.5, high: 208.7, low: 204.0, close: 207.3 },
+            { time: "2026-07-22", open: 205.8, high: 214.4, low: 204.9, close: 212.1 },
+            { time: "2026-07-23", open: 209.5, high: 210.9, low: 206.0, close: 208.8 },
+            { time: "2026-07-24", open: 207.4, high: 211.9, low: 204.8, close: 206.8 },
+          ],
+        });
+
+        const tl = gsap.timeline({ paused: true });
+        const durationAnchor = { value: 0 };
+
+        gsap.set("#f05-phase-tsla", { autoAlpha: 1, x: 0 });
+        gsap.set("#f05-phase-nvda", { autoAlpha: 0, x: 54 });
+        gsap.set(".phase-a .rank-row", { opacity: 0 });
+        gsap.set(".phase-a .tv-chart", { opacity: 0, scaleY: 0.96 });
+        gsap.set(".phase-a .rank-bar", { scaleX: 0 });
+        gsap.set(".phase-b .tv-chart", { opacity: 0, scaleY: 0.96 });
+        gsap.set("#f05-dex-bar", { scaleX: 0 });
+        gsap.set("#f05-dex-marker", { opacity: 0, scaleY: 0 });
+        gsap.set("#f05-contract", { opacity: 0 });
+
+        tl.fromTo(".phase-a .phase-header", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.05);
+        tl.fromTo(".phase-a .chart-panel, .phase-a .metric-panel", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.12 }, 0.4);
+        tl.to(".phase-a .tv-chart", { opacity: 1, scaleY: 1, duration: 0.52, ease: "power2.out" }, 0.68);
+        tl.to(".phase-a .rank-row", { opacity: 1, duration: 0.32, stagger: 0.2, ease: "power2.out" }, 1.0);
+        tl.to(".phase-a .rank-bar", { scaleX: 1, duration: 0.65, stagger: 0.2, ease: "power3.out" }, 1.12);
+        tl.fromTo("#f05-contract", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.75);
+
+        tl.to("#f05-phase-tsla", { autoAlpha: 0, x: -54, duration: 0.46, ease: "power2.inOut" }, 5.35);
+        tl.fromTo("#f05-phase-nvda", { autoAlpha: 0, x: 54 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: "power3.out" }, 5.45);
+        tl.to(".phase-b .tv-chart", { opacity: 1, scaleY: 1, duration: 0.52, ease: "power2.out" }, 5.7);
+        tl.to("#f05-dex-bar", { scaleX: 1, duration: 0.9, ease: "power3.out" }, 6.15);
+        tl.to("#f05-dex-marker", { opacity: 1, scaleY: 1, duration: 0.38, ease: "power2.out" }, 6.82);
+        tl.to(durationAnchor, { value: 1, duration: 11.5, ease: "none" }, 0);
+
+        window.__timelines["05-weekly-ledger"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

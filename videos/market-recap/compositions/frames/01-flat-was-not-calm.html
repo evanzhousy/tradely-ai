@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>01 Short Gamma Held</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face {
+          font-family: "Newsreader";
+          src: url("fonts/LibreBaskerville-Regular.ttf") format("truetype");
+          font-weight: 400;
+        }
+
+        @font-face {
+          font-family: "Hanken Grotesk";
+          src: url("fonts/Inter-Regular.woff2") format("woff2");
+          font-weight: 400 700;
+        }
+
+        @font-face {
+          font-family: "DM Mono";
+          src: url("fonts/JetBrainsMono-400.woff2") format("woff2");
+          font-weight: 400;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          color: #1f2be0;
+          container-type: size;
+        }
+
+        .clip {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        .ground {
+          background-color: #ffffff;
+          background-image:
+            linear-gradient(rgba(31, 43, 224, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(31, 43, 224, 0.1) 1px, transparent 1px);
+          background-size: 2cqw 2cqw;
+        }
+
+        .hairline {
+          position: absolute;
+          left: 4cqw;
+          right: 4cqw;
+          height: 0;
+          border-top: 0.12cqw solid #1f2be0;
+        }
+
+        .hairline.top {
+          top: 3cqw;
+        }
+
+        .hairline.bottom {
+          top: 81.9cqh;
+        }
+
+        .chrome {
+          position: absolute;
+          top: 78.3cqh;
+          font-family: "DM Mono";
+          font-size: 0.74cqw;
+          letter-spacing: 0.06em;
+        }
+
+        .chrome.left {
+          left: 4cqw;
+        }
+
+        .chrome.right {
+          right: 4cqw;
+        }
+
+        .content {
+          font-family: "Hanken Grotesk";
+        }
+
+        .kicker {
+          position: absolute;
+          left: 4cqw;
+          top: 9.2cqh;
+          font-family: "DM Mono";
+          font-size: 0.82cqw;
+          letter-spacing: 0.08em;
+        }
+
+        .hero {
+          position: absolute;
+          left: 4cqw;
+          top: 16.2cqh;
+          width: 43cqw;
+        }
+
+        .hero-value {
+          font-family: "Newsreader";
+          font-size: 8.9cqw;
+          line-height: 0.9;
+          letter-spacing: -0.018em;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+
+        .hero-label {
+          display: flex;
+          align-items: center;
+          gap: 0.7cqw;
+          margin-top: 2.2cqh;
+          font-family: "DM Mono";
+          font-size: 0.95cqw;
+          letter-spacing: 0.06em;
+        }
+
+        .hero-label img {
+          width: 1.6cqw;
+          height: 1.6cqw;
+          object-fit: contain;
+        }
+
+        .regime {
+          margin-top: 3.2cqh;
+          font-family: "Newsreader";
+          font-size: 3.15cqw;
+          line-height: 0.94;
+          letter-spacing: -0.008em;
+        }
+
+        .chart {
+          position: absolute;
+          left: 50cqw;
+          top: 17.4cqh;
+          width: 44cqw;
+          height: 40.2cqh;
+          border-top: 0.12cqw solid #1f2be0;
+          border-bottom: 0.12cqw solid #1f2be0;
+        }
+
+        .chart-title {
+          position: absolute;
+          left: 0;
+          top: 1.25cqh;
+          font-family: "DM Mono";
+          font-size: 0.78cqw;
+          letter-spacing: 0.07em;
+        }
+
+        .chart-summary {
+          position: absolute;
+          right: 0;
+          top: 1.25cqh;
+          font-family: "DM Mono";
+          font-size: 0.78cqw;
+          letter-spacing: 0.04em;
+        }
+
+        .ohlc-strip {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 3.35cqh;
+          display: flex;
+          align-items: center;
+          gap: 1.05cqw;
+          height: 2.65cqh;
+          padding: 0 0.6cqw;
+          border-left: 0.14cqw solid #4f46e5;
+          background: rgba(224, 231, 255, 0.48);
+          font-family: "DM Mono";
+          font-size: 0.58cqw;
+          letter-spacing: 0.02em;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+
+        .ohlc-strip strong {
+          font-size: 0.62cqw;
+          font-weight: 700;
+        }
+
+        .price-plot {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 7cqh;
+          height: 16.2cqh;
+          border-top: 0.08cqw solid rgba(31, 43, 224, 0.22);
+          border-bottom: 0.08cqw solid rgba(31, 43, 224, 0.22);
+          overflow: hidden;
+        }
+
+        .tv-chart {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          transform-origin: center bottom;
+        }
+
+        .gex-band {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 27.2cqh;
+          height: 10.2cqh;
+          border-top: 0.08cqw solid rgba(31, 43, 224, 0.22);
+        }
+
+        .gex-title,
+        .gex-delta {
+          position: absolute;
+          top: 1.2cqh;
+          font-family: "DM Mono";
+          font-size: 0.68cqw;
+          letter-spacing: 0.045em;
+        }
+
+        .gex-title {
+          left: 0;
+        }
+
+        .gex-delta {
+          right: 0;
+        }
+
+        .gex-track {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 4.3cqh;
+          height: 2.2cqh;
+          background: rgba(31, 43, 224, 0.1);
+        }
+
+        .gex-bar {
+          position: absolute;
+          left: 45.33%;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          background: linear-gradient(90deg, #4c1d95 0%, #7c3aed 58%, #c4b5fd 100%);
+          transform-origin: right center;
+        }
+
+        .gex-zero {
+          position: absolute;
+          right: 0;
+          top: -0.8cqh;
+          height: 3.8cqh;
+          border-left: 0.13cqw solid #1f2be0;
+        }
+
+        .gex-marker {
+          position: absolute;
+          top: -0.6cqh;
+          height: 3.4cqh;
+          border-left: 0.1cqw solid #4c1d95;
+          transform-origin: center center;
+        }
+
+        .gex-marker.prior {
+          left: 54.33%;
+          border-left-style: dashed;
+        }
+
+        .gex-marker.current {
+          left: 45.33%;
+        }
+
+        .gex-label {
+          position: absolute;
+          top: 7.2cqh;
+          font-family: "DM Mono";
+          font-size: 0.65cqw;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+        }
+
+        .gex-label.min {
+          left: 0;
+        }
+
+        .gex-label.prior {
+          left: 54.33%;
+          transform: translateX(0);
+          text-align: left;
+        }
+
+        .gex-label.current {
+          left: 45.33%;
+          transform: translateX(-100%);
+          text-align: right;
+        }
+
+        .gex-label.zero {
+          right: 0;
+        }
+
+        .explainer {
+          position: absolute;
+          left: 4cqw;
+          top: 62.2cqh;
+          width: 90cqw;
+          padding-top: 2.4cqh;
+          border-top: 0.12cqw solid #1f2be0;
+          font-family: "Newsreader";
+          font-size: 2.35cqw;
+          line-height: 1.1;
+          letter-spacing: -0.006em;
+        }
+      </style>
+
+      <script src="lightweight-charts.standalone.production.js"></script>
+      <script src="lightweight-chart-theme.js"></script>
+      <script src="gsap.min.js"></script>
+
+      <div data-hf-id="hf-f01-root" id="root" data-composition-id="01-flat-was-not-calm" data-start="0" data-duration="10.5" data-width="1920" data-height="1080">
+        <section data-hf-id="hf-f01-ground" id="f01-ground" class="clip ground" data-start="0" data-duration="10.5" data-track-index="0">
+          <div data-hf-id="hf-f01-line-top" class="hairline top"></div>
+          <div data-hf-id="hf-f01-line-bottom" class="hairline bottom"></div>
+          <div data-hf-id="hf-f01-chrome-left" class="chrome left">FIG 01 / STRUCTURE</div>
+          <div data-hf-id="hf-f01-chrome-right" class="chrome right">MODELED EOD EXPOSURE</div>
+        </section>
+
+        <section data-hf-id="hf-f01-content" id="f01-content" class="clip content" data-start="0" data-duration="10.5" data-track-index="1">
+          <div data-hf-id="hf-f01-kicker" id="f01-kicker" class="kicker">FRIDAY, JULY 24 · SPX NET GAMMA EXPOSURE</div>
+
+          <div data-hf-id="hf-f01-hero" id="f01-hero" class="hero">
+            <div data-hf-id="hf-f01-value" id="f01-value" class="hero-value">−$6.56B</div>
+            <div data-hf-id="hf-f01-label" class="hero-label">
+              <img data-hf-id="hf-f01-logo" src=".media/images/logo_011.ico" alt="S&P Global">
+              <span data-hf-id="hf-f01-label-text">SPX · NET GEX</span>
+            </div>
+            <div data-hf-id="hf-f01-regime" id="f01-regime" class="regime">SHORT GAMMA<br data-hf-id="hf-x5px">HELD</div>
+          </div>
+
+          <div data-hf-id="hf-f01-chart" id="f01-chart" class="chart">
+            <div data-hf-id="hf-f01-chart-title" class="chart-title">SPX PRICE CONTEXT · DAILY · JUL 20–24</div>
+            <div data-hf-id="hf-f01-chart-summary" id="f01-chart-summary" class="chart-summary">USD · 5 SESSIONS</div>
+            <div data-hf-id="hf-f01-ohlc" class="ohlc-strip">
+              <strong data-hf-id="hf-f01-ohlc-date">JUL 24</strong>
+              <span data-hf-id="hf-f01-open">O 7,406.3</span>
+              <span data-hf-id="hf-f01-high">H 7,461.0</span>
+              <span data-hf-id="hf-f01-low">L 7,396.5</span>
+              <span data-hf-id="hf-f01-close">C 7,412.0</span>
+              <strong data-hf-id="hf-f01-change">+0.05%</strong>
+            </div>
+            <div data-hf-id="hf-f01-price-plot" class="price-plot">
+              <div data-hf-id="hf-f01-tv-chart" id="f01-tv-chart" class="tv-chart" aria-label="SPX five-session candlestick chart"></div>
+            </div>
+
+            <div data-hf-id="hf-f01-gex-band" class="gex-band" data-chart-pattern="shadcn-chart-bar-negative">
+              <div data-hf-id="hf-f01-gex-title" class="gex-title">NET GEX · SIGNED · −$12B TO $0</div>
+              <div data-hf-id="hf-f01-gex-delta" id="f01-delta" class="gex-delta">−$1.08B MORE NEGATIVE</div>
+              <div data-hf-id="hf-f01-gex-track" class="gex-track">
+                <div data-hf-id="hf-f01-bar" id="f01-bar" class="gex-bar"></div>
+                <div data-hf-id="hf-f01-prior-marker" id="f01-prior-marker" class="gex-marker prior"></div>
+                <div data-hf-id="hf-f01-current-marker" id="f01-current-marker" class="gex-marker current"></div>
+                <div data-hf-id="hf-f01-zero-line" id="f01-zero-line" class="gex-zero"></div>
+              </div>
+              <div data-hf-id="hf-f01-gex-min" class="gex-label min">−$12B</div>
+              <div data-hf-id="hf-f01-prior-label" id="f01-prior-label" class="gex-label prior">THU −$5.48B</div>
+              <div data-hf-id="hf-f01-current-label" id="f01-current-label" class="gex-label current">FRI −$6.56B</div>
+              <div data-hf-id="hf-f01-gex-zero-label" class="gex-label zero">$0</div>
+            </div>
+          </div>
+
+          <div data-hf-id="hf-f01-explainer" id="f01-explainer" class="explainer">
+            Negative modeled dealer gamma can make hedging flows reinforce, rather than absorb, market moves.
+          </div>
+        </section>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        TradingFlowCharts.createCandlestick({
+          containerId: "f01-tv-chart",
+          fallbackWidth: 845,
+          fallbackHeight: 175,
+          precision: 1,
+          minMove: 0.1,
+          lastPrice: 7412.0,
+          data: [
+            { time: "2026-07-20", open: 7489.2, high: 7513.2, low: 7440.5, close: 7443.3 },
+            { time: "2026-07-21", open: 7489.9, high: 7515.3, low: 7467.9, close: 7509.2 },
+            { time: "2026-07-22", open: 7497.5, high: 7525.9, low: 7485.9, close: 7499.0 },
+            { time: "2026-07-23", open: 7418.3, high: 7450.1, low: 7376.0, close: 7408.3 },
+            { time: "2026-07-24", open: 7406.3, high: 7461.0, low: 7396.5, close: 7412.0 },
+          ],
+        });
+
+        const tl = gsap.timeline({ paused: true });
+        const durationAnchor = { value: 0 };
+        const valueNode = document.getElementById("f01-value");
+        const valueState = { value: 0 };
+
+        gsap.set(
+          [
+            "#f01-kicker",
+            "#f01-hero",
+            "#f01-chart",
+            "#f01-prior-marker",
+            "#f01-current-marker",
+            "#f01-zero-line",
+            "#f01-prior-label",
+            "#f01-current-label",
+            "#f01-delta",
+            "#f01-chart-summary",
+            "#f01-tv-chart",
+            "#f01-explainer",
+          ],
+          { opacity: 0 },
+        );
+        gsap.set("#f01-tv-chart", { scaleY: 0.96 });
+        gsap.set("#f01-bar", { scaleX: 0 });
+
+        tl.fromTo("#f01-kicker", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 0.1);
+        tl.fromTo("#f01-hero", { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: 0.75, ease: "power3.out" }, 0.45);
+        tl.to(
+          valueState,
+          {
+            value: 6.56,
+            duration: 1.35,
+            ease: "power3.out",
+            onUpdate: () => {
+              valueNode.textContent = `−$${valueState.value.toFixed(2)}B`;
+            },
+          },
+          0.55,
+        );
+        tl.fromTo("#f01-chart", { opacity: 0, x: 44 }, { opacity: 1, x: 0, duration: 0.65, ease: "power3.out" }, 1.0);
+        tl.fromTo("#f01-tv-chart", { opacity: 0, scaleY: 0.96 }, { opacity: 1, scaleY: 1, duration: 0.52, ease: "power2.out" }, 1.22);
+        tl.fromTo("#f01-chart-summary", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.9);
+        tl.fromTo("#f01-zero-line", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.38, ease: "power2.out" }, 2.25);
+        tl.fromTo("#f01-prior-marker", { opacity: 0, scaleY: 0 }, { opacity: 0.75, scaleY: 1, duration: 0.38, ease: "power2.out" }, 2.45);
+        tl.fromTo("#f01-prior-label", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" }, 2.6);
+        tl.fromTo("#f01-bar", { scaleX: 0 }, { scaleX: 1, duration: 0.95, ease: "power3.out" }, 2.75);
+        tl.fromTo("#f01-current-marker", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.38, ease: "power2.out" }, 3.35);
+        tl.fromTo("#f01-current-label", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" }, 3.5);
+        tl.fromTo("#f01-delta", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 3.75);
+        tl.fromTo("#f01-regime", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.62, ease: "power3.out" }, 4.1);
+        tl.fromTo("#f01-explainer", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 5.0);
+        tl.to(durationAnchor, { value: 1, duration: 10.5, ease: "none" }, 0);
+
+        window.__timelines["01-flat-was-not-calm"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "title": "GEX Screener Paper-Collage Tutorial",
+  "language": "en",
+  "aspectRatio": "16:9",
+  "resolution": "1920x1080",
+  "draftDurationSeconds": 38,
+  "creativeAngle": "A paper pinball table makes invisible dealer pressure visible, then folds into TradingFlow's Rank Symbols map.",
+  "scenes": [
+    {
+      "scene": 1,
+      "start": 0,
+      "duration": 7,
+      "role": "hook",
+      "idea": "Price can pin until it suddenly breaks.",
+      "action": "A paper price puck taps the call wall, bounces from the put wall, then tears through the ceiling.",
+      "joke": "A tiny trader is left staring at the torn bumper.",
+      "narration": "Price taps the same ceiling. Again. Again. Then one day, it flies through.",
+      "labels": ["CALL WALL", "PUT WALL"]
+    },
+    {
+      "scene": 2,
+      "start": 7,
+      "duration": 8,
+      "role": "mechanism",
+      "idea": "Dealer hedging can resist or reinforce a move.",
+      "action": "The table splits into positive and negative GEX; paper hands push against or with the puck.",
+      "joke": "The positive side uses a cushion; the negative side needs a seat belt.",
+      "narration": "The difference can be pressure you can't see.",
+      "labels": ["POSITIVE GEX — hedge against the move", "NEGATIVE GEX — hedge with the move"]
+    },
+    {
+      "scene": 3,
+      "start": 15,
+      "duration": 8,
+      "role": "product-entry",
+      "idea": "Use Rank Symbols to inspect the regime.",
+      "action": "The pinball table folds into the current Rank Symbols UI and highlights three steps.",
+      "joke": "The last paper tab lands with a precise little stamp.",
+      "narration": "Start with the market's mood, not a prediction.",
+      "labels": ["1 RANK → SYMBOLS", "2 SORT BY GEX", "3 OPEN A TICKER"]
+    },
+    {
+      "scene": 4,
+      "start": 23,
+      "duration": 9,
+      "role": "tutorial-proof",
+      "idea": "Read regime, zero gamma, and walls while respecting the data horizon.",
+      "action": "The drawer unfolds into four cards; a separate snapshot stamp and contextual spot marker appear.",
+      "joke": "The snapshot stamp lands harder than the tiny spot marker expects.",
+      "narration": "Calm can mean mean reversion. Tension can mean acceleration. Either way, levels are possibilities—not promises.",
+      "labels": ["GEX ENVIRONMENT", "ZERO GAMMA", "CALL WALL", "PUT WALL", "GEX STRUCTURE · LATEST SNAPSHOT", "SPOT · LIVE CONTEXT WHEN AVAILABLE"]
+    },
+    {
+      "scene": 5,
+      "start": 32,
+      "duration": 6,
+      "role": "resolution-cta",
+      "idea": "Combine regime and walls with option flow.",
+      "action": "Regime, wall map, and flow tape lock together; the exact TradingFlow logo and URL hold.",
+      "joke": "The puck settles with a satisfied paper click.",
+      "narration": "Weather. Map. Then the tape. Explore GEX in TradingFlow.",
+      "labels": ["EXPLORE GEX IN TRADINGFLOW", "app.tradingflow.com/app/rank/symbols"]
+    }
+  ]
+}
