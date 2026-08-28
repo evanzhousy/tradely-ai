@@ -1,6 +1,7 @@
 import { useServerFn } from "@tanstack/react-start";
 import { useRef } from "react";
 
+import { useAnalytics } from "@/analytics/context";
 import type { Lesson, LessonMedia } from "@/content/course";
 import { useI18n } from "@/i18n/provider";
 import { saveLessonProgress } from "@/server/progress";
@@ -15,8 +16,10 @@ export function LessonVideo({
 	initialPositionSeconds?: number;
 }) {
 	const { t } = useI18n();
+	const { capture } = useAnalytics();
 	const saveProgress = useServerFn(saveLessonProgress);
 	const lastSavedSecond = useRef(initialPositionSeconds);
+	const startedCaptured = useRef(false);
 
 	const persistPosition = async (seconds: number) => {
 		const rounded = Math.max(0, Math.round(seconds));
@@ -55,7 +58,30 @@ export function LessonVideo({
 				onPause={(event) =>
 					void persistPosition(event.currentTarget.currentTime)
 				}
-				onEnded={(event) => void persistPosition(event.currentTarget.duration)}
+				onPlay={(event) => {
+					if (startedCaptured.current) return;
+					if (
+						capture("lesson_video_started", {
+							lesson_id: lesson.id,
+							position_seconds: Math.max(
+								0,
+								Math.round(event.currentTarget.currentTime),
+							),
+						})
+					) {
+						startedCaptured.current = true;
+					}
+				}}
+				onEnded={(event) => {
+					capture("lesson_video_completed", {
+						lesson_id: lesson.id,
+						duration_seconds: Math.max(
+							0,
+							Math.round(event.currentTarget.duration),
+						),
+					});
+					void persistPosition(event.currentTarget.duration);
+				}}
 			>
 				<source src={media.video} type="video/mp4" />
 				<track

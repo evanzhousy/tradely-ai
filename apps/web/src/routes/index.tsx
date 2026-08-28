@@ -14,7 +14,8 @@ import {
 	BookOpenCheckIcon,
 	ExternalLinkIcon,
 } from "lucide-react";
-
+import { useEffect } from "react";
+import { useAnalytics } from "@/analytics/context";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -32,7 +33,13 @@ export const Route = createFileRoute("/")({
 function HomeComponent() {
 	const progress = Route.useLoaderData();
 	const { locale, t } = useI18n();
+	const { capture } = useAnalytics();
 	const course = getLocalizedCourse(locale);
+	useEffect(() => {
+		if (progress.accessUnavailable) {
+			capture("billing_status_unavailable", { surface: "course_progress" });
+		}
+	}, [capture, progress.accessUnavailable]);
 	return (
 		<main>
 			<section className="overflow-hidden border-border/60 border-b">
@@ -63,6 +70,11 @@ function HomeComponent() {
 							</Link>
 							<a
 								href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=home-hero"
+								onClick={() =>
+									capture("tradingflow_link_opened", {
+										surface: "home_hero",
+									})
+								}
 								className={buttonVariants({ variant: "outline", size: "lg" })}
 							>
 								{t("nav.openTradingFlow")}

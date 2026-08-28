@@ -34,7 +34,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					heading: "Information we collect",
 					paragraphs: [
 						"When you create or use a Tradely account, we receive the identity and contact details provided through Clerk, such as your name, email address, and account identifiers.",
-						"We record learning activity needed to operate the hub, including lesson completion, video resume position, content version, and timestamps. We also receive limited technical information such as request metadata, device or browser signals, and security logs when you access the service.",
+						"We record learning activity needed to operate the hub, including lesson completion, video resume position, content version, and timestamps. If you allow analytics, we also receive limited page-usage, learning-milestone, browser-performance, and error-diagnostic information. PostHog may process the client IP for coarse location and bot detection, but the Tradely project discards it instead of storing it with events. Tradely strips URL query strings and does not send lesson text, payment details, or your email address to PostHog.",
 					],
 				},
 				{
@@ -50,13 +50,13 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 						"Save your progress and restore video position across devices.",
 						"Confirm membership access to protected course media.",
 						"Process payments and provide billing support through Stripe.",
-						"Understand service reliability and improve curriculum usability.",
+						"With your permission, understand page usage, service reliability, performance, errors, and curriculum usability.",
 					],
 				},
 				{
 					heading: "Service providers and partner boundary",
 					paragraphs: [
-						"Our service providers may include Clerk for identity, Stripe for billing, Neon for the Tradely database, Vercel for application delivery, and Cloudflare R2 for media storage. They process information only as needed to provide their infrastructure and services.",
+						"Our service providers may include Clerk for identity, Stripe for billing, Neon for the Tradely database, Vercel for application delivery, Cloudflare R2 for media storage, and PostHog for consented product analytics and error diagnostics. They process information only as needed to provide their infrastructure and services.",
 						"TradingFlow is an independent partnered product. Tradely does not share your Clerk account, billing record, learning record, or customer identifiers with TradingFlow. Links to TradingFlow are outbound practice links; any TradingFlow account or subscription is governed by TradingFlow's own terms and privacy practices.",
 					],
 				},
@@ -70,7 +70,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Your choices and rights",
 					paragraphs: [
-						"Depending on where you live, you may have rights to access, correct, delete, restrict, or export personal information, and to object to certain processing. We will verify requests and respond as required by applicable law. You can also manage account details in Clerk and billing details in Stripe's customer portal.",
+						"Depending on where you live, you may have rights to access, correct, delete, restrict, or export personal information, and to object to certain processing. We will verify requests and respond as required by applicable law. You can manage account details in Clerk, billing details in Stripe's customer portal, and optional analytics through Privacy choices in the Tradely footer.",
 					],
 				},
 				{
@@ -185,13 +185,14 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Optional measurement",
 					paragraphs: [
-						"Tradely does not enable optional advertising or analytics cookies by default. If we add optional measurement in the future, we will describe it here and provide an appropriate choice before enabling it where required.",
+						"Tradely initializes PostHog in an opted-out state. No analytics events are sent until you choose Allow analytics. After consent, PostHog may use browser storage and cookies to connect page usage, learning milestones, web-vitals measurements, and error diagnostics across a session. Tradely disables PostHog autocaptured element text, session replay, heatmaps, surveys, and console-log capture.",
+						"PostHog analytics is used for product improvement and reliability, not advertising. Tradely identifies signed-in analytics only with the Clerk user ID and does not send the learner's email address, lesson text, or payment details.",
 					],
 				},
 				{
 					heading: "Your controls",
 					paragraphs: [
-						"You can clear browser storage or block cookies through your browser settings. Blocking necessary storage may sign you out or prevent billing and protected lesson features from working. See the Privacy Policy for the broader information practices.",
+						"Use Privacy choices in the Tradely footer to allow or withdraw optional analytics at any time. Withdrawing consent stops capture and resets the PostHog browser identity. You can also clear browser storage or block cookies through your browser settings. Blocking necessary storage may sign you out or prevent billing and protected lesson features from working.",
 					],
 				},
 			],
@@ -208,7 +209,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					heading: "我们收集的信息",
 					paragraphs: [
 						"创建或使用 Tradely 账户时，我们会从 Clerk 接收你提交的身份和联系方式，例如姓名、邮箱地址和账户标识符。",
-						"为提供学习中心功能，我们会记录课程完成状态、视频播放位置、内容版本和时间戳，也可能记录请求元数据、设备或浏览器信号以及安全日志等有限技术信息。",
+						"为提供学习中心功能，我们会记录课程完成状态、视频播放位置、内容版本和时间戳。如果你允许分析，我们还会接收有限的页面使用、学习里程碑、浏览器性能和错误诊断信息。PostHog 可能临时处理客户端 IP 用于粗略地区和机器人识别，但 Tradely 项目会丢弃该 IP，不把它与事件一起保存。Tradely 会移除 URL 查询参数，不会向 PostHog 发送课程正文、付款信息或邮箱地址。",
 					],
 				},
 				{
@@ -224,13 +225,13 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 						"保存课程进度，并在不同设备恢复视频位置。",
 						"确认受保护课程媒体的会员权限。",
 						"通过 Stripe 处理付款并提供账单支持。",
-						"了解服务可靠性并改善课程体验。",
+						"经你允许，了解页面使用、服务可靠性、性能、错误和课程体验。",
 					],
 				},
 				{
 					heading: "服务供应商与合作边界",
 					paragraphs: [
-						"我们的服务供应商可能包括负责身份的 Clerk、负责账单的 Stripe、负责 Tradely 数据库的 Neon、负责应用交付的 Vercel，以及负责媒体存储的 Cloudflare R2。他们仅在提供基础设施和服务所需范围内处理信息。",
+						"我们的服务供应商可能包括负责身份的 Clerk、负责账单的 Stripe、负责 Tradely 数据库的 Neon、负责应用交付的 Vercel、负责媒体存储的 Cloudflare R2，以及负责经同意的产品分析和错误诊断的 PostHog。他们仅在提供基础设施和服务所需范围内处理信息。",
 						"TradingFlow 是独立运营的合作产品。Tradely 不会向 TradingFlow 分享你的 Clerk 账户、账单记录、学习记录或客户标识符。指向 TradingFlow 的链接只是练习入口；TradingFlow 账户和订阅适用其自己的条款与隐私政策。",
 					],
 				},
@@ -244,7 +245,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "你的选择与权利",
 					paragraphs: [
-						"根据所在地法律，你可能拥有访问、更正、删除、限制处理或导出个人信息，以及反对某些处理的权利。我们会验证请求，并依适用法律回复。你也可以在 Clerk 中管理账户信息，在 Stripe 客户门户管理账单信息。",
+						"根据所在地法律，你可能拥有访问、更正、删除、限制处理或导出个人信息，以及反对某些处理的权利。我们会验证请求，并依适用法律回复。你可以在 Clerk 中管理账户信息，在 Stripe 客户门户管理账单信息，并通过 Tradely 页脚的隐私设置管理可选分析。",
 					],
 				},
 				{
@@ -357,13 +358,14 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "可选统计",
 					paragraphs: [
-						"Tradely 默认不会启用可选广告或分析 Cookie。如果未来加入可选统计，我们会在此说明，并在适用法律要求时先提供选择。",
+						"Tradely 会以默认退出状态初始化 PostHog。在你选择允许分析前，不会发送分析事件。同意后，PostHog 可能使用浏览器存储和 Cookie，把同一会话中的页面使用、学习里程碑、Web Vitals 和错误诊断关联起来。Tradely 已关闭 PostHog 的元素文字自动采集、会话回放、热图、问卷和控制台日志采集。",
+						"PostHog 分析仅用于产品改进和可靠性，不用于广告。登录后仅使用 Clerk 用户 ID 作为分析标识，不会发送邮箱地址、课程正文或付款信息。",
 					],
 				},
 				{
 					heading: "你的控制权",
 					paragraphs: [
-						"你可以通过浏览器设置清除或阻止 Cookie。阻止必要存储可能导致退出登录，或使账单和受保护课程功能无法运行。更完整的信息处理方式请参阅隐私政策。",
+						"你可以随时通过 Tradely 页脚的隐私设置允许或撤回可选分析。撤回同意会停止采集并重置 PostHog 浏览器身份。你也可以通过浏览器设置清除或阻止 Cookie；阻止必要存储可能导致退出登录，或使账单和受保护课程功能无法运行。",
 					],
 				},
 			],

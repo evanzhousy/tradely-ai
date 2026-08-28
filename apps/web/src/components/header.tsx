@@ -11,6 +11,7 @@ import {
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 
+import { useAnalytics } from "@/analytics/context";
 import { useI18n } from "@/i18n/provider";
 import { AuthControls } from "./auth-controls";
 import { TradelyBrand } from "./brand";
@@ -42,6 +43,7 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
 
 export default function Header() {
 	const { t } = useI18n();
+	const { capture } = useAnalytics();
 	return (
 		<header className="material-chrome sticky top-0 z-40 border-border/60 border-b">
 			<div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -58,6 +60,9 @@ export default function Header() {
 				<div className="flex items-center gap-1.5">
 					<a
 						href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=header"
+						onClick={() =>
+							capture("tradingflow_link_opened", { surface: "header" })
+						}
 						className={cn(
 							buttonVariants({ variant: "outline", size: "sm" }),
 							"hidden sm:inline-flex",
@@ -97,6 +102,9 @@ export default function Header() {
 								<LocaleSwitcher />
 								<a
 									href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=mobile-menu"
+									onClick={() =>
+										capture("tradingflow_link_opened", { surface: "header" })
+									}
 									className={cn(buttonVariants({ variant: "outline" }), "mt-4")}
 								>
 									{t("nav.openTradingFlow")}

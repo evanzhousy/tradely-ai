@@ -58,6 +58,7 @@ tmp
 temp
 
 # Course media is imported locally or uploaded to Tradely-owned object storage.
+/videos/
 apps/web/public/media/tradingflow/*.mp4
 apps/web/private-media/
 /.husky/pre-commit

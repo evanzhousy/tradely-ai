@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 
+import { useAnalytics } from "@/analytics/context";
 import { useI18n } from "@/i18n/provider";
 
 export function Footer() {
 	const { t } = useI18n();
+	const { isConfigured, openPreferences } = useAnalytics();
 	return (
 		<footer className="border-border/60 border-t bg-muted/20">
 			<div className="mx-auto grid max-w-[1480px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
@@ -48,6 +50,15 @@ export function Footer() {
 						>
 							{t("footer.cookies")}
 						</Link>
+						{isConfigured ? (
+							<button
+								type="button"
+								className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+								onClick={openPreferences}
+							>
+								{t("footer.privacyChoices")}
+							</button>
+						) : null}
 					</div>
 				</nav>
 			</div>

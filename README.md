@@ -11,6 +11,7 @@ Tradely is the independent options-learning hub for `tradely.ai`. It teaches an 
 - shadcn/ui Base Luma primitives and Tailwind CSS
 - Cloudflare R2 (S3-compatible) storage for paid course media
 - Typed English / Simplified Chinese interface copy with a persisted language preference
+- Consent-aware PostHog product analytics, web vitals, and browser error tracking
 
 The database intentionally contains only two tables: `app_user` and `lesson_progress`. Curriculum structure, lesson ordering, prerequisites, and content versions live in source control.
 
@@ -63,6 +64,7 @@ pnpm build
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the access, billing, progress, and media contracts.
+See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for the consent, identity, event, error, and web-vitals analytics contract.
 
 ## Trust and accessibility surface
 

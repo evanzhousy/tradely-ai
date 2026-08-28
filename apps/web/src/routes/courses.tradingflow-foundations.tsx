@@ -9,7 +9,9 @@ import {
 	CardTitle,
 } from "@tradely/ui/components/card";
 import { ArrowRightIcon } from "lucide-react";
+import { useEffect } from "react";
 
+import { useAnalytics } from "@/analytics/context";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -40,7 +42,13 @@ export const Route = createFileRoute("/courses/tradingflow-foundations")({
 function CoursePage() {
 	const progress = Route.useLoaderData();
 	const { locale, t } = useI18n();
+	const { capture } = useAnalytics();
 	const course = getLocalizedCourse(locale);
+	useEffect(() => {
+		if (progress.accessUnavailable) {
+			capture("billing_status_unavailable", { surface: "course_progress" });
+		}
+	}, [capture, progress.accessUnavailable]);
 	return (
 		<main className="mx-auto flex w-full max-w-[1180px] flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
 			<section className="grid items-end gap-8 lg:grid-cols-[1fr_360px]">

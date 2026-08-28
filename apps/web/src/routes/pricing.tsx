@@ -8,13 +8,19 @@ import {
 	CardTitle,
 } from "@tradely/ui/components/card";
 import { CheckIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { z } from "zod";
 
+import { useAnalytics } from "@/analytics/context";
 import { PricingActions } from "@/components/pricing-actions";
 import { useI18n } from "@/i18n/provider";
 import { getPlanSummary } from "@/server/billing";
 
 export const Route = createFileRoute("/pricing")({
 	loader: () => getPlanSummary(),
+	validateSearch: z.object({
+		checkout: z.enum(["success", "cancel"]).optional(),
+	}),
 	head: () => ({
 		links: [{ rel: "canonical", href: "https://tradely.ai/pricing" }],
 		meta: [
@@ -44,7 +50,25 @@ function formatPlanPrice(
 
 function PricingPage() {
 	const plan = Route.useLoaderData();
+	const { checkout } = Route.useSearch();
 	const { locale, t } = useI18n();
+	const { capture, isCapturing } = useAnalytics();
+	const trackedCheckoutReturn = useRef<string | null>(null);
+	useEffect(() => {
+		if (!isCapturing) {
+			trackedCheckoutReturn.current = null;
+			return;
+		}
+		if (!checkout || trackedCheckoutReturn.current === checkout) return;
+		if (
+			capture("billing_checkout_returned", {
+				status: checkout,
+				estimate: true,
+			})
+		) {
+			trackedCheckoutReturn.current = checkout;
+		}
+	}, [capture, checkout, isCapturing]);
 	const features = [
 		t("pricing.featureCurriculum"),
 		t("pricing.featureProgress"),

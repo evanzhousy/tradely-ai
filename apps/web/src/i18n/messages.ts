@@ -143,9 +143,15 @@ const messages = {
 		"footer.terms": "Terms",
 		"footer.risk": "Risk disclosure",
 		"footer.cookies": "Cookies",
+		"footer.privacyChoices": "Privacy choices",
 		"footer.rights": "© {year} Tradely. All rights reserved.",
 		"legal.lastUpdated": "Last updated: August 28, 2026",
 		"legal.backToLearning": "Back to learning hub",
+		"analytics.consentTitle": "Help improve Tradely",
+		"analytics.consentDescription":
+			"Allow privacy-limited PostHog analytics for page usage, learning milestones, performance, and error diagnostics. No lesson text, payment details, or email address is sent.",
+		"analytics.allow": "Allow analytics",
+		"analytics.necessaryOnly": "Use necessary only",
 	},
 	zh: {
 		"brand.home": "Tradely 首页",
@@ -279,9 +285,15 @@ const messages = {
 		"footer.terms": "服务条款",
 		"footer.risk": "风险披露",
 		"footer.cookies": "Cookie 政策",
+		"footer.privacyChoices": "隐私设置",
 		"footer.rights": "© {year} Tradely。保留所有权利。",
 		"legal.lastUpdated": "最后更新：2026 年 8 月 28 日",
 		"legal.backToLearning": "返回学习中心",
+		"analytics.consentTitle": "帮助改进 Tradely",
+		"analytics.consentDescription":
+			"允许使用隐私受限的 PostHog 分析，了解页面使用、学习里程碑、性能和错误诊断。不会发送课程正文、付款信息或邮箱地址。",
+		"analytics.allow": "允许分析",
+		"analytics.necessaryOnly": "仅使用必要功能",
 	},
 } as const;
 

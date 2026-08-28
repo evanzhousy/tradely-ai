@@ -7,17 +7,27 @@ import {
 } from "@tradely/ui/components/alert";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { LockKeyholeIcon, RefreshCwIcon, UserRoundIcon } from "lucide-react";
+import { useEffect } from "react";
 
+import { useAnalytics } from "@/analytics/context";
 import type { LessonAccessDecision } from "@/domain/access";
 import { useI18n } from "@/i18n/provider";
 import { clerkIsConfigured } from "./app-providers";
 
 export function AccessPanel({
 	access,
+	lessonId,
 }: {
 	access: Extract<LessonAccessDecision, { allowed: false }>;
+	lessonId?: string;
 }) {
 	const { t } = useI18n();
+	const { capture } = useAnalytics();
+	useEffect(() => {
+		if (access.reason === "billing-unavailable") {
+			capture("billing_status_unavailable", { surface: "lesson_access" });
+		}
+	}, [access.reason, capture]);
 	if (access.reason === "billing-unavailable") {
 		return (
 			<Alert>
@@ -43,7 +53,15 @@ export function AccessPanel({
 					<p>{t("access.signInDescription")}</p>
 					{clerkIsConfigured ? (
 						<SignInButton mode="modal">
-							<Button>{t("auth.signIn")}</Button>
+							<Button
+								onClick={() =>
+									capture("auth_sign_in_opened", {
+										surface: "lesson_access",
+									})
+								}
+							>
+								{t("auth.signIn")}
+							</Button>
 						</SignInButton>
 					) : (
 						<Button disabled>{t("access.clerkUnavailable")}</Button>
@@ -59,7 +77,16 @@ export function AccessPanel({
 			<AlertTitle>{t("access.membershipTitle")}</AlertTitle>
 			<AlertDescription className="flex flex-col items-start gap-4">
 				<p>{t("access.membershipDescription")}</p>
-				<Link to="/pricing" className={buttonVariants()}>
+				<Link
+					to="/pricing"
+					className={buttonVariants()}
+					onClick={() =>
+						capture("membership_cta_clicked", {
+							surface: "lesson_access",
+							lesson_id: lessonId,
+						})
+					}
+				>
 					{t("access.viewMembership")}
 				</Link>
 			</AlertDescription>

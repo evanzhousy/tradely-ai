@@ -11,11 +11,25 @@ import {
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon } from "lucide-react";
 
+import { useAnalytics } from "@/analytics/context";
 import type { TradingFlowPractice } from "@/content/course";
 import { useI18n } from "@/i18n/provider";
 
-export function PracticeCard({ practice }: { practice: TradingFlowPractice }) {
+export function PracticeCard({
+	lessonId,
+	practice,
+}: {
+	lessonId: string;
+	practice: TradingFlowPractice;
+}) {
 	const { t } = useI18n();
+	const { capture } = useAnalytics();
+	const captureOpen = () =>
+		capture("tradingflow_link_opened", {
+			surface: "lesson_practice",
+			lesson_id: lessonId,
+			tool: practice.tool,
+		});
 	return (
 		<Card className="bg-primary text-primary-foreground ring-0">
 			<CardHeader>
@@ -41,6 +55,7 @@ export function PracticeCard({ practice }: { practice: TradingFlowPractice }) {
 				<CardAction>
 					<a
 						href={practice.href}
+						onClick={captureOpen}
 						className={cn(
 							buttonVariants({ variant: "secondary", size: "sm" }),
 							"hidden sm:inline-flex",
@@ -57,6 +72,7 @@ export function PracticeCard({ practice }: { practice: TradingFlowPractice }) {
 				</p>
 				<a
 					href={practice.href}
+					onClick={captureOpen}
 					className={cn(buttonVariants({ variant: "secondary" }), "sm:hidden")}
 				>
 					{t("practice.open")}

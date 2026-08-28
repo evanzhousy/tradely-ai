@@ -20,9 +20,11 @@ import {
 	Clock3Icon,
 	VideoOffIcon,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { useAnalytics } from "@/analytics/context";
 import { AccessPanel } from "@/components/access-panel";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
@@ -70,10 +72,44 @@ function LessonPage() {
 	const { page, progress } = Route.useLoaderData();
 	const sourceLesson = getLesson(lessonSlug);
 	const { locale, t } = useI18n();
+	const { capture, isCapturing } = useAnalytics();
+	const trackedLessonRef = useRef<string | null>(null);
 	const course = getLocalizedCourse(locale);
 	const lesson = sourceLesson
 		? getLocalizedLesson(sourceLesson, locale)
 		: undefined;
+	const accessState = !page.found
+		? null
+		: page.access.allowed
+			? "allowed"
+			: page.access.reason === "signed-out"
+				? "signed_out"
+				: page.access.reason === "payment-required"
+					? "payment_required"
+					: "billing_unavailable";
+	const mediaAvailable = Boolean(
+		page.found && page.access.allowed && page.media,
+	);
+	useEffect(() => {
+		if (!isCapturing) {
+			trackedLessonRef.current = null;
+			return;
+		}
+		if (!sourceLesson || !accessState) return;
+		if (trackedLessonRef.current === sourceLesson.id) return;
+		if (
+			capture("lesson_opened", {
+				lesson_id: sourceLesson.id,
+				lesson_order: sourceLesson.order + 1,
+				access_tier: sourceLesson.access,
+				access_state: accessState,
+				media_available: mediaAvailable,
+				locale,
+			})
+		) {
+			trackedLessonRef.current = sourceLesson.id;
+		}
+	}, [accessState, capture, isCapturing, locale, mediaAvailable, sourceLesson]);
 	if (!sourceLesson || !lesson || !page.found) {
 		return (
 			<main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-start justify-center gap-4 px-4">
@@ -222,7 +258,7 @@ function LessonPage() {
 									{page.body ?? ""}
 								</ReactMarkdown>
 							</article>
-							<PracticeCard practice={lesson.practice} />
+							<PracticeCard lessonId={lesson.id} practice={lesson.practice} />
 							<div className="flex flex-col gap-5">
 								<CompleteLessonButton lesson={lesson} />
 								<Separator />
@@ -268,7 +304,7 @@ function LessonPage() {
 							</div>
 						</>
 					) : (
-						<AccessPanel access={page.access} />
+						<AccessPanel access={page.access} lessonId={lesson.id} />
 					)}
 				</div>
 			</div>
