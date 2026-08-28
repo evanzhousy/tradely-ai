@@ -17,35 +17,39 @@ import {
 
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
-import { tradingFlowCourse } from "@/content/course";
+import { getLocalizedCourse } from "@/i18n/course";
+import { useI18n } from "@/i18n/provider";
 import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/")({
 	loader: () => getCourseProgress(),
+	head: () => ({
+		links: [{ rel: "canonical", href: "https://tradely.ai/" }],
+	}),
 	component: HomeComponent,
 });
 
 function HomeComponent() {
 	const progress = Route.useLoaderData();
+	const { locale, t } = useI18n();
+	const course = getLocalizedCourse(locale);
 	return (
 		<main>
 			<section className="overflow-hidden border-border/60 border-b">
 				<div className="mx-auto grid max-w-[1480px] items-center gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:py-24">
 					<div className="flex max-w-2xl flex-col items-start gap-7">
 						<div className="flex flex-wrap items-center gap-2">
-							<Badge variant="secondary">{tradingFlowCourse.title}</Badge>
+							<Badge variant="secondary">{course.title}</Badge>
 							<span className="font-mono text-muted-foreground text-xs">
-								11 lessons · TradingFlow practice
+								{t("home.coursePractice", { count: course.lessons.length })}
 							</span>
 						</div>
 						<div className="flex flex-col gap-5">
 							<h1 className="max-w-[12ch] font-semibold text-5xl text-display sm:text-6xl lg:text-7xl">
-								Read the market. Then verify the story.
+								{t("home.heroTitle")}
 							</h1>
 							<p className="max-w-[62ch] text-lg text-muted-foreground leading-8">
-								A guided options curriculum that turns flow, ranking, Greeks,
-								GEX, and open interest into one repeatable research
-								workflow—with real practice in TradingFlow.
+								{t("home.heroDescription")}
 							</p>
 						</div>
 						<div className="flex flex-col gap-3 sm:flex-row">
@@ -54,20 +58,19 @@ function HomeComponent() {
 								params={{ lessonSlug: "audited-boundary" }}
 								className={buttonVariants({ size: "lg" })}
 							>
-								Start learning
-								<ArrowRightIcon data-icon="inline-end" />
+								{t("common.startLearning")}
+								<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 							</Link>
 							<a
 								href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=home-hero"
 								className={buttonVariants({ variant: "outline", size: "lg" })}
 							>
-								Open TradingFlow
-								<ExternalLinkIcon data-icon="inline-end" />
+								{t("nav.openTradingFlow")}
+								<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
 							</a>
 						</div>
 						<p className="text-muted-foreground text-xs">
-							TradingFlow is an independent partnered service. Its own account
-							or subscription may be required.
+							{t("home.partnerDisclosure")}
 						</p>
 					</div>
 
@@ -77,6 +80,8 @@ function HomeComponent() {
 								controls
 								playsInline
 								preload="metadata"
+								aria-label={t("home.workflowTitle")}
+								aria-describedby="course-overview-video-description"
 								poster="/media/tradingflow/posters/series-overview.jpg"
 								className="aspect-video w-full bg-black object-cover"
 							>
@@ -88,19 +93,22 @@ function HomeComponent() {
 									kind="captions"
 									src="/media/tradingflow/captions/series-overview.vtt"
 									srcLang="en"
-									label="English"
+									label={t("language.english")}
 									default
 								/>
 							</video>
 							<div className="flex items-start gap-3 px-5 py-4">
-								<BookOpenCheckIcon className="mt-0.5 size-5 text-primary" />
+								<BookOpenCheckIcon
+									className="mt-0.5 size-5 text-primary"
+									aria-hidden="true"
+								/>
 								<div className="flex flex-col gap-1">
-									<p className="font-medium">
-										One workflow across the full course
-									</p>
-									<p className="text-muted-foreground text-sm">
-										Discover → inspect → validate → compare freshness → decide
-										what remains unknown.
+									<p className="font-medium">{t("home.workflowTitle")}</p>
+									<p
+										id="course-overview-video-description"
+										className="text-muted-foreground text-sm"
+									>
+										{t("home.workflowDescription")}
 									</p>
 								</div>
 							</div>
@@ -112,22 +120,23 @@ function HomeComponent() {
 			<section className="mx-auto grid max-w-[1280px] gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.38fr_0.62fr] lg:px-8 lg:py-24">
 				<div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
 					<div className="flex flex-col gap-3">
-						<p className="font-mono text-primary text-xs">THE COURSE</p>
+						<p className="font-mono text-primary text-xs">
+							{t("home.courseEyebrow")}
+						</p>
 						<h2 className="font-semibold text-3xl text-display sm:text-4xl">
-							A field manual, not a video library.
+							{t("home.courseHeading")}
 						</h2>
 						<p className="text-muted-foreground leading-7">
-							Each lesson explains one decision, shows the relevant evidence,
-							and ends with a bounded task in TradingFlow.
+							{t("home.courseDescription")}
 						</p>
 					</div>
 					<Card size="sm">
 						<CardHeader>
-							<CardTitle>Your learning record</CardTitle>
+							<CardTitle>{t("home.learningRecord")}</CardTitle>
 							<CardDescription>
 								{progress.signedIn
-									? "Synced to your Tradely account."
-									: "Sign in to sync progress across devices."}
+									? t("progress.synced")
+									: t("progress.signInToSync")}
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
@@ -142,12 +151,12 @@ function HomeComponent() {
 
 				<Card className="[--card-spacing:--spacing(4)] sm:[--card-spacing:--spacing(5)]">
 					<CardHeader>
-						<CardTitle>{tradingFlowCourse.title}</CardTitle>
-						<CardDescription>{tradingFlowCourse.description}</CardDescription>
+						<CardTitle>{course.title}</CardTitle>
+						<CardDescription>{course.description}</CardDescription>
 					</CardHeader>
 					<CardContent className="-mx-2">
 						<CourseList
-							lessons={tradingFlowCourse.lessons}
+							lessons={course.lessons}
 							completedIds={progress.records
 								.filter((record) => record.completedAt)
 								.map((record) => record.lessonId)}
@@ -160,22 +169,18 @@ function HomeComponent() {
 
 			<section className="border-border/60 border-t bg-muted/35">
 				<div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-4 py-16 text-center sm:px-6 lg:py-20">
-					<Badge variant="secondary">
-						Independent products · official practice partnership
-					</Badge>
+					<Badge variant="secondary">{t("home.independentProducts")}</Badge>
 					<h2 className="max-w-[18ch] font-semibold text-3xl text-display sm:text-4xl">
-						Learn in Tradely. Practice in TradingFlow.
+						{t("home.partnerHeading")}
 					</h2>
 					<p className="max-w-[68ch] text-muted-foreground leading-7">
-						Tradely keeps your curriculum and progress. TradingFlow remains the
-						real analysis environment, with separate customer accounts and
-						infrastructure.
+						{t("home.partnerDescription")}
 					</p>
 					<Link
 						to="/courses/tradingflow-foundations"
 						className={cn(buttonVariants({ variant: "outline" }))}
 					>
-						View the complete course
+						{t("common.viewCompleteCourse")}
 					</Link>
 				</div>
 			</section>

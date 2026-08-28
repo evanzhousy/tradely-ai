@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { LockKeyholeIcon, RefreshCwIcon, UserRoundIcon } from "lucide-react";
 
 import type { LessonAccessDecision } from "@/domain/access";
+import { useI18n } from "@/i18n/provider";
 import { clerkIsConfigured } from "./app-providers";
 
 export function AccessPanel({
@@ -16,19 +17,17 @@ export function AccessPanel({
 }: {
 	access: Extract<LessonAccessDecision, { allowed: false }>;
 }) {
+	const { t } = useI18n();
 	if (access.reason === "billing-unavailable") {
 		return (
 			<Alert>
-				<RefreshCwIcon />
-				<AlertTitle>Access could not be refreshed</AlertTitle>
+				<RefreshCwIcon aria-hidden="true" />
+				<AlertTitle>{t("access.refreshTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
-					<p>
-						Tradely could not confirm the current billing state. Retry before
-						assuming this account needs to upgrade.
-					</p>
+					<p>{t("access.refreshDescription")}</p>
 					<Button onClick={() => window.location.reload()}>
-						<RefreshCwIcon data-icon="inline-start" />
-						Retry
+						<RefreshCwIcon data-icon="inline-start" aria-hidden="true" />
+						{t("common.retry")}
 					</Button>
 				</AlertDescription>
 			</Alert>
@@ -38,19 +37,16 @@ export function AccessPanel({
 	if (access.reason === "signed-out") {
 		return (
 			<Alert>
-				<UserRoundIcon />
-				<AlertTitle>Sign in to continue</AlertTitle>
+				<UserRoundIcon aria-hidden="true" />
+				<AlertTitle>{t("access.signInTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
-					<p>
-						This member lesson is tied to an individual Tradely account and
-						learning record.
-					</p>
+					<p>{t("access.signInDescription")}</p>
 					{clerkIsConfigured ? (
 						<SignInButton mode="modal">
-							<Button>Sign in</Button>
+							<Button>{t("auth.signIn")}</Button>
 						</SignInButton>
 					) : (
-						<Button disabled>Clerk is not configured locally</Button>
+						<Button disabled>{t("access.clerkUnavailable")}</Button>
 					)}
 				</AlertDescription>
 			</Alert>
@@ -59,15 +55,12 @@ export function AccessPanel({
 
 	return (
 		<Alert>
-			<LockKeyholeIcon />
-			<AlertTitle>Membership lesson</AlertTitle>
+			<LockKeyholeIcon aria-hidden="true" />
+			<AlertTitle>{t("access.membershipTitle")}</AlertTitle>
 			<AlertDescription className="flex flex-col items-start gap-4">
-				<p>
-					Unlock the complete curriculum, persistent progress, and every future
-					course update.
-				</p>
+				<p>{t("access.membershipDescription")}</p>
 				<Link to="/pricing" className={buttonVariants()}>
-					View membership
+					{t("access.viewMembership")}
 				</Link>
 			</AlertDescription>
 		</Alert>

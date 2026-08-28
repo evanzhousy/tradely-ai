@@ -8,7 +8,9 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@tradely/ui/components/sonner";
 
 import { AppProviders } from "../components/app-providers";
+import { Footer } from "../components/footer";
 import Header from "../components/header";
+import { useI18n } from "../i18n/provider";
 import appCss from "../index.css?url";
 
 export type RouterAppContext = Record<string, never>;
@@ -18,6 +20,10 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
+			{ name: "theme-color", content: "#ffffff" },
+			{ name: "robots", content: "index, follow" },
+			{ property: "og:site_name", content: "Tradely" },
+			{ property: "og:type", content: "website" },
 			{ title: "Tradely — Options learning with real workflow practice" },
 			{
 				name: "description",
@@ -45,9 +51,17 @@ function RootDocument() {
 				  FORM: Read-mode guided field manual; approved sidebar lesson structure from the product plan.
 				*/}
 				<AppProviders>
-					<div className="grid min-h-svh grid-rows-[auto_1fr]">
+					<div className="flex min-h-svh flex-col">
+						<SkipLink />
 						<Header />
-						<Outlet />
+						<div
+							id="main-content"
+							tabIndex={-1}
+							className="flex-1 outline-none"
+						>
+							<Outlet />
+						</div>
+						<Footer />
 					</div>
 					<Toaster richColors />
 					{import.meta.env.DEV ? (
@@ -57,5 +71,17 @@ function RootDocument() {
 				<Scripts />
 			</body>
 		</html>
+	);
+}
+
+function SkipLink() {
+	const { t } = useI18n();
+	return (
+		<a
+			href="#main-content"
+			className="sr-only fixed top-3 left-3 z-50 rounded-xl bg-background px-4 py-2 font-medium text-foreground shadow-lg focus:not-sr-only focus:outline-none focus:ring-3 focus:ring-ring/40"
+		>
+			{t("common.skipToContent")}
+		</a>
 	);
 }

@@ -28,7 +28,7 @@ Stripe remains the billing source of truth. Checkout Customer creation and Check
 
 Free preview media may use `MEDIA_PUBLIC_BASE_URL`. Paid media must never be placed under `apps/web/public`.
 
-The preferred production path is a private S3-compatible bucket. After access succeeds, the server returns 30-minute presigned URLs for the exact video and caption objects. The local Node-host fallback returns a signed Tradely endpoint; each request verifies both the HMAC token and the current Clerk user, and video responses support byte ranges.
+The preferred production path is the shared Tradely Cloudflare R2 private bucket (R2's S3-compatible API). Test and production intentionally use the same bucket and credentials, while all credentials remain server-only. After access succeeds, the server returns 30-minute presigned URLs for the exact video and caption objects. The local Node-host fallback returns a signed Tradely endpoint; each request verifies both the HMAC token and the current Clerk user, and video responses support byte ranges.
 
 Posters are public because they reveal no paid lesson body. Caption tracks follow the same protection as their video.
 

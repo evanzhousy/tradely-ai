@@ -8,7 +8,10 @@ import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
+import { useI18n } from "@/i18n/provider";
+
 export function ThemeToggle() {
+	const { t } = useI18n();
 	const { resolvedTheme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
@@ -22,14 +25,18 @@ export function ThemeToggle() {
 						variant="ghost"
 						size="icon"
 						onClick={() => setTheme(dark ? "light" : "dark")}
-						aria-label={dark ? "Use light theme" : "Use dark theme"}
+						aria-label={dark ? t("theme.light") : t("theme.dark")}
 					/>
 				}
 			>
-				{dark ? <SunIcon /> : <MoonIcon />}
+				{dark ? (
+					<SunIcon aria-hidden="true" />
+				) : (
+					<MoonIcon aria-hidden="true" />
+				)}
 			</TooltipTrigger>
 			<TooltipContent>
-				{dark ? "Use light theme" : "Use dark theme"}
+				{dark ? t("theme.light") : t("theme.dark")}
 			</TooltipContent>
 		</Tooltip>
 	);

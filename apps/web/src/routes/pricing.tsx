@@ -10,11 +10,13 @@ import {
 import { CheckIcon } from "lucide-react";
 
 import { PricingActions } from "@/components/pricing-actions";
+import { useI18n } from "@/i18n/provider";
 import { getPlanSummary } from "@/server/billing";
 
 export const Route = createFileRoute("/pricing")({
 	loader: () => getPlanSummary(),
 	head: () => ({
+		links: [{ rel: "canonical", href: "https://tradely.ai/pricing" }],
 		meta: [
 			{ title: "Tradely membership" },
 			{
@@ -27,10 +29,13 @@ export const Route = createFileRoute("/pricing")({
 	component: PricingPage,
 });
 
-function formatPlanPrice(plan: Awaited<ReturnType<typeof getPlanSummary>>) {
+function formatPlanPrice(
+	plan: Awaited<ReturnType<typeof getPlanSummary>>,
+	locale: "en" | "zh",
+) {
 	if (!plan.configured || plan.unitAmount === null)
-		return "Configured in Stripe";
-	return new Intl.NumberFormat("en-US", {
+		return locale === "zh" ? "已在 Stripe 配置" : "Configured in Stripe";
+	return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
 		style: "currency",
 		currency: plan.currency.toUpperCase(),
 		maximumFractionDigits: 2,
@@ -39,44 +44,39 @@ function formatPlanPrice(plan: Awaited<ReturnType<typeof getPlanSummary>>) {
 
 function PricingPage() {
 	const plan = Route.useLoaderData();
+	const { locale, t } = useI18n();
 	const features = [
-		"Complete Evidence-Led Options Research curriculum",
-		"Persistent lesson progress across devices",
-		"Every future lesson and course update while active",
-		"TradingFlow practice assignments and direct tool links",
+		t("pricing.featureCurriculum"),
+		t("pricing.featureProgress"),
+		t("pricing.featureUpdates"),
+		t("pricing.featurePractice"),
 	];
 	return (
 		<main className="mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-[1080px] items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
 			<section className="flex flex-col gap-6">
-				<Badge variant="secondary">Tradely membership</Badge>
+				<Badge variant="secondary">{t("pricing.membership")}</Badge>
 				<div className="flex flex-col gap-4">
 					<h1 className="font-semibold text-5xl text-display sm:text-6xl">
-						Keep the whole learning path open.
+						{t("pricing.heading")}
 					</h1>
 					<p className="max-w-[58ch] text-lg text-muted-foreground leading-8">
-						One Tradely membership unlocks the paid curriculum and your learning
-						record. TradingFlow remains a separate partnered service.
+						{t("pricing.description")}
 					</p>
 				</div>
-				<p className="text-muted-foreground text-sm">
-					Taxes are not enabled automatically. Tradely will configure collection
-					only after applicable registrations and tax treatment are confirmed.
-				</p>
+				<p className="text-muted-foreground text-sm">{t("pricing.taxNote")}</p>
 			</section>
 
 			<Card>
 				<CardHeader>
 					<CardTitle className="text-2xl">
-						{plan.configured ? plan.productName : "Tradely membership"}
+						{plan.configured ? plan.productName : t("pricing.membership")}
 					</CardTitle>
-					<CardDescription>
-						Stripe-hosted checkout and self-service billing management.
-					</CardDescription>
+					<CardDescription>{t("pricing.checkoutDescription")}</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-7">
 					<div className="flex items-end gap-2">
 						<span className="font-semibold text-4xl text-display">
-							{formatPlanPrice(plan)}
+							{formatPlanPrice(plan, locale)}
 						</span>
 						{plan.configured && plan.interval ? (
 							<span className="pb-1 text-muted-foreground">
@@ -88,7 +88,7 @@ function PricingPage() {
 						{features.map((feature) => (
 							<li key={feature} className="flex items-start gap-3 text-sm">
 								<span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-									<CheckIcon className="size-3.5" />
+									<CheckIcon className="size-3.5" aria-hidden="true" />
 								</span>
 								{feature}
 							</li>
@@ -97,7 +97,7 @@ function PricingPage() {
 					<PricingActions configured={plan.configured} />
 					{!plan.configured ? (
 						<p className="text-muted-foreground text-xs">
-							Local preview: add Stripe API and Price IDs to enable checkout.
+							{t("pricing.localPreview")}
 						</p>
 					) : null}
 				</CardContent>

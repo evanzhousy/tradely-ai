@@ -11,6 +11,8 @@
 			"**",
 			"!**/.next",
 			"!**/dist",
+			"!**/.vercel",
+			"!videos",
 			"!**/.turbo",
 			"!**/.nx",
 			"!**/dev-dist",

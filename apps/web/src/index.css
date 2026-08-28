@@ -73,4 +73,35 @@
 		padding-inline-start: 1rem;
 		color: var(--muted-foreground);
 	}
+
+	.legal-prose {
+		color: var(--foreground);
+		font-size: 1rem;
+		line-height: 1.8;
+	}
+
+	.legal-prose h2 {
+		margin-block: 0;
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		line-height: 1.25;
+	}
+
+	.legal-prose p {
+		max-width: 72ch;
+		margin-block: 0.35rem;
+	}
+
+	.legal-prose ul {
+		max-width: 72ch;
+		margin-block: 0.35rem;
+		padding-inline-start: 1.4rem;
+		list-style: disc;
+	}
+
+	.legal-prose li {
+		padding-inline-start: 0.25rem;
+	}
 }

@@ -6,16 +6,19 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import type { Lesson } from "@/content/course";
+import { useI18n } from "@/i18n/provider";
 import { saveLessonProgress } from "@/server/progress";
 
 export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 	const saveProgress = useServerFn(saveLessonProgress);
 	const router = useRouter();
+	const { t } = useI18n();
 	const [pending, setPending] = useState(false);
 
 	return (
 		<Button
 			disabled={pending}
+			aria-busy={pending}
 			onClick={async () => {
 				setPending(true);
 				try {
@@ -28,22 +31,22 @@ export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 					if (!result.saved) {
 						toast.error(
 							result.reason === "signed-out"
-								? "Sign in to save progress"
-								: "This lesson could not be saved",
+								? t("complete.signInError")
+								: t("complete.saveError"),
 						);
 						return;
 					}
-					toast.success("Lesson completed");
+					toast.success(t("complete.success"));
 					await router.invalidate();
 				} catch {
-					toast.error("Progress is unavailable. Your lesson remains open.");
+					toast.error(t("complete.unavailable"));
 				} finally {
 					setPending(false);
 				}
 			}}
 		>
-			<CheckIcon data-icon="inline-start" />
-			{pending ? "Saving…" : "Complete lesson"}
+			<CheckIcon data-icon="inline-start" aria-hidden="true" />
+			{pending ? t("complete.saving") : t("complete.lesson")}
 		</Button>
 	);
 }

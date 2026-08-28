@@ -29,12 +29,9 @@ import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { PracticeCard } from "@/components/practice-card";
 import { LessonVideo } from "@/components/video-player";
-import {
-	getLesson,
-	getNextLesson,
-	getPreviousLesson,
-	tradingFlowCourse,
-} from "@/content/course";
+import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
+import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
+import { useI18n } from "@/i18n/provider";
 import { getLessonPageData } from "@/server/lesson";
 import { getCourseProgress } from "@/server/progress";
 
@@ -50,6 +47,12 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 	head: ({ params }) => {
 		const lesson = getLesson(params.lessonSlug);
 		return {
+			links: [
+				{
+					rel: "canonical",
+					href: `https://tradely.ai/learn/${params.lessonSlug}`,
+				},
+			],
 			meta: [
 				{
 					title: lesson
@@ -65,16 +68,21 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 function LessonPage() {
 	const { lessonSlug } = Route.useParams();
 	const { page, progress } = Route.useLoaderData();
-	const lesson = getLesson(lessonSlug);
-	if (!lesson || !page.found) {
+	const sourceLesson = getLesson(lessonSlug);
+	const { locale, t } = useI18n();
+	const course = getLocalizedCourse(locale);
+	const lesson = sourceLesson
+		? getLocalizedLesson(sourceLesson, locale)
+		: undefined;
+	if (!sourceLesson || !lesson || !page.found) {
 		return (
 			<main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-start justify-center gap-4 px-4">
-				<h1 className="font-semibold text-3xl">Lesson not found</h1>
+				<h1 className="font-semibold text-3xl">{t("common.notFound")}</h1>
 				<Link
 					to="/courses/tradingflow-foundations"
 					className={buttonVariants({ variant: "outline" })}
 				>
-					Return to the course
+					{t("common.returnCourse")}
 				</Link>
 			</main>
 		);
@@ -84,14 +92,18 @@ function LessonPage() {
 		.filter((record) => record.completedAt)
 		.map((record) => record.lessonId);
 	const lessonProgress = progress.records.find(
-		(record) => record.lessonId === lesson.id,
+		(record) => record.lessonId === sourceLesson.id,
 	);
 	const initialPositionSeconds =
-		lessonProgress?.contentVersion === lesson.contentVersion
+		lessonProgress?.contentVersion === sourceLesson.contentVersion
 			? (lessonProgress.lastPositionSeconds ?? 0)
 			: 0;
-	const previous = getPreviousLesson(lesson.slug);
-	const next = getNextLesson(lesson.slug);
+	const previous = getPreviousLesson(sourceLesson.slug);
+	const next = getNextLesson(sourceLesson.slug);
+	const localizedPrevious = previous
+		? getLocalizedLesson(previous, locale)
+		: undefined;
+	const localizedNext = next ? getLocalizedLesson(next, locale) : undefined;
 
 	return (
 		<main className="mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[330px_1fr]">
@@ -105,7 +117,7 @@ function LessonPage() {
 					/>
 					<div className="max-h-[calc(100svh-12rem)] overflow-y-auto pr-1">
 						<CourseList
-							lessons={tradingFlowCourse.lessons}
+							lessons={course.lessons}
 							completedIds={completedIds}
 							currentLessonId={lesson.id}
 							canAccessPaid={page.canAccessPaid}
@@ -120,7 +132,9 @@ function LessonPage() {
 					<Accordion className="lg:hidden">
 						<AccordionItem value="course-navigation">
 							<AccordionTrigger>
-								Course navigation · {progress.percentage}% complete
+								{t("lesson.courseNavigation", {
+									percentage: progress.percentage,
+								})}
 							</AccordionTrigger>
 							<AccordionContent>
 								<div className="flex flex-col gap-5 py-2">
@@ -131,7 +145,7 @@ function LessonPage() {
 										compact
 									/>
 									<CourseList
-										lessons={tradingFlowCourse.lessons}
+										lessons={course.lessons}
 										completedIds={completedIds}
 										currentLessonId={lesson.id}
 										canAccessPaid={page.canAccessPaid}
@@ -145,15 +159,21 @@ function LessonPage() {
 					<header className="flex flex-col gap-5">
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">
-								Lesson {lesson.order + 1} of {tradingFlowCourse.lessons.length}
+								{t("common.lessonNumber", {
+									current: lesson.order + 1,
+									total: course.lessons.length,
+								})}
 							</Badge>
 							<Badge
 								variant={lesson.access === "preview" ? "secondary" : "outline"}
 							>
-								{lesson.access === "preview" ? "Free preview" : "Membership"}
+								{lesson.access === "preview"
+									? t("common.freePreview")
+									: t("common.membership")}
 							</Badge>
 							<span className="inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
-								<Clock3Icon className="size-3.5" /> {lesson.minutes} min
+								<Clock3Icon className="size-3.5" aria-hidden="true" />{" "}
+								{t("common.minutes", { minutes: lesson.minutes })}
 							</span>
 						</div>
 						<div className="flex flex-col gap-3">
@@ -179,15 +199,25 @@ function LessonPage() {
 								/>
 							) : (
 								<Alert>
-									<VideoOffIcon />
-									<AlertTitle>Video is temporarily unavailable</AlertTitle>
+									<VideoOffIcon aria-hidden="true" />
+									<AlertTitle>{t("video.unavailableTitle")}</AlertTitle>
 									<AlertDescription>
-										The written lesson remains available. Tradely could not
-										issue a protected media URL.
+										{t("video.unavailableDescription")}
 									</AlertDescription>
 								</Alert>
 							)}
-							<article className="lesson-prose max-w-[72ch]">
+							<article
+								className="lesson-prose max-w-[72ch]"
+								aria-labelledby="written-lesson-title"
+							>
+								<h2 id="written-lesson-title" className="sr-only">
+									{t("lesson.writtenLesson")}
+								</h2>
+								{locale === "zh" ? (
+									<p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-muted-foreground text-sm leading-6">
+										{t("lesson.englishNotice")}
+									</p>
+								) : null}
 								<ReactMarkdown remarkPlugins={[remarkGfm]}>
 									{page.body ?? ""}
 								</ReactMarkdown>
@@ -198,7 +228,7 @@ function LessonPage() {
 								<Separator />
 								<nav
 									className="flex items-center justify-between gap-4"
-									aria-label="Lesson navigation"
+									aria-label={t("lesson.navigation")}
 								>
 									{previous ? (
 										<Link
@@ -206,9 +236,14 @@ function LessonPage() {
 											params={{ lessonSlug: previous.slug }}
 											className={buttonVariants({ variant: "ghost" })}
 										>
-											<ArrowLeftIcon data-icon="inline-start" />
-											<span className="hidden sm:inline">{previous.title}</span>
-											<span className="sm:hidden">Previous</span>
+											<ArrowLeftIcon
+												data-icon="inline-start"
+												aria-hidden="true"
+											/>
+											<span className="hidden sm:inline">
+												{localizedPrevious?.title}
+											</span>
+											<span className="sm:hidden">{t("common.previous")}</span>
 										</Link>
 									) : (
 										<span />
@@ -222,8 +257,11 @@ function LessonPage() {
 												"max-w-[55%]",
 											)}
 										>
-											<span className="truncate">{next.title}</span>
-											<ArrowRightIcon data-icon="inline-end" />
+											<span className="truncate">{localizedNext?.title}</span>
+											<ArrowRightIcon
+												data-icon="inline-end"
+												aria-hidden="true"
+											/>
 										</Link>
 									) : null}
 								</nav>

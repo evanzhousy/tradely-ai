@@ -2,6 +2,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRef } from "react";
 
 import type { Lesson, LessonMedia } from "@/content/course";
+import { useI18n } from "@/i18n/provider";
 import { saveLessonProgress } from "@/server/progress";
 
 export function LessonVideo({
@@ -13,6 +14,7 @@ export function LessonVideo({
 	media: LessonMedia;
 	initialPositionSeconds?: number;
 }) {
+	const { t } = useI18n();
 	const saveProgress = useServerFn(saveLessonProgress);
 	const lastSavedSecond = useRef(initialPositionSeconds);
 
@@ -40,6 +42,7 @@ export function LessonVideo({
 				preload="metadata"
 				poster={media.poster}
 				className="aspect-video w-full bg-black object-cover"
+				aria-label={`${lesson.title} video`}
 				aria-describedby="lesson-video-description"
 				onLoadedMetadata={(event) => {
 					if (
@@ -59,17 +62,16 @@ export function LessonVideo({
 					kind="captions"
 					src={media.captions}
 					srcLang="en"
-					label="English"
+					label={t("language.english")}
 					default
 				/>
-				Your browser does not support HTML video.
+				{t("video.browserFallback")}
 			</video>
 			<p
 				id="lesson-video-description"
 				className="px-5 py-3 text-muted-foreground text-xs"
 			>
-				The written lesson below provides the complete accessible explanation
-				and practice instructions.
+				{t("video.accessibleDescription")}
 			</p>
 		</div>
 	);

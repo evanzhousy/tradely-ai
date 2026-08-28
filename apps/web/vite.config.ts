@@ -12,7 +12,15 @@ export default defineConfig({
 		tsconfigPaths: true,
 	},
 	ssr: {
-		noExternal: true,
+		// Bundle workspace packages, but leave React and third-party CJS packages
+		// to the Node runtime so Nitro dev SSR does not evaluate React's CJS entry
+		// as an ESM module (`module is not defined`).
+		noExternal: [/^@tradely\//],
 	},
-	plugins: [tailwindcss(), tanstackStart(), nitro({ preset: "vercel" }), viteReact()],
+	plugins: [
+		tailwindcss(),
+		tanstackStart(),
+		nitro({ preset: "vercel" }),
+		viteReact(),
+	],
 });

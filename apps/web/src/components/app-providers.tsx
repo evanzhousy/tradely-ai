@@ -4,16 +4,20 @@ import { TooltipProvider } from "@tradely/ui/components/tooltip";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 
+import { LocaleProvider } from "@/i18n/provider";
+
 export function AppProviders({ children }: { children: ReactNode }) {
 	const content = (
-		<ThemeProvider
-			attribute="class"
-			defaultTheme="system"
-			enableSystem
-			disableTransitionOnChange
-		>
-			<TooltipProvider>{children}</TooltipProvider>
-		</ThemeProvider>
+		<LocaleProvider>
+			<ThemeProvider
+				attribute="class"
+				defaultTheme="system"
+				enableSystem
+				disableTransitionOnChange
+			>
+				<TooltipProvider>{children}</TooltipProvider>
+			</ThemeProvider>
+		</LocaleProvider>
 	);
 	if (!env.VITE_CLERK_PUBLISHABLE_KEY) return content;
 	return (

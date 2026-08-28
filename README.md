@@ -9,7 +9,8 @@ Tradely is the independent options-learning hub for `tradely.ai`. It teaches an 
 - Stripe Checkout and Customer Portal for Tradely membership
 - Neon Postgres with Drizzle
 - shadcn/ui Base Luma primitives and Tailwind CSS
-- Tradely-owned S3-compatible storage for paid course media
+- Cloudflare R2 (S3-compatible) storage for paid course media
+- Typed English / Simplified Chinese interface copy with a persisted language preference
 
 The database intentionally contains only two tables: `app_user` and `lesson_progress`. Curriculum structure, lesson ordering, prerequisites, and content versions live in source control.
 
@@ -32,7 +33,7 @@ Open [http://localhost:3001](http://localhost:3001).
 
 Copy [apps/web/.env.example](apps/web/.env.example) and configure a dedicated Tradely Clerk app, Stripe account, and Neon database. Do not reuse TradingFlow credentials or customer identifiers.
 
-For production media, configure `MEDIA_S3_*` for a Tradely-owned private S3-compatible bucket. Paid objects use these keys:
+For production media, configure `MEDIA_S3_*` for the shared Tradely Cloudflare R2 private bucket. Paid objects use these keys:
 
 ```text
 tradingflow-foundations/03-symbol-drawer.mp4
@@ -62,3 +63,7 @@ pnpm build
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the access, billing, progress, and media contracts.
+
+## Trust and accessibility surface
+
+The shared shell includes a keyboard-visible skip link, semantic landmarks, a native language selector, reduced-motion support, and a footer linking to the Privacy Policy, Terms of Service, Options Risk Disclosure, and Cookie Policy. Course metadata and all shell controls support English and Simplified Chinese; lesson bodies currently remain English with an explicit language note until a reviewed translation is available.
