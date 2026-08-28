@@ -1,0 +1,25 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "crf": 18,
+  "voiceGain": 1.1,
+  "music": "../assets/audio/underscore.wav",
+  "musicVolume": 0.12,
+  "ducking": {
+    "enabled": true,
+    "threshold": 0.025,
+    "ratio": 6,
+    "attackMs": 20,
+    "releaseMs": 280
+  },
+  "targetLufs": -16,
+  "truePeak": -1.5,
+  "scenes": [
+    {"video":"../renders/animated/scene-01.mp4","sourceDuration":7,"duration":7,"voice":"../assets/voice-final/01.wav","voiceStart":0.35,"sfx":[{"file":"../assets/audio/click-soft.wav","at":2.2,"volume":0.18}]},
+    {"video":"../renders/animated/scene-02.mp4","sourceDuration":8,"duration":8,"voice":"../assets/voice-final/02.wav","voiceStart":0.35,"sfx":[{"file":"../assets/audio/whoosh-short.wav","at":0.1,"volume":0.18}]},
+    {"video":"../renders/animated/scene-03.mp4","sourceDuration":8,"duration":8,"voice":"../assets/voice-final/03.wav","voiceStart":0.35,"sfx":[{"file":"../assets/audio/click-soft.wav","at":2.0,"volume":0.16}]},
+    {"video":"../renders/animated/scene-04.mp4","sourceDuration":9,"duration":9,"voice":"../assets/voice-final/04.wav","voiceStart":0.35,"sfx":[{"file":"../assets/audio/click-soft.wav","at":3.0,"volume":0.14}]},
+    {"video":"../renders/animated/scene-05.mp4","sourceDuration":6,"duration":6,"voice":"../assets/voice-final/05.wav","voiceStart":0.35,"sfx":[{"file":"../assets/audio/click-soft.wav","at":2.2,"volume":0.2}]}
+  ]
+}

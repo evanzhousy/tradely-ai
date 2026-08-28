@@ -10,9 +10,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const sourceRoot = resolve(
-	process.argv[2] ?? resolve(projectRoot, "../tradingflow-web-landingpage"),
-);
+const sourceRoot = resolve(process.argv[2] ?? projectRoot);
 const mediaRoot = resolve(projectRoot, "apps/web/public/media/tradingflow");
 const privateMediaRoot = resolve(
 	projectRoot,
@@ -219,33 +217,6 @@ for (const lesson of lessons) {
 		resolve(targetCaptionRoot, `${lesson.target}.vtt`),
 	);
 }
-
-copyFileSync(
-	resolve(sourceRoot, "video/series-overview/series-overview-final.mp4"),
-	resolve(mediaRoot, "series-overview.mp4"),
-);
-execFileSync("ffmpeg", [
-	"-loglevel",
-	"error",
-	"-y",
-	"-ss",
-	"5",
-	"-i",
-	resolve(mediaRoot, "series-overview.mp4"),
-	"-frames:v",
-	"1",
-	"-q:v",
-	"2",
-	resolve(posterRoot, "series-overview.jpg"),
-]);
-execFileSync("ffmpeg", [
-	"-loglevel",
-	"error",
-	"-y",
-	"-i",
-	resolve(sourceRoot, "video/narration/overview.ass"),
-	resolve(captionRoot, "series-overview.vtt"),
-]);
 
 mkdirSync(resolve(projectRoot, "apps/web/public/partners"), {
 	recursive: true,

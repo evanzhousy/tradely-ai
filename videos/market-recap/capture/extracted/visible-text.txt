@@ -1,0 +1,33 @@
+Primary editorial source:
+TradingFlow Daily Market Recap — Friday, July 24, 2026
+https://app.tradingflow.com/app/market-recap/2026-07-24
+
+Headline:
+Dealers Stay Short Gamma as Micron Options Premium Nears $2 Billion
+
+Dek:
+Index gamma stayed negative after Thursday's AI-capex selloff while
+semiconductor names again led options premium and Tesla retained the session's
+largest directional footprint.
+
+Verified video facts:
+
+- Total options premium: $18.0B, down from $23.0B in the prior session and
+  below the roughly $20.5B 20-session average.
+- Call share: 52%, up from 44% Thursday but below the 61% trailing average.
+- Sentiment-tagged flow: 22% bearish versus 20% bullish.
+- SPX net GEX: -$6.56B, deeper than Thursday's -$5.48B.
+- SPY net GEX: -$11.07B, eased from -$16.70B.
+- QQQ net GEX: -$8.61B, deeper than -$7.15B.
+- Semiconductors led classified names with $6.8B in premium.
+- MU led all symbols at $1.99B, followed by SNDK at $1.85B and NVDA at $885M.
+- TSLA led modeled DEI magnitude at 266, followed by AAPL 112, NVDA 94, and
+  META 78.
+- NVDA net DEX: +126M share-equivalents.
+- Week-ahead catalysts: the July 28-29 Federal Reserve meeting, Microsoft and
+  Meta after Wednesday's close, then Amazon and Apple on Thursday.
+
+Disclosure:
+Educational and informational only, not financial advice. Options-flow reads
+are statistical inferences. Dealer exposure levels, including GEX, DEX, and
+DEI, are modeled estimates, not guarantees.

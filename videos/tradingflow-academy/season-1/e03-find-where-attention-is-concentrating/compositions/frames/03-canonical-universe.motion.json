@@ -1,0 +1,10 @@
+{
+  "duration": 48,
+  "assertions": [
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-03-universe\"]","bySec":2},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-03-ranked\"]","bySec":9.2},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-03-provenance\"]","bySec":19.2},
+    {"kind":"before","a":"[data-hf-id=\"hf-e03-03-universe\"]","b":"[data-hf-id=\"hf-e03-03-ranked\"]"},
+    {"kind":"staysInFrame","selector":".ranked"}
+  ]
+}

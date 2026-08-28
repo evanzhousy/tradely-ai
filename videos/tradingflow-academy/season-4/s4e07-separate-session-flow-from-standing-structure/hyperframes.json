@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "projectId": "s4e07-separate-session-flow-from-standing-structure",
+  "composition": "index.html",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 480,
+  "autoProxy": true
+}

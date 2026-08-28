@@ -1,0 +1,10 @@
+{
+  "name": "s2e01-start-a-new-season-with-a-new-hypothesis",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.87 preview",
+    "check": "npx --yes hyperframes@0.7.87 check",
+    "render": "npx --yes hyperframes@0.7.87 render"
+  }
+}

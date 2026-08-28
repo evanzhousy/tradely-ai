@@ -1,0 +1,51 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Biggest is not best</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.stage{position:absolute;inset:116px 84px 64px;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:end}
+.question{position:absolute;left:84px;top:146px;margin:0;max-width:1220px;font:700 80px/.96 var(--font-display);letter-spacing:-.055em}
+.question .swap{display:inline-block;color:var(--color-accent)}
+.comparison{position:relative;height:470px;padding:30px}
+.symbol{display:flex;align-items:center;justify-content:space-between}
+.ticker{font:700 28px/1 var(--font-display)}
+.premium{font:400 17px/1 var(--font-mono);color:var(--color-muted)}
+.big-number{margin-top:58px;font:700 84px/.9 var(--font-display);letter-spacing:-.05em}
+.big-label{margin-top:12px;color:var(--color-muted);font:400 14px/1 var(--font-mono);letter-spacing:.08em}
+.impact{position:absolute;left:30px;right:30px;bottom:40px}
+.impact-head{display:flex;justify-content:space-between;margin-bottom:10px;color:var(--color-ink-soft);font:700 13px/1 var(--font-body)}
+.track{height:22px;overflow:hidden;border-radius:4px;background:var(--color-surface-muted);box-shadow:var(--shadow-hairline)}
+.fill{height:100%;transform-origin:left}
+.mega .fill{width:28%;background:linear-gradient(90deg,oklch(78% .08 245),var(--color-accent))}
+.small .fill{width:86%;background:linear-gradient(90deg,oklch(78% .10 145),var(--color-positive))}
+.answer{position:absolute;left:50%;bottom:38px;transform:translateX(-50%);padding:14px 22px;border-radius:var(--radius-sm);background:var(--color-accent);color:var(--color-on-accent);font:700 15px/1 var(--font-body);letter-spacing:.04em;white-space:nowrap;box-shadow:var(--shadow-overlay)}
+</style>
+<div id="root" data-hf-id="hf-e03-01-root" data-composition-id="01-biggest-is-not-best" data-width="1920" data-height="900">
+  <div data-hf-id="hf-e03-01-bg" class="backdrop"></div><div data-hf-id="hf-e03-01-line" class="topline"></div>
+  <div data-hf-id="hf-e03-01-eye" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>DISCOVERY · THE SCALE TRAP</div>
+  <h1 data-hf-id="hf-e03-01-question" class="question">The <span data-hf-id="hf-e03-01-swap" class="swap">biggest print</span><br data-hf-id="hf-x5px">is not the answer.</h1>
+  <div data-hf-id="hf-e03-01-stage" class="stage">
+    <section data-hf-id="hf-e03-01-mega" class="comparison mega card">
+      <div data-hf-id="hf-jfi4" class="symbol"><span data-hf-id="hf-buv4" class="ticker">MEGA-CAP</span><span data-hf-id="hf-lb2w" class="premium">RAW SCALE</span></div>
+      <div data-hf-id="hf-nn8g" class="big-number">$50M</div><div data-hf-id="hf-imai" class="big-label">TOTAL PREMIUM</div>
+      <div data-hf-id="hf-c2x2" class="impact"><div data-hf-id="hf-nqkh" class="impact-head"><span data-hf-id="hf-lbbd">RELATIVE IMPACT</span><strong data-hf-id="hf-4wr1">0.8×</strong></div><div data-hf-id="hf-64lp" class="track"><div data-hf-id="hf-e03-01-mega-fill" class="fill"></div></div></div>
+    </section>
+    <section data-hf-id="hf-e03-01-small" class="comparison small card">
+      <div data-hf-id="hf-xcxg" class="symbol"><span data-hf-id="hf-rmlg" class="ticker">SMALLER NAME</span><span data-hf-id="hf-ka0c" class="premium">RELATIVE SIGNAL</span></div>
+      <div data-hf-id="hf-tg2u" class="big-number">$5M</div><div data-hf-id="hf-wn0e" class="big-label">TOTAL PREMIUM</div>
+      <div data-hf-id="hf-47gq" class="impact"><div data-hf-id="hf-kaj9" class="impact-head"><span data-hf-id="hf-3bzx">RELATIVE IMPACT</span><strong data-hf-id="hf-vurm">3.4×</strong></div><div data-hf-id="hf-gav5" class="track"><div data-hf-id="hf-e03-01-small-fill" class="fill"></div></div></div>
+    </section>
+  </div>
+  <div data-hf-id="hf-e03-01-answer" class="answer">WHERE IS ATTENTION CONCENTRATING RELATIVE TO THE NAME?</div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.question",{y:28,opacity:0},{y:0,opacity:1,duration:.72,stagger:.14,ease:"power3.out"},.1);
+tl.fromTo(".mega",{x:-110,opacity:0,rotateY:3},{x:0,opacity:1,rotateY:0,duration:.85,ease:"power3.out"},1.0);
+tl.fromTo(".small",{x:110,opacity:0,rotateY:-3},{x:0,opacity:1,rotateY:0,duration:.85,ease:"power3.out"},4.2);
+tl.fromTo(".fill",{scaleX:0},{scaleX:1,duration:1.1,stagger:3.2,ease:"power2.out"},2.0);
+tl.to(".swap",{opacity:0,duration:.16,ease:"none"},9.0).call(function(){document.querySelector(".swap").textContent="most informative";},null,9.17).to(".swap",{opacity:1,duration:.16,ease:"none"},9.18);
+tl.fromTo(".answer",{y:22,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},14.0);
+tl.to(".small",{scale:1.018,duration:.8,ease:"power2.inOut"},20).to(".small",{scale:1,duration:.8,ease:"power2.inOut"},20.8);
+var anchor={v:0};tl.to(anchor,{v:1,duration:28,ease:"none"},0);window.__timelines["01-biggest-is-not-best"]=tl;
+</script>
+</template></body></html>

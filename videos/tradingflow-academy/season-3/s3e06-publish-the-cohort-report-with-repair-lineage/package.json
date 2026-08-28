@@ -1,0 +1,10 @@
+{
+  "name": "s3e06-publish-the-cohort-report-with-repair-lineage",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.87 preview",
+    "check": "npx --yes hyperframes@0.7.87 check",
+    "render": "npx --yes hyperframes@0.7.87 render"
+  }
+}

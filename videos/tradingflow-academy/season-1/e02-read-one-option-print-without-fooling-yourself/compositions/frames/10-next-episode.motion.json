@@ -1,0 +1,39 @@
+{
+  "duration": 14.5,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-e02-10-logo\"]",
+      "bySec": 1
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-e02-10-next-panel\"]",
+      "bySec": 1.4
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-e02-10-next-title\"]",
+      "bySec": 2.8
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-e02-10-preview-3\"]",
+      "bySec": 4.8
+    },
+    {
+      "kind": "before",
+      "a": "[data-hf-id=\"hf-e02-10-next-title\"]",
+      "b": "[data-hf-id=\"hf-e02-10-preview-3\"]"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": ".next-panel"
+    },
+    {
+      "kind": "keepsMoving",
+      "withinSelector": ".next-panel",
+      "maxStaticSec": 3
+    }
+  ]
+}

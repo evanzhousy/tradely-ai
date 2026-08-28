@@ -1,0 +1,39 @@
+{
+  "duration": 28,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-akkv\"]",
+      "bySec": 2.5
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-nhh1\"]",
+      "bySec": 3.2
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-5y28\"]",
+      "bySec": 12
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-e02-09-marker-stroke\"]",
+      "bySec": 16.6
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-hf-id=\"hf-rqt7\"]",
+      "bySec": 22.5
+    },
+    {
+      "kind": "before",
+      "a": "[data-hf-id=\"hf-5y28\"]",
+      "b": "[data-hf-id=\"hf-rqt7\"]"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": ".practice"
+    }
+  ]
+}

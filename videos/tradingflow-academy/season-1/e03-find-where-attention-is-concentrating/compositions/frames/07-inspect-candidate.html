@@ -1,0 +1,43 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Inspect the candidate</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{font-size:58px;max-width:1160px}
+.viewport{position:absolute;left:84px;right:84px;top:286px;height:448px;overflow:hidden;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-hairline),var(--shadow-raised)}
+.world{position:absolute;left:0;top:0;width:4200px;height:448px;display:flex;align-items:stretch;gap:0;will-change:transform}
+.station{position:relative;width:1030px;flex:0 0 1030px;padding:30px 36px;border-right:1px solid var(--color-rule)}
+.station-head{display:flex;align-items:center;justify-content:space-between}.station h2{margin:0;font-size:34px}.tab{padding:9px 12px;border-radius:var(--radius-xs);background:var(--color-accent-soft);color:var(--color-accent);font:700 12px/1 var(--font-mono)}
+.station p{margin:18px 0 0;max-width:720px;color:var(--color-muted);font-size:19px;line-height:1.45}
+.checks{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:28px}.check{padding:18px;border-radius:var(--radius-sm);background:var(--color-surface-muted)}.check b{display:block;font-size:17px}.check span{display:block;margin-top:7px;color:var(--color-muted);font:400 12px/1.35 var(--font-mono)}
+.callout{position:absolute;right:34px;bottom:34px;padding:15px 18px;border-radius:var(--radius-sm);background:var(--color-accent);color:white;font:700 14px/1 var(--font-body)}
+.timeline{position:absolute;left:84px;right:84px;bottom:40px;display:flex;align-items:center;gap:12px}.timeline i{flex:1;height:3px;background:var(--color-rule);position:relative}.timeline i:after{content:"";position:absolute;inset:0;background:var(--color-accent);transform:scaleX(.25);transform-origin:left}.timeline span{font:400 12px/1 var(--font-mono);color:var(--color-muted)}
+</style>
+<div id="root" data-hf-id="hf-e03-07-root" data-composition-id="07-inspect-candidate" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-437s" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>WORKFLOW STEP 03 · INSPECT, DO NOT DECLARE</div>
+  <h1 data-hf-id="hf-mjer" class="title">A candidate becomes a sequence of research questions.</h1>
+  <div data-hf-id="hf-e03-07-viewport" class="viewport">
+    <div data-hf-id="hf-e03-07-world" class="world" data-layout-allow-overflow="">
+      <section data-hf-id="hf-e03-07-station-1" class="station"><div data-hf-id="hf-yr3n" class="station-head"><h2 data-hf-id="hf-ec7c">NVDA · orient the candidate</h2><span data-hf-id="hf-307d" class="tab">OVERVIEW</span></div><p data-hf-id="hf-0rdt">Confirm the session, symbol, relative magnitude, signed direction, breadth, and freshness before opening a more specific analytical surface.</p><div data-hf-id="hf-jdor" class="checks"><div data-hf-id="hf-zsdk" class="check"><b data-hf-id="hf-urib">Relative magnitude</b><span data-hf-id="hf-3pve">NET DEI · 2.6×</span></div><div data-hf-id="hf-melc" class="check"><b data-hf-id="hf-yibe">Session direction</b><span data-hf-id="hf-rxqr">NET DEX · POSITIVE</span></div><div data-hf-id="hf-l7o9" class="check"><b data-hf-id="hf-jzeu">Activity breadth</b><span data-hf-id="hf-68o6">128 TRADES · 43 CONTRACTS</span></div><div data-hf-id="hf-llza" class="check"><b data-hf-id="hf-crb6">Provenance</b><span data-hf-id="hf-2gqb">STRUCTURE + FLOW VISIBLE</span></div></div></section>
+      <section data-hf-id="hf-e03-07-station-2" class="station"><div data-hf-id="hf-ckk3" class="station-head"><h2 data-hf-id="hf-abzu">Ask a structural question</h2><span data-hf-id="hf-2h43" class="tab">POSITIONING · CHAIN</span></div><p data-hf-id="hf-pahi">Use open interest and chain context to understand where positioning exists. These views do not convert session flow into a prediction.</p><div data-hf-id="hf-olm3" class="checks"><div data-hf-id="hf-kf27" class="check"><b data-hf-id="hf-hkhs">Expiry distribution</b><span data-hf-id="hf-ueup">WHERE IS OI CONCENTRATED?</span></div><div data-hf-id="hf-ktd8" class="check"><b data-hf-id="hf-el10">Strike context</b><span data-hf-id="hf-y9mw">HOW DOES SPOT RELATE?</span></div><div data-hf-id="hf-jmg5" class="check"><b data-hf-id="hf-0270">Call / put structure</b><span data-hf-id="hf-ma9s">WHAT DOES THE CHAIN SHOW?</span></div><div data-hf-id="hf-k0r6" class="check"><b data-hf-id="hf-5u57">Data clock</b><span data-hf-id="hf-3563">WHICH SNAPSHOT?</span></div></div></section>
+      <section data-hf-id="hf-e03-07-station-3" class="station"><div data-hf-id="hf-c692" class="station-head"><h2 data-hf-id="hf-mkgc">Ask a sensitivity question</h2><span data-hf-id="hf-uz12" class="tab">GEX · VOL</span></div><p data-hf-id="hf-txm3">Gamma Exposure and volatility answer their own questions. Keep GEX, implied volatility, and signed tape flow conceptually separate.</p><div data-hf-id="hf-o7b2" class="checks"><div data-hf-id="hf-itu3" class="check"><b data-hf-id="hf-eseh">Gamma context</b><span data-hf-id="hf-4odf">STRUCTURAL EXPOSURE</span></div><div data-hf-id="hf-j854" class="check"><b data-hf-id="hf-h5q1">Volatility context</b><span data-hf-id="hf-e7uc">IV · TERM · SKEW</span></div><div data-hf-id="hf-4cmo" class="check"><b data-hf-id="hf-setq">No forced story</b><span data-hf-id="hf-ox4o">DESCRIPTIVE, NOT CERTAIN</span></div><div data-hf-id="hf-3ybn" class="check"><b data-hf-id="hf-oejs">Contradiction stays</b><span data-hf-id="hf-coto">DO NOT HIDE IT</span></div></div></section>
+      <section data-hf-id="hf-e03-07-station-4" class="station"><div data-hf-id="hf-bry1" class="station-head"><h2 data-hf-id="hf-7xc4">End with the next question</h2><span data-hf-id="hf-p08u" class="tab">FLOW · CHAIN</span></div><p data-hf-id="hf-ivro">Deeper session evidence and contract selection come next. Mixed or thin evidence changes the verification path; it does not manufacture a verdict.</p><div data-hf-id="hf-nt01" class="checks"><div data-hf-id="hf-3k0m" class="check"><b data-hf-id="hf-fk98">Coherent?</b><span data-hf-id="hf-dmqx">MAGNITUDE + DIRECTION</span></div><div data-hf-id="hf-35pl" class="check"><b data-hf-id="hf-fdza">Broad enough?</b><span data-hf-id="hf-k1vm">MORE THAN ONE ISOLATED ROW</span></div><div data-hf-id="hf-2rek" class="check"><b data-hf-id="hf-oze2">Fresh enough?</b><span data-hf-id="hf-hpms">FOR THIS QUESTION</span></div><div data-hf-id="hf-2d3j" class="check"><b data-hf-id="hf-1ivm">Next investigation</b><span data-hf-id="hf-g6rp">EXPIRY · STRIKE · MONEYNESS</span></div></div><div data-hf-id="hf-e03-07-callout" class="callout">NO VERDICT · ONE BETTER NEXT QUESTION</div></section>
+    </div>
+  </div>
+  <div data-hf-id="hf-jvx5" class="timeline"><span data-hf-id="hf-747a">OVERVIEW</span><i data-hf-id="hf-wt6k"></i><span data-hf-id="hf-d1vu">POSITIONING</span><i data-hf-id="hf-zeb8"></i><span data-hf-id="hf-tuqf">GEX / VOL</span><i data-hf-id="hf-y7e5"></i><span data-hf-id="hf-sbqw">NEXT QUESTION</span></div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.title",{y:28,opacity:0},{y:0,opacity:1,duration:.7,stagger:.14,ease:"power3.out"},.1);
+tl.fromTo(".viewport",{y:45,opacity:0},{y:0,opacity:1,duration:.85,ease:"power3.out"},.8);
+tl.fromTo(".station:first-child .check",{y:12,opacity:0},{y:0,opacity:1,duration:.35,stagger:.22,ease:"power2.out"},2);
+tl.to(".world",{x:-1030,duration:1.25,ease:"power2.inOut"},8);
+tl.fromTo(".station:nth-child(2) .check",{y:12,opacity:0},{y:0,opacity:1,duration:.35,stagger:.22,ease:"power2.out"},9.2);
+tl.to(".world",{x:-2060,duration:1.25,ease:"power2.inOut"},16);
+tl.fromTo(".station:nth-child(3) .check",{y:12,opacity:0},{y:0,opacity:1,duration:.35,stagger:.22,ease:"power2.out"},17.2);
+tl.to(".world",{x:-2570,duration:1.25,ease:"power2.inOut"},25);
+tl.fromTo(".station:nth-child(4) .check",{y:12,opacity:0},{y:0,opacity:1,duration:.35,stagger:.22,ease:"power2.out"},26.2);
+tl.fromTo(".callout",{scale:.96,opacity:0},{scale:1,opacity:1,duration:.5,ease:"power2.out"},31);
+var anchor={v:0};tl.to(anchor,{v:1,duration:38,ease:"none"},0);window.__timelines["07-inspect-candidate"]=tl;
+</script>
+</template></body></html>

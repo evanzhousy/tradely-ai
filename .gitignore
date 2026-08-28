@@ -58,8 +58,27 @@ tmp
 temp
 
 # Course media is imported locally or uploaded to Tradely-owned object storage.
-/videos/
 apps/web/public/media/tradingflow/*.mp4
 apps/web/private-media/
+
+# Academy masters and render artifacts stay on disk and in Tradely R2.
+videos/**/*.mp4
+videos/**/*.webm
+videos/**/*.mov
+videos/**/*.wav
+videos/**/*.aiff
+videos/**/*.mp3
+videos/**/*.aac
+videos/**/*.woff
+videos/**/*.woff2
+videos/**/*.ttf
+videos/**/*.png
+videos/**/*.jpg
+videos/**/*.jpeg
+videos/**/*.webp
+videos/**/*.ico
+videos/**/gsap.min.js
+videos/**/node_modules/
+videos/**/.waveform-cache/
 /.husky/pre-commit
 /.impeccable/design.json

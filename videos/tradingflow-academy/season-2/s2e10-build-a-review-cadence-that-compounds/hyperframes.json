@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "projectId": "s2e10-build-a-review-cadence-that-compounds",
+  "composition": "index.html",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 480,
+  "autoProxy": true
+}

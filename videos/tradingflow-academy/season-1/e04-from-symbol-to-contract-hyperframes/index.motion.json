@@ -1,0 +1,17 @@
+{
+  "duration": 445,
+  "assertions": [
+    {"kind": "appearsBy", "selector": "#s1-title", "bySec": 1.6},
+    {"kind": "before", "a": "#s1-title", "b": "#s1-chips .contract-chip:nth-child(1)"},
+    {"kind": "staysInFrame", "selector": "#s1-title"},
+    {"kind": "staysInFrame", "selector": "#s2-title"},
+    {"kind": "staysInFrame", "selector": "#s3-title"},
+    {"kind": "staysInFrame", "selector": "#s4-title"},
+    {"kind": "staysInFrame", "selector": "#s5-title"},
+    {"kind": "staysInFrame", "selector": "#s6-title"},
+    {"kind": "staysInFrame", "selector": "#s8-title"},
+    {"kind": "staysInFrame", "selector": ".logo-pill"},
+    {"kind": "before", "a": "#s7-title", "b": "#s7-checks .check-row:nth-child(1)"},
+    {"kind": "before", "a": "#s8-brand", "b": "#s8-next"}
+  ]
+}

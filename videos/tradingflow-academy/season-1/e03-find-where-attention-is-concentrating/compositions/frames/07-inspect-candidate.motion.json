@@ -1,0 +1,10 @@
+{
+  "duration": 38,
+  "assertions": [
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-07-viewport\"]","bySec":2},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-07-station-2\"]","bySec":10},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-07-station-4\"]","bySec":27},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-07-callout\"]","bySec":32},
+    {"kind":"staysInFrame","selector":".viewport"}
+  ]
+}

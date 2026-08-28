@@ -7,7 +7,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"dev": "pnpm -r dev",
+		"dev": "pnpm --filter web dev",
 		"build": "pnpm -r --if-present build",
 		"check-types": "pnpm -r check-types",
 		"test": "pnpm --filter web test",
@@ -17,7 +17,11 @@
 		"db:generate": "pnpm --filter @tradely/db db:generate",
 		"db:migrate": "pnpm --filter @tradely/db db:migrate",
 		"media:import": "node scripts/import-course-media.mjs",
-		"check": "biome check .",
+		"media:assert": "node scripts/assert-media-boundary.mjs",
+		"media:assert:local": "node scripts/assert-media-boundary.mjs --require-local",
+		"media:upload": "node apps/web/scripts/upload-course-media.mjs --upload",
+		"media:verify": "node apps/web/scripts/upload-course-media.mjs --verify",
+		"check": "biome check . && pnpm media:assert",
 		"check:fix": "biome check --write .",
 		"prepare": "husky"
 	},

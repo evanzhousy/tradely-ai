@@ -1,0 +1,73 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Read seven fields</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{max-width:1450px;font-size:62px}
+.field-grid{position:absolute;left:84px;right:84px;top:310px;bottom:88px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:18px}
+.field{position:relative;z-index:2;padding:25px;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-hairline),var(--shadow-raised)}
+.field .num{display:flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:var(--radius-xs);background:var(--color-accent-soft);color:var(--color-accent);font:400 14px/1 var(--font-mono)}
+.field h2{margin:20px 0 10px;font-size:31px;letter-spacing:-.03em}
+.field p{margin:0;color:var(--color-muted);font-size:18px;line-height:1.4}
+.field.context{grid-column:3/5;background:var(--color-accent-soft)}
+.field.context .num{background:var(--color-accent);color:var(--color-on-accent)}
+.field.context h2{color:var(--color-accent)}
+.context-steps{display:flex;gap:9px;flex-wrap:wrap;margin-top:23px}
+.sequence{position:absolute;left:84px;right:84px;top:270px;height:4px;border-radius:0;background:var(--color-rule)}
+.sequence i{display:block;width:100%;height:100%;border-radius:0;background:var(--color-accent);transform:scaleX(0);transform-origin:0 50%}
+.sequence-nodes{position:absolute;inset:0}
+.sequence-dot{position:absolute;left:var(--pos);top:50%;display:flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:var(--radius-xs);background:var(--color-surface);color:var(--color-accent);font:700 11px/1 var(--font-mono);box-shadow:var(--shadow-raised),0 0 0 2px var(--color-accent-mid);transform:translate(-50%,-50%)}
+.cascade-stems{position:absolute;inset:0;z-index:1;pointer-events:none}
+.cascade-stem{position:absolute;left:var(--x);top:var(--y);width:3px;height:34px;border-radius:0;background:var(--color-accent);transform:translateX(-50%) scaleY(0);transform-origin:50% 0;opacity:0}
+</style>
+<div id="root" data-hf-id="hf-e02-03-root" data-composition-id="03-seven-fields" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-flkc" class="wash a"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-nk07" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>A REPEATABLE READING ORDER</div><div data-hf-id="hf-l0sc" class="scope"><span data-hf-id="hf-d4qz" class="chip dark">1 → 7</span></div>
+  <h1 data-hf-id="hf-py7n" class="title">Read seven fields. Let context have the last word.</h1>
+  <div data-hf-id="hf-bo0n" class="sequence">
+    <i data-hf-id="hf-wt6k"></i>
+    <div data-hf-id="hf-e02-03-sequence-nodes" class="sequence-nodes">
+      <span data-hf-id="hf-e02-03-sequence-01" class="sequence-dot" style="--pos:0%">01</span>
+      <span data-hf-id="hf-e02-03-sequence-02" class="sequence-dot" style="--pos:16.667%">02</span>
+      <span data-hf-id="hf-e02-03-sequence-03" class="sequence-dot" style="--pos:33.333%">03</span>
+      <span data-hf-id="hf-e02-03-sequence-04" class="sequence-dot" style="--pos:50%">04</span>
+      <span data-hf-id="hf-e02-03-sequence-05" class="sequence-dot" style="--pos:66.667%">05</span>
+      <span data-hf-id="hf-e02-03-sequence-06" class="sequence-dot" style="--pos:83.333%">06</span>
+      <span data-hf-id="hf-e02-03-sequence-07" class="sequence-dot" style="--pos:100%">07</span>
+    </div>
+  </div>
+  <div data-hf-id="hf-22tx" class="field-grid">
+    <div data-hf-id="hf-0ztw" class="field"><span data-hf-id="hf-cshg" class="num">01</span><h2 data-hf-id="hf-arhp">Call or Put</h2><p data-hf-id="hf-3u65">Contract type, not the thesis.</p></div>
+    <div data-hf-id="hf-bxgc" class="field"><span data-hf-id="hf-blkd" class="num">02</span><h2 data-hf-id="hf-n4fi">Execution side</h2><p data-hf-id="hf-3hdd">AAsk, Ask, Mid, Bid, or BBid.</p></div>
+    <div data-hf-id="hf-aqj9" class="field"><span data-hf-id="hf-bzve" class="num">03</span><h2 data-hf-id="hf-m13q">Size</h2><p data-hf-id="hf-jdqn">Contracts represented by the row.</p></div>
+    <div data-hf-id="hf-b4ua" class="field"><span data-hf-id="hf-dzej" class="num">04</span><h2 data-hf-id="hf-cp3c">Premium</h2><p data-hf-id="hf-v3bm">Price × size × 100. Money traded.</p></div>
+    <div data-hf-id="hf-d4df" class="field"><span data-hf-id="hf-edpk" class="num">05</span><h2 data-hf-id="hf-25my">Moneyness</h2><p data-hf-id="hf-6cky">Strike relative to spot: ITM, ATM, OTM.</p></div>
+    <div data-hf-id="hf-diog" class="field"><span data-hf-id="hf-d6sh" class="num">06</span><h2 data-hf-id="hf-62gu">DTE</h2><p data-hf-id="hf-9afg">Time exposure changes the meaning.</p></div>
+    <div data-hf-id="hf-8w31" class="field context"><span data-hf-id="hf-dl3i" class="num">07</span><h2 data-hf-id="hf-drwd">Context protects the reading.</h2><p data-hf-id="hf-h87e">Do not let one row answer a portfolio-level question.</p><div data-hf-id="hf-ue9n" class="context-steps"><span data-hf-id="hf-bph6" class="chip blue">Strike + spot</span><span data-hf-id="hf-oov6" class="chip blue">OI + Vol/OI</span><span data-hf-id="hf-8c60" class="chip blue">Activity type</span><span data-hf-id="hf-m7gz" class="chip blue">Neighboring prints</span></div></div>
+    <div data-hf-id="hf-e02-03-cascade-stems" class="cascade-stems">
+      <span data-hf-id="hf-e02-03-stem-01" class="cascade-stem" style="--x:12.11%;--y:-34px"></span>
+      <span data-hf-id="hf-e02-03-stem-02" class="cascade-stem" style="--x:37.37%;--y:-34px"></span>
+      <span data-hf-id="hf-e02-03-stem-03" class="cascade-stem" style="--x:62.63%;--y:-34px"></span>
+      <span data-hf-id="hf-e02-03-stem-04" class="cascade-stem" style="--x:87.89%;--y:-34px"></span>
+      <span data-hf-id="hf-e02-03-stem-05" class="cascade-stem" style="--x:12.11%;--y:226px"></span>
+      <span data-hf-id="hf-e02-03-stem-06" class="cascade-stem" style="--x:37.37%;--y:226px"></span>
+      <span data-hf-id="hf-e02-03-stem-07" class="cascade-stem" style="--x:75.25%;--y:226px"></span>
+    </div>
+  </div>
+  <div data-hf-id="hf-xj9s" class="footnote"><span data-hf-id="hf-ld1h">FIRST SIX: DESCRIBE THE ROW</span><span data-hf-id="hf-a1t7">SEVENTH: CHALLENGE THE STORY</span></div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.title",{y:34,opacity:0},{y:0,opacity:1,duration:.75,stagger:.16,ease:"power3.out"},.1);
+tl.to(".sequence i",{scaleX:1,duration:34.9,ease:"none"},1.3);
+var cards=document.querySelectorAll(".field"),dots=document.querySelectorAll(".sequence-dot"),stems=document.querySelectorAll(".cascade-stem");
+var starts=[3.8,9.2,15,19.9,25.6,31,36.2];
+cards.forEach(function(card,i){
+  tl.fromTo(dots[i],{scale:.7,opacity:.32},{scale:1,opacity:1,duration:.36,ease:"power4.out"},starts[i]-.48);
+  tl.fromTo(stems[i],{scaleY:0,opacity:0},{scaleY:1,opacity:1,duration:.34,ease:"power2.out"},starts[i]-.36);
+  tl.fromTo(card,{y:30,opacity:0,scale:.965},{y:0,opacity:1,scale:1,duration:.72,ease:"power3.out"},starts[i]);
+});
+tl.fromTo(".context-steps .chip",{y:16,opacity:0},{y:0,opacity:1,duration:.45,stagger:.13,ease:"power2.out"},38.1);
+tl.to(".field.context",{scale:1.02,duration:.59,ease:"power2.inOut"},45.7).to(".field.context",{scale:1,duration:.6,ease:"power2.inOut"},46.3);
+var anchor={v:0};tl.to(anchor,{v:1,duration:53,ease:"none"},0);window.__timelines["03-seven-fields"]=tl;
+</script>
+</template></body></html>

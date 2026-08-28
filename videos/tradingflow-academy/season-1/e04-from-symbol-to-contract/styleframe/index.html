@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1920, initial-scale=1" />
+    <title>TradingFlow Academy S1E04 Styleframes</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: #020409; color: #f8fafc; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+      .frame {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 82% 12%, rgba(37, 99, 235, .16), transparent 34%),
+          #05070d;
+      }
+      .identity {
+        position: absolute; left: 64px; right: 64px; top: 30px; height: 48px;
+        display: flex; align-items: center; justify-content: space-between;
+        font: 700 18px ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: .12em; text-transform: uppercase; color: #94a3b8;
+      }
+      .identity img { width: 210px; height: 48px; object-fit: contain; object-position: right center; }
+      .caption {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 120px;
+        display: grid; place-items: center; padding: 18px 90px;
+        background: #f8fafc; color: #09090b; font-size: 42px; font-weight: 680;
+        letter-spacing: -.02em; text-align: center;
+      }
+      .workbench {
+        position: absolute; left: 64px; right: 64px; top: 96px; bottom: 148px;
+        overflow: hidden; border-radius: 30px; background: #0b0f18;
+        box-shadow: 0 38px 90px rgba(0,0,0,.44), inset 0 0 0 1px rgba(148,163,184,.14);
+      }
+      .workbench img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+      .spot {
+        position: absolute; left: 74px; right: 70px; bottom: 52px; height: 100px;
+        border: 3px solid #22d3ee; border-radius: 16px;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.35), 0 0 48px rgba(34,211,238,.28);
+      }
+      .primitive {
+        position: absolute; left: 96px; right: 96px; top: 142px; bottom: 188px;
+        display: grid; grid-template-columns: 1.08fr .92fr; gap: 36px;
+      }
+      .panel { border-radius: 28px; padding: 42px; background: #0b0f18; box-shadow: inset 0 0 0 1px rgba(148,163,184,.14); }
+      .kicker { color: #22d3ee; font: 700 17px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; }
+      h1 { margin: 16px 0 0; max-width: 880px; font-size: 76px; line-height: .98; letter-spacing: -.06em; }
+      .formula { margin-top: 60px; display: flex; align-items: center; gap: 22px; font-size: 50px; font-weight: 750; }
+      .chip { padding: 22px 30px; border-radius: 18px; background: #121826; box-shadow: inset 0 0 0 1px rgba(148,163,184,.18); }
+      .warn { margin-top: 34px; color: #f59e0b; font-size: 25px; line-height: 1.4; }
+      .scale { position: relative; height: 100%; overflow: hidden; }
+      .ticks { position: absolute; left: 48%; top: -120px; width: 46%; height: 980px; display: grid; grid-auto-rows: 86px; }
+      .tick { border-top: 1px solid rgba(148,163,184,.25); font: 700 30px ui-monospace, SFMono-Regular, Menlo, monospace; color: #94a3b8; padding-top: 12px; }
+      .pointer { position: absolute; left: 8%; right: 8%; top: 48%; height: 4px; background: #22d3ee; box-shadow: 0 0 28px rgba(34,211,238,.55); }
+      .pointer::before { content: ""; position: absolute; left: 0; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: #22d3ee; }
+      .outro { display: grid; place-items: center; }
+      .contract-chip {
+        width: 760px; height: 138px; display: flex; align-items: center; justify-content: space-between;
+        padding: 0 36px; border-radius: 24px; background: #121826;
+        box-shadow: 0 0 0 1px rgba(148,163,184,.16), 0 28px 90px rgba(0,0,0,.46);
+        font: 750 42px ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .mark { color: #22d3ee; font-size: 70px; }
+      .next { position: absolute; top: 720px; text-align: center; color: #94a3b8; font-size: 28px; }
+      .next strong { display: block; margin-top: 12px; color: #f8fafc; font-size: 44px; }
+    </style>
+  </head>
+  <body>
+    <section class="frame" id="workbench">
+      <div class="identity"><span>S1E04 · From Symbol to Contract</span><img src="../public/brand/tradingflow-logo.png" alt="" /></div>
+      <div class="workbench"><img src="../public/textures/contract-rank.png" alt="" /><div class="spot"></div></div>
+      <div class="caption">A ranked symbol is a starting point, not a contract decision.</div>
+    </section>
+    <section class="frame" id="primitive">
+      <div class="identity"><span>Evidence 04 · Turnover</span><img src="../public/brand/tradingflow-logo.png" alt="" /></div>
+      <div class="primitive">
+        <div class="panel">
+          <div class="kicker">Volume-to-open-interest</div>
+          <h1>Turnover relative to contracts outstanding.</h1>
+          <div class="formula"><span class="chip">Daily volume</span><span>÷</span><span class="chip">Open interest</span></div>
+          <div class="warn">Not proof that positions were opened.</div>
+        </div>
+        <div class="panel scale">
+          <div class="ticks">
+            <div class="tick">0.4×</div><div class="tick">1×</div><div class="tick">3×</div>
+            <div class="tick">6×</div><div class="tick">12×</div><div class="tick">24×</div>
+            <div class="tick">48×</div><div class="tick">96×</div>
+          </div>
+          <div class="pointer"></div>
+        </div>
+      </div>
+      <div class="caption">Treat Vol/OI as a turnover shock detector, then verify the prints.</div>
+    </section>
+    <section class="frame outro" id="outro">
+      <div class="identity"><span>TradingFlow Academy</span><img src="../public/brand/tradingflow-logo.png" alt="" /></div>
+      <div class="contract-chip"><span>TREE · 2026-08-21 · $45 PUT</span><span class="mark">⌁</span></div>
+      <div class="next">Next episode<strong>Verify the setup print by print</strong></div>
+      <div class="caption">Move from attention, to evidence, to a decision you can explain.</div>
+    </section>
+  </body>
+</html>

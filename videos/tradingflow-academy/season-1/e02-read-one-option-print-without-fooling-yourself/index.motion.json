@@ -1,0 +1,18 @@
+{
+  "duration": 420,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "#brand-bug",
+      "bySec": 1.5
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#brand-bug"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#episode-bug"
+    }
+  ]
+}

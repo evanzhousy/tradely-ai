@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>TradingFlow Academy S1E01</title>
+    <script src="gsap.min.js"></script>
+    <style>
+      @font-face { font-family: Inter; src: url("assets/fonts/Inter-Regular.woff2") format("woff2"); font-weight: 400; }
+      @font-face { font-family: Inter; src: url("assets/fonts/Inter-Bold.woff2") format("woff2"); font-weight: 700; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #fff; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #fff; color: #252525; font-family: Inter, sans-serif; }
+      .visual-stage { position: absolute; inset: 0 0 180px; overflow: hidden; background: #fff; }
+      .scene { position: absolute; inset: 0; width: 1920px; height: 900px; will-change: transform, opacity, filter; }
+      .caption-rail { position: absolute; left: 0; right: 0; bottom: 0; height: 180px; z-index: 90; background: #f8fafc; box-shadow: 0 -18px 56px rgba(0,0,0,.18), 0 -1px 0 rgba(148,163,184,.24); }
+      .caption-rail::before { content: ""; position: absolute; left: 128px; right: 128px; top: 22px; bottom: 22px; border-radius: 24px; background: #eef2f7; box-shadow: inset 0 0 0 1px rgba(15,23,42,.06); }
+      .caption-card { position: absolute; left: 180px; right: 180px; bottom: 30px; min-height: 116px; display: flex; align-items: center; justify-content: center; padding: 10px 42px; color: #09090b; font-size: 36px; font-weight: 700; line-height: 1.18; letter-spacing: -0.018em; text-align: center; text-wrap: balance; opacity: 0; }
+      #caption-layer { position: absolute; inset: 0; z-index: 100; }
+      /* Season-wide caption pass: captions stay in the dedicated bottom-safe rail. */
+      .brand-bug { position: absolute; left: 42px; top: 18px; width: 202px; z-index: 120; padding: 10px 14px; border-radius: 24px; background: rgba(255,255,255,.92); box-shadow: 0 10px 30px rgba(30,77,123,.10), inset 0 0 0 1px rgba(37,37,37,.05); }
+      .brand-bug img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+      .episode-bug { position: absolute; top: 24px; right: 54px; z-index: 120; padding: 13px 18px; border-radius: 999px; background: #f5f5f5; color: #525252; font: 700 15px/1 Inter,sans-serif; letter-spacing: .06em; box-shadow: inset 0 0 0 1px rgba(37,37,37,.04); }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-u8mu" id="root" data-composition-id="main" data-start="0" data-duration="480" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-esgd" class="visual-stage">
+        <div data-hf-id="hf-3fin" id="scene-01" class="scene clip" data-composition-id="01-big-call" data-composition-src="compositions/frames/01-big-call.html" data-start="0" data-duration="22.5" data-track-index="0" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-r0xy" id="scene-02" class="scene clip" data-composition-id="02-context-collapse" data-composition-src="compositions/frames/02-context-collapse.html" data-start="22" data-duration="50.5" data-track-index="1" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-zuva" id="scene-03" class="scene clip" data-composition-id="03-wrong-questions" data-composition-src="compositions/frames/03-wrong-questions.html" data-start="72" data-duration="60.5" data-track-index="0" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-7m9y" id="scene-04" class="scene clip" data-composition-id="04-market-approaches" data-composition-src="compositions/frames/04-market-approaches.html" data-start="132" data-duration="50.5" data-track-index="1" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-pikl" id="scene-05" class="scene clip" data-composition-id="05-research-contract" data-composition-src="compositions/frames/05-research-contract.html" data-start="182" data-duration="43.5" data-track-index="0" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-ce4j" id="scene-06" class="scene clip" data-composition-id="06-five-steps" data-composition-src="compositions/frames/06-five-steps.html" data-start="225" data-duration="47.5" data-track-index="1" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-i5rp" id="scene-07" class="scene clip" data-composition-id="07-app-workflow" data-composition-src="compositions/frames/07-app-workflow.html" data-start="272" data-duration="120.5" data-track-index="0" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-7q63" id="scene-08" class="scene clip" data-composition-id="08-evidence-ledger" data-composition-src="compositions/frames/08-evidence-ledger.html" data-start="392" data-duration="40.5" data-track-index="1" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-r8ef" id="scene-09" class="scene clip" data-composition-id="09-preserve-meaning" data-composition-src="compositions/frames/09-preserve-meaning.html" data-start="432" data-duration="34.5" data-track-index="0" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+        <div data-hf-id="hf-5t56" id="scene-10" class="scene clip" data-composition-id="10-repeat-five" data-composition-src="compositions/frames/10-repeat-five.html" data-start="466" data-duration="14" data-track-index="1" data-width="1920" data-height="900" data-layout-allow-overflow="" data-layout-allow-occlusion=""></div>
+      </div>
+
+      <audio data-hf-id="hf-episode-mix" id="episode-mix" class="clip" src="assets/audio/tradingflow-academy-s1e01-final-mix.mp3" data-start="0" data-duration="480" data-track-index="10" data-volume="1"></audio>
+
+      <div data-hf-id="hf-rxs5" id="caption-rail" class="caption-rail clip" data-start="0" data-duration="480" data-track-index="20" data-layout-ignore=""></div>
+      <div data-hf-id="hf-3q8z" id="caption-layer" class="clip" data-start="0" data-duration="480" data-track-index="21" data-layout-allow-occlusion="" aria-label="English captions"></div>
+
+      <div data-hf-id="hf-grw2" id="brand-bug" class="brand-bug clip" data-start="0" data-duration="480" data-track-index="30" data-layout-ignore=""><img data-hf-id="hf-ijwl" src="assets/brand/tradingflow-logo.png" alt="TradingFlow"></div>
+      <div data-hf-id="hf-tbix" id="episode-bug" class="episode-bug clip" data-start="0" data-duration="480" data-track-index="31" data-layout-ignore="">TradingFlow Academy · S1E01</div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      var captionCues = [
+        [0.50,3.59,"A large call order hits the ask."],
+        [3.59,6.32,"The premium is huge."],
+        [6.32,9.41,"A scanner labels it bullish."],
+        [9.41,12.32,"Most traders stop there."],
+        [12.32,15.69,"But was it an opening trade, one leg of a spread, or a hedge?"],
+        [15.69,18.14,"Or was it a position that disappeared before the close?"],
+        [18.14,19.60,"The print is real. The complete story is not."],
+        [22.50,26.56,"The problem isn't access to data."],
+        [26.56,31.02,"Traders now have live prints, unusual activity alerts, open interest, volatility, and gamma levels."],
+        [31.02,34.26,"They also have a stream of confident explanations."],
+        [34.26,37.51,"The problem is context collapse."],
+        [37.51,40.76,"An execution-side inference becomes a fact."],
+        [40.76,44.00,"A large premium becomes conviction."],
+        [44.00,47.25,"A modeled level becomes a price target."],
+        [47.25,52.52,"Current-session flow, overnight open interest, and prior-close gamma are treated as if measured together."],
+        [52.52,56.98,"More information arrives, but the reasoning gets shorter."],
+        [56.98,62.50,"One attractive metric becomes the entire thesis."],
+        [72.50,77.37,"Price charts, unusual prints, and gamma maps are all useful."],
+        [77.37,82.24,"The mistake is asking one lens to answer a question it cannot answer."],
+        [82.24,87.11,"A price chart shows what price has done."],
+        [87.11,91.53,"It doesn't reveal the complete option structure behind the move."],
+        [91.53,95.96,"A large call print tells us that contracts traded."],
+        [95.96,100.39,"It doesn't tell us the trader's full portfolio."],
+        [100.39,105.70,"A high volume-to-open-interest ratio highlights heavy turnover."],
+        [105.70,110.13,"It does not prove that every contract opened a new position."],
+        [110.13,114.55,"A Call Wall shows modeled concentration at a strike."],
+        [114.55,118.09,"It does not guarantee resistance."],
+        [118.09,121.64,"A bullish or bearish label is an inference—not a sworn statement of intent."],
+        [121.64,125.00,"What did we observe, infer, and still not know?"],
+        [132.50,137.35,"Most modern platforms begin from one of three strong ideas."],
+        [137.35,142.65,"Tape-first tools surface important trades quickly and filter millions of prints."],
+        [142.65,147.94,"Structure-first tools map gamma, open interest, volatility, and key strikes."],
+        [147.94,152.79,"Alert-first tools compress a huge market into manageable candidates."],
+        [152.79,156.76,"These approaches solve real problems."],
+        [156.76,160.29,"Many platforms combine more than one of them."],
+        [160.29,163.82,"But a powerful view can still be misused."],
+        [163.82,168.24,"A tape can tempt us to chase the loudest print."],
+        [168.24,172.21,"A level map can look more deterministic than its model."],
+        [172.21,176.00,"An alert can hide ranked evidence, missing inputs, and data clocks."],
+        [182.50,186.14,"The missing layer is not another indicator."],
+        [186.14,189.05,"It is a research contract."],
+        [189.05,193.42,"Session Flow describes what traded during a selected session."],
+        [193.42,197.79,"Open interest is cleared overnight and does not update trade by trade."],
+        [197.79,202.89,"GEX is modeled structural context for a selected date and expiry scope."],
+        [202.89,207.98,"These observations can inform one another, but cannot become one certainty score without losing meaning."],
+        [207.98,213.30,"Freshness, scope, and detail level are part of the data."],
+        [225.50,230.41,"TradingFlow starts from a different premise."],
+        [230.41,235.32,"The goal is not to manufacture certainty."],
+        [235.32,239.83,"The goal is to reduce ambiguity in a repeatable order."],
+        [239.83,243.51,"Discover where activity is concentrating."],
+        [243.51,246.78,"Inspect the underlying and the exact contract."],
+        [246.78,250.06,"Validate the interpretation against actual prints."],
+        [250.06,254.97,"Compare the date, scope, denominator, and freshness of each observation."],
+        [254.97,259.88,"Then decide: supported, contradicted, or still unknown?"],
+        [259.88,263.40,"Discover. Inspect. Validate. Compare. Decide."],
+        [272.50,275.79,"First, discover in Rank Symbols."],
+        [275.79,279.45,"It narrows a canonical universe into candidates worth inspecting."],
+        [279.45,283.11,"A ranked symbol is not a trade signal."],
+        [283.11,286.40,"It is a reason to ask the next question."],
+        [288.00,291.73,"Second, inspect the symbol drawer."],
+        [291.73,296.29,"Keep each lens separate."],
+        [296.29,300.85,"Positioning and Chain show open-interest and strike context."],
+        [300.85,305.00,"Session Flow shows what traded in the selected session."],
+        [305.00,309.98,"GEX shows selected-date modeled structure with an explicit expiry scope."],
+        [309.98,314.54,"Vol compares option pricing across strikes and expirations."],
+        [314.54,319.10,"Price history supplies context, but prior sessions do not inherit today's GEX overlays."],
+        [320.50,324.83,"Third, validate with Option Trades."],
+        [324.83,330.12,"Live shows the latest snapshot and, when available, the real-time stream."],
+        [330.12,334.93,"Historical lets you return to the selected session."],
+        [334.93,341.19,"Read call or put, bid and ask location, size, premium, activity type, and surrounding prints."],
+        [341.19,345.52,"Repetition can strengthen an interpretation."],
+        [345.52,349.37,"Mid-market execution can preserve uncertainty."],
+        [349.37,353.70,"A sweep can show urgency, but not the complete strategy."],
+        [355.00,359.73,"Fourth, compare the evidence."],
+        [359.73,367.42,"Ask which expiry, strike, moneyness, volume-to-open-interest ratio, and flow bucket contributed."],
+        [367.42,372.74,"Net DEX describes signed session-flow direction."],
+        [372.74,378.06,"Net DEI describes magnitude relative to an effective liquidity denominator."],
+        [378.06,382.20,"Direction and magnitude are not the same thing."],
+        [383.00,392.06,"Fifth, decide with an evidence ledger."],
+        [392.06,399.00,"More detail does not eliminate ambiguity."],
+        [400.00,404.35,"A responsible conclusion is not a green or red badge."],
+        [404.35,407.83,"It is an evidence ledger."],
+        [407.83,412.62,"Supports: repeated ask-side call activity appeared in the selected session."],
+        [412.62,417.40,"Contradicts: neutral flow was also present, or price failed to respond."],
+        [417.40,422.63,"Unknown: opening, hedging, or part of a multi-leg strategy."],
+        [422.63,428.28,"The next cleared open-interest snapshot may add evidence, but remains aggregate."],
+        [428.28,434.20,"This ledger shows exactly how strong the analysis is."],
+        [435.50,440.19,"TradingFlow doesn't claim to remove uncertainty."],
+        [440.19,444.45,"It doesn't need a new name for every familiar metric."],
+        [444.45,448.72,"Its advantage is preserving meaning through the research."],
+        [448.72,453.41,"Flow remains Flow. Structure remains structure."],
+        [453.41,457.67,"Magnitude remains separate from direction."],
+        [457.67,463.90,"The App connects discovery, inspection, validation, comparison, and repeatable output."],
+        [467.00,470.13,"Pick one symbol in TradingFlow."],
+        [470.13,473.89,"Discover. Inspect. Validate. Compare. Decide."],
+        [473.89,478.90,"Don't chase the loudest story. Build the clearest evidence chain."]
+      ];
+      var captionLayer = document.getElementById("caption-layer");
+      captionCues.forEach(function(cue,index){
+        var node = document.createElement("div");
+        var suffix = String(index + 1).padStart(3,"0");
+        node.id = "cap-" + suffix;
+        node.className = "caption-card";
+        node.setAttribute("data-hf-id","hf-caption-" + suffix);
+        node.textContent = cue[2];
+        captionLayer.appendChild(node);
+      });
+      var tl = gsap.timeline({ paused: true });
+      var cuts = [22,72,132,182,225,272,392,432,466];
+      for (var i = 0; i < cuts.length; i++) {
+        var oldEl = "#scene-" + String(i + 1).padStart(2,"0");
+        var newEl = "#scene-" + String(i + 2).padStart(2,"0");
+        var T = cuts[i];
+        if (i === 4 || i === 6) {
+          tl.to(oldEl, { filter:"blur(12px)", scale:1.025, opacity:0, duration:.55, ease:"power2.inOut" }, T);
+          tl.fromTo(newEl, { filter:"blur(12px)", scale:.975, opacity:0 }, { filter:"blur(0px)", scale:1, opacity:1, duration:.55, ease:"power2.inOut" }, T);
+        } else {
+          tl.to(oldEl, { x:-1920, duration:.5, ease:"power3.inOut" }, T);
+          tl.fromTo(newEl, { x:1920, opacity:1 }, { x:0, opacity:1, duration:.5, ease:"power3.inOut" }, T);
+        }
+      }
+      tl.set(".caption-card",{autoAlpha:0},0);
+      captionCues.forEach(function(cue,index){
+        var id = "#cap-" + String(index + 1).padStart(3,"0");
+        tl.set(id,{autoAlpha:1},cue[0]);
+        tl.set(id,{autoAlpha:0},cue[1]);
+      });
+      tl.fromTo(".brand-bug",{opacity:0},{opacity:1,duration:.7,ease:"power2.out"},0);
+      var anchor={v:0}; tl.to(anchor,{v:1,duration:480,ease:"none"},0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

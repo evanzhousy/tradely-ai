@@ -1,0 +1,10 @@
+{
+  "name": "e06-gex-is-a-regime-not-a-forecast",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.87 preview",
+    "check": "npx --yes hyperframes@0.7.87 check",
+    "render": "npx --yes hyperframes@0.7.87 render"
+  }
+}

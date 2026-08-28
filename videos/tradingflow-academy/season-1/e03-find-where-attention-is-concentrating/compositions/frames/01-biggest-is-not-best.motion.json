@@ -1,0 +1,10 @@
+{
+  "duration": 28,
+  "assertions": [
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-01-mega\"]","bySec":2},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-01-small\"]","bySec":5.3},
+    {"kind":"appearsBy","selector":"[data-hf-id=\"hf-e03-01-answer\"]","bySec":15},
+    {"kind":"before","a":"[data-hf-id=\"hf-e03-01-mega\"]","b":"[data-hf-id=\"hf-e03-01-answer\"]"},
+    {"kind":"staysInFrame","selector":".comparison"}
+  ]
+}

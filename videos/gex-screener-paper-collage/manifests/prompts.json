@@ -1,0 +1,18 @@
+{
+  "styleAnchor": "assets/keyframes/scene-01-style-anchor.png",
+  "references": {
+    "brand": "assets/brand/tradingflow-logo.png",
+    "rankSymbols": "assets/screenshots/rank-symbols-ui.png",
+    "symbolDrawer": "assets/screenshots/symbol-drawer-ui.png",
+    "rankTable": "assets/screenshots/rank-symbols-table.png"
+  },
+  "fixedSystem": {
+    "medium": "physical layered editorial paper collage",
+    "field": "#F2EEE5 warm off-white uncoated paper with fine visible fibers",
+    "halftone": "fine round-dot black-and-white at approximately 65 lpi",
+    "edge": "crisp machine-cut with slight handmade variance and warm-white keyline",
+    "shadow": "10px down-right, soft, approximately 24% opacity",
+    "palette": ["#2164FF", "#F15A3A", "#2B9C91", "#1A1B1E", "#F2EEE5"]
+  },
+  "textPolicy": "No generated text in raster keyframes. All labels, URL, logo, and product UI text are exact local HTML/image assets."
+}

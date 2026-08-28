@@ -1,0 +1,75 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Evidence ledger</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{left:84px;top:154px;width:1180px;max-width:none;font-size:92px;line-height:.95;white-space:nowrap;transform-origin:0 50%}
+.title-thesis{position:absolute;left:84px;top:230px;margin:0;color:var(--color-ink);font:700 52px/1 var(--font-display);letter-spacing:-.045em}
+.ledger{position:absolute;left:84px;right:84px;top:306px;height:430px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.column{position:relative;padding:28px 28px 24px;overflow:hidden}
+.column:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--color-rule)}
+.column.observed:before{background:var(--color-accent)}
+.column.inferred:before{background:var(--color-inference)}
+.column.unknown:before{background:var(--color-muted)}
+.column-head{display:flex;align-items:center;justify-content:space-between}
+.column h2{margin:28px 0 20px;font-size:32px;letter-spacing:-.035em}
+.entry{display:flex;gap:13px;margin-top:16px;color:var(--color-ink-soft);font-size:17px;line-height:1.4}
+.entry i{flex:0 0 22px;height:22px;margin-top:1px;border-radius:50%;background:var(--color-accent-soft);color:var(--color-accent);font:700 12px/22px var(--font-mono);text-align:center;font-style:normal}
+.inferred .entry i{background:var(--color-inference-soft);color:var(--color-inference-ink)}
+.unknown .entry i{background:var(--color-surface-muted);color:var(--color-ink-soft)}
+.open-slot{position:absolute;left:28px;right:28px;bottom:26px;height:60px;border:2px dashed var(--color-neutral);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--color-muted);font:400 13px/1 var(--font-mono)}
+.ledger-rule{position:absolute;left:490px;right:490px;bottom:62px;text-align:center;color:var(--color-accent);font:700 22px/1.25 var(--font-display)}
+.scope{top:100px}
+</style>
+<div id="root" data-hf-id="hf-e02-08-root" data-composition-id="08-evidence-ledger" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-flkc" class="wash a"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-8zxv" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>RESEARCH OUTPUT · THREE COLUMNS</div>
+  <div data-hf-id="hf-l0sc" class="scope"><span data-hf-id="hf-9vjq" class="chip">SPX · 2026-07-24</span></div>
+  <h1 data-hf-id="hf-ayrb" class="title">THREE COLUMNS</h1>
+  <p data-hf-id="hf-e02-08-thesis" class="title-thesis">Write what the tape earns.</p>
+  <div data-hf-id="hf-75x7" class="ledger">
+    <article data-hf-id="hf-jjnh" class="column observed card">
+      <div data-hf-id="hf-q99d" class="column-head"><span data-hf-id="hf-jfgb" class="evidence-chip observed">OBSERVED</span><span data-hf-id="hf-uqv1" class="mono section-label">DIRECT</span></div>
+      <h2 data-hf-id="hf-4i4w">What the rows show</h2>
+      <div data-hf-id="hf-v590" class="entry"><i data-hf-id="hf-943b">1</i><span data-hf-id="hf-j11p">7445 Call · AAsk · size 4 · <b data-hf-id="hf-pjwj">$70.0K</b></span></div>
+      <div data-hf-id="hf-qnak" class="entry"><i data-hf-id="hf-8psa">2</i><span data-hf-id="hf-h1yf">Same-second Put · same strike, expiry, and size</span></div>
+      <div data-hf-id="hf-pgdh" class="entry"><i data-hf-id="hf-8bh9">3</i><span data-hf-id="hf-arte">Historical session · 17:06:38 ET</span></div>
+    </article>
+    <article data-hf-id="hf-65ru" class="column inferred card">
+      <div data-hf-id="hf-1k6t" class="column-head"><span data-hf-id="hf-lkt5" class="evidence-chip inferred">INFERRED</span><span data-hf-id="hf-ifck" class="mono section-label">CONSISTENT WITH</span></div>
+      <h2 data-hf-id="hf-lfy4">What the rows support</h2>
+      <div data-hf-id="hf-puoi" class="entry"><i data-hf-id="hf-9cdz">1</i><span data-hf-id="hf-x3j5">Call: aggressive buying</span></div>
+      <div data-hf-id="hf-ru7n" class="entry"><i data-hf-id="hf-hqa6">2</i><span data-hf-id="hf-v55g">Put: aggressive selling</span></div>
+      <div data-hf-id="hf-s8io" class="entry"><i data-hf-id="hf-ckz5">3</i><span data-hf-id="hf-ry6k"><b data-hf-id="hf-joab">If linked:</b> structured bullish position</span></div>
+    </article>
+    <article data-hf-id="hf-tdsd" class="column unknown card">
+      <div data-hf-id="hf-2r3w" class="column-head"><span data-hf-id="hf-l2hv" class="evidence-chip unknown">UNKNOWN</span><span data-hf-id="hf-cd8j" class="mono section-label">KEEP OPEN</span></div>
+      <h2 data-hf-id="hf-e2vv">What the tape cannot prove</h2>
+      <div data-hf-id="hf-r1ll" class="entry"><i data-hf-id="hf-d35l">?</i><span data-hf-id="hf-01kj">Linkage · opening or closing · hedge purpose</span></div>
+      <div data-hf-id="hf-rfwm" class="entry"><i data-hf-id="hf-s4ct">?</i><span data-hf-id="hf-3a8e">Participant identity · account inventory</span></div>
+      <div data-hf-id="hf-n2jb" class="entry"><i data-hf-id="hf-tb9w">?</i><span data-hf-id="hf-16go">What SPX does next</span></div>
+      <div data-hf-id="hf-foam" class="open-slot">UNKNOWN REMAINS VISIBLE</div>
+    </article>
+  </div>
+  <div data-hf-id="hf-9yaw" class="ledger-rule">Traceability creates confidence. Hiding unknowns does not.</div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".title",{x:470,y:105,scale:1,opacity:0,filter:"blur(12px)"},{x:470,y:105,scale:1,opacity:1,filter:"blur(0px)",duration:.45,ease:"power3.out"},.08);
+tl.to(".title",{x:0,y:0,scale:.32,duration:.68,ease:"power3.inOut"},1.2);
+tl.fromTo(".title-thesis",{y:28,opacity:0},{y:0,opacity:1,duration:.7,ease:"power3.out"},1.6);
+tl.fromTo(".eyebrow,.scope",{y:-12,opacity:0},{y:0,opacity:1,duration:.55,stagger:.08,ease:"power2.out"},2.05);
+tl.fromTo(".column.observed",{y:58,opacity:0,filter:"blur(10px)",scale:.97},{y:0,opacity:1,filter:"blur(0px)",scale:1,duration:.82,ease:"power3.out"},2.65);
+tl.fromTo(".column.inferred",{y:58,opacity:0,filter:"blur(10px)",scale:.97},{y:0,opacity:1,filter:"blur(0px)",scale:1,duration:.82,ease:"power3.out"},16.9);
+tl.fromTo(".column.unknown",{y:58,opacity:0,filter:"blur(10px)",scale:.97},{y:0,opacity:1,filter:"blur(0px)",scale:1,duration:.82,ease:"power3.out"},25.8);
+var observedEntries=document.querySelectorAll(".column.observed .entry");
+var inferredEntries=document.querySelectorAll(".column.inferred .entry");
+var unknownEntries=document.querySelectorAll(".column.unknown .entry");
+[3.4,10.8,14].forEach(function(t,i){tl.fromTo(observedEntries[i],{x:-18,opacity:0},{x:0,opacity:1,duration:.52,ease:"power2.out"},t)});
+[17.6,20.4,23.8].forEach(function(t,i){tl.fromTo(inferredEntries[i],{x:-18,opacity:0},{x:0,opacity:1,duration:.52,ease:"power2.out"},t)});
+[26.5,29.5,32.5].forEach(function(t,i){tl.fromTo(unknownEntries[i],{x:-18,opacity:0},{x:0,opacity:1,duration:.52,ease:"power2.out"},t)});
+tl.fromTo(".open-slot",{opacity:0,scale:.96},{opacity:1,scale:1,duration:.6,ease:"power2.out"},34.2);
+tl.fromTo(".ledger-rule",{y:18,opacity:0},{y:0,opacity:1,duration:.7,ease:"power3.out"},36.2);
+tl.to(".open-slot",{opacity:.62,duration:.8,ease:"power2.inOut"},37).to(".open-slot",{opacity:1,duration:.79,ease:"power2.inOut"},37.81);
+var anchor={v:0};tl.to(anchor,{v:1,duration:42,ease:"none"},0);window.__timelines["08-evidence-ledger"]=tl;
+</script>
+</template></body></html>

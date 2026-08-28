@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relative comparison</title></head><body><template>
+<style>
+@import url("compositions/frames/scene-base.css");
+.title{font-size:64px;max-width:1320px}
+.boards{position:absolute;left:84px;right:84px;top:294px;height:454px;display:grid;grid-template-columns:1fr 1fr;gap:28px;perspective:1600px}
+.board{position:relative;padding:24px 26px}
+.board h2{margin:0 0 20px;font-size:25px;letter-spacing:-.02em}
+.row{display:grid;grid-template-columns:52px 92px 1fr 110px;gap:12px;align-items:center;height:64px;border-top:1px solid var(--color-rule)}
+.rank{font:400 12px/1 var(--font-mono);color:var(--color-muted)}
+.ticker{font:700 20px/1 var(--font-display)}
+.bar{height:12px;border-radius:3px;background:var(--color-surface-muted);overflow:hidden}
+.bar i{display:block;height:100%;transform-origin:left}
+.raw .bar i{background:linear-gradient(90deg,oklch(78% .08 245),var(--color-accent))}
+.relative .bar i{background:linear-gradient(90deg,oklch(78% .10 145),var(--color-positive))}
+.value{text-align:right;font:400 13px/1 var(--font-mono);color:var(--color-ink-soft)}
+.outlier{opacity:.42}
+.quarantine{position:absolute;right:22px;bottom:20px;padding:8px 11px;border-radius:var(--radius-xs);background:var(--color-negative-soft);color:var(--color-negative-ink);font:700 11px/1 var(--font-body);letter-spacing:.05em}
+.scopebar{position:absolute;left:420px;right:420px;bottom:38px;display:flex;justify-content:center;gap:9px}
+</style>
+<div id="root" data-hf-id="hf-e03-02-root" data-composition-id="02-relative-comparison" data-width="1920" data-height="900">
+  <div data-hf-id="hf-j1s6" class="backdrop"></div><div data-hf-id="hf-o5lv" class="topline"></div>
+  <div data-hf-id="hf-6q0s" class="eyebrow"><span data-hf-id="hf-9gry" class="dot"></span>COMPARE LIKE WITH LIKE</div>
+  <h1 data-hf-id="hf-9ab4" class="title">Absolute scale and relative impact answer different questions.</h1>
+  <div data-hf-id="hf-c0d7" class="boards">
+    <section data-hf-id="hf-e03-02-raw" class="board raw card">
+      <h2 data-hf-id="hf-l285">Raw premium leaderboard</h2>
+      <div data-hf-id="hf-thy4" class="row"><span data-hf-id="hf-2jgc" class="rank">01</span><span data-hf-id="hf-rv1f" class="ticker">SPY</span><span data-hf-id="hf-flu0" class="bar"><i data-hf-id="hf-3jld" style="width:100%"></i></span><span data-hf-id="hf-xrp1" class="value">$1.8B</span></div>
+      <div data-hf-id="hf-lt04" class="row"><span data-hf-id="hf-1cj9" class="rank">02</span><span data-hf-id="hf-8t04" class="ticker">QQQ</span><span data-hf-id="hf-78ow" class="bar"><i data-hf-id="hf-kq1r" style="width:78%"></i></span><span data-hf-id="hf-0uc9" class="value">$1.4B</span></div>
+      <div data-hf-id="hf-km31" class="row"><span data-hf-id="hf-1qua" class="rank">03</span><span data-hf-id="hf-4ql0" class="ticker">NVDA</span><span data-hf-id="hf-61rt" class="bar"><i data-hf-id="hf-yaom" style="width:51%"></i></span><span data-hf-id="hf-d1jg" class="value">$920M</span></div>
+      <div data-hf-id="hf-l0e2" class="row"><span data-hf-id="hf-xsq9" class="rank">19</span><span data-hf-id="hf-jjmm" class="ticker">XYZ</span><span data-hf-id="hf-6g2u" class="bar"><i data-hf-id="hf-u2q1" style="width:9%"></i></span><span data-hf-id="hf-cyfi" class="value">$16M</span></div>
+    </section>
+    <section data-hf-id="hf-e03-02-relative" class="board relative card">
+      <h2 data-hf-id="hf-jbxi">Session-scoped relative impact</h2>
+      <div data-hf-id="hf-mzx7" class="row"><span data-hf-id="hf-wo6s" class="rank">01</span><span data-hf-id="hf-tqf6" class="ticker">XYZ</span><span data-hf-id="hf-595r" class="bar"><i data-hf-id="hf-aaqn" style="width:92%"></i></span><span data-hf-id="hf-xb8b" class="value">4.8×</span></div>
+      <div data-hf-id="hf-ne88" class="row"><span data-hf-id="hf-5uqx" class="rank">02</span><span data-hf-id="hf-0ii4" class="ticker">NVDA</span><span data-hf-id="hf-5ngs" class="bar"><i data-hf-id="hf-ygod" style="width:61%"></i></span><span data-hf-id="hf-eqd7" class="value">2.6×</span></div>
+      <div data-hf-id="hf-m7b5" class="row"><span data-hf-id="hf-6y2u" class="rank">03</span><span data-hf-id="hf-ogdf" class="ticker">SPY</span><span data-hf-id="hf-4gjp" class="bar"><i data-hf-id="hf-q06z" style="width:38%"></i></span><span data-hf-id="hf-ja5n" class="value">1.1×</span></div>
+      <div data-hf-id="hf-oab0" class="row outlier"><span data-hf-id="hf-06pl" class="rank">—</span><span data-hf-id="hf-yxk4" class="ticker">THIN</span><span data-hf-id="hf-4uuq" class="bar"><i data-hf-id="hf-vc9x" style="width:100%"></i></span><span data-hf-id="hf-xge4" class="value">12.2×</span></div>
+      <span data-hf-id="hf-e03-02-quarantine" class="quarantine">CHECK LIQUIDITY + BREADTH</span>
+    </section>
+  </div>
+  <div data-hf-id="hf-e03-02-scope" class="scopebar"><span data-hf-id="hf-k0ht" class="chip blue">SAME METRIC</span><span data-hf-id="hf-93qu" class="chip blue">SAME UNIVERSE</span><span data-hf-id="hf-4ndj" class="chip blue">SAME SESSION</span></div>
+</div>
+<script>
+window.__timelines=window.__timelines||{};var tl=gsap.timeline({paused:true});
+tl.fromTo(".topline",{scaleX:0},{scaleX:1,duration:.6,ease:"power3.out"},0);
+tl.fromTo(".eyebrow,.title",{y:28,opacity:0},{y:0,opacity:1,duration:.7,stagger:.14,ease:"power3.out"},.1);
+tl.fromTo(".raw",{x:-150,opacity:0,rotateY:5},{x:0,opacity:1,rotateY:0,duration:.95,ease:"power3.out"},.8);
+tl.fromTo(".relative",{x:150,opacity:0,rotateY:-5},{x:0,opacity:1,rotateY:0,duration:.95,ease:"power3.out"},3.2);
+tl.fromTo(".row .bar i",{scaleX:0},{scaleX:1,duration:.7,stagger:.24,ease:"power2.out"},4.5);
+tl.fromTo(".quarantine",{scale:.92,opacity:0},{scale:1,opacity:1,duration:.5,ease:"power2.out"},12);
+tl.fromTo(".scopebar .chip",{y:14,opacity:0},{y:0,opacity:1,duration:.45,stagger:.28,ease:"power2.out"},17);
+tl.to(".boards",{scale:1.012,duration:1,ease:"power2.inOut"},27).to(".boards",{scale:1,duration:1,ease:"power2.inOut"},28);
+var anchor={v:0};tl.to(anchor,{v:1,duration:42,ease:"none"},0);window.__timelines["02-relative-comparison"]=tl;
+</script>
+</template></body></html>
