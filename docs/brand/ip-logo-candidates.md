@@ -2,7 +2,7 @@
 
 Generated on 2026-08-29 with the built-in OpenAI image-generation tool. Six candidates were generated independently in one pass with main-prompt constraints, no image references, no automatic retries, and no post-processing. Native outputs are 1254 × 1254 PNG files. The tool surfaced OpenAI Media Service API / gpt-image 2.0 provenance on C1; the other calls did not surface a model identifier.
 
-Selected mark: **A1 — Evidence Owl, lower-left**. The native file remains unchanged in `./candidates/tradely-a1.png`; the byte-identical promoted mark is served from `/brand/tradely-mark.png`, with deterministic smaller delivery derivatives for the application shell and device icons.
+Historical selection: **A1 — Evidence Owl, lower-left** was superseded on 2026-08-29 by the yellow-black-white **B1 Night Scholar Owl**. Its native file remains unchanged in `./candidates/tradely-a1.png`; current production-mark lineage is documented in `./yellow-black-white-owl-candidates.md`.
 
 | Label | Direction | Rationale | Corner | Character colors | Background | Asset |
 | --- | --- | --- | --- | --- | --- | --- |

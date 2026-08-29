@@ -25,16 +25,11 @@ export function TradelyBrand({ compactOnMobile = false }: TradelyBrandProps) {
 			/>
 			<span
 				className={cn(
-					"items-baseline gap-1.5",
-					compactOnMobile ? "hidden sm:inline-flex" : "inline-flex",
+					"whitespace-nowrap font-semibold text-foreground text-lg tracking-[-0.025em]",
+					compactOnMobile ? "hidden sm:inline" : "inline",
 				)}
 			>
-				<span className="font-semibold text-foreground text-lg tracking-[-0.025em]">
-					Tradely
-				</span>
-				<span className="font-medium font-mono text-[11px] text-muted-foreground">
-					.ai
-				</span>
+				Tradely.ai
 			</span>
 		</Link>
 	);

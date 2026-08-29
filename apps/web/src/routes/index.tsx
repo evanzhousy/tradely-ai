@@ -9,11 +9,7 @@ import {
 	CardTitle,
 } from "@tradely/ui/components/card";
 import { cn } from "@tradely/ui/lib/utils";
-import {
-	ArrowRightIcon,
-	BookOpenCheckIcon,
-	ExternalLinkIcon,
-} from "lucide-react";
+import { ArrowRightIcon, ExternalLinkIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { CourseList } from "@/components/course-list";
@@ -43,8 +39,8 @@ function HomeComponent() {
 	return (
 		<main>
 			<section className="overflow-hidden border-border/60 border-b">
-				<div className="mx-auto grid max-w-[1480px] items-center gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:py-24">
-					<div className="flex max-w-2xl flex-col items-start gap-7">
+				<div className="mx-auto max-w-[1280px] px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
+					<div className="flex max-w-4xl flex-col items-start gap-7">
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">{course.title}</Badge>
 							<span className="font-mono text-muted-foreground text-xs">
@@ -52,10 +48,10 @@ function HomeComponent() {
 							</span>
 						</div>
 						<div className="flex flex-col gap-5">
-							<h1 className="max-w-[12ch] font-semibold text-5xl text-display sm:text-6xl lg:text-7xl">
+							<h1 className="max-w-[15ch] font-semibold text-5xl text-display sm:text-6xl lg:text-7xl">
 								{t("home.heroTitle")}
 							</h1>
-							<p className="max-w-[62ch] text-lg text-muted-foreground leading-8">
+							<p className="max-w-[68ch] text-lg text-muted-foreground leading-8">
 								{t("home.heroDescription")}
 							</p>
 						</div>
@@ -84,47 +80,6 @@ function HomeComponent() {
 						<p className="text-muted-foreground text-xs">
 							{t("home.partnerDisclosure")}
 						</p>
-					</div>
-
-					<div className="relative">
-						<div className="overflow-hidden rounded-4xl bg-card shadow-xl ring-1 ring-foreground/8 dark:ring-foreground/12">
-							<video
-								controls
-								playsInline
-								preload="metadata"
-								aria-label={t("home.workflowTitle")}
-								aria-describedby="course-overview-video-description"
-								poster="/media/tradingflow/posters/series-overview.jpg"
-								className="aspect-video w-full bg-black object-cover"
-							>
-								<source
-									src="/media/tradingflow/series-overview.mp4"
-									type="video/mp4"
-								/>
-								<track
-									kind="captions"
-									src="/media/tradingflow/captions/series-overview.vtt"
-									srcLang="en"
-									label={t("language.english")}
-									default
-								/>
-							</video>
-							<div className="flex items-start gap-3 px-5 py-4">
-								<BookOpenCheckIcon
-									className="mt-0.5 size-5 text-primary"
-									aria-hidden="true"
-								/>
-								<div className="flex flex-col gap-1">
-									<p className="font-medium">{t("home.workflowTitle")}</p>
-									<p
-										id="course-overview-video-description"
-										className="text-muted-foreground text-sm"
-									>
-										{t("home.workflowDescription")}
-									</p>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</section>

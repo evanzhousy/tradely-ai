@@ -2,17 +2,17 @@
 name: Tradely
 description: An evidence-led learning desk for option traders.
 colors:
-  mineral-blue: "#6f849b"
-  action-blue: "#49677e"
-  warm-ivory: "#f4e8d0"
-  ink-navy: "#172c3d"
-  paper: "#f8f4ea"
-  card: "#fffdf8"
-  muted-surface: "#eee9de"
-  muted-ink: "#566a7b"
-  divider: "#d4dde2"
-  night: "#101d29"
-  night-surface: "#172c3d"
+  sunflower-yellow: "#f2c94c"
+  ink-black: "#111111"
+  clean-white: "#ffffff"
+  focus-gold: "#8a6a00"
+  paper: "#fffcf2"
+  card: "#ffffff"
+  muted-surface: "#f2f0e8"
+  muted-ink: "#5e5a4f"
+  divider: "#ddd8c7"
+  night: "#111111"
+  night-surface: "#1a1a1a"
 typography:
   display:
     fontFamily: "Inter Variable, sans-serif"
@@ -47,19 +47,19 @@ spacing:
   xl: "3rem"
 components:
   button-primary:
-    backgroundColor: "{colors.action-blue}"
-    textColor: "{colors.warm-ivory}"
+    backgroundColor: "{colors.ink-black}"
+    textColor: "{colors.sunflower-yellow}"
     rounded: "{rounded.capsule}"
     padding: "0.625rem 1rem"
     typography: "{typography.body}"
   card:
     backgroundColor: "{colors.card}"
-    textColor: "{colors.ink-navy}"
+    textColor: "{colors.ink-black}"
     rounded: "{rounded.panel}"
     padding: "{spacing.md}"
   badge:
     backgroundColor: "{colors.muted-surface}"
-    textColor: "{colors.ink-navy}"
+    textColor: "{colors.ink-black}"
     rounded: "{rounded.capsule}"
     padding: "0.125rem 0.5rem"
     typography: "{typography.label}"
@@ -71,41 +71,41 @@ components:
 
 **Creative North Star: "The Evidence Desk"**
 
-Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The Evidence Owl gives Tradely its own memorable IP identity, while the system retains TradingFlow-authorized Luma geometry, semantic surfaces, and disciplined typography without implying shared infrastructure or accounts.
+Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The yellow-black-white Night Scholar Owl gives Tradely its own memorable IP identity, while the system retains TradingFlow-authorized Luma geometry, semantic surfaces, and disciplined typography without implying shared infrastructure or accounts.
 
 The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The interface avoids course-marketplace spectacle, simulated trading imagery, and generic grids of video thumbnails.
 
 **Key Characteristics:**
 
 - Evidence-first hierarchy with one dominant reading path.
-- Borderless, deeply rounded surfaces over warm ivory or ink-navy canvases.
-- Mineral blue for orientation, contrast-adjusted action blue for interaction, and ink navy for structure.
-- The Evidence Owl appears as a compact brand signature, not decorative course illustration.
+- Borderless, deeply rounded surfaces over warm-white or ink-black canvases.
+- Sunflower yellow for orientation and dark-mode action, with ink black for light-mode interaction and structure.
+- The Night Scholar Owl appears as a compact brand signature, not decorative course illustration.
 - Inter for readable structure and JetBrains Mono for compact metadata.
 - Real TradingFlow media appears only inside explicit partner and practice contexts.
 
 ## Colors
 
-The palette is derived directly from the selected A1 Evidence Owl: muted mineral blue, warm ivory, and deep ink navy. Functional action blue is a darker mineral-blue sibling chosen to preserve WCAG contrast with ivory text.
+The palette is derived directly from the selected YBW B1 Night Scholar Owl: sunflower yellow, ink black, and clean white. Light-mode focus gold is a darker yellow sibling used only where the exact brand yellow would not provide sufficient focus contrast on white.
 
 ### Brand and action
 
-- **Mineral Blue** (`#6f849b`): The owl background, focus rings, and calm orientation cues.
-- **Action Blue** (`#49677e`): Light-mode primary actions, progress, links, and compact wayfinding; its darker value keeps ivory text above AA contrast.
-- **Warm Ivory** (`#f4e8d0`): The owl face, dark-mode primary actions, and the warm foundation of the reading experience.
-- **Ink Navy** (`#172c3d`): The owl body, primary text, and structural dark surface.
+- **Sunflower Yellow** (`#f2c94c`): The owl body, dark-mode primary actions, progress, and high-salience orientation.
+- **Ink Black** (`#111111`): The owl background, primary text, light-mode primary actions, and structural dark surface.
+- **Clean White** (`#ffffff`): The owl eye mask, card surfaces, and dark-mode primary text.
+- **Focus Gold** (`#8a6a00`): Light-mode focus rings only; it preserves the yellow family while reaching 4.94:1 against the paper canvas.
 
 ### Neutral
 
-- **Paper** (`#f8f4ea`): Warm light canvas.
-- **Card** (`#fffdf8`): Raised reading and curriculum surfaces.
-- **Muted Surface** (`#eee9de`): Chips, secondary controls, and quiet grouping.
-- **Muted Ink** (`#566a7b`): Supporting copy and metadata.
-- **Divider** (`#d4dde2`): Fine separators and low-contrast rings.
-- **Night** (`#101d29`): Dark canvas.
-- **Night Surface** (`#172c3d`): Dark cards and sheets.
+- **Paper** (`#fffcf2`): Warm-white light canvas.
+- **Card** (`#ffffff`): Raised reading and curriculum surfaces.
+- **Muted Surface** (`#f2f0e8`): Chips, secondary controls, and quiet grouping.
+- **Muted Ink** (`#5e5a4f`): Supporting copy and metadata.
+- **Divider** (`#ddd8c7`): Fine separators and low-contrast rings.
+- **Night** (`#111111`): Dark canvas and logo field.
+- **Night Surface** (`#1a1a1a`): Dark cards and sheets.
 
-**The Semantic Color Rule.** Action blue and mineral blue communicate interaction, progress, and orientation. Green and red are reserved for genuine market data or success/error state; they never decorate lessons.
+**The Semantic Color Rule.** Yellow communicates interaction, progress, and orientation; black and white carry structure and reading hierarchy. Green, red, orange, and blue remain reserved for genuine market data or success/error/info state; they never decorate lessons.
 
 ## Typography
 
@@ -127,9 +127,9 @@ The palette is derived directly from the selected A1 Evidence Owl: muted mineral
 
 ## Layout
 
-The widest shell is 1480px with 16px mobile gutters, 24px tablet gutters, and 32px desktop gutters. Marketing and course-overview surfaces use split grids; reading surfaces use a 330px curriculum rail and a centered lesson column capped near 920px. Prose itself stays near 72ch.
+The widest shell is 1480px with 16px mobile gutters, 24px tablet gutters, and 32px desktop gutters. The homepage hero uses one editorial column, course-overview surfaces use split grids, and reading surfaces use a 330px curriculum rail with a centered lesson column capped near 920px. Prose itself stays near 72ch.
 
-The responsive sequence is preserved rather than compressed: thesis, action, media, progress, then curriculum. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs stack without centering the reading voice.
+The responsive sequence is preserved rather than compressed: thesis, action, progress, curriculum, then partnership context. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs stack without centering the reading voice.
 
 Spacing follows an 8px base rhythm, with 16–24px inside components, 32–48px between local groups, and 64–96px between major story sections.
 
@@ -148,7 +148,7 @@ The base radius is 10px. Buttons, chips, cards, media frames, and sheets extend 
 ### Buttons
 
 - **Shape:** Soft capsule (26px radius) with 36–40px desktop height and 44px coarse-pointer minimum.
-- **Primary:** Action Blue with warm-ivory text in light mode; warm ivory with ink-navy text in dark mode. Large CTAs use 16px horizontal padding.
+- **Primary:** Ink black with sunflower-yellow text in light mode; sunflower yellow with ink-black text in dark mode. Large CTAs use 16px horizontal padding.
 - **Hover / Focus:** Background darkens or softens; focus adds a semantic ring; press scales to 0.97 with a short ease-out.
 - **Secondary / Ghost:** Neutral fill or transparent surface. Outline is quiet and never the page's focal action.
 
@@ -167,7 +167,7 @@ The base radius is 10px. Buttons, chips, cards, media frames, and sheets extend 
 
 ### Navigation
 
-The 64px sticky header uses the Evidence Owl mark with the Tradely wordmark, low-contrast links, one partnered-tool action, theme control, and account state. The wordmark yields to the standalone mark on small screens. Active links become foreground rather than gaining a decorative underline. Mobile navigation is a right-side sheet with the same order and language.
+The 64px sticky header uses the Night Scholar Owl mark with the indivisible `Tradely.ai` wordmark, low-contrast links, one partnered-tool action, theme control, and account state. The complete wordmark yields to the standalone mark on small screens. Active links become foreground rather than gaining a decorative underline. Mobile navigation is a right-side sheet with the same order and language.
 
 ### Lesson Path
 

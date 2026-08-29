@@ -22,7 +22,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ name: "theme-color", content: "#6f849b" },
+			{ name: "theme-color", content: "#f2c94c" },
 			{ name: "robots", content: "index, follow" },
 			{ property: "og:site_name", content: "Tradely" },
 			{ property: "og:type", content: "website" },
@@ -32,7 +32,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			},
 			{ property: "og:image:width", content: "1254" },
 			{ property: "og:image:height", content: "1254" },
-			{ property: "og:image:alt", content: "Tradely Evidence Owl" },
+			{ property: "og:image:alt", content: "Tradely Night Scholar Owl" },
 			{ name: "twitter:card", content: "summary" },
 			{
 				name: "twitter:image",
@@ -72,9 +72,9 @@ function RootDocument() {
 			<body suppressHydrationWarning>
 				{/*
 				  THESIS: Tradely turns options concepts into a repeatable evidence workflow and refuses the generic video-grid LMS.
-				  OWN-WORLD: The Evidence Owl, warm ivory learning surfaces, mineral-blue orientation, ink-navy structure, Luma geometry, Inter, and JetBrains Mono establish Tradely's distinct identity.
+				  OWN-WORLD: The Night Scholar Owl, sunflower-yellow orientation, ink-black structure, clean white reading surfaces, Luma geometry, Inter, and JetBrains Mono establish Tradely's distinct identity.
 				  STORY: Orient, learn one concept, practice it in TradingFlow, record progress, and continue.
-				  FIRST VIEWPORT: A decisive course thesis beside a real curriculum preview and existing TradingFlow media, with one clear start action.
+				  FIRST VIEWPORT: A decisive, single-column course thesis with one clear start action and an explicit partnered-tool path.
 				  FORM: Read-mode guided field manual; approved sidebar lesson structure from the product plan.
 				*/}
 				<AppProviders>

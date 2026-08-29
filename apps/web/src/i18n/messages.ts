@@ -60,9 +60,6 @@ const messages = {
 			"A guided options curriculum that turns flow, ranking, Greeks, GEX, and open interest into one repeatable research workflow—with real practice in TradingFlow.",
 		"home.partnerDisclosure":
 			"TradingFlow is an independent partnered service. Its own account or subscription may be required.",
-		"home.workflowTitle": "One workflow across the full course",
-		"home.workflowDescription":
-			"Discover → inspect → validate → compare freshness → decide what remains unknown.",
 		"home.courseEyebrow": "THE COURSE",
 		"home.courseHeading": "A field manual, not a video library.",
 		"home.courseDescription":
@@ -209,9 +206,6 @@ const messages = {
 			"一套有引导的期权课程，把成交流、排名、Greeks、GEX 和未平仓量串成可重复的研究流程，并在 TradingFlow 中完成真实练习。",
 		"home.partnerDisclosure":
 			"TradingFlow 是独立运营的合作服务，可能需要单独注册账户或订阅。",
-		"home.workflowTitle": "贯穿全课程的一套流程",
-		"home.workflowDescription":
-			"发现 → 检查 → 验证 → 对比数据时效 → 明确仍未知的部分。",
 		"home.courseEyebrow": "课程",
 		"home.courseHeading": "一本实战手册，而不是视频目录。",
 		"home.courseDescription":
