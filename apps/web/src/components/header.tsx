@@ -48,7 +48,7 @@ export default function Header() {
 		<header className="material-chrome sticky top-0 z-40 border-border/60 border-b">
 			<div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center gap-8">
-					<TradelyBrand />
+					<TradelyBrand compactOnMobile />
 					<nav
 						className="hidden items-center gap-6 md:flex"
 						aria-label={t("nav.primary")}

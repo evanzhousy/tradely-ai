@@ -2,15 +2,17 @@
 name: Tradely
 description: An evidence-led learning desk for option traders.
 colors:
-  evidence-blue: "#1e4d7b"
-  paper: "oklch(1 0 0)"
-  ink: "oklch(0.145 0 0)"
-  muted-surface: "oklch(0.97 0 0)"
-  muted-ink: "oklch(0.556 0 0)"
-  divider: "oklch(0.922 0 0)"
-  night: "oklch(0.145 0 0)"
-  night-surface: "oklch(0.205 0 0)"
-  light-ink: "oklch(0.985 0 0)"
+  mineral-blue: "#6f849b"
+  action-blue: "#49677e"
+  warm-ivory: "#f4e8d0"
+  ink-navy: "#172c3d"
+  paper: "#f8f4ea"
+  card: "#fffdf8"
+  muted-surface: "#eee9de"
+  muted-ink: "#566a7b"
+  divider: "#d4dde2"
+  night: "#101d29"
+  night-surface: "#172c3d"
 typography:
   display:
     fontFamily: "Inter Variable, sans-serif"
@@ -45,19 +47,19 @@ spacing:
   xl: "3rem"
 components:
   button-primary:
-    backgroundColor: "{colors.evidence-blue}"
-    textColor: "{colors.light-ink}"
+    backgroundColor: "{colors.action-blue}"
+    textColor: "{colors.warm-ivory}"
     rounded: "{rounded.capsule}"
     padding: "0.625rem 1rem"
     typography: "{typography.body}"
   card:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink-navy}"
     rounded: "{rounded.panel}"
     padding: "{spacing.md}"
   badge:
     backgroundColor: "{colors.muted-surface}"
-    textColor: "{colors.ink}"
+    textColor: "{colors.ink-navy}"
     rounded: "{rounded.capsule}"
     padding: "0.125rem 0.5rem"
     typography: "{typography.label}"
@@ -69,38 +71,41 @@ components:
 
 **Creative North Star: "The Evidence Desk"**
 
-Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The system inherits TradingFlow's authorized Luma geometry, semantic surfaces, disciplined typography, and deep blue action color while keeping a separate Tradely identity.
+Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The Evidence Owl gives Tradely its own memorable IP identity, while the system retains TradingFlow-authorized Luma geometry, semantic surfaces, and disciplined typography without implying shared infrastructure or accounts.
 
 The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The interface avoids course-marketplace spectacle, simulated trading imagery, and generic grids of video thumbnails.
 
 **Key Characteristics:**
 
 - Evidence-first hierarchy with one dominant reading path.
-- Borderless, deeply rounded surfaces over neutral light or night canvases.
-- Restrained evidence blue for action and navigation, never for invented market meaning.
+- Borderless, deeply rounded surfaces over warm ivory or ink-navy canvases.
+- Mineral blue for orientation, contrast-adjusted action blue for interaction, and ink navy for structure.
+- The Evidence Owl appears as a compact brand signature, not decorative course illustration.
 - Inter for readable structure and JetBrains Mono for compact metadata.
 - Real TradingFlow media appears only inside explicit partner and practice contexts.
 
 ## Colors
 
-The palette combines a single sober blue accent with high-clarity neutral surfaces that work in both paper and night modes.
+The palette is derived directly from the selected A1 Evidence Owl: muted mineral blue, warm ivory, and deep ink navy. Functional action blue is a darker mineral-blue sibling chosen to preserve WCAG contrast with ivory text.
 
-### Primary
+### Brand and action
 
-- **Evidence Blue** (`#1e4d7b`): Primary actions, progress, links, and small orientation labels.
+- **Mineral Blue** (`#6f849b`): The owl background, focus rings, and calm orientation cues.
+- **Action Blue** (`#49677e`): Light-mode primary actions, progress, links, and compact wayfinding; its darker value keeps ivory text above AA contrast.
+- **Warm Ivory** (`#f4e8d0`): The owl face, dark-mode primary actions, and the warm foundation of the reading experience.
+- **Ink Navy** (`#172c3d`): The owl body, primary text, and structural dark surface.
 
 ### Neutral
 
-- **Paper** (`oklch(1 0 0)`): Light canvas and light card surface.
-- **Ink** (`oklch(0.145 0 0)`): Primary light-mode text.
-- **Muted Surface** (`oklch(0.97 0 0)`): Chips, secondary controls, and quiet grouping.
-- **Muted Ink** (`oklch(0.556 0 0)`): Supporting copy and metadata.
-- **Divider** (`oklch(0.922 0 0)`): Fine separators and low-contrast rings.
-- **Night** (`oklch(0.145 0 0)`): Dark canvas.
-- **Night Surface** (`oklch(0.205 0 0)`): Dark cards and sheets.
-- **Light Ink** (`oklch(0.985 0 0)`): Primary text on dark surfaces.
+- **Paper** (`#f8f4ea`): Warm light canvas.
+- **Card** (`#fffdf8`): Raised reading and curriculum surfaces.
+- **Muted Surface** (`#eee9de`): Chips, secondary controls, and quiet grouping.
+- **Muted Ink** (`#566a7b`): Supporting copy and metadata.
+- **Divider** (`#d4dde2`): Fine separators and low-contrast rings.
+- **Night** (`#101d29`): Dark canvas.
+- **Night Surface** (`#172c3d`): Dark cards and sheets.
 
-**The Semantic Color Rule.** Evidence blue communicates interaction and progress. Green and red are reserved for genuine market data or success/error state; they never decorate lessons.
+**The Semantic Color Rule.** Action blue and mineral blue communicate interaction, progress, and orientation. Green and red are reserved for genuine market data or success/error state; they never decorate lessons.
 
 ## Typography
 
@@ -143,7 +148,7 @@ The base radius is 10px. Buttons, chips, cards, media frames, and sheets extend 
 ### Buttons
 
 - **Shape:** Soft capsule (26px radius) with 36–40px desktop height and 44px coarse-pointer minimum.
-- **Primary:** Evidence Blue with light text; large CTAs use 16px horizontal padding.
+- **Primary:** Action Blue with warm-ivory text in light mode; warm ivory with ink-navy text in dark mode. Large CTAs use 16px horizontal padding.
 - **Hover / Focus:** Background darkens or softens; focus adds a semantic ring; press scales to 0.97 with a short ease-out.
 - **Secondary / Ghost:** Neutral fill or transparent surface. Outline is quiet and never the page's focal action.
 
@@ -162,7 +167,7 @@ The base radius is 10px. Buttons, chips, cards, media frames, and sheets extend 
 
 ### Navigation
 
-The 64px sticky header uses a text wordmark, low-contrast links, one partnered-tool action, theme control, and account state. Active links become foreground rather than gaining a decorative underline. Mobile navigation is a right-side sheet with the same order and language.
+The 64px sticky header uses the Evidence Owl mark with the Tradely wordmark, low-contrast links, one partnered-tool action, theme control, and account state. The wordmark yields to the standalone mark on small screens. Active links become foreground rather than gaining a decorative underline. Mobile navigation is a right-side sheet with the same order and language.
 
 ### Lesson Path
 

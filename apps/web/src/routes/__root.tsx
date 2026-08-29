@@ -22,10 +22,22 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ name: "theme-color", content: "#ffffff" },
+			{ name: "theme-color", content: "#6f849b" },
 			{ name: "robots", content: "index, follow" },
 			{ property: "og:site_name", content: "Tradely" },
 			{ property: "og:type", content: "website" },
+			{
+				property: "og:image",
+				content: "https://tradely.ai/brand/tradely-mark.png",
+			},
+			{ property: "og:image:width", content: "1254" },
+			{ property: "og:image:height", content: "1254" },
+			{ property: "og:image:alt", content: "Tradely Evidence Owl" },
+			{ name: "twitter:card", content: "summary" },
+			{
+				name: "twitter:image",
+				content: "https://tradely.ai/brand/tradely-mark.png",
+			},
 			{ title: "Tradely — Options learning with real workflow practice" },
 			{
 				name: "description",
@@ -33,7 +45,20 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 					"Learn options flow, ranking, Greeks, GEX, and open interest through an ordered curriculum with TradingFlow practice.",
 			},
 		],
-		links: [{ rel: "stylesheet", href: appCss }],
+		links: [
+			{ rel: "stylesheet", href: appCss },
+			{
+				rel: "icon",
+				type: "image/png",
+				sizes: "64x64",
+				href: "/brand/tradely-favicon-64.png",
+			},
+			{
+				rel: "apple-touch-icon",
+				sizes: "180x180",
+				href: "/brand/tradely-apple-touch-icon.png",
+			},
+		],
 	}),
 	component: RootDocument,
 });
@@ -47,7 +72,7 @@ function RootDocument() {
 			<body suppressHydrationWarning>
 				{/*
 				  THESIS: Tradely turns options concepts into a repeatable evidence workflow and refuses the generic video-grid LMS.
-				  OWN-WORLD: TradingFlow-authorized Luma geometry, semantic light/dark surfaces, Inter, JetBrains Mono, and restrained blue action color under a distinct Tradely identity.
+				  OWN-WORLD: The Evidence Owl, warm ivory learning surfaces, mineral-blue orientation, ink-navy structure, Luma geometry, Inter, and JetBrains Mono establish Tradely's distinct identity.
 				  STORY: Orient, learn one concept, practice it in TradingFlow, record progress, and continue.
 				  FIRST VIEWPORT: A decisive course thesis beside a real curriculum preview and existing TradingFlow media, with one clear start action.
 				  FORM: Read-mode guided field manual; approved sidebar lesson structure from the product plan.
