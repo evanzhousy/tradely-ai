@@ -9,6 +9,7 @@ import {
 	getCurrentCourseAccess,
 	resolveCurrentLessonAccess,
 } from "./access.server";
+import { captureServerException } from "./analytics/posthog.server";
 import type { SaveLessonProgressInput } from "./progress";
 import { ensureAppUser } from "./users.server";
 
@@ -53,7 +54,12 @@ export async function getCourseProgressImpl() {
 			canAccessPaid: courseAccess.canAccessPaid,
 			accessUnavailable: courseAccess.billingState === "unavailable",
 		};
-	} catch {
+	} catch (error) {
+		await captureServerException(error, {
+			source: "progress",
+			operation: "course_progress_read",
+			userId,
+		});
 		return {
 			signedIn: true as const,
 			completed: 0,
@@ -75,43 +81,53 @@ export async function saveLessonProgressImpl(data: SaveLessonProgressInput) {
 	const userId = courseAccess.userId;
 	if (!userId) return { saved: false as const, reason: "signed-out" as const };
 	if (!access.allowed) return { saved: false as const, reason: access.reason };
-	await ensureAppUser(userId);
-	const db = createDb();
-	const now = new Date();
-	const updateFields = {
-		contentVersion: lesson.contentVersion,
-		updatedAt: now,
-		...(data.lastPositionSeconds !== undefined
-			? { lastPositionSeconds: data.lastPositionSeconds }
-			: {}),
-		...(data.complete ? { completedAt: now } : {}),
-	};
-	await db
-		.insert(lessonProgress)
-		.values({
-			clerkUserId: userId,
-			lessonId: data.lessonId,
+	try {
+		await ensureAppUser(userId);
+		const db = createDb();
+		const now = new Date();
+		const updateFields = {
 			contentVersion: lesson.contentVersion,
-			lastPositionSeconds: data.lastPositionSeconds ?? null,
-			completedAt: data.complete ? now : null,
 			updatedAt: now,
-		})
-		.onConflictDoUpdate({
-			target: [lessonProgress.clerkUserId, lessonProgress.lessonId],
-			set: updateFields,
+			...(data.lastPositionSeconds !== undefined
+				? { lastPositionSeconds: data.lastPositionSeconds }
+				: {}),
+			...(data.complete ? { completedAt: now } : {}),
+		};
+		await db
+			.insert(lessonProgress)
+			.values({
+				clerkUserId: userId,
+				lessonId: data.lessonId,
+				contentVersion: lesson.contentVersion,
+				lastPositionSeconds: data.lastPositionSeconds ?? null,
+				completedAt: data.complete ? now : null,
+				updatedAt: now,
+			})
+			.onConflictDoUpdate({
+				target: [lessonProgress.clerkUserId, lessonProgress.lessonId],
+				set: updateFields,
+			});
+		const [record] = await db
+			.select()
+			.from(lessonProgress)
+			.where(
+				and(
+					eq(lessonProgress.clerkUserId, userId),
+					eq(lessonProgress.lessonId, data.lessonId),
+				),
+			)
+			.limit(1);
+		return {
+			saved: true as const,
+			completedAt: record?.completedAt?.toISOString() ?? null,
+		};
+	} catch (error) {
+		await captureServerException(error, {
+			source: "progress",
+			operation: "lesson_progress_save",
+			userId,
+			lessonId: data.lessonId,
 		});
-	const [record] = await db
-		.select()
-		.from(lessonProgress)
-		.where(
-			and(
-				eq(lessonProgress.clerkUserId, userId),
-				eq(lessonProgress.lessonId, data.lessonId),
-			),
-		)
-		.limit(1);
-	return {
-		saved: true as const,
-		completedAt: record?.completedAt?.toISOString() ?? null,
-	};
+		throw error;
+	}
 }

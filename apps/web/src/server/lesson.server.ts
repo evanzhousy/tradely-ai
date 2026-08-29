@@ -3,6 +3,7 @@ import "@tanstack/react-start/server-only";
 import { getLesson } from "@/content/course";
 import { getLessonBody } from "@/content/lesson-content.server";
 import { resolveCurrentLessonAccess } from "./access.server";
+import { captureServerException } from "./analytics/posthog.server";
 import { createLessonMedia } from "./media.server";
 
 export async function getLessonPageDataImpl(data: { slug: string }) {
@@ -14,7 +15,13 @@ export async function getLessonPageDataImpl(data: { slug: string }) {
 	if (access.allowed) {
 		try {
 			media = await createLessonMedia(lesson, courseAccess.userId);
-		} catch {
+		} catch (error) {
+			await captureServerException(error, {
+				source: "lesson",
+				operation: "lesson_media_resolve",
+				userId: courseAccess.userId,
+				lessonId: lesson.id,
+			});
 			mediaUnavailable = true;
 		}
 	}

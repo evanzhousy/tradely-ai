@@ -5,8 +5,10 @@ import { createHash } from "node:crypto";
 import { env } from "@tradely/env/server";
 import Stripe from "stripe";
 
+import { isExpectedBillingError } from "@/analytics/redaction";
 import type { BillingState } from "@/domain/access";
 import { subscriptionGrantsCourse } from "@/domain/billing";
+import { captureServerException } from "./analytics/posthog.server";
 import { getCurrentClerkIdentity, getCurrentClerkUserId } from "./auth.server";
 import {
 	ensureAppUser,
@@ -52,7 +54,11 @@ export async function getStripeBillingState(
 		)
 			? "active"
 			: "inactive";
-	} catch {
+	} catch (error) {
+		await captureServerException(error, {
+			source: "billing",
+			operation: "subscription_status",
+		});
 		return "unavailable";
 	}
 }
@@ -103,12 +109,16 @@ export async function getPlanSummaryImpl() {
 					? "Tradely membership"
 					: price.product.name,
 		};
-	} catch {
+	} catch (error) {
+		await captureServerException(error, {
+			source: "billing",
+			operation: "plan_summary",
+		});
 		return { configured: false as const };
 	}
 }
 
-export async function beginCheckoutImpl() {
+async function beginCheckoutCore() {
 	if (!env.STRIPE_PRICE_ID) throw new Error("Stripe price is not configured");
 	const appUrl = checkoutBaseUrl();
 	const { clerkUserId, stripeCustomerId } = await ensureStripeCustomer();
@@ -150,7 +160,22 @@ export async function beginCheckoutImpl() {
 	return { url: session.url };
 }
 
-export async function openCustomerPortalImpl() {
+export async function beginCheckoutImpl() {
+	try {
+		return await beginCheckoutCore();
+	} catch (error) {
+		if (!isExpectedBillingError(error)) {
+			await captureServerException(error, {
+				source: "billing",
+				operation: "begin_checkout",
+				action: "checkout",
+			});
+		}
+		throw error;
+	}
+}
+
+async function openCustomerPortalCore() {
 	const appUrl = checkoutBaseUrl();
 	const userId = await getCurrentClerkUserId();
 	if (!userId) throw new Error("Sign in to manage billing");
@@ -162,4 +187,19 @@ export async function openCustomerPortalImpl() {
 		return_url: `${appUrl}/pricing`,
 	});
 	return { url: session.url };
+}
+
+export async function openCustomerPortalImpl() {
+	try {
+		return await openCustomerPortalCore();
+	} catch (error) {
+		if (!isExpectedBillingError(error)) {
+			await captureServerException(error, {
+				source: "billing",
+				operation: "open_customer_portal",
+				action: "portal",
+			});
+		}
+		throw error;
+	}
 }

@@ -2,6 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import type { Lesson } from "@/content/course";
 import { resolveLessonAccess } from "@/domain/access";
+import { captureServerException } from "./analytics/posthog.server";
 import { getCurrentClerkUserId } from "./auth.server";
 import { getStripeBillingState } from "./billing.server";
 import { findAppUser, hasManualAllAccess } from "./users.server";
@@ -30,7 +31,12 @@ export async function getCurrentCourseAccess() {
 			hasManualGrant,
 			canAccessPaid: hasManualGrant || billingState === "active",
 		};
-	} catch {
+	} catch (error) {
+		await captureServerException(error, {
+			source: "access",
+			operation: "course_access",
+			userId,
+		});
 		return {
 			userId,
 			isSignedIn: true as const,

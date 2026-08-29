@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	ANALYTICS_EVENT_NAMES,
+	ANALYTICS_EVENT_SCHEMA_VERSION,
 	analyticsEnvironment,
 	analyticsRouteName,
 	billingActionFailureReason,
@@ -9,6 +11,14 @@ import {
 } from "./events";
 
 describe("analytics event boundaries", () => {
+	it("keeps a versioned exhaustive runtime event registry", () => {
+		expect(ANALYTICS_EVENT_SCHEMA_VERSION).toBe(1);
+		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain("lesson_completed");
+		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain(
+			"billing_action_failed",
+		);
+	});
+
 	it("maps concrete URLs to bounded route names", () => {
 		expect(analyticsRouteName("/")).toBe("home");
 		expect(analyticsRouteName("/learn/audited-boundary")).toBe("lesson");

@@ -10,6 +10,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@tradely/env/server";
 
 import { getLesson, type Lesson, type LessonMedia } from "@/content/course";
+import { captureServerException } from "./analytics/posthog.server";
 import { getCurrentClerkUserId } from "./auth.server";
 
 const MEDIA_URL_TTL_SECONDS = 30 * 60;
@@ -201,7 +202,12 @@ export async function serveLocalLessonMedia(input: {
 	let claims: MediaClaims | null = null;
 	try {
 		claims = verifyClaims(token, lesson.slug);
-	} catch {
+	} catch (error) {
+		await captureServerException(error, {
+			source: "media",
+			operation: "media_token_verify",
+			lessonId: lesson.id,
+		});
 		return new Response("Media is not configured", { status: 503 });
 	}
 	const currentUserId = await getCurrentClerkUserId();

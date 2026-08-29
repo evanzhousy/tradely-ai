@@ -1,36 +1,17 @@
 import { env } from "@tradely/env/web";
 
 import type { ExceptionContext } from "./context";
-import { analyticsEnvironment, sanitizeAnalyticsUrl } from "./events";
+import {
+	ANALYTICS_EVENT_SCHEMA_VERSION,
+	analyticsEnvironment,
+	sanitizeAnalyticsUrl,
+} from "./events";
+import { safeAnalyticsError } from "./redaction";
 
 export type PostHogClient = typeof import("posthog-js")["default"];
 
 let clientPromise: Promise<PostHogClient> | null = null;
 let activeClient: PostHogClient | null = null;
-
-function safeError(error: unknown): Error {
-	const source =
-		error instanceof Error ? error : new Error("Unknown client error");
-	const safe = new Error(
-		source.message
-			.replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[redacted-email]")
-			.replace(
-				/([?&](?:token|key|secret|session|code)=)[^&#\s]+/gi,
-				"$1[redacted]",
-			)
-			.slice(0, 500),
-	);
-	safe.name = source.name.slice(0, 120);
-	if (source.stack) {
-		safe.stack = source.stack
-			.replace(
-				/([?&](?:token|key|secret|session|code)=)[^&#\s)]+/gi,
-				"$1[redacted]",
-			)
-			.slice(0, 12_000);
-	}
-	return safe;
-}
 
 export function getPostHogClient(): Promise<PostHogClient> {
 	if (clientPromise) return clientPromise;
@@ -84,6 +65,7 @@ export function getPostHogClient(): Promise<PostHogClient> {
 					event.properties[key] = sanitizeAnalyticsUrl(event.properties[key]);
 				}
 				event.properties.app = "tradely";
+				event.properties.event_schema_version = ANALYTICS_EVENT_SCHEMA_VERSION;
 				event.properties.environment = analyticsEnvironment(
 					window.location.hostname,
 				);
@@ -101,6 +83,6 @@ export function capturePostHogException(
 	context: ExceptionContext,
 ): boolean {
 	if (!activeClient || activeClient.has_opted_out_capturing()) return false;
-	activeClient.captureException(safeError(error), context);
+	activeClient.captureException(safeAnalyticsError(error), context);
 	return true;
 }

@@ -16,10 +16,19 @@ import {
 import {
 	ANALYTICS_CONSENT_STORAGE_KEY,
 	type AnalyticsConsent,
+	analyticsConsentCookie,
 	parseAnalyticsConsent,
 } from "./consent";
 import { AnalyticsContext, type AnalyticsContextValue } from "./context";
 import type { AnalyticsEventMap, AnalyticsEventName } from "./events";
+
+function persistConsentCookie(consent: Exclude<AnalyticsConsent, "unknown">) {
+	// biome-ignore lint/suspicious/noDocumentCookie: The server needs a same-site mirror of the explicit browser consent state.
+	document.cookie = analyticsConsentCookie(
+		consent,
+		window.location.protocol === "https:",
+	);
+}
 
 export function AnalyticsProvider({ children }: { children: ReactNode }) {
 	const isConfigured = Boolean(env.VITE_POSTHOG_KEY);
@@ -53,6 +62,9 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		consentRef.current = storedConsent;
 		setConsentState(storedConsent);
 		setIsConsentResolved(true);
+		if (storedConsent !== "unknown") {
+			persistConsentCookie(storedConsent);
+		}
 		let cancelled = false;
 		void getPostHogClient().then((client) => {
 			if (cancelled) return;
@@ -111,6 +123,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		(nextConsent: Exclude<AnalyticsConsent, "unknown">) => {
 			const wasCapturing = capturingRef.current;
 			window.localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, nextConsent);
+			persistConsentCookie(nextConsent);
 			consentRef.current = nextConsent;
 			setConsentState(nextConsent);
 			setPreferencesOpen(false);

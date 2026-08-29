@@ -3,6 +3,8 @@ import type { Locale } from "@/i18n/messages";
 
 export type AnalyticsEnvironment = "production" | "preview" | "local";
 
+export const ANALYTICS_EVENT_SCHEMA_VERSION = 1;
+
 export type BillingActionFailureReason =
 	| "sign_in_required"
 	| "already_active"
@@ -93,6 +95,25 @@ export type AnalyticsEventMap = {
 };
 
 export type AnalyticsEventName = keyof AnalyticsEventMap;
+
+export const ANALYTICS_EVENT_NAMES = {
+	page_viewed: true,
+	locale_changed: true,
+	auth_sign_in_opened: true,
+	tradingflow_link_opened: true,
+	lesson_opened: true,
+	lesson_video_started: true,
+	lesson_video_completed: true,
+	lesson_completed: true,
+	lesson_progress_save_failed: true,
+	membership_cta_clicked: true,
+	billing_status_unavailable: true,
+	billing_action_started: true,
+	billing_action_redirected: true,
+	billing_action_failed: true,
+	billing_checkout_returned: true,
+	analytics_consent_updated: true,
+} satisfies Record<AnalyticsEventName, true>;
 
 export type CaptureAnalyticsEvent = <EventName extends AnalyticsEventName>(
 	event: EventName,
