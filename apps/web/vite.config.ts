@@ -12,10 +12,19 @@ export default defineConfig({
 		tsconfigPaths: true,
 	},
 	ssr: {
-		// Bundle workspace packages, but leave React and third-party CJS packages
-		// to the Node runtime so Nitro dev SSR does not evaluate React's CJS entry
-		// as an ESM module (`module is not defined`).
-		noExternal: [/^@tradely\//],
+		// Local Nitro SSR leaves React to Node so CJS `react` is not evaluated as
+		// ESM (`module is not defined`). Vercel functions have no node_modules, so
+		// production must inline React or the SSR chunk fails with MODULE_NOT_FOUND.
+		noExternal: process.env.VERCEL
+			? [
+					/^@tradely\//,
+					"react",
+					"react-dom",
+					"react/jsx-runtime",
+					"react/jsx-dev-runtime",
+					"use-sync-external-store",
+				]
+			: [/^@tradely\//],
 	},
 	plugins: [
 		tailwindcss(),
