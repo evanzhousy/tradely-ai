@@ -1,28 +1,45 @@
-import { cpSync, existsSync, mkdirSync } from "node:fs";
-import { createRequire } from "node:module";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const require = createRequire(import.meta.url);
 const webRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const funcDir = join(webRoot, ".vercel/output/functions/__server.func");
 
 if (!existsSync(funcDir)) {
-	console.log("No Vercel function output; skip React copy");
+	console.log("No Vercel function output; skip React patch");
 	process.exit(0);
 }
 
-const destRoot = join(funcDir, "node_modules");
-mkdirSync(destRoot, { recursive: true });
-
-for (const pkg of ["react", "react-dom", "scheduler"]) {
-	let src;
-	try {
-		src = dirname(require.resolve(`${pkg}/package.json`));
-	} catch {
-		console.log(`skip ${pkg}; not resolvable`);
-		continue;
+function walkMjs(dir) {
+	const files = [];
+	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		const path = join(dir, entry.name);
+		if (entry.isDirectory()) {
+			if (entry.name === "node_modules") continue;
+			files.push(...walkMjs(path));
+			continue;
+		}
+		if (entry.name.endsWith(".mjs")) files.push(path);
 	}
-	cpSync(src, join(destRoot, pkg), { recursive: true, dereference: true });
-	console.log(`copied ${pkg}`);
+	return files;
 }
+
+const requireReact = /__require\(\s*["']react["']\s*\)/g;
+let patched = 0;
+
+for (const file of walkMjs(funcDir)) {
+	const source = readFileSync(file, "utf8");
+	const next = source.replace(requireReact, "require_react()");
+	if (next === source) continue;
+	if (!/\brequire_react\b/.test(source)) {
+		console.error(`cannot rewrite ${file}: no require_react in scope`);
+		process.exit(1);
+	}
+	writeFileSync(file, next);
+	patched += 1;
+	console.log(
+		`rewrote __require("react") in ${file.slice(funcDir.length + 1)}`,
+	);
+}
+
+console.log(`patched ${patched} SSR file(s) onto the inlined React instance`);
