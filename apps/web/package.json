@@ -6,7 +6,7 @@
 		"node": "24.x"
 	},
 	"scripts": {
-		"build": "vite build",
+		"build": "vite build && node ./scripts/copy-vercel-react.mjs",
 		"check-types": "tsr generate && tsc --noEmit",
 		"serve": "vite preview",
 		"dev": "vite dev",
