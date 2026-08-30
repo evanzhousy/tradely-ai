@@ -1,6 +1,8 @@
 import type { LessonAccess, TradingFlowPractice } from "@/content/course";
 import type { Locale } from "@/i18n/messages";
 
+import { redactAnalyticsPersonProperties } from "./redaction";
+
 export type AnalyticsEnvironment = "production" | "preview" | "local";
 
 export const ANALYTICS_EVENT_SCHEMA_VERSION = 1;
@@ -34,6 +36,9 @@ export type AnalyticsEventMap = {
 	};
 	auth_sign_in_opened: {
 		surface: "header" | "lesson_access";
+	};
+	auth_session_established: {
+		provider: "clerk";
 	};
 	tradingflow_link_opened: {
 		surface: "header" | "home_hero" | "lesson_practice";
@@ -89,6 +94,13 @@ export type AnalyticsEventMap = {
 		status: "success" | "cancel";
 		estimate: true;
 	};
+	server_route_timing: {
+		surface: "course_progress";
+		operation: "course_progress_read";
+		duration_ms: number;
+		status: "ok" | "unavailable";
+		signed_in: boolean;
+	};
 	analytics_consent_updated: {
 		status: "granted";
 	};
@@ -100,6 +112,7 @@ export const ANALYTICS_EVENT_NAMES = {
 	page_viewed: true,
 	locale_changed: true,
 	auth_sign_in_opened: true,
+	auth_session_established: true,
 	tradingflow_link_opened: true,
 	lesson_opened: true,
 	lesson_video_started: true,
@@ -112,8 +125,79 @@ export const ANALYTICS_EVENT_NAMES = {
 	billing_action_redirected: true,
 	billing_action_failed: true,
 	billing_checkout_returned: true,
+	server_route_timing: true,
 	analytics_consent_updated: true,
 } satisfies Record<AnalyticsEventName, true>;
+
+export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	page_viewed: ["route_name", "path", "locale"],
+	locale_changed: ["from_locale", "to_locale"],
+	auth_sign_in_opened: ["surface"],
+	auth_session_established: ["provider"],
+	tradingflow_link_opened: ["surface", "lesson_id", "tool"],
+	lesson_opened: [
+		"lesson_id",
+		"lesson_order",
+		"access_tier",
+		"access_state",
+		"media_available",
+		"locale",
+	],
+	lesson_video_started: ["lesson_id", "position_seconds"],
+	lesson_video_completed: ["lesson_id", "duration_seconds"],
+	lesson_completed: ["lesson_id", "lesson_order"],
+	lesson_progress_save_failed: ["lesson_id", "reason"],
+	membership_cta_clicked: ["surface", "lesson_id"],
+	billing_status_unavailable: ["surface"],
+	billing_action_started: ["action"],
+	billing_action_redirected: ["action"],
+	billing_action_failed: ["action", "reason"],
+	billing_checkout_returned: ["status", "estimate"],
+	server_route_timing: [
+		"surface",
+		"operation",
+		"duration_ms",
+		"status",
+		"signed_in",
+	],
+	analytics_consent_updated: ["status"],
+} satisfies {
+	[EventName in AnalyticsEventName]: readonly (keyof AnalyticsEventMap[EventName])[];
+};
+
+const PRESERVED_POSTHOG_PROPERTY_KEYS = new Set([
+	"app",
+	"environment",
+	"event_schema_version",
+	"release",
+	"runtime",
+	"token",
+	"distinct_id",
+	"groups",
+]);
+
+export function pruneAnalyticsEventProperties(
+	eventName: AnalyticsEventName,
+	properties: Record<string, unknown>,
+): void {
+	redactAnalyticsPersonProperties(properties.$set);
+	redactAnalyticsPersonProperties(properties.$set_once);
+	const allowedKeys = new Set([
+		...ANALYTICS_EVENT_PROPERTY_KEYS[eventName],
+		...PRESERVED_POSTHOG_PROPERTY_KEYS,
+	]);
+	for (const key of Object.keys(properties)) {
+		if (key.startsWith("$") || allowedKeys.has(key)) continue;
+		delete properties[key];
+	}
+}
+
+export function isRegisteredAnalyticsEvent(eventName: unknown): boolean {
+	if (typeof eventName !== "string") return false;
+	return (
+		eventName.startsWith("$") || Object.hasOwn(ANALYTICS_EVENT_NAMES, eventName)
+	);
+}
 
 export type CaptureAnalyticsEvent = <EventName extends AnalyticsEventName>(
 	event: EventName,
@@ -152,6 +236,23 @@ export function sanitizeAnalyticsUrl(value: unknown): unknown {
 		return `${url.origin}${canonicalAnalyticsPath(url.pathname)}`;
 	} catch {
 		return canonicalAnalyticsPath(value.split(/[?#]/, 1)[0] ?? "/");
+	}
+}
+
+const URL_LIKE_SYSTEM_PROPERTY_PATTERN = /(?:url|referrer)$/i;
+
+export function sanitizeAnalyticsEventUrlProperties(
+	properties: Record<string, unknown>,
+): void {
+	for (const [key, value] of Object.entries(properties)) {
+		if (
+			key.startsWith("$") &&
+			(URL_LIKE_SYSTEM_PROPERTY_PATTERN.test(key) ||
+				key === "$pathname" ||
+				key === "$initial_pathname")
+		) {
+			properties[key] = sanitizeAnalyticsUrl(value);
+		}
 	}
 }
 

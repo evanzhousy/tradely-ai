@@ -28,8 +28,8 @@
 		"lucide-react": "catalog:",
 		"next-themes": "catalog:",
 		"nitro": "3.0.260610-beta",
-		"posthog-js": "^1.422.0",
-		"posthog-node": "^5.51.4",
+		"posthog-js": "1.422.0",
+		"posthog-node": "5.51.4",
 		"react": "catalog:",
 		"react-dom": "catalog:",
 		"react-markdown": "^10.1.0",
@@ -40,7 +40,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@posthog/rollup-plugin": "^1.5.1",
+		"@posthog/rollup-plugin": "1.5.1",
 		"@tanstack/react-router-devtools": "^1.167.0",
 		"@tanstack/router-cli": "^1.167.30",
 		"@testing-library/dom": "^10.4.1",

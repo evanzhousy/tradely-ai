@@ -2,11 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import {
 	ANALYTICS_EVENT_NAMES,
+	ANALYTICS_EVENT_PROPERTY_KEYS,
 	ANALYTICS_EVENT_SCHEMA_VERSION,
 	analyticsEnvironment,
 	analyticsRouteName,
 	billingActionFailureReason,
 	canonicalAnalyticsPath,
+	isRegisteredAnalyticsEvent,
+	pruneAnalyticsEventProperties,
+	sanitizeAnalyticsEventUrlProperties,
 	sanitizeAnalyticsUrl,
 } from "./events";
 
@@ -15,7 +19,23 @@ describe("analytics event boundaries", () => {
 		expect(ANALYTICS_EVENT_SCHEMA_VERSION).toBe(1);
 		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain("lesson_completed");
 		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain(
+			"auth_session_established",
+		);
+		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain(
 			"billing_action_failed",
+		);
+	});
+
+	it("allows registered product events and PostHog system events only", () => {
+		expect(isRegisteredAnalyticsEvent("lesson_opened")).toBe(true);
+		expect(isRegisteredAnalyticsEvent("$web_vitals")).toBe(true);
+		expect(isRegisteredAnalyticsEvent("unregistered_event")).toBe(false);
+		expect(isRegisteredAnalyticsEvent(null)).toBe(false);
+	});
+
+	it("keeps the runtime property registry exhaustive", () => {
+		expect(Object.keys(ANALYTICS_EVENT_PROPERTY_KEYS).sort()).toEqual(
+			Object.keys(ANALYTICS_EVENT_NAMES).sort(),
 		);
 	});
 
@@ -33,6 +53,37 @@ describe("analytics event boundaries", () => {
 			),
 		).toBe("https://tradely.ai/pricing");
 		expect(canonicalAnalyticsPath("/privacy/")).toBe("/privacy");
+	});
+
+	it("sanitizes URL-like PostHog system properties beyond the core fields", () => {
+		const properties: Record<string, unknown> = {
+			$current_url: "https://tradely.ai/lesson?token=private#fragment",
+			$last_external_referrer_url:
+				"https://example.com/?email=user@example.com",
+			$pathname: "/pricing?checkout=success",
+			$browser: "Chrome",
+		};
+		sanitizeAnalyticsEventUrlProperties(properties);
+		expect(properties).toMatchObject({
+			$current_url: "https://tradely.ai/lesson",
+			$last_external_referrer_url: "https://example.com/",
+			$pathname: "/pricing",
+			$browser: "Chrome",
+		});
+	});
+
+	it("preserves runtime attribution while pruning custom properties", () => {
+		const properties: Record<string, unknown> = {
+			runtime: "browser",
+			lesson_id: "lesson-1",
+			unexpected: "remove-me",
+		};
+		pruneAnalyticsEventProperties("lesson_completed", properties);
+		expect(properties).toMatchObject({
+			runtime: "browser",
+			lesson_id: "lesson-1",
+		});
+		expect(properties).not.toHaveProperty("unexpected");
 	});
 
 	it("marks production, preview, and local traffic explicitly", () => {

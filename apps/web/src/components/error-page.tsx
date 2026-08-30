@@ -4,12 +4,12 @@ import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
 import { RefreshCwIcon } from "lucide-react";
 import { useEffect } from "react";
-import { capturePostHogException } from "@/analytics/client";
+import { capturePostHogExceptionWhenReady } from "@/analytics/client";
 import { analyticsRouteName } from "@/analytics/events";
 
 export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 	useEffect(() => {
-		capturePostHogException(error, {
+		void capturePostHogExceptionWhenReady(error, {
 			source: "route_boundary",
 			route_name: analyticsRouteName(window.location.pathname),
 		});

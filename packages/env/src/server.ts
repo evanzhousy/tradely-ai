@@ -2,12 +2,21 @@ import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+const POSTHOG_INGESTION_HOST = "https://us.i.posthog.com";
+const posthogHost = z
+	.string()
+	.url()
+	.refine(
+		(value) => value.replace(/\/+$/, "") === POSTHOG_INGESTION_HOST,
+		"Tradely uses the US PostHog ingestion host",
+	);
+
 export const env = createEnv({
 	server: {
 		DATABASE_URL: z.string().min(1).optional(),
 		CLERK_SECRET_KEY: z.string().min(1).optional(),
 		POSTHOG_PROJECT_TOKEN: z.string().startsWith("phc_").optional(),
-		POSTHOG_HOST: z.string().url().default("https://us.i.posthog.com"),
+		POSTHOG_HOST: posthogHost.default(POSTHOG_INGESTION_HOST),
 		STRIPE_API_KEY: z.string().min(1).optional(),
 		STRIPE_PRICE_ID: z.string().min(1).optional(),
 		MEDIA_PUBLIC_BASE_URL: z.string().min(1).default("/media/tradingflow"),

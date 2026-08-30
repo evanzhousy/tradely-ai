@@ -1,22 +1,44 @@
 import "@tanstack/react-start/server-only";
 
+import { performance } from "node:perf_hooks";
+
 import { createDb, lessonProgress } from "@tradely/db";
 import { and, eq } from "drizzle-orm";
 
+import { shouldCaptureServerTiming } from "@/analytics/server-timing";
 import { getLessonById, tradingFlowCourse } from "@/content/course";
 import { calculateCourseProgress } from "@/domain/progress";
 import {
 	getCurrentCourseAccess,
 	resolveCurrentLessonAccess,
 } from "./access.server";
-import { captureServerException } from "./analytics/posthog.server";
+import {
+	captureServerException,
+	captureServerRouteTiming,
+} from "./analytics/posthog.server";
 import type { SaveLessonProgressInput } from "./progress";
 import { ensureAppUser } from "./users.server";
 
 export async function getCourseProgressImpl() {
+	const startedAt = performance.now();
+	const captureSlowTiming = async (
+		status: "ok" | "unavailable",
+		signedIn: boolean,
+	) => {
+		const duration_ms = performance.now() - startedAt;
+		if (!shouldCaptureServerTiming(duration_ms)) return;
+		await captureServerRouteTiming({
+			surface: "course_progress",
+			operation: "course_progress_read",
+			duration_ms,
+			status,
+			signed_in: signedIn,
+		});
+	};
 	const courseAccess = await getCurrentCourseAccess();
 	const userId = courseAccess.userId;
 	if (!userId) {
+		await captureSlowTiming("ok", false);
 		return {
 			signedIn: false as const,
 			completed: 0,
@@ -44,6 +66,10 @@ export async function getCourseProgressImpl() {
 			lastPositionSeconds: record.lastPositionSeconds,
 			completedAt: record.completedAt?.toISOString() ?? null,
 		}));
+		await captureSlowTiming(
+			courseAccess.billingState === "unavailable" ? "unavailable" : "ok",
+			true,
+		);
 		return {
 			signedIn: true as const,
 			...calculateCourseProgress(
@@ -60,6 +86,7 @@ export async function getCourseProgressImpl() {
 			operation: "course_progress_read",
 			userId,
 		});
+		await captureSlowTiming("unavailable", true);
 		return {
 			signedIn: true as const,
 			completed: 0,

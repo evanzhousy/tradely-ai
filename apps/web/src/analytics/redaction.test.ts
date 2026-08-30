@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	isExpectedBillingError,
+	redactAnalyticsPersonProperties,
 	redactAnalyticsText,
 	safeAnalyticsError,
 	serverAnalyticsEnvironment,
@@ -37,6 +38,19 @@ describe("analytics error redaction", () => {
 		expect(isExpectedBillingError(new Error("Stripe request failed"))).toBe(
 			false,
 		);
+	});
+
+	it("redacts sensitive nested person properties without touching safe fields", () => {
+		const properties = {
+			auth_provider: "clerk",
+			email: "user@example.com",
+			nested: { phone: "555-0100", locale: "en" },
+		};
+		redactAnalyticsPersonProperties(properties);
+		expect(properties).toEqual({
+			auth_provider: "clerk",
+			nested: { locale: "en" },
+		});
 	});
 
 	it("labels Vercel production, previews, and local execution", () => {

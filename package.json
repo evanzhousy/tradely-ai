@@ -21,7 +21,8 @@
 		"media:assert:local": "node scripts/assert-media-boundary.mjs --require-local",
 		"media:upload": "node apps/web/scripts/upload-course-media.mjs --upload",
 		"media:verify": "node apps/web/scripts/upload-course-media.mjs --verify",
-		"check": "biome check . && pnpm media:assert",
+		"posthog:secrets": "node scripts/assert-posthog-secrets.mjs",
+		"check": "biome check . && pnpm posthog:secrets && pnpm media:assert",
 		"check:fix": "biome check --write .",
 		"prepare": "husky"
 	},
