@@ -11,7 +11,10 @@ export type BillingActionFailureReason =
 	| "sign_in_required"
 	| "already_active"
 	| "no_customer"
+	| "not_found"
 	| "unavailable";
+
+export type BillingOffer = "membership" | "lifetime_course";
 
 export type AnalyticsRouteName =
 	| "home"
@@ -35,7 +38,7 @@ export type AnalyticsEventMap = {
 		to_locale: Locale;
 	};
 	auth_sign_in_opened: {
-		surface: "header" | "lesson_access";
+		surface: "header" | "lesson_access" | "pricing";
 	};
 	auth_session_established: {
 		provider: "clerk";
@@ -82,17 +85,25 @@ export type AnalyticsEventMap = {
 	};
 	billing_action_started: {
 		action: "checkout" | "portal";
+		offer?: BillingOffer;
 	};
 	billing_action_redirected: {
 		action: "checkout" | "portal";
+		offer?: BillingOffer;
 	};
 	billing_action_failed: {
 		action: "checkout" | "portal";
+		offer?: BillingOffer;
 		reason: BillingActionFailureReason;
 	};
 	billing_checkout_returned: {
 		status: "success" | "cancel";
 		estimate: true;
+		offer: BillingOffer;
+	};
+	course_pass_access_verified: {
+		course_id: "tradingflow-foundations";
+		source: "checkout_return" | "restore" | "existing";
 	};
 	server_route_timing: {
 		surface: "course_progress";
@@ -125,6 +136,7 @@ export const ANALYTICS_EVENT_NAMES = {
 	billing_action_redirected: true,
 	billing_action_failed: true,
 	billing_checkout_returned: true,
+	course_pass_access_verified: true,
 	server_route_timing: true,
 	analytics_consent_updated: true,
 } satisfies Record<AnalyticsEventName, true>;
@@ -149,10 +161,11 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 	lesson_progress_save_failed: ["lesson_id", "reason"],
 	membership_cta_clicked: ["surface", "lesson_id"],
 	billing_status_unavailable: ["surface"],
-	billing_action_started: ["action"],
-	billing_action_redirected: ["action"],
-	billing_action_failed: ["action", "reason"],
-	billing_checkout_returned: ["status", "estimate"],
+	billing_action_started: ["action", "offer"],
+	billing_action_redirected: ["action", "offer"],
+	billing_action_failed: ["action", "offer", "reason"],
+	billing_checkout_returned: ["status", "estimate", "offer"],
+	course_pass_access_verified: ["course_id", "source"],
 	server_route_timing: [
 		"surface",
 		"operation",
@@ -264,5 +277,6 @@ export function billingActionFailureReason(
 	if (message.includes("sign in")) return "sign_in_required";
 	if (message.includes("already active")) return "already_active";
 	if (message.includes("no stripe customer")) return "no_customer";
+	if (message.includes("no verified lifetime purchase")) return "not_found";
 	return "unavailable";
 }

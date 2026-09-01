@@ -7,14 +7,31 @@ import Stripe from "stripe";
 
 import { isExpectedBillingError } from "@/analytics/redaction";
 import type { BillingState } from "@/domain/access";
-import { subscriptionGrantsCourse } from "@/domain/billing";
+import {
+	BILLING_CONTRACT,
+	COURSE_PASS_ENTITLEMENT,
+	checkoutSessionGrantsCoursePass,
+	subscriptionGrantsCourse,
+} from "@/domain/billing";
 import { captureServerException } from "./analytics/posthog.server";
 import { getCurrentClerkIdentity, getCurrentClerkUserId } from "./auth.server";
 import {
 	ensureAppUser,
 	findAppUser,
+	grantCoursePass,
+	hasActiveCoursePass,
+	hasManualAllAccess,
 	updateStripeCustomerId,
 } from "./users.server";
+
+type OfferSummary =
+	| { configured: false }
+	| {
+			configured: true;
+			currency: string;
+			unitAmount: number | null;
+			interval: string | null;
+	  };
 
 function stripeClient(): Stripe {
 	if (!env.STRIPE_API_KEY) throw new Error("Stripe is not configured");
@@ -22,6 +39,20 @@ function stripeClient(): Stripe {
 }
 
 function checkoutBaseUrl(): string {
+	if (env.VERCEL_ENV === "preview") {
+		const hostname = env.VERCEL_URL?.trim().toLowerCase();
+		if (!hostname?.endsWith(".vercel.app")) {
+			throw new Error("Vercel Preview URL is not configured for billing");
+		}
+		const previewUrl = new URL(`https://${hostname}`);
+		if (
+			previewUrl.hostname !== hostname ||
+			previewUrl.origin !== `https://${hostname}`
+		) {
+			throw new Error("Vercel Preview URL is invalid for billing");
+		}
+		return previewUrl.origin;
+	}
 	const url = new URL(env.APP_URL);
 	if (
 		env.NODE_ENV === "production" &&
@@ -34,10 +65,27 @@ function checkoutBaseUrl(): string {
 	return url.origin;
 }
 
+function checkoutIntegrationIdentifier(
+	offer: "membership" | "course_pass",
+	seed: string,
+): string {
+	const digest = createHash("sha256").update(seed).digest();
+	const suffix = Array.from(digest.subarray(0, 8), (byte) =>
+		String.fromCharCode(97 + (byte % 26)),
+	).join("");
+	return `tradely_${offer}_${suffix}`;
+}
+
+function stripeObjectId(value: string | { id: string } | null): string | null {
+	if (!value) return null;
+	return typeof value === "string" ? value : value.id;
+}
+
 export async function getStripeBillingState(
 	stripeCustomerId: string | null,
 ): Promise<BillingState> {
-	if (!env.STRIPE_API_KEY || !env.STRIPE_PRICE_ID) return "unavailable";
+	if (!env.STRIPE_API_KEY || !env.STRIPE_MEMBERSHIP_PRICE_ID)
+		return "unavailable";
 	if (!stripeCustomerId) return "inactive";
 	try {
 		const subscriptions = await stripeClient().subscriptions.list({
@@ -49,7 +97,7 @@ export async function getStripeBillingState(
 			subscriptionGrantsCourse({
 				status: subscription.status,
 				priceIds: subscription.items.data.map((item) => item.price.id),
-				expectedPriceId: env.STRIPE_PRICE_ID as string,
+				expectedPriceId: env.STRIPE_MEMBERSHIP_PRICE_ID as string,
 			}),
 		)
 			? "active"
@@ -91,35 +139,90 @@ async function ensureStripeCustomer(): Promise<{
 	return { clerkUserId: identity.userId, stripeCustomerId: customer.id };
 }
 
-export async function getPlanSummaryImpl() {
-	if (!env.STRIPE_API_KEY || !env.STRIPE_PRICE_ID) {
-		return { configured: false as const };
-	}
+async function getOfferSummary(
+	priceId: string | undefined,
+	expected: "recurring" | "one_time",
+): Promise<OfferSummary> {
+	if (!env.STRIPE_API_KEY || !priceId) return { configured: false };
 	try {
-		const price = await stripeClient().prices.retrieve(env.STRIPE_PRICE_ID, {
-			expand: ["product"],
-		});
+		const price = await stripeClient().prices.retrieve(priceId);
+		if (
+			(expected === "recurring" && !price.recurring) ||
+			(expected === "one_time" && price.recurring)
+		) {
+			return { configured: false };
+		}
 		return {
-			configured: true as const,
+			configured: true,
 			currency: price.currency,
 			unitAmount: price.unit_amount,
 			interval: price.recurring?.interval ?? null,
-			productName:
-				typeof price.product === "string" || price.product.deleted
-					? "Tradely membership"
-					: price.product.name,
 		};
 	} catch (error) {
 		await captureServerException(error, {
 			source: "billing",
-			operation: "plan_summary",
+			operation: `offer_summary_${expected}`,
 		});
-		return { configured: false as const };
+		return { configured: false };
 	}
 }
 
-async function beginCheckoutCore() {
-	if (!env.STRIPE_PRICE_ID) throw new Error("Stripe price is not configured");
+export async function getOffersSummaryImpl() {
+	const [membership, coursePass] = await Promise.all([
+		getOfferSummary(env.STRIPE_MEMBERSHIP_PRICE_ID, "recurring"),
+		env.LIFETIME_CHECKOUT_ENABLED
+			? getOfferSummary(env.STRIPE_COURSE_PASS_PRICE_ID, "one_time")
+			: Promise.resolve<OfferSummary>({ configured: false }),
+	]);
+	return {
+		membership,
+		coursePass,
+		lifetimeCheckoutEnabled: env.LIFETIME_CHECKOUT_ENABLED,
+	};
+}
+
+export async function getPricingAccessImpl() {
+	const userId = await getCurrentClerkUserId();
+	if (!userId) {
+		return {
+			isSignedIn: false as const,
+			billingState: "inactive" as const,
+			hasCoursePass: false,
+			hasManualGrant: false,
+			hasStripeCustomer: false,
+		};
+	}
+	try {
+		const user = await findAppUser(userId);
+		const billingState = await getStripeBillingState(
+			user?.stripeCustomerId ?? null,
+		);
+		return {
+			isSignedIn: true as const,
+			billingState,
+			hasCoursePass: hasActiveCoursePass(user),
+			hasManualGrant: hasManualAllAccess(user),
+			hasStripeCustomer: Boolean(user?.stripeCustomerId),
+		};
+	} catch (error) {
+		await captureServerException(error, {
+			source: "billing",
+			operation: "pricing_access",
+			userId,
+		});
+		return {
+			isSignedIn: true as const,
+			billingState: "unavailable" as const,
+			hasCoursePass: false,
+			hasManualGrant: false,
+			hasStripeCustomer: false,
+		};
+	}
+}
+
+async function beginMembershipCheckoutCore() {
+	if (!env.STRIPE_MEMBERSHIP_PRICE_ID)
+		throw new Error("Stripe membership price is not configured");
 	const appUrl = checkoutBaseUrl();
 	const { clerkUserId, stripeCustomerId } = await ensureStripeCustomer();
 	const billingState = await getStripeBillingState(stripeCustomerId);
@@ -138,36 +241,255 @@ async function beginCheckoutCore() {
 		.digest("hex")
 		.slice(0, 24);
 	const priceKey = createHash("sha256")
-		.update(env.STRIPE_PRICE_ID)
+		.update(env.STRIPE_MEMBERSHIP_PRICE_ID)
 		.digest("hex")
 		.slice(0, 12);
 	const timeBucket = Math.floor(Date.now() / (30 * 60 * 1000));
 	const session = await stripeClient().checkout.sessions.create(
 		{
 			mode: "subscription",
+			branding_settings: BILLING_CONTRACT.checkoutBranding,
+			integration_identifier: checkoutIntegrationIdentifier(
+				"membership",
+				`${clerkUserId}:${priceKey}:${timeBucket}`,
+			),
 			customer: stripeCustomerId,
 			client_reference_id: clerkUserId,
-			line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
-			success_url: `${appUrl}/pricing?checkout=success`,
-			cancel_url: `${appUrl}/pricing?checkout=cancel`,
+			line_items: [{ price: env.STRIPE_MEMBERSHIP_PRICE_ID, quantity: 1 }],
+			success_url: `${appUrl}/pricing?checkout=membership-success`,
+			cancel_url: `${appUrl}/pricing?checkout=membership-cancel`,
 			subscription_data: {
 				metadata: { tradely_clerk_user_id: clerkUserId },
 			},
 		},
-		{ idempotencyKey: `tradely-checkout-${userKey}-${priceKey}-${timeBucket}` },
+		{
+			idempotencyKey: `tradely-membership-${userKey}-${priceKey}-${timeBucket}`,
+		},
 	);
 	if (!session.url) throw new Error("Stripe did not return a checkout URL");
 	return { url: session.url };
 }
 
-export async function beginCheckoutImpl() {
+export async function beginMembershipCheckoutImpl() {
 	try {
-		return await beginCheckoutCore();
+		return await beginMembershipCheckoutCore();
 	} catch (error) {
 		if (!isExpectedBillingError(error)) {
 			await captureServerException(error, {
 				source: "billing",
-				operation: "begin_checkout",
+				operation: "begin_membership_checkout",
+				action: "checkout",
+			});
+		}
+		throw error;
+	}
+}
+
+async function beginCoursePassCheckoutCore() {
+	if (!env.LIFETIME_CHECKOUT_ENABLED)
+		throw new Error("Lifetime course checkout is unavailable");
+	if (!env.STRIPE_COURSE_PASS_PRICE_ID)
+		throw new Error("Stripe course-pass price is not configured");
+	const appUrl = checkoutBaseUrl();
+	const { clerkUserId, stripeCustomerId } = await ensureStripeCustomer();
+	const user = await findAppUser(clerkUserId);
+	if (hasActiveCoursePass(user)) {
+		throw new Error("Lifetime course access is already active");
+	}
+	const userKey = createHash("sha256")
+		.update(clerkUserId)
+		.digest("hex")
+		.slice(0, 24);
+	const priceKey = createHash("sha256")
+		.update(env.STRIPE_COURSE_PASS_PRICE_ID)
+		.digest("hex")
+		.slice(0, 12);
+	const timeBucket = Math.floor(Date.now() / (30 * 60 * 1000));
+	const metadata = {
+		tradely_clerk_user_id: clerkUserId,
+		tradely_entitlement: COURSE_PASS_ENTITLEMENT,
+	};
+	const session = await stripeClient().checkout.sessions.create(
+		{
+			mode: "payment",
+			branding_settings: BILLING_CONTRACT.checkoutBranding,
+			integration_identifier: checkoutIntegrationIdentifier(
+				"course_pass",
+				`${clerkUserId}:${priceKey}:${timeBucket}`,
+			),
+			customer: stripeCustomerId,
+			client_reference_id: clerkUserId,
+			line_items: [{ price: env.STRIPE_COURSE_PASS_PRICE_ID, quantity: 1 }],
+			metadata,
+			payment_intent_data: { metadata },
+			success_url: `${appUrl}/pricing?checkout=lifetime-success&session_id={CHECKOUT_SESSION_ID}`,
+			cancel_url: `${appUrl}/pricing?checkout=lifetime-cancel`,
+		},
+		{
+			idempotencyKey: `tradely-course-pass-${userKey}-${priceKey}-${timeBucket}`,
+		},
+	);
+	if (!session.url) throw new Error("Stripe did not return a checkout URL");
+	return { url: session.url };
+}
+
+export async function beginCoursePassCheckoutImpl() {
+	try {
+		return await beginCoursePassCheckoutCore();
+	} catch (error) {
+		if (!isExpectedBillingError(error)) {
+			await captureServerException(error, {
+				source: "billing",
+				operation: "begin_course_pass_checkout",
+				action: "checkout",
+			});
+		}
+		throw error;
+	}
+}
+
+async function coursePassSessionMatchesUser(
+	session: Stripe.Checkout.Session,
+	input: {
+		clerkUserId: string;
+		stripeCustomerId: string;
+		priceId: string;
+	},
+): Promise<boolean> {
+	if (
+		session.mode !== "payment" ||
+		session.status !== "complete" ||
+		session.payment_status !== "paid" ||
+		stripeObjectId(session.customer) !== input.stripeCustomerId ||
+		session.client_reference_id !== input.clerkUserId ||
+		session.metadata?.tradely_clerk_user_id !== input.clerkUserId ||
+		session.metadata?.tradely_entitlement !== COURSE_PASS_ENTITLEMENT
+	) {
+		return false;
+	}
+	const lineItems = await stripeClient().checkout.sessions.listLineItems(
+		session.id,
+		{ limit: 100 },
+	);
+	return checkoutSessionGrantsCoursePass({
+		mode: session.mode,
+		status: session.status,
+		paymentStatus: session.payment_status,
+		customerId: stripeObjectId(session.customer),
+		expectedCustomerId: input.stripeCustomerId,
+		clientReferenceId: session.client_reference_id,
+		expectedClerkUserId: input.clerkUserId,
+		metadataClerkUserId: session.metadata?.tradely_clerk_user_id ?? null,
+		priceIds: lineItems.data.flatMap((item) =>
+			item.price ? [item.price.id] : [],
+		),
+		expectedPriceId: input.priceId,
+		entitlement: session.metadata?.tradely_entitlement ?? null,
+	});
+}
+
+async function currentCoursePassIdentity() {
+	if (!env.STRIPE_COURSE_PASS_PRICE_ID) {
+		throw new Error("Lifetime course checkout is unavailable");
+	}
+	const identity = await getCurrentClerkIdentity();
+	if (!identity) throw new Error("Sign in to verify lifetime access");
+	const user = await ensureAppUser(identity.userId);
+	if (!user.stripeCustomerId) {
+		throw new Error("No Stripe customer is linked to this account");
+	}
+	return {
+		identity,
+		user,
+		priceId: env.STRIPE_COURSE_PASS_PRICE_ID,
+		stripeCustomerId: user.stripeCustomerId,
+	};
+}
+
+async function verifyCoursePassSession(sessionId: string) {
+	const current = await currentCoursePassIdentity();
+	const session = await stripeClient().checkout.sessions.retrieve(sessionId);
+	const valid = await coursePassSessionMatchesUser(session, {
+		clerkUserId: current.identity.userId,
+		stripeCustomerId: current.stripeCustomerId,
+		priceId: current.priceId,
+	});
+	if (!valid) {
+		throw new Error("Course pass purchase could not be verified");
+	}
+	if (
+		current.user.coursePassRevokedAt &&
+		current.user.stripeCoursePassCheckoutSessionId === session.id
+	) {
+		throw new Error("This course pass purchase has been revoked");
+	}
+	await grantCoursePass(current.identity.userId, session.id);
+	return {
+		verified: true as const,
+		courseId: "tradingflow-foundations" as const,
+	};
+}
+
+export async function verifyCoursePassCheckoutImpl(sessionId: string) {
+	try {
+		return {
+			...(await verifyCoursePassSession(sessionId)),
+			source: "checkout_return" as const,
+		};
+	} catch (error) {
+		if (!isExpectedBillingError(error)) {
+			await captureServerException(error, {
+				source: "billing",
+				operation: "verify_course_pass_checkout",
+				action: "checkout",
+			});
+		}
+		throw error;
+	}
+}
+
+export async function restoreCoursePassImpl() {
+	try {
+		const current = await currentCoursePassIdentity();
+		if (hasActiveCoursePass(current.user)) {
+			return {
+				verified: true as const,
+				courseId: "tradingflow-foundations" as const,
+				source: "existing" as const,
+			};
+		}
+		const sessions = await stripeClient().checkout.sessions.list({
+			customer: current.stripeCustomerId,
+			limit: 100,
+		});
+		for (const session of sessions.data) {
+			if (
+				current.user.coursePassRevokedAt &&
+				current.user.stripeCoursePassCheckoutSessionId === session.id
+			) {
+				continue;
+			}
+			if (
+				await coursePassSessionMatchesUser(session, {
+					clerkUserId: current.identity.userId,
+					stripeCustomerId: current.stripeCustomerId,
+					priceId: current.priceId,
+				})
+			) {
+				await grantCoursePass(current.identity.userId, session.id);
+				return {
+					verified: true as const,
+					courseId: "tradingflow-foundations" as const,
+					source: "restore" as const,
+				};
+			}
+		}
+		throw new Error("No verified lifetime purchase was found");
+	} catch (error) {
+		if (!isExpectedBillingError(error)) {
+			await captureServerException(error, {
+				source: "billing",
+				operation: "restore_course_pass",
 				action: "checkout",
 			});
 		}

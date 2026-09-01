@@ -6,6 +6,7 @@
 		"node": "24.x"
 	},
 	"scripts": {
+		"billing:preflight": "tsx scripts/billing-preflight.ts",
 		"build": "vite build && node ./scripts/copy-vercel-react.mjs",
 		"check-types": "tsr generate && tsc --noEmit",
 		"serve": "vite preview",
@@ -50,6 +51,7 @@
 		"@types/react-dom": "catalog:",
 		"@vitejs/plugin-react": "^6.0.4",
 		"jsdom": "^30.0.0",
+		"tsx": "4.23.12",
 		"typescript": "catalog:",
 		"vite": "^8.1.5",
 		"vitest": "^4.1.10",

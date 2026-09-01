@@ -6,7 +6,7 @@ Tradely is the independent options-learning hub for `tradely.ai`. It teaches an 
 
 - TanStack Start, React, TypeScript, and TanStack Router
 - Clerk for Tradely identity
-- Stripe Checkout and Customer Portal for Tradely membership
+- Stripe Checkout and Customer Portal for Tradely membership plus a one-time Lifetime Course Pass
 - Neon Postgres with Drizzle
 - shadcn/ui Base Luma primitives and Tailwind CSS
 - Cloudflare R2 (S3-compatible) storage for paid course media
@@ -34,7 +34,7 @@ Media ownership and source/access invariants are checked with `pnpm media:assert
 
 ## Service configuration
 
-Copy [apps/web/.env.example](apps/web/.env.example) and configure a dedicated Tradely Clerk app, Stripe account, and Neon database. Do not reuse TradingFlow credentials or customer identifiers.
+Copy [apps/web/.env.example](apps/web/.env.example) and configure a dedicated Tradely Clerk app, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Clerk mappings. Configure separate `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. Setting `LIFETIME_CHECKOUT_ENABLED=false` stops new Course Pass purchases without revoking existing grants.
 
 For production media, configure `MEDIA_S3_*` for the shared Tradely Cloudflare R2 private bucket. Paid objects use these keys:
 
@@ -67,6 +67,11 @@ pnpm build
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the access, billing, progress, and media contracts.
 See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for the consent, identity, event, error, and web-vitals analytics contract.
+See [docs/BILLING.md](docs/BILLING.md) for membership, Lifetime Course Pass, fulfillment, restore, refund, and rollout operations.
+
+Billing operators can run `pnpm billing:preflight` for read-only Stripe/config
+verification and `pnpm billing:revoke-course-pass` for the dry-run-first manual
+refund/dispute revocation path.
 
 ## Trust and accessibility surface
 

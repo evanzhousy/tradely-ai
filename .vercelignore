@@ -1,0 +1,24 @@
+# Local course masters and HyperFrames projects are published to R2 separately.
+videos/
+apps/web/private-media/
+apps/web/public/media/tradingflow/*.mp4
+
+# Dependencies and generated deployment output are rebuilt by Vercel.
+node_modules/
+**/node_modules/
+.vercel/
+**/.vercel/
+dist/
+**/dist/
+coverage/
+**/coverage/
+
+# Local secrets and machine artifacts never belong in deployment uploads.
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+.DS_Store
+**/.DS_Store

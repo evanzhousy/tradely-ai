@@ -43,7 +43,7 @@ const messages = {
 		"common.free": "Free",
 		"common.unlocked": "Unlocked",
 		"common.membership": "Membership",
-		"common.membershipLesson": "Membership lesson",
+		"common.membershipLesson": "Paid lesson",
 		"common.accessUnavailable": "Access status unavailable",
 		"common.completed": "Completed",
 		"common.lessonNumber": "Lesson {current} of {total}",
@@ -87,10 +87,10 @@ const messages = {
 		"access.signInDescription":
 			"This member lesson is tied to an individual Tradely account and learning record.",
 		"access.clerkUnavailable": "Clerk is not configured locally",
-		"access.membershipTitle": "Membership lesson",
+		"access.membershipTitle": "Paid lesson",
 		"access.membershipDescription":
-			"Unlock the complete curriculum, persistent progress, and every future course update.",
-		"access.viewMembership": "View membership",
+			"Unlock this lesson with an active Tradely membership or the Lifetime Course Pass.",
+		"access.viewMembership": "View access options",
 		"video.unavailableTitle": "Video is temporarily unavailable",
 		"video.unavailableDescription":
 			"The written lesson remains available. Tradely could not issue a protected media URL.",
@@ -110,17 +110,32 @@ const messages = {
 		"complete.unavailable":
 			"Progress is unavailable. Your lesson remains open.",
 		"pricing.membership": "Tradely membership",
+		"pricing.coursePass": "Lifetime Course Pass",
 		"pricing.heading": "Keep the whole learning path open.",
 		"pricing.description":
-			"One Tradely membership unlocks the paid curriculum and your learning record. TradingFlow remains a separate partnered service.",
+			"Choose ongoing membership for all Tradely learning, or buy permanent access to the current Evidence-Led Options Research course. TradingFlow remains a separate partnered service.",
 		"pricing.taxNote":
 			"Taxes are not enabled automatically. Tradely will configure collection only after applicable registrations and tax treatment are confirmed.",
 		"pricing.checkoutDescription":
 			"Stripe-hosted checkout and self-service billing management.",
+		"pricing.membershipDescription":
+			"All Tradely courses and new learning content while your membership is active.",
+		"pricing.coursePassDescription":
+			"One payment for permanent access to Evidence-Led Options Research and its revisions. Future distinct courses are excluded.",
+		"pricing.oneTime": "one-time",
 		"pricing.configuredInStripe": "Configured in Stripe",
 		"pricing.unlock": "Unlock the curriculum",
 		"pricing.openingCheckout": "Opening checkout…",
+		"pricing.openingCoursePass": "Opening course pass checkout…",
+		"pricing.buyCoursePass": "Buy lifetime course access",
+		"pricing.membershipActive": "Membership active",
+		"pricing.coursePassActive": "Lifetime access active",
 		"pricing.manageBilling": "Manage billing",
+		"pricing.restorePurchase": "Restore purchase",
+		"pricing.restoringPurchase": "Restoring purchase…",
+		"pricing.restoreSuccess": "Lifetime course access restored",
+		"pricing.verifySuccess": "Lifetime course access verified",
+		"pricing.verifyFailure": "The course pass purchase could not be verified",
 		"pricing.localPreview":
 			"Local preview: add Stripe API and Price IDs to enable checkout.",
 		"pricing.billingUnavailable": "Billing is unavailable",
@@ -130,6 +145,14 @@ const messages = {
 		"pricing.featureUpdates":
 			"Every future lesson and course update while active",
 		"pricing.featurePractice":
+			"TradingFlow practice assignments and direct tool links",
+		"pricing.featureCoursePassCurriculum":
+			"All 11 Evidence-Led Options Research lessons",
+		"pricing.featureCoursePassProgress":
+			"Persistent lesson progress across devices",
+		"pricing.featureCoursePassRevisions":
+			"Future corrections and revisions to this course",
+		"pricing.featureCoursePassPractice":
 			"TradingFlow practice assignments and direct tool links",
 		"footer.description":
 			"Evidence-led options learning for traders who want a repeatable research process.",
@@ -142,7 +165,7 @@ const messages = {
 		"footer.cookies": "Cookies",
 		"footer.privacyChoices": "Privacy choices",
 		"footer.rights": "© {year} Tradely. All rights reserved.",
-		"legal.lastUpdated": "Last updated: August 28, 2026",
+		"legal.lastUpdated": "Last updated: August 31, 2026",
 		"legal.backToLearning": "Back to learning hub",
 		"analytics.consentTitle": "Help improve Tradely",
 		"analytics.consentDescription":
@@ -189,7 +212,7 @@ const messages = {
 		"common.free": "免费",
 		"common.unlocked": "已解锁",
 		"common.membership": "会员",
-		"common.membershipLesson": "会员课程",
+		"common.membershipLesson": "付费课程",
 		"common.accessUnavailable": "暂时无法确认访问权限",
 		"common.completed": "已完成",
 		"common.lessonNumber": "第 {current} 课，共 {total} 课",
@@ -232,10 +255,10 @@ const messages = {
 		"access.signInDescription":
 			"这节会员课程绑定到个人 Tradely 账户和学习记录。",
 		"access.clerkUnavailable": "本地尚未配置 Clerk",
-		"access.membershipTitle": "会员课程",
+		"access.membershipTitle": "付费课程",
 		"access.membershipDescription":
-			"解锁完整课程、持续进度记录以及未来的课程更新。",
-		"access.viewMembership": "查看会员方案",
+			"通过有效的 Tradely 会员或课程终身通行证解锁这节课。",
+		"access.viewMembership": "查看访问选项",
 		"video.unavailableTitle": "视频暂时不可用",
 		"video.unavailableDescription":
 			"文字课程仍可阅读。Tradely 暂时无法签发受保护的媒体地址。",
@@ -254,16 +277,31 @@ const messages = {
 		"complete.saveError": "无法保存这节课程",
 		"complete.unavailable": "进度服务暂不可用，课程仍保持打开。",
 		"pricing.membership": "Tradely 会员",
+		"pricing.coursePass": "课程终身通行证",
 		"pricing.heading": "保持完整学习路径开放。",
 		"pricing.description":
-			"一个 Tradely 会员账户即可解锁付费课程并保存学习记录。TradingFlow 仍是独立的合作服务。",
+			"你可以选择持续会员以访问所有 Tradely 学习内容，或一次性购买当前《证据驱动的期权研究》课程的永久访问权。TradingFlow 仍是独立的合作服务。",
 		"pricing.taxNote":
 			"当前不会自动计算税费。Tradely 会在完成适用注册并确认税务处理后配置收取。",
 		"pricing.checkoutDescription": "使用 Stripe 托管结账并自助管理账单。",
+		"pricing.membershipDescription":
+			"会员有效期间访问全部 Tradely 课程和新增学习内容。",
+		"pricing.coursePassDescription":
+			"一次付款，永久访问《证据驱动的期权研究》及其修订版本；不包含未来的独立课程。",
+		"pricing.oneTime": "一次性付款",
 		"pricing.configuredInStripe": "已在 Stripe 配置",
 		"pricing.unlock": "解锁课程",
 		"pricing.openingCheckout": "正在打开结账…",
+		"pricing.openingCoursePass": "正在打开课程通行证结账…",
+		"pricing.buyCoursePass": "购买课程终身访问权",
+		"pricing.membershipActive": "会员已生效",
+		"pricing.coursePassActive": "终身访问权已生效",
 		"pricing.manageBilling": "管理账单",
+		"pricing.restorePurchase": "恢复购买",
+		"pricing.restoringPurchase": "正在恢复购买…",
+		"pricing.restoreSuccess": "课程终身访问权已恢复",
+		"pricing.verifySuccess": "课程终身访问权已验证",
+		"pricing.verifyFailure": "无法验证课程通行证购买",
 		"pricing.localPreview":
 			"本地预览：配置 Stripe API 和 Price ID 后启用结账。",
 		"pricing.billingUnavailable": "账单服务暂不可用",
@@ -271,6 +309,11 @@ const messages = {
 		"pricing.featureProgress": "跨设备保存课程进度",
 		"pricing.featureUpdates": "会员有效期内的后续课程与更新",
 		"pricing.featurePractice": "TradingFlow 练习任务与直接工具链接",
+		"pricing.featureCoursePassCurriculum":
+			"《证据驱动的期权研究》全部 11 节课程",
+		"pricing.featureCoursePassProgress": "跨设备保存课程进度",
+		"pricing.featureCoursePassRevisions": "当前课程的后续修订与更正",
+		"pricing.featureCoursePassPractice": "TradingFlow 练习任务与直接工具链接",
 		"footer.description":
 			"为希望建立可重复研究流程的交易者提供证据驱动的期权学习。",
 		"footer.partner": "TradingFlow 是独立运营的合作练习服务。",
@@ -281,7 +324,7 @@ const messages = {
 		"footer.cookies": "Cookie 政策",
 		"footer.privacyChoices": "隐私设置",
 		"footer.rights": "© {year} Tradely。保留所有权利。",
-		"legal.lastUpdated": "最后更新：2026 年 8 月 28 日",
+		"legal.lastUpdated": "最后更新：2026 年 8 月 31 日",
 		"legal.backToLearning": "返回学习中心",
 		"analytics.consentTitle": "帮助改进 Tradely",
 		"analytics.consentDescription":

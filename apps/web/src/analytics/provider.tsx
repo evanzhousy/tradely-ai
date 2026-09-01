@@ -62,6 +62,7 @@ const SEND_BEACON_EVENTS = new Set<AnalyticsEventName>([
 	"analytics_consent_updated",
 	"billing_action_redirected",
 	"billing_checkout_returned",
+	"course_pass_access_verified",
 	"lesson_completed",
 	"lesson_video_completed",
 	"tradingflow_link_opened",

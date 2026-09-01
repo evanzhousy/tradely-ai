@@ -8,7 +8,9 @@ Tradely owns its identity, billing, database, media, and customer relationship. 
 
 Only two PostgreSQL tables are persisted:
 
-- `app_user`: Clerk user ID, optional Stripe Customer ID, and narrow manual access overrides.
+- `app_user`: Clerk user ID, optional Stripe Customer ID, a verified/revocable
+  Lifetime Course Pass grant with its unique Stripe Checkout Session, and narrow
+  manual access overrides.
 - `lesson_progress`: user plus lesson ID, authoritative content version, last video position, and completion timestamps.
 
 Course and lesson metadata live in `apps/web/src/content/course.ts`. Lesson bodies remain in a server-only module. There are no subscription, entitlement, enrollment, prerequisite, quiz, or processed-webhook tables.
@@ -16,13 +18,24 @@ Course and lesson metadata live in `apps/web/src/content/course.ts`. Lesson bodi
 ## Access contract
 
 1. Clerk establishes the current Tradely user.
-2. `app_user.stripe_customer_id` identifies that user in the dedicated Tradely Stripe account.
-3. The server calls Stripe at access time.
-4. Access is active only when an `active` or `trialing` Subscription contains the exact configured `STRIPE_PRICE_ID`, or a non-expired manual grant exists.
-5. Billing lookup failure is represented as unavailable, not as unpaid.
-6. Paid lesson bodies and media URLs are returned only after that server decision.
+2. `app_user.stripe_customer_id` identifies that user in the configured Tradely billing account. The current product decision reuses Stripe account `acct_1LZx3GFrxuhJplqI` while retaining Tradely-specific Products, Prices, and Clerk mappings.
+3. A verified, non-revoked Course Pass or non-expired manual grant short-circuits
+   subscription lookup for lesson access.
+4. Otherwise, the server calls Stripe at access time. Subscription access is
+   active only when an `active` or `trialing` Subscription contains the exact
+   configured `STRIPE_MEMBERSHIP_PRICE_ID`.
+5. One-time access is granted only after the server verifies a completed, paid
+   Checkout Session for the signed-in Clerk user, matching Stripe Customer,
+   exact `STRIPE_COURSE_PASS_PRICE_ID`, and exact entitlement metadata.
+6. Billing lookup failure is represented as unavailable, not as unpaid.
+7. Paid lesson bodies and media URLs are returned only after that server decision.
 
-Stripe remains the billing source of truth. Checkout Customer creation and Checkout Session creation use stable idempotency keys, and an already-active member cannot create another subscription through Tradely.
+Stripe remains payment, subscription, refund, and dispute truth. The verified
+`app_user` Course Pass grant is the low-latency entitlement record. Checkout
+Customer creation and Checkout Session creation use stable idempotency keys; an
+already-active member cannot create another membership subscription, and an
+active Course Pass owner cannot create another Course Pass checkout through
+Tradely.
 
 ## Media contract
 

@@ -15,8 +15,20 @@ export function manualGrantIsActive(
 	return Number.isFinite(expiresAt) && expiresAt > now;
 }
 
+export function coursePassIsActive(
+	grant:
+		| { coursePassGrantedAt?: Date | null; coursePassRevokedAt?: Date | null }
+		| null
+		| undefined,
+): boolean {
+	return Boolean(grant?.coursePassGrantedAt && !grant.coursePassRevokedAt);
+}
+
 export type LessonAccessDecision =
-	| { allowed: true; reason: "free-preview" | "subscribed" | "manual-grant" }
+	| {
+			allowed: true;
+			reason: "free-preview" | "course-pass" | "subscribed" | "manual-grant";
+	  }
 	| {
 			allowed: false;
 			reason: "signed-out" | "payment-required" | "billing-unavailable";
@@ -26,6 +38,7 @@ export function resolveLessonAccess(input: {
 	access: LessonAccess;
 	isSignedIn: boolean;
 	billingState: BillingState;
+	hasCoursePass?: boolean;
 	hasManualGrant?: boolean;
 }): LessonAccessDecision {
 	if (input.access === "preview") {
@@ -33,6 +46,9 @@ export function resolveLessonAccess(input: {
 	}
 	if (!input.isSignedIn) {
 		return { allowed: false, reason: "signed-out" };
+	}
+	if (input.hasCoursePass) {
+		return { allowed: true, reason: "course-pass" };
 	}
 	if (input.hasManualGrant) {
 		return { allowed: true, reason: "manual-grant" };

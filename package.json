@@ -9,8 +9,11 @@
 	"scripts": {
 		"dev": "pnpm --filter web dev",
 		"build": "pnpm -r --if-present build",
+		"billing:revoke-course-pass": "pnpm --filter @tradely/db billing:revoke-course-pass",
+		"billing:preflight": "pnpm --filter web billing:preflight",
 		"check-types": "pnpm -r check-types",
 		"test": "pnpm --filter web test",
+		"test:db": "pnpm --filter @tradely/db test",
 		"dev:web": "pnpm --filter web dev",
 		"db:push": "pnpm --filter @tradely/db db:push",
 		"db:studio": "pnpm --filter @tradely/db db:studio",

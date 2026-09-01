@@ -18,7 +18,13 @@ export const env = createEnv({
 		POSTHOG_PROJECT_TOKEN: z.string().startsWith("phc_").optional(),
 		POSTHOG_HOST: posthogHost.default(POSTHOG_INGESTION_HOST),
 		STRIPE_API_KEY: z.string().min(1).optional(),
-		STRIPE_PRICE_ID: z.string().min(1).optional(),
+		STRIPE_ACCOUNT_ID: z.string().startsWith("acct_").optional(),
+		STRIPE_MEMBERSHIP_PRICE_ID: z.string().startsWith("price_").optional(),
+		STRIPE_COURSE_PASS_PRICE_ID: z.string().startsWith("price_").optional(),
+		LIFETIME_CHECKOUT_ENABLED: z
+			.enum(["true", "false"])
+			.default("false")
+			.transform((value) => value === "true"),
 		MEDIA_PUBLIC_BASE_URL: z.string().min(1).default("/media/tradingflow"),
 		MEDIA_SIGNING_SECRET: z.string().min(32).optional(),
 		PRIVATE_MEDIA_ROOT: z.string().min(1).optional(),
@@ -29,6 +35,8 @@ export const env = createEnv({
 		MEDIA_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
 		MEDIA_S3_KEY_PREFIX: z.string().min(1).default("tradingflow-foundations"),
 		APP_URL: z.string().url().default("http://localhost:3001"),
+		VERCEL_ENV: z.enum(["development", "preview", "production"]).optional(),
+		VERCEL_URL: z.string().min(1).optional(),
 		NODE_ENV: z
 			.enum(["development", "production", "test"])
 			.default("development"),

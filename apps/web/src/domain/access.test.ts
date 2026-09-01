@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { manualGrantIsActive, resolveLessonAccess } from "./access";
+import {
+	coursePassIsActive,
+	manualGrantIsActive,
+	resolveLessonAccess,
+} from "./access";
 
 describe("resolveLessonAccess", () => {
 	it("keeps previews public", () => {
@@ -31,6 +35,32 @@ describe("resolveLessonAccess", () => {
 				billingState: "active",
 			}),
 		).toEqual({ allowed: true, reason: "subscribed" });
+	});
+
+	it("accepts a durable course pass before consulting billing state", () => {
+		expect(
+			resolveLessonAccess({
+				access: "paid",
+				isSignedIn: true,
+				billingState: "unavailable",
+				hasCoursePass: true,
+			}),
+		).toEqual({ allowed: true, reason: "course-pass" });
+	});
+
+	it("treats a revoked course pass as inactive", () => {
+		expect(
+			coursePassIsActive({
+				coursePassGrantedAt: new Date("2026-08-30T12:00:00Z"),
+				coursePassRevokedAt: null,
+			}),
+		).toBe(true);
+		expect(
+			coursePassIsActive({
+				coursePassGrantedAt: new Date("2026-08-30T12:00:00Z"),
+				coursePassRevokedAt: new Date("2026-08-31T12:00:00Z"),
+			}),
+		).toBe(false);
 	});
 
 	it("expires a manual grant at its configured boundary", () => {

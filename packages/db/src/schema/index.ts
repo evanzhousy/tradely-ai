@@ -16,6 +16,15 @@ export type AccessOverrides = {
 export const appUser = pgTable("app_user", {
 	clerkUserId: text("clerk_user_id").primaryKey(),
 	stripeCustomerId: text("stripe_customer_id").unique(),
+	stripeCoursePassCheckoutSessionId: text(
+		"stripe_course_pass_checkout_session_id",
+	).unique(),
+	coursePassGrantedAt: timestamp("course_pass_granted_at", {
+		withTimezone: true,
+	}),
+	coursePassRevokedAt: timestamp("course_pass_revoked_at", {
+		withTimezone: true,
+	}),
 	accessOverrides: jsonb("access_overrides").$type<AccessOverrides>(),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()

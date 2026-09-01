@@ -24,6 +24,9 @@ describe("analytics event boundaries", () => {
 		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain(
 			"billing_action_failed",
 		);
+		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain(
+			"course_pass_access_verified",
+		);
 	});
 
 	it("allows registered product events and PostHog system events only", () => {
@@ -108,6 +111,11 @@ describe("analytics event boundaries", () => {
 				new Error("No Stripe customer is linked to this account"),
 			),
 		).toBe("no_customer");
+		expect(
+			billingActionFailureReason(
+				new Error("No verified lifetime purchase was found"),
+			),
+		).toBe("not_found");
 		expect(billingActionFailureReason(new Error("Network failed"))).toBe(
 			"unavailable",
 		);

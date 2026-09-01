@@ -48,7 +48,13 @@ export function isExpectedBillingError(error: unknown): boolean {
 		"This membership is already active",
 		"Billing status could not be confirmed",
 		"Sign in to manage billing",
+		"Sign in to verify lifetime access",
 		"No Stripe customer is linked",
+		"Lifetime course checkout is unavailable",
+		"Lifetime course access is already active",
+		"Course pass purchase could not be verified",
+		"This course pass purchase has been revoked",
+		"No verified lifetime purchase was found",
 	].some((prefix) => error.message.startsWith(prefix));
 }
 

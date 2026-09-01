@@ -5,7 +5,11 @@ import { resolveLessonAccess } from "@/domain/access";
 import { captureServerException } from "./analytics/posthog.server";
 import { getCurrentClerkUserId } from "./auth.server";
 import { getStripeBillingState } from "./billing.server";
-import { findAppUser, hasManualAllAccess } from "./users.server";
+import {
+	findAppUser,
+	hasActiveCoursePass,
+	hasManualAllAccess,
+} from "./users.server";
 
 export async function getCurrentCourseAccess() {
 	const userId = await getCurrentClerkUserId();
@@ -14,22 +18,29 @@ export async function getCurrentCourseAccess() {
 			userId: null,
 			isSignedIn: false as const,
 			billingState: "inactive" as const,
+			hasCoursePass: false,
+			hasStripeCustomer: false,
 			hasManualGrant: false,
 			canAccessPaid: false,
 		};
 	}
 	try {
 		const user = await findAppUser(userId);
+		const hasCoursePass = hasActiveCoursePass(user);
 		const hasManualGrant = hasManualAllAccess(user);
-		const billingState = await getStripeBillingState(
-			user?.stripeCustomerId ?? null,
-		);
+		const billingState =
+			hasCoursePass || hasManualGrant
+				? ("inactive" as const)
+				: await getStripeBillingState(user?.stripeCustomerId ?? null);
 		return {
 			userId,
 			isSignedIn: true as const,
 			billingState,
+			hasCoursePass,
+			hasStripeCustomer: Boolean(user?.stripeCustomerId),
 			hasManualGrant,
-			canAccessPaid: hasManualGrant || billingState === "active",
+			canAccessPaid:
+				hasCoursePass || hasManualGrant || billingState === "active",
 		};
 	} catch (error) {
 		await captureServerException(error, {
@@ -41,6 +52,8 @@ export async function getCurrentCourseAccess() {
 			userId,
 			isSignedIn: true as const,
 			billingState: "unavailable" as const,
+			hasCoursePass: false,
+			hasStripeCustomer: false,
 			hasManualGrant: false,
 			canAccessPaid: false,
 		};
@@ -55,6 +68,7 @@ export async function resolveCurrentLessonAccess(lesson: Lesson) {
 			access: lesson.access,
 			isSignedIn: courseAccess.isSignedIn,
 			billingState: courseAccess.billingState,
+			hasCoursePass: courseAccess.hasCoursePass,
 			hasManualGrant: courseAccess.hasManualGrant,
 		}),
 	};

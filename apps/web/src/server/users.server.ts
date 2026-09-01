@@ -2,8 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import { type AppUser, appUser, createDb } from "@tradely/db";
 import { eq } from "drizzle-orm";
-
-import { manualGrantIsActive } from "@/domain/access";
+import { coursePassIsActive, manualGrantIsActive } from "@/domain/access";
 
 export async function findAppUser(
 	clerkUserId: string,
@@ -44,4 +43,47 @@ export async function updateStripeCustomerId(
 
 export function hasManualAllAccess(user: AppUser | null): boolean {
 	return manualGrantIsActive(user?.accessOverrides);
+}
+
+export function hasActiveCoursePass(user: AppUser | null): boolean {
+	return coursePassIsActive(user);
+}
+
+export async function grantCoursePass(
+	clerkUserId: string,
+	checkoutSessionId: string,
+): Promise<void> {
+	const user = await ensureAppUser(clerkUserId);
+	if (
+		user.stripeCoursePassCheckoutSessionId === checkoutSessionId &&
+		user.coursePassRevokedAt
+	) {
+		throw new Error("This course pass purchase has been revoked");
+	}
+	if (
+		user.stripeCoursePassCheckoutSessionId === checkoutSessionId &&
+		coursePassIsActive(user)
+	)
+		return;
+	if (coursePassIsActive(user)) return;
+	const now = new Date();
+	const db = createDb();
+	await db
+		.update(appUser)
+		.set({
+			stripeCoursePassCheckoutSessionId: checkoutSessionId,
+			coursePassGrantedAt: now,
+			coursePassRevokedAt: null,
+			updatedAt: now,
+		})
+		.where(eq(appUser.clerkUserId, clerkUserId));
+}
+
+export async function revokeCoursePass(clerkUserId: string): Promise<void> {
+	const now = new Date();
+	const db = createDb();
+	await db
+		.update(appUser)
+		.set({ coursePassRevokedAt: now, updatedAt: now })
+		.where(eq(appUser.clerkUserId, clerkUserId));
 }

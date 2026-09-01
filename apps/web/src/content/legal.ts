@@ -28,7 +28,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Privacy policy",
 			intro:
 				"This policy explains how Tradely collects, uses, and protects information when you use the Tradely learning hub at tradely.ai.",
-			lastUpdated: "Last updated: August 28, 2026",
+			lastUpdated: "Last updated: August 31, 2026",
 			sections: [
 				{
 					heading: "Information we collect",
@@ -40,7 +40,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Billing information",
 					paragraphs: [
-						"Tradely uses Stripe-hosted checkout and billing management. Stripe processes payment-card details and billing transactions; Tradely stores a Stripe customer reference and entitlement state needed to decide which lessons are available. Tradely does not receive or store your full card number.",
+						"Tradely uses Stripe-hosted checkout for recurring membership and one-time Course Pass purchases, plus billing management for subscriptions. Stripe processes payment-card details and billing transactions; Tradely stores a Stripe customer reference and verified entitlement state needed to decide which lessons are available. Tradely does not receive or store your full card number.",
 					],
 				},
 				{
@@ -48,7 +48,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					bullets: [
 						"Provide, secure, and troubleshoot the learning hub.",
 						"Save your progress and restore video position across devices.",
-						"Confirm membership access to protected course media.",
+						"Confirm membership, Lifetime Course Pass, or manual-grant access to protected course media.",
 						"Process payments and provide billing support through Stripe.",
 						"With your permission, understand page usage, service reliability, performance, errors, and curriculum usability.",
 					],
@@ -86,7 +86,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Terms of service",
 			intro:
 				"These terms govern your use of the Tradely learning hub, its curriculum, and member features.",
-			lastUpdated: "Last updated: August 28, 2026",
+			lastUpdated: "Last updated: August 31, 2026",
 			sections: [
 				{
 					heading: "Educational service",
@@ -103,7 +103,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Membership and billing",
 					paragraphs: [
-						"Paid lessons require an active Tradely membership as shown at checkout. Stripe processes payment and recurring billing details. Cancellation, renewals, refunds, and taxes are handled according to the checkout terms and applicable law; access may remain available through the paid period shown by Stripe.",
+						"Paid lessons require an active Tradely membership, a verified Lifetime Course Pass for the named course, or a valid manual grant. Membership covers eligible Tradely content only while active. A Lifetime Course Pass covers Evidence-Led Options Research and revisions to that course while Tradely continues operating it; future distinct courses are excluded. Stripe processes one-time and recurring payments. Cancellation, renewals, refunds, revocation after refunds or disputes, and taxes are handled according to checkout terms and applicable law.",
 					],
 				},
 				{
@@ -136,7 +136,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Options risk disclosure",
 			intro:
 				"Options involve substantial risk and are not suitable for every investor. Read this disclosure before using Tradely's educational material or any linked practice tool.",
-			lastUpdated: "Last updated: August 28, 2026",
+			lastUpdated: "Last updated: August 31, 2026",
 			sections: [
 				{
 					heading: "You can lose the entire amount invested",
@@ -168,7 +168,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Cookie policy",
 			intro:
 				"This policy describes the browser storage and cookies Tradely uses to keep the learning hub dependable and remember your choices.",
-			lastUpdated: "Last updated: August 28, 2026",
+			lastUpdated: "Last updated: August 31, 2026",
 			sections: [
 				{
 					heading: "Strictly necessary storage",
@@ -203,7 +203,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "隐私政策",
 			intro:
 				"本政策说明你使用 tradely.ai 学习中心时，Tradely 如何收集、使用和保护信息。",
-			lastUpdated: "最后更新：2026 年 8 月 28 日",
+			lastUpdated: "最后更新：2026 年 8 月 31 日",
 			sections: [
 				{
 					heading: "我们收集的信息",
@@ -215,7 +215,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "账单信息",
 					paragraphs: [
-						"Tradely 使用 Stripe 托管结账和账单管理。Stripe 处理银行卡信息和账单交易；Tradely 仅保存用于判断课程权限的 Stripe 客户引用和会员状态，不会接收或保存完整卡号。",
+						"Tradely 使用 Stripe 托管结账来处理周期会员和一次性课程通行证购买，并为订阅提供账单管理。Stripe 处理银行卡信息和账单交易；Tradely 仅保存用于判断课程权限的 Stripe 客户引用和已验证的访问状态，不会接收或保存完整卡号。",
 					],
 				},
 				{
@@ -223,7 +223,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					bullets: [
 						"提供、保护和排查学习中心。",
 						"保存课程进度，并在不同设备恢复视频位置。",
-						"确认受保护课程媒体的会员权限。",
+						"确认受保护课程媒体的会员、终身课程通行证或人工授权权限。",
 						"通过 Stripe 处理付款并提供账单支持。",
 						"经你允许，了解页面使用、服务可靠性、性能、错误和课程体验。",
 					],
@@ -259,7 +259,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 		terms: {
 			title: "服务条款",
 			intro: "本条款约束你对 Tradely 学习中心、课程内容和会员功能的使用。",
-			lastUpdated: "最后更新：2026 年 8 月 28 日",
+			lastUpdated: "最后更新：2026 年 8 月 31 日",
 			sections: [
 				{
 					heading: "教育服务",
@@ -276,7 +276,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "会员与账单",
 					paragraphs: [
-						"付费课程需要结账页面显示的有效 Tradely 会员。Stripe 处理付款和周期账单；取消、续费、退款和税费依结账条款及适用法律处理，访问权限可能持续到 Stripe 显示的付费周期结束。",
+						"付费课程需要有效的 Tradely 会员、当前指定课程的已验证终身通行证或有效人工授权。会员仅在有效期间覆盖符合条件的 Tradely 内容；终身课程通行证覆盖《证据驱动的期权研究》及该课程的修订版本，并以 Tradely 持续运营该课程为前提，不包含未来的独立课程。Stripe 处理一次性和周期付款；取消、续费、退款或争议后的撤销以及税费，依结账条款和适用法律处理。",
 					],
 				},
 				{
@@ -309,7 +309,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "期权风险披露",
 			intro:
 				"期权涉及重大风险，并不适合所有投资者。在使用 Tradely 教育材料或任何练习工具前，请阅读本披露。",
-			lastUpdated: "最后更新：2026 年 8 月 28 日",
+			lastUpdated: "最后更新：2026 年 8 月 31 日",
 			sections: [
 				{
 					heading: "可能损失全部投入",
@@ -341,7 +341,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Cookie 政策",
 			intro:
 				"本政策说明 Tradely 使用哪些浏览器存储和 Cookie，以保持学习中心可靠并记住你的选择。",
-			lastUpdated: "最后更新：2026 年 8 月 28 日",
+			lastUpdated: "最后更新：2026 年 8 月 31 日",
 			sections: [
 				{
 					heading: "必要存储",
