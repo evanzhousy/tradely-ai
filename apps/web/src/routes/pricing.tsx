@@ -44,7 +44,7 @@ export const Route = createFileRoute("/pricing")({
 			{
 				name: "description",
 				content:
-					"Choose Tradely membership or one-time lifetime access to Evidence-Led Options Research with Stripe-hosted checkout.",
+					"Explore Tradely membership and course-access options with Stripe-hosted checkout.",
 			},
 		],
 	}),
@@ -210,7 +210,11 @@ function PricingPage() {
 					{t("pricing.heading")}
 				</h1>
 				<p className="text-lg text-muted-foreground leading-8">
-					{t("pricing.description")}
+					{t(
+						offers.lifetimeCheckoutEnabled
+							? "pricing.description"
+							: "pricing.descriptionMembershipOnly",
+					)}
 				</p>
 			</section>
 

@@ -114,6 +114,8 @@ const messages = {
 		"pricing.heading": "Keep the whole learning path open.",
 		"pricing.description":
 			"Choose ongoing membership for all Tradely learning, or buy permanent access to the current Evidence-Led Options Research course. TradingFlow remains a separate partnered service.",
+		"pricing.descriptionMembershipOnly":
+			"Choose ongoing membership for all Tradely learning and keep every current course open while your membership is active. TradingFlow remains a separate partnered service.",
 		"pricing.taxNote":
 			"Taxes are not enabled automatically. Tradely will configure collection only after applicable registrations and tax treatment are confirmed.",
 		"pricing.checkoutDescription":
@@ -281,6 +283,8 @@ const messages = {
 		"pricing.heading": "保持完整学习路径开放。",
 		"pricing.description":
 			"你可以选择持续会员以访问所有 Tradely 学习内容，或一次性购买当前《证据驱动的期权研究》课程的永久访问权。TradingFlow 仍是独立的合作服务。",
+		"pricing.descriptionMembershipOnly":
+			"选择持续会员，在会员有效期间访问全部 Tradely 学习内容与当前课程。TradingFlow 仍是独立的合作服务。",
 		"pricing.taxNote":
 			"当前不会自动计算税费。Tradely 会在完成适用注册并确认税务处理后配置收取。",
 		"pricing.checkoutDescription": "使用 Stripe 托管结账并自助管理账单。",
