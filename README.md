@@ -32,6 +32,9 @@ Open [http://localhost:8250](http://localhost:8250).
 
 Media ownership and source/access invariants are checked with `pnpm media:assert`. Use `pnpm media:assert:local` after `pnpm media:import` to require every local Academy/caption source before a media operation. Use `pnpm media:verify` for a read-only checksum/size check against the configured Tradely R2 bucket. `pnpm media:upload` is the explicit mutating command; it uploads only the private assets listed in `scripts/media-manifest.json` and verifies every object after upload.
 
+For the Git/R2/ChatCut boundary, generated-artifact policy, release sequence,
+and rollback rules, see [the ops engineer media practice](ops/human/ops-engineer-instruction.md).
+
 ## Service configuration
 
 Copy [apps/web/.env.example](apps/web/.env.example) and configure a dedicated Tradely Clerk app, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Clerk mappings. Configure separate `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. Setting `LIFETIME_CHECKOUT_ENABLED=false` stops new Course Pass purchases without revoking existing grants.

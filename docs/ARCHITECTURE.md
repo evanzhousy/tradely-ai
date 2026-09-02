@@ -45,6 +45,9 @@ The preferred production path is the shared Tradely Cloudflare R2 private bucket
 
 Posters are public because they reveal no paid lesson body. Caption tracks follow the same protection as their video.
 
+The operational Git and artifact boundary is documented in
+[`ops/human/ops-engineer-instruction.md`](../ops/human/ops-engineer-instruction.md): final media is delivered through R2, while source and metadata remain reviewable in Git.
+
 ## Progress contract
 
 The client submits only the lesson ID, playback position, and completion intent. The server resolves the lesson, its content version, and its current access rule from source control. A signed-in user cannot write progress for a paid lesson without current access.

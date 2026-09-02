@@ -80,5 +80,16 @@ videos/**/*.ico
 videos/**/gsap.min.js
 videos/**/node_modules/
 videos/**/.waveform-cache/
+
+# HyperFrames/ChatCut generated project artifacts. Keep storyboards, scripts,
+# manifests, and metadata JSON; keep compositions/renders and editor caches on
+# disk or in the media archive instead of Git.
+videos/**/index.html
+videos/**/compositions/
+videos/**/styleframe/
+videos/**/.hyperframes/
+videos/**/.media/images/
+videos/**/.media/preferences.json
+videos/**/lightweight-chart*.js
 /.husky/pre-commit
 /.impeccable/design.json
