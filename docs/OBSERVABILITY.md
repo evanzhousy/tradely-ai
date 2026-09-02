@@ -237,6 +237,8 @@ Do not configure grouping, suppression, severity, or assignment rules before rea
 
 Before release:
 
+When verifying with browser automation, use a normal Chrome user agent and ensure the browser does not expose `navigator.webdriver=true` (for `agent-browser`, pass `--args '--disable-blink-features=AutomationControlled'`). PostHog intentionally drops either signal as bot traffic before `before_send`; do not disable the production user-agent filter just to make an automated probe appear. When querying the probe in PostHog, set `filterTestAccounts: false` so localhost and explicitly marked test users are included. Saved production monitors should continue filtering test accounts.
+
 1. Load the app with no stored consent and confirm there are no requests to PostHog ingestion.
 2. Choose **Use necessary only** and confirm capture remains silent and the consent cookie is `denied`.
 3. Choose **Allow analytics** and verify one `$pageview` plus one `page_viewed` event for the current route, one GA4 `page_view`, the Google tag load, and a `granted` consent cookie.

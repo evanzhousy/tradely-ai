@@ -81,6 +81,21 @@ function stripeObjectId(value: string | { id: string } | null): string | null {
 	return typeof value === "string" ? value : value.id;
 }
 
+function coursePassCheckoutGeneration(
+	user: {
+		stripeCoursePassCheckoutSessionId: string | null;
+		coursePassRevokedAt: Date | null;
+	} | null,
+): string {
+	if (!user?.coursePassRevokedAt) return "initial";
+	return createHash("sha256")
+		.update(
+			`${user.stripeCoursePassCheckoutSessionId ?? "none"}:${user.coursePassRevokedAt.toISOString()}`,
+		)
+		.digest("hex")
+		.slice(0, 12);
+}
+
 export async function getStripeBillingState(
 	stripeCustomerId: string | null,
 ): Promise<BillingState> {
@@ -88,20 +103,38 @@ export async function getStripeBillingState(
 		return "unavailable";
 	if (!stripeCustomerId) return "inactive";
 	try {
-		const subscriptions = await stripeClient().subscriptions.list({
-			customer: stripeCustomerId,
-			status: "all",
-			limit: 10,
-		});
-		return subscriptions.data.some((subscription) =>
-			subscriptionGrantsCourse({
-				status: subscription.status,
-				priceIds: subscription.items.data.map((item) => item.price.id),
-				expectedPriceId: env.STRIPE_MEMBERSHIP_PRICE_ID as string,
-			}),
-		)
-			? "active"
-			: "inactive";
+		const stripe = stripeClient();
+		for (const status of ["active", "trialing"] as const) {
+			let startingAfter: string | undefined;
+			for (;;) {
+				const subscriptions = await stripe.subscriptions.list({
+					customer: stripeCustomerId,
+					status,
+					limit: 100,
+					...(startingAfter ? { starting_after: startingAfter } : {}),
+				});
+				if (
+					subscriptions.data.some((subscription) =>
+						subscriptionGrantsCourse({
+							status: subscription.status,
+							priceIds: subscription.items.data.map((item) => item.price.id),
+							expectedPriceId: env.STRIPE_MEMBERSHIP_PRICE_ID as string,
+						}),
+					)
+				) {
+					return "active";
+				}
+				if (!subscriptions.has_more) break;
+				const lastSubscription = subscriptions.data.at(-1);
+				if (!lastSubscription) {
+					throw new Error(
+						"Stripe returned an empty subscription page with more data",
+					);
+				}
+				startingAfter = lastSubscription.id;
+			}
+		}
+		return "inactive";
 	} catch (error) {
 		await captureServerException(error, {
 			source: "billing",
@@ -178,6 +211,9 @@ export async function getOffersSummaryImpl() {
 		membership,
 		coursePass,
 		lifetimeCheckoutEnabled: env.LIFETIME_CHECKOUT_ENABLED,
+		coursePassRecoveryConfigured: Boolean(
+			env.STRIPE_API_KEY && env.STRIPE_COURSE_PASS_PRICE_ID,
+		),
 	};
 }
 
@@ -305,6 +341,7 @@ async function beginCoursePassCheckoutCore() {
 		.digest("hex")
 		.slice(0, 12);
 	const timeBucket = Math.floor(Date.now() / (30 * 60 * 1000));
+	const purchaseGeneration = coursePassCheckoutGeneration(user);
 	const metadata = {
 		tradely_clerk_user_id: clerkUserId,
 		tradely_entitlement: COURSE_PASS_ENTITLEMENT,
@@ -315,7 +352,7 @@ async function beginCoursePassCheckoutCore() {
 			branding_settings: BILLING_CONTRACT.checkoutBranding,
 			integration_identifier: checkoutIntegrationIdentifier(
 				"course_pass",
-				`${clerkUserId}:${priceKey}:${timeBucket}`,
+				`${clerkUserId}:${priceKey}:${purchaseGeneration}:${timeBucket}`,
 			),
 			customer: stripeCustomerId,
 			client_reference_id: clerkUserId,
@@ -326,7 +363,7 @@ async function beginCoursePassCheckoutCore() {
 			cancel_url: `${appUrl}/pricing?checkout=lifetime-cancel`,
 		},
 		{
-			idempotencyKey: `tradely-course-pass-${userKey}-${priceKey}-${timeBucket}`,
+			idempotencyKey: `tradely-course-pass-${userKey}-${priceKey}-${purchaseGeneration}-${timeBucket}`,
 		},
 	);
 	if (!session.url) throw new Error("Stripe did not return a checkout URL");
@@ -458,31 +495,45 @@ export async function restoreCoursePassImpl() {
 				source: "existing" as const,
 			};
 		}
-		const sessions = await stripeClient().checkout.sessions.list({
-			customer: current.stripeCustomerId,
-			limit: 100,
-		});
-		for (const session of sessions.data) {
-			if (
-				current.user.coursePassRevokedAt &&
-				current.user.stripeCoursePassCheckoutSessionId === session.id
-			) {
-				continue;
+		const stripe = stripeClient();
+		let startingAfter: string | undefined;
+		for (;;) {
+			const sessions = await stripe.checkout.sessions.list({
+				customer: current.stripeCustomerId,
+				status: "complete",
+				limit: 100,
+				...(startingAfter ? { starting_after: startingAfter } : {}),
+			});
+			for (const session of sessions.data) {
+				if (
+					current.user.coursePassRevokedAt &&
+					current.user.stripeCoursePassCheckoutSessionId === session.id
+				) {
+					continue;
+				}
+				if (
+					await coursePassSessionMatchesUser(session, {
+						clerkUserId: current.identity.userId,
+						stripeCustomerId: current.stripeCustomerId,
+						priceId: current.priceId,
+					})
+				) {
+					await grantCoursePass(current.identity.userId, session.id);
+					return {
+						verified: true as const,
+						courseId: "tradingflow-foundations" as const,
+						source: "restore" as const,
+					};
+				}
 			}
-			if (
-				await coursePassSessionMatchesUser(session, {
-					clerkUserId: current.identity.userId,
-					stripeCustomerId: current.stripeCustomerId,
-					priceId: current.priceId,
-				})
-			) {
-				await grantCoursePass(current.identity.userId, session.id);
-				return {
-					verified: true as const,
-					courseId: "tradingflow-foundations" as const,
-					source: "restore" as const,
-				};
+			if (!sessions.has_more) break;
+			const lastSession = sessions.data.at(-1);
+			if (!lastSession) {
+				throw new Error(
+					"Stripe returned an empty Checkout Session page with more data",
+				);
 			}
+			startingAfter = lastSession.id;
 		}
 		throw new Error("No verified lifetime purchase was found");
 	} catch (error) {

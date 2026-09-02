@@ -78,6 +78,8 @@ vi.mock("./users.server", () => ({
 import {
 	beginCoursePassCheckoutImpl,
 	beginMembershipCheckoutImpl,
+	getOffersSummaryImpl,
+	getStripeBillingState,
 	restoreCoursePassImpl,
 	verifyCoursePassCheckoutImpl,
 } from "./billing.server";
@@ -161,6 +163,52 @@ describe("Stripe billing server", () => {
 			/^tradely_membership_[a-z]{8}$/,
 		);
 		expect(params).not.toHaveProperty("payment_method_types");
+	});
+
+	it("paginates past old subscriptions to find a valid membership", async () => {
+		mocks.subscriptionsList
+			.mockResolvedValueOnce({
+				data: [],
+				has_more: false,
+			})
+			.mockResolvedValueOnce({
+				data: [
+					{
+						id: "sub_newer_unrelated",
+						status: "trialing",
+						items: { data: [{ price: { id: "price_other" } }] },
+					},
+				],
+				has_more: true,
+			})
+			.mockResolvedValueOnce({
+				data: [
+					{
+						id: "sub_older_valid",
+						status: "trialing",
+						items: { data: [{ price: { id: "price_membership" } }] },
+					},
+				],
+				has_more: false,
+			});
+
+		await expect(getStripeBillingState("cus_tradely")).resolves.toBe("active");
+		expect(mocks.subscriptionsList).toHaveBeenNthCalledWith(1, {
+			customer: "cus_tradely",
+			status: "active",
+			limit: 100,
+		});
+		expect(mocks.subscriptionsList).toHaveBeenNthCalledWith(2, {
+			customer: "cus_tradely",
+			status: "trialing",
+			limit: 100,
+		});
+		expect(mocks.subscriptionsList).toHaveBeenNthCalledWith(3, {
+			customer: "cus_tradely",
+			status: "trialing",
+			limit: 100,
+			starting_after: "sub_newer_unrelated",
+		});
 	});
 
 	it("uses the trusted Vercel deployment origin for Preview callbacks", async () => {
@@ -247,6 +295,29 @@ describe("Stripe billing server", () => {
 		expect(secondOptions.idempotencyKey).toBe(firstOptions.idempotencyKey);
 	});
 
+	it("starts a new idempotency generation after Course Pass revocation", async () => {
+		mocks.checkoutCreate.mockResolvedValue({
+			url: "https://checkout.test/course-pass",
+		});
+
+		await beginCoursePassCheckoutImpl();
+		const [firstParams, firstOptions] = mocks.checkoutCreate.mock.calls[0];
+		mocks.findAppUser.mockResolvedValue({
+			...appUser,
+			stripeCoursePassCheckoutSessionId: "cs_test_revoked",
+			coursePassGrantedAt: new Date("2026-09-01T12:00:00Z"),
+			coursePassRevokedAt: new Date("2026-09-02T12:00:00Z"),
+		});
+
+		await beginCoursePassCheckoutImpl();
+		const [secondParams, secondOptions] = mocks.checkoutCreate.mock.calls[1];
+
+		expect(secondParams.integration_identifier).not.toBe(
+			firstParams.integration_identifier,
+		);
+		expect(secondOptions.idempotencyKey).not.toBe(firstOptions.idempotencyKey);
+	});
+
 	it("blocks new Course Pass sessions when checkout is disabled", async () => {
 		mocks.env.LIFETIME_CHECKOUT_ENABLED = false;
 
@@ -254,6 +325,21 @@ describe("Stripe billing server", () => {
 			"Lifetime course checkout is unavailable",
 		);
 		expect(mocks.checkoutCreate).not.toHaveBeenCalled();
+	});
+
+	it("keeps Course Pass recovery configured when new sales are disabled", async () => {
+		mocks.env.LIFETIME_CHECKOUT_ENABLED = false;
+		mocks.pricesRetrieve.mockResolvedValue({
+			currency: "usd",
+			unit_amount: 990,
+			recurring: { interval: "month" },
+		});
+
+		await expect(getOffersSummaryImpl()).resolves.toMatchObject({
+			coursePass: { configured: false },
+			lifetimeCheckoutEnabled: false,
+			coursePassRecoveryConfigured: true,
+		});
 	});
 
 	it("grants access only after exact paid-session verification", async () => {
@@ -304,6 +390,44 @@ describe("Stripe billing server", () => {
 		expect(mocks.grantCoursePass).toHaveBeenCalledWith(
 			"user_tradely",
 			"cs_test_course_pass",
+		);
+	});
+
+	it("paginates Checkout Sessions while restoring an older purchase", async () => {
+		mocks.checkoutList
+			.mockResolvedValueOnce({
+				data: [
+					paidCoursePassSession({
+						id: "cs_test_newer_unpaid",
+						status: "open",
+						payment_status: "unpaid",
+					}),
+				],
+				has_more: true,
+			})
+			.mockResolvedValueOnce({
+				data: [paidCoursePassSession({ id: "cs_test_older_paid" })],
+				has_more: false,
+			});
+
+		await expect(restoreCoursePassImpl()).resolves.toMatchObject({
+			verified: true,
+			source: "restore",
+		});
+		expect(mocks.checkoutList).toHaveBeenNthCalledWith(1, {
+			customer: "cus_tradely",
+			status: "complete",
+			limit: 100,
+		});
+		expect(mocks.checkoutList).toHaveBeenNthCalledWith(2, {
+			customer: "cus_tradely",
+			status: "complete",
+			limit: 100,
+			starting_after: "cs_test_newer_unpaid",
+		});
+		expect(mocks.grantCoursePass).toHaveBeenCalledWith(
+			"user_tradely",
+			"cs_test_older_paid",
 		);
 	});
 });

@@ -11,7 +11,6 @@ import {
 import { CheckIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import { useAnalytics } from "@/analytics/context";
 import type { BillingOffer } from "@/analytics/events";
@@ -19,24 +18,16 @@ import {
 	PricingAccountActions,
 	PricingCheckoutButton,
 } from "@/components/pricing-actions";
+import {
+	type PricingCheckoutResult,
+	parsePricingSearch,
+} from "@/domain/pricing-search";
 import { useI18n } from "@/i18n/provider";
 import { getPricingSummary, verifyCoursePassCheckout } from "@/server/billing";
 
-const checkoutResultSchema = z.enum([
-	"success",
-	"cancel",
-	"membership-success",
-	"membership-cancel",
-	"lifetime-success",
-	"lifetime-cancel",
-]);
-
 export const Route = createFileRoute("/pricing")({
 	loader: () => getPricingSummary(),
-	validateSearch: z.object({
-		checkout: checkoutResultSchema.optional(),
-		session_id: z.string().startsWith("cs_").max(200).optional(),
-	}),
+	validateSearch: parsePricingSearch,
 	head: () => ({
 		links: [{ rel: "canonical", href: "https://tradely.ai/pricing" }],
 		meta: [
@@ -120,7 +111,7 @@ function OfferCard({
 	);
 }
 
-function checkoutAnalytics(value: z.infer<typeof checkoutResultSchema>): {
+function checkoutAnalytics(value: PricingCheckoutResult): {
 	status: "success" | "cancel";
 	offer: BillingOffer;
 } {
@@ -148,6 +139,17 @@ function PricingPage() {
 	const { capture, isCapturing } = useAnalytics();
 	const trackedCheckoutReturn = useRef<string | null>(null);
 	const verifiedSession = useRef<string | null>(null);
+	const invalidReturnReported = useRef(false);
+
+	useEffect(() => {
+		if (checkout !== "lifetime-success" || sessionId) {
+			invalidReturnReported.current = false;
+			return;
+		}
+		if (invalidReturnReported.current) return;
+		invalidReturnReported.current = true;
+		toast.error(t("pricing.verifyFailure"));
+	}, [checkout, sessionId, t]);
 
 	useEffect(() => {
 		if (
@@ -244,10 +246,13 @@ function PricingPage() {
 			<PricingAccountActions
 				canManageBilling={access.billingState === "active"}
 				canRestoreCoursePass={
-					offers.lifetimeCheckoutEnabled &&
+					offers.coursePassRecoveryConfigured &&
 					access.isSignedIn &&
 					!access.hasCoursePass &&
 					access.hasStripeCustomer
+				}
+				showCoursePassStatus={
+					!offers.lifetimeCheckoutEnabled && access.hasCoursePass
 				}
 				onAccessChanged={() => void router.invalidate()}
 			/>

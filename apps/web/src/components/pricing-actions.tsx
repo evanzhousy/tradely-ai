@@ -118,10 +118,12 @@ export function PricingCheckoutButton({
 export function PricingAccountActions({
 	canManageBilling,
 	canRestoreCoursePass,
+	showCoursePassStatus,
 	onAccessChanged,
 }: {
 	canManageBilling: boolean;
 	canRestoreCoursePass: boolean;
+	showCoursePassStatus: boolean;
 	onAccessChanged: () => void;
 }) {
 	const portal = useServerFn(openCustomerPortal);
@@ -130,7 +132,8 @@ export function PricingAccountActions({
 	const { capture, captureException } = useAnalytics();
 	const [pending, setPending] = useState<"portal" | "restore" | null>(null);
 
-	if (!canManageBilling && !canRestoreCoursePass) return null;
+	if (!canManageBilling && !canRestoreCoursePass && !showCoursePassStatus)
+		return null;
 
 	const openPortal = async () => {
 		setPending("portal");
@@ -189,6 +192,15 @@ export function PricingAccountActions({
 
 	return (
 		<div className="flex flex-wrap gap-3">
+			{showCoursePassStatus ? (
+				<div
+					className="inline-flex h-9 items-center gap-1.5 rounded-4xl border border-border bg-background px-3 font-medium text-foreground text-sm"
+					role="status"
+				>
+					<CheckIcon data-icon="inline-start" aria-hidden="true" />
+					{t("pricing.coursePassActive")}
+				</div>
+			) : null}
 			{canManageBilling ? (
 				<Button
 					variant="outline"

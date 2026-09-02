@@ -31,6 +31,13 @@ by the application. Because branding, customers, reporting, and statement
 descriptors are account-scoped, changes can affect every product on this shared
 account.
 
+Production and non-production must use distinct Clerk instances and Neon
+branches/databases. `app_user` stores one Stripe Customer reference, and Stripe
+test and live Customers are different objects even when their IDs have the same
+shape. Sharing one learner row across key modes can replace or strand the
+Customer mapping, so environment isolation is a billing invariant rather than
+an optional deployment preference.
+
 `LIFETIME_CHECKOUT_ENABLED` controls only the creation and display of new
 one-time purchases. Verification, restore, and previously granted access must
 continue working when it is false.
@@ -87,9 +94,10 @@ The unique Checkout Session column makes repeated return callbacks idempotent.
 ## Restore purchase
 
 If payment succeeded but the browser never returned, a signed-in learner can
-run **Restore purchase**. The server searches the bounded recent Checkout
-Sessions for that Stripe Customer and applies the same verification contract.
-No browser-supplied Customer or Price ID is accepted.
+run **Restore purchase**. The server paginates through Checkout Sessions for
+that Stripe Customer and applies the same verification contract. No
+browser-supplied Customer or Price ID is accepted. Recovery remains available
+when new Course Pass sales are disabled.
 
 ## Refunds and disputes
 
@@ -127,7 +135,8 @@ support reference.
 
 Revocation keeps the original Checkout Session reference so Restore purchase
 cannot reactivate a refunded purchase. A later new paid Session can establish a
-new grant.
+new grant. That revocation state also advances the Checkout idempotency
+generation, so the next purchase cannot reuse the completed revoked Session.
 
 ## Test-mode acceptance matrix
 
