@@ -7,6 +7,7 @@ import { TradelyBrand } from "./brand";
 export function Footer() {
 	const { t } = useI18n();
 	const { isConfigured, openPreferences } = useAnalytics();
+	const year = new Date().getFullYear();
 	return (
 		<footer className="border-border/60 border-t bg-muted/20">
 			<div className="mx-auto grid max-w-[1480px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
@@ -61,7 +62,7 @@ export function Footer() {
 				</nav>
 			</div>
 			<div className="mx-auto max-w-[1480px] px-4 pb-8 text-muted-foreground text-xs sm:px-6 lg:px-8">
-				{t("footer.rights", { year: new Date().getFullYear() })}
+				{t("footer.rights", { year })}
 			</div>
 		</footer>
 	);

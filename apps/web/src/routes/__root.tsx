@@ -38,7 +38,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				name: "twitter:image",
 				content: "https://tradely.ai/brand/tradely-mark.png",
 			},
-			{ title: "Tradely — Options learning with real workflow practice" },
+			{ title: "Tradely. Options learning with real workflow practice" },
 			{
 				name: "description",
 				content:
@@ -72,10 +72,10 @@ function RootDocument() {
 			<body suppressHydrationWarning>
 				{/*
 				  THESIS: Tradely turns options concepts into a repeatable evidence workflow and refuses the generic video-grid LMS.
-				  OWN-WORLD: The Night Scholar Owl, sunflower-yellow orientation, ink-black structure, clean white reading surfaces, Luma geometry, Inter, and JetBrains Mono establish Tradely's distinct identity.
+				  OWN-WORLD: The Night Scholar Owl, sunflower-yellow orientation, ink-black structure, clean white reading surfaces, Inter, and JetBrains Mono establish Tradely's distinct identity.
 				  STORY: Orient, learn one concept, practice it in TradingFlow, record progress, and continue.
-				  FIRST VIEWPORT: A decisive, single-column course thesis with one clear start action and an explicit partnered-tool path.
-				  FORM: Read-mode guided field manual; approved sidebar lesson structure from the product plan.
+				  FIRST VIEWPORT: A decisive course thesis, sourced figures, one start action, and the ordered curriculum as proof.
+				  FORM: Evidence Desk; homepage uses desk-* composition classes from DESIGN.md.
 				*/}
 				<AppProviders>
 					<RouteAnalytics />

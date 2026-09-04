@@ -84,6 +84,56 @@ The default density is editorial rather than dashboard-heavy. Large thesis state
 - Inter for readable structure and JetBrains Mono for compact metadata.
 - Real TradingFlow media appears only inside explicit partner and practice contexts.
 
+## Agent contract
+
+This file is the design authority for agents working in this repository. Load it before changing UI. Do not load `https://vercel.com/design.md` or Geist/VBG report primitives as Tradely's visual system. Vercel's public file is a foreign brand contract. Tradely may reuse its *method* (reader job, evidence composition, eval loop) while keeping this palette, type, and identity.
+
+### Scope
+
+Applies to every Tradely web surface: homepage, course index, lesson, pricing, auth chrome, legal. Video and ops skills have their own frame contracts and are out of scope here.
+
+### Reader and task
+
+The primary reader is an options trader deciding whether to start the ordered curriculum. The strongest supported answer is: Tradely teaches one research path, then sends the learner to TradingFlow for a bounded practice task. The two products do not share accounts. No outcome, speed, or profitability claim is supported.
+
+### Observable decisions
+
+Agents must be able to point at the rendered page and confirm each of these:
+
+1. The homepage first viewport contains one `h1`, one start-learning action to the first lesson, sourced lesson/minute/preview/progress figures, and the TradingFlow independence caveat.
+2. The curriculum proof is a full-width semantic table (or, on in-app lesson rails, one ordered list). It is not a grid of video posters or nested cards.
+3. Each homepage lesson row maps the lesson to the TradingFlow tool named in `lesson.practice.tool`.
+4. Access states remain distinct in text: free, paid/membership, unlocked, access unavailable, completed.
+5. Partner copy states that TradingFlow is independent and may require its own account. It never describes a shared login or shared infrastructure.
+6. Inter is the interface face. JetBrains Mono is limited to counts, duration, sequence, access, and compact labels.
+7. Sunflower yellow, ink black, and paper/night are the structural colors. Green and red appear only for genuine success/error or market data.
+8. Product UI copy does not use em dashes or all-caps decorative eyebrows.
+9. Light and dark both preserve the same hierarchy. Reduced motion, reduced transparency, and 44px coarse-pointer targets remain.
+
+### Available primitives
+
+Compose from installed tokens and these named pieces. Do not invent a parallel type scale or a second chrome.
+
+- Theme tokens in `packages/ui/src/styles/globals.css`: `background`, `foreground`, `card`, `muted`, `primary`, `border`, `ring`.
+- shadcn controls for behavior: `Button`, `Sheet`, `Header` product chrome, `CourseList` on course/lesson rails.
+- Homepage composition classes in `apps/web/src/styles/desk.css`: `desk-opening`, `desk-opening-claim`, `desk-opening-proof`, `desk-opening-context`, `desk-stat-strip`, `desk-stat`, `desk-stat-label`, `desk-stat-value`, `desk-stat-detail`, `desk-curriculum`, `desk-numeric`.
+- `LandingCurriculumTable` is the homepage evidence table. `CourseList` is the in-app ordered path. They are cousins; do not merge them.
+
+### Generated-design patterns to refuse
+
+- Marketplace thumbnail grids and stacked video-card catalogs.
+- Generic centered hero plus three equal feature cards.
+- All-caps or tracked eyebrows, kickers, and decorative numbered section labels.
+- Badges or pills for ordinary metadata (course title, "the course", partner kicker).
+- Nested cards used to repair weak hierarchy.
+- Gradients, glow, blobs, glass spectacle, or decorative finance imagery.
+- Geist, Vercel wordmark/triangle, or `vbg-*` classes on Tradely product surfaces.
+- Invented testimonials, win rates, or "fast/safe" trading claims.
+
+### Eval loop
+
+Homepage is the first frozen scenario: `docs/design-eval/homepage.md`. Mechanical checks live in `apps/web/src/design-eval/homepage.contract.test.ts`. When a review correction repeats, encode it here as an observable rule, in `desk.css` as a primitive, or in that test as a check. Do not hand-tune one generated page and leave the contract unchanged.
+
 ## Colors
 
 The palette is derived directly from the selected YBW B1 Night Scholar Owl: sunflower yellow, ink black, and clean white. Light-mode focus gold is a darker yellow sibling used only where the exact brand yellow would not provide sufficient focus contrast on white.
@@ -127,9 +177,9 @@ The palette is derived directly from the selected YBW B1 Night Scholar Owl: sunf
 
 ## Layout
 
-The widest shell is 1480px with 16px mobile gutters, 24px tablet gutters, and 32px desktop gutters. The homepage hero uses one editorial column, course-overview surfaces use split grids, and reading surfaces use a 330px curriculum rail with a centered lesson column capped near 920px. Prose itself stays near 72ch.
+The widest shell is 1480px with 16px mobile gutters, 24px tablet gutters, and 32px desktop gutters. The homepage opening is claim-led: thesis and start action share the first viewport with sourced figures; the curriculum table then owns the full evidence width. Course-overview surfaces use split grids. Reading surfaces use a 330px curriculum rail with a centered lesson column capped near 920px. Prose itself stays near 72ch.
 
-The responsive sequence is preserved rather than compressed: thesis, action, progress, curriculum, then partnership context. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs stack without centering the reading voice.
+The responsive sequence is preserved rather than compressed: thesis, action, sourced figures, curriculum table, then partnership context. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs stack without centering the reading voice.
 
 Spacing follows an 8px base rhythm, with 16–24px inside components, 32–48px between local groups, and 64–96px between major story sections.
 
@@ -148,7 +198,7 @@ The base radius is 10px. Buttons, chips, cards, media frames, and sheets extend 
 ### Buttons
 
 - **Shape:** Soft capsule (26px radius) with 36–40px desktop height and 44px coarse-pointer minimum.
-- **Primary:** Ink black with sunflower-yellow text in light mode; sunflower yellow with ink-black text in dark mode. Large CTAs use 16px horizontal padding.
+- **Primary:** Ink black with sunflower-yellow text in light mode; sunflower yellow with ink-black text in dark mode. Large CTAs use 16px horizontal padding. Homepage start learning is content-sized in the claim column, not a full-width bar.
 - **Hover / Focus:** Background darkens or softens; focus adds a semantic ring; press scales to 0.97 with a short ease-out.
 - **Secondary / Ghost:** Neutral fill or transparent surface. Outline is quiet and never the page's focal action.
 

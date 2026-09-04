@@ -1,0 +1,136 @@
+.desk-opening {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 2rem;
+	min-width: 0;
+}
+
+.desk-opening-claim,
+.desk-opening-proof,
+.desk-opening-context {
+	min-width: 0;
+}
+
+.desk-opening-context {
+	max-width: 68ch;
+}
+
+@media (min-width: 1024px) {
+	.desk-opening {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		column-gap: 3rem;
+		row-gap: 1.5rem;
+	}
+
+	.desk-opening-claim {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.desk-opening-proof {
+		grid-column: 2;
+		grid-row: 1;
+	}
+
+	.desk-opening-context {
+		grid-column: 1;
+		grid-row: 2;
+	}
+}
+
+.desk-stat-strip {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.5rem 2rem;
+}
+
+.desk-stat {
+	display: grid;
+	gap: 0.25rem;
+	min-width: 0;
+}
+
+.desk-stat-label {
+	color: var(--muted-foreground);
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.desk-stat-value {
+	font-size: 1.875rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.025em;
+	line-height: 1.1;
+}
+
+.desk-stat-detail {
+	color: var(--muted-foreground);
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.desk-curriculum {
+	width: 100%;
+	min-width: 0;
+	overflow-x: auto;
+}
+
+.desk-curriculum table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9375rem;
+}
+
+.desk-curriculum caption {
+	caption-side: top;
+	margin-bottom: 0.75rem;
+	color: var(--muted-foreground);
+	font-size: 0.875rem;
+	text-align: start;
+}
+
+.desk-curriculum th,
+.desk-curriculum td {
+	padding: 1rem 0.75rem 1rem 0;
+	border-bottom: 1px solid var(--border);
+	text-align: start;
+	vertical-align: baseline;
+}
+
+.desk-curriculum thead th {
+	color: var(--muted-foreground);
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.desk-curriculum tbody th {
+	font-weight: 500;
+}
+
+.desk-numeric {
+	text-align: end;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.desk-curriculum a {
+	color: var(--foreground);
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.desk-curriculum a:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.18em;
+}
+
+.desk-curriculum a:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 2px;
+}
