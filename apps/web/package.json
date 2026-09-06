@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"billing:preflight": "tsx scripts/billing-preflight.ts",
-		"build": "vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && SERVER_ENTRY=$(find .. -path '*/.vercel/output/functions/__server.func/index.mjs' -print -quit) && test -n \"$SERVER_ENTRY\" && cp \"$SERVER_ENTRY\" dist/server/index.js",
+		"build": "vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && SERVER_ENTRY=$(find ../.. -path '*/.vercel/output/functions/__server.func/index.mjs' -print -quit) && test -n \"$SERVER_ENTRY\" && cp \"$SERVER_ENTRY\" dist/server/index.js",
 		"check-types": "tsr generate && tsc --noEmit",
 		"serve": "vite preview",
 		"dev": "vite dev",
