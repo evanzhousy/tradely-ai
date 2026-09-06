@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"billing:preflight": "tsx scripts/billing-preflight.ts",
-		"build": "vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && cp .vercel/output/functions/__server.func/index.mjs dist/server/index.js",
+		"build": "vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && if test -f .vercel/output/functions/__server.func/index.mjs; then cp .vercel/output/functions/__server.func/index.mjs dist/server/index.js; elif test -f ../../.vercel/output/functions/__server.func/index.mjs; then cp ../../.vercel/output/functions/__server.func/index.mjs dist/server/index.js; else echo 'Missing Vercel server output' >&2; exit 1; fi",
 		"check-types": "tsr generate && tsc --noEmit",
 		"serve": "vite preview",
 		"dev": "vite dev",
