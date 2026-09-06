@@ -1,17 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { buttonVariants } from "@tradely/ui/components/button";
+import {
+	ArrowDownIcon,
+	ArrowRightIcon,
+	BookOpenIcon,
+	ScanLineIcon,
+	WorkflowIcon,
+} from "lucide-react";
 import { useEffect } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { LandingCurriculumTable } from "@/components/landing-curriculum-table";
+import { LandingResearchDemo } from "@/components/landing-research-demo";
+import { TradingHall } from "@/components/trading-hall";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/")({
 	loader: () => getCourseProgress(),
-	head: () => ({
-		links: [{ rel: "canonical", href: "https://tradely.ai/" }],
-	}),
+	head: () => ({ links: [{ rel: "canonical", href: "https://tradely.ai/" }] }),
 	component: HomeComponent,
 });
 
@@ -29,88 +36,142 @@ function HomeComponent() {
 		(lesson) => lesson.access === "preview",
 	).length;
 	useEffect(() => {
-		if (progress.accessUnavailable) {
+		if (progress.accessUnavailable)
 			capture("billing_status_unavailable", { surface: "course_progress" });
-		}
 	}, [capture, progress.accessUnavailable]);
 	return (
-		<main>
-			<section className="desk-opening mx-auto max-w-[1480px] px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
-				<div className="desk-opening-claim flex flex-col gap-5">
-					<h1 className="max-w-[15ch] font-semibold text-5xl text-display sm:text-6xl lg:text-7xl">
-						{t("home.heroTitle")}
-					</h1>
-					<p className="max-w-[68ch] text-lg text-muted-foreground leading-8">
-						{t("home.heroDescription")}
-					</p>
-					{startLesson ? (
-						<Link
-							to="/learn/$lessonSlug"
-							params={{ lessonSlug: startLesson.slug }}
-							className={buttonVariants({
-								size: "lg",
-								className: "self-start",
-							})}
-						>
-							{t("common.startLearning")}
-						</Link>
-					) : null}
-				</div>
-				<div className="desk-opening-proof">
-					<div className="desk-stat-strip">
+		<main className="observatory">
+			<TradingHall>
+				<div className="observatory-container observatory-opening">
+					<div className="observatory-claim">
+						<p className="observatory-label">
+							<span />
+							{t("home.openingLabel")}
+						</p>
+						<h1>
+							<span>{t("home.titleRead")}</span>
+							<span>{t("home.titleVerify")}</span>
+						</h1>
+						<p className="observatory-intro">{t("home.intro")}</p>
+						<div className="observatory-hero-actions">
+							{startLesson ? (
+								<Link
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: startLesson.slug }}
+									className={buttonVariants({
+										size: "lg",
+										className: "self-start",
+									})}
+								>
+									{t("home.startFree")}
+									<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+								</Link>
+							) : null}
+							<a href="#curriculum" className="observatory-text-link">
+								{t("home.explore")}
+								<ArrowDownIcon size={15} aria-hidden="true" />
+							</a>
+						</div>
+						<p className="observatory-free-note">
+							{t("home.freeNote", { minutes: startLesson?.minutes ?? 0 })}
+						</p>
+					</div>
+					<div className="desk-stat-strip observatory-stats">
 						<div className="desk-stat">
-							<p className="desk-stat-label">{t("home.statLessons")}</p>
-							<p className="desk-stat-value">{course.lessons.length}</p>
-							<p className="desk-stat-detail">{t("home.partnerHeading")}</p>
+							<p className="desk-stat-value">
+								{course.lessons.length}
+								<span>{t("home.statLessons")}</span>
+							</p>
 						</div>
 						<div className="desk-stat">
-							<p className="desk-stat-label">{t("home.statMinutes")}</p>
-							<p className="desk-stat-value">{totalMinutes}</p>
-							<p className="desk-stat-detail">{course.title}</p>
+							<p className="desk-stat-value">
+								{totalMinutes}
+								<span>{t("home.statMinutes")}</span>
+							</p>
 						</div>
 						<div className="desk-stat">
-							<p className="desk-stat-label">{t("home.statPreview")}</p>
-							<p className="desk-stat-value">{previewCount}</p>
-							<p className="desk-stat-detail">{t("home.statPreviewDetail")}</p>
+							<p className="desk-stat-value">
+								{previewCount}
+								<span>{t("home.statPreview")}</span>
+							</p>
 						</div>
 						<div className="desk-stat">
-							<p className="desk-stat-label">{t("home.statProgress")}</p>
 							<p className="desk-stat-value">
 								{progress.completed}/{progress.total}
+								<span>{t("home.statProgress")}</span>
 							</p>
-							<p className="desk-stat-detail">
+							<p className="observatory-progress-note">
 								{progress.signedIn
 									? t("progress.synced")
 									: t("progress.signInToSync")}
 							</p>
 						</div>
 					</div>
+					<p className="observatory-partner-note">
+						{t("home.partnerDisclosure")}
+					</p>
 				</div>
-				<p className="desk-opening-context text-muted-foreground text-sm leading-6">
-					{t("home.partnerDisclosure")}
-				</p>
+			</TradingHall>
+			<section
+				className="observatory-method-strip"
+				aria-label={t("home.pathLabel")}
+			>
+				<div className="observatory-container">
+					<span>
+						<BookOpenIcon aria-hidden="true" />
+						{t("home.pathOne")}
+					</span>
+					<ArrowRightIcon aria-hidden="true" />
+					<span>
+						<ScanLineIcon aria-hidden="true" />
+						{t("home.pathTwo")}
+					</span>
+					<ArrowRightIcon aria-hidden="true" />
+					<span>
+						<WorkflowIcon aria-hidden="true" />
+						{t("home.pathThree")}
+					</span>
+				</div>
 			</section>
-
-			<section className="mx-auto max-w-[1480px] px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
-				<h2 className="font-semibold text-3xl text-display sm:text-4xl">
-					{t("home.curriculumHeading")}
-				</h2>
-				<p className="mt-3 max-w-[68ch] text-muted-foreground leading-7">
-					{t("home.courseDescription")}
-				</p>
-				<div className="mt-8">
-					<LandingCurriculumTable
-						lessons={course.lessons}
-						completedIds={progress.records
-							.filter((record) => record.completedAt)
-							.map((record) => record.lessonId)}
-						canAccessPaid={progress.canAccessPaid}
-						accessUnavailable={progress.accessUnavailable}
-						caption={t("progress.completedLabel", {
-							completed: progress.completed,
-							total: progress.total,
-						})}
-					/>
+			<LandingResearchDemo />
+			<section
+				id="curriculum"
+				className="observatory-curriculum observatory-container"
+			>
+				<div className="observatory-section-heading">
+					<div>
+						<p className="observatory-label">
+							<span />
+							{t("home.curriculumLabel")}
+						</p>
+						<h2>{t("home.curriculumTitle")}</h2>
+					</div>
+					<p>{t("home.curriculumIntro")}</p>
+				</div>
+				<LandingCurriculumTable
+					lessons={course.lessons}
+					completedIds={progress.records
+						.filter((record) => record.completedAt)
+						.map((record) => record.lessonId)}
+					canAccessPaid={progress.canAccessPaid}
+					accessUnavailable={progress.accessUnavailable}
+					caption={t("progress.completedLabel", {
+						completed: progress.completed,
+						total: progress.total,
+					})}
+				/>
+				<div className="observatory-access">
+					<div>
+						<h3>{t("home.accessTitle")}</h3>
+						<p>{t("home.accessDescription", { count: previewCount })}</p>
+					</div>
+					<Link
+						to="/pricing"
+						className={buttonVariants({ variant: "outline", size: "lg" })}
+					>
+						{t("home.accessLink")}
+						<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+					</Link>
 				</div>
 			</section>
 		</main>

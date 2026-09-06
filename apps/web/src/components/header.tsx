@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import {
 	Sheet,
@@ -42,10 +42,18 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
 }
 
 export default function Header() {
+	const isHome = useRouterState({
+		select: (state) => state.location.pathname === "/",
+	});
 	const { t } = useI18n();
 	const { capture } = useAnalytics();
 	return (
-		<header className="material-chrome sticky top-0 z-40 border-border/60 border-b">
+		<header
+			className={cn(
+				"material-chrome sticky top-0 z-40 border-border/60 border-b",
+				isHome && "observatory-chrome observatory-surface",
+			)}
+		>
 			<div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center gap-8">
 					<TradelyBrand compactOnMobile />

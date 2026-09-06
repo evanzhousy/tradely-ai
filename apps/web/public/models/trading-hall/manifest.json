@@ -1,0 +1,46 @@
+{
+	"scene": "Tradely exchange hall",
+	"version": 1,
+	"source": "Blender MCP procedural build, guided by generated references",
+	"marketScreens": 60,
+	"tickerSurfaces": 2,
+	"deskIslands": 6,
+	"workstations": 18,
+	"meshCount": 14,
+	"polygons": 45272,
+	"camera": {
+		"position": [0.4, 3, 18],
+		"target": [0, 2.5, -6]
+	},
+	"materials": [
+		"TH_StoneFloor_PBR",
+		"TH_WallStone_PBR",
+		"TH_Ceiling",
+		"TH_DarkMetal",
+		"TH_Bronze",
+		"TH_WarmLight",
+		"TH_WindowLight",
+		"TH_ScreenBezel",
+		"TH_MarketScreens",
+		"TH_TickerScreens",
+		"TH_Walnut_PBR",
+		"TH_Keycaps",
+		"TH_Leather",
+		"TH_Plaster"
+	],
+	"textureFormat": "WebP quality 90",
+	"textureSources": [
+		{
+			"id": "natural_walnut_veneer",
+			"url": "https://polyhaven.com/a/natural_walnut_veneer",
+			"license": "CC0"
+		},
+		{
+			"id": "slate_floor",
+			"url": "https://polyhaven.com/a/slate_floor",
+			"license": "CC0"
+		}
+	],
+	"bytes": 6508680,
+	"sha256": "0dbe1e551416aba5f99a7fc7b2a7ff8f4293fc9d550a798beb04f11a2bc80139"
+}

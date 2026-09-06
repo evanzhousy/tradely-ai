@@ -93,3 +93,6 @@ videos/**/.media/preferences.json
 videos/**/lightweight-chart*.js
 /.husky/pre-commit
 /.impeccable/design.json
+
+# Trading-hall image references and editable Blender source are generated locally.
+/artifacts/trading-hall/

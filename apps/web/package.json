@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"billing:preflight": "tsx scripts/billing-preflight.ts",
-		"build": "vite build && node ./scripts/copy-vercel-react.mjs",
+		"build": "vite build && node ./scripts/copy-vercel-react.mjs && cp dist/server/server.js dist/server/index.js",
 		"check-types": "tsr generate && tsc --noEmit",
 		"serve": "vite preview",
 		"dev": "vite dev",
@@ -38,6 +38,7 @@
 		"sonner": "catalog:",
 		"stripe": "^22.4.0",
 		"tailwindcss": "catalog:",
+		"three": "^0.185.1",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
@@ -49,6 +50,7 @@
 		"@tradely/config": "workspace:*",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
+		"@types/three": "^0.185.4",
 		"@vitejs/plugin-react": "^6.0.4",
 		"jsdom": "^30.0.0",
 		"tsx": "4.23.12",

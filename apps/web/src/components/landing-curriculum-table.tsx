@@ -71,9 +71,21 @@ export function LandingCurriculumTable({
 										</p>
 									</div>
 								</th>
-								<td>{lesson.practice.tool}</td>
-								<td>{accessLabel}</td>
-								<td className="desk-numeric">{lesson.minutes}</td>
+								<td data-label={t("home.tablePractice")}>
+									{lesson.practice.tool}
+								</td>
+								<td
+									data-label={t("home.tableAccess")}
+									data-access={lesson.access}
+								>
+									{accessLabel}
+								</td>
+								<td
+									className="desk-numeric"
+									data-label={t("home.tableMinutes")}
+								>
+									{lesson.minutes}
+								</td>
 							</tr>
 						);
 					})}

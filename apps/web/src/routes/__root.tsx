@@ -3,6 +3,7 @@ import {
 	HeadContent,
 	Outlet,
 	Scripts,
+	useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@tradely/ui/components/sonner";
@@ -64,6 +65,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootDocument() {
+	const location = useLocation();
+	const isHouseScene = location.pathname === "/house";
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
@@ -81,7 +84,7 @@ function RootDocument() {
 					<RouteAnalytics />
 					<div className="flex min-h-svh flex-col">
 						<SkipLink />
-						<Header />
+						{isHouseScene ? null : <Header />}
 						<div
 							id="main-content"
 							tabIndex={-1}
@@ -89,10 +92,10 @@ function RootDocument() {
 						>
 							<Outlet />
 						</div>
-						<Footer />
+						{isHouseScene ? null : <Footer />}
 					</div>
-					<CookieConsentBanner />
-					<Toaster richColors />
+					{isHouseScene ? null : <CookieConsentBanner />}
+					{isHouseScene ? null : <Toaster richColors />}
 					{import.meta.env.DEV ? (
 						<TanStackRouterDevtools position="bottom-right" />
 					) : null}

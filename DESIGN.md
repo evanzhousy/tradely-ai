@@ -73,7 +73,7 @@ components:
 
 Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The yellow-black-white Night Scholar Owl gives Tradely its own memorable IP identity, while the system retains TradingFlow-authorized Luma geometry, semantic surfaces, and disciplined typography without implying shared infrastructure or accounts.
 
-The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The interface avoids course-marketplace spectacle, simulated trading imagery, and generic grids of video thumbnails.
+The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The homepage uses the Evidence Observatory composition: a Blender-built trading hall hero with animated simulated market screens, a labeled interactive learning exercise, the ordered curriculum, and a Three.js contour landscape at the close. These expressive scenes were explicitly requested on 2026-09-05. Lesson and account surfaces retain the calm Evidence Desk system.
 
 **Key Characteristics:**
 
@@ -126,11 +126,13 @@ Compose from installed tokens and these named pieces. Do not invent a parallel t
 - All-caps or tracked eyebrows, kickers, and decorative numbered section labels.
 - Badges or pills for ordinary metadata (course title, "the course", partner kicker).
 - Nested cards used to repair weak hierarchy.
-- Gradients, glow, blobs, glass spectacle, or decorative finance imagery.
+- Unmotivated gradients, glow, blobs, or decorative finance imagery in learning and account UI. The homepage hero and footer are explicit exceptions for the explicitly requested exchange-hall environment, gold light shaders, particles, and contour terrain. They stay decorative, keep all actions/text in HTML, and never present generated scenery as market data.
 - Geist, Vercel wordmark/triangle, or `vbg-*` classes on Tradely product surfaces.
 - Invented testimonials, win rates, or "fast/safe" trading claims.
 
 ### Eval loop
+
+The exchange hall is owned by `trading-hall.tsx` and the lazy `features/trading-hall/` modules; the footer renderer remains owned by `landing-scene.tsx` and `landing-scene-renderer.ts`. The hall is constructed in Blender through MCP from the imagegen references recorded in `scripts/trading-hall/`. Its screen data must be simulated, labeled, deterministic, and independent of financial APIs. Scroll choreography moves the camera through the aisle and uses HTML captions and a projected inspection reticle; the entrance reveal transitions from a wireframe study to shaded materials. The active header, first lesson action, sourced figures, and partner caveat remain accessible. It must dispose GPU resources on navigation, pause offscreen and when hidden, respect reduced motion, expose pause controls, and leave a static CSS fallback if WebGL is unavailable. Cinematic hero/footer surfaces stay ink-black in both themes; the curriculum and explanatory sections honor the selected theme. Mobile curriculum rows preserve table semantics while stacking labeled metadata beneath each lesson.
 
 Homepage is the first frozen scenario: `docs/design-eval/homepage.md`. Mechanical checks live in `apps/web/src/design-eval/homepage.contract.test.ts`. When a review correction repeats, encode it here as an observable rule, in `desk.css` as a primitive, or in that test as a check. Do not hand-tune one generated page and leave the contract unchanged.
 

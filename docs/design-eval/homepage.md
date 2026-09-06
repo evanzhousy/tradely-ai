@@ -1,7 +1,7 @@
 # Scenario: homepage
 
 **Route:** `/`  
-**Contract:** `DESIGN.md`  
+**Contract:** `DESIGN.md` (Evidence Observatory homepage, 2026-09-05)
 **Mechanical checks:** `apps/web/src/design-eval/homepage.contract.test.ts`
 
 ## Reader
@@ -31,11 +31,14 @@ Score yes/no. A no blocks shipping the homepage.
 1. Supplied facts survive (counts, minutes, first lesson, tool names, independence caveat).
 2. One `h1`. The start action goes to lesson one.
 3. First viewport carries the claim, the sourced figures, and the caveat. It is not a masthead followed by empty setup.
-4. Curriculum proof is a full-width table mapping lesson → TradingFlow tool. No poster grid, no nested cards, no metadata badges.
+4. Curriculum proof is a full-width table mapping lesson → TradingFlow tool. Mobile rows stack labeled metadata beneath the lesson. No poster grid, no nested cards, no metadata badges.
 5. Access states are written as text (free / paid / unlocked / unavailable / completed).
 6. Inter + JetBrains Mono. No Geist. No `vbg-*`. No Vercel wordmark.
 7. Light and dark keep the same hierarchy. Mobile stacks claim above figures; the table remains readable (scroll locally if needed).
 8. No em dashes or all-caps eyebrows in homepage copy.
+9. Hero renders the Blender-built exchange hall and footer renders the contour terrain in Three.js, respect reduced motion and pause controls, suspend offscreen, and dispose on route changes. Content and CTAs remain usable without WebGL.
+10. All 60 market surfaces and both tickers use animated simulated data; no financial API is accessed. Scroll motion progresses through the wide hall, close workstation, and market wall views.
+11. The illustrative research exercise reveals reasoning on demand and links to the matching free lesson. It makes no live-data or performance claim.
 
 ## Baseline (2026-09-03)
 

@@ -28,7 +28,10 @@ const homepageKeys = [
 	"home.tablePractice",
 	"home.tableAccess",
 	"home.tableMinutes",
-	"common.startLearning",
+	"home.startFree",
+	"home.titleRead",
+	"home.titleVerify",
+	"home.intro",
 ] as const;
 
 describe("homepage design contract", () => {
@@ -57,7 +60,7 @@ describe("homepage design contract", () => {
 
 	it("renders claim, start action, figures, caveat, and full-width table without cards or badges", () => {
 		expect(indexSource).toContain("<h1");
-		expect(indexSource).toContain('t("common.startLearning")');
+		expect(indexSource).toContain('t("home.startFree")');
 		expect(indexSource).toContain("self-start");
 		expect(indexSource).toContain("startLesson.slug");
 		expect(indexSource).toContain('t("home.partnerDisclosure")');
