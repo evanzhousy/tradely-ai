@@ -26,7 +26,9 @@ export function TradingHall({ children }: { children: ReactNode }) {
 		const abort = new AbortController();
 		import("@/features/trading-hall/renderer")
 			.then(({ createTradingHall }) =>
-				createTradingHall(element, section, abort.signal),
+				createTradingHall(element, section, abort.signal, (availability) => {
+					if (!cancelled) setState(availability);
+				}),
 			)
 			.then((instance) => {
 				if (cancelled) {

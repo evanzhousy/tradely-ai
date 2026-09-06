@@ -1,65 +1,87 @@
 import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { storyProgress, updateStoryCamera } from "./camera";
+import { INSPECTION_TARGET, storyProgress, updateStoryCamera } from "./camera";
 
 const file = readFileSync(
 	new URL(
-		"../../../public/models/trading-hall/trading-hall.glb",
+		"../../../public/models/trading-hall/night-v3/exchange.glb",
 		import.meta.url,
 	),
 );
 const gltf = JSON.parse(
 	file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"),
 );
-it("exports the Blender market atlas as an actual textured mesh", () => {
+it("ships the night Blender model with all market screens and usable PBR maps", () => {
 	expect(file.readUInt32LE(0)).toBe(0x46546c67);
 	expect(gltf.asset.generator).toContain("Blender");
-	const node = gltf.nodes.find((n: { name: string }) =>
-		n.name.startsWith("TH_MarketScreens"),
+	expect(gltf.extensionsRequired).toContain("KHR_draco_mesh_compression");
+	const node = gltf.nodes.find(
+		(n: { name: string }) => n.name === "EX3_Markets",
 	);
 	expect(node).toBeDefined();
 	const primitive = gltf.meshes[node.mesh].primitives[0];
 	expect(primitive.attributes.TEXCOORD_0).toBeDefined();
-	const indices = gltf.accessors[primitive.indices];
-	expect(indices.count).toBe(60 * 6);
-	expect(
-		gltf.nodes.find((n: { name: string }) =>
-			n.name.startsWith("TH_TickerScreens"),
-		),
-	).toBeDefined();
-	for (const name of [
-		"TH_Walnut_PBR",
-		"TH_WallStone_PBR",
-		"TH_StoneFloor_PBR",
-	]) {
+	expect(gltf.accessors[primitive.indices].count).toBe(380 * 6);
+	for (const [name, tint] of [
+		["EX3_OakPBR", [0.8, 0.56, 0.26, 1]],
+		["EX3_FasciaPBR", [0.3, 0.19, 0.1, 1]],
+	] as const) {
 		const material = gltf.materials.find(
 			(m: { name: string }) => m.name === name,
 		);
 		expect(material.pbrMetallicRoughness.baseColorTexture).toBeDefined();
+		expect(material.pbrMetallicRoughness.baseColorFactor).toEqual(tint);
 		expect(
 			material.pbrMetallicRoughness.metallicRoughnessTexture,
 		).toBeDefined();
 		expect(material.normalTexture).toBeDefined();
 	}
-	expect(file.byteLength).toBeLessThan(8_000_000);
+	expect(gltf.meshes).toHaveLength(16);
+	expect(file.byteLength).toBeLessThan(4_000_000);
 });
-describe("scroll camera progress", () => {
-	it("clamps to the stage endpoints", () => {
+describe("human viewpoint choreography", () => {
+	it("clamps scroll progress to the story endpoints", () => {
 		expect(storyProgress(500, 2400, 900)).toBe(0);
 		expect(storyProgress(64, 2400, 900)).toBe(0);
 		expect(storyProgress(-3000, 2400, 900)).toBe(1);
 		expect(storyProgress(-700, 2400, 900)).toBeGreaterThan(0);
 		expect(storyProgress(-700, 2400, 900)).toBeLessThan(1);
 	});
-});
-
-it("keeps the workstation inspection target in frame at the close-up beat", () => {
-	const camera = new THREE.PerspectiveCamera(56, 1440 / 900, 0.1, 110);
-	updateStoryCamera(camera, 2 / 3, new THREE.Vector2());
-	camera.updateMatrixWorld(true);
-	const target = new THREE.Vector3(-3.85, 1.94, 8.6).project(camera);
-	expect(Math.abs(target.x)).toBeLessThan(0.5);
-	expect(Math.abs(target.y)).toBeLessThan(0.6);
-	expect(Math.abs(camera.position.x)).toBeLessThan(2.7);
+	it("keeps the entire camera path at human height and outside the seven trading posts", () => {
+		const camera = new THREE.PerspectiveCamera(49, 1.6, 0.08, 120);
+		const posts = [
+			[-6.2, 6.2, 4],
+			[5.8, 6.6, 4.2],
+			[0, -3, 3.7],
+			[-8, -5.2, 3.25],
+			[8, -5.6, 3.25],
+			[-5.4, -13, 3.1],
+			[4.9, -13.2, 3.1],
+		];
+		for (let step = 0; step <= 200; step++) {
+			for (const offset of [-0.5, 0, 0.5]) {
+				updateStoryCamera(
+					camera,
+					step / 200,
+					new THREE.Vector2(offset, offset),
+				);
+				expect(camera.position.y).toBeGreaterThanOrEqual(1.67);
+				expect(camera.position.y).toBeLessThanOrEqual(1.73);
+				for (const [x, z, radius] of posts) {
+					expect(
+						Math.hypot(camera.position.x - x, camera.position.z - z),
+					).toBeGreaterThan(radius + 0.3);
+				}
+			}
+		}
+	});
+	it("frames the real foreground terminal during the inspection beat", () => {
+		const camera = new THREE.PerspectiveCamera(49, 1440 / 900, 0.08, 120);
+		updateStoryCamera(camera, 0.5, new THREE.Vector2());
+		camera.updateMatrixWorld(true);
+		const target = INSPECTION_TARGET.clone().project(camera);
+		expect(Math.abs(target.x)).toBeLessThan(0.1);
+		expect(Math.abs(target.y)).toBeLessThan(0.1);
+	});
 });
