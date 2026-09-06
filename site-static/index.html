@@ -11,7 +11,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/controls/OrbitControls.js';
 import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/loaders/GLTFLoader.js';
-const host=document.querySelector('#viewport'), scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,200);camera.position.set(19,15,29);
+const host=document.querySelector('#viewport'), direction=document.querySelector('#direction'), sunset=document.querySelector('#sunset'), reset=document.querySelector('#reset'), dirValue=document.querySelector('#dirValue'), sunValue=document.querySelector('#sunValue'), scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,200);camera.position.set(19,15,29);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;host.append(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(-1.5,2.5,-2);controls.enableDamping=true;controls.minDistance=9;controls.maxDistance=65;
 const sky=new THREE.HemisphereLight(0xf5f7ff,0x7b8163,1.4);scene.add(sky);const sun=new THREE.DirectionalLight(0xfff3dd,3.5);sun.position.set(8,18,10);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
