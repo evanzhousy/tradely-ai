@@ -39,6 +39,13 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
+# Python tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # Turbo
 .turbo
 .nx
@@ -53,9 +60,27 @@ coverage
 
 # Misc
 *.tgz
+*.tar.gz
 .cache
 tmp
 temp
+*.tmp
+*.bak
+*.orig
+*.rej
+.eslintcache
+.vite/
+
+# Local credentials and environment variants
+*.pem
+.env.*
+!.env.example
+
+# Local database sidecars
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
 
 # Course media is imported locally or uploaded to Tradely-owned object storage.
 apps/web/public/media/tradingflow/*.mp4
