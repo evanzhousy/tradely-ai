@@ -1,5 +1,7 @@
 # Kirkland house web asset
 
+This deployment packages the standalone house scene at `/house` without the parent product navigation.
+
 `house.glb` is the optimized, self-contained glTF 2 export of the Blender reconstruction at `artifacts/kirkland-house/8311-kirkland-house.blend`. Source material: the user-provided front / roof photographs and Zillow listing 59698516. Dimensions and unseen geometry are approximate; no interiors are modeled.
 
 The export combines mesh geometry into six named layers. Roofs, Landscape and Context have matching `extras.layer` values consumed by the viewer. Procedural Blender bump textures are not baked; the web model uses exported PBR colors and geometry. Preview image is a render of the same model.
