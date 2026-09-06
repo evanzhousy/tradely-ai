@@ -24,7 +24,6 @@ it("ships the night Blender model with all market screens and usable PBR maps", 
 	expect(primitive.attributes.TEXCOORD_0).toBeDefined();
 	expect(gltf.accessors[primitive.indices].count).toBe(380 * 6);
 	for (const [name, tint] of [
-		["EX3_OakPBR", [0.8, 0.56, 0.26, 1]],
 		["EX3_FasciaPBR", [0.3, 0.19, 0.1, 1]],
 	] as const) {
 		const material = gltf.materials.find(
@@ -37,6 +36,19 @@ it("ships the night Blender model with all market screens and usable PBR maps", 
 		).toBeDefined();
 		expect(material.normalTexture).toBeDefined();
 	}
+	const carpet = gltf.materials.find(
+		(m: { name: string }) => m.name === "EX3_CharcoalCarpetPBR",
+	);
+	expect(carpet.pbrMetallicRoughness.baseColorTexture).toBeDefined();
+	expect(carpet.pbrMetallicRoughness.metallicFactor).toBe(0);
+	expect(carpet.pbrMetallicRoughness.roughnessFactor ?? 1).toBe(1);
+	expect(carpet.pbrMetallicRoughness.metallicRoughnessTexture).toBeDefined();
+	expect(carpet.normalTexture).toBeDefined();
+	expect(
+		gltf.nodes.some((n: { name: string }) =>
+			/OakPBR|plank joints/.test(n.name),
+		),
+	).toBe(false);
 	expect(gltf.meshes).toHaveLength(16);
 	expect(file.byteLength).toBeLessThan(4_000_000);
 });

@@ -5,7 +5,8 @@ The existing TradingHall React component owns accessible content and controls; t
 ## Visual contract
 
 - A standing observer inside the same seven-post exchange, at approximately 1.7 m eye height throughout.
-- Dark exterior, restrained warm practical lighting, oak floor, brown fascia, blue/green quote screens, and reflective dark glazing.
+- The Hero crops the bottom 16% of the virtual camera frame on desktop and 12% on mobile to reduce empty floor. The camera stays at eye height, render resolution stays unchanged, and both projected terminal markers and the loading poster use the cropped composition. The responsive crop is owned by `--hall-floor-crop` in the Hero stylesheet.
+- Dark exterior, restrained warm practical lighting, matte charcoal low-pile carpet, brown wood fascia, blue/green quote screens, and reflective dark glazing. Original carpet color/normal/roughness maps replace the floor's wood maps; plank-joint geometry is hidden and excluded from export.
 - Materials keep real color, normal, and roughness textures. Cycles is the offline reference renderer; the website uses real-time PBR raster rendering, shadow maps, an interior environment capture, and desktop SSAO.
 - The HTML headline and lesson CTA remain usable during loading and graphics failure; the static fallback is a render of the actual night model.
 

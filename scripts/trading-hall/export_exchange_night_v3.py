@@ -56,7 +56,7 @@ for name, objects in groups.items():
 
 # Explicit glTF-compatible PBR chains. Blender noise/mix nodes do not serialize
 # as arbitrary GLSL; the runtime receives real color/roughness/normal maps.
-for name, tint in [('EX3_OakPBR', (.80, .56, .26, 1)), ('EX3_FasciaPBR', (.30, .19, .10, 1))]:
+for name, tint in [('EX3_FasciaPBR', (.30, .19, .10, 1))]:
     mat = bpy.data.materials[name]
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
     bsdf = nodes.get('Principled BSDF')
@@ -84,7 +84,7 @@ raw = path.read_bytes()
 json_length = struct.unpack_from('<I', raw, 12)[0]
 document = json.loads(raw[20:20 + json_length])
 for material in document['materials']:
-    tint = {'EX3_OakPBR': [.80, .56, .26, 1], 'EX3_FasciaPBR': [.30, .19, .10, 1]}.get(material['name'])
+    tint = {'EX3_FasciaPBR': [.30, .19, .10, 1]}.get(material['name'])
     if tint:
         material['pbrMetallicRoughness']['baseColorFactor'] = tint
 encoded = json.dumps(document, separators=(',', ':')).encode()
@@ -100,6 +100,7 @@ manifest = {
     'marketScreens': sum(o.get('screen_role') == 'market' for o in source.objects),
     'towerDisplayFaces': sum(o.get('screen_role') in ['flag', 'nyse'] for o in source.objects),
     'tradingPosts': 7, 'atlas': {'columns': 4, 'rows': 4, 'tiles': 16},
+    'floorFinish': source.get('floor_finish', ''),
     'materials': list(groups), 'bytes': path.stat().st_size,
     'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
     'coordinateSystem': 'glTF Y-up; Blender (x,y,z) becomes (x,z,-y)',
@@ -108,7 +109,7 @@ manifest = {
     'sourceCameras': {o.name: {'position': [o.location.x, o.location.z, -o.location.y],
                             'lensMm': o.data.lens, 'sensorMm': o.data.sensor_width}
                       for o in source.objects if o.type == 'CAMERA'},
-    'textureSources': [{'id': 'natural_walnut_veneer', 'url': 'https://polyhaven.com/a/natural_walnut_veneer', 'license': 'CC0'}],
+    'textureSources': [{'id': 'natural_walnut_veneer', 'url': 'https://polyhaven.com/a/natural_walnut_veneer', 'license': 'CC0'}, {'id': 'charcoal_carpet', 'source': 'Original procedural PBR maps; scripts/trading-hall/apply_carpet_floor.py'}],
 }
 (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=2))
 print('EXCHANGE_EXPORT ' + json.dumps(manifest))

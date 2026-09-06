@@ -1,5 +1,13 @@
 # Night Hero verification — 2026-09-06
 
+## Charcoal carpet update
+
+The current floor uses original seamless charcoal carpet color, normal, and roughness maps with a 0.5 m repeat. Both room-floor sections use `EX3_CharcoalCarpetPBR`; the old wood-plank-joint object is hidden and excluded from export. The trading-post wood fascia remains unchanged. The previous wood-floor Blender file and renders are preserved in the ignored `exchange-night-v3/wood-floor-backup/` directory.
+
+Re-rendered all five Cycles views and updated the same-scene WebP loading poster. The actual local Hero was inspected in Browser with `state=ready`, `representation=solid`, eye height 1.700 m, and 380 animated screen surfaces; no console errors were observed. The runtime uses matte carpet shading and neutral ground fill.
+
+Node 24 type checking, all 9 trading-hall tests, scoped Biome, and the production build passed. The exported GLB is 3,063,504 bytes, 16 material batches, and 719,560 triangles. SHA-256: `cac9379b3091e465f1f3d7db17eb51ffb8fa7f8aeeb9c1a4fe49fe99869078fc`. The older counts below describe the earlier wood-floor integration.
+
 ## Wireframe transition update
 
 The current opening is now a 0.5 s structural-wireframe hold followed by a material reveal completing at 2.35 s. In-app Browser checks captured the actual wireframe (`revealProgress=0.000`) and a mixed wire/solid frame (`0.460`) with the headline and CTA visible. Pause preserved those frames; replay restarted the transition. The extra wire/occlusion groups are hidden once solid.

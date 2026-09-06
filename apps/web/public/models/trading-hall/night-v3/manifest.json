@@ -3,9 +3,9 @@
 	"scene": "Tradely_Exchange_Human_Night_v3",
 	"file": "exchange.glb",
 	"sourceBlend": "artifacts/trading-hall/exchange-night-v3/exchange-human-night-v3.blend",
-	"sourceObjects": 3047,
+	"sourceObjects": 3046,
 	"meshes": 16,
-	"triangles": 732040,
+	"triangles": 719560,
 	"marketScreens": 380,
 	"towerDisplayFaces": 24,
 	"tradingPosts": 7,
@@ -14,9 +14,9 @@
 		"rows": 4,
 		"tiles": 16
 	},
+	"floorFinish": "Seamless charcoal low-pile carpet, original color/normal/roughness maps, 0.5 m repeat.",
 	"materials": [
-		"EX3_OakPBR",
-		"EX3_FasciaPBR",
+		"EX3_CharcoalCarpetPBR",
 		"EX3_Stone",
 		"EX3_StoneDark",
 		"EX3_PaintedMetal",
@@ -27,13 +27,14 @@
 		"EX3_Label",
 		"EX3_Markets",
 		"EX3_Tray",
+		"EX3_FasciaPBR",
 		"EX3_Keys",
 		"EX3_Paper",
 		"EX3_NYSE",
 		"EX3_Flag"
 	],
-	"bytes": 2651424,
-	"sha256": "4539ae114f84f9efe5ce525a30c58757fb0d1415c7fa81cbae97c7278f2717e3",
+	"bytes": 3063504,
+	"sha256": "cac9379b3091e465f1f3d7db17eb51ffb8fa7f8aeeb9c1a4fe49fe99869078fc",
 	"coordinateSystem": "glTF Y-up; Blender (x,y,z) becomes (x,z,-y)",
 	"openingCamera": {
 		"position": [0, 1.7, 15.8],
@@ -72,6 +73,10 @@
 			"id": "natural_walnut_veneer",
 			"url": "https://polyhaven.com/a/natural_walnut_veneer",
 			"license": "CC0"
+		},
+		{
+			"id": "charcoal_carpet",
+			"source": "Original procedural PBR maps; scripts/trading-hall/apply_carpet_floor.py"
 		}
 	]
 }

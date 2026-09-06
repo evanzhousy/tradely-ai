@@ -137,3 +137,7 @@ def save():
     (OUT / 'renders').mkdir(exist_ok=True)
     bpy.data.libraries.write(str(OUT / 'exchange-human-night-v3.blend'), {s}, fake_user=True)
     print('Saved isolated night scene library to', OUT)
+
+def carpet_floor():
+    import runpy
+    runpy.run_path(str(ROOT / 'scripts/trading-hall/apply_carpet_floor.py'))['apply']()

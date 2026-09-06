@@ -16,7 +16,7 @@ export function enhanceHallMaterials(root: THREE.Object3D, anisotropy: number) {
 				continue;
 			handled.add(material);
 			material.envMapIntensity = 0.7;
-			if (/OakPBR|FasciaPBR/.test(material.name)) {
+			if (/FasciaPBR/.test(material.name)) {
 				material.envMapIntensity = 0.25;
 				material.roughness = 1;
 				material.onBeforeCompile = (shader) => {
@@ -26,6 +26,11 @@ export function enhanceHallMaterials(root: THREE.Object3D, anisotropy: number) {
 					);
 				};
 				material.customProgramCacheKey = () => "exchange-satin-wood-v3";
+			}
+			if (material.name === "EX3_CharcoalCarpetPBR") {
+				material.envMapIntensity = 0.04;
+				material.roughness = 1;
+				material.metalness = 0;
 			}
 			for (const texture of [
 				material.map,

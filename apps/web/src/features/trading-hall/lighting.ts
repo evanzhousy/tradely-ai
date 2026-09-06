@@ -7,7 +7,7 @@ export function createNightLighting(scene: THREE.Scene, compact: boolean) {
 	const rig = new THREE.Group();
 	rig.name = "Exchange night practical lights";
 	scene.add(rig);
-	rig.add(new THREE.HemisphereLight(0xc6c9cf, 0x3e2d1d, 0.14));
+	rig.add(new THREE.HemisphereLight(0xc6c9cf, 0x171b20, 0.14));
 	for (const x of [-8, 0, 8]) {
 		for (const z of compact ? [10, -8] : [12, 2, -10]) {
 			const light = new THREE.RectAreaLight(0xffe8cc, 28, 5.8, 0.7);

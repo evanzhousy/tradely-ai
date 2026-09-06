@@ -13,7 +13,7 @@ The V2 scene and file remain preserved. V3 copies objects, world, and object-lin
 
 ## Rebuild and render
 
-With the documentary V2 scene loaded in Blender, execute `build_exchange_night_v3.py` through Blender MCP and call `clone_scene()`, `lighting_and_cameras()`, and `save()` once in that order. Resume an existing V3 instead of repeating construction. Then run:
+With the documentary V2 scene loaded in Blender, execute `build_exchange_night_v3.py` through Blender MCP and call `clone_scene()`, `lighting_and_cameras()`, `carpet_floor()`, and `save()` once in that order. The carpet phase creates original seamless color, roughness, and normal maps, assigns a matte charcoal material to both room-floor sections, and hides the old wood-plank joints. Resume an existing V3 instead of repeating construction. Then run:
 
 ```sh
 /Applications/Blender.app/Contents/MacOS/Blender -b artifacts/trading-hall/exchange-night-v3/exchange-human-night-v3.blend --python scripts/trading-hall/render_exchange_night_v3.py -- final
