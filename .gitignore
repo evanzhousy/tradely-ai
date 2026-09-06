@@ -94,5 +94,14 @@ videos/**/lightweight-chart*.js
 /.husky/pre-commit
 /.impeccable/design.json
 
-# Trading-hall image references and editable Blender source are generated locally.
+# Local 3D/model source files and generated previews/renders. Optimized runtime
+# assets in apps/web/public/models remain tracked because the site serves them.
+artifacts/**/*.blend
+artifacts/**/*.blend1
+artifacts/**/*.png
+artifacts/**/*.jpg
+artifacts/**/*.jpeg
+artifacts/**/*.webp
+
+# Trading-hall source scene bundles and verification artifacts are generated locally.
 /artifacts/trading-hall/
