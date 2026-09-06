@@ -8,7 +8,7 @@
 	],
 	"scripts": {
 		"dev": "pnpm --filter web dev",
-		"build": "pnpm -r --if-present build",
+		"build": "cd apps/web && npm run build",
 		"billing:revoke-course-pass": "pnpm --filter @tradely/db billing:revoke-course-pass",
 		"billing:preflight": "pnpm --filter web billing:preflight",
 		"check-types": "pnpm -r check-types",
