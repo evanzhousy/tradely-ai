@@ -23,7 +23,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ name: "theme-color", content: "#f2c94c" },
+			{ name: "theme-color", content: "#fdc700" },
 			{ name: "robots", content: "index, follow" },
 			{ property: "og:site_name", content: "Tradely" },
 			{ property: "og:type", content: "website" },

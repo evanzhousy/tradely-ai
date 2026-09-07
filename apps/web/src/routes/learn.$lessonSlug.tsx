@@ -216,7 +216,7 @@ function LessonPage() {
 							</span>
 						</div>
 						<div className="flex flex-col gap-3">
-							<p className="font-medium text-primary text-sm">
+							<p className="font-medium text-foreground text-sm">
 								{lesson.category}
 							</p>
 							<h1 className="font-semibold text-4xl text-display sm:text-5xl">

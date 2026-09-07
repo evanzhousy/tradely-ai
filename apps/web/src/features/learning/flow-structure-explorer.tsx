@@ -151,7 +151,7 @@ export function FlowStructureExplorer({
 						</p>
 						<svg
 							viewBox="0 0 640 210"
-							className="w-full text-primary"
+							className="w-full text-chart-1"
 							role="img"
 							aria-label={text("chart")}
 						>

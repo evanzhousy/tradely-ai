@@ -53,7 +53,7 @@
 	}
 
 	.lesson-prose a {
-		color: var(--primary);
+		color: var(--foreground);
 		font-weight: 500;
 		text-decoration: underline;
 		text-decoration-thickness: 0.08em;

@@ -51,7 +51,7 @@ export function CourseList({
 							<span className="flex size-9 shrink-0 items-center justify-center rounded-3xl bg-muted font-mono text-muted-foreground text-xs group-hover:text-foreground">
 								{isCompleted ? (
 									<CheckCircle2Icon
-										className="text-primary"
+										className="text-success"
 										aria-hidden="true"
 									/>
 								) : (

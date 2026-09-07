@@ -58,7 +58,7 @@ export function TradingHall({ children }: { children: ReactNode }) {
 			aria-label={t("hall.sceneLabel")}
 		>
 			<div
-				className="trading-hall-stage observatory-hero observatory-surface"
+				className="dark trading-hall-stage observatory-hero observatory-surface"
 				data-chapter="opening"
 				data-load={state}
 			>

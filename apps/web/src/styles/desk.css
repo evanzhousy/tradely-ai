@@ -137,16 +137,6 @@
 
 /* Evidence Observatory: expressive landing scenes, semantic learning surfaces. */
 .observatory-surface {
-	--background: #090b0b;
-	--foreground: #f3f1e9;
-	--primary: #f2c94c;
-	--primary-foreground: #15160f;
-	--muted: #1b1e1b;
-	--muted-foreground: #aaafa8;
-	--border: #32362e;
-	--ring: #f2c94c;
-	--accent: #262b20;
-	--accent-foreground: #f3f1e9;
 	color: var(--foreground);
 	background: var(--background);
 }
@@ -155,8 +145,8 @@
 	margin-inline: auto;
 }
 .observatory-chrome {
-	background: #090b0bf2;
-	border-bottom-color: #ffffff12;
+	background: color-mix(in oklch, var(--background) 95%, transparent);
+	border-bottom-color: var(--border);
 }
 .observatory-chrome > div {
 	max-width: 1344px;
@@ -188,8 +178,8 @@
 	width: 6px;
 	height: 6px;
 	border-radius: 50%;
-	background: #b29a47;
-	box-shadow: 0 0 12px #f2c94c30;
+	background: var(--primary);
+	box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 20%, transparent);
 }
 .observatory-hero h1 {
 	font-size: clamp(48px, 6.1vw, 88px);
@@ -202,7 +192,7 @@
 	display: block;
 }
 .observatory-hero h1 > span:last-child {
-	color: #efd183;
+	color: var(--foreground);
 }
 .observatory-intro {
 	max-width: 535px;
@@ -250,7 +240,7 @@
 	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: 24px;
 	padding-top: 25px;
-	border-top: 1px solid #ffffff16;
+	border-top: 1px solid var(--border);
 }
 .observatory-stats .desk-stat-value {
 	display: flex;
@@ -284,7 +274,11 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	background-image: linear-gradient(90deg, #ffffff05 1px, transparent 1px);
+	background-image: linear-gradient(
+		90deg,
+		color-mix(in oklch, var(--foreground) 3%, transparent) 1px,
+		transparent 1px
+	);
 	background-size: 25% 100%;
 	mask-image: linear-gradient(transparent, black 50%, transparent);
 }
@@ -296,7 +290,11 @@
 	overflow: hidden;
 }
 .observatory-scene-hero {
-	background: radial-gradient(ellipse at 80% 45%, #a37b1720, transparent 48%);
+	background: radial-gradient(
+		ellipse at 80% 45%,
+		color-mix(in oklch, var(--primary) 12%, transparent),
+		transparent 48%
+	);
 }
 .observatory-scene canvas {
 	display: block;
@@ -317,7 +315,7 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	color: #d8c18a;
+	color: var(--foreground);
 	font-family: var(--font-mono);
 	font-size: 10px;
 }
@@ -331,9 +329,9 @@
 	content: "";
 	width: 4px;
 	height: 4px;
-	background: #d8c18a;
+	background: var(--foreground);
 	border-radius: 50%;
-	box-shadow: 0 0 12px #f2c94c;
+	box-shadow: 0 0 12px var(--primary);
 }
 .observatory-orbit-labels span:nth-child(1) {
 	left: 74%;
@@ -407,14 +405,14 @@
 	overflow: hidden;
 	box-shadow:
 		0 20px 60px #00000014,
-		0 0 0 1px #a8a69225;
-	background: linear-gradient(135deg, #1b1d19, #0d0f0e 65%);
+		0 0 0 1px var(--border);
+	background: linear-gradient(135deg, var(--card), var(--muted) 65%);
 }
 .observatory-exercise-bar {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	border-bottom: 1px solid #ffffff12;
+	border-bottom: 1px solid var(--border);
 	padding: 18px 24px;
 	font-size: 10px;
 	color: var(--muted-foreground);
@@ -442,7 +440,7 @@
 	gap: 12px;
 	margin: 27px 0;
 	padding: 20px 18px;
-	background: #ffffff03;
+	background: color-mix(in oklch, var(--foreground) 2%, transparent);
 	border-radius: 6px;
 }
 .observatory-evidence-lines > div {
@@ -452,12 +450,12 @@
 	height: 13px;
 	font-family: var(--font-mono);
 	font-size: 9px;
-	color: #878a7f;
+	color: var(--muted-foreground);
 }
 .observatory-evidence-lines i {
 	display: block;
 	height: 5px;
-	background: #5c6354;
+	background: var(--muted-foreground);
 	border-radius: 1px;
 }
 .observatory-evidence-lines b {
@@ -465,11 +463,11 @@
 	margin-left: auto;
 }
 .observatory-evidence-lines > div:first-child {
-	color: #f2c94c;
+	color: var(--foreground);
 }
 .observatory-evidence-lines > div:first-child i {
-	background: linear-gradient(90deg, #9d7c30, #f2c94c);
-	box-shadow: 0 0 14px #f2c94c18;
+	background: linear-gradient(90deg, var(--muted-foreground), var(--primary));
+	box-shadow: 0 0 14px color-mix(in oklch, var(--primary) 10%, transparent);
 }
 .observatory-exercise dt {
 	font-size: 10px;
@@ -490,7 +488,7 @@
 	padding-top: 19px;
 }
 .observatory-reasoning dd {
-	color: #f0d696;
+	color: var(--foreground);
 }
 .observatory-reasoning > p {
 	font-size: 12px;
@@ -501,7 +499,7 @@
 .observatory-exercise-caption {
 	margin: 0;
 	padding: 14px 24px;
-	border-top: 1px solid #ffffff12;
+	border-top: 1px solid var(--border);
 	color: var(--muted-foreground);
 	font-size: 9px;
 	line-height: 1.6;
@@ -607,14 +605,18 @@
 }
 .observatory-scene-terrain {
 	top: 110px;
-	background: radial-gradient(ellipse at 50% 90%, #96752812, transparent 70%);
+	background: radial-gradient(
+		ellipse at 50% 90%,
+		color-mix(in oklch, var(--primary) 7%, transparent),
+		transparent 70%
+	);
 }
 .observatory-footer > div:not(.observatory-finale) {
 	position: relative;
 	max-width: 1344px;
 }
 .observatory-footer > div:nth-child(2) {
-	border-top: 1px solid #ffffff12;
+	border-top: 1px solid var(--border);
 	padding-top: 40px;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -838,7 +840,7 @@
 }
 @media (prefers-reduced-transparency: reduce) {
 	.observatory-chrome {
-		background: #090b0b;
+		background: var(--background);
 	}
 }
 
@@ -846,7 +848,7 @@
 .trading-hall-story {
 	height: 240svh;
 	position: relative;
-	background: #090b0b;
+	background: var(--background);
 }
 .trading-hall-stage {
 	--hall-progress: 0;
@@ -944,7 +946,7 @@
 }
 .trading-hall-stage .observatory-intro {
 	max-width: 470px;
-	color: #c4c7c4;
+	color: var(--muted-foreground);
 	font-size: 16px;
 }
 .trading-hall-stage .observatory-stats {
@@ -968,7 +970,7 @@
 	gap: 8px;
 	align-items: center;
 	font-size: 10px;
-	color: #d6d8d3;
+	color: var(--foreground);
 	z-index: 3;
 	text-shadow: 0 1px 6px #000;
 }
@@ -976,7 +978,7 @@
 	width: 5px;
 	height: 5px;
 	border-radius: 50%;
-	background: #eaca8d;
+	background: var(--primary);
 }
 .trading-hall-bottom {
 	position: absolute;
@@ -994,12 +996,12 @@
 	align-items: center;
 	gap: 10px;
 	font-size: 10px;
-	color: #d5d4c9;
+	color: var(--muted-foreground);
 }
 .trading-hall-scroll i {
 	width: 82px;
 	height: 1px;
-	background: #ffffff30;
+	background: var(--border);
 	margin-left: 12px;
 	overflow: hidden;
 }
@@ -1007,7 +1009,7 @@
 	display: block;
 	width: 100%;
 	height: 100%;
-	background: #f2c94c;
+	background: var(--primary);
 	transform: scaleX(var(--hall-progress));
 	transform-origin: left;
 }
@@ -1018,7 +1020,7 @@
 }
 .trading-hall-loading {
 	font-size: 10px;
-	color: #bfc7c9;
+	color: var(--muted-foreground);
 }
 .trading-hall-captions {
 	position: absolute;
@@ -1040,7 +1042,7 @@
 		0 0 60px #000;
 }
 .trading-hall-captions p {
-	color: #efd18e;
+	color: var(--primary);
 	font-size: 12px;
 	margin: 0 0 18px;
 }
@@ -1054,7 +1056,7 @@
 }
 .trading-hall-captions span {
 	font-size: 15px;
-	color: #e0e3df;
+	color: var(--foreground);
 	line-height: 1.7;
 }
 .trading-hall-stage[data-chapter="observe"] .hall-caption-observe,
@@ -1166,7 +1168,7 @@
 	transform: translate(-50%, -50%);
 	width: 112px;
 	height: 72px;
-	color: #f3d79b;
+	color: var(--primary);
 	opacity: 0;
 	transition: opacity 350ms ease;
 	pointer-events: none;
@@ -1205,9 +1207,9 @@
 	transform: translateX(-50%);
 	font-size: 10px;
 	white-space: nowrap;
-	background: #090e10b3;
+	background: color-mix(in oklch, var(--background) 70%, transparent);
 	padding: 7px 11px;
-	border: 1px solid #f3d79b33;
+	border: 1px solid var(--border);
 	border-radius: 4px;
 }
 .trading-hall-stage[data-chapter="observe"] .trading-hall-focus {
