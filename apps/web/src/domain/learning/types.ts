@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ContractNeighborhood } from "./contracts";
+import type { FlowStructureComparison } from "./flow-structure";
 
 export type LearningCopy = { en: string; zh: string };
 export type LearningChoice = { id: string; label: LearningCopy };
@@ -32,6 +33,7 @@ export type LearningStepView = {
 	questions: LearningQuestion[];
 	hint: LearningCopy | null;
 	neighborhood: ContractNeighborhood | null;
+	flowStructure: FlowStructureComparison | null;
 	quote: {
 		bid: number;
 		ask: number;

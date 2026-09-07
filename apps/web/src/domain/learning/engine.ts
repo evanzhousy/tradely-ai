@@ -177,6 +177,7 @@ export function projectAttempt(
 			facts: step.facts,
 			quote: step.quote,
 			neighborhood: step.neighborhood ?? null,
+			flowStructure: step.flowStructure ?? null,
 			evidence: step.evidence.map((evidence) => ({
 				id: evidence.id,
 				title: evidence.title,

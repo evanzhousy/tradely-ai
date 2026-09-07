@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
 import { contractNeighborhoodScenarios } from "@/content/scenarios/contract-neighborhood";
-import { useContractReplay } from "./use-contract-replay";
+import { useLearningReplay } from "./use-learning-replay";
 
 describe("replay transport", () => {
 	const data = contractNeighborhoodScenarios[0].steps[0].neighborhood;
@@ -69,7 +69,7 @@ describe("replay transport", () => {
 			for (const callback of batch) callback(now);
 		});
 	it("plays, pauses, resumes, changes speed and stops at the close", () => {
-		const { result } = renderHook(() => useContractReplay(data, host));
+		const { result } = renderHook(() => useLearningReplay(data, host));
 		expect(result.current.clock.rate).toBe(2);
 		act(() => result.current.play());
 		advance(1750);
@@ -89,7 +89,7 @@ describe("replay transport", () => {
 		expect(callbacks.size).toBe(0);
 	});
 	it("scrubbing interrupts playback and unmount cancels scheduled work", () => {
-		const { result, unmount } = renderHook(() => useContractReplay(data, host));
+		const { result, unmount } = renderHook(() => useLearningReplay(data, host));
 		act(() => result.current.play());
 		advance(1000);
 		act(() => result.current.seek(0.7));
@@ -101,7 +101,7 @@ describe("replay transport", () => {
 		expect(callbacks.size).toBe(0);
 	});
 	it("pauses when hidden or offscreen and does not skip forward on return", () => {
-		const { result } = renderHook(() => useContractReplay(data, host));
+		const { result } = renderHook(() => useLearningReplay(data, host));
 		act(() => result.current.play());
 		advance(700);
 		act(() => {
@@ -128,7 +128,7 @@ describe("replay transport", () => {
 	});
 	it("reduced-motion preference starts at the closing snapshot and offers stepped playback", () => {
 		reduce = true;
-		const { result } = renderHook(() => useContractReplay(data, host, 0));
+		const { result } = renderHook(() => useLearningReplay(data, host, 0));
 		expect(result.current.position).toBe(1);
 		expect(result.current.reducedMotion).toBe(true);
 		act(() => result.current.play());
@@ -139,7 +139,7 @@ describe("replay transport", () => {
 		expect(result.current.clock.playing).toBe(true);
 	});
 	it("pauses normal motion when reduced motion is enabled, then allows explicit stepped playback", () => {
-		const { result } = renderHook(() => useContractReplay(data, host));
+		const { result } = renderHook(() => useLearningReplay(data, host));
 		act(() => result.current.play());
 		advance(700);
 		act(() => {

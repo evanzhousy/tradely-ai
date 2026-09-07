@@ -1,11 +1,14 @@
 import "@tanstack/react-start/server-only";
 import { contractNeighborhoodScenarios } from "./contract-neighborhood";
 import { optionPrintScenarios } from "./option-print";
+import { sessionFlowScenarios } from "./session-flow";
 
 export function getLessonScenarios(lessonId: string) {
-	return [...optionPrintScenarios, ...contractNeighborhoodScenarios].filter(
-		(scenario) => scenario.lessonId === lessonId,
-	);
+	return [
+		...optionPrintScenarios,
+		...contractNeighborhoodScenarios,
+		...sessionFlowScenarios,
+	].filter((scenario) => scenario.lessonId === lessonId);
 }
 
 export function getScenario(

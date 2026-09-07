@@ -54,10 +54,12 @@ import {
 	type RendererChange,
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
+import { FlowStructureExplorer } from "./flow-structure-explorer";
 
 export type LearningScreenProps = {
 	lessonId?: string;
 	initialRenderer?: ContractRenderer;
+	persistence?: "account" | "preview";
 	onRendererChange?: RendererChange;
 	locale: Locale;
 	view: LearningView | null;
@@ -142,6 +144,7 @@ function QuoteComparison({
 export function LearningScreen({
 	lessonId,
 	initialRenderer,
+	persistence = "account",
 	onRendererChange,
 	locale,
 	view,
@@ -250,7 +253,9 @@ export function LearningScreen({
 								</AlertDescription>
 							</Alert>
 						) : null}
-						<Facts facts={view.step.facts} locale={locale} />
+						{view.step.facts.length > 0 ? (
+							<Facts facts={view.step.facts} locale={locale} />
+						) : null}
 						{view.step.neighborhood ? (
 							<ContractExplorer
 								key={`${view.attemptId}:${view.step.id}:${view.step.neighborhood.id}`}
@@ -263,6 +268,13 @@ export function LearningScreen({
 						) : null}
 						{view.step.quote ? (
 							<QuoteComparison quote={view.step.quote} locale={locale} />
+						) : null}
+						{view.step.flowStructure ? (
+							<FlowStructureExplorer
+								key={`${view.attemptId}:${view.step.id}:${view.step.flowStructure.id}`}
+								data={view.step.flowStructure}
+								locale={locale}
+							/>
 						) : null}
 						{view.step.evidence.length > 0 ? (
 							<section
@@ -461,7 +473,7 @@ export function LearningScreen({
 							? text("saving")
 							: error
 								? ""
-								: text("saved")
+								: text(persistence === "preview" ? "previewOnly" : "saved")
 						: busy
 							? text("loading")
 							: ""}

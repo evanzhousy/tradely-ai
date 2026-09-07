@@ -1,6 +1,6 @@
 # Interactive lesson pilots: implementation and review
 
-These are the print-validation and contract-neighborhood milestones from [the course conversion plan](interactive-course-plan.md). Both are supplemental exercises for existing paid lessons, with English and Simplified Chinese content, server-owned assessment, and saved attempts. The contract lesson includes the optional Three.js experiment. Nine lesson conversions and learner-effectiveness evaluation remain pending.
+These are the print-validation, contract-neighborhood, and session-flow-versus-structure milestones from [the course conversion plan](interactive-course-plan.md). All three are supplemental exercises for existing paid lessons, with English and Simplified Chinese content, server-owned assessment, and saved attempts. The contract lesson includes the optional Three.js experiment. Eight lesson conversions and learner-effectiveness evaluation remain pending.
 
 ## Case specification
 
@@ -80,4 +80,24 @@ Lesson pages include direct Home and Curriculum links on desktop and mobile. The
 
 ## Next milestone
 
-Use the same attempt/assessment contract for the session-flow clock comparison. Before learning-effect evaluation, author a separate held-back case and fix the study criteria; the shipped practice variants are not held-out evaluation evidence.
+Finish the signed-in browser journey on an identified test database before expanding the next conversion batch. Before learning-effect evaluation, author a separate held-back case and fix the study criteria; the shipped practice variants are not held-out evaluation evidence.
+
+## Session flow and structure — 2026-09-07
+
+**Design statement:** one replay clock owns playback timing and accessibility, while each lesson's domain sampler determines which observations can change; the assessment remains server-owned.
+
+The new `session-flow-vs-structure` pilot animates September 3 session volume against fixed September 2 OI and GEX snapshots. The guided case grows from 0 to 8,400 traded contracts while reported OI stays at 12,000; the earlier comparable report is 12,200, so ΔOI is -200 across September 1 and 2. The exercise asks learners to inspect report dates, scope, and model assumptions before interpreting changes. The independent case either permits a -400 report-to-report comparison or rejects it because the expiry scopes differ. The latter also preserves a missing model value as missing.
+
+The conceptual distinction follows the Options Industry Council's explanation of [volume and outstanding option contracts](https://www.optionseducation.org/referencelibrary/faq/general-information). All numbers, dates, scope labels, interpolation profiles, and GEX model values in the exercise are authored synthetic fixtures, not market observations or forecasts.
+
+`domain/learning/replay.ts`, `use-learning-replay.ts`, and `ReplayControls` now serve both animated pilots. Available rates remain 0.5×, 1×, and 2×; the default is derived from the fastest option. Hidden/offscreen pause, stepped reduced motion, deterministic scrubbing, and clock continuity use the existing tested transport. OI deltas reject missing values, unlike scopes, and reversed report dates. Neither animation makes attempt writes.
+
+Local review: select **Session flow vs structure · Animated clocks** in the fixture dropdown, or open `http://127.0.0.1:8261/?lesson=session-flow-vs-structure`. The fixture now explicitly says decisions reset on reload instead of claiming they were saved to an account.
+
+### Integrated verification and remaining gate
+
+The added `learning-journey.test.ts` uses the actual access resolver, user records, lesson loader, attempt services, and course-progress services against the generated migrations in isolated PostgreSQL (PGlite). It covers all three pilots, restores saved evidence and answers with a new request at every stage, preserves final assessment results, verifies separate explicit lesson completion, and checks sign-out and another account's denial. Identity, billing lookup, and media are test boundaries; this is not a real Clerk browser session.
+
+A read-only check of the configured database on September 7 found `lesson_progress` present and `lesson_attempt` absent. The local Clerk configuration is a development instance. Real signed-in save/resume verification therefore requires an entitled test account and confirmation of the database target before applying `0002_learning_attempts.sql`. No remote schema or account grant was changed during this implementation.
+
+Verification: all 45 learning tests passed, the application build passed, 32 learning source files passed Biome, and credential/media-boundary checks passed. The client output contained none of the private authored case markers. Browser review completed the new independent case with 3/3 criteria, observed moving volume with unchanged OI, checked the 390px Chinese/dark layout without overflow, and confirmed reduced-motion startup at 16:00 followed by explicit stepped playback. The broader suite recorded 180 passing tests and one failure in the concurrently edited house-interior navigation test; a later workspace type check also encountered an unused import in that unrelated test. Those house files were not changed for this feature.

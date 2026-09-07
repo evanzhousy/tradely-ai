@@ -44,7 +44,7 @@ import type { Locale } from "@/i18n/messages";
 import { contractCopy } from "./contract-copy";
 import { ReplayControls } from "./replay-controls";
 import { ThreeContractView } from "./three-contract-view";
-import { useContractReplay } from "./use-contract-replay";
+import { useLearningReplay } from "./use-learning-replay";
 
 export type ContractRenderer = "2d" | "3d";
 export type RendererChange = (
@@ -79,7 +79,7 @@ export function ContractExplorer({
 	const [sceneReady, setSceneReady] = useState(false);
 	const host = useRef<HTMLElement>(null);
 	const didAutoplay = useRef(false);
-	const playback = useContractReplay(
+	const playback = useLearningReplay(
 		snapshot,
 		host,
 		autoPlay && initialRenderer === "3d" ? 0 : 1,
@@ -236,6 +236,7 @@ export function ContractExplorer({
 				</Alert>
 			) : null}
 			<ReplayControls
+				note={contractCopy.replayNote}
 				data={snapshot}
 				clock={clock}
 				position={position}

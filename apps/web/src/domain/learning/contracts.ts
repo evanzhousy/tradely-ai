@@ -1,3 +1,4 @@
+import type { ReplayClock } from "./replay";
 import type { LearningCopy } from "./types";
 
 export type NeighborhoodContract = {
@@ -30,13 +31,6 @@ export type ContractViewState = {
 	scopeOnly: boolean;
 	expiry: number | null;
 	replay?: ReplayClock;
-};
-export type ReplayClock = {
-	position: number;
-	startedAt: number;
-	playing: boolean;
-	rate: number;
-	stepOnly: boolean;
 };
 export type ContractStatus =
 	| "comparable"

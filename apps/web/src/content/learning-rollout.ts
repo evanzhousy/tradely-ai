@@ -33,4 +33,16 @@ export const learningRollout: Readonly<
 			zh: "比较行权价、到期日与时段成交量，在保持研究边界不变的前提下找到有效候选。",
 		},
 	},
+	"session-flow-vs-structure": {
+		presentation: "supplemental",
+		three: false,
+		title: {
+			en: "Keep flow and structure on their own clocks.",
+			zh: "让成交与结构各守其时钟。",
+		},
+		intro: {
+			en: "Replay session volume, inspect dated position reports, then test a new comparison without inventing live positions.",
+			zh: "回放时段成交量，检查带日期的持仓报告，再检验另一组比较，避免虚构实时持仓。",
+		},
+	},
 };

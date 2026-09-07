@@ -4,7 +4,7 @@ Status: proposed implementation plan, following the agreed direction of interact
 
 Prepared: 2026-09-06. Repository baseline: `5504e8a`. This document describes proposed work; it does not report deployed features or measured learning improvements.
 
-Implementation update: print-validation and contract-neighborhood pilots now have local implementations on `codex/interactive-courses`, including independent case variants, saved attempts, server assessment, bilingual UI, and an optional Three.js view synchronized with the contract map. The contract view now includes a controlled synthetic session replay with animated columns and counters. See [the pilot review notes](interactive-course-pilot.md). Preview/production migration and deployment, learner evaluation, the flow-versus-structure pilot, and the other eight lesson conversions are still pending.
+Implementation update: print-validation, contract-neighborhood, and session-flow-versus-structure pilots now have local implementations on `codex/interactive-courses`, including independent case variants, saved attempts, server assessment, and bilingual UI. The contract pilot includes an optional Three.js view with animated columns and counters; the flow pilot uses a 2D volume replay beside dated OI and model snapshots. Both use the same playback clock and default fastest speed. See [the pilot review notes](interactive-course-pilot.md). Migration to an identified test database, signed-in browser verification, deployment, learner evaluation, and the other eight lesson conversions remain pending.
 
 ## Outcome and scope
 

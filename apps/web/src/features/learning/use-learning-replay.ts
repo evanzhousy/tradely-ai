@@ -5,17 +5,15 @@ import {
 	useRef,
 	useState,
 } from "react";
+import type { ReplayClock, ReplaySource } from "@/domain/learning/replay";
 import {
 	clampReplayPosition,
+	REPLAY_RATES,
 	replayPositionAt,
-} from "@/domain/learning/contract-replay";
-import type {
-	ContractNeighborhood,
-	ReplayClock,
-} from "@/domain/learning/contracts";
+} from "@/domain/learning/replay";
 
-export function useContractReplay(
-	data: ContractNeighborhood,
+export function useLearningReplay(
+	data: ReplaySource,
 	host: RefObject<HTMLElement | null>,
 	initialPosition = 1,
 ) {
@@ -23,7 +21,7 @@ export function useContractReplay(
 		position: initialPosition,
 		startedAt: 0,
 		playing: false,
-		rate: 2,
+		rate: Math.max(...REPLAY_RATES),
 		stepOnly: false,
 	});
 	const clockRef = useRef(clock);
@@ -75,7 +73,7 @@ export function useContractReplay(
 	);
 	const setRate = useCallback(
 		(rate: number) => {
-			if (![0.5, 1, 2].includes(rate)) return;
+			if (!REPLAY_RATES.includes(rate)) return;
 			const current = clockRef.current;
 			const now = performance.now();
 			commit({

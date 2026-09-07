@@ -1,9 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import {
-	replayPositionAt,
-	sampleContractReplay,
-} from "@/domain/learning/contract-replay";
+import { sampleContractReplay } from "@/domain/learning/contract-replay";
 import {
 	type ContractNeighborhood,
 	type ContractViewState,
@@ -11,6 +8,7 @@ import {
 	contractStatus,
 	visibleContracts,
 } from "@/domain/learning/contracts";
+import { replayPositionAt } from "@/domain/learning/replay";
 import type { Locale } from "@/i18n/messages";
 
 export type ContractSceneController = {

@@ -57,11 +57,13 @@ Resume positions are restored only when the stored content version matches the c
 
 ## Interactive practice contract
 
-`content/learning-rollout.ts` owns public introductions and capabilities for the supplemental `validate-option-print` and `rank-contracts` pilots. The lesson loader exposes availability only after the existing access decision. Case content and answer keys are server-only; the client receives only the current stage, its approved comparison snapshot, and evidence it has inspected. Opening or changing an attempt rechecks identity, paid access, and attempt ownership.
+`content/learning-rollout.ts` owns public introductions and capabilities for the supplemental `validate-option-print`, `rank-contracts`, and `session-flow-vs-structure` pilots. The lesson loader exposes availability only after the existing access decision. Case content and answer keys are server-only; the client receives only the current stage, its approved comparison snapshot, and evidence it has inspected. Opening or changing an attempt rechecks identity, paid access, and attempt ownership.
 
 The contract explorer shares selection and view filters across an accessible 2D map and a lazy-loaded Three.js view. Its immutable snapshot ID is part of the component key; saving an answer does not change the graph's snapshot or reset the camera. The renderer owns graphics resources only. It neither grades answers nor changes the declared comparison boundary, and WebGL failure preserves the selection in 2D.
 
 Contract replay version 2 uses one monotonic clock for the numeric map and animated column heights. Synthetic checkpoint volumes are temporally interpolated while prior-session and missing observations retain their original state. The close is the unchanged assessment snapshot. Playback is local presentation state, pauses when hidden or offscreen, and produces no attempt writes or per-frame analytics. Reduced motion disables autoplay and opts manual playback into discrete checkpoints.
+
+The clock, rate options, and transport controls are shared with the 2D session-flow comparison. Its sampler changes only cumulative volume; OI and model values retain their supplied report dates. Report-to-report OI changes require present values, identical scopes, and increasing dates. Synthetic snapshots with missing model values or mismatched OI scopes stay explicitly unavailable. The fastest available playback rate is the default in both lessons.
 
 Every decision is saved before the next action is enabled. Updates compare the expected revision and deduplicate the command ID; a lost response can be retried without applying the decision twice. Concurrent-tab conflicts require loading the current attempt. Submitted attempts are immutable, and their assessments are stored independently of subsequent rubric edits. A retry uses the alternate independent case; retired scenario versions require an explicit restart and retain the prior record.
 

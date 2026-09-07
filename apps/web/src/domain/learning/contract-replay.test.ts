@@ -1,15 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { sampleContractReplay } from "./contract-replay";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
 import { contractNeighborhoodScenarios } from "@/content/scenarios/contract-neighborhood";
-import {
-	clampReplayPosition,
-	replayPositionAt,
-	replayTime,
-	sampleContractReplay,
-} from "./contract-replay";
-import type { ReplayClock } from "./contracts";
+import type { ReplayClock } from "./replay";
+import { clampReplayPosition, replayPositionAt, replayTime } from "./replay";
 
 describe("illustrative session replay", () => {
 	const data = contractNeighborhoodScenarios[0].steps[0].neighborhood;

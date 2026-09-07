@@ -8,6 +8,10 @@ export const learningCopy = {
 	saving: { en: "Saving your decision…", zh: "正在保存你的判断…" },
 	loading: { en: "Opening your case…", zh: "正在打开案例…" },
 	saved: { en: "Saved to your account", zh: "已保存到你的账户" },
+	previewOnly: {
+		en: "Preview only · decisions reset on reload",
+		zh: "仅供预览 · 刷新后判断会重置",
+	},
 	prediction: { en: "First judgment", zh: "初步判断" },
 	guided: { en: "Investigate", zh: "检查证据" },
 	independent: { en: "Independent case", zh: "独立案例" },

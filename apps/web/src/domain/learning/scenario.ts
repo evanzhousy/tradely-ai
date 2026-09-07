@@ -23,6 +23,7 @@ export type ScenarioStep = {
 	hint: LearningCopy;
 	quote: LearningStepView["quote"];
 	neighborhood?: NonNullable<LearningStepView["neighborhood"]>;
+	flowStructure?: NonNullable<LearningStepView["flowStructure"]>;
 };
 export type LearningScenario = {
 	id: string;

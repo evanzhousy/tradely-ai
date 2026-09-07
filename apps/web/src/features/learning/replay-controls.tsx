@@ -6,16 +6,14 @@ import {
 } from "@tradely/ui/components/native-select";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { useId } from "react";
-import { replayTime } from "@/domain/learning/contract-replay";
-import type {
-	ContractNeighborhood,
-	ReplayClock,
-} from "@/domain/learning/contracts";
+import type { ReplayClock, ReplaySource } from "@/domain/learning/replay";
+import { REPLAY_RATES, replayTime } from "@/domain/learning/replay";
 import type { Locale } from "@/i18n/messages";
-import { contractCopy } from "./contract-copy";
+import { replayCopy } from "./replay-copy";
 
 export function ReplayControls({
 	data,
+	note,
 	clock,
 	position,
 	reducedMotion,
@@ -25,7 +23,8 @@ export function ReplayControls({
 	seek,
 	setRate,
 }: {
-	data: ContractNeighborhood;
+	data: ReplaySource;
+	note: { en: string; zh: string };
 	clock: ReplayClock;
 	position: number;
 	reducedMotion: boolean;
@@ -36,7 +35,7 @@ export function ReplayControls({
 	setRate: (rate: number) => void;
 }) {
 	const id = useId();
-	const text = (key: keyof typeof contractCopy) => contractCopy[key][locale];
+	const text = (key: keyof typeof replayCopy) => replayCopy[key][locale];
 	if (!data.replay) return null;
 	return (
 		<section className="flex flex-col gap-3" aria-label={text("replayTitle")}>
@@ -77,7 +76,7 @@ export function ReplayControls({
 						value={clock.rate}
 						onChange={(event) => setRate(Number(event.target.value))}
 					>
-						{[0.5, 1, 2].map((rate) => (
+						{REPLAY_RATES.map((rate) => (
 							<NativeSelectOption key={rate} value={rate}>
 								{rate}×
 							</NativeSelectOption>
@@ -129,7 +128,7 @@ export function ReplayControls({
 					</Button>
 				))}
 			</div>
-			<p className="text-muted-foreground text-xs">{text("replayNote")}</p>
+			<p className="text-muted-foreground text-xs">{note[locale]}</p>
 			{reducedMotion ? (
 				<p className="text-muted-foreground text-xs">{text("reducedReplay")}</p>
 			) : null}
