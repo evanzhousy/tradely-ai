@@ -21,6 +21,10 @@ describe("avatar movement boundaries", () => {
 		])
 			expect(canWalk(x, z)).toBe(false);
 	});
+	it("blocks large landscape and neighbor objects", () => {
+		expect(canWalk(-4.8, -4.8)).toBe(false);
+		expect(canWalk(3.8, 4)).toBe(false);
+	});
 	it("slides along a wall without moving inside it", () => {
 		expect(walkStep(0, 0.4, 0.08, -0.1)).toEqual({ x: 0.08, z: 0.4 });
 	});
