@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useAnalytics } from "@/analytics/context";
-import { LandingCurriculumTable } from "@/components/landing-curriculum-table";
+import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingResearchDemo } from "@/components/landing-research-demo";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -197,7 +197,7 @@ function HomeComponent() {
 					</div>
 					<p>{t("home.curriculumIntro")}</p>
 				</div>
-				<LandingCurriculumTable
+				<LandingCurriculum
 					lessons={course.lessons}
 					completedIds={progress.records
 						.filter((record) => record.completedAt)

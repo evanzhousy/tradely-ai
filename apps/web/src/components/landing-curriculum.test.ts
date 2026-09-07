@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { lessonAccessLabel } from "./landing-curriculum-table";
+import { lessonAccessLabel } from "./landing-curriculum";
 
 describe("lessonAccessLabel", () => {
 	it("labels preview lessons as free even when paid access is closed", () => {

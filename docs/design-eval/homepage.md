@@ -31,13 +31,13 @@ Score yes/no. A no blocks shipping the homepage.
 1. Supplied facts survive (counts, minutes, first lesson, tool names, independence caveat).
 2. One `h1`. The start action goes to lesson one.
 3. First viewport carries the claim, the sourced figures, and the caveat. It is not a masthead followed by empty setup.
-4. Curriculum proof is a full-width table mapping lesson → TradingFlow tool. Mobile rows stack labeled metadata beneath the lesson. No poster grid, no nested cards, no metadata badges.
+4. Curriculum proof is an ordered grid of 11 lesson cards. Every card has a distinct, relevant SVG diagram, full title, learning outcome, sequence number, duration, access state, and TradingFlow practice tool. The entire card links to its lesson.
 5. Access states are written as text (free / paid / unlocked / unavailable / completed).
 6. Inter + JetBrains Mono. No Geist. No `vbg-*`. No Vercel wordmark.
-7. Light and dark keep the same hierarchy. Mobile stacks claim above figures; the table remains readable (scroll locally if needed).
+7. Light and dark keep the same hierarchy. Mobile stacks claim above figures; cards form a single readable column on phones, two columns on tablets, and three columns on desktop.
 8. No em dashes or all-caps eyebrows in homepage copy.
 9. The hero frames the claim with original typographic field notes at desktop widths and removes the decorative materials on mobile. Neither hero nor footer mounts WebGL or downloads 3D assets. Content requires no animation.
-10. The learning outline links to real lesson rows and derives the ranges from the course: scope and discovery, inspection and context, then research and review. The three stages remain one ordered course. Anchor targets stay clear of the sticky header.
+10. The learning outline links to real lesson cards and derives the ranges from the course: scope and discovery, inspection and context, then research and review. The three stages remain one ordered course. Anchor targets stay clear of the sticky header.
 11. The illustrative research exercise reveals reasoning on demand and links to the matching free lesson. It makes no live-data or performance claim.
 
 ## Baseline (2026-09-03)
@@ -48,18 +48,19 @@ Failures against this rubric: 6 (foreign type and tokens), 3 (report chrome spli
 
 ## Candidate (2026-09-07)
 
-Fanout reference: spacious typography, tangible study materials, and a clear route into the learning content. Tradely adapts those principles using its own yellow field guide, actual first-lesson note, sourced course figures, continuous learning outline, interactive example, and full evidence table. The original brand, independent TradingFlow relationship, lesson access, and progress contracts remain.
+Fanout reference: spacious typography, tangible study materials, and a clear route into the learning content. Tradely adapts those principles using its own yellow field guide, actual first-lesson note, sourced course figures, continuous learning outline, interactive example, and an ordered grid of topic-specific SVG lesson cards, requested in the next design iteration. The original brand, independent TradingFlow relationship, lesson access, and progress contracts remain.
 
 ## How to rerun
 
 1. `pnpm --filter web test` (includes homepage.contract.test.ts).
 2. `pnpm --filter web dev` and open `/` in light and dark, desktop and mobile.
-3. Click Start learning and one table row. Confirm course and lesson pages still use product chrome, not a second visual system.
+3. Click Start learning and one lesson card. Confirm course and lesson pages still use product chrome, not a second visual system.
 
-## Local verification (2026-09-07)
+## Local verification
 
-- Node 24 production build and the 9 existing homepage, curriculum-access, and locale checks pass. Scoped Biome checks pass.
-- Browser coverage: 320, 390, 768, 1024, and 1440px, each in English/Chinese and light/dark. All 20 combinations fit without horizontal page overflow.
-- First-lesson navigation, lesson-row anchors, desktop/mobile exercise reveal and reset, and the responsive menu to pricing work. The hero's course facts and partnership caveat fit the reference viewports.
-- Reduced-motion mode has no homepage animations. The homepage mounts no canvas and requests no 3D models.
-- The full workspace type check encountered a geometry assignment error in the concurrently edited learning-lab `gex-scene.ts`; the production build and landing checks above are separate evidence. No deployment was performed.
+Verified locally on 2026-09-07 after the card migration:
+
+- Node 24 production build and full web type check pass. The 10 focused homepage, diagram-coverage, access-label, and locale tests pass, as do scoped Biome checks.
+- All 20 combinations of 320, 390, 768, 1024, and 1440px with English/Chinese and light/dark render 11 cards and 11 SVG diagrams without horizontal overflow or failed asset requests. Diagrams have unique accessible titles and their labels remain inside the SVG bounds.
+- The card link has a visible keyboard focus ring; Enter opens the first lesson. Lesson order, practice tools, duration, free/paid text, and progress inputs remain intact.
+- The local production preview uses a private temporary copy of the build output, so concurrent builds cannot replace its assets. No deployment was performed.

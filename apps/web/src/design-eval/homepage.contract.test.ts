@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
+import { lessonInfographicSubjects } from "@/components/lesson-infographic";
 import { tradingFlowCourse } from "@/content/course";
 import { translate } from "@/i18n/messages";
 
@@ -24,10 +25,8 @@ const homepageKeys = [
 	"home.statPreview",
 	"home.statProgress",
 	"home.statPreviewDetail",
-	"home.tableLesson",
-	"home.tablePractice",
-	"home.tableAccess",
-	"home.tableMinutes",
+	"home.cardConcept",
+	"home.cardPractice",
 	"home.startFree",
 	"home.titleRead",
 	"home.titleVerify",
@@ -39,9 +38,15 @@ describe("homepage design contract", () => {
 	const rootSource = readWeb("src/routes/__root.tsx");
 	const headerSource = readWeb("src/components/header.tsx");
 	const footerSource = readWeb("src/components/footer.tsx");
-	const tableSource = readWeb("src/components/landing-curriculum-table.tsx");
+	const curriculumSource = readWeb("src/components/landing-curriculum.tsx");
 	const deskCss = readWeb("src/styles/desk.css");
 	const designDoc = readFileSync(join(webRoot, "../../DESIGN.md"), "utf8");
+
+	it("has a subject-specific infographic for every lesson in the catalog", () => {
+		expect(new Set(lessonInfographicSubjects)).toEqual(
+			new Set(tradingFlowCourse.lessons.map((lesson) => lesson.slug)),
+		);
+	});
 
 	it("keeps sourced course facts stable for the frozen scenario", () => {
 		expect(tradingFlowCourse.title).toBe("Evidence-Led Options Research");
@@ -58,20 +63,20 @@ describe("homepage design contract", () => {
 		expect(tradingFlowCourse.lessons[0]?.slug).toBe("audited-boundary");
 	});
 
-	it("renders claim, start action, figures, caveat, and full-width table without cards or badges", () => {
+	it("renders the learning claim, sourced figures, caveat, and ordered illustrated curriculum", () => {
 		expect(indexSource).toContain("<h1");
 		expect(indexSource).toContain('t("home.startFree")');
 		expect(indexSource).toContain("self-start");
 		expect(indexSource).toContain("startLesson.slug");
 		expect(indexSource).toContain('t("home.partnerDisclosure")');
 		expect(indexSource).toContain("desk-stat-strip");
-		expect(indexSource).toContain("LandingCurriculumTable");
-		expect(indexSource).not.toMatch(/Badge|Card|vbg-|home\.courseEyebrow/);
-		expect(tableSource).toContain("desk-curriculum");
-		expect(tableSource).toContain("lesson.practice.tool");
-		expect(tableSource).toContain('scope="col"');
-		expect(deskCss).toContain(".desk-curriculum");
-		expect(deskCss).toMatch(/\.desk-curriculum table[\s\S]*width:\s*100%/);
+		expect(indexSource).toContain("LandingCurriculum");
+		expect(indexSource).not.toMatch(/vbg-|home\.courseEyebrow/);
+		expect(curriculumSource).toContain("lesson.practice.tool");
+		expect(curriculumSource).toContain("<ol");
+		expect(curriculumSource).toContain("LessonInfographic");
+		expect(curriculumSource).toContain("lesson.slug");
+		expect(deskCss).toContain(".curriculum-grid");
 	});
 
 	it("keeps homepage English copy free of em dashes and all-caps eyebrows", () => {

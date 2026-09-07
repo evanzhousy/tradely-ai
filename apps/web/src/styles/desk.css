@@ -72,69 +72,6 @@
 	line-height: 1.5;
 }
 
-.desk-curriculum {
-	width: 100%;
-	min-width: 0;
-	overflow-x: auto;
-}
-
-.desk-curriculum table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.9375rem;
-}
-
-.desk-curriculum caption {
-	caption-side: top;
-	margin-bottom: 0.75rem;
-	color: var(--muted-foreground);
-	font-size: 0.875rem;
-	text-align: start;
-}
-
-.desk-curriculum th,
-.desk-curriculum td {
-	padding: 1rem 0.75rem 1rem 0;
-	border-bottom: 1px solid var(--border);
-	text-align: start;
-	vertical-align: baseline;
-}
-
-.desk-curriculum thead th {
-	color: var(--muted-foreground);
-	font-family: var(--font-mono);
-	font-size: 0.75rem;
-	font-weight: 500;
-	line-height: 1.4;
-}
-
-.desk-curriculum tbody th {
-	font-weight: 500;
-}
-
-.desk-numeric {
-	text-align: end;
-	font-family: var(--font-mono);
-	font-size: 0.75rem;
-	font-variant-numeric: tabular-nums;
-}
-
-.desk-curriculum a {
-	color: var(--foreground);
-	font-weight: 500;
-	text-decoration: none;
-}
-
-.desk-curriculum a:hover {
-	text-decoration: underline;
-	text-underline-offset: 0.18em;
-}
-
-.desk-curriculum a:focus-visible {
-	outline: 2px solid var(--ring);
-	outline-offset: 2px;
-}
-
 /* Evidence Observatory: expressive landing scenes, semantic learning surfaces. */
 .observatory-surface {
 	color: var(--foreground);
@@ -525,33 +462,7 @@
 	margin: 0;
 	max-width: 46ch;
 }
-.observatory-curriculum .desk-curriculum caption {
-	font-size: 11px;
-}
-.observatory-curriculum .desk-curriculum th,
-.observatory-curriculum .desk-curriculum td {
-	padding-block: 22px;
-}
-.observatory-curriculum .desk-curriculum tbody th {
-	width: 61%;
-	padding-right: 48px;
-}
-.observatory-curriculum .desk-curriculum tbody th a {
-	font-size: 15px;
-	letter-spacing: -0.012em;
-}
-.observatory-curriculum .desk-curriculum tbody th p {
-	max-width: 70ch;
-	font-size: 12px;
-	line-height: 1.8;
-}
-.observatory-curriculum .desk-curriculum tbody td:not(:first-child) {
-	font-size: 11px;
-}
-.observatory-curriculum td[data-access="preview"] {
-	color: var(--foreground);
-	font-weight: 600;
-}
+
 .observatory-access {
 	display: flex;
 	align-items: center;
@@ -622,9 +533,6 @@
 @media (hover: hover) and (pointer: fine) {
 	.observatory-text-link:hover {
 		text-decoration: underline;
-	}
-	.observatory-curriculum tbody tr:hover {
-		background: color-mix(in srgb, var(--foreground) 2%, transparent);
 	}
 }
 @media (max-width: 1100px) {
@@ -770,67 +678,6 @@
 	}
 	.observatory-footer .observatory-motion {
 		bottom: 8px;
-	}
-	.desk-curriculum table,
-	.desk-curriculum tbody {
-		display: block;
-	}
-	.desk-curriculum thead {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-	}
-	.desk-curriculum caption {
-		display: block;
-	}
-	.desk-curriculum tbody tr {
-		display: grid;
-		grid-template-columns: 30px minmax(0, 1fr);
-		column-gap: 12px;
-		padding-block: 20px;
-		border-bottom: 1px solid var(--border);
-	}
-	.desk-curriculum tbody tr > td:first-child {
-		grid-column: 1;
-		grid-row: 1 / span 4;
-		padding-top: 4px;
-	}
-	.desk-curriculum tbody th,
-	.observatory-curriculum .desk-curriculum tbody th {
-		width: auto;
-		grid-column: 2;
-		padding: 0 0 10px;
-		border: 0;
-	}
-	.desk-curriculum tbody td,
-	.observatory-curriculum .desk-curriculum tbody td {
-		border: 0;
-		padding: 3px 0;
-		font-size: 11px;
-	}
-	.desk-curriculum tbody td[data-label] {
-		grid-column: 2;
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-		text-align: left;
-		font-family: var(--font-sans);
-	}
-	.desk-curriculum tbody td[data-label]::before {
-		content: attr(data-label);
-		color: var(--muted-foreground);
-		width: 72px;
-		flex-shrink: 0;
-		font-size: 10px;
-		font-weight: 400;
-	}
-	.observatory-curriculum .desk-curriculum tbody th a {
-		font-size: 14px;
-		line-height: 1.55;
-		display: inline-block;
-		padding-block: 5px;
 	}
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1616,12 +1463,7 @@
 .landing-notebook .observatory-curriculum {
 	padding-top: 88px;
 }
-.landing-notebook .desk-curriculum tbody tr {
-	scroll-margin-top: 92px;
-}
-.landing-notebook .desk-curriculum tbody tr:target {
-	background: color-mix(in oklch, var(--primary) 12%, transparent);
-}
+
 .landing-notebook .observatory-access {
 	border-top: 0;
 	padding: 28px 32px;
@@ -1839,5 +1681,223 @@
 @media (prefers-reduced-motion: reduce) {
 	.landing-path-stages a {
 		transition: none;
+	}
+}
+
+/* Subject illustrations and ordered, fully linked curriculum cards. */
+.curriculum-caption {
+	margin-bottom: 22px;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--muted-foreground);
+}
+.curriculum-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 24px;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.curriculum-item {
+	min-width: 0;
+	scroll-margin-top: 92px;
+}
+.curriculum-card {
+	--card-spacing: 22px;
+	transition:
+		transform 180ms ease-out,
+		box-shadow 180ms ease-out;
+}
+.curriculum-card-link {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 20px;
+	min-width: 0;
+	color: inherit;
+	text-decoration: none;
+}
+.curriculum-art {
+	background: color-mix(in srgb, var(--background) 94%, var(--primary));
+	border-bottom: 1px solid var(--border);
+}
+.curriculum-art-caption {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 19px 22px 0;
+	font-family: var(--font-mono);
+	font-size: 9px;
+	color: var(--muted-foreground);
+}
+.curriculum-art-caption > span:first-child {
+	color: var(--foreground);
+	font-size: 13px;
+}
+.curriculum-art-caption > span:nth-child(2) {
+	margin-left: auto;
+}
+.curriculum-card h3 {
+	font-size: 19px;
+	font-weight: 550;
+	line-height: 1.4;
+	letter-spacing: -0.03em;
+	text-wrap: pretty;
+}
+.curriculum-card [data-slot="card-description"] p {
+	font-size: 13px;
+	line-height: 1.8;
+	text-wrap: pretty;
+}
+.curriculum-practice {
+	font-size: 11px;
+	line-height: 1.7;
+	color: var(--muted-foreground);
+}
+.curriculum-card-footer {
+	border-top: 1px solid var(--border);
+	padding-block: 16px 18px;
+}
+.curriculum-card-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px 16px;
+	width: 100%;
+	font-size: 11px;
+	line-height: 1.6;
+}
+.curriculum-card-meta > span {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.curriculum-card-meta > span:first-child {
+	color: var(--muted-foreground);
+	font-family: var(--font-mono);
+	font-size: 10px;
+}
+.curriculum-card-meta > [data-access="preview"] {
+	font-weight: 600;
+}
+.curriculum-completed {
+	flex-basis: 100%;
+}
+.curriculum-card:focus-within,
+.curriculum-item:target .curriculum-card {
+	outline: 2px solid var(--ring);
+	outline-offset: 4px;
+}
+.landing-notebook .curriculum-card-link:focus-visible {
+	outline: none;
+}
+.lesson-infographic {
+	display: block;
+	width: 100%;
+	height: auto;
+	color: var(--foreground);
+}
+.lesson-infographic text {
+	fill: var(--foreground);
+	stroke: none;
+	font-family: var(--font-mono);
+	font-size: 11px;
+}
+.diagram-line,
+.diagram-faint-line,
+.diagram-dashed,
+.diagram-accent-line,
+.diagram-on-accent-line,
+.diagram-highlight-ring {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.diagram-grid {
+	fill: none;
+	stroke: color-mix(in oklch, var(--border) 45%, transparent);
+	stroke-width: 0.6;
+}
+.diagram-paper {
+	fill: var(--card);
+	stroke: var(--border);
+	stroke-width: 1.5;
+}
+.diagram-ink {
+	fill: var(--foreground);
+}
+.diagram-faint-fill {
+	fill: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+.diagram-accent {
+	fill: var(--primary);
+}
+.diagram-accent-wash {
+	fill: color-mix(in srgb, var(--primary) 22%, var(--card));
+}
+.diagram-faint-line {
+	stroke: color-mix(in oklch, var(--foreground) 27%, transparent);
+}
+.diagram-dashed {
+	stroke: var(--muted-foreground);
+	stroke-dasharray: 4 5;
+	opacity: 0.6;
+}
+.diagram-accent-line,
+.diagram-highlight-ring {
+	stroke: var(--primary);
+	stroke-width: 2.5;
+}
+.diagram-bar {
+	stroke: var(--primary);
+	stroke-width: 8;
+	stroke-linecap: round;
+}
+.lesson-infographic .diagram-muted-text {
+	fill: var(--muted-foreground);
+	font-size: 10px;
+}
+.lesson-infographic .diagram-small-text {
+	fill: var(--muted-foreground);
+	font-size: 8px;
+}
+.lesson-infographic .diagram-on-accent {
+	fill: #1b1b17;
+}
+.diagram-on-accent-line {
+	stroke: #1b1b17;
+}
+@media (hover: hover) and (pointer: fine) {
+	.curriculum-card:hover {
+		transform: translateY(-3px);
+		box-shadow:
+			0 14px 28px -14px #0003,
+			0 0 0 1px var(--border);
+	}
+}
+@media (max-width: 1099px) {
+	.curriculum-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 639px) {
+	.curriculum-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 24px;
+	}
+	.curriculum-card h3 {
+		font-size: 20px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.curriculum-card {
+		transition: none;
+	}
+	.curriculum-card:hover {
+		transform: none;
 	}
 }

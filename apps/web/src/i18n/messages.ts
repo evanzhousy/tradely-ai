@@ -5,6 +5,8 @@ export const LOCALE_STORAGE_KEY = "tradely.locale";
 
 const messages = {
 	en: {
+		"home.cardConcept": "Concept map",
+		"home.cardPractice": "Practice in {tool}",
 		"home.seeInside": "Take a look inside",
 		"home.guideLabel": "The research field guide",
 		"home.guideTitle": "Options.\nEvidence.\nPerspective.",
@@ -267,6 +269,8 @@ const messages = {
 		"analytics.necessaryOnly": "Use necessary only",
 	},
 	zh: {
+		"home.cardConcept": "概念图解",
+		"home.cardPractice": "在 {tool} 中练习",
 		"home.seeInside": "看看如何学习",
 		"home.guideLabel": "研究实践指南",
 		"home.guideTitle": "期权。\n证据。\n视角。",
