@@ -35,11 +35,11 @@ export const PORTALS: Record<Area, readonly Portal[]> = {
 		},
 		{
 			id: "stairs-up",
-			x: -2.4,
-			z: 3.8,
+			x: -3.25,
+			z: 3.25,
 			destination: "upper",
 			label: "上楼 · Upstairs",
-			spawn: [0, 3.2],
+			spawn: [2, 0],
 		},
 	],
 	upper: [
@@ -49,7 +49,7 @@ export const PORTALS: Record<Area, readonly Portal[]> = {
 			z: 4.5,
 			destination: "ground",
 			label: "下楼 · Downstairs",
-			spawn: [-1.4, 3.8],
+			spawn: [-3.25, 3.4],
 		},
 	],
 };
