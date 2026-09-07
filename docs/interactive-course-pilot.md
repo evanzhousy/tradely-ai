@@ -74,6 +74,10 @@ The replay is presentation state, not an attempt mutation: it does not save deci
 
 Validation: 164 web tests, workspace type checks, the application build, and changed-file Biome checks passed. Tests cover monotonic values, exact checkpoints, closing-state identity, clock continuity, pause/resume, rate changes, scrubbing, hidden/offscreen behavior, cleanup, reduced motion, and one-time autoplay. Browser checks confirmed changing values during playback, matching paused 2D/3D values, an idle renderer after pause, and a 390px Chinese/dark layout without horizontal overflow. A fresh reduced-motion load stayed paused at the close; explicit playback advanced to the 10:30 checkpoint without being interrupted by duplicate preference notifications. Credentials and media-boundary checks also passed. Production migration and deployment remain pending.
 
+## Course navigation — 2026-09-07
+
+Lesson pages include direct Home and Curriculum links on desktop and mobile. The isolated fixture preview uses the same navigation component in a sticky header, with links to the running main app at `http://127.0.0.1:8250/` and `/courses/tradingflow-foundations`. The preview remains local fixture data; course access and progress use the main application's existing checks. The main header labels now read Home / Curriculum (首页 / 课程目录), and the mobile menu closes after selecting a destination.
+
 ## Next milestone
 
 Use the same attempt/assessment contract for the session-flow clock comparison. Before learning-effect evaluation, author a separate held-back case and fix the study criteria; the shipped practice variants are not held-out evaluation evidence.

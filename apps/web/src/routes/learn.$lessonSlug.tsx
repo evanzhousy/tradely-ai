@@ -29,6 +29,7 @@ import { AccessPanel } from "@/components/access-panel";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
+import { LessonNavigation } from "@/components/lesson-navigation";
 import { PracticeCard } from "@/components/practice-card";
 import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
@@ -166,6 +167,7 @@ function LessonPage() {
 
 			<div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10 xl:px-16">
 				<div className="mx-auto flex max-w-[920px] flex-col gap-8">
+					<LessonNavigation locale={locale} />
 					<Accordion className="lg:hidden">
 						<AccordionItem value="course-navigation">
 							<AccordionTrigger>

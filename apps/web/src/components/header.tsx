@@ -10,6 +10,7 @@ import {
 } from "@tradely/ui/components/sheet";
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
+import { useState } from "react";
 
 import { useAnalytics } from "@/analytics/context";
 import { useI18n } from "@/i18n/provider";
@@ -24,12 +25,20 @@ const navigation = [
 	{ to: "/pricing", key: "nav.pricing" },
 ] as const;
 
-function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
+function NavigationLinks({
+	mobile = false,
+	onNavigate,
+}: {
+	mobile?: boolean;
+	onNavigate?: () => void;
+}) {
 	const { t } = useI18n();
 	return navigation.map((item) => (
 		<Link
 			key={item.to}
 			to={item.to}
+			onClick={onNavigate}
+			activeOptions={{ exact: item.to === "/" }}
 			className={cn(
 				"font-medium text-muted-foreground text-sm transition-colors hover:text-foreground",
 				mobile && "rounded-2xl px-3 py-3 text-base",
@@ -42,6 +51,7 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
 }
 
 export default function Header() {
+	const [menuOpen, setMenuOpen] = useState(false);
 	const isHome = useRouterState({
 		select: (state) => state.location.pathname === "/",
 	});
@@ -82,7 +92,7 @@ export default function Header() {
 					<LocaleSwitcher />
 					<ThemeToggle />
 					<AuthControls />
-					<Sheet>
+					<Sheet open={menuOpen} onOpenChange={setMenuOpen}>
 						<SheetTrigger
 							render={
 								<Button
@@ -106,7 +116,7 @@ export default function Header() {
 								className="flex flex-col gap-1 px-3"
 								aria-label={t("nav.mobile")}
 							>
-								<NavigationLinks mobile />
+								<NavigationLinks mobile onNavigate={() => setMenuOpen(false)} />
 								<LocaleSwitcher />
 								<a
 									href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=mobile-menu"
