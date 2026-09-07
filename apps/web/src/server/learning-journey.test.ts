@@ -97,6 +97,11 @@ describe("integrated course persistence journey", () => {
 		"rank-contracts",
 		"validate-option-print",
 		"session-flow-vs-structure",
+		"dex-dei-gex",
+		"symbol-drawer",
+		"cookbook-research-packet",
+		"market-recap",
+		"audit-market-recap",
 	])(
 		"checks access, resumes evidence and answers, and preserves completion for %s",
 		async (lessonId) => {

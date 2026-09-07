@@ -122,7 +122,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 			await openLearningImpl({ lessonId: "rank-contracts", restart: false }),
 		);
 		expect(contract.attemptId).not.toBe(print.attemptId);
-		expect(contract.step.neighborhood?.id).toBe("alfa-neighborhood-v2");
+		expect(contract.step.neighborhood?.id).toBe("alfa-neighborhood-v3");
 		const saved = viewOf(
 			await updateLearningImpl({
 				...command(contract, {
@@ -191,7 +191,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		});
 		expect(await open()).toEqual({ ok: false, reason: "signed_out" });
 		expect(
-			await openLearningImpl({ lessonId: "audited-boundary", restart: false }),
+			await openLearningImpl({ lessonId: "missing-lesson", restart: false }),
 		).toEqual({ ok: false, reason: "not_found" });
 	});
 

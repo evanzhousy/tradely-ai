@@ -18,7 +18,7 @@ Ask whether the execution is at bid, mid, or ask; location describes the print, 
 
 **Keep premium and size separate**
 
-Premium is price per contract; size is quantity. Both need the same contract and timestamp context.
+Quoted option price is per share; size is contract count. Total execution premium equals quoted price × contract count × the stated multiplier (100 in this example). Preserve the contract and timestamp context.
 
 ## 4. 04 · Context
 

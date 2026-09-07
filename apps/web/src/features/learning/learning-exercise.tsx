@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { clerkIsConfigured } from "@/components/app-providers";
+import { getLessonById } from "@/content/course";
 import type {
 	LearningAction,
 	LearningFailure,
@@ -16,6 +17,7 @@ import {
 } from "@/server/learning";
 import type { ContractRenderer } from "./contract-explorer";
 import { LearningScreen } from "./learning-screen";
+import { PreviewLearning } from "./preview-learning";
 
 function LearningSession({ lessonId }: { lessonId: string }) {
 	const { locale } = useI18n();
@@ -166,7 +168,11 @@ function LearningSession({ lessonId }: { lessonId: string }) {
 
 function AuthenticatedLearning({ lessonId }: { lessonId: string }) {
 	const { userId, isLoaded } = useAuth();
-	if (!isLoaded || !userId) return null;
+	if (!isLoaded) return null;
+	if (!userId)
+		return getLessonById(lessonId)?.access === "preview" ? (
+			<PreviewLearning key={lessonId} lessonId={lessonId} />
+		) : null;
 	// Changing Clerk identity destroys the prior account's view and pending requests.
 	return <LearningSession key={`${userId}:${lessonId}`} lessonId={lessonId} />;
 }
@@ -174,5 +180,7 @@ function AuthenticatedLearning({ lessonId }: { lessonId: string }) {
 export function LearningExercise({ lessonId }: { lessonId: string }) {
 	return clerkIsConfigured ? (
 		<AuthenticatedLearning lessonId={lessonId} />
+	) : getLessonById(lessonId)?.access === "preview" ? (
+		<PreviewLearning key={lessonId} lessonId={lessonId} />
 	) : null;
 }

@@ -24,6 +24,9 @@ export type ScenarioStep = {
 	quote: LearningStepView["quote"];
 	neighborhood?: NonNullable<LearningStepView["neighborhood"]>;
 	flowStructure?: NonNullable<LearningStepView["flowStructure"]>;
+	neighborhoodPair?: NonNullable<LearningStepView["neighborhoodPair"]>;
+	metrics?: NonNullable<LearningStepView["metrics"]>;
+	universe?: NonNullable<LearningStepView["universe"]>;
 };
 export type LearningScenario = {
 	id: string;

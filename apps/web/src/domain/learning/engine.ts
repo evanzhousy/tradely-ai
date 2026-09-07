@@ -168,6 +168,7 @@ export function projectAttempt(
 		revision,
 		stepIndex: state.step,
 		stepCount: scenario.steps.length,
+		stepKinds: scenario.steps.map((item) => item.kind),
 		phase: state.phase,
 		step: {
 			id: step.id,
@@ -178,6 +179,9 @@ export function projectAttempt(
 			quote: step.quote,
 			neighborhood: step.neighborhood ?? null,
 			flowStructure: step.flowStructure ?? null,
+			neighborhoodPair: step.neighborhoodPair ?? null,
+			metrics: step.metrics ?? null,
+			universe: step.universe ?? null,
 			evidence: step.evidence.map((evidence) => ({
 				id: evidence.id,
 				title: evidence.title,

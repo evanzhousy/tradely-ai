@@ -23,6 +23,7 @@ import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "@tradely/ui/components/toggle-group";
+import { cn } from "@tradely/ui/lib/utils";
 import { BoxIcon, Grid2X2Icon } from "lucide-react";
 import {
 	useCallback,
@@ -36,6 +37,7 @@ import { sampleContractReplay } from "@/domain/learning/contract-replay";
 import {
 	type ContractNeighborhood,
 	type ContractViewState,
+	callMoneyness,
 	contractLayout,
 	contractStatus,
 	visibleContracts,
@@ -189,6 +191,11 @@ export function ContractExplorer({
 					</ToggleGroup>
 				) : null}
 			</div>
+			{snapshot.spot !== undefined ? (
+				<p className="text-sm">
+					{text("spot")}: <strong>${snapshot.spot.toFixed(2)}</strong>
+				</p>
+			) : null}
 			<FieldGroup className="sm:flex-row sm:items-end">
 				<Field>
 					<FieldTitle id={`${id}-scope`}>{text("visibility")}</FieldTitle>
@@ -282,6 +289,11 @@ export function ContractExplorer({
 						<TableRow key={strike}>
 							<TableHead scope="row" className="p-1">
 								{strike}
+								{snapshot.spot !== undefined ? (
+									<span className="block text-muted-foreground text-xs">
+										{callMoneyness(strike, snapshot.spot).toUpperCase()}
+									</span>
+								) : null}
 							</TableHead>
 							{expiries.map((days) => {
 								const contract = shown.find(
@@ -296,7 +308,16 @@ export function ContractExplorer({
 									);
 								const status = contractStatus(snapshot, contract);
 								return (
-									<TableCell key={days} className="p-1">
+									<TableCell
+										key={days}
+										className={cn(
+											"p-1",
+											selected &&
+												(selected.strike === strike ||
+													selected.days === days) &&
+												"outline outline-1 outline-primary/40 -outline-offset-1",
+										)}
+									>
 										<Button
 											className="relative min-h-11 w-full min-w-0 gap-1 px-1 tabular-nums"
 											variant={selectedId === contract.id ? "default" : "ghost"}
@@ -340,7 +361,7 @@ export function ContractExplorer({
 				</p>
 			) : null}
 			<p className="text-muted-foreground text-xs">
-				{text("volume")} · {text("legend")}
+				{text("volume")} · {text("legend")} {text("neighbors")}
 			</p>
 			<div
 				aria-live={clock.playing ? "off" : "polite"}
@@ -356,6 +377,9 @@ export function ContractExplorer({
 							</strong>
 							<Badge variant="secondary">
 								{text(contractStatus(snapshot, selected))}
+								{snapshot.spot !== undefined
+									? ` · ${text(callMoneyness(selected.strike, snapshot.spot))}`
+									: ""}
 							</Badge>
 						</div>
 						<p className="text-sm tabular-nums">

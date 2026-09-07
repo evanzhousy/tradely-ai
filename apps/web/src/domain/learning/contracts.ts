@@ -11,6 +11,8 @@ export type NeighborhoodContract = {
 export type ContractNeighborhood = {
 	id: string;
 	symbol: string;
+	/** Fixed underlying reference for this synthetic snapshot, in USD. */
+	spot?: number;
 	asOf: LearningCopy;
 	scope: {
 		minDays: number;
@@ -26,6 +28,15 @@ export type ContractNeighborhood = {
 		frames: Array<{ position: number; volumes: Record<string, number | null> }>;
 	};
 };
+
+export type NeighborhoodPair = {
+	id: string;
+	cases: Array<{ label: LearningCopy; data: ContractNeighborhood }>;
+};
+
+export function callMoneyness(strike: number, spot: number) {
+	return strike === spot ? "atm" : strike < spot ? "itm" : "otm";
+}
 export type ContractViewState = {
 	selectedId: string | null;
 	scopeOnly: boolean;

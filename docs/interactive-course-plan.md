@@ -4,7 +4,7 @@ Status: proposed implementation plan, following the agreed direction of interact
 
 Prepared: 2026-09-06. Repository baseline: `5504e8a`. This document describes proposed work; it does not report deployed features or measured learning improvements.
 
-Implementation update: print-validation, contract-neighborhood, and session-flow-versus-structure pilots now have local implementations on `codex/interactive-courses`, including independent case variants, saved attempts, server assessment, and bilingual UI. The contract pilot includes an optional Three.js view with animated columns and counters; the flow pilot uses a 2D volume replay beside dated OI and model snapshots. Both use the same playback clock and default fastest speed. See [the pilot review notes](interactive-course-pilot.md). Migration to an identified test database, signed-in browser verification, deployment, learner evaluation, and the other eight lesson conversions remain pending.
+Implementation update (2026-09-07): all 11 lessons now have local supplemental exercises with English/Simplified Chinese prompts, independent practice variants, and server-owned grading. The contract lesson adds spot/moneyness and paired concentration cases; the metrics lesson adds a denominator lab and optional signed GEX visualization. The three free lessons support anonymous, non-persisted practice through a server-validated public-only endpoint. Signed-in attempts continue through the existing authorized persistence service. See [the pilot review notes](interactive-course-pilot.md). Deployment, real signed-in verification in the intended environment, and learner-effectiveness evaluation remain separate release work.
 
 ## Outcome and scope
 
@@ -54,7 +54,7 @@ Lesson numbers below are the learner-facing order. Build order is defined in the
 | 5 | `rank-contracts` | Select a contract inside a fixed comparison boundary; inspect nearby strikes and expirations, including missing or incomparable values | Comparison lab | Optional pilot: contract neighborhood |
 | 6 | `validate-option-print` | Inspect one execution, quote context, and surrounding prints; separate execution facts, supported inference, and unresolved intent | Evidence case | No |
 | 7 | `session-flow-vs-structure` | Step through a fixture in which tape and reported snapshots update on different clocks; identify invalid same-time comparisons | Comparison lab | No |
-| 8 | `dex-dei-gex` | Compare signed flow, normalized magnitude, and modeled structure; change a declared denominator or scope and explain which claims remain supported | Comparison lab | Start in 2D; any later spatial view needs its own evidence |
+| 8 | `dex-dei-gex` | Compare signed flow and magnitude, change an explicit denominator, and inspect signed GEX distributions with equal totals or missing cells | Comparison lab | Optional signed GEX pilot; 2D default; learning benefit unmeasured |
 | 9 | `cookbook-research-packet` | Assemble question, fixed inputs, replay parameters, exclusions, and sources into a rerunnable educational packet | Research packet | No |
 | 10 | `market-recap` | Match claims to charts and evidence; place source, date, scope, and caveats beside the claim they qualify | Research packet | No |
 | 11 | `audit-market-recap` | Audit a deliberately flawed recap; locate unsupported claims, stale inputs, and missing lineage, then select a defensible revision | Research packet | No |

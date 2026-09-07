@@ -1,6 +1,8 @@
 import { z } from "zod";
-import type { ContractNeighborhood } from "./contracts";
+import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { FlowStructureComparison } from "./flow-structure";
+import type { MetricsComparison } from "./metrics";
+import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
 export type LearningChoice = { id: string; label: LearningCopy };
@@ -34,6 +36,9 @@ export type LearningStepView = {
 	hint: LearningCopy | null;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
+	neighborhoodPair?: NeighborhoodPair | null;
+	metrics?: MetricsComparison | null;
+	universe?: UniverseComparison | null;
 	quote: {
 		bid: number;
 		ask: number;
@@ -100,6 +105,7 @@ export type LearningView = {
 	revision: number;
 	stepIndex: number;
 	stepCount: number;
+	stepKinds?: LearningStepView["kind"][];
 	phase: AttemptState["phase"];
 	step: LearningStepView;
 	answers: Record<string, string>;

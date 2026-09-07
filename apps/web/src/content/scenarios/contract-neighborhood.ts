@@ -5,6 +5,7 @@ import type {
 	ScenarioStep,
 } from "@/domain/learning/scenario";
 import type { LearningCopy } from "@/domain/learning/types";
+import { neighborhoodComparisonStep } from "./neighborhood-comparison";
 
 const copy = (en: string, zh: string): LearningCopy => ({ en, zh });
 const choice = (id: string, en: string, zh: string) => ({
@@ -59,6 +60,7 @@ function neighborhood(
 	return {
 		id,
 		symbol: independent ? "BETA" : "ALFA",
+		spot: independent ? 103 : 100,
 		asOf: copy("Synthetic session · 16:00 ET", "模拟时段 · 16:00 ET"),
 		scope: independent
 			? { minDays: 30, maxDays: 60, minStrike: 100, maxStrike: 110 }
@@ -91,7 +93,7 @@ function neighborhood(
 	};
 }
 
-const guidedData = neighborhood("alfa-neighborhood-v2", false);
+const guidedData = neighborhood("alfa-neighborhood-v3", false);
 const scopeFacts = [
 	fact(
 		"Frozen comparison",
@@ -430,6 +432,12 @@ export const contractNeighborhoodScenarios: LearningScenario[] = [
 ].map((alternate) => ({
 	id: `contract-neighborhood-${alternate ? "b" : "a"}`,
 	lessonId: "rank-contracts",
-	version: 2,
-	steps: [first, investigation, independent(alternate)],
+	version: 3,
+	steps: [
+		first,
+		investigation,
+		neighborhoodComparisonStep(false),
+		independent(alternate),
+		neighborhoodComparisonStep(true, alternate),
+	],
 }));

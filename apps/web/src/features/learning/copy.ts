@@ -3,7 +3,7 @@ import type { LearningCopy } from "@/domain/learning/types";
 export const learningCopy = {
 	label: { en: "Interactive practice", zh: "互动练习" },
 	synthetic: { en: "Synthetic cases", zh: "模拟案例" },
-	stages: { en: "3 stages", zh: "3 个阶段" },
+	stages: { en: "Practice stages", zh: "练习阶段" },
 	start: { en: "Start or resume practice", zh: "开始或继续练习" },
 	saving: { en: "Saving your decision…", zh: "正在保存你的判断…" },
 	loading: { en: "Opening your case…", zh: "正在打开案例…" },

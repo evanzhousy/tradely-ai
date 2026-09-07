@@ -56,7 +56,9 @@ describe("contract neighborhood evidence", () => {
 	});
 	it("each independent case identifies the highest fresh candidate inside its own boundary", () => {
 		for (const [index, scenario] of contractNeighborhoodScenarios.entries()) {
-			const last = scenario.steps.at(-1);
+			const last = scenario.steps.find(
+				(step) => step.id === "neighborhood-independent",
+			);
 			if (!last?.neighborhood) throw new Error("Missing independent grid");
 			const grid = last.neighborhood;
 			const ranked = grid.contracts
@@ -76,7 +78,7 @@ describe("contract neighborhood evidence", () => {
 		for (const scenario of contractNeighborhoodScenarios) {
 			let state = initialAttemptState();
 			const first = JSON.stringify(projectAttempt(scenario, state, "id", 0));
-			expect(first).toContain("alfa-neighborhood-v2");
+			expect(first).toContain("alfa-neighborhood-v3");
 			expect(first).not.toContain("beta-neighborhood");
 			expect(first).not.toContain('"accepted"');
 			for (const step of scenario.steps) {
@@ -97,8 +99,8 @@ describe("contract neighborhood evidence", () => {
 			}
 			expect(assessAttempt(scenario, state)).toEqual({
 				status: "demonstrated",
-				met: 3,
-				total: 3,
+				met: 5,
+				total: 5,
 				usedHint: false,
 			});
 		}

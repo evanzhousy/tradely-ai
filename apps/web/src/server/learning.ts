@@ -23,6 +23,21 @@ export const updateLearningSchema = z
 export type OpenLearningInput = z.infer<typeof openLearningSchema>;
 export type UpdateLearningInput = z.infer<typeof updateLearningSchema>;
 
+export const previewLearningSchema = z
+	.object({
+		lessonId,
+		variant: z.number().int().min(0).max(1),
+		actions: z.array(learningActionSchema).max(256),
+	})
+	.strict();
+export type PreviewLearningInput = z.infer<typeof previewLearningSchema>;
+export const previewLearning = createServerFn({ method: "POST" })
+	.validator(previewLearningSchema)
+	.handler(async ({ data }) => {
+		const { previewLearningImpl } = await import("./preview-learning.server");
+		return previewLearningImpl(data);
+	});
+
 export const openLearning = createServerFn({ method: "POST" })
 	.validator(openLearningSchema)
 	.handler(async ({ data }) => {

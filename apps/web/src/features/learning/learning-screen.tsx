@@ -55,6 +55,10 @@ import {
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
+import { MetricsExplorer } from "./metrics-explorer";
+import { NeighborhoodComparison } from "./neighborhood-comparison";
+import { PremiumExplorer } from "./premium-explorer";
+import { UniverseExplorer } from "./universe-explorer";
 
 export type LearningScreenProps = {
 	lessonId?: string;
@@ -180,7 +184,11 @@ export function LearningScreen({
 	}, [error]);
 
 	return (
-		<Card id="interactive-practice" aria-labelledby={`${id}-title`}>
+		<Card
+			id="interactive-practice"
+			data-learning-persistence={persistence}
+			aria-labelledby={`${id}-title`}
+		>
 			<CardHeader>
 				<div className="mb-2 flex flex-wrap items-center gap-2">
 					<Badge variant="secondary">{text("label")}</Badge>
@@ -214,20 +222,21 @@ export function LearningScreen({
 				{view ? (
 					<>
 						<ol className="flex flex-wrap gap-2" aria-label={text("stages")}>
-							{(["prediction", "guided", "independent"] as const).map(
-								(step, index) => (
-									<li
-										key={step}
-										aria-current={view.stepIndex === index ? "step" : undefined}
+							{(
+								view.stepKinds ??
+								(["prediction", "guided", "independent"] as const)
+							).map((step, index) => (
+								<li
+									key={step + index}
+									aria-current={view.stepIndex === index ? "step" : undefined}
+								>
+									<Badge
+										variant={view.stepIndex === index ? "default" : "outline"}
 									>
-										<Badge
-											variant={view.stepIndex === index ? "default" : "outline"}
-										>
-											{index + 1}. {text(step)}
-										</Badge>
-									</li>
-								),
-							)}
+										{index + 1}. {text(step)}
+									</Badge>
+								</li>
+							))}
 						</ol>
 						<div className="flex flex-col gap-2">
 							<h3
@@ -266,8 +275,40 @@ export function LearningScreen({
 								onRendererChange={onRendererChange}
 							/>
 						) : null}
+						{view.step.neighborhoodPair ? (
+							<NeighborhoodComparison
+								key={view.attemptId + view.step.id}
+								data={view.step.neighborhoodPair}
+								allowThree={release?.three ?? false}
+								locale={locale}
+								onRendererChange={onRendererChange}
+							/>
+						) : null}
+						{view.step.metrics ? (
+							<MetricsExplorer
+								key={view.attemptId + view.step.id}
+								data={view.step.metrics}
+								allowThree={release?.three ?? false}
+								locale={locale}
+								onRendererChange={onRendererChange}
+							/>
+						) : null}
+						{view.step.universe ? (
+							<UniverseExplorer
+								key={view.attemptId + view.step.id}
+								data={view.step.universe}
+								locale={locale}
+							/>
+						) : null}
 						{view.step.quote ? (
-							<QuoteComparison quote={view.step.quote} locale={locale} />
+							<div className="flex flex-col gap-4">
+								<QuoteComparison quote={view.step.quote} locale={locale} />
+								<PremiumExplorer
+									key={view.step.id}
+									price={view.step.quote.trade}
+									locale={locale}
+								/>
+							</div>
 						) : null}
 						{view.step.flowStructure ? (
 							<FlowStructureExplorer

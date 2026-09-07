@@ -57,7 +57,7 @@ Compare contracts like with like. Different expiry horizons or denominators may 
 
 Read the contract identity and the print's location relative to bid and ask. Ask-side execution supports an aggressive-buyer inference; bid-side execution supports an aggressive-seller inference; mid-market execution preserves more uncertainty.
 
-Keep premium and size separate. Premium measures dollars exchanged after price, contracts, and the one-hundred multiplier are combined. It does not directly measure contract count or conviction.
+Keep premium and size separate. Total execution premium measures dollars exchanged: quoted option price per share × contract count × the stated contract multiplier (100 in these examples). It does not directly measure contract count or conviction.
 
 ### Return to context
 

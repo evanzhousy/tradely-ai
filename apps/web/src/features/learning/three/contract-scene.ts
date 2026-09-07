@@ -161,6 +161,23 @@ export function mountContractScene(
 			new THREE.Vector3(-0.65, 6.2, 0),
 			true,
 		);
+		if (data.spot !== undefined) {
+			const spotGeometry = track(
+				new THREE.BufferGeometry().setFromPoints([
+					new THREE.Vector3(layout.x(data.spot), 0.08, -0.5),
+					new THREE.Vector3(layout.x(data.spot), 0.08, 6.4),
+				]),
+			);
+			const spotMaterial = track(
+				new THREE.LineBasicMaterial({ color: 0xb58c26 }),
+			);
+			scene.add(new THREE.Line(spotGeometry, spotMaterial));
+			addLabel(
+				(locale === "zh" ? "现价 $" : "Spot $") + data.spot,
+				new THREE.Vector3(layout.x(data.spot), 0.1, -0.9),
+				true,
+			);
+		}
 		labels.sort((a, b) => Number(b.axis) - Number(a.axis));
 		for (const [index, contract] of data.contracts.entries()) {
 			const material = track(
@@ -320,6 +337,12 @@ export function mountContractScene(
 				const mesh = bars[index];
 				const selected = contract.id === state.selectedId;
 				const comparable = contractStatus(data, contract) === "comparable";
+				const anchor = data.contracts.find(
+					(item) => item.id === state.selectedId,
+				);
+				const neighbor =
+					anchor &&
+					(anchor.strike === contract.strike || anchor.days === contract.days);
 				const material = mesh.material as THREE.MeshStandardMaterial;
 				material.color.copy(
 					color(
@@ -330,7 +353,8 @@ export function mountContractScene(
 								: "--muted-foreground",
 					),
 				);
-				material.opacity = selected || comparable ? 1 : 0.28;
+				material.opacity =
+					selected || (comparable && (!anchor || neighbor)) ? 1 : 0.28;
 				material.depthWrite = selected || comparable;
 				mesh.visible = shown.has(contract.id);
 				outlines[index].visible =
