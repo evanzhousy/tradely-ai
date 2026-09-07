@@ -1,0 +1,21 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js';
+
+const STYLE = `.mobile-controls{position:absolute;inset:0;pointer-events:none}.joystick{position:absolute;left:28px;bottom:28px;width:126px;height:126px;border:1px solid #ffffff45;border-radius:50%;background:#11151b88;backdrop-filter:blur(8px);pointer-events:auto;touch-action:none}.joystick:after{content:'';position:absolute;inset:24px;border:1px solid #ffffff28;border-radius:50%}.joystick-knob{position:absolute;left:50%;top:50%;width:54px;height:54px;transform:translate(-50%,-50%);border:1px solid #f4c95d99;border-radius:50%;background:#f4c95dcc;box-shadow:0 4px 16px #0005}.skill{position:absolute;right:28px;bottom:38px;width:92px;height:92px;border:2px solid #f4c95d;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#d88a2e 40%,#73301e 100%);box-shadow:0 0 0 7px #f4c95d24,0 8px 25px #0007;color:#fff;font:700 12px monospace;letter-spacing:.04em;pointer-events:auto;touch-action:manipulation}.skill:active{transform:scale(.94)}.mobile-hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:5px 9px;border-radius:999px;background:#11151b99;color:#fff9;font:10px monospace;pointer-events:none}@media(min-width:800px){.joystick{left:34px;bottom:34px}.skill{right:34px;bottom:44px}}`;
+
+export function createMobileControls(scene, avatar, camera, onMove) {
+ const style=document.createElement('style');style.textContent=STYLE;document.head.append(style);
+ const layer=document.createElement('div');layer.className='mobile-controls';
+ const joystick=document.createElement('div');joystick.className='joystick';joystick.setAttribute('aria-label','Virtual movement joystick');joystick.setAttribute('role','application');
+ const knob=document.createElement('div');knob.className='joystick-knob';joystick.append(knob);
+ const skill=document.createElement('button');skill.className='skill';skill.type='button';skill.textContent='魔法 / CAST';skill.setAttribute('aria-label','Cast magic attack');
+ const hint=document.createElement('div');hint.className='mobile-hint';hint.textContent='摇杆移动 · 技能键施法';layer.append(joystick,skill,hint);document.querySelector('#app').append(layer);
+ let pointer=null, vector={x:0,z:0};
+ const update=(event)=>{const rect=joystick.getBoundingClientRect();const x=event.clientX-(rect.left+rect.width/2),y=event.clientY-(rect.top+rect.height/2),radius=rect.width*.34;const length=Math.min(radius,Math.hypot(x,y));const angle=Math.atan2(y,x);const nx=Math.cos(angle)*length/radius,ny=Math.sin(angle)*length/radius;knob.style.transform=`translate(calc(-50% + ${nx*radius}px),calc(-50% + ${ny*radius}px))`;vector={x:nx,z:ny};onMove(vector)};
+ const release=()=>{pointer=null;vector={x:0,z:0};knob.style.transform='translate(-50%,-50%)';onMove(vector)};
+ joystick.addEventListener('pointerdown',e=>{pointer=e.pointerId;joystick.setPointerCapture(pointer);update(e)});joystick.addEventListener('pointermove',e=>{if(e.pointerId===pointer)update(e)});joystick.addEventListener('pointerup',release);joystick.addEventListener('pointercancel',release);window.addEventListener('blur',release);
+ const spells=[];
+ const cast=()=>{if(!avatar.root.visible)return;const orb=new THREE.Mesh(new THREE.SphereGeometry(.11,12,8),new THREE.MeshBasicMaterial({color:0xffd56b,transparent:true,opacity:.95}));orb.position.copy(avatar.root.position).add(new THREE.Vector3(0,.75,0));scene.add(orb);const glow=new THREE.PointLight(0xff9d45,2.2,3);orb.add(glow);const direction=new THREE.Vector3();camera.getWorldDirection(direction);direction.y=0;direction.normalize();spells.push({orb,velocity:direction.multiplyScalar(7),life:1.4});};
+ const tick=(delta)=>{for(let i=spells.length-1;i>=0;i--){const spell=spells[i];spell.orb.position.addScaledVector(spell.velocity,delta);spell.life-=delta;spell.orb.scale.setScalar(1+Math.sin(spell.life*35)*.16);if(spell.life<=0){scene.remove(spell.orb);spell.orb.geometry.dispose();spell.orb.material.dispose();spells.splice(i,1)}}};
+ skill.addEventListener('click',cast);const dispose=()=>{window.removeEventListener('blur',release);for(const spell of spells){scene.remove(spell.orb);spell.orb.geometry.dispose();spell.orb.material.dispose()}style.remove();layer.remove()};
+ return {getVector:()=>vector,tick,dispose};
+}
