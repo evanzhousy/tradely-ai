@@ -32,6 +32,7 @@ import { CourseProgress } from "@/components/course-progress";
 import { PracticeCard } from "@/components/practice-card";
 import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
+import { LearningExercise } from "@/features/learning/learning-exercise";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { getLessonPageData } from "@/server/lesson";
@@ -227,6 +228,9 @@ function LessonPage() {
 
 					{page.access.allowed ? (
 						<>
+							{page.learning ? (
+								<LearningExercise lessonId={sourceLesson.id} />
+							) : null}
 							{page.media ? (
 								<LessonVideo
 									lesson={lesson}

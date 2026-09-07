@@ -125,6 +125,10 @@ The primary learning journey is:
 5. `lesson_video_completed`
 6. `lesson_completed`
 
+The interactive pilots add the source-contract events `lesson_exercise_started`, `lesson_exercise_submitted`, `lesson_hint_opened`, `lesson_exercise_save_failed`, and `lesson_renderer_changed`. These are declared in the existing typed registry and property allowlist. They report bounded lesson/scenario identifiers, scenario version, stage, criterion counts, result category, failure category, or a 2D/3D renderer change with its selection/unavailability reason. They never include answer selections, evidence text, attempt state, camera movements, raw comparison data, or notes. Opening a saved attempt also counts as an exercise start/resume; it is not a unique-attempt denominator.
+
+The `lesson_attempt.assessment` record is authoritative for a submitted practice result. Analytics remains consented, best-effort journey evidence. Database failures from the learning service are replaced with a fixed error before exception capture so SQL parameters and case content cannot enter telemetry. New event shapes must be observed in a deployed consented session before building live insights; this source addition does not establish delivery or learning efficacy.
+
 Membership and Course Pass events are `membership_cta_clicked`, `billing_action_started`, `billing_action_redirected`, `billing_action_failed`, `billing_checkout_returned`, and `course_pass_access_verified`. Checkout intent events use `offer = membership | lifetime_course`. A checkout return is explicitly marked `estimate: true`; it is not authoritative proof of payment, subscription activation, recognized revenue, or MRR. `course_pass_access_verified` contains only the bounded course ID and verification source after the server has updated access; Stripe and the database remain payment and entitlement truth.
 
 Reliability events are `$exception`, `$web_vitals`, `server_route_timing`, `billing_status_unavailable`, and `lesson_progress_save_failed`.

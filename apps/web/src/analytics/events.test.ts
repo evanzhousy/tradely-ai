@@ -15,6 +15,29 @@ import {
 } from "./events";
 
 describe("analytics event boundaries", () => {
+	it("keeps learner answers and evidence out of learning events", () => {
+		const properties: Record<string, unknown> = {
+			lesson_id: "validate-option-print",
+			scenario_id: "option-print-a",
+			scenario_version: 1,
+			criteria_met: 3,
+			criteria_total: 3,
+			result: "demonstrated",
+			answers: { intent: "unknown" },
+			evidence: "private case body",
+			note: "learner reflection",
+			state: { step: 2 },
+		};
+		pruneAnalyticsEventProperties("lesson_exercise_submitted", properties);
+		expect(properties).toEqual({
+			lesson_id: "validate-option-print",
+			scenario_id: "option-print-a",
+			scenario_version: 1,
+			criteria_met: 3,
+			criteria_total: 3,
+			result: "demonstrated",
+		});
+	});
 	it("keeps a versioned exhaustive runtime event registry", () => {
 		expect(ANALYTICS_EVENT_SCHEMA_VERSION).toBe(1);
 		expect(Object.keys(ANALYTICS_EVENT_NAMES)).toContain("lesson_completed");

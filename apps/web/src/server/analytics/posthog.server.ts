@@ -25,7 +25,7 @@ import {
 } from "@/analytics/server-timing";
 
 export type ServerExceptionContext = {
-	source: "access" | "billing" | "lesson" | "media" | "progress";
+	source: "access" | "billing" | "lesson" | "media" | "progress" | "learning";
 	operation: string;
 	userId?: string | null;
 	lessonId?: string;

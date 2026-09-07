@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { getLesson } from "@/content/course";
+import { learningRollout } from "@/content/learning-rollout";
 import { getLessonBody } from "@/content/lesson-content.server";
 import { resolveCurrentLessonAccess } from "./access.server";
 import { captureServerException } from "./analytics/posthog.server";
@@ -32,5 +33,6 @@ export async function getLessonPageDataImpl(data: { slug: string }) {
 		media,
 		mediaUnavailable,
 		canAccessPaid: courseAccess.canAccessPaid,
+		learning: access.allowed ? (learningRollout[lesson.id] ?? null) : null,
 	};
 }

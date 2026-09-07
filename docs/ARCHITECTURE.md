@@ -6,12 +6,13 @@ Tradely owns its identity, billing, database, media, and customer relationship. 
 
 ## Persistent model
 
-Only two PostgreSQL tables are persisted:
+The source schema defines three PostgreSQL tables. The interactive-practice table requires migration `0002_learning_attempts` before deploying its server functions.
 
 - `app_user`: Clerk user ID, optional Stripe Customer ID, a verified/revocable
   Lifetime Course Pass grant with its unique Stripe Checkout Session, and narrow
   manual access overrides.
 - `lesson_progress`: user plus lesson ID, authoritative content version, last video position, and completion timestamps.
+- `lesson_attempt`: a user-owned, versioned scenario attempt with structured answers, inspected evidence, hint use, revision, and an immutable submitted assessment. A partial unique index permits one active attempt per user and lesson.
 
 Course and lesson metadata live in `apps/web/src/content/course.ts`. Lesson bodies remain in a server-only module. There are no subscription, entitlement, enrollment, prerequisite, quiz, or processed-webhook tables.
 
@@ -53,6 +54,20 @@ The operational Git and artifact boundary is documented in
 The client submits only the lesson ID, playback position, and completion intent. The server resolves the lesson, its content version, and its current access rule from source control. A signed-in user cannot write progress for a paid lesson without current access.
 
 Resume positions are restored only when the stored content version matches the current lesson version. This prevents an old timestamp from dropping a learner into the wrong place after a lesson is replaced.
+
+## Interactive practice contract
+
+`content/learning-rollout.ts` owns public introductions and capabilities for the supplemental `validate-option-print` and `rank-contracts` pilots. The lesson loader exposes availability only after the existing access decision. Case content and answer keys are server-only; the client receives only the current stage, its approved comparison snapshot, and evidence it has inspected. Opening or changing an attempt rechecks identity, paid access, and attempt ownership.
+
+The contract explorer shares selection and view filters across an accessible 2D map and a lazy-loaded Three.js view. Its immutable snapshot ID is part of the component key; saving an answer does not change the graph's snapshot or reset the camera. The renderer owns graphics resources only. It neither grades answers nor changes the declared comparison boundary, and WebGL failure preserves the selection in 2D.
+
+Contract replay version 2 uses one monotonic clock for the numeric map and animated column heights. Synthetic checkpoint volumes are temporally interpolated while prior-session and missing observations retain their original state. The close is the unchanged assessment snapshot. Playback is local presentation state, pauses when hidden or offscreen, and produces no attempt writes or per-frame analytics. Reduced motion disables autoplay and opts manual playback into discrete checkpoints.
+
+Every decision is saved before the next action is enabled. Updates compare the expected revision and deduplicate the command ID; a lost response can be retried without applying the decision twice. Concurrent-tab conflicts require loading the current attempt. Submitted attempts are immutable, and their assessments are stored independently of subsequent rubric edits. A retry uses the alternate independent case; retired scenario versions require an explicit restart and retain the prior record.
+
+Practice completion is separate from `lesson_progress`. The independent case earns `demonstrated` only when every required criterion is met without an independent-case hint; other completed attempts are `practiced`. A course completion timestamp does not establish this result. The pilot is a paid lesson and requires sign-in; anonymous preview exercises belong to the later public-lesson rollout.
+
+The exercise clears its client state when Clerk identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the pilot implementation notes](interactive-course-pilot.md) for case review, verification, and rollout details.
 
 ## Failure behavior
 

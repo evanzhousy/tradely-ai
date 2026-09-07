@@ -15,6 +15,13 @@
 			"when": 1788164361081,
 			"tag": "0001_low_clea",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1788718082661,
+			"tag": "0002_learning_attempts",
+			"breakpoints": true
 		}
 	]
 }

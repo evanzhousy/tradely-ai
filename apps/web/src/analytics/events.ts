@@ -1,4 +1,5 @@
 import type { LessonAccess, TradingFlowPractice } from "@/content/course";
+import type { LearningFailure } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 
 import { redactAnalyticsPersonProperties } from "./redaction";
@@ -28,6 +29,33 @@ export type AnalyticsRouteName =
 	| "not_found";
 
 export type AnalyticsEventMap = {
+	lesson_renderer_changed: {
+		lesson_id: string;
+		scenario_id: string;
+		scenario_version: number;
+		renderer: "2d" | "3d";
+		reason: "selected" | "unavailable";
+	};
+	lesson_exercise_started: {
+		lesson_id: string;
+		scenario_id: string;
+		scenario_version: number;
+	};
+	lesson_exercise_submitted: {
+		lesson_id: string;
+		scenario_id: string;
+		scenario_version: number;
+		criteria_met: number;
+		criteria_total: number;
+		result: "practiced" | "demonstrated";
+	};
+	lesson_hint_opened: {
+		lesson_id: string;
+		scenario_id: string;
+		scenario_version: number;
+		stage: "prediction" | "guided" | "independent";
+	};
+	lesson_exercise_save_failed: { lesson_id: string; reason: LearningFailure };
 	page_viewed: {
 		route_name: AnalyticsRouteName;
 		path: string;
@@ -120,6 +148,11 @@ export type AnalyticsEventMap = {
 export type AnalyticsEventName = keyof AnalyticsEventMap;
 
 export const ANALYTICS_EVENT_NAMES = {
+	lesson_renderer_changed: true,
+	lesson_exercise_started: true,
+	lesson_exercise_submitted: true,
+	lesson_hint_opened: true,
+	lesson_exercise_save_failed: true,
 	page_viewed: true,
 	locale_changed: true,
 	auth_sign_in_opened: true,
@@ -142,6 +175,24 @@ export const ANALYTICS_EVENT_NAMES = {
 } satisfies Record<AnalyticsEventName, true>;
 
 export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	lesson_renderer_changed: [
+		"lesson_id",
+		"scenario_id",
+		"scenario_version",
+		"renderer",
+		"reason",
+	],
+	lesson_exercise_started: ["lesson_id", "scenario_id", "scenario_version"],
+	lesson_exercise_submitted: [
+		"lesson_id",
+		"scenario_id",
+		"scenario_version",
+		"criteria_met",
+		"criteria_total",
+		"result",
+	],
+	lesson_hint_opened: ["lesson_id", "scenario_id", "scenario_version", "stage"],
+	lesson_exercise_save_failed: ["lesson_id", "reason"],
 	page_viewed: ["route_name", "path", "locale"],
 	locale_changed: ["from_locale", "to_locale"],
 	auth_sign_in_opened: ["surface"],

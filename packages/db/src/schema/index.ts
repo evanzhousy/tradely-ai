@@ -1,10 +1,14 @@
+import { sql } from "drizzle-orm";
 import {
+	check,
+	index,
 	integer,
 	jsonb,
 	pgTable,
 	primaryKey,
 	text,
 	timestamp,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export type AccessOverrides = {
@@ -56,3 +60,48 @@ export const lessonProgress = pgTable(
 
 export type AppUser = typeof appUser.$inferSelect;
 export type LessonProgress = typeof lessonProgress.$inferSelect;
+
+export const lessonAttempt = pgTable(
+	"lesson_attempt",
+	{
+		id: text("id").primaryKey(),
+		clerkUserId: text("clerk_user_id")
+			.notNull()
+			.references(() => appUser.clerkUserId, { onDelete: "cascade" }),
+		lessonId: text("lesson_id").notNull(),
+		scenarioId: text("scenario_id").notNull(),
+		scenarioVersion: integer("scenario_version").notNull(),
+		status: text("status", { enum: ["in_progress", "submitted", "retired"] })
+			.notNull()
+			.default("in_progress"),
+		revision: integer("revision").notNull().default(0),
+		state: jsonb("state").$type<unknown>().notNull(),
+		assessment: jsonb("assessment").$type<unknown>(),
+		lastCommandId: text("last_command_id"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+	},
+	(table) => [
+		uniqueIndex("lesson_attempt_active_user_lesson")
+			.on(table.clerkUserId, table.lessonId)
+			.where(sql`${table.status} = 'in_progress'`),
+		index("lesson_attempt_user_lesson_created").on(
+			table.clerkUserId,
+			table.lessonId,
+			table.createdAt,
+		),
+		check("lesson_attempt_revision_nonnegative", sql`${table.revision} >= 0`),
+		check("lesson_attempt_version_positive", sql`${table.scenarioVersion} > 0`),
+		check(
+			"lesson_attempt_status_valid",
+			sql`${table.status} in ('in_progress', 'submitted', 'retired')`,
+		),
+	],
+);
+
+export type LessonAttempt = typeof lessonAttempt.$inferSelect;
