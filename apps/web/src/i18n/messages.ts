@@ -5,6 +5,24 @@ export const LOCALE_STORAGE_KEY = "tradely.locale";
 
 const messages = {
 	en: {
+		"home.seeInside": "Take a look inside",
+		"home.guideLabel": "The research field guide",
+		"home.guideTitle": "Options.\nEvidence.\nPerspective.",
+		"home.noteLabel": "Research note · 01",
+		"home.noteQuestion": "One clear question",
+		"home.noteSource": "A named source",
+		"home.noteInvalidation": "A reason to reconsider",
+		"home.marginNote": "Stay curious.\nCheck your assumptions.",
+		"home.practiceSlipLabel": "From the learning desk",
+		"home.practiceSlipTitle": "A process you can explain.",
+		"home.pathTitle": "Less noise. A clear place to start.",
+		"home.lessonRange": "Lessons {first}–{last}",
+		"home.pathOneDescription":
+			"Set the scope. Choose a universe. Learn what a ranking can actually tell you.",
+		"home.pathTwoDescription":
+			"Look into contracts, individual trades, session flow, and structural context.",
+		"home.pathThreeDescription":
+			"Build a research packet, write the recap, and review the reasoning behind it.",
 		"hall.sceneLabel": "Inside the Tradely trading hall",
 		"hall.simulation": "Trading hall · Simulated market data",
 		"hall.observeLabel": "Read the data",
@@ -20,11 +38,11 @@ const messages = {
 		"hall.loading": "Opening the trading hall…",
 		"hall.static": "Trading hall preview",
 		"home.openingLabel": "A field guide to options research",
-		"home.titleRead": "Read the market.",
-		"home.titleVerify": "Verify the story.",
+		"home.titleRead": "Learn the market.",
+		"home.titleVerify": "Think for yourself.",
 		"home.intro":
-			"Turn options flow, ranking, and market structure into a research process you can explain. One question. One lesson. One piece of evidence at a time.",
-		"home.startFree": "Start the first free lesson",
+			"A guided path through options flow, market structure, and evidence. Learn one concept, question what you see, and put it into practice.",
+		"home.startFree": "Start learning free",
 		"home.freeNote": "{minutes} minutes · No Tradely membership required",
 		"home.explore": "Explore the curriculum",
 		"home.pauseMotion": "Pause motion",
@@ -55,15 +73,15 @@ const messages = {
 		"home.demoCaption":
 			"Illustrative exercise · Based on the Rank Symbols lesson",
 		"home.curriculumLabel": "Your learning path",
-		"home.curriculumTitle": "One workflow. A clearer way to learn.",
+		"home.curriculumTitle": "The whole path. Nothing hidden.",
 		"home.curriculumIntro":
 			"Start with a question. Work through the evidence. Finish with a research packet you can inspect and explain.",
 		"home.accessTitle": "Start with curiosity. Take it further.",
 		"home.accessDescription":
 			"The first {count} lessons are free. Continue the course with Tradely paid access when you are ready.",
 		"home.accessLink": "See access options",
-		"home.finaleLabel": "There is always another layer to understand.",
-		"home.finaleTitle": "Follow the evidence.",
+		"home.finaleLabel": "A little curiosity goes a long way.",
+		"home.finaleTitle": "Make room for a better question.",
 		"home.finaleDescription":
 			"Your next research question starts with one lesson.",
 		"home.footerLearning": "Learning",
@@ -249,6 +267,23 @@ const messages = {
 		"analytics.necessaryOnly": "Use necessary only",
 	},
 	zh: {
+		"home.seeInside": "看看如何学习",
+		"home.guideLabel": "研究实践指南",
+		"home.guideTitle": "期权。\n证据。\n视角。",
+		"home.noteLabel": "研究笔记 · 01",
+		"home.noteQuestion": "一个清晰的问题",
+		"home.noteSource": "明确的资料来源",
+		"home.noteInvalidation": "重新考虑的依据",
+		"home.marginNote": "保持好奇。\n检验你的假设。",
+		"home.practiceSlipLabel": "来自学习桌",
+		"home.practiceSlipTitle": "说得清的研究过程。",
+		"home.pathTitle": "理清思路，找到起点。",
+		"home.lessonRange": "第 {first}–{last} 课",
+		"home.pathOneDescription":
+			"设定边界，选择比较范围，理解排名究竟能说明什么。",
+		"home.pathTwoDescription": "逐步检视合约、单笔交易、当日资金流与结构背景。",
+		"home.pathThreeDescription":
+			"形成研究记录，撰写复盘，并检查结论背后的推理。",
 		"hall.sceneLabel": "走进 Tradely 交易大厅",
 		"hall.simulation": "交易大厅 · 模拟行情",
 		"hall.observeLabel": "读懂数据",
@@ -262,10 +297,10 @@ const messages = {
 		"hall.loading": "正在展开交易大厅…",
 		"hall.static": "交易大厅预览",
 		"home.openingLabel": "期权研究的实践指南",
-		"home.titleRead": "读懂市场。",
-		"home.titleVerify": "验证判断。",
+		"home.titleRead": "理解市场。",
+		"home.titleVerify": "独立思考。",
 		"home.intro":
-			"把期权资金流、排名和市场结构，串成一个说得清的研究过程。从一个问题、一堂课、一份证据开始。",
+			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
 		"home.startFree": "免费开始第一课",
 		"home.freeNote": "{minutes} 分钟 · 无需 Tradely 会员",
 		"home.explore": "探索课程路径",
@@ -295,15 +330,15 @@ const messages = {
 			"核对交易时段和比较范围，阅读排名背后的字段，并写下一条足以改变研究优先级的反向证据。",
 		"home.demoCaption": "示意练习 · 基于 Rank Symbols 课程",
 		"home.curriculumLabel": "你的学习路径",
-		"home.curriculumTitle": "一条研究路径，让学习更清晰。",
+		"home.curriculumTitle": "完整路径，一目了然。",
 		"home.curriculumIntro":
 			"从一个问题开始，逐步检视证据，最终形成可检查、可解释的研究记录。",
 		"home.accessTitle": "从好奇开始，继续深入。",
 		"home.accessDescription":
 			"前 {count} 课免费。准备好后，可通过 Tradely 付费访问继续学习。",
 		"home.accessLink": "查看访问方案",
-		"home.finaleLabel": "总有更深一层，值得理解。",
-		"home.finaleTitle": "循着证据，继续探索。",
+		"home.finaleLabel": "带着一点好奇，继续探索。",
+		"home.finaleTitle": "给一个更好的问题，留点空间。",
 		"home.finaleDescription": "你的下一个研究问题，从一堂课开始。",
 		"home.footerLearning": "学习",
 		"home.footerNote": "为审慎研究而构建。",

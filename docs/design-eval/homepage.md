@@ -1,7 +1,7 @@
 # Scenario: homepage
 
 **Route:** `/`  
-**Contract:** `DESIGN.md` (Evidence Observatory homepage, 2026-09-05)
+**Contract:** `DESIGN.md` (Research Notebook homepage, 2026-09-07)
 **Mechanical checks:** `apps/web/src/design-eval/homepage.contract.test.ts`
 
 ## Reader
@@ -36,8 +36,8 @@ Score yes/no. A no blocks shipping the homepage.
 6. Inter + JetBrains Mono. No Geist. No `vbg-*`. No Vercel wordmark.
 7. Light and dark keep the same hierarchy. Mobile stacks claim above figures; the table remains readable (scroll locally if needed).
 8. No em dashes or all-caps eyebrows in homepage copy.
-9. Hero renders the Blender-built exchange hall and footer renders the contour terrain in Three.js, respect reduced motion and pause controls, suspend offscreen, and dispose on route changes. Content and CTAs remain usable without WebGL.
-10. All 60 market surfaces and both tickers use animated simulated data; no financial API is accessed. Scroll motion progresses through the wide hall, close workstation, and market wall views.
+9. The hero frames the claim with original typographic field notes at desktop widths and removes the decorative materials on mobile. Neither hero nor footer mounts WebGL or downloads 3D assets. Content requires no animation.
+10. The learning outline links to real lesson rows and derives the ranges from the course: scope and discovery, inspection and context, then research and review. The three stages remain one ordered course. Anchor targets stay clear of the sticky header.
 11. The illustrative research exercise reveals reasoning on demand and links to the matching free lesson. It makes no live-data or performance claim.
 
 ## Baseline (2026-09-03)
@@ -46,12 +46,20 @@ Loaded `https://vercel.com/design.md` plus `vercel-brand.css`. Composition was a
 
 Failures against this rubric: 6 (foreign type and tokens), 3 (report chrome split from the product shell), and the dual-system exception in `DESIGN.md`.
 
-## Candidate (this loop)
+## Candidate (2026-09-07)
 
-Same composition, Evidence Desk tokens, one product header/footer, `desk-*` primitives. Winner of the matched comparison: this candidate, because it keeps the reader-job structure and restores Tradely identity.
+Fanout reference: spacious typography, tangible study materials, and a clear route into the learning content. Tradely adapts those principles using its own yellow field guide, actual first-lesson note, sourced course figures, continuous learning outline, interactive example, and full evidence table. The original brand, independent TradingFlow relationship, lesson access, and progress contracts remain.
 
 ## How to rerun
 
 1. `pnpm --filter web test` (includes homepage.contract.test.ts).
 2. `pnpm --filter web dev` and open `/` in light and dark, desktop and mobile.
 3. Click Start learning and one table row. Confirm course and lesson pages still use product chrome, not a second visual system.
+
+## Local verification (2026-09-07)
+
+- Node 24 production build and the 9 existing homepage, curriculum-access, and locale checks pass. Scoped Biome checks pass.
+- Browser coverage: 320, 390, 768, 1024, and 1440px, each in English/Chinese and light/dark. All 20 combinations fit without horizontal page overflow.
+- First-lesson navigation, lesson-row anchors, desktop/mobile exercise reveal and reset, and the responsive menu to pricing work. The hero's course facts and partnership caveat fit the reference viewports.
+- Reduced-motion mode has no homepage animations. The homepage mounts no canvas and requests no 3D models.
+- The full workspace type check encountered a geometry assignment error in the concurrently edited learning-lab `gex-scene.ts`; the production build and landing checks above are separate evidence. No deployment was performed.

@@ -73,7 +73,7 @@ components:
 
 Tradely should feel like a calm research desk placed beside a live market tool: serious enough for consequential analysis, clear enough for a learner, and restrained enough that the evidence stays louder than the interface. The yellow-black-white Night Scholar Owl gives Tradely its own memorable IP identity, while the system retains TradingFlow-authorized Luma geometry, semantic surfaces, and disciplined typography without implying shared infrastructure or accounts.
 
-The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The homepage uses the Evidence Observatory composition: a Blender-built trading hall hero with animated simulated market screens, a labeled interactive learning exercise, the ordered curriculum, and a Three.js contour landscape at the close. These expressive scenes were explicitly requested on 2026-09-05. Lesson and account surfaces retain the calm Evidence Desk system.
+The default density is editorial rather than dashboard-heavy. Large thesis statements create orientation; compact mono labels carry sequence, time, and state; quiet elevated panels organize the curriculum. The homepage uses the Research Notebook composition, redesigned with Fanout as a reference on 2026-09-07: a spacious learning thesis framed by original HTML field notes, sourced course facts, three consecutive learning stages, a labeled interactive exercise, the full curriculum, and a quiet closing invitation. Lesson and account surfaces retain the calm Evidence Desk system.
 
 **Key Characteristics:**
 
@@ -100,7 +100,7 @@ The primary reader is an options trader deciding whether to start the ordered cu
 
 Agents must be able to point at the rendered page and confirm each of these:
 
-1. The homepage first viewport contains one `h1`, one start-learning action to the first lesson, sourced lesson/minute/preview/progress figures, and the TradingFlow independence caveat.
+1. The homepage first viewport at 1440×900 and 390×844 contains one `h1`, one start-learning action to the first lesson, sourced lesson/minute/preview/progress figures, and the TradingFlow independence caveat. At narrower widths and increased text size, preserve the reading order without forcing these into a fixed height.
 2. The curriculum proof is a full-width semantic table (or, on in-app lesson rails, one ordered list). It is not a grid of video posters or nested cards.
 3. Each homepage lesson row maps the lesson to the TradingFlow tool named in `lesson.practice.tool`.
 4. Access states remain distinct in text: free, paid/membership, unlocked, access unavailable, completed.
@@ -116,23 +116,24 @@ Compose from installed tokens and these named pieces. Do not invent a parallel t
 
 - Theme tokens in `packages/ui/src/styles/globals.css`: `background`, `foreground`, `card`, `muted`, `primary`, `border`, `ring`.
 - shadcn controls for behavior: `Button`, `Sheet`, `Header` product chrome, `CourseList` on course/lesson rails.
-- Homepage composition classes in `apps/web/src/styles/desk.css`: `desk-opening`, `desk-opening-claim`, `desk-opening-proof`, `desk-opening-context`, `desk-stat-strip`, `desk-stat`, `desk-stat-label`, `desk-stat-value`, `desk-stat-detail`, `desk-curriculum`, `desk-numeric`.
+- Homepage composition in `apps/web/src/styles/desk.css`: `landing-hero`, `landing-materials`, `landing-proof`, `landing-path`, and `landing-study-section`. Course facts and the curriculum retain `desk-stat-strip`, `desk-stat`, `desk-stat-value`, `desk-curriculum`, and `desk-numeric`.
+- `LandingStudyMaterials` owns decorative HTML previews of the actual first lesson and the research method. It has no controls, tracking, live data, or image downloads. Hide it on narrow screens so it never competes with the learning action.
 - `LandingCurriculumTable` is the homepage evidence table. `CourseList` is the in-app ordered path. They are cousins; do not merge them.
 
 ### Generated-design patterns to refuse
 
 - Marketplace thumbnail grids and stacked video-card catalogs.
-- Generic centered hero plus three equal feature cards.
+- Generic centered hero plus three unrelated feature cards. The notebook hero earns its centered layout with course-specific study materials; its three linked stages form one continuous curriculum outline, not separate course products.
 - All-caps or tracked eyebrows, kickers, and decorative numbered section labels.
 - Badges or pills for ordinary metadata (course title, "the course", partner kicker).
 - Nested cards used to repair weak hierarchy.
-- Unmotivated gradients, glow, blobs, or decorative finance imagery in learning and account UI. The homepage hero and footer are explicit exceptions for the explicitly requested exchange-hall environment, gold light shaders, particles, and contour terrain. They stay decorative, keep all actions/text in HTML, and never present generated scenery as market data.
+- Unmotivated gradients, glow, blobs, or decorative finance imagery. The homepage uses original typographic study materials and quiet paper surfaces. Do not reintroduce WebGL scenes, scroll hijacking, or simulated market screens into the notebook landing page.
 - Geist, Vercel wordmark/triangle, or `vbg-*` classes on Tradely product surfaces.
 - Invented testimonials, win rates, or "fast/safe" trading claims.
 
 ### Eval loop
 
-The exchange hall is owned by `trading-hall.tsx` and the lazy `features/trading-hall/` modules; the footer renderer remains owned by `landing-scene.tsx` and `landing-scene-renderer.ts`. The hall is constructed in Blender through MCP from the imagegen references recorded in `scripts/trading-hall/`. Its screen data must be simulated, labeled, deterministic, and independent of financial APIs. Scroll choreography moves the camera through the aisle and uses HTML captions and a projected inspection reticle; the entrance reveal transitions from a wireframe study to shaded materials. The active header, first lesson action, sourced figures, and partner caveat remain accessible. It must dispose GPU resources on navigation, pause offscreen and when hidden, respect reduced motion, expose pause controls, and leave a static CSS fallback if WebGL is unavailable. Cinematic hero/footer surfaces stay ink-black in both themes; the curriculum and explanatory sections honor the selected theme. Mobile curriculum rows preserve table semantics while stacking labeled metadata beneath each lesson.
+The homepage is owned by `routes/index.tsx`; decorative course materials are owned by `landing-study-materials.tsx`, and the worked example by `landing-research-demo.tsx`. Figures and lesson ranges derive from localized course content; access and progress remain server-owned. Both themes use semantic surfaces and retain the same hierarchy. The original exchange-hall and terrain modules and their runtime models remain in the repository, but the homepage does not mount or download them. No animation or GPU support is required to read the page. The worked example reveals reasoning on demand and stays labeled as illustrative. Mobile curriculum rows preserve table semantics and visible, labeled access and duration information.
 
 Homepage is the first frozen scenario: `docs/design-eval/homepage.md`. Mechanical checks live in `apps/web/src/design-eval/homepage.contract.test.ts`. When a review correction repeats, encode it here as an observable rule, in `desk.css` as a primitive, or in that test as a check. Do not hand-tune one generated page and leave the contract unchanged.
 
@@ -169,7 +170,7 @@ The palette is derived directly from the selected YBW B1 Night Scholar Owl: sunf
 
 ### Hierarchy
 
-- **Display** (600, 3–4.5rem, 1.02): One thesis-level heading per primary surface.
+- **Display** (500–600, 3–5rem, 1.08): One thesis-level heading per primary surface. The notebook homepage may center this with a quiet sunflower underline; mobile scales to fit the reading width.
 - **Headline** (600, 1.875–2.25rem, 1.1): Section transitions and course framing.
 - **Title** (500–600, 1–1.25rem, 1.35): Cards, lessons, and practice assignments.
 - **Body** (400, 1rem, 1.8): Lesson prose with a target width of 68–72 characters.
@@ -181,7 +182,7 @@ The palette is derived directly from the selected YBW B1 Night Scholar Owl: sunf
 
 The widest shell is 1480px with 16px mobile gutters, 24px tablet gutters, and 32px desktop gutters. The homepage opening is claim-led: thesis and start action share the first viewport with sourced figures; the curriculum table then owns the full evidence width. Course-overview surfaces use split grids. Reading surfaces use a 330px curriculum rail with a centered lesson column capped near 920px. Prose itself stays near 72ch.
 
-The responsive sequence is preserved rather than compressed: thesis, action, sourced figures, curriculum table, then partnership context. Below 1024px the lesson rail becomes an accordion. Below 768px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs stack without centering the reading voice.
+The responsive sequence is preserved rather than compressed: thesis, action, sourced figures, curriculum table, then partnership context. Below 1024px the lesson rail becomes an accordion. Below 1024px primary navigation moves into a right-hand sheet, controls retain 44px touch targets, and CTAs wrap as space requires. The notebook hero retains its centered opening; supporting sections remain aligned to the reading edge.
 
 Spacing follows an 8px base rhythm, with 16–24px inside components, 32–48px between local groups, and 64–96px between major story sections.
 

@@ -7,7 +7,6 @@ import { useAnalytics } from "@/analytics/context";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { TradelyBrand } from "./brand";
-import { LandingScene } from "./landing-scene";
 
 export function Footer() {
 	const { t, locale } = useI18n();
@@ -26,7 +25,9 @@ export function Footer() {
 		>
 			{isHome ? (
 				<div className="observatory-finale">
-					<LandingScene variant="terrain" />
+					<div className="landing-finale-symbol" aria-hidden="true">
+						↗
+					</div>
 					<div className="observatory-finale-copy">
 						<p className="observatory-label">{t("home.finaleLabel")}</p>
 						<h2>{t("home.finaleTitle")}</h2>

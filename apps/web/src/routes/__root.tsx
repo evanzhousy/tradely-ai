@@ -77,8 +77,8 @@ function RootDocument() {
 				  THESIS: Tradely turns options concepts into a repeatable evidence workflow and refuses the generic video-grid LMS.
 				  OWN-WORLD: The Night Scholar Owl, sunflower-yellow orientation, ink-black structure, clean white reading surfaces, Inter, and JetBrains Mono establish Tradely's distinct identity.
 				  STORY: Orient, learn one concept, practice it in TradingFlow, record progress, and continue.
-				  FIRST VIEWPORT: A decisive course thesis, sourced figures, one start action, and the ordered curriculum as proof.
-				  FORM: Evidence Desk; homepage uses desk-* composition classes from DESIGN.md.
+				  FIRST VIEWPORT: A clear learning thesis, study materials, one start action, sourced course figures, and the independent-practice caveat.
+				  FORM: Research Notebook; the homepage uses landing-* composition and the existing desk-* curriculum from DESIGN.md.
 				*/}
 				<AppProviders>
 					<RouteAnalytics />

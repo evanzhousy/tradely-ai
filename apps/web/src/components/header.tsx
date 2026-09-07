@@ -64,18 +64,18 @@ export default function Header() {
 				isHome && "observatory-chrome observatory-surface",
 			)}
 		>
-			<div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+			<div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
 				<div className="flex items-center gap-8">
 					<TradelyBrand compactOnMobile />
 					<nav
-						className="hidden items-center gap-6 md:flex"
+						className="hidden items-center gap-6 lg:flex"
 						aria-label={t("nav.primary")}
 					>
 						<NavigationLinks />
 					</nav>
 				</div>
 
-				<div className="flex items-center gap-1.5">
+				<div className="flex items-center gap-0.5 sm:gap-1.5">
 					<a
 						href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=header"
 						onClick={() =>
@@ -98,7 +98,7 @@ export default function Header() {
 								<Button
 									variant="ghost"
 									size="icon"
-									className="md:hidden"
+									className="lg:hidden"
 									aria-label={t("nav.openMenu")}
 								/>
 							}

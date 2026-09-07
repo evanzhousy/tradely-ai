@@ -48,7 +48,7 @@ export function LandingCurriculumTable({
 							paid: t("common.membershipLesson"),
 						});
 						return (
-							<tr key={lesson.id}>
+							<tr key={lesson.id} id={`lesson-${lesson.slug}`}>
 								<td className="desk-numeric">
 									{String(index + 1).padStart(2, "0")}
 								</td>

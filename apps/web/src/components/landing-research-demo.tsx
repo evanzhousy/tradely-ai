@@ -10,6 +10,7 @@ export function LandingResearchDemo() {
 	const explanationId = useId();
 	return (
 		<section
+			id="research-demo"
 			className="observatory-study observatory-container"
 			aria-labelledby="study-heading"
 		>
