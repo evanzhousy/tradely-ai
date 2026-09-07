@@ -1,0 +1,50 @@
+{
+  "units": "meters; exported at scale 1",
+  "floor_elevations_m": [
+    0.2,
+    3.2,
+    6.2
+  ],
+  "bed_mattress": {
+    "name": "DH White mattress",
+    "width_m": 2.0,
+    "depth_m": 1.6,
+    "top_above_floor_m": 0.575
+  },
+  "dining_table": {
+    "name": "DH Round white dining table",
+    "width_m": 1.101,
+    "depth_m": 1.101,
+    "top_above_floor_m": 0.75
+  },
+  "dining_seat": {
+    "name": "DH Dining molded seat",
+    "width_m": 0.563,
+    "depth_m": 0.563,
+    "top_above_floor_m": 0.45
+  },
+  "sofa_seat": {
+    "name": "DH Sofa seat",
+    "width_m": 1.053,
+    "depth_m": 0.762,
+    "top_above_floor_m": 0.45
+  },
+  "desk": {
+    "name": "DH Top right desk",
+    "width_m": 1.2,
+    "depth_m": 0.6,
+    "top_above_floor_m": 0.75
+  },
+  "kitchen_counter": {
+    "name": "DH Kitchen counter",
+    "width_m": 1.18,
+    "depth_m": 0.644,
+    "top_above_floor_m": 0.9
+  },
+  "coffee_table": {
+    "name": "DH Yellow coffee table",
+    "width_m": 1.102,
+    "depth_m": 0.549,
+    "top_above_floor_m": 0.43
+  }
+}

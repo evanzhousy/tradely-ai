@@ -1,6 +1,6 @@
 # Tradely exchange hall
 
-The current landing Hero is **the human-eye-level night exchange V3**. See [the current motion/design contract](night-hero-design.md), [current verification](night-hero-verification.md), and [Blender night-scene instructions](exchange-night-v3-README.md). Its runtime model is `apps/web/public/models/trading-hall/night-v3/exchange.glb`, exported by `export_exchange_night_v3.py`. The following notes describe the preserved earlier straight-desk version.
+The current landing Hero is **the professional, modern night exchange V4**. See [the revised art direction](v4-design.md) and [V4 source, runtime and verification](exchange-modern-v4-README.md). Its runtime model is `apps/web/public/models/trading-hall/modern-v4/exchange.glb`, with two denoised Cycles lightmaps. The earlier [V3 motion/design contract](night-hero-design.md) and [V3 source instructions](exchange-night-v3-README.md) are preserved for provenance. The following notes describe the earlier straight-desk version.
 
 The user requested imagegen references, Blender MCP construction, a Three.js securities trading hall with many animated market screens, cinematic lighting and particles, scroll motion graphics, and the layered reveal/natural atmosphere of https://threeui.com/three-js/sylva-living-world.
 

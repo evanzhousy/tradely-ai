@@ -18,18 +18,19 @@ export function createHallEffects(scene: THREE.Scene, compact: boolean) {
 		transparent: true,
 		depthWrite: false,
 		blending: THREE.AdditiveBlending,
-		uniforms: { time: { value: 0 } },
+		uniforms: { time: { value: 0 }, amount: { value: 1 } },
 		vertexShader: `attribute vec3 seed;uniform float time;varying float glow;
 void main(){vec3 p=vec3(-10.+seed.x*20.,1.2+seed.y*6.8,-16.+seed.z*32.);p.x+=sin(time*.09+seed.z*30.)*.16;p.y+=sin(time*.12+seed.x*16.)*.1;vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp(17./max(3.,-mv.z),.7,2.4);glow=.035+seed.y*.07;}`,
 		fragmentShader:
-			"varying float glow;void main(){float a=1.-smoothstep(.03,.5,length(gl_PointCoord-.5));gl_FragColor=vec4(.91,.87,.77,a*glow);}",
+			"uniform float amount;varying float glow;void main(){float a=1.-smoothstep(.03,.5,length(gl_PointCoord-.5));gl_FragColor=vec4(.91,.87,.77,a*glow*amount);}",
 	});
 	const dust = new THREE.Points(geometry, material);
 	dust.frustumCulled = false;
 	scene.add(dust);
 	return {
-		update(time: number) {
+		update(time: number, digital = 0) {
 			material.uniforms.time.value = time;
+			material.uniforms.amount.value = 1 - digital;
 		},
 		dispose() {
 			geometry.dispose();

@@ -123,6 +123,16 @@ videos/**/lightweight-chart*.js
 # assets in apps/web/public/models remain tracked because the site serves them.
 artifacts/**/*.blend
 artifacts/**/*.blend1
+artifacts/**/*.glb
+artifacts/**/*.gltf
+artifacts/**/*.fbx
+artifacts/**/*.obj
+artifacts/**/*.usd
+artifacts/**/*.usda
+artifacts/**/*.usdc
+artifacts/**/*.mtlx
+artifacts/**/*.tres
+artifacts/**/*.zip
 artifacts/**/*.png
 artifacts/**/*.jpg
 artifacts/**/*.jpeg

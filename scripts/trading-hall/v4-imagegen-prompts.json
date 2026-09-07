@@ -1,0 +1,33 @@
+{
+  "mode": "built-in image_gen",
+  "sources": {
+    "concept": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-d1ff2715-17bd-4767-b5bb-012ddbe070e5.png",
+    "stone": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-ba335b82-b0d4-4728-86d9-51dbec00b483.png",
+    "wood": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-ab8530f3-f60d-436d-8c9b-f54e056738d9.png",
+    "metal": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-701a1236-e608-4bdc-92cf-e5718d9c11e0.png",
+    "carpet": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-08a1d213-81b3-4fdb-860a-b86f9906fb37.png",
+    "flag": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-71ce9fd2-0a9d-41d5-bf0e-09b2d7b9c783.png"
+  },
+  "prompts": {
+    "concept": "Use case: stylized-concept.\nAsset type: reference concept art for an actual Blender/Three.js environment.\nInput image: spatial reference only \u2014 preserve this stock exchange room, central aisle, seven trading islands, tall screen towers and historic windows. Create a polished new art-direction reference, not a UI screenshot.\nPrimary request: a sad but beautiful dystopian exchange hall, with a voxel-ish art style and lighting that feels real and physical.\nStyle: meticulously crafted 3D voxel-inspired environment art, chunky faceted geometry, stepped stone pilasters, polygonal 12-sided trading posts, rectangular blocky monitors and mechanical equipment. Clearly stylized forms, believable rich surface textures and physically traced lighting. Quiet, melancholy, dignified, inhabited by time. No people.\nScene: the SAME exchange interior after dark. Weathered blue-grey limestone, tired dark walnut fronts with blackened brass edges, charcoal low-pile carpet with subtle wear, empty blocky office chairs, a few abandoned folders and coiled cables on counters. Some dark inactive monitors; the remaining screens show dim desaturated teal/green market traces. Worn flag graphics and muted exchange signage on the existing tall towers.\nLighting: motivated practical illumination only. A few warm amber overhead/task lamps form intimate islands of light. Cold faint night illumination through tall rain-streaked black-mullioned windows. Strong contact shadows, believable light falloff and indirect bounce, rich blacks with readable forms. Very subtle atmospheric depth, not smoke. Cinematic and beautiful, not uniformly lit.\nComposition: standing human eye level around 1.7 metres, 28mm-equivalent lens, no overhead view. Wide 16:9 frame. Trading stations fill foreground left and right, central tower beyond the aisle. Keep floor area modest and avoid a large empty foreground. Left upper/middle area relatively quiet and dark for later webpage headline. Focus on sculptural light, tactile worn surfaces and depth. No webpage text, no UI overlay, no watermark.\nAvoid: smooth futuristic pods, neon trim, holograms, excessive bloom, sci-fi laser beams, flooded or mirror-polished floor, daytime light, cute toy colors, post-apocalyptic rubble everywhere.",
+    "textures": [
+      [
+        "stone",
+        "A seamless tileable PBR BASE COLOR texture for weathered dark blue-grey limestone in a sad but beautiful dystopian voxel-inspired exchange hall. Orthographic flat material swatch filling the entire square, no objects, no perspective, no lighting, no cast shadows, no baked highlights. Tactile chalky pores, tiny chips, dark soot and subtle cool mineral discoloration, restrained blocky pixel-like mottling. Broad neutral grey material average about sRGB 95,100,104, suitable for tinting darker in Blender. No brick joints, no mortar grid, no labels, no text, no border. Even albedo, seamless edges, 2048 square."
+      ],
+      [
+        "wood",
+        "A seamless tileable PBR BASE COLOR texture for very old smoked walnut panels in a melancholic voxel-inspired stock exchange interior. Flat front-on orthographic surface filling entire square. Rich tactile horizontal wood grain with grey dry wear, tiny scratches, rubbed edges hinted through subtle mottling, ingrained grime, restrained rectangular pixel-like flecks. Muted dark brown/taupe average sRGB 95,75,55, no orange saturation. No complete furniture, no boards or seams or nails, no perspective, no directional lighting, no shadows or specular highlights, no text, no border. An unlit albedo map with seamless edges for UV-mapped Blender meshes, 2048 square."
+      ],
+      [
+        "metal",
+        "A seamless tileable PBR BASE COLOR texture for aged blackened steel and oxidized gunmetal monitor cases in a sad beautiful dystopian voxel-ish environment. Flat orthographic swatch over entire square. Very dark desaturated grey-brown steel, subtle grime, tiny rubbed silver scratches and sparse muted brown oxidized flecks, fine irregular pixel-like worn patches. Average sRGB around 55,57,56. Real tactile material detail, no big rust patches. No plates or seams, no objects, no lighting, no shadows, no reflected environment, no text, no border. Seamless unlit albedo for 3D meshes, 2048 square."
+      ],
+      [
+        "carpet",
+        "A seamless tileable PBR BASE COLOR texture of old low-pile charcoal commercial carpet for an abandoned but beautiful stock exchange. Flat orthographic top-down material swatch covering the full square. Dense tiny felt fibers, worn compressed pile, subtle blocky tufts and softly mottled ash-grey patches, delicate sparse dust in weave. Dark neutral charcoal average sRGB 65,66,65. No stains with recognizable shapes, no tile joints, no carpet edge, no objects, no perspective, no directional light, no shadows, no highlights, no text or border. Seamless unlit albedo for voxel-ish Blender environment meshes, 2048 square."
+      ]
+    ],
+    "flag": "Use case: stylized-concept. Asset type: UV-mapped portrait graphic texture for the tall display tower in a voxel-inspired dystopian stock exchange. Create one flat, front-on American flag graphic filling a tall portrait rectangle, worn and faded, with crisp recognizable stars and stripes, muted brick-red, dusty ivory and very dark desaturated blue. Patchy rectangular pixel-like scuffs, tiny peeling spots and aged surface wear, consistent with weathered voxel environment art. It should feel sad, beautiful and dignified. Uniform unlit albedo, no perspective, no room, no frame, no folds, no lighting gradient, no glowing pixels, no highlights, no logos or words. Portrait aspect ratio about 1:2, full-bleed texture."
+  }
+}

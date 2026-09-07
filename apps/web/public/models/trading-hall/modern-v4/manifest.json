@@ -1,0 +1,82 @@
+{
+  "version": 4,
+  "style": "Professional modern, subtly voxel-inspired",
+  "scene": "Exchange_Modern_V4",
+  "sourceBlend": "artifacts/trading-hall/exchange-v4/exchange-modern-v4.blend",
+  "bakedBlend": "artifacts/trading-hall/exchange-v4/exchange-modern-v4-baked.blend",
+  "concept": "artifacts/trading-hall/exchange-v4/concept-modern.png",
+  "meshCount": 32,
+  "triangles": 232812,
+  "marketScreens": 380,
+  "tradingPosts": 7,
+  "atlas": {
+    "columns": 4,
+    "rows": 4,
+    "tiles": 16
+  },
+  "generatedTextures": [
+    "stone",
+    "wood",
+    "metal",
+    "carpet",
+    "flag"
+  ],
+  "lightmaps": {
+    "room": {
+      "file": "room-lightmap.webp",
+      "size": 4096,
+      "range": 4.0,
+      "intensity": 12.566370614359172,
+      "max": 4.2652506828308105,
+      "mean": 0.0978003591299057,
+      "coverage": 0.711815357208252,
+      "samples": 256,
+      "denoiser": "OIDN RT HDR high",
+      "compactFile": "room-lightmap-2k.webp",
+      "colorSpace": "sRGB",
+      "channel": 1
+    },
+    "stations": {
+      "file": "stations-lightmap.webp",
+      "size": 4096,
+      "range": 12.0,
+      "intensity": 37.69911184307752,
+      "max": 60.138580322265625,
+      "mean": 0.17299722135066986,
+      "coverage": 0.4827197194099426,
+      "samples": 256,
+      "denoiser": "OIDN RT HDR high",
+      "compactFile": "stations-lightmap-2k.webp",
+      "colorSpace": "sRGB",
+      "channel": 1
+    }
+  },
+  "bytes": 6935968,
+  "sha256": "51c131672c8a147945d0c412499673166ba61551c96869d1791e66fe261d200e",
+  "lighting": "Cycles diffuse direct and indirect lighting, exported as gamma-encoded HDR-range lightmaps; real-time PBR reflections and emissive screens.",
+  "modeling": "Every physical asset authored in Blender; no third-party geometry.",
+  "texturePrompts": "scripts/trading-hall/v4-modern-imagegen-prompts.json",
+  "runtimeImages": {
+    "poster.webp": {
+      "bytes": 203826,
+      "sha256": "22148a6932807e9516d8f4eabf27240661d5347be76f4bd9824848d7ea3e7175"
+    },
+    "stations-lightmap-2k.webp": {
+      "bytes": 785030,
+      "sha256": "2b718bd0567351dc113ed850e75384c451c34d3758e53bc1bcfed3786ce32c45"
+    },
+    "room-lightmap.webp": {
+      "bytes": 2621356,
+      "sha256": "68928afef408bb89ba15645f18dc4a701cabe506a481911bf33c7b00170cb51a"
+    },
+    "room-lightmap-2k.webp": {
+      "bytes": 932986,
+      "sha256": "9accf4bb29c816c2c387024aa06bdf7e4fcb1e90498755866741fdc731544d5d"
+    },
+    "stations-lightmap.webp": {
+      "bytes": 2129880,
+      "sha256": "e9acf81a1cfc3b2531aedc510a7131bc63c79cbb68b3385afb33333b425929e1"
+    }
+  },
+  "positionQuantizationBits": 20
+}

@@ -1,0 +1,36 @@
+{
+  "mode": "built-in image_gen",
+  "direction": "Professional modern; supersedes sad/dystopian study",
+  "assets": {
+    "concept": {
+      "prompt": "Use case: stylized-concept. Asset: production-quality concept art for a Blender / Three.js landing-page environment.\nThe input image is a GEOMETRY reference only: preserve the stock exchange, trading islands, central aisle, tall display towers, and large windows, but completely replace the abandoned mood and finishes.\nCreate a PROFESSIONAL, MODERN, CONFIDENT stock exchange after dark. Subtle voxel-inspired architecture: precise faceted curves, square-section supports, clean stepped edges and block-built details, premium intentional geometric craftsmanship. Beautiful, sophisticated architectural visualization with physical path-traced light. Not sad, not dystopian, no decay, no rust, no broken equipment, no peeling paint.\nMaterials: clean cool-grey natural stone piers and panels, refined dark walnut trading fronts, satin charcoal metal monitor cases, subtle champagne metal trim, and high-quality charcoal carpet. Immaculate yet tactile surfaces, natural microtexture, organized desks with blocky keyboards, modern task lights, and aligned office chairs. Crisp professional NYSE/GTS lettering. Clean flag graphics and stock-market displays, no damaged imagery.\nLighting: believable evening working environment with balanced warm-neutral 3800K ceiling and task lights, soft light pools on desks, readable shadow detail, natural indirect bounce and contact shadows. Subtle cool night illumination through the windows, a few distant city lights. Clear blue-green data screens with controlled luminance. Professional clarity, cinematic depth, no oppressive darkness, no neon bars or holograms, no excessive bloom.\nFraming: standing human eye level 1.7m, wide 16:9, 28mm-equivalent view. Desks fill left/right foreground and central station beyond, modest floor area. Leave the upper-left middle relatively calm for a webpage headline but do not put any webpage copy or UI in the image. No people, no watermark.",
+      "source": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-854a51f8-400c-4b03-b264-2b9de64e83f7.png",
+      "projectFile": "artifacts/trading-hall/exchange-v4/concept-modern.png"
+    },
+    "stone": {
+      "prompt": "Use case: product-mockup. Asset: seamless PBR base-color texture for Blender meshes in a professional modern voxel-inspired stock exchange. Flat orthographic unlit swatch of premium cool-grey honed limestone, even subtle fine mineral grain, very small pores, refined tactile natural surface. Average sRGB approximately 135,140,145. Clean, maintained material. No stains, no damage, no chips, no soot, no joints or brick grid. No objects, perspective, light gradients, highlights, cast shadows, labels or border. Full square image, seamless edges, texture detail suitable for tiling on precise architectural blocks.",
+      "source": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-2de950b0-4105-47d7-ad6a-f958dbb487dd.png",
+      "projectFile": "artifacts/trading-hall/exchange-v4/textures/modern/stone-color.png"
+    },
+    "wood": {
+      "prompt": "Use case: product-mockup. Asset: seamless PBR base-color texture for Blender meshes. Premium dark natural walnut veneer for a modern professional stock-exchange trading desk. Subtle elegant horizontal grain, rich restrained chocolate brown average sRGB 85,66,48, clean maintained satin surface, slight natural tonal variation. Flat orthographic unlit albedo filling the square. No scratches, peeling, wear, stains, boards, seams, nails, reflections, lighting, shadows, text or border. Seamless tileable edges. Sophisticated physical material, not an illustration of furniture.",
+      "source": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-e3d5820b-cea7-4f09-8ba4-7091e180100a.png",
+      "projectFile": "artifacts/trading-hall/exchange-v4/textures/modern/wood-color.png"
+    },
+    "metal": {
+      "prompt": "Use case: product-mockup. Asset: seamless PBR albedo texture for modern professional stock exchange equipment. Clean charcoal anodized aluminium, extraordinarily fine uniform brushed grain, neutral blue-grey undertone, restrained microscopic texture. Average sRGB about 68,72,77. Flat orthographic unlit surface filling entire square. No rust, no scratches, no fingerprints, no damage, no panels or seams, no objects or perspective, no light gradient, no specular highlights, no cast shadow, no text or border. Seamless material texture for precise voxel-inspired blocky monitor housings.",
+      "source": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-5a7d7bad-7782-47bf-9b88-53d74bcacb9e.png",
+      "projectFile": "artifacts/trading-hall/exchange-v4/textures/modern/metal-color.png"
+    },
+    "carpet": {
+      "prompt": "Use case: product-mockup. Asset: seamless PBR base-color texture for a premium modern stock exchange floor. Dense charcoal commercial low-pile carpet with fine tightly woven fibres and restrained neutral-grey melange. Average sRGB about 65,67,70. Clean maintained professional appearance, tactile but quiet and even. Flat top-down orthographic unlit swatch covering the entire square. No stains, footprints, wear, large mottled patches, tile seams, perspective, objects, lighting or shadows, text, labels or border. Seamless edges, subtle detail suitable for a 0.5 metre material repeat.",
+      "source": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-21caa2c0-5f84-4872-8bb5-0dbe84bc06e9.png",
+      "projectFile": "artifacts/trading-hall/exchange-v4/textures/modern/carpet-color.png"
+    },
+    "flag": {
+      "prompt": "Use case: product-mockup. Asset: portrait UV texture for a stock-exchange display tower. A clean vertically hanging American flag graphic, correct recognizable stars and stripes, deep navy, dignified red and warm white. Precise flat graphic with very subtle high-quality fabric/LED microtexture, well maintained and professional. Full-bleed tall portrait rectangle about 1:2. No wear, scratches, peeling, stains, folds, perspective, frame, room, lights, shadows, glow, text or watermark. Unlit color texture for a physical display in a modern voxel-inspired environment.",
+      "source": "/Users/evansmacbookpro/.codex/generated_images/01a072f1-290d-77d2-b0c1-b823e52bb6b0/exec-a6008c36-ef2e-4dd7-b961-1f779a6d908e.png",
+      "projectFile": "artifacts/trading-hall/exchange-v4/textures/modern/flag-color.png"
+    }
+  }
+}

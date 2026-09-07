@@ -1,87 +1,67 @@
 import * as THREE from "three";
 
+/** Preserve authored PBR values and keep baked diffuse light separate from reflections. */
 export function enhanceHallMaterials(root: THREE.Object3D, anisotropy: number) {
 	const handled = new Set<THREE.Material>();
 	root.traverse((object) => {
 		if (!(object instanceof THREE.Mesh)) return;
-		object.castShadow = !/Markets|Flag|NYSE|Fixture|Glass/.test(object.name);
-		object.receiveShadow = true;
-		for (const material of Array.isArray(object.material)
+		object.castShadow = false;
+		object.receiveShadow = false;
+		const materials: THREE.Material[] = Array.isArray(object.material)
 			? object.material
-			: [object.material]) {
+			: [object.material];
+		for (const material of materials) {
 			if (
 				!(material instanceof THREE.MeshStandardMaterial) ||
 				handled.has(material)
 			)
 				continue;
 			handled.add(material);
-			material.envMapIntensity = 0.7;
-			if (/FasciaPBR/.test(material.name)) {
-				material.envMapIntensity = 0.25;
-				material.roughness = 1;
-				material.onBeforeCompile = (shader) => {
-					shader.fragmentShader = shader.fragmentShader.replace(
-						"#include <roughnessmap_fragment>",
-						"#include <roughnessmap_fragment>\nroughnessFactor=max(roughnessFactor,.5);",
-					);
-				};
-				material.customProgramCacheKey = () => "exchange-satin-wood-v3";
-			}
-			if (material.name === "EX3_CharcoalCarpetPBR") {
-				material.envMapIntensity = 0.04;
-				material.roughness = 1;
-				material.metalness = 0;
-			}
+			material.envMapIntensity = /Metal|Brass|Lettering/.test(material.name)
+				? 0.65
+				: /Wood/.test(material.name)
+					? 0.22
+					: 0.15;
+			if (/Carpet/.test(material.name)) material.envMapIntensity = 0.025;
 			for (const texture of [
 				material.map,
-				material.roughnessMap,
 				material.normalMap,
+				material.roughnessMap,
 			]) {
 				if (texture) texture.anisotropy = anisotropy;
 			}
-			if (
-				/Glass/.test(material.name) &&
-				material instanceof THREE.MeshPhysicalMaterial
-			) {
-				material.transmission = 0;
-				material.color.setHex(0x10151c);
-				material.metalness = 0.65;
-				material.roughness = 0.12;
+			if (material.lightMap) {
+				const original = material.onBeforeCompile;
+				const key = material.customProgramCacheKey();
+				material.onBeforeCompile = (shader, renderer) => {
+					original.call(material, shader, renderer);
+					shader.fragmentShader = shader.fragmentShader.replace(
+						"#include <lights_fragment_maps>",
+						"#include <lights_fragment_maps>\n#if defined(RE_IndirectDiffuse)\niblIrradiance=vec3(0.0);\n#endif",
+					);
+				};
+				material.customProgramCacheKey = () => `${key}-cycles-diffuse-v4`;
 			}
-			if (/Fixture/.test(material.name)) material.emissiveIntensity = 3;
-			if (/Flag|NYSE/.test(material.name)) material.emissiveIntensity = 0.8;
+			if (/Glass/.test(material.name)) {
+				if (material instanceof THREE.MeshPhysicalMaterial)
+					material.transmission = 0;
+				material.transparent = true;
+				material.opacity = 0.17;
+				material.depthWrite = false;
+				material.side = THREE.DoubleSide;
+				material.envMapIntensity = 0.4;
+			}
 		}
 	});
 }
-/** A brief screen scan on entry/replay; ordinary updates remain steady. */
+
+/** Dynamic feeds inherit the exported display's physical color and emission values. */
 export function createDisplayMaterial(
 	map: THREE.Texture,
-	entrance: THREE.IUniform<number>,
+	source: THREE.MeshStandardMaterial,
 ) {
-	const material = new THREE.MeshStandardMaterial({
-		map,
-		emissiveMap: map,
-		emissive: 0xffffff,
-		emissiveIntensity: 0.9,
-		roughness: 0.38,
-		metalness: 0,
-		side: THREE.DoubleSide,
-	});
-	material.onBeforeCompile = (shader) => {
-		shader.uniforms.uEntrance = entrance;
-		shader.fragmentShader = shader.fragmentShader
-			.replace(
-				"#include <common>",
-				"#include <common>\nuniform float uEntrance;",
-			)
-			.replace(
-				"#include <emissivemap_fragment>",
-				`#include <emissivemap_fragment>
-float scan=exp(-abs(fract(vEmissiveMapUv.y*4.)-uEntrance)*55.);
-totalEmissiveRadiance*=.92+.08*uEntrance;
-totalEmissiveRadiance+=vec3(.045,.065,.07)*scan*(1.-step(.99,uEntrance));`,
-			);
-	};
-	material.customProgramCacheKey = () => "exchange-night-display-v3";
+	const material = source.clone();
+	material.map = map;
+	material.emissiveMap = map;
 	return material;
 }

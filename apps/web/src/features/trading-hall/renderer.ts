@@ -6,14 +6,16 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { SMAAPass } from "three/addons/postprocessing/SMAAPass.js";
-import { SSAOPass } from "three/addons/postprocessing/SSAOPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { attachBakedLighting } from "./baked-lighting";
+import { createBinaryBackdrop } from "./binary-backdrop";
 import { INSPECTION_TARGET, storyProgress, updateStoryCamera } from "./camera";
 import { createHallEffects } from "./effects";
-import { createNightLighting } from "./lighting";
 import { createMarketDisplays, MARKET_SCREEN_COUNT } from "./market";
 import { createDisplayMaterial, enhanceHallMaterials } from "./materials";
-import { createHallReveal, HALL_REVEAL_DURATION } from "./reveal";
+import { createHallScan, HALL_SCAN_END, HALL_SCAN_START } from "./scan";
+
+const ASSET_PATH = "/models/trading-hall/modern-v4";
 
 export interface HallController {
 	setPaused: (paused: boolean) => void;
@@ -36,15 +38,15 @@ export async function createTradingHall(
 	renderer.setPixelRatio(Math.min(devicePixelRatio || 1, compact ? 1 : 1.5));
 	renderer.outputColorSpace = THREE.SRGBColorSpace;
 	renderer.toneMapping = THREE.AgXToneMapping;
-	renderer.toneMappingExposure = 1.05;
-	renderer.shadowMap.enabled = true;
+	renderer.toneMappingExposure = 2;
+	renderer.shadowMap.enabled = false;
 	renderer.shadowMap.type = THREE.PCFShadowMap;
 	host.appendChild(renderer.domElement);
 	renderer.domElement.setAttribute("aria-hidden", "true");
 	const scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x050709);
 	const camera = new THREE.PerspectiveCamera(compact ? 64 : 49, 1, 0.08, 120);
-	const lighting = createNightLighting(scene, compact);
+	const binary = createBinaryBackdrop(scene, compact);
 	let environment: THREE.WebGLRenderTarget | undefined;
 	const createEnvironment = () => {
 		scene.environment = null;
@@ -53,7 +55,12 @@ export async function createTradingHall(
 		});
 		const capture = new THREE.CubeCamera(0.1, 100, cube);
 		capture.position.set(0, 2.5, 8);
-		capture.update(renderer, scene);
+		binary.mesh.visible = false;
+		try {
+			capture.update(renderer, scene);
+		} finally {
+			binary.mesh.visible = true;
+		}
 		const generator = new THREE.PMREMGenerator(renderer);
 		const result = generator.fromCubemap(cube.texture);
 		generator.dispose();
@@ -61,18 +68,12 @@ export async function createTradingHall(
 		return result;
 	};
 	const decoder = new DRACOLoader();
-	decoder.setDecoderPath("/models/trading-hall/night-v3/draco/");
+	decoder.setDecoderPath("/models/trading-hall/draco/");
 	decoder.setWorkerLimit(2);
 	const displays = createMarketDisplays(compact);
-	const entrance = { value: reduced.matches ? 1 : 0 };
 	const effects = createHallEffects(scene, compact);
 	const composer = new EffectComposer(renderer);
 	const beauty = new RenderPass(scene, camera);
-	const ao = new SSAOPass(scene, camera, 512, 512, 12);
-	ao.kernelRadius = 0.35;
-	ao.minDistance = 0.008;
-	ao.maxDistance = 0.045;
-	ao.enabled = !compact;
 	const bloom = new UnrealBloomPass(
 		new THREE.Vector2(512, 512),
 		0.1,
@@ -89,13 +90,12 @@ export async function createTradingHall(
 	const antialias = new SMAAPass();
 	const output = new OutputPass();
 	composer.addPass(beauty);
-	composer.addPass(ao);
 	composer.addPass(bloom);
 	composer.addPass(grade);
 	composer.addPass(antialias);
 	composer.addPass(output);
 	let model: THREE.Group | undefined;
-	let reveal: ReturnType<typeof createHallReveal> | undefined;
+	let scan: ReturnType<typeof createHallScan> | undefined;
 	let disposed = false;
 	let paused = false;
 	let visible = true;
@@ -103,7 +103,7 @@ export async function createTradingHall(
 	let frame = 0;
 	let last = 0;
 	let time = 0;
-	let entranceTime = reduced.matches ? HALL_REVEAL_DURATION : 0;
+	let scanReplay: number | null = null;
 	const retiredMaterials: THREE.Material[] = [];
 	let lastDraw = 0;
 	let lastTick = -1;
@@ -147,17 +147,15 @@ export async function createTradingHall(
 		disposed = true;
 		cancelAnimationFrame(frame);
 		contextCleanup();
-		reveal?.dispose();
+		scan?.dispose();
 		if (model) disposeModel(model);
 		decoder.dispose();
-		lighting.dispose();
 		effects.dispose();
+		binary.dispose();
 		displays.dispose();
 		environment?.dispose();
-		for (const pass of [beauty, ao, bloom, grade, antialias, output])
+		for (const pass of [beauty, bloom, grade, antialias, output])
 			pass.dispose();
-		ao.ssaoMaterial.dispose();
-		ao.noiseTexture.dispose();
 		composer.dispose();
 		scene.traverse((o) => {
 			if (
@@ -173,45 +171,54 @@ export async function createTradingHall(
 		delete host.dataset.animationActive;
 	}
 	try {
-		const response = await fetch("/models/trading-hall/night-v3/exchange.glb", {
+		const response = await fetch(`${ASSET_PATH}/exchange.glb`, {
 			signal,
 		});
 		if (!response.ok) throw new Error("Trading hall model unavailable");
 		const gltf = await new GLTFLoader()
 			.setDRACOLoader(decoder)
-			.parseAsync(
-				await response.arrayBuffer(),
-				"/models/trading-hall/night-v3/",
-			);
+			.parseAsync(await response.arrayBuffer(), `${ASSET_PATH}/`);
 		if (signal?.aborted) {
 			disposeModel(gltf.scene);
 			throw new DOMException("Aborted", "AbortError");
 		}
 		model = gltf.scene;
-		enhanceHallMaterials(
-			model,
-			Math.min(8, renderer.capabilities.getMaxAnisotropy()),
-		);
 		model.traverse((object) => {
-			if (!(object instanceof THREE.Mesh) || object.name !== "EX3_Markets")
+			if (
+				!(object instanceof THREE.Mesh) ||
+				!/^EX4_live_Markets(?:Dim)?$/.test(object.name)
+			)
 				return;
 			retiredMaterials.push(
 				...(Array.isArray(object.material)
 					? object.material
 					: [object.material]),
 			);
-			object.material = createDisplayMaterial(displays.texture, entrance);
+			const source = Array.isArray(object.material)
+				? object.material[0]
+				: object.material;
+			if (!(source instanceof THREE.MeshStandardMaterial))
+				throw new Error("Invalid exchange display material");
+			object.material = createDisplayMaterial(displays.texture, source);
 			object.castShadow = false;
 		});
+		const baked = await attachBakedLighting(model, ASSET_PATH, compact, signal);
+		host.dataset.lightmapCount = String(baked.count);
+		host.dataset.lightmapResolution = String(baked.resolution);
+		enhanceHallMaterials(
+			model,
+			Math.min(8, renderer.capabilities.getMaxAnisotropy()),
+		);
 		scene.add(model);
 		model.updateMatrixWorld(true);
 		renderer.shadowMap.autoUpdate = false;
 		renderer.shadowMap.needsUpdate = true;
 		environment = createEnvironment();
 		scene.environment = environment.texture;
-		scene.environmentIntensity = 0.18;
-		reveal = createHallReveal(model, scene, reduced.matches);
-		host.dataset.assetVersion = "night-v3";
+		scene.environmentIntensity = 0.8;
+		scan = createHallScan(model, scene, reduced.matches, binary);
+		host.dataset.assetVersion = "modern-v4";
+		host.dataset.lighting = "cycles-baked";
 	} catch (error) {
 		dispose();
 		throw error;
@@ -235,9 +242,11 @@ export async function createTradingHall(
 		// or rendering extra pixels. Projected screen markers use this same frame.
 		camera.setViewOffset(width, height / (1 - floorCrop), 0, 0, width, height);
 		composer.setSize(width, height);
+		binary.resize(width, height, renderer.getPixelRatio());
 		draw();
 	};
 	const onScroll = () => {
+		scanReplay = null;
 		progressTarget = reduced.matches
 			? 0
 			: storyProgress(
@@ -252,15 +261,25 @@ export async function createTradingHall(
 	};
 	function draw() {
 		if (disposed || lost) return;
-		entrance.value = reduced.matches
-			? 1
-			: THREE.MathUtils.smoothstep(entranceTime, 0, 1.8);
-		const solid = reveal?.update(entranceTime, reduced.matches) ?? 1;
-		ao.enabled = !compact && solid === 1;
-		host.dataset.revealProgress = solid.toFixed(3);
-		host.dataset.representation =
-			solid === 1 ? "solid" : solid === 0 ? "wireframe" : "transition";
-		updateStoryCamera(camera, progress, pointer, entrance.value);
+		const scanProgress =
+			scanReplay === null
+				? progress
+				: THREE.MathUtils.lerp(HALL_SCAN_START, HALL_SCAN_END, scanReplay);
+		const scanState = scan?.update(scanProgress, reduced.matches);
+		const dataAmount = binary.update(
+			time,
+			scanState?.phase ?? 0,
+			reduced.matches,
+		);
+		host.dataset.binaryBackdrop = dataAmount > 0 ? "visible" : "hidden";
+		host.dataset.scanProgress = (scanState?.phase ?? 0).toFixed(3);
+		host.dataset.scanHeight = (scanState?.height ?? -1.5).toFixed(3);
+		host.dataset.representation = scanState?.active
+			? scanState.scanning
+				? "scan-wireframe"
+				: "wireframe"
+			: "solid";
+		updateStoryCamera(camera, progress, pointer);
 		stage.style.setProperty("--hall-progress", String(progress));
 		const focus = INSPECTION_TARGET.clone().project(camera);
 		stage.style.setProperty("--focus-x", `${(focus.x * 0.5 + 0.5) * 100}%`);
@@ -271,18 +290,18 @@ export async function createTradingHall(
 			"--hall-intro-opacity",
 			String(1 - THREE.MathUtils.smoothstep(progress, 0.08, 0.28)),
 		);
-		effects.update(time);
+		effects.update(time, dataAmount);
 		const tick = displays.update(time);
 		if (tick !== lastTick) {
 			host.dataset.marketTick = String(tick);
 			lastTick = tick;
 		}
-		stage.style.setProperty("--hall-entrance", String(entrance.value));
 		host.dataset.cameraHeight = camera.position.y.toFixed(3);
 		host.dataset.cameraPosition = camera.position
 			.toArray()
 			.map((v) => v.toFixed(3))
 			.join(",");
+		binary.render(renderer);
 		composer.render();
 		frames++;
 		const now = performance.now();
@@ -302,7 +321,7 @@ export async function createTradingHall(
 		last = now;
 		lastDraw = now;
 		time += dt;
-		entranceTime += dt;
+		if (scanReplay !== null) scanReplay = Math.min(1, scanReplay + dt / 2.8);
 		progress = THREE.MathUtils.damp(progress, progressTarget, 4.5, dt);
 		pointer.lerp(pointerTarget, 0.04);
 		draw();
@@ -322,10 +341,7 @@ export async function createTradingHall(
 			document.visibilityState === "visible";
 		host.dataset.animationActive = String(active);
 		if (active) frame = requestAnimationFrame(animate);
-		else {
-			if (reduced.matches) entranceTime = HALL_REVEAL_DURATION;
-			draw();
-		}
+		else draw();
 	};
 	const pointerMove = (e: PointerEvent) => {
 		if (paused || reduced.matches) return;
@@ -353,8 +369,8 @@ export async function createTradingHall(
 	};
 	const contextRestored = () => {
 		lost = false;
-		// Reflection capture must contain the fully shaded room, even mid-reveal.
-		reveal?.update(HALL_REVEAL_DURATION, true);
+		// Reflections contain the physical room, not the temporary scan band.
+		scan?.update(0, true);
 		environment?.dispose();
 		renderer.shadowMap.needsUpdate = true;
 		environment = createEnvironment();
@@ -408,8 +424,8 @@ export async function createTradingHall(
 			sync();
 		},
 		replay() {
-			entranceTime = 0;
-			entrance.value = 0;
+			// Explicit replay scans the current view; scrolling regains control.
+			scanReplay = 0;
 			draw();
 		},
 	};

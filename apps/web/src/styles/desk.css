@@ -844,7 +844,7 @@
 
 /* The exchange hall is a scroll-driven environment, with an accessible HTML story. */
 .trading-hall-story {
-	height: 270svh;
+	height: 240svh;
 	position: relative;
 	background: #090b0b;
 }
@@ -868,7 +868,7 @@
 	inset: 0 0 calc(-100% * var(--hall-floor-crop) / (1 - var(--hall-floor-crop)))
 		0;
 	background:
-		#080a0c url("/models/trading-hall/night-v3/poster.webp") center / cover
+		#080a0c url("/models/trading-hall/modern-v4/poster.webp") center / cover
 		no-repeat;
 }
 .trading-hall-canvas canvas {
