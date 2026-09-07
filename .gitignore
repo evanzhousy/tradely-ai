@@ -140,3 +140,10 @@ artifacts/**/*.webp
 
 # Trading-hall source scene bundles and verification artifacts are generated locally.
 /artifacts/trading-hall/
+
+# Local-only dollhouse source, Blender assets, generated metadata and previews.
+# The currently published Site version remains available online.
+/local/dollhouse/
+/site-static/dollhouse.js
+/site-static/dollhouse-physics.js
+/site-static/dollhouse-physics.test.mjs
