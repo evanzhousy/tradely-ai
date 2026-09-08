@@ -55,9 +55,12 @@ import {
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
+import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PremiumExplorer } from "./premium-explorer";
+import { QuotePositionExplorer } from "./quote-position-explorer";
+import { ResearchConnections } from "./research-connections";
 import { UniverseExplorer } from "./universe-explorer";
 
 export type LearningScreenProps = {
@@ -74,7 +77,15 @@ export type LearningScreenProps = {
 	onRecover: () => void;
 };
 
-function Facts({ facts, locale }: { facts: LearningFact[]; locale: Locale }) {
+function Facts({
+	facts,
+	locale,
+	emphasize = false,
+}: {
+	facts: LearningFact[];
+	locale: Locale;
+	emphasize?: boolean;
+}) {
 	return (
 		<Table>
 			<TableBody>
@@ -84,7 +95,13 @@ function Facts({ facts, locale }: { facts: LearningFact[]; locale: Locale }) {
 							{fact.label[locale]}
 						</TableHead>
 						<TableCell className="whitespace-normal break-words">
-							{fact.value[locale]}
+							{emphasize ? (
+								<ChangeHighlight value={fact.value[locale]}>
+									{fact.value[locale]}
+								</ChangeHighlight>
+							) : (
+								fact.value[locale]
+							)}
 						</TableCell>
 					</TableRow>
 				))}
@@ -145,7 +162,7 @@ function QuoteComparison({
 	);
 }
 
-export function LearningScreen({
+function LearningScreenContent({
 	lessonId,
 	initialRenderer,
 	persistence = "account",
@@ -238,7 +255,10 @@ export function LearningScreen({
 								</li>
 							))}
 						</ol>
-						<div className="flex flex-col gap-2">
+						<LessonReveal
+							key={view.attemptId + view.step.id + view.phase}
+							className="flex flex-col gap-2"
+						>
 							<h3
 								ref={heading}
 								tabIndex={-1}
@@ -253,7 +273,7 @@ export function LearningScreen({
 							<p className="text-muted-foreground text-sm leading-relaxed">
 								{local(view.step.brief)}
 							</p>
-						</div>
+						</LessonReveal>
 						{view.initialJudgment && view.step.kind === "guided" ? (
 							<Alert>
 								<AlertTitle>{text("initial")}</AlertTitle>
@@ -303,6 +323,11 @@ export function LearningScreen({
 						{view.step.quote ? (
 							<div className="flex flex-col gap-4">
 								<QuoteComparison quote={view.step.quote} locale={locale} />
+								<QuotePositionExplorer
+									key={view.step.id}
+									quote={view.step.quote}
+									locale={locale}
+								/>
 								<PremiumExplorer
 									key={view.step.id}
 									price={view.step.quote.trade}
@@ -328,7 +353,7 @@ export function LearningScreen({
 								{view.step.evidence.map((evidence) => (
 									<div className="flex flex-col gap-3" key={evidence.id}>
 										{evidence.detail ? (
-											<>
+											<LessonReveal className="flex flex-col gap-3">
 												<div className="flex flex-wrap items-center gap-2">
 													<h5 className="font-medium text-sm">
 														{local(evidence.title)}
@@ -338,11 +363,15 @@ export function LearningScreen({
 														{text("inspected")}
 													</Badge>
 												</div>
-												<Facts facts={evidence.detail.facts} locale={locale} />
+												<Facts
+													facts={evidence.detail.facts}
+													locale={locale}
+													emphasize={view.step.kind !== "independent"}
+												/>
 												<p className="text-sm leading-relaxed">
 													{local(evidence.detail.note)}
 												</p>
-											</>
+											</LessonReveal>
 										) : (
 											<Button
 												variant="outline"
@@ -360,6 +389,9 @@ export function LearningScreen({
 									</div>
 								))}
 							</section>
+						) : null}
+						{release?.showEvidenceLinks && view.step.evidence.length ? (
+							<ResearchConnections view={view} locale={locale} />
 						) : null}
 						{answering ? (
 							<FieldGroup>
@@ -408,7 +440,7 @@ export function LearningScreen({
 								aria-label={text("debrief")}
 							>
 								{view.feedback.map((criterion) => (
-									<div
+									<LessonReveal
 										key={criterion.questionId}
 										className="flex flex-col gap-2"
 									>
@@ -427,7 +459,7 @@ export function LearningScreen({
 										<p className="text-sm leading-relaxed">
 											{local(criterion.explanation)}
 										</p>
-									</div>
+									</LessonReveal>
 								))}
 							</section>
 						)}
@@ -496,7 +528,11 @@ export function LearningScreen({
 							disabled={locked}
 							onClick={() => onAction({ type: "continue" })}
 						>
-							{view.stepIndex === 1 ? text("independentNext") : text("next")}
+							{(view.stepKinds?.[view.stepIndex + 1] ??
+								(view.stepIndex === 1 ? "independent" : "guided")) ===
+							"independent"
+								? text("independentNext")
+								: text("next")}
 							<ArrowRightIcon data-icon="inline-end" />
 						</Button>
 					)}
@@ -521,5 +557,13 @@ export function LearningScreen({
 				</p>
 			</CardFooter>
 		</Card>
+	);
+}
+
+export function LearningScreen(props: LearningScreenProps) {
+	return (
+		<LessonMotion>
+			<LearningScreenContent {...props} />
+		</LessonMotion>
 	);
 }

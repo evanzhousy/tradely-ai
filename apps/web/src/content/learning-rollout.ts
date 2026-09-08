@@ -7,6 +7,7 @@ export const learningRollout: Readonly<
 		{
 			presentation: "supplemental" | "primary";
 			three: boolean;
+			showEvidenceLinks?: boolean;
 			title: LearningCopy;
 			intro: LearningCopy;
 		}
@@ -67,6 +68,7 @@ export const learningRollout: Readonly<
 		},
 	},
 	"cookbook-research-packet": {
+		showEvidenceLinks: true,
 		presentation: "supplemental",
 		three: false,
 		title: { en: "Assemble a rerunnable packet.", zh: "组装可重跑研究包。" },
@@ -76,6 +78,7 @@ export const learningRollout: Readonly<
 		},
 	},
 	"market-recap": {
+		showEvidenceLinks: true,
 		presentation: "supplemental",
 		three: false,
 		title: { en: "Attach evidence to the headline.", zh: "为标题附上证据。" },
@@ -85,6 +88,7 @@ export const learningRollout: Readonly<
 		},
 	},
 	"audit-market-recap": {
+		showEvidenceLinks: true,
 		presentation: "supplemental",
 		three: false,
 		title: { en: "Repair an unsupported recap.", zh: "修复缺乏支持的复盘。" },

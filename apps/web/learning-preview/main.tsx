@@ -13,7 +13,7 @@ import type {
 } from "../src/domain/learning/types";
 import { LearningScreen } from "../src/features/learning/learning-screen";
 import type { Locale } from "../src/i18n/messages";
-import "../src/index.css";
+import "./preview.css";
 
 function Session({
 	lessonId,
@@ -25,9 +25,14 @@ function Session({
 	locale: Locale;
 }) {
 	const scenario = getLessonScenarios(lessonId)[variant];
-	const [state, setState] = useState(initialAttemptState);
+	const requestedStage = Number(
+		new URLSearchParams(location.search).get("stage") ?? 0,
+	);
+	const [state, setState] = useState(() => stateAt(requestedStage));
 	const view = projectAttempt(scenario, state, "local-fixture", 0);
-	function jump(index: number) {
+	function stateAt(index: number) {
+		if (!Number.isInteger(index) || index < 0 || index >= scenario.steps.length)
+			return initialAttemptState();
 		let next = initialAttemptState();
 		for (let i = 0; i < index; i++) {
 			const step = scenario.steps[i];
@@ -45,7 +50,7 @@ function Session({
 			next = transitionAttempt(scenario, next, { type: "submit" });
 			next = transitionAttempt(scenario, next, { type: "continue" });
 		}
-		setState(next);
+		return next;
 	}
 	const act = (action: LearningAction) =>
 		setState((state: AttemptState) =>
@@ -58,7 +63,7 @@ function Session({
 				<select
 					className="rounded border p-2"
 					value={state.step}
-					onChange={(event) => jump(Number(event.target.value))}
+					onChange={(event) => setState(stateAt(Number(event.target.value)))}
 				>
 					{scenario.steps.map((step, index) => (
 						<option key={step.id} value={index}>

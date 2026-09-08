@@ -129,3 +129,8 @@ The practice variants are not a held-out evaluation bank. Functional tests and b
 
 
 Validation for this expansion: 213 web tests and 6 database utility tests passed under Node 24, along with workspace type checks, the application build, changed-file Biome, credential scanning, and media-boundary checks. Browser inspection covered 140 lesson/variant/stage views across English desktop and Chinese mobile/dark at 390px, with no horizontal overflow or error overlays after correcting the local review picker. Actual WebGL rendering, signed selection, idle rendering, and forced-context-loss fallback were checked for GEX. The real application guest endpoint completed the boundary lesson with 2/2 independent criteria and the reset-on-reload notice. Paid account persistence was verified in isolated PostgreSQL; this is not production deployment or a live signed-in persistence claim. The client bundle contained none of the checked private scenario markers, and both scene modules were emitted as separate lazy chunks.
+
+
+## 2D motion — 2026-09-08
+
+Motion for React now supplies rank-row transitions, guided evidence reveals, an explicitly hypothetical quote marker, calculation tracing, and draft source links. The existing replay clock and assessment rules remain the owners of their data. See [the motion implementation and review notes](interactive-course-motion.md).

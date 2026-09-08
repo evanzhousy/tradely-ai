@@ -11,7 +11,18 @@ import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "@tradely/ui/components/toggle-group";
+import * as m from "motion/react-m";
 import { useState } from "react";
+import {
+	ChangeHighlight,
+	instantTransition,
+	lessonTransition,
+	useLessonMotion,
+} from "./lesson-motion";
+
+// Keep layout measurement enabled; transitions implement the live motion policy.
+const AnimatedTableRow = m.create(TableRow);
+
 import {
 	rankUniverse,
 	type UniverseComparison,
@@ -25,6 +36,8 @@ export function UniverseExplorer({
 	data: UniverseComparison;
 	locale: Locale;
 }) {
+	const motionEnabled = useLessonMotion();
+	const focal = data.rows[0];
 	const [admitted, setAdmitted] = useState(data.rows.map((row) => row.symbol));
 	const [changed, setChanged] = useState(false);
 	const text = (en: string, zh: string) => (locale === "zh" ? zh : en);
@@ -63,6 +76,26 @@ export function UniverseExplorer({
 					"个标的。筛选用于探索，评估仍使用声明的规则。",
 				)}
 			</p>
+			{focal ? (
+				<div
+					className="rounded-xl bg-muted/50 px-3 py-2 text-sm"
+					data-focal-observation
+				>
+					<span className="text-muted-foreground">
+						{text("Focal observation", "目标观测")}:{" "}
+					</span>
+					<strong>{focal.symbol}</strong> ·{" "}
+					<span className="font-mono" data-focal-volume>
+						{(changed ? focal.peerVolume : focal.volume)?.toLocaleString(
+							locale,
+						) ?? "—"}
+					</span>{" "}
+					{text(
+						"contracts · same observation while peers change",
+						"张 · 同组变化时，该观测保持不变",
+					)}
+				</div>
+			) : null}
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -74,10 +107,21 @@ export function UniverseExplorer({
 				</TableHeader>
 				<TableBody>
 					{ranked.map((row, index) => (
-						<TableRow key={row.symbol}>
+						<AnimatedTableRow
+							key={row.symbol}
+							data-rank-symbol={row.symbol}
+							layout="position"
+							layoutDependency={String(changed) + admitted.join("|")}
+							initial={false}
+							transition={motionEnabled ? lessonTransition : instantTransition}
+						>
 							<TableCell>{row.value === null ? "—" : index + 1}</TableCell>
 							<TableCell>{row.symbol}</TableCell>
-							<TableCell>{row.value?.toLocaleString(locale) ?? "—"}</TableCell>
+							<TableCell>
+								<ChangeHighlight value={row.value ?? "missing"}>
+									{row.value?.toLocaleString(locale) ?? "—"}
+								</ChangeHighlight>
+							</TableCell>
 							<TableCell>
 								{!row.eligible
 									? text("Outside scope", "范围外")
@@ -87,7 +131,7 @@ export function UniverseExplorer({
 											? text("Missing", "缺失")
 											: text("Comparable", "可比")}
 							</TableCell>
-						</TableRow>
+						</AnimatedTableRow>
 					))}
 				</TableBody>
 			</Table>

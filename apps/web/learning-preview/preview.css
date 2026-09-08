@@ -1,0 +1,5 @@
+@import "../src/index.css";
+
+/* The isolated preview root must also scan the real lesson components. */
+@source "../src";
+@source "../../../packages/ui/src";

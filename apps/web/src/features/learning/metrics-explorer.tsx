@@ -25,7 +25,9 @@ import {
 	type MetricsComparison,
 } from "@/domain/learning/metrics";
 import type { Locale } from "@/i18n/messages";
+import { CalculationTrace } from "./calculation-trace";
 import type { RendererChange } from "./contract-explorer";
+import { ChangeHighlight } from "./lesson-motion";
 import { ThreeGexView } from "./three-gex-view";
 
 export function MetricsExplorer({
@@ -93,9 +95,11 @@ export function MetricsExplorer({
 						{text("DEI magnitude · percent", "DEI 幅度 · 百分比")}
 					</p>
 					<p className="font-mono text-3xl" data-dei>
-						{magnitude === null
-							? text("Unknown", "未知")
-							: `${magnitude.toLocaleString(locale)}%`}
+						<ChangeHighlight value={magnitude ?? "unknown"}>
+							{magnitude === null
+								? text("Unknown", "未知")
+								: `${magnitude.toLocaleString(locale)}%`}
+						</ChangeHighlight>
 					</p>
 					<p className="text-xs">
 						{text(
@@ -123,6 +127,33 @@ export function MetricsExplorer({
 					))}
 				</NativeSelect>
 			</Field>
+			<CalculationTrace
+				locale={locale}
+				terms={[
+					{
+						id: "dex",
+						label: text("|Net DEX|", "|净 DEX|"),
+						value: Math.abs(snapshot.netDex).toLocaleString(locale),
+					},
+					{
+						id: "denominator",
+						label: text("Divide by shares", "除以股数"),
+						value:
+							denominator > 0
+								? denominator.toLocaleString(locale)
+								: text("Unknown", "未知"),
+					},
+					{ id: "scale", label: text("Multiply by", "乘以"), value: "100" },
+					{
+						id: "dei",
+						label: text("DEI magnitude", "DEI 幅度"),
+						value:
+							magnitude === null
+								? text("Unknown", "未知")
+								: `${magnitude.toLocaleString(locale)}%`,
+					},
+				]}
+			/>
 			<p className="text-muted-foreground text-sm">
 				{text(
 					"Only normalization changes. The session observations and model snapshot stay fixed. This lesson uses non-negative DEI magnitude; signed DEX retains direction.",
@@ -257,7 +288,9 @@ export function MetricsExplorer({
 								</Button>
 							</TableCell>
 							<TableCell>
-								<span>{cell.value === null ? "—" : signed(cell.value)}</span>
+								<ChangeHighlight value={cell.value ?? "missing"}>
+									{cell.value === null ? "—" : signed(cell.value)}
+								</ChangeHighlight>
 								<div className="relative h-3 w-full" aria-hidden="true">
 									<span className="absolute left-1/2 h-full border-foreground/40 border-l" />
 									{cell.value !== null ? (
