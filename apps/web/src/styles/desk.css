@@ -1901,3 +1901,29 @@
 		transform: none;
 	}
 }
+
+/* Finite illustration accents run above the always-visible concept diagrams. */
+.diagram-motion-trace {
+	fill: none;
+	stroke: var(--primary);
+	stroke-width: 2.75;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	opacity: 0;
+	pointer-events: none;
+}
+.diagram-motion-trace.diagram-motion-ink {
+	stroke: #1b1b17;
+}
+.lesson-infographic [data-diagram-motion="pulse"] {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+.lesson-infographic [data-diagram-motion="tick"] {
+	transform-box: view-box;
+}
+@media (prefers-reduced-motion: reduce) {
+	.diagram-motion-trace {
+		display: none;
+	}
+}

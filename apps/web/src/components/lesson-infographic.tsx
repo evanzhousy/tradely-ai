@@ -1,5 +1,7 @@
+import { cn } from "@tradely/ui/lib/utils";
 import { useId } from "react";
 import type { Locale } from "@/i18n/messages";
+import { useLessonInfographicMotion } from "./lesson-infographic-motion";
 
 const terms = {
 	question: ["Question", "问题"],
@@ -41,6 +43,38 @@ const terms = {
 type Label = (key: keyof typeof terms) => string;
 type DiagramProps = { label: Label };
 
+// The complete path stays visible underneath its temporary drawing accent.
+function TracePath({
+	d,
+	className = "diagram-line",
+	delay = 0,
+	duration = 850,
+}: {
+	d: string;
+	className?: string;
+	delay?: number;
+	duration?: number;
+}) {
+	return (
+		<>
+			<path d={d} className={className} />
+			<path
+				d={d}
+				pathLength={1}
+				strokeDasharray="1"
+				strokeDashoffset="1"
+				className={cn(
+					"diagram-motion-trace",
+					className === "diagram-on-accent-line" && "diagram-motion-ink",
+				)}
+				data-diagram-motion="trace"
+				data-diagram-delay={delay}
+				data-diagram-duration={duration}
+			/>
+		</>
+	);
+}
+
 function Boundary({ label }: DiagramProps) {
 	return (
 		<>
@@ -52,9 +86,10 @@ function Boundary({ label }: DiagramProps) {
 				rx="13"
 				className="diagram-dashed"
 			/>
-			<path
+			<TracePath
 				d="M180 83v13m-73 0h146m-146 0v15m146-15v15"
 				className="diagram-line"
+				delay={100}
 			/>
 			<rect
 				x="118"
@@ -63,6 +98,8 @@ function Boundary({ label }: DiagramProps) {
 				height="34"
 				rx="17"
 				className="diagram-accent"
+				data-diagram-motion="pulse"
+				data-diagram-duration="550"
 			/>
 			<text x="180" y="70" className="diagram-on-accent">
 				{label("question")}
@@ -89,7 +126,14 @@ function Boundary({ label }: DiagramProps) {
 			<text x="253" y="131">
 				{label("horizon")}
 			</text>
-			<circle cx="180" cy="172" r="5" className="diagram-ink" />
+			<circle
+				cx="180"
+				cy="172"
+				r="5"
+				data-diagram-motion="pulse"
+				data-diagram-delay="650"
+				className="diagram-ink"
+			/>
 			<text x="180" y="197" className="diagram-muted-text">
 				{label("invalidation")}
 			</text>
@@ -118,11 +162,21 @@ function Universe({ label }: DiagramProps) {
 						cx={70 + column * 44}
 						cy={55 + row * 31}
 						r={inside ? 7 : 4}
+						data-diagram-motion={inside ? "pulse" : undefined}
+						data-diagram-delay={row * 90 + column * 35}
+						data-diagram-duration="440"
 						className={inside ? "diagram-ink" : "diagram-faint-fill"}
 					/>
 				);
 			})}
-			<circle cx="202" cy="86" r="17" className="diagram-highlight-ring" />
+			<circle
+				cx="202"
+				cy="86"
+				r="17"
+				className="diagram-highlight-ring"
+				data-diagram-motion="pulse"
+				data-diagram-delay="600"
+			/>
 			<text x="180" y="25">
 				{label("universe")}
 			</text>
@@ -149,13 +203,21 @@ function Ranking({ label }: DiagramProps) {
 						height="20"
 						rx="4"
 						className={index === 0 ? "diagram-accent" : "diagram-faint-fill"}
+						data-diagram-motion={index === 0 ? "pulse" : undefined}
+						data-diagram-duration="550"
 					/>
 				</g>
 			))}
-			<path d="M215 57h40m-5-5 5 5-5 5" className="diagram-line" />
-			<circle cx="281" cy="57" r="20" className="diagram-paper" />
-			<circle cx="279" cy="54" r="7" className="diagram-line" />
-			<path d="m284 60 6 6" className="diagram-line" />
+			<TracePath
+				d="M215 57h40m-5-5 5 5-5 5"
+				className="diagram-line"
+				delay={150}
+			/>
+			<g data-diagram-motion="settle" data-diagram-delay="320">
+				<circle cx="281" cy="57" r="20" className="diagram-paper" />
+				<circle cx="279" cy="54" r="7" className="diagram-line" />
+				<path d="m284 60 6 6" className="diagram-line" />
+			</g>
 			<text x="281" y="97">
 				{label("inspect")}
 			</text>
@@ -190,8 +252,9 @@ function Freshness({ label }: DiagramProps) {
 					>
 						{label(term)}
 					</text>
-					<path
+					<TracePath
 						d={`M190 ${83 + index * 32}h62`}
+						delay={index * 150}
 						className={
 							index === 2 ? "diagram-accent-line" : "diagram-faint-line"
 						}
@@ -199,7 +262,13 @@ function Freshness({ label }: DiagramProps) {
 				</g>
 			))}
 			<circle cx="280" cy="147" r="28" className="diagram-accent" />
-			<path d="M280 130v17l12 7" className="diagram-on-accent-line" />
+			<path
+				data-diagram-motion="tick"
+				data-diagram-delay="350"
+				style={{ transformOrigin: "280px 147px" }}
+				d="M280 130v17l12 7"
+				className="diagram-on-accent-line"
+			/>
 			<text x="177" y="202" className="diagram-muted-text">
 				{label("freshness")}
 			</text>
@@ -222,13 +291,19 @@ function Contracts({ label }: DiagramProps) {
 						height="28"
 						rx="5"
 						className={index === 6 ? "diagram-accent" : "diagram-paper"}
+						data-diagram-motion={index === 6 ? "pulse" : undefined}
+						data-diagram-delay="320"
 					/>
 				);
 			})}
-			<path d="M69 39v102m14 14h187" className="diagram-line" />
+			<TracePath
+				d="M69 39v102m14 14h187"
+				className="diagram-line"
+				duration={900}
+			/>
 			<path d="m65 45 4-6 4 6m191 106 6 4-6 4" className="diagram-line" />
 			<circle cx="201" cy="90" r="5" className="diagram-ink" />
-			<path d="M201 104v64" className="diagram-dashed" />
+			<TracePath d="M201 104v64" className="diagram-dashed" delay={450} />
 			<text
 				x="40"
 				y="91"
@@ -250,7 +325,7 @@ function Contracts({ label }: DiagramProps) {
 function Print({ label }: DiagramProps) {
 	return (
 		<>
-			<path d="M60 91h240M60 82v18m240-18v18" className="diagram-line" />
+			<TracePath d="M60 91h240M60 82v18m240-18v18" className="diagram-line" />
 			<rect
 				x="107"
 				y="79"
@@ -259,8 +334,15 @@ function Print({ label }: DiagramProps) {
 				rx="12"
 				className="diagram-accent-wash"
 			/>
-			<circle cx="233" cy="91" r="9" className="diagram-accent" />
-			<path d="M233 43v34" className="diagram-dashed" />
+			<circle
+				cx="233"
+				cy="91"
+				r="9"
+				data-diagram-motion="pulse"
+				data-diagram-delay="450"
+				className="diagram-accent"
+			/>
+			<TracePath d="M233 43v34" className="diagram-dashed" delay={200} />
 			<text x="233" y="33">
 				{label("trade")}
 			</text>
@@ -279,6 +361,8 @@ function Print({ label }: DiagramProps) {
 						height="30"
 						rx="6"
 						className="diagram-paper"
+						data-diagram-motion="focus"
+						data-diagram-delay={350 + index * 150}
 					/>
 					<text x={86 + index * 94} y="173">
 						{label(term)}
@@ -296,19 +380,37 @@ function TwoClocks({ label }: DiagramProps) {
 				{label("session")}
 			</text>
 			<path d="M42 89h268" className="diagram-faint-line" />
-			<path
+			<TracePath
 				d="M43 80h23l8-22 11 37 10-51 12 37h26l8-12 11 18 10-39 12 32h28l10-22 11 31 10-44 12 35h30"
 				className="diagram-accent-line"
+				duration={780}
 			/>
 			<text x="41" y="132" textAnchor="start">
 				{label("structure")}
 			</text>
 			<path d="M42 180h268" className="diagram-faint-line" />
-			<path d="M44 172h47v-19h65v8h53v-24h55v14h44" className="diagram-line" />
+			<TracePath
+				d="M44 172h47v-19h65v8h53v-24h55v14h44"
+				className="diagram-line"
+				delay={240}
+				duration={1100}
+			/>
 			<circle cx="308" cy="54" r="13" className="diagram-paper" />
-			<path d="M308 45v9l6 4" className="diagram-line" />
+			<path
+				data-diagram-motion="tick"
+				style={{ transformOrigin: "308px 54px" }}
+				d="M308 45v9l6 4"
+				className="diagram-line"
+			/>
 			<circle cx="308" cy="151" r="13" className="diagram-paper" />
-			<path d="M308 142v9h7" className="diagram-line" />
+			<path
+				data-diagram-motion="tick"
+				data-diagram-delay="360"
+				data-diagram-duration="900"
+				style={{ transformOrigin: "308px 151px" }}
+				d="M308 142v9h7"
+				className="diagram-line"
+			/>
 		</>
 	);
 }
@@ -316,7 +418,7 @@ function TwoClocks({ label }: DiagramProps) {
 function Lenses({ label }: DiagramProps) {
 	return (
 		<>
-			{[28, 137, 246].map((x) => (
+			{[28, 137, 246].map((x, index) => (
 				<rect
 					key={x}
 					x={x}
@@ -325,6 +427,8 @@ function Lenses({ label }: DiagramProps) {
 					height="153"
 					rx="8"
 					className="diagram-paper"
+					data-diagram-motion="focus"
+					data-diagram-delay={index * 260}
 				/>
 			))}
 			<text x="72" y="53">
@@ -341,14 +445,16 @@ function Lenses({ label }: DiagramProps) {
 				d="M52 113v-20m14 20v21m14-21V77m14 36v11"
 				className="diagram-bar"
 			/>
-			<path
+			<TracePath
 				d="M151 120c9 0 10-23 20-23s12-21 19-21 10 12 21 12"
 				className="diagram-accent-line"
+				delay={260}
 			/>
 			<circle cx="190" cy="76" r="5" className="diagram-accent" />
-			<path
+			<TracePath
 				d="M258 134c22 0 22-65 37-65s10 44 28 44"
 				className="diagram-line"
+				delay={520}
 			/>
 			<path d="M294 65v82" className="diagram-dashed" />
 			<text x="72" y="164" className="diagram-small-text">
@@ -384,7 +490,11 @@ function Packet({ label }: DiagramProps) {
 				rx="8"
 				className="diagram-paper"
 			/>
-			<path d="M137 59h44m-44 18h81m-81 13h58" className="diagram-line" />
+			<TracePath
+				d="M137 59h44m-44 18h81m-81 13h58"
+				className="diagram-line"
+				delay={180}
+			/>
 			<rect
 				x="136"
 				y="108"
@@ -393,11 +503,13 @@ function Packet({ label }: DiagramProps) {
 				rx="4"
 				className="diagram-accent-wash"
 			/>
-			<path d="m145 135 16-9 15 4 17-13 17 5" className="diagram-line" />
-			<path
-				d="M40 83h64m-6-5 6 5-6 5M251 113h65m-6-5 6 5-6 5"
+			<TracePath
+				d="m145 135 16-9 15 4 17-13 17 5"
 				className="diagram-line"
+				delay={320}
 			/>
+			<TracePath d="M40 83h64m-6-5 6 5-6 5" />
+			<TracePath d="M251 113h65m-6-5 6 5-6 5" delay={640} duration={650} />
 			<text x="65" y="67" className="diagram-muted-text">
 				{label("evidence")}
 			</text>
@@ -434,13 +546,26 @@ function Recap({ label }: DiagramProps) {
 				rx="4"
 				className="diagram-accent-wash"
 			/>
-			<path d="m104 124 15-16 13 6 17-20 20 7" className="diagram-line" />
-			<path
+			<TracePath d="m104 124 15-16 13 6 17-20 20 7" className="diagram-line" />
+			<TracePath
 				d="M194 87h71m-71 13h61m-61 13h69m-69 13h44M94 157h99"
 				className="diagram-faint-line"
+				delay={280}
 			/>
-			<circle cx="251" cy="157" r="15" className="diagram-accent" />
-			<path d="m244 157 5 5 10-11" className="diagram-on-accent-line" />
+			<circle
+				cx="251"
+				cy="157"
+				r="15"
+				data-diagram-motion="pulse"
+				data-diagram-delay="550"
+				className="diagram-accent"
+			/>
+			<TracePath
+				d="m244 157 5 5 10-11"
+				className="diagram-on-accent-line"
+				delay={600}
+				duration={600}
+			/>
 			<text x="180" y="203" className="diagram-muted-text">
 				{label("evidence")} → {label("claim")}
 			</text>
@@ -462,21 +587,43 @@ function Audit({ label }: DiagramProps) {
 						className={index < 2 ? "diagram-accent" : "diagram-paper"}
 					/>
 					{index < 2 ? (
-						<path
+						<TracePath
+							delay={index * 200}
 							d={`m49 ${46 + index * 46} 4 4 7-8`}
 							className="diagram-on-accent-line"
 						/>
 					) : (
-						<circle cx="54" cy="138" r="3" className="diagram-ink" />
+						<circle
+							cx="54"
+							cy="138"
+							r="3"
+							data-diagram-motion="pulse"
+							data-diagram-delay="450"
+							className="diagram-ink"
+						/>
 					)}
 					<text x="80" y={50 + index * 46} textAnchor="start">
 						{label(term)}
 					</text>
 				</g>
 			))}
-			<path d="M227 46h17v92h-17m17-46h35" className="diagram-line" />
-			<path d="m292 66 26 26-26 26-26-26Z" className="diagram-accent" />
-			<path d="M286 92h12m-5-5 5 5-5 5" className="diagram-on-accent-line" />
+			<TracePath
+				d="M227 46h17v92h-17m17-46h35"
+				className="diagram-line"
+				delay={400}
+			/>
+			<path
+				data-diagram-motion="pulse"
+				data-diagram-delay="680"
+				d="m292 66 26 26-26 26-26-26Z"
+				className="diagram-accent"
+			/>
+			<TracePath
+				d="M286 92h12m-5-5 5 5-5 5"
+				className="diagram-on-accent-line"
+				delay={660}
+				duration={600}
+			/>
 			<text x="292" y="147">
 				{label("publish")}
 			</text>
@@ -575,12 +722,14 @@ export function LessonInfographic({
 	locale: Locale;
 }) {
 	const id = useId();
+	const ref = useLessonInfographicMotion(subject);
 	const illustration = illustrations[subject as keyof typeof illustrations];
 	if (!illustration) return null;
 	const { Diagram, description } = illustration;
 	const languageIndex = locale === "zh" ? 1 : 0;
 	return (
 		<svg
+			ref={ref}
 			className="lesson-infographic"
 			viewBox="0 0 360 216"
 			textAnchor="middle"
