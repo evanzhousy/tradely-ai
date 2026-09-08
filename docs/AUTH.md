@@ -132,3 +132,32 @@ vercel deploy --prod --build-env "VITE_APP_RELEASE=$release" --env "VITE_APP_REL
 
 Use a new production build with Production environment variables. Promoting a
 Preview build would retain its Preview database and authentication configuration.
+
+## Verified prelaunch cutover — September 8, 2026
+
+- Neon project: `winter-fire-23212462` (Tradely AI, FLOWMAN LLC).
+- Production/default branch: `neon-auth-production` (`br-withered-wind-afyejyfy`).
+- Preview branch: `neon-auth-preview` (`br-solitary-frog-afgk8fxl`).
+- Live application: https://www.tradely.ai/auth/sign-in.
+- Auth-only code release: `bc8350b73678d1dad556a60c54fec5bf8045fc58`.
+- Final production deployment: `dpl_ANgcuTqqTPnbgib2AbRKwrCLnyxb`.
+- The isolated release passed 331 web tests, 6 database-script tests, type
+  checking, scoped Biome checks, and a Node 24 production build. The full
+  repository Biome command remains blocked by pre-existing `site-static` errors.
+- Real email-code delivery, invalid-code rejection, new and returning sign-in,
+  signed cookies, saved progress across reloads, unpaid access denial, and logout
+  were exercised across local and hosted Preview. Production independently passed
+  registration, session/progress persistence, unpaid denial, logout, and
+  cross-origin auth POST rejection (403 with private/no-store caching).
+- Desktop and mobile sign-in layouts were inspected; mobile had no horizontal
+  overflow. The live page loaded no Clerk scripts or development-mode badge.
+- Production and Preview use separate Auth URLs, database branches, and session
+  cookie secrets. All Clerk project environment variables were removed and
+  production was rebuilt afterward. Verification accounts and progress were
+  removed from both new branches; each had zero auth users after cleanup.
+- The project is still prelaunch. The Neon shared email sender is active;
+  configure a dedicated SMTP sender before public launch. Verification email on
+  sign-in must remain enabled for the tested returning-user code flow.
+- Previous database branches remain available for rollback. The auth-only
+  release excludes the concurrent local PostHog implementation commit, which was
+  not part of this deployment. Commits remain local; no Git push was performed.
