@@ -1944,3 +1944,74 @@
 		display: none;
 	}
 }
+
+/* Each public card has a complete SVG; motion only explains its relationships. */
+.lesson-infographic .diagram-value {
+	font-size: 17px;
+	font-weight: 600;
+	letter-spacing: -0.04em;
+}
+.lesson-infographic .diagram-caption {
+	fill: var(--muted-foreground);
+	font-size: 10px;
+}
+.diagram-negative {
+	fill: var(--destructive);
+}
+.diagram-correction {
+	fill: none;
+	stroke: var(--destructive);
+	stroke-width: 2;
+	stroke-linecap: round;
+}
+.diagram-traveler {
+	fill: var(--foreground);
+	stroke: var(--primary);
+	stroke-width: 2;
+	opacity: 0;
+	pointer-events: none;
+}
+.lesson-infographic [data-diagram-motion="grow"],
+.lesson-infographic [data-diagram-motion="grow-down"],
+.lesson-infographic [data-diagram-motion="grow-x"] {
+	transform-box: fill-box;
+	transform-origin: center bottom;
+}
+.lesson-infographic [data-diagram-motion="grow-down"] {
+	transform-origin: center top;
+}
+.lesson-infographic [data-diagram-motion="grow-x"] {
+	transform-origin: left center;
+}
+.curriculum-modules {
+	display: flex;
+	flex-direction: column;
+	gap: 48px;
+}
+.curriculum-module {
+	scroll-margin-top: 100px;
+}
+.curriculum-module-heading {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 20px;
+}
+.curriculum-module-heading h2 {
+	font-size: 23px;
+	line-height: 1.35;
+	font-weight: 550;
+	letter-spacing: -0.03em;
+}
+.curriculum-module-heading p {
+	flex-shrink: 0;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--muted-foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+	.diagram-traveler {
+		display: none;
+	}
+}

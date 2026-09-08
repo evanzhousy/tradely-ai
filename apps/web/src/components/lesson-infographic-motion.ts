@@ -1,8 +1,19 @@
 import { useEffect, useRef } from "react";
 
-type MotionKind = "trace" | "pulse" | "focus" | "tick" | "settle";
+type MotionKind =
+	| "trace"
+	| "pulse"
+	| "focus"
+	| "tick"
+	| "settle"
+	| "travel"
+	| "scan"
+	| "grow"
+	| "grow-down"
+	| "grow-x";
 
 const cycleRestMs = 700;
+const playbackRate = 2;
 
 const easeOut = "cubic-bezier(0.23, 1, 0.32, 1)";
 const easeInOut = "cubic-bezier(0.77, 0, 0.175, 1)";
@@ -12,6 +23,27 @@ function keyframes(
 	accent: string,
 ): Keyframe[] | undefined {
 	switch (element.dataset.diagramMotion as MotionKind) {
+		case "travel":
+		case "scan": {
+			const dx = Number(element.dataset.diagramDx) || 0;
+			const dy = Number(element.dataset.diagramDy) || 0;
+			return [
+				{ transform: "translate(0px, 0px)", opacity: 0 },
+				{ transform: "translate(0px, 0px)", opacity: 1, offset: 0.08 },
+				{ transform: `translate(${dx}px, ${dy}px)`, opacity: 1, offset: 0.9 },
+				{ transform: `translate(${dx}px, ${dy}px)`, opacity: 0 },
+			];
+		}
+		case "grow":
+		case "grow-down":
+		case "grow-x": {
+			const axis = element.dataset.diagramMotion === "grow-x" ? "X" : "Y";
+			return [
+				{ transform: `scale${axis}(0.08)` },
+				{ transform: `scale${axis}(1)`, offset: 0.75 },
+				{ transform: `scale${axis}(1)` },
+			];
+		}
 		case "trace":
 			return [
 				{ strokeDashoffset: 1, opacity: 0 },
@@ -105,8 +137,8 @@ export function useLessonInfographicMotion(subject: string, enabled = true) {
 				animations.push(
 					element.animate(frames, {
 						id: `lesson-${subject}`,
-						duration,
-						delay,
+						duration: duration / playbackRate,
+						delay: delay / playbackRate,
 						iterations: 1,
 						fill: "none",
 						easing: ["pulse", "focus"].includes(

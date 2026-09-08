@@ -8,6 +8,7 @@ import {
 	screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { LessonInfographic } from "./lesson-infographic";
 import { useLessonInfographicMotion } from "./lesson-infographic-motion";
 
 function Example({
@@ -136,6 +137,54 @@ async function advance(milliseconds: number) {
 }
 
 describe("lesson illustration loops", () => {
+	it("animates the matching path at 2x and cancels it to the complete static diagram", () => {
+		const { container, rerender } = render(
+			<LessonInfographic subject="execution-counterparties" locale="en" />,
+		);
+		enter();
+		expect(animate).toHaveBeenCalledTimes(2);
+		expect(animate.mock.calls[0][0]).toContainEqual({
+			transform: "translate(44px, 0px)",
+			opacity: 1,
+			offset: 0.9,
+		});
+		expect(animate.mock.calls[1][0]).toContainEqual({
+			transform: "translate(-44px, 0px)",
+			opacity: 1,
+			offset: 0.9,
+		});
+		expect(animate.mock.calls[0][1]).toMatchObject({
+			duration: 1300,
+			delay: 0,
+		});
+		expect(animate.mock.calls[1][1]).toMatchObject({
+			duration: 1300,
+			delay: 200,
+		});
+		rerender(
+			<LessonInfographic
+				subject="execution-counterparties"
+				locale="en"
+				motionEnabled={false}
+			/>,
+		);
+		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
+		expect(container.textContent).toContain("1 print · 2 parties");
+	});
+	it("grows positive and negative exposure bars from zero in their declared directions", () => {
+		render(<LessonInfographic subject="gamma-exposure" locale="en" />);
+		enter();
+		expect(animate).toHaveBeenCalledTimes(3);
+		for (const [frames, options] of animate.mock.calls) {
+			expect(frames).toContainEqual({ transform: "scaleY(1)", offset: 0.75 });
+			expect(options).toMatchObject({ duration: 1150, iterations: 1 });
+		}
+		expect(
+			document
+				.querySelector('[data-diagram-motion="grow-down"]')
+				?.getAttribute("y"),
+		).toBe("113");
+	});
 	it("repeats complete sequences with a quiet gap and keeps parallel starts from stacking", async () => {
 		render(<Example />);
 		expect(animate).not.toHaveBeenCalled();

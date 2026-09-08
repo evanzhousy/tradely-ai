@@ -11,8 +11,8 @@ import {
 import { ArrowRightIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useAnalytics } from "@/analytics/context";
-import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
+import { LandingCurriculum } from "@/components/landing-curriculum";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -121,22 +121,16 @@ function CoursePage() {
 					? "核心路径：合约 → 成交 → 成交流 → 比较研究 → 研究产出。定价与模型、组合为扩展路径。先修提示是学习建议，不新增访问锁。"
 					: "Core path: contracts → execution → flow → research → written output. Pricing/models and portfolios form deeper branches. Prerequisites guide learning; they do not add access locks."}
 			</p>
-			<Card>
-				<CardHeader>
-					<CardTitle>{t("course.curriculum")}</CardTitle>
-					<CardDescription>{t("course.curriculumDescription")}</CardDescription>
-				</CardHeader>
-				<CardContent className="-mx-2">
-					<CourseList
-						lessons={course.lessons}
-						completedIds={progress.records
-							.filter((record) => record.completedAt)
-							.map((record) => record.lessonId)}
-						canAccessPaid={progress.canAccessPaid}
-						accessUnavailable={progress.accessUnavailable}
-					/>
-				</CardContent>
-			</Card>
+			<LandingCurriculum
+				groupByModule
+				caption={t("course.curriculumDescription")}
+				lessons={course.lessons}
+				completedIds={progress.records
+					.filter((record) => record.completedAt)
+					.map((record) => record.lessonId)}
+				canAccessPaid={progress.canAccessPaid}
+				accessUnavailable={progress.accessUnavailable}
+			/>
 		</main>
 	);
 }

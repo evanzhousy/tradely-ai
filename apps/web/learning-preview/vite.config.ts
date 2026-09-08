@@ -8,6 +8,8 @@ const path = (relative: string) =>
 /** Explicit local fixture entry; never imported by the application build. */
 export default defineConfig({
 	root: path("./"),
+	// The fixture and real app run together; they must not overwrite optimized deps.
+	cacheDir: path("./node_modules/.vite"),
 	server: {
 		host: "127.0.0.1",
 		port: 8261,
