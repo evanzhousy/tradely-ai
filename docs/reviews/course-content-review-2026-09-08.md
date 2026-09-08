@@ -2,6 +2,8 @@
 
 Reviewed September 8, 2026, against worktree HEAD `a17dabb` and the concurrent local learning-UI changes. This is a content review and redesign proposal. No lessons, access rules, database records, or deployments were changed by this review.
 
+**Subsequent scope clarification:** the user requires platform-agnostic teaching of the financial and analytical concepts encountered throughout TradingFlow, including basic quotes, orders, executions, side, and sentiment. This review evaluated the existing 11 classes; it did not establish complete app-concept coverage. The [concept coverage addendum](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md) supersedes the assumed entry-level vocabulary and makes the missing execution foundations the immediate authoring priority. The findings below remain the review of the earlier lesson set.
+
 **Verdict:** the course has a useful evidence discipline and several worthwhile comparison exercises, but it currently teaches recognition of cautious language more reliably than independent research. Keep the numerical core of lessons 5–8. Rebuild the opening around a concrete problem and make lessons 9–11 produce an actual research artifact. More animation will not resolve these gaps.
 
 **Highest-leverage change:** define the final research brief and its scoring rubric first, then make each earlier lesson contribute one decision the learner must make to produce it.

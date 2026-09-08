@@ -2,6 +2,8 @@
 
 Status: proposed implementation plan, following the agreed direction of interactive lessons with selective Three.js scenarios.
 
+Scope clarification (2026-09-08): the current 11 lessons are an applied research sequence, not complete conceptual coverage. The curriculum must teach the financial and analytical concepts used across TradingFlow in platform-agnostic language, starting with contracts, quotes versus trades, orders and counterparties, execution side, and inferred sentiment. Use the [concept coverage plan](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md) to extend the prerequisite path into Greeks, volatility, positioning models, research methods, and portfolio concepts. Product navigation belongs in product help. This expands the original lesson-conversion scope; it does not claim those additional lessons are implemented.
+
 Prepared: 2026-09-06. Repository baseline: `5504e8a`. This document describes proposed work; it does not report deployed features or measured learning improvements.
 
 Implementation update (2026-09-07): all 11 lessons now have local supplemental exercises with English/Simplified Chinese prompts, independent practice variants, and server-owned grading. The contract lesson adds spot/moneyness and paired concentration cases; the metrics lesson adds a denominator lab and optional signed GEX visualization. The three free lessons support anonymous, non-persisted practice through a server-validated public-only endpoint. Signed-in attempts continue through the existing authorized persistence service. See [the pilot review notes](interactive-course-pilot.md). Deployment, real signed-in verification in the intended environment, and learner-effectiveness evaluation remain separate release work.
@@ -12,7 +14,7 @@ Turn the 11 lessons in Evidence-Led Options Research into guided investigations 
 
 **Design statement:** Tradely's lesson engine owns versioned scenarios, learner attempts, and assessment; React presents the learning flow, while optional Three.js views visualize the same scenario state without owning scoring, access, or progress.
 
-The first release covers the 11 lessons in `apps/web/src/content/course.ts`. The larger Academy media archive is source material for explanations, not a second conversion backlog. New courses about option pricing, Greeks, or volatility surfaces can follow as a separate curriculum initiative.
+The original conversion release covers the 11 lessons in `apps/web/src/content/course.ts`. The larger Academy media archive is source material for explanations, not a second conversion backlog. The clarified curriculum scope also requires the conceptual prerequisites and advanced topics represented in the app, including Greeks and volatility surfaces. Their grouping into foundation and advanced tracks follows the concept coverage plan rather than the existing screen order.
 
 Tradely remains the independent learning product. Exercises use self-contained educational fixtures; TradingFlow remains the external destination for optional real-tool practice. The current account, payment, media-access, and attribution boundaries continue to apply.
 
