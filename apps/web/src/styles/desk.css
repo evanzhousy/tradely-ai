@@ -1927,3 +1927,20 @@
 		display: none;
 	}
 }
+
+.curriculum-caption-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 22px;
+}
+.curriculum-caption-row .curriculum-caption {
+	min-width: 0;
+	margin-bottom: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+	.curriculum-motion-toggle {
+		display: none;
+	}
+}

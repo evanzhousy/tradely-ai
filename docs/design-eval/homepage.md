@@ -39,7 +39,7 @@ Score yes/no. A no blocks shipping the homepage.
 9. The hero frames the claim with original typographic field notes at desktop widths and removes the decorative materials on mobile. Neither hero nor footer mounts WebGL or downloads 3D assets. Content requires no animation.
 10. The learning outline links to real lesson cards and derives the ranges from the course: scope and discovery, inspection and context, then research and review. The three stages remain one ordered course. Anchor targets stay clear of the sticky header.
 11. The illustrative research exercise reveals reasoning on demand and links to the matching free lesson. It makes no live-data or performance claim.
-12. Each lesson SVG has a brief subject-specific animation on first visibility and mouse-hover replay. Keep the base diagram and labels visible. Effects terminate, cancel when offscreen/hidden, and remain static for reduced motion or unsupported browser APIs. Keyboard navigation must not wait for animation.
+12. Each lesson SVG loops its subject-specific sequence while visible, with a short rest between cycles. Keep the base diagram and labels visible. Pause motion stops both effects and pending cycles; Resume motion restores eligible loops. Offscreen and hidden tabs stop work, and reduced motion or unsupported browser APIs remain static. Keyboard navigation must not wait for animation.
 
 ## Baseline (2026-09-03)
 
@@ -70,8 +70,8 @@ Verified locally on 2026-09-07 after the card migration:
 
 | Before | After | Why |
 | --- | --- | --- |
-| Static subject diagrams | One brief explanatory sequence per diagram on first visibility, with mouse-hover replay | Bring attention to the concept without moving the page or delaying navigation. |
+| Static subject diagrams | Repeated explanatory sequences while visible, with a 700ms rest and a Pause motion control | Bring attention to the concept without moving the page or delaying navigation. |
 | The same visual emphasis throughout | Traced research paths, selected-symbol pulses, clock ticks, contract emphasis, and sequential evidence checks | Match motion to the lesson subject; keep data and labels intact. |
-| No animation lifecycle | Cancel effects offscreen, on hidden tabs, on reduced-motion changes, and on unmount | Keep complete static diagrams and avoid background work. |
+| No animation lifecycle | Cancel effects and scheduled cycles offscreen, on hidden tabs, on reduced-motion changes, on pause, and on unmount | Keep complete static diagrams and avoid background work. |
 
-Verification: Node 24 build and type check passed; 17 focused tests passed. Browser checks confirmed native playback for all 11 SVGs, finite sequences of 1.02–1.38 seconds, and zero active illustration animations after scrolling offscreen. English/Chinese, light/dark, and 390/1440px checks passed without overflow, hidden labels, or failed asset requests. Reduced motion produced 11 static diagrams and zero animations. The local preview runs from an isolated build copy. No deployment was performed.
+Verification after the loop update: Node 24 build and type check passed; 20 focused tests passed. Browser observation confirmed at least three automatic cycles for each of the 11 SVGs. Each cycle retains the 1.02–1.38 second sequence and adds a 700ms rest. Pause stopped all 11 diagrams and their scheduled restarts; Resume produced further automatic cycles. Offscreen and reduced-motion checks left zero active animations. English/Chinese at 320/1440px had no horizontal overflow or failed asset requests; the mobile pause control had a 44px touch target. The local preview runs from an isolated build copy. No deployment was performed.

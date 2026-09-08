@@ -717,12 +717,14 @@ export const lessonInfographicSubjects = Object.keys(illustrations);
 export function LessonInfographic({
 	subject,
 	locale,
+	motionEnabled = true,
 }: {
 	subject: string;
 	locale: Locale;
+	motionEnabled?: boolean;
 }) {
 	const id = useId();
-	const ref = useLessonInfographicMotion(subject);
+	const ref = useLessonInfographicMotion(subject, motionEnabled);
 	const illustration = illustrations[subject as keyof typeof illustrations];
 	if (!illustration) return null;
 	const { Diagram, description } = illustration;

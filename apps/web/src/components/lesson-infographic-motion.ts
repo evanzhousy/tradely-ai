@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 
 type MotionKind = "trace" | "pulse" | "focus" | "tick" | "settle";
 
+const cycleRestMs = 700;
+
 const easeOut = "cubic-bezier(0.23, 1, 0.32, 1)";
 const easeInOut = "cubic-bezier(0.77, 0, 0.175, 1)";
 
@@ -32,47 +34,59 @@ function keyframes(
 			];
 		}
 		case "tick":
-			return [{ transform: "rotate(-30deg)" }, { transform: "rotate(0deg)" }];
+			return [
+				{ transform: "rotate(0deg)" },
+				{ transform: "rotate(30deg)", offset: 0.4 },
+				{ transform: "rotate(0deg)" },
+			];
 		case "settle":
 			return [
-				{ transform: "translateX(-7px)" },
+				{ transform: "translateX(0)" },
+				{ transform: "translateX(-7px)", offset: 0.4 },
 				{ transform: "translateX(0)" },
 			];
 	}
 }
 
-// Owns the finite illustration playback lifecycle; it never changes lesson data.
-export function useLessonInfographicMotion(subject: string) {
+// Owns visible illustration loops; it never changes lesson data.
+export function useLessonInfographicMotion(subject: string, enabled = true) {
 	const ref = useRef<SVGSVGElement>(null);
 	useEffect(() => {
 		const svg = ref.current;
+		if (!svg) return;
+		if (!enabled) {
+			svg.dataset.motionState = "paused";
+			return;
+		}
 		if (
-			!svg ||
 			typeof IntersectionObserver === "undefined" ||
 			typeof svg.animate !== "function"
 		)
 			return;
 
 		const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-		const trigger = svg.closest(".curriculum-card-link") ?? svg;
+		let disposed = false;
 		let visible = false;
-		let playedSubject: string | null = null;
+		let nextCycle: number | undefined;
 		let generation = 0;
 		let animations: Animation[] = [];
 
 		const stop = () => {
 			generation++;
+			window.clearTimeout(nextCycle);
+			nextCycle = undefined;
 			for (const animation of animations) animation.cancel();
 			animations = [];
 			svg.dataset.motionState = reducedMotion.matches ? "reduced" : "idle";
 		};
 		const play = () => {
 			if (
+				disposed ||
 				!visible ||
 				document.hidden ||
 				reducedMotion.matches ||
-				animations.length
+				animations.length ||
+				nextCycle !== undefined
 			)
 				return;
 			const accent =
@@ -90,6 +104,7 @@ export function useLessonInfographicMotion(subject: string) {
 				);
 				animations.push(
 					element.animate(frames, {
+						id: `lesson-${subject}`,
 						duration,
 						delay,
 						iterations: 1,
@@ -103,52 +118,49 @@ export function useLessonInfographicMotion(subject: string) {
 				);
 			}
 			if (!animations.length) return;
-			playedSubject = subject;
 			svg.dataset.motionState = "playing";
 			void Promise.allSettled(
 				animations.map((animation) => animation.finished),
 			).then(() => {
 				if (generation !== run) return;
 				animations = [];
-				svg.dataset.motionState = "idle";
+				svg.dataset.motionState = "waiting";
+				nextCycle = window.setTimeout(() => {
+					nextCycle = undefined;
+					play();
+				}, cycleRestMs);
 			});
 		};
 		const observer = new IntersectionObserver(
-			([entry]) => {
+			(entries) => {
+				if (disposed) return;
+				const entry = entries[entries.length - 1];
 				visible = !!entry?.isIntersecting && entry.intersectionRatio >= 0.55;
 				if (!visible) stop();
-				else if (playedSubject !== subject) play();
+				else play();
 			},
 			{ threshold: [0, 0.55] },
 		);
-		const onPointerEnter = (event: Event) => {
-			if (
-				finePointer.matches &&
-				(event as PointerEvent).pointerType === "mouse"
-			)
-				play();
-		};
 		const onVisibilityChange = () => {
 			if (document.hidden) stop();
-			else if (playedSubject !== subject) play();
+			else play();
 		};
 		const onMotionChange = () => {
 			stop();
-			if (playedSubject !== subject) play();
+			play();
 		};
 
 		stop();
 		observer.observe(svg);
-		trigger.addEventListener("pointerenter", onPointerEnter);
 		document.addEventListener("visibilitychange", onVisibilityChange);
 		reducedMotion.addEventListener("change", onMotionChange);
 		return () => {
+			disposed = true;
 			observer.disconnect();
-			trigger.removeEventListener("pointerenter", onPointerEnter);
 			document.removeEventListener("visibilitychange", onVisibilityChange);
 			reducedMotion.removeEventListener("change", onMotionChange);
 			stop();
 		};
-	}, [subject]);
+	}, [subject, enabled]);
 	return ref;
 }

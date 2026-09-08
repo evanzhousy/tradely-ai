@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "@tradely/ui/components/button";
 import {
 	Card,
 	CardContent,
@@ -7,8 +8,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
-import { ArrowUpRightIcon, CheckIcon, Clock3Icon } from "lucide-react";
-import { useId } from "react";
+import {
+	ArrowUpRightIcon,
+	CheckIcon,
+	Clock3Icon,
+	PauseIcon,
+	PlayIcon,
+} from "lucide-react";
+import { useId, useState } from "react";
 import type { Lesson } from "@/content/course";
 import { useI18n } from "@/i18n/provider";
 import { LessonInfographic } from "./lesson-infographic";
@@ -29,13 +36,33 @@ export function LandingCurriculum({
 }) {
 	const { t, locale } = useI18n();
 	const id = useId();
+	const [motionEnabled, setMotionEnabled] = useState(true);
+	const gridId = `${id}-grid`;
 	const completed = new Set(completedIds);
 	return (
 		<div className="landing-curriculum">
-			<p id={id} className="curriculum-caption">
-				{caption}
-			</p>
+			<div className="curriculum-caption-row">
+				<p id={id} className="curriculum-caption">
+					{caption}
+				</p>
+				<Button
+					variant="ghost"
+					size="sm"
+					className="curriculum-motion-toggle"
+					aria-pressed={!motionEnabled}
+					aria-controls={gridId}
+					onClick={() => setMotionEnabled((current) => !current)}
+				>
+					{motionEnabled ? (
+						<PauseIcon data-icon="inline-start" aria-hidden="true" />
+					) : (
+						<PlayIcon data-icon="inline-start" aria-hidden="true" />
+					)}
+					{t(motionEnabled ? "home.pauseMotion" : "home.resumeMotion")}
+				</Button>
+			</div>
 			<ol
+				id={gridId}
 				className="curriculum-grid"
 				aria-label={t("home.curriculumLabel")}
 				aria-describedby={id}
@@ -73,7 +100,11 @@ export function LandingCurriculum({
 											<span>{t("home.cardConcept")}</span>
 											<ArrowUpRightIcon size={16} aria-hidden="true" />
 										</div>
-										<LessonInfographic subject={lesson.slug} locale={locale} />
+										<LessonInfographic
+											subject={lesson.slug}
+											locale={locale}
+											motionEnabled={motionEnabled}
+										/>
 									</div>
 									<CardHeader className="gap-3">
 										<CardTitle>

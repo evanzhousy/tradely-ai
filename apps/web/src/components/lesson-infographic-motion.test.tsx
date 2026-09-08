@@ -10,8 +10,14 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useLessonInfographicMotion } from "./lesson-infographic-motion";
 
-function Example({ subject = "example" }: { subject?: string }) {
-	const ref = useLessonInfographicMotion(subject);
+function Example({
+	subject = "example",
+	enabled = true,
+}: {
+	subject?: string;
+	enabled?: boolean;
+}) {
+	const ref = useLessonInfographicMotion(subject, enabled);
 	return (
 		<a href="/lesson" className="curriculum-card-link" data-testid="card">
 			<svg ref={ref} role="img" aria-label="A complete research diagram">
@@ -34,7 +40,6 @@ let disconnect: ReturnType<typeof vi.fn>;
 let animate: ReturnType<typeof vi.fn>;
 let hidden: boolean;
 let reduced: boolean;
-let fine: boolean;
 let preferenceListeners: Set<() => void>;
 const originalAnimate = Object.getOwnPropertyDescriptor(
 	Element.prototype,
@@ -67,17 +72,17 @@ function changePreference(value: boolean) {
 }
 
 beforeEach(() => {
+	vi.useFakeTimers();
 	handles = [];
 	intersections = [];
 	disconnect = vi.fn();
 	preferenceListeners = new Set();
 	hidden = false;
 	reduced = false;
-	fine = true;
 	vi.spyOn(document, "hidden", "get").mockImplementation(() => hidden);
-	vi.stubGlobal("matchMedia", (query: string) => ({
+	vi.stubGlobal("matchMedia", () => ({
 		get matches() {
-			return query.includes("reduced-motion") ? reduced : fine;
+			return reduced;
 		},
 		addEventListener: (_event: string, listener: () => void) =>
 			preferenceListeners.add(listener),
@@ -118,55 +123,81 @@ afterEach(() => {
 	cleanup();
 	vi.restoreAllMocks();
 	vi.unstubAllGlobals();
+	vi.useRealTimers();
 	if (originalAnimate)
 		Object.defineProperty(Element.prototype, "animate", originalAnimate);
 	else Reflect.deleteProperty(Element.prototype, "animate");
 });
 
-describe("lesson illustration playback", () => {
-	it("plays once on entry and replays on mouse hover without restarting a running sequence", async () => {
+async function advance(milliseconds: number) {
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(milliseconds);
+	});
+}
+
+describe("lesson illustration loops", () => {
+	it("repeats complete sequences with a quiet gap and keeps parallel starts from stacking", async () => {
 		render(<Example />);
 		expect(animate).not.toHaveBeenCalled();
-		expect(screen.getByText("Question and evidence")).toBeTruthy();
 		enter();
 		expect(animate).toHaveBeenCalledTimes(2);
+		enter();
 		pointer();
 		expect(animate).toHaveBeenCalledTimes(2);
 		for (const call of animate.mock.calls)
 			expect(call[1]).toMatchObject({ iterations: 1, fill: "none" });
 		await finish();
-		enter();
-		expect(animate).toHaveBeenCalledTimes(2);
-		pointer();
-		expect(animate).toHaveBeenCalledTimes(4);
 		expect(screen.getByRole("img").getAttribute("data-motion-state")).toBe(
-			"playing",
+			"waiting",
 		);
+		enter();
+		pointer();
+		await advance(699);
+		expect(animate).toHaveBeenCalledTimes(2);
+		await advance(1);
+		expect(animate).toHaveBeenCalledTimes(4);
+		await finish();
+		await advance(700);
+		expect(animate).toHaveBeenCalledTimes(6);
+		expect(screen.getByText("Question and evidence")).toBeTruthy();
 	});
 
-	it("cancels offscreen work, preserves the static diagram, and releases listeners on unmount", () => {
+	it("cancels active effects offscreen and starts again when the diagram returns", async () => {
 		const { unmount } = render(<Example />);
 		enter();
 		enter(false);
 		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
-		expect(screen.getByText("Question and evidence")).toBeTruthy();
-		enter();
+		await advance(5000);
 		expect(animate).toHaveBeenCalledTimes(2);
-		pointer();
-		const trigger = screen.getByTestId("card");
+		enter();
+		expect(animate).toHaveBeenCalledTimes(4);
 		unmount();
 		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
 		expect(disconnect).toHaveBeenCalledOnce();
 		expect(preferenceListeners.size).toBe(0);
-		pointer("mouse", trigger);
+		enter();
+		await advance(5000);
 		expect(animate).toHaveBeenCalledTimes(4);
+		expect(vi.getTimerCount()).toBe(0);
 	});
 
-	it("honors reduced motion initially and when the preference changes during playback", () => {
+	it("clears the scheduled cycle when scrolling away during the rest", async () => {
+		render(<Example />);
+		enter();
+		await finish();
+		expect(vi.getTimerCount()).toBe(1);
+		enter(false);
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(2);
+		expect(vi.getTimerCount()).toBe(0);
+		expect(screen.getByText("Question and evidence")).toBeTruthy();
+	});
+
+	it("honors reduced motion and resumes only after the preference is disabled", async () => {
 		reduced = true;
 		render(<Example />);
 		enter();
-		pointer();
+		await advance(5000);
 		expect(animate).not.toHaveBeenCalled();
 		expect(screen.getByRole("img").getAttribute("data-motion-state")).toBe(
 			"reduced",
@@ -175,44 +206,96 @@ describe("lesson illustration playback", () => {
 		expect(animate).toHaveBeenCalledTimes(2);
 		changePreference(true);
 		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
-		pointer();
+		await advance(5000);
 		expect(animate).toHaveBeenCalledTimes(2);
-		expect(screen.getByText("Question and evidence")).toBeTruthy();
+		changePreference(false);
+		expect(animate).toHaveBeenCalledTimes(4);
+		await finish();
+		changePreference(true);
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(4);
+		expect(vi.getTimerCount()).toBe(0);
 	});
 
-	it("stops when the document is hidden and does not run an automatic loop on return", () => {
+	it("stops active and scheduled loops in hidden tabs, then resumes when visible", async () => {
 		render(<Example />);
 		enter();
 		hidden = true;
 		fireEvent(document, new Event("visibilitychange"));
 		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(2);
 		hidden = false;
 		fireEvent(document, new Event("visibilitychange"));
-		expect(animate).toHaveBeenCalledTimes(2);
-		pointer();
 		expect(animate).toHaveBeenCalledTimes(4);
+		await finish();
+		hidden = true;
+		fireEvent(document, new Event("visibilitychange"));
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(4);
+		hidden = false;
+		fireEvent(document, new Event("visibilitychange"));
+		expect(animate).toHaveBeenCalledTimes(6);
 	});
 
-	it("keeps touch and keyboard navigation immediate, while touch still gets the first-view animation", async () => {
+	it("pauses both active effects and pending cycles through the playback control", async () => {
+		const { rerender } = render(<Example />);
+		enter();
+		rerender(<Example enabled={false} />);
+		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(2);
+		expect(screen.getByRole("img").getAttribute("data-motion-state")).toBe(
+			"paused",
+		);
+		rerender(<Example />);
+		enter();
+		expect(animate).toHaveBeenCalledTimes(4);
+		await finish();
+		rerender(<Example enabled={false} />);
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(4);
+		expect(vi.getTimerCount()).toBe(0);
+		expect(screen.getByText("Question and evidence")).toBeTruthy();
+	});
+
+	it("keeps hover, touch, and keyboard navigation from restarting the loop", async () => {
 		render(<Example />);
 		enter();
 		await finish();
 		pointer("touch");
+		pointer("mouse");
 		fireEvent.focus(screen.getByTestId("card"));
 		expect(animate).toHaveBeenCalledTimes(2);
-		fine = false;
-		pointer();
-		expect(animate).toHaveBeenCalledTimes(2);
+		await advance(700);
+		expect(animate).toHaveBeenCalledTimes(4);
 		expect(screen.getByRole("link").getAttribute("href")).toBe("/lesson");
 	});
 
-	it("resets first-view playback when the subject changes", () => {
+	it("drops an old subject's pending cycle when the subject changes", async () => {
 		const { rerender } = render(<Example />);
 		enter();
+		await finish();
 		rerender(<Example subject="another" />);
-		for (const handle of handles) expect(handle.cancel).toHaveBeenCalledOnce();
+		await advance(5000);
+		expect(animate).toHaveBeenCalledTimes(2);
 		enter();
 		expect(animate).toHaveBeenCalledTimes(4);
+		expect(animate.mock.calls.at(-1)?.[1].id).toBe("lesson-another");
+	});
+
+	it("uses the latest visibility entry when the browser batches intersection changes", () => {
+		render(<Example />);
+		act(() =>
+			intersections[0]?.(
+				[
+					{ isIntersecting: true, intersectionRatio: 0.8 },
+					{ isIntersecting: false, intersectionRatio: 0 },
+				] as IntersectionObserverEntry[],
+				{} as IntersectionObserver,
+			),
+		);
+		expect(animate).not.toHaveBeenCalled();
 	});
 
 	it("retains the full diagram when animation APIs are unavailable", () => {
@@ -221,5 +304,6 @@ describe("lesson illustration playback", () => {
 		expect(screen.getByRole("img")).toBeTruthy();
 		expect(screen.getByText("Question and evidence")).toBeTruthy();
 		expect(intersections).toHaveLength(0);
+		expect(vi.getTimerCount()).toBe(0);
 	});
 });
