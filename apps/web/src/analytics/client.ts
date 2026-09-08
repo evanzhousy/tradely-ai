@@ -13,6 +13,7 @@ import {
 	pruneAnalyticsEventProperties,
 	sanitizeAnalyticsEventUrlProperties,
 } from "./events";
+import { redactPostHogExceptions } from "./exception-payload";
 import { normalizePostHogHost } from "./posthog-config";
 import {
 	redactAnalyticsPersonProperties,
@@ -40,8 +41,14 @@ let activeClient: PostHogClient | null = null;
 
 export function getPostHogClient(): Promise<PostHogClient> {
 	if (clientPromise) return clientPromise;
-	clientPromise = import("posthog-js")
-		.then(({ default: client }) => {
+	// These extensions normally load from PostHog's CDN. Bundle only the two
+	// permitted features, inside the same consent-gated lazy load as the client.
+	clientPromise = Promise.all([
+		import("posthog-js"),
+		import("posthog-js/dist/exception-autocapture"),
+		import("posthog-js/dist/web-vitals"),
+	])
+		.then(([{ default: client }]) => {
 			client.init(env.VITE_POSTHOG_KEY as string, {
 				api_host: normalizePostHogHost(env.VITE_POSTHOG_HOST),
 				ui_host: "https://us.posthog.com",
@@ -97,6 +104,9 @@ export function getPostHogClient(): Promise<PostHogClient> {
 						return null;
 					}
 					if (!event?.properties) return event;
+					if (event.event === "$exception") {
+						redactPostHogExceptions(event.properties);
+					}
 					redactAnalyticsPersonProperties(event.properties.$set);
 					redactAnalyticsPersonProperties(event.properties.$set_once);
 					const eventWithPersonSets = event as typeof event & {
