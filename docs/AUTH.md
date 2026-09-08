@@ -63,7 +63,9 @@ mode, and hides account controls.
 In Neon Auth configuration:
 
 1. Enable the email OTP plugin with six-digit codes and sign-up enabled.
-2. Require email verification. The application independently rejects unverified
+2. Require email verification and enable verification emails on both sign-up
+   and sign-in. Hosted returning-user OTP delivery was verified with both
+   settings enabled. The application independently rejects unverified
    identities on every identity-dependent server call.
 3. Configure a custom SMTP sender for production email delivery. Neon's shared
    sender is for development/testing and is rate-limited.
@@ -116,3 +118,17 @@ build and deploy, and repeat the sign-in/reload/logout and denied-access checks.
 Remove obsolete hosting environment variables after the new deployment is
 verified. A successful build or mocked SDK test is not proof of email delivery
 or live authentication.
+
+## Manual Vercel releases
+
+Git-triggered builds receive `VERCEL_GIT_COMMIT_SHA`. CLI releases must supply
+the release identifier explicitly for the existing PostHog build gate and
+matching runtime diagnostics. Run from the isolated, committed release checkout:
+
+```bash
+release="$(git rev-parse HEAD)"
+vercel deploy --prod --build-env "VITE_APP_RELEASE=$release" --env "VITE_APP_RELEASE=$release"
+```
+
+Use a new production build with Production environment variables. Promoting a
+Preview build would retain its Preview database and authentication configuration.
