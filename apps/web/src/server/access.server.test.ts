@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
 	captureServerException: vi.fn(),
-	getCurrentClerkUserId: vi.fn(),
+	getCurrentUserId: vi.fn(),
 	getStripeBillingState: vi.fn(),
 	findAppUser: vi.fn(),
 	hasActiveCoursePass: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("./analytics/posthog.server", () => ({
 }));
 
 vi.mock("./auth.server", () => ({
-	getCurrentClerkUserId: mocks.getCurrentClerkUserId,
+	getCurrentUserId: mocks.getCurrentUserId,
 }));
 
 vi.mock("./billing.server", () => ({
@@ -34,9 +34,9 @@ import { getCurrentCourseAccess } from "./access.server";
 describe("course access server", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mocks.getCurrentClerkUserId.mockResolvedValue("user_tradely");
+		mocks.getCurrentUserId.mockResolvedValue("user_tradely");
 		mocks.findAppUser.mockResolvedValue({
-			clerkUserId: "user_tradely",
+			userId: "user_tradely",
 			stripeCustomerId: "cus_tradely",
 		});
 		mocks.hasManualAllAccess.mockReturnValue(false);

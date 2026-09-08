@@ -44,8 +44,8 @@ export function checkoutSessionGrantsCoursePass(input: {
 	customerId: string | null;
 	expectedCustomerId: string;
 	clientReferenceId: string | null;
-	expectedClerkUserId: string;
-	metadataClerkUserId: string | null;
+	expectedUserId: string;
+	metadataUserId: string | null;
 	priceIds: string[];
 	expectedPriceId: string;
 	entitlement: string | null;
@@ -55,8 +55,8 @@ export function checkoutSessionGrantsCoursePass(input: {
 		input.status === "complete" &&
 		input.paymentStatus === "paid" &&
 		input.customerId === input.expectedCustomerId &&
-		input.clientReferenceId === input.expectedClerkUserId &&
-		input.metadataClerkUserId === input.expectedClerkUserId &&
+		input.clientReferenceId === input.expectedUserId &&
+		input.metadataUserId === input.expectedUserId &&
 		input.priceIds.length === 1 &&
 		input.priceIds[0] === input.expectedPriceId &&
 		input.entitlement === COURSE_PASS_ENTITLEMENT

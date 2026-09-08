@@ -1,9 +1,9 @@
-import { useAuth } from "@clerk/tanstack-react-start";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@/auth/client";
 
 import { useAnalytics } from "./context";
 
-export function ClerkAnalyticsIdentity() {
+export function AuthAnalyticsIdentity() {
 	const { isLoaded, isSignedIn, userId } = useAuth();
 	const { capture, identify, isCapturing, resetIdentity } = useAnalytics();
 	const identifiedUserRef = useRef<string | null>(null);
@@ -22,7 +22,7 @@ export function ClerkAnalyticsIdentity() {
 			if (identify(userId)) {
 				identifiedUserRef.current = userId;
 				if (sessionEventUserRef.current !== userId) {
-					if (capture("auth_session_established", { provider: "clerk" })) {
+					if (capture("auth_session_established", { provider: "neon" })) {
 						sessionEventUserRef.current = userId;
 					}
 				}

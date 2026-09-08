@@ -22,6 +22,13 @@
 			"when": 1788718082661,
 			"tag": "0002_learning_attempts",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1788896675930,
+			"tag": "0003_neon_auth_fresh_start",
+			"breakpoints": true
 		}
 	]
 }

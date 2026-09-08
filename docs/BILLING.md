@@ -31,7 +31,7 @@ by the application. Because branding, customers, reporting, and statement
 descriptors are account-scoped, changes can affect every product on this shared
 account.
 
-Production and non-production must use distinct Clerk instances and Neon
+Production and non-production must use distinct Neon Auth instances and Neon
 branches/databases. `app_user` stores one Stripe Customer reference, and Stripe
 test and live Customers are different objects even when their IDs have the same
 shape. Sharing one learner row across key modes can replace or strand the
@@ -85,7 +85,7 @@ Checkout Session and grants access only when all of these conditions hold:
 
 1. Session mode is `payment`, status is `complete`, and payment status is `paid`.
 2. Session Customer matches the signed-in user's stored Stripe Customer.
-3. `client_reference_id` matches the signed-in Clerk user.
+3. `client_reference_id` matches the signed-in Neon Auth user.
 4. A line item contains the exact Course Pass Price ID.
 5. Session metadata contains the exact Course Pass entitlement code.
 
@@ -105,13 +105,13 @@ There is no Stripe webhook in the current minimal-table architecture. A refund
 or dispute therefore requires two operator actions:
 
 1. Process or confirm the refund/dispute in Stripe.
-2. Dry-run and then apply the bounded revocation command for the exact Clerk
+2. Dry-run and then apply the bounded revocation command for the exact Neon Auth
    user and Checkout Session.
 
 ```text
 pnpm billing:revoke-course-pass -- \
   --environment test \
-  --clerk-user-id user_... \
+  --user-id user_... \
   --checkout-session-id cs_test_... \
   --reason refund \
   --reference re_...

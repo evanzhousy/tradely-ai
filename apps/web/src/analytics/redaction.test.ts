@@ -42,13 +42,13 @@ describe("analytics error redaction", () => {
 
 	it("redacts sensitive nested person properties without touching safe fields", () => {
 		const properties = {
-			auth_provider: "clerk",
+			auth_provider: "neon",
 			email: "user@example.com",
 			nested: { phone: "555-0100", locale: "en" },
 		};
 		redactAnalyticsPersonProperties(properties);
 		expect(properties).toEqual({
-			auth_provider: "clerk",
+			auth_provider: "neon",
 			nested: { locale: "en" },
 		});
 	});
@@ -73,4 +73,13 @@ describe("analytics error redaction", () => {
 			}),
 		).toBe("local");
 	});
+});
+
+it("redacts Neon user and session UUIDs from diagnostic text", () => {
+	expect(
+		redactAnalyticsText(
+			"User a50d580e-fdb3-4c31-a87b-14f48d399eb9 failed",
+			500,
+		),
+	).toBe("User [redacted-id] failed");
 });

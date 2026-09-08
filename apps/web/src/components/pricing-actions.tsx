@@ -1,4 +1,3 @@
-import { SignInButton } from "@clerk/tanstack-react-start";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@tradely/ui/components/button";
 import {
@@ -14,6 +13,7 @@ import {
 	type BillingOffer,
 	billingActionFailureReason,
 } from "@/analytics/events";
+import { authIsConfigured } from "@/auth/client";
 import { useI18n } from "@/i18n/provider";
 import {
 	beginCoursePassCheckout,
@@ -21,7 +21,7 @@ import {
 	openCustomerPortal,
 	restoreCoursePass,
 } from "@/server/billing";
-import { clerkIsConfigured } from "./app-providers";
+import { SignInLink } from "./sign-in-link";
 
 export function PricingCheckoutButton({
 	offer,
@@ -93,21 +93,19 @@ export function PricingCheckoutButton({
 			) : null}
 		</>
 	);
-	if (!isSignedIn && !active && clerkIsConfigured) {
+	if (!isSignedIn && !active && authIsConfigured) {
 		return (
-			<SignInButton mode="modal">
-				<Button
-					disabled={!configured}
-					onClick={() => capture("auth_sign_in_opened", { surface: "pricing" })}
-				>
-					{contents}
-				</Button>
-			</SignInButton>
+			<SignInLink
+				disabled={!configured}
+				onClick={() => capture("auth_sign_in_opened", { surface: "pricing" })}
+			>
+				{contents}
+			</SignInLink>
 		);
 	}
 	return (
 		<Button
-			disabled={!configured || active || pending || !clerkIsConfigured}
+			disabled={!configured || active || pending || !authIsConfigured}
 			onClick={() => void checkout()}
 		>
 			{contents}

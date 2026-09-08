@@ -24,7 +24,7 @@ vi.mock("@tradely/db", async () => ({
 	createDb: dependencies.db,
 }));
 vi.mock("./auth.server", () => ({
-	getCurrentClerkUserId: async () => dependencies.userId,
+	getCurrentUserId: async () => dependencies.userId,
 }));
 vi.mock("./billing.server", () => ({
 	getStripeBillingState: async () => "inactive",
@@ -58,6 +58,7 @@ describe("integrated course persistence journey", () => {
 			"0000_salty_randall.sql",
 			"0001_low_clea.sql",
 			"0002_learning_attempts.sql",
+			"0003_neon_auth_fresh_start.sql",
 		])
 			await pg.exec(
 				readFileSync(
@@ -75,7 +76,7 @@ describe("integrated course persistence journey", () => {
 		dependencies.db.mockReturnValue(db);
 		await pg.exec("TRUNCATE lesson_attempt, lesson_progress, app_user CASCADE");
 		await db.insert(schema.appUser).values({
-			clerkUserId: "journey-learner",
+			userId: "journey-learner",
 			coursePassGrantedAt: new Date(),
 		});
 	});

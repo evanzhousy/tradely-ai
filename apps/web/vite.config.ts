@@ -17,6 +17,18 @@ const appRelease = resolveAnalyticsRelease(
 	process.env.VITE_APP_RELEASE,
 );
 const isProductionBuild = process.env.VERCEL_ENV === "production";
+
+if (
+	isProductionBuild &&
+	(process.env.VITE_AUTH_ENABLED !== "true" ||
+		!process.env.NEON_AUTH_BASE_URL?.startsWith("https://") ||
+		(process.env.NEON_AUTH_COOKIE_SECRET?.length ?? 0) < 32)
+) {
+	throw new Error(
+		"Production builds require Neon Auth and a secure session cookie secret",
+	);
+}
+
 const posthogProjectToken = process.env.VITE_POSTHOG_KEY?.trim();
 const posthogIngestionHost = normalizePostHogHost(
 	process.env.VITE_POSTHOG_HOST,
@@ -102,7 +114,7 @@ export default defineConfig({
 		// Workspace packages must be bundled. React itself is inlined by Nitro into
 		// `_libs/@tanstack/react-router+[...].mjs` as `require_react`. CJS shims such
 		// as use-sync-external-store still emit `__require("react")`; copy-vercel-react.mjs
-		// rewrites those onto the inlined instance so Clerk/Base UI share one dispatcher.
+		// rewrites those onto the inlined instance so the application and Base UI share one dispatcher.
 		noExternal: [/^@tradely\//],
 	},
 	plugins: [

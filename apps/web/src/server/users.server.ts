@@ -4,25 +4,23 @@ import { type AppUser, appUser, createDb } from "@tradely/db";
 import { eq } from "drizzle-orm";
 import { coursePassIsActive, manualGrantIsActive } from "@/domain/access";
 
-export async function findAppUser(
-	clerkUserId: string,
-): Promise<AppUser | null> {
+export async function findAppUser(userId: string): Promise<AppUser | null> {
 	const db = createDb();
 	const [user] = await db
 		.select()
 		.from(appUser)
-		.where(eq(appUser.clerkUserId, clerkUserId))
+		.where(eq(appUser.userId, userId))
 		.limit(1);
 	return user ?? null;
 }
 
-export async function ensureAppUser(clerkUserId: string): Promise<AppUser> {
+export async function ensureAppUser(userId: string): Promise<AppUser> {
 	const db = createDb();
 	const [user] = await db
 		.insert(appUser)
-		.values({ clerkUserId })
+		.values({ userId })
 		.onConflictDoUpdate({
-			target: appUser.clerkUserId,
+			target: appUser.userId,
 			set: { updatedAt: new Date() },
 		})
 		.returning();
@@ -31,14 +29,14 @@ export async function ensureAppUser(clerkUserId: string): Promise<AppUser> {
 }
 
 export async function updateStripeCustomerId(
-	clerkUserId: string,
+	userId: string,
 	stripeCustomerId: string,
 ): Promise<void> {
 	const db = createDb();
 	await db
 		.update(appUser)
 		.set({ stripeCustomerId, updatedAt: new Date() })
-		.where(eq(appUser.clerkUserId, clerkUserId));
+		.where(eq(appUser.userId, userId));
 }
 
 export function hasManualAllAccess(user: AppUser | null): boolean {
@@ -50,10 +48,10 @@ export function hasActiveCoursePass(user: AppUser | null): boolean {
 }
 
 export async function grantCoursePass(
-	clerkUserId: string,
+	userId: string,
 	checkoutSessionId: string,
 ): Promise<void> {
-	const user = await ensureAppUser(clerkUserId);
+	const user = await ensureAppUser(userId);
 	if (
 		user.stripeCoursePassCheckoutSessionId === checkoutSessionId &&
 		user.coursePassRevokedAt
@@ -76,14 +74,14 @@ export async function grantCoursePass(
 			coursePassRevokedAt: null,
 			updatedAt: now,
 		})
-		.where(eq(appUser.clerkUserId, clerkUserId));
+		.where(eq(appUser.userId, userId));
 }
 
-export async function revokeCoursePass(clerkUserId: string): Promise<void> {
+export async function revokeCoursePass(userId: string): Promise<void> {
 	const now = new Date();
 	const db = createDb();
 	await db
 		.update(appUser)
 		.set({ coursePassRevokedAt: now, updatedAt: now })
-		.where(eq(appUser.clerkUserId, clerkUserId));
+		.where(eq(appUser.userId, userId));
 }

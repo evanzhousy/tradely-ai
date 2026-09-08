@@ -3,7 +3,7 @@ import "@tanstack/react-start/server-only";
 import type { Lesson } from "@/content/course";
 import { resolveLessonAccess } from "@/domain/access";
 import { captureServerException } from "./analytics/posthog.server";
-import { getCurrentClerkUserId } from "./auth.server";
+import { getCurrentUserId } from "./auth.server";
 import { getStripeBillingState } from "./billing.server";
 import {
 	findAppUser,
@@ -12,7 +12,7 @@ import {
 } from "./users.server";
 
 export async function getCurrentCourseAccess() {
-	const userId = await getCurrentClerkUserId();
+	const userId = await getCurrentUserId();
 	if (!userId) {
 		return {
 			userId: null,

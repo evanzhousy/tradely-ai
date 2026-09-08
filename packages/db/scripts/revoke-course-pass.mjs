@@ -11,7 +11,7 @@ const REVOCATION_REASONS = new Set([
 const HELP = `Usage:
   pnpm billing:revoke-course-pass -- \\
     --environment <test|production> \\
-    --clerk-user-id <user_...> \\
+    --user-id <user-id> \\
     --checkout-session-id <cs_test_...|cs_live_...> \\
     --reason <refund|dispute|chargeback|other> \\
     --reference <Stripe or support reference>
@@ -47,8 +47,8 @@ export function parseRevocationArgs(argv) {
 				input.environment = nextValue(argv, index, flag);
 				index += 1;
 				break;
-			case "--clerk-user-id":
-				input.clerkUserId = nextValue(argv, index, flag);
+			case "--user-id":
+				input.userId = nextValue(argv, index, flag);
 				index += 1;
 				break;
 			case "--checkout-session-id":
@@ -76,8 +76,8 @@ export function parseRevocationArgs(argv) {
 	if (!new Set(["test", "production"]).has(input.environment)) {
 		throw new Error("--environment must be test or production");
 	}
-	if (!/^user_[A-Za-z0-9]+$/.test(input.clerkUserId ?? "")) {
-		throw new Error("--clerk-user-id must be a Clerk user ID");
+	if (!/^[A-Za-z0-9][A-Za-z0-9_-]{1,127}$/.test(input.userId ?? "")) {
+		throw new Error("--user-id must be a valid Tradely user ID");
 	}
 	if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(input.checkoutSessionId ?? "")) {
 		throw new Error(
@@ -171,12 +171,12 @@ export async function runCoursePassRevocation(argv, output = console) {
 	const sql = neon(process.env.DATABASE_URL);
 	const rows = await sql`
 		select
-			clerk_user_id,
+			user_id,
 			stripe_course_pass_checkout_session_id,
 			course_pass_granted_at,
 			course_pass_revoked_at
 		from app_user
-		where clerk_user_id = ${input.clerkUserId}
+		where user_id = ${input.userId}
 		limit 1
 	`;
 	const outcome = evaluateCoursePassRevocation(
@@ -190,7 +190,7 @@ export async function runCoursePassRevocation(argv, output = console) {
 		outcome,
 		changed: false,
 		databaseSource,
-		user: identifierEvidence(input.clerkUserId),
+		user: identifierEvidence(input.userId),
 		checkoutSession: identifierEvidence(input.checkoutSessionId),
 		reason: input.reason,
 		reference: input.reference,
@@ -209,11 +209,11 @@ export async function runCoursePassRevocation(argv, output = console) {
 	const updated = await sql`
 		update app_user
 		set course_pass_revoked_at = now(), updated_at = now()
-		where clerk_user_id = ${input.clerkUserId}
+		where user_id = ${input.userId}
 			and stripe_course_pass_checkout_session_id = ${input.checkoutSessionId}
 			and course_pass_granted_at is not null
 			and course_pass_revoked_at is null
-		returning clerk_user_id
+		returning user_id
 	`;
 	if (updated.length !== 1) {
 		throw new Error(

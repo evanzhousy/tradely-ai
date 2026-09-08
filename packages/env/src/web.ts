@@ -13,7 +13,10 @@ const posthogHost = z
 export const env = createEnv({
 	clientPrefix: "VITE_",
 	client: {
-		VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
+		VITE_AUTH_ENABLED: z
+			.enum(["true", "false"])
+			.default("false")
+			.transform((value) => value === "true"),
 		VITE_POSTHOG_KEY: z.string().startsWith("phc_").optional(),
 		VITE_POSTHOG_HOST: posthogHost.optional(),
 		VITE_APP_RELEASE: z.string().min(1).max(120).optional(),

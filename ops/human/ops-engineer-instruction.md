@@ -27,7 +27,7 @@ media contract; Cloudflare R2 should deliver the final media.
 - Concept cards and paid case-study media use the `tradingflow-concepts/`
   prefix.
 - Every uploaded object is private and is served only through the server's
-  short-lived, user-bound presigned URL after the Clerk/Stripe access decision.
+  short-lived, user-bound presigned URL after the Neon Auth/Stripe access decision.
 
 ### Public preview exception
 

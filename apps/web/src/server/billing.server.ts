@@ -14,7 +14,7 @@ import {
 	subscriptionGrantsCourse,
 } from "@/domain/billing";
 import { captureServerException } from "./analytics/posthog.server";
-import { getCurrentClerkIdentity, getCurrentClerkUserId } from "./auth.server";
+import { getCurrentIdentity, getCurrentUserId } from "./auth.server";
 import {
 	ensureAppUser,
 	findAppUser,
@@ -145,15 +145,15 @@ export async function getStripeBillingState(
 }
 
 async function ensureStripeCustomer(): Promise<{
-	clerkUserId: string;
+	userId: string;
 	stripeCustomerId: string;
 }> {
-	const identity = await getCurrentClerkIdentity();
+	const identity = await getCurrentIdentity();
 	if (!identity) throw new Error("Sign in before starting checkout");
 	const user = await ensureAppUser(identity.userId);
 	if (user.stripeCustomerId) {
 		return {
-			clerkUserId: identity.userId,
+			userId: identity.userId,
 			stripeCustomerId: user.stripeCustomerId,
 		};
 	}
@@ -164,12 +164,12 @@ async function ensureStripeCustomer(): Promise<{
 	const customer = await stripeClient().customers.create(
 		{
 			email: identity.email ?? undefined,
-			metadata: { tradely_clerk_user_id: identity.userId },
+			metadata: { tradely_user_id: identity.userId },
 		},
 		{ idempotencyKey: `tradely-customer-${userKey}` },
 	);
 	await updateStripeCustomerId(identity.userId, customer.id);
-	return { clerkUserId: identity.userId, stripeCustomerId: customer.id };
+	return { userId: identity.userId, stripeCustomerId: customer.id };
 }
 
 async function getOfferSummary(
@@ -218,7 +218,7 @@ export async function getOffersSummaryImpl() {
 }
 
 export async function getPricingAccessImpl() {
-	const userId = await getCurrentClerkUserId();
+	const userId = await getCurrentUserId();
 	if (!userId) {
 		return {
 			isSignedIn: false as const,
@@ -260,7 +260,7 @@ async function beginMembershipCheckoutCore() {
 	if (!env.STRIPE_MEMBERSHIP_PRICE_ID)
 		throw new Error("Stripe membership price is not configured");
 	const appUrl = checkoutBaseUrl();
-	const { clerkUserId, stripeCustomerId } = await ensureStripeCustomer();
+	const { userId, stripeCustomerId } = await ensureStripeCustomer();
 	const billingState = await getStripeBillingState(stripeCustomerId);
 	if (billingState === "active") {
 		throw new Error(
@@ -273,7 +273,7 @@ async function beginMembershipCheckoutCore() {
 		);
 	}
 	const userKey = createHash("sha256")
-		.update(clerkUserId)
+		.update(userId)
 		.digest("hex")
 		.slice(0, 24);
 	const priceKey = createHash("sha256")
@@ -287,15 +287,15 @@ async function beginMembershipCheckoutCore() {
 			branding_settings: BILLING_CONTRACT.checkoutBranding,
 			integration_identifier: checkoutIntegrationIdentifier(
 				"membership",
-				`${clerkUserId}:${priceKey}:${timeBucket}`,
+				`${userId}:${priceKey}:${timeBucket}`,
 			),
 			customer: stripeCustomerId,
-			client_reference_id: clerkUserId,
+			client_reference_id: userId,
 			line_items: [{ price: env.STRIPE_MEMBERSHIP_PRICE_ID, quantity: 1 }],
 			success_url: `${appUrl}/pricing?checkout=membership-success`,
 			cancel_url: `${appUrl}/pricing?checkout=membership-cancel`,
 			subscription_data: {
-				metadata: { tradely_clerk_user_id: clerkUserId },
+				metadata: { tradely_user_id: userId },
 			},
 		},
 		{
@@ -327,13 +327,13 @@ async function beginCoursePassCheckoutCore() {
 	if (!env.STRIPE_COURSE_PASS_PRICE_ID)
 		throw new Error("Stripe course-pass price is not configured");
 	const appUrl = checkoutBaseUrl();
-	const { clerkUserId, stripeCustomerId } = await ensureStripeCustomer();
-	const user = await findAppUser(clerkUserId);
+	const { userId, stripeCustomerId } = await ensureStripeCustomer();
+	const user = await findAppUser(userId);
 	if (hasActiveCoursePass(user)) {
 		throw new Error("Lifetime course access is already active");
 	}
 	const userKey = createHash("sha256")
-		.update(clerkUserId)
+		.update(userId)
 		.digest("hex")
 		.slice(0, 24);
 	const priceKey = createHash("sha256")
@@ -343,7 +343,7 @@ async function beginCoursePassCheckoutCore() {
 	const timeBucket = Math.floor(Date.now() / (30 * 60 * 1000));
 	const purchaseGeneration = coursePassCheckoutGeneration(user);
 	const metadata = {
-		tradely_clerk_user_id: clerkUserId,
+		tradely_user_id: userId,
 		tradely_entitlement: COURSE_PASS_ENTITLEMENT,
 	};
 	const session = await stripeClient().checkout.sessions.create(
@@ -352,10 +352,10 @@ async function beginCoursePassCheckoutCore() {
 			branding_settings: BILLING_CONTRACT.checkoutBranding,
 			integration_identifier: checkoutIntegrationIdentifier(
 				"course_pass",
-				`${clerkUserId}:${priceKey}:${purchaseGeneration}:${timeBucket}`,
+				`${userId}:${priceKey}:${purchaseGeneration}:${timeBucket}`,
 			),
 			customer: stripeCustomerId,
-			client_reference_id: clerkUserId,
+			client_reference_id: userId,
 			line_items: [{ price: env.STRIPE_COURSE_PASS_PRICE_ID, quantity: 1 }],
 			metadata,
 			payment_intent_data: { metadata },
@@ -388,7 +388,7 @@ export async function beginCoursePassCheckoutImpl() {
 async function coursePassSessionMatchesUser(
 	session: Stripe.Checkout.Session,
 	input: {
-		clerkUserId: string;
+		userId: string;
 		stripeCustomerId: string;
 		priceId: string;
 	},
@@ -398,8 +398,8 @@ async function coursePassSessionMatchesUser(
 		session.status !== "complete" ||
 		session.payment_status !== "paid" ||
 		stripeObjectId(session.customer) !== input.stripeCustomerId ||
-		session.client_reference_id !== input.clerkUserId ||
-		session.metadata?.tradely_clerk_user_id !== input.clerkUserId ||
+		session.client_reference_id !== input.userId ||
+		session.metadata?.tradely_user_id !== input.userId ||
 		session.metadata?.tradely_entitlement !== COURSE_PASS_ENTITLEMENT
 	) {
 		return false;
@@ -415,8 +415,8 @@ async function coursePassSessionMatchesUser(
 		customerId: stripeObjectId(session.customer),
 		expectedCustomerId: input.stripeCustomerId,
 		clientReferenceId: session.client_reference_id,
-		expectedClerkUserId: input.clerkUserId,
-		metadataClerkUserId: session.metadata?.tradely_clerk_user_id ?? null,
+		expectedUserId: input.userId,
+		metadataUserId: session.metadata?.tradely_user_id ?? null,
 		priceIds: lineItems.data.flatMap((item) =>
 			item.price ? [item.price.id] : [],
 		),
@@ -429,7 +429,7 @@ async function currentCoursePassIdentity() {
 	if (!env.STRIPE_COURSE_PASS_PRICE_ID) {
 		throw new Error("Lifetime course checkout is unavailable");
 	}
-	const identity = await getCurrentClerkIdentity();
+	const identity = await getCurrentIdentity();
 	if (!identity) throw new Error("Sign in to verify lifetime access");
 	const user = await ensureAppUser(identity.userId);
 	if (!user.stripeCustomerId) {
@@ -447,7 +447,7 @@ async function verifyCoursePassSession(sessionId: string) {
 	const current = await currentCoursePassIdentity();
 	const session = await stripeClient().checkout.sessions.retrieve(sessionId);
 	const valid = await coursePassSessionMatchesUser(session, {
-		clerkUserId: current.identity.userId,
+		userId: current.identity.userId,
 		stripeCustomerId: current.stripeCustomerId,
 		priceId: current.priceId,
 	});
@@ -513,7 +513,7 @@ export async function restoreCoursePassImpl() {
 				}
 				if (
 					await coursePassSessionMatchesUser(session, {
-						clerkUserId: current.identity.userId,
+						userId: current.identity.userId,
 						stripeCustomerId: current.stripeCustomerId,
 						priceId: current.priceId,
 					})
@@ -550,7 +550,7 @@ export async function restoreCoursePassImpl() {
 
 async function openCustomerPortalCore() {
 	const appUrl = checkoutBaseUrl();
-	const userId = await getCurrentClerkUserId();
+	const userId = await getCurrentUserId();
 	if (!userId) throw new Error("Sign in to manage billing");
 	const user = await findAppUser(userId);
 	if (!user?.stripeCustomerId)

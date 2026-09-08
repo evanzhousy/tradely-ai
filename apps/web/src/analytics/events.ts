@@ -69,7 +69,7 @@ export type AnalyticsEventMap = {
 		surface: "header" | "lesson_access" | "pricing";
 	};
 	auth_session_established: {
-		provider: "clerk";
+		provider: "neon";
 	};
 	tradingflow_link_opened: {
 		surface: "header" | "home_hero" | "lesson_practice";

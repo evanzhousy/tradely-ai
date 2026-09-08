@@ -69,6 +69,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 			"0000_salty_randall.sql",
 			"0001_low_clea.sql",
 			"0002_learning_attempts.sql",
+			"0003_neon_auth_fresh_start.sql",
 		])
 			await pg.exec(
 				readFileSync(
@@ -261,9 +262,9 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		expect(old).toMatchObject({ status: "retired", scenarioVersion: 999 });
 	});
 	it("stores immutable results, alternates practice cases and preserves historical progress", async () => {
-		await db.insert(schema.appUser).values({ clerkUserId: "learner-a" });
+		await db.insert(schema.appUser).values({ userId: "learner-a" });
 		await db.insert(schema.lessonProgress).values({
-			clerkUserId: "learner-a",
+			userId: "learner-a",
 			lessonId,
 			contentVersion: 1,
 			lastPositionSeconds: 123,
@@ -282,7 +283,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		expect(legacy.completedAt?.toISOString()).toBe("2026-09-01T00:00:00.000Z");
 	});
 	it("preserves an archived submitted scenario without certifying the updated lesson", async () => {
-		await db.insert(schema.appUser).values({ clerkUserId: "learner-a" });
+		await db.insert(schema.appUser).values({ userId: "learner-a" });
 		const legacy = optionPrintScenarios[0];
 		let state = initialAttemptState();
 		for (const step of legacy.steps) {
@@ -299,7 +300,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		}
 		await db.insert(schema.lessonAttempt).values({
 			id: "legacy-submitted",
-			clerkUserId: "learner-a",
+			userId: "learner-a",
 			lessonId,
 			scenarioId: legacy.id,
 			scenarioVersion: legacy.version,
@@ -369,7 +370,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 			openLearningSchema.safeParse({
 				lessonId,
 				restart: false,
-				clerkUserId: "other",
+				userId: "other",
 			}).success,
 		).toBe(false);
 		expect(mocks.capture).not.toHaveBeenCalled();

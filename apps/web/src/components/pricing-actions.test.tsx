@@ -13,9 +13,7 @@ vi.mock("@tanstack/react-start", () => ({
 	useServerFn: () => mocks.serverFn,
 }));
 
-vi.mock("@clerk/tanstack-react-start", () => ({
-	SignInButton: ({ children }: { children: unknown }) => children,
-}));
+vi.mock("@/auth/client", () => ({ authIsConfigured: true }));
 
 vi.mock("@/analytics/context", () => ({
 	useAnalytics: () => ({

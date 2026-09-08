@@ -97,7 +97,7 @@ export async function openLearningImpl(
 		if (!scenarios.length) return { ok: false, reason: "not_found" };
 		const db = createDb();
 		const owner = and(
-			eq(lessonAttempt.clerkUserId, access.userId),
+			eq(lessonAttempt.userId, access.userId),
 			eq(lessonAttempt.lessonId, data.lessonId),
 		);
 		const [latest] = await db
@@ -140,7 +140,7 @@ export async function openLearningImpl(
 				.from(lessonAttempt)
 				.where(
 					and(
-						eq(lessonAttempt.clerkUserId, access.userId),
+						eq(lessonAttempt.userId, access.userId),
 						eq(lessonAttempt.lessonId, sourceId),
 						eq(lessonAttempt.status, "submitted"),
 					),
@@ -164,7 +164,7 @@ export async function openLearningImpl(
 			.insert(lessonAttempt)
 			.values({
 				id: randomUUID(),
-				clerkUserId: access.userId,
+				userId: access.userId,
 				lessonId: data.lessonId,
 				scenarioId: scenario.id,
 				scenarioVersion: scenario.version,
@@ -198,7 +198,7 @@ export async function updateLearningImpl(
 		const db = createDb();
 		const owner = and(
 			eq(lessonAttempt.id, data.attemptId),
-			eq(lessonAttempt.clerkUserId, access.userId),
+			eq(lessonAttempt.userId, access.userId),
 			eq(lessonAttempt.lessonId, data.lessonId),
 		);
 		const [record] = await db
