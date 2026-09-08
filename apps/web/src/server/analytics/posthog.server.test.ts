@@ -133,11 +133,11 @@ describe("server PostHog telemetry boundary", () => {
 		const personProperties = beforeSend({
 			event: "$identify",
 			properties: {
-				$set: { auth_provider: "clerk", email: "user@example.com" },
+				$set: { auth_provider: "neon", email: "user@example.com" },
 			},
 		});
 		expect(personProperties).toMatchObject({
-			properties: { $set: { auth_provider: "clerk" } },
+			properties: { $set: { auth_provider: "neon" } },
 		});
 		expect(personProperties).not.toHaveProperty("properties.$set.email");
 	});

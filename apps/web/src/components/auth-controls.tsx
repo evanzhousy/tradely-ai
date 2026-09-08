@@ -1,39 +1,73 @@
-import { SignInButton, UserButton, useAuth } from "@clerk/tanstack-react-start";
-import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
-
+import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
+import { authClient, authIsConfigured, useAuth } from "@/auth/client";
 import { useI18n } from "@/i18n/provider";
-import { clerkIsConfigured } from "./app-providers";
+import { SignInLink } from "./sign-in-link";
 
 function ConfiguredAuthControls() {
 	const { t } = useI18n();
 	const { capture } = useAnalytics();
-	const { isLoaded, isSignedIn } = useAuth();
+	const { isLoaded, isSignedIn, email } = useAuth();
+	const [pending, setPending] = useState(false);
+	const [failed, setFailed] = useState(false);
 	if (!isLoaded)
 		return (
-			<span
-				className="h-9 w-20 animate-pulse rounded-4xl bg-muted"
-				role="status"
-				aria-label={t("auth.loading")}
-			/>
+			<span role="status" className="text-muted-foreground text-sm">
+				{t("auth.loading")}
+			</span>
 		);
-	if (isSignedIn) return <UserButton />;
-	return (
-		<SignInButton mode="modal">
-			<Button
+	if (!isSignedIn) {
+		return (
+			<SignInLink
 				size="sm"
 				onClick={() => capture("auth_sign_in_opened", { surface: "header" })}
 			>
 				{t("auth.signIn")}
+			</SignInLink>
+		);
+	}
+	async function signOut() {
+		setPending(true);
+		setFailed(false);
+		try {
+			const { error } = await authClient.signOut();
+			if (error) {
+				setFailed(true);
+				return;
+			}
+			window.location.assign("/");
+		} catch {
+			setFailed(true);
+		} finally {
+			setPending(false);
+		}
+	}
+	return (
+		<div className="flex items-center gap-2">
+			<span
+				className="hidden max-w-36 truncate text-muted-foreground text-sm lg:inline"
+				title={email ?? undefined}
+			>
+				{email}
+			</span>
+			<Button
+				size="sm"
+				variant="outline"
+				disabled={pending}
+				onClick={() => void signOut()}
+			>
+				{t("auth.signOut")}
 			</Button>
-		</SignInButton>
+			{failed ? (
+				<span role="alert" className="text-destructive text-sm">
+					{t("auth.retry")}
+				</span>
+			) : null}
+		</div>
 	);
 }
 
 export function AuthControls() {
-	const { t } = useI18n();
-	if (!clerkIsConfigured)
-		return <Badge variant="secondary">{t("auth.localPreview")}</Badge>;
-	return <ConfiguredAuthControls />;
+	return authIsConfigured ? <ConfiguredAuthControls /> : null;
 }

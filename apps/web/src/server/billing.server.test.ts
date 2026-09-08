@@ -16,8 +16,8 @@ const mocks = vi.hoisted(() => ({
 		VERCEL_URL: undefined as string | undefined,
 	},
 	captureServerException: vi.fn(),
-	getCurrentClerkIdentity: vi.fn(),
-	getCurrentClerkUserId: vi.fn(),
+	getCurrentIdentity: vi.fn(),
+	getCurrentUserId: vi.fn(),
 	ensureAppUser: vi.fn(),
 	findAppUser: vi.fn(),
 	grantCoursePass: vi.fn(),
@@ -62,8 +62,8 @@ vi.mock("./analytics/posthog.server", () => ({
 }));
 
 vi.mock("./auth.server", () => ({
-	getCurrentClerkIdentity: mocks.getCurrentClerkIdentity,
-	getCurrentClerkUserId: mocks.getCurrentClerkUserId,
+	getCurrentIdentity: mocks.getCurrentIdentity,
+	getCurrentUserId: mocks.getCurrentUserId,
 }));
 
 vi.mock("./users.server", () => ({
@@ -85,7 +85,7 @@ import {
 } from "./billing.server";
 
 const appUser = {
-	clerkUserId: "user_tradely",
+	userId: "user_tradely",
 	stripeCustomerId: "cus_tradely",
 	stripeCoursePassCheckoutSessionId: null,
 	coursePassGrantedAt: null,
@@ -106,7 +106,7 @@ function paidCoursePassSession(
 		customer: "cus_tradely",
 		client_reference_id: "user_tradely",
 		metadata: {
-			tradely_clerk_user_id: "user_tradely",
+			tradely_user_id: "user_tradely",
 			tradely_entitlement: "tradingflow-foundations-lifetime",
 		},
 		...change,
@@ -119,11 +119,11 @@ describe("Stripe billing server", () => {
 		mocks.env.LIFETIME_CHECKOUT_ENABLED = true;
 		mocks.env.VERCEL_ENV = undefined;
 		mocks.env.VERCEL_URL = undefined;
-		mocks.getCurrentClerkIdentity.mockResolvedValue({
+		mocks.getCurrentIdentity.mockResolvedValue({
 			userId: "user_tradely",
 			email: "learner@example.com",
 		});
-		mocks.getCurrentClerkUserId.mockResolvedValue("user_tradely");
+		mocks.getCurrentUserId.mockResolvedValue("user_tradely");
 		mocks.ensureAppUser.mockResolvedValue(appUser);
 		mocks.findAppUser.mockResolvedValue(appUser);
 		mocks.hasActiveCoursePass.mockReturnValue(false);
@@ -261,12 +261,12 @@ describe("Stripe billing server", () => {
 			client_reference_id: "user_tradely",
 			line_items: [{ price: "price_course_pass", quantity: 1 }],
 			metadata: {
-				tradely_clerk_user_id: "user_tradely",
+				tradely_user_id: "user_tradely",
 				tradely_entitlement: "tradingflow-foundations-lifetime",
 			},
 			payment_intent_data: {
 				metadata: {
-					tradely_clerk_user_id: "user_tradely",
+					tradely_user_id: "user_tradely",
 					tradely_entitlement: "tradingflow-foundations-lifetime",
 				},
 			},
@@ -368,7 +368,7 @@ describe("Stripe billing server", () => {
 		expect(mocks.grantCoursePass).toHaveBeenCalled();
 	});
 
-	it("rejects a paid session belonging to another Clerk user", async () => {
+	it("rejects a paid session belonging to another user", async () => {
 		mocks.checkoutRetrieve.mockResolvedValue(
 			paidCoursePassSession({ client_reference_id: "user_other" }),
 		);

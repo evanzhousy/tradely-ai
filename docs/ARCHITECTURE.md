@@ -2,13 +2,13 @@
 
 ## Product boundary
 
-Tradely owns its identity, billing, database, media, and customer relationship. The course teaches platform-agnostic market concepts. TradingFlow is an external partnered practice tool and a source for the concept coverage checklist. Outbound links contain only course-level UTM attribution—never Clerk IDs, Stripe IDs, progress, or other personal data.
+Tradely owns its identity, billing, database, media, and customer relationship. The course teaches platform-agnostic market concepts. TradingFlow is an external partnered practice tool and a source for the concept coverage checklist. Outbound links contain only course-level UTM attribution—never Neon Auth IDs, Stripe IDs, progress, or other personal data.
 
 ## Persistent model
 
 The source schema defines three PostgreSQL tables. The interactive-practice table requires migration `0002_learning_attempts` before deploying its server functions.
 
-- `app_user`: Clerk user ID, optional Stripe Customer ID, a verified/revocable
+- `app_user`: Neon Auth user ID, optional Stripe Customer ID, a verified/revocable
   Lifetime Course Pass grant with its unique Stripe Checkout Session, and narrow
   manual access overrides.
 - `lesson_progress`: user plus lesson ID, authoritative content version, last video position, and completion timestamps.
@@ -18,15 +18,15 @@ The eight-module, 36-lesson syllabus lives in `apps/web/src/content/syllabus.ts`
 
 ## Access contract
 
-1. Clerk establishes the current Tradely user.
-2. `app_user.stripe_customer_id` identifies that user in the configured Tradely billing account. The current product decision reuses Stripe account `acct_1LZx3GFrxuhJplqI` while retaining Tradely-specific Products, Prices, and Clerk mappings.
+1. Neon Auth establishes the current Tradely user.
+2. `app_user.stripe_customer_id` identifies that user in the configured Tradely billing account. The current product decision reuses Stripe account `acct_1LZx3GFrxuhJplqI` while retaining Tradely-specific Products, Prices, and Neon Auth mappings.
 3. A verified, non-revoked Course Pass or non-expired manual grant short-circuits
    subscription lookup for lesson access.
 4. Otherwise, the server calls Stripe at access time. Subscription access is
    active only when an `active` or `trialing` Subscription contains the exact
    configured `STRIPE_MEMBERSHIP_PRICE_ID`.
 5. One-time access is granted only after the server verifies a completed, paid
-   Checkout Session for the signed-in Clerk user, matching Stripe Customer,
+   Checkout Session for the signed-in Neon Auth user, matching Stripe Customer,
    exact `STRIPE_COURSE_PASS_PRICE_ID`, and exact entitlement metadata.
 6. Billing lookup failure is represented as unavailable, not as unpaid.
 7. Paid lesson bodies and media URLs are returned only after that server decision.
@@ -42,7 +42,7 @@ Tradely.
 
 Free preview media may use `MEDIA_PUBLIC_BASE_URL`. Paid media must never be placed under `apps/web/public`.
 
-The preferred production path is the shared Tradely Cloudflare R2 private bucket (R2's S3-compatible API). Test and production intentionally use the same bucket and credentials, while all credentials remain server-only. After access succeeds, the server returns 30-minute presigned URLs for the exact video and caption objects. The local Node-host fallback returns a signed Tradely endpoint; each request verifies both the HMAC token and the current Clerk user, and video responses support byte ranges.
+The preferred production path is the shared Tradely Cloudflare R2 private bucket (R2's S3-compatible API). Test and production intentionally use the same bucket and credentials, while all credentials remain server-only. After access succeeds, the server returns 30-minute presigned URLs for the exact video and caption objects. The local Node-host fallback returns a signed Tradely endpoint; each request verifies both the HMAC token and the current Neon Auth user, and video responses support byte ranges.
 
 The current course edition sets `mediaCurrent: false`: earlier videos are withheld while the updated interactive lessons and notes are the primary instruction. Three corrected English silent companions are rendered and checked locally under `videos/course-v2-companions/`; their proposed private keys have not been uploaded or activated. Only the isolated local review entry can import those generated files.
 
@@ -75,11 +75,11 @@ Every decision is saved before the next action is enabled. Updates compare the e
 
 Practice completion is separate from `lesson_progress`. The independent case earns `demonstrated` only when every required criterion is automatically checkable and met without an independent-case hint. Cases containing unreviewed prose and other completed attempts are `practiced`. The result separates automatically checked criteria from pending written review. A course completion timestamp does not establish this result. The three existing free lessons retain anonymous practice without persistence. New lessons use the existing paid course access rule. Signed-in account persistence uses the same three-table schema.
 
-The exercise clears its client state when Clerk identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the current implementation verification](reviews/course-update-verification-2026-09-08.md) for coverage, validation and remaining release gates. The [pilot implementation notes](interactive-course-pilot.md) remain historical evidence.
+The exercise clears its client state when Neon Auth identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the current implementation verification](reviews/course-update-verification-2026-09-08.md) for coverage, validation and remaining release gates. The [pilot implementation notes](interactive-course-pilot.md) remain historical evidence.
 
 ## Failure behavior
 
-- No Clerk configuration: public previews work; identity-dependent actions remain unavailable.
+- No Neon Auth configuration: public previews work; identity-dependent actions remain unavailable.
 - No database: previews work; account progress reports unavailable without fabricating state.
 - Stripe lookup failure: paid access is not revoked or described as unpaid; the UI asks the learner to retry.
 - Protected media failure: the authorized written lesson remains available and the UI reports that video could not be issued.

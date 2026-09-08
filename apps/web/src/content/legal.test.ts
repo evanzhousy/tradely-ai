@@ -28,7 +28,7 @@ describe("legal content", () => {
 	it("privacy content names the core account, billing, and partner boundaries", () => {
 		const privacy = getLegalDocument("privacy", "en");
 		const text = JSON.stringify(privacy).toLowerCase();
-		expect(text).toContain("clerk");
+		expect(text).toContain("neon");
 		expect(text).toContain("stripe");
 		expect(text).toContain("tradingflow");
 		expect(text).toContain("cloudflare");

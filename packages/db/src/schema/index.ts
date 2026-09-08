@@ -18,7 +18,7 @@ export type AccessOverrides = {
 };
 
 export const appUser = pgTable("app_user", {
-	clerkUserId: text("clerk_user_id").primaryKey(),
+	userId: text("user_id").primaryKey(),
 	stripeCustomerId: text("stripe_customer_id").unique(),
 	stripeCoursePassCheckoutSessionId: text(
 		"stripe_course_pass_checkout_session_id",
@@ -41,9 +41,9 @@ export const appUser = pgTable("app_user", {
 export const lessonProgress = pgTable(
 	"lesson_progress",
 	{
-		clerkUserId: text("clerk_user_id")
+		userId: text("user_id")
 			.notNull()
-			.references(() => appUser.clerkUserId, { onDelete: "cascade" }),
+			.references(() => appUser.userId, { onDelete: "cascade" }),
 		lessonId: text("lesson_id").notNull(),
 		contentVersion: integer("content_version").notNull(),
 		lastPositionSeconds: integer("last_position_seconds"),
@@ -55,7 +55,7 @@ export const lessonProgress = pgTable(
 			.defaultNow()
 			.notNull(),
 	},
-	(table) => [primaryKey({ columns: [table.clerkUserId, table.lessonId] })],
+	(table) => [primaryKey({ columns: [table.userId, table.lessonId] })],
 );
 
 export type AppUser = typeof appUser.$inferSelect;
@@ -65,9 +65,9 @@ export const lessonAttempt = pgTable(
 	"lesson_attempt",
 	{
 		id: text("id").primaryKey(),
-		clerkUserId: text("clerk_user_id")
+		userId: text("user_id")
 			.notNull()
-			.references(() => appUser.clerkUserId, { onDelete: "cascade" }),
+			.references(() => appUser.userId, { onDelete: "cascade" }),
 		lessonId: text("lesson_id").notNull(),
 		scenarioId: text("scenario_id").notNull(),
 		scenarioVersion: integer("scenario_version").notNull(),
@@ -88,10 +88,10 @@ export const lessonAttempt = pgTable(
 	},
 	(table) => [
 		uniqueIndex("lesson_attempt_active_user_lesson")
-			.on(table.clerkUserId, table.lessonId)
+			.on(table.userId, table.lessonId)
 			.where(sql`${table.status} = 'in_progress'`),
 		index("lesson_attempt_user_lesson_created").on(
-			table.clerkUserId,
+			table.userId,
 			table.lessonId,
 			table.createdAt,
 		),

@@ -1,0 +1,333 @@
+{
+	"id": "b5406ec2-b889-4e6f-a8af-f95cd4f39a7e",
+	"prevId": "ff34af2b-0fce-4c77-a6a0-6dda1829a195",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.app_user": {
+			"name": "app_user",
+			"schema": "",
+			"columns": {
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"stripe_customer_id": {
+					"name": "stripe_customer_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"stripe_course_pass_checkout_session_id": {
+					"name": "stripe_course_pass_checkout_session_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"course_pass_granted_at": {
+					"name": "course_pass_granted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"course_pass_revoked_at": {
+					"name": "course_pass_revoked_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"access_overrides": {
+					"name": "access_overrides",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"app_user_stripe_customer_id_unique": {
+					"name": "app_user_stripe_customer_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["stripe_customer_id"]
+				},
+				"app_user_stripe_course_pass_checkout_session_id_unique": {
+					"name": "app_user_stripe_course_pass_checkout_session_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["stripe_course_pass_checkout_session_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.lesson_attempt": {
+			"name": "lesson_attempt",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"scenario_id": {
+					"name": "scenario_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"scenario_version": {
+					"name": "scenario_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'in_progress'"
+				},
+				"revision": {
+					"name": "revision",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"state": {
+					"name": "state",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"assessment": {
+					"name": "assessment",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"last_command_id": {
+					"name": "last_command_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"submitted_at": {
+					"name": "submitted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"lesson_attempt_active_user_lesson": {
+					"name": "lesson_attempt_active_user_lesson",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "lesson_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"where": "\"lesson_attempt\".\"status\" = 'in_progress'",
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"lesson_attempt_user_lesson_created": {
+					"name": "lesson_attempt_user_lesson_created",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "lesson_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "created_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"lesson_attempt_user_id_app_user_user_id_fk": {
+					"name": "lesson_attempt_user_id_app_user_user_id_fk",
+					"tableFrom": "lesson_attempt",
+					"tableTo": "app_user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["user_id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"lesson_attempt_revision_nonnegative": {
+					"name": "lesson_attempt_revision_nonnegative",
+					"value": "\"lesson_attempt\".\"revision\" >= 0"
+				},
+				"lesson_attempt_version_positive": {
+					"name": "lesson_attempt_version_positive",
+					"value": "\"lesson_attempt\".\"scenario_version\" > 0"
+				},
+				"lesson_attempt_status_valid": {
+					"name": "lesson_attempt_status_valid",
+					"value": "\"lesson_attempt\".\"status\" in ('in_progress', 'submitted', 'retired')"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.lesson_progress": {
+			"name": "lesson_progress",
+			"schema": "",
+			"columns": {
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"content_version": {
+					"name": "content_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"last_position_seconds": {
+					"name": "last_position_seconds",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"started_at": {
+					"name": "started_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"lesson_progress_user_id_app_user_user_id_fk": {
+					"name": "lesson_progress_user_id_app_user_user_id_fk",
+					"tableFrom": "lesson_progress",
+					"tableTo": "app_user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["user_id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"lesson_progress_user_id_lesson_id_pk": {
+					"name": "lesson_progress_user_id_lesson_id_pk",
+					"columns": ["user_id", "lesson_id"]
+				}
+			},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}

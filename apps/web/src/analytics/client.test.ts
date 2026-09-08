@@ -130,11 +130,11 @@ describe("browser PostHog initialization contract", () => {
 		const personProperties = options.before_send({
 			event: "$identify",
 			properties: {
-				$set: { auth_provider: "clerk", email: "user@example.com" },
+				$set: { auth_provider: "neon", email: "user@example.com" },
 			},
 		});
 		expect(personProperties?.properties).toMatchObject({
-			$set: { auth_provider: "clerk" },
+			$set: { auth_provider: "neon" },
 		});
 		expect(personProperties?.properties?.$set).not.toHaveProperty("email");
 

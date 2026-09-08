@@ -59,7 +59,7 @@ export async function getCourseProgressImpl() {
 				completedAt: lessonProgress.completedAt,
 			})
 			.from(lessonProgress)
-			.where(eq(lessonProgress.clerkUserId, userId));
+			.where(eq(lessonProgress.userId, userId));
 		const normalized = records.map((record) => ({
 			lessonId: record.lessonId,
 			contentVersion: record.contentVersion,
@@ -123,7 +123,7 @@ export async function saveLessonProgressImpl(data: SaveLessonProgressInput) {
 		await db
 			.insert(lessonProgress)
 			.values({
-				clerkUserId: userId,
+				userId: userId,
 				lessonId: data.lessonId,
 				contentVersion: lesson.contentVersion,
 				lastPositionSeconds: data.lastPositionSeconds ?? null,
@@ -131,7 +131,7 @@ export async function saveLessonProgressImpl(data: SaveLessonProgressInput) {
 				updatedAt: now,
 			})
 			.onConflictDoUpdate({
-				target: [lessonProgress.clerkUserId, lessonProgress.lessonId],
+				target: [lessonProgress.userId, lessonProgress.lessonId],
 				set: updateFields,
 			});
 		const [record] = await db
@@ -139,7 +139,7 @@ export async function saveLessonProgressImpl(data: SaveLessonProgressInput) {
 			.from(lessonProgress)
 			.where(
 				and(
-					eq(lessonProgress.clerkUserId, userId),
+					eq(lessonProgress.userId, userId),
 					eq(lessonProgress.lessonId, data.lessonId),
 				),
 			)

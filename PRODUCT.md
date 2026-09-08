@@ -31,14 +31,14 @@ Tradely connects options education to an actual analysis workflow. Lessons do no
 ## Capabilities and Constraints
 
 - Full-stack framework: TanStack Start with React and TypeScript.
-- Identity: a dedicated Tradely Clerk application.
+- Identity: a dedicated Tradely Neon Auth application.
 - Billing: a dedicated Tradely Stripe account using Checkout and live Stripe access checks.
 - Persistence: a dedicated Neon PostgreSQL database accessed through Drizzle.
 - MVP persistence is intentionally limited to `app_user` and `lesson_progress`.
 - Courses, modules, lessons, ordering, access requirements, and prerequisites are version-controlled content, not database tables.
 - No quiz system in the MVP.
 - Paid lesson bodies are authorized on the server; client-side lock presentation is not authorization.
-- Tradely does not exchange Clerk IDs, Stripe Customers, database records, or private user data with TradingFlow.
+- Tradely does not exchange Neon Auth IDs, Stripe Customers, database records, or private user data with TradingFlow.
 - TradingFlow outbound links carry only non-PII course attribution.
 - TradingFlow accounts or subscriptions may be required separately and must be described honestly.
 

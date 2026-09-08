@@ -5,7 +5,7 @@ Tradely is the independent options-learning hub for `tradely.ai`. It teaches an 
 ## Stack
 
 - TanStack Start, React, TypeScript, and TanStack Router
-- Clerk for Tradely identity
+- Neon Auth for Tradely identity
 - Stripe Checkout and Customer Portal for Tradely membership plus a one-time Lifetime Course Pass
 - Neon Postgres with Drizzle
 - shadcn/ui Base Luma primitives and Tailwind CSS
@@ -37,7 +37,9 @@ and rollback rules, see [the ops engineer media practice](ops/human/ops-engineer
 
 ## Service configuration
 
-Copy [apps/web/.env.example](apps/web/.env.example) and configure a dedicated Tradely Clerk app, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Clerk mappings. Configure separate `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. Setting `LIFETIME_CHECKOUT_ENABLED=false` stops new Course Pass purchases without revoking existing grants.
+Copy [apps/web/.env.example](apps/web/.env.example) and enable Neon Auth on a dedicated Tradely database branch, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Neon Auth mappings. Configure separate `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. Setting `LIFETIME_CHECKOUT_ENABLED=false` stops new Course Pass purchases without revoking existing grants.
+
+Authentication setup, the prelaunch database reset, environment isolation, and validation are documented in [AUTH.md](docs/AUTH.md).
 
 For production media, configure `MEDIA_S3_*` for the shared Tradely Cloudflare R2 private bucket. Paid objects use these keys:
 
@@ -46,7 +48,7 @@ tradingflow-foundations/03-symbol-drawer.mp4
 tradingflow-foundations/captions/03-symbol-drawer.vtt
 ```
 
-The server issues 30-minute presigned object URLs only after Clerk identity and the configured Stripe Price have been verified. `MEDIA_SIGNING_SECRET` plus local private media is a development or long-running Node-host fallback; it is not needed when S3 storage is configured.
+The server issues 30-minute presigned object URLs only after Neon Auth identity and the configured Stripe Price have been verified. `MEDIA_SIGNING_SECRET` plus local private media is a development or long-running Node-host fallback; it is not needed when S3 storage is configured.
 
 ## Database
 

@@ -4,8 +4,9 @@ const SECRET_QUERY_PATTERN =
 const BEARER_PATTERN = /\bbearer\s+[a-z0-9._~+/-]+=*/gi;
 const PROVIDER_ID_PATTERN =
 	/\b(?:cus|sub|cs|price|pi|pm|in|sess|user)_[a-z0-9_-]+\b/gi;
+const UUID_PATTERN = /\b[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b/gi;
 const PERSON_PROPERTY_SENSITIVE_KEY_PATTERN =
-	/(?:email|phone|name|token|secret|password|authorization|cookie|address|customer|clerk|stripe|user[_-]?id|url|href)/i;
+	/(?:email|phone|name|token|secret|password|authorization|cookie|address|customer|identity|stripe|user[_-]?id|url|href)/i;
 
 export function redactAnalyticsText(value: string, limit: number): string {
 	return value
@@ -13,6 +14,7 @@ export function redactAnalyticsText(value: string, limit: number): string {
 		.replace(SECRET_QUERY_PATTERN, "$1[redacted]")
 		.replace(BEARER_PATTERN, "Bearer [redacted]")
 		.replace(PROVIDER_ID_PATTERN, "[redacted-provider-id]")
+		.replace(UUID_PATTERN, "[redacted-id]")
 		.slice(0, limit);
 }
 

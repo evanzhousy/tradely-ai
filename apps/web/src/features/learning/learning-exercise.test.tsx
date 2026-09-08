@@ -21,10 +21,10 @@ vi.mock("@/server/learning", () => ({
 	openLearning: mocks.open,
 	updateLearning: mocks.update,
 }));
-vi.mock("@clerk/tanstack-react-start", () => ({
+vi.mock("@/auth/client", () => ({
 	useAuth: () => ({ isLoaded: true, userId: mocks.userId }),
+	authIsConfigured: true,
 }));
-vi.mock("@/components/app-providers", () => ({ clerkIsConfigured: true }));
 vi.mock("@/analytics/context", () => ({
 	useAnalytics: () => ({ capture: mocks.capture }),
 }));

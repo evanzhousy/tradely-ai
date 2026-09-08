@@ -14,7 +14,8 @@ const posthogHost = z
 export const env = createEnv({
 	server: {
 		DATABASE_URL: z.string().min(1).optional(),
-		CLERK_SECRET_KEY: z.string().min(1).optional(),
+		NEON_AUTH_BASE_URL: z.string().url().optional(),
+		NEON_AUTH_COOKIE_SECRET: z.string().min(32).optional(),
 		POSTHOG_PROJECT_TOKEN: z.string().startsWith("phc_").optional(),
 		POSTHOG_HOST: posthogHost.default(POSTHOG_INGESTION_HOST),
 		STRIPE_API_KEY: z.string().min(1).optional(),

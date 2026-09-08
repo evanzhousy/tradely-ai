@@ -11,7 +11,7 @@ import { env } from "@tradely/env/server";
 
 import { getLesson, type Lesson, type LessonMedia } from "@/content/course";
 import { captureServerException } from "./analytics/posthog.server";
-import { getCurrentClerkUserId } from "./auth.server";
+import { getCurrentUserId } from "./auth.server";
 
 const MEDIA_URL_TTL_SECONDS = 30 * 60;
 
@@ -210,7 +210,7 @@ export async function serveLocalLessonMedia(input: {
 		});
 		return new Response("Media is not configured", { status: 503 });
 	}
-	const currentUserId = await getCurrentClerkUserId();
+	const currentUserId = await getCurrentUserId();
 	if (!claims || !currentUserId || currentUserId !== claims.userId) {
 		return new Response("Not found", { status: 404 });
 	}

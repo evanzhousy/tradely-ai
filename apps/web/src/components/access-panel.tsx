@@ -1,4 +1,3 @@
-import { SignInButton } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
 import {
 	Alert,
@@ -8,11 +7,11 @@ import {
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { LockKeyholeIcon, RefreshCwIcon, UserRoundIcon } from "lucide-react";
 import { useEffect } from "react";
-
 import { useAnalytics } from "@/analytics/context";
+import { authIsConfigured } from "@/auth/client";
 import type { LessonAccessDecision } from "@/domain/access";
 import { useI18n } from "@/i18n/provider";
-import { clerkIsConfigured } from "./app-providers";
+import { SignInLink } from "./sign-in-link";
 
 export function AccessPanel({
 	access,
@@ -51,20 +50,18 @@ export function AccessPanel({
 				<AlertTitle>{t("access.signInTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
 					<p>{t("access.signInDescription")}</p>
-					{clerkIsConfigured ? (
-						<SignInButton mode="modal">
-							<Button
-								onClick={() =>
-									capture("auth_sign_in_opened", {
-										surface: "lesson_access",
-									})
-								}
-							>
-								{t("auth.signIn")}
-							</Button>
-						</SignInButton>
+					{authIsConfigured ? (
+						<SignInLink
+							onClick={() =>
+								capture("auth_sign_in_opened", {
+									surface: "lesson_access",
+								})
+							}
+						>
+							{t("auth.signIn")}
+						</SignInLink>
 					) : (
-						<Button disabled>{t("access.clerkUnavailable")}</Button>
+						<Button disabled>{t("access.authUnavailable")}</Button>
 					)}
 				</AlertDescription>
 			</Alert>

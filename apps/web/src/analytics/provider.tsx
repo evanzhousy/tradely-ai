@@ -366,7 +366,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 	const identify = useCallback((userId: string): boolean => {
 		if (!postHogCapturingRef.current || !clientRef.current) return false;
 		try {
-			clientRef.current.identify(userId, { auth_provider: "clerk" });
+			clientRef.current.identify(userId, { auth_provider: "neon" });
 			return true;
 		} catch {
 			return false;
