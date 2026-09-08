@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import type { Lesson } from "@/content/course";
+import { courseModules } from "@/content/syllabus";
 import { useI18n } from "@/i18n/provider";
 
 export function CourseList({
@@ -24,7 +25,7 @@ export function CourseList({
 	canAccessPaid?: boolean;
 	accessUnavailable?: boolean;
 }) {
-	const { t } = useI18n();
+	const { t, locale } = useI18n();
 	const completed = new Set(completedIds);
 	return (
 		<ol className="flex flex-col" aria-label={t("course.curriculum")}>
@@ -40,7 +41,8 @@ export function CourseList({
 								: t("common.membershipLesson");
 				const completionLabel = isCompleted ? t("common.completed") : "";
 				return (
-					<li key={lesson.id}>
+					<li key={lesson.id} id={!currentLessonId ? `lesson-${lesson.id}` : undefined} className="scroll-mt-24">
+						{lesson.moduleId && lesson.moduleId !== lessons[index - 1]?.moduleId ? <div id={!currentLessonId ? `module-${lesson.moduleId}` : undefined} className="flex scroll-mt-24 flex-wrap items-center justify-between gap-2 px-3 pt-6 pb-2"><h3 className="font-semibold text-sm">{courseModules.find(module => module.id === lesson.moduleId)?.[locale]}</h3><span className="font-mono text-muted-foreground text-xs">{lessons.filter(item => item.moduleId === lesson.moduleId && completed.has(item.id)).length}/{lessons.filter(item => item.moduleId === lesson.moduleId).length}</span></div> : null}
 						<Link
 							to="/learn/$lessonSlug"
 							params={{ lessonSlug: lesson.slug }}
@@ -55,7 +57,7 @@ export function CourseList({
 										aria-hidden="true"
 									/>
 								) : (
-									String(index + 1).padStart(2, "0")
+									String(lesson.order + 1).padStart(2, "0")
 								)}
 							</span>
 							<span className="flex min-w-0 flex-1 flex-col gap-1">

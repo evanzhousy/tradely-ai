@@ -25,22 +25,22 @@ export const Route = createFileRoute("/")({
 // Consecutive stages of the existing course, not separate products.
 const stages = [
 	{
-		start: "audited-boundary",
-		end: "rank-symbols",
+		start: "option-contracts",
+		end: "symbol-drawer",
 		title: "home.pathOne",
 		description: "home.pathOneDescription",
 		icon: BookOpenIcon,
 	},
 	{
-		start: "symbol-drawer",
-		end: "dex-dei-gex",
+		start: "delta",
+		end: "charm-vanna",
 		title: "home.pathTwo",
 		description: "home.pathTwoDescription",
 		icon: ScanLineIcon,
 	},
 	{
-		start: "cookbook-research-packet",
-		end: "audit-market-recap",
+		start: "audited-boundary",
+		end: "portfolio-exposure",
 		title: "home.pathThree",
 		description: "home.pathThreeDescription",
 		icon: WorkflowIcon,
@@ -89,7 +89,7 @@ function HomeComponent() {
 										className: "self-start",
 									})}
 								>
-									{t("home.startFree")}
+									{startLesson.access === "preview" ? t("home.startFree") : (locale === "zh" ? "开始学习" : "Start learning")}
 									<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 								</Link>
 							) : null}
@@ -99,7 +99,7 @@ function HomeComponent() {
 							</a>
 						</div>
 						<p className="landing-free-note">
-							{t("home.freeNote", { minutes: startLesson?.minutes ?? 0 })}
+							{startLesson?.access === "preview" ? t("home.freeNote", { minutes: startLesson.minutes }) : t("course.freeLessons", { count: previewCount })}
 						</p>
 					</div>
 				</div>

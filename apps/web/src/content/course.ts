@@ -1,3 +1,4 @@
+import { syllabus, courseModules, type ModuleId } from "./syllabus";
 export type LessonAccess = "preview" | "paid";
 
 export type TradingFlowPractice = {
@@ -32,12 +33,17 @@ export type Lesson = {
 	mediaKey: string;
 	poster: string;
 	prerequisites: string[];
-	practice: TradingFlowPractice;
+	practice: TradingFlowPractice | null;
+	moduleId?: ModuleId;
+	titleZh?: string;
+	summaryZh?: string;
+	concepts?: string[];
+	mediaCurrent?: boolean;
 };
 
 const MEDIA_ROOT = "/media/tradingflow";
 
-export const tradingFlowCourse = {
+const legacyCourse = {
 	id: "tradingflow-foundations",
 	slug: "tradingflow-foundations",
 	title: "Evidence-Led Options Research",
@@ -277,6 +283,23 @@ export const tradingFlowCourse = {
 		},
 	] satisfies Lesson[],
 } as const;
+
+export const tradingFlowCourse = {
+ ...legacyCourse,
+ description: "Understand contracts, quotes, executions, flow, Greeks, market structure and portfolios. Build and audit research from evidence.",
+ modules: courseModules,
+ lessons: syllabus.map((entry, order): Lesson => {
+  const prior = legacyCourse.lessons.find((item) => item.id === entry.id);
+  return {
+   ...entry, slug: entry.id, order, category: courseModules.find((item) => item.id === entry.moduleId)!.en,
+   minutes: entry.moduleId === "production" ? 18 : entry.moduleId === "structure" ? 14 : 10,
+   access: prior?.access ?? "paid", contentVersion: 2,
+   mediaKey: prior?.mediaKey ?? entry.id, poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
+   mediaCurrent: false,
+   practice: prior?.practice ?? null,
+  };
+ }),
+};
 
 export type Course = typeof tradingFlowCourse;
 

@@ -1,18 +1,22 @@
 import "@tanstack/react-start/server-only";
+import { teachingUnits } from "../units/index.server";
+import { unitScenarios } from "../units/authoring.server";
 import { contractNeighborhoodScenarios } from "./contract-neighborhood";
 import { metricLensScenarios } from "./metric-lenses";
 import { optionPrintScenarios } from "./option-print";
 import { researchWorkflowScenarios } from "./research-workflow";
 import { sessionFlowScenarios } from "./session-flow";
 
-export function getLessonScenarios(lessonId: string) {
-	return [
+const archivedScenarios = [
 		...optionPrintScenarios,
 		...contractNeighborhoodScenarios,
 		...sessionFlowScenarios,
 		...metricLensScenarios,
 		...researchWorkflowScenarios,
-	].filter((scenario) => scenario.lessonId === lessonId);
+];
+const currentScenarios = teachingUnits.flatMap(unit => unitScenarios(unit));
+export function getLessonScenarios(lessonId: string) {
+	return currentScenarios.filter(scenario => scenario.lessonId === lessonId);
 }
 
 export function getScenario(
@@ -20,7 +24,7 @@ export function getScenario(
 	scenarioId: string,
 	version: number,
 ) {
-	return getLessonScenarios(lessonId).find(
-		(scenario) => scenario.id === scenarioId && scenario.version === version,
+	return [...currentScenarios, ...archivedScenarios].find(
+		(scenario) => scenario.lessonId === lessonId && scenario.id === scenarioId && scenario.version === version,
 	);
 }

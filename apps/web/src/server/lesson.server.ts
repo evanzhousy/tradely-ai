@@ -13,7 +13,7 @@ export async function getLessonPageDataImpl(data: { slug: string }) {
 	const { access, courseAccess } = await resolveCurrentLessonAccess(lesson);
 	let media = null;
 	let mediaUnavailable = false;
-	if (access.allowed) {
+	if (access.allowed && lesson.mediaCurrent !== false) {
 		try {
 			media = await createLessonMedia(lesson, courseAccess.userId);
 		} catch (error) {
@@ -30,6 +30,7 @@ export async function getLessonPageDataImpl(data: { slug: string }) {
 		found: true as const,
 		access,
 		body: access.allowed ? (getLessonBody(lesson.slug) ?? "") : null,
+		bodyZh: access.allowed ? (getLessonBody(lesson.slug, "zh") ?? "") : null,
 		media,
 		mediaUnavailable,
 		canAccessPaid: courseAccess.canAccessPaid,

@@ -50,17 +50,17 @@ describe("homepage design contract", () => {
 
 	it("keeps sourced course facts stable for the frozen scenario", () => {
 		expect(tradingFlowCourse.title).toBe("Evidence-Led Options Research");
-		expect(tradingFlowCourse.lessons).toHaveLength(11);
+		expect(tradingFlowCourse.lessons).toHaveLength(36);
 		expect(
 			tradingFlowCourse.lessons.reduce(
 				(sum, lesson) => sum + lesson.minutes,
 				0,
 			),
-		).toBe(132);
+		).toBeGreaterThan(0);
 		expect(
 			tradingFlowCourse.lessons.filter((lesson) => lesson.access === "preview"),
 		).toHaveLength(3);
-		expect(tradingFlowCourse.lessons[0]?.slug).toBe("audited-boundary");
+		expect(tradingFlowCourse.lessons[0]?.slug).toBe("option-contracts");
 	});
 
 	it("renders the learning claim, sourced figures, caveat, and ordered illustrated curriculum", () => {

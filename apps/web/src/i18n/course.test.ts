@@ -10,7 +10,7 @@ describe("localized course manifest", () => {
 		for (const lesson of course.lessons) {
 			expect(lesson.title, lesson.id).not.toBe("");
 			expect(lesson.summary, lesson.id).not.toBe("");
-			expect(lesson.practice.goal, lesson.id).not.toBe("");
+			expect(lesson.practice?.goal ?? lesson.summary, lesson.id).not.toBe("");
 		}
 	});
 
@@ -22,8 +22,8 @@ describe("localized course manifest", () => {
 		expect(course.lessons.map((lesson) => lesson.access)).toEqual(
 			tradingFlowCourse.lessons.map((lesson) => lesson.access),
 		);
-		expect(course.lessons.map((lesson) => lesson.practice.href)).toEqual(
-			tradingFlowCourse.lessons.map((lesson) => lesson.practice.href),
+		expect(course.lessons.map((lesson) => lesson.practice?.href)).toEqual(
+			tradingFlowCourse.lessons.map((lesson) => lesson.practice?.href),
 		);
 	});
 });

@@ -1,4 +1,5 @@
 import type { LearningScenario, ScenarioStep } from "./scenario";
+import { numericResponse, responseComplete } from "./types";
 import type {
 	AttemptState,
 	CriterionFeedback,
@@ -34,8 +35,9 @@ export function transitionAttempt(
 	const step = requireStep(scenario, previous);
 	if (previous.phase === "complete") throw new InvalidLearningAction();
 	if (action.type === "continue") {
+		const explanationOnly = previous.phase === "answer" && step.questions.length === 0 && step.requiredEvidence.length === 0;
 		if (
-			previous.phase !== "feedback" ||
+			(!explanationOnly && previous.phase !== "feedback") ||
 			previous.step >= scenario.steps.length - 1
 		)
 			throw new InvalidLearningAction();
@@ -43,11 +45,17 @@ export function transitionAttempt(
 	}
 	if (previous.phase !== "answer") throw new InvalidLearningAction();
 	switch (action.type) {
+		case "respond": {
+			const question = step.questions.find((item) => item.id === action.questionId);
+			if (!question?.input || action.value.length > (question.input.kind === "text" ? question.input.maxLength : 40)) throw new InvalidLearningAction();
+			if (question.input.kind === "number" && action.value.trim() && !responseComplete(question, action.value)) throw new InvalidLearningAction();
+			return { ...previous, answers: { ...previous.answers, [step.id]: { ...previous.answers[step.id], [question.id]: action.value } } };
+		}
 		case "answer": {
 			const question = step.questions.find(
 				(item) => item.id === action.questionId,
 			);
-			if (!question?.choices.some((choice) => choice.id === action.choiceId))
+			if (question?.input || !question?.choices.some((choice) => choice.id === action.choiceId))
 				throw new InvalidLearningAction();
 			return {
 				...previous,
@@ -83,11 +91,7 @@ export function transitionAttempt(
 			};
 		case "submit": {
 			if (
-				!step.questions.every((question) =>
-					question.choices.some(
-						(choice) => choice.id === previous.answers[step.id]?.[question.id],
-					),
-				)
+				!step.questions.every((question) => responseComplete(question, previous.answers[step.id]?.[question.id]))
 			)
 				throw new InvalidLearningAction();
 			if (
@@ -110,6 +114,14 @@ function feedbackFor(
 	state: AttemptState,
 ): CriterionFeedback[] {
 	return step.questions.map((question) => {
+		const value = state.answers[step.id]?.[question.id] ?? "";
+		if (!responseComplete(question, value)) throw new InvalidLearningAction();
+		if (question.input) return {
+			questionId: question.id, prompt: question.prompt, selected: { en: value, zh: value },
+			met: question.input.kind === "number" && question.accepted.some((answer) => Math.abs((numericResponse(value) ?? Number.NaN) - Number(answer)) <= (question.tolerance ?? 0.001)),
+			explanation: question.explanation,
+			...(question.input.kind === "text" ? { reviewRequired: true } : {}),
+		};
 		const choice = question.choices.find(
 			(item) => item.id === state.answers[step.id]?.[question.id],
 		);
@@ -136,14 +148,16 @@ export function assessAttempt(
 	const feedback = independent.flatMap((step) => feedbackFor(step, state));
 	const met = feedback.filter((criterion) => criterion.met).length;
 	const usedHint = independent.some((step) => state.hinted.includes(step.id));
+	const unreviewed = feedback.filter((item) => item.reviewRequired).length;
 	return {
 		status:
-			feedback.length > 0 && met === feedback.length && !usedHint
+			feedback.length > 0 && met === feedback.length && !usedHint && !unreviewed
 				? "demonstrated"
 				: "practiced",
 		met,
 		total: feedback.length,
 		usedHint,
+		...(unreviewed ? { unreviewed } : {}),
 	};
 }
 
@@ -182,6 +196,8 @@ export function projectAttempt(
 			neighborhoodPair: step.neighborhoodPair ?? null,
 			metrics: step.metrics ?? null,
 			universe: step.universe ?? null,
+			execution: step.execution,
+			worksheet: step.worksheet,
 			evidence: step.evidence.map((evidence) => ({
 				id: evidence.id,
 				title: evidence.title,
@@ -194,6 +210,7 @@ export function projectAttempt(
 				id: question.id,
 				prompt: question.prompt,
 				choices: question.choices,
+				...(question.input ? { input: question.input } : {}),
 			})),
 			hint: state.hinted.includes(step.id) ? step.hint : null,
 		},
@@ -201,5 +218,11 @@ export function projectAttempt(
 		initialJudgment: state.step > 0 ? initialJudgment : null,
 		feedback: state.phase === "answer" ? [] : feedbackFor(step, state),
 		result: assessAttempt(scenario, state),
+		...(state.sourceWork ? { sourceWork: state.sourceWork } : {}),
+		...(state.phase === "complete" ? { work: {
+			lessonId: scenario.lessonId, attemptId, scenarioVersion: scenario.version, submittedAt: "",
+			evidence: scenario.steps.filter(item => item.kind === "independent" && item.worksheet).at(-1)?.worksheet,
+			fields: scenario.steps.filter((item) => item.kind === "independent").flatMap((item) => item.questions.map((question) => ({ label: question.prompt, value: question.input ? state.answers[item.id]?.[question.id] ?? "" : question.choices.find((choice) => choice.id === state.answers[item.id]?.[question.id])?.label.en ?? "", ...(!question.input ? { localizedValue: question.choices.find(choice => choice.id === state.answers[item.id]?.[question.id])?.label } : {}) }))),
+		} } : {}),
 	};
 }

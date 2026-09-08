@@ -10,6 +10,7 @@ import type {
 export type ScenarioQuestion = LearningQuestion & {
 	accepted: string[];
 	explanation: LearningCopy;
+	tolerance?: number;
 };
 export type ScenarioStep = {
 	id: string;
@@ -27,6 +28,8 @@ export type ScenarioStep = {
 	neighborhoodPair?: NonNullable<LearningStepView["neighborhoodPair"]>;
 	metrics?: NonNullable<LearningStepView["metrics"]>;
 	universe?: NonNullable<LearningStepView["universe"]>;
+	execution?: LearningStepView["execution"];
+	worksheet?: LearningStepView["worksheet"];
 };
 export type LearningScenario = {
 	id: string;

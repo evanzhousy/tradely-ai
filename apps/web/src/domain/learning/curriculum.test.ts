@@ -1,3 +1,6 @@
+import { metricLensScenarios } from "@/content/scenarios/metric-lenses";
+import { researchWorkflowScenarios } from "@/content/scenarios/research-workflow";
+import { referenceAction } from "@/domain/learning/test-helpers";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
@@ -58,17 +61,13 @@ describe("curriculum teaching contracts", () => {
 								(choice) => choice.label.en && choice.label.zh,
 							),
 						).toBe(true);
-						state = transitionAttempt(scenario, state, {
-							type: "answer",
-							questionId: question.id,
-							choiceId: question.accepted[0],
-						});
+						state = transitionAttempt(scenario, state, referenceAction(question));
 					}
 					state = transitionAttempt(scenario, state, { type: "submit" });
 					if (state.phase !== "complete")
 						state = transitionAttempt(scenario, state, { type: "continue" });
 				}
-				expect(assessAttempt(scenario, state)?.status).toBe("demonstrated");
+				expect(assessAttempt(scenario, state)?.status).toBe(scenario.steps.some(step => step.kind === "independent" && step.questions.some(question => question.input?.kind === "text")) ? "practiced" : "demonstrated");
 				const final = required(scenario.steps.at(-1));
 				const missed = {
 					...state,
@@ -76,12 +75,7 @@ describe("curriculum teaching contracts", () => {
 						...state.answers,
 						[final.id]: {
 							...state.answers[final.id],
-							[final.questions[0].id]: required(
-								final.questions[0].choices.find(
-									(choice) => !final.questions[0].accepted.includes(choice.id),
-								),
-							).id,
-						},
+							[final.questions[0].id]: final.questions[0].input?.kind === "number" ? "987654321" : final.questions[0].input?.kind === "text" ? final.questions[0].explanation.en : required(final.questions[0].choices.find(choice => !final.questions[0].accepted.includes(choice.id))).id,						},
 					},
 				};
 				expect(assessAttempt(scenario, missed)?.status).toBe("practiced");
@@ -97,7 +91,7 @@ describe("curriculum teaching contracts", () => {
 	});
 	it("equal complete GEX totals hide opposite near-expiry signs, and missing is never zero", () => {
 		const guided = required(
-			getLessonScenarios("dex-dei-gex")[0].steps[1].metrics,
+			metricLensScenarios[0].steps[1].metrics,
 		);
 		const [a, b] = guided.distributions;
 		expect(gexTotal(a.cells)).toBe(100);
@@ -105,7 +99,7 @@ describe("curriculum teaching contracts", () => {
 		expect(gexTotal(a.cells.filter((cell) => cell.days === 7))).toBe(-150);
 		expect(gexTotal(b.cells.filter((cell) => cell.days === 7))).toBe(40);
 		const transfer = required(
-			getLessonScenarios("dex-dei-gex")[1].steps[2].metrics,
+			metricLensScenarios[1].steps[2].metrics,
 		);
 		expect(gexTotal(transfer.distributions[1].cells)).toBeNull();
 	});
@@ -134,7 +128,7 @@ describe("curriculum teaching contracts", () => {
 	});
 	it("rank changes with peer observations while the focal volume remains fixed", () => {
 		const data = required(
-			getLessonScenarios("rank-symbols")[0].steps[1].universe,
+			researchWorkflowScenarios.find(scenario => scenario.lessonId === "rank-symbols")?.steps[1].universe,
 		);
 		const admitted = data.rows
 			.filter((row) => row.eligible)

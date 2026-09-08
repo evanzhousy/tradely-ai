@@ -12,7 +12,7 @@ export const learningCopy = {
 		en: "Preview only · decisions reset on reload",
 		zh: "仅供预览 · 刷新后判断会重置",
 	},
-	prediction: { en: "First judgment", zh: "初步判断" },
+	prediction: { en: "Learn", zh: "理解" },
 	guided: { en: "Investigate", zh: "检查证据" },
 	independent: { en: "Independent case", zh: "独立案例" },
 	evidence: { en: "Evidence to inspect", zh: "待检查的证据" },
@@ -33,7 +33,7 @@ export const learningCopy = {
 	met: { en: "Supported", zh: "有证据支持" },
 	revisit: { en: "Revisit this reasoning", zh: "重新检查这项推理" },
 	yourAnswer: { en: "Your answer", zh: "你的答案" },
-	demonstrated: { en: "Demonstrated in this case", zh: "已在本案例中独立掌握" },
+	demonstrated: { en: "Demonstrated in this case", zh: "本案例的独立检查已通过" },
 	practiced: { en: "Practice completed", zh: "练习已完成" },
 	criteria: { en: "Independent criteria met", zh: "满足的独立判断标准" },
 	hinted: {

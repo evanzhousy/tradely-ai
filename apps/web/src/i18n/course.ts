@@ -1,3 +1,4 @@
+import { courseModules } from "@/content/syllabus";
 import type { Lesson, TradingFlowPractice } from "@/content/course";
 import { type Course, tradingFlowCourse } from "@/content/course";
 import type { Locale } from "./messages";
@@ -125,7 +126,7 @@ const courseCopy = {
 	zh: {
 		title: "证据驱动的期权研究",
 		description:
-			"从一个边界明确的市场问题出发，经过 Rank、Option Trades、结构上下文、Cookbooks 和 Market Recap，建立可审计的研究路径。",
+			"理解合约、报价、成交、成交流、希腊值、市场结构与投资组合，用证据建立并审核研究。",
 	},
 } as const;
 
@@ -141,17 +142,17 @@ export type LocalizedCourse = Omit<
 export function getLocalizedLesson(lesson: Lesson, locale: Locale): Lesson {
 	if (locale === "en") return lesson;
 	const copy = chineseLessonCopy[lesson.slug];
-	if (!copy) return lesson;
+	if (!copy) return { ...lesson, title: lesson.titleZh ?? lesson.title, summary: lesson.summaryZh ?? lesson.summary, category: courseModules.find(module => module.id === lesson.moduleId)?.zh ?? lesson.category };
 	return {
 		...lesson,
-		title: copy.title ?? lesson.title,
-		summary: copy.summary ?? lesson.summary,
-		category: copy.category ?? lesson.category,
-		practice: {
+		title: lesson.titleZh ?? copy.title ?? lesson.title,
+		summary: lesson.summaryZh ?? copy.summary ?? lesson.summary,
+		category: courseModules.find(module => module.id === lesson.moduleId)?.zh ?? copy.category ?? lesson.category,
+		practice: lesson.practice ? {
 			...lesson.practice,
 			title: copy.practice?.title ?? lesson.practice.title,
 			goal: copy.practice?.goal ?? lesson.practice.goal,
-		},
+		} : null,
 	};
 }
 

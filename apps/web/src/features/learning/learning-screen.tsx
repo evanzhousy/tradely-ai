@@ -37,7 +37,11 @@ import {
 	RotateCcwIcon,
 	ScanSearchIcon,
 } from "lucide-react";
-import { useEffect, useId, useRef } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { responseComplete } from "@/domain/learning/types";
+import { WorkDocument, Worksheet } from "./work-document";
+import { ExecutionLab } from "./execution-lab";
+import { ResponseField } from "./response-field";
 import { learningRollout } from "@/content/learning-rollout";
 import type {
 	LearningAction,
@@ -183,9 +187,12 @@ function LearningScreenContent({
 	const text = (key: keyof typeof learningCopy) => learningCopy[key][locale];
 	const local = (value: LearningCopy) => value[locale];
 	const answering = view?.phase === "answer";
+	const [drafts, setDrafts] = useState<Record<string, boolean>>({});
+	const onDraftChange = useCallback((id: string, dirty: boolean) => setDrafts(previous => previous[id] === dirty ? previous : { ...previous, [id]: dirty }), []);
 	const ready =
+		!Object.values(drafts).some(Boolean) &&
 		!!view &&
-		view.step.questions.every((question) => view.answers[question.id]) &&
+		view.step.questions.every((question) => responseComplete(question, view.answers[question.id])) &&
 		view.step.evidence.every(
 			(evidence) => !evidence.required || evidence.detail,
 		);
@@ -270,7 +277,7 @@ function LearningScreenContent({
 										? text(view.result.status)
 										: text("debrief")}
 							</h3>
-							<p className="text-muted-foreground text-sm leading-relaxed">
+							<p className="whitespace-pre-line text-muted-foreground text-sm leading-relaxed">
 								{local(view.step.brief)}
 							</p>
 						</LessonReveal>
@@ -320,7 +327,10 @@ function LearningScreenContent({
 								locale={locale}
 							/>
 						) : null}
-						{view.step.quote ? (
+						{view.sourceWork && view.step.kind === "independent" ? <WorkDocument work={view.sourceWork} locale={locale} source /> : null}
+{view.step.execution ? <ExecutionLab key={`${view.attemptId}:${view.step.id}`} locale={locale} optionType={view.step.execution.optionType} incoming={view.step.execution.incoming} mode={view.step.execution.mode} /> : null}
+{view.step.worksheet ? <Worksheet data={view.step.worksheet} locale={locale} /> : null}
+{view.step.quote ? (
 							<div className="flex flex-col gap-4">
 								<QuoteComparison quote={view.step.quote} locale={locale} />
 								<QuotePositionExplorer
@@ -368,7 +378,7 @@ function LearningScreenContent({
 													locale={locale}
 													emphasize={view.step.kind !== "independent"}
 												/>
-												<p className="text-sm leading-relaxed">
+												<p className="whitespace-pre-line text-sm leading-relaxed">
 													{local(evidence.detail.note)}
 												</p>
 											</LessonReveal>
@@ -396,7 +406,7 @@ function LearningScreenContent({
 						{answering ? (
 							<FieldGroup>
 								{view.step.questions.map((question) => (
-									<FieldSet key={question.id} disabled={locked}>
+									question.input ? <ResponseField key={`${view.attemptId}:${view.step.id}:${question.id}`} question={question} value={view.answers[question.id] ?? ""} locale={locale} disabled={locked} onDraftChange={onDraftChange} onSave={value => onAction({ type: "respond", questionId: question.id, value })} /> : <FieldSet key={question.id} disabled={locked}>
 										<FieldLegend id={`${id}-${question.id}`}>
 											{local(question.prompt)}
 										</FieldLegend>
@@ -448,7 +458,7 @@ function LearningScreenContent({
 											variant={criterion.met ? "secondary" : "outline"}
 											className="self-start"
 										>
-											{text(criterion.met ? "met" : "revisit")}
+											{criterion.reviewRequired ? (locale === "zh" ? "对照参考，自行复核" : "Compare with the reference") : text(criterion.met ? "met" : "revisit")}
 										</Badge>
 										<h4 className="font-medium text-sm">
 											{local(criterion.prompt)}
@@ -456,7 +466,7 @@ function LearningScreenContent({
 										<p className="text-muted-foreground text-sm">
 											{text("yourAnswer")}: {local(criterion.selected)}
 										</p>
-										<p className="text-sm leading-relaxed">
+										<p className="whitespace-pre-line text-sm leading-relaxed">
 											{local(criterion.explanation)}
 										</p>
 									</LessonReveal>
@@ -470,14 +480,17 @@ function LearningScreenContent({
 								<AlertDescription>{local(view.step.hint)}</AlertDescription>
 							</Alert>
 						) : null}
-						{view.result ? (
+						{view.work ? <WorkDocument work={view.work} locale={locale} /> : null}
+{view.archived ? <Alert><AlertTitle>{locale === "zh" ? "保留的历史案例" : "Preserved earlier case"}</AlertTitle><AlertDescription>{locale === "zh" ? "此结果属于较早案例版本，不能替代当前案例评估。" : "This result belongs to an earlier case version; it does not assess the updated case."}</AlertDescription></Alert> : null}
+{view.result ? (
 							<Alert>
 								<CheckIcon />
 								<AlertTitle>
 									{text("criteria")}: {view.result.met} / {view.result.total}
 								</AlertTitle>
 								<AlertDescription>
-									{view.result.usedHint ? <p>{text("hinted")}</p> : null}
+									{view.result.unreviewed ? <p>{locale === "zh" ? `${view.result.unreviewed} 项文字回答已保存，需自评或人工复核；系统未认定掌握。` : `${view.result.unreviewed} written responses saved for self/reviewer assessment; mastery is not certified.`}</p> : null}
+{view.result.usedHint ? <p>{text("hinted")}</p> : null}
 									<p>{text("completeNote")}</p>
 								</AlertDescription>
 							</Alert>
@@ -496,14 +509,14 @@ function LearningScreenContent({
 						<>
 							<Button
 								disabled={locked || !ready}
-								onClick={() => onAction({ type: "submit" })}
+								onClick={() => onAction({ type: view.step.questions.length === 0 ? "continue" : "submit" })}
 							>
-								{view.step.kind === "prediction"
+								{view.step.questions.length === 0 ? (locale === "zh" ? "进入练习" : "Continue to practice") : view.step.kind === "prediction"
 									? text("commit")
 									: text("submit")}
 								<ArrowRightIcon data-icon="inline-end" />
 							</Button>
-							{!view.step.hint ? (
+							{!view.step.hint && view.step.questions.length > 0 ? (
 								<Button
 									variant="ghost"
 									disabled={locked}

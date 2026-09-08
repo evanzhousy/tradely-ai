@@ -1,3 +1,4 @@
+import { referenceAction } from "@/domain/learning/test-helpers";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
@@ -119,7 +120,7 @@ describe("integrated course persistence journey", () => {
 			expect(allowed).toMatchObject({
 				found: true,
 				access: { allowed: true, reason: "course-pass" },
-				learning: { presentation: "supplemental" },
+				learning: { presentation: "primary" },
 			});
 			await saveLessonProgressImpl({ lessonId, lastPositionSeconds: 123 });
 			let view = viewOf(await open());
@@ -129,18 +130,14 @@ describe("integrated course persistence journey", () => {
 				for (const evidenceId of step.requiredEvidence)
 					view = await update(view, { type: "inspect", evidenceId });
 				for (const question of step.questions)
-					view = await update(view, {
-						type: "answer",
-						questionId: question.id,
-						choiceId: question.accepted[0],
-					});
+					view = await update(view, referenceAction(question));
 				// A new request after leaving or refreshing must restore the stored projection.
 				expect(viewOf(await open())).toEqual(view);
 				view = await update(view, { type: "submit" });
 				if (view.phase !== "complete")
 					view = await update(view, { type: "continue" });
 			}
-			expect(view.result?.status).toBe("demonstrated");
+			expect(view.result?.status).toBe(view.result?.unreviewed ? "practiced" : "demonstrated");
 			expect(viewOf(await open())).toEqual(view);
 			expect((await getCourseProgressImpl()).completed).toBe(0);
 			expect(

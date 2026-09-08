@@ -1,3 +1,4 @@
+import { referenceAction } from "@/domain/learning/test-helpers";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
@@ -16,7 +17,7 @@ describe("public practice boundary", () => {
 			previewLearningImpl({
 				lessonId: "audited-boundary",
 				variant: 0,
-				actions: [{ type: "submit" }],
+				actions: [{ type: "answer", questionId: "forged", choiceId: "forged" }],
 			}),
 		).toEqual({ ok: false, reason: "invalid_action" });
 		expect(
@@ -36,11 +37,7 @@ describe("public practice boundary", () => {
 				for (const evidenceId of step.requiredEvidence)
 					actions.push({ type: "inspect", evidenceId });
 				for (const question of step.questions)
-					actions.push({
-						type: "answer",
-						questionId: question.id,
-						choiceId: question.accepted[0],
-					});
+					actions.push(referenceAction(question));
 				actions.push({ type: "submit" });
 				if (index < scenario.steps.length - 1)
 					actions.push({ type: "continue" });
@@ -48,7 +45,7 @@ describe("public practice boundary", () => {
 			const response = previewLearningImpl({ lessonId, variant: 1, actions });
 			expect(response).toMatchObject({
 				ok: true,
-				view: { attemptId: "preview", result: { status: "demonstrated" } },
+				view: { attemptId: "preview", result: { status: lessonId === "audited-boundary" ? "practiced" : "demonstrated" } },
 			});
 			expect(
 				previewLearningImpl({ lessonId, variant: 1, actions: [] }),

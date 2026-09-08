@@ -8,7 +8,7 @@ const messages = {
 		"home.cardConcept": "Concept map",
 		"home.cardPractice": "Practice in {tool}",
 		"home.seeInside": "Take a look inside",
-		"home.guideLabel": "The research field guide",
+		"home.guideLabel": "The options field guide",
 		"home.guideTitle": "Options.\nEvidence.\nPerspective.",
 		"home.noteLabel": "Research note · 01",
 		"home.noteQuestion": "One clear question",
@@ -20,11 +20,11 @@ const messages = {
 		"home.pathTitle": "Less noise. A clear place to start.",
 		"home.lessonRange": "Lessons {first}–{last}",
 		"home.pathOneDescription":
-			"Set the scope. Choose a universe. Learn what a ranking can actually tell you.",
+			"Understand contracts, quotes, trades, side and sentiment before interpreting flow.",
 		"home.pathTwoDescription":
-			"Look into contracts, individual trades, session flow, and structural context.",
+			"Calculate Greeks and normalized exposure; interpret volatility and structural models.",
 		"home.pathThreeDescription":
-			"Build a research packet, write the recap, and review the reasoning behind it.",
+			"Build and audit a research packet, then explore portfolio risk and performance.",
 		"hall.sceneLabel": "Inside the Tradely trading hall",
 		"hall.simulation": "Trading hall · Simulated market data",
 		"hall.observeLabel": "Read the data",
@@ -43,7 +43,7 @@ const messages = {
 		"home.titleRead": "Learn the market.",
 		"home.titleVerify": "Think for yourself.",
 		"home.intro":
-			"A guided path through options flow, market structure, and evidence. Learn one concept, question what you see, and put it into practice.",
+			"A guided path through options flow, market structure, and evidence. Start with contracts and executions, then build toward independent research.",
 		"home.startFree": "Start learning free",
 		"home.freeNote": "{minutes} minutes · No Tradely membership required",
 		"home.explore": "Explore the curriculum",
@@ -97,7 +97,7 @@ const messages = {
 		"nav.openTradingFlow": "Open TradingFlow",
 		"nav.openMenu": "Open menu",
 		"nav.mobileTitle": "Tradely",
-		"nav.mobileDescription": "Options learning with TradingFlow practice.",
+		"nav.mobileDescription": "Options knowledge, examples and independent practice.",
 		"language.label": "Language",
 		"language.english": "English",
 		"language.chinese": "中文",
@@ -242,7 +242,7 @@ const messages = {
 		"pricing.featurePractice":
 			"TradingFlow practice assignments and direct tool links",
 		"pricing.featureCoursePassCurriculum":
-			"All 11 Evidence-Led Options Research lessons",
+			"All current Evidence-Led Options Research lessons",
 		"pricing.featureCoursePassProgress":
 			"Persistent lesson progress across devices",
 		"pricing.featureCoursePassRevisions":
@@ -494,7 +494,7 @@ const messages = {
 		"pricing.featureUpdates": "会员有效期内的后续课程与更新",
 		"pricing.featurePractice": "TradingFlow 练习任务与直接工具链接",
 		"pricing.featureCoursePassCurriculum":
-			"《证据驱动的期权研究》全部 11 节课程",
+			"《证据驱动的期权研究》全部当前课程",
 		"pricing.featureCoursePassProgress": "跨设备保存课程进度",
 		"pricing.featureCoursePassRevisions": "当前课程的后续修订与更正",
 		"pricing.featureCoursePassPractice": "TradingFlow 练习任务与直接工具链接",

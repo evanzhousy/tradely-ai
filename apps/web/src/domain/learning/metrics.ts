@@ -12,6 +12,7 @@ export type GexDistribution = {
 	cells: GexCell[];
 };
 export type MetricsComparison = {
+	gexOnly?: boolean;
 	id: string;
 	symbol: string;
 	sessionDate: string;

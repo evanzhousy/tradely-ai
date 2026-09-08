@@ -6,9 +6,11 @@ import { type Locale, translate } from "@/i18n/messages";
 export function LessonNavigation({
 	locale,
 	siteOrigin = "",
+	lessonId,
 }: {
 	locale: Locale;
 	siteOrigin?: string;
+	lessonId?: string;
 }) {
 	return (
 		<nav
@@ -23,7 +25,7 @@ export function LessonNavigation({
 				{translate(locale, "nav.learn")}
 			</a>
 			<a
-				href={`${siteOrigin}/courses/tradingflow-foundations`}
+				href={`${siteOrigin}/courses/tradingflow-foundations${lessonId ? `#lesson-${encodeURIComponent(lessonId)}` : ""}`}
 				className={buttonVariants({ variant: "outline" })}
 			>
 				<BookOpenIcon data-icon="inline-start" aria-hidden="true" />

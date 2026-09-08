@@ -67,7 +67,7 @@ for (const lesson of tradingFlowCourse.lessons) {
 		for (const question of independent) {
 			if (
 				taught.some(
-					(previous) => JSON.stringify(previous) === JSON.stringify(question),
+					(previous) => JSON.stringify({ ...previous, choices: [...previous.choices].sort((a,b)=>a.id.localeCompare(b.id)) }) === JSON.stringify({ ...question, choices: [...question.choices].sort((a,b)=>a.id.localeCompare(b.id)) }),
 				)
 			)
 				exactRepeatedQuestions.push({
@@ -75,22 +75,24 @@ for (const lesson of tradingFlowCourse.lessons) {
 					questionId: question.id,
 				});
 		}
-		for (const step of scenario.steps) {
-			for (const evidenceId of step.requiredEvidence)
-				state = engine.transitionAttempt(scenario, state, {
-					type: "inspect",
-					evidenceId,
-				});
-			for (const question of step.questions)
-				state = engine.transitionAttempt(scenario, state, {
-					type: "answer",
-					questionId: question.id,
-					choiceId: question.choices[0].id,
-				});
-			state = engine.transitionAttempt(scenario, state, { type: "submit" });
-			if (state.phase !== "complete")
-				state = engine.transitionAttempt(scenario, state, { type: "continue" });
-		}
+        const strategyResults = [];
+        for (let position = 0; position < 5; position++) {
+          state = engine.initialAttemptState();
+          for (const step of scenario.steps) {
+            for (const evidenceId of step.requiredEvidence) state = engine.transitionAttempt(scenario, state, { type: "inspect", evidenceId });
+            for (const question of step.questions) {
+              const action = question.input ? {
+                type: "respond", questionId: question.id,
+                value: question.input.kind === "number" ? "0" : "Blind response without using the supplied evidence. ".repeat(12).slice(0, question.input.maxLength),
+              } : { type: "answer", questionId: question.id, choiceId: question.choices[Math.min(position, question.choices.length - 1)].id };
+              state = engine.transitionAttempt(scenario, state, action);
+            }
+            state = engine.transitionAttempt(scenario, state, { type: "submit" });
+            if (state.phase !== "complete") state = engine.transitionAttempt(scenario, state, { type: "continue" });
+          }
+          strategyResults.push({ position: position + 1, result: engine.assessAttempt(scenario, state) });
+        }
+
 		variants.push({
 			lessonId: lesson.id,
 			scenarioId: scenario.id,
@@ -98,7 +100,8 @@ for (const lesson of tradingFlowCourse.lessons) {
 			firstInRegistry: variantIndex === 0,
 			stepCount: scenario.steps.length,
 			independentQuestions: independent.length,
-			alwaysFirstResult: engine.assessAttempt(scenario, state),
+			alwaysFirstResult: strategyResults[0].result,
+			strategyResults,
 		});
 	}
 }
@@ -115,7 +118,7 @@ console.log(
 				encoding: "utf8",
 			}).trim(),
 			method:
-				"Select the first displayed answer for every question, open required evidence without reading it, use no hints, and submit through the real pure transition/assessment engine. This is a content shortcut probe, not a learner study or browser/access test.",
+				"Probe five fixed answer positions (last available choice if shorter), numerical zero and repeated blind prose, opening required evidence without interpreting it. Submit through the real pure engine. Duplicate comparison normalizes choice order. This extends the original choice-only audit; it is not a learner study or browser/access test.",
 			lessons: tradingFlowCourse.lessons.length,
 			scenarioVariants: variants.length,
 			independentQuestionInstances: variants.reduce(
@@ -127,6 +130,7 @@ console.log(
 				0,
 			),
 			firstChoiceDemonstratedVariants: demonstrated.length,
+			anyFixedPositionDemonstratedVariants: variants.filter(row => row.strategyResults.some(strategy => strategy.result.status === "demonstrated")).length,
 			firstChoiceDemonstratedDefaultLessons: demonstrated.filter(
 				(row) => row.firstInRegistry,
 			).length,

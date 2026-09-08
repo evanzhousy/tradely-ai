@@ -75,7 +75,8 @@ export function MetricsExplorer({
 			className="flex min-w-0 flex-col gap-5"
 			aria-label={text("Metric lenses lab", "指标实验")}
 		>
-			<div className="grid gap-4 sm:grid-cols-2">
+			{!snapshot.gexOnly ? <>
+<div className="grid gap-4 sm:grid-cols-2">
 				<div>
 					<p className="text-muted-foreground text-sm">
 						{text(
@@ -160,6 +161,7 @@ export function MetricsExplorer({
 					"只有归一化结果改变，时段观测与模型快照保持不变。本课使用非负 DEI 幅度，由带符号 DEX 保留方向。",
 				)}
 			</p>
+</> : null}
 			<h4 className="font-medium">
 				{text("GEX distribution · model date ", "GEX 分布 · 模型日期 ")}
 				{snapshot.modelDate}

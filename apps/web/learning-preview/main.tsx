@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { LessonNavigation } from "../src/components/lesson-navigation";
 import { createRoot } from "react-dom/client";
 import { tradingFlowCourse } from "../src/content/course";
 import { getLessonScenarios } from "../src/content/scenarios/index.server";
@@ -43,9 +44,7 @@ function Session({
 				});
 			for (const question of step.questions)
 				next = transitionAttempt(scenario, next, {
-					type: "answer",
-					questionId: question.id,
-					choiceId: question.accepted[0],
+					...(question.input ? { type: "respond" as const, questionId: question.id, value: question.input.kind === "text" ? question.explanation.en : question.accepted[0] } : { type: "answer" as const, questionId: question.id, choiceId: question.accepted[0] }),
 				});
 			next = transitionAttempt(scenario, next, { type: "submit" });
 			next = transitionAttempt(scenario, next, { type: "continue" });
@@ -92,10 +91,12 @@ function App() {
 		tradingFlowCourse.lessons.find((item) => item.id === requested)?.id ??
 			"rank-contracts",
 	);
-	const [variant, setVariant] = useState(0);
-	const [locale, setLocale] = useState<Locale>("en");
+	const [variant, setVariant] = useState(Number(new URLSearchParams(location.search).get("variant")) === 1 ? 1 : 0);
+	const [locale, setLocale] = useState<Locale>(new URLSearchParams(location.search).get("lang") === "zh" ? "zh" : "en");
+	useEffect(() => { document.documentElement.classList.toggle("dark", new URLSearchParams(location.search).get("theme") === "dark"); }, []);
 	return (
 		<main className="mx-auto flex max-w-4xl flex-col gap-6 p-4 sm:p-8">
+			<LessonNavigation locale={locale} siteOrigin="http://127.0.0.1:8250" lessonId={lessonId} />
 			<h1 className="font-semibold text-2xl">Tradely · Lesson review</h1>
 			<p className="text-muted-foreground text-sm">
 				Local synthetic fixtures. Decisions reset on reload; no identity,

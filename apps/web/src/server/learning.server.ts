@@ -50,6 +50,8 @@ function projectRecord(record: LessonAttempt): LearningResponse {
 	);
 	if (!scenario || record.status === "retired")
 		return { ok: false, reason: "retired" };
+	const current = getLessonScenarios(record.lessonId).some(item => item.id === record.scenarioId && item.version === record.scenarioVersion);
+	if (!current && record.status === "in_progress") return { ok: false, reason: "retired" };
 	const view = projectAttempt(
 		scenario,
 		attemptStateSchema.parse(record.state),
@@ -58,6 +60,12 @@ function projectRecord(record: LessonAttempt): LearningResponse {
 	);
 	if (record.status === "submitted")
 		view.result = learningResultSchema.parse(record.assessment);
+	if (!current) view.archived = true;
+	if (view.work) {
+		view.work.submittedAt = record.submittedAt?.toISOString() ?? "";
+		const variant = Number(record.scenarioId.match(/-practice-([12])$/)?.[1]);
+		if (variant) view.work.caseVariant = variant;
+	}
 	return { ok: true, view };
 }
 
@@ -110,7 +118,16 @@ export async function openLearningImpl(
 		const previousIndex = scenarios.findIndex(
 			(scenario) => scenario.id === latest?.scenarioId,
 		);
-		const scenario = scenarios[(previousIndex + 1) % scenarios.length];
+		const sourceId = ({ "market-recap": "cookbook-research-packet", "audit-market-recap": "market-recap" } as Record<string, string>)[data.lessonId];
+		let sourceWork;
+		if (sourceId && (await authorize(sourceId)).ok) {
+			const [source] = await db.select().from(lessonAttempt).where(and(eq(lessonAttempt.clerkUserId, access.userId), eq(lessonAttempt.lessonId, sourceId), eq(lessonAttempt.status, "submitted"))).orderBy(desc(lessonAttempt.createdAt), desc(lessonAttempt.id)).limit(1);
+			if (source && /-practice-[12]$/.test(source.scenarioId)) {
+				const projected = projectRecord(source);
+				if (projected.ok && !projected.view.archived) sourceWork = projected.view.work;
+			}
+		}
+		const scenario = scenarios[sourceWork?.caseVariant ? sourceWork.caseVariant - 1 : (previousIndex + 1) % scenarios.length];
 		await ensureAppUser(access.userId);
 		const [created] = await db
 			.insert(lessonAttempt)
@@ -120,7 +137,7 @@ export async function openLearningImpl(
 				lessonId: data.lessonId,
 				scenarioId: scenario.id,
 				scenarioVersion: scenario.version,
-				state: initialAttemptState(),
+				state: { ...initialAttemptState(), ...(sourceWork ? { sourceWork } : {}) },
 			})
 			.onConflictDoNothing()
 			.returning();
