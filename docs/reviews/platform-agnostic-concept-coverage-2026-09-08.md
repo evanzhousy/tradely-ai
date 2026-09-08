@@ -2,6 +2,8 @@
 
 User clarification, September 8, 2026: learners need the financial and analytical concepts used throughout TradingFlow, including elementary quote/trade/side/sentiment concepts. Tradely teaches transferable knowledge. Product navigation is outside this curriculum's purpose.
 
+The [consolidated course update plan](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/interactive-course-plan.md) now owns the proposed syllabus, existing-lesson mapping, implementation phases and release criteria. This document remains the supporting concept inventory and definition review.
+
 **Correction to the earlier review:** reviewing the existing 11 lessons did not establish coverage of all concepts learners need. The previous suggestion to assume basic option vocabulary is not sufficient for this audience. Those lessons are an applied research sequence; they need a substantive conceptual foundation and additional advanced modules.
 
 **Design statement:** Tradely owns a concept curriculum organized by prerequisites, worked examples, and independent demonstrations; the app supplies an inventory of encountered concepts, while financial definitions and explicitly stated model conventions govern what is taught.

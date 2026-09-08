@@ -1,198 +1,264 @@
-# Interactive course implementation plan
+# Course update plan: concepts, interactive practice, and independent research
 
-Status: proposed implementation plan, following the agreed direction of interactive lessons with selective Three.js scenarios.
+Updated September 8, 2026. Planning baseline: `2e1f657`. This consolidated plan replaces the earlier eleven-lesson conversion roadmap. Supporting evidence remains in the [content review](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/course-content-review-2026-09-08.md), [concept coverage inventory](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md), and [pilot implementation record](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/interactive-course-pilot.md).
 
-Scope clarification (2026-09-08): the current 11 lessons are an applied research sequence, not complete conceptual coverage. The curriculum must teach the financial and analytical concepts used across TradingFlow in platform-agnostic language, starting with contracts, quotes versus trades, orders and counterparties, execution side, and inferred sentiment. Use the [concept coverage plan](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md) to extend the prerequisite path into Greeks, volatility, positioning models, research methods, and portfolio concepts. Product navigation belongs in product help. This expands the original lesson-conversion scope; it does not claim those additional lessons are implemented.
+**Recommendation:** expand the applied-research course into eight concept-led modules, with a working syllabus of 36 focused lessons. Build execution foundations first, revise existing lessons where their objectives remain recognizable, and progressively add advanced and portfolio material. Each lesson must teach and test a useful skill. The proposed count is an authoring outline, not a fixed runtime or database structure.
 
-Prepared: 2026-09-06. Repository baseline: `5504e8a`. This document describes proposed work; it does not report deployed features or measured learning improvements.
+**Design statement:** Tradely owns explanations, versioned teaching cases, learner work, and assessment; the app supplies the coverage checklist, while optional 2D/Three.js views illustrate the same evidence without owning its meaning or grading.
 
-Implementation update (2026-09-07): all 11 lessons now have local supplemental exercises with English/Simplified Chinese prompts, independent practice variants, and server-owned grading. The contract lesson adds spot/moneyness and paired concentration cases; the metrics lesson adds a denominator lab and optional signed GEX visualization. The three free lessons support anonymous, non-persisted practice through a server-validated public-only endpoint. Signed-in attempts continue through the existing authorized persistence service. See [the pilot review notes](interactive-course-pilot.md). Deployment, real signed-in verification in the intended environment, and learner-effectiveness evaluation remain separate release work.
+## 1. Decisions carried forward
 
-## Outcome and scope
+- Teach **platform-agnostic knowledge** encountered throughout `/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack`. Use neutral lesson titles and portable examples. Platform navigation belongs in product help; TradingFlow practice links remain optional enrichment.
+- Teach **beginner foundations**: contracts, money, quotes, orders, executions, counterparties, side, and sentiment before advanced flow labels.
+- Cover all in-scope financial/analytical concepts. Reconcile app glossaries, metric definitions, research abilities and portfolio analytics term by term. The current 30 concept families are the starting inventory, not proof of complete teaching.
+- Make lessons interactive, with **selective optional Three.js** and an equivalent accessible 2D path. Interaction must expose a relationship or test a decision.
+- Animate changing numbers with visible input/output relationships. **Default playback to the fastest available option, currently 2×**; preserve pause, replay, scrub/checkpoints, and reduced-motion behavior.
+- Keep **Home, Curriculum, module context and previous/next lesson** available on desktop and mobile. Returning to the curriculum retains the learner's place.
+- Keep content flexible and versioning simple: reuse JSONB attempt state/results and existing `content_version`/`scenario_version` fields. No curriculum publication, enrollment, or automatic migration framework.
+- Preserve existing lesson IDs, URLs, access rules and historical progress where the objective continues. New objectives get new semantic IDs. Completion is separate from passing the current exercise.
+- Provide complete **English and Simplified Chinese** explanations, examples, feedback and equivalent assessments.
+- Finish implementation batches with scoped local commits and relevant verification. Publishing and remote data changes require their own identified targets; they are not implied by a local preview.
 
-Turn the 11 lessons in Evidence-Led Options Research into guided investigations in which learners make a judgment, inspect evidence, receive specific feedback, and apply the method to an unfamiliar case.
+## 2. Starting point and immediate repairs
 
-**Design statement:** Tradely's lesson engine owns versioned scenarios, learner attempts, and assessment; React presents the learning flow, while optional Three.js views visualize the same scenario state without owning scoring, access, or progress.
+The worktree contains 11 lessons and 22 supplemental scenario variants, optional contract/GEX Three.js views, and existing account/attempt infrastructure. Reuse these assets.
 
-The original conversion release covers the 11 lessons in `apps/web/src/content/course.ts`. The larger Academy media archive is source material for explanations, not a second conversion backlog. The clarified curriculum scope also requires the conceptual prerequisites and advanced topics represented in the app, including Greeks and volatility surfaces. Their grouping into foundation and advanced tracks follows the concept coverage plan rather than the existing screen order.
+A fresh run of the [assessment probe](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/audit-course-assessments.cjs) at this planning baseline reproduced: fixed first-answer selection scores 36/60 independent question instances and earns “demonstrated” in 8/22 variants, including default cases for 7/11 lessons. Seventeen independent questions exactly repeat an earlier non-independent question within the same scenario. These are content-shortcut findings, not learner outcomes.
 
-Tradely remains the independent learning product. Exercises use self-contained educational fixtures; TradingFlow remains the external destination for optional real-tool practice. The current account, payment, media-access, and attribution boundaries continue to apply.
+Repair first:
 
-## What each lesson becomes
+1. Reconcile quote price, per-contract amount, total premium and notional across lesson 6's text, captions and rendered video. A corrected script alone is insufficient.
+2. Remove the unavailable Season 3 entry dependency and absent S4E12 ending handoff.
+3. Replace the decorative recap chart with a genuine example carrying quantity, units, source, date, scope and coverage.
+4. Clarify underspecified versus untestable forecasts, declared cross-expiry comparisons, and consistent denominator methods versus identical numeric denominators.
+5. Replace duplicated/telegraphed independent items and align English/Chinese result claims.
+6. Resolve app-source disagreements before reusing definitions: conviction versus urgency, DEX units, DEI conventions, index proxies, and T+1 attribution. The app tells us what students encounter; its wording is not automatically universal truth.
 
-Use one consistent flow, with short explanations available where learners need them:
+Real learner effectiveness and deployed account persistence were not established by the content review. They remain separate verification tasks and do not block local authoring.
 
-1. **Brief:** state the question, relevant context, and learning objective.
-2. **First judgment:** record an initial decision and the evidence supporting it.
-3. **Investigation:** inspect additional facts or change an allowed input.
-4. **Revision:** decide what the new evidence changes and what remains unknown.
-5. **Debrief:** explain each assessment criterion, including acceptable alternative answers.
-6. **Independent case:** apply the same method to a new fixture without the guided hints.
+## 3. Proposed syllabus
 
-Keep the first exercise small: one central misconception and a few meaningful decisions. Progressively reveal complexity. Explain a mistake at the point it matters, and use relevant existing video segments or written material as optional help.
+Numbers are planning positions, not stored IDs. C01–C30 refer to the [coverage inventory](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md). Each row requires learner output; merely mentioning a term does not satisfy it.
 
-Assess reasoning supported by the available evidence. A decision to withhold a conclusion can be correct. Future price movement is not a substitute for evaluating the research process.
+### Module A — Contracts and money
 
-## Three reusable exercise types
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 1 | What an option contract describes | C01, C02 | Identify underlying, stock/ETF/index type, call/put, strike, expiry and stated multiplier |
+| 2 | Buyers, writers, rights and obligations | C02, C09 | Explain long/short call and put positions and identify each party's right or obligation |
+| 3 | Quote price, premium, moneyness, payoff and profit | C03 | Calculate per-contract/total premium, classify call/put moneyness, and distinguish payoff from profit and break-even |
+| 4 | Expiration, exercise, assignment and settlement | C02, C24 | Follow a position under stated product rules; distinguish DTE/0DTE, exercise, assignment, cash and physical settlement |
 
-| Type | Learner actions | Shared capabilities |
+### Module B — Quotes, executions, side and sentiment
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 5 | A quote, an order and a trade are different events | C04 | Read bid/ask prices/sizes, spread, midpoint, last and NBBO; distinguish orders, cancellations, quote updates and prints |
+| 6 | Who buys and who sells in one execution? | C05 | Identify counterparties, resting orders and aggressors; compare market, limit, marketable-limit, partial-fill and slippage examples |
+| 7 | Reading execution side against a reliable quote | C06, C24 | Interpret ASK/AASK/MID/BID/BBID, inside-spread versus exact midpoint, and unreliable quote context |
+| 8 | How option flow gets a bullish or bearish label | C07 | Explain all four call/put classifications; distinguish inferred direction, belief, position exposure and neutral/unknown |
+| 9 | Validate one execution from its evidence | C03, C06, C07, C24 | Produce a calculation and fact/inference/unknown/next-check note from an unfamiliar print |
+
+### Module C — Flow, positions and data quality
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 10 | Why volume and open interest move differently | C08, C24 | Derive volume/OI from open/open, close/close and transfer examples; explain ΔOI and attribution limits |
+| 11 | What a tape row represents | C10, C11 | Reconstruct aggregated size/premium/trade count; interpret sweep/block/auction/complex-order conditions without inferring identity |
+| 12 | When activity is actually unusual | C12, C25 | Calculate relative volume and volume/OI; expose a tiny-denominator or partial-session false positive |
+| 13 | One option leg can belong to many strategies | C09 | Use spreads, rolls, protective puts, covered/uncovered calls, straddles and collars as counterexamples to single-print intent claims |
+| 14 | Read each source on its own clock | C24 | Audit identity, timestamps, coverage, missing versus zero, and fixed versus rolling cohorts |
+
+### Module D — Pricing, Greeks and normalized exposure
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 15 | Delta: a local price sensitivity | C13 | Calculate a small-move example with units/signs; distinguish sensitivity from a guaranteed price or probability |
+| 16 | Gamma: how delta changes | C13 | Explain curvature and a conditional hedge adjustment, holding other inputs fixed |
+| 17 | Time, volatility and rates: theta, vega and rho | C13 | Compare one-input changes and explain a loss despite a favorable underlying move |
+| 18 | Implied and realized volatility answer different questions | C14 | Explain model-implied versus historical estimates, annualization/windows, IV30/RV20, vol points and event-related changes |
+| 19 | Read a volatility smile, skew and term structure | C15 | Interpret strike/expiry and 25-delta slices, risk reversal/butterfly measures, and observed/fitted/unsupported cells |
+| 20 | IV rank and IV percentile can disagree | C16 | Compute both on a small history; explain an outlier or insufficient sample |
+| 21 | From delta equivalents to DEX and DEI | C17, C18 | Calculate trade magnitude, signed aggregate flow, neutral contribution, DEI and ΔOI normalization with explicit units/proxies |
+
+### Module E — Modeled positioning and structure
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 22 | Build and interpret a GEX snapshot | C19 | Reproduce small net/gross/call/put totals, explain sign assumptions and identify missing chain coverage |
+| 23 | Gamma regimes and the zero-gamma boundary | C20 | Explain conditional hedging, a repriced flip and gamma-squeeze scenario without claiming a forecast |
+| 24 | Walls, concentration, max pain and distance | C21 | Distinguish gamma-weighted levels from OI-only payout; preserve expiry scope, spot and ATR context |
+| 25 | Charm and vanna: exposure changes without a new trade | C22 | Separate time, volatility and spot effects and state the model assumptions |
+
+### Module F — Defensible comparison and investigation
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 26 | Write a question the evidence can answer | C26 | Write an observable question, required evidence and a reason to reconsider it |
+| 27 | Define who belongs in the comparison | C23, C24 | Derive eligibility from raw facts, record exclusions and distinguish intended from observed universe |
+| 28 | Rank observations without inventing a prediction | C12, C23 | Choose a metric for the question, explain peer-driven rank changes and justify a candidate |
+| 29 | Read a contract neighborhood | C03, C23 | Compare concentration versus total activity across strike/expiry slices and qualify a candidate with nearby evidence |
+| 30 | Test a pattern without hindsight | C25, C26 | Reconstruct point-in-time evidence; compare baseline/calibration/recency choices and test an unseen period |
+
+### Module G — Produce and audit research
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 31 | Build a reproducible research packet | C27 | Assemble concrete inputs, parameters, transformations, exclusions and output that another person can rerun |
+| 32 | Write a supported recap | C27 | Produce a headline, correctly labeled chart, source references and nearby caveats |
+| 33 | Audit and repair an unfamiliar recap | C26, C27 | Locate numerical/temporal/inference defects, repair affected claims and preserve valid conclusions |
+
+### Module H — Portfolio understanding
+
+| # | Lesson | Coverage | Learner output |
+| --- | --- | --- | --- |
+| 34 | Positions, cost, cash and P&L | C28 | Calculate cost basis, mark/value, realized/unrealized P&L, fees and concentration; distinguish cash from buying power |
+| 35 | Evaluate performance rather than balance growth | C29 | Separate cash flows from returns; interpret TWR, benchmark comparison, win rate, average win/loss, profit factor and attribution |
+| 36 | Aggregate portfolio exposure and its limits | C30 | Sum mixed-portfolio Greeks with correct units/signs, evaluate a hedge and disclose missing exposure coverage |
+
+The complete path can follow numerical order. Shorter paths preserve prerequisites:
+
+- **Core evidence:** A → B → C → F → G. Its capstone uses quotes, premium, volume and dated OI without requiring every advanced model.
+- **Advanced exposure:** after A–C, D → E, then an advanced F/G capstone with volatility and GEX assumptions.
+- **Portfolio branch:** A–D supplies the contract, position and Greek prerequisites for H. Portfolio concepts do not require brokerage integration or a claim that the app's internal rollout is public.
+
+Prerequisites guide learning; they do not introduce new hard access locks. Split overloaded lessons after pilot timing rather than silently dropping concepts or giving everything an arbitrary 12-minute label.
+
+## 4. What happens to the existing eleven lessons
+
+Preserve IDs/URLs when the core objective continues. Display names and order can change. New objectives receive new semantic IDs during authoring; planning numbers never become identity.
+
+| Existing ID | New position | Treatment |
 | --- | --- | --- |
-| Evidence case | Select a claim, inspect facts, classify observations and uncertainty, revise a decision | Evidence reveal, claim classification, reason selection, criterion-level feedback |
-| Comparison lab | Filter a universe, select contracts, compare snapshots, move through a fixed replay | Tables, linked 2D charts, timestamp and scope labels, parameter controls |
-| Research packet | Build a bounded packet, connect claims to sources, audit another packet | Structured fields, evidence references, claim-to-source mapping, review checklist |
+| `audited-boundary` | 26 | Rewrite the introduction; require a concrete learner-written question |
+| `symbol-universe` | 27 | Retain the table; replace supplied eligibility answers with raw facts and decisions |
+| `rank-symbols` | 28 | Keep peer-change animation; add objective-based candidate justification |
+| `symbol-drawer` | 14 | Remove navigation framing; assess several field-level requirements |
+| `rank-contracts` | 29 | Keep 2D/3D; add equal-total/different-concentration cases and evidence-based selection |
+| `validate-option-print` | 9 | Repair units/media; integrate the new side/sentiment foundations |
+| `session-flow-vs-structure` | 10 | Keep clock replay; add transaction mechanisms and fixed-series comparisons |
+| `dex-dei-gex` | 21 | Refocus on flow exposure/normalization; move reusable GEX material into new lesson 22 with its own ID |
+| `cookbook-research-packet` | 31 | Replace sentence selection with concrete structured learner work |
+| `market-recap` | 32 | Add actual chart interpretation and learner-produced headline/caption |
+| `audit-market-recap` | 33 | Use an unseen packet with subtle defects and valid conclusions |
 
-These are composition patterns, not three separately maintained applications. Extract shared behavior after the pilot establishes the repeated interaction. Use ordinary accessible controls for selection and ordering; any drag interaction must have a keyboard and touch alternative.
+Retitling/reordering alone is not a content-version change. Substantive explanation/media changes use the existing content-version field; evidence/rubric changes use scenario version. Keep submitted results without silently regrading them. Do not copy old metrics completion into the new GEX lesson or award a new assessment automatically.
 
-## Lesson-by-lesson conversion
+When the syllabus expands, display retained completed lessons alongside newly added work. The completion denominator may increase; explain that change rather than implying the learner lost completed work. Module/path context should make the next recommended lesson clear.
 
-Lesson numbers below are the learner-facing order. Build order is defined in the delivery phases.
+Preserve current free/paid assignments and course access semantics. New lessons can use the existing course entitlement during staged rollout. Extending free previews is a separate release-configuration choice. Modules and recommended paths do not require a new billing/enrollment system.
 
-| # | Lesson ID | Experience and assessment | Type | Three.js |
-| --- | --- | --- | --- | --- |
-| 1 | `audited-boundary` | Construct a question with a universe, source, horizon, and invalidation rule; identify where a revised question changes the original contract | Evidence case | No |
-| 2 | `symbol-universe` | Admit or exclude rows using declared freshness and eligibility rules; explain how changing the denominator changes the comparison | Comparison lab | No |
-| 3 | `rank-symbols` | Promote a candidate for investigation and identify counter-evidence; distinguish priority from a directional forecast | Evidence case | No |
-| 4 | `symbol-drawer` | Audit a drawer's identity, source clocks, missing fields, and coverage; decide what can proceed and what needs another check | Evidence case | No |
-| 5 | `rank-contracts` | Select a contract inside a fixed comparison boundary; inspect nearby strikes and expirations, including missing or incomparable values | Comparison lab | Optional pilot: contract neighborhood |
-| 6 | `validate-option-print` | Inspect one execution, quote context, and surrounding prints; separate execution facts, supported inference, and unresolved intent | Evidence case | No |
-| 7 | `session-flow-vs-structure` | Step through a fixture in which tape and reported snapshots update on different clocks; identify invalid same-time comparisons | Comparison lab | No |
-| 8 | `dex-dei-gex` | Compare signed flow and magnitude, change an explicit denominator, and inspect signed GEX distributions with equal totals or missing cells | Comparison lab | Optional signed GEX pilot; 2D default; learning benefit unmeasured |
-| 9 | `cookbook-research-packet` | Assemble question, fixed inputs, replay parameters, exclusions, and sources into a rerunnable educational packet | Research packet | No |
-| 10 | `market-recap` | Match claims to charts and evidence; place source, date, scope, and caveats beside the claim they qualify | Research packet | No |
-| 11 | `audit-market-recap` | Audit a deliberately flawed recap; locate unsupported claims, stale inputs, and missing lineage, then select a defensible revision | Research packet | No |
+## 5. Standard lesson package and assessment
 
-The last three lessons form a connected capstone. A learner can carry forward a packet, but each lesson also has a complete supplied fixture so a missing earlier attempt never prevents practice.
+Every lesson needs an English/Chinese objective and prerequisites; definitions with units; a worked example; a guided interaction; a plausible misconception or contrasting case; an unfamiliar independent task; and criterion-level feedback/reference solution. Optional short video segments must agree with the text, numbers and version. Accessible written explanations must stand on their own.
 
-## The first Three.js experiment
+Use **explain → worked example → supported attempt → contrasting case → independent work → debrief**. Include later retrieval practice. The [IES practice guide](https://ies.ed.gov/ncee/wwc/practiceguide/1) supports alternating worked examples with problems, concrete/abstract connections, spacing and explanatory questions. This informs the design, not an effectiveness claim for this course.
 
-Build a **contract neighborhood explorer** for lesson 5 only after its 2D version works.
+Assessment requirements:
 
-- Represent strike and expiration on the horizontal dimensions; height represents one explicitly named, comparable metric with visible units.
-- Use discrete observations. Preserve missing values as missing; do not interpolate a continuous surface that invents evidence between contracts.
-- Selecting a contract synchronizes the 3D view, the 2D slice, and the accessible table.
-- The question, admitted universe, evidence, selections, and grading remain identical in the 2D and 3D versions.
-- Provide a focused initial view and constrained camera controls. All learning actions remain available through HTML controls.
-- Load the renderer only when the learner opens 3D. A rendering failure returns to the equivalent 2D exercise with the current attempt intact.
-- Start with simple geometry and direct labels. The existing cinematic trading-hall renderer supplies lifecycle references; its scene, lighting, and postprocessing do not become dependencies of the lesson engine.
+- Materially change the independent reasoning problem, not only a symbol's name. Maintain a separate evaluation bank that is never a guided example.
+- Use plausible distractors and balanced positions. Run first-position, other fixed-position and wording-shortcut probes. No authored independent case should award complete demonstration through a fixed-position strategy; this is a screening rule, not proof of learning.
+- Require calculation, construction, evidence references or explanation when selection cannot demonstrate the promised skill. Opening a card does not establish understanding.
+- Check units, source/clock matching, missingness and unsupported attribution as critical criteria. Include valid cases where proceeding is correct; universal caution should not pass.
+- Use deterministic reviewed grading for numerical responses and bounded structured decisions. Do not award prose mastery through keyword checks or unvalidated AI grading. Store prose as learner work and assess it with an appropriate rubric/reviewer, or label it explicitly unverified/self-reviewed.
+- Keep practiced, independently checked and reviewer-assessed results honest and distinct from video/manual course completion. Two repeating practice variants are not an unlimited unseen bank.
 
-Keep 3D only if learners use it to understand a spatial relationship more reliably or efficiently. Preference and visual appeal are secondary evidence. An inconclusive pilot leaves 2D as the default and does not delay the remaining curriculum.
+## 6. First pilot: one execution, two participants
 
-Use on-demand rendering for stationary views and explicitly dispose of GPU resources on teardown, as described in the [Three.js rendering guide](https://threejs.org/manual/en/rendering-on-demand.html) and [cleanup guide](https://threejs.org/manual/en/cleanup.html). Canvas functionality needs an equivalent accessible representation under the [HTML standard](https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element).
+Develop lessons 5–8 as one integrated foundation experiment, supplying contract/price prerequisites from 1–3 alongside it.
 
-## Content and assessment contract
+Use a synthetic bid of $2.00 × 40 contracts and ask of $2.10 × 30. Introduce a resting seller, then a buyer able to pay the ask, and show one 10-contract execution. Name both participants: the buyer buys at ask and the resting seller sells at ask. Count one trade, not two opposing flow events. Repeat at bid with roles reversed. Compare a marketable limit order and market order reaching the same price; a print alone does not reveal the instruction.
 
-Each scenario is an immutable, reviewed definition with a stable ID and version. It includes:
+Next hide order messages, stale the quote, introduce an inside-spread execution, and change call to put. Ask which facts remain known, when side becomes indeterminate, and how the declared sentiment classification changes. Keep the option-leg label separate from the whole strategy. The [coverage addendum](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md) provides the four-way mapping, counterexamples and primary sources.
 
-- Lesson and objective IDs, misconception being addressed, prerequisite knowledge, and expected decisions.
-- A synthetic dataset, or a historical dataset whose instructional use has been verified, with provenance, units, scope, timestamps, and modeled assumptions.
-- An evidence sequence, allowed interactions, valid transitions, and the facts visible at each stage.
-- Structured answer choices, supported alternative responses, criterion-level rubric, and debrief explanations.
-- Guided and independent variants, plus a held-back case for evaluation.
-- English and Simplified Chinese prompts, controls, feedback, and equivalent assessment meaning.
+The unfamiliar test must establish that the learner can distinguish quote/order/trade events and quote size from execution size; name both counterparties and the aggressor; explain buying and selling at the same ask; handle all five side codes and inside-spread conventions; identify unknowable order instructions; explain bullish/bearish/neutral classifications; and reject unsupported conviction, opening-intent, identity and portfolio claims while retaining supported inferences.
 
-Synthetic cases must be visibly labeled. Historical cases must exclude future information until the exercise intentionally reveals it. Unknown intent and missing data remain valid states; neither becomes a fabricated fact for the sake of a neat answer.
+The animation changes displayed quote size solely under explicit toy assumptions about cancellations, replenishment and other orders. Do not teach that every real size change reveals an execution. This is an educational simulation requiring no live orders or brokerage transactions.
 
-The pilot uses deterministic, reviewed grading for structured choices and evidence references. Open reflection may be offered as a local learner note with an explicit device-only label, but it is not automatically graded or sent to analytics. Any later persisted journal or AI tutor is a separate feature decision.
+## 7. Motion and Three.js
 
-Paid scenario definitions remain server-only and are returned in stage-appropriate form after the existing lesson-access decision. Assessment keys and unrevealed evidence stay on the server until their authorized reveal/debrief stage. Rendering code can be public without bundling paid case content.
-
-## Application architecture
-
-| Responsibility | Proposed location or existing owner | Boundary |
+| Teaching purpose | Default presentation | 3D decision |
 | --- | --- | --- |
-| Public lesson metadata | Existing `apps/web/src/content/course.ts` | Keep stable lesson IDs, ordering, access tiers, and practice links; add only the public exercise availability metadata needed by the catalog |
-| Scenario content | New `apps/web/src/content/scenarios/` with server-only entry point | Own immutable fixtures, evidence sequence, translated copy, and assessment rules |
-| Attempt transitions and rubric evaluation | New `apps/web/src/domain/learning/` | Pure typed logic, deterministic results, no rendering or network dependencies; answer-bearing modules must not enter client imports |
-| Interactive lesson UI | New `apps/web/src/features/learning/` | Compose the three exercise patterns and expose accessible controls |
-| Optional 3D view | New `apps/web/src/features/learning/three/` | Lazy-loaded renderer consuming the same approved view state and emitting the same selection actions as 2D |
-| Access and persistence | Existing access resolver plus new `apps/web/src/server/learning.ts` and `learning.server.ts` | Validate identity, access, attempt ownership, scenario version, transition, and submitted answers |
-| Lesson page integration | Existing `apps/web/src/routes/learn.$lessonSlug.tsx` | Present the active exercise, explanations, practice result, and existing course navigation |
-| Database | Existing `packages/db/src/schema/index.ts` and versioned migrations | Add one attempt entity; derive current practice status from reviewed results |
-| Instrumentation | Existing typed analytics registry, provider, and consent boundary | Emit bounded learning events without lesson text or learner notes |
+| Orders, quotes, counterparties and prints | 2D timeline/price ladder with matched quantities | Not planned |
+| Premium, payoff, DEX/DEI calculations | Linked inputs, arithmetic, units and before/after values | Not planned |
+| Volume versus OI | Transaction ledger and separately dated report on a shared timeline | Keep 2D replay |
+| Relative rank | Stable numbers and animated row movement | Not planned |
+| Contract neighborhood | Strike/expiry table, slices and concentration measures | Retain optional Three.js |
+| Signed GEX | Signed bars/table, net/gross totals and expiry slices | Retain optional Three.js |
+| Volatility surface | Begin with smile and term-structure slices | Candidate after 2D works; distinguish measured, fitted and unsupported regions |
+| Research writing/audit and portfolio arithmetic | Forms, evidence references, charts and calculations | Not planned |
 
-Implement the first complete lesson before generalizing the engine. The second lesson should test whether the shared interfaces are sufficient; the capstone may keep its distinct packet state while reusing attempt and assessment contracts.
+Every numerical animation identifies what changed and why. All representations share domain state and timing. A display filter does not redefine the assessment universe; a moving tape does not refresh an old report; missing data stays missing.
 
-### Attempts, resume, and completion
+Default to the fastest available rate, currently 2×. Preserve pause, replay, scrubbing/checkpoints, once-only visible autoplay where appropriate, hidden/offscreen pause and reduced-motion stepping. Playback rate and reading time are separate concerns. Load Three.js only when opened, stop idle rendering and release resources on teardown. WebGL failure preserves the same evidence and selection in 2D.
 
-Add one `lesson_attempt` table. An attempt records a server-issued ID, user, lesson, immutable scenario ID/version, status, revision, bounded structured state, criterion results, and creation/update/submission timestamps. The scenario version pins its fixture and rubric. Keep submitted attempts immutable; retrying creates a new attempt.
+Evaluate equivalent unfamiliar tasks in 2D and 3D with matched prior knowledge and counterbalanced order or separate groups. Compare accuracy, critical misconceptions, time and device failures; preference is secondary. Inconclusive results keep 2D as default and do not delay teaching the concept.
 
-The server issues and authorizes attempts, validates every transition, and recomputes assessment results. Saves use revision checks, and submission is idempotent so retries or multiple tabs cannot replace a result or award duplicate completion. A stale save returns a conflict with an explicit recovery path.
+## 8. Runtime, content, navigation and storage work
 
-Signed-in learners can resume a valid attempt across devices. Public preview exercises work without sign-in, using anonymous device-local practice state; it is labeled as local and does not claim account progress. Account changes must clear user-specific in-memory/local drafts. Importing a guest draft must revalidate the scenario and answers rather than accepting a guest-computed result.
+Reuse React/TanStack, current scenario modules, server-owned transitions/assessment and account access. Add only interaction types required by real lessons: numerical responses and selected reasons/evidence first, then structured research work for the capstone.
 
-Keep existing `lesson_progress` completion and video position records. A completed video or a manually completed lesson remains historical completion; it is not converted into demonstrated understanding. Display current exercise status separately as not started, in progress, practiced, or demonstrated on the independent case.
-
-For the pilot, demonstrated means every required rubric criterion is met on an independent case without hints and no critical misconception remains. Optional enrichment criteria do not block it. A guided or hinted completion is practiced; a fresh independent variant can establish demonstrated status later. The server derives these labels from the versioned rubric and attempt record.
-
-Adding an exercise does not by itself change the video's content version. A scenario change creates a new scenario version; old results stay visible but cannot silently certify the new rubric. Provide an explicit restart path for retired scenario versions. During the pilot, practice is additive and does not introduce new prerequisite locks or revoke earned completion.
-
-## Delivery phases
-
-Calendar estimates should follow the first completed pilot: case-authoring and domain review are currently unmeasured. The sequence below is the delivery commitment; each phase has a reviewable exit condition.
-
-| Phase | Work | Exit condition |
+| Responsibility | Existing owner | Planned work |
 | --- | --- | --- |
-| 0 — Specify the pilot | Write objectives and rubrics for lessons 6, 7, and 5, in that build order; prepare guided, independent, and evaluation cases; establish device and learning baselines | A domain reviewer can solve every case, explain accepted alternatives, and trace every fact to its fixture |
-| 1 — Ship one complete exercise | Implement lesson 6, Validate one print, with accessible 2D interactions, feedback, attempt saves/resume, access checks, translations, and measurement | The full learner journey works in the preview environment, including failed saves and retries; assessment and access checks pass |
-| 2 — Prove reuse | Add lesson 7's clock comparison and lesson 5's contract comparison, both in 2D; refine shared behavior from actual repetition | Three usable pilot lessons share stable attempt and feedback contracts; case logic and renderer state remain separate |
-| 3 — Evaluate selective 3D | Add the optional neighborhood explorer; compare it with the equivalent 2D lesson on held-back tasks | Record a keep, revise, or defer decision using learning, usability, and device evidence; 2D remains fully functional |
-| 4 — Convert the other eight lessons | Batch A: lessons 1–4. Batch B: lesson 8. Batch C: lessons 9–11 and connected capstone | Each batch passes content review, accessibility, protected-access, resume, and independent-case assessment checks |
-| 5 — Make validated exercises primary | Promote lesson by lesson, retain explanations/media, update learner-facing copy and documentation, and inspect production behavior | Every current lesson has a reviewed interactive path; old progress remains legible; production access, persistence, and consented measurement are verified |
+| Catalog/modules | [Course metadata](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/content/course.ts) | Group modules/prerequisites, add semantic lesson IDs, preserve URLs |
+| Explanations/cases | [Lesson content](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/content/lesson-content.server.ts), [scenario registry](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/content/scenarios/index.server.ts) | Complete bilingual packages, sources and separate practice/evaluation cases |
+| Actions/grading | [Domain types](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/domain/learning/types.ts), [engine](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/domain/learning/engine.ts) | Extend choice-based state with bounded numerical/structured work and valid old-state handling |
+| Interaction/UI | [Learning screen](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/features/learning/learning-screen.tsx) | Quote/execution teaching view and actual artifact editing; decorative links do not substitute for evidence selection |
+| Persistence | [Existing schema](/Users/evansmacbookpro/Desktop/Projects/tradely/packages/db/src/schema/index.ts), [learning service](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/server/learning.server.ts) | Reuse JSONB, server validation, ownership, revision conflicts and retry idempotency |
+| Navigation | [Lesson route](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/routes/learn.$lessonSlug.tsx) and curriculum components | Module grouping, recommended next steps, visible Home/Curriculum, preserved place and mobile navigation |
+| Media | [Media manifest](/Users/evansmacbookpro/Desktop/Projects/tradely/scripts/media-manifest.json) and delivery | Review text/script/captions/render together; preserve private paid-media boundaries |
+| Verification | Learning tests and `learning:preview` harness | New interaction types, shortcuts, bilingual/accessibility states and real persistence |
 
-Phase 4 depends on the reusable 2D pilot from phase 2, not a successful 3D result. Phase 3 can be deferred if it would hold up useful lessons. Within phase 4, the capstone follows the earlier evidence and comparison exercises.
+The schema already has `lesson_progress.content_version`, `lesson_attempt.scenario_version`, and JSONB `state`/`assessment`. New sections and fields do not need individual database columns. Extend application validation without accepting arbitrary client grades.
 
-Engineering owns runtime, persistence, rendering, and verification. A domain/content reviewer owns fixture correctness and rubrics. A bilingual reviewer checks that translated decisions and feedback preserve the same meaning. The same person can cover multiple responsibilities, but each review remains explicit.
+Do not add curriculum publication/enrollment tables, a version-selection UI, or automatic user-migration service. Keep historical completion and submitted results. Use the existing explicit updated-case/restart behavior for retired scenarios. Older JSON must remain readable or safely retired, never overwritten to satisfy a renderer.
 
-## Learning evaluation and release gates
+For capstone continuity, store the actual structured packet and source references in existing attempt JSON. A following lesson may copy an identified snapshot of that learner artifact, with a supplied fallback and provenance. It gets its own result. Add length/shape limits; learner prose, answers and evidence stay out of analytics/errors. No AI grading service is introduced by this plan.
 
-Evaluate interactivity and 3D separately:
+## 9. Delivery phases and exit criteria
 
-1. Compare the existing explanation-based lesson with the 2D interactive version using equivalent unseen cases. Match prior knowledge and record time spent.
-2. For the spatial lesson, compare 2D and 3D with the same data, tasks, hints, and scoring. Counterbalance order or use separate groups and alternate fixtures to avoid learning the answer in the first condition.
-3. Include a delayed unfamiliar case, ideally 3–7 days later in a consented pilot, to distinguish immediate familiarity from retained understanding.
+| Phase | Deliverables | Required evidence before promotion |
+| --- | --- | --- |
+| 0 — Content contract and corrections | Term-level coverage register; resolve disputed definitions; repair existing media/reference defects; draft reference capstone and rubric | Every app term mapped or explicitly classified; all C01–C30 have destinations; no unresolved critical definition in the first batch; corrected text/caption/render agree |
+| 1 — Execution foundations | Lessons 1–8; develop 5–8 as the integrated order-to-print pilot with prerequisites supplied | Unfamiliar side/sentiment task works in both languages; numbers/roles stay distinct; keyboard/mobile/reduced-motion and first real account save/resume verified |
+| 2 — Print, flow and positions | Lessons 9–14; rebuild old print/clock/drawer cases and introduce needed numerical/structured answers | Independent print/OI/aggregation cases require evidence and arithmetic; valid and indeterminate cases both present; no fixed-position demonstration |
+| 3 — Quantities before models | Lessons 15–21 with formulas, units and assumptions | Reviewer independently reproduces calculations; unseen work separates magnitude, signed exposure and normalized values |
+| 4 — Advanced structure | Lessons 22–25; revised GEX; optional IV surface after 2D slices | Sign/net/gross/missingness and model boundaries agree; levels are not guaranteed predictions; 2D remains complete |
+| 5 — Comparison and research | Lessons 26–33; reuse strong universe/rank/neighborhood components; real packet/recap/audit outputs | Another reviewer reproduces the packet; unseen audit finds critical defects and retains valid conclusions |
+| 6 — Portfolio branch | Lessons 34–36 with neutral account fixtures | Correct P&L/return/cash-flow/Greek calculations with valuation and coverage assumptions; no brokerage required |
+| 7 — Coverage validation and release | Complete register, bilingual/media review, full account journey, learner evaluation and deployment checks | Every in-scope concept has teaching, worked example, independent task and review evidence; claims match the verified environment/results |
 
-The main outcome is the fraction of reviewed reasoning criteria met on an unfamiliar case. Also record critical misconception rate, hints needed, task completion, time to a supported answer, and device-specific failures. Record learner preference separately.
+Phase 5's core evidence version can follow phase 2; its advanced version follows 3–4. Phase 6 depends on positions and Greeks, not successful 3D. All phases remain required for full concept coverage. Later content can be authored locally while a release check waits, but cannot be called deployed because a fixture works.
 
-Define the minimum meaningful improvement and acceptable usability regression before evaluating results. Choose sample size once baseline variability is available; a small usability group can expose problems but cannot establish an efficacy claim. If learning results are inconclusive, document the uncertainty and continue only with reversible, clearly usable changes rather than claiming a measured improvement.
+**First implementation batch:** resolve the precise quote/side/sentiment definitions through source review; author worked, contrasting and independent cases for lessons 5–8; build one integrated 2D order-to-print pilot in the current runtime with essential contract/premium prerequisites. Finish lessons 1–8 before presenting the foundation module as a complete learning path.
 
-Use application attempt records as result truth. Proposed analytics events are `lesson_exercise_started`, `lesson_exercise_submitted`, `lesson_hint_opened`, `lesson_renderer_changed`, and `lesson_exercise_save_failed`. Register them in the existing allowlist before emission. Allow only bounded identifiers, versions, renderer/experiment variant, criterion counts, duration buckets, and failure categories. Learner text, raw answers, evidence bodies, and market payloads must not enter analytics or exception logs.
+Assign content/domain, bilingual and engineering review responsibilities explicitly. One person may cover multiple roles, but checks remain distinct. Measure first-batch authoring, review, implementation and learner task time before estimating a date for all 36 lessons. Do not multiply the old uniform 12-minute labels into a delivery or course-duration promise.
 
-Consent decline must not stop exercises, saving, grading, or account progress. Consented analytics describes its own population; it is not a complete learner denominator. Avoid high-frequency events for timeline dragging or camera movement. Verify deployed event shapes before creating insights that depend on them; the observability document's older live snapshot is not a current baseline.
+## 10. Verification, release and stopping rules
 
-## Required verification during implementation
+### Content
 
-- Content validation: unique scenario IDs/versions, valid lesson mappings, reachable endings, valid evidence references, complete translations, and reviewed solutions for independent cases.
-- Assessment tests: accepted alternatives, uncertainty, missingness, unrevealed evidence, version changes, and inability to bypass required independent work through client-supplied results.
-- Persistence and access tests: anonymous previews, entitled and denied paid access, account isolation, stale revisions, duplicate submissions, retired versions, and recovery from failed saves.
-- Renderer checks: identical selection and assessment state across 2D/3D, direct 2D access, keyboard-only completion, touch controls, reduced motion, WebGL failure, repeated mount/teardown, and restored drafts.
-- Performance checks: benchmark the same representative desktop and mobile devices before and after; verify that 3D downloads only when opened, resting views stop rendering, and switching lessons does not retain GPU resources. Agree numerical budgets during phase 0 using these devices.
-- Repository checks appropriate to code changes: `pnpm check-types`, relevant Vitest suites, `pnpm test:db` when persistence changes, `pnpm check`, and `pnpm build`; protect existing media boundaries with `pnpm media:assert`.
-- Browser evidence: complete all three pilot journeys in the preview deployment and then verify the released paths; distinguish source tests, preview behavior, and production evidence in the release note.
+- Complete a register of concept ID, aliases/app labels, source, universal definition, named model/vendor convention, units, prerequisites, lesson, example, assessment and status. Reconcile all current research abilities, glossary/metric catalogs and in-scope portfolio terms. Track future/prototype concepts separately.
+- Have a domain reviewer solve each case from visible evidence and independently check calculations, units and accepted alternatives.
+- Verify English/Chinese meaning, especially standing structure, neutral/unknown, aggressiveness versus conviction and result-label strength.
+- Run answer-position, repeated-question and wording-shortcut audits. An answer-key test is not pedagogical validation.
+- Begin with a small usability group, then use unfamiliar immediate and delayed transfer cases. A 3–7-day revisit informs a pilot, not long-term retention. Set meaningful improvement and sample size from baseline variability before claiming efficacy.
 
-## Migration and rollout
+### Application and records
 
-Use one typed per-lesson rollout map owned by the lesson loader, with explicit supplemental or primary presentation and a separate opt-in 3D capability. Avoid scattering feature flags through individual controls.
+- Verify the actual account journey: access/sign-in, start, every new action, refresh/resume, artifact handoff, submission, retry, sign-out, account change and concurrent-tab conflict.
+- Confirm paid cases and unrevealed evidence/keys remain server-protected. Anonymous/fixture practice must accurately disclose reset behavior and never claim account persistence.
+- Check old versions, updated-case restart, retained historical completion, new-lesson empty state and failed-save recovery. Do not convert video completion into demonstrated understanding.
+- Before remote writes, identify the intended non-production database and entitled test account. Apply only required existing migrations through the existing workflow and verify actual rows. The earlier environment/account gap is a release prerequisite, not a reason to build another database system.
+- Exercise Home → Curriculum → lesson → Curriculum/Home, module context, previous/next, keyboard focus, touch, narrow layout, reduced motion and WebGL fallback. Ensure 3D is lazy-loaded and idle rendering stops.
+- Verify consent handling and bounded analytics without learner text, answers, packets or evidence payloads.
 
-Start with internal/preview access, then a bounded eligible learner cohort. Keep the existing free/paid lesson tiers. Promote a batch only after its content and runtime checks pass. Use additive database migrations; retire no old progress fields in this project.
+Use Node 24. Run affected learning/content tests first, then type checking and build for runtime changes; database tests when persistence changes, plus credential/media-boundary checks before release. Extend the preview harness across every new lesson/variant/stage in both languages. Fixture rendering, isolated database tests, real signed-in persistence and deployed behavior remain separate evidence levels.
 
-If a released exercise fails, return its presentation to the existing lesson while preserving attempts. If only 3D fails, select the equivalent 2D view. Operational rollback should not require data deletion or re-uploading the course-media library.
+The course update is complete only when the register accounts for every in-scope term, every planned outcome has teaching and independent-assessment evidence, preserved-record/account journeys work, and the approved release is verified. A plan, test suite, glossary entry, animation or lesson count alone is insufficient.
 
-Update `docs/ARCHITECTURE.md` when attempts become a third persisted entity, `docs/OBSERVABILITY.md` when new learning events ship, and course/interface copy when the primary lesson experience changes. Marketing claims must describe demonstrated functionality and any measured outcomes accurately.
+Stop visual expansion when learners cannot explain the numbers in 2D. Stop assessment promotion when evidence-blind shortcuts pass. Fix an unreproducible packet before scoring learners on it. Keep 3D optional when its advantage is unproven. Release reviewed modules progressively and keep unfinished scope visible.
 
-## First implementation milestone
+## Planning deliverable verification
 
-Deliver **Validate one print** as a complete 2D interactive lesson: reviewed synthetic case, committed initial judgment, evidence investigation, revision, specific debrief, independent assessment, accessible English/Chinese UI, signed-in resume, public/paid access behavior, and preserved historical progress.
-
-Use this milestone to measure actual engineering and authoring effort before estimating the remaining conversion. The next implementation task should begin with its case specification and rubric, then build only the runtime required to deliver that lesson.
-
-## Current implementation anchors
-
-- [Course manifest](../apps/web/src/content/course.ts)
-- [Current lesson page](../apps/web/src/routes/learn.$lessonSlug.tsx)
-- [Server-only written content](../apps/web/src/content/lesson-content.server.ts)
-- [Existing lesson access/data loader](../apps/web/src/server/lesson.server.ts)
-- [Existing progress storage](../apps/web/src/server/progress.server.ts)
-- [Database schema](../packages/db/src/schema/index.ts)
-- [Analytics event contract](../apps/web/src/analytics/events.ts)
-- [Trading hall renderer lifecycle](../apps/web/src/features/trading-hall/renderer.ts)
-- [Architecture](ARCHITECTURE.md) and [observability contract](OBSERVABILITY.md)
+This plan maps all 30 identified concept families to proposed lessons, assigns all 11 existing IDs a treatment, preserves the database/version boundary, specifies motion/navigation requirements, and defines the first batch and full-scope release gates. These are planned lessons and checks; this planning change does not implement them.
