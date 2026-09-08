@@ -1,0 +1,5149 @@
+{
+	"generatedAt": "2026-09-08T16:37:01.472Z",
+	"head": "17817194e03036ce6eb5f0af692202387e32c7b7",
+	"method": "Probe five fixed answer positions (last available choice if shorter), numerical zero and repeated blind prose, plus copying the guided case's accepted answers by question ID into new evidence. Submit through the real pure engine. Duplicate comparison normalizes choice order. This extends the original choice-only audit; it is not a learner study or browser/access test.",
+	"lessons": 36,
+	"scenarioVariants": 72,
+	"independentQuestionInstances": 186,
+	"firstChoiceCorrectInstances": 23,
+	"firstChoiceDemonstratedVariants": 0,
+	"copiedGuidedDemonstratedVariants": 0,
+	"anyFixedPositionDemonstratedVariants": 0,
+	"firstChoiceDemonstratedDefaultLessons": 0,
+	"exactRepeatedQuestionInstances": 57,
+	"exactRepeatedQuestions": [
+		{
+			"scenarioId": "option-contracts-practice-1",
+			"questionId": "identity"
+		},
+		{
+			"scenarioId": "option-contracts-practice-2",
+			"questionId": "identity"
+		},
+		{
+			"scenarioId": "option-rights-practice-1",
+			"questionId": "role"
+		},
+		{
+			"scenarioId": "option-rights-practice-2",
+			"questionId": "role"
+		},
+		{
+			"scenarioId": "expiration-settlement-practice-1",
+			"questionId": "delivery"
+		},
+		{
+			"scenarioId": "expiration-settlement-practice-2",
+			"questionId": "delivery"
+		},
+		{
+			"scenarioId": "quotes-orders-trades-practice-1",
+			"questionId": "event"
+		},
+		{
+			"scenarioId": "quotes-orders-trades-practice-2",
+			"questionId": "event"
+		},
+		{
+			"scenarioId": "execution-counterparties-practice-1",
+			"questionId": "aggressor"
+		},
+		{
+			"scenarioId": "execution-side-practice-1",
+			"questionId": "stale"
+		},
+		{
+			"scenarioId": "execution-side-practice-2",
+			"questionId": "stale"
+		},
+		{
+			"scenarioId": "flow-sentiment-practice-1",
+			"questionId": "neutral"
+		},
+		{
+			"scenarioId": "flow-sentiment-practice-1",
+			"questionId": "portfolio"
+		},
+		{
+			"scenarioId": "flow-sentiment-practice-2",
+			"questionId": "neutral"
+		},
+		{
+			"scenarioId": "flow-sentiment-practice-2",
+			"questionId": "portfolio"
+		},
+		{
+			"scenarioId": "validate-option-print-practice-1",
+			"questionId": "inference"
+		},
+		{
+			"scenarioId": "session-flow-vs-structure-practice-1",
+			"questionId": "no-flags"
+		},
+		{
+			"scenarioId": "session-flow-vs-structure-practice-2",
+			"questionId": "no-flags"
+		},
+		{
+			"scenarioId": "trade-records-practice-1",
+			"questionId": "link"
+		},
+		{
+			"scenarioId": "trade-records-practice-2",
+			"questionId": "weighted"
+		},
+		{
+			"scenarioId": "trade-records-practice-2",
+			"questionId": "link"
+		},
+		{
+			"scenarioId": "unusual-activity-practice-1",
+			"questionId": "turnover"
+		},
+		{
+			"scenarioId": "option-strategies-practice-1",
+			"questionId": "isolated"
+		},
+		{
+			"scenarioId": "option-strategies-practice-2",
+			"questionId": "isolated"
+		},
+		{
+			"scenarioId": "symbol-drawer-practice-2",
+			"questionId": "flow-gate"
+		},
+		{
+			"scenarioId": "implied-realized-volatility-practice-1",
+			"questionId": "interpretation"
+		},
+		{
+			"scenarioId": "implied-realized-volatility-practice-2",
+			"questionId": "interpretation"
+		},
+		{
+			"scenarioId": "volatility-surface-practice-2",
+			"questionId": "butterfly"
+		},
+		{
+			"scenarioId": "gamma-exposure-practice-1",
+			"questionId": "compare"
+		},
+		{
+			"scenarioId": "gamma-regimes-practice-1",
+			"questionId": "certainty"
+		},
+		{
+			"scenarioId": "gamma-regimes-practice-2",
+			"questionId": "certainty"
+		},
+		{
+			"scenarioId": "audited-boundary-practice-1",
+			"questionId": "question"
+		},
+		{
+			"scenarioId": "audited-boundary-practice-2",
+			"questionId": "change"
+		},
+		{
+			"scenarioId": "audited-boundary-practice-2",
+			"questionId": "question"
+		},
+		{
+			"scenarioId": "symbol-universe-practice-1",
+			"questionId": "claim"
+		},
+		{
+			"scenarioId": "symbol-universe-practice-2",
+			"questionId": "admitted"
+		},
+		{
+			"scenarioId": "symbol-universe-practice-2",
+			"questionId": "claim"
+		},
+		{
+			"scenarioId": "rank-symbols-practice-2",
+			"questionId": "leader"
+		},
+		{
+			"scenarioId": "rank-contracts-practice-1",
+			"questionId": "moneyness"
+		},
+		{
+			"scenarioId": "rank-contracts-practice-2",
+			"questionId": "breadth-a"
+		},
+		{
+			"scenarioId": "point-in-time-research-practice-1",
+			"questionId": "cutoff"
+		},
+		{
+			"scenarioId": "point-in-time-research-practice-2",
+			"questionId": "cutoff"
+		},
+		{
+			"scenarioId": "cookbook-research-packet-practice-1",
+			"questionId": "scope"
+		},
+		{
+			"scenarioId": "cookbook-research-packet-practice-1",
+			"questionId": "method"
+		},
+		{
+			"scenarioId": "cookbook-research-packet-practice-1",
+			"questionId": "replay"
+		},
+		{
+			"scenarioId": "cookbook-research-packet-practice-2",
+			"questionId": "scope"
+		},
+		{
+			"scenarioId": "cookbook-research-packet-practice-2",
+			"questionId": "replay"
+		},
+		{
+			"scenarioId": "market-recap-practice-1",
+			"questionId": "caption"
+		},
+		{
+			"scenarioId": "market-recap-practice-1",
+			"questionId": "full-total"
+		},
+		{
+			"scenarioId": "market-recap-practice-2",
+			"questionId": "caption"
+		},
+		{
+			"scenarioId": "market-recap-practice-2",
+			"questionId": "full-total"
+		},
+		{
+			"scenarioId": "audit-market-recap-practice-1",
+			"questionId": "correct-premium"
+		},
+		{
+			"scenarioId": "audit-market-recap-practice-1",
+			"questionId": "audit"
+		},
+		{
+			"scenarioId": "audit-market-recap-practice-1",
+			"questionId": "signoff"
+		},
+		{
+			"scenarioId": "audit-market-recap-practice-2",
+			"questionId": "audit"
+		},
+		{
+			"scenarioId": "portfolio-exposure-practice-1",
+			"questionId": "coverage"
+		},
+		{
+			"scenarioId": "portfolio-exposure-practice-2",
+			"questionId": "coverage"
+		}
+	],
+	"variants": [
+		{
+			"lessonId": "option-contracts",
+			"scenarioId": "option-contracts-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "option-contracts",
+			"scenarioId": "option-contracts-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "option-rights",
+			"scenarioId": "option-rights-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "option-rights",
+			"scenarioId": "option-rights-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "premium-payoff",
+			"scenarioId": "premium-payoff-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "premium-payoff",
+			"scenarioId": "premium-payoff-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "expiration-settlement",
+			"scenarioId": "expiration-settlement-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "expiration-settlement",
+			"scenarioId": "expiration-settlement-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "quotes-orders-trades",
+			"scenarioId": "quotes-orders-trades-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "quotes-orders-trades",
+			"scenarioId": "quotes-orders-trades-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "execution-counterparties",
+			"scenarioId": "execution-counterparties-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "execution-counterparties",
+			"scenarioId": "execution-counterparties-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "execution-side",
+			"scenarioId": "execution-side-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 6,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 2,
+				"total": 6,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 6,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 6,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "execution-side",
+			"scenarioId": "execution-side-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 6,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 6,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 3,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 3,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 6,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 6,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "flow-sentiment",
+			"scenarioId": "flow-sentiment-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 6,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 6,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 3,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 4,
+				"total": 6,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "flow-sentiment",
+			"scenarioId": "flow-sentiment-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 6,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 6,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 4,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 2,
+						"total": 6,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 2,
+				"total": 6,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "validate-option-print",
+			"scenarioId": "validate-option-print-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "validate-option-print",
+			"scenarioId": "validate-option-print-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "session-flow-vs-structure",
+			"scenarioId": "session-flow-vs-structure-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "session-flow-vs-structure",
+			"scenarioId": "session-flow-vs-structure-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "trade-records",
+			"scenarioId": "trade-records-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "trade-records",
+			"scenarioId": "trade-records-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 2,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "unusual-activity",
+			"scenarioId": "unusual-activity-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "unusual-activity",
+			"scenarioId": "unusual-activity-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "option-strategies",
+			"scenarioId": "option-strategies-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "option-strategies",
+			"scenarioId": "option-strategies-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "symbol-drawer",
+			"scenarioId": "symbol-drawer-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "symbol-drawer",
+			"scenarioId": "symbol-drawer-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "delta",
+			"scenarioId": "delta-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "delta",
+			"scenarioId": "delta-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "gamma",
+			"scenarioId": "gamma-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "gamma",
+			"scenarioId": "gamma-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "theta-vega-rho",
+			"scenarioId": "theta-vega-rho-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "theta-vega-rho",
+			"scenarioId": "theta-vega-rho-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "implied-realized-volatility",
+			"scenarioId": "implied-realized-volatility-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "implied-realized-volatility",
+			"scenarioId": "implied-realized-volatility-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "volatility-surface",
+			"scenarioId": "volatility-surface-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "volatility-surface",
+			"scenarioId": "volatility-surface-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "iv-rank-percentile",
+			"scenarioId": "iv-rank-percentile-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "iv-rank-percentile",
+			"scenarioId": "iv-rank-percentile-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "dex-dei-gex",
+			"scenarioId": "dex-dei-gex-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "dex-dei-gex",
+			"scenarioId": "dex-dei-gex-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "gamma-exposure",
+			"scenarioId": "gamma-exposure-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "gamma-exposure",
+			"scenarioId": "gamma-exposure-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "gamma-regimes",
+			"scenarioId": "gamma-regimes-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "gamma-regimes",
+			"scenarioId": "gamma-regimes-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "structural-levels",
+			"scenarioId": "structural-levels-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "structural-levels",
+			"scenarioId": "structural-levels-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "charm-vanna",
+			"scenarioId": "charm-vanna-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "charm-vanna",
+			"scenarioId": "charm-vanna-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "audited-boundary",
+			"scenarioId": "audited-boundary-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false,
+				"unreviewed": 1
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false,
+				"unreviewed": 1
+			}
+		},
+		{
+			"lessonId": "audited-boundary",
+			"scenarioId": "audited-boundary-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false,
+				"unreviewed": 1
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false,
+						"unreviewed": 1
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false,
+				"unreviewed": 1
+			}
+		},
+		{
+			"lessonId": "symbol-universe",
+			"scenarioId": "symbol-universe-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "symbol-universe",
+			"scenarioId": "symbol-universe-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 2,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "rank-symbols",
+			"scenarioId": "rank-symbols-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "rank-symbols",
+			"scenarioId": "rank-symbols-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "rank-contracts",
+			"scenarioId": "rank-contracts-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "rank-contracts",
+			"scenarioId": "rank-contracts-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "point-in-time-research",
+			"scenarioId": "point-in-time-research-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "point-in-time-research",
+			"scenarioId": "point-in-time-research-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "cookbook-research-packet",
+			"scenarioId": "cookbook-research-packet-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 4,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 3
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 3
+			}
+		},
+		{
+			"lessonId": "cookbook-research-packet",
+			"scenarioId": "cookbook-research-packet-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 4,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 3
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 3
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 3
+			}
+		},
+		{
+			"lessonId": "market-recap",
+			"scenarioId": "market-recap-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 4,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 2
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 2
+			}
+		},
+		{
+			"lessonId": "market-recap",
+			"scenarioId": "market-recap-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 4,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 2
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 4,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 4,
+				"usedHint": false,
+				"unreviewed": 2
+			}
+		},
+		{
+			"lessonId": "audit-market-recap",
+			"scenarioId": "audit-market-recap-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false,
+				"unreviewed": 2
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false,
+				"unreviewed": 2
+			}
+		},
+		{
+			"lessonId": "audit-market-recap",
+			"scenarioId": "audit-market-recap-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false,
+				"unreviewed": 2
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false,
+						"unreviewed": 2
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false,
+				"unreviewed": 2
+			}
+		},
+		{
+			"lessonId": "portfolio-pnl",
+			"scenarioId": "portfolio-pnl-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "portfolio-pnl",
+			"scenarioId": "portfolio-pnl-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "portfolio-performance",
+			"scenarioId": "portfolio-performance-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "portfolio-performance",
+			"scenarioId": "portfolio-performance-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 2,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 2,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 2,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "portfolio-exposure",
+			"scenarioId": "portfolio-exposure-practice-1",
+			"scenarioVersion": 2,
+			"firstInRegistry": true,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 0,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		},
+		{
+			"lessonId": "portfolio-exposure",
+			"scenarioId": "portfolio-exposure-practice-2",
+			"scenarioVersion": 2,
+			"firstInRegistry": false,
+			"stepCount": 3,
+			"independentQuestions": 3,
+			"alwaysFirstResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			},
+			"strategyResults": [
+				{
+					"position": 1,
+					"result": {
+						"status": "practiced",
+						"met": 1,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 2,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 3,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 4,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				},
+				{
+					"position": 5,
+					"result": {
+						"status": "practiced",
+						"met": 0,
+						"total": 3,
+						"usedHint": false
+					}
+				}
+			],
+			"copiedGuidedResult": {
+				"status": "practiced",
+				"met": 1,
+				"total": 3,
+				"usedHint": false
+			}
+		}
+	],
+	"sourceHashes": {
+		"apps/web/src/content/course.ts": "7b82cee6cfb41a3ae079d8f513c8bf7f57bad2491c7dae76f79e20a10d8d7226",
+		"apps/web/src/content/syllabus.ts": "aeebefdc39515a3a52bd6c4b483e1bd551df41115f2398063f25a756abf3223f",
+		"apps/web/src/content/scenarios/index.server.ts": "723a9ca3782b4f603a53beb4660f2dc0f243f302c369040e800974019d3e748c",
+		"apps/web/src/content/units/authoring.server.ts": "65908d8a53d760caae391e7a70ac528c3918f9f9f7b21a9e2542e41cefedd2b4",
+		"apps/web/src/content/units/index.server.ts": "49fb7e5bef64f77dee3568fc850387514f824ccc8960bdc284143d07e434c85e",
+		"apps/web/src/content/units/exposure.server.ts": "f29c15f7d94253d45d6ae56a3fd2ffced4a2782cfcc5c34fb2a2edaf16ed1c3f",
+		"apps/web/src/content/units/flow.server.ts": "5af17571232b1eb061756db66eb64c6a5b971bc8d2bf7624afb599d956c6b855",
+		"apps/web/src/content/units/foundations.server.ts": "386804316ca8de0b3ad0d08b5e12ebc352d9c2f381fa20288edfdc940e5fd8db",
+		"apps/web/src/content/units/portfolio.server.ts": "3b5c362413a72fec2e2c824f52b1cd117a2c7d7e9893a0637269a713ff0fbb07",
+		"apps/web/src/content/units/production.server.ts": "26e1b6f4bca4657a96ec1f61e6d317bb91aa31b7b0eab9ba6299688f335843b9",
+		"apps/web/src/content/units/research.server.ts": "3baca17516983988b3538ab3da39908a31365c845c6c4eb8b90de48c7cf4b5de",
+		"apps/web/src/content/units/structure.server.ts": "e535f77a638338cd05a73ce91a1a70b6b616f37dbe52c001fcdc87968dabb474",
+		"apps/web/src/content/scenarios/contract-neighborhood.ts": "fd2f8272caf527de121f94091b90fd692a98d4171e24c9f86a6573f559d29228",
+		"apps/web/src/content/scenarios/neighborhood-comparison.ts": "be0ca933305be25afe531f83c76cdd3e6c74d83aaa0d7e76f5437610d5817e32",
+		"apps/web/src/content/scenarios/authoring.server.ts": "54097080a868cce58fd0f16fbef19a097eab6d97aeda6ec9dfc6151f0f645f1e",
+		"apps/web/src/content/scenarios/metric-lenses.ts": "9d681e441b6094d03afecdf2b1a834eddef79945a8d5bdae8c12ae7363a1dc30",
+		"apps/web/src/content/scenarios/option-print.ts": "539dc3559dce0bd1ce56044b3a000a418e4001526456650db765ed01ecc2ae5a",
+		"apps/web/src/content/scenarios/research-workflow.ts": "c9c479b2ac25f9d5561153d41ab1e23fd4e1cf762fbebc276de5c5c8d28b873c",
+		"apps/web/src/content/scenarios/session-flow.ts": "d454023847590f80643d300ff80b7da0d4d02cf7f1716f5c4cc6affad0cbfe47",
+		"apps/web/src/domain/learning/engine.ts": "2a10a75889504d191d3b7467be1b4b3dc09e766b2847f0ef7b2d3620af8b59cc",
+		"apps/web/src/domain/learning/types.ts": "26795e54b4e947a8eb2bf2416c611de40b81772001ae7809cddc9e6d248d7207"
+	}
+}

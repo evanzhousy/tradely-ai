@@ -67,7 +67,19 @@ for (const lesson of tradingFlowCourse.lessons) {
 		for (const question of independent) {
 			if (
 				taught.some(
-					(previous) => JSON.stringify({ ...previous, choices: [...previous.choices].sort((a,b)=>a.id.localeCompare(b.id)) }) === JSON.stringify({ ...question, choices: [...question.choices].sort((a,b)=>a.id.localeCompare(b.id)) }),
+					(previous) =>
+						JSON.stringify({
+							...previous,
+							choices: [...previous.choices].sort((a, b) =>
+								a.id.localeCompare(b.id),
+							),
+						}) ===
+						JSON.stringify({
+							...question,
+							choices: [...question.choices].sort((a, b) =>
+								a.id.localeCompare(b.id),
+							),
+						}),
 				)
 			)
 				exactRepeatedQuestions.push({
@@ -75,23 +87,59 @@ for (const lesson of tradingFlowCourse.lessons) {
 					questionId: question.id,
 				});
 		}
-        const strategyResults = [];
-        for (let position = 0; position < 5; position++) {
-          state = engine.initialAttemptState();
-          for (const step of scenario.steps) {
-            for (const evidenceId of step.requiredEvidence) state = engine.transitionAttempt(scenario, state, { type: "inspect", evidenceId });
-            for (const question of step.questions) {
-              const action = question.input ? {
-                type: "respond", questionId: question.id,
-                value: question.input.kind === "number" ? "0" : "Blind response without using the supplied evidence. ".repeat(12).slice(0, question.input.maxLength),
-              } : { type: "answer", questionId: question.id, choiceId: question.choices[Math.min(position, question.choices.length - 1)].id };
-              state = engine.transitionAttempt(scenario, state, action);
-            }
-            state = engine.transitionAttempt(scenario, state, { type: "submit" });
-            if (state.phase !== "complete") state = engine.transitionAttempt(scenario, state, { type: "continue" });
-          }
-          strategyResults.push({ position: position + 1, result: engine.assessAttempt(scenario, state) });
-        }
+		const strategyResults = [];
+		for (let position = 0; position < 6; position++) {
+			state = engine.initialAttemptState();
+			for (const step of scenario.steps) {
+				for (const evidenceId of step.requiredEvidence)
+					state = engine.transitionAttempt(scenario, state, {
+						type: "inspect",
+						evidenceId,
+					});
+				for (const question of step.questions) {
+					const copied =
+						position === 5
+							? step.kind === "independent"
+								? taught.find((item) => item.id === question.id)
+								: question
+							: undefined;
+					const action = question.input
+						? {
+								type: "respond",
+								questionId: question.id,
+								value:
+									question.input.kind === "number"
+										? (copied?.accepted[0] ?? "0")
+										: "Blind response without using the supplied evidence. "
+												.repeat(12)
+												.slice(0, question.input.maxLength),
+							}
+						: {
+								type: "answer",
+								questionId: question.id,
+								choiceId:
+									question.choices.find(
+										(choice) => choice.id === copied?.accepted[0],
+									)?.id ??
+									question.choices[
+										position === 5
+											? 0
+											: Math.min(position, question.choices.length - 1)
+									].id,
+							};
+					state = engine.transitionAttempt(scenario, state, action);
+				}
+				state = engine.transitionAttempt(scenario, state, { type: "submit" });
+				if (state.phase !== "complete")
+					state = engine.transitionAttempt(scenario, state, {
+						type: "continue",
+					});
+			}
+			strategyResults.push({
+				position: position + 1,
+				result: engine.assessAttempt(scenario, state),
+			});
+		}
 
 		variants.push({
 			lessonId: lesson.id,
@@ -101,7 +149,8 @@ for (const lesson of tradingFlowCourse.lessons) {
 			stepCount: scenario.steps.length,
 			independentQuestions: independent.length,
 			alwaysFirstResult: strategyResults[0].result,
-			strategyResults,
+			strategyResults: strategyResults.slice(0, 5),
+			copiedGuidedResult: strategyResults[5].result,
 		});
 	}
 }
@@ -118,7 +167,7 @@ console.log(
 				encoding: "utf8",
 			}).trim(),
 			method:
-				"Probe five fixed answer positions (last available choice if shorter), numerical zero and repeated blind prose, opening required evidence without interpreting it. Submit through the real pure engine. Duplicate comparison normalizes choice order. This extends the original choice-only audit; it is not a learner study or browser/access test.",
+				"Probe five fixed answer positions (last available choice if shorter), numerical zero and repeated blind prose, plus copying the guided case's accepted answers by question ID into new evidence. Submit through the real pure engine. Duplicate comparison normalizes choice order. This extends the original choice-only audit; it is not a learner study or browser/access test.",
 			lessons: tradingFlowCourse.lessons.length,
 			scenarioVariants: variants.length,
 			independentQuestionInstances: variants.reduce(
@@ -130,7 +179,14 @@ console.log(
 				0,
 			),
 			firstChoiceDemonstratedVariants: demonstrated.length,
-			anyFixedPositionDemonstratedVariants: variants.filter(row => row.strategyResults.some(strategy => strategy.result.status === "demonstrated")).length,
+			copiedGuidedDemonstratedVariants: variants.filter(
+				(row) => row.copiedGuidedResult.status === "demonstrated",
+			).length,
+			anyFixedPositionDemonstratedVariants: variants.filter((row) =>
+				row.strategyResults.some(
+					(strategy) => strategy.result.status === "demonstrated",
+				),
+			).length,
 			firstChoiceDemonstratedDefaultLessons: demonstrated.filter(
 				(row) => row.firstInRegistry,
 			).length,

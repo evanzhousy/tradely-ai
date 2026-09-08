@@ -714,34 +714,143 @@ const illustrations = {
 } as const;
 
 const conceptConnections: Record<string, [string, string][]> = {
-	"option-contracts": [["Underlying", "标的"], ["Contract", "合约"], ["Multiplier", "乘数"]],
-	"option-rights": [["Holder", "持有人"], ["Right", "权利"], ["Writer", "卖方"]],
-	"premium-payoff": [["Payoff", "到期价值"], ["− premium", "−权利金"], ["Profit", "盈亏"]],
-	"expiration-settlement": [["Contract", "合约"], ["Exercise", "行权"], ["Settlement", "结算"]],
-	"quotes-orders-trades": [["Order", "订单"], ["Quote", "报价"], ["Execution", "成交"]],
-	"execution-counterparties": [["Incoming", "主动订单"], ["Match", "撮合"], ["Resting", "挂单对手"]],
-	"execution-side": [["Bid", "买价"], ["Print price", "成交价"], ["Ask", "卖价"]],
-	"flow-sentiment": [["Option type", "期权类型"], ["Initiator", "主动方"], ["Inferred label", "推断标签"]],
-	"trade-records": [["Prints", "原始成交"], ["Group rule", "分组规则"], ["Totals", "总量"]],
-	"unusual-activity": [["Activity", "活动量"], ["÷ baseline", "÷基准"], ["Relative size", "相对幅度"]],
-	"option-strategies": [["One leg", "一条腿"], ["Other legs", "其他腿"], ["Portfolio", "组合"]],
-	"delta": [["Spot move", "现价变动"], ["× delta", "×Delta"], ["Price change", "价格变化"]],
-	"gamma": [["Spot move", "现价变动"], ["× gamma", "×Gamma"], ["Delta change", "Delta 变化"]],
-	"theta-vega-rho": [["Time", "时间"], ["Volatility", "波动率"], ["Rates", "利率"]],
-	"implied-realized-volatility": [["Option price", "期权价格"], ["Implied IV", "隐含 IV"], ["Past RV", "历史 RV"]],
-	"volatility-surface": [["Strike", "行权价"], ["IV slice", "IV 切片"], ["Expiry", "到期日"]],
-	"iv-rank-percentile": [["IV history", "IV 历史"], ["Range", "区间"], ["Frequency", "频率"]],
-	"dex-dei-gex": [["Δ equivalents", "Delta 等价量"], ["Net DEX", "净 DEX"], ["DEI", "DEI"]],
-	"gamma-exposure": [["Chain + signs", "链与符号"], ["Gross", "总幅度"], ["Net", "净值"]],
-	"gamma-regimes": [["Assumed risk", "假设风险"], ["Spot move", "现价变动"], ["Hedge change", "对冲变化"]],
-	"structural-levels": [["OI / gamma", "OI / Gamma"], ["Scope", "范围"], ["Reference", "参考位置"]],
-	"charm-vanna": [["Time / IV", "时间 / IV"], ["Sensitivity", "敏感度"], ["Delta change", "Delta 变化"]],
-	"point-in-time-research": [["Known when?", "何时可知？"], ["Fixed rule", "固定规则"], ["Unseen case", "未见案例"]],
-	"portfolio-pnl": [["Cost", "成本"], ["Valuation", "估值"], ["P&L", "盈亏"]],
-	"portfolio-performance": [["Cash flows", "资金流"], ["Returns", "收益"], ["Benchmark", "基准"]],
-	"portfolio-exposure": [["Positions", "持仓"], ["Signed Greeks", "带符号希腊值"], ["Coverage", "覆盖"]],
+	"option-contracts": [
+		["Underlying", "标的"],
+		["Contract", "合约"],
+		["Multiplier", "乘数"],
+	],
+	"option-rights": [
+		["Holder", "持有人"],
+		["Right", "权利"],
+		["Writer", "卖方"],
+	],
+	"premium-payoff": [
+		["Payoff", "到期价值"],
+		["− premium", "−权利金"],
+		["Profit", "盈亏"],
+	],
+	"expiration-settlement": [
+		["Contract", "合约"],
+		["Exercise", "行权"],
+		["Settlement", "结算"],
+	],
+	"quotes-orders-trades": [
+		["Order", "订单"],
+		["Quote", "报价"],
+		["Execution", "成交"],
+	],
+	"execution-counterparties": [
+		["Incoming", "主动订单"],
+		["Match", "撮合"],
+		["Resting", "挂单对手"],
+	],
+	"execution-side": [
+		["Bid", "买价"],
+		["Print price", "成交价"],
+		["Ask", "卖价"],
+	],
+	"flow-sentiment": [
+		["Option type", "期权类型"],
+		["Initiator", "主动方"],
+		["Inferred label", "推断标签"],
+	],
+	"trade-records": [
+		["Prints", "原始成交"],
+		["Group rule", "分组规则"],
+		["Totals", "总量"],
+	],
+	"unusual-activity": [
+		["Activity", "活动量"],
+		["÷ baseline", "÷基准"],
+		["Relative size", "相对幅度"],
+	],
+	"option-strategies": [
+		["One leg", "一条腿"],
+		["Other legs", "其他腿"],
+		["Portfolio", "组合"],
+	],
+	delta: [
+		["Spot move", "现价变动"],
+		["× delta", "×Delta"],
+		["Price change", "价格变化"],
+	],
+	gamma: [
+		["Spot move", "现价变动"],
+		["× gamma", "×Gamma"],
+		["Delta change", "Delta 变化"],
+	],
+	"theta-vega-rho": [
+		["Time", "时间"],
+		["Volatility", "波动率"],
+		["Rates", "利率"],
+	],
+	"implied-realized-volatility": [
+		["Option price", "期权价格"],
+		["Implied IV", "隐含 IV"],
+		["Past RV", "历史 RV"],
+	],
+	"volatility-surface": [
+		["Strike", "行权价"],
+		["IV slice", "IV 切片"],
+		["Expiry", "到期日"],
+	],
+	"iv-rank-percentile": [
+		["IV history", "IV 历史"],
+		["Range", "区间"],
+		["Frequency", "频率"],
+	],
+	"dex-dei-gex": [
+		["Δ equivalents", "Delta 等价量"],
+		["Net DEX", "净 DEX"],
+		["DEI", "DEI"],
+	],
+	"gamma-exposure": [
+		["Chain + signs", "链与符号"],
+		["Gross", "总幅度"],
+		["Net", "净值"],
+	],
+	"gamma-regimes": [
+		["Assumed risk", "假设风险"],
+		["Spot move", "现价变动"],
+		["Hedge change", "对冲变化"],
+	],
+	"structural-levels": [
+		["OI / gamma", "OI / Gamma"],
+		["Scope", "范围"],
+		["Reference", "参考位置"],
+	],
+	"charm-vanna": [
+		["Time / IV", "时间 / IV"],
+		["Sensitivity", "敏感度"],
+		["Delta change", "Delta 变化"],
+	],
+	"point-in-time-research": [
+		["Known when?", "何时可知？"],
+		["Fixed rule", "固定规则"],
+		["Unseen case", "未见案例"],
+	],
+	"portfolio-pnl": [
+		["Cost", "成本"],
+		["Valuation", "估值"],
+		["P&L", "盈亏"],
+	],
+	"portfolio-performance": [
+		["Cash flows", "资金流"],
+		["Returns", "收益"],
+		["Benchmark", "基准"],
+	],
+	"portfolio-exposure": [
+		["Positions", "持仓"],
+		["Signed Greeks", "带符号希腊值"],
+		["Coverage", "覆盖"],
+	],
 };
-export const lessonInfographicSubjects = [...new Set([...Object.keys(illustrations), ...Object.keys(conceptConnections)])];
+export const lessonInfographicSubjects = [
+	...new Set([
+		...Object.keys(illustrations),
+		...Object.keys(conceptConnections),
+	]),
+];
 
 export function LessonInfographic({
 	subject,
@@ -756,7 +865,58 @@ export function LessonInfographic({
 	const ref = useLessonInfographicMotion(subject, motionEnabled);
 	const illustration = illustrations[subject as keyof typeof illustrations];
 	const connections = conceptConnections[subject];
-	if (connections) return <svg ref={ref} className="lesson-infographic" viewBox="0 0 360 216" textAnchor="middle" role="img" aria-labelledby={id}><title id={id}>{syllabus.find(lesson => lesson.id === subject)?.[locale === "zh" ? "titleZh" : "title"]}: {connections.map(item => item[locale === "zh" ? 1 : 0]).join(" → ")}</title><path d="M24 48h312M24 108h312M24 168h312" className="diagram-grid"/>{connections.map((item,index)=><g key={item[0]}><rect x={24+index*112} y="74" width="88" height="68" rx="12" className={index===1 ? "diagram-accent" : "diagram-paper"}/><text x={68+index*112} y="111" className={index===1 ? "diagram-on-accent-text" : undefined}>{item[locale==="zh" ? 1 : 0]}</text>{index<2 ? <TracePath d={`M${114+index*112} 108h18m-5-5 5 5-5 5`} delay={index*250}/> : null}</g>)}<text x="180" y="185" className="diagram-muted-text">{locale === "zh" ? "定义 → 比较 → 解释" : "Define · compare · explain"}</text></svg>;
+	if (connections)
+		return (
+			<svg
+				ref={ref}
+				className="lesson-infographic"
+				viewBox="0 0 360 216"
+				textAnchor="middle"
+				role="img"
+				aria-labelledby={id}
+			>
+				<title id={id}>
+					{
+						syllabus.find((lesson) => lesson.id === subject)?.[
+							locale === "zh" ? "titleZh" : "title"
+						]
+					}
+					:{" "}
+					{connections.map((item) => item[locale === "zh" ? 1 : 0]).join(" → ")}
+				</title>
+				<path d="M24 48h312M24 108h312M24 168h312" className="diagram-grid" />
+				{connections.map((item, index) => (
+					<g key={item[0]}>
+						<rect
+							x={24 + index * 112}
+							y="74"
+							width="88"
+							height="68"
+							rx="12"
+							className={index === 1 ? "diagram-accent" : "diagram-paper"}
+						/>
+						<text
+							x={68 + index * 112}
+							y="111"
+							className={index === 1 ? "diagram-on-accent-text" : undefined}
+						>
+							{item[locale === "zh" ? 1 : 0]}
+						</text>
+						{index < 2 ? (
+							<TracePath
+								d={`M${114 + index * 112} 108h18m-5-5 5 5-5 5`}
+								delay={index * 250}
+							/>
+						) : null}
+					</g>
+				))}
+				<text x="180" y="185" className="diagram-muted-text">
+					{locale === "zh"
+						? "定义 → 比较 → 解释"
+						: "Define · compare · explain"}
+				</text>
+			</svg>
+		);
 	if (!illustration) return null;
 	const { Diagram, description } = illustration;
 	const languageIndex = locale === "zh" ? 1 : 0;

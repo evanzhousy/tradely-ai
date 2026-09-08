@@ -6,6 +6,8 @@ Updated September 8, 2026. Planning baseline: `2e1f657`. This consolidated plan 
 
 **Design statement:** Tradely owns explanations, versioned teaching cases, learner work, and assessment; the app supplies the coverage checklist, while optional 2D/Three.js views illustrate the same evidence without owning its meaning or grading.
 
+**Implementation status:** the 36-lesson edition is implemented locally. The [verification record](reviews/course-update-verification-2026-09-08.md) records delivered behavior, tests, content audits and remaining live-account, media-publication and human-review gates. The original 11 IDs and existing version fields are retained.
+
 ## 1. Decisions carried forward
 
 - Teach **platform-agnostic knowledge** encountered throughout `/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack`. Use neutral lesson titles and portable examples. Platform navigation belongs in product help; TradingFlow practice links remain optional enrichment.

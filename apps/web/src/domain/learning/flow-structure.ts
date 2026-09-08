@@ -17,7 +17,7 @@ export type FlowStructureComparison = {
 	sessionDate: string;
 	reportedOi: DatedObservation;
 	previousOi: DatedObservation | null;
-	gex: DatedObservation;
+	gex: DatedObservation | null;
 	note: LearningCopy;
 	replay: ReplayTimeline<{ position: number; volume: number }>;
 };

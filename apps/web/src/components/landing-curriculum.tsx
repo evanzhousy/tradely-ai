@@ -116,7 +116,11 @@ export function LandingCurriculum({
 									</CardHeader>
 									<CardContent className="mt-auto">
 										<p className="curriculum-practice">
-											{lesson.practice ? t("home.cardPractice", { tool: lesson.practice.tool }) : (locale === "zh" ? "交互练习与独立案例" : "Interactive practice and independent cases")}
+											{lesson.practice
+												? t("home.cardPractice", { tool: lesson.practice.tool })
+												: locale === "zh"
+													? "交互练习与独立案例"
+													: "Interactive practice and independent cases"}
 										</p>
 									</CardContent>
 									<CardFooter className="curriculum-card-footer">

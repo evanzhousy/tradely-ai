@@ -1,0 +1,35 @@
+[
+  {
+    "id": "premium-calculation",
+    "file": "videos/course-v2-companions/premium-calculation/renders/companion.mp4",
+    "duration": 45,
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "sha256": "56ddc85beb849b70bcfadd8751361e70f7d64162949e1c40f7e75242a5b3f348",
+    "status": "rendered and checked locally; not published"
+  },
+  {
+    "id": "research-question",
+    "file": "videos/course-v2-companions/research-question/renders/companion.mp4",
+    "duration": 45,
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "sha256": "87fbe2f90352011c04db35748e8e455a9b021ae5396faad6edb9862213362f7c",
+    "status": "rendered and checked locally; not published"
+  },
+  {
+    "id": "recap-audit",
+    "file": "videos/course-v2-companions/recap-audit/renders/companion.mp4",
+    "duration": 45,
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "sha256": "a23c1cc002f15ff01a5b3ccd12a78ebad0351a04dbc595bbdaa9ec64ebc407d6",
+    "status": "rendered and checked locally; not published"
+  }
+]

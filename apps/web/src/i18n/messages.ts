@@ -97,7 +97,8 @@ const messages = {
 		"nav.openTradingFlow": "Open TradingFlow",
 		"nav.openMenu": "Open menu",
 		"nav.mobileTitle": "Tradely",
-		"nav.mobileDescription": "Options knowledge, examples and independent practice.",
+		"nav.mobileDescription":
+			"Options knowledge, examples and independent practice.",
 		"language.label": "Language",
 		"language.english": "English",
 		"language.chinese": "中文",
@@ -130,7 +131,7 @@ const messages = {
 		"common.accessUnavailable": "Access status unavailable",
 		"common.completed": "Completed",
 		"common.lessonNumber": "Lesson {current} of {total}",
-		"common.minutes": "{minutes} min",
+		"common.minutes": "~{minutes} min",
 		"progress.course": "Course progress",
 		"progress.completedLabel": "{completed} of {total} lessons completed",
 		"progress.synced": "Synced to your Tradely account.",
@@ -154,7 +155,7 @@ const messages = {
 		"home.partnerDescription":
 			"Tradely keeps your curriculum and progress. TradingFlow remains the real analysis environment, with separate customer accounts and infrastructure.",
 		"home.statLessons": "Lessons",
-		"home.statMinutes": "Guided minutes",
+		"home.statMinutes": "Estimated study minutes",
 		"home.statPreview": "Free lessons",
 		"home.statProgress": "Completed",
 		"home.statPreviewDetail": "No Tradely membership required",
@@ -284,10 +285,11 @@ const messages = {
 		"home.pathTitle": "理清思路，找到起点。",
 		"home.lessonRange": "第 {first}–{last} 课",
 		"home.pathOneDescription":
-			"设定边界，选择比较范围，理解排名究竟能说明什么。",
-		"home.pathTwoDescription": "逐步检视合约、单笔交易、当日资金流与结构背景。",
+			"先理解合约、报价、交易、成交侧与情绪标签，再解读资金流。",
+		"home.pathTwoDescription":
+			"计算希腊字母与归一化敞口，解读波动率和市场结构模型。",
 		"home.pathThreeDescription":
-			"形成研究记录，撰写复盘，并检查结论背后的推理。",
+			"制作并审查研究资料包，再探索投资组合风险与绩效。",
 		"hall.sceneLabel": "走进 Tradely 交易大厅",
 		"hall.simulation": "交易大厅 · 模拟行情",
 		"hall.observeLabel": "读懂数据",
@@ -388,7 +390,7 @@ const messages = {
 		"common.accessUnavailable": "暂时无法确认访问权限",
 		"common.completed": "已完成",
 		"common.lessonNumber": "第 {current} 课，共 {total} 课",
-		"common.minutes": "{minutes} 分钟",
+		"common.minutes": "约 {minutes} 分钟",
 		"progress.course": "课程进度",
 		"progress.completedLabel": "已完成 {completed}/{total} 课",
 		"progress.synced": "已同步到你的 Tradely 账户。",
@@ -411,7 +413,7 @@ const messages = {
 		"home.partnerDescription":
 			"Tradely 保存你的课程与进度。TradingFlow 仍是独立的分析环境，双方使用各自的账户和基础设施。",
 		"home.statLessons": "课程数",
-		"home.statMinutes": "讲解时长",
+		"home.statMinutes": "预计学习分钟数",
 		"home.statPreview": "免费课程",
 		"home.statProgress": "已完成",
 		"home.statPreviewDetail": "无需 Tradely 会员",
@@ -493,8 +495,7 @@ const messages = {
 		"pricing.featureProgress": "跨设备保存课程进度",
 		"pricing.featureUpdates": "会员有效期内的后续课程与更新",
 		"pricing.featurePractice": "TradingFlow 练习任务与直接工具链接",
-		"pricing.featureCoursePassCurriculum":
-			"《证据驱动的期权研究》全部当前课程",
+		"pricing.featureCoursePassCurriculum": "《证据驱动的期权研究》全部当前课程",
 		"pricing.featureCoursePassProgress": "跨设备保存课程进度",
 		"pricing.featureCoursePassRevisions": "当前课程的后续修订与更正",
 		"pricing.featureCoursePassPractice": "TradingFlow 练习任务与直接工具链接",

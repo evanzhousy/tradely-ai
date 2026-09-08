@@ -11,12 +11,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
+import { contractNeighborhoodScenarios } from "@/content/scenarios/contract-neighborhood";
 import { metricLensScenarios } from "@/content/scenarios/metric-lenses";
 import { optionPrintScenarios } from "@/content/scenarios/option-print";
-import { contractNeighborhoodScenarios } from "@/content/scenarios/contract-neighborhood";
 import { researchWorkflowScenarios } from "@/content/scenarios/research-workflow";
+
 // Preserve renderer coverage with the archived fixtures as well as the new unit tests.
-const getLessonScenarios = (id: string) => [...metricLensScenarios, ...optionPrintScenarios, ...contractNeighborhoodScenarios, ...researchWorkflowScenarios].filter(item => item.lessonId === id);
+const getLessonScenarios = (id: string) =>
+	[
+		...metricLensScenarios,
+		...optionPrintScenarios,
+		...contractNeighborhoodScenarios,
+		...researchWorkflowScenarios,
+	].filter((item) => item.lessonId === id);
+
 import {
 	initialAttemptState,
 	projectAttempt,

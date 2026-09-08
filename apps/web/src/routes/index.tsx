@@ -89,7 +89,11 @@ function HomeComponent() {
 										className: "self-start",
 									})}
 								>
-									{startLesson.access === "preview" ? t("home.startFree") : (locale === "zh" ? "开始学习" : "Start learning")}
+									{startLesson.access === "preview"
+										? t("home.startFree")
+										: locale === "zh"
+											? "开始学习"
+											: "Start learning"}
 									<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 								</Link>
 							) : null}
@@ -99,7 +103,9 @@ function HomeComponent() {
 							</a>
 						</div>
 						<p className="landing-free-note">
-							{startLesson?.access === "preview" ? t("home.freeNote", { minutes: startLesson.minutes }) : t("course.freeLessons", { count: previewCount })}
+							{startLesson?.access === "preview"
+								? t("home.freeNote", { minutes: startLesson.minutes })
+								: t("course.freeLessons", { count: previewCount })}
 						</p>
 					</div>
 				</div>

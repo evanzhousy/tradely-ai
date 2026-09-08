@@ -1,0 +1,9 @@
+{
+  "name": "tradely-research-question",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "npx --yes hyperframes@0.8.31 check",
+    "render": "npx --yes hyperframes@0.8.31 render --quality high --output renders/companion.mp4"
+  }
+}

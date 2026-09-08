@@ -6,5 +6,14 @@ import { portfolioUnits } from "./portfolio.server";
 import { productionUnits } from "./production.server";
 import { researchUnits } from "./research.server";
 import { structureUnits } from "./structure.server";
-export const teachingUnits = [...foundationUnits, ...flowUnits, ...exposureUnits, ...structureUnits, ...researchUnits, ...productionUnits, ...portfolioUnits];
-export const getTeachingUnit = (id: string) => teachingUnits.find(unit => unit.id === id);
+export const teachingUnits = [
+	...foundationUnits,
+	...flowUnits,
+	...exposureUnits,
+	...structureUnits,
+	...researchUnits,
+	...productionUnits,
+	...portfolioUnits,
+];
+export const getTeachingUnit = (id: string) =>
+	teachingUnits.find((unit) => unit.id === id);

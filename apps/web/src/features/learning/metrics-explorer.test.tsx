@@ -17,12 +17,20 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 vi.mock("./three/gex-scene", () => ({ mountGexScene: mocks.mount }));
 
+import { contractNeighborhoodScenarios } from "@/content/scenarios/contract-neighborhood";
 import { metricLensScenarios } from "@/content/scenarios/metric-lenses";
 import { optionPrintScenarios } from "@/content/scenarios/option-print";
-import { contractNeighborhoodScenarios } from "@/content/scenarios/contract-neighborhood";
 import { researchWorkflowScenarios } from "@/content/scenarios/research-workflow";
+
 // Preserve renderer coverage with the archived fixtures as well as the new unit tests.
-const getLessonScenarios = (id: string) => [...metricLensScenarios, ...optionPrintScenarios, ...contractNeighborhoodScenarios, ...researchWorkflowScenarios].filter(item => item.lessonId === id);
+const getLessonScenarios = (id: string) =>
+	[
+		...metricLensScenarios,
+		...optionPrintScenarios,
+		...contractNeighborhoodScenarios,
+		...researchWorkflowScenarios,
+	].filter((item) => item.lessonId === id);
+
 import { initialAttemptState, projectAttempt } from "@/domain/learning/engine";
 import { LearningScreen } from "./learning-screen";
 import { MetricsExplorer } from "./metrics-explorer";

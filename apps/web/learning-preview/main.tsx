@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { LessonNavigation } from "../src/components/lesson-navigation";
 import { createRoot } from "react-dom/client";
+import { LessonNavigation } from "../src/components/lesson-navigation";
 import { tradingFlowCourse } from "../src/content/course";
 import { getLessonScenarios } from "../src/content/scenarios/index.server";
 import {
@@ -15,6 +15,29 @@ import type {
 import { LearningScreen } from "../src/features/learning/learning-screen";
 import type { Locale } from "../src/i18n/messages";
 import "./preview.css";
+
+// Optional generated media belongs only to this isolated local review entry.
+const companionVideos = import.meta.glob<string>(
+	"../../../videos/course-v2-companions/*/renders/companion.mp4",
+	{ eager: true, query: "?url", import: "default" },
+);
+const companionCaptions = import.meta.glob<string>(
+	"../../../videos/course-v2-companions/*/captions.vtt",
+	{ eager: true, query: "?url", import: "default" },
+);
+const companions: Record<string, { video: string; captions: string }> =
+	Object.fromEntries(
+		[
+			["validate-option-print", "premium-calculation"],
+			["audited-boundary", "research-question"],
+			["audit-market-recap", "recap-audit"],
+		].flatMap(([lesson, project]) => {
+			const base = `../../../videos/course-v2-companions/${project}`;
+			const video = companionVideos[`${base}/renders/companion.mp4`];
+			const captions = companionCaptions[`${base}/captions.vtt`];
+			return video && captions ? [[lesson, { video, captions }]] : [];
+		}),
+	);
 
 function Session({
 	lessonId,
@@ -44,7 +67,20 @@ function Session({
 				});
 			for (const question of step.questions)
 				next = transitionAttempt(scenario, next, {
-					...(question.input ? { type: "respond" as const, questionId: question.id, value: question.input.kind === "text" ? question.explanation.en : question.accepted[0] } : { type: "answer" as const, questionId: question.id, choiceId: question.accepted[0] }),
+					...(question.input
+						? {
+								type: "respond" as const,
+								questionId: question.id,
+								value:
+									question.input.kind === "text"
+										? question.explanation.en
+										: question.accepted[0],
+							}
+						: {
+								type: "answer" as const,
+								questionId: question.id,
+								choiceId: question.accepted[0],
+							}),
 				});
 			next = transitionAttempt(scenario, next, { type: "submit" });
 			next = transitionAttempt(scenario, next, { type: "continue" });
@@ -91,12 +127,25 @@ function App() {
 		tradingFlowCourse.lessons.find((item) => item.id === requested)?.id ??
 			"rank-contracts",
 	);
-	const [variant, setVariant] = useState(Number(new URLSearchParams(location.search).get("variant")) === 1 ? 1 : 0);
-	const [locale, setLocale] = useState<Locale>(new URLSearchParams(location.search).get("lang") === "zh" ? "zh" : "en");
-	useEffect(() => { document.documentElement.classList.toggle("dark", new URLSearchParams(location.search).get("theme") === "dark"); }, []);
+	const [variant, setVariant] = useState(
+		Number(new URLSearchParams(location.search).get("variant")) === 1 ? 1 : 0,
+	);
+	const [locale, setLocale] = useState<Locale>(
+		new URLSearchParams(location.search).get("lang") === "zh" ? "zh" : "en",
+	);
+	useEffect(() => {
+		document.documentElement.classList.toggle(
+			"dark",
+			new URLSearchParams(location.search).get("theme") === "dark",
+		);
+	}, []);
 	return (
 		<main className="mx-auto flex max-w-4xl flex-col gap-6 p-4 sm:p-8">
-			<LessonNavigation locale={locale} siteOrigin="http://127.0.0.1:8250" lessonId={lessonId} />
+			<LessonNavigation
+				locale={locale}
+				siteOrigin="http://127.0.0.1:8250"
+				lessonId={lessonId}
+			/>
 			<h1 className="font-semibold text-2xl">Tradely · Lesson review</h1>
 			<p className="text-muted-foreground text-sm">
 				Local synthetic fixtures. Decisions reset on reload; no identity,
@@ -158,6 +207,34 @@ function App() {
 				variant={variant}
 				locale={locale}
 			/>
+			{companions[lessonId] ? (
+				<details>
+					<summary>
+						{locale === "zh"
+							? "修订后的英语视觉短片（本地预览）"
+							: "Corrected English visual companion (local preview)"}
+					</summary>
+					<p>
+						{locale === "zh"
+							? "课程正文和练习均有完整中文，此可选短片为英语静音视觉示例。"
+							: "Optional silent visual example. The full lesson and practice are available in English and Chinese."}
+					</p>
+					<video
+						className="mt-3 aspect-video w-full"
+						controls
+						playsInline
+						preload="none"
+						src={companions[lessonId].video}
+					>
+						<track
+							kind="captions"
+							srcLang="en"
+							label="English"
+							src={companions[lessonId].captions}
+						/>
+					</video>
+				</details>
+			) : null}
 		</main>
 	);
 }

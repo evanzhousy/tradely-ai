@@ -217,24 +217,31 @@ export function FlowStructureExplorer({
 							) : null}
 						</CardContent>
 					</Card>
-					<Card size="sm">
-						<CardHeader>
-							<Badge variant="secondary">{text("fixed")}</Badge>
-							<CardTitle>{text("gex")}</CardTitle>
-							<CardDescription>
-								{text("date")} {data.gex.asOf}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="flex flex-col gap-3">
-							<strong className="font-mono text-3xl tabular-nums" data-flow-gex>
-								{format(data.gex.value, true)}
-							</strong>
-							<p className="text-muted-foreground text-xs">
-								{data.gex.value === null ? text("missing") : text("gexUnits")}
-							</p>
-							<p className="text-muted-foreground text-xs">{text("gexNote")}</p>
-						</CardContent>
-					</Card>
+					{data.gex ? (
+						<Card size="sm">
+							<CardHeader>
+								<Badge variant="secondary">{text("fixed")}</Badge>
+								<CardTitle>{text("gex")}</CardTitle>
+								<CardDescription>
+									{text("date")} {data.gex.asOf}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="flex flex-col gap-3">
+								<strong
+									className="font-mono text-3xl tabular-nums"
+									data-flow-gex
+								>
+									{format(data.gex.value, true)}
+								</strong>
+								<p className="text-muted-foreground text-xs">
+									{data.gex.value === null ? text("missing") : text("gexUnits")}
+								</p>
+								<p className="text-muted-foreground text-xs">
+									{text("gexNote")}
+								</p>
+							</CardContent>
+						</Card>
+					) : null}
 				</div>
 			</div>
 		</section>

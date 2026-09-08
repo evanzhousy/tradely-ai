@@ -19,6 +19,7 @@ import {
 	attemptStateSchema,
 	type LearningResponse,
 	learningResultSchema,
+	type SourceWork,
 } from "@/domain/learning/types";
 import { resolveCurrentLessonAccess } from "./access.server";
 import { captureServerException } from "./analytics/posthog.server";
@@ -42,6 +43,13 @@ async function authorize(lessonId: string) {
 	return { ok: true, userId: courseAccess.userId } as const;
 }
 
+function isCurrentScenario(record: LessonAttempt) {
+	return getLessonScenarios(record.lessonId).some(
+		(item) =>
+			item.id === record.scenarioId && item.version === record.scenarioVersion,
+	);
+}
+
 function projectRecord(record: LessonAttempt): LearningResponse {
 	const scenario = getScenario(
 		record.lessonId,
@@ -50,8 +58,9 @@ function projectRecord(record: LessonAttempt): LearningResponse {
 	);
 	if (!scenario || record.status === "retired")
 		return { ok: false, reason: "retired" };
-	const current = getLessonScenarios(record.lessonId).some(item => item.id === record.scenarioId && item.version === record.scenarioVersion);
-	if (!current && record.status === "in_progress") return { ok: false, reason: "retired" };
+	const current = isCurrentScenario(record);
+	if (!current && record.status === "in_progress")
+		return { ok: false, reason: "retired" };
 	const view = projectAttempt(
 		scenario,
 		attemptStateSchema.parse(record.state),
@@ -118,16 +127,38 @@ export async function openLearningImpl(
 		const previousIndex = scenarios.findIndex(
 			(scenario) => scenario.id === latest?.scenarioId,
 		);
-		const sourceId = ({ "market-recap": "cookbook-research-packet", "audit-market-recap": "market-recap" } as Record<string, string>)[data.lessonId];
-		let sourceWork;
+		const sourceId = (
+			{
+				"market-recap": "cookbook-research-packet",
+				"audit-market-recap": "market-recap",
+			} as Record<string, string>
+		)[data.lessonId];
+		let sourceWork: SourceWork | undefined;
 		if (sourceId && (await authorize(sourceId)).ok) {
-			const [source] = await db.select().from(lessonAttempt).where(and(eq(lessonAttempt.clerkUserId, access.userId), eq(lessonAttempt.lessonId, sourceId), eq(lessonAttempt.status, "submitted"))).orderBy(desc(lessonAttempt.createdAt), desc(lessonAttempt.id)).limit(1);
+			const [source] = await db
+				.select()
+				.from(lessonAttempt)
+				.where(
+					and(
+						eq(lessonAttempt.clerkUserId, access.userId),
+						eq(lessonAttempt.lessonId, sourceId),
+						eq(lessonAttempt.status, "submitted"),
+					),
+				)
+				.orderBy(desc(lessonAttempt.createdAt), desc(lessonAttempt.id))
+				.limit(1);
 			if (source && /-practice-[12]$/.test(source.scenarioId)) {
 				const projected = projectRecord(source);
-				if (projected.ok && !projected.view.archived) sourceWork = projected.view.work;
+				if (projected.ok && !projected.view.archived)
+					sourceWork = projected.view.work;
 			}
 		}
-		const scenario = scenarios[sourceWork?.caseVariant ? sourceWork.caseVariant - 1 : (previousIndex + 1) % scenarios.length];
+		const scenario =
+			scenarios[
+				sourceWork?.caseVariant
+					? sourceWork.caseVariant - 1
+					: (previousIndex + 1) % scenarios.length
+			];
 		await ensureAppUser(access.userId);
 		const [created] = await db
 			.insert(lessonAttempt)
@@ -137,7 +168,10 @@ export async function openLearningImpl(
 				lessonId: data.lessonId,
 				scenarioId: scenario.id,
 				scenarioVersion: scenario.version,
-				state: { ...initialAttemptState(), ...(sourceWork ? { sourceWork } : {}) },
+				state: {
+					...initialAttemptState(),
+					...(sourceWork ? { sourceWork } : {}),
+				},
 			})
 			.onConflictDoNothing()
 			.returning();
@@ -178,7 +212,11 @@ export async function updateLearningImpl(
 			record.scenarioId,
 			record.scenarioVersion,
 		);
-		if (!scenario || record.status === "retired")
+		if (
+			!scenario ||
+			record.status === "retired" ||
+			(record.status === "in_progress" && !isCurrentScenario(record))
+		)
 			return { ok: false, reason: "retired" };
 		if (record.lastCommandId === data.commandId) return projectRecord(record);
 		if (record.revision !== data.revision)

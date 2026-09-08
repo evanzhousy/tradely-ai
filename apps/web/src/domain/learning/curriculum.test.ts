@@ -1,7 +1,7 @@
+import { describe, expect, it, vi } from "vitest";
 import { metricLensScenarios } from "@/content/scenarios/metric-lenses";
 import { researchWorkflowScenarios } from "@/content/scenarios/research-workflow";
 import { referenceAction } from "@/domain/learning/test-helpers";
-import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
@@ -61,13 +61,27 @@ describe("curriculum teaching contracts", () => {
 								(choice) => choice.label.en && choice.label.zh,
 							),
 						).toBe(true);
-						state = transitionAttempt(scenario, state, referenceAction(question));
+						state = transitionAttempt(
+							scenario,
+							state,
+							referenceAction(question),
+						);
 					}
 					state = transitionAttempt(scenario, state, { type: "submit" });
 					if (state.phase !== "complete")
 						state = transitionAttempt(scenario, state, { type: "continue" });
 				}
-				expect(assessAttempt(scenario, state)?.status).toBe(scenario.steps.some(step => step.kind === "independent" && step.questions.some(question => question.input?.kind === "text")) ? "practiced" : "demonstrated");
+				expect(assessAttempt(scenario, state)?.status).toBe(
+					scenario.steps.some(
+						(step) =>
+							step.kind === "independent" &&
+							step.questions.some(
+								(question) => question.input?.kind === "text",
+							),
+					)
+						? "practiced"
+						: "demonstrated",
+				);
 				const final = required(scenario.steps.at(-1));
 				const missed = {
 					...state,
@@ -75,7 +89,18 @@ describe("curriculum teaching contracts", () => {
 						...state.answers,
 						[final.id]: {
 							...state.answers[final.id],
-							[final.questions[0].id]: final.questions[0].input?.kind === "number" ? "987654321" : final.questions[0].input?.kind === "text" ? final.questions[0].explanation.en : required(final.questions[0].choices.find(choice => !final.questions[0].accepted.includes(choice.id))).id,						},
+							[final.questions[0].id]:
+								final.questions[0].input?.kind === "number"
+									? "987654321"
+									: final.questions[0].input?.kind === "text"
+										? final.questions[0].explanation.en
+										: required(
+												final.questions[0].choices.find(
+													(choice) =>
+														!final.questions[0].accepted.includes(choice.id),
+												),
+											).id,
+						},
 					},
 				};
 				expect(assessAttempt(scenario, missed)?.status).toBe("practiced");
@@ -90,17 +115,13 @@ describe("curriculum teaching contracts", () => {
 		expect(deiMagnitude(50000, -1)).toBeNull();
 	});
 	it("equal complete GEX totals hide opposite near-expiry signs, and missing is never zero", () => {
-		const guided = required(
-			metricLensScenarios[0].steps[1].metrics,
-		);
+		const guided = required(metricLensScenarios[0].steps[1].metrics);
 		const [a, b] = guided.distributions;
 		expect(gexTotal(a.cells)).toBe(100);
 		expect(gexTotal(b.cells)).toBe(100);
 		expect(gexTotal(a.cells.filter((cell) => cell.days === 7))).toBe(-150);
 		expect(gexTotal(b.cells.filter((cell) => cell.days === 7))).toBe(40);
-		const transfer = required(
-			metricLensScenarios[1].steps[2].metrics,
-		);
+		const transfer = required(metricLensScenarios[1].steps[2].metrics);
 		expect(gexTotal(transfer.distributions[1].cells)).toBeNull();
 	});
 	it("equal contract peaks do not establish equal neighborhood breadth or moneyness", () => {
@@ -128,7 +149,9 @@ describe("curriculum teaching contracts", () => {
 	});
 	it("rank changes with peer observations while the focal volume remains fixed", () => {
 		const data = required(
-			researchWorkflowScenarios.find(scenario => scenario.lessonId === "rank-symbols")?.steps[1].universe,
+			researchWorkflowScenarios.find(
+				(scenario) => scenario.lessonId === "rank-symbols",
+			)?.steps[1].universe,
 		);
 		const admitted = data.rows
 			.filter((row) => row.eligible)

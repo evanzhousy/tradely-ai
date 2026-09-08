@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Tradely owns its identity, billing, database, media, and customer relationship. TradingFlow is an external partnered practice tool. Outbound links contain only course-level UTM attribution—never Clerk IDs, Stripe IDs, progress, or other personal data.
+Tradely owns its identity, billing, database, media, and customer relationship. The course teaches platform-agnostic market concepts. TradingFlow is an external partnered practice tool and a source for the concept coverage checklist. Outbound links contain only course-level UTM attribution—never Clerk IDs, Stripe IDs, progress, or other personal data.
 
 ## Persistent model
 
@@ -14,7 +14,7 @@ The source schema defines three PostgreSQL tables. The interactive-practice tabl
 - `lesson_progress`: user plus lesson ID, authoritative content version, last video position, and completion timestamps.
 - `lesson_attempt`: a user-owned, versioned scenario attempt with structured answers, inspected evidence, hint use, revision, and an immutable submitted assessment. A partial unique index permits one active attempt per user and lesson.
 
-Course and lesson metadata live in `apps/web/src/content/course.ts`. Lesson bodies remain in a server-only module. There are no subscription, entitlement, enrollment, prerequisite, quiz, or processed-webhook tables.
+The eight-module, 36-lesson syllabus lives in `apps/web/src/content/syllabus.ts`; `course.ts` adds access, existing IDs and media metadata. Bilingual explanations, worked examples, synthetic cases and answer keys live in server-only `content/units/*.server.ts` modules. JSONB attempt state accepts choice IDs, numerical strings, written responses and optional snapshots of preceding learner work. Versioning uses only the existing `content_version` and `scenario_version` fields. There are no subscription, entitlement, enrollment, prerequisite, quiz, or processed-webhook tables.
 
 ## Access contract
 
@@ -44,6 +44,8 @@ Free preview media may use `MEDIA_PUBLIC_BASE_URL`. Paid media must never be pla
 
 The preferred production path is the shared Tradely Cloudflare R2 private bucket (R2's S3-compatible API). Test and production intentionally use the same bucket and credentials, while all credentials remain server-only. After access succeeds, the server returns 30-minute presigned URLs for the exact video and caption objects. The local Node-host fallback returns a signed Tradely endpoint; each request verifies both the HMAC token and the current Clerk user, and video responses support byte ranges.
 
+The current course edition sets `mediaCurrent: false`: earlier videos are withheld while the updated interactive lessons and notes are the primary instruction. Three corrected English silent companions are rendered and checked locally under `videos/course-v2-companions/`; their proposed private keys have not been uploaded or activated. Only the isolated local review entry can import those generated files.
+
 Posters are public because they reveal no paid lesson body. Caption tracks follow the same protection as their video.
 
 The operational Git and artifact boundary is documented in
@@ -57,19 +59,23 @@ Resume positions are restored only when the stored content version matches the c
 
 ## Interactive practice contract
 
-`content/learning-rollout.ts` owns public introductions and capabilities for the supplemental `validate-option-print`, `rank-contracts`, and `session-flow-vs-structure` pilots. The lesson loader exposes availability only after the existing access decision. Case content and answer keys are server-only; the client receives only the current stage, its approved comparison snapshot, and evidence it has inspected. Opening or changing an attempt rechecks identity, paid access, and attempt ownership.
+`content/learning-rollout.ts` derives public introductions and capabilities from the syllabus. All 36 lessons use a worked explanation, a guided case and an independent case. Two practice variants are available; a third evaluation variant is reserved for offline review and is absent from the runtime registry. Case content and answer keys remain server-only; the client receives the current stage and approved evidence. The lesson loader applies the existing access decision before returning protected lesson content. Opening or changing a saved attempt rechecks identity, paid access and attempt ownership.
+
+The four execution foundations share a 2D order/quote/print demonstration. Its editable buy/sell order, order quantity and, in the sentiment lesson, option type expose the relevant relationships. One fill has two counterparties but adds volume only once. Partial fills and cancellations retain their different effects on resting quantity and executed volume. The demonstration belongs to the explanation stage; independent cases present different evidence.
+
+Numeric responses have explicit units and server-side parsing, tolerance and completeness checks. Text responses are bounded and saved for self or human review; they never receive automatic mastery credit. Unsaved drafts block submission. Submitted work can be downloaded as Markdown with the source worksheet and missing observations. The recap can snapshot the same user's latest submitted research packet, and the audit can snapshot their recap. The receiving case matches that source variant, access is rechecked, and subsequent edits or retries cannot rewrite the copied snapshot.
 
 The contract explorer shares selection and view filters across an accessible 2D map and a lazy-loaded Three.js view. Its immutable snapshot ID is part of the component key; saving an answer does not change the graph's snapshot or reset the camera. The renderer owns graphics resources only. It neither grades answers nor changes the declared comparison boundary, and WebGL failure preserves the selection in 2D.
 
 Contract replay version 2 uses one monotonic clock for the numeric map and animated column heights. Synthetic checkpoint volumes are temporally interpolated while prior-session and missing observations retain their original state. The close is the unchanged assessment snapshot. Playback is local presentation state, pauses when hidden or offscreen, and produces no attempt writes or per-frame analytics. Reduced motion disables autoplay and opts manual playback into discrete checkpoints.
 
-The clock, rate options, and transport controls are shared with the 2D session-flow comparison. Its sampler changes only cumulative volume; OI and model values retain their supplied report dates. Report-to-report OI changes require present values, identical scopes, and increasing dates. Synthetic snapshots with missing model values or mismatched OI scopes stay explicitly unavailable. The fastest available playback rate is the default in both lessons.
+The clock, rate options, and transport controls are shared with the 2D session-flow comparison. Its sampler changes only cumulative volume; OI and model values retain their supplied report dates. Report-to-report OI changes require present values, identical scopes, and increasing dates. Synthetic snapshots with missing model values or mismatched OI scopes stay explicitly unavailable. The fastest available playback rate, 2×, is the default in each replay. Optional Three.js is used for the contract neighborhood and signed GEX distribution. The GEX view retains a common scale, explicit missing values and the same snapshot/slice selection as its table.
 
-Every decision is saved before the next action is enabled. Updates compare the expected revision and deduplicate the command ID; a lost response can be retried without applying the decision twice. Concurrent-tab conflicts require loading the current attempt. Submitted attempts are immutable, and their assessments are stored independently of subsequent rubric edits. A retry uses the alternate independent case; retired scenario versions require an explicit restart and retain the prior record.
+Every decision is saved before the next action is enabled. Updates compare the expected revision and deduplicate the command ID; a lost response can be retried without applying the decision twice. Concurrent-tab conflicts require loading the current attempt. Submitted attempts are immutable, and their assessments are stored independently of subsequent rubric edits. A retry uses the alternate independent case unless it continues a fixed source-work snapshot. Retired scenario versions require an explicit restart and retain the prior record; cached-tab mutations to earlier active versions are rejected. Submitted earlier cases can still be viewed with their stored assessment and an archive label.
 
-Practice completion is separate from `lesson_progress`. The independent case earns `demonstrated` only when every required criterion is met without an independent-case hint; other completed attempts are `practiced`. A course completion timestamp does not establish this result. The pilot is a paid lesson and requires sign-in; anonymous preview exercises belong to the later public-lesson rollout.
+Practice completion is separate from `lesson_progress`. The independent case earns `demonstrated` only when every required criterion is automatically checkable and met without an independent-case hint. Cases containing unreviewed prose and other completed attempts are `practiced`. The result separates automatically checked criteria from pending written review. A course completion timestamp does not establish this result. The three existing free lessons retain anonymous practice without persistence. New lessons use the existing paid course access rule. Signed-in account persistence uses the same three-table schema.
 
-The exercise clears its client state when Clerk identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the pilot implementation notes](interactive-course-pilot.md) for case review, verification, and rollout details.
+The exercise clears its client state when Clerk identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the current implementation verification](reviews/course-update-verification-2026-09-08.md) for coverage, validation and remaining release gates. The [pilot implementation notes](interactive-course-pilot.md) remain historical evidence.
 
 ## Failure behavior
 

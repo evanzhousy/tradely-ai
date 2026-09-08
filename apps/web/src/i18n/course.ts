@@ -1,6 +1,6 @@
-import { courseModules } from "@/content/syllabus";
 import type { Lesson, TradingFlowPractice } from "@/content/course";
 import { type Course, tradingFlowCourse } from "@/content/course";
+import { courseModules } from "@/content/syllabus";
 import type { Locale } from "./messages";
 
 type LessonCopy = Partial<Pick<Lesson, "title" | "summary" | "category">> & {
@@ -142,17 +142,30 @@ export type LocalizedCourse = Omit<
 export function getLocalizedLesson(lesson: Lesson, locale: Locale): Lesson {
 	if (locale === "en") return lesson;
 	const copy = chineseLessonCopy[lesson.slug];
-	if (!copy) return { ...lesson, title: lesson.titleZh ?? lesson.title, summary: lesson.summaryZh ?? lesson.summary, category: courseModules.find(module => module.id === lesson.moduleId)?.zh ?? lesson.category };
+	if (!copy)
+		return {
+			...lesson,
+			title: lesson.titleZh ?? lesson.title,
+			summary: lesson.summaryZh ?? lesson.summary,
+			category:
+				courseModules.find((module) => module.id === lesson.moduleId)?.zh ??
+				lesson.category,
+		};
 	return {
 		...lesson,
 		title: lesson.titleZh ?? copy.title ?? lesson.title,
 		summary: lesson.summaryZh ?? copy.summary ?? lesson.summary,
-		category: courseModules.find(module => module.id === lesson.moduleId)?.zh ?? copy.category ?? lesson.category,
-		practice: lesson.practice ? {
-			...lesson.practice,
-			title: copy.practice?.title ?? lesson.practice.title,
-			goal: copy.practice?.goal ?? lesson.practice.goal,
-		} : null,
+		category:
+			courseModules.find((module) => module.id === lesson.moduleId)?.zh ??
+			copy.category ??
+			lesson.category,
+		practice: lesson.practice
+			? {
+					...lesson.practice,
+					title: copy.practice?.title ?? lesson.practice.title,
+					goal: copy.practice?.goal ?? lesson.practice.goal,
+				}
+			: null,
 	};
 }
 

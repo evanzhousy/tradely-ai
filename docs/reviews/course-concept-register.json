@@ -1,0 +1,2527 @@
+{
+	"generatedAt": "2026-09-08T16:36:57.678Z",
+	"scope": "Named glossary, GEX education, domain-model attributes, metric definitions, volatility labels and documented portfolio analytics. This maps teaching ownership; it does not certify learning or treat vendor conventions as universal.",
+	"lessons": 36,
+	"families": 30,
+	"sourceTerms": 196,
+	"unmapped": [],
+	"coverageFamilies": [
+		{
+			"id": "C01",
+			"requiredConcepts": "Underlying, ticker, stock/ETF/index, sector, spot, market cap, share volume, earnings dates",
+			"lessons": [
+				{
+					"id": "option-contracts",
+					"title": "What an option contract describes"
+				}
+			]
+		},
+		{
+			"id": "C02",
+			"requiredConcepts": "Call/put rights and obligations, holder/writer, long/short, strike, expiration, DTE/0DTE, multiplier, exercise/assignment and settlement",
+			"lessons": [
+				{
+					"id": "option-contracts",
+					"title": "What an option contract describes"
+				},
+				{
+					"id": "option-rights",
+					"title": "Buyers, writers, rights and obligations"
+				},
+				{
+					"id": "expiration-settlement",
+					"title": "Expiration, exercise and settlement"
+				}
+			]
+		},
+		{
+			"id": "C03",
+			"requiredConcepts": "Quote price, per-contract amount, total execution premium, notional, intrinsic/extrinsic value, moneyness for calls and puts, payoff versus profit/break-even",
+			"lessons": [
+				{
+					"id": "premium-payoff",
+					"title": "Price, premium, payoff and profit"
+				},
+				{
+					"id": "validate-option-print",
+					"title": "Validate one execution from its evidence"
+				},
+				{
+					"id": "rank-contracts",
+					"title": "Read a contract neighborhood"
+				}
+			]
+		},
+		{
+			"id": "C04",
+			"requiredConcepts": "Quote versus order versus trade; best bid/ask; bid/ask sizes; NBBO; spread in dollars and percent; midpoint/mark/last",
+			"lessons": [
+				{
+					"id": "quotes-orders-trades",
+					"title": "A quote, an order and a trade"
+				}
+			]
+		},
+		{
+			"id": "C05",
+			"requiredConcepts": "Market/limit/marketable-limit orders, resting orders, liquidity provider/taker, aggressor/counterparty, partial fills, depth, price improvement, slippage",
+			"lessons": [
+				{
+					"id": "execution-counterparties",
+					"title": "Who buys and who sells in one execution?"
+				}
+			]
+		},
+		{
+			"id": "C06",
+			"requiredConcepts": "Execution-side location: AASK/ASK/MID/BID/BBID; stale, missing, locked/crossed or mismatched quotes; reporting/condition limits",
+			"lessons": [
+				{
+					"id": "execution-side",
+					"title": "Read execution side against a reliable quote"
+				},
+				{
+					"id": "validate-option-print",
+					"title": "Validate one execution from its evidence"
+				}
+			]
+		},
+		{
+			"id": "C07",
+			"requiredConcepts": "Bullish/bearish/neutral: belief versus exposure versus inferred classification; all four call/put combinations; unknown direction",
+			"lessons": [
+				{
+					"id": "flow-sentiment",
+					"title": "How flow gets a bullish or bearish label"
+				},
+				{
+					"id": "validate-option-print",
+					"title": "Validate one execution from its evidence"
+				}
+			]
+		},
+		{
+			"id": "C08",
+			"requiredConcepts": "Buy/sell to open/close; OI creation, transfer, reduction; volume versus OI; ΔOI; report timing; expiry/exercise effects; limits of T+1 attribution",
+			"lessons": [
+				{
+					"id": "session-flow-vs-structure",
+					"title": "Why volume and open interest move differently"
+				}
+			]
+		},
+		{
+			"id": "C09",
+			"requiredConcepts": "Single leg versus multi-leg; spreads, straddles, collars, rolls, covered versus uncovered call, protective put; stock-option linkage",
+			"lessons": [
+				{
+					"id": "option-rights",
+					"title": "Buyers, writers, rights and obligations"
+				},
+				{
+					"id": "option-strategies",
+					"title": "One leg can belong to many strategies"
+				}
+			]
+		},
+		{
+			"id": "C10",
+			"requiredConcepts": "Raw prints versus aggregation; trade count versus contract count; weighted versus unweighted summaries; duplicate/corrected/out-of-order records",
+			"lessons": [
+				{
+					"id": "trade-records",
+					"title": "What a tape row represents"
+				}
+			]
+		},
+		{
+			"id": "C11",
+			"requiredConcepts": "Execution conditions: sweep/ISO, block, auction/cross, electronic/floor, complex-order/stock-contingent mechanisms",
+			"lessons": [
+				{
+					"id": "trade-records",
+					"title": "What a tape row represents"
+				}
+			]
+		},
+		{
+			"id": "C12",
+			"requiredConcepts": "Unusual activity, relative volume, volume/OI, baseline/window choice, tiny denominators, partial-session comparisons, opening-position heuristics",
+			"lessons": [
+				{
+					"id": "unusual-activity",
+					"title": "When activity is actually unusual"
+				},
+				{
+					"id": "rank-symbols",
+					"title": "Rank observations without inventing a prediction"
+				}
+			]
+		},
+		{
+			"id": "C13",
+			"requiredConcepts": "Delta, gamma, theta, vega, rho; units, long/short signs, local sensitivities, all-else-equal assumptions",
+			"lessons": [
+				{
+					"id": "delta",
+					"title": "Delta: a local price sensitivity"
+				},
+				{
+					"id": "gamma",
+					"title": "Gamma: how delta changes"
+				},
+				{
+					"id": "theta-vega-rho",
+					"title": "Time, volatility and rates"
+				}
+			]
+		},
+		{
+			"id": "C14",
+			"requiredConcepts": "Implied versus realized/historical volatility; annualization, window/source, IV30/RV20, vol points versus relative percent, IV crush and event context",
+			"lessons": [
+				{
+					"id": "implied-realized-volatility",
+					"title": "Implied and realized volatility"
+				}
+			]
+		},
+		{
+			"id": "C15",
+			"requiredConcepts": "ATM reference, 25-delta coordinates, volatility smile/skew, risk reversal, butterfly, term structure, IV surface, observed/fitted/missing regions",
+			"lessons": [
+				{
+					"id": "volatility-surface",
+					"title": "Smile, skew and term structure"
+				}
+			]
+		},
+		{
+			"id": "C16",
+			"requiredConcepts": "IV rank versus IV percentile; trailing sample, outliers, insufficient history, same-method comparison across instruments",
+			"lessons": [
+				{
+					"id": "iv-rank-percentile",
+					"title": "IV rank and percentile can disagree"
+				}
+			]
+		},
+		{
+			"id": "C17",
+			"requiredConcepts": "Trade delta-equivalent magnitude versus signed position delta versus signed aggregate flow; gross/bull/bear/neutral DEX, cancellation, Net DEX",
+			"lessons": [
+				{
+					"id": "dex-dei-gex",
+					"title": "From delta equivalents to DEX and DEI"
+				}
+			]
+		},
+		{
+			"id": "C18",
+			"requiredConcepts": "DEI/ΔOI DEI, effective-volume denominator, percentage scaling, sign versus magnitude, stock/index proxy normalization, unavailable denominator",
+			"lessons": [
+				{
+					"id": "dex-dei-gex",
+					"title": "From delta equivalents to DEX and DEI"
+				}
+			]
+		},
+		{
+			"id": "C19",
+			"requiredConcepts": "GEX model, OI versus volume inputs, assumed position signs, net/gross/call/put GEX, cancellation, units, full-chain coverage and selected scope",
+			"lessons": [
+				{
+					"id": "gamma-exposure",
+					"title": "Build and interpret a GEX snapshot"
+				}
+			]
+		},
+		{
+			"id": "C20",
+			"requiredConcepts": "Positive/negative/near-zero gamma regimes; conditional delta hedging, zero-gamma flip/repricing, gamma squeeze; scenario sensitivity",
+			"lessons": [
+				{
+					"id": "gamma-regimes",
+					"title": "Gamma regimes and the zero-gamma boundary"
+				}
+			]
+		},
+		{
+			"id": "C21",
+			"requiredConcepts": "Call/put walls, gamma concentration/magnet, max pain versus gamma-weighted levels, expiry shares, level distance, reference spot and ATR",
+			"lessons": [
+				{
+					"id": "structural-levels",
+					"title": "Walls, concentration, max pain and distance"
+				}
+			]
+		},
+		{
+			"id": "C22",
+			"requiredConcepts": "Charm, vanna, charm concentration/pin; time/volatility-driven delta changes, sign conventions and model uncertainty",
+			"lessons": [
+				{
+					"id": "charm-vanna",
+					"title": "Exposure changes without a new trade"
+				}
+			]
+		},
+		{
+			"id": "C23",
+			"requiredConcepts": "Ranking versus prediction; signed versus magnitude ordering; comparable universe, liquidity floor, exclusions, selection/survivorship bias; concentration",
+			"lessons": [
+				{
+					"id": "symbol-universe",
+					"title": "Define who belongs in the comparison"
+				},
+				{
+					"id": "rank-symbols",
+					"title": "Rank observations without inventing a prediction"
+				},
+				{
+					"id": "rank-contracts",
+					"title": "Read a contract neighborhood"
+				}
+			]
+		},
+		{
+			"id": "C24",
+			"requiredConcepts": "Time and provenance: live/delayed/completed session, event/source/receipt dates, point-in-time information, source grain, rolling versus fixed cohorts, zero versus missing",
+			"lessons": [
+				{
+					"id": "expiration-settlement",
+					"title": "Expiration, exercise and settlement"
+				},
+				{
+					"id": "execution-side",
+					"title": "Read execution side against a reliable quote"
+				},
+				{
+					"id": "validate-option-print",
+					"title": "Validate one execution from its evidence"
+				},
+				{
+					"id": "session-flow-vs-structure",
+					"title": "Why volume and open interest move differently"
+				},
+				{
+					"id": "symbol-drawer",
+					"title": "Read each source on its own clock"
+				},
+				{
+					"id": "symbol-universe",
+					"title": "Define who belongs in the comparison"
+				}
+			]
+		},
+		{
+			"id": "C25",
+			"requiredConcepts": "Historical abnormality, baseline calibration, percentile/standardized score, recency weighting/half-life, coverage and uncertainty; heuristic scores versus probabilities",
+			"lessons": [
+				{
+					"id": "unusual-activity",
+					"title": "When activity is actually unusual"
+				},
+				{
+					"id": "point-in-time-research",
+					"title": "Test a pattern without hindsight"
+				}
+			]
+		},
+		{
+			"id": "C26",
+			"requiredConcepts": "Research question, falsifiability, observation/inference, counter-evidence, confirmation/selection bias, replay, out-of-sample cases, correlation versus causality",
+			"lessons": [
+				{
+					"id": "audited-boundary",
+					"title": "Write a question the evidence can answer"
+				},
+				{
+					"id": "point-in-time-research",
+					"title": "Test a pattern without hindsight"
+				},
+				{
+					"id": "audit-market-recap",
+					"title": "Audit and repair an unfamiliar recap"
+				}
+			]
+		},
+		{
+			"id": "C27",
+			"requiredConcepts": "Reproducible analysis, calculations, source-to-claim lineage, chart axes/units/scales, aggregation, caveats, research brief and independent audit",
+			"lessons": [
+				{
+					"id": "cookbook-research-packet",
+					"title": "Build a reproducible research packet"
+				},
+				{
+					"id": "market-recap",
+					"title": "Write a supported recap"
+				},
+				{
+					"id": "audit-market-recap",
+					"title": "Audit and repair an unfamiliar recap"
+				}
+			]
+		},
+		{
+			"id": "C28",
+			"requiredConcepts": "Holdings, quantity, cost basis, mark/market value, cash versus buying power, realized/unrealized P&L, fees, long/short risk, allocation/concentration",
+			"lessons": [
+				{
+					"id": "portfolio-pnl",
+					"title": "Positions, cost, cash and P&L"
+				}
+			]
+		},
+		{
+			"id": "C29",
+			"requiredConcepts": "Equity curve, deposits/withdrawals versus return, time-weighted return, benchmark comparison, win rate, average win/loss, profit factor, attribution, FIFO assumptions",
+			"lessons": [
+				{
+					"id": "portfolio-performance",
+					"title": "Evaluate performance rather than balance growth"
+				}
+			]
+		},
+		{
+			"id": "C30",
+			"requiredConcepts": "Portfolio Greeks, multiplier/direction aggregation, missing-Greek coverage, hedging, contract/underlying exposure, journal versus outcome evidence",
+			"lessons": [
+				{
+					"id": "portfolio-exposure",
+					"title": "Aggregate portfolio exposure and its limits"
+				}
+			]
+		}
+	],
+	"terms": [
+		{
+			"catalog": "app glossary",
+			"key": "tradeSide",
+			"term": "Trade Side",
+			"aliases": ["AASK", "ASK", "MID", "BID", "BBID"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3527",
+			"family": "C06",
+			"definitionAndWorkedExample": ["execution-side", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "aggressor",
+			"term": "Aggressor",
+			"aliases": ["Buyer-initiated", "Seller-initiated"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3534",
+			"family": "C05",
+			"definitionAndWorkedExample": ["execution-counterparties"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "sentiment",
+			"term": "Sentiment",
+			"aliases": ["BULLISH", "BEARISH", "NEUTRAL"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3538",
+			"family": "C07",
+			"definitionAndWorkedExample": ["flow-sentiment", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "moneyness",
+			"term": "Moneyness",
+			"aliases": ["ITM", "ATM", "OTM"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3543",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "premium",
+			"term": "Premium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3548",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "tradeActivityType",
+			"term": "Trade Activity Type",
+			"aliases": ["AUTO", "MLET", "SLAN", "ISOI"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3550",
+			"family": "C11",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "rawMode",
+			"term": "RAW Mode",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3556",
+			"family": "C10",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "aggregatedMode",
+			"term": "Aggregated Mode",
+			"aliases": ["aggregation_mode"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3558",
+			"family": "C10",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "tradeCount",
+			"term": "Trade Count",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3562",
+			"family": "C10",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "unusualOptionsActivity",
+			"term": "Unusual Options Activity",
+			"aliases": ["UOA"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3564",
+			"family": "C12",
+			"definitionAndWorkedExample": ["unusual-activity", "rank-symbols"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "relativeVolume",
+			"term": "Relative Volume",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3567",
+			"family": "C12",
+			"definitionAndWorkedExample": ["unusual-activity", "rank-symbols"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "blockTrade",
+			"term": "Block Trade",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3569",
+			"family": "C11",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "delta",
+			"term": "Delta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3571",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "deltaExposure",
+			"term": "Delta Exposure",
+			"aliases": ["DEX"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3573",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "deltaImpact",
+			"term": "Delta Impact",
+			"aliases": ["DEI"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3576",
+			"family": "C18",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "gamma",
+			"term": "Gamma",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3579",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "gammaExposure",
+			"term": "Gamma Exposure",
+			"aliases": ["GEX", "Net GEX", "Call GEX", "Put GEX"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3581",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "gammaSqueeze",
+			"term": "Gamma Squeeze",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3587",
+			"family": "C20",
+			"definitionAndWorkedExample": ["gamma-regimes"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "zeroDte",
+			"term": "0DTE",
+			"aliases": ["Zero Days to Expiration"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3589",
+			"family": "C02",
+			"definitionAndWorkedExample": [
+				"option-contracts",
+				"option-rights",
+				"expiration-settlement"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "impliedVolatility",
+			"term": "Implied Volatility",
+			"aliases": ["IV"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3592",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "ivCrush",
+			"term": "IV Crush",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3595",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "optionChain",
+			"term": "Option Chain",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3597",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "optionFlow",
+			"term": "Option Flow",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3599",
+			"family": "C10",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "openInterest",
+			"term": "Open Interest",
+			"aliases": ["OI"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3601",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "oiChange",
+			"term": "OI Change",
+			"aliases": ["Delta OI", "dOI"],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3604",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "tPlusOneConfirmation",
+			"term": "T+1 Confirmation",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3608",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "callWall",
+			"term": "Call Wall",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3610",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "app glossary",
+			"key": "putWall",
+			"term": "Put Wall",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:3612",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "gex",
+			"term": "Gamma Exposure (GEX)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2009",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "netGex",
+			"term": "Net GEX",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2016",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "grossGex",
+			"term": "Gross GEX",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2023",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "callPutRatio",
+			"term": "Call / put GEX ratio",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2030",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "gammaRegime",
+			"term": "Gamma regime",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2037",
+			"family": "C20",
+			"definitionAndWorkedExample": ["gamma-regimes"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "gammaTransition",
+			"term": "Gamma transition (zero-gamma flip)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2044",
+			"family": "C20",
+			"definitionAndWorkedExample": ["gamma-regimes"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "callWall",
+			"term": "Call Wall",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2051",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "putWall",
+			"term": "Put Wall",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2058",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "gammaMagnet",
+			"term": "Gamma Magnet",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2065",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "oi",
+			"term": "Open Interest (OI)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2072",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "dailyAtr",
+			"term": "Daily ATR(14)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2079",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "maxPain",
+			"term": "Max Pain",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2086",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "charm",
+			"term": "Charm",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2093",
+			"family": "C22",
+			"definitionAndWorkedExample": ["charm-vanna"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "charmPin",
+			"term": "Charm Pin",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2100",
+			"family": "C22",
+			"definitionAndWorkedExample": ["charm-vanna"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "vanna",
+			"term": "Vanna",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2107",
+			"family": "C22",
+			"definitionAndWorkedExample": ["charm-vanna"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "GEX education",
+			"key": "expiryScopeShare",
+			"term": "Expiry scope share",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:2114",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "ticker",
+			"term": "Underlying: ticker",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:126",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "sector",
+			"term": "Underlying: sector",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:127",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "underlyingType",
+			"term": "Underlying: underlyingType",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:128",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "spotPrice",
+			"term": "Underlying: spotPrice",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:131",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "marketCap",
+			"term": "Underlying: marketCap",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:132",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "averageVolume",
+			"term": "Underlying: averageVolume",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:133",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "earningsDate",
+			"term": "Underlying: earningsDate",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:135",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "historicalVolatility",
+			"term": "Underlying: historicalVolatility",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:136",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "realizedVolatility",
+			"term": "Underlying: realizedVolatility",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:141",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "dailyATR",
+			"term": "Underlying: dailyATR",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:146",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "underlyingTicker",
+			"term": "Option Chain: underlyingTicker",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:162",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "asOfDate",
+			"term": "Option Chain: asOfDate",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:162",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "netGEX",
+			"term": "Option Chain: netGEX",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:166",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "grossGEX",
+			"term": "Option Chain: grossGEX",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:175",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "netPremium",
+			"term": "Option Chain: netPremium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:179",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "callWallStrike",
+			"term": "Option Chain: callWallStrike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:184",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "putWallStrike",
+			"term": "Option Chain: putWallStrike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:184",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "gammaMagnetStrike",
+			"term": "Option Chain: gammaMagnetStrike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:189",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "zeroDteTopStrike",
+			"term": "Option Chain: zeroDteTopStrike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:191",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "charmPinStrike",
+			"term": "Option Chain: charmPinStrike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:194",
+			"family": "C22",
+			"definitionAndWorkedExample": ["charm-vanna"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "maxPainStrike",
+			"term": "Option Chain: maxPainStrike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:199",
+			"family": "C21",
+			"definitionAndWorkedExample": ["structural-levels"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "zeroGammaFlip",
+			"term": "Option Chain: zeroGammaFlip",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:206",
+			"family": "C20",
+			"definitionAndWorkedExample": ["gamma-regimes"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "gammaRegime",
+			"term": "Option Chain: gammaRegime",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:210",
+			"family": "C20",
+			"definitionAndWorkedExample": ["gamma-regimes"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "callPutGexRatio",
+			"term": "Option Chain: callPutGexRatio",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:213",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "impliedVolatilitySurface",
+			"term": "Option Chain: impliedVolatilitySurface",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:218",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "atmIv30",
+			"term": "Option Chain: atmIv30",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:221",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "skew",
+			"term": "Option Chain: skew",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:226",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "termStructure",
+			"term": "Option Chain: termStructure",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:229",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "ivRank",
+			"term": "Option Chain: ivRank",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:232",
+			"family": "C16",
+			"definitionAndWorkedExample": ["iv-rank-percentile"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "ivPercentile",
+			"term": "Option Chain: ivPercentile",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:232",
+			"family": "C16",
+			"definitionAndWorkedExample": ["iv-rank-percentile"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "ivVsRvSpread",
+			"term": "Option Chain: ivVsRvSpread",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:236",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "underlyingTicker",
+			"term": "Option Contract: underlyingTicker",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:250",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "strike",
+			"term": "Option Contract: strike",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:251",
+			"family": "C02",
+			"definitionAndWorkedExample": [
+				"option-contracts",
+				"option-rights",
+				"expiration-settlement"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "expiration",
+			"term": "Option Contract: expiration",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:251",
+			"family": "C02",
+			"definitionAndWorkedExample": [
+				"option-contracts",
+				"option-rights",
+				"expiration-settlement"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "type",
+			"term": "Option Contract: type",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:251",
+			"family": "C02",
+			"definitionAndWorkedExample": [
+				"option-contracts",
+				"option-rights",
+				"expiration-settlement"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "moneyness",
+			"term": "Option Contract: moneyness",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:254",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "daysToExpiration",
+			"term": "Option Contract: daysToExpiration",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:257",
+			"family": "C02",
+			"definitionAndWorkedExample": [
+				"option-contracts",
+				"option-rights",
+				"expiration-settlement"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "openInterest",
+			"term": "Option Contract: openInterest",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:262",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "oiChange",
+			"term": "Option Contract: oiChange",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:265",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "volume",
+			"term": "Option Contract: volume",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:275",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "volumeToOI",
+			"term": "Option Contract: volumeToOI",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:277",
+			"family": "C12",
+			"definitionAndWorkedExample": ["unusual-activity", "rank-symbols"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "relativeVolume",
+			"term": "Option Contract: relativeVolume",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:281",
+			"family": "C12",
+			"definitionAndWorkedExample": ["unusual-activity", "rank-symbols"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "premium",
+			"term": "Option Contract: premium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:287",
+			"family": "C04",
+			"definitionAndWorkedExample": ["quotes-orders-trades"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "bid",
+			"term": "Option Contract: bid",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:290",
+			"family": "C04",
+			"definitionAndWorkedExample": ["quotes-orders-trades"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "ask",
+			"term": "Option Contract: ask",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:290",
+			"family": "C04",
+			"definitionAndWorkedExample": ["quotes-orders-trades"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "impliedVolatility",
+			"term": "Option Contract: impliedVolatility",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:293",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "delta",
+			"term": "Option Contract: delta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:300",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "theta",
+			"term": "Option Contract: theta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:300",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "vega",
+			"term": "Option Contract: vega",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:300",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "gamma",
+			"term": "Option Contract: gamma",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:306",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "charm",
+			"term": "Option Contract: charm",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:310",
+			"family": "C22",
+			"definitionAndWorkedExample": ["charm-vanna"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "vanna",
+			"term": "Option Contract: vanna",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:314",
+			"family": "C22",
+			"definitionAndWorkedExample": ["charm-vanna"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "contractId",
+			"term": "Option Trade: contractId",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:333",
+			"family": "C02",
+			"definitionAndWorkedExample": [
+				"option-contracts",
+				"option-rights",
+				"expiration-settlement"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "price",
+			"term": "Option Trade: price",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:334",
+			"family": "C04",
+			"definitionAndWorkedExample": ["quotes-orders-trades"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "size",
+			"term": "Option Trade: size",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:336",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "executedAt",
+			"term": "Option Trade: executedAt",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:337",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "side",
+			"term": "Option Trade: side",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:338",
+			"family": "C06",
+			"definitionAndWorkedExample": ["execution-side", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "activityType",
+			"term": "Option Trade: activityType",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:342",
+			"family": "C11",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "premium",
+			"term": "Option Trade: premium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:348",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "sentiment",
+			"term": "Option Trade: sentiment",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:349",
+			"family": "C07",
+			"definitionAndWorkedExample": ["flow-sentiment", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "impliedVolatility",
+			"term": "Option Trade: impliedVolatility",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:353",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "delta",
+			"term": "Option Trade: delta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:353",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "gamma",
+			"term": "Option Trade: gamma",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:353",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "theta",
+			"term": "Option Trade: theta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:353",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "vega",
+			"term": "Option Trade: vega",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:353",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "rho",
+			"term": "Option Trade: rho",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:353",
+			"family": "C13",
+			"definitionAndWorkedExample": ["delta", "gamma", "theta-vega-rho"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "domain model",
+			"key": "deltaExposure",
+			"term": "Option Trade: deltaExposure",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md:358",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "quote_side",
+			"term": "Execution side",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:70",
+			"family": "C04",
+			"definitionAndWorkedExample": ["quotes-orders-trades"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "sentiment",
+			"term": "Inferred direction",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:77",
+			"family": "C07",
+			"definitionAndWorkedExample": ["flow-sentiment", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "net_dex",
+			"term": "Net DEX",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:84",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "net_dei",
+			"term": "Net DEI magnitude",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:91",
+			"family": "C18",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "gex",
+			"term": "Gamma exposure (GEX)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:98",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "iv30_rv20",
+			"term": "IV30 − RV20",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:105",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "premium",
+			"term": "Premium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:136",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "net_premium",
+			"term": "Net premium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:151",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "net_dex",
+			"term": "Net DEX",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:166",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "dei",
+			"term": "Net DEI magnitude (%)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:181",
+			"family": "C18",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "sentiment_premium",
+			"term": "Inferred-direction premium",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:202",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "trade_premium",
+			"term": "Trade premium (raw column)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:218",
+			"family": "C03",
+			"definitionAndWorkedExample": [
+				"premium-payoff",
+				"validate-option-print",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "trade_count_total",
+			"term": "Trade row count",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:241",
+			"family": "C10",
+			"definitionAndWorkedExample": ["trade-records"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "market_cap",
+			"term": "Market cap",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:256",
+			"family": "C01",
+			"definitionAndWorkedExample": ["option-contracts"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "iv30",
+			"term": "IV30",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:288",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "iv_rank_1y",
+			"term": "IV rank (1Y)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:310",
+			"family": "C16",
+			"definitionAndWorkedExample": ["iv-rank-percentile"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "metric registry",
+			"key": "iv_percentile_1y",
+			"term": "IV percentile (1Y)",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts:327",
+			"family": "C16",
+			"definitionAndWorkedExample": ["iv-rank-percentile"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "volatility labels",
+			"key": "vol.skew25d30d",
+			"term": "25-delta skew / risk reversal",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:1052",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "volatility labels",
+			"key": "vol.butterfly25d30d",
+			"term": "25-delta butterfly",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:1055",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "volatility labels",
+			"key": "vol.ivRank",
+			"term": "IV rank",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:1051",
+			"family": "C16",
+			"definitionAndWorkedExample": ["iv-rank-percentile"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "volatility labels",
+			"key": "vol.ivPercentile",
+			"term": "IV percentile",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts:1245",
+			"family": "C16",
+			"definitionAndWorkedExample": ["iv-rank-percentile"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.costbasis",
+			"term": "cost basis",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.mark",
+			"term": "mark",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.marketvalue",
+			"term": "market value",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.cash",
+			"term": "cash",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.buyingpower",
+			"term": "buying power",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.realizedpl",
+			"term": "realized P&L",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.unrealizedpl",
+			"term": "unrealized P&L",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "positions.allocation",
+			"term": "allocation",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C28",
+			"definitionAndWorkedExample": ["portfolio-pnl"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.equitycurve",
+			"term": "equity curve",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.externalcashflows",
+			"term": "external cash flows",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.twr",
+			"term": "TWR",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.benchmark",
+			"term": "benchmark",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.winrate",
+			"term": "win rate",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.averagewinloss",
+			"term": "average win/loss",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.profitfactor",
+			"term": "profit factor",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.fifo",
+			"term": "FIFO",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.monthlypl",
+			"term": "monthly P&L",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "performance.attribution",
+			"term": "attribution",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C29",
+			"definitionAndWorkedExample": ["portfolio-performance"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "exposure.portfoliodelta",
+			"term": "portfolio delta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C30",
+			"definitionAndWorkedExample": ["portfolio-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "exposure.portfoliogamma",
+			"term": "portfolio gamma",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C30",
+			"definitionAndWorkedExample": ["portfolio-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "exposure.portfoliotheta",
+			"term": "portfolio theta",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C30",
+			"definitionAndWorkedExample": ["portfolio-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "exposure.portfoliovega",
+			"term": "portfolio vega",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C30",
+			"definitionAndWorkedExample": ["portfolio-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "exposure.coverage",
+			"term": "coverage",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C30",
+			"definitionAndWorkedExample": ["portfolio-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "portfolio (internal rollout)",
+			"key": "exposure.journal",
+			"term": "journal",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md:32",
+			"family": "C30",
+			"definitionAndWorkedExample": ["portfolio-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_discovery",
+			"term": "rank symbol discovery",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C23",
+			"definitionAndWorkedExample": [
+				"symbol-universe",
+				"rank-symbols",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_overview",
+			"term": "rank symbol overview",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_flow",
+			"term": "rank symbol flow",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_positioning",
+			"term": "rank symbol positioning",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_gex",
+			"term": "rank symbol gex",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_volatility",
+			"term": "rank symbol volatility",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_symbol_chain",
+			"term": "rank symbol chain",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_contract_discovery",
+			"term": "rank contract discovery",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C23",
+			"definitionAndWorkedExample": [
+				"symbol-universe",
+				"rank-symbols",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_contract_flow",
+			"term": "rank contract flow",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_contract_positioning",
+			"term": "rank contract positioning",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "rank_contract_tradeability",
+			"term": "rank contract tradeability",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C05",
+			"definitionAndWorkedExample": ["execution-counterparties"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "live_tape",
+			"term": "live tape",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_ABILITY_KEYS",
+			"key": "historical_tape",
+			"term": "historical tape",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:14",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "symbol_discovery",
+			"term": "symbol discovery",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C23",
+			"definitionAndWorkedExample": [
+				"symbol-universe",
+				"rank-symbols",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "symbol_flow_history",
+			"term": "symbol flow history",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "symbol_positioning_context",
+			"term": "symbol positioning context",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "symbol_chain_inspection",
+			"term": "symbol chain inspection",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "contract_intraday_flow",
+			"term": "contract intraday flow",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C17",
+			"definitionAndWorkedExample": ["dex-dei-gex"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "contract_positioning_history",
+			"term": "contract positioning history",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "iv_vs_realized",
+			"term": "iv vs realized",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "gex_oi_context",
+			"term": "gex oi context",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C19",
+			"definitionAndWorkedExample": ["gamma-exposure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "structure_cross_check",
+			"term": "structure cross check",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "post_move_structure",
+			"term": "post move structure",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C26",
+			"definitionAndWorkedExample": [
+				"audited-boundary",
+				"point-in-time-research",
+				"audit-market-recap"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "term_structure_skew",
+			"term": "term structure skew",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C15",
+			"definitionAndWorkedExample": ["volatility-surface"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "contract_tradeability",
+			"term": "contract tradeability",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C05",
+			"definitionAndWorkedExample": ["execution-counterparties"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "unusual_contract_scan",
+			"term": "unusual contract scan",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C12",
+			"definitionAndWorkedExample": ["unusual-activity", "rank-symbols"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "contract_concentration",
+			"term": "contract concentration",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C23",
+			"definitionAndWorkedExample": [
+				"symbol-universe",
+				"rank-symbols",
+				"rank-contracts"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "put_call_price_context",
+			"term": "put call price context",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C07",
+			"definitionAndWorkedExample": ["flow-sentiment", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "current_follow_through",
+			"term": "current follow through",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C26",
+			"definitionAndWorkedExample": [
+				"audited-boundary",
+				"point-in-time-research",
+				"audit-market-recap"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "post_move_follow_through",
+			"term": "post move follow through",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C26",
+			"definitionAndWorkedExample": [
+				"audited-boundary",
+				"point-in-time-research",
+				"audit-market-recap"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "recent_call_flow",
+			"term": "recent call flow",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C07",
+			"definitionAndWorkedExample": ["flow-sentiment", "validate-option-print"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "multi_session_oi_accumulation",
+			"term": "multi session oi accumulation",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C08",
+			"definitionAndWorkedExample": ["session-flow-vs-structure"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "pre_move_window",
+			"term": "pre move window",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C26",
+			"definitionAndWorkedExample": [
+				"audited-boundary",
+				"point-in-time-research",
+				"audit-market-recap"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_LENS_KEYS",
+			"key": "flow_cross_check",
+			"term": "flow cross check",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:32",
+			"family": "C24",
+			"definitionAndWorkedExample": [
+				"expiration-settlement",
+				"execution-side",
+				"validate-option-print",
+				"session-flow-vs-structure",
+				"symbol-drawer",
+				"symbol-universe"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_WORKFLOW_KEYS",
+			"key": "call_sale_check",
+			"term": "call sale check",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:58",
+			"family": "C09",
+			"definitionAndWorkedExample": ["option-rights", "option-strategies"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_WORKFLOW_KEYS",
+			"key": "unusual_positioning",
+			"term": "unusual positioning",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:58",
+			"family": "C12",
+			"definitionAndWorkedExample": ["unusual-activity", "rank-symbols"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_WORKFLOW_KEYS",
+			"key": "post_move_backtrace",
+			"term": "post move backtrace",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:58",
+			"family": "C26",
+			"definitionAndWorkedExample": [
+				"audited-boundary",
+				"point-in-time-research",
+				"audit-market-recap"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "RESEARCH_WORKFLOW_KEYS",
+			"key": "iv_regime",
+			"term": "iv regime",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts:58",
+			"family": "C14",
+			"definitionAndWorkedExample": ["implied-realized-volatility"],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "statistical model (release status separate)",
+			"key": "recencyHalfLife",
+			"term": "Recency weighting and half-life",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/optionTrades/flowActivity.ts:1",
+			"family": "C25",
+			"definitionAndWorkedExample": [
+				"unusual-activity",
+				"point-in-time-research"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		},
+		{
+			"catalog": "statistical model (release status separate)",
+			"key": "flowActivityCalibration",
+			"term": "Historical calibration and abnormality",
+			"aliases": [],
+			"source": "/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/optionTrades/flowMatrixTypes.ts:1",
+			"family": "C25",
+			"definitionAndWorkedExample": [
+				"unusual-activity",
+				"point-in-time-research"
+			],
+			"status": "Authored mapping; independent domain and learner review remain release gates."
+		}
+	],
+	"sourceHashes": {
+		"/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/content/syllabus.ts": "aeebefdc39515a3a52bd6c4b483e1bd551df41115f2398063f25a756abf3223f",
+		"/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/locales/en-US.ts": "abc184b31769e03c37f596fdd79e76978f0d21a16b752cc7583d57e6965b6058",
+		"/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/ontology/concepts.md": "9c7b4b1b2ca8ca44050b58ba6f579d1e21af4d366124645ed98026aafa1daf5a",
+		"/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/lib/metrics/registry.ts": "8590a71baed1e7496650bd7142ab7d281fe21a4bbce653cf8d7229d39c6c4a4a",
+		"/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/doc/domain-knowledge/portfolio/functionality.md": "bd5d50df7d10972293bd003158713ce30ff27f07979efb28ad790c20c71ba792",
+		"/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/researchWorkflows/catalog.ts": "a8ada6f00892a57261b6232df74742bc0e3ce4b5ebca3752a8ae6e303405f853",
+		"/Users/evansmacbookpro/Desktop/Projects/tradingflow-webapp-fullstack/src/domain/optionTrades/flowActivity.ts": "3dcb814ece383c0a435f8d42bdfb4ac131f2bd69355a463c397150bfdec95822",
+		"/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/platform-agnostic-concept-coverage-2026-09-08.md": "f0ab104a79014df5ebfb818ab1ef951f321dcb8ebc725877564280861b9c8f5a"
+	}
+}

@@ -1,4 +1,4 @@
-import { syllabus, courseModules, type ModuleId } from "./syllabus";
+import { courseModules, type ModuleId, syllabus } from "./syllabus";
 export type LessonAccess = "preview" | "paid";
 
 export type TradingFlowPractice = {
@@ -285,20 +285,33 @@ const legacyCourse = {
 } as const;
 
 export const tradingFlowCourse = {
- ...legacyCourse,
- description: "Understand contracts, quotes, executions, flow, Greeks, market structure and portfolios. Build and audit research from evidence.",
- modules: courseModules,
- lessons: syllabus.map((entry, order): Lesson => {
-  const prior = legacyCourse.lessons.find((item) => item.id === entry.id);
-  return {
-   ...entry, slug: entry.id, order, category: courseModules.find((item) => item.id === entry.moduleId)!.en,
-   minutes: entry.moduleId === "production" ? 18 : entry.moduleId === "structure" ? 14 : 10,
-   access: prior?.access ?? "paid", contentVersion: 2,
-   mediaKey: prior?.mediaKey ?? entry.id, poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
-   mediaCurrent: false,
-   practice: prior?.practice ?? null,
-  };
- }),
+	...legacyCourse,
+	description:
+		"Understand contracts, quotes, executions, flow, Greeks, market structure and portfolios. Build and audit research from evidence.",
+	modules: courseModules,
+	lessons: syllabus.map((entry, order): Lesson => {
+		const prior = legacyCourse.lessons.find((item) => item.id === entry.id);
+		const module = courseModules.find((item) => item.id === entry.moduleId);
+		if (!module) throw new Error("Unknown course module");
+		return {
+			...entry,
+			slug: entry.id,
+			order,
+			category: module.en,
+			minutes:
+				entry.moduleId === "production"
+					? 18
+					: entry.moduleId === "structure"
+						? 14
+						: 10,
+			access: prior?.access ?? "paid",
+			contentVersion: 2,
+			mediaKey: prior?.mediaKey ?? entry.id,
+			poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
+			mediaCurrent: false,
+			practice: prior?.practice ?? null,
+		};
+	}),
 };
 
 export type Course = typeof tradingFlowCourse;

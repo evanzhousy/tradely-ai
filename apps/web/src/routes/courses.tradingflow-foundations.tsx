@@ -10,11 +10,10 @@ import {
 } from "@tradely/ui/components/card";
 import { ArrowRightIcon } from "lucide-react";
 import { useEffect } from "react";
-import { courseModules } from "@/content/syllabus";
-
 import { useAnalytics } from "@/analytics/context";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
+import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { getCourseProgress } from "@/server/progress";
@@ -94,13 +93,34 @@ function CoursePage() {
 							total={progress.total}
 							percentage={progress.percentage}
 						/>
-						<p className="mt-3 text-muted-foreground text-xs">{locale === "zh" ? "旧课完成记录已保留。新增课程会扩大总课数，不代表旧记录丢失。" : "Earlier completions are retained. Added lessons expand the total; they do not erase completed work."}</p>
+						<p className="mt-3 text-muted-foreground text-xs">
+							{locale === "zh"
+								? "旧课完成记录已保留。新增课程会扩大总课数，不代表旧记录丢失。"
+								: "Earlier completions are retained. Added lessons expand the total; they do not erase completed work."}
+						</p>
 					</CardContent>
 				</Card>
 			</section>
 
-			<nav className="flex flex-wrap gap-2" aria-label={locale === "zh" ? "跳至模块" : "Jump to module"}>{courseModules.map(module => <a key={module.id} className={buttonVariants({ variant: "outline", size: "sm" })} href={`#module-${module.id}`}>{module[locale]}</a>)}</nav>
-			<p className="text-muted-foreground text-sm">{locale === "zh" ? "核心路径：合约 → 成交 → 成交流 → 比较研究 → 研究产出。定价与模型、组合为扩展路径。先修提示是学习建议，不新增访问锁。" : "Core path: contracts → execution → flow → research → written output. Pricing/models and portfolios form deeper branches. Prerequisites guide learning; they do not add access locks."}</p>
+			<nav
+				className="flex flex-wrap gap-2"
+				aria-label={locale === "zh" ? "跳至模块" : "Jump to module"}
+			>
+				{courseModules.map((module) => (
+					<a
+						key={module.id}
+						className={buttonVariants({ variant: "outline", size: "sm" })}
+						href={`#module-${module.id}`}
+					>
+						{module[locale]}
+					</a>
+				))}
+			</nav>
+			<p className="text-muted-foreground text-sm">
+				{locale === "zh"
+					? "核心路径：合约 → 成交 → 成交流 → 比较研究 → 研究产出。定价与模型、组合为扩展路径。先修提示是学习建议，不新增访问锁。"
+					: "Core path: contracts → execution → flow → research → written output. Pricing/models and portfolios form deeper branches. Prerequisites guide learning; they do not add access locks."}
+			</p>
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("course.curriculum")}</CardTitle>

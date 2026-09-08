@@ -228,8 +228,32 @@ function LessonPage() {
 						</div>
 					</header>
 
-					{lesson.prerequisites.length ? <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label={locale === "zh" ? "相关先修概念" : "Suggested prerequisites"}><span className="text-muted-foreground">{locale === "zh" ? "先了解：" : "Build on:"}</span>{lesson.prerequisites.map(id => { const item = course.lessons.find(item => item.id === id); return item ? <Link key={id} to="/learn/$lessonSlug" params={{ lessonSlug: item.slug }} className="underline underline-offset-4">{item.title}</Link> : null; })}</nav> : null}
-{page.access.allowed ? (
+					{lesson.prerequisites.length ? (
+						<nav
+							className="flex flex-wrap items-center gap-2 text-sm"
+							aria-label={
+								locale === "zh" ? "相关先修概念" : "Suggested prerequisites"
+							}
+						>
+							<span className="text-muted-foreground">
+								{locale === "zh" ? "先了解：" : "Build on:"}
+							</span>
+							{lesson.prerequisites.map((id) => {
+								const item = course.lessons.find((item) => item.id === id);
+								return item ? (
+									<Link
+										key={id}
+										to="/learn/$lessonSlug"
+										params={{ lessonSlug: item.slug }}
+										className="underline underline-offset-4"
+									>
+										{item.title}
+									</Link>
+								) : null;
+							})}
+						</nav>
+					) : null}
+					{page.access.allowed ? (
 						<>
 							{page.learning ? (
 								<LearningExercise lessonId={sourceLesson.id} />
@@ -249,19 +273,28 @@ function LessonPage() {
 									</AlertDescription>
 								</Alert>
 							) : null}
-							<details><summary className="cursor-pointer font-medium">{locale === "zh" ? "课程笔记与参考来源" : "Lesson notes and references"}</summary><article
-								className="lesson-prose max-w-[72ch]"
-								aria-labelledby="written-lesson-title"
-							>
-								<h2 id="written-lesson-title" className="sr-only">
-									{t("lesson.writtenLesson")}
-								</h2>
+							<details>
+								<summary className="cursor-pointer font-medium">
+									{locale === "zh"
+										? "课程笔记与参考来源"
+										: "Lesson notes and references"}
+								</summary>
+								<article
+									className="lesson-prose max-w-[72ch]"
+									aria-labelledby="written-lesson-title"
+								>
+									<h2 id="written-lesson-title" className="sr-only">
+										{t("lesson.writtenLesson")}
+									</h2>
 
-								<ReactMarkdown remarkPlugins={[remarkGfm]}>
-									{(locale === "zh" ? page.bodyZh : page.body) ?? ""}
-								</ReactMarkdown>
-							</article></details>
-							{lesson.practice ? <PracticeCard lessonId={lesson.id} practice={lesson.practice} /> : null}
+									<ReactMarkdown remarkPlugins={[remarkGfm]}>
+										{(locale === "zh" ? page.bodyZh : page.body) ?? ""}
+									</ReactMarkdown>
+								</article>
+							</details>
+							{lesson.practice ? (
+								<PracticeCard lessonId={lesson.id} practice={lesson.practice} />
+							) : null}
 							<div className="flex flex-col gap-5">
 								<CompleteLessonButton lesson={lesson} />
 								<Separator />

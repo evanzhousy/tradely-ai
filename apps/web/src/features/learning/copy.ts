@@ -33,7 +33,10 @@ export const learningCopy = {
 	met: { en: "Supported", zh: "有证据支持" },
 	revisit: { en: "Revisit this reasoning", zh: "重新检查这项推理" },
 	yourAnswer: { en: "Your answer", zh: "你的答案" },
-	demonstrated: { en: "Demonstrated in this case", zh: "本案例的独立检查已通过" },
+	demonstrated: {
+		en: "Demonstrated in this case",
+		zh: "本案例的独立检查已通过",
+	},
 	practiced: { en: "Practice completed", zh: "练习已完成" },
 	criteria: { en: "Independent criteria met", zh: "满足的独立判断标准" },
 	hinted: {

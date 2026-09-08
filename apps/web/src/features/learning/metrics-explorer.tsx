@@ -75,93 +75,95 @@ export function MetricsExplorer({
 			className="flex min-w-0 flex-col gap-5"
 			aria-label={text("Metric lenses lab", "指标实验")}
 		>
-			{!snapshot.gexOnly ? <>
-<div className="grid gap-4 sm:grid-cols-2">
-				<div>
+			{!snapshot.gexOnly ? (
+				<>
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div>
+							<p className="text-muted-foreground text-sm">
+								{text(
+									"Signed session DEX · share equivalents",
+									"带符号时段 DEX · 股等价量",
+								)}
+							</p>
+							<p className="font-mono text-3xl" data-net-dex>
+								{signed(snapshot.netDex)}
+							</p>
+							<p className="text-xs">
+								{snapshot.symbol} · {snapshot.sessionDate}
+							</p>
+						</div>
+						<div>
+							<p className="text-muted-foreground text-sm">
+								{text("DEI magnitude · percent", "DEI 幅度 · 百分比")}
+							</p>
+							<p className="font-mono text-3xl" data-dei>
+								<ChangeHighlight value={magnitude ?? "unknown"}>
+									{magnitude === null
+										? text("Unknown", "未知")
+										: `${magnitude.toLocaleString(locale)}%`}
+								</ChangeHighlight>
+							</p>
+							<p className="text-xs">
+								{text(
+									"|net DEX| ÷ positive effective denominator × 100",
+									"|净 DEX| ÷ 正的有效分母 × 100",
+								)}
+							</p>
+						</div>
+					</div>
+					<Field>
+						<FieldLabel htmlFor={`${id}-denominator`}>
+							{text("Effective denominator (shares)", "有效分母（股）")}
+						</FieldLabel>
+						<NativeSelect
+							id={`${id}-denominator`}
+							value={denominator}
+							onChange={(event) => setDenominator(Number(event.target.value))}
+						>
+							{snapshot.denominators.map((value) => (
+								<NativeSelectOption key={value} value={value}>
+									{value > 0
+										? value.toLocaleString(locale)
+										: text("Unavailable / non-positive", "不可用 / 非正")}
+								</NativeSelectOption>
+							))}
+						</NativeSelect>
+					</Field>
+					<CalculationTrace
+						locale={locale}
+						terms={[
+							{
+								id: "dex",
+								label: text("|Net DEX|", "|净 DEX|"),
+								value: Math.abs(snapshot.netDex).toLocaleString(locale),
+							},
+							{
+								id: "denominator",
+								label: text("Divide by shares", "除以股数"),
+								value:
+									denominator > 0
+										? denominator.toLocaleString(locale)
+										: text("Unknown", "未知"),
+							},
+							{ id: "scale", label: text("Multiply by", "乘以"), value: "100" },
+							{
+								id: "dei",
+								label: text("DEI magnitude", "DEI 幅度"),
+								value:
+									magnitude === null
+										? text("Unknown", "未知")
+										: `${magnitude.toLocaleString(locale)}%`,
+							},
+						]}
+					/>
 					<p className="text-muted-foreground text-sm">
 						{text(
-							"Signed session DEX · share equivalents",
-							"带符号时段 DEX · 股等价量",
+							"Only normalization changes. The session observations and model snapshot stay fixed. This lesson uses non-negative DEI magnitude; signed DEX retains direction.",
+							"只有归一化结果改变，时段观测与模型快照保持不变。本课使用非负 DEI 幅度，由带符号 DEX 保留方向。",
 						)}
 					</p>
-					<p className="font-mono text-3xl" data-net-dex>
-						{signed(snapshot.netDex)}
-					</p>
-					<p className="text-xs">
-						{snapshot.symbol} · {snapshot.sessionDate}
-					</p>
-				</div>
-				<div>
-					<p className="text-muted-foreground text-sm">
-						{text("DEI magnitude · percent", "DEI 幅度 · 百分比")}
-					</p>
-					<p className="font-mono text-3xl" data-dei>
-						<ChangeHighlight value={magnitude ?? "unknown"}>
-							{magnitude === null
-								? text("Unknown", "未知")
-								: `${magnitude.toLocaleString(locale)}%`}
-						</ChangeHighlight>
-					</p>
-					<p className="text-xs">
-						{text(
-							"|net DEX| ÷ positive effective denominator × 100",
-							"|净 DEX| ÷ 正的有效分母 × 100",
-						)}
-					</p>
-				</div>
-			</div>
-			<Field>
-				<FieldLabel htmlFor={`${id}-denominator`}>
-					{text("Effective denominator (shares)", "有效分母（股）")}
-				</FieldLabel>
-				<NativeSelect
-					id={`${id}-denominator`}
-					value={denominator}
-					onChange={(event) => setDenominator(Number(event.target.value))}
-				>
-					{snapshot.denominators.map((value) => (
-						<NativeSelectOption key={value} value={value}>
-							{value > 0
-								? value.toLocaleString(locale)
-								: text("Unavailable / non-positive", "不可用 / 非正")}
-						</NativeSelectOption>
-					))}
-				</NativeSelect>
-			</Field>
-			<CalculationTrace
-				locale={locale}
-				terms={[
-					{
-						id: "dex",
-						label: text("|Net DEX|", "|净 DEX|"),
-						value: Math.abs(snapshot.netDex).toLocaleString(locale),
-					},
-					{
-						id: "denominator",
-						label: text("Divide by shares", "除以股数"),
-						value:
-							denominator > 0
-								? denominator.toLocaleString(locale)
-								: text("Unknown", "未知"),
-					},
-					{ id: "scale", label: text("Multiply by", "乘以"), value: "100" },
-					{
-						id: "dei",
-						label: text("DEI magnitude", "DEI 幅度"),
-						value:
-							magnitude === null
-								? text("Unknown", "未知")
-								: `${magnitude.toLocaleString(locale)}%`,
-					},
-				]}
-			/>
-			<p className="text-muted-foreground text-sm">
-				{text(
-					"Only normalization changes. The session observations and model snapshot stay fixed. This lesson uses non-negative DEI magnitude; signed DEX retains direction.",
-					"只有归一化结果改变，时段观测与模型快照保持不变。本课使用非负 DEI 幅度，由带符号 DEX 保留方向。",
-				)}
-			</p>
-</> : null}
+				</>
+			) : null}
 			<h4 className="font-medium">
 				{text("GEX distribution · model date ", "GEX 分布 · 模型日期 ")}
 				{snapshot.modelDate}

@@ -41,8 +41,40 @@ export function CourseList({
 								: t("common.membershipLesson");
 				const completionLabel = isCompleted ? t("common.completed") : "";
 				return (
-					<li key={lesson.id} id={!currentLessonId ? `lesson-${lesson.id}` : undefined} className="scroll-mt-24">
-						{lesson.moduleId && lesson.moduleId !== lessons[index - 1]?.moduleId ? <div id={!currentLessonId ? `module-${lesson.moduleId}` : undefined} className="flex scroll-mt-24 flex-wrap items-center justify-between gap-2 px-3 pt-6 pb-2"><h3 className="font-semibold text-sm">{courseModules.find(module => module.id === lesson.moduleId)?.[locale]}</h3><span className="font-mono text-muted-foreground text-xs">{lessons.filter(item => item.moduleId === lesson.moduleId && completed.has(item.id)).length}/{lessons.filter(item => item.moduleId === lesson.moduleId).length}</span></div> : null}
+					<li
+						key={lesson.id}
+						id={!currentLessonId ? `lesson-${lesson.id}` : undefined}
+						className="scroll-mt-24"
+					>
+						{lesson.moduleId &&
+						lesson.moduleId !== lessons[index - 1]?.moduleId ? (
+							<div
+								id={!currentLessonId ? `module-${lesson.moduleId}` : undefined}
+								className="flex scroll-mt-24 flex-wrap items-center justify-between gap-2 px-3 pt-6 pb-2"
+							>
+								<h3 className="font-semibold text-sm">
+									{
+										courseModules.find(
+											(module) => module.id === lesson.moduleId,
+										)?.[locale]
+									}
+								</h3>
+								<span className="font-mono text-muted-foreground text-xs">
+									{
+										lessons.filter(
+											(item) =>
+												item.moduleId === lesson.moduleId &&
+												completed.has(item.id),
+										).length
+									}
+									/
+									{
+										lessons.filter((item) => item.moduleId === lesson.moduleId)
+											.length
+									}
+								</span>
+							</div>
+						) : null}
 						<Link
 							to="/learn/$lessonSlug"
 							params={{ lessonSlug: lesson.slug }}

@@ -1,0 +1,29 @@
+{
+  "note": "Review and publish explicitly; this builder performs no network writes.",
+  "assets": [
+    {
+      "lessonId": "validate-option-print",
+      "project": "videos/course-v2-companions/premium-calculation",
+      "source": "videos/course-v2-companions/premium-calculation/renders/companion.mp4",
+      "captions": "videos/course-v2-companions/premium-calculation/captions.vtt",
+      "proposedPrivateKey": "tradingflow-concepts/course-v2/premium-calculation.mp4",
+      "status": "prepared-local-not-published"
+    },
+    {
+      "lessonId": "audited-boundary",
+      "project": "videos/course-v2-companions/research-question",
+      "source": "videos/course-v2-companions/research-question/renders/companion.mp4",
+      "captions": "videos/course-v2-companions/research-question/captions.vtt",
+      "proposedPrivateKey": "tradingflow-concepts/course-v2/research-question.mp4",
+      "status": "prepared-local-not-published"
+    },
+    {
+      "lessonId": "audit-market-recap",
+      "project": "videos/course-v2-companions/recap-audit",
+      "source": "videos/course-v2-companions/recap-audit/renders/companion.mp4",
+      "captions": "videos/course-v2-companions/recap-audit/captions.vtt",
+      "proposedPrivateKey": "tradingflow-concepts/course-v2/recap-audit.mp4",
+      "status": "prepared-local-not-published"
+    }
+  ]
+}

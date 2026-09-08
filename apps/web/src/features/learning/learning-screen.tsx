@@ -38,10 +38,6 @@ import {
 	ScanSearchIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { responseComplete } from "@/domain/learning/types";
-import { WorkDocument, Worksheet } from "./work-document";
-import { ExecutionLab } from "./execution-lab";
-import { ResponseField } from "./response-field";
 import { learningRollout } from "@/content/learning-rollout";
 import type {
 	LearningAction,
@@ -51,6 +47,7 @@ import type {
 	LearningStepView,
 	LearningView,
 } from "@/domain/learning/types";
+import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import {
 	ContractExplorer,
@@ -58,6 +55,7 @@ import {
 	type RendererChange,
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
+import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { MetricsExplorer } from "./metrics-explorer";
@@ -65,7 +63,9 @@ import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
+import { ResponseField } from "./response-field";
 import { UniverseExplorer } from "./universe-explorer";
+import { WorkDocument, Worksheet } from "./work-document";
 
 export type LearningScreenProps = {
 	lessonId?: string;
@@ -188,11 +188,19 @@ function LearningScreenContent({
 	const local = (value: LearningCopy) => value[locale];
 	const answering = view?.phase === "answer";
 	const [drafts, setDrafts] = useState<Record<string, boolean>>({});
-	const onDraftChange = useCallback((id: string, dirty: boolean) => setDrafts(previous => previous[id] === dirty ? previous : { ...previous, [id]: dirty }), []);
+	const onDraftChange = useCallback(
+		(id: string, dirty: boolean) =>
+			setDrafts((previous) =>
+				previous[id] === dirty ? previous : { ...previous, [id]: dirty },
+			),
+		[],
+	);
 	const ready =
 		!Object.values(drafts).some(Boolean) &&
 		!!view &&
-		view.step.questions.every((question) => responseComplete(question, view.answers[question.id])) &&
+		view.step.questions.every((question) =>
+			responseComplete(question, view.answers[question.id]),
+		) &&
 		view.step.evidence.every(
 			(evidence) => !evidence.required || evidence.detail,
 		);
@@ -327,10 +335,22 @@ function LearningScreenContent({
 								locale={locale}
 							/>
 						) : null}
-						{view.sourceWork && view.step.kind === "independent" ? <WorkDocument work={view.sourceWork} locale={locale} source /> : null}
-{view.step.execution ? <ExecutionLab key={`${view.attemptId}:${view.step.id}`} locale={locale} optionType={view.step.execution.optionType} incoming={view.step.execution.incoming} mode={view.step.execution.mode} /> : null}
-{view.step.worksheet ? <Worksheet data={view.step.worksheet} locale={locale} /> : null}
-{view.step.quote ? (
+						{view.sourceWork && view.step.kind === "independent" ? (
+							<WorkDocument work={view.sourceWork} locale={locale} source />
+						) : null}
+						{view.step.execution ? (
+							<ExecutionLab
+								key={`${view.attemptId}:${view.step.id}`}
+								locale={locale}
+								optionType={view.step.execution.optionType}
+								incoming={view.step.execution.incoming}
+								mode={view.step.execution.mode}
+							/>
+						) : null}
+						{view.step.worksheet ? (
+							<Worksheet data={view.step.worksheet} locale={locale} />
+						) : null}
+						{view.step.quote ? (
 							<div className="flex flex-col gap-4">
 								<QuoteComparison quote={view.step.quote} locale={locale} />
 								<QuotePositionExplorer
@@ -405,44 +425,62 @@ function LearningScreenContent({
 						) : null}
 						{answering ? (
 							<FieldGroup>
-								{view.step.questions.map((question) => (
-									question.input ? <ResponseField key={`${view.attemptId}:${view.step.id}:${question.id}`} question={question} value={view.answers[question.id] ?? ""} locale={locale} disabled={locked} onDraftChange={onDraftChange} onSave={value => onAction({ type: "respond", questionId: question.id, value })} /> : <FieldSet key={question.id} disabled={locked}>
-										<FieldLegend id={`${id}-${question.id}`}>
-											{local(question.prompt)}
-										</FieldLegend>
-										<RadioGroup
-											aria-labelledby={`${id}-${question.id}`}
+								{view.step.questions.map((question) =>
+									question.input ? (
+										<ResponseField
+											key={`${view.attemptId}:${view.step.id}:${question.id}`}
+											question={question}
 											value={view.answers[question.id] ?? ""}
-											onValueChange={(value) => {
-												if (typeof value === "string")
-													onAction({
-														type: "answer",
-														questionId: question.id,
-														choiceId: value,
-													});
-											}}
+											locale={locale}
 											disabled={locked}
-										>
-											{question.choices.map((choice) => (
-												<FieldLabel
-													key={choice.id}
-													htmlFor={`${id}-${question.id}-${choice.id}`}
-												>
-													<Field
-														orientation="horizontal"
-														data-disabled={locked}
+											onDraftChange={onDraftChange}
+											onSave={(value) =>
+												onAction({
+													type: "respond",
+													questionId: question.id,
+													value,
+												})
+											}
+										/>
+									) : (
+										<FieldSet key={question.id} disabled={locked}>
+											<FieldLegend id={`${id}-${question.id}`}>
+												{local(question.prompt)}
+											</FieldLegend>
+											<RadioGroup
+												aria-labelledby={`${id}-${question.id}`}
+												value={view.answers[question.id] ?? ""}
+												onValueChange={(value) => {
+													if (typeof value === "string")
+														onAction({
+															type: "answer",
+															questionId: question.id,
+															choiceId: value,
+														});
+												}}
+												disabled={locked}
+											>
+												{question.choices.map((choice) => (
+													<FieldLabel
+														key={choice.id}
+														htmlFor={`${id}-${question.id}-${choice.id}`}
 													>
-														<RadioGroupItem
-															id={`${id}-${question.id}-${choice.id}`}
-															value={choice.id}
-														/>
-														<FieldContent>{local(choice.label)}</FieldContent>
-													</Field>
-												</FieldLabel>
-											))}
-										</RadioGroup>
-									</FieldSet>
-								))}
+														<Field
+															orientation="horizontal"
+															data-disabled={locked}
+														>
+															<RadioGroupItem
+																id={`${id}-${question.id}-${choice.id}`}
+																value={choice.id}
+															/>
+															<FieldContent>{local(choice.label)}</FieldContent>
+														</Field>
+													</FieldLabel>
+												))}
+											</RadioGroup>
+										</FieldSet>
+									),
+								)}
 							</FieldGroup>
 						) : (
 							<section
@@ -458,7 +496,11 @@ function LearningScreenContent({
 											variant={criterion.met ? "secondary" : "outline"}
 											className="self-start"
 										>
-											{criterion.reviewRequired ? (locale === "zh" ? "对照参考，自行复核" : "Compare with the reference") : text(criterion.met ? "met" : "revisit")}
+											{criterion.reviewRequired
+												? locale === "zh"
+													? "对照参考，自行复核"
+													: "Compare with the reference"
+												: text(criterion.met ? "met" : "revisit")}
 										</Badge>
 										<h4 className="font-medium text-sm">
 											{local(criterion.prompt)}
@@ -480,17 +522,44 @@ function LearningScreenContent({
 								<AlertDescription>{local(view.step.hint)}</AlertDescription>
 							</Alert>
 						) : null}
-						{view.work ? <WorkDocument work={view.work} locale={locale} /> : null}
-{view.archived ? <Alert><AlertTitle>{locale === "zh" ? "保留的历史案例" : "Preserved earlier case"}</AlertTitle><AlertDescription>{locale === "zh" ? "此结果属于较早案例版本，不能替代当前案例评估。" : "This result belongs to an earlier case version; it does not assess the updated case."}</AlertDescription></Alert> : null}
-{view.result ? (
+						{view.work ? (
+							<WorkDocument work={view.work} locale={locale} />
+						) : null}
+						{view.archived ? (
+							<Alert>
+								<AlertTitle>
+									{locale === "zh"
+										? "保留的历史案例"
+										: "Preserved earlier case"}
+								</AlertTitle>
+								<AlertDescription>
+									{locale === "zh"
+										? "此结果属于较早案例版本，不能替代当前案例评估。"
+										: "This result belongs to an earlier case version; it does not assess the updated case."}
+								</AlertDescription>
+							</Alert>
+						) : null}
+						{view.result ? (
 							<Alert>
 								<CheckIcon />
 								<AlertTitle>
-									{text("criteria")}: {view.result.met} / {view.result.total}
+									{view.result.unreviewed
+										? locale === "zh"
+											? "自动核验通过项"
+											: "Automatically checked criteria met"
+										: text("criteria")}
+									: {view.result.met} /{" "}
+									{view.result.total - (view.result.unreviewed ?? 0)}
 								</AlertTitle>
 								<AlertDescription>
-									{view.result.unreviewed ? <p>{locale === "zh" ? `${view.result.unreviewed} 项文字回答已保存，需自评或人工复核；系统未认定掌握。` : `${view.result.unreviewed} written responses saved for self/reviewer assessment; mastery is not certified.`}</p> : null}
-{view.result.usedHint ? <p>{text("hinted")}</p> : null}
+									{view.result.unreviewed ? (
+										<p>
+											{locale === "zh"
+												? `${view.result.unreviewed} 项文字回答已保存，需自评或人工复核；系统未认定掌握。`
+												: `${view.result.unreviewed} written responses saved for self/reviewer assessment; mastery is not certified.`}
+										</p>
+									) : null}
+									{view.result.usedHint ? <p>{text("hinted")}</p> : null}
 									<p>{text("completeNote")}</p>
 								</AlertDescription>
 							</Alert>
@@ -509,11 +578,20 @@ function LearningScreenContent({
 						<>
 							<Button
 								disabled={locked || !ready}
-								onClick={() => onAction({ type: view.step.questions.length === 0 ? "continue" : "submit" })}
+								onClick={() =>
+									onAction({
+										type:
+											view.step.questions.length === 0 ? "continue" : "submit",
+									})
+								}
 							>
-								{view.step.questions.length === 0 ? (locale === "zh" ? "进入练习" : "Continue to practice") : view.step.kind === "prediction"
-									? text("commit")
-									: text("submit")}
+								{view.step.questions.length === 0
+									? locale === "zh"
+										? "进入练习"
+										: "Continue to practice"
+									: view.step.kind === "prediction"
+										? text("commit")
+										: text("submit")}
 								<ArrowRightIcon data-icon="inline-end" />
 							</Button>
 							{!view.step.hint && view.step.questions.length > 0 ? (
@@ -534,7 +612,11 @@ function LearningScreenContent({
 							onClick={() => onOpen(true)}
 						>
 							<RotateCcwIcon data-icon="inline-start" />
-							{text("tryAgain")}
+							{view.sourceWork
+								? locale === "zh"
+									? "针对此来源重新作答"
+									: "Start a fresh response to this source"
+								: text("tryAgain")}
 						</Button>
 					) : (
 						<Button

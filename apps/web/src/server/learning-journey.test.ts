@@ -1,4 +1,3 @@
-import { referenceAction } from "@/domain/learning/test-helpers";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
@@ -12,6 +11,8 @@ import {
 	it,
 	vi,
 } from "vitest";
+import { tradingFlowCourse } from "@/content/course";
+import { referenceAction } from "@/domain/learning/test-helpers";
 
 const dependencies = vi.hoisted(() => ({
 	db: vi.fn(),
@@ -94,16 +95,11 @@ describe("integrated course persistence journey", () => {
 			}),
 		);
 
-	it.each([
-		"rank-contracts",
-		"validate-option-print",
-		"session-flow-vs-structure",
-		"dex-dei-gex",
-		"symbol-drawer",
-		"cookbook-research-packet",
-		"market-recap",
-		"audit-market-recap",
-	])(
+	it.each(
+		tradingFlowCourse.lessons
+			.filter((lesson) => lesson.access === "paid")
+			.map((lesson) => lesson.id),
+	)(
 		"checks access, resumes evidence and answers, and preserves completion for %s",
 		async (lessonId) => {
 			const open = async () => openLearningImpl({ lessonId, restart: false });
@@ -137,7 +133,9 @@ describe("integrated course persistence journey", () => {
 				if (view.phase !== "complete")
 					view = await update(view, { type: "continue" });
 			}
-			expect(view.result?.status).toBe(view.result?.unreviewed ? "practiced" : "demonstrated");
+			expect(view.result?.status).toBe(
+				view.result?.unreviewed ? "practiced" : "demonstrated",
+			);
 			expect(viewOf(await open())).toEqual(view);
 			expect((await getCourseProgressImpl()).completed).toBe(0);
 			expect(

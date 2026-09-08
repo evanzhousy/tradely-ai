@@ -35,7 +35,7 @@ describe("flow and structure clocks", () => {
 		const alternate = sessionFlowScenarios[1].steps[2].flowStructure;
 		if (!alternate) throw new Error("Missing alternate");
 		expect(reportedOiChange(alternate)).toBeNull();
-		expect(alternate.gex.value).toBeNull();
+		expect(alternate.gex?.value).toBeNull();
 		expect(reportedOiChange({ ...data, previousOi: null })).toBeNull();
 		expect(
 			reportedOiChange({

@@ -1,40 +1,402 @@
 import "@tanstack/react-start/server-only";
-import { choose as c, numberQuestion as n, oi, quotes, t, type TeachingUnit, write } from "./authoring.server";
+import {
+	choose as c,
+	numberQuestion as n,
+	oi,
+	quotes,
+	type TeachingUnit,
+	t,
+	write,
+} from "./authoring.server";
 
 export const researchUnits: TeachingUnit[] = [
-{
- id:"audited-boundary",sources:[oi,quotes],
- explanation:t("Start with a question whose subject, quantity, universe, time interval and evidence requirements are explicit. A descriptive question asks what happened; a forecasting question additionally needs a measurable future outcome, horizon and out-of-sample evaluation. 'What will rally?' is underspecified, not inherently untestable. This course does not validate a trading forecast from a single print. Separate observed facts, calculations, interpretations, contradictions and unknowns. An invalidation rule says which failure of evidence or tested hypothesis would require reconsideration. New evidence may test the same question. Changing the population, instrument or method creates a different question; preserve the original record instead of retrofitting it to the interesting result.","先明确问题的对象、测量量、范围、时间区间与证据要求。描述性问题问发生了什么，预测性问题还需可测未来结果、期限与样本外评价。“什么会上涨”是不够明确，不是本质上不可检验。本课不会从单笔成交验证交易预测。区分观测、计算、解读、反证与未知。失效规则说明哪类证据或假设失败需要重新考虑。新证据可检验同一问题，但更换人群、工具或方法会形成新问题；应保留原记录，避免事后迎合突出结果。"),
- example:t("Question: among the declared ALFA calls with October 16 expiry, where did September 3 session volume concentrate? Record source tape-A, complete-session cutoff and missing series. A later corrected print tests this question. Replacing calls with puts after seeing the leader changes it. One individual can own the note and revision history; no prior season or organizational role chart is required.","问题：在声明的 ALFA 10 月 16 日到期看涨集合中，9 月 3 日成交集中在哪里？记录来源 tape-A、完整时段截止及缺失序列。后续更正成交可检验该问题；看完领先者后改为看跌，则改变问题。个人可负责笔记与修订历史，无需前一季课程或组织角色图。"),
- misconception:t("A good question permits a supported answer and a reason to revise it. Caution alone is not the output; write the actual scope and quantity.","好问题应能得到有依据的答案，并有修订理由。仅表达谨慎不够，需写出实际范围与测量量。"),
- case:v=>{const day=[3,4,8,9][v];return{brief:t(`Original contract: BETA calls, October 16 expiry, September ${day}, source tape-B. A proposed rerun ${v%2?"switches to puts after viewing the highest-volume row":"adds a corrected same-session call execution without changing method"}.`,`原规则：BETA 看涨、10 月 16 日到期、9 月 ${day} 日、来源 tape-B。建议${v%2?"看到最大成交后改为看跌":"添加同日看涨更正成交，方法不变"}。`),questions:[c("change","Does the proposal change the research question?","建议改变研究问题吗？",[["new","Yes: define a new question and retain the original.","是，声明新问题并保留原件。"],["same","No: corrected evidence tests the existing question.","否，更正证据检验原问题。"]],v%2?"new":"same","A changed instrument population differs from corrected observations inside the existing population.","更换工具人群与修正原人群内观测不同。"),write("question","Write the actual question, source, cutoff and one invalidation rule.","写出实际问题、来源、截止时间与一条失效规则。","A reviewable answer names BETA calls/October 16, the stated session, tape-B and a complete-session cutoff, then explains how missing required coverage limits the claim. Evaluate your wording against those fields; it is not machine-certified.","可审核回答应明确 BETA 看涨/10 月 16 日、给定时段、tape-B 和完整时段截止，并说明必需覆盖缺失如何限制结论。按这些字段自评，文字不由机器认证。",40) ]};}
-},
-{
- id:"symbol-universe",sources:[oi],
- explanation:t("A comparison universe is a declared set of eligible observations. Derive eligibility from source facts rather than trusting a green badge: instrument identity, selected session, required coverage and liquidity threshold. Keep the intended population separate from the subset actually observed. Excluding a missing high-volume candidate may be necessary for a measured comparison, but it does not prove the remaining leader is largest in the unseen full universe. Sector, market cap, underlying type and earnings dates may define the question; they are not interchangeable filters. Historical membership must be point-in-time to avoid survivorship bias. A reference denominator can mean peer count or a numeric normalization baseline; say which one you are using.","比较范围是声明的合格观测集合。资格应由来源事实决定，不是只信绿色标签：工具身份、时段、必需覆盖与流动性阈值。区分目标人群与实际观测子集。缺失大成交候选可能需从测量比较中排除，但剩余领先者不因此成为未知完整范围的最大值。行业、市值、标的类型与财报日期可定义问题，却不能互换。历史成员应按当时确定，避免幸存者偏差。分母可能指同组数量，也可能指归一化基准，需明确。"),
- example:t("Rule: stock options, September 3, complete source, at least 500 contracts. A: stock/September 3/complete/800; B: ETF/September 3/complete/2,000; C: stock/September 2/complete/3,000; D: stock/September 3/missing. Only A has a valid observed comparison. D is unknown, not zero, and limits full-universe claims.","规则：股票期权、9 月 3 日、来源完整、至少 500 张。A：股票/9 月 3 日/完整/800；B：ETF/同日/完整/2,000；C：股票/9 月 2 日/完整/3,000；D：股票/同日/缺失。只有 A 可作有效观测比较。D 是未知而不是零，限制完整范围结论。"),
- misconception:t("Compute eligibility before ranking. Changing exclusions after seeing the winner changes the question.","先计算资格再排名，看到领先者后更改排除项会改变问题。"),
- case:v=>{const a=[800,900,650,750][v],b=[400,700,450,950][v];return{brief:t("Rule: ALFA/BETA/GAMMA stock options in the same stated session, complete observations, volume ≥500. No other rows belong to the universe.","规则：给定同一时段的 ALFA/BETA/GAMMA 股票期权，观测完整且量≥500。范围中无其他行。"),worksheet:{columns:[t("Row","行"),t("Volume","成交量"),t("Coverage","覆盖")],rows:[["ALFA",String(a),"complete / 完整"],["BETA",String(b),"complete / 完整"],["GAMMA","—","missing / 缺失"]],caption:t("Synthetic fixed-session source · volume in contracts; dash is missing", "模拟固定时段来源 · 成交量单位为张；横线为缺失")},questions:[n("admitted","How many rows qualify for the observed-volume comparison?","多少行可进入已观测成交量比较？",b>=500?2:1,"rows","行","ALFA qualifies; BETA only if ≥500; GAMMA lacks the required observation.","ALFA 合格，BETA 需≥500，GAMMA 缺少必需观测。"),c("claim","Can the observed leader be called the largest in the complete intended universe?","观测领先者可称完整目标范围最大吗？",[["full","Yes, missing rows count as zero.","可以，缺失按零计。"],["limited","No; report the observed subset and missing coverage.","不可以，应说明观测子集与缺失覆盖。"]],"limited","Unknown volume can change the full-universe order.","未知成交量可能改变完整范围排序。") ]};}
-},
-{
- id:"rank-symbols",sources:[oi],
- explanation:t("Ranking sorts observations under a metric and scope. It can prioritize attention without proving future performance. A signed metric sorted by absolute magnitude differs from sorting its signed value: −100 can rank above +60 by magnitude while retaining a negative direction. Peer changes can move an unchanged observation's rank. Raw size and baseline-normalized activity answer different questions, so choose the metric from the research objective, not from the most dramatic result. Liquidity floors and coverage exclusions can protect a comparison from tiny-denominator extremes but must be disclosed. A candidate handoff should include the observed value, comparison set, why it merits inspection and what could lower its priority.","排名按指标与范围排序，可安排关注顺序，但不证明未来表现。有符号指标按绝对幅度排序不同于按数值排序：−100 可按幅度排在 +60 前，同时方向仍为负。同组变化可改变自身观测未变的排名。原始规模与基准归一化活跃度回答不同问题，应按研究目标选指标，不追逐最突出结果。流动性门槛及覆盖排除可避免小分母极值，但必须披露。候选交接应含观测值、比较集合、检查理由及降级条件。"),
- example:t("A stays at volume 1,000. Peers fall from 1,600 and 1,300 to 500 and 600; A moves from third to first without new own-symbol activity. Separately, 1,000 versus a normal 2,000 is 0.5×; 600 versus normal 200 is 3×. A raw-volume question and an unusual-relative-activity question need different leaders.","A 始终成交 1,000，同组从 1,600 和 1,300 降至 500 和 600，A 从第三升第一而自身无新增活动。另看基准：1,000/通常 2,000=0.5×，600/通常 200=3×。原始量与相对异常活动问题需要不同领先者。"),
- misconception:t("A higher rank can result from peers or exclusions. Rank change alone is not a change in the focal metric or a directional signal.","升名次可能来自同组或排除项，不能单凭名次确定自身指标变化或方向信号。"),
- case:v=>{const rawA=[1200,1800,1600,1400][v],normalA=[2400,600,3200,700][v],rawB=[900,1200,1000,1100][v],normalB=[300,1200,500,1100][v];return{brief:t("Research question: which of two fully covered eligible names is more active relative to its own comparable-session baseline?", "研究问题：两个完整覆盖的合格标的，谁相对于自身可比时段基准更活跃？"),universe:{id:`peer-lab-${v}`,note:t("Independent questions use ORIGINAL worksheet values. This separate comparison changes BETA while holding ALFA fixed; it demonstrates relative rank, not a new market observation.","独立题目使用原始表格数值。本对比仅改变 BETA、固定 ALFA，演示相对排名，并非新增市场观测。"),rows:[{symbol:"ALFA",volume:rawA,peerVolume:rawA,fresh:true,eligible:true},{symbol:"BETA",volume:rawB,peerVolume:rawA+300,fresh:true,eligible:true}]},worksheet:{columns:[t("Symbol","标的"),t("Volume","量"),t("Typical volume","典型量")],rows:[["ALFA",String(rawA),String(normalA)],["BETA",String(rawB),String(normalB)]],caption:t("Synthetic complete sessions · contracts", "模拟完整时段 · 张")},questions:[n("ratio-a","ALFA relative volume?","ALFA 相对成交量？",rawA/normalA,"times","倍","ALFA current ÷ ALFA baseline.","ALFA 当前量÷自身基准。"),c("leader","Which name answers this relative-activity question?","哪个标的符合此相对活动问题？",[["a","ALFA","ALFA"],["b","BETA","BETA"]],rawA/normalA>rawB/normalB?"a":"b","Compare ratios for this question, not raw volume or expected returns.","此问题比较比率，不比较原始量或预期收益。") ]};}
-},
-{
- id:"rank-contracts",sources:[oi],
- explanation:t("A contract neighborhood locates activity across strikes and expiries while retaining a fixed underlying, option type, session and quality rule. Spot lets you classify moneyness, but moneyness alone does not tell you which contract to buy. An expiry slice changes visible rows; it does not silently admit outside-scope contracts. Compare total activity and concentration separately. Equal peaks can hide different breadth; equal totals can also be distributed differently. Missing observations are not zeros, and prior-session values cannot win a current-session comparison. A selected contract earns a reasoned next inspection with nearby context. Neither a shape nor a cluster establishes a spread, common owner, accumulation or a forecast.","合约邻域按行权价与到期日定位活动，同时固定标的、期权类型、时段及质量规则。现价可判断价内外状态，但该状态不告诉你该买哪张。到期切片改变可见行，不会自动纳入范围外合约。总活动与集中度需分开看：相同峰值可能广度不同，相同总量也可能分布不同。缺失不是零，前日值不能赢得当日比较。候选需要带邻近上下文进入下一项检查，形状或聚集不能证明价差策略、共同持有、积累或预测。"),
- example:t("Two 3×3 neighborhoods both total 8,000 and peak at 3,000. A has three nonzero cells (3,000, 2,500, 2,500). B has nine (3,000, four 750s, four 500s). B is broader despite identical peak and total. With spot 103, a 105 call is OTM; a 100 call is ITM. Both can be research candidates under a stated question.","两个 3×3 邻域总量均 8,000、峰值均 3,000。A 有三个非零格（3,000、2,500、2,500），B 有九个（3,000、四个 750、四个 500）。峰值和总量相同，B 仍更广。现价 103 时，105 看涨为虚值、100 看涨为实值；在明确问题下两者都可成为研究候选。"),
- misconception:t("Count observed nonzero cells without converting missing values to zeros. View controls change visibility, not the declared source data or eligibility.","只计有观测的非零格，不能把缺失变零。显示控件不改变声明的来源或资格。"),
- case:v=>{const spot=[100,98,108,104][v],strikes=[100,105,110],a=[0,0,0,0,3000,2500,0,2500,0],b=[500,750,500,750,3000,750,500,750,500];const grids=v%2?[b,a]:[a,b];return{brief:t(`At 16:00, both fixed call neighborhoods total 8,000 contracts and peak at 3,000. Replay values between checkpoints are illustrative. Spot reference ${spot}. Compare observed breadth; all zero cells are explicitly observed, not missing.`,`16:00 时，两个固定看涨邻域总量均 8,000、峰值均 3,000，回放检查点之间为示意值。现价参考 ${spot}，比较观测广度；所有零均为明确观测，而非缺失。`),neighborhoodPair:{id:`breadth-v2-${v}`,cases:grids.map((values,i)=>({label:t(i===0?"Case A":"Case B",i===0?"案例 A":"案例 B"),data:{id:`breadth-v2-${v}-${i}`,symbol:"ALFA",spot,asOf:t("Fixed synthetic close","固定模拟收盘"),scope:{minStrike:100,maxStrike:110,minDays:14,maxDays:60},contracts:[14,30,60].flatMap((days,row)=>strikes.map((strike,col)=>({id:`c-${strike}-${days}`,strike,days,volume:values[row*3+col],fresh:true}))),replay:{durationMs:14000,openMinute:570,closeMinute:960,frames:[0,.2,.45,.75,1].map((position,frame)=>({position,volumes:Object.fromEntries([14,30,60].flatMap((days,row)=>strikes.map((strike,col)=>[`c-${strike}-${days}`,Math.round(values[row*3+col]*[0,.15,.4,.8,1][frame])])))}))}}}))},questions:[n("breadth-a","At the 16:00 close, number of nonzero cells in Case A?","16:00 收盘时，案例 A 非零格数量？",v%2?9:3,"cells","格","Count the complete Case A grid, regardless of selected display slice.","按案例 A 完整网格计数，不受显示切片影响。"),c("moneyness","The 105 call is…","105 看涨属于……",[["itm","ITM: strike below spot.","实值：行权价低于现价。"],["otm","OTM: strike above spot.","虚值：行权价高于现价。"],["atm","ATM: equal to the stated spot.","平值：等于给定现价。"]],105<spot?"itm":105>spot?"otm":"atm","For calls compare strike with the stated spot; this says nothing about future direction.","看涨应比较行权价与给定现价，不说明未来方向。") ]};}
-},
-{
- id:"point-in-time-research",sources:[oi,quotes],
- explanation:t("A historical test must use information available at the decision time. Event time and knowledge/receipt time can differ: a correction received later was not usable earlier. Freeze the question, eligible population, measure and evaluation rule before inspecting outcomes. Hold out a separate period or case; tuning a threshold after seeing that outcome turns it into development data. Recency-weighted activity may decay with a half-life while raw trade count does not; a score can change without a new trade. Percentiles, standardized scores and calibrated probabilities are different quantities. Require a comparable baseline, sufficient samples and source coverage. An unusual score or a pre-move association does not establish causation, ownership or repeatable out-of-sample returns.","历史检验必须使用决策时已可用的信息。事件时间与获知/接收时间可能不同，后来收到的更正在早先不可用。看结果前固定问题、合格人群、测量与评价规则。保留独立时段或案例；看完结果再调阈值，就把评估集变成开发数据。近期加权活动可按半衰期衰减，而原始笔数不变，因此无新成交时分数也可变化。百分位、标准分与校准概率不同，需可比基准、足够样本与来源覆盖。异常分数或上涨前关联，不证明因果、归属或可重复样本外收益。"),
- example:t("An event at 09:59 is first received at 10:02. A 10:00 replay cannot use it. Separately, activity weight 80 with a 60-second half-life becomes 40 after 60 seconds and 20 after 120, absent new events. The original volume stays unchanged. Calling a 90th-percentile score a 90% chance of profit would change its meaning.","09:59 事件在 10:02 才收到，10:00 回放不能使用。另有活动权重 80，半衰期 60 秒，无新事件时 60 秒后 40、120 秒后 20，原始成交量不变。把第 90 百分位称为 90% 盈利概率，会改变含义。"),
- misconception:t("Freeze the knowledge cutoff, not just the event date. Repeatedly testing on the same held-out case consumes its independence.","固定获知截止时间，不只是事件日期。反复用同一保留案例调试会失去独立性。"),
- case:v=>{const initial=[80,120,160,96][v],halves=[2,3,1,4][v];return{brief:t(`No new events: starting weight ${initial}, half-life 60 seconds, elapsed ${halves*60} seconds. A correction about a 09:59 event arrives at 10:02; the decision cutoff is 10:00.`,`无新事件：初始权重 ${initial}，半衰期 60 秒，已过 ${halves*60} 秒。09:59 事件的更正在 10:02 到达，决策截止 10:00。`),questions:[n("weight","Remaining recency weight?","余下近期权重？",initial/2**halves,"weight units","权重单位","Initial × (1/2)^(elapsed/half-life). Raw executions were not removed.","初值×(1/2)^(经过时间/半衰期)，原始成交并未被移除。"),c("cutoff","May the 10:00 decision use that correction?","10:00 决策可使用该更正吗？",[["yes","Yes, its event time is before the cutoff.","可，事件时间早于截止。"],["no","No, the correction was only available at 10:02.","不可，更正到 10:02 才可用。"]],"no","Use availability as well as event time to avoid look-ahead.","同时检查可用时间和事件时间以避免前视。") ]};}
-},
+	{
+		id: "audited-boundary",
+		sources: [oi, quotes],
+		explanation: t(
+			"Start with a question whose subject, quantity, universe, time interval and evidence requirements are explicit. A descriptive question asks what happened; a forecasting question additionally needs a measurable future outcome, horizon and out-of-sample evaluation. 'What will rally?' is underspecified, not inherently untestable. This course does not validate a trading forecast from a single print. Separate observed facts, calculations, interpretations, contradictions and unknowns. An invalidation rule says which failure of evidence or tested hypothesis would require reconsideration. New evidence may test the same question. Changing the population, instrument or method creates a different question; preserve the original record instead of retrofitting it to the interesting result.",
+			"先明确问题的对象、测量量、范围、时间区间与证据要求。描述性问题问发生了什么，预测性问题还需可测未来结果、期限与样本外评价。“什么会上涨”是不够明确，不是本质上不可检验。本课不会从单笔成交验证交易预测。区分观测、计算、解读、反证与未知。失效规则说明哪类证据或假设失败需要重新考虑。新证据可检验同一问题，但更换人群、工具或方法会形成新问题；应保留原记录，避免事后迎合突出结果。",
+		),
+		example: t(
+			"Question: among the declared ALFA calls with October 16 expiry, where did September 3 session volume concentrate? Record source tape-A, complete-session cutoff and missing series. A later corrected print tests this question. Replacing calls with puts after seeing the leader changes it. One individual can own the note and revision history; no prior season or organizational role chart is required.",
+			"问题：在声明的 ALFA 10 月 16 日到期看涨集合中，9 月 3 日成交集中在哪里？记录来源 tape-A、完整时段截止及缺失序列。后续更正成交可检验该问题；看完领先者后改为看跌，则改变问题。个人可负责笔记与修订历史，无需前一季课程或组织角色图。",
+		),
+		misconception: t(
+			"A good question permits a supported answer and a reason to revise it. Caution alone is not the output; write the actual scope and quantity.",
+			"好问题应能得到有依据的答案，并有修订理由。仅表达谨慎不够，需写出实际范围与测量量。",
+		),
+		case: (v) => {
+			const day = [3, 4, 8, 9][v];
+			return {
+				brief: t(
+					`Original contract: BETA calls, October 16 expiry, September ${day}, source tape-B. A proposed rerun ${v % 2 ? "switches to puts after viewing the highest-volume row" : "adds a corrected same-session call execution without changing method"}.`,
+					`原规则：BETA 看涨、10 月 16 日到期、9 月 ${day} 日、来源 tape-B。建议${v % 2 ? "看到最大成交后改为看跌" : "添加同日看涨更正成交，方法不变"}。`,
+				),
+				questions: [
+					c(
+						"change",
+						"Does the proposal change the research question?",
+						"建议改变研究问题吗？",
+						[
+							[
+								"new",
+								"Yes: define a new question and retain the original.",
+								"是，声明新问题并保留原件。",
+							],
+							[
+								"same",
+								"No: corrected evidence tests the existing question.",
+								"否，更正证据检验原问题。",
+							],
+						],
+						v % 2 ? "new" : "same",
+						"A changed instrument population differs from corrected observations inside the existing population.",
+						"更换工具人群与修正原人群内观测不同。",
+					),
+					write(
+						"question",
+						"Write the actual question, source, cutoff and one invalidation rule.",
+						"写出实际问题、来源、截止时间与一条失效规则。",
+						"A reviewable answer names BETA calls/October 16, the stated session, tape-B and a complete-session cutoff, then explains how missing required coverage limits the claim. Evaluate your wording against those fields; it is not machine-certified.",
+						"可审核回答应明确 BETA 看涨/10 月 16 日、给定时段、tape-B 和完整时段截止，并说明必需覆盖缺失如何限制结论。按这些字段自评，文字不由机器认证。",
+						40,
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "symbol-universe",
+		sources: [oi],
+		explanation: t(
+			"A comparison universe is a declared set of eligible observations. Derive eligibility from source facts rather than trusting a green badge: instrument identity, selected session, required coverage and liquidity threshold. Keep the intended population separate from the subset actually observed. Excluding a missing high-volume candidate may be necessary for a measured comparison, but it does not prove the remaining leader is largest in the unseen full universe. Sector, market cap, underlying type and earnings dates may define the question; they are not interchangeable filters. Historical membership must be point-in-time to avoid survivorship bias. A reference denominator can mean peer count or a numeric normalization baseline; say which one you are using.",
+			"比较范围是声明的合格观测集合。资格应由来源事实决定，不是只信绿色标签：工具身份、时段、必需覆盖与流动性阈值。区分目标人群与实际观测子集。缺失大成交候选可能需从测量比较中排除，但剩余领先者不因此成为未知完整范围的最大值。行业、市值、标的类型与财报日期可定义问题，却不能互换。历史成员应按当时确定，避免幸存者偏差。分母可能指同组数量，也可能指归一化基准，需明确。",
+		),
+		example: t(
+			"Rule: stock options, September 3, complete source, at least 500 contracts. A: stock/September 3/complete/800; B: ETF/September 3/complete/2,000; C: stock/September 2/complete/3,000; D: stock/September 3/missing. Only A has a valid observed comparison. D is unknown, not zero, and limits full-universe claims.",
+			"规则：股票期权、9 月 3 日、来源完整、至少 500 张。A：股票/9 月 3 日/完整/800；B：ETF/同日/完整/2,000；C：股票/9 月 2 日/完整/3,000；D：股票/同日/缺失。只有 A 可作有效观测比较。D 是未知而不是零，限制完整范围结论。",
+		),
+		misconception: t(
+			"Compute eligibility before ranking. Changing exclusions after seeing the winner changes the question.",
+			"先计算资格再排名，看到领先者后更改排除项会改变问题。",
+		),
+		case: (v) => {
+			const a = [800, 900, 650, 750][v];
+			const b = [400, 700, 450, 950][v];
+			return {
+				brief: t(
+					"Rule: ALFA/BETA/GAMMA stock options in the same stated session, complete observations, volume ≥500. No other rows belong to the universe.",
+					"规则：给定同一时段的 ALFA/BETA/GAMMA 股票期权，观测完整且量≥500。范围中无其他行。",
+				),
+				worksheet: {
+					columns: [
+						t("Row", "行"),
+						t("Volume", "成交量"),
+						t("Coverage", "覆盖"),
+					],
+					rows: [
+						["ALFA", String(a), "complete / 完整"],
+						["BETA", String(b), "complete / 完整"],
+						["GAMMA", "—", "missing / 缺失"],
+					],
+					caption: t(
+						"Synthetic fixed-session source · volume in contracts; dash is missing",
+						"模拟固定时段来源 · 成交量单位为张；横线为缺失",
+					),
+				},
+				questions: [
+					n(
+						"admitted",
+						"How many rows qualify for the observed-volume comparison?",
+						"多少行可进入已观测成交量比较？",
+						b >= 500 ? 2 : 1,
+						"rows",
+						"行",
+						"ALFA qualifies; BETA only if ≥500; GAMMA lacks the required observation.",
+						"ALFA 合格，BETA 需≥500，GAMMA 缺少必需观测。",
+					),
+					n(
+						"eligible-volume",
+						"What is the volume subtotal of qualifying observed rows?",
+						"合格已观测行的成交量小计是多少？",
+						a + (b >= 500 ? b : 0),
+						"contracts",
+						"张",
+						"Sum only rows that meet the stated threshold and coverage rule. This is not the missing full-universe total.",
+						"仅累加满足门槛和覆盖规则的行；这不是存在缺失的完整范围总量。",
+					),
+					c(
+						"claim",
+						"Can the observed leader be called the largest in the complete intended universe?",
+						"观测领先者可称完整目标范围最大吗？",
+						[
+							[
+								"full",
+								"Yes, missing rows count as zero.",
+								"可以，缺失按零计。",
+							],
+							[
+								"limited",
+								"No; report the observed subset and missing coverage.",
+								"不可以，应说明观测子集与缺失覆盖。",
+							],
+						],
+						"limited",
+						"Unknown volume can change the full-universe order.",
+						"未知成交量可能改变完整范围排序。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "rank-symbols",
+		sources: [oi],
+		explanation: t(
+			"Ranking sorts observations under a metric and scope. It can prioritize attention without proving future performance. A signed metric sorted by absolute magnitude differs from sorting its signed value: −100 can rank above +60 by magnitude while retaining a negative direction. Peer changes can move an unchanged observation's rank. Raw size and baseline-normalized activity answer different questions, so choose the metric from the research objective, not from the most dramatic result. Liquidity floors and coverage exclusions can protect a comparison from tiny-denominator extremes but must be disclosed. A candidate handoff should include the observed value, comparison set, why it merits inspection and what could lower its priority.",
+			"排名按指标与范围排序，可安排关注顺序，但不证明未来表现。有符号指标按绝对幅度排序不同于按数值排序：−100 可按幅度排在 +60 前，同时方向仍为负。同组变化可改变自身观测未变的排名。原始规模与基准归一化活跃度回答不同问题，应按研究目标选指标，不追逐最突出结果。流动性门槛及覆盖排除可避免小分母极值，但必须披露。候选交接应含观测值、比较集合、检查理由及降级条件。",
+		),
+		example: t(
+			"A stays at volume 1,000. Peers fall from 1,600 and 1,300 to 500 and 600; A moves from third to first without new own-symbol activity. Separately, 1,000 versus a normal 2,000 is 0.5×; 600 versus normal 200 is 3×. A raw-volume question and an unusual-relative-activity question need different leaders.",
+			"A 始终成交 1,000，同组从 1,600 和 1,300 降至 500 和 600，A 从第三升第一而自身无新增活动。另看基准：1,000/通常 2,000=0.5×，600/通常 200=3×。原始量与相对异常活动问题需要不同领先者。",
+		),
+		misconception: t(
+			"A higher rank can result from peers or exclusions. Rank change alone is not a change in the focal metric or a directional signal.",
+			"升名次可能来自同组或排除项，不能单凭名次确定自身指标变化或方向信号。",
+		),
+		case: (v) => {
+			const rawA = [1200, 1800, 1600, 1400][v];
+			const normalA = [2400, 600, 2000, 700][v];
+			const rawB = [900, 1200, 1000, 1100][v];
+			const normalB = [300, 1200, 500, 1100][v];
+			return {
+				brief: t(
+					"Research question: which of two fully covered eligible names is more active relative to its own comparable-session baseline?",
+					"研究问题：两个完整覆盖的合格标的，谁相对于自身可比时段基准更活跃？",
+				),
+				universe: {
+					id: `peer-lab-${v}`,
+					note: t(
+						"Independent questions use ORIGINAL worksheet values. This separate comparison changes BETA while holding ALFA fixed; it demonstrates relative rank, not a new market observation.",
+						"独立题目使用原始表格数值。本对比仅改变 BETA、固定 ALFA，演示相对排名，并非新增市场观测。",
+					),
+					rows: [
+						{
+							symbol: "ALFA",
+							volume: rawA,
+							peerVolume: rawA,
+							fresh: true,
+							eligible: true,
+						},
+						{
+							symbol: "BETA",
+							volume: rawB,
+							peerVolume: rawA + 300,
+							fresh: true,
+							eligible: true,
+						},
+					],
+				},
+				worksheet: {
+					columns: [
+						t("Symbol", "标的"),
+						t("Volume", "量"),
+						t("Typical volume", "典型量"),
+					],
+					rows: [
+						["ALFA", String(rawA), String(normalA)],
+						["BETA", String(rawB), String(normalB)],
+					],
+					caption: t(
+						"Synthetic complete sessions · contracts",
+						"模拟完整时段 · 张",
+					),
+				},
+				questions: [
+					n(
+						"ratio-a",
+						"ALFA relative volume?",
+						"ALFA 相对成交量？",
+						rawA / normalA,
+						"times",
+						"倍",
+						"ALFA current ÷ ALFA baseline.",
+						"ALFA 当前量÷自身基准。",
+					),
+					c(
+						"leader",
+						"Which name answers this relative-activity question?",
+						"哪个标的符合此相对活动问题？",
+						[
+							["a", "ALFA", "ALFA"],
+							["b", "BETA", "BETA"],
+						],
+						rawA / normalA > rawB / normalB ? "a" : "b",
+						"Compare ratios for this question, not raw volume or expected returns.",
+						"此问题比较比率，不比较原始量或预期收益。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "rank-contracts",
+		sources: [oi],
+		explanation: t(
+			"A contract neighborhood locates activity across strikes and expiries while retaining a fixed underlying, option type, session and quality rule. Spot lets you classify moneyness, but moneyness alone does not tell you which contract to buy. An expiry slice changes visible rows; it does not silently admit outside-scope contracts. Compare total activity and concentration separately. Equal peaks can hide different breadth; equal totals can also be distributed differently. Missing observations are not zeros, and prior-session values cannot win a current-session comparison. A selected contract earns a reasoned next inspection with nearby context. Neither a shape nor a cluster establishes a spread, common owner, accumulation or a forecast.",
+			"合约邻域按行权价与到期日定位活动，同时固定标的、期权类型、时段及质量规则。现价可判断价内外状态，但该状态不告诉你该买哪张。到期切片改变可见行，不会自动纳入范围外合约。总活动与集中度需分开看：相同峰值可能广度不同，相同总量也可能分布不同。缺失不是零，前日值不能赢得当日比较。候选需要带邻近上下文进入下一项检查，形状或聚集不能证明价差策略、共同持有、积累或预测。",
+		),
+		example: t(
+			"Two 3×3 neighborhoods both total 8,000 and peak at 3,000. A has three nonzero cells (3,000, 2,500, 2,500). B has nine (3,000, four 750s, four 500s). B is broader despite identical peak and total. With spot 103, a 105 call is OTM; a 100 call is ITM. Both can be research candidates under a stated question.",
+			"两个 3×3 邻域总量均 8,000、峰值均 3,000。A 有三个非零格（3,000、2,500、2,500），B 有九个（3,000、四个 750、四个 500）。峰值和总量相同，B 仍更广。现价 103 时，105 看涨为虚值、100 看涨为实值；在明确问题下两者都可成为研究候选。",
+		),
+		misconception: t(
+			"Count observed nonzero cells without converting missing values to zeros. View controls change visibility, not the declared source data or eligibility.",
+			"只计有观测的非零格，不能把缺失变零。显示控件不改变声明的来源或资格。",
+		),
+		case: (v) => {
+			const spot = [100, 98, 108, 104][v];
+			const strikes = [100, 105, 110];
+			const a = [0, 0, 0, 0, 3000, 2500, 0, 2500, 0];
+			const b = [500, 750, 500, 750, 3000, 750, 500, 750, 500];
+			const grids = v % 2 ? [b, a] : [a, b];
+			return {
+				brief: t(
+					`At 16:00, both fixed call neighborhoods total 8,000 contracts and peak at 3,000. Replay values between checkpoints are illustrative. Spot reference ${spot}. Compare observed breadth; all zero cells are explicitly observed, not missing.`,
+					`16:00 时，两个固定看涨邻域总量均 8,000、峰值均 3,000，回放检查点之间为示意值。现价参考 ${spot}，比较观测广度；所有零均为明确观测，而非缺失。`,
+				),
+				neighborhoodPair: {
+					id: `breadth-v2-${v}`,
+					cases: grids.map((values, i) => ({
+						label: t(
+							i === 0 ? "Case A" : "Case B",
+							i === 0 ? "案例 A" : "案例 B",
+						),
+						data: {
+							id: `breadth-v2-${v}-${i}`,
+							symbol: "ALFA",
+							spot,
+							asOf: t("Fixed synthetic close", "固定模拟收盘"),
+							scope: {
+								minStrike: 100,
+								maxStrike: 110,
+								minDays: 14,
+								maxDays: 60,
+							},
+							contracts: [14, 30, 60].flatMap((days, row) =>
+								strikes.map((strike, col) => ({
+									id: `c-${strike}-${days}`,
+									strike,
+									days,
+									volume: values[row * 3 + col],
+									fresh: true,
+								})),
+							),
+							replay: {
+								durationMs: 14000,
+								openMinute: 570,
+								closeMinute: 960,
+								frames: [0, 0.2, 0.45, 0.75, 1].map((position, frame) => ({
+									position,
+									volumes: Object.fromEntries(
+										[14, 30, 60].flatMap((days, row) =>
+											strikes.map((strike, col) => [
+												`c-${strike}-${days}`,
+												Math.round(
+													values[row * 3 + col] * [0, 0.15, 0.4, 0.8, 1][frame],
+												),
+											]),
+										),
+									),
+								})),
+							},
+						},
+					})),
+				},
+				questions: [
+					n(
+						"breadth-a",
+						"At the 16:00 close, number of nonzero cells in Case A?",
+						"16:00 收盘时，案例 A 非零格数量？",
+						v % 2 ? 9 : 3,
+						"cells",
+						"格",
+						"Count the complete Case A grid, regardless of selected display slice.",
+						"按案例 A 完整网格计数，不受显示切片影响。",
+					),
+					c(
+						"moneyness",
+						"The 105 call is…",
+						"105 看涨属于……",
+						[
+							["itm", "ITM: strike below spot.", "实值：行权价低于现价。"],
+							["otm", "OTM: strike above spot.", "虚值：行权价高于现价。"],
+							["atm", "ATM: equal to the stated spot.", "平值：等于给定现价。"],
+						],
+						105 < spot ? "itm" : 105 > spot ? "otm" : "atm",
+						"For calls compare strike with the stated spot; this says nothing about future direction.",
+						"看涨应比较行权价与给定现价，不说明未来方向。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "point-in-time-research",
+		sources: [oi, quotes],
+		explanation: t(
+			"A historical test must use information available at the decision time. Event time and knowledge/receipt time can differ: a correction received later was not usable earlier. Freeze the question, eligible population, measure and evaluation rule before inspecting outcomes. Hold out a separate period or case; tuning a threshold after seeing that outcome turns it into development data. Recency-weighted activity may decay with a half-life while raw trade count does not; a score can change without a new trade. Percentiles, standardized scores and calibrated probabilities are different quantities. Require a comparable baseline, sufficient samples and source coverage. An unusual score or a pre-move association does not establish causation, ownership or repeatable out-of-sample returns.",
+			"历史检验必须使用决策时已可用的信息。事件时间与获知/接收时间可能不同，后来收到的更正在早先不可用。看结果前固定问题、合格人群、测量与评价规则。保留独立时段或案例；看完结果再调阈值，就把评估集变成开发数据。近期加权活动可按半衰期衰减，而原始笔数不变，因此无新成交时分数也可变化。百分位、标准分与校准概率不同，需可比基准、足够样本与来源覆盖。异常分数或上涨前关联，不证明因果、归属或可重复样本外收益。",
+		),
+		example: t(
+			"An event at 09:59 is first received at 10:02. A 10:00 replay cannot use it. Separately, activity weight 80 with a 60-second half-life becomes 40 after 60 seconds and 20 after 120, absent new events. The original volume stays unchanged. Calling a 90th-percentile score a 90% chance of profit would change its meaning.",
+			"09:59 事件在 10:02 才收到，10:00 回放不能使用。另有活动权重 80，半衰期 60 秒，无新事件时 60 秒后 40、120 秒后 20，原始成交量不变。把第 90 百分位称为 90% 盈利概率，会改变含义。",
+		),
+		misconception: t(
+			"Freeze the knowledge cutoff, not just the event date. Repeatedly testing on the same held-out case consumes its independence.",
+			"固定获知截止时间，不只是事件日期。反复用同一保留案例调试会失去独立性。",
+		),
+		case: (v) => {
+			const initial = [80, 120, 160, 96][v];
+			const halves = [2, 3, 1, 4][v];
+			return {
+				brief: t(
+					`No new events: starting weight ${initial}, half-life 60 seconds, elapsed ${halves * 60} seconds. A correction about a 09:59 event arrives at 10:02; the decision cutoff is 10:00.`,
+					`无新事件：初始权重 ${initial}，半衰期 60 秒，已过 ${halves * 60} 秒。09:59 事件的更正在 10:02 到达，决策截止 10:00。`,
+				),
+				questions: [
+					n(
+						"weight",
+						"Remaining recency weight?",
+						"余下近期权重？",
+						initial / 2 ** halves,
+						"weight units",
+						"权重单位",
+						"Initial × (1/2)^(elapsed/half-life). Raw executions were not removed.",
+						"初值×(1/2)^(经过时间/半衰期)，原始成交并未被移除。",
+					),
+					c(
+						"cutoff",
+						"May the 10:00 decision use that correction?",
+						"10:00 决策可使用该更正吗？",
+						[
+							[
+								"yes",
+								"Yes, its event time is before the cutoff.",
+								"可，事件时间早于截止。",
+							],
+							[
+								"no",
+								"No, the correction was only available at 10:02.",
+								"不可，更正到 10:02 才可用。",
+							],
+						],
+						"no",
+						"Use availability as well as event time to avoid look-ahead.",
+						"同时检查可用时间和事件时间以避免前视。",
+					),
+				],
+			};
+		},
+	},
 ];
