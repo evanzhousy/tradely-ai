@@ -38,13 +38,20 @@ flowchart LR
 
 ## Environment configuration
 
-Enable Auth on separate Tradely Neon branches for Production and Preview.
-For this prelaunch cutover, create standard child branches of the existing
-working Auth branch and clear copied test accounts after applying migrations.
-Schema-only copies can retain an empty `neon_auth` schema without a working
-Auth integration; they are not used for this release. Never connect Preview
-to the production learner database or Stripe live credentials. Preview
-checkout remains disabled until dedicated Stripe test credentials are set.
+Use the two original branches in Neon project `winter-fire-23212462`:
+
+| Neon branch | Branch ID | Application environment |
+| --- | --- | --- |
+| `production` (default) | `br-young-night-afo4dv8d` | Vercel Production |
+| `test` | `br-muddy-credit-afua0u9c` | Vercel Preview and local development |
+
+Each branch contains both Managed Better Auth's `neon_auth` schema and the
+application's `public` tables for learner profiles, progress, and attempts.
+Separate branches for authentication are unnecessary. Enable and verify Auth
+on the branch itself; an empty `neon_auth` schema alone does not establish a
+working Auth integration. Never connect Preview to the production learner
+database or Stripe live credentials. Preview checkout remains disabled until
+dedicated Stripe test credentials are set.
 
 Set these per Vercel environment:
 
@@ -56,7 +63,7 @@ Set these per Vercel environment:
 | `DATABASE_URL` | The matching branch's database connection string |
 
 Set the cookie secret as a sensitive Vercel variable. Never commit it. Local
-`.env` values may use a development branch; production builds reject missing
+`.env` values use the `test` branch; production builds reject missing
 authentication configuration. `VITE_AUTH_ENABLED=false` is a local public-preview
 mode, and hides account controls.
 
@@ -71,7 +78,7 @@ In Neon Auth configuration:
    sender is for development/testing and is rate-limited.
 4. Allow only the applicable origins. Production requires `https://tradely.ai`
    and `https://www.tradely.ai`; preview origins belong to Preview's branch.
-5. Disable localhost access on Production. Allow it on the development branch.
+5. Disable localhost access on `production`. Allow it on `test`.
 6. Set the user-facing application name to Tradely.
 
 See [Neon production configuration](https://neon.com/docs/auth/production-checklist)
@@ -135,6 +142,9 @@ Preview build would retain its Preview database and authentication configuration
 
 ## Verified prelaunch cutover — September 8, 2026
 
+This historical rollout used temporary branches. The September 9 consolidation
+below supersedes its branch mapping and rollback availability.
+
 - Neon project: `winter-fire-23212462` (Tradely AI, FLOWMAN LLC).
 - Production/default branch: `neon-auth-production` (`br-withered-wind-afyejyfy`).
 - Preview branch: `neon-auth-preview` (`br-solitary-frog-afgk8fxl`).
@@ -161,3 +171,43 @@ Preview build would retain its Preview database and authentication configuration
 - Previous database branches remain available for rollback. The auth-only
   release excludes the concurrent local PostHog implementation commit, which was
   not part of this deployment. Commits remain local; no Git push was performed.
+
+## Verified branch consolidation — September 9, 2026
+
+- Restored the original `production` and `test` branches shown in the environment
+  table above. `production` is the project default. Each environment uses its own
+  branch for both authentication and application data.
+- Both temporary `neon-auth-*` branches had zero users, sessions, profiles,
+  progress, and attempts before removal. No post-cutover records needed moving.
+  The original `test` branch's 14 legacy Clerk test profiles and one progress row
+  were cleared under the owner's approved prelaunch fresh start. Both original
+  branches have the current migrations and `user_id` identity columns; their
+  working Managed Better Auth integrations were preserved.
+- Updated Vercel Production and Preview database URLs, matching Auth URLs, and
+  independent sensitive cookie secrets. Local `apps/web/.env` now uses `test`.
+  Cookie rotation requires signing in again. Production allows the two Tradely
+  origins and rejects localhost; `test` allows localhost and the exact verified
+  Preview origin.
+- Rebuilt the existing live code release
+  `3789a59eeee76f640e738cb1591a96d8516794af` with the new environment settings:
+  Preview `dpl_BhnoJbJsu9NPRCRSa5Qbjdszkk7J`, Production
+  `dpl_6ofJ1D7z84LYYBQ4uYubZtPMvEjF`. Both reached READY; Production serves
+  `tradely.ai` and `www.tradely.ai`.
+- Verified real email-code registration, saved lesson progress across a reload,
+  and logout in both environments. Database readback confirmed each verified
+  identity and completed lesson in its corresponding original branch. Returning
+  sign-in also passed on Preview. Production denied unpaid access and rejected
+  a foreign-origin auth POST with 403. Preview blocks paid content while its
+  Stripe test credentials remain unconfigured. Auth session responses use
+  `private, no-store`; the live page loads no Clerk scripts.
+- The two targeted migration and auth test files passed all 12 tests. Removed
+  only the verification identities and their application records after testing.
+  All four branches were empty of users and application records at cleanup.
+- Deleted `neon-auth-production` and `neon-auth-preview` after verification and
+  confirmed only the two original branches remain. Older deployments that embed
+  deleted branch URLs must be rebuilt with the current environment bindings;
+  those branches are no longer rollback targets.
+- The shared Neon email sender remains active for prelaunch testing. Dedicated
+  production SMTP and Preview Stripe test credentials remain separate launch
+  setup. This consolidation changed infrastructure and documentation; it did not
+  deploy newer local application commits or push Git changes.
