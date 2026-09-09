@@ -1,8 +1,8 @@
 # Tradely authentication
 
-Tradely uses Neon's Managed Better Auth with email verification codes. The same
-form signs in returning learners and creates a new account after an email code
-is verified. No password or social-provider credentials are required by this UI.
+Tradely uses Neon's Managed Better Auth with Google OAuth and email verification
+codes. Both choices sign in returning learners or create a verified account.
+Google OAuth credentials are configured in Neon, never in the browser bundle.
 Only verified email identities can access identity-dependent server functions.
 
 ## Ownership and request flow
@@ -15,13 +15,28 @@ The application does not implement session cryptography.
 flowchart LR
     Browser -->|Same-origin /api/auth/*|Proxy[Tradely auth proxy]
     Proxy --> Neon[Managed Better Auth]
+    Neon --> Google[Google sign-in]
+    Google --> Neon
+    Neon -->|OAuth verifier|Callback[Tradely /auth/callback]
+    Callback -->|SDK challenge exchange|Neon
+    Callback -->|Session cookies and clean return URL|Browser
     Browser -->|HttpOnly session cookie|Server[Tradely server function]
     Server -->|Verified session|Neon
     Server --> Access[User and paid-access checks]
     Access --> Data[Progress, attempts and private media]
 ```
 
-- The browser calls `/api/auth/*`; the upstream Neon Auth URL stays server-side.
+- Browser auth API calls go through `/api/auth/*`. OAuth redirects also visit
+  Google and Neon to complete the provider handshake.
+- Google sign-in sends existing-user, new-user, and error callbacks to the
+  same-origin `/auth/callback` endpoint. It uses the SDK's
+  `processAuthMiddleware` to validate the browser challenge and exchange the
+  verifier before rendering any page. The redirect preserves every SDK session
+  and challenge-cleanup cookie. Only sanitized application paths are accepted
+  as `returnTo`; cancellation and failure show a fixed retry message.
+- Callback responses are `private, no-store` with `Referrer-Policy: no-referrer`.
+  OAuth verifiers and provider errors are stripped before page rendering and
+  analytics initialization. Google sign-in grants no paid access by itself.
 - The SDK filters cookies, signs its session-data cache, and rewrites cookies
   with `Secure`, `HttpOnly` where emitted by Neon, and `SameSite=Lax`. Lax keeps
   sign-in available on top-level returns from Stripe and email clients.
@@ -84,6 +99,31 @@ In Neon Auth configuration:
 See [Neon production configuration](https://neon.com/docs/auth/production-checklist)
 and the SDK's `BUILDING-AN-ADAPTER.md`. Managed Better Auth is currently beta;
 review the SDK changelog before upgrading the pinned server toolkit.
+
+## Google OAuth configuration
+
+Google's shared testing provider is enabled on both `production` and `test`.
+The owner approved continuing with these credentials while Tradely is prelaunch.
+Google's consent screen therefore identifies `neon.tech`. Public launch requires
+custom Google OAuth clients and Tradely consent-screen branding in Google Cloud.
+
+For custom clients, use the **Web application** client type and register the
+matching provider redirect URI:
+
+| Neon branch | Google authorized redirect URI |
+| --- | --- |
+| `production` | `https://ep-quiet-rain-afp8bmfg.neonauth.c-2.us-west-2.aws.neon.tech/neondb/auth/callback/google` |
+| `test` | `https://ep-wandering-field-afm7brbp.neonauth.c-2.us-west-2.aws.neon.tech/neondb/auth/callback/google` |
+
+These are Google's callbacks to Neon. The application's `/auth/callback` is the
+subsequent return from Neon to Tradely. Keep application origins in the matching
+Neon branch's trusted domains. Enter each Client ID and Client Secret in that
+branch's Auth configuration; no additional Vercel Google secret is needed.
+
+See [Neon's OAuth setup guide](https://neon.com/docs/auth/guides/setup-oauth).
+The button uses Google's official
+[G asset](https://developers.google.com/static/identity/images/g-logo.png),
+served locally as `/google-g.png`.
 
 ## Prelaunch database reset
 

@@ -8,7 +8,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
-import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
+import {
+	Field,
+	FieldGroup,
+	FieldLabel,
+	FieldSeparator,
+} from "@tradely/ui/components/field";
 import { Input } from "@tradely/ui/components/input";
 import { type FormEvent, useEffect, useState } from "react";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
@@ -18,6 +23,7 @@ import { useI18n } from "@/i18n/provider";
 export const Route = createFileRoute("/auth/sign-in")({
 	validateSearch: (search: Record<string, unknown>) => ({
 		returnTo: safeReturnTo(search.returnTo),
+		oauthError: search.oauthError === "google" ? "google" : undefined,
 	}),
 	head: () => ({
 		meta: [
@@ -28,14 +34,22 @@ export const Route = createFileRoute("/auth/sign-in")({
 	component: SignInPage,
 });
 
-function EmailCodeForm({ returnTo }: { returnTo: string }) {
+function SignInForm({
+	returnTo,
+	oauthFailed,
+}: {
+	returnTo: string;
+	oauthFailed: boolean;
+}) {
 	const { t } = useI18n();
 	const { isLoaded, isSignedIn } = useAuth();
 	const [email, setEmail] = useState("");
 	const [code, setCode] = useState("");
 	const [step, setStep] = useState<"email" | "code">("email");
-	const [pending, setPending] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [pending, setPending] = useState<"email" | "google" | null>(null);
+	const [error, setError] = useState<string | null>(
+		oauthFailed ? t("auth.googleFailed") : null,
+	);
 	const [cooldown, setCooldown] = useState(0);
 	useEffect(() => {
 		if (isLoaded && isSignedIn) window.location.replace(returnTo);
@@ -50,7 +64,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 	}, [cooldown]);
 
 	async function sendCode() {
-		setPending(true);
+		setPending("email");
 		setError(null);
 		try {
 			const result = await authClient.emailOtp.sendVerificationOtp({
@@ -68,7 +82,27 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 		} catch {
 			setError(t("auth.sendFailed"));
 		} finally {
-			setPending(false);
+			setPending(null);
+		}
+	}
+	async function signInWithGoogle() {
+		if (pending) return;
+		setPending("google");
+		setError(null);
+		const callback = new URL("/auth/callback", window.location.origin);
+		callback.searchParams.set("returnTo", safeReturnTo(returnTo));
+		try {
+			const result = await authClient.signIn.social({
+				provider: "google",
+				callbackURL: callback.toString(),
+				newUserCallbackURL: callback.toString(),
+				errorCallbackURL: callback.toString(),
+			});
+			if (result.error) setError(t("auth.googleFailed"));
+		} catch {
+			setError(t("auth.googleFailed"));
+		} finally {
+			setPending(null);
 		}
 	}
 	async function submit(event: FormEvent<HTMLFormElement>) {
@@ -78,7 +112,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 			await sendCode();
 			return;
 		}
-		setPending(true);
+		setPending("email");
 		setError(null);
 		try {
 			const result = await authClient.signIn.emailOtp({
@@ -93,12 +127,34 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 		} catch {
 			setError(t("auth.codeFailed"));
 		} finally {
-			setPending(false);
+			setPending(null);
 		}
 	}
 	return (
 		<form onSubmit={(event) => void submit(event)}>
 			<FieldGroup>
+				{step === "email" ? (
+					<>
+						<Button
+							type="button"
+							variant="outline"
+							size="lg"
+							disabled={Boolean(pending) || !isLoaded}
+							aria-busy={pending === "google"}
+							onClick={() => void signInWithGoogle()}
+						>
+							<img
+								src="/google-g.png"
+								alt=""
+								width={18}
+								height={18}
+								className="size-[18px]"
+							/>
+							{pending === "google" ? t("auth.working") : t("auth.google")}
+						</Button>
+						<FieldSeparator>{t("auth.orEmail")}</FieldSeparator>
+					</>
+				) : null}
 				{step === "email" ? (
 					<Field>
 						<FieldLabel htmlFor="auth-email">{t("auth.email")}</FieldLabel>
@@ -111,7 +167,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 							maxLength={254}
 							value={email}
 							onChange={(event) => setEmail(event.target.value)}
-							disabled={pending}
+							disabled={Boolean(pending)}
 						/>
 					</Field>
 				) : (
@@ -133,7 +189,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 								onChange={(event) =>
 									setCode(event.target.value.replace(/\D/g, ""))
 								}
-								disabled={pending}
+								disabled={Boolean(pending)}
 								aria-invalid={Boolean(error)}
 								aria-describedby={error ? "auth-error" : undefined}
 							/>
@@ -145,8 +201,8 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 						<AlertDescription>{error}</AlertDescription>
 					</Alert>
 				) : null}
-				<Button type="submit" disabled={pending} className="w-full">
-					{pending
+				<Button type="submit" disabled={Boolean(pending)} className="w-full">
+					{pending === "email"
 						? t("auth.working")
 						: step === "email"
 							? t("auth.sendCode")
@@ -157,7 +213,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 						<Button
 							type="button"
 							variant="ghost"
-							disabled={pending}
+							disabled={Boolean(pending)}
 							onClick={() => {
 								setStep("email");
 								setCode("");
@@ -169,7 +225,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 						<Button
 							type="button"
 							variant="ghost"
-							disabled={pending || cooldown > 0}
+							disabled={Boolean(pending) || cooldown > 0}
 							onClick={() => void sendCode()}
 						>
 							{cooldown > 0
@@ -189,7 +245,7 @@ function EmailCodeForm({ returnTo }: { returnTo: string }) {
 
 export function SignInPage() {
 	const { t } = useI18n();
-	const { returnTo } = Route.useSearch();
+	const { returnTo, oauthError } = Route.useSearch();
 	return (
 		<div className="mx-auto flex w-full max-w-md flex-col gap-6 px-5 py-16 sm:py-24">
 			<Card>
@@ -201,7 +257,10 @@ export function SignInPage() {
 				</CardHeader>
 				<CardContent>
 					{authIsConfigured ? (
-						<EmailCodeForm returnTo={returnTo} />
+						<SignInForm
+							returnTo={returnTo}
+							oauthFailed={oauthError === "google"}
+						/>
 					) : (
 						<p role="status">{t("access.authUnavailable")}</p>
 					)}

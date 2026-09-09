@@ -6,11 +6,13 @@ import {
 	handleAuthProxyRequest,
 	NEON_AUTH_SESSION_COOKIE_NAME,
 	parseCookieValue,
+	processAuthMiddleware,
 	type RequestContext,
 	resolveNeonAuthLogging,
 } from "@neondatabase/auth/server";
 import { getRequest, setCookie } from "@tanstack/react-start/server";
 import { env } from "@tradely/env/server";
+import { safeReturnTo } from "./redirect";
 
 export function createRequestContext(): RequestContext {
 	const request = getRequest();
@@ -62,6 +64,44 @@ const privateHeaders = {
 	"Cache-Control": "private, no-store",
 	Vary: "Cookie, Origin",
 };
+
+/** Finalize OAuth before rendering a page or exposing its verifier to analytics. */
+export async function completeOAuthRequest(
+	request: Request,
+): Promise<Response> {
+	const url = new URL(request.url);
+	const returnTo = safeReturnTo(url.searchParams.get("returnTo"));
+	const failure = new URL("/auth/sign-in", url.origin);
+	failure.searchParams.set("returnTo", returnTo);
+	failure.searchParams.set("oauthError", "google");
+	const headers = new Headers({
+		...privateHeaders,
+		"Referrer-Policy": "no-referrer",
+		Location: failure.toString(),
+	});
+	const config = configuration();
+	if (config && !url.searchParams.has("error")) {
+		try {
+			const result = await processAuthMiddleware({
+				...config,
+				request,
+				pathname: url.pathname,
+				skipRoutes: [],
+				loginUrl: "/auth/sign-in",
+			});
+			if (result.action === "redirect_oauth") {
+				// The SDK validates the browser challenge and exchanges the verifier.
+				// Preserve every session and challenge-cleanup cookie separately.
+				for (const cookie of result.cookies)
+					headers.append("Set-Cookie", cookie);
+				headers.set("Location", new URL(returnTo, url.origin).toString());
+			}
+		} catch {
+			// Provider errors can contain credentials; show only a fixed retry message.
+		}
+	}
+	return new Response(null, { status: 302, headers });
+}
 
 export async function proxyAuthRequest(
 	request: Request,
