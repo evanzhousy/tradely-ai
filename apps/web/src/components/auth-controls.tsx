@@ -1,4 +1,5 @@
 import { Button } from "@tradely/ui/components/button";
+import { Skeleton } from "@tradely/ui/components/skeleton";
 import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
@@ -13,9 +14,10 @@ function ConfiguredAuthControls() {
 	const [failed, setFailed] = useState(false);
 	if (!isLoaded)
 		return (
-			<span role="status" className="text-muted-foreground text-sm">
-				{t("auth.loading")}
-			</span>
+			<div role="status">
+				<Skeleton className="h-8 w-20" aria-hidden="true" />
+				<span className="sr-only">{t("auth.loading")}</span>
+			</div>
 		);
 	if (!isSignedIn) {
 		return (

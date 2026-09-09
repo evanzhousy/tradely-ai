@@ -1,17 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
-import { buttonVariants } from "@tradely/ui/components/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@tradely/ui/components/card";
-import { ArrowRightIcon } from "lucide-react";
+import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
+import { BookOpenIcon } from "lucide-react";
 import { useBillingStatusAnalytics } from "@/analytics/billing-status";
+import { CourseCatalog } from "@/components/course-catalog";
 import { CourseProgress } from "@/components/course-progress";
-import { LandingCurriculum } from "@/components/landing-curriculum";
+import { PageIntro } from "@/components/page-intro";
 import { getFreeLessons } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -35,82 +29,80 @@ function CoursePage() {
 		? course.lessons[0]
 		: freeLessons[0];
 	return (
-		<main className="mx-auto flex w-full max-w-[1180px] flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
-			<section className="grid items-end gap-8 lg:grid-cols-[1fr_360px]">
-				<div className="flex max-w-3xl flex-col gap-5">
-					<div className="flex flex-wrap gap-2">
-						<Badge>{t("course.practiceBadge")}</Badge>
-						<Badge variant="secondary">
-							{t("course.freeLessons", {
-								count: freeLessons.length,
-							})}
-						</Badge>
+		<main className="page-shell">
+			<PageIntro
+				eyebrow={t("course.practiceBadge")}
+				title={course.title}
+				description={course.description}
+				aside={
+					<div className="course-progress-card">
+						<div className="mb-5 flex items-center gap-2 font-medium text-sm">
+							<BookOpenIcon size={16} aria-hidden="true" />
+							{t("course.yourProgress")}
+						</div>
+						<CourseProgress
+							completed={progress.completed}
+							total={progress.total}
+							percentage={progress.percentage}
+						/>
+						<p className="text-muted-foreground text-xs leading-6">
+							{progress.signedIn
+								? t("progress.accountCurrent")
+								: t("progress.signInToRecord")}
+						</p>
+						<p className="text-muted-foreground text-xs leading-5">
+							{locale === "zh"
+								? "旧课完成记录已保留。新增课程会扩大总课数，不代表旧记录丢失。"
+								: "Earlier completions are retained. Added lessons expand the total; they do not erase completed work."}
+						</p>
 					</div>
-					<h1 className="font-semibold text-5xl text-display sm:text-6xl">
-						{course.title}
-					</h1>
-					<p className="max-w-[68ch] text-lg text-muted-foreground leading-8">
-						{course.description}
-					</p>
+				}
+			>
+				<div className="flex flex-wrap items-center gap-4">
 					{startLesson ? (
-						<Link
-							to="/learn/$lessonSlug"
-							params={{ lessonSlug: startLesson.slug }}
-							className={buttonVariants({ size: "lg" })}
+						<InteractiveHoverLink
+							size="lg"
+							render={
+								<Link
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: startLesson.slug }}
+								/>
+							}
 						>
 							{t(
 								progress.canAccessPaid
 									? "common.startLessonOne"
 									: "home.startFree",
 							)}
-							<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-						</Link>
+						</InteractiveHoverLink>
 					) : null}
+					<Badge variant="secondary">
+						{t("course.freeLessons", { count: freeLessons.length })}
+					</Badge>
 				</div>
-				<Card size="sm">
-					<CardHeader>
-						<CardTitle>{t("course.yourProgress")}</CardTitle>
-						<CardDescription>
-							{progress.signedIn
-								? t("progress.accountCurrent")
-								: t("progress.signInToRecord")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<CourseProgress
-							completed={progress.completed}
-							total={progress.total}
-							percentage={progress.percentage}
-						/>
-						<p className="mt-3 text-muted-foreground text-xs">
-							{locale === "zh"
-								? "旧课完成记录已保留。新增课程会扩大总课数，不代表旧记录丢失。"
-								: "Earlier completions are retained. Added lessons expand the total; they do not erase completed work."}
-						</p>
-					</CardContent>
-				</Card>
-			</section>
-
-			<nav
-				className="flex flex-wrap gap-2"
-				aria-label={locale === "zh" ? "跳至模块" : "Jump to module"}
-			>
-				{courseModules.map((module) => (
-					<a
-						key={module.id}
-						className={buttonVariants({ variant: "outline", size: "sm" })}
-						href={`#module-${module.id}`}
-					>
-						{module[locale]}
-					</a>
-				))}
-			</nav>
+				<dl className="course-facts">
+					<div>
+						<dt>{t("home.statLessons")}</dt>
+						<dd>{course.lessons.length}</dd>
+					</div>
+					<div>
+						<dt>{locale === "zh" ? "学习模块" : "Learning modules"}</dt>
+						<dd>{courseModules.length}</dd>
+					</div>
+					<div>
+						<dt>{t("home.statMinutes")}</dt>
+						<dd>
+							{course.lessons.reduce((sum, lesson) => sum + lesson.minutes, 0)}
+						</dd>
+					</div>
+				</dl>
+			</PageIntro>
 			<p className="text-muted-foreground text-sm">
 				{locale === "zh"
 					? "核心路径：合约 → 成交 → 成交流 → 比较研究 → 研究产出。定价与模型、组合为扩展路径。先修提示是学习建议，不新增访问锁。"
 					: "Core path: contracts → execution → flow → research → written output. Pricing/models and portfolios form deeper branches. Prerequisites guide learning; they do not add access locks."}
 			</p>
-			<LandingCurriculum
+			<CourseCatalog
 				groupByModule
 				caption={t("course.curriculumDescription")}
 				lessons={course.lessons}

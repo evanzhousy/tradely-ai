@@ -128,8 +128,8 @@ function LessonPage() {
 	const localizedNext = next ? getLocalizedLesson(next, locale) : undefined;
 
 	return (
-		<main className="mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[330px_1fr]">
-			<aside className="hidden min-h-[calc(100svh-4rem)] border-border/60 border-r px-4 py-8 lg:block">
+		<main className="lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[330px_1fr]">
+			<aside className="lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r px-4 py-8 lg:block">
 				<div className="sticky top-24 flex flex-col gap-6">
 					<CourseProgress
 						completed={progress.completed}
@@ -151,7 +151,11 @@ function LessonPage() {
 
 			<div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10 xl:px-16">
 				<div className="mx-auto flex max-w-[920px] flex-col gap-8">
-					<LessonNavigation locale={locale} lessonId={lesson.id} />
+					<LessonNavigation
+						locale={locale}
+						lessonId={lesson.id}
+						lessonTitle={lesson.title}
+					/>
 					<Accordion className="lg:hidden">
 						<AccordionItem value="course-navigation">
 							<AccordionTrigger>
@@ -179,7 +183,7 @@ function LessonPage() {
 						</AccordionItem>
 					</Accordion>
 
-					<header className="flex flex-col gap-5">
+					<header className="lesson-heading flex flex-col gap-5">
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">
 								{t("common.lessonNumber", {
@@ -269,7 +273,7 @@ function LessonPage() {
 									</AlertDescription>
 								</Alert>
 							) : null}
-							<details>
+							<details className="lesson-notes">
 								<summary className="cursor-pointer font-medium">
 									{locale === "zh"
 										? "课程笔记与参考来源"

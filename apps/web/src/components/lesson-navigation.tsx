@@ -1,4 +1,11 @@
-import { buttonVariants } from "@tradely/ui/components/button";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "@tradely/ui/components/breadcrumb";
 import { BookOpenIcon, HomeIcon } from "lucide-react";
 
 import { type Locale, translate } from "@/i18n/messages";
@@ -7,30 +14,40 @@ export function LessonNavigation({
 	locale,
 	siteOrigin = "",
 	lessonId,
+	lessonTitle,
 }: {
 	locale: Locale;
 	siteOrigin?: string;
 	lessonId?: string;
+	lessonTitle?: string;
 }) {
 	return (
-		<nav
-			aria-label={translate(locale, "lesson.navigation")}
-			className="flex flex-wrap items-center gap-2"
-		>
-			<a
-				href={`${siteOrigin}/`}
-				className={buttonVariants({ variant: "ghost" })}
-			>
-				<HomeIcon data-icon="inline-start" aria-hidden="true" />
-				{translate(locale, "nav.learn")}
-			</a>
-			<a
-				href={`${siteOrigin}/courses/tradingflow-foundations${lessonId ? `#lesson-${encodeURIComponent(lessonId)}` : ""}`}
-				className={buttonVariants({ variant: "outline" })}
-			>
-				<BookOpenIcon data-icon="inline-start" aria-hidden="true" />
-				{translate(locale, "course.curriculum")}
-			</a>
-		</nav>
+		<Breadcrumb aria-label={translate(locale, "lesson.navigation")}>
+			<BreadcrumbList>
+				<BreadcrumbItem>
+					<BreadcrumbLink href={`${siteOrigin}/`}>
+						<HomeIcon size={14} aria-hidden="true" />
+						{translate(locale, "nav.learn")}
+					</BreadcrumbLink>
+				</BreadcrumbItem>
+				<BreadcrumbSeparator />
+				<BreadcrumbItem>
+					<BreadcrumbLink
+						href={`${siteOrigin}/courses/tradingflow-foundations${lessonId ? `#lesson-${encodeURIComponent(lessonId)}` : ""}`}
+					>
+						<BookOpenIcon size={14} aria-hidden="true" />
+						{translate(locale, "course.curriculum")}
+					</BreadcrumbLink>
+				</BreadcrumbItem>
+				{lessonTitle ? (
+					<>
+						<BreadcrumbSeparator />
+						<BreadcrumbItem>
+							<BreadcrumbPage>{lessonTitle}</BreadcrumbPage>
+						</BreadcrumbItem>
+					</>
+				) : null}
+			</BreadcrumbList>
+		</Breadcrumb>
 	);
 }

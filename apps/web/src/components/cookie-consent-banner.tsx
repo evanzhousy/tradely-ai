@@ -25,7 +25,7 @@ export function CookieConsentBanner() {
 
 	return (
 		<section
-			className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-2xl rounded-3xl border border-border bg-background/95 p-5 shadow-2xl backdrop-blur-xl sm:inset-x-6 sm:p-6"
+			className="consent-surface fixed inset-x-3 bottom-3 z-50 mx-auto max-w-2xl rounded-3xl border border-border bg-background/95 p-5 shadow-2xl backdrop-blur-xl sm:inset-x-6 sm:p-6"
 			aria-labelledby="analytics-consent-title"
 			aria-describedby="analytics-consent-description"
 			aria-live="polite"

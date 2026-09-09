@@ -114,6 +114,8 @@ Agents must be able to point at the rendered page and confirm each of these:
 
 Compose from installed tokens and these named pieces. Do not invent a parallel type scale or a second chrome.
 
+The application-wide 21st community adoption is documented in `docs/21st-components.md`. Shared `DotPattern`, `BentoGrid`/`BentoCard`, `CircularProgress`, `InteractiveHoverLink`/`InteractiveHoverButton`, `Breadcrumb`, `Tabs`, `Empty`, `Item`, `Skeleton`, `Kbd` and `StepIndicator` live in `packages/ui`. Page openings, curriculum discovery, and reading navigation are composed in `apps/web/src/components`; their layouts live in `styles/pages.css`. New pages should use this layer. Preserve native links for navigation, visible actions without hover, semantic state labels, and the established content/learning boundaries.
+
 - Theme tokens in `packages/ui/src/styles/globals.css`: `background`, `foreground`, `card`, `muted`, `primary`, `border`, `ring`.
 - shadcn controls for behavior: `Button`, `Sheet`, `Header` product chrome, `CourseList` on course/lesson rails.
 - Homepage composition in `apps/web/src/styles/desk.css`: `landing-hero`, `landing-materials`, `landing-proof`, `landing-path`, and `landing-study-section`. Course facts and the curriculum retain `desk-stat-strip`, `desk-stat`, `desk-stat-value`; the ordered card grid uses `curriculum-grid` and `curriculum-card`.

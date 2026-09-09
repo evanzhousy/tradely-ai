@@ -28,7 +28,7 @@ export function AccessPanel({
 	);
 	if (access.reason === "billing-unavailable") {
 		return (
-			<Alert>
+			<Alert className="access-panel">
 				<RefreshCwIcon aria-hidden="true" />
 				<AlertTitle>{t("access.refreshTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
@@ -44,7 +44,7 @@ export function AccessPanel({
 
 	if (access.reason === "signed-out") {
 		return (
-			<Alert>
+			<Alert className="access-panel">
 				<UserRoundIcon aria-hidden="true" />
 				<AlertTitle>{t("access.signInTitle")}</AlertTitle>
 				<AlertDescription className="flex flex-col items-start gap-4">
@@ -68,7 +68,7 @@ export function AccessPanel({
 	}
 
 	return (
-		<Alert>
+		<Alert className="access-panel">
 			<LockKeyholeIcon aria-hidden="true" />
 			<AlertTitle>{t("access.membershipTitle")}</AlertTitle>
 			<AlertDescription className="flex flex-col items-start gap-4">

@@ -20,7 +20,7 @@ export function Footer() {
 	return (
 		<footer
 			className={cn(
-				"border-border/60 border-t bg-muted/20",
+				"app-footer border-border/60 border-t",
 				isHome && "observatory-footer observatory-surface",
 			)}
 		>

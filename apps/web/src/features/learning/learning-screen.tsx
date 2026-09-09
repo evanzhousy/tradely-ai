@@ -23,6 +23,7 @@ import {
 } from "@tradely/ui/components/field";
 import { RadioGroup, RadioGroupItem } from "@tradely/ui/components/radio-group";
 import { Separator } from "@tradely/ui/components/separator";
+import { StepIndicator } from "@tradely/ui/components/step-indicator";
 import {
 	Table,
 	TableBody,
@@ -218,6 +219,8 @@ function LearningScreenContent({
 	return (
 		<Card
 			id="interactive-practice"
+			className="learning-workspace"
+			data-started={Boolean(view || error)}
 			data-learning-persistence={persistence}
 			aria-labelledby={`${id}-title`}
 		>
@@ -253,23 +256,18 @@ function LearningScreenContent({
 				) : null}
 				{view ? (
 					<>
-						<ol className="flex flex-wrap gap-2" aria-label={text("stages")}>
-							{(
+						<StepIndicator
+							label={text("stages")}
+							current={view.stepIndex}
+							complete={view.phase === "complete"}
+							steps={(
 								view.stepKinds ??
 								(["prediction", "guided", "independent"] as const)
-							).map((step, index) => (
-								<li
-									key={step + index}
-									aria-current={view.stepIndex === index ? "step" : undefined}
-								>
-									<Badge
-										variant={view.stepIndex === index ? "default" : "outline"}
-									>
-										{index + 1}. {text(step)}
-									</Badge>
-								</li>
-							))}
-						</ol>
+							).map((step, index) => ({
+								id: `${step}-${index}`,
+								label: text(step),
+							}))}
+						/>
 						<LessonReveal
 							key={view.attemptId + view.step.id + view.phase}
 							className="flex flex-col gap-2"

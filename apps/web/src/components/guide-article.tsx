@@ -1,5 +1,16 @@
 import { Link } from "@tanstack/react-router";
+import { BentoCard } from "@tradely/ui/components/bento-grid";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "@tradely/ui/components/breadcrumb";
 import { buttonVariants } from "@tradely/ui/components/button";
+import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
+import { useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAnalytics } from "@/analytics/context";
 import {
@@ -10,67 +21,64 @@ import {
 import { type Guide, guides } from "@/content/guides";
 import { GuideDemo } from "@/features/guides/guide-demo";
 import { GuideCards } from "./guide-cards";
+import { PageIntro } from "./page-intro";
+import { ScrollProgress } from "./scroll-progress";
+import { TableOfContents } from "./table-of-contents";
 
 export function GuideArticle({ guide }: { guide: Guide }) {
 	const { capture } = useAnalytics();
+	const article = useRef<HTMLElement>(null);
 	const free = getFreeLessons(tradingFlowCourse.lessons)[0];
 	return (
-		<main
-			lang="en"
-			className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-10 sm:px-6 sm:py-16"
-		>
-			<article className="flex flex-col gap-10">
-				<header className="flex max-w-3xl flex-col items-start gap-5">
-					<nav
-						aria-label="Breadcrumb"
-						className="flex flex-wrap gap-2 text-muted-foreground text-sm"
-					>
-						<Link to="/">Home</Link>
-						<span aria-hidden="true">/</span>
-						<Link to="/guides">Guides</Link>
-					</nav>
-					<p className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
-						The options field guide · {guide.minutes} min
-					</p>
-					<h1 className="font-semibold text-4xl text-display leading-tight sm:text-5xl">
-						{guide.title}
-					</h1>
-					<p className="text-lg text-muted-foreground leading-8">
-						{guide.description}
-					</p>
+		<main lang="en" className="page-shell">
+			<ScrollProgress target={article} />
+			<Breadcrumb aria-label="Breadcrumb">
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbLink render={<Link to="/" />}>Home</BreadcrumbLink>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<BreadcrumbLink render={<Link to="/guides" />}>
+							Guides
+						</BreadcrumbLink>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<BreadcrumbPage>{guide.title}</BreadcrumbPage>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			<article ref={article} className="flex flex-col gap-10">
+				<PageIntro
+					eyebrow={`The options field guide · ${guide.minutes} min`}
+					title={guide.title}
+					description={guide.description}
+				>
 					<p className="text-muted-foreground text-sm">
 						By Tradely · Updated{" "}
 						<time dateTime={guide.updated}>{guide.updated}</time> · English
 					</p>
-					<a href="#example" className={buttonVariants()}>
+					<InteractiveHoverLink render={<a href="#example" />}>
 						Try the free example
-					</a>
-				</header>
-				<div className="grid items-start gap-10 lg:grid-cols-[200px_minmax(0,1fr)]">
-					<nav
-						aria-label="On this page"
-						className="flex flex-col gap-3 text-sm lg:sticky lg:top-24"
-					>
-						<p className="font-semibold">In this guide</p>
-						{guide.sections.map((section) => (
-							<a
-								key={section.id}
-								href={`#${section.id}`}
-								className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-							>
-								{section.title}
-							</a>
-						))}
-						<a href="#example">Interactive example</a>
-						<a href="#sources">Sources</a>
-					</nav>
-					<div className="flex min-w-0 max-w-3xl flex-col gap-10">
+					</InteractiveHoverLink>
+				</PageIntro>
+				<div className="reading-layout">
+					<TableOfContents
+						label="In this guide"
+						items={[
+							...guide.sections,
+							{ id: "example", title: "Interactive example" },
+							{ id: "sources", title: "Sources" },
+						]}
+					/>
+					<div className="reading-body flex flex-col gap-10">
 						{guide.sections.map((section) => (
 							<section
 								key={section.id}
 								id={section.id}
 								aria-labelledby={`${section.id}-heading`}
-								className="scroll-mt-24"
+								className="reading-section"
 							>
 								<h2
 									id={`${section.id}-heading`}
@@ -119,21 +127,12 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 								Read the risk disclosure
 							</Link>
 						</section>
-						<section
-							aria-labelledby="next-heading"
-							className="flex flex-col gap-5 rounded-2xl border p-6"
+						<BentoCard
+							title={
+								<h2 id="next-heading">Put your understanding into practice</h2>
+							}
+							description="Explore a free research lesson, or follow the full curriculum for structured practice. Related member lessons require Tradely paid access. Sign in when you want to save course progress."
 						>
-							<h2
-								id="next-heading"
-								className="font-semibold text-2xl text-display"
-							>
-								Put your understanding into practice
-							</h2>
-							<p className="text-muted-foreground leading-7">
-								Explore a free research lesson, or follow the full curriculum
-								for structured practice. Related member lessons require Tradely
-								paid access. Sign in when you want to save course progress.
-							</p>
 							<div className="flex flex-wrap gap-3">
 								{free ? (
 									<Link
@@ -192,7 +191,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 									) : null;
 								})}
 							</ul>
-						</section>
+						</BentoCard>
 					</div>
 				</div>
 			</article>

@@ -8,6 +8,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
+import { DotPattern } from "@tradely/ui/components/dot-pattern";
 import {
 	Field,
 	FieldGroup,
@@ -15,6 +16,17 @@ import {
 	FieldSeparator,
 } from "@tradely/ui/components/field";
 import { Input } from "@tradely/ui/components/input";
+import { InteractiveHoverButton } from "@tradely/ui/components/interactive-hover-button";
+import {
+	Item,
+	ItemContent,
+	ItemDescription,
+	ItemGroup,
+	ItemMedia,
+	ItemTitle,
+} from "@tradely/ui/components/item";
+import { StepIndicator } from "@tradely/ui/components/step-indicator";
+import { BookmarkCheckIcon, BookOpenIcon, ListChecksIcon } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
 import { safeReturnTo } from "@/auth/redirect";
@@ -129,6 +141,14 @@ function SignInForm({
 	return (
 		<form onSubmit={(event) => void submit(event)}>
 			<FieldGroup>
+				<StepIndicator
+					current={step === "email" ? 0 : 1}
+					label={t("auth.welcome")}
+					steps={[
+						{ id: "email", label: t("auth.email") },
+						{ id: "code", label: t("auth.code") },
+					]}
+				/>
 				{step === "email" ? (
 					<>
 						<Button
@@ -197,13 +217,17 @@ function SignInForm({
 						<AlertDescription>{error}</AlertDescription>
 					</Alert>
 				) : null}
-				<Button type="submit" disabled={Boolean(pending)} className="w-full">
+				<InteractiveHoverButton
+					type="submit"
+					disabled={Boolean(pending)}
+					className="w-full"
+				>
 					{pending === "email"
 						? t("auth.working")
 						: step === "email"
 							? t("auth.sendCode")
 							: t("auth.verifyCode")}
-				</Button>
+				</InteractiveHoverButton>
 				{step === "code" ? (
 					<div className="flex flex-wrap justify-between gap-2">
 						<Button
@@ -240,41 +264,100 @@ function SignInForm({
 }
 
 export function SignInPage() {
-	const { t } = useI18n();
+	const { t, locale } = useI18n();
 	const { returnTo, oauthError } = Route.useSearch();
 	return (
-		<div className="mx-auto flex w-full max-w-md flex-col gap-6 px-5 py-16 sm:py-24">
-			<Card>
-				<CardHeader>
-					<CardTitle>
-						<h1>{t("auth.welcome")}</h1>
-					</CardTitle>
-					<CardDescription>{t("auth.description")}</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{authIsConfigured ? (
-						<SignInForm
-							returnTo={returnTo}
-							oauthFailed={oauthError === "google"}
-						/>
-					) : (
-						<p role="status">{t("access.authUnavailable")}</p>
-					)}
-				</CardContent>
-			</Card>
-			<p className="text-center text-muted-foreground text-sm">
-				{t("auth.termsPrefix")}{" "}
-				<a href="/terms" className="underline">
-					{t("footer.terms")}
-				</a>{" "}
-				·{" "}
-				<a href="/privacy" className="underline">
-					{t("footer.privacy")}
+		<main className="page-shell sign-in-layout">
+			<div className="sign-in-form">
+				<Card>
+					<CardHeader>
+						<CardTitle>
+							<h1>{t("auth.welcome")}</h1>
+						</CardTitle>
+						<CardDescription>{t("auth.description")}</CardDescription>
+					</CardHeader>
+					<CardContent>
+						{authIsConfigured ? (
+							<SignInForm
+								returnTo={returnTo}
+								oauthFailed={oauthError === "google"}
+							/>
+						) : (
+							<p role="status">{t("access.authUnavailable")}</p>
+						)}
+					</CardContent>
+				</Card>
+				<p className="text-center text-muted-foreground text-sm">
+					{t("auth.termsPrefix")}{" "}
+					<a href="/terms" className="underline">
+						{t("footer.terms")}
+					</a>{" "}
+					·{" "}
+					<a href="/privacy" className="underline">
+						{t("footer.privacy")}
+					</a>
+				</p>
+				<a href={returnTo} className={buttonVariants({ variant: "ghost" })}>
+					{t("auth.back")}
 				</a>
-			</p>
-			<a href={returnTo} className={buttonVariants({ variant: "ghost" })}>
-				{t("auth.back")}
-			</a>
-		</div>
+			</div>
+			<section className="sign-in-story" aria-labelledby="sign-in-story-title">
+				<DotPattern />
+				<p className="page-eyebrow">
+					{locale === "zh" ? "你的学习空间" : "Your learning space"}
+				</p>
+				<h2 id="sign-in-story-title">
+					{locale === "zh"
+						? "把每一次学习，连成自己的研究路径。"
+						: "A place for every step of your research."}
+				</h2>
+				<p className="page-description">
+					{locale === "zh"
+						? "保存完成记录，回顾已学内容，继续你的下一节课。"
+						: "Record your progress, revisit what you have learned, and return to your next lesson."}
+				</p>
+				<ItemGroup>
+					{[
+						{
+							icon: BookOpenIcon,
+							title: locale === "zh" ? "循序学习" : "Follow a clear path",
+							description:
+								locale === "zh"
+									? "从基础概念到独立研究。"
+									: "From foundational concepts to independent research.",
+						},
+						{
+							icon: ListChecksIcon,
+							title:
+								locale === "zh"
+									? "通过练习理解"
+									: "Learn by working through it",
+							description:
+								locale === "zh"
+									? "用交互案例检验自己的理解。"
+									: "Check your understanding with interactive cases.",
+						},
+						{
+							icon: BookmarkCheckIcon,
+							title: locale === "zh" ? "保留完成记录" : "Keep your progress",
+							description:
+								locale === "zh"
+									? "在账户中记录已完成的课程。"
+									: "Record completed lessons in your account.",
+						},
+					].map((item) => (
+						<Item key={item.title} render={<li />} size="sm">
+							<ItemMedia variant="icon">
+								<item.icon aria-hidden="true" />
+							</ItemMedia>
+							<ItemContent>
+								<ItemTitle>{item.title}</ItemTitle>
+								<ItemDescription>{item.description}</ItemDescription>
+							</ItemContent>
+						</Item>
+					))}
+				</ItemGroup>
+			</section>
+		</main>
 	);
 }

@@ -1,26 +1,37 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Badge } from "@tradely/ui/components/badge";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@tradely/ui/components/accordion";
+import { BentoCard } from "@tradely/ui/components/bento-grid";
 import {
 	Card,
 	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
-import { CheckIcon } from "lucide-react";
+import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
+import { BookOpenIcon, CheckIcon, LayersIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAnalytics } from "@/analytics/context";
 import type { BillingOffer } from "@/analytics/events";
+import { PageIntro } from "@/components/page-intro";
 import {
 	PricingAccountActions,
 	PricingCheckoutButton,
 } from "@/components/pricing-actions";
+import { getFreeLessons } from "@/content/course";
 import {
 	type PricingCheckoutResult,
 	parsePricingSearch,
 } from "@/domain/pricing-search";
+import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
 import { getPricingSummary, verifyCoursePassCheckout } from "@/server/billing";
@@ -37,7 +48,7 @@ type OfferSummary = PricingSummary["offers"]["membership"];
 
 function formatOfferPrice(offer: OfferSummary, locale: "en" | "zh"): string {
 	if (!offer.configured || offer.unitAmount === null)
-		return locale === "zh" ? "已在 Stripe 配置" : "Configured in Stripe";
+		return locale === "zh" ? "价格暂不可用" : "Price unavailable";
 	return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
 		style: "currency",
 		currency: offer.currency.toUpperCase(),
@@ -64,14 +75,22 @@ function OfferCard({
 }) {
 	const { locale, t } = useI18n();
 	return (
-		<Card className="h-full">
+		<Card className="pricing-offer h-full" data-offer={offer}>
 			<CardHeader>
-				<CardTitle className="text-2xl">{title}</CardTitle>
+				<div className="offer-label">
+					<LayersIcon size={14} aria-hidden="true" />
+					{offer === "membership"
+						? t("pricing.membership")
+						: t("pricing.oneTime")}
+				</div>
+				<CardTitle>
+					<h2>{title}</h2>
+				</CardTitle>
 				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent className="flex h-full flex-col gap-7">
-				<div className="flex items-end gap-2">
-					<span className="font-semibold text-4xl text-display">
+				<div className="flex flex-wrap items-end gap-2">
+					<span className="pricing-price">
 						{formatOfferPrice(summary, locale)}
 					</span>
 					{summary.configured ? (
@@ -90,13 +109,15 @@ function OfferCard({
 						</li>
 					))}
 				</ul>
+			</CardContent>
+			<CardFooter>
 				<PricingCheckoutButton
 					offer={offer}
 					configured={summary.configured}
 					active={active}
 					isSignedIn={isSignedIn}
 				/>
-			</CardContent>
+			</CardFooter>
 		</Card>
 	);
 }
@@ -125,7 +146,9 @@ function PricingPage() {
 	const { checkout, session_id: sessionId } = Route.useSearch();
 	const router = useRouter();
 	const verifyCoursePass = useServerFn(verifyCoursePassCheckout);
-	const { t } = useI18n();
+	const { t, locale } = useI18n();
+	const course = getLocalizedCourse(locale);
+	const freeLessons = getFreeLessons(course.lessons);
 	const { capture, isCapturing } = useAnalytics();
 	const trackedCheckoutReturn = useRef<string | null>(null);
 	const verifiedSession = useRef<string | null>(null);
@@ -195,22 +218,74 @@ function PricingPage() {
 	];
 
 	return (
-		<main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-[1180px] flex-col gap-10 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-			<section className="flex max-w-3xl flex-col gap-5">
-				<Badge variant="secondary">{t("nav.pricing")}</Badge>
-				<h1 className="font-semibold text-5xl text-display sm:text-6xl">
-					{t("pricing.heading")}
-				</h1>
-				<p className="text-lg text-muted-foreground leading-8">
-					{t(
-						offers.lifetimeCheckoutEnabled
-							? "pricing.description"
-							: "pricing.descriptionMembershipOnly",
-					)}
+		<main className="page-shell pricing-page">
+			<PageIntro
+				eyebrow={t("nav.pricing")}
+				title={t("pricing.heading")}
+				description={t(
+					offers.lifetimeCheckoutEnabled
+						? "pricing.description"
+						: "pricing.descriptionMembershipOnly",
+				)}
+			>
+				<p className="text-muted-foreground text-sm">
+					{locale === "zh"
+						? "先从免费课程开始，再按自己的节奏深入学习。"
+						: "Start with a free lesson. Go deeper at your own pace."}
 				</p>
-			</section>
-
-			<div className="grid gap-6 lg:grid-cols-2">
+			</PageIntro>
+			<div className="pricing-grid">
+				<BentoCard
+					eyebrow={
+						<>
+							<BookOpenIcon size={14} aria-hidden="true" />
+							{locale === "zh" ? "开始探索" : "Start exploring"}
+						</>
+					}
+					title={<h2>{locale === "zh" ? "免费课程" : "Free lessons"}</h2>}
+					description={
+						locale === "zh"
+							? "先体验学习方法，再决定下一步。"
+							: "Try the learning method before choosing your next step."
+					}
+					footer={
+						freeLessons[0] ? (
+							<InteractiveHoverLink
+								variant="outline"
+								render={
+									<Link
+										to="/learn/$lessonSlug"
+										params={{ lessonSlug: freeLessons[0].slug }}
+									/>
+								}
+							>
+								{t("home.startFree")}
+							</InteractiveHoverLink>
+						) : null
+					}
+				>
+					<div className="flex flex-col gap-7">
+						<p className="pricing-price">$0</p>
+						<ul className="flex flex-col gap-3 text-sm">
+							<li>{t("course.freeLessons", { count: freeLessons.length })}</li>
+							<li>
+								{locale === "zh"
+									? "包含交互练习与研究案例"
+									: "Interactive practice and research cases"}
+							</li>
+							<li>
+								{locale === "zh"
+									? "无需登录即可开始"
+									: "Start without signing in"}
+							</li>
+							<li>
+								{locale === "zh"
+									? "登录后可保存课程完成记录"
+									: "Sign in to record lesson completion"}
+							</li>
+						</ul>
+					</div>
+				</BentoCard>
 				<OfferCard
 					offer="membership"
 					summary={offers.membership}
@@ -253,6 +328,54 @@ function PricingPage() {
 					{t("pricing.localPreview")}
 				</p>
 			) : null}
+			<section className="pricing-faq" aria-labelledby="pricing-questions">
+				<div className="flex flex-col gap-3">
+					<p className="page-eyebrow">
+						{locale === "zh" ? "开始之前" : "Before you begin"}
+					</p>
+					<h2 id="pricing-questions">
+						{locale === "zh" ? "常见问题" : "A few things to know"}
+					</h2>
+				</div>
+				<Accordion>
+					<AccordionItem value="free">
+						<AccordionTrigger>
+							{locale === "zh" ? "可以先试学吗？" : "Can I try a lesson first?"}
+						</AccordionTrigger>
+						<AccordionContent>
+							<p className="leading-7">
+								{locale === "zh"
+									? `可以。${freeLessons.length} 节标记为免费的课程无需登录或付费即可开始。`
+									: `Yes. The ${freeLessons.length} lessons labeled Free are available without signing in or paying.`}
+							</p>
+						</AccordionContent>
+					</AccordionItem>
+					<AccordionItem value="accounts">
+						<AccordionTrigger>
+							{locale === "zh"
+								? "是否包含 TradingFlow 账户？"
+								: "Does this include a TradingFlow account?"}
+						</AccordionTrigger>
+						<AccordionContent>
+							<p className="leading-7">{t("home.partnerDisclosure")}</p>
+						</AccordionContent>
+					</AccordionItem>
+					<AccordionItem value="progress">
+						<AccordionTrigger>
+							{locale === "zh"
+								? "学习进度如何保存？"
+								: "How is progress saved?"}
+						</AccordionTrigger>
+						<AccordionContent>
+							<p className="leading-7">
+								{locale === "zh"
+									? "登录 Tradely 后可记录课程完成情况。匿名练习在重新加载后重置；已有的完成记录会保留。"
+									: "Sign in to Tradely to record lesson completion. Anonymous practice resets on reload. Earlier lesson completions are retained as the curriculum grows."}
+							</p>
+						</AccordionContent>
+					</AccordionItem>
+				</Accordion>
+			</section>
 		</main>
 	);
 }

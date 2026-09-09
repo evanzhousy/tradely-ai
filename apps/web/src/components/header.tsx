@@ -69,7 +69,7 @@ export default function Header() {
 				<div className="flex items-center gap-8">
 					<TradelyBrand compactOnMobile />
 					<nav
-						className="hidden items-center gap-6 lg:flex"
+						className="app-navigation hidden items-center gap-1 lg:flex"
 						aria-label={t("nav.primary")}
 					>
 						<NavigationLinks />

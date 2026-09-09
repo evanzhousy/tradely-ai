@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { buttonVariants } from "@tradely/ui/components/button";
+import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
 import {
 	ArrowDownIcon,
 	ArrowRightIcon,
@@ -79,17 +80,18 @@ function HomeComponent() {
 						<p className="landing-intro">{t("home.intro")}</p>
 						<div className="landing-hero-actions">
 							{startLesson ? (
-								<Link
-									to="/learn/$lessonSlug"
-									params={{ lessonSlug: startLesson.slug }}
-									className={buttonVariants({
-										size: "lg",
-										className: "self-start",
-									})}
+								<InteractiveHoverLink
+									size="lg"
+									className="self-start"
+									render={
+										<Link
+											to="/learn/$lessonSlug"
+											params={{ lessonSlug: startLesson.slug }}
+										/>
+									}
 								>
 									{t("home.startFree")}
-									<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-								</Link>
+								</InteractiveHoverLink>
 							) : null}
 							<a href="#research-demo" className="observatory-text-link">
 								<BookOpenIcon size={16} aria-hidden="true" />

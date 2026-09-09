@@ -1,5 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "@tradely/ui/components/breadcrumb";
 import { Button } from "@tradely/ui/components/button";
+import { Kbd, KbdGroup } from "@tradely/ui/components/kbd";
 import { ArrowUpRight, Box, Minus, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Quality } from "@/features/house/cinematic";
@@ -110,7 +119,18 @@ function HousePage() {
 		>
 			<div className="mb-7 flex flex-wrap items-end justify-between gap-5">
 				<div>
-					<p className="mb-3 flex items-center gap-2 font-mono text-muted-foreground text-xs uppercase tracking-widest">
+					<Breadcrumb className="mb-5" aria-label="Breadcrumb">
+						<BreadcrumbList>
+							<BreadcrumbItem>
+								<BreadcrumbLink href="/">Tradely</BreadcrumbLink>
+							</BreadcrumbItem>
+							<BreadcrumbSeparator />
+							<BreadcrumbItem>
+								<BreadcrumbPage>House explorer</BreadcrumbPage>
+							</BreadcrumbItem>
+						</BreadcrumbList>
+					</Breadcrumb>
+					<p className="page-eyebrow mb-3">
 						<Box className="size-4" /> A house to explore / 001
 					</p>
 					<h1 className="font-semibold text-3xl tracking-tight sm:text-5xl">
@@ -157,7 +177,7 @@ function HousePage() {
 			</div>
 			<section
 				aria-label="Sunlight controls"
-				className="mb-5 grid gap-5 rounded-2xl border border-border bg-background p-5 md:grid-cols-3"
+				className="house-chrome mb-5 grid gap-5 rounded-2xl bg-card p-5 md:grid-cols-3"
 			>
 				<label className="flex flex-col gap-3 text-sm">
 					<span className="flex justify-between gap-2">
@@ -504,8 +524,14 @@ function HousePage() {
 							<br />
 							Right-drag to pan · Pinch on mobile
 						</p>
-						<p className="mt-2">
-							Keyboard: WASD walks · E enters doors / stairs · Arrow keys orbit.
+						<p className="mt-2 flex flex-wrap items-center gap-2">
+							<KbdGroup>
+								<Kbd>W</Kbd>
+								<Kbd>A</Kbd>
+								<Kbd>S</Kbd>
+								<Kbd>D</Kbd>
+							</KbdGroup>{" "}
+							walks · <Kbd>E</Kbd> enters doors / stairs · Arrow keys orbit.
 						</p>
 					</div>
 				</aside>

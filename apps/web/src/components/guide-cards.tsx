@@ -1,22 +1,46 @@
 import { Link } from "@tanstack/react-router";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@tradely/ui/components/card";
-import { ArrowRightIcon } from "lucide-react";
+import { BentoCard, BentoGrid } from "@tradely/ui/components/bento-grid";
+import { ArrowUpRightIcon, Clock3Icon } from "lucide-react";
 import { type Guide, guides } from "@/content/guides";
+import { LessonInfographic } from "./lesson-infographic";
 
-export function GuideCards({ items = guides }: { items?: Guide[] }) {
+const subjects = {
+	"gamma-exposure": "gamma-exposure",
+	"open-interest-vs-volume": "session-flow-vs-structure",
+	"iv-crush": "implied-realized-volatility",
+} as const;
+
+export function GuideCards({
+	items = guides,
+	headingLevel = 3,
+}: {
+	items?: Guide[];
+	headingLevel?: 2 | 3;
+}) {
+	const Heading = headingLevel === 2 ? "h2" : "h3";
 	return (
-		<div lang="en" className="grid gap-5 md:grid-cols-3">
+		<BentoGrid lang="en">
 			{items.map((guide) => (
-				<Card key={guide.slug}>
-					<CardHeader>
-						<CardDescription>Free guide · {guide.minutes} min</CardDescription>
-						<CardTitle>
+				<BentoCard
+					key={guide.slug}
+					visual={
+						<div className="guide-visual">
+							<LessonInfographic
+								subject={subjects[guide.slug]}
+								locale="en"
+								motionEnabled={false}
+							/>
+						</div>
+					}
+					eyebrow={
+						<>
+							Free guide <span aria-hidden="true">·</span>
+							<Clock3Icon size={12} aria-hidden="true" />
+							{guide.minutes} min
+						</>
+					}
+					title={
+						<Heading>
 							<Link
 								className="underline-offset-4 hover:underline"
 								to="/guides/$guideSlug"
@@ -24,23 +48,22 @@ export function GuideCards({ items = guides }: { items?: Guide[] }) {
 							>
 								{guide.title}
 							</Link>
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="flex flex-col gap-5">
-						<p className="text-muted-foreground leading-7">
-							{guide.description}
-						</p>
+						</Heading>
+					}
+					description={guide.description}
+					footer={
 						<Link
 							to="/guides/$guideSlug"
 							params={{ guideSlug: guide.slug }}
-							className="inline-flex items-center gap-2 font-medium text-sm"
+							className="guide-link"
 						>
-							Read the guide <ArrowRightIcon size={16} aria-hidden="true" />
+							Read the guide
+							<ArrowUpRightIcon size={16} aria-hidden="true" />
 							<span className="sr-only">: {guide.title}</span>
 						</Link>
-					</CardContent>
-				</Card>
+					}
+				/>
 			))}
-		</div>
+		</BentoGrid>
 	);
 }

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
+import { Item } from "@tradely/ui/components/item";
 import { Separator } from "@tradely/ui/components/separator";
 import {
 	CheckCircle2Icon,
@@ -7,6 +8,7 @@ import {
 	LockKeyholeIcon,
 	PlayCircleIcon,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
@@ -27,8 +29,31 @@ export function CourseList({
 }) {
 	const { t, locale } = useI18n();
 	const completed = new Set(completedIds);
+	const list = useRef<HTMLOListElement>(null);
+	useEffect(() => {
+		if (!currentLessonId) return;
+		const viewport = list.current?.parentElement;
+		const current = list.current?.querySelector<HTMLElement>(
+			'a[aria-current="page"]',
+		);
+		if (
+			!viewport ||
+			!current?.getClientRects().length ||
+			getComputedStyle(viewport).overflowY !== "auto"
+		)
+			return;
+		// Move only the lesson rail, leaving the reader's document scroll position intact.
+		viewport.scrollTop +=
+			current.getBoundingClientRect().top -
+			viewport.getBoundingClientRect().top -
+			16;
+	}, [currentLessonId]);
 	return (
-		<ol className="flex flex-col" aria-label={t("course.curriculum")}>
+		<ol
+			ref={list}
+			className="course-path flex flex-col"
+			aria-label={t("course.curriculum")}
+		>
 			{lessons.map((lesson, index) => {
 				const isCompleted = completed.has(lesson.id);
 				const accessLabel =
@@ -75,9 +100,14 @@ export function CourseList({
 								</span>
 							</div>
 						) : null}
-						<Link
-							to="/learn/$lessonSlug"
-							params={{ lessonSlug: lesson.slug }}
+						<Item
+							render={
+								<Link
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: lesson.slug }}
+								/>
+							}
+							size="sm"
 							className="group flex items-start gap-4 rounded-2xl px-3 py-4 transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							aria-current={currentLessonId === lesson.id ? "page" : undefined}
 							aria-label={`${lesson.title}. ${completionLabel ? `${completionLabel}. ` : ""}${accessLabel}. ${t("common.minutes", { minutes: lesson.minutes })}.`}
@@ -122,7 +152,7 @@ export function CourseList({
 									{lesson.category}
 								</span>
 							</span>
-						</Link>
+						</Item>
 						{index < lessons.length - 1 ? <Separator /> : null}
 					</li>
 				);
