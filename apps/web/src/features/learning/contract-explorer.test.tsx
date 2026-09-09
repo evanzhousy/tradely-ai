@@ -34,7 +34,15 @@ describe("optional contract renderer", () => {
 	});
 	afterEach(cleanup);
 	it("loads Three.js only when requested and preserves selection in both directions", async () => {
-		render(<ContractExplorer autoPlay={false} data={data} locale="en" />);
+		const onRendererChange = vi.fn();
+		render(
+			<ContractExplorer
+				autoPlay={false}
+				data={data}
+				locale="en"
+				onRendererChange={onRendererChange}
+			/>,
+		);
 		expect(mocks.mount).not.toHaveBeenCalled();
 		const cell = screen.getByRole("button", {
 			name: "ALFA 100 call, 14 days, 3,200, Comparable",
@@ -43,6 +51,7 @@ describe("optional contract renderer", () => {
 		expect(cell.getAttribute("aria-pressed")).toBe("true");
 		fireEvent.click(screen.getByRole("button", { name: "3D + map" }));
 		await waitFor(() => expect(mocks.mount).toHaveBeenCalledTimes(1));
+		expect(onRendererChange).toHaveBeenLastCalledWith("3d", "selected");
 		expect(mocks.update).toHaveBeenLastCalledWith(
 			expect.objectContaining({
 				selectedId: "c-100-14",
@@ -59,6 +68,7 @@ describe("optional contract renderer", () => {
 				.getAttribute("aria-pressed"),
 		).toBe("true");
 		fireEvent.click(screen.getByRole("button", { name: "2D map" }));
+		expect(onRendererChange).toHaveBeenLastCalledWith("2d", "selected");
 		expect(mocks.dispose).toHaveBeenCalledTimes(1);
 		expect(
 			screen
@@ -69,12 +79,14 @@ describe("optional contract renderer", () => {
 		).toBe("true");
 	});
 	it("falls back on context loss without losing the selected observation", async () => {
+		const onRendererChange = vi.fn();
 		render(
 			<ContractExplorer
 				autoPlay={false}
 				data={data}
 				locale="en"
 				initialRenderer="3d"
+				onRendererChange={onRendererChange}
 			/>,
 		);
 		await waitFor(() => expect(mocks.mount).toHaveBeenCalledTimes(1));
@@ -84,6 +96,7 @@ describe("optional contract renderer", () => {
 			}),
 		);
 		act(() => mocks.mount.mock.calls[0][4]());
+		expect(onRendererChange).toHaveBeenLastCalledWith("2d", "unavailable");
 		expect(await screen.findByText(/3D is unavailable/)).toBeTruthy();
 		expect(
 			screen

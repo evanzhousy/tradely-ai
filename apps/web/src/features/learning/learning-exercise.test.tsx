@@ -96,6 +96,114 @@ describe("interactive learning UI", () => {
 		);
 	});
 
+	it("tracks a successful open and hint without sending answers or case content", async () => {
+		mocks.capture.mockReturnValue(true);
+		const hinted = transitionAttempt(scenario, initialAttemptState(), {
+			type: "hint",
+		});
+		mocks.update.mockResolvedValue({
+			ok: true,
+			view: projectAttempt(scenario, hinted, initial.attemptId, 1),
+		});
+		render(<LearningExercise lessonId="validate-option-print" />);
+		fireEvent.click(
+			screen.getByRole("button", { name: "Start or resume practice" }),
+		);
+		await screen.findByText("A large call print");
+		fireEvent.click(screen.getByRole("button", { name: "Show a hint" }));
+		await waitFor(() =>
+			expect(mocks.capture).toHaveBeenCalledWith("lesson_hint_opened", {
+				lesson_id: "validate-option-print",
+				scenario_id: initial.scenarioId,
+				scenario_version: initial.scenarioVersion,
+				stage: "prediction",
+			}),
+		);
+		expect(mocks.capture).toHaveBeenCalledWith("lesson_exercise_started", {
+			lesson_id: "validate-option-print",
+			scenario_id: initial.scenarioId,
+			scenario_version: initial.scenarioVersion,
+		});
+		for (const [, properties] of mocks.capture.mock.calls) {
+			expect(properties).not.toHaveProperty("answers");
+			expect(properties).not.toHaveProperty("attemptId");
+			expect(properties).not.toHaveProperty("step");
+		}
+	});
+
+	it("tracks the server's assessment once after submission", async () => {
+		mocks.capture.mockReturnValue(true);
+		const answered = transitionAttempt(scenario, initialAttemptState(), {
+			type: "answer",
+			questionId: "first-claim",
+			choiceId: "execution",
+		});
+		mocks.update
+			.mockResolvedValueOnce({
+				ok: true,
+				view: projectAttempt(scenario, answered, initial.attemptId, 1),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				view: {
+					...initial,
+					phase: "complete",
+					result: { met: 2, total: 3, status: "practiced", usedHint: true },
+				},
+			});
+		const page = render(<LearningExercise lessonId="validate-option-print" />);
+		fireEvent.click(
+			screen.getByRole("button", { name: "Start or resume practice" }),
+		);
+		fireEvent.click(
+			await screen.findByRole("radio", {
+				name: "500 calls traded at $2.05; execution premium is $102,500.",
+			}),
+		);
+		await waitFor(() =>
+			expect(
+				screen
+					.getByRole("button", { name: "Commit my judgment" })
+					.hasAttribute("disabled"),
+			).toBe(false),
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Commit my judgment" }));
+		await waitFor(() =>
+			expect(mocks.capture).toHaveBeenCalledWith("lesson_exercise_submitted", {
+				lesson_id: "validate-option-print",
+				scenario_id: initial.scenarioId,
+				scenario_version: initial.scenarioVersion,
+				criteria_met: 2,
+				criteria_total: 3,
+				result: "practiced",
+			}),
+		);
+		page.rerender(<LearningExercise lessonId="validate-option-print" />);
+		expect(
+			mocks.capture.mock.calls.filter(
+				(call) => call[0] === "lesson_exercise_submitted",
+			),
+		).toHaveLength(1);
+	});
+
+	it.each(["unavailable", "access_denied", "conflict"] as const)(
+		"tracks an unsuccessful exercise open (%s) without a start event",
+		async (reason) => {
+			mocks.open.mockResolvedValue({ ok: false, reason });
+			render(<LearningExercise lessonId="validate-option-print" />);
+			fireEvent.click(
+				screen.getByRole("button", { name: "Start or resume practice" }),
+			);
+			await waitFor(() =>
+				expect(mocks.capture).toHaveBeenCalledWith(
+					"lesson_exercise_save_failed",
+					{ lesson_id: "validate-option-print", reason },
+				),
+			);
+			expect(mocks.capture).toHaveBeenCalledOnce();
+		},
+	);
+
 	it("drops an old account's pending response after an identity change", async () => {
 		let resolve: (value: LearningResponse) => void = () => {};
 		mocks.open.mockReturnValue(

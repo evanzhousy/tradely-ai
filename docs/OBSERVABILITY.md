@@ -1,5 +1,8 @@
 # Tradely observability
 
+The complete application event catalog and scenario verification points are in
+[Analytics scenarios](ANALYTICS-SCENARIOS.md).
+
 Tradely uses PostHog US Cloud project `582920` (`Tradely`) for consented product events, web vitals, browser exceptions, and consent-gated server exceptions. `AnalyticsProvider` owns client initialization, consent, identity, URL sanitization, and the typed emitter. `captureServerException` owns bounded Vercel/Node failures. Product components may emit only events declared in `apps/web/src/analytics/events.ts`.
 
 Tradely uses the existing Google Analytics 4 property `552068066` and web stream `landingpage` (`15524570705`) for `tradely.ai`. Its measurement ID is `G-TGJJLS7M42`. The Google tag loads only after explicit analytics consent, sends page views and allowlisted typed product events, disables Google advertising signals, and never receives the Tradely user ID, lesson text, or payment details. The stream has email redaction plus eight sensitive URL-query keys enabled; Tradely's custom page locations are query-free. The stream will show no Tradely data until a deployment containing this integration is live.

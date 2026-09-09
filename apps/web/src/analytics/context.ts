@@ -21,6 +21,7 @@ export type ExceptionContext = {
 export type AnalyticsContextValue = {
 	consent: AnalyticsConsent;
 	isCapturing: boolean;
+	isPostHogCapturing: boolean;
 	isConsentResolved: boolean;
 	isConfigured: boolean;
 	preferencesOpen: boolean;

@@ -254,7 +254,7 @@ function PricingPage() {
 				showCoursePassStatus={
 					!offers.lifetimeCheckoutEnabled && access.hasCoursePass
 				}
-				onAccessChanged={() => void router.invalidate()}
+				onAccessChanged={() => router.invalidate()}
 			/>
 			<p className="text-muted-foreground text-sm">{t("pricing.taxNote")}</p>
 			{!offers.membership.configured ||

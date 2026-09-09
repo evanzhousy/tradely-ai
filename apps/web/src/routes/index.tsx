@@ -7,8 +7,7 @@ import {
 	ScanLineIcon,
 	WorkflowIcon,
 } from "lucide-react";
-import { useEffect } from "react";
-import { useAnalytics } from "@/analytics/context";
+import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingResearchDemo } from "@/components/landing-research-demo";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
@@ -50,7 +49,7 @@ const stages = [
 function HomeComponent() {
 	const progress = Route.useLoaderData();
 	const { locale, t } = useI18n();
-	const { capture } = useAnalytics();
+	useBillingStatusAnalytics(progress.accessUnavailable, "course_progress");
 	const course = getLocalizedCourse(locale);
 	const startLesson = course.lessons[0];
 	const totalMinutes = course.lessons.reduce(
@@ -60,10 +59,6 @@ function HomeComponent() {
 	const previewCount = course.lessons.filter(
 		(lesson) => lesson.access === "preview",
 	).length;
-	useEffect(() => {
-		if (progress.accessUnavailable)
-			capture("billing_status_unavailable", { surface: "course_progress" });
-	}, [capture, progress.accessUnavailable]);
 	return (
 		<main className="observatory landing-notebook">
 			<section className="landing-hero" aria-labelledby="landing-heading">

@@ -128,6 +128,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 	const isConfigured = hasPostHog || hasGoogleAnalytics;
 	const [consent, setConsentState] = useState<AnalyticsConsent>("unknown");
 	const [isCapturing, setIsCapturing] = useState(false);
+	const [isPostHogCapturing, setIsPostHogCapturing] = useState(false);
 	const [isConsentResolved, setIsConsentResolved] = useState(false);
 	const [preferencesOpen, setPreferencesOpen] = useState(false);
 	const clientRef = useRef<PostHogClient | null>(null);
@@ -144,6 +145,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		capturingRef.current =
 			postHogCapturingRef.current || googleAnalyticsCapturingRef.current;
 		setIsCapturing(capturingRef.current);
+		setIsPostHogCapturing(postHogCapturingRef.current);
 	}, []);
 
 	const applyPostHogConsent = useCallback(
@@ -442,6 +444,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		() => ({
 			consent,
 			isCapturing,
+			isPostHogCapturing,
 			isConsentResolved,
 			isConfigured,
 			preferencesOpen,
@@ -461,6 +464,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 			consent,
 			identify,
 			isCapturing,
+			isPostHogCapturing,
 			isConsentResolved,
 			isConfigured,
 			preferencesOpen,

@@ -6,15 +6,26 @@ import type { Lesson, LessonMedia } from "@/content/course";
 import { useI18n } from "@/i18n/provider";
 import { saveLessonProgress } from "@/server/progress";
 
-export function LessonVideo({
-	lesson,
-	media,
-	initialPositionSeconds = 0,
-}: {
+type LessonVideoProps = {
 	lesson: Lesson;
 	media: LessonMedia;
 	initialPositionSeconds?: number;
-}) {
+};
+
+export function LessonVideo(props: LessonVideoProps) {
+	return (
+		<LessonVideoPlayback
+			key={`${props.lesson.id}:${props.lesson.contentVersion}`}
+			{...props}
+		/>
+	);
+}
+
+function LessonVideoPlayback({
+	lesson,
+	media,
+	initialPositionSeconds = 0,
+}: LessonVideoProps) {
 	const { t } = useI18n();
 	const { capture } = useAnalytics();
 	const saveProgress = useServerFn(saveLessonProgress);

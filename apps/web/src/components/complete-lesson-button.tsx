@@ -48,7 +48,14 @@ export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 						lesson_order: lesson.order + 1,
 					});
 					toast.success(t("complete.success"));
-					await router.invalidate();
+					// The save is already confirmed. A failed refresh is a diagnostic
+					// error, not a failed lesson completion.
+					await router.invalidate().catch((error: unknown) => {
+						captureException(error, {
+							source: "lesson_completion",
+							lesson_id: lesson.id,
+						});
+					});
 				} catch (error) {
 					capture("lesson_progress_save_failed", {
 						lesson_id: lesson.id,

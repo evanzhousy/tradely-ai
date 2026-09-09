@@ -122,7 +122,7 @@ export function PricingAccountActions({
 	canManageBilling: boolean;
 	canRestoreCoursePass: boolean;
 	showCoursePassStatus: boolean;
-	onAccessChanged: () => void;
+	onAccessChanged: () => void | Promise<void>;
 }) {
 	const portal = useServerFn(openCustomerPortal);
 	const restore = useServerFn(restoreCoursePass);
@@ -164,7 +164,16 @@ export function PricingAccountActions({
 				source: result.source,
 			});
 			toast.success(t("pricing.restoreSuccess"));
-			onAccessChanged();
+			// Access has already been verified. Refresh failures must not turn
+			// that successful restore into billing_action_failed.
+			try {
+				await onAccessChanged();
+			} catch (error) {
+				captureException(error, {
+					source: "billing_action",
+					action: "checkout",
+				});
+			}
 		} catch (error) {
 			const reason = billingActionFailureReason(error);
 			capture("billing_action_failed", {

@@ -16,7 +16,14 @@ const mocks = vi.hoisted(() => ({
 	disableGoogleAnalytics: vi.fn(),
 	captureGoogleAnalyticsEvent: vi.fn(),
 	captureGoogleAnalyticsPageView: vi.fn(),
+	auth: {
+		isLoaded: true,
+		isSignedIn: true,
+		userId: "learner-123" as string | null,
+	},
 }));
+
+vi.mock("@/auth/client", () => ({ useAuth: () => mocks.auth }));
 
 vi.mock("@tradely/env/web", () => ({
 	env: {
@@ -37,19 +44,29 @@ vi.mock("./google", () => ({
 	enableGoogleAnalytics: mocks.enableGoogleAnalytics,
 }));
 
+import { AuthAnalyticsIdentity } from "./auth-identity";
 import { useAnalytics } from "./context";
 import { AnalyticsProvider } from "./provider";
 
 function ConsentHarness() {
 	const { consent, setConsent } = useAnalytics();
 	return (
-		<button
-			type="button"
-			aria-label="grant consent"
-			onClick={() => setConsent("granted")}
-		>
-			{consent}
-		</button>
+		<>
+			<button
+				type="button"
+				aria-label="grant consent"
+				onClick={() => setConsent("granted")}
+			>
+				{consent}
+			</button>
+			<button
+				type="button"
+				aria-label="deny consent"
+				onClick={() => setConsent("denied")}
+			>
+				deny
+			</button>
+		</>
 	);
 }
 
@@ -117,6 +134,7 @@ describe("AnalyticsProvider consent readiness", () => {
 
 	beforeEach(() => {
 		window.localStorage.clear();
+		mocks.auth = { isLoaded: true, isSignedIn: true, userId: "learner-123" };
 		mocks.getPostHogClient.mockReset();
 		mocks.capturePostHogException.mockReset();
 		mocks.enableGoogleAnalytics.mockReset().mockReturnValue(true);
@@ -225,6 +243,108 @@ describe("AnalyticsProvider consent readiness", () => {
 			{ lesson_id: "lesson-1", lesson_order: 1 },
 			{ send_instantly: true, transport: "sendBeacon" },
 		);
+	});
+
+	it("identifies a signed-in learner when PostHog becomes ready after GA4", async () => {
+		const posthog = createPostHogClient();
+		let resolvePostHog: (client: typeof posthog) => void = () => {};
+		mocks.getPostHogClient.mockReturnValue(
+			new Promise((resolve) => {
+				resolvePostHog = resolve;
+			}),
+		);
+		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		render(
+			<AnalyticsProvider>
+				<AuthAnalyticsIdentity />
+			</AnalyticsProvider>,
+		);
+		await waitFor(() => expect(mocks.enableGoogleAnalytics).toHaveBeenCalled());
+		expect(posthog.identify).not.toHaveBeenCalled();
+		await act(async () => resolvePostHog(posthog));
+		await waitFor(() =>
+			expect(posthog.identify).toHaveBeenCalledWith("learner-123", {
+				auth_provider: "neon",
+			}),
+		);
+		expect(
+			posthog.capture.mock.calls.filter(
+				(call) => call[0] === "auth_session_established",
+			),
+		).toHaveLength(1);
+		expect(mocks.captureGoogleAnalyticsEvent).toHaveBeenCalledWith(
+			"auth_session_established",
+			{ provider: "neon" },
+		);
+	});
+
+	it("discards queued events when consent is withdrawn during SDK loading", async () => {
+		const posthog = createPostHogClient();
+		let resolvePostHog: (client: typeof posthog) => void = () => {};
+		mocks.getPostHogClient.mockReturnValue(
+			new Promise((resolve) => {
+				resolvePostHog = resolve;
+			}),
+		);
+		const page = render(
+			<AnalyticsProvider>
+				<ConsentHarness />
+				<CriticalEventHarness />
+			</AnalyticsProvider>,
+		);
+		fireEvent.click(page.getByRole("button", { name: "grant consent" }));
+		fireEvent.click(
+			page.getByRole("button", { name: "capture lesson completion" }),
+		);
+		fireEvent.click(page.getByRole("button", { name: "deny consent" }));
+		await act(async () => resolvePostHog(posthog));
+		expect(posthog.opt_out_capturing).toHaveBeenCalled();
+		expect(posthog.capture).not.toHaveBeenCalled();
+	});
+
+	it("deduplicates authenticated sessions and resets identity when accounts change", async () => {
+		const posthog = createPostHogClient();
+		mocks.getPostHogClient.mockResolvedValue(posthog);
+		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		const page = render(
+			<AnalyticsProvider>
+				<AuthAnalyticsIdentity />
+			</AnalyticsProvider>,
+		);
+		await waitFor(() => expect(posthog.identify).toHaveBeenCalledOnce());
+		page.rerender(
+			<AnalyticsProvider>
+				<AuthAnalyticsIdentity />
+			</AnalyticsProvider>,
+		);
+		expect(posthog.identify).toHaveBeenCalledOnce();
+		mocks.auth = { isLoaded: true, isSignedIn: true, userId: "learner-456" };
+		page.rerender(
+			<AnalyticsProvider>
+				<AuthAnalyticsIdentity />
+			</AnalyticsProvider>,
+		);
+		expect(posthog.reset).toHaveBeenCalledOnce();
+		expect(posthog.identify).toHaveBeenLastCalledWith("learner-456", {
+			auth_provider: "neon",
+		});
+		expect(
+			posthog.capture.mock.calls.filter(
+				(call) => call[0] === "auth_session_established",
+			),
+		).toHaveLength(2);
+		mocks.auth = { isLoaded: true, isSignedIn: false, userId: null };
+		page.rerender(
+			<AnalyticsProvider>
+				<AuthAnalyticsIdentity />
+			</AnalyticsProvider>,
+		);
+		expect(posthog.reset).toHaveBeenCalledTimes(2);
+		expect(
+			posthog.capture.mock.calls.filter(
+				(call) => call[0] === "auth_session_established",
+			),
+		).toHaveLength(2);
 	});
 
 	it("does not initialize PostHog for a denied choice", () => {

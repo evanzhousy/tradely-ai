@@ -5,12 +5,13 @@ import { useAnalytics } from "./context";
 
 export function AuthAnalyticsIdentity() {
 	const { isLoaded, isSignedIn, userId } = useAuth();
-	const { capture, identify, isCapturing, resetIdentity } = useAnalytics();
+	const { capture, identify, isPostHogCapturing, resetIdentity } =
+		useAnalytics();
 	const identifiedUserRef = useRef<string | null>(null);
 	const sessionEventUserRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		if (!isCapturing) {
+		if (!isPostHogCapturing) {
 			identifiedUserRef.current = null;
 			sessionEventUserRef.current = null;
 			return;
@@ -37,7 +38,7 @@ export function AuthAnalyticsIdentity() {
 	}, [
 		capture,
 		identify,
-		isCapturing,
+		isPostHogCapturing,
 		isLoaded,
 		isSignedIn,
 		resetIdentity,

@@ -6,7 +6,7 @@ import {
 } from "@tradely/ui/components/alert";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { LockKeyholeIcon, RefreshCwIcon, UserRoundIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { useAnalytics } from "@/analytics/context";
 import { authIsConfigured } from "@/auth/client";
 import type { LessonAccessDecision } from "@/domain/access";
@@ -22,11 +22,10 @@ export function AccessPanel({
 }) {
 	const { t } = useI18n();
 	const { capture } = useAnalytics();
-	useEffect(() => {
-		if (access.reason === "billing-unavailable") {
-			capture("billing_status_unavailable", { surface: "lesson_access" });
-		}
-	}, [access.reason, capture]);
+	useBillingStatusAnalytics(
+		access.reason === "billing-unavailable",
+		"lesson_access",
+	);
 	if (access.reason === "billing-unavailable") {
 		return (
 			<Alert>

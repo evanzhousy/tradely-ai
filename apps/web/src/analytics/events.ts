@@ -22,6 +22,7 @@ export type AnalyticsRouteName =
 	| "course"
 	| "lesson"
 	| "pricing"
+	| "auth_sign_in"
 	| "privacy"
 	| "terms"
 	| "risk_disclosure"
@@ -281,6 +282,7 @@ export function analyticsRouteName(pathname: string): AnalyticsRouteName {
 	if (pathname === "/courses/tradingflow-foundations") return "course";
 	if (pathname.startsWith("/learn/")) return "lesson";
 	if (pathname === "/pricing") return "pricing";
+	if (pathname === "/auth/sign-in") return "auth_sign_in";
 	if (pathname === "/privacy") return "privacy";
 	if (pathname === "/terms") return "terms";
 	if (pathname === "/risk-disclosure") return "risk_disclosure";

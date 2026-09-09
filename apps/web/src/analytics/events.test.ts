@@ -69,6 +69,7 @@ describe("analytics event boundaries", () => {
 		expect(analyticsRouteName("/")).toBe("home");
 		expect(analyticsRouteName("/learn/audited-boundary")).toBe("lesson");
 		expect(analyticsRouteName("/risk-disclosure")).toBe("risk_disclosure");
+		expect(analyticsRouteName("/auth/sign-in")).toBe("auth_sign_in");
 		expect(analyticsRouteName("/unknown")).toBe("not_found");
 	});
 
