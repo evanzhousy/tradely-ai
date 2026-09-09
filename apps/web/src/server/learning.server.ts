@@ -2,8 +2,6 @@ import "@tanstack/react-start/server-only";
 import { randomUUID } from "node:crypto";
 import { createDb, type LessonAttempt, lessonAttempt } from "@tradely/db";
 import { and, desc, eq } from "drizzle-orm";
-import { getLessonById } from "@/content/course";
-import { learningRollout } from "@/content/learning-rollout";
 import {
 	getLessonScenarios,
 	getScenario,
@@ -21,27 +19,10 @@ import {
 	learningResultSchema,
 	type SourceWork,
 } from "@/domain/learning/types";
-import { resolveCurrentLessonAccess } from "./access.server";
 import { captureServerException } from "./analytics/posthog.server";
 import type { OpenLearningInput, UpdateLearningInput } from "./learning";
+import { authorizeLearning as authorize } from "./learning-access.server";
 import { ensureAppUser } from "./users.server";
-
-async function authorize(lessonId: string) {
-	const lesson = getLessonById(lessonId);
-	if (!lesson || !Object.hasOwn(learningRollout, lessonId))
-		return { ok: false, reason: "not_found" } as const;
-	const { access, courseAccess } = await resolveCurrentLessonAccess(lesson);
-	if (!courseAccess.userId) return { ok: false, reason: "signed_out" } as const;
-	if (!access.allowed)
-		return {
-			ok: false,
-			reason:
-				access.reason === "billing-unavailable"
-					? "unavailable"
-					: "access_denied",
-		} as const;
-	return { ok: true, userId: courseAccess.userId } as const;
-}
 
 function isCurrentScenario(record: LessonAttempt) {
 	return getLessonScenarios(record.lessonId).some(

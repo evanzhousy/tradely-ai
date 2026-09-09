@@ -138,7 +138,7 @@ export function transitionAttempt(
 	}
 }
 
-function feedbackFor(
+export function evaluateStep(
 	step: ScenarioStep,
 	state: AttemptState,
 ): CriterionFeedback[] {
@@ -184,7 +184,7 @@ export function assessAttempt(
 	const independent = scenario.steps.filter(
 		(step) => step.kind === "independent",
 	);
-	const feedback = independent.flatMap((step) => feedbackFor(step, state));
+	const feedback = independent.flatMap((step) => evaluateStep(step, state));
 	const met = feedback.filter((criterion) => criterion.met).length;
 	const usedHint = independent.some((step) => state.hinted.includes(step.id));
 	const unreviewed = feedback.filter((item) => item.reviewRequired).length;
@@ -255,7 +255,7 @@ export function projectAttempt(
 		},
 		answers: state.answers[step.id] ?? {},
 		initialJudgment: state.step > 0 ? initialJudgment : null,
-		feedback: state.phase === "answer" ? [] : feedbackFor(step, state),
+		feedback: state.phase === "answer" ? [] : evaluateStep(step, state),
 		result: assessAttempt(scenario, state),
 		...(state.sourceWork ? { sourceWork: state.sourceWork } : {}),
 		...(state.phase === "complete"

@@ -21,6 +21,10 @@ vi.mock("@/server/learning", () => ({
 	openLearning: mocks.open,
 	updateLearning: mocks.update,
 }));
+vi.mock("@/server/coaching", () => ({
+	getCoaching: vi.fn().mockResolvedValue({ ok: false, reason: "disabled" }),
+	updateCoaching: vi.fn(),
+}));
 vi.mock("@/auth/client", () => ({
 	useAuth: () => ({ isLoaded: true, userId: mocks.userId }),
 	authIsConfigured: true,

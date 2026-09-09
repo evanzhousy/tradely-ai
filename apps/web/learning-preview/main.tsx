@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { LessonNavigation } from "../src/components/lesson-navigation";
 import { tradingFlowCourse } from "../src/content/course";
@@ -15,6 +15,9 @@ import type {
 import { LearningScreen } from "../src/features/learning/learning-screen";
 import type { Locale } from "../src/i18n/messages";
 import "./preview.css";
+import { isCoachingLesson } from "../src/domain/coaching/policy";
+import { guidedRecord } from "../src/domain/coaching/test-fixtures";
+import { coachingFixture } from "./coaching-fixture";
 
 // Optional generated media belongs only to this isolated local review entry.
 const companionVideos = import.meta.glob<string>(
@@ -52,8 +55,19 @@ function Session({
 	const requestedStage = Number(
 		new URLSearchParams(location.search).get("stage") ?? 0,
 	);
-	const [state, setState] = useState(() => stateAt(requestedStage));
-	const view = projectAttempt(scenario, state, "local-fixture", 0);
+	const coaching =
+		new URLSearchParams(location.search).get("coaching") === "1" &&
+		isCoachingLesson(lessonId);
+	const [state, setState] = useState<AttemptState>(() =>
+		coaching
+			? (guidedRecord(lessonId).state as AttemptState)
+			: stateAt(requestedStage),
+	);
+	const [revision, setRevision] = useState(0);
+	const record = useRef(guidedRecord(lessonId));
+	record.current = { ...record.current, state, revision };
+	const transport = useMemo(() => coachingFixture(() => record.current), []);
+	const view = projectAttempt(scenario, state, "local-fixture", revision);
 	function stateAt(index: number) {
 		if (!Number.isInteger(index) || index < 0 || index >= scenario.steps.length)
 			return initialAttemptState();
@@ -87,12 +101,20 @@ function Session({
 		}
 		return next;
 	}
-	const act = (action: LearningAction) =>
+	const act = (action: LearningAction) => {
+		setRevision((value) => value + 1);
 		setState((state: AttemptState) =>
 			transitionAttempt(scenario, state, action),
 		);
+	};
 	return (
 		<div className="flex flex-col gap-5">
+			{coaching ? (
+				<p role="status">
+					Coaching preview: deterministic test feedback, no AI calls. All
+					coaching resets on reload.
+				</p>
+			) : null}
 			<label className="flex min-w-0 max-w-full flex-col gap-1 text-sm">
 				Review stage (earlier answers prefilled for this local preview){" "}
 				<select
@@ -108,6 +130,7 @@ function Session({
 				</select>
 			</label>
 			<LearningScreen
+				coachingTransport={coaching ? transport : undefined}
 				lessonId={lessonId}
 				locale={locale}
 				view={view}

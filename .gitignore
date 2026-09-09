@@ -146,6 +146,7 @@ artifacts/**/*.webp
 # The currently published Site version remains available online.
 /local/dollhouse/
 /artifacts/dollhouse/
+/artifacts/coaching/
 /apps/web/public/models/dollhouse/
 /site-static/dollhouse.js
 /site-static/dollhouse-physics.js

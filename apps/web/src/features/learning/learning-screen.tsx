@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { learningRollout } from "@/content/learning-rollout";
+import { isCoachingLesson } from "@/domain/coaching/policy";
 import type {
 	LearningAction,
 	LearningCopy,
@@ -50,6 +51,11 @@ import type {
 } from "@/domain/learning/types";
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
+import {
+	type CoachingEvent,
+	CoachingPanel,
+	type CoachingTransport,
+} from "./coaching-panel";
 import {
 	ContractExplorer,
 	type ContractRenderer,
@@ -69,6 +75,8 @@ import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
 export type LearningScreenProps = {
+	coachingTransport?: CoachingTransport;
+	onCoachingEvent?: (event: CoachingEvent) => void;
 	lessonId?: string;
 	initialRenderer?: ContractRenderer;
 	persistence?: "account" | "preview";
@@ -168,6 +176,8 @@ function QuoteComparison({
 }
 
 function LearningScreenContent({
+	coachingTransport,
+	onCoachingEvent,
 	lessonId,
 	initialRenderer,
 	persistence = "account",
@@ -513,6 +523,17 @@ function LearningScreenContent({
 								))}
 							</section>
 						)}
+						{coachingTransport && isCoachingLesson(view.lessonId) ? (
+							<CoachingPanel
+								key={view.attemptId}
+								view={view}
+								locale={locale}
+								transport={coachingTransport}
+								onEvent={onCoachingEvent}
+								blocked={locked || !ready}
+								onHint={() => onAction({ type: "hint" })}
+							/>
+						) : null}
 						{view.step.hint ? (
 							<Alert>
 								<CircleHelpIcon />

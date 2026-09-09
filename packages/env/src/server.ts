@@ -13,6 +13,18 @@ const posthogHost = z
 
 export const env = createEnv({
 	server: {
+		AI_COACH_ENABLED: z
+			.enum(["true", "false"])
+			.default("false")
+			.transform((value) => value === "true"),
+		AI_COACH_USER_IDS: z.string().default(""),
+		AI_COACH_MODEL: z.string().optional(),
+		AI_GATEWAY_API_KEY: z.string().min(1).optional(),
+		AI_COACH_DAILY_BUDGET_USD: z.coerce
+			.number()
+			.positive()
+			.max(100)
+			.default(10),
 		DATABASE_URL: z.string().min(1).optional(),
 		NEON_AUTH_BASE_URL: z.string().url().optional(),
 		NEON_AUTH_COOKIE_SECRET: z.string().min(32).optional(),

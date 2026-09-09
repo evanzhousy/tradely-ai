@@ -25,6 +25,7 @@
 		"@tradely/db": "workspace:*",
 		"@tradely/env": "workspace:*",
 		"@tradely/ui": "workspace:*",
+		"ai": "^7.0.93",
 		"dotenv": "catalog:",
 		"drizzle-orm": "^0.45.2",
 		"lucide-react": "catalog:",

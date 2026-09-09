@@ -1,8 +1,25 @@
 import type { LessonAccess, TradingFlowPractice } from "@/content/course";
+import type { CoachingFailure } from "@/domain/coaching/types";
 import type { LearningFailure } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
-
 import { redactAnalyticsPersonProperties } from "./redaction";
+
+type CoachingEventProperties = {
+	lesson_id: string;
+	scenario_id: string;
+	scenario_version: number;
+	locale: Locale;
+	round?: "initial" | "revision";
+	reason?: CoachingFailure;
+};
+const coachingPropertyKeys = [
+	"lesson_id",
+	"scenario_id",
+	"scenario_version",
+	"locale",
+	"round",
+	"reason",
+] as const;
 
 export type AnalyticsEnvironment = "production" | "preview" | "local";
 
@@ -32,6 +49,11 @@ export type AnalyticsRouteName =
 	| "not_found";
 
 export type AnalyticsEventMap = {
+	lesson_coach_started: CoachingEventProperties;
+	lesson_coach_feedback_viewed: CoachingEventProperties;
+	lesson_coach_revision_saved: CoachingEventProperties;
+	lesson_coach_cycle_completed: CoachingEventProperties;
+	lesson_coach_failed: CoachingEventProperties;
 	guide_demo_started: { guide_id: string; demo_id: string; locale: Locale };
 	guide_demo_completed: { guide_id: string; demo_id: string; locale: Locale };
 	guide_next_step_clicked: {
@@ -169,6 +191,11 @@ export type AnalyticsEventMap = {
 export type AnalyticsEventName = keyof AnalyticsEventMap;
 
 export const ANALYTICS_EVENT_NAMES = {
+	lesson_coach_started: true,
+	lesson_coach_feedback_viewed: true,
+	lesson_coach_revision_saved: true,
+	lesson_coach_cycle_completed: true,
+	lesson_coach_failed: true,
 	guide_demo_started: true,
 	guide_demo_completed: true,
 	guide_next_step_clicked: true,
@@ -201,6 +228,11 @@ export const ANALYTICS_EVENT_NAMES = {
 } satisfies Record<AnalyticsEventName, true>;
 
 export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	lesson_coach_started: coachingPropertyKeys,
+	lesson_coach_feedback_viewed: coachingPropertyKeys,
+	lesson_coach_revision_saved: coachingPropertyKeys,
+	lesson_coach_cycle_completed: coachingPropertyKeys,
+	lesson_coach_failed: coachingPropertyKeys,
 	guide_demo_started: ["guide_id", "demo_id", "locale"],
 	guide_demo_completed: ["guide_id", "demo_id", "locale"],
 	guide_next_step_clicked: ["guide_id", "destination_kind", "lesson_id"],

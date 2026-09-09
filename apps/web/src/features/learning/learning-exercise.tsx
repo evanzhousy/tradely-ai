@@ -1,5 +1,5 @@
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { authIsConfigured, useAuth } from "@/auth/client";
 import { getLessonById } from "@/content/course";
@@ -9,11 +9,13 @@ import type {
 	LearningView,
 } from "@/domain/learning/types";
 import { useI18n } from "@/i18n/provider";
+import { getCoaching, updateCoaching } from "@/server/coaching";
 import {
 	openLearning,
 	type UpdateLearningInput,
 	updateLearning,
 } from "@/server/learning";
+import type { CoachingEvent, CoachingTransport } from "./coaching-panel";
 import type { ContractRenderer } from "./contract-explorer";
 import { LearningScreen } from "./learning-screen";
 import { PreviewLearning } from "./preview-learning";
@@ -23,6 +25,15 @@ function LearningSession({ lessonId }: { lessonId: string }) {
 	const { capture } = useAnalytics();
 	const open = useServerFn(openLearning);
 	const update = useServerFn(updateLearning);
+	const readCoach = useServerFn(getCoaching);
+	const updateCoach = useServerFn(updateCoaching);
+	const coachingTransport = useMemo<CoachingTransport>(
+		() => ({
+			read: (data) => readCoach({ data }),
+			update: (data) => updateCoach({ data }),
+		}),
+		[readCoach, updateCoach],
+	);
 	const [view, setView] = useState<LearningView | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<LearningFailure | null>(null);
@@ -32,6 +43,20 @@ function LearningSession({ lessonId }: { lessonId: string }) {
 	const capturedResult = useRef<string | null>(null);
 	const scenarioId = view?.scenarioId;
 	const scenarioVersion = view?.scenarioVersion;
+	const onCoachingEvent = useCallback(
+		(event: CoachingEvent) => {
+			if (!scenarioId || !scenarioVersion) return;
+			capture(`lesson_coach_${event.type}`, {
+				lesson_id: lessonId,
+				scenario_id: scenarioId,
+				scenario_version: scenarioVersion,
+				locale,
+				round: event.round,
+				reason: event.reason,
+			});
+		},
+		[capture, lessonId, scenarioId, scenarioVersion, locale],
+	);
 	const onRendererChange = useCallback(
 		(renderer: ContractRenderer, reason: "selected" | "unavailable") => {
 			if (scenarioId && scenarioVersion)
@@ -144,6 +169,8 @@ function LearningSession({ lessonId }: { lessonId: string }) {
 	};
 	return (
 		<LearningScreen
+			coachingTransport={coachingTransport}
+			onCoachingEvent={onCoachingEvent}
 			lessonId={lessonId}
 			onRendererChange={onRendererChange}
 			locale={locale}
