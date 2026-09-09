@@ -1,9 +1,10 @@
-import { cpSync, mkdirSync, readdirSync } from 'node:fs';
+import { cpSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const out = join(root, 'dist');
+rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 for (const file of readdirSync(root)) {
   if (/\.(html|js|css)$/.test(file)) cpSync(join(root, file), join(out, file));
