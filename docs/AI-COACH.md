@@ -2,6 +2,8 @@
 
 Local implementation validation is recorded in [the verification report](reviews/ai-coach-verification-2026-09-09.md). Provider quality and deployment gates remain outstanding.
 
+The proposed next stage—targeted follow-up practice, visual evidence guidance and progress across cases—is described in [the learning progression code-change plan](research/ai-learning-progression-code-change-plan-2026-09-09.md). Those additions are planned, not implemented.
+
 The pilot adds two rounds of formative feedback to the guided cases in `audited-boundary`, `rank-symbols`, and `rank-contracts`. It never writes `lesson_attempt.assessment`, `lesson_progress`, or mastery. The boundary lesson reuses its saved written answer; the other two collect a separate saved explanation. Independent cases keep the existing deterministic scoring and hint policy.
 
 ## Runtime and data
