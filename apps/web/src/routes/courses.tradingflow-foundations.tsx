@@ -12,6 +12,7 @@ import { ArrowRightIcon } from "lucide-react";
 import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { CourseProgress } from "@/components/course-progress";
 import { LandingCurriculum } from "@/components/landing-curriculum";
+import { getFreeLessons } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -43,6 +44,10 @@ function CoursePage() {
 	const { locale, t } = useI18n();
 	useBillingStatusAnalytics(progress.accessUnavailable, "course_progress");
 	const course = getLocalizedCourse(locale);
+	const freeLessons = getFreeLessons(course.lessons);
+	const startLesson = progress.canAccessPaid
+		? course.lessons[0]
+		: freeLessons[0];
 	return (
 		<main className="mx-auto flex w-full max-w-[1180px] flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
 			<section className="grid items-end gap-8 lg:grid-cols-[1fr_360px]">
@@ -51,9 +56,7 @@ function CoursePage() {
 						<Badge>{t("course.practiceBadge")}</Badge>
 						<Badge variant="secondary">
 							{t("course.freeLessons", {
-								count: course.lessons.filter(
-									(lesson) => lesson.access === "preview",
-								).length,
+								count: freeLessons.length,
 							})}
 						</Badge>
 					</div>
@@ -63,14 +66,20 @@ function CoursePage() {
 					<p className="max-w-[68ch] text-lg text-muted-foreground leading-8">
 						{course.description}
 					</p>
-					<Link
-						to="/learn/$lessonSlug"
-						params={{ lessonSlug: course.lessons[0].slug }}
-						className={buttonVariants({ size: "lg" })}
-					>
-						{t("common.startLessonOne")}
-						<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-					</Link>
+					{startLesson ? (
+						<Link
+							to="/learn/$lessonSlug"
+							params={{ lessonSlug: startLesson.slug }}
+							className={buttonVariants({ size: "lg" })}
+						>
+							{t(
+								progress.canAccessPaid
+									? "common.startLessonOne"
+									: "home.startFree",
+							)}
+							<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+						</Link>
+					) : null}
 				</div>
 				<Card size="sm">
 					<CardHeader>

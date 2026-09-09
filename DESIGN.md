@@ -100,7 +100,7 @@ The primary reader is an options trader deciding whether to start the ordered cu
 
 Agents must be able to point at the rendered page and confirm each of these:
 
-1. The homepage first viewport at 1440×900 and 390×844 contains one `h1`, one start-learning action to the first lesson, sourced lesson/minute/preview/progress figures, and the TradingFlow independence caveat. At narrower widths and increased text size, preserve the reading order without forcing these into a fixed height.
+1. The homepage first viewport at 1440×900 and 390×844 contains one `h1`, one free-start action to the first lesson marked `preview`, sourced lesson/minute/preview/progress figures, and the TradingFlow independence caveat. Free entry points follow access metadata rather than syllabus position. A compact free-lesson navigation precedes the full ordered catalog on the homepage and course overview. At narrower widths and increased text size, preserve the reading order without forcing these into a fixed height.
 2. The homepage curriculum is an ordered grid of cards, explicitly requested on 2026-09-07. Every lesson has a subject-specific SVG infographic, full title, outcome, sequence number, duration, practice tool, and access state. In-app lesson rails retain their ordered list.
 3. Each homepage lesson card maps the lesson to the TradingFlow tool named in `lesson.practice.tool`.
 4. Access states remain distinct in text: free, paid/membership, unlocked, access unavailable, completed.

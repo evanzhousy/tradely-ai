@@ -16,7 +16,7 @@ import {
 	PlayIcon,
 } from "lucide-react";
 import { useId, useState } from "react";
-import type { Lesson } from "@/content/course";
+import { getFreeLessons, type Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { useI18n } from "@/i18n/provider";
 import { LessonInfographic } from "./lesson-infographic";
@@ -41,6 +41,7 @@ export function LandingCurriculum({
 	const id = useId();
 	const [motionEnabled, setMotionEnabled] = useState(true);
 	const gridId = `${id}-grid`;
+	const freeLessons = getFreeLessons(lessons);
 	const completed = new Set(completedIds);
 	const renderLessons = (items: readonly Lesson[]) => (
 		<ol
@@ -128,6 +129,45 @@ export function LandingCurriculum({
 	);
 	return (
 		<div className="landing-curriculum">
+			{freeLessons.length > 0 ? (
+				<nav
+					aria-labelledby={`${id}-free-title`}
+					className="mb-6 flex flex-col gap-3 rounded-3xl bg-muted/50 p-4 sm:p-6"
+				>
+					<h2 id={`${id}-free-title`} className="font-semibold text-lg">
+						{t("course.freeLessons", { count: freeLessons.length })}
+					</h2>
+					<p className="text-muted-foreground text-sm">
+						{t("course.freeLessonsDescription")}
+					</p>
+					<ul className="grid gap-2 md:grid-cols-3">
+						{freeLessons.map((lesson) => (
+							<li key={lesson.id}>
+								<Link
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: lesson.slug }}
+									className="flex h-full min-h-11 items-start gap-3 rounded-2xl p-3 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								>
+									<span className="font-mono text-muted-foreground">
+										{String(lesson.order + 1).padStart(2, "0")}
+									</span>
+									<span className="flex flex-1 flex-col gap-2">
+										<span className="font-medium">{lesson.title}</span>
+										<span className="text-muted-foreground text-xs">
+											{t("common.free")} ·{" "}
+											{t("common.minutes", { minutes: lesson.minutes })}
+										</span>
+									</span>
+									<ArrowUpRightIcon
+										className="size-4 shrink-0"
+										aria-hidden="true"
+									/>
+								</Link>
+							</li>
+						))}
+					</ul>
+				</nav>
+			) : null}
 			<div className="curriculum-caption-row">
 				<p id={id} className="curriculum-caption">
 					{caption}

@@ -316,6 +316,11 @@ export const tradingFlowCourse = {
 
 export type Course = typeof tradingFlowCourse;
 
+// Public discovery follows access metadata, independently of syllabus order.
+export function getFreeLessons(lessons: readonly Lesson[]): Lesson[] {
+	return lessons.filter((lesson) => lesson.access === "preview");
+}
+
 export function getLesson(slug: string): Lesson | undefined {
 	return tradingFlowCourse.lessons.find((lesson) => lesson.slug === slug);
 }

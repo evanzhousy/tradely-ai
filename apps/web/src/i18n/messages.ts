@@ -80,7 +80,7 @@ const messages = {
 			"Start with a question. Work through the evidence. Finish with a research packet you can inspect and explain.",
 		"home.accessTitle": "Start with curiosity. Take it further.",
 		"home.accessDescription":
-			"The first {count} lessons are free. Continue the course with Tradely paid access when you are ready.",
+			"Explore {count} free lessons with no sign-in or payment required. Unlock the full curriculum with Tradely paid access when you are ready.",
 		"home.accessLink": "See access options",
 		"home.finaleLabel": "A little curiosity goes a long way.",
 		"home.finaleTitle": "Make room for a better question.",
@@ -191,6 +191,8 @@ const messages = {
 		"home.curriculumHeading": "The path, in the order the workflow uses it.",
 		"course.practiceBadge": "TradingFlow practice course",
 		"course.freeLessons": "{count} free lessons",
+		"course.freeLessonsDescription":
+			"Open any of these lessons without signing in or paying. Their numbers show where they fit in the full curriculum below.",
 		"course.yourProgress": "Your progress",
 		"course.curriculum": "Curriculum",
 		"course.curriculumDescription":
@@ -333,7 +335,7 @@ const messages = {
 		"home.titleVerify": "独立思考。",
 		"home.intro":
 			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
-		"home.startFree": "免费开始第一课",
+		"home.startFree": "免费开始学习",
 		"home.freeNote": "{minutes} 分钟 · 无需 Tradely 会员",
 		"home.explore": "探索课程路径",
 		"home.pauseMotion": "暂停动画",
@@ -367,7 +369,7 @@ const messages = {
 			"从一个问题开始，逐步检视证据，最终形成可检查、可解释的研究记录。",
 		"home.accessTitle": "从好奇开始，继续深入。",
 		"home.accessDescription":
-			"前 {count} 课免费。准备好后，可通过 Tradely 付费访问继续学习。",
+			"无需登录或付款，即可学习 {count} 节免费课程。准备好后，可通过 Tradely 付费访问解锁完整课程。",
 		"home.accessLink": "查看访问方案",
 		"home.finaleLabel": "带着一点好奇，继续探索。",
 		"home.finaleTitle": "给一个更好的问题，留点空间。",
@@ -471,6 +473,8 @@ const messages = {
 		"home.curriculumHeading": "按研究流程顺序排列的路径。",
 		"course.practiceBadge": "TradingFlow 实战课程",
 		"course.freeLessons": "{count} 节免费课程",
+		"course.freeLessonsDescription":
+			"以下课程无需登录或付款即可学习。课号对应它们在下方完整课程目录中的位置。",
 		"course.yourProgress": "你的进度",
 		"course.curriculum": "课程目录",
 		"course.curriculumDescription":

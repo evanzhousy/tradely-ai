@@ -11,6 +11,7 @@ import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingResearchDemo } from "@/components/landing-research-demo";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
+import { getFreeLessons } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { getCourseProgress } from "@/server/progress";
@@ -51,14 +52,13 @@ function HomeComponent() {
 	const { locale, t } = useI18n();
 	useBillingStatusAnalytics(progress.accessUnavailable, "course_progress");
 	const course = getLocalizedCourse(locale);
-	const startLesson = course.lessons[0];
+	const freeLessons = getFreeLessons(course.lessons);
+	const startLesson = freeLessons[0];
 	const totalMinutes = course.lessons.reduce(
 		(sum, lesson) => sum + lesson.minutes,
 		0,
 	);
-	const previewCount = course.lessons.filter(
-		(lesson) => lesson.access === "preview",
-	).length;
+	const previewCount = freeLessons.length;
 	return (
 		<main className="observatory landing-notebook">
 			<section className="landing-hero" aria-labelledby="landing-heading">
@@ -84,11 +84,7 @@ function HomeComponent() {
 										className: "self-start",
 									})}
 								>
-									{startLesson.access === "preview"
-										? t("home.startFree")
-										: locale === "zh"
-											? "开始学习"
-											: "Start learning"}
+									{t("home.startFree")}
 									<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 								</Link>
 							) : null}
@@ -98,7 +94,7 @@ function HomeComponent() {
 							</a>
 						</div>
 						<p className="landing-free-note">
-							{startLesson?.access === "preview"
+							{startLesson
 								? t("home.freeNote", { minutes: startLesson.minutes })
 								: t("course.freeLessons", { count: previewCount })}
 						</p>

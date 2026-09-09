@@ -4,6 +4,7 @@ import { cn } from "@tradely/ui/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
+import { getFreeLessons } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { TradelyBrand } from "./brand";
@@ -13,7 +14,7 @@ export function Footer() {
 	const isHome = useRouterState({
 		select: (state) => state.location.pathname === "/",
 	});
-	const firstLesson = getLocalizedCourse(locale).lessons[0];
+	const firstLesson = getFreeLessons(getLocalizedCourse(locale).lessons)[0];
 	const { isConfigured, openPreferences } = useAnalytics();
 	const year = new Date().getFullYear();
 	return (
