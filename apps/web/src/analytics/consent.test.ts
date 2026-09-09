@@ -12,7 +12,7 @@ describe("analytics consent", () => {
 
 	it("creates a bounded same-site consent cookie for server observability", () => {
 		expect(analyticsConsentCookie("granted", true)).toBe(
-			"tradely_analytics_consent=granted; Path=/; Max-Age=31536000; SameSite=Lax; Secure",
+			"tradely_analytics_consent_v2=granted; Path=/; Max-Age=31536000; SameSite=Lax; Secure",
 		);
 		expect(analyticsConsentCookie("denied", false)).not.toContain("Secure");
 	});

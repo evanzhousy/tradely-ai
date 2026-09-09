@@ -33,4 +33,15 @@ describe("legal content", () => {
 		expect(text).toContain("tradingflow");
 		expect(text).toContain("cloudflare");
 	});
+
+	it("discloses masked replay, heatmaps, and retention in both languages", () => {
+		for (const page of ["privacy", "cookies"] as const) {
+			const en = JSON.stringify(getLegalDocument(page, "en"));
+			const zh = JSON.stringify(getLegalDocument(page, "zh"));
+			expect(en).toContain("heatmap");
+			expect(en).toMatch(/30[ -]day/);
+			expect(zh).toContain("热图");
+			expect(zh).toContain("30 天");
+		}
+	});
 });

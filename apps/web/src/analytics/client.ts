@@ -1,5 +1,7 @@
 import { env } from "@tradely/env/web";
 
+import { applyBrowserCaptureConsent } from "./browser-consent";
+
 import {
 	ANALYTICS_CONSENT_STORAGE_KEY,
 	parseAnalyticsConsent,
@@ -20,6 +22,7 @@ import {
 	safeAnalyticsError,
 } from "./redaction";
 import { normalizeAnalyticsRelease } from "./release";
+import { replayPrivacyOptions, sanitizeHeatmapUrls } from "./replay-privacy";
 
 export type PostHogClient = typeof import("posthog-js")["default"];
 
@@ -41,12 +44,13 @@ let activeClient: PostHogClient | null = null;
 
 export function getPostHogClient(): Promise<PostHogClient> {
 	if (clientPromise) return clientPromise;
-	// These extensions normally load from PostHog's CDN. Bundle only the two
+	// These extensions normally load from PostHog's CDN. Bundle only the
 	// permitted features, inside the same consent-gated lazy load as the client.
 	clientPromise = Promise.all([
 		import("posthog-js"),
 		import("posthog-js/dist/exception-autocapture"),
 		import("posthog-js/dist/web-vitals"),
+		import("posthog-js/dist/posthog-recorder"),
 	])
 		.then(([{ default: client }]) => {
 			client.init(env.VITE_POSTHOG_KEY as string, {
@@ -79,9 +83,14 @@ export function getPostHogClient(): Promise<PostHogClient> {
 					web_vitals_attribution: false,
 				},
 				disable_session_recording: true,
+				session_recording: replayPrivacyOptions,
 				disable_surveys: true,
 				enable_recording_console_log: false,
-				advanced_disable_flags: true,
+				// Replay needs the project's JSON remote configuration. Optional
+				// scripts and feature-flag evaluation remain disabled.
+				advanced_disable_flags: false,
+				advanced_disable_feature_flags: true,
+				advanced_disable_feature_flags_on_first_load: true,
 				person_profiles: "identified_only",
 				persistence: "localStorage+cookie",
 				cross_subdomain_cookie: false,
@@ -124,6 +133,7 @@ export function getPostHogClient(): Promise<PostHogClient> {
 							event.properties.$is_identified === true;
 					}
 					sanitizeAnalyticsEventUrlProperties(event.properties);
+					sanitizeHeatmapUrls(event.properties);
 					event.properties.app = "tradely";
 					event.properties.event_schema_version =
 						ANALYTICS_EVENT_SCHEMA_VERSION;
@@ -135,11 +145,10 @@ export function getPostHogClient(): Promise<PostHogClient> {
 					return event;
 				},
 			});
-			if (persistedAnalyticsConsent() === "granted") {
-				client.opt_in_capturing({ captureEventName: false });
-			} else {
-				client.opt_out_capturing();
-			}
+			applyBrowserCaptureConsent(
+				client,
+				persistedAnalyticsConsent() === "granted",
+			);
 			activeClient = client;
 			return client;
 		})

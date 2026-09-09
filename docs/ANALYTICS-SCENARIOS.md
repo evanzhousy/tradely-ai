@@ -10,7 +10,8 @@ imports restricted to the shared browser and server clients.
 
 - Browser events require analytics consent and respect Do Not Track. Unknown or
   denied consent does not load the PostHog SDK. Server events require the same-site
-  `tradely_analytics_consent=granted` cookie.
+  `tradely_analytics_consent_v2=granted` cookie. Version 2 includes masked replay
+  and heatmaps; the previous event-only consent does not opt visitors into them.
 - PostHog events carry `app=tradely`, `environment`, `runtime`, `release`, and
   `event_schema_version=1`. Custom properties are pruned to the typed allowlist.
 - Route URLs omit query strings and fragments. Learner answers, case bodies,
@@ -68,10 +69,18 @@ Paths below are relative to `apps/web/src`.
   media, progress, and learning failures. Browser console-error capture and global
   Node exception autocapture stay disabled.
 
-Replay, heatmaps, generic click autocapture, page-leave events, and optional product
-widgets remain disabled. Anonymous exercise previews intentionally do not emit
+Masked replay and coordinate heatmaps are enabled after consent. `$pageleave`
+records scroll information before SPA navigation and on unload. Generic click
+autocapture and optional product widgets remain disabled. Anonymous exercise previews intentionally do not emit
 the signed-in exercise events. No dedicated signup, payment-success, subscription
 activation, refund, or revenue event is part of this contract.
+
+Recordings retain layout and interaction paths while masking text and inputs.
+Images, media, canvases, embedded frames, protected lesson prose, and interactive
+practice contents are blocked. DOM attributes are restricted to layout/state
+fields; replay URLs and nested heatmap URL buckets omit queries and fragments.
+Console logs, request/response details, and canvas capture remain off. Retention
+is 30 days. See [Replay setup](POSTHOG-REPLAY.md) for live activation and checks.
 
 ## Verification
 

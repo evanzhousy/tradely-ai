@@ -1,7 +1,9 @@
 export type AnalyticsConsent = "unknown" | "granted" | "denied";
 
-export const ANALYTICS_CONSENT_STORAGE_KEY = "tradely.analytics-consent.v1";
-export const ANALYTICS_CONSENT_COOKIE_NAME = "tradely_analytics_consent";
+// Replay/heatmaps expand the original event-only consent scope. Old choices do
+// not opt visitors into recording; both browser and server require this version.
+export const ANALYTICS_CONSENT_STORAGE_KEY = "tradely.analytics-consent.v2";
+export const ANALYTICS_CONSENT_COOKIE_NAME = "tradely_analytics_consent_v2";
 
 export function analyticsConsentCookie(
 	consent: Exclude<AnalyticsConsent, "unknown">,

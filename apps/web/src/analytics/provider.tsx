@@ -7,7 +7,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-
+import { applyBrowserCaptureConsent } from "./browser-consent";
 import {
 	capturePostHogException,
 	getPostHogClient,
@@ -107,8 +107,17 @@ function capturePostHogEvent(
 function capturePostHogPageView(
 	client: PostHogClient,
 	properties: AnalyticsEventMap["page_viewed"],
+	history: { current: AnalyticsEventMap["page_viewed"] | null },
 ): boolean {
 	try {
+		const previous = history.current;
+		if (previous && previous.path !== properties.path) {
+			client.capture("$pageleave", {
+				...previous,
+				$current_url: `${window.location.origin}${previous.path}`,
+				$pathname: previous.path,
+			});
+		}
 		const currentUrl = `${window.location.origin}${properties.path}`;
 		client.capture("$pageview", {
 			...properties,
@@ -116,6 +125,7 @@ function capturePostHogPageView(
 			$pathname: properties.path,
 		});
 		client.capture("page_viewed", properties);
+		history.current = properties;
 		return true;
 	} catch {
 		return false;
@@ -132,6 +142,9 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 	const [isConsentResolved, setIsConsentResolved] = useState(false);
 	const [preferencesOpen, setPreferencesOpen] = useState(false);
 	const clientRef = useRef<PostHogClient | null>(null);
+	const lastPostHogPageRef = useRef<AnalyticsEventMap["page_viewed"] | null>(
+		null,
+	);
 	const consentRef = useRef<AnalyticsConsent>("unknown");
 	const postHogCapturingRef = useRef(false);
 	const googleAnalyticsCapturingRef = useRef(false);
@@ -151,13 +164,11 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 	const applyPostHogConsent = useCallback(
 		(client: PostHogClient, nextConsent: AnalyticsConsent) => {
 			try {
-				if (nextConsent === "granted") {
-					client.opt_in_capturing({ captureEventName: false });
-					postHogCapturingRef.current = !client.has_opted_out_capturing();
-				} else {
-					client.opt_out_capturing();
-					postHogCapturingRef.current = false;
-				}
+				postHogCapturingRef.current = applyBrowserCaptureConsent(
+					client,
+					nextConsent === "granted",
+				);
+				if (!postHogCapturingRef.current) lastPostHogPageRef.current = null;
 			} catch {
 				postHogCapturingRef.current = false;
 			}
@@ -239,7 +250,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		for (const item of pending) {
 			if (now - item.queuedAt > PENDING_POSTHOG_EVENT_MAX_AGE_MS) continue;
 			if (item.kind === "page_view") {
-				capturePostHogPageView(client, item.properties);
+				capturePostHogPageView(client, item.properties, lastPostHogPageRef);
 				continue;
 			}
 			capturePostHogEvent(client, item.event, item.properties);
@@ -335,7 +346,11 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		(properties: AnalyticsEventMap["page_viewed"]): boolean => {
 			let postHogCaptured = false;
 			if (postHogCapturingRef.current && clientRef.current) {
-				postHogCaptured = capturePostHogPageView(clientRef.current, properties);
+				postHogCaptured = capturePostHogPageView(
+					clientRef.current,
+					properties,
+					lastPostHogPageRef,
+				);
 			} else if (
 				consentRef.current === "granted" &&
 				hasPostHog &&
@@ -406,7 +421,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 			const client = clientRef.current;
 			if (client && nextConsent === "denied" && wasPostHogCapturing) {
 				try {
-					client.opt_out_capturing();
+					applyBrowserCaptureConsent(client, false);
 					client.reset(true);
 				} catch {
 					// Identity reset is best effort and must not interrupt consent changes.

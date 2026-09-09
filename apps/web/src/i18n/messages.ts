@@ -293,7 +293,7 @@ const messages = {
 		"legal.backToLearning": "Back to learning hub",
 		"analytics.consentTitle": "Help improve Tradely",
 		"analytics.consentDescription":
-			"Allow privacy-limited PostHog and Google Analytics 4 for page usage, learning milestones, performance, and error diagnostics. No lesson text, payment details, or email address is sent.",
+			"Allow analytics, heatmaps, and masked session recordings to improve Tradely. Replay text and inputs are masked; protected lesson content and media are blocked. Recordings are kept for 30 days. You can withdraw consent in Privacy choices.",
 		"analytics.allow": "Allow analytics",
 		"analytics.necessaryOnly": "Use necessary only",
 	},
@@ -564,7 +564,7 @@ const messages = {
 		"legal.backToLearning": "返回学习中心",
 		"analytics.consentTitle": "帮助改进 Tradely",
 		"analytics.consentDescription":
-			"允许使用隐私受限的 PostHog 和 Google Analytics 4，了解页面使用、学习里程碑、性能和错误诊断。不会发送课程正文、付款信息或邮箱地址。",
+			"允许分析、热图和经过遮盖的会话回放，以改进 Tradely。回放文字和输入内容会被遮盖，受保护的课程内容和媒体会被屏蔽。回放保留 30 天，可随时通过隐私设置撤回同意。",
 		"analytics.allow": "允许分析",
 		"analytics.necessaryOnly": "仅使用必要功能",
 	},

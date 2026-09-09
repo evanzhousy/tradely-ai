@@ -1,7 +1,7 @@
 # Tradely observability
 
 The complete application event catalog and scenario verification points are in
-[Analytics scenarios](ANALYTICS-SCENARIOS.md).
+[Analytics scenarios](ANALYTICS-SCENARIOS.md). The current masked replay and heatmap setup is documented in [Replay setup](POSTHOG-REPLAY.md).
 
 Tradely uses PostHog US Cloud project `582920` (`Tradely`) for consented product events, web vitals, browser exceptions, and consent-gated server exceptions. `AnalyticsProvider` owns client initialization, consent, identity, URL sanitization, and the typed emitter. `captureServerException` owns bounded Vercel/Node failures. Product components may emit only events declared in `apps/web/src/analytics/events.ts`.
 
@@ -92,7 +92,7 @@ The navigation-path monitor currently shows one consented learner moving from ho
 
 - PostHog and Google Analytics 4 initialize opted out. No browser product event, web vital, browser exception, server exception, Google tag, or Google Analytics event is sent before the learner selects **Allow analytics**. The PostHog client reconciles Tradely's persisted consent before exposing itself, so stale SDK opt-in state cannot leak events during provider startup. If the optional PostHog bundle fails to initialize, the provider keeps the app usable and leaves Google consented capture independent; a later grant can retry the PostHog path.
 - The PostHog browser SDK is deferred until an existing granted choice or a new explicit grant; unknown and denied visitors do not pay the SDK startup cost.
-- Consent is stored in local storage and mirrored into a same-site `tradely_analytics_consent` cookie containing only `granted` or `denied`. Server functions require `granted` before reporting.
+- Consent is stored in local storage and mirrored into a same-site `tradely_analytics_consent_v2` cookie containing only `granted` or `denied`. Server functions require `granted` before reporting.
 - Consent storage and cookie writes are best effort: browser storage failures fail closed for server capture without interrupting the privacy controls or the learner's navigation.
 - Open tabs subscribe to the consent storage key, so a grant or withdrawal in one tab is applied to PostHog and Google Analytics in the others.
 - The learner can grant or withdraw analytics through **Privacy choices** in the footer. Withdrawal stops PostHog and Google Analytics capture, resets the PostHog browser identity, and changes the server-consent cookie to `denied`.
@@ -102,12 +102,12 @@ The navigation-path monitor currently shows one consented learner moving from ho
 - URL query strings and fragments are removed before PostHog browser and server capture and from Tradely's custom Google Analytics page locations. URL-like PostHog system properties are sanitized centrally, and PostHog's explicit URL-hash suppression is enabled as defense in depth. Google stream-level redaction covers email plus eight sensitive query keys.
 - Client and server exception messages/stacks pass through a bounded redaction layer for email, bearer credentials, sensitive query values, authentication identifiers, and Stripe identifiers.
 - The PostHog project anonymizes client IPs. Server events also set GeoIP capture off.
-- Autocaptured element text/clicks, session replay, heatmaps, surveys, dead clicks, feature flags, web experiments, conversations, product tours, browser console-log capture, and optional device-model lookup remain disabled by the client configuration. DOM text and element attributes are masked as a defense in depth if autocapture is ever enabled. External PostHog dependency loading is disabled, and any future permitted extension URLs are version-pinned. Google advertising signals and user-ID collection are disabled.
+- Masked session replay and coordinate heatmaps are enabled after version-2 consent, with 30-day replay retention. Text and inputs are masked; protected lesson contents and media are blocked. Generic autocaptured element text/clicks, surveys, standalone dead-click events, feature-flag evaluation, web experiments, conversations, product tours, browser console-log capture, and optional device-model lookup remain disabled. DOM text and element attributes are masked as a defense in depth if autocapture is ever enabled. External PostHog dependency loading is disabled, and any future permitted extension URLs are version-pinned. Google advertising signals and user-ID collection are disabled.
 - Browser exception autocapture covers unhandled errors and promise rejections only after consent. The route error boundary waits for a consented PostHog client before capturing, while caught billing and lesson-completion errors use the same bounded redaction layer.
 - PostHog initialization, event capture, identity changes, and exception capture fail closed: browser SDK import, server client construction, readiness, and transport failures are swallowed and never interrupt route rendering, billing, lesson completion, or error recovery.
 - Web vitals include LCP, CLS, FCP, and INP without DOM attribution.
 
-The live PostHog project audit confirms IP anonymization is enabled, session recording and console-log capture are disabled, and surveys and heatmaps are not enabled. Event retention is configured for 84 months but enforcement is disabled; shortening or enforcing retention can remove historical data and requires an explicit product/legal decision.
+The 2026-09-09 PostHog update enables masked session recording and heatmaps. Console/network capture and surveys remain off; IP anonymization remains enabled. Event retention is configured for 84 months but enforcement is disabled; shortening or enforcing retention can remove historical data and requires an explicit product/legal decision.
 
 ## Event contract
 
@@ -234,7 +234,7 @@ Do not configure grouping, suppression, severity, or assignment rules before rea
 
 ## Pending activation gates
 
-- **Latest project audit (2026-08-29):** PostHog reports `effective_membership_level = 8`, `access_control = false`, `event_retention_months = 84`, and `events_retention_enforced = false`; session recording, surveys, and heatmaps remain disabled.
+- **Historical project audit (2026-08-29):** PostHog reports `effective_membership_level = 8`, `access_control = false`, `event_retention_months = 84`, and `events_retention_enforced = false`; session recording, surveys, and heatmaps remain disabled.
 - **Authorized deployment:** ship the local `server_route_timing` and `auth_session_established` instrumentation, then run a consented production probe, confirm both events and their `release` values in PostHog, and only then create their actions or derived insights. Production builds now fail closed if release metadata or project-scoped source-map configuration is absent.
 - **Retention decision:** choose and approve the event-retention period before enabling enforcement; the current project setting is 84 months with enforcement disabled.
 - **Dashboard permissions:** enable invited-only editing only after the PostHog Boost feature is available; the dashboard setting is prepared but not effective under the current project tier.

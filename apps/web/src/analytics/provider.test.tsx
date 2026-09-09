@@ -109,6 +109,19 @@ function OperationsHarness() {
 			>
 				identify
 			</button>
+			<button
+				type="button"
+				aria-label="capture pricing view"
+				onClick={() =>
+					capturePageView({
+						route_name: "pricing",
+						path: "/pricing",
+						locale: "en",
+					})
+				}
+			>
+				pricing
+			</button>
 			<button type="button" aria-label="reset identity" onClick={resetIdentity}>
 				reset
 			</button>
@@ -119,6 +132,7 @@ function OperationsHarness() {
 function createPostHogClient() {
 	return {
 		capture: vi.fn(),
+		set_config: vi.fn(),
 		has_opted_out_capturing: vi.fn(() => false),
 		identify: vi.fn(),
 		opt_in_capturing: vi.fn(),
@@ -151,6 +165,46 @@ describe("AnalyticsProvider consent readiness", () => {
 		);
 
 		expect(mocks.getPostHogClient).not.toHaveBeenCalled();
+	});
+
+	it("does not upgrade event-only consent to replay consent", () => {
+		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		render(
+			<AnalyticsProvider>
+				<ConsentHarness />
+			</AnalyticsProvider>,
+		);
+		expect(mocks.getPostHogClient).not.toHaveBeenCalled();
+	});
+
+	it("emits a sanitized previous-page leave before a new SPA page view", async () => {
+		const posthog = createPostHogClient();
+		mocks.getPostHogClient.mockResolvedValue(posthog);
+		window.localStorage.setItem("tradely.analytics-consent.v2", "granted");
+		const page = render(
+			<AnalyticsProvider>
+				<OperationsHarness />
+			</AnalyticsProvider>,
+		);
+		await waitFor(() => expect(posthog.opt_in_capturing).toHaveBeenCalled());
+		fireEvent.click(page.getByRole("button", { name: "capture page view" }));
+		fireEvent.click(page.getByRole("button", { name: "capture pricing view" }));
+		expect(posthog.capture.mock.calls.map((call) => call[0])).toEqual([
+			"$pageview",
+			"page_viewed",
+			"$pageleave",
+			"$pageview",
+			"page_viewed",
+		]);
+		expect(posthog.capture).toHaveBeenNthCalledWith(
+			3,
+			"$pageleave",
+			expect.objectContaining({
+				path: "/",
+				$pathname: "/",
+				$current_url: `${window.location.origin}/`,
+			}),
+		);
 	});
 
 	it("queues a fast grant until PostHog is ready and captures it once", async () => {
@@ -253,7 +307,7 @@ describe("AnalyticsProvider consent readiness", () => {
 				resolvePostHog = resolve;
 			}),
 		);
-		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "granted");
 		render(
 			<AnalyticsProvider>
 				<AuthAnalyticsIdentity />
@@ -305,7 +359,7 @@ describe("AnalyticsProvider consent readiness", () => {
 	it("deduplicates authenticated sessions and resets identity when accounts change", async () => {
 		const posthog = createPostHogClient();
 		mocks.getPostHogClient.mockResolvedValue(posthog);
-		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "granted");
 		const page = render(
 			<AnalyticsProvider>
 				<AuthAnalyticsIdentity />
@@ -350,7 +404,7 @@ describe("AnalyticsProvider consent readiness", () => {
 	it("does not initialize PostHog for a denied choice", () => {
 		const posthog = createPostHogClient();
 		mocks.getPostHogClient.mockResolvedValue(posthog);
-		window.localStorage.setItem("tradely.analytics-consent.v1", "denied");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "denied");
 
 		render(
 			<AnalyticsProvider>
@@ -369,7 +423,7 @@ describe("AnalyticsProvider consent readiness", () => {
 	it("syncs consent withdrawal from another browser tab", async () => {
 		const posthog = createPostHogClient();
 		mocks.getPostHogClient.mockResolvedValue(posthog);
-		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "granted");
 
 		render(
 			<AnalyticsProvider>
@@ -380,7 +434,7 @@ describe("AnalyticsProvider consent readiness", () => {
 		await waitFor(() => expect(posthog.opt_in_capturing).toHaveBeenCalled());
 		window.dispatchEvent(
 			new StorageEvent("storage", {
-				key: "tradely.analytics-consent.v1",
+				key: "tradely.analytics-consent.v2",
 				newValue: "denied",
 			}),
 		);
@@ -410,7 +464,7 @@ describe("AnalyticsProvider consent readiness", () => {
 	it("contains PostHog event and identity failures without breaking UI actions", async () => {
 		const posthog = createPostHogClient();
 		mocks.getPostHogClient.mockResolvedValue(posthog);
-		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "granted");
 		posthog.capture.mockImplementation(() => {
 			throw new Error("capture failed");
 		});

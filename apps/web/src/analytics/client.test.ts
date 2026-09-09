@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
 	posthog: {
 		captureException: vi.fn(),
+		set_config: vi.fn(),
 		has_opted_out_capturing: vi.fn(() => false),
 		init: vi.fn(),
 		opt_in_capturing: vi.fn(),
@@ -33,7 +34,7 @@ import {
 describe("browser PostHog initialization contract", () => {
 	beforeEach(() => {
 		window.localStorage.clear();
-		window.localStorage.setItem("tradely.analytics-consent.v1", "granted");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "granted");
 		mocks.posthog.captureException.mockReset();
 		mocks.posthog.init.mockReset();
 		mocks.posthog.opt_in_capturing.mockReset();

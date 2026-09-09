@@ -10,6 +10,7 @@ vi.mock("@tradely/env/web", () => ({
 	},
 }));
 
+import { applyBrowserCaptureConsent } from "./browser-consent";
 import { getPostHogClient, type PostHogClient } from "./client";
 
 describe("bundled PostHog browser SDK", () => {
@@ -22,7 +23,7 @@ describe("bundled PostHog browser SDK", () => {
 		vi.useFakeTimers();
 		// Exercise the real SDK and send boundary without contacting PostHog.
 		vi.spyOn(XMLHttpRequest.prototype, "send").mockImplementation(() => {});
-		window.localStorage.setItem("tradely.analytics-consent.v1", "denied");
+		window.localStorage.setItem("tradely.analytics-consent.v2", "denied");
 		client = await getPostHogClient();
 		client.on("eventCaptured", (event) => captured.push(event));
 	});
@@ -90,5 +91,30 @@ describe("bundled PostHog browser SDK", () => {
 		client.opt_out_capturing();
 		trigger();
 		expect(captured).toHaveLength(1);
+	});
+
+	it("clears pending heatmap clicks and ignores interactions during withdrawal", () => {
+		captured.length = 0;
+		const button = document.createElement("button");
+		document.body.append(button);
+		const click = (x: number) =>
+			button.dispatchEvent(
+				new MouseEvent("click", { bubbles: true, clientX: x, clientY: 2 }),
+			);
+		applyBrowserCaptureConsent(client, true);
+		click(11);
+		applyBrowserCaptureConsent(client, false);
+		click(99);
+		applyBrowserCaptureConsent(client, true);
+		click(22);
+		vi.advanceTimersByTime(6000);
+		const heatmaps = captured.filter((event) => event.event === "$$heatmap");
+		expect(heatmaps).toHaveLength(1);
+		const points = Object.values(
+			heatmaps[0]?.properties.$heatmap_data as Record<string, { x: number }[]>,
+		).flat();
+		expect(points.map((point) => point.x)).toEqual([22]);
+		applyBrowserCaptureConsent(client, false);
+		button.remove();
 	});
 });
