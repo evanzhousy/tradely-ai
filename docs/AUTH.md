@@ -251,3 +251,30 @@ below supersedes its branch mapping and rollback availability.
   production SMTP and Preview Stripe test credentials remain separate launch
   setup. This consolidation changed infrastructure and documentation; it did not
   deploy newer local application commits or push Git changes.
+
+## Verified Google sign-in release — September 9, 2026
+
+- Implementation commit: `4106599` (`feat(auth): add Google sign-in through Neon OAuth`).
+- Preview deployment: `dpl_FTwDZJgE4F891ZvAfJjcxJcUYhpz`, using `test`.
+- Production deployment: `dpl_5vY9u1wFhynbGN7gp5zfgUY4EUVU`, serving
+  `tradely.ai` and `www.tradely.ai` using `production`. Both builds reached READY.
+- Local validation passed all 347 web tests, type checks, scoped Biome checks,
+  and `git diff --check`. Callback tests use the real Neon server toolkit with
+  an isolated upstream to exercise challenge validation, signed cookies, unsafe
+  return paths, cancellation, and upstream failures. Desktop and 390px mobile
+  sign-in pages rendered correctly with no horizontal overflow or error overlay.
+- Real Google sign-in passed locally, on Preview, and on Production. Production
+  exercised a new Google account; Preview exercised returning sign-in. Both
+  hosted environments returned to the requested lesson without an OAuth verifier
+  in the final URL and retained the session and saved progress after reload.
+  Database reads confirmed verified Google identities and progress in the
+  matching original branches.
+- Production also passed unpaid lesson denial, logout, and email-code sign-in
+  to the same Google-linked account with its existing progress. A foreign-origin
+  social sign-in POST returned 403; a cancelled callback returned a clean retry
+  URL with `private, no-store` and `Referrer-Policy: no-referrer`.
+- Retained the owner's Google identities and removed only the lesson-completion
+  records created during verification. No purchases or paid grants were made.
+  The two original branches and the approved shared Google provider remain in
+  use. Deployment used a clean checkout and environment-specific Vercel builds;
+  no Git push was performed for this release.
