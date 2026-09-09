@@ -24,27 +24,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{ name: "theme-color", content: "#fdc700" },
-			{ name: "robots", content: "index, follow" },
-			{ property: "og:site_name", content: "Tradely" },
-			{ property: "og:type", content: "website" },
-			{
-				property: "og:image",
-				content: "https://tradely.ai/brand/tradely-mark.png",
-			},
-			{ property: "og:image:width", content: "1254" },
-			{ property: "og:image:height", content: "1254" },
-			{ property: "og:image:alt", content: "Tradely Night Scholar Owl" },
-			{ name: "twitter:card", content: "summary" },
-			{
-				name: "twitter:image",
-				content: "https://tradely.ai/brand/tradely-mark.png",
-			},
-			{ title: "Tradely. Options learning with real workflow practice" },
-			{
-				name: "description",
-				content:
-					"Learn options flow, ranking, Greeks, GEX, and open interest through an ordered curriculum with TradingFlow practice.",
-			},
+			{ name: "robots", content: "noindex, follow" },
+			{ title: "Tradely" },
 		],
 		links: [
 			{ rel: "stylesheet", href: appCss },

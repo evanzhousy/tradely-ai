@@ -9,14 +9,10 @@ import type {
 	HouseView,
 	HouseViewer,
 } from "@/features/house/viewer";
+import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/house")({
-	head: () => ({
-		meta: [
-			{ title: "8311 Kirkland — House explorer | Tradely" },
-			{ name: "robots", content: "noindex, nofollow" },
-		],
-	}),
+	head: () => pageHead("/house"),
 	component: HousePage,
 });
 

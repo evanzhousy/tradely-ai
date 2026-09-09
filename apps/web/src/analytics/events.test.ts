@@ -15,6 +15,25 @@ import {
 } from "./events";
 
 describe("analytics event boundaries", () => {
+	it("keeps public guide and preview events bounded and separate from account progress", () => {
+		const properties: Record<string, unknown> = {
+			guide_id: "gamma-exposure",
+			demo_id: "gamma-exposure",
+			locale: "en",
+			answer: "private input",
+			state: { secret: true },
+			referrer: "https://example.com/?email=private",
+		};
+		pruneAnalyticsEventProperties("guide_demo_completed", properties);
+		expect(properties).toEqual({
+			guide_id: "gamma-exposure",
+			demo_id: "gamma-exposure",
+			locale: "en",
+		});
+		expect(analyticsRouteName("/guides")).toBe("guides");
+		expect(analyticsRouteName("/guides/iv-crush")).toBe("guide");
+		expect(isRegisteredAnalyticsEvent("preview_exercise_submitted")).toBe(true);
+	});
 	it("keeps learner answers and evidence out of learning events", () => {
 		const properties: Record<string, unknown> = {
 			lesson_id: "validate-option-print",

@@ -49,6 +49,9 @@ export function Footer() {
 			<div className="mx-auto grid max-w-[1480px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
 				<div className="flex max-w-md flex-col gap-3">
 					<TradelyBrand />
+					<Link to="/guides" className="text-sm underline underline-offset-4">
+						{t("nav.guides")}
+					</Link>
 					<p className="text-muted-foreground text-sm leading-6">
 						{t("footer.description")}
 					</p>

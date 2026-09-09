@@ -1,18 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-
 import { LegalPage } from "@/components/legal-page";
+import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/risk-disclosure")({
-	head: () => ({
-		links: [{ rel: "canonical", href: "https://tradely.ai/risk-disclosure" }],
-		meta: [
-			{ title: "Options risk disclosure — Tradely" },
-			{
-				name: "description",
-				content:
-					"Important options, leverage, assignment, and data limitations.",
-			},
-		],
-	}),
+	head: () => pageHead("/risk-disclosure"),
 	component: () => <LegalPage page="risk-disclosure" />,
 });

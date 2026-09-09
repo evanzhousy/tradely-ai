@@ -19,18 +19,14 @@ import { type FormEvent, useEffect, useState } from "react";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
 import { safeReturnTo } from "@/auth/redirect";
 import { useI18n } from "@/i18n/provider";
+import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/auth/sign-in")({
 	validateSearch: (search: Record<string, unknown>) => ({
 		returnTo: safeReturnTo(search.returnTo),
 		oauthError: search.oauthError === "google" ? "google" : undefined,
 	}),
-	head: () => ({
-		meta: [
-			{ title: "Sign in · Tradely" },
-			{ name: "robots", content: "noindex, nofollow" },
-		],
-	}),
+	head: () => pageHead("/auth/sign-in"),
 	component: SignInPage,
 });
 

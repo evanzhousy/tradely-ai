@@ -1,6 +1,6 @@
 # Tradely SEO 代码改动计划
 
-状态：仅计划，尚未实施。基于 [SEO 研究](./seo-positioning-2026-09-09.md) 和 2026-09-09 当前代码，基线 HEAD 为 `5bd62bb`。目标站为 Tradely。
+状态：已完成本地实现；部署与 GSC 检查留待发布。实施说明见 [SEO.md](../SEO.md)。以下保留原设计与验收计划，基于 [SEO 研究](./seo-positioning-2026-09-09.md) 和 2026-09-09 的代码基线 `5bd62bb`。目标站为 Tradely。
 
 ## 目标与设计决定
 

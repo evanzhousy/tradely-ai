@@ -23,7 +23,9 @@ export type FlowStructureComparison = {
 };
 
 /** Only comparable cleared reports can produce a delta; missing never means zero. */
-export function reportedOiChange(data: FlowStructureComparison): number | null {
+export function reportedOiChange(
+	data: Pick<FlowStructureComparison, "previousOi" | "reportedOi">,
+): number | null {
 	const previous = data.previousOi;
 	const latest = data.reportedOi;
 	if (

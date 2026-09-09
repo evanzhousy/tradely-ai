@@ -36,7 +36,9 @@ export function deiMagnitude(
 }
 
 /** Missing contributions prevent a complete total; filtering creates a subtotal. */
-export function gexTotal(cells: GexCell[]): number | null {
+export function gexTotal(
+	cells: ReadonlyArray<Pick<GexCell, "value">>,
+): number | null {
 	return cells.length && cells.every((cell) => cell.value !== null)
 		? cells.reduce((total, cell) => total + (cell.value ?? 0), 0)
 		: null;

@@ -11,7 +11,6 @@ import {
 import { CheckIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-
 import { useAnalytics } from "@/analytics/context";
 import type { BillingOffer } from "@/analytics/events";
 import {
@@ -23,22 +22,13 @@ import {
 	parsePricingSearch,
 } from "@/domain/pricing-search";
 import { useI18n } from "@/i18n/provider";
+import { pageHead } from "@/seo/pages";
 import { getPricingSummary, verifyCoursePassCheckout } from "@/server/billing";
 
 export const Route = createFileRoute("/pricing")({
 	loader: () => getPricingSummary(),
 	validateSearch: parsePricingSearch,
-	head: () => ({
-		links: [{ rel: "canonical", href: "https://tradely.ai/pricing" }],
-		meta: [
-			{ title: "Tradely pricing" },
-			{
-				name: "description",
-				content:
-					"Explore Tradely membership and course-access options with Stripe-hosted checkout.",
-			},
-		],
-	}),
+	head: () => pageHead("/pricing"),
 	component: PricingPage,
 });
 

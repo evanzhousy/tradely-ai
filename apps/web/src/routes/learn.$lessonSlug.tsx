@@ -23,7 +23,6 @@ import {
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
 import { useAnalytics } from "@/analytics/context";
 import { AccessPanel } from "@/components/access-panel";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
@@ -33,9 +32,11 @@ import { LessonNavigation } from "@/components/lesson-navigation";
 import { PracticeCard } from "@/components/practice-card";
 import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
+import { guidesForLesson } from "@/content/guides";
 import { LearningExercise } from "@/features/learning/learning-exercise";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
+import { pageHead } from "@/seo/pages";
 import { getLessonPageData } from "@/server/lesson";
 import { getCourseProgress } from "@/server/progress";
 
@@ -48,24 +49,7 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 		if (!page.found) throw notFound();
 		return { page, progress };
 	},
-	head: ({ params }) => {
-		const lesson = getLesson(params.lessonSlug);
-		return {
-			links: [
-				{
-					rel: "canonical",
-					href: `https://tradely.ai/learn/${params.lessonSlug}`,
-				},
-			],
-			meta: [
-				{
-					title: lesson
-						? `${lesson.title} — Tradely`
-						: "Lesson not found — Tradely",
-				},
-			],
-		};
-	},
+	head: ({ params }) => pageHead(`/learn/${params.lessonSlug}`),
 	component: LessonPage,
 });
 
@@ -228,6 +212,18 @@ function LessonPage() {
 						</div>
 					</header>
 
+					{guidesForLesson(lesson.id).map((guide) => (
+						<p key={guide.slug} lang="en" className="text-sm leading-6">
+							Free background guide:{" "}
+							<Link
+								to="/guides/$guideSlug"
+								params={{ guideSlug: guide.slug }}
+								className="underline underline-offset-4"
+							>
+								{guide.title}
+							</Link>
+						</p>
+					))}
 					{lesson.prerequisites.length ? (
 						<nav
 							className="flex flex-wrap items-center gap-2 text-sm"

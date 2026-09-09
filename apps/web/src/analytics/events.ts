@@ -18,6 +18,8 @@ export type BillingActionFailureReason =
 export type BillingOffer = "membership" | "lifetime_course";
 
 export type AnalyticsRouteName =
+	| "guides"
+	| "guide"
 	| "home"
 	| "course"
 	| "lesson"
@@ -30,6 +32,24 @@ export type AnalyticsRouteName =
 	| "not_found";
 
 export type AnalyticsEventMap = {
+	guide_demo_started: { guide_id: string; demo_id: string; locale: Locale };
+	guide_demo_completed: { guide_id: string; demo_id: string; locale: Locale };
+	guide_next_step_clicked: {
+		guide_id: string;
+		destination_kind: "free_lesson" | "related_lesson" | "course";
+		lesson_id?: string;
+	};
+	preview_exercise_started: {
+		lesson_id: string;
+		scenario_id: string;
+		scenario_version: number;
+	};
+	preview_exercise_submitted: {
+		lesson_id: string;
+		scenario_id: string;
+		scenario_version: number;
+		result: "practiced" | "demonstrated";
+	};
 	lesson_renderer_changed: {
 		lesson_id: string;
 		scenario_id: string;
@@ -149,6 +169,11 @@ export type AnalyticsEventMap = {
 export type AnalyticsEventName = keyof AnalyticsEventMap;
 
 export const ANALYTICS_EVENT_NAMES = {
+	guide_demo_started: true,
+	guide_demo_completed: true,
+	guide_next_step_clicked: true,
+	preview_exercise_started: true,
+	preview_exercise_submitted: true,
 	lesson_renderer_changed: true,
 	lesson_exercise_started: true,
 	lesson_exercise_submitted: true,
@@ -176,6 +201,16 @@ export const ANALYTICS_EVENT_NAMES = {
 } satisfies Record<AnalyticsEventName, true>;
 
 export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	guide_demo_started: ["guide_id", "demo_id", "locale"],
+	guide_demo_completed: ["guide_id", "demo_id", "locale"],
+	guide_next_step_clicked: ["guide_id", "destination_kind", "lesson_id"],
+	preview_exercise_started: ["lesson_id", "scenario_id", "scenario_version"],
+	preview_exercise_submitted: [
+		"lesson_id",
+		"scenario_id",
+		"scenario_version",
+		"result",
+	],
 	lesson_renderer_changed: [
 		"lesson_id",
 		"scenario_id",
@@ -278,6 +313,8 @@ export function analyticsEnvironment(hostname: string): AnalyticsEnvironment {
 }
 
 export function analyticsRouteName(pathname: string): AnalyticsRouteName {
+	if (pathname === "/guides" || pathname === "/guides/") return "guides";
+	if (pathname.startsWith("/guides/")) return "guide";
 	if (pathname === "/") return "home";
 	if (pathname === "/courses/tradingflow-foundations") return "course";
 	if (pathname.startsWith("/learn/")) return "lesson";

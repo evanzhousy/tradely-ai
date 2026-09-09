@@ -1,6 +1,6 @@
 # Analytics scenarios
 
-This is the implementation contract for Tradely's 24 application events, reviewed
+This is the implementation contract for Tradely's registered application events, reviewed
 on 2026-09-09. The typed names and permitted properties live in
 [`events.ts`](../apps/web/src/analytics/events.ts). Consent, identity, and delivery
 belong to [`AnalyticsProvider`](../apps/web/src/analytics/provider.tsx), with SDK
@@ -120,3 +120,18 @@ a query-free checkout-return event, language-change events, web vitals, and zero
 new events after withdrawal. Signed-in and persistence-failure scenarios were
 verified with isolated tests; no production checkout or learning records were
 changed. Deployment of these source changes is a separate step.
+# Public guides and anonymous previews
+
+The SEO implementation adds these registered events through the existing consent boundary:
+
+| Event | Trigger | Allowed fields |
+|---|---|---|
+| `guide_demo_started` | First active interaction in a public demo run; never on render. | `guide_id`, `demo_id`, `locale` |
+| `guide_demo_completed` | Correct understanding check, once per run whose start was captured. | `guide_id`, `demo_id`, `locale` |
+| `guide_next_step_clicked` | Free lesson, related lesson or curriculum link in a guide. | `guide_id`, `destination_kind`, optional `lesson_id` |
+| `preview_exercise_started` | A public lesson preview successfully opens/restarts, once per run. | `lesson_id`, `scenario_id`, `scenario_version` |
+| `preview_exercise_submitted` | Preview service returns a result, once per run whose start was captured. | `lesson_id`, `scenario_id`, `scenario_version`, `result` |
+
+`page_viewed.route_name` also supports `guides` and `guide`. Public guide content is English. Anonymous preview events are separate from the existing signed-in `lesson_exercise_*` events. No answer, action history, worksheet text or raw referrer query is sent. Actions performed before consent are not replayed afterward. A reset creates a new run; a failed request does not count as a successful open or submission.
+
+These events measure learning behavior, not verified purchases. See [SEO.md](SEO.md) for the publishing and release checks.

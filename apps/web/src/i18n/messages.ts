@@ -40,8 +40,8 @@ const messages = {
 		"hall.loading": "Opening the trading hall…",
 		"hall.static": "Trading hall preview",
 		"home.openingLabel": "A field guide to options research",
-		"home.titleRead": "Learn the market.",
-		"home.titleVerify": "Think for yourself.",
+		"home.titleRead": "Understand options data.",
+		"home.titleVerify": "Practice your reasoning.",
 		"home.intro":
 			"A guided path through options flow, market structure, and evidence. Start with contracts and executions, then build toward independent research.",
 		"home.startFree": "Start learning free",
@@ -93,6 +93,10 @@ const messages = {
 		"nav.mobile": "Mobile navigation",
 		"nav.learn": "Home",
 		"nav.course": "Curriculum",
+		"nav.guides": "Guides",
+		"home.guidesTitle": "Start with a question about options.",
+		"home.guidesDescription":
+			"Three free guides. Worked examples, clear assumptions and a chance to check your understanding.",
 		"nav.pricing": "Pricing",
 		"nav.openTradingFlow": "Open TradingFlow",
 		"nav.openMenu": "Open menu",
@@ -331,8 +335,8 @@ const messages = {
 		"hall.loading": "正在展开交易大厅…",
 		"hall.static": "交易大厅预览",
 		"home.openingLabel": "期权研究的实践指南",
-		"home.titleRead": "理解市场。",
-		"home.titleVerify": "独立思考。",
+		"home.titleRead": "读懂期权数据。",
+		"home.titleVerify": "练习独立判断。",
 		"home.intro":
 			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
 		"home.startFree": "免费开始学习",
@@ -381,6 +385,10 @@ const messages = {
 		"nav.mobile": "移动导航",
 		"nav.learn": "首页",
 		"nav.course": "课程目录",
+		"nav.guides": "知识指南",
+		"home.guidesTitle": "从一个期权问题开始。",
+		"home.guidesDescription":
+			"三篇免费英文指南：示例计算、明确假设与理解检查。",
 		"nav.pricing": "会员",
 		"nav.openTradingFlow": "打开 TradingFlow",
 		"nav.openMenu": "打开菜单",

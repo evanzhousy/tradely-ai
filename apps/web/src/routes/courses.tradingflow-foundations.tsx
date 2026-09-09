@@ -16,26 +16,12 @@ import { getFreeLessons } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
+import { pageHead } from "@/seo/pages";
 import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/courses/tradingflow-foundations")({
 	loader: () => getCourseProgress(),
-	head: () => ({
-		links: [
-			{
-				rel: "canonical",
-				href: "https://tradely.ai/courses/tradingflow-foundations",
-			},
-		],
-		meta: [
-			{ title: "Evidence-Led Options Research — Tradely" },
-			{
-				name: "description",
-				content:
-					"A platform-independent course in contracts, execution, flow, Greeks, market structure and research.",
-			},
-		],
-	}),
+	head: () => pageHead("/courses/tradingflow-foundations"),
 	component: CoursePage,
 });
 

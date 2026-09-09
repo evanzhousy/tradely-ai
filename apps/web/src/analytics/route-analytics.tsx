@@ -27,7 +27,10 @@ export function RouteAnalytics() {
 			capturePageView({
 				route_name: analyticsRouteName(path),
 				path,
-				locale: localeRef.current,
+				locale:
+					path === "/guides" || path.startsWith("/guides/")
+						? "en"
+						: localeRef.current,
 			})
 		) {
 			lastCapturedPathRef.current = path;

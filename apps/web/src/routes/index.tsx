@@ -8,17 +8,20 @@ import {
 	WorkflowIcon,
 } from "lucide-react";
 import { useBillingStatusAnalytics } from "@/analytics/billing-status";
+import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingResearchDemo } from "@/components/landing-research-demo";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
 import { getFreeLessons } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
+import { pageHead } from "@/seo/pages";
+import { organizationStructuredData } from "@/seo/structured-data";
 import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/")({
 	loader: () => getCourseProgress(),
-	head: () => ({ links: [{ rel: "canonical", href: "https://tradely.ai/" }] }),
+	head: () => ({ ...pageHead("/"), scripts: [organizationStructuredData()] }),
 	component: HomeComponent,
 });
 
@@ -134,6 +137,21 @@ function HomeComponent() {
 					</div>
 					<p className="landing-partner-note">{t("home.partnerDisclosure")}</p>
 				</div>
+			</section>
+			<section
+				className="observatory-container flex flex-col gap-6 py-12"
+				aria-labelledby="home-guides-title"
+			>
+				<h2
+					id="home-guides-title"
+					className="font-semibold text-3xl text-display"
+				>
+					{t("home.guidesTitle")}
+				</h2>
+				<p className="max-w-2xl text-muted-foreground leading-7">
+					{t("home.guidesDescription")}
+				</p>
+				<GuideCards />
 			</section>
 			<section
 				className="landing-path observatory-container"
