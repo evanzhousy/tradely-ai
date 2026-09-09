@@ -20,7 +20,7 @@ STRIPE_API_KEY=<test or production restricted key>
 STRIPE_ACCOUNT_ID=acct_...
 STRIPE_MEMBERSHIP_PRICE_ID=price_...
 STRIPE_COURSE_PASS_PRICE_ID=price_...
-LIFETIME_CHECKOUT_ENABLED=false
+LIFETIME_CHECKOUT_ENABLED=true
 ```
 
 Tradely reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision. Use
@@ -41,6 +41,11 @@ an optional deployment preference.
 `LIFETIME_CHECKOUT_ENABLED` controls only the creation and display of new
 one-time purchases. Verification, restore, and previously granted access must
 continue working when it is false.
+
+Local test checkout and production checkout are enabled as of 2026-09-09.
+Keep the local `apps/web/.env` on Stripe test mode and the separate test database.
+Changing the production flag requires a new deployment before it affects the
+live page; setting it back to `false` and redeploying remains the rollback.
 
 Preview Checkout sessions return to the current Vercel deployment using the
 platform-provided `VERCEL_URL`. Production and local callbacks continue to use
@@ -181,6 +186,42 @@ title, header, and Link copy. Both proof Sessions were cancelled and granted no
 access. These shared-account settings can affect every product on the account.
 
 ## Production gate
+
+### 2026-09-09 activation
+
+The owner authorized enabling lifetime checkout locally and in production.
+The offer remains USD 49.00 once for this course and its revisions, alongside
+USD 9.90/month membership. Future distinct courses are excluded from the pass.
+
+- Local `apps/web/.env` already had the flag enabled. The running pricing page
+  displayed both offers; the test database schema and all 32 test preflight
+  checks passed with a fresh unpaid Checkout Session, which was expired.
+- Vercel Production now has `LIFETIME_CHECKOUT_ENABLED=true`. Production's
+  sensitive Stripe key stayed inside Vercel during verification.
+- The initial production preflight found one mismatch: the live Product was
+  named `Lifetime Course Pass`. Its name was corrected to the canonical
+  `Evidence-Led Options Research — Lifetime Course Pass`. The existing
+  USD 49.00 Price, IDs, and entitlement metadata were retained.
+- All 32 production launch checks passed in verification deployment
+  `dpl_CsESwL3vB8wR2MYRBixoHbu1L9Vc`. The Course Pass database columns were
+  present, and the production database branch differed from local test.
+  The live-mode probe Session had USD 49.00, Tradely.ai branding, and
+  `payment_status=unpaid`; it was expired without a charge or entitlement grant.
+- The final release `dpl_M2PkaTRbij55NXDoCa9Yysd3wYdV` reused the source of the
+  previously live deployment `dpl_5vY9u1wFhynbGN7gp5zfgUY4EUVU`, keeping unrelated
+  local edits out of production. Its build explicitly used that source's
+  recorded revision `4106599121b22f407d687df6e640700056e4a8d6` for
+  `VITE_APP_RELEASE`; 113 PostHog symbol chunks uploaded successfully.
+- The temporary server-only launch-probe configuration was removed before the
+  final build. The Vercel project's default build-command setting remains
+  unchanged. Candidate pricing verified both amounts and the lifetime purchase
+  link before the deployment was promoted to production.
+- After promotion, `https://www.tradely.ai/pricing` served the final deployment
+  and displayed USD 49.00 one-time beside USD 9.90/month. The lifetime purchase
+  link opened sign-in with `/pricing` retained as the return destination. The
+  immediate deployment-scoped error-log scan returned zero records.
+- Forty-three focused billing/access tests passed. This activation verifies
+  live checkout creation and pricing, not a completed live payment or refund.
 
 Before enabling production Checkout:
 
