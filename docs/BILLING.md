@@ -242,3 +242,7 @@ Before enabling production Checkout:
 
 Rollback is `LIFETIME_CHECKOUT_ENABLED=false`. Do not delete the Product/Price,
 clear entitlement columns, or revoke existing purchasers during rollback.
+
+## Optional coaching pilot
+
+The AI coaching pilot uses current course access and a separate server-side invited cohort. Free-access users can start one complete two-round coaching session per UTC day; full-course users can start three. No new Stripe product or price is created. These are temporary pilot allowances and do not extend the Lifetime Course Pass into a promise of unlimited lifetime AI. Existing reservations may finish after the daily admission reset, subject to current access and the global service switch. See [AI-COACH.md](AI-COACH.md).

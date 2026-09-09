@@ -3,6 +3,7 @@ import { responseComplete } from "@/domain/learning/types";
 import {
 	CoachingError,
 	type CoachingSnapshot,
+	type CoachingSnapshotView,
 	coachingFeedbackSchema,
 } from "./types";
 
@@ -52,9 +53,9 @@ export function validateFeedback(
 }
 
 /** An input change is evidence, not permission to overwrite the first snapshot. */
-export function sameWork(a: CoachingSnapshot, b: CoachingSnapshot) {
+export function sameWork(a: CoachingSnapshotView, b: CoachingSnapshotView) {
 	// PostgreSQL JSONB reorders object keys. Compare values in an explicit canonical order.
-	const work = (snapshot: CoachingSnapshot) =>
+	const work = (snapshot: CoachingSnapshotView) =>
 		JSON.stringify({
 			reason: snapshot.reason,
 			answers: snapshot.answers.map((answer) => [

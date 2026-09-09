@@ -12,9 +12,9 @@ Tradely serves option traders who want a structured path from market concepts to
 
 ## Product Purpose
 
-Tradely is a video-led options learning hub. It organizes lessons into an ordered curriculum, records individual lesson progress, and gives learners clear practice assignments in TradingFlow, the partnered external options-analysis product.
+Tradely is an interactive options learning hub. Its 36-lesson curriculum connects worked explanations, guided cases, independent practice, saved research and partnered TradingFlow assignments. Current-edition interactive material is primary while replacement lesson videos are pending.
 
-Success means a learner can understand a concept, see it demonstrated, practice the corresponding workflow in TradingFlow, and resume the Tradely curriculum without losing their place.
+Success means a learner can explain a concept, make a bounded judgment from evidence, revise it when warranted, and apply it independently to a different case. Learners can resume saved work and optionally practice the corresponding workflow in TradingFlow.
 
 ## Positioning
 
@@ -32,15 +32,19 @@ Tradely connects options education to an actual analysis workflow. Lessons do no
 
 - Full-stack framework: TanStack Start with React and TypeScript.
 - Identity: a dedicated Tradely Neon Auth application.
-- Billing: a dedicated Tradely Stripe account using Checkout and live Stripe access checks.
+- Billing: Tradely-specific Stripe Checkout offers and live Stripe access checks.
 - Persistence: a dedicated Neon PostgreSQL database accessed through Drizzle.
-- MVP persistence is intentionally limited to `app_user` and `lesson_progress`.
+- Persistence includes `app_user`, `lesson_progress` and versioned `lesson_attempt` records. The optional coaching pilot adds `coaching_session` and `coaching_generation`; it does not create a separate mastery or entitlement system.
 - Courses, modules, lessons, ordering, access requirements, and prerequisites are version-controlled content, not database tables.
-- No quiz system in the MVP.
+- Independent numeric and choice criteria use deterministic assessment. Written work remains subject to self or human review; AI feedback never certifies mastery.
 - Paid lesson bodies are authorized on the server; client-side lock presentation is not authorization.
 - Tradely does not exchange Neon Auth IDs, Stripe Customers, database records, or private user data with TradingFlow.
 - TradingFlow outbound links carry only non-PII course attribution.
 - TradingFlow accounts or subscriptions may be required separately and must be described honestly.
+
+## AI Practice Coaching
+
+The optional AI practice coach works inside guided cases for `audited-boundary`, `rank-symbols` and `rank-contracts`. Learners save their reasoning, receive evidence-linked feedback, revise it and then use the existing independent case. The pilot requires a signed-in allowlisted account, preserves course access checks and offers two feedback rounds per session. It is disabled by default pending configuration and model-quality review. Pilot AI allowances do not promise unlimited lifetime AI usage with the Course Pass.
 
 ## Brand Commitments
 
@@ -61,7 +65,7 @@ Tradely connects options education to an actual analysis workflow. Lessons do no
 ## Product Principles
 
 1. Teach a decision workflow, not isolated terminology.
-2. Use TradingFlow for real practice rather than building toy analysis tools inside Tradely.
+2. Use synthetic cases to teach and check concepts; keep live market analysis on partnered tools such as TradingFlow.
 3. Keep identity, billing, persistence, and partner boundaries explicit.
 4. Minimize persistent concepts and derive curriculum state from version-controlled content.
 5. Preserve evidence, uncertainty, and risk language appropriate for options education.

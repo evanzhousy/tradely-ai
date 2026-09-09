@@ -16,6 +16,7 @@ import {
 import {
 	Field,
 	FieldDescription,
+	FieldGroup,
 	FieldLabel,
 } from "@tradely/ui/components/field";
 import { Textarea } from "@tradely/ui/components/textarea";
@@ -53,6 +54,7 @@ export function CoachingPanel({
 	onHint,
 	transport,
 	onEvent,
+	onDraftChange,
 }: {
 	view: LearningView;
 	locale: "en" | "zh";
@@ -60,6 +62,7 @@ export function CoachingPanel({
 	onHint: () => void;
 	transport: CoachingTransport;
 	onEvent?: (event: CoachingEvent) => void;
+	onDraftChange?: (dirty: boolean) => void;
 }) {
 	const id = useId();
 	const [data, setData] = useState<CoachingView | null>(null);
@@ -81,6 +84,14 @@ export function CoachingPanel({
 	const accept = useCallback(
 		(result: CoachingResponse) => {
 			if (!result.ok) {
+				if (
+					["signed_out", "access_denied", "not_found"].includes(result.reason)
+				) {
+					setData(null);
+					setDraft("");
+					savedReason.current = "";
+					latestRevision.current = -1;
+				}
 				setError(result.reason);
 				return;
 			}
@@ -164,14 +175,36 @@ export function CoachingPanel({
 		}
 	};
 	const session = data?.session;
+	const extra = data?.reasonQuestionId === null;
+	const dirty = extra && draft !== (session?.draftReason ?? "");
+	useEffect(() => {
+		onDraftChange?.(dirty);
+		return () => onDraftChange?.(false);
+	}, [dirty, onDraftChange]);
 	if (!session && !canCoach(view)) return null;
 	if (!data?.available && !session && !error) return null;
 	if (!session && (error === "not_eligible" || error === "disabled"))
 		return null;
 	const initial = session?.generations.find((g) => g.round === "initial");
 	const revised = session?.generations.find((g) => g.round === "revision");
-	const extra = data?.reasonQuestionId === null;
-	const dirty = extra && draft !== (session?.draftReason ?? "");
+	const original = session?.initial;
+	const currentReason = data?.reasonQuestionId
+		? view.answers[data.reasonQuestionId]
+		: session?.draftReason;
+	const revisionChanged =
+		!original ||
+		original.reason !== currentReason ||
+		original.answers.some((answer) => {
+			const question = view.step.questions.find(
+				(q) => q.prompt[original.locale] === answer.question,
+			);
+			if (!question) return true;
+			return (
+				(question.choices.find((c) => c.id === view.answers[question.id])
+					?.label[original.locale] ?? view.answers[question.id]) !==
+				answer.answer
+			);
+		});
 	const editable = !!data?.available && canCoach(view) && !session?.deleted;
 	const locked = blocked || busy || !editable;
 	const reviewing =
@@ -212,7 +245,9 @@ export function CoachingPanel({
 	return (
 		<Card data-analytics-private aria-labelledby={`${id}-title`}>
 			<CardHeader>
-				<CardTitle id={`${id}-title`}>{text("title")}</CardTitle>
+				<CardTitle id={`${id}-title`}>
+					<h3>{text("title")}</h3>
+				</CardTitle>
 				<CardDescription>{text("intro")}</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-5">
@@ -267,32 +302,45 @@ export function CoachingPanel({
 						) : null}
 						{editable && !revised ? (
 							extra ? (
-								<Field data-disabled={locked || reviewing}>
-									<FieldLabel htmlFor={`${id}-reason`}>
-										{text("reason")}
-									</FieldLabel>
-									<Textarea
-										id={`${id}-reason`}
-										rows={4}
-										maxLength={1800}
-										value={draft}
-										onChange={(e) => setDraft(e.target.value)}
-										disabled={locked || reviewing}
-										aria-describedby={`${id}-help`}
-									/>
-									<FieldDescription id={`${id}-help`}>
-										{text("reasonHelp")}
-									</FieldDescription>
-									<Button
-										variant="outline"
-										size="sm"
-										className="self-start"
-										disabled={locked || reviewing || !dirty}
-										onClick={() => void run({ type: "save", reason: draft })}
-									>
-										{dirty ? text("save") : text("saved")}
-									</Button>
-								</Field>
+								<FieldGroup>
+									<Field data-disabled={locked || reviewing}>
+										<FieldLabel htmlFor={`${id}-reason`}>
+											{text("reason")}
+										</FieldLabel>
+										<Textarea
+											id={`${id}-reason`}
+											rows={4}
+											maxLength={1800}
+											value={draft}
+											onChange={(e) => setDraft(e.target.value)}
+											disabled={locked || reviewing}
+											aria-describedby={`${id}-help`}
+										/>
+										<FieldDescription id={`${id}-help`}>
+											{text("reasonHelp")}
+										</FieldDescription>
+										<Button
+											variant="outline"
+											size="sm"
+											className="self-start"
+											disabled={locked || reviewing || !dirty}
+											onClick={() => void run({ type: "save", reason: draft })}
+										>
+											{dirty ? text("save") : text("saved")}
+										</Button>
+									</Field>
+									{dirty ? (
+										<Button
+											variant="ghost"
+											size="sm"
+											className="self-start"
+											disabled={busy}
+											onClick={() => setDraft(session?.draftReason ?? "")}
+										>
+											{locale === "zh" ? "放弃修改" : "Discard edits"}
+										</Button>
+									) : null}
+								</FieldGroup>
 							) : (
 								<p className="text-muted-foreground text-sm">
 									{text("sourceReason")}
@@ -317,7 +365,19 @@ export function CoachingPanel({
 						) : null}
 						{revised?.status === "succeeded" ? (
 							<p role="status" className="text-sm">
-								{text("done")}
+								{view.phase === "complete"
+									? locale === "zh"
+										? "辅导记录已保存，独立案例结果单独展示。"
+										: "Coaching saved. Your independent result is shown separately."
+									: view.step.kind === "independent"
+										? locale === "zh"
+											? "这是引导案例的辅导记录，请独立完成当前案例。"
+											: "This record belongs to the guided case. Complete the current case independently."
+										: view.phase === "feedback"
+											? locale === "zh"
+												? "辅导已完成，可以进入独立案例。"
+												: "Coaching complete. Continue to the independent case."
+											: text("done")}
 							</p>
 						) : null}
 					</>
@@ -332,6 +392,7 @@ export function CoachingPanel({
 							<Button
 								disabled={
 									locked ||
+									!revisionChanged ||
 									dirty ||
 									reviewing ||
 									(extra && (session?.draftReason.trim().length ?? 0) < 40)

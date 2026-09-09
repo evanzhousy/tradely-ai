@@ -1,754 +1,727 @@
 {
-  "id": "1b945e42-3b00-4070-abea-810428d438ec",
-  "prevId": "b5406ec2-b889-4e6f-a8af-f95cd4f39a7e",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.app_user": {
-      "name": "app_user",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "stripe_customer_id": {
-          "name": "stripe_customer_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stripe_course_pass_checkout_session_id": {
-          "name": "stripe_course_pass_checkout_session_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "course_pass_granted_at": {
-          "name": "course_pass_granted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "course_pass_revoked_at": {
-          "name": "course_pass_revoked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "access_overrides": {
-          "name": "access_overrides",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "app_user_stripe_customer_id_unique": {
-          "name": "app_user_stripe_customer_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "stripe_customer_id"
-          ]
-        },
-        "app_user_stripe_course_pass_checkout_session_id_unique": {
-          "name": "app_user_stripe_course_pass_checkout_session_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "stripe_course_pass_checkout_session_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.coaching_generation": {
-      "name": "coaching_generation",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "session_id": {
-          "name": "session_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "round": {
-          "name": "round",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "command_id": {
-          "name": "command_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "input_hash": {
-          "name": "input_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "model": {
-          "name": "model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "prompt_version": {
-          "name": "prompt_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "feedback": {
-          "name": "feedback",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "error_code": {
-          "name": "error_code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "input_tokens": {
-          "name": "input_tokens",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "output_tokens": {
-          "name": "output_tokens",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cost_micros": {
-          "name": "cost_micros",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "elapsed_ms": {
-          "name": "elapsed_ms",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "lease_expires_at": {
-          "name": "lease_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "completed_at": {
-          "name": "completed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "coaching_generation_session_round": {
-          "name": "coaching_generation_session_round",
-          "columns": [
-            {
-              "expression": "session_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "round",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "coaching_generation_command": {
-          "name": "coaching_generation_command",
-          "columns": [
-            {
-              "expression": "command_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "coaching_generation_session_id_coaching_session_id_fk": {
-          "name": "coaching_generation_session_id_coaching_session_id_fk",
-          "tableFrom": "coaching_generation",
-          "tableTo": "coaching_session",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "coaching_generation_valid": {
-          "name": "coaching_generation_valid",
-          "value": "\"coaching_generation\".\"round\" in ('initial', 'revision') and \"coaching_generation\".\"status\" in ('running', 'succeeded', 'failed', 'indeterminate')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.coaching_session": {
-      "name": "coaching_session",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "attempt_id": {
-          "name": "attempt_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lesson_id": {
-          "name": "lesson_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "scenario_id": {
-          "name": "scenario_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "scenario_version": {
-          "name": "scenario_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rubric_version": {
-          "name": "rubric_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "step_id": {
-          "name": "step_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "locale": {
-          "name": "locale",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "draft_reason": {
-          "name": "draft_reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "initial_snapshot": {
-          "name": "initial_snapshot",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "revised_snapshot": {
-          "name": "revised_snapshot",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "last_command_id": {
-          "name": "last_command_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "quota_day": {
-          "name": "quota_day",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reserved_micros": {
-          "name": "reserved_micros",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "model": {
-          "name": "model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "completed_at": {
-          "name": "completed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "coaching_session_attempt_step": {
-          "name": "coaching_session_attempt_step",
-          "columns": [
-            {
-              "expression": "attempt_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "step_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "coaching_session_user_day": {
-          "name": "coaching_session_user_day",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "quota_day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "coaching_session_day": {
-          "name": "coaching_session_day",
-          "columns": [
-            {
-              "expression": "quota_day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "coaching_session_user_id_app_user_user_id_fk": {
-          "name": "coaching_session_user_id_app_user_user_id_fk",
-          "tableFrom": "coaching_session",
-          "tableTo": "app_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "coaching_session_attempt_id_lesson_attempt_id_fk": {
-          "name": "coaching_session_attempt_id_lesson_attempt_id_fk",
-          "tableFrom": "coaching_session",
-          "tableTo": "lesson_attempt",
-          "columnsFrom": [
-            "attempt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "coaching_session_valid": {
-          "name": "coaching_session_valid",
-          "value": "\"coaching_session\".\"revision\" >= 0 and \"coaching_session\".\"reserved_micros\" >= 0 and length(\"coaching_session\".\"draft_reason\") <= 1800 and \"coaching_session\".\"locale\" in ('en', 'zh')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.lesson_attempt": {
-      "name": "lesson_attempt",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lesson_id": {
-          "name": "lesson_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "scenario_id": {
-          "name": "scenario_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "scenario_version": {
-          "name": "scenario_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'in_progress'"
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "state": {
-          "name": "state",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "assessment": {
-          "name": "assessment",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "last_command_id": {
-          "name": "last_command_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "submitted_at": {
-          "name": "submitted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "lesson_attempt_active_user_lesson": {
-          "name": "lesson_attempt_active_user_lesson",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "lesson_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"lesson_attempt\".\"status\" = 'in_progress'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "lesson_attempt_user_lesson_created": {
-          "name": "lesson_attempt_user_lesson_created",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "lesson_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "lesson_attempt_user_id_app_user_user_id_fk": {
-          "name": "lesson_attempt_user_id_app_user_user_id_fk",
-          "tableFrom": "lesson_attempt",
-          "tableTo": "app_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "lesson_attempt_revision_nonnegative": {
-          "name": "lesson_attempt_revision_nonnegative",
-          "value": "\"lesson_attempt\".\"revision\" >= 0"
-        },
-        "lesson_attempt_version_positive": {
-          "name": "lesson_attempt_version_positive",
-          "value": "\"lesson_attempt\".\"scenario_version\" > 0"
-        },
-        "lesson_attempt_status_valid": {
-          "name": "lesson_attempt_status_valid",
-          "value": "\"lesson_attempt\".\"status\" in ('in_progress', 'submitted', 'retired')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.lesson_progress": {
-      "name": "lesson_progress",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lesson_id": {
-          "name": "lesson_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_version": {
-          "name": "content_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "last_position_seconds": {
-          "name": "last_position_seconds",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "started_at": {
-          "name": "started_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "completed_at": {
-          "name": "completed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "lesson_progress_user_id_app_user_user_id_fk": {
-          "name": "lesson_progress_user_id_app_user_user_id_fk",
-          "tableFrom": "lesson_progress",
-          "tableTo": "app_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "lesson_progress_user_id_lesson_id_pk": {
-          "name": "lesson_progress_user_id_lesson_id_pk",
-          "columns": [
-            "user_id",
-            "lesson_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    }
-  },
-  "enums": {},
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "views": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+	"id": "1b945e42-3b00-4070-abea-810428d438ec",
+	"prevId": "b5406ec2-b889-4e6f-a8af-f95cd4f39a7e",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.app_user": {
+			"name": "app_user",
+			"schema": "",
+			"columns": {
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"stripe_customer_id": {
+					"name": "stripe_customer_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"stripe_course_pass_checkout_session_id": {
+					"name": "stripe_course_pass_checkout_session_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"course_pass_granted_at": {
+					"name": "course_pass_granted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"course_pass_revoked_at": {
+					"name": "course_pass_revoked_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"access_overrides": {
+					"name": "access_overrides",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"app_user_stripe_customer_id_unique": {
+					"name": "app_user_stripe_customer_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["stripe_customer_id"]
+				},
+				"app_user_stripe_course_pass_checkout_session_id_unique": {
+					"name": "app_user_stripe_course_pass_checkout_session_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["stripe_course_pass_checkout_session_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.coaching_generation": {
+			"name": "coaching_generation",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"session_id": {
+					"name": "session_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"round": {
+					"name": "round",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"command_id": {
+					"name": "command_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"input_hash": {
+					"name": "input_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"model": {
+					"name": "model",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"prompt_version": {
+					"name": "prompt_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"feedback": {
+					"name": "feedback",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"error_code": {
+					"name": "error_code",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"input_tokens": {
+					"name": "input_tokens",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"output_tokens": {
+					"name": "output_tokens",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"cost_micros": {
+					"name": "cost_micros",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"elapsed_ms": {
+					"name": "elapsed_ms",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"lease_expires_at": {
+					"name": "lease_expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"coaching_generation_session_round": {
+					"name": "coaching_generation_session_round",
+					"columns": [
+						{
+							"expression": "session_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "round",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"coaching_generation_command": {
+					"name": "coaching_generation_command",
+					"columns": [
+						{
+							"expression": "command_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"coaching_generation_session_id_coaching_session_id_fk": {
+					"name": "coaching_generation_session_id_coaching_session_id_fk",
+					"tableFrom": "coaching_generation",
+					"tableTo": "coaching_session",
+					"columnsFrom": ["session_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"coaching_generation_valid": {
+					"name": "coaching_generation_valid",
+					"value": "\"coaching_generation\".\"round\" in ('initial', 'revision') and \"coaching_generation\".\"status\" in ('running', 'succeeded', 'failed', 'indeterminate')"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.coaching_session": {
+			"name": "coaching_session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"attempt_id": {
+					"name": "attempt_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"scenario_id": {
+					"name": "scenario_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"scenario_version": {
+					"name": "scenario_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"rubric_version": {
+					"name": "rubric_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"step_id": {
+					"name": "step_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"locale": {
+					"name": "locale",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"draft_reason": {
+					"name": "draft_reason",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "''"
+				},
+				"initial_snapshot": {
+					"name": "initial_snapshot",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"revised_snapshot": {
+					"name": "revised_snapshot",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"revision": {
+					"name": "revision",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"last_command_id": {
+					"name": "last_command_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"quota_day": {
+					"name": "quota_day",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"reserved_micros": {
+					"name": "reserved_micros",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"model": {
+					"name": "model",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"coaching_session_attempt_step": {
+					"name": "coaching_session_attempt_step",
+					"columns": [
+						{
+							"expression": "attempt_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "step_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"coaching_session_user_day": {
+					"name": "coaching_session_user_day",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "quota_day",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"coaching_session_day": {
+					"name": "coaching_session_day",
+					"columns": [
+						{
+							"expression": "quota_day",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"coaching_session_user_id_app_user_user_id_fk": {
+					"name": "coaching_session_user_id_app_user_user_id_fk",
+					"tableFrom": "coaching_session",
+					"tableTo": "app_user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["user_id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"coaching_session_attempt_id_lesson_attempt_id_fk": {
+					"name": "coaching_session_attempt_id_lesson_attempt_id_fk",
+					"tableFrom": "coaching_session",
+					"tableTo": "lesson_attempt",
+					"columnsFrom": ["attempt_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"coaching_session_valid": {
+					"name": "coaching_session_valid",
+					"value": "\"coaching_session\".\"revision\" >= 0 and \"coaching_session\".\"reserved_micros\" >= 0 and length(\"coaching_session\".\"draft_reason\") <= 1800 and \"coaching_session\".\"locale\" in ('en', 'zh')"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.lesson_attempt": {
+			"name": "lesson_attempt",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"scenario_id": {
+					"name": "scenario_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"scenario_version": {
+					"name": "scenario_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'in_progress'"
+				},
+				"revision": {
+					"name": "revision",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"state": {
+					"name": "state",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"assessment": {
+					"name": "assessment",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"last_command_id": {
+					"name": "last_command_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"submitted_at": {
+					"name": "submitted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"lesson_attempt_active_user_lesson": {
+					"name": "lesson_attempt_active_user_lesson",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "lesson_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"where": "\"lesson_attempt\".\"status\" = 'in_progress'",
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"lesson_attempt_user_lesson_created": {
+					"name": "lesson_attempt_user_lesson_created",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "lesson_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "created_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"lesson_attempt_user_id_app_user_user_id_fk": {
+					"name": "lesson_attempt_user_id_app_user_user_id_fk",
+					"tableFrom": "lesson_attempt",
+					"tableTo": "app_user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["user_id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {
+				"lesson_attempt_revision_nonnegative": {
+					"name": "lesson_attempt_revision_nonnegative",
+					"value": "\"lesson_attempt\".\"revision\" >= 0"
+				},
+				"lesson_attempt_version_positive": {
+					"name": "lesson_attempt_version_positive",
+					"value": "\"lesson_attempt\".\"scenario_version\" > 0"
+				},
+				"lesson_attempt_status_valid": {
+					"name": "lesson_attempt_status_valid",
+					"value": "\"lesson_attempt\".\"status\" in ('in_progress', 'submitted', 'retired')"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.lesson_progress": {
+			"name": "lesson_progress",
+			"schema": "",
+			"columns": {
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"content_version": {
+					"name": "content_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"last_position_seconds": {
+					"name": "last_position_seconds",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"started_at": {
+					"name": "started_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"lesson_progress_user_id_app_user_user_id_fk": {
+					"name": "lesson_progress_user_id_app_user_user_id_fk",
+					"tableFrom": "lesson_progress",
+					"tableTo": "app_user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["user_id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"lesson_progress_user_id_lesson_id_pk": {
+					"name": "lesson_progress_user_id_lesson_id_pk",
+					"columns": ["user_id", "lesson_id"]
+				}
+			},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
 }

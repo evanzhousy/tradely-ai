@@ -38,6 +38,12 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					],
 				},
 				{
+					heading: "Optional AI practice coaching",
+					paragraphs: [
+						"If you choose to start an enabled coaching session, Tradely sends the current guided case, your saved explanation and relevant earlier feedback to Anthropic through Vercel AI Gateway. We do not include your email, billing identifiers, other learners or future independent cases. We save your coaching text and feedback in your account until you delete the coaching record or request account deletion. Deleting coaching does not delete original lesson answers. Operational token and cost details are scheduled for removal after 30 days; a minimal reservation marker remains while an unfinished session can still be completed. Coaching text is excluded from product analytics and session replay. Provider processing and retention also follow the applicable provider terms and configuration; we do not promise zero provider retention.",
+					],
+				},
+				{
 					heading: "Billing information",
 					paragraphs: [
 						"Tradely uses Stripe-hosted checkout for recurring membership and one-time Course Pass purchases, plus billing management for subscriptions. Stripe processes payment-card details and billing transactions; Tradely stores a Stripe customer reference and verified entitlement state needed to decide which lessons are available. Tradely does not receive or store your full card number.",
@@ -210,6 +216,12 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					paragraphs: [
 						"创建或使用 Tradely 账户时，我们会从 Neon Auth 接收你提交的身份和联系方式，例如姓名、邮箱地址和账户标识符。",
 						"为提供学习中心功能，我们会记录课程完成状态、视频播放位置、内容版本和时间戳。如果你允许分析，我们还会通过 PostHog 和 Google Analytics 4 接收有限的页面使用、学习里程碑、浏览器性能和错误诊断信息。PostHog 还会采集经过遮盖的会话回放以及点击、鼠标移动和滚动热图，以改进易用性。回放文字和输入内容会被遮盖；受保护的课程内容、图片、视频、画布和嵌入页面会被屏蔽。回放保留 30 天。PostHog 可能临时处理客户端 IP 用于粗略地区和机器人识别，但 Tradely 项目会丢弃该 IP，不把它与事件一起保存。Google Analytics 可能处理设备和大致位置数据用于汇总报告。Tradely 会从自定义事件载荷中移除查询参数，Google Analytics 会遮盖邮箱地址和选定的敏感查询键。Tradely 不会向任一分析服务发送课程正文、付款信息或邮箱地址。",
+					],
+				},
+				{
+					heading: "可选 AI 练习辅导",
+					paragraphs: [
+						"如果你选择开始已开放的辅导，Tradely 会经 Vercel AI Gateway 向 Anthropic 发送当前引导案例、你保存的解释及相关先前反馈，不附带邮箱、账单标识、其他学习者资料或未来独立案例。辅导文字与反馈保存在账户中，直至你删除辅导记录或申请删除账户。删除辅导不会删除原课程答案。运营用 token 与费用明细计划在 30 天后清理，未完成辅导保留必要的最小额度预留标记，以便继续完成。辅导文字不进入产品分析和会话回放。提供方处理与保留还适用其条款和实际配置，我们不承诺提供方零保留。",
 					],
 				},
 				{

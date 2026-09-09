@@ -83,3 +83,7 @@ The exercise clears its client state when Neon Auth identity changes and ignores
 - No database: previews work; account progress reports unavailable without fabricating state.
 - Stripe lookup failure: paid access is not revoked or described as unpaid; the UI asks the learner to retry.
 - Protected media failure: the authorized written lesson remains available and the UI reports that video could not be issued.
+
+## Optional AI practice coach
+
+The additive coaching implementation is described in [AI-COACH.md](AI-COACH.md). Migration `0004_coaching_records` adds two formative-coaching tables to the three learning/account tables described above. A database-atomic command reserves both feedback rounds, persists input snapshots and deduplicates executions. Learning attempts, deterministic independent grading, consent, and course access remain authoritative. The default configuration is disabled; local implementation and tests do not establish provider quality, hosted migration or deployment readiness.

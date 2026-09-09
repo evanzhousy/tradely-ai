@@ -6,6 +6,7 @@ import { exampleFeedback } from "../src/domain/coaching/test-fixtures";
 import {
 	CoachingError,
 	type CoachingSessionView,
+	projectCoachingSnapshot,
 } from "../src/domain/coaching/types";
 import type { CoachingTransport } from "../src/features/learning/coaching-panel";
 import { buildCoachingSnapshot } from "../src/server/coaching-context.server";
@@ -67,8 +68,9 @@ export function coachingFixture(
 						sameWork(session.initial, snapshot)
 					)
 						throw new CoachingError("incomplete");
-					if (input.action.round === "initial") session.initial = snapshot;
-					else session.revised = snapshot;
+					if (input.action.round === "initial")
+						session.initial = projectCoachingSnapshot(snapshot);
+					else session.revised = projectCoachingSnapshot(snapshot);
 					await new Promise((resolve) => setTimeout(resolve, 350));
 					session.generations.push({
 						id: crypto.randomUUID(),

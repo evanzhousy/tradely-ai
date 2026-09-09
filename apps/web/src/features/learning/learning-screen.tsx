@@ -199,6 +199,7 @@ function LearningScreenContent({
 	const local = (value: LearningCopy) => value[locale];
 	const answering = view?.phase === "answer";
 	const [drafts, setDrafts] = useState<Record<string, boolean>>({});
+	const [coachingDraft, setCoachingDraft] = useState(false);
 	const onDraftChange = useCallback(
 		(id: string, dirty: boolean) =>
 			setDrafts((previous) =>
@@ -529,6 +530,7 @@ function LearningScreenContent({
 								view={view}
 								locale={locale}
 								transport={coachingTransport}
+								onDraftChange={setCoachingDraft}
 								onEvent={onCoachingEvent}
 								blocked={locked || !ready}
 								onHint={() => onAction({ type: "hint" })}
@@ -596,7 +598,7 @@ function LearningScreenContent({
 					) : answering ? (
 						<>
 							<Button
-								disabled={locked || !ready}
+								disabled={locked || !ready || coachingDraft}
 								onClick={() =>
 									onAction({
 										type:
@@ -610,7 +612,12 @@ function LearningScreenContent({
 										: "Continue to practice"
 									: view.step.kind === "prediction"
 										? text("commit")
-										: text("submit")}
+										: view.step.kind === "guided" &&
+												isCoachingLesson(view.lessonId)
+											? locale === "zh"
+												? "提交引导答案"
+												: "Submit guided answers"
+											: text("submit")}
 								<ArrowRightIcon data-icon="inline-end" />
 							</Button>
 							{!view.step.hint && view.step.questions.length > 0 ? (

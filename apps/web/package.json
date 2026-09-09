@@ -12,7 +12,10 @@
 		"serve": "vite preview",
 		"dev": "vite dev",
 		"test": "vitest run",
-		"learning:preview": "vite --config learning-preview/vite.config.ts"
+		"learning:preview": "vite --config learning-preview/vite.config.ts",
+		"coaching:evaluate": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/evaluate-coaching.ts",
+		"coaching:preflight": "node scripts/coaching-preflight.mjs",
+		"coaching:purge": "pnpm --filter @tradely/db coaching:purge"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.1111.0",

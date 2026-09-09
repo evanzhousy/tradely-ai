@@ -41,6 +41,27 @@ export type CoachingSnapshot = {
 	references: CoachingReference[];
 	criteria: Array<{ id: string; guidance: string }>;
 };
+export type CoachingSnapshotView = Omit<
+	CoachingSnapshot,
+	"criteria" | "rubricVersion"
+>;
+export function projectCoachingSnapshot(
+	snapshot: CoachingSnapshot | null,
+): CoachingSnapshotView | null {
+	if (!snapshot) return null;
+	return {
+		schemaVersion: snapshot.schemaVersion,
+		lessonId: snapshot.lessonId,
+		scenarioId: snapshot.scenarioId,
+		scenarioVersion: snapshot.scenarioVersion,
+		attemptRevision: snapshot.attemptRevision,
+		stepId: snapshot.stepId,
+		locale: snapshot.locale,
+		reason: snapshot.reason,
+		answers: snapshot.answers,
+		references: snapshot.references,
+	};
+}
 export const coachingFailureSchema = z.enum([
 	"signed_out",
 	"access_denied",
@@ -72,8 +93,8 @@ export type CoachingSessionView = {
 	revision: number;
 	locale: "en" | "zh";
 	draftReason: string;
-	initial: CoachingSnapshot | null;
-	revised: CoachingSnapshot | null;
+	initial: CoachingSnapshotView | null;
+	revised: CoachingSnapshotView | null;
 	generations: CoachingGenerationView[];
 	deleted: boolean;
 	stale: boolean;

@@ -1,0 +1,12 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"@/*": ["../src/*"],
+			"@tanstack/react-start/server-only": [
+				"../learning-preview/server-only.ts"
+			],
+			"@tradely/ui/*": ["../../../packages/ui/src/*"]
+		}
+	}
+}

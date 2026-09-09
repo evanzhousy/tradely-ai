@@ -20,6 +20,7 @@ import {
 	type CoachingView,
 	coachingFailureSchema,
 	coachingFeedbackSchema,
+	projectCoachingSnapshot,
 } from "@/domain/coaching/types";
 import { attemptStateSchema } from "@/domain/learning/types";
 import { captureServerException } from "./analytics/posthog.server";
@@ -142,8 +143,12 @@ async function viewOf(
 			revision: session.revision,
 			locale: session.locale,
 			draftReason: session.draftReason,
-			initial: session.initialSnapshot as CoachingSnapshot | null,
-			revised: session.revisedSnapshot as CoachingSnapshot | null,
+			initial: projectCoachingSnapshot(
+				session.initialSnapshot as CoachingSnapshot | null,
+			),
+			revised: projectCoachingSnapshot(
+				session.revisedSnapshot as CoachingSnapshot | null,
+			),
 			deleted: session.deletedAt !== null,
 			stale:
 				attempt.status !== "in_progress" ||

@@ -135,3 +135,9 @@ The SEO implementation adds these registered events through the existing consent
 `page_viewed.route_name` also supports `guides` and `guide`. Public guide content is English. Anonymous preview events are separate from the existing signed-in `lesson_exercise_*` events. No answer, action history, worksheet text or raw referrer query is sent. Actions performed before consent are not replayed afterward. A reset creates a new run; a failed request does not count as a successful open or submission.
 
 These events measure learning behavior, not verified purchases. See [SEO.md](SEO.md) for the publishing and release checks.
+
+## AI coaching pilot
+
+`lesson_coach_started`, `lesson_coach_feedback_viewed`, `lesson_coach_revision_saved`, `lesson_coach_cycle_completed`, and `lesson_coach_failed` use the typed event registry and property allowlist. Only lesson/scenario/version, locale, feedback round and fixed failure reasons are included. Explanations, feedback, evidence, snapshots and provider bodies are excluded. All coaching DOM is marked `data-analytics-private` and remains inside the protected exercise surface. Declining analytics consent does not disable coaching.
+
+The database owns actual executions, quota and cost. Client events describe UX milestones and must not be used for billing or claims of mastery. Use consented learners for behavioral funnels. Compare existing independent-case results only when the case is new to the learner, distinguish hint use and repeat attempts, and use human review for prose. Saved coaching text is never sent to the analytics provider.

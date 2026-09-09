@@ -1,7 +1,7 @@
 import { Button } from "@tradely/ui/components/button";
 import { useId, useState } from "react";
 import type {
-	CoachingSnapshot,
+	CoachingSnapshotView,
 	CoachingFeedback as Feedback,
 } from "@/domain/coaching/types";
 import { coachingCopy } from "./coaching-copy";
@@ -12,7 +12,7 @@ export function CoachingFeedback({
 	locale,
 }: {
 	feedback: Feedback;
-	snapshot: CoachingSnapshot;
+	snapshot: CoachingSnapshotView;
 	locale: "en" | "zh";
 }) {
 	const [selected, setSelected] = useState<string | null>(null);

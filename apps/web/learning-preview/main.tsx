@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { LessonNavigation } from "../src/components/lesson-navigation";
 import { tradingFlowCourse } from "../src/content/course";
 import { getLessonScenarios } from "../src/content/scenarios/index.server";
@@ -65,9 +65,20 @@ function Session({
 	);
 	const [revision, setRevision] = useState(0);
 	const record = useRef(guidedRecord(lessonId));
-	record.current = { ...record.current, state, revision };
+	record.current = {
+		...record.current,
+		state,
+		revision,
+		scenarioId: scenario.id,
+		scenarioVersion: scenario.version,
+	};
 	const transport = useMemo(() => coachingFixture(() => record.current), []);
-	const view = projectAttempt(scenario, state, "local-fixture", revision);
+	const view = projectAttempt(
+		scenario,
+		state,
+		coaching ? record.current.id : "local-fixture",
+		revision,
+	);
 	function stateAt(index: number) {
 		if (!Number.isInteger(index) || index < 0 || index >= scenario.steps.length)
 			return initialAttemptState();
@@ -263,4 +274,6 @@ function App() {
 }
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing preview root");
-createRoot(root).render(<App />);
+const previewRoot: Root = import.meta.hot?.data.previewRoot ?? createRoot(root);
+if (import.meta.hot) import.meta.hot.data.previewRoot = previewRoot;
+previewRoot.render(<App />);

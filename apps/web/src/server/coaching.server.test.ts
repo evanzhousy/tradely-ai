@@ -137,6 +137,7 @@ describe("coaching with actual PostgreSQL migrations", () => {
 		await save();
 		const first = resultView(await review());
 		expect(first.session?.initial?.reason).toBe(exampleReason);
+		expect(first.session?.initial).not.toHaveProperty("criteria");
 		await save(
 			`${exampleReason} ALFA is at half its baseline, while BETA is at three times its baseline.`,
 		);
@@ -370,5 +371,51 @@ describe("coaching with actual PostgreSQL migrations", () => {
 				await command({ type: "review", round: "revision" }),
 			),
 		).toEqual({ ok: false, reason: "retired" });
+	});
+	it("purges old usage while preserving the reservation and learning text", async () => {
+		await save();
+		await review();
+		await pg.exec(
+			"UPDATE coaching_generation SET created_at = now() - interval '31 days'; UPDATE coaching_session SET quota_day = '2020-01-01'",
+		);
+		const moduleUrl = new URL(
+			"../../../../packages/db/scripts/purge-coaching.mjs",
+			import.meta.url,
+		).href;
+		const { coachingPurgeSql } = (await import(
+			/* @vite-ignore */ moduleUrl
+		)) as { coachingPurgeSql: string };
+		await pg.exec(coachingPurgeSql);
+		const [generation] = await db.select().from(schema.coachingGeneration);
+		const [session] = await db.select().from(schema.coachingSession);
+		expect(generation.costMicros).toBeNull();
+		expect(generation.feedback).not.toBeNull();
+		expect(session.reservedMicros).toBe(93_200);
+		expect(session.quotaDay).toBeNull();
+		await save(
+			`${exampleReason} I added evidence after returning to this case.`,
+		);
+		expect(
+			resultView(await review("revision")).session?.generations[1].status,
+		).toBe("succeeded");
+	});
+	it("purges old deletion tombstones without changing the original lesson", async () => {
+		await save();
+		await review();
+		await updateCoachingImpl(await command({ type: "delete" }));
+		await pg.exec(
+			"UPDATE coaching_session SET deleted_at = now() - interval '31 days', quota_day = '2020-01-01'; UPDATE coaching_generation SET created_at = now() - interval '31 days'",
+		);
+		const moduleUrl = new URL(
+			"../../../../packages/db/scripts/purge-coaching.mjs",
+			import.meta.url,
+		).href;
+		const { coachingPurgeSql } = (await import(
+			/* @vite-ignore */ moduleUrl
+		)) as { coachingPurgeSql: string };
+		await pg.exec(coachingPurgeSql);
+		expect(await db.select().from(schema.coachingSession)).toHaveLength(0);
+		expect(await db.select().from(schema.coachingGeneration)).toHaveLength(0);
+		expect(await db.select().from(schema.lessonAttempt)).toHaveLength(1);
 	});
 });
