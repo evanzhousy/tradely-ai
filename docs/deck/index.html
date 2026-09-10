@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Tradely · EASY Residency Season 5</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #111111;
+        color: #ffffff;
+      }
+      body { font-family: Inter, system-ui, sans-serif; }
+      .scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #111111;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .scene.is-active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        z-index: 2;
+      }
+      .clip { position: absolute; inset: 0; }
+      .glow {
+        position: absolute;
+        width: 920px;
+        height: 920px;
+        right: -180px;
+        top: -220px;
+        background: radial-gradient(circle, rgba(242, 201, 76, 0.22) 0%, rgba(242, 201, 76, 0) 68%);
+        pointer-events: none;
+      }
+      .glow-left {
+        right: auto;
+        left: -240px;
+        top: 220px;
+      }
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(17,17,17,0) 42%, rgba(17,17,17,0.72) 100%);
+        pointer-events: none;
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.09;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+      }
+      .pad {
+        position: relative;
+        z-index: 2;
+        height: 1080px;
+        padding: 72px 120px 80px;
+        display: flex;
+        flex-direction: column;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 48px;
+        margin-bottom: 48px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: Inter, sans-serif;
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: #ffffff;
+      }
+      .brand img { width: 48px; height: 48px; display: block; }
+      .kicker {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        font-weight: 500;
+        color: #f2c94c;
+        letter-spacing: -0.02em;
+      }
+      .idx {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        font-weight: 500;
+        color: #c9c3b5;
+        font-variant-numeric: tabular-nums;
+      }
+      h1, h2 {
+        font-family: Inter, sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        color: #ffffff;
+        max-width: 1560px;
+      }
+      h1 { font-size: 88px; }
+      h2 { font-size: 72px; }
+      .lede {
+        margin-top: 28px;
+        font-size: 48px;
+        line-height: 1.28;
+        color: #c9c3b5;
+        max-width: 1480px;
+        font-weight: 400;
+      }
+      .fill { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+      .fill-top { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+      .row { display: flex; gap: 48px; align-items: stretch; }
+      .stack { display: flex; flex-direction: column; gap: 28px; }
+      .stat {
+        font-size: 128px;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        line-height: 0.92;
+        font-variant-numeric: tabular-nums;
+        color: #f2c94c;
+      }
+      .stat-unit {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        color: #c9c3b5;
+        margin-top: 12px;
+      }
+      .card {
+        background: #1a1a1a;
+        border-radius: 26px;
+        padding: 36px 40px;
+        min-height: 220px;
+      }
+      .card h3 {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin-bottom: 14px;
+      }
+      .card p {
+        font-size: 40px;
+        line-height: 1.28;
+        color: #c9c3b5;
+      }
+      .num {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        color: #f2c94c;
+        margin-bottom: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .shot {
+        background: #1a1a1a;
+        border-radius: 26px;
+        padding: 18px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 16px;
+      }
+      .ghost {
+        position: absolute;
+        left: 80px;
+        bottom: 40px;
+        font-size: 220px;
+        font-weight: 700;
+        letter-spacing: -0.06em;
+        color: rgba(242, 201, 76, 0.08);
+        pointer-events: none;
+        line-height: 1;
+        z-index: 1;
+      }
+      .rule {
+        display: block;
+        width: 120px;
+        height: 6px;
+        background: #f2c94c;
+        border-radius: 6px;
+        transform-origin: left center;
+      }
+      .owl-hero {
+        position: absolute;
+        right: -40px;
+        bottom: -80px;
+        width: 820px;
+        height: 820px;
+        object-fit: cover;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .foot {
+        margin-top: auto;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        color: #c9c3b5;
+        max-width: 1080px;
+      }
+      .bars { display: flex; align-items: flex-end; gap: 28px; height: 320px; }
+      .bar {
+        width: 88px;
+        background: #3a372f;
+        transform-origin: bottom center;
+        border-radius: 8px 8px 0 0;
+        display: block;
+      }
+      .bar.now { background: #f2c94c; }
+      .module {
+        font-size: 40px;
+        line-height: 1.2;
+        padding: 18px 24px;
+        background: #1a1a1a;
+        border-radius: 18px;
+      }
+      .module b { color: #f2c94c; font-weight: 700; font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+      .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; }
+      .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 24px; }
+      .yellow { color: #f2c94c; }
+      .compare-col h3 { font-size: 48px; margin-bottom: 20px; letter-spacing: -0.03em; }
+      .compare-col p { font-size: 40px; line-height: 1.28; color: #c9c3b5; }
+      .compare-col.us { background: #f2c94c; color: #111111; border-radius: 26px; padding: 36px 40px; }
+      .compare-col.us h3 { color: #111111; }
+      .compare-col.us p { color: #111111; }
+      .formula {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 48px;
+        line-height: 1.45;
+        color: #ffffff;
+      }
+      [data-frag] { opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <script type="application/hyperframes-slideshow+json">
+      {
+        "slides": [
+          {
+            "sceneId": "title",
+            "notes": "Name the program first. Tradely is applying, not explaining the residency. Pause on tradely.ai."
+          },
+          {
+            "sceneId": "hook",
+            "notes": "OCC 15.2 billion contracts in 2025. The punch is the second sentence: judgment did not scale."
+          },
+          {
+            "sceneId": "problem",
+            "notes": "Walk the three gaps one at a time. Do not bash competitors. Name the missing method.",
+            "fragments": [16.35, 16.7, 17.05]
+          },
+          {
+            "sceneId": "solution",
+            "notes": "One sentence company: evidence desk between data and a decision you can explain."
+          },
+          {
+            "sceneId": "product",
+            "notes": "36 lessons, 8 modules, 3 free. Current-edition interactive material is primary."
+          },
+          {
+            "sceneId": "method",
+            "notes": "Question, evidence, packet, then a bounded TradingFlow task. Products stay independent."
+          },
+          {
+            "sceneId": "proof",
+            "notes": "This is the product, not a mock. Synthetic cases. English and Chinese already ship."
+          },
+          {
+            "sceneId": "coach",
+            "notes": "Pilot, not generally available. It cites evidence and cannot certify mastery. That constraint is the point."
+          },
+          {
+            "sceneId": "season",
+            "notes": "Map to Season 5 trusted agents and AI interfaces. Say out loud: we are not an onchain protocol."
+          },
+          {
+            "sceneId": "market",
+            "notes": "Do not say TAM. Beachhead is flow-tool users who still cannot show their work. Click the hotspot if they ask for math.",
+            "hotspots": [
+              {
+                "id": "h-math",
+                "label": "Where do these numbers come from?",
+                "target": "market-detail",
+                "region": { "x": 8, "y": 70, "w": 54, "h": 18 }
+              }
+            ]
+          },
+          {
+            "sceneId": "model",
+            "notes": "USD 69 per month membership, USD 49 lifetime course pass. TradingFlow month is a partner benefit, redeemed separately."
+          },
+          {
+            "sceneId": "traction",
+            "notes": "Be blunt. Live product, live billing, early usage. Do not read PostHog one-person samples as traction."
+          },
+          {
+            "sceneId": "competition",
+            "notes": "Terminals, courses, Tradely. We sit in the judgment gap. No fake win-rate claims."
+          },
+          {
+            "sceneId": "weeks",
+            "notes": "Map the 10 weeks to GTM, coach quality, and a Demo Day artifact they can inspect."
+          },
+          {
+            "sceneId": "ask",
+            "notes": "Close on the residency, not a shopping list. Founder is Evan Zhou. tradely.ai."
+          }
+        ],
+        "slideSequences": [
+          {
+            "id": "market-detail",
+            "label": "Beachhead math",
+            "slides": [
+              {
+                "sceneId": "market-math",
+                "notes": "Bottom-up only. 1,000 members is a scenario. OCC and Option Alpha uniques are sources, not Tradely users."
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <div
+      id="root-clock"
+      data-composition-id="root"
+      data-start="0"
+      data-duration="152"
+      data-width="1920"
+      data-height="1080"
+      data-label="Clock"
+      data-layout-ignore="true"
+      style="position:absolute;inset:0;pointer-events:none;opacity:0;visibility:hidden"
+    ></div>
+
+    <!-- 01 Title -->
+    <div class="scene is-active" id="title" data-composition-id="title" data-start="0" data-duration="8" data-label="Title" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow" id="title-glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <img class="owl-hero" id="title-owl" src="assets/owl.png" alt="" data-layout-ignore="true" />
+      <section class="clip pad" id="title-clip" data-start="0" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="brand" id="title-brand"><img src="assets/owl.png" alt="" /> Tradely</div>
+          <div class="idx">01 / 15</div>
+        </div>
+        <div class="fill">
+          <div class="kicker" id="title-kicker">YZi Labs · EASY Residency Season 5</div>
+          <h1 id="title-h1" style="margin-top: 28px; max-width: 1100px;">Tradely is applying to build in Thailand this season.</h1>
+          <p class="lede" id="title-lede" style="max-width: 980px;">An evidence desk for options traders, and a constrained AI coach for a market that is about to be run by agents.</p>
+        </div>
+        <div class="foot" id="title-foot">tradely.ai · Applications close 21 September 2026, 23:59 GMT-7</div>
+      </section>
+    </div>
+
+    <!-- 02 Hook -->
+    <div class="scene" id="hook" data-composition-id="hook" data-start="8" data-duration="8" data-label="Hook" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow glow-left"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <div class="ghost" id="hook-ghost" data-layout-ignore="true">15.2B</div>
+      <section class="clip pad" id="hook-clip" data-start="8" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The market</div>
+          <div class="idx">02 / 15</div>
+        </div>
+        <div class="fill">
+          <div class="stat" id="hook-num">15.2</div>
+          <div class="stat-unit" id="hook-unit">billion US listed options contracts cleared in 2025 · OCC</div>
+          <h2 id="hook-h2" style="margin-top: 48px; max-width: 1500px;">Judgment did not scale with that volume.</h2>
+        </div>
+      </section>
+    </div>
+
+    <!-- 03 Problem -->
+    <div class="scene" id="problem" data-composition-id="problem" data-start="16" data-duration="12" data-label="Problem" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="problem-clip" data-start="16" data-duration="12" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The gap</div>
+          <div class="idx">03 / 15</div>
+        </div>
+        <h2 id="problem-h2">Traders drown in flow, Greeks, and GEX without a method they can defend.</h2>
+        <div class="grid-3" style="margin-top: 56px;">
+          <div class="card" id="pain-1" data-frag="1">
+            <div class="num">01</div>
+            <h3>Courses stop at definitions.</h3>
+            <p>They name the Greek. They do not make the learner show their work.</p>
+          </div>
+          <div class="card" id="pain-2" data-frag="1">
+            <div class="num">02</div>
+            <h3>Terminals stop at screens.</h3>
+            <p>More heatmaps. Same untested conclusion at the end of the session.</p>
+          </div>
+          <div class="card" id="pain-3" data-frag="1">
+            <div class="num">03</div>
+            <h3>Agents will stop at action.</h3>
+            <p>If a human cannot audit a call, an agent cannot be trusted to place it.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 04 Solution -->
+    <div class="scene" id="solution" data-composition-id="solution" data-start="28" data-duration="8" data-label="Solution" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="solution-clip" data-start="28" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">What Tradely is</div>
+          <div class="idx">04 / 15</div>
+        </div>
+        <div class="fill">
+          <div class="rule" id="solution-rule"></div>
+          <h1 id="solution-h1" style="margin-top: 36px; max-width: 1600px;">Tradely is the evidence desk between options data and a decision you can explain.</h1>
+          <p class="lede" id="solution-lede">Learn the path in Tradely. Practice the same move in TradingFlow. The two products do not share accounts.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- 05 Product -->
+    <div class="scene" id="product" data-composition-id="product" data-start="36" data-duration="10" data-label="Product" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="product-clip" data-start="36" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The curriculum</div>
+          <div class="idx">05 / 15</div>
+        </div>
+        <h2 id="product-h2">Thirty-six lessons, eight modules, one research path you can inspect.</h2>
+        <div class="grid-4" style="margin-top: 40px;" id="product-mods">
+          <div class="module"><b>01</b> Contracts and money</div>
+          <div class="module"><b>02</b> Quotes, executions, sentiment</div>
+          <div class="module"><b>03</b> Flow, positions, data quality</div>
+          <div class="module"><b>04</b> Pricing, Greeks, exposure</div>
+          <div class="module"><b>05</b> Modeled positioning</div>
+          <div class="module"><b>06</b> Comparison and investigation</div>
+          <div class="module"><b>07</b> Produce and audit research</div>
+          <div class="module"><b>08</b> Portfolio understanding</div>
+        </div>
+        <div class="foot" id="product-foot" style="margin-top: 36px;">3 free preview lessons · English interface and Simplified Chinese · tradely.ai</div>
+      </section>
+    </div>
+
+    <!-- 06 Method -->
+    <div class="scene" id="method" data-composition-id="method" data-start="46" data-duration="10" data-label="Method" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="method-clip" data-start="46" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The method</div>
+          <div class="idx">06 / 15</div>
+        </div>
+        <h2 id="method-h2">A bounded question, then evidence, then a packet you can audit.</h2>
+        <div class="grid-2" style="margin-top: 48px;">
+          <div class="card" id="method-a">
+            <div class="num">In Tradely</div>
+            <h3>Synthetic cases. Saved reasoning. Independent checks.</h3>
+            <p>The learner has to record what the evidence supports before the next step opens.</p>
+          </div>
+          <div class="card" id="method-b">
+            <div class="num">In TradingFlow</div>
+            <h3>A bounded practice task on the live tool.</h3>
+            <p>Official partner, separate product. Its own account or subscription may be required.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 07 Proof -->
+    <div class="scene" id="proof" data-composition-id="proof" data-start="56" data-duration="10" data-label="Product proof" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="proof-clip" data-start="56" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Inside the desk</div>
+          <div class="idx">07 / 15</div>
+        </div>
+        <h2 id="proof-h2" style="max-width: 1400px;">Every judgment is tested against evidence before the next step opens.</h2>
+        <div class="row" style="margin-top: 36px; height: 620px;">
+          <div class="shot" id="proof-desk" style="flex: 1.35; height: 620px;">
+            <img src="assets/lesson-practice.png" alt="Tradely interactive practice case asking what the evidence supports" />
+          </div>
+          <div class="shot" id="proof-zh" style="flex: 0.72; height: 620px;">
+            <img src="assets/lesson-zh.png" alt="The same lesson surface in Simplified Chinese" />
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 08 Coach -->
+    <div class="scene" id="coach" data-composition-id="coach" data-start="66" data-duration="10" data-label="Trusted coach" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="coach-clip" data-start="66" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Trusted agent, not a tip bot</div>
+          <div class="idx">08 / 15</div>
+        </div>
+        <h2 id="coach-h2">The AI coach can cite the case. It cannot certify mastery.</h2>
+        <div class="row" style="margin-top: 36px; align-items: stretch;">
+          <div class="shot" id="coach-shot" style="flex: 1.2; height: 520px;">
+            <img src="assets/coach-panel.png" alt="Coaching panel with evidence-linked feedback and a non-certification notice" />
+          </div>
+          <div class="stack" id="coach-list" style="flex: 0.9; justify-content: center;">
+            <div class="module">Evidence only. No identity, billing, or answer keys in the model request.</div>
+            <div class="module">Two rounds, then the independent case still scores itself.</div>
+            <div class="module">Pilot built. Disabled by default until teaching quality is reviewed.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 09 Season fit -->
+    <div class="scene" id="season" data-composition-id="season" data-start="76" data-duration="10" data-label="Season fit" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="season-clip" data-start="76" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Why Season 5</div>
+          <div class="idx">09 / 15</div>
+        </div>
+        <h2 id="season-h2">Season 5 is about trusted agents. Tradely is the judgment layer they still lack.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="season-cards">
+          <div class="card">
+            <div class="num">Trusted agents</div>
+            <h3>Permission, evidence, audit.</h3>
+            <p>Least-privilege context. Tamper-evident coaching records. No silent mastery stamp.</p>
+          </div>
+          <div class="card">
+            <div class="num">AI interfaces</div>
+            <h3>From chat to a defended call.</h3>
+            <p>The interface is a research desk, not another voice that sounds sure.</p>
+          </div>
+          <div class="card">
+            <div class="num">Onchain options</div>
+            <h3>We are not a protocol.</h3>
+            <p>When options move onchain, someone still has to teach the risk with evidence.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 10 Market -->
+    <div class="scene" id="market" data-composition-id="market" data-start="86" data-duration="10" data-label="Beachhead" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="market-clip" data-start="86" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Beachhead, not a TAM slide</div>
+          <div class="idx">10 / 15</div>
+        </div>
+        <h2 id="market-h2">The first customers already pay for flow tools and still cannot show their work.</h2>
+        <div class="grid-2" style="margin-top: 40px; align-items: stretch;">
+          <div class="card" id="market-chart">
+            <div class="bars" id="market-bars">
+              <div class="bar" style="height: 90px;"></div>
+              <div class="bar" style="height: 140px;"></div>
+              <div class="bar" style="height: 190px;"></div>
+              <div class="bar" style="height: 240px;"></div>
+              <div class="bar now" style="height: 320px;"></div>
+            </div>
+            <p class="stat-unit" style="margin-top: 24px;">OCC-cleared options, 2019 to 2025. Volume is the backdrop, not our revenue.</p>
+          </div>
+          <div class="stack" id="market-notes">
+            <div class="module" id="market-a">Option Alpha: 85.2k unique visitors in July 2026. That is a neighbor, not a count of Tradely users.</div>
+            <div class="module" id="market-b">Price: $69 / month. If 1,000 of those traders paid, that is $828k ARR. Scenario, not a forecast.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 11 Model -->
+    <div class="scene" id="model" data-composition-id="model" data-start="96" data-duration="8" data-label="Model" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="model-clip" data-start="96" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">How it is sold</div>
+          <div class="idx">11 / 15</div>
+        </div>
+        <h2 id="model-h2">Membership is $69 a month. The course pass is $49 once.</h2>
+        <div class="grid-2" style="margin-top: 48px;">
+          <div class="card" id="model-a">
+            <div class="num">Tradely Membership</div>
+            <h3>$69 / month</h3>
+            <p>All current learning while active, plus one month of TradingFlow membership redeemed with the partner.</p>
+          </div>
+          <div class="card" id="model-b">
+            <div class="num">Lifetime Course Pass</div>
+            <h3>$49 one-time</h3>
+            <p>Permanent access to Evidence-Led Options Research and its revisions. Future distinct courses are excluded.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 12 Traction -->
+    <div class="scene" id="traction" data-composition-id="traction" data-start="104" data-duration="10" data-label="Traction" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="traction-clip" data-start="104" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">What is actually true</div>
+          <div class="idx">12 / 15</div>
+        </div>
+        <h2 id="traction-h2">The product is live. Traction is early. We are not dressing that up.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="traction-cards">
+          <div class="card">
+            <div class="num">Shipped</div>
+            <h3>tradely.ai is up.</h3>
+            <p>Curriculum, billing, English and Chinese chrome, partnered practice links.</p>
+          </div>
+          <div class="card">
+            <div class="num">Built</div>
+            <h3>Coach is real code.</h3>
+            <p>Allowlisted pilot, two-round budget, evidence projection, not a slide mock.</p>
+          </div>
+          <div class="card">
+            <div class="num">Not claimed</div>
+            <h3>No fake revenue.</h3>
+            <p>No testimonials on file. No win rate. This is an early-stage application.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 13 Competition -->
+    <div class="scene" id="competition" data-composition-id="competition" data-start="114" data-duration="10" data-label="Competition" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="competition-clip" data-start="114" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Where we sit</div>
+          <div class="idx">13 / 15</div>
+        </div>
+        <h2 id="comp-h2">Data terminals show the tape. Courses show definitions. Tradely teaches the decision.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="comp-cols">
+          <div class="compare-col card">
+            <h3>Terminals</h3>
+            <p>Unusual Whales, SpotGamma, MenthorQ. Strong at data. Weak at an auditable method.</p>
+          </div>
+          <div class="compare-col card">
+            <h3>Courses</h3>
+            <p>Option Alpha, OIC. Strong at vocabulary and strategy catalogs. Weak at forcing a defended packet.</p>
+          </div>
+          <div class="compare-col us">
+            <h3>Tradely</h3>
+            <p>One evidence path, interactive checks, a constrained coach, then practice in TradingFlow.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 14 Ten weeks -->
+    <div class="scene" id="weeks" data-composition-id="weeks" data-start="124" data-duration="10" data-label="Ten weeks" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="weeks-clip" data-start="124" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The residency</div>
+          <div class="idx">14 / 15</div>
+        </div>
+        <h2 id="weeks-h2">Ten weeks to ship a trusted coach and walk into Demo Day with a packet, not a pitch.</h2>
+        <div class="grid-2" style="margin-top: 48px;">
+          <div class="card" id="weeks-a">
+            <div class="num">Weeks 1–5 · online</div>
+            <h3>GTM, hiring, capital, mechanism.</h3>
+            <p>Finish coach evaluation. Tighten the English and Chinese path. Name the first 100 traders with precision.</p>
+          </div>
+          <div class="card" id="weeks-b">
+            <div class="num">Weeks 6–10 · Thailand</div>
+            <h3>Build in the room. Demo Day with evidence.</h3>
+            <p>A working trusted-coach session a reviewer can inspect, plus the research packet the course already teaches.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 15 Ask -->
+    <div class="scene" id="ask" data-composition-id="ask" data-start="134" data-duration="10" data-label="Ask" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow" id="ask-glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <img class="owl-hero" id="ask-owl" src="assets/owl.png" alt="" data-layout-ignore="true" />
+      <section class="clip pad" id="ask-clip" data-start="134" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="brand"><img src="assets/owl.png" alt="" /> Tradely</div>
+          <div class="idx">15 / 15</div>
+        </div>
+        <div class="fill">
+          <div class="kicker" id="ask-kicker">The ask</div>
+          <h1 id="ask-h1" style="margin-top: 24px; max-width: 1120px;">Admit Tradely. We will spend the residency building.</h1>
+          <p class="lede" id="ask-lede" style="max-width: 980px;">Founder: Evan Zhou. We want the 10-week seat, the cohort, and the standard EASY investment if the work earns it.</p>
+        </div>
+        <div class="foot" id="ask-foot">tradely.ai</div>
+      </section>
+    </div>
+
+    <!-- Branch: market math -->
+    <div class="scene" id="market-math" data-composition-id="market-math" data-start="144" data-duration="8" data-label="Beachhead math" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="math-clip" data-start="144" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Beachhead math</div>
+          <div class="idx">Branch</div>
+        </div>
+        <h2 id="math-h2">1,000 members × $69 × 12 = $828,000 ARR. That is a scenario, not a forecast.</h2>
+        <div class="stack" style="margin-top: 40px;" id="math-lines">
+          <p class="formula">OCC 2025: 15,207,163,554 listed options contracts.</p>
+          <p class="formula">Option Alpha, July 2026: 85.2k unique visitors · 342k visits.</p>
+          <p class="formula">Tradely price: $69 / month membership · $49 lifetime course pass.</p>
+          <p class="formula">1,000 is about 1.2% of that monthly unique-visitor neighbor set.</p>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+
+      var SCENES = [
+        { id: "title", start: 0, duration: 8 },
+        { id: "hook", start: 8, duration: 8 },
+        { id: "problem", start: 16, duration: 12 },
+        { id: "solution", start: 28, duration: 8 },
+        { id: "product", start: 36, duration: 10 },
+        { id: "method", start: 46, duration: 10 },
+        { id: "proof", start: 56, duration: 10 },
+        { id: "coach", start: 66, duration: 10 },
+        { id: "season", start: 76, duration: 10 },
+        { id: "market", start: 86, duration: 10 },
+        { id: "model", start: 96, duration: 8 },
+        { id: "traction", start: 104, duration: 10 },
+        { id: "competition", start: 114, duration: 10 },
+        { id: "weeks", start: 124, duration: 10 },
+        { id: "ask", start: 134, duration: 10 },
+        { id: "market-math", start: 144, duration: 8 },
+      ];
+      var TOTAL = 152;
+      var FRAGMENTS = [
+        { time: 16.35, id: "pain-1", revealed: false },
+        { time: 16.7, id: "pain-2", revealed: false },
+        { time: 17.05, id: "pain-3", revealed: false },
+      ];
+      var lastActiveId = null;
+
+      function fireEntrance(sceneEl) {
+        var els = sceneEl.querySelectorAll(
+          "h1, h2, .lede, .card:not([data-frag]), .module, .shot, .stat, .rule, .owl-hero, .kicker, .brand, .foot, .formula, .stat-unit",
+        );
+        if (!els.length) return;
+        gsap.fromTo(
+          els,
+          { opacity: 0, y: 28 },
+          { opacity: 1, y: 0, duration: 0.42, stagger: 0.06, ease: "power3.out", overwrite: true },
+        );
+        var bars = sceneEl.querySelectorAll(".bar");
+        if (bars.length) {
+          gsap.set(bars, { scaleY: 1, transformOrigin: "bottom center" });
+          gsap.fromTo(
+            bars,
+            { scaleY: 0 },
+            { scaleY: 1, duration: 0.7, ease: "power3.out", stagger: 0.08, overwrite: "auto" },
+          );
+        }
+        if (sceneEl.id === "hook") {
+          var n = { v: 0 };
+          var num = document.getElementById("hook-num");
+          gsap.to(n, {
+            v: 15.2,
+            duration: 1.1,
+            ease: "power2.out",
+            onUpdate: function () {
+              if (num) num.textContent = n.v.toFixed(1);
+            },
+          });
+        }
+      }
+
+      function revealFragment(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        gsap.fromTo(
+          el,
+          { opacity: 0, y: 28 },
+          { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", overwrite: true },
+        );
+      }
+
+      function resetProblemFragments() {
+        for (var i = 0; i < FRAGMENTS.length; i++) {
+          FRAGMENTS[i].revealed = false;
+          var el = document.getElementById(FRAGMENTS[i].id);
+          if (el) gsap.set(el, { opacity: 0, y: 28 });
+        }
+      }
+
+      function updateVisibility(t) {
+        for (var i = 0; i < SCENES.length; i++) {
+          var s = SCENES[i];
+          var el = document.getElementById(s.id);
+          if (!el) continue;
+          var active = t >= s.start && t < s.start + s.duration;
+          el.classList.toggle("is-active", active);
+          el.style.opacity = active ? "1" : "0";
+          el.style.visibility = active ? "visible" : "hidden";
+          el.style.pointerEvents = active ? "auto" : "none";
+          if (active && lastActiveId !== s.id) {
+            lastActiveId = s.id;
+            if (s.id === "problem") resetProblemFragments();
+            fireEntrance(el);
+          }
+        }
+        for (var f = 0; f < FRAGMENTS.length; f++) {
+          if (!FRAGMENTS[f].revealed && t >= FRAGMENTS[f].time) {
+            FRAGMENTS[f].revealed = true;
+            revealFragment(FRAGMENTS[f].id);
+          }
+        }
+      }
+
+      window.__hfSetTime = updateVisibility;
+
+      var root = gsap.timeline({ paused: true });
+      root.to({}, { duration: TOTAL });
+      root.eventCallback("onUpdate", function () {
+        updateVisibility(root.time());
+      });
+      window.__timelines.root = root;
+
+      SCENES.forEach(function (s) {
+        var tl = gsap.timeline({ paused: true });
+        window.__timelines[s.id] = tl;
+      });
+
+      updateVisibility(0);
+
+      var lastPlayerT = -1;
+      function syncFromPlayer() {
+        try {
+          var p = parent.document.querySelector("hyperframes-player");
+          if (!p || typeof p.currentTime !== "number") return;
+          var t = p.currentTime;
+          if (Math.abs(t - lastPlayerT) < 0.02) return;
+          lastPlayerT = t;
+          if (window.__timelines.root) window.__timelines.root.time(t);
+          updateVisibility(t);
+        } catch (e) {}
+      }
+      setInterval(syncFromPlayer, 50);
+      window.addEventListener("message", function () {
+        syncFromPlayer();
+      });
+
+      function postTimeline() {
+        try {
+          parent.postMessage(
+            {
+              source: "hf-preview",
+              type: "timeline",
+              durationInFrames: TOTAL * 30,
+              scenes: SCENES.map(function (s) {
+                return { id: s.id, start: s.start, duration: s.duration };
+              }),
+            },
+            "*",
+          );
+        } catch (e) {}
+      }
+      if (document.readyState === "complete") {
+        setTimeout(postTimeline, 300);
+      } else {
+        window.addEventListener("load", function () {
+          setTimeout(postTimeline, 300);
+        });
+      }
+    </script>
+  </body>
+</html>
