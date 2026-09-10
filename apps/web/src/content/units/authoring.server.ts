@@ -82,6 +82,7 @@ export type TeachingCase = {
 	universe?: NonNullable<LearningStepView["universe"]>;
 };
 export type TeachingUnit = {
+	version?: number;
 	demonstration?: LearningStepView["execution"];
 	id: string;
 	explanation: LearningCopy;
@@ -149,7 +150,7 @@ export function unitScenarios(
 		return {
 			id: `${unit.id}-${purpose}-${variant}`,
 			lessonId: unit.id,
-			version: 2,
+			version: unit.version ?? 2,
 			steps: [
 				{
 					id: "worked-example",

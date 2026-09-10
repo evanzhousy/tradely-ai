@@ -96,6 +96,40 @@ describe("integrated course persistence journey", () => {
 			}),
 		);
 
+	it.each([
+		"option-contracts",
+		"option-rights",
+		"premium-payoff",
+		"expiration-settlement",
+	])(
+		"opens free foundation %s anonymously and saves completion for an unpaid account",
+		async (lessonId) => {
+			const page = await getLessonPageDataImpl({ slug: lessonId });
+			expect(page).toMatchObject({
+				found: true,
+				access: { allowed: true, reason: "free-preview" },
+				learning: { presentation: "primary" },
+			});
+			if (!page.found) throw new Error("Missing foundation");
+			expect(page.body?.length).toBeGreaterThan(300);
+			expect(page.bodyZh?.length).toBeGreaterThan(100);
+			expect(
+				await saveLessonProgressImpl({ lessonId, complete: true }),
+			).toMatchObject({ saved: false });
+			dependencies.userId = "free-learner";
+			expect(
+				await saveLessonProgressImpl({ lessonId, complete: true }),
+			).toMatchObject({ saved: true });
+			expect((await getCourseProgressImpl()).completed).toBe(1);
+			expect(
+				await getLessonPageDataImpl({ slug: "quotes-orders-trades" }),
+			).toMatchObject({
+				access: { allowed: false, reason: "payment-required" },
+				body: null,
+			});
+		},
+	);
+
 	it.each(
 		tradingFlowCourse.lessons
 			.filter((lesson) => lesson.access === "paid")

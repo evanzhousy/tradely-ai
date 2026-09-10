@@ -13,6 +13,7 @@ import {
 export const foundationUnits: TeachingUnit[] = [
 	{
 		id: "option-contracts",
+		version: 3,
 		sources: [basics],
 		explanation: t(
 			"An underlying is the asset or index referenced by an option. A stock, an ETF share and a cash-settled index are not interchangeable instruments. A ticker identifies an underlying; a contract also needs call/put, strike and expiration. Its multiplier states how a quoted unit converts into a cash amount. Read the product terms rather than assuming every contract delivers 100 shares. Sector is an industry classification; market capitalization is share price times shares outstanding. Share volume counts traded shares; an earnings date identifies an event, not guaranteed news timing. These describe the underlying, not option expiry or traded contract count. A missing sector on an index is not an unknown contract identity. The source date belongs to every price or volume observation: it is not part of the permanent contract key.",
@@ -28,43 +29,21 @@ export const foundationUnits: TeachingUnit[] = [
 		),
 		case: (v) => {
 			const count = [4, 7, 9, 6][v];
-			const sharesMillions = [2, 3, 4, 5][v];
-			const spot = [50, 45, 30, 22][v];
+			const price = [2, 1.5, 2.4, 3][v];
 			return {
 				brief: t(
-					"Both records are ALFA 105 calls with a stated 100-share multiplier. Record A expires October 16; B expires November 20. Use the stated product terms.",
-					"两条记录均为 ALFA 105 看涨，每张给定 100 股。A 于 10 月 16 日到期，B 于 11 月 20 日到期。使用给定条款。",
+					"Both records are ALFA 105 calls with a stated 100-share multiplier. Record A expires October 16; B expires November 20. The supplied execution price and quantity describe a purchase of record A. Calculate the premium paid before fees.",
+					"两条记录均为 ALFA 105 看涨，每张给定 100 股。A 于 10 月 16 日到期，B 于 11 月 20 日到期。给定成交价与数量对应买入 A，计算不含费用的已付权利金。",
 				),
 				facts: [
-					f("Position (contracts)", "持仓（张）", String(count)),
+					f("Purchased contracts", "买入合约（张）", String(count)),
 					f(
-						"Company shares outstanding (millions)",
-						"公司发行在外股数（百万股）",
-						String(sharesMillions),
+						"Execution price (USD per share)",
+						"成交价（美元/股）",
+						String(price),
 					),
-					f("Stock price (USD)", "股价（美元）", String(spot)),
 				],
 				questions: [
-					n(
-						"market-cap",
-						"Company market capitalization in millions of dollars?",
-						"公司市值为多少百万美元？",
-						sharesMillions * spot,
-						"million USD",
-						"百万美元",
-						"Shares outstanding × share price; this does not depend on your option contract count.",
-						"发行在外股数×股价，与所持期权张数无关。",
-					),
-					n(
-						"deliverable",
-						"How many deliverable shares do these contracts represent?",
-						"这些合约对应多少交付股数？",
-						count * 100,
-						"shares",
-						"股",
-						`${count} × 100 = ${count * 100} shares. No delta was supplied.`,
-						`${count} × 100 = ${count * 100} 股，未给定 Delta。`,
-					),
 					c(
 						"identity",
 						"Can A and B be treated as the same contract?",
@@ -89,6 +68,26 @@ export const foundationUnits: TeachingUnit[] = [
 						"different",
 						"Expiration is part of identity; market price is an observation.",
 						"到期日属于身份，市场价格是观测。",
+					),
+					n(
+						"premium",
+						"What total premium was paid for these contracts, before fees?",
+						"买入这些合约共支付多少权利金（不含费用）？",
+						price * count * 100,
+						"USD",
+						"美元",
+						`$${price} per share × 100 shares per contract × ${count} contracts = $${price * count * 100}. This is premium paid, not profit.`,
+						`每股 $${price} × 每张 100 股 × ${count} 张 = $${price * count * 100}。这是已付权利金，不是利润。`,
+					),
+					n(
+						"deliverable",
+						"How many deliverable shares do these contracts represent?",
+						"这些合约对应多少交付股数？",
+						count * 100,
+						"shares",
+						"股",
+						`${count} × 100 = ${count * 100} shares. No delta was supplied.`,
+						`${count} × 100 = ${count * 100} 股，未给定 Delta。`,
 					),
 				],
 			};

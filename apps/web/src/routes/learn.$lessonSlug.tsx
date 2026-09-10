@@ -24,14 +24,21 @@ import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAnalytics } from "@/analytics/context";
+import { authIsConfigured } from "@/auth/client";
 import { AccessPanel } from "@/components/access-panel";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { LessonNavigation } from "@/components/lesson-navigation";
 import { PracticeCard } from "@/components/practice-card";
+import { SignInLink } from "@/components/sign-in-link";
 import { LessonVideo } from "@/components/video-player";
-import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
+import {
+	getFreeLearningPath,
+	getLesson,
+	getNextLesson,
+	getPreviousLesson,
+} from "@/content/course";
 import { guidesForLesson } from "@/content/guides";
 import { LearningExercise } from "@/features/learning/learning-exercise";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
@@ -61,6 +68,9 @@ function LessonPage() {
 	const { capture, isCapturing } = useAnalytics();
 	const trackedLessonRef = useRef<string | null>(null);
 	const course = getLocalizedCourse(locale);
+	const finalFoundation = getFreeLearningPath(course.lessons, "foundations").at(
+		-1,
+	);
 	const lesson = sourceLesson
 		? getLocalizedLesson(sourceLesson, locale)
 		: undefined;
@@ -296,7 +306,45 @@ function LessonPage() {
 								<PracticeCard lessonId={lesson.id} practice={lesson.practice} />
 							) : null}
 							<div className="flex flex-col gap-5">
-								<CompleteLessonButton lesson={lesson} />
+								{progress.signedIn ? (
+									<CompleteLessonButton lesson={lesson} />
+								) : (
+									<div className="flex flex-col items-start gap-3">
+										<p className="text-muted-foreground text-sm">
+											{t("complete.previewNote")}
+										</p>
+										<SignInLink
+											disabled={!authIsConfigured}
+											onClick={() =>
+												capture("auth_sign_in_opened", {
+													surface: "lesson_completion",
+												})
+											}
+										>
+											{t("complete.signInToSave")}
+										</SignInLink>
+									</div>
+								)}
+								{lesson.id === finalFoundation?.id && !page.canAccessPaid ? (
+									<Alert>
+										<AlertTitle>{t("course.foundationNextTitle")}</AlertTitle>
+										<AlertDescription className="flex flex-col items-start gap-4">
+											<p>{t("course.foundationNextDescription")}</p>
+											<Link
+												to="/pricing"
+												className={buttonVariants()}
+												onClick={() =>
+													capture("membership_cta_clicked", {
+														surface: "foundation_completion",
+														lesson_id: lesson.id,
+													})
+												}
+											>
+												{t("course.foundationNextAction")}
+											</Link>
+										</AlertDescription>
+									</Alert>
+								) : null}
 								<Separator />
 								<nav
 									className="flex items-center justify-between gap-4"

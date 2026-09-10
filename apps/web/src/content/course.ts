@@ -43,6 +43,18 @@ export type Lesson = {
 
 const MEDIA_ROOT = "/media/tradingflow";
 
+/** Stable lesson identities own access; reordering the syllabus cannot move a paywall. */
+export const freeLearningPaths = {
+	foundations: [
+		"option-contracts",
+		"option-rights",
+		"premium-payoff",
+		"expiration-settlement",
+	],
+	research: ["audited-boundary", "symbol-universe", "rank-symbols"],
+} as const;
+const freeLessonIds = new Set<string>(Object.values(freeLearningPaths).flat());
+
 const legacyCourse = {
 	id: "tradingflow-foundations",
 	slug: "tradingflow-foundations",
@@ -304,8 +316,8 @@ export const tradingFlowCourse = {
 					: entry.moduleId === "structure"
 						? 14
 						: 10,
-			access: prior?.access ?? "paid",
-			contentVersion: 2,
+			access: freeLessonIds.has(entry.id) ? "preview" : "paid",
+			contentVersion: entry.id === "option-contracts" ? 3 : 2,
 			mediaKey: prior?.mediaKey ?? entry.id,
 			poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
 			mediaCurrent: false,
@@ -319,6 +331,16 @@ export type Course = typeof tradingFlowCourse;
 // Public discovery follows access metadata, independently of syllabus order.
 export function getFreeLessons(lessons: readonly Lesson[]): Lesson[] {
 	return lessons.filter((lesson) => lesson.access === "preview");
+}
+
+export function getFreeLearningPath(
+	lessons: readonly Lesson[],
+	path: keyof typeof freeLearningPaths,
+): Lesson[] {
+	return freeLearningPaths[path].flatMap((id) => {
+		const lesson = lessons.find((lesson) => lesson.id === id);
+		return lesson?.access === "preview" ? [lesson] : [];
+	});
 }
 
 export function getLesson(slug: string): Lesson | undefined {

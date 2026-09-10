@@ -44,7 +44,7 @@ const messages = {
 		"home.titleVerify": "Practice your reasoning.",
 		"home.intro":
 			"A guided path through options flow, market structure, and evidence. Start with contracts and executions, then build toward independent research.",
-		"home.startFree": "Start learning free",
+		"home.startFree": "Start the free foundations course",
 		"home.freeNote": "{minutes} minutes · No Tradely membership required",
 		"home.explore": "Explore the curriculum",
 		"home.pauseMotion": "Pause motion",
@@ -223,6 +223,22 @@ const messages = {
 		"course.freeLessons": "{count} free lessons",
 		"course.freeLessonsDescription":
 			"Open any of these lessons without signing in or paying. Their numbers show where they fit in the full curriculum below.",
+		"course.foundationsTitle": "Free foundations: start here",
+		"course.foundationsDescription":
+			"Learn contracts, rights, premium and settlement in order. All four lessons include exercises and feedback, with no sign-in or payment required.",
+		"course.researchTitle": "Already know the basics? Try a research lesson.",
+		"course.researchDescription":
+			"Three optional free previews of evidence-led research. These assume prior options knowledge; suggested prerequisites may belong to the paid course.",
+		"course.foundationCount": "{count} free foundation lessons",
+		"course.researchCount": "{count} optional research previews",
+		"course.foundationNextTitle":
+			"Next: read quotes, executions, and options flow",
+		"course.foundationNextDescription":
+			"Continue beyond contract fundamentals with execution analysis, flow interpretation and evidence-led research in the full course. Compare the Lifetime Course Pass and membership options.",
+		"course.foundationNextAction": "Explore full course access",
+		"complete.signInToSave": "Sign in to save lesson completion",
+		"complete.previewNote":
+			"Practice is free. Sign in to record completion; anonymous exercise progress resets on reload.",
 		"course.yourProgress": "Your progress",
 		"course.curriculum": "Curriculum",
 		"course.curriculumDescription":
@@ -236,7 +252,7 @@ const messages = {
 			"Tradely could not confirm the current billing state. Retry before assuming this account needs to upgrade.",
 		"access.signInTitle": "Sign in to continue",
 		"access.signInDescription":
-			"This member lesson is tied to an individual Tradely account and learning record.",
+			"This is a paid lesson. Sign in if you already have access, or compare the Lifetime Course Pass and membership options.",
 		"access.authUnavailable":
 			"Sign-in is temporarily unavailable. Please try again later.",
 		"access.membershipTitle": "Paid lesson",
@@ -265,7 +281,7 @@ const messages = {
 		"pricing.coursePass": "Lifetime Course Pass",
 		"pricing.heading": "Keep the whole learning path open.",
 		"pricing.description":
-			"Choose ongoing membership for all Tradely learning, or buy permanent access to the current Evidence-Led Options Research course. TradingFlow remains a separate partnered service.",
+			"Buy permanent access to Evidence-Led Options Research with the Lifetime Course Pass, or choose ongoing membership for all Tradely learning. TradingFlow remains a separate partnered service.",
 		"pricing.descriptionMembershipOnly":
 			"Choose ongoing membership for all Tradely learning and keep every current course open while your membership is active. TradingFlow remains a separate partnered service.",
 		"pricing.taxNote":
@@ -367,7 +383,7 @@ const messages = {
 		"home.titleVerify": "练习独立判断。",
 		"home.intro":
 			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
-		"home.startFree": "免费开始学习",
+		"home.startFree": "开始免费基础课程",
 		"home.freeNote": "{minutes} 分钟 · 无需 Tradely 会员",
 		"home.explore": "探索课程路径",
 		"home.pauseMotion": "暂停动画",
@@ -535,6 +551,21 @@ const messages = {
 		"course.freeLessons": "{count} 节免费课程",
 		"course.freeLessonsDescription":
 			"以下课程无需登录或付款即可学习。课号对应它们在下方完整课程目录中的位置。",
+		"course.foundationsTitle": "免费基础课程：从这里开始",
+		"course.foundationsDescription":
+			"依次学习合约、权利、权利金与结算。四节课均包含练习与反馈，无需登录或付费。",
+		"course.researchTitle": "已掌握基础？试学研究课程。",
+		"course.researchDescription":
+			"三节可选的免费研究试学课，需要已有期权知识；建议的先修内容可能属于付费课程。",
+		"course.foundationCount": "{count} 节免费基础课",
+		"course.researchCount": "{count} 节可选研究试学课",
+		"course.foundationNextTitle": "下一步：阅读报价、成交与期权成交流",
+		"course.foundationNextDescription":
+			"在完整课程中继续学习成交分析、成交流解读与证据研究。查看课程终身通行证和会员方案。",
+		"course.foundationNextAction": "查看完整课程访问方案",
+		"complete.signInToSave": "登录以保存课程完成记录",
+		"complete.previewNote":
+			"练习免费。登录可记录课程完成情况；匿名练习进度会在重新加载后重置。",
 		"course.yourProgress": "你的进度",
 		"course.curriculum": "课程目录",
 		"course.curriculumDescription":
@@ -548,7 +579,7 @@ const messages = {
 			"Tradely 无法确认当前账单状态。请先重试，再判断是否需要升级账户。",
 		"access.signInTitle": "登录后继续",
 		"access.signInDescription":
-			"这节会员课程绑定到个人 Tradely 账户和学习记录。",
+			"这是一节付费课程。已有访问权可直接登录，或查看课程终身通行证与会员方案。",
 		"access.authUnavailable": "登录暂时不可用，请稍后重试。",
 		"access.membershipTitle": "付费课程",
 		"access.membershipDescription":
@@ -575,7 +606,7 @@ const messages = {
 		"pricing.coursePass": "课程终身通行证",
 		"pricing.heading": "保持完整学习路径开放。",
 		"pricing.description":
-			"你可以选择持续会员以访问所有 Tradely 学习内容，或一次性购买当前《证据驱动的期权研究》课程的永久访问权。TradingFlow 仍是独立的合作服务。",
+			"你可以通过课程终身通行证，一次性购买《证据驱动的期权研究》的永久访问权，或选择持续会员以访问所有 Tradely 学习内容。TradingFlow 仍是独立的合作服务。",
 		"pricing.descriptionMembershipOnly":
 			"选择持续会员，在会员有效期间访问全部 Tradely 学习内容与当前课程。TradingFlow 仍是独立的合作服务。",
 		"pricing.taxNote":

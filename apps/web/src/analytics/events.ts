@@ -109,7 +109,7 @@ export type AnalyticsEventMap = {
 		to_locale: Locale;
 	};
 	auth_sign_in_opened: {
-		surface: "header" | "lesson_access" | "pricing";
+		surface: "header" | "lesson_access" | "pricing" | "lesson_completion";
 	};
 	auth_session_established: {
 		provider: "neon";
@@ -148,7 +148,7 @@ export type AnalyticsEventMap = {
 		reason: "signed_out" | "access_denied" | "unavailable";
 	};
 	membership_cta_clicked: {
-		surface: "lesson_access";
+		surface: "lesson_access" | "foundation_completion";
 		lesson_id?: string;
 	};
 	billing_status_unavailable: {

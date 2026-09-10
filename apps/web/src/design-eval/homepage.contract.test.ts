@@ -59,7 +59,7 @@ describe("homepage design contract", () => {
 		).toBeGreaterThan(0);
 		expect(
 			tradingFlowCourse.lessons.filter((lesson) => lesson.access === "preview"),
-		).toHaveLength(3);
+		).toHaveLength(7);
 		expect(tradingFlowCourse.lessons[0]?.slug).toBe("option-contracts");
 	});
 

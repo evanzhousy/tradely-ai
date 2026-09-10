@@ -368,7 +368,7 @@
 		0 0 0 1px var(--border),
 		0 12px 32px rgb(0 0 0 / 3%);
 }
-.pricing-offer[data-offer="membership"] {
+.pricing-offer[data-offer="lifetime_course"] {
 	box-shadow:
 		0 0 0 1px var(--ring),
 		0 12px 32px rgb(0 0 0 / 4%);

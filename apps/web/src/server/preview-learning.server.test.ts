@@ -28,7 +28,15 @@ describe("public practice boundary", () => {
 			}).success,
 		).toBe(false);
 	});
-	it.each(["audited-boundary", "symbol-universe", "rank-symbols"])(
+	it.each([
+		"option-contracts",
+		"option-rights",
+		"premium-payoff",
+		"expiration-settlement",
+		"audited-boundary",
+		"symbol-universe",
+		"rank-symbols",
+	])(
 		"grades a free lesson from validated actions without account storage: %s",
 		(lessonId) => {
 			const actions: LearningAction[] = [];

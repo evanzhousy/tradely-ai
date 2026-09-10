@@ -26,7 +26,7 @@ import {
 	PricingAccountActions,
 	PricingCheckoutButton,
 } from "@/components/pricing-actions";
-import { getFreeLessons } from "@/content/course";
+import { getFreeLearningPath, getFreeLessons } from "@/content/course";
 import {
 	type PricingCheckoutResult,
 	parsePricingSearch,
@@ -75,7 +75,7 @@ function OfferCard({
 }) {
 	const { locale, t } = useI18n();
 	return (
-		<Card className="pricing-offer h-full" data-offer={offer}>
+		<Card className="pricing-offer h-full" data-offer={offer} id={offer}>
 			<CardHeader>
 				<div className="offer-label">
 					<LayersIcon size={14} aria-hidden="true" />
@@ -149,6 +149,8 @@ function PricingPage() {
 	const { t, locale } = useI18n();
 	const course = getLocalizedCourse(locale);
 	const freeLessons = getFreeLessons(course.lessons);
+	const foundations = getFreeLearningPath(course.lessons, "foundations");
+	const researchPreviews = getFreeLearningPath(course.lessons, "research");
 	const { capture, isCapturing } = useAnalytics();
 	const trackedCheckoutReturn = useRef<string | null>(null);
 	const verifiedSession = useRef<string | null>(null);
@@ -250,13 +252,13 @@ function PricingPage() {
 							: "Try the learning method before choosing your next step."
 					}
 					footer={
-						freeLessons[0] ? (
+						foundations[0] ? (
 							<InteractiveHoverLink
 								variant="outline"
 								render={
 									<Link
 										to="/learn/$lessonSlug"
-										params={{ lessonSlug: freeLessons[0].slug }}
+										params={{ lessonSlug: foundations[0].slug }}
 									/>
 								}
 							>
@@ -268,7 +270,12 @@ function PricingPage() {
 					<div className="flex flex-col gap-7">
 						<p className="pricing-price">$0</p>
 						<ul className="flex flex-col gap-3 text-sm">
-							<li>{t("course.freeLessons", { count: freeLessons.length })}</li>
+							<li>
+								{t("course.foundationCount", { count: foundations.length })}
+							</li>
+							<li>
+								{t("course.researchCount", { count: researchPreviews.length })}
+							</li>
 							<li>
 								{locale === "zh"
 									? "包含交互练习与研究案例"
@@ -287,15 +294,6 @@ function PricingPage() {
 						</ul>
 					</div>
 				</BentoCard>
-				<OfferCard
-					offer="membership"
-					summary={offers.membership}
-					title={t("pricing.membership")}
-					description={t("pricing.membershipDescription")}
-					features={membershipFeatures}
-					active={access.billingState === "active"}
-					isSignedIn={access.isSignedIn}
-				/>
 				{offers.lifetimeCheckoutEnabled ? (
 					<OfferCard
 						offer="lifetime_course"
@@ -307,6 +305,15 @@ function PricingPage() {
 						isSignedIn={access.isSignedIn}
 					/>
 				) : null}
+				<OfferCard
+					offer="membership"
+					summary={offers.membership}
+					title={t("pricing.membership")}
+					description={t("pricing.membershipDescription")}
+					features={membershipFeatures}
+					active={access.billingState === "active"}
+					isSignedIn={access.isSignedIn}
+				/>
 			</div>
 
 			<PricingAccountActions

@@ -13,7 +13,7 @@ import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
-import { getFreeLessons } from "@/content/course";
+import { getFreeLearningPath, getFreeLessons } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
@@ -57,7 +57,7 @@ function HomeComponent() {
 	useBillingStatusAnalytics(progress.accessUnavailable, "course_progress");
 	const course = getLocalizedCourse(locale);
 	const freeLessons = getFreeLessons(course.lessons);
-	const startLesson = freeLessons[0];
+	const startLesson = getFreeLearningPath(course.lessons, "foundations")[0];
 	const totalMinutes = course.lessons.reduce(
 		(sum, lesson) => sum + lesson.minutes,
 		0,

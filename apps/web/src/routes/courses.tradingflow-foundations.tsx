@@ -6,7 +6,7 @@ import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseProgress } from "@/components/course-progress";
 import { PageIntro } from "@/components/page-intro";
-import { getFreeLessons } from "@/content/course";
+import { getFreeLearningPath, getFreeLessons } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -27,7 +27,7 @@ function CoursePage() {
 	const freeLessons = getFreeLessons(course.lessons);
 	const startLesson = progress.canAccessPaid
 		? course.lessons[0]
-		: freeLessons[0];
+		: getFreeLearningPath(course.lessons, "foundations")[0];
 	return (
 		<main className="page-shell">
 			<PageIntro

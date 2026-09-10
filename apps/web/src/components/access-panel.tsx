@@ -62,6 +62,18 @@ export function AccessPanel({
 					) : (
 						<Button disabled>{t("access.authUnavailable")}</Button>
 					)}
+					<Link
+						to="/pricing"
+						className={buttonVariants({ variant: "outline" })}
+						onClick={() =>
+							capture("membership_cta_clicked", {
+								surface: "lesson_access",
+								lesson_id: lessonId,
+							})
+						}
+					>
+						{t("access.viewMembership")}
+					</Link>
 				</AlertDescription>
 			</Alert>
 		);
