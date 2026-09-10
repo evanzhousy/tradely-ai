@@ -2070,21 +2070,17 @@
 	line-height: 1.6;
 	color: var(--muted-foreground);
 }
-.platform-coaching-preview {
-	margin: 0;
-	border: 1px solid var(--border);
-	border-radius: 12px;
-	overflow: hidden;
-	background: var(--background);
-}
-.platform-coaching-preview figcaption {
-	padding: 12px 18px;
-	border-bottom: 1px solid var(--border);
+/* Widget motifs adapted from Animata; responsive and driven by shared demo state. */
+.platform-widget-caption {
+	margin: 0 0 14px;
 	font: 10px / 1.5 var(--font-mono);
 	color: var(--muted-foreground);
 }
-.platform-explanation {
-	padding: 22px;
+.platform-widget-hint {
+	margin: 8px 0 0;
+	font-size: 11px;
+	line-height: 1.6;
+	color: var(--muted-foreground);
 }
 .platform-preview-label {
 	margin: 0 0 8px;
@@ -2092,95 +2088,216 @@
 	line-height: 1.5;
 	color: var(--muted-foreground);
 }
-.platform-explanation blockquote {
+.platform-checkpoints-widget {
 	margin: 0;
-	font-size: 18px;
-	line-height: 1.6;
-	letter-spacing: -0.02em;
-}
-.platform-feedback {
-	display: grid;
-	gap: 22px;
-	margin: 0;
-	padding: 22px;
-	background: var(--muted);
-}
-.platform-feedback dt {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 12px;
-	font-weight: 600;
-	margin-bottom: 8px;
-}
-.platform-feedback dt svg {
-	flex-shrink: 0;
-}
-.platform-feedback dd {
-	margin: 0;
-	line-height: 1.7;
-	color: var(--muted-foreground);
-}
-.platform-followup {
-	padding: 22px;
-}
-.platform-followup > p:last-child {
-	margin: 0;
-	line-height: 1.7;
-}
-.platform-sync-devices {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 16px;
-	padding-block: 12px 24px;
-}
-.platform-bento .platform-sync-devices > svg {
-	width: 30px;
-	height: 30px;
-	stroke-width: 1.5;
-	flex-shrink: 0;
-}
-.platform-sync-devices > span {
-	flex: 1;
-	max-width: 72px;
-	border-top: 1px dashed var(--border);
-}
-.platform-saved-items {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px 20px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-.platform-bento .platform-saved-items li {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 12px;
-}
-.platform-practice-preview {
-	padding: 16px 18px;
+	padding: 20px;
+	border-radius: 18px;
 	border: 1px solid var(--border);
-	border-radius: 10px;
 	background: var(--background);
 }
-.platform-practice-preview > p:last-of-type {
+.platform-checkpoints-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+.platform-checkpoints-heading p {
 	margin: 0;
-	line-height: 1.6;
+	font-size: 14px;
+	font-weight: 550;
+}
+.platform-checkpoints-heading output {
+	display: flex;
+	align-items: baseline;
+	font-size: 34px;
+	font-weight: 550;
+	letter-spacing: -0.05em;
+	font-variant-numeric: tabular-nums;
+}
+.platform-checkpoints-heading output span {
+	font-size: 15px;
+	margin-left: 2px;
+}
+.platform-checkpoint-rings {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	padding: 0;
+	margin: 20px 0 16px;
+	list-style: none;
+}
+.platform-bento .platform-checkpoint-rings > li {
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	gap: 9px;
+	font-size: 11px;
+}
+.platform-checkpoint-rings .circular-progress {
+	width: 56px;
+	height: 56px;
+}
+.platform-checkpoint-rings .circular-progress > span {
+	font-size: 14px;
+}
+.platform-checkpoint-rings .circular-progress small {
+	font-size: 9px;
+}
+.platform-checkpoints-status {
+	margin: 0;
+	font-size: 12px;
 	font-weight: 500;
 }
-.platform-practice-answer {
-	margin-top: 12px;
-	padding-top: 12px;
-	border-top: 1px solid var(--border);
+.platform-notes-widget {
+	max-width: 520px;
+	margin: 0 auto;
+	padding: 0 8px 10px;
 }
-.platform-practice-answer p {
+.platform-note-original {
+	padding: 18px 20px;
+	border: 1px solid var(--border);
+	border-radius: 14px;
+	background: var(--background);
+}
+.platform-note-original blockquote {
 	margin: 0;
-	font-size: 13px;
-	line-height: 1.7;
+	font-size: 17px;
+	line-height: 1.6;
+	letter-spacing: -0.015em;
+}
+.platform-feedback-note {
+	position: relative;
+	margin: 22px 0 0;
+	padding: 28px 24px;
+	border-radius: 6px 6px 24px 6px;
+	background: color-mix(in oklch, var(--primary) 38%, white);
+	color: var(--primary-foreground);
+	box-shadow: 0 12px 25px -20px #0007;
+	transform: rotate(-1deg);
+}
+.platform-feedback-note::before {
+	content: "";
+	position: absolute;
+	top: -9px;
+	left: calc(50% - 30px);
+	width: 60px;
+	height: 18px;
+	background: color-mix(in oklch, var(--primary) 45%, transparent);
+	transform: rotate(3deg);
+}
+.platform-note-heading {
+	margin: 0 0 24px;
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.4;
+	letter-spacing: -0.025em;
+}
+.platform-feedback-note dl {
+	display: grid;
+	gap: 24px;
+	margin: 0;
+}
+.platform-feedback-note dt {
+	margin-bottom: 8px;
+	font-size: 11px;
+	font-weight: 600;
+}
+.platform-feedback-note dd {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.75;
+}
+.platform-evidence-widget {
+	padding: 18px 20px;
+	border-radius: 18px;
+	border: 1px solid var(--border);
+	background: var(--background);
+}
+.platform-evidence-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+.platform-evidence-heading p {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 550;
+}
+.platform-evidence-heading > span {
+	font-size: 10px;
+	border-radius: 6px;
+	padding: 3px 7px;
+	background: var(--muted);
 	color: var(--muted-foreground);
+}
+.platform-evidence-widget fieldset {
+	min-width: 0;
+	margin: 0;
+	border: 0;
+	padding: 0;
+}
+.platform-checklist-row {
+	position: relative;
+	display: flex;
+	align-items: center;
+	min-height: 48px;
+	padding: 10px 0;
+	gap: 12px;
+	border-bottom: 1px solid var(--border);
+	font-size: 14px;
+	line-height: 1.5;
+	cursor: pointer;
+}
+.platform-checklist-row input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+	margin: 0;
+}
+.platform-checkbox-mark {
+	display: grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	border: 1.5px solid var(--muted-foreground);
+	border-radius: 50%;
+	color: transparent;
+}
+.platform-checklist-row input:checked + .platform-checkbox-mark {
+	background: var(--primary);
+	border-color: var(--primary);
+	color: var(--primary-foreground);
+}
+.platform-checklist-row input:focus-visible + .platform-checkbox-mark {
+	outline: 2px solid var(--ring);
+	outline-offset: 3px;
+}
+.platform-checklist-row input:checked ~ span:last-child {
+	color: var(--muted-foreground);
+	text-decoration: line-through;
+}
+.platform-checklist-footer {
+	margin-top: 14px;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.platform-checkpoint-rings .circular-progress-value {
+		transition: stroke-dashoffset 220ms ease-out;
+	}
+	.platform-checkbox-mark {
+		transition:
+			background-color 150ms ease-out,
+			border-color 150ms ease-out;
+	}
 }
 .platform-learning-steps {
 	display: grid;
@@ -2257,9 +2374,15 @@
 	.platform-bento .bento-card {
 		--card-spacing: 22px;
 	}
-	.platform-explanation,
-	.platform-feedback,
-	.platform-followup {
-		padding: 18px;
+	.platform-notes-widget {
+		padding-inline: 0;
+	}
+	.platform-feedback-note {
+		padding: 24px 20px;
+		transform: none;
+	}
+	.platform-checkpoints-widget,
+	.platform-evidence-widget {
+		padding: 16px;
 	}
 }

@@ -2,26 +2,38 @@ import { BentoCard, BentoGrid } from "@tradely/ui/components/bento-grid";
 import { Button } from "@tradely/ui/components/button";
 import {
 	ArrowRightIcon,
-	CheckIcon,
 	CloudCheckIcon,
 	LanguagesIcon,
-	LaptopIcon,
 	MousePointer2Icon,
-	RotateCcwIcon,
 	RouteIcon,
-	SmartphoneIcon,
 	SparklesIcon,
 } from "lucide-react";
-import { useId, useState } from "react";
-import { coachingCopy } from "@/features/learning/coaching-copy";
+import { useState } from "react";
 import { learningCopy } from "@/features/learning/copy";
 import { useI18n } from "@/i18n/provider";
+
+import {
+	CoachingNotesWidget,
+	EvidenceChecklistWidget,
+	LearningCheckpointsWidget,
+} from "./landing-platform-widgets";
+import {
+	initialSampleCheckpoints,
+	type SampleCheckpointId,
+} from "./platform-widget-copy";
 
 // Public capability previews belong here; account state and AI requests stay in lessons.
 export function LandingPlatformFeatures() {
 	const { t, locale, setLocale } = useI18n();
-	const [revealed, setRevealed] = useState(false);
-	const explanationId = useId();
+	const [checked, setChecked] = useState<readonly SampleCheckpointId[]>(
+		initialSampleCheckpoints,
+	);
+	const toggleCheckpoint = (id: SampleCheckpointId) =>
+		setChecked((current) =>
+			current.includes(id)
+				? current.filter((item) => item !== id)
+				: [...current, id],
+		);
 	return (
 		<section
 			id="research-demo"
@@ -52,37 +64,13 @@ export function LandingPlatformFeatures() {
 						<p className="platform-note">{t("home.features.aiAvailability")}</p>
 					}
 				>
-					<figure className="platform-coaching-preview">
-						<figcaption>{t("home.features.aiExample")}</figcaption>
-						<div className="platform-explanation">
-							<p className="platform-preview-label">
-								{coachingCopy.before[locale]}
-							</p>
-							<blockquote>{t("home.features.aiAnswer")}</blockquote>
-						</div>
-						<dl className="platform-feedback">
-							<div>
-								<dt>
-									<CheckIcon size={15} aria-hidden="true" />
-									{coachingCopy.support[locale]}
-								</dt>
-								<dd>{t("home.features.aiSupport")}</dd>
-							</div>
-							<div>
-								<dt>
-									<RotateCcwIcon size={15} aria-hidden="true" />
-									{coachingCopy.gaps[locale]}
-								</dt>
-								<dd>{t("home.features.aiGap")}</dd>
-							</div>
-						</dl>
-						<div className="platform-followup">
-							<p className="platform-preview-label">
-								{coachingCopy.question[locale]}
-							</p>
-							<p>{t("home.features.aiQuestion")}</p>
-						</div>
-					</figure>
+					<CoachingNotesWidget
+						locale={locale}
+						caption={t("home.features.aiExample")}
+						explanation={t("home.features.aiAnswer")}
+						feedback={t("home.features.aiGap")}
+						question={t("home.features.aiQuestion")}
+					/>
 				</BentoCard>
 				<BentoCard
 					className="platform-bento-progress"
@@ -95,23 +83,7 @@ export function LandingPlatformFeatures() {
 					title={<h3>{t("home.features.progressTitle")}</h3>}
 					description={t("home.features.progressDescription")}
 				>
-					<div className="platform-sync-devices" aria-hidden="true">
-						<LaptopIcon />
-						<span />
-						<CloudCheckIcon />
-						<span />
-						<SmartphoneIcon />
-					</div>
-					<ul className="platform-saved-items">
-						<li>
-							<CheckIcon size={15} aria-hidden="true" />
-							{t("home.features.savedLessons")}
-						</li>
-						<li>
-							<CheckIcon size={15} aria-hidden="true" />
-							{t("home.features.savedPractice")}
-						</li>
-					</ul>
+					<LearningCheckpointsWidget locale={locale} checked={checked} />
 				</BentoCard>
 				<BentoCard
 					className="platform-bento-practice"
@@ -123,35 +95,13 @@ export function LandingPlatformFeatures() {
 					}
 					title={<h3>{t("home.features.practiceTitle")}</h3>}
 					description={t("home.features.practiceDescription")}
-					footer={
-						<Button
-							variant="outline"
-							aria-expanded={revealed}
-							aria-controls={explanationId}
-							onClick={() => setRevealed(!revealed)}
-						>
-							{t(revealed ? "home.demoHide" : "home.demoReveal")}
-							{revealed ? (
-								<RotateCcwIcon data-icon="inline-end" aria-hidden="true" />
-							) : (
-								<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-							)}
-						</Button>
-					}
 				>
-					<div className="platform-practice-preview">
-						<p className="platform-preview-label">
-							{t("home.features.practiceExample")}
-						</p>
-						<p>{t("home.demoQuestion")}</p>
-						<div
-							id={explanationId}
-							className="platform-practice-answer"
-							hidden={!revealed}
-						>
-							<p>{t("home.demoInterpreted")}</p>
-						</div>
-					</div>
+					<EvidenceChecklistWidget
+						locale={locale}
+						checked={checked}
+						onToggle={toggleCheckpoint}
+						onReset={() => setChecked(initialSampleCheckpoints)}
+					/>
 				</BentoCard>
 				<BentoCard
 					className="platform-bento-path"
