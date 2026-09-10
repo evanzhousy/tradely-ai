@@ -11,7 +11,7 @@ import {
 import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
-import { LandingResearchDemo } from "@/components/landing-research-demo";
+import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
 import { getFreeLessons } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -201,7 +201,7 @@ function HomeComponent() {
 				</ol>
 			</section>
 			<div className="landing-study-section">
-				<LandingResearchDemo />
+				<LandingPlatformFeatures />
 			</div>
 			<section
 				id="curriculum"

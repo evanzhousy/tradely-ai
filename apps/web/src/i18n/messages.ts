@@ -56,24 +56,50 @@ const messages = {
 		"home.pathOne": "Define your question",
 		"home.pathTwo": "Inspect the evidence",
 		"home.pathThree": "Build your research",
-		"home.demoLabel": "Inside the learning experience",
-		"home.demoTitle": "A better question changes the whole picture.",
-		"home.demoDescription":
-			"Every lesson connects a concept to a decision. Inspect the evidence, challenge your first interpretation, then practice the method in TradingFlow.",
-		"home.demoLink": "Explore this lesson",
-		"home.demoExercise": "A sample research exercise",
+		"home.features.label": "Built around your learning",
+		"home.features.title": "A place to practice. A way to keep growing.",
+		"home.features.description":
+			"Save your progress, work through evidence, and find a clearer next step. Tradely brings the tools together.",
+		"home.features.aiLabel": "AI reasoning coach",
+		"home.features.pilot": "Pilot",
+		"home.features.aiTitle": "A second look at your reasoning.",
+		"home.features.aiDescription":
+			"Explain your answer, get feedback on the evidence, then refine your reasoning with a second review.",
+		"home.features.aiAvailability":
+			"Pilot for eligible accounts in selected guided cases.",
+		"home.features.aiExample": "Illustrative coaching preview",
+		"home.features.aiAnswer":
+			"The symbol ranks first, so its price should rise.",
+		"home.features.aiSupport":
+			"You identified its position within the comparison.",
+		"home.features.aiGap":
+			"A rank alone does not establish price direction. Check the evidence behind it.",
+		"home.features.aiQuestion":
+			"Could its rank change even if its own value stayed the same?",
+		"home.features.progressLabel": "Saved progress",
+		"home.features.progressTitle": "Pick up where you left off.",
+		"home.features.progressDescription":
+			"Sign in to keep lesson progress and saved practice with your account, across devices.",
+		"home.features.savedLessons": "Lesson completion",
+		"home.features.savedPractice": "Saved practice answers",
+		"home.features.practiceTitle": "Make a call. Check the evidence.",
+		"home.features.practiceDescription":
+			"Explore cases, inspect the evidence, and check what your answer supports.",
+		"home.features.practiceExample": "Try a sample",
+		"home.features.pathLabel": "Guided learning",
+		"home.features.pathTitle": "A clear next step.",
+		"home.features.pathDescription":
+			"Work from an initial judgment through guided practice, then apply the method to an independent case.",
+		"home.features.languageLabel": "English & Chinese",
+		"home.features.languageTitle": "Learn in your language.",
+		"home.features.languageDescription":
+			"Switch lesson content and practice prompts between English and Chinese.",
+		"home.features.languageSwitch": "Switch to Chinese",
 		"home.demoQuestion": "A symbol ranks first. What does that tell you?",
-		"home.demoObservation": "The observation",
-		"home.demoObserved": "It leads this ranked universe.",
-		"home.demoConclusion": "The interpretation",
 		"home.demoInterpreted":
 			"It deserves inspection. Direction and intent still need evidence.",
 		"home.demoReveal": "Reveal the reasoning",
 		"home.demoHide": "Reset the exercise",
-		"home.demoReason":
-			"Check the session and comparison universe. Read the underlying fields. Write one piece of counter-evidence that would change your priority.",
-		"home.demoCaption":
-			"Illustrative exercise · Based on the Rank Symbols lesson",
 		"home.curriculumLabel": "Your learning path",
 		"home.curriculumTitle": "The whole path. Nothing hidden.",
 		"home.curriculumIntro":
@@ -353,22 +379,46 @@ const messages = {
 		"home.pathOne": "定义研究问题",
 		"home.pathTwo": "检视相关证据",
 		"home.pathThree": "形成研究记录",
-		"home.demoLabel": "走进学习体验",
-		"home.demoTitle": "一个更好的问题，带来不同的视角。",
-		"home.demoDescription":
-			"每一课把概念连接到一个具体决定。检视证据，质疑最初的解读，再到 TradingFlow 中练习这个方法。",
-		"home.demoLink": "探索这一课",
-		"home.demoExercise": "研究练习示例",
+		"home.features.label": "为你的学习而设计",
+		"home.features.title": "从练习出发，让每一步都有积累。",
+		"home.features.description":
+			"保存进度，检视证据，找到清晰的下一步。Tradely 将学习所需的工具放在一起。",
+		"home.features.aiLabel": "AI 推理辅导",
+		"home.features.pilot": "试点",
+		"home.features.aiTitle": "为你的判断，多提供一个视角。",
+		"home.features.aiDescription":
+			"解释你的答案，获得基于证据的反馈，再通过第二轮检查完善理由。",
+		"home.features.aiAvailability":
+			"仅向符合条件的试点账户开放，适用于部分引导案例。",
+		"home.features.aiExample": "辅导反馈示例",
+		"home.features.aiAnswer": "这个标的排名第一，所以价格应该上涨。",
+		"home.features.aiSupport": "你识别了它在当前比较范围内的位置。",
+		"home.features.aiGap":
+			"单凭排名无法确定价格方向，还需要检查排名背后的证据。",
+		"home.features.aiQuestion": "如果它自身的数值不变，排名是否仍可能改变？",
+		"home.features.progressLabel": "进度保存",
+		"home.features.progressTitle": "随时回来，接着学。",
+		"home.features.progressDescription":
+			"登录后，课程进度和已保存的练习会保留在你的账户中，方便跨设备继续学习。",
+		"home.features.savedLessons": "课程完成记录",
+		"home.features.savedPractice": "已保存的练习答案",
+		"home.features.practiceTitle": "做出判断，再检查证据。",
+		"home.features.practiceDescription":
+			"探索案例、检视证据，检查你的答案能够支持什么。",
+		"home.features.practiceExample": "试试这个示例",
+		"home.features.pathLabel": "循序学习",
+		"home.features.pathTitle": "每一步，都有方向。",
+		"home.features.pathDescription":
+			"从初步判断出发，通过引导练习，再将方法应用到独立案例。",
+		"home.features.languageLabel": "中英双语",
+		"home.features.languageTitle": "用熟悉的语言学习。",
+		"home.features.languageDescription":
+			"在英文和中文之间切换课程内容与练习题目。",
+		"home.features.languageSwitch": "切换为英文",
 		"home.demoQuestion": "一个标的排名第一，能说明什么？",
-		"home.demoObservation": "观察到的事实",
-		"home.demoObserved": "它在当前比较范围内排名领先。",
-		"home.demoConclusion": "如何解读",
 		"home.demoInterpreted": "它值得进一步检视。方向和意图仍需证据支持。",
 		"home.demoReveal": "查看推理过程",
 		"home.demoHide": "重置练习",
-		"home.demoReason":
-			"核对交易时段和比较范围，阅读排名背后的字段，并写下一条足以改变研究优先级的反向证据。",
-		"home.demoCaption": "示意练习 · 基于 Rank Symbols 课程",
 		"home.curriculumLabel": "你的学习路径",
 		"home.curriculumTitle": "完整路径，一目了然。",
 		"home.curriculumIntro":

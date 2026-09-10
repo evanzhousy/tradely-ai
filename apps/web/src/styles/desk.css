@@ -2016,82 +2016,250 @@
 	}
 }
 
-/* A learning overview: one interactive exercise, two real concept maps, course facts. */
-.landing-notebook .research-bento-section {
+/* Platform capabilities. Previews are illustrative; real saved state lives in lessons. */
+.landing-notebook .platform-features {
 	grid-template-columns: minmax(0, 1fr);
 	gap: 36px;
 }
-.research-bento-section .observatory-study-copy {
-	max-width: 760px;
+.platform-features .observatory-study-copy {
+	max-width: 780px;
 }
-.research-bento-section .observatory-study-copy h2 {
-	max-width: 24ch;
+.platform-features .observatory-study-copy h2 {
+	max-width: 25ch;
 }
-.research-bento-section .observatory-study-copy > p:not(.observatory-label) {
-	max-width: 64ch;
+.platform-features .observatory-study-copy > p:not(.observatory-label) {
+	max-width: 65ch;
 }
-.research-bento.bento-grid {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+.platform-bento.bento-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 16px;
 	align-items: stretch;
 }
-.research-bento .bento-card,
-.research-bento .research-bento-exercise {
+.platform-bento .bento-card {
 	min-width: 0;
+	border-radius: 16px;
+	--card-spacing: 28px;
 }
-.research-bento .research-bento-exercise {
-	grid-column: span 2;
+.platform-bento .bento-card h3 {
+	font-size: clamp(22px, 2vw, 28px);
+	line-height: 1.2;
+	letter-spacing: -0.035em;
+	text-wrap: balance;
+}
+.platform-bento .bento-card-eyebrow {
+	margin-bottom: 10px;
+	gap: 8px;
+	font-size: 11px;
+	font-family: var(--font-mono);
+	color: var(--muted-foreground);
+}
+.platform-bento .platform-bento-ai {
 	grid-row: span 2;
-	align-self: stretch;
+	border-top: 3px solid var(--primary);
 }
-.research-bento-visual {
-	grid-column: span 2;
+.platform-pilot {
+	margin-left: auto;
+	padding: 3px 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	color: var(--foreground);
 }
-.research-bento .bento-card {
-	border-radius: 12px;
-}
-.research-bento .bento-card-visual {
-	height: auto;
-	padding: 8px 24px 0;
-}
-.research-bento .lesson-infographic {
-	display: block;
-	width: 100%;
-	max-width: 340px;
-	margin-inline: auto;
-}
-.research-bento .bento-card h3 {
-	font-size: 18px;
-	line-height: 1.35;
-}
-.research-bento-stat {
-	grid-column: span 2;
-}
-.research-bento-number {
+.platform-note {
 	margin: 0;
-	font-size: clamp(56px, 6vw, 80px);
-	font-weight: 600;
-	line-height: 1;
-	letter-spacing: -0.06em;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--muted-foreground);
 }
-.research-bento .research-bento-free {
+.platform-coaching-preview {
+	margin: 0;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--background);
+}
+.platform-coaching-preview figcaption {
+	padding: 12px 18px;
+	border-bottom: 1px solid var(--border);
+	font: 10px / 1.5 var(--font-mono);
+	color: var(--muted-foreground);
+}
+.platform-explanation {
+	padding: 22px;
+}
+.platform-preview-label {
+	margin: 0 0 8px;
+	font-size: 11px;
+	line-height: 1.5;
+	color: var(--muted-foreground);
+}
+.platform-explanation blockquote {
+	margin: 0;
+	font-size: 18px;
+	line-height: 1.6;
+	letter-spacing: -0.02em;
+}
+.platform-feedback {
+	display: grid;
+	gap: 22px;
+	margin: 0;
+	padding: 22px;
+	background: var(--muted);
+}
+.platform-feedback dt {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+.platform-feedback dt svg {
+	flex-shrink: 0;
+}
+.platform-feedback dd {
+	margin: 0;
+	line-height: 1.7;
+	color: var(--muted-foreground);
+}
+.platform-followup {
+	padding: 22px;
+}
+.platform-followup > p:last-child {
+	margin: 0;
+	line-height: 1.7;
+}
+.platform-sync-devices {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	padding-block: 12px 24px;
+}
+.platform-bento .platform-sync-devices > svg {
+	width: 30px;
+	height: 30px;
+	stroke-width: 1.5;
+	flex-shrink: 0;
+}
+.platform-sync-devices > span {
+	flex: 1;
+	max-width: 72px;
+	border-top: 1px dashed var(--border);
+}
+.platform-saved-items {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 20px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.platform-bento .platform-saved-items li {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+}
+.platform-practice-preview {
+	padding: 16px 18px;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	background: var(--background);
+}
+.platform-practice-preview > p:last-of-type {
+	margin: 0;
+	line-height: 1.6;
+	font-weight: 500;
+}
+.platform-practice-answer {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid var(--border);
+}
+.platform-practice-answer p {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--muted-foreground);
+}
+.platform-learning-steps {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.platform-bento .platform-learning-steps li {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	border-top: 1px solid var(--border);
+	padding-top: 14px;
+	font-size: 13px;
+	line-height: 1.5;
+}
+.platform-learning-steps span {
+	font: 12px / 1.5 var(--font-mono);
+	color: var(--muted-foreground);
+}
+.platform-bento .platform-bento-language {
 	background: var(--primary);
 	color: var(--primary-foreground);
 }
-.research-bento-free .observatory-text-link {
+.platform-bento-language .bento-card-eyebrow,
+.platform-bento-language [data-slot="card-description"] {
 	color: inherit;
 }
-@media (max-width: 639px) {
-	.research-bento.bento-grid {
+.platform-language-pair {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+.platform-language-pair span {
+	display: grid;
+	place-items: center;
+	width: 78px;
+	height: 78px;
+	border: 1px solid currentColor;
+	border-radius: 14px;
+	font-size: 38px;
+	font-weight: 550;
+	letter-spacing: -0.05em;
+}
+.platform-language-pair span:first-child {
+	transform: rotate(-5deg);
+}
+.platform-bento .platform-language-pair span:last-child {
+	transform: rotate(5deg);
+}
+@media (min-width: 1100px) {
+	.platform-bento.bento-grid {
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+	}
+	.platform-bento .platform-bento-ai,
+	.platform-bento-path {
+		grid-column: span 7;
+	}
+	.platform-bento-progress,
+	.platform-bento-practice,
+	.platform-bento .platform-bento-language {
+		grid-column: span 5;
+	}
+}
+@media (max-width: 767px) {
+	.platform-bento.bento-grid {
 		grid-template-columns: minmax(0, 1fr);
 	}
-	.research-bento .bento-card,
-	.research-bento .research-bento-exercise {
-		grid-column: auto;
+	.platform-bento .platform-bento-ai {
 		grid-row: auto;
 	}
-	.research-bento .bento-card-visual {
-		padding-inline: 12px;
+	.platform-bento .bento-card {
+		--card-spacing: 22px;
+	}
+	.platform-explanation,
+	.platform-feedback,
+	.platform-followup {
+		padding: 18px;
 	}
 }
