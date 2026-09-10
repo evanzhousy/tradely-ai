@@ -295,7 +295,11 @@ async function beginMembershipCheckoutCore() {
 			success_url: `${appUrl}/pricing?checkout=membership-success`,
 			cancel_url: `${appUrl}/pricing?checkout=membership-cancel`,
 			subscription_data: {
-				metadata: { tradely_user_id: userId },
+				metadata: {
+					tradely_user_id: userId,
+					tradely_partner_benefit:
+						BILLING_CONTRACT.membership.partnerBenefitMetadata,
+				},
 			},
 		},
 		{

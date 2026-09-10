@@ -5,9 +5,10 @@ export const BILLING_CONTRACT = {
 	statementDescriptorPrefix: "TRADELY",
 	membership: {
 		productName: "Tradely Membership",
-		unitAmount: 990,
+		unitAmount: 6900,
 		interval: "month",
 		offerMetadata: "membership",
+		partnerBenefitMetadata: "tradingflow_membership_1_month",
 	},
 	coursePass: {
 		productName: "Evidence-Led Options Research — Lifetime Course Pass",

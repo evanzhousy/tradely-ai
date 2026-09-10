@@ -209,6 +209,7 @@ function PricingPage() {
 		t("pricing.featureProgress"),
 		t("pricing.featureUpdates"),
 		t("pricing.featurePractice"),
+		t("pricing.featureTradingFlowMembership"),
 	];
 	const coursePassFeatures = [
 		t("pricing.featureCoursePassCurriculum"),

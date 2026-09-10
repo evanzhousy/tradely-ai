@@ -34,7 +34,7 @@ const snapshot = {
 		livemode: false,
 		active: true,
 		currency: "usd",
-		unitAmount: 990,
+		unitAmount: 6900,
 		interval: "month",
 		product: {
 			active: true,

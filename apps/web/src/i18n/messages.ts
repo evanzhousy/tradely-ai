@@ -274,6 +274,8 @@ const messages = {
 			"Every future lesson and course update while active",
 		"pricing.featurePractice":
 			"TradingFlow practice assignments and direct tool links",
+		"pricing.featureTradingFlowMembership":
+			"One month of TradingFlow membership, redeemed separately with the partner",
 		"pricing.featureCoursePassCurriculum":
 			"All current Evidence-Led Options Research lessons",
 		"pricing.featureCoursePassProgress":
@@ -554,6 +556,8 @@ const messages = {
 		"pricing.featureProgress": "跨设备保存课程进度",
 		"pricing.featureUpdates": "会员有效期内的后续课程与更新",
 		"pricing.featurePractice": "TradingFlow 练习任务与直接工具链接",
+		"pricing.featureTradingFlowMembership":
+			"赠送一个月 TradingFlow 会员，由合作方单独兑换与发放",
 		"pricing.featureCoursePassCurriculum": "《证据驱动的期权研究》全部当前课程",
 		"pricing.featureCoursePassProgress": "跨设备保存课程进度",
 		"pricing.featureCoursePassRevisions": "当前课程的后续修订与更正",

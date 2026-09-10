@@ -1,6 +1,6 @@
 # Tradely
 
-Tradely is the independent options-learning hub for `tradely.ai`. It teaches an ordered evidence workflow and sends learners into TradingFlow for official, bounded practice tasks. Tradely and TradingFlow do not share accounts, billing, databases, or infrastructure.
+Tradely is the independent options-learning hub for `tradely.ai`. It teaches an ordered evidence workflow and sends learners into TradingFlow for official, bounded practice tasks. Tradely and TradingFlow do not share accounts, billing, databases, or infrastructure; the monthly Tradely Membership includes a separately fulfilled one-month TradingFlow partner benefit.
 
 ## Stack
 

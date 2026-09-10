@@ -2,8 +2,10 @@
 
 Tradely sells two independent offers through Stripe-hosted Checkout:
 
-- **Tradely Membership** is a recurring subscription. An active or trialing
-  subscription containing `STRIPE_MEMBERSHIP_PRICE_ID` grants member access.
+- **Tradely Membership** is a USD 69.00/month recurring subscription. An active
+  or trialing subscription containing `STRIPE_MEMBERSHIP_PRICE_ID` grants member
+  access and carries the `tradingflow_membership_1_month` partner-benefit
+  metadata for separate TradingFlow fulfillment.
 - **Evidence-Led Options Research — Lifetime Course Pass** is a one-time
   payment. A completed, paid Checkout Session containing
   `STRIPE_COURSE_PASS_PRICE_ID` grants permanent access to the current course
@@ -191,7 +193,9 @@ access. These shared-account settings can affect every product on the account.
 
 The owner authorized enabling lifetime checkout locally and in production.
 The offer remains USD 49.00 once for this course and its revisions, alongside
-USD 9.90/month membership. Future distinct courses are excluded from the pass.
+USD 69.00/month membership. The membership includes one month of TradingFlow
+membership, redeemed and fulfilled separately by the TradingFlow partner.
+Future distinct courses are excluded from the pass.
 
 - Local `apps/web/.env` already had the flag enabled. The running pricing page
   displayed both offers; the test database schema and all 32 test preflight
@@ -217,7 +221,7 @@ USD 9.90/month membership. Future distinct courses are excluded from the pass.
   unchanged. Candidate pricing verified both amounts and the lifetime purchase
   link before the deployment was promoted to production.
 - After promotion, `https://www.tradely.ai/pricing` served the final deployment
-  and displayed USD 49.00 one-time beside USD 9.90/month. The lifetime purchase
+  and displayed USD 49.00 one-time beside the membership offer. The lifetime purchase
   link opened sign-in with `/pricing` retained as the return destination. The
   immediate deployment-scoped error-log scan returned zero records.
 - Forty-three focused billing/access tests passed. This activation verifies

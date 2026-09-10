@@ -115,7 +115,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "TradingFlow partnership",
 					paragraphs: [
-						"TradingFlow is a separate service operated by an independent partner. Tradely course links may open TradingFlow for practice, but TradingFlow accounts, pricing, availability, and data are outside these terms and governed by TradingFlow's own policies.",
+						"TradingFlow is a separate service operated by an independent partner. The Tradely Membership may include a one-month TradingFlow partner benefit, which is redeemed and fulfilled separately by TradingFlow; it does not create a shared account or automatic cross-service access. TradingFlow accounts, pricing, availability, redemption, and data are governed by TradingFlow's own policies.",
 					],
 				},
 				{
@@ -244,7 +244,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					heading: "服务供应商与合作边界",
 					paragraphs: [
 						"我们的服务供应商可能包括负责身份的 Neon Auth、负责账单的 Stripe、负责 Tradely 数据库的 Neon、负责应用交付的 Vercel、负责媒体存储的 Cloudflare R2，以及负责经同意的产品分析和错误诊断的 PostHog 与 Google Analytics。他们仅在提供基础设施和服务所需范围内处理信息。",
-						"TradingFlow 是独立运营的合作产品。Tradely 不会向 TradingFlow 分享你的 Neon Auth 账户、账单记录、学习记录或客户标识符。指向 TradingFlow 的链接只是练习入口；TradingFlow 账户和订阅适用其自己的条款与隐私政策。",
+						"TradingFlow 是独立运营的合作产品。Tradely 不会向 TradingFlow 分享你的 Neon Auth 账户、账单记录、学习记录或客户标识符。会员可能包含一个月 TradingFlow 合作权益，该权益由 TradingFlow 单独兑换和发放，不会创建共享账户或自动跨服务访问；TradingFlow 账户、订阅、兑换和数据适用其自己的条款与隐私政策。",
 					],
 				},
 				{
@@ -294,7 +294,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "TradingFlow 合作关系",
 					paragraphs: [
-						"TradingFlow 是独立合作方运营的单独服务。Tradely 课程链接可能打开 TradingFlow 进行练习，但 TradingFlow 的账户、价格、可用性和数据不属于本条款，而适用 TradingFlow 自己的政策。",
+						"TradingFlow 是独立合作方运营的单独服务。会员可能包含一个月 TradingFlow 合作权益，但该权益由 TradingFlow 单独兑换和发放，不会创建共享账户或自动跨服务访问。Tradely 课程链接可能打开 TradingFlow 进行练习；TradingFlow 的账户、价格、可用性、兑换和数据不属于本条款，而适用 TradingFlow 自己的政策。",
 					],
 				},
 				{

@@ -156,6 +156,12 @@ describe("Stripe billing server", () => {
 			customer: "cus_tradely",
 			client_reference_id: "user_tradely",
 			line_items: [{ price: "price_membership", quantity: 1 }],
+			subscription_data: {
+				metadata: {
+					tradely_user_id: "user_tradely",
+					tradely_partner_benefit: "tradingflow_membership_1_month",
+				},
+			},
 			success_url: "http://localhost:8250/pricing?checkout=membership-success",
 			cancel_url: "http://localhost:8250/pricing?checkout=membership-cancel",
 		});
@@ -331,7 +337,7 @@ describe("Stripe billing server", () => {
 		mocks.env.LIFETIME_CHECKOUT_ENABLED = false;
 		mocks.pricesRetrieve.mockResolvedValue({
 			currency: "usd",
-			unit_amount: 990,
+			unit_amount: 6900,
 			recurring: { interval: "month" },
 		});
 
