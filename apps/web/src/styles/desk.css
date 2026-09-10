@@ -2015,3 +2015,83 @@
 		display: none;
 	}
 }
+
+/* A learning overview: one interactive exercise, two real concept maps, course facts. */
+.landing-notebook .research-bento-section {
+	grid-template-columns: minmax(0, 1fr);
+	gap: 36px;
+}
+.research-bento-section .observatory-study-copy {
+	max-width: 760px;
+}
+.research-bento-section .observatory-study-copy h2 {
+	max-width: 24ch;
+}
+.research-bento-section .observatory-study-copy > p:not(.observatory-label) {
+	max-width: 64ch;
+}
+.research-bento.bento-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+	align-items: stretch;
+}
+.research-bento .bento-card,
+.research-bento .research-bento-exercise {
+	min-width: 0;
+}
+.research-bento .research-bento-exercise {
+	grid-column: span 2;
+	grid-row: span 2;
+	align-self: stretch;
+}
+.research-bento-visual {
+	grid-column: span 2;
+}
+.research-bento .bento-card {
+	border-radius: 12px;
+}
+.research-bento .bento-card-visual {
+	height: auto;
+	padding: 8px 24px 0;
+}
+.research-bento .lesson-infographic {
+	display: block;
+	width: 100%;
+	max-width: 340px;
+	margin-inline: auto;
+}
+.research-bento .bento-card h3 {
+	font-size: 18px;
+	line-height: 1.35;
+}
+.research-bento-stat {
+	grid-column: span 2;
+}
+.research-bento-number {
+	margin: 0;
+	font-size: clamp(56px, 6vw, 80px);
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: -0.06em;
+}
+.research-bento .research-bento-free {
+	background: var(--primary);
+	color: var(--primary-foreground);
+}
+.research-bento-free .observatory-text-link {
+	color: inherit;
+}
+@media (max-width: 639px) {
+	.research-bento.bento-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.research-bento .bento-card,
+	.research-bento .research-bento-exercise {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.research-bento .bento-card-visual {
+		padding-inline: 12px;
+	}
+}
