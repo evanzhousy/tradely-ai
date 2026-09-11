@@ -12,6 +12,7 @@ import {
 
 import { executionConceptData } from "./execution-concept.server";
 import { quoteConceptData } from "./quote-concept.server";
+import { sentimentConceptData } from "./sentiment-concept.server";
 import { sideConceptData } from "./side-concept.server";
 
 export const foundationUnits: TeachingUnit[] = [
@@ -564,7 +565,14 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "flow-sentiment",
-		demonstration: { mode: "sentiment", optionType: "CALL" },
+		conceptLab: {
+			kind: "flow-sentiment",
+			data: sentimentConceptData,
+			intro: t(
+				"Connect option type with likely buying or selling, test the evidence behind a label, and follow the same put purchase into different position contexts. Explore before classifying new records.",
+				"把期权类型与推断买卖方向联系起来，检查标签背后的证据，再追踪同一看跌买入在不同持仓中的含义。先探索，再为新记录分类。",
+			),
+		},
 		sources: [quotes, basics],
 		explanation: t(
 			"Bullish can describe an upward price view or positive directional exposure; bearish can describe a downward view or negative exposure. Name whose view or which exposure. A flow feed's sentiment is a separate rule-based classification. Under the convention used here: likely call buying is bullish, call selling bearish, put buying bearish, and put selling bullish. The mapping follows the isolated leg's directional effect from the likely aggressor's perspective. A trade has another party with the opposite leg. Do not count each print twice. Neutral means the available execution evidence does not establish direction, not that the investor expects a flat market or owns a neutral portfolio.",

@@ -76,6 +76,7 @@ import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { RightsConceptLab } from "./rights-concept-lab";
+import { SentimentConceptLab } from "./sentiment-concept-lab";
 import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
@@ -89,6 +90,7 @@ const conceptLabs = {
 	"quotes-orders-trades": QuoteConceptLab,
 	"execution-counterparties": ExecutionConceptLab,
 	"execution-side": SideConceptLab,
+	"flow-sentiment": SentimentConceptLab,
 };
 
 export type LearningScreenProps = {
