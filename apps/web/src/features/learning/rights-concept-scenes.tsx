@@ -5,14 +5,11 @@ import {
 } from "@tradely/ui/components/alert";
 import { Badge } from "@tradely/ui/components/badge";
 import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
-import {
-	ToggleGroup,
-	ToggleGroupItem,
-} from "@tradely/ui/components/toggle-group";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
 import {
+	ChoiceField,
 	Diagram,
 	PlaybackButton,
 	SceneLayout,
@@ -40,40 +37,6 @@ const text = (locale: Locale) => (en: string, zh: string) =>
 	locale === "zh" ? zh : en;
 const money = (value: number) => `$${value.toLocaleString("en-US")}`;
 
-function ChoiceField<T extends string>({
-	label,
-	value,
-	options,
-	onChange,
-}: {
-	label: string;
-	value: T;
-	options: readonly (readonly [T, string])[];
-	onChange: (value: T) => void;
-}) {
-	const id = useId();
-	return (
-		<Field>
-			<FieldLabel id={id}>{label}</FieldLabel>
-			<ToggleGroup
-				aria-labelledby={id}
-				value={[value]}
-				onValueChange={(values) => {
-					const option = options.find(([key]) => key === values[0]);
-					if (option) onChange(option[0]);
-				}}
-				variant="outline"
-				className="flex-wrap"
-			>
-				{options.map(([key, label]) => (
-					<ToggleGroupItem key={key} value={key}>
-						{label}
-					</ToggleGroupItem>
-				))}
-			</ToggleGroup>
-		</Field>
-	);
-}
 function OptionTypeField({
 	value,
 	onChange,

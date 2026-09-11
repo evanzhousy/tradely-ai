@@ -90,13 +90,13 @@ describe("rights concept lesson", () => {
 		const summary = () =>
 			container.querySelector("[data-rights-summary]")?.textContent;
 		expect(summary()).toBe("Right to buy 100 shares at $50 per share.");
-		fireEvent.click(screen.getByRole("button", { name: "Put", exact: true }));
+		fireEvent.click(screen.getByRole("button", { name: "Put" }));
 		expect(summary()).toBe("Right to sell 100 shares at $50 per share.");
 		fireEvent.click(screen.getByRole("button", { name: "Writer · short" }));
 		expect(summary()).toBe("Obligation to buy 100 shares at $50 per share.");
-		fireEvent.click(screen.getByRole("button", { name: "Call", exact: true }));
+		fireEvent.click(screen.getByRole("button", { name: "Call" }));
 		expect(summary()).toBe("Obligation to sell 100 shares at $50 per share.");
-		fireEvent.click(screen.getByRole("button", { name: "Call", exact: true }));
+		fireEvent.click(screen.getByRole("button", { name: "Call" }));
 		expect(summary()).toBe("Obligation to sell 100 shares at $50 per share.");
 	});
 	it("updates signed inventory and removes any claimed result when the starting position is missing", () => {
@@ -112,7 +112,7 @@ describe("rights concept lesson", () => {
 		fireEvent.change(screen.getByLabelText("Starting option position"), {
 			target: { value: "-3" },
 		});
-		fireEvent.click(screen.getByRole("button", { name: "Buy", exact: true }));
+		fireEvent.click(screen.getByRole("button", { name: "Buy" }));
 		expect(screen.getByText("Buy to close")).toBeTruthy();
 		fireEvent.change(screen.getByLabelText("Starting option position"), {
 			target: { value: "unknown" },
@@ -140,7 +140,7 @@ describe("rights concept lesson", () => {
 				"The assigned put writer pays cash and receives shares.",
 			),
 		).toBeTruthy();
-		fireEvent.click(screen.getByRole("button", { name: "Call", exact: true }));
+		fireEvent.click(screen.getByRole("button", { name: "Call" }));
 		expect(
 			screen.getByText(
 				"The assigned call writer delivers shares and receives cash.",
@@ -195,7 +195,7 @@ describe("rights concept lesson", () => {
 				view={projectAttempt(scenario, state, "rights-test", 0)}
 			/>,
 		);
-		fireEvent.click(screen.getByRole("button", { name: "Put", exact: true }));
+		fireEvent.click(screen.getByRole("button", { name: "Put" }));
 		fireEvent.click(screen.getByRole("tab", { name: /Assignment/ }));
 		fireEvent.click(screen.getByRole("button", { name: "3. Assignment" }));
 		expect(onAction).not.toHaveBeenCalled();

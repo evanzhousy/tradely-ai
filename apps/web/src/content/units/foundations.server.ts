@@ -178,7 +178,28 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "premium-payoff",
-		sources: [basics],
+		conceptLab: {
+			kind: "premium-payoff",
+			intro: t(
+				"Follow the units from price to premium, separate intrinsic and extrinsic value, then drag the expiration price through a payoff chart. Find where an in-the-money option still produces a loss.",
+				"从价格单位追踪到权利金，分清内在价值与外在价值，再拖动到期价格，探索支付价值曲线。找出期权已实值、买方却仍亏损的位置。",
+			),
+		},
+		sources: [
+			basics,
+			{
+				title: "OIC · Options pricing",
+				href: "https://www.optionseducation.org/optionsoverview/options-pricing",
+			},
+			{
+				title: "OIC · Long call",
+				href: "https://www.optionseducation.org/strategies/all-strategies/long-call",
+			},
+			{
+				title: "OIC · Long put",
+				href: "https://www.optionseducation.org/strategies/all-strategies/long-put",
+			},
+		],
 		explanation: t(
 			"Distinguish a quote per share, premium per contract, and total execution premium. Multiply the quote by the stated multiplier, then by contract count. Underlying notional uses the underlying price instead of the option premium. Intrinsic value at expiration is max(spot − strike, 0) for a call and max(strike − spot, 0) for a put. Before expiry, premium may also contain extrinsic value. A call is ITM above its strike; a put is ITM below it. ATM is a stated near-spot convention. ITM does not mean profitable: a buyer must recover premium and fees. Long-call expiration break-even is strike plus paid premium per share; long-put break-even is strike minus that premium, before fees.",
 			"区分每股报价、每张权利金和成交总权利金。报价乘以给定乘数，再乘张数。标的名义金额使用标的价格，而非期权报价。到期看涨内在价值为 max(现价−行权价,0)，看跌为 max(行权价−现价,0)。到期前还可能有外在价值。看涨在现价高于行权价时实值，看跌相反；平值是明确的近现价约定。实值不代表盈利，买方还需收回权利金与费用。不计费用，多头看涨到期盈亏平衡价为行权价加每股权利金，多头看跌则相减。",

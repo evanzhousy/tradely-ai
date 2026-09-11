@@ -140,7 +140,9 @@ describe("optional contract renderer", () => {
 		try {
 			render(<ContractExplorer data={data} locale="en" />);
 			fireEvent.click(screen.getByRole("button", { name: "3D + map" }));
-			await screen.findByRole("button", { name: "Pause" });
+			// The lazy renderer can take longer than the default 1 s DOM-query wait
+			// on a loaded host; replay time remains frozen by the RAF stub above.
+			await screen.findByRole("button", { name: "Pause" }, { timeout: 5000 });
 			fireEvent.click(screen.getByRole("button", { name: "Pause" }));
 			expect(screen.queryByRole("button", { name: "Pause" })).toBeNull();
 			fireEvent.click(screen.getByRole("button", { name: "View 16:00 ET" }));

@@ -4,6 +4,10 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
+import {
+	ToggleGroup,
+	ToggleGroupItem,
+} from "@tradely/ui/components/toggle-group";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { type ReactNode, useEffect, useId, useState } from "react";
 
@@ -156,5 +160,40 @@ export function PlaybackButton({
 			)}
 			{playing ? l("Pause", "暂停") : l("Play explanation", "播放讲解")}
 		</Button>
+	);
+}
+
+export function ChoiceField<T extends string>({
+	label,
+	value,
+	options,
+	onChange,
+}: {
+	label: string;
+	value: T;
+	options: readonly (readonly [T, string])[];
+	onChange: (value: T) => void;
+}) {
+	const id = useId();
+	return (
+		<Field>
+			<FieldLabel id={id}>{label}</FieldLabel>
+			<ToggleGroup
+				aria-labelledby={id}
+				value={[value]}
+				onValueChange={(values) => {
+					const option = options.find(([key]) => key === values[0]);
+					if (option) onChange(option[0]);
+				}}
+				variant="outline"
+				className="flex-wrap"
+			>
+				{options.map(([key, label]) => (
+					<ToggleGroupItem key={key} value={key}>
+						{label}
+					</ToggleGroupItem>
+				))}
+			</ToggleGroup>
+		</Field>
 	);
 }

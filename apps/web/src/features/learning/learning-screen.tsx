@@ -68,6 +68,7 @@ import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
+import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
@@ -310,6 +311,13 @@ function LearningScreenContent({
 						{view.step.conceptLab === "option-rights" &&
 						view.step.kind === "prediction" ? (
 							<RightsConceptLab
+								key={`${view.attemptId}:${view.step.id}`}
+								locale={locale}
+							/>
+						) : null}
+						{view.step.conceptLab === "premium-payoff" &&
+						view.step.kind === "prediction" ? (
+							<PayoffConceptLab
 								key={`${view.attemptId}:${view.step.id}`}
 								locale={locale}
 							/>
