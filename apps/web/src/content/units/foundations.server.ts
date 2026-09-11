@@ -11,6 +11,7 @@ import {
 } from "./authoring.server";
 
 import { executionConceptData } from "./execution-concept.server";
+import { printReviewConceptData } from "./print-review-concept.server";
 import { quoteConceptData } from "./quote-concept.server";
 import { sentimentConceptData } from "./sentiment-concept.server";
 import { sideConceptData } from "./side-concept.server";
@@ -682,6 +683,14 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "validate-option-print",
+		conceptLab: {
+			kind: "validate-option-print",
+			data: printReviewConceptData,
+			intro: t(
+				"Inspect one execution, separate what its evidence can support, and choose a follow-up that closes a specific gap. These fictional records let you practice the full review before your independent case.",
+				"检查一笔成交，区分证据能支持的结论，再选择填补具体缺口的后续检查。先用这些虚构记录练习完整审查流程，再进入独立案例。",
+			),
+		},
 		sources: [quotes, basics],
 		explanation: t(
 			"Read an execution in this order: contract identity, event time, price per unit, count and multiplier, matched quote, then any execution conditions and linkage. Calculate premium from the execution itself. A contemporaneous valid bid/ask can support an aggressor inference; a prior or incompatible quote cannot. Opening/closing flags and linked legs would be additional evidence, not conclusions from premium size. Separate what is observed, what is calculated, what is inferred under a convention, and what is still unknown. The best next check addresses a specific missing fact rather than searching for another dramatic print or waiting to see whether price rises.",

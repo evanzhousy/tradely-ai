@@ -3,6 +3,7 @@ import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
+import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
@@ -112,12 +113,14 @@ export type LearningStepView = {
 		| "quotes-orders-trades"
 		| "execution-counterparties"
 		| "execution-side"
-		| "flow-sentiment";
+		| "flow-sentiment"
+		| "validate-option-print";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
 		| SideConceptData
-		| SentimentConceptData;
+		| SentimentConceptData
+		| PrintReviewConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

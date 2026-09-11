@@ -71,6 +71,7 @@ import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
+import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuoteConceptLab } from "./quote-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
@@ -91,6 +92,7 @@ const conceptLabs = {
 	"execution-counterparties": ExecutionConceptLab,
 	"execution-side": SideConceptLab,
 	"flow-sentiment": SentimentConceptLab,
+	"validate-option-print": PrintReviewConceptLab,
 };
 
 export type LearningScreenProps = {
