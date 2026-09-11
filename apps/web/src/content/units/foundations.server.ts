@@ -102,7 +102,20 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "option-rights",
-		sources: [basics],
+		conceptLab: {
+			kind: "option-rights",
+			intro: t(
+				"Switch between holder and writer, track how trades change a position, and follow exercise into assignment. Explore the diagrams before applying the ideas to a new case.",
+				"切换持有人与卖方，追踪交易如何改变持仓，再跟随行权进入指派流程。先探索图示，再将概念用于新案例。",
+			),
+		},
+		sources: [
+			basics,
+			{
+				title: "OIC · Exercising options",
+				href: "https://www.optionseducation.org/optionsoverview/exercising-options",
+			},
+		],
 		explanation: t(
 			"Long means holding an option; short means having written it. A call holder has a right to buy the underlying on the stated terms; a put holder has a right to sell. The assigned writer has the corresponding obligation. Selling an option can open a short position or close a long one. Buying can open a long position or close a short one. These four position actions are different from buying or selling the underlying itself. Directional exposure also differs: a long put is not a short put, and owning a call does not mean owning the referenced shares. Exercise style and settlement specify when and how rights are used.",
 			"多头表示持有期权，空头表示卖出开立期权。看涨持有人在给定条款下有权买入标的，看跌持有人有权卖出；被指派的卖方承担对应义务。卖出可以开空仓，也可以平多仓；买入可以开多仓，也可以平空仓。这四种动作与直接买卖标的不同。买入看跌不等于卖出看跌，持有看涨也不等于持有股票。行权方式与结算条款决定权利何时、如何使用。",

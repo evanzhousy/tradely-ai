@@ -72,6 +72,7 @@ import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
+import { RightsConceptLab } from "./rights-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
@@ -302,6 +303,13 @@ function LearningScreenContent({
 						{view.step.conceptLab === "option-contracts" &&
 						view.step.kind === "prediction" ? (
 							<ContractConceptLab
+								key={`${view.attemptId}:${view.step.id}`}
+								locale={locale}
+							/>
+						) : null}
+						{view.step.conceptLab === "option-rights" &&
+						view.step.kind === "prediction" ? (
+							<RightsConceptLab
 								key={`${view.attemptId}:${view.step.id}`}
 								locale={locale}
 							/>
