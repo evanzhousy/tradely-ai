@@ -31,6 +31,7 @@ export type ScenarioStep = {
 	execution?: LearningStepView["execution"];
 	worksheet?: LearningStepView["worksheet"];
 	conceptLab?: LearningStepView["conceptLab"];
+	conceptData?: LearningStepView["conceptData"];
 };
 export type LearningScenario = {
 	id: string;

@@ -237,6 +237,7 @@ export function projectAttempt(
 			universe: step.universe ?? null,
 			execution: step.execution,
 			conceptLab: step.conceptLab,
+			conceptData: step.kind === "prediction" ? step.conceptData : undefined,
 			worksheet: step.worksheet,
 			evidence: step.evidence.map((evidence) => ({
 				id: evidence.id,

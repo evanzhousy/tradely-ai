@@ -10,6 +10,8 @@ import {
 	t,
 } from "./authoring.server";
 
+import { quoteConceptData } from "./quote-concept.server";
+
 export const foundationUnits: TeachingUnit[] = [
 	{
 		id: "option-contracts",
@@ -330,7 +332,14 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "quotes-orders-trades",
-		demonstration: { mode: "quote", optionType: "CALL" },
+		conceptLab: {
+			kind: "quotes-orders-trades",
+			data: quoteConceptData,
+			intro: t(
+				"Move a quote, compare a cancellation with a confirmed trade, and trace the best prices across venues. These fictional examples are yours to explore before practice.",
+				"移动报价，比较撤单与已确认成交，再追踪不同场所的最优价格。先自由探索这些虚构示例，再进入练习。",
+			),
+		},
 		sources: [quotes, orders],
 		explanation: t(
 			"A quote advertises prices and displayed quantities; an order is an instruction; a trade is a completed execution. The bid is an offer to buy and the ask an offer to sell. Sizes are quoted in contracts in this lesson. A venue's quote is not automatically the national best bid and offer, which combines the best eligible quotations. The spread is ask minus bid; the midpoint is their arithmetic average. Last is the most recent execution, which can have a different time from the quote. A mark may be a valuation convention rather than a traded price. Quotes can change when orders arrive or cancel, without any execution. Always pair the reference quote with its timestamp.",

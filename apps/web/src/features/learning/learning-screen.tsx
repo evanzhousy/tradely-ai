@@ -70,6 +70,7 @@ import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
+import { QuoteConceptLab } from "./quote-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
@@ -83,6 +84,7 @@ const conceptLabs = {
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,
 	"expiration-settlement": SettlementConceptLab,
+	"quotes-orders-trades": QuoteConceptLab,
 };
 
 export type LearningScreenProps = {
@@ -317,6 +319,7 @@ function LearningScreenContent({
 							<Concept
 								key={`${view.attemptId}:${view.step.id}`}
 								locale={locale}
+								data={view.step.conceptData}
 							/>
 						) : null}
 						{view.initialJudgment && view.step.kind === "guided" ? (

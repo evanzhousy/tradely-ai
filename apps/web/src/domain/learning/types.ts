@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
+import type { QuoteConceptData } from "./quote-concept";
 import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
@@ -99,12 +100,14 @@ export type LearningStepView = {
 	}>;
 	questions: LearningQuestion[];
 	hint: LearningCopy | null;
-	/** Public, ungraded teaching interaction; never an assessment payload. */
+	/** Ungraded teaching interaction; access follows the lesson authorization. */
 	conceptLab?:
 		| "option-contracts"
 		| "option-rights"
 		| "premium-payoff"
-		| "expiration-settlement";
+		| "expiration-settlement"
+		| "quotes-orders-trades";
+	conceptData?: QuoteConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
