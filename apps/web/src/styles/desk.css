@@ -1249,6 +1249,50 @@
 	background: color-mix(in oklch, var(--primary) 30%, transparent);
 	transform: rotate(-12deg);
 }
+/* A decorative dog-ear; the note remains readable without hover or motion. */
+.landing-note-corner {
+	position: absolute;
+	top: -1px;
+	right: -1px;
+	width: 38px;
+	height: 38px;
+	pointer-events: none;
+	transform: scale(0.4);
+	transform-origin: top right;
+}
+.landing-note-corner::before,
+.landing-note-corner::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+.landing-note-corner::before {
+	background: color-mix(in oklch, var(--background) 98%, var(--primary));
+	clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.landing-note-corner::after {
+	background: linear-gradient(
+		45deg,
+		color-mix(in oklch, var(--card) 82%, var(--foreground)),
+		var(--card) 65%,
+		color-mix(in oklch, var(--card) 90%, var(--foreground))
+	);
+	clip-path: polygon(0 0, 0 100%, 100% 100%);
+	filter: drop-shadow(-1px 2px 1px #0002);
+}
+@media (hover: hover) and (pointer: fine) and (
+		prefers-reduced-motion: no-preference
+	) {
+	.landing-research-note {
+		pointer-events: auto;
+	}
+	.landing-note-corner {
+		transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	.landing-research-note:hover .landing-note-corner {
+		transform: scale(1);
+	}
+}
 .landing-research-note > .landing-artifact-label {
 	color: var(--muted-foreground);
 }

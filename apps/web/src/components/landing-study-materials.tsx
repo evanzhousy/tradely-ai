@@ -45,6 +45,7 @@ export function LandingStudyMaterials({ lesson }: { lesson: Lesson }) {
 				</div>
 			</div>
 			<div className="landing-research-note">
+				<span className="landing-note-corner" />
 				<span className="landing-note-tape" />
 				<span className="landing-artifact-label">{t("home.noteLabel")}</span>
 				<p className="landing-note-title">{lesson.title}</p>
