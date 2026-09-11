@@ -12,6 +12,7 @@ import {
 
 import { executionConceptData } from "./execution-concept.server";
 import { quoteConceptData } from "./quote-concept.server";
+import { sideConceptData } from "./side-concept.server";
 
 export const foundationUnits: TeachingUnit[] = [
 	{
@@ -480,7 +481,14 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "execution-side",
-		demonstration: { mode: "side", optionType: "CALL" },
+		conceptLab: {
+			kind: "execution-side",
+			data: sideConceptData,
+			intro: t(
+				"Move a print across the spread, test its reference quote, and separate location from inference. Explore these fictional examples before classifying new executions.",
+				"移动成交价穿越价差，检查参考报价，再区分位置与推断。先探索这些虚构示例，再为新成交分类。",
+			),
+		},
 		sources: [quotes],
 		explanation: t(
 			"Execution side locates a print relative to its reference quote. In this lesson's convention, price above ask is AASK; at ask is ASK; inside a valid spread is MID; at bid is BID; below bid is BBID. MID does not have to be the exact arithmetic midpoint. This location may suggest the likely aggressor, but it does not reveal the participant's identity or opening/closing instructions. A stale, missing, locked or crossed quote and complex-order conditions can invalidate a simple classification. An outside-spread price may reflect timing or special conditions; it does not prove conviction or desperation. The quote must be comparable and contemporaneous before interpretation.",

@@ -77,6 +77,7 @@ import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { RightsConceptLab } from "./rights-concept-lab";
 import { SettlementConceptLab } from "./settlement-concept-lab";
+import { SideConceptLab } from "./side-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
@@ -87,6 +88,7 @@ const conceptLabs = {
 	"expiration-settlement": SettlementConceptLab,
 	"quotes-orders-trades": QuoteConceptLab,
 	"execution-counterparties": ExecutionConceptLab,
+	"execution-side": SideConceptLab,
 };
 
 export type LearningScreenProps = {

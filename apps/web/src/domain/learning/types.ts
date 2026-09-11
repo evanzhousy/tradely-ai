@@ -4,6 +4,7 @@ import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
 import type { QuoteConceptData } from "./quote-concept";
+import type { SideConceptData } from "./side-concept";
 import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
@@ -108,8 +109,9 @@ export type LearningStepView = {
 		| "premium-payoff"
 		| "expiration-settlement"
 		| "quotes-orders-trades"
-		| "execution-counterparties";
-	conceptData?: QuoteConceptData | ExecutionConceptData;
+		| "execution-counterparties"
+		| "execution-side";
+	conceptData?: QuoteConceptData | ExecutionConceptData | SideConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
