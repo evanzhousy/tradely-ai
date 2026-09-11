@@ -74,8 +74,16 @@ import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { RightsConceptLab } from "./rights-concept-lab";
+import { SettlementConceptLab } from "./settlement-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
+
+const conceptLabs = {
+	"option-contracts": ContractConceptLab,
+	"option-rights": RightsConceptLab,
+	"premium-payoff": PayoffConceptLab,
+	"expiration-settlement": SettlementConceptLab,
+};
 
 export type LearningScreenProps = {
 	coachingTransport?: CoachingTransport;
@@ -201,6 +209,10 @@ function LearningScreenContent({
 	const text = (key: keyof typeof learningCopy) => learningCopy[key][locale];
 	const local = (value: LearningCopy) => value[locale];
 	const answering = view?.phase === "answer";
+	const Concept =
+		view?.step.kind === "prediction" && view.step.conceptLab
+			? conceptLabs[view.step.conceptLab]
+			: null;
 	const [drafts, setDrafts] = useState<Record<string, boolean>>({});
 	const [coachingDraft, setCoachingDraft] = useState(false);
 	const onDraftChange = useCallback(
@@ -301,23 +313,8 @@ function LearningScreenContent({
 								{local(view.step.brief)}
 							</p>
 						</LessonReveal>
-						{view.step.conceptLab === "option-contracts" &&
-						view.step.kind === "prediction" ? (
-							<ContractConceptLab
-								key={`${view.attemptId}:${view.step.id}`}
-								locale={locale}
-							/>
-						) : null}
-						{view.step.conceptLab === "option-rights" &&
-						view.step.kind === "prediction" ? (
-							<RightsConceptLab
-								key={`${view.attemptId}:${view.step.id}`}
-								locale={locale}
-							/>
-						) : null}
-						{view.step.conceptLab === "premium-payoff" &&
-						view.step.kind === "prediction" ? (
-							<PayoffConceptLab
+						{Concept ? (
+							<Concept
 								key={`${view.attemptId}:${view.step.id}`}
 								locale={locale}
 							/>

@@ -100,7 +100,11 @@ export type LearningStepView = {
 	questions: LearningQuestion[];
 	hint: LearningCopy | null;
 	/** Public, ungraded teaching interaction; never an assessment payload. */
-	conceptLab?: "option-contracts" | "option-rights" | "premium-payoff";
+	conceptLab?:
+		| "option-contracts"
+		| "option-rights"
+		| "premium-payoff"
+		| "expiration-settlement";
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

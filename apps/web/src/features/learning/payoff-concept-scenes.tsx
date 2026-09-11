@@ -5,7 +5,7 @@ import {
 } from "@tradely/ui/components/alert";
 import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
-import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
+import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -13,6 +13,7 @@ import { CalculationTrace } from "./calculation-trace";
 import {
 	ChoiceField,
 	Diagram,
+	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -44,46 +45,7 @@ function money(
 ) {
 	return `${cents < 0 ? "−" : ""}$${(Math.abs(cents) / 100).toLocaleString(locale === "zh" ? "zh-CN" : "en-US", { minimumFractionDigits: digits, maximumFractionDigits: 2 })}`;
 }
-function RangeControl({
-	label,
-	value,
-	display,
-	min,
-	max,
-	step = 1,
-	onChange,
-}: {
-	label: string;
-	value: number;
-	display: string;
-	min: number;
-	max: number;
-	step?: number;
-	onChange: (value: number) => void;
-}) {
-	const id = useId();
-	return (
-		<Field>
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<FieldLabel htmlFor={id}>{label}</FieldLabel>
-				<output htmlFor={id} className="font-mono text-sm">
-					{display}
-				</output>
-			</div>
-			<input
-				id={id}
-				className="contract-range"
-				type="range"
-				min={min}
-				max={max}
-				step={step}
-				value={value}
-				aria-valuetext={display}
-				onChange={(event) => onChange(Number(event.target.value))}
-			/>
-		</Field>
-	);
-}
+
 function TypeField({
 	locale,
 	type,

@@ -197,3 +197,44 @@ export function ChoiceField<T extends string>({
 		</Field>
 	);
 }
+
+export function RangeControl({
+	label,
+	value,
+	display,
+	min,
+	max,
+	step = 1,
+	onChange,
+}: {
+	label: string;
+	value: number;
+	display: string;
+	min: number;
+	max: number;
+	step?: number;
+	onChange: (value: number) => void;
+}) {
+	const id = useId();
+	return (
+		<Field>
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<FieldLabel htmlFor={id}>{label}</FieldLabel>
+				<output htmlFor={id} className="font-mono text-sm">
+					{display}
+				</output>
+			</div>
+			<input
+				id={id}
+				className="contract-range"
+				type="range"
+				min={min}
+				max={max}
+				step={step}
+				value={value}
+				aria-valuetext={display}
+				onChange={(event) => onChange(Number(event.target.value))}
+			/>
+		</Field>
+	);
+}

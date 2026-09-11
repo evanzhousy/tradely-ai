@@ -248,7 +248,24 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "expiration-settlement",
-		sources: [basics],
+		conceptLab: {
+			kind: "expiration-settlement",
+			intro: t(
+				"Follow two different ways a long option can end, move through an exercise schedule, and compare physical delivery with cash settlement. Keep product terms and the official reference in view.",
+				"追踪期权多头结束的两种不同路径，沿时间轴查看行权安排，再比较实物交付与现金结算。始终保留产品条款与官方参考值。",
+			),
+		},
+		sources: [
+			basics,
+			{
+				title: "OIC · Exercising options",
+				href: "https://www.optionseducation.org/optionsoverview/exercising-options",
+			},
+			{
+				title: "OIC · Equity vs. index options",
+				href: "https://www.optionseducation.org/advancedconcepts/equity-vs-index-options",
+			},
+		],
 		explanation: t(
 			"An exchange trade that closes a position and an exercise are different events. A holder can sell a long option to close it without exercising. Exercise invokes the contract; assignment allocates the writer's obligation. American-style generally permits exercise before expiry under product rules; European-style restricts it to the specified expiry exercise time. The names describe timing, not geography. Physical settlement transfers the stated deliverable; cash settlement pays an amount based on the contract's settlement value. Check the actual product's last trading time, settlement reference and exercise terms. DTE counts time remaining under a stated calendar convention. 0DTE means expiry today, not no risk: prices and sensitivities can change rapidly, and a quoted spot may differ from a product's final settlement value.",
 			"交易平仓与行权不是同一事件。持有人可卖出期权平仓，无需行权；行权使用合约权利，被指派则分配卖方义务。美式通常允许按产品规则在到期前行权，欧式限制为指定到期行权时点；名称描述时间，不是地理位置。实物结算交付条款中的标的，现金结算按结算参考值支付金额。应检查产品的最后交易时间、结算参考及行权条款。DTE 按声明的日历约定计数；0DTE 表示今天到期，不代表没有风险。价格和敏感度仍会快速变化，现价也可能不同于最终结算值。",
