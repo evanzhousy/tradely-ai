@@ -10,6 +10,7 @@ import {
 } from "./authoring.server";
 
 import { oiConceptData } from "./oi-concept.server";
+import { tapeConceptData } from "./tape-concept.server";
 
 export const flowUnits: TeachingUnit[] = [
 	{
@@ -117,6 +118,14 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "trade-records",
+		conceptLab: {
+			kind: "trade-records",
+			data: tapeConceptData,
+			intro: t(
+				"Build an aggregate from its source prints, replay duplicate and revised messages, and inspect what an execution condition can establish. Explore these fictional records before reconstructing your own tape row.",
+				"从原始成交建立聚合，回放重复与修订消息，再检查成交条件能确定什么。先探索这些虚构记录，再还原自己的成交行。",
+			),
+		},
 		sources: [quotes, oi],
 		explanation: t(
 			"A raw print represents one reported execution. An aggregate can combine several prints according to a stated grouping rule. Its contract count and premium are sums; its trade count records the represented prints. A quantity-weighted execution price differs from an unweighted average. Do not aggregate unlike contracts or mix price units. Duplicate messages and corrections can change a feed without new economic activity; exchange time and receipt time can differ. Execution conditions describe mechanisms: sweep/ISO routing, auction or cross, electronic or floor, and complex or stock-contingent trades. A block may be large, but neither a large row nor a cluster proves common ownership, institutional identity or inside information. An exchange's code needs its own documented definition.",

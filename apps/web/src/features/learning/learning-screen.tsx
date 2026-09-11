@@ -81,6 +81,7 @@ import { RightsConceptLab } from "./rights-concept-lab";
 import { SentimentConceptLab } from "./sentiment-concept-lab";
 import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
+import { TapeConceptLab } from "./tape-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
@@ -95,6 +96,7 @@ const conceptLabs = {
 	"flow-sentiment": SentimentConceptLab,
 	"validate-option-print": PrintReviewConceptLab,
 	"session-flow-vs-structure": OiConceptLab,
+	"trade-records": TapeConceptLab,
 };
 
 export type LearningScreenProps = {

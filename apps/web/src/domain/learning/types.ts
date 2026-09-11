@@ -8,6 +8,7 @@ import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
+import type { TapeConceptData } from "./tape-concept";
 import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
@@ -116,14 +117,16 @@ export type LearningStepView = {
 		| "execution-side"
 		| "flow-sentiment"
 		| "validate-option-print"
-		| "session-flow-vs-structure";
+		| "session-flow-vs-structure"
+		| "trade-records";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
 		| SideConceptData
 		| SentimentConceptData
 		| PrintReviewConceptData
-		| OiConceptData;
+		| OiConceptData
+		| TapeConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
