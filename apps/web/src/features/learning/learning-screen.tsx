@@ -69,6 +69,7 @@ import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
+import { OiConceptLab } from "./oi-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
@@ -93,6 +94,7 @@ const conceptLabs = {
 	"execution-side": SideConceptLab,
 	"flow-sentiment": SentimentConceptLab,
 	"validate-option-print": PrintReviewConceptLab,
+	"session-flow-vs-structure": OiConceptLab,
 };
 
 export type LearningScreenProps = {

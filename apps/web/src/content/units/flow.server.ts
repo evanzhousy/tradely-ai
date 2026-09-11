@@ -9,9 +9,19 @@ import {
 	t,
 } from "./authoring.server";
 
+import { oiConceptData } from "./oi-concept.server";
+
 export const flowUnits: TeachingUnit[] = [
 	{
 		id: "session-flow-vs-structure",
+		conceptLab: {
+			kind: "session-flow-vs-structure",
+			data: oiConceptData,
+			intro: t(
+				"Follow opening, closing and transferred contracts, replay the session beside its OI reports, and compare the same expiry set across dates. Explore these fictional ledgers before building your own calculation.",
+				"追踪开仓、平仓与转移合约，对照 OI 报告回放交易时段，再跨日期比较相同到期集合。先探索这些虚构台账，再完成自己的计算。",
+			),
+		},
 		sources: [oi],
 		explanation: t(
 			"Volume counts contracts executed during a session. Open interest counts contracts still outstanding at a report time. If both parties open, OI increases; if both close, it decreases; if one opens while the other closes, the contract transfers and OI stays unchanged. Each execution still contributes its contract count to volume. Exercise, assignment and expiration can also remove contracts. A later OI report sums all relevant activity, so it cannot identify the owner or purpose of one print. Compare the same contract series and report interval. Two rolling '14–30 DTE' buckets can contain different expiries on different dates even when the labels match.",
