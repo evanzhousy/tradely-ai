@@ -29,7 +29,7 @@ describe("free learning entry paths", () => {
 		);
 		const paths = html.match(/<nav\b[^>]*>[\s\S]*?<\/nav>/g) ?? [];
 		expect(paths).toHaveLength(2);
-		const [foundations, research] = paths;
+		const [foundations = "", research = ""] = paths;
 		expect(foundations).toContain("Free foundations: start here");
 		expect(
 			[...foundations.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),

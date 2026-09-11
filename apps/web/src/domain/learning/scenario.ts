@@ -30,6 +30,7 @@ export type ScenarioStep = {
 	universe?: NonNullable<LearningStepView["universe"]>;
 	execution?: LearningStepView["execution"];
 	worksheet?: LearningStepView["worksheet"];
+	conceptLab?: LearningStepView["conceptLab"];
 };
 export type LearningScenario = {
 	id: string;

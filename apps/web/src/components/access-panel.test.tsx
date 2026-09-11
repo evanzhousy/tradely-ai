@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, render } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -15,6 +16,12 @@ vi.mock("@/analytics/context", () => ({
 	}),
 }));
 vi.mock("@/auth/client", () => ({ authIsConfigured: false }));
+// This unit test exercises analytics episodes, independently of router context.
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({ to, ...props }: ComponentProps<"a"> & { to: string }) => (
+		<a {...props} href={to} />
+	),
+}));
 vi.mock("@/i18n/provider", () => ({
 	useI18n: () => ({ t: (key: string) => key }),
 }));

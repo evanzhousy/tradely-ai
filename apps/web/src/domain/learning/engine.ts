@@ -236,6 +236,7 @@ export function projectAttempt(
 			metrics: step.metrics ?? null,
 			universe: step.universe ?? null,
 			execution: step.execution,
+			conceptLab: step.conceptLab,
 			worksheet: step.worksheet,
 			evidence: step.evidence.map((evidence) => ({
 				id: evidence.id,

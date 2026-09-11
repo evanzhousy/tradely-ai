@@ -14,6 +14,13 @@ export const foundationUnits: TeachingUnit[] = [
 	{
 		id: "option-contracts",
 		version: 3,
+		conceptLab: {
+			kind: "option-contracts",
+			intro: t(
+				"Take a contract apart, change one field, and follow its units. Explore these four scenes at your own pace before practicing with new evidence.",
+				"拆解一张合约，改变一个字段，再追踪它的单位。按自己的节奏探索四个场景，然后用新证据练习。",
+			),
+		},
 		sources: [basics],
 		explanation: t(
 			"An underlying is the asset or index referenced by an option. A stock, an ETF share and a cash-settled index are not interchangeable instruments. A ticker identifies an underlying; a contract also needs call/put, strike and expiration. Its multiplier states how a quoted unit converts into a cash amount. Read the product terms rather than assuming every contract delivers 100 shares. Sector is an industry classification; market capitalization is share price times shares outstanding. Share volume counts traded shares; an earnings date identifies an event, not guaranteed news timing. These describe the underlying, not option expiry or traded contract count. A missing sector on an index is not an unknown contract identity. The source date belongs to every price or volume observation: it is not part of the permanent contract key.",

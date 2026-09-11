@@ -99,6 +99,8 @@ export type LearningStepView = {
 	}>;
 	questions: LearningQuestion[];
 	hint: LearningCopy | null;
+	/** Public, ungraded teaching interaction; never an assessment payload. */
+	conceptLab?: "option-contracts";
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

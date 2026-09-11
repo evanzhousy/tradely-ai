@@ -56,6 +56,7 @@ import {
 	CoachingPanel,
 	type CoachingTransport,
 } from "./coaching-panel";
+import { ContractConceptLab } from "./contract-concept-lab";
 import {
 	ContractExplorer,
 	type ContractRenderer,
@@ -298,6 +299,13 @@ function LearningScreenContent({
 								{local(view.step.brief)}
 							</p>
 						</LessonReveal>
+						{view.step.conceptLab === "option-contracts" &&
+						view.step.kind === "prediction" ? (
+							<ContractConceptLab
+								key={`${view.attemptId}:${view.step.id}`}
+								locale={locale}
+							/>
+						) : null}
 						{view.initialJudgment && view.step.kind === "guided" ? (
 							<Alert>
 								<AlertTitle>{text("initial")}</AlertTitle>

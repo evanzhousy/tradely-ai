@@ -83,6 +83,10 @@ export type TeachingCase = {
 };
 export type TeachingUnit = {
 	version?: number;
+	conceptLab?: {
+		kind: NonNullable<LearningStepView["conceptLab"]>;
+		intro: LearningCopy;
+	};
 	demonstration?: LearningStepView["execution"];
 	id: string;
 	explanation: LearningCopy;
@@ -156,10 +160,13 @@ export function unitScenarios(
 					id: "worked-example",
 					kind: "prediction",
 					title: t("Understand the concept", "理解概念"),
-					brief: t(
-						`${unit.explanation.en}\n\nWorked example\n${unit.example.en}\n\nWatch the distinction\n${unit.misconception.en}`,
-						`${unit.explanation.zh}\n\n示例\n${unit.example.zh}\n\n注意区分\n${unit.misconception.zh}`,
-					),
+					conceptLab: unit.conceptLab?.kind,
+					brief:
+						unit.conceptLab?.intro ??
+						t(
+							`${unit.explanation.en}\n\nWorked example\n${unit.example.en}\n\nWatch the distinction\n${unit.misconception.en}`,
+							`${unit.explanation.zh}\n\n示例\n${unit.example.zh}\n\n注意区分\n${unit.misconception.zh}`,
+						),
 					facts: [],
 					evidence: [],
 					requiredEvidence: [],
