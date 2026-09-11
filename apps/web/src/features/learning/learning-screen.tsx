@@ -63,6 +63,7 @@ import {
 	type RendererChange,
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
+import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
@@ -85,6 +86,7 @@ const conceptLabs = {
 	"premium-payoff": PayoffConceptLab,
 	"expiration-settlement": SettlementConceptLab,
 	"quotes-orders-trades": QuoteConceptLab,
+	"execution-counterparties": ExecutionConceptLab,
 };
 
 export type LearningScreenProps = {

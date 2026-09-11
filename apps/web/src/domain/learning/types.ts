@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
+import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
 import type { QuoteConceptData } from "./quote-concept";
@@ -106,8 +107,9 @@ export type LearningStepView = {
 		| "option-rights"
 		| "premium-payoff"
 		| "expiration-settlement"
-		| "quotes-orders-trades";
-	conceptData?: QuoteConceptData;
+		| "quotes-orders-trades"
+		| "execution-counterparties";
+	conceptData?: QuoteConceptData | ExecutionConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

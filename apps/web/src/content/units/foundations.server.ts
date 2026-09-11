@@ -10,6 +10,7 @@ import {
 	t,
 } from "./authoring.server";
 
+import { executionConceptData } from "./execution-concept.server";
 import { quoteConceptData } from "./quote-concept.server";
 
 export const foundationUnits: TeachingUnit[] = [
@@ -399,7 +400,14 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "execution-counterparties",
-		demonstration: { mode: "counterparties", optionType: "CALL" },
+		conceptLab: {
+			kind: "execution-counterparties",
+			data: executionConceptData,
+			intro: t(
+				"Follow both sides of one execution, move a price limit through a displayed book, and inspect the evidence behind a trade print. Explore these fictional cases before practicing independently.",
+				"追踪同一成交的双方，移动限价观察可见订单簿，再检查成交记录背后的证据。先探索这些虚构案例，再独立练习。",
+			),
+		},
 		sources: [quotes, orders],
 		explanation: t(
 			"Every trade has a buyer and a seller. The aggressor is the party demanding immediate execution against a resting order. An incoming buyer taking an offer buys at the ask; the resting seller sells at that same ask. This is one ask-side print, not separate bullish and bearish events. At the bid, an incoming seller trades with a resting buyer. A market order accepts available prices without a limit-price guarantee. A limit order constrains price; it can rest or immediately execute if marketable. Thus the same ask-side print can come from a market order or a marketable limit order. Depth, earlier orders, cancellations and routing affect available fills and slippage.",

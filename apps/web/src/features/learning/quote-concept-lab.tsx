@@ -1,4 +1,4 @@
-import type { QuoteConceptData } from "@/domain/learning/quote-concept";
+import type { LearningStepView } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import { ConceptLab, type ConceptScene } from "./concept-lab";
 import { QuoteData } from "./quote-concept-data";
@@ -54,7 +54,7 @@ export function QuoteConceptLab({
 	data,
 }: {
 	locale: Locale;
-	data?: QuoteConceptData;
+	data?: LearningStepView["conceptData"];
 }) {
 	if (data?.kind !== "quotes-orders-trades")
 		return (
