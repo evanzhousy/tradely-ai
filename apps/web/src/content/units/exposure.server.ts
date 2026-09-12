@@ -8,6 +8,7 @@ import {
 } from "./authoring.server";
 import { deltaConceptData } from "./delta-concept.server";
 import { gammaConceptData } from "./gamma-concept.server";
+import { surfaceConceptData } from "./surface-concept.server";
 import { timeVolRateConceptData } from "./time-vol-rate-concept.server";
 import { volatilityConceptData } from "./volatility-concept.server";
 
@@ -255,6 +256,14 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "volatility-surface",
+		conceptLab: {
+			kind: "volatility-surface",
+			data: surfaceConceptData,
+			intro: t(
+				"Select strike and expiry slices, compare compatible delta-wing references, and distinguish supplied nodes from explicit interpolation estimates.",
+				"选择行权价与到期切片，比较兼容的 Delta 翼参考，并区分给定节点与明确的插值估计。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"A volatility smile is a strike or moneyness slice at one expiry; term structure compares expiries using a comparable reference. A surface joins those dimensions. Delta coordinates such as 25-delta wings depend on model and quote conventions. State whether skew is put IV minus call IV or the reverse. Here 25-delta skew/risk reversal means put minus call; butterfly means the average wing IV minus ATM IV. Values are in volatility points. ATM30 is a standardized reference, not necessarily one quoted listed contract. Interpolation is a modeled estimate between supported observations, not a quote. Leave unsupported cells blank. A traded-only smile has different coverage from a fully quoted chain, and a change of side or expiry can change the comparison.",

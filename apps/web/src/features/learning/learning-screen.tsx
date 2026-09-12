@@ -86,6 +86,7 @@ import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
 import { SourceConceptLab } from "./source-concept-lab";
 import { StrategyConceptLab } from "./strategy-concept-lab";
+import { SurfaceConceptLab } from "./surface-concept-lab";
 import { TapeConceptLab } from "./tape-concept-lab";
 import { TimeVolRateConceptLab } from "./time-vol-rate-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
@@ -93,6 +94,7 @@ import { VolatilityConceptLab } from "./volatility-concept-lab";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
+	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
 	gamma: GammaConceptLab,

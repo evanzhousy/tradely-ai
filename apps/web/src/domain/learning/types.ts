@@ -13,6 +13,7 @@ import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
 import type { SourceConceptData } from "./source-concept";
 import type { StrategyConceptData } from "./strategy-concept";
+import type { SurfaceConceptData } from "./surface-concept";
 import type { TapeConceptData } from "./tape-concept";
 import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
 import type { UniverseComparison } from "./universe";
@@ -132,7 +133,8 @@ export type LearningStepView = {
 		| "delta"
 		| "gamma"
 		| "theta-vega-rho"
-		| "implied-realized-volatility";
+		| "implied-realized-volatility"
+		| "volatility-surface";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -147,7 +149,8 @@ export type LearningStepView = {
 		| DeltaConceptData
 		| GammaConceptData
 		| TimeVolRateConceptData
-		| VolatilityConceptData;
+		| VolatilityConceptData
+		| SurfaceConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
