@@ -2,7 +2,7 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–13 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Current baseline: Lessons 1–14 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ Current baseline: Lessons 1–13 have implemented SVG labs and individual review
 | 11 | `trade-records` | Existing SVG lab; final audit pending |
 | 12 | `unusual-activity` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 13 | `option-strategies` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 14 | `symbol-drawer` | Not started |
+| 14 | `symbol-drawer` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 15 | `delta` | Not started |
 | 16 | `gamma` | Not started |
 | 17 | `theta-vega-rho` | Not started |
@@ -45,7 +45,7 @@ Current baseline: Lessons 1–13 have implemented SVG labs and individual review
 
 ## Continuation notes
 
-- Next implementation: Lesson 14, `symbol-drawer`. Lesson 13 evidence and checks are recorded in `lesson-13-svg-lab-2026-09-12.md`.
+- Next implementation: Lesson 15, `delta`. Lesson 14 evidence and checks are recorded in `lesson-14-svg-lab-2026-09-12.md`.
 - Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
 - Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
 - Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.
@@ -54,7 +54,7 @@ Current baseline: Lessons 1–13 have implemented SVG labs and individual review
 
 ### Next lesson design notes
 
-- Lesson 14 (`symbol-drawer`): inspect the authored teaching unit and source clocks; preserve identity, source dates, coverage, and fixed versus rolling cohort membership in interactive comparisons.
+- Lesson 15 (`delta`): inspect the authored teaching unit; show a local small-move price approximation, option versus position signs, contract multipliers and the limits of holding delta constant. Keep delta distinct from a guaranteed move or a literal forecast probability.
 - Reuse coordinate/control primitives while keeping lesson-specific data and calculation contracts explicit.
 - Preserve the full objective: all remaining lesson IDs above need implementation and evidence, followed by a curriculum-wide completion audit.
 
@@ -62,6 +62,6 @@ Current baseline: Lessons 1–13 have implemented SVG labs and individual review
 
 - The overall goal remains active. Browser task space **140** is retained under agent control for this ongoing goal; reuse it and verify ownership before interaction.
 - Component preview: `http://127.0.0.1:8261/`, last verified PID **3498**, exec session **78039**. Verify the live process before reuse; do not restart merely because a previous observation timed out.
-- The owned production preview on port 8252 was stopped after Lesson 13 verification, ready for the next rebuild.
+- The owned production preview on port 8252 was stopped after Lesson 14 verification, ready for the next rebuild.
 - Lesson 13 model: `apps/web/src/domain/learning/strategy-concept.ts`; signed-leg valuation, exact expiry curve knots and separate roll inventory/cash are wired into the authorized Learn projection.
 - Source edits should finish before test/browse snapshots. A full page reload after HMR prevents stale context-provider state in the isolated preview.

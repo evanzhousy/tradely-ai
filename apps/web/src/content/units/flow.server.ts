@@ -11,6 +11,7 @@ import {
 	t,
 } from "./authoring.server";
 import { oiConceptData } from "./oi-concept.server";
+import { sourceConceptData } from "./source-concept.server";
 import { strategyConceptData } from "./strategy-concept.server";
 import { tapeConceptData } from "./tape-concept.server";
 
@@ -320,6 +321,14 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "symbol-drawer",
+		conceptLab: {
+			kind: "symbol-drawer",
+			data: sourceConceptData,
+			intro: t(
+				"Replay event and receipt clocks, audit each source against a stated requirement, and follow exact expiry-series membership across reports.",
+				"回放事件与接收时钟，对照声明要求审计各来源，并跨报告追踪实际到期序列成员。",
+			),
+		},
 		sources: [oi, quotes],
 		explanation: t(
 			"Give each field its own identity, source, timestamp, unit and coverage requirement. Event time says when something happened; receipt time says when a system learned of it. A selected historical session is not the same as the most recent completed session. Delayed flow, prior-cleared OI and a dated model may coexist without being contemporaneous. A previous OI report can be legitimate context while yesterday's tape fails today's flow requirement. Null is missing, zero is a measured value, and not applicable is a different state. A full-universe claim needs full coverage. Use exact expiry-series membership when comparing position changes; the same rolling DTE label can conceal entering or exiting contracts.",
