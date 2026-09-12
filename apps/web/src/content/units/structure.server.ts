@@ -1,3 +1,4 @@
+import { charmVannaConceptData } from "./charm-vanna-concept.server";
 import { gexConceptData } from "./gex-concept.server";
 import { levelsConceptData } from "./levels-concept.server";
 import { regimeConceptData } from "./regime-concept.server";
@@ -260,6 +261,14 @@ export const structureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "charm-vanna",
+		conceptLab: {
+			kind: "charm-vanna",
+			data: charmVannaConceptData,
+			intro: t(
+				"Separate time and IV effects on delta, match derivative conventions to input units, and scale the result into a stated signed position.",
+				"区分时间与 IV 对 Delta 的影响，匹配导数约定与输入单位，并将结果缩放至给定带符号持仓。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"Delta can change without a new execution. Charm describes delta's time sensitivity; vanna describes its volatility sensitivity, equivalently a cross-sensitivity of vega to spot under the model. Vendors may quote time derivatives with different signs or scales, so read whether time means elapsed time or remaining maturity. This lesson supplies changes per elapsed calendar day and per one IV percentage point. Multiply the stated sensitivity by its matching input change, then by signed position quantity and multiplier. A charm concentration or pin is an approximate model summary. These derivatives depend on a pricing model, spot, volatility, rates, dividends and time. They are not observed flows or identified dealer hedges.",

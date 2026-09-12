@@ -1,0 +1,87 @@
+import "@tanstack/react-start/server-only";
+import type { CharmVannaConceptData } from "@/domain/learning/charm-vanna-concept";
+export const charmVannaConceptData: CharmVannaConceptData = {
+	kind: "charm-vanna",
+	reference: "OMICRON · 2030-10-18 C100 · CROSS-DELTA-R",
+	asOf: "2030-09-13 · supplied local derivatives",
+	initialDelta: 0.45,
+	conventions: [
+		{
+			id: "standard",
+			label: ["Elapsed day / IV point", "已过自然日 / IV 百分点"],
+			charm: -0.01,
+			timeBasis: "elapsed-day",
+			vanna: 0.02,
+			volBasis: "iv-point",
+		},
+		{
+			id: "remaining",
+			label: ["Remaining day / IV point", "剩余自然日 / IV 百分点"],
+			charm: 0.01,
+			timeBasis: "remaining-day",
+			vanna: 0.02,
+			volBasis: "iv-point",
+		},
+		{
+			id: "decimal",
+			label: ["Elapsed day / decimal volatility", "已过自然日 / 小数波动率"],
+			charm: -0.01,
+			timeBasis: "elapsed-day",
+			vanna: 2,
+			volBasis: "vol-decimal",
+		},
+		{
+			id: "time-unknown",
+			label: ["Time convention not supplied", "未提供时间约定"],
+			charm: -0.01,
+			timeBasis: null,
+			vanna: 0.02,
+			volBasis: "iv-point",
+		},
+		{
+			id: "vol-unknown",
+			label: ["Volatility scale not supplied", "未提供波动率尺度"],
+			charm: -0.01,
+			timeBasis: "elapsed-day",
+			vanna: 0.02,
+			volBasis: null,
+		},
+	],
+	frames: [
+		{ days: 1, ivPoints: 2 },
+		{ days: 1, ivPoints: 0 },
+		{ days: 2, ivPoints: 0 },
+		{ days: 2, ivPoints: 1 },
+		{ days: 2, ivPoints: 3 },
+	],
+	dayRange: [0, 4],
+	ivRange: [-3, 3],
+	quantity: 2,
+	multiplier: 100,
+	events: [
+		{
+			id: "both",
+			label: ["1 day, IV +2 points", "1 天，IV +2 点"],
+			days: 1,
+			ivPoints: 2,
+		},
+		{
+			id: "time",
+			label: ["1 day, unchanged IV", "1 天，IV 不变"],
+			days: 1,
+			ivPoints: 0,
+		},
+		{
+			id: "vol",
+			label: ["No time change, IV +2 points", "时间不变，IV +2 点"],
+			days: 0,
+			ivPoints: 2,
+		},
+		{
+			id: "cancel",
+			label: ["2 days, IV +1 point", "2 天，IV +1 点"],
+			days: 2,
+			ivPoints: 1,
+		},
+	],
+};
