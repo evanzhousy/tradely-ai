@@ -1,3 +1,4 @@
+import { gexConceptData } from "./gex-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -11,6 +12,14 @@ import {
 export const structureUnits: TeachingUnit[] = [
 	{
 		id: "gamma-exposure",
+		conceptLab: {
+			kind: "gamma-exposure",
+			data: gexConceptData,
+			intro: t(
+				"Scale a contribution under explicit assumptions, inspect strike and expiry structure, and distinguish a known subtotal from a complete chain total.",
+				"在明确假设下缩放贡献，检查行权价与到期日结构，并区分已知小计与完整链总和。",
+			),
+		},
 		sources: [greeks, oi],
 		explanation: t(
 			"A GEX snapshot combines option gamma with quantities and an explicit position-sign convention. Open interest supplies outstanding contract counts, not observed dealer ownership. Many models assume signs by option type; those assumptions must remain attached to the result. One common dollar-per-1%-move convention is gamma × OI × multiplier × spot squared × 0.01 × assumed sign. Other conventions use different scaling. This course's supplied contribution grid already uses USD of delta exposure per 1% underlying move. Net sums signed contributions; gross sums their absolute values. Opposite signs can cancel. Full-chain structure includes zero-trade contracts; a traded-only sample cannot establish complete GEX. A missing cell prevents a complete total even when a known subtotal is available.",

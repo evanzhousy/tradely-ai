@@ -6,6 +6,7 @@ import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowImpactConceptData } from "./flow-impact-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { GammaConceptData } from "./gamma-concept";
+import type { GexConceptData } from "./gex-concept";
 import type { IvRankConceptData } from "./iv-rank-concept";
 import type { MetricsComparison } from "./metrics";
 import type { OiConceptData } from "./oi-concept";
@@ -138,7 +139,8 @@ export type LearningStepView = {
 		| "implied-realized-volatility"
 		| "volatility-surface"
 		| "iv-rank-percentile"
-		| "dex-dei-gex";
+		| "dex-dei-gex"
+		| "gamma-exposure";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -156,7 +158,8 @@ export type LearningStepView = {
 		| VolatilityConceptData
 		| SurfaceConceptData
 		| IvRankConceptData
-		| FlowImpactConceptData;
+		| FlowImpactConceptData
+		| GexConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
