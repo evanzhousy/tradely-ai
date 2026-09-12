@@ -84,6 +84,7 @@ import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { OiConceptLab } from "./oi-concept-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
+import { PnlConceptLab } from "./pnl-concept-lab";
 import { PointTimeConceptLab } from "./point-time-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
@@ -122,6 +123,7 @@ const conceptLabs = {
 	"cookbook-research-packet": PacketConceptLab,
 	"market-recap": RecapConceptLab,
 	"audit-market-recap": AuditRecapConceptLab,
+	"portfolio-pnl": PnlConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

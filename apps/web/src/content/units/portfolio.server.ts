@@ -1,3 +1,4 @@
+import { pnlConceptData } from "./pnl-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	basics,
@@ -11,6 +12,14 @@ import {
 export const portfolioUnits: TeachingUnit[] = [
 	{
 		id: "portfolio-pnl",
+		conceptLab: {
+			kind: "portfolio-pnl",
+			data: pnlConceptData,
+			intro: t(
+				"Separate realized and unrealized results, inspect cost and fee conventions, and distinguish cash, buying power and signed marked exposure.",
+				"区分已实现与未实现结果，检查成本及费用约定，并区分现金、购买力与带符号估值敞口。",
+			),
+		},
 		sources: [basics],
 		explanation: t(
 			"Position quantity, average cost and mark produce a valuation, not necessarily an executable liquidation price. For a long stock position, market value is quantity × mark and unrealized P&L is quantity × (mark − cost), before fees. A closed lot creates realized P&L under a stated lot-matching convention such as FIFO. Cash is a balance; buying power can include credit or margin rules and is not interchangeable with cash or a safe risk budget. Allocation can be measured by market value but options also require notional and sensitivity context. Short positions have different signs and risk; a small received premium does not cap an uncovered option writer's potential loss. Keep missing marks, fees and source dates visible.",

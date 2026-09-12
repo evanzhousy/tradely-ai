@@ -2,7 +2,7 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–33 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Current baseline: Lessons 1–34 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
@@ -39,13 +39,13 @@ Current baseline: Lessons 1–33 have implemented SVG labs and individual review
 | 31 | `cookbook-research-packet` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 32 | `market-recap` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 33 | `audit-market-recap` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 34 | `portfolio-pnl` | Not started |
+| 34 | `portfolio-pnl` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 35 | `portfolio-performance` | Not started |
 | 36 | `portfolio-exposure` | Not started |
 
 ## Continuation notes
 
-- Next implementation: Lesson 34, `portfolio-pnl`. Lesson 33 evidence and checks are recorded in `lesson-33-svg-lab-2026-09-12.md`.
+- Next implementation: Lesson 35, `portfolio-performance`. Lesson 34 evidence and checks are recorded in `lesson-34-svg-lab-2026-09-12.md`.
 - Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
 - Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
 - Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.
@@ -54,7 +54,7 @@ Current baseline: Lessons 1–33 have implemented SVG labs and individual review
 
 ### Next lesson design notes
 
-- Lesson 34 (`portfolio-pnl`): separate marked value, realized and unrealized P&L, cash and buying power. Keep lot matching, fees, position signs, option multipliers and source dates explicit; a deposit is not trading profit and a mark is not a guaranteed liquidation fill. Missing marks stay unknown. This is paid: verify the anonymous gate separately.
+- Lesson 35 (`portfolio-performance`): separate balance growth from flow-adjusted/TWR performance, preserve before/after-flow valuation timing, and compare compatible benchmark dates/currency/fees/return type. Show how high win rate can coexist with losses, and keep profit factor undefined with a zero loss denominator under this convention. Partial history cannot establish full-account performance. This is paid: verify the anonymous gate separately.
 - Reuse coordinate/control primitives while keeping lesson-specific data and calculation contracts explicit.
 - Preserve the full objective: all remaining lesson IDs above need implementation and evidence, followed by a curriculum-wide completion audit.
 
@@ -62,7 +62,7 @@ Current baseline: Lessons 1–33 have implemented SVG labs and individual review
 
 - The overall goal remains active. Browser task space **140** is retained under agent control for this ongoing goal; reuse it and verify ownership before interaction.
 - Component preview: `http://127.0.0.1:8261/`, last verified PID **1149**, exec session **37544**. Verify the live process before reuse; do not restart merely because a previous observation timed out.
-- The owned production preview on port 8252 was stopped after Lesson 33 verification, ready for the next rebuild.
+- The owned production preview on port 8252 was stopped after Lesson 34 verification, ready for the next rebuild.
 - Lesson 13 model: `apps/web/src/domain/learning/strategy-concept.ts`; signed-leg valuation, exact expiry curve knots and separate roll inventory/cash are wired into the authorized Learn projection.
 - `local-greeks.ts` owns `signedPositionUnits`, `localDeltaChange` and `gammaTerms`. Lessons 15–17 consume the same signed contract-scaling arithmetic; lesson-specific models own their input conventions, assumptions and validity boundaries.
 - Source edits should finish before test/browse snapshots. A full page reload after HMR prevents stale context-provider state in the isolated preview.
