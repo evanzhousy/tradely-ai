@@ -1,3 +1,4 @@
+import { performanceConceptData } from "./performance-concept.server";
 import { pnlConceptData } from "./pnl-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -71,6 +72,14 @@ export const portfolioUnits: TeachingUnit[] = [
 	},
 	{
 		id: "portfolio-performance",
+		conceptLab: {
+			kind: "portfolio-performance",
+			data: performanceConceptData,
+			intro: t(
+				"Explore cash flows, payoff distributions and comparison evidence.",
+				"探索资金流、盈亏分布与比较证据。",
+			),
+		},
 		sources: [
 			{
 				title: "Investor.gov · Assessing your performance",

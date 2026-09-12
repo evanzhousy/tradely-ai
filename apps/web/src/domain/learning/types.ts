@@ -17,6 +17,7 @@ import type { MetricsComparison } from "./metrics";
 import type { NeighborhoodConceptData } from "./neighborhood-concept";
 import type { OiConceptData } from "./oi-concept";
 import type { PacketConceptData } from "./packet-concept";
+import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PointTimeConceptData } from "./point-time-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
@@ -164,7 +165,8 @@ export type LearningStepView = {
 		| "cookbook-research-packet"
 		| "market-recap"
 		| "audit-market-recap"
-		| "portfolio-pnl";
+		| "portfolio-pnl"
+		| "portfolio-performance";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -195,7 +197,8 @@ export type LearningStepView = {
 		| PacketConceptData
 		| RecapConceptData
 		| AuditRecapConceptData
-		| PnlConceptData;
+		| PnlConceptData
+		| PerformanceConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
