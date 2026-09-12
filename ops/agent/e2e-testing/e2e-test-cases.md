@@ -44,7 +44,7 @@ Each row supplies setup/action and expected observable outcome. Server-negative 
 | ID | Priority | Setup and action | Expected result |
 | --- | --- | --- | --- |
 | NAV-001 | P1 | Open `/`, use the main free-learning CTA. | Arrive at the beginner foundation entry; free research previews are separately discoverable. |
-| NAV-002 | P1 | Open `/courses/tradingflow-foundations`; inspect all modules and lessons. | All 36 lessons in eight modules follow current syllabus order and metadata. |
+| NAV-002 | P1 | Open `/courses/tradingflow-foundations`; inspect all modules and lessons. | All 36 lessons in eight modules follow current syllabus order and metadata; current interactive lab additions must remain attached to their lesson without changing syllabus identity. |
 | NAV-003 | P0 | Filter the catalog to free lessons. | Exactly the seven explicit free IDs appear, including late-course previews; ordering does not move access. |
 | NAV-004 | P1 | Search by English and Chinese title; combine free/completion filters. | Results match localized metadata and all active filters; unknown/retired progress cannot create phantom lessons. |
 | NAV-005 | P1 | Search for no matches, clear filters and search. | An understandable empty state appears; clearing restores the full catalog. |
@@ -309,7 +309,7 @@ pnpm build
 
 The integrated learning journey uses isolated PGlite with real application services and migrations, but mocked identity/billing/media. Provider acceptance and browser interaction therefore remain separate cases above. Billing preflight and media verification require the correct environment configuration and are not implied by the commands above.
 
-Inventory totals: **119 test files; 672 source test declarations/templates; 122 acceptance rows; 36 lessons × 7 lesson checks** before browser/locale/fixture expansion.
+Inventory totals: **120 test files; 682 source test declarations/templates; 122 acceptance rows; 36 lessons × 7 lesson checks** before browser/locale/fixture expansion. Since the original baseline, the audit-recap lab added `apps/web/src/features/learning/audit-recap-concept-lab.test.tsx` with 10 declarations; current dirty worktree adds portfolio P&L lab code without a syllabus entry change.
 
 ### `apps/web/src/analytics/client-sdk.test.ts`
 

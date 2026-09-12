@@ -12,11 +12,12 @@ Read [AGENTS.md](../../../AGENTS.md) and use the installed `runbook-maintainer` 
 
 Last updated: 2026-09-12
 
-Documentation creation only; no goal, browser session, application tests or provider checks were executed in this pass.
+The first execution created report `runs/20260912T193140Z/report.md`. Round 1 reached the anonymous free-course destination, but the case is blocked overall because the exposed @Browser surface has no writable GIF export path. The local server also runs on Node 22 instead of the required Node 24.
 
-- First execution: perform the Git-history refresh below before browser testing; there is no completed-run baseline or existing results ledger.
-- Resolve the target environment and fixture availability at execution time. No hosted deployment, test identity, payment or cancellation fixture has been verified by this document.
-- The creation-time worktree contains concurrent application edits, including audit-recap teaching work. Recheck current status and include relevant uncommitted changes in the refresh; do not absorb or overwrite another task's changes.
+- Resume from `runs/20260912T193140Z/report.md`; materialize and freeze the remaining queue before the next independent round.
+- Resolve a writable sanitized GIF capture path in @Browser and rerun `NAV-001` if a file-backed evidence path becomes available.
+- Resolve Node 24 and verify the assigned non-production Feishu mailbox/test identity before email-auth cases; keep Stripe test-mode and cancellation fixtures separate.
+- The current worktree contains concurrent portfolio P&L edits and deleted/untracked ops paths. Recheck status and include relevant changes in each refresh; do not absorb or overwrite another task's changes.
 
 Keep this section to 3–7 actionable bullets (maximum 12). On resume, replace these initial items with the active report path, last durable round/next case and unresolved prerequisite actions. Completed work belongs in the report, not here.
 
@@ -89,6 +90,18 @@ After the refresh, read the current inventory's fixture and browser matrix. Reco
 - Available @Browser capabilities for viewport, locale, keyboard, reduced motion, WebGL, network/console inspection and recording. Do not claim Firefox/Safari coverage from Chromium viewport emulation.
 
 Repair routine local startup/environment issues within existing authorization before abandoning browser coverage. Preserve existing services; identify the process/port before starting another instance, and stop only a process owned by this run. Production setup changes, enabling paid AI generation and destructive fixture changes remain bounded by user authorization. Continue independent eligible cases while a case-specific prerequisite is missing.
+
+### Authentication with Feishu mail
+
+For email OTP sign-in and sign-up cases, use a dedicated non-production test identity whose mailbox is accessible through the approved Feishu Mail account. The application sends the six-digit Neon Auth verification code to that address.
+
+1. In @Browser, open the Tradely sign-in route and enter the assigned test email. Do not paste the address or code into the report.
+2. Submit **Send code**, then open Feishu Mail in a separate approved browser tab or the authorized Feishu mail connector. Search only the assigned test mailbox for the newest Tradely/Neon Auth verification message. Confirm the recipient and recent timestamp before using it.
+3. Read the six-digit OTP in Feishu Mail and enter it only into the @Browser OTP field. Never copy it into shell commands, chat, screenshots, GIFs, browser URLs, logs, report files or Git.
+4. Complete the return flow and verify the visible signed-in state plus the authorized session/progress behavior required by the selected case. Close or discard the mail tab after the round; do not mark the case complete from the email alone.
+5. For sign-up, use a never-registered test address only when the target Neon Auth environment has sign-up enabled. For returning sign-in, reuse the assigned verified identity. Keep separate aliases for A and B.
+
+If Feishu Mail access, the assigned mailbox, the OTP delivery, or the target's non-production identity configuration is unavailable, mark the email-auth case `BLOCKED` with the exact missing prerequisite. Do not use a guessed code, a shared production inbox, a hard-coded test OTP, or a different mailbox provider as an equivalent pass. A local mocked OTP or server test is supporting evidence only and cannot replace this Browser round.
 
 **Goal contract:**
 
