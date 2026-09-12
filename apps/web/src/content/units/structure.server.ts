@@ -1,4 +1,5 @@
 import { gexConceptData } from "./gex-concept.server";
+import { levelsConceptData } from "./levels-concept.server";
 import { regimeConceptData } from "./regime-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -201,6 +202,14 @@ export const structureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "structural-levels",
+		conceptLab: {
+			kind: "structural-levels",
+			data: levelsConceptData,
+			intro: t(
+				"Compare concentration rules, explore candidate payout minima, and measure distances with compatible spot and ATR references.",
+				"比较集中度规则，探索候选支付最小值，并使用兼容现价与 ATR 参考测量距离。",
+			),
+		},
 		sources: [oi, greeks],
 		explanation: t(
 			"A wall or concentration label points to a strike selected by a stated exposure or OI rule. Gamma-weighted call/put walls differ from OI-only max pain, which minimizes an expiration payout calculation over a chosen candidate set. A gamma magnet or charm pin is a model-based concentration reference, not guaranteed attraction or pinning. Expiry-scope shares describe how much modeled magnitude lies in a horizon. Always keep the scope, source date and reference spot. Distance in dollars, percent of spot or units of average true range are different measurements. ATR summarizes historical trading ranges with a stated window; it is not expected directional return. Corporate actions and changed price scales can make an unadjusted historical comparison invalid.",

@@ -1,0 +1,86 @@
+import "@tanstack/react-start/server-only";
+import type { LevelsConceptData } from "@/domain/learning/levels-concept";
+export const levelsConceptData: LevelsConceptData = {
+	kind: "structural-levels",
+	symbol: "XI",
+	asOf: "2030-09-13 · fixed source snapshot",
+	model: "LEVELS-XI-R · supplied gamma magnitudes",
+	expiries: ["2030-09-20", "2030-10-18"],
+	strikes: [95, 100, 105],
+	rows: [
+		{
+			strike: 95,
+			expiry: "2030-09-20",
+			callOi: 10,
+			putOi: 80,
+			callMagnitude: 20,
+			putMagnitude: 30,
+		},
+		{
+			strike: 100,
+			expiry: "2030-09-20",
+			callOi: 40,
+			putOi: 30,
+			callMagnitude: 80,
+			putMagnitude: 100,
+		},
+		{
+			strike: 105,
+			expiry: "2030-09-20",
+			callOi: 100,
+			putOi: 10,
+			callMagnitude: 40,
+			putMagnitude: 10,
+		},
+		{
+			strike: 95,
+			expiry: "2030-10-18",
+			callOi: 20,
+			putOi: 30,
+			callMagnitude: 10,
+			putMagnitude: 300,
+		},
+		{
+			strike: 100,
+			expiry: "2030-10-18",
+			callOi: 100,
+			putOi: 20,
+			callMagnitude: 20,
+			putMagnitude: 40,
+		},
+		{
+			strike: 105,
+			expiry: "2030-10-18",
+			callOi: 30,
+			putOi: 10,
+			callMagnitude: 200,
+			putMagnitude: 20,
+		},
+	],
+	payoutSets: [
+		{
+			id: "single",
+			label: ["Single strike · complete OI", "单一行权价 · OI 完整"],
+			rows: [{ strike: 100, calls: 10, puts: 20, multiplier: 100 }],
+		},
+		{
+			id: "plateau",
+			label: ["Two strikes · tied candidates", "两个行权价 · 候选并列"],
+			rows: [
+				{ strike: 95, calls: 20, puts: 0, multiplier: 100 },
+				{ strike: 105, calls: 0, puts: 20, multiplier: 100 },
+			],
+		},
+		{
+			id: "missing",
+			label: ["Missing required put OI", "所需看跌 OI 缺失"],
+			rows: [{ strike: 100, calls: 10, puts: null, multiplier: 100 }],
+		},
+	],
+	candidates: [90, 95, 100, 105, 110],
+	spot: 102,
+	level: 100,
+	atr: 2,
+	atrWindow: "20 sessions · ending 2030-09-12 · supplied ATR",
+	spotRange: [90, 110],
+};

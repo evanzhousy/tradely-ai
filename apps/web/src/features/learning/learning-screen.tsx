@@ -73,6 +73,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { OiConceptLab } from "./oi-concept-lab";
@@ -102,6 +103,7 @@ const conceptLabs = {
 	"dex-dei-gex": FlowImpactConceptLab,
 	"gamma-exposure": GexConceptLab,
 	"gamma-regimes": RegimeConceptLab,
+	"structural-levels": LevelsConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

@@ -8,6 +8,7 @@ import type { FlowStructureComparison } from "./flow-structure";
 import type { GammaConceptData } from "./gamma-concept";
 import type { GexConceptData } from "./gex-concept";
 import type { IvRankConceptData } from "./iv-rank-concept";
+import type { LevelsConceptData } from "./levels-concept";
 import type { MetricsComparison } from "./metrics";
 import type { OiConceptData } from "./oi-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
@@ -142,7 +143,8 @@ export type LearningStepView = {
 		| "iv-rank-percentile"
 		| "dex-dei-gex"
 		| "gamma-exposure"
-		| "gamma-regimes";
+		| "gamma-regimes"
+		| "structural-levels";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -162,7 +164,8 @@ export type LearningStepView = {
 		| IvRankConceptData
 		| FlowImpactConceptData
 		| GexConceptData
-		| RegimeConceptData;
+		| RegimeConceptData
+		| LevelsConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
