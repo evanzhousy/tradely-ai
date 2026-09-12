@@ -33,6 +33,8 @@ P0 = access, identity, payments, privacy or saved-work integrity release gate. P
 
 ## Browser and integrated acceptance cases
 
+Account and billing lifecycle coverage: returning-user sign-in (`AUTH-001`–`AUTH-011`), first-time registration (`AUTH-012`–`AUTH-015`), successful Course Pass payment (`BILL-005`), successful membership payment and failed/authenticated payments (`BILL-016`–`BILL-017`), and subscription cancellation through effective access loss and repurchase (`BILL-018`–`BILL-025`). Canceling an unfinished Checkout (`BILL-010`) is distinct from canceling an existing subscription. All remain NOT RUN until evidenced in a named environment.
+
 Each row supplies setup/action and expected observable outcome. Server-negative cases require a controlled request or fixture in addition to browser inspection.
 
 ### NAV — Discovery, navigation and content
@@ -66,6 +68,10 @@ Each row supplies setup/action and expected observable outcome. Server-negative 
 | AUTH-009 | P0 | Switch A to B while learning/coaching requests are pending. | UI clears A state and ignores late A responses; B cannot access A attempts/results. |
 | AUTH-010 | P0 | Simulate auth outage and missing auth configuration separately. | Outage is not represented as an anonymous success; configured-disabled identity actions are unavailable while public content works. |
 | AUTH-011 | P0 | Send cross-origin/cross-site auth requests and invalid auth paths. | Requests fail closed; same-origin valid auth responses are not cached and only auth cookies are forwarded. |
+| AUTH-012 | P0 | Use a never-registered email in the shared sign-in/sign-up OTP flow; verify the code and return to a free lesson. | With provider sign-up enabled, a new verified Tradely identity is established; account-backed learning can save, and no paid entitlement is invented. There is no separate sign-up page in the current route set. |
+| AUTH-013 | P0 | Register with a new Google identity, then sign out and sign in again with the same provider. | First successful callback establishes the account; subsequent sign-in returns the same identity and its saved work without creating a duplicate learner. |
+| AUTH-014 | P0 | Start registration but abandon verification or enter wrong/expired codes; attempt saved progress and paid access. | Unverified registration does not grant server identity, saved progress, or paid access; valid verification can subsequently recover the flow. |
+| AUTH-015 | P0 | Return with an existing email OTP account, then exercise the same-email Google flow in a controlled provider fixture. | Existing email sign-in preserves identity and progress. Record the configured provider linking policy; Google either links through verified provider rules or presents a safe explicit conflict/recovery, never an unverified account merge or transfer of another account's entitlement. |
 
 ### ACCESS — Authorization
 
@@ -99,6 +105,16 @@ Each row supplies setup/action and expected observable outcome. Server-negative 
 | BILL-013 | P1 | Open Customer Portal for the mapped test customer and return. | Correct customer portal opens; refreshed access reflects authoritative subscription state. |
 | BILL-014 | P0 | Refund/revoke a test pass via the documented dry-run/apply process, then restore. | Revocation retains original Session identity and restore cannot reactivate it; later new purchase uses a new generation. |
 | BILL-015 | P1 | Inspect membership partner-benefit copy and Session metadata. | Separate fulfillment is described; metadata does not imply automatic TradingFlow account creation or shared access. |
+| BILL-016 | P0 | As a newly registered unpaid learner, finish membership Checkout with a successful Stripe test payment; return and reload clean pricing and a paid lesson. | Stripe shows the correct customer, exact membership Price and successful payment/subscription state; the server sees active membership and unlocks paid content. Access survives reload and sign-out/sign-in; a success query alone is insufficient. |
+| BILL-017 | P0 | For each offer, use a declined test payment and an authentication-required payment; fail/cancel authentication, then retry successfully. | Failed/incomplete payment grants no new access or false success. Successful authentication and payment grant only the selected offer after its authoritative checks, without duplicate successful purchases from retries. |
+| BILL-018 | P0 | As a member without a pass/manual grant, open Manage billing and confirm subscription cancellation in the Stripe Customer Portal. | The correct customer's exact membership subscription is selected; confirmation and Stripe state agree. Record whether the configured portal cancels at period end or immediately. Portal opening alone does not satisfy this case; unavailable cancellation is a blocked acceptance gap. |
+| BILL-019 | P0 | With period-end cancellation configured, schedule cancellation and return before the effective end; reload a paid lesson. | Stripe records scheduled cancellation while the subscription remains active/trialing; current server rules retain access until the subscription actually leaves those statuses. No duplicate subscription is created. |
+| BILL-020 | P0 | Advance an isolated test subscription through its scheduled end, or use a supported test fixture; refresh pricing and request paid content/progress from an already-open tab. | Stripe confirms canceled/non-active status; without another valid grant, fresh requests deny paid content and writes. Historical learner work is retained, free lessons remain available, and no post-cancellation renewal is collected for that subscription. |
+| BILL-021 | P0 | If the configured portal supports immediate cancellation, confirm it and refresh Tradely. | Once Stripe status is no longer active/trialing, paid access is denied absent another valid grant. Record actual refund/proration behavior from the configured test policy; do not assume cancellation produces a refund. |
+| BILL-022 | P1 | Open cancellation but abandon before confirmation; separately resume a scheduled cancellation before its end when the portal supports it. | Abandoning leaves the subscription unchanged. Successful resumption clears the scheduled cancellation on the same subscription, retains access and does not create a second subscription. Unsupported resumption is explicitly recorded. |
+| BILL-023 | P0 | Cancel membership for a learner who also owns a valid Course Pass, then let membership end. | Recurring membership ends while Course Pass access to its covered course remains active; cancellation does not revoke the independent one-time grant. |
+| BILL-024 | P0 | After membership cancellation becomes effective, purchase membership again in test mode. | Exactly one new intended active membership is established on the correct mapped customer; paid access returns and earlier saved learning remains associated with the same user. |
+| BILL-025 | P0 | Start Manage billing anonymously, as another account, with no mapped customer, and during a portal/provider error. | Server-owned identity selects the customer; another account cannot manage or cancel the original member's subscription. Missing mapping or provider failure yields safe recovery and does not change membership state. |
 
 ### LEARN — Practice, grading and saved progress
 
@@ -291,7 +307,7 @@ pnpm build
 
 The integrated learning journey uses isolated PGlite with real application services and migrations, but mocked identity/billing/media. Provider acceptance and browser interaction therefore remain separate cases above. Billing preflight and media verification require the correct environment configuration and are not implied by the commands above.
 
-Inventory totals: **119 test files; 672 source test declarations/templates; 108 acceptance rows; 36 lessons × 7 lesson checks** before browser/locale/fixture expansion.
+Inventory totals: **119 test files; 672 source test declarations/templates; 122 acceptance rows; 36 lessons × 7 lesson checks** before browser/locale/fixture expansion.
 
 ### `apps/web/src/analytics/client-sdk.test.ts`
 
