@@ -1,3 +1,4 @@
+export const POSTHOG_PROJECT_ID = 582920;
 export const POSTHOG_INGESTION_HOST = "https://us.i.posthog.com";
 export const POSTHOG_PROXY_HOST = "https://z.tradely.ai";
 export const POSTHOG_CONTROL_HOST = "https://us.posthog.com";

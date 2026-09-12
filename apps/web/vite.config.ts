@@ -8,6 +8,7 @@ import { defineConfig } from "vite";
 import {
 	normalizePostHogHost,
 	POSTHOG_CONTROL_HOST,
+	POSTHOG_PROJECT_ID,
 	POSTHOG_PROXY_HOST,
 } from "./src/analytics/posthog-config.ts";
 import { resolveAnalyticsRelease } from "./src/analytics/release.ts";
@@ -73,15 +74,16 @@ function posthogSourceMapsPlugin() {
 		return null;
 	}
 	const personalApiKey = process.env.POSTHOG_CLI_API_KEY;
-	const projectId = process.env.POSTHOG_CLI_PROJECT_ID?.trim();
+	const projectId =
+		process.env.POSTHOG_CLI_PROJECT_ID?.trim() || String(POSTHOG_PROJECT_ID);
 	if (!personalApiKey || !projectId) {
 		throw new Error(
 			"PostHog source maps are enabled but build credentials are incomplete",
 		);
 	}
-	if (projectId !== "582920") {
+	if (projectId !== String(POSTHOG_PROJECT_ID)) {
 		throw new Error(
-			"PostHog source maps must target the Tradely project (582920)",
+			`PostHog source maps must target the Tradely project (${POSTHOG_PROJECT_ID})`,
 		);
 	}
 	return posthog({
