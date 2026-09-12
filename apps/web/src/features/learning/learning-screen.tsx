@@ -64,6 +64,7 @@ import {
 	type RendererChange,
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
+import { DeltaConceptLab } from "./delta-concept-lab";
 import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
@@ -89,6 +90,7 @@ import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
+	delta: DeltaConceptLab,
 	"symbol-drawer": SourceConceptLab,
 	"unusual-activity": ActivityConceptLab,
 	"option-strategies": StrategyConceptLab,

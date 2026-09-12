@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ActivityConceptData } from "./activity-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
+import type { DeltaConceptData } from "./delta-concept";
 import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
@@ -124,7 +125,8 @@ export type LearningStepView = {
 		| "trade-records"
 		| "unusual-activity"
 		| "option-strategies"
-		| "symbol-drawer";
+		| "symbol-drawer"
+		| "delta";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -135,7 +137,8 @@ export type LearningStepView = {
 		| TapeConceptData
 		| ActivityConceptData
 		| StrategyConceptData
-		| SourceConceptData;
+		| SourceConceptData
+		| DeltaConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

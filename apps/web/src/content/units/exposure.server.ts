@@ -6,10 +6,19 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
+import { deltaConceptData } from "./delta-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
 		id: "delta",
+		conceptLab: {
+			kind: "delta",
+			data: deltaConceptData,
+			intro: t(
+				"Explore a local option-price slope, carry its sign and units into position exposure, and test when the delta-only estimate is incomplete.",
+				"探索局部期权价格斜率，将符号与单位带入持仓敞口，并检验何时仅用 Delta 的估计不完整。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"Delta approximates an option's price change for a small one-unit move in its underlying, holding other inputs fixed. A quoted delta of 0.50 means about $0.50 per option-share for a $1 underlying move in this example. Multiply by contract count and the stated multiplier for dollar change or share-equivalent position exposure. A long call commonly has positive delta; a long put negative. Shorting the same option reverses the position sign. Delta is local, may change with spot, time and volatility, and is not a promise about the next price or a universally valid probability. Distinguish the option's model delta from a flow convention that first takes absolute exposure and adds a sentiment sign later.",
