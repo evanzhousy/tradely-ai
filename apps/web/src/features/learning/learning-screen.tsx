@@ -69,6 +69,7 @@ import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { GammaConceptLab } from "./gamma-concept-lab";
+import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
@@ -94,6 +95,7 @@ import { VolatilityConceptLab } from "./volatility-concept-lab";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
+	"iv-rank-percentile": IvRankConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

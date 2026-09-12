@@ -8,6 +8,7 @@ import {
 } from "./authoring.server";
 import { deltaConceptData } from "./delta-concept.server";
 import { gammaConceptData } from "./gamma-concept.server";
+import { ivRankConceptData } from "./iv-rank-concept.server";
 import { surfaceConceptData } from "./surface-concept.server";
 import { timeVolRateConceptData } from "./time-vol-rate-concept.server";
 import { volatilityConceptData } from "./volatility-concept.server";
@@ -325,6 +326,14 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "iv-rank-percentile",
+		conceptLab: {
+			kind: "iv-rank-percentile",
+			data: ivRankConceptData,
+			intro: t(
+				"Compare range position with strictly-below frequency, isolate one historical outlier, and audit the reference, window and coverage before publishing percentages.",
+				"比较区间位置与严格低于频率，单独改变一个历史极端值，并在发布百分比前审计参考、窗口与覆盖。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"IV rank positions today's standardized IV within a historical low-to-high range: (current−minimum)/(maximum−minimum)×100. IV percentile counts the share of historical observations below the current value; a tie rule must be stated. They need the same IV reference, a defined history window and adequate coverage. One extreme high can lower rank without changing how many ordinary days sit below today. This lesson uses strictly-below percentile and an explicitly supplied sample, not a claim that a short sample is a valid one-year estimate. If the range is zero, rank is undefined under this formula. If history is missing, disclose it rather than presenting a confident percentage.",

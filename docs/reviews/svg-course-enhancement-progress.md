@@ -2,7 +2,7 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–19 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Current baseline: Lessons 1–20 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Current baseline: Lessons 1–19 have implemented SVG labs and individual review
 | 17 | `theta-vega-rho` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 18 | `implied-realized-volatility` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 19 | `volatility-surface` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 20 | `iv-rank-percentile` | Not started |
+| 20 | `iv-rank-percentile` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 21 | `dex-dei-gex` | Not started |
 | 22 | `gamma-exposure` | Not started |
 | 23 | `gamma-regimes` | Not started |
@@ -45,7 +45,7 @@ Current baseline: Lessons 1–19 have implemented SVG labs and individual review
 
 ## Continuation notes
 
-- Next implementation: Lesson 20, `iv-rank-percentile`. Lesson 19 evidence and checks are recorded in `lesson-19-svg-lab-2026-09-12.md`.
+- Next implementation: Lesson 21, `dex-dei-gex`. Lesson 20 evidence and checks are recorded in `lesson-20-svg-lab-2026-09-12.md`.
 - Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
 - Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
 - Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.
@@ -54,7 +54,7 @@ Current baseline: Lessons 1–19 have implemented SVG labs and individual review
 
 ### Next lesson design notes
 
-- Lesson 20 (`iv-rank-percentile`): inspect the authored unit; distinguish range position from strictly-below frequency, make outlier and tie effects visible, and preserve reference/window/coverage requirements. A zero range makes rank undefined; a short sample is not a valid one-year estimate by assertion.
+- Lesson 21 (`dex-dei-gex`): distinguish signed trade delta-equivalent flow, normalized DEI and separately sourced GEX. Show neutral flow coverage, declared direction conventions and denominator sensitivity. Preserve units and lineage; an index proxy needs an explicit scale.
 - Reuse coordinate/control primitives while keeping lesson-specific data and calculation contracts explicit.
 - Preserve the full objective: all remaining lesson IDs above need implementation and evidence, followed by a curriculum-wide completion audit.
 
@@ -62,7 +62,7 @@ Current baseline: Lessons 1–19 have implemented SVG labs and individual review
 
 - The overall goal remains active. Browser task space **140** is retained under agent control for this ongoing goal; reuse it and verify ownership before interaction.
 - Component preview: `http://127.0.0.1:8261/`, last verified PID **2417**, exec session **95649**. Verify the live process before reuse; do not restart merely because a previous observation timed out.
-- The owned production preview on port 8252 was stopped after Lesson 19 verification, ready for the next rebuild.
+- The owned production preview on port 8252 was stopped after Lesson 20 verification, ready for the next rebuild.
 - Lesson 13 model: `apps/web/src/domain/learning/strategy-concept.ts`; signed-leg valuation, exact expiry curve knots and separate roll inventory/cash are wired into the authorized Learn projection.
 - `local-greeks.ts` owns `signedPositionUnits`, `localDeltaChange` and `gammaTerms`. Lessons 15–17 consume the same signed contract-scaling arithmetic; lesson-specific models own their input conventions, assumptions and validity boundaries.
 - Source edits should finish before test/browse snapshots. A full page reload after HMR prevents stale context-provider state in the isolated preview.
