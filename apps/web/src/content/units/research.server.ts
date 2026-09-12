@@ -1,6 +1,7 @@
 import { boundaryConceptData } from "./boundary-concept.server";
 import { eligibilityConceptData } from "./eligibility-concept.server";
 import { neighborhoodConceptData } from "./neighborhood-concept.server";
+import { pointTimeConceptData } from "./point-time-concept.server";
 import { rankSymbolConceptData } from "./rank-symbol-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -379,6 +380,14 @@ export const researchUnits: TeachingUnit[] = [
 	},
 	{
 		id: "point-in-time-research",
+		conceptLab: {
+			kind: "point-in-time-research",
+			data: pointTimeConceptData,
+			intro: t(
+				"Respect knowledge cutoffs, separate weighted scores from raw activity, read score meanings correctly, and preserve an untouched evaluation boundary.",
+				"遵守获知截止，区分加权分数与原始活动，正确读取分数含义，并保留未触碰评价边界。",
+			),
+		},
 		sources: [oi, quotes],
 		explanation: t(
 			"A historical test must use information available at the decision time. Event time and knowledge/receipt time can differ: a correction received later was not usable earlier. Freeze the question, eligible population, measure and evaluation rule before inspecting outcomes. Hold out a separate period or case; tuning a threshold after seeing that outcome turns it into development data. Recency-weighted activity may decay with a half-life while raw trade count does not; a score can change without a new trade. Percentiles, standardized scores and calibrated probabilities are different quantities. Require a comparable baseline, sufficient samples and source coverage. An unusual score or a pre-move association does not establish causation, ownership or repeatable out-of-sample returns.",

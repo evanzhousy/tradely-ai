@@ -82,6 +82,7 @@ import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { OiConceptLab } from "./oi-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
+import { PointTimeConceptLab } from "./point-time-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuoteConceptLab } from "./quote-concept-lab";
@@ -114,6 +115,7 @@ const conceptLabs = {
 	"symbol-universe": EligibilityConceptLab,
 	"rank-symbols": RankSymbolConceptLab,
 	"rank-contracts": NeighborhoodConceptLab,
+	"point-in-time-research": PointTimeConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
