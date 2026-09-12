@@ -15,6 +15,7 @@ import type { LevelsConceptData } from "./levels-concept";
 import type { MetricsComparison } from "./metrics";
 import type { NeighborhoodConceptData } from "./neighborhood-concept";
 import type { OiConceptData } from "./oi-concept";
+import type { PacketConceptData } from "./packet-concept";
 import type { PointTimeConceptData } from "./point-time-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
@@ -156,7 +157,8 @@ export type LearningStepView = {
 		| "symbol-universe"
 		| "rank-symbols"
 		| "rank-contracts"
-		| "point-in-time-research";
+		| "point-in-time-research"
+		| "cookbook-research-packet";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -183,7 +185,8 @@ export type LearningStepView = {
 		| EligibilityConceptData
 		| RankSymbolConceptData
 		| NeighborhoodConceptData
-		| PointTimeConceptData;
+		| PointTimeConceptData
+		| PacketConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

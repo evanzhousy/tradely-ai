@@ -1,3 +1,4 @@
+import { packetConceptData } from "./packet-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -49,6 +50,14 @@ export function packetData(variant: number) {
 export const productionUnits: TeachingUnit[] = [
 	{
 		id: "cookbook-research-packet",
+		conceptLab: {
+			kind: "cookbook-research-packet",
+			data: packetConceptData,
+			intro: t(
+				"Trace actual source rows into a premium subtotal, inspect the recorded packet fields, and separate permitted reruns from method revisions.",
+				"沿实际来源行追溯权利金小计，检查研究包记录字段，并区分允许重跑与方法修订。",
+			),
+		},
 		sources: [oi, quotes],
 		explanation: t(
 			"A reproducible research packet is a usable record, not a slogan about rigor. Name the question, instrument set, session cutoff, source identifiers, units, transformation and missingness. Keep fixed method parameters separate from permitted replay inputs. Record the actual row IDs used in a calculation so another reader can reconstruct it. Save each rerun with its own date and evidence; changing the source, universe or method needs an explicit new question or revision, not an overwritten result. Your packet can contain a valid observed subtotal while the full-universe total remains unavailable. One person can maintain the record and ask another to challenge it. This exercise saves your actual fields; prose is available for self/reviewer assessment, not automatic mastery certification.",
