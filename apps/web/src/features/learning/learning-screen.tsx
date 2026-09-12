@@ -52,6 +52,7 @@ import type {
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import { ActivityConceptLab } from "./activity-concept-lab";
+import { AuditRecapConceptLab } from "./audit-recap-concept-lab";
 import { BoundaryConceptLab } from "./boundary-concept-lab";
 import { CharmVannaConceptLab } from "./charm-vanna-concept-lab";
 import {
@@ -120,6 +121,7 @@ const conceptLabs = {
 	"point-in-time-research": PointTimeConceptLab,
 	"cookbook-research-packet": PacketConceptLab,
 	"market-recap": RecapConceptLab,
+	"audit-market-recap": AuditRecapConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

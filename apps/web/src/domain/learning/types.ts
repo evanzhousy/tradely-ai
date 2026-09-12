@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ActivityConceptData } from "./activity-concept";
+import type { AuditRecapConceptData } from "./audit-recap-concept";
 import type { BoundaryConceptData } from "./boundary-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
@@ -160,7 +161,8 @@ export type LearningStepView = {
 		| "rank-contracts"
 		| "point-in-time-research"
 		| "cookbook-research-packet"
-		| "market-recap";
+		| "market-recap"
+		| "audit-market-recap";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -189,7 +191,8 @@ export type LearningStepView = {
 		| NeighborhoodConceptData
 		| PointTimeConceptData
 		| PacketConceptData
-		| RecapConceptData;
+		| RecapConceptData
+		| AuditRecapConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

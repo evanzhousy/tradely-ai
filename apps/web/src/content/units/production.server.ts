@@ -1,3 +1,4 @@
+import { auditRecapConceptData } from "./audit-recap-concept.server";
 import { packetConceptData } from "./packet-concept.server";
 import { recapConceptData } from "./recap-concept.server";
 import "@tanstack/react-start/server-only";
@@ -197,6 +198,14 @@ export const productionUnits: TeachingUnit[] = [
 	},
 	{
 		id: "audit-market-recap",
+		conceptLab: {
+			kind: "audit-market-recap",
+			data: auditRecapConceptData,
+			intro: t(
+				"Recalculate a flawed amount, compare report claims with source identity and scale, and assemble a bounded signoff that retains valid evidence.",
+				"重算错误金额，将报告结论与来源身份及尺度比较，并组装保留有效证据的有边界签核。",
+			),
+		},
 		sources: [oi, quotes],
 		explanation: t(
 			"Audit someone else's result against its sources and transformations. Check identity, units, time, coverage and inference before polishing prose. Recalculate a number; inspect the actual chart scale; verify that a report's date and expiry set match the claim. Find the first unsupported step and repair the affected conclusion without discarding valid evidence. A useful signoff says what is supported, which defects were repaired, what remains unknown and what would reopen review. A compelling-looking chart or a plausible outcome is not a substitute for source lineage. Your audit notes are saved for self or human review; the numerical checks are graded separately from the quality of your prose.",
