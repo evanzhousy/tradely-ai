@@ -1,4 +1,5 @@
 import { packetConceptData } from "./packet-concept.server";
+import { recapConceptData } from "./recap-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -117,6 +118,14 @@ export const productionUnits: TeachingUnit[] = [
 	},
 	{
 		id: "market-recap",
+		conceptLab: {
+			kind: "market-recap",
+			data: recapConceptData,
+			intro: t(
+				"Match a chart to its claimed quantity, inspect the effect of axis cropping, and compose a bounded headline and source-linked caption.",
+				"将图表与声明量匹配，检查轴裁切影响，并编排有边界标题及关联来源的图注。",
+			),
+		},
 		sources: [oi, quotes],
 		explanation: t(
 			"A recap communicates a research packet's supported findings. Start from the supplied rows or your identified saved packet, not a dramatic headline. Every numerical claim needs a traceable calculation, date, unit, population and coverage boundary. Use a chart of one comparable quantity; different metrics need separate axes or panels with honest units. A truncated axis, missing denominator, or an unmarked missing row can distort interpretation even when the arithmetic is correct. A descriptive claim does not become a forecast through stronger wording. Your written headline and caption are saved as an artifact and can be exported with source references. Compare them with the reference after submission; text quality is not automatically graded.",

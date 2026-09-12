@@ -20,6 +20,7 @@ import type { PointTimeConceptData } from "./point-time-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
 import type { RankSymbolConceptData } from "./rank-symbol-concept";
+import type { RecapConceptData } from "./recap-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
@@ -158,7 +159,8 @@ export type LearningStepView = {
 		| "rank-symbols"
 		| "rank-contracts"
 		| "point-in-time-research"
-		| "cookbook-research-packet";
+		| "cookbook-research-packet"
+		| "market-recap";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -186,7 +188,8 @@ export type LearningStepView = {
 		| RankSymbolConceptData
 		| NeighborhoodConceptData
 		| PointTimeConceptData
-		| PacketConceptData;
+		| PacketConceptData
+		| RecapConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

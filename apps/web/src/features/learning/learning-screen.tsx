@@ -89,6 +89,7 @@ import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuoteConceptLab } from "./quote-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { RankSymbolConceptLab } from "./rank-symbol-concept-lab";
+import { RecapConceptLab } from "./recap-concept-lab";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
@@ -118,6 +119,7 @@ const conceptLabs = {
 	"rank-contracts": NeighborhoodConceptLab,
 	"point-in-time-research": PointTimeConceptLab,
 	"cookbook-research-packet": PacketConceptLab,
+	"market-recap": RecapConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

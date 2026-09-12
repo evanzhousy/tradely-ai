@@ -2,7 +2,7 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–31 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Current baseline: Lessons 1–32 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
@@ -37,7 +37,7 @@ Current baseline: Lessons 1–31 have implemented SVG labs and individual review
 | 29 | `rank-contracts` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 30 | `point-in-time-research` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 31 | `cookbook-research-packet` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 32 | `market-recap` | Not started |
+| 32 | `market-recap` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 33 | `audit-market-recap` | Not started |
 | 34 | `portfolio-pnl` | Not started |
 | 35 | `portfolio-performance` | Not started |
@@ -45,7 +45,7 @@ Current baseline: Lessons 1–31 have implemented SVG labs and individual review
 
 ## Continuation notes
 
-- Next implementation: Lesson 32, `market-recap`. Lesson 31 evidence and checks are recorded in `lesson-31-svg-lab-2026-09-12.md`.
+- Next implementation: Lesson 33, `audit-market-recap`. Lesson 32 evidence and checks are recorded in `lesson-32-svg-lab-2026-09-12.md`.
 - Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
 - Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
 - Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.
@@ -54,7 +54,7 @@ Current baseline: Lessons 1–31 have implemented SVG labs and individual review
 
 ### Next lesson design notes
 
-- Lesson 32 (`market-recap`): build a supported headline/caption and chart from identified source rows. Keep units, dates, population and missingness beside claims; expose truncated-axis and metric-substitution distortions. Preserve written-artifact persistence/self-review. Reuse `packetTeachingSource` from `packet-concept.server.ts` for Learn-stage continuity if appropriate; it has R1/R2 volumes 10/20, premium subtotal $8,000, missing R3, and cutoff under `method.cutoff`. Do not alter the distinct shared graded `packetData` dataset. This is paid: verify the anonymous gate separately.
+- Lesson 33 (`audit-market-recap`): audit a flawed result against source identity, units, time, coverage and inference; recalculate the missing-multiplier amount, inspect actual chart scale, repair only unsupported claims and retain valid R1 evidence. Signoff must name supported/repaired/unknown items and reopening conditions. Reuse the Learn teaching packet/recap source for continuity; preserve the distinct graded `packetData`, saved audit writing and human review. This is paid: verify the anonymous gate separately.
 - Reuse coordinate/control primitives while keeping lesson-specific data and calculation contracts explicit.
 - Preserve the full objective: all remaining lesson IDs above need implementation and evidence, followed by a curriculum-wide completion audit.
 
@@ -62,7 +62,7 @@ Current baseline: Lessons 1–31 have implemented SVG labs and individual review
 
 - The overall goal remains active. Browser task space **140** is retained under agent control for this ongoing goal; reuse it and verify ownership before interaction.
 - Component preview: `http://127.0.0.1:8261/`, last verified PID **1149**, exec session **37544**. Verify the live process before reuse; do not restart merely because a previous observation timed out.
-- The owned production preview on port 8252 was stopped after Lesson 31 verification, ready for the next rebuild.
+- The owned production preview on port 8252 was stopped after Lesson 32 verification, ready for the next rebuild.
 - Lesson 13 model: `apps/web/src/domain/learning/strategy-concept.ts`; signed-leg valuation, exact expiry curve knots and separate roll inventory/cash are wired into the authorized Learn projection.
 - `local-greeks.ts` owns `signedPositionUnits`, `localDeltaChange` and `gammaTerms`. Lessons 15–17 consume the same signed contract-scaling arithmetic; lesson-specific models own their input conventions, assumptions and validity boundaries.
 - Source edits should finish before test/browse snapshots. A full page reload after HMR prevents stale context-provider state in the isolated preview.
