@@ -67,6 +67,7 @@ import {
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
 import { DeltaConceptLab } from "./delta-concept-lab";
+import { EligibilityConceptLab } from "./eligibility-concept-lab";
 import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
@@ -108,6 +109,7 @@ const conceptLabs = {
 	"structural-levels": LevelsConceptLab,
 	"charm-vanna": CharmVannaConceptLab,
 	"audited-boundary": BoundaryConceptLab,
+	"symbol-universe": EligibilityConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

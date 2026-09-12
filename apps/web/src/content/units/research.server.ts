@@ -1,4 +1,5 @@
 import { boundaryConceptData } from "./boundary-concept.server";
+import { eligibilityConceptData } from "./eligibility-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -76,6 +77,14 @@ export const researchUnits: TeachingUnit[] = [
 	},
 	{
 		id: "symbol-universe",
+		conceptLab: {
+			kind: "symbol-universe",
+			data: eligibilityConceptData,
+			intro: t(
+				"Derive eligibility from source facts, separate observed peers from missing candidates, and preserve the membership date of a historical comparison.",
+				"根据来源事实判定资格，区分观测同组与缺失候选，并保留历史比较的成员日期。",
+			),
+		},
 		sources: [oi],
 		explanation: t(
 			"A comparison universe is a declared set of eligible observations. Derive eligibility from source facts rather than trusting a green badge: instrument identity, selected session, required coverage and liquidity threshold. Keep the intended population separate from the subset actually observed. Excluding a missing high-volume candidate may be necessary for a measured comparison, but it does not prove the remaining leader is largest in the unseen full universe. Sector, market cap, underlying type and earnings dates may define the question; they are not interchangeable filters. Historical membership must be point-in-time to avoid survivorship bias. A reference denominator can mean peer count or a numeric normalization baseline; say which one you are using.",

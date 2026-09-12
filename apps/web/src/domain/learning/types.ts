@@ -4,6 +4,7 @@ import type { BoundaryConceptData } from "./boundary-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
+import type { EligibilityConceptData } from "./eligibility-concept";
 import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowImpactConceptData } from "./flow-impact-concept";
 import type { FlowStructureComparison } from "./flow-structure";
@@ -148,7 +149,8 @@ export type LearningStepView = {
 		| "gamma-regimes"
 		| "structural-levels"
 		| "charm-vanna"
-		| "audited-boundary";
+		| "audited-boundary"
+		| "symbol-universe";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -171,7 +173,8 @@ export type LearningStepView = {
 		| RegimeConceptData
 		| LevelsConceptData
 		| CharmVannaConceptData
-		| BoundaryConceptData;
+		| BoundaryConceptData
+		| EligibilityConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
