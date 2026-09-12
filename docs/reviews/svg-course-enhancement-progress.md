@@ -2,67 +2,51 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–36 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Completed: all 36 lessons and the final curriculum-wide audit. See `svg-curriculum-completion-audit-2026-09-12.md` for the 110-scene matrix, tests, access checks and evidence index.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
-| 1 | `option-contracts` | Existing SVG lab; final audit pending |
-| 2 | `option-rights` | Existing SVG lab; final audit pending |
-| 3 | `premium-payoff` | Existing SVG lab; final audit pending |
-| 4 | `expiration-settlement` | Existing SVG lab; final audit pending |
-| 5 | `quotes-orders-trades` | Existing SVG lab; final audit pending |
-| 6 | `execution-counterparties` | Existing SVG lab; final audit pending |
-| 7 | `execution-side` | Existing SVG lab; final audit pending |
-| 8 | `flow-sentiment` | Existing SVG lab; final audit pending |
-| 9 | `validate-option-print` | Existing SVG lab; final audit pending |
-| 10 | `session-flow-vs-structure` | Existing SVG lab; final audit pending |
-| 11 | `trade-records` | Existing SVG lab; final audit pending |
-| 12 | `unusual-activity` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 13 | `option-strategies` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 14 | `symbol-drawer` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 15 | `delta` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 16 | `gamma` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 17 | `theta-vega-rho` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 18 | `implied-realized-volatility` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 19 | `volatility-surface` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 20 | `iv-rank-percentile` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 21 | `dex-dei-gex` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 22 | `gamma-exposure` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 23 | `gamma-regimes` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 24 | `structural-levels` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 25 | `charm-vanna` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 26 | `audited-boundary` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 27 | `symbol-universe` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 28 | `rank-symbols` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 29 | `rank-contracts` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 30 | `point-in-time-research` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 31 | `cookbook-research-packet` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 32 | `market-recap` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 33 | `audit-market-recap` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 34 | `portfolio-pnl` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 35 | `portfolio-performance` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 36 | `portfolio-exposure` | SVG implemented; browser/GIF and validation complete; final audit pending |
+| 1 | `option-contracts` | SVG, browser/GIF and final audit complete |
+| 2 | `option-rights` | SVG, browser/GIF and final audit complete |
+| 3 | `premium-payoff` | SVG, browser/GIF and final audit complete |
+| 4 | `expiration-settlement` | SVG, browser/GIF and final audit complete |
+| 5 | `quotes-orders-trades` | SVG, browser/GIF and final audit complete |
+| 6 | `execution-counterparties` | SVG, browser/GIF and final audit complete |
+| 7 | `execution-side` | SVG, browser/GIF and final audit complete |
+| 8 | `flow-sentiment` | SVG, browser/GIF and final audit complete |
+| 9 | `validate-option-print` | SVG, browser/GIF and final audit complete |
+| 10 | `session-flow-vs-structure` | SVG, browser/GIF and final audit complete |
+| 11 | `trade-records` | SVG, browser/GIF and final audit complete |
+| 12 | `unusual-activity` | SVG, browser/GIF and final audit complete |
+| 13 | `option-strategies` | SVG, browser/GIF and final audit complete |
+| 14 | `symbol-drawer` | SVG, browser/GIF and final audit complete |
+| 15 | `delta` | SVG, browser/GIF and final audit complete |
+| 16 | `gamma` | SVG, browser/GIF and final audit complete |
+| 17 | `theta-vega-rho` | SVG, browser/GIF and final audit complete |
+| 18 | `implied-realized-volatility` | SVG, browser/GIF and final audit complete |
+| 19 | `volatility-surface` | SVG, browser/GIF and final audit complete |
+| 20 | `iv-rank-percentile` | SVG, browser/GIF and final audit complete |
+| 21 | `dex-dei-gex` | SVG, browser/GIF and final audit complete |
+| 22 | `gamma-exposure` | SVG, browser/GIF and final audit complete |
+| 23 | `gamma-regimes` | SVG, browser/GIF and final audit complete |
+| 24 | `structural-levels` | SVG, browser/GIF and final audit complete |
+| 25 | `charm-vanna` | SVG, browser/GIF and final audit complete |
+| 26 | `audited-boundary` | SVG, browser/GIF and final audit complete |
+| 27 | `symbol-universe` | SVG, browser/GIF and final audit complete |
+| 28 | `rank-symbols` | SVG, browser/GIF and final audit complete |
+| 29 | `rank-contracts` | SVG, browser/GIF and final audit complete |
+| 30 | `point-in-time-research` | SVG, browser/GIF and final audit complete |
+| 31 | `cookbook-research-packet` | SVG, browser/GIF and final audit complete |
+| 32 | `market-recap` | SVG, browser/GIF and final audit complete |
+| 33 | `audit-market-recap` | SVG, browser/GIF and final audit complete |
+| 34 | `portfolio-pnl` | SVG, browser/GIF and final audit complete |
+| 35 | `portfolio-performance` | SVG, browser/GIF and final audit complete |
+| 36 | `portfolio-exposure` | SVG, browser/GIF and final audit complete |
 
-## Continuation notes
+## Completion notes
 
-- Next: finish the curriculum-wide audit. Lesson 36 evidence and checks are recorded in `lesson-36-svg-lab-2026-09-12.md`.
-- Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
-- Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
-- Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.
-- Use Node 24 and finish source edits before full-suite checks to avoid mixed hot-reload/test-module results.
-- Each completed lesson needs real browser GIF evidence and a review record. Do not mark the overall goal complete at an individual lesson checkpoint.
-
-### Next lesson design notes
-
-- Lesson 36 (`portfolio-exposure`): aggregate signed stock/option Greeks with declared multipliers, units and timestamps. Keep missing holdings separate from covered subtotals, and distinguish delta neutrality from gamma/vega/theta risk. Preserve the original covered delta +20 / stock hedge −20 case. This is paid: verify its anonymous gate separately.
-- Reuse coordinate/control primitives while keeping lesson-specific data and calculation contracts explicit.
-- Preserve the full objective: all remaining lesson IDs above need implementation and evidence, followed by a curriculum-wide completion audit.
-
-### Live continuation resources
-
-- The overall goal remains active. Browser task space **140** is retained under agent control for this ongoing goal; reuse it and verify ownership before interaction.
-- Component preview: `http://127.0.0.1:8261/`, last verified PID **1149**, exec session **37544**. Verify the live process before reuse; do not restart merely because a previous observation timed out.
-- The owned production preview on port 8252 was stopped after Lesson 35 verification, ready for the next rebuild.
-- Lesson 13 model: `apps/web/src/domain/learning/strategy-concept.ts`; signed-leg valuation, exact expiry curve knots and separate roll inventory/cash are wired into the authorized Learn projection.
-- `local-greeks.ts` owns `signedPositionUnits`, `localDeltaChange` and `gammaTerms`. Lessons 15–17 consume the same signed contract-scaling arithmetic; lesson-specific models own their input conventions, assumptions and validity boundaries.
-- Source edits should finish before test/browse snapshots. A full page reload after HMR prevents stale context-provider state in the isolated preview.
+- All 36 lessons are implemented and committed. The completion audit contains the authoritative validation and GIF index.
+- Shared primitives remain in `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`; domain helpers retain calculation ownership.
+- Learn exploration remains separate from grading and persistence. Paid-authored examples were checked in the local component preview; anonymous gates and free practice were checked on the production-built local application.
+- Local preview processes and browser task space are cleaned up after final evidence capture. No push or deployment was performed.
+- Unrelated user ops changes were preserved and excluded from implementation commits.

@@ -23,4 +23,4 @@ Recorded from the **actual local component preview** at `http://127.0.0.1:8261/?
 
 Export: 32.38 seconds, 784 × 1280, 259 frames, 270,415 bytes. The 34 source screenshots, actual timestamps, 11 successful assertions and empty browser error list are in `lesson-36-evidence-frames/capture.json`. Sampling pauses while scenes settle. The decoded contact sheet was visually inspected. Separate desktop, mobile and paid-gate JSON records retain those checks.
 
-All lessons now have implementations; the final curriculum audit remains in progress. No push or deployment was performed.
+All lessons and the final curriculum audit are complete; see `svg-curriculum-completion-audit-2026-09-12.md`. No push or deployment was performed.

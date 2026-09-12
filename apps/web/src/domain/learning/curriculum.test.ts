@@ -34,11 +34,22 @@ describe("curriculum teaching contracts", () => {
 			for (const scenario of scenarios) {
 				let state = initialAttemptState();
 				for (const step of scenario.steps) {
-					const projected = JSON.stringify(
-						projectAttempt(scenario, state, "attempt", 0),
-					);
-					expect(projected).not.toContain('"accepted"');
-					expect(projected).not.toContain('"explanation"');
+					const projected = projectAttempt(scenario, state, "attempt", 0);
+					// Learn examples may supply ungraded explanatory feedback. Assessment
+					// questions must never carry their private answer or explanation fields.
+					for (const question of projected.step.questions) {
+						expect(question).not.toHaveProperty("accepted");
+						expect(question).not.toHaveProperty("explanation");
+					}
+					const { conceptData, ...assessmentStep } = projected.step;
+					const assessmentProjection = JSON.stringify({
+						...projected,
+						step: assessmentStep,
+					});
+					expect(assessmentProjection).not.toContain('"accepted":');
+					expect(assessmentProjection).not.toContain('"explanation":');
+					if (state.step === 0) expect(projected.step.conceptLab).toBeTruthy();
+					else expect(conceptData).toBeUndefined();
 					for (const evidence of step.evidence) {
 						expect(
 							projectAttempt(scenario, state, "attempt", 0).step.evidence.find(

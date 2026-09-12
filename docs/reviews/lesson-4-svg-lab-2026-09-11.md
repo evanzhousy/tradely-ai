@@ -22,3 +22,9 @@ Financial concept references were checked against [OIC Exercising Options](https
 - GIF evidence records the implemented local component preview at `http://127.0.0.1:8261/?lesson=expiration-settlement` and is delivered separately in the task response.
 
 This is local implementation and verification, not a production deployment or a measured learning-outcome result.
+
+## GIF evidence
+
+[Lesson 4 interaction GIF](/Users/evansmacbookpro/.codex/visualizations/2026/09/11/01a08f18-1191-7d02-8460-ca434a213789/lesson-4-interactive-evidence.gif)
+
+Captured from the actual local component preview at port 8261. The adjacent `lesson-4-evidence-frames/capture.json` retains its source URL. The final curriculum audit verified that this file exists and decodes as an animation.

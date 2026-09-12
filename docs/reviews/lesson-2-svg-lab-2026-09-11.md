@@ -22,3 +22,9 @@ The rights and exercise descriptions were checked against [OIC Options Basics](h
 - GIF evidence records the implemented local component preview at `http://127.0.0.1:8261/?lesson=option-rights`, showing roles, position changes, and assignment flows. The GIF is supplied as a separate artifact in the task response.
 
 This is local implementation and verification. It does not constitute a production deployment or measured evidence of improved student learning.
+
+## GIF evidence
+
+[Lesson 2 interaction GIF](/Users/evansmacbookpro/.codex/visualizations/2026/09/11/01a08f18-1191-7d02-8460-ca434a213789/lesson-2-interactive-evidence.gif)
+
+Captured from the actual local component preview at port 8261. The adjacent `lesson-2-evidence-frames/capture.json` retains its source URL. The final curriculum audit verified that this file exists and decodes as an animation.

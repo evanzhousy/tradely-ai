@@ -24,3 +24,9 @@ Concept references: [OIC Options Pricing](https://www.optionseducation.org/optio
 - GIF evidence is recorded from `http://127.0.0.1:8261/?lesson=premium-payoff`, using the implemented local component preview. The GIF is delivered as a separate artifact in the task response.
 
 This is local implementation and verification, not a production deployment or a measured learning-outcome result.
+
+## GIF evidence
+
+[Lesson 3 interaction GIF](/Users/evansmacbookpro/.codex/visualizations/2026/09/11/01a08f18-1191-7d02-8460-ca434a213789/lesson-3-interactive-evidence.gif)
+
+Captured from the actual local component preview at port 8261. The adjacent `lesson-3-evidence-frames/capture.json` retains its source URL. The final curriculum audit verified that this file exists and decodes as an animation.

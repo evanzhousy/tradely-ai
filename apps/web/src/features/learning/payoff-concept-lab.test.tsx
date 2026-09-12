@@ -286,3 +286,15 @@ describe("premium and payoff concept lesson", () => {
 		expect(getLessonBody("premium-payoff")).toContain("Underlying notional");
 	});
 });
+
+it("supplies value-bar widths before motion frames", () => {
+	const { container } = render(<ValuePartsScene locale="en" />);
+	const bars = container.querySelectorAll('rect[y="125"]');
+	expect(bars.length).toBe(3);
+	for (const bar of bars) {
+		expect(bar.getAttribute("width")).not.toBeNull();
+		expect(
+			Number.isFinite(Number.parseFloat(bar.getAttribute("width") ?? "")),
+		).toBe(true);
+	}
+});

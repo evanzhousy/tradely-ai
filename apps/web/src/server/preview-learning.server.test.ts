@@ -3,6 +3,7 @@ import { referenceAction } from "@/domain/learning/test-helpers";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
+import { tradingFlowCourse } from "@/content/course";
 import { getLessonScenarios } from "@/content/scenarios/index.server";
 import type { LearningAction } from "@/domain/learning/types";
 import { previewLearningSchema } from "./learning";
@@ -66,4 +67,15 @@ describe("public practice boundary", () => {
 			).toMatchObject({ ok: true, view: { phase: "answer", result: null } });
 		},
 	);
+});
+
+it.each(
+	tradingFlowCourse.lessons
+		.filter((lesson) => lesson.access === "paid")
+		.map((lesson) => lesson.id),
+)("withholds each paid lesson from anonymous preview: %s", (lessonId) => {
+	expect(previewLearningImpl({ lessonId, variant: 0, actions: [] })).toEqual({
+		ok: false,
+		reason: "access_denied",
+	});
 });

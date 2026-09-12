@@ -258,6 +258,8 @@ export function ValuePartsScene({ locale }: Props) {
 						y="125"
 						height="42"
 						fill="var(--ring)"
+						width={width(parts.intrinsic)}
+						initial={false}
 						animate={{ x: 40, width: width(parts.intrinsic) }}
 						transition={motion ? lessonTransition : instantTransition}
 					/>
@@ -266,6 +268,8 @@ export function ValuePartsScene({ locale }: Props) {
 						height="42"
 						fill="var(--foreground)"
 						opacity="0.65"
+						width={width(parts.extrinsic)}
+						initial={false}
 						animate={{
 							x: 40 + width(parts.intrinsic),
 							width: width(parts.extrinsic),

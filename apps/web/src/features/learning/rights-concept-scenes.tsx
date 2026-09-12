@@ -310,6 +310,8 @@ export function PositionActionsScene({ locale }: Props) {
 								r="8"
 								cy="181"
 								className="contract-svg-handle"
+								cx={180 + after * 23}
+								initial={false}
 								animate={{ cx: 180 + after * 23 }}
 								transition={motion ? lessonTransition : instantTransition}
 							/>
@@ -426,6 +428,7 @@ function Transfer({
 				cy={y}
 				r="5"
 				fill="var(--ring)"
+				cx={end}
 				initial={{ cx: motion ? start : end }}
 				animate={{ cx: end }}
 				transition={

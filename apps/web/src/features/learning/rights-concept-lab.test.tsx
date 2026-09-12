@@ -226,3 +226,15 @@ describe("rights concept lesson", () => {
 		]);
 	});
 });
+
+it("supplies finite SVG marker coordinates before motion frames", () => {
+	const page = render(<PositionActionsScene locale="en" />);
+	const marker = page.container.querySelector("circle.contract-svg-handle");
+	expect(marker?.getAttribute("cx")).not.toBeNull();
+	expect(Number.isFinite(Number(marker?.getAttribute("cx")))).toBe(true);
+	page.rerender(<AssignmentScene locale="en" />);
+	for (const circle of page.container.querySelectorAll("circle")) {
+		expect(circle.getAttribute("cx")).not.toBeNull();
+		expect(Number.isFinite(Number(circle.getAttribute("cx")))).toBe(true);
+	}
+});

@@ -20,3 +20,9 @@ Lesson 1 (`option-contracts`) now teaches through four interactive scenes in the
 - Mobile: all four Chinese scenes fit a 390 px viewport without document overflow; anatomy buttons measured 48 px high. Reduced-motion policy reported off; keyboard End selected the final snapshot. Dark and light presentation were reviewed.
 
 This is local implementation and verification, not a production deployment or evidence of measured learning improvement.
+
+## GIF evidence
+
+[Lesson 1 interaction GIF](/Users/evansmacbookpro/.codex/visualizations/2026/09/11/01a08f18-1191-7d02-8460-ca434a213789/lesson-1-interactive-evidence.gif)
+
+Captured from the actual local component preview at port 8261. The adjacent `lesson-1-evidence-frames/capture.json` retains its source URL. The final curriculum audit verified that this file exists and decodes as an animation.
