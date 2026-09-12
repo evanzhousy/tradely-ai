@@ -2430,3 +2430,11 @@
 		padding: 16px;
 	}
 }
+
+/* The companion occupies the book's margin, outside the reading and CTA column. */
+.tradely-avatar { position: absolute; left: 8%; bottom: 90px; width: 180px; height: 200px; pointer-events: none; }
+.tradely-avatar canvas { display: block; width: 100%; height: 100%; }
+.tradely-avatar img { position: absolute; width: 100px; height: 100px; left: 40px; top: 50px; border-radius: 28px; }
+.tradely-avatar[data-ready="true"] img { visibility: hidden; }
+.tradely-avatar[data-ready="false"] canvas { visibility: hidden; }
+@media (max-width: 1199px) { .tradely-avatar { left: 2%; bottom: 105px; width: 140px; height: 156px; } }

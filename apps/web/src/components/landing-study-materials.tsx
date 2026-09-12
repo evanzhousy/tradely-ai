@@ -1,4 +1,5 @@
 import { ArrowUpRightIcon, CheckIcon, CornerDownRightIcon } from "lucide-react";
+import { TradelyAvatar } from "@/components/tradely-avatar";
 import type { Lesson } from "@/content/course";
 import { useI18n } from "@/i18n/provider";
 
@@ -68,6 +69,7 @@ export function LandingStudyMaterials({ lesson }: { lesson: Lesson }) {
 					{t("common.minutes", { minutes: lesson.minutes })} <span>↗</span>
 				</span>
 			</div>
+			<TradelyAvatar />
 			<div className="landing-margin-note">
 				<CornerDownRightIcon size={20} />
 				<p>{t("home.marginNote")}</p>
