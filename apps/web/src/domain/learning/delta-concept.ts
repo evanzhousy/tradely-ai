@@ -1,3 +1,5 @@
+import { gammaTerms } from "./local-greeks";
+
 export type DeltaOption = {
 	id: string;
 	label: readonly [string, string];
@@ -28,48 +30,16 @@ export type DeltaConceptData = {
 	};
 };
 
-/** Prices/changes are cents; delta and position delta retain their natural units. */
-export function localDeltaChange(
-	delta: number | null,
-	moveCents: number,
-	quantity: number,
-	multiplier: number,
-	side: "long" | "short",
-) {
-	if (
-		delta === null ||
-		!Number.isFinite(delta) ||
-		!Number.isFinite(moveCents) ||
-		!Number.isInteger(quantity) ||
-		quantity < 0 ||
-		!Number.isFinite(multiplier) ||
-		multiplier <= 0
-	)
-		return null;
-	const unitChangeCents = delta * moveCents;
-	const positionDelta =
-		delta * quantity * multiplier * (side === "long" ? 1 : -1);
-	const positionChangeCents = positionDelta * moveCents;
-	if (
-		![unitChangeCents, positionDelta, positionChangeCents].every(
-			Number.isFinite,
-		)
-	)
-		return null;
-	return { unitChangeCents, positionDelta, positionChangeCents };
-}
-
 /** Declared quadratic teaching curve, not a market-pricing or probability model. */
 export function illustrativeDeltaCurve(
 	curve: DeltaConceptData["curve"],
 	moveCents: number,
 ) {
+	const terms = gammaTerms(curve.delta, curve.gammaPerDollar, moveCents);
+	if (!terms) throw new Error("Invalid declared teaching curve");
 	return {
-		linearPriceCents: curve.priceCents + curve.delta * moveCents,
-		curvedPriceCents:
-			curve.priceCents +
-			curve.delta * moveCents +
-			0.5 * curve.gammaPerDollar * (moveCents / 100) ** 2 * 100,
-		localDelta: curve.delta + (curve.gammaPerDollar * moveCents) / 100,
+		linearPriceCents: curve.priceCents + terms.deltaPriceCents,
+		curvedPriceCents: curve.priceCents + terms.totalPriceCents,
+		localDelta: terms.nextDelta,
 	};
 }

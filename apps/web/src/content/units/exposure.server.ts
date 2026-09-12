@@ -7,6 +7,7 @@ import {
 	t,
 } from "./authoring.server";
 import { deltaConceptData } from "./delta-concept.server";
+import { gammaConceptData } from "./gamma-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
@@ -70,6 +71,14 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "gamma",
+		conceptLab: {
+			kind: "gamma",
+			data: gammaConceptData,
+			intro: t(
+				"Separate gamma's change in delta from its price term, replay a hedge for a supplied position, and compare near-expiry sensitivity without extrapolating past valid delta bounds.",
+				"区分 Gamma 引起的 Delta 变化与价格项，回放给定持仓对冲，并比较临近到期敏感度而不越过有效 Delta 边界外推。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"Gamma measures how model delta changes with the underlying. Delta is the slope; gamma describes its change. For a small move, new delta is approximately old delta plus gamma times the move. An option-price approximation can include delta × move + one-half × gamma × move squared. Those are different calculations. Long vanilla options generally have positive gamma; the same short position has negative gamma. A hedge offsets a stated position's delta, not an unknown dealer portfolio inferred from a print. Near expiration, at-the-money sensitivities can change sharply; this does not make every 0DTE contract equally sensitive or the local approximation valid for an arbitrarily large move.",

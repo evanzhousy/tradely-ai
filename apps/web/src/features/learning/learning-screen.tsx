@@ -68,6 +68,7 @@ import { DeltaConceptLab } from "./delta-concept-lab";
 import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
+import { GammaConceptLab } from "./gamma-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
@@ -90,6 +91,7 @@ import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
+	gamma: GammaConceptLab,
 	delta: DeltaConceptLab,
 	"symbol-drawer": SourceConceptLab,
 	"unusual-activity": ActivityConceptLab,

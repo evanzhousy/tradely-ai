@@ -10,8 +10,8 @@ import {
 	type DeltaConceptData,
 	type DeltaOption,
 	illustrativeDeltaCurve,
-	localDeltaChange,
 } from "@/domain/learning/delta-concept";
+import { localDeltaChange } from "@/domain/learning/local-greeks";
 import type { Locale } from "@/i18n/messages";
 import {
 	ChoiceField,

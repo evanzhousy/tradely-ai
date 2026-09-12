@@ -4,6 +4,7 @@ import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
 import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowStructureComparison } from "./flow-structure";
+import type { GammaConceptData } from "./gamma-concept";
 import type { MetricsComparison } from "./metrics";
 import type { OiConceptData } from "./oi-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
@@ -126,7 +127,8 @@ export type LearningStepView = {
 		| "unusual-activity"
 		| "option-strategies"
 		| "symbol-drawer"
-		| "delta";
+		| "delta"
+		| "gamma";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -138,7 +140,8 @@ export type LearningStepView = {
 		| ActivityConceptData
 		| StrategyConceptData
 		| SourceConceptData
-		| DeltaConceptData;
+		| DeltaConceptData
+		| GammaConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

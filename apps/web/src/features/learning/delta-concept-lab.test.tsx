@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import {
 	act,
 	cleanup,
@@ -7,16 +8,14 @@ import {
 	screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { localDeltaChange } from "@/domain/learning/local-greeks";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
 import { getLessonScenarios } from "@/content/scenarios/index.server";
 import { deltaConceptData as data } from "@/content/units/delta-concept.server";
 import { sourceConceptData } from "@/content/units/source-concept.server";
-import {
-	illustrativeDeltaCurve,
-	localDeltaChange,
-} from "@/domain/learning/delta-concept";
+import { illustrativeDeltaCurve } from "@/domain/learning/delta-concept";
 import {
 	initialAttemptState,
 	projectAttempt,
