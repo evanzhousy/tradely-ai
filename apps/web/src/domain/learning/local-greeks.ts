@@ -1,3 +1,19 @@
+export function signedPositionUnits(
+	quantity: number,
+	multiplier: number,
+	side: "long" | "short",
+) {
+	if (
+		!Number.isInteger(quantity) ||
+		quantity < 0 ||
+		!Number.isFinite(multiplier) ||
+		multiplier <= 0
+	)
+		return null;
+	const units = quantity * multiplier * (side === "long" ? 1 : -1);
+	return Number.isFinite(units) ? units : null;
+}
+
 /** Prices/changes are cents; delta and position delta retain their natural units. */
 export function localDeltaChange(
 	delta: number | null,
@@ -6,19 +22,16 @@ export function localDeltaChange(
 	multiplier: number,
 	side: "long" | "short",
 ) {
+	const units = signedPositionUnits(quantity, multiplier, side);
 	if (
 		delta === null ||
 		!Number.isFinite(delta) ||
 		!Number.isFinite(moveCents) ||
-		!Number.isInteger(quantity) ||
-		quantity < 0 ||
-		!Number.isFinite(multiplier) ||
-		multiplier <= 0
+		units === null
 	)
 		return null;
 	const unitChangeCents = delta * moveCents;
-	const positionDelta =
-		delta * quantity * multiplier * (side === "long" ? 1 : -1);
+	const positionDelta = delta * units;
 	const positionChangeCents = positionDelta * moveCents;
 	if (
 		![unitChangeCents, positionDelta, positionChangeCents].every(

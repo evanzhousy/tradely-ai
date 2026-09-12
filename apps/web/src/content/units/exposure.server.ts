@@ -8,6 +8,7 @@ import {
 } from "./authoring.server";
 import { deltaConceptData } from "./delta-concept.server";
 import { gammaConceptData } from "./gamma-concept.server";
+import { timeVolRateConceptData } from "./time-vol-rate-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
@@ -129,6 +130,14 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "theta-vega-rho",
+		conceptLab: {
+			kind: "theta-vega-rho",
+			data: timeVolRateConceptData,
+			intro: t(
+				"Read calendar days and percentage-point conventions, scale each signed sensitivity, and build up a local estimate from spot, time, volatility and rate contributions.",
+				"读取自然日与百分点约定，缩放各项带符号敏感度，并从现价、时间、波动率与利率贡献累加局部估计。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"Theta, vega and rho describe local sensitivities to time, implied volatility and interest rates. Read the quoted convention: this lesson uses theta in dollars per option-share per calendar day, vega per one percentage-point IV change, and rho per one percentage-point rate change. A move from 20% to 23% IV is three vol points, not a 3% relative increase. Signs belong to the stated position and model; shorting an option reverses that option's sensitivities. Other inputs held fixed is a condition of the estimate. A favorable underlying move can be outweighed by time decay or an IV decrease. Rates, dividends, exercise style and model assumptions matter; do not memorize one sign as a universal rule for every product.",

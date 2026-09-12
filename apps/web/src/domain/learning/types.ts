@@ -14,6 +14,7 @@ import type { SideConceptData } from "./side-concept";
 import type { SourceConceptData } from "./source-concept";
 import type { StrategyConceptData } from "./strategy-concept";
 import type { TapeConceptData } from "./tape-concept";
+import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
 import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
@@ -128,7 +129,8 @@ export type LearningStepView = {
 		| "option-strategies"
 		| "symbol-drawer"
 		| "delta"
-		| "gamma";
+		| "gamma"
+		| "theta-vega-rho";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -141,7 +143,8 @@ export type LearningStepView = {
 		| StrategyConceptData
 		| SourceConceptData
 		| DeltaConceptData
-		| GammaConceptData;
+		| GammaConceptData
+		| TimeVolRateConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

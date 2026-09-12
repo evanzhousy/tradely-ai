@@ -2,7 +2,7 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–16 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Current baseline: Lessons 1–17 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
@@ -22,7 +22,7 @@ Current baseline: Lessons 1–16 have implemented SVG labs and individual review
 | 14 | `symbol-drawer` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 15 | `delta` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 16 | `gamma` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 17 | `theta-vega-rho` | Not started |
+| 17 | `theta-vega-rho` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 18 | `implied-realized-volatility` | Not started |
 | 19 | `volatility-surface` | Not started |
 | 20 | `iv-rank-percentile` | Not started |
@@ -45,7 +45,7 @@ Current baseline: Lessons 1–16 have implemented SVG labs and individual review
 
 ## Continuation notes
 
-- Next implementation: Lesson 17, `theta-vega-rho`. Lesson 16 evidence and checks are recorded in `lesson-16-svg-lab-2026-09-12.md`.
+- Next implementation: Lesson 18, `implied-realized-volatility`. Lesson 17 evidence and checks are recorded in `lesson-17-svg-lab-2026-09-12.md`.
 - Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
 - Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
 - Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.
@@ -54,7 +54,7 @@ Current baseline: Lessons 1–16 have implemented SVG labs and individual review
 
 ### Next lesson design notes
 
-- Lesson 17 (`theta-vega-rho`): inspect the authored teaching unit; separate calendar days from percentage-point IV/rate changes, compare signed per-unit contributions, and show how time/volatility can outweigh a favorable spot move. State held-fixed inputs and omitted interactions rather than calling local estimates realized P&L.
+- Lesson 18 (`implied-realized-volatility`): inspect the authored teaching unit; distinguish model-inferred IV from historical return dispersion, show sampling/window/annualization choices, and keep IV30 versus RV20 horizons explicit. Their difference is volatility points, not a return forecast or proof of mispricing.
 - Reuse coordinate/control primitives while keeping lesson-specific data and calculation contracts explicit.
 - Preserve the full objective: all remaining lesson IDs above need implementation and evidence, followed by a curriculum-wide completion audit.
 
@@ -62,7 +62,7 @@ Current baseline: Lessons 1–16 have implemented SVG labs and individual review
 
 - The overall goal remains active. Browser task space **140** is retained under agent control for this ongoing goal; reuse it and verify ownership before interaction.
 - Component preview: `http://127.0.0.1:8261/`, last verified PID **3498**, exec session **78039**. Verify the live process before reuse; do not restart merely because a previous observation timed out.
-- The owned production preview on port 8252 was stopped after Lesson 16 verification, ready for the next rebuild.
+- The owned production preview on port 8252 was stopped after Lesson 17 verification, ready for the next rebuild.
 - Lesson 13 model: `apps/web/src/domain/learning/strategy-concept.ts`; signed-leg valuation, exact expiry curve knots and separate roll inventory/cash are wired into the authorized Learn projection.
-- `local-greeks.ts` now owns `localDeltaChange` and `gammaTerms`; both Delta and Gamma lessons consume the same cents/unit arithmetic. Lesson-specific models still own their assumptions and validity boundaries.
+- `local-greeks.ts` owns `signedPositionUnits`, `localDeltaChange` and `gammaTerms`. Lessons 15–17 consume the same signed contract-scaling arithmetic; lesson-specific models own their input conventions, assumptions and validity boundaries.
 - Source edits should finish before test/browse snapshots. A full page reload after HMR prevents stale context-provider state in the isolated preview.
