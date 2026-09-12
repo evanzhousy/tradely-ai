@@ -79,6 +79,7 @@ import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
+import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { OiConceptLab } from "./oi-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
@@ -112,6 +113,7 @@ const conceptLabs = {
 	"audited-boundary": BoundaryConceptLab,
 	"symbol-universe": EligibilityConceptLab,
 	"rank-symbols": RankSymbolConceptLab,
+	"rank-contracts": NeighborhoodConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

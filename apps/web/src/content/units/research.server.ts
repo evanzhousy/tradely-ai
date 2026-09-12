@@ -1,5 +1,6 @@
 import { boundaryConceptData } from "./boundary-concept.server";
 import { eligibilityConceptData } from "./eligibility-concept.server";
+import { neighborhoodConceptData } from "./neighborhood-concept.server";
 import { rankSymbolConceptData } from "./rank-symbol-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -268,6 +269,14 @@ export const researchUnits: TeachingUnit[] = [
 	},
 	{
 		id: "rank-contracts",
+		conceptLab: {
+			kind: "rank-contracts",
+			data: neighborhoodConceptData,
+			intro: t(
+				"Inspect strike and expiry context, compare neighborhood breadth, and audit missing, stale or outside-scope values before choosing a candidate.",
+				"检查行权价与到期上下文，比较邻域广度，并在选择候选前审计缺失、过时或范围外数值。",
+			),
+		},
 		sources: [oi],
 		explanation: t(
 			"A contract neighborhood locates activity across strikes and expiries while retaining a fixed underlying, option type, session and quality rule. Spot lets you classify moneyness, but moneyness alone does not tell you which contract to buy. An expiry slice changes visible rows; it does not silently admit outside-scope contracts. Compare total activity and concentration separately. Equal peaks can hide different breadth; equal totals can also be distributed differently. Missing observations are not zeros, and prior-session values cannot win a current-session comparison. A selected contract earns a reasoned next inspection with nearby context. Neither a shape nor a cluster establishes a spread, common owner, accumulation or a forecast.",

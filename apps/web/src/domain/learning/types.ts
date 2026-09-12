@@ -13,6 +13,7 @@ import type { GexConceptData } from "./gex-concept";
 import type { IvRankConceptData } from "./iv-rank-concept";
 import type { LevelsConceptData } from "./levels-concept";
 import type { MetricsComparison } from "./metrics";
+import type { NeighborhoodConceptData } from "./neighborhood-concept";
 import type { OiConceptData } from "./oi-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
@@ -152,7 +153,8 @@ export type LearningStepView = {
 		| "charm-vanna"
 		| "audited-boundary"
 		| "symbol-universe"
-		| "rank-symbols";
+		| "rank-symbols"
+		| "rank-contracts";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -177,7 +179,8 @@ export type LearningStepView = {
 		| CharmVannaConceptData
 		| BoundaryConceptData
 		| EligibilityConceptData
-		| RankSymbolConceptData;
+		| RankSymbolConceptData
+		| NeighborhoodConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
