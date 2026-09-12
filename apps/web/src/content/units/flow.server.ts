@@ -1,4 +1,6 @@
 import "@tanstack/react-start/server-only";
+
+import { activityConceptData } from "./activity-concept.server";
 import {
 	basics,
 	choose as c,
@@ -8,7 +10,6 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-
 import { oiConceptData } from "./oi-concept.server";
 import { tapeConceptData } from "./tape-concept.server";
 
@@ -195,6 +196,14 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "unusual-activity",
+		conceptLab: {
+			kind: "unusual-activity",
+			data: activityConceptData,
+			intro: t(
+				"Change the denominator, align the comparison window, and test how a screen changes the population. Explore why a high ratio is a research prompt rather than proof of informed trading.",
+				"改变分母、对齐比较窗口，再检验筛选如何改变人群。探索为何高比率只是研究线索，而非知情交易的证明。",
+			),
+		},
 		sources: [oi],
 		explanation: t(
 			"Unusual is relative to a baseline, not synonymous with large. Relative volume compares current activity with a stated historical typical volume; volume/OI compares activity with outstanding contracts. Their denominators answer different questions. Compare complete sessions with complete sessions, or use an explicitly comparable intraday window. A near-zero denominator can make an ordinary numerator look extreme. A missing or non-positive required denominator gives an unavailable ratio, not zero or infinity. Averaging ratios across rows differs from dividing the summed numerators by summed denominators. A threshold such as 2× is a declared screen, not a universal discovery of informed trading. Review liquidity, coverage, event context and the population selected by the screen.",

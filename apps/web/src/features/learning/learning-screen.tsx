@@ -51,6 +51,7 @@ import type {
 } from "@/domain/learning/types";
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
+import { ActivityConceptLab } from "./activity-concept-lab";
 import {
 	type CoachingEvent,
 	CoachingPanel,
@@ -86,6 +87,7 @@ import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
+	"unusual-activity": ActivityConceptLab,
 	"option-contracts": ContractConceptLab,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ActivityConceptData } from "./activity-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowStructureComparison } from "./flow-structure";
@@ -118,7 +119,8 @@ export type LearningStepView = {
 		| "flow-sentiment"
 		| "validate-option-print"
 		| "session-flow-vs-structure"
-		| "trade-records";
+		| "trade-records"
+		| "unusual-activity";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -126,7 +128,8 @@ export type LearningStepView = {
 		| SentimentConceptData
 		| PrintReviewConceptData
 		| OiConceptData
-		| TapeConceptData;
+		| TapeConceptData
+		| ActivityConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
