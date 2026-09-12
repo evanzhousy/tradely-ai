@@ -2,7 +2,7 @@
 
 Goal: complete interactive SVG teaching experiences for all remaining lessons in the 36-lesson curriculum. Browser/GIF evidence, preserved grading/access, relevant validation and local commits are required. No push or deployment is implied.
 
-Current baseline: Lessons 1–35 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
+Current baseline: Lessons 1–36 have implemented SVG labs and individual review records. Final curriculum-wide completion still needs a fresh audit.
 
 | Lesson | ID | Status |
 | --- | --- | --- |
@@ -41,11 +41,11 @@ Current baseline: Lessons 1–35 have implemented SVG labs and individual review
 | 33 | `audit-market-recap` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 34 | `portfolio-pnl` | SVG implemented; browser/GIF and validation complete; final audit pending |
 | 35 | `portfolio-performance` | SVG implemented; browser/GIF and validation complete; final audit pending |
-| 36 | `portfolio-exposure` | Not started |
+| 36 | `portfolio-exposure` | SVG implemented; browser/GIF and validation complete; final audit pending |
 
 ## Continuation notes
 
-- Next implementation: Lesson 36, `portfolio-exposure`. Lesson 35 evidence and checks are recorded in `lesson-35-svg-lab-2026-09-12.md`.
+- Next: finish the curriculum-wide audit. Lesson 36 evidence and checks are recorded in `lesson-36-svg-lab-2026-09-12.md`.
 - Source examples remain server-only and reach only the authorized Learn projection. Keep existing assessment versions and answers intact.
 - Shared components: `concept-lab.tsx`, `concept-scene.tsx`, and `lesson-motion.tsx`.
 - Use the local component preview at port 8261 for authored paid examples; verify the anonymous paid gate on the production-built local preview separately.

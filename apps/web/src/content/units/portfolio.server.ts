@@ -1,5 +1,6 @@
 import { performanceConceptData } from "./performance-concept.server";
 import { pnlConceptData } from "./pnl-concept.server";
+import { portfolioExposureData } from "./portfolio-exposure-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	basics,
@@ -136,6 +137,14 @@ export const portfolioUnits: TeachingUnit[] = [
 	},
 	{
 		id: "portfolio-exposure",
+		conceptLab: {
+			kind: "portfolio-exposure",
+			data: portfolioExposureData,
+			intro: t(
+				"Aggregate signed sensitivities, test a local hedge, and audit missing or incompatible inputs.",
+				"合并带符号敏感度，检验局部对冲，并审查缺失或不兼容输入。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"Portfolio exposure sums signed position contributions under consistent units and timestamps. Stock contributes one share of delta per long share and the opposite for shorts. Option contribution is model sensitivity × signed contract quantity × multiplier. Gamma, theta and vega also need their own scales; adding raw fields without converting units can be meaningless. Net delta can be near zero while gamma, volatility or time risk remains large. A hedge changes exposure, not necessarily all risk or transaction cost. Missing Greeks create incomplete coverage, not zero exposure. Disclose which holdings and valuation times were included. A journal records what you believed and why at the time; later profits do not retroactively prove the reasoning was sound.",

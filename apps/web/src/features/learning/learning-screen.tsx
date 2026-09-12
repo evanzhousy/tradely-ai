@@ -87,6 +87,7 @@ import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PerformanceConceptLab } from "./performance-concept-lab";
 import { PnlConceptLab } from "./pnl-concept-lab";
 import { PointTimeConceptLab } from "./point-time-concept-lab";
+import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuoteConceptLab } from "./quote-concept-lab";
@@ -126,6 +127,7 @@ const conceptLabs = {
 	"audit-market-recap": AuditRecapConceptLab,
 	"portfolio-pnl": PnlConceptLab,
 	"portfolio-performance": PerformanceConceptLab,
+	"portfolio-exposure": PortfolioExposureConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

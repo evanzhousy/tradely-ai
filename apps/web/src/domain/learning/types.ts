@@ -20,6 +20,7 @@ import type { PacketConceptData } from "./packet-concept";
 import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PointTimeConceptData } from "./point-time-concept";
+import type { PortfolioExposureData } from "./portfolio-exposure-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
 import type { RankSymbolConceptData } from "./rank-symbol-concept";
@@ -166,7 +167,8 @@ export type LearningStepView = {
 		| "market-recap"
 		| "audit-market-recap"
 		| "portfolio-pnl"
-		| "portfolio-performance";
+		| "portfolio-performance"
+		| "portfolio-exposure";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -198,7 +200,8 @@ export type LearningStepView = {
 		| RecapConceptData
 		| AuditRecapConceptData
 		| PnlConceptData
-		| PerformanceConceptData;
+		| PerformanceConceptData
+		| PortfolioExposureData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
