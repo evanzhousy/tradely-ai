@@ -50,8 +50,9 @@ describe("lesson completion outcomes", () => {
 				resolveSave = resolve;
 			}),
 		);
-		render(<CompleteLessonButton lesson={lesson} />);
+		const { rerender } = render(<CompleteLessonButton lesson={lesson} />);
 		fireEvent.click(screen.getByRole("button"));
+		expect(screen.queryByText("complete.success")).toBeNull();
 		expect(mocks.capture).not.toHaveBeenCalled();
 		resolveSave({ saved: true });
 		await waitFor(() =>
@@ -60,6 +61,9 @@ describe("lesson completion outcomes", () => {
 				lesson_order: lesson.order + 1,
 			}),
 		);
+		expect(screen.getByText("complete.success")).toBeTruthy();
+		rerender(<CompleteLessonButton lesson={{ ...lesson, id: "delta" }} />);
+		expect(screen.queryByText("complete.success")).toBeNull();
 	});
 
 	it("keeps a confirmed save successful when refreshing the page fails", async () => {
@@ -99,6 +103,7 @@ describe("lesson completion outcomes", () => {
 			);
 			expect(mocks.capture).toHaveBeenCalledOnce();
 			expect(mocks.captureException).not.toHaveBeenCalled();
+			expect(screen.queryByText("complete.success")).toBeNull();
 		},
 	);
 
@@ -112,5 +117,6 @@ describe("lesson completion outcomes", () => {
 			reason: "unavailable",
 		});
 		expect(mocks.capture).toHaveBeenCalledOnce();
+		expect(screen.queryByText("complete.success")).toBeNull();
 	});
 });

@@ -20,6 +20,7 @@ import { type ComponentProps, useId, useState } from "react";
 import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { useI18n } from "@/i18n/provider";
+import { BrandOwl } from "./brand-owl";
 import { LandingCurriculum } from "./landing-curriculum";
 
 type CatalogFilter = "all" | "free" | "completed";
@@ -121,8 +122,8 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 						) : (
 							<Empty>
 								<EmptyHeader>
-									<EmptyMedia variant="icon">
-										<SearchIcon aria-hidden="true" />
+									<EmptyMedia>
+										<BrandOwl pose="thinking" />
 									</EmptyMedia>
 									<EmptyTitle>
 										{locale === "zh" ? "暂无匹配课程" : "No matching lessons"}

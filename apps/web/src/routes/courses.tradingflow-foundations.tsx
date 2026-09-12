@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
-import { BookOpenIcon } from "lucide-react";
 import { useBillingStatusAnalytics } from "@/analytics/billing-status";
+import { BrandOwl } from "@/components/brand-owl";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseProgress } from "@/components/course-progress";
 import { PageIntro } from "@/components/page-intro";
@@ -36,8 +36,8 @@ function CoursePage() {
 				description={course.description}
 				aside={
 					<div className="course-progress-card">
-						<div className="mb-5 flex items-center gap-2 font-medium text-sm">
-							<BookOpenIcon size={16} aria-hidden="true" />
+						<div className="mb-5 flex items-center justify-between gap-3 font-medium text-sm">
+							<BrandOwl pose="welcome" size={80} />
 							{t("course.yourProgress")}
 						</div>
 						<CourseProgress

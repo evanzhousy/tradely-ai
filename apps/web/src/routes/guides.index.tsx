@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BrandOwl } from "@/components/brand-owl";
 import { GuideCards } from "@/components/guide-cards";
 import { PageIntro } from "@/components/page-intro";
 import { pageHead } from "@/seo/pages";
@@ -13,6 +14,7 @@ function GuidesPage() {
 		<main lang="en" className="page-shell">
 			<PageIntro
 				eyebrow="The options field guide"
+				aside={<BrandOwl pose="reading" size={160} className="mx-auto" />}
 				title={
 					<>
 						Understand the data.

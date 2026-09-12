@@ -6,11 +6,10 @@ import {
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
-	EmptyMedia,
 } from "@tradely/ui/components/empty";
 import { cn } from "@tradely/ui/lib/utils";
-import { BookOpenIcon } from "lucide-react";
 import { useI18n } from "@/i18n/provider";
+import { BrandOwl } from "./brand-owl";
 
 export default function NotFound() {
 	const { t } = useI18n();
@@ -19,10 +18,10 @@ export default function NotFound() {
 			<DotPattern />
 			<Empty>
 				<EmptyHeader>
-					<EmptyMedia variant="icon" className="relative">
-						<BookOpenIcon aria-hidden="true" />
-						<span className="state-code">404</span>
-					</EmptyMedia>
+					<div className="flex flex-col items-center gap-2">
+						<BrandOwl pose="curious" size={160} />
+						<span className="font-mono text-muted-foreground text-sm">404</span>
+					</div>
 					<h1
 						id="not-found-title"
 						className="font-semibold text-4xl text-display sm:text-5xl"
