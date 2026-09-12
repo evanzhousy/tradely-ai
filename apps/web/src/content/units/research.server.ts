@@ -1,5 +1,6 @@
 import { boundaryConceptData } from "./boundary-concept.server";
 import { eligibilityConceptData } from "./eligibility-concept.server";
+import { rankSymbolConceptData } from "./rank-symbol-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -169,6 +170,14 @@ export const researchUnits: TeachingUnit[] = [
 	},
 	{
 		id: "rank-symbols",
+		conceptLab: {
+			kind: "rank-symbols",
+			data: rankSymbolConceptData,
+			intro: t(
+				"Compare signed and magnitude order, separate raw from relative activity, and carry a candidate forward with its comparison set and revision triggers.",
+				"比较有符号与幅度排序，区分原始与相对活动，并携比较集合及修订触发条件交接候选。",
+			),
+		},
 		sources: [oi],
 		explanation: t(
 			"Ranking sorts observations under a metric and scope. It can prioritize attention without proving future performance. A signed metric sorted by absolute magnitude differs from sorting its signed value: −100 can rank above +60 by magnitude while retaining a negative direction. Peer changes can move an unchanged observation's rank. Raw size and baseline-normalized activity answer different questions, so choose the metric from the research objective, not from the most dramatic result. Liquidity floors and coverage exclusions can protect a comparison from tiny-denominator extremes but must be disclosed. A candidate handoff should include the observed value, comparison set, why it merits inspection and what could lower its priority.",

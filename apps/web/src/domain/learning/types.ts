@@ -16,6 +16,7 @@ import type { MetricsComparison } from "./metrics";
 import type { OiConceptData } from "./oi-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
+import type { RankSymbolConceptData } from "./rank-symbol-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
@@ -150,7 +151,8 @@ export type LearningStepView = {
 		| "structural-levels"
 		| "charm-vanna"
 		| "audited-boundary"
-		| "symbol-universe";
+		| "symbol-universe"
+		| "rank-symbols";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -174,7 +176,8 @@ export type LearningStepView = {
 		| LevelsConceptData
 		| CharmVannaConceptData
 		| BoundaryConceptData
-		| EligibilityConceptData;
+		| EligibilityConceptData
+		| RankSymbolConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

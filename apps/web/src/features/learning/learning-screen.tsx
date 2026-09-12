@@ -85,6 +85,7 @@ import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuoteConceptLab } from "./quote-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
+import { RankSymbolConceptLab } from "./rank-symbol-concept-lab";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
@@ -110,6 +111,7 @@ const conceptLabs = {
 	"charm-vanna": CharmVannaConceptLab,
 	"audited-boundary": BoundaryConceptLab,
 	"symbol-universe": EligibilityConceptLab,
+	"rank-symbols": RankSymbolConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
