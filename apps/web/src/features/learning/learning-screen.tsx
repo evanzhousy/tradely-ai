@@ -89,9 +89,11 @@ import { StrategyConceptLab } from "./strategy-concept-lab";
 import { TapeConceptLab } from "./tape-concept-lab";
 import { TimeVolRateConceptLab } from "./time-vol-rate-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
+import { VolatilityConceptLab } from "./volatility-concept-lab";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
+	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
 	gamma: GammaConceptLab,
 	delta: DeltaConceptLab,

@@ -9,6 +9,7 @@ import {
 import { deltaConceptData } from "./delta-concept.server";
 import { gammaConceptData } from "./gamma-concept.server";
 import { timeVolRateConceptData } from "./time-vol-rate-concept.server";
+import { volatilityConceptData } from "./volatility-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
@@ -187,6 +188,14 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "implied-realized-volatility",
+		conceptLab: {
+			kind: "implied-realized-volatility",
+			data: volatilityConceptData,
+			intro: t(
+				"Fit an implied volatility through a stated option model, calculate realized volatility from selected returns, and compare forward and backward references with their definitions intact.",
+				"通过声明的期权模型拟合隐含波动率，根据选定收益计算已实现波动率，并保留定义来比较向前与向后参考。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"Implied volatility is an input inferred from an option price through a stated pricing model. It is not directly observed future volatility. Realized volatility is computed from historical returns with a defined window, sampling and annualization. A vendor's unspecified historical-volatility field is not automatically your chosen realized estimate. IV30 is a standardized forward-looking 30-day implied reference; RV20 may be a trailing 20-session estimate. Their horizons differ. Subtracting them gives volatility points, not a return forecast or proof of mispricing. IV can fall after an anticipated event, reducing option value even when the underlying moved favorably. Quotes, trade prices and model assumptions can produce different IV observations.",

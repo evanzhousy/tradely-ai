@@ -16,6 +16,7 @@ import type { StrategyConceptData } from "./strategy-concept";
 import type { TapeConceptData } from "./tape-concept";
 import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
 import type { UniverseComparison } from "./universe";
+import type { VolatilityConceptData } from "./volatility-concept";
 
 export type LearningCopy = { en: string; zh: string };
 export type LearningChoice = { id: string; label: LearningCopy };
@@ -130,7 +131,8 @@ export type LearningStepView = {
 		| "symbol-drawer"
 		| "delta"
 		| "gamma"
-		| "theta-vega-rho";
+		| "theta-vega-rho"
+		| "implied-realized-volatility";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -144,7 +146,8 @@ export type LearningStepView = {
 		| SourceConceptData
 		| DeltaConceptData
 		| GammaConceptData
-		| TimeVolRateConceptData;
+		| TimeVolRateConceptData
+		| VolatilityConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
