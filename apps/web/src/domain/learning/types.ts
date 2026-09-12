@@ -12,6 +12,7 @@ import type { MetricsComparison } from "./metrics";
 import type { OiConceptData } from "./oi-concept";
 import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
+import type { RegimeConceptData } from "./regime-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
 import type { SourceConceptData } from "./source-concept";
@@ -140,7 +141,8 @@ export type LearningStepView = {
 		| "volatility-surface"
 		| "iv-rank-percentile"
 		| "dex-dei-gex"
-		| "gamma-exposure";
+		| "gamma-exposure"
+		| "gamma-regimes";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -159,7 +161,8 @@ export type LearningStepView = {
 		| SurfaceConceptData
 		| IvRankConceptData
 		| FlowImpactConceptData
-		| GexConceptData;
+		| GexConceptData
+		| RegimeConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

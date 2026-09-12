@@ -1,4 +1,5 @@
 import { gexConceptData } from "./gex-concept.server";
+import { regimeConceptData } from "./regime-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -134,6 +135,14 @@ export const structureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "gamma-regimes",
+		conceptLab: {
+			kind: "gamma-regimes",
+			data: regimeConceptData,
+			intro: t(
+				"Explore conditional hedge responses, inspect repriced gamma across spot samples, and separate model targets from execution and liquidity evidence.",
+				"探索条件性对冲响应，检查沿现价样本重定价的 Gamma，并区分模型目标、执行与流动性证据。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"A gamma regime summarizes a specified modeled position set, date and expiry scope. Under continuous delta hedging, a long-gamma position tends to require selling underlying after a rise and buying after a fall; a short-gamma position has the opposite local hedge response. This is conditional on the assumed portfolio, hedge objective and other inputs. It does not establish actual dealer inventory, transactions or market impact. A zero-gamma flip is a modeled spot at which repriced aggregate gamma changes sign; it is not simply a cumulative sum crossing on a strike chart. A near-zero net can hide substantial gross exposure. Gamma-squeeze narratives additionally require positions, hedging demand and market liquidity; the label alone does not forecast a squeeze.",

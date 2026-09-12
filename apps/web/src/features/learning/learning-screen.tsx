@@ -81,6 +81,7 @@ import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuoteConceptLab } from "./quote-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
+import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { RightsConceptLab } from "./rights-concept-lab";
@@ -100,6 +101,7 @@ const conceptLabs = {
 	"iv-rank-percentile": IvRankConceptLab,
 	"dex-dei-gex": FlowImpactConceptLab,
 	"gamma-exposure": GexConceptLab,
+	"gamma-regimes": RegimeConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
