@@ -120,6 +120,7 @@ const messages = {
 		"nav.learn": "Home",
 		"nav.course": "Curriculum",
 		"nav.guides": "Guides",
+		"nav.changelog": "Changelog",
 		"home.guidesTitle": "Start with a question about options.",
 		"home.guidesDescription":
 			"Three free guides. Worked examples, clear assumptions and a chance to check your understanding.",
@@ -454,6 +455,7 @@ const messages = {
 		"nav.learn": "首页",
 		"nav.course": "课程目录",
 		"nav.guides": "知识指南",
+		"nav.changelog": "更新日志",
 		"home.guidesTitle": "从一个期权问题开始。",
 		"home.guidesDescription":
 			"三篇免费英文指南：示例计算、明确假设与理解检查。",

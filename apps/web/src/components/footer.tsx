@@ -52,6 +52,12 @@ export function Footer() {
 					<Link to="/guides" className="text-sm underline underline-offset-4">
 						{t("nav.guides")}
 					</Link>
+					<Link
+						to="/changelog"
+						className="text-sm underline underline-offset-4"
+					>
+						{t("nav.changelog")}
+					</Link>
 					<p className="text-muted-foreground text-sm leading-6">
 						{t("footer.description")}
 					</p>

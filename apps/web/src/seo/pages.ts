@@ -14,6 +14,14 @@ export type SeoPage = {
 
 const staticPages: SeoPage[] = [
 	{
+		path: "/changelog",
+		title: "Changelog | Tradely",
+		description:
+			"What’s new in Tradely: lesson updates, interactive practice and improvements to the way you learn options research.",
+		index: true,
+		sitemap: true,
+	},
+	{
 		path: "/",
 		title: "Learn Options Flow, Greeks & Gamma Exposure | Tradely",
 		description:
