@@ -1,3 +1,4 @@
+import { flowImpactConceptData } from "./flow-impact-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -390,6 +391,14 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "dex-dei-gex",
+		conceptLab: {
+			kind: "dex-dei-gex",
+			data: flowImpactConceptData,
+			intro: t(
+				"Build classified flow, change its volume denominator, and audit the source before comparing DEX, DEI and GEX.",
+				"构建分类成交流，改变成交量分母，并在比较 DEX、DEI 与 GEX 前审计来源。",
+			),
+		},
 		sources: [greeks],
 		explanation: t(
 			"A trade's delta-equivalent magnitude can be |delta|×contracts×multiplier. This lesson signs that magnitude by a stated inferred-flow convention: bullish positive, bearish negative, neutral excluded from directional net but retained in coverage. Net DEX is classified flow, not the dealer's inventory or the buyer's entire portfolio. Net classified premium instead subtracts bearish dollars from bullish dollars; it has money units, not share equivalents. Opposite signed contributions can cancel while gross activity remains large. DEI here is |net DEX| divided by a positive effective typical share-volume denominator ×100. Direction stays in Net DEX. Index proxies need an explicit scale and methodology because an index itself has no ordinary share volume. ΔOI-based impact changes the numerator's lineage to reported position change; it does not inherit today's tape direction. Missing denominators remain unavailable.",

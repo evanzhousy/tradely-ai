@@ -1,0 +1,108 @@
+import "@tanstack/react-start/server-only";
+import type { FlowImpactConceptData } from "@/domain/learning/flow-impact-concept";
+export const flowImpactConceptData: FlowImpactConceptData = {
+	kind: "dex-dei-gex",
+	symbol: "LAMBDA",
+	session: "2030-09-13 · synthetic session",
+	convention: [
+		"Inferred flow: bullish +, bearish −; neutral unsigned",
+		"推断成交流：看涨 +，看跌 −；中性不赋符号",
+	],
+	prints: [
+		{
+			id: "A",
+			delta: 0.5,
+			contracts: 1200,
+			multiplier: 100,
+			premium: 120000,
+			classification: "bullish",
+		},
+		{
+			id: "B",
+			delta: -0.4,
+			contracts: 500,
+			multiplier: 100,
+			premium: 80000,
+			classification: "bearish",
+		},
+		{
+			id: "C",
+			delta: 0.2,
+			contracts: 500,
+			multiplier: 100,
+			premium: 20000,
+			classification: "neutral",
+		},
+	],
+	contractRange: [0, 2000],
+	contractFrames: [500, 1000, 1500, 2000],
+	volumeRange: [500000, 2000000],
+	references: [
+		{
+			id: "shares",
+			label: ["Typical stock volume", "典型股票成交量"],
+			kind: "shares",
+			volume: 1000000,
+			scale: null,
+			method: null,
+		},
+		{
+			id: "proxy",
+			label: ["Declared index proxy", "已声明指数代理"],
+			kind: "proxy",
+			volume: 250000,
+			scale: 4,
+			method: "Teaching proxy P × 4 share-equivalent scale",
+		},
+		{
+			id: "unscaled",
+			label: ["Proxy without scale", "代理缺少比例"],
+			kind: "proxy",
+			volume: 250000,
+			scale: null,
+			method: "Teaching proxy P",
+		},
+		{
+			id: "undocumented",
+			label: ["Proxy without method", "代理缺少方法"],
+			kind: "proxy",
+			volume: 250000,
+			scale: 4,
+			method: null,
+		},
+		{
+			id: "missing",
+			label: ["Missing volume", "成交量缺失"],
+			kind: "shares",
+			volume: null,
+			scale: null,
+			method: null,
+		},
+		{
+			id: "zero",
+			label: ["Zero volume", "成交量为零"],
+			kind: "shares",
+			volume: 0,
+			scale: null,
+			method: null,
+		},
+	],
+	gex: {
+		value: 2000000,
+		unit: [
+			"USD delta-notional change / +1% spot",
+			"美元 Delta 名义变化 / 现价 +1%",
+		],
+		source: "STRUCTURE-R · supplied GEX report",
+		asOf: "2030-09-12 close",
+		convention: [
+			"Positive under report R's assumed inventory signs",
+			"按报告 R 的假设库存符号为正",
+		],
+	},
+	oi: {
+		magnitude: 15000,
+		source: "OI-CHANGE-R · supplied absolute delta-equivalent change",
+		asOf: "2030-09-12 → 2030-09-13 reported OI",
+	},
+};

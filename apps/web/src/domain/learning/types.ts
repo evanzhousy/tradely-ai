@@ -3,6 +3,7 @@ import type { ActivityConceptData } from "./activity-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
 import type { ExecutionConceptData } from "./execution-concept";
+import type { FlowImpactConceptData } from "./flow-impact-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { GammaConceptData } from "./gamma-concept";
 import type { IvRankConceptData } from "./iv-rank-concept";
@@ -136,7 +137,8 @@ export type LearningStepView = {
 		| "theta-vega-rho"
 		| "implied-realized-volatility"
 		| "volatility-surface"
-		| "iv-rank-percentile";
+		| "iv-rank-percentile"
+		| "dex-dei-gex";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -153,7 +155,8 @@ export type LearningStepView = {
 		| TimeVolRateConceptData
 		| VolatilityConceptData
 		| SurfaceConceptData
-		| IvRankConceptData;
+		| IvRankConceptData
+		| FlowImpactConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

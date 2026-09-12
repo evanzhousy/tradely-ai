@@ -67,6 +67,7 @@ import { learningCopy } from "./copy";
 import { DeltaConceptLab } from "./delta-concept-lab";
 import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
+import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { GammaConceptLab } from "./gamma-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
@@ -96,6 +97,7 @@ import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
 	"iv-rank-percentile": IvRankConceptLab,
+	"dex-dei-gex": FlowImpactConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
