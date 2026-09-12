@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 import {
 	normalizePostHogHost,
 	POSTHOG_CONTROL_HOST,
-	POSTHOG_INGESTION_HOST,
+	POSTHOG_PROXY_HOST,
 } from "./src/analytics/posthog-config.ts";
 import { resolveAnalyticsRelease } from "./src/analytics/release.ts";
 
@@ -53,12 +53,12 @@ if (isProductionBuild && !posthogProjectToken?.startsWith("phc_")) {
 
 if (
 	isProductionBuild &&
-	(posthogIngestionHost !== POSTHOG_INGESTION_HOST ||
-		posthogServerHost !== POSTHOG_INGESTION_HOST ||
+	(posthogIngestionHost !== POSTHOG_PROXY_HOST ||
+		posthogServerHost !== POSTHOG_PROXY_HOST ||
 		posthogControlHost !== POSTHOG_CONTROL_HOST)
 ) {
 	throw new Error(
-		"Production builds must use Tradely's US PostHog ingestion and control hosts",
+		"Production builds must use Tradely's managed PostHog proxy and US control host",
 	);
 }
 

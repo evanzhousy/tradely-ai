@@ -3,17 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
 	normalizePostHogHost,
 	POSTHOG_CONTROL_HOST,
-	POSTHOG_INGESTION_HOST,
+	POSTHOG_PROXY_HOST,
 } from "./posthog-config";
 
 describe("PostHog host boundaries", () => {
-	it("uses the Tradely ingestion host by default", () => {
-		expect(normalizePostHogHost(undefined)).toBe(POSTHOG_INGESTION_HOST);
+	it("uses the Tradely proxy host by default", () => {
+		expect(normalizePostHogHost(undefined)).toBe(POSTHOG_PROXY_HOST);
 	});
 
 	it("trims trailing slashes without changing the host", () => {
-		expect(normalizePostHogHost("  https://us.i.posthog.com///  ")).toBe(
-			POSTHOG_INGESTION_HOST,
+		expect(normalizePostHogHost("  https://z.tradely.ai///  ")).toBe(
+			POSTHOG_PROXY_HOST,
 		);
 	});
 

@@ -2,13 +2,13 @@ import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-const POSTHOG_INGESTION_HOST = "https://us.i.posthog.com";
+const POSTHOG_PROXY_HOST = "https://z.tradely.ai";
 const posthogHost = z
 	.string()
 	.url()
 	.refine(
-		(value) => value.replace(/\/+$/, "") === POSTHOG_INGESTION_HOST,
-		"Tradely uses the US PostHog ingestion host",
+		(value) => value.replace(/\/+$/, "") === POSTHOG_PROXY_HOST,
+		"Tradely uses its managed PostHog reverse proxy",
 	);
 
 export const env = createEnv({
@@ -29,7 +29,7 @@ export const env = createEnv({
 		NEON_AUTH_BASE_URL: z.string().url().optional(),
 		NEON_AUTH_COOKIE_SECRET: z.string().min(32).optional(),
 		POSTHOG_PROJECT_TOKEN: z.string().startsWith("phc_").optional(),
-		POSTHOG_HOST: posthogHost.default(POSTHOG_INGESTION_HOST),
+		POSTHOG_HOST: posthogHost.default(POSTHOG_PROXY_HOST),
 		STRIPE_API_KEY: z.string().min(1).optional(),
 		STRIPE_ACCOUNT_ID: z.string().startsWith("acct_").optional(),
 		STRIPE_MEMBERSHIP_PRICE_ID: z.string().startsWith("price_").optional(),

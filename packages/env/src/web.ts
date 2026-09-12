@@ -1,13 +1,13 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-const POSTHOG_INGESTION_HOST = "https://us.i.posthog.com";
+const POSTHOG_PROXY_HOST = "https://z.tradely.ai";
 const posthogHost = z
 	.string()
 	.url()
 	.refine(
-		(value) => value.replace(/\/+$/, "") === POSTHOG_INGESTION_HOST,
-		"Tradely uses the US PostHog ingestion host",
+		(value) => value.replace(/\/+$/, "") === POSTHOG_PROXY_HOST,
+		"Tradely uses its managed PostHog reverse proxy",
 	);
 
 export const env = createEnv({
