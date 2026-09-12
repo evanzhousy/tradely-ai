@@ -1,5 +1,7 @@
 # Tradely E2E test cases
 
+Execution procedure: [Browser E2E runbook](browser-e2e-runbook.md). Refresh this inventory from Git history before running; execute one concrete case per goal round and retain outcomes in the run report.
+
 Source inventory date: 2026-09-12. Baseline commit: `c16a86f8287065212224d39cc32a6c64884c2c9d`.
 
 This is the source-derived acceptance inventory for the current Tradely application. It contains a browser E2E matrix, a per-lesson sweep, a route inventory, and every test declaration found in the configured web and database test directories. **Execution status: NOT RUN for every case in this document.** Creating this inventory does not establish local, Preview, production, or provider success.
