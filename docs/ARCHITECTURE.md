@@ -75,7 +75,7 @@ Every decision is saved before the next action is enabled. Updates compare the e
 
 Practice completion is separate from `lesson_progress`. The independent case earns `demonstrated` only when every required criterion is automatically checkable and met without an independent-case hint. Cases containing unreviewed prose and other completed attempts are `practiced`. The result separates automatically checked criteria from pending written review. A course completion timestamp does not establish this result. The three existing free lessons retain anonymous practice without persistence. New lessons use the existing paid course access rule. Signed-in account persistence uses the same three-table schema.
 
-The exercise clears its client state when Neon Auth identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the current implementation verification](reviews/course-update-verification-2026-09-08.md) for coverage, validation and remaining release gates. The [pilot implementation notes](interactive-course-pilot.md) remain historical evidence.
+The exercise clears its client state when Neon Auth identity changes and ignores responses belonging to an unmounted account. Raw answers, evidence, and learner content are excluded from analytics and exception logging. See [the current implementation verification](reviews/course-update-verification-2026-09-08.md) for coverage, validation and remaining release gates.
 
 ## Failure behavior
 

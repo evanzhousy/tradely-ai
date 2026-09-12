@@ -16,7 +16,7 @@ The local masters all report 480 seconds through `ffprobe`. Every caption file h
 
 Current pending UI work includes calculation traces, animated emphasis, and a source-to-draft visualization. It was inspected where relevant and left untouched. In particular, animated links in [ResearchConnections](/Users/evansmacbookpro/Desktop/Projects/tradely/apps/web/src/features/learning/research-connections.tsx) display the current selected answers; they do not add a learner-authored packet, independently selected source references, or a rerunnable output.
 
-The [read-only probe](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/audit-course-assessments.cjs) and [captured results](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/course-assessment-probe-2026-09-08.json) make the assessment findings reproducible. The probe loads authored fixtures and the actual pure transition/assessment engine. It does not connect to an account or database. Source hashes identify the exact inspected inputs.
+The [read-only probe](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/audit-course-assessments.cjs) and [updated captured results](/Users/evansmacbookpro/Desktop/Projects/tradely/docs/reviews/course-assessment-probe-v2-2026-09-08.json) make the assessment findings reproducible. The probe loads authored fixtures and the actual pure transition/assessment engine. It does not connect to an account or database. Source hashes identify the exact inspected inputs.
 
 ## Findings that change the next decision
 
