@@ -19,7 +19,7 @@ def material(name, color, roughness=.72):
 
 
 yellow = material('Warm logo yellow', (1, .66, .045))
-wing_gold = material('Folded wing gold', (.88, .46, .025))
+wing_brown = material('Warm brown wings', (.19, .065, .022))
 ivory = material('Connected ivory facial discs', (.98, .97, .92))
 ink = material('Ink pupils', (.012, .014, .013))
 amber = material('Amber beak and feet', (.60, .22, .018))
@@ -57,7 +57,7 @@ sphere('OwlBody', (0, 0, -.02), (.84, .56, .88), yellow)
 for side, x in [('Left', -.57), ('Right', .57)]:
     tuft = tapered(side + 'CrownTuft', (x, .01, .74), (.34, .30, .46), yellow, .10, .75)
     tuft.rotation_euler[1] = -.25 if x < 0 else .25
-    wing = sphere(side + 'FoldedWing', (x * 1.22, -.10, -.36), (.21, .34, .49), wing_gold)
+    wing = sphere(side + 'FoldedWing', (x * 1.22, -.10, -.36), (.21, .34, .49), wing_brown)
     wing.rotation_euler[1] = -.22 if x < 0 else .22
     for index in range(3):
         sphere(side + 'Toe' + str(index), (x * .57 + (index - 1) * .085, -.17, -.88),
