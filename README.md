@@ -35,6 +35,9 @@ Media ownership and source/access invariants are checked with `pnpm media:assert
 For the Git/R2/ChatCut boundary, generated-artifact policy, release sequence,
 and rollback rules, see [the ops engineer media practice](ops/human/ops-engineer-instruction.md).
 
+Agent procedures are listed in the [agent runbook index](ops/agent/README.md),
+including [updating the public changelog](ops/agent/update-changelog.md).
+
 ## Service configuration
 
 Copy [apps/web/.env.example](apps/web/.env.example) and enable Neon Auth on a dedicated Tradely database branch, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Neon Auth mappings. Configure separate `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. Setting `LIFETIME_CHECKOUT_ENABLED=false` stops new Course Pass purchases without revoking existing grants.
