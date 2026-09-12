@@ -1,5 +1,13 @@
 # PostHog web and product analysis — 2026-09-12
 
+> Correction from the later [error-analysis execution](posthog-error-analysis-2026-09-12.md):
+> a live query's returned URL identified the connector's active project as
+> OptionData.io (90561), despite an explicit metadata read of Tradely (582920).
+> This report did not verify its analytics query context. Its attribution of
+> OptionData traffic to project 582920 and inference of an ingestion mapping
+> failure are unproven. Do not change deployment keys based on this report;
+> explicitly select Tradely, verify query provenance, and rerun the analysis.
+
 ## Decision summary
 
 Do not use project 582920 for a Tradely product decision yet. The connected

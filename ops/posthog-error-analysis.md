@@ -13,13 +13,17 @@ unless the user also authorizes implementation.
 
 Last updated: 2026-09-12
 
-Documentation creation only; this runbook has not been executed and no live
-PostHog or production checks were performed during creation.
+Live read-only execution on 2026-09-12 reached the project-verification gate;
+Tradely error attribution remains blocked. See the
+[execution report](../docs/reviews/posthog-error-analysis-2026-09-12.md).
 
-- [ ] Verify project/token/deployment mapping before attributing any issue to
-  Tradely. The [2026-09-12 analysis](../docs/reviews/posthog-analysis-2026-09-12.md)
-  reported OptionData traffic in project 582920 despite its Tradely name. Recheck
-  current evidence; do not treat that historical result as a fresh measurement.
+- [ ] Obtain explicit direction to switch the connector to Tradely (582920),
+  then recheck schema and the returned query URL before error triage. The live
+  trends result used OptionData.io (90561); fetching metadata for 582920 did not
+  change the query context. The switch tool requires a user-requested switch.
+- [ ] Run the issue inventory, comparison, recurrence, and root-cause analysis
+  in the verified context. No Tradely exception counts or health verdict were
+  established; the earlier report's ingestion-mismatch explanation is unproven.
 
 ## Recommended Invocation
 
@@ -77,6 +81,15 @@ or authorized-URL list alone does not establish which application emits its data
 If traffic belongs to another product, stop Tradely impact attribution, record
 the mismatch, and identify the mapping evidence needed. Do not silently switch
 projects or change configuration to make the report proceed.
+
+Verify the query's own project context, for example the project ID in its returned
+`_posthogUrl`. An explicit `project-get(id)` retrieves that project's metadata;
+it does not establish the default context of schema, trends, or issue queries.
+Do not diagnose token/deployment contamination from those mixed reads. If the
+documented `@current` lookup is rejected by a numeric-only connector schema,
+use returned query provenance and project-list metadata. Follow the switch tool's
+authorization requirement, then rerun schema discovery after switching. Redact
+project tokens from metadata responses before displaying or saving them.
 
 Inspect a bounded recent event sample and schema before selecting filters. Use
 verified `app=tradely` and `environment=production` properties where available;
