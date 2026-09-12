@@ -1,6 +1,7 @@
 """Rebuild the logo-derived owl: Blender --background --python scripts/brand/build-avatar.py."""
 from pathlib import Path
 import bpy
+import bmesh
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'apps/web/public/models/tradely-avatar'
@@ -53,7 +54,23 @@ def tapered(name, location, scale, mat, top_radius, bottom_radius):
 
 
 # Broad, compact owl silhouette. Short feather tufts distinguish it from an egg.
-sphere('OwlBody', (0, 0, -.02), (.84, .56, .88), yellow)
+body = sphere('OwlBody', (0, 0, -.02), (.84, .56, .88), yellow)
+# Split the existing silhouette at an overlapping neck seam so only the head turns.
+bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+head_shell = body.copy()
+head_shell.data = body.data.copy()
+head_shell.name = 'OwlHeadShell'
+bpy.context.collection.objects.link(head_shell)
+for obj, height, remove_lower in [(body, .07, False), (head_shell, -.07, True)]:
+    mesh = bmesh.new()
+    mesh.from_mesh(obj.data)
+    bmesh.ops.bisect_plane(mesh, geom=list(mesh.verts) + list(mesh.edges) + list(mesh.faces),
+                          plane_co=(0, 0, height), plane_no=(0, 0, 1),
+                          clear_inner=remove_lower, clear_outer=not remove_lower)
+    bmesh.ops.holes_fill(mesh, edges=[edge for edge in mesh.edges if edge.is_boundary], sides=0)
+    bmesh.ops.recalc_face_normals(mesh, faces=list(mesh.faces))
+    mesh.to_mesh(obj.data)
+    mesh.free()
 for side, x in [('Left', -.57), ('Right', .57)]:
     tuft = tapered(side + 'CrownTuft', (x, .01, .74), (.34, .30, .46), yellow, .10, .75)
     tuft.rotation_euler[1] = -.25 if x < 0 else .25
@@ -70,6 +87,17 @@ sphere('PupilLeft', (-.265, -.615, .30), (.106, .046, .122), ink)
 sphere('PupilRight', (.345, -.62, .25), (.106, .046, .122), ink)
 # Downward-pointing short beak: separate, editable geometry, between the eye discs.
 tapered('ShortOwlBeak', (0, -.639, .025), (.16, .18, .25), amber, .72, .035)
+
+# Author the pivot in the asset, rather than reconstructing a head in the web player.
+head = bpy.data.objects.new('HeadPivot', None)
+bpy.context.collection.objects.link(head)
+head.location = (0, 0, -.02)
+bpy.context.view_layer.update()
+for obj in list(bpy.context.scene.objects):
+    if obj.name in {'OwlHeadShell', 'LeftCrownTuft', 'RightCrownTuft',
+                    'FacialDiscLeft', 'FacialDiscRight', 'PupilLeft', 'PupilRight', 'ShortOwlBeak'}:
+        obj.parent = head
+        obj.matrix_parent_inverse = head.matrix_world.inverted()
 
 # Blender Z-up exports to glTF Y-up; -Y face exports toward the player's camera.
 bpy.context.preferences.filepaths.save_version = 0

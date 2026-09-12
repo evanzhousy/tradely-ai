@@ -15,6 +15,11 @@ export async function mountTradelyAvatar(host: HTMLDivElement) {
 					material.dispose();
 			}
 		});
+	const head = model.getObjectByName("HeadPivot");
+	if (!head) {
+		releaseModel();
+		throw new Error("Owl model is missing its head pivot");
+	}
 	let renderer: THREE.WebGLRenderer;
 	try {
 		renderer = new THREE.WebGLRenderer({
@@ -41,19 +46,23 @@ export async function mountTradelyAvatar(host: HTMLDivElement) {
 	model.rotation.set(-0.04, -0.14, -0.1);
 	const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 	const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
-	const target = new THREE.Vector2(-0.14, -0.04);
+	const target = new THREE.Vector2(0, 0);
 	let frame = 0;
 	let visible = true;
 	let disposed = false;
-	const draw = () => {
+	let previousTime = 0;
+	const draw = (time: number) => {
 		frame = 0;
 		if (disposed || !visible || document.hidden) return;
-		model.rotation.y += (target.x - model.rotation.y) * 0.14;
-		model.rotation.x += (target.y - model.rotation.x) * 0.14;
+		const delta = Math.min((time - previousTime) / 1000, 0.05);
+		previousTime = time;
+		const blend = 1 - Math.exp(-10 * delta);
+		head.rotation.y += (target.x - head.rotation.y) * blend;
+		head.rotation.x += (target.y - head.rotation.x) * blend;
 		renderer.render(scene, camera);
 		if (
-			Math.abs(target.x - model.rotation.y) +
-				Math.abs(target.y - model.rotation.x) >
+			Math.abs(target.x - head.rotation.y) +
+				Math.abs(target.y - head.rotation.x) >
 			0.001
 		)
 			frame = requestAnimationFrame(draw);
@@ -62,19 +71,23 @@ export async function mountTradelyAvatar(host: HTMLDivElement) {
 		if (!frame && !disposed) frame = requestAnimationFrame(draw);
 	};
 	const reset = () => {
-		target.set(-0.14, -0.04);
-		model.rotation.y = target.x;
-		model.rotation.x = target.y;
+		target.set(0, 0);
+		head.rotation.y = 0;
+		head.rotation.x = 0;
+		schedule();
+	};
+	const rest = () => {
+		target.set(0, 0);
 		schedule();
 	};
 	const pointer = (event: PointerEvent) => {
-		if (reduced.matches || !fine.matches) return;
+		if (reduced.matches || !fine.matches || !visible || document.hidden) return;
 		const bounds = host.getBoundingClientRect();
 		target.set(
 			THREE.MathUtils.clamp(
-				(event.clientX - bounds.left - bounds.width / 2) / 700,
-				-0.3,
-				0.3,
+				(event.clientX - bounds.left - bounds.width / 2) / 1000,
+				-0.4,
+				0.4,
 			),
 			THREE.MathUtils.clamp(
 				(event.clientY - bounds.top - bounds.height / 2) / 900,
@@ -104,6 +117,8 @@ export async function mountTradelyAvatar(host: HTMLDivElement) {
 	observer.observe(host);
 	window.addEventListener("pointermove", pointer, { passive: true });
 	document.addEventListener("visibilitychange", schedule);
+	document.documentElement.addEventListener("pointerleave", rest);
+	window.addEventListener("blur", rest);
 	reduced.addEventListener("change", reset);
 	return () => {
 		disposed = true;
@@ -111,6 +126,8 @@ export async function mountTradelyAvatar(host: HTMLDivElement) {
 		observer.disconnect();
 		window.removeEventListener("pointermove", pointer);
 		document.removeEventListener("visibilitychange", schedule);
+		document.documentElement.removeEventListener("pointerleave", rest);
+		window.removeEventListener("blur", rest);
 		reduced.removeEventListener("change", reset);
 		renderer.domElement.removeEventListener("webglcontextlost", contextLost);
 		renderer.domElement.removeEventListener(
