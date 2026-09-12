@@ -9,6 +9,7 @@ import type { PrintReviewConceptData } from "./print-review-concept";
 import type { QuoteConceptData } from "./quote-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
 import type { SideConceptData } from "./side-concept";
+import type { StrategyConceptData } from "./strategy-concept";
 import type { TapeConceptData } from "./tape-concept";
 import type { UniverseComparison } from "./universe";
 
@@ -120,7 +121,8 @@ export type LearningStepView = {
 		| "validate-option-print"
 		| "session-flow-vs-structure"
 		| "trade-records"
-		| "unusual-activity";
+		| "unusual-activity"
+		| "option-strategies";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -129,7 +131,8 @@ export type LearningStepView = {
 		| PrintReviewConceptData
 		| OiConceptData
 		| TapeConceptData
-		| ActivityConceptData;
+		| ActivityConceptData
+		| StrategyConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

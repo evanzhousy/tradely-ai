@@ -11,6 +11,7 @@ import {
 	t,
 } from "./authoring.server";
 import { oiConceptData } from "./oi-concept.server";
+import { strategyConceptData } from "./strategy-concept.server";
 import { tapeConceptData } from "./tape-concept.server";
 
 export const flowUnits: TeachingUnit[] = [
@@ -253,6 +254,14 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "option-strategies",
+		conceptLab: {
+			kind: "option-strategies",
+			data: strategyConceptData,
+			intro: t(
+				"Connect the supplied stock and option legs, explore expiration value and profit, and replay a linked roll. Compare the evidence for a complete structure with what one isolated position can reveal.",
+				"连接给定股票与期权腿，探索到期价值与盈亏，再回放关联移仓。比较完整结构证据与单一持仓能够揭示的信息。",
+			),
+		},
 		sources: [basics],
 		explanation: t(
 			"A leg is one position; a strategy combines legs and sometimes underlying shares. A protective put combines stock with a long put. A covered call combines stock with a short call; an uncovered short call lacks that stock and has very different upside risk. A vertical spread combines same-expiry options at different strikes. A straddle combines a call and put at one strike; a collar combines stock, a put and a short call. A roll closes one contract and opens another. These structures can make an isolated print's sentiment misleading about the complete portfolio. Opening/closing and linked-leg records are required to distinguish them. Expiration payoff, entry premium, fees, early assignment and path-dependent management must remain separate.",

@@ -82,12 +82,14 @@ import { RightsConceptLab } from "./rights-concept-lab";
 import { SentimentConceptLab } from "./sentiment-concept-lab";
 import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
+import { StrategyConceptLab } from "./strategy-concept-lab";
 import { TapeConceptLab } from "./tape-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
 	"unusual-activity": ActivityConceptLab,
+	"option-strategies": StrategyConceptLab,
 	"option-contracts": ContractConceptLab,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,

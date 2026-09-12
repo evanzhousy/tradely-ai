@@ -108,3 +108,75 @@ export function valueStrategy(
 		legs: valued,
 	};
 }
+
+export type StrategyExample = {
+	id: string;
+	label: readonly [string, string];
+	note: readonly [string, string];
+	focusLegId: string;
+	legs: readonly StrategyLeg[];
+};
+export type StrategyConceptData = {
+	kind: "option-strategies";
+	underlying: string;
+	asOf: string;
+	expiry: string;
+	spotRange: readonly [number, number];
+	defaultSpot: number;
+	feeMax: number;
+	profitRange: readonly [number, number];
+	terminalRange: readonly [number, number];
+	examples: readonly [StrategyExample, ...StrategyExample[]];
+	roll: {
+		date: string;
+		oldContract: string;
+		newContract: string;
+		quantity: number;
+		multiplier: number;
+		closingPrice: number;
+		openingPrice: number;
+	};
+};
+export function strategyPoints(
+	legs: readonly StrategyLeg[],
+	spotRange: readonly [number, number],
+	fees: number,
+	measure: "profit" | "terminal",
+) {
+	if (
+		!Number.isFinite(spotRange[0]) ||
+		!Number.isFinite(spotRange[1]) ||
+		spotRange[0] < 0 ||
+		spotRange[0] >= spotRange[1]
+	)
+		return null;
+	const knots = [
+		...new Set([
+			spotRange[0],
+			spotRange[1],
+			...legs.flatMap((leg) => (leg.kind === "option" ? [leg.strike] : [])),
+		]),
+	]
+		.filter((spot) => spot >= spotRange[0] && spot <= spotRange[1])
+		.sort((a, b) => a - b);
+	const points = knots.map((spot) => {
+		const value = valueStrategy(legs, spot, fees);
+		return value.ok
+			? {
+					spot,
+					value: measure === "profit" ? value.profit : value.terminalValue,
+				}
+			: null;
+	});
+	return points.every((point) => point !== null) ? points : null;
+}
+/** The supplied linked transactions close the old quantity, then open the new one. Cost basis is not supplied. */
+export function rollState(roll: StrategyConceptData["roll"], step: number) {
+	return {
+		oldQuantity: step >= 1 ? 0 : roll.quantity,
+		newQuantity: step >= 2 ? roll.quantity : 0,
+		cashFlow:
+			(step >= 1 ? roll.closingPrice * roll.quantity * roll.multiplier : 0) -
+			(step >= 2 ? roll.openingPrice * roll.quantity * roll.multiplier : 0),
+	};
+}
