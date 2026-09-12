@@ -16,7 +16,7 @@ export function TradelyBrand({ compactOnMobile = false }: TradelyBrandProps) {
 			aria-label={t("brand.home")}
 		>
 			<img
-				src="/brand/tradely-mark-128.png"
+				src="/brand/tradely-mark.svg"
 				alt=""
 				width={128}
 				height={128}
