@@ -11,9 +11,19 @@ measurement. This is the canonical procedure in the [agent index](README.md).
 
 Last updated: 2026-09-12
 
-No open maintenance items. This pass created documentation only; no live PostHog
-analysis, production checks, or browser verification was executed. On first
-execution, establish current project access, event coverage, and a baseline.
+### Look First
+
+- [ ] Reconcile the PostHog connector project/token/deployment mapping: project
+  582920 is named Tradely but current traffic is `www.optiondata.io`; evidence
+  is in [the 2026-09-12 report](../../docs/reviews/posthog-analysis-2026-09-12.md).
+- [ ] After mapping is corrected, rerun schema verification and the two-period
+  web/product analysis before making any Tradely product decision.
+
+### Blocked / Needs Decision
+
+- [ ] Confirm which PostHog project contains deployed `tradely.ai` production
+  traffic. The historical dashboard `2043620` returned 404 in the active project;
+  no dashboard or project settings were changed.
 
 ## Recommended Invocation
 
