@@ -52,6 +52,7 @@ import type {
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import { ActivityConceptLab } from "./activity-concept-lab";
+import { BoundaryConceptLab } from "./boundary-concept-lab";
 import { CharmVannaConceptLab } from "./charm-vanna-concept-lab";
 import {
 	type CoachingEvent,
@@ -106,6 +107,7 @@ const conceptLabs = {
 	"gamma-regimes": RegimeConceptLab,
 	"structural-levels": LevelsConceptLab,
 	"charm-vanna": CharmVannaConceptLab,
+	"audited-boundary": BoundaryConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,

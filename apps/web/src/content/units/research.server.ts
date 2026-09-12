@@ -1,3 +1,4 @@
+import { boundaryConceptData } from "./boundary-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -12,6 +13,14 @@ import {
 export const researchUnits: TeachingUnit[] = [
 	{
 		id: "audited-boundary",
+		conceptLab: {
+			kind: "audited-boundary",
+			data: boundaryConceptData,
+			intro: t(
+				"Declare a reviewable question, separate evidence roles, and preserve the original record when evidence or the research scope changes.",
+				"声明可审核问题，区分证据作用，并在证据或研究范围变化时保留原记录。",
+			),
+		},
 		sources: [oi, quotes],
 		explanation: t(
 			"Start with a question whose subject, quantity, universe, time interval and evidence requirements are explicit. A descriptive question asks what happened; a forecasting question additionally needs a measurable future outcome, horizon and out-of-sample evaluation. 'What will rally?' is underspecified, not inherently untestable. This course does not validate a trading forecast from a single print. Separate observed facts, calculations, interpretations, contradictions and unknowns. An invalidation rule says which failure of evidence or tested hypothesis would require reconsideration. New evidence may test the same question. Changing the population, instrument or method creates a different question; preserve the original record instead of retrofitting it to the interesting result.",

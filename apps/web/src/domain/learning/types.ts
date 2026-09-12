@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ActivityConceptData } from "./activity-concept";
+import type { BoundaryConceptData } from "./boundary-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
@@ -146,7 +147,8 @@ export type LearningStepView = {
 		| "gamma-exposure"
 		| "gamma-regimes"
 		| "structural-levels"
-		| "charm-vanna";
+		| "charm-vanna"
+		| "audited-boundary";
 	conceptData?:
 		| QuoteConceptData
 		| ExecutionConceptData
@@ -168,7 +170,8 @@ export type LearningStepView = {
 		| GexConceptData
 		| RegimeConceptData
 		| LevelsConceptData
-		| CharmVannaConceptData;
+		| CharmVannaConceptData
+		| BoundaryConceptData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;
