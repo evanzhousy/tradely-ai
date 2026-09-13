@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>TradingFlow · evidence layer</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #111111;
+        color: #ffffff;
+      }
+      body { font-family: Inter, system-ui, sans-serif; }
+      .scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #111111;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .clip { position: absolute; inset: 0; }
+      .glow {
+        position: absolute;
+        width: 920px;
+        height: 920px;
+        right: -180px;
+        top: -220px;
+        background: radial-gradient(circle, rgba(242, 201, 76, 0.22) 0%, rgba(242, 201, 76, 0) 68%);
+        pointer-events: none;
+      }
+      .glow-left {
+        right: auto;
+        left: -240px;
+        top: 220px;
+      }
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(17,17,17,0) 42%, rgba(17,17,17,0.72) 100%);
+        pointer-events: none;
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.09;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+      }
+      .pad {
+        position: relative;
+        z-index: 2;
+        height: 1080px;
+        padding: 72px 120px 80px;
+        display: flex;
+        flex-direction: column;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 48px;
+        margin-bottom: 48px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      .brand img { width: 48px; height: 48px; display: block; }
+      .kicker {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        font-weight: 500;
+        color: #f2c94c;
+        letter-spacing: -0.02em;
+      }
+      .idx {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        font-weight: 500;
+        color: #c9c3b5;
+        font-variant-numeric: tabular-nums;
+      }
+      h1, h2 {
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        max-width: 1560px;
+      }
+      h1 { font-size: 80px; }
+      h2 { font-size: 68px; }
+      .lede {
+        margin-top: 28px;
+        font-size: 44px;
+        line-height: 1.28;
+        color: #c9c3b5;
+        max-width: 1480px;
+        font-weight: 400;
+      }
+      .fill { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+      .row { display: flex; gap: 40px; align-items: stretch; }
+      .stack { display: flex; flex-direction: column; gap: 24px; }
+      .stat {
+        font-size: 128px;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        line-height: 0.92;
+        font-variant-numeric: tabular-nums;
+        color: #f2c94c;
+      }
+      .stat-unit {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        color: #c9c3b5;
+        margin-top: 12px;
+      }
+      .card {
+        background: #1a1a1a;
+        border-radius: 26px;
+        padding: 32px 36px;
+        min-height: 200px;
+      }
+      .card h3 {
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin-bottom: 12px;
+      }
+      .card p {
+        font-size: 40px;
+        line-height: 1.28;
+        color: #c9c3b5;
+      }
+      .num {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        color: #f2c94c;
+        margin-bottom: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .shot {
+        background: #1a1a1a;
+        border-radius: 26px;
+        padding: 18px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 16px;
+      }
+      .foot {
+        margin-top: auto;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 40px;
+        color: #c9c3b5;
+        max-width: 1200px;
+      }
+      .module {
+        font-size: 40px;
+        line-height: 1.25;
+        padding: 18px 24px;
+        background: #1a1a1a;
+        border-radius: 18px;
+      }
+      .module b {
+        color: #f2c94c;
+        font-weight: 700;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+      .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; }
+      .compare-col h3 { font-size: 44px; margin-bottom: 16px; letter-spacing: -0.03em; }
+      .compare-col p { font-size: 40px; line-height: 1.28; color: #c9c3b5; }
+      .compare-col.us { background: #f2c94c; color: #111111; border-radius: 26px; padding: 36px 40px; }
+      .compare-col.us h3, .compare-col.us p { color: #111111; }
+      .formula {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 42px;
+        line-height: 1.45;
+      }
+      .rule {
+        display: block;
+        width: 120px;
+        height: 6px;
+        background: #f2c94c;
+        border-radius: 6px;
+        transform-origin: left center;
+      }
+      .frag { opacity: 0; }
+      #clock {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="application/hyperframes-slideshow+json">
+      {
+        "slides": [
+          {
+            "sceneId": "title",
+            "notes": "Name TradingFlow first. Pause on the sentence. Do not mention Tradely on this slide."
+          },
+          {
+            "sceneId": "hook",
+            "notes": "The product is the loop. The constraint is the point: we do not place trades."
+          },
+          {
+            "sceneId": "problem",
+            "notes": "Walk the three gaps. Do not bash Unusual Whales. The buyer already pays for a terminal.",
+            "fragments": [19.0, 22.0, 25.0]
+          },
+          {
+            "sceneId": "solution",
+            "notes": "One sentence company. Rank, tape, structure. Read-only agents. $69/month."
+          },
+          {
+            "sceneId": "product",
+            "notes": "Three surfaces, one path. Cookbooks re-run SQL. They are not frozen PDFs."
+          },
+          {
+            "sceneId": "proof",
+            "notes": "This is the live workbench, captured from the product. Not a mock."
+          },
+          {
+            "sceneId": "agent",
+            "notes": "MCP is launched as a kill switch, approved accounts in production. Do not say it is GA for every paid user. Default keys cannot write."
+          },
+          {
+            "sceneId": "season",
+            "notes": "Say the second half out loud. We are not onchain. We do not execute. That is the trusted-agent story."
+          },
+          {
+            "sceneId": "market",
+            "notes": "Beachhead is $50–$200/month flow-tool users who cannot defend a print. Not undergrads. Click the hotspot for math.",
+            "hotspots": [
+              {
+                "id": "h-math",
+                "label": "Where do these numbers come from?",
+                "target": "market-detail",
+                "region": { "x": 8, "y": 68, "w": 54, "h": 20 }
+              }
+            ]
+          },
+          {
+            "sceneId": "model",
+            "notes": "Price is on the billing table. Trial is seven days, no card. AI credits are not the business."
+          },
+          {
+            "sceneId": "traction",
+            "notes": "Be blunt. Live product, live billing. No MRR on this slide because we are not inventing one. Distribution is the hole."
+          },
+          {
+            "sceneId": "competition",
+            "notes": "UW has brand. ChatGPT has vocabulary. We sell an inspectable loop plus a governed agent door."
+          },
+          {
+            "sceneId": "footnote",
+            "notes": "If they ask about Tradely: separate domain, billing, database. GTM footnote. We are not raising it."
+          },
+          {
+            "sceneId": "ask",
+            "notes": "Close on distribution. $500k does not buy more Rank columns. Founder is Evan Zhou. tradingflow.com."
+          }
+        ],
+        "slideSequences": [
+          {
+            "id": "market-detail",
+            "label": "Beachhead math",
+            "slides": [
+              {
+                "sceneId": "market-math",
+                "notes": "Bottom-up only. 1,000 members is a scenario. $3–5k MRR is the bar before YC or angels."
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <div id="clock" data-composition-id="root" data-start="0" data-duration="140" data-width="1920" data-height="1080" data-label="Clock"></div>
+
+    <div class="scene" id="title" data-composition-id="title" data-start="0" data-duration="8" data-label="Title" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow" id="title-glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="title-clip" data-start="0" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="brand" id="title-brand" data-anim><img id="title-logo" src="assets/logo-mark.webp" alt="" data-layout-ignore="true" /> TradingFlow</div>
+          <div class="idx">01 / 14</div>
+        </div>
+        <div class="fill">
+          <div class="kicker" id="title-kicker" data-anim>YZi Labs · EASY Residency Season 5</div>
+          <h1 id="title-h1" data-anim style="margin-top: 28px; max-width: 1500px;">TradingFlow is the options research desk a human uses today and an agent queries tomorrow.</h1>
+          <p class="lede" id="title-lede" data-anim style="max-width: 1200px;">Rank the session. Inspect the tape. Read the structure. Default agent access is read-only.</p>
+        </div>
+        <div class="foot" id="title-foot" data-anim>tradingflow.com · Applications close 21 September 2026, 23:59 GMT-7</div>
+      </section>
+    </div>
+
+    <div class="scene" id="hook" data-composition-id="hook" data-start="8" data-duration="8" data-label="Hook" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow glow-left"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="hook-clip" data-start="8" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The product</div>
+          <div class="idx">02 / 14</div>
+        </div>
+        <div class="fill">
+          <div class="stat" id="hook-num" data-anim>$69</div>
+          <div class="stat-unit" id="hook-unit" data-anim>per month for the evidence layer · we do not place trades</div>
+          <h2 id="hook-h2" data-anim style="margin-top: 48px; max-width: 1500px;">Humans run Rank to tape to structure. Agents get the same data, read-only.</h2>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="problem" data-composition-id="problem" data-start="16" data-duration="12" data-label="Problem" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="problem-clip" data-start="16" data-duration="12" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The gap</div>
+          <div class="idx">03 / 14</div>
+        </div>
+        <h2 id="problem-h2" data-anim>Traders already pay for flow tools and still cannot defend a print.</h2>
+        <div class="grid-3" style="margin-top: 56px;">
+          <div class="card frag" id="pain-1">
+            <div class="num">01</div>
+            <h3>Alerts without a tape check.</h3>
+            <p>A screenshot is not evidence. The session still ends untested.</p>
+          </div>
+          <div class="card frag" id="pain-2">
+            <div class="num">02</div>
+            <h3>Rank without the print.</h3>
+            <p>The shortlist and the tape live in different products. The strike gets lost.</p>
+          </div>
+          <div class="card frag" id="pain-3">
+            <div class="num">03</div>
+            <h3>Agents will copy that call.</h3>
+            <p>If a human cannot audit the evidence, an agent must not be allowed to act on it.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="solution" data-composition-id="solution" data-start="28" data-duration="8" data-label="Solution" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="solution-clip" data-start="28" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">What TradingFlow is</div>
+          <div class="idx">04 / 14</div>
+        </div>
+        <div class="fill">
+          <div class="rule" id="solution-rule" data-anim></div>
+          <h1 id="solution-h1" data-anim style="margin-top: 36px; max-width: 1600px;">Rank the session, inspect the tape, read the structure. Then stop.</h1>
+          <p class="lede" id="solution-lede" data-anim>We sell that loop. We do not route, size, or send an order. The decision stays with the trader, or with an agent that is only allowed to read.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="product" data-composition-id="product" data-start="36" data-duration="10" data-label="Product" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="product-clip" data-start="36" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">The workbench</div>
+          <div class="idx">05 / 14</div>
+        </div>
+        <h2 id="product-h2" data-anim>Three surfaces. One research path a reviewer can inspect.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="product-cards">
+          <div class="card" data-anim>
+            <div class="num">Rank</div>
+            <h3>Shortlist the session.</h3>
+            <p>Symbols and contracts, with GEX, vol, and chain in the same drawer.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">Option Trades</div>
+            <h3>See the print.</h3>
+            <p>Live and historical tape. Exact-contract handoff from Rank. No silent widening of scope.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">Cookbooks</div>
+            <h3>Run it again tomorrow.</h3>
+            <p>A recipe re-runs SQL for a session. It is not a frozen PDF and not a tip sheet.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="proof" data-composition-id="proof" data-start="46" data-duration="10" data-label="Product proof" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="proof-clip" data-start="46" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Inside the desk</div>
+          <div class="idx">06 / 14</div>
+        </div>
+        <h2 id="proof-h2" data-anim>The loop is shipped. These are product captures, not a concept deck.</h2>
+        <div class="row" style="margin-top: 32px; height: 640px;">
+          <div class="shot" id="proof-a" data-anim style="flex: 1; height: 640px;">
+            <img src="assets/rank-symbols.webp" alt="Rank Symbols workbench shortlisting a session" />
+          </div>
+          <div class="shot" id="proof-b" data-anim style="flex: 1; height: 640px;">
+            <img src="assets/live-tape.webp" alt="Option Trades live tape with filters" />
+          </div>
+          <div class="shot" id="proof-c" data-anim style="flex: 1; height: 640px;">
+            <img src="assets/rank-contracts.webp" alt="Rank Contracts listing strike and expiry candidates" />
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="agent" data-composition-id="agent" data-start="56" data-duration="10" data-label="Trusted agent" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="agent-clip" data-start="56" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Trusted agent, not a trading bot</div>
+          <div class="idx">07 / 14</div>
+        </div>
+        <h2 id="agent-h2" data-anim>Default agent access is read-only. That constraint is the product.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="agent-cards">
+          <div class="card" data-anim>
+            <div class="num">MCP</div>
+            <h3>Claude Code, Cursor, Codex.</h3>
+            <p>Governed metrics, tape, rank. Access re-checked on every call. Not a cached key from mint time.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">Writes</div>
+            <h3>Propose, then confirm.</h3>
+            <p>recipe:write is opt-in. Nothing saves in the call that validates it. SQL is capped and read-only.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">Honest gate</div>
+            <h3>Not generally launched.</h3>
+            <p>Production MCP is an approved audience. Assistant Channels are off. We will not demo internal flags as GA.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="season" data-composition-id="season" data-start="66" data-duration="10" data-label="Season fit" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="season-clip" data-start="66" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Why Season 5</div>
+          <div class="idx">08 / 14</div>
+        </div>
+        <h2 id="season-h2" data-anim>Season 5 asked for agents that price, route, and execute — and the data they depend on.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="season-cards">
+          <div class="card" data-anim>
+            <div class="num">We occupy</div>
+            <h3>The second half.</h3>
+            <p>Live options data, governed metrics, an agent door that cannot act.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">Trusted agents</div>
+            <h3>Permission, then audit.</h3>
+            <p>Read by default. Writes are a second, explicit step. No order placement. No fund movement.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">We are not</div>
+            <h3>An onchain protocol.</h3>
+            <p>NYSE, NASDAQ, CBOE, OCC. When someone asks if we execute, the answer is no.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="market" data-composition-id="market" data-start="76" data-duration="10" data-label="Beachhead" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="market-clip" data-start="76" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Beachhead, not a TAM slide</div>
+          <div class="idx">09 / 14</div>
+        </div>
+        <h2 id="market-h2" data-anim>The first customers already pay $50 to $200 a month and still cannot show their work.</h2>
+        <div class="stack" style="margin-top: 48px; max-width: 1500px;">
+          <div class="module" id="market-a" data-anim>Not financial-engineering undergrads. Not “everyone who trades options.” People who already bought Unusual Whales, Cheddar, or SpotGamma.</div>
+          <div class="module" id="market-b" data-anim>The job is Rank to tape to structure. If they wanted alerts, they already have alerts.</div>
+          <div class="module" id="market-c" data-anim>Price: $69 / month. If 1,000 of those traders paid, that is $828k ARR. Scenario, not a forecast.</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="model" data-composition-id="model" data-start="86" data-duration="8" data-label="Model" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="model-clip" data-start="86" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">How it is sold</div>
+          <div class="idx">10 / 14</div>
+        </div>
+        <h2 id="model-h2" data-anim>Premium is $69 monthly, $59 quarterly, $49 annually. Trial is seven days, no card.</h2>
+        <div class="grid-2" style="margin-top: 48px;">
+          <div class="card" id="model-a" data-anim>
+            <div class="num">Workbench</div>
+            <h3>Rank, tape, cookbooks.</h3>
+            <p>Paid entitlement. Home is public orientation. The research surfaces are not unpaid previews.</p>
+          </div>
+          <div class="card" id="model-b" data-anim>
+            <div class="num">AI credits</div>
+            <h3>Metered, not the company.</h3>
+            <p>Welcome grant, then a monthly allowance. Exhausting credits never auto-invoices. We sell the desk.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="traction" data-composition-id="traction" data-start="94" data-duration="10" data-label="Traction" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="traction-clip" data-start="94" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">What is actually true</div>
+          <div class="idx">11 / 14</div>
+        </div>
+        <h2 id="traction-h2" data-anim>The product is live. We will not invent a revenue number to fill this slide.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="traction-cards">
+          <div class="card" data-anim>
+            <div class="num">Shipped</div>
+            <h3>tradingflow.com is up.</h3>
+            <p>Live tape, Rank, cookbooks, Stripe, seven-day trial. Version 0.18 of a real workbench.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">Built</div>
+            <h3>MCP is real code.</h3>
+            <p>Read-only SQL, propose-then-confirm recipes, public /docs/mcp. Not a slide mock.</p>
+          </div>
+          <div class="card" data-anim>
+            <div class="num">The hole</div>
+            <h3>Distribution, not features.</h3>
+            <p>Public posts sit near zero engagement. $500k is for GTM, not another Rank column.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="competition" data-composition-id="competition" data-start="104" data-duration="10" data-label="Competition" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="competition-clip" data-start="104" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Where we sit</div>
+          <div class="idx">12 / 14</div>
+        </div>
+        <h2 id="comp-h2" data-anim>Unusual Whales has the brand. ChatGPT has the vocabulary. We sell the inspectable loop.</h2>
+        <div class="grid-3" style="margin-top: 48px;" id="comp-cols">
+          <div class="compare-col card">
+            <h3>Terminals</h3>
+            <p>Unusual Whales, Cheddar, SpotGamma. Strong at data and alerts. Weak at a Rank-to-tape path an agent can query without acting.</p>
+          </div>
+          <div class="compare-col card">
+            <h3>Chatbots</h3>
+            <p>ChatGPT, Claude, Codex. Strong at definitions. They do not hold the tape, the universe, or a frozen session.</p>
+          </div>
+          <div class="compare-col us">
+            <h3>TradingFlow</h3>
+            <p>One loop: rank, tape, structure. Recipes that re-run. MCP that is read-only unless the owner opts into a confirmed write.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="footnote" data-composition-id="footnote" data-start="114" data-duration="8" data-label="Not Tradely" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="footnote-clip" data-start="114" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Cap table hygiene</div>
+          <div class="idx">13 / 14</div>
+        </div>
+        <div class="fill">
+          <h1 id="foot-h1" data-anim style="max-width: 1500px;">Tradely is a separate product. It is not this company, and it is not this raise.</h1>
+          <p class="lede" id="foot-lede" data-anim>Separate domain, accounts, billing, and database. If it appears at all, it is a practice exam that hands off a redeemed TradingFlow month — never co-branding, never shared equity.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="scene" id="ask" data-composition-id="ask" data-start="122" data-duration="10" data-label="Ask" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="glow" id="ask-glow"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="ask-clip" data-start="122" data-duration="10" data-track-index="1">
+        <div class="topbar">
+          <div class="brand" id="ask-brand" data-anim>TradingFlow</div>
+          <div class="idx">14 / 14</div>
+        </div>
+        <div class="fill">
+          <div class="kicker" id="ask-kicker" data-anim>The ask</div>
+          <h1 id="ask-h1" data-anim style="margin-top: 24px; max-width: 1400px;">Put $500k behind distribution. Do not fund another Rank column.</h1>
+          <p class="lede" id="ask-lede" data-anim style="max-width: 1280px;">YZi: $150k for 5% plus $350k uncapped. YC: $125k for 7% plus $375k MFN. Same company. Same sentence. Founder: Evan Zhou.</p>
+        </div>
+        <div class="foot" id="ask-foot" data-anim>tradingflow.com · founders.yzilabs.com/apply/er</div>
+      </section>
+    </div>
+
+    <div class="scene" id="market-math" data-composition-id="market-math" data-start="132" data-duration="8" data-label="Beachhead math" data-width="1920" data-height="1080" data-layout-allow-overflow="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <section class="clip pad" id="math-clip" data-start="132" data-duration="8" data-track-index="1">
+        <div class="topbar">
+          <div class="kicker">Beachhead math</div>
+          <div class="idx">Branch</div>
+        </div>
+        <h2 id="math-h2" data-anim>1,000 members × $69 × 12 = $828,000 ARR. That is a scenario, not a forecast.</h2>
+        <div class="stack" style="margin-top: 40px;" id="math-lines">
+          <p class="formula" data-anim>Unusual Whales Retail Basic lists at $50 / month. We sit in the same wallet.</p>
+          <p class="formula" data-anim>TradingFlow Premium: $69 monthly · $59 quarterly · $49 annually.</p>
+          <p class="formula" data-anim>$3–5k MRR, converting, is the bar before YC or angels. We are not there on this slide.</p>
+          <p class="formula" data-anim>OCC volume is the backdrop. It is not our revenue.</p>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+
+      function enter(tl, sel, time, extra) {
+        extra = extra || {};
+        tl.fromTo(
+          sel,
+          { autoAlpha: 0, y: extra.y == null ? 40 : extra.y },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: extra.dur || 0.45,
+            ease: "power4.out",
+            stagger: extra.stagger,
+            immediateRender: true,
+          },
+          time
+        );
+      }
+
+      function scene(id, build) {
+        var tl = gsap.timeline({ paused: true });
+        build(tl);
+        window.__timelines[id] = tl;
+      }
+
+      scene("title", function (tl) {
+        enter(tl, "#title-brand", 0.12, { y: 24, dur: 0.4 });
+        enter(tl, "#title-kicker", 0.28, { y: 28 });
+        enter(tl, "#title-h1", 0.42, { y: 56, dur: 0.55 });
+        enter(tl, "#title-lede", 0.7, { y: 36 });
+        enter(tl, "#title-foot", 0.95, { y: 20, dur: 0.35 });
+        var period = 3;
+        var repeats = Math.max(0, Math.floor(8 / (period / 2)) - 1);
+        tl.fromTo("#title-glow", { scale: 1 }, { scale: 1.06, duration: period / 2, ease: "sine.inOut", yoyo: true, repeat: repeats, transformOrigin: "center center" }, 1.2);
+      });
+
+      scene("hook", function (tl) {
+        enter(tl, "#hook-num", 8.2, { y: 30, dur: 0.4 });
+        enter(tl, "#hook-unit", 8.35, { y: 20, dur: 0.35 });
+        enter(tl, "#hook-h2", 9.1, { y: 40, dur: 0.5 });
+      });
+
+      scene("problem", function (tl) {
+        enter(tl, "#problem-h2", 16.25, { y: 36, dur: 0.5 });
+        enter(tl, "#pain-1", 18.2, { y: 48, dur: 0.45 });
+        enter(tl, "#pain-2", 21.2, { y: 48, dur: 0.45 });
+        enter(tl, "#pain-3", 24.2, { y: 48, dur: 0.45 });
+      });
+
+      scene("solution", function (tl) {
+        tl.fromTo("#solution-rule", { scaleX: 0, autoAlpha: 1 }, { scaleX: 1, duration: 0.45, ease: "power3.out", immediateRender: true }, 28.2);
+        enter(tl, "#solution-h1", 28.4, { y: 48, dur: 0.55 });
+        enter(tl, "#solution-lede", 28.85, { y: 28 });
+      });
+
+      scene("product", function (tl) {
+        enter(tl, "#product-h2", 36.2, { y: 36 });
+        enter(tl, "#product-cards .card", 36.55, { y: 28, stagger: 0.08, dur: 0.4 });
+      });
+
+      scene("proof", function (tl) {
+        enter(tl, "#proof-h2", 46.2, { y: 32 });
+        enter(tl, "#proof-a", 46.5, { y: 36, dur: 0.45 });
+        enter(tl, "#proof-b", 46.65, { y: 36, dur: 0.45 });
+        enter(tl, "#proof-c", 46.8, { y: 36, dur: 0.45 });
+      });
+
+      scene("agent", function (tl) {
+        enter(tl, "#agent-h2", 56.2, { y: 32 });
+        enter(tl, "#agent-cards .card", 56.55, { y: 36, stagger: 0.08, dur: 0.4 });
+      });
+
+      scene("season", function (tl) {
+        enter(tl, "#season-h2", 66.2, { y: 36 });
+        enter(tl, "#season-cards .card", 66.55, { y: 36, stagger: 0.08, dur: 0.4 });
+      });
+
+      scene("market", function (tl) {
+        enter(tl, "#market-h2", 76.2, { y: 32 });
+        enter(tl, "#market-a", 76.55, { y: 24, dur: 0.35 });
+        enter(tl, "#market-b", 76.75, { y: 24, dur: 0.35 });
+        enter(tl, "#market-c", 76.95, { y: 24, dur: 0.35 });
+      });
+
+      scene("model", function (tl) {
+        enter(tl, "#model-h2", 86.2, { y: 32 });
+        enter(tl, "#model-a", 86.5, { y: 36 });
+        enter(tl, "#model-b", 86.7, { y: 36 });
+      });
+
+      scene("traction", function (tl) {
+        enter(tl, "#traction-h2", 94.2, { y: 32 });
+        enter(tl, "#traction-cards .card", 94.55, { y: 36, stagger: 0.08, dur: 0.4 });
+      });
+
+      scene("competition", function (tl) {
+        enter(tl, "#comp-h2", 104.2, { y: 32 });
+        enter(tl, "#comp-cols > div", 104.55, { y: 36, stagger: 0.1, dur: 0.4 });
+      });
+
+      scene("footnote", function (tl) {
+        enter(tl, "#foot-h1", 114.25, { y: 48, dur: 0.55 });
+        enter(tl, "#foot-lede", 114.7, { y: 28 });
+      });
+
+      scene("ask", function (tl) {
+        enter(tl, "#ask-kicker", 122.2, { y: 20, dur: 0.35 });
+        enter(tl, "#ask-h1", 122.4, { y: 48, dur: 0.55 });
+        enter(tl, "#ask-lede", 122.8, { y: 28 });
+        enter(tl, "#ask-foot", 123.05, { y: 16, dur: 0.3 });
+        var period = 3;
+        var repeats = Math.max(0, Math.floor(10 / (period / 2)) - 1);
+        tl.fromTo("#ask-glow", { scale: 1 }, { scale: 1.06, duration: period / 2, ease: "sine.inOut", yoyo: true, repeat: repeats, transformOrigin: "center center" }, 123.2);
+      });
+
+      scene("market-math", function (tl) {
+        enter(tl, "#math-h2", 132.2, { y: 32 });
+        enter(tl, "#math-lines .formula", 132.55, { y: 20, stagger: 0.08, dur: 0.35 });
+      });
+
+      var rootTl = gsap.timeline({ paused: true });
+      rootTl.to({}, { duration: 140 });
+      window.__timelines.root = rootTl;
+
+      var SCENES = [
+        { id: "title", start: 0, end: 8 },
+        { id: "hook", start: 8, end: 16 },
+        { id: "problem", start: 16, end: 28 },
+        { id: "solution", start: 28, end: 36 },
+        { id: "product", start: 36, end: 46 },
+        { id: "proof", start: 46, end: 56 },
+        { id: "agent", start: 56, end: 66 },
+        { id: "season", start: 66, end: 76 },
+        { id: "market", start: 76, end: 86 },
+        { id: "model", start: 86, end: 94 },
+        { id: "traction", start: 94, end: 104 },
+        { id: "competition", start: 104, end: 114 },
+        { id: "footnote", start: 114, end: 122 },
+        { id: "ask", start: 122, end: 132 },
+        { id: "market-math", start: 132, end: 140 }
+      ];
+
+      var FRAGMENTS = [
+        { time: 19.0, id: "pain-1", revealed: false },
+        { time: 22.0, id: "pain-2", revealed: false },
+        { time: 25.0, id: "pain-3", revealed: false }
+      ];
+
+      var lastActiveId = null;
+
+      function fireEntrance(sceneEl) {
+        var animEls = sceneEl.querySelectorAll("[data-anim]");
+        if (!animEls.length) return;
+        gsap.fromTo(
+          animEls,
+          { autoAlpha: 0, y: 28 },
+          { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.07, ease: "power2.out", overwrite: true }
+        );
+      }
+
+      function revealFragment(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, x: -24 },
+          { autoAlpha: 1, x: 0, duration: 0.35, ease: "power2.out", overwrite: true }
+        );
+      }
+
+      function updateVisibility(t) {
+        for (var i = 0; i < SCENES.length; i++) {
+          var s = SCENES[i];
+          var el = document.getElementById(s.id);
+          if (!el) continue;
+          var active = t >= s.start && t < s.end;
+          if (i === SCENES.length - 1 && t >= s.start) active = true;
+          el.style.opacity = active ? "1" : "0";
+          el.style.visibility = active ? "visible" : "hidden";
+          el.style.pointerEvents = active ? "auto" : "none";
+          if (active && lastActiveId !== s.id) {
+            lastActiveId = s.id;
+            if (s.id === "problem") {
+              for (var f = 0; f < FRAGMENTS.length; f++) {
+                FRAGMENTS[f].revealed = false;
+                var pEl = document.getElementById(FRAGMENTS[f].id);
+                if (pEl) gsap.set(pEl, { autoAlpha: 0, x: 0 });
+              }
+            }
+            var sceneTl = window.__timelines[s.id];
+            if (sceneTl) {
+              var hold = Math.min(s.end - 0.05, Math.max(t, s.start + 1.6));
+              sceneTl.seek(hold, false);
+            }
+            fireEntrance(el);
+          }
+        }
+        if (lastActiveId === "problem") {
+          for (var f2 = 0; f2 < FRAGMENTS.length; f2++) {
+            if (!FRAGMENTS[f2].revealed && t >= FRAGMENTS[f2].time) {
+              FRAGMENTS[f2].revealed = true;
+              revealFragment(FRAGMENTS[f2].id);
+            }
+          }
+        }
+      }
+
+      function readPlayerTime() {
+        try {
+          var player = parent.document.querySelector("hyperframes-player");
+          if (player && typeof player.currentTime === "number") return player.currentTime;
+        } catch (e) {}
+        return window.__timelines.root ? window.__timelines.root.time() : 0;
+      }
+
+      window.__hfSetTime = updateVisibility;
+      updateVisibility(0);
+      if (window.__timelines.root) {
+        window.__timelines.root.eventCallback("onUpdate", function () {
+          updateVisibility(window.__timelines.root.time());
+        });
+      }
+      setInterval(function () {
+        updateVisibility(readPlayerTime());
+      }, 50);
+
+      (function () {
+        var FPS = 30;
+        var scenes = SCENES.map(function (s) {
+          return { id: s.id, start: s.start, duration: s.end - s.start };
+        });
+        function postTimeline() {
+          try {
+            parent.postMessage(
+              {
+                source: "hf-preview",
+                type: "timeline",
+                durationInFrames: 140 * FPS,
+                scenes: scenes.concat([{ id: "root", start: 0, duration: 140 }]),
+              },
+              "*"
+            );
+          } catch (e) {}
+        }
+        if (document.readyState === "complete") {
+          setTimeout(postTimeline, 300);
+        } else {
+          window.addEventListener("load", function () {
+            setTimeout(postTimeline, 300);
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
