@@ -12,9 +12,9 @@ Read [AGENTS.md](../../../AGENTS.md) and use the installed `runbook-maintainer` 
 
 Last updated: 2026-09-12
 
-The first execution created report `runs/20260912T193140Z/report.md`. Round 1 reached the anonymous free-course destination, but the case is blocked overall because the exposed @Browser surface has no writable GIF export path. The local server also runs on Node 22 instead of the required Node 24.
+The first execution's repository-local checkpoint was removed under the repository report-storage policy; future runs must use an external report path and must not add repository-local reports. Round 1 reached the anonymous free-course destination, but the case was blocked overall because the exposed @Browser surface had no writable GIF export path. The local server also ran on Node 22 instead of the required Node 24.
 
-- Resume from `runs/20260912T193140Z/report.md`; materialize and freeze the remaining queue before the next independent round.
+- Start a new external report with the current Git and Browser state; materialize and freeze the remaining queue before the next independent round.
 - Resolve a writable sanitized GIF capture path in @Browser and rerun `NAV-001` if a file-backed evidence path becomes available.
 - Resolve Node 24 and verify the assigned non-production Feishu mailbox/test identity before email-auth cases; keep Stripe test-mode and cancellation fixtures separate.
 - The current worktree contains concurrent portfolio P&L edits and deleted/untracked ops paths. Recheck status and include relevant changes in each refresh; do not absorb or overwrite another task's changes.
@@ -115,7 +115,7 @@ For a normal run request, finish preflight before creating the execution goal. F
 
 ## 3. Materialize a finite, resumable case queue
 
-Create `runs/<UTC-run-id>/report.md` under this directory, where the run ID is a timestamp such as `20260912T180000Z`. Create it at execution time, not during documentation-only maintenance. Keep sanitized report/queue files in Git. Keep raw captures, sensitive transcripts and large media under the repository's ignored `tmp/browser-e2e/<run-id>/` directory; export sanitized GIFs there and use absolute file links. Reports must identify local-only evidence that is unavailable from a fresh clone.
+Create the report at an external path such as `/tmp/tradely-browser-e2e/<UTC-run-id>/report.md`, where the run ID is a timestamp such as `20260912T180000Z`. Create it at execution time, not during documentation-only maintenance. Do not create, commit, or store reports, screenshots, GIFs, raw captures, sensitive transcripts, or large media inside the repository. Keep sanitized reports and GIFs in that external output directory and use absolute file links. Reports must identify local-only evidence that is unavailable from a fresh clone.
 
 Build the queue from the **refreshed** inventory:
 
@@ -126,7 +126,7 @@ Build the queue from the **refreshed** inventory:
 5. Order by dependencies and risk: onboarding/sign-in → payments/access → learning/progress → cancellation/access-loss/recovery; then remaining discovery/labs/privacy/secondary cases. Delay cancellation until tests relying on that subscription finish, or use distinct fixtures. Keep all queued P1/P2 cases; prioritization is not scope reduction.
 6. Freeze the queue and matrix revision before the first case. Add newly discovered requirements explicitly with source/reason; never delete an unexecuted row to improve completion numbers. Retired cases remain traceable with reason and replacement.
 
-The queue table in `report.md` is the single source of progress:
+The queue table in the external `report.md` is the single source of progress:
 
 | Instance ID | Parent | Fixture / matrix | Dependencies | Status | Latest round | Evidence / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -194,7 +194,7 @@ On user pause or budget interruption, checkpoint honestly; do not claim completi
 
 ## 7. Final findings report and completion
 
-At the end of execution (or any genuine stop), finalize `runs/<run-id>/report.md` with:
+At the end of execution (or any genuine stop), finalize the external `/tmp/tradely-browser-e2e/<run-id>/report.md` with:
 
 1. Outcome: **complete audit with/without defects**, **blocked**, or **partial/user-paused**. State release readiness separately; any failed critical gate or missing required evidence prevents an all-green claim.
 2. Refresh summary: reviewed Git range, changes to runbook/inventory, target revision/deployment, uncommitted scope and any revision drift/retests. Include the matrix actually exercised.
@@ -204,7 +204,7 @@ At the end of execution (or any genuine stop), finalize `runs/<run-id>/report.md
 6. Remaining test-owned fixture cleanup, remediation recommendations and retest list. Delete only disposable resources created by this run within authorized scope; preserve shared accounts/subscriptions and prior evidence. Document retained fixtures for the next run.
 7. Runbook maintenance decision and next-run handoff. No completed todos or raw logs in this runbook.
 
-Validate case counts, unique IDs, queue-to-round references, evidence-file existence, links and `git diff --check`. Review screenshots/GIFs for secrets before referencing or committing reports. Commit only owned sanitized documentation/report changes after validation; do not push or absorb concurrent edits.
+Validate case counts, unique IDs, queue-to-round references, evidence-file existence, links and `git diff --check`. Review screenshots/GIFs for secrets before linking them. Do not commit the external report or browser artifacts; commit only owned runbook/inventory documentation changes after validation. Do not push or absorb concurrent edits.
 
 Mark the goal complete only when its success criteria are actually satisfied and no required work remains. An audit can finish with confirmed product defects if every applicable case has been executed and reported; never equate that with the application passing. Report blocked/partial coverage explicitly instead of silently narrowing the objective.
 

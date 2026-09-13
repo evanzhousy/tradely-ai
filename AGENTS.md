@@ -14,3 +14,7 @@
   interactions. Record the actual application or its local component preview,
   identify which environment was captured, and include the GIF in the final
   response with a link to the file.
+- Do not generate browser E2E reports or store run reports, screenshots, GIFs,
+  raw captures, or other test artifacts inside the repository. Keep them in an
+  external temporary/output directory and link to the files from the final
+  response. Do not commit those reports or artifacts.
