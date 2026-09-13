@@ -13,7 +13,7 @@ import type { PreviewLearningInput } from "./learning";
 export function previewLearningImpl(
 	data: PreviewLearningInput,
 ): LearningResponse {
-	if (getLessonById(data.lessonId)?.access !== "preview")
+	if (!getLessonById(data.lessonId))
 		return { ok: false, reason: "access_denied" };
 	const scenario = getLessonScenarios(data.lessonId)[data.variant];
 	if (!scenario) return { ok: false, reason: "not_found" };

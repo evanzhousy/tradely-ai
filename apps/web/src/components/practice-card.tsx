@@ -12,18 +12,16 @@ import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
-import type { TradingFlowPractice } from "@/content/course";
+import { getLessonById } from "@/content/course";
+import { getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 
-export function PracticeCard({
-	lessonId,
-	practice,
-}: {
-	lessonId: string;
-	practice: TradingFlowPractice;
-}) {
-	const { t } = useI18n();
+export function PracticeCard({ lessonId }: { lessonId: string }) {
+	const { t, locale } = useI18n();
 	const { capture } = useAnalytics();
+	const lesson = getLessonById(lessonId);
+	const practice = lesson ? getLocalizedLesson(lesson, locale).practice : null;
+	if (!practice) return null;
 	const captureOpen = () =>
 		capture("tradingflow_link_opened", {
 			surface: "lesson_practice",

@@ -8,10 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { shouldCaptureServerTiming } from "@/analytics/server-timing";
 import { getLessonById, tradingFlowCourse } from "@/content/course";
 import { calculateCourseProgress } from "@/domain/progress";
-import {
-	getCurrentCourseAccess,
-	resolveCurrentLessonAccess,
-} from "./access.server";
+import { getLearningIdentity } from "./access.server";
 import {
 	captureServerException,
 	captureServerRouteTiming,
@@ -35,18 +32,17 @@ export async function getCourseProgressImpl() {
 			signed_in: signedIn,
 		});
 	};
-	const courseAccess = await getCurrentCourseAccess();
-	const userId = courseAccess.userId;
+	const identity = await getLearningIdentity();
+	const userId = identity.userId;
 	if (!userId) {
-		await captureSlowTiming("ok", false);
+		await captureSlowTiming(identity.unavailable ? "unavailable" : "ok", false);
 		return {
 			signedIn: false as const,
 			completed: 0,
 			total: tradingFlowCourse.lessons.length,
 			percentage: 0,
 			records: [],
-			canAccessPaid: false,
-			accessUnavailable: false,
+			unavailable: identity.unavailable,
 		};
 	}
 	try {
@@ -66,10 +62,7 @@ export async function getCourseProgressImpl() {
 			lastPositionSeconds: record.lastPositionSeconds,
 			completedAt: record.completedAt?.toISOString() ?? null,
 		}));
-		await captureSlowTiming(
-			courseAccess.billingState === "unavailable" ? "unavailable" : "ok",
-			true,
-		);
+		await captureSlowTiming("ok", true);
 		return {
 			signedIn: true as const,
 			...calculateCourseProgress(
@@ -77,8 +70,7 @@ export async function getCourseProgressImpl() {
 				normalized,
 			),
 			records: normalized,
-			canAccessPaid: courseAccess.canAccessPaid,
-			accessUnavailable: courseAccess.billingState === "unavailable",
+			unavailable: false,
 		};
 	} catch (error) {
 		await captureServerException(error, {
@@ -93,8 +85,7 @@ export async function getCourseProgressImpl() {
 			total: tradingFlowCourse.lessons.length,
 			percentage: 0,
 			records: [],
-			canAccessPaid: courseAccess.canAccessPaid,
-			accessUnavailable: courseAccess.billingState === "unavailable",
+
 			unavailable: true as const,
 		};
 	}
@@ -104,10 +95,11 @@ export async function saveLessonProgressImpl(data: SaveLessonProgressInput) {
 	const lesson = getLessonById(data.lessonId);
 	if (!lesson)
 		return { saved: false as const, reason: "unknown-lesson" as const };
-	const { access, courseAccess } = await resolveCurrentLessonAccess(lesson);
-	const userId = courseAccess.userId;
+	const identity = await getLearningIdentity();
+	if (identity.unavailable)
+		return { saved: false as const, reason: "unavailable" as const };
+	const userId = identity.userId;
 	if (!userId) return { saved: false as const, reason: "signed-out" as const };
-	if (!access.allowed) return { saved: false as const, reason: access.reason };
 	try {
 		await ensureAppUser(userId);
 		const db = createDb();

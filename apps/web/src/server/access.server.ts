@@ -1,75 +1,23 @@
 import "@tanstack/react-start/server-only";
-
-import type { Lesson } from "@/content/course";
-import { resolveLessonAccess } from "@/domain/access";
-import { captureServerException } from "./analytics/posthog.server";
 import { getCurrentUserId } from "./auth.server";
-import { getStripeBillingState } from "./billing.server";
-import {
-	findAppUser,
-	hasActiveCoursePass,
-	hasManualAllAccess,
-} from "./users.server";
 
-export async function getCurrentCourseAccess() {
-	const userId = await getCurrentUserId();
-	if (!userId) {
-		return {
-			userId: null,
-			isSignedIn: false as const,
-			billingState: "inactive" as const,
-			hasCoursePass: false,
-			hasStripeCustomer: false,
-			hasManualGrant: false,
-			canAccessPaid: false,
-		};
-	}
+/** Optional account state never restricts the public curriculum. */
+export async function getLearningIdentity() {
+	let timer: ReturnType<typeof setTimeout> | undefined;
 	try {
-		const user = await findAppUser(userId);
-		const hasCoursePass = hasActiveCoursePass(user);
-		const hasManualGrant = hasManualAllAccess(user);
-		const billingState =
-			hasCoursePass || hasManualGrant
-				? ("inactive" as const)
-				: await getStripeBillingState(user?.stripeCustomerId ?? null);
-		return {
-			userId,
-			isSignedIn: true as const,
-			billingState,
-			hasCoursePass,
-			hasStripeCustomer: Boolean(user?.stripeCustomerId),
-			hasManualGrant,
-			canAccessPaid:
-				hasCoursePass || hasManualGrant || billingState === "active",
-		};
-	} catch (error) {
-		await captureServerException(error, {
-			source: "access",
-			operation: "course_access",
-			userId,
-		});
-		return {
-			userId,
-			isSignedIn: true as const,
-			billingState: "unavailable" as const,
-			hasCoursePass: false,
-			hasStripeCustomer: false,
-			hasManualGrant: false,
-			canAccessPaid: false,
-		};
+		const userId = await Promise.race([
+			getCurrentUserId(),
+			new Promise<never>((_, reject) => {
+				timer = setTimeout(
+					() => reject(new Error("Account lookup timed out")),
+					1500,
+				);
+			}),
+		]);
+		return { userId, isSignedIn: Boolean(userId), unavailable: false };
+	} catch {
+		return { userId: null, isSignedIn: false, unavailable: true };
+	} finally {
+		if (timer) clearTimeout(timer);
 	}
-}
-
-export async function resolveCurrentLessonAccess(lesson: Lesson) {
-	const courseAccess = await getCurrentCourseAccess();
-	return {
-		courseAccess,
-		access: resolveLessonAccess({
-			access: lesson.access,
-			isSignedIn: courseAccess.isSignedIn,
-			billingState: courseAccess.billingState,
-			hasCoursePass: courseAccess.hasCoursePass,
-			hasManualGrant: courseAccess.hasManualGrant,
-		}),
-	};
 }

@@ -1,67 +1,60 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({
-	captureServerException: vi.fn(),
-	getCurrentUserId: vi.fn(),
-	getStripeBillingState: vi.fn(),
-	findAppUser: vi.fn(),
-	hasActiveCoursePass: vi.fn(),
-	hasManualAllAccess: vi.fn(),
-}));
-
+const mocks = vi.hoisted(() => ({ identity: vi.fn(), stripe: vi.fn() }));
 vi.mock("@tanstack/react-start/server-only", () => ({}));
+vi.mock("./auth.server", () => ({ getCurrentUserId: mocks.identity }));
+vi.mock("./billing.server", () => ({ getStripeBillingState: mocks.stripe }));
 
-vi.mock("./analytics/posthog.server", () => ({
-	captureServerException: mocks.captureServerException,
-}));
+import { tradingFlowCourse } from "@/content/course";
+import { getLearningIdentity } from "./access.server";
+import { getLessonPageDataImpl } from "./lesson.server";
 
-vi.mock("./auth.server", () => ({
-	getCurrentUserId: mocks.getCurrentUserId,
-}));
-
-vi.mock("./billing.server", () => ({
-	getStripeBillingState: mocks.getStripeBillingState,
-}));
-
-vi.mock("./users.server", () => ({
-	findAppUser: mocks.findAppUser,
-	hasActiveCoursePass: mocks.hasActiveCoursePass,
-	hasManualAllAccess: mocks.hasManualAllAccess,
-}));
-
-import { getCurrentCourseAccess } from "./access.server";
-
-describe("course access server", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		mocks.getCurrentUserId.mockResolvedValue("user_tradely");
-		mocks.findAppUser.mockResolvedValue({
-			userId: "user_tradely",
-			stripeCustomerId: "cus_tradely",
-		});
-		mocks.hasManualAllAccess.mockReturnValue(false);
-		mocks.getStripeBillingState.mockResolvedValue("unavailable");
+describe("free learning identity", () => {
+	beforeEach(() => vi.clearAllMocks());
+	it.each([null, "ordinary-account"])(
+		"never consults Stripe for %s",
+		async (userId) => {
+			mocks.identity.mockResolvedValue(userId);
+			expect(await getLearningIdentity()).toEqual({
+				userId,
+				isSignedIn: Boolean(userId),
+				unavailable: false,
+			});
+			expect(mocks.stripe).not.toHaveBeenCalled();
+		},
+	);
+	it("bounds a stalled identity lookup so public pages can finish loading", async () => {
+		vi.useFakeTimers();
+		try {
+			mocks.identity.mockImplementation(() => new Promise(() => {}));
+			const pending = getLearningIdentity();
+			await vi.advanceTimersByTimeAsync(1500);
+			expect(await pending).toEqual({
+				userId: null,
+				isSignedIn: false,
+				unavailable: true,
+			});
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
-	it("short-circuits Stripe lookup for an active Course Pass", async () => {
-		mocks.hasActiveCoursePass.mockReturnValue(true);
-
-		await expect(getCurrentCourseAccess()).resolves.toMatchObject({
-			isSignedIn: true,
-			hasCoursePass: true,
-			canAccessPaid: true,
+	it("reports identity failure without making lessons unavailable", async () => {
+		mocks.identity.mockRejectedValue(new Error("offline"));
+		expect(await getLearningIdentity()).toMatchObject({
+			userId: null,
+			unavailable: true,
 		});
-		expect(mocks.getStripeBillingState).not.toHaveBeenCalled();
-	});
-
-	it("preserves unavailable billing when no durable grant exists", async () => {
-		mocks.hasActiveCoursePass.mockReturnValue(false);
-
-		await expect(getCurrentCourseAccess()).resolves.toMatchObject({
-			billingState: "unavailable",
-			hasCoursePass: false,
-			canAccessPaid: false,
-		});
-		expect(mocks.getStripeBillingState).toHaveBeenCalledWith("cus_tradely");
+		mocks.identity.mockClear();
+		for (const lesson of tradingFlowCourse.lessons) {
+			expect(await getLessonPageDataImpl({ slug: lesson.slug })).toMatchObject({
+				found: true,
+				body: expect.any(String),
+				learning: expect.any(Object),
+				media: null,
+			});
+		}
+		expect(mocks.identity).not.toHaveBeenCalled();
+		expect(mocks.stripe).not.toHaveBeenCalled();
 	});
 });

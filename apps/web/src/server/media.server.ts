@@ -11,13 +11,12 @@ import { env } from "@tradely/env/server";
 
 import { getLesson, type Lesson, type LessonMedia } from "@/content/course";
 import { captureServerException } from "./analytics/posthog.server";
-import { getCurrentUserId } from "./auth.server";
 
 const MEDIA_URL_TTL_SECONDS = 30 * 60;
 
 type MediaClaims = {
 	lessonSlug: string;
-	userId: string;
+	asset: MediaAsset;
 	expiresAt: number;
 };
 
@@ -42,8 +41,14 @@ function signClaims(claims: MediaClaims): string {
 	return `${payload}.${signature}`;
 }
 
-function verifyClaims(token: string, lessonSlug: string): MediaClaims | null {
-	const [payload, signature] = token.split(".");
+function verifyClaims(
+	token: string,
+	lessonSlug: string,
+	asset: MediaAsset,
+): MediaClaims | null {
+	const parts = token.split(".");
+	if (parts.length !== 2 || token.length > 2048) return null;
+	const [payload, signature] = parts;
 	if (!payload || !signature) return null;
 	const expected = createHmac("sha256", signingSecret())
 		.update(payload)
@@ -60,7 +65,7 @@ function verifyClaims(token: string, lessonSlug: string): MediaClaims | null {
 		) as MediaClaims;
 		if (
 			claims.lessonSlug !== lessonSlug ||
-			!claims.userId ||
+			claims.asset !== asset ||
 			!Number.isFinite(claims.expiresAt) ||
 			claims.expiresAt <= Date.now()
 		) {
@@ -116,11 +121,11 @@ async function createObjectStorageUrl(
 	);
 }
 
-export async function createLessonMedia(
-	lesson: Lesson,
-	userId: string | null,
-): Promise<LessonMedia> {
-	if (lesson.access === "preview") {
+export async function createLessonMedia(input: Lesson): Promise<LessonMedia> {
+	const lesson = getLesson(input.slug);
+	if (lesson?.mediaCurrent !== true)
+		throw new Error("Lesson media is withheld");
+	if (lesson.mediaDelivery === "public") {
 		return {
 			video: joinUrl(env.MEDIA_PUBLIC_BASE_URL, `${lesson.mediaKey}.mp4`),
 			poster: lesson.poster,
@@ -130,7 +135,6 @@ export async function createLessonMedia(
 			),
 		};
 	}
-	if (!userId) throw new Error("Paid lesson media requires a signed-in user");
 	if (env.MEDIA_S3_BUCKET) {
 		const [video, captions] = await Promise.all([
 			createObjectStorageUrl(lesson, "video"),
@@ -138,17 +142,18 @@ export async function createLessonMedia(
 		]);
 		return { video, poster: lesson.poster, captions };
 	}
-	const token = signClaims({
-		lessonSlug: lesson.slug,
-		userId,
-		expiresAt: Date.now() + MEDIA_URL_TTL_SECONDS * 1000,
-	});
-	const encodedToken = encodeURIComponent(token);
-	const base = `/api/lesson-media/${encodeURIComponent(lesson.slug)}`;
+	const assetUrl = (asset: MediaAsset) => {
+		const token = signClaims({
+			lessonSlug: lesson.slug,
+			asset,
+			expiresAt: Date.now() + MEDIA_URL_TTL_SECONDS * 1000,
+		});
+		return `/api/lesson-media/${encodeURIComponent(lesson.slug)}/${asset}?token=${encodeURIComponent(token)}`;
+	};
 	return {
-		video: `${base}/video?token=${encodedToken}`,
+		video: assetUrl("video"),
 		poster: lesson.poster,
-		captions: `${base}/captions?token=${encodedToken}`,
+		captions: assetUrl("captions"),
 	};
 }
 
@@ -169,18 +174,25 @@ function byteRange(
 	const match = /^bytes=(\d*)-(\d*)$/.exec(value);
 	if (!match) return null;
 	if (!match[1] && !match[2]) return null;
-	let start = match[1]
-		? Number(match[1])
-		: Math.max(0, size - Number(match[2]));
-	let end = match[2] ? Number(match[2]) : size - 1;
+	let start: number;
+	let end: number;
+	if (!match[1]) {
+		const suffix = Number(match[2]);
+		if (!Number.isSafeInteger(suffix) || suffix <= 0) return null;
+		start = Math.max(0, size - suffix);
+		end = size - 1;
+	} else {
+		start = Number(match[1]);
+		end = match[2] ? Number(match[2]) : size - 1;
+	}
 	if (
-		!Number.isInteger(start) ||
-		!Number.isInteger(end) ||
+		!Number.isSafeInteger(start) ||
+		!Number.isSafeInteger(end) ||
 		start < 0 ||
+		start >= size ||
 		end < start
 	)
 		return null;
-	start = Math.min(start, size - 1);
 	end = Math.min(end, size - 1);
 	return { start, end };
 }
@@ -192,7 +204,7 @@ export async function serveLocalLessonMedia(input: {
 	headOnly?: boolean;
 }): Promise<Response> {
 	const lesson = getLesson(input.lessonSlug);
-	if (lesson?.access !== "paid")
+	if (lesson?.mediaCurrent !== true || lesson.mediaDelivery !== "signed")
 		return new Response("Not found", { status: 404 });
 	if (input.asset !== "video" && input.asset !== "captions") {
 		return new Response("Not found", { status: 404 });
@@ -201,7 +213,7 @@ export async function serveLocalLessonMedia(input: {
 	if (!token) return new Response("Not found", { status: 404 });
 	let claims: MediaClaims | null = null;
 	try {
-		claims = verifyClaims(token, lesson.slug);
+		claims = verifyClaims(token, lesson.slug, input.asset);
 	} catch (error) {
 		await captureServerException(error, {
 			source: "media",
@@ -210,18 +222,16 @@ export async function serveLocalLessonMedia(input: {
 		});
 		return new Response("Media is not configured", { status: 503 });
 	}
-	const currentUserId = await getCurrentUserId();
-	if (!claims || !currentUserId || currentUserId !== claims.userId) {
+	if (!claims) {
 		return new Response("Not found", { status: 404 });
 	}
 	const path = localMediaPath(lesson, input.asset);
 	if (!existsSync(path))
 		return new Response("Media not found", { status: 404 });
 	const headers = new Headers({
-		"Cache-Control": "private, max-age=60",
+		"Cache-Control": "no-store",
 		"Content-Type":
 			input.asset === "video" ? "video/mp4" : "text/vtt; charset=utf-8",
-		Vary: "Cookie",
 	});
 	if (input.asset === "captions") {
 		const body = readFileSync(path);
@@ -230,7 +240,12 @@ export async function serveLocalLessonMedia(input: {
 	}
 	const size = statSync(path).size;
 	headers.set("Accept-Ranges", "bytes");
-	const range = byteRange(input.request.headers.get("range"), size);
+	const requestedRange = input.request.headers.get("range");
+	const range = byteRange(requestedRange, size);
+	if (requestedRange && !range) {
+		headers.set("Content-Range", `bytes */${size}`);
+		return new Response(null, { status: 416, headers });
+	}
 	if (!range) {
 		headers.set("Content-Length", String(size));
 		const stream = input.headOnly

@@ -207,7 +207,7 @@ describe("volume and open interest concept lesson", () => {
 				?.getAttribute("data-cohort-included"),
 		).toBe("true");
 	});
-	it("supports Chinese resets and rejects missing or mismatched paid data", () => {
+	it("supports Chinese resets and rejects missing or mismatched data", () => {
 		const page = render(<OiConceptLab locale="zh" data={data} />);
 		fireEvent.click(screen.getByRole("tab", { name: /回放两本台账/ }));
 		change("时段台账时间轴", "4");
@@ -268,6 +268,6 @@ describe("volume and open interest concept lesson", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

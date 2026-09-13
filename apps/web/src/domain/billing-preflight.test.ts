@@ -7,13 +7,12 @@ import {
 
 const snapshot = {
 	environment: "test" as const,
-	stage: "acceptance" as const,
+	stage: "retired" as const,
 	configSource: "apps/web/.env" as const,
 	config: {
 		accountId: "acct_tradely",
 		appUrl: "http://localhost:8250",
 		keyKind: "secret-test",
-		lifetimeCheckoutEnabled: true,
 		membershipPriceId: "price_membership",
 		coursePassPriceId: "price_course",
 	},
@@ -32,12 +31,12 @@ const snapshot = {
 	membership: {
 		id: "price_membership",
 		livemode: false,
-		active: true,
+		active: false,
 		currency: "usd",
 		unitAmount: 6900,
 		interval: "month",
 		product: {
-			active: true,
+			active: false,
 			name: "Tradely Membership",
 			metadata: { tradely_offer: "membership" },
 		},
@@ -45,12 +44,12 @@ const snapshot = {
 	coursePass: {
 		id: "price_course",
 		livemode: false,
-		active: true,
+		active: false,
 		currency: "usd",
 		unitAmount: 4900,
 		interval: null,
 		product: {
-			active: true,
+			active: false,
 			name: "Evidence-Led Options Research — Lifetime Course Pass",
 			metadata: {
 				tradely_offer: "course_pass",
@@ -66,72 +65,55 @@ const snapshot = {
 	},
 };
 
-describe("billing preflight arguments", () => {
-	it("parses test acceptance with a Session proof", () => {
+describe("retired billing checks", () => {
+	it("accepts only retirement checks, without requiring a new purchase", () => {
 		expect(
 			parseBillingPreflightArgs([
 				"--environment",
 				"test",
 				"--stage",
-				"acceptance",
-				"--checkout-session-id",
-				"cs_test_tradely",
+				"retired",
 			]),
-		).toEqual({
-			environment: "test",
-			stage: "acceptance",
-			checkoutSessionId: "cs_test_tradely",
-		});
-	});
-
-	it("requires a Session proof for launch", () => {
+		).toEqual({ environment: "test", stage: "retired" });
 		expect(() =>
-			parseBillingPreflightArgs([
-				"--environment",
-				"production",
-				"--stage",
-				"launch",
-			]),
-		).toThrow(/requires --checkout-session-id/);
+			parseBillingPreflightArgs(["--environment", "test", "--stage", "launch"]),
+		).toThrow(/retired/);
 	});
-});
-
-describe("billing preflight checks", () => {
-	it("passes the complete test acceptance contract", () => {
-		const checks = buildBillingPreflightChecks(snapshot);
-		expect(checks.filter((item) => !item.pass)).toEqual([]);
+	it("validates archived exact owned Prices", () => {
+		expect(
+			buildBillingPreflightChecks(snapshot).filter((c) => !c.pass),
+		).toEqual([]);
 	});
-
-	it("detects a mismatched account and stale Checkout brand", () => {
+	it("rejects active external sales and wrong ownership", () => {
 		const checks = buildBillingPreflightChecks({
 			...snapshot,
-			account: { ...snapshot.account, id: "acct_shared" },
-			session: {
-				...snapshot.session,
-				brandingDisplayName: "TradingMap AI",
+			account: { ...snapshot.account, id: "acct_else" },
+			membership: {
+				...snapshot.membership,
+				active: true,
+				product: {
+					...snapshot.membership.product,
+					metadata: { tradely_offer: "else" },
+				},
 			},
 		});
-		expect(
-			checks.filter((item) => !item.pass).map((item) => item.name),
-		).toEqual(["config.account_id", "checkout.brand_name"]);
+		expect(checks.filter((c) => !c.pass).map((c) => c.name)).toEqual([
+			"config.account_id",
+			"membership.retired",
+			"membership.offer_metadata",
+		]);
 	});
-
-	it("enforces production source, key, URL, and disabled rollout flag", () => {
+	it("rejects live key and account mode mismatches", () => {
 		const checks = buildBillingPreflightChecks({
 			...snapshot,
 			environment: "production",
-			stage: "deploy-disabled",
 			configSource: "injected",
-			config: {
-				...snapshot.config,
-				appUrl: "https://tradely.ai",
-				keyKind: "restricted-production",
-				lifetimeCheckoutEnabled: false,
-			},
-			membership: { ...snapshot.membership, livemode: true },
-			coursePass: { ...snapshot.coursePass, livemode: true },
-			session: undefined,
 		});
-		expect(checks.filter((item) => !item.pass)).toEqual([]);
+		expect(checks.find((c) => c.name === "config.key_environment")?.pass).toBe(
+			false,
+		);
+		expect(checks.find((c) => c.name === "membership.livemode")?.pass).toBe(
+			false,
+		);
 	});
 });

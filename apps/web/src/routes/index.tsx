@@ -8,12 +8,11 @@ import {
 	ScanLineIcon,
 	WorkflowIcon,
 } from "lucide-react";
-import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
-import { getFreeLearningPath, getFreeLessons } from "@/content/course";
+import { getLearningPath } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
@@ -54,10 +53,9 @@ const stages = [
 function HomeComponent() {
 	const progress = Route.useLoaderData();
 	const { locale, t } = useI18n();
-	useBillingStatusAnalytics(progress.accessUnavailable, "course_progress");
 	const course = getLocalizedCourse(locale);
-	const freeLessons = getFreeLessons(course.lessons);
-	const startLesson = getFreeLearningPath(course.lessons, "foundations")[0];
+	const freeLessons = course.lessons;
+	const startLesson = getLearningPath(course.lessons, "foundations")[0];
 	const totalMinutes = course.lessons.reduce(
 		(sum, lesson) => sum + lesson.minutes,
 		0,
@@ -219,8 +217,6 @@ function HomeComponent() {
 					completedIds={progress.records
 						.filter((record) => record.completedAt)
 						.map((record) => record.lessonId)}
-					canAccessPaid={progress.canAccessPaid}
-					accessUnavailable={progress.accessUnavailable}
 					caption={t("progress.completedLabel", {
 						completed: progress.completed,
 						total: progress.total,
@@ -232,7 +228,7 @@ function HomeComponent() {
 						<p>{t("home.accessDescription", { count: previewCount })}</p>
 					</div>
 					<Link
-						to="/pricing"
+						to="/courses/tradingflow-foundations"
 						className={buttonVariants({ variant: "outline", size: "lg" })}
 					>
 						{t("home.accessLink")}

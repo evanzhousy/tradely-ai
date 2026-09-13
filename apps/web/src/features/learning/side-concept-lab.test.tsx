@@ -203,7 +203,7 @@ describe("execution-side teaching lab", () => {
 		page.rerender(<SideConceptLab locale="en" data={executionConceptData} />);
 		expect(document.querySelector("[data-concept-lab]")).toBeNull();
 	});
-	it("projects paid Learn data without changing the version 2 classification assessment", () => {
+	it("projects Learn data without changing the version 2 classification assessment", () => {
 		const scenario = getLessonScenarios("execution-side")[0];
 		const state = initialAttemptState();
 		const onAction = vi.fn();
@@ -255,6 +255,6 @@ describe("execution-side teaching lab", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

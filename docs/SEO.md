@@ -1,5 +1,7 @@
 # Public guides and SEO
 
+All published lessons are now public, indexable, and included in the production sitemap. Preview deployments remain noindex. Public lesson notes render on the server; answer keys, held-out scenarios, and private learner work remain protected. Historical paid-shell descriptions below describe the earlier release.
+
 Implemented from [the SEO plan](research/seo-code-change-plan-2026-09-09.md).
 
 ## Ownership

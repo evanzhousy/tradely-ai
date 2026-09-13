@@ -10,9 +10,13 @@ import { previewLearningSchema } from "./learning";
 import { previewLearningImpl } from "./preview-learning.server";
 
 describe("public practice boundary", () => {
-	it("rejects paid lesson IDs, invalid histories, and unbounded requests", () => {
+	it("rejects unknown lesson IDs, invalid histories, and unbounded requests", () => {
 		expect(
-			previewLearningImpl({ lessonId: "dex-dei-gex", variant: 0, actions: [] }),
+			previewLearningImpl({
+				lessonId: "unknown-lesson",
+				variant: 0,
+				actions: [],
+			}),
 		).toEqual({ ok: false, reason: "access_denied" });
 		expect(
 			previewLearningImpl({
@@ -70,12 +74,26 @@ describe("public practice boundary", () => {
 });
 
 it.each(
-	tradingFlowCourse.lessons
-		.filter((lesson) => lesson.access === "paid")
-		.map((lesson) => lesson.id),
-)("withholds each paid lesson from anonymous preview: %s", (lessonId) => {
-	expect(previewLearningImpl({ lessonId, variant: 0, actions: [] })).toEqual({
-		ok: false,
-		reason: "access_denied",
-	});
+	tradingFlowCourse.lessons.flatMap((lesson) =>
+		[0, 1].map((variant) => [lesson.id, variant] as const),
+	),
+)("completes public practice for %s variant %s", (lessonId, variant) => {
+	const actions: LearningAction[] = [];
+	const scenario = getLessonScenarios(lessonId)[variant];
+	for (const [index, step] of scenario.steps.entries()) {
+		for (const evidenceId of step.requiredEvidence)
+			actions.push({ type: "inspect", evidenceId });
+		for (const question of step.questions)
+			actions.push(referenceAction(question));
+		actions.push({ type: "submit" });
+		if (index < scenario.steps.length - 1) actions.push({ type: "continue" });
+	}
+	const result = previewLearningImpl({ lessonId, variant, actions });
+	expect(result.ok).toBe(true);
+	if (!result.ok) throw new Error(result.reason);
+	expect(result.view.result).not.toBeNull();
+	expect(["practiced", "demonstrated"]).toContain(result.view.result?.status);
+	expect(previewLearningImpl({ lessonId, variant, actions: [] })).toMatchObject(
+		{ ok: true, view: { result: null } },
+	);
 });

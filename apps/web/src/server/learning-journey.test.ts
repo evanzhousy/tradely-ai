@@ -77,7 +77,6 @@ describe("integrated course persistence journey", () => {
 		await pg.exec("TRUNCATE lesson_attempt, lesson_progress, app_user CASCADE");
 		await db.insert(schema.appUser).values({
 			userId: "journey-learner",
-			coursePassGrantedAt: new Date(),
 		});
 	});
 	const viewOf = (response: LearningResponse) => {
@@ -107,7 +106,6 @@ describe("integrated course persistence journey", () => {
 			const page = await getLessonPageDataImpl({ slug: lessonId });
 			expect(page).toMatchObject({
 				found: true,
-				access: { allowed: true, reason: "free-preview" },
 				learning: { presentation: "primary" },
 			});
 			if (!page.found) throw new Error("Missing foundation");
@@ -124,33 +122,27 @@ describe("integrated course persistence journey", () => {
 			expect(
 				await getLessonPageDataImpl({ slug: "quotes-orders-trades" }),
 			).toMatchObject({
-				access: { allowed: false, reason: "payment-required" },
-				body: null,
+				found: true,
+				body: expect.any(String),
 			});
 		},
 	);
 
-	it.each(
-		tradingFlowCourse.lessons
-			.filter((lesson) => lesson.access === "paid")
-			.map((lesson) => lesson.id),
-	)(
+	it.each(tradingFlowCourse.lessons.map((lesson) => lesson.id))(
 		"checks access, resumes evidence and answers, and preserves completion for %s",
 		async (lessonId) => {
 			const open = async () => openLearningImpl({ lessonId, restart: false });
 			const denied = await getLessonPageDataImpl({ slug: lessonId });
 			expect(denied).toMatchObject({
 				found: true,
-				body: null,
-				learning: null,
-				access: { allowed: false, reason: "signed-out" },
+				body: expect.any(String),
+				learning: expect.any(Object),
 			});
 			expect(await open()).toEqual({ ok: false, reason: "signed_out" });
 			dependencies.userId = "journey-learner";
 			const allowed = await getLessonPageDataImpl({ slug: lessonId });
 			expect(allowed).toMatchObject({
 				found: true,
-				access: { allowed: true, reason: "course-pass" },
 				learning: { presentation: "primary" },
 			});
 			await saveLessonProgressImpl({ lessonId, lastPositionSeconds: 123 });
@@ -185,7 +177,7 @@ describe("integrated course persistence journey", () => {
 			expect(progress.records[0].completedAt).toBeTruthy();
 			expect(viewOf(await open()).attemptId).toBe(attemptId);
 			dependencies.userId = "another-learner";
-			expect(await open()).toEqual({ ok: false, reason: "access_denied" });
+			expect(viewOf(await open()).attemptId).not.toBe(attemptId);
 			expect((await getCourseProgressImpl()).records).toEqual([]);
 			dependencies.userId = null;
 			expect(await open()).toEqual({ ok: false, reason: "signed_out" });

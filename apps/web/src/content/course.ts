@@ -1,5 +1,4 @@
 import { courseModules, type ModuleId, syllabus } from "./syllabus";
-export type LessonAccess = "preview" | "paid";
 
 export type TradingFlowPractice = {
 	title: string;
@@ -28,7 +27,7 @@ export type Lesson = {
 	category: string;
 	minutes: number;
 	order: number;
-	access: LessonAccess;
+	mediaDelivery: "public" | "signed";
 	contentVersion: number;
 	mediaKey: string;
 	poster: string;
@@ -43,8 +42,8 @@ export type Lesson = {
 
 const MEDIA_ROOT = "/media/tradingflow";
 
-/** Stable lesson identities own access; reordering the syllabus cannot move a paywall. */
-export const freeLearningPaths = {
+/** Recommended starting paths are independent of public lesson availability. */
+export const learningPaths = {
 	foundations: [
 		"option-contracts",
 		"option-rights",
@@ -53,7 +52,6 @@ export const freeLearningPaths = {
 	],
 	research: ["audited-boundary", "symbol-universe", "rank-symbols"],
 } as const;
-const freeLessonIds = new Set<string>(Object.values(freeLearningPaths).flat());
 
 const legacyCourse = {
 	id: "tradingflow-foundations",
@@ -71,7 +69,7 @@ const legacyCourse = {
 			category: "Method",
 			minutes: 12,
 			order: 0,
-			access: "preview",
+			mediaDelivery: "public",
 			contentVersion: 1,
 			mediaKey: "00-audited-boundary",
 			poster: `${MEDIA_ROOT}/posters/00-audited-boundary.jpg`,
@@ -92,7 +90,7 @@ const legacyCourse = {
 			category: "Discovery",
 			minutes: 12,
 			order: 1,
-			access: "preview",
+			mediaDelivery: "public",
 			contentVersion: 1,
 			mediaKey: "01-symbol-universe",
 			poster: `${MEDIA_ROOT}/posters/01-symbol-universe.jpg`,
@@ -113,7 +111,7 @@ const legacyCourse = {
 			category: "Discovery",
 			minutes: 12,
 			order: 2,
-			access: "preview",
+			mediaDelivery: "public",
 			contentVersion: 1,
 			mediaKey: "02-rank-symbols",
 			poster: `${MEDIA_ROOT}/posters/02-rank-symbols.jpg`,
@@ -134,7 +132,7 @@ const legacyCourse = {
 			category: "Inspection",
 			minutes: 12,
 			order: 3,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "03-symbol-drawer",
 			poster: `${MEDIA_ROOT}/posters/03-symbol-drawer.jpg`,
@@ -155,7 +153,7 @@ const legacyCourse = {
 			category: "Inspection",
 			minutes: 12,
 			order: 4,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "04-rank-contracts",
 			poster: `${MEDIA_ROOT}/posters/04-rank-contracts.jpg`,
@@ -176,7 +174,7 @@ const legacyCourse = {
 			category: "Validation",
 			minutes: 12,
 			order: 5,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "05-option-trades",
 			poster: `${MEDIA_ROOT}/posters/05-option-trades.jpg`,
@@ -197,7 +195,7 @@ const legacyCourse = {
 			category: "Structure",
 			minutes: 12,
 			order: 6,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "06-session-flow-structure",
 			poster: `${MEDIA_ROOT}/posters/06-session-flow-structure.jpg`,
@@ -218,7 +216,7 @@ const legacyCourse = {
 			category: "Structure",
 			minutes: 12,
 			order: 7,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "07-dex-dei-gex",
 			poster: `${MEDIA_ROOT}/posters/07-dex-dei-gex.jpg`,
@@ -239,7 +237,7 @@ const legacyCourse = {
 			category: "Research output",
 			minutes: 12,
 			order: 8,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "08-cookbooks-packet",
 			poster: `${MEDIA_ROOT}/posters/08-cookbooks-packet.jpg`,
@@ -260,7 +258,7 @@ const legacyCourse = {
 			category: "Research output",
 			minutes: 12,
 			order: 9,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "09-market-recap",
 			poster: `${MEDIA_ROOT}/posters/09-market-recap.jpg`,
@@ -281,7 +279,7 @@ const legacyCourse = {
 			category: "Research output",
 			minutes: 12,
 			order: 10,
-			access: "paid",
+			mediaDelivery: "signed",
 			contentVersion: 1,
 			mediaKey: "10-recap-audit",
 			poster: `${MEDIA_ROOT}/posters/10-recap-audit.jpg`,
@@ -316,7 +314,7 @@ export const tradingFlowCourse = {
 					: entry.moduleId === "structure"
 						? 14
 						: 10,
-			access: freeLessonIds.has(entry.id) ? "preview" : "paid",
+			mediaDelivery: prior?.mediaDelivery ?? "signed",
 			contentVersion: entry.id === "option-contracts" ? 3 : 2,
 			mediaKey: prior?.mediaKey ?? entry.id,
 			poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
@@ -328,18 +326,13 @@ export const tradingFlowCourse = {
 
 export type Course = typeof tradingFlowCourse;
 
-// Public discovery follows access metadata, independently of syllabus order.
-export function getFreeLessons(lessons: readonly Lesson[]): Lesson[] {
-	return lessons.filter((lesson) => lesson.access === "preview");
-}
-
-export function getFreeLearningPath(
+export function getLearningPath(
 	lessons: readonly Lesson[],
-	path: keyof typeof freeLearningPaths,
+	path: keyof typeof learningPaths,
 ): Lesson[] {
-	return freeLearningPaths[path].flatMap((id) => {
+	return learningPaths[path].flatMap((id) => {
 		const lesson = lessons.find((lesson) => lesson.id === id);
-		return lesson?.access === "preview" ? [lesson] : [];
+		return lesson ? [lesson] : [];
 	});
 }
 

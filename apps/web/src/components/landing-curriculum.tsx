@@ -16,7 +16,7 @@ import {
 	PlayIcon,
 } from "lucide-react";
 import { useId, useState } from "react";
-import { getFreeLearningPath, type Lesson } from "@/content/course";
+import { getLearningPath, type Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { useI18n } from "@/i18n/provider";
 import { LessonInfographic } from "./lesson-infographic";
@@ -25,15 +25,11 @@ import { LessonInfographic } from "./lesson-infographic";
 export function LandingCurriculum({
 	lessons,
 	completedIds = [],
-	canAccessPaid = false,
-	accessUnavailable = false,
 	caption,
 	groupByModule = false,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
-	canAccessPaid?: boolean;
-	accessUnavailable?: boolean;
 	caption: string;
 	groupByModule?: boolean;
 }) {
@@ -43,7 +39,7 @@ export function LandingCurriculum({
 	const gridId = `${id}-grid`;
 	const freePaths = (["foundations", "research"] as const).map((path) => ({
 		path,
-		lessons: getFreeLearningPath(lessons, path),
+		lessons: getLearningPath(lessons, path),
 	}));
 	const completed = new Set(completedIds);
 	const renderLessons = (items: readonly Lesson[]) => (
@@ -56,15 +52,7 @@ export function LandingCurriculum({
 				const isCompleted = completed.has(lesson.id);
 				const titleId = `${id}-${lesson.id}-title`;
 				const detailId = `${id}-${lesson.id}-detail`;
-				const accessLabel = lessonAccessLabel({
-					access: lesson.access,
-					canAccessPaid,
-					accessUnavailable,
-					free: t("common.free"),
-					unlocked: t("common.unlocked"),
-					unavailable: t("common.accessUnavailable"),
-					paid: t("common.membershipLesson"),
-				});
+				const accessLabel = t("common.free");
 				return (
 					<li
 						className="curriculum-item"
@@ -114,7 +102,7 @@ export function LandingCurriculum({
 											<Clock3Icon size={13} aria-hidden="true" />
 											{t("common.minutes", { minutes: lesson.minutes })}
 										</span>
-										<span data-access={lesson.access}>{accessLabel}</span>
+										<span data-access="free">{accessLabel}</span>
 										{isCompleted ? (
 											<span className="curriculum-completed">
 												<CheckIcon size={13} aria-hidden="true" />
@@ -237,27 +225,4 @@ export function LandingCurriculum({
 			</div>
 		</div>
 	);
-}
-
-export function lessonAccessLabel({
-	access,
-	canAccessPaid,
-	accessUnavailable,
-	free,
-	unlocked,
-	unavailable,
-	paid,
-}: {
-	access: Lesson["access"];
-	canAccessPaid: boolean;
-	accessUnavailable: boolean;
-	free: string;
-	unlocked: string;
-	unavailable: string;
-	paid: string;
-}) {
-	if (access === "preview") return free;
-	if (canAccessPaid) return unlocked;
-	if (accessUnavailable) return unavailable;
-	return paid;
 }

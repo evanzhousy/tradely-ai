@@ -1,5 +1,7 @@
 # Tradely architecture
 
+The free-learning implementation supersedes the paid-access descriptions below. Public lesson reads and guest exercises no longer consult identity, grants, or Stripe. Account mutations require verified identity and ownership. Media delivery uses `mediaDelivery` independently of price and still requires `mediaCurrent: true`. Historical purchase support remains isolated in billing. Migration `0005_coaching_daily_budget` preserves global reservations across account deletion and blocks new coaching admissions on its migration UTC date; the pilot then allows one session per account per UTC day.
+
 ## Product boundary
 
 Tradely owns its identity, billing, database, media, and customer relationship. The course teaches platform-agnostic market concepts. TradingFlow is an external partnered practice tool and a source for the concept coverage checklist. Outbound links contain only course-level UTM attribution—never Neon Auth IDs, Stripe IDs, progress, or other personal data.

@@ -1,5 +1,7 @@
 # AI practice coaching
 
+Free learning uses one new two-round session per eligible account per UTC day, independent of purchase history. Global reservation totals use the non-personal `coaching_daily_budget` ledger; account deletion does not replenish this total. Migration 0005 blocks new admissions on its UTC date, while existing reserved revisions may finish. New admissions resume the next UTC day. Keep the pilot allowlist and global disable switch. Evaluation output now defaults to an external temporary directory and supports `--output-dir`; do not write evaluation artifacts in the repository. The admission budget is not an exact provider invoice ceiling for the day a reserved revision runs.
+
 Local implementation validation is recorded in [the verification report](reviews/ai-coach-verification-2026-09-09.md). Provider quality and deployment gates remain outstanding.
 
 The proposed next stage—targeted follow-up practice, visual evidence guidance and progress across cases—is described in [the learning progression code-change plan](research/ai-learning-progression-code-change-plan-2026-09-09.md). Those additions are planned, not implemented.

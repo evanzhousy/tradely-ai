@@ -23,7 +23,7 @@ vi.mock("@tradely/db", async () => ({
 	createDb: mocks.db,
 }));
 vi.mock("./access.server", () => ({
-	resolveCurrentLessonAccess: mocks.access,
+	getLearningIdentity: mocks.access,
 }));
 vi.mock("./analytics/posthog.server", () => ({
 	captureServerException: mocks.capture,
@@ -89,8 +89,8 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		vi.clearAllMocks();
 		mocks.db.mockReturnValue(db);
 		mocks.access.mockResolvedValue({
-			access: { allowed: true, reason: "course-pass" },
-			courseAccess: { userId: "learner-a" },
+			userId: "learner-a",
+			unavailable: false,
 		});
 	});
 	async function decisionStart() {
@@ -184,34 +184,25 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		expect(results).toContainEqual({ ok: false, reason: "conflict" });
 		expect(viewOf(await open()).revision).toBe(first.revision + 1);
 	});
-	it("checks identity and paid access on every request", async () => {
+	it("checks identity on every request", async () => {
 		const first = viewOf(await open());
 		const payload = command(first, { type: "hint" });
 		mocks.access.mockResolvedValue({
-			access: { allowed: true },
-			courseAccess: { userId: "learner-b" },
+			userId: "learner-b",
+			unavailable: false,
 		});
 		expect(await updateLearningImpl(payload)).toEqual({
 			ok: false,
 			reason: "not_found",
 		});
 		mocks.access.mockResolvedValue({
-			access: { allowed: false, reason: "payment-required" },
-			courseAccess: { userId: "learner-a" },
-		});
-		expect(await updateLearningImpl(payload)).toEqual({
-			ok: false,
-			reason: "access_denied",
-		});
-		expect(await open()).toEqual({ ok: false, reason: "access_denied" });
-		mocks.access.mockResolvedValue({
-			access: { allowed: false, reason: "billing-unavailable" },
-			courseAccess: { userId: "learner-a" },
+			userId: null,
+			unavailable: true,
 		});
 		expect(await open()).toEqual({ ok: false, reason: "unavailable" });
 		mocks.access.mockResolvedValue({
-			access: { allowed: false, reason: "signed-out" },
-			courseAccess: { userId: null },
+			userId: null,
+			unavailable: false,
 		});
 		expect(await open()).toEqual({ ok: false, reason: "signed_out" });
 		expect(
@@ -338,8 +329,8 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		);
 		expect(saved.sourceWork).toEqual(before);
 		mocks.access.mockResolvedValue({
-			access: { allowed: true },
-			courseAccess: { userId: "learner-b" },
+			userId: "learner-b",
+			unavailable: false,
 		});
 		const other = viewOf(
 			await openLearningImpl({ lessonId: "market-recap", restart: false }),

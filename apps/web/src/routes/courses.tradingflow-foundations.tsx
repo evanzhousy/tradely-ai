@@ -1,12 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
-import { useBillingStatusAnalytics } from "@/analytics/billing-status";
 import { BrandOwl } from "@/components/brand-owl";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseProgress } from "@/components/course-progress";
 import { PageIntro } from "@/components/page-intro";
-import { getFreeLearningPath, getFreeLessons } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -22,12 +20,9 @@ export const Route = createFileRoute("/courses/tradingflow-foundations")({
 function CoursePage() {
 	const progress = Route.useLoaderData();
 	const { locale, t } = useI18n();
-	useBillingStatusAnalytics(progress.accessUnavailable, "course_progress");
 	const course = getLocalizedCourse(locale);
-	const freeLessons = getFreeLessons(course.lessons);
-	const startLesson = progress.canAccessPaid
-		? course.lessons[0]
-		: getFreeLearningPath(course.lessons, "foundations")[0];
+	const freeLessons = course.lessons;
+	const startLesson = course.lessons[0];
 	return (
 		<main className="page-shell">
 			<PageIntro
@@ -41,14 +36,17 @@ function CoursePage() {
 							{t("course.yourProgress")}
 						</div>
 						<CourseProgress
+							unavailable={progress.unavailable}
 							completed={progress.completed}
 							total={progress.total}
 							percentage={progress.percentage}
 						/>
 						<p className="text-muted-foreground text-xs leading-6">
-							{progress.signedIn
-								? t("progress.accountCurrent")
-								: t("progress.signInToRecord")}
+							{progress.unavailable
+								? t("complete.unavailable")
+								: progress.signedIn
+									? t("progress.accountCurrent")
+									: t("progress.signInToRecord")}
 						</p>
 						<p className="text-muted-foreground text-xs leading-5">
 							{locale === "zh"
@@ -69,11 +67,7 @@ function CoursePage() {
 								/>
 							}
 						>
-							{t(
-								progress.canAccessPaid
-									? "common.startLessonOne"
-									: "home.startFree",
-							)}
+							{t("home.startFree")}
 						</InteractiveHoverLink>
 					) : null}
 					<Badge variant="secondary">
@@ -109,8 +103,6 @@ function CoursePage() {
 				completedIds={progress.records
 					.filter((record) => record.completedAt)
 					.map((record) => record.lessonId)}
-				canAccessPaid={progress.canAccessPaid}
-				accessUnavailable={progress.accessUnavailable}
 			/>
 		</main>
 	);

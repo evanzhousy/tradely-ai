@@ -1,4 +1,29 @@
+export type BillingState = "active" | "inactive" | "unavailable";
+
+export function manualGrantIsActive(
+	overrides:
+		| { features?: string[]; expiresAt?: string | null }
+		| null
+		| undefined,
+	now = Date.now(),
+): boolean {
+	if (!overrides?.features?.includes("learning-hub-all-access")) return false;
+	if (!overrides.expiresAt) return true;
+	const expiresAt = Date.parse(overrides.expiresAt);
+	return Number.isFinite(expiresAt) && expiresAt > now;
+}
+
+export function coursePassIsActive(
+	grant:
+		| { coursePassGrantedAt?: Date | null; coursePassRevokedAt?: Date | null }
+		| null
+		| undefined,
+): boolean {
+	return Boolean(grant?.coursePassGrantedAt && !grant.coursePassRevokedAt);
+}
+
 export const BILLING_CONTRACT = {
+	salesRetired: true,
 	currency: "usd",
 	accountDisplayName: "Tradely.ai",
 	statementDescriptor: "TRADELYAI",

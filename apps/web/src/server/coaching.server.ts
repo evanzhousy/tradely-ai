@@ -239,7 +239,7 @@ export async function updateCoachingImpl(
 			rubricVersion: config.version,
 			stepIndex: state.step,
 			...settings,
-			dailyLimit: access.canAccessPaid ? 3 : 1,
+			dailyLimit: 1,
 		};
 		if (input.action.type === "save") {
 			if (config.reasonQuestionId) throw new CoachingError("invalid_action");

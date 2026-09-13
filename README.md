@@ -1,15 +1,17 @@
 # Tradely
 
-Tradely is the independent options-learning hub for `tradely.ai`. It teaches an ordered evidence workflow and sends learners into TradingFlow for official, bounded practice tasks. Tradely and TradingFlow do not share accounts, billing, databases, or infrastructure; the monthly Tradely Membership includes a separately fulfilled one-month TradingFlow partner benefit.
+All 36 current lessons and interactive exercises are free. Guests can practice without persistence; free accounts save progress and attempts. Stripe supports historical billing only, and new checkout is permanently retired. Optional AI coaching remains a bounded, allowlisted pilot. TradingFlow retains separate accounts and pricing.
+
+Tradely is the independent options-learning hub for `tradely.ai`. It teaches an ordered evidence workflow and sends learners into TradingFlow for official, bounded practice tasks. Tradely and TradingFlow do not share accounts, billing, databases, or infrastructure; previously promised partner benefits are handled separately through support.
 
 ## Stack
 
 - TanStack Start, React, TypeScript, and TanStack Router
 - Neon Auth for Tradely identity
-- Stripe Checkout and Customer Portal for Tradely membership plus a one-time Lifetime Course Pass
+- Stripe Customer Portal and recovery for previous purchases
 - Neon Postgres with Drizzle
 - shadcn/ui Base Luma primitives and Tailwind CSS
-- Cloudflare R2 (S3-compatible) storage for paid course media
+- Cloudflare R2 (S3-compatible) storage for course media
 - Typed English / Simplified Chinese interface copy with a persisted language preference
 - Consent-aware PostHog product analytics, web vitals, and browser error tracking
 
@@ -28,7 +30,7 @@ pnpm dev:web
 
 Open [http://localhost:8250](http://localhost:8250).
 
-`media:import` copies the three free lesson videos into the public development directory. Paid lesson videos and caption tracks go into ignored `apps/web/private-media/` storage and are served only through short-lived, user-bound URLs. Posters remain public. The import reads the Tradely-owned `videos/tradingflow-academy/` source tree and uses the full 7–8 minute Academy masters, not the 15-second Landing chapter cards.
+`media:import` copies the three free lesson videos into the public development directory. Private-storage lesson videos and caption tracks go into ignored `apps/web/private-media/` storage and are served through short-lived URLs only when their current edition is enabled. Posters remain public. The import reads the Tradely-owned `videos/tradingflow-academy/` source tree and uses the full 7–8 minute Academy masters, not the 15-second Landing chapter cards.
 
 Media ownership and source/access invariants are checked with `pnpm media:assert`. Use `pnpm media:assert:local` after `pnpm media:import` to require every local Academy/caption source before a media operation. Use `pnpm media:verify` for a read-only checksum/size check against the configured Tradely R2 bucket. `pnpm media:upload` is the explicit mutating command; it uploads only the private assets listed in `scripts/media-manifest.json` and verifies every object after upload.
 
@@ -40,18 +42,18 @@ including [updating the public changelog](ops/agent/update-changelog.md).
 
 ## Service configuration
 
-Copy [apps/web/.env.example](apps/web/.env.example) and enable Neon Auth on a dedicated Tradely database branch, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Neon Auth mappings. Configure separate `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. Setting `LIFETIME_CHECKOUT_ENABLED=false` stops new Course Pass purchases without revoking existing grants.
+Copy [apps/web/.env.example](apps/web/.env.example) and enable Neon Auth on a dedicated Tradely database branch, the approved Stripe account ID, and Neon database. Tradely currently reuses Stripe account `acct_1LZx3GFrxuhJplqI` by product decision, but keeps its own Products, Prices, and customer-to-Neon Auth mappings. Historical recovery uses the exact `STRIPE_MEMBERSHIP_PRICE_ID` and `STRIPE_COURSE_PASS_PRICE_ID` values. New purchases are permanently disabled in code; Stripe configuration is unnecessary for learning.
 
 Authentication setup, the prelaunch database reset, environment isolation, and validation are documented in [AUTH.md](docs/AUTH.md).
 
-For production media, configure `MEDIA_S3_*` for the shared Tradely Cloudflare R2 private bucket. Paid objects use these keys:
+For production media, configure `MEDIA_S3_*` for the shared Tradely Cloudflare R2 private bucket. Storage objects use these keys:
 
 ```text
 tradingflow-foundations/03-symbol-drawer.mp4
 tradingflow-foundations/captions/03-symbol-drawer.vtt
 ```
 
-The server issues 30-minute presigned object URLs only after Neon Auth identity and the configured Stripe Price have been verified. `MEDIA_SIGNING_SECRET` plus local private media is a development or long-running Node-host fallback; it is not needed when S3 storage is configured.
+The server issues 30-minute presigned object URLs for published lessons with current media. Anonymous learners can use these URLs. Withheld or outdated media stays unavailable. `MEDIA_SIGNING_SECRET` plus local private media is a development or long-running Node-host fallback; it is not needed when S3 storage is configured.
 
 ## Database
 

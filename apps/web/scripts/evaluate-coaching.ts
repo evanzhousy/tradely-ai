@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { env } from "@tradely/env/server";
 import {
 	COACH_MODEL,
@@ -46,10 +48,19 @@ if (process.argv.includes("--run")) {
 		throw new Error(
 			"Evaluation exceeds the configured budget. No generations started.",
 		);
-	const destination = path.resolve(
-		"../../artifacts/coaching",
-		`evaluation-${randomUUID()}`,
-	);
+	const outputIndex = process.argv.indexOf("--output-dir");
+	const requestedOutput =
+		outputIndex < 0
+			? path.join(tmpdir(), "tradely-coaching")
+			: process.argv[outputIndex + 1];
+	if (!requestedOutput || requestedOutput.startsWith("--"))
+		throw new Error("--output-dir requires an external directory");
+	const output = path.resolve(requestedOutput);
+	const repo = fileURLToPath(new URL("../../../", import.meta.url));
+	const relative = path.relative(repo, output);
+	if (!relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+		throw new Error("Evaluation output must be outside the repository");
+	const destination = path.join(output, `evaluation-${randomUUID()}`);
 	await mkdir(destination, { recursive: true });
 	for (const fixture of selected) {
 		const file = path.join(destination, `${fixture.id}.json`);

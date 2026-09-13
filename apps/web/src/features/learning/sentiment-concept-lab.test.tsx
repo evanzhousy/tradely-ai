@@ -208,7 +208,7 @@ describe("flow sentiment teaching lab", () => {
 		click("重置场景");
 		expect(read("[data-scope-puts]")).toBe("—");
 	});
-	it("rejects absent and mismatched paid teaching data", () => {
+	it("rejects absent and mismatched teaching data", () => {
 		const page = render(<SentimentConceptLab locale="en" />);
 		expect(screen.getByRole("status").textContent).toContain("unavailable");
 		page.rerender(<SentimentConceptLab locale="en" data={sideConceptData} />);
@@ -266,6 +266,6 @@ describe("flow sentiment teaching lab", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

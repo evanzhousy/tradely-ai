@@ -2,12 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { Item } from "@tradely/ui/components/item";
 import { Separator } from "@tradely/ui/components/separator";
-import {
-	CheckCircle2Icon,
-	CircleAlertIcon,
-	LockKeyholeIcon,
-	PlayCircleIcon,
-} from "lucide-react";
+import { CheckCircle2Icon, PlayCircleIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import type { Lesson } from "@/content/course";
@@ -18,14 +13,10 @@ export function CourseList({
 	lessons,
 	completedIds = [],
 	currentLessonId,
-	canAccessPaid = false,
-	accessUnavailable = false,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
 	currentLessonId?: string;
-	canAccessPaid?: boolean;
-	accessUnavailable?: boolean;
 }) {
 	const { t, locale } = useI18n();
 	const completed = new Set(completedIds);
@@ -56,14 +47,7 @@ export function CourseList({
 		>
 			{lessons.map((lesson, index) => {
 				const isCompleted = completed.has(lesson.id);
-				const accessLabel =
-					lesson.access === "preview"
-						? t("common.free")
-						: canAccessPaid
-							? t("common.unlocked")
-							: accessUnavailable
-								? t("common.accessUnavailable")
-								: t("common.membershipLesson");
+				const accessLabel = t("common.free");
 				const completionLabel = isCompleted ? t("common.completed") : "";
 				return (
 					<li
@@ -127,21 +111,7 @@ export function CourseList({
 									<span className="font-medium text-foreground">
 										{lesson.title}
 									</span>
-									{lesson.access === "preview" ? (
-										<Badge variant="secondary">{t("common.free")}</Badge>
-									) : canAccessPaid ? (
-										<Badge variant="secondary">{t("common.unlocked")}</Badge>
-									) : accessUnavailable ? (
-										<CircleAlertIcon
-											className="size-3.5 text-muted-foreground"
-											aria-hidden="true"
-										/>
-									) : (
-										<LockKeyholeIcon
-											className="size-3.5 text-muted-foreground"
-											aria-hidden="true"
-										/>
-									)}
+									<Badge variant="secondary">{t("common.free")}</Badge>
 								</span>
 								<span className="line-clamp-2 text-muted-foreground text-sm">
 									{lesson.summary}

@@ -159,7 +159,7 @@ describe("unusual activity SVG lesson", () => {
 		page.rerender(<ActivityConceptLab locale="en" data={tapeConceptData} />);
 		expect(document.querySelector("[data-concept-lab]")).toBeNull();
 	});
-	it("preserves version 2 assessment and the paid lesson boundary", () => {
+	it("preserves version 2 assessment and the public lesson boundary", () => {
 		const scenario = getLessonScenarios("unusual-activity")[0];
 		const state = initialAttemptState();
 		const onAction = vi.fn();
@@ -206,6 +206,6 @@ describe("unusual activity SVG lesson", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

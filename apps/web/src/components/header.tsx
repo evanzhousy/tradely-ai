@@ -23,7 +23,6 @@ const navigation = [
 	{ to: "/", key: "nav.learn" },
 	{ to: "/guides", key: "nav.guides" },
 	{ to: "/courses/tradingflow-foundations", key: "nav.course" },
-	{ to: "/pricing", key: "nav.pricing" },
 ] as const;
 
 function NavigationLinks({

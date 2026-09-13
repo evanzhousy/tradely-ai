@@ -135,42 +135,6 @@ describe("Stripe billing server", () => {
 		mocks.grantCoursePass.mockResolvedValue(undefined);
 	});
 
-	it("creates a subscription Checkout Session for the exact membership Price", async () => {
-		mocks.checkoutCreate.mockResolvedValue({
-			url: "https://checkout.test/member",
-		});
-
-		await expect(beginMembershipCheckoutImpl()).resolves.toEqual({
-			url: "https://checkout.test/member",
-		});
-		const [params] = mocks.checkoutCreate.mock.calls[0];
-		expect(params).toMatchObject({
-			mode: "subscription",
-			branding_settings: {
-				display_name: "Tradely.ai",
-				background_color: "#fffdf5",
-				button_color: "#111111",
-				border_style: "rounded",
-				font_family: "inter",
-			},
-			customer: "cus_tradely",
-			client_reference_id: "user_tradely",
-			line_items: [{ price: "price_membership", quantity: 1 }],
-			subscription_data: {
-				metadata: {
-					tradely_user_id: "user_tradely",
-					tradely_partner_benefit: "tradingflow_membership_1_month",
-				},
-			},
-			success_url: "http://localhost:8250/pricing?checkout=membership-success",
-			cancel_url: "http://localhost:8250/pricing?checkout=membership-cancel",
-		});
-		expect(params.integration_identifier).toMatch(
-			/^tradely_membership_[a-z]{8}$/,
-		);
-		expect(params).not.toHaveProperty("payment_method_types");
-	});
-
 	it("paginates past old subscriptions to find a valid membership", async () => {
 		mocks.subscriptionsList
 			.mockResolvedValueOnce({
@@ -217,122 +181,6 @@ describe("Stripe billing server", () => {
 		});
 	});
 
-	it("uses the trusted Vercel deployment origin for Preview callbacks", async () => {
-		mocks.env.VERCEL_ENV = "preview";
-		mocks.env.VERCEL_URL = "tradely-preview-abc.vercel.app";
-		mocks.checkoutCreate.mockResolvedValue({
-			url: "https://checkout.test/course-pass",
-		});
-
-		await beginCoursePassCheckoutImpl();
-
-		const [params] = mocks.checkoutCreate.mock.calls[0];
-		expect(params).toMatchObject({
-			success_url:
-				"https://tradely-preview-abc.vercel.app/pricing?checkout=lifetime-success&session_id={CHECKOUT_SESSION_ID}",
-			cancel_url:
-				"https://tradely-preview-abc.vercel.app/pricing?checkout=lifetime-cancel",
-		});
-	});
-
-	it("rejects an untrusted Preview callback host", async () => {
-		mocks.env.VERCEL_ENV = "preview";
-		mocks.env.VERCEL_URL = "tradely-preview.example.com";
-
-		await expect(beginCoursePassCheckoutImpl()).rejects.toThrow(
-			"Vercel Preview URL is not configured for billing",
-		);
-		expect(mocks.checkoutCreate).not.toHaveBeenCalled();
-	});
-
-	it("creates a one-time Checkout Session with bounded entitlement metadata", async () => {
-		mocks.checkoutCreate.mockResolvedValue({
-			url: "https://checkout.test/course-pass",
-		});
-
-		await expect(beginCoursePassCheckoutImpl()).resolves.toEqual({
-			url: "https://checkout.test/course-pass",
-		});
-		const [params] = mocks.checkoutCreate.mock.calls[0];
-		expect(params).toMatchObject({
-			mode: "payment",
-			branding_settings: {
-				display_name: "Tradely.ai",
-				background_color: "#fffdf5",
-				button_color: "#111111",
-				border_style: "rounded",
-				font_family: "inter",
-			},
-			customer: "cus_tradely",
-			client_reference_id: "user_tradely",
-			line_items: [{ price: "price_course_pass", quantity: 1 }],
-			metadata: {
-				tradely_user_id: "user_tradely",
-				tradely_entitlement: "tradingflow-foundations-lifetime",
-			},
-			payment_intent_data: {
-				metadata: {
-					tradely_user_id: "user_tradely",
-					tradely_entitlement: "tradingflow-foundations-lifetime",
-				},
-			},
-			success_url:
-				"http://localhost:8250/pricing?checkout=lifetime-success&session_id={CHECKOUT_SESSION_ID}",
-			cancel_url: "http://localhost:8250/pricing?checkout=lifetime-cancel",
-		});
-		expect(params.integration_identifier).toMatch(
-			/^tradely_course_pass_[a-z]{8}$/,
-		);
-		expect(params).not.toHaveProperty("payment_method_types");
-	});
-
-	it("keeps integration and idempotency identifiers stable for retries", async () => {
-		mocks.checkoutCreate.mockResolvedValue({
-			url: "https://checkout.test/course-pass",
-		});
-
-		await beginCoursePassCheckoutImpl();
-		await beginCoursePassCheckoutImpl();
-		const [firstParams, firstOptions] = mocks.checkoutCreate.mock.calls[0];
-		const [secondParams, secondOptions] = mocks.checkoutCreate.mock.calls[1];
-		expect(secondParams.integration_identifier).toBe(
-			firstParams.integration_identifier,
-		);
-		expect(secondOptions.idempotencyKey).toBe(firstOptions.idempotencyKey);
-	});
-
-	it("starts a new idempotency generation after Course Pass revocation", async () => {
-		mocks.checkoutCreate.mockResolvedValue({
-			url: "https://checkout.test/course-pass",
-		});
-
-		await beginCoursePassCheckoutImpl();
-		const [firstParams, firstOptions] = mocks.checkoutCreate.mock.calls[0];
-		mocks.findAppUser.mockResolvedValue({
-			...appUser,
-			stripeCoursePassCheckoutSessionId: "cs_test_revoked",
-			coursePassGrantedAt: new Date("2026-09-01T12:00:00Z"),
-			coursePassRevokedAt: new Date("2026-09-02T12:00:00Z"),
-		});
-
-		await beginCoursePassCheckoutImpl();
-		const [secondParams, secondOptions] = mocks.checkoutCreate.mock.calls[1];
-
-		expect(secondParams.integration_identifier).not.toBe(
-			firstParams.integration_identifier,
-		);
-		expect(secondOptions.idempotencyKey).not.toBe(firstOptions.idempotencyKey);
-	});
-
-	it("blocks new Course Pass sessions when checkout is disabled", async () => {
-		mocks.env.LIFETIME_CHECKOUT_ENABLED = false;
-
-		await expect(beginCoursePassCheckoutImpl()).rejects.toThrow(
-			"Lifetime course checkout is unavailable",
-		);
-		expect(mocks.checkoutCreate).not.toHaveBeenCalled();
-	});
-
 	it("keeps Course Pass recovery configured when new sales are disabled", async () => {
 		mocks.env.LIFETIME_CHECKOUT_ENABLED = false;
 		mocks.pricesRetrieve.mockResolvedValue({
@@ -342,8 +190,7 @@ describe("Stripe billing server", () => {
 		});
 
 		await expect(getOffersSummaryImpl()).resolves.toMatchObject({
-			coursePass: { configured: false },
-			lifetimeCheckoutEnabled: false,
+			salesRetired: true,
 			coursePassRecoveryConfigured: true,
 		});
 	});
@@ -436,4 +283,14 @@ describe("Stripe billing server", () => {
 			"cs_test_older_paid",
 		);
 	});
+});
+
+it("unconditionally retires both checkout entry points without writes", async () => {
+	vi.clearAllMocks();
+	for (const action of [
+		beginMembershipCheckoutImpl,
+		beginCoursePassCheckoutImpl,
+	])
+		expect(await action()).toEqual({ retired: true, reason: "sales_retired" });
+	expect(mocks.checkoutCreate).not.toHaveBeenCalled();
 });

@@ -25,20 +25,13 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAnalytics } from "@/analytics/context";
 import { authIsConfigured } from "@/auth/client";
-import { AccessPanel } from "@/components/access-panel";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { LessonNavigation } from "@/components/lesson-navigation";
-import { PracticeCard } from "@/components/practice-card";
 import { SignInLink } from "@/components/sign-in-link";
 import { LessonVideo } from "@/components/video-player";
-import {
-	getFreeLearningPath,
-	getLesson,
-	getNextLesson,
-	getPreviousLesson,
-} from "@/content/course";
+import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
 import { guidesForLesson } from "@/content/guides";
 import { LearningExercise } from "@/features/learning/learning-exercise";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
@@ -68,24 +61,11 @@ function LessonPage() {
 	const { capture, isCapturing } = useAnalytics();
 	const trackedLessonRef = useRef<string | null>(null);
 	const course = getLocalizedCourse(locale);
-	const finalFoundation = getFreeLearningPath(course.lessons, "foundations").at(
-		-1,
-	);
 	const lesson = sourceLesson
 		? getLocalizedLesson(sourceLesson, locale)
 		: undefined;
-	const accessState = !page.found
-		? null
-		: page.access.allowed
-			? "allowed"
-			: page.access.reason === "signed-out"
-				? "signed_out"
-				: page.access.reason === "payment-required"
-					? "payment_required"
-					: "billing_unavailable";
-	const mediaAvailable = Boolean(
-		page.found && page.access.allowed && page.media,
-	);
+	const accessState = page.found ? "allowed" : null;
+	const mediaAvailable = Boolean(page.found && page.media);
 	useEffect(() => {
 		if (!isCapturing) {
 			trackedLessonRef.current = null;
@@ -97,7 +77,7 @@ function LessonPage() {
 			capture("lesson_opened", {
 				lesson_id: sourceLesson.id,
 				lesson_order: sourceLesson.order + 1,
-				access_tier: sourceLesson.access,
+				access_tier: "free",
 				access_state: accessState,
 				media_available: mediaAvailable,
 				locale,
@@ -142,6 +122,7 @@ function LessonPage() {
 			<aside className="lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r px-4 py-8 lg:block">
 				<div className="sticky top-24 flex flex-col gap-6">
 					<CourseProgress
+						unavailable={progress.unavailable}
 						completed={progress.completed}
 						total={progress.total}
 						percentage={progress.percentage}
@@ -152,8 +133,6 @@ function LessonPage() {
 							lessons={course.lessons}
 							completedIds={completedIds}
 							currentLessonId={lesson.id}
-							canAccessPaid={page.canAccessPaid}
-							accessUnavailable={progress.accessUnavailable}
 						/>
 					</div>
 				</div>
@@ -176,6 +155,7 @@ function LessonPage() {
 							<AccordionContent>
 								<div className="flex flex-col gap-5 py-2">
 									<CourseProgress
+										unavailable={progress.unavailable}
 										completed={progress.completed}
 										total={progress.total}
 										percentage={progress.percentage}
@@ -185,8 +165,6 @@ function LessonPage() {
 										lessons={course.lessons}
 										completedIds={completedIds}
 										currentLessonId={lesson.id}
-										canAccessPaid={page.canAccessPaid}
-										accessUnavailable={progress.accessUnavailable}
 									/>
 								</div>
 							</AccordionContent>
@@ -201,13 +179,7 @@ function LessonPage() {
 									total: course.lessons.length,
 								})}
 							</Badge>
-							<Badge
-								variant={lesson.access === "preview" ? "secondary" : "outline"}
-							>
-								{lesson.access === "preview"
-									? t("common.freePreview")
-									: t("common.membership")}
-							</Badge>
+							<Badge variant="secondary">{t("common.free")}</Badge>
 							<span className="inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
 								<Clock3Icon className="size-3.5" aria-hidden="true" />{" "}
 								{t("common.minutes", { minutes: lesson.minutes })}
@@ -263,7 +235,7 @@ function LessonPage() {
 							})}
 						</nav>
 					) : null}
-					{page.access.allowed ? (
+					{
 						<>
 							{page.learning ? (
 								<LearningExercise lessonId={sourceLesson.id} />
@@ -302,9 +274,6 @@ function LessonPage() {
 									</ReactMarkdown>
 								</article>
 							</details>
-							{lesson.practice ? (
-								<PracticeCard lessonId={lesson.id} practice={lesson.practice} />
-							) : null}
 							<div className="flex flex-col gap-5">
 								{progress.signedIn ? (
 									<CompleteLessonButton lesson={lesson} />
@@ -325,26 +294,6 @@ function LessonPage() {
 										</SignInLink>
 									</div>
 								)}
-								{lesson.id === finalFoundation?.id && !page.canAccessPaid ? (
-									<Alert>
-										<AlertTitle>{t("course.foundationNextTitle")}</AlertTitle>
-										<AlertDescription className="flex flex-col items-start gap-4">
-											<p>{t("course.foundationNextDescription")}</p>
-											<Link
-												to="/pricing"
-												className={buttonVariants()}
-												onClick={() =>
-													capture("membership_cta_clicked", {
-														surface: "foundation_completion",
-														lesson_id: lesson.id,
-													})
-												}
-											>
-												{t("course.foundationNextAction")}
-											</Link>
-										</AlertDescription>
-									</Alert>
-								) : null}
 								<Separator />
 								<nav
 									className="flex items-center justify-between gap-4"
@@ -387,9 +336,7 @@ function LessonPage() {
 								</nav>
 							</div>
 						</>
-					) : (
-						<AccessPanel access={page.access} lessonId={lesson.id} />
-					)}
+					}
 				</div>
 			</div>
 		</main>

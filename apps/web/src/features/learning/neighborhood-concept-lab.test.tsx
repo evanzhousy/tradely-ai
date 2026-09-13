@@ -183,7 +183,7 @@ describe("contract neighborhood SVG lesson", () => {
 		page.rerender(<NeighborhoodConceptLab locale="en" />);
 		expect(screen.getByRole("status").textContent).toContain("unavailable");
 	});
-	it("preserves version 2 grading, neighborhood investigation and paid access", () => {
+	it("preserves version 2 grading, neighborhood investigation and public practice", () => {
 		const scenario = getLessonScenarios("rank-contracts")[0];
 		let state = initialAttemptState();
 		const props = {
@@ -232,6 +232,6 @@ describe("contract neighborhood SVG lesson", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

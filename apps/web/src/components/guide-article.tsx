@@ -13,11 +13,7 @@ import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-b
 import { useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAnalytics } from "@/analytics/context";
-import {
-	getFreeLessons,
-	getLessonById,
-	tradingFlowCourse,
-} from "@/content/course";
+import { getLessonById, tradingFlowCourse } from "@/content/course";
 import { type Guide, guides } from "@/content/guides";
 import { GuideDemo } from "@/features/guides/guide-demo";
 import { GuideCards } from "./guide-cards";
@@ -28,7 +24,7 @@ import { TableOfContents } from "./table-of-contents";
 export function GuideArticle({ guide }: { guide: Guide }) {
 	const { capture } = useAnalytics();
 	const article = useRef<HTMLElement>(null);
-	const free = getFreeLessons(tradingFlowCourse.lessons)[0];
+	const free = tradingFlowCourse.lessons[0];
 	return (
 		<main lang="en" className="page-shell">
 			<ScrollProgress target={article} />
@@ -183,9 +179,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 												{lesson.title}
 											</Link>
 											<span className="ml-2 text-muted-foreground text-xs">
-												{lesson.access === "preview"
-													? "Free lesson"
-													: "Member lesson"}
+												Free
 											</span>
 										</li>
 									) : null;

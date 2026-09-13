@@ -202,7 +202,7 @@ describe("point-in-time research SVG lesson", () => {
 		page.rerender(<PointTimeConceptLab locale="en" />);
 		expect(screen.getByRole("status").textContent).toContain("unavailable");
 	});
-	it("preserves version 2 grading and the paid Learn boundary", () => {
+	it("preserves version 2 grading and the public Learn boundary", () => {
 		const scenario = getLessonScenarios("point-in-time-research")[0];
 		let state = initialAttemptState();
 		const props = {
@@ -248,6 +248,6 @@ describe("point-in-time research SVG lesson", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

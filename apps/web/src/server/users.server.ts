@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import { type AppUser, appUser, createDb } from "@tradely/db";
 import { eq } from "drizzle-orm";
-import { coursePassIsActive, manualGrantIsActive } from "@/domain/access";
+import { coursePassIsActive, manualGrantIsActive } from "@/domain/billing";
 
 export async function findAppUser(userId: string): Promise<AppUser | null> {
 	const db = createDb();

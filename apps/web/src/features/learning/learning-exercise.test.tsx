@@ -32,7 +32,9 @@ vi.mock("@/auth/client", () => ({
 vi.mock("@/analytics/context", () => ({
 	useAnalytics: () => ({ capture: mocks.capture }),
 }));
-vi.mock("@/i18n/provider", () => ({ useI18n: () => ({ locale: "en" }) }));
+vi.mock("@/i18n/provider", () => ({
+	useI18n: () => ({ locale: "en", t: (key: string) => key }),
+}));
 
 import { optionPrintScenarios } from "@/content/scenarios/option-print";
 import {

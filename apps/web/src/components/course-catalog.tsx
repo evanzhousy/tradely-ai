@@ -23,7 +23,7 @@ import { useI18n } from "@/i18n/provider";
 import { BrandOwl } from "./brand-owl";
 import { LandingCurriculum } from "./landing-curriculum";
 
-type CatalogFilter = "all" | "free" | "completed";
+type CatalogFilter = "all" | "completed";
 
 export function filterCatalog(
 	lessons: readonly Lesson[],
@@ -34,7 +34,6 @@ export function filterCatalog(
 	const search = query.trim().toLocaleLowerCase();
 	return lessons.filter(
 		(lesson) =>
-			(filter !== "free" || lesson.access === "preview") &&
 			(filter !== "completed" || completedIds.includes(lesson.id)) &&
 			(!search ||
 				`${lesson.title} ${lesson.summary} ${lesson.category}`
@@ -52,15 +51,13 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 	const lessons = filterCatalog(props.lessons, query, filter, completedIds);
 	const filters = [
 		{ value: "all", label: locale === "zh" ? "全部" : "All lessons" },
-		{ value: "free", label: t("common.free") },
 		{ value: "completed", label: t("common.completed") },
 	] as const;
 	return (
 		<Tabs
 			value={filter}
 			onValueChange={(value) => {
-				if (value === "all" || value === "free" || value === "completed")
-					setFilter(value);
+				if (value === "all" || value === "completed") setFilter(value);
 			}}
 			className="gap-6"
 		>

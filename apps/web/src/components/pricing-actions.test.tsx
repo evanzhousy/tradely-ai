@@ -51,10 +51,7 @@ vi.mock("@/server/billing", () => ({
 	restoreCoursePass: vi.fn(),
 }));
 
-import {
-	PricingAccountActions,
-	PricingCheckoutButton,
-} from "./pricing-actions";
+import { PricingAccountActions } from "./pricing-actions";
 
 describe("PricingAccountActions", () => {
 	beforeEach(() => {
@@ -164,31 +161,4 @@ describe("PricingAccountActions", () => {
 		]);
 		expect(mocks.captureException).not.toHaveBeenCalled();
 	});
-
-	it.each(["membership", "lifetime_course"] as const)(
-		"tracks %s checkout intent and unexpected failures",
-		async (offer) => {
-			const error = new Error("Checkout unavailable");
-			mocks.serverFn.mockRejectedValue(error);
-			render(
-				<PricingCheckoutButton
-					offer={offer}
-					configured
-					active={false}
-					isSignedIn
-				/>,
-			);
-			fireEvent.click(screen.getByRole("button"));
-			await waitFor(() =>
-				expect(mocks.captureException).toHaveBeenCalledOnce(),
-			);
-			expect(mocks.capture.mock.calls).toEqual([
-				["billing_action_started", { action: "checkout", offer }],
-				[
-					"billing_action_failed",
-					{ action: "checkout", offer, reason: "unavailable" },
-				],
-			]);
-		},
-	);
 });

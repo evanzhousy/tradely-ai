@@ -27,7 +27,7 @@ vi.mock("@tradely/db", async () => ({
 	createDb: mocks.db,
 }));
 vi.mock("./access.server", () => ({
-	resolveCurrentLessonAccess: mocks.access,
+	getLearningIdentity: mocks.access,
 }));
 vi.mock("./analytics/posthog.server", () => ({
 	captureServerException: mocks.capture,
@@ -96,6 +96,7 @@ describe("coaching with actual PostgreSQL migrations", () => {
 			"0002_learning_attempts",
 			"0003_neon_auth_fresh_start",
 			"0004_coaching_records",
+			"0005_coaching_daily_budget",
 		])
 			await pg.exec(
 				readFileSync(
@@ -106,16 +107,23 @@ describe("coaching with actual PostgreSQL migrations", () => {
 					"utf8",
 				),
 			);
+		expect(
+			(
+				await pg.query<{ reserved_micros: number }>(
+					"SELECT reserved_micros FROM coaching_daily_budget",
+				)
+			).rows,
+		).toEqual([{ reserved_micros: 100000000 }]);
 	});
 	afterAll(() => pg.close());
 	beforeEach(async () => {
-		await pg.exec("TRUNCATE app_user CASCADE");
+		await pg.exec("TRUNCATE app_user, coaching_daily_budget CASCADE");
 		vi.clearAllMocks();
 		record = guidedRecord();
 		mocks.db.mockReturnValue(db);
 		mocks.access.mockResolvedValue({
-			access: { allowed: true },
-			courseAccess: { userId: "learner-a", canAccessPaid: false },
+			userId: "learner-a",
+			unavailable: false,
 		});
 		mocks.settings.mockReturnValue({
 			model: "anthropic/claude-haiku-4.5",
@@ -188,6 +196,69 @@ describe("coaching with actual PostgreSQL migrations", () => {
 		await db.insert(schema.lessonAttempt).values(record);
 		expect(await review()).toEqual({ ok: false, reason: "quota_exceeded" });
 	});
+	it("keeps global reservations after account deletion and blocks another account", async () => {
+		mocks.settings.mockReturnValue({
+			model: "anthropic/claude-haiku-4.5",
+			reservationMicros: 93_200,
+			budgetMicros: 93_200,
+		});
+		await save();
+		expect((await review()).ok).toBe(true);
+		await db
+			.delete(schema.appUser)
+			.where(eq(schema.appUser.userId, "learner-a"));
+		expect(await db.select().from(schema.coachingSession)).toHaveLength(0);
+		expect(await db.select().from(schema.coachingDailyBudget)).toMatchObject([
+			{ reservedMicros: 93_200 },
+		]);
+		await db.insert(schema.appUser).values({ userId: "learner-b" });
+		record = {
+			...guidedRecord("audited-boundary", randomUUID()),
+			userId: "learner-b",
+		};
+		await db.insert(schema.lessonAttempt).values(record);
+		mocks.access.mockResolvedValue({ userId: "learner-b", unavailable: false });
+		expect(await review()).toEqual({ ok: false, reason: "budget_exceeded" });
+		expect(mocks.generate).toHaveBeenCalledTimes(1);
+	});
+	it("caps reservations across concurrent different accounts", async () => {
+		mocks.settings.mockReturnValue({
+			model: "anthropic/claude-haiku-4.5",
+			reservationMicros: 93_200,
+			budgetMicros: 93_200,
+		});
+		await save();
+		const first = await command({ type: "review", round: "initial" });
+		const secondRecord = {
+			...guidedRecord("audited-boundary", randomUUID()),
+			userId: "learner-b",
+		};
+		await db.insert(schema.appUser).values({ userId: secondRecord.userId });
+		await db.insert(schema.lessonAttempt).values(secondRecord);
+		// Identity reads are deterministic per command through the separate lesson IDs.
+		mocks.access
+			.mockResolvedValueOnce({ userId: "learner-a", unavailable: false })
+			.mockResolvedValueOnce({ userId: "learner-b", unavailable: false });
+		const results = await Promise.all([
+			updateCoachingImpl(first),
+			updateCoachingImpl({
+				...first,
+				lessonId: secondRecord.lessonId,
+				attemptId: secondRecord.id,
+				attemptRevision: secondRecord.revision,
+				sessionRevision: null,
+				commandId: randomUUID(),
+			}),
+		]);
+		expect(results.some((r) => !r.ok && r.reason === "budget_exceeded")).toBe(
+			true,
+		);
+		expect(mocks.generate).toHaveBeenCalledTimes(1);
+		expect(await db.select().from(schema.coachingDailyBudget)).toMatchObject([
+			{ reservedMicros: 93_200 },
+		]);
+	});
+
 	it("rejects a new session before a provider call when the global budget is exhausted", async () => {
 		mocks.settings.mockReturnValue({
 			model: "anthropic/claude-haiku-4.5",
@@ -242,28 +313,20 @@ describe("coaching with actual PostgreSQL migrations", () => {
 		).toEqual({ ok: false, reason: "invalid_action" });
 		expect(mocks.generate).toHaveBeenCalledTimes(1);
 	});
-	it("isolates accounts and rechecks paid access", async () => {
+	it("isolates accounts and handles identity outages", async () => {
 		await save();
 		await review();
 		mocks.access.mockResolvedValue({
-			access: { allowed: true },
-			courseAccess: { userId: "learner-b" },
+			userId: "learner-b",
+			unavailable: false,
 		});
 		expect(await read()).toEqual({ ok: false, reason: "not_found" });
 		mocks.access.mockResolvedValue({
-			access: { allowed: false, reason: "billing-unavailable" },
-			courseAccess: { userId: "learner-a" },
+			userId: null,
+			unavailable: true,
 		});
 		expect(await read()).toEqual({ ok: false, reason: "unavailable" });
-		mocks.access.mockResolvedValue({
-			access: { allowed: false, reason: "unpaid" },
-			courseAccess: { userId: "learner-a" },
-		});
-		expect(await read()).toEqual({ ok: false, reason: "access_denied" });
-		mocks.access.mockResolvedValue({
-			access: { allowed: true },
-			courseAccess: { userId: null },
-		});
+		mocks.access.mockResolvedValue({ userId: null, unavailable: false });
 		expect(await read()).toEqual({ ok: false, reason: "signed_out" });
 	});
 	it("retains result retrieval and deletion when generation is switched off", async () => {
@@ -343,34 +406,6 @@ describe("coaching with actual PostgreSQL migrations", () => {
 		);
 		await db.update(schema.lessonAttempt).set({ revision: 2 });
 		expect(resultView(await read()).session?.stale).toBe(true);
-	});
-	it("allows three entitled sessions and stops new calls after an access change", async () => {
-		mocks.access.mockResolvedValue({
-			access: { allowed: true },
-			courseAccess: { userId: "learner-a", canAccessPaid: true },
-		});
-		for (const lesson of [
-			"rank-symbols",
-			"rank-contracts",
-			"audited-boundary",
-		]) {
-			if (lesson !== "rank-symbols") {
-				record = guidedRecord(lesson, randomUUID());
-				await db.insert(schema.lessonAttempt).values(record);
-			}
-			if (lesson !== "audited-boundary") await save();
-			expect((await review()).ok).toBe(true);
-		}
-		expect(mocks.generate).toHaveBeenCalledTimes(3);
-		await db
-			.update(schema.lessonAttempt)
-			.set({ status: "retired" })
-			.where(eq(schema.lessonAttempt.id, record.id));
-		expect(
-			await updateCoachingImpl(
-				await command({ type: "review", round: "revision" }),
-			),
-		).toEqual({ ok: false, reason: "retired" });
 	});
 	it("purges old usage while preserving the reservation and learning text", async () => {
 		await save();

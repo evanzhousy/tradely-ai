@@ -15,7 +15,9 @@ const mocks = vi.hoisted(() => ({
 	preview: vi.fn(),
 }));
 vi.mock("@/analytics/context", () => ({ useAnalytics: () => mocks }));
-vi.mock("@/i18n/provider", () => ({ useI18n: () => ({ locale: "en" }) }));
+vi.mock("@/i18n/provider", () => ({
+	useI18n: () => ({ locale: "en", t: (key: string) => key }),
+}));
 vi.mock("@/server/learning", () => ({ previewLearning: mocks.preview }));
 vi.mock("./learning-screen", () => ({
 	LearningScreen: ({

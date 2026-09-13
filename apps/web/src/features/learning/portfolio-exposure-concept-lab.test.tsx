@@ -141,7 +141,7 @@ it("supports Chinese and missing teaching data", () => {
 	p.rerender(<PortfolioExposureConceptLab locale="en" />);
 	expect(screen.getByRole("status").textContent).toContain("unavailable");
 });
-it("preserves the original paid assessment and only dispatches Continue", () => {
+it("preserves the original assessment and only dispatches Continue", () => {
 	const scenario = getLessonScenarios("portfolio-exposure")[0];
 	let state = initialAttemptState();
 	const props = {
@@ -190,5 +190,5 @@ it("preserves the original paid assessment and only dispatches Continue", () => 
 			variant: 0,
 			actions: [],
 		}),
-	).toEqual({ ok: false, reason: "access_denied" });
+	).toMatchObject({ ok: true, view: { result: null } });
 });

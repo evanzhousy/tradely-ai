@@ -225,6 +225,6 @@ describe("flow impact SVG lesson", () => {
 		).toEqual([true, true, true]);
 		expect(
 			previewLearningImpl({ lessonId: "dex-dei-gex", variant: 0, actions: [] }),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

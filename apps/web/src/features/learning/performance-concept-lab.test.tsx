@@ -135,7 +135,7 @@ it("updates payoff and evidence scenes without inventing missing totals", () => 
 	change("Symbol attribution coverage", "complete");
 	expect(read("[data-performance-attribution]")).toContain("total: $30");
 });
-it("preserves version 2 grading and the paid Learn boundary", () => {
+it("preserves version 2 grading and the public Learn boundary", () => {
 	const scenario = getLessonScenarios("portfolio-performance")[0];
 	let state = initialAttemptState();
 	const props = {
@@ -179,5 +179,5 @@ it("preserves version 2 grading and the paid Learn boundary", () => {
 			variant: 0,
 			actions: [],
 		}),
-	).toEqual({ ok: false, reason: "access_denied" });
+	).toMatchObject({ ok: true, view: { result: null } });
 });

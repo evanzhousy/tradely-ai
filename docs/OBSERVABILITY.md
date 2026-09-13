@@ -1,5 +1,7 @@
 # Tradely observability
 
+Current learning opens emit `access_tier: free` and `access_state: allowed`. Historical preview/paid values remain readable; `preview_exercise_*` still means unsaved guest practice and now covers all 36 lessons. Billing events are limited to historical support. `tradingflow_link_opened` is an outbound click, not a payment or product-activation record. Existing consent, masking, query sanitization, and project-provenance requirements remain. Old snapshots below are not current traffic or revenue evidence.
+
 The complete application event catalog and scenario verification points are in
 [Analytics scenarios](ANALYTICS-SCENARIOS.md). The current masked replay and heatmap setup is documented in [Replay setup](POSTHOG-REPLAY.md).
 

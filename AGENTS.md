@@ -1,5 +1,12 @@
 # Agent instructions
 
+## Documentation
+
+- Do not create documentation files in this repository unless the user explicitly
+  asks for a repository document. A request for a plan alone is not permission to
+  save it in the repository; keep plans in the conversation or an external output
+  directory instead.
+
 ## Git workflow
 
 - After completing an implementation and running the relevant validation, commit

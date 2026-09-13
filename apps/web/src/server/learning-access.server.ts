@@ -1,25 +1,14 @@
 import "@tanstack/react-start/server-only";
 import { getLessonById } from "@/content/course";
 import { learningRollout } from "@/content/learning-rollout";
-import { resolveCurrentLessonAccess } from "./access.server";
+import { getLearningIdentity } from "./access.server";
 
 export async function authorizeLearning(lessonId: string) {
-	const lesson = getLessonById(lessonId);
-	if (!lesson || !Object.hasOwn(learningRollout, lessonId))
+	if (!getLessonById(lessonId) || !Object.hasOwn(learningRollout, lessonId))
 		return { ok: false, reason: "not_found" } as const;
-	const { access, courseAccess } = await resolveCurrentLessonAccess(lesson);
-	if (!courseAccess.userId) return { ok: false, reason: "signed_out" } as const;
-	if (!access.allowed)
-		return {
-			ok: false,
-			reason:
-				access.reason === "billing-unavailable"
-					? "unavailable"
-					: "access_denied",
-		} as const;
-	return {
-		ok: true,
-		userId: courseAccess.userId,
-		canAccessPaid: courseAccess.canAccessPaid,
-	} as const;
+	const identity = await getLearningIdentity();
+	if (identity.unavailable)
+		return { ok: false, reason: "unavailable" } as const;
+	if (!identity.userId) return { ok: false, reason: "signed_out" } as const;
+	return { ok: true, userId: identity.userId } as const;
 }

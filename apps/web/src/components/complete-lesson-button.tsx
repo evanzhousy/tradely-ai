@@ -41,7 +41,9 @@ export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 								reason:
 									result.reason === "signed-out"
 										? "signed_out"
-										: "access_denied",
+										: result.reason === "unavailable"
+											? "unavailable"
+											: "access_denied",
 							});
 							toast.error(
 								result.reason === "signed-out"

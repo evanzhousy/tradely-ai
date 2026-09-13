@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getFreeLessons, tradingFlowCourse } from "@/content/course";
+import { tradingFlowCourse } from "@/content/course";
 import { guides } from "@/content/guides";
 import {
 	indexablePages,
@@ -26,12 +26,10 @@ describe("public search contract", () => {
 				.filter((page) => page.path.startsWith("/learn/"))
 				.map((page) => page.path),
 		).toEqual(
-			getFreeLessons(tradingFlowCourse.lessons).map(
-				(lesson) => `/learn/${lesson.slug}`,
-			),
+			tradingFlowCourse.lessons.map((lesson) => `/learn/${lesson.slug}`),
 		);
 		expect(pages.every((page) => page.index && page.sitemap)).toBe(true);
-		expect(seoPage("/learn/gamma-exposure")?.index).toBe(false);
+		expect(seoPage("/learn/gamma-exposure")?.index).toBe(true);
 		expect(seoPage("/guides/gamma-exposure")?.index).toBe(true);
 		expect(seoPage("/auth/sign-in")?.index).toBe(false);
 		expect(seoPage("/guides/not-a-guide")).toBeUndefined();
@@ -48,7 +46,7 @@ describe("public search contract", () => {
 			expect(xml).toContain(`<loc>${canonicalUrl(page.path)}</loc>`);
 		expect(xml).not.toContain("<loc>https://tradely.ai");
 		expect(xml).not.toContain("/auth/");
-		expect(xml).not.toContain("/learn/gamma-exposure");
+		expect(xml).toContain("/learn/gamma-exposure");
 		expect(xml.match(/<lastmod>/g)?.length).toBe(guides.length);
 		expect(robotsTxt()).toContain("https://www.tradely.ai/sitemap.xml");
 		for (const path of [

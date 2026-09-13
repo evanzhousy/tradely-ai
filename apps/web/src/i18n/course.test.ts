@@ -19,8 +19,8 @@ describe("localized course manifest", () => {
 		expect(course.lessons.map((lesson) => lesson.id)).toEqual(
 			tradingFlowCourse.lessons.map((lesson) => lesson.id),
 		);
-		expect(course.lessons.map((lesson) => lesson.access)).toEqual(
-			tradingFlowCourse.lessons.map((lesson) => lesson.access),
+		expect(course.lessons.map((lesson) => lesson.mediaDelivery)).toEqual(
+			tradingFlowCourse.lessons.map((lesson) => lesson.mediaDelivery),
 		);
 		expect(course.lessons.map((lesson) => lesson.practice?.href)).toEqual(
 			tradingFlowCourse.lessons.map((lesson) => lesson.practice?.href),

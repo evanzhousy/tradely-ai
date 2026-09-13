@@ -4,7 +4,6 @@ import { cn } from "@tradely/ui/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
-import { getFreeLessons } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { TradelyBrand } from "./brand";
@@ -14,7 +13,7 @@ export function Footer() {
 	const isHome = useRouterState({
 		select: (state) => state.location.pathname === "/",
 	});
-	const firstLesson = getFreeLessons(getLocalizedCourse(locale).lessons)[0];
+	const firstLesson = getLocalizedCourse(locale).lessons[0];
 	const { isConfigured, openPreferences } = useAnalytics();
 	const year = new Date().getFullYear();
 	return (
@@ -49,6 +48,13 @@ export function Footer() {
 			<div className="mx-auto grid max-w-[1480px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
 				<div className="flex max-w-md flex-col gap-3">
 					<TradelyBrand />
+					<Link
+						to="/pricing"
+						hash="past-purchases"
+						className="text-sm underline underline-offset-4"
+					>
+						{t("pricing.pastPurchases")}
+					</Link>
 					<Link to="/guides" className="text-sm underline underline-offset-4">
 						{t("nav.guides")}
 					</Link>

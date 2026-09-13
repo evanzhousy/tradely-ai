@@ -1,5 +1,7 @@
 # Tradely billing operations
 
+New sales are permanently retired in application code, regardless of old enable flags. `/pricing` now explains free learning and retains authenticated previous-purchase support. Existing grants and customer references remain. `pnpm billing:preflight -- --environment test --stage retired` checks historical configuration and archived Prices; it does not prove subscriptions are canceled. The `billing:retire` script in the web package defaults to an external dry-run inventory and requires an explicitly reviewed manifest for mutations. No production cancellation, refund, or price change is implied by this source change. The previous launch instructions below are historical and must not be used to reopen sales.
+
 Tradely sells two independent offers through Stripe-hosted Checkout:
 
 - **Tradely Membership** is a USD 69.00/month recurring subscription. An active

@@ -8,13 +8,21 @@ export function CourseProgress({
 	total,
 	percentage,
 	compact = false,
+	unavailable = false,
 }: {
 	completed: number;
 	total: number;
 	percentage: number;
 	compact?: boolean;
+	unavailable?: boolean;
 }) {
 	const { t } = useI18n();
+	if (unavailable)
+		return (
+			<p role="status" className="text-muted-foreground text-sm">
+				{t("complete.unavailable")}
+			</p>
+		);
 	if (!compact)
 		return (
 			<section

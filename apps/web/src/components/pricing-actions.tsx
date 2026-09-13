@@ -1,117 +1,12 @@
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@tradely/ui/components/button";
-import {
-	ArrowRightIcon,
-	CheckIcon,
-	CreditCardIcon,
-	RefreshCwIcon,
-} from "lucide-react";
+import { CheckIcon, CreditCardIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAnalytics } from "@/analytics/context";
-import {
-	type BillingOffer,
-	billingActionFailureReason,
-} from "@/analytics/events";
-import { authIsConfigured } from "@/auth/client";
+import { billingActionFailureReason } from "@/analytics/events";
 import { useI18n } from "@/i18n/provider";
-import {
-	beginCoursePassCheckout,
-	beginMembershipCheckout,
-	openCustomerPortal,
-	restoreCoursePass,
-} from "@/server/billing";
-import { SignInLink } from "./sign-in-link";
-
-export function PricingCheckoutButton({
-	offer,
-	configured,
-	active,
-	isSignedIn,
-}: {
-	offer: BillingOffer;
-	configured: boolean;
-	active: boolean;
-	isSignedIn: boolean;
-}) {
-	const membershipCheckout = useServerFn(beginMembershipCheckout);
-	const coursePassCheckout = useServerFn(beginCoursePassCheckout);
-	const { t } = useI18n();
-	const { capture, captureException } = useAnalytics();
-	const [pending, setPending] = useState(false);
-
-	const checkout = async () => {
-		setPending(true);
-		capture("billing_action_started", { action: "checkout", offer });
-		try {
-			const result =
-				offer === "membership"
-					? await membershipCheckout()
-					: await coursePassCheckout();
-			capture("billing_action_redirected", { action: "checkout", offer });
-			window.location.assign(result.url);
-		} catch (error) {
-			const reason = billingActionFailureReason(error);
-			capture("billing_action_failed", {
-				action: "checkout",
-				offer,
-				reason,
-			});
-			if (reason === "unavailable") {
-				captureException(error, {
-					source: "billing_action",
-					action: "checkout",
-				});
-			}
-			toast.error(
-				error instanceof Error
-					? error.message
-					: t("pricing.billingUnavailable"),
-			);
-			setPending(false);
-		}
-	};
-
-	const contents = (
-		<>
-			{active ? (
-				<CheckIcon data-icon="inline-start" aria-hidden="true" />
-			) : null}
-			{active
-				? offer === "membership"
-					? t("pricing.membershipActive")
-					: t("pricing.coursePassActive")
-				: pending
-					? offer === "membership"
-						? t("pricing.openingCheckout")
-						: t("pricing.openingCoursePass")
-					: offer === "membership"
-						? t("pricing.unlock")
-						: t("pricing.buyCoursePass")}
-			{!active ? (
-				<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-			) : null}
-		</>
-	);
-	if (!isSignedIn && !active && authIsConfigured) {
-		return (
-			<SignInLink
-				disabled={!configured}
-				onClick={() => capture("auth_sign_in_opened", { surface: "pricing" })}
-			>
-				{contents}
-			</SignInLink>
-		);
-	}
-	return (
-		<Button
-			disabled={!configured || active || pending || !authIsConfigured}
-			onClick={() => void checkout()}
-		>
-			{contents}
-		</Button>
-	);
-}
+import { openCustomerPortal, restoreCoursePass } from "@/server/billing";
 
 export function PricingAccountActions({
 	canManageBilling,

@@ -41,15 +41,15 @@ const staticPages: SeoPage[] = [
 		path: "/courses/tradingflow-foundations",
 		title: "Options Research Course: Concepts & Practice | Tradely",
 		description:
-			"Build a repeatable options research process through contracts, executions, flow, Greeks and market structure. Explore free lessons and the full curriculum.",
+			"Build a repeatable options research process through contracts, executions, flow, Greeks and market structure. Explore the complete free curriculum.",
 		index: true,
 		sitemap: true,
 	},
 	{
 		path: "/pricing",
-		title: "Options Course Access & Pricing | Tradely",
+		title: "Free Learning & Previous Purchases | Tradely",
 		description:
-			"Compare Tradely membership and course access. Start with free lessons, then choose access to the complete options research curriculum.",
+			"All current Tradely lessons and exercises are free. Save progress with a free account, or manage previous purchases.",
 		index: true,
 		sitemap: true,
 	},
@@ -125,8 +125,8 @@ export function seoPage(path: string): SeoPage | undefined {
 				path: normalized,
 				title: `${lesson.title} | Tradely`,
 				description: lesson.summary,
-				index: lesson.access === "preview",
-				sitemap: lesson.access === "preview",
+				index: true,
+				sitemap: true,
 			};
 	}
 	return undefined;

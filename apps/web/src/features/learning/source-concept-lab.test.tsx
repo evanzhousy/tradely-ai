@@ -249,7 +249,7 @@ describe("source audit SVG lesson", () => {
 		page.rerender(<SourceConceptLab locale="en" data={strategyConceptData} />);
 		expect(document.querySelector("[data-concept-lab]")).toBeNull();
 	});
-	it("preserves version 2 grading, Learn projection and paid access", () => {
+	it("preserves version 2 grading, Learn projection and public practice", () => {
 		const scenario = getLessonScenarios("symbol-drawer")[0];
 		const state = initialAttemptState();
 		const onAction = vi.fn();
@@ -293,6 +293,6 @@ describe("source audit SVG lesson", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

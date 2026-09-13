@@ -36,6 +36,13 @@
 			"when": 1788972913811,
 			"tag": "0004_coaching_records",
 			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1789328326827,
+			"tag": "0005_coaching_daily_budget",
+			"breakpoints": true
 		}
 	]
 }

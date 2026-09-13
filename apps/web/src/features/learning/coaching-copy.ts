@@ -5,8 +5,8 @@ export const coachingCopy = {
 		zh: "用证据解释答案，通过两轮辅导完善你的理由。",
 	},
 	notice: {
-		en: "Starting sends this case and your saved explanation to our AI provider through Vercel AI Gateway. Feedback supports practice; it does not certify mastery.",
-		zh: "开始后，本案例和你保存的解释会经 Vercel AI Gateway 发送给 AI 提供方。反馈用于练习，不代表掌握认证。",
+		en: "Starting sends this case and your saved explanation to our AI provider. Feedback supports practice; it does not certify mastery.",
+		zh: "开始后，本案例和你保存的解释会发送给 AI 提供方。反馈用于练习，不代表掌握认证。",
 	},
 	reason: { en: "Explain your judgment", zh: "解释你的判断理由" },
 	reasonHelp: {

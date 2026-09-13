@@ -8,19 +8,6 @@ describe("curriculum discovery", () => {
 	it("retains the full curriculum order by default", () => {
 		expect(filterCatalog(lessons, "", "all", [])).toEqual(lessons);
 	});
-	it("finds free lessons by their access metadata, including late-course entry points", () => {
-		expect(
-			filterCatalog(lessons, "", "free", []).map((lesson) => lesson.slug),
-		).toEqual([
-			"option-contracts",
-			"option-rights",
-			"premium-payoff",
-			"expiration-settlement",
-			"audited-boundary",
-			"symbol-universe",
-			"rank-symbols",
-		]);
-	});
 	it("intersects completion and search without exposing unknown or retired records", () => {
 		const first = lessons[0];
 		const last = lessons.at(-1);

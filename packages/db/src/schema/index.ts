@@ -196,3 +196,18 @@ export const coachingGeneration = pgTable(
 );
 export type CoachingSessionRecord = typeof coachingSession.$inferSelect;
 export type CoachingGenerationRecord = typeof coachingGeneration.$inferSelect;
+
+// Non-personal aggregate: deleting an account must not replenish the AI budget.
+export const coachingDailyBudget = pgTable(
+	"coaching_daily_budget",
+	{
+		quotaDay: text("quota_day").primaryKey(),
+		reservedMicros: integer("reserved_micros").notNull().default(0),
+	},
+	(table) => [
+		check(
+			"coaching_daily_budget_nonnegative",
+			sql`${table.reservedMicros} >= 0`,
+		),
+	],
+);

@@ -1,4 +1,4 @@
-import type { LessonAccess, TradingFlowPractice } from "@/content/course";
+import type { TradingFlowPractice } from "@/content/course";
 import type { CoachingFailure } from "@/domain/coaching/types";
 import type { LearningFailure } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
@@ -122,7 +122,7 @@ export type AnalyticsEventMap = {
 	lesson_opened: {
 		lesson_id: string;
 		lesson_order: number;
-		access_tier: LessonAccess;
+		access_tier: "free" | "preview" | "paid";
 		access_state:
 			| "allowed"
 			| "signed_out"

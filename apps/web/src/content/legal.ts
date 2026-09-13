@@ -46,7 +46,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Billing information",
 					paragraphs: [
-						"Tradely uses Stripe-hosted checkout for recurring membership and one-time Course Pass purchases, plus billing management for subscriptions. Stripe processes payment-card details and billing transactions; Tradely stores a Stripe customer reference and verified entitlement state needed to decide which lessons are available. Tradely does not receive or store your full card number.",
+						"Tradely no longer sells course access. Stripe remains the processor for previous payments, refunds, invoices, and subscription management. Tradely retains the customer and purchase references needed to support those records; payment status does not restrict lessons. Tradely never stores your full card number.",
 					],
 				},
 				{
@@ -54,7 +54,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					bullets: [
 						"Provide, secure, and troubleshoot the learning hub.",
 						"Save your progress and restore video position across devices.",
-						"Confirm membership, Lifetime Course Pass, or manual-grant access to protected course media.",
+						"Support historical purchases and billing requests without restricting free learning.",
 						"Process payments and provide billing support through Stripe.",
 						"With your permission, understand page usage, service reliability, performance, errors, and curriculum usability.",
 					],
@@ -107,15 +107,15 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					],
 				},
 				{
-					heading: "Membership and billing",
+					heading: "Free learning and previous purchases",
 					paragraphs: [
-						"Paid lessons require an active Tradely membership, a verified Lifetime Course Pass for the named course, or a valid manual grant. Membership covers eligible Tradely content only while active. A Lifetime Course Pass covers Evidence-Led Options Research and revisions to that course while Tradely continues operating it; future distinct courses are excluded. Stripe processes one-time and recurring payments. Cancellation, renewals, refunds, revocation after refunds or disputes, and taxes are handled according to checkout terms and applicable law.",
+						"All current Tradely lessons and interactive exercises are free. A free account is required to save progress and attempts. Guest practice resets on reload. Optional AI coaching has audience, usage, and shared budget limits and does not certify mastery. Previous purchases and subscriptions remain subject to their original billing terms and applicable refund and tax rules. Existing subscriptions must be canceled separately; free lesson access does not itself cancel them.",
 					],
 				},
 				{
 					heading: "TradingFlow partnership",
 					paragraphs: [
-						"TradingFlow is a separate service operated by an independent partner. The Tradely Membership may include a one-month TradingFlow partner benefit, which is redeemed and fulfilled separately by TradingFlow; it does not create a shared account or automatic cross-service access. TradingFlow accounts, pricing, availability, redemption, and data are governed by TradingFlow's own policies.",
+						"TradingFlow is a separate service with its own accounts, pricing, availability, and data policies. Tradely does not create shared accounts or automatic TradingFlow access. Any previously promised partner benefit is handled separately through support.",
 					],
 				},
 				{
@@ -227,7 +227,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "账单信息",
 					paragraphs: [
-						"Tradely 使用 Stripe 托管结账来处理周期会员和一次性课程通行证购买，并为订阅提供账单管理。Stripe 处理银行卡信息和账单交易；Tradely 仅保存用于判断课程权限的 Stripe 客户引用和已验证的访问状态，不会接收或保存完整卡号。",
+						"Tradely 不再出售课程访问权。Stripe 继续处理历史付款、退款、发票和订阅管理。Tradely 保留处理历史账单所需的客户和购买引用，付款状态不影响免费学习，且不会存储完整银行卡号。",
 					],
 				},
 				{
@@ -235,7 +235,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					bullets: [
 						"提供、保护和排查学习中心。",
 						"保存课程进度，并在不同设备恢复视频位置。",
-						"确认受保护课程媒体的会员、终身课程通行证或人工授权权限。",
+						"处理历史购买和账单请求，不限制免费学习。",
 						"通过 Stripe 处理付款并提供账单支持。",
 						"经你允许，了解页面使用、服务可靠性、性能、错误和课程体验。",
 					],
@@ -244,7 +244,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					heading: "服务供应商与合作边界",
 					paragraphs: [
 						"我们的服务供应商可能包括负责身份的 Neon Auth、负责账单的 Stripe、负责 Tradely 数据库的 Neon、负责应用交付的 Vercel、负责媒体存储的 Cloudflare R2，以及负责经同意的产品分析和错误诊断的 PostHog 与 Google Analytics。他们仅在提供基础设施和服务所需范围内处理信息。",
-						"TradingFlow 是独立运营的合作产品。Tradely 不会向 TradingFlow 分享你的 Neon Auth 账户、账单记录、学习记录或客户标识符。会员可能包含一个月 TradingFlow 合作权益，该权益由 TradingFlow 单独兑换和发放，不会创建共享账户或自动跨服务访问；TradingFlow 账户、订阅、兑换和数据适用其自己的条款与隐私政策。",
+						"TradingFlow 是独立运营的合作产品。Tradely 不向其分享账户、账单、学习记录或客户标识符；仅在练习链接中使用课程级归因参数。历史合作权益单独处理，TradingFlow 的账户、订阅和数据适用自己的政策。",
 					],
 				},
 				{
@@ -286,15 +286,15 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					],
 				},
 				{
-					heading: "会员与账单",
+					heading: "免费学习与历史购买",
 					paragraphs: [
-						"付费课程需要有效的 Tradely 会员、当前指定课程的已验证终身通行证或有效人工授权。会员仅在有效期间覆盖符合条件的 Tradely 内容；终身课程通行证覆盖《证据驱动的期权研究》及该课程的修订版本，并以 Tradely 持续运营该课程为前提，不包含未来的独立课程。Stripe 处理一次性和周期付款；取消、续费、退款或争议后的撤销以及税费，依结账条款和适用法律处理。",
+						"所有现有 Tradely 课程与交互练习均免费。保存进度和练习需要免费账户；访客练习在刷新后重置。可选 AI 辅导受开放范围、使用次数与共享预算限制，不代表掌握认证。历史购买和订阅仍适用原有账单条款及相关退款和税务规则。已有订阅需单独取消，免费学习不会自动取消订阅。",
 					],
 				},
 				{
 					heading: "TradingFlow 合作关系",
 					paragraphs: [
-						"TradingFlow 是独立合作方运营的单独服务。会员可能包含一个月 TradingFlow 合作权益，但该权益由 TradingFlow 单独兑换和发放，不会创建共享账户或自动跨服务访问。Tradely 课程链接可能打开 TradingFlow 进行练习；TradingFlow 的账户、价格、可用性、兑换和数据不属于本条款，而适用 TradingFlow 自己的政策。",
+						"TradingFlow 为独立服务，其账户、价格、可用性与数据受自己的政策约束。Tradely 不创建共享账户或自动授予 TradingFlow 权限；以往承诺的合作权益通过支持渠道单独处理。",
 					],
 				},
 				{
@@ -358,7 +358,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "必要存储",
 					paragraphs: [
-						"身份验证和安全 Cookie 或浏览器存储用于支持 Neon Auth 会话、请求保护以及会员课程访问。没有这些存储，登录和受保护媒体无法可靠工作。",
+						"身份验证和安全 Cookie 或浏览器存储用于支持 Neon Auth 会话、请求保护和账户学习记录。未登录也可阅读课程并进行访客练习。",
 					],
 				},
 				{

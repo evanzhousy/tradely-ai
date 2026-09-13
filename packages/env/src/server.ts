@@ -34,10 +34,6 @@ export const env = createEnv({
 		STRIPE_ACCOUNT_ID: z.string().startsWith("acct_").optional(),
 		STRIPE_MEMBERSHIP_PRICE_ID: z.string().startsWith("price_").optional(),
 		STRIPE_COURSE_PASS_PRICE_ID: z.string().startsWith("price_").optional(),
-		LIFETIME_CHECKOUT_ENABLED: z
-			.enum(["true", "false"])
-			.default("false")
-			.transform((value) => value === "true"),
 		MEDIA_PUBLIC_BASE_URL: z.string().min(1).default("/media/tradingflow"),
 		MEDIA_SIGNING_SECRET: z.string().min(32).optional(),
 		PRIVATE_MEDIA_ROOT: z.string().min(1).optional(),

@@ -1,7 +1,9 @@
 import { useServerFn } from "@tanstack/react-start";
+import { Button } from "@tradely/ui/components/button";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { authIsConfigured, useAuth } from "@/auth/client";
+import { PracticeCard } from "@/components/practice-card";
 import { getLessonById } from "@/content/course";
 import type {
 	LearningAction,
@@ -168,35 +170,51 @@ function LearningSession({ lessonId }: { lessonId: string }) {
 		});
 	};
 	return (
-		<LearningScreen
-			coachingTransport={coachingTransport}
-			onCoachingEvent={onCoachingEvent}
-			lessonId={lessonId}
-			onRendererChange={onRendererChange}
-			locale={locale}
-			view={view}
-			busy={busy}
-			error={error}
-			onOpen={(restart = false) => {
-				void run({ kind: "open", restart });
-			}}
-			onAction={act}
-			onRecover={() => {
-				void run(
-					failedCommand.current
-						? { kind: "update", data: failedCommand.current }
-						: { kind: "open", restart: error === "retired" },
-				);
-			}}
-		/>
+		<>
+			<LearningScreen
+				coachingTransport={coachingTransport}
+				onCoachingEvent={onCoachingEvent}
+				lessonId={lessonId}
+				onRendererChange={onRendererChange}
+				locale={locale}
+				view={view}
+				busy={busy}
+				error={error}
+				onOpen={(restart = false) => {
+					void run({ kind: "open", restart });
+				}}
+				onAction={act}
+				onRecover={() => {
+					void run(
+						failedCommand.current
+							? { kind: "update", data: failedCommand.current }
+							: { kind: "open", restart: error === "retired" },
+					);
+				}}
+			/>
+			{view?.result ? <PracticeCard lessonId={lessonId} /> : null}
+		</>
 	);
 }
 
 function AuthenticatedLearning({ lessonId }: { lessonId: string }) {
-	const { userId, isLoaded } = useAuth();
-	if (!isLoaded) return null;
+	const { userId, isLoaded, error } = useAuth();
+	const { t } = useI18n();
+	const [guest, setGuest] = useState(false);
+	if (guest) return <PreviewLearning key={lessonId} lessonId={lessonId} />;
+	if (!isLoaded || error)
+		return (
+			<div className="flex flex-col items-start gap-3">
+				<p role="status">
+					{t(error ? "complete.unavailable" : "auth.loading")}
+				</p>
+				<Button onClick={() => setGuest(true)}>
+					{t("complete.practiceAsGuest")}
+				</Button>
+			</div>
+		);
 	if (!userId)
-		return getLessonById(lessonId)?.access === "preview" ? (
+		return getLessonById(lessonId) ? (
 			<PreviewLearning key={lessonId} lessonId={lessonId} />
 		) : null;
 	// Changing authentication identity destroys the prior account's view and pending requests.
@@ -206,7 +224,7 @@ function AuthenticatedLearning({ lessonId }: { lessonId: string }) {
 export function LearningExercise({ lessonId }: { lessonId: string }) {
 	return authIsConfigured ? (
 		<AuthenticatedLearning lessonId={lessonId} />
-	) : getLessonById(lessonId)?.access === "preview" ? (
+	) : getLessonById(lessonId) ? (
 		<PreviewLearning key={lessonId} lessonId={lessonId} />
 	) : null;
 }

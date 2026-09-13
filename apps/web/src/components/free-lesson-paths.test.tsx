@@ -50,7 +50,7 @@ describe("free learning entry paths", () => {
 			"/learn/rank-symbols",
 		]);
 		expect(research).toContain(
-			"suggested prerequisites may belong to the paid course",
+			"Build on the earlier concepts whenever you need a refresher",
 		);
 		expect(foundations).not.toContain("/learn/rank-symbols");
 	});

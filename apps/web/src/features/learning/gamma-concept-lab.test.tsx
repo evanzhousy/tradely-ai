@@ -261,6 +261,6 @@ describe("gamma SVG lesson", () => {
 		).toEqual([true, true]);
 		expect(
 			previewLearningImpl({ lessonId: "gamma", variant: 0, actions: [] }),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

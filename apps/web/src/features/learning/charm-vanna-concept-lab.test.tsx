@@ -203,6 +203,6 @@ describe("charm and vanna SVG lesson", () => {
 		).toEqual([true, true]);
 		expect(
 			previewLearningImpl({ lessonId: "charm-vanna", variant: 0, actions: [] }),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

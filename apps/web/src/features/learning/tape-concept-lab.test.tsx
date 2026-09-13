@@ -219,7 +219,7 @@ describe("tape record concept lesson", () => {
 		change("Condition example", "unknown");
 		expect(read("[data-tape-condition-support]")).toBe("Not established");
 	});
-	it("supports Chinese reset and rejects missing or mismatched paid teaching data", () => {
+	it("supports Chinese reset and rejects missing or mismatched teaching data", () => {
 		const page = render(<TapeConceptLab locale="zh" data={data} />);
 		change("候选分组", "b");
 		expect(read("[data-tape-weighted]")).toBe("$3.00");
@@ -278,6 +278,6 @@ describe("tape record concept lesson", () => {
 				variant: 0,
 				actions: [],
 			}),
-		).toEqual({ ok: false, reason: "access_denied" });
+		).toMatchObject({ ok: true, view: { result: null } });
 	});
 });

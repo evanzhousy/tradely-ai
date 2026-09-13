@@ -1,15 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import {
-	getFreeLearningPath,
-	getFreeLessons,
-	tradingFlowCourse,
-} from "./course";
+import { getLearningPath, tradingFlowCourse } from "./course";
 
 describe("tradingFlowCourse manifest", () => {
-	it("offers a complete free foundation and three research previews while keeping all other lessons paid", () => {
+	it("retains beginner and research starting paths independently of media storage", () => {
 		const lessons = tradingFlowCourse.lessons;
-		const foundations = getFreeLearningPath(lessons, "foundations");
+		const foundations = getLearningPath(lessons, "foundations");
 		expect(foundations.map((lesson) => lesson.id)).toEqual([
 			"option-contracts",
 			"option-rights",
@@ -25,17 +21,11 @@ describe("tradingFlowCourse manifest", () => {
 			}
 		}
 		expect(
-			getFreeLearningPath(lessons, "research").map((lesson) => lesson.id),
+			getLearningPath(lessons, "research").map((lesson) => lesson.id),
 		).toEqual(["audited-boundary", "symbol-universe", "rank-symbols"]);
-		expect(getFreeLessons(lessons)).toHaveLength(7);
-		expect(lessons.filter((lesson) => lesson.access === "paid")).toHaveLength(
-			29,
-		);
-		expect(lessons[4]).toMatchObject({
-			id: "quotes-orders-trades",
-			access: "paid",
-		});
-		expect(getFreeLearningPath([...lessons].reverse(), "foundations")).toEqual(
+		expect(lessons).toHaveLength(36);
+		expect(lessons.every((lesson) => lesson.mediaCurrent === false)).toBe(true);
+		expect(getLearningPath([...lessons].reverse(), "foundations")).toEqual(
 			foundations,
 		);
 	});

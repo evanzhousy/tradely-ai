@@ -60,17 +60,17 @@ for (const asset of manifest.assets ?? []) {
 		if (!requirement.startsWith("course:")) continue;
 		const lessonId = requirement.split("/")[1];
 		const lessonBlock = new RegExp(
-			`id: "${lessonId}"[\\s\\S]{0,900}?access: "paid"`,
+			`id: "${lessonId}"[\\s\\S]{0,900}?mediaDelivery: "signed"`,
 		);
 		if (!lessonBlock.test(courseSource)) {
 			fail(
-				`manifest course asset is not a paid lesson: ${asset.id} -> ${lessonId}`,
+				`manifest course asset is not an owned signed-media lesson: ${asset.id} -> ${lessonId}`,
 			);
 		}
 	}
 }
 
-const paidBasenames = new Set(
+const privateBasenames = new Set(
 	(manifest.assets ?? [])
 		.filter(
 			(asset) =>
@@ -79,14 +79,14 @@ const paidBasenames = new Set(
 		)
 		.map((asset) => basename(asset.key)),
 );
-for (const name of paidBasenames) {
+for (const name of privateBasenames) {
 	const publicPath = join(
 		projectRoot,
 		"apps/web/public/media/tradingflow",
 		name,
 	);
 	if (existsSync(publicPath))
-		fail(`paid video is publicly staged: ${publicPath}`);
+		fail(`private storage video is publicly staged: ${publicPath}`);
 }
 
 const importer = readFileSync(

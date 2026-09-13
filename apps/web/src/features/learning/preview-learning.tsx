@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
+import { PracticeCard } from "@/components/practice-card";
 import type {
 	LearningAction,
 	LearningFailure,
@@ -95,30 +96,33 @@ export function PreviewLearning({ lessonId }: { lessonId: string }) {
 		}
 	}
 	return (
-		<LearningScreen
-			lessonId={lessonId}
-			locale={locale}
-			view={view}
-			busy={busy}
-			error={error}
-			persistence="preview"
-			onOpen={(restart) => {
-				if (pending.current) return;
-				void run(
-					restart ? [] : actions.current,
-					restart ? (variant.current + 1) % 2 : variant.current,
-					restart,
-				);
-			}}
-			onAction={(action) => void run([...actions.current, action])}
-			onRecover={() => {
-				const retry = failedRequest.current;
-				void run(
-					retry?.actions ?? actions.current,
-					retry?.variant ?? variant.current,
-					retry?.restart ?? false,
-				);
-			}}
-		/>
+		<>
+			<LearningScreen
+				lessonId={lessonId}
+				locale={locale}
+				view={view}
+				busy={busy}
+				error={error}
+				persistence="preview"
+				onOpen={(restart) => {
+					if (pending.current) return;
+					void run(
+						restart ? [] : actions.current,
+						restart ? (variant.current + 1) % 2 : variant.current,
+						restart,
+					);
+				}}
+				onAction={(action) => void run([...actions.current, action])}
+				onRecover={() => {
+					const retry = failedRequest.current;
+					void run(
+						retry?.actions ?? actions.current,
+						retry?.variant ?? variant.current,
+						retry?.restart ?? false,
+					);
+				}}
+			/>
+			{view?.result ? <PracticeCard lessonId={lessonId} /> : null}
+		</>
 	);
 }

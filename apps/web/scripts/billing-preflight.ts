@@ -10,16 +10,8 @@ import {
 	parseBillingPreflightArgs,
 } from "../src/domain/billing-preflight";
 
-const HELP = `Usage:
-  pnpm billing:preflight -- \\
-    --environment <test|production> \\
-    --stage <acceptance|deploy-disabled|launch> \\
-    [--checkout-session-id <cs_test_...|cs_live_...>]
-
-Stages:
-  acceptance      Test environment with lifetime checkout enabled and a Session proof
-  deploy-disabled Production configuration with lifetime checkout disabled
-  launch          Production configuration with lifetime checkout enabled and a Session proof
+const HELP = `Usage: pnpm billing:preflight -- --environment <test|production> --stage retired [--checkout-session-id <cs_...>]
+Read-only checks for retired Prices and historical recovery. This does not verify that subscriptions, schedules, or pending invoices are canceled.
 `;
 
 function keyKind(key: string): string {
@@ -76,10 +68,6 @@ async function runBillingPreflight(argv: string[]): Promise<void> {
 	const membershipPriceId = requiredEnv("STRIPE_MEMBERSHIP_PRICE_ID");
 	const coursePassPriceId = requiredEnv("STRIPE_COURSE_PASS_PRICE_ID");
 	const appUrl = requiredEnv("APP_URL");
-	const lifetimeFlag = requiredEnv("LIFETIME_CHECKOUT_ENABLED");
-	if (!new Set(["true", "false"]).has(lifetimeFlag)) {
-		throw new Error("LIFETIME_CHECKOUT_ENABLED must be true or false");
-	}
 	const stripe = new Stripe(apiKey, { apiVersion: "2026-07-29.dahlia" });
 	const [account, membershipPrice, coursePassPrice, session] =
 		await Promise.all([
@@ -100,7 +88,6 @@ async function runBillingPreflight(argv: string[]): Promise<void> {
 			accountId,
 			appUrl,
 			keyKind: keyKind(apiKey),
-			lifetimeCheckoutEnabled: lifetimeFlag === "true",
 			membershipPriceId,
 			coursePassPriceId,
 		},
