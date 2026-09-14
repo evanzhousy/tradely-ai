@@ -1,6 +1,26 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-09-14-tradingflow-labs",
+		date: "2026-09-14",
+		dateLabel: "September 14, 2026",
+		title: "Practice with guided TradingFlow Recipes",
+		summary:
+			"Three guided labs connect free lessons to unusual activity, gamma structure and session recaps in TradingFlow.",
+		changes: [
+			{
+				title: "Follow a complete research task",
+				description:
+					"Review a free worked example, open the matching Recipe in a new tab, and use the lesson’s steps to inspect its evidence. TradingFlow access is required to run reports.",
+			},
+			{
+				title: "Choose when to create an account",
+				description:
+					"Go straight to the partner platform, or save your Tradely exercise to a free account. Lesson progress remains separate from Recipe execution.",
+			},
+		],
+	},
+	{
 		id: "2026-09-14-save-guest-learning",
 		date: "2026-09-14",
 		dateLabel: "September 14, 2026",

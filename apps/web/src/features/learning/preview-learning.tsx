@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { authIsConfigured } from "@/auth/client";
 import { PracticeCard } from "@/components/practice-card";
+import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { GuestSaveIntent } from "@/domain/guest-learning";
 import type {
 	LearningAction,
@@ -57,7 +58,13 @@ export function PreviewLearning({
 	>(undefined);
 
 	useEffect(() => {
-		if (!view?.result || promptChecked.current || !authIsConfigured) return;
+		if (
+			!view?.result ||
+			promptChecked.current ||
+			!authIsConfigured ||
+			getTradingFlowLab(lessonId)
+		)
+			return;
 		promptChecked.current = true;
 		try {
 			if (guestPromptWasShown(sessionStorage)) return;

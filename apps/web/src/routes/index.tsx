@@ -12,6 +12,7 @@ import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
+import { TradingFlowLabs } from "@/components/tradingflow-lab";
 import { getLearningPath } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -199,6 +200,9 @@ function HomeComponent() {
 				</ol>
 			</section>
 			<div className="landing-study-section">
+				<div className="observatory-container">
+					<TradingFlowLabs />
+				</div>
 				<LandingPlatformFeatures />
 			</div>
 			<section

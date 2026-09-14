@@ -1,4 +1,8 @@
 import type { TradingFlowPractice } from "@/content/course";
+import type {
+	TradingFlowLab,
+	TradingFlowLabId,
+} from "@/content/tradingflow-labs";
 import type { CoachingFailure } from "@/domain/coaching/types";
 import type { LearningFailure } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
@@ -48,7 +52,22 @@ export type AnalyticsRouteName =
 	| "cookies"
 	| "not_found";
 
+type LabEventProperties = {
+	lab_id: TradingFlowLabId;
+	lesson_id: string;
+	recipe_slug: TradingFlowLab["recipeSlug"];
+	lab_version: number;
+};
+const labPropertyKeys = [
+	"lab_id",
+	"lesson_id",
+	"recipe_slug",
+	"lab_version",
+] as const;
+
 export type AnalyticsEventMap = {
+	tradingflow_lab_viewed: LabEventProperties;
+	tradingflow_lab_sample_viewed: LabEventProperties;
 	guest_signup_prompt_shown: { lesson_id: string };
 	guest_signup_prompt_dismissed: { lesson_id: string };
 	guest_work_save_requested: {
@@ -129,8 +148,8 @@ export type AnalyticsEventMap = {
 	auth_session_established: {
 		provider: "neon";
 	};
-	tradingflow_link_opened: {
-		surface: "header" | "home_hero" | "lesson_practice";
+	tradingflow_link_opened: Partial<LabEventProperties> & {
+		surface: "header" | "home_hero" | "lesson_practice" | "lesson_lab";
 		lesson_id?: string;
 		tool?: TradingFlowPractice["tool"];
 	};
@@ -206,6 +225,8 @@ export type AnalyticsEventMap = {
 export type AnalyticsEventName = keyof AnalyticsEventMap;
 
 export const ANALYTICS_EVENT_NAMES = {
+	tradingflow_lab_viewed: true,
+	tradingflow_lab_sample_viewed: true,
 	guest_signup_prompt_shown: true,
 	guest_signup_prompt_dismissed: true,
 	guest_work_save_requested: true,
@@ -248,6 +269,8 @@ export const ANALYTICS_EVENT_NAMES = {
 } satisfies Record<AnalyticsEventName, true>;
 
 export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	tradingflow_lab_viewed: labPropertyKeys,
+	tradingflow_lab_sample_viewed: labPropertyKeys,
 	guest_signup_prompt_shown: ["lesson_id"],
 	guest_signup_prompt_dismissed: ["lesson_id"],
 	guest_work_save_requested: ["lesson_id", "intent"],
@@ -290,7 +313,7 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 	locale_changed: ["from_locale", "to_locale"],
 	auth_sign_in_opened: ["surface"],
 	auth_session_established: ["provider"],
-	tradingflow_link_opened: ["surface", "lesson_id", "tool"],
+	tradingflow_link_opened: ["surface", "tool", ...labPropertyKeys],
 	lesson_opened: [
 		"lesson_id",
 		"lesson_order",

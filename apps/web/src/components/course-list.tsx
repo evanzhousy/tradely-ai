@@ -4,9 +4,9 @@ import { Item } from "@tradely/ui/components/item";
 import { Separator } from "@tradely/ui/components/separator";
 import { CheckCircle2Icon, PlayCircleIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
-
 import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
+import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { useI18n } from "@/i18n/provider";
 
 export function CourseList({
@@ -112,6 +112,9 @@ export function CourseList({
 										{lesson.title}
 									</span>
 									<Badge variant="secondary">{t("common.free")}</Badge>
+									{getTradingFlowLab(lesson.id) ? (
+										<Badge variant="outline">{t("lab.badge")}</Badge>
+									) : null}
 								</span>
 								<span className="line-clamp-2 text-muted-foreground text-sm">
 									{lesson.summary}

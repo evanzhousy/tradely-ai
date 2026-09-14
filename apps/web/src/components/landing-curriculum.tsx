@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
 import {
 	Card,
@@ -18,6 +19,7 @@ import {
 import { useId, useState } from "react";
 import { getLearningPath, type Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
+import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { useI18n } from "@/i18n/provider";
 import { LessonInfographic } from "./lesson-infographic";
 
@@ -82,6 +84,9 @@ export function LandingCurriculum({
 								<CardHeader className="gap-3">
 									<CardTitle>
 										<h3 id={titleId}>{lesson.title}</h3>
+										{getTradingFlowLab(lesson.id) ? (
+											<Badge variant="outline">{t("lab.badge")}</Badge>
+										) : null}
 									</CardTitle>
 									<CardDescription>
 										<p>{lesson.summary}</p>
@@ -154,6 +159,9 @@ export function LandingCurriculum({
 										</span>
 										<span className="flex flex-1 flex-col gap-2">
 											<span className="font-medium">{lesson.title}</span>
+											{getTradingFlowLab(lesson.id) ? (
+												<Badge variant="outline">{t("lab.badge")}</Badge>
+											) : null}
 											<span className="text-muted-foreground text-xs">
 												{t("common.free")} ·{" "}
 												{t("common.minutes", { minutes: lesson.minutes })}

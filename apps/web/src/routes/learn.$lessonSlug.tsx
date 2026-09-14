@@ -30,6 +30,10 @@ import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
 import { LessonNavigation } from "@/components/lesson-navigation";
 import { SignInLink } from "@/components/sign-in-link";
+import {
+	TradingFlowLab,
+	TradingFlowLabIntro,
+} from "@/components/tradingflow-lab";
 import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
 import { guidesForLesson } from "@/content/guides";
@@ -207,6 +211,7 @@ function LessonPage() {
 							</p>
 						</div>
 					</header>
+					<TradingFlowLabIntro lessonId={lesson.id} />
 
 					{guidesForLesson(lesson.id).map((guide) => (
 						<p key={guide.slug} lang="en" className="text-sm leading-6">
@@ -256,6 +261,7 @@ function LessonPage() {
 									onSelectAttempt={selectAttempt}
 								/>
 							) : null}
+							<TradingFlowLab lessonId={lesson.id} />
 							{page.media ? (
 								<LessonVideo
 									lesson={lesson}

@@ -13,6 +13,7 @@ import { ExternalLinkIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
 import { getLessonById } from "@/content/course";
+import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 
@@ -21,7 +22,7 @@ export function PracticeCard({ lessonId }: { lessonId: string }) {
 	const { capture } = useAnalytics();
 	const lesson = getLessonById(lessonId);
 	const practice = lesson ? getLocalizedLesson(lesson, locale).practice : null;
-	if (!practice) return null;
+	if (!practice || getTradingFlowLab(lessonId)) return null;
 	const captureOpen = () =>
 		capture("tradingflow_link_opened", {
 			surface: "lesson_practice",
@@ -53,6 +54,8 @@ export function PracticeCard({ lessonId }: { lessonId: string }) {
 				<CardAction>
 					<a
 						href={practice.href}
+						target="_blank"
+						rel="noopener noreferrer"
 						onClick={captureOpen}
 						className={cn(
 							buttonVariants({ variant: "secondary", size: "sm" }),
@@ -70,6 +73,8 @@ export function PracticeCard({ lessonId }: { lessonId: string }) {
 				</p>
 				<a
 					href={practice.href}
+					target="_blank"
+					rel="noopener noreferrer"
 					onClick={captureOpen}
 					className={cn(buttonVariants({ variant: "secondary" }), "sm:hidden")}
 				>

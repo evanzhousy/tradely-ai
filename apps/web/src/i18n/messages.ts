@@ -5,6 +5,26 @@ export const LOCALE_STORAGE_KEY = "tradely.locale";
 
 const messages = {
 	en: {
+		"lab.badge": "TradingFlow lab",
+		"lab.intro": "Includes a guided TradingFlow Recipe lab",
+		"lab.accessShort": "Platform access required",
+		"lab.sample": "Review the free worked example",
+		"lab.illustrative":
+			"Teaching example · illustrative values, not a current TradingFlow report",
+		"lab.settings": "Starting settings",
+		"lab.steps": "Your steps in TradingFlow",
+		"lab.inspect": "Bring back your reasoning",
+		"lab.access":
+			"Tradely lessons and sample exercises are free. Running this lab requires TradingFlow access through an eligible trial or subscription. You can go directly to TradingFlow without a Tradely account.",
+		"lab.accessDetails": "Check current access and trial terms ↗",
+		"lab.run": "Run this lesson’s Recipe",
+		"lab.keepOpen":
+			"Opens a new tab. Keep this lesson open beside the report. Your Tradely exercise progress is separate from Recipe execution.",
+		"lab.collectionTitle": "Put your learning to work in TradingFlow",
+		"lab.collectionDescription":
+			"Three guided Recipe labs connect concepts to a repeatable research routine. Read the lessons and worked examples free; TradingFlow access is required to run the reports.",
+		"lab.prerequisites": "Suggested preparation:",
+		"lab.open": "Explore this lab",
 		"complete.practiceAsGuest": "Practice without saving",
 		"pricing.freeHeading": "Every current lesson is free.",
 		"pricing.freeDescription":
@@ -208,17 +228,17 @@ const messages = {
 		"home.heroDescription":
 			"A guided options curriculum that turns flow, ranking, Greeks, GEX, and open interest into one repeatable research workflow, with real practice in TradingFlow.",
 		"home.partnerDisclosure":
-			"TradingFlow is an independent partnered service. Its own account or subscription may be required.",
+			"Tradely courses and sample exercises are free. Partner labs run in TradingFlow and require its own account and access.",
 		"home.courseEyebrow": "THE COURSE",
 		"home.courseHeading": "A field manual, not a video library.",
 		"home.courseDescription":
-			"Each lesson explains one decision, shows the relevant evidence, and ends with a bounded task in TradingFlow.",
+			"Each lesson explains one decision and gives you evidence to practice with. Selected lessons include guided TradingFlow Recipe labs.",
 		"home.learningRecord": "Your learning record",
 		"home.independentProducts":
 			"Independent products · official practice partnership",
 		"home.partnerHeading": "Learn in Tradely. Practice in TradingFlow.",
 		"home.partnerDescription":
-			"Tradely keeps your curriculum and progress. TradingFlow remains the real analysis environment, with separate customer accounts and infrastructure.",
+			"Learn concepts and save your progress in Tradely. Apply them through guided Recipes in TradingFlow, our partner research platform.",
 		"home.statLessons": "Lessons",
 		"home.statMinutes": "Estimated study minutes",
 		"home.statPreview": "Free lessons",
@@ -300,6 +320,25 @@ const messages = {
 		"analytics.necessaryOnly": "Use necessary only",
 	},
 	zh: {
+		"lab.badge": "TradingFlow 实践",
+		"lab.intro": "本课含 TradingFlow Recipe 引导实践",
+		"lab.accessShort": "需要平台访问权限",
+		"lab.sample": "查看免费解析示例",
+		"lab.illustrative": "教学示例 · 示例数值，并非 TradingFlow 当前报告",
+		"lab.settings": "初始设置",
+		"lab.steps": "在 TradingFlow 中的操作步骤",
+		"lab.inspect": "整理你的分析理由",
+		"lab.access":
+			"Tradely 课程和示例练习免费。运行本实践需要符合条件的 TradingFlow 试用或订阅权限，无需先注册 Tradely。",
+		"lab.accessDetails": "查看当前访问和试用条款 ↗",
+		"lab.run": "运行本课 Recipe",
+		"lab.keepOpen":
+			"在新标签页打开，请将本课保留在报告旁。Tradely 练习进度与 Recipe 运行分别记录。",
+		"lab.collectionTitle": "在 TradingFlow 中运用所学",
+		"lab.collectionDescription":
+			"三个 Recipe 引导实践把概念连接到可重复的研究流程。课程和解析示例免费阅读，运行报告需要 TradingFlow 访问权限。",
+		"lab.prerequisites": "建议先学：",
+		"lab.open": "查看本实践",
 		"complete.practiceAsGuest": "不保存记录，直接练习",
 		"pricing.freeHeading": "所有现有课程均免费。",
 		"pricing.freeDescription":
@@ -491,16 +530,16 @@ const messages = {
 		"home.heroDescription":
 			"一套有引导的期权课程，把成交流、排名、Greeks、GEX 和未平仓量串成可重复的研究流程，并在 TradingFlow 中完成真实练习。",
 		"home.partnerDisclosure":
-			"TradingFlow 是独立运营的合作服务，可能需要单独注册账户或订阅。",
+			"Tradely 课程和示例练习免费。合作实践在 TradingFlow 中运行，需要其平台账户和访问权限。",
 		"home.courseEyebrow": "课程",
 		"home.courseHeading": "一本实战手册，而不是视频目录。",
 		"home.courseDescription":
-			"每一课聚焦一个决策，展示相关证据，并以 TradingFlow 中一个边界明确的任务收尾。",
+			"每一课聚焦一个决策，并提供可练习的证据。部分课程包含 TradingFlow Recipe 引导实践。",
 		"home.learningRecord": "你的学习记录",
 		"home.independentProducts": "独立产品 · 官方练习合作",
 		"home.partnerHeading": "在 Tradely 学习，在 TradingFlow 练习。",
 		"home.partnerDescription":
-			"Tradely 保存你的课程与进度。TradingFlow 仍是独立的分析环境，双方使用各自的账户和基础设施。",
+			"在 Tradely 学习概念并保存进度，在合作研究平台 TradingFlow 中通过 Recipe 引导实践运用所学。",
 		"home.statLessons": "课程数",
 		"home.statMinutes": "预计学习分钟数",
 		"home.statPreview": "免费课程",
