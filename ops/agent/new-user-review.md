@@ -18,11 +18,11 @@ Last updated: 2026-09-14
 
 Latest run: partial greenfield Browser review through Round 010. External state/report: `/tmp/tradely-new-user-review/20260914-greenfield/state.md` and `report.md`. No production checks, billing mutations, or credentials were used.
 
-- Resume at Round 011 from the external queue; consume lessons 02–36 one learner objective per round and preserve source-linked teach-backs and first attempts.
+- Resume at Round 046 from the external state for final boundary work. Lessons 01–36 are assessed in the external state/report; no Tradely lesson content remains queued.
 - Establish Node 24.x and rerun affected checks if runtime qualification matters; the app ran on Node 22.16.0 because the existing 8250 service forced the run-owned server to 8251.
 - Establish a supported writable GIF capture path; seven screenshots exist externally, but the required GIF evidence gate remains BLOCKED.
 - Obtain an assigned non-production identity/mailbox before testing signup, OTP, saved progress, and cross-device resume; do not use guessed or production credentials.
-- Keep the partial outcome: confirmed bugs were none in the reviewed journeys; current findings are consent/study-mark usability friction plus environment/evidence blockers.
+- Keep the partial outcome: confirmed bugs were none in the reviewed journeys; current findings are consent/study-mark usability friction plus environment/evidence blockers. Close authorized TradingFlow Recipe and authenticated-persistence checks before claiming a fully evidenced audit.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
