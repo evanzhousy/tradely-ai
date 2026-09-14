@@ -71,8 +71,7 @@ The initial migration is [packages/db/src/migrations/0000_salty_randall.sql](pac
 
 ```bash
 pnpm check-types
-pnpm --filter web test
-pnpm exec biome check .
+pnpm check
 pnpm build
 ```
 

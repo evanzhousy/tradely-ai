@@ -142,7 +142,7 @@ lesson component.
 
    ```bash
    pnpm check-types
-   pnpm --filter web test
+   pnpm check
    pnpm exec biome check .
    pnpm build
    ```

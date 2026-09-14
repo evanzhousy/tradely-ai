@@ -7,9 +7,9 @@ Tradely follows the same *method* as Vercel's public `design.md` work: one in-re
 1. Freeze a real reader task and its inputs (`homepage.md`).
 2. Keep the previous first-attempt screenshots as baseline.
 3. Change `DESIGN.md`, `desk.css`, or the page, not an ad-hoc restyle of one render.
-4. Run `pnpm --filter web test` so mechanical checks move with the contract.
+4. Run `pnpm check-types` and review the page in the Browser at the frozen sizes and themes.
 5. Score light and dark, desktop and mobile, against the scenario rubric.
-6. If a correction repeats, encode it as an observable rule, a `desk-*` primitive, or a contract test.
+6. If a correction repeats, encode it as an observable rule or a `desk-*` primitive.
 
 ## Scenarios
 

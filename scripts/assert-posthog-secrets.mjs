@@ -54,11 +54,9 @@ for (const relativePath of files) {
 	}
 	if (contents.includes("\0")) continue;
 	scanned += 1;
-	const isTestFile = /\.test\.[cm]?[jt]sx?$/.test(relativePath);
 	if (
 		sourceExtensions.has(extname(relativePath)) &&
-		relativePath !== "scripts/assert-posthog-secrets.mjs" &&
-		!isTestFile
+		relativePath !== "scripts/assert-posthog-secrets.mjs"
 	) {
 		if (
 			contents.includes("process.env.POSTHOG_CLI_API_KEY") &&

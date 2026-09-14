@@ -139,7 +139,7 @@ The homepage is owned by `routes/index.tsx`; decorative course materials are own
 
 The SVG motion requested on 2026-09-08 is owned by `lesson-infographic-motion.ts`. Each visible diagram loops its complete explanatory sequence, with a 700ms rest between cycles. Repetition is synchronized at the sequence level so the subject-specific delays stay intact. Trace accents draw above intact static paths; labels, values, access states, and pending audit states remain unchanged. Keyboard and touch navigation stay immediate and do not restart the loop. A Pause motion / Resume motion control above the curriculum stops or restarts the diagrams. Reduced motion and missing browser APIs retain the complete static diagram. Cancel both active effects and scheduled cycles when offscreen, hidden, paused, or unmounted; resume when eligible again. No new animation-library dependency is needed for these SVGs.
 
-Homepage is the first frozen scenario: `docs/design-eval/homepage.md`. Mechanical checks live in `apps/web/src/design-eval/homepage.contract.test.ts`. When a review correction repeats, encode it here as an observable rule, in `desk.css` as a primitive, or in that test as a check. Do not hand-tune one generated page and leave the contract unchanged.
+Homepage is the first frozen scenario: `docs/design-eval/homepage.md`. Review it in the Browser at both themes and baseline desktop/mobile sizes. When a review correction repeats, encode it here as an observable rule or in `desk.css` as a primitive. Do not hand-tune one generated page and leave the contract unchanged.
 
 ## Colors
 

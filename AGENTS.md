@@ -7,6 +7,13 @@
   save it in the repository; keep plans in the conversation or an external output
   directory instead.
 
+## Testing
+
+- Do not add, restore, or run unit tests in this repository. Do not introduce
+unit-test files, runners, configuration, or unit-test-only dependencies. Validate
+changes with type checks, builds, lint/static checks, and user-observable/browser
+acceptance checks where relevant.
+
 ## Git workflow
 
 - After completing an implementation and running the relevant validation, commit

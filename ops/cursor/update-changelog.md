@@ -111,13 +111,14 @@ For content updates, run these commands from the repository root:
 ```sh
 pnpm exec biome check apps/web/src/content/changelog.ts
 pnpm --filter web check-types
-pnpm --filter web test src/seo/pages.test.ts
+pnpm build
 git diff --check
 ```
 
 Include any other edited source files in the formatting check. Manually verify
 unique IDs, valid dates, newest-first ordering, matching date labels, nonempty
-copy, and unchanged historical IDs. Broaden tests only if code behavior changed.
+copy, and unchanged historical IDs. Broaden validation only if code behavior
+changed.
 If a check fails outside the scope, identify the file and failure; do not repair
 or commit another agent's work or report a clean check.
 

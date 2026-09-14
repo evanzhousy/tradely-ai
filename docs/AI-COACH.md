@@ -39,7 +39,6 @@ Run under Node 24:
 ```sh
 pnpm --filter web coaching:preflight
 pnpm --filter web coaching:evaluate
-pnpm --filter web exec vitest run src/domain/coaching src/server/coaching.server.test.ts src/server/coaching-provider.server.test.ts src/features/learning/coaching-panel.test.tsx src/analytics/coaching-events.test.ts
 ```
 
 Preflight reports presence only and reads the public model catalog. It does not contact the database or generate text. A nonzero result with no key/cohort configured is expected before activation.

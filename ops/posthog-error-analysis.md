@@ -176,14 +176,13 @@ not authorize changing PostHog issue status or suppression rules.
 ### 4. Define repair and verification gates
 
 For each actionable issue, name the owning file/module or deployment setting,
-proposed change, expected behavior, focused regression check, and residual risk.
+proposed change, expected behavior, focused validation check, and residual risk.
 Preserve server-owned access, grading, billing, and consent contracts. An analysis
 request alone ends with recommendations; execute implementation only if authorized.
 
 If implementing, reproduce safely locally or in an authorized preview and use
-the repository's Node 24 toolchain. Choose focused tests from `pnpm --filter web
-test -- <test-path>`; use `pnpm check-types` when types change and build checks
-when bundling changes. Inspect build configuration before running production-mode
+the repository's Node 24 toolchain. Use `pnpm check-types`, `pnpm check`, and
+`pnpm build` as appropriate. Inspect build configuration before running production-mode
 builds because source-map plugins can upload externally. For telemetry repairs,
 verify no capture before consent or after withdrawal, redaction, and expected
 capture after consent. Test failures in unrelated dirty files must be identified,
@@ -195,7 +194,7 @@ for sensitive content, and include the GIF and file link in the final response
 as required by AGENTS.md. Keep sensitive captures outside Git. A data-only run
 does not require synthetic browser activity.
 
-Local tests prove local behavior. Production resolution additionally requires a
+Local checks prove local behavior. Production resolution additionally requires a
 verified deployed release, successful affected journey, and a bounded observation
 window with comparable traffic/capture coverage. Define that window and required
 exposure for the issue; no events during no traffic is not proof of recovery.
@@ -224,7 +223,7 @@ Reconcile a headline issue count with an independent bounded event query under
 the same filters, accounting for grouping and sampling differences. If blocked,
 record why reconciliation cannot be done. Re-read report and runbook, validate
 relative paths, inspect for sensitive data, and run `git diff --check`. No app
-tests are needed for documentation-only work. Perform the maintenance decision,
+checks are needed for documentation-only work. Perform the maintenance decision,
 stage only owned files, inspect `git diff --cached`, and commit validated scoped
 changes before reporting completion. Do not push without authorization.
 

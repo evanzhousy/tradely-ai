@@ -2,7 +2,7 @@
 
 **Route:** `/`  
 **Contract:** `DESIGN.md` (Research Notebook homepage, 2026-09-07)
-**Mechanical checks:** `apps/web/src/design-eval/homepage.contract.test.ts`
+**Verification:** inspect the route in the Browser at the frozen desktop/mobile sizes and both themes.
 
 ## Reader
 
@@ -53,7 +53,7 @@ Fanout reference: spacious typography, tangible study materials, and a clear rou
 
 ## How to rerun
 
-1. `pnpm --filter web test` (includes homepage.contract.test.ts).
+1. `pnpm check-types`, `pnpm check`, and `pnpm build`.
 2. `pnpm --filter web dev` and open `/` in light and dark, desktop and mobile.
 3. Click Start learning and one lesson card. Confirm course and lesson pages still use product chrome, not a second visual system.
 

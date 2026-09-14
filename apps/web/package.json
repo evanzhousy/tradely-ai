@@ -11,7 +11,6 @@
 		"check-types": "tsr generate && tsc --noEmit",
 		"serve": "vite preview",
 		"dev": "vite dev",
-		"test": "vitest run",
 		"learning:preview": "vite --config learning-preview/vite.config.ts",
 		"coaching:evaluate": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/evaluate-coaching.ts",
 		"coaching:preflight": "node scripts/coaching-preflight.mjs",
@@ -49,22 +48,17 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@electric-sql/pglite": "0.5.8",
 		"@posthog/rollup-plugin": "1.5.1",
 		"@tanstack/react-router-devtools": "^1.167.0",
 		"@tanstack/router-cli": "^1.167.30",
-		"@testing-library/dom": "^10.4.1",
-		"@testing-library/react": "^16.3.2",
 		"@tradely/config": "workspace:*",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
 		"@types/three": "^0.185.4",
 		"@vitejs/plugin-react": "^6.0.4",
-		"jsdom": "^30.0.0",
 		"tsx": "4.23.12",
 		"typescript": "catalog:",
 		"vite": "^8.1.5",
-		"vitest": "^4.1.10",
 		"web-vitals": "^6.0.1"
 	}
 }

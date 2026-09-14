@@ -83,29 +83,12 @@ Console logs, request/response details, and canvas capture remain off. Retention
 is 30 days. See [Replay setup](POSTHOG-REPLAY.md) for live activation and checks.
 
 ## Verification
-
-- `analytics/provider.test.tsx`: delayed SDK readiness after GA4, identity/session
-  deduplication, account changes, pending-event withdrawal, and consent failures.
-- `analytics/route-analytics.test.tsx`: consented navigation, query removal,
-  language changes, auth route classification, withdrawal, and resumption.
-- `components/access-panel.test.tsx`: unavailable state already visible when
-  consent arrives, recovery, and renewed consent.
-- `components/video-player.test.tsx`: per-lesson/revision start lifecycle,
-  consented retry, completion, and protected URL exclusion.
-- `components/complete-lesson-button.test.tsx`: confirmed saves, rejected saves,
-  exceptions, and refresh failures after successful persistence.
-- `components/pricing-actions.test.tsx`: offer-specific checkout failures,
-  portal failures, verified restoration, and refresh failure classification.
-- `features/learning/learning-exercise.test.tsx` and `contract-explorer.test.tsx`:
-  open/hint/assessment outcomes, failures, stale account responses, renderer
-  selection, and fallback.
-- Existing SDK, property-redaction, Google Analytics, and server-telemetry tests
-  cover capture/privacy boundaries. Local test success is separate from deployed
-  event delivery and PostHog dashboard population.
-
-For a local browser smoke test, grant consent, navigate between home, pricing, and
-sign-in, then withdraw consent. Verify one `$pageview`/`page_viewed` pair per
-navigation, no sensitive query values, and no further events after withdrawal.
+Run `pnpm check-types`, `pnpm check`, and `pnpm build`. Then use the Browser
+to grant consent, navigate between home, pricing, and sign-in, and withdraw
+consent. Verify one `$pageview`/`page_viewed` pair per navigation, no
+sensitive query values, and no further events after withdrawal. Local event
+delivery remains separate from deployed event delivery and PostHog dashboard
+population.
 Use a normal Chrome user agent and `navigator.webdriver=false`; keep production
 bot filtering enabled. Do not perform real checkout or mutate production learning
 records for a smoke test.
