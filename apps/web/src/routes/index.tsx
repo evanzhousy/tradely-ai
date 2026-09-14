@@ -12,6 +12,7 @@ import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
+import { LearningProgressCounts } from "@/components/learning-progress";
 import { TradingFlowLabs } from "@/components/tradingflow-lab";
 import { getLearningPath } from "@/content/course";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -126,16 +127,26 @@ function HomeComponent() {
 						</div>
 						<div className="desk-stat">
 							<p className="desk-stat-value">
-								{progress.completed}/{progress.total}
+								{progress.unavailable
+									? "—"
+									: `${progress.completed}/${progress.total}`}
 								<span>{t("home.statProgress")}</span>
 							</p>
 							<p className="landing-progress-note">
-								{progress.signedIn
-									? t("progress.synced")
-									: t("progress.signInToSync")}
+								{progress.unavailable
+									? t("complete.unavailable")
+									: progress.signedIn
+										? t("progress.synced")
+										: t("progress.signInToSync")}
 							</p>
 						</div>
 					</div>
+					{progress.signedIn && !progress.unavailable ? (
+						<LearningProgressCounts
+							summary={progress.learning}
+							locale={locale}
+						/>
+					) : null}
 					<p className="landing-partner-note">{t("home.partnerDisclosure")}</p>
 				</div>
 			</section>
@@ -217,6 +228,7 @@ function HomeComponent() {
 					<p>{t("home.curriculumIntro")}</p>
 				</div>
 				<LandingCurriculum
+					learning={progress.learning}
 					lessons={course.lessons}
 					completedIds={progress.records
 						.filter((record) => record.completedAt)

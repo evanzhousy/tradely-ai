@@ -61,7 +61,9 @@ describe("lesson completion outcomes", () => {
 				lesson_order: lesson.order + 1,
 			}),
 		);
-		expect(screen.getByText("complete.success")).toBeTruthy();
+		expect(
+			screen.getByRole("button", { name: "complete.success" }),
+		).toBeTruthy();
 		rerender(<CompleteLessonButton lesson={{ ...lesson, id: "delta" }} />);
 		expect(screen.queryByText("complete.success")).toBeNull();
 	});
@@ -81,6 +83,15 @@ describe("lesson completion outcomes", () => {
 			"lesson_completed",
 		]);
 		expect(mocks.error).not.toHaveBeenCalled();
+	});
+	it("keeps the persisted study mark after remount without another write", () => {
+		render(<CompleteLessonButton lesson={lesson} studied />);
+		const button = screen.getByRole("button", {
+			name: "complete.success",
+		}) as HTMLButtonElement;
+		expect(button.disabled).toBe(true);
+		fireEvent.click(button);
+		expect(mocks.save).not.toHaveBeenCalled();
 	});
 
 	it.each([

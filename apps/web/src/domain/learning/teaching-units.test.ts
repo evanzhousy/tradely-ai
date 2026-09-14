@@ -78,11 +78,9 @@ describe("expanded concept curriculum", () => {
 					.case(variant)
 					.questions.find((item) => item.id === q)?.accepted[0],
 			);
-		expect(answer("premium-payoff", 2, "profit")).toBe(-600);
-		expect(answer("expiration-settlement", 2, "settlement-difference")).toBe(
-			-10,
-		);
-		expect(answer("expiration-settlement", 2, "cash")).toBe(0);
+		expect(answer("premium-payoff", 2, "profit")).toBe(-1000);
+		expect(answer("premium-payoff", 2, "payoff")).toBe(0);
+		expect(answer("expiration-settlement", 2, "cash")).toBe(1000);
 		expect(answer("session-flow-vs-structure", 2, "volume")).toBe(40);
 		expect(answer("session-flow-vs-structure", 2, "ending-oi")).toBe(496);
 		expect(answer("dex-dei-gex", 1, "net")).toBe(-30000);

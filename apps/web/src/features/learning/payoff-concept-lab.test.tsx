@@ -270,7 +270,7 @@ describe("premium and payoff concept lesson", () => {
 			}),
 		).toBeNull();
 		expect(screen.getByText("Total premium paid?")).toBeTruthy();
-		expect(scenario.version).toBe(2);
+		expect(scenario.version).toBe(4);
 		expect(
 			scenario.steps[1].questions.map((q) => ({
 				id: q.id,

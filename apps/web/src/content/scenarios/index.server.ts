@@ -1,4 +1,5 @@
 import "@tanstack/react-start/server-only";
+import { archivedFoundationUnits } from "../units/archive/foundations-original.server";
 import { optionContractsV2 } from "../units/archive/option-contracts-v2.server";
 import { unitScenarios } from "../units/authoring.server";
 import { teachingUnits } from "../units/index.server";
@@ -9,6 +10,7 @@ import { researchWorkflowScenarios } from "./research-workflow";
 import { sessionFlowScenarios } from "./session-flow";
 
 const archivedScenarios = [
+	...archivedFoundationUnits.flatMap((unit) => unitScenarios(unit)),
 	...unitScenarios(optionContractsV2),
 	...optionPrintScenarios,
 	...contractNeighborhoodScenarios,

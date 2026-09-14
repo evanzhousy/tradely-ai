@@ -150,7 +150,16 @@ describe("integrated course persistence journey", () => {
 				view.result?.unreviewed ? "practiced" : "demonstrated",
 			);
 			expect(viewOf(await open())).toEqual(view);
-			expect((await getCourseProgressImpl()).completed).toBe(0);
+			const afterExercise = await getCourseProgressImpl();
+			expect(afterExercise.completed).toBe(0);
+			expect(afterExercise.learning).toMatchObject({
+				submitted: 1,
+				passed: view.result?.status === "demonstrated" ? 1 : 0,
+				reviewNeeded: view.result?.unreviewed ? 1 : 0,
+			});
+			expect(afterExercise.learning.lessons[lessonId].latest?.attemptId).toBe(
+				attemptId,
+			);
 			expect(
 				await saveLessonProgressImpl({ lessonId, complete: true }),
 			).toMatchObject({ saved: true });
@@ -165,6 +174,7 @@ describe("integrated course persistence journey", () => {
 			dependencies.userId = "another-learner";
 			expect(viewOf(await open()).attemptId).not.toBe(attemptId);
 			expect((await getCourseProgressImpl()).records).toEqual([]);
+			expect((await getCourseProgressImpl()).learning.submitted).toBe(0);
 			dependencies.userId = null;
 			expect(await open()).toEqual({ ok: false, reason: "signed_out" });
 			dependencies.userId = "journey-learner";

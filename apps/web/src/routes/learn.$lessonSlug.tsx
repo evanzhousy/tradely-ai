@@ -28,6 +28,8 @@ import { authIsConfigured } from "@/auth/client";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
+import { LessonLearningStatus } from "@/components/learning-progress";
+import { LessonIntroduction } from "@/components/lesson-introduction";
 import { LessonNavigation } from "@/components/lesson-navigation";
 import { SignInLink } from "@/components/sign-in-link";
 import {
@@ -130,12 +132,14 @@ function LessonPage() {
 		? getLocalizedLesson(previous, locale)
 		: undefined;
 	const localizedNext = next ? getLocalizedLesson(next, locale) : undefined;
+	const earlierResult = progress.learning.lessons[lesson.id]?.earlier;
 
 	return (
 		<main className="lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[330px_1fr]">
 			<aside className="lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r px-4 py-8 lg:block">
 				<div className="sticky top-24 flex flex-col gap-6">
 					<CourseProgress
+						learning={progress.learning}
 						unavailable={progress.unavailable}
 						completed={progress.completed}
 						total={progress.total}
@@ -144,6 +148,7 @@ function LessonPage() {
 					/>
 					<div className="max-h-[calc(100svh-12rem)] overflow-y-auto pr-1">
 						<CourseList
+							learning={progress.learning}
 							lessons={course.lessons}
 							completedIds={completedIds}
 							currentLessonId={lesson.id}
@@ -162,13 +167,16 @@ function LessonPage() {
 					<Accordion className="lg:hidden">
 						<AccordionItem value="course-navigation">
 							<AccordionTrigger>
-								{t("lesson.courseNavigation", {
-									percentage: progress.percentage,
-								})}
+								{progress.unavailable
+									? t("complete.unavailable")
+									: t("lesson.courseNavigation", {
+											percentage: progress.percentage,
+										})}
 							</AccordionTrigger>
 							<AccordionContent>
 								<div className="flex flex-col gap-5 py-2">
 									<CourseProgress
+										learning={progress.learning}
 										unavailable={progress.unavailable}
 										completed={progress.completed}
 										total={progress.total}
@@ -176,6 +184,7 @@ function LessonPage() {
 										compact
 									/>
 									<CourseList
+										learning={progress.learning}
 										lessons={course.lessons}
 										completedIds={completedIds}
 										currentLessonId={lesson.id}
@@ -211,6 +220,21 @@ function LessonPage() {
 							</p>
 						</div>
 					</header>
+					<LessonIntroduction lessonId={lesson.id} locale={locale} />
+					<LessonLearningStatus
+						evidence={progress.learning.lessons[lesson.id]}
+						locale={locale}
+					/>
+					{earlierResult ? (
+						<a
+							className="text-sm underline underline-offset-4"
+							href={`/learn/${encodeURIComponent(lesson.id)}?attempt=${encodeURIComponent(earlierResult.attemptId)}`}
+						>
+							{locale === "zh"
+								? "查看保留的旧版案例"
+								: "View your preserved earlier case"}
+						</a>
+					) : null}
 					<TradingFlowLabIntro lessonId={lesson.id} />
 
 					{guidesForLesson(lesson.id).map((guide) => (
@@ -298,7 +322,10 @@ function LessonPage() {
 							</details>
 							<div className="flex flex-col gap-5">
 								{progress.signedIn ? (
-									<CompleteLessonButton lesson={lesson} />
+									<CompleteLessonButton
+										lesson={lesson}
+										studied={Boolean(lessonProgress?.completedAt)}
+									/>
 								) : !page.learning ? (
 									<div className="flex flex-col items-start gap-3">
 										<p className="text-muted-foreground text-sm">

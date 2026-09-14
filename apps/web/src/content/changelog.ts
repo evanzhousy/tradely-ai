@@ -1,6 +1,26 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-09-14-foundation-learning-evidence",
+		date: "2026-09-14",
+		dateLabel: "September 14, 2026 · Unreleased",
+		title: "Clearer foundations and more meaningful progress",
+		summary:
+			"The first four lessons introduce their purpose and key terms, then test the concept in different situations.",
+		changes: [
+			{
+				title: "See what you studied and what you practiced",
+				description:
+					"Personal study marks and independent exercise results now appear separately. Hints, written work needing review and earlier-version results keep their own labels.",
+			},
+			{
+				title: "Apply the idea to a different case",
+				description:
+					"Foundation cases now contrast contract identity, missing terms, closing and assignment, costs and payoff, and physical and cash settlement. Previous attempts retain their original grading rules.",
+			},
+		],
+	},
+	{
 		id: "2026-09-14-tradingflow-labs",
 		date: "2026-09-14",
 		dateLabel: "September 14, 2026",

@@ -25,10 +25,10 @@ describe("i18n messages", () => {
 	it("interpolates dynamic values without dropping unknown placeholders", () => {
 		const key = "progress.completedLabel" as MessageKey;
 		expect(translate("en", key, { completed: 3, total: 11 })).toBe(
-			"3 of 11 lessons completed",
+			"3 of 11 lessons marked as studied",
 		);
 		expect(translate("zh", key, { completed: 3, total: 11 })).toBe(
-			"已完成 3/11 课",
+			"已标记学过 3/11 课",
 		);
 	});
 });

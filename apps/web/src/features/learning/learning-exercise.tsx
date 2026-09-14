@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
 	Alert,
@@ -42,7 +42,8 @@ function LearningSession({
 	onSelectAttempt,
 }: LearningExerciseProps) {
 	const { locale } = useI18n();
-	const { capture } = useAnalytics();
+	const { capture, captureException } = useAnalytics();
+	const router = useRouter();
 	const open = useServerFn(openLearning);
 	const update = useServerFn(updateLearning);
 	const readCoach = useServerFn(getCoaching);
@@ -161,6 +162,12 @@ function LearningSession({
 					capturedResult.current !== response.view.attemptId
 				) {
 					capturedResult.current = response.view.attemptId;
+					void router.invalidate().catch((error: unknown) =>
+						captureException(error, {
+							source: "route_boundary",
+							lesson_id: lessonId,
+						}),
+					);
 					capture("lesson_exercise_submitted", {
 						...properties,
 						criteria_met: response.view.result.met,
@@ -183,7 +190,16 @@ function LearningSession({
 				}
 			}
 		},
-		[attemptId, capture, lessonId, onSelectAttempt, open, update],
+		[
+			attemptId,
+			capture,
+			captureException,
+			router,
+			lessonId,
+			onSelectAttempt,
+			open,
+			update,
+		],
 	);
 	useEffect(() => {
 		if (attemptId && view?.attemptId !== attemptId && !pending.current)

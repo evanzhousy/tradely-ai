@@ -2,11 +2,17 @@ import "@tanstack/react-start/server-only";
 
 import { performance } from "node:perf_hooks";
 
-import { createDb, lessonProgress } from "@tradely/db";
+import { createDb, lessonAttempt, lessonProgress } from "@tradely/db";
 import { and, eq } from "drizzle-orm";
 
 import { shouldCaptureServerTiming } from "@/analytics/server-timing";
 import { getLessonById, tradingFlowCourse } from "@/content/course";
+import { getLessonScenarios } from "@/content/scenarios/index.server";
+import { learningResultSchema } from "@/domain/learning/types";
+import {
+	type AssessmentRecord,
+	summarizeLearningEvidence,
+} from "@/domain/learning-progress";
 import { calculateCourseProgress } from "@/domain/progress";
 import { getLearningIdentity } from "./access.server";
 import {
@@ -17,6 +23,9 @@ import type { SaveLessonProgressInput } from "./progress";
 import { ensureAppUser } from "./users.server";
 
 export async function getCourseProgressImpl() {
+	const lessonIds = tradingFlowCourse.lessons.map((lesson) => lesson.id);
+	const scenarios = lessonIds.flatMap(getLessonScenarios);
+	const emptyLearning = summarizeLearningEvidence(lessonIds, scenarios, []);
 	const startedAt = performance.now();
 	const captureSlowTiming = async (
 		status: "ok" | "unavailable",
@@ -42,26 +51,57 @@ export async function getCourseProgressImpl() {
 			total: tradingFlowCourse.lessons.length,
 			percentage: 0,
 			records: [],
+			learning: emptyLearning,
 			unavailable: identity.unavailable,
 		};
 	}
 	try {
 		const db = createDb();
-		const records = await db
-			.select({
-				lessonId: lessonProgress.lessonId,
-				contentVersion: lessonProgress.contentVersion,
-				lastPositionSeconds: lessonProgress.lastPositionSeconds,
-				completedAt: lessonProgress.completedAt,
-			})
-			.from(lessonProgress)
-			.where(eq(lessonProgress.userId, userId));
+		const [records, submitted] = await Promise.all([
+			db
+				.select({
+					lessonId: lessonProgress.lessonId,
+					contentVersion: lessonProgress.contentVersion,
+					lastPositionSeconds: lessonProgress.lastPositionSeconds,
+					completedAt: lessonProgress.completedAt,
+				})
+				.from(lessonProgress)
+				.where(eq(lessonProgress.userId, userId)),
+			db
+				.select({
+					lessonId: lessonAttempt.lessonId,
+					attemptId: lessonAttempt.id,
+					scenarioId: lessonAttempt.scenarioId,
+					scenarioVersion: lessonAttempt.scenarioVersion,
+					submittedAt: lessonAttempt.submittedAt,
+					assessment: lessonAttempt.assessment,
+				})
+				.from(lessonAttempt)
+				.where(
+					and(
+						eq(lessonAttempt.userId, userId),
+						eq(lessonAttempt.status, "submitted"),
+					),
+				),
+		]);
 		const normalized = records.map((record) => ({
 			lessonId: record.lessonId,
 			contentVersion: record.contentVersion,
 			lastPositionSeconds: record.lastPositionSeconds,
 			completedAt: record.completedAt?.toISOString() ?? null,
 		}));
+		const assessments: AssessmentRecord[] = submitted.flatMap((record) => {
+			const parsed = learningResultSchema.safeParse(record.assessment);
+			if (!parsed.success || !record.submittedAt) return [];
+			const { assessment: _assessment, ...metadata } = record;
+			return [
+				{
+					...metadata,
+					submittedAt: record.submittedAt.toISOString(),
+					result: parsed.data,
+				},
+			];
+		});
 		await captureSlowTiming("ok", true);
 		return {
 			signedIn: true as const,
@@ -70,6 +110,7 @@ export async function getCourseProgressImpl() {
 				normalized,
 			),
 			records: normalized,
+			learning: summarizeLearningEvidence(lessonIds, scenarios, assessments),
 			unavailable: false,
 		};
 	} catch (error) {
@@ -85,7 +126,7 @@ export async function getCourseProgressImpl() {
 			total: tradingFlowCourse.lessons.length,
 			percentage: 0,
 			records: [],
-
+			learning: emptyLearning,
 			unavailable: true as const,
 		};
 	}

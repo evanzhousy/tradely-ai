@@ -216,7 +216,7 @@ describe("rights concept lesson", () => {
 		expect(
 			screen.getByText("What gross cash amount must the writer pay?"),
 		).toBeTruthy();
-		expect(scenario.version).toBe(2);
+		expect(scenario.version).toBe(4);
 		expect(scenario.steps.slice(1).every((step) => !step.conceptLab)).toBe(
 			true,
 		);

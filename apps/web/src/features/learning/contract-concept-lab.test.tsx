@@ -230,6 +230,6 @@ describe("contract concept lab", () => {
 		expect(getLessonBody("option-contracts")).toContain(
 			"market capitalization",
 		);
-		expect(scenario.version).toBe(3);
+		expect(scenario.version).toBe(4);
 	});
 });

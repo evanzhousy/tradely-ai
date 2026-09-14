@@ -37,6 +37,7 @@ function CoursePage() {
 							{t("course.yourProgress")}
 						</div>
 						<CourseProgress
+							learning={progress.learning}
 							unavailable={progress.unavailable}
 							completed={progress.completed}
 							total={progress.total}
@@ -99,6 +100,7 @@ function CoursePage() {
 			</p>
 			<TradingFlowLabs />
 			<CourseCatalog
+				learning={progress.learning}
 				groupByModule
 				caption={t("course.curriculumDescription")}
 				lessons={course.lessons}

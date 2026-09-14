@@ -11,7 +11,13 @@ import type { Lesson } from "@/content/course";
 import { useI18n } from "@/i18n/provider";
 import { saveLessonProgress } from "@/server/progress";
 
-export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
+export function CompleteLessonButton({
+	lesson,
+	studied = false,
+}: {
+	lesson: Lesson;
+	studied?: boolean;
+}) {
 	const saveProgress = useServerFn(saveLessonProgress);
 	const router = useRouter();
 	const { t } = useI18n();
@@ -24,7 +30,8 @@ export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 	return (
 		<div className="flex flex-col items-start gap-3">
 			<Button
-				disabled={pending}
+				variant="outline"
+				disabled={pending || studied || confirmedLessonId === lesson.id}
 				aria-busy={pending}
 				onClick={async () => {
 					setPending(true);
@@ -82,8 +89,13 @@ export function CompleteLessonButton({ lesson }: { lesson: Lesson }) {
 				}}
 			>
 				<CheckIcon data-icon="inline-start" aria-hidden="true" />
-				{pending ? t("complete.saving") : t("complete.lesson")}
+				{pending
+					? t("complete.saving")
+					: studied || confirmedLessonId === lesson.id
+						? t("complete.success")
+						: t("complete.lesson")}
 			</Button>
+			<p className="text-muted-foreground text-xs">{t("complete.studyNote")}</p>
 			{confirmedLessonId === lesson.id ? (
 				<div className="flex items-center gap-3 text-sm">
 					<BrandOwl pose="complete" size={48} />

@@ -315,7 +315,7 @@ export const tradingFlowCourse = {
 						? 14
 						: 10,
 			mediaDelivery: prior?.mediaDelivery ?? "signed",
-			contentVersion: entry.id === "option-contracts" ? 3 : 2,
+			contentVersion: entry.moduleId === "contracts" ? 4 : 2,
 			mediaKey: prior?.mediaKey ?? entry.id,
 			poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
 			mediaCurrent: false,

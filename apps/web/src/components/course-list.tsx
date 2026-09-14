@@ -7,16 +7,20 @@ import { useEffect, useRef } from "react";
 import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
+import type { CourseEvidenceProgress } from "@/domain/learning-progress";
 import { useI18n } from "@/i18n/provider";
+import { LessonLearningStatus } from "./learning-progress";
 
 export function CourseList({
 	lessons,
 	completedIds = [],
 	currentLessonId,
+	learning,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
 	currentLessonId?: string;
+	learning?: CourseEvidenceProgress;
 }) {
 	const { t, locale } = useI18n();
 	const completed = new Set(completedIds);
@@ -119,6 +123,10 @@ export function CourseList({
 								<span className="line-clamp-2 text-muted-foreground text-sm">
 									{lesson.summary}
 								</span>
+								<LessonLearningStatus
+									evidence={learning?.lessons[lesson.id]}
+									locale={locale}
+								/>
 								<span className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
 									<PlayCircleIcon className="size-3.5" aria-hidden="true" />
 									{t("common.minutes", { minutes: lesson.minutes })} ·{" "}

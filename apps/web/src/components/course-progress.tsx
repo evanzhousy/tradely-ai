@@ -1,7 +1,8 @@
 import { CircularProgress } from "@tradely/ui/components/circular-progress";
 import { Progress } from "@tradely/ui/components/progress";
-
+import type { CourseEvidenceProgress } from "@/domain/learning-progress";
 import { useI18n } from "@/i18n/provider";
+import { LearningProgressCounts } from "./learning-progress";
 
 export function CourseProgress({
 	completed,
@@ -9,14 +10,16 @@ export function CourseProgress({
 	percentage,
 	compact = false,
 	unavailable = false,
+	learning,
 }: {
 	completed: number;
 	total: number;
 	percentage: number;
 	compact?: boolean;
 	unavailable?: boolean;
+	learning?: CourseEvidenceProgress;
 }) {
-	const { t } = useI18n();
+	const { t, locale } = useI18n();
 	if (unavailable)
 		return (
 			<p role="status" className="text-muted-foreground text-sm">
@@ -35,6 +38,9 @@ export function CourseProgress({
 					<p className="font-mono text-muted-foreground text-xs">
 						{completed} / {total} {t("common.completed")}
 					</p>
+					{learning ? (
+						<LearningProgressCounts summary={learning} locale={locale} />
+					) : null}
 				</div>
 			</section>
 		);
@@ -54,6 +60,9 @@ export function CourseProgress({
 				aria-label={t("progress.course")}
 				className={compact ? "h-2" : undefined}
 			/>
+			{learning ? (
+				<LearningProgressCounts summary={learning} locale={locale} />
+			) : null}
 		</section>
 	);
 }

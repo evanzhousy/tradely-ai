@@ -285,7 +285,7 @@ describe("expiration and settlement concept lesson", () => {
 			}),
 		).toBeNull();
 		expect(screen.getByText("What is the cash payoff?")).toBeTruthy();
-		expect(scenario.version).toBe(2);
+		expect(scenario.version).toBe(4);
 		expect(scenario.steps.slice(1).every((step) => !step.conceptLab)).toBe(
 			true,
 		);

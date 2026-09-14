@@ -14,9 +14,12 @@ const mocks = vi.hoisted(() => ({
 	open: vi.fn(),
 	update: vi.fn(),
 	capture: vi.fn(),
+	captureException: vi.fn(),
+	invalidate: vi.fn().mockResolvedValue(undefined),
 	userId: "learner-a",
 }));
 vi.mock("@tanstack/react-router", () => ({
+	useRouter: () => ({ invalidate: mocks.invalidate }),
 	Link: ({
 		children,
 		params,
@@ -40,7 +43,10 @@ vi.mock("@/auth/client", () => ({
 	authIsConfigured: true,
 }));
 vi.mock("@/analytics/context", () => ({
-	useAnalytics: () => ({ capture: mocks.capture }),
+	useAnalytics: () => ({
+		capture: mocks.capture,
+		captureException: mocks.captureException,
+	}),
 }));
 vi.mock("@/i18n/provider", () => ({
 	useI18n: () => ({ locale: "en", t: (key: string) => key }),
@@ -195,6 +201,7 @@ describe("interactive learning UI", () => {
 			}),
 		);
 		page.rerender(<LearningExercise lessonId="validate-option-print" />);
+		expect(mocks.invalidate).toHaveBeenCalledOnce();
 		expect(
 			mocks.capture.mock.calls.filter(
 				(call) => call[0] === "lesson_exercise_submitted",

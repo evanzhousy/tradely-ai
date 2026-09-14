@@ -44,8 +44,8 @@ export const learningCopy = {
 		zh: "你在独立案例中使用了提示，因此本次结果记录为练习。",
 	},
 	completeNote: {
-		en: "This practice result is separate from your course completion and video progress.",
-		zh: "本次练习结果与课程完成情况及视频进度分别记录。",
+		en: "This practice result is separate from your study marks and video progress.",
+		zh: "本次练习结果与学习标记及视频进度分别记录。",
 	},
 	tryAgain: { en: "Practice another case", zh: "练习另一个案例" },
 	retry: { en: "Retry saving", zh: "重试保存" },

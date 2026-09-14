@@ -20,7 +20,9 @@ import { useId, useState } from "react";
 import { getLearningPath, type Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
+import type { CourseEvidenceProgress } from "@/domain/learning-progress";
 import { useI18n } from "@/i18n/provider";
+import { LessonLearningStatus } from "./learning-progress";
 import { LessonInfographic } from "./lesson-infographic";
 
 // Owns ordered lesson discovery; the catalog and server access state remain inputs.
@@ -29,11 +31,13 @@ export function LandingCurriculum({
 	completedIds = [],
 	caption,
 	groupByModule = false,
+	learning,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
 	caption: string;
 	groupByModule?: boolean;
+	learning?: CourseEvidenceProgress;
 }) {
 	const { t, locale } = useI18n();
 	const id = useId();
@@ -93,6 +97,10 @@ export function LandingCurriculum({
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="mt-auto">
+									<LessonLearningStatus
+										evidence={learning?.lessons[lesson.id]}
+										locale={locale}
+									/>
 									<p className="curriculum-practice">
 										{lesson.practice
 											? t("home.cardPractice", { tool: lesson.practice.tool })
