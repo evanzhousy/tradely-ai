@@ -10,18 +10,44 @@ Read [AGENTS.md](../../../AGENTS.md) and use the installed `runbook-maintainer` 
 
 ## Agent Handoff
 
-Last updated: 2026-09-12
+Last updated: 2026-09-14
 
-The first execution's repository-local checkpoint was removed under the repository report-storage policy; future runs must use an external report path and must not add repository-local reports. Round 1 reached the anonymous free-course destination, but the case was blocked overall because the exposed @Browser surface had no writable GIF export path. The local server also ran on Node 22 instead of the required Node 24.
+Maintenance-only review against HEAD `9b1e848`: learning is free, new sales are retired, guest work can continue through registration, Recipe labs are available, and unit tests were removed. No browser or provider checks were run during this update. Previous pricing-era observations do not prove the current product.
 
 - Start a new external report with the current Git and Browser state; materialize and freeze the remaining queue before the next independent round.
-- Resolve a writable sanitized GIF capture path in @Browser and rerun `NAV-001` if a file-backed evidence path becomes available.
-- Resolve Node 24 and verify the assigned non-production Feishu mailbox/test identity before email-auth cases; keep Stripe test-mode and cancellation fixtures separate.
-- The current worktree contains concurrent portfolio P&L edits and deleted/untracked ops paths. Recheck status and include relevant changes in each refresh; do not absorb or overwrite another task's changes.
+- Reconcile the older case inventory using the current-product rules below before queue creation; paid-access and new-purchase expectations are obsolete.
+- Recheck runtime and GIF capture capabilities from current evidence; prior limitations are not confirmed current blockers.
+- Verify non-production Feishu identities for saving and guest handoff. Historical billing fixtures are needed only for implemented support checks.
 
 Keep this section to 3–7 actionable bullets (maximum 12). On resume, replace these initial items with the active report path, last durable round/next case and unresolved prerequisite actions. Completed work belongs in the report, not here.
 
 ## Recommended invocation
+
+### Current product and inventory reconciliation
+
+Current source supersedes the older pricing-era inventory. Update affected expectations before execution, preserving stable IDs and explicit retirement/replacement mappings. This maintenance pass updates this runbook only; it does not claim the case inventory has already been reconciled.
+
+- All curriculum lessons and practice are free. Anonymous learners and accounts without subscriptions can learn. Auth/database/Stripe failure must not introduce a learning paywall. Verified identity and ownership remain required for account-owned saving and retrieval.
+- There are no new pricing/purchase offers. `/pricing` still exists as a compatibility route for free-learning information and historical purchase support. Check that navigation does not promote purchases. Both legacy checkout entry points return `sales_retired` without creating Sessions, regardless of old flags.
+- Manage billing, paid-return verification and Restore purchase remain conditional historical support. Use existing authorized test fixtures; do not buy, create or repurchase subscriptions to populate fixtures. Historical cancellation must not remove free learning. Do not execute billing-retirement scripts as browser-test setup.
+- Guest learning is browser-local and can continue through registration/sign-in. Validate reload, interrupted authentication, successful handoff, repeated recovery and account isolation. Retire the old assumptions that every reload discards guest work or sign-in cannot preserve it.
+- Study completion and practice evidence are distinct. Check course-summary layout, current-version results, saved versus unsaved result copy and recovery after save failure. Account persistence requires server confirmation.
+- Exercise current TradingFlow Recipe lab controls, reset, evidence boundaries and practice destinations. TradingFlow remains a separate partner service; free Tradely learning does not imply partner access.
+- Repeat privacy-choice discovery, acceptance/withdrawal/reload and sensitive-text masking checks. Free curriculum access does not imply media activation or coaching eligibility: inspect actual media edition, cohort/configuration and budgets.
+- Do not add, restore or run unit tests, runners or unit-test dependencies. Historical test declarations are not current execution steps. Use permitted type/build/lint/static and browser checks when relevant.
+
+| Older inventory coverage | Current replacement |
+| --- | --- |
+| `NAV-003`, seven-free filter and lesson access labels | Every current lesson is free; discovery reflects actual controls without an obsolete seven-lesson subset |
+| `ACCESS-001`–`ACCESS-008`, paid gates | Public learning under anonymous/account/service-failure states, with ownership enforcement for saving |
+| `BILL-001`–`BILL-025`, new payments and repurchase | No-sales UI and retired checkout checks; retain only implemented historical support with source evidence |
+| Cancellation removes course access | Historical subscription changes while learning remains free |
+| `LEARN-020`, guest reset/no transfer | Browser-local recovery and safe transfer through registration/sign-in |
+| Lesson L01/L07 paid branches | Public learning, account-owned saving/export and correct navigation |
+
+Record removed product cases as retired with reasons and replacements; do not count them as passes or missing-fixture blockers. Retain implemented historical support. Confirm the target deployment separately before reporting a product defect.
+
+### Invocation examples
 
 To have the agent refresh first and then start the goal, send:
 
@@ -69,9 +95,9 @@ rg --files apps/web/src packages/db ops/agent/e2e-testing
    git diff <baseline> HEAD -- apps/web/src/routes apps/web/src/server apps/web/src/auth apps/web/src/domain apps/web/src/content packages/db/src
    ```
 
-3. If the baseline is missing, unreachable, or not ancestral after a rebase, inspect available history and perform a full current route/feature/test inventory. Record the history gap. Do not silently truncate review to a chosen date or claim complete historical coverage.
+3. If the baseline is missing, unreachable, or not ancestral after a rebase, inspect available history and perform a full current route/feature inventory. Record the history gap. Do not silently truncate review to a chosen date or claim complete historical coverage.
 4. Read relevant changed components, configuration and docs, including working-tree and staged changes and new untracked application files. Inspect sensitive configuration by names/presence and environment identity only. Record dirty-path/content fingerprints privately so later rounds can detect changes without putting source patches or secrets into reports.
-5. Map each user-visible change to affected case IDs: route/navigation, sign-up/sign-in, access, checkout/payment/cancellation, learning/progress, labs/replay, media, coaching, privacy and accessibility. Read the current implementation to resolve the actual behavior; commit subjects are not an oracle.
+5. Map each user-visible change to affected case IDs: route/navigation, sign-up/sign-in, free access, guest handoff, retired sales/historical support, learning/progress/results, Recipe labs/replay, media, coaching, privacy and accessibility. Read the current implementation to resolve the actual behavior; commit subjects are not an oracle.
 6. Update **this runbook first** where prerequisites, commands, environment setup, evidence requirements or execution order have drifted. Update the **case inventory** where scope, expected results, routes or lesson/lab coverage changed. Preserve stable IDs; append new IDs. Record retirement/replacement of obsolete IDs and the reason. Never rewrite an expected result to excuse an apparent regression in the agreed product contract.
 7. Refresh affected route and acceptance references in the inventory. Verify the current route set, syllabus/free IDs and enabled feature boundaries. Avoid hard-coding current case/lesson counts into this runbook.
 8. Write a refresh record in the new/active run report: previous baseline, reviewed code SHA, dirty-state scope, commits/range examined, changed paths → affected/new/retired case IDs, procedure edits and unresolved contract questions. If no relevant change exists, record the range reviewed and `Pre-run maintenance: no change` rather than making cosmetic edits.
@@ -84,9 +110,9 @@ rg --files apps/web/src packages/db ops/agent/e2e-testing
 After the refresh, read the current inventory's fixture and browser matrix. Record:
 
 - Base URL, local/Preview/production classification, application revision/deployment, startup command if local, and current dirty-state scope.
-- Available anonymous and distinct verified test accounts; unpaid/member/pass-owner/manual-grant fixtures and saved-attempt versions as required by individual cases. Use aliases A/B in reports.
-- Verified separation of non-production Auth, database and Stripe test configuration. Inspect no secrets in output. A public page or local URL alone does not prove test-mode billing.
-- Current feature availability: Course Pass sales flag, media edition, coaching cohort/budgets, portal cancellation policy, provider linking policy. Record unavailable evidence as unknown.
+- Anonymous/browser-local guest work, distinct verified test accounts A/B and saved-attempt versions. Subscription/pass/manual grants are not learning prerequisites.
+- Separate non-production Auth/database; inspect Stripe test configuration only for historical support. Stripe unavailability must not block public learning.
+- Current guest handoff, Recipe labs, saved results, media edition, coaching cohort/budgets and historical support/linking policies. New checkout remains retired regardless of old sales flags.
 - Available @Browser capabilities for viewport, locale, keyboard, reduced motion, WebGL, network/console inspection and recording. Do not claim Firefox/Safari coverage from Chromium viewport emulation.
 
 Repair routine local startup/environment issues within existing authorization before abandoning browser coverage. Preserve existing services; identify the process/port before starting another instance, and stop only a process owned by this run. Production setup changes, enabling paid AI generation and destructive fixture changes remain bounded by user authorization. Continue independent eligible cases while a case-specific prerequisite is missing.
@@ -101,7 +127,7 @@ For email OTP sign-in and sign-up cases, use a dedicated non-production test ide
 4. Complete the return flow and verify the visible signed-in state plus the authorized session/progress behavior required by the selected case. Close or discard the mail tab after the round; do not mark the case complete from the email alone.
 5. For sign-up, use a never-registered test address only when the target Neon Auth environment has sign-up enabled. For returning sign-in, reuse the assigned verified identity. Keep separate aliases for A and B.
 
-If Feishu Mail access, the assigned mailbox, the OTP delivery, or the target's non-production identity configuration is unavailable, mark the email-auth case `BLOCKED` with the exact missing prerequisite. Do not use a guessed code, a shared production inbox, a hard-coded test OTP, or a different mailbox provider as an equivalent pass. A local mocked OTP or server test is supporting evidence only and cannot replace this Browser round.
+If Feishu Mail access, the assigned mailbox, the OTP delivery, or the target's non-production identity configuration is unavailable, mark the email-auth case `BLOCKED` with the exact missing prerequisite. Do not use a guessed code, a shared production inbox, a hard-coded test OTP, or a different mailbox provider as an equivalent pass. Source inspection cannot replace actual OTP delivery and browser session proof.
 
 **Goal contract:**
 
@@ -119,11 +145,11 @@ Create the report at an external path such as `/tmp/tradely-browser-e2e/<UTC-run
 
 Build the queue from the **refreshed** inventory:
 
-1. Include every acceptance row. Split compound rows into concrete instances where they specify multiple offers, statuses, invalid inputs, routes, providers, languages, account states or independent outcomes. Expand every current lesson's L01–L07 checks and required case variants. Enumerate route/guide sweeps from the current registries.
-2. Assign stable instance IDs, for example `AUTH-012/email-new/desktop-en`, `BILL-018/member-period-end/desktop-en`, or `LESSON-option-contracts-L04-A/desktop-en`. Preserve the parent ID. Every split branch must appear explicitly; a parent is not complete while any required child remains untested.
+1. Include every acceptance row. Split compound rows into concrete instances where they specify multiple supported statuses, invalid inputs, routes, providers, languages, account states or independent outcomes. Expand every current lesson's L01–L07 checks and required case variants. Enumerate route/guide sweeps from the current registries.
+2. Assign stable instance IDs, for example `AUTH-012/email-new/desktop-en`, `SALES-RETIRED-001/legacy-membership/desktop-en`, or `LESSON-option-contracts-L04-A/desktop-en`. Preserve the parent ID. Every split branch must appear explicitly; a parent is not complete while any required child remains untested.
 3. Apply the inventory's browser/viewport/locale/accessibility matrix deliberately. Record each required configuration, which cases it expands, and the rationale for representative repeated coverage; do not silently shrink “each lesson” into one example. Unsupported requested browser engines/capabilities are coverage gaps, not equivalent passes.
-4. Record supporting automated declarations separately as unit/component/server coverage references. They are not hundreds of extra browser cases merely because they appear in the appendix. A server-only assertion may need a controlled request/provider/DB check attached to the same browser case. If unavailable through authorized tools/fixtures, mark that required evidence blocked.
-5. Order by dependencies and risk: onboarding/sign-in → payments/access → learning/progress → cancellation/access-loss/recovery; then remaining discovery/labs/privacy/secondary cases. Delay cancellation until tests relying on that subscription finish, or use distinct fixtures. Keep all queued P1/P2 cases; prioritization is not scope reduction.
+4. Do not execute or restore removed unit tests. Attach permitted controlled-request/domain/provider checks to browser cases when required; historical test titles cannot substitute for evidence.
+5. Order by dependencies and risk: public discovery/free learning → guest recovery → authentication/account handoff → saved learning/progress/results → Recipe labs/privacy/replay → retired-sales compatibility and historical support → secondary cases. Retire obsolete purchase branches explicitly; keep every supported P1/P2 case.
 6. Freeze the queue and matrix revision before the first case. Add newly discovered requirements explicitly with source/reason; never delete an unexecuted row to improve completion numbers. Retired cases remain traceable with reason and replacement.
 
 The queue table in the external `report.md` is the single source of progress:
@@ -135,7 +161,7 @@ Use `NOT RUN`, `RUNNING`, `PASS`, `FAIL`, `BLOCKED`, `NOT APPLICABLE`. Preserve 
 
 ## 4. Use the requested @Browser surface
 
-Use the bundled **@Browser** surface for application interactions, OAuth/Checkout/Portal journeys and visual evidence. Load its current instructions and follow only capabilities actually exposed in the session. Do not silently substitute ego-browser, a standalone Playwright/agent-browser session, curl, static source checks or rendered component tests for @Browser acceptance.
+Use the bundled **@Browser** surface for application interactions, OAuth and conditional historical-support journeys and visual evidence. Load its current instructions and follow only capabilities actually exposed in the session. Do not silently substitute ego-browser, a standalone Playwright/agent-browser session, curl, static source checks or rendered component tests for @Browser acceptance.
 
 Where the host exposes @Browser through CUA's in-app browser, the documented entry is `cua.createBrowserTab("iab", verifiedBaseUrl, { visible: true })` via `mcp__cua_repl.js`. Its first invocation must contain only the supported entry call; read the returned documentation/state before continuing. Discover other browser entry points from the current tool inventory rather than assuming this adapter is always installed.
 
@@ -149,12 +175,12 @@ A **test round** is one goal execution turn dedicated to exactly one queue insta
 
 At each turn:
 
-1. Read the active report/checkpoint. Confirm the target URL, account fixture, latest queue revision and whether the previous round ended durably. A `RUNNING` case without a finished record is incomplete; inspect its actual state before resuming, especially after checkout or cancellation. Never blindly repeat a possibly successful payment.
-2. Check for relevant application/deployment/dirty-state changes since the last round. If changed, perform the refresh gate again before the next test. Preserve old evidence under its old revision, invalidate affected latest passes for the new target and enqueue explicit retests. Routine report commits alone do not invalidate application coverage.
+1. Read the active report/checkpoint. Confirm the target URL, account fixture, latest queue revision and whether the previous round ended durably. A `RUNNING` case without a finished record is incomplete; inspect its actual state before resuming, especially after guest handoff or historical-support mutations. Never repeat an uncertain save/transfer without checking current state.
+2. Check for relevant application/deployment/dirty-state changes since the last round. If changed, perform the refresh gate again before the next test. Preserve old evidence under its old revision, invalidate affected latest passes for the new target and enqueue explicit retests. Routine documentation changes alone do not invalidate application coverage.
 3. Choose **one** eligible NOT RUN case or a blocked case whose prerequisite has actually changed. If none are eligible, handle the impasse rules below. Update its status to RUNNING and save the planned round number, instance ID, expected outcome and fixture before interacting.
 4. State a short pre-round plan to the user: round number, case ID, environment and behavior being tested. Establish only the selected case's prerequisites; do not count setup as passing other cases.
 5. Execute the case in @Browser. Record reproducible actions, observable result, relevant sanitized errors/network evidence and persistence/provider confirmation required by the inventory. Record fixture changes and any cleanup/reuse obligation.
-6. Capture a sanitized GIF showing the actual interaction and result with the environment in its caption. For email/OAuth/payment pages, omit sensitive entry frames and preserve non-sensitive transition/outcome evidence. Never save OTPs, cookies, card data, raw learner text, credentials or signed media URLs in Git/reports.
+6. Capture a sanitized GIF showing the actual interaction and result with the environment in its caption. For email/OAuth/historical-support pages, omit sensitive entry frames and preserve non-sensitive transition/outcome evidence. Never save OTPs, cookies, card data, raw learner text, credentials or signed media URLs in Git/reports.
 7. Assign a result using the rules below; append the round record and update only that instance's queue status. Multiple findings from the same case may be recorded in this round. Log an unrelated incidental observation as **unverified** and queue its own case; do not claim it tested.
 8. Checkpoint the report and handoff before ending the turn. State the one-case outcome and next case briefly. **End this goal turn without starting the next case**; leave the active goal to continue in its next round. A tool call or a paragraph label is not a new goal round.
 
@@ -179,9 +205,9 @@ Next eligible instance: <ID>
 
 ## 6. Evidence, results and blockers
 
-- **PASS:** expected visible behavior and all required domain/provider evidence are present, with GIF evidence. Source/unit results cannot fill a missing browser/provider boundary.
+- **PASS:** expected visible behavior and all required domain/provider evidence are present, with GIF evidence. Source/static results cannot fill a missing browser/provider boundary.
 - **FAIL:** reproducible application behavior violates the supported contract. Preserve evidence, severity and affected instance; continue other independent cases. Do not automatically fix the product or change expected results. Fixes require scope authorization, their own validation/commit and a later one-case retest.
-- **BLOCKED:** cannot execute or prove a required assertion due to unavailable browser, credentials, fixture, provider, deployment, permissions or capture capability. Include the exact missing condition, attempts and next action. Partial visible success with missing payment/persistence proof is blocked overall; keep the proven sub-observations.
+- **BLOCKED:** cannot execute or prove a required assertion due to unavailable browser, credentials, fixture, provider, deployment, permissions or capture capability. Include the exact missing condition, attempts and next action. Partial visible success with missing persistence/provider proof is blocked overall; keep the proven sub-observations.
 - **NOT APPLICABLE:** the conditional branch is demonstrably disabled or intentionally absent in the target and the inventory permits that branch to be skipped. Cite config/content evidence. Missing tools, lack of time or unavailable accounts are not N/A.
 
 For each finding record: stable ID, severity (separate from case priority), affected users/flow, expected versus actual, minimal reproduction, first/last revision, evidence links, confirmed versus suspected cause, and recommended next action. Deduplicate common causes while retaining every affected case and environment. Keep infrastructure/fixture gaps separate from confirmed product defects.
@@ -199,8 +225,8 @@ At the end of execution (or any genuine stop), finalize the external `/tmp/trade
 1. Outcome: **complete audit with/without defects**, **blocked**, or **partial/user-paused**. State release readiness separately; any failed critical gate or missing required evidence prevents an all-green claim.
 2. Refresh summary: reviewed Git range, changes to runbook/inventory, target revision/deployment, uncommitted scope and any revision drift/retests. Include the matrix actually exercised.
 3. Coverage: total concrete instances and distinct parents; counts for PASS, FAIL, BLOCKED, NOT APPLICABLE, NOT RUN and RUNNING. Reconcile totals exactly. Report the lesson sweep and browser/configuration coverage separately. Retests add round records, not duplicate queue-instance counts.
-4. **All findings**, sorted by severity, with affected case IDs, impact, reproduction and evidence. Include sign-in/sign-up, membership/Course Pass payments, and cancellation through actual access loss as explicit lifecycle summaries, even if blocked.
-5. Every blocker/unsupported branch and what would resolve it. Clearly separate @Browser, automated/server checks, real-provider proof and unverified behavior. Link representative GIFs in the user-facing summary and the complete per-case evidence index in the report.
+4. **All findings**, sorted by severity, with affected case IDs, impact, reproduction and evidence. Explicitly summarize public learning, guest recovery, sign-in/sign-up, account saving/results, Recipe labs and retired-sales checks. Report historical support separately where exercised; cancellation must not imply loss of free learning.
+5. Every blocker/unsupported branch and what would resolve it. Clearly separate @Browser, static/domain checks, real-provider proof and unverified behavior. Link representative GIFs in the user-facing summary and the complete per-case evidence index in the report.
 6. Remaining test-owned fixture cleanup, remediation recommendations and retest list. Delete only disposable resources created by this run within authorized scope; preserve shared accounts/subscriptions and prior evidence. Document retained fixtures for the next run.
 7. Runbook maintenance decision and next-run handoff. No completed todos or raw logs in this runbook.
 
