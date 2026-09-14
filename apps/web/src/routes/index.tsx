@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
+import { useLandingMotion } from "@/components/landing-motion";
 import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
 import { LearningProgressCounts } from "@/components/learning-progress";
@@ -53,6 +54,7 @@ const stages = [
 ] as const;
 
 function HomeComponent() {
+	const landingRef = useLandingMotion();
 	const progress = Route.useLoaderData();
 	const { locale, t } = useI18n();
 	const course = getLocalizedCourse(locale);
@@ -64,7 +66,7 @@ function HomeComponent() {
 	);
 	const previewCount = freeLessons.length;
 	return (
-		<main className="observatory landing-notebook">
+		<main ref={landingRef} className="observatory landing-notebook">
 			<section className="landing-hero" aria-labelledby="landing-heading">
 				<div className="landing-hero-stage">
 					{startLesson ? <LandingStudyMaterials lesson={startLesson} /> : null}
@@ -153,6 +155,7 @@ function HomeComponent() {
 			<section
 				className="observatory-container flex flex-col gap-6 py-12"
 				aria-labelledby="home-guides-title"
+				data-landing-reveal=".bento-card"
 			>
 				<h2
 					id="home-guides-title"
@@ -179,7 +182,7 @@ function HomeComponent() {
 						<ArrowDownIcon size={15} aria-hidden="true" />
 					</a>
 				</div>
-				<ol className="landing-path-stages">
+				<ol className="landing-path-stages" data-landing-reveal=":scope > li">
 					{stages.map((stage) => {
 						const first = course.lessons.findIndex(
 							(lesson) => lesson.slug === stage.start,
@@ -210,7 +213,10 @@ function HomeComponent() {
 					})}
 				</ol>
 			</section>
-			<div className="landing-study-section">
+			<div
+				className="landing-study-section"
+				data-landing-reveal=".platform-bento > .bento-card"
+			>
 				<div className="observatory-container">
 					<TradingFlowLabs />
 				</div>

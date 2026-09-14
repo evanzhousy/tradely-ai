@@ -9,39 +9,43 @@ export function LandingStudyMaterials({ lesson }: { lesson: Lesson }) {
 	return (
 		<div className="landing-materials" aria-hidden="true">
 			<div className="landing-field-guide">
-				<div className="landing-book-spine">Tradely</div>
-				<div className="landing-book-cover">
-					<span className="landing-artifact-label">{t("home.guideLabel")}</span>
-					<p>{t("home.guideTitle")}</p>
-					<svg
-						className="landing-guide-diagram"
-						viewBox="0 0 200 150"
-						fill="none"
-						aria-hidden="true"
-					>
-						<path
-							d="M25 118V36h55v42h48V20h47M25 118h150M80 78v40m48-40v40"
-							stroke="currentColor"
-							strokeWidth="1.5"
-						/>
-						<circle cx="25" cy="36" r="9" fill="currentColor" />
-						<circle cx="80" cy="78" r="9" fill="currentColor" />
-						<circle cx="128" cy="20" r="9" fill="currentColor" />
-						<circle
-							cx="175"
-							cy="20"
-							r="9"
-							stroke="currentColor"
-							strokeWidth="1.5"
-						/>
-						<path
-							d="M16 135h18m37 0h18m30 0h18m29 0h18"
-							stroke="currentColor"
-						/>
-					</svg>
-					<div className="landing-book-signature">
-						<span>Tradely.ai</span>
-						<ArrowUpRightIcon size={17} />
+				<div className="landing-book-surface">
+					<div className="landing-book-spine">Tradely</div>
+					<div className="landing-book-cover">
+						<span className="landing-artifact-label">
+							{t("home.guideLabel")}
+						</span>
+						<p>{t("home.guideTitle")}</p>
+						<svg
+							className="landing-guide-diagram"
+							viewBox="0 0 200 150"
+							fill="none"
+							aria-hidden="true"
+						>
+							<path
+								d="M25 118V36h55v42h48V20h47M25 118h150M80 78v40m48-40v40"
+								stroke="currentColor"
+								strokeWidth="1.5"
+							/>
+							<circle cx="25" cy="36" r="9" fill="currentColor" />
+							<circle cx="80" cy="78" r="9" fill="currentColor" />
+							<circle cx="128" cy="20" r="9" fill="currentColor" />
+							<circle
+								cx="175"
+								cy="20"
+								r="9"
+								stroke="currentColor"
+								strokeWidth="1.5"
+							/>
+							<path
+								d="M16 135h18m37 0h18m30 0h18m29 0h18"
+								stroke="currentColor"
+							/>
+						</svg>
+						<div className="landing-book-signature">
+							<span>Tradely.ai</span>
+							<ArrowUpRightIcon size={17} />
+						</div>
 					</div>
 				</div>
 			</div>
