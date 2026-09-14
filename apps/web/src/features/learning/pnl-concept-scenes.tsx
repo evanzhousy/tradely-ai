@@ -250,6 +250,7 @@ export function StockAccountingScene({ locale }: Props) {
 			/>
 			{knownMark && (
 				<RangeControl
+					inputScale={100}
 					label={l("Hypothetical stock mark", "假设股票估值价")}
 					value={mark ?? source.finalMark}
 					display={money(mark)}
@@ -410,6 +411,7 @@ export function AccountCashScene({ locale }: Props) {
 				{l("Given snapshot · fees excluded", "给定快照 · 未计费用")}
 			</p>
 			<RangeControl
+				inputScale={100}
 				label={l("Hypothetical cash deposit", "假设现金存款")}
 				value={deposit}
 				display={money(deposit)}
@@ -549,6 +551,7 @@ export function OptionValueScene({ locale }: Props) {
 				{o.multiplier}
 			</p>
 			<RangeControl
+				inputScale={1}
 				label={l("Option contracts", "期权张数")}
 				value={quantity}
 				display={String(quantity)}
@@ -558,6 +561,7 @@ export function OptionValueScene({ locale }: Props) {
 				onChange={setQuantity}
 			/>
 			<RangeControl
+				inputScale={100}
 				label={l("Hypothetical option mark", "假设期权估值价")}
 				value={mark}
 				display={money(mark)}

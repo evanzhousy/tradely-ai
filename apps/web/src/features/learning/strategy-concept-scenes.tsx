@@ -385,6 +385,7 @@ export function ExpirationStrategyScene({ locale }: Props) {
 					onChange={setScaleMode}
 				/>
 				<RangeControl
+					inputScale={100}
 					label={l("Expiry stock price", "到期股价")}
 					value={spot}
 					display={money(spot)}
@@ -394,6 +395,7 @@ export function ExpirationStrategyScene({ locale }: Props) {
 					onChange={setSpot}
 				/>
 				<RangeControl
+					inputScale={100}
 					label={l("Total fees in this example", "本例总费用")}
 					value={fees}
 					display={money(fees)}

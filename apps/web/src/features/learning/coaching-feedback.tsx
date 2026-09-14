@@ -42,7 +42,10 @@ export function CoachingFeedback({
 		</li>
 	);
 	return (
-		<div className="flex flex-col gap-4 text-sm" data-analytics-private>
+		<div
+			className="coaching-feedback flex flex-col gap-4 text-sm"
+			data-analytics-private
+		>
 			{feedback.strengths.length > 0 ? (
 				<section className="flex flex-col gap-2">
 					<h4 className="font-medium">{text("support")}</h4>

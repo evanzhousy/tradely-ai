@@ -223,6 +223,7 @@ export function LocationMapScene({ locale }: Props) {
 			<FieldGroup>
 				<div onPointerDownCapture={pause} onKeyDownCapture={pause}>
 					<RangeControl
+						inputScale={100}
 						label={l("Execution price", "成交价格")}
 						value={price}
 						display={money(price)}

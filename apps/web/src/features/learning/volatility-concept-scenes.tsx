@@ -200,6 +200,7 @@ export function ImpliedVolatilityScene({ locale }: Props) {
 					}}
 				/>
 				<RangeControl
+					inputScale={1}
 					label={l("Trial annualized IV", "试算年化 IV")}
 					value={iv}
 					display={pct(iv, 2)}

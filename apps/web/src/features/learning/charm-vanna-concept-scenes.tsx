@@ -168,6 +168,7 @@ export function CrossDeltaEffectsScene({ locale }: Props) {
 		>
 			<Context locale={locale} />
 			<RangeControl
+				inputScale={1}
 				label={l("Elapsed calendar days", "已过自然日")}
 				value={event.days}
 				display={number(event.days)}
@@ -177,6 +178,7 @@ export function CrossDeltaEffectsScene({ locale }: Props) {
 				onChange={(days) => choose({ ...event, days })}
 			/>
 			<RangeControl
+				inputScale={1}
 				label={l("IV percentage-point change", "IV 百分点变化")}
 				value={event.ivPoints}
 				display={signed(event.ivPoints)}
@@ -441,6 +443,7 @@ export function CrossDeltaPositionScene({ locale }: Props) {
 				onChange={setId}
 			/>
 			<RangeControl
+				inputScale={1}
 				label={l("Position contracts", "持仓张数")}
 				value={quantity}
 				display={number(quantity)}

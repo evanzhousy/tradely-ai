@@ -129,6 +129,7 @@ export function FlowReturnScene({ locale }: Props) {
 			}
 		>
 			<RangeControl
+				inputScale={100}
 				label={l("Hypothetical external flow", "假设外部资金流")}
 				value={flow}
 				display={money(flow)}
@@ -268,6 +269,7 @@ export function TradePayoffScene({ locale }: Props) {
 			}
 		>
 			<RangeControl
+				inputScale={100}
 				label={l("Fifth lot loss", "第五批次亏损")}
 				value={loss}
 				display={money(loss)}

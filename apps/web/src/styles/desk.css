@@ -2445,9 +2445,58 @@
 }
 
 /* The companion occupies the book's margin, outside the reading and CTA column. */
-.tradely-avatar { position: absolute; left: 8%; bottom: 90px; width: 180px; height: 200px; pointer-events: none; }
-.tradely-avatar canvas { display: block; width: 100%; height: 100%; }
-.tradely-avatar img { position: absolute; width: 100px; height: 100px; left: 40px; top: 50px; border-radius: 28px; }
-.tradely-avatar[data-ready="true"] img { visibility: hidden; }
-.tradely-avatar[data-ready="false"] canvas { visibility: hidden; }
-@media (max-width: 1199px) { .tradely-avatar { left: 2%; bottom: 105px; width: 140px; height: 156px; } }
+.tradely-avatar {
+	position: absolute;
+	left: 8%;
+	bottom: 90px;
+	width: 180px;
+	height: 200px;
+	pointer-events: none;
+}
+.tradely-avatar canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.tradely-avatar img {
+	position: absolute;
+	width: 100px;
+	height: 100px;
+	left: 40px;
+	top: 50px;
+	border-radius: 28px;
+}
+.tradely-avatar[data-ready="true"] img {
+	visibility: hidden;
+}
+.tradely-avatar[data-ready="false"] canvas {
+	visibility: hidden;
+}
+@media (max-width: 1199px) {
+	.tradely-avatar {
+		left: 2%;
+		bottom: 105px;
+		width: 140px;
+		height: 156px;
+	}
+}
+
+/* Readable supporting copy and consistent course-card metadata. */
+.landing-notebook .landing-free-note,
+.landing-notebook .landing-partner-note,
+.landing-notebook .landing-progress-note {
+	font-size: 0.75rem;
+	line-height: 1.7;
+}
+.curriculum-card .curriculum-card-meta {
+	font-size: 0.8125rem;
+}
+.curriculum-card .curriculum-card-meta > span:first-child {
+	font-size: 0.75rem;
+}
+.curriculum-card .curriculum-practice {
+	font-size: 0.8125rem;
+}
+.curriculum-card-link {
+	overflow-wrap: anywhere;
+}

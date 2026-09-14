@@ -198,6 +198,7 @@ export function PositionEffectsScene({ locale }: Props) {
 					onKeyDownCapture={() => playback.select(playback.frame)}
 				>
 					<RangeControl
+						inputScale={1}
 						label={l("Executed quantity", "成交张数")}
 						value={quantity}
 						display={`${quantity} ${l("contracts", "张")}`}

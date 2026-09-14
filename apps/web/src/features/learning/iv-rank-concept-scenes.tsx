@@ -208,6 +208,7 @@ export function RankFrequencyScene({ locale }: Props) {
 		>
 			<ExperimentContext locale={locale} />
 			<RangeControl
+				inputScale={1}
 				label={l("Hypothetical current IV", "假设当前 IV")}
 				value={current}
 				display={pct(current)}
@@ -377,6 +378,7 @@ export function RankOutlierScene({ locale }: Props) {
 		>
 			<ExperimentContext locale={locale} />
 			<RangeControl
+				inputScale={1}
 				label={l("Highest historical observation", "历史最高观测")}
 				value={high}
 				display={pct(high)}

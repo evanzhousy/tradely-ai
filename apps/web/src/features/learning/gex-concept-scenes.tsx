@@ -152,6 +152,7 @@ export function GexFormulaScene({ locale }: Props) {
 		>
 			<Context locale={locale} />
 			<RangeControl
+				inputScale={1}
 				label={l("Open interest contracts", "未平仓合约张数")}
 				value={oi}
 				display={number(oi)}
@@ -164,6 +165,7 @@ export function GexFormulaScene({ locale }: Props) {
 				}}
 			/>
 			<RangeControl
+				inputScale={1}
 				label={l("Hypothetical spot", "假设现价")}
 				value={spot}
 				display={`$${number(spot)}`}

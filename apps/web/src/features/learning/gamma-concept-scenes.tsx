@@ -215,6 +215,7 @@ export function GammaTermsScene({ locale }: Props) {
 					onChange={setMeasure}
 				/>
 				<RangeControl
+					inputScale={100}
 					label={l("Underlying price change", "标的价格变动")}
 					value={move}
 					display={money(move)}
@@ -617,6 +618,7 @@ export function GammaSensitivityScene({ locale }: Props) {
 			/>
 			<Snapshot locale={locale} snapshot={snapshot} />
 			<RangeControl
+				inputScale={100}
 				label={l("Exploratory underlying move", "探索标的变动")}
 				value={move}
 				display={money(move)}

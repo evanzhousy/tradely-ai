@@ -208,6 +208,7 @@ export function FlowBuildScene({ locale }: Props) {
 				{data.prints[2].multiplier}
 			</p>
 			<RangeControl
+				inputScale={1}
 				label={l("Print B contracts", "成交 B 张数")}
 				value={contracts}
 				display={number(contracts)}
@@ -349,6 +350,7 @@ export function FlowDenominatorScene({ locale }: Props) {
 			/>
 			{id === "shares" && (
 				<RangeControl
+					inputScale={1}
 					label={l("Typical share volume", "典型股票成交量")}
 					value={volume}
 					display={number(volume)}

@@ -72,6 +72,17 @@ function LessonPage() {
 		[navigate],
 	);
 	const { page, progress } = Route.useLoaderData();
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Reapply the hash when a different lesson reuses this route component.
+	useEffect(() => {
+		const revealNotes = () => {
+			if (window.location.hash !== "#lesson-notes") return;
+			const notes = document.getElementById("lesson-notes");
+			if (notes instanceof HTMLDetailsElement) notes.open = true;
+		};
+		revealNotes();
+		window.addEventListener("hashchange", revealNotes);
+		return () => window.removeEventListener("hashchange", revealNotes);
+	}, [lessonSlug]);
 	const sourceLesson = getLesson(lessonSlug);
 	const { locale, t } = useI18n();
 	const { capture, isCapturing } = useAnalytics();
@@ -174,7 +185,7 @@ function LessonPage() {
 										})}
 							</AccordionTrigger>
 							<AccordionContent>
-								<div className="flex flex-col gap-5 py-2">
+								<div className="lesson-mobile-curriculum flex flex-col gap-5 py-2">
 									<CourseProgress
 										learning={progress.learning}
 										unavailable={progress.unavailable}
@@ -194,7 +205,41 @@ function LessonPage() {
 						</AccordionItem>
 					</Accordion>
 
-					<header className="lesson-heading flex flex-col gap-5">
+					<nav
+						className="lesson-sections"
+						aria-label={locale === "zh" ? "本课内容" : "In this lesson"}
+					>
+						<span className="lesson-sections-label">
+							{locale === "zh" ? "本课" : "This lesson"}
+						</span>
+						<a href="#lesson-overview">
+							{locale === "zh" ? "概览" : "Overview"}
+						</a>
+						{page.learning ? (
+							<a href="#lesson-practice">
+								{locale === "zh" ? "互动练习" : "Practice"}
+							</a>
+						) : null}
+						{/* biome-ignore lint/a11y/useValidAnchor: This navigates to a real section and expands its native disclosure. */}
+						<a
+							href="#lesson-notes"
+							onClick={() => {
+								const notes = document.getElementById("lesson-notes");
+								if (notes instanceof HTMLDetailsElement) notes.open = true;
+							}}
+						>
+							{locale === "zh" ? "笔记与来源" : "Notes & sources"}
+						</a>
+						{progress.signedIn ? (
+							<a href="#study-mark">
+								{locale === "zh" ? "学习标记" : "Study mark"}
+							</a>
+						) : null}
+					</nav>
+					<header
+						id="lesson-overview"
+						className="lesson-heading flex flex-col gap-5"
+					>
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">
 								{t("common.lessonNumber", {
@@ -277,13 +322,15 @@ function LessonPage() {
 					{
 						<>
 							{page.learning ? (
-								<LearningExercise
-									key={sourceLesson.id}
-									lessonId={sourceLesson.id}
-									attemptId={attempt}
-									saveGuest={saveGuest === "1"}
-									onSelectAttempt={selectAttempt}
-								/>
+								<div id="lesson-practice">
+									<LearningExercise
+										key={sourceLesson.id}
+										lessonId={sourceLesson.id}
+										attemptId={attempt}
+										saveGuest={saveGuest === "1"}
+										onSelectAttempt={selectAttempt}
+									/>
+								</div>
 							) : null}
 							<TradingFlowLab lessonId={lesson.id} />
 							{page.media ? (
@@ -301,7 +348,7 @@ function LessonPage() {
 									</AlertDescription>
 								</Alert>
 							) : null}
-							<details className="lesson-notes">
+							<details id="lesson-notes" className="lesson-notes">
 								<summary className="cursor-pointer font-medium">
 									{locale === "zh"
 										? "课程笔记与参考来源"

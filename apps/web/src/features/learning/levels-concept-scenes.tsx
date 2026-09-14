@@ -305,6 +305,7 @@ export function LevelsPayoutScene({ locale }: Props) {
 				}}
 			/>
 			<RangeControl
+				inputScale={1}
 				label={l("Hypothetical settlement", "假设结算价")}
 				value={settlement}
 				display={`$${number(settlement)}`}
@@ -475,6 +476,7 @@ export function LevelsDistanceScene({ locale }: Props) {
 			{!split && mode !== "unadjusted" && (
 				<>
 					<RangeControl
+						inputScale={1}
 						label={l("Reference spot", "参考现价")}
 						value={spot}
 						display={`$${spot}`}
@@ -485,6 +487,7 @@ export function LevelsDistanceScene({ locale }: Props) {
 					/>
 					{mode === "current" && (
 						<RangeControl
+							inputScale={1}
 							label={l("Supplied ATR", "给定 ATR")}
 							value={atr}
 							display={`$${atr}`}

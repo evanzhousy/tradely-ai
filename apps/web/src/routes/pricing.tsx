@@ -141,34 +141,44 @@ function PricingPage() {
 					{t("home.startFree")}
 				</Link>
 			</PageIntro>
-			<Card>
-				<CardHeader>
-					<CardTitle>{t("pricing.freeAccount")}</CardTitle>
-					<CardDescription>
-						{t("pricing.freeAccountDescription")}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<Link
-						to="/courses/tradingflow-foundations"
-						className={buttonVariants({ variant: "outline" })}
-					>
-						{t("common.returnCourse")}
-					</Link>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>{t("pricing.coachingTitle")}</CardTitle>
-					<CardDescription>{t("pricing.coachingDescription")}</CardDescription>
-				</CardHeader>
-			</Card>
+			<div className="access-options">
+				<Card>
+					<CardHeader>
+						<CardTitle>
+							<h2>{t("pricing.freeAccount")}</h2>
+						</CardTitle>
+						<CardDescription>
+							{t("pricing.freeAccountDescription")}
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<Link
+							to="/courses/tradingflow-foundations"
+							className={buttonVariants({ variant: "outline" })}
+						>
+							{t("common.returnCourse")}
+						</Link>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardHeader>
+						<CardTitle>
+							<h2>{t("pricing.coachingTitle")}</h2>
+						</CardTitle>
+						<CardDescription>
+							{t("pricing.coachingDescription")}
+						</CardDescription>
+					</CardHeader>
+				</Card>
+			</div>
 			<p className="text-muted-foreground text-sm">
 				{t("practice.disclosure")}
 			</p>
 			<Card id="past-purchases">
 				<CardHeader>
-					<CardTitle>{t("pricing.pastPurchases")}</CardTitle>
+					<CardTitle>
+						<h2>{t("pricing.pastPurchases")}</h2>
+					</CardTitle>
 					<CardDescription>
 						{t("pricing.pastPurchasesDescription")}
 					</CardDescription>

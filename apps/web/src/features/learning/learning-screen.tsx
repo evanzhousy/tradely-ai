@@ -368,6 +368,9 @@ function LearningScreenContent({
 					<>
 						<StepIndicator
 							label={text("stages")}
+							completeLabel={
+								locale === "zh" ? "练习已结束" : "Practice finished"
+							}
 							current={view.stepIndex}
 							complete={view.phase === "complete"}
 							steps={(
@@ -714,7 +717,7 @@ function LearningScreenContent({
 					</>
 				) : null}
 			</CardContent>
-			<CardFooter className="flex-col items-stretch gap-3">
+			<CardFooter className="learning-actions flex-col items-stretch gap-3">
 				{!showResultSave ? guestSaveControl : null}
 				<div className="flex flex-wrap items-center gap-3">
 					{!view ? (
@@ -791,7 +794,8 @@ function LearningScreenContent({
 				<p
 					role="status"
 					aria-live="polite"
-					className="min-h-4 text-muted-foreground text-xs"
+					className="learning-save-status min-h-4 text-muted-foreground text-xs"
+					data-saving={busy}
 				>
 					{view
 						? busy

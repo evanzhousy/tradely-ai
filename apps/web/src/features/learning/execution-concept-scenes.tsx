@@ -398,6 +398,7 @@ export function LiquidityScene({ locale }: Props) {
 					onChange={setInstruction}
 				/>
 				<RangeControl
+					inputScale={1}
 					label={l("Requested quantity", "请求数量")}
 					value={quantity}
 					display={`${quantity} ${l("contracts", "张")}`}
@@ -407,6 +408,7 @@ export function LiquidityScene({ locale }: Props) {
 				/>
 				{instruction === "limit" ? (
 					<RangeControl
+						inputScale={100}
 						label={l("Limit price", "限价价格")}
 						value={limit}
 						display={money(limit)}

@@ -10,15 +10,19 @@ import {
 import { Field, FieldLabel } from "@tradely/ui/components/field";
 import { Input } from "@tradely/ui/components/input";
 import {
+	NativeSelect,
+	NativeSelectOption,
+} from "@tradely/ui/components/native-select";
+import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@tradely/ui/components/tabs";
-import { SearchIcon } from "lucide-react";
 import { type ComponentProps, useId, useState } from "react";
 import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
+import { useActiveSection } from "@/hooks/use-active-section";
 import { useI18n } from "@/i18n/provider";
 import { BrandOwl } from "./brand-owl";
 import { LandingCurriculum } from "./landing-curriculum";
@@ -46,9 +50,22 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 	const { locale, t } = useI18n();
 	const id = useId();
 	const [query, setQuery] = useState("");
+	const [moduleId, setModuleId] = useState("all");
 	const [filter, setFilter] = useState<CatalogFilter>("all");
 	const completedIds = props.completedIds ?? [];
-	const lessons = filterCatalog(props.lessons, query, filter, completedIds);
+	const lessons = filterCatalog(
+		props.lessons,
+		query,
+		filter,
+		completedIds,
+	).filter((lesson) => moduleId === "all" || lesson.moduleId === moduleId);
+	const activeModule = useActiveSection(
+		courseModules
+			.filter((module) =>
+				lessons.some((lesson) => lesson.moduleId === module.id),
+			)
+			.map((module) => `module-${module.id}`),
+	);
 	const filters = [
 		{ value: "all", label: locale === "zh" ? "全部" : "All lessons" },
 		{ value: "completed", label: t("common.completed") },
@@ -78,12 +95,30 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 							: `${lessons.length} of ${props.lessons.length} lessons`}
 					</p>
 				</div>
-				<Field className="w-full sm:w-80">
+				<Field className="catalog-module-field">
+					<FieldLabel htmlFor={`${id}-module`}>
+						{locale === "zh" ? "学习模块" : "Learning module"}
+					</FieldLabel>
+					<NativeSelect
+						id={`${id}-module`}
+						value={moduleId}
+						onChange={(event) => setModuleId(event.target.value)}
+					>
+						<NativeSelectOption value="all">
+							{locale === "zh" ? "全部模块" : "All modules"}
+						</NativeSelectOption>
+						{courseModules.map((module) => (
+							<NativeSelectOption key={module.id} value={module.id}>
+								{module[locale]}
+							</NativeSelectOption>
+						))}
+					</NativeSelect>
+				</Field>
+				<Field className="catalog-search-field">
 					<FieldLabel htmlFor={id}>
 						{locale === "zh" ? "查找课程" : "Find a lesson"}
 					</FieldLabel>
 					<div className="catalog-search">
-						<SearchIcon size={16} aria-hidden="true" />
 						<Input
 							id={id}
 							type="search"
@@ -96,6 +131,22 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 					</div>
 				</Field>
 			</div>
+			{query || moduleId !== "all" || filter !== "all" ? (
+				<div className="catalog-filter-summary">
+					<span>{locale === "zh" ? "已筛选课程" : "Filtered curriculum"}</span>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => {
+							setQuery("");
+							setModuleId("all");
+							setFilter("all");
+						}}
+					>
+						{locale === "zh" ? "清除筛选" : "Clear filters"}
+					</Button>
+				</div>
+			) : null}
 			{filters.map((item) => (
 				<TabsContent key={item.value} value={item.value}>
 					{item.value === filter ? (
@@ -107,7 +158,15 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 								>
 									{courseModules.map((module, index) =>
 										lessons.some((lesson) => lesson.moduleId === module.id) ? (
-											<a key={module.id} href={`#module-${module.id}`}>
+											<a
+												key={module.id}
+												href={`#module-${module.id}`}
+												aria-current={
+													activeModule === `module-${module.id}`
+														? "location"
+														: undefined
+												}
+											>
 												<span>{String(index + 1).padStart(2, "0")}</span>
 												{module[locale]}
 											</a>
@@ -140,6 +199,7 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 										variant="outline"
 										onClick={() => {
 											setQuery("");
+											setModuleId("all");
 											setFilter("all");
 										}}
 									>

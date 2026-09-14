@@ -25,13 +25,13 @@ function ChangelogPage() {
 						key={entry.id}
 						id={entry.id}
 						aria-labelledby={`${entry.id}-title`}
-						className="grid gap-6 border-border border-b pb-12 md:grid-cols-[180px_1fr] md:gap-12"
+						className="grid scroll-mt-24 gap-6 border-border border-b pb-12 md:grid-cols-[180px_1fr] md:gap-12"
 					>
-						<div>
+						<div className="self-start md:sticky md:top-24">
 							<a
 								href={`#${entry.id}`}
 								aria-label={`Permalink to update for ${entry.dateLabel}`}
-								className="font-mono text-muted-foreground text-xs underline-offset-4 hover:text-foreground hover:underline"
+								className="inline-flex min-h-11 items-center rounded font-mono text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4"
 							>
 								<time dateTime={entry.date}>{entry.dateLabel}</time>
 							</a>

@@ -239,6 +239,7 @@ export function RankActivityScene({ locale }: Props) {
 				onChange={(v) => setRelative(v === "relative")}
 			/>
 			<RangeControl
+				inputScale={1}
 				label={l("Declared volume floor", "声明成交量门槛")}
 				value={floor}
 				display={number(floor)}

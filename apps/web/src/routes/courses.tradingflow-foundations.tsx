@@ -23,7 +23,20 @@ function CoursePage() {
 	const { locale, t } = useI18n();
 	const course = getLocalizedCourse(locale);
 	const freeLessons = course.lessons;
-	const startLesson = course.lessons[0];
+	const studiedIds = new Set(
+		progress.records
+			.filter((record) => record.completedAt)
+			.map((record) => record.lessonId),
+	);
+	const nextUnstudied = course.lessons.find(
+		(lesson) => !studiedIds.has(lesson.id),
+	);
+	const startLesson = nextUnstudied ?? course.lessons[0];
+	const continuing =
+		!progress.unavailable &&
+		progress.signedIn &&
+		studiedIds.size > 0 &&
+		Boolean(nextUnstudied);
 	return (
 		<main className="page-shell">
 			<PageIntro
@@ -69,8 +82,17 @@ function CoursePage() {
 								/>
 							}
 						>
-							{t("home.startFree")}
+							{continuing
+								? locale === "zh"
+									? "继续学习"
+									: "Continue learning"
+								: t("home.startFree")}
 						</InteractiveHoverLink>
+					) : null}
+					{continuing ? (
+						<span className="text-muted-foreground text-sm">
+							{startLesson?.title}
+						</span>
 					) : null}
 					<Badge variant="secondary">
 						{t("course.freeLessons", { count: freeLessons.length })}

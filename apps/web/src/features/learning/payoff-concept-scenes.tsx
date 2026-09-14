@@ -149,6 +149,7 @@ export function PremiumUnitsScene({ locale }: Props) {
 		>
 			<FieldGroup>
 				<RangeControl
+					inputScale={100}
 					label={l("Option price per share", "每股期权价格")}
 					value={paid}
 					display={money(paid, locale, 2)}
@@ -158,6 +159,7 @@ export function PremiumUnitsScene({ locale }: Props) {
 					onChange={setPaid}
 				/>
 				<RangeControl
+					inputScale={1}
 					label={l("Contract quantity", "合约张数")}
 					value={count}
 					display={String(count)}
@@ -503,6 +505,7 @@ export function ExpirationProfitScene({ locale }: Props) {
 			<FieldGroup>
 				<TypeField locale={locale} type={type} onChange={setType} />
 				<RangeControl
+					inputScale={100}
 					label={l("Premium paid per share", "每股已付权利金")}
 					value={paid}
 					display={money(paid, locale, 2)}
@@ -512,6 +515,7 @@ export function ExpirationProfitScene({ locale }: Props) {
 					onChange={setPaid}
 				/>
 				<RangeControl
+					inputScale={1}
 					label={l("Contract quantity", "合约张数")}
 					value={count}
 					display={String(count)}

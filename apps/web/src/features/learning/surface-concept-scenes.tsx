@@ -536,6 +536,7 @@ export function SurfaceInterpolationScene({ locale }: Props) {
 					onChange={setCoverage}
 				/>
 				<RangeControl
+					inputScale={1}
 					label={l("Target calendar days", "目标自然日数")}
 					value={days}
 					display={String(days)}

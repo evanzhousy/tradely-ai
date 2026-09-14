@@ -43,7 +43,7 @@ function NavigationLinks({
 				"font-medium text-muted-foreground text-sm transition-colors hover:text-foreground",
 				mobile && "rounded-2xl px-3 py-3 text-base",
 			)}
-			activeProps={{ className: "text-foreground" }}
+			activeProps={{ className: "text-foreground", "aria-current": "page" }}
 		>
 			{t(item.key)}
 		</Link>

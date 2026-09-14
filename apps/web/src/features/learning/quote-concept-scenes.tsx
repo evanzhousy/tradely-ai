@@ -151,6 +151,7 @@ export function QuoteAnatomyScene({ locale }: Props) {
 		>
 			<Snapshot locale={locale} />
 			<RangeControl
+				inputScale={100}
 				label={l("What-if ask price", "假设卖价")}
 				value={ask}
 				display={money(ask)}
@@ -353,6 +354,7 @@ export function BookEventScene({ locale }: Props) {
 				}}
 			/>
 			<RangeControl
+				inputScale={1}
 				label={l("Order quantity", "订单数量")}
 				value={size}
 				display={`${size} ${l("contracts", "张")}`}

@@ -4,6 +4,7 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
+import { NumberField } from "@tradely/ui/components/number-field";
 import {
 	ToggleGroup,
 	ToggleGroupItem,
@@ -205,6 +206,7 @@ export function RangeControl({
 	min,
 	max,
 	step = 1,
+	inputScale,
 	onChange,
 }: {
 	label: string;
@@ -213,6 +215,8 @@ export function RangeControl({
 	min: number;
 	max: number;
 	step?: number;
+	/** Stored units per entered unit, e.g. 100 cents per dollar. Omit for date/index controls. */
+	inputScale?: number;
 	onChange: (value: number) => void;
 }) {
 	const id = useId();
@@ -220,10 +224,23 @@ export function RangeControl({
 		<Field>
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<FieldLabel htmlFor={id}>{label}</FieldLabel>
-				<output htmlFor={id} className="font-mono text-sm">
+				<output id={`${id}-value`} htmlFor={id} className="font-mono text-sm">
 					{display}
 				</output>
 			</div>
+
+			{inputScale !== undefined && display !== "—" ? (
+				<NumberField
+					id={`${id}-number`}
+					descriptionId={`${id}-value`}
+					label={label}
+					value={value / inputScale}
+					min={min / inputScale}
+					max={max / inputScale}
+					step={step / inputScale}
+					onChange={(next) => onChange(Number((next * inputScale).toFixed(8)))}
+				/>
+			) : null}
 			<input
 				id={id}
 				className="contract-range"

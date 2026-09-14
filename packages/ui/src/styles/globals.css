@@ -318,19 +318,43 @@
 		font-size: 0.6875rem;
 		margin-bottom: 8px;
 	}
+	.step-progress {
+		container-type: inline-size;
+		padding: 16px;
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		background: var(--background);
+	}
+	.step-progress-summary {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: 16px;
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+	.step-progress-count {
+		flex-shrink: 0;
+		color: var(--muted-foreground);
+		font: 0.75rem var(--font-mono);
+	}
 	.step-indicator {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 10px 20px;
+		gap: 12px;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 	.step-indicator li {
-		position: relative;
+		flex: 1;
+		min-width: 0;
 		display: flex;
-		align-items: center;
-		gap: 8px;
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 10px;
+		padding-top: 12px;
+		border-top: 3px solid var(--border);
 		color: var(--muted-foreground);
 		font-size: 0.75rem;
 		line-height: 1.5;
@@ -338,26 +362,79 @@
 	.step-indicator-marker {
 		display: grid;
 		flex-shrink: 0;
-		width: 26px;
-		height: 26px;
+		width: 28px;
+		height: 28px;
 		place-items: center;
 		border-radius: 50%;
 		background: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
+		font: 0.75rem var(--font-mono);
 	}
 	.step-indicator li[aria-current] {
 		color: var(--foreground);
 		font-weight: 600;
+		border-color: var(--primary);
 	}
 	.step-indicator li[aria-current] .step-indicator-marker {
 		background: var(--primary);
 		color: var(--primary-foreground);
-		box-shadow: 0 0 0 4px color-mix(in oklch, var(--primary) 16%, transparent);
+	}
+	.step-indicator li[data-complete="true"] {
+		border-color: var(--foreground);
 	}
 	.step-indicator li[data-complete="true"] .step-indicator-marker {
 		background: var(--foreground);
 		color: var(--background);
+	}
+	@container (max-width: 440px) {
+		.step-indicator {
+			gap: 8px;
+		}
+		.step-indicator li {
+			align-items: center;
+		}
+		.step-indicator li > span:last-child {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+	}
+	.number-field-group {
+		display: flex;
+		align-items: stretch;
+		min-height: 44px;
+		border: 1px solid var(--input);
+		border-radius: 12px;
+		background: var(--card);
+		overflow: clip;
+	}
+	.number-field-group:focus-within {
+		outline: 2px solid var(--ring);
+		outline-offset: 2px;
+	}
+	.number-field-button {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		flex-shrink: 0;
+		cursor: pointer;
+	}
+	.number-field-button:hover {
+		background: var(--muted);
+	}
+	.number-field-button:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+	.number-field-input {
+		width: 100%;
+		min-width: 0;
+		text-align: center;
+		font: 1rem var(--font-mono);
+		background: transparent;
+		outline: none;
 	}
 	[data-slot="breadcrumb-link"] {
 		display: inline-flex;

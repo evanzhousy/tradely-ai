@@ -685,6 +685,7 @@ export function SettlementComparisonScene({ locale }: Props) {
 				/>
 				<TypeField locale={locale} type={type} onChange={setType} />
 				<RangeControl
+					inputScale={1}
 					label={l("Contract quantity", "合约张数")}
 					value={count}
 					display={String(count)}

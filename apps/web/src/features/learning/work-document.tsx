@@ -174,14 +174,19 @@ export function WorkDocument({
 			{work.evidence ? (
 				<Worksheet data={work.evidence} locale={locale} />
 			) : null}
-			{work.fields.map((field, index) => (
-				<div key={`${field.label.en}-${index}`} className="flex flex-col gap-1">
-					<h4 className="font-medium text-sm">{field.label[locale]}</h4>
-					<p className="whitespace-pre-wrap break-words text-sm">
-						{field.localizedValue?.[locale] ?? field.value}
-					</p>
-				</div>
-			))}
+			<dl className="work-record-fields">
+				{work.fields.map((field, index) => (
+					<div
+						key={`${field.label.en}-${index}`}
+						className="flex flex-col gap-1"
+					>
+						<dt className="font-medium text-sm">{field.label[locale]}</dt>
+						<dd className="whitespace-pre-wrap break-words text-sm">
+							{field.localizedValue?.[locale] ?? field.value}
+						</dd>
+					</div>
+				))}
+			</dl>
 		</section>
 	);
 }
