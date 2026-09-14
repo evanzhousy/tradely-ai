@@ -16,13 +16,13 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 Last updated: 2026-09-14
 
-Latest run: partial greenfield Browser review through Round 010. External state/report: `/tmp/tradely-new-user-review/20260914-greenfield/state.md` and `report.md`. No production checks, billing mutations, or credentials were used.
+Latest run: remediation verification completed on 2026-09-14. External report/state remain `/tmp/tradely-new-user-review/20260914-greenfield/report.md` and `state.md`; remediation GIFs are `/tmp/tradely-findings-fix/consent.gif` and `result.gif`. No production checks, billing mutations, or credentials were used.
 
-- Resume at Round 048 from the external state for final boundary work. Lessons 01–36 are assessed in the external state/report; no Tradely lesson content remains queued. Round 047 opened a linked TradingFlow Recipe in a contaminated existing session and did not run it.
+- Resume at Round 048 from the external state for final boundary work. Lessons 01–36 are assessed; the consent and guest-result findings were remediated and verified locally. Round 047 opened a linked TradingFlow Recipe in a contaminated existing session and did not run it.
 - Establish Node 24.x and rerun affected checks if runtime qualification matters; the app ran on Node 22.16.0 because the existing 8250 service forced the run-owned server to 8251.
-- Establish a supported writable GIF capture path; seven screenshots exist externally, but the required GIF evidence gate remains BLOCKED.
+- Preserve the verified GIF capture method (chronological Browser CDP frames encoded outside the repo) for future rounds; sensitive auth intervals must still be excluded.
 - Obtain an assigned non-production identity/mailbox before testing signup, OTP, saved progress, and cross-device resume; do not use guessed or production credentials.
-- Keep the partial outcome: confirmed bugs were none in the reviewed journeys; current findings are consent/study-mark usability friction plus environment/evidence blockers. Close authorized TradingFlow Recipe and authenticated-persistence checks before claiming a fully evidenced audit.
+- Keep the partial outcome: no confirmed product bug remains in the reviewed journeys; historical Nitro failure, partner Recipe access, authenticated persistence, and Node 24 are still separate boundaries. Close authorized TradingFlow Recipe and authenticated-persistence checks before claiming a fully evidenced audit.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
