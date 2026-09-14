@@ -11,15 +11,16 @@ This is the canonical procedure, listed in the [agent runbook index](README.md).
 
 ## Agent Handoff
 
-Last updated: 2026-09-12
+Last updated: 2026-09-14
 
-No open handoff items. This pass created documentation only; the changelog update
-procedure was not executed and no production checks were performed.
+No open handoff items. The latest pass updated the existing September 14 entry
+after checking its lesson introduction and progress-summary behavior on the live
+site. Updated changelog copy was validated locally; no deployment was performed.
 
 ## Recommended Invocation
 
 ```text
-/goal Use ops/agent/update-changelog.md to update the public changelog for
+/goal Use ops/cursor/update-changelog.md to update the public changelog for
 [release or change scope]. Verify each claim, preserve existing permalinks,
 validate the page and capture local browser GIF evidence, maintain the runbook,
 and commit only the scoped changes. Do not push or deploy without authorization.
@@ -47,7 +48,9 @@ remove a blocker.
   environment. For an entry accompanying a release, verify the included code and
   describe it as prepared locally until that release is verified. If the release
   date or inclusion is unknown, keep the candidate in the handoff rather than
-  adding an unsupported public announcement.
+  adding an unsupported public announcement. An “Unreleased” label in the live
+  changelog can itself be stale; verify the described product behavior before
+  retaining or removing it.
 - Pushing, deploying, changing production settings, or notifying others requires
   authorization in the current task context. Do not repeat an already granted
   approval request. Do not execute those actions merely to populate this runbook.

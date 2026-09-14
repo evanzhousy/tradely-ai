@@ -3,11 +3,16 @@ export const changelog = [
 	{
 		id: "2026-09-14-foundation-learning-evidence",
 		date: "2026-09-14",
-		dateLabel: "September 14, 2026 · Unreleased",
+		dateLabel: "September 14, 2026",
 		title: "Clearer foundations and more meaningful progress",
 		summary:
 			"The first four lessons introduce their purpose and key terms, then test the concept in different situations.",
 		changes: [
+			{
+				title: "Start with a worked example",
+				description:
+					"Each of the first four lessons opens with a practical question, a learning goal and a worked example. Expand key terms for definitions as you need them.",
+			},
 			{
 				title: "See what you studied and what you practiced",
 				description:
@@ -17,6 +22,11 @@ export const changelog = [
 				title: "Apply the idea to a different case",
 				description:
 					"Foundation cases now contrast contract identity, missing terms, closing and assignment, costs and payoff, and physical and cash settlement. Previous attempts retain their original grading rules.",
+			},
+			{
+				title: "Read your progress at a glance",
+				description:
+					"The course summary gives practice results their own space below study progress, making submitted exercises and independent checks easier to scan.",
 			},
 		],
 	},
