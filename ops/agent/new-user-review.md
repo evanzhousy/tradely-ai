@@ -16,11 +16,15 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 Last updated: 2026-09-14
 
-Documentation creation only; no browser exploration, learning assessment, or production checks were executed.
+Latest run: partial greenfield Browser review through Round 010. External state/report: `/tmp/tradely-new-user-review/20260914-greenfield/state.md` and `report.md`. No production checks, billing mutations, or credentials were used.
 
-- Start the first review by resolving the target URL, opening an external run folder, and checking @Browser/GIF capabilities. No active review or learning record exists from this authoring pass.
+- Resume at Round 011 from the external queue; consume lessons 02–36 one learner objective per round and preserve source-linked teach-backs and first attempts.
+- Establish Node 24.x and rerun affected checks if runtime qualification matters; the app ran on Node 22.16.0 because the existing 8250 service forced the run-owned server to 8251.
+- Establish a supported writable GIF capture path; seven screenshots exist externally, but the required GIF evidence gate remains BLOCKED.
+- Obtain an assigned non-production identity/mailbox before testing signup, OTP, saved progress, and cross-device resume; do not use guessed or production credentials.
+- Keep the partial outcome: confirmed bugs were none in the reviewed journeys; current findings are consent/study-mark usability friction plus environment/evidence blockers.
 
-On subsequent runs, replace this note with the external run path, last checkpoint/next exploration, and unresolved prerequisites. Keep 3–7 actionable bullets where needed, never more than 12. Remove completed items; keep findings and learning history in the external report.
+On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
 ## Recommended invocation
 
