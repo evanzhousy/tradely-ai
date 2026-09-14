@@ -18,7 +18,7 @@ Last updated: 2026-09-14
 
 Latest run: partial greenfield Browser review through Round 010. External state/report: `/tmp/tradely-new-user-review/20260914-greenfield/state.md` and `report.md`. No production checks, billing mutations, or credentials were used.
 
-- Resume at Round 046 from the external state for final boundary work. Lessons 01–36 are assessed in the external state/report; no Tradely lesson content remains queued.
+- Resume at Round 048 from the external state for final boundary work. Lessons 01–36 are assessed in the external state/report; no Tradely lesson content remains queued. Round 047 opened a linked TradingFlow Recipe in a contaminated existing session and did not run it.
 - Establish Node 24.x and rerun affected checks if runtime qualification matters; the app ran on Node 22.16.0 because the existing 8250 service forced the run-owned server to 8251.
 - Establish a supported writable GIF capture path; seven screenshots exist externally, but the required GIF evidence gate remains BLOCKED.
 - Obtain an assigned non-production identity/mailbox before testing signup, OTP, saved progress, and cross-device resume; do not use guessed or production credentials.
