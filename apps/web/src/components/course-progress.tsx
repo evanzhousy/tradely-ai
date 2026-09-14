@@ -29,19 +29,21 @@ export function CourseProgress({
 	if (!compact)
 		return (
 			<section
-				className="course-progress-summary"
+				className="flex flex-col gap-4"
 				aria-label={t("progress.completedLabel", { completed, total })}
 			>
-				<CircularProgress value={percentage} label={t("progress.course")} />
-				<div className="flex flex-col gap-2">
-					<p className="font-medium text-sm">{t("progress.course")}</p>
-					<p className="font-mono text-muted-foreground text-xs">
-						{completed} / {total} {t("common.completed")}
-					</p>
-					{learning ? (
-						<LearningProgressCounts summary={learning} locale={locale} />
-					) : null}
+				<div className="course-progress-summary">
+					<CircularProgress value={percentage} label={t("progress.course")} />
+					<div className="flex flex-col gap-2">
+						<p className="font-medium text-sm">{t("progress.course")}</p>
+						<p className="font-mono text-muted-foreground text-xs">
+							{completed} / {total} {t("common.completed")}
+						</p>
+					</div>
 				</div>
+				{learning ? (
+					<LearningProgressCounts summary={learning} locale={locale} />
+				) : null}
 			</section>
 		);
 	return (
