@@ -31,7 +31,7 @@ function isCurrentScenario(record: LessonAttempt) {
 	);
 }
 
-function projectRecord(record: LessonAttempt): LearningResponse {
+export function projectRecord(record: LessonAttempt): LearningResponse {
 	const scenario = getScenario(
 		record.lessonId,
 		record.scenarioId,
@@ -81,6 +81,16 @@ export async function openLearningImpl(
 			eq(lessonAttempt.userId, access.userId),
 			eq(lessonAttempt.lessonId, data.lessonId),
 		);
+		if (data.attemptId && !data.restart) {
+			const [selected] = await db
+				.select()
+				.from(lessonAttempt)
+				.where(and(owner, eq(lessonAttempt.id, data.attemptId)))
+				.limit(1);
+			return selected
+				? projectRecord(selected)
+				: { ok: false, reason: "not_found" };
+		}
 		const [latest] = await db
 			.select()
 			.from(lessonAttempt)

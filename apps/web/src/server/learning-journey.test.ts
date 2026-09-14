@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import {
@@ -13,6 +12,7 @@ import {
 } from "vitest";
 import { tradingFlowCourse } from "@/content/course";
 import { referenceAction } from "@/domain/learning/test-helpers";
+import { applyTestMigrations } from "./test-database";
 
 const dependencies = vi.hoisted(() => ({
 	db: vi.fn(),
@@ -54,21 +54,7 @@ describe("integrated course persistence journey", () => {
 	const pg = new PGlite();
 	const db = drizzle(pg, { schema });
 	beforeAll(async () => {
-		for (const name of [
-			"0000_salty_randall.sql",
-			"0001_low_clea.sql",
-			"0002_learning_attempts.sql",
-			"0003_neon_auth_fresh_start.sql",
-		])
-			await pg.exec(
-				readFileSync(
-					new URL(
-						`../../../../packages/db/src/migrations/${name}`,
-						import.meta.url,
-					),
-					"utf8",
-				),
-			);
+		await applyTestMigrations(pg);
 	});
 	afterAll(() => pg.close());
 	beforeEach(async () => {

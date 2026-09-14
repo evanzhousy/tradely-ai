@@ -20,7 +20,7 @@ import {
 	Clock3Icon,
 	VideoOffIcon,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAnalytics } from "@/analytics/context";
@@ -33,6 +33,7 @@ import { SignInLink } from "@/components/sign-in-link";
 import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
 import { guidesForLesson } from "@/content/guides";
+import { parseLearningSearch } from "@/domain/guest-learning";
 import { LearningExercise } from "@/features/learning/learning-exercise";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -41,6 +42,7 @@ import { getLessonPageData } from "@/server/lesson";
 import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/learn/$lessonSlug")({
+	validateSearch: parseLearningSearch,
 	loader: async ({ params }) => {
 		const [page, progress] = await Promise.all([
 			getLessonPageData({ data: { slug: params.lessonSlug } }),
@@ -55,6 +57,14 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 
 function LessonPage() {
 	const { lessonSlug } = Route.useParams();
+	const { attempt, saveGuest } = Route.useSearch();
+	const navigate = Route.useNavigate();
+	const selectAttempt = useCallback(
+		(attemptId: string) => {
+			void navigate({ search: { attempt: attemptId }, replace: true });
+		},
+		[navigate],
+	);
 	const { page, progress } = Route.useLoaderData();
 	const sourceLesson = getLesson(lessonSlug);
 	const { locale, t } = useI18n();
@@ -238,7 +248,13 @@ function LessonPage() {
 					{
 						<>
 							{page.learning ? (
-								<LearningExercise lessonId={sourceLesson.id} />
+								<LearningExercise
+									key={sourceLesson.id}
+									lessonId={sourceLesson.id}
+									attemptId={attempt}
+									saveGuest={saveGuest === "1"}
+									onSelectAttempt={selectAttempt}
+								/>
 							) : null}
 							{page.media ? (
 								<LessonVideo
@@ -277,7 +293,7 @@ function LessonPage() {
 							<div className="flex flex-col gap-5">
 								{progress.signedIn ? (
 									<CompleteLessonButton lesson={lesson} />
-								) : (
+								) : !page.learning ? (
 									<div className="flex flex-col items-start gap-3">
 										<p className="text-muted-foreground text-sm">
 											{t("complete.previewNote")}
@@ -293,7 +309,7 @@ function LessonPage() {
 											{t("complete.signInToSave")}
 										</SignInLink>
 									</div>
-								)}
+								) : null}
 								<Separator />
 								<nav
 									className="flex items-center justify-between gap-4"

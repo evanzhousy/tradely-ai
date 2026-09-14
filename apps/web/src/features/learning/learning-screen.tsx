@@ -39,6 +39,7 @@ import {
 	ScanSearchIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { getLessonById } from "@/content/course";
 import { learningRollout } from "@/content/learning-rollout";
 import { isCoachingLesson } from "@/domain/coaching/policy";
 import type {
@@ -149,7 +150,13 @@ const conceptLabs = {
 	"trade-records": TapeConceptLab,
 };
 
+import {
+	GuestSaveControl,
+	type GuestSaveControlProps,
+} from "./guest-save-control";
+
 export type LearningScreenProps = {
+	guestSave?: GuestSaveControlProps;
 	coachingTransport?: CoachingTransport;
 	onCoachingEvent?: (event: CoachingEvent) => void;
 	lessonId?: string;
@@ -251,6 +258,7 @@ function QuoteComparison({
 }
 
 function LearningScreenContent({
+	guestSave,
 	coachingTransport,
 	onCoachingEvent,
 	lessonId,
@@ -296,6 +304,18 @@ function LearningScreenContent({
 			(evidence) => !evidence.required || evidence.detail,
 		);
 	const locked = busy || error !== null;
+	const showResultSave = view?.phase === "complete" && guestSave?.prominent;
+	const guestSaveControl =
+		guestSave && view ? (
+			<GuestSaveControl
+				control={guestSave}
+				locale={locale}
+				complete={view.phase === "complete"}
+				research={getLessonById(view.lessonId)?.moduleId === "production"}
+				disabled={locked}
+				dirty={Object.values(drafts).some(Boolean) || coachingDraft}
+			/>
+		) : null;
 	const focusKey = view
 		? `${view.attemptId}:${view.stepIndex}:${view.phase}`
 		: "";
@@ -373,6 +393,7 @@ function LearningScreenContent({
 										? text(view.result.status)
 										: text("debrief")}
 							</h3>
+							{showResultSave ? guestSaveControl : null}
 							<p className="whitespace-pre-line text-muted-foreground text-sm leading-relaxed">
 								{local(view.step.brief)}
 							</p>
@@ -675,6 +696,7 @@ function LearningScreenContent({
 				) : null}
 			</CardContent>
 			<CardFooter className="flex-col items-stretch gap-3">
+				{!showResultSave ? guestSaveControl : null}
 				<div className="flex flex-wrap items-center gap-3">
 					{!view ? (
 						<Button onClick={() => onOpen()} disabled={locked}>

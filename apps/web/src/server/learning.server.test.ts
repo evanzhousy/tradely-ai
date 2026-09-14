@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import {
@@ -11,6 +10,7 @@ import {
 	it,
 	vi,
 } from "vitest";
+import { applyTestMigrations } from "./test-database";
 
 const mocks = vi.hoisted(() => ({
 	db: vi.fn(),
@@ -65,21 +65,7 @@ describe("learning persistence and authorization (isolated PostgreSQL)", () => {
 		action,
 	});
 	beforeAll(async () => {
-		for (const filename of [
-			"0000_salty_randall.sql",
-			"0001_low_clea.sql",
-			"0002_learning_attempts.sql",
-			"0003_neon_auth_fresh_start.sql",
-		])
-			await pg.exec(
-				readFileSync(
-					new URL(
-						`../../../../packages/db/src/migrations/${filename}`,
-						import.meta.url,
-					),
-					"utf8",
-				),
-			);
+		await applyTestMigrations(pg);
 	});
 	afterAll(async () => {
 		await pg.close();

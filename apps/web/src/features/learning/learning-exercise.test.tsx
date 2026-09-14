@@ -7,6 +7,7 @@ import {
 	screen,
 	waitFor,
 } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -14,6 +15,15 @@ const mocks = vi.hoisted(() => ({
 	update: vi.fn(),
 	capture: vi.fn(),
 	userId: "learner-a",
+}));
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({
+		children,
+		params,
+	}: {
+		children: ReactNode;
+		params: { lessonSlug: string };
+	}) => <a href={`/learn/${params.lessonSlug}`}>{children}</a>,
 }));
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));

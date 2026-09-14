@@ -43,6 +43,20 @@
 			"when": 1789328326827,
 			"tag": "0005_coaching_daily_budget",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1789369433834,
+			"tag": "0006_guest_learning_import",
+			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1789372104127,
+			"tag": "0007_guest_import_integrity",
+			"breakpoints": true
 		}
 	]
 }

@@ -193,3 +193,48 @@ describe("new course learning surfaces", () => {
 		);
 	});
 });
+
+it.each([
+	["rank-contracts", "Save my result — create a free account"],
+	["cookbook-research-packet", "Save this research"],
+])(
+	"offers the right save intent for a completed %s document",
+	(lessonId, label) => {
+		const scenario = required(getLessonScenarios(lessonId)[0]);
+		let state = initialAttemptState();
+		for (const [index, step] of scenario.steps.entries()) {
+			for (const evidenceId of step.requiredEvidence)
+				state = transitionAttempt(scenario, state, {
+					type: "inspect",
+					evidenceId,
+				});
+			for (const question of step.questions)
+				state = transitionAttempt(scenario, state, referenceAction(question));
+			state = transitionAttempt(scenario, state, { type: "submit" });
+			if (index < scenario.steps.length - 1)
+				state = transitionAttempt(scenario, state, { type: "continue" });
+		}
+		const view = projectAttempt(scenario, state, "guest", 20);
+		expect(view.work).toBeTruthy();
+		render(
+			<LearningScreen
+				locale="en"
+				lessonId={lessonId}
+				view={view}
+				busy={false}
+				error={null}
+				persistence="preview"
+				onOpen={() => {}}
+				onAction={() => {}}
+				onRecover={() => {}}
+				guestSave={{
+					onSave: vi.fn(),
+					onDismiss: vi.fn(),
+					prominent: true,
+					storageError: false,
+				}}
+			/>,
+		);
+		expect(screen.getByRole("button", { name: label })).toBeTruthy();
+	},
+);

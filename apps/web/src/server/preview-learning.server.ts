@@ -13,10 +13,25 @@ import type { PreviewLearningInput } from "./learning";
 export function previewLearningImpl(
 	data: PreviewLearningInput,
 ): LearningResponse {
-	if (!getLessonById(data.lessonId))
-		return { ok: false, reason: "access_denied" };
-	const scenario = getLessonScenarios(data.lessonId)[data.variant];
-	if (!scenario) return { ok: false, reason: "not_found" };
+	const lesson = getLessonById(data.lessonId);
+	if (!lesson) return { ok: false, reason: "access_denied" };
+	const scenarios = getLessonScenarios(data.lessonId);
+	const scenario = data.pin
+		? scenarios.find(
+				(s) =>
+					s.id === data.pin?.scenarioId &&
+					s.version === data.pin.scenarioVersion,
+			)
+		: scenarios[data.variant];
+	if (!scenario)
+		return { ok: false, reason: data.pin ? "retired" : "not_found" };
+	if (
+		data.pin &&
+		(data.pin.scenarioId !== scenario.id ||
+			data.pin.scenarioVersion !== scenario.version ||
+			data.pin.contentVersion !== lesson.contentVersion)
+	)
+		return { ok: false, reason: "retired" };
 	try {
 		const state = data.actions.reduce(
 			(state, action) => transitionAttempt(scenario, state, action),
@@ -24,7 +39,10 @@ export function previewLearningImpl(
 		);
 		return {
 			ok: true,
-			view: projectAttempt(scenario, state, "preview", data.actions.length),
+			view: {
+				...projectAttempt(scenario, state, "preview", data.actions.length),
+				contentVersion: lesson.contentVersion,
+			},
 		};
 	} catch {
 		return { ok: false, reason: "invalid_action" };

@@ -78,6 +78,8 @@ export const lessonAttempt = pgTable(
 		state: jsonb("state").$type<unknown>().notNull(),
 		assessment: jsonb("assessment").$type<unknown>(),
 		lastCommandId: text("last_command_id"),
+		guestImportId: text("guest_import_id"),
+		guestImportHash: text("guest_import_hash"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.defaultNow()
 			.notNull(),
@@ -87,6 +89,11 @@ export const lessonAttempt = pgTable(
 		submittedAt: timestamp("submitted_at", { withTimezone: true }),
 	},
 	(table) => [
+		uniqueIndex("lesson_attempt_guest_import").on(table.guestImportId),
+		check(
+			"lesson_attempt_guest_import_pair",
+			sql`(${table.guestImportId} is null and ${table.guestImportHash} is null) or (${table.guestImportId} is not null and ${table.guestImportHash} is not null and ${table.guestImportHash} ~ '^[0-9a-f]{64}$')`,
+		),
 		uniqueIndex("lesson_attempt_active_user_lesson")
 			.on(table.userId, table.lessonId)
 			.where(sql`${table.status} = 'in_progress'`),

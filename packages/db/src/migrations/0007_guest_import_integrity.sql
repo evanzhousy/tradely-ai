@@ -1,0 +1,2 @@
+ALTER TABLE "lesson_attempt" DROP CONSTRAINT "lesson_attempt_guest_import_pair";--> statement-breakpoint
+ALTER TABLE "lesson_attempt" ADD CONSTRAINT "lesson_attempt_guest_import_pair" CHECK (("lesson_attempt"."guest_import_id" is null and "lesson_attempt"."guest_import_hash" is null) or ("lesson_attempt"."guest_import_id" is not null and "lesson_attempt"."guest_import_hash" is not null and "lesson_attempt"."guest_import_hash" ~ '^[0-9a-f]{64}$'));

@@ -31,6 +31,8 @@ export function guidedRecord(
 		state,
 		assessment: null,
 		lastCommandId: null,
+		guestImportId: null,
+		guestImportHash: null,
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		submittedAt: null,

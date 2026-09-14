@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {
+	guestImportSchema,
+	guestScenarioSchema,
+} from "@/domain/guest-learning";
 import { learningActionSchema } from "@/domain/learning/types";
 
 const lessonId = z
@@ -8,7 +12,11 @@ const lessonId = z
 	.max(100)
 	.regex(/^[a-z0-9-]+$/);
 export const openLearningSchema = z
-	.object({ lessonId, restart: z.boolean().default(false) })
+	.object({
+		lessonId,
+		restart: z.boolean().default(false),
+		attemptId: z.string().uuid().optional(),
+	})
 	.strict();
 export const updateLearningSchema = z
 	.object({
@@ -28,6 +36,7 @@ export const previewLearningSchema = z
 		lessonId,
 		variant: z.number().int().min(0).max(1),
 		actions: z.array(learningActionSchema).max(256),
+		pin: guestScenarioSchema.optional(),
 	})
 	.strict();
 export type PreviewLearningInput = z.infer<typeof previewLearningSchema>;
@@ -36,6 +45,13 @@ export const previewLearning = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		const { previewLearningImpl } = await import("./preview-learning.server");
 		return previewLearningImpl(data);
+	});
+
+export const importGuestLearning = createServerFn({ method: "POST" })
+	.validator(guestImportSchema)
+	.handler(async ({ data }) => {
+		const { importGuestLearningImpl } = await import("./guest-learning.server");
+		return importGuestLearningImpl(data);
 	});
 
 export const openLearning = createServerFn({ method: "POST" })

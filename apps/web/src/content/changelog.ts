@@ -1,6 +1,26 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-09-14-save-guest-learning",
+		date: "2026-09-14",
+		dateLabel: "September 14, 2026",
+		title: "Keep your guest practice when you sign in",
+		summary:
+			"Save a result, your place, or a research exercise to a free account without starting over.",
+		changes: [
+			{
+				title: "Save after trying a lesson",
+				description:
+					"A contextual save action keeps your pending exercise in the same tab while you sign in. Cancelling sign-in restores that pending work.",
+			},
+			{
+				title: "Preserve existing work",
+				description:
+					"Saving checks the case version and keeps existing account attempts intact. Retrying an interrupted save does not create duplicate results.",
+			},
+		],
+	},
+	{
 		id: "2026-09-13-free-learning",
 		date: "2026-09-13",
 		dateLabel: "September 13, 2026",

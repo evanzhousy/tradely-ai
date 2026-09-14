@@ -239,7 +239,11 @@ export const learningActionSchema = z.discriminatedUnion("type", [
 		.object({
 			type: z.literal("answer"),
 			questionId: identifier,
-			choiceId: identifier,
+			choiceId: z
+				.string()
+				.min(1)
+				.max(100)
+				.regex(/^[A-Za-z0-9-]+$/),
 		})
 		.strict(),
 	z
@@ -287,6 +291,8 @@ export const learningResultSchema = z
 	.strict();
 export type LearningResult = z.infer<typeof learningResultSchema>;
 export type LearningView = {
+	/** Supplied by the guest server when pinning a handoff to a course edition. */
+	contentVersion?: number;
 	attemptId: string;
 	scenarioId: string;
 	scenarioVersion: number;

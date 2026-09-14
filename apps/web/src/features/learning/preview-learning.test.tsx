@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LearningAction } from "@/domain/learning/types";
+import { prepareGuestHandoff, writeGuestHandoff } from "./guest-handoff";
 
 const mocks = vi.hoisted(() => ({
 	consent: "granted",
@@ -56,6 +57,7 @@ import { PreviewLearning } from "./preview-learning";
 
 afterEach(cleanup);
 beforeEach(() => {
+	sessionStorage.clear();
 	mocks.consent = "granted";
 	mocks.capture.mockClear();
 	mocks.preview.mockReset();
@@ -90,7 +92,11 @@ describe("anonymous preview analytics", () => {
 		await click("Submit", 2);
 		await click("Submit", 3);
 		await click("Restart", 4);
-		expect(mocks.capture.mock.calls.map((call) => call[0])).toEqual([
+		expect(
+			mocks.capture.mock.calls
+				.map((call) => call[0])
+				.filter((name) => name.startsWith("preview_")),
+		).toEqual([
 			"preview_exercise_started",
 			"preview_exercise_submitted",
 			"preview_exercise_started",
@@ -117,7 +123,11 @@ describe("anonymous preview analytics", () => {
 			mocks.preview.mock.calls[2][0],
 		);
 		expect(mocks.preview.mock.calls[3][0].data.actions).toEqual([]);
-		expect(mocks.capture.mock.calls.map((call) => call[0])).toEqual([
+		expect(
+			mocks.capture.mock.calls
+				.map((call) => call[0])
+				.filter((name) => name.startsWith("preview_")),
+		).toEqual([
 			"preview_exercise_started",
 			"preview_exercise_submitted",
 			"preview_exercise_started",
@@ -136,6 +146,53 @@ describe("anonymous preview analytics", () => {
 		view.rerender(<PreviewLearning lessonId="audited-boundary" />);
 		await click("Submit", 2);
 		await click("Restart", 3);
-		expect(mocks.capture).not.toHaveBeenCalled();
+		expect(
+			mocks.capture.mock.calls.filter((call) => call[0].startsWith("preview_")),
+		).toEqual([]);
 	});
+});
+
+it("restores the pinned second variant after an interrupted sign-in without a duplicate start event", async () => {
+	const work = {
+		lessonId: "audited-boundary",
+		scenarioId: "audited-boundary-practice-2",
+		scenarioVersion: 2,
+		contentVersion: 2,
+		variant: 1,
+		actions: [{ type: "continue" as const }],
+		intent: "place" as const,
+	};
+	prepareGuestHandoff(work, sessionStorage);
+	mocks.preview.mockResolvedValue(result());
+	render(<PreviewLearning lessonId={work.lessonId} />);
+	await waitFor(() => expect(mocks.preview).toHaveBeenCalledTimes(1));
+	expect(mocks.preview.mock.calls[0][0].data).toEqual({
+		lessonId: work.lessonId,
+		variant: 1,
+		actions: work.actions,
+		pin: { scenarioId: work.scenarioId, scenarioVersion: 2, contentVersion: 2 },
+	});
+	expect(
+		mocks.capture.mock.calls.filter((c) => c[0] === "preview_exercise_started"),
+	).toEqual([]);
+});
+it("does not reveal a pending copy bound to a different account", async () => {
+	const handoff = prepareGuestHandoff(
+		{
+			lessonId: "audited-boundary",
+			scenarioId: "audited-boundary-practice-1",
+			scenarioVersion: 2,
+			contentVersion: 2,
+			variant: 0,
+			actions: [],
+			intent: "place",
+		},
+		sessionStorage,
+	);
+	writeGuestHandoff({ ...handoff, boundUserId: "account-a" }, sessionStorage);
+	render(
+		<PreviewLearning lessonId="audited-boundary" currentUserId="account-b" />,
+	);
+	await screen.findByRole("alert");
+	expect(mocks.preview).not.toHaveBeenCalled();
 });

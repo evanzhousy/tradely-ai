@@ -49,6 +49,21 @@ export type AnalyticsRouteName =
 	| "not_found";
 
 export type AnalyticsEventMap = {
+	guest_signup_prompt_shown: { lesson_id: string };
+	guest_signup_prompt_dismissed: { lesson_id: string };
+	guest_work_save_requested: {
+		lesson_id: string;
+		intent: "result" | "place" | "research";
+	};
+	guest_work_import_succeeded: {
+		lesson_id: string;
+		intent: "result" | "place" | "research";
+		completed: boolean;
+	};
+	guest_work_import_failed: {
+		lesson_id: string;
+		reason: import("@/domain/guest-learning").GuestImportFailure;
+	};
 	lesson_coach_started: CoachingEventProperties;
 	lesson_coach_feedback_viewed: CoachingEventProperties;
 	lesson_coach_revision_saved: CoachingEventProperties;
@@ -191,6 +206,11 @@ export type AnalyticsEventMap = {
 export type AnalyticsEventName = keyof AnalyticsEventMap;
 
 export const ANALYTICS_EVENT_NAMES = {
+	guest_signup_prompt_shown: true,
+	guest_signup_prompt_dismissed: true,
+	guest_work_save_requested: true,
+	guest_work_import_succeeded: true,
+	guest_work_import_failed: true,
 	lesson_coach_started: true,
 	lesson_coach_feedback_viewed: true,
 	lesson_coach_revision_saved: true,
@@ -228,6 +248,11 @@ export const ANALYTICS_EVENT_NAMES = {
 } satisfies Record<AnalyticsEventName, true>;
 
 export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	guest_signup_prompt_shown: ["lesson_id"],
+	guest_signup_prompt_dismissed: ["lesson_id"],
+	guest_work_save_requested: ["lesson_id", "intent"],
+	guest_work_import_succeeded: ["lesson_id", "intent", "completed"],
+	guest_work_import_failed: ["lesson_id", "reason"],
 	lesson_coach_started: coachingPropertyKeys,
 	lesson_coach_feedback_viewed: coachingPropertyKeys,
 	lesson_coach_revision_saved: coachingPropertyKeys,

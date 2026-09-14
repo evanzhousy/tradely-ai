@@ -9,8 +9,8 @@ export const learningCopy = {
 	loading: { en: "Opening your case…", zh: "正在打开案例…" },
 	saved: { en: "Saved to your account", zh: "已保存到你的账户" },
 	previewOnly: {
-		en: "Guest practice · decisions reset on reload",
-		zh: "访客练习 · 刷新后判断会重置",
+		en: "Guest practice · save to a free account to keep your work",
+		zh: "访客练习 · 保存到免费账户以保留记录",
 	},
 	prediction: { en: "Learn", zh: "理解" },
 	guided: { en: "Investigate", zh: "检查证据" },

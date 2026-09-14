@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
@@ -12,6 +11,7 @@ import {
 	it,
 	vi,
 } from "vitest";
+import { applyTestMigrations } from "./test-database";
 
 const mocks = vi.hoisted(() => ({
 	db: vi.fn(),
@@ -90,23 +90,7 @@ describe("coaching with actual PostgreSQL migrations", () => {
 	const review = async (round: "initial" | "revision" = "initial") =>
 		updateCoachingImpl(await command({ type: "review", round }));
 	beforeAll(async () => {
-		for (const file of [
-			"0000_salty_randall",
-			"0001_low_clea",
-			"0002_learning_attempts",
-			"0003_neon_auth_fresh_start",
-			"0004_coaching_records",
-			"0005_coaching_daily_budget",
-		])
-			await pg.exec(
-				readFileSync(
-					new URL(
-						`../../../../packages/db/src/migrations/${file}.sql`,
-						import.meta.url,
-					),
-					"utf8",
-				),
-			);
+		await applyTestMigrations(pg);
 		expect(
 			(
 				await pg.query<{ reserved_micros: number }>(
