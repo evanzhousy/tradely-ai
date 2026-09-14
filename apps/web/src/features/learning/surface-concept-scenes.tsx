@@ -27,6 +27,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const SurfaceData = createContext<SurfaceConceptData | null>(null);
 function useData() {
@@ -69,9 +70,13 @@ export function SurfaceSlicesScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const [dataset, setDataset] = useState(data.datasets[0].id);
-	const [row, setRow] = useState(1);
+	const [row, setRow] = useGuidedState(1, [0, 1, 2]);
 	const [column, setColumn] = useState(1);
-	const [axis, setAxis] = useState("strike");
+	const [axis, setAxis] = useGuidedState("strike", [
+		"strike",
+		"term",
+		"strike",
+	]);
 	const selected = surfaceCell(data, dataset, row, column);
 	const coordinates =
 		axis === "strike" ? data.strikes : data.expiries.map((e) => e.days);
@@ -252,7 +257,10 @@ export function SurfaceSlicesScene({ locale }: Props) {
 export function SurfaceWingsScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.wings[0].id);
+	const [id, setId] = useGuidedState(
+		data.wings[0].id,
+		data.wings.map((item) => item.id),
+	);
 	const [order, setOrder] = useState<"put-call" | "call-put">("put-call");
 	const example = data.wings.find((w) => w.id === id) ?? data.wings[0];
 	const result = wingComparison(example, order);
@@ -390,7 +398,11 @@ export function SurfaceInterpolationScene({ locale }: Props) {
 	const l = copy(locale);
 	const [days, setDays] = useState(data.defaultTarget);
 	const [method, setMethod] = useState<InterpolationMethod>("none");
-	const [coverage, setCoverage] = useState("complete");
+	const [coverage, setCoverage] = useGuidedState("complete", [
+		"complete",
+		"missing",
+		"complete",
+	]);
 	const anchors = data.anchors.map((a, i) =>
 		i === 1 && coverage === "missing" ? { ...a, iv: null } : a,
 	);

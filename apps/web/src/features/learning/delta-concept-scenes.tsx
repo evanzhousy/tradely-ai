@@ -28,6 +28,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const DeltaData = createContext<DeltaConceptData | null>(null);
 function useDeltaData() {
@@ -81,7 +82,11 @@ export function DeltaSlopeScene({ locale }: Props) {
 	const data = useDeltaData();
 	const l = copy(locale);
 	const [id, setId] = useState(data.options[0].id);
-	const [move, setMove] = useState(data.defaultMoveCents);
+	const [move, setMove] = useGuidedState(data.defaultMoveCents, [
+		0,
+		data.defaultMoveCents / 2,
+		data.defaultMoveCents,
+	]);
 	const option = data.options.find((o) => o.id === id) ?? data.options[0];
 	const result = localDeltaChange(option.delta, move, 1, 1, "long");
 	const estimate = result ? option.priceCents + result.unitChangeCents : null;
@@ -235,8 +240,16 @@ export function DeltaPositionScene({ locale }: Props) {
 	const data = useDeltaData();
 	const l = copy(locale);
 	const [id, setId] = useState(data.options[0].id);
-	const [side, setSide] = useState<"long" | "short">("long");
-	const [quantity, setQuantity] = useState(data.defaultQuantity);
+	const [side, setSide] = useGuidedState<"long" | "short">("long", [
+		"long",
+		"short",
+		"long",
+	]);
+	const [quantity, setQuantity] = useGuidedState(data.defaultQuantity, [
+		data.defaultQuantity,
+		data.defaultQuantity,
+		data.defaultQuantity * 2,
+	]);
 	const [multiplier, setMultiplier] = useState(data.multipliers[0]);
 	const option = data.options.find((o) => o.id === id) ?? data.options[0];
 	const result = localDeltaChange(
@@ -433,7 +446,11 @@ export function DeltaLimitsScene({ locale }: Props) {
 	const l = copy(locale);
 	const motion = useLessonMotion();
 	const playback = useFrames(curve.frames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const [condition, setCondition] = useState("fixed");
 	const move = manual ?? curve.frames[playback.frame];
 	const chooseMove = (value: number) => {

@@ -8,14 +8,13 @@ import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
+import { useVisualBookmarks } from "@/features/learning/visual-bookmark";
 import { useI18n } from "@/i18n/provider";
-import { LessonLearningStatus } from "./learning-progress";
 
 export function CourseList({
 	lessons,
 	completedIds = [],
 	currentLessonId,
-	learning,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
@@ -24,6 +23,7 @@ export function CourseList({
 }) {
 	const { t, locale } = useI18n();
 	const completed = new Set(completedIds);
+	const bookmarks = useVisualBookmarks();
 	const list = useRef<HTMLOListElement>(null);
 	useEffect(() => {
 		if (!currentLessonId) return;
@@ -123,10 +123,19 @@ export function CourseList({
 								<span className="line-clamp-2 text-muted-foreground text-sm">
 									{lesson.summary}
 								</span>
-								<LessonLearningStatus
-									evidence={learning?.lessons[lesson.id]}
-									locale={locale}
-								/>
+								<span className="text-muted-foreground text-xs">
+									{isCompleted
+										? locale === "zh"
+											? "已学习"
+											: "Studied"
+										: bookmarks[lesson.id]
+											? locale === "zh"
+												? "学习中"
+												: "In progress"
+											: locale === "zh"
+												? "尚未开始"
+												: "Not started"}
+								</span>
 								<span className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
 									<PlayCircleIcon className="size-3.5" aria-hidden="true" />
 									{t("common.minutes", { minutes: lesson.minutes })} ·{" "}

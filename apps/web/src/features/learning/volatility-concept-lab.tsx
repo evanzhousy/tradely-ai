@@ -17,6 +17,12 @@ const scenes = [
 			"Try an IV, then fit the model to the selected price. Compare price sources and maturity assumptions.",
 			"试算 IV，再拟合选定价格，比较价格来源与期限假设。",
 		],
+		demonstration: [
+			[
+				"Changing the model's IV changes its option value. A fitted IV matches a supplied price under stated assumptions.",
+				"改变模型 IV 会改变期权价值；拟合 IV 在给定假设下匹配给定价格。",
+			],
+		],
 		Component: ImpliedVolatilityScene,
 	},
 	{
@@ -30,6 +36,12 @@ const scenes = [
 			"Change the window, sampling interval and hypothetical final return. Keep the annualization convention visible.",
 			"改变窗口、采样间隔与假设最后收益，保留年化约定。",
 		],
+		demonstration: [
+			[
+				"Changing the measurement window changes the historical sample behind realized volatility.",
+				"改变测量窗口，会改变已实现波动率背后的历史样本。",
+			],
+		],
 		Component: RealizedVolatilityScene,
 	},
 	{
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Inspect the source identities, dates and definitions before interpreting an IV–RV difference.",
 			"解读 IV–RV 差值前，检查来源身份、日期与定义。",
+		],
+		demonstration: [
+			[
+				"Forward-implied and backward-realized measures retain their separate horizons.",
+				"向前隐含与向后已实现指标，各自保留独立时间范围。",
+			],
 		],
 		Component: VolatilityHorizonsScene,
 	},

@@ -20,6 +20,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const RankSymbolData = createContext<RankSymbolConceptData | null>(null);
 function useData() {
 	const data = useContext(RankSymbolData);
@@ -164,7 +165,7 @@ function exclusion(reason: string, locale: Locale) {
 export function RankActivityScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [relative, setRelative] = useState(true);
+	const [relative, setRelative] = useGuidedState(true, [false, true, true]);
 	const [floor, setFloor] = useState(100);
 	const [selected, setSelected] = useState("B");
 	const result = rankActivity(data.activity, relative, floor);
@@ -294,7 +295,10 @@ export function RankActivityScene({ locale }: Props) {
 export function RankHandoffScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.handoffs[0].id);
+	const [id, setId] = useGuidedState(
+		data.handoffs[0].id,
+		data.handoffs.map((item) => item.id),
+	);
 	const [field, setField] = useState("observation");
 	const snapshot = data.handoffs.find((s) => s.id === id) ?? data.handoffs[0];
 	const result = rankActivity(snapshot.rows, true, 100);

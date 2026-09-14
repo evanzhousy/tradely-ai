@@ -15,6 +15,12 @@ const scenes = [
 			"Switch Call / Put, then choose a role. Follow the right and the obligation.",
 			"切换看涨 / 看跌，再选择角色，追踪权利与义务。",
 		],
+		demonstration: [
+			[
+				"The buyer holds a right. The writer takes the corresponding obligation. Follow the two sides together.",
+				"买方持有权利，卖方承担对应义务，沿两条路径一起看。",
+			],
+		],
 		Component: RightsRolesScene,
 	},
 	{
@@ -25,6 +31,12 @@ const scenes = [
 			"Change the starting position and trade. Watch the option inventory move.",
 			"改变起始持仓与交易，观察期权持仓如何变化。",
 		],
+		demonstration: [
+			[
+				"Compare separate starting positions: selling can close a long or open a short.",
+				"比较不同起始持仓：卖出可以平掉多头，也可以建立空头。",
+			],
+		],
 		Component: PositionActionsScene,
 	},
 	{
@@ -34,6 +46,12 @@ const scenes = [
 		prompt: [
 			"Step through a valid exercise and assignment. Reverse Call / Put to reverse the flows.",
 			"逐步查看一次有效行权与指派，切换看涨 / 看跌，让资金与股票流向反转。",
+		],
+		demonstration: [
+			[
+				"Follow the stated strike payment and deliverable shares through assignment.",
+				"沿被指派流程，查看约定行权金额与交付股票。",
+			],
 		],
 		Component: AssignmentScene,
 	},

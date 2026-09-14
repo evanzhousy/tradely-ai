@@ -1063,3 +1063,175 @@
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
+
+/* The diagram is the lesson; controls and extended prose are optional. */
+.visual-classroom {
+	background: var(--card);
+}
+.visual-stage {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	min-width: 0;
+}
+.visual-caption {
+	max-width: 64ch;
+	min-height: 3.25em;
+	font-size: 1rem;
+	line-height: 1.65;
+	color: var(--muted-foreground);
+	text-wrap: pretty;
+}
+.visual-playback {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: var(--background);
+}
+.visual-timeline {
+	flex: 1;
+	width: 100%;
+	min-width: 3rem;
+	min-height: 44px;
+	accent-color: var(--ring);
+	cursor: pointer;
+}
+.visual-timeline:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 3px;
+	border-radius: 0.25rem;
+}
+.visual-scene-layout {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.visual-scene-layout > .contract-stage {
+	padding: 1rem;
+	min-height: 340px;
+	background: var(--muted);
+}
+.visual-scene-layout .contract-diagram {
+	max-width: 27rem;
+}
+.visual-scene-layout .contract-anatomy-map {
+	max-width: 30rem;
+}
+.visual-explore {
+	border-top: 1px solid var(--border);
+	padding-top: 0.75rem;
+}
+.visual-explore > summary {
+	cursor: pointer;
+	padding: 0.65rem 0;
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+.visual-explore > summary:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 3px;
+}
+[data-lesson-motion="on"]
+	.visual-classroom
+	.contract-diagram
+	:is(circle, rect) {
+	transition:
+		cx 240ms ease-out,
+		cy 240ms ease-out,
+		width 240ms ease-out,
+		height 240ms ease-out,
+		fill 240ms ease-out,
+		opacity 240ms ease-out;
+}
+@media (max-width: 560px) {
+	.visual-playback {
+		flex-wrap: wrap;
+	}
+	.visual-playback .visual-timeline {
+		min-width: 35%;
+	}
+	.visual-scene-layout > .contract-stage {
+		padding: 0;
+	}
+	.visual-classroom {
+		padding: 0.75rem;
+	}
+	.visual-caption {
+		min-height: 5em;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	[data-lesson-motion="on"]
+		.visual-classroom
+		.contract-diagram
+		:is(circle, rect) {
+		transition: none;
+	}
+}
+@media (min-width: 1100px) {
+	.visual-stage {
+		display: grid;
+		grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+		align-items: start;
+		gap: 1.25rem;
+	}
+	.visual-stage > div:first-child {
+		grid-column: 1;
+		grid-row: 1;
+		padding-top: 1rem;
+	}
+	.visual-stage > .visual-playback {
+		grid-column: 1;
+		grid-row: 2;
+		flex-wrap: wrap;
+	}
+	.visual-stage > div:last-child {
+		grid-column: 2;
+		grid-row: 1 / span 3;
+	}
+	.visual-stage .visual-timeline {
+		flex-basis: 60%;
+	}
+}
+
+@media (min-width: 1100px) {
+	.visual-stage > div:last-child:has(.contract-comparison) {
+		grid-column: 1 / -1;
+		grid-row: 3;
+	}
+	.visual-stage:has(.contract-comparison) > div:first-child {
+		grid-column: 1 / -1;
+	}
+	.visual-stage:has(.contract-comparison) > .visual-playback {
+		grid-column: 1 / -1;
+	}
+}
+@media (max-width: 560px) {
+	.lesson-shell .lesson-heading {
+		padding-bottom: 0.5rem;
+	}
+	.visual-classroom {
+		gap: 0.875rem;
+	}
+	.visual-classroom .contract-scene-tabs {
+		grid-template-columns: repeat(var(--scene-columns, 3), minmax(0, 1fr));
+	}
+	.visual-classroom .contract-scene-tabs [role="tab"] {
+		font-size: 0.75rem;
+		padding-inline: 0.25rem;
+	}
+	.visual-classroom .contract-scene-tabs [role="tab"] > span:first-child {
+		display: none;
+	}
+	.visual-caption {
+		min-height: 3.2em;
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+	.visual-stage {
+		gap: 0.875rem;
+	}
+}

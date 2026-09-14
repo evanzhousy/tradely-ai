@@ -24,6 +24,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const NeighborhoodData = createContext<NeighborhoodConceptData | null>(
 	null,
 );
@@ -169,7 +170,11 @@ export function NeighborhoodExploreScene({ locale }: Props) {
 	const snapshot = data.snapshots[0];
 	const [selected, setSelected] = useState("30:100");
 	const [focus, setFocus] = useState<number | null>(null);
-	const [spot, setSpot] = useState(snapshot.data.spot as number);
+	const [spot, setSpot] = useGuidedState(snapshot.data.spot as number, [
+		snapshot.data.spot as number,
+		(snapshot.data.spot as number) + 2,
+		snapshot.data.spot as number,
+	]);
 	const row =
 		snapshot.data.contracts.find((c) => c.id === selected) ??
 		snapshot.data.contracts[0];
@@ -282,7 +287,11 @@ export function NeighborhoodBreadthScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const replay = useFrames(3);
-	const [manual, setManual] = useState<number | null>(0);
+	const [manual, setManual] = useGuidedState<number | null>(0, [
+		null,
+		null,
+		null,
+	]);
 	const index = manual ?? (replay.frame === 1 ? 1 : 0);
 	const snapshot = data.snapshots[index];
 	const [selected, setSelected] = useState("30:100");
@@ -379,8 +388,12 @@ export function NeighborhoodBreadthScene({ locale }: Props) {
 export function NeighborhoodQualityScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState("broad");
-	const [selected, setSelected] = useState("14:95");
+	const [id, setId] = useGuidedState("broad", ["broad", "broad", "broad"]);
+	const [selected, setSelected] = useGuidedState("14:95", [
+		"14:95",
+		"30:100",
+		"14:95",
+	]);
 	const snapshot = data.snapshots.find((s) => s.id === id) ?? data.snapshots[1];
 	const row =
 		snapshot.data.contracts.find((c) => c.id === selected) ??

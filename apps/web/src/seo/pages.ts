@@ -17,7 +17,7 @@ const staticPages: SeoPage[] = [
 		path: "/changelog",
 		title: "Changelog | Tradely",
 		description:
-			"What’s new in Tradely: lesson updates, interactive practice and improvements to the way you learn options research.",
+			"What’s new in Tradely: lesson updates, animated diagrams and improvements to the way you learn options research.",
 		index: true,
 		sitemap: true,
 	},
@@ -25,7 +25,7 @@ const staticPages: SeoPage[] = [
 		path: "/",
 		title: "Learn Options Flow, Greeks & Gamma Exposure | Tradely",
 		description:
-			"Learn to interpret options data with worked examples and interactive practice. Explore options flow, open interest, Greeks and gamma exposure.",
+			"Learn to interpret options data with worked examples and animated diagrams. Explore options flow, open interest, Greeks and gamma exposure.",
 		index: true,
 		sitemap: true,
 	},
@@ -33,13 +33,13 @@ const staticPages: SeoPage[] = [
 		path: "/guides",
 		title: "Options Guides with Interactive Examples | Tradely",
 		description:
-			"Free guides to gamma exposure, open interest vs volume and IV crush. Read a worked example, test your understanding and continue learning.",
+			"Free guides to gamma exposure, open interest vs volume and IV crush. Read a worked example, explore the concept and continue learning.",
 		index: true,
 		sitemap: true,
 	},
 	{
 		path: "/courses/tradingflow-foundations",
-		title: "Options Research Course: Concepts & Practice | Tradely",
+		title: "Options Research Course: Visual Lessons | Tradely",
 		description:
 			"Build a repeatable options research process through contracts, executions, flow, Greeks and market structure. Explore the complete free curriculum.",
 		index: true,

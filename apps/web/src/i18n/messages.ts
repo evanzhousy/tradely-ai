@@ -15,11 +15,11 @@ const messages = {
 		"lab.steps": "Your steps in TradingFlow",
 		"lab.inspect": "Bring back your reasoning",
 		"lab.access":
-			"Tradely lessons and sample exercises are free. Running this lab requires TradingFlow access through an eligible trial or subscription. You can go directly to TradingFlow without a Tradely account.",
+			"Tradely lessons and worked examples are free. Running this lab requires TradingFlow access through an eligible trial or subscription. You can go directly to TradingFlow without a Tradely account.",
 		"lab.accessDetails": "Check current access and trial terms ↗",
 		"lab.run": "Run this lesson’s Recipe",
 		"lab.keepOpen":
-			"Opens a new tab. Keep this lesson open beside the report. Your Tradely exercise progress is separate from Recipe execution.",
+			"Opens a new tab. Keep this lesson beside the report. Study marks and Recipe execution are separate.",
 		"lab.collectionTitle": "Put your learning to work in TradingFlow",
 		"lab.collectionDescription":
 			"Three guided Recipe labs connect concepts to a repeatable research routine. Read the lessons and worked examples free; TradingFlow access is required to run the reports.",
@@ -28,19 +28,19 @@ const messages = {
 		"complete.practiceAsGuest": "Practice without saving",
 		"pricing.freeHeading": "Every current lesson is free.",
 		"pricing.freeDescription":
-			"Read all 36 lessons and work through the interactive exercises without paying or creating an account.",
+			"Explore all 36 lessons through animated diagrams and worked examples, without paying or creating an account.",
 		"pricing.freeAccount": "A free account saves your work",
 		"pricing.freeAccountDescription":
-			"Sign in to save progress and attempts across devices. Guest practice resets on reload.",
-		"pricing.coachingTitle": "Optional AI coaching",
+			"Sign in to save study marks across devices. Your last visual scene is remembered on this device.",
+		"pricing.coachingTitle": "Learn visually, at your pace",
 		"pricing.coachingDescription":
-			"Coaching is available to a limited pilot on selected lessons. Eligible accounts can start one two-round session per UTC day, subject to a shared budget. Ordinary exercises and hints remain free when coaching is unavailable.",
+			"Watch the explanation, pause or replay it, and explore the controls when you want. Continue freely between lessons.",
 		"pricing.pastPurchases": "Previous purchases",
 		"pricing.pastPurchasesDescription":
 			"Tradely no longer sells course access. Sign in to manage previous billing or recover a purchase record. Learning is free regardless of previous purchases. Existing subscriptions require a separate cancellation; opening this page does not cancel billing.",
 		"pricing.signInHistory": "Sign in to manage previous purchases",
 		"home.cardConcept": "Concept map",
-		"home.cardPractice": "Practice in {tool}",
+		"home.cardPractice": "Explore {tool}",
 		"home.seeInside": "Take a look inside",
 		"home.guideLabel": "The options field guide",
 		"home.guideTitle": "Options.\nEvidence.\nPerspective.",
@@ -75,7 +75,7 @@ const messages = {
 		"hall.static": "Trading hall preview",
 		"home.openingLabel": "A field guide to options research",
 		"home.titleRead": "Learn options research for free.",
-		"home.titleVerify": "Practice your reasoning.",
+		"home.titleVerify": "See how it works.",
 		"home.intro":
 			"A guided path through options flow, market structure, and evidence. Start with contracts and executions, then build toward independent research.",
 		"home.startFree": "Start learning",
@@ -91,9 +91,9 @@ const messages = {
 		"home.pathTwo": "Inspect the evidence",
 		"home.pathThree": "Build your research",
 		"home.features.label": "Built around your learning",
-		"home.features.title": "A place to practice. A way to keep growing.",
+		"home.features.title": "See the idea. Follow the change.",
 		"home.features.description":
-			"Save your progress, work through evidence, and find a clearer next step. Tradely brings the tools together.",
+			"Animated diagrams explain the relationships. Worked examples show the reasoning. Explore at your own pace.",
 		"home.features.aiLabel": "AI reasoning coach",
 		"home.features.pilot": "Pilot",
 		"home.features.aiTitle": "A second look at your reasoning.",
@@ -113,31 +113,31 @@ const messages = {
 		"home.features.progressLabel": "Saved progress",
 		"home.features.progressTitle": "Pick up where you left off.",
 		"home.features.progressDescription":
-			"Sign in to keep lesson progress and saved practice with your account, across devices.",
+			"Sign in to save study marks across devices. Resume your last scene on this device.",
 		"home.features.savedLessons": "Lesson completion",
-		"home.features.savedPractice": "Saved practice answers",
-		"home.features.practiceTitle": "Make a call. Check the evidence.",
+		"home.features.savedPractice": "Scene bookmarks",
+		"home.features.practiceTitle": "Change an input. See the effect.",
 		"home.features.practiceDescription":
-			"Explore cases, inspect the evidence, and check what your answer supports.",
+			"Move a slider or compare examples to see how the diagram and calculation respond together.",
 		"home.features.practiceExample": "Try a sample",
 		"home.features.pathLabel": "Guided learning",
 		"home.features.pathTitle": "A clear next step.",
 		"home.features.pathDescription":
-			"Work from an initial judgment through guided practice, then apply the method to an independent case.",
+			"Watch a visual explanation, explore the relationship, then follow a worked example.",
 		"home.features.languageLabel": "English & Chinese",
 		"home.features.languageTitle": "Learn in your language.",
 		"home.features.languageDescription":
-			"Switch lesson content and practice prompts between English and Chinese.",
+			"Switch diagrams, captions and lesson notes between English and Chinese.",
 		"home.features.languageSwitch": "Switch to Chinese",
 		"home.demoQuestion": "A symbol ranks first. What does that tell you?",
 		"home.demoInterpreted":
 			"It deserves inspection. Direction and intent still need evidence.",
 		"home.demoReveal": "Reveal the reasoning",
-		"home.demoHide": "Reset the exercise",
+		"home.demoHide": "Replay the explanation",
 		"home.curriculumLabel": "Your learning path",
 		"home.curriculumTitle": "The whole path. Nothing hidden.",
 		"home.curriculumIntro":
-			"Start with a question. Work through the evidence. Finish with a research packet you can inspect and explain.",
+			"Explore contracts, flow, Greeks and research through 36 visual lessons. Follow the diagrams and continue freely.",
 		"home.accessTitle": "Start with curiosity. Take it further.",
 		"home.accessDescription":
 			"Explore all {count} lessons with no sign-in or payment required. Create a free account when you want to save your work.",
@@ -162,8 +162,7 @@ const messages = {
 		"nav.openTradingFlow": "Open TradingFlow",
 		"nav.openMenu": "Open menu",
 		"nav.mobileTitle": "Tradely",
-		"nav.mobileDescription":
-			"Options knowledge, examples and independent practice.",
+		"nav.mobileDescription": "Options explained through interactive diagrams.",
 		"language.label": "Language",
 		"language.english": "English",
 		"language.chinese": "中文",
@@ -224,16 +223,16 @@ const messages = {
 		"progress.signInToSync": "Sign in to sync progress across devices.",
 		"progress.accountCurrent": "Account progress is current.",
 		"progress.signInToRecord": "Sign in to record completion.",
-		"home.coursePractice": "{count} lessons · TradingFlow practice",
+		"home.coursePractice": "{count} visual lessons",
 		"home.heroTitle": "Read the market. Then verify the story.",
 		"home.heroDescription":
-			"A guided options curriculum that turns flow, ranking, Greeks, GEX, and open interest into one repeatable research workflow, with real practice in TradingFlow.",
+			"A visual options curriculum connecting contracts, flow, Greeks and research through animated diagrams and worked examples.",
 		"home.partnerDisclosure":
 			"Tradely courses and sample exercises are free. Partner labs run in TradingFlow and require its own account and access.",
 		"home.courseEyebrow": "THE COURSE",
 		"home.courseHeading": "A field manual, not a video library.",
 		"home.courseDescription":
-			"Each lesson explains one decision and gives you evidence to practice with. Selected lessons include guided TradingFlow Recipe labs.",
+			"Learn options through animated SVG diagrams, interactive comparisons and worked examples.",
 		"home.learningRecord": "Your learning record",
 		"home.independentProducts":
 			"Independent products · official practice partnership",
@@ -250,7 +249,7 @@ const messages = {
 		"home.tableAccess": "Access",
 		"home.tableMinutes": "Minutes",
 		"home.curriculumHeading": "The path, in the order the workflow uses it.",
-		"course.practiceBadge": "TradingFlow practice course",
+		"course.practiceBadge": "Visual options course",
 		"course.freeLessons": "{count} free lessons",
 		"course.freeLessonsDescription":
 			"Open any of these lessons without signing in or paying. Their numbers show where they fit in the full curriculum below.",
@@ -264,7 +263,7 @@ const messages = {
 		"course.researchCount": "{count} optional research previews",
 		"complete.signInToSave": "Create a free account to save progress",
 		"complete.previewNote":
-			"Practice is free. Sign in to record completion; anonymous exercise progress resets on reload.",
+			"Explore the visual lessons freely. Sign in to save study marks across devices.",
 		"course.yourProgress": "Your progress",
 		"course.curriculum": "Curriculum",
 		"course.curriculumDescription":
@@ -277,7 +276,7 @@ const messages = {
 			"Sign-in is temporarily unavailable. Please try again later.",
 		"video.unavailableTitle": "Video is temporarily unavailable",
 		"video.unavailableDescription":
-			"The written lesson remains available. Tradely could not issue a protected media URL.",
+			"The visual lesson and notes provide the complete explanation.",
 		"video.accessibleDescription":
 			"The written lesson below provides the complete accessible explanation and practice instructions.",
 		"video.browserFallback": "Your browser does not support HTML video.",
@@ -289,7 +288,7 @@ const messages = {
 			"The lesson text is currently available in English; the surrounding controls and course metadata follow your selected language.",
 		"complete.lesson": "Mark as studied",
 		"complete.studyNote":
-			"Your study mark is a personal record. Independent exercise results are tracked separately.",
+			"Your personal study mark records that you visited the lesson.",
 		"complete.saving": "Saving…",
 		"complete.success": "Marked as studied",
 		"complete.signInError": "Sign in to save progress",
@@ -336,11 +335,11 @@ const messages = {
 		"lab.steps": "在 TradingFlow 中的操作步骤",
 		"lab.inspect": "整理你的分析理由",
 		"lab.access":
-			"Tradely 课程和示例练习免费。运行本实践需要符合条件的 TradingFlow 试用或订阅权限，无需先注册 Tradely。",
+			"Tradely 课程与示例免费。运行此实践需要符合条件的 TradingFlow 试用或订阅权限，无需先注册 Tradely。",
 		"lab.accessDetails": "查看当前访问和试用条款 ↗",
 		"lab.run": "运行本课 Recipe",
 		"lab.keepOpen":
-			"在新标签页打开，请将本课保留在报告旁。Tradely 练习进度与 Recipe 运行分别记录。",
+			"在新标签页打开，可将课程放在报告旁。学习标记与 Recipe 运行分别记录。",
 		"lab.collectionTitle": "在 TradingFlow 中运用所学",
 		"lab.collectionDescription":
 			"三个 Recipe 引导实践把概念连接到可重复的研究流程。课程和解析示例免费阅读，运行报告需要 TradingFlow 访问权限。",
@@ -349,19 +348,19 @@ const messages = {
 		"complete.practiceAsGuest": "不保存记录，直接练习",
 		"pricing.freeHeading": "所有现有课程均免费。",
 		"pricing.freeDescription":
-			"无需付费或注册，即可学习全部 36 节课并完成交互练习。",
+			"无需付费或注册，通过动画图解与示例学习全部 36 节课。",
 		"pricing.freeAccount": "免费账户可保存学习记录",
 		"pricing.freeAccountDescription":
-			"登录后可跨设备保存进度与练习。访客练习在刷新后重置。",
-		"pricing.coachingTitle": "可选 AI 辅导",
+			"登录后可跨设备保存学习标记；上次查看的视觉场景保存在本设备。",
+		"pricing.coachingTitle": "按自己的节奏，直观学习",
 		"pricing.coachingDescription":
-			"AI 辅导目前仅向部分试用账户开放，支持指定课程。符合条件的账户每天（UTC）可开始一次两轮辅导，并受共享预算限制。辅导不可用时，普通练习与提示仍免费。",
+			"观看讲解，随时暂停、重播，按需探索控件，自由切换课程。",
 		"pricing.pastPurchases": "历史购买",
 		"pricing.pastPurchasesDescription":
 			"Tradely 不再出售课程访问权。登录可管理历史账单或恢复购买记录，无论是否购买过，学习均免费。已有订阅需单独取消，打开此页面不会取消扣费。",
 		"pricing.signInHistory": "登录管理历史购买",
 		"home.cardConcept": "概念图解",
-		"home.cardPractice": "在 {tool} 中练习",
+		"home.cardPractice": "探索 {tool}",
 		"home.seeInside": "看看如何学习",
 		"home.guideLabel": "研究实践指南",
 		"home.guideTitle": "期权。\n证据。\n视角。",
@@ -394,7 +393,7 @@ const messages = {
 		"hall.static": "交易大厅预览",
 		"home.openingLabel": "期权研究的实践指南",
 		"home.titleRead": "免费学习期权研究。",
-		"home.titleVerify": "练习独立判断。",
+		"home.titleVerify": "看懂它如何运作。",
 		"home.intro":
 			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
 		"home.startFree": "开始学习",
@@ -410,9 +409,9 @@ const messages = {
 		"home.pathTwo": "检视相关证据",
 		"home.pathThree": "形成研究记录",
 		"home.features.label": "为你的学习而设计",
-		"home.features.title": "从练习出发，让每一步都有积累。",
+		"home.features.title": "看见概念，看懂变化。",
 		"home.features.description":
-			"保存进度，检视证据，找到清晰的下一步。Tradely 将学习所需的工具放在一起。",
+			"动画图解解释关系，完整示例展示推理，按自己的节奏探索。",
 		"home.features.aiLabel": "AI 推理辅导",
 		"home.features.pilot": "试点",
 		"home.features.aiTitle": "为你的判断，多提供一个视角。",
@@ -429,30 +428,29 @@ const messages = {
 		"home.features.progressLabel": "进度保存",
 		"home.features.progressTitle": "随时回来，接着学。",
 		"home.features.progressDescription":
-			"登录后，课程进度和已保存的练习会保留在你的账户中，方便跨设备继续学习。",
+			"登录跨设备保存学习标记，在本设备继续上次场景。",
 		"home.features.savedLessons": "课程完成记录",
-		"home.features.savedPractice": "已保存的练习答案",
-		"home.features.practiceTitle": "做出判断，再检查证据。",
+		"home.features.savedPractice": "场景书签",
+		"home.features.practiceTitle": "改变输入，看见结果。",
 		"home.features.practiceDescription":
-			"探索案例、检视证据，检查你的答案能够支持什么。",
+			"拖动滑块或比较示例，观察图解与计算同步变化。",
 		"home.features.practiceExample": "试试这个示例",
 		"home.features.pathLabel": "循序学习",
 		"home.features.pathTitle": "每一步，都有方向。",
-		"home.features.pathDescription":
-			"从初步判断出发，通过引导练习，再将方法应用到独立案例。",
+		"home.features.pathDescription": "观看视觉讲解，探索关系，再跟随完整示例。",
 		"home.features.languageLabel": "中英双语",
 		"home.features.languageTitle": "用熟悉的语言学习。",
 		"home.features.languageDescription":
-			"在英文和中文之间切换课程内容与练习题目。",
+			"在英文和中文之间切换图解、字幕与课程笔记。",
 		"home.features.languageSwitch": "切换为英文",
 		"home.demoQuestion": "一个标的排名第一，能说明什么？",
 		"home.demoInterpreted": "它值得进一步检视。方向和意图仍需证据支持。",
 		"home.demoReveal": "查看推理过程",
-		"home.demoHide": "重置练习",
+		"home.demoHide": "重播讲解",
 		"home.curriculumLabel": "你的学习路径",
 		"home.curriculumTitle": "完整路径，一目了然。",
 		"home.curriculumIntro":
-			"从一个问题开始，逐步检视证据，最终形成可检查、可解释的研究记录。",
+			"通过 36 节视觉课程探索合约、成交流、Greeks 与研究方法，跟随图解自由学习。",
 		"home.accessTitle": "从好奇开始，继续深入。",
 		"home.accessDescription":
 			"无需登录或付款，即可学习全部 {count} 节课程。需要保存学习记录时，可创建免费账户。",
@@ -476,7 +474,7 @@ const messages = {
 		"nav.openTradingFlow": "打开 TradingFlow",
 		"nav.openMenu": "打开菜单",
 		"nav.mobileTitle": "Tradely",
-		"nav.mobileDescription": "用 TradingFlow 练习期权研究。",
+		"nav.mobileDescription": "通过交互图解理解期权。",
 		"language.label": "语言",
 		"language.english": "English",
 		"language.chinese": "中文",
@@ -532,16 +530,15 @@ const messages = {
 		"progress.signInToSync": "登录后可在不同设备同步进度。",
 		"progress.accountCurrent": "账户进度已更新。",
 		"progress.signInToRecord": "登录后记录完成状态。",
-		"home.coursePractice": "{count} 课 · TradingFlow 练习",
+		"home.coursePractice": "{count} 节视觉课程",
 		"home.heroTitle": "读懂市场，再验证你的判断。",
 		"home.heroDescription":
-			"一套有引导的期权课程，把成交流、排名、Greeks、GEX 和未平仓量串成可重复的研究流程，并在 TradingFlow 中完成真实练习。",
+			"一套视觉期权课程，通过动画图解与完整示例连接合约、成交流、Greeks 与研究方法。",
 		"home.partnerDisclosure":
 			"Tradely 课程和示例练习免费。合作实践在 TradingFlow 中运行，需要其平台账户和访问权限。",
 		"home.courseEyebrow": "课程",
 		"home.courseHeading": "一本实战手册，而不是视频目录。",
-		"home.courseDescription":
-			"每一课聚焦一个决策，并提供可练习的证据。部分课程包含 TradingFlow Recipe 引导实践。",
+		"home.courseDescription": "通过 SVG 动画图解、交互对比与完整示例学习期权。",
 		"home.learningRecord": "你的学习记录",
 		"home.independentProducts": "独立产品 · 官方练习合作",
 		"home.partnerHeading": "在 Tradely 学习，在 TradingFlow 练习。",
@@ -557,21 +554,20 @@ const messages = {
 		"home.tableAccess": "权限",
 		"home.tableMinutes": "分钟",
 		"home.curriculumHeading": "按研究流程顺序排列的路径。",
-		"course.practiceBadge": "TradingFlow 实战课程",
+		"course.practiceBadge": "期权视觉课程",
 		"course.freeLessons": "{count} 节免费课程",
 		"course.freeLessonsDescription":
 			"以下课程无需登录或付款即可学习。课号对应它们在下方完整课程目录中的位置。",
 		"course.foundationsTitle": "免费基础课程：从这里开始",
 		"course.foundationsDescription":
-			"依次学习合约、权利、权利金与结算。四节课均包含练习与反馈，无需登录或付费。",
+			"通过图解学习合约、权利、权利金与结算，无需登录或付费。",
 		"course.researchTitle": "已掌握基础？试学研究课程。",
 		"course.researchDescription":
 			"三个推荐的研究起点，需要已有期权知识；可随时免费回看前面的概念。",
 		"course.foundationCount": "{count} 节免费基础课",
 		"course.researchCount": "{count} 节可选研究试学课",
 		"complete.signInToSave": "创建免费账户以保存进度",
-		"complete.previewNote":
-			"练习免费。登录可记录课程完成情况；匿名练习进度会在重新加载后重置。",
+		"complete.previewNote": "自由探索视觉课程，登录后可跨设备保存学习标记。",
 		"course.yourProgress": "你的进度",
 		"course.curriculum": "课程目录",
 		"course.curriculumDescription":
@@ -582,8 +578,7 @@ const messages = {
 			"TradingFlow 是独立运营的合作服务，可能需要单独账户或订阅。",
 		"access.authUnavailable": "登录暂时不可用，请稍后重试。",
 		"video.unavailableTitle": "视频暂时不可用",
-		"video.unavailableDescription":
-			"文字课程仍可阅读。Tradely 暂时无法签发受保护的媒体地址。",
+		"video.unavailableDescription": "视觉课堂与课程笔记提供完整讲解。",
 		"video.accessibleDescription":
 			"下方文字课程提供完整的无障碍说明和练习步骤。",
 		"video.browserFallback": "你的浏览器不支持 HTML 视频。",
@@ -593,7 +588,7 @@ const messages = {
 		"lesson.englishNotice":
 			"当前课程正文为英文；周边控件和课程信息会使用你选择的语言。",
 		"complete.lesson": "标记为学过",
-		"complete.studyNote": "学习标记是你的个人记录，独立练习结果单独统计。",
+		"complete.studyNote": "学习标记是你学习本课的个人记录。",
 		"complete.saving": "保存中…",
 		"complete.success": "已标记学过",
 		"complete.signInError": "登录后才能保存进度",

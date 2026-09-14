@@ -20,6 +20,12 @@ const scenes = [
 			"Change one input and compare its stated unit with a relative percentage. Apply the supplied sensitivity once.",
 			"改变一个输入，比较声明单位与相对百分比，只应用一次给定敏感度。",
 		],
+		demonstration: [
+			[
+				"Each sensitivity pairs with its own input and unit before contributions can be compared.",
+				"先让每项敏感度匹配自身输入与单位，再比较贡献。",
+			],
+		],
 		Component: GreekUnitsScene,
 	},
 	{
@@ -29,6 +35,12 @@ const scenes = [
 		prompt: [
 			"Compare the supplied call and put, reverse the position, and change quantity without adding unlike units.",
 			"比较给定看涨与看跌期权，反转持仓并改变张数，不把不同单位直接相加。",
+		],
+		demonstration: [
+			[
+				"Reversing the position reverses its signed sensitivity contribution.",
+				"反转持仓方向，会反转其敏感度贡献的符号。",
+			],
 		],
 		Component: GreekSignsScene,
 	},
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Build the supplied shock set and inspect the signed dollar effects. A stock move alone is only one contribution.",
 			"累加给定冲击，检查带符号美元影响。标的变动只是一项贡献。",
+		],
+		demonstration: [
+			[
+				"Build the total from separate time, volatility and rate contributions.",
+				"从时间、波动率与利率的独立贡献，构建总变化。",
+			],
 		],
 		Component: GreekAttributionScene,
 	},

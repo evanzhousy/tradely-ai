@@ -23,6 +23,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const FlowImpactData = createContext<FlowImpactConceptData | null>(null);
 function useData() {
 	const data = useContext(FlowImpactData);
@@ -61,7 +62,11 @@ export function FlowBuildScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const replay = useFrames(data.contractFrames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const [classification, setClassification] = useState<FlowClass>(
 		data.prints[1].classification,
 	);
@@ -260,7 +265,14 @@ export function FlowDenominatorScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const [id, setId] = useState(data.references[0].id);
-	const [volume, setVolume] = useState(data.references[0].volume as number);
+	const [volume, setVolume] = useGuidedState(
+		data.references[0].volume as number,
+		[
+			data.references[0].volume as number,
+			(data.references[0].volume as number) * 2,
+			data.references[0].volume as number,
+		],
+	);
 	const reference =
 		data.references.find((r) => r.id === id) ?? data.references[0];
 	const effective = {
@@ -398,7 +410,11 @@ export function FlowDenominatorScene({ locale }: Props) {
 export function FlowLineageScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [source, setSource] = useState<"tape" | "oi" | "gex">("tape");
+	const [source, setSource] = useGuidedState<"tape" | "oi" | "gex">("tape", [
+		"tape",
+		"oi",
+		"tape",
+	]);
 	const net = summarizeFlow(data.prints).net;
 	const result = flowImpact(net, data.references[0], source);
 	const motion = useLessonMotion();

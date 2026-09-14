@@ -22,6 +22,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const LevelsData = createContext<LevelsConceptData | null>(null);
 function useData() {
 	const data = useContext(LevelsData);
@@ -60,7 +61,11 @@ function Context({ locale }: Props) {
 export function LevelsConcentrationScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [measure, setMeasure] = useState<"gamma" | "oi">("gamma");
+	const [measure, setMeasure] = useGuidedState<"gamma" | "oi">("gamma", [
+		"gamma",
+		"oi",
+		"gamma",
+	]);
 	const [side, setSide] = useState<"call" | "put">("call");
 	const [scope, setScope] = useState("near");
 	const [selected, setSelected] = useState(100);
@@ -195,7 +200,11 @@ export function LevelsPayoutScene({ locale }: Props) {
 	const l = copy(locale);
 	const [id, setId] = useState(data.payoutSets[0].id);
 	const replay = useFrames(data.candidates.length);
-	const [manual, setManual] = useState<number | null>(100);
+	const [manual, setManual] = useGuidedState<number | null>(100, [
+		null,
+		null,
+		null,
+	]);
 	const settlement = manual ?? data.candidates[replay.frame];
 	const set = data.payoutSets.find((s) => s.id === id) ?? data.payoutSets[0];
 	const result = expirationPayout(set.rows, settlement);
@@ -362,7 +371,11 @@ export function LevelsPayoutScene({ locale }: Props) {
 export function LevelsDistanceScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [spot, setSpot] = useState(data.spot);
+	const [spot, setSpot] = useGuidedState(data.spot, [
+		data.spot,
+		data.spot + data.atr,
+		data.spot,
+	]);
 	const [atr, setAtr] = useState(data.atr);
 	const [mode, setMode] = useState("current");
 	const split = mode === "adjusted";

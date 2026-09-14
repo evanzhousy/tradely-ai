@@ -30,6 +30,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const StrategyData = createContext<StrategyConceptData | null>(null);
 function useStrategyData() {
 	const data = useContext(StrategyData);
@@ -89,7 +90,10 @@ export function CompositionScene({ locale }: Props) {
 	const l = text(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const motion = useLessonMotion();
-	const [id, setId] = useState(data.examples[0].id);
+	const [id, setId] = useGuidedState(
+		data.examples[0].id,
+		data.examples.map((item) => item.id),
+	);
 	const [scope, setScope] = useState("linked");
 	const [focus, setFocus] = useState<string | null>(null);
 	const example = data.examples.find((e) => e.id === id) ?? data.examples[0];
@@ -245,7 +249,11 @@ export function ExpirationStrategyScene({ locale }: Props) {
 	const l = text(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const [id, setId] = useState(data.examples[0].id);
-	const [spot, setSpot] = useState(data.defaultSpot);
+	const [spot, setSpot] = useGuidedState(data.defaultSpot, [
+		data.defaultSpot - 500,
+		data.defaultSpot,
+		data.defaultSpot + 500,
+	]);
 	const [fees, setFees] = useState(0);
 	const [measure, setMeasure] = useState<"profit" | "terminal">("profit");
 	const [scaleMode, setScaleMode] = useState("fit");

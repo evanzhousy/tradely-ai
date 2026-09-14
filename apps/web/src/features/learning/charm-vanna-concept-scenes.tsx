@@ -20,6 +20,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const CrossDeltaData = createContext<CharmVannaConceptData | null>(null);
 function useData() {
 	const data = useContext(CrossDeltaData);
@@ -225,7 +226,10 @@ export function CrossDeltaEffectsScene({ locale }: Props) {
 export function CrossDeltaUnitsScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.conventions[0].id);
+	const [id, setId] = useGuidedState(
+		data.conventions[0].id,
+		data.conventions.map((item) => item.id),
+	);
 	const [selected, setSelected] = useState("time");
 	const convention =
 		data.conventions.find((c) => c.id === id) ?? data.conventions[0];
@@ -351,7 +355,11 @@ export function CrossDeltaPositionScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const [id, setId] = useState(data.events[0].id);
-	const [side, setSide] = useState<"long" | "short">("long");
+	const [side, setSide] = useGuidedState<"long" | "short">("long", [
+		"long",
+		"short",
+		"long",
+	]);
 	const [quantity, setQuantity] = useState(data.quantity);
 	const [known, setKnown] = useState(true);
 	const event = data.events.find((e) => e.id === id) ?? data.events[0];

@@ -21,6 +21,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const RegimeData = createContext<RegimeConceptData | null>(null);
 function useData() {
 	const data = useContext(RegimeData);
@@ -61,7 +62,11 @@ export function RegimeHedgeScene({ locale }: Props) {
 	const l = copy(locale);
 	const [id, setId] = useState(data.portfolios[0].id);
 	const replay = useFrames(data.moves.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const move = manual ?? data.moves[replay.frame];
 	const portfolio =
 		data.portfolios.find((p) => p.id === id) ?? data.portfolios[0];
@@ -243,7 +248,10 @@ export function RegimeHedgeScene({ locale }: Props) {
 export function RegimeFlipScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.curves[0].id);
+	const [id, setId] = useGuidedState(
+		data.curves[0].id,
+		data.curves.map((item) => item.id),
+	);
 	const [index, setIndex] = useState(2);
 	const curve = data.curves.find((c) => c.id === id) ?? data.curves[0];
 	const point = curve.points[index];
@@ -410,7 +418,10 @@ export function RegimeFlipScene({ locale }: Props) {
 export function RegimeEvidenceScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [opened, setOpened] = useState<string[]>([]);
+	const [opened, setOpened] = useGuidedState<string[]>(
+		[],
+		[["model"], ["model", "fill"], ["model", "fill", "depth"]],
+	);
 	const has = (id: string) => opened.includes(id);
 	const toggle = (id: string) =>
 		setOpened((prev) =>

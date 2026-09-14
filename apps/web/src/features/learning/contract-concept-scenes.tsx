@@ -33,6 +33,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
 type Copy = (en: string, zh: string) => string;
@@ -291,28 +292,38 @@ function IdentityCard({
 
 export function IdentityScene({ locale }: Props) {
 	const l = copy(locale);
-	const [identity, setIdentity] = useState<ContractIdentity>({
-		...teachingContract,
-		expiry: "2026-11-20",
-	});
-	const [snapshot, setSnapshot] = useState("0");
+	const [identity, setIdentity] = useGuidedState<ContractIdentity>(
+		{
+			...teachingContract,
+			expiry: "2026-11-20",
+		},
+		[
+			teachingContract,
+			{ ...teachingContract, expiry: "2026-11-20" },
+			teachingContract,
+		],
+	);
+	const [snapshot, setSnapshot] = useGuidedState("0", ["0", "0", "1"]);
 	const differences = contractDifferences(teachingContract, identity);
 	const observation = teachingSnapshots[Number(snapshot)];
 	return (
-		<div className="flex flex-col gap-5">
-			<div className="contract-comparison">
-				<IdentityCard
-					identity={teachingContract}
-					label={l("Contract A · Reference", "合约 A · 参照")}
-					locale={locale}
-				/>
-				<IdentityCard
-					identity={identity}
-					differences={differences}
-					label={l("Contract B · Your changes", "合约 B · 你的修改")}
-					locale={locale}
-				/>
-			</div>
+		<SceneLayout
+			diagram={
+				<div className="contract-comparison">
+					<IdentityCard
+						identity={teachingContract}
+						label={l("Contract A · Reference", "合约 A · 参照")}
+						locale={locale}
+					/>
+					<IdentityCard
+						identity={identity}
+						differences={differences}
+						label={l("Contract B · Your changes", "合约 B · 你的修改")}
+						locale={locale}
+					/>
+				</div>
+			}
+		>
 			<div className="contract-scene-layout">
 				<FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					{contractFields.map((field) => (
@@ -376,14 +387,14 @@ export function IdentityScene({ locale }: Props) {
 					</p>
 				</div>
 			</div>
-		</div>
+		</SceneLayout>
 	);
 }
 
 export function UnitsScene({ locale }: Props) {
 	const l = copy(locale);
 	const id = useId();
-	const [count, setCount] = useState(3);
+	const [count, setCount] = useGuidedState(3, [1, 2, 3]);
 	const [cents, setCents] = useState(200);
 	const [termsKnown, setTermsKnown] = useState("known");
 	const terms = {
@@ -614,7 +625,11 @@ export function SourceTimeScene({ locale }: Props) {
 	const l = copy(locale);
 	const id = useId();
 	const playback = useFrames(teachingSnapshots.length);
-	const [position, setPosition] = useState<number | null>(null);
+	const [position, setPosition] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const selected = position === null ? playback.frame : Math.round(position);
 	const snapshot = teachingSnapshots[selected];
 	const seek = (value: number) => {

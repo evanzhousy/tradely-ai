@@ -17,6 +17,12 @@ const scenes = [
 			"Move a hypothetical current IV while the history stays fixed. Watch range distance, below counts and ties separately.",
 			"保持历史固定，移动假设当前 IV，分别观察区间距离、较低计数与相等值。",
 		],
+		demonstration: [
+			[
+				"Range location and historical frequency respond differently to the current IV.",
+				"区间位置与历史频率，对当前 IV 的响应不同。",
+			],
+		],
 		Component: RankFrequencyScene,
 	},
 	{
@@ -30,6 +36,12 @@ const scenes = [
 			"Replace only the high observation, keeping it above the fixed current IV. Replay the controlled values or drag directly.",
 			"仅替换高值观测，并保持其高于固定当前 IV，回放控制值或直接拖动。",
 		],
+		demonstration: [
+			[
+				"One extreme observation stretches the range without adding many days below today's IV.",
+				"一个极端值会拉长区间，却不会增加许多低于当前 IV 的日期。",
+			],
+		],
 		Component: RankOutlierScene,
 	},
 	{
@@ -39,6 +51,12 @@ const scenes = [
 		prompt: [
 			"Compare shorter, flat, incomplete and incompatible histories. Check which statistics remain supported.",
 			"比较较短、不变、不完整与不兼容历史，检查哪些统计量仍受支持。",
+		],
+		demonstration: [
+			[
+				"A percentage needs a defined reference, window, tie rule and adequate history.",
+				"一个百分比需要明确参考、窗口、相等值规则与足够历史。",
+			],
 		],
 		Component: RankCoverageScene,
 	},

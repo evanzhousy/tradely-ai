@@ -1,51 +1,35 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@tradely/ui/components/accordion";
-import {
-	Alert,
-	AlertDescription,
-	AlertTitle,
-} from "@tradely/ui/components/alert";
+import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@tradely/ui/components/badge";
 import { buttonVariants } from "@tradely/ui/components/button";
-import { Separator } from "@tradely/ui/components/separator";
-import { cn } from "@tradely/ui/lib/utils";
-import {
-	ArrowLeftIcon,
-	ArrowRightIcon,
-	Clock3Icon,
-	VideoOffIcon,
-} from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAnalytics } from "@/analytics/context";
-import { authIsConfigured } from "@/auth/client";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
-import { LessonLearningStatus } from "@/components/learning-progress";
-import { LessonIntroduction } from "@/components/lesson-introduction";
+import { LessonInfographic } from "@/components/lesson-infographic";
 import { LessonNavigation } from "@/components/lesson-navigation";
 import { SignInLink } from "@/components/sign-in-link";
-import {
-	TradingFlowLab,
-	TradingFlowLabIntro,
-} from "@/components/tradingflow-lab";
+import { TradingFlowLab } from "@/components/tradingflow-lab";
 import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
-import { guidesForLesson } from "@/content/guides";
+import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
-import { LearningExercise } from "@/features/learning/learning-exercise";
+import { VisualLesson } from "@/features/learning/visual-lesson";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
 import { getLessonPageData } from "@/server/lesson";
-import { getCourseProgress } from "@/server/progress";
+import { getCourseProgress, saveLessonProgress } from "@/server/progress";
+
+const LearningHistory = lazy(() =>
+	import("@/features/learning/learning-history").then((m) => ({
+		default: m.LearningHistory,
+	})),
+);
 
 export const Route = createFileRoute("/learn/$lessonSlug")({
 	validateSearch: parseLearningSearch,
@@ -63,94 +47,90 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 
 function LessonPage() {
 	const { lessonSlug } = Route.useParams();
-	const { attempt, saveGuest } = Route.useSearch();
-	const navigate = Route.useNavigate();
-	const selectAttempt = useCallback(
-		(attemptId: string) => {
-			void navigate({ search: { attempt: attemptId }, replace: true });
-		},
-		[navigate],
-	);
+	const { attempt } = Route.useSearch();
 	const { page, progress } = Route.useLoaderData();
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Reapply the hash when a different lesson reuses this route component.
-	useEffect(() => {
-		const revealNotes = () => {
-			if (window.location.hash !== "#lesson-notes") return;
-			const notes = document.getElementById("lesson-notes");
-			if (notes instanceof HTMLDetailsElement) notes.open = true;
-		};
-		revealNotes();
-		window.addEventListener("hashchange", revealNotes);
-		return () => window.removeEventListener("hashchange", revealNotes);
-	}, [lessonSlug]);
-	const sourceLesson = getLesson(lessonSlug);
 	const { locale, t } = useI18n();
-	const { capture, isCapturing } = useAnalytics();
-	const trackedLessonRef = useRef<string | null>(null);
+	const { capture, isCapturing, captureException } = useAnalytics();
+	const saveProgress = useServerFn(saveLessonProgress);
+	const source = getLesson(lessonSlug);
 	const course = getLocalizedCourse(locale);
-	const lesson = sourceLesson
-		? getLocalizedLesson(sourceLesson, locale)
-		: undefined;
-	const accessState = page.found ? "allowed" : null;
-	const mediaAvailable = Boolean(page.found && page.media);
+	const lesson = source ? getLocalizedLesson(source, locale) : null;
+	const tracked = useRef<string | null>(null);
+	const started = useRef<string | null>(null);
 	useEffect(() => {
 		if (!isCapturing) {
-			trackedLessonRef.current = null;
+			tracked.current = null;
 			return;
 		}
-		if (!sourceLesson || !accessState) return;
-		if (trackedLessonRef.current === sourceLesson.id) return;
+		if (tracked.current === lessonSlug) return;
 		if (
 			capture("lesson_opened", {
-				lesson_id: sourceLesson.id,
-				lesson_order: sourceLesson.order + 1,
+				lesson_id: lessonSlug,
 				access_tier: "free",
-				access_state: accessState,
-				media_available: mediaAvailable,
+				access_state: "allowed",
 				locale,
+				lesson_order: (source?.order ?? 0) + 1,
+				media_available: !!(page.found && page.media),
 			})
-		) {
-			trackedLessonRef.current = sourceLesson.id;
-		}
-	}, [accessState, capture, isCapturing, locale, mediaAvailable, sourceLesson]);
-	if (!sourceLesson || !lesson || !page.found) {
-		return (
-			<main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-start justify-center gap-4 px-4">
-				<h1 className="font-semibold text-3xl">{t("common.notFound")}</h1>
-				<Link
-					to="/courses/tradingflow-foundations"
-					className={buttonVariants({ variant: "outline" })}
-				>
-					{t("common.returnCourse")}
-				</Link>
-			</main>
+		)
+			tracked.current = lessonSlug;
+	}, [capture, isCapturing, lessonSlug, locale, source?.order, page]);
+	useEffect(() => {
+		if (
+			!progress.signedIn ||
+			progress.unavailable ||
+			started.current === lessonSlug ||
+			progress.records.some((record) => record.lessonId === lessonSlug)
+		)
+			return;
+		started.current = lessonSlug;
+		void saveProgress({
+			data: { lessonId: lessonSlug, complete: false },
+		}).catch((error) =>
+			captureException(error, {
+				source: "lesson_completion",
+				lesson_id: lessonSlug,
+			}),
 		);
-	}
-
+	}, [
+		lessonSlug,
+		progress.signedIn,
+		progress.unavailable,
+		progress.records,
+		saveProgress,
+		captureException,
+	]);
+	useEffect(() => {
+		const reveal = () => {
+			const notes = document.getElementById("lesson-notes");
+			if (
+				window.location.hash === "#lesson-notes" &&
+				notes instanceof HTMLDetailsElement
+			)
+				notes.open = true;
+		};
+		reveal();
+		window.addEventListener("hashchange", reveal);
+		return () => window.removeEventListener("hashchange", reveal);
+	}, []);
+	if (!source || !lesson || !page.found) return null;
 	const completedIds = progress.records
 		.filter((record) => record.completedAt)
 		.map((record) => record.lessonId);
-	const lessonProgress = progress.records.find(
-		(record) => record.lessonId === sourceLesson.id,
+	const record = progress.records.find(
+		(record) => record.lessonId === lesson.id,
 	);
-	const initialPositionSeconds =
-		lessonProgress?.contentVersion === sourceLesson.contentVersion
-			? (lessonProgress.lastPositionSeconds ?? 0)
-			: 0;
-	const previous = getPreviousLesson(sourceLesson.slug);
-	const next = getNextLesson(sourceLesson.slug);
-	const localizedPrevious = previous
-		? getLocalizedLesson(previous, locale)
-		: undefined;
-	const localizedNext = next ? getLocalizedLesson(next, locale) : undefined;
-	const earlierResult = progress.learning.lessons[lesson.id]?.earlier;
-
+	const previous = getPreviousLesson(lessonSlug);
+	const next = getNextLesson(lessonSlug);
+	const history = progress.learning.lessons[lesson.id];
+	const histories = [history?.latest, history?.earlier].filter(
+		(item) => !!item,
+	);
 	return (
-		<main className="lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[330px_1fr]">
+		<main className="lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[290px_1fr]">
 			<aside className="lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r px-4 py-8 lg:block">
 				<div className="sticky top-24 flex flex-col gap-6">
 					<CourseProgress
-						learning={progress.learning}
 						unavailable={progress.unavailable}
 						completed={progress.completed}
 						total={progress.total}
@@ -159,7 +139,6 @@ function LessonPage() {
 					/>
 					<div className="max-h-[calc(100svh-12rem)] overflow-y-auto pr-1">
 						<CourseList
-							learning={progress.learning}
 							lessons={course.lessons}
 							completedIds={completedIds}
 							currentLessonId={lesson.id}
@@ -167,79 +146,16 @@ function LessonPage() {
 					</div>
 				</div>
 			</aside>
-
-			<div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10 xl:px-16">
-				<div className="mx-auto flex max-w-[920px] flex-col gap-8">
-					<LessonNavigation
-						locale={locale}
-						lessonId={lesson.id}
-						lessonTitle={lesson.title}
-					/>
-					<Accordion className="lg:hidden">
-						<AccordionItem value="course-navigation">
-							<AccordionTrigger>
-								{progress.unavailable
-									? t("complete.unavailable")
-									: t("lesson.courseNavigation", {
-											percentage: progress.percentage,
-										})}
-							</AccordionTrigger>
-							<AccordionContent>
-								<div className="lesson-mobile-curriculum flex flex-col gap-5 py-2">
-									<CourseProgress
-										learning={progress.learning}
-										unavailable={progress.unavailable}
-										completed={progress.completed}
-										total={progress.total}
-										percentage={progress.percentage}
-										compact
-									/>
-									<CourseList
-										learning={progress.learning}
-										lessons={course.lessons}
-										completedIds={completedIds}
-										currentLessonId={lesson.id}
-									/>
-								</div>
-							</AccordionContent>
-						</AccordionItem>
-					</Accordion>
-
-					<nav
-						className="lesson-sections"
-						aria-label={locale === "zh" ? "本课内容" : "In this lesson"}
-					>
-						<span className="lesson-sections-label">
-							{locale === "zh" ? "本课" : "This lesson"}
-						</span>
-						<a href="#lesson-overview">
-							{locale === "zh" ? "概览" : "Overview"}
-						</a>
-						{page.learning ? (
-							<a href="#lesson-practice">
-								{locale === "zh" ? "互动练习" : "Practice"}
-							</a>
-						) : null}
-						{/* biome-ignore lint/a11y/useValidAnchor: This navigates to a real section and expands its native disclosure. */}
-						<a
-							href="#lesson-notes"
-							onClick={() => {
-								const notes = document.getElementById("lesson-notes");
-								if (notes instanceof HTMLDetailsElement) notes.open = true;
-							}}
-						>
-							{locale === "zh" ? "笔记与来源" : "Notes & sources"}
-						</a>
-						{progress.signedIn ? (
-							<a href="#study-mark">
-								{locale === "zh" ? "学习标记" : "Study mark"}
-							</a>
-						) : null}
-					</nav>
-					<header
-						id="lesson-overview"
-						className="lesson-heading flex flex-col gap-5"
-					>
+			<div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+				<div className="mx-auto flex max-w-[980px] flex-col gap-7">
+					<div className="hidden sm:block">
+						<LessonNavigation
+							locale={locale}
+							lessonId={lesson.id}
+							lessonTitle={lesson.title}
+						/>
+					</div>
+					<header className="lesson-heading flex flex-col gap-3">
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">
 								{t("common.lessonNumber", {
@@ -247,198 +163,168 @@ function LessonPage() {
 									total: course.lessons.length,
 								})}
 							</Badge>
+							<Badge variant="outline">{lesson.category}</Badge>
 							<Badge variant="secondary">{t("common.free")}</Badge>
-							<span className="inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
-								<Clock3Icon className="size-3.5" aria-hidden="true" />{" "}
-								{t("common.minutes", { minutes: lesson.minutes })}
-							</span>
-						</div>
-						<div className="flex flex-col gap-3">
-							<p className="font-medium text-foreground text-sm">
-								{lesson.category}
-							</p>
-							<h1 className="font-semibold text-4xl text-display sm:text-5xl">
-								{lesson.title}
-							</h1>
-							<p className="max-w-[68ch] text-lg text-muted-foreground leading-8">
-								{lesson.summary}
-							</p>
-						</div>
-					</header>
-					<LessonIntroduction lessonId={lesson.id} locale={locale} />
-					<LessonLearningStatus
-						evidence={progress.learning.lessons[lesson.id]}
-						locale={locale}
-					/>
-					{earlierResult ? (
-						<a
-							className="text-sm underline underline-offset-4"
-							href={`/learn/${encodeURIComponent(lesson.id)}?attempt=${encodeURIComponent(earlierResult.attemptId)}`}
-						>
-							{locale === "zh"
-								? "查看保留的旧版案例"
-								: "View your preserved earlier case"}
-						</a>
-					) : null}
-					<TradingFlowLabIntro lessonId={lesson.id} />
-
-					{guidesForLesson(lesson.id).map((guide) => (
-						<p key={guide.slug} lang="en" className="text-sm leading-6">
-							Free background guide:{" "}
 							<Link
-								to="/guides/$guideSlug"
-								params={{ guideSlug: guide.slug }}
-								className="underline underline-offset-4"
+								to="/courses/tradingflow-foundations"
+								className="ml-auto text-xs underline underline-offset-4 lg:hidden"
 							>
-								{guide.title}
+								{t("course.curriculum")}
 							</Link>
-						</p>
-					))}
-					{lesson.prerequisites.length ? (
-						<nav
-							className="flex flex-wrap items-center gap-2 text-sm"
-							aria-label={
-								locale === "zh" ? "相关先修概念" : "Suggested prerequisites"
-							}
-						>
-							<span className="text-muted-foreground">
-								{locale === "zh" ? "先了解：" : "Build on:"}
-							</span>
-							{lesson.prerequisites.map((id) => {
-								const item = course.lessons.find((item) => item.id === id);
-								return item ? (
-									<Link
-										key={id}
-										to="/learn/$lessonSlug"
-										params={{ lessonSlug: item.slug }}
-										className="underline underline-offset-4"
-									>
-										{item.title}
-									</Link>
-								) : null;
-							})}
-						</nav>
-					) : null}
-					{
-						<>
-							{page.learning ? (
-								<div id="lesson-practice">
-									<LearningExercise
-										key={sourceLesson.id}
-										lessonId={sourceLesson.id}
-										attemptId={attempt}
-										saveGuest={saveGuest === "1"}
-										onSelectAttempt={selectAttempt}
-									/>
-								</div>
-							) : null}
-							<TradingFlowLab lessonId={lesson.id} />
-							{page.media ? (
-								<LessonVideo
-									lesson={lesson}
-									media={page.media}
-									initialPositionSeconds={initialPositionSeconds}
-								/>
-							) : page.mediaUnavailable ? (
-								<Alert>
-									<VideoOffIcon aria-hidden="true" />
-									<AlertTitle>{t("video.unavailableTitle")}</AlertTitle>
-									<AlertDescription>
-										{t("video.unavailableDescription")}
-									</AlertDescription>
-								</Alert>
-							) : null}
-							<details id="lesson-notes" className="lesson-notes">
-								<summary className="cursor-pointer font-medium">
+						</div>
+						<h1 className="font-semibold text-2xl text-display sm:text-4xl">
+							{lesson.title}
+						</h1>
+					</header>
+					<VisualLesson
+						key={lesson.id}
+						lessonId={lesson.id}
+						locale={locale}
+						data={page.conceptData}
+					/>
+					<details className="lesson-notes">
+						<summary>
+							{locale === "zh" ? "一图回顾" : "Visual takeaway"}
+						</summary>
+						<div className="mx-auto max-w-md py-4">
+							<LessonInfographic
+								subject={lesson.id}
+								locale={locale}
+								motionEnabled={false}
+							/>
+							<p className="text-muted-foreground text-sm">{lesson.summary}</p>
+						</div>
+					</details>
+					<section id="study-mark" className="flex flex-col gap-4">
+						{progress.signedIn ? (
+							<CompleteLessonButton
+								lesson={lesson}
+								studied={!!record?.completedAt}
+							/>
+						) : (
+							<p className="text-muted-foreground text-sm">
+								<SignInLink>
 									{locale === "zh"
-										? "课程笔记与参考来源"
-										: "Lesson notes and references"}
-								</summary>
-								<article
-									className="lesson-prose max-w-[72ch]"
-									aria-labelledby="written-lesson-title"
+										? "登录以保存学习标记"
+										: "Sign in to save study marks"}
+								</SignInLink>
+							</p>
+						)}
+						<nav
+							className="flex items-center justify-between gap-4"
+							aria-label={t("lesson.navigation")}
+						>
+							{previous ? (
+								<Link
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: previous.slug }}
+									search={{}}
+									className={buttonVariants({ variant: "ghost" })}
 								>
-									<h2 id="written-lesson-title" className="sr-only">
-										{t("lesson.writtenLesson")}
-									</h2>
-
-									<ReactMarkdown remarkPlugins={[remarkGfm]}>
-										{(locale === "zh" ? page.bodyZh : page.body) ?? ""}
-									</ReactMarkdown>
-								</article>
-							</details>
-							<div className="flex flex-col gap-5">
-								{progress.signedIn ? (
-									<section
-										id="study-mark"
-										className="scroll-mt-24"
-										aria-label={t("progress.course")}
+									<ArrowLeftIcon data-icon="inline-start" />
+									{t("common.previous")}
+								</Link>
+							) : (
+								<span />
+							)}
+							{next ? (
+								<Link
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: next.slug }}
+									search={{}}
+									className={buttonVariants()}
+								>
+									{locale === "zh" ? "下一课" : "Next lesson"}
+									<ArrowRightIcon data-icon="inline-end" />
+								</Link>
+							) : (
+								<Link
+									to="/courses/tradingflow-foundations"
+									className={buttonVariants()}
+								>
+									{locale === "zh" ? "回到课程" : "Back to the course"}
+								</Link>
+							)}
+						</nav>
+					</section>
+					<details id="lesson-notes" className="lesson-notes">
+						<summary>
+							{locale === "zh"
+								? "深入阅读：笔记、公式与来源"
+								: "Go deeper: notes, formulas & sources"}
+						</summary>
+						<article className="lesson-prose max-w-[72ch]">
+							<ReactMarkdown remarkPlugins={[remarkGfm]}>
+								{(locale === "zh" ? page.bodyZh : page.body) ?? ""}
+							</ReactMarkdown>
+						</article>
+					</details>
+					{getTradingFlowLab(lesson.id) ? (
+						<details className="lesson-notes">
+							<summary>
+								{locale === "zh"
+									? "在 TradingFlow 中查看应用示例"
+									: "See the application in TradingFlow"}
+							</summary>
+							<TradingFlowLab lessonId={lesson.id} />
+						</details>
+					) : null}
+					{page.media ? (
+						<details className="lesson-notes">
+							<summary>
+								{locale === "zh" ? "补充视频" : "Companion video"}
+							</summary>
+							<LessonVideo
+								lesson={lesson}
+								media={page.media}
+								initialPositionSeconds={
+									record?.contentVersion === source.contentVersion
+										? (record.lastPositionSeconds ?? 0)
+										: 0
+								}
+							/>
+						</details>
+					) : null}
+					{histories.length > 0 || attempt ? (
+						<details className="lesson-notes" open={!!attempt}>
+							<summary>
+								{locale === "zh"
+									? "以前保存的学习记录"
+									: "Previously saved work"}
+							</summary>
+							<div className="flex flex-col gap-5 pt-4">
+								{histories.map((item) => (
+									<Link
+										key={item.attemptId}
+										to="/learn/$lessonSlug"
+										params={{ lessonSlug }}
+										search={{ attempt: item.attemptId }}
 									>
-										<CompleteLessonButton
-											lesson={lesson}
-											studied={Boolean(lessonProgress?.completedAt)}
+										{locale === "zh" ? "查看" : "View"} ·{" "}
+										{item.submittedAt.slice(0, 10)} ·{" "}
+										{locale === "zh" ? "版本" : "Edition"}{" "}
+										{item.scenarioVersion}
+									</Link>
+								))}
+								{attempt ? (
+									<Suspense
+										fallback={
+											<p role="status">
+												{locale === "zh" ? "正在加载…" : "Loading…"}
+											</p>
+										}
+									>
+										<LearningHistory
+											key={attempt}
+											lessonId={lesson.id}
+											attemptId={attempt}
+											locale={locale}
 										/>
-									</section>
-								) : !page.learning ? (
-									<div className="flex flex-col items-start gap-3">
-										<p className="text-muted-foreground text-sm">
-											{t("complete.previewNote")}
-										</p>
-										<SignInLink
-											disabled={!authIsConfigured}
-											onClick={() =>
-												capture("auth_sign_in_opened", {
-													surface: "lesson_completion",
-												})
-											}
-										>
-											{t("complete.signInToSave")}
-										</SignInLink>
-									</div>
+									</Suspense>
 								) : null}
-								<Separator />
-								<nav
-									className="flex items-center justify-between gap-4"
-									aria-label={t("lesson.navigation")}
-								>
-									{previous ? (
-										<Link
-											to="/learn/$lessonSlug"
-											params={{ lessonSlug: previous.slug }}
-											className={buttonVariants({ variant: "ghost" })}
-										>
-											<ArrowLeftIcon
-												data-icon="inline-start"
-												aria-hidden="true"
-											/>
-											<span className="hidden sm:inline">
-												{localizedPrevious?.title}
-											</span>
-											<span className="sm:hidden">{t("common.previous")}</span>
-										</Link>
-									) : (
-										<span />
-									)}
-									{next ? (
-										<Link
-											to="/learn/$lessonSlug"
-											params={{ lessonSlug: next.slug }}
-											className={cn(
-												buttonVariants({ variant: "outline" }),
-												"max-w-[55%]",
-											)}
-										>
-											<span className="truncate">{localizedNext?.title}</span>
-											<ArrowRightIcon
-												data-icon="inline-end"
-												aria-hidden="true"
-											/>
-										</Link>
-									) : null}
-								</nav>
 							</div>
-						</>
-					}
+						</details>
+					) : null}
 				</div>
 			</div>
 		</main>

@@ -35,6 +35,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const PrintReviewData = createContext<PrintReviewConceptData | null>(
 	null,
 );
@@ -337,12 +338,19 @@ export function EvidenceBucketsScene({ locale }: Props) {
 	const l = text(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const motion = useLessonMotion();
-	const [id, setId] = useState<ReviewPacketId>("original");
-	const [statement, setStatement] = useState<ReviewStatement>("aggressor");
-	const [chosen, setChosen] = useState<EvidenceBucket | null>(null);
+	const [id, setId] = useGuidedState<ReviewPacketId>("original", [
+		"original",
+		"original",
+		"original",
+	]);
+	const [statement, setStatement] = useGuidedState<ReviewStatement>(
+		"aggressor",
+		["premium", "aggressor", "opening"],
+	);
 	const packet = data.packets[id];
 	const result = assessPrint(data.print, packet);
 	const expected = statementBucket(statement, data.print, packet);
+	const chosen = expected;
 	const values = [
 		`${number(data.print.quantity)} @ ${money(data.print.price)}`,
 		amount(result.premium),
@@ -436,7 +444,6 @@ export function EvidenceBucketsScene({ locale }: Props) {
 					id={id}
 					onChange={(value) => {
 						setId(value);
-						setChosen(null);
 					}}
 				/>
 				<SelectField
@@ -449,20 +456,7 @@ export function EvidenceBucketsScene({ locale }: Props) {
 					onChange={(value) => {
 						if (Object.hasOwn(statements, value)) {
 							setStatement(value as ReviewStatement);
-							setChosen(null);
 						}
-					}}
-				/>
-				<ChoiceField
-					label={l("Which evidence category?", "属于哪类证据？")}
-					value={chosen ?? "unanswered"}
-					options={buckets.map((bucket) => [
-						bucket,
-						bucketCopy[bucket][language],
-					])}
-					onChange={(value) => {
-						const bucket = buckets.find((b) => b === value);
-						if (bucket) setChosen(bucket);
 					}}
 				/>
 			</FieldGroup>
@@ -566,7 +560,10 @@ export function FollowUpScene({ locale }: Props) {
 	const motion = useLessonMotion();
 	const [gap, setGap] = useState<ReviewGap>("timing");
 	const [request, setRequest] = useState<EvidenceRequest>("larger");
-	const [inspected, setInspected] = useState<EvidenceRequest | null>(null);
+	const [inspected, setInspected] = useGuidedState<EvidenceRequest | null>(
+		null,
+		[null, "larger", "larger"],
+	);
 	const packet = data.packets[followUpPacket(gap, inspected)];
 	const result = assessPrint(data.print, packet);
 	const resolved = inspected === reviewGaps[gap].request;

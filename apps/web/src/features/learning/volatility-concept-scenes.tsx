@@ -27,6 +27,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const VolatilityData = createContext<VolatilityConceptData | null>(null);
 function useData() {
@@ -59,7 +60,11 @@ export function ImpliedVolatilityScene({ locale }: Props) {
 	const model = data.model;
 	const [source, setSource] = useState(model.prices[0].id);
 	const [days, setDays] = useState(model.defaultDays);
-	const [iv, setIv] = useState(model.initialIv);
+	const [iv, setIv] = useGuidedState(model.initialIv, [
+		model.initialIv,
+		model.initialIv + 5,
+		model.initialIv + 10,
+	]);
 	const [fitting, setFitting] = useState(false);
 	const quote = model.prices.find((p) => p.id === source) ?? model.prices[0];
 	const price = priceAtmCall(model.spotCents, days, iv);
@@ -267,7 +272,10 @@ export function RealizedVolatilityScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const source = data.returns;
-	const [windowSize, setWindow] = useState(source.windows[0]);
+	const [windowSize, setWindow] = useGuidedState(
+		source.windows[0],
+		source.windows,
+	);
 	const [sampling, setSampling] = useState<1 | 2>(1);
 	const [last, setLast] = useState(
 		source.values[source.values.length - 1].percent,
@@ -468,7 +476,10 @@ export function RealizedVolatilityScene({ locale }: Props) {
 export function VolatilityHorizonsScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.pairs[0].id);
+	const [id, setId] = useGuidedState(
+		data.pairs[0].id,
+		data.pairs.map((item) => item.id),
+	);
 	const pair = data.pairs.find((p) => p.id === id) ?? data.pairs[0];
 	const result = compareVolatility(pair);
 	const issues = {

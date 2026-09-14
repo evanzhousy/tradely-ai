@@ -3,6 +3,7 @@ import "@tanstack/react-start/server-only";
 import { getLesson } from "@/content/course";
 import { learningRollout } from "@/content/learning-rollout";
 import { getLessonBody } from "@/content/lesson-content.server";
+import { getTeachingUnit } from "@/content/units/index.server";
 import { captureServerException } from "./analytics/posthog.server";
 import { createLessonMedia } from "./media.server";
 
@@ -25,6 +26,7 @@ export async function getLessonPageDataImpl(data: { slug: string }) {
 	}
 	return {
 		found: true as const,
+		conceptData: getTeachingUnit(lesson.id)?.conceptLab?.data,
 		body: getLessonBody(lesson.slug) ?? "",
 		bodyZh: getLessonBody(lesson.slug, "zh") ?? "",
 		media,

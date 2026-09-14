@@ -21,6 +21,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const GexData = createContext<GexConceptData | null>(null);
 function useData() {
 	const data = useContext(GexData);
@@ -57,7 +58,11 @@ export function GexFormulaScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const replay = useFrames(data.oiFrames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const [spot, setSpot] = useState(data.contract.spot);
 	const [sign, setSign] = useState(data.contract.sign);
 	const oi = manual ?? data.oiFrames[replay.frame];
@@ -297,7 +302,10 @@ function Grid({
 export function GexDistributionScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.snapshots[0].id);
+	const [id, setId] = useGuidedState(
+		data.snapshots[0].id,
+		data.snapshots.map((item) => item.id),
+	);
 	const [selected, setSelected] = useState(data.requiredIds[0]);
 	const snapshot = data.snapshots.find((s) => s.id === id) ?? data.snapshots[0];
 	const cell =
@@ -382,7 +390,7 @@ export function GexDistributionScene({ locale }: Props) {
 export function GexCoverageScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [mode, setMode] = useState("full");
+	const [mode, setMode] = useGuidedState("full", ["full", "traded", "full"]);
 	const [selected, setSelected] = useState(data.requiredIds[0]);
 	const base =
 		mode === "gap"

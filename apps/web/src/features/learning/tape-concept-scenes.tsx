@@ -29,6 +29,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const TapeData = createContext<TapeConceptData | null>(null);
 function useTapeData() {
 	const data = useContext(TapeData);
@@ -72,7 +73,10 @@ export function AggregateScene({ locale }: Props) {
 	const l = text(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const motion = useLessonMotion();
-	const [id, setId] = useState(data.groups[0].id);
+	const [id, setId] = useGuidedState(
+		data.groups[0].id,
+		data.groups.map((item) => item.id),
+	);
 	const group = data.groups.find((g) => g.id === id) ?? data.groups[0];
 	const prints = group.ids.map((key) => data.records[key]);
 	const result = aggregateTape(prints);
@@ -471,7 +475,10 @@ export function ConditionScene({ locale }: Props) {
 	const l = text(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const motion = useLessonMotion();
-	const [id, setId] = useState(data.conditions[0].id);
+	const [id, setId] = useGuidedState(
+		data.conditions[0].id,
+		data.conditions.map((item) => item.id),
+	);
 	const [definition, setDefinition] = useState("supplied");
 	const [claim, setClaim] = useState<ConditionClaim>("meaning");
 	const condition =

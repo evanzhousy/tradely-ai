@@ -23,6 +23,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const PointTimeData = createContext<PointTimeConceptData | null>(null);
 function useData() {
 	const data = useContext(PointTimeData);
@@ -67,7 +68,11 @@ export function KnowledgeCutoffScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const replay = useFrames(data.cutoffFrames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const cutoff = manual ?? data.cutoffFrames[replay.frame];
 	const [selected, setSelected] = useState("late");
 	const row = data.records.find((r) => r.id === selected) ?? data.records[0];
@@ -236,7 +241,11 @@ export function RecencyDecayScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const replay = useFrames(data.decay.frames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const elapsed = manual ?? data.decay.frames[replay.frame];
 	const [halfLife, setHalfLife] = useState<number | null>(data.decay.halfLife);
 	const value = recencyWeight(data.decay.initial, elapsed, halfLife);
@@ -388,7 +397,10 @@ export function RecencyDecayScene({ locale }: Props) {
 export function ScoreMeaningScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.reports[0].id);
+	const [id, setId] = useGuidedState(
+		data.reports[0].id,
+		data.reports.map((item) => item.id),
+	);
 	const [selected, setSelected] = useState("percentile");
 	const report = data.reports.find((r) => r.id === id) ?? data.reports[0];
 	const result = describeScore(report);
@@ -516,9 +528,17 @@ export function ScoreMeaningScene({ locale }: Props) {
 export function HoldoutScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [threshold, setThreshold] = useState(data.evaluation.threshold);
-	const [frozen, setFrozen] = useState<number | null>(null);
-	const [reused, setReused] = useState(false);
+	const [threshold, setThreshold] = useGuidedState(data.evaluation.threshold, [
+		data.evaluation.threshold,
+		data.evaluation.threshold,
+		data.evaluation.threshold + 1,
+	]);
+	const [frozen, setFrozen] = useGuidedState<number | null>(null, [
+		null,
+		data.evaluation.threshold,
+		data.evaluation.threshold,
+	]);
+	const [reused, setReused] = useGuidedState(false, [false, false, true]);
 	const first =
 		frozen === null ? null : evaluationMatches(data.evaluation.heldout, frozen);
 	const current =

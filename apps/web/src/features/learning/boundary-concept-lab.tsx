@@ -20,6 +20,12 @@ const scenes = [
 			"Open the supplied fields in the SVG. Switch to a forecast design and inspect its extra requirements.",
 			"在 SVG 中打开给定字段，切换预测设计并检查额外要求。",
 		],
+		demonstration: [
+			[
+				"Add subject, quantity, universe and cutoff to turn the example into an answerable question.",
+				"补齐对象、数量、范围与截止时点，让示例问题可以被回答。",
+			],
+		],
 		Component: BoundaryQuestionScene,
 	},
 	{
@@ -29,6 +35,12 @@ const scenes = [
 		prompt: [
 			"Pick a statement and try an evidence category. Read why it fits, including cases with more than one role.",
 			"选择陈述并尝试证据类别，阅读其适用原因，包括多种作用的情况。",
+		],
+		demonstration: [
+			[
+				"A statement can have more than one supported evidence role. The supported categories are highlighted.",
+				"一条陈述可以具有多个有依据的证据作用，支持的类别已高亮。",
+			],
 		],
 		Component: BoundaryEvidenceScene,
 	},
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Replay a correction, then compare population, method and coverage changes. Keep the original record visible.",
 			"回放更正，再比较人群、方法与覆盖变化，保持原记录可见。",
+		],
+		demonstration: [
+			[
+				"New evidence may revise the same answer; changing scope creates a different question.",
+				"新证据可修订同一问题的答案，改变范围则形成不同问题。",
+			],
 		],
 		Component: BoundaryRevisionScene,
 	},

@@ -3,7 +3,6 @@ import { createContext, type ReactNode, useContext, useState } from "react";
 import {
 	type BoundaryConceptData,
 	changedQuestionFields,
-	type EvidenceLayer,
 	type QuestionField,
 	questionDeclaration,
 	requiredQuestionFields,
@@ -22,6 +21,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const BoundaryData = createContext<BoundaryConceptData | null>(null);
 function useData() {
 	const data = useContext(BoundaryData);
@@ -61,11 +61,10 @@ export function BoundaryQuestionScene({ locale }: Props) {
 	const [forecast, setForecast] = useState(false);
 	const required = requiredQuestionFields(forecast);
 	const replay = useFrames(required.length + 1);
-	const [manual, setManual] = useState<QuestionField[] | null>([
-		"subject",
-		"quantity",
-		"universe",
-	]);
+	const [manual, setManual] = useGuidedState<QuestionField[] | null>(
+		["subject", "quantity", "universe"],
+		[null, null, null],
+	);
 	const selected = manual ?? required.slice(0, replay.frame);
 	const [focus, setFocus] = useState<QuestionField>("interval");
 	const state = questionDeclaration(selected, forecast);
@@ -214,10 +213,13 @@ export function BoundaryEvidenceScene({ locale }: Props) {
 	const data = useData();
 	const language = locale === "zh" ? 1 : 0;
 	const l = copy(locale);
-	const [id, setId] = useState(data.cards[0].id);
-	const [choice, setChoice] = useState<EvidenceLayer | null>(null);
+	const [id, setId] = useGuidedState(
+		data.cards[0].id,
+		data.cards.map((item) => item.id),
+	);
 	const card = data.cards.find((c) => c.id === id) ?? data.cards[0];
-	const fits = choice !== null && card.accepted.includes(choice);
+	const choice = card.accepted[0];
+	const fits = true;
 	return (
 		<SceneLayout
 			diagram={
@@ -238,18 +240,17 @@ export function BoundaryEvidenceScene({ locale }: Props) {
 								width={310}
 								height={44}
 								rx={10}
-								fill={choice === layer.id ? "var(--primary)" : "currentColor"}
-								opacity={choice === layer.id ? 0.2 : 0.04}
+								fill={
+									card.accepted.includes(layer.id)
+										? "var(--primary)"
+										: "currentColor"
+								}
+								opacity={card.accepted.includes(layer.id) ? 0.2 : 0.04}
 							/>
 							<foreignObject x={25} y={155 + i * 54} width={310} height={44}>
-								<button
-									type="button"
-									className="h-full w-full rounded-lg text-sm"
-									aria-pressed={choice === layer.id}
-									onClick={() => setChoice(layer.id)}
-								>
+								<div className="flex h-full w-full items-center justify-center rounded-lg text-sm">
 									{layer.label[language]}
-								</button>
+								</div>
 							</foreignObject>
 						</g>
 					))}
@@ -263,7 +264,6 @@ export function BoundaryEvidenceScene({ locale }: Props) {
 				options={data.cards.map((c) => [c.id, c.label[language]])}
 				onChange={(value) => {
 					setId(value);
-					setChoice(null);
 				}}
 			/>
 			<p data-boundary-category role="status">

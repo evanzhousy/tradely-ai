@@ -21,6 +21,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const EligibilityData = createContext<EligibilityConceptData | null>(
 	null,
 );
@@ -69,7 +70,11 @@ export function EligibilityRulesScene({ locale }: Props) {
 	const [minimum, setMinimum] = useState(500);
 	const [selected, setSelected] = useState("D");
 	const replay = useFrames(5);
-	const [manual, setManual] = useState<number | null>(4);
+	const [manual, setManual] = useGuidedState<number | null>(4, [
+		null,
+		null,
+		null,
+	]);
 	const step = manual ?? replay.frame;
 	const result = summarizeEligibility(data.rows, {
 		kind,
@@ -236,7 +241,7 @@ export function EligibilityRulesScene({ locale }: Props) {
 export function EligibilityDenominatorScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [corrected, setCorrected] = useState(false);
+	const [corrected, setCorrected] = useGuidedState(false, [false, true, true]);
 	const [baselineId, setBaselineId] = useState(data.baselines[0].id);
 	const baseline =
 		data.baselines.find((b) => b.id === baselineId) ?? data.baselines[0];
@@ -380,7 +385,7 @@ export function EligibilityDenominatorScene({ locale }: Props) {
 export function EligibilityHistoryScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [current, setCurrent] = useState(false);
+	const [current, setCurrent] = useGuidedState(false, [false, true, false]);
 	const [selected, setSelected] = useState("OLD");
 	const members = data.history.members.filter((m) =>
 		current ? m.currentMember : m.historicalMember,

@@ -21,8 +21,8 @@ import { getLearningPath, type Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
+import { useVisualBookmarks } from "@/features/learning/visual-bookmark";
 import { useI18n } from "@/i18n/provider";
-import { LessonLearningStatus } from "./learning-progress";
 import { LessonInfographic } from "./lesson-infographic";
 
 // Owns ordered lesson discovery; the catalog and server access state remain inputs.
@@ -31,7 +31,6 @@ export function LandingCurriculum({
 	completedIds = [],
 	caption,
 	groupByModule = false,
-	learning,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
@@ -48,6 +47,7 @@ export function LandingCurriculum({
 		lessons: getLearningPath(lessons, path),
 	}));
 	const completed = new Set(completedIds);
+	const bookmarks = useVisualBookmarks();
 	const renderLessons = (items: readonly Lesson[]) => (
 		<ol
 			className="curriculum-grid"
@@ -97,16 +97,23 @@ export function LandingCurriculum({
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="mt-auto">
-									<LessonLearningStatus
-										evidence={learning?.lessons[lesson.id]}
-										locale={locale}
-									/>
+									<p className="text-muted-foreground text-xs">
+										{isCompleted
+											? locale === "zh"
+												? "已学习"
+												: "Studied"
+											: bookmarks[lesson.id]
+												? locale === "zh"
+													? "学习中"
+													: "In progress"
+												: locale === "zh"
+													? "尚未开始"
+													: "Not started"}
+									</p>
 									<p className="curriculum-practice">
-										{lesson.practice
-											? t("home.cardPractice", { tool: lesson.practice.tool })
-											: locale === "zh"
-												? "交互练习与独立案例"
-												: "Interactive practice and independent cases"}
+										{locale === "zh"
+											? "动画图解与完整示例"
+											: "Animated diagrams & worked examples"}
 									</p>
 								</CardContent>
 								<CardFooter className="curriculum-card-footer">

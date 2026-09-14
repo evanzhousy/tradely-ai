@@ -20,6 +20,12 @@ const scenes = [
 			"Inspect the supplied strategy, then switch to the evidence from just one position.",
 			"检查给定策略，再切换到仅有单一持仓证据的视角。",
 		],
+		demonstration: [
+			[
+				"Keep the option leg in view as surrounding positions change the complete structure.",
+				"保留同一期权腿，查看周围持仓如何改变完整结构。",
+			],
+		],
 		Component: CompositionScene,
 	},
 	{
@@ -33,6 +39,12 @@ const scenes = [
 			"Drag the underlying price. Compare the strategy shapes on shared axes, then separate terminal value, entry cost and fees.",
 			"拖动标的价格，在共同坐标轴上比较策略形状，再区分到期价值、入场成本与费用。",
 		],
+		demonstration: [
+			[
+				"Add the signed legs before interpreting the combined expiration profit.",
+				"先汇总带符号的各腿，再解读组合到期盈亏。",
+			],
+		],
 		Component: ExpirationStrategyScene,
 	},
 	{
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Replay the supplied closing and opening fills. Follow contract identity, inventory and cash flow.",
 			"回放给定平仓与开仓成交，追踪合约身份、持仓和现金流。",
+		],
+		demonstration: [
+			[
+				"A roll closes one position and opens another. Follow both transactions and their cash flows.",
+				"展期同时平掉一份持仓、建立另一份，沿两笔交易查看现金流。",
+			],
 		],
 		Component: RollScene,
 	},

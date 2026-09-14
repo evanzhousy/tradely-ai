@@ -31,6 +31,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const SourceData = createContext<SourceConceptData | null>(null);
 function useSourceData() {
@@ -240,7 +241,10 @@ export function SourceRequirementScene({ locale }: Props) {
 	const { audit } = useSourceData();
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
-	const [requirementId, setRequirement] = useState(audit.requirements[0].id);
+	const [requirementId, setRequirement] = useGuidedState(
+		audit.requirements[0].id,
+		audit.requirements.map((item) => item.id),
+	);
 	const [recordId, setRecord] = useState(audit.records[0].id);
 	const requirement =
 		audit.requirements.find((r) => r.id === requirementId) ??

@@ -4,7 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import * as m from "motion/react-m";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 import {
 	type IvObservation,
 	type IvRankConceptData,
@@ -26,6 +26,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const IvRankData = createContext<IvRankConceptData | null>(null);
 function useData() {
@@ -117,7 +118,11 @@ function HistoryBoxes({
 export function RankFrequencyScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [current, setCurrent] = useState(data.experiment.current);
+	const [current, setCurrent] = useGuidedState(data.experiment.current, [
+		data.experiment.current - 5,
+		data.experiment.current,
+		data.experiment.current + 5,
+	]);
 	const stats = ivRankStatistics(
 		data.experiment.observations.map((o) => o.iv),
 		current,
@@ -260,7 +265,11 @@ export function RankOutlierScene({ locale }: Props) {
 	const l = copy(locale);
 	const motion = useLessonMotion();
 	const replay = useFrames(data.outlierFrames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const high = manual ?? data.outlierFrames[replay.frame];
 	const observations = data.experiment.observations.map((o, i) =>
 		i === data.experiment.observations.length - 1 ? { ...o, iv: high } : o,
@@ -422,7 +431,10 @@ export function RankOutlierScene({ locale }: Props) {
 export function RankCoverageScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [id, setId] = useState(data.samples[0].id);
+	const [id, setId] = useGuidedState(
+		data.samples[0].id,
+		data.samples.map((item) => item.id),
+	);
 	const sample = data.samples.find((s) => s.id === id) ?? data.samples[0];
 	const result = inspectIvHistory(sample);
 	const stats = result.statistics;

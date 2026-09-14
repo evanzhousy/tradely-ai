@@ -34,6 +34,7 @@ import {
 	premiumExamples,
 	valueParts,
 } from "./payoff-concept-model";
+import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
 const text = (locale: Locale) => (en: string, zh: string) =>
@@ -68,8 +69,8 @@ function TypeField({
 export function PremiumUnitsScene({ locale }: Props) {
 	const l = text(locale);
 	const motion = useLessonMotion();
-	const [paid, setPaid] = useState(300);
-	const [count, setCount] = useState(2);
+	const [paid, setPaid] = useGuidedState(300, [300, 300, 450]);
+	const [count, setCount] = useGuidedState(2, [1, 2, 2]);
 	const amounts = premiumAmounts(paid, count);
 	const rows = [
 		{
@@ -222,8 +223,12 @@ export function ValuePartsScene({ locale }: Props) {
 	const l = text(locale);
 	const motion = useLessonMotion();
 	const [type, setType] = useState<PayoffType>("CALL");
-	const [index, setIndex] = useState(2);
-	const [timing, setTiming] = useState("before");
+	const [index, setIndex] = useGuidedState(2, [0, 2, 2]);
+	const [timing, setTiming] = useGuidedState("before", [
+		"before",
+		"before",
+		"expiry",
+	]);
 	const example = premiumExamples[index];
 	const parts = valueParts(type, example, timing === "expiry");
 	const width = (cents: number) => (cents / 600) * 280;
@@ -362,7 +367,7 @@ export function ExpirationProfitScene({ locale }: Props) {
 	const l = text(locale);
 	const id = useId();
 	const [type, setType] = useState<PayoffType>("CALL");
-	const [spot, setSpot] = useState(10200);
+	const [spot, setSpot] = useGuidedState(10200, [10000, 10200, 10300, 10800]);
 	const [paid, setPaid] = useState(300);
 	const [count, setCount] = useState(2);
 	const result = expirationOutcome(type, spot, paid, count);

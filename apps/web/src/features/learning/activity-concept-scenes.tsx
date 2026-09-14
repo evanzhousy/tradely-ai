@@ -30,6 +30,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const ActivityData = createContext<ActivityConceptData | null>(null);
 function useActivityData() {
 	const data = useContext(ActivityData);
@@ -68,7 +69,10 @@ function MetricField({
 export function DenominatorScene({ locale }: Props) {
 	const data = useActivityData();
 	const l = text(locale);
-	const [id, setId] = useState(data.samples[0].id);
+	const [id, setId] = useGuidedState(
+		data.samples[0].id,
+		data.samples.map((item) => item.id),
+	);
 	const [metric, setMetric] = useState<ActivityMetric>("relative");
 	const [custom, setCustom] = useState<number | null>(null);
 	const [available, setAvailable] = useState("known");
@@ -414,7 +418,11 @@ export function ScreeningScene({ locale }: Props) {
 	const data = useActivityData();
 	const l = text(locale);
 	const [metric, setMetric] = useState<ActivityMetric>("relative");
-	const [threshold, setThreshold] = useState(data.threshold.initial);
+	const [threshold, setThreshold] = useGuidedState(data.threshold.initial, [
+		data.threshold.initial,
+		data.threshold.initial * 2,
+		data.threshold.initial,
+	]);
 	const [scope, setScope] = useState("all");
 	const summary = summarizeActivity(
 		data.samples,

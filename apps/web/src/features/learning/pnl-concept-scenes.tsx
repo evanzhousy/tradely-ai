@@ -17,6 +17,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const PnlData = createContext<PnlConceptData | null>(null);
 function useData() {
 	const data = useContext(PnlData);
@@ -59,9 +60,17 @@ export function StockAccountingScene({ locale }: Props) {
 	const [method, setMethod] = useState<"fifo" | "average">("fifo");
 	const [fees, setFees] = useState("exclude");
 	const [knownMark, setKnownMark] = useState(true);
-	const [customMark, setCustomMark] = useState<number | null>(null);
+	const [customMark, setCustomMark] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const replay = useFrames(3);
-	const [manual, setManual] = useState<number | null>(2);
+	const [manual, setManual] = useGuidedState<number | null>(2, [
+		null,
+		null,
+		null,
+	]);
 	const phase = manual ?? replay.frame;
 	const source = data.stockCases.find((c) => c.id === id) ?? data.stockCases[0];
 	const mark = knownMark
@@ -324,7 +333,7 @@ export function StockAccountingScene({ locale }: Props) {
 export function AccountCashScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [deposit, setDeposit] = useState(0);
+	const [deposit, setDeposit] = useGuidedState(0, [0, 50000, 100000]);
 	const [missing, setMissing] = useState("none");
 	const [selected, setSelected] = useState("cash");
 	const a = data.account;
@@ -470,9 +479,17 @@ export function OptionValueScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const o = data.option;
-	const [side, setSide] = useState<"long" | "short">("long");
+	const [side, setSide] = useGuidedState<"long" | "short">("long", [
+		"long",
+		"short",
+		"short",
+	]);
 	const [quantity, setQuantity] = useState(o.quantity);
-	const [mark, setMark] = useState(o.markCents);
+	const [mark, setMark] = useGuidedState(o.markCents, [
+		o.markCents,
+		o.markCents,
+		o.markCents + 200,
+	]);
 	const [known, setKnown] = useState(true);
 	const result = optionValuation(
 		quantity,

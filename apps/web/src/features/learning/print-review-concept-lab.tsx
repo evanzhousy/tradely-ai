@@ -17,6 +17,12 @@ const scenes = [
 			"Follow the contract, timestamp, price, count and multiplier. Notice what changes when a required unit is missing.",
 			"依次检查合约、时间、价格、数量与乘数，观察必要单位缺失时会发生什么。",
 		],
+		demonstration: [
+			[
+				"Follow quantity, execution price and the stated multiplier into the premium amount.",
+				"沿数量、成交价与给定乘数，查看权利金金额如何形成。",
+			],
+		],
 		Component: PrintInspectorScene,
 	},
 	{
@@ -30,6 +36,12 @@ const scenes = [
 			"Inspect a statement and place it in an evidence category. Then add a new record and reconsider.",
 			"检查一项陈述并选择证据类别，再加入新记录，重新判断。",
 		],
+		demonstration: [
+			[
+				"The highlighted category shows what the supplied evidence supports; the explanation is already available.",
+				"高亮类别显示给定证据所能支持的结论，讲解直接呈现。",
+			],
+		],
 		Component: EvidenceBucketsScene,
 	},
 	{
@@ -39,6 +51,12 @@ const scenes = [
 		prompt: [
 			"Choose one missing fact, request a follow-up record, and see exactly what it resolves.",
 			"选择一个缺失事实，检查一项后续记录，观察它究竟解决了什么。",
+		],
+		demonstration: [
+			[
+				"Compare additional records with the missing fact. Bigger activity alone cannot fill an evidence gap.",
+				"将补充记录与缺失事实对照，成交更大本身不能填补证据缺口。",
+			],
 		],
 		Component: FollowUpScene,
 	},

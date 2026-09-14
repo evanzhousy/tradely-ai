@@ -17,6 +17,12 @@ const scenes = [
 			"Inspect source rows, then replay the instrument, session, coverage and volume checks. A ready badge is not evidence.",
 			"检查来源行，再回放工具、时段、覆盖与成交量检查。就绪标签不是证据。",
 		],
+		demonstration: [
+			[
+				"Apply the declared eligibility rules before ranking the observed rows.",
+				"先应用给定资格规则，再对已观测行排名。",
+			],
+		],
 		Component: EligibilityRulesScene,
 	},
 	{
@@ -30,6 +36,12 @@ const scenes = [
 			"Compare the observed peer count with a typical-volume ratio. Reveal a corrected missing candidate without changing the rule.",
 			"比较已观测同组数量与典型成交量比率。在规则不变时展示缺失候选的更正数据。",
 		],
+		demonstration: [
+			[
+				"Revealing a missing record changes the observed subtotal without changing the original rule.",
+				"揭示缺失记录会改变已观测小计，但不改变原规则。",
+			],
+		],
 		Component: EligibilityDenominatorScene,
 	},
 	{
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Switch the membership date while keeping the historical observations fixed. Inspect excluded and newly added members.",
 			"保持历史观测固定，切换成员日期，检查被排除与新增成员。",
+		],
+		demonstration: [
+			[
+				"Today's surviving members cannot replace the historical comparison universe.",
+				"今天仍存在的成员，不能替代历史比较范围。",
+			],
 		],
 		Component: EligibilityHistoryScene,
 	},

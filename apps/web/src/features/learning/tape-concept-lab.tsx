@@ -17,6 +17,12 @@ const scenes = [
 			"Choose source prints. Check identity and units, then compare weighted price with a simple average.",
 			"选择原始成交。先检查合约与单位，再比较数量加权价格和简单均价。",
 		],
+		demonstration: [
+			[
+				"Expand a row into its executions. Quantity-weighted price and total premium use different calculations.",
+				"把汇总行展开为成交，数量加权价格与总权利金采用不同计算。",
+			],
+		],
 		Component: AggregateScene,
 	},
 	{
@@ -30,6 +36,12 @@ const scenes = [
 			"Follow explicit execution IDs through a duplicate, correction and cancellation. Watch the current view change.",
 			"根据明确成交标识追踪重复、更正和撤销，观察当前记录视图如何变化。",
 		],
+		demonstration: [
+			[
+				"A correction replaces its linked report; it is not another execution to add.",
+				"更正替代关联的原报告，不是额外增加的一笔成交。",
+			],
+		],
 		Component: MessageReplayScene,
 	},
 	{
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Inspect a supplied condition definition, then test what it can establish about this large illustrative row.",
 			"检查给定成交条件定义，再判断它能确定这条大额示例记录的哪些信息。",
+		],
+		demonstration: [
+			[
+				"An execution condition describes the record under its source convention, not the investor's identity.",
+				"成交条件按来源约定描述记录，不揭示投资者身份。",
+			],
 		],
 		Component: ConditionScene,
 	},

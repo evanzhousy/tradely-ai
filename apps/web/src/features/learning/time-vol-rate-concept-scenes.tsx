@@ -31,6 +31,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const TimeVolRateData = createContext<TimeVolRateConceptData | null>(
 	null,
@@ -81,7 +82,10 @@ export function GreekUnitsScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
-	const [id, setId] = useState<OtherGreek>("theta");
+	const [id, setId] = useGuidedState<OtherGreek>(
+		"theta",
+		data.factors.map((item) => item.id),
+	);
 	const [after, setAfter] = useState(data.factors[0].after);
 	const factor = data.factors.find((f) => f.id === id) ?? data.factors[0];
 	const snapshot = data.options[0];
@@ -267,7 +271,11 @@ export function GreekSignsScene({ locale }: Props) {
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const [id, setId] = useState(data.options[0].id);
-	const [side, setSide] = useState<"long" | "short">("long");
+	const [side, setSide] = useGuidedState<"long" | "short">("long", [
+		"long",
+		"short",
+		"long",
+	]);
 	const [quantity, setQuantity] = useState(data.quantity);
 	const snapshot = data.options.find((s) => s.id === id) ?? data.options[0];
 	const units = signedPositionUnits(quantity, data.multiplier, side);

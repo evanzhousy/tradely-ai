@@ -17,6 +17,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const RecapData = createContext<RecapConceptData | null>(null);
 function useData() {
 	const data = useContext(RecapData);
@@ -172,8 +173,16 @@ function Chart({
 export function RecapMetricScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
-	const [metric, setMetric] = useState<RecapMetric>("volume");
-	const [claim, setClaim] = useState<RecapMetric>("volume");
+	const [metric, setMetric] = useGuidedState<RecapMetric>("volume", [
+		"volume",
+		"premium",
+		"premium",
+	]);
+	const [claim, setClaim] = useGuidedState<RecapMetric>("volume", [
+		"volume",
+		"volume",
+		"premium",
+	]);
 	const [selected, setSelected] = useState("R2");
 	const source = recapSeries(data.packet, data.series, metric);
 	const claimed = recapSeries(data.packet, data.series, claim);
@@ -261,7 +270,11 @@ export function RecapAxisScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const replay = useFrames(data.axisFrames.length);
-	const [manual, setManual] = useState<number | null>(null);
+	const [manual, setManual] = useGuidedState<number | null>(null, [
+		null,
+		null,
+		null,
+	]);
 	const minimum = manual ?? data.axisFrames[replay.frame];
 	const [selected, setSelected] = useState("R2");
 	const result = recapSeries(data.packet, data.series, "volume");
@@ -346,9 +359,20 @@ export function RecapComposeScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
-	const [headline, setHeadline] = useState("observed");
-	const [included, setIncluded] = useState(
+	const [headline, setHeadline] = useGuidedState("observed", [
+		"full",
+		"observed",
+		"observed",
+	]);
+	const [included, setIncluded] = useGuidedState(
 		data.captionFields.filter((f) => f.id !== "coverage").map((f) => f.id),
+		[
+			[],
+			data.captionFields
+				.filter((item) => item.id !== "coverage")
+				.map((item) => item.id),
+			data.captionFields.map((item) => item.id),
+		],
 	);
 	const missing = data.captionFields.filter((f) => !included.includes(f.id));
 	const labels = {
@@ -484,7 +508,7 @@ export function RecapComposeScene({ locale }: Props) {
 			<p className="text-muted-foreground text-xs">
 				{l(
 					"These checks apply only to fixed teaching templates, not arbitrary written headlines. This sample is not saved or published. The following exercise preserves your actual writing for self or human review and does not automatically certify prose quality.",
-					"这些检查仅针对固定教学模板，不针对任意标题。此样例不保存或发布。后续练习保留你的实际写作供自评或人工审核，不自动认证文字质量。",
+					"本演示展示已编写的教学示例，可自由比较各步骤。",
 				)}
 			</p>
 		</SceneLayout>

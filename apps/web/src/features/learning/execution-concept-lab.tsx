@@ -20,6 +20,12 @@ const scenes = [
 			"Switch the incoming side and play the match. Follow the roles, price and single trade count.",
 			"切换主动到来的一方并播放撮合，追踪角色、价格与唯一的成交计数。",
 		],
+		demonstration: [
+			[
+				"An incoming order meets a resting counterparty. Two participants create one execution.",
+				"主动订单与挂单方撮合，两名参与者形成一笔成交。",
+			],
+		],
 		Component: CounterpartyScene,
 	},
 	{
@@ -29,6 +35,12 @@ const scenes = [
 		prompt: [
 			"Move the limit and order size. See which displayed prices can fill, and what remains unfilled.",
 			"移动限价与订单数量，观察哪些可见价位能够成交，以及还有多少未成交。",
+		],
+		demonstration: [
+			[
+				"Increasing the requested quantity does not create more liquidity at the limit price.",
+				"增加请求数量，不会凭空增加限价内的流动性。",
+			],
 		],
 		Component: LiquidityScene,
 	},
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Make a judgment from the print, then inspect its order record. Try the other example and compare.",
 			"先根据成交记录作出判断，再查看订单记录。切换另一个示例进行比较。",
+		],
+		demonstration: [
+			[
+				"Different instructions can produce the same print. Only the supplied order record resolves this example.",
+				"不同指令可以形成相同成交，给定订单记录才能确定本例的指令。",
+			],
 		],
 		Component: OrderEvidenceScene,
 	},

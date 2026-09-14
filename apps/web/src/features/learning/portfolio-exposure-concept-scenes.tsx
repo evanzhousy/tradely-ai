@@ -17,6 +17,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const PortfolioExposureContext =
 	createContext<PortfolioExposureData | null>(null);
 function useData() {
@@ -50,7 +51,11 @@ export function ExposureCoverageScene({ locale }: Props) {
 	const l = copy(locale);
 	const enabled = useLessonMotion();
 	const replay = useFrames(data.hedgeFrames.length);
-	const [manual, setManual] = useState<number | null>(0);
+	const [manual, setManual] = useGuidedState<number | null>(0, [
+		null,
+		null,
+		null,
+	]);
 	const [coverage, setCoverage] = useState("missing");
 	const hedge = manual ?? data.hedgeFrames[replay.frame];
 	const call = positionExposure(data.calls, data.at).delta;
@@ -198,9 +203,13 @@ export function ExposureRiskScene({ locale }: Props) {
 	const l = copy(locale);
 	const enabled = useLessonMotion();
 	const replay = useFrames(data.moveFrames.length);
-	const [manual, setManual] = useState<number | null>(0);
-	const [iv, setIv] = useState(0);
-	const [days, setDays] = useState(0);
+	const [manual, setManual] = useGuidedState<number | null>(0, [
+		null,
+		null,
+		null,
+	]);
+	const [iv, setIv] = useGuidedState(0, [0, 1, 1]);
+	const [days, setDays] = useGuidedState(0, [0, 0, 1]);
 	const move = manual ?? data.moveFrames[replay.frame];
 	const call = positionExposure(data.calls, data.at);
 	const delta = 0;
@@ -362,7 +371,11 @@ export function ExposureUnitsScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const [scale, setScale] = useState("point");
-	const [evidence, setEvidence] = useState("current");
+	const [evidence, setEvidence] = useGuidedState("current", [
+		"current",
+		"stale",
+		"current",
+	]);
 	const raw = scale === "point" ? 0.12 : 12;
 	const row = {
 		...data.calls,

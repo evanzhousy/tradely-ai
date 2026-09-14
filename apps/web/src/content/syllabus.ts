@@ -308,8 +308,8 @@ export const syllabus: readonly Entry[] = [
 	lesson(
 		"audited-boundary",
 		"research",
-		"Write a question the evidence can answer",
-		"写出证据能回答的问题",
+		"See what makes a research question answerable",
+		"看懂什么问题能用证据回答",
 		"Declare an observable question, inputs and a reason to reconsider.",
 		"声明可观察的问题、输入与重新考虑的条件。",
 		["C26"],
@@ -368,8 +368,8 @@ export const syllabus: readonly Entry[] = [
 	lesson(
 		"market-recap",
 		"production",
-		"Write a supported recap",
-		"撰写有依据的复盘",
+		"See how a supported recap is built",
+		"看懂有依据的复盘如何形成",
 		"Produce a headline, chart, evidence references and visible caveats.",
 		"生成标题、图表、证据引用与可见限制。",
 		["C27"],

@@ -24,6 +24,7 @@ import {
 	useLessonMotion,
 } from "./lesson-motion";
 import { useQuoteData } from "./quote-concept-data";
+import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
 const text = (locale: Locale) => (en: string, zh: string) =>
@@ -54,7 +55,11 @@ function Note({ children }: { children: ReactNode }) {
 export function QuoteAnatomyScene({ locale }: Props) {
 	const data = useQuoteData();
 	const l = text(locale);
-	const [ask, setAsk] = useState(data.ask);
+	const [ask, setAsk] = useGuidedState(data.ask, [
+		data.ask,
+		data.ask + 10,
+		data.ask + 20,
+	]);
 	const [mark, setMark] = useState("midpoint");
 	const { spread, midpoint } = quoteMeasures(data.bid, ask);
 	const x = (price: number) =>
@@ -405,7 +410,10 @@ export function VenueQuoteScene({ locale }: Props) {
 	const data = useQuoteData();
 	const l = text(locale);
 	const motion = useLessonMotion();
-	const [selected, setSelected] = useState(data.venues[0]?.id ?? "");
+	const [selected, setSelected] = useGuidedState(
+		data.venues[0]?.id ?? "",
+		data.venues.map((item) => item.id),
+	);
 	const [scope, setScope] = useState("all");
 	const eligible = data.venues.filter(
 		(v) => scope === "all" || (scope === "stale" && v.id !== data.staleVenue),

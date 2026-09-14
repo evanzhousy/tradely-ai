@@ -31,6 +31,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const ExecutionData = createContext<ExecutionConceptData | null>(null);
 function useExecutionData() {
@@ -256,7 +257,11 @@ export function LiquidityScene({ locale }: Props) {
 	const l = text(locale);
 	const [side, setSide] = useState<ExecutionSide>("buy");
 	const [instruction, setInstruction] = useState<OrderInstruction>("limit");
-	const [quantity, setQuantity] = useState(data.defaultQuantity);
+	const [quantity, setQuantity] = useGuidedState(data.defaultQuantity, [
+		data.defaultQuantity,
+		data.defaultQuantity + 10,
+		data.defaultQuantity + 20,
+	]);
 	const [limit, setLimit] = useState(data.asks[0].price);
 	const levels = side === "buy" ? data.asks : data.bids;
 	const range = side === "buy" ? data.buyLimitRange : data.sellLimitRange;
@@ -454,17 +459,13 @@ export function OrderEvidenceScene({ locale }: Props) {
 	const data = useExecutionData();
 	const l = text(locale);
 	const motion = useLessonMotion();
-	const [example, setExample] = useState(data.records[0]?.id ?? "");
-	const [revealed, setRevealed] = useState(false);
-	const [guess, setGuess] = useState("unanswered");
+	const [example, setExample] = useGuidedState(
+		data.records[0]?.id ?? "",
+		data.records.map((item) => item.id),
+	);
+	const [revealed, setRevealed] = useGuidedState(false, [false, true, true]);
 	const record = data.records.find((r) => r.id === example);
 	const instruction = revealed ? record?.instruction : null;
-	const choices = [
-		["market", l("Market", "市价")],
-		["limit", l("Limit", "限价")],
-		["unknown", l("Cannot tell", "无法确定")],
-	] as const;
-	const correct = guess === (instruction ?? "unknown");
 	return (
 		<SceneLayout
 			diagram={
@@ -574,25 +575,13 @@ export function OrderEvidenceScene({ locale }: Props) {
 					onChange={(v) => {
 						setExample(v);
 						setRevealed(false);
-						setGuess("unanswered");
 					}}
 				/>
-				<ChoiceField
-					label={l(
-						"What instruction does this evidence establish?",
-						"这些证据能确定哪种指令？",
-					)}
-					value={guess}
-					options={choices}
-					onChange={setGuess}
-				/>
 			</FieldGroup>
-			{guess !== "unanswered" ? (
+			{
 				<Alert role="status">
 					<AlertTitle>
-						{correct
-							? l("Supported by this evidence", "得到当前证据支持")
-							: l("Look at the evidence boundary", "注意证据边界")}
+						{l("What the evidence establishes", "证据能确定什么")}
 					</AlertTitle>
 					<AlertDescription>
 						{revealed
@@ -606,12 +595,11 @@ export function OrderEvidenceScene({ locale }: Props) {
 								)}
 					</AlertDescription>
 				</Alert>
-			) : null}
+			}
 			<Button
 				variant="outline"
 				onClick={() => {
 					setRevealed(!revealed);
-					setGuess("unanswered");
 				}}
 			>
 				{revealed

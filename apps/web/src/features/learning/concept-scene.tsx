@@ -10,7 +10,8 @@ import {
 	ToggleGroupItem,
 } from "@tradely/ui/components/toggle-group";
 import { PauseIcon, PlayIcon } from "lucide-react";
-import { type ReactNode, useEffect, useId, useState } from "react";
+import { type ReactNode, useContext, useEffect, useId, useState } from "react";
+import { VisualLocale, VisualPlayback } from "./visual-playback";
 
 type Copy = (en: string, zh: string) => string;
 
@@ -74,10 +75,23 @@ export function SceneLayout({
 	diagram: ReactNode;
 	children: ReactNode;
 }) {
+	const playback = useContext(VisualPlayback);
+	const locale = useContext(VisualLocale);
 	return (
-		<div className="contract-scene-layout">
+		<div className={playback ? "visual-scene-layout" : "contract-scene-layout"}>
 			<div className="contract-stage">{diagram}</div>
-			<div className="flex min-w-0 flex-col gap-5">{children}</div>
+			{playback ? (
+				<details className="visual-explore">
+					<summary>
+						{locale === "zh"
+							? "自由探索与详细讲解"
+							: "Explore controls & explanation"}
+					</summary>
+					<div className="flex min-w-0 flex-col gap-5 pt-5">{children}</div>
+				</details>
+			) : (
+				<div className="flex min-w-0 flex-col gap-5">{children}</div>
+			)}
 		</div>
 	);
 }
@@ -113,6 +127,7 @@ export function SelectField({
 
 /** Explicit playback visits supplied teaching states. It stops on direct input, hide, or unmount. */
 export function useFrames(length: number) {
+	const shared = useContext(VisualPlayback);
 	const [frame, setFrame] = useState(0);
 	const [playing, setPlaying] = useState(false);
 	useEffect(() => {
@@ -130,6 +145,16 @@ export function useFrames(length: number) {
 			document.removeEventListener("visibilitychange", stopOnHide);
 		};
 	}, [frame, playing, length]);
+	if (shared)
+		return {
+			frame: Math.round(shared.progress * (length - 1)),
+			playing: shared.playing,
+			select: (value: number) => {
+				shared.pause();
+				shared.seek(length > 1 ? value / (length - 1) : 0);
+			},
+			toggle: shared.toggle,
+		};
 	return {
 		frame,
 		playing,
@@ -152,6 +177,8 @@ export function PlaybackButton({
 	onClick: () => void;
 	l: Copy;
 }) {
+	const shared = useContext(VisualPlayback);
+	if (shared) return null;
 	return (
 		<Button variant="outline" size="sm" onClick={onClick}>
 			{playing ? (

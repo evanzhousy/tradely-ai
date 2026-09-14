@@ -36,6 +36,7 @@ import {
 	type SettlementOptionType,
 	settlementExamples,
 } from "./settlement-concept-model";
+import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
 const text = (locale: Locale) => (en: string, zh: string) =>
@@ -533,7 +534,7 @@ function DeliveryArrow({
 
 export function SettlementComparisonScene({ locale }: Props) {
 	const l = text(locale);
-	const [kind, setKind] = useState("cash");
+	const [kind, setKind] = useGuidedState("cash", ["cash", "physical", "cash"]);
 	const [type, setType] = useState<SettlementOptionType>("CALL");
 	const [count, setCount] = useState(1);
 	const [example, setExample] = useState(0);

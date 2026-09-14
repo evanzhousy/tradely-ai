@@ -32,6 +32,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const SideData = createContext<SideConceptData | null>(null);
 function useSideData() {
@@ -82,8 +83,9 @@ export function LocationMapScene({ locale }: Props) {
 	const l = text(locale);
 	const motion = useLessonMotion();
 	const playback = useFrames(data.examples.length);
-	const [customPrice, setCustomPrice] = useState<number | null>(
+	const [customPrice, setCustomPrice] = useGuidedState<number | null>(
 		data.defaultPrice,
+		[null, null, null],
 	);
 	const price = customPrice ?? data.examples[playback.frame].price;
 	const code = locateExecution(price, data.bid, data.ask);
@@ -287,7 +289,10 @@ export function QuoteReferenceScene({ locale }: Props) {
 	const data = useSideData();
 	const l = text(locale);
 	const motion = useLessonMotion();
-	const [id, setId] = useState(data.references[0].id);
+	const [id, setId] = useGuidedState(
+		data.references[0].id,
+		data.references.map((item) => item.id),
+	);
 	const reference =
 		data.references.find((r) => r.id === id) ?? data.references[0];
 	const result = assessSideReference(data.contract, data.ask, reference);
@@ -458,7 +463,11 @@ export function SideClaimScene({ locale }: Props) {
 	const l = text(locale);
 	const motion = useLessonMotion();
 	const [price, setPrice] = useState(data.ask);
-	const [claim, setClaim] = useState<SideClaim>("location");
+	const [claim, setClaim] = useGuidedState<SideClaim>("location", [
+		"location",
+		"initiation",
+		"belief",
+	]);
 	const code = locateExecution(price, data.bid, data.ask);
 	const level = sideClaimLevel(code, claim);
 	const language = locale === "zh" ? 1 : 0;

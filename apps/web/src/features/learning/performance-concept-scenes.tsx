@@ -18,6 +18,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const PerformanceData = createContext<PerformanceConceptData | null>(
 	null,
 );
@@ -40,7 +41,11 @@ export function FlowReturnScene({ locale }: Props) {
 	const l = copy(locale);
 	const motion = useLessonMotion();
 	const replay = useFrames(f.frames.length);
-	const [manual, setManual] = useState<number | null>(f.defaultFlow);
+	const [manual, setManual] = useGuidedState<number | null>(f.defaultFlow, [
+		null,
+		null,
+		null,
+	]);
 	const [known, setKnown] = useState("known");
 	const flow = manual ?? f.frames[replay.frame];
 	const r = flowReturns(
@@ -197,7 +202,11 @@ export function TradePayoffScene({ locale }: Props) {
 	const l = copy(locale);
 	const motion = useLessonMotion();
 	const replay = useFrames(data.lossFrames.length);
-	const [manual, setManual] = useState<number | null>(10000);
+	const [manual, setManual] = useGuidedState<number | null>(10000, [
+		null,
+		null,
+		null,
+	]);
 	const [coverage, setCoverage] = useState("all");
 	const loss = manual ?? data.lossFrames[replay.frame];
 	const trades = data.trades.map((t, i) => ({
@@ -344,7 +353,11 @@ export function PerformanceEvidenceScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const [id, setId] = useState("matched");
-	const [coverage, setCoverage] = useState("partial");
+	const [coverage, setCoverage] = useGuidedState("partial", [
+		"partial",
+		"complete",
+		"partial",
+	]);
 	const b = data.benchmarks.find((b) => b.id === id) ?? data.benchmarks[0];
 	const differences = benchmarkDifferences(data.flow.spec, b.spec);
 	const f = data.flow;

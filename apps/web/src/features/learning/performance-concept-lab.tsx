@@ -20,6 +20,12 @@ const scenes = [
 			"Hold the valuation checkpoints fixed and change the hypothetical external flow. Inspect both sides of the flow boundary.",
 			"固定估值检查点，改变假设外部资金流，检查资金流边界两侧。",
 		],
+		demonstration: [
+			[
+				"Separate the external cash flow before chaining the subperiod returns.",
+				"先分离外部资金流，再连乘各子期间收益率。",
+			],
+		],
 		Component: FlowReturnScene,
 	},
 	{
@@ -29,6 +35,12 @@ const scenes = [
 		prompt: [
 			"Keep four $20 wins and vary the fifth close. Compare win rate, average outcomes, total P&L and profit factor.",
 			"保留四次各 $20 盈利，改变第五次平仓，比较胜率、平均盈亏、总盈亏与盈利因子。",
+		],
+		demonstration: [
+			[
+				"The number of wins and the size of losses describe different parts of performance.",
+				"盈利次数与亏损大小，描述绩效的不同方面。",
+			],
 		],
 		Component: TradePayoffScene,
 	},
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Inspect benchmark assumptions and a separate realized-P&L attribution. Keep mismatched and missing evidence visible.",
 			"检查基准假设与独立已实现盈亏归因，保留不匹配及缺失证据。",
+		],
+		demonstration: [
+			[
+				"Compatible dates, methods and coverage are needed before comparing performance.",
+				"比较表现前，需要相容的日期、方法与覆盖范围。",
+			],
 		],
 		Component: PerformanceEvidenceScene,
 	},

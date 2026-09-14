@@ -20,6 +20,12 @@ const scenes = [
 			"Move the ask and watch the spread and midpoint. Does the last trade move with them?",
 			"移动卖价，观察价差与中点。最新成交价也会跟着改变吗？",
 		],
+		demonstration: [
+			[
+				"The ask moves, changing spread and midpoint. The last execution remains a separate observation.",
+				"卖价变化带动价差与中点变化，最新成交仍是独立观测。",
+			],
+		],
 		Component: QuoteAnatomyScene,
 	},
 	{
@@ -33,6 +39,12 @@ const scenes = [
 			"Play an order through to its supplied outcome. Compare a cancellation with a confirmed execution.",
 			"播放订单直至给定结果，比较撤单与已确认成交。",
 		],
+		demonstration: [
+			[
+				"Follow an order from arrival to its outcome. A cancellation changes the book without creating a trade.",
+				"跟随订单从进入到结果；撤单改变订单簿，但不产生交易。",
+			],
+		],
 		Component: BookEventScene,
 	},
 	{
@@ -45,6 +57,12 @@ const scenes = [
 		prompt: [
 			"Inspect one venue, then change which quotes are eligible for the combined best prices.",
 			"检查一个场所，再改变参与汇总最优价格的合格报价范围。",
+		],
+		demonstration: [
+			[
+				"Best bid and best ask can come from different eligible venues.",
+				"最优买价与最优卖价可以来自不同的合格场所。",
+			],
 		],
 		Component: VenueQuoteScene,
 	},

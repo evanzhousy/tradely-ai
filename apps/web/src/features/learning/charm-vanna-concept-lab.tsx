@@ -20,6 +20,12 @@ const scenes = [
 			"Change elapsed time and IV independently, then compare their contributions before adding them.",
 			"独立改变已过时间与 IV，先比较各自贡献，再相加。",
 		],
+		demonstration: [
+			[
+				"Time and IV can change delta even with no new execution.",
+				"即使没有新成交，时间和 IV 也能改变 Delta。",
+			],
+		],
 		Component: CrossDeltaEffectsScene,
 	},
 	{
@@ -33,6 +39,12 @@ const scenes = [
 			"Keep one day passing and a two-point IV rise fixed. Change the derivative convention and inspect the matching input change.",
 			"固定经过一天与 IV 上升两点，改变导数约定并检查匹配的输入变化。",
 		],
+		demonstration: [
+			[
+				"Equivalent derivative conventions agree only after matching the input's sign and unit.",
+				"等价导数约定只有匹配输入符号与单位后，才会得到一致结果。",
+			],
+		],
 		Component: CrossDeltaUnitsScene,
 	},
 	{
@@ -45,6 +57,12 @@ const scenes = [
 		prompt: [
 			"Select an event, then change quantity or long/short side. Separate the option's delta from position delta and observed flow.",
 			"选择事件，再改变张数或多空方向。区分期权 Delta、持仓 Delta 与观测成交流。",
+		],
+		demonstration: [
+			[
+				"Carry the option-level change into signed position exposure using quantity and multiplier.",
+				"使用数量与乘数，将期权层面的变化换算为带符号持仓敞口。",
+			],
 		],
 		Component: CrossDeltaPositionScene,
 	},

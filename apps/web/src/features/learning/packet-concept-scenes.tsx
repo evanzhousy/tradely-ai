@@ -16,6 +16,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const PacketData = createContext<PacketConceptData | null>(null);
 function useData() {
 	const data = useContext(PacketData);
@@ -114,7 +115,11 @@ export function PacketTraceScene({ locale }: Props) {
 	const record = data.original;
 	const [selected, setSelected] = useState("R1");
 	const replay = useFrames(4);
-	const [manual, setManual] = useState<number | null>(3);
+	const [manual, setManual] = useGuidedState<number | null>(3, [
+		null,
+		null,
+		null,
+	]);
 	const step = manual ?? replay.frame;
 	const stats = packetTotals(record.rows, data.requiredIds);
 	const row = record.rows.find((r) => r.id === selected) ?? record.rows[0];
@@ -250,8 +255,15 @@ export function PacketFieldsScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
-	const [present, setPresent] = useState(
+	const [present, setPresent] = useGuidedState(
 		data.fields.filter((f) => f.id !== "missing").map((f) => f.id),
+		[
+			[],
+			data.fields
+				.filter((item) => item.id !== "missing")
+				.map((item) => item.id),
+			data.fields.map((item) => item.id),
+		],
 	);
 	const [focus, setFocus] = useState("missing");
 	const field = data.fields.find((f) => f.id === focus) ?? data.fields[0];

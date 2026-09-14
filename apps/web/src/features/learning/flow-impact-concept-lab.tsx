@@ -17,6 +17,12 @@ const scenes = [
 			"Change print B's size or inferred classification. Keep share equivalents separate from premium dollars.",
 			"改变成交 B 的张数或推断分类，将股等价量与权利金美元分开。",
 		],
+		demonstration: [
+			[
+				"Signed contributions may cancel while gross activity remains large.",
+				"带符号的贡献可以相互抵消，即使总活动依然很大。",
+			],
+		],
 		Component: FlowBuildScene,
 	},
 	{
@@ -26,6 +32,12 @@ const scenes = [
 		prompt: [
 			"Hold the original flow fixed. Adjust typical volume, then inspect proxy and missing-volume cases.",
 			"固定原始成交流，调整典型量，再检查代理与缺失成交量情况。",
+		],
+		demonstration: [
+			[
+				"Doubling only the volume denominator halves the impact percentage, leaving the signed flow unchanged.",
+				"仅把成交量分母翻倍，影响百分比减半，带符号成交流不变。",
+			],
 		],
 		Component: FlowDenominatorScene,
 	},
@@ -39,6 +51,12 @@ const scenes = [
 		prompt: [
 			"Select a source report. Check its clock, units and sign convention before routing it into this lesson's DEI.",
 			"选择来源报告，在代入本课 DEI 前检查时点、单位与符号约定。",
+		],
+		demonstration: [
+			[
+				"Similar metric labels can describe different source records and numerators.",
+				"相似指标名称可以对应不同来源记录与分子。",
+			],
 		],
 		Component: FlowLineageScene,
 	},

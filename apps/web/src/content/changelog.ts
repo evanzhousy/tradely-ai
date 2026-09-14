@@ -1,6 +1,31 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "visual-lessons-unreleased",
+		date: "2026-09-15",
+		dateLabel: "Unreleased",
+		title: "Learn through visual explanations",
+		summary:
+			"All 36 lessons put animated diagrams and worked examples first, with free navigation between scenes and lessons.",
+		changes: [
+			{
+				title: "Watch, pause and explore",
+				description:
+					"Follow 110 illustrated scenes with English and Chinese captions. Replay the explanation or change the controls to explore the relationship. Reduced-motion preferences use a manual step-by-step view.",
+			},
+			{
+				title: "Continue without answering questions",
+				description:
+					"Lessons open directly into visual teaching. Study marks are separate from earlier exercise records, which remain available in a read-only history view.",
+			},
+			{
+				title: "Pick up the thread",
+				description:
+					"Your last scene is remembered on this device. Sign in to save study marks across devices; notes, formulas and sources remain available when you want more detail.",
+			},
+		],
+	},
+	{
 		id: "2026-09-14-foundation-learning-evidence",
 		date: "2026-09-14",
 		dateLabel: "September 14, 2026",

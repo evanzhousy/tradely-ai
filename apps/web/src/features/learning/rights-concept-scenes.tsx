@@ -31,6 +31,7 @@ import {
 	type TradeSide,
 	underlyingAction,
 } from "./rights-concept-model";
+import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
 const text = (locale: Locale) => (en: string, zh: string) =>
@@ -86,7 +87,11 @@ function CountField({
 export function RightsRolesScene({ locale }: Props) {
 	const l = text(locale);
 	const [type, setType] = useState<OptionType>("CALL");
-	const [role, setRole] = useState<OptionRole>("long");
+	const [role, setRole] = useGuidedState<OptionRole>("long", [
+		"long",
+		"short",
+		"long",
+	]);
 	const motion = useLessonMotion();
 	const verb = underlyingAction(type, role);
 	const verbLabel = verb === "buy" ? l("buy", "买入") : l("sell", "卖出");
@@ -245,9 +250,9 @@ const actionCopy = {
 export function PositionActionsScene({ locale }: Props) {
 	const l = text(locale);
 	const motion = useLessonMotion();
-	const [before, setBefore] = useState<number | null>(3);
+	const [before, setBefore] = useGuidedState<number | null>(3, [3, 3, 0]);
 	const [side, setSide] = useState<TradeSide>("sell");
-	const [count, setCount] = useState(1);
+	const [count, setCount] = useGuidedState(1, [1, 3, 1]);
 	const { after, action } = positionChange(before, side, count);
 	const label = actionCopy[action][locale === "zh" ? 1 : 0];
 	const position = (value: number | null) =>

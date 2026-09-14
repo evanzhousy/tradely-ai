@@ -28,6 +28,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const GammaData = createContext<GammaConceptData | null>(null);
 function useGammaData() {
@@ -91,7 +92,11 @@ export function GammaTermsScene({ locale }: Props) {
 	const data = useGammaData();
 	const l = copy(locale);
 	const [id, setId] = useState(data.options[0].id);
-	const [move, setMove] = useState(data.defaultMoveCents);
+	const [move, setMove] = useGuidedState(data.defaultMoveCents, [
+		0,
+		data.defaultMoveCents / 2,
+		data.defaultMoveCents,
+	]);
 	const [measure, setMeasure] = useState("delta");
 	const snapshot = data.options.find((s) => s.id === id) ?? data.options[0];
 	const estimate = gammaApproximation(snapshot, move);
@@ -281,7 +286,7 @@ export function GammaHedgeScene({ locale }: Props) {
 	const motion = useLessonMotion();
 	const [id, setId] = useState(data.options[0].id);
 	const [side, setSide] = useState<"long" | "short">("long");
-	const [move, setMove] = useState(data.hedgeMoves[0]);
+	const [move, setMove] = useGuidedState(data.hedgeMoves[0], data.hedgeMoves);
 	const [scope, setScope] = useState("known");
 	const playback = useFrames(3);
 	const snapshot = data.options.find((s) => s.id === id) ?? data.options[0];
@@ -510,8 +515,9 @@ export function GammaHedgeScene({ locale }: Props) {
 export function GammaSensitivityScene({ locale }: Props) {
 	const data = useGammaData();
 	const l = copy(locale);
-	const [id, setId] = useState(
+	const [id, setId] = useGuidedState(
 		data.sensitivity[1]?.id ?? data.sensitivity[0].id,
+		data.sensitivity.map((item) => item.id),
 	);
 	const [move, setMove] = useState(50);
 	const snapshot =

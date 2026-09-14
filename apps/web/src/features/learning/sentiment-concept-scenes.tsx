@@ -32,6 +32,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 
 export const SentimentData = createContext<SentimentConceptData | null>(null);
 function useSentimentData() {
@@ -227,8 +228,10 @@ export function FlowEvidenceScene({ locale }: Props) {
 	const l = text(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const motion = useLessonMotion();
-	const [id, setId] = useState(data.evidence[0].id);
-	const [answer, setAnswer] = useState("unanswered");
+	const [id, setId] = useGuidedState(
+		data.evidence[0].id,
+		data.evidence.map((item) => item.id),
+	);
 	const record = data.evidence.find((e) => e.id === id) ?? data.evidence[0];
 	const result = evaluateFlowEvidence(
 		`${data.contractBase} PUT`,
@@ -364,34 +367,17 @@ export function FlowEvidenceScene({ locale }: Props) {
 					options={data.evidence.map((e) => [e.id, e.label[language]])}
 					onChange={(value) => {
 						setId(value);
-						setAnswer("unanswered");
 					}}
 				/>
-				{!supported ? (
-					<ChoiceField
-						label={l("What does neutral mean here?", "此处中性表示什么？")}
-						value={answer}
-						options={[
-							["unknown", l("Unknown direction", "方向未知")],
-							["flat", l("Expects a flat market", "预期横盘")],
-							["hedged", l("Neutral portfolio", "组合中性")],
-						]}
-						onChange={setAnswer}
-					/>
-				) : null}
 			</FieldGroup>
 			<p className="font-mono text-muted-foreground text-xs">
 				{l("Quote time", "报价时间")}: {record.reference.at ?? "—"}
 			</p>
-			<Alert role={answer === "unanswered" ? "note" : "status"}>
+			<Alert>
 				<AlertTitle>
 					{supported
 						? l("A conditional flow inference", "有条件的成交流推断")
-						: answer === "unanswered"
-							? l("Neutral means indeterminate", "中性表示无法确定")
-							: answer === "unknown"
-								? l("Supported by the evidence", "得到证据支持")
-								: l("The evidence does not say that", "证据不支持该结论")}
+						: l("Neutral means indeterminate", "中性表示无法确定")}
 				</AlertTitle>
 				<AlertDescription>
 					{supported

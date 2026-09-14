@@ -97,7 +97,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Educational service",
 					paragraphs: [
-						"Tradely provides educational material and structured practice prompts about options research. The service is for learning and workflow practice only. It is not investment, legal, tax, accounting, or financial advice, and it does not recommend a security, trade, strategy, or position.",
+						"Tradely provides educational material, animated diagrams and worked examples about options research. The service is for learning and workflow practice only. It is not investment, legal, tax, accounting, or financial advice, and it does not recommend a security, trade, strategy, or position.",
 					],
 				},
 				{
@@ -109,7 +109,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Free learning and previous purchases",
 					paragraphs: [
-						"All current Tradely lessons and interactive exercises are free. A free account is required to save progress and attempts. Guest practice resets on reload unless you explicitly request to save it. During sign-in, a temporary copy stays in the same browser tab for up to 24 hours and is removed after a confirmed account save or when the tab closes. Optional AI coaching has audience, usage, and shared budget limits and does not certify mastery. Previous purchases and subscriptions remain subject to their original billing terms and applicable refund and tax rules. Existing subscriptions must be canceled separately; free lesson access does not itself cancel them.",
+						"All current Tradely visual lessons are free. A free account is required to save study marks across devices. Visual scene bookmarks are stored on this device. Earlier exercise records remain available to their owners. Guest practice resets on reload unless you explicitly request to save it. During sign-in, a temporary copy stays in the same browser tab for up to 24 hours and is removed after a confirmed account save or when the tab closes. Optional AI coaching has audience, usage, and shared budget limits and does not certify mastery. Previous purchases and subscriptions remain subject to their original billing terms and applicable refund and tax rules. Existing subscriptions must be canceled separately; free lesson access does not itself cancel them.",
 					],
 				},
 				{
@@ -179,7 +179,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Strictly necessary storage",
 					paragraphs: [
-						"Authentication and security cookies support Neon Auth sessions and request protection. When you choose to save a guest exercise, this tab temporarily stores its actions, responses, case version and save identifier during sign-in, for up to 24 hours. This copy is removed after successful saving or when the tab closes and is never sent to analytics. A small tab preference prevents repeated registration prompts. Public lessons remain available without an account.",
+						"Authentication and security cookies support Neon Auth sessions and request protection. A local visual-scene bookmark remembers the last scene opened in each lesson on this device; it contains lesson and scene identifiers, not answers, and is not sent to analytics. When you choose to save a guest exercise, this tab temporarily stores its actions, responses, case version and save identifier during sign-in, for up to 24 hours. This copy is removed after successful saving or when the tab closes and is never sent to analytics. A small tab preference prevents repeated registration prompts. Public lessons remain available without an account.",
 					],
 				},
 				{
@@ -276,7 +276,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "教育服务",
 					paragraphs: [
-						"Tradely 提供关于期权研究的教育材料和结构化练习提示，仅用于学习和流程练习，不构成投资、法律、税务、会计或金融建议，也不推荐任何证券、交易、策略或仓位。",
+						"Tradely 提供关于期权研究的教育材料、动画图解与完整示例，仅用于学习和流程练习，不构成投资、法律、税务、会计或金融建议，也不推荐任何证券、交易、策略或仓位。",
 					],
 				},
 				{
@@ -288,7 +288,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "免费学习与历史购买",
 					paragraphs: [
-						"所有现有 Tradely 课程与交互练习均免费。保存进度和练习需要免费账户；访客练习在刷新后重置，除非你明确选择保存。登录期间，临时副本会在同一浏览器标签页保留最多 24 小时，并在确认保存到账户后或关闭标签页时移除。可选 AI 辅导受开放范围、使用次数与共享预算限制，不代表掌握认证。历史购买和订阅仍适用原有账单条款及相关退款和税务规则。已有订阅需单独取消，免费学习不会自动取消订阅。",
+						"所有现有 Tradely 视觉课程均免费。跨设备保存学习标记需要免费账户，视觉场景书签保存在本设备。以前的练习记录仍供其所有者查看。访客练习在刷新后重置，除非你明确选择保存。登录期间，临时副本会在同一浏览器标签页保留最多 24 小时，并在确认保存到账户后或关闭标签页时移除。可选 AI 辅导受开放范围、使用次数与共享预算限制，不代表掌握认证。历史购买和订阅仍适用原有账单条款及相关退款和税务规则。已有订阅需单独取消，免费学习不会自动取消订阅。",
 					],
 				},
 				{
@@ -358,7 +358,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "必要存储",
 					paragraphs: [
-						"身份验证和安全 Cookie 支持 Neon Auth 会话与请求保护。选择保存访客练习时，当前标签页会在登录期间暂存操作、回答、案例版本和保存标识，最多保留 24 小时；保存成功或关闭标签页后移除，且不会发送给分析服务。标签页偏好用于避免重复注册提示。未登录也可阅读课程并进行访客练习。",
+						"身份验证和安全 Cookie 支持 Neon Auth 会话与请求保护。本设备的视觉场景书签记录各课最后打开的场景，仅含课程和场景标识，不包含回答，也不发送给分析服务。选择保存访客练习时，当前标签页会在登录期间暂存操作、回答、案例版本和保存标识，最多保留 24 小时；保存成功或关闭标签页后移除，且不会发送给分析服务。标签页偏好用于避免重复注册提示。未登录也可阅读课程并进行访客练习。",
 					],
 				},
 				{

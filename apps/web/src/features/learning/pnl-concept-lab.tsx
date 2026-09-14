@@ -20,6 +20,12 @@ const scenes = [
 			"Replay supplied checkpoints, compare FIFO with average-cost attribution, and include or withhold fee evidence.",
 			"回放给定检查点，比较 FIFO 与平均成本归因，并纳入或撤去费用证据。",
 		],
+		demonstration: [
+			[
+				"A partial close realizes one result. The remaining position keeps a separate unrealized result.",
+				"部分平仓实现一份盈亏，剩余持仓保留独立的未实现盈亏。",
+			],
+		],
 		Component: StockAccountingScene,
 	},
 	{
@@ -33,6 +39,12 @@ const scenes = [
 			"Add a hypothetical deposit while holding positions fixed. Inspect marked allocation and the limits of reported buying power.",
 			"保持持仓固定，加入假设存款，检查估值配置及报告购买力的限制。",
 		],
+		demonstration: [
+			[
+				"A deposit increases account value without creating trading profit.",
+				"入金增加账户价值，但不创造交易利润。",
+			],
+		],
 		Component: AccountCashScene,
 	},
 	{
@@ -45,6 +57,12 @@ const scenes = [
 		prompt: [
 			"Change long/short side and the hypothetical mark. Retain multiplier, notional and missing-Greeks context.",
 			"改变多空方向与假设估值价，保留乘数、名义金额及希腊值缺失上下文。",
+		],
+		demonstration: [
+			[
+				"Position direction changes the value and P&L signs. Received premium is not a short option's loss limit.",
+				"持仓方向改变价值与盈亏符号，收到权利金并非期权空头的亏损上限。",
+			],
 		],
 		Component: OptionValueScene,
 	},

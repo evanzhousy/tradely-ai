@@ -20,6 +20,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { useGuidedState } from "./visual-playback";
 export const AuditRecapData = createContext<AuditRecapConceptData | null>(null);
 function useData() {
 	const data = useContext(AuditRecapData);
@@ -63,7 +64,10 @@ export function AuditAmountScene({ locale }: Props) {
 	const source = packetTotals(data.packet.rows, data.requiredIds);
 	const ids = source.usedIds;
 	const replay = useFrames(ids.length + 1);
-	const [manual, setManual] = useState<string[] | null>([]);
+	const [manual, setManual] = useGuidedState<string[] | null>(
+		[],
+		[null, null, null],
+	);
 	const repaired = manual ?? ids.slice(0, replay.frame);
 	const working = workingAuditPremium(
 		data.packet,
@@ -231,7 +235,17 @@ export function AuditClaimsScene({ locale }: Props) {
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
 	const [selected, setSelected] = useState("time");
-	const [repaired, setRepaired] = useState<string[]>([]);
+	const [repaired, setRepaired] = useGuidedState<string[]>(
+		[],
+		[
+			[],
+			data.checks
+				.filter((c) => !c.initiallySupported)
+				.slice(0, 1)
+				.map((c) => c.id),
+			data.checks.filter((c) => !c.initiallySupported).map((c) => c.id),
+		],
+	);
 	const check = data.checks.find((c) => c.id === selected) ?? data.checks[0];
 	const pending = unresolvedAuditChecks(data.checks, repaired);
 	const fixed = repaired.includes(check.id);
@@ -374,7 +388,14 @@ export function AuditSignoffScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
 	const language = locale === "zh" ? 1 : 0;
-	const [included, setIncluded] = useState(["supported", "repaired"]);
+	const [included, setIncluded] = useGuidedState(
+		["supported", "repaired"],
+		[
+			["supported"],
+			["supported", "repaired"],
+			["supported", "repaired", "unknown", "reopen"],
+		],
+	);
 	const missing = data.signoff.filter((f) => !included.includes(f.id));
 	return (
 		<SceneLayout
@@ -451,7 +472,7 @@ export function AuditSignoffScene({ locale }: Props) {
 			<p className="text-muted-foreground text-xs">
 				{l(
 					"The local preview does not save an audit or certify prose. In the following exercise, your actual audit and signoff writing remain available for self or human review; numerical checks are graded separately.",
-					"本地预览不保存审核或认证文字。后续练习中，你的实际审核与签核写作仍供自评或人工审核，数值检查单独评分。",
+					"本演示展示已编写的教学示例，可自由比较各步骤。",
 				)}
 			</p>
 		</SceneLayout>

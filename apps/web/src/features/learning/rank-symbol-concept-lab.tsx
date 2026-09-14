@@ -17,6 +17,12 @@ const scenes = [
 			"Switch signed versus magnitude order, then replay peer changes while A stays fixed.",
 			"切换有符号与幅度排序，再回放同组变化，保持 A 固定。",
 		],
+		demonstration: [
+			[
+				"Sorting by magnitude keeps a negative value negative, even when it rises to first place.",
+				"按幅度排序时，负值即使排到第一，也仍然为负。",
+			],
+		],
 		Component: RankSignedScene,
 	},
 	{
@@ -30,6 +36,12 @@ const scenes = [
 			"Change the metric and volume floor. Inspect excluded rows before interpreting the observed ranking.",
 			"改变指标与成交量门槛，在解读观测排名前检查排除行。",
 		],
+		demonstration: [
+			[
+				"Raw size and relative activity can select different leaders from the same rows.",
+				"同一组数据按原始大小与相对活动排序，可能选出不同第一名。",
+			],
+		],
 		Component: RankActivityScene,
 	},
 	{
@@ -42,6 +54,12 @@ const scenes = [
 		prompt: [
 			"Keep B as the inspected candidate. Compare peer, baseline and coverage revisions before deciding the next inspection.",
 			"保持 B 为检查候选，在决定下一项检查前比较同组、基准与覆盖修订。",
+		],
+		demonstration: [
+			[
+				"A useful candidate includes its metric, peers, coverage and reason to reconsider.",
+				"有用的候选项需包含指标、同组对象、覆盖范围及重新考虑条件。",
+			],
 		],
 		Component: RankHandoffScene,
 	},
