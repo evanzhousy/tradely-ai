@@ -322,10 +322,16 @@ function LessonPage() {
 							</details>
 							<div className="flex flex-col gap-5">
 								{progress.signedIn ? (
-									<CompleteLessonButton
-										lesson={lesson}
-										studied={Boolean(lessonProgress?.completedAt)}
-									/>
+									<section
+										id="study-mark"
+										className="scroll-mt-24"
+										aria-label={t("progress.course")}
+									>
+										<CompleteLessonButton
+											lesson={lesson}
+											studied={Boolean(lessonProgress?.completedAt)}
+										/>
+									</section>
 								) : !page.learning ? (
 									<div className="flex flex-col items-start gap-3">
 										<p className="text-muted-foreground text-sm">

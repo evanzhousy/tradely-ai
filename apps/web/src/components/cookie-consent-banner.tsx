@@ -25,9 +25,9 @@ export function CookieConsentBanner() {
 
 	return (
 		<section
-			className="consent-surface fixed inset-x-3 bottom-3 z-50 mx-auto max-w-2xl rounded-3xl border border-border bg-background/95 p-5 shadow-2xl backdrop-blur-xl sm:inset-x-6 sm:p-6"
+			className="consent-surface fixed inset-x-3 bottom-3 z-50 rounded-3xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur-xl sm:right-6 sm:left-auto sm:max-w-md"
 			aria-labelledby="analytics-consent-title"
-			aria-describedby="analytics-consent-description"
+			aria-describedby="analytics-consent-summary"
 			aria-live="polite"
 		>
 			{preferencesOpen ? (
@@ -41,24 +41,38 @@ export function CookieConsentBanner() {
 					<XIcon aria-hidden="true" />
 				</Button>
 			) : null}
-			<div className="flex flex-col gap-4 pr-8">
+			<div className="flex flex-col gap-3">
 				<div className="flex flex-col gap-2">
-					<h2 id="analytics-consent-title" className="font-semibold text-lg">
+					<h2
+						id="analytics-consent-title"
+						className="pr-8 font-semibold text-sm"
+					>
 						{t("analytics.consentTitle")}
 					</h2>
 					<p
-						id="analytics-consent-description"
-						className="text-muted-foreground text-sm leading-6"
+						id="analytics-consent-summary"
+						className="text-muted-foreground text-sm"
 					>
-						{t("analytics.consentDescription")}{" "}
-						<Link className="underline underline-offset-4" to="/privacy">
-							{t("footer.privacy")}
-						</Link>
-						{" · "}
-						<Link className="underline underline-offset-4" to="/cookies">
-							{t("footer.cookies")}
-						</Link>
+						{t("analytics.consentSummary")}
 					</p>
+					<details open={preferencesOpen || undefined}>
+						<summary className="cursor-pointer text-sm underline underline-offset-4">
+							{t("analytics.details")}
+						</summary>
+						<p
+							id="analytics-consent-description"
+							className="text-muted-foreground text-sm leading-6"
+						>
+							{t("analytics.consentDescription")}{" "}
+							<Link className="underline underline-offset-4" to="/privacy">
+								{t("footer.privacy")}
+							</Link>
+							{" · "}
+							<Link className="underline underline-offset-4" to="/cookies">
+								{t("footer.cookies")}
+							</Link>
+						</p>
+					</details>
 				</div>
 				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 					<Button variant="outline" onClick={() => setConsent("denied")}>

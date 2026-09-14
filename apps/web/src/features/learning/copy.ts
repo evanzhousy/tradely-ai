@@ -40,8 +40,8 @@ export const learningCopy = {
 	practiced: { en: "Practice completed", zh: "练习已完成" },
 	criteria: { en: "Independent criteria met", zh: "满足的独立判断标准" },
 	hinted: {
-		en: "You used a hint on the independent case. This result is saved as practice.",
-		zh: "你在独立案例中使用了提示，因此本次结果记录为练习。",
+		en: "You used a hint on the independent case. This counts as assisted practice.",
+		zh: "你在独立案例中使用了提示，因此本次属于辅助练习。",
 	},
 	completeNote: {
 		en: "This practice result is separate from your study marks and video progress.",

@@ -689,6 +689,25 @@ function LearningScreenContent({
 									) : null}
 									{view.result.usedHint ? <p>{text("hinted")}</p> : null}
 									<p>{text("completeNote")}</p>
+									<p>
+										{persistence === "preview"
+											? locale === "zh"
+												? "这是访客结果，尚未保存到账户。保存到免费账户后才能同步练习与学习标记。"
+												: "This is a guest result, not saved to an account. Save it to a free account to sync your practice and study marks."
+											: locale === "zh"
+												? "练习结果已保存到账户；学习标记不会自动改变。"
+												: "Your practice result is saved to your account. Your study mark does not change automatically."}
+									</p>
+									{persistence === "account" && !view.archived ? (
+										<a
+											href="#study-mark"
+											className="underline underline-offset-4"
+										>
+											{locale === "zh"
+												? "查看或记录学习标记"
+												: "View or record your study mark"}
+										</a>
+									) : null}
 								</AlertDescription>
 							</Alert>
 						) : null}

@@ -9,6 +9,16 @@ export const changelog = [
 			"The first four lessons introduce their purpose and key terms, then test the concept in different situations.",
 		changes: [
 			{
+				title: "Keep the privacy choice compact",
+				description:
+					"The initial analytics notice gives a short explanation with expandable details, keeping more of the learning page visible. Necessary storage and optional analytics remain separate choices.",
+			},
+			{
+				title: "Know what your result records",
+				description:
+					"Exercise results explain whether they are guest work or saved to your account. Account results link to the separate study-mark action.",
+			},
+			{
 				title: "Start with a worked example",
 				description:
 					"Each of the first four lessons opens with a practical question, a learning goal and a worked example. Expand key terms for definitions as you need them.",
