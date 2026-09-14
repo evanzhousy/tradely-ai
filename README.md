@@ -38,7 +38,8 @@ For the Git/R2/ChatCut boundary, generated-artifact policy, release sequence,
 and rollback rules, see [the ops engineer media practice](ops/human/ops-engineer-instruction.md).
 
 Agent procedures are listed in the [agent runbook index](ops/agent/README.md),
-including [updating the public changelog](ops/agent/update-changelog.md).
+including [new-user platform reviews](ops/agent/new-user-review.md) and
+[updating the public changelog](ops/cursor/update-changelog.md).
 
 ## Service configuration
 

@@ -2,6 +2,8 @@
 
 Read the [repository agent instructions](../../../AGENTS.md), then the runbook's handoff.
 
+For a first-visit usability and learning review, use the [new-user platform review](../new-user-review.md). That workflow discovers behavior through the UI; do not pre-read this test inventory for it.
+
 | Purpose | Canonical file |
 | --- | --- |
 | Refresh coverage from Git and run one @Browser case per goal round | [Browser E2E runbook](browser-e2e-runbook.md) |
