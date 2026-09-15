@@ -204,6 +204,28 @@ export function PacketTraceScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Observed subtotal", "观测小计")}
+						</p>
+						<p className="scene-outcome-value">{money(stats.subtotal)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Rows used", "使用行")}</p>
+						<p className="scene-outcome-value">{stats.usedIds.length}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Coverage", "覆盖")}</p>
+						<p className="scene-outcome-value">
+							{stats.missingIds.length
+								? l("Partial", "部分")
+								: l("Complete", "完整")}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<Context locale={locale} />
 			<p className="font-mono text-xs">

@@ -132,6 +132,24 @@ export function FlowReturnScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("TWR", "时间加权收益")}</p>
+						<p className="scene-outcome-value">{pct(r.twr)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Raw balance growth", "原始余额增长")}
+						</p>
+						<p className="scene-outcome-value">{pct(r.growth)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Cash flow", "资金流")}</p>
+						<p className="scene-outcome-value">{money(flow)}</p>
+					</div>
+				</>
+			}
 		>
 			<RangeControl
 				inputScale={100}

@@ -188,6 +188,30 @@ export function AuditAmountScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Working subtotal", "工作小计")}
+						</p>
+						<p className="scene-outcome-value">{money(working.subtotal)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Repaired rows", "已修复行")}
+						</p>
+						<p className="scene-outcome-value">{repaired.length}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Review state", "审核状态")}
+						</p>
+						<p className="scene-outcome-value">
+							{complete ? l("Ready", "已完成") : l("Open", "待处理")}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<Context locale={locale} />
 			<PlaybackButton

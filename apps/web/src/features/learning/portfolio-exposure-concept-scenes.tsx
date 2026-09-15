@@ -135,6 +135,28 @@ export function ExposureCoverageScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Covered delta", "已覆盖 Delta")}
+						</p>
+						<p className="scene-outcome-value">{num(sum.subtotal)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Complete delta", "完整 Delta")}
+						</p>
+						<p className="scene-outcome-value">{num(sum.total)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Coverage", "覆盖")}</p>
+						<p className="scene-outcome-value">
+							{sum.known}/{sum.required}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<RangeControl
 				inputScale={1}
