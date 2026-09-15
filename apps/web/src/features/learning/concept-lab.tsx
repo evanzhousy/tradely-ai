@@ -259,9 +259,29 @@ export function ConceptLab({
 					<h2 className="font-semibold text-2xl tracking-tight sm:text-3xl">
 						{active.title[language]}
 					</h2>
-					<p className="visual-caption" aria-live={playing ? "off" : "polite"}>
-						{caption[language]}
-					</p>
+					<div className="visual-caption-stack">
+						<p
+							className="visual-caption"
+							aria-live={playing ? "off" : "polite"}
+						>
+							{caption[language]}
+						</p>
+						<p
+							className="visual-caption visual-caption-reserve"
+							aria-hidden="true"
+						>
+							{active.prompt[language]}
+						</p>
+						{steps.map((item) => (
+							<p
+								key={item.id}
+								className="visual-caption visual-caption-reserve"
+								aria-hidden="true"
+							>
+								{item.caption[language]}
+							</p>
+						))}
+					</div>
 				</div>
 				<fieldset
 					className="visual-playback"
@@ -281,7 +301,7 @@ export function ConceptLab({
 						{playing
 							? l("Pause", "暂停")
 							: exploring
-								? l("Return to walkthrough", "返回讲解")
+								? l("Return to lesson", "返回讲解")
 								: reduced
 									? l("Next step", "下一步")
 									: progress === 1
@@ -337,16 +357,30 @@ export function ConceptLab({
 						pause,
 						seek,
 						toggle,
+						start: () => {
+							autoStarted.current = scene;
+							seek(0);
+							setPlaying(!reduced);
+						},
 					}}
 				>
+					{/* biome-ignore lint/a11y/noStaticElementInteractions: Delegated events from native interactive descendants; this wrapper is not a control. */}
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: Native controls emit click on keyboard activation; capture pauses keyboard exploration. */}
 					<div
 						id={`${titleId}-scene`}
 						key={`${scene}:${resetVersion}`}
 						onPointerDownCapture={() => {
 							pause();
-							setExploring(true);
 						}}
 						onKeyDownCapture={() => {
+							pause();
+						}}
+						onClick={(event) => {
+							if ((event.target as Element).closest("[data-lesson-action]"))
+								return;
+							setExploring(true);
+						}}
+						onChangeCapture={() => {
 							pause();
 							setExploring(true);
 						}}

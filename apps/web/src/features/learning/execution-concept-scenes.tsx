@@ -6,7 +6,15 @@ import {
 import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
-import { createContext, lazy, Suspense, useContext, useState } from "react";
+import {
+	createContext,
+	lazy,
+	type ReactNode,
+	Suspense,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
 import {
 	type ExecutionConceptData,
 	type ExecutionSide,
@@ -33,7 +41,7 @@ import {
 	useLessonMotion,
 } from "./lesson-motion";
 import { OrderBookPanel, remainingBook } from "./order-book-panel";
-import { useGuidedState } from "./visual-playback";
+import { useGuidedState, VisualPlayback } from "./visual-playback";
 
 // The CLI asset is a local evaluation build; production keeps the established SVG.
 const RiveLiquidityPilot = import.meta.env.DEV
@@ -41,6 +49,37 @@ const RiveLiquidityPilot = import.meta.env.DEV
 	: null;
 
 export const ExecutionData = createContext<ExecutionConceptData | null>(null);
+export const LiquidityExample = createContext<{
+	instruction: OrderInstruction;
+	select: (instruction: OrderInstruction) => void;
+} | null>(null);
+
+function LiquidityBook({ locale, children }: Props & { children: ReactNode }) {
+	const [wide, setWide] = useState(false);
+	const [expanded, setExpanded] = useState(false);
+	useEffect(() => {
+		const query = window.matchMedia("(min-width: 760px)");
+		const update = () => setWide(query.matches);
+		update();
+		query.addEventListener("change", update);
+		return () => query.removeEventListener("change", update);
+	}, []);
+	return (
+		<details className="liquidity-book" open={wide || expanded}>
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: Native summary supports Enter and Space activation. */}
+			<summary
+				data-lesson-action="presentation"
+				onClick={(event) => {
+					event.preventDefault();
+					setExpanded((value) => !value);
+				}}
+			>
+				{locale === "zh" ? "完整订单簿与成交记录" : "Full order book & fills"}
+			</summary>
+			{children}
+		</details>
+	);
+}
 function useExecutionData() {
 	const data = useContext(ExecutionData);
 	if (!data)
@@ -308,8 +347,12 @@ export function CounterpartyScene({ locale }: Props) {
 export function LiquidityScene({ locale }: Props) {
 	const data = useExecutionData();
 	const l = text(locale);
+	const example = useContext(LiquidityExample);
+	const guided = useContext(VisualPlayback);
 	const [side, setSide] = useState<ExecutionSide>("buy");
-	const [instruction, setInstruction] = useState<OrderInstruction>("limit");
+	const [instruction, setInstruction] = useState<OrderInstruction>(
+		example?.instruction ?? "limit",
+	);
 	const [quantity, setQuantity] = useState(data.defaultQuantity);
 	const playback = useFrames(6);
 	const [limit, setLimit] = useState(data.asks[0].price);
@@ -323,6 +366,26 @@ export function LiquidityScene({ locale }: Props) {
 		Math.max(0, playback.frame - 1),
 	);
 	const finished = playback.frame === 5;
+	const lastFill = result.rows.reduce(
+		(last, row, i) => (row.filled > 0 ? i : last),
+		-1,
+	);
+	const matchingIndex =
+		playback.frame >= 2 && playback.frame <= 4
+			? result.unfilled === 0
+				? lastFill
+				: playback.frame - 2
+			: -1;
+	const activePrice = result.rows[matchingIndex]?.price ?? null;
+	const chooseExample = (next: OrderInstruction) => {
+		example?.select(next);
+		setSide("buy");
+		setQuantity(data.defaultQuantity);
+		setLimit(data.asks[0].price);
+		setInstruction(next);
+		if (guided?.start) guided.start();
+		else playback.select(0);
+	};
 	const fallback = (
 		<Diagram label={l("Order and fill summary", "订单与成交汇总")} height={310}>
 			<SvgText x={180} y={40} strong>
@@ -364,6 +427,32 @@ export function LiquidityScene({ locale }: Props) {
 	);
 	return (
 		<SceneLayout
+			toolbar={
+				<fieldset
+					className="liquidity-examples"
+					aria-label={l("Worked examples", "演示示例")}
+					data-lesson-action="scenario"
+				>
+					{(["limit", "market"] as const).map((kind) => (
+						<Button
+							key={kind}
+							size="sm"
+							variant={instruction === kind ? "secondary" : "outline"}
+							aria-pressed={
+								instruction === kind &&
+								side === "buy" &&
+								quantity === data.defaultQuantity &&
+								(kind === "market" || limit === data.asks[0].price)
+							}
+							onClick={() => chooseExample(kind)}
+						>
+							{kind === "limit"
+								? l("Watch limit order", "观看限价单")
+								: l("Watch market order", "观看市价单")}
+						</Button>
+					))}
+				</fieldset>
+			}
 			diagram={
 				RiveLiquidityPilot ? (
 					<Suspense fallback={fallback}>
@@ -374,6 +463,7 @@ export function LiquidityScene({ locale }: Props) {
 							limit={limit}
 							quantity={quantity}
 							frame={playback.frame}
+							activePrice={activePrice}
 							result={result}
 							fallback={fallback}
 						/>
@@ -383,11 +473,16 @@ export function LiquidityScene({ locale }: Props) {
 				)
 			}
 			companion={
-				<>
+				<LiquidityBook locale={locale}>
 					<OrderBookPanel
 						locale={locale}
 						contract={`${data.contractBase} CALL`}
 						at={playback.frame >= 2 ? data.printedAt : data.asOf}
+						activeQuote={
+							activePrice === null
+								? undefined
+								: { side: side === "buy" ? "ask" : "bid", price: activePrice }
+						}
 						depth
 						scale={Math.max(
 							...data.bids.map((r) => r.size),
@@ -430,7 +525,7 @@ export function LiquidityScene({ locale }: Props) {
 									)
 						}
 					/>
-				</>
+				</LiquidityBook>
 			}
 			controls={
 				<FieldGroup>

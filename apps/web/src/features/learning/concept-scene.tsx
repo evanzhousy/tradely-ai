@@ -70,6 +70,7 @@ export function SvgText({
 }
 export function SceneLayout({
 	diagram,
+	toolbar,
 	companion,
 	outcome,
 	comparison,
@@ -78,6 +79,7 @@ export function SceneLayout({
 	children,
 }: {
 	diagram: ReactNode;
+	toolbar?: ReactNode;
 	companion?: ReactNode;
 	outcome?: ReactNode;
 	comparison?: ReactNode;
@@ -92,6 +94,7 @@ export function SceneLayout({
 			className={playback ? "visual-scene-layout" : "contract-scene-layout"}
 			data-has-companion={companion ? "true" : undefined}
 		>
+			{toolbar}
 			<div className="scene-visuals">
 				<div className="contract-stage">{diagram}</div>
 				{companion ? (

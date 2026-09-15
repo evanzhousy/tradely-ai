@@ -1,9 +1,12 @@
+import { useState } from "react";
+import type { OrderInstruction } from "@/domain/learning/execution-concept";
 import type { LearningStepView } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import { ConceptLab, type ConceptScene } from "./concept-lab";
 import {
 	CounterpartyScene,
 	ExecutionData,
+	LiquidityExample,
 	LiquidityScene,
 	OrderEvidenceScene,
 } from "./execution-concept-scenes";
@@ -133,6 +136,7 @@ export function ExecutionConceptLab({
 	locale: Locale;
 	data?: LearningStepView["conceptData"];
 }) {
+	const [instruction, select] = useState<OrderInstruction>("limit");
 	if (data?.kind !== "execution-counterparties")
 		return (
 			<p role="status">
@@ -143,15 +147,17 @@ export function ExecutionConceptLab({
 		);
 	return (
 		<ExecutionData value={data}>
-			<ConceptLab
-				locale={locale}
-				id="execution"
-				label={[
-					"Interactive execution counterparties lesson",
-					"成交对手方互动课堂",
-				]}
-				scenes={scenes}
-			/>
+			<LiquidityExample value={{ instruction, select }}>
+				<ConceptLab
+					locale={locale}
+					id="execution"
+					label={[
+						"Interactive execution counterparties lesson",
+						"成交对手方互动课堂",
+					]}
+					scenes={scenes}
+				/>
+			</LiquidityExample>
 		</ExecutionData>
 	);
 }

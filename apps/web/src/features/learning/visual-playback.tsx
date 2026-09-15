@@ -19,6 +19,7 @@ export type VisualPlaybackState = {
 	pause: () => void;
 	seek: (progress: number) => void;
 	toggle: () => void;
+	start?: () => void;
 };
 export const VisualPlayback = createContext<VisualPlaybackState | null>(null);
 export const VisualLessonIdentity = createContext<string | null>(null);

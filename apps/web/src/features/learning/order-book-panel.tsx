@@ -18,6 +18,7 @@ type Props = {
 	scale?: number;
 	note?: string;
 	event?: string;
+	activeQuote?: { side: "bid" | "ask"; price: number };
 	print?: { price: number; quantity?: number; at: string };
 };
 
@@ -32,6 +33,7 @@ export function OrderBookPanel({
 	scale,
 	note,
 	event,
+	activeQuote,
 	print,
 }: Props) {
 	const l = (en: string, zh: string) => (locale === "zh" ? zh : en);
@@ -49,6 +51,9 @@ export function OrderBookPanel({
 		<tr
 			key={`${side}:${level.price}`}
 			data-book-side={side}
+			data-book-active={
+				activeQuote?.side === side && activeQuote.price === level.price
+			}
 			data-book-price={level.price}
 			data-book-size={level.size ?? "unknown"}
 			data-book-filled={level.filled ?? 0}

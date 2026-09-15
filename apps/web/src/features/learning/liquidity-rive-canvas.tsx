@@ -3,6 +3,7 @@ import {
 	Alignment,
 	Fit,
 	Layout,
+	type Rive,
 	RuntimeLoader,
 	type ViewModelInstance,
 } from "@rive-app/webgl2";
@@ -54,8 +55,13 @@ export default function LiquidityRiveCanvas({
 	const latest = useRef(values);
 	latest.current = values;
 	const previous = useRef("");
+	const native = useRef<Rive | null>(null);
+	const latestPlaying = useRef(playing);
+	latestPlaying.current = playing;
+	const pendingSnapshot = useRef(false);
+	const pauseFrame = useRef<number | null>(null);
 	const [ready, setReady] = useState(false);
-	const { rive, RiveComponent } = useRive(
+	const { rive, container, RiveComponent } = useRive(
 		{
 			src: assetUrl,
 			artboard: "Liquidity",
@@ -66,7 +72,20 @@ export default function LiquidityRiveCanvas({
 			enableRiveAssetCDN: false,
 			shouldDisableRiveListeners: true,
 			onLoadError: onFailure,
+			onAdvance: () => {
+				if (!pendingSnapshot.current || latestPlaying.current) return;
+				pendingSnapshot.current = false;
+				if (pauseFrame.current !== null)
+					cancelAnimationFrame(pauseFrame.current);
+				// Pause after the renderer has painted the newly bound pose, not before it advances.
+				pauseFrame.current = requestAnimationFrame(() => {
+					pauseFrame.current = null;
+					if (!latestPlaying.current && native.current?.viewModelInstance)
+						native.current.pause("Walkthrough");
+				});
+			},
 			onRiveReady: (instance) => {
+				native.current = instance;
 				try {
 					const model = instance
 						.viewModelByName("Liquidity")
@@ -92,6 +111,33 @@ export default function LiquidityRiveCanvas({
 	}, [ready, onFailure]);
 
 	useEffect(() => {
+		if (!rive || !container || !rive.viewModelInstance) return;
+		native.current = rive;
+		let connected = true;
+		const observer = new ResizeObserver(() => {
+			// React may dispose the runtime before a queued resize notification is delivered.
+			if (
+				!connected ||
+				!container.isConnected ||
+				native.current !== rive ||
+				!rive.viewModelInstance
+			)
+				return;
+			if (!latestPlaying.current) {
+				pendingSnapshot.current = true;
+				rive.play("Walkthrough");
+			}
+		});
+		observer.observe(container);
+		return () => {
+			connected = false;
+			observer.disconnect();
+			if (pauseFrame.current !== null) cancelAnimationFrame(pauseFrame.current);
+			if (native.current === rive) native.current = null;
+		};
+	}, [rive, container]);
+
+	useEffect(() => {
 		if (!rive || !ready) return;
 		const instance = rive.viewModelInstance;
 		if (!instance) return onFailure();
@@ -101,13 +147,13 @@ export default function LiquidityRiveCanvas({
 			if (changed) {
 				writeValues(instance, values, playing && previous.current ? 0.42 : 0);
 				previous.current = signature;
-				// An explicit step/exploration edit renders one exact pose, including while paused.
-				if (!playing) rive.stopRendering();
+				pendingSnapshot.current = !playing;
 				rive.play("Walkthrough");
 			} else if (playing) {
+				pendingSnapshot.current = false;
 				rive.play("Walkthrough");
 			}
-			if (!playing) rive.pause("Walkthrough");
+			if (!playing && !pendingSnapshot.current) rive.pause("Walkthrough");
 		} catch {
 			onFailure();
 		}
