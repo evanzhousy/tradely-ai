@@ -2,6 +2,7 @@ import { Skeleton } from "@tradely/ui/components/skeleton";
 import { lazy, Suspense } from "react";
 import type { LearningStepView } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
+import { getDiagramPalette } from "./diagram-palette";
 import { LessonMotion } from "./lesson-motion";
 import { VisualLessonIdentity, VisualLocaleProvider } from "./visual-playback";
 
@@ -183,22 +184,27 @@ export function VisualLesson({
 	return (
 		<VisualLessonIdentity value={lessonId}>
 			<VisualLocaleProvider locale={locale}>
-				<LessonMotion>
-					<Suspense
-						fallback={
-							<div role="status" className="flex flex-col gap-4">
-								<span>
-									{locale === "zh"
-										? "正在加载视觉课堂…"
-										: "Loading the visual lesson…"}
-								</span>
-								<Skeleton className="h-96 w-full" />
-							</div>
-						}
-					>
-						<Lesson locale={locale} data={data} />
-					</Suspense>
-				</LessonMotion>
+				<div
+					className="visual-color-system"
+					data-visual-palette={getDiagramPalette(lessonId)}
+				>
+					<LessonMotion>
+						<Suspense
+							fallback={
+								<div role="status" className="flex flex-col gap-4">
+									<span>
+										{locale === "zh"
+											? "正在加载视觉课堂…"
+											: "Loading the visual lesson…"}
+									</span>
+									<Skeleton className="h-96 w-full" />
+								</div>
+							}
+						>
+							<Lesson locale={locale} data={data} />
+						</Suspense>
+					</LessonMotion>
+				</div>
 			</VisualLocaleProvider>
 		</VisualLessonIdentity>
 	);

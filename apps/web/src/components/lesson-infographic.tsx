@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { getDiagramPalette } from "@/features/learning/diagram-palette";
 import type { Locale } from "@/i18n/messages";
 import { useLessonInfographicMotion } from "./lesson-infographic-motion";
 import { courseCardScenes } from "./lesson-infographic-scenes";
@@ -29,6 +30,7 @@ export function LessonInfographic({
 			role="img"
 			aria-labelledby={id}
 			data-lesson-graphic={subject}
+			data-diagram-palette={getDiagramPalette(subject)}
 			data-motion-rate="2"
 		>
 			<title id={id}>{scene.description[locale === "zh" ? 1 : 0]}</title>

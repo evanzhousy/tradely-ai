@@ -664,6 +664,36 @@
 	border-radius: 1.25rem;
 	background: var(--background);
 }
+.visual-color-system,
+.lesson-infographic {
+	--diagram-reference: #2563eb;
+	--diagram-positive: #16a34a;
+	--diagram-negative: #dc2626;
+	--diagram-caution: #d97706;
+	--diagram-model: #7c3aed;
+	--diagram-neutral: #64748b;
+	--diagram-accent: var(--diagram-reference);
+}
+.visual-color-system[data-visual-palette="positive"],
+.lesson-infographic[data-diagram-palette="positive"] {
+	--diagram-accent: var(--diagram-positive);
+}
+.visual-color-system[data-visual-palette="negative"],
+.lesson-infographic[data-diagram-palette="negative"] {
+	--diagram-accent: var(--diagram-negative);
+}
+.visual-color-system[data-visual-palette="caution"],
+.lesson-infographic[data-diagram-palette="caution"] {
+	--diagram-accent: var(--diagram-caution);
+}
+.visual-color-system[data-visual-palette="model"],
+.lesson-infographic[data-diagram-palette="model"] {
+	--diagram-accent: var(--diagram-model);
+}
+.visual-color-system[data-visual-palette="neutral"],
+.lesson-infographic[data-diagram-palette="neutral"] {
+	--diagram-accent: var(--diagram-neutral);
+}
 .concept-lab .contract-scene-tabs {
 	display: grid;
 	grid-template-columns: repeat(var(--scene-columns, 4), minmax(0, 1fr));
@@ -769,7 +799,7 @@
 	stroke-width: 1.5;
 }
 .contract-svg-wash {
-	fill: color-mix(in srgb, var(--primary) 24%, var(--card));
+	fill: color-mix(in srgb, var(--diagram-accent) 24%, var(--card));
 }
 .contract-svg-line,
 .contract-svg-active-line {
@@ -780,16 +810,23 @@
 	stroke-linejoin: round;
 }
 .contract-svg-active-line {
-	stroke: var(--ring);
+	stroke: var(--diagram-accent);
 	stroke-width: 3;
 }
 .contract-svg-dot {
 	fill: var(--foreground);
 }
 .contract-svg-handle {
-	fill: var(--primary);
+	fill: var(--diagram-accent);
 	stroke: var(--foreground);
 	stroke-width: 2;
+}
+.visual-color-system .contract-diagram [stroke="var(--ring)"],
+.visual-color-system .contract-diagram [stroke="var(--primary)"],
+.visual-color-system .contract-diagram [fill="var(--ring)"],
+.visual-color-system .contract-diagram [fill="var(--primary)"] {
+	stroke: var(--diagram-accent);
+	fill: var(--diagram-accent);
 }
 .contract-range {
 	width: 100%;

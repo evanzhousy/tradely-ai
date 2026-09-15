@@ -1891,10 +1891,10 @@
 	fill: color-mix(in oklch, var(--foreground) 16%, transparent);
 }
 .diagram-accent {
-	fill: var(--primary);
+	fill: var(--diagram-accent, var(--primary));
 }
 .diagram-accent-wash {
-	fill: color-mix(in srgb, var(--primary) 22%, var(--card));
+	fill: color-mix(in srgb, var(--diagram-accent, var(--primary)) 22%, var(--card));
 }
 .diagram-faint-line {
 	stroke: color-mix(in oklch, var(--foreground) 27%, transparent);
@@ -1906,7 +1906,7 @@
 }
 .diagram-accent-line,
 .diagram-highlight-ring {
-	stroke: var(--primary);
+	stroke: var(--diagram-accent, var(--primary));
 	stroke-width: 2.5;
 }
 .diagram-bar {
@@ -2013,11 +2013,11 @@
 	font-size: 10px;
 }
 .diagram-negative {
-	fill: var(--destructive);
+	fill: var(--diagram-negative, var(--destructive));
 }
 .diagram-correction {
 	fill: none;
-	stroke: var(--destructive);
+	stroke: var(--diagram-negative, var(--destructive));
 	stroke-width: 2;
 	stroke-linecap: round;
 }
