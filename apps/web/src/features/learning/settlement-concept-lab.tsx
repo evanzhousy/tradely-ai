@@ -1,9 +1,12 @@
+import { useState } from "react";
 import type { Locale } from "@/i18n/messages";
 import { ConceptLab, type ConceptScene } from "./concept-lab";
 import {
 	ClosingExerciseScene,
 	ExerciseTimingScene,
 	SettlementComparisonScene,
+	SettlementExample,
+	type SettlementKind,
 } from "./settlement-concept-scenes";
 import { teachingSteps } from "./visual-step";
 
@@ -51,26 +54,49 @@ const scenes = [
 			"Compare shares with cash, then inspect the settlement reference.",
 			"比较股票与现金的交付，再检查结算参考值。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Cash settlement transfers an amount. Physical settlement transfers the stated shares and cash.",
-				"现金结算交付金额，实物结算交付约定股票与现金。",
+				[
+					"Read the selected product, option type, strike and quantity. These are different illustrative contracts.",
+					"读取所选产品、期权类型、行权价与张数。这是不同的教学合约。",
+				],
+				[
+					"Use the product terms to determine delivery. Cash settlement requires the official reference.",
+					"根据产品条款确定交付，现金结算需要官方参考值。",
+				],
+				[
+					"Follow the labelled transfers. Physical settlement is a paired cash-and-share exchange, not two ordered events.",
+					"追踪带标签的交付。实物结算是一组现金与股票交换，不表示两个事件的先后顺序。",
+				],
+				[
+					"Read the holder's cash and shares. These are settlement movements, not profit. Missing references remain unknown.",
+					"读取持有人的现金与股票变动。这是结算变动，不是利润。参考值缺失时仍保持未知。",
+				],
 			],
-		]),
+			[
+				["Contract", "合约"],
+				["Determine delivery", "确定交付"],
+				["Transfer", "交付"],
+				["Result", "结果"],
+			],
+		),
 		Component: SettlementComparisonScene,
 	},
 ] as const satisfies readonly ConceptScene[];
 
 export function SettlementConceptLab({ locale }: { locale: Locale }) {
+	const [kind, select] = useState<SettlementKind>("physical");
 	return (
-		<ConceptLab
-			locale={locale}
-			id="settlement"
-			label={[
-				"Interactive expiration and settlement lesson",
-				"到期与结算互动课堂",
-			]}
-			scenes={scenes}
-		/>
+		<SettlementExample value={{ kind, select }}>
+			<ConceptLab
+				locale={locale}
+				id="settlement"
+				label={[
+					"Interactive expiration and settlement lesson",
+					"到期与结算互动课堂",
+				]}
+				scenes={scenes}
+			/>
+		</SettlementExample>
 	);
 }

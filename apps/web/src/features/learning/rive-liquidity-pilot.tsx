@@ -1,13 +1,11 @@
 import { Button } from "@tradely/ui/components/button";
 import { useTheme } from "next-themes";
 import {
-	Component,
 	lazy,
 	type ReactNode,
 	Suspense,
 	useCallback,
 	useContext,
-	useEffect,
 	useLayoutEffect,
 	useMemo,
 	useRef,
@@ -21,26 +19,14 @@ import {
 } from "@/domain/learning/execution-concept";
 import type { Locale } from "@/i18n/messages";
 import type { LiquidityCanvasValues } from "./liquidity-rive-canvas";
+import {
+	RiveSceneBoundary as CanvasBoundary,
+	useRiveMotionAllowed,
+} from "./rive-scene-support";
 import { SceneOutcome } from "./scene-outcome";
 import { VisualPlayback } from "./visual-playback";
 
 const Canvas = lazy(() => import("./liquidity-rive-canvas"));
-
-class CanvasBoundary extends Component<
-	{ children: ReactNode; fallback: ReactNode; onFailure: () => void },
-	{ failed: boolean }
-> {
-	state = { failed: false };
-	static getDerivedStateFromError() {
-		return { failed: true };
-	}
-	componentDidCatch() {
-		this.props.onFailure();
-	}
-	render() {
-		return this.state.failed ? this.props.fallback : this.props.children;
-	}
-}
 
 export default function RiveLiquidityPilot({
 	locale,
@@ -67,17 +53,10 @@ export default function RiveLiquidityPilot({
 	const playback = useContext(VisualPlayback);
 	const { resolvedTheme } = useTheme();
 	const dark = resolvedTheme === "dark";
-	const [motionAllowed, setMotionAllowed] = useState(false);
+	const motionAllowed = useRiveMotionAllowed();
 	const [simple, setSimple] = useState(false);
 	const [failed, setFailed] = useState(false);
 	const onFailure = useCallback(() => setFailed(true), []);
-	useEffect(() => {
-		const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const update = () => setMotionAllowed(!query.matches);
-		update();
-		query.addEventListener("change", update);
-		return () => query.removeEventListener("change", update);
-	}, []);
 
 	// Match the full book's descending price order, independent of execution order.
 	const displayRows = useMemo(

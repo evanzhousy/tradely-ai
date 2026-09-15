@@ -4,11 +4,18 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { Badge } from "@tradely/ui/components/badge";
+import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
-import { useId, useState } from "react";
+import {
+	createContext,
+	lazy,
+	Suspense,
+	useContext,
+	useId,
+	useState,
+} from "react";
 import type { Locale } from "@/i18n/messages";
-import { CashStockTransfer } from "./cash-stock-transfer";
 import {
 	ChoiceField,
 	Diagram,
@@ -24,7 +31,6 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
-import { SceneOutcome } from "./scene-outcome";
 import {
 	cashSettlement,
 	cashTerms,
@@ -38,7 +44,14 @@ import {
 	type SettlementOptionType,
 	settlementExamples,
 } from "./settlement-concept-model";
-import { useGuidedState } from "./visual-playback";
+import { VisualPlayback } from "./visual-playback";
+
+const SettlementAnimation = lazy(() => import("./settlement-animation"));
+export type SettlementKind = "physical" | "cash";
+export const SettlementExample = createContext<{
+	kind: SettlementKind;
+	select: (kind: SettlementKind) => void;
+} | null>(null);
 
 type Props = { locale: Locale };
 const text = (locale: Locale) => (en: string, zh: string) =>
@@ -546,7 +559,17 @@ function DeliveryArrow({
 
 export function SettlementComparisonScene({ locale }: Props) {
 	const l = text(locale);
-	const [kind, setKind] = useGuidedState("cash", ["cash", "physical", "cash"]);
+	const preset = useContext(SettlementExample);
+	const [kind, setLocalKind] = useState<SettlementKind>(
+		preset?.kind ?? "physical",
+	);
+	const setKind = (value: string) => {
+		const next = value === "cash" ? "cash" : "physical";
+		setLocalKind(next);
+		preset?.select(next);
+	};
+	const guided = useContext(VisualPlayback);
+	const playback = useFrames(4);
 	const [type, setType] = useState<SettlementOptionType>("CALL");
 	const [count, setCount] = useState(1);
 	const [example, setExample] = useState(0);
@@ -556,190 +579,187 @@ export function SettlementComparisonScene({ locale }: Props) {
 	const physical = physicalDelivery(type, count);
 	const isCash = kind === "cash";
 	const holderCash = isCash ? cash.cash : physical.cashToHolder;
+	const calculation = isCash
+		? cash.cash === null
+			? l(
+					"Official reference missing — cash amount unknown.",
+					"缺少官方参考值，现金金额未知。",
+				)
+			: `${cash.payoffPoints} ${l("points", "点")} × ${money(cashTerms.dollarsPerPoint)} × ${count} = ${money(cash.cash)}`
+		: `${Math.abs(physical.sharesToHolder)} ${l("shares", "股")} × ${money(physicalTerms.strike)} = ${money(Math.abs(physical.cashToHolder))}`;
+	const fallback = (
+		<Diagram
+			label={
+				isCash
+					? l(
+							"Official reference determines cash settlement",
+							"官方参考值决定现金结算",
+						)
+					: l(
+							"Physical exercise exchanges shares and strike cash",
+							"实物行权交换股票与行权现金",
+						)
+			}
+			height={394}
+		>
+			<SvgText x={180} y={28} strong>
+				{isCash ? "IDX" : "ALFA"} · {type}
+			</SvgText>
+			<SvgText x={180} y={54} muted>
+				{isCash
+					? l("Strike 4,000 · $100 / point", "行权价 4,000 · $100 / 点")
+					: l("Strike $50 · 100 shares / contract", "行权价 $50 · 每张 100 股")}
+			</SvgText>
+			{isCash ? (
+				<>
+					<rect
+						x="13"
+						y="80"
+						width="151"
+						height="74"
+						rx="10"
+						className="contract-svg-wash"
+					/>
+					<SvgText x={88} y={106} muted>
+						{l("Official reference", "官方参考值")}
+					</SvgText>
+					<SvgText x={88} y={137} strong>
+						{official === null ? "—" : number(official)}
+					</SvgText>
+					<rect
+						x="196"
+						y="80"
+						width="151"
+						height="74"
+						rx="10"
+						className="contract-svg-paper"
+					/>
+					<SvgText x={271} y={106} muted>
+						{l("Last display", "最后显示值")}
+					</SvgText>
+					<SvgText x={271} y={137} strong>
+						{number(cashTerms.lastDisplay)}
+					</SvgText>
+					<path d="M88 154v35h92v20" className="contract-svg-active-line" />
+					<rect
+						x="35"
+						y="209"
+						width="290"
+						height="78"
+						rx="12"
+						className="contract-svg-paper"
+					/>
+					<SvgText x={180} y={235} muted>
+						{l("Cash payoff to holder", "持有人收到的现金支付")}
+					</SvgText>
+					<SvgText x={180} y={266} strong>
+						{cash.cash === null
+							? l("Reference needed", "需要参考值")
+							: money(cash.cash)}
+					</SvgText>
+					<SvgText x={180} y={325}>
+						{l("No shares delivered", "不交付股票")}
+					</SvgText>
+					<SvgText x={180} y={354} muted>
+						{l("Last display is context only", "最后显示值仅作背景参考")}
+					</SvgText>
+				</>
+			) : (
+				<>
+					{[0, 1].map((i) => (
+						<g key={i}>
+							<rect
+								x={15 + i * 190}
+								y="82"
+								width="140"
+								height="66"
+								rx="10"
+								className="contract-svg-paper"
+							/>
+							<SvgText x={85 + i * 190} y={111} strong>
+								{i === 0 ? l("HOLDER", "持有人") : l("WRITER", "卖方")}
+							</SvgText>
+							<SvgText x={85 + i * 190} y={136} muted>
+								{i === 0 ? l("Exercises", "行权") : l("Assigned", "被指派")}
+							</SvgText>
+						</g>
+					))}
+					<DeliveryArrow
+						toHolder={physical.cashToHolder > 0}
+						y={218}
+						label={l(
+							`Exercise cash ${money(Math.abs(physical.cashToHolder))}`,
+							`行权金额 ${money(Math.abs(physical.cashToHolder))}`,
+						)}
+						id={`cash-${type}-${count}`}
+					/>
+					<DeliveryArrow
+						toHolder={physical.sharesToHolder > 0}
+						y={295}
+						label={l(
+							`${Math.abs(physical.sharesToHolder)} shares`,
+							`${Math.abs(physical.sharesToHolder)} 股`,
+						)}
+						id={`shares-${type}-${count}`}
+					/>
+					<SvgText x={180} y={348} muted>
+						{l("Valid exercise and delivery assumed", "假定行权与交付有效")}
+					</SvgText>
+				</>
+			)}
+			<SvgText x={180} y={382} muted>
+				{count} {l("contract(s) · premium excluded", "张 · 不计购买权利金")}
+			</SvgText>
+		</Diagram>
+	);
+	const choosePreset = (next: SettlementKind) => {
+		setKind(next);
+		setType("CALL");
+		setCount(1);
+		setExample(0);
+		setInspect("official");
+		if (guided?.start) guided.start();
+		else playback.select(0);
+	};
 	return (
 		<SceneLayout
-			companion={
-				<CashStockTransfer
-					locale={locale}
-					cash={holderCash}
-					shares={isCash ? 0 : physical.sharesToHolder}
-					formatCash={money}
-					phase={
-						isCash
-							? l("Cash-settled index example", "现金结算指数示例")
-							: l("Physical stock example", "实物股票示例")
-					}
-					note={l(
-						"Amounts follow the selected product terms. No stock delivery for cash settlement.",
-						"金额遵循所选产品条款，现金结算不交付股票。",
-					)}
-				/>
+			toolbar={
+				<fieldset
+					className="settlement-presets"
+					aria-label={l("Settlement examples", "结算示例")}
+					data-lesson-action="scenario"
+				>
+					{(["physical", "cash"] as const).map((value) => (
+						<Button
+							key={value}
+							size="sm"
+							variant={kind === value ? "secondary" : "outline"}
+							aria-pressed={kind === value}
+							onClick={() => choosePreset(value)}
+						>
+							{value === "physical"
+								? l("Physical settlement", "实物结算")
+								: l("Cash settlement", "现金结算")}
+						</Button>
+					))}
+				</fieldset>
 			}
 			diagram={
-				<Diagram
-					label={
-						isCash
-							? l(
-									"Official reference determines cash settlement",
-									"官方参考值决定现金结算",
-								)
-							: l(
-									"Physical exercise exchanges shares and strike cash",
-									"实物行权交换股票与行权现金",
-								)
-					}
-					height={394}
-				>
-					<SvgText x={180} y={28} strong>
-						{isCash ? "IDX" : "ALFA"} · {type}
-					</SvgText>
-					<SvgText x={180} y={54} muted>
-						{isCash
-							? l("Strike 4,000 · $100 / point", "行权价 4,000 · $100 / 点")
-							: l(
-									"Strike $50 · 100 shares / contract",
-									"行权价 $50 · 每张 100 股",
-								)}
-					</SvgText>
-					{isCash ? (
-						<>
-							<rect
-								x="13"
-								y="80"
-								width="151"
-								height="74"
-								rx="10"
-								className="contract-svg-wash"
-							/>
-							<SvgText x={88} y={106} muted>
-								{l("Official reference", "官方参考值")}
-							</SvgText>
-							<SvgText x={88} y={137} strong>
-								{official === null ? "—" : number(official)}
-							</SvgText>
-							<rect
-								x="196"
-								y="80"
-								width="151"
-								height="74"
-								rx="10"
-								className="contract-svg-paper"
-							/>
-							<SvgText x={271} y={106} muted>
-								{l("Last display", "最后显示值")}
-							</SvgText>
-							<SvgText x={271} y={137} strong>
-								{number(cashTerms.lastDisplay)}
-							</SvgText>
-							<path d="M88 154v35h92v20" className="contract-svg-active-line" />
-							<rect
-								x="35"
-								y="209"
-								width="290"
-								height="78"
-								rx="12"
-								className="contract-svg-paper"
-							/>
-							<SvgText x={180} y={235} muted>
-								{l("Cash payoff to holder", "持有人收到的现金支付")}
-							</SvgText>
-							<SvgText x={180} y={266} strong>
-								{cash.cash === null
-									? l("Reference needed", "需要参考值")
-									: money(cash.cash)}
-							</SvgText>
-							<SvgText x={180} y={325}>
-								{l("No shares delivered", "不交付股票")}
-							</SvgText>
-							<SvgText x={180} y={354} muted>
-								{l("Last display is context only", "最后显示值仅作背景参考")}
-							</SvgText>
-						</>
-					) : (
-						<>
-							{[0, 1].map((i) => (
-								<g key={i}>
-									<rect
-										x={15 + i * 190}
-										y="82"
-										width="140"
-										height="66"
-										rx="10"
-										className="contract-svg-paper"
-									/>
-									<SvgText x={85 + i * 190} y={111} strong>
-										{i === 0 ? l("HOLDER", "持有人") : l("WRITER", "卖方")}
-									</SvgText>
-									<SvgText x={85 + i * 190} y={136} muted>
-										{i === 0 ? l("Exercises", "行权") : l("Assigned", "被指派")}
-									</SvgText>
-								</g>
-							))}
-							<DeliveryArrow
-								toHolder={physical.cashToHolder > 0}
-								y={218}
-								label={l(
-									`Exercise cash ${money(Math.abs(physical.cashToHolder))}`,
-									`行权金额 ${money(Math.abs(physical.cashToHolder))}`,
-								)}
-								id={`cash-${type}-${count}`}
-							/>
-							<DeliveryArrow
-								toHolder={physical.sharesToHolder > 0}
-								y={295}
-								label={l(
-									`${Math.abs(physical.sharesToHolder)} shares`,
-									`${Math.abs(physical.sharesToHolder)} 股`,
-								)}
-								id={`shares-${type}-${count}`}
-							/>
-							<SvgText x={180} y={348} muted>
-								{l("Valid exercise and delivery assumed", "假定行权与交付有效")}
-							</SvgText>
-						</>
-					)}
-					<SvgText x={180} y={382} muted>
-						{count} {l("contract(s) · premium excluded", "张 · 不计购买权利金")}
-					</SvgText>
-				</Diagram>
-			}
-			outcome={
-				<SceneOutcome
-					locale={locale}
-					items={[
-						{
-							id: "result-1",
-							label: <>{l("Settlement route", "结算方式")}</>,
-							value: <>{isCash ? l("Cash", "现金") : l("Physical", "实物")}</>,
-						},
-						{
-							id: "result-2",
-							label: (
-								<>
-									{holderCash === null
-										? l("Holder cash", "持有人现金")
-										: holderCash < 0
-											? l("Holder pays", "持有人支付")
-											: l("Holder receives", "持有人收到")}
-								</>
-							),
-							value: (
-								<>{holderCash === null ? "—" : money(Math.abs(holderCash))}</>
-							),
-						},
-						{
-							id: "result-3",
-							label: <>{l("Delivery", "交付")}</>,
-							value: (
-								<>
-									{isCash
-										? l("No shares delivered", "不交付股票")
-										: `${physical.sharesToHolder > 0 ? l("Receives", "接收") : l("Delivers", "交付")} ${Math.abs(physical.sharesToHolder)} ${l("shares", "股")}`}
-								</>
-							),
-						},
-					]}
-				/>
+				<Suspense fallback={fallback}>
+					<SettlementAnimation
+						locale={locale}
+						kind={kind}
+						type={type}
+						count={count}
+						official={official}
+						inspect={inspect}
+						cash={holderCash}
+						shares={isCash ? 0 : physical.sharesToHolder}
+						calculation={calculation}
+						frame={playback.frame}
+						fallback={fallback}
+					/>
+				</Suspense>
 			}
 			controls={
 				<FieldGroup>

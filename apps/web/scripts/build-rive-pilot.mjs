@@ -10,27 +10,33 @@ const cli = process.env.RIVE_CLI || "rive";
 const version = execFileSync(cli, ["--version"], { encoding: "utf8" }).trim();
 if (version !== "rive 1.0.3")
 	throw new Error(`Expected Rive CLI 1.0.3; got ${version}`);
-const source = fileURLToPath(
-	new URL("../src/features/learning/rive/liquidity/", import.meta.url),
-);
-const temporary = mkdtempSync(join(tmpdir(), "tradely-rive-build-"));
-try {
-	for (const name of ["scene.rml", "rive.yaml"])
-		copyFileSync(join(source, name), join(temporary, name));
-	execFileSync(cli, [temporary, "--verify"], { stdio: "inherit" });
-	const inspection = JSON.parse(
-		execFileSync(cli, ["inspect", temporary, "--json"], { encoding: "utf8" }),
+const requested = process.argv[2] ?? "all";
+const scenes = ["liquidity", "settlement"];
+if (requested !== "all" && !scenes.includes(requested))
+	throw new Error("Choose liquidity, settlement, or all");
+for (const scene of requested === "all" ? scenes : [requested]) {
+	const source = fileURLToPath(
+		new URL(`../src/features/learning/rive/${scene}/`, import.meta.url),
 	);
-	if (inspection.problems.length)
-		throw new Error(JSON.stringify(inspection.problems));
-	execFileSync(cli, [temporary, "--once"], { stdio: "inherit" });
-	copyFileSync(
-		join(temporary, "build/liquidity.riv"),
-		join(source, "liquidity.riv"),
-	);
-	console.log(
-		"Built the liquidity animation; source and runtime asset are ready.",
-	);
-} finally {
-	rmSync(temporary, { recursive: true, force: true });
+	const temporary = mkdtempSync(join(tmpdir(), "tradely-rive-build-"));
+	try {
+		for (const name of ["scene.rml", "rive.yaml"])
+			copyFileSync(join(source, name), join(temporary, name));
+		execFileSync(cli, [temporary, "--verify"], { stdio: "inherit" });
+		const inspection = JSON.parse(
+			execFileSync(cli, ["inspect", temporary, "--json"], { encoding: "utf8" }),
+		);
+		if (inspection.problems.length)
+			throw new Error(JSON.stringify(inspection.problems));
+		execFileSync(cli, [temporary, "--once"], { stdio: "inherit" });
+		copyFileSync(
+			join(temporary, `build/${scene}.riv`),
+			join(source, `${scene}.riv`),
+		);
+		console.log(
+			`Built the ${scene} animation; source and runtime asset are ready.`,
+		);
+	} finally {
+		rmSync(temporary, { recursive: true, force: true });
+	}
 }

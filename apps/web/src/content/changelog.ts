@@ -1,6 +1,26 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "settlement-transfers-unreleased",
+		date: "2026-09-15",
+		dateLabel: "Unreleased",
+		title: "Follow cash and shares through settlement",
+		summary:
+			"Separate physical and cash settlement examples show contract terms, delivery amounts, transfers and the result.",
+		changes: [
+			{
+				title: "Watch a complete settlement",
+				description:
+					"Physical delivery shows cash and shares as a paired exchange. Cash settlement uses its official reference and delivers no stock.",
+			},
+			{
+				title: "Explore without losing the assumptions",
+				description:
+					"Compare calls, puts and quantities, or inspect a missing reference. Unknown amounts stay unknown. Pause, restart and simplified views remain available.",
+			},
+		],
+	},
+	{
 		id: "2026-09-15-animated-liquidity",
 		date: "2026-09-15",
 		dateLabel: "September 15, 2026",

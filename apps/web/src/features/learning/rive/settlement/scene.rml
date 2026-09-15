@@ -1,0 +1,82 @@
+<!-- Paired cash/share delivery. Financial amounts remain in settlement-concept-model.ts. -->
+<Rive version="1" kind="fragment">
+  <Artboard name="Settlement" id="0:2" styleId="0:5" width="600" height="240" defaultStateMachineId="0:7" viewModelId="0:40" viewModelInstanceId="0:41">
+    <LayoutComponentStyle name="Artboard Style" id="0:5"/>
+    <Shape name="cash lane" x="50" y="90">
+      <DataBindContext sourcePathIds="0:40-0:109" propertyKey="18"/>
+      <Rectangle width="500" height="3" originX="0"/>
+      <Fill><SolidColor colorValue="FF60A5FA"><DataBindContext sourcePathIds="0:40-0:200" propertyKey="37"/></SolidColor></Fill>
+    </Shape>
+    <Shape name="cash direction" x="520" y="90" rotation="1.5707963">
+      <DataBindContext sourcePathIds="0:40-0:105" propertyKey="13"/>
+      <DataBindContext sourcePathIds="0:40-0:107" propertyKey="15"/>
+      <DataBindContext sourcePathIds="0:40-0:103" propertyKey="18"/>
+      <Triangle width="18" height="18"/>
+      <Fill><SolidColor colorValue="FF60A5FA"><DataBindContext sourcePathIds="0:40-0:200" propertyKey="37"/></SolidColor></Fill>
+    </Shape>
+    <Shape name="cash transfer" x="80" y="90" opacity="0">
+      <DataBindContext sourcePathIds="0:40-0:101" propertyKey="13" converterId="0:50"/>
+      <DataBindContext sourcePathIds="0:40-0:103" propertyKey="18"/>
+      <Ellipse width="28" height="28"/>
+      <Fill><SolidColor colorValue="FF60A5FA"><DataBindContext sourcePathIds="0:40-0:200" propertyKey="37"/></SolidColor></Fill>
+    </Shape>
+    <Shape name="shares lane" x="50" y="190">
+      <DataBindContext sourcePathIds="0:40-0:110" propertyKey="18"/>
+      <Rectangle width="500" height="3" originX="0"/>
+      <Fill><SolidColor colorValue="FF4ADE80"><DataBindContext sourcePathIds="0:40-0:201" propertyKey="37"/></SolidColor></Fill>
+    </Shape>
+    <Shape name="shares direction" x="520" y="190" rotation="1.5707963">
+      <DataBindContext sourcePathIds="0:40-0:106" propertyKey="13"/>
+      <DataBindContext sourcePathIds="0:40-0:108" propertyKey="15"/>
+      <DataBindContext sourcePathIds="0:40-0:104" propertyKey="18"/>
+      <Triangle width="18" height="18"/>
+      <Fill><SolidColor colorValue="FF4ADE80"><DataBindContext sourcePathIds="0:40-0:201" propertyKey="37"/></SolidColor></Fill>
+    </Shape>
+    <Shape name="shares transfer" x="80" y="190" opacity="0">
+      <DataBindContext sourcePathIds="0:40-0:102" propertyKey="13" converterId="0:50"/>
+      <DataBindContext sourcePathIds="0:40-0:104" propertyKey="18"/>
+      <Rectangle width="32" height="24" cornerRadiusTL="4"/>
+      <Fill><SolidColor colorValue="FF4ADE80"><DataBindContext sourcePathIds="0:40-0:201" propertyKey="37"/></SolidColor></Fill>
+    </Shape>
+    <LinearAnimation name="Delivery" id="0:6" duration="60" loopValue="loop"/>
+    <StateMachine name="Walkthrough" id="0:7"><StateMachineLayer name="Paired transfer" id="0:8">
+      <AnyState x="200" y="-120"/><ExitState x="400" y="-120"/>
+      <EntryState><StateTransition stateToId="0:12"/></EntryState>
+      <AnimationState x="200" animationId="0:6" id="0:12"/>
+    </StateMachineLayer></StateMachine>
+  </Artboard>
+  <DataConverterInterpolator name="Transfer movement" id="0:50" duration="0" interpolationType="cubic">
+    <DataBindContext sourcePathIds="0:40-0:100" propertyKey="756"/>
+    <CubicEaseInterpolator x1="0.22" y1="1" x2="0.36" y2="1"/>
+  </DataConverterInterpolator>
+  <ViewModel name="Settlement" id="0:40" defaultInstanceId="0:41">
+    <ViewModelPropertyNumber name="motionSeconds" id="0:100"/>
+    <ViewModelPropertyNumber name="cashX" id="0:101"/>
+    <ViewModelPropertyNumber name="sharesX" id="0:102"/>
+    <ViewModelPropertyNumber name="cashVisible" id="0:103"/>
+    <ViewModelPropertyNumber name="sharesVisible" id="0:104"/>
+    <ViewModelPropertyNumber name="cashArrowX" id="0:105"/>
+    <ViewModelPropertyNumber name="sharesArrowX" id="0:106"/>
+    <ViewModelPropertyNumber name="cashRotation" id="0:107"/>
+    <ViewModelPropertyNumber name="sharesRotation" id="0:108"/>
+    <ViewModelPropertyNumber name="cashLaneOpacity" id="0:109"/>
+    <ViewModelPropertyNumber name="sharesLaneOpacity" id="0:110"/>
+    <ViewModelPropertyColor name="cashColor" id="0:200"/>
+    <ViewModelPropertyColor name="sharesColor" id="0:201"/>
+    <ViewModelInstance name="Default" id="0:41" exports="true">
+      <ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:100"/>
+      <ViewModelInstanceNumber propertyValue="80" viewModelPropertyId="0:101"/>
+      <ViewModelInstanceNumber propertyValue="520" viewModelPropertyId="0:102"/>
+      <ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:103"/>
+      <ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:104"/>
+      <ViewModelInstanceNumber propertyValue="550" viewModelPropertyId="0:105"/>
+      <ViewModelInstanceNumber propertyValue="50" viewModelPropertyId="0:106"/>
+      <ViewModelInstanceNumber propertyValue="1.5707963267948966" viewModelPropertyId="0:107"/>
+      <ViewModelInstanceNumber propertyValue="-1.5707963267948966" viewModelPropertyId="0:108"/>
+      <ViewModelInstanceNumber propertyValue="0.6" viewModelPropertyId="0:109"/>
+      <ViewModelInstanceNumber propertyValue="0.6" viewModelPropertyId="0:110"/>
+      <ViewModelInstanceColor propertyValue="FF60A5FA" viewModelPropertyId="0:200"/>
+      <ViewModelInstanceColor propertyValue="FF4ADE80" viewModelPropertyId="0:201"/>
+    </ViewModelInstance>
+  </ViewModel>
+</Rive>
