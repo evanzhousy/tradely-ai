@@ -204,10 +204,15 @@ export function AuditAmountScene({ locale }: Props) {
 					</div>
 					<div className="scene-outcome-card">
 						<p className="scene-outcome-label">
-							{l("Review state", "审核状态")}
+							{l("Amount calculation", "金额计算")}
 						</p>
 						<p className="scene-outcome-value">
-							{complete ? l("Ready", "已完成") : l("Open", "待处理")}
+							{complete
+								? l(
+										"Repaired; coverage still limited",
+										"金额已修复，覆盖仍有限",
+									)
+								: l("Repair in progress", "金额修复中")}
 						</p>
 					</div>
 				</>

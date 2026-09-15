@@ -822,11 +822,50 @@
 	stroke-width: 2;
 }
 .visual-color-system .contract-diagram [stroke="var(--ring)"],
-.visual-color-system .contract-diagram [stroke="var(--primary)"],
+.visual-color-system .contract-diagram [stroke="var(--primary)"] {
+	stroke: var(--diagram-accent);
+}
 .visual-color-system .contract-diagram [fill="var(--ring)"],
 .visual-color-system .contract-diagram [fill="var(--primary)"] {
-	stroke: var(--diagram-accent);
 	fill: var(--diagram-accent);
+}
+.visual-color-system,
+.lesson-infographic {
+	--diagram-gain: #15803d;
+	--diagram-loss: #be123c;
+	--diagram-observed: #1d4ed8;
+	--diagram-estimated: #7c3aed;
+	--diagram-unknown: #b45309;
+}
+.dark .visual-color-system,
+.dark .lesson-infographic {
+	--diagram-gain: #4ade80;
+	--diagram-loss: #fb7185;
+	--diagram-observed: #60a5fa;
+	--diagram-estimated: #c4b5fd;
+	--diagram-unknown: #fbbf24;
+}
+.diagram-profit {
+	fill: none;
+	stroke: var(--diagram-gain);
+	stroke-width: 3;
+}
+.diagram-loss {
+	fill: none;
+	stroke: var(--diagram-loss);
+	stroke-width: 3;
+}
+.diagram-reference {
+	fill: none;
+	stroke: var(--diagram-observed);
+	stroke-width: 2;
+	stroke-dasharray: 5 4;
+}
+.diagram-boundary {
+	fill: none;
+	stroke: var(--diagram-unknown);
+	stroke-width: 1.5;
+	stroke-dasharray: 3 4;
 }
 .contract-range {
 	width: 100%;

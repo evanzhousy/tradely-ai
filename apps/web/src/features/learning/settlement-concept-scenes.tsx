@@ -543,6 +543,7 @@ export function SettlementComparisonScene({ locale }: Props) {
 	const cash = cashSettlement(type, official, count);
 	const physical = physicalDelivery(type, count);
 	const isCash = kind === "cash";
+	const holderCash = isCash ? cash.cash : physical.cashToHolder;
 	return (
 		<SceneLayout
 			diagram={
@@ -685,16 +686,22 @@ export function SettlementComparisonScene({ locale }: Props) {
 					</div>
 					<div className="scene-outcome-card">
 						<p className="scene-outcome-label">
-							{l("Cash amount", "现金金额")}
+							{holderCash === null
+								? l("Holder cash", "持有人现金")
+								: holderCash < 0
+									? l("Holder pays", "持有人支付")
+									: l("Holder receives", "持有人收到")}
 						</p>
 						<p className="scene-outcome-value">
-							{cash.cash === null ? "—" : money(cash.cash)}
+							{holderCash === null ? "—" : money(Math.abs(holderCash))}
 						</p>
 					</div>
 					<div className="scene-outcome-card">
 						<p className="scene-outcome-label">{l("Delivery", "交付")}</p>
 						<p className="scene-outcome-value">
-							{isCash ? "—" : `${count * 100} ${l("shares", "股")}`}
+							{isCash
+								? l("No shares delivered", "不交付股票")
+								: `${physical.sharesToHolder > 0 ? l("Receives", "接收") : l("Delivers", "交付")} ${Math.abs(physical.sharesToHolder)} ${l("shares", "股")}`}
 						</p>
 					</div>
 				</>

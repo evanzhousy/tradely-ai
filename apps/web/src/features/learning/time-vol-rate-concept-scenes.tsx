@@ -86,8 +86,13 @@ export function GreekUnitsScene({ locale }: Props) {
 		"theta",
 		data.factors.map((item) => item.id),
 	);
-	const [after, setAfter] = useState(data.factors[0].after);
+	const [editedInput, setEditedInput] = useState<{
+		id: OtherGreek;
+		value: number;
+	} | null>(null);
 	const factor = data.factors.find((f) => f.id === id) ?? data.factors[0];
+	const after = editedInput?.id === id ? editedInput.value : factor.after;
+	const setAfter = (value: number) => setEditedInput({ id, value });
 	const snapshot = data.options[0];
 	const difference = inputDifference(factor.before, after);
 	const effect = difference

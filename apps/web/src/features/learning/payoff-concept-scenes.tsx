@@ -458,7 +458,8 @@ export function ExpirationProfitScene({ locale }: Props) {
 						y="65"
 						width={bandWidth}
 						height="190"
-						className="contract-svg-wash"
+						fill="var(--diagram-unknown)"
+						opacity="0.12"
 					/>
 					{[-600, 0, 600, 1200, 1500].map((value) => (
 						<g key={value}>
@@ -480,23 +481,31 @@ export function ExpirationProfitScene({ locale }: Props) {
 					/>
 					<path
 						d={`M${x(result.breakEven)} 65V255`}
-						stroke="var(--ring)"
-						strokeWidth="1.5"
-						strokeDasharray="3 4"
-						fill="none"
+						className="diagram-boundary"
 					/>
 					<path
 						d={payoffPath(type, 0)}
 						data-payoff-curve="payoff"
-						fill="none"
-						stroke="var(--foreground)"
-						strokeWidth="2"
-						strokeDasharray="5 4"
+						className="diagram-reference"
 					/>
+					<defs>
+						<clipPath id={`${id}-gain`}>
+							<rect x="35" y="60" width="290" height={y(0) - 60} />
+						</clipPath>
+						<clipPath id={`${id}-loss`}>
+							<rect x="35" y={y(0)} width="290" height={260 - y(0)} />
+						</clipPath>
+					</defs>
 					<path
 						d={payoffPath(type, paid)}
 						data-payoff-curve="profit"
-						className="contract-svg-active-line"
+						className="diagram-profit"
+						clipPath={`url(#${id}-gain)`}
+					/>
+					<path
+						d={payoffPath(type, paid)}
+						className="diagram-loss"
+						clipPath={`url(#${id}-loss)`}
 					/>
 					<path
 						d={`M${x(spot)} 65V255`}
@@ -516,7 +525,13 @@ export function ExpirationProfitScene({ locale }: Props) {
 						cx={x(spot)}
 						cy={y(result.intrinsic - paid)}
 						r="5"
-						className="contract-svg-handle"
+						fill={
+							result.profit < 0
+								? "var(--diagram-loss)"
+								: result.profit > 0
+									? "var(--diagram-gain)"
+									: "var(--diagram-unknown)"
+						}
 					/>
 					{[8500, 10000, 11500].map((value) => (
 						<SvgText key={value} x={x(value)} y={279} muted>
