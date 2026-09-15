@@ -204,6 +204,32 @@ export function StockAccountingScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Realized P&L", "已实现盈亏")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(result.realized, true)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Unrealized P&L", "未实现盈亏")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(result.unrealized, true)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Remaining value", "剩余估值")}
+						</p>
+						<p className="scene-outcome-value">{money(result.value)}</p>
+					</div>
+				</>
+			}
 		>
 			<Context locale={locale} />
 			<SelectField

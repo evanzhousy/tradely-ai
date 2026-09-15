@@ -202,6 +202,34 @@ export function RecapMetricScene({ locale }: Props) {
 					/>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{claim === "volume"
+								? l("Observed contracts", "观测张数")
+								: l("Observed premium", "观测权利金")}
+						</p>
+						<p className="scene-outcome-value">
+							{format(claimed.subtotal, claim)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Missing coverage", "缺失覆盖")}
+						</p>
+						<p className="scene-outcome-value">R3</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Chart / claim", "图表 / 结论")}
+						</p>
+						<p className="scene-outcome-value">
+							{metric === claim ? l("Match", "匹配") : l("Mismatch", "不匹配")}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<Context locale={locale} />
 			<SelectField

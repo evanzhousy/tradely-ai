@@ -147,6 +147,34 @@ export function PremiumUnitsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Total premium", "总权利金")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(amounts.total, locale)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Per contract", "每张合约")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(amounts.perContract, locale)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Referenced notional", "参考名义金额")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(amounts.notional, locale)}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<FieldGroup>
 				<RangeControl
@@ -311,6 +339,34 @@ export function ValuePartsScene({ locale }: Props) {
 						{l("Fixed scale · USD per share", "固定刻度 · 美元 / 股")}
 					</SvgText>
 				</Diagram>
+			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Intrinsic value", "内在价值")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(parts.intrinsic, locale, 2)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Extrinsic value", "外在价值")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(parts.extrinsic, locale, 2)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Option value", "期权价值")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(parts.value, locale, 2)}
+						</p>
+					</div>
+				</>
 			}
 		>
 			<FieldGroup>
@@ -492,6 +548,30 @@ export function ExpirationProfitScene({ locale }: Props) {
 						{l("Drag the stock-price handle", "拖动股价滑块")}
 					</SvgText>
 				</Diagram>
+			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Payoff", "支付价值")}</p>
+						<p className="scene-outcome-value">
+							{money(result.payoff, locale)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Premium paid", "已付权利金")}
+						</p>
+						<p className="scene-outcome-value">
+							{money(result.premium, locale)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{resultLabel}</p>
+						<p className="scene-outcome-value">
+							{money(result.profit, locale)}
+						</p>
+					</div>
+				</>
 			}
 		>
 			<div className="flex flex-wrap gap-4 text-xs">

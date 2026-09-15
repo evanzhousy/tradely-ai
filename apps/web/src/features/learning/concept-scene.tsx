@@ -71,10 +71,12 @@ export function SvgText({
 export function SceneLayout({
 	diagram,
 	companion,
+	outcome,
 	children,
 }: {
 	diagram: ReactNode;
 	companion?: ReactNode;
+	outcome?: ReactNode;
 	children: ReactNode;
 }) {
 	const playback = useContext(VisualPlayback);
@@ -90,6 +92,7 @@ export function SceneLayout({
 					<aside className="scene-companion">{companion}</aside>
 				) : null}
 			</div>
+			{outcome ? <div className="scene-outcome">{outcome}</div> : null}
 			{playback ? (
 				<details className="visual-explore">
 					<summary>

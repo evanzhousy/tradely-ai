@@ -1235,6 +1235,33 @@
 	gap: 0.75rem;
 	min-width: 0;
 }
+.scene-outcome {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	gap: 0.65rem;
+	margin-top: 0.75rem;
+}
+.scene-outcome-card {
+	min-width: 0;
+	padding: 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: 0.8rem;
+	background: color-mix(
+		in srgb,
+		var(--diagram-accent, var(--primary)) 8%,
+		var(--card)
+	);
+}
+.scene-outcome-label {
+	color: var(--muted-foreground);
+	font-size: 0.7rem;
+	line-height: 1.35;
+}
+.scene-outcome-value {
+	margin-top: 0.2rem;
+	overflow-wrap: anywhere;
+	font: 600 1rem / 1.3 var(--font-mono);
+}
 .market-panel {
 	--book-bid: #15803d;
 	--book-ask: #be123c;
