@@ -200,6 +200,26 @@ export function GreekUnitsScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Input change", "输入变化")}
+						</p>
+						<p className="scene-outcome-value">
+							{signed(difference?.change ?? null)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Contribution", "贡献")}</p>
+						<p className="scene-outcome-value">{money(effect)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Unit", "单位")}</p>
+						<p className="scene-outcome-value">{factor.unit[language]}</p>
+					</div>
+				</>
+			}
 		>
 			<Snapshot locale={locale} snapshot={snapshot} />
 			<FieldGroup>

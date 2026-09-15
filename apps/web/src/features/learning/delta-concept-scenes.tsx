@@ -176,6 +176,30 @@ export function DeltaSlopeScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Underlying move", "标的变动")}
+						</p>
+						<p className="scene-outcome-value">{money(move)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Option price change", "期权价格变化")}
+						</p>
+						<p className="scene-outcome-value">
+							{estimate === null ? "—" : money(estimate - option.priceCents)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Local delta", "局部 Delta")}
+						</p>
+						<p className="scene-outcome-value">{signed(option.delta)}</p>
+					</div>
+				</>
+			}
 		>
 			<Snapshot locale={locale} option={option} />
 			<FieldGroup>

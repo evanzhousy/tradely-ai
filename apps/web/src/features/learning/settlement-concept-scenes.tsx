@@ -673,6 +673,32 @@ export function SettlementComparisonScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Settlement route", "结算方式")}
+						</p>
+						<p className="scene-outcome-value">
+							{isCash ? l("Cash", "现金") : l("Physical", "实物")}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{l("Cash amount", "现金金额")}
+						</p>
+						<p className="scene-outcome-value">
+							{cash.cash === null ? "—" : money(cash.cash)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Delivery", "交付")}</p>
+						<p className="scene-outcome-value">
+							{isCash ? "—" : `${count * 100} ${l("shares", "股")}`}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<FieldGroup>
 				<ChoiceField

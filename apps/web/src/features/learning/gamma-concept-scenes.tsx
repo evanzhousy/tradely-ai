@@ -206,6 +206,30 @@ export function GammaTermsScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
+			outcome={
+				<>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Move", "变动")}</p>
+						<p className="scene-outcome-value">{money(move)}</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">
+							{deltaView
+								? l("Next delta", "新 Delta")
+								: l("Gamma price term", "Gamma 价格项")}
+						</p>
+						<p className="scene-outcome-value">
+							{focal === null ? "—" : deltaView ? number(focal) : money(focal)}
+						</p>
+					</div>
+					<div className="scene-outcome-card">
+						<p className="scene-outcome-label">{l("Formula", "公式")}</p>
+						<p className="scene-outcome-value">
+							{deltaView ? "Δ + Γ×move" : "½Γ×move²"}
+						</p>
+					</div>
+				</>
+			}
 		>
 			<Snapshot locale={locale} snapshot={snapshot} />
 			<FieldGroup>

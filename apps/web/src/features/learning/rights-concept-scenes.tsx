@@ -180,6 +180,14 @@ export function RightsRolesScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
+			outcome={
+				<div className="scene-outcome-card">
+					<p className="scene-outcome-label">
+						{l("Current responsibility", "当前责任")}
+					</p>
+					<p className="scene-outcome-value">{summary}</p>
+				</div>
+			}
 		>
 			<FieldGroup>
 				<OptionTypeField value={type} onChange={setType} locale={locale} />
