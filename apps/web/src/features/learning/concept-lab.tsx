@@ -1,5 +1,13 @@
 import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
+import {
+	Stepper,
+	StepperIndicator,
+	StepperItem,
+	StepperNav,
+	StepperTitle,
+	StepperTrigger,
+} from "@tradely/ui/components/reui/stepper";
 import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
 import {
 	ArrowLeftIcon,
@@ -52,7 +60,6 @@ export function ConceptLab({
 	const [ready, setReady] = useState(false);
 	const restored = useRef(false);
 	const stage = useRef<HTMLDivElement>(null);
-	const timelineId = useId();
 	const titleId = useId();
 	const index = Math.max(
 		0,
@@ -67,7 +74,25 @@ export function ConceptLab({
 		setProgress(Math.max(0, Math.min(1, value)));
 		setEpoch((value) => value + 1);
 	}, []);
+	const beats = active.demonstration ?? [
+		active.title,
+		active.prompt,
+		active.title,
+	];
+	const stepCount = beats.length;
+	const step = Math.min(
+		stepCount,
+		Math.max(1, Math.round(progress * (stepCount - 1)) + 1),
+	);
+	const selectStep = (value: number) => {
+		pause();
+		seek(stepCount <= 1 ? 0 : (value - 1) / (stepCount - 1));
+	};
 	const toggle = () => {
+		if (reduced) {
+			selectStep(step >= stepCount ? 1 : step + 1);
+			return;
+		}
 		if (playing) pause();
 		else {
 			seek(progress === 1 ? 0 : progress);
@@ -114,18 +139,16 @@ export function ConceptLab({
 		};
 	}, [pause, scene]);
 	useEffect(() => {
-		if (!playing || reduced) return;
+		if (!playing || !ready || reduced) return;
 		const timer = window.setTimeout(() => {
 			if (progress >= 1) pause();
 			else seek(Math.min(1, Math.round((progress + 0.1) * 10) / 10));
 		}, 2200);
 		return () => window.clearTimeout(timer);
-	}, [playing, progress, reduced, pause, seek]);
-	const beats = active.demonstration ?? [
-		active.title,
-		active.prompt,
-		active.title,
-	];
+	}, [playing, progress, reduced, ready, pause, seek]);
+	useEffect(() => {
+		if (ready && !reduced && progress === 0) setPlaying(true);
+	}, [ready, reduced, progress, scene]);
 	const caption = exploring
 		? active.prompt
 		: beats[Math.round(progress * (beats.length - 1))];
@@ -172,48 +195,44 @@ export function ConceptLab({
 					className="visual-playback"
 					aria-label={l("Demonstration controls", "演示控制")}
 				>
-					{reduced ? (
-						<Badge variant="secondary">
-							{l("Step-by-step view", "逐步查看")}
-						</Badge>
-					) : (
-						<Button
-							size="sm"
-							variant="secondary"
-							onClick={toggle}
-							aria-pressed={playing}
-						>
-							{playing ? (
-								<PauseIcon data-icon="inline-start" />
-							) : (
-								<PlayIcon data-icon="inline-start" />
-							)}
-							{playing
-								? l("Pause", "暂停")
-								: progress === 1
-									? l("Replay", "重播")
-									: l("Watch explanation", "观看演示")}
-						</Button>
-					)}
-					<label htmlFor={timelineId} className="sr-only">
-						{l("Explanation timeline", "讲解时间轴")}
-					</label>
-					<input
-						id={timelineId}
-						type="range"
-						min="0"
-						max="100"
-						step="1"
-						value={Math.round(progress * 100)}
-						onChange={(event) => {
-							pause();
-							seek(Number(event.target.value) / 100);
-						}}
-						aria-valuetext={caption[language]}
-						className="visual-timeline"
-					/>
 					<Button
-						size="icon-sm"
+						size="sm"
+						variant="secondary"
+						onClick={toggle}
+						aria-pressed={playing}
+					>
+						{playing ? (
+							<PauseIcon data-icon="inline-start" />
+						) : (
+							<PlayIcon data-icon="inline-start" />
+						)}
+						{playing
+							? l("Pause", "暂停")
+							: progress === 1
+								? l("Start again", "重新开始")
+								: l("Start explanation", "开始讲解")}
+					</Button>
+					<Stepper
+						value={step}
+						onValueChange={selectStep}
+						className="visual-stepper"
+						aria-label={l("Explanation steps", "讲解步骤")}
+					>
+						<StepperNav>
+							{beats.map((beat, i) => (
+								<StepperItem key={i} step={i + 1} completed={i + 1 < step}>
+									<StepperTrigger aria-label={beat[language]}>
+										<StepperIndicator>{i + 1}</StepperIndicator>
+										<StepperTitle className="sr-only">
+											{beat[language]}
+										</StepperTitle>
+									</StepperTrigger>
+								</StepperItem>
+							))}
+						</StepperNav>
+					</Stepper>
+					<Button
+						size="sm"
 						variant="ghost"
 						onClick={() => {
 							pause();
@@ -222,6 +241,7 @@ export function ConceptLab({
 						aria-label={l("Reset demonstration", "重置演示")}
 					>
 						<RotateCcwIcon />
+						{l("Restart", "重启")}
 					</Button>
 				</fieldset>
 				<VisualPlayback

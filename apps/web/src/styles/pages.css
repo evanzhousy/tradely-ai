@@ -1141,6 +1141,23 @@
 	outline-offset: 3px;
 	border-radius: 0.25rem;
 }
+.visual-stepper {
+	min-width: min(18rem, 100%);
+}
+.visual-stepper [data-slot="stepper-nav"] {
+	width: 100%;
+}
+.visual-stepper [data-slot="stepper-trigger"] {
+	min-height: 2.75rem;
+}
+.visual-stepper [data-slot="stepper-indicator"] {
+	border-color: var(--diagram-accent, var(--ring));
+}
+.visual-stepper [data-slot="stepper-indicator"][data-state="active"],
+.visual-stepper [data-slot="stepper-indicator"][data-state="completed"] {
+	background: var(--diagram-accent, var(--primary));
+	color: var(--primary-foreground);
+}
 .visual-scene-layout {
 	display: flex;
 	flex-direction: column;
@@ -1189,6 +1206,10 @@
 	}
 	.visual-playback .visual-timeline {
 		min-width: 35%;
+	}
+	.visual-playback .visual-stepper {
+		order: 3;
+		width: 100%;
 	}
 	.visual-scene-layout > .contract-stage {
 		padding: 0;
