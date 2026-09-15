@@ -1,6 +1,26 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-09-15-animated-liquidity",
+		date: "2026-09-15",
+		dateLabel: "September 15, 2026",
+		title: "Follow each fill through the book",
+		summary:
+			"The execution lesson now shows a labelled order moving through displayed liquidity, with matching price highlights and visible remaining quantities.",
+		changes: [
+			{
+				title: "Compare limit and market orders",
+				description:
+					"Start either worked example directly, pause the explanation or replay it. The animation and order book use the same quantities and fills.",
+			},
+			{
+				title: "Choose a simpler view",
+				description:
+					"Switch to the simplified diagram whenever you prefer. Reduced-motion preferences and animation loading failures automatically use that view.",
+			},
+		],
+	},
+	{
 		id: "worked-visual-results-unreleased",
 		date: "2026-09-15",
 		dateLabel: "Unreleased",

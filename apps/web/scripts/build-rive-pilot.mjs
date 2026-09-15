@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Rive CLI: https://rive.app/docs/cli/getting-started
-// --once is a local pilot build. Production uses the SVG until a release export is approved.
+// No scripts are embedded, so this asset needs no signed script payload. Review builds before deploying.
 const cli = process.env.RIVE_CLI || "rive";
 const version = execFileSync(cli, ["--version"], { encoding: "utf8" }).trim();
 if (version !== "rive 1.0.3")
@@ -29,7 +29,7 @@ try {
 		join(source, "liquidity.riv"),
 	);
 	console.log(
-		"Built the local liquidity pilot; source and runtime asset are ready.",
+		"Built the liquidity animation; source and runtime asset are ready.",
 	);
 } finally {
 	rmSync(temporary, { recursive: true, force: true });

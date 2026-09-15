@@ -43,10 +43,8 @@ import {
 import { OrderBookPanel, remainingBook } from "./order-book-panel";
 import { useGuidedState, VisualPlayback } from "./visual-playback";
 
-// The CLI asset is a local evaluation build; production keeps the established SVG.
-const RiveLiquidityPilot = import.meta.env.DEV
-	? lazy(() => import("./rive-liquidity-pilot"))
-	: null;
+// Load only for this scene; the component retains SVG failure and reduced-motion fallbacks.
+const RiveLiquidityPilot = lazy(() => import("./rive-liquidity-pilot"));
 
 export const ExecutionData = createContext<ExecutionConceptData | null>(null);
 export const LiquidityExample = createContext<{
@@ -454,23 +452,19 @@ export function LiquidityScene({ locale }: Props) {
 				</fieldset>
 			}
 			diagram={
-				RiveLiquidityPilot ? (
-					<Suspense fallback={fallback}>
-						<RiveLiquidityPilot
-							locale={locale}
-							side={side}
-							instruction={instruction}
-							limit={limit}
-							quantity={quantity}
-							frame={playback.frame}
-							activePrice={activePrice}
-							result={result}
-							fallback={fallback}
-						/>
-					</Suspense>
-				) : (
-					fallback
-				)
+				<Suspense fallback={fallback}>
+					<RiveLiquidityPilot
+						locale={locale}
+						side={side}
+						instruction={instruction}
+						limit={limit}
+						quantity={quantity}
+						frame={playback.frame}
+						activePrice={activePrice}
+						result={result}
+						fallback={fallback}
+					/>
+				</Suspense>
 			}
 			companion={
 				<LiquidityBook locale={locale}>
