@@ -16,6 +16,7 @@ import {
 	type TimeVolRateSnapshot,
 } from "@/domain/learning/time-vol-rate-concept";
 import type { Locale } from "@/i18n/messages";
+import { BeforeAfterComparison } from "./before-after-comparison";
 import {
 	ChoiceField,
 	Diagram,
@@ -31,6 +32,8 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
+import { ContributionWaterfall } from "./value-breakdown";
 import { useGuidedState } from "./visual-playback";
 
 export const TimeVolRateData = createContext<TimeVolRateConceptData | null>(
@@ -107,6 +110,34 @@ export function GreekUnitsScene({ locale }: Props) {
 		((value - factor.range[0]) / (factor.range[1] - factor.range[0])) * 280;
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey={id}
+					values={[
+						{
+							id: "input",
+							label: factor.label[language],
+							before: factor.before,
+							current: after,
+							unit: factor.unit[language],
+							format: number,
+						},
+						{
+							id: "effect",
+							label: l("Price contribution", "价格贡献"),
+							before: 0,
+							current: effect,
+							unit: "USD/option unit",
+							format: money,
+						},
+					]}
+					note={l(
+						"Each sensitivity uses its own input units.",
+						"各敏感度使用各自的输入单位。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -206,88 +237,95 @@ export function GreekUnitsScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Input change", "输入变化")}</>,
+							value: <>{signed(difference?.change ?? null)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Contribution", "贡献")}</>,
+							value: <>{money(effect)}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Unit", "单位")}</>,
+							value: <>{factor.unit[language]}</>,
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Sensitivity to inspect", "查看的敏感度")}
+						value={id}
+						options={data.factors.map((f) => [f.id, f.label[language]])}
+						onChange={(value) => {
+							const next = data.factors.find((f) => f.id === value);
+							if (next) {
+								setId(next.id);
+								setAfter(next.after);
+							}
+						}}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Input after change", "变化后的输入")}
+						value={after}
+						display={inputLabel(after)}
+						min={factor.range[0]}
+						max={factor.range[1]}
+						step={factor.step}
+						onChange={setAfter}
+					/>
+				</FieldGroup>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Input change", "输入变化")}
-						</p>
-						<p className="scene-outcome-value">
-							{signed(difference?.change ?? null)}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Contribution", "贡献")}</p>
-						<p className="scene-outcome-value">{money(effect)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Unit", "单位")}</p>
-						<p className="scene-outcome-value">{factor.unit[language]}</p>
-					</div>
+					<Snapshot locale={locale} snapshot={snapshot} />
+					<p className="text-sm">
+						{greekName(id)}:{" "}
+						<strong>
+							{money(snapshot.greeks[id])} / {factor.unit[language]}
+						</strong>
+						<br />
+						{l(
+							"per option unit, with other inputs fixed",
+							"每单位期权，其他输入固定",
+						)}
+					</p>
+					<p className="font-mono text-sm">
+						{money(snapshot.greeks[id])} × {signed(difference?.change ?? null)}{" "}
+						= {money(effect)}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{factor.pointBased
+								? l(
+										"Percentage points are not relative percentages",
+										"百分点不等于相对百分比",
+									)
+								: l("Use the stated day convention", "使用声明的天数约定")}
+						</AlertTitle>
+						<AlertDescription>
+							{factor.pointBased
+								? l(
+										"From 20% to 23% is +3 percentage points and +15% relative growth. The supplied vega/rho convention multiplies the point change, not the relative percentage and not 0.03. These are local estimates. Larger moves or changing inputs can make a constant-Greek estimate inaccurate.",
+										"从 20% 到 23% 是 +3 个百分点、相对增长 +15%。给定 Vega/Rho 约定乘百分点变化，不乘相对百分比，也不乘 0.03。这是局部估计；变动较大或其他输入变化时，常数希腊值估计可能不准确。",
+									)
+								: l(
+										"This lesson quotes theta per calendar day. Two days means two calendar days, including weekends. Theta itself can change with time and other inputs, so a straight multiplication is a local estimate, not a promised daily decay schedule.",
+										"本课 Theta 按自然日报价。两天指两个自然日，包括周末。Theta 本身会随时间及其他输入变化，直接相乘是局部估计，不是每日固定损耗承诺。",
+									)}
+						</AlertDescription>
+					</Alert>
 				</>
 			}
-		>
-			<Snapshot locale={locale} snapshot={snapshot} />
-			<FieldGroup>
-				<SelectField
-					label={l("Sensitivity to inspect", "查看的敏感度")}
-					value={id}
-					options={data.factors.map((f) => [f.id, f.label[language]])}
-					onChange={(value) => {
-						const next = data.factors.find((f) => f.id === value);
-						if (next) {
-							setId(next.id);
-							setAfter(next.after);
-						}
-					}}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Input after change", "变化后的输入")}
-					value={after}
-					display={inputLabel(after)}
-					min={factor.range[0]}
-					max={factor.range[1]}
-					step={factor.step}
-					onChange={setAfter}
-				/>
-			</FieldGroup>
-			<p className="text-sm">
-				{greekName(id)}:{" "}
-				<strong>
-					{money(snapshot.greeks[id])} / {factor.unit[language]}
-				</strong>
-				<br />
-				{l(
-					"per option unit, with other inputs fixed",
-					"每单位期权，其他输入固定",
-				)}
-			</p>
-			<p className="font-mono text-sm">
-				{money(snapshot.greeks[id])} × {signed(difference?.change ?? null)} ={" "}
-				{money(effect)}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{factor.pointBased
-						? l(
-								"Percentage points are not relative percentages",
-								"百分点不等于相对百分比",
-							)
-						: l("Use the stated day convention", "使用声明的天数约定")}
-				</AlertTitle>
-				<AlertDescription>
-					{factor.pointBased
-						? l(
-								"From 20% to 23% is +3 percentage points and +15% relative growth. The supplied vega/rho convention multiplies the point change, not the relative percentage and not 0.03. These are local estimates. Larger moves or changing inputs can make a constant-Greek estimate inaccurate.",
-								"从 20% 到 23% 是 +3 个百分点、相对增长 +15%。给定 Vega/Rho 约定乘百分点变化，不乘相对百分比，也不乘 0.03。这是局部估计；变动较大或其他输入变化时，常数希腊值估计可能不准确。",
-							)
-						: l(
-								"This lesson quotes theta per calendar day. Two days means two calendar days, including weekends. Theta itself can change with time and other inputs, so a straight multiplication is a local estimate, not a promised daily decay schedule.",
-								"本课 Theta 按自然日报价。两天指两个自然日，包括周末。Theta 本身会随时间及其他输入变化，直接相乘是局部估计，不是每日固定损耗承诺。",
-							)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+		/>
 	);
 }
 
@@ -369,56 +407,61 @@ export function GreekSignsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} snapshot={snapshot} />
-			<FieldGroup>
-				<SelectField
-					label={l("Supplied option", "给定期权")}
-					value={id}
-					options={data.options.map((s) => [s.id, s.label[language]])}
-					onChange={setId}
-				/>
-				<ChoiceField
-					label={l("Position side", "持仓方向")}
-					value={side}
-					options={[
-						["long", l("Long", "多头")],
-						["short", l("Short", "空头")],
-					]}
-					onChange={setSide}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Number of contracts", "合约张数")}
-					value={quantity}
-					display={String(quantity)}
-					min={1}
-					max={data.quantityMax}
-					onChange={setQuantity}
-				/>
-			</FieldGroup>
-			<p className="text-sm">
-				{l("Stated multiplier", "给定乘数")}: {data.multiplier}{" "}
-				{l("units per contract", "单位/张")}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Reverse the position sign once", "只反转一次持仓符号")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"Shorting the same option reverses its position sensitivities without changing the option's quoted Greeks. Apply contracts and the stated multiplier once. The supplied call and put differ in rho; signs belong to the model and contract, not a universal rule for every product.",
-						"做空同一期权会反转持仓敏感度，不改变期权报价希腊值。张数与给定乘数只应用一次。给定看涨与看跌的 Rho 不同；符号属于该模型与合约，并非所有产品通用规则。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Do not add these sensitivities directly: days, IV points and rate points are different input units. First apply a declared change to each, then add their estimated dollar contributions. Rates, dividends, exercise style and pricing assumptions matter.",
-					"不要直接相加这些敏感度：天、IV 点与利率点是不同输入单位。先分别应用声明变动，再相加估计美元贡献。利率、股息、行权方式与定价假设都重要。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Supplied option", "给定期权")}
+						value={id}
+						options={data.options.map((s) => [s.id, s.label[language]])}
+						onChange={setId}
+					/>
+					<ChoiceField
+						label={l("Position side", "持仓方向")}
+						value={side}
+						options={[
+							["long", l("Long", "多头")],
+							["short", l("Short", "空头")],
+						]}
+						onChange={setSide}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Number of contracts", "合约张数")}
+						value={quantity}
+						display={String(quantity)}
+						min={1}
+						max={data.quantityMax}
+						onChange={setQuantity}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} snapshot={snapshot} />
+					<p className="text-sm">
+						{l("Stated multiplier", "给定乘数")}: {data.multiplier}{" "}
+						{l("units per contract", "单位/张")}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l("Reverse the position sign once", "只反转一次持仓符号")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"Shorting the same option reverses its position sensitivities without changing the option's quoted Greeks. Apply contracts and the stated multiplier once. The supplied call and put differ in rho; signs belong to the model and contract, not a universal rule for every product.",
+								"做空同一期权会反转持仓敏感度，不改变期权报价希腊值。张数与给定乘数只应用一次。给定看涨与看跌的 Rho 不同；符号属于该模型与合约，并非所有产品通用规则。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Do not add these sensitivities directly: days, IV points and rate points are different input units. First apply a declared change to each, then add their estimated dollar contributions. Rates, dividends, exercise style and pricing assumptions matter.",
+							"不要直接相加这些敏感度：天、IV 点与利率点是不同输入单位。先分别应用声明变动，再相加估计美元贡献。利率、股息、行权方式与定价假设都重要。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -456,6 +499,23 @@ export function GreekAttributionScene({ locale }: Props) {
 		id === "spot" ? l("Spot / delta", "现价 / Delta") : greekName(id);
 	return (
 		<SceneLayout
+			companion={
+				<ContributionWaterfall
+					locale={locale}
+					parts={rows.map((id) => ({
+						id,
+						label: label(id),
+						value: result?.contributions[id] ?? null,
+					}))}
+					total={result?.totalCents ?? null}
+					unit={l("USD · whole position", "美元 · 整份持仓")}
+					format={money}
+					note={l(
+						"Local model contributions under the supplied shock. Missing inputs withhold the total.",
+						"给定冲击下的局部模型贡献。输入缺失时不提供合计。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -552,97 +612,117 @@ export function GreekAttributionScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} snapshot={snapshot} />
-			<p className="font-mono text-muted-foreground text-xs">
-				{data.quantity} × {data.multiplier} · Δ {signed(snapshot.delta)}
-				<br />
-				{data.factors
-					.map(
-						(f) =>
-							`${greekName(f.id)} ${money(snapshot.greeks[f.id])} / ${f.unit[language]}`,
-					)
-					.join(" · ")}
-			</p>
-			<FieldGroup>
-				<SelectField
-					label={l("Build-up step", "累加步骤")}
-					value={String(playback.frame)}
-					options={data.shocks.map((s, i) => [String(i), s.label[language]])}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-				<ChoiceField
-					label={l("Position side", "持仓方向")}
-					value={side}
-					options={[
-						["long", l("Long", "多头")],
-						["short", l("Short", "空头")],
-					]}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setSide(value);
-					}}
-				/>
-				<SelectField
-					label={l("Visible inputs", "可见输入")}
-					value={visibility}
-					options={[
-						["all", l("All supplied Greeks", "全部给定希腊值")],
-						["delta", l("Withhold delta", "隐藏 Delta")],
-						...data.factors.map(
-							(f) =>
-								[
-									f.id,
-									l(`Withhold ${greekName(f.id)}`, `隐藏 ${greekName(f.id)}`),
-								] as const,
-						),
-					]}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setVisibility(value);
-					}}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<div className="grid grid-cols-2 gap-3 text-sm">
-				<p>
-					{l("Stock move", "标的变动")}
-					<br />
-					{money(shock.spotCents)}
-				</p>
-				{data.factors.map((f) => (
-					<p key={f.id}>
-						{greekName(f.id)} {l("input change", "输入变化")}
+			controls={
+				<>
+					<FieldGroup>
+						<SelectField
+							label={l("Build-up step", "累加步骤")}
+							value={String(playback.frame)}
+							options={data.shocks.map((s, i) => [
+								String(i),
+								s.label[language],
+							])}
+							onChange={(value) => playback.select(Number(value))}
+						/>
+						<ChoiceField
+							label={l("Position side", "持仓方向")}
+							value={side}
+							options={[
+								["long", l("Long", "多头")],
+								["short", l("Short", "空头")],
+							]}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setSide(value);
+							}}
+						/>
+						<SelectField
+							label={l("Visible inputs", "可见输入")}
+							value={visibility}
+							options={[
+								["all", l("All supplied Greeks", "全部给定希腊值")],
+								["delta", l("Withhold delta", "隐藏 Delta")],
+								...data.factors.map(
+									(f) =>
+										[
+											f.id,
+											l(
+												`Withhold ${greekName(f.id)}`,
+												`隐藏 ${greekName(f.id)}`,
+											),
+										] as const,
+								),
+							]}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setVisibility(value);
+							}}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} snapshot={snapshot} />
+					<p className="font-mono text-muted-foreground text-xs">
+						{data.quantity} × {data.multiplier} · Δ {signed(snapshot.delta)}
 						<br />
-						{signed(shock.changes[f.id])} {f.unit[language]}
-						{language === 0 && Math.abs(shock.changes[f.id]) !== 1 ? "s" : ""}
+						{data.factors
+							.map(
+								(f) =>
+									`${greekName(f.id)} ${money(snapshot.greeks[f.id])} / ${f.unit[language]}`,
+							)
+							.join(" · ")}
 					</p>
-				))}
-			</div>
-			<p data-tvr-coverage className="text-sm">
-				{result?.totalCents === null || !result
-					? l("Incomplete inputs: total unavailable", "输入不完整：合计不可用")
-					: l("All declared contributions available", "所有声明贡献均可用")}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"An attribution estimate, not realized P&L",
-						"归因估计，而非已实现盈亏",
-					)}
-				</AlertTitle>
-				<AlertDescription>{data.attributionNote[language]}</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Greeks are held constant for this local sum. Gamma, changing sensitivities, cross-effects, dividends, exercise/assignment, financing, taxes and fees are omitted. Hide one Greek to inspect input coverage; missing is not zero. A favorable stock move alone does not determine option profit.",
-					"局部求和中希腊值保持不变。省略 Gamma、敏感度变化、交互影响、股息、行权/指派、融资、税费与费用。隐藏一个希腊值可检查输入覆盖，缺失不等于零。仅标的方向有利不能确定期权利润。",
-				)}
-			</p>
-		</SceneLayout>
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						<p>
+							{l("Stock move", "标的变动")}
+							<br />
+							{money(shock.spotCents)}
+						</p>
+						{data.factors.map((f) => (
+							<p key={f.id}>
+								{greekName(f.id)} {l("input change", "输入变化")}
+								<br />
+								{signed(shock.changes[f.id])} {f.unit[language]}
+								{language === 0 && Math.abs(shock.changes[f.id]) !== 1
+									? "s"
+									: ""}
+							</p>
+						))}
+					</div>
+					<p data-tvr-coverage className="text-sm">
+						{result?.totalCents === null || !result
+							? l(
+									"Incomplete inputs: total unavailable",
+									"输入不完整：合计不可用",
+								)
+							: l("All declared contributions available", "所有声明贡献均可用")}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"An attribution estimate, not realized P&L",
+								"归因估计，而非已实现盈亏",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{data.attributionNote[language]}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Greeks are held constant for this local sum. Gamma, changing sensitivities, cross-effects, dividends, exercise/assignment, financing, taxes and fees are omitted. Hide one Greek to inspect input coverage; missing is not zero. A favorable stock move alone does not determine option profit.",
+							"局部求和中希腊值保持不变。省略 Gamma、敏感度变化、交互影响、股息、行权/指派、融资、税费与费用。隐藏一个希腊值可检查输入覆盖，缺失不等于零。仅标的方向有利不能确定期权利润。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

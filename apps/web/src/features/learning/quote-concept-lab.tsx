@@ -7,6 +7,7 @@ import {
 	QuoteAnatomyScene,
 	VenueQuoteScene,
 } from "./quote-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -20,17 +21,19 @@ const scenes = [
 			"Move the ask and watch the spread and midpoint. Does the last trade move with them?",
 			"移动卖价，观察价差与中点。最新成交价也会跟着改变吗？",
 		],
-		demonstration: [
+		steps: teachingSteps(
 			[
-				"The ask moves, changing spread and midpoint. The last execution remains a separate observation.",
-				"卖价变化带动价差与中点变化，最新成交仍是独立观测。",
+				[
+					"The ask moves, changing spread and midpoint. The last execution remains a separate observation.",
+					"卖价变化带动价差与中点变化，最新成交仍是独立观测。",
+				],
 			],
-		],
-		playbackStops: [
-			["Original quote", "原报价"],
-			["Ask changes", "卖价变化"],
-			["Wider spread", "价差扩大"],
-		],
+			[
+				["Original quote", "原报价"],
+				["Ask changes", "卖价变化"],
+				["Wider spread", "价差扩大"],
+			],
+		),
 		Component: QuoteAnatomyScene,
 	},
 	{
@@ -44,17 +47,19 @@ const scenes = [
 			"Play an order through to its supplied outcome. Compare a cancellation with a confirmed execution.",
 			"播放订单直至给定结果，比较撤单与已确认成交。",
 		],
-		demonstration: [
+		steps: teachingSteps(
 			[
-				"Follow an order from arrival to its outcome. A cancellation changes the book without creating a trade.",
-				"跟随订单从进入到结果；撤单改变订单簿，但不产生交易。",
+				[
+					"Follow an order from arrival to its outcome. A cancellation changes the book without creating a trade.",
+					"跟随订单从进入到结果；撤单改变订单簿，但不产生交易。",
+				],
 			],
-		],
-		playbackStops: [
-			["Resting quote", "初始报价"],
-			["Instruction sent", "指令发送"],
-			["Outcome confirmed", "结果确认"],
-		],
+			[
+				["Resting quote", "初始报价"],
+				["Instruction sent", "指令发送"],
+				["Outcome confirmed", "结果确认"],
+			],
+		),
 		Component: BookEventScene,
 	},
 	{
@@ -68,12 +73,12 @@ const scenes = [
 			"Inspect one venue, then change which quotes are eligible for the combined best prices.",
 			"检查一个场所，再改变参与汇总最优价格的合格报价范围。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Best bid and best ask can come from different eligible venues.",
 				"最优买价与最优卖价可以来自不同的合格场所。",
 			],
-		],
+		]),
 		Component: VenueQuoteScene,
 	},
 ] as const satisfies readonly ConceptScene[];

@@ -4,11 +4,16 @@ import {
 	type ReactNode,
 	type SetStateAction,
 	useContext,
+	useEffect,
+	useId,
 	useState,
 } from "react";
+import type { VisualStep } from "./visual-step";
 
 export type VisualPlaybackState = {
 	progress: number;
+	step?: VisualStep;
+	registerFrames?: (id: string, count: number) => () => void;
 	epoch: number;
 	playing: boolean;
 	pause: () => void;
@@ -25,13 +30,26 @@ export function useGuidedState<T>(
 	states: readonly T[],
 ): [T, Dispatch<SetStateAction<T>>] {
 	const playback = useContext(VisualPlayback);
+	const id = useId();
+	const count = states.some((value) => !Object.is(value, states[0]))
+		? states.length
+		: 1;
+	useEffect(
+		() => playback?.registerFrames?.(id, count),
+		[playback?.registerFrames, id, count],
+	);
 	const [override, setOverride] = useState<{ epoch: number; value: T } | null>(
 		null,
 	);
 	const epoch = playback?.epoch ?? 0;
 	const demonstrated =
 		playback && states.length > 0
-			? states[Math.round(playback.progress * (states.length - 1))]
+			? states[
+					Math.round(
+						(playback.step?.state.position ?? playback.progress) *
+							(states.length - 1),
+					)
+				]
 			: initial;
 	const value = override?.epoch === epoch ? override.value : demonstrated;
 	const setValue: Dispatch<SetStateAction<T>> = (next) => {

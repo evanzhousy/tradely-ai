@@ -179,62 +179,69 @@ export function KnowledgeCutoffScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<p className="font-mono text-xs">{data.date}</p>
-			<RangeControl
-				label={l(
-					"Decision cutoff seconds after 09:58",
-					"09:58 后的决策截止秒数",
-				)}
-				value={cutoff}
-				display={clock(cutoff)}
-				min={0}
-				max={300}
-				step={30}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(v);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<SelectField
-				label={l("Inspect source revision", "检查来源版本")}
-				value={selected}
-				options={data.records.map((r) => [r.id, `${r.key} v${r.version}`])}
-				onChange={setSelected}
-			/>
-			<p data-pit-record className="font-mono text-xs">
-				{row.key} v{row.version} · {number(row.contracts)}
-				<br />
-				{l("Event", "事件")}: {clock(row.eventSeconds)}
-				<br />
-				{l("Received", "接收")}:{" "}
-				{row.receivedSeconds === null ? "—" : clock(row.receivedSeconds)}
-			</p>
-			<p data-pit-status>{status}</p>
-			<p data-pit-total>
-				{l("Active known subtotal", "有效已知小计")}:{" "}
-				{number(knownContractSum(active))}
-			</p>
-			<p data-pit-active>
-				{l("Active revisions", "有效版本")}:{" "}
-				{active.map((r) => `${r.key} v${r.version}`).join(" / ") || "—"}
-			</p>
-			<Note>
-				{l(
-					"At 10:00 the 09:59 event is still unavailable: it arrives at 10:02. At 10:03, its correction replaces 100 with 70; do not add both versions. An unknown receipt clock cannot establish earlier availability. This subtotal covers known active records, not a complete source tape.",
-					"10:00 时，09:59 事件仍不可用，它到 10:02 才到达。10:03 的更正将 100 替换为 70，不要将两版本相加。未知接收时钟不能确定早先可用性。小计仅覆盖已知有效记录，不代表完整来源成交带。",
-				)}
-			</Note>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						label={l(
+							"Decision cutoff seconds after 09:58",
+							"09:58 后的决策截止秒数",
+						)}
+						value={cutoff}
+						display={clock(cutoff)}
+						min={0}
+						max={300}
+						step={30}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(v);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+					<SelectField
+						label={l("Inspect source revision", "检查来源版本")}
+						value={selected}
+						options={data.records.map((r) => [r.id, `${r.key} v${r.version}`])}
+						onChange={setSelected}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">{data.date}</p>
+					<p data-pit-record className="font-mono text-xs">
+						{row.key} v{row.version} · {number(row.contracts)}
+						<br />
+						{l("Event", "事件")}: {clock(row.eventSeconds)}
+						<br />
+						{l("Received", "接收")}:{" "}
+						{row.receivedSeconds === null ? "—" : clock(row.receivedSeconds)}
+					</p>
+					<p data-pit-status>{status}</p>
+					<p data-pit-total>
+						{l("Active known subtotal", "有效已知小计")}:{" "}
+						{number(knownContractSum(active))}
+					</p>
+					<p data-pit-active>
+						{l("Active revisions", "有效版本")}:{" "}
+						{active.map((r) => `${r.key} v${r.version}`).join(" / ") || "—"}
+					</p>
+					<Note>
+						{l(
+							"At 10:00 the 09:59 event is still unavailable: it arrives at 10:02. At 10:03, its correction replaces 100 with 70; do not add both versions. An unknown receipt clock cannot establish earlier availability. This subtotal covers known active records, not a complete source tape.",
+							"10:00 时，09:59 事件仍不可用，它到 10:02 才到达。10:03 的更正将 100 替换为 70，不要将两版本相加。未知接收时钟不能确定早先可用性。小计仅覆盖已知有效记录，不代表完整来源成交带。",
+						)}
+					</Note>
+				</>
+			}
+		/>
 	);
 }
 export function RecencyDecayScene({ locale }: Props) {
@@ -335,63 +342,71 @@ export function RecencyDecayScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Elapsed seconds without new events", "无新事件经过秒数")}
-				value={elapsed}
-				display={`${elapsed}s`}
-				min={0}
-				max={180}
-				step={30}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(v);
-				}}
-			/>
-			<SelectField
-				label={l("Half-life", "半衰期")}
-				value={halfLife === null ? "missing" : String(halfLife)}
-				options={[
-					["30", "30s"],
-					["60", "60s"],
-					["120", "120s"],
-					["missing", l("Not supplied", "未提供")],
-				]}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setHalfLife(v === "missing" ? null : Number(v));
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p className="font-mono text-xs">
-				{data.decay.initial} × (1/2)^({elapsed} / {number(halfLife)})
-			</p>
-			<p data-pit-raw>
-				{l("Fixed raw records", "固定原始记录")}: {data.decay.rawEvents}{" "}
-				{l("events", "事件")} · {data.decay.rawContracts} {l("contracts", "张")}
-			</p>
-			<Note>
-				{l(
-					"With a 60-second half-life, weight 80 becomes 40 after 60 seconds, 20 after 120 and 10 after 180. No raw events or contracts are removed. Changing the half-life changes the scoring method, not the original executions.",
-					"半衰期 60 秒时，权重 80 在 60 秒后为 40，120 秒后为 20，180 秒后为 10。未移除任何原始事件或张数。改变半衰期改变评分方法，而非原始执行。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This is a separate fixed-event example and an explicit decay formula, not a price forecast. A score changing without new activity does not imply new buying or selling.",
-					"这是独立固定事件示例及明确衰减公式，不是价格预测。无新活动时分数变化，不意味着新增买卖。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Elapsed seconds without new events", "无新事件经过秒数")}
+						value={elapsed}
+						display={`${elapsed}s`}
+						min={0}
+						max={180}
+						step={30}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(v);
+						}}
+					/>
+					<SelectField
+						label={l("Half-life", "半衰期")}
+						value={halfLife === null ? "missing" : String(halfLife)}
+						options={[
+							["30", "30s"],
+							["60", "60s"],
+							["120", "120s"],
+							["missing", l("Not supplied", "未提供")],
+						]}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setHalfLife(v === "missing" ? null : Number(v));
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						{data.decay.initial} × (1/2)^({elapsed} / {number(halfLife)})
+					</p>
+					<p data-pit-raw>
+						{l("Fixed raw records", "固定原始记录")}: {data.decay.rawEvents}{" "}
+						{l("events", "事件")} · {data.decay.rawContracts}{" "}
+						{l("contracts", "张")}
+					</p>
+					<Note>
+						{l(
+							"With a 60-second half-life, weight 80 becomes 40 after 60 seconds, 20 after 120 and 10 after 180. No raw events or contracts are removed. Changing the half-life changes the scoring method, not the original executions.",
+							"半衰期 60 秒时，权重 80 在 60 秒后为 40，120 秒后为 20，180 秒后为 10。未移除任何原始事件或张数。改变半衰期改变评分方法，而非原始执行。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This is a separate fixed-event example and an explicit decay formula, not a price forecast. A score changing without new activity does not imply new buying or selling.",
+							"这是独立固定事件示例及明确衰减公式，不是价格预测。无新活动时分数变化，不意味着新增买卖。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function ScoreMeaningScene({ locale }: Props) {
@@ -460,69 +475,77 @@ export function ScoreMeaningScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Baseline report", "基准报告")}
-				value={id}
-				options={data.reports.map((r) => [
-					r.id,
-					r.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<p className="font-mono text-xs">
-				n = {report.count} · {l("Protocol minimum", "协议下限")} ={" "}
-				{report.minimumCount}
-				<br />
-				{l("Current / mean / deviation", "当前 / 均值 / 标准差")}:{" "}
-				{report.current} / {report.mean} / {number(report.deviation)}
-				<br />
-				{l("Strictly below current", "严格低于当前")}: {report.below}
-			</p>
-			<p data-pit-percentile>
-				{l("Percentile", "百分位")}:{" "}
-				{result.percentile === null ? "—" : `${number(result.percentile)}%`}
-			</p>
-			<p data-pit-z>z: {number(result.z)}</p>
-			<p data-pit-score-status>
-				{result.reason === null
-					? l(
-							"Descriptive statistics under this supplied protocol",
-							"本给定协议下的描述统计",
-						)
-					: result.reason === "coverage"
-						? l("Required baseline coverage missing", "必需基准覆盖缺失")
-						: result.reason === "baseline"
-							? l("Baseline comparison is not supported", "基准比较不受支持")
-							: l(
-									"Below this example's declared sample minimum",
-									"低于本例声明样本下限",
-								)}
-			</p>
-			<Note>
-				{selected === "percentile"
-					? l(
-							"In the default report, 90 of 100 baseline observations are strictly below the current value: 90th percentile under this convention. This locates the value in that distribution; it is not a 90% chance of profit.",
-							"默认报告中，100 个基准观测有 90 个严格低于当前值：按此约定为第 90 百分位。这表示其在该分布的位置，不是 90% 盈利概率。",
-						)
-					: selected === "z"
-						? l(
-								"The default report’s current value 20, mean 10 and deviation 5 give z = (20−10)/5 = 2. This is standardized distance. Zero deviation makes z undefined while a supported percentile can remain available.",
-								"给定当前值 20、均值 10、标准差 5，得到 z=(20−10)/5=2。这是标准化距离。标准差为零时 z 未定义，但受支持的百分位可仍可用。",
-							)
-						: l(
-								"An outcome probability requires a defined event and horizon plus an evaluated, calibrated model. No such model is supplied here, so probability is unavailable. Percentile and z do not convert into a profit probability by relabeling.",
-								"结果概率需定义事件与期限，并提供经过评价和校准的模型。此处未提供，因此概率不可用。改标签不能将百分位或 z 变成盈利概率。",
-							)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"The 30-sample publication minimum is specific to this teaching protocol, not a universal statistical rule. These supplied summary reports are independent of the preceding decay example.",
-					"30 个样本的发布下限仅属于本教学协议，不是通用统计规则。这些给定汇总报告独立于前面的衰减示例。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<SelectField
+					label={l("Baseline report", "基准报告")}
+					value={id}
+					options={data.reports.map((r) => [
+						r.id,
+						r.label[locale === "zh" ? 1 : 0],
+					])}
+					onChange={setId}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						n = {report.count} · {l("Protocol minimum", "协议下限")} ={" "}
+						{report.minimumCount}
+						<br />
+						{l("Current / mean / deviation", "当前 / 均值 / 标准差")}:{" "}
+						{report.current} / {report.mean} / {number(report.deviation)}
+						<br />
+						{l("Strictly below current", "严格低于当前")}: {report.below}
+					</p>
+					<p data-pit-percentile>
+						{l("Percentile", "百分位")}:{" "}
+						{result.percentile === null ? "—" : `${number(result.percentile)}%`}
+					</p>
+					<p data-pit-z>z: {number(result.z)}</p>
+					<p data-pit-score-status>
+						{result.reason === null
+							? l(
+									"Descriptive statistics under this supplied protocol",
+									"本给定协议下的描述统计",
+								)
+							: result.reason === "coverage"
+								? l("Required baseline coverage missing", "必需基准覆盖缺失")
+								: result.reason === "baseline"
+									? l(
+											"Baseline comparison is not supported",
+											"基准比较不受支持",
+										)
+									: l(
+											"Below this example's declared sample minimum",
+											"低于本例声明样本下限",
+										)}
+					</p>
+					<Note>
+						{selected === "percentile"
+							? l(
+									"In the default report, 90 of 100 baseline observations are strictly below the current value: 90th percentile under this convention. This locates the value in that distribution; it is not a 90% chance of profit.",
+									"默认报告中，100 个基准观测有 90 个严格低于当前值：按此约定为第 90 百分位。这表示其在该分布的位置，不是 90% 盈利概率。",
+								)
+							: selected === "z"
+								? l(
+										"The default report’s current value 20, mean 10 and deviation 5 give z = (20−10)/5 = 2. This is standardized distance. Zero deviation makes z undefined while a supported percentile can remain available.",
+										"给定当前值 20、均值 10、标准差 5，得到 z=(20−10)/5=2。这是标准化距离。标准差为零时 z 未定义，但受支持的百分位可仍可用。",
+									)
+								: l(
+										"An outcome probability requires a defined event and horizon plus an evaluated, calibrated model. No such model is supplied here, so probability is unavailable. Percentile and z do not convert into a profit probability by relabeling.",
+										"结果概率需定义事件与期限，并提供经过评价和校准的模型。此处未提供，因此概率不可用。改标签不能将百分位或 z 变成盈利概率。",
+									)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"The 30-sample publication minimum is specific to this teaching protocol, not a universal statistical rule. These supplied summary reports are independent of the preceding decay example.",
+							"30 个样本的发布下限仅属于本教学协议，不是通用统计规则。这些给定汇总报告独立于前面的衰减示例。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function HoldoutScene({ locale }: Props) {
@@ -616,72 +639,79 @@ export function HoldoutScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Toy decision threshold", "示例决策阈值")}
-				value={threshold}
-				display={String(threshold)}
-				min={40}
-				max={100}
-				step={10}
-				onChange={change}
-			/>
-			<p className="font-mono text-xs">
-				{l("Development", "开发")}: {data.evaluation.developmentPeriod}
-				<br />
-				{l("Held out", "保留")}: {data.evaluation.heldoutPeriod}
-				<br />
-				{l("Outcome", "结果")}:{" "}
-				{l("positive next-session return", "下一时段收益为正")}
-			</p>
-			<p data-pit-frozen>
-				{l("First frozen threshold", "首次固定阈值")}: {number(frozen)}
-			</p>
-			<p data-pit-first>
-				{l("First held-out matches", "首次保留匹配")}:{" "}
-				{first === null ? "—" : `${first} / ${data.evaluation.heldout.length}`}
-			</p>
-			<p data-pit-current>
-				{l("Current replay matches", "当前重放匹配")}:{" "}
-				{current === null
-					? "—"
-					: `${current} / ${data.evaluation.heldout.length}`}
-			</p>
-			<p data-pit-holdout-status>
-				{reused
-					? l(
-							"Tuned after viewing outcomes: development reuse, not a fresh held-out test",
-							"看结果后调参：开发复用，不是新的保留检验",
-						)
-					: frozen === null
-						? l(
-								"Set the design before revealing outcomes",
-								"展示结果前设置设计",
-							)
-						: l(
-								"Original frozen result retained; no subsequent tuning yet",
-								"保留原固定结果；尚未后续调参",
-							)}
-			</p>
-			<Note>
-				{frozen === null
-					? l(
-							"Use development observations to set the rule before opening held-out outcomes. The reveal action freezes the current threshold and records its first comparison. Do not select a threshold using results that belong to the test period.",
-							"打开保留结果前，使用开发观测设置规则。展示操作会固定当前阈值并记录首次比较。不要用检验期结果选择阈值。",
-						)
-					: l(
-							"The first result belongs to the frozen threshold. A better replay after outcome-informed tuning is development reuse. Returning to the original parameter cannot make seen outcomes untouched again; retain the first result and use a genuinely new test period.",
-							"首次结果属于固定阈值。受结果影响调参后的更好重放属于开发复用。参数调回原值不能让已看结果重新未触碰；应保留首次结果，并使用真正的新检验期。",
+			controls={
+				<RangeControl
+					inputScale={1}
+					label={l("Toy decision threshold", "示例决策阈值")}
+					value={threshold}
+					display={String(threshold)}
+					min={40}
+					max={100}
+					step={10}
+					onChange={change}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						{l("Development", "开发")}: {data.evaluation.developmentPeriod}
+						<br />
+						{l("Held out", "保留")}: {data.evaluation.heldoutPeriod}
+						<br />
+						{l("Outcome", "结果")}:{" "}
+						{l("positive next-session return", "下一时段收益为正")}
+					</p>
+					<p data-pit-frozen>
+						{l("First frozen threshold", "首次固定阈值")}: {number(frozen)}
+					</p>
+					<p data-pit-first>
+						{l("First held-out matches", "首次保留匹配")}:{" "}
+						{first === null
+							? "—"
+							: `${first} / ${data.evaluation.heldout.length}`}
+					</p>
+					<p data-pit-current>
+						{l("Current replay matches", "当前重放匹配")}:{" "}
+						{current === null
+							? "—"
+							: `${current} / ${data.evaluation.heldout.length}`}
+					</p>
+					<p data-pit-holdout-status>
+						{reused
+							? l(
+									"Tuned after viewing outcomes: development reuse, not a fresh held-out test",
+									"看结果后调参：开发复用，不是新的保留检验",
+								)
+							: frozen === null
+								? l(
+										"Set the design before revealing outcomes",
+										"展示结果前设置设计",
+									)
+								: l(
+										"Original frozen result retained; no subsequent tuning yet",
+										"保留原固定结果；尚未后续调参",
+									)}
+					</p>
+					<Note>
+						{frozen === null
+							? l(
+									"Use development observations to set the rule before opening held-out outcomes. The reveal action freezes the current threshold and records its first comparison. Do not select a threshold using results that belong to the test period.",
+									"打开保留结果前，使用开发观测设置规则。展示操作会固定当前阈值并记录首次比较。不要用检验期结果选择阈值。",
+								)
+							: l(
+									"The first result belongs to the frozen threshold. A better replay after outcome-informed tuning is development reuse. Returning to the original parameter cannot make seen outcomes untouched again; retain the first result and use a genuinely new test period.",
+									"首次结果属于固定阈值。受结果影响调参后的更好重放属于开发复用。参数调回原值不能让已看结果重新未触碰；应保留首次结果，并使用真正的新检验期。",
+								)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"These tiny synthetic counts demonstrate protocol, not predictive skill or tradable returns. Reset restores only this illustration; it cannot erase knowledge of a real holdout. Freeze population, features, metric and evaluation rules before opening a genuinely new test period.",
+							"这些极小模拟计数演示协议，不证明预测能力或可交易收益。重置仅恢复此示例，不能抹去真实保留集知识。开启真正新检验期前，应固定人群、特征、指标与评价规则。",
 						)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"These tiny synthetic counts demonstrate protocol, not predictive skill or tradable returns. Reset restores only this illustration; it cannot erase knowledge of a real holdout. Freeze population, features, metric and evaluation rules before opening a genuinely new test period.",
-					"这些极小模拟计数演示协议，不证明预测能力或可交易收益。重置仅恢复此示例，不能抹去真实保留集知识。开启真正新检验期前，应固定人群、特征、指标与评价规则。",
-				)}
-			</p>
-		</SceneLayout>
+					</p>
+				</>
+			}
+		/>
 	);
 }

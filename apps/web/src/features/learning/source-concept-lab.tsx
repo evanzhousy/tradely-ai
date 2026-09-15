@@ -7,6 +7,7 @@ import {
 	SourceData,
 	SourceRequirementScene,
 } from "./source-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -17,12 +18,12 @@ const scenes = [
 			"Replay event and receipt time while dated OI and model context keep their own clocks.",
 			"回放事件与接收时间，带日期 OI 和模型上下文保留各自时钟。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"An event may happen before it becomes available to the researcher.",
 				"事件发生时间，可以早于研究者得知它的时间。",
 			],
-		],
+		]),
 		Component: SourceClocksScene,
 	},
 	{
@@ -33,12 +34,12 @@ const scenes = [
 			"Choose the requested session, then audit the source's identity, time, unit, value and coverage.",
 			"选择请求时段，再审计来源的身份、时间、单位、数值与覆盖。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"The same record can satisfy one time requirement and fail another.",
 				"同一记录可满足一种时间要求，却不满足另一种。",
 			],
-		],
+		]),
 		Component: SourceRequirementScene,
 	},
 	{
@@ -52,12 +53,12 @@ const scenes = [
 			"Replay two reports. Compare fixed series with a rolling DTE window, then withhold a later value.",
 			"回放两份报告，比较固定序列与滚动 DTE 窗口，再隐藏一个后期数值。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Changing membership can change a rolling subtotal even when individual records stay fixed.",
 				"即使单条记录不变，成员变动也能改变滚动小计。",
 			],
-		],
+		]),
 		Component: SourceCohortScene,
 	},
 ] as const satisfies readonly ConceptScene[];

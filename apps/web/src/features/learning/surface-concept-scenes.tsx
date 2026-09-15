@@ -191,66 +191,71 @@ export function SurfaceSlicesScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("IV input coverage", "IV 输入覆盖")}
-					value={dataset}
-					options={data.datasets.map((d) => [
-						d.id,
-						d.label[locale === "zh" ? 1 : 0],
-					])}
-					onChange={setDataset}
-				/>
-				<ChoiceField
-					label={l("Slice to inspect", "检查的切片")}
-					value={axis}
-					options={[
-						["strike", l("Strike slice", "行权价切片")],
-						["term", l("Term slice", "期限切片")],
-					]}
-					onChange={setAxis}
-				/>
-				<SelectField
-					label={l("Selected expiry", "选定到期日")}
-					value={String(row)}
-					options={data.expiries.map((e, i) => [
-						String(i),
-						`${e.date} · ${e.days}D`,
-					])}
-					onChange={(value) => setRow(Number(value))}
-				/>
-				<SelectField
-					label={l("Selected strike", "选定行权价")}
-					value={String(column)}
-					options={data.strikes.map((strike, i) => [String(i), `$${strike}`])}
-					onChange={(value) => setColumn(Number(value))}
-				/>
-			</FieldGroup>
-			<p data-surface-availability className="text-sm">
-				{selected === null
-					? l(
-							"This source does not supply the selected cell",
-							"此来源未提供选定单元格",
-						)
-					: l(
-							"Supplied IV node; no interpolation applied",
-							"给定 IV 节点；未应用插值",
-						)}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l("A slice keeps one coordinate fixed", "切片固定一个坐标")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"A strike slice compares strikes at one expiry. This term slice keeps the strike fixed while expiry changes. These fixed-strike nodes are not 25-delta wings. Quote-derived and traded-only inputs have different coverage and may produce different IVs. Missing cells remain empty; no line is drawn through an absent observation.",
-						"行权价切片在一个到期日比较行权价；此期限切片固定行权价、改变到期日。这些固定行权价节点不是 25 Delta 翼。报价推导与仅成交输入覆盖不同，也可能产生不同 IV。缺失单元格保持空白，不连线穿过缺失观测。",
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("IV input coverage", "IV 输入覆盖")}
+						value={dataset}
+						options={data.datasets.map((d) => [
+							d.id,
+							d.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setDataset}
+					/>
+					<ChoiceField
+						label={l("Slice to inspect", "检查的切片")}
+						value={axis}
+						options={[
+							["strike", l("Strike slice", "行权价切片")],
+							["term", l("Term slice", "期限切片")],
+						]}
+						onChange={setAxis}
+					/>
+					<SelectField
+						label={l("Selected expiry", "选定到期日")}
+						value={String(row)}
+						options={data.expiries.map((e, i) => [
+							String(i),
+							`${e.date} · ${e.days}D`,
+						])}
+						onChange={(value) => setRow(Number(value))}
+					/>
+					<SelectField
+						label={l("Selected strike", "选定行权价")}
+						value={String(column)}
+						options={data.strikes.map((strike, i) => [String(i), `$${strike}`])}
+						onChange={(value) => setColumn(Number(value))}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p data-surface-availability className="text-sm">
+						{selected === null
+							? l(
+									"This source does not supply the selected cell",
+									"此来源未提供选定单元格",
+								)
+							: l(
+									"Supplied IV node; no interpolation applied",
+									"给定 IV 节点；未应用插值",
+								)}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l("A slice keeps one coordinate fixed", "切片固定一个坐标")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"A strike slice compares strikes at one expiry. This term slice keeps the strike fixed while expiry changes. These fixed-strike nodes are not 25-delta wings. Quote-derived and traded-only inputs have different coverage and may produce different IVs. Missing cells remain empty; no line is drawn through an absent observation.",
+								"行权价切片在一个到期日比较行权价；此期限切片固定行权价、改变到期日。这些固定行权价节点不是 25 Delta 翼。报价推导与仅成交输入覆盖不同，也可能产生不同 IV。缺失单元格保持空白，不连线穿过缺失观测。",
+							)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -338,57 +343,62 @@ export function SurfaceWingsScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("Wing reference case", "两翼参考案例")}
-					value={id}
-					options={data.wings.map((w) => [
-						w.id,
-						w.label[locale === "zh" ? 1 : 0],
-					])}
-					onChange={setId}
-				/>
-				<ChoiceField
-					label={l("Skew sign convention", "偏斜符号约定")}
-					value={order}
-					options={[
-						["put-call", l("Put minus call", "看跌减看涨")],
-						["call-put", l("Call minus put", "看涨减看跌")],
-					]}
-					onChange={setOrder}
-				/>
-			</FieldGroup>
-			<div className="space-y-3 break-words font-mono text-muted-foreground text-xs">
-				{refs.map(([label, ref]) => (
-					<p key={label}>
-						{label}: {pct(ref.iv)} · {ref.expiry}
-						<br />
-						{ref.convention}
-						<br />
-						{ref.source}
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Wing reference case", "两翼参考案例")}
+						value={id}
+						options={data.wings.map((w) => [
+							w.id,
+							w.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setId}
+					/>
+					<ChoiceField
+						label={l("Skew sign convention", "偏斜符号约定")}
+						value={order}
+						options={[
+							["put-call", l("Put minus call", "看跌减看涨")],
+							["call-put", l("Call minus put", "看涨减看跌")],
+						]}
+						onChange={setOrder}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<div className="space-y-3 break-words font-mono text-muted-foreground text-xs">
+						{refs.map(([label, ref]) => (
+							<p key={label}>
+								{label}: {pct(ref.iv)} · {ref.expiry}
+								<br />
+								{ref.convention}
+								<br />
+								{ref.source}
+							</p>
+						))}
+					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{l("Check compatibility before subtracting", "相减前检查兼容性")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"Skew needs compatible put/call references. Butterfly also needs a matching ATM value: (put IV + call IV)/2 − ATM IV. A missing ATM can leave skew available while withholding butterfly. A missing wing affects both. This lab requires the same expiry, coordinate convention and price-source convention; equal-looking numbers do not repair a mismatch.",
+								"偏斜需要兼容的看跌/看涨参考；蝶式还需匹配 ATM 值：（看跌 IV + 看涨 IV）/2 − ATM IV。ATM 缺失时偏斜仍可用，而蝶式不可用；任一翼缺失会影响两者。本课堂要求相同到期日、坐标约定与价格来源约定，数值看似相等不能修复不匹配。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Delta coordinates depend on the model and premium convention and can correspond to different strikes at different expiries. These are supplied delta/ATM references, separate from the sparse fixed-strike grid. The butterfly here is an IV-shape statistic, not a trading-strategy price.",
+							"Delta 坐标依赖模型和权利金约定，不同到期日可对应不同行权价。这些是给定 Delta/ATM 参考，与稀疏固定行权价网格分开。此处蝶式是 IV 形状统计量，不是交易策略价格。",
+						)}
 					</p>
-				))}
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Check compatibility before subtracting", "相减前检查兼容性")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"Skew needs compatible put/call references. Butterfly also needs a matching ATM value: (put IV + call IV)/2 − ATM IV. A missing ATM can leave skew available while withholding butterfly. A missing wing affects both. This lab requires the same expiry, coordinate convention and price-source convention; equal-looking numbers do not repair a mismatch.",
-						"偏斜需要兼容的看跌/看涨参考；蝶式还需匹配 ATM 值：（看跌 IV + 看涨 IV）/2 − ATM IV。ATM 缺失时偏斜仍可用，而蝶式不可用；任一翼缺失会影响两者。本课堂要求相同到期日、坐标约定与价格来源约定，数值看似相等不能修复不匹配。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Delta coordinates depend on the model and premium convention and can correspond to different strikes at different expiries. These are supplied delta/ATM references, separate from the sparse fixed-strike grid. The butterfly here is an IV-shape statistic, not a trading-strategy price.",
-					"Delta 坐标依赖模型和权利金约定，不同到期日可对应不同行权价。这些是给定 Delta/ATM 参考，与稀疏固定行权价网格分开。此处蝶式是 IV 形状统计量，不是交易策略价格。",
-				)}
-			</p>
-		</SceneLayout>
+				</>
+			}
+		/>
 	);
 }
 
@@ -525,58 +535,63 @@ export function SurfaceInterpolationScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("Interpolation method", "插值方法")}
-					value={method}
-					options={[
-						["none", l("Supplied nodes only", "仅给定节点")],
-						["iv", l("Linear IV", "线性 IV")],
-						["variance", l("Linear total variance", "线性总方差")],
-					]}
-					onChange={(value) => setMethod(value as InterpolationMethod)}
-				/>
-				<SelectField
-					label={l("Anchor coverage", "锚点覆盖")}
-					value={coverage}
-					options={[
-						["complete", l("Both references supplied", "两个参考均已提供")],
-						["missing", l("Later reference withheld", "后期参考被隐藏")],
-					]}
-					onChange={setCoverage}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Target calendar days", "目标自然日数")}
-					value={days}
-					display={String(days)}
-					min={data.targetRange[0]}
-					max={data.targetRange[1]}
-					onChange={setDays}
-				/>
-			</FieldGroup>
-			<p data-surface-provenance className="text-sm">
-				{reason}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Keep estimates visibly labeled", "明确标注估计值")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"Interpolation is opt-in and only supported between two supplied anchors. Exact anchor tenors keep their supplied values. Linear IV blends percentages; linear total variance blends (IV/100)² × years and then converts back to IV, using ACT/365 here. The rules can produce different answers. Missing anchors and outside-range targets do not receive invented values.",
-						"插值需主动选择，且仅在两个给定锚点之间受支持。精确锚点期限保留给定值。线性 IV 混合百分比；线性总方差混合（IV/100）平方 × 年数，再转换回 IV，此处使用 ACT/365。不同规则可能产生不同结果。缺失锚点与超范围目标不会获得编造值。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Filled nodes are supplied references; an outlined node and dashed curve identify estimates. An ATM30 reference need not be a listed 30-day contract. This illustration is not a complete arbitrage-free surface, a quote guarantee or a forecast.",
-					"实心节点是给定参考，空心节点与虚线表示估计。ATM30 参考不必对应挂牌 30 天合约。本示例不是完整无套利曲面、报价保证或预测。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Interpolation method", "插值方法")}
+						value={method}
+						options={[
+							["none", l("Supplied nodes only", "仅给定节点")],
+							["iv", l("Linear IV", "线性 IV")],
+							["variance", l("Linear total variance", "线性总方差")],
+						]}
+						onChange={(value) => setMethod(value as InterpolationMethod)}
+					/>
+					<SelectField
+						label={l("Anchor coverage", "锚点覆盖")}
+						value={coverage}
+						options={[
+							["complete", l("Both references supplied", "两个参考均已提供")],
+							["missing", l("Later reference withheld", "后期参考被隐藏")],
+						]}
+						onChange={setCoverage}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Target calendar days", "目标自然日数")}
+						value={days}
+						display={String(days)}
+						min={data.targetRange[0]}
+						max={data.targetRange[1]}
+						onChange={setDays}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p data-surface-provenance className="text-sm">
+						{reason}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l("Keep estimates visibly labeled", "明确标注估计值")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"Interpolation is opt-in and only supported between two supplied anchors. Exact anchor tenors keep their supplied values. Linear IV blends percentages; linear total variance blends (IV/100)² × years and then converts back to IV, using ACT/365 here. The rules can produce different answers. Missing anchors and outside-range targets do not receive invented values.",
+								"插值需主动选择，且仅在两个给定锚点之间受支持。精确锚点期限保留给定值。线性 IV 混合百分比；线性总方差混合（IV/100）平方 × 年数，再转换回 IV，此处使用 ACT/365。不同规则可能产生不同结果。缺失锚点与超范围目标不会获得编造值。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Filled nodes are supplied references; an outlined node and dashed curve identify estimates. An ATM30 reference need not be a listed 30-day contract. This illustration is not a complete arbitrage-free surface, a quote guarantee or a forecast.",
+							"实心节点是给定参考，空心节点与虚线表示估计。ATM30 参考不必对应挂牌 30 天合约。本示例不是完整无套利曲面、报价保证或预测。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

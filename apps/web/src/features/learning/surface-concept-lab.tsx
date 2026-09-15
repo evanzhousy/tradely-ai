@@ -7,6 +7,7 @@ import {
 	SurfaceSlicesScene,
 	SurfaceWingsScene,
 } from "./surface-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -17,12 +18,12 @@ const scenes = [
 			"Pick a cell in the SVG and compare its strike row or expiry column. Change the source to reveal coverage differences.",
 			"在 SVG 中选择单元格，比较其行权价行或到期日列，再改变来源查看覆盖差异。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Read a strike slice and an expiry slice as different directions through the same observations.",
 				"行权价切片与到期切片，是读取同一组观测的不同方向。",
 			],
-		],
+		]),
 		Component: SurfaceSlicesScene,
 	},
 	{
@@ -36,12 +37,12 @@ const scenes = [
 			"Inspect the put, ATM and call references. Reverse the skew convention or remove an input and watch what remains calculable.",
 			"检查看跌、ATM 与看涨参考，反转偏斜约定或移除输入，观察哪些量仍可计算。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Keep the wing convention and missing observations attached to the comparison.",
 				"比较时保留两翼约定，以及缺失的观测信息。",
 			],
-		],
+		]),
 		Component: SurfaceWingsScene,
 	},
 	{
@@ -55,12 +56,12 @@ const scenes = [
 			"Choose an interpolation rule explicitly, then move the target tenor. Compare supplied, estimated and unsupported values.",
 			"明确选择插值规则，再移动目标期限，比较给定、估计与无支持数值。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Observed nodes and estimated values are different. Missing support remains visible.",
 				"观测节点与估计值不同，缺少支持的数据保持可见。",
 			],
-		],
+		]),
 		Component: SurfaceInterpolationScene,
 	},
 ] as const satisfies readonly ConceptScene[];

@@ -210,53 +210,58 @@ export function RankFrequencyScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<ExperimentContext locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Hypothetical current IV", "假设当前 IV")}
-				value={current}
-				display={pct(current)}
-				min={data.currentRange[0]}
-				max={data.currentRange[1]}
-				step={1}
-				onChange={setCurrent}
-			/>
-			<div className="space-y-3 text-sm">
-				<p>
-					{l("Rank", "Rank")}: ({current} − {stats.minimum}) / ({stats.maximum}{" "}
-					− {stats.minimum}) × 100
-				</p>
-				<p>
-					{l("Strictly-below percentile", "严格低于百分位")}: {stats.below} /{" "}
-					{stats.count} × 100
-				</p>
-				<p data-ivr-counts>
-					{l("Below / equal / above", "低于 / 相等 / 高于")}: {stats.below} /{" "}
-					{stats.equal} / {stats.above}
-				</p>
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"Location and frequency answer different questions",
-						"位置与频率回答不同问题",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"Rank measures distance within the supplied low-to-high range. Percentile counts observations strictly below the current value. Equal values are not below, but remain in the denominator. Moving the current IV changes rank continuously; the strictly-below count changes at historical IV thresholds.",
-						"Rank 衡量当前值在给定最低到最高区间内的位置；百分位统计严格低于当前值的观测。相等值不算较低，但仍保留于分母。移动当前 IV 时，Rank 连续改变，严格低于计数则在历史 IV 阈值处改变。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This is a small supplied sample, not a one-year history. The current observation is not appended to the historical denominator. Neither measure predicts direction or profit.",
-					"这是给定小样本，不是一年历史。当前观测不会追加进历史分母。两项指标都不预测方向或利润。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<RangeControl
+					inputScale={1}
+					label={l("Hypothetical current IV", "假设当前 IV")}
+					value={current}
+					display={pct(current)}
+					min={data.currentRange[0]}
+					max={data.currentRange[1]}
+					step={1}
+					onChange={setCurrent}
+				/>
+			}
+			details={
+				<>
+					<ExperimentContext locale={locale} />
+					<div className="space-y-3 text-sm">
+						<p>
+							{l("Rank", "Rank")}: ({current} − {stats.minimum}) / (
+							{stats.maximum} − {stats.minimum}) × 100
+						</p>
+						<p>
+							{l("Strictly-below percentile", "严格低于百分位")}: {stats.below}{" "}
+							/ {stats.count} × 100
+						</p>
+						<p data-ivr-counts>
+							{l("Below / equal / above", "低于 / 相等 / 高于")}: {stats.below}{" "}
+							/ {stats.equal} / {stats.above}
+						</p>
+					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"Location and frequency answer different questions",
+								"位置与频率回答不同问题",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"Rank measures distance within the supplied low-to-high range. Percentile counts observations strictly below the current value. Equal values are not below, but remain in the denominator. Moving the current IV changes rank continuously; the strictly-below count changes at historical IV thresholds.",
+								"Rank 衡量当前值在给定最低到最高区间内的位置；百分位统计严格低于当前值的观测。相等值不算较低，但仍保留于分母。移动当前 IV 时，Rank 连续改变，严格低于计数则在历史 IV 阈值处改变。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This is a small supplied sample, not a one-year history. The current observation is not appended to the historical denominator. Neither measure predicts direction or profit.",
+							"这是给定小样本，不是一年历史。当前观测不会追加进历史分母。两项指标都不预测方向或利润。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -384,47 +389,54 @@ export function RankOutlierScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<ExperimentContext locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Highest historical observation", "历史最高观测")}
-				value={high}
-				display={pct(high)}
-				min={data.outlierRange[0]}
-				max={data.outlierRange[1]}
-				step={1}
-				onChange={choose}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p className="text-sm">
-				{l(
-					"Only the highest observation changes; current IV and the other observations stay fixed.",
-					"仅最高观测改变；当前 IV 与其他观测保持不变。",
-				)}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"A wider range can lower rank without moving the count",
-						"区间变宽可降低 Rank，却不改变计数",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The edited high remains above the current value, so below/tie/above membership does not change. Its magnitude changes the range denominator and therefore rank. The normalized range track changes endpoints; it is not a common absolute-IV axis. Playback visits hypothetical replacements, not an observed market sequence.",
-						"修改后的高值仍高于当前值，因此低于、相等、高于的成员关系不变。其大小改变区间分母，进而改变 Rank。归一化区间轨道的端点会变化，并非共同绝对 IV 坐标轴。回放展示假设替换值，不是观测市场序列。",
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Highest historical observation", "历史最高观测")}
+						value={high}
+						display={pct(high)}
+						min={data.outlierRange[0]}
+						max={data.outlierRange[1]}
+						step={1}
+						onChange={choose}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<ExperimentContext locale={locale} />
+					<p className="text-sm">
+						{l(
+							"Only the highest observation changes; current IV and the other observations stay fixed.",
+							"仅最高观测改变；当前 IV 与其他观测保持不变。",
+						)}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"A wider range can lower rank without moving the count",
+								"区间变宽可降低 Rank，却不改变计数",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The edited high remains above the current value, so below/tie/above membership does not change. Its magnitude changes the range denominator and therefore rank. The normalized range track changes endpoints; it is not a common absolute-IV axis. Playback visits hypothetical replacements, not an observed market sequence.",
+								"修改后的高值仍高于当前值，因此低于、相等、高于的成员关系不变。其大小改变区间分母，进而改变 Rank。归一化区间轨道的端点会变化，并非共同绝对 IV 坐标轴。回放展示假设替换值，不是观测市场序列。",
+							)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -516,63 +528,68 @@ export function RankCoverageScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<SelectField
-				label={l("History sample", "历史样本")}
-				value={id}
-				options={data.samples.map((s) => [
-					s.id,
-					s.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<div className="space-y-3 break-words font-mono text-muted-foreground text-xs">
-				<p>
-					{l("Current", "当前")}: {sample.current.symbol} ·{" "}
-					{sample.current.reference}
-					<br />
-					{sample.current.date} · {pct(sample.current.iv)}
-				</p>
-				<p>
-					{l("History", "历史")}: {sample.history.symbol} ·{" "}
-					{sample.history.reference}
-					<br />
-					{sample.history.start} → {sample.history.end}
-				</p>
-			</div>
-			<p data-ivr-sample-status className="text-sm">
-				{result.issue
-					? issues[result.issue]
-					: stats?.minimum === stats?.maximum
-						? l(
-								"Zero historical range: rank undefined; percentile remains defined",
-								"历史区间为零：Rank 无定义，百分位仍有定义",
-							)
-						: l(
-								"Statistics for this complete declared sample",
-								"此完整声明样本的统计量",
+			controls={
+				<SelectField
+					label={l("History sample", "历史样本")}
+					value={id}
+					options={data.samples.map((s) => [
+						s.id,
+						s.label[locale === "zh" ? 1 : 0],
+					])}
+					onChange={setId}
+				/>
+			}
+			details={
+				<>
+					<div className="space-y-3 break-words font-mono text-muted-foreground text-xs">
+						<p>
+							{l("Current", "当前")}: {sample.current.symbol} ·{" "}
+							{sample.current.reference}
+							<br />
+							{sample.current.date} · {pct(sample.current.iv)}
+						</p>
+						<p>
+							{l("History", "历史")}: {sample.history.symbol} ·{" "}
+							{sample.history.reference}
+							<br />
+							{sample.history.start} → {sample.history.end}
+						</p>
+					</div>
+					<p data-ivr-sample-status className="text-sm">
+						{result.issue
+							? issues[result.issue]
+							: stats?.minimum === stats?.maximum
+								? l(
+										"Zero historical range: rank undefined; percentile remains defined",
+										"历史区间为零：Rank 无定义，百分位仍有定义",
+									)
+								: l(
+										"Statistics for this complete declared sample",
+										"此完整声明样本的统计量",
+									)}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"Check the reference, window and denominator",
+								"检查参考、窗口与分母",
 							)}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"Check the reference, window and denominator",
-						"检查参考、窗口与分母",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The current and historical IV reference must match. This lab uses distinct historical dates before the current date and a declared required count. Missing values are neither dropped nor filled with zero. A zero high-to-low range blocks rank, but does not prevent counting below the current value. Ties remain in the denominator.",
-						"当前与历史 IV 参考必须匹配。本课堂使用当前日期之前的独立历史日期，并声明所需数量。缺失值既不删除，也不填零。最高到最低区间为零时 Rank 无定义，但仍可统计低于当前值的数量。相等值保留于分母。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Changing the window changes the sample. These short supplied examples are not one-year estimates. Provider inclusion and tie conventions can differ and must be stated; neither a high rank nor a high percentile guarantees direction or profit.",
-					"改变窗口就改变样本。这些给定短样本不是一年估计。供应商的纳入及相等值约定可能不同，必须说明；高 Rank 或高百分位都不保证方向或利润。",
-				)}
-			</p>
-		</SceneLayout>
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The current and historical IV reference must match. This lab uses distinct historical dates before the current date and a declared required count. Missing values are neither dropped nor filled with zero. A zero high-to-low range blocks rank, but does not prevent counting below the current value. Ties remain in the denominator.",
+								"当前与历史 IV 参考必须匹配。本课堂使用当前日期之前的独立历史日期，并声明所需数量。缺失值既不删除，也不填零。最高到最低区间为零时 Rank 无定义，但仍可统计低于当前值的数量。相等值保留于分母。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Changing the window changes the sample. These short supplied examples are not one-year estimates. Provider inclusion and tie conventions can differ and must be stated; neither a high rank nor a high percentile guarantees direction or profit.",
+							"改变窗口就改变样本。这些给定短样本不是一年估计。供应商的纳入及相等值约定可能不同，必须说明；高 Rank 或高百分位都不保证方向或利润。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

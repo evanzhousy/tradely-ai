@@ -7,6 +7,7 @@ import {
 	PositionEffectsScene,
 	SessionOiScene,
 } from "./oi-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -20,7 +21,7 @@ const scenes = [
 			"Change the supplied buyer and seller flags. Watch which contracts are created, removed or transferred.",
 			"改变给定买卖双方的开平仓标记，观察合约是新增、消除还是转移。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Both sides open: OI rises while the execution adds volume.",
 				"双方开仓：OI 增加，成交也计入成交量。",
@@ -37,7 +38,7 @@ const scenes = [
 				"The buyer closes and the seller opens: OI is unchanged, but volume still increases.",
 				"买方平仓、卖方开仓：OI 不变，成交量仍增加。",
 			],
-		],
+		]),
 		Component: PositionEffectsScene,
 	},
 	{
@@ -51,7 +52,7 @@ const scenes = [
 			"Replay the executions and clearing activity. Keep a calculation separate from a published observation.",
 			"回放成交与清算活动，区分计算结果与已发布观测。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Start with the reported opening balance. It is a dated position count.",
 				"从已报告的起始余额开始，它是带日期的持仓数量。",
@@ -64,7 +65,7 @@ const scenes = [
 				"Compare the final reported OI with session volume using their own dates and coverage.",
 				"按各自日期与覆盖范围，比较期末报告 OI 和日内成交量。",
 			],
-		],
+		]),
 		Component: SessionOiScene,
 	},
 	{
@@ -78,7 +79,7 @@ const scenes = [
 			"Move between report dates. Compare a fixed expiry set with a rolling DTE window.",
 			"切换报告日期，比较固定到期集合与滚动 DTE 窗口。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"A rolling label can contain different contracts on different days.",
 				"同一个滚动标签，在不同日期可能包含不同合约。",
@@ -91,7 +92,7 @@ const scenes = [
 				"Compare a fixed cohort before interpreting the difference as position change.",
 				"先比较固定合约集合，再解读其差值。",
 			],
-		],
+		]),
 		Component: CohortComparisonScene,
 	},
 ] as const satisfies readonly ConceptScene[];

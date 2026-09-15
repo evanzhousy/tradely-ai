@@ -7,6 +7,7 @@ import {
 	GexDistributionScene,
 	GexFormulaScene,
 } from "./gex-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -20,12 +21,12 @@ const scenes = [
 			"Change OI, spot or the assumed position sign. Hold the other inputs fixed and inspect the stated units.",
 			"改变 OI、现价或假设持仓符号，固定其他输入并检查声明单位。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Build the contribution from the stated inputs, scale and assumed position sign.",
 				"用给定输入、尺度及假设持仓符号构建贡献值。",
 			],
-		],
+		]),
 		Component: GexFormulaScene,
 	},
 	{
@@ -39,12 +40,12 @@ const scenes = [
 			"Select an SVG cell, inspect its expiry slice, then switch distributions. Compare net, gross and location separately.",
 			"选择 SVG 单元格，检查其到期切片，再切换分布，分别比较净值、总幅度与位置。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Different strike distributions can share the same net exposure.",
 				"不同的行权价分布，可以具有相同净敞口。",
 			],
-		],
+		]),
 		Component: GexDistributionScene,
 	},
 	{
@@ -55,12 +56,12 @@ const scenes = [
 			"Remove a contribution or keep only traded contracts. Explicit zero, missing data and excluded contracts have different meanings.",
 			"移除一项贡献或仅保留有成交合约。明确的零、缺失数据与被排除合约含义不同。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"A visible subtotal does not establish the complete chain total.",
 				"可见小计不能确定完整期权链总量。",
 			],
-		],
+		]),
 		Component: GexCoverageScene,
 	},
 ] as const satisfies readonly ConceptScene[];

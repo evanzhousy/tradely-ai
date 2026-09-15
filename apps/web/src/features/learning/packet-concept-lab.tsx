@@ -7,6 +7,7 @@ import {
 	PacketRerunScene,
 	PacketTraceScene,
 } from "./packet-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -17,12 +18,20 @@ const scenes = [
 			"Inspect each supplied row, then replay the transformation and coverage check. Missing R3 stays in the record.",
 			"检查每条给定行，再回放变换与覆盖检查。缺失 R3 保留在记录中。",
 		],
-		demonstration: [
+		steps: teachingSteps(
 			[
-				"Trace the actual row IDs through the formula to the observed subtotal.",
-				"沿真实行 ID，经过公式，追踪到已观测小计。",
+				[
+					"Trace the actual row IDs through the formula to the observed subtotal.",
+					"沿真实行 ID，经过公式，追踪到已观测小计。",
+				],
 			],
-		],
+			[
+				["Source rows", "来源行"],
+				["Calculate", "计算"],
+				["Subtotal", "小计"],
+				["Coverage", "覆盖"],
+			],
+		),
 		Component: PacketTraceScene,
 	},
 	{
@@ -36,12 +45,12 @@ const scenes = [
 			"Inspect the actual recorded fields. Remove a field to see what another reader would be missing.",
 			"检查实际记录字段，移除字段以查看其他读者会缺少什么。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Build a complete example with source, method, units and missingness beside the result.",
 				"在结果旁补齐来源、方法、单位与缺失信息，构建完整示例。",
 			],
-		],
+		]),
 		Component: PacketFieldsScene,
 	},
 	{
@@ -55,12 +64,12 @@ const scenes = [
 			"Compare a dated rerun with a changed universe, source or formula. Keep the original packet visible.",
 			"比较日期重跑与范围、来源或公式变化，保持原研究包可见。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"A permitted rerun gets its own record while preserving the original result.",
 				"允许的重跑建立独立记录，同时保留原结果。",
 			],
-		],
+		]),
 		Component: PacketRerunScene,
 	},
 ] as const satisfies readonly ConceptScene[];

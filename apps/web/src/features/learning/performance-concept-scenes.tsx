@@ -8,6 +8,7 @@ import {
 	type PerformanceConceptData,
 } from "@/domain/learning/performance-concept";
 import type { Locale } from "@/i18n/messages";
+import { BeforeAfterComparison } from "./before-after-comparison";
 import {
 	Diagram,
 	PlaybackButton,
@@ -18,6 +19,7 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 export const PerformanceData = createContext<PerformanceConceptData | null>(
 	null,
@@ -72,6 +74,39 @@ export function FlowReturnScene({ locale }: Props) {
 	};
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey={known}
+					values={[
+						{
+							id: "flow",
+							label: l("External flow", "外部资金流"),
+							before: f.defaultFlow,
+							current: flow,
+							unit: "USD",
+							format: money,
+						},
+						{
+							id: "twr",
+							label: "TWR",
+							before: flowReturns(
+								f.startCents,
+								known === "known" ? f.beforeCents : null,
+								f.defaultFlow,
+								f.endCents,
+							).twr,
+							current: r.twr,
+							unit: "%",
+							format: pct,
+						},
+					]}
+					note={l(
+						"Compare cash-flow assumptions using the same supplied valuation checkpoints.",
+						"使用同一组给定估值，比较不同资金流假设。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -133,86 +168,97 @@ export function FlowReturnScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("TWR", "时间加权收益")}</>,
+							value: <>{pct(r.twr)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Raw balance growth", "原始余额增长")}</>,
+							value: <>{pct(r.growth)}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Cash flow", "资金流")}</>,
+							value: <>{money(flow)}</>,
+						},
+					]}
+				/>
+			}
+			controls={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("TWR", "时间加权收益")}</p>
-						<p className="scene-outcome-value">{pct(r.twr)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Raw balance growth", "原始余额增长")}
-						</p>
-						<p className="scene-outcome-value">{pct(r.growth)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Cash flow", "资金流")}</p>
-						<p className="scene-outcome-value">{money(flow)}</p>
-					</div>
+					<RangeControl
+						inputScale={100}
+						label={l("Hypothetical external flow", "假设外部资金流")}
+						value={flow}
+						display={money(flow)}
+						min={-110000}
+						max={150000}
+						step={10000}
+						onChange={(v) => {
+							stop();
+							setManual(v);
+						}}
+					/>
+					<SelectField
+						label={l("Boundary valuation evidence", "边界估值证据")}
+						value={known}
+						options={[
+							["known", l("Before-flow value supplied", "提供资金流前估值")],
+							["missing", l("Before-flow value missing", "缺少资金流前估值")],
+						]}
+						onChange={(v) => {
+							stop();
+							setKnown(v);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						l={l}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+					/>
 				</>
 			}
-		>
-			<RangeControl
-				inputScale={100}
-				label={l("Hypothetical external flow", "假设外部资金流")}
-				value={flow}
-				display={money(flow)}
-				min={-110000}
-				max={150000}
-				step={10000}
-				onChange={(v) => {
-					stop();
-					setManual(v);
-				}}
-			/>
-			<SelectField
-				label={l("Boundary valuation evidence", "边界估值证据")}
-				value={known}
-				options={[
-					["known", l("Before-flow value supplied", "提供资金流前估值")],
-					["missing", l("Before-flow value missing", "缺少资金流前估值")],
-				]}
-				onChange={(v) => {
-					stop();
-					setKnown(v);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				l={l}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-			/>
-			<div aria-live="polite" className="space-y-2 rounded-xl border p-4">
-				<p>
-					{l("First period", "第一期")}: {pct(r.first)} ·{" "}
-					{l("Second period", "第二期")}: {pct(r.second)}
-				</p>
-				<p data-performance-twr>TWR: {pct(r.twr)}</p>
-				<p>
-					{l("Raw balance growth", "原始余额增长")}: {pct(r.growth)}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"TWR = (1 + first return) × (1 + second return) − 1. A deposit is positive; a withdrawal is negative. The cash-flow jump is excluded from return. Missing boundaries or a nonpositive return denominator withhold TWR.",
-					"TWR = (1 + 第一期收益) × (1 + 第二期收益) − 1。存入为正，取出为负。资金流跳变不计收益。边界缺失或收益分母非正时不提供 TWR。",
-				)}
-			</p>
-			<p className="text-muted-foreground text-xs">
-				{data.source}
-				<br />
-				{f.spec.start} → {f.spec.end} · USD
-				<br />
-				{f.flowAt}
-				<br />
-				{l(
-					"Fixed hypothetical checkpoints; net of declared costs, income included. Changing flow changes the implied return, not the end value.",
-					"固定假设检查点；扣除声明成本，包含收入。改变资金流会改变隐含收益，不改变期末估值。",
-				)}
-			</p>
-		</SceneLayout>
+			details={
+				<>
+					<div aria-live="polite" className="space-y-2 rounded-xl border p-4">
+						<p>
+							{l("First period", "第一期")}: {pct(r.first)} ·{" "}
+							{l("Second period", "第二期")}: {pct(r.second)}
+						</p>
+						<p data-performance-twr>TWR: {pct(r.twr)}</p>
+						<p>
+							{l("Raw balance growth", "原始余额增长")}: {pct(r.growth)}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"TWR = (1 + first return) × (1 + second return) − 1. A deposit is positive; a withdrawal is negative. The cash-flow jump is excluded from return. Missing boundaries or a nonpositive return denominator withhold TWR.",
+							"TWR = (1 + 第一期收益) × (1 + 第二期收益) − 1。存入为正，取出为负。资金流跳变不计收益。边界缺失或收益分母非正时不提供 TWR。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{data.source}
+						<br />
+						{f.spec.start} → {f.spec.end} · USD
+						<br />
+						{f.flowAt}
+						<br />
+						{l(
+							"Fixed hypothetical checkpoints; net of declared costs, income included. Changing flow changes the implied return, not the end value.",
+							"固定假设检查点；扣除声明成本，包含收入。改变资金流会改变隐含收益，不改变期末估值。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function TradePayoffScene({ locale }: Props) {
@@ -259,7 +305,7 @@ export function TradePayoffScene({ locale }: Props) {
 					/>
 					{trades.map((t, i) => {
 						const h = (Math.abs(t.pnlCents ?? 0) / 20000) * 160;
-						const y = i === 4 ? 135 : 135 - h;
+						const y = (t.pnlCents ?? 0) < 0 ? 135 : 135 - h;
 						return (
 							<g key={t.id}>
 								{t.pnlCents !== null &&
@@ -269,7 +315,11 @@ export function TradePayoffScene({ locale }: Props) {
 											y={y}
 											width={36}
 											height={h}
-											fill={i === 4 ? "var(--chart-3)" : "var(--primary)"}
+											fill={
+												t.pnlCents < 0
+													? "var(--diagram-loss)"
+													: "var(--diagram-gain)"
+											}
 											initial={false}
 											animate={{ height: h }}
 											transition={lessonTransition}
@@ -280,7 +330,11 @@ export function TradePayoffScene({ locale }: Props) {
 											y={y}
 											width={36}
 											height={h}
-											fill={i === 4 ? "var(--chart-3)" : "var(--primary)"}
+											fill={
+												t.pnlCents < 0
+													? "var(--diagram-loss)"
+													: "var(--diagram-gain)"
+											}
 										/>
 									))}
 								<SvgText x={53 + i * 63} y={325}>
@@ -294,77 +348,84 @@ export function TradePayoffScene({ locale }: Props) {
 					})}
 				</Diagram>
 			}
-		>
-			<RangeControl
-				inputScale={100}
-				label={l("Fifth lot loss", "第五批次亏损")}
-				value={loss}
-				display={money(loss)}
-				min={0}
-				max={20000}
-				step={1000}
-				onChange={(v) => {
-					stop();
-					setManual(v);
-				}}
-			/>
-			<SelectField
-				label={l("Closed-lot coverage", "已平仓批次覆盖")}
-				value={coverage}
-				options={[
-					["all", l("All five outcomes known", "五次结果均已知")],
-					["missing", l("Fifth outcome missing", "第五次结果缺失")],
-				]}
-				onChange={(v) => {
-					stop();
-					setCoverage(v);
-				}}
-			/>
-			<PlaybackButton
-				l={l}
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-			/>
-			<div
-				aria-live="polite"
-				className="space-y-2 rounded-xl border p-4"
-				data-performance-trades
-			>
-				<p>
-					{l("Win rate", "胜率")}: {pct(r.winRate)}
-				</p>
-				<p>
-					{l("Total P&L", "总盈亏")}: {money(r.total)}
-				</p>
-				<p>
-					{l("Average win / loss magnitude", "平均盈利 / 亏损绝对值")}:{" "}
-					{money(r.averageWin)} / {money(r.averageLoss)}
-				</p>
-				<p>
-					{l("Profit factor", "盈利因子")}:{" "}
-					{r.profitFactor === null ? "—" : n(r.profitFactor)}
-				</p>
-				<p>
-					{l("Known subtotal", "已知小计")}: {money(r.subtotal)} ·{" "}
-					{r.knownCount}/{r.requiredCount}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"Profit factor = gross gains ÷ absolute gross losses. Zero losses leave that ratio undefined. A breakeven lot stays in the win-rate denominator. Missing outcomes withhold complete-sample metrics.",
-					"盈利因子 = 盈利总额 ÷ 亏损总额绝对值。亏损为零时该比率未定义。保本批次保留在胜率分母中。缺失结果时不提供完整样本指标。",
-				)}
-			</p>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Synthetic five-lot sample, FIFO, net of declared costs. Four A lots and one B lot; not the full account or a forecast.",
-					"模拟五批次样本，FIFO，扣除声明成本。四个 A 批次与一个 B 批次；不是完整账户或预测。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={100}
+						label={l("Fifth lot loss", "第五批次亏损")}
+						value={loss}
+						display={money(loss)}
+						min={0}
+						max={20000}
+						step={1000}
+						onChange={(v) => {
+							stop();
+							setManual(v);
+						}}
+					/>
+					<SelectField
+						label={l("Closed-lot coverage", "已平仓批次覆盖")}
+						value={coverage}
+						options={[
+							["all", l("All five outcomes known", "五次结果均已知")],
+							["missing", l("Fifth outcome missing", "第五次结果缺失")],
+						]}
+						onChange={(v) => {
+							stop();
+							setCoverage(v);
+						}}
+					/>
+					<PlaybackButton
+						l={l}
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+					/>
+				</>
+			}
+			details={
+				<>
+					<div
+						aria-live="polite"
+						className="space-y-2 rounded-xl border p-4"
+						data-performance-trades
+					>
+						<p>
+							{l("Win rate", "胜率")}: {pct(r.winRate)}
+						</p>
+						<p>
+							{l("Total P&L", "总盈亏")}: {money(r.total)}
+						</p>
+						<p>
+							{l("Average win / loss magnitude", "平均盈利 / 亏损绝对值")}:{" "}
+							{money(r.averageWin)} / {money(r.averageLoss)}
+						</p>
+						<p>
+							{l("Profit factor", "盈利因子")}:{" "}
+							{r.profitFactor === null ? "—" : n(r.profitFactor)}
+						</p>
+						<p>
+							{l("Known subtotal", "已知小计")}: {money(r.subtotal)} ·{" "}
+							{r.knownCount}/{r.requiredCount}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"Profit factor = gross gains ÷ absolute gross losses. Zero losses leave that ratio undefined. A breakeven lot stays in the win-rate denominator. Missing outcomes withhold complete-sample metrics.",
+							"盈利因子 = 盈利总额 ÷ 亏损总额绝对值。亏损为零时该比率未定义。保本批次保留在胜率分母中。缺失结果时不提供完整样本指标。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Synthetic five-lot sample, FIFO, net of declared costs. Four A lots and one B lot; not the full account or a forecast.",
+							"模拟五批次样本，FIFO，扣除声明成本。四个 A 批次与一个 B 批次；不是完整账户或预测。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function PerformanceEvidenceScene({ locale }: Props) {
@@ -448,69 +509,77 @@ export function PerformanceEvidenceScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<SelectField
-				label={l("Benchmark record", "基准记录")}
-				value={id}
-				options={data.benchmarks.map((b) => [
-					b.id,
-					b.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<div
-				aria-live="polite"
-				data-performance-comparison
-				className="rounded-xl border p-4"
-			>
-				<p>
-					{l("Like-for-like difference", "同口径差异")}:{" "}
-					{comparable
-						? n(((twr as number) - (b.returnRate as number)) * 100) +
-							l(" percentage points", " 个百分点")
-						: "—"}
-				</p>
-				<p className="text-sm">
-					{differences.length
-						? l("Reconcile mismatched fields: ", "需协调不匹配字段：") +
-							differences.join(", ")
-						: b.returnRate === null
-							? l("Benchmark return missing", "基准收益缺失")
-							: l(
-									"Dates, currency, costs and income basis match.",
-									"日期、币种、成本及收入口径一致。",
-								)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs">
-				{b.spec.start} → {b.spec.end} · {b.spec.currency}
-				<br />
-				{b.spec.fees} · {b.spec.basis}
-			</p>
-			<SelectField
-				label={l("Symbol attribution coverage", "标的归因覆盖")}
-				value={coverage}
-				options={[
-					["partial", l("C result missing", "C 结果缺失")],
-					["complete", l("Supply C aggregate +$50", "提供 C 汇总 +$50")],
-				]}
-				onChange={setCoverage}
-			/>
-			<div aria-live="polite" data-performance-attribution>
-				<p>
-					{l("Known realized subtotal", "已知已实现小计")}: {money(r.subtotal)}
-				</p>
-				<p>
-					{l("Complete declared-symbol total", "声明标的完整合计")}:{" "}
-					{money(r.total)}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"Uses the original 15.5% return and original A/B closed sample, independent of earlier what-if controls. Realized dollars are not TWR. The C aggregate provides no trade count, so the five-lot win rate cannot represent the full account. Unreconciled comparisons need adjustment or explicit qualification.",
-					"使用原始 15.5% 收益及原始 A/B 平仓样本，独立于前面的假设控件。已实现美元盈亏不是 TWR。C 汇总不提供交易次数，因此五批次胜率不能代表完整账户。未协调比较需要调整或明确限定。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Benchmark record", "基准记录")}
+						value={id}
+						options={data.benchmarks.map((b) => [
+							b.id,
+							b.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setId}
+					/>
+					<SelectField
+						label={l("Symbol attribution coverage", "标的归因覆盖")}
+						value={coverage}
+						options={[
+							["partial", l("C result missing", "C 结果缺失")],
+							["complete", l("Supply C aggregate +$50", "提供 C 汇总 +$50")],
+						]}
+						onChange={setCoverage}
+					/>
+				</>
+			}
+			details={
+				<>
+					<div
+						aria-live="polite"
+						data-performance-comparison
+						className="rounded-xl border p-4"
+					>
+						<p>
+							{l("Like-for-like difference", "同口径差异")}:{" "}
+							{comparable
+								? n(((twr as number) - (b.returnRate as number)) * 100) +
+									l(" percentage points", " 个百分点")
+								: "—"}
+						</p>
+						<p className="text-sm">
+							{differences.length
+								? l("Reconcile mismatched fields: ", "需协调不匹配字段：") +
+									differences.join(", ")
+								: b.returnRate === null
+									? l("Benchmark return missing", "基准收益缺失")
+									: l(
+											"Dates, currency, costs and income basis match.",
+											"日期、币种、成本及收入口径一致。",
+										)}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-xs">
+						{b.spec.start} → {b.spec.end} · {b.spec.currency}
+						<br />
+						{b.spec.fees} · {b.spec.basis}
+					</p>
+					<div aria-live="polite" data-performance-attribution>
+						<p>
+							{l("Known realized subtotal", "已知已实现小计")}:{" "}
+							{money(r.subtotal)}
+						</p>
+						<p>
+							{l("Complete declared-symbol total", "声明标的完整合计")}:{" "}
+							{money(r.total)}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"Uses the original 15.5% return and original A/B closed sample, independent of earlier what-if controls. Realized dollars are not TWR. The C aggregate provides no trade count, so the five-lot win rate cannot represent the full account. Unreconciled comparisons need adjustment or explicit qualification.",
+							"使用原始 15.5% 收益及原始 A/B 平仓样本，独立于前面的假设控件。已实现美元盈亏不是 TWR。C 汇总不提供交易次数，因此五批次胜率不能代表完整账户。未协调比较需要调整或明确限定。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

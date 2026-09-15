@@ -24,6 +24,7 @@ import {
 	SvgText,
 	useFrames,
 } from "./concept-scene";
+import { ExecutionTape } from "./execution-tape";
 import {
 	instantTransition,
 	lessonTransition,
@@ -219,52 +220,57 @@ export function AggregateScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<SelectField
-				label={l("Grouping candidate", "候选分组")}
-				value={id}
-				options={data.groups.map((g) => [g.id, g.label[language]])}
-				onChange={setId}
-			/>
-			<p className="text-sm" data-tape-premium>
-				{l("Summed execution premium", "成交权利金之和")}:{" "}
-				<strong>{result.ok ? money(result.premium) : "—"}</strong>
-			</p>
-			<p className="text-sm" data-tape-mean>
-				{l("Simple mean of prices", "价格简单均值")}:{" "}
-				{result.ok ? price(result.meanPrice) : "—"}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{result.ok
-						? l("Count quantity, not just rows", "用数量加权，不只数行")
-						: l("Fix the grouping boundary first", "先修正分组边界")}
-				</AlertTitle>
-				<AlertDescription>
-					{result.ok
-						? result.weightedPrice === result.meanPrice
-							? l(
-									"The weighted and simple averages coincide for this selection. With different executed quantities they need not match. Premium sums each execution's price × quantity × stated multiplier.",
-									"本次选择的加权与简单均值恰好相同。不同成交数量下，它们不一定相同。权利金逐笔累加价格 × 数量 × 给定乘数。",
-								)
-							: l(
-									"Each price gets its executed quantity as its weight. A simple average treats unequal prints as equally sized. The premium and execution count are separate sums.",
-									"每个价格按其成交数量加权。简单均值把不同数量成交当作等量处理。权利金与成交笔数分别统计。",
-								)
-						: l(
-								"These records cannot form the proposed aggregate. Check full contract identity, quote units, multiplier evidence and unique execution IDs before doing arithmetic. Do not silently drop the incompatible row.",
-								"这些记录不能组成拟议聚合。计算前检查完整合约、报价单位、乘数证据与唯一成交标识，不应悄悄丢弃不兼容行。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Grouping rule: only the selected compatible execution IDs in this supplied window. This is not total session volume, one identified order or proof of a shared strategy. U is a deliberately incompatible unit example.",
-					"分组规则：仅统计给定窗口内选定且兼容的成交标识。这不是整个时段成交量、已识别的一张订单或共同策略的证明。U 是故意设置的单位不兼容示例。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<SelectField
+					label={l("Grouping candidate", "候选分组")}
+					value={id}
+					options={data.groups.map((g) => [g.id, g.label[language]])}
+					onChange={setId}
+				/>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p className="text-sm" data-tape-premium>
+						{l("Summed execution premium", "成交权利金之和")}:{" "}
+						<strong>{result.ok ? money(result.premium) : "—"}</strong>
+					</p>
+					<p className="text-sm" data-tape-mean>
+						{l("Simple mean of prices", "价格简单均值")}:{" "}
+						{result.ok ? price(result.meanPrice) : "—"}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{result.ok
+								? l("Count quantity, not just rows", "用数量加权，不只数行")
+								: l("Fix the grouping boundary first", "先修正分组边界")}
+						</AlertTitle>
+						<AlertDescription>
+							{result.ok
+								? result.weightedPrice === result.meanPrice
+									? l(
+											"The weighted and simple averages coincide for this selection. With different executed quantities they need not match. Premium sums each execution's price × quantity × stated multiplier.",
+											"本次选择的加权与简单均值恰好相同。不同成交数量下，它们不一定相同。权利金逐笔累加价格 × 数量 × 给定乘数。",
+										)
+									: l(
+											"Each price gets its executed quantity as its weight. A simple average treats unequal prints as equally sized. The premium and execution count are separate sums.",
+											"每个价格按其成交数量加权。简单均值把不同数量成交当作等量处理。权利金与成交笔数分别统计。",
+										)
+								: l(
+										"These records cannot form the proposed aggregate. Check full contract identity, quote units, multiplier evidence and unique execution IDs before doing arithmetic. Do not silently drop the incompatible row.",
+										"这些记录不能组成拟议聚合。计算前检查完整合约、报价单位、乘数证据与唯一成交标识，不应悄悄丢弃不兼容行。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Grouping rule: only the selected compatible execution IDs in this supplied window. This is not total session volume, one identified order or proof of a shared strategy. U is a deliberately incompatible unit example.",
+							"分组规则：仅统计给定窗口内选定且兼容的成交标识。这不是整个时段成交量、已识别的一张订单或共同策略的证明。U 是故意设置的单位不兼容示例。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -435,68 +441,75 @@ export function MessageReplayScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<SelectField
-				label={l("Received message", "已接收消息")}
-				value={String(playback.frame)}
-				options={stops.map((label, i) => [String(i), label])}
-				onChange={(value) => playback.select(Number(value))}
-			/>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<div className="flex flex-col gap-2 text-sm" data-tape-active-records>
-				<strong>{l("Current execution records", "当前成交记录")}</strong>
-				{state.active.length ? (
-					state.active.map((record) => (
-						<p key={record.id} className="font-mono text-xs">
-							{record.id}: {record.quantity} @ {price(record.price)}
-						</p>
-					))
-				) : (
-					<p>{l("No active records yet", "暂无有效记录")}</p>
-				)}
-			</div>
-			<Alert role="note">
-				<AlertTitle>{event}</AlertTitle>
-				<AlertDescription>
-					{current?.kind === "duplicate"
-						? l(
-								"The supplied execution ID was already seen. This repeated message adds no new execution, quantity or premium. Similar price and time alone would not prove a duplicate.",
-								"给定成交标识已出现。重复消息不新增成交、张数或权利金。仅凭相近价格与时间不能证明重复。",
-							)
-						: current?.kind === "correct"
-							? l(
-									"The correction explicitly targets the prior execution. Its revised price and quantity replace that report; they are not appended as another fill.",
-									"更正明确指向原成交。修订后的价格与数量替换原报告，不追加为另一笔成交。",
-								)
-							: current?.kind === "cancel"
+			controls={
+				<>
+					<SelectField
+						label={l("Received message", "已接收消息")}
+						value={String(playback.frame)}
+						options={stops.map((label, i) => [String(i), label])}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<div className="flex flex-col gap-2 text-sm" data-tape-active-records>
+						<strong>{l("Current execution records", "当前成交记录")}</strong>
+						{state.active.length ? (
+							state.active.map((record) => (
+								<p key={record.id} className="font-mono text-xs">
+									{record.id}: {record.quantity} @ {price(record.price)}
+								</p>
+							))
+						) : (
+							<p>{l("No active records yet", "暂无有效记录")}</p>
+						)}
+					</div>
+					<Alert role="note">
+						<AlertTitle>{event}</AlertTitle>
+						<AlertDescription>
+							{current?.kind === "duplicate"
 								? l(
-										"The cancellation explicitly removes the linked execution from the current counted view. It is not an opposite-side trade. A later replay of the old ID must not resurrect it.",
-										"撤销明确把关联成交从当前统计视图移除，不是一笔反向交易。之后重放旧标识也不应令其复活。",
+										"The supplied execution ID was already seen. This repeated message adds no new execution, quantity or premium. Similar price and time alone would not prove a duplicate.",
+										"给定成交标识已出现。重复消息不新增成交、张数或权利金。仅凭相近价格与时间不能证明重复。",
 									)
-								: l(
-										"The second received report has an earlier execution time than the first. Keep execution time and receipt time distinct, and use explicit identities for reconciliation.",
-										"第二条收到的报告，其成交时间早于第一条。应区分成交时间与接收时间，并使用明确标识核对。",
-									)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This teaching replay supplies normalized execution IDs and explicit revision links. Real feed namespaces and correction chains require the source specification. The view covers only these messages.",
-					"此教学回放给定规范化成交标识与明确修订关联。真实数据的标识范围和更正链需按来源规范处理，当前视图仅覆盖这些消息。",
-				)}
-			</p>
-			{state.unresolved ? (
-				<p role="status">
-					{l("Unresolved message references", "消息关联未解析")}:{" "}
-					{state.unresolved}
-				</p>
-			) : null}
-		</SceneLayout>
+								: current?.kind === "correct"
+									? l(
+											"The correction explicitly targets the prior execution. Its revised price and quantity replace that report; they are not appended as another fill.",
+											"更正明确指向原成交。修订后的价格与数量替换原报告，不追加为另一笔成交。",
+										)
+									: current?.kind === "cancel"
+										? l(
+												"The cancellation explicitly removes the linked execution from the current counted view. It is not an opposite-side trade. A later replay of the old ID must not resurrect it.",
+												"撤销明确把关联成交从当前统计视图移除，不是一笔反向交易。之后重放旧标识也不应令其复活。",
+											)
+										: l(
+												"The second received report has an earlier execution time than the first. Keep execution time and receipt time distinct, and use explicit identities for reconciliation.",
+												"第二条收到的报告，其成交时间早于第一条。应区分成交时间与接收时间，并使用明确标识核对。",
+											)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This teaching replay supplies normalized execution IDs and explicit revision links. Real feed namespaces and correction chains require the source specification. The view covers only these messages.",
+							"此教学回放给定规范化成交标识与明确修订关联。真实数据的标识范围和更正链需按来源规范处理，当前视图仅覆盖这些消息。",
+						)}
+					</p>
+					{state.unresolved ? (
+						<p role="status">
+							{l("Unresolved message references", "消息关联未解析")}:{" "}
+							{state.unresolved}
+						</p>
+					) : null}
+				</>
+			}
+		/>
 	);
 }
 
@@ -620,71 +633,74 @@ export function ConditionScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs">
-				{l(
-					"Illustrative condition families · source definitions matter",
-					"示例成交条件类别 · 需核对来源定义",
-				)}
-			</p>
-			<FieldGroup>
-				<SelectField
-					label={l("Condition example", "成交条件示例")}
-					value={id}
-					options={data.conditions.map((c) => [c.id, c.label[language]])}
-					onChange={setId}
-				/>
-				<ChoiceField
-					label={l("Source codebook", "来源代码手册")}
-					value={definition}
-					options={[
-						["supplied", l("Supplied", "已提供")],
-						["missing", l("Unavailable", "不可用")],
-					]}
-					onChange={setDefinition}
-				/>
-				<SelectField
-					label={l("Test a claim", "检验结论")}
-					value={claim}
-					options={Object.entries(claimCopy).map(([key, copy]) => [
-						key,
-						copy[language],
-					])}
-					onChange={(value) => {
-						if (Object.hasOwn(claimCopy, value))
-							setClaim(value as ConditionClaim);
-					}}
-				/>
-			</FieldGroup>
-			<Alert role="status">
-				<AlertTitle>
-					{meaning
-						? l("Read the supplied definition", "阅读给定定义")
-						: l("Meaning remains unmapped", "含义仍未映射")}
-				</AlertTitle>
-				<AlertDescription>
-					{meaning
-						? meaning[language]
-						: l(
-								"Without a documented mapping for this source, do not guess what the condition means. The large quantity does not repair the missing definition.",
-								"没有对应来源的文档映射，就不应猜测条件含义。数量大无法补齐缺失定义。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-sm">
-				{l(
-					"A condition can describe routing, matching, execution method, linkage or size. None of these labels alone proves common ownership, institutional identity, inside information or a complete strategy.",
-					"成交条件可描述路由、撮合、执行方式、关联或数量。这些标签本身不证明共同归属、机构身份、内幕信息或完整策略。",
-				)}
-			</p>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"These are teaching categories, not a universal exchange-code table. Actual flags require the originating venue or feed's codebook.",
-					"这些是教学类别，不是通用交易所代码表。真实标记需要依据原始场所或数据源的代码手册。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Condition example", "成交条件示例")}
+						value={id}
+						options={data.conditions.map((c) => [c.id, c.label[language]])}
+						onChange={setId}
+					/>
+					<ChoiceField
+						label={l("Source codebook", "来源代码手册")}
+						value={definition}
+						options={[
+							["supplied", l("Supplied", "已提供")],
+							["missing", l("Unavailable", "不可用")],
+						]}
+						onChange={setDefinition}
+					/>
+					<SelectField
+						label={l("Test a claim", "检验结论")}
+						value={claim}
+						options={Object.entries(claimCopy).map(([key, copy]) => [
+							key,
+							copy[language],
+						])}
+						onChange={(value) => {
+							if (Object.hasOwn(claimCopy, value))
+								setClaim(value as ConditionClaim);
+						}}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs">
+						{l(
+							"Illustrative condition families · source definitions matter",
+							"示例成交条件类别 · 需核对来源定义",
+						)}
+					</p>
+					<Alert role="status">
+						<AlertTitle>
+							{meaning
+								? l("Read the supplied definition", "阅读给定定义")
+								: l("Meaning remains unmapped", "含义仍未映射")}
+						</AlertTitle>
+						<AlertDescription>
+							{meaning
+								? meaning[language]
+								: l(
+										"Without a documented mapping for this source, do not guess what the condition means. The large quantity does not repair the missing definition.",
+										"没有对应来源的文档映射，就不应猜测条件含义。数量大无法补齐缺失定义。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-sm">
+						{l(
+							"A condition can describe routing, matching, execution method, linkage or size. None of these labels alone proves common ownership, institutional identity, inside information or a complete strategy.",
+							"成交条件可描述路由、撮合、执行方式、关联或数量。这些标签本身不证明共同归属、机构身份、内幕信息或完整策略。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"These are teaching categories, not a universal exchange-code table. Actual flags require the originating venue or feed's codebook.",
+							"这些是教学类别，不是通用交易所代码表。真实标记需要依据原始场所或数据源的代码手册。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
-
-import { ExecutionTape } from "./execution-tape";

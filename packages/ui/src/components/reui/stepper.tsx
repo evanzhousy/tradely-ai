@@ -1,11 +1,9 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cn } from "@tradely/ui/lib/utils";
-import type { HTMLAttributes, ReactElement } from "react";
+import type { HTMLAttributes } from "react";
 import {
-	Children,
 	createContext,
-	isValidElement,
 	useCallback,
 	useContext,
 	useEffect,
@@ -29,7 +27,7 @@ interface StepperContextValue {
 	setActiveStep: (step: number) => void;
 	stepsCount: number;
 	orientation: StepperOrientation;
-	registerTrigger: (node: HTMLButtonElement | null) => void;
+	registerTrigger: (node: HTMLButtonElement | null) => () => void;
 	triggerNodes: HTMLButtonElement[];
 	focusNext: (currentIdx: number) => void;
 	focusPrev: (currentIdx: number) => void;
@@ -87,15 +85,15 @@ function Stepper({
 
 	// Register/unregister triggers
 	const registerTrigger = useCallback((node: HTMLButtonElement | null) => {
+		if (!node) return () => {};
 		setTriggerNodes((prev) => {
 			if (node && !prev.includes(node)) {
 				return [...prev, node];
 			}
-			if (!node && prev.includes(node!)) {
-				return prev.filter((n) => n !== node);
-			}
 			return prev;
 		});
+		return () =>
+			setTriggerNodes((previous) => previous.filter((item) => item !== node));
 	}, []);
 
 	const handleSetActiveStep = useCallback(
@@ -111,27 +109,36 @@ function Stepper({
 	const currentStep = value ?? activeStep;
 
 	// Keyboard navigation logic
-	const focusTrigger = (idx: number) => {
-		if (triggerNodes[idx]) triggerNodes[idx].focus();
-	};
-	const focusNext = (currentIdx: number) =>
-		focusTrigger((currentIdx + 1) % triggerNodes.length);
-	const focusPrev = (currentIdx: number) =>
-		focusTrigger((currentIdx - 1 + triggerNodes.length) % triggerNodes.length);
-	const focusFirst = () => focusTrigger(0);
-	const focusLast = () => focusTrigger(triggerNodes.length - 1);
+	const focusTrigger = useCallback(
+		(idx: number) => {
+			if (triggerNodes[idx]) triggerNodes[idx].focus();
+		},
+		[triggerNodes],
+	);
+	const focusNext = useCallback(
+		(currentIdx: number) =>
+			focusTrigger((currentIdx + 1) % triggerNodes.length),
+		[focusTrigger, triggerNodes.length],
+	);
+	const focusPrev = useCallback(
+		(currentIdx: number) =>
+			focusTrigger(
+				(currentIdx - 1 + triggerNodes.length) % triggerNodes.length,
+			),
+		[focusTrigger, triggerNodes.length],
+	);
+	const focusFirst = useCallback(() => focusTrigger(0), [focusTrigger]);
+	const focusLast = useCallback(
+		() => focusTrigger(triggerNodes.length - 1),
+		[focusTrigger, triggerNodes.length],
+	);
 
 	// Context value
 	const contextValue = useMemo<StepperContextValue>(
 		() => ({
 			activeStep: currentStep,
 			setActiveStep: handleSetActiveStep,
-			stepsCount: Children.toArray(children).filter(
-				(child): child is ReactElement =>
-					isValidElement(child) &&
-					(child.type as { displayName?: string }).displayName ===
-						"StepperItem",
-			).length,
+			stepsCount: triggerNodes.length,
 			orientation,
 			registerTrigger,
 			focusNext,
@@ -144,10 +151,14 @@ function Stepper({
 		[
 			currentStep,
 			handleSetActiveStep,
-			children,
 			orientation,
 			registerTrigger,
 			triggerNodes,
+			focusFirst,
+			focusLast,
+			focusNext,
+			focusPrev,
+			indicators,
 		],
 	);
 
@@ -243,16 +254,14 @@ function StepperTrigger({
 	// Register this trigger for keyboard navigation
 	const btnRef = useRef<HTMLButtonElement>(null);
 	useEffect(() => {
-		if (btnRef.current) {
-			registerTrigger(btnRef.current);
-		}
-	}, [btnRef.current]);
+		return registerTrigger(btnRef.current);
+	}, [registerTrigger]);
 
 	// Find our index among triggers for navigation
 	const myIdx = useMemo(
 		() =>
 			triggerNodes.findIndex((n: HTMLButtonElement) => n === btnRef.current),
-		[triggerNodes, btnRef.current],
+		[triggerNodes],
 	);
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {

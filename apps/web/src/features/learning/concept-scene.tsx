@@ -72,12 +72,18 @@ export function SceneLayout({
 	diagram,
 	companion,
 	outcome,
+	comparison,
+	controls,
+	details,
 	children,
 }: {
 	diagram: ReactNode;
 	companion?: ReactNode;
 	outcome?: ReactNode;
-	children: ReactNode;
+	comparison?: ReactNode;
+	controls?: ReactNode;
+	details?: ReactNode;
+	children?: ReactNode;
 }) {
 	const playback = useContext(VisualPlayback);
 	const locale = useContext(VisualLocale);
@@ -93,17 +99,26 @@ export function SceneLayout({
 				) : null}
 			</div>
 			{outcome ? <div className="scene-outcome">{outcome}</div> : null}
-			{playback ? (
+			{comparison}
+			{controls ? (
+				<details className="visual-controls">
+					<summary>
+						{locale === "zh" ? "自由探索" : "Explore the inputs"}
+					</summary>
+					<div className="flex min-w-0 flex-col gap-5 pt-5">{controls}</div>
+				</details>
+			) : null}
+			{playback && (details || children) ? (
 				<details className="visual-explore">
 					<summary>
-						{locale === "zh"
-							? "自由探索与详细讲解"
-							: "Explore controls & explanation"}
+						{locale === "zh" ? "详细讲解与假设" : "Explanation & assumptions"}
 					</summary>
-					<div className="flex min-w-0 flex-col gap-5 pt-5">{children}</div>
+					<div className="flex min-w-0 flex-col gap-5 pt-5">
+						{details ?? children}
+					</div>
 				</details>
 			) : (
-				<div className="flex min-w-0 flex-col gap-5">{children}</div>
+				<div className="flex min-w-0 flex-col gap-5">{details ?? children}</div>
 			)}
 		</div>
 	);
@@ -141,6 +156,11 @@ export function SelectField({
 /** Explicit playback visits supplied teaching states. It stops on direct input, hide, or unmount. */
 export function useFrames(length: number) {
 	const shared = useContext(VisualPlayback);
+	const id = useId();
+	useEffect(
+		() => shared?.registerFrames?.(id, length),
+		[shared?.registerFrames, id, length],
+	);
 	const [frame, setFrame] = useState(0);
 	const [playing, setPlaying] = useState(false);
 	useEffect(() => {

@@ -1,6 +1,6 @@
 import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import type { Locale } from "@/i18n/messages";
 import {
 	ChangeHighlight,
@@ -8,6 +8,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { VisualPlayback } from "./visual-playback";
 
 export type CalculationTerm = { id: string; label: string; value: string };
 
@@ -20,6 +21,7 @@ export function CalculationTrace({
 	locale: Locale;
 }) {
 	const [run, setRun] = useState(0);
+	const playback = useContext(VisualPlayback);
 	const enabled = useLessonMotion();
 	return (
 		<div className="flex flex-col gap-2">
@@ -29,6 +31,11 @@ export function CalculationTrace({
 			>
 				{terms.map((term, index) => (
 					<m.li
+						data-trace-active={
+							playback
+								? index === Math.round(playback.progress * (terms.length - 1))
+								: undefined
+						}
 						key={term.id + run}
 						className="min-w-0 rounded-xl bg-muted/50 p-3"
 						initial={run > 0 && enabled ? { opacity: 0, y: 4 } : false}
@@ -48,14 +55,16 @@ export function CalculationTrace({
 					</m.li>
 				))}
 			</ol>
-			<Button
-				variant="ghost"
-				size="sm"
-				className="self-start"
-				onClick={() => setRun((value) => value + 1)}
-			>
-				{locale === "zh" ? "逐步查看计算" : "Trace the calculation"}
-			</Button>
+			{!playback ? (
+				<Button
+					variant="ghost"
+					size="sm"
+					className="self-start"
+					onClick={() => setRun((value) => value + 1)}
+				>
+					{locale === "zh" ? "逐步查看计算" : "Trace the calculation"}
+				</Button>
+			) : null}
 		</div>
 	);
 }

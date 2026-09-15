@@ -154,68 +154,75 @@ export function GexFormulaScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Open interest contracts", "未平仓合约张数")}
-				value={oi}
-				display={number(oi)}
-				min={data.oiRange[0]}
-				max={data.oiRange[1]}
-				step={100}
-				onChange={(v) => {
-					stop();
-					setManual(v);
-				}}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("Hypothetical spot", "假设现价")}
-				value={spot}
-				display={`$${number(spot)}`}
-				min={data.spotRange[0]}
-				max={data.spotRange[1]}
-				step={10}
-				onChange={(v) => {
-					stop();
-					setSpot(v);
-				}}
-			/>
-			<SelectField
-				label={l("Assumed position sign", "假设持仓符号")}
-				value={sign === null ? "unknown" : String(sign)}
-				options={[
-					["1", l("Positive assumption", "正符号假设")],
-					["-1", l("Negative assumption", "负符号假设")],
-					["unknown", l("No sign supplied", "未提供符号")],
-				]}
-				onChange={(v) => {
-					stop();
-					setSign(v === "unknown" ? null : v === "1" ? 1 : -1);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<Note>
-				{l(
-					"OI counts outstanding contracts; it does not identify dealer ownership. Reversing the assumed position sign reverses this contribution. Without that assumption the signed result is unavailable.",
-					"OI 统计未平仓张数，不识别做市商归属。反转假设持仓符号会反转此项贡献。没有该假设时，带符号结果不可用。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Gamma is held fixed to isolate the arithmetic. Doubling spot quadruples this frozen-input expression; it is not a forecast of repriced gamma or actual hedging. The next scenes use already-scaled supplied outputs, not these contract inputs.",
-					"固定 Gamma 以隔离算术影响。现价翻倍使此固定输入表达式变为四倍，并非重新定价 Gamma 或实际对冲的预测。后续场景使用已缩放的给定输出，而非这些合约输入。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Open interest contracts", "未平仓合约张数")}
+						value={oi}
+						display={number(oi)}
+						min={data.oiRange[0]}
+						max={data.oiRange[1]}
+						step={100}
+						onChange={(v) => {
+							stop();
+							setManual(v);
+						}}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Hypothetical spot", "假设现价")}
+						value={spot}
+						display={`$${number(spot)}`}
+						min={data.spotRange[0]}
+						max={data.spotRange[1]}
+						step={10}
+						onChange={(v) => {
+							stop();
+							setSpot(v);
+						}}
+					/>
+					<SelectField
+						label={l("Assumed position sign", "假设持仓符号")}
+						value={sign === null ? "unknown" : String(sign)}
+						options={[
+							["1", l("Positive assumption", "正符号假设")],
+							["-1", l("Negative assumption", "负符号假设")],
+							["unknown", l("No sign supplied", "未提供符号")],
+						]}
+						onChange={(v) => {
+							stop();
+							setSign(v === "unknown" ? null : v === "1" ? 1 : -1);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<Note>
+						{l(
+							"OI counts outstanding contracts; it does not identify dealer ownership. Reversing the assumed position sign reverses this contribution. Without that assumption the signed result is unavailable.",
+							"OI 统计未平仓张数，不识别做市商归属。反转假设持仓符号会反转此项贡献。没有该假设时，带符号结果不可用。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Gamma is held fixed to isolate the arithmetic. Doubling spot quadruples this frozen-input expression; it is not a forecast of repriced gamma or actual hedging. The next scenes use already-scaled supplied outputs, not these contract inputs.",
+							"固定 Gamma 以隔离算术影响。现价翻倍使此固定输入表达式变为四倍，并非重新定价 Gamma 或实际对冲的预测。后续场景使用已缩放的给定输出，而非这些合约输入。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 function Grid({
@@ -345,46 +352,56 @@ export function GexDistributionScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Distribution", "分布")}
-				value={id}
-				options={data.snapshots
-					.slice(0, 2)
-					.map((s) => [s.id, s.label[locale === "zh" ? 1 : 0]])}
-				onChange={setId}
-			/>
-			<SelectField
-				label={l("Inspect cell", "检查单元格")}
-				value={selected}
-				options={snapshot.cells.map((c) => [c.id, `${c.expiry} · ${c.strike}`])}
-				onChange={setSelected}
-			/>
-			<p data-gex-cell>
-				{l("Selected contribution", "所选贡献")}: {signed(cell.value)}
-				<br />
-				{cell.expiry} · {cell.strike}
-			</p>
-			<p data-gex-net>
-				{l("Complete net", "完整净值")}: {signed(all.net)}
-			</p>
-			<p data-gex-gross>
-				{l("Complete gross", "完整总幅度")}: {number(all.gross)}
-			</p>
-			<Note>
-				{l(
-					"A and B both net +100. A has gross 400 and a near-expiry net of −150; B has gross 100 and a near-expiry net of +100. Selecting an expiry changes the inspected slice, not the complete total.",
-					"A 与 B 净值均为 +100。A 总幅度为 400、近到期净值为 −150；B 总幅度为 100、近到期净值为 +100。选择到期日只改变检查切片，不改变完整总和。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Cells are supplied synthetic model outputs in the stated units. Do not multiply them by OI or spot again. Signed contributions reflect the model's assumptions, not observed dealer positions.",
-					"单元格为声明单位的给定模拟模型输出，不要再次乘以 OI 或现价。带符号贡献反映模型假设，而非已观测做市商持仓。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Distribution", "分布")}
+						value={id}
+						options={data.snapshots
+							.slice(0, 2)
+							.map((s) => [s.id, s.label[locale === "zh" ? 1 : 0]])}
+						onChange={setId}
+					/>
+					<SelectField
+						label={l("Inspect cell", "检查单元格")}
+						value={selected}
+						options={snapshot.cells.map((c) => [
+							c.id,
+							`${c.expiry} · ${c.strike}`,
+						])}
+						onChange={setSelected}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-gex-cell>
+						{l("Selected contribution", "所选贡献")}: {signed(cell.value)}
+						<br />
+						{cell.expiry} · {cell.strike}
+					</p>
+					<p data-gex-net>
+						{l("Complete net", "完整净值")}: {signed(all.net)}
+					</p>
+					<p data-gex-gross>
+						{l("Complete gross", "完整总幅度")}: {number(all.gross)}
+					</p>
+					<Note>
+						{l(
+							"A and B both net +100. A has gross 400 and a near-expiry net of −150; B has gross 100 and a near-expiry net of +100. Selecting an expiry changes the inspected slice, not the complete total.",
+							"A 与 B 净值均为 +100。A 总幅度为 400、近到期净值为 −150；B 总幅度为 100、近到期净值为 +100。选择到期日只改变检查切片，不改变完整总和。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Cells are supplied synthetic model outputs in the stated units. Do not multiply them by OI or spot again. Signed contributions reflect the model's assumptions, not observed dealer positions.",
+							"单元格为声明单位的给定模拟模型输出，不要再次乘以 OI 或现价。带符号贡献反映模型假设，而非已观测做市商持仓。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function GexCoverageScene({ locale }: Props) {
@@ -439,60 +456,67 @@ export function GexCoverageScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Coverage view", "覆盖视图")}
-				value={mode}
-				options={[
-					["full", l("A · full chain", "A · 完整链")],
-					["traded", l("A · traded contracts only", "A · 仅有成交合约")],
-					["gap", l("A · one missing value", "A · 缺一个数值")],
-					["zeros", l("B · explicit zero observations", "B · 明确零观测")],
-				]}
-				onChange={setMode}
-			/>
-			<SelectField
-				label={l("Inspect required cell", "检查所需单元格")}
-				value={selected}
-				options={data.snapshots[0].cells.map((c) => [
-					c.id,
-					`${c.expiry} · ${c.strike}`,
-				])}
-				onChange={setSelected}
-			/>
-			<p data-gex-coverage-cell>
-				{(() => {
-					const c = cells.find((c) => c.id === selected);
-					return `${selected} · ${!c ? l("Excluded from sample", "被排除于样本") : c.value === null ? l("Required contribution missing", "所需贡献缺失") : `${signed(c.value)} · ${c.traded ? l("Traded", "有成交") : l("No trades; still required", "零成交；仍需纳入")}`}`;
-				})()}
-			</p>
-			<p data-gex-coverage-status role="status">
-				{stats.complete
-					? l(
-							"Complete for the declared six-cell teaching scope",
-							"对声明的六格教学范围完整",
-						)
-					: l(
-							"Incomplete: only a known subtotal is supported",
-							"不完整：仅支持已知小计",
+			controls={
+				<>
+					<SelectField
+						label={l("Coverage view", "覆盖视图")}
+						value={mode}
+						options={[
+							["full", l("A · full chain", "A · 完整链")],
+							["traded", l("A · traded contracts only", "A · 仅有成交合约")],
+							["gap", l("A · one missing value", "A · 缺一个数值")],
+							["zeros", l("B · explicit zero observations", "B · 明确零观测")],
+						]}
+						onChange={setMode}
+					/>
+					<SelectField
+						label={l("Inspect required cell", "检查所需单元格")}
+						value={selected}
+						options={data.snapshots[0].cells.map((c) => [
+							c.id,
+							`${c.expiry} · ${c.strike}`,
+						])}
+						onChange={setSelected}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-gex-coverage-cell>
+						{(() => {
+							const c = cells.find((c) => c.id === selected);
+							return `${selected} · ${!c ? l("Excluded from sample", "被排除于样本") : c.value === null ? l("Required contribution missing", "所需贡献缺失") : `${signed(c.value)} · ${c.traded ? l("Traded", "有成交") : l("No trades; still required", "零成交；仍需纳入")}`}`;
+						})()}
+					</p>
+					<p data-gex-coverage-status role="status">
+						{stats.complete
+							? l(
+									"Complete for the declared six-cell teaching scope",
+									"对声明的六格教学范围完整",
+								)
+							: l(
+									"Incomplete: only a known subtotal is supported",
+									"不完整：仅支持已知小计",
+								)}
+					</p>
+					<p data-gex-complete-gross>
+						{l("Complete gross", "完整总幅度")}: {number(stats.gross)}
+					</p>
+					<Note>
+						{l(
+							"The required scope stays all six cells. The traded-only view excludes −80 and +120 even though their contracts remain outstanding in this example. A missing contribution is not zero. Explicit zeros in B count as known observations.",
+							"所需范围始终为全部六格。仅成交视图排除了 −80 与 +120，尽管本例这些合约仍未平仓。缺失贡献不是零。B 中明确的零计为已知观测。",
 						)}
-			</p>
-			<p data-gex-complete-gross>
-				{l("Complete gross", "完整总幅度")}: {number(stats.gross)}
-			</p>
-			<Note>
-				{l(
-					"The required scope stays all six cells. The traded-only view excludes −80 and +120 even though their contracts remain outstanding in this example. A missing contribution is not zero. Explicit zeros in B count as known observations.",
-					"所需范围始终为全部六格。仅成交视图排除了 −80 与 +120，尽管本例这些合约仍未平仓。缺失贡献不是零。B 中明确的零计为已知观测。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Completeness is relative to the declared synthetic scope, not a claim about a live full option chain. A gap can hide either sign; a subtotal cannot establish the complete sign or magnitude.",
-					"完整性仅针对已声明模拟范围，不代表真实完整期权链。缺口可能隐藏任一符号，小计不能确定完整符号或幅度。",
-				)}
-			</p>
-		</SceneLayout>
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Completeness is relative to the declared synthetic scope, not a claim about a live full option chain. A gap can hide either sign; a subtotal cannot establish the complete sign or magnitude.",
+							"完整性仅针对已声明模拟范围，不代表真实完整期权链。缺口可能隐藏任一符号，小计不能确定完整符号或幅度。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

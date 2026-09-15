@@ -17,6 +17,8 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { ResearchArtifactPreview } from "./research-artifact-preview";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 export const RecapData = createContext<RecapConceptData | null>(null);
 function useData() {
@@ -189,6 +191,17 @@ export function RecapMetricScene({ locale }: Props) {
 	const row = source.rows.find((r) => r.id === selected) ?? source.rows[0];
 	return (
 		<SceneLayout
+			companion={
+				<ResearchArtifactPreview
+					locale={locale}
+					record={data.packet}
+					metric={metric}
+					selectedId={selected}
+					onSelect={setSelected}
+					headline={l("Read the displayed metric", "阅读当前显示指标")}
+					supported={metric === claim}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l("Comparable source chart", "可比来源图表")}
@@ -203,95 +216,111 @@ export function RecapMetricScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: (
+								<>
+									{claim === "volume"
+										? l("Observed contracts", "观测张数")
+										: l("Observed premium", "观测权利金")}
+								</>
+							),
+							value: <>{format(claimed.subtotal, claim)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Missing coverage", "缺失覆盖")}</>,
+							value: <>R3</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Chart / claim", "图表 / 结论")}</>,
+							value: (
+								<>
+									{metric === claim
+										? l("Match", "匹配")
+										: l("Mismatch", "不匹配")}
+								</>
+							),
+						},
+					]}
+				/>
+			}
+			controls={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{claim === "volume"
-								? l("Observed contracts", "观测张数")
-								: l("Observed premium", "观测权利金")}
-						</p>
-						<p className="scene-outcome-value">
-							{format(claimed.subtotal, claim)}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Missing coverage", "缺失覆盖")}
-						</p>
-						<p className="scene-outcome-value">R3</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Chart / claim", "图表 / 结论")}
-						</p>
-						<p className="scene-outcome-value">
-							{metric === claim ? l("Match", "匹配") : l("Mismatch", "不匹配")}
-						</p>
-					</div>
+					<SelectField
+						label={l("Chart metric", "图表指标")}
+						value={metric}
+						options={[
+							["volume", l("Contracts traded", "成交张数")],
+							["premium", l("Premium in USD", "美元权利金")],
+						]}
+						onChange={(v) => setMetric(v as RecapMetric)}
+					/>
+					<SelectField
+						label={l("Claim quantity", "结论量")}
+						value={claim}
+						options={[
+							["volume", l("Observed contract count", "观测合约张数")],
+							["premium", l("Observed premium subtotal", "观测权利金小计")],
+						]}
+						onChange={(v) => setClaim(v as RecapMetric)}
+					/>
 				</>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Chart metric", "图表指标")}
-				value={metric}
-				options={[
-					["volume", l("Contracts traded", "成交张数")],
-					["premium", l("Premium in USD", "美元权利金")],
-				]}
-				onChange={(v) => setMetric(v as RecapMetric)}
-			/>
-			<SelectField
-				label={l("Claim quantity", "结论量")}
-				value={claim}
-				options={[
-					["volume", l("Observed contract count", "观测合约张数")],
-					["premium", l("Observed premium subtotal", "观测权利金小计")],
-				]}
-				onChange={(v) => setClaim(v as RecapMetric)}
-			/>
-			<p data-recap-row>
-				{row.id} · {row.strike} · {format(row.value, metric)}{" "}
-				{metric === "volume" ? l("contracts", "张") : "USD"}
-			</p>
-			<p data-recap-claim>
-				{claim === "volume"
-					? l(
-							`${format(claimed.subtotal, claim)} contracts observed across R1/R2; R3 is missing.`,
-							`R1/R2 观测 ${format(claimed.subtotal, claim)} 张；R3 缺失。`,
-						)
-					: l(
-							`${format(claimed.subtotal, claim)} premium observed across R1/R2; R3 is missing.`,
-							`R1/R2 观测权利金 ${format(claimed.subtotal, claim)}；R3 缺失。`,
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-recap-row>
+						{row.id} · {row.strike} · {format(row.value, metric)}{" "}
+						{metric === "volume" ? l("contracts", "张") : "USD"}
+					</p>
+					<p data-recap-claim>
+						{claim === "volume"
+							? l(
+									`${format(claimed.subtotal, claim)} contracts observed across R1/R2; R3 is missing.`,
+									`R1/R2 观测 ${format(claimed.subtotal, claim)} 张；R3 缺失。`,
+								)
+							: l(
+									`${format(claimed.subtotal, claim)} premium observed across R1/R2; R3 is missing.`,
+									`R1/R2 观测权利金 ${format(claimed.subtotal, claim)}；R3 缺失。`,
+								)}
+					</p>
+					<p data-recap-match>
+						{metric === claim
+							? l(
+									"Chart quantity matches the sample claim",
+									"图表量与示例结论匹配",
+								)
+							: l(
+									"The packet supports the sample number, but this chart shows a different quantity",
+									"研究包支持示例数值，但此图表显示另一种量",
+								)}
+					</p>
+					<p>
+						{l("Full-universe total", "完整范围总量")}:{" "}
+						{format(claimed.fullTotal, claim)}
+					</p>
+					<Note>
+						{l(
+							"Volume is 10 versus 20 contracts; premium is $2,000 versus $6,000. They answer different questions and need their own units. Switching the chart does not change the source facts or turn a premium bar into evidence for a volume comparison.",
+							"成交量为 10 对 20 张，权利金为 $2,000 对 $6,000。它们回答不同问题，需保留各自单位。切换图表不改变来源事实，也不会让权利金柱支持成交量比较。",
 						)}
-			</p>
-			<p data-recap-match>
-				{metric === claim
-					? l("Chart quantity matches the sample claim", "图表量与示例结论匹配")
-					: l(
-							"The packet supports the sample number, but this chart shows a different quantity",
-							"研究包支持示例数值，但此图表显示另一种量",
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{data.packet.method.universe}
+						<br />
+						{l(
+							"Strike labels are linked explicitly to source row IDs in this teaching chart. R3 has a missing marker, never a zero-height observed bar. These are partial observations, not a full-universe superlative or forecast.",
+							"此教学图明确将行权价标签关联来源行 ID。R3 使用缺失标记，不是观测为零的柱。这些是部分观测，不是完整范围最高等结论或预测。",
 						)}
-			</p>
-			<p>
-				{l("Full-universe total", "完整范围总量")}:{" "}
-				{format(claimed.fullTotal, claim)}
-			</p>
-			<Note>
-				{l(
-					"Volume is 10 versus 20 contracts; premium is $2,000 versus $6,000. They answer different questions and need their own units. Switching the chart does not change the source facts or turn a premium bar into evidence for a volume comparison.",
-					"成交量为 10 对 20 张，权利金为 $2,000 对 $6,000。它们回答不同问题，需保留各自单位。切换图表不改变来源事实，也不会让权利金柱支持成交量比较。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{data.packet.method.universe}
-				<br />
-				{l(
-					"Strike labels are linked explicitly to source row IDs in this teaching chart. R3 has a missing marker, never a zero-height observed bar. These are partial observations, not a full-universe superlative or forecast.",
-					"此教学图明确将行权价标签关联来源行 ID。R3 使用缺失标记，不是观测为零的柱。这些是部分观测，不是完整范围最高等结论或预测。",
-				)}
-			</p>
-		</SceneLayout>
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function RecapAxisScene({ locale }: Props) {
@@ -334,53 +363,60 @@ export function RecapAxisScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Bar-axis minimum", "柱轴下限")}
-				value={minimum}
-				display={String(minimum)}
-				min={0}
-				max={9}
-				step={1}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(v);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p data-recap-actual-ratio>
-				{l("Actual R2 / R1 values", "实际 R2 / R1 数值")}: {number(b / a)}×
-			</p>
-			<p data-recap-height-ratio>
-				{l("Visible bar-height ratio", "可见柱高比")}:{" "}
-				{number(apparentBarRatio(b, a, minimum))}×
-			</p>
-			<p data-recap-axis-total>
-				{l("Observed contracts stay fixed", "观测张数保持固定")}:{" "}
-				{number(result.subtotal)}
-			</p>
-			<Note>
-				{l(
-					"At a zero baseline, values 20 and 10 have both a value ratio and bar-height ratio of 2×. Starting at 9 makes the visible heights 11 and 1, or 11×, while the actual ratio stays 2×. Correct labels do not repair misleading geometry.",
-					"从零起时，20 与 10 的数值比、柱高比均为 2×。从 9 起使可见高度为 11 与 1，即 11×，但实际比仍为 2×。正确标签不能修复误导几何。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This deliberately marked crop illustrates a presentation defect. For magnitude bars, use a zero baseline or clearly explain any crop and its limits. Playback changes only presentation; it does not add or remove observations.",
-					"此明确标记的裁切演示展示呈现缺陷。幅度柱形应从零起，或明确说明裁切及限制。回放仅改变呈现，不增减观测。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Bar-axis minimum", "柱轴下限")}
+						value={minimum}
+						display={String(minimum)}
+						min={0}
+						max={9}
+						step={1}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(v);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-recap-actual-ratio>
+						{l("Actual R2 / R1 values", "实际 R2 / R1 数值")}: {number(b / a)}×
+					</p>
+					<p data-recap-height-ratio>
+						{l("Visible bar-height ratio", "可见柱高比")}:{" "}
+						{number(apparentBarRatio(b, a, minimum))}×
+					</p>
+					<p data-recap-axis-total>
+						{l("Observed contracts stay fixed", "观测张数保持固定")}:{" "}
+						{number(result.subtotal)}
+					</p>
+					<Note>
+						{l(
+							"At a zero baseline, values 20 and 10 have both a value ratio and bar-height ratio of 2×. Starting at 9 makes the visible heights 11 and 1, or 11×, while the actual ratio stays 2×. Correct labels do not repair misleading geometry.",
+							"从零起时，20 与 10 的数值比、柱高比均为 2×。从 9 起使可见高度为 11 与 1，即 11×，但实际比仍为 2×。正确标签不能修复误导几何。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This deliberately marked crop illustrates a presentation defect. For magnitude bars, use a zero baseline or clearly explain any crop and its limits. Playback changes only presentation; it does not add or remove observations.",
+							"此明确标记的裁切演示展示呈现缺陷。幅度柱形应从零起，或明确说明裁切及限制。回放仅改变呈现，不增减观测。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function RecapComposeScene({ locale }: Props) {
@@ -443,6 +479,19 @@ export function RecapComposeScene({ locale }: Props) {
 						);
 	return (
 		<SceneLayout
+			companion={
+				<ResearchArtifactPreview
+					locale={locale}
+					record={data.packet}
+					metric="volume"
+					headline={labels[headline as keyof typeof labels]}
+					supported={headline === "observed"}
+					caption={data.captionFields
+						.filter((f) => included.includes(f.id))
+						.map((f) => f.value[language])
+						.join(" · ")}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -489,56 +538,61 @@ export function RecapComposeScene({ locale }: Props) {
 					))}
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Sample headline", "示例标题")}
-				value={headline}
-				options={[
-					["observed", l("Bounded observed claim", "有边界观测结论")],
-					["full", l("Full-universe overclaim", "完整范围过度结论")],
-					["positions", l("Position/intent inference", "持仓/意图推断")],
-					["forecast", l("Forecast overclaim", "预测过度结论")],
-				]}
-				onChange={setHeadline}
-			/>
-			<p data-recap-verdict>{verdict}</p>
-			<button
-				type="button"
-				className="rounded-xl border px-4 py-3 text-sm"
-				onClick={() => setHeadline("observed")}
-			>
-				{l("Repair to the supported sample", "修复为受支持示例")}
-			</button>
-			<div className="rounded-2xl border p-4 text-sm leading-relaxed">
-				<strong>{l("Caption preview", "图注预览")}</strong>
-				<p data-recap-caption>
-					{data.captionFields
-						.filter((f) => included.includes(f.id))
-						.map((f) => f.value[language])
-						.join(" · ") || "—"}
-				</p>
-			</div>
-			<p data-recap-caption-status>
-				{missing.length
-					? `${l("Caption still lacks", "图注仍缺少")}: ${missing.map((f) => f.label[language]).join(" · ")}`
-					: l(
-							"Caption fields present; review wording and source fidelity",
-							"图注字段齐备；仍需审核措辞及来源一致性",
+			controls={
+				<SelectField
+					label={l("Sample headline", "示例标题")}
+					value={headline}
+					options={[
+						["observed", l("Bounded observed claim", "有边界观测结论")],
+						["full", l("Full-universe overclaim", "完整范围过度结论")],
+						["positions", l("Position/intent inference", "持仓/意图推断")],
+						["forecast", l("Forecast overclaim", "预测过度结论")],
+					]}
+					onChange={setHeadline}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-recap-verdict>{verdict}</p>
+					<button
+						type="button"
+						className="rounded-xl border px-4 py-3 text-sm"
+						onClick={() => setHeadline("observed")}
+					>
+						{l("Repair to the supported sample", "修复为受支持示例")}
+					</button>
+					<div className="rounded-2xl border p-4 text-sm leading-relaxed">
+						<strong>{l("Caption preview", "图注预览")}</strong>
+						<p data-recap-caption>
+							{data.captionFields
+								.filter((f) => included.includes(f.id))
+								.map((f) => f.value[language])
+								.join(" · ") || "—"}
+						</p>
+					</div>
+					<p data-recap-caption-status>
+						{missing.length
+							? `${l("Caption still lacks", "图注仍缺少")}: ${missing.map((f) => f.label[language]).join(" · ")}`
+							: l(
+									"Caption fields present; review wording and source fidelity",
+									"图注字段齐备；仍需审核措辞及来源一致性",
+								)}
+					</p>
+					<Note>
+						{l(
+							"This sample caption belongs to a zero-based contract-count chart. A chart can circulate without the surrounding prose. Keep source, date, axes/units and missingness in its own caption. Repair only the unsupported claim: the valid observed count of 30 is retained. Stronger wording does not turn a descriptive packet into a position report or forecast.",
+							"此示例图注对应从零起的合约张数图。图表可能脱离周围文字传播。其图注应包含来源、日期、坐标/单位与缺失。仅修复无依据结论，保留有效观测数 30。加强措辞不会让描述研究包变成持仓报告或预测。",
 						)}
-			</p>
-			<Note>
-				{l(
-					"This sample caption belongs to a zero-based contract-count chart. A chart can circulate without the surrounding prose. Keep source, date, axes/units and missingness in its own caption. Repair only the unsupported claim: the valid observed count of 30 is retained. Stronger wording does not turn a descriptive packet into a position report or forecast.",
-					"此示例图注对应从零起的合约张数图。图表可能脱离周围文字传播。其图注应包含来源、日期、坐标/单位与缺失。仅修复无依据结论，保留有效观测数 30。加强措辞不会让描述研究包变成持仓报告或预测。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"These checks apply only to fixed teaching templates, not arbitrary written headlines. This sample is not saved or published. The following exercise preserves your actual writing for self or human review and does not automatically certify prose quality.",
-					"本演示展示已编写的教学示例，可自由比较各步骤。",
-				)}
-			</p>
-		</SceneLayout>
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Compare these authored teaching examples freely. This preview is not saved or published and does not certify arbitrary prose.",
+							"本演示展示已编写的教学示例，可自由比较各步骤。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

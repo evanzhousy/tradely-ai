@@ -9,6 +9,7 @@ import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
+import { BeforeAfterComparison } from "./before-after-comparison";
 import { CalculationTrace } from "./calculation-trace";
 import {
 	ChoiceField,
@@ -34,6 +35,8 @@ import {
 	premiumExamples,
 	valueParts,
 } from "./payoff-concept-model";
+import { SceneOutcome } from "./scene-outcome";
+import { ValueBreakdown } from "./value-breakdown";
 import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
@@ -88,6 +91,34 @@ export function PremiumUnitsScene({ locale }: Props) {
 	];
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey="ALFA-premium-v1"
+					values={[
+						{
+							id: "premium",
+							label: l("Premium", "权利金"),
+							before: 30000,
+							current: amounts.total,
+							unit: "USD",
+							format: (n) => money(n, locale),
+						},
+						{
+							id: "notional",
+							label: l("Notional", "名义金额"),
+							before: 1000000,
+							current: amounts.notional,
+							unit: "USD",
+							format: (n) => money(n, locale),
+						},
+					]}
+					note={l(
+						"Starting example: one contract at $3/share, multiplier 100, underlying $100. Notional is not purchase cost.",
+						"起始示例：一张，每股 $3、乘数 100、标的 $100。名义金额不是购买成本。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -148,102 +179,109 @@ export function PremiumUnitsScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Total premium", "总权利金")}</>,
+							value: <>{money(amounts.total, locale)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Per contract", "每张合约")}</>,
+							value: <>{money(amounts.perContract, locale)}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Referenced notional", "参考名义金额")}</>,
+							value: <>{money(amounts.notional, locale)}</>,
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<RangeControl
+						inputScale={100}
+						label={l("Option price per share", "每股期权价格")}
+						value={paid}
+						display={money(paid, locale, 2)}
+						min={100}
+						max={600}
+						step={25}
+						onChange={setPaid}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Contract quantity", "合约张数")}
+						value={count}
+						display={String(count)}
+						min={1}
+						max={3}
+						onChange={setCount}
+					/>
+				</FieldGroup>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Total premium", "总权利金")}
-						</p>
-						<p className="scene-outcome-value">
+					<div aria-live="polite" className="flex flex-col gap-3">
+						<p className="font-mono text-3xl" data-total-premium>
 							{money(amounts.total, locale)}
 						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Per contract", "每张合约")}
+						<p className="text-muted-foreground text-sm leading-7">
+							{l(
+								"Total premium at this option price, before fees. Changing the option price changes the premium, but leaves the entry stock price and referenced notional unchanged.",
+								"按该期权价格计算的总权利金，不含费用。改变期权价格会改变权利金，但入场股价与参考名义金额保持不变。",
+							)}
 						</p>
-						<p className="scene-outcome-value">
-							{money(amounts.perContract, locale)}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Referenced notional", "参考名义金额")}
-						</p>
-						<p className="scene-outcome-value">
+						<p className="text-sm" data-entry-notional>
+							{l("Referenced notional", "参考名义金额")}:{" "}
 							{money(amounts.notional, locale)}
 						</p>
 					</div>
+					<CalculationTrace
+						locale={locale}
+						terms={[
+							{
+								id: "price",
+								label: l("Price / share", "价格 / 股"),
+								value: money(paid, locale, 2),
+							},
+							{
+								id: "multiplier",
+								label: l("Multiplier", "乘数"),
+								value: "100",
+							},
+							{
+								id: "count",
+								label: l("Contracts", "张数"),
+								value: String(count),
+							},
+							{
+								id: "premium",
+								label: l("Premium", "权利金"),
+								value: money(amounts.total, locale),
+							},
+						]}
+					/>
+					<Alert>
+						<AlertTitle>
+							{l(
+								"These amounts describe different things",
+								"这些金额描述不同的东西",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"Notional uses the entry stock price ($100 × 100 × contracts). It is not the option purchase cost, profit, or delta-equivalent exposure. The multiplier is a stated term of this teaching example.",
+								"名义金额使用入场股价（$100 × 100 × 张数），不是期权购买成本、利润或 Delta 等价敞口。乘数是本教学示例明确给定的条款。",
+							)}
+						</AlertDescription>
+					</Alert>
 				</>
 			}
-		>
-			<FieldGroup>
-				<RangeControl
-					inputScale={100}
-					label={l("Option price per share", "每股期权价格")}
-					value={paid}
-					display={money(paid, locale, 2)}
-					min={100}
-					max={600}
-					step={25}
-					onChange={setPaid}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Contract quantity", "合约张数")}
-					value={count}
-					display={String(count)}
-					min={1}
-					max={3}
-					onChange={setCount}
-				/>
-			</FieldGroup>
-			<div aria-live="polite" className="flex flex-col gap-3">
-				<p className="font-mono text-3xl" data-total-premium>
-					{money(amounts.total, locale)}
-				</p>
-				<p className="text-muted-foreground text-sm leading-7">
-					{l(
-						"Total premium at this option price, before fees. Changing the option price changes the premium, but leaves the entry stock price and referenced notional unchanged.",
-						"按该期权价格计算的总权利金，不含费用。改变期权价格会改变权利金，但入场股价与参考名义金额保持不变。",
-					)}
-				</p>
-				<p className="text-sm" data-entry-notional>
-					{l("Referenced notional", "参考名义金额")}:{" "}
-					{money(amounts.notional, locale)}
-				</p>
-			</div>
-			<CalculationTrace
-				locale={locale}
-				terms={[
-					{
-						id: "price",
-						label: l("Price / share", "价格 / 股"),
-						value: money(paid, locale, 2),
-					},
-					{ id: "multiplier", label: l("Multiplier", "乘数"), value: "100" },
-					{ id: "count", label: l("Contracts", "张数"), value: String(count) },
-					{
-						id: "premium",
-						label: l("Premium", "权利金"),
-						value: money(amounts.total, locale),
-					},
-				]}
-			/>
-			<Alert>
-				<AlertTitle>
-					{l(
-						"These amounts describe different things",
-						"这些金额描述不同的东西",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"Notional uses the entry stock price ($100 × 100 × contracts). It is not the option purchase cost, profit, or delta-equivalent exposure. The multiplier is a stated term of this teaching example.",
-						"名义金额使用入场股价（$100 × 100 × 张数），不是期权购买成本、利润或 Delta 等价敞口。乘数是本教学示例明确给定的条款。",
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+		/>
 	);
 }
 
@@ -262,6 +300,30 @@ export function ValuePartsScene({ locale }: Props) {
 	const width = (cents: number) => (cents / 600) * 280;
 	return (
 		<SceneLayout
+			companion={
+				<ValueBreakdown
+					title={l("Option value explained", "期权价值拆解")}
+					parts={[
+						{
+							id: "intrinsic",
+							label: l("Intrinsic", "内在价值"),
+							value: parts.intrinsic,
+						},
+						{
+							id: "extrinsic",
+							label: l("Extrinsic", "外在价值"),
+							value: parts.extrinsic,
+						},
+					]}
+					total={parts.value}
+					unit={l("USD per share", "美元/股")}
+					format={(n) => money(n, locale, 2)}
+					note={l(
+						"These components add to the supplied option value.",
+						"两部分相加等于给定期权价值。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -341,81 +403,81 @@ export function ValuePartsScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Intrinsic value", "内在价值")}</>,
+							value: <>{money(parts.intrinsic, locale, 2)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Extrinsic value", "外在价值")}</>,
+							value: <>{money(parts.extrinsic, locale, 2)}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Option value", "期权价值")}</>,
+							value: <>{money(parts.value, locale, 2)}</>,
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<TypeField locale={locale} type={type} onChange={setType} />
+					<SelectField
+						label={l("Supplied stock-price example", "给定股价示例")}
+						value={String(index)}
+						options={premiumExamples.map(
+							(item, i) => [String(i), money(item.spotCents, locale)] as const,
+						)}
+						onChange={(value) => setIndex(Number(value))}
+					/>
+					<ChoiceField
+						label={l("Value comparison", "价值比较")}
+						value={timing}
+						options={[
+							["before", l("Before expiry", "到期前")],
+							["expiry", l("At expiry", "到期时")],
+						]}
+						onChange={setTiming}
+					/>
+				</FieldGroup>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Intrinsic value", "内在价值")}
-						</p>
-						<p className="scene-outcome-value">
-							{money(parts.intrinsic, locale, 2)}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Extrinsic value", "外在价值")}
-						</p>
-						<p className="scene-outcome-value">
-							{money(parts.extrinsic, locale, 2)}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Option value", "期权价值")}
-						</p>
-						<p className="scene-outcome-value">
+					<div aria-live="polite" className="flex flex-col gap-3">
+						<Badge className="self-start" variant="secondary">
+							{moneyness(type, example.spotCents)}
+						</Badge>
+						<p className="font-mono text-lg" data-value-parts>
+							{money(parts.intrinsic, locale, 2)} +{" "}
+							{money(parts.extrinsic, locale, 2)} ={" "}
 							{money(parts.value, locale, 2)}
 						</p>
+						<p className="text-muted-foreground text-sm leading-7">
+							{timing === "before"
+								? l(
+										"The supplied premium includes intrinsic value plus extrinsic value. OTM options can have a positive premium even when their intrinsic value is zero.",
+										"给定权利金由内在价值与外在价值组成。虚值期权的内在价值为零，但权利金仍可能为正。",
+									)
+								: l(
+										"At expiration, this model's option value is its intrinsic value. Extrinsic value is zero. This comparison holds the stock price fixed; it is not a simulated market path or a promise of how a quote will decay.",
+										"到期时，本模型的期权价值等于内在价值，外在价值为零。这里固定股价做比较，不是模拟市场路径，也不保证报价会按某条路径衰减。",
+									)}
+						</p>
 					</div>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"American-style equity option teaching examples; quoted premiums are authored, not pricing-model outputs. ATM means exactly at the $100 strike here. No fees; physical-settlement terms are stated in the course.",
+							"美式股票期权教学示例；报价为编写数据，并非定价模型输出。本例 ATM 指股价恰好等于 $100 行权价。不计费用，实物结算条款已在课程中说明。",
+						)}
+					</p>
 				</>
 			}
-		>
-			<FieldGroup>
-				<TypeField locale={locale} type={type} onChange={setType} />
-				<SelectField
-					label={l("Supplied stock-price example", "给定股价示例")}
-					value={String(index)}
-					options={premiumExamples.map(
-						(item, i) => [String(i), money(item.spotCents, locale)] as const,
-					)}
-					onChange={(value) => setIndex(Number(value))}
-				/>
-				<ChoiceField
-					label={l("Value comparison", "价值比较")}
-					value={timing}
-					options={[
-						["before", l("Before expiry", "到期前")],
-						["expiry", l("At expiry", "到期时")],
-					]}
-					onChange={setTiming}
-				/>
-			</FieldGroup>
-			<div aria-live="polite" className="flex flex-col gap-3">
-				<Badge className="self-start" variant="secondary">
-					{moneyness(type, example.spotCents)}
-				</Badge>
-				<p className="font-mono text-lg" data-value-parts>
-					{money(parts.intrinsic, locale, 2)} +{" "}
-					{money(parts.extrinsic, locale, 2)} = {money(parts.value, locale, 2)}
-				</p>
-				<p className="text-muted-foreground text-sm leading-7">
-					{timing === "before"
-						? l(
-								"The supplied premium includes intrinsic value plus extrinsic value. OTM options can have a positive premium even when their intrinsic value is zero.",
-								"给定权利金由内在价值与外在价值组成。虚值期权的内在价值为零，但权利金仍可能为正。",
-							)
-						: l(
-								"At expiration, this model's option value is its intrinsic value. Extrinsic value is zero. This comparison holds the stock price fixed; it is not a simulated market path or a promise of how a quote will decay.",
-								"到期时，本模型的期权价值等于内在价值，外在价值为零。这里固定股价做比较，不是模拟市场路径，也不保证报价会按某条路径衰减。",
-							)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"American-style equity option teaching examples; quoted premiums are authored, not pricing-model outputs. ATM means exactly at the $100 strike here. No fees; physical-settlement terms are stated in the course.",
-					"美式股票期权教学示例；报价为编写数据，并非定价模型输出。本例 ATM 指股价恰好等于 $100 行权价。不计费用，实物结算条款已在课程中说明。",
-				)}
-			</p>
-		</SceneLayout>
+		/>
 	);
 }
 
@@ -439,6 +501,58 @@ export function ExpirationProfitScene({ locale }: Props) {
 				: l("Break-even", "盈亏平衡");
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey={`${type}:${paid}:${count}`}
+					values={[
+						{
+							id: "spot",
+							label: l("Stock price", "股价"),
+							before: 10000,
+							current: spot,
+							unit: "USD/share",
+							format: (n) => money(n, locale, 2),
+						},
+						{
+							id: "pnl",
+							label: l("Profit / loss", "盈亏"),
+							before: -result.premium,
+							current: result.profit,
+							unit: "USD",
+							format: (n) => money(n, locale),
+						},
+					]}
+					note={l(
+						"Compare with spot at the $100 strike, holding type, premium and quantity fixed.",
+						"与股价处于 $100 行权价时比较，类型、权利金与数量固定。",
+					)}
+				/>
+			}
+			companion={
+				<ValueBreakdown
+					title={l("From payoff to profit", "从支付价值到盈亏")}
+					parts={[
+						{
+							id: "payoff",
+							label: l("Expiration payoff", "到期支付价值"),
+							value: result.payoff,
+						},
+						{
+							id: "cost",
+							label: l("Premium paid", "已付权利金"),
+							value: -result.premium,
+						},
+					]}
+					total={result.profit}
+					unit={l("USD · whole position", "美元 · 整份持仓")}
+					format={(n) => money(n, locale)}
+					note={l(
+						"Payoff minus premium. Fees excluded.",
+						"支付价值减去权利金，不含费用。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -565,159 +679,163 @@ export function ExpirationProfitScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Payoff", "支付价值")}</>,
+							value: <>{money(result.payoff, locale)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Premium paid", "已付权利金")}</>,
+							value: <>{money(result.premium, locale)}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{resultLabel}</>,
+							value: <>{money(result.profit, locale)}</>,
+							tone: result.profit < 0 ? "loss" : "gain",
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<TypeField locale={locale} type={type} onChange={setType} />
+					<RangeControl
+						inputScale={100}
+						label={l("Premium paid per share", "每股已付权利金")}
+						value={paid}
+						display={money(paid, locale, 2)}
+						min={100}
+						max={600}
+						step={25}
+						onChange={setPaid}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Contract quantity", "合约张数")}
+						value={count}
+						display={String(count)}
+						min={1}
+						max={3}
+						onChange={setCount}
+					/>
+				</FieldGroup>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Payoff", "支付价值")}</p>
-						<p className="scene-outcome-value">
-							{money(result.payoff, locale)}
+					<div className="flex flex-wrap gap-4 text-xs">
+						<span className="inline-flex items-center gap-2">
+							<span
+								className="w-6 border-foreground border-t-2 border-dashed"
+								aria-hidden="true"
+							/>
+							{l("Payoff", "支付价值")}
+						</span>
+						<span className="inline-flex items-center gap-2">
+							<span className="w-6 border-ring border-t-2" aria-hidden="true" />
+							{l("Profit after premium", "扣除权利金后的盈亏")}
+						</span>
+					</div>
+					<div aria-live="polite" className="flex flex-col gap-3">
+						<div className="flex flex-wrap items-center gap-2">
+							<Badge variant="outline">{result.moneyness}</Badge>
+							<Badge variant="secondary" data-profit-status>
+								{resultLabel}
+							</Badge>
+							<span className="font-mono text-sm" data-expiration-spot>
+								{l("Stock", "股价")} {money(spot, locale, 2)}
+							</span>
+						</div>
+						<p className="text-muted-foreground text-xs">
+							{count}{" "}
+							{l(
+								"contracts × 100 · position totals · no fees",
+								"张 × 100 · 持仓总额 · 不含费用",
+							)}
+						</p>
+						<dl className="grid grid-cols-3 gap-2">
+							<div>
+								<dt className="text-muted-foreground text-xs">
+									{l("Payoff", "支付价值")}
+								</dt>
+								<dd
+									className="mt-1 break-words font-mono text-sm"
+									data-expiration-payoff
+								>
+									{money(result.payoff, locale)}
+								</dd>
+							</div>
+							<div>
+								<dt className="text-muted-foreground text-xs">
+									{l("Paid premium", "已付权利金")}
+								</dt>
+								<dd
+									className="mt-1 break-words font-mono text-sm"
+									data-expiration-premium
+								>
+									{money(result.premium, locale)}
+								</dd>
+							</div>
+							<div>
+								<dt className="text-muted-foreground text-xs">
+									{l("Profit / loss", "盈亏")}
+								</dt>
+								<dd
+									className="mt-1 break-words font-mono text-lg"
+									data-expiration-profit
+								>
+									{money(result.profit, locale)}
+								</dd>
+							</div>
+						</dl>
+						<p className="font-mono text-sm" data-break-even>
+							{l("Break-even stock price", "盈亏平衡股价")}:{" "}
+							{money(result.breakEven, locale, 2)}
 						</p>
 					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Premium paid", "已付权利金")}
-						</p>
-						<p className="scene-outcome-value">
-							{money(result.premium, locale)}
-						</p>
+					<div className="flex flex-wrap gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => {
+								setPaid(300);
+								setCount(2);
+								setSpot(type === "CALL" ? 10200 : 9800);
+							}}
+						>
+							{l("Show an ITM loss", "查看实值亏损")}
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setSpot(result.breakEven)}
+						>
+							{l("Find break-even", "找到盈亏平衡点")}
+						</Button>
 					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{resultLabel}</p>
-						<p className="scene-outcome-value">
-							{money(result.profit, locale)}
-						</p>
-					</div>
+					<p className="text-muted-foreground text-sm leading-7">
+						{result.moneyness === "ITM" && result.profit < 0
+							? l(
+									"The option has intrinsic value, but its payoff has not recovered the premium paid. The shaded band marks this ITM-loss region, ending at break-even.",
+									"期权已有内在价值，但支付价值尚未收回已付权利金。阴影带标出这段实值亏损区间，并止于盈亏平衡点。",
+								)
+							: l(
+									"Profit = payoff − paid premium. Payoff stops at zero; profit can be negative. The shaded band lies between strike and break-even.",
+									"盈亏 = 支付价值 − 已付权利金。支付价值最低为零，盈亏则可以为负。阴影带位于行权价与盈亏平衡点之间。",
+								)}
+					</p>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Hypothetical expiration prices, not current option quotes. Strike $100; long options only; before fees. Lines use a fixed per-share scale: quantity scales position totals, not break-even. At expiry, ATM here means stock exactly at strike.",
+							"假设到期价格，不是当前期权报价。行权价 $100，仅展示期权多头，不计费用。曲线使用固定每股刻度：数量影响持仓总额，不改变盈亏平衡点。本例到期 ATM 指股价恰等于行权价。",
+						)}
+					</p>
 				</>
 			}
-		>
-			<div className="flex flex-wrap gap-4 text-xs">
-				<span className="inline-flex items-center gap-2">
-					<span
-						className="w-6 border-foreground border-t-2 border-dashed"
-						aria-hidden="true"
-					/>
-					{l("Payoff", "支付价值")}
-				</span>
-				<span className="inline-flex items-center gap-2">
-					<span className="w-6 border-ring border-t-2" aria-hidden="true" />
-					{l("Profit after premium", "扣除权利金后的盈亏")}
-				</span>
-			</div>
-			<FieldGroup>
-				<TypeField locale={locale} type={type} onChange={setType} />
-				<RangeControl
-					inputScale={100}
-					label={l("Premium paid per share", "每股已付权利金")}
-					value={paid}
-					display={money(paid, locale, 2)}
-					min={100}
-					max={600}
-					step={25}
-					onChange={setPaid}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Contract quantity", "合约张数")}
-					value={count}
-					display={String(count)}
-					min={1}
-					max={3}
-					onChange={setCount}
-				/>
-			</FieldGroup>
-			<div aria-live="polite" className="flex flex-col gap-3">
-				<div className="flex flex-wrap items-center gap-2">
-					<Badge variant="outline">{result.moneyness}</Badge>
-					<Badge variant="secondary" data-profit-status>
-						{resultLabel}
-					</Badge>
-					<span className="font-mono text-sm" data-expiration-spot>
-						{l("Stock", "股价")} {money(spot, locale, 2)}
-					</span>
-				</div>
-				<p className="text-muted-foreground text-xs">
-					{count}{" "}
-					{l(
-						"contracts × 100 · position totals · no fees",
-						"张 × 100 · 持仓总额 · 不含费用",
-					)}
-				</p>
-				<dl className="grid grid-cols-3 gap-2">
-					<div>
-						<dt className="text-muted-foreground text-xs">
-							{l("Payoff", "支付价值")}
-						</dt>
-						<dd
-							className="mt-1 break-words font-mono text-sm"
-							data-expiration-payoff
-						>
-							{money(result.payoff, locale)}
-						</dd>
-					</div>
-					<div>
-						<dt className="text-muted-foreground text-xs">
-							{l("Paid premium", "已付权利金")}
-						</dt>
-						<dd
-							className="mt-1 break-words font-mono text-sm"
-							data-expiration-premium
-						>
-							{money(result.premium, locale)}
-						</dd>
-					</div>
-					<div>
-						<dt className="text-muted-foreground text-xs">
-							{l("Profit / loss", "盈亏")}
-						</dt>
-						<dd
-							className="mt-1 break-words font-mono text-lg"
-							data-expiration-profit
-						>
-							{money(result.profit, locale)}
-						</dd>
-					</div>
-				</dl>
-				<p className="font-mono text-sm" data-break-even>
-					{l("Break-even stock price", "盈亏平衡股价")}:{" "}
-					{money(result.breakEven, locale, 2)}
-				</p>
-			</div>
-			<div className="flex flex-wrap gap-2">
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => {
-						setPaid(300);
-						setCount(2);
-						setSpot(type === "CALL" ? 10200 : 9800);
-					}}
-				>
-					{l("Show an ITM loss", "查看实值亏损")}
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => setSpot(result.breakEven)}
-				>
-					{l("Find break-even", "找到盈亏平衡点")}
-				</Button>
-			</div>
-			<p className="text-muted-foreground text-sm leading-7">
-				{result.moneyness === "ITM" && result.profit < 0
-					? l(
-							"The option has intrinsic value, but its payoff has not recovered the premium paid. The shaded band marks this ITM-loss region, ending at break-even.",
-							"期权已有内在价值，但支付价值尚未收回已付权利金。阴影带标出这段实值亏损区间，并止于盈亏平衡点。",
-						)
-					: l(
-							"Profit = payoff − paid premium. Payoff stops at zero; profit can be negative. The shaded band lies between strike and break-even.",
-							"盈亏 = 支付价值 − 已付权利金。支付价值最低为零，盈亏则可以为负。阴影带位于行权价与盈亏平衡点之间。",
-						)}
-			</p>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"Hypothetical expiration prices, not current option quotes. Strike $100; long options only; before fees. Lines use a fixed per-share scale: quantity scales position totals, not break-even. At expiry, ATM here means stock exactly at strike.",
-					"假设到期价格，不是当前期权报价。行权价 $100，仅展示期权多头，不计费用。曲线使用固定每股刻度：数量影响持仓总额，不改变盈亏平衡点。本例到期 ATM 指股价恰等于行权价。",
-				)}
-			</p>
-		</SceneLayout>
+		/>
 	);
 }

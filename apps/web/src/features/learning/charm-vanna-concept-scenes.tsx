@@ -166,61 +166,70 @@ export function CrossDeltaEffectsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<RangeControl
-				inputScale={1}
-				label={l("Elapsed calendar days", "已过自然日")}
-				value={event.days}
-				display={number(event.days)}
-				min={data.dayRange[0]}
-				max={data.dayRange[1]}
-				step={0.5}
-				onChange={(days) => choose({ ...event, days })}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("IV percentage-point change", "IV 百分点变化")}
-				value={event.ivPoints}
-				display={signed(event.ivPoints)}
-				min={data.ivRange[0]}
-				max={data.ivRange[1]}
-				step={0.5}
-				onChange={(ivPoints) => choose({ ...event, ivPoints })}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p className="font-mono text-xs">
-				Charm: −0.01 × {event.days} = {signed(terms.charm)}
-				<br />
-				Vanna: +0.02 × {event.ivPoints} = {signed(terms.vanna)}
-			</p>
-			<p data-cross-next>
-				{l("Initial option delta", "初始期权 Delta")}:{" "}
-				{number(data.initialDelta)}
-				<br />
-				{l("Local next option delta", "局部新期权 Delta")}:{" "}
-				{number(terms.total === null ? null : data.initialDelta + terms.total)}
-			</p>
-			<Note>
-				{l(
-					"Charm is supplied per elapsed calendar day; vanna is supplied per one IV percentage point. One day and IV +2 points give −0.01 + 0.04 = +0.03. Opposing contributions can cancel without either sensitivity being zero.",
-					"Charm 按每经过自然日给定，Vanna 按每 IV 百分点给定。一天与 IV +2 点得到 −0.01 + 0.04 = +0.03。相反贡献可抵消，而两项敏感度均不必为零。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This first-order local estimate holds derivatives fixed and omits higher-order interactions. It is not a full repricing or an observed trade. Playback visits controlled teaching states, not market observations.",
-					"此一阶局部估计固定导数并省略高阶交互，不是完整重定价或观测成交。回放展示控制教学状态，而非市场观测。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Elapsed calendar days", "已过自然日")}
+						value={event.days}
+						display={number(event.days)}
+						min={data.dayRange[0]}
+						max={data.dayRange[1]}
+						step={0.5}
+						onChange={(days) => choose({ ...event, days })}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("IV percentage-point change", "IV 百分点变化")}
+						value={event.ivPoints}
+						display={signed(event.ivPoints)}
+						min={data.ivRange[0]}
+						max={data.ivRange[1]}
+						step={0.5}
+						onChange={(ivPoints) => choose({ ...event, ivPoints })}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						Charm: −0.01 × {event.days} = {signed(terms.charm)}
+						<br />
+						Vanna: +0.02 × {event.ivPoints} = {signed(terms.vanna)}
+					</p>
+					<p data-cross-next>
+						{l("Initial option delta", "初始期权 Delta")}:{" "}
+						{number(data.initialDelta)}
+						<br />
+						{l("Local next option delta", "局部新期权 Delta")}:{" "}
+						{number(
+							terms.total === null ? null : data.initialDelta + terms.total,
+						)}
+					</p>
+					<Note>
+						{l(
+							"Charm is supplied per elapsed calendar day; vanna is supplied per one IV percentage point. One day and IV +2 points give −0.01 + 0.04 = +0.03. Opposing contributions can cancel without either sensitivity being zero.",
+							"Charm 按每经过自然日给定，Vanna 按每 IV 百分点给定。一天与 IV +2 点得到 −0.01 + 0.04 = +0.03。相反贡献可抵消，而两项敏感度均不必为零。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This first-order local estimate holds derivatives fixed and omits higher-order interactions. It is not a full repricing or an observed trade. Playback visits controlled teaching states, not market observations.",
+							"此一阶局部估计固定导数并省略高阶交互，不是完整重定价或观测成交。回放展示控制教学状态，而非市场观测。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function CrossDeltaUnitsScene({ locale }: Props) {
@@ -318,37 +327,42 @@ export function CrossDeltaUnitsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Derivative convention", "导数约定")}
-				value={id}
-				options={data.conventions.map((c) => [
-					c.id,
-					c.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<p data-cross-unit-time>Charm: {signed(terms.charm)}</p>
-			<p data-cross-unit-vol>Vanna: {signed(terms.vanna)}</p>
-			<Note>
-				{selected === "time"
-					? l(
-							"One day passing means elapsed time +1 day but remaining maturity −1 day. The equivalent derivatives here are −0.01 per elapsed day and +0.01 per remaining day. Both give delta change −0.01 when paired with the correct time change.",
-							"经过一天意味着已过时间 +1 天、剩余期限 −1 天。本例等价导数为每已过日 −0.01 与每剩余日 +0.01。匹配正确时间变化后，Delta 变化均为 −0.01。",
-						)
-					: l(
-							"IV moving from 20% to 22% is +2 percentage points, or +0.02 in decimal volatility. Vanna +0.02 per IV point is equivalent here to +2 per decimal unit. Multiply by 2 or 0.02 respectively to get the same +0.04 delta change.",
-							"IV 从 20% 变为 22% 是 +2 个百分点，或小数波动率 +0.02。本例每 IV 点 +0.02 的 Vanna 等价于每小数单位 +2。分别乘 2 或 0.02，均得到 +0.04 Delta 变化。",
+			controls={
+				<SelectField
+					label={l("Derivative convention", "导数约定")}
+					value={id}
+					options={data.conventions.map((c) => [
+						c.id,
+						c.label[locale === "zh" ? 1 : 0],
+					])}
+					onChange={setId}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-cross-unit-time>Charm: {signed(terms.charm)}</p>
+					<p data-cross-unit-vol>Vanna: {signed(terms.vanna)}</p>
+					<Note>
+						{selected === "time"
+							? l(
+									"One day passing means elapsed time +1 day but remaining maturity −1 day. The equivalent derivatives here are −0.01 per elapsed day and +0.01 per remaining day. Both give delta change −0.01 when paired with the correct time change.",
+									"经过一天意味着已过时间 +1 天、剩余期限 −1 天。本例等价导数为每已过日 −0.01 与每剩余日 +0.01。匹配正确时间变化后，Delta 变化均为 −0.01。",
+								)
+							: l(
+									"IV moving from 20% to 22% is +2 percentage points, or +0.02 in decimal volatility. Vanna +0.02 per IV point is equivalent here to +2 per decimal unit. Multiply by 2 or 0.02 respectively to get the same +0.04 delta change.",
+									"IV 从 20% 变为 22% 是 +2 个百分点，或小数波动率 +0.02。本例每 IV 点 +0.02 的 Vanna 等价于每小数单位 +2。分别乘 2 或 0.02，均得到 +0.04 Delta 变化。",
+								)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Only the supplied representations change, not the event. These are equivalent local teaching derivatives, not claims about every vendor's definition. Missing time basis or volatility scale leaves the affected term and combined result unavailable while retaining the other term.",
+							"仅改变给定表示方式，不改变事件。这些是等价局部教学导数，并非所有供应商定义。时间基准或波动率尺度缺失时，对应项与合计不可用，另一项仍保留。",
 						)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Only the supplied representations change, not the event. These are equivalent local teaching derivatives, not claims about every vendor's definition. Missing time basis or volatility scale leaves the affected term and combined result unavailable while retaining the other term.",
-					"仅改变给定表示方式，不改变事件。这些是等价局部教学导数，并非所有供应商定义。时间基准或波动率尺度缺失时，对应项与合计不可用，另一项仍保留。",
-				)}
-			</p>
-		</SceneLayout>
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function CrossDeltaPositionScene({ locale }: Props) {
@@ -439,55 +453,64 @@ export function CrossDeltaPositionScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Input event", "输入事件")}
-				value={id}
-				options={data.events.map((e) => [
-					e.id,
-					e.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("Position contracts", "持仓张数")}
-				value={quantity}
-				display={number(quantity)}
-				min={0}
-				max={10}
-				step={1}
-				onChange={setQuantity}
-			/>
-			<SelectField
-				label={l("Position evidence", "持仓证据")}
-				value={known ? "known" : "missing"}
-				options={[
-					["known", l("Quantity and side supplied", "张数与方向已提供")],
-					["missing", l("Position not established", "持仓未确定")],
-				]}
-				onChange={(v) => setKnown(v === "known")}
-			/>
-			<p data-cross-position-next>
-				{l("Initial option delta", "初始期权 Delta")}:{" "}
-				{number(data.initialDelta)}
-				<br />
-				{l("Local next option delta", "局部新期权 Delta")}:{" "}
-				{number(terms.total === null ? null : data.initialDelta + terms.total)}
-			</p>
-			<Note>
-				{l(
-					"For the +0.03 example, the option delta change becomes +6 shares-equivalent for two long contracts ×100, or −6 for two short contracts. The option's own next delta stays 0.48. Position side changes exposure, not the option's model delta.",
-					"在 +0.03 示例中，期权 Delta 变化对于两张多头×100 是 +6 股等价量；两张空头则为 −6。期权自身新 Delta 仍为 0.48。持仓方向改变敞口，不改变期权模型 Delta。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This is a local modeled exposure change, not observed flow or an identified dealer hedge. Charm concentrations or pins remain approximate summaries of model assumptions. No position target can be established from option sensitivities alone.",
-					"这是局部模型敞口变化，不是观测成交流或已识别做市商对冲。Charm 集中或钉住仍是模型假设的近似汇总，仅凭期权敏感度不能确定持仓目标。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Input event", "输入事件")}
+						value={id}
+						options={data.events.map((e) => [
+							e.id,
+							e.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setId}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Position contracts", "持仓张数")}
+						value={quantity}
+						display={number(quantity)}
+						min={0}
+						max={10}
+						step={1}
+						onChange={setQuantity}
+					/>
+					<SelectField
+						label={l("Position evidence", "持仓证据")}
+						value={known ? "known" : "missing"}
+						options={[
+							["known", l("Quantity and side supplied", "张数与方向已提供")],
+							["missing", l("Position not established", "持仓未确定")],
+						]}
+						onChange={(v) => setKnown(v === "known")}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-cross-position-next>
+						{l("Initial option delta", "初始期权 Delta")}:{" "}
+						{number(data.initialDelta)}
+						<br />
+						{l("Local next option delta", "局部新期权 Delta")}:{" "}
+						{number(
+							terms.total === null ? null : data.initialDelta + terms.total,
+						)}
+					</p>
+					<Note>
+						{l(
+							"For the +0.03 example, the option delta change becomes +6 shares-equivalent for two long contracts ×100, or −6 for two short contracts. The option's own next delta stays 0.48. Position side changes exposure, not the option's model delta.",
+							"在 +0.03 示例中，期权 Delta 变化对于两张多头×100 是 +6 股等价量；两张空头则为 −6。期权自身新 Delta 仍为 0.48。持仓方向改变敞口，不改变期权模型 Delta。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This is a local modeled exposure change, not observed flow or an identified dealer hedge. Charm concentrations or pins remain approximate summaries of model assumptions. No position target can be established from option sensitivities alone.",
+							"这是局部模型敞口变化，不是观测成交流或已识别做市商对冲。Charm 集中或钉住仍是模型假设的近似汇总，仅凭期权敏感度不能确定持仓目标。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

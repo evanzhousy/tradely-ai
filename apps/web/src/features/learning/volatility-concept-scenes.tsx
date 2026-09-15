@@ -167,104 +167,111 @@ export function ImpliedVolatilityScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs leading-relaxed">
-				{model.label}
-				<br />
-				{data.asOf}
-				<br />S = K = {money(model.spotCents)}
-				<br />
-				{l(
-					"Rate = dividend yield = 0 · ACT/365",
-					"利率 = 股息率 = 0 · ACT/365",
-				)}
-			</p>
-			<FieldGroup>
-				<SelectField
-					label={l("Price input", "价格输入")}
-					value={source}
-					options={model.prices.map((p) => [
-						p.id,
-						p.label[locale === "zh" ? 1 : 0],
-					])}
-					onChange={(value) => {
-						setFitting(false);
-						setSource(value);
-					}}
-				/>
-				<SelectField
-					label={l("Assumed calendar days to expiry", "假设到期自然日数")}
-					value={String(days)}
-					options={model.days.map((d) => [
-						String(d),
-						`${d} ${l("calendar days", "自然日")}`,
-					])}
-					onChange={(value) => {
-						setFitting(false);
-						setDays(Number(value));
-					}}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Trial annualized IV", "试算年化 IV")}
-					value={iv}
-					display={pct(iv, 2)}
-					min={model.ivRange[0]}
-					max={model.ivRange[1]}
-					step={0.01}
-					onChange={changeIv}
-				/>
-			</FieldGroup>
-			<Button
-				disabled={fit === null}
-				onClick={() => {
-					if (fit !== null) {
-						setFitting(true);
-						setIv(Math.round(fit * 100) / 100);
-					}
-				}}
-			>
-				{l("Fit IV to this price", "拟合此价格的 IV")}
-			</Button>
-			<div className="grid grid-cols-2 gap-3 text-sm">
-				<p data-vol-quote>
-					{l("Supplied price", "给定价格")}
-					<br />
-					<strong>{money(quote.cents)}</strong>
-				</p>
-				<p data-vol-model-price>
-					{l("Model price", "模型价格")}
-					<br />
-					<strong>{money(price)}</strong>
-				</p>
-			</div>
-			<p data-vol-fit-status className="text-sm">
-				{quote.cents === null
-					? l(
-							"Price unavailable: IV cannot be inferred",
-							"价格不可用：无法反推 IV",
-						)
-					: fit === null
-						? l("No fit within the declared IV range", "声明 IV 范围内无解")
-						: matched
+			controls={
+				<>
+					<FieldGroup>
+						<SelectField
+							label={l("Price input", "价格输入")}
+							value={source}
+							options={model.prices.map((p) => [
+								p.id,
+								p.label[locale === "zh" ? 1 : 0],
+							])}
+							onChange={(value) => {
+								setFitting(false);
+								setSource(value);
+							}}
+						/>
+						<SelectField
+							label={l("Assumed calendar days to expiry", "假设到期自然日数")}
+							value={String(days)}
+							options={model.days.map((d) => [
+								String(d),
+								`${d} ${l("calendar days", "自然日")}`,
+							])}
+							onChange={(value) => {
+								setFitting(false);
+								setDays(Number(value));
+							}}
+						/>
+						<RangeControl
+							inputScale={1}
+							label={l("Trial annualized IV", "试算年化 IV")}
+							value={iv}
+							display={pct(iv, 2)}
+							min={model.ivRange[0]}
+							max={model.ivRange[1]}
+							step={0.01}
+							onChange={changeIv}
+						/>
+					</FieldGroup>
+					<Button
+						disabled={fit === null}
+						onClick={() => {
+							if (fit !== null) {
+								setFitting(true);
+								setIv(Math.round(fit * 100) / 100);
+							}
+						}}
+					>
+						{l("Fit IV to this price", "拟合此价格的 IV")}
+					</Button>
+				</>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs leading-relaxed">
+						{model.label}
+						<br />
+						{data.asOf}
+						<br />S = K = {money(model.spotCents)}
+						<br />
+						{l(
+							"Rate = dividend yield = 0 · ACT/365",
+							"利率 = 股息率 = 0 · ACT/365",
+						)}
+					</p>
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						<p data-vol-quote>
+							{l("Supplied price", "给定价格")}
+							<br />
+							<strong>{money(quote.cents)}</strong>
+						</p>
+						<p data-vol-model-price>
+							{l("Model price", "模型价格")}
+							<br />
+							<strong>{money(price)}</strong>
+						</p>
+					</div>
+					<p data-vol-fit-status className="text-sm">
+						{quote.cents === null
 							? l(
-									"Matches to the supplied cent precision",
-									"匹配给定的美分精度",
+									"Price unavailable: IV cannot be inferred",
+									"价格不可用：无法反推 IV",
 								)
-							: l("Adjust IV or fit the model", "调整 IV 或拟合模型")}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l("IV is inferred through a model", "IV 通过模型反推")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The observed input here is a supplied price; IV is the model input that reproduces it. Bid, ask and last can imply different IVs. Changing the hypothetical maturity changes the fit. These are what-if assumptions for a European ATM call with zero rates and dividends, not editable terms of a real contract or observed future volatility.",
-						"此处给定观测输入是价格；IV 是令模型复现该价格的输入。买价、卖价与最新成交价可对应不同 IV。改变假设期限会改变拟合。这是零利率、零股息欧式平值看涨的假设，不是可任意修改的真实合约条款，也不是已观测未来波动率。",
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+							: fit === null
+								? l("No fit within the declared IV range", "声明 IV 范围内无解")
+								: matched
+									? l(
+											"Matches to the supplied cent precision",
+											"匹配给定的美分精度",
+										)
+									: l("Adjust IV or fit the model", "调整 IV 或拟合模型")}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l("IV is inferred through a model", "IV 通过模型反推")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The observed input here is a supplied price; IV is the model input that reproduces it. Bid, ask and last can imply different IVs. Changing the hypothetical maturity changes the fit. These are what-if assumptions for a European ATM call with zero rates and dividends, not editable terms of a real contract or observed future volatility.",
+								"此处给定观测输入是价格；IV 是令模型复现该价格的输入。买价、卖价与最新成交价可对应不同 IV。改变假设期限会改变拟合。这是零利率、零股息欧式平值看涨的假设，不是可任意修改的真实合约条款，也不是已观测未来波动率。",
+							)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -384,92 +391,97 @@ export function RealizedVolatilityScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs leading-relaxed">
-				{source.symbol}
-				<br />
-				{selected[0].date} → {selected[selected.length - 1].date}
-				<br />
-				{l(
-					"Simple close-to-close percentage returns",
-					"简单收盘到收盘百分比收益",
-				)}
-			</p>
-			<FieldGroup>
-				<SelectField
-					label={l("Lookback window", "回看窗口")}
-					value={String(windowSize)}
-					options={source.windows.map((n) => [
-						String(n),
-						`${n} ${l("trading sessions", "交易时段")}`,
-					])}
-					onChange={(value) => setWindow(Number(value))}
-				/>
-				<SelectField
-					label={l("Sampling interval", "采样间隔")}
-					value={String(sampling)}
-					options={[
-						["1", l("Every trading session", "每个交易时段")],
-						["2", l("Every two trading sessions", "每两个交易时段")],
-					]}
-					onChange={(value) => setSampling(Number(value) as 1 | 2)}
-				/>
-				<SelectField
-					label={l("Return coverage", "收益覆盖")}
-					value={coverage}
-					options={[
-						[
-							"complete",
-							l("All selected returns supplied", "选定收益均已提供"),
-						],
-						["missing", l("Final return withheld", "最后收益被隐藏")],
-					]}
-					onChange={setCoverage}
-				/>
-			</FieldGroup>
-			<div className="grid grid-cols-2 gap-3 text-sm">
-				<p>
-					{l("Sampled observations", "采样观测数")}
-					<br />
-					{samples.length}
-				</p>
-				<p>
-					{l("Periods per year", "每年观测期数")}
-					<br />
-					{number(result?.periodsPerYear ?? null)}
-				</p>
-				<p data-vol-sd>
-					{l("Sample standard deviation", "样本标准差")}
-					<br />
-					<strong>{pct(result?.standardDeviation ?? null)}</strong>
-				</p>
-				<p>
-					{l("Mean return per observation", "每观测平均收益")}
-					<br />
-					{pct(result?.mean ?? null)}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"Annualized RV = sample SD × √periods per year",
-					"年化 RV = 样本标准差 × √每年观测期数",
-				)}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"Window, sampling and annualization all matter",
-						"窗口、采样与年化均重要",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The sample standard deviation uses n−1. Two-session returns compound adjacent daily returns, and use half as many annual periods. Coarser sampling can hide intermediate moves. The last-return control is a hypothetical edit; missing observations are not dropped or filled with zero. These short synthetic samples teach the calculation, not a reliable forecast.",
-						"样本标准差使用 n−1。双时段收益复合相邻日收益，并使用一半的年度观测期数。较粗采样可能掩盖中间变动。最后收益控制为假设修改；缺失观测既不删除，也不填零。这些短模拟样本用于教学计算，不是可靠预测。",
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Lookback window", "回看窗口")}
+						value={String(windowSize)}
+						options={source.windows.map((n) => [
+							String(n),
+							`${n} ${l("trading sessions", "交易时段")}`,
+						])}
+						onChange={(value) => setWindow(Number(value))}
+					/>
+					<SelectField
+						label={l("Sampling interval", "采样间隔")}
+						value={String(sampling)}
+						options={[
+							["1", l("Every trading session", "每个交易时段")],
+							["2", l("Every two trading sessions", "每两个交易时段")],
+						]}
+						onChange={(value) => setSampling(Number(value) as 1 | 2)}
+					/>
+					<SelectField
+						label={l("Return coverage", "收益覆盖")}
+						value={coverage}
+						options={[
+							[
+								"complete",
+								l("All selected returns supplied", "选定收益均已提供"),
+							],
+							["missing", l("Final return withheld", "最后收益被隐藏")],
+						]}
+						onChange={setCoverage}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs leading-relaxed">
+						{source.symbol}
+						<br />
+						{selected[0].date} → {selected[selected.length - 1].date}
+						<br />
+						{l(
+							"Simple close-to-close percentage returns",
+							"简单收盘到收盘百分比收益",
+						)}
+					</p>
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						<p>
+							{l("Sampled observations", "采样观测数")}
+							<br />
+							{samples.length}
+						</p>
+						<p>
+							{l("Periods per year", "每年观测期数")}
+							<br />
+							{number(result?.periodsPerYear ?? null)}
+						</p>
+						<p data-vol-sd>
+							{l("Sample standard deviation", "样本标准差")}
+							<br />
+							<strong>{pct(result?.standardDeviation ?? null)}</strong>
+						</p>
+						<p>
+							{l("Mean return per observation", "每观测平均收益")}
+							<br />
+							{pct(result?.mean ?? null)}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"Annualized RV = sample SD × √periods per year",
+							"年化 RV = 样本标准差 × √每年观测期数",
+						)}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"Window, sampling and annualization all matter",
+								"窗口、采样与年化均重要",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The sample standard deviation uses n−1. Two-session returns compound adjacent daily returns, and use half as many annual periods. Coarser sampling can hide intermediate moves. The last-return control is a hypothetical edit; missing observations are not dropped or filled with zero. These short synthetic samples teach the calculation, not a reliable forecast.",
+								"样本标准差使用 n−1。双时段收益复合相邻日收益，并使用一半的年度观测期数。较粗采样可能掩盖中间变动。最后收益控制为假设修改；缺失观测既不删除，也不填零。这些短模拟样本用于教学计算，不是可靠预测。",
+							)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -574,78 +586,89 @@ export function VolatilityHorizonsScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<SelectField
-				label={l("Reference comparison", "参考比较")}
-				value={id}
-				options={data.pairs.map((p) => [
-					p.id,
-					p.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<div className="space-y-3 font-mono text-xs">
-				<p>
-					IV{pair.iv.days ?? "?"} · {pair.iv.symbol} · {pair.iv.asOf}
-					<br />
-					{pair.iv.annualized
-						? l("Supplied annualized implied reference", "给定年化隐含参考")
-						: l("Annualization unspecified", "年化未说明")}
-				</p>
-				<p>
-					{pair.rv.sessions === null || pair.rv.method === null
-						? l("Historical volatility", "历史波动率")
-						: `RV${pair.rv.sessions}`}{" "}
-					· {pair.rv.symbol} · {pair.rv.asOf}
-					<br />
-					{pair.rv.annualized
-						? l("Supplied annualized historical reference", "给定年化历史参考")
-						: l("Annualization unspecified", "年化未说明")}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs">
-				{pair.rv.method === "daily-sample"
-					? l(
-							"Simple daily close-to-close returns · sample SD (n−1)",
-							"简单日收盘到收盘收益 · 样本标准差（n−1）",
-						)
-					: l("Sampling and estimator not supplied", "未提供采样与估计方法")}
-				<br />
-				{l("RV annualization periods", "RV 年化观测期数")}:{" "}
-				{number(pair.rv.periodsPerYear)}
-			</p>
-			<p data-vol-relative className="text-sm">
-				{l("Relative to RV (%)", "相对 RV（%）")}:{" "}
-				{signed(result.relativePercent)}
-			</p>
-			<p data-vol-comparison-status className="text-sm">
-				{result.issue
-					? issues[result.issue]
-					: l(
-							"Defined comparison; different horizons remain",
-							"比较定义完整，但时间范围仍不同",
+			controls={
+				<SelectField
+					label={l("Reference comparison", "参考比较")}
+					value={id}
+					options={data.pairs.map((p) => [
+						p.id,
+						p.label[locale === "zh" ? 1 : 0],
+					])}
+					onChange={setId}
+				/>
+			}
+			details={
+				<>
+					<div className="space-y-3 font-mono text-xs">
+						<p>
+							IV{pair.iv.days ?? "?"} · {pair.iv.symbol} · {pair.iv.asOf}
+							<br />
+							{pair.iv.annualized
+								? l("Supplied annualized implied reference", "给定年化隐含参考")
+								: l("Annualization unspecified", "年化未说明")}
+						</p>
+						<p>
+							{pair.rv.sessions === null || pair.rv.method === null
+								? l("Historical volatility", "历史波动率")
+								: `RV${pair.rv.sessions}`}{" "}
+							· {pair.rv.symbol} · {pair.rv.asOf}
+							<br />
+							{pair.rv.annualized
+								? l(
+										"Supplied annualized historical reference",
+										"给定年化历史参考",
+									)
+								: l("Annualization unspecified", "年化未说明")}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-xs">
+						{pair.rv.method === "daily-sample"
+							? l(
+									"Simple daily close-to-close returns · sample SD (n−1)",
+									"简单日收盘到收盘收益 · 样本标准差（n−1）",
+								)
+							: l(
+									"Sampling and estimator not supplied",
+									"未提供采样与估计方法",
+								)}
+						<br />
+						{l("RV annualization periods", "RV 年化观测期数")}:{" "}
+						{number(pair.rv.periodsPerYear)}
+					</p>
+					<p data-vol-relative className="text-sm">
+						{l("Relative to RV (%)", "相对 RV（%）")}:{" "}
+						{signed(result.relativePercent)}
+					</p>
+					<p data-vol-comparison-status className="text-sm">
+						{result.issue
+							? issues[result.issue]
+							: l(
+									"Defined comparison; different horizons remain",
+									"比较定义完整，但时间范围仍不同",
+								)}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"A volatility spread is context, not a return",
+								"波动率差是上下文，并非收益",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"IV30 is a standardized forward 30-calendar-day reference; RV20 looks back over 20 trading sessions. This question requires the same underlying and as-of date, plus a defined 30-day implied reference and a daily close-to-close RV20 using sample SD and 252 annual periods. A vendor's unspecified historical-volatility number cannot silently become RV20. The difference is volatility points, not a stock-return forecast or certain mispricing.",
+								"IV30 是标准化向前 30 自然日参考；RV20 回看 20 个交易时段。本问题要求相同标的、截至日期、定义明确的 30 天隐含参考及使用样本标准差与 252 年度观测期的日收盘到收盘 RV20。供应商未说明定义的历史波动率不能自动变成 RV20。差值是波动率点，不是股票收益预测或确定错误定价。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"These are independent supplied reference examples. RV20 is not calculated from the earlier 4/8-session exercise, and IV30 is not necessarily the IV of one listed option. A valid comparison does not make forward-implied and backward-realized estimates the same quantity.",
+							"这些是独立给定参考示例。RV20 并非来自前面的 4/8 时段练习，IV30 也不一定是单一挂牌期权的 IV。比较有效不代表向前隐含与向后已实现估计成为同一种量。",
 						)}
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"A volatility spread is context, not a return",
-						"波动率差是上下文，并非收益",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"IV30 is a standardized forward 30-calendar-day reference; RV20 looks back over 20 trading sessions. This question requires the same underlying and as-of date, plus a defined 30-day implied reference and a daily close-to-close RV20 using sample SD and 252 annual periods. A vendor's unspecified historical-volatility number cannot silently become RV20. The difference is volatility points, not a stock-return forecast or certain mispricing.",
-						"IV30 是标准化向前 30 自然日参考；RV20 回看 20 个交易时段。本问题要求相同标的、截至日期、定义明确的 30 天隐含参考及使用样本标准差与 252 年度观测期的日收盘到收盘 RV20。供应商未说明定义的历史波动率不能自动变成 RV20。差值是波动率点，不是股票收益预测或确定错误定价。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"These are independent supplied reference examples. RV20 is not calculated from the earlier 4/8-session exercise, and IV30 is not necessarily the IV of one listed option. A valid comparison does not make forward-implied and backward-realized estimates the same quantity.",
-					"这些是独立给定参考示例。RV20 并非来自前面的 4/8 时段练习，IV30 也不一定是单一挂牌期权的 IV。比较有效不代表向前隐含与向后已实现估计成为同一种量。",
-				)}
-			</p>
-		</SceneLayout>
+					</p>
+				</>
+			}
+		/>
 	);
 }

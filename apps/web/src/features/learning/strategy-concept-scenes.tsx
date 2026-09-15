@@ -189,58 +189,63 @@ export function CompositionScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<ExampleField
-					locale={locale}
-					example={example}
-					onChange={(value) => {
-						setId(value);
-						setFocus(null);
-					}}
-				/>
-				<ChoiceField
-					label={l("Evidence view", "证据视角")}
-					value={scope}
-					options={[
-						["linked", l("Linked structure", "关联结构")],
-						["single", l("One position only", "仅一个持仓")],
-					]}
-					onChange={setScope}
-				/>
-				<SelectField
-					label={l("Selected position", "选定持仓")}
-					value={selected.id}
-					options={example.legs.map((leg) => [leg.id, legName(leg, l)])}
-					onChange={setFocus}
-				/>
-			</FieldGroup>
-			<Alert role="note">
-				<AlertTitle>
-					{full
-						? example.label[language]
-						: l(
-								"An isolated leg is incomplete evidence",
-								"孤立单腿的证据不完整",
-							)}
-				</AlertTitle>
-				<AlertDescription>
-					{full
-						? example.note[language]
-						: l(
-								"The selected position could stand alone or link to other options or shares. One position does not identify the complete structure, portfolio or investor outlook.",
-								"选定持仓可能独立存在，也可能关联其他期权或股票。单一持仓不能识别完整结构、组合或投资者观点。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This compares evidence views for a known teaching example. Signed positions are supplied here; an isolated trade print provides still less information and does not itself establish opening/closing status.",
-					"这是对已知教学示例的证据视角比较。此处给定了持仓方向；孤立成交提供的信息更少，本身不确定开平仓状态。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<ExampleField
+						locale={locale}
+						example={example}
+						onChange={(value) => {
+							setId(value);
+							setFocus(null);
+						}}
+					/>
+					<ChoiceField
+						label={l("Evidence view", "证据视角")}
+						value={scope}
+						options={[
+							["linked", l("Linked structure", "关联结构")],
+							["single", l("One position only", "仅一个持仓")],
+						]}
+						onChange={setScope}
+					/>
+					<SelectField
+						label={l("Selected position", "选定持仓")}
+						value={selected.id}
+						options={example.legs.map((leg) => [leg.id, legName(leg, l)])}
+						onChange={setFocus}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Alert role="note">
+						<AlertTitle>
+							{full
+								? example.label[language]
+								: l(
+										"An isolated leg is incomplete evidence",
+										"孤立单腿的证据不完整",
+									)}
+						</AlertTitle>
+						<AlertDescription>
+							{full
+								? example.note[language]
+								: l(
+										"The selected position could stand alone or link to other options or shares. One position does not identify the complete structure, portfolio or investor outlook.",
+										"选定持仓可能独立存在，也可能关联其他期权或股票。单一持仓不能识别完整结构、组合或投资者观点。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This compares evidence views for a known teaching example. Signed positions are supplied here; an isolated trade print provides still less information and does not itself establish opening/closing status.",
+							"这是对已知教学示例的证据视角比较。此处给定了持仓方向；孤立成交提供的信息更少，本身不确定开平仓状态。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -370,91 +375,96 @@ export function ExpirationStrategyScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<ExampleField locale={locale} example={example} onChange={setId} />
-				<ChoiceField
-					label={l("Chart measure", "图表指标")}
-					value={measure}
-					options={[
-						["profit", l("Profit", "盈亏")],
-						["terminal", l("Terminal value", "到期价值")],
-					]}
-					onChange={setMeasure}
-				/>
-				<ChoiceField
-					label={l("Chart scale", "图表比例")}
-					value={scaleMode}
-					options={[
-						["fit", l("Fit strategy", "适配策略")],
-						["shared", l("Shared range", "共同范围")],
-					]}
-					onChange={setScaleMode}
-				/>
-				<RangeControl
-					inputScale={100}
-					label={l("Expiry stock price", "到期股价")}
-					value={spot}
-					display={money(spot)}
-					min={data.spotRange[0]}
-					max={data.spotRange[1]}
-					step={100}
-					onChange={setSpot}
-				/>
-				<RangeControl
-					inputScale={100}
-					label={l("Total fees in this example", "本例总费用")}
-					value={fees}
-					display={money(fees)}
-					min={0}
-					max={data.feeMax}
-					step={500}
-					onChange={setFees}
-				/>
-			</FieldGroup>
-			{result.ok ? (
-				<div className="grid grid-cols-2 gap-3 text-sm">
-					<p data-strategy-terminal>
-						{l("Terminal value", "到期价值")}
-						<br />
-						<strong>{money(result.terminalValue)}</strong>
-					</p>
-					<p data-strategy-entry>
-						{l("Net entry cost", "净入场成本")}
-						<br />
-						<strong>{money(result.entryCost)}</strong>
-					</p>
-					<p>
-						{l("Fees", "费用")}
-						<br />
-						<strong>{money(result.fees)}</strong>
-					</p>
-					<p data-strategy-profit>
-						{l("Profit", "盈亏")}
-						<br />
-						<strong>{money(result.profit)}</strong>
-					</p>
-				</div>
-			) : (
-				<p role="status">
-					{l(
-						"Terms cannot support this expiry calculation.",
-						"这些条款不能支持此到期计算。",
+			controls={
+				<FieldGroup>
+					<ExampleField locale={locale} example={example} onChange={setId} />
+					<ChoiceField
+						label={l("Chart measure", "图表指标")}
+						value={measure}
+						options={[
+							["profit", l("Profit", "盈亏")],
+							["terminal", l("Terminal value", "到期价值")],
+						]}
+						onChange={setMeasure}
+					/>
+					<ChoiceField
+						label={l("Chart scale", "图表比例")}
+						value={scaleMode}
+						options={[
+							["fit", l("Fit strategy", "适配策略")],
+							["shared", l("Shared range", "共同范围")],
+						]}
+						onChange={setScaleMode}
+					/>
+					<RangeControl
+						inputScale={100}
+						label={l("Expiry stock price", "到期股价")}
+						value={spot}
+						display={money(spot)}
+						min={data.spotRange[0]}
+						max={data.spotRange[1]}
+						step={100}
+						onChange={setSpot}
+					/>
+					<RangeControl
+						inputScale={100}
+						label={l("Total fees in this example", "本例总费用")}
+						value={fees}
+						display={money(fees)}
+						min={0}
+						max={data.feeMax}
+						step={500}
+						onChange={setFees}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					{result.ok ? (
+						<div className="grid grid-cols-2 gap-3 text-sm">
+							<p data-strategy-terminal>
+								{l("Terminal value", "到期价值")}
+								<br />
+								<strong>{money(result.terminalValue)}</strong>
+							</p>
+							<p data-strategy-entry>
+								{l("Net entry cost", "净入场成本")}
+								<br />
+								<strong>{money(result.entryCost)}</strong>
+							</p>
+							<p>
+								{l("Fees", "费用")}
+								<br />
+								<strong>{money(result.fees)}</strong>
+							</p>
+							<p data-strategy-profit>
+								{l("Profit", "盈亏")}
+								<br />
+								<strong>{money(result.profit)}</strong>
+							</p>
+						</div>
+					) : (
+						<p role="status">
+							{l(
+								"Terms cannot support this expiry calculation.",
+								"这些条款不能支持此到期计算。",
+							)}
+						</p>
 					)}
-				</p>
-			)}
-			<Alert role="note">
-				<AlertTitle>{example.label[language]}</AlertTitle>
-				<AlertDescription>{example.note[language]}</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Use Shared range to compare magnitudes across examples; Fit strategy uses a separate scale. The finite spot window does not establish risk limits. Terminal value minus signed entry cost and fees gives expiry profit; a negative entry cost is a credit. Early exercise/assignment, dividends, financing and taxes are omitted.",
-					"使用共同范围比较各示例的绝对量，适配策略模式使用各自比例。有限股价窗口不确定风险极限。到期价值减带符号入场成本及费用得到到期盈亏；负入场成本表示净收款。不含提前行权/指派、股息、融资和税费。",
-				)}
-			</p>
-		</SceneLayout>
+					<Alert role="note">
+						<AlertTitle>{example.label[language]}</AlertTitle>
+						<AlertDescription>{example.note[language]}</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Use Shared range to compare magnitudes across examples; Fit strategy uses a separate scale. The finite spot window does not establish risk limits. Terminal value minus signed entry cost and fees gives expiry profit; a negative entry cost is a credit. Early exercise/assignment, dividends, financing and taxes are omitted.",
+							"使用共同范围比较各示例的绝对量，适配策略模式使用各自比例。有限股价窗口不确定风险极限。到期价值减带符号入场成本及费用得到到期盈亏；负入场成本表示净收款。不含提前行权/指派、股息、融资和税费。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -596,41 +606,51 @@ export function RollScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs">
-				{l("Supplied linked closing/opening records", "给定关联平仓/开仓记录")}
-				<br />
-				{data.roll.quantity} {l("contract each", "张各一笔")} ·{" "}
-				{l("multiplier", "乘数")} {data.roll.multiplier}
-			</p>
-			<SelectField
-				label={l("Roll step", "移仓步骤")}
-				value={String(playback.frame)}
-				options={steps.map((label, i) => [String(i), label])}
-				onChange={(value) => playback.select(Number(value))}
-			/>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Cash flow is not realized profit", "现金流不等于已实现利润")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The old fill receives cash; the new fill spends cash. Their net debit or credit does not reveal profit on the old position without its original cost basis. Two linked fills, their opening/closing instructions and different expiries establish this supplied roll.",
-						"旧成交收款，新成交付款。没有旧持仓原始成本，净支出或收入不揭示旧持仓盈亏。两笔关联成交、开平仓指令与不同到期日共同确定此给定移仓。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-sm">
-				{l(
-					"The old quantity is closed before the new one is held in this replay. Combining both expiries into one terminal-price curve would describe a different model and is intentionally unsupported.",
-					"本回放先平掉旧数量，再持有新合约。将两个到期日混入一条终值价格曲线属于另一种模型，此处不作该计算。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Roll step", "移仓步骤")}
+						value={String(playback.frame)}
+						options={steps.map((label, i) => [String(i), label])}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs">
+						{l(
+							"Supplied linked closing/opening records",
+							"给定关联平仓/开仓记录",
+						)}
+						<br />
+						{data.roll.quantity} {l("contract each", "张各一笔")} ·{" "}
+						{l("multiplier", "乘数")} {data.roll.multiplier}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l("Cash flow is not realized profit", "现金流不等于已实现利润")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The old fill receives cash; the new fill spends cash. Their net debit or credit does not reveal profit on the old position without its original cost basis. Two linked fills, their opening/closing instructions and different expiries establish this supplied roll.",
+								"旧成交收款，新成交付款。没有旧持仓原始成本，净支出或收入不揭示旧持仓盈亏。两笔关联成交、开平仓指令与不同到期日共同确定此给定移仓。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-sm">
+						{l(
+							"The old quantity is closed before the new one is held in this replay. Combining both expiries into one terminal-price curve would describe a different model and is intentionally unsupported.",
+							"本回放先平掉旧数量，再持有新合约。将两个到期日混入一条终值价格曲线属于另一种模型，此处不作该计算。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

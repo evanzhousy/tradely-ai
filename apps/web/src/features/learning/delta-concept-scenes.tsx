@@ -13,6 +13,7 @@ import {
 } from "@/domain/learning/delta-concept";
 import { localDeltaChange } from "@/domain/learning/local-greeks";
 import type { Locale } from "@/i18n/messages";
+import { BeforeAfterComparison } from "./before-after-comparison";
 import {
 	ChoiceField,
 	Diagram,
@@ -28,6 +29,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 
 export const DeltaData = createContext<DeltaConceptData | null>(null);
@@ -102,6 +104,34 @@ export function DeltaSlopeScene({ locale }: Props) {
 			210;
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey={option.id}
+					values={[
+						{
+							id: "move",
+							label: l("Underlying move", "标的变动"),
+							before: 0,
+							current: move,
+							unit: "USD",
+							format: (n) => money(n, true),
+						},
+						{
+							id: "value",
+							label: l("Option price", "期权价格"),
+							before: option.priceCents,
+							current: estimate,
+							unit: "USD/share",
+							format: (n) => money(n, true),
+						},
+					]}
+					note={l(
+						"Local delta approximation; all other inputs fixed.",
+						"局部 Delta 近似，其他输入固定。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -177,86 +207,95 @@ export function DeltaSlopeScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Underlying move", "标的变动")}</>,
+							value: <>{money(move)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Option price change", "期权价格变化")}</>,
+							value: (
+								<>
+									{estimate === null
+										? "—"
+										: money(estimate - option.priceCents)}
+								</>
+							),
+						},
+						{
+							id: "result-3",
+							label: <>{l("Local delta", "局部 Delta")}</>,
+							value: <>{signed(option.delta)}</>,
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<OptionField locale={locale} option={option} onChange={setId} />
+					<RangeControl
+						inputScale={100}
+						label={l("Underlying price change", "标的价格变动")}
+						value={move}
+						display={money(move, true)}
+						min={data.localMoveRange[0]}
+						max={data.localMoveRange[1]}
+						step={5}
+						onChange={setMove}
+					/>
+				</FieldGroup>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Underlying move", "标的变动")}
+					<Snapshot locale={locale} option={option} />
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						<p>
+							{l("Starting option price", "起始期权价格")}
+							<br />
+							<strong>{money(option.priceCents)}</strong>
 						</p>
-						<p className="scene-outcome-value">{money(move)}</p>
+						<p data-delta-model>
+							{l("Model delta", "模型 Delta")}
+							<br />
+							<strong>{signed(option.delta)}</strong>
+						</p>
+						<p data-delta-unit-change>
+							{l("Estimated change / unit", "每单位估计变化")}
+							<br />
+							<strong>
+								{result ? money(result.unitChangeCents, true, 4) : "—"}
+							</strong>
+						</p>
+						<p>
+							{l("Units", "单位")}
+							<br />
+							{l("$/unit per $1 underlying", "标的每 $1 的美元/单位")}
+						</p>
 					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Option price change", "期权价格变化")}
-						</p>
-						<p className="scene-outcome-value">
-							{estimate === null ? "—" : money(estimate - option.priceCents)}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Local delta", "局部 Delta")}
-						</p>
-						<p className="scene-outcome-value">{signed(option.delta)}</p>
-					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{l("Slope, not a predicted next price", "斜率，而非下个价格预测")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The line holds the supplied delta constant over a small move. Its horizontal and vertical steps show underlying change and estimated option change. The put has its own negative model delta; this is the option's price sensitivity before any long/short position sign.",
+								"直线在小幅变动中保持给定 Delta 不变。水平与垂直步长分别表示标的变化和期权估计变化。看跌期权有自己的负模型 Delta；这是期权价格敏感度，尚未加入持仓多空符号。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Time, volatility, rates and other inputs are held fixed. The marker is a delta-only estimate, not a live quote, fill, expiration payoff or promised profit.",
+							"时间、波动率、利率及其他输入保持不变。标记是仅用 Delta 的估计，不是实时报价、成交、到期支付或利润承诺。",
+						)}
+					</p>
 				</>
 			}
-		>
-			<Snapshot locale={locale} option={option} />
-			<FieldGroup>
-				<OptionField locale={locale} option={option} onChange={setId} />
-				<RangeControl
-					inputScale={100}
-					label={l("Underlying price change", "标的价格变动")}
-					value={move}
-					display={money(move, true)}
-					min={data.localMoveRange[0]}
-					max={data.localMoveRange[1]}
-					step={5}
-					onChange={setMove}
-				/>
-			</FieldGroup>
-			<div className="grid grid-cols-2 gap-3 text-sm">
-				<p>
-					{l("Starting option price", "起始期权价格")}
-					<br />
-					<strong>{money(option.priceCents)}</strong>
-				</p>
-				<p data-delta-model>
-					{l("Model delta", "模型 Delta")}
-					<br />
-					<strong>{signed(option.delta)}</strong>
-				</p>
-				<p data-delta-unit-change>
-					{l("Estimated change / unit", "每单位估计变化")}
-					<br />
-					<strong>
-						{result ? money(result.unitChangeCents, true, 4) : "—"}
-					</strong>
-				</p>
-				<p>
-					{l("Units", "单位")}
-					<br />
-					{l("$/unit per $1 underlying", "标的每 $1 的美元/单位")}
-				</p>
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Slope, not a predicted next price", "斜率，而非下个价格预测")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The line holds the supplied delta constant over a small move. Its horizontal and vertical steps show underlying change and estimated option change. The put has its own negative model delta; this is the option's price sensitivity before any long/short position sign.",
-						"直线在小幅变动中保持给定 Delta 不变。水平与垂直步长分别表示标的变化和期权估计变化。看跌期权有自己的负模型 Delta；这是期权价格敏感度，尚未加入持仓多空符号。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Time, volatility, rates and other inputs are held fixed. The marker is a delta-only estimate, not a live quote, fill, expiration payoff or promised profit.",
-					"时间、波动率、利率及其他输入保持不变。标记是仅用 Delta 的估计，不是实时报价、成交、到期支付或利润承诺。",
-				)}
-			</p>
-		</SceneLayout>
+		/>
 	);
 }
 
@@ -396,72 +435,77 @@ export function DeltaPositionScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} option={option} />
-			<FieldGroup>
-				<OptionField locale={locale} option={option} onChange={setId} />
-				<ChoiceField
-					label={l("Position side", "持仓方向")}
-					value={side}
-					options={[
-						["long", l("Long", "多头")],
-						["short", l("Short", "空头")],
-					]}
-					onChange={setSide}
-				/>
-				<SelectField
-					label={l("Illustrative contract size", "示例合约规模")}
-					value={String(multiplier)}
-					options={data.multipliers.map((m) => [
-						String(m),
-						`${m} ${l("units / contract", "单位/张")}`,
-					])}
-					onChange={(value) => setMultiplier(Number(value))}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Number of contracts", "合约张数")}
-					value={quantity}
-					display={String(quantity)}
-					min={1}
-					max={data.quantityMax}
-					onChange={setQuantity}
-				/>
-			</FieldGroup>
-			<div className="space-y-3 text-sm">
-				<p>
-					{l("Underlying move held at", "标的变动固定为")}{" "}
-					{money(data.positionMoveCents, true)}
-				</p>
-				<p data-delta-position-change>
-					{l("Estimated position value change", "持仓价值估计变化")}
-					<br />
-					<strong className="text-xl">
-						{result ? money(result.positionChangeCents, true) : "—"}
-					</strong>
-				</p>
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"Shorting reverses the position, not the quoted delta",
-						"做空反转持仓，而非报价 Delta",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"One option's model delta × contract count × the stated multiplier × long/short sign gives share-equivalent exposure. Multiply that exposure by the underlying move to estimate the dollar change. Do not apply the multiplier twice.",
-						"单份期权模型 Delta × 张数 × 给定乘数 × 多空符号，得到股等价敞口。再乘标的变化估计金额变化，不要重复乘乘数。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"The size selector compares hypothetical contract specifications; read the actual contract terms in practice. Share-equivalent sensitivity is not ownership of shares, realized P&L, or an inferred flow-sentiment sign. Time, volatility, curvature, fees and other effects are omitted.",
-					"规模选择比较假设合约规格；实际需阅读合约条款。股等价敏感度不等于持有股票、已实现盈亏或推断的成交流情绪符号。此处省略时间、波动率、曲率、费用及其他影响。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<OptionField locale={locale} option={option} onChange={setId} />
+					<ChoiceField
+						label={l("Position side", "持仓方向")}
+						value={side}
+						options={[
+							["long", l("Long", "多头")],
+							["short", l("Short", "空头")],
+						]}
+						onChange={setSide}
+					/>
+					<SelectField
+						label={l("Illustrative contract size", "示例合约规模")}
+						value={String(multiplier)}
+						options={data.multipliers.map((m) => [
+							String(m),
+							`${m} ${l("units / contract", "单位/张")}`,
+						])}
+						onChange={(value) => setMultiplier(Number(value))}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Number of contracts", "合约张数")}
+						value={quantity}
+						display={String(quantity)}
+						min={1}
+						max={data.quantityMax}
+						onChange={setQuantity}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} option={option} />
+					<div className="space-y-3 text-sm">
+						<p>
+							{l("Underlying move held at", "标的变动固定为")}{" "}
+							{money(data.positionMoveCents, true)}
+						</p>
+						<p data-delta-position-change>
+							{l("Estimated position value change", "持仓价值估计变化")}
+							<br />
+							<strong className="text-xl">
+								{result ? money(result.positionChangeCents, true) : "—"}
+							</strong>
+						</p>
+					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"Shorting reverses the position, not the quoted delta",
+								"做空反转持仓，而非报价 Delta",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"One option's model delta × contract count × the stated multiplier × long/short sign gives share-equivalent exposure. Multiply that exposure by the underlying move to estimate the dollar change. Do not apply the multiplier twice.",
+								"单份期权模型 Delta × 张数 × 给定乘数 × 多空符号，得到股等价敞口。再乘标的变化估计金额变化，不要重复乘乘数。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"The size selector compares hypothetical contract specifications; read the actual contract terms in practice. Share-equivalent sensitivity is not ownership of shares, realized P&L, or an inferred flow-sentiment sign. Time, volatility, curvature, fees and other effects are omitted.",
+							"规模选择比较假设合约规格；实际需阅读合约条款。股等价敏感度不等于持有股票、已实现盈亏或推断的成交流情绪符号。此处省略时间、波动率、曲率、费用及其他影响。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -605,108 +649,117 @@ export function DeltaLimitsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs">
-				{l("Separate mathematical illustration", "独立数学示例")}
-				<br />
-				{l("Anchor price", "锚点价格")} {money(curve.priceCents)} · Δ{" "}
-				{known ? curve.delta : "—"}
-				<br />
-				{l("Declared curvature", "给定曲率")} {curve.gammaPerDollar} / $1
-			</p>
-			<FieldGroup>
-				<SelectField
-					label={l("Estimate conditions", "估计条件")}
-					value={condition}
-					options={[
-						["fixed", l("Other inputs held fixed", "其他输入固定")],
-						["volatility", l("Volatility also changed", "波动率也已变化")],
-						["time", l("Time also passed", "时间也已流逝")],
-						["missing", l("Model delta missing", "模型 Delta 缺失")],
-					]}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setCondition(value);
-					}}
-				/>
-				<RangeControl
-					inputScale={100}
-					label={l("Stress-test underlying move", "压力测试标的变动")}
-					value={move}
-					display={money(move, true)}
-					min={curve.moveRange[0]}
-					max={curve.moveRange[1]}
-					step={5}
-					onChange={chooseMove}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={() => {
-					setManual(null);
-					playback.toggle();
-				}}
-				l={l}
-			/>
-			<div className="grid grid-cols-2 gap-3 text-sm">
-				<p data-delta-spot-only>
-					{l("Old-delta spot calculation / unit", "旧 Delta 现价计算/单位")}
-					<br />
-					<strong>{known ? money(curve.delta * move, true, 4) : "—"}</strong>
-				</p>
-				<p data-delta-reference>
-					{l("Curve price / unit", "曲线价格/单位")}
-					<br />
-					<strong>
-						{fixed ? money(values.curvedPriceCents, false, 4) : "—"}
-					</strong>
-				</p>
-				<p data-delta-gap>
-					{l("Curve minus line / unit", "曲线减直线/单位")}
-					<br />
-					<strong>
-						{fixed
-							? money(
-									values.curvedPriceCents - values.linearPriceCents,
-									true,
-									4,
-								)
-							: "—"}
-					</strong>
-				</p>
-				<p data-delta-local-slope>
-					{l("Curve's local delta", "曲线局部 Delta")}
-					<br />
-					<strong>{fixed ? signed(values.localDelta, 4) : "—"}</strong>
-				</p>
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{fixed
-						? l("The slope can change as spot moves", "斜率可随现价变动")
-						: l(
-								"The old delta cannot supply the total",
-								"旧 Delta 不能给出总变化",
-							)}
-				</AlertTitle>
-				<AlertDescription>
-					{fixed
-						? l(
-								`This declared quadratic curve adds ½ × ${curve.gammaPerDollar} × move² to the ${curve.delta} × move response (dollar units). Near the anchor the line and curve are close; farther away their gap grows. It illustrates curvature, not a validated option-pricing model or a universal safe-move threshold.`,
-								`给定二次曲线在 ${curve.delta} × 变动响应上加入 ½ × ${curve.gammaPerDollar} × 变动平方（美元单位）。锚点附近直线与曲线接近，远离后差距扩大。这展示曲率，不是经过验证的期权定价模型或通用安全变动阈值。`,
-							)
-						: l(
-								"A mechanical old-delta calculation for spot alone cannot estimate the total when other inputs change. Their effects and updated sensitivities are not supplied. If delta itself is missing, even that calculation is unavailable.",
-								"当其他输入变化时，仅针对现价机械套用旧 Delta 不能估计总变化。此处未提供其他影响与更新后的敏感度。若 Delta 本身缺失，连该计算也不可用。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Delta is a model price sensitivity. Probability interpretations require additional assumptions; a delta of 0.50 is not a guaranteed 50% chance of a profitable trade. Model delta and a signed flow convention are different quantities.",
-					"Delta 是模型价格敏感度。概率解读需要额外假设；Delta 0.50 不保证交易有 50% 盈利概率。模型 Delta 与带符号成交流约定是不同量。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<FieldGroup>
+						<SelectField
+							label={l("Estimate conditions", "估计条件")}
+							value={condition}
+							options={[
+								["fixed", l("Other inputs held fixed", "其他输入固定")],
+								["volatility", l("Volatility also changed", "波动率也已变化")],
+								["time", l("Time also passed", "时间也已流逝")],
+								["missing", l("Model delta missing", "模型 Delta 缺失")],
+							]}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setCondition(value);
+							}}
+						/>
+						<RangeControl
+							inputScale={100}
+							label={l("Stress-test underlying move", "压力测试标的变动")}
+							value={move}
+							display={money(move, true)}
+							min={curve.moveRange[0]}
+							max={curve.moveRange[1]}
+							step={5}
+							onChange={chooseMove}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={() => {
+							setManual(null);
+							playback.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs">
+						{l("Separate mathematical illustration", "独立数学示例")}
+						<br />
+						{l("Anchor price", "锚点价格")} {money(curve.priceCents)} · Δ{" "}
+						{known ? curve.delta : "—"}
+						<br />
+						{l("Declared curvature", "给定曲率")} {curve.gammaPerDollar} / $1
+					</p>
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						<p data-delta-spot-only>
+							{l("Old-delta spot calculation / unit", "旧 Delta 现价计算/单位")}
+							<br />
+							<strong>
+								{known ? money(curve.delta * move, true, 4) : "—"}
+							</strong>
+						</p>
+						<p data-delta-reference>
+							{l("Curve price / unit", "曲线价格/单位")}
+							<br />
+							<strong>
+								{fixed ? money(values.curvedPriceCents, false, 4) : "—"}
+							</strong>
+						</p>
+						<p data-delta-gap>
+							{l("Curve minus line / unit", "曲线减直线/单位")}
+							<br />
+							<strong>
+								{fixed
+									? money(
+											values.curvedPriceCents - values.linearPriceCents,
+											true,
+											4,
+										)
+									: "—"}
+							</strong>
+						</p>
+						<p data-delta-local-slope>
+							{l("Curve's local delta", "曲线局部 Delta")}
+							<br />
+							<strong>{fixed ? signed(values.localDelta, 4) : "—"}</strong>
+						</p>
+					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{fixed
+								? l("The slope can change as spot moves", "斜率可随现价变动")
+								: l(
+										"The old delta cannot supply the total",
+										"旧 Delta 不能给出总变化",
+									)}
+						</AlertTitle>
+						<AlertDescription>
+							{fixed
+								? l(
+										`This declared quadratic curve adds ½ × ${curve.gammaPerDollar} × move² to the ${curve.delta} × move response (dollar units). Near the anchor the line and curve are close; farther away their gap grows. It illustrates curvature, not a validated option-pricing model or a universal safe-move threshold.`,
+										`给定二次曲线在 ${curve.delta} × 变动响应上加入 ½ × ${curve.gammaPerDollar} × 变动平方（美元单位）。锚点附近直线与曲线接近，远离后差距扩大。这展示曲率，不是经过验证的期权定价模型或通用安全变动阈值。`,
+									)
+								: l(
+										"A mechanical old-delta calculation for spot alone cannot estimate the total when other inputs change. Their effects and updated sensitivities are not supplied. If delta itself is missing, even that calculation is unavailable.",
+										"当其他输入变化时，仅针对现价机械套用旧 Delta 不能估计总变化。此处未提供其他影响与更新后的敏感度。若 Delta 本身缺失，连该计算也不可用。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Delta is a model price sensitivity. Probability interpretations require additional assumptions; a delta of 0.50 is not a guaranteed 50% chance of a profitable trade. Model delta and a signed flow convention are different quantities.",
+							"Delta 是模型价格敏感度。概率解读需要额外假设；Delta 0.50 不保证交易有 50% 盈利概率。模型 Delta 与带符号成交流约定是不同量。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

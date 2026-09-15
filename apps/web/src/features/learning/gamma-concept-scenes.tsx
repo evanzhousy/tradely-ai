@@ -13,6 +13,7 @@ import {
 	gammaHedge,
 } from "@/domain/learning/gamma-concept";
 import type { Locale } from "@/i18n/messages";
+import { BeforeAfterComparison } from "./before-after-comparison";
 import {
 	ChoiceField,
 	Diagram,
@@ -28,6 +29,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 
 export const GammaData = createContext<GammaConceptData | null>(null);
@@ -131,6 +133,34 @@ export function GammaTermsScene({ locale }: Props) {
 		: null;
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey={snapshot.id}
+					values={[
+						{
+							id: "delta",
+							label: l("Delta", "Delta"),
+							before: snapshot.delta,
+							current: terms?.nextDelta ?? null,
+							unit: l("price sensitivity", "价格敏感度"),
+							format: number,
+						},
+						{
+							id: "gamma",
+							label: l("Gamma price term", "Gamma 价格项"),
+							before: 0,
+							current: terms?.gammaPriceCents ?? null,
+							unit: "USD/share",
+							format: (n) => money(n),
+						},
+					]}
+					note={l(
+						"Compared with zero spot movement. Invalid local estimates stay unavailable.",
+						"与现价变动为零时比较，无效的局部估计保持不可用。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -207,100 +237,117 @@ export function GammaTermsScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Move", "变动")}</>,
+							value: <>{money(move)}</>,
+						},
+						{
+							id: "result-2",
+							label: (
+								<>
+									{deltaView
+										? l("Next delta", "新 Delta")
+										: l("Gamma price term", "Gamma 价格项")}
+								</>
+							),
+							value: (
+								<>
+									{focal === null
+										? "—"
+										: deltaView
+											? number(focal)
+											: money(focal)}
+								</>
+							),
+						},
+						{
+							id: "result-3",
+							label: <>{l("Formula", "公式")}</>,
+							value: <>{deltaView ? "Δ + Γ×move" : "½Γ×move²"}</>,
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<OptionField locale={locale} id={id} onChange={setId} />
+					<ChoiceField
+						label={l("Chart quantity", "图表量")}
+						value={measure}
+						options={[
+							["delta", l("Next delta", "新 Delta")],
+							["price", l("Gamma price term", "Gamma 价格项")],
+						]}
+						onChange={setMeasure}
+					/>
+					<RangeControl
+						inputScale={100}
+						label={l("Underlying price change", "标的价格变动")}
+						value={move}
+						display={money(move)}
+						min={data.moveRange[0]}
+						max={data.moveRange[1]}
+						step={25}
+						onChange={setMove}
+					/>
+				</FieldGroup>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Move", "变动")}</p>
-						<p className="scene-outcome-value">{money(move)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{deltaView
-								? l("Next delta", "新 Delta")
-								: l("Gamma price term", "Gamma 价格项")}
+					<Snapshot locale={locale} snapshot={snapshot} />
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						<p data-gamma-delta-change>
+							{l("Change in delta: Γ × move", "Delta 变化：Γ × 变动")}
+							<br />
+							<strong>{signed(terms?.deltaChange ?? null)}</strong>
 						</p>
-						<p className="scene-outcome-value">
-							{focal === null ? "—" : deltaView ? number(focal) : money(focal)}
+						<p data-gamma-next>
+							{l("Next delta: old Δ + change", "新 Delta：原 Δ + 变化")}
+							<br />
+							<strong>{signed(terms?.nextDelta ?? null)}</strong>
+						</p>
+						<p data-gamma-linear>
+							{l("Delta price term / unit", "Delta 价格项/单位")}
+							<br />
+							<strong>{money(terms?.deltaPriceCents ?? null)}</strong>
+						</p>
+						<p data-gamma-quadratic>
+							{l("Gamma price term / unit", "Gamma 价格项/单位")}
+							<br />
+							<strong>{money(terms?.gammaPriceCents ?? null)}</strong>
 						</p>
 					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Formula", "公式")}</p>
-						<p className="scene-outcome-value">
-							{deltaView ? "Δ + Γ×move" : "½Γ×move²"}
-						</p>
-					</div>
+					<p className="text-sm" data-gamma-total>
+						{l("Combined price change / unit", "合并价格变化/单位")}:{" "}
+						<strong>{money(terms?.totalPriceCents ?? null)}</strong>
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"Delta change is not the price correction",
+								"Delta 变化不等于价格修正",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"New delta uses Δ + Γ × move. The second-order price estimate uses Δ × move + ½ × Γ × move², in dollar units. With positive option gamma, its price term is positive for either move direction; the first-order delta term can still make the total negative.",
+								"新 Delta 使用 Δ + Γ × 变动。二阶价格估计使用 Δ × 变动 + ½ × Γ × 变动平方，以美元为单位。期权 Gamma 为正时，无论标的向哪边变动，该价格项均为正；一阶 Delta 项仍可能令合计为负。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"These are local, constant-Greek approximations with time, volatility and other inputs fixed. The option's quoted gamma is distinct from the signed gamma of a long or short position.",
+							"这些是时间、波动率等输入固定时的局部常数希腊值近似。期权报价 Gamma 与多空持仓带符号 Gamma 不同。",
+						)}
+					</p>
 				</>
 			}
-		>
-			<Snapshot locale={locale} snapshot={snapshot} />
-			<FieldGroup>
-				<OptionField locale={locale} id={id} onChange={setId} />
-				<ChoiceField
-					label={l("Chart quantity", "图表量")}
-					value={measure}
-					options={[
-						["delta", l("Next delta", "新 Delta")],
-						["price", l("Gamma price term", "Gamma 价格项")],
-					]}
-					onChange={setMeasure}
-				/>
-				<RangeControl
-					inputScale={100}
-					label={l("Underlying price change", "标的价格变动")}
-					value={move}
-					display={money(move)}
-					min={data.moveRange[0]}
-					max={data.moveRange[1]}
-					step={25}
-					onChange={setMove}
-				/>
-			</FieldGroup>
-			<div className="grid grid-cols-2 gap-3 text-sm">
-				<p data-gamma-delta-change>
-					{l("Change in delta: Γ × move", "Delta 变化：Γ × 变动")}
-					<br />
-					<strong>{signed(terms?.deltaChange ?? null)}</strong>
-				</p>
-				<p data-gamma-next>
-					{l("Next delta: old Δ + change", "新 Delta：原 Δ + 变化")}
-					<br />
-					<strong>{signed(terms?.nextDelta ?? null)}</strong>
-				</p>
-				<p data-gamma-linear>
-					{l("Delta price term / unit", "Delta 价格项/单位")}
-					<br />
-					<strong>{money(terms?.deltaPriceCents ?? null)}</strong>
-				</p>
-				<p data-gamma-quadratic>
-					{l("Gamma price term / unit", "Gamma 价格项/单位")}
-					<br />
-					<strong>{money(terms?.gammaPriceCents ?? null)}</strong>
-				</p>
-			</div>
-			<p className="text-sm" data-gamma-total>
-				{l("Combined price change / unit", "合并价格变化/单位")}:{" "}
-				<strong>{money(terms?.totalPriceCents ?? null)}</strong>
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"Delta change is not the price correction",
-						"Delta 变化不等于价格修正",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"New delta uses Δ + Γ × move. The second-order price estimate uses Δ × move + ½ × Γ × move², in dollar units. With positive option gamma, its price term is positive for either move direction; the first-order delta term can still make the total negative.",
-						"新 Delta 使用 Δ + Γ × 变动。二阶价格估计使用 Δ × 变动 + ½ × Γ × 变动平方，以美元为单位。期权 Gamma 为正时，无论标的向哪边变动，该价格项均为正；一阶 Delta 项仍可能令合计为负。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"These are local, constant-Greek approximations with time, volatility and other inputs fixed. The option's quoted gamma is distinct from the signed gamma of a long or short position.",
-					"这些是时间、波动率等输入固定时的局部常数希腊值近似。期权报价 Gamma 与多空持仓带符号 Gamma 不同。",
-				)}
-			</p>
-		</SceneLayout>
+		/>
 	);
 }
 
@@ -430,109 +477,119 @@ export function GammaHedgeScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} snapshot={snapshot} />
-			<FieldGroup>
-				<OptionField
-					locale={locale}
-					id={id}
-					onChange={(value) => {
-						playback.select(0);
-						setId(value);
-					}}
-				/>
-				<ChoiceField
-					label={l("Position evidence", "持仓证据")}
-					value={scope}
-					options={[
-						["known", l("Known position", "已知持仓")],
-						["unknown", l("Greeks only", "仅希腊值")],
-					]}
-					onChange={(value) => {
-						playback.select(0);
-						setScope(value);
-					}}
-				/>
-				{known ? (
-					<ChoiceField
-						label={l("Position side", "持仓方向")}
-						value={side}
-						options={[
-							["long", l("Long", "多头")],
-							["short", l("Short", "空头")],
-						]}
-						onChange={(value) => {
-							playback.select(0);
-							setSide(value);
-						}}
+			controls={
+				<>
+					<FieldGroup>
+						<OptionField
+							locale={locale}
+							id={id}
+							onChange={(value) => {
+								playback.select(0);
+								setId(value);
+							}}
+						/>
+						<ChoiceField
+							label={l("Position evidence", "持仓证据")}
+							value={scope}
+							options={[
+								["known", l("Known position", "已知持仓")],
+								["unknown", l("Greeks only", "仅希腊值")],
+							]}
+							onChange={(value) => {
+								playback.select(0);
+								setScope(value);
+							}}
+						/>
+						{known ? (
+							<ChoiceField
+								label={l("Position side", "持仓方向")}
+								value={side}
+								options={[
+									["long", l("Long", "多头")],
+									["short", l("Short", "空头")],
+								]}
+								onChange={(value) => {
+									playback.select(0);
+									setSide(value);
+								}}
+							/>
+						) : null}
+						<SelectField
+							label={l("Underlying scenario", "标的情景")}
+							value={String(move)}
+							options={data.hedgeMoves.map((value) => [
+								String(value),
+								money(value),
+							])}
+							onChange={(value) => {
+								playback.select(0);
+								setMove(Number(value));
+							}}
+						/>
+						<SelectField
+							label={l("Hedge step", "对冲步骤")}
+							value={String(playback.frame)}
+							options={phases.map((label, i) => [String(i), label])}
+							onChange={(value) => playback.select(Number(value))}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
 					/>
-				) : null}
-				<SelectField
-					label={l("Underlying scenario", "标的情景")}
-					value={String(move)}
-					options={data.hedgeMoves.map((value) => [
-						String(value),
-						money(value),
-					])}
-					onChange={(value) => {
-						playback.select(0);
-						setMove(Number(value));
-					}}
-				/>
-				<SelectField
-					label={l("Hedge step", "对冲步骤")}
-					value={String(playback.frame)}
-					options={phases.map((label, i) => [String(i), label])}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			{known ? (
-				<p className="font-mono text-muted-foreground text-xs">
-					{data.quantity} {l("contracts", "张")} × {data.multiplier}{" "}
-					{l("units each", "单位/张")}
-				</p>
-			) : null}
-			<div className="space-y-2 text-sm">
-				<p data-gamma-position-gamma>
-					{l("Position gamma", "持仓 Gamma")}:{" "}
-					<strong>{signed(state?.positionGamma ?? null)}</strong>{" "}
-					{l("shares-equivalent / $1", "股等价量 / $1")}
-				</p>
-				<p data-gamma-trade>
-					{l("Required stock adjustment", "所需股票调整")}:{" "}
-					<strong>{trade}</strong>
-				</p>
-				<p>
-					{l("New hedge target", "新对冲目标")}:{" "}
-					{signed(state?.targetHedge ?? null)} {l("shares", "股")}
-				</p>
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{!state
-						? l("Cannot establish the hedge", "无法确定对冲")
-						: Math.abs(state.netDelta) > 1e-9
-							? l("The old hedge leaves residual delta", "旧对冲留下剩余 Delta")
-							: l("Delta-neutral at this snapshot", "此快照 Delta 中性")}
-				</AlertTitle>
-				<AlertDescription>
-					{known
-						? l(
-								"The stock hedge starts opposite the stated position delta. After the stock move, gamma changes that delta; the final step assumes the required adjustment fills. In this local example, a long-gamma position sells after a rise and buys after a fall. Shorting reverses those adjustments. Gamma, volatility, time, execution and cost risks remain.",
-								"股票对冲最初与给定持仓 Delta 相反。标的变化后，Gamma 改变 Delta；最后一步假设所需调整已成交。在此局部示例中，正 Gamma 持仓上涨后卖股、下跌后买股。做空反转这些调整。Gamma、波动率、时间、执行与成本风险仍存在。",
-							)
-						: l(
-								"This view supplies only the option's model Greeks. Position size, long/short side and existing holdings are absent, so exposure and a hedge order are unavailable. A trade print alone also does not establish a dealer's portfolio.",
-								"此视角仅提供期权模型希腊值。未给持仓规模、多空方向及现有持仓，因此无法确定敞口与对冲指令。孤立成交也不能确定做市商组合。",
-							)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} snapshot={snapshot} />
+					{known ? (
+						<p className="font-mono text-muted-foreground text-xs">
+							{data.quantity} {l("contracts", "张")} × {data.multiplier}{" "}
+							{l("units each", "单位/张")}
+						</p>
+					) : null}
+					<div className="space-y-2 text-sm">
+						<p data-gamma-position-gamma>
+							{l("Position gamma", "持仓 Gamma")}:{" "}
+							<strong>{signed(state?.positionGamma ?? null)}</strong>{" "}
+							{l("shares-equivalent / $1", "股等价量 / $1")}
+						</p>
+						<p data-gamma-trade>
+							{l("Required stock adjustment", "所需股票调整")}:{" "}
+							<strong>{trade}</strong>
+						</p>
+						<p>
+							{l("New hedge target", "新对冲目标")}:{" "}
+							{signed(state?.targetHedge ?? null)} {l("shares", "股")}
+						</p>
+					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{!state
+								? l("Cannot establish the hedge", "无法确定对冲")
+								: Math.abs(state.netDelta) > 1e-9
+									? l(
+											"The old hedge leaves residual delta",
+											"旧对冲留下剩余 Delta",
+										)
+									: l("Delta-neutral at this snapshot", "此快照 Delta 中性")}
+						</AlertTitle>
+						<AlertDescription>
+							{known
+								? l(
+										"The stock hedge starts opposite the stated position delta. After the stock move, gamma changes that delta; the final step assumes the required adjustment fills. In this local example, a long-gamma position sells after a rise and buys after a fall. Shorting reverses those adjustments. Gamma, volatility, time, execution and cost risks remain.",
+										"股票对冲最初与给定持仓 Delta 相反。标的变化后，Gamma 改变 Delta；最后一步假设所需调整已成交。在此局部示例中，正 Gamma 持仓上涨后卖股、下跌后买股。做空反转这些调整。Gamma、波动率、时间、执行与成本风险仍存在。",
+									)
+								: l(
+										"This view supplies only the option's model Greeks. Position size, long/short side and existing holdings are absent, so exposure and a hedge order are unavailable. A trade print alone also does not establish a dealer's portfolio.",
+										"此视角仅提供期权模型希腊值。未给持仓规模、多空方向及现有持仓，因此无法确定敞口与对冲指令。孤立成交也不能确定做市商组合。",
+									)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -636,68 +693,75 @@ export function GammaSensitivityScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<SelectField
-				label={l("Sensitivity snapshot", "敏感度快照")}
-				value={id}
-				options={data.sensitivity.map((s) => [
-					s.id,
-					s.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<Snapshot locale={locale} snapshot={snapshot} />
-			<RangeControl
-				inputScale={100}
-				label={l("Exploratory underlying move", "探索标的变动")}
-				value={move}
-				display={money(move)}
-				min={data.moveRange[0]}
-				max={data.moveRange[1]}
-				step={25}
-				onChange={setMove}
-			/>
-			<div className="space-y-2 text-sm">
-				<p data-gamma-sensitivity-next>
-					{l("Approximate next delta", "近似新 Delta")}:{" "}
-					<strong>
-						{estimate.ok ? signed(estimate.terms.nextDelta) : "—"}
-					</strong>
-				</p>
-				<p data-gamma-validity>
-					{estimate.ok
-						? l(
-								"Within delta bounds; still only local",
-								"在 Delta 边界内，仍仅为局部近似",
-							)
-						: estimate.issue === "delta-bounds"
-							? l(
-									"Outside delta bounds: reprice instead",
-									"超出 Delta 边界：需重新定价",
-								)
-							: l("Missing or invalid Greeks", "希腊值缺失或无效")}
-				</p>
-			</div>
-			<Alert role="note">
-				<AlertTitle>
-					{l(
-						"Near expiry does not make every contract alike",
-						"临近到期不使所有合约相同",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The supplied 0-DTE ATM example has more gamma than the longer-dated ATM and the 0-DTE ITM/OTM examples. These are illustrative snapshots, not a calibrated universal curve. A large move can make constant gamma imply call delta above 1 or below 0. The raw extrapolation is shown as a diagnostic; the usable estimate is withheld, never clamped to a boundary.",
-						"给定 0-DTE 平值示例的 Gamma 高于较长期平值及 0-DTE 实值/虚值示例。这些是示例快照，并非校准后的通用曲线。大幅变动可能使常数 Gamma 推出看涨 Delta 超过 1 或低于 0。原始外推仅作诊断展示，可用估计会被保留为空，而非强制截到边界。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"A result inside the bounds is not proof that the approximation is accurate. Spot, volatility and time can change gamma itself. A missing gamma is not zero, and none of these snapshots establishes dealer positions or predicts a market move.",
-					"结果在边界内不证明近似准确。现价、波动率与时间会改变 Gamma 本身。Gamma 缺失不等于零，这些快照均不能确定做市商持仓或预测市场变动。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Sensitivity snapshot", "敏感度快照")}
+						value={id}
+						options={data.sensitivity.map((s) => [
+							s.id,
+							s.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setId}
+					/>
+					<RangeControl
+						inputScale={100}
+						label={l("Exploratory underlying move", "探索标的变动")}
+						value={move}
+						display={money(move)}
+						min={data.moveRange[0]}
+						max={data.moveRange[1]}
+						step={25}
+						onChange={setMove}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} snapshot={snapshot} />
+					<div className="space-y-2 text-sm">
+						<p data-gamma-sensitivity-next>
+							{l("Approximate next delta", "近似新 Delta")}:{" "}
+							<strong>
+								{estimate.ok ? signed(estimate.terms.nextDelta) : "—"}
+							</strong>
+						</p>
+						<p data-gamma-validity>
+							{estimate.ok
+								? l(
+										"Within delta bounds; still only local",
+										"在 Delta 边界内，仍仅为局部近似",
+									)
+								: estimate.issue === "delta-bounds"
+									? l(
+											"Outside delta bounds: reprice instead",
+											"超出 Delta 边界：需重新定价",
+										)
+									: l("Missing or invalid Greeks", "希腊值缺失或无效")}
+						</p>
+					</div>
+					<Alert role="note">
+						<AlertTitle>
+							{l(
+								"Near expiry does not make every contract alike",
+								"临近到期不使所有合约相同",
+							)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The supplied 0-DTE ATM example has more gamma than the longer-dated ATM and the 0-DTE ITM/OTM examples. These are illustrative snapshots, not a calibrated universal curve. A large move can make constant gamma imply call delta above 1 or below 0. The raw extrapolation is shown as a diagnostic; the usable estimate is withheld, never clamped to a boundary.",
+								"给定 0-DTE 平值示例的 Gamma 高于较长期平值及 0-DTE 实值/虚值示例。这些是示例快照，并非校准后的通用曲线。大幅变动可能使常数 Gamma 推出看涨 Delta 超过 1 或低于 0。原始外推仅作诊断展示，可用估计会被保留为空，而非强制截到边界。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"A result inside the bounds is not proof that the approximation is accurate. Spot, volatility and time can change gamma itself. A missing gamma is not zero, and none of these snapshots establishes dealer positions or predicts a market move.",
+							"结果在边界内不证明近似准确。现价、波动率与时间会改变 Gamma 本身。Gamma 缺失不等于零，这些快照均不能确定做市商持仓或预测市场变动。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

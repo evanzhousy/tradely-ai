@@ -16,6 +16,8 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { ResearchArtifactPreview } from "./research-artifact-preview";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 export const PacketData = createContext<PacketConceptData | null>(null);
 function useData() {
@@ -130,6 +132,15 @@ export function PacketTraceScene({ locale }: Props) {
 	};
 	return (
 		<SceneLayout
+			companion={
+				<ResearchArtifactPreview
+					locale={locale}
+					record={record}
+					selectedId={selected}
+					onSelect={setSelected}
+					revealed={step >= 1}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -205,72 +216,85 @@ export function PacketTraceScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Observed subtotal", "观测小计")}</>,
+							value: <>{money(stats.subtotal)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Rows used", "使用行")}</>,
+							value: <>{stats.usedIds.length}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Coverage", "覆盖")}</>,
+							value: (
+								<>
+									{stats.missingIds.length
+										? l("Partial", "部分")
+										: l("Complete", "完整")}
+								</>
+							),
+						},
+					]}
+				/>
+			}
+			controls={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Observed subtotal", "观测小计")}
-						</p>
-						<p className="scene-outcome-value">{money(stats.subtotal)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Rows used", "使用行")}</p>
-						<p className="scene-outcome-value">{stats.usedIds.length}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Coverage", "覆盖")}</p>
-						<p className="scene-outcome-value">
-							{stats.missingIds.length
-								? l("Partial", "部分")
-								: l("Complete", "完整")}
-						</p>
-					</div>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+					<SelectField
+						label={l("Source row", "来源行")}
+						value={selected}
+						options={record.rows.map((r) => [r.id, r.id])}
+						onChange={setSelected}
+					/>
 				</>
 			}
-		>
-			<Context locale={locale} />
-			<p className="font-mono text-xs">
-				{record.id} · {record.method.source}
-				<br />
-				{record.session} · {record.method.cutoff}
-				<br />
-				{record.method.universe}
-			</p>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<SelectField
-				label={l("Source row", "来源行")}
-				value={selected}
-				options={record.rows.map((r) => [r.id, r.id])}
-				onChange={setSelected}
-			/>
-			<p data-packet-row>
-				{row.id} · {l("premium", "权利金")}: {money(packetRowPremium(row))}
-			</p>
-			<p className="font-mono text-xs">
-				{l("Contracts × USD/share × multiplier", "张数 × 美元/股 × 乘数")}
-				<br />
-				{number(row.contracts)} × {money(row.priceCents)} ×{" "}
-				{number(row.multiplier)}
-			</p>
-			<p data-packet-used>
-				{l("Calculation row IDs", "计算行 ID")}: {stats.usedIds.join(" / ")}
-			</p>
-			<p data-packet-full>
-				{l("Full required total", "完整必需总量")}: {money(stats.fullTotal)}
-			</p>
-			<Note>
-				{l(
-					"R1 contributes $2,000 and R2 $6,000. The $8,000 sum is observed premium, not profit or a full-universe total. R3 stays required and missing. Record both the used row IDs and the omitted unknown row; a source link alone cannot reproduce the arithmetic.",
-					"R1 贡献 $2,000、R2 $6,000。$8,000 是观测权利金，不是利润或完整范围总量。R3 仍为必需且缺失。需记录使用行 ID 及未计入的未知行；单有来源链接不能复现算术。",
-				)}
-			</Note>
-		</SceneLayout>
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						{record.id} · {record.method.source}
+						<br />
+						{record.session} · {record.method.cutoff}
+						<br />
+						{record.method.universe}
+					</p>
+					<p data-packet-row>
+						{row.id} · {l("premium", "权利金")}: {money(packetRowPremium(row))}
+					</p>
+					<p className="font-mono text-xs">
+						{l("Contracts × USD/share × multiplier", "张数 × 美元/股 × 乘数")}
+						<br />
+						{number(row.contracts)} × {money(row.priceCents)} ×{" "}
+						{number(row.multiplier)}
+					</p>
+					<p data-packet-used>
+						{l("Calculation row IDs", "计算行 ID")}: {stats.usedIds.join(" / ")}
+					</p>
+					<p data-packet-full>
+						{l("Full required total", "完整必需总量")}: {money(stats.fullTotal)}
+					</p>
+					<Note>
+						{l(
+							"R1 contributes $2,000 and R2 $6,000. The $8,000 sum is observed premium, not profit or a full-universe total. R3 stays required and missing. Record both the used row IDs and the omitted unknown row; a source link alone cannot reproduce the arithmetic.",
+							"R1 贡献 $2,000、R2 $6,000。$8,000 是观测权利金，不是利润或完整范围总量。R3 仍为必需且缺失。需记录使用行 ID 及未计入的未知行；单有来源链接不能复现算术。",
+						)}
+					</Note>
+				</>
+			}
+		/>
 	);
 }
 export function PacketFieldsScene({ locale }: Props) {
@@ -298,6 +322,17 @@ export function PacketFieldsScene({ locale }: Props) {
 	};
 	return (
 		<SceneLayout
+			companion={
+				<ResearchArtifactPreview
+					locale={locale}
+					record={data.original}
+					caption={data.fields
+						.filter((f) => present.includes(f.id))
+						.map((f) => f.value[language])
+						.join(" · ")}
+					revealed={present.length > 0}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l("Recorded packet fields", "研究包记录字段")}
@@ -339,47 +374,55 @@ export function PacketFieldsScene({ locale }: Props) {
 					))}
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Inspect packet field", "检查研究包字段")}
-				value={focus}
-				options={data.fields.map((f) => [f.id, f.label[language]])}
-				onChange={setFocus}
-			/>
-			<div className="rounded-2xl border p-4 text-sm">
-				<strong>{field.label[language]}</strong>
-				<p data-packet-field-value>
-					{present.includes(field.id)
-						? field.value[language]
-						: l("Not recorded in this packet preview", "未记录于此研究包预览")}
-				</p>
-			</div>
-			<p data-packet-field-status>
-				{missing.length
-					? `${l("Missing record fields", "缺少记录字段")}: ${missing.map((f) => f.label[language]).join(" · ")}`
-					: l(
-							"Fields present; still requires self or human review",
-							"字段齐备；仍需自评或人工审核",
+			controls={
+				<SelectField
+					label={l("Inspect packet field", "检查研究包字段")}
+					value={focus}
+					options={data.fields.map((f) => [f.id, f.label[language]])}
+					onChange={setFocus}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<div className="rounded-2xl border p-4 text-sm">
+						<strong>{field.label[language]}</strong>
+						<p data-packet-field-value>
+							{present.includes(field.id)
+								? field.value[language]
+								: l(
+										"Not recorded in this packet preview",
+										"未记录于此研究包预览",
+									)}
+						</p>
+					</div>
+					<p data-packet-field-status>
+						{missing.length
+							? `${l("Missing record fields", "缺少记录字段")}: ${missing.map((f) => f.label[language]).join(" · ")}`
+							: l(
+									"Fields present; still requires self or human review",
+									"字段齐备；仍需自评或人工审核",
+								)}
+					</p>
+					<p>
+						{l("Source calculation for comparison", "用于对照的来源计算")}:{" "}
+						{money(packetTotals(data.original.rows, data.requiredIds).subtotal)}
+					</p>
+					<Note>
+						{l(
+							"Each recorded field contains concrete values, not just a checked label. Remove source IDs, units or transformation and a reader cannot reliably reconstruct this source calculation from the packet. Omit missingness and the subtotal's claim boundary disappears.",
+							"每个记录字段包含具体值，而非仅勾选标签。移除来源 ID、单位或变换，读者就不能可靠地从研究包还原此来源计算。省略缺失信息，会丢失小计的结论边界。",
 						)}
-			</p>
-			<p>
-				{l("Source calculation for comparison", "用于对照的来源计算")}:{" "}
-				{money(packetTotals(data.original.rows, data.requiredIds).subtotal)}
-			</p>
-			<Note>
-				{l(
-					"Each recorded field contains concrete values, not just a checked label. Remove source IDs, units or transformation and a reader cannot reliably reconstruct this source calculation from the packet. Omit missingness and the subtotal's claim boundary disappears.",
-					"每个记录字段包含具体值，而非仅勾选标签。移除来源 ID、单位或变换，读者就不能可靠地从研究包还原此来源计算。省略缺失信息，会丢失小计的结论边界。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"All supplied fields can be present while a source row is still missing. Metadata completeness does not create missing observations or certify prose quality. This is a local sample; the following writing exercise retains the platform's existing saving and self-review behavior.",
-					"给定字段可全部齐备，而来源行仍缺失。元数据完整不会创造缺失观测，也不认证文字质量。这是本地样例；后续写作练习保留平台已有保存与自评行为。",
-				)}
-			</p>
-		</SceneLayout>
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"All supplied fields can be present while a source row is still missing. Metadata completeness does not create missing observations or certify prose quality. Explore this local example without submitting answers.",
+							"给定字段可全部齐备，而来源行仍缺失。元数据完整不会创造缺失观测，也不认证文字质量。可以自由探索此本地示例，无需提交答案。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function PacketRerunScene({ locale }: Props) {
@@ -477,82 +520,93 @@ export function PacketRerunScene({ locale }: Props) {
 					)}
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Rerun proposal", "重跑建议")}
-				value={id}
-				options={data.reruns.map((p) => [p.id, p.label[language]])}
-				onChange={(v) => {
-					setId(v);
-					replay.select(0);
-				}}
-			/>
-			<PlaybackButton playing={replay.playing} onClick={replay.toggle} l={l} />
-			<p>{proposal.note[language]}</p>
-			<p className="font-mono text-xs">
-				{l("Permitted replay input", "允许回放输入")}:{" "}
-				{l("session date", "时段日期")}
-				<br />
-				{proposal.record.method.universe}
-				<br />
-				{proposal.record.method.source}
-				<br />
-				{l("Fixed cutoff", "固定截止")}: {data.original.method.cutoff}
-				<br />
-				{l("Proposed cutoff", "建议截止")}: {proposal.record.method.cutoff}
-			</p>
-			{allowed && (
-				<p data-packet-rerun-rows className="font-mono text-xs">
-					{proposal.record.id} · {proposal.record.session}
-					<br />
-					{proposal.record.rows
-						.map(
-							(r) =>
-								`${r.id}: ${number(r.contracts)} × ${money(r.priceCents)} × ${number(r.multiplier)} = ${money(packetRowPremium(r))}`,
-						)
-						.join("; ")}
-				</p>
-			)}
-			<p data-packet-rerun-status>
-				{replay.frame < 2
-					? l("Review pending", "审核待完成")
-					: allowed
-						? l(
-								"Allowed dated rerun; original record retained",
-								"允许日期重跑；原记录保留",
-							)
-						: l(
-								"Fixed method changed; explicit revision required",
-								"固定方法改变；需明确修订",
-							)}
-			</p>
-			<p data-packet-rerun-total>
-				{l("New observed subtotal", "新观测小计")}:{" "}
-				{replay.frame === 2 && allowed ? money(next.subtotal) : "—"}
-			</p>
-			<p data-packet-original>
-				{l("Original observed subtotal", "原观测小计")}:{" "}
-				{money(original.subtotal)}
-			</p>
-			<p>
-				{l("Changed method fields", "改变的方法字段")}:{" "}
-				{changes.length
-					? changes.map((c) => names[c]).join(" · ")
-					: l("None", "无")}
-			</p>
-			<Note>
-				{l(
-					"The template permits a session-date change, which creates a new dated question instance and evidence record under the same method. Changing the cutoff, switching calls to puts, replacing the source or excluding an inconvenient row is not that permitted input change. Preserve the original and declare a method revision before producing a new result.",
-					"模板允许改变时段日期，在同一方法下创建新日期问题实例与证据记录。改变截止、看涨改看跌、更换来源或排除不方便的行，不是该允许输入变化。产生新结果前，应保留原件并声明方法修订。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This walkthrough previews version separation; it does not write a real packet or certify the revised research. A reviewer still needs the new row IDs, inputs, formula, units and missingness.",
-					"此演示预览版本分离，不写入真实研究包，也不认证修订研究。审核者仍需新的行 ID、输入、公式、单位与缺失信息。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Rerun proposal", "重跑建议")}
+						value={id}
+						options={data.reruns.map((p) => [p.id, p.label[language]])}
+						onChange={(v) => {
+							setId(v);
+							replay.select(0);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={replay.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p>{proposal.note[language]}</p>
+					<p className="font-mono text-xs">
+						{l("Permitted replay input", "允许回放输入")}:{" "}
+						{l("session date", "时段日期")}
+						<br />
+						{proposal.record.method.universe}
+						<br />
+						{proposal.record.method.source}
+						<br />
+						{l("Fixed cutoff", "固定截止")}: {data.original.method.cutoff}
+						<br />
+						{l("Proposed cutoff", "建议截止")}: {proposal.record.method.cutoff}
+					</p>
+					{allowed && (
+						<p data-packet-rerun-rows className="font-mono text-xs">
+							{proposal.record.id} · {proposal.record.session}
+							<br />
+							{proposal.record.rows
+								.map(
+									(r) =>
+										`${r.id}: ${number(r.contracts)} × ${money(r.priceCents)} × ${number(r.multiplier)} = ${money(packetRowPremium(r))}`,
+								)
+								.join("; ")}
+						</p>
+					)}
+					<p data-packet-rerun-status>
+						{replay.frame < 2
+							? l("Review pending", "审核待完成")
+							: allowed
+								? l(
+										"Allowed dated rerun; original record retained",
+										"允许日期重跑；原记录保留",
+									)
+								: l(
+										"Fixed method changed; explicit revision required",
+										"固定方法改变；需明确修订",
+									)}
+					</p>
+					<p data-packet-rerun-total>
+						{l("New observed subtotal", "新观测小计")}:{" "}
+						{replay.frame === 2 && allowed ? money(next.subtotal) : "—"}
+					</p>
+					<p data-packet-original>
+						{l("Original observed subtotal", "原观测小计")}:{" "}
+						{money(original.subtotal)}
+					</p>
+					<p>
+						{l("Changed method fields", "改变的方法字段")}:{" "}
+						{changes.length
+							? changes.map((c) => names[c]).join(" · ")
+							: l("None", "无")}
+					</p>
+					<Note>
+						{l(
+							"The template permits a session-date change, which creates a new dated question instance and evidence record under the same method. Changing the cutoff, switching calls to puts, replacing the source or excluding an inconvenient row is not that permitted input change. Preserve the original and declare a method revision before producing a new result.",
+							"模板允许改变时段日期，在同一方法下创建新日期问题实例与证据记录。改变截止、看涨改看跌、更换来源或排除不方便的行，不是该允许输入变化。产生新结果前，应保留原件并声明方法修订。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This walkthrough previews version separation; it does not write a real packet or certify the revised research. A reviewer still needs the new row IDs, inputs, formula, units and missingness.",
+							"此演示预览版本分离，不写入真实研究包，也不认证修订研究。审核者仍需新的行 ID、输入、公式、单位与缺失信息。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

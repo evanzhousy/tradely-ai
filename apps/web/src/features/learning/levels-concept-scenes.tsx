@@ -134,65 +134,72 @@ export function LevelsConcentrationScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Concentration rule", "集中度规则")}
-				value={measure}
-				options={[
-					[
-						"gamma",
-						l("Gamma magnitude · model output", "Gamma 幅度 · 模型输出"),
-					],
-					[
-						"oi",
-						l("OI count · no gamma weighting", "OI 张数 · 不按 Gamma 加权"),
-					],
-				]}
-				onChange={(v) => setMeasure(v as typeof measure)}
-			/>
-			<SelectField
-				label={l("Option type", "期权类型")}
-				value={side}
-				options={[
-					["call", l("Calls", "看涨")],
-					["put", l("Puts", "看跌")],
-				]}
-				onChange={(v) => setSide(v as typeof side)}
-			/>
-			<SelectField
-				label={l("Expiry scope", "到期范围")}
-				value={scope}
-				options={[
-					["near", l("Near expiry only", "仅近到期")],
-					["all", l("Both supplied expiries", "两个给定到期日")],
-				]}
-				onChange={setScope}
-			/>
-			<p data-level-selected>
-				{l("Inspected strike", "检查行权价")}: {selected} ·{" "}
-				{number(current?.value ?? null)}
-			</p>
-			<p className="font-mono text-xs">
-				{expiries.join(" · ")}
-				<br />
-				{measure === "gamma"
-					? `${data.model} · ${l("USD delta exposure / +1% move · magnitude", "每 +1% 变动美元 Delta 敞口 · 幅度")}`
-					: l("OI units: contracts", "OI 单位：张")}
-			</p>
-			<Note>
-				{l(
-					"A gamma-weighted wall and an OI maximum use different inputs. Changing expiry scope can change the selected strike. These are magnitude concentrations under a declared rule, not observed dealer positions or guaranteed support/resistance.",
-					"Gamma 加权墙位与 OI 最大值使用不同输入。改变到期范围可改变所选行权价。这些是声明规则下的幅度集中，不是观测做市商持仓或保证支撑阻力。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Bars rescale to the largest value in each selected view. Read the values and units before comparing views. Tied positive maxima are retained; a zero-only set has no positive concentration.",
-					"柱形按各视图最大值重新缩放。跨视图比较前需读取数值与单位。正最大值并列时全部保留；全零集合无正集中度。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Concentration rule", "集中度规则")}
+						value={measure}
+						options={[
+							[
+								"gamma",
+								l("Gamma magnitude · model output", "Gamma 幅度 · 模型输出"),
+							],
+							[
+								"oi",
+								l("OI count · no gamma weighting", "OI 张数 · 不按 Gamma 加权"),
+							],
+						]}
+						onChange={(v) => setMeasure(v as typeof measure)}
+					/>
+					<SelectField
+						label={l("Option type", "期权类型")}
+						value={side}
+						options={[
+							["call", l("Calls", "看涨")],
+							["put", l("Puts", "看跌")],
+						]}
+						onChange={(v) => setSide(v as typeof side)}
+					/>
+					<SelectField
+						label={l("Expiry scope", "到期范围")}
+						value={scope}
+						options={[
+							["near", l("Near expiry only", "仅近到期")],
+							["all", l("Both supplied expiries", "两个给定到期日")],
+						]}
+						onChange={setScope}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-level-selected>
+						{l("Inspected strike", "检查行权价")}: {selected} ·{" "}
+						{number(current?.value ?? null)}
+					</p>
+					<p className="font-mono text-xs">
+						{expiries.join(" · ")}
+						<br />
+						{measure === "gamma"
+							? `${data.model} · ${l("USD delta exposure / +1% move · magnitude", "每 +1% 变动美元 Delta 敞口 · 幅度")}`
+							: l("OI units: contracts", "OI 单位：张")}
+					</p>
+					<Note>
+						{l(
+							"A gamma-weighted wall and an OI maximum use different inputs. Changing expiry scope can change the selected strike. These are magnitude concentrations under a declared rule, not observed dealer positions or guaranteed support/resistance.",
+							"Gamma 加权墙位与 OI 最大值使用不同输入。改变到期范围可改变所选行权价。这些是声明规则下的幅度集中，不是观测做市商持仓或保证支撑阻力。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Bars rescale to the largest value in each selected view. Read the values and units before comparing views. Tied positive maxima are retained; a zero-only set has no positive concentration.",
+							"柱形按各视图最大值重新缩放。跨视图比较前需读取数值与单位。正最大值并列时全部保留；全零集合无正集中度。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function LevelsPayoutScene({ locale }: Props) {
@@ -299,73 +306,83 @@ export function LevelsPayoutScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Payout set", "支付集合")}
-				value={id}
-				options={data.payoutSets.map((s) => [
-					s.id,
-					s.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setId(v);
-				}}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("Hypothetical settlement", "假设结算价")}
-				value={settlement}
-				display={`$${number(settlement)}`}
-				min={90}
-				max={110}
-				step={1}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(v);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p className="font-mono text-xs">
-				{l("Same supplied expiry: 2030-09-20", "同一给定到期日：2030-09-20")}
-				<br />
-				{set.rows
-					.map(
-						(r) =>
-							`${r.strike}: C ${number(r.calls)} / P ${number(r.puts)} × ${r.multiplier}`,
-					)
-					.join("; ")}
-			</p>
-			<p data-level-call-payout>
-				{l("Calls payout", "看涨支付")}: ${number(result?.calls ?? null)}
-			</p>
-			<p data-level-put-payout>
-				{l("Puts payout", "看跌支付")}: ${number(result?.puts ?? null)}
-			</p>
-			<p data-level-total-payout>
-				{l("Total payout", "总支付")}: ${number(result?.total ?? null)}
-			</p>
-			<Note>
-				{l(
-					"Calls pay max(settlement − strike, 0); puts pay max(strike − settlement, 0), multiplied by OI and contract multiplier. This OI-only calculation uses no gamma or ownership assumption. It excludes premiums, so it is not trader profit.",
-					"看涨支付 max(结算价−行权价,0)，看跌支付 max(行权价−结算价,0)，再乘 OI 与合约乘数。这项仅 OI 计算不使用 Gamma 或归属假设。未计权利金，因此不是交易者利润。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"All tied minima in the finite candidate set are shown. Missing OI withholds the total and minimum. Neither the minimum nor the animated settlement path predicts where prices settle.",
-					"显示有限候选集合中的全部并列最小值。OI 缺失时不提供总支付与最小值。最小值及结算动画路径均不预测价格结算位置。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Payout set", "支付集合")}
+						value={id}
+						options={data.payoutSets.map((s) => [
+							s.id,
+							s.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setId(v);
+						}}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Hypothetical settlement", "假设结算价")}
+						value={settlement}
+						display={`$${number(settlement)}`}
+						min={90}
+						max={110}
+						step={1}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(v);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						{l(
+							"Same supplied expiry: 2030-09-20",
+							"同一给定到期日：2030-09-20",
+						)}
+						<br />
+						{set.rows
+							.map(
+								(r) =>
+									`${r.strike}: C ${number(r.calls)} / P ${number(r.puts)} × ${r.multiplier}`,
+							)
+							.join("; ")}
+					</p>
+					<p data-level-call-payout>
+						{l("Calls payout", "看涨支付")}: ${number(result?.calls ?? null)}
+					</p>
+					<p data-level-put-payout>
+						{l("Puts payout", "看跌支付")}: ${number(result?.puts ?? null)}
+					</p>
+					<p data-level-total-payout>
+						{l("Total payout", "总支付")}: ${number(result?.total ?? null)}
+					</p>
+					<Note>
+						{l(
+							"Calls pay max(settlement − strike, 0); puts pay max(strike − settlement, 0), multiplied by OI and contract multiplier. This OI-only calculation uses no gamma or ownership assumption. It excludes premiums, so it is not trader profit.",
+							"看涨支付 max(结算价−行权价,0)，看跌支付 max(行权价−结算价,0)，再乘 OI 与合约乘数。这项仅 OI 计算不使用 Gamma 或归属假设。未计权利金，因此不是交易者利润。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"All tied minima in the finite candidate set are shown. Missing OI withholds the total and minimum. Neither the minimum nor the animated settlement path predicts where prices settle.",
+							"显示有限候选集合中的全部并列最小值。OI 缺失时不提供总支付与最小值。最小值及结算动画路径均不预测价格结算位置。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function LevelsDistanceScene({ locale }: Props) {
@@ -466,76 +483,81 @@ export function LevelsDistanceScene({ locale }: Props) {
 					))}
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Reference compatibility", "参考兼容性")}
-				value={mode}
-				options={[
-					["current", l("Compatible current references", "兼容当前参考")],
-					["missing", l("ATR unavailable", "ATR 不可用")],
-					["zero", l("ATR is zero", "ATR 为零")],
-					[
-						"unadjusted",
-						l("2-for-1 split · unadjusted level", "一拆二 · 位置未调整"),
-					],
-					[
-						"adjusted",
-						l("2-for-1 split · adjusted references", "一拆二 · 已调整参考"),
-					],
-				]}
-				onChange={setMode}
-			/>
-			{!split && mode !== "unadjusted" && (
+			controls={
+				<SelectField
+					label={l("Reference compatibility", "参考兼容性")}
+					value={mode}
+					options={[
+						["current", l("Compatible current references", "兼容当前参考")],
+						["missing", l("ATR unavailable", "ATR 不可用")],
+						["zero", l("ATR is zero", "ATR 为零")],
+						[
+							"unadjusted",
+							l("2-for-1 split · unadjusted level", "一拆二 · 位置未调整"),
+						],
+						[
+							"adjusted",
+							l("2-for-1 split · adjusted references", "一拆二 · 已调整参考"),
+						],
+					]}
+					onChange={setMode}
+				/>
+			}
+			details={
 				<>
-					<RangeControl
-						inputScale={1}
-						label={l("Reference spot", "参考现价")}
-						value={spot}
-						display={`$${spot}`}
-						min={data.spotRange[0]}
-						max={data.spotRange[1]}
-						step={1}
-						onChange={setSpot}
-					/>
-					{mode === "current" && (
-						<RangeControl
-							inputScale={1}
-							label={l("Supplied ATR", "给定 ATR")}
-							value={atr}
-							display={`$${atr}`}
-							min={1}
-							max={5}
-							step={0.5}
-							onChange={setAtr}
-						/>
+					<Context locale={locale} />
+					{!split && mode !== "unadjusted" && (
+						<>
+							<RangeControl
+								inputScale={1}
+								label={l("Reference spot", "参考现价")}
+								value={spot}
+								display={`$${spot}`}
+								min={data.spotRange[0]}
+								max={data.spotRange[1]}
+								step={1}
+								onChange={setSpot}
+							/>
+							{mode === "current" && (
+								<RangeControl
+									inputScale={1}
+									label={l("Supplied ATR", "给定 ATR")}
+									value={atr}
+									display={`$${atr}`}
+									min={1}
+									max={5}
+									step={0.5}
+									onChange={setAtr}
+								/>
+							)}
+						</>
 					)}
-				</>
-			)}
-			<p className="font-mono text-xs">
-				{data.atrWindow}
-				<br />
-				{l("Level − spot", "位置 − 现价")}: {level} − {reference}
-				<br />
-				ATR: {number(volatility)}
-			</p>
-			<Note>
-				{!compatible
-					? l(
-							"The historical level 100 is on the pre-split scale; spot 51 is post-split. Do not publish a distance until the price scales are reconciled. The adjusted case supplies level 50 and ATR 1 on the same post-split scale.",
-							"历史位置 100 为拆股前尺度，现价 51 为拆股后尺度。价格尺度一致前不发布距离。调整案例提供同一拆股后尺度的位置 50 与 ATR 1。",
-						)
-					: l(
-							"Dollar distance is level minus reference spot. Percent divides by that spot; ATR distance divides by a positive ATR. Missing or zero ATR blocks only the ATR calculation. ATR summarizes historical ranges under its stated window, not expected directional return.",
-							"美元距离为位置减参考现价。百分比除以该现价，ATR 距离除以正 ATR。ATR 缺失或为零只阻止 ATR 计算。ATR 按声明窗口概括历史波幅，不是预期方向收益。",
+					<p className="font-mono text-xs">
+						{data.atrWindow}
+						<br />
+						{l("Level − spot", "位置 − 现价")}: {level} − {reference}
+						<br />
+						ATR: {number(volatility)}
+					</p>
+					<Note>
+						{!compatible
+							? l(
+									"The historical level 100 is on the pre-split scale; spot 51 is post-split. Do not publish a distance until the price scales are reconciled. The adjusted case supplies level 50 and ATR 1 on the same post-split scale.",
+									"历史位置 100 为拆股前尺度，现价 51 为拆股后尺度。价格尺度一致前不发布距离。调整案例提供同一拆股后尺度的位置 50 与 ATR 1。",
+								)
+							: l(
+									"Dollar distance is level minus reference spot. Percent divides by that spot; ATR distance divides by a positive ATR. Missing or zero ATR blocks only the ATR calculation. ATR summarizes historical ranges under its stated window, not expected directional return.",
+									"美元距离为位置减参考现价。百分比除以该现价，ATR 距离除以正 ATR。ATR 缺失或为零只阻止 ATR 计算。ATR 按声明窗口概括历史波幅，不是预期方向收益。",
+								)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"These are distances to a supplied reference, not probabilities of reaching it. A wall, magnet or pin label does not guarantee attraction, support or resistance.",
+							"这些是距给定参考的距离，不是到达概率。墙位、磁点或钉住标签不保证吸引、支撑或阻力。",
 						)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"These are distances to a supplied reference, not probabilities of reaching it. A wall, magnet or pin label does not guarantee attraction, support or resistance.",
-					"这些是距给定参考的距离，不是到达概率。墙位、磁点或钉住标签不保证吸引、支撑或阻力。",
-				)}
-			</p>
-		</SceneLayout>
+					</p>
+				</>
+			}
+		/>
 	);
 }

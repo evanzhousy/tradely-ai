@@ -167,77 +167,84 @@ export function AnatomyScene({ locale }: Props) {
 					</p>
 				</div>
 			}
-		>
-			<FieldGroup>
-				<SelectField
-					label={l("Teaching product", "教学产品")}
-					value={product}
-					options={[
-						["stock", l("Stock option · ALFA", "股票期权 · ALFA")],
-						["etf", l("ETF option · BASK", "ETF 期权 · BASK")],
-						[
-							"index",
-							l("Cash-settled index option · IDX", "现金结算指数期权 · IDX"),
-						],
-					]}
-					onChange={(value) => {
-						setProduct(value as TeachingProduct);
-						playback.select(0);
-					}}
-				/>
-			</FieldGroup>
-			<div className="flex flex-col gap-2" aria-live="polite">
-				<p className="font-mono text-muted-foreground text-xs">
-					{String(playback.frame + 1).padStart(2, "0")} / 05
-				</p>
-				<h5 className="font-semibold text-lg">{fieldLabel(field, locale)}</h5>
-				<p className="text-muted-foreground text-sm leading-7">
-					{descriptions[field]}
-				</p>
-			</div>
-			<div>
-				<PlaybackButton
-					playing={playback.playing}
-					onClick={playback.toggle}
-					l={l}
-				/>
-			</div>
-			<details className="text-sm leading-7">
-				<summary className="cursor-pointer font-medium">
-					{l("Explore the underlying profile", "探索标的资料")}
-				</summary>
-				<div className="mt-3 flex flex-col gap-3 text-muted-foreground">
-					<p>
-						{product === "stock"
-							? l(
-									"ALFA is a fictional company. Its sector is an industry classification. At a $40 share price and 3 million shares outstanding, market capitalization is $120 million.",
-									"ALFA 是虚构公司。行业是产业分类。给定股价 40 美元、发行在外 300 万股，市值为 1.2 亿美元。",
-								)
-							: product === "etf"
-								? l(
-										"BASK is a fictional ETF. A fund share represents an interest in a fund. Company sector and earnings fields are not supplied for this example.",
-										"BASK 是虚构 ETF。基金份额代表基金权益。本例未提供公司行业与财报字段。",
-									)
-								: l(
-										"IDX is a fictional index, not a company share. Company sector, market capitalization and an earnings date are not applicable here; that does not make the contract identity unknown.",
-										"IDX 是虚构指数，不是公司股票。公司行业、市值与财报日期在此不适用，并不意味着合约身份未知。",
-									)}
-					</p>
-					<p>
-						{l(
-							"Share volume counts shares; option volume counts contracts. An earnings date describes an underlying event, not option expiration or guaranteed news timing. Always retain the source date of each observation.",
-							"股票成交量按股计，期权成交量按张计。财报日期是标的事件，不是期权到期日，也不保证消息公布时刻。应保留每项观测的来源日期。",
-						)}
-					</p>
-					<p className="font-mono text-xs">
-						{l(
-							"Profile teaching snapshot · Sep 11, 2026",
-							"资料教学快照 · 2026-09-11",
-						)}
-					</p>
-				</div>
-			</details>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Teaching product", "教学产品")}
+						value={product}
+						options={[
+							["stock", l("Stock option · ALFA", "股票期权 · ALFA")],
+							["etf", l("ETF option · BASK", "ETF 期权 · BASK")],
+							[
+								"index",
+								l("Cash-settled index option · IDX", "现金结算指数期权 · IDX"),
+							],
+						]}
+						onChange={(value) => {
+							setProduct(value as TeachingProduct);
+							playback.select(0);
+						}}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div className="flex flex-col gap-2" aria-live="polite">
+						<p className="font-mono text-muted-foreground text-xs">
+							{String(playback.frame + 1).padStart(2, "0")} / 05
+						</p>
+						<h5 className="font-semibold text-lg">
+							{fieldLabel(field, locale)}
+						</h5>
+						<p className="text-muted-foreground text-sm leading-7">
+							{descriptions[field]}
+						</p>
+					</div>
+					<div>
+						<PlaybackButton
+							playing={playback.playing}
+							onClick={playback.toggle}
+							l={l}
+						/>
+					</div>
+					<details className="text-sm leading-7">
+						<summary className="cursor-pointer font-medium">
+							{l("Explore the underlying profile", "探索标的资料")}
+						</summary>
+						<div className="mt-3 flex flex-col gap-3 text-muted-foreground">
+							<p>
+								{product === "stock"
+									? l(
+											"ALFA is a fictional company. Its sector is an industry classification. At a $40 share price and 3 million shares outstanding, market capitalization is $120 million.",
+											"ALFA 是虚构公司。行业是产业分类。给定股价 40 美元、发行在外 300 万股，市值为 1.2 亿美元。",
+										)
+									: product === "etf"
+										? l(
+												"BASK is a fictional ETF. A fund share represents an interest in a fund. Company sector and earnings fields are not supplied for this example.",
+												"BASK 是虚构 ETF。基金份额代表基金权益。本例未提供公司行业与财报字段。",
+											)
+										: l(
+												"IDX is a fictional index, not a company share. Company sector, market capitalization and an earnings date are not applicable here; that does not make the contract identity unknown.",
+												"IDX 是虚构指数，不是公司股票。公司行业、市值与财报日期在此不适用，并不意味着合约身份未知。",
+											)}
+							</p>
+							<p>
+								{l(
+									"Share volume counts shares; option volume counts contracts. An earnings date describes an underlying event, not option expiration or guaranteed news timing. Always retain the source date of each observation.",
+									"股票成交量按股计，期权成交量按张计。财报日期是标的事件，不是期权到期日，也不保证消息公布时刻。应保留每项观测的来源日期。",
+								)}
+							</p>
+							<p className="font-mono text-xs">
+								{l(
+									"Profile teaching snapshot · Sep 11, 2026",
+									"资料教学快照 · 2026-09-11",
+								)}
+							</p>
+						</div>
+					</details>
+				</>
+			}
+		/>
 	);
 }
 
@@ -323,71 +330,72 @@ export function IdentityScene({ locale }: Props) {
 					/>
 				</div>
 			}
-		>
-			<div className="contract-scene-layout">
-				<FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					{contractFields.map((field) => (
-						<SelectField
-							key={field}
-							label={`${fieldLabel(field, locale)} B`}
-							value={identity[field]}
-							options={(field === "underlying"
-								? ["ALFA", "BETA"]
-								: field === "type"
-									? ["CALL", "PUT"]
-									: field === "strike"
-										? ["$95", "$100", "$105"]
-										: ["2026-10-16", "2026-11-20"]
-							).map((value) => [value, value] as const)}
-							onChange={(value) =>
-								setIdentity((previous) => ({ ...previous, [field]: value }))
-							}
-						/>
-					))}
-				</FieldGroup>
-				<div className="flex flex-col gap-4">
-					<Alert>
-						<AlertTitle>
-							{differences.length
-								? l("Different contracts", "不同合约")
-								: l("Same contract", "同一合约")}
-						</AlertTitle>
-						<AlertDescription>
-							<p data-contract-identity-status aria-live="polite">
-								{differences.length
-									? `${l("Fields that differ", "不同字段")}: ${differences.map((field) => fieldLabel(field, locale)).join(", ")}.`
-									: l(
-											"All four identity fields match. Price and source time can change while identity stays the same.",
-											"四个身份字段全部一致。价格和来源时间可以改变，合约身份保持不变。",
-										)}
-							</p>
-						</AlertDescription>
-					</Alert>
-					<FieldGroup>
-						<SelectField
-							label={l("B's teaching observation", "B 的教学观测")}
-							value={snapshot}
-							options={teachingSnapshots.map(
-								(item, i) =>
-									[String(i), `${item.time} · $${item.price}/share`] as const,
-							)}
-							onChange={setSnapshot}
-						/>
+			details={
+				<div className="contract-scene-layout">
+					<FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						{contractFields.map((field) => (
+							<SelectField
+								key={field}
+								label={`${fieldLabel(field, locale)} B`}
+								value={identity[field]}
+								options={(field === "underlying"
+									? ["ALFA", "BETA"]
+									: field === "type"
+										? ["CALL", "PUT"]
+										: field === "strike"
+											? ["$95", "$100", "$105"]
+											: ["2026-10-16", "2026-11-20"]
+								).map((value) => [value, value] as const)}
+								onChange={(value) =>
+									setIdentity((previous) => ({ ...previous, [field]: value }))
+								}
+							/>
+						))}
 					</FieldGroup>
-					<p
-						className="text-muted-foreground text-sm leading-6"
-						data-contract-observation
-					>
-						{l("Selected observation", "所选观测")}: ${observation.price}
-						{l("/share", "/股")} · {observation.time} · 2026-09-11.{" "}
-						{l(
-							"An observation is not an identity field. These are authored snapshots, not a pricing model.",
-							"观测不属于身份字段。这些是编写的快照，不是定价模型。",
-						)}
-					</p>
+					<div className="flex flex-col gap-4">
+						<Alert>
+							<AlertTitle>
+								{differences.length
+									? l("Different contracts", "不同合约")
+									: l("Same contract", "同一合约")}
+							</AlertTitle>
+							<AlertDescription>
+								<p data-contract-identity-status aria-live="polite">
+									{differences.length
+										? `${l("Fields that differ", "不同字段")}: ${differences.map((field) => fieldLabel(field, locale)).join(", ")}.`
+										: l(
+												"All four identity fields match. Price and source time can change while identity stays the same.",
+												"四个身份字段全部一致。价格和来源时间可以改变，合约身份保持不变。",
+											)}
+								</p>
+							</AlertDescription>
+						</Alert>
+						<FieldGroup>
+							<SelectField
+								label={l("B's teaching observation", "B 的教学观测")}
+								value={snapshot}
+								options={teachingSnapshots.map(
+									(item, i) =>
+										[String(i), `${item.time} · $${item.price}/share`] as const,
+								)}
+								onChange={setSnapshot}
+							/>
+						</FieldGroup>
+						<p
+							className="text-muted-foreground text-sm leading-6"
+							data-contract-observation
+						>
+							{l("Selected observation", "所选观测")}: ${observation.price}
+							{l("/share", "/股")} · {observation.time} · 2026-09-11.{" "}
+							{l(
+								"An observation is not an identity field. These are authored snapshots, not a pricing model.",
+								"观测不属于身份字段。这些是编写的快照，不是定价模型。",
+							)}
+						</p>
+					</div>
 				</div>
-			</div>
-		</SceneLayout>
+			}
+		/>
 	);
 }
 
@@ -487,137 +495,148 @@ export function UnitsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<FieldGroup>
-				<Field>
-					<FieldLabel htmlFor={`${id}-count`}>
-						{l("Contracts", "合约张数")}
-					</FieldLabel>
-					<div className="flex items-center gap-3">
-						<Button
-							variant="outline"
-							size="sm"
-							aria-label={l("Remove one contract", "减少一张合约")}
-							disabled={count === 1}
-							onClick={() => setCount((n) => n - 1)}
-						>
-							−
-						</Button>
-						<output
-							className="min-w-8 text-center font-mono text-lg"
-							htmlFor={`${id}-count`}
-						>
-							{count}
+			controls={
+				<FieldGroup>
+					<Field>
+						<FieldLabel htmlFor={`${id}-count`}>
+							{l("Contracts", "合约张数")}
+						</FieldLabel>
+						<div className="flex items-center gap-3">
+							<Button
+								variant="outline"
+								size="sm"
+								aria-label={l("Remove one contract", "减少一张合约")}
+								disabled={count === 1}
+								onClick={() => setCount((n) => n - 1)}
+							>
+								−
+							</Button>
+							<output
+								className="min-w-8 text-center font-mono text-lg"
+								htmlFor={`${id}-count`}
+							>
+								{count}
+							</output>
+							<Button
+								variant="outline"
+								size="sm"
+								aria-label={l("Add one contract", "增加一张合约")}
+								disabled={count === 5}
+								onClick={() => setCount((n) => n + 1)}
+							>
+								+
+							</Button>
+						</div>
+						<input
+							id={`${id}-count`}
+							className="contract-range"
+							type="range"
+							min="1"
+							max="5"
+							step="1"
+							value={count}
+							onChange={(event) => setCount(Number(event.target.value))}
+						/>
+					</Field>
+					<Field>
+						<FieldLabel htmlFor={`${id}-price`}>
+							{l("Option price per share", "每股期权价格")}
+						</FieldLabel>
+						<output className="font-mono text-lg" htmlFor={`${id}-price`}>
+							{money(cents / 100)}
 						</output>
-						<Button
-							variant="outline"
-							size="sm"
-							aria-label={l("Add one contract", "增加一张合约")}
-							disabled={count === 5}
-							onClick={() => setCount((n) => n + 1)}
+						<input
+							id={`${id}-price`}
+							className="contract-range"
+							type="range"
+							min="50"
+							max="500"
+							step="25"
+							value={cents}
+							aria-valuetext={`${money(cents / 100)} ${l("per share", "每股")}`}
+							onChange={(event) => setCents(Number(event.target.value))}
+						/>
+					</Field>
+					<SelectField
+						label={l("Supplied product terms", "给定产品条款")}
+						value={termsKnown}
+						options={[
+							[
+								"known",
+								l(
+									"100 shares/contract · multiplier 100",
+									"每张 100 股 · 乘数 100",
+								),
+							],
+							["missing", l("Terms missing", "条款缺失")],
+						]}
+						onChange={setTermsKnown}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div aria-live="polite" className="flex flex-col gap-2">
+						<p className="text-muted-foreground text-sm">
+							{l("Total premium · before fees", "总权利金 · 不含费用")}
+						</p>
+						<p
+							className="font-mono text-3xl tracking-tight"
+							data-contract-premium
 						>
-							+
-						</Button>
+							{amounts.premium === null ? "—" : money(amounts.premium)}
+						</p>
+						<p
+							className="text-muted-foreground text-sm"
+							data-contract-deliverable
+						>
+							{amounts.shares === null
+								? l(
+										"Product terms needed. No multiplier is assumed.",
+										"需要产品条款，不假定乘数。",
+									)
+								: l(
+										`${count} × 100 = ${amounts.shares} deliverable shares.`,
+										`${count} × 100 = ${amounts.shares} 股交付数量。`,
+									)}
+						</p>
 					</div>
-					<input
-						id={`${id}-count`}
-						className="contract-range"
-						type="range"
-						min="1"
-						max="5"
-						step="1"
-						value={count}
-						onChange={(event) => setCount(Number(event.target.value))}
-					/>
-				</Field>
-				<Field>
-					<FieldLabel htmlFor={`${id}-price`}>
-						{l("Option price per share", "每股期权价格")}
-					</FieldLabel>
-					<output className="font-mono text-lg" htmlFor={`${id}-price`}>
-						{money(cents / 100)}
-					</output>
-					<input
-						id={`${id}-price`}
-						className="contract-range"
-						type="range"
-						min="50"
-						max="500"
-						step="25"
-						value={cents}
-						aria-valuetext={`${money(cents / 100)} ${l("per share", "每股")}`}
-						onChange={(event) => setCents(Number(event.target.value))}
-					/>
-				</Field>
-				<SelectField
-					label={l("Supplied product terms", "给定产品条款")}
-					value={termsKnown}
-					options={[
-						[
-							"known",
-							l(
-								"100 shares/contract · multiplier 100",
-								"每张 100 股 · 乘数 100",
-							),
-						],
-						["missing", l("Terms missing", "条款缺失")],
-					]}
-					onChange={setTermsKnown}
-				/>
-			</FieldGroup>
-			<div aria-live="polite" className="flex flex-col gap-2">
-				<p className="text-muted-foreground text-sm">
-					{l("Total premium · before fees", "总权利金 · 不含费用")}
-				</p>
-				<p className="font-mono text-3xl tracking-tight" data-contract-premium>
-					{amounts.premium === null ? "—" : money(amounts.premium)}
-				</p>
-				<p className="text-muted-foreground text-sm" data-contract-deliverable>
-					{amounts.shares === null
-						? l(
-								"Product terms needed. No multiplier is assumed.",
-								"需要产品条款，不假定乘数。",
-							)
-						: l(
-								`${count} × 100 = ${amounts.shares} deliverable shares.`,
-								`${count} × 100 = ${amounts.shares} 股交付数量。`,
-							)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-sm leading-6">
-				{l(
-					"Premium is the amount at the selected option price, not profit. Contractual deliverable is not shares already owned or delta-equivalent exposure.",
-					"权利金是按所选期权价格计算的金额，不是利润。交付股数不等于已经持有的股票或 Delta 等价敞口。",
-				)}
-			</p>
-			{amounts.premium !== null ? (
-				<CalculationTrace
-					locale={locale}
-					terms={[
-						{
-							id: "price",
-							label: l("Price / share", "价格 / 股"),
-							value: money(cents / 100),
-						},
-						{
-							id: "multiplier",
-							label: l("Shares / contract", "股 / 张"),
-							value: "100",
-						},
-						{
-							id: "contracts",
-							label: l("Contracts", "张"),
-							value: String(count),
-						},
-						{
-							id: "total",
-							label: l("Total premium", "总权利金"),
-							value: money(amounts.premium),
-						},
-					]}
-				/>
-			) : null}
-		</SceneLayout>
+					<p className="text-muted-foreground text-sm leading-6">
+						{l(
+							"Premium is the amount at the selected option price, not profit. Contractual deliverable is not shares already owned or delta-equivalent exposure.",
+							"权利金是按所选期权价格计算的金额，不是利润。交付股数不等于已经持有的股票或 Delta 等价敞口。",
+						)}
+					</p>
+					{amounts.premium !== null ? (
+						<CalculationTrace
+							locale={locale}
+							terms={[
+								{
+									id: "price",
+									label: l("Price / share", "价格 / 股"),
+									value: money(cents / 100),
+								},
+								{
+									id: "multiplier",
+									label: l("Shares / contract", "股 / 张"),
+									value: "100",
+								},
+								{
+									id: "contracts",
+									label: l("Contracts", "张"),
+									value: String(count),
+								},
+								{
+									id: "total",
+									label: l("Total premium", "总权利金"),
+									value: money(amounts.premium),
+								},
+							]}
+						/>
+					) : null}
+				</>
+			}
+		/>
 	);
 }
 
@@ -747,61 +766,66 @@ export function SourceTimeScene({ locale }: Props) {
 					</foreignObject>
 				</Diagram>
 			}
-		>
-			<Badge variant="outline" className="self-start">
-				{l("Same contract throughout", "全程为同一合约")}
-			</Badge>
-
-			<div className="flex flex-wrap gap-2">
-				<Button
-					size="sm"
-					variant="outline"
-					disabled={selected === 0}
-					onClick={() => {
-						playback.select(selected - 1);
-						setPosition(null);
-					}}
-				>
-					{l("Previous snapshot", "上一快照")}
-				</Button>
-				<PlaybackButton
-					playing={playback.playing}
-					l={l}
-					onClick={() => {
-						setPosition(null);
-						playback.toggle();
-					}}
-				/>
-				<Button
-					size="sm"
-					variant="outline"
-					disabled={selected === 2}
-					onClick={() => {
-						playback.select(selected + 1);
-						setPosition(null);
-					}}
-				>
-					{l("Next snapshot", "下一快照")}
-				</Button>
-			</div>
-			<div aria-live="polite" className="flex flex-col gap-3 text-sm leading-7">
-				<p className="font-mono" data-contract-snapshot>
-					{snapshot.time} · ${snapshot.price}
-					{l("/share", "/股")}
-				</p>
-				<p className="text-muted-foreground">
-					{l(
-						"The quote changed; expiration stayed October 16, 2026. The source time belongs to this observation, not to the contract's permanent identity.",
-						"报价变了，到期日仍是 2026 年 10 月 16 日。来源时间属于该条观测，不属于合约固定身份。",
-					)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"Source: three authored teaching snapshots, September 11, 2026 (ET). Between markers, the nearest supplied snapshot is shown. Prices are never interpolated.",
-					"来源：2026 年 9 月 11 日（美东时间）的三个编写教学快照。标记之间显示最近的给定快照，不插值生成价格。",
-				)}
-			</p>
-		</SceneLayout>
+			details={
+				<>
+					<Badge variant="outline" className="self-start">
+						{l("Same contract throughout", "全程为同一合约")}
+					</Badge>
+					<div className="flex flex-wrap gap-2">
+						<Button
+							size="sm"
+							variant="outline"
+							disabled={selected === 0}
+							onClick={() => {
+								playback.select(selected - 1);
+								setPosition(null);
+							}}
+						>
+							{l("Previous snapshot", "上一快照")}
+						</Button>
+						<PlaybackButton
+							playing={playback.playing}
+							l={l}
+							onClick={() => {
+								setPosition(null);
+								playback.toggle();
+							}}
+						/>
+						<Button
+							size="sm"
+							variant="outline"
+							disabled={selected === 2}
+							onClick={() => {
+								playback.select(selected + 1);
+								setPosition(null);
+							}}
+						>
+							{l("Next snapshot", "下一快照")}
+						</Button>
+					</div>
+					<div
+						aria-live="polite"
+						className="flex flex-col gap-3 text-sm leading-7"
+					>
+						<p className="font-mono" data-contract-snapshot>
+							{snapshot.time} · ${snapshot.price}
+							{l("/share", "/股")}
+						</p>
+						<p className="text-muted-foreground">
+							{l(
+								"The quote changed; expiration stayed October 16, 2026. The source time belongs to this observation, not to the contract's permanent identity.",
+								"报价变了，到期日仍是 2026 年 10 月 16 日。来源时间属于该条观测，不属于合约固定身份。",
+							)}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Source: three authored teaching snapshots, September 11, 2026 (ET). Between markers, the nearest supplied snapshot is shown. Prices are never interpolated.",
+							"来源：2026 年 9 月 11 日（美东时间）的三个编写教学快照。标记之间显示最近的给定快照，不插值生成价格。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

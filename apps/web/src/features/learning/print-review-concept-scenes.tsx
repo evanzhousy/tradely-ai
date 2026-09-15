@@ -35,6 +35,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { OrderBookPanel } from "./order-book-panel";
 import { useGuidedState } from "./visual-playback";
 export const PrintReviewData = createContext<PrintReviewConceptData | null>(
 	null,
@@ -303,49 +304,58 @@ export function PrintInspectorScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("Inspection step", "检查步骤")}
-					value={String(playback.frame)}
-					options={inspectionFields.map((field, i) => [
-						String(i),
-						field[language],
-					])}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-				<ChoiceField
-					label={l("Multiplier evidence", "乘数证据")}
-					value={known}
-					options={[
-						["supplied", l("Supplied", "已提供")],
-						["missing", l("Missing", "缺失")],
-					]}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setKnown(value);
-					}}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>{inspectionFields[playback.frame][language]}</AlertTitle>
-				<AlertDescription>
-					{inspectionFields[playback.frame][language + 2]}
-				</AlertDescription>
-			</Alert>
-			<p className="text-sm">
-				{l(
-					"A stale quote can block an aggressor inference while this amount remains calculable. Dollar size is not conviction, profit or a net market inflow.",
-					"过时报价可阻止主动方推断，但金额仍可计算。金额大小不是确信程度、利润或市场净流入。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<FieldGroup>
+						<SelectField
+							label={l("Inspection step", "检查步骤")}
+							value={String(playback.frame)}
+							options={inspectionFields.map((field, i) => [
+								String(i),
+								field[language],
+							])}
+							onChange={(value) => playback.select(Number(value))}
+						/>
+						<ChoiceField
+							label={l("Multiplier evidence", "乘数证据")}
+							value={known}
+							options={[
+								["supplied", l("Supplied", "已提供")],
+								["missing", l("Missing", "缺失")],
+							]}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setKnown(value);
+							}}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Alert role="note">
+						<AlertTitle>
+							{inspectionFields[playback.frame][language]}
+						</AlertTitle>
+						<AlertDescription>
+							{inspectionFields[playback.frame][language + 2]}
+						</AlertDescription>
+					</Alert>
+					<p className="text-sm">
+						{l(
+							"A stale quote can block an aggressor inference while this amount remains calculable. Dollar size is not conviction, profit or a net market inflow.",
+							"过时报价可阻止主动方推断，但金额仍可计算。金额大小不是确信程度、利润或市场净流入。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -482,106 +492,114 @@ export function EvidenceBucketsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<PacketField
-					locale={locale}
-					id={id}
-					onChange={(value) => {
-						setId(value);
-					}}
-				/>
-				<SelectField
-					label={l("Inspect a statement", "检查陈述")}
-					value={statement}
-					options={Object.entries(statements).map(([key, copy]) => [
-						key,
-						copy[language],
-					])}
-					onChange={(value) => {
-						if (Object.hasOwn(statements, value)) {
-							setStatement(value as ReviewStatement);
-						}
-					}}
-				/>
-			</FieldGroup>
-			<p className="font-mono text-muted-foreground text-xs">
-				{l("Quote timestamp", "报价时间")}: {packet.reference.at ?? "—"}
-				<br />
-				{packet.reference.condition === "complex"
-					? l(
-							"Complex leg: condition review required",
-							"复杂单腿：需要审查成交条件",
-						)
-					: l("No special-condition flag supplied", "未提供特殊成交条件标记")}
-			</p>
-			<Alert role={chosen ? "status" : "note"}>
-				<AlertTitle>
-					{chosen
-						? chosen === expected
-							? l("Supported by this packet", "得到当前资料支持")
-							: l("Recheck what is supplied", "重新检查已提供的证据")
-						: l("Classify the statement", "判断陈述类别")}
-				</AlertTitle>
-				<AlertDescription>
-					{chosen ? (
-						<>
-							<p data-bucket-feedback>
-								{statements[statement][language]} →{" "}
-								{bucketCopy[expected][language]}
-							</p>
-							<p>
-								{statement === "premium"
-									? result.premium === null
-										? l(
-												"A required multiplier is absent. Do not substitute an assumed 100.",
-												"缺少必要乘数，不应自行假定为 100。",
-											)
-										: l(
-												"The amount is calculated from the execution and stated multiplier, independently of the quote's age.",
-												"金额由成交与给定乘数计算，与参考报价是否过时是两回事。",
-											)
-									: statement === "aggressor"
-										? result.aggressor === null
-											? l(
-													"The reference cannot support a reliable aggressor inference. The execution amount can still be known.",
-													"参考证据无法支持可靠主动方推断，但成交金额仍可能已知。",
-												)
-											: l(
-													"The matched quote supports a likely aggressor. It does not reveal opening intent or a complete strategy.",
-													"匹配报价支持推断可能主动方，不揭示开仓意图或完整策略。",
-												)
-										: statement === "opening"
-											? packet.opening
+			controls={
+				<FieldGroup>
+					<PacketField
+						locale={locale}
+						id={id}
+						onChange={(value) => {
+							setId(value);
+						}}
+					/>
+					<SelectField
+						label={l("Inspect a statement", "检查陈述")}
+						value={statement}
+						options={Object.entries(statements).map(([key, copy]) => [
+							key,
+							copy[language],
+						])}
+						onChange={(value) => {
+							if (Object.hasOwn(statements, value)) {
+								setStatement(value as ReviewStatement);
+							}
+						}}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p className="font-mono text-muted-foreground text-xs">
+						{l("Quote timestamp", "报价时间")}: {packet.reference.at ?? "—"}
+						<br />
+						{packet.reference.condition === "complex"
+							? l(
+									"Complex leg: condition review required",
+									"复杂单腿：需要审查成交条件",
+								)
+							: l(
+									"No special-condition flag supplied",
+									"未提供特殊成交条件标记",
+								)}
+					</p>
+					<Alert role={chosen ? "status" : "note"}>
+						<AlertTitle>
+							{chosen
+								? chosen === expected
+									? l("Supported by this packet", "得到当前资料支持")
+									: l("Recheck what is supplied", "重新检查已提供的证据")
+								: l("Classify the statement", "判断陈述类别")}
+						</AlertTitle>
+						<AlertDescription>
+							{chosen ? (
+								<>
+									<p data-bucket-feedback>
+										{statements[statement][language]} →{" "}
+										{bucketCopy[expected][language]}
+									</p>
+									<p>
+										{statement === "premium"
+											? result.premium === null
 												? l(
-														"An explicit opening/closing record is supplied for this leg. That is additional observed evidence.",
-														"此单腿已提供明确开平仓记录，这是新增的观测证据。",
+														"A required multiplier is absent. Do not substitute an assumed 100.",
+														"缺少必要乘数，不应自行假定为 100。",
 													)
 												: l(
-														"No opening/closing record is supplied. Price, size and quote-side location cannot replace it.",
-														"未提供开平仓记录，价格、数量与报价侧位置不能替代该记录。",
+														"The amount is calculated from the execution and stated multiplier, independently of the quote's age.",
+														"金额由成交与给定乘数计算，与参考报价是否过时是两回事。",
 													)
-											: statement === "strategy"
-												? l(
-														"Even a linked-leg flag does not describe the complete strategy, portfolio or investor belief.",
-														"即使有关联单腿标记，也无法描述完整策略、组合或投资者观点。",
-													)
-												: l(
-														"The contract identifier is part of the supplied execution record.",
-														"合约标识是给定成交记录的一部分。",
-													)}
-							</p>
-						</>
-					) : (
-						l(
-							"Choose a category using this packet. New records can change which category a statement belongs in.",
-							"根据当前资料选择类别。新增记录可能改变陈述所属的证据类别。",
-						)
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+											: statement === "aggressor"
+												? result.aggressor === null
+													? l(
+															"The reference cannot support a reliable aggressor inference. The execution amount can still be known.",
+															"参考证据无法支持可靠主动方推断，但成交金额仍可能已知。",
+														)
+													: l(
+															"The matched quote supports a likely aggressor. It does not reveal opening intent or a complete strategy.",
+															"匹配报价支持推断可能主动方，不揭示开仓意图或完整策略。",
+														)
+												: statement === "opening"
+													? packet.opening
+														? l(
+																"An explicit opening/closing record is supplied for this leg. That is additional observed evidence.",
+																"此单腿已提供明确开平仓记录，这是新增的观测证据。",
+															)
+														: l(
+																"No opening/closing record is supplied. Price, size and quote-side location cannot replace it.",
+																"未提供开平仓记录，价格、数量与报价侧位置不能替代该记录。",
+															)
+													: statement === "strategy"
+														? l(
+																"Even a linked-leg flag does not describe the complete strategy, portfolio or investor belief.",
+																"即使有关联单腿标记，也无法描述完整策略、组合或投资者观点。",
+															)
+														: l(
+																"The contract identifier is part of the supplied execution record.",
+																"合约标识是给定成交记录的一部分。",
+															)}
+									</p>
+								</>
+							) : (
+								l(
+									"Choose a category using this packet. New records can change which category a statement belongs in.",
+									"根据当前资料选择类别。新增记录可能改变陈述所属的证据类别。",
+								)
+							)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -756,77 +774,85 @@ export function FollowUpScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("Investigate one gap", "调查一个缺口")}
-					value={gap}
-					options={Object.entries(gapCopy).map(([key, copy]) => [
-						key,
-						copy[language],
-					])}
-					onChange={(value) => {
-						if (Object.hasOwn(gapCopy, value)) {
-							setGap(value as ReviewGap);
-							setInspected(null);
-						}
-					}}
-				/>
-				<SelectField
-					label={l("Choose a follow-up", "选择后续检查")}
-					value={request}
-					options={Object.entries(requestCopy).map(([key, copy]) => [
-						key,
-						copy[language],
-					])}
-					onChange={(value) => {
-						if (Object.hasOwn(requestCopy, value)) {
-							setRequest(value as EvidenceRequest);
-							setInspected(null);
-						}
-					}}
-				/>
-			</FieldGroup>
-			<Button variant="outline" onClick={() => setInspected(request)}>
-				{l("Inspect this evidence", "检查这项证据")}
-			</Button>
-			<Alert role={inspected ? "status" : "note"}>
-				<AlertTitle>
-					{inspected
-						? resolved
-							? l("A specific missing fact is supplied", "已补充具体缺失事实")
-							: l(
-									"This choice does not close this gap",
-									"此选择没有填补当前缺口",
-								)
-						: l("Choose the useful next check", "选择有用的下一项检查")}
-				</AlertTitle>
-				<AlertDescription>
-					{inspected
-						? resolved
-							? l(
-									"The supplied follow-up answers this selected question. Other unknowns remain: a matched quote does not supply opening intent, and linkage alone does not establish a full strategy or belief.",
-									"给定后续记录回答了选定问题，其他未知仍然存在：匹配报价不提供开仓意图，仅有关联也不确定完整策略或观点。",
-								)
-							: l(
-									"This request does not answer the selected question. A larger print or later price move cannot fill a missing fact; a record about another issue may add context but leaves this gap unresolved.",
-									"此请求没有回答选定问题。更大成交或之后的价格变化不能补齐缺失事实；其他问题的记录可能增加背景，却未解决当前缺口。",
-								)
-						: l(
-								"Inspect one candidate request, then compare what became known with what remains unknown.",
-								"检查一个候选请求，再比较哪些信息已知、哪些仍未知。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Each comparison starts from the selected gap's original packet. Resolving one gap is not an all-clear for the trade.",
-					"每次比较从该缺口的原始资料开始。解决一个缺口不代表整笔成交已全部验证。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<FieldGroup>
+						<SelectField
+							label={l("Investigate one gap", "调查一个缺口")}
+							value={gap}
+							options={Object.entries(gapCopy).map(([key, copy]) => [
+								key,
+								copy[language],
+							])}
+							onChange={(value) => {
+								if (Object.hasOwn(gapCopy, value)) {
+									setGap(value as ReviewGap);
+									setInspected(null);
+								}
+							}}
+						/>
+						<SelectField
+							label={l("Choose a follow-up", "选择后续检查")}
+							value={request}
+							options={Object.entries(requestCopy).map(([key, copy]) => [
+								key,
+								copy[language],
+							])}
+							onChange={(value) => {
+								if (Object.hasOwn(requestCopy, value)) {
+									setRequest(value as EvidenceRequest);
+									setInspected(null);
+								}
+							}}
+						/>
+					</FieldGroup>
+					<Button variant="outline" onClick={() => setInspected(request)}>
+						{l("Inspect this evidence", "检查这项证据")}
+					</Button>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Alert role={inspected ? "status" : "note"}>
+						<AlertTitle>
+							{inspected
+								? resolved
+									? l(
+											"A specific missing fact is supplied",
+											"已补充具体缺失事实",
+										)
+									: l(
+											"This choice does not close this gap",
+											"此选择没有填补当前缺口",
+										)
+								: l("Choose the useful next check", "选择有用的下一项检查")}
+						</AlertTitle>
+						<AlertDescription>
+							{inspected
+								? resolved
+									? l(
+											"The supplied follow-up answers this selected question. Other unknowns remain: a matched quote does not supply opening intent, and linkage alone does not establish a full strategy or belief.",
+											"给定后续记录回答了选定问题，其他未知仍然存在：匹配报价不提供开仓意图，仅有关联也不确定完整策略或观点。",
+										)
+									: l(
+											"This request does not answer the selected question. A larger print or later price move cannot fill a missing fact; a record about another issue may add context but leaves this gap unresolved.",
+											"此请求没有回答选定问题。更大成交或之后的价格变化不能补齐缺失事实；其他问题的记录可能增加背景，却未解决当前缺口。",
+										)
+								: l(
+										"Inspect one candidate request, then compare what became known with what remains unknown.",
+										"检查一个候选请求，再比较哪些信息已知、哪些仍未知。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Each comparison starts from the selected gap's original packet. Resolving one gap is not an all-clear for the trade.",
+							"每次比较从该缺口的原始资料开始。解决一个缺口不代表整笔成交已全部验证。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
-
-import { OrderBookPanel } from "./order-book-panel";

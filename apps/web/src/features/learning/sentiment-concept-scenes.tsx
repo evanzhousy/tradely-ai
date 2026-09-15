@@ -177,49 +177,58 @@ export function DirectionMatrixScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} option={pair.option} />
-			<FieldGroup>
-				<ChoiceField
-					label={l("Option type", "期权类型")}
-					value={pair.option}
-					options={[
-						["CALL", l("Call", "看涨期权")],
-						["PUT", l("Put", "看跌期权")],
-					]}
-					onChange={(option) => choose(option, pair.aggressor)}
-				/>
-				<ChoiceField
-					label={l("Likely aggressor's action", "推断主动方的行为")}
-					value={pair.aggressor}
-					options={[
-						["buy", l("Buying", "买入")],
-						["sell", l("Selling", "卖出")],
-					]}
-					onChange={(aggressor) => choose(pair.option, aggressor)}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>{l("Name the perspective", "先明确观察视角")}</AlertTitle>
-				<AlertDescription>
-					{l(
-						"This course labels the isolated leg from the likely aggressor's perspective. Call buying and put selling map to bullish flow; call selling and put buying map to bearish flow. These are directional conventions, not return forecasts.",
-						"本课从推断主动方视角标记孤立单腿：买看涨或卖看跌映射看涨成交流，卖看涨或买看跌映射看跌成交流。这是方向约定，不是收益预测。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-sm" data-counterparty-perspective>
-				{l(
-					"The resting counterparty has the opposite leg. That does not create a second print or double the traded quantity.",
-					"挂单对手方持相反单腿，但不会因此产生第二笔成交或双倍成交量。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<FieldGroup>
+						<ChoiceField
+							label={l("Option type", "期权类型")}
+							value={pair.option}
+							options={[
+								["CALL", l("Call", "看涨期权")],
+								["PUT", l("Put", "看跌期权")],
+							]}
+							onChange={(option) => choose(option, pair.aggressor)}
+						/>
+						<ChoiceField
+							label={l("Likely aggressor's action", "推断主动方的行为")}
+							value={pair.aggressor}
+							options={[
+								["buy", l("Buying", "买入")],
+								["sell", l("Selling", "卖出")],
+							]}
+							onChange={(aggressor) => choose(pair.option, aggressor)}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} option={pair.option} />
+					<Alert role="note">
+						<AlertTitle>
+							{l("Name the perspective", "先明确观察视角")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"This course labels the isolated leg from the likely aggressor's perspective. Call buying and put selling map to bullish flow; call selling and put buying map to bearish flow. These are directional conventions, not return forecasts.",
+								"本课从推断主动方视角标记孤立单腿：买看涨或卖看跌映射看涨成交流，卖看涨或买看跌映射看跌成交流。这是方向约定，不是收益预测。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-sm" data-counterparty-perspective>
+						{l(
+							"The resting counterparty has the opposite leg. That does not create a second print or double the traded quantity.",
+							"挂单对手方持相反单腿，但不会因此产生第二笔成交或双倍成交量。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -358,40 +367,45 @@ export function FlowEvidenceScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("Execution evidence", "执行证据")}
-					value={id}
-					options={data.evidence.map((e) => [e.id, e.label[language]])}
-					onChange={(value) => {
-						setId(value);
-					}}
-				/>
-			</FieldGroup>
-			<p className="font-mono text-muted-foreground text-xs">
-				{l("Quote time", "报价时间")}: {record.reference.at ?? "—"}
-			</p>
-			<Alert>
-				<AlertTitle>
-					{supported
-						? l("A conditional flow inference", "有条件的成交流推断")
-						: l("Neutral means indeterminate", "中性表示无法确定")}
-				</AlertTitle>
-				<AlertDescription>
-					{supported
-						? l(
-								"The usable simple quote supports a likely buying or selling inference here. The put mapping follows from that inference, not from the word PUT alone. Participant intent and the full portfolio remain unknown.",
-								"此处可用的简单报价支持推断买入或卖出，再据此映射看跌期权方向，而不是只看 PUT 一词。参与者意图与完整组合仍未知。",
-							)
-						: l(
-								"The evidence does not establish a reliable direction. Neutral is an uncertainty label here; it does not mean the investor expects a flat market or owns a delta-neutral portfolio. Keep the recorded price and quantity.",
-								"证据不能确定可靠方向。此处中性标记不确定性，不表示投资者预期横盘，也不表示组合 Delta 中性。保留成交价与数量。",
-							)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Execution evidence", "执行证据")}
+						value={id}
+						options={data.evidence.map((e) => [e.id, e.label[language]])}
+						onChange={(value) => {
+							setId(value);
+						}}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p className="font-mono text-muted-foreground text-xs">
+						{l("Quote time", "报价时间")}: {record.reference.at ?? "—"}
+					</p>
+					<Alert>
+						<AlertTitle>
+							{supported
+								? l("A conditional flow inference", "有条件的成交流推断")
+								: l("Neutral means indeterminate", "中性表示无法确定")}
+						</AlertTitle>
+						<AlertDescription>
+							{supported
+								? l(
+										"The usable simple quote supports a likely buying or selling inference here. The put mapping follows from that inference, not from the word PUT alone. Participant intent and the full portfolio remain unknown.",
+										"此处可用的简单报价支持推断买入或卖出，再据此映射看跌期权方向，而不是只看 PUT 一词。参与者意图与完整组合仍未知。",
+									)
+								: l(
+										"The evidence does not establish a reliable direction. Neutral is an uncertainty label here; it does not mean the investor expects a flat market or owns a delta-neutral portfolio. Keep the recorded price and quantity.",
+										"证据不能确定可靠方向。此处中性标记不确定性，不表示投资者预期横盘，也不表示组合 Delta 中性。保留成交价与数量。",
+									)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -559,71 +573,78 @@ export function PositionScopeScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<SelectField
-					label={l("Position context", "持仓背景")}
-					value={id}
-					options={data.contexts.map((c) => [c.id, c.label[language]])}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setId(value);
-					}}
-				/>
-				<div
-					onPointerDownCapture={() => playback.select(playback.frame)}
-					onKeyDownCapture={() => playback.select(playback.frame)}
-				>
-					<RangeControl
-						label={l("Replay step", "回放阶段")}
-						value={playback.frame}
-						display={stages[playback.frame]}
-						min={0}
-						max={2}
-						onChange={playback.select}
+			controls={
+				<>
+					<FieldGroup>
+						<SelectField
+							label={l("Position context", "持仓背景")}
+							value={id}
+							options={data.contexts.map((c) => [c.id, c.label[language]])}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setId(value);
+							}}
+						/>
+						<div
+							onPointerDownCapture={() => playback.select(playback.frame)}
+							onKeyDownCapture={() => playback.select(playback.frame)}
+						>
+							<RangeControl
+								label={l("Replay step", "回放阶段")}
+								value={playback.frame}
+								display={stages[playback.frame]}
+								min={0}
+								max={2}
+								onChange={playback.select}
+							/>
+						</div>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
 					/>
-				</div>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>
-					{context.meaning === "protection"
-						? l("A put can protect stock", "看跌期权可以保护股票")
-						: context.meaning === "close"
-							? l("A purchase can close a short", "买入也可以平掉空头")
-							: l(
-									"No linkage means no portfolio conclusion",
-									"没有关联，就无法判断组合",
-								)}
-				</AlertTitle>
-				<AlertDescription>
-					{context.meaning === "protection"
-						? l(
-								`The supplied record links ${data.quantity} puts to ${number(context.beforeShares)} shares (${data.multiplier} shares per contract). This is stock protection, not proof of an overall bearish portfolio. Premium cost and the rest of the portfolio are not shown.`,
-								`给定记录将 ${data.quantity} 张看跌期权关联到 ${number(context.beforeShares)} 股股票（每张对应 ${data.multiplier} 股）。这是股票保护，不证明整体组合看跌。未展示权利金成本与组合其他部分。`,
-							)
-						: context.meaning === "close"
-							? l(
-									"The linked buy-to-close removes the existing short puts. Zero remaining puts is not a new bearish put position, and says nothing about unspecified holdings.",
-									"关联买入平仓移除了原有空头看跌。剩余零张不是新建看跌多头，也不说明未给出的其他持仓。",
-								)
-							: l(
-									"The print establishes a purchase in this supplied history. Without opening/closing or holding linkage, the before and after positions remain unknown. Unknown shares are not zero shares.",
-									"在给定历史中，此成交确定了买入行为。没有开平仓或持仓关联，成交前后的持仓仍未知。股票持仓未知不等于零股。",
-								)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-sm" data-scope-boundary>
-				{l(
-					"The same bearish flow label survives every context. Full-portfolio exposure, investor belief and future returns require more evidence.",
-					"相同看跌成交流标签适用于每种背景。完整组合敞口、投资者观点与未来收益需要更多证据。",
-				)}
-			</p>
-		</SceneLayout>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Alert role="note">
+						<AlertTitle>
+							{context.meaning === "protection"
+								? l("A put can protect stock", "看跌期权可以保护股票")
+								: context.meaning === "close"
+									? l("A purchase can close a short", "买入也可以平掉空头")
+									: l(
+											"No linkage means no portfolio conclusion",
+											"没有关联，就无法判断组合",
+										)}
+						</AlertTitle>
+						<AlertDescription>
+							{context.meaning === "protection"
+								? l(
+										`The supplied record links ${data.quantity} puts to ${number(context.beforeShares)} shares (${data.multiplier} shares per contract). This is stock protection, not proof of an overall bearish portfolio. Premium cost and the rest of the portfolio are not shown.`,
+										`给定记录将 ${data.quantity} 张看跌期权关联到 ${number(context.beforeShares)} 股股票（每张对应 ${data.multiplier} 股）。这是股票保护，不证明整体组合看跌。未展示权利金成本与组合其他部分。`,
+									)
+								: context.meaning === "close"
+									? l(
+											"The linked buy-to-close removes the existing short puts. Zero remaining puts is not a new bearish put position, and says nothing about unspecified holdings.",
+											"关联买入平仓移除了原有空头看跌。剩余零张不是新建看跌多头，也不说明未给出的其他持仓。",
+										)
+									: l(
+											"The print establishes a purchase in this supplied history. Without opening/closing or holding linkage, the before and after positions remain unknown. Unknown shares are not zero shares.",
+											"在给定历史中，此成交确定了买入行为。没有开平仓或持仓关联，成交前后的持仓仍未知。股票持仓未知不等于零股。",
+										)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-sm" data-scope-boundary>
+						{l(
+							"The same bearish flow label survives every context. Full-portfolio exposure, investor belief and future returns require more evidence.",
+							"相同看跌成交流标签适用于每种背景。完整组合敞口、投资者观点与未来收益需要更多证据。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

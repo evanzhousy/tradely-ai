@@ -230,66 +230,73 @@ export function CounterpartyScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} type={type} />
-			<FieldGroup>
-				<IncomingSide
-					locale={locale}
-					side={side}
-					onChange={(v) => {
-						playback.select(playback.frame);
-						setSide(v);
-					}}
-				/>
-				<ChoiceField
-					label={l("Option type", "期权类型")}
-					value={type}
-					options={[
-						["CALL", l("Call", "看涨")],
-						["PUT", l("Put", "看跌")],
-					]}
-					onChange={(v) => {
-						playback.select(playback.frame);
-						setType(v);
-					}}
-				/>
-				<SelectField
-					label={l("Match stage", "撮合阶段")}
-					value={String(playback.frame)}
-					options={stages.map((v, i) => [String(i), v])}
-					onChange={(v) => playback.select(Number(v))}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Who demanded immediacy?", "谁要求立即成交？")}
-				</AlertTitle>
-				<AlertDescription>
-					<p data-execution-aggressor>
-						{side === "buy"
-							? l(
-									"The incoming buyer takes the ask. The resting seller sells at that same ask.",
-									"主动买方接受卖价，挂单卖方也在同一卖价卖出。",
-								)
-							: l(
-									"The incoming seller takes the bid. The resting buyer buys at that same bid.",
-									"主动卖方接受买价，挂单买方也在同一买价买入。",
-								)}
+			controls={
+				<>
+					<FieldGroup>
+						<IncomingSide
+							locale={locale}
+							side={side}
+							onChange={(v) => {
+								playback.select(playback.frame);
+								setSide(v);
+							}}
+						/>
+						<ChoiceField
+							label={l("Option type", "期权类型")}
+							value={type}
+							options={[
+								["CALL", l("Call", "看涨")],
+								["PUT", l("Put", "看跌")],
+							]}
+							onChange={(v) => {
+								playback.select(playback.frame);
+								setType(v);
+							}}
+						/>
+						<SelectField
+							label={l("Match stage", "撮合阶段")}
+							value={String(playback.frame)}
+							options={stages.map((v, i) => [String(i), v])}
+							onChange={(v) => playback.select(Number(v))}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} type={type} />
+					<Alert role="note">
+						<AlertTitle>
+							{l("Who demanded immediacy?", "谁要求立即成交？")}
+						</AlertTitle>
+						<AlertDescription>
+							<p data-execution-aggressor>
+								{side === "buy"
+									? l(
+											"The incoming buyer takes the ask. The resting seller sells at that same ask.",
+											"主动买方接受卖价，挂单卖方也在同一卖价卖出。",
+										)
+									: l(
+											"The incoming seller takes the bid. The resting buyer buys at that same bid.",
+											"主动卖方接受买价，挂单买方也在同一买价买入。",
+										)}
+							</p>
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Call and put examples reuse one invented quote. Neither option type nor counterparty role proves intent, identity, or an opening/closing instruction. Roles here come from the supplied order history.",
+							"看涨与看跌示例复用同一虚构报价。期权类型或买卖角色都不证明意图、身份或开平仓指令。此处角色来自给定订单历史。",
+						)}
 					</p>
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Call and put examples reuse one invented quote. Neither option type nor counterparty role proves intent, identity, or an opening/closing instruction. Roles here come from the supplied order history.",
-					"看涨与看跌示例复用同一虚构报价。期权类型或买卖角色都不证明意图、身份或开平仓指令。此处角色来自给定订单历史。",
-				)}
-			</p>
-		</SceneLayout>
+				</>
+			}
+		/>
 	);
 }
 
@@ -405,76 +412,86 @@ export function LiquidityScene({ locale }: Props) {
 					/>
 				</>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<IncomingSide
-					locale={locale}
-					side={side}
-					onChange={(v) => {
-						setSide(v);
-						setLimit(v === "buy" ? data.asks[0].price : data.bids[0].price);
-					}}
-				/>
-				<ChoiceField
-					label={l("Order instruction", "订单指令")}
-					value={instruction}
-					options={[
-						["limit", l("Limit", "限价")],
-						["market", l("Market", "市价")],
-					]}
-					onChange={setInstruction}
-				/>
-				<RangeControl
-					inputScale={1}
-					label={l("Requested quantity", "请求数量")}
-					value={quantity}
-					display={`${quantity} ${l("contracts", "张")}`}
-					min={1}
-					max={data.maxQuantity}
-					onChange={setQuantity}
-				/>
-				{instruction === "limit" ? (
-					<RangeControl
-						inputScale={100}
-						label={l("Limit price", "限价价格")}
-						value={limit}
-						display={money(limit)}
-						min={range[0]}
-						max={range[1]}
-						onChange={setLimit}
+			controls={
+				<FieldGroup>
+					<IncomingSide
+						locale={locale}
+						side={side}
+						onChange={(v) => {
+							setSide(v);
+							setLimit(v === "buy" ? data.asks[0].price : data.bids[0].price);
+						}}
 					/>
-				) : null}
-			</FieldGroup>
-			<p className="text-sm" data-depth-average>
-				{l("Average matched price (rounded)", "撮合均价（已四舍五入）")}:{" "}
-				<strong>{result.average === null ? "—" : money(result.average)}</strong>
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{instruction === "limit"
-						? l("Price protection, not a fill promise", "限制价格，不保证成交")
-						: l("Available prices can differ", "可用价格可能不同")}
-				</AlertTitle>
-				<AlertDescription>
-					{instruction === "limit"
-						? l(
-								"A buy limit accepts its limit or lower; a sell limit accepts its limit or higher. Unfilled quantity may rest or cancel according to the order's time-in-force; it is not an execution.",
-								"买入限价接受限价或更低价格，卖出限价接受限价或更高价格。未成交部分可能依有效期设置挂单或取消，不属于成交。",
-							)
-						: l(
-								"This market order can reach every displayed level. Its average changes as it consumes depth. There is no limit-price protection; fills beyond the displayed book are unknown here.",
-								"此市价单可触及所有展示价位。消耗深度会改变均价，且没有限价保护。本例无法确定展示订单簿以外的成交。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"What-if match: each row is eligible displayed liquidity in price order. No earlier orders, replenishment, cancellations, hidden liquidity, routing or fees. Real fills depend on those conditions.",
-					"假设撮合：每行是按价格排序的合格可见流动性，无排在前面的订单、补单、撤单、隐藏流动性、路由或费用。真实成交取决于这些条件。",
-				)}
-			</p>
-		</SceneLayout>
+					<ChoiceField
+						label={l("Order instruction", "订单指令")}
+						value={instruction}
+						options={[
+							["limit", l("Limit", "限价")],
+							["market", l("Market", "市价")],
+						]}
+						onChange={setInstruction}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Requested quantity", "请求数量")}
+						value={quantity}
+						display={`${quantity} ${l("contracts", "张")}`}
+						min={1}
+						max={data.maxQuantity}
+						onChange={setQuantity}
+					/>
+					{instruction === "limit" ? (
+						<RangeControl
+							inputScale={100}
+							label={l("Limit price", "限价价格")}
+							value={limit}
+							display={money(limit)}
+							min={range[0]}
+							max={range[1]}
+							onChange={setLimit}
+						/>
+					) : null}
+				</FieldGroup>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p className="text-sm" data-depth-average>
+						{l("Average matched price (rounded)", "撮合均价（已四舍五入）")}:{" "}
+						<strong>
+							{result.average === null ? "—" : money(result.average)}
+						</strong>
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{instruction === "limit"
+								? l(
+										"Price protection, not a fill promise",
+										"限制价格，不保证成交",
+									)
+								: l("Available prices can differ", "可用价格可能不同")}
+						</AlertTitle>
+						<AlertDescription>
+							{instruction === "limit"
+								? l(
+										"A buy limit accepts its limit or lower; a sell limit accepts its limit or higher. Unfilled quantity may rest or cancel according to the order's time-in-force; it is not an execution.",
+										"买入限价接受限价或更低价格，卖出限价接受限价或更高价格。未成交部分可能依有效期设置挂单或取消，不属于成交。",
+									)
+								: l(
+										"This market order can reach every displayed level. Its average changes as it consumes depth. There is no limit-price protection; fills beyond the displayed book are unknown here.",
+										"此市价单可触及所有展示价位。消耗深度会改变均价，且没有限价保护。本例无法确定展示订单簿以外的成交。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"What-if match: each row is eligible displayed liquidity in price order. No earlier orders, replenishment, cancellations, hidden liquidity, routing or fees. Real fills depend on those conditions.",
+							"假设撮合：每行是按价格排序的合格可见流动性，无排在前面的订单、补单、撤单、隐藏流动性、路由或费用。真实成交取决于这些条件。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -604,67 +621,74 @@ export function OrderEvidenceScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<ChoiceField
-					label={l("Compare possible histories", "比较可能历史")}
-					value={example}
-					options={data.records.map((r) => [
-						r.id,
-						`${l("Example", "示例")} ${r.id}`,
-					])}
-					onChange={(v) => {
-						setExample(v);
-						setRevealed(false);
-					}}
-				/>
-			</FieldGroup>
-			{
-				<Alert role="status">
-					<AlertTitle>
-						{l("What the evidence establishes", "证据能确定什么")}
-					</AlertTitle>
-					<AlertDescription>
+			controls={
+				<>
+					<FieldGroup>
+						<ChoiceField
+							label={l("Compare possible histories", "比较可能历史")}
+							value={example}
+							options={data.records.map((r) => [
+								r.id,
+								`${l("Example", "示例")} ${r.id}`,
+							])}
+							onChange={(v) => {
+								setExample(v);
+								setRevealed(false);
+							}}
+						/>
+					</FieldGroup>
+					<Button
+						variant="outline"
+						onClick={() => {
+							setRevealed(!revealed);
+						}}
+					>
 						{revealed
-							? l(
-									"The supplied order record establishes the instruction in this example. The print alone did not.",
-									"给定订单记录确定了本例的指令类型，单凭成交记录无法做到。",
-								)
-							: l(
-									"Both illustrated instructions can produce this same price and size. A print alone does not identify market versus limit, aggressor, identity, or strategy.",
-									"两种示例指令都可产生相同价格和数量。单凭成交记录不能确定市价或限价、主动方、身份或策略。",
-								)}
-					</AlertDescription>
-				</Alert>
+							? l("Hide order record", "隐藏订单记录")
+							: l("Reveal order record", "查看订单记录")}
+					</Button>
+				</>
 			}
-			<Button
-				variant="outline"
-				onClick={() => {
-					setRevealed(!revealed);
-				}}
-			>
-				{revealed
-					? l("Hide order record", "隐藏订单记录")
-					: l("Reveal order record", "查看订单记录")}
-			</Button>
-			<Alert role="note">
-				<AlertTitle>
-					{revealed
-						? `${l("Order record", "订单记录")} ${example}`
-						: l("Available evidence: print only", "可用证据：仅成交记录")}
-				</AlertTitle>
-				<AlertDescription>
-					<p data-evidence-record>
-						{revealed
-							? `${l("Incoming buyer", "主动买方")} · ${record?.instruction === "limit" && record.limit !== null ? `${l("buy limit", "买入限价")} ${money(record.limit)}` : l("market buy", "市价买入")} · ${data.unitTradeSize} ${l("contracts", "张")}. ${l("Matched with a resting seller.", "与挂单卖方撮合。")}`
-							: l(
-									"The two paths are possible histories, not two trades. Reveal the extra record to identify this example's instruction.",
-									"两条路径代表可能的历史，而非两笔成交。查看额外记录以识别本例指令。",
-								)}
-					</p>
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+			details={
+				<>
+					<Snapshot locale={locale} />
+					{
+						<Alert role="status">
+							<AlertTitle>
+								{l("What the evidence establishes", "证据能确定什么")}
+							</AlertTitle>
+							<AlertDescription>
+								{revealed
+									? l(
+											"The supplied order record establishes the instruction in this example. The print alone did not.",
+											"给定订单记录确定了本例的指令类型，单凭成交记录无法做到。",
+										)
+									: l(
+											"Both illustrated instructions can produce this same price and size. A print alone does not identify market versus limit, aggressor, identity, or strategy.",
+											"两种示例指令都可产生相同价格和数量。单凭成交记录不能确定市价或限价、主动方、身份或策略。",
+										)}
+							</AlertDescription>
+						</Alert>
+					}
+					<Alert role="note">
+						<AlertTitle>
+							{revealed
+								? `${l("Order record", "订单记录")} ${example}`
+								: l("Available evidence: print only", "可用证据：仅成交记录")}
+						</AlertTitle>
+						<AlertDescription>
+							<p data-evidence-record>
+								{revealed
+									? `${l("Incoming buyer", "主动买方")} · ${record?.instruction === "limit" && record.limit !== null ? `${l("buy limit", "买入限价")} ${money(record.limit)}` : l("market buy", "市价买入")} · ${data.unitTradeSize} ${l("contracts", "张")}. ${l("Matched with a resting seller.", "与挂单卖方撮合。")}`
+									: l(
+											"The two paths are possible histories, not two trades. Reveal the extra record to identify this example's instruction.",
+											"两条路径代表可能的历史，而非两笔成交。查看额外记录以识别本例指令。",
+										)}
+							</p>
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }

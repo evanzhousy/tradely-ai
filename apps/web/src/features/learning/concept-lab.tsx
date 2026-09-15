@@ -23,19 +23,20 @@ import {
 	useContext,
 	useEffect,
 	useId,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
 import type { Locale } from "@/i18n/messages";
 import { saveVisualBookmark, useVisualBookmarks } from "./visual-bookmark";
 import { VisualLessonIdentity, VisualPlayback } from "./visual-playback";
+import { expandSteps, type VisualStep } from "./visual-step";
 export type ConceptScene = {
 	id: string;
 	label: readonly [string, string];
 	title: readonly [string, string];
 	prompt: readonly [string, string];
-	demonstration?: readonly (readonly [string, string])[];
-	playbackStops?: readonly (readonly [string, string])[];
+	steps: readonly VisualStep[];
 	Component: ComponentType<{ locale: Locale }>;
 };
 
@@ -55,6 +56,8 @@ export function ConceptLab({
 	const [scene, setScene] = useState(scenes[0].id);
 	const [progress, setProgress] = useState(0);
 	const [epoch, setEpoch] = useState(0);
+	const [resetVersion, setResetVersion] = useState(0);
+	const [frames, setFrames] = useState<Record<string, number>>({});
 	const [playing, setPlaying] = useState(false);
 	const [exploring, setExploring] = useState(false);
 	const [reduced, setReduced] = useState(true);
@@ -70,6 +73,31 @@ export function ConceptLab({
 		scenes.findIndex((item) => item.id === scene),
 	);
 	const active = scenes[index];
+	const registerFrames = useCallback(
+		(id: string, count: number) => {
+			const key = `${scene}:${id}`;
+			setFrames((previous) =>
+				previous[key] === count ? previous : { ...previous, [key]: count },
+			);
+			return () =>
+				setFrames((previous) => {
+					const next = { ...previous };
+					delete next[key];
+					return next;
+				});
+		},
+		[scene],
+	);
+	const steps = useMemo(
+		() =>
+			expandSteps(
+				active.steps,
+				Object.entries(frames)
+					.filter(([key]) => key.startsWith(`${scene}:`))
+					.map(([, count]) => count),
+			),
+		[active.steps, frames, scene],
+	);
 	const language = locale === "zh" ? 1 : 0;
 	const l = (en: string, zh: string) => (locale === "zh" ? zh : en);
 	const pause = useCallback(() => {
@@ -81,40 +109,41 @@ export function ConceptLab({
 		setProgress(Math.max(0, Math.min(1, value)));
 		setEpoch((value) => value + 1);
 	}, []);
-	const beats = active.demonstration ?? [
-		active.title,
-		active.prompt,
-		active.title,
-	];
-	const stops =
-		active.playbackStops ??
-		Array.from(
-			{ length: Math.max(3, beats.length) },
-			(_, i) => [`Step ${i + 1}`, `步骤 ${i + 1}`] as const,
-		);
-	const stepCount = stops.length;
-	const discretePlayback = !!active.playbackStops;
-	const step = Math.min(
-		stepCount,
-		Math.max(1, Math.round(progress * (stepCount - 1)) + 1),
-	);
+	const stepCount = steps.length;
+	const step =
+		steps.reduce(
+			(closest, item, i) =>
+				Math.abs(item.state.position - progress) <
+				Math.abs(steps[closest].state.position - progress)
+					? i
+					: closest,
+			0,
+		) + 1;
+	const currentStep = steps[step - 1];
 	const selectStep = (value: number) => {
 		pause();
-		seek(stepCount <= 1 ? 0 : (value - 1) / (stepCount - 1));
+		seek(steps[Math.max(0, Math.min(stepCount - 1, value - 1))].state.position);
 	};
 	const toggle = () => {
 		if (reduced) {
+			if (exploring) {
+				setResetVersion((value) => value + 1);
+				selectStep(1);
+				return;
+			}
 			selectStep(step >= stepCount ? 1 : step + 1);
 			return;
 		}
 		if (playing) pause();
 		else {
 			autoStarted.current = scene;
-			seek(progress === 1 ? 0 : progress);
+			if (exploring || progress === 1) setResetVersion((value) => value + 1);
+			seek(exploring || progress === 1 ? 0 : progress);
 			setPlaying(true);
 		}
 	};
 	const selectScene = (value: string) => {
+		if (value === scene) return;
 		pause();
 		setVisible(false);
 		seek(0);
@@ -145,32 +174,25 @@ export function ConceptLab({
 		onHide();
 		document.addEventListener("visibilitychange", onHide);
 		const observer = new IntersectionObserver(([entry]) => {
+			if (!stage.current?.contains(entry.target)) return;
 			setVisible(entry.isIntersecting);
 			if (!entry.isIntersecting) setPlaying(false);
 		});
 		const diagram =
-			stage.current?.querySelector(".scene-visuals") ?? stage.current;
+			stage.current?.querySelector(".visual-scene-layout") ?? stage.current;
 		if (diagram) observer.observe(diagram);
 		return () => {
 			preference.removeEventListener("change", update);
 			document.removeEventListener("visibilitychange", onHide);
 			observer.disconnect();
 		};
-	}, [pause, scene]);
+	}, [pause, scene, resetVersion]);
 	useEffect(() => {
 		if (!playing || !ready || reduced) return;
 		const timer = window.setTimeout(() => {
 			if (progress >= 1) pause();
-			else
-				seek(
-					Math.min(
-						1,
-						discretePlayback
-							? step / Math.max(1, stepCount - 1)
-							: Math.round((progress + 0.1) * 10) / 10,
-					),
-				);
-		}, 2400);
+			else seek(steps[Math.min(step, stepCount - 1)].state.position);
+		}, currentStep.holdMs);
 		return () => window.clearTimeout(timer);
 	}, [
 		playing,
@@ -181,7 +203,8 @@ export function ConceptLab({
 		seek,
 		step,
 		stepCount,
-		discretePlayback,
+		steps,
+		currentStep.holdMs,
 	]);
 	useEffect(() => {
 		if (
@@ -195,9 +218,7 @@ export function ConceptLab({
 			setPlaying(true);
 		}
 	}, [ready, reduced, visible, pageVisible, scene]);
-	const caption = exploring
-		? active.prompt
-		: beats[Math.round(progress * (beats.length - 1))];
+	const caption = exploring ? active.prompt : currentStep.caption;
 	const Component = active.Component;
 	return (
 		<section
@@ -208,6 +229,9 @@ export function ConceptLab({
 			data-visual-ready={ready}
 			data-playback-progress={progress}
 			data-playing={playing}
+			data-scene-id={active.id}
+			data-mode={exploring ? "explore" : "walkthrough"}
+			data-focus={currentStep.focus}
 			data-contract-lab={id === "contracts" ? "" : undefined}
 		>
 			<div className="flex flex-wrap items-center justify-between gap-3">
@@ -256,11 +280,13 @@ export function ConceptLab({
 						)}
 						{playing
 							? l("Pause", "暂停")
-							: reduced
-								? l("Next step", "下一步")
-								: progress === 1
-									? l("Start again", "重新开始")
-									: l("Start explanation", "开始讲解")}
+							: exploring
+								? l("Return to walkthrough", "返回讲解")
+								: reduced
+									? l("Next step", "下一步")
+									: progress === 1
+										? l("Start again", "重新开始")
+										: l("Start explanation", "开始讲解")}
 					</Button>
 					<Stepper
 						key={scene}
@@ -270,16 +296,16 @@ export function ConceptLab({
 						aria-label={l("Explanation steps", "讲解步骤")}
 					>
 						<StepperNav>
-							{stops.map((beat, i) => (
+							{steps.map((item, i) => (
 								<StepperItem key={i} step={i + 1} completed={i + 1 < step}>
 									<StepperTrigger
 										id={`${titleId}-step-${i + 1}`}
 										aria-controls={`${titleId}-scene`}
-										aria-label={`${i + 1}. ${beat[language]}`}
+										aria-label={`${i + 1}. ${item.label[language]}`}
 									>
 										<StepperIndicator>{i + 1}</StepperIndicator>
 										<StepperTitle className="text-center text-xs leading-tight">
-											{beat[language]}
+											{item.label[language]}
 										</StepperTitle>
 									</StepperTrigger>
 								</StepperItem>
@@ -292,6 +318,7 @@ export function ConceptLab({
 						onClick={() => {
 							autoStarted.current = scene;
 							seek(0);
+							setResetVersion((value) => value + 1);
 							setPlaying(!reduced);
 						}}
 						aria-label={l("Reset demonstration", "重置演示")}
@@ -301,11 +328,20 @@ export function ConceptLab({
 					</Button>
 				</fieldset>
 				<VisualPlayback
-					value={{ progress, epoch, playing, pause, seek, toggle }}
+					value={{
+						progress,
+						step: currentStep,
+						registerFrames,
+						epoch,
+						playing,
+						pause,
+						seek,
+						toggle,
+					}}
 				>
 					<div
 						id={`${titleId}-scene`}
-						key={scene}
+						key={`${scene}:${resetVersion}`}
 						onPointerDownCapture={() => {
 							pause();
 							setExploring(true);

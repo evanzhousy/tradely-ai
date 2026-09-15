@@ -1275,10 +1275,237 @@
 	min-width: 0;
 }
 .scene-outcome {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	display: flex;
+	flex-direction: column;
 	gap: 0.65rem;
 	margin-top: 0.75rem;
+}
+.outcome-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+	gap: 0.65rem;
+}
+.outcome-unit {
+	display: block;
+	margin-top: 0.3rem;
+	color: var(--muted-foreground);
+	font-size: 0.7rem;
+	font-weight: 400;
+}
+.outcome-note {
+	margin-top: 0.5rem;
+	color: var(--muted-foreground);
+	font-size: 0.75rem;
+	line-height: 1.65;
+	overflow-wrap: anywhere;
+}
+:where(.outcome-grid [data-tone="gain"]) .scene-outcome-value {
+	color: var(--diagram-gain);
+}
+:where(.outcome-grid [data-tone="loss"]) .scene-outcome-value {
+	color: var(--diagram-loss);
+}
+:where(.outcome-grid [data-tone="unknown"]) .scene-outcome-value {
+	color: var(--diagram-unknown);
+}
+.comparison-panel,
+.breakdown-panel,
+.transfer-panel,
+.research-artifact {
+	min-width: 0;
+	padding: 1rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: var(--card);
+}
+:is(.comparison-panel, .breakdown-panel, .transfer-panel, .research-artifact)
+	h3 {
+	font-weight: 600;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+.comparison-panel header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+.comparison-panel table,
+.artifact-source-table {
+	width: 100%;
+	table-layout: fixed;
+	font-size: 0.75rem;
+	border-collapse: collapse;
+}
+:where(.comparison-panel table, .artifact-source-table) :is(th, td) {
+	text-align: left;
+	padding: 0.5rem 0.25rem;
+	border-bottom: 1px solid var(--border);
+	overflow-wrap: anywhere;
+	font-variant-numeric: tabular-nums;
+}
+.comparison-panel small {
+	display: block;
+	color: var(--muted-foreground);
+	font-weight: 400;
+}
+.breakdown-row {
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	padding: 0.8rem 0;
+	font-size: 0.875rem;
+	border-bottom: 1px solid var(--border);
+}
+.breakdown-row dd {
+	font-family: var(--font-mono);
+	font-weight: 600;
+}
+.breakdown-bar {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	height: 3px;
+	background: var(--diagram-gain);
+	transition: width 240ms ease-out;
+}
+.breakdown-row[data-tone="loss"] .breakdown-bar {
+	background: var(--diagram-loss);
+}
+.breakdown-row[data-tone="unknown"] {
+	border-bottom: 2px dashed var(--diagram-unknown);
+}
+.breakdown-total {
+	font-family: var(--font-mono);
+	font-size: 1.3rem;
+	font-weight: 600;
+	margin-top: 1rem;
+}
+.breakdown-panel svg {
+	width: 100%;
+	margin-top: 0.8rem;
+}
+.breakdown-panel svg text {
+	fill: var(--foreground);
+	font-size: 12px;
+	font-family: var(--font-mono);
+}
+.transfer-parties {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-top: 1rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+.transfer-row {
+	display: grid;
+	grid-template-columns: 4rem 2rem minmax(0, 1fr);
+	align-items: center;
+	gap: 0.5rem;
+	padding: 1rem 0;
+	font-size: 0.8rem;
+	border-bottom: 1px solid var(--border);
+}
+.transfer-arrow {
+	color: var(--diagram-observed);
+	font-size: 1.5rem;
+}
+.artifact-bars {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin-top: 1rem;
+}
+.artifact-bar-row {
+	display: grid;
+	grid-template-columns: 2rem minmax(0, 1fr) 5rem;
+	width: 100%;
+	gap: 0.5rem;
+	text-align: left;
+}
+.artifact-bar-track {
+	background: var(--muted);
+	height: 16px;
+}
+.research-artifact .artifact-bar-track > span {
+	display: block;
+	height: 100%;
+	background: var(--diagram-observed);
+}
+.artifact-bar-track > span[data-missing="true"] {
+	height: 100%;
+	background: repeating-linear-gradient(
+		135deg,
+		transparent 0,
+		transparent 6px,
+		var(--diagram-unknown) 6px,
+		var(--diagram-unknown) 7px
+	);
+}
+.artifact-caution {
+	border-left: 3px solid var(--diagram-unknown);
+	padding: 0.5rem;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	margin-top: 0.7rem;
+}
+.artifact-total {
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin-top: 0.8rem;
+}
+.artifact-source-table caption {
+	margin-block: 0.8rem 0.4rem;
+	text-align: left;
+	font-size: 0.75rem;
+	color: var(--muted-foreground);
+}
+.artifact-source-table [data-selected="true"] {
+	outline: 2px solid var(--diagram-observed);
+	outline-offset: -2px;
+}
+.artifact-calculation,
+.artifact-caption {
+	margin-top: 0.8rem;
+	font-size: 0.8rem;
+	line-height: 1.7;
+	overflow-wrap: anywhere;
+}
+.artifact-calculation {
+	padding: 0.5rem;
+	background: var(--muted);
+	font-family: var(--font-mono);
+}
+.visual-controls {
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--border);
+}
+.visual-controls > summary {
+	cursor: pointer;
+	padding-block: 0.65rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+.visual-controls > summary:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 3px;
+}
+[data-trace-active="true"] {
+	outline: 2px solid var(--diagram-observed);
+	outline-offset: -2px;
+}
+[data-focus="result"] .outcome-summary {
+	border-left: 3px solid var(--diagram-observed);
+	padding-left: 0.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+	.breakdown-bar {
+		transition: none;
+	}
 }
 .scene-outcome-card {
 	min-width: 0;

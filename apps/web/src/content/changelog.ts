@@ -1,6 +1,31 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "worked-visual-results-unreleased",
+		date: "2026-09-15",
+		dateLabel: "Unreleased",
+		title: "See the calculation and its result together",
+		summary:
+			"Visual lessons separate the worked example, optional inputs and detailed explanations, with a clear return to the walkthrough.",
+		changes: [
+			{
+				title: "Compare before and after",
+				description:
+					"Selected payoff, Greek and portfolio scenes keep starting values beside current results. Pin a comparison within the same example, or restart to restore the authored starting state.",
+			},
+			{
+				title: "Follow the parts",
+				description:
+					"Premium breakdowns, contribution waterfalls and cash/share transfers show how the result is formed, with explicit units and signed colors.",
+			},
+			{
+				title: "Trace a research result",
+				description:
+					"Packet, recap and audit examples link their charts to the supplied source rows. Missing values remain unavailable and observed subtotals are distinguished from complete totals.",
+			},
+		],
+	},
+	{
 		id: "order-book-lessons-unreleased",
 		date: "2026-09-15",
 		dateLabel: "Unreleased",

@@ -11,6 +11,7 @@ import {
 } from "@/domain/learning/packet-concept";
 import { apparentBarRatio } from "@/domain/learning/recap-concept";
 import type { Locale } from "@/i18n/messages";
+import { BeforeAfterComparison } from "./before-after-comparison";
 import {
 	Diagram,
 	PlaybackButton,
@@ -20,6 +21,8 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { ResearchArtifactPreview } from "./research-artifact-preview";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 export const AuditRecapData = createContext<AuditRecapConceptData | null>(null);
 function useData() {
@@ -82,6 +85,49 @@ export function AuditAmountScene({ locale }: Props) {
 		: 0;
 	return (
 		<SceneLayout
+			comparison={
+				<BeforeAfterComparison
+					locale={locale}
+					comparisonKey={data.packet.id}
+					values={[
+						{
+							id: "amount",
+							label: l("Reported subtotal", "报告小计"),
+							before: workingAuditPremium(
+								data.packet,
+								data.requiredIds,
+								[],
+								data.reportedMultiplier,
+							).subtotal,
+							current: working.subtotal,
+							unit: "USD",
+							format: money,
+						},
+						{
+							id: "repairs",
+							label: l("Repaired factors", "修复乘数"),
+							before: 0,
+							current: repaired.length,
+							unit: l("rows", "行"),
+							format: String,
+						},
+					]}
+					note={l(
+						"Only the amount calculation is repaired here; source coverage and inference need separate review.",
+						"此处仅修复金额计算，来源覆盖与推断仍需单独审核。",
+					)}
+				/>
+			}
+			companion={
+				<ResearchArtifactPreview
+					locale={locale}
+					record={data.packet}
+					headline={l(
+						"Retain the source; repair the arithmetic",
+						"保留来源，修复计算",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -189,74 +235,81 @@ export function AuditAmountScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Working subtotal", "工作小计")}</>,
+							value: <>{money(working.subtotal)}</>,
+						},
+						{
+							id: "result-2",
+							label: <>{l("Repaired rows", "已修复行")}</>,
+							value: <>{repaired.length}</>,
+						},
+						{
+							id: "result-3",
+							label: <>{l("Amount calculation", "金额计算")}</>,
+							value: (
+								<>
+									{complete
+										? l(
+												"Repaired; coverage still limited",
+												"金额已修复，覆盖仍有限",
+											)
+										: l("Repair in progress", "金额修复中")}
+								</>
+							),
+						},
+					]}
+				/>
+			}
+			controls={
+				<PlaybackButton
+					playing={replay.playing}
+					onClick={() => {
+						setManual(null);
+						replay.toggle();
+					}}
+					l={l}
+				/>
+			}
+			details={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Working subtotal", "工作小计")}
-						</p>
-						<p className="scene-outcome-value">{money(working.subtotal)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Repaired rows", "已修复行")}
-						</p>
-						<p className="scene-outcome-value">{repaired.length}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Amount calculation", "金额计算")}
-						</p>
-						<p className="scene-outcome-value">
-							{complete
-								? l(
-										"Repaired; coverage still limited",
-										"金额已修复，覆盖仍有限",
-									)
-								: l("Repair in progress", "金额修复中")}
-						</p>
-					</div>
+					<Context locale={locale} />
+					<p data-audit-amount-status>
+						{complete
+							? l(
+									"Source multipliers restored; other report claims still need review",
+									"来源乘数已恢复；报告其他结论仍需审核",
+								)
+							: l(
+									"The reported calculation omits required multiplier scaling",
+									"报告计算遗漏必需乘数缩放",
+								)}
+					</p>
+					<p data-audit-retained>
+						{l("Retain valid R1 price/share", "保留有效 R1 每股价格")}:{" "}
+						{money(data.packet.rows[0].priceCents)}
+					</p>
+					<p>
+						{l("Used source rows", "使用来源行")}: {source.usedIds.join(" / ")}
+						<br />
+						{l("Missing required rows", "必需缺失行")}:{" "}
+						{source.missingIds.join(" / ")}
+						<br />
+						{l("Complete total", "完整总量")}: {money(source.fullTotal)}
+					</p>
+					<Note>
+						{l(
+							"The flawed factors give $20+$60=$80. Restoring R1 alone gives $2,060; restoring both gives $8,000 observed premium. R1's correctly reported $2 per-share price stays valid throughout. Correcting the dollars does not establish opening intent, complete coverage or a forecast.",
+							"错误乘数得到 $20+$60=$80。仅恢复 R1 得 $2,060，两行均恢复后为 $8,000 观测权利金。R1 正确报告的每股 $2 始终有效。修正金额不确定开仓意图、完整覆盖或预测。",
+						)}
+					</Note>
 				</>
 			}
-		>
-			<Context locale={locale} />
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p data-audit-amount-status>
-				{complete
-					? l(
-							"Source multipliers restored; other report claims still need review",
-							"来源乘数已恢复；报告其他结论仍需审核",
-						)
-					: l(
-							"The reported calculation omits required multiplier scaling",
-							"报告计算遗漏必需乘数缩放",
-						)}
-			</p>
-			<p data-audit-retained>
-				{l("Retain valid R1 price/share", "保留有效 R1 每股价格")}:{" "}
-				{money(data.packet.rows[0].priceCents)}
-			</p>
-			<p>
-				{l("Used source rows", "使用来源行")}: {source.usedIds.join(" / ")}
-				<br />
-				{l("Missing required rows", "必需缺失行")}:{" "}
-				{source.missingIds.join(" / ")}
-				<br />
-				{l("Complete total", "完整总量")}: {money(source.fullTotal)}
-			</p>
-			<Note>
-				{l(
-					"The flawed factors give $20+$60=$80. Restoring R1 alone gives $2,060; restoring both gives $8,000 observed premium. R1's correctly reported $2 per-share price stays valid throughout. Correcting the dollars does not establish opening intent, complete coverage or a forecast.",
-					"错误乘数得到 $20+$60=$80。仅恢复 R1 得 $2,060，两行均恢复后为 $8,000 观测权利金。R1 正确报告的每股 $2 始终有效。修正金额不确定开仓意图、完整覆盖或预测。",
-				)}
-			</Note>
-		</SceneLayout>
+		/>
 	);
 }
 export function AuditClaimsScene({ locale }: Props) {
@@ -331,86 +384,92 @@ export function AuditClaimsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Audit check", "审核项")}
-				value={selected}
-				options={data.checks.map((c) => [c.id, c.label[language]])}
-				onChange={setSelected}
-			/>
-			<div className="rounded-2xl border p-4 text-sm leading-relaxed">
-				<strong>{l("Report excerpt", "报告摘录")}</strong>
-				<p data-audit-report>
-					{fixed ? check.repair[language] : check.reported[language]}
-				</p>
-				<strong>{l("Source evidence", "来源证据")}</strong>
-				<p>{check.source[language]}</p>
-			</div>
-			{selected === "scale" && (
-				<div data-audit-chart>
-					<Diagram
-						label={l("Actual report bar scale", "报告实际柱轴尺度")}
-						height={220}
+			controls={
+				<SelectField
+					label={l("Audit check", "审核项")}
+					value={selected}
+					options={data.checks.map((c) => [c.id, c.label[language]])}
+					onChange={setSelected}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<div className="rounded-2xl border p-4 text-sm leading-relaxed">
+						<strong>{l("Report excerpt", "报告摘录")}</strong>
+						<p data-audit-report>
+							{fixed ? check.repair[language] : check.reported[language]}
+						</p>
+						<strong>{l("Source evidence", "来源证据")}</strong>
+						<p>{check.source[language]}</p>
+					</div>
+					{selected === "scale" && (
+						<div data-audit-chart>
+							<Diagram
+								label={l("Actual report bar scale", "报告实际柱轴尺度")}
+								height={220}
+							>
+								<SvgText x={180} y={25}>
+									{l("Contracts · axis minimum", "张数 · 轴下限")}: {minimum}
+								</SvgText>
+								{[10, 20].map((value, i) => {
+									const height = ((value - minimum) / (20 - minimum)) * 110;
+									const x = 80 + i * 190;
+									return (
+										<g key={value}>
+											<rect
+												x={x - 30}
+												y={165 - height}
+												width={60}
+												height={height}
+												rx={4}
+												fill="var(--primary)"
+												opacity={0.65}
+											/>
+											<SvgText x={x} y={153 - height}>
+												{value}
+											</SvgText>
+											<SvgText x={x} y={187}>
+												R{i + 1}
+											</SvgText>
+										</g>
+									);
+								})}
+								<SvgText x={180} y={214}>
+									{l("Height ratio", "柱高比")}:{" "}
+									{apparentBarRatio(20, 10, minimum)}× · {l("values", "数值")}:
+									2×
+								</SvgText>
+							</Diagram>
+						</div>
+					)}
+					<button
+						type="button"
+						className="rounded-xl border px-4 py-3 text-sm disabled:opacity-60"
+						disabled={supported}
+						onClick={() => setRepaired((prev) => [...prev, check.id])}
 					>
-						<SvgText x={180} y={25}>
-							{l("Contracts · axis minimum", "张数 · 轴下限")}: {minimum}
-						</SvgText>
-						{[10, 20].map((value, i) => {
-							const height = ((value - minimum) / (20 - minimum)) * 110;
-							const x = 80 + i * 190;
-							return (
-								<g key={value}>
-									<rect
-										x={x - 30}
-										y={165 - height}
-										width={60}
-										height={height}
-										rx={4}
-										fill="var(--primary)"
-										opacity={0.65}
-									/>
-									<SvgText x={x} y={153 - height}>
-										{value}
-									</SvgText>
-									<SvgText x={x} y={187}>
-										R{i + 1}
-									</SvgText>
-								</g>
-							);
-						})}
-						<SvgText x={180} y={214}>
-							{l("Height ratio", "柱高比")}: {apparentBarRatio(20, 10, minimum)}
-							× · {l("values", "数值")}: 2×
-						</SvgText>
-					</Diagram>
-				</div>
-			)}
-			<button
-				type="button"
-				className="rounded-xl border px-4 py-3 text-sm disabled:opacity-60"
-				disabled={supported}
-				onClick={() => setRepaired((prev) => [...prev, check.id])}
-			>
-				{supported
-					? l("Supported or repaired · retain", "支持或已修复 · 保留")
-					: l("Repair selected issue", "修复所选问题")}
-			</button>
-			<p data-audit-first>
-				{pending.length
-					? `${l("First unresolved check", "首个未解决检查")}: ${pending[0].label[language]}`
-					: l(
-							"Scripted defects repaired; unknown evidence still remains",
-							"示例缺陷已修复；未知证据仍存在",
+						{supported
+							? l("Supported or repaired · retain", "支持或已修复 · 保留")
+							: l("Repair selected issue", "修复所选问题")}
+					</button>
+					<p data-audit-first>
+						{pending.length
+							? `${l("First unresolved check", "首个未解决检查")}: ${pending[0].label[language]}`
+							: l(
+									"Scripted defects repaired; unknown evidence still remains",
+									"示例缺陷已修复；未知证据仍存在",
+								)}
+					</p>
+					<Note>
+						{l(
+							"Check order helps locate the first unsupported step. Repairing a later inference does not fix an earlier date mismatch. Inspect the actual axis, not just the labels. These are fixed examples with supplied repairs, not automatic analysis of arbitrary reports.",
+							"检查顺序有助定位首个无依据步骤。修复后续推断不会修复先前日期不符。应检查实际轴，而非仅看标签。这些是带给定修复的固定示例，不是对任意报告的自动分析。",
 						)}
-			</p>
-			<Note>
-				{l(
-					"Check order helps locate the first unsupported step. Repairing a later inference does not fix an earlier date mismatch. Inspect the actual axis, not just the labels. These are fixed examples with supplied repairs, not automatic analysis of arbitrary reports.",
-					"检查顺序有助定位首个无依据步骤。修复后续推断不会修复先前日期不符。应检查实际轴，而非仅看标签。这些是带给定修复的固定示例，不是对任意报告的自动分析。",
-				)}
-			</Note>
-		</SceneLayout>
+					</Note>
+				</>
+			}
+		/>
 	);
 }
 export function AuditSignoffScene({ locale }: Props) {
@@ -428,6 +487,17 @@ export function AuditSignoffScene({ locale }: Props) {
 	const missing = data.signoff.filter((f) => !included.includes(f.id));
 	return (
 		<SceneLayout
+			companion={
+				<ResearchArtifactPreview
+					locale={locale}
+					record={data.packet}
+					headline={l("A bounded review conclusion", "有边界的审核结论")}
+					caption={data.signoff
+						.filter((f) => included.includes(f.id))
+						.map((f) => f.text[language])
+						.join(" · ")}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l("Bounded signoff fields", "有边界签核字段")}
@@ -469,41 +539,44 @@ export function AuditSignoffScene({ locale }: Props) {
 					))}
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<div className="rounded-2xl border p-4 text-sm leading-relaxed">
-				<strong>{l("Signoff preview", "签核预览")}</strong>
-				<div data-audit-signoff>
-					{data.signoff
-						.filter((f) => included.includes(f.id))
-						.map((f) => (
-							<p key={f.id}>
-								<strong>{f.label[language]}: </strong>
-								{f.text[language]}
-							</p>
-						))}
-				</div>
-			</div>
-			<p data-audit-signoff-status>
-				{missing.length
-					? `${l("Signoff is missing", "签核缺少")}: ${missing.map((f) => f.label[language]).join(" · ")}`
-					: l(
-							"Ready for human review; unknowns and reopening conditions remain explicit",
-							"可供人工审核；未知项与重审条件仍明确",
+			details={
+				<>
+					<Context locale={locale} />
+					<div className="rounded-2xl border p-4 text-sm leading-relaxed">
+						<strong>{l("Signoff preview", "签核预览")}</strong>
+						<div data-audit-signoff>
+							{data.signoff
+								.filter((f) => included.includes(f.id))
+								.map((f) => (
+									<p key={f.id}>
+										<strong>{f.label[language]}: </strong>
+										{f.text[language]}
+									</p>
+								))}
+						</div>
+					</div>
+					<p data-audit-signoff-status>
+						{missing.length
+							? `${l("Signoff is missing", "签核缺少")}: ${missing.map((f) => f.label[language]).join(" · ")}`
+							: l(
+									"Ready for human review; unknowns and reopening conditions remain explicit",
+									"可供人工审核；未知项与重审条件仍明确",
+								)}
+					</p>
+					<Note>
+						{l(
+							"This signoff starts from a supplied repaired example, not an assumption that every earlier control was completed. It retains the valid R1 fact, names repairs, states unresolved evidence and identifies what would reopen review. Saying only 'uncertain' or discarding the whole packet would fail to do that.",
+							"此签核从给定修复示例出发，不假定此前每个控件都已完成。它保留有效 R1 事实、说明修复、列出未解决证据及重审条件。仅说“不确定”或丢弃整份研究包，都不能做到这些。",
 						)}
-			</p>
-			<Note>
-				{l(
-					"This signoff starts from a supplied repaired example, not an assumption that every earlier control was completed. It retains the valid R1 fact, names repairs, states unresolved evidence and identifies what would reopen review. Saying only 'uncertain' or discarding the whole packet would fail to do that.",
-					"此签核从给定修复示例出发，不假定此前每个控件都已完成。它保留有效 R1 事实、说明修复、列出未解决证据及重审条件。仅说“不确定”或丢弃整份研究包，都不能做到这些。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"The local preview does not save an audit or certify prose. In the following exercise, your actual audit and signoff writing remain available for self or human review; numerical checks are graded separately.",
-					"本演示展示已编写的教学示例，可自由比较各步骤。",
-				)}
-			</p>
-		</SceneLayout>
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Compare these authored teaching examples freely. This local preview does not save an audit or certify prose.",
+							"本演示展示已编写的教学示例，可自由比较各步骤。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

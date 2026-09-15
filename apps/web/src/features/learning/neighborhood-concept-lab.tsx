@@ -7,6 +7,7 @@ import {
 	NeighborhoodExploreScene,
 	NeighborhoodQualityScene,
 } from "./neighborhood-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -17,12 +18,12 @@ const scenes = [
 			"Select a strike/expiry cell, focus an expiry and change the reference spot without changing observed volume.",
 			"选择行权价/到期单元格，聚焦到期日，并改变参考现价而不改变观测量。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Move the spot reference while the supplied contract activity stays fixed.",
 				"移动现价参考，给定合约活动保持不变。",
 			],
-		],
+		]),
 		Component: NeighborhoodExploreScene,
 	},
 	{
@@ -36,12 +37,12 @@ const scenes = [
 			"Compare two supplied layouts. Watch the nonzero-cell count while total activity and peak stay fixed.",
 			"比较两个给定布局，观察非零格数量，同时总活动与峰值保持固定。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Compare breadth as well as peak and total activity across the two neighborhoods.",
 				"比较两个邻域时，同时观察广度、峰值与总活动。",
 			],
-		],
+		]),
 		Component: NeighborhoodBreadthScene,
 	},
 	{
@@ -55,12 +56,12 @@ const scenes = [
 			"Inspect missing, prior-session and outside-scope rows. Keep known subtotals separate from complete totals.",
 			"检查缺失、前日与范围外行，区分已知小计与完整总和。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"A large visible value can remain outside the declared comparison scope.",
 				"可见的大数值，也可能不属于给定比较范围。",
 			],
-		],
+		]),
 		Component: NeighborhoodQualityScene,
 	},
 ] as const satisfies readonly ConceptScene[];

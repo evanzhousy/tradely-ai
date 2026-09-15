@@ -7,6 +7,7 @@ import {
 	ExposureUnitsScene,
 	PortfolioExposureContext,
 } from "./portfolio-exposure-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -17,12 +18,12 @@ const scenes = [
 			"Combine same-underlying stock and signed option delta. Adjust stock, then reveal the missing put's supplied sensitivity.",
 			"合并同一标的股票与带符号期权 Delta。调整股票，再查看缺失看跌期权的已提供敏感度。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"A hedge changes covered exposure but cannot fill missing information about another holding.",
 				"对冲改变已覆盖敞口，却不能补全另一持仓的缺失信息。",
 			],
-		],
+		]),
 		Component: ExposureCoverageScene,
 	},
 	{
@@ -36,12 +37,12 @@ const scenes = [
 			"Use only the declared stock-and-call subset. Change one small local assumption at a time and inspect each Taylor term.",
 			"仅使用声明的股票与看涨期权子集。逐一改变小幅局部假设，检查各泰勒项。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Changing volatility or time affects the example even when local delta has been offset.",
 				"即使局部 Delta 已抵消，波动率或时间变化仍会影响示例。",
 			],
-		],
+		]),
 		Component: ExposureRiskScene,
 	},
 	{
@@ -52,12 +53,12 @@ const scenes = [
 			"Convert the same vega quote between scales. A stale timestamp or missing sensitivity cannot become a current zero.",
 			"换算同一 Vega 报价的不同尺度。陈旧时间或缺失敏感度不能变成当前零值。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Normalize units and timestamps before interpreting an aggregated sensitivity.",
 				"解读汇总敏感度前，先统一单位与时间戳。",
 			],
-		],
+		]),
 		Component: ExposureUnitsScene,
 	},
 ] as const satisfies readonly ConceptScene[];

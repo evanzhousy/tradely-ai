@@ -8,6 +8,7 @@ import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
+import { CashStockTransfer } from "./cash-stock-transfer";
 import {
 	ChoiceField,
 	Diagram,
@@ -23,6 +24,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
 import {
 	cashSettlement,
 	cashTerms,
@@ -191,87 +193,92 @@ export function ClosingExerciseScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<FieldGroup>
-				<TypeField
-					locale={locale}
-					type={type}
-					onChange={(value) => {
-						setType(value);
-						playback.select(playback.frame);
-					}}
-				/>
-				<ChoiceField
-					label={l("Route to compare", "要比较的路径")}
-					value={route}
-					options={[
-						["close", l("Sell to close", "卖出平仓")],
-						["exercise", l("Exercise", "行权")],
-					]}
-					onChange={(value) => {
-						setRoute(value);
-						playback.select(playback.frame);
-					}}
-				/>
-				<ChoiceField
-					label={l("Example stage", "示例阶段")}
-					value={String(playback.frame)}
-					options={[
-						["0", l("1. Hold", "1. 持有")],
-						["1", l("2. Route", "2. 路径")],
-						["2", l("3. Outcome", "3. 结果")],
-					]}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-			</FieldGroup>
-			<div>
-				<PlaybackButton
-					playing={playback.playing}
-					onClick={playback.toggle}
-					l={l}
-				/>
-			</div>
-			<div aria-live="polite" className="flex flex-col gap-3">
-				<Badge className="self-start" variant="secondary">
-					{route === "close"
-						? l("Trade", "交易")
-						: l("Exercise → assignment → delivery", "行权 → 指派 → 交付")}
-				</Badge>
-				<p className="font-semibold text-lg" data-exit-status>
-					{done
-						? route === "close"
-							? l(
-									"The long option was sold, not exercised.",
-									"期权多头已卖出，没有行权。",
-								)
-							: l(
-									"The right was exercised; an assigned writer fulfills the obligation.",
-									"权利已被行使，被指派的卖方履行义务。",
-								)
-						: l(
-								"Step through the example to reveal its supplied outcome.",
-								"逐步查看示例，显示给定的结果。",
-							)}
-				</p>
-				<p className="text-muted-foreground text-sm leading-7">
-					{route === "close"
-						? l(
-								"This example supplies a completed closing sale at $2.50/share × 100 = $250 received. An unfilled order would not establish a closed position. Sale proceeds alone do not establish profit.",
-								"本例给定一笔已完成的平仓出售：$2.50/股 × 100 = 收到 $250。未成交订单不能证明已平仓，仅凭出售所得也不能确定利润。",
-							)
-						: l(
-								"Valid exercise and delivery are assumed here: strike $50 × 100 shares = $5,000 gross exercise cash. Calls receive shares; puts deliver shares. This amount is separate from purchase premium and profit.",
-								"本例假定行权与交付有效：行权价 $50 × 100 股 = $5,000 行权总金额。看涨接收股票，看跌交付股票。该金额与购买权利金及盈亏不同。",
-							)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"An option can also expire without exercise. Automatic-exercise rules and broker instructions are product-specific. The next scene separates the relevant time windows.",
-					"期权也可能未行权就到期。自动行权规则与券商指令取决于产品。下一场景将区分相关时间窗口。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<TypeField
+						locale={locale}
+						type={type}
+						onChange={(value) => {
+							setType(value);
+							playback.select(playback.frame);
+						}}
+					/>
+					<ChoiceField
+						label={l("Route to compare", "要比较的路径")}
+						value={route}
+						options={[
+							["close", l("Sell to close", "卖出平仓")],
+							["exercise", l("Exercise", "行权")],
+						]}
+						onChange={(value) => {
+							setRoute(value);
+							playback.select(playback.frame);
+						}}
+					/>
+					<ChoiceField
+						label={l("Example stage", "示例阶段")}
+						value={String(playback.frame)}
+						options={[
+							["0", l("1. Hold", "1. 持有")],
+							["1", l("2. Route", "2. 路径")],
+							["2", l("3. Outcome", "3. 结果")],
+						]}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div>
+						<PlaybackButton
+							playing={playback.playing}
+							onClick={playback.toggle}
+							l={l}
+						/>
+					</div>
+					<div aria-live="polite" className="flex flex-col gap-3">
+						<Badge className="self-start" variant="secondary">
+							{route === "close"
+								? l("Trade", "交易")
+								: l("Exercise → assignment → delivery", "行权 → 指派 → 交付")}
+						</Badge>
+						<p className="font-semibold text-lg" data-exit-status>
+							{done
+								? route === "close"
+									? l(
+											"The long option was sold, not exercised.",
+											"期权多头已卖出，没有行权。",
+										)
+									: l(
+											"The right was exercised; an assigned writer fulfills the obligation.",
+											"权利已被行使，被指派的卖方履行义务。",
+										)
+								: l(
+										"Step through the example to reveal its supplied outcome.",
+										"逐步查看示例，显示给定的结果。",
+									)}
+						</p>
+						<p className="text-muted-foreground text-sm leading-7">
+							{route === "close"
+								? l(
+										"This example supplies a completed closing sale at $2.50/share × 100 = $250 received. An unfilled order would not establish a closed position. Sale proceeds alone do not establish profit.",
+										"本例给定一笔已完成的平仓出售：$2.50/股 × 100 = 收到 $250。未成交订单不能证明已平仓，仅凭出售所得也不能确定利润。",
+									)
+								: l(
+										"Valid exercise and delivery are assumed here: strike $50 × 100 shares = $5,000 gross exercise cash. Calls receive shares; puts deliver shares. This amount is separate from purchase premium and profit.",
+										"本例假定行权与交付有效：行权价 $50 × 100 股 = $5,000 行权总金额。看涨接收股票，看跌交付股票。该金额与购买权利金及盈亏不同。",
+									)}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"An option can also expire without exercise. Automatic-exercise rules and broker instructions are product-specific. The next scene separates the relevant time windows.",
+							"期权也可能未行权就到期。自动行权规则与券商指令取决于产品。下一场景将区分相关时间窗口。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -411,86 +418,91 @@ export function ExerciseTimingScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<FieldGroup>
-				<ChoiceField
-					label={l("Exercise style", "行权方式")}
-					value={style}
-					options={[
-						["american", l("American", "美式")],
-						["european", l("European", "欧式")],
-					]}
-					onChange={(value) => {
-						setStyle(value);
-						playback.select(playback.frame);
-					}}
-				/>
-				<SelectField
-					label={l("Schedule stop", "时间节点")}
-					value={String(playback.frame)}
-					options={exerciseSchedule.map(
-						(stop, i) =>
-							[String(i), locale === "zh" ? stop.zh : stop.en] as const,
-					)}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-			</FieldGroup>
-			<div>
-				<PlaybackButton
-					playing={playback.playing}
-					onClick={playback.toggle}
-					l={l}
-				/>
-			</div>
-			<div aria-live="polite" className="flex flex-col gap-3">
-				<Badge className="self-start" variant="secondary" data-calendar-dte>
-					{moment.dte} DTE
-				</Badge>
-				<h5 className="font-semibold text-lg">
-					{locale === "zh" ? moment.zh : moment.en}
-				</h5>
-				<p className="text-sm" data-trading-window>
-					{l("Trading window", "交易窗口")}:{" "}
-					{moment.tradingOpen ? l("open", "开放") : l("closed", "关闭")}
-				</p>
-				<p className="font-medium text-sm" data-exercise-window>
-					{moment.exerciseOpen
-						? l(
-								"Within this contract's exercise window.",
-								"处于本合约的行权时段内。",
-							)
-						: l(
-								"Outside this contract's exercise window.",
-								"不在本合约的行权时段内。",
+			controls={
+				<FieldGroup>
+					<ChoiceField
+						label={l("Exercise style", "行权方式")}
+						value={style}
+						options={[
+							["american", l("American", "美式")],
+							["european", l("European", "欧式")],
+						]}
+						onChange={(value) => {
+							setStyle(value);
+							playback.select(playback.frame);
+						}}
+					/>
+					<SelectField
+						label={l("Schedule stop", "时间节点")}
+						value={String(playback.frame)}
+						options={exerciseSchedule.map(
+							(stop, i) =>
+								[String(i), locale === "zh" ? stop.zh : stop.en] as const,
+						)}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div>
+						<PlaybackButton
+							playing={playback.playing}
+							onClick={playback.toggle}
+							l={l}
+						/>
+					</div>
+					<div aria-live="polite" className="flex flex-col gap-3">
+						<Badge className="self-start" variant="secondary" data-calendar-dte>
+							{moment.dte} DTE
+						</Badge>
+						<h5 className="font-semibold text-lg">
+							{locale === "zh" ? moment.zh : moment.en}
+						</h5>
+						<p className="text-sm" data-trading-window>
+							{l("Trading window", "交易窗口")}:{" "}
+							{moment.tradingOpen ? l("open", "开放") : l("closed", "关闭")}
+						</p>
+						<p className="font-medium text-sm" data-exercise-window>
+							{moment.exerciseOpen
+								? l(
+										"Within this contract's exercise window.",
+										"处于本合约的行权时段内。",
+									)
+								: l(
+										"Outside this contract's exercise window.",
+										"不在本合约的行权时段内。",
+									)}
+						</p>
+					</div>
+					<Alert>
+						<AlertTitle>
+							{moment.dte === 0
+								? l(
+										"0DTE means today, not no risk",
+										"0DTE 表示今天到期，不代表没有风险",
+									)
+								: l(
+										"Style describes timing, not geography",
+										"行权方式描述时间，不是地理位置",
+									)}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The example counts calendar days; its final three stops all occur on the expiry date. Trading, exercise instructions, assignment and settlement have different clocks. Processing and obligations can continue after an exercise deadline.",
+								"本例按日历日期计数，最后三个节点都在到期日。交易、行权指令、指派与结算各有不同的时间安排；行权截止后，处理流程与义务仍可能继续。",
 							)}
-				</p>
-			</div>
-			<Alert>
-				<AlertTitle>
-					{moment.dte === 0
-						? l(
-								"0DTE means today, not no risk",
-								"0DTE 表示今天到期，不代表没有风险",
-							)
-						: l(
-								"Style describes timing, not geography",
-								"行权方式描述时间，不是地理位置",
-							)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The example counts calendar days; its final three stops all occur on the expiry date. Trading, exercise instructions, assignment and settlement have different clocks. Processing and obligations can continue after an exercise deadline.",
-						"本例按日历日期计数，最后三个节点都在到期日。交易、行权指令、指派与结算各有不同的时间安排；行权截止后，处理流程与义务仍可能继续。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"This fictional schedule puts the last trading time before the final exercise window. Actual product rules and broker deadlines control the real sequence. An open trading window does not guarantee a fill; exercise eligibility is not an automatic-exercise prediction.",
-					"此虚构安排将最后交易时间设在最终行权时段之前。真实顺序由产品规则与券商截止时间决定。交易窗口开放不保证成交，具备行权时间条件也不代表预测会自动行权。",
-				)}
-			</p>
-		</SceneLayout>
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"This fictional schedule puts the last trading time before the final exercise window. Actual product rules and broker deadlines control the real sequence. An open trading window does not guarantee a fill; exercise eligibility is not an automatic-exercise prediction.",
+							"此虚构安排将最后交易时间设在最终行权时段之前。真实顺序由产品规则与券商截止时间决定。交易窗口开放不保证成交，具备行权时间条件也不代表预测会自动行权。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -546,6 +558,23 @@ export function SettlementComparisonScene({ locale }: Props) {
 	const holderCash = isCash ? cash.cash : physical.cashToHolder;
 	return (
 		<SceneLayout
+			companion={
+				<CashStockTransfer
+					locale={locale}
+					cash={holderCash}
+					shares={isCash ? 0 : physical.sharesToHolder}
+					formatCash={money}
+					phase={
+						isCash
+							? l("Cash-settled index example", "现金结算指数示例")
+							: l("Physical stock example", "实物股票示例")
+					}
+					note={l(
+						"Amounts follow the selected product terms. No stock delivery for cash settlement.",
+						"金额遵循所选产品条款，现金结算不交付股票。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={
@@ -675,153 +704,164 @@ export function SettlementComparisonScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
-				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Settlement route", "结算方式")}
-						</p>
-						<p className="scene-outcome-value">
-							{isCash ? l("Cash", "现金") : l("Physical", "实物")}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{holderCash === null
-								? l("Holder cash", "持有人现金")
-								: holderCash < 0
-									? l("Holder pays", "持有人支付")
-									: l("Holder receives", "持有人收到")}
-						</p>
-						<p className="scene-outcome-value">
-							{holderCash === null ? "—" : money(Math.abs(holderCash))}
-						</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Delivery", "交付")}</p>
-						<p className="scene-outcome-value">
-							{isCash
-								? l("No shares delivered", "不交付股票")
-								: `${physical.sharesToHolder > 0 ? l("Receives", "接收") : l("Delivers", "交付")} ${Math.abs(physical.sharesToHolder)} ${l("shares", "股")}`}
-						</p>
-					</div>
-				</>
-			}
-		>
-			<FieldGroup>
-				<ChoiceField
-					label={l("Settlement product", "结算产品")}
-					value={kind}
-					options={[
-						["cash", l("Cash · index example", "现金 · 指数示例")],
-						["physical", l("Physical · stock example", "实物 · 股票示例")],
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Settlement route", "结算方式")}</>,
+							value: <>{isCash ? l("Cash", "现金") : l("Physical", "实物")}</>,
+						},
+						{
+							id: "result-2",
+							label: (
+								<>
+									{holderCash === null
+										? l("Holder cash", "持有人现金")
+										: holderCash < 0
+											? l("Holder pays", "持有人支付")
+											: l("Holder receives", "持有人收到")}
+								</>
+							),
+							value: (
+								<>{holderCash === null ? "—" : money(Math.abs(holderCash))}</>
+							),
+						},
+						{
+							id: "result-3",
+							label: <>{l("Delivery", "交付")}</>,
+							value: (
+								<>
+									{isCash
+										? l("No shares delivered", "不交付股票")
+										: `${physical.sharesToHolder > 0 ? l("Receives", "接收") : l("Delivers", "交付")} ${Math.abs(physical.sharesToHolder)} ${l("shares", "股")}`}
+								</>
+							),
+						},
 					]}
-					onChange={setKind}
 				/>
-				<TypeField locale={locale} type={type} onChange={setType} />
-				<RangeControl
-					inputScale={1}
-					label={l("Contract quantity", "合约张数")}
-					value={count}
-					display={String(count)}
-					min={1}
-					max={3}
-					onChange={setCount}
-				/>
-				{isCash ? (
-					<>
-						<SelectField
-							label={l("Official-reference example", "官方参考值示例")}
-							value={String(example)}
-							options={[
-								["0", l("Above strike · 4,025", "高于行权价 · 4,025")],
-								["1", l("Below strike · 3,990", "低于行权价 · 3,990")],
-								["2", l("Official reference missing", "官方参考值缺失")],
-							]}
-							onChange={(value) => setExample(Number(value))}
-						/>
-						<ChoiceField
-							label={l("Inspect a reference", "检查参考值")}
-							value={inspect}
-							options={[
-								["official", l("Official", "官方")],
-								["last", l("Last display", "最后显示值")],
-							]}
-							onChange={setInspect}
-						/>
-					</>
-				) : null}
-			</FieldGroup>
-			<div className="flex flex-col gap-3" aria-live="polite">
-				<p className="text-muted-foreground text-sm">
-					{isCash
-						? l("Cash payoff to holder", "持有人收到的现金支付")
-						: l("Holder cash movement", "持有人现金变动")}
-				</p>
-				<p className="font-mono text-3xl" data-settlement-cash>
-					{isCash
-						? cash.cash === null
-							? "—"
-							: money(cash.cash)
-						: money(physical.cashToHolder)}
-				</p>
-				{isCash ? (
-					<>
-						<p className="font-mono text-sm" data-settlement-difference>
-							{l("Settlement − strike", "结算参考值 − 行权价")}:{" "}
-							{cash.difference === null ? "—" : cash.difference}{" "}
-							{l("points", "点")}
+			}
+			controls={
+				<FieldGroup>
+					<ChoiceField
+						label={l("Settlement product", "结算产品")}
+						value={kind}
+						options={[
+							["cash", l("Cash · index example", "现金 · 指数示例")],
+							["physical", l("Physical · stock example", "实物 · 股票示例")],
+						]}
+						onChange={setKind}
+					/>
+					<TypeField locale={locale} type={type} onChange={setType} />
+					<RangeControl
+						inputScale={1}
+						label={l("Contract quantity", "合约张数")}
+						value={count}
+						display={String(count)}
+						min={1}
+						max={3}
+						onChange={setCount}
+					/>
+					{isCash ? (
+						<>
+							<SelectField
+								label={l("Official-reference example", "官方参考值示例")}
+								value={String(example)}
+								options={[
+									["0", l("Above strike · 4,025", "高于行权价 · 4,025")],
+									["1", l("Below strike · 3,990", "低于行权价 · 3,990")],
+									["2", l("Official reference missing", "官方参考值缺失")],
+								]}
+								onChange={(value) => setExample(Number(value))}
+							/>
+							<ChoiceField
+								label={l("Inspect a reference", "检查参考值")}
+								value={inspect}
+								options={[
+									["official", l("Official", "官方")],
+									["last", l("Last display", "最后显示值")],
+								]}
+								onChange={setInspect}
+							/>
+						</>
+					) : null}
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div className="flex flex-col gap-3" aria-live="polite">
+						<p className="text-muted-foreground text-sm">
+							{isCash
+								? l("Cash payoff to holder", "持有人收到的现金支付")
+								: l("Holder cash movement", "持有人现金变动")}
 						</p>
-						<p className="text-sm" data-inspected-reference>
-							{inspect === "official"
-								? l("Official reference", "官方参考值")
-								: l(
-										"Last display (not used in payoff)",
-										"最后显示值（不用于支付计算）",
-									)}
-							:{" "}
-							{inspect === "last"
-								? number(cashTerms.lastDisplay)
-								: official === null
-									? l("Missing", "缺失")
-									: number(official)}
+						<p className="font-mono text-3xl" data-settlement-cash>
+							{isCash
+								? cash.cash === null
+									? "—"
+									: money(cash.cash)
+								: money(physical.cashToHolder)}
 						</p>
-						<p className="text-muted-foreground text-sm leading-7">
-							{cash.cash === null
-								? l(
-										"The last display is available, but the official reference is missing. The cash payoff remains unknown; it is not zero and cannot be filled from the last display.",
-										"最后显示值可用，但官方参考值缺失。现金支付仍未知，不能当作零，也不能用最后显示值补齐。",
-									)
-								: type === "CALL"
+						{isCash ? (
+							<>
+								<p className="font-mono text-sm" data-settlement-difference>
+									{l("Settlement − strike", "结算参考值 − 行权价")}:{" "}
+									{cash.difference === null ? "—" : cash.difference}{" "}
+									{l("points", "点")}
+								</p>
+								<p className="text-sm" data-inspected-reference>
+									{inspect === "official"
+										? l("Official reference", "官方参考值")
+										: l(
+												"Last display (not used in payoff)",
+												"最后显示值（不用于支付计算）",
+											)}
+									:{" "}
+									{inspect === "last"
+										? number(cashTerms.lastDisplay)
+										: official === null
+											? l("Missing", "缺失")
+											: number(official)}
+								</p>
+								<p className="text-muted-foreground text-sm leading-7">
+									{cash.cash === null
+										? l(
+												"The last display is available, but the official reference is missing. The cash payoff remains unknown; it is not zero and cannot be filled from the last display.",
+												"最后显示值可用，但官方参考值缺失。现金支付仍未知，不能当作零，也不能用最后显示值补齐。",
+											)
+										: type === "CALL"
+											? l(
+													"Call: max(official settlement − strike, 0) × $100/point × contracts. Keep a negative raw difference visible before flooring the payoff at zero.",
+													"看涨：max(官方结算值 − 行权价, 0) × $100/点 × 张数。先保留原始负差值，再将支付下限设为零。",
+												)
+											: l(
+													"Put: max(strike − official settlement, 0) × $100/point × contracts. The raw settlement-minus-strike difference is shown separately.",
+													"看跌：max(行权价 − 官方结算值, 0) × $100/点 × 张数。另行显示结算参考值减行权价的原始差值。",
+												)}
+								</p>
+							</>
+						) : (
+							<p className="text-sm leading-7" data-physical-delivery>
+								{physical.sharesToHolder > 0
 									? l(
-											"Call: max(official settlement − strike, 0) × $100/point × contracts. Keep a negative raw difference visible before flooring the payoff at zero.",
-											"看涨：max(官方结算值 − 行权价, 0) × $100/点 × 张数。先保留原始负差值，再将支付下限设为零。",
+											`The holder receives ${physical.sharesToHolder} shares and pays ${money(-physical.cashToHolder)}.`,
+											`持有人接收 ${physical.sharesToHolder} 股，支付 ${money(-physical.cashToHolder)}。`,
 										)
 									: l(
-											"Put: max(strike − official settlement, 0) × $100/point × contracts. The raw settlement-minus-strike difference is shown separately.",
-											"看跌：max(行权价 − 官方结算值, 0) × $100/点 × 张数。另行显示结算参考值减行权价的原始差值。",
+											`The holder delivers ${-physical.sharesToHolder} shares and receives ${money(physical.cashToHolder)}.`,
+											`持有人交付 ${-physical.sharesToHolder} 股，收到 ${money(physical.cashToHolder)}。`,
 										)}
-						</p>
-					</>
-				) : (
-					<p className="text-sm leading-7" data-physical-delivery>
-						{physical.sharesToHolder > 0
-							? l(
-									`The holder receives ${physical.sharesToHolder} shares and pays ${money(-physical.cashToHolder)}.`,
-									`持有人接收 ${physical.sharesToHolder} 股，支付 ${money(-physical.cashToHolder)}。`,
-								)
-							: l(
-									`The holder delivers ${-physical.sharesToHolder} shares and receives ${money(physical.cashToHolder)}.`,
-									`持有人交付 ${-physical.sharesToHolder} 股，收到 ${money(physical.cashToHolder)}。`,
-								)}
+							</p>
+						)}
+					</div>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"These are different, explicitly specified teaching products. Exercise style does not determine settlement method. Cash payoff and gross physical exercise cash are different quantities; neither is profit. Actual products specify their own settlement reference and delivery terms.",
+							"这些是条款明确但不同的教学产品。行权方式不能决定结算方式。现金支付与实物行权总金额是不同量，都不是利润；真实产品各自规定结算参考值与交付条款。",
+						)}
 					</p>
-				)}
-			</div>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"These are different, explicitly specified teaching products. Exercise style does not determine settlement method. Cash payoff and gross physical exercise cash are different quantities; neither is profit. Actual products specify their own settlement reference and delivery terms.",
-					"这些是条款明确但不同的教学产品。行权方式不能决定结算方式。现金支付与实物行权总金额是不同量，都不是利润；真实产品各自规定结算参考值与交付条款。",
-				)}
-			</p>
-		</SceneLayout>
+				</>
+			}
+		/>
 	);
 }

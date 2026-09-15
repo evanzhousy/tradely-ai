@@ -6,6 +6,7 @@ import {
 	SourceTimeScene,
 	UnitsScene,
 } from "./contract-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -16,12 +17,12 @@ const scenes = [
 			"Select a field in the diagram to find out what it describes.",
 			"点击图中的字段，了解它描述什么。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"The highlighted field describes one part of this contract. Product terms define the units and settlement.",
 				"高亮字段描述合约的一部分，产品条款决定单位与结算方式。",
 			],
-		],
+		]),
 		Component: AnatomyScene,
 	},
 	{
@@ -32,12 +33,12 @@ const scenes = [
 			"Change one field on B. Watch which differences matter.",
 			"改变 B 的一个字段，观察哪些差异影响合约身份。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Change the expiry: the contract changes. Change only the observation: its identity stays the same.",
 				"改变到期日会改变合约；仅改变观测时点，合约身份不变。",
 			],
-		],
+		]),
 		Component: IdentityScene,
 	},
 	{
@@ -48,12 +49,12 @@ const scenes = [
 			"Add a contract or move the price slider. Follow what changes.",
 			"增加一张合约，或拖动价格滑块，观察变化。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"More contracts scale both premium and deliverable units. Buying an option does not deliver shares immediately.",
 				"张数增加会同时放大权利金与交付数量；买入期权不会立即交付股票。",
 			],
-		],
+		]),
 		Component: UnitsScene,
 	},
 	{
@@ -64,12 +65,12 @@ const scenes = [
 			"Drag the timeline through three supplied snapshots.",
 			"拖动时间轴，查看三个给定快照。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"The contract stays fixed while its price, volume and reporting time change.",
 				"合约不变，价格、成交量与报告时间可以改变。",
 			],
-		],
+		]),
 		Component: SourceTimeScene,
 	},
 ] as const satisfies readonly ConceptScene[];

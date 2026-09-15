@@ -5,6 +5,7 @@ import {
 	PremiumUnitsScene,
 	ValuePartsScene,
 } from "./payoff-concept-scenes";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -15,7 +16,7 @@ const scenes = [
 			"Change the option price and quantity. Keep the units attached to every amount.",
 			"改变期权价格与数量，观察每笔金额对应的单位。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"One contract: $3 per share × 100 = $300 premium.",
 				"一张合约：每股 $3 × 100 = $300 权利金。",
@@ -28,7 +29,7 @@ const scenes = [
 				"At $4.50 per share, two contracts cost $900 before fees. The stock-price reference stays fixed.",
 				"每股 $4.50 时，两张合约费用前成本为 $900，参考股价保持不变。",
 			],
-		],
+		]),
 		Component: PremiumUnitsScene,
 	},
 	{
@@ -39,7 +40,7 @@ const scenes = [
 			"Compare supplied examples before expiry with intrinsic value at expiry, holding spot fixed.",
 			"在标的价格保持不变的比较中，查看到期前示例报价与到期内在价值。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Before expiry, an option can have extrinsic value even with no intrinsic value.",
 				"到期前，即使内在价值为零，期权仍可有外在价值。",
@@ -52,7 +53,7 @@ const scenes = [
 				"At expiry, extrinsic value is zero in this model. This is a comparison, not a forecast price path.",
 				"本模型到期时外在价值为零；这是对比示例，不是价格路径预测。",
 			],
-		],
+		]),
 		Component: ValuePartsScene,
 	},
 	{
@@ -63,7 +64,7 @@ const scenes = [
 			"Drag the stock price along the chart. See payoff and profit respond together.",
 			"沿图表拖动股票价格，观察支付价值与盈亏如何同时变化。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Start at the strike: expiration payoff is zero, but the premium has been paid.",
 				"从行权价开始：到期支付价值为零，但权利金已经支付。",
@@ -80,7 +81,7 @@ const scenes = [
 				"Beyond breakeven, payoff exceeds the premium. The solid line shows profit after that cost.",
 				"越过盈亏平衡点后，支付价值超过权利金，实线显示扣除成本后的盈亏。",
 			],
-		],
+		]),
 		Component: ExpirationProfitScene,
 	},
 ] as const satisfies readonly ConceptScene[];

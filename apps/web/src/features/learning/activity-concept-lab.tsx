@@ -7,6 +7,7 @@ import {
 	WindowComparisonScene,
 } from "./activity-concept-scenes";
 import { ConceptLab, type ConceptScene } from "./concept-lab";
+import { teachingSteps } from "./visual-step";
 
 const scenes = [
 	{
@@ -20,12 +21,12 @@ const scenes = [
 			"Hold volume fixed and explore a hypothetical comparison value. Relative volume and volume/OI answer different questions.",
 			"保持成交量不变，探索假设比较值。相对成交量与成交量/OI 回答不同问题。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Similar activity can produce very different ratios when the baseline changes.",
 				"基准变化时，相近成交量可以产生截然不同的比率。",
 			],
-		],
+		]),
 		Component: DenominatorScene,
 	},
 	{
@@ -36,12 +37,12 @@ const scenes = [
 			"Inspect the current window, historical window and coverage before accepting a ratio.",
 			"接受比率前，检查当前窗口、历史窗口与覆盖情况。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"Compare activity over compatible session windows before interpreting the ratio.",
 				"先用相容的日内窗口比较成交，再解读比率。",
 			],
-		],
+		]),
 		Component: WindowComparisonScene,
 	},
 	{
@@ -55,12 +56,12 @@ const scenes = [
 			"Move the threshold and switch the metric. Compare an equal-row average with a pooled ratio on the selected population.",
 			"移动阈值并切换指标，在选定人群内比较等权行均值与汇总比率。",
 		],
-		demonstration: [
+		steps: teachingSteps([
 			[
 				"A threshold changes which rows enter the comparison. The selected population stays visible.",
 				"阈值改变进入比较的行，筛选后的群体始终可见。",
 			],
-		],
+		]),
 		Component: ScreeningScene,
 	},
 ] as const satisfies readonly ConceptScene[];

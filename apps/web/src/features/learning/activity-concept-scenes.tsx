@@ -180,85 +180,96 @@ export function DenominatorScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs">
-				{sample.contract}
-				<br />
-				{data.date} · {l("Fictional record", "虚构记录")}
-			</p>
-			<FieldGroup>
-				<SelectField
-					label={l("Compare a record", "比较记录")}
-					value={id}
-					options={data.samples.map((s) => [
-						s.id,
-						`${s.id} · ${number(s.volume)} ${l("contracts", "张")}`,
-					])}
-					onChange={(value) => {
-						setId(value);
-						setCustom(null);
-						setAvailable("known");
-					}}
-				/>
-				<MetricField
-					locale={locale}
-					metric={metric}
-					onChange={(value) => {
-						setMetric(value);
-						setCustom(null);
-						setAvailable("known");
-					}}
-				/>
-				<ChoiceField
-					label={l("Denominator evidence", "分母证据")}
-					value={available}
-					options={[
-						["known", l("Supplied", "已提供")],
-						["missing", l("Missing", "缺失")],
-					]}
-					onChange={setAvailable}
-				/>
-				{denominator !== null ? (
-					<RangeControl
-						inputScale={1}
-						label={l("What-if denominator", "假设分母")}
-						value={denominator}
-						display={number(denominator)}
-						min={0}
-						max={data.denominatorMax}
-						onChange={change}
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Compare a record", "比较记录")}
+						value={id}
+						options={data.samples.map((s) => [
+							s.id,
+							`${s.id} · ${number(s.volume)} ${l("contracts", "张")}`,
+						])}
+						onChange={(value) => {
+							setId(value);
+							setCustom(null);
+							setAvailable("known");
+						}}
 					/>
-				) : null}
-			</FieldGroup>
-			<Alert role="note">
-				<AlertTitle>
-					{ratio === null
-						? l("Unavailable is not zero or infinity", "不可确定不是零或无穷")
-						: l("The denominator changes the question", "分母改变所回答的问题")}
-				</AlertTitle>
-				<AlertDescription>
-					{metric === "relative"
-						? l(
-								"Relative volume compares activity with its historical typical volume. A smaller baseline raises the ratio without adding any current trades.",
-								"相对成交量比较当前活动与历史典型量。基准变小可使比率变高，而当前成交并未增加。",
-							)
-						: l(
-								"Volume/OI compares executed activity with outstanding contracts. A tiny OI value can produce a high ratio even for a small print count; it is not an opening-position flag.",
-								"成交量/OI 比较已成交活动与存续合约。很小的 OI 可让少量成交也产生高比率；它不是开仓标记。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{metric === "relative"
-					? data.benchmark[locale === "zh" ? 1 : 0]
-					: `${l("OI as of", "OI 截至")} ${data.oiAsOf}`}
-				<br />
-				{l(
-					"Sliders explore hypothetical denominators. Missing or non-positive values cannot support a ratio.",
-					"滑块用于探索假设分母。缺失或非正分母不能支持比率。",
-				)}
-			</p>
-		</SceneLayout>
+					<MetricField
+						locale={locale}
+						metric={metric}
+						onChange={(value) => {
+							setMetric(value);
+							setCustom(null);
+							setAvailable("known");
+						}}
+					/>
+					<ChoiceField
+						label={l("Denominator evidence", "分母证据")}
+						value={available}
+						options={[
+							["known", l("Supplied", "已提供")],
+							["missing", l("Missing", "缺失")],
+						]}
+						onChange={setAvailable}
+					/>
+					{denominator !== null ? (
+						<RangeControl
+							inputScale={1}
+							label={l("What-if denominator", "假设分母")}
+							value={denominator}
+							display={number(denominator)}
+							min={0}
+							max={data.denominatorMax}
+							onChange={change}
+						/>
+					) : null}
+				</FieldGroup>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs">
+						{sample.contract}
+						<br />
+						{data.date} · {l("Fictional record", "虚构记录")}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{ratio === null
+								? l(
+										"Unavailable is not zero or infinity",
+										"不可确定不是零或无穷",
+									)
+								: l(
+										"The denominator changes the question",
+										"分母改变所回答的问题",
+									)}
+						</AlertTitle>
+						<AlertDescription>
+							{metric === "relative"
+								? l(
+										"Relative volume compares activity with its historical typical volume. A smaller baseline raises the ratio without adding any current trades.",
+										"相对成交量比较当前活动与历史典型量。基准变小可使比率变高，而当前成交并未增加。",
+									)
+								: l(
+										"Volume/OI compares executed activity with outstanding contracts. A tiny OI value can produce a high ratio even for a small print count; it is not an opening-position flag.",
+										"成交量/OI 比较已成交活动与存续合约。很小的 OI 可让少量成交也产生高比率；它不是开仓标记。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{metric === "relative"
+							? data.benchmark[locale === "zh" ? 1 : 0]
+							: `${l("OI as of", "OI 截至")} ${data.oiAsOf}`}
+						<br />
+						{l(
+							"Sliders explore hypothetical denominators. Missing or non-positive values cannot support a ratio.",
+							"滑块用于探索假设分母。缺失或非正分母不能支持比率。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -364,53 +375,60 @@ export function WindowComparisonScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs">
-				{data.date}
-				<br />
-				{data.benchmark[language]}
-			</p>
-			<SelectField
-				label={l("Window evidence", "窗口证据")}
-				value={String(playback.frame)}
-				options={data.windows.map((w, i) => [String(i), w.label[language]])}
-				onChange={(value) => playback.select(Number(value))}
-			/>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<p className="text-muted-foreground text-xs">
-				{l("Current scope", "当前范围")}: {item.currentScope}
-				<br />
-				{l("Benchmark scope", "基准范围")}: {item.baselineScope}
-			</p>
-			<Alert role="status">
-				<AlertTitle>
-					{result.issue === null
-						? l("A matched comparison", "可比的匹配比较")
-						: result.issue === "window"
-							? l("Different observation windows", "观测窗口不同")
-							: result.issue === "coverage"
-								? l("Incomplete coverage", "覆盖不完整")
-								: result.issue === "scope"
-									? l("Different populations", "比较人群不同")
-									: l("Missing usable baseline", "缺少可用基准")}
-				</AlertTitle>
-				<AlertDescription>
-					{result.ratio !== null
-						? l(
-								"Both counts cover the same defined portion of comparable sessions and the same contract. The ratio describes this comparison; it does not prove informed trading.",
-								"两项数量覆盖可比时段中的相同部分与相同合约。比率描述该比较，不证明知情交易。",
-							)
-						: l(
-								"Do not compare a partial day with a full-day benchmark, substitute another contract's baseline, or treat missing coverage as zero. Obtain a comparable source window first.",
-								"不要把部分交易日与全天基准比较，不要替换成另一合约基准，也不要把缺失覆盖当作零。应先获得可比来源窗口。",
-							)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Window evidence", "窗口证据")}
+						value={String(playback.frame)}
+						options={data.windows.map((w, i) => [String(i), w.label[language]])}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs">
+						{data.date}
+						<br />
+						{data.benchmark[language]}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{l("Current scope", "当前范围")}: {item.currentScope}
+						<br />
+						{l("Benchmark scope", "基准范围")}: {item.baselineScope}
+					</p>
+					<Alert role="status">
+						<AlertTitle>
+							{result.issue === null
+								? l("A matched comparison", "可比的匹配比较")
+								: result.issue === "window"
+									? l("Different observation windows", "观测窗口不同")
+									: result.issue === "coverage"
+										? l("Incomplete coverage", "覆盖不完整")
+										: result.issue === "scope"
+											? l("Different populations", "比较人群不同")
+											: l("Missing usable baseline", "缺少可用基准")}
+						</AlertTitle>
+						<AlertDescription>
+							{result.ratio !== null
+								? l(
+										"Both counts cover the same defined portion of comparable sessions and the same contract. The ratio describes this comparison; it does not prove informed trading.",
+										"两项数量覆盖可比时段中的相同部分与相同合约。比率描述该比较，不证明知情交易。",
+									)
+								: l(
+										"Do not compare a partial day with a full-day benchmark, substitute another contract's baseline, or treat missing coverage as zero. Obtain a comparable source window first.",
+										"不要把部分交易日与全天基准比较，不要替换成另一合约基准，也不要把缺失覆盖当作零。应先获得可比来源窗口。",
+									)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -543,51 +561,56 @@ export function ScreeningScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<p className="font-mono text-muted-foreground text-xs">
-				{data.date} · {l("Two-contract population", "双合约人群")}
-				<br />
-				{data.samples.map((s) => `${s.id}: ${s.contract}`).join("\n")}
-			</p>
-			<FieldGroup>
-				<MetricField locale={locale} metric={metric} onChange={setMetric} />
-				<RangeControl
-					inputScale={1}
-					label={l("Declared screening threshold", "声明筛选阈值")}
-					value={threshold}
-					display={multiple(threshold)}
-					min={data.threshold.min}
-					max={data.threshold.max}
-					step={data.threshold.step}
-					onChange={setThreshold}
-				/>
-				<ChoiceField
-					label={l("Summary population", "汇总人群")}
-					value={scope}
-					options={[
-						["all", l("All rows", "全部记录")],
-						["screened", l("Screened only", "仅筛选结果")],
-					]}
-					onChange={setScope}
-				/>
-			</FieldGroup>
-			<Alert role="note">
-				<AlertTitle>
-					{l("Declare the weighting and selection", "明确权重与选择规则")}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"The row mean weights each ratio equally. The pooled ratio divides summed volumes by summed denominators. They answer different questions; filtering changes the population again. A threshold is a declared screen, not evidence of informed trading.",
-						"行均值对每个比率等权；汇总比率用总成交量除以总分母。两者回答不同问题，筛选又改变了人群。阈值是声明的筛选规则，不是知情交易证据。",
-					)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"This is a stated population-level ratio comparison, not a merged same-contract tape row. Missing ratios cannot pass the screen; an empty or incomplete selected population has no summary ratio. Review liquidity, coverage and event context next.",
-					"这是声明的人群比率比较，不是合并为同合约成交行。缺失比率不能通过筛选；选定人群为空或不完整时，汇总比率不可得。还应检查流动性、覆盖和事件背景。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<MetricField locale={locale} metric={metric} onChange={setMetric} />
+					<RangeControl
+						inputScale={1}
+						label={l("Declared screening threshold", "声明筛选阈值")}
+						value={threshold}
+						display={multiple(threshold)}
+						min={data.threshold.min}
+						max={data.threshold.max}
+						step={data.threshold.step}
+						onChange={setThreshold}
+					/>
+					<ChoiceField
+						label={l("Summary population", "汇总人群")}
+						value={scope}
+						options={[
+							["all", l("All rows", "全部记录")],
+							["screened", l("Screened only", "仅筛选结果")],
+						]}
+						onChange={setScope}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<p className="font-mono text-muted-foreground text-xs">
+						{data.date} · {l("Two-contract population", "双合约人群")}
+						<br />
+						{data.samples.map((s) => `${s.id}: ${s.contract}`).join("\n")}
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{l("Declare the weighting and selection", "明确权重与选择规则")}
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"The row mean weights each ratio equally. The pooled ratio divides summed volumes by summed denominators. They answer different questions; filtering changes the population again. A threshold is a declared screen, not evidence of informed trading.",
+								"行均值对每个比率等权；汇总比率用总成交量除以总分母。两者回答不同问题，筛选又改变了人群。阈值是声明的筛选规则，不是知情交易证据。",
+							)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"This is a stated population-level ratio comparison, not a merged same-contract tape row. Missing ratios cannot pass the screen; an empty or incomplete selected population has no summary ratio. Review liquidity, coverage and event context next.",
+							"这是声明的人群比率比较，不是合并为同合约成交行。缺失比率不能通过筛选；选定人群为空或不完整时，汇总比率不可得。还应检查流动性、覆盖和事件背景。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

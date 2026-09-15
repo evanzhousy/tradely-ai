@@ -8,6 +8,7 @@ import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
+import { CashStockTransfer } from "./cash-stock-transfer";
 import {
 	ChoiceField,
 	Diagram,
@@ -31,6 +32,7 @@ import {
 	type TradeSide,
 	underlyingAction,
 } from "./rights-concept-model";
+import { SceneOutcome } from "./scene-outcome";
 import { useGuidedState } from "./visual-playback";
 
 type Props = { locale: Locale };
@@ -181,65 +183,74 @@ export function RightsRolesScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
-				<div className="scene-outcome-card">
-					<p className="scene-outcome-label">
-						{l("Current responsibility", "当前责任")}
-					</p>
-					<p className="scene-outcome-value">{summary}</p>
-				</div>
-			}
-		>
-			<FieldGroup>
-				<OptionTypeField value={type} onChange={setType} locale={locale} />
-				<ChoiceField
-					label={l("Your role", "你的角色")}
-					value={role}
-					options={[
-						["long", l("Holder · long", "持有人 · 多头")],
-						["short", l("Writer · short", "卖方 · 空头")],
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Current responsibility", "当前责任")}</>,
+							value: <>{summary}</>,
+						},
 					]}
-					onChange={setRole}
 				/>
-			</FieldGroup>
-			<div className="flex flex-col gap-3" aria-live="polite">
-				<Badge variant="secondary" className="self-start">
-					{role === "long"
-						? l("Owns a right", "拥有权利")
-						: l("Has a conditional obligation", "承担有条件的义务")}
-				</Badge>
-				<p
-					className="font-semibold text-xl leading-relaxed"
-					data-rights-summary
-				>
-					{summary}
-				</p>
-				<p className="text-muted-foreground text-sm leading-7">
-					{role === "long"
-						? l(
-								"The holder has the exercise right under the contract terms. Buying the option does not itself exercise it or deliver the referenced shares.",
-								"持有人按合约条款拥有行权权利。买入期权本身不等于行权，也不会直接交付所参考的股票。",
-							)
-						: l(
-								"Once assigned, the writer must fulfill the contract. A short put is an obligation to buy; a long put is a right to sell.",
-								"一旦被指派，卖方必须履行合约。看跌空头承担买入义务，看跌多头拥有卖出权利。",
+			}
+			controls={
+				<FieldGroup>
+					<OptionTypeField value={type} onChange={setType} locale={locale} />
+					<ChoiceField
+						label={l("Your role", "你的角色")}
+						value={role}
+						options={[
+							["long", l("Holder · long", "持有人 · 多头")],
+							["short", l("Writer · short", "卖方 · 空头")],
+						]}
+						onChange={setRole}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div className="flex flex-col gap-3" aria-live="polite">
+						<Badge variant="secondary" className="self-start">
+							{role === "long"
+								? l("Owns a right", "拥有权利")
+								: l("Has a conditional obligation", "承担有条件的义务")}
+						</Badge>
+						<p
+							className="font-semibold text-xl leading-relaxed"
+							data-rights-summary
+						>
+							{summary}
+						</p>
+						<p className="text-muted-foreground text-sm leading-7">
+							{role === "long"
+								? l(
+										"The holder has the exercise right under the contract terms. Buying the option does not itself exercise it or deliver the referenced shares.",
+										"持有人按合约条款拥有行权权利。买入期权本身不等于行权，也不会直接交付所参考的股票。",
+									)
+								: l(
+										"Once assigned, the writer must fulfill the contract. A short put is an obligation to buy; a long put is a right to sell.",
+										"一旦被指派，卖方必须履行合约。看跌空头承担买入义务，看跌多头拥有卖出权利。",
+									)}
+						</p>
+					</div>
+					<Alert>
+						<AlertTitle>
+							{l(
+								"Option ownership is not share ownership",
+								"持有期权不等于持有股票",
 							)}
-				</p>
-			</div>
-			<Alert>
-				<AlertTitle>
-					{l(
-						"Option ownership is not share ownership",
-						"持有期权不等于持有股票",
-					)}
-				</AlertTitle>
-				<AlertDescription>
-					{l(
-						"Call / Put describes the right. Long / Short describes your side. Neither label alone tells us about separate stock holdings or a complete trading strategy.",
-						"看涨 / 看跌描述权利，多头 / 空头描述你所处的一方。这些标签本身不能说明另有的股票持仓或完整交易策略。",
-					)}
-				</AlertDescription>
-			</Alert>
-		</SceneLayout>
+						</AlertTitle>
+						<AlertDescription>
+							{l(
+								"Call / Put describes the right. Long / Short describes your side. Neither label alone tells us about separate stock holdings or a complete trading strategy.",
+								"看涨 / 看跌描述权利，多头 / 空头描述你所处的一方。这些标签本身不能说明另有的股票持仓或完整交易策略。",
+							)}
+						</AlertDescription>
+					</Alert>
+				</>
+			}
+		/>
 	);
 }
 
@@ -358,58 +369,63 @@ export function PositionActionsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<FieldGroup>
-				<SelectField
-					label={l("Starting option position", "起始期权持仓")}
-					value={before === null ? "unknown" : String(before)}
-					options={[
-						["3", l("Long 3 contracts", "多头 3 张")],
-						["0", l("Flat (no position)", "空仓（无持仓）")],
-						["-3", l("Short 3 contracts", "空头 3 张")],
-						["unknown", l("Not supplied", "未提供")],
-					]}
-					onChange={(value) =>
-						setBefore(value === "unknown" ? null : Number(value))
-					}
-				/>
-				<ChoiceField
-					label={l("Trade action", "交易动作")}
-					value={side}
-					options={[
-						["buy", l("Buy", "买入")],
-						["sell", l("Sell", "卖出")],
-					]}
-					onChange={setSide}
-				/>
-				<CountField locale={locale} count={count} onChange={setCount} />
-			</FieldGroup>
-			<div className="flex flex-col gap-3" aria-live="polite">
-				<p className="font-semibold text-xl" data-position-action>
-					{label}
-				</p>
-				<p className="font-mono" data-position-result>
-					{position(before)} → {position(after)}
-				</p>
-				<p className="text-muted-foreground text-sm leading-7">
-					{before === null
-						? l(
-								"A Buy / Sell label tells us the trade action. Without the starting position, we cannot tell whether it opened or closed a position.",
-								"买入 / 卖出标签说明交易动作。缺少起始持仓，就无法判断它是开仓还是平仓。",
-							)
-						: l(
-								"The starting position is supplied here, so we can classify this trade. A sale can reduce an existing long; a purchase can reduce an existing short.",
-								"这里给定了起始持仓，因此可以分类这笔交易。卖出可以减少已有多头，买入可以减少已有空头。",
-							)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"Positions refer to the same option contract in one account. These are option contracts, not shares. The supplied trades do not cross through zero into the opposite side.",
-					"持仓指同一账户里的同一期权合约，单位是张，不是股。给定交易不会越过零点开立反向持仓。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<FieldGroup>
+					<SelectField
+						label={l("Starting option position", "起始期权持仓")}
+						value={before === null ? "unknown" : String(before)}
+						options={[
+							["3", l("Long 3 contracts", "多头 3 张")],
+							["0", l("Flat (no position)", "空仓（无持仓）")],
+							["-3", l("Short 3 contracts", "空头 3 张")],
+							["unknown", l("Not supplied", "未提供")],
+						]}
+						onChange={(value) =>
+							setBefore(value === "unknown" ? null : Number(value))
+						}
+					/>
+					<ChoiceField
+						label={l("Trade action", "交易动作")}
+						value={side}
+						options={[
+							["buy", l("Buy", "买入")],
+							["sell", l("Sell", "卖出")],
+						]}
+						onChange={setSide}
+					/>
+					<CountField locale={locale} count={count} onChange={setCount} />
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div className="flex flex-col gap-3" aria-live="polite">
+						<p className="font-semibold text-xl" data-position-action>
+							{label}
+						</p>
+						<p className="font-mono" data-position-result>
+							{position(before)} → {position(after)}
+						</p>
+						<p className="text-muted-foreground text-sm leading-7">
+							{before === null
+								? l(
+										"A Buy / Sell label tells us the trade action. Without the starting position, we cannot tell whether it opened or closed a position.",
+										"买入 / 卖出标签说明交易动作。缺少起始持仓，就无法判断它是开仓还是平仓。",
+									)
+								: l(
+										"The starting position is supplied here, so we can classify this trade. A sale can reduce an existing long; a purchase can reduce an existing short.",
+										"这里给定了起始持仓，因此可以分类这笔交易。卖出可以减少已有多头，买入可以减少已有空头。",
+									)}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Positions refer to the same option contract in one account. These are option contracts, not shares. The supplied trades do not cross through zero into the opposite side.",
+							"持仓指同一账户里的同一期权合约，单位是张，不是股。给定交易不会越过零点开立反向持仓。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -467,6 +483,35 @@ export function AssignmentScene({ locale }: Props) {
 	] as const;
 	return (
 		<SceneLayout
+			companion={
+				<CashStockTransfer
+					locale={locale}
+					cash={
+						settled
+							? amounts.cashFrom === "holder"
+								? -amounts.cash
+								: amounts.cash
+							: 0
+					}
+					shares={
+						settled
+							? amounts.sharesFrom === "holder"
+								? -amounts.shares
+								: amounts.shares
+							: 0
+					}
+					formatCash={money}
+					phase={
+						settled
+							? l("Assumed valid exercise settled", "假定有效行权已结算")
+							: l("Before settlement", "结算前")
+					}
+					note={l(
+						"Physical settlement at the stated strike. Premium and exercise cash are separate.",
+						"按给定行权价实物结算，权利金与行权现金分开。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(`${type} exercise and assignment`, `${type} 行权与指派`)}
@@ -561,87 +606,99 @@ export function AssignmentScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<FieldGroup>
-				<OptionTypeField
-					locale={locale}
-					value={type}
-					onChange={(value) => {
-						setType(value);
-						playback.select(playback.frame);
-					}}
-				/>
-				<CountField
-					locale={locale}
-					count={count}
-					onChange={(value) => {
-						setCount(value);
-						playback.select(playback.frame);
-					}}
-				/>
-				<ChoiceField
-					label={l("Exercise stage", "行权阶段")}
-					value={String(playback.frame)}
-					options={phases}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-			</FieldGroup>
-			<div>
-				<PlaybackButton
-					playing={playback.playing}
-					onClick={playback.toggle}
-					l={l}
-				/>
-			</div>
-			<div className="flex flex-col gap-3" aria-live="polite">
-				<p className="font-semibold text-lg" data-assignment-status>
-					{playback.frame === 0
-						? l("Holding an option is not exercise.", "持有期权不等于行权。")
-						: playback.frame === 1
-							? l(
-									"The holder exercises a valid right. Assignment follows through clearing.",
-									"持有人使用有效行权权利，随后通过清算安排指派。",
-								)
-							: type === "PUT"
+			controls={
+				<FieldGroup>
+					<OptionTypeField
+						locale={locale}
+						value={type}
+						onChange={(value) => {
+							setType(value);
+							playback.select(playback.frame);
+						}}
+					/>
+					<CountField
+						locale={locale}
+						count={count}
+						onChange={(value) => {
+							setCount(value);
+							playback.select(playback.frame);
+						}}
+					/>
+					<ChoiceField
+						label={l("Exercise stage", "行权阶段")}
+						value={String(playback.frame)}
+						options={phases}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<div>
+						<PlaybackButton
+							playing={playback.playing}
+							onClick={playback.toggle}
+							l={l}
+						/>
+					</div>
+					<div className="flex flex-col gap-3" aria-live="polite">
+						<p className="font-semibold text-lg" data-assignment-status>
+							{playback.frame === 0
 								? l(
-										"The assigned put writer pays cash and receives shares.",
-										"被指派的看跌卖方支付现金，接收股票。",
+										"Holding an option is not exercise.",
+										"持有期权不等于行权。",
 									)
-								: l(
-										"The assigned call writer delivers shares and receives cash.",
-										"被指派的看涨卖方交付股票，接收现金。",
-									)}
-				</p>
-				<p className="text-muted-foreground text-sm">
-					{l("Gross cash if exercised / assigned", "行权 / 被指派时的总金额")}
-				</p>
-				<p className="font-mono text-3xl" data-exercise-cash>
-					{money(amounts.cash)}
-				</p>
-				<p className="font-mono text-sm">
-					{count} × {exerciseTerms.sharesPerContract} {l("shares", "股")} × $50
-				</p>
-				<p
-					className="text-muted-foreground text-sm leading-6"
-					data-opening-premium
-				>
-					{l(
-						"Separate opening premium in this example",
-						"本例另计的开仓权利金",
-					)}
-					: {money(amounts.openingPremium)} ({l("$2/share", "$2/股")}).{" "}
-					{l(
-						"Premium and profit are not the gross exercise amount.",
-						"权利金与盈亏均不同于行权总额。",
-					)}
-				</p>
-			</div>
-			<p className="text-muted-foreground text-xs leading-6">
-				{l(
-					"Teaching terms: physical settlement, 100 shares per contract, valid exercise assumed. Clearing determines assignment; the writer shown need not be the holder's original trading counterparty. Exercise timing and settlement details are covered in Lesson 4.",
-					"教学条款：实物结算，每张 100 股，假定行权有效。指派由清算流程决定，图中的卖方不一定是持有人原始交易的对手方。第 4 课详述行权时间与结算。",
-				)}
-			</p>
-		</SceneLayout>
+								: playback.frame === 1
+									? l(
+											"The holder exercises a valid right. Assignment follows through clearing.",
+											"持有人使用有效行权权利，随后通过清算安排指派。",
+										)
+									: type === "PUT"
+										? l(
+												"The assigned put writer pays cash and receives shares.",
+												"被指派的看跌卖方支付现金，接收股票。",
+											)
+										: l(
+												"The assigned call writer delivers shares and receives cash.",
+												"被指派的看涨卖方交付股票，接收现金。",
+											)}
+						</p>
+						<p className="text-muted-foreground text-sm">
+							{l(
+								"Gross cash if exercised / assigned",
+								"行权 / 被指派时的总金额",
+							)}
+						</p>
+						<p className="font-mono text-3xl" data-exercise-cash>
+							{money(amounts.cash)}
+						</p>
+						<p className="font-mono text-sm">
+							{count} × {exerciseTerms.sharesPerContract} {l("shares", "股")} ×
+							$50
+						</p>
+						<p
+							className="text-muted-foreground text-sm leading-6"
+							data-opening-premium
+						>
+							{l(
+								"Separate opening premium in this example",
+								"本例另计的开仓权利金",
+							)}
+							: {money(amounts.openingPremium)} ({l("$2/share", "$2/股")}).{" "}
+							{l(
+								"Premium and profit are not the gross exercise amount.",
+								"权利金与盈亏均不同于行权总额。",
+							)}
+						</p>
+					</div>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Teaching terms: physical settlement, 100 shares per contract, valid exercise assumed. Clearing determines assignment; the writer shown need not be the holder's original trading counterparty. Exercise timing and settlement details are covered in Lesson 4.",
+							"教学条款：实物结算，每张 100 股，假定行权有效。指派由清算流程决定，图中的卖方不一定是持有人原始交易的对手方。第 4 课详述行权时间与结算。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

@@ -172,82 +172,89 @@ export function PositionEffectsScene({ locale }: Props) {
 					</g>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<ChoiceField
-					label={l("Buyer position effect", "买方持仓效果")}
-					value={pair.buyer}
-					options={[
-						["open", l("Opens", "开仓")],
-						["close", l("Closes", "平仓")],
-					]}
-					onChange={(buyer) => choose(buyer, pair.seller)}
-				/>
-				<ChoiceField
-					label={l("Seller position effect", "卖方持仓效果")}
-					value={pair.seller}
-					options={[
-						["open", l("Opens", "开仓")],
-						["close", l("Closes", "平仓")],
-					]}
-					onChange={(seller) => choose(pair.buyer, seller)}
-				/>
-				<div
-					onPointerDownCapture={() => playback.select(playback.frame)}
-					onKeyDownCapture={() => playback.select(playback.frame)}
-				>
-					<RangeControl
-						inputScale={1}
-						label={l("Executed quantity", "成交张数")}
-						value={quantity}
-						display={`${quantity} ${l("contracts", "张")}`}
-						min={1}
-						max={data.maxQuantity}
-						onChange={(value) => {
-							playback.select(playback.frame);
-							setQuantity(value);
-						}}
+			controls={
+				<>
+					<FieldGroup>
+						<ChoiceField
+							label={l("Buyer position effect", "买方持仓效果")}
+							value={pair.buyer}
+							options={[
+								["open", l("Opens", "开仓")],
+								["close", l("Closes", "平仓")],
+							]}
+							onChange={(buyer) => choose(buyer, pair.seller)}
+						/>
+						<ChoiceField
+							label={l("Seller position effect", "卖方持仓效果")}
+							value={pair.seller}
+							options={[
+								["open", l("Opens", "开仓")],
+								["close", l("Closes", "平仓")],
+							]}
+							onChange={(seller) => choose(pair.buyer, seller)}
+						/>
+						<div
+							onPointerDownCapture={() => playback.select(playback.frame)}
+							onKeyDownCapture={() => playback.select(playback.frame)}
+						>
+							<RangeControl
+								inputScale={1}
+								label={l("Executed quantity", "成交张数")}
+								value={quantity}
+								display={`${quantity} ${l("contracts", "张")}`}
+								min={1}
+								max={data.maxQuantity}
+								onChange={(value) => {
+									playback.select(playback.frame);
+									setQuantity(value);
+								}}
+							/>
+						</div>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
 					/>
-				</div>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>
-					{change > 0
-						? l("A new outstanding contract", "新增存续合约")
-						: change < 0
-							? l("An outstanding contract is removed", "存续合约被消除")
-							: l("The contract transfers", "合约转移")}
-				</AlertTitle>
-				<AlertDescription>
-					{change > 0
-						? l(
-								"Both sides open. Each matched contract adds one to OI, not two. The buyer and seller share the same execution count.",
-								"双方开仓。每张撮合合约使 OI 增加一张，不是两张；买卖双方共用同一成交数量。",
-							)
-						: change < 0
-							? l(
-									"Both sides close. Outstanding contracts decrease, while the execution still adds its full quantity to session volume.",
-									"双方平仓。存续合约减少，但这笔成交仍按完整张数计入时段成交量。",
-								)
-							: l(
-									"One side opens and the other closes. OI is unchanged, but volume still increases. No OI change does not mean no trading.",
-									"一方开仓、另一方平仓。OI 不变，成交量仍增加。OI 不变不代表没有交易。",
-								)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Each selection starts from the same initial OI and supplies both position flags. No other activity is included. A print alone does not reveal these flags.",
-					"每次选择从相同初始 OI 开始，并给定双方持仓标记，不含其他活动。仅成交记录无法揭示这些标记。",
-				)}
-			</p>
-		</SceneLayout>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Alert role="note">
+						<AlertTitle>
+							{change > 0
+								? l("A new outstanding contract", "新增存续合约")
+								: change < 0
+									? l("An outstanding contract is removed", "存续合约被消除")
+									: l("The contract transfers", "合约转移")}
+						</AlertTitle>
+						<AlertDescription>
+							{change > 0
+								? l(
+										"Both sides open. Each matched contract adds one to OI, not two. The buyer and seller share the same execution count.",
+										"双方开仓。每张撮合合约使 OI 增加一张，不是两张；买卖双方共用同一成交数量。",
+									)
+								: change < 0
+									? l(
+											"Both sides close. Outstanding contracts decrease, while the execution still adds its full quantity to session volume.",
+											"双方平仓。存续合约减少，但这笔成交仍按完整张数计入时段成交量。",
+										)
+									: l(
+											"One side opens and the other closes. OI is unchanged, but volume still increases. No OI change does not mean no trading.",
+											"一方开仓、另一方平仓。OI 不变，成交量仍增加。OI 不变不代表没有交易。",
+										)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Each selection starts from the same initial OI and supplies both position flags. No other activity is included. A print alone does not reveal these flags.",
+							"每次选择从相同初始 OI 开始，并给定双方持仓标记，不含其他活动。仅成交记录无法揭示这些标记。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -424,63 +431,70 @@ export function SessionOiScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<FieldGroup>
-				<ChoiceField
-					label={l("Evidence available", "可用证据")}
-					value={evidence}
-					options={[
-						["complete", l("Complete ledger", "完整台账")],
-						["prints", l("Prints only", "仅成交记录")],
-					]}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setEvidence(value);
-					}}
-				/>
-				<SelectField
-					label={l("Replay stop", "回放节点")}
-					value={String(playback.frame)}
-					options={stops.map((label, i) => [String(i), label])}
-					onChange={(value) => playback.select(Number(value))}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Alert role="note">
-				<AlertTitle>
-					{result.published
-						? l("A report arrives on its own clock", "报告按自身时间发布")
-						: l("The prior report stays dated", "前期报告保留原日期")}
-				</AlertTitle>
-				<AlertDescription>
-					{result.published
-						? l(
-								`The supplied report now states ${data.nextReport.value} as of ${data.nextReport.asOf}. Its net change does not identify the owner or purpose of any individual print.`,
-								`给定新报告截至 ${data.nextReport.asOf} 的 OI 为 ${data.nextReport.value}。净变化不识别任何单笔成交的持有人或目的。`,
-							)
-						: l(
-								"Executions move the volume counter. They do not rewrite the last reported OI. Only the supplied next report updates the reported value and its date.",
-								"成交推动成交量计数器，不会改写最近报告的 OI。只有给定下一报告才更新报告值与日期。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-sm">
-				{complete
-					? l(
-							"The complete toy ledger includes three executions and two exercised contracts with paired assignments, counted once. Those removals add no tape volume. Expiration can also remove contracts, but is not an event in this ledger.",
-							"完整模拟台账含三笔成交，以及两张已行权并对应指派的合约，移除仅计一次。这些移除不增加成交量。到期也可移除合约，但本台账不含到期事件。",
-						)
-					: l(
-							"Volume survives when position flags and clearing details are removed. Calculated ending OI does not. The later published report is still observable without reconstructing every event.",
-							"移除持仓标记和清算明细后，成交量仍已知，计算期末 OI 则不可得。无需重建每个事件，仍可观察后续发布的报告。",
-						)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<FieldGroup>
+						<ChoiceField
+							label={l("Evidence available", "可用证据")}
+							value={evidence}
+							options={[
+								["complete", l("Complete ledger", "完整台账")],
+								["prints", l("Prints only", "仅成交记录")],
+							]}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setEvidence(value);
+							}}
+						/>
+						<SelectField
+							label={l("Replay stop", "回放节点")}
+							value={String(playback.frame)}
+							options={stops.map((label, i) => [String(i), label])}
+							onChange={(value) => playback.select(Number(value))}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Alert role="note">
+						<AlertTitle>
+							{result.published
+								? l("A report arrives on its own clock", "报告按自身时间发布")
+								: l("The prior report stays dated", "前期报告保留原日期")}
+						</AlertTitle>
+						<AlertDescription>
+							{result.published
+								? l(
+										`The supplied report now states ${data.nextReport.value} as of ${data.nextReport.asOf}. Its net change does not identify the owner or purpose of any individual print.`,
+										`给定新报告截至 ${data.nextReport.asOf} 的 OI 为 ${data.nextReport.value}。净变化不识别任何单笔成交的持有人或目的。`,
+									)
+								: l(
+										"Executions move the volume counter. They do not rewrite the last reported OI. Only the supplied next report updates the reported value and its date.",
+										"成交推动成交量计数器，不会改写最近报告的 OI。只有给定下一报告才更新报告值与日期。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-sm">
+						{complete
+							? l(
+									"The complete toy ledger includes three executions and two exercised contracts with paired assignments, counted once. Those removals add no tape volume. Expiration can also remove contracts, but is not an event in this ledger.",
+									"完整模拟台账含三笔成交，以及两张已行权并对应指派的合约，移除仅计一次。这些移除不增加成交量。到期也可移除合约，但本台账不含到期事件。",
+								)
+							: l(
+									"Volume survives when position flags and clearing details are removed. Calculated ending OI does not. The later published report is still observable without reconstructing every event.",
+									"移除持仓标记和清算明细后，成交量仍已知，计算期末 OI 则不可得。无需重建每个事件，仍可观察后续发布的报告。",
+								)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 
@@ -584,63 +598,70 @@ export function CohortComparisonScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} cohort />
-			<FieldGroup>
-				<ChoiceField
-					label={l("Comparison scope", "比较范围")}
-					value={mode}
-					options={[
-						["rolling", l("Rolling DTE", "滚动 DTE")],
-						["fixed", l("Fixed members", "固定成员")],
-					]}
-					onChange={(value) => {
-						playback.select(playback.frame);
-						setMode(value);
-					}}
-				/>
-				<RangeControl
-					label={l("Report date", "报告日期")}
-					value={report}
-					display={data.reportDates[report]}
-					min={0}
-					max={1}
-					onChange={playback.select}
-				/>
-			</FieldGroup>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<p className="text-sm" data-cohort-delta>
-				{l("Difference across selected reports", "选定报告差值")}:{" "}
-				<strong>{signed(comparison.delta)}</strong>
-			</p>
-			<Alert role="note">
-				<AlertTitle>
-					{mode === "rolling"
-						? l("Membership changes the total", "成员变化改变总数")
-						: l("Follow the same expiries", "追踪相同到期日")}
-				</AlertTitle>
-				<AlertDescription>
-					{mode === "rolling"
-						? l(
-								`Entries add ${number(comparison.entryOi)} OI; exits remove ${number(comparison.exitOi)} from this bucket. Retained-series change is ${signed(comparison.retainedChange)}. The net difference is not an identified count of opening trades.`,
-								`进入成员带入 ${number(comparison.entryOi)} OI，退出成员从桶内移出 ${number(comparison.exitOi)}。留存序列变化为 ${signed(comparison.retainedChange)}。净差值不是已识别的开仓成交数。`,
-							)
-						: l(
-								"This comparison keeps the first report's expiry members, even when one ages outside the DTE window. A stable OI total still does not prove that no trades occurred.",
-								"此比较保留首份报告的到期成员，即使某成员已老化至 DTE 窗口之外。OI 总数不变仍不证明没有交易。",
-							)}
-				</AlertDescription>
-			</Alert>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Rows outside the chosen set remain visible for comparison. Individual series reports are unchanged in this example; gross trading activity and ownership are not supplied.",
-					"选定集合之外的行保留用于比较。本例单独合约序列的报告值不变，未提供全部成交活动与持有人信息。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<FieldGroup>
+						<ChoiceField
+							label={l("Comparison scope", "比较范围")}
+							value={mode}
+							options={[
+								["rolling", l("Rolling DTE", "滚动 DTE")],
+								["fixed", l("Fixed members", "固定成员")],
+							]}
+							onChange={(value) => {
+								playback.select(playback.frame);
+								setMode(value);
+							}}
+						/>
+						<RangeControl
+							label={l("Report date", "报告日期")}
+							value={report}
+							display={data.reportDates[report]}
+							min={0}
+							max={1}
+							onChange={playback.select}
+						/>
+					</FieldGroup>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} cohort />
+					<p className="text-sm" data-cohort-delta>
+						{l("Difference across selected reports", "选定报告差值")}:{" "}
+						<strong>{signed(comparison.delta)}</strong>
+					</p>
+					<Alert role="note">
+						<AlertTitle>
+							{mode === "rolling"
+								? l("Membership changes the total", "成员变化改变总数")
+								: l("Follow the same expiries", "追踪相同到期日")}
+						</AlertTitle>
+						<AlertDescription>
+							{mode === "rolling"
+								? l(
+										`Entries add ${number(comparison.entryOi)} OI; exits remove ${number(comparison.exitOi)} from this bucket. Retained-series change is ${signed(comparison.retainedChange)}. The net difference is not an identified count of opening trades.`,
+										`进入成员带入 ${number(comparison.entryOi)} OI，退出成员从桶内移出 ${number(comparison.exitOi)}。留存序列变化为 ${signed(comparison.retainedChange)}。净差值不是已识别的开仓成交数。`,
+									)
+								: l(
+										"This comparison keeps the first report's expiry members, even when one ages outside the DTE window. A stable OI total still does not prove that no trades occurred.",
+										"此比较保留首份报告的到期成员，即使某成员已老化至 DTE 窗口之外。OI 总数不变仍不证明没有交易。",
+									)}
+						</AlertDescription>
+					</Alert>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Rows outside the chosen set remain visible for comparison. Individual series reports are unchanged in this example; gross trading activity and ownership are not supplied.",
+							"选定集合之外的行保留用于比较。本例单独合约序列的报告值不变，未提供全部成交活动与持有人信息。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

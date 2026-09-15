@@ -184,65 +184,73 @@ export function RegimeHedgeScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Stated portfolio", "给定组合")}
-				value={id}
-				options={data.portfolios.map((p) => [
-					p.id,
-					p.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setId(v);
-				}}
-			/>
-			<RangeControl
-				label={l("Underlying move in cents", "标的变动（美分）")}
-				value={move}
-				display={`$${signed(move / 100)}`}
-				min={data.moveRange[0]}
-				max={data.moveRange[1]}
-				step={10}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(v);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p>{portfolio.scope[locale === "zh" ? 1 : 0]}</p>
-			<p data-regime-net>
-				{l("Net sensitivity", "净敏感度")}: {signed(totals?.net ?? null)}
-			</p>
-			<p data-regime-gross>
-				{l("Gross sensitivity", "总敏感度")}: {number(totals?.gross ?? null)}
-			</p>
-			<p className="font-mono text-xs">
-				{l("Shares of delta per $1", "每 $1 的 Delta 股数")}
-				<br />
-				{portfolio.components.map(number).join(" + ")}
-			</p>
-			<Note>
-				{l(
-					"To maintain a delta-neutral stock hedge: hedge change = −net sensitivity × spot change. Long gamma sells after a rise and buys after a fall; short gamma reverses that local response. Near-zero net can hide large opposing sensitivities.",
-					"维持股票 Delta 中性对冲：对冲变化 = −净敏感度 × 现价变动。正 Gamma 上涨后卖、下跌后买；负 Gamma 的局部响应相反。净值近零可隐藏大量相反敏感度。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Other inputs and the hedge objective are held fixed. These values are already position-scaled, in shares per dollar, not dollar GEX per 1%. Missing position evidence withholds the target.",
-					"固定其他输入与对冲目标。这些值已按持仓缩放，单位为每美元股数，而非每 1% 变动美元 GEX。持仓证据缺失时不提供目标。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Stated portfolio", "给定组合")}
+						value={id}
+						options={data.portfolios.map((p) => [
+							p.id,
+							p.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setId(v);
+						}}
+					/>
+					<RangeControl
+						label={l("Underlying move in cents", "标的变动（美分）")}
+						value={move}
+						display={`$${signed(move / 100)}`}
+						min={data.moveRange[0]}
+						max={data.moveRange[1]}
+						step={10}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(v);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p>{portfolio.scope[locale === "zh" ? 1 : 0]}</p>
+					<p data-regime-net>
+						{l("Net sensitivity", "净敏感度")}: {signed(totals?.net ?? null)}
+					</p>
+					<p data-regime-gross>
+						{l("Gross sensitivity", "总敏感度")}:{" "}
+						{number(totals?.gross ?? null)}
+					</p>
+					<p className="font-mono text-xs">
+						{l("Shares of delta per $1", "每 $1 的 Delta 股数")}
+						<br />
+						{portfolio.components.map(number).join(" + ")}
+					</p>
+					<Note>
+						{l(
+							"To maintain a delta-neutral stock hedge: hedge change = −net sensitivity × spot change. Long gamma sells after a rise and buys after a fall; short gamma reverses that local response. Near-zero net can hide large opposing sensitivities.",
+							"维持股票 Delta 中性对冲：对冲变化 = −净敏感度 × 现价变动。正 Gamma 上涨后卖、下跌后买；负 Gamma 的局部响应相反。净值近零可隐藏大量相反敏感度。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Other inputs and the hedge objective are held fixed. These values are already position-scaled, in shares per dollar, not dollar GEX per 1%. Missing position evidence withholds the target.",
+							"固定其他输入与对冲目标。这些值已按持仓缩放，单位为每美元股数，而非每 1% 变动美元 GEX。持仓证据缺失时不提供目标。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function RegimeFlipScene({ locale }: Props) {
@@ -364,55 +372,63 @@ export function RegimeFlipScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Model position and expiry scope", "模型持仓与到期范围")}
-				value={id}
-				options={data.curves.map((c) => [
-					c.id,
-					c.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			<RangeControl
-				label={l("Spot sample index", "现价样本索引")}
-				value={index}
-				display={`$${point.spot}`}
-				min={0}
-				max={curve.points.length - 1}
-				step={1}
-				onChange={setIndex}
-			/>
-			<p>{curve.scope[locale === "zh" ? 1 : 0]}</p>
-			<p data-regime-sample>
-				{l("Supplied sensitivity", "给定敏感度")}: {signed(point.sensitivity)}
-			</p>
-			<p data-regime-sign>
-				{!known
-					? l("Unknown at this spot", "此现价未知")
-					: point.sensitivity === 0
-						? l("Zero at this supplied node", "此给定节点为零")
-						: (point.sensitivity as number) > 0
-							? l("Positive at this supplied node", "此给定节点为正")
-							: l("Negative at this supplied node", "此给定节点为负")}
-			</p>
-			<p data-regime-flips className="font-mono text-sm">
-				{description}
-			</p>
-			<Note>
-				{l(
-					"A flip concerns the sign of the same modeled position set repriced at different spot prices. The dashed line is a linear estimate inside an adjacent sign-change bracket, not a guaranteed exact root. Changing positions or expiry scope changes the model without a new trade.",
-					"转折涉及同一模型持仓集在不同现价重定价后的符号。虚线是相邻符号变化区间内的线性估计，不保证精确根。改变持仓或到期范围，无需新成交也会改变模型。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Straight connectors only aid reading supplied samples. Missing values break the curve. No crossing found in this finite sample is not proof that no crossing exists elsewhere. A cumulative strike chart is a different calculation; none of these marks promises support or resistance.",
-					"直线仅辅助阅读给定样本，缺失值断开曲线。有限样本未找到转折，不证明其他位置不存在转折。行权价累计图是另一种计算，这些标记均不保证支撑或阻力。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Model position and expiry scope", "模型持仓与到期范围")}
+						value={id}
+						options={data.curves.map((c) => [
+							c.id,
+							c.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setId}
+					/>
+					<RangeControl
+						label={l("Spot sample index", "现价样本索引")}
+						value={index}
+						display={`$${point.spot}`}
+						min={0}
+						max={curve.points.length - 1}
+						step={1}
+						onChange={setIndex}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p>{curve.scope[locale === "zh" ? 1 : 0]}</p>
+					<p data-regime-sample>
+						{l("Supplied sensitivity", "给定敏感度")}:{" "}
+						{signed(point.sensitivity)}
+					</p>
+					<p data-regime-sign>
+						{!known
+							? l("Unknown at this spot", "此现价未知")
+							: point.sensitivity === 0
+								? l("Zero at this supplied node", "此给定节点为零")
+								: (point.sensitivity as number) > 0
+									? l("Positive at this supplied node", "此给定节点为正")
+									: l("Negative at this supplied node", "此给定节点为负")}
+					</p>
+					<p data-regime-flips className="font-mono text-sm">
+						{description}
+					</p>
+					<Note>
+						{l(
+							"A flip concerns the sign of the same modeled position set repriced at different spot prices. The dashed line is a linear estimate inside an adjacent sign-change bracket, not a guaranteed exact root. Changing positions or expiry scope changes the model without a new trade.",
+							"转折涉及同一模型持仓集在不同现价重定价后的符号。虚线是相邻符号变化区间内的线性估计，不保证精确根。改变持仓或到期范围，无需新成交也会改变模型。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Straight connectors only aid reading supplied samples. Missing values break the curve. No crossing found in this finite sample is not proof that no crossing exists elsewhere. A cumulative strike chart is a different calculation; none of these marks promises support or resistance.",
+							"直线仅辅助阅读给定样本，缺失值断开曲线。有限样本未找到转折，不证明其他位置不存在转折。行权价累计图是另一种计算，这些标记均不保证支撑或阻力。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function RegimeEvidenceScene({ locale }: Props) {
@@ -502,56 +518,60 @@ export function RegimeEvidenceScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<p className="font-mono text-xs">{data.packet.source}</p>
-			<p data-regime-target>
-				{l("Conditional hedge target", "条件性对冲目标")}:{" "}
-				{signed(result?.hedgeChange ?? null)}
-			</p>
-			<p data-regime-fill>
-				{l("Supplied fill", "给定成交")}:{" "}
-				{has("fill") ? signed(data.packet.fillShares) : "—"}
-				{has("fill") && (
-					<>
-						<br />
-						{data.packet.fillTime}
-					</>
-				)}
-			</p>
-			<p data-regime-depth>
-				{l("Supplied displayed depth", "给定显示深度")}:{" "}
-				{has("depth") ? number(data.packet.askDepthShares) : "—"}
-				{has("depth") && (
-					<>
-						<br />
-						{data.packet.depthTime}
-					</>
-				)}
-			</p>
-			{has("model") && (
-				<p className="font-mono text-xs">
-					{l(
-						"Stated portfolio · delta-neutral objective",
-						"给定组合 · Delta 中性目标",
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">{data.packet.source}</p>
+					<p data-regime-target>
+						{l("Conditional hedge target", "条件性对冲目标")}:{" "}
+						{signed(result?.hedgeChange ?? null)}
+					</p>
+					<p data-regime-fill>
+						{l("Supplied fill", "给定成交")}:{" "}
+						{has("fill") ? signed(data.packet.fillShares) : "—"}
+						{has("fill") && (
+							<>
+								<br />
+								{data.packet.fillTime}
+							</>
+						)}
+					</p>
+					<p data-regime-depth>
+						{l("Supplied displayed depth", "给定显示深度")}:{" "}
+						{has("depth") ? number(data.packet.askDepthShares) : "—"}
+						{has("depth") && (
+							<>
+								<br />
+								{data.packet.depthTime}
+							</>
+						)}
+					</p>
+					{has("model") && (
+						<p className="font-mono text-xs">
+							{l(
+								"Stated portfolio · delta-neutral objective",
+								"给定组合 · Delta 中性目标",
+							)}
+							<br />
+							−({data.packet.sensitivity}) × $
+							{number(data.packet.moveCents / 100)} ={" "}
+							{signed(result?.hedgeChange ?? null)}
+						</p>
 					)}
-					<br />
-					−({data.packet.sensitivity}) × ${number(data.packet.moveCents / 100)}{" "}
-					= {signed(result?.hedgeChange ?? null)}
-				</p>
-			)}
-			<Note>
-				{l(
-					"Reveal buttons expose fixed synthetic records; they do not place orders or establish real dealer ownership. The model supplies a target, the fill supplies an execution, and the earlier depth snapshot supplies displayed liquidity at its own timestamp.",
-					"展示按钮打开固定模拟记录，不下单，也不确定真实做市商归属。模型提供目标，成交记录提供执行，较早的深度快照提供其自身时点的显示流动性。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Displayed depth can change and excludes hidden liquidity and later orders. Even with all three records, price impact and a squeeze are not established. A short-gamma label alone supplies none of this execution evidence.",
-					"显示深度可变化，且不包括隐藏流动性与后续订单。即使三项记录齐全，也未确定价格冲击或挤压。单凭负 Gamma 标签不能提供这些执行证据。",
-				)}
-			</p>
-		</SceneLayout>
+					<Note>
+						{l(
+							"Reveal buttons expose fixed synthetic records; they do not place orders or establish real dealer ownership. The model supplies a target, the fill supplies an execution, and the earlier depth snapshot supplies displayed liquidity at its own timestamp.",
+							"展示按钮打开固定模拟记录，不下单，也不确定真实做市商归属。模型提供目标，成交记录提供执行，较早的深度快照提供其自身时点的显示流动性。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Displayed depth can change and excludes hidden liquidity and later orders. Even with all three records, price impact and a squeeze are not established. A short-gamma label alone supplies none of this execution evidence.",
+							"显示深度可变化，且不包括隐藏流动性与后续订单。即使三项记录齐全，也未确定价格冲击或挤压。单凭负 Gamma 标签不能提供这些执行证据。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

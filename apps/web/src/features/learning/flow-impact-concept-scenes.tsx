@@ -201,64 +201,73 @@ export function FlowBuildScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<p className="font-mono text-xs">
-				A: |{data.prints[0].delta}| × {data.prints[0].contracts} ×{" "}
-				{data.prints[0].multiplier}
-				<br />
-				B: |{data.prints[1].delta}| × {contracts} × {data.prints[1].multiplier}
-				<br />
-				C: |{data.prints[2].delta}| × {data.prints[2].contracts} ×{" "}
-				{data.prints[2].multiplier}
-			</p>
-			<RangeControl
-				inputScale={1}
-				label={l("Print B contracts", "成交 B 张数")}
-				value={contracts}
-				display={number(contracts)}
-				min={data.contractRange[0]}
-				max={data.contractRange[1]}
-				step={100}
-				onChange={choose}
-			/>
-			<SelectField
-				label={l("Print B inferred flow", "成交 B 推断成交流")}
-				value={classification}
-				options={Object.entries(labels) as [string, string][]}
-				onChange={(value) => {
-					replay.select(replay.frame);
-					setClassification(value as FlowClass);
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p data-flow-gross>
-				{l("Gross represented magnitude", "已代表总幅度")}:{" "}
-				{number(result.gross)} · {l("shares-equivalent", "股等价量")}
-			</p>
-			<p data-flow-premium>
-				{l("Net classified premium", "分类净权利金")}: ${signed(result.premium)}
-			</p>
-			<Note>
-				{l(
-					"B has negative option delta, but this flow sign comes from its selected inferred classification. It is not signed position delta or dealer inventory. Neutral magnitude remains in gross coverage.",
-					"B 的期权 Delta 为负，但这里的成交流符号来自所选推断分类。它不是带符号持仓 Delta 或做市商库存。中性幅度保留在总覆盖中。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Hypothetical size changes hold premium per contract fixed. Reclassification changes both classified sums, not the observed prices. Playback is a controlled experiment, not a market replay.",
-					"假设张数变化保持每张权利金固定。重新分类改变两项分类汇总，不改变观测价格。回放是控制实验，不是行情重播。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Print B contracts", "成交 B 张数")}
+						value={contracts}
+						display={number(contracts)}
+						min={data.contractRange[0]}
+						max={data.contractRange[1]}
+						step={100}
+						onChange={choose}
+					/>
+					<SelectField
+						label={l("Print B inferred flow", "成交 B 推断成交流")}
+						value={classification}
+						options={Object.entries(labels) as [string, string][]}
+						onChange={(value) => {
+							replay.select(replay.frame);
+							setClassification(value as FlowClass);
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs">
+						A: |{data.prints[0].delta}| × {data.prints[0].contracts} ×{" "}
+						{data.prints[0].multiplier}
+						<br />
+						B: |{data.prints[1].delta}| × {contracts} ×{" "}
+						{data.prints[1].multiplier}
+						<br />
+						C: |{data.prints[2].delta}| × {data.prints[2].contracts} ×{" "}
+						{data.prints[2].multiplier}
+					</p>
+					<p data-flow-gross>
+						{l("Gross represented magnitude", "已代表总幅度")}:{" "}
+						{number(result.gross)} · {l("shares-equivalent", "股等价量")}
+					</p>
+					<p data-flow-premium>
+						{l("Net classified premium", "分类净权利金")}: $
+						{signed(result.premium)}
+					</p>
+					<Note>
+						{l(
+							"B has negative option delta, but this flow sign comes from its selected inferred classification. It is not signed position delta or dealer inventory. Neutral magnitude remains in gross coverage.",
+							"B 的期权 Delta 为负，但这里的成交流符号来自所选推断分类。它不是带符号持仓 Delta 或做市商库存。中性幅度保留在总覆盖中。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Hypothetical size changes hold premium per contract fixed. Reclassification changes both classified sums, not the observed prices. Playback is a controlled experiment, not a market replay.",
+							"假设张数变化保持每张权利金固定。重新分类改变两项分类汇总，不改变观测价格。回放是控制实验，不是行情重播。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function FlowDenominatorScene({ locale }: Props) {
@@ -349,62 +358,68 @@ export function FlowDenominatorScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Volume reference", "成交量参考")}
-				value={id}
-				options={data.references.map((r) => [
-					r.id,
-					r.label[locale === "zh" ? 1 : 0],
-				])}
-				onChange={setId}
-			/>
-			{id === "shares" && (
-				<RangeControl
-					inputScale={1}
-					label={l("Typical share volume", "典型股票成交量")}
-					value={volume}
-					display={number(volume)}
-					min={data.volumeRange[0]}
-					max={data.volumeRange[1]}
-					step={100000}
-					onChange={setVolume}
+			controls={
+				<SelectField
+					label={l("Volume reference", "成交量参考")}
+					value={id}
+					options={data.references.map((r) => [
+						r.id,
+						r.label[locale === "zh" ? 1 : 0],
+					])}
+					onChange={setId}
 				/>
-			)}
-			<p data-flow-reference className="font-mono text-xs leading-relaxed">
-				{l("Raw volume", "原始成交量")}: {number(effective.volume)}
-				<br />
-				{l("Proxy scale", "代理比例")}: {number(reference.scale)}
-				<br />
-				{reference.method ?? l("No proxy method supplied", "未提供代理方法")}
-			</p>
-			<p role="status">
-				{den === null
-					? l(
-							"Unavailable: a positive denominator and any required proxy scale/method must be supplied.",
-							"不可用：必须提供正分母及所需代理比例与方法。",
-						)
-					: l(
-							"Supported under this declared teaching convention.",
-							"在已声明教学约定下可计算。",
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					{id === "shares" && (
+						<RangeControl
+							inputScale={1}
+							label={l("Typical share volume", "典型股票成交量")}
+							value={volume}
+							display={number(volume)}
+							min={data.volumeRange[0]}
+							max={data.volumeRange[1]}
+							step={100000}
+							onChange={setVolume}
+						/>
+					)}
+					<p data-flow-reference className="font-mono text-xs leading-relaxed">
+						{l("Raw volume", "原始成交量")}: {number(effective.volume)}
+						<br />
+						{l("Proxy scale", "代理比例")}: {number(reference.scale)}
+						<br />
+						{reference.method ??
+							l("No proxy method supplied", "未提供代理方法")}
+					</p>
+					<p role="status">
+						{den === null
+							? l(
+									"Unavailable: a positive denominator and any required proxy scale/method must be supplied.",
+									"不可用：必须提供正分母及所需代理比例与方法。",
+								)
+							: l(
+									"Supported under this declared teaching convention.",
+									"在已声明教学约定下可计算。",
+								)}
+					</p>
+					<Note>
+						{l(
+							"An index has no ordinary share volume. A proxy's raw volume is not automatically comparable: this example declares 250,000 × 4 = 1,000,000 effective units. The factor is illustrative, not a universal index conversion.",
+							"指数没有普通股票成交量。代理原始量不能自动比较：本例声明 250,000 × 4 = 1,000,000 有效单位。该比例仅作教学演示，不是通用指数换算。",
 						)}
-			</p>
-			<Note>
-				{l(
-					"An index has no ordinary share volume. A proxy's raw volume is not automatically comparable: this example declares 250,000 × 4 = 1,000,000 effective units. The factor is illustrative, not a universal index conversion.",
-					"指数没有普通股票成交量。代理原始量不能自动比较：本例声明 250,000 × 4 = 1,000,000 有效单位。该比例仅作教学演示，不是通用指数换算。",
-				)}
-			</Note>
-			<p data-flow-fixed-gex className="text-sm">
-				{l("Separate GEX report stays fixed", "独立 GEX 报告保持固定")}:{" "}
-				{signed(data.gex.value)}
-				<br />
-				{data.gex.unit[locale === "zh" ? 1 : 0]}
-				<br />
-				{data.gex.source} · {data.gex.asOf}
-			</p>
-		</SceneLayout>
+					</Note>
+					<p data-flow-fixed-gex className="text-sm">
+						{l("Separate GEX report stays fixed", "独立 GEX 报告保持固定")}:{" "}
+						{signed(data.gex.value)}
+						<br />
+						{data.gex.unit[locale === "zh" ? 1 : 0]}
+						<br />
+						{data.gex.source} · {data.gex.asOf}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function FlowLineageScene({ locale }: Props) {
@@ -498,43 +513,51 @@ export function FlowLineageScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Numerator source", "分子来源")}
-				value={source}
-				options={rows.map(([id, label]) => [id, label])}
-				onChange={(value) => setSource(value as typeof source)}
-			/>
-			<p data-flow-source-detail className="font-mono text-xs leading-relaxed">
-				{source === "tape"
-					? `${data.session} · ${data.convention[locale === "zh" ? 1 : 0]}`
-					: source === "oi"
-						? `${data.oi.source} · ${data.oi.asOf}`
-						: `${data.gex.source} · ${data.gex.asOf} · ${data.gex.convention[locale === "zh" ? 1 : 0]}`}
-			</p>
-			<Note>
-				{source === "tape"
-					? l(
-							"Eligible: signed classified flow from the stated session, divided by the positive effective volume. DEI is a magnitude. It does not reveal dealer inventory or predict a price move.",
-							"可计算：声明时段的带符号分类成交流，除以正有效量。DEI 是幅度，不揭示做市商库存，也不预测价格变化。",
-						)
-					: source === "oi"
-						? l(
-								"This supplied absolute ΔOI-based magnitude describes reported position change. Today's inferred tape direction cannot give it a sign. An OI-impact measure needs its own numerator convention, clock and denominator; it cannot silently replace this flow-based DEI.",
-								"给定的绝对 ΔOI 型幅度描述报告持仓变化。今天推断的成交方向不能为其赋符号。OI 型影响需自己的分子约定、时点与分母，不能悄然替换本课成交流型 DEI。",
-							)
-						: l(
-								"This supplied GEX is a sensitivity report under an assumed inventory-sign convention. Its USD delta-notional change per +1% spot move differs from tape DEX share equivalents. It is neither a trade-flow numerator nor proof of observed dealer hedging.",
-								"给定 GEX 是按假设库存符号生成的敏感度报告。其现价 +1% 对应的美元 Delta 名义变化，与成交 DEX 的股等价单位不同。它既不是成交流分子，也不是已观测做市商对冲的证据。",
-							)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"All values are synthetic supplied teaching reports. GEX is displayed, not reconstructed from these three prints. Metric names alone do not establish compatible units, dates, scope or methods.",
-					"所有数值均为给定模拟教学报告。GEX 仅展示，不由这三笔成交重建。指标名称本身不保证单位、日期、范围或方法兼容。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<SelectField
+					label={l("Numerator source", "分子来源")}
+					value={source}
+					options={rows.map(([id, label]) => [id, label])}
+					onChange={(value) => setSource(value as typeof source)}
+				/>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p
+						data-flow-source-detail
+						className="font-mono text-xs leading-relaxed"
+					>
+						{source === "tape"
+							? `${data.session} · ${data.convention[locale === "zh" ? 1 : 0]}`
+							: source === "oi"
+								? `${data.oi.source} · ${data.oi.asOf}`
+								: `${data.gex.source} · ${data.gex.asOf} · ${data.gex.convention[locale === "zh" ? 1 : 0]}`}
+					</p>
+					<Note>
+						{source === "tape"
+							? l(
+									"Eligible: signed classified flow from the stated session, divided by the positive effective volume. DEI is a magnitude. It does not reveal dealer inventory or predict a price move.",
+									"可计算：声明时段的带符号分类成交流，除以正有效量。DEI 是幅度，不揭示做市商库存，也不预测价格变化。",
+								)
+							: source === "oi"
+								? l(
+										"This supplied absolute ΔOI-based magnitude describes reported position change. Today's inferred tape direction cannot give it a sign. An OI-impact measure needs its own numerator convention, clock and denominator; it cannot silently replace this flow-based DEI.",
+										"给定的绝对 ΔOI 型幅度描述报告持仓变化。今天推断的成交方向不能为其赋符号。OI 型影响需自己的分子约定、时点与分母，不能悄然替换本课成交流型 DEI。",
+									)
+								: l(
+										"This supplied GEX is a sensitivity report under an assumed inventory-sign convention. Its USD delta-notional change per +1% spot move differs from tape DEX share equivalents. It is neither a trade-flow numerator nor proof of observed dealer hedging.",
+										"给定 GEX 是按假设库存符号生成的敏感度报告。其现价 +1% 对应的美元 Delta 名义变化，与成交 DEX 的股等价单位不同。它既不是成交流分子，也不是已观测做市商对冲的证据。",
+									)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"All values are synthetic supplied teaching reports. GEX is displayed, not reconstructed from these three prints. Metric names alone do not establish compatible units, dates, scope or methods.",
+							"所有数值均为给定模拟教学报告。GEX 仅展示，不由这三笔成交重建。指标名称本身不保证单位、日期、范围或方法兼容。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }

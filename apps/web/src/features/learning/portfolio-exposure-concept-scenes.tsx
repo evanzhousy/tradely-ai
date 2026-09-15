@@ -17,6 +17,8 @@ import {
 	useFrames,
 } from "./concept-scene";
 import { lessonTransition, useLessonMotion } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
+import { ContributionWaterfall } from "./value-breakdown";
 import { useGuidedState } from "./visual-playback";
 export const PortfolioExposureContext =
 	createContext<PortfolioExposureData | null>(null);
@@ -104,7 +106,9 @@ export function ExposureCoverageScene({ locale }: Props) {
 											width={w}
 											height={19}
 											rx={4}
-											fill={v < 0 ? "var(--chart-3)" : "var(--primary)"}
+											fill={
+												v < 0 ? "var(--diagram-loss)" : "var(--diagram-gain)"
+											}
 											initial={false}
 											animate={{ width: w }}
 											transition={lessonTransition}
@@ -116,7 +120,9 @@ export function ExposureCoverageScene({ locale }: Props) {
 											width={w}
 											height={19}
 											rx={4}
-											fill={v < 0 ? "var(--chart-3)" : "var(--primary)"}
+											fill={
+												v < 0 ? "var(--diagram-loss)" : "var(--diagram-gain)"
+											}
 										/>
 									))}
 								{v === null && (
@@ -136,88 +142,102 @@ export function ExposureCoverageScene({ locale }: Props) {
 				</Diagram>
 			}
 			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "result-1",
+							label: <>{l("Covered delta", "已覆盖 Delta")}</>,
+							value: <>{num(sum.subtotal)}</>,
+							unit: l("share equivalents", "等效股数"),
+						},
+						{
+							id: "result-2",
+							label: <>{l("Complete delta", "完整 Delta")}</>,
+							value: <>{num(sum.total)}</>,
+							unit: l("share equivalents", "等效股数"),
+							tone: sum.total === null ? "unknown" : "estimated",
+						},
+						{
+							id: "result-3",
+							label: <>{l("Coverage", "覆盖")}</>,
+							value: (
+								<>
+									{sum.known}/{sum.required}
+								</>
+							),
+						},
+					]}
+				/>
+			}
+			controls={
 				<>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Covered delta", "已覆盖 Delta")}
-						</p>
-						<p className="scene-outcome-value">{num(sum.subtotal)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">
-							{l("Complete delta", "完整 Delta")}
-						</p>
-						<p className="scene-outcome-value">{num(sum.total)}</p>
-					</div>
-					<div className="scene-outcome-card">
-						<p className="scene-outcome-label">{l("Coverage", "覆盖")}</p>
-						<p className="scene-outcome-value">
-							{sum.known}/{sum.required}
-						</p>
-					</div>
+					<RangeControl
+						inputScale={1}
+						label={l("Hypothetical stock adjustment", "假设股票调整")}
+						value={hedge}
+						display={`${num(hedge)} ${l("shares", "股")}`}
+						min={-100}
+						max={100}
+						step={10}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(v);
+						}}
+					/>
+					<SelectField
+						label={l("Third holding evidence", "第三项持仓证据")}
+						value={coverage}
+						options={[
+							["missing", l("Put sensitivity missing", "看跌敏感度缺失")],
+							["known", l("Supply put delta −0.30", "提供看跌 Delta −0.30")],
+						]}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(hedge);
+							setCoverage(v);
+						}}
+					/>
+					<PlaybackButton
+						l={l}
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+					/>
 				</>
 			}
-		>
-			<RangeControl
-				inputScale={1}
-				label={l("Hypothetical stock adjustment", "假设股票调整")}
-				value={hedge}
-				display={`${num(hedge)} ${l("shares", "股")}`}
-				min={-100}
-				max={100}
-				step={10}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(v);
-				}}
-			/>
-			<SelectField
-				label={l("Third holding evidence", "第三项持仓证据")}
-				value={coverage}
-				options={[
-					["missing", l("Put sensitivity missing", "看跌敏感度缺失")],
-					["known", l("Supply put delta −0.30", "提供看跌 Delta −0.30")],
-				]}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(hedge);
-					setCoverage(v);
-				}}
-			/>
-			<PlaybackButton
-				l={l}
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-			/>
-			<div
-				aria-live="polite"
-				data-exposure-coverage
-				className="space-y-2 rounded-xl border p-4"
-			>
-				<p>
-					{l("Covered delta", "已覆盖 Delta")}: {num(sum.subtotal)} ·{" "}
-					{sum.known}/{sum.required}
-				</p>
-				<p>
-					{l("Complete delta", "完整 Delta")}: {num(sum.total)}
-				</p>
-				<p>
-					{l("Offset covered subtotal", "抵消已覆盖小计")}:{" "}
-					{num(sum.subtotal === null ? null : -sum.subtotal)}{" "}
-					{l("additional shares", "额外股数")}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"Original: 100 shares + (−2 × 100 × 0.40) = +20. Selling 20 shares offsets only the covered delta. Reveal the put: its −30 contribution changes the total. Buy is positive; sell is negative. Model delta and assignment exposure remain distinct.",
-					"原始：100 股 + (−2 × 100 × 0.40) = +20。卖 20 股只抵消已覆盖 Delta。揭示看跌期权：其 −30 贡献改变合计。买入为正，卖出为负。模型 Delta 与被指派敞口仍不同。",
-				)}
-			</p>
-			<Source locale={locale} />
-		</SceneLayout>
+			details={
+				<>
+					<div
+						aria-live="polite"
+						data-exposure-coverage
+						className="space-y-2 rounded-xl border p-4"
+					>
+						<p>
+							{l("Covered delta", "已覆盖 Delta")}: {num(sum.subtotal)} ·{" "}
+							{sum.known}/{sum.required}
+						</p>
+						<p>
+							{l("Complete delta", "完整 Delta")}: {num(sum.total)}
+						</p>
+						<p>
+							{l("Offset covered subtotal", "抵消已覆盖小计")}:{" "}
+							{num(sum.subtotal === null ? null : -sum.subtotal)}{" "}
+							{l("additional shares", "额外股数")}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"Original: 100 shares + (−2 × 100 × 0.40) = +20. Selling 20 shares offsets only the covered delta. Reveal the put: its −30 contribution changes the total. Buy is positive; sell is negative. Model delta and assignment exposure remain distinct.",
+							"原始：100 股 + (−2 × 100 × 0.40) = +20。卖 20 股只抵消已覆盖 Delta。揭示看跌期权：其 −30 贡献改变合计。买入为正，卖出为负。模型 Delta 与被指派敞口仍不同。",
+						)}
+					</p>
+					<Source locale={locale} />
+				</>
+			}
+		/>
 	);
 }
 export function ExposureRiskScene({ locale }: Props) {
@@ -258,6 +278,24 @@ export function ExposureRiskScene({ locale }: Props) {
 	const marker = { cx: 180 + move * 125, cy: 110 - result.gammaTerm * 55 };
 	return (
 		<SceneLayout
+			companion={
+				<ContributionWaterfall
+					locale={locale}
+					parts={[
+						{ id: "delta", label: "Delta", value: result.deltaTerm },
+						{ id: "gamma", label: "Gamma", value: result.gammaTerm },
+						{ id: "vega", label: "Vega", value: result.volTerm },
+						{ id: "theta", label: "Theta", value: result.timeTerm },
+					]}
+					total={result.total}
+					unit="USD"
+					format={money}
+					note={l(
+						"Covered stock-and-call subset only; local approximation.",
+						"仅限给定股票与看涨期权子集，采用局部近似。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -307,86 +345,94 @@ export function ExposureRiskScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<RangeControl
-				inputScale={1}
-				label={l("Small underlying move", "标的小幅变动")}
-				value={move}
-				display={money(move)}
-				min={-1}
-				max={1}
-				step={0.25}
-				onChange={(v) => {
-					stop();
-					setManual(v);
-				}}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("IV change in percentage points", "IV 变化百分点")}
-				value={iv}
-				display={`${num(iv)} pp`}
-				min={-1}
-				max={1}
-				step={0.25}
-				onChange={(v) => {
-					stop();
-					setIv(v);
-				}}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("Elapsed calendar days", "经过日历天数")}
-				value={days}
-				display={num(days)}
-				min={0}
-				max={1}
-				step={1}
-				onChange={(v) => {
-					stop();
-					setDays(v);
-				}}
-			/>
-			<PlaybackButton
-				l={l}
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					setIv(0);
-					setDays(0);
-					replay.toggle();
-				}}
-			/>
-			<div
-				aria-live="polite"
-				data-exposure-risk
-				className="space-y-1 rounded-xl border p-4"
-			>
-				<p>
-					Delta: {money(result.deltaTerm)} · Gamma: {money(result.gammaTerm)}
-				</p>
-				<p>
-					Vega: {money(result.volTerm)} · Theta: {money(result.timeTerm)}
-				</p>
-				<p>
-					{l("Combined local approximation", "合并局部近似")}:{" "}
-					{money(result.total)}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"Independent subset: 80 XYZ shares and 2 short calls; the third holding is excluded. Initial delta 0, gamma −4 shares/$, theta +$6/calendar day, vega −$24/IV point. P&L ≈ Δ·dS + ½Γ·dS² + V·dIV + Θ·dt. The curve shows spot terms only. Other controls change the separate combined estimate.",
-					"独立子集：80 股 XYZ 与 2 张看涨空头；排除第三项持仓。起始 Delta 0，Gamma −4 股/美元，Theta +$6/日历天，Vega −$24/IV 百分点。盈亏 ≈ Δ·dS + ½Γ·dS² + V·dIV + Θ·dt。曲线只显示现价项，其余控件改变独立合并估计。",
-				)}
-			</p>
-			<p className="text-muted-foreground text-sm">
-				{l(
-					"Frozen local Greeks, not repricing or a forecast. Cross effects, changing volatility surfaces, fees, funding, jumps and assignment are omitted. The same held stock hedge will not stay delta-neutral after a move.",
-					"冻结局部希腊值，不是重新定价或预测。省略交叉效应、波动率曲面变化、费用、融资、跳跃和指派。现价变化后，同一股票对冲不会持续 Delta 中性。",
-				)}
-			</p>
-			<Source locale={locale} />
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={1}
+						label={l("Small underlying move", "标的小幅变动")}
+						value={move}
+						display={money(move)}
+						min={-1}
+						max={1}
+						step={0.25}
+						onChange={(v) => {
+							stop();
+							setManual(v);
+						}}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("IV change in percentage points", "IV 变化百分点")}
+						value={iv}
+						display={`${num(iv)} pp`}
+						min={-1}
+						max={1}
+						step={0.25}
+						onChange={(v) => {
+							stop();
+							setIv(v);
+						}}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Elapsed calendar days", "经过日历天数")}
+						value={days}
+						display={num(days)}
+						min={0}
+						max={1}
+						step={1}
+						onChange={(v) => {
+							stop();
+							setDays(v);
+						}}
+					/>
+					<PlaybackButton
+						l={l}
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							setIv(0);
+							setDays(0);
+							replay.toggle();
+						}}
+					/>
+				</>
+			}
+			details={
+				<>
+					<div
+						aria-live="polite"
+						data-exposure-risk
+						className="space-y-1 rounded-xl border p-4"
+					>
+						<p>
+							Delta: {money(result.deltaTerm)} · Gamma:{" "}
+							{money(result.gammaTerm)}
+						</p>
+						<p>
+							Vega: {money(result.volTerm)} · Theta: {money(result.timeTerm)}
+						</p>
+						<p>
+							{l("Combined local approximation", "合并局部近似")}:{" "}
+							{money(result.total)}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"Independent subset: 80 XYZ shares and 2 short calls; the third holding is excluded. Initial delta 0, gamma −4 shares/$, theta +$6/calendar day, vega −$24/IV point. P&L ≈ Δ·dS + ½Γ·dS² + V·dIV + Θ·dt. The curve shows spot terms only. Other controls change the separate combined estimate.",
+							"独立子集：80 股 XYZ 与 2 张看涨空头；排除第三项持仓。起始 Delta 0，Gamma −4 股/美元，Theta +$6/日历天，Vega −$24/IV 百分点。盈亏 ≈ Δ·dS + ½Γ·dS² + V·dIV + Θ·dt。曲线只显示现价项，其余控件改变独立合并估计。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-sm">
+						{l(
+							"Frozen local Greeks, not repricing or a forecast. Cross effects, changing volatility surfaces, fees, funding, jumps and assignment are omitted. The same held stock hedge will not stay delta-neutral after a move.",
+							"冻结局部希腊值，不是重新定价或预测。省略交叉效应、波动率曲面变化、费用、融资、跳跃和指派。现价变化后，同一股票对冲不会持续 Delta 中性。",
+						)}
+					</p>
+					<Source locale={locale} />
+				</>
+			}
+		/>
 	);
 }
 export function ExposureUnitsScene({ locale }: Props) {
@@ -451,54 +497,62 @@ export function ExposureUnitsScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<SelectField
-				label={l("Call vega quote scale", "看涨 Vega 报价尺度")}
-				value={scale}
-				options={[
-					["point", l("$0.12 per 1 percentage point", "每 1 百分点 $0.12")],
-					["unit", l("$12 per 1.00 volatility", "每 1.00 波动率 $12")],
-				]}
-				onChange={setScale}
-			/>
-			<SelectField
-				label={l("Call snapshot evidence", "看涨快照证据")}
-				value={evidence}
-				options={[
-					["current", l("Matching timestamp", "时间一致")],
-					["stale", l("Previous-day timestamp", "前一天时间")],
-					["missing", l("Vega missing", "Vega 缺失")],
-				]}
-				onChange={setEvidence}
-			/>
-			<div
-				aria-live="polite"
-				data-exposure-units
-				className="space-y-2 rounded-xl border p-4"
-			>
-				<p>
-					{l("Known current vega subtotal", "已知当前 Vega 小计")}:{" "}
-					{num(sum.subtotal)} USD/pp
-				</p>
-				<p>
-					{l("Complete current vega", "完整当前 Vega")}: {num(sum.total)} USD/pp
-				</p>
-				<p>
-					{l("Current coverage", "当前覆盖")}: {sum.known}/{sum.required}
-				</p>
-			</div>
-			<p className="text-sm">
-				{l(
-					"0.01 volatility = one percentage point. Both quotes describe the same sensitivity. Two short contracts × multiplier 100 reverse the sign. Stock vega is a known zero; unavailable or stale option vega is not. A −14 USD/point total requires all three holdings on the declared snapshot.",
-					"0.01 波动率 = 一个百分点。两种报价描述同一敏感度。两张空头 × 乘数 100 会反转符号。股票 Vega 是已知零；不可用或陈旧的期权 Vega 不是。−14 美元/百分点合计需要三项持仓都属于声明快照。",
-				)}
-			</p>
-			<p className="text-muted-foreground text-xs">
-				{l("Call source time", "看涨来源时间")}: {row.at}
-				<br />
-				{l("Target snapshot", "目标快照")}: {data.at}
-			</p>
-			<Source locale={locale} />
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Call vega quote scale", "看涨 Vega 报价尺度")}
+						value={scale}
+						options={[
+							["point", l("$0.12 per 1 percentage point", "每 1 百分点 $0.12")],
+							["unit", l("$12 per 1.00 volatility", "每 1.00 波动率 $12")],
+						]}
+						onChange={setScale}
+					/>
+					<SelectField
+						label={l("Call snapshot evidence", "看涨快照证据")}
+						value={evidence}
+						options={[
+							["current", l("Matching timestamp", "时间一致")],
+							["stale", l("Previous-day timestamp", "前一天时间")],
+							["missing", l("Vega missing", "Vega 缺失")],
+						]}
+						onChange={setEvidence}
+					/>
+				</>
+			}
+			details={
+				<>
+					<div
+						aria-live="polite"
+						data-exposure-units
+						className="space-y-2 rounded-xl border p-4"
+					>
+						<p>
+							{l("Known current vega subtotal", "已知当前 Vega 小计")}:{" "}
+							{num(sum.subtotal)} USD/pp
+						</p>
+						<p>
+							{l("Complete current vega", "完整当前 Vega")}: {num(sum.total)}{" "}
+							USD/pp
+						</p>
+						<p>
+							{l("Current coverage", "当前覆盖")}: {sum.known}/{sum.required}
+						</p>
+					</div>
+					<p className="text-sm">
+						{l(
+							"0.01 volatility = one percentage point. Both quotes describe the same sensitivity. Two short contracts × multiplier 100 reverse the sign. Stock vega is a known zero; unavailable or stale option vega is not. A −14 USD/point total requires all three holdings on the declared snapshot.",
+							"0.01 波动率 = 一个百分点。两种报价描述同一敏感度。两张空头 × 乘数 100 会反转符号。股票 Vega 是已知零；不可用或陈旧的期权 Vega 不是。−14 美元/百分点合计需要三项持仓都属于声明快照。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						{l("Call source time", "看涨来源时间")}: {row.at}
+						<br />
+						{l("Target snapshot", "目标快照")}: {data.at}
+					</p>
+					<Source locale={locale} />
+				</>
+			}
+		/>
 	);
 }

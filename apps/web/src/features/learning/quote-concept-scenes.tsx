@@ -23,6 +23,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { OrderBookPanel } from "./order-book-panel";
 import { useQuoteData } from "./quote-concept-data";
 import { useGuidedState } from "./visual-playback";
 
@@ -163,39 +164,46 @@ export function QuoteAnatomyScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<RangeControl
-				inputScale={100}
-				label={l("What-if ask price", "假设卖价")}
-				value={ask}
-				display={money(ask)}
-				min={data.askRange[0]}
-				max={data.askRange[1]}
-				onChange={setAsk}
-			/>
-			<SelectField
-				label={l("Mark convention", "估值约定")}
-				value={mark}
-				options={[
-					["midpoint", l("Use midpoint", "使用中点")],
-					["last", l("Use last execution", "使用最新成交")],
-				]}
-				onChange={setMark}
-			/>
-			<p className="text-sm" data-quote-mark>
-				{l("Illustrative mark", "示例估值价")}:{" "}
-				<strong>
-					{money(mark === "midpoint" ? midpoint : data.last.price)}
-				</strong>
-			</p>
-			<Note>
-				{l(
-					"Spread = ask − bid. Midpoint = (bid + ask) ÷ 2. A midpoint or mark is a reference, not proof of an execution or an available fill price. Moving this quote creates no trades.",
-					"价差 = 卖价 − 买价；中点 =（买价 + 卖价）÷ 2。中点或估值价是参考值，不证明发生过成交，也不保证可以成交。移动报价不会产生交易。",
-				)}
-			</Note>
-		</SceneLayout>
+			controls={
+				<>
+					<RangeControl
+						inputScale={100}
+						label={l("What-if ask price", "假设卖价")}
+						value={ask}
+						display={money(ask)}
+						min={data.askRange[0]}
+						max={data.askRange[1]}
+						onChange={setAsk}
+					/>
+					<SelectField
+						label={l("Mark convention", "估值约定")}
+						value={mark}
+						options={[
+							["midpoint", l("Use midpoint", "使用中点")],
+							["last", l("Use last execution", "使用最新成交")],
+						]}
+						onChange={setMark}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p className="text-sm" data-quote-mark>
+						{l("Illustrative mark", "示例估值价")}:{" "}
+						<strong>
+							{money(mark === "midpoint" ? midpoint : data.last.price)}
+						</strong>
+					</p>
+					<Note>
+						{l(
+							"Spread = ask − bid. Midpoint = (bid + ask) ÷ 2. A midpoint or mark is a reference, not proof of an execution or an available fill price. Moving this quote creates no trades.",
+							"价差 = 卖价 − 买价；中点 =（买价 + 卖价）÷ 2。中点或估值价是参考值，不证明发生过成交，也不保证可以成交。移动报价不会产生交易。",
+						)}
+					</Note>
+				</>
+			}
+		/>
 	);
 }
 export function BookEventScene({ locale }: Props) {
@@ -369,67 +377,74 @@ export function BookEventScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<ChoiceField
-				label={l("Compare events", "比较事件")}
-				value={event}
-				options={[
-					["add", l("Add", "新增")],
-					["cancel", l("Cancel", "撤单")],
-					["trade", l("Trade", "成交")],
-				]}
-				onChange={(value) => {
-					playback.select(playback.frame);
-					setEvent(value);
-				}}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("Order quantity", "订单数量")}
-				value={size}
-				display={`${size} ${l("contracts", "张")}`}
-				min={1}
-				max={data.eventLimit}
-				onChange={(value) => {
-					playback.select(playback.frame);
-					setSize(value);
-				}}
-			/>
-			<SelectField
-				label={l("Event stage", "事件阶段")}
-				value={String(playback.frame)}
-				options={stages.map((label, i) => [String(i), label])}
-				onChange={(value) => playback.select(Number(value))}
-			/>
-			<PlaybackButton
-				playing={playback.playing}
-				onClick={playback.toggle}
-				l={l}
-			/>
-			<Note>
-				{!changed
-					? l(
-							"An instruction is not a confirmed result. The book and tape stay unchanged until the supplied outcome arrives.",
-							"指令不等于已确认结果。给定结果到达之前，订单簿与成交记录保持不变。",
-						)
-					: event === "trade"
-						? l(
-								"This example supplies a confirmed match at the ask. Volume and last now update. Sending a buy order alone would not establish that fill.",
-								"此例给定了在卖价的已确认撮合，成交量与最新成交价随之更新。仅发送买单不能证明成交。",
-							)
-						: l(
-								"The quote size changes, but no trade is reported. A cancellation removes an unfilled order; it does not add traded volume.",
-								"报价数量改变，但没有成交报告。撤单移除未成交订单，不增加成交量。",
-							)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Isolated displayed-book example: no other orders, hidden liquidity or executions. Times share the snapshot date.",
-					"独立可见订单簿示例：没有其他订单、隐藏流动性或成交。所有时间均属快照当日。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<ChoiceField
+						label={l("Compare events", "比较事件")}
+						value={event}
+						options={[
+							["add", l("Add", "新增")],
+							["cancel", l("Cancel", "撤单")],
+							["trade", l("Trade", "成交")],
+						]}
+						onChange={(value) => {
+							playback.select(playback.frame);
+							setEvent(value);
+						}}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Order quantity", "订单数量")}
+						value={size}
+						display={`${size} ${l("contracts", "张")}`}
+						min={1}
+						max={data.eventLimit}
+						onChange={(value) => {
+							playback.select(playback.frame);
+							setSize(value);
+						}}
+					/>
+					<SelectField
+						label={l("Event stage", "事件阶段")}
+						value={String(playback.frame)}
+						options={stages.map((label, i) => [String(i), label])}
+						onChange={(value) => playback.select(Number(value))}
+					/>
+					<PlaybackButton
+						playing={playback.playing}
+						onClick={playback.toggle}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<Note>
+						{!changed
+							? l(
+									"An instruction is not a confirmed result. The book and tape stay unchanged until the supplied outcome arrives.",
+									"指令不等于已确认结果。给定结果到达之前，订单簿与成交记录保持不变。",
+								)
+							: event === "trade"
+								? l(
+										"This example supplies a confirmed match at the ask. Volume and last now update. Sending a buy order alone would not establish that fill.",
+										"此例给定了在卖价的已确认撮合，成交量与最新成交价随之更新。仅发送买单不能证明成交。",
+									)
+								: l(
+										"The quote size changes, but no trade is reported. A cancellation removes an unfilled order; it does not add traded volume.",
+										"报价数量改变，但没有成交报告。撤单移除未成交订单，不增加成交量。",
+									)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Isolated displayed-book example: no other orders, hidden liquidity or executions. Times share the snapshot date.",
+							"独立可见订单簿示例：没有其他订单、隐藏流动性或成交。所有时间均属快照当日。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function VenueQuoteScene({ locale }: Props) {
@@ -597,49 +612,56 @@ export function VenueQuoteScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Snapshot locale={locale} />
-			<ChoiceField
-				label={l("Inspect venue", "检查场所")}
-				value={selected}
-				options={data.venues.map((v) => [v.id, v.id])}
-				onChange={setSelected}
-			/>
-			<p className="text-sm" data-venue-inspected>
-				{l("Venue", "场所")} {selected}:{" "}
-				{inspected ? `${money(inspected.bid)} / ${money(inspected.ask)}` : "—"}
-				<br />
-				{l("Its own spread", "自身价差")}:{" "}
-				{inspected ? money(inspected.ask - inspected.bid) : "—"}
-			</p>
-			<SelectField
-				label={l("Quote eligibility", "报价资格")}
-				value={scope}
-				options={[
-					["all", l("All current", "全部有效")],
-					[
-						"stale",
-						l(
-							`Exclude stale venue ${data.staleVenue}`,
-							`排除过期场所 ${data.staleVenue}`,
-						),
-					],
-					["none", l("No eligible quotes", "没有合格报价")],
-				]}
-				onChange={setScope}
-			/>
-			<p className="text-sm" data-best-spread>
-				{l("Combined spread", "汇总价差")}:{" "}
-				<strong>{best ? money(best.spread) : l("Unknown", "未知")}</strong>
-			</p>
-			<Note>
-				{l(
-					"NBBO combines the best eligible quotations across venues. This three-venue teaching model illustrates that idea; it is not a live national feed or a fill guarantee. Excluded rows remain visible for comparison. Missing quotes do not mean a zero price.",
-					"NBBO 汇总各场所的合格最优报价。三个虚构场所仅演示这一概念，并非实时全国行情，也不保证成交。排除的行仍保留供比较；缺失报价不等于价格为零。",
-				)}
-			</Note>
-		</SceneLayout>
+			controls={
+				<>
+					<ChoiceField
+						label={l("Inspect venue", "检查场所")}
+						value={selected}
+						options={data.venues.map((v) => [v.id, v.id])}
+						onChange={setSelected}
+					/>
+					<SelectField
+						label={l("Quote eligibility", "报价资格")}
+						value={scope}
+						options={[
+							["all", l("All current", "全部有效")],
+							[
+								"stale",
+								l(
+									`Exclude stale venue ${data.staleVenue}`,
+									`排除过期场所 ${data.staleVenue}`,
+								),
+							],
+							["none", l("No eligible quotes", "没有合格报价")],
+						]}
+						onChange={setScope}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Snapshot locale={locale} />
+					<p className="text-sm" data-venue-inspected>
+						{l("Venue", "场所")} {selected}:{" "}
+						{inspected
+							? `${money(inspected.bid)} / ${money(inspected.ask)}`
+							: "—"}
+						<br />
+						{l("Its own spread", "自身价差")}:{" "}
+						{inspected ? money(inspected.ask - inspected.bid) : "—"}
+					</p>
+					<p className="text-sm" data-best-spread>
+						{l("Combined spread", "汇总价差")}:{" "}
+						<strong>{best ? money(best.spread) : l("Unknown", "未知")}</strong>
+					</p>
+					<Note>
+						{l(
+							"NBBO combines the best eligible quotations across venues. This three-venue teaching model illustrates that idea; it is not a live national feed or a fill guarantee. Excluded rows remain visible for comparison. Missing quotes do not mean a zero price.",
+							"NBBO 汇总各场所的合格最优报价。三个虚构场所仅演示这一概念，并非实时全国行情，也不保证成交。排除的行仍保留供比较；缺失报价不等于价格为零。",
+						)}
+					</Note>
+				</>
+			}
+		/>
 	);
 }
-
-import { OrderBookPanel } from "./order-book-panel";

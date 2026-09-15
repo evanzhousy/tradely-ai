@@ -213,74 +213,82 @@ export function NeighborhoodExploreScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Expiry focus", "到期聚焦")}
-				value={focus === null ? "all" : String(focus)}
-				options={[
-					["all", l("All expiries", "全部到期日")],
-					...data.days.map(
-						(d) => [String(d), `${d} ${l("days", "天")}`] as const,
-					),
-				]}
-				onChange={(value) => {
-					const next = value === "all" ? null : Number(value);
-					setFocus(next);
-					if (next !== null)
-						setSelected(
-							snapshot.data.contracts.find((c) => c.days === next)?.id ??
-								selected,
-						);
-				}}
-			/>
-			<SelectField
-				label={l("Selected contract", "所选合约")}
-				value={selected}
-				options={snapshot.data.contracts.map((c) => [
-					c.id,
-					`${c.days}d · ${c.strike} call`,
-				])}
-				onChange={choose}
-			/>
-			<RangeControl
-				inputScale={1}
-				label={l("Hypothetical reference spot", "假设参考现价")}
-				value={spot}
-				display={`$${spot}`}
-				min={data.spotRange[0]}
-				max={data.spotRange[1]}
-				step={1}
-				onChange={setSpot}
-			/>
-			<p data-neighbor-selected>
-				{row.days}d · {row.strike} call · {number(row.volume)}{" "}
-				{l("contracts", "张")}
-			</p>
-			<p data-neighbor-money>
-				{l("Call moneyness", "看涨价内外")}:{" "}
-				{callMoneyness(row.strike, spot).toUpperCase()}
-			</p>
-			<p data-neighbor-slice>
-				{l("Focused expiry subtotal", "聚焦到期小计")}: {number(slice.total)}
-			</p>
-			<p data-neighbor-full>
-				{l("Full declared scope total", "完整声明范围总量")}:{" "}
-				{number(all.total)}
-			</p>
-			<Note>
-				{l(
-					"Focus dims other expiries; it does not remove contracts from the declared universe or recompute full totals. Spot changes only moneyness here: at 103, a 100 call is ITM and a 105 call is OTM. It does not alter the observed volume or tell you which contract to buy.",
-					"聚焦使其他到期日变淡，不将合约移出声明范围，也不改写完整总量。此处现价只改变价内外：103 时，100 看涨为实值、105 看涨为虚值，不改变观测量，也不告诉你买哪张。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Carry the selected identity, source date, nearby activity and coverage into the next inspection. A cluster does not establish a spread, shared owner, accumulation or forecast.",
-					"下一项检查应携带所选身份、来源日期、邻近活动与覆盖。聚集不证明价差策略、共同持有、积累或预测。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Expiry focus", "到期聚焦")}
+						value={focus === null ? "all" : String(focus)}
+						options={[
+							["all", l("All expiries", "全部到期日")],
+							...data.days.map(
+								(d) => [String(d), `${d} ${l("days", "天")}`] as const,
+							),
+						]}
+						onChange={(value) => {
+							const next = value === "all" ? null : Number(value);
+							setFocus(next);
+							if (next !== null)
+								setSelected(
+									snapshot.data.contracts.find((c) => c.days === next)?.id ??
+										selected,
+								);
+						}}
+					/>
+					<SelectField
+						label={l("Selected contract", "所选合约")}
+						value={selected}
+						options={snapshot.data.contracts.map((c) => [
+							c.id,
+							`${c.days}d · ${c.strike} call`,
+						])}
+						onChange={choose}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Hypothetical reference spot", "假设参考现价")}
+						value={spot}
+						display={`$${spot}`}
+						min={data.spotRange[0]}
+						max={data.spotRange[1]}
+						step={1}
+						onChange={setSpot}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-neighbor-selected>
+						{row.days}d · {row.strike} call · {number(row.volume)}{" "}
+						{l("contracts", "张")}
+					</p>
+					<p data-neighbor-money>
+						{l("Call moneyness", "看涨价内外")}:{" "}
+						{callMoneyness(row.strike, spot).toUpperCase()}
+					</p>
+					<p data-neighbor-slice>
+						{l("Focused expiry subtotal", "聚焦到期小计")}:{" "}
+						{number(slice.total)}
+					</p>
+					<p data-neighbor-full>
+						{l("Full declared scope total", "完整声明范围总量")}:{" "}
+						{number(all.total)}
+					</p>
+					<Note>
+						{l(
+							"Focus dims other expiries; it does not remove contracts from the declared universe or recompute full totals. Spot changes only moneyness here: at 103, a 100 call is ITM and a 105 call is OTM. It does not alter the observed volume or tell you which contract to buy.",
+							"聚焦使其他到期日变淡，不将合约移出声明范围，也不改写完整总量。此处现价只改变价内外：103 时，100 看涨为实值、105 看涨为虚值，不改变观测量，也不告诉你买哪张。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Carry the selected identity, source date, nearby activity and coverage into the next inspection. A cluster does not establish a spread, shared owner, accumulation or forecast.",
+							"下一项检查应携带所选身份、来源日期、邻近活动与覆盖。聚集不证明价差策略、共同持有、积累或预测。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function NeighborhoodBreadthScene({ locale }: Props) {
@@ -340,49 +348,56 @@ export function NeighborhoodBreadthScene({ locale }: Props) {
 					/>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Supplied layout", "给定布局")}
-				value={String(index)}
-				options={data.snapshots
-					.slice(0, 2)
-					.map((s, i) => [String(i), s.label[locale === "zh" ? 1 : 0]])}
-				onChange={(v) => {
-					replay.select(replay.frame);
-					setManual(Number(v));
-				}}
-			/>
-			<PlaybackButton
-				playing={replay.playing}
-				onClick={() => {
-					setManual(null);
-					replay.toggle();
-				}}
-				l={l}
-			/>
-			<p data-neighbor-total>
-				{l("Complete total", "完整总量")}: {number(stats.total)}
-			</p>
-			<p data-neighbor-peak>
-				{l("Complete peak", "完整峰值")}: {number(stats.peak)}
-			</p>
-			<p data-neighbor-breadth>
-				{l("Complete nonzero count", "完整非零数")}: {stats.breadth}
-			</p>
-			<Note>
-				{l(
-					"Both layouts total 8,000 contracts and peak at 3,000. The compact layout has three nonzero cells; the broad layout has nine. Peak and total alone do not describe distribution. Explicit zero observations count toward coverage but not nonzero breadth.",
-					"两种布局总量均为 8,000 张、峰值均为 3,000。集中布局有三个非零格，广泛布局有九个。仅峰值与总量不能描述分布。明确零观测计入覆盖，但不计非零广度。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Playback compares fixed illustrative layouts, not a live session or reconstructed trade path. Every cell keeps the same declared units and axes.",
-					"回放比较固定示意布局，不是实时时段或重建成交路径。每格保持相同声明单位与坐标。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Supplied layout", "给定布局")}
+						value={String(index)}
+						options={data.snapshots
+							.slice(0, 2)
+							.map((s, i) => [String(i), s.label[locale === "zh" ? 1 : 0]])}
+						onChange={(v) => {
+							replay.select(replay.frame);
+							setManual(Number(v));
+						}}
+					/>
+					<PlaybackButton
+						playing={replay.playing}
+						onClick={() => {
+							setManual(null);
+							replay.toggle();
+						}}
+						l={l}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-neighbor-total>
+						{l("Complete total", "完整总量")}: {number(stats.total)}
+					</p>
+					<p data-neighbor-peak>
+						{l("Complete peak", "完整峰值")}: {number(stats.peak)}
+					</p>
+					<p data-neighbor-breadth>
+						{l("Complete nonzero count", "完整非零数")}: {stats.breadth}
+					</p>
+					<Note>
+						{l(
+							"Both layouts total 8,000 contracts and peak at 3,000. The compact layout has three nonzero cells; the broad layout has nine. Peak and total alone do not describe distribution. Explicit zero observations count toward coverage but not nonzero breadth.",
+							"两种布局总量均为 8,000 张、峰值均为 3,000。集中布局有三个非零格，广泛布局有九个。仅峰值与总量不能描述分布。明确零观测计入覆盖，但不计非零广度。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Playback compares fixed illustrative layouts, not a live session or reconstructed trade path. Every cell keeps the same declared units and axes.",
+							"回放比较固定示意布局，不是实时时段或重建成交路径。每格保持相同声明单位与坐标。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
 export function NeighborhoodQualityScene({ locale }: Props) {
@@ -437,61 +452,72 @@ export function NeighborhoodQualityScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-		>
-			<Context locale={locale} />
-			<SelectField
-				label={l("Evidence snapshot", "证据快照")}
-				value={id}
-				options={data.snapshots
-					.slice(1)
-					.map((s) => [s.id, s.label[locale === "zh" ? 1 : 0]])}
-				onChange={(v) => {
-					setId(v);
-					setSelected("14:95");
-				}}
-			/>
-			<SelectField
-				label={l("Inspect evidence row", "检查证据行")}
-				value={row.id}
-				options={snapshot.data.contracts.map((c) => [
-					c.id,
-					`${c.days}d · ${c.strike} call`,
-				])}
-				onChange={setSelected}
-			/>
-			<p data-neighbor-quality-detail>
-				{row.days}d · {row.strike} call · {number(row.volume)}
-				<br />
-				{l("Source session", "来源时段")}: {snapshot.sessions[row.id]}
-			</p>
-			<p data-neighbor-status>
-				{statusLabel(neighborhoodEvidenceStatus(snapshot.data, row), locale)}
-			</p>
-			<p data-neighbor-known>
-				{l("Known eligible subtotal", "已知合格小计")}:{" "}
-				{number(stats.knownTotal)}
-			</p>
-			<p data-neighbor-complete>
-				{l("Complete scope total", "完整范围总量")}: {number(stats.total)}
-			</p>
-			<p data-neighbor-known-peak>
-				{l("Known eligible peak", "已知合格峰值")}: {number(stats.knownPeak)}
-			</p>
-			<p data-neighbor-complete-peak>
-				{l("Complete scope peak", "完整范围峰值")}: {number(stats.peak)}
-			</p>
-			<Note>
-				{l(
-					"A missing required cell or a prior-session value leaves current coverage incomplete. A known subtotal or peak does not certify the complete total or maximum. The 20,000-contract row at strike 115 is outside the fixed scope, so it cannot win this comparison even though it is visible for audit.",
-					"必需格缺失或仅有前日值时，当前覆盖不完整。已知小计或峰值不能认证完整总和或最大值。行权价 115 的 20,000 张行位于固定范围外，即使显示以供审计，也不能赢得本比较。",
-				)}
-			</Note>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Keep excluded and unknown evidence in the record. Do not replace either with zero, silently widen the scope or infer a position from the shape.",
-					"记录中保留排除与未知证据，不将其补零，不悄然扩大范围，也不从形状推断持仓。",
-				)}
-			</p>
-		</SceneLayout>
+			controls={
+				<>
+					<SelectField
+						label={l("Evidence snapshot", "证据快照")}
+						value={id}
+						options={data.snapshots
+							.slice(1)
+							.map((s) => [s.id, s.label[locale === "zh" ? 1 : 0]])}
+						onChange={(v) => {
+							setId(v);
+							setSelected("14:95");
+						}}
+					/>
+					<SelectField
+						label={l("Inspect evidence row", "检查证据行")}
+						value={row.id}
+						options={snapshot.data.contracts.map((c) => [
+							c.id,
+							`${c.days}d · ${c.strike} call`,
+						])}
+						onChange={setSelected}
+					/>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p data-neighbor-quality-detail>
+						{row.days}d · {row.strike} call · {number(row.volume)}
+						<br />
+						{l("Source session", "来源时段")}: {snapshot.sessions[row.id]}
+					</p>
+					<p data-neighbor-status>
+						{statusLabel(
+							neighborhoodEvidenceStatus(snapshot.data, row),
+							locale,
+						)}
+					</p>
+					<p data-neighbor-known>
+						{l("Known eligible subtotal", "已知合格小计")}:{" "}
+						{number(stats.knownTotal)}
+					</p>
+					<p data-neighbor-complete>
+						{l("Complete scope total", "完整范围总量")}: {number(stats.total)}
+					</p>
+					<p data-neighbor-known-peak>
+						{l("Known eligible peak", "已知合格峰值")}:{" "}
+						{number(stats.knownPeak)}
+					</p>
+					<p data-neighbor-complete-peak>
+						{l("Complete scope peak", "完整范围峰值")}: {number(stats.peak)}
+					</p>
+					<Note>
+						{l(
+							"A missing required cell or a prior-session value leaves current coverage incomplete. A known subtotal or peak does not certify the complete total or maximum. The 20,000-contract row at strike 115 is outside the fixed scope, so it cannot win this comparison even though it is visible for audit.",
+							"必需格缺失或仅有前日值时，当前覆盖不完整。已知小计或峰值不能认证完整总和或最大值。行权价 115 的 20,000 张行位于固定范围外，即使显示以供审计，也不能赢得本比较。",
+						)}
+					</Note>
+					<p className="text-muted-foreground text-xs">
+						{l(
+							"Keep excluded and unknown evidence in the record. Do not replace either with zero, silently widen the scope or infer a position from the shape.",
+							"记录中保留排除与未知证据，不将其补零，不悄然扩大范围，也不从形状推断持仓。",
+						)}
+					</p>
+				</>
+			}
+		/>
 	);
 }
