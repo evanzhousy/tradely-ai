@@ -85,7 +85,23 @@ export function TapeConceptLab({
 				locale={locale}
 				id="tape"
 				label={["Interactive tape record lesson", "成交记录互动课堂"]}
-				scenes={scenes}
+				scenes={[
+					scenes[0],
+					{
+						...scenes[1],
+						playbackStops: [
+							["Before messages", "收到消息前"] as const,
+							...data.messages.map(
+								(message) =>
+									[
+										`${message.id} · ${message.kind}`,
+										`${message.id} · ${message.kind === "new" ? "新增" : message.kind === "correct" ? "更正" : message.kind === "cancel" ? "撤销" : "重复"}`,
+									] as const,
+							),
+						],
+					},
+					scenes[2],
+				]}
 			/>
 		</TapeData>
 	);

@@ -23,6 +23,13 @@ const scenes = [
 				"沿数量、成交价与给定乘数，查看权利金金额如何形成。",
 			],
 		],
+		playbackStops: [
+			["Contract", "合约"],
+			["Time", "时间"],
+			["Price", "价格"],
+			["Quantity", "数量"],
+			["Multiplier", "乘数"],
+		],
 		Component: PrintInspectorScene,
 	},
 	{

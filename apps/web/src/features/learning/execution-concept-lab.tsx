@@ -22,9 +22,22 @@ const scenes = [
 		],
 		demonstration: [
 			[
-				"An incoming order meets a resting counterparty. Two participants create one execution.",
-				"主动订单与挂单方撮合，两名参与者形成一笔成交。",
+				"Start with the supplied resting buyers and sellers.",
+				"从给定的挂单买方与卖方开始。",
 			],
+			[
+				"The incoming order meets the opposite side of the book.",
+				"主动订单与订单簿的对手方撮合。",
+			],
+			[
+				"One execution reduces displayed size and adds the same quantity to the tape.",
+				"一笔成交减少可见数量，同时增加相同数量的成交记录。",
+			],
+		],
+		playbackStops: [
+			["Resting book", "初始订单簿"],
+			["Order arrives", "订单到达"],
+			["Confirmed execution", "成交确认"],
 		],
 		Component: CounterpartyScene,
 	},
@@ -38,9 +51,37 @@ const scenes = [
 		],
 		demonstration: [
 			[
-				"Increasing the requested quantity does not create more liquidity at the limit price.",
-				"增加请求数量，不会凭空增加限价内的流动性。",
+				"The book shows the supplied quantities at each price.",
+				"订单簿显示每个价位给定的数量。",
 			],
+			[
+				"The incoming order specifies a quantity and a price limit, or accepts the displayed market prices.",
+				"主动订单指定数量与限价，或接受可见市价。",
+			],
+			[
+				"Match the best opposite-side price when it is eligible.",
+				"在符合条件时，先匹配对手方最优价。",
+			],
+			[
+				"Only reach the second level if the order still needs quantity and the price is permitted.",
+				"只有还有剩余需求且价格允许，才继续到第二档。",
+			],
+			[
+				"The last supplied level is the boundary of this displayed book.",
+				"最后给定档位就是本例可见订单簿的边界。",
+			],
+			[
+				"Filled plus unfilled equals requested quantity. Each fill is listed beside the book.",
+				"已成交加未成交等于请求数量，每笔模拟成交都列在订单簿旁。",
+			],
+		],
+		playbackStops: [
+			["Resting book", "初始订单簿"],
+			["Order arrives", "订单到达"],
+			["First level", "第一档"],
+			["Second level", "第二档"],
+			["Third level", "第三档"],
+			["Result", "结果"],
 		],
 		Component: LiquidityScene,
 	},
@@ -57,9 +98,22 @@ const scenes = [
 		],
 		demonstration: [
 			[
-				"Different instructions can produce the same print. Only the supplied order record resolves this example.",
-				"不同指令可以形成相同成交，给定订单记录才能确定本例的指令。",
+				"The print supplies execution price and size; its original instruction is unresolved.",
+				"成交记录给出价格与数量，原始指令尚未确定。",
 			],
+			[
+				"The first supplied order record identifies a limit order.",
+				"第一份给定订单记录确认是限价单。",
+			],
+			[
+				"The other supplied history produces the same print from a market order.",
+				"另一份给定历史用市价单产生相同成交。",
+			],
+		],
+		playbackStops: [
+			["Print only", "仅成交"],
+			["Order record A", "订单记录 A"],
+			["Order record B", "订单记录 B"],
 		],
 		Component: OrderEvidenceScene,
 	},

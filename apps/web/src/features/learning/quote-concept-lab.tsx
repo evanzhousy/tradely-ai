@@ -26,6 +26,11 @@ const scenes = [
 				"卖价变化带动价差与中点变化，最新成交仍是独立观测。",
 			],
 		],
+		playbackStops: [
+			["Original quote", "原报价"],
+			["Ask changes", "卖价变化"],
+			["Wider spread", "价差扩大"],
+		],
 		Component: QuoteAnatomyScene,
 	},
 	{
@@ -44,6 +49,11 @@ const scenes = [
 				"Follow an order from arrival to its outcome. A cancellation changes the book without creating a trade.",
 				"跟随订单从进入到结果；撤单改变订单簿，但不产生交易。",
 			],
+		],
+		playbackStops: [
+			["Resting quote", "初始报价"],
+			["Instruction sent", "指令发送"],
+			["Outcome confirmed", "结果确认"],
 		],
 		Component: BookEventScene,
 	},

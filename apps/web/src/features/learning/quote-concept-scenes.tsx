@@ -66,6 +66,16 @@ export function QuoteAnatomyScene({ locale }: Props) {
 		40 + ((price - data.bid) / (data.askRange[1] - data.bid)) * 280;
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={data.contract}
+					at={data.quoteAt}
+					bids={[{ price: data.bid, size: data.bidSize }]}
+					asks={[{ price: ask, size: data.askSize }]}
+					print={data.last}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -209,6 +219,22 @@ export function BookEventScene({ locale }: Props) {
 	const changed = playback.frame === 2;
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={data.contract}
+					at={changed ? data.outcomeAt : data.quoteAt}
+					bids={[{ price: data.bid, size: data.bidSize }]}
+					asks={[{ price: data.ask, size: result.askSize }]}
+					scale={data.askSize + data.eventLimit}
+					event={`${stages[playback.frame]} · ${names[event]}`}
+					print={result.last}
+					note={l(
+						"Only a confirmed execution changes the tape. Adding or canceling an order changes displayed size.",
+						"只有已确认成交才改变成交记录。新增或取消订单仅改变可见数量。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -422,6 +448,42 @@ export function VenueQuoteScene({ locale }: Props) {
 	const inspected = data.venues.find((v) => v.id === selected);
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={data.contract}
+					at={data.quoteAt}
+					bids={
+						best
+							? [
+									{
+										price: best.bid,
+										size: eligible
+											.filter((v) => v.bid === best.bid)
+											.reduce((sum, v) => sum + v.bidSize, 0),
+									},
+								]
+							: []
+					}
+					asks={
+						best
+							? [
+									{
+										price: best.ask,
+										size: eligible
+											.filter((v) => v.ask === best.ask)
+											.reduce((sum, v) => sum + v.askSize, 0),
+									},
+								]
+							: []
+					}
+					note={
+						best
+							? `${l("Best bid venues", "最优买价场所")}: ${best.bidVenues.join(", ")} · ${l("Best ask venues", "最优卖价场所")}: ${best.askVenues.join(", ")}`
+							: l("No eligible quotes supplied.", "没有给定合格报价。")
+					}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -579,3 +641,5 @@ export function VenueQuoteScene({ locale }: Props) {
 		</SceneLayout>
 	);
 }
+
+import { OrderBookPanel } from "./order-book-panel";

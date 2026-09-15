@@ -101,6 +101,20 @@ export function LocationMapScene({ locale }: Props) {
 	};
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={data.contract}
+					at={null}
+					bids={[{ price: data.bid, size: null }]}
+					asks={[{ price: data.ask, size: null }]}
+					print={{ price, quantity: data.quantity, at: data.printAt }}
+					note={l(
+						"Price comparison example. Quote sizes and deeper liquidity are not supplied.",
+						"价格比较示例，没有给定报价数量与更深流动性。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -304,6 +318,21 @@ export function QuoteReferenceScene({ locale }: Props) {
 	const quoteX = age === null ? null : plot(age);
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={reference.contract}
+					at={reference.at}
+					bids={
+						reference.bid === null ? [] : [{ price: reference.bid, size: null }]
+					}
+					asks={
+						reference.ask === null ? [] : [{ price: reference.ask, size: null }]
+					}
+					print={{ price: data.ask, quantity: data.quantity, at: data.printAt }}
+					note={`${reference.label[language]} · ${l("Keep the print; assess quote timing and conditions separately.", "保留成交，单独判断报价时间与条件。")}`}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -488,6 +517,16 @@ export function SideClaimScene({ locale }: Props) {
 				: l("Initiation unresolved", "主动方未确定");
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={data.contract}
+					at={null}
+					bids={[{ price: data.bid, size: null }]}
+					asks={[{ price: data.ask, size: null }]}
+					print={{ price, quantity: data.quantity, at: data.printAt }}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -652,3 +691,5 @@ export function SideClaimScene({ locale }: Props) {
 		</SceneLayout>
 	);
 }
+
+import { OrderBookPanel } from "./order-book-panel";

@@ -158,6 +158,29 @@ export function PrintInspectorScene({ locale }: Props) {
 	];
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={packet.reference.contract}
+					at={packet.reference.at}
+					bids={
+						packet.reference.bid === null
+							? []
+							: [{ price: packet.reference.bid, size: null }]
+					}
+					asks={
+						packet.reference.ask === null
+							? []
+							: [{ price: packet.reference.ask, size: null }]
+					}
+					print={{
+						price: data.print.price,
+						quantity: data.print.quantity,
+						at: data.print.at,
+					}}
+					note={`${packet.reference.label[language]} · ${l("Quote sizes and depth are not supplied.", "没有给定报价数量与深度。")}`}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -363,6 +386,29 @@ export function EvidenceBucketsScene({ locale }: Props) {
 	];
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={packet.reference.contract}
+					at={packet.reference.at}
+					bids={
+						packet.reference.bid === null
+							? []
+							: [{ price: packet.reference.bid, size: null }]
+					}
+					asks={
+						packet.reference.ask === null
+							? []
+							: [{ price: packet.reference.ask, size: null }]
+					}
+					print={{
+						price: data.print.price,
+						quantity: data.print.quantity,
+						at: data.print.at,
+					}}
+					note={`${packet.reference.label[language]} · ${l("Quote sizes and depth are not supplied.", "没有给定报价数量与深度。")}`}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -583,6 +629,29 @@ export function FollowUpScene({ locale }: Props) {
 						: l("Linkage unknown", "关联未知");
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={packet.reference.contract}
+					at={packet.reference.at}
+					bids={
+						packet.reference.bid === null
+							? []
+							: [{ price: packet.reference.bid, size: null }]
+					}
+					asks={
+						packet.reference.ask === null
+							? []
+							: [{ price: packet.reference.ask, size: null }]
+					}
+					print={{
+						price: data.print.price,
+						quantity: data.print.quantity,
+						at: data.print.at,
+					}}
+					note={`${packet.reference.label[language]} · ${l("Quote sizes and depth are not supplied.", "没有给定报价数量与深度。")}`}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -759,3 +828,5 @@ export function FollowUpScene({ locale }: Props) {
 		</SceneLayout>
 	);
 }
+
+import { OrderBookPanel } from "./order-book-panel";

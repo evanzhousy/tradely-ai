@@ -1,6 +1,31 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "order-book-lessons-unreleased",
+		date: "2026-09-15",
+		dateLabel: "Unreleased",
+		title: "Follow an execution through the order book",
+		summary:
+			"Execution lessons now pair their diagrams with a synchronized price ladder and fill list.",
+		changes: [
+			{
+				title: "See where the order can fill",
+				description:
+					"Step through resting liquidity, the incoming order, each displayed level and the result. Filled quantities reduce the book; restarting restores the supplied snapshot.",
+			},
+			{
+				title: "Compare the evidence beside the diagram",
+				description:
+					"Quote and execution-side lessons show their supplied references. Tape lessons show unique executions after corrections and cancellations. Unknown depth remains unavailable.",
+			},
+			{
+				title: "Choose an event directly",
+				description:
+					"Named playback stops follow the demonstrated events. Selecting a step pauses playback; restarting begins again. Mobile layouts keep the market panel visible below the diagram.",
+			},
+		],
+	},
+	{
 		id: "visual-lessons-unreleased",
 		date: "2026-09-15",
 		dateLabel: "Unreleased",

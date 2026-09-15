@@ -79,7 +79,19 @@ export function SideConceptLab({
 				locale={locale}
 				id="side"
 				label={["Interactive execution-side lesson", "成交位置互动课堂"]}
-				scenes={scenes}
+				scenes={[
+					{
+						...scenes[0],
+						playbackStops: data.examples.map(
+							(example) => [example.code, example.code] as const,
+						),
+					},
+					{
+						...scenes[1],
+						playbackStops: data.references.map((reference) => reference.label),
+					},
+					scenes[2],
+				]}
 			/>
 		</SideData>
 	);

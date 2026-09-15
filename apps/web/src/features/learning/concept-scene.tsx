@@ -70,16 +70,26 @@ export function SvgText({
 }
 export function SceneLayout({
 	diagram,
+	companion,
 	children,
 }: {
 	diagram: ReactNode;
+	companion?: ReactNode;
 	children: ReactNode;
 }) {
 	const playback = useContext(VisualPlayback);
 	const locale = useContext(VisualLocale);
 	return (
-		<div className={playback ? "visual-scene-layout" : "contract-scene-layout"}>
-			<div className="contract-stage">{diagram}</div>
+		<div
+			className={playback ? "visual-scene-layout" : "contract-scene-layout"}
+			data-has-companion={companion ? "true" : undefined}
+		>
+			<div className="scene-visuals">
+				<div className="contract-stage">{diagram}</div>
+				{companion ? (
+					<aside className="scene-companion">{companion}</aside>
+				) : null}
+			</div>
 			{playback ? (
 				<details className="visual-explore">
 					<summary>

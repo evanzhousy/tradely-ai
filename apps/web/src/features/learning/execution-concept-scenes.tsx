@@ -26,11 +26,13 @@ import {
 	SvgText,
 	useFrames,
 } from "./concept-scene";
+import { ExecutionTape } from "./execution-tape";
 import {
 	instantTransition,
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { OrderBookPanel, remainingBook } from "./order-book-panel";
 import { useGuidedState } from "./visual-playback";
 
 export const ExecutionData = createContext<ExecutionConceptData | null>(null);
@@ -90,6 +92,13 @@ export function CounterpartyScene({ locale }: Props) {
 	const playback = useFrames(3);
 	const done = playback.frame === 2;
 	const result = executionRoles(data, side, done);
+	const fills = matchDisplayedBook(
+		side === "buy" ? data.asks : data.bids,
+		side,
+		data.unitTradeSize,
+		result.price,
+		done ? 3 : 0,
+	);
 	const stages = [
 		l("Resting quote", "挂单报价"),
 		l("Incoming instruction", "主动指令到达"),
@@ -98,6 +107,38 @@ export function CounterpartyScene({ locale }: Props) {
 	const path = (x: number) => `M${x} 165v32H180v40`;
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={`${data.contractBase} ${type}`}
+					at={done ? data.printedAt : data.asOf}
+					depth
+					scale={Math.max(
+						...data.bids.map((r) => r.size),
+						...data.asks.map((r) => r.size),
+					)}
+					bids={
+						side === "sell" ? remainingBook(data.bids, fills.rows) : data.bids
+					}
+					asks={
+						side === "buy" ? remainingBook(data.asks, fills.rows) : data.asks
+					}
+					event={
+						playback.frame > 0
+							? `${side === "buy" ? l("Incoming buy", "主动买入") : l("Incoming sell", "主动卖出")} · ${data.unitTradeSize}`
+							: l("Resting liquidity", "挂单流动性")
+					}
+					print={
+						done
+							? {
+									price: result.price,
+									quantity: data.unitTradeSize,
+									at: data.printedAt,
+								}
+							: undefined
+					}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -257,11 +298,8 @@ export function LiquidityScene({ locale }: Props) {
 	const l = text(locale);
 	const [side, setSide] = useState<ExecutionSide>("buy");
 	const [instruction, setInstruction] = useState<OrderInstruction>("limit");
-	const [quantity, setQuantity] = useGuidedState(data.defaultQuantity, [
-		data.defaultQuantity,
-		data.defaultQuantity + 10,
-		data.defaultQuantity + 20,
-	]);
+	const [quantity, setQuantity] = useState(data.defaultQuantity);
+	const playback = useFrames(6);
 	const [limit, setLimit] = useState(data.asks[0].price);
 	const levels = side === "buy" ? data.asks : data.bids;
 	const range = side === "buy" ? data.buyLimitRange : data.sellLimitRange;
@@ -270,117 +308,102 @@ export function LiquidityScene({ locale }: Props) {
 		side,
 		quantity,
 		instruction === "limit" ? limit : null,
+		Math.max(0, playback.frame - 1),
 	);
+	const finished = playback.frame === 5;
 	return (
 		<SceneLayout
 			diagram={
 				<Diagram
-					label={l(
-						"An incoming order matches eligible displayed price levels",
-						"主动订单与符合限价的可见价位撮合",
-					)}
-					height={466}
+					label={l("Order and fill summary", "订单与成交汇总")}
+					height={310}
 				>
-					<rect
-						x="40"
-						y="14"
-						width="280"
-						height="65"
-						rx="12"
-						className="contract-svg-wash"
-					/>
-					<SvgText x={180} y={42} strong>
+					<SvgText x={180} y={40} strong>
 						{side === "buy" ? l("BUY", "买入") : l("SELL", "卖出")} {quantity}
 					</SvgText>
-					<SvgText x={180} y={65} muted>
+					<SvgText x={180} y={72}>
 						{instruction === "market"
-							? l("Market · no price limit", "市价 · 无限价")
-							: `${side === "buy" ? "≤" : "≥"} ${money(limit)}`}
+							? l("Market order", "市价单")
+							: `${l("Limit", "限价")} ${money(limit)}`}
 					</SvgText>
-					<SvgText x={70} y={111} muted>
-						{side === "buy" ? l("Ask", "卖价") : l("Bid", "买价")}
-					</SvgText>
-					<SvgText x={180} y={111} muted>
-						{l("Available", "可见数量")}
-					</SvgText>
-					<SvgText x={290} y={111} muted>
-						{l("Matched", "撮合数量")}
-					</SvgText>
-					{result.rows.map((row, i) => {
-						const y = 125 + i * 76;
-						return (
-							<g
-								key={row.price}
-								data-depth-price={row.price}
-								data-depth-filled={row.filled}
-								data-depth-eligible={row.eligible}
-							>
-								<rect
-									x="14"
-									y={y}
-									width="332"
-									height="64"
-									rx="10"
-									className={
-										row.filled ? "contract-svg-wash" : "contract-svg-paper"
-									}
-								/>
-								<SvgText x={70} y={y + 28}>
-									{money(row.price)}
-								</SvgText>
-								<SvgText x={180} y={y + 28}>
-									{row.size}
-								</SvgText>
-								<SvgText x={290} y={y + 28} strong>
-									{row.eligible ? row.filled : "—"}
-								</SvgText>
-								<rect
-									x="28"
-									y={y + 45}
-									width="304"
-									height="7"
-									rx="3.5"
-									className="contract-svg-wash"
-								/>
-								<rect
-									x="28"
-									y={y + 45}
-									width={row.size ? (304 * row.filled) / row.size : 0}
-									height="7"
-									rx="3.5"
-									className="contract-svg-dot"
-								/>
-							</g>
-						);
-					})}
-					<SvgText x={180} y={368} muted>
-						{l("— = price outside the limit", "— = 价格超出限价")}
-					</SvgText>
-					<rect
-						x="14"
-						y="386"
-						width="332"
-						height="64"
-						rx="12"
-						className="contract-svg-paper"
+					<path
+						d="M180 90v40m0 0h-85v35m85-35h85v35"
+						className="contract-svg-active-line"
 					/>
-					<SvgText x={95} y={408} muted>
-						{l("Matched here", "此处已撮合")}
-					</SvgText>
-					<SvgText x={265} y={408} muted>
-						{l("Unfilled here", "此处未成交")}
+					<SvgText x={95} y={193} muted>
+						{l("Filled", "已成交")}
 					</SvgText>
 					<g data-depth-total>
-						<SvgText x={95} y={435} strong>
+						<SvgText x={95} y={228} strong>
 							{result.filled}
 						</SvgText>
 					</g>
+					<SvgText x={265} y={193} muted>
+						{finished ? l("Unfilled", "未成交") : l("Remaining", "剩余")}
+					</SvgText>
 					<g data-depth-unfilled>
-						<SvgText x={265} y={435} strong>
+						<SvgText x={265} y={228} strong>
 							{result.unfilled}
 						</SvgText>
 					</g>
+					<SvgText x={180} y={278} muted>
+						{playback.frame === 0
+							? l("Resting book", "初始订单簿")
+							: finished
+								? l("Match complete", "撮合结束")
+								: l("Matching the displayed levels", "匹配可见价位")}
+					</SvgText>
 				</Diagram>
+			}
+			companion={
+				<>
+					<OrderBookPanel
+						locale={locale}
+						contract={`${data.contractBase} CALL`}
+						at={playback.frame >= 2 ? data.printedAt : data.asOf}
+						depth
+						scale={Math.max(
+							...data.bids.map((r) => r.size),
+							...data.asks.map((r) => r.size),
+						)}
+						bids={
+							side === "sell"
+								? remainingBook(data.bids, result.rows)
+								: data.bids
+						}
+						asks={
+							side === "buy" ? remainingBook(data.asks, result.rows) : data.asks
+						}
+						event={
+							playback.frame === 0
+								? l("Resting liquidity", "挂单流动性")
+								: `${side === "buy" ? l("Buy", "买入") : l("Sell", "卖出")} ${quantity} · ${instruction === "market" ? l("Market", "市价") : money(limit)}`
+						}
+					/>
+					<ExecutionTape
+						locale={locale}
+						simulated
+						rows={result.rows
+							.filter((r) => r.filled > 0)
+							.map((r) => ({
+								id: `F-${r.price}`,
+								price: r.price,
+								quantity: r.filled,
+								at: data.printedAt,
+							}))}
+						note={
+							finished
+								? l(
+										"Unfilled quantity is not an execution. Resting or canceling it requires an order-duration instruction.",
+										"未成交数量不属于成交。是否挂单或取消，取决于订单有效期指令。",
+									)
+								: l(
+										"Fills appear as matching reaches each eligible price.",
+										"撮合到达各合格价位时，逐步显示成交。",
+									)
+						}
+					/>
+				</>
 			}
 		>
 			<Snapshot locale={locale} />
@@ -459,15 +482,34 @@ export function OrderEvidenceScene({ locale }: Props) {
 	const data = useExecutionData();
 	const l = text(locale);
 	const motion = useLessonMotion();
-	const [example, setExample] = useGuidedState(
+	const [example, setExample] = useGuidedState(data.records[0]?.id ?? "", [
 		data.records[0]?.id ?? "",
-		data.records.map((item) => item.id),
-	);
+		data.records[0]?.id ?? "",
+		data.records[1]?.id ?? "",
+	]);
 	const [revealed, setRevealed] = useGuidedState(false, [false, true, true]);
 	const record = data.records.find((r) => r.id === example);
 	const instruction = revealed ? record?.instruction : null;
 	return (
 		<SceneLayout
+			companion={
+				<OrderBookPanel
+					locale={locale}
+					contract={`${data.contractBase} CALL`}
+					at={data.asOf}
+					bids={[data.bids[0]]}
+					asks={[data.asks[0]]}
+					print={{
+						price: data.asks[0].price,
+						quantity: data.unitTradeSize,
+						at: data.printedAt,
+					}}
+					note={l(
+						"Illustrated quote and print. A print cannot reconstruct prior depth or order instructions.",
+						"示例报价与成交。成交不能还原先前深度或订单指令。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(

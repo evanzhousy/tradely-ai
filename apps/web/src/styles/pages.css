@@ -1163,7 +1163,7 @@
 	flex-direction: column;
 	gap: 1rem;
 }
-.visual-scene-layout > .contract-stage {
+.visual-scene-layout .scene-visuals > .contract-stage {
 	padding: 1rem;
 	min-height: 340px;
 	background: var(--muted);
@@ -1211,7 +1211,7 @@
 		order: 3;
 		width: 100%;
 	}
-	.visual-scene-layout > .contract-stage {
+	.visual-scene-layout .scene-visuals > .contract-stage {
 		padding: 0;
 	}
 	.visual-classroom {
@@ -1219,6 +1219,176 @@
 	}
 	.visual-caption {
 		min-height: 5em;
+	}
+}
+
+/* A companion shares the scene clock and stays visible when the layout stacks. */
+.scene-visuals {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 1rem;
+	min-width: 0;
+}
+.scene-companion {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	min-width: 0;
+}
+.market-panel {
+	--book-bid: #15803d;
+	--book-ask: #be123c;
+	--book-event: #b45309;
+	--book-reference: #1d4ed8;
+	padding: 1rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: var(--card);
+	min-width: 0;
+}
+.dark .market-panel {
+	--book-bid: #4ade80;
+	--book-ask: #fb7185;
+	--book-event: #fbbf24;
+	--book-reference: #60a5fa;
+}
+.market-panel header {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.5rem;
+}
+.market-panel h3 {
+	font-size: 1rem;
+	font-weight: 600;
+}
+.market-panel header > span,
+.market-context {
+	font-size: 0.75rem;
+	line-height: 1.6;
+	color: var(--muted-foreground);
+	overflow-wrap: anywhere;
+}
+.market-context,
+.market-event,
+.market-print {
+	margin-top: 0.75rem;
+}
+.market-event,
+.market-print {
+	border-left: 3px solid var(--book-event);
+	padding: 0.4rem 0.65rem;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+}
+.book-table {
+	width: 100%;
+	table-layout: fixed;
+	margin-top: 0.75rem;
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	border-collapse: collapse;
+}
+.book-table :is(th, td) {
+	padding: 0.5rem 0.25rem;
+	text-align: right;
+	border-bottom: 1px solid var(--border);
+	overflow-wrap: anywhere;
+}
+.book-table th:first-child {
+	text-align: left;
+}
+.book-table thead {
+	color: var(--muted-foreground);
+}
+.book-table tr[data-book-side="ask"] {
+	--book-side: var(--book-ask);
+}
+.book-table tr[data-book-side="bid"] {
+	--book-side: var(--book-bid);
+}
+.book-table .book-price {
+	color: var(--book-side);
+	font-weight: 600;
+}
+.book-size {
+	position: relative;
+}
+.book-size > span:last-child {
+	position: relative;
+}
+.book-size-bar {
+	position: absolute;
+	right: 0;
+	top: 15%;
+	height: 70%;
+	background: var(--book-side);
+	opacity: 0.18;
+	transition: width 240ms ease-out;
+}
+.book-spread td {
+	text-align: center;
+	color: var(--book-reference);
+	background: var(--muted);
+}
+.book-fill {
+	color: var(--book-event);
+}
+.book-table [data-print-match="true"] {
+	outline: 1px dashed var(--book-event);
+	outline-offset: -1px;
+}
+.book-table [data-book-size="0"] {
+	color: var(--muted-foreground);
+}
+.book-table [data-eligible="false"] td:last-child {
+	color: var(--muted-foreground);
+}
+@media (min-width: 760px) {
+	.visual-scene-layout[data-has-companion="true"] .scene-visuals {
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+		align-items: start;
+	}
+}
+@media (min-width: 1100px) {
+	.visual-stage:has([data-has-companion="true"]) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.visual-stage:has([data-has-companion="true"]) > div:first-child {
+		grid-column: 1;
+		grid-row: 1;
+		padding-top: 0;
+	}
+	.visual-stage:has([data-has-companion="true"]) > .visual-playback {
+		grid-column: 1;
+		grid-row: 2;
+	}
+	.visual-stage:has([data-has-companion="true"]) > div:last-child {
+		grid-column: 1;
+		grid-row: 3;
+	}
+}
+.visual-playback {
+	flex-wrap: wrap;
+}
+.visual-stepper {
+	min-width: 0;
+	flex: 1 1 15rem;
+}
+.visual-stepper [data-slot="stepper-nav"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+	gap: 0.25rem;
+}
+.visual-stepper [data-slot="stepper-trigger"] {
+	min-width: 44px;
+	width: 100%;
+	justify-content: center;
+}
+@media (prefers-reduced-motion: reduce) {
+	.book-size-bar {
+		transition: none;
 	}
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1246,6 +1416,7 @@
 		grid-row: 2;
 		flex-wrap: wrap;
 	}
+	/* biome-ignore lint/style/noDescendingSpecificity: The more specific companion grid intentionally overrides this base layout. */
 	.visual-stage > div:last-child {
 		grid-column: 2;
 		grid-row: 1 / span 3;

@@ -28,20 +28,24 @@ export function matchDisplayedBook(
 	side: ExecutionSide,
 	quantity: number,
 	limit: number | null,
+	visibleLevels = Number.POSITIVE_INFINITY,
 ) {
 	const requested = Math.max(0, Math.floor(quantity));
 	let unfilled = requested;
 	let value = 0;
 	const rows = [...levels]
 		.sort((a, b) => (side === "buy" ? a.price - b.price : b.price - a.price))
-		.map((level) => {
+		.map((level, index) => {
 			const eligible =
 				limit === null ||
 				(side === "buy" ? level.price <= limit : level.price >= limit);
-			const filled = eligible ? Math.min(unfilled, Math.max(0, level.size)) : 0;
+			const filled =
+				eligible && index < visibleLevels
+					? Math.min(unfilled, Math.max(0, level.size))
+					: 0;
 			unfilled -= filled;
 			value += filled * level.price;
-			return { ...level, eligible, filled };
+			return { ...level, eligible, filled, remaining: level.size - filled };
 		});
 	const filled = requested - unfilled;
 	return { rows, filled, unfilled, average: filled ? value / filled : null };

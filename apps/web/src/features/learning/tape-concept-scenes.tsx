@@ -82,6 +82,25 @@ export function AggregateScene({ locale }: Props) {
 	const result = aggregateTape(prints);
 	return (
 		<SceneLayout
+			companion={
+				<ExecutionTape
+					locale={locale}
+					rows={[...new Map(prints.map((p) => [p.id, p])).values()].map(
+						(p) => ({
+							id: p.id,
+							price: p.price,
+							quantity: p.quantity,
+							at: p.executionAt,
+							unit: p.unit,
+							contract: p.contract,
+						}),
+					)}
+					note={l(
+						"Supplied execution records. Trades alone cannot reconstruct displayed liquidity.",
+						"给定成交记录。仅凭成交无法还原可见流动性。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -273,6 +292,24 @@ export function MessageReplayScene({ locale }: Props) {
 						: l("No messages received", "尚未收到消息");
 	return (
 		<SceneLayout
+			companion={
+				<ExecutionTape
+					locale={locale}
+					rows={state.active.map((p) => ({
+						id: p.id,
+						price: p.price,
+						quantity: p.quantity,
+						at: p.executionAt,
+						unit: p.unit,
+						contract: p.contract,
+					}))}
+					event={current ? `${current.receivedAt} · ${event}` : event}
+					note={l(
+						"Current unique reports after corrections and cancellations. Canceling a trade report does not replenish an order book.",
+						"更正与撤销后的唯一有效记录。撤销成交报告不会自动补回订单簿。",
+					)}
+				/>
+			}
 			diagram={
 				<Diagram
 					label={l(
@@ -649,3 +686,5 @@ export function ConditionScene({ locale }: Props) {
 		</SceneLayout>
 	);
 }
+
+import { ExecutionTape } from "./execution-tape";
