@@ -7,6 +7,7 @@ const path = (relative: string) =>
 	fileURLToPath(new URL(relative, import.meta.url));
 /** Explicit local fixture entry; never imported by the application build. */
 export default defineConfig({
+	assetsInclude: ["**/*.riv"],
 	root: path("./"),
 	// The fixture and real app run together; they must not overwrite optimized deps.
 	cacheDir: path("./node_modules/.vite"),

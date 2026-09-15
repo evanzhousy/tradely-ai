@@ -6,7 +6,7 @@ import {
 import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
-import { createContext, useContext, useState } from "react";
+import { createContext, lazy, Suspense, useContext, useState } from "react";
 import {
 	type ExecutionConceptData,
 	type ExecutionSide,
@@ -34,6 +34,11 @@ import {
 } from "./lesson-motion";
 import { OrderBookPanel, remainingBook } from "./order-book-panel";
 import { useGuidedState } from "./visual-playback";
+
+// The CLI asset is a local evaluation build; production keeps the established SVG.
+const RiveLiquidityPilot = import.meta.env.DEV
+	? lazy(() => import("./rive-liquidity-pilot"))
+	: null;
 
 export const ExecutionData = createContext<ExecutionConceptData | null>(null);
 function useExecutionData() {
@@ -318,49 +323,64 @@ export function LiquidityScene({ locale }: Props) {
 		Math.max(0, playback.frame - 1),
 	);
 	const finished = playback.frame === 5;
+	const fallback = (
+		<Diagram label={l("Order and fill summary", "订单与成交汇总")} height={310}>
+			<SvgText x={180} y={40} strong>
+				{side === "buy" ? l("BUY", "买入") : l("SELL", "卖出")} {quantity}
+			</SvgText>
+			<SvgText x={180} y={72}>
+				{instruction === "market"
+					? l("Market order", "市价单")
+					: `${l("Limit", "限价")} ${money(limit)}`}
+			</SvgText>
+			<path
+				d="M180 90v40m0 0h-85v35m85-35h85v35"
+				className="contract-svg-active-line"
+			/>
+			<SvgText x={95} y={193} muted>
+				{l("Filled", "已成交")}
+			</SvgText>
+			<g data-depth-total>
+				<SvgText x={95} y={228} strong>
+					{result.filled}
+				</SvgText>
+			</g>
+			<SvgText x={265} y={193} muted>
+				{finished ? l("Unfilled", "未成交") : l("Remaining", "剩余")}
+			</SvgText>
+			<g data-depth-unfilled>
+				<SvgText x={265} y={228} strong>
+					{result.unfilled}
+				</SvgText>
+			</g>
+			<SvgText x={180} y={278} muted>
+				{playback.frame === 0
+					? l("Resting book", "初始订单簿")
+					: finished
+						? l("Match complete", "撮合结束")
+						: l("Matching the displayed levels", "匹配可见价位")}
+			</SvgText>
+		</Diagram>
+	);
 	return (
 		<SceneLayout
 			diagram={
-				<Diagram
-					label={l("Order and fill summary", "订单与成交汇总")}
-					height={310}
-				>
-					<SvgText x={180} y={40} strong>
-						{side === "buy" ? l("BUY", "买入") : l("SELL", "卖出")} {quantity}
-					</SvgText>
-					<SvgText x={180} y={72}>
-						{instruction === "market"
-							? l("Market order", "市价单")
-							: `${l("Limit", "限价")} ${money(limit)}`}
-					</SvgText>
-					<path
-						d="M180 90v40m0 0h-85v35m85-35h85v35"
-						className="contract-svg-active-line"
-					/>
-					<SvgText x={95} y={193} muted>
-						{l("Filled", "已成交")}
-					</SvgText>
-					<g data-depth-total>
-						<SvgText x={95} y={228} strong>
-							{result.filled}
-						</SvgText>
-					</g>
-					<SvgText x={265} y={193} muted>
-						{finished ? l("Unfilled", "未成交") : l("Remaining", "剩余")}
-					</SvgText>
-					<g data-depth-unfilled>
-						<SvgText x={265} y={228} strong>
-							{result.unfilled}
-						</SvgText>
-					</g>
-					<SvgText x={180} y={278} muted>
-						{playback.frame === 0
-							? l("Resting book", "初始订单簿")
-							: finished
-								? l("Match complete", "撮合结束")
-								: l("Matching the displayed levels", "匹配可见价位")}
-					</SvgText>
-				</Diagram>
+				RiveLiquidityPilot ? (
+					<Suspense fallback={fallback}>
+						<RiveLiquidityPilot
+							locale={locale}
+							side={side}
+							instruction={instruction}
+							limit={limit}
+							quantity={quantity}
+							frame={playback.frame}
+							result={result}
+							fallback={fallback}
+						/>
+					</Suspense>
+				) : (
+					fallback
+				)
 			}
 			companion={
 				<>
