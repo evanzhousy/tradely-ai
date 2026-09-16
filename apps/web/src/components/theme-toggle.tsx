@@ -1,43 +1,31 @@
-import { Button } from "@tradely/ui/components/button";
+import { buttonVariants } from "@tradely/ui/components/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@tradely/ui/components/tooltip";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { cn } from "@tradely/ui/lib/utils";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-
 import { useI18n } from "@/i18n/provider";
+import { ThemeToggle as BeUiThemeToggle } from "./motion/theme-toggle";
 
 export function ThemeToggle() {
 	const { t } = useI18n();
-	const { resolvedTheme, setTheme } = useTheme();
-	const [mounted, setMounted] = useState(false);
-	useEffect(() => setMounted(true), []);
-	if (!mounted) return <span className="size-9" aria-hidden />;
+	const { resolvedTheme } = useTheme();
 	const dark = resolvedTheme === "dark";
+	const label = dark ? t("theme.light") : t("theme.dark");
 	return (
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => setTheme(dark ? "light" : "dark")}
-						aria-label={dark ? t("theme.light") : t("theme.dark")}
+					<BeUiThemeToggle
+						className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+						iconClassName="size-4"
+						aria-label={label}
 					/>
 				}
-			>
-				{dark ? (
-					<SunIcon aria-hidden="true" />
-				) : (
-					<MoonIcon aria-hidden="true" />
-				)}
-			</TooltipTrigger>
-			<TooltipContent>
-				{dark ? t("theme.light") : t("theme.dark")}
-			</TooltipContent>
+			/>
+			<TooltipContent>{label}</TooltipContent>
 		</Tooltip>
 	);
 }

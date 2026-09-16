@@ -5,6 +5,7 @@ import {
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
 import { useEffect, useId, useRef, useState } from "react";
+import { RangeSlider } from "@/components/motion/range-slider";
 import { REPLAY_RATES } from "@/domain/learning/replay";
 import type { Locale } from "@/i18n/messages";
 import { ChangeHighlight } from "./lesson-motion";
@@ -332,17 +333,18 @@ export function ExecutionLab({
 				<FieldLabel htmlFor={`${id}-position`}>
 					{text("Sequence position", "序列位置")}
 				</FieldLabel>
-				<input
+				<RangeSlider
 					id={`${id}-position`}
-					className="h-11 w-full accent-primary"
-					type="range"
-					min="0"
-					max="100"
+					min={0}
+					max={100}
+					step={1}
 					value={Math.round(replay.position * 100)}
-					onChange={(event) =>
-						act(() => replay.seek(Number(event.target.value) / 100))
+					aria-label={text("Sequence position", "序列位置")}
+					formatValueText={(value) =>
+						stages[Math.round(value / 25)] ?? stages[0]
 					}
-					aria-valuetext={stages[phase]}
+					onValueChange={(value) => act(() => replay.seek(value / 100))}
+					className="h-11"
 				/>
 			</Field>
 			<div className="flex flex-wrap gap-2">

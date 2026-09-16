@@ -11,6 +11,7 @@ import {
 } from "@tradely/ui/components/toggle-group";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { type ReactNode, useContext, useEffect, useId, useState } from "react";
+import { RangeSlider } from "@/components/motion/range-slider";
 import { VisualLocale, VisualPlayback } from "./visual-playback";
 
 type Copy = (en: string, zh: string) => string;
@@ -304,16 +305,16 @@ export function RangeControl({
 					onChange={(next) => onChange(Number((next * inputScale).toFixed(8)))}
 				/>
 			) : null}
-			<input
+			<RangeSlider
 				id={id}
-				className="contract-range"
-				type="range"
 				min={min}
 				max={max}
 				step={step}
 				value={value}
-				aria-valuetext={display}
-				onChange={(event) => onChange(Number(event.target.value))}
+				aria-label={label}
+				formatValueText={() => display}
+				onValueChange={onChange}
+				className="mt-1"
 			/>
 		</Field>
 	);

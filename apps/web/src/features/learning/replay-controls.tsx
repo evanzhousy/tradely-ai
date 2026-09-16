@@ -6,6 +6,7 @@ import {
 } from "@tradely/ui/components/native-select";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { useId } from "react";
+import { RangeSlider } from "@/components/motion/range-slider";
 import type { ReplayClock, ReplaySource } from "@/domain/learning/replay";
 import { REPLAY_RATES, replayTime } from "@/domain/learning/replay";
 import type { Locale } from "@/i18n/messages";
@@ -88,30 +89,19 @@ export function ReplayControls({
 				<FieldLabel htmlFor={`${id}-timeline`} className="sr-only">
 					{text("replayTimeline")}
 				</FieldLabel>
-				<input
+				<RangeSlider
 					id={`${id}-timeline`}
-					type="range"
 					min={0}
 					max={1000}
 					step={1}
 					value={Math.round(position * 1000)}
-					onPointerDown={pause}
-					onKeyDown={(event) => {
-						if (
-							[
-								"ArrowLeft",
-								"ArrowRight",
-								"Home",
-								"End",
-								"PageUp",
-								"PageDown",
-							].includes(event.key)
-						)
-							pause();
+					aria-label={text("replayTimeline")}
+					formatValueText={(value) => `${replayTime(data, value / 1000)} ET`}
+					onValueChange={(value) => {
+						pause();
+						seek(value / 1000);
 					}}
-					onChange={(event) => seek(Number(event.target.value) / 1000)}
-					aria-valuetext={`${replayTime(data, position)} ET`}
-					className="h-11 w-full cursor-pointer accent-primary"
+					className="h-11"
 				/>
 			</Field>
 			<div className="flex justify-between gap-1">
