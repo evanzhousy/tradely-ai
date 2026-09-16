@@ -1,5 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
-import { Button } from "@tradely/ui/components/button";
+import { Button, buttonVariants } from "@tradely/ui/components/button";
 import {
 	Stepper,
 	StepperIndicator,
@@ -27,9 +28,11 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { getLessonById, getNextLesson } from "@/content/course";
 import type { Locale } from "@/i18n/messages";
 import { saveVisualBookmark, useVisualBookmarks } from "./visual-bookmark";
 import { VisualLessonIdentity, VisualPlayback } from "./visual-playback";
+import { VisualPlaybackProgress } from "./visual-playback-progress";
 import { expandSteps, type VisualStep } from "./visual-step";
 export type ConceptScene = {
 	id: string;
@@ -59,6 +62,7 @@ export function ConceptLab({
 	const [resetVersion, setResetVersion] = useState(0);
 	const [frames, setFrames] = useState<Record<string, number>>({});
 	const [playing, setPlaying] = useState(false);
+	const [complete, setComplete] = useState(false);
 	const [exploring, setExploring] = useState(false);
 	const [reduced, setReduced] = useState(true);
 	const [ready, setReady] = useState(false);
@@ -105,6 +109,7 @@ export function ConceptLab({
 		setPlaying(false);
 	}, [scene]);
 	const seek = useCallback((value: number) => {
+		setComplete(false);
 		setExploring(false);
 		setProgress(Math.max(0, Math.min(1, value)));
 		setEpoch((value) => value + 1);
@@ -137,8 +142,10 @@ export function ConceptLab({
 		if (playing) pause();
 		else {
 			autoStarted.current = scene;
-			if (exploring || progress === 1) setResetVersion((value) => value + 1);
-			seek(exploring || progress === 1 ? 0 : progress);
+			if (exploring || complete) {
+				setResetVersion((value) => value + 1);
+				seek(0);
+			}
 			setPlaying(true);
 		}
 	};
@@ -187,25 +194,12 @@ export function ConceptLab({
 			observer.disconnect();
 		};
 	}, [pause, scene, resetVersion]);
-	useEffect(() => {
-		if (!playing || !ready || reduced) return;
-		const timer = window.setTimeout(() => {
-			if (progress >= 1) pause();
-			else seek(steps[Math.min(step, stepCount - 1)].state.position);
-		}, currentStep.holdMs);
-		return () => window.clearTimeout(timer);
-	}, [
-		playing,
-		progress,
-		reduced,
-		ready,
-		pause,
-		seek,
-		step,
-		stepCount,
-		steps,
-		currentStep.holdMs,
-	]);
+	const advance = useCallback(() => {
+		if (step >= stepCount) {
+			setComplete(true);
+			pause();
+		} else seek(steps[step].state.position);
+	}, [pause, seek, step, stepCount, steps]);
 	useEffect(() => {
 		if (
 			ready &&
@@ -220,6 +214,39 @@ export function ConceptLab({
 	}, [ready, reduced, visible, pageVisible, scene]);
 	const caption = exploring ? active.prompt : currentStep.caption;
 	const Component = active.Component;
+	const lesson = lessonId ? getLessonById(lessonId) : undefined;
+	const nextLesson = lesson ? getNextLesson(lesson.slug) : undefined;
+	const continuation =
+		index < scenes.length - 1 ? (
+			<Button
+				variant={complete ? "default" : "outline"}
+				size="sm"
+				onClick={() => selectScene(scenes[index + 1].id)}
+			>
+				{l("Next scene", "下一场景")}
+				<ArrowRightIcon data-icon="inline-end" />
+			</Button>
+		) : nextLesson ? (
+			<Link
+				to="/learn/$lessonSlug"
+				params={{ lessonSlug: nextLesson.slug }}
+				search={{}}
+				className={buttonVariants({
+					variant: complete ? "default" : "outline",
+					size: "sm",
+				})}
+			>
+				{l("Next lesson", "下一课")}
+				<ArrowRightIcon data-icon="inline-end" />
+			</Link>
+		) : lesson ? (
+			<Link
+				to="/courses/tradingflow-foundations"
+				className={buttonVariants({ variant: "outline", size: "sm" })}
+			>
+				{l("Back to the course", "回到课程")}
+			</Link>
+		) : null;
 	return (
 		<section
 			className="concept-lab visual-classroom"
@@ -304,9 +331,9 @@ export function ConceptLab({
 								? l("Return to lesson", "返回讲解")
 								: reduced
 									? l("Next step", "下一步")
-									: progress === 1
+									: complete
 										? l("Start again", "重新开始")
-										: l("Start explanation", "开始讲解")}
+										: l("Continue explanation", "继续讲解")}
 					</Button>
 					<Stepper
 						key={scene}
@@ -346,6 +373,19 @@ export function ConceptLab({
 						<RotateCcwIcon />
 						{l("Restart", "重启")}
 					</Button>
+					<VisualPlaybackProgress
+						key={`${scene}:${epoch}`}
+						locale={locale}
+						steps={steps}
+						step={step}
+						running={playing && ready && visible && pageVisible}
+						exploring={exploring}
+						reduced={reduced}
+						complete={complete}
+						onElapsed={advance}
+					>
+						{continuation}
+					</VisualPlaybackProgress>
 				</fieldset>
 				<VisualPlayback
 					value={{
@@ -399,23 +439,7 @@ export function ConceptLab({
 					<ArrowLeftIcon data-icon="inline-start" />
 					{l("Previous scene", "上一场景")}
 				</Button>
-				{index < scenes.length - 1 ? (
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => selectScene(scenes[index + 1].id)}
-					>
-						{l("Next scene", "下一场景")}
-						<ArrowRightIcon data-icon="inline-end" />
-					</Button>
-				) : (
-					<span className="text-muted-foreground text-sm">
-						{l(
-							"Explore again or continue to the next lesson below.",
-							"可以再次探索，或继续下方的下一课。",
-						)}
-					</span>
-				)}
+				{continuation}
 			</div>
 			<p className="text-muted-foreground text-xs">
 				{l(

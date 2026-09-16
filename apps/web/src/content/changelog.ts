@@ -1,6 +1,21 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "visual-playback-progress-unreleased",
+		date: "2026-09-16",
+		dateLabel: "Unreleased",
+		title: "See how much of each explanation remains",
+		summary:
+			"Visual lessons now show playback progress and estimated time remaining, with a clear next action when the explanation finishes.",
+		changes: [
+			{
+				title: "Continue at your own pace",
+				description:
+					"Pause and resume without losing your place, jump between steps, or restart. Exploration and reduced-motion views remain untimed, and you can move on whenever you choose.",
+			},
+		],
+	},
+	{
 		id: "settlement-transfers-unreleased",
 		date: "2026-09-15",
 		dateLabel: "Unreleased",
