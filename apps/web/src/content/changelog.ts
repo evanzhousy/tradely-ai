@@ -4,9 +4,9 @@ export const changelog = [
 		id: "visual-playback-progress-unreleased",
 		date: "2026-09-16",
 		dateLabel: "Unreleased",
-		title: "See how much of each explanation remains",
+		title: "Follow the progress of each explanation step",
 		summary:
-			"Visual lessons now show playback progress and estimated time remaining, with a clear next action when the explanation finishes.",
+			"Only the selected step shows its own progress bar and estimated time remaining. Completed steps show a checkmark, with a clear next action when the explanation finishes.",
 		changes: [
 			{
 				title: "Continue at your own pace",

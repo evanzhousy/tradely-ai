@@ -1174,26 +1174,25 @@
 	inline-size: 12rem;
 }
 .visual-playback-progress {
-	flex: 0 0 100%;
 	display: grid;
-	gap: 0.65rem;
-	padding: 0.65rem 0.25rem 0.15rem;
-	border-top: 1px solid var(--border);
-	font-size: 0.8rem;
+	gap: 0.35rem;
+	width: 100%;
+	padding: 0 0.35rem;
+	font-size: 0.7rem;
+	line-height: 1.3;
+	text-align: center;
 	color: var(--muted-foreground);
 	font-variant-numeric: tabular-nums;
 }
 .visual-playback-status {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	gap: 0.25rem 0.75rem;
+	min-height: 2.6em;
+	text-wrap: balance;
 }
 .visual-playback-progress progress {
 	appearance: none;
 	display: block;
 	width: 100%;
-	height: 0.4rem;
+	height: 0.2rem;
 	border: 0;
 	border-radius: 1rem;
 	overflow: hidden;
@@ -1209,9 +1208,26 @@
 .visual-playback-progress progress::-moz-progress-bar {
 	background: var(--diagram-accent, var(--ring));
 }
-.visual-playback-progress > a,
-.visual-playback-progress > button {
-	justify-self: end;
+.visual-playback-complete {
+	flex: 0 0 100%;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding-top: 0.65rem;
+	border-top: 1px solid var(--border);
+	font-size: 0.8rem;
+}
+.visual-stepper [data-slot="stepper-item"] {
+	display: grid;
+	grid-template-rows: minmax(2.75rem, auto) 3rem;
+	align-content: start;
+	justify-content: stretch;
+	min-width: 0;
+}
+.visual-stepper [data-slot="stepper-trigger"] {
+	align-self: stretch;
 }
 .liquidity-examples {
 	display: flex;

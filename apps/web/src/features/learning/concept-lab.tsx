@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
 import {
 	ArrowLeftIcon,
 	ArrowRightIcon,
+	CheckIcon,
 	PauseIcon,
 	PlayIcon,
 	RotateCcwIcon,
@@ -126,8 +127,9 @@ export function ConceptLab({
 		) + 1;
 	const currentStep = steps[step - 1];
 	const selectStep = (value: number) => {
-		pause();
+		autoStarted.current = scene;
 		seek(steps[Math.max(0, Math.min(stepCount - 1, value - 1))].state.position);
+		setPlaying(!reduced);
 	};
 	const toggle = () => {
 		if (reduced) {
@@ -340,11 +342,18 @@ export function ConceptLab({
 						value={step}
 						onValueChange={selectStep}
 						className="visual-stepper"
+						indicators={{
+							completed: <CheckIcon className="size-3.5" aria-hidden="true" />,
+						}}
 						aria-label={l("Explanation steps", "讲解步骤")}
 					>
 						<StepperNav>
 							{steps.map((item, i) => (
-								<StepperItem key={i} step={i + 1} completed={i + 1 < step}>
+								<StepperItem
+									key={i}
+									step={i + 1}
+									completed={i + 1 < step || (complete && i + 1 === step)}
+								>
 									<StepperTrigger
 										id={`${titleId}-step-${i + 1}`}
 										aria-controls={`${titleId}-scene`}
@@ -355,6 +364,19 @@ export function ConceptLab({
 											{item.label[language]}
 										</StepperTitle>
 									</StepperTrigger>
+									{i + 1 === step && (
+										<VisualPlaybackProgress
+											key={`${scene}:${epoch}`}
+											locale={locale}
+											currentStep={currentStep}
+											step={step}
+											running={playing && ready && visible && pageVisible}
+											exploring={exploring}
+											reduced={reduced}
+											complete={complete}
+											onElapsed={advance}
+										/>
+									)}
 								</StepperItem>
 							))}
 						</StepperNav>
@@ -373,19 +395,14 @@ export function ConceptLab({
 						<RotateCcwIcon />
 						{l("Restart", "重启")}
 					</Button>
-					<VisualPlaybackProgress
-						key={`${scene}:${epoch}`}
-						locale={locale}
-						steps={steps}
-						step={step}
-						running={playing && ready && visible && pageVisible}
-						exploring={exploring}
-						reduced={reduced}
-						complete={complete}
-						onElapsed={advance}
-					>
-						{continuation}
-					</VisualPlaybackProgress>
+					{complete && !exploring && (
+						<div className="visual-playback-complete">
+							<span role="status">
+								{l("Explanation complete", "本段讲解完成")}
+							</span>
+							{continuation}
+						</div>
+					)}
 				</fieldset>
 				<VisualPlayback
 					value={{
