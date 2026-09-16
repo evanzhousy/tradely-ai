@@ -31,6 +31,7 @@ import {
 } from "react";
 import { getLessonById, getNextLesson } from "@/content/course";
 import type { Locale } from "@/i18n/messages";
+import { LessonPlan } from "./lesson-plan";
 import { saveVisualBookmark, useVisualBookmarks } from "./visual-bookmark";
 import { VisualLessonIdentity, VisualPlayback } from "./visual-playback";
 import { VisualPlaybackProgress } from "./visual-playback-progress";
@@ -445,6 +446,16 @@ export function ConceptLab({
 						<Component locale={locale} />
 					</div>
 				</VisualPlayback>
+				<LessonPlan
+					locale={locale}
+					steps={steps}
+					step={step}
+					running={playing && ready && visible && pageVisible}
+					exploring={exploring}
+					reduced={reduced}
+					complete={complete}
+					epoch={epoch}
+				/>
 			</div>
 			<div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
 				<Button
