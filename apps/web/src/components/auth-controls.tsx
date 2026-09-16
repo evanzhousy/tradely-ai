@@ -1,5 +1,4 @@
 import { Button } from "@tradely/ui/components/button";
-import { Skeleton } from "@tradely/ui/components/skeleton";
 import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
@@ -14,8 +13,19 @@ function ConfiguredAuthControls() {
 	const [failed, setFailed] = useState(false);
 	if (!isLoaded)
 		return (
-			<div role="status">
-				<Skeleton className="h-8 w-20" aria-hidden="true" />
+			<div
+				role="status"
+				aria-label={t("auth.loading")}
+				className="inline-flex h-8 w-16 items-center justify-center gap-1 rounded-full border border-border/70 bg-muted/80 sm:w-20"
+			>
+				{[0, 1, 2].map((index) => (
+					<span
+						key={index}
+						aria-hidden="true"
+						className="size-1.5 animate-pulse rounded-full bg-muted-foreground/70"
+						style={{ animationDelay: `${index * 120}ms` }}
+					/>
+				))}
 				<span className="sr-only">{t("auth.loading")}</span>
 			</div>
 		);
