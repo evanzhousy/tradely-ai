@@ -52,12 +52,9 @@ export function PricingAccountActions({
 
 	const restorePurchase = async () => {
 		setPending("restore");
+		capture("billing_action_started", { action: "course_pass_restore" });
 		try {
-			const result = await restore();
-			capture("course_pass_access_verified", {
-				course_id: result.courseId,
-				source: result.source,
-			});
+			await restore();
 			toast.success(t("pricing.restoreSuccess"));
 			// Access has already been verified. Refresh failures must not turn
 			// that successful restore into billing_action_failed.
@@ -66,20 +63,19 @@ export function PricingAccountActions({
 			} catch (error) {
 				captureException(error, {
 					source: "billing_action",
-					action: "checkout",
+					action: "course_pass_restore",
 				});
 			}
 		} catch (error) {
 			const reason = billingActionFailureReason(error);
 			capture("billing_action_failed", {
-				action: "checkout",
-				offer: "lifetime_course",
+				action: "course_pass_restore",
 				reason,
 			});
 			if (reason === "unavailable") {
 				captureException(error, {
 					source: "billing_action",
-					action: "checkout",
+					action: "course_pass_restore",
 				});
 			}
 			toast.error(

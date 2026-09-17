@@ -4,6 +4,7 @@ import type { AnalyticsConsent } from "./consent";
 import type {
 	AnalyticsEventMap,
 	AnalyticsRouteName,
+	BillingAction,
 	CaptureAnalyticsEvent,
 } from "./events";
 
@@ -15,7 +16,7 @@ export type ExceptionContext = {
 		| "client_unhandled";
 	route_name?: AnalyticsRouteName;
 	lesson_id?: string;
-	action?: "checkout" | "portal";
+	action?: BillingAction;
 };
 
 export type AnalyticsContextValue = {

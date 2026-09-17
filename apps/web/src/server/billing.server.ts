@@ -10,7 +10,10 @@ import {
 	checkoutSessionGrantsCoursePass,
 	subscriptionGrantsCourse,
 } from "@/domain/billing";
-import { captureServerException } from "./analytics/posthog.server";
+import {
+	captureServerAnalyticsEvent,
+	captureServerException,
+} from "./analytics/posthog.server";
 import { getCurrentIdentity, getCurrentUserId } from "./auth.server";
 import {
 	ensureAppUser,
@@ -240,13 +243,24 @@ async function verifyCoursePassSession(sessionId: string) {
 	return {
 		verified: true as const,
 		courseId: "tradingflow-foundations" as const,
+		userId: current.identity.userId,
 	};
 }
 
 export async function verifyCoursePassCheckoutImpl(sessionId: string) {
 	try {
+		const verified = await verifyCoursePassSession(sessionId);
+		await captureServerAnalyticsEvent(
+			"course_pass_access_verified",
+			verified.userId,
+			{
+				course_id: verified.courseId,
+				source: "checkout_return",
+			},
+		);
 		return {
-			...(await verifyCoursePassSession(sessionId)),
+			verified: verified.verified,
+			courseId: verified.courseId,
 			source: "checkout_return" as const,
 		};
 	} catch (error) {
@@ -254,7 +268,6 @@ export async function verifyCoursePassCheckoutImpl(sessionId: string) {
 			await captureServerException(error, {
 				source: "billing",
 				operation: "verify_course_pass_checkout",
-				action: "checkout",
 			});
 		}
 		throw error;
@@ -265,6 +278,14 @@ export async function restoreCoursePassImpl() {
 	try {
 		const current = await currentCoursePassIdentity();
 		if (hasActiveCoursePass(current.user)) {
+			await captureServerAnalyticsEvent(
+				"course_pass_access_verified",
+				current.identity.userId,
+				{
+					course_id: "tradingflow-foundations",
+					source: "existing",
+				},
+			);
 			return {
 				verified: true as const,
 				courseId: "tradingflow-foundations" as const,
@@ -295,6 +316,14 @@ export async function restoreCoursePassImpl() {
 					})
 				) {
 					await grantCoursePass(current.identity.userId, session.id);
+					await captureServerAnalyticsEvent(
+						"course_pass_access_verified",
+						current.identity.userId,
+						{
+							course_id: "tradingflow-foundations",
+							source: "restore",
+						},
+					);
 					return {
 						verified: true as const,
 						courseId: "tradingflow-foundations" as const,
@@ -317,7 +346,7 @@ export async function restoreCoursePassImpl() {
 			await captureServerException(error, {
 				source: "billing",
 				operation: "restore_course_pass",
-				action: "checkout",
+				action: "course_pass_restore",
 			});
 		}
 		throw error;

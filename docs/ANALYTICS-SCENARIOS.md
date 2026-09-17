@@ -1,7 +1,7 @@
 # Analytics scenarios
 
 This is the implementation contract for Tradely's registered application events, reviewed
-on 2026-09-09. The typed names and permitted properties live in
+on 2026-09-17. The typed names and permitted properties live in
 [`events.ts`](../apps/web/src/analytics/events.ts). Consent, identity, and delivery
 belong to [`AnalyticsProvider`](../apps/web/src/analytics/provider.tsx), with SDK
 imports restricted to the shared browser and server clients.
@@ -35,7 +35,8 @@ Paths below are relative to `apps/web/src`.
 | `analytics_consent_updated` | Explicit grant, once per provider in the current consent window; only `status=granted`. | `analytics/provider.tsx` |
 | `page_viewed` | Current page after consent, then each pathname change. Query-only or language-only changes do not duplicate the visit. Auth entry uses `route_name=auth_sign_in`. | `analytics/route-analytics.tsx` |
 | `locale_changed` | Language selection changes; previous/new locale only. | `components/locale-switcher.tsx` |
-| `auth_sign_in_opened` | Click sign-in from header, restricted lesson, or pricing; records entry surface. | `components/auth-controls.tsx`, `access-panel.tsx`, `pricing-actions.tsx` |
+| `auth_sign_in_opened` | Click sign-in from a registered entry surface; records intent only. | `components/auth-controls.tsx` and other sign-in links |
+| `auth_sign_in_completed` | A Tradely-started email-OTP or Google sign-in reaches an identified Neon session. Failed/stale pending markers are cleared and expire. | `analytics/auth-sign-in.ts`, `analytics/auth-identity.tsx`, `routes/auth.sign-in.tsx` |
 | `auth_session_established` | PostHog identifies an available signed-in Neon identity after consent. Deduplicated while that mounted identity remains active; existing restored sessions also qualify. | `analytics/auth-identity.tsx` |
 | `tradingflow_link_opened` | Click a header or lesson-practice TradingFlow link; optional bounded lesson ID/tool. `home_hero` is reserved in the type but has no current emitter. | `components/header.tsx`, `practice-card.tsx` |
 | `lesson_opened` | View a valid lesson after consent, once per lesson visit, including restricted access. Captures access state at that moment, locale, and media availability. | `routes/learn.$lessonSlug.tsx` |
@@ -43,18 +44,18 @@ Paths below are relative to `apps/web/src`.
 | `lesson_video_completed` | Video `ended`; records duration and lesson ID, not media URL. Replay can produce another completion. | `components/video-player.tsx` |
 | `lesson_completed` | Server confirms a requested completion save. | `components/complete-lesson-button.tsx` |
 | `lesson_progress_save_failed` | Completion save is rejected (`signed_out`, `access_denied`) or throws (`unavailable`). Optional video-position writes do not emit this event. | `components/complete-lesson-button.tsx` |
+| `visual_lesson_scene_started` | A visual scene walkthrough starts. `mode=autoplay` is visibility-driven playback; `mode=manual` is learner-started navigation. Deduplicated per scene for the page visit. | `features/learning/concept-lab.tsx` |
+| `visual_lesson_scene_completed` | A visual scene reaches its final authored step. Records bounded lesson/scene IDs, locale, and start mode. | `features/learning/concept-lab.tsx` |
+| `visual_lesson_explored` | First direct interaction with the interactive scene for the page visit. | `features/learning/concept-lab.tsx` |
 | `lesson_exercise_started` | Signed-in exercise successfully opens, resumes, or restarts. This is not a unique-attempt count. | `features/learning/learning-exercise.tsx` |
 | `lesson_hint_opened` | Server successfully processes a hint request; scenario IDs/version and current stage only. | `features/learning/learning-exercise.tsx` |
 | `lesson_exercise_submitted` | An update returns an assessment; once per returned attempt within the mounted learning session. Records criteria counts and `practiced`/`demonstrated`, not answers. | `features/learning/learning-exercise.tsx` |
 | `lesson_exercise_save_failed` | Signed-in exercise open/update fails; bounded failure reason only. | `features/learning/learning-exercise.tsx` |
 | `lesson_renderer_changed` | Select 2D/3D or fall back to 2D on renderer failure. | `features/learning/learning-exercise.tsx`, `contract-explorer.tsx` |
-| `membership_cta_clicked` | Restricted lesson's membership/access CTA is clicked. | `components/access-panel.tsx` |
-| `billing_status_unavailable` | Unavailable billing is visible in a lesson access or course-progress surface. Waits for consent/readiness; deduplicated until recovery, a new mount, or a new consent window. | `analytics/billing-status.ts`, used by the access panel, home, and curriculum |
-| `billing_action_started` | Checkout or portal request begins; offer distinguishes membership from lifetime course access. | `components/pricing-actions.tsx` |
-| `billing_action_redirected` | Server returns a hosted URL, immediately before navigation. It does not prove checkout or payment completion. | `components/pricing-actions.tsx` |
-| `billing_action_failed` | Checkout, portal, or restoration fails. Under the existing contract, restoration failures use `action=checkout`, `offer=lifetime_course`. | `components/pricing-actions.tsx` |
-| `billing_checkout_returned` | Recognized checkout return on pricing; `status`, `offer`, and `estimate=true`. It does not prove payment. | `routes/pricing.tsx` |
-| `course_pass_access_verified` | Verification/restoration returns confirmed access; source is `checkout_return`, `restore`, or `existing`. Analytics remains best effort; Stripe/database retain authority. | `routes/pricing.tsx`, `components/pricing-actions.tsx` |
+| `billing_action_started` | A supported billing-support action begins: `portal` or `course_pass_restore`. | `components/pricing-actions.tsx` |
+| `billing_action_redirected` | The customer portal returns a hosted URL immediately before navigation. | `components/pricing-actions.tsx` |
+| `billing_action_failed` | Customer portal or historical Course Pass restoration fails with a bounded reason. | `components/pricing-actions.tsx` |
+| `course_pass_access_verified` | Server-side verification/restoration confirms historical Course Pass access after the database grant is authoritative; source is `checkout_return`, `restore`, or `existing`. | `server/billing.server.ts`, `server/analytics/posthog.server.ts` |
 | `server_route_timing` | Course-progress read takes at least 1,000 ms; duration capped at 60,000 ms, plus status and signed-in state. | `server/progress.server.ts`, `server/analytics/posthog.server.ts` |
 
 ## SDK scenarios
@@ -72,8 +73,10 @@ Paths below are relative to `apps/web/src`.
 Masked replay and coordinate heatmaps are enabled after consent. `$pageleave`
 records scroll information before SPA navigation and on unload. Generic click
 autocapture and optional product widgets remain disabled. Anonymous exercise previews intentionally do not emit
-the signed-in exercise events. No dedicated signup, payment-success, subscription
-activation, refund, or revenue event is part of this contract.
+the signed-in exercise events. Sales are retired, so the active contract contains no
+new-checkout, payment-success, subscription-activation, refund, or revenue event.
+`auth_sign_in_completed` proves completion of a Tradely-started sign-in flow, but
+Neon does not expose a trustworthy new-account boundary here, so it is not labeled signup.
 
 Recordings retain layout and interaction paths while masking text and inputs.
 Images, media, canvases, embedded frames, protected lesson prose, and interactive
@@ -90,19 +93,17 @@ sensitive query values, and no further events after withdrawal. Local event
 delivery remains separate from deployed event delivery and PostHog dashboard
 population.
 Use a normal Chrome user agent and `navigator.webdriver=false`; keep production
-bot filtering enabled. Do not perform real checkout or mutate production learning
-records for a smoke test.
+bot filtering enabled. Exercise visual playback, direct exploration, and a normal
+sign-in flow when credentials are available. Do not mutate production learning
+records solely to generate analytics.
 
 Reference: [PostHog event tracking guidance](https://posthog.com/tutorials/event-tracking-guide).
 See [observability configuration](OBSERVABILITY.md) for deployment and alerting.
 
-The 2026-09-09 implementation passed 373 tests, workspace type checking, the Vite
-build (source-map upload disabled), scoped Biome checks, and the credential scan.
-A local browser smoke test verified consent-gated initialization, page-view pairs,
-a query-free checkout-return event, language-change events, web vitals, and zero
-new events after withdrawal. Signed-in and persistence-failure scenarios were
-verified with isolated tests; no production checkout or learning records were
-changed. Deployment of these source changes is a separate step.
+The 2026-09-17 contract follows the free visual-learning product: visual scene
+engagement is first-class, sign-in completion is distinct from restored sessions,
+and historical Course Pass verification is emitted from the server after the
+authoritative grant. Deployment and live PostHog observation remain separate proof.
 # Public guides and anonymous previews
 
 The SEO implementation adds these registered events through the existing consent boundary:

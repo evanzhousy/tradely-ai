@@ -38,15 +38,15 @@ Current dedicated monitors:
 - [Sign-in opens by surface — production](https://us.posthog.com/project/582920/insights/nUdxE2eo) (`11451956`)
 - [Learner navigation paths — production](https://us.posthog.com/project/582920/insights/RSFnCMvX) (`11452143`)
 - [Visitor → lesson activation — production](https://us.posthog.com/project/582920/insights/SRvfnuFt) (`11443815`)
-- [Checkout returns — estimate](https://us.posthog.com/project/582920/insights/OyB8E0dZ) (`11430646`)
-- [Checkout returns by status — production estimate](https://us.posthog.com/project/582920/insights/DxDAIzJI) (`11451681`)
-- [Visitor → checkout return — production estimate](https://us.posthog.com/project/582920/insights/t0x3L4n1) (`11451653`)
-- [Billing journey — production estimate](https://us.posthog.com/project/582920/insights/8uqdQeNL) (`11451824`)
-- [Billing actions by type — production](https://us.posthog.com/project/582920/insights/4skB8g1o) (`11451966`)
-- [Paywall → membership CTA — production](https://us.posthog.com/project/582920/insights/CgIvtWqn) (`11451924`)
-- [Sign-in → allowed lesson — production](https://us.posthog.com/project/582920/insights/e2VJxjwn) (`11451993`)
+- Historical — [Checkout returns — estimate](https://us.posthog.com/project/582920/insights/OyB8E0dZ) (`11430646`)
+- Historical — [Checkout returns by status — production estimate](https://us.posthog.com/project/582920/insights/DxDAIzJI) (`11451681`)
+- Historical — [Visitor → checkout return — production estimate](https://us.posthog.com/project/582920/insights/t0x3L4n1) (`11451653`)
+- Historical — [Billing journey — production estimate](https://us.posthog.com/project/582920/insights/8uqdQeNL) (`11451824`)
+- Historical — [Billing actions by type — production](https://us.posthog.com/project/582920/insights/4skB8g1o) (`11451966`)
+- Historical — [Paywall → membership CTA — production](https://us.posthog.com/project/582920/insights/CgIvtWqn) (`11451924`)
+- Historical — [Sign-in → allowed lesson — production](https://us.posthog.com/project/582920/insights/e2VJxjwn) (`11451993`)
 
-The dashboard intentionally leads with reliability and performance diagnostics, then shows traffic, learning activation, and billing estimates.
+The dashboard intentionally leads with reliability and performance diagnostics, then shows traffic and learning activation. Historical billing/access tiles remain visible only to preserve the retired-flow record until the live dashboard is reconciled after the replacement events are deployed.
 
 ## Live validation snapshot
 
@@ -58,13 +58,11 @@ The current production events predate the release-context change, so they do not
 
 Production Vite builds fail closed when the PostHog project key is missing or malformed, either PostHog host is outside Tradely's US endpoints, neither `VERCEL_GIT_COMMIT_SHA` nor an explicit `VITE_APP_RELEASE` is available, or PostHog source-map upload is disabled or pointed at another project. This prevents a deploy that would silently omit telemetry, cross account boundaries, produce uncorrelated events, or create opaque Error Tracking issues.
 
-The learning-to-checkout funnel currently contains one person at each step with a median 22-second checkout-return interval. This is a one-person directional sample; the final `billing_checkout_returned` step remains an estimate and must not be treated as payment, activation, revenue, or MRR evidence.
+Historical checkout/paywall insights describe the retired paid-course flow and are not current conversion KPIs. The active product is free learning; current analysis should center on lesson opens, visual-scene engagement, sign-in completion, saved study marks, and returning learners. Historical billing data remains available for support and audit use.
 
-The lesson-access monitor currently shows 3 `allowed`, 2 `payment_required`, and 1 `signed_out` lesson opens over the last 30 days. These are application-reported access states for friction analysis, not a replacement for authoritative Stripe entitlement checks.
+The current lesson route reports `access_tier=free` and `access_state=allowed`. Older `payment_required` and `signed_out` lesson-open values belong to the retired access model and must not be used as current paywall metrics.
 
-The checkout-status monitor currently shows 1 `cancel` return and no observed `success` return in the last 30 days. This is a small, consented estimate sample; it must not be interpreted as a failed payment or missing subscription without checking Stripe.
-
-The billing-journey funnel currently contains one person at each step: membership CTA, billing action, hosted redirect, and Checkout return. Median intervals are 8 seconds, 2 seconds, and 11 seconds respectively; the final return remains an estimate and is not payment or activation proof.
+Checkout-return and membership-CTA events are no longer part of the active source contract. Existing PostHog rows and saved insights are historical evidence only.
 
 The consent monitor currently shows 1 explicit analytics grant in the partial 30-day window. Because denials are intentionally not captured, this is an opt-in count rather than a consent rate or denominator.
 
@@ -80,13 +78,7 @@ The lesson-open stickiness monitor currently shows one learner active on one day
 
 The learner-lifecycle monitor currently shows one `new` learner in the latest week and no `returning`, `resurrecting`, or `dormant` learners. This is a small sample, not a churn or growth baseline.
 
-The sign-in monitor currently shows 1 sign-in open from the `lesson_access` surface and no header opens in the last 30 days. This measures authentication intent, not successful sign-in.
-
-The paywall funnel currently contains one person moving from a `payment_required` lesson open to the lesson-access membership CTA within one day, with a median interval of 1 second. This is a small intent sample; a CTA click is not payment or entitlement proof.
-
-The billing-action monitor currently shows 1 `checkout` start and no `portal` start in the last 30 days. This is billing intent telemetry only; it does not replace Stripe subscription state.
-
-The sign-in outcome funnel currently contains one person moving from a sign-in open to an `allowed` lesson within one day, with a median interval of 1 minute 15 seconds. This is directional correlation, not proof of sign-in causality or entitlement.
+`auth_sign_in_opened` remains an intent signal. `auth_sign_in_completed` is the identified outcome for a Tradely-started email-OTP or Google flow; `auth_session_established` remains broader session-readiness telemetry and also covers restored sessions.
 
 The navigation-path monitor currently shows one consented learner moving from home to `audited-boundary`, then `rank-symbols`, then `symbol-drawer`. It intentionally uses PostHog's `$pageview` path event type because Paths scopes navigation nodes by event type; the semantic `page_viewed` action remains the source for traffic and funnel metrics. Path timing is directional and based on a one-person sample.
 
@@ -125,29 +117,30 @@ The primary learning journey is:
 
 1. `$pageview` and `page_viewed`
 2. `lesson_opened`
-3. `lesson_video_started`
-4. `tradingflow_link_opened`
-5. `lesson_video_completed`
-6. `lesson_completed`
+3. `visual_lesson_scene_started`
+4. `visual_lesson_explored` when the learner directly manipulates a scene
+5. `visual_lesson_scene_completed`
+6. `lesson_video_started` / `lesson_video_completed` when companion media exists
+7. `tradingflow_link_opened` when the learner follows a product-practice handoff
+8. `lesson_completed` when a signed-in learner records the study mark
 
-The interactive pilots add the source-contract events `lesson_exercise_started`, `lesson_exercise_submitted`, `lesson_hint_opened`, `lesson_exercise_save_failed`, and `lesson_renderer_changed`. These are declared in the existing typed registry and property allowlist. They report bounded lesson/scenario identifiers, scenario version, stage, criterion counts, result category, failure category, or a 2D/3D renderer change with its selection/unavailability reason. They never include answer selections, evidence text, attempt state, camera movements, raw comparison data, or notes. Opening a saved attempt also counts as an exercise start/resume; it is not a unique-attempt denominator.
+The older signed-in exercise/coaching event family remains registered for the retained exercise implementation, but the current lesson route renders `VisualLesson` and does not mount `LearningExercise`. Do not use `lesson_exercise_*`, `lesson_hint_opened`, renderer, or coaching events as denominators for the current visual curriculum unless that product surface is mounted again.
 
 The `lesson_attempt.assessment` record is authoritative for a submitted practice result. Analytics remains consented, best-effort journey evidence. Database failures from the learning service are replaced with a fixed error before exception capture so SQL parameters and case content cannot enter telemetry. New event shapes must be observed in a deployed consented session before building live insights; this source addition does not establish delivery or learning efficacy.
 
-Membership and Course Pass events are `membership_cta_clicked`, `billing_action_started`, `billing_action_redirected`, `billing_action_failed`, `billing_checkout_returned`, and `course_pass_access_verified`. Checkout intent events use `offer = membership | lifetime_course`. A checkout return is explicitly marked `estimate: true`; it is not authoritative proof of payment, subscription activation, recognized revenue, or MRR. `course_pass_access_verified` contains only the bounded course ID and verification source after the server has updated access; Stripe and the database remain payment and entitlement truth.
+Sales are retired. Active billing telemetry is limited to support of existing customers: `billing_action_started`, `billing_action_redirected`, and `billing_action_failed` use `action=portal|course_pass_restore`. `course_pass_access_verified` is emitted server-side only after historical Course Pass verification/restoration has succeeded; Stripe and the database remain entitlement truth.
 
-Reliability events are `$exception`, `$web_vitals`, `server_route_timing`, `billing_status_unavailable`, and `lesson_progress_save_failed`.
+Reliability events are `$exception`, `$web_vitals`, `server_route_timing`, and `lesson_progress_save_failed`.
 
-Authentication telemetry includes `auth_sign_in_opened` for entry intent and `auth_session_established` after authentication has loaded a signed-in session. The latter is emitted at most once per user per consented analytics session; it is session-readiness evidence, not proof of a newly created account.
+Authentication telemetry includes `auth_sign_in_opened` for entry intent, `auth_sign_in_completed` for a Tradely-started flow that reaches an identified session, and `auth_session_established` for signed-in session readiness including restored sessions. None of these is labeled account creation because the application does not have a trustworthy Neon new-user boundary.
 
-Small terminal browser events (`analytics_consent_updated`, `billing_action_redirected`, `billing_checkout_returned`, `lesson_completed`, `lesson_video_completed`, and `tradingflow_link_opened`) use PostHog's immediate `sendBeacon` transport so navigation or unload is less likely to drop them. Beacon delivery remains best effort and is not treated as payment or entitlement proof.
+Small terminal browser events (`analytics_consent_updated`, `billing_action_redirected`, `lesson_completed`, `lesson_video_completed`, `tradingflow_link_opened`, and `visual_lesson_scene_completed`) use PostHog's immediate `sendBeacon` transport so navigation or unload is less likely to drop them.
 
-The currently observed custom event schema includes `page_viewed`, `analytics_consent_updated`, `auth_sign_in_opened`, `lesson_opened`, and `billing_checkout_returned`, alongside `$web_vitals`. Governance definitions are verified and tagged for those events plus `billing_action_started`, `billing_action_redirected`, and `membership_cta_clicked`; `$web_vitals` is verified and tagged `web-vitals`, `performance`, `tradely`, and `observability`, `$pageview` is verified and tagged `navigation`, `traffic`, `tradely`, and `observability`, `$identify` is verified and tagged `identity`, `privacy`, `tradely`, and `observability`, `analytics_consent_updated` is verified and tagged `consent`, `privacy`, `tradely`, and `observability`, `billing_checkout_returned` is verified and tagged `billing`, `checkout`, `estimate`, `tradely`, and `observability`, `auth_sign_in_opened` is verified and tagged `authentication`, `identity`, `activation`, `tradely`, and `observability`, `page_viewed` is verified and tagged `traffic`, `navigation`, `activation`, `tradely`, and `observability`, `lesson_opened` is verified and tagged `learning`, `content`, `activation`, `tradely`, `access`, and `observability`, `billing_action_started` is verified and tagged `intent`, `billing`, `checkout`, `tradely`, and `observability`, `billing_action_redirected` is verified and tagged `billing`, `intent`, `tradely`, `redirect`, and `observability`, and `membership_cta_clicked` is verified and tagged `learning`, `access`, `intent`, `billing`, `tradely`, and `observability`. The remaining source-contract events should be promoted only after observed traffic establishes their live shape. The browser and Node `before_send` boundaries drop any non-system custom event that is not declared in `apps/web/src/analytics/events.ts`, prune undeclared non-system properties, and set explicit browser profile processing from `$is_identified` while preserving PostHog-required token/identity fields and internal `$` properties.
+The live project has proven production delivery for the core route, consent, identity, lesson, and reliability events. Newly added `visual_lesson_*` and `auth_sign_in_completed` definitions should be promoted into saved PostHog actions/insights only after a deployed consented session establishes their live property shapes. The browser and Node `before_send` boundaries drop unregistered custom events and prune undeclared non-system properties.
 
-As of 2026-08-29, the current live schema does not yet contain `auth_session_established`, `locale_changed`, `tradingflow_link_opened`, `lesson_video_started`, `lesson_video_completed`, `lesson_completed`, `lesson_progress_save_failed`, `billing_status_unavailable`, `billing_action_failed`, `course_pass_access_verified`, or `server_route_timing`. These remain valid source-contract events in the application, but no PostHog insight or action should be built from them until a consented deployment captures their live shape.
+As of the 2026-09-17 audit, production delivery is established for `page_viewed`, `lesson_opened`, `analytics_consent_updated`, `auth_session_established`, `server_route_timing`, and several learning/support events. The new visual-lesson and explicit sign-in-completion events remain deployment-gated until observed in project 582920.
 
-PostHog actions centralize stable learning, privacy, billing, traffic, and authentication signals: [Allowed lesson opened](https://us.posthog.com/project/582920/data-management/actions/355884) (`355884`) matches `access_state = allowed`, [Payment-required lesson opened](https://us.posthog.com/project/582920/data-management/actions/355885) (`355885`) matches `access_state = payment_required`, [Lesson-access membership CTA clicked](https://us.posthog.com/project/582920/data-management/actions/355886) (`355886`) matches `surface = lesson_access`, [Checkout action started](https://us.posthog.com/project/582920/data-management/actions/355887) (`355887`) matches `action = checkout`, [Checkout redirect returned](https://us.posthog.com/project/582920/data-management/actions/355888) (`355888`) matches `billing_action_redirected` where `action = checkout`, [Checkout return (estimate)](https://us.posthog.com/project/582920/data-management/actions/355889) (`355889`) matches `billing_checkout_returned`, [Analytics consent granted](https://us.posthog.com/project/582920/data-management/actions/355890) (`355890`) matches `status = granted`, [Lesson opened](https://us.posthog.com/project/582920/data-management/actions/355891) (`355891`) matches all `lesson_opened` events, [Consented page viewed](https://us.posthog.com/project/582920/data-management/actions/355892) (`355892`) matches semantic route views after explicit consent, [Billing action started](https://us.posthog.com/project/582920/data-management/actions/355893) (`355893`) matches checkout or portal intent, and [Sign-in opened](https://us.posthog.com/project/582920/data-management/actions/355894) (`355894`) matches sign-in intent. The sign-in-to-access, sign-in-surface, paywall, visitor-to-checkout, billing-journey, checkout-status, checkout-return, consent, total lesson-open, daily-active-learner, access-state, lesson-demand, locale, retention, stickiness, lifecycle, visitor-activation, consented-traffic, and billing-action monitors reuse these actions so definitions stay centralized; they remain directional application telemetry rather than Stripe entitlement proof.
-All eleven reusable actions carry the shared `observability` tag while retaining their product-area labels. The `Checkout action started` action is additionally tagged `intent` alongside `tradely`, `billing`, and `activation`; the `Lesson-access membership CTA clicked` action is additionally tagged `intent` alongside `access`, `billing`, `activation`, and `tradely`. Product-intent action Slack notifications remain disabled because these are not incidents.
+Existing PostHog actions for payment-required lessons, membership CTA, checkout start/redirect, and checkout return are historical definitions from the retired sales flow. Keep them only for historical analysis; current dashboards should not present them as live conversion objectives. Reusable current actions include consent granted, lesson opened, consented page viewed, and sign-in opened; add visual-lesson and sign-in-completion actions only after their deployed schema is observed.
 
 ## Server exception coverage
 

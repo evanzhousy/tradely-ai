@@ -15,7 +15,6 @@ import {
 	CardTitle,
 } from "@tradely/ui/components/card";
 import { useEffect, useState } from "react";
-import { useAnalytics } from "@/analytics/context";
 import { authIsConfigured, useAuth } from "@/auth/client";
 import { PageIntro } from "@/components/page-intro";
 import { PricingAccountActions } from "@/components/pricing-actions";
@@ -36,7 +35,6 @@ function PurchaseSupport({ userId }: { userId: string }) {
 	const { checkout, session_id: sessionId } = Route.useSearch();
 	const load = useServerFn(getPricingSummary);
 	const verify = useServerFn(verifyCoursePassCheckout);
-	const { capture } = useAnalytics();
 	const history = useQuery({
 		queryKey: ["historical-billing", userId],
 		queryFn: () => load(),
@@ -54,13 +52,9 @@ function PurchaseSupport({ userId }: { userId: string }) {
 		let active = true;
 		setVerification("pending");
 		void verify({ data: { sessionId } })
-			.then((result) => {
+			.then(() => {
 				if (!active) return;
 				setVerification("success");
-				capture("course_pass_access_verified", {
-					course_id: result.courseId,
-					source: result.source,
-				});
 				void history.refetch();
 			})
 			.catch(() => {
@@ -69,7 +63,7 @@ function PurchaseSupport({ userId }: { userId: string }) {
 		return () => {
 			active = false;
 		};
-	}, [checkout, sessionId, verify, capture, history.refetch]);
+	}, [checkout, sessionId, verify, history.refetch]);
 	return (
 		<div className="flex flex-col gap-4">
 			{verification && (

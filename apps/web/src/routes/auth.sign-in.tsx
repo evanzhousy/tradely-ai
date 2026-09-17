@@ -28,6 +28,11 @@ import {
 import { StepIndicator } from "@tradely/ui/components/step-indicator";
 import { BookmarkCheckIcon, BookOpenIcon, ListChecksIcon } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
+import {
+	clearPendingAuthSignIn,
+	markPendingAuthSignIn,
+} from "@/analytics/auth-sign-in";
+import { useAnalytics } from "@/analytics/context";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
 import { safeReturnTo } from "@/auth/redirect";
 import { useI18n } from "@/i18n/provider";
@@ -51,6 +56,7 @@ function SignInForm({
 }) {
 	const { t } = useI18n();
 	const { isLoaded, isSignedIn } = useAuth();
+	const { consent } = useAnalytics();
 	const [email, setEmail] = useState("");
 	const [code, setCode] = useState("");
 	const [step, setStep] = useState<"email" | "code">("email");
@@ -59,6 +65,13 @@ function SignInForm({
 		oauthFailed ? t("auth.googleFailed") : null,
 	);
 	const [cooldown, setCooldown] = useState(0);
+	const markConsentedSignIn = (method: "email_otp" | "google") => {
+		if (consent === "granted") markPendingAuthSignIn(method);
+		else clearPendingAuthSignIn();
+	};
+	useEffect(() => {
+		if (oauthFailed) clearPendingAuthSignIn();
+	}, [oauthFailed]);
 	useEffect(() => {
 		if (isLoaded && isSignedIn) window.location.replace(returnTo);
 	}, [isLoaded, isSignedIn, returnTo]);
@@ -99,6 +112,7 @@ function SignInForm({
 		setError(null);
 		const callback = new URL("/auth/callback", window.location.origin);
 		callback.searchParams.set("returnTo", safeReturnTo(returnTo));
+		markConsentedSignIn("google");
 		try {
 			const result = await authClient.signIn.social({
 				provider: "google",
@@ -106,8 +120,12 @@ function SignInForm({
 				newUserCallbackURL: callback.toString(),
 				errorCallbackURL: callback.toString(),
 			});
-			if (result.error) setError(t("auth.googleFailed"));
+			if (result.error) {
+				clearPendingAuthSignIn();
+				setError(t("auth.googleFailed"));
+			}
 		} catch {
+			clearPendingAuthSignIn();
 			setError(t("auth.googleFailed"));
 		} finally {
 			setPending(null);
@@ -122,17 +140,20 @@ function SignInForm({
 		}
 		setPending("email");
 		setError(null);
+		markConsentedSignIn("email_otp");
 		try {
 			const result = await authClient.signIn.emailOtp({
 				email,
 				otp: code.trim(),
 			});
 			if (result.error || !result.data?.user?.emailVerified) {
+				clearPendingAuthSignIn();
 				setError(t("auth.codeFailed"));
 				return;
 			}
 			window.location.assign(returnTo);
 		} catch {
+			clearPendingAuthSignIn();
 			setError(t("auth.codeFailed"));
 		} finally {
 			setPending(null);

@@ -36,7 +36,15 @@ export type BillingActionFailureReason =
 	| "not_found"
 	| "unavailable";
 
-export type BillingOffer = "membership" | "lifetime_course";
+export type BillingAction = "portal" | "course_pass_restore";
+
+export type VisualLessonPlaybackMode = "autoplay" | "manual";
+
+type VisualLessonEventProperties = {
+	lesson_id: string;
+	scene_id: string;
+	locale: Locale;
+};
 
 export type AnalyticsRouteName =
 	| "guides"
@@ -145,9 +153,20 @@ export type AnalyticsEventMap = {
 	auth_sign_in_opened: {
 		surface: "header" | "lesson_access" | "pricing" | "lesson_completion";
 	};
+	auth_sign_in_completed: {
+		provider: "neon";
+		method: "email_otp" | "google";
+	};
 	auth_session_established: {
 		provider: "neon";
 	};
+	visual_lesson_scene_started: VisualLessonEventProperties & {
+		mode: VisualLessonPlaybackMode;
+	};
+	visual_lesson_scene_completed: VisualLessonEventProperties & {
+		mode: VisualLessonPlaybackMode;
+	};
+	visual_lesson_explored: VisualLessonEventProperties;
 	tradingflow_link_opened: Partial<LabEventProperties> & {
 		surface: "header" | "home_hero" | "lesson_practice" | "lesson_lab";
 		lesson_id?: string;
@@ -181,30 +200,15 @@ export type AnalyticsEventMap = {
 		lesson_id: string;
 		reason: "signed_out" | "access_denied" | "unavailable";
 	};
-	membership_cta_clicked: {
-		surface: "lesson_access" | "foundation_completion";
-		lesson_id?: string;
-	};
-	billing_status_unavailable: {
-		surface: "lesson_access" | "course_progress";
-	};
 	billing_action_started: {
-		action: "checkout" | "portal";
-		offer?: BillingOffer;
+		action: BillingAction;
 	};
 	billing_action_redirected: {
-		action: "checkout" | "portal";
-		offer?: BillingOffer;
+		action: BillingAction;
 	};
 	billing_action_failed: {
-		action: "checkout" | "portal";
-		offer?: BillingOffer;
+		action: BillingAction;
 		reason: BillingActionFailureReason;
-	};
-	billing_checkout_returned: {
-		status: "success" | "cancel";
-		estimate: true;
-		offer: BillingOffer;
 	};
 	course_pass_access_verified: {
 		course_id: "tradingflow-foundations";
@@ -250,19 +254,20 @@ export const ANALYTICS_EVENT_NAMES = {
 	page_viewed: true,
 	locale_changed: true,
 	auth_sign_in_opened: true,
+	auth_sign_in_completed: true,
 	auth_session_established: true,
+	visual_lesson_scene_started: true,
+	visual_lesson_scene_completed: true,
+	visual_lesson_explored: true,
 	tradingflow_link_opened: true,
 	lesson_opened: true,
 	lesson_video_started: true,
 	lesson_video_completed: true,
 	lesson_completed: true,
 	lesson_progress_save_failed: true,
-	membership_cta_clicked: true,
-	billing_status_unavailable: true,
 	billing_action_started: true,
 	billing_action_redirected: true,
 	billing_action_failed: true,
-	billing_checkout_returned: true,
 	course_pass_access_verified: true,
 	server_route_timing: true,
 	analytics_consent_updated: true,
@@ -312,7 +317,11 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 	page_viewed: ["route_name", "path", "locale"],
 	locale_changed: ["from_locale", "to_locale"],
 	auth_sign_in_opened: ["surface"],
+	auth_sign_in_completed: ["provider", "method"],
 	auth_session_established: ["provider"],
+	visual_lesson_scene_started: ["lesson_id", "scene_id", "locale", "mode"],
+	visual_lesson_scene_completed: ["lesson_id", "scene_id", "locale", "mode"],
+	visual_lesson_explored: ["lesson_id", "scene_id", "locale"],
 	tradingflow_link_opened: ["surface", "tool", ...labPropertyKeys],
 	lesson_opened: [
 		"lesson_id",
@@ -326,12 +335,9 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 	lesson_video_completed: ["lesson_id", "duration_seconds"],
 	lesson_completed: ["lesson_id", "lesson_order"],
 	lesson_progress_save_failed: ["lesson_id", "reason"],
-	membership_cta_clicked: ["surface", "lesson_id"],
-	billing_status_unavailable: ["surface"],
-	billing_action_started: ["action", "offer"],
-	billing_action_redirected: ["action", "offer"],
-	billing_action_failed: ["action", "offer", "reason"],
-	billing_checkout_returned: ["status", "estimate", "offer"],
+	billing_action_started: ["action"],
+	billing_action_redirected: ["action"],
+	billing_action_failed: ["action", "reason"],
 	course_pass_access_verified: ["course_id", "source"],
 	server_route_timing: [
 		"surface",

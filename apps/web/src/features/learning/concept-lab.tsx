@@ -29,6 +29,8 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useAnalytics } from "@/analytics/context";
+import type { VisualLessonPlaybackMode } from "@/analytics/events";
 import { getLessonById, getNextLesson } from "@/content/course";
 import type { Locale } from "@/i18n/messages";
 import { LessonPlan } from "./lesson-plan";
@@ -57,6 +59,7 @@ export function ConceptLab({
 	scenes: readonly [ConceptScene, ...ConceptScene[]];
 }) {
 	const lessonId = useContext(VisualLessonIdentity);
+	const { capture, isCapturing } = useAnalytics();
 	const bookmarks = useVisualBookmarks();
 	const [scene, setScene] = useState(scenes[0].id);
 	const [progress, setProgress] = useState(0);
@@ -73,6 +76,10 @@ export function ConceptLab({
 	const [visible, setVisible] = useState(false);
 	const [pageVisible, setPageVisible] = useState(true);
 	const stage = useRef<HTMLDivElement>(null);
+	const startedScenes = useRef(new Set<string>());
+	const completedScenes = useRef(new Set<string>());
+	const exploredScenes = useRef(new Set<string>());
+	const sceneModes = useRef(new Map<string, VisualLessonPlaybackMode>());
 	const titleId = useId();
 	const index = Math.max(
 		0,
@@ -106,6 +113,68 @@ export function ConceptLab({
 	);
 	const language = locale === "zh" ? 1 : 0;
 	const l = (en: string, zh: string) => (locale === "zh" ? zh : en);
+	const analyticsSceneKey = lessonId ? `${lessonId}:${active.id}` : null;
+	const captureSceneStarted = useCallback(
+		(mode: VisualLessonPlaybackMode) => {
+			if (!lessonId || !analyticsSceneKey || !isCapturing) return;
+			if (!sceneModes.current.has(analyticsSceneKey)) {
+				sceneModes.current.set(analyticsSceneKey, mode);
+			}
+			if (startedScenes.current.has(analyticsSceneKey)) return;
+			const startMode = sceneModes.current.get(analyticsSceneKey) ?? mode;
+			if (
+				capture("visual_lesson_scene_started", {
+					lesson_id: lessonId,
+					scene_id: active.id,
+					locale,
+					mode: startMode,
+				})
+			) {
+				startedScenes.current.add(analyticsSceneKey);
+			}
+		},
+		[active.id, analyticsSceneKey, capture, isCapturing, lessonId, locale],
+	);
+	const captureSceneCompleted = useCallback(() => {
+		if (!lessonId || !analyticsSceneKey || !isCapturing) return;
+		if (completedScenes.current.has(analyticsSceneKey)) return;
+		const mode =
+			sceneModes.current.get(analyticsSceneKey) ??
+			(reduced ? "manual" : "autoplay");
+		captureSceneStarted(mode);
+		if (
+			capture("visual_lesson_scene_completed", {
+				lesson_id: lessonId,
+				scene_id: active.id,
+				locale,
+				mode,
+			})
+		) {
+			completedScenes.current.add(analyticsSceneKey);
+		}
+	}, [
+		active.id,
+		analyticsSceneKey,
+		capture,
+		captureSceneStarted,
+		isCapturing,
+		lessonId,
+		locale,
+		reduced,
+	]);
+	const captureSceneExplored = useCallback(() => {
+		if (!lessonId || !analyticsSceneKey || !isCapturing) return;
+		if (exploredScenes.current.has(analyticsSceneKey)) return;
+		if (
+			capture("visual_lesson_explored", {
+				lesson_id: lessonId,
+				scene_id: active.id,
+				locale,
+			})
+		) {
+			exploredScenes.current.add(analyticsSceneKey);
+		}
+	}, [active.id, analyticsSceneKey, capture, isCapturing, lessonId, locale]);
 	const pause = useCallback(() => {
 		autoStarted.current = scene;
 		setPlaying(false);
@@ -129,7 +198,13 @@ export function ConceptLab({
 	const currentStep = steps[step - 1];
 	const selectStep = (value: number) => {
 		autoStarted.current = scene;
-		seek(steps[Math.max(0, Math.min(stepCount - 1, value - 1))].state.position);
+		captureSceneStarted("manual");
+		const nextIndex = Math.max(0, Math.min(stepCount - 1, value - 1));
+		seek(steps[nextIndex].state.position);
+		if (reduced && nextIndex === stepCount - 1) {
+			setComplete(true);
+			captureSceneCompleted();
+		}
 		setPlaying(!reduced);
 	};
 	const toggle = () => {
@@ -145,6 +220,7 @@ export function ConceptLab({
 		if (playing) pause();
 		else {
 			autoStarted.current = scene;
+			captureSceneStarted("manual");
 			if (exploring || complete) {
 				setResetVersion((value) => value + 1);
 				seek(0);
@@ -199,10 +275,11 @@ export function ConceptLab({
 	}, [pause, scene, resetVersion]);
 	const advance = useCallback(() => {
 		if (step >= stepCount) {
+			captureSceneCompleted();
 			setComplete(true);
 			pause();
 		} else seek(steps[step].state.position);
-	}, [pause, seek, step, stepCount, steps]);
+	}, [captureSceneCompleted, pause, seek, step, stepCount, steps]);
 	useEffect(() => {
 		if (
 			ready &&
@@ -212,9 +289,16 @@ export function ConceptLab({
 			autoStarted.current !== scene
 		) {
 			autoStarted.current = scene;
+			captureSceneStarted("autoplay");
 			setPlaying(true);
 		}
-	}, [ready, reduced, visible, pageVisible, scene]);
+	}, [captureSceneStarted, ready, reduced, visible, pageVisible, scene]);
+	useEffect(() => {
+		if (!playing) return;
+		captureSceneStarted(
+			sceneModes.current.get(analyticsSceneKey ?? scene) ?? "autoplay",
+		);
+	}, [analyticsSceneKey, captureSceneStarted, playing, scene]);
 	const caption = exploring ? active.prompt : currentStep.caption;
 	const Component = active.Component;
 	const lesson = lessonId ? getLessonById(lessonId) : undefined;
@@ -417,6 +501,7 @@ export function ConceptLab({
 						toggle,
 						start: () => {
 							autoStarted.current = scene;
+							captureSceneStarted("manual");
 							seek(0);
 							setPlaying(!reduced);
 						},
@@ -436,10 +521,12 @@ export function ConceptLab({
 						onClick={(event) => {
 							if ((event.target as Element).closest("[data-lesson-action]"))
 								return;
+							captureSceneExplored();
 							setExploring(true);
 						}}
 						onChangeCapture={() => {
 							pause();
+							captureSceneExplored();
 							setExploring(true);
 						}}
 					>

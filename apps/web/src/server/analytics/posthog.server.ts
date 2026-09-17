@@ -5,9 +5,10 @@ import { env } from "@tradely/env/server";
 import { type EventMessage, PostHog } from "posthog-node";
 
 import { ANALYTICS_CONSENT_COOKIE_NAME } from "@/analytics/consent";
-import type { AnalyticsEventName } from "@/analytics/events";
 import {
 	ANALYTICS_EVENT_SCHEMA_VERSION,
+	type AnalyticsEventMap,
+	type AnalyticsEventName,
 	isRegisteredAnalyticsEvent,
 	pruneAnalyticsEventProperties,
 	sanitizeAnalyticsEventUrlProperties,
@@ -36,7 +37,7 @@ export type ServerExceptionContext = {
 	operation: string;
 	userId?: string | null;
 	lessonId?: string;
-	action?: "checkout" | "portal";
+	action?: "portal" | "course_pass_restore";
 };
 
 let serverClient: PostHog | null = null;
@@ -147,18 +148,23 @@ export async function captureServerException(
 	}
 }
 
-export async function captureServerRouteTiming(
-	context: ServerRouteTimingContext,
+export async function captureServerAnalyticsEvent<
+	EventName extends AnalyticsEventName,
+>(
+	event: EventName,
+	distinctId: string,
+	properties: AnalyticsEventMap[EventName],
+	processPersonProfile = true,
 ): Promise<boolean> {
 	if (!hasAnalyticsConsent()) return false;
 	try {
 		const client = getServerClient();
 		if (!client) return false;
 		await client.captureImmediate({
-			distinctId: "tradely-server",
-			event: "server_route_timing",
+			distinctId,
+			event,
 			properties: {
-				$process_person_profile: false,
+				$process_person_profile: processPersonProfile,
 				app: "tradely",
 				event_schema_version: ANALYTICS_EVENT_SCHEMA_VERSION,
 				environment: serverAnalyticsEnvironment({
@@ -166,11 +172,7 @@ export async function captureServerRouteTiming(
 					vercelEnv: process.env.VERCEL_ENV,
 				}),
 				runtime: process.env.VERCEL ? "vercel_function" : "node",
-				surface: context.surface,
-				operation: context.operation.slice(0, 120),
-				duration_ms: boundedServerTimingMs(context.duration_ms),
-				status: context.status,
-				signed_in: context.signed_in,
+				...properties,
 				release: serverAnalyticsRelease(),
 			},
 		});
@@ -178,4 +180,21 @@ export async function captureServerRouteTiming(
 	} catch {
 		return false;
 	}
+}
+
+export async function captureServerRouteTiming(
+	context: ServerRouteTimingContext,
+): Promise<boolean> {
+	return captureServerAnalyticsEvent(
+		"server_route_timing",
+		"tradely-server",
+		{
+			surface: context.surface,
+			operation: context.operation,
+			duration_ms: boundedServerTimingMs(context.duration_ms),
+			status: context.status,
+			signed_in: context.signed_in,
+		},
+		false,
+	);
 }

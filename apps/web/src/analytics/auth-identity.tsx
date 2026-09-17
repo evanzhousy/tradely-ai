@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/auth/client";
 
+import { consumePendingAuthSignIn } from "./auth-sign-in";
 import { useAnalytics } from "./context";
 
 export function AuthAnalyticsIdentity() {
@@ -22,6 +23,13 @@ export function AuthAnalyticsIdentity() {
 			if (identifiedUserRef.current) resetIdentity();
 			if (identify(userId)) {
 				identifiedUserRef.current = userId;
+				const signInMethod = consumePendingAuthSignIn();
+				if (signInMethod) {
+					capture("auth_sign_in_completed", {
+						provider: "neon",
+						method: signInMethod,
+					});
+				}
 				if (sessionEventUserRef.current !== userId) {
 					if (capture("auth_session_established", { provider: "neon" })) {
 						sessionEventUserRef.current = userId;
