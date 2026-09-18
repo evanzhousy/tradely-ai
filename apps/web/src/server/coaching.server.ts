@@ -5,8 +5,9 @@ import {
 	coachingGeneration,
 	coachingSession,
 	createDb,
-	type LessonAttempt,
+	type LessonAttemptCore,
 	lessonAttempt,
+	lessonAttemptCoreSelection,
 } from "@tradely/db";
 import { and, asc, eq, lt, sql } from "drizzle-orm";
 import { getCoachingLesson } from "@/content/coaching/index.server";
@@ -50,7 +51,7 @@ async function own(input: CoachingIdentity) {
 	if (!access.ok) throw new CoachingError(access.reason);
 	const db = createDb();
 	const [attempt] = await db
-		.select()
+		.select(lessonAttemptCoreSelection)
 		.from(lessonAttempt)
 		.where(
 			and(
@@ -108,7 +109,7 @@ function settingsReason(userId: string) {
 async function viewOf(
 	db: ReturnType<typeof createDb>,
 	userId: string,
-	attempt: LessonAttempt,
+	attempt: LessonAttemptCore,
 	session?: CoachingSessionRecord,
 ): Promise<CoachingView> {
 	const config = getCoachingLesson(attempt.lessonId);

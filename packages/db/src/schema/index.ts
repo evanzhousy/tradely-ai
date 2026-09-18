@@ -113,6 +113,32 @@ export const lessonAttempt = pgTable(
 
 export type LessonAttempt = typeof lessonAttempt.$inferSelect;
 
+/**
+ * Stable attempt fields required by core learning and coaching flows.
+ *
+ * Keep additive feature columns (for example guest-import metadata) out of this
+ * projection so a delayed additive migration cannot make the core lesson path
+ * select columns it does not use.
+ */
+export const lessonAttemptCoreSelection = {
+	id: lessonAttempt.id,
+	userId: lessonAttempt.userId,
+	lessonId: lessonAttempt.lessonId,
+	scenarioId: lessonAttempt.scenarioId,
+	scenarioVersion: lessonAttempt.scenarioVersion,
+	status: lessonAttempt.status,
+	revision: lessonAttempt.revision,
+	state: lessonAttempt.state,
+	assessment: lessonAttempt.assessment,
+	lastCommandId: lessonAttempt.lastCommandId,
+	submittedAt: lessonAttempt.submittedAt,
+};
+
+export type LessonAttemptCore = Pick<
+	LessonAttempt,
+	keyof typeof lessonAttemptCoreSelection
+>;
+
 /** Formative coaching is separate from immutable lesson assessments. Costs are micro-USD. */
 export const coachingSession = pgTable(
 	"coaching_session",

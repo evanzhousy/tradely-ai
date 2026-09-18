@@ -1,6 +1,11 @@
 import "@tanstack/react-start/server-only";
 import { randomUUID } from "node:crypto";
-import { createDb, type LessonAttempt, lessonAttempt } from "@tradely/db";
+import {
+	createDb,
+	type LessonAttemptCore,
+	lessonAttempt,
+	lessonAttemptCoreSelection,
+} from "@tradely/db";
 import { and, desc, eq } from "drizzle-orm";
 import {
 	getLessonScenarios,
@@ -24,14 +29,14 @@ import type { OpenLearningInput, UpdateLearningInput } from "./learning";
 import { authorizeLearning as authorize } from "./learning-access.server";
 import { ensureAppUser } from "./users.server";
 
-function isCurrentScenario(record: LessonAttempt) {
+function isCurrentScenario(record: LessonAttemptCore) {
 	return getLessonScenarios(record.lessonId).some(
 		(item) =>
 			item.id === record.scenarioId && item.version === record.scenarioVersion,
 	);
 }
 
-export function projectRecord(record: LessonAttempt): LearningResponse {
+export function projectRecord(record: LessonAttemptCore): LearningResponse {
 	const scenario = getScenario(
 		record.lessonId,
 		record.scenarioId,
@@ -83,7 +88,7 @@ export async function openLearningImpl(
 		);
 		if (data.attemptId && !data.restart) {
 			const [selected] = await db
-				.select()
+				.select(lessonAttemptCoreSelection)
 				.from(lessonAttempt)
 				.where(and(owner, eq(lessonAttempt.id, data.attemptId)))
 				.limit(1);
@@ -92,7 +97,7 @@ export async function openLearningImpl(
 				: { ok: false, reason: "not_found" };
 		}
 		const [latest] = await db
-			.select()
+			.select(lessonAttemptCoreSelection)
 			.from(lessonAttempt)
 			.where(owner)
 			.orderBy(desc(lessonAttempt.createdAt), desc(lessonAttempt.id))
@@ -127,7 +132,7 @@ export async function openLearningImpl(
 		let sourceWork: SourceWork | undefined;
 		if (sourceId && (await authorize(sourceId)).ok) {
 			const [source] = await db
-				.select()
+				.select(lessonAttemptCoreSelection)
 				.from(lessonAttempt)
 				.where(
 					and(
@@ -165,11 +170,11 @@ export async function openLearningImpl(
 				},
 			})
 			.onConflictDoNothing()
-			.returning();
+			.returning(lessonAttemptCoreSelection);
 		if (created) return projectRecord(created);
 		// The partial unique index resolves simultaneous starts from two tabs.
 		const [active] = await db
-			.select()
+			.select(lessonAttemptCoreSelection)
 			.from(lessonAttempt)
 			.where(and(owner, eq(lessonAttempt.status, "in_progress")))
 			.limit(1);
@@ -193,7 +198,7 @@ export async function updateLearningImpl(
 			eq(lessonAttempt.lessonId, data.lessonId),
 		);
 		const [record] = await db
-			.select()
+			.select(lessonAttemptCoreSelection)
 			.from(lessonAttempt)
 			.where(owner)
 			.limit(1);
@@ -240,10 +245,10 @@ export async function updateLearningImpl(
 					eq(lessonAttempt.status, "in_progress"),
 				),
 			)
-			.returning();
+			.returning(lessonAttemptCoreSelection);
 		if (saved) return projectRecord(saved);
 		const [winner] = await db
-			.select()
+			.select(lessonAttemptCoreSelection)
 			.from(lessonAttempt)
 			.where(owner)
 			.limit(1);

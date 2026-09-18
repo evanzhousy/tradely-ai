@@ -1,5 +1,5 @@
 import "@tanstack/react-start/server-only";
-import type { LessonAttempt } from "@tradely/db";
+import type { LessonAttemptCore } from "@tradely/db";
 import { getCoachingLesson } from "@/content/coaching/index.server";
 import { getLessonScenarios } from "@/content/scenarios/index.server";
 import { getTeachingUnit } from "@/content/units/index.server";
@@ -12,7 +12,7 @@ import {
 import { evaluateStep, projectAttempt } from "@/domain/learning/engine";
 import { attemptStateSchema } from "@/domain/learning/types";
 
-export function requireCoachingStage(record: LessonAttempt) {
+export function requireCoachingStage(record: LessonAttemptCore) {
 	const config = getCoachingLesson(record.lessonId);
 	const unit = getTeachingUnit(record.lessonId);
 	const scenario = getLessonScenarios(record.lessonId).find(
@@ -27,7 +27,7 @@ export function requireCoachingStage(record: LessonAttempt) {
 	return { config, unit, scenario, state, view };
 }
 export function buildCoachingSnapshot(
-	record: LessonAttempt,
+	record: LessonAttemptCore,
 	locale: "en" | "zh",
 	extraReason: string,
 ): CoachingSnapshot {
