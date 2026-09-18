@@ -35,7 +35,7 @@ const scenes = [
 	},
 	{
 		id: "evidence",
-		label: ["When direction is unknown", "方向未知时"],
+		label: ["Evidence before label", "先看证据再贴标签"],
 		title: ["A label needs usable evidence", "标签需要可用证据"],
 		prompt: [
 			"Change the reference evidence for a put execution. See when the mapping can proceed and when it must stop.",
@@ -104,7 +104,11 @@ export function SentimentConceptLab({
 				locale={locale}
 				id="sentiment"
 				label={["Interactive flow sentiment lesson", "成交流情绪互动课堂"]}
-				scenes={scenes}
+				evidenceBoundary={[
+					"Question: what directional label does this isolated leg support under the stated convention? Scope is one print and its reference evidence at the print cutoff. Reconsider when initiation evidence or position context changes.",
+					"问题：按给定约定，这个孤立单腿能支持什么方向标签？范围是一笔成交及其成交时点的参考证据。主动方证据或持仓背景变化时应重新判断。",
+				]}
+				scenes={[scenes[1], scenes[0], scenes[2]]}
 			/>
 		</SentimentData>
 	);

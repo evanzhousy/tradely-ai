@@ -107,6 +107,10 @@ export function ActivityConceptLab({
 				locale={locale}
 				id="activity"
 				label={["Interactive unusual activity lesson", "异常活动互动课堂"]}
+				evidenceBoundary={[
+					"Question: unusual relative to which baseline? Declare the population, session window and denominator before comparing. Reconsider if coverage, membership or the baseline definition changes.",
+					"问题：相对什么基准才算异常？比较前先声明群体、时段窗口与分母。覆盖、成员或基准定义变化时应重新判断。",
+				]}
 				scenes={scenes}
 			/>
 		</ActivityData>

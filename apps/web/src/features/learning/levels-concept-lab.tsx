@@ -110,6 +110,10 @@ export function LevelsConceptLab({
 				locale={locale}
 				id="levels"
 				label={["Interactive structural levels lesson", "结构位置互动课堂"]}
+				evidenceBoundary={[
+					"Question: which reference level follows from this declared rule and scope? Keep measure, side, expiries, source date and coverage fixed. Reconsider when the rule or included contracts change.",
+					"问题：按声明规则与范围，哪个参考位置成立？固定指标、方向、到期日、来源日期与覆盖。规则或纳入合约变化时应重新判断。",
+				]}
 				scenes={scenes}
 			/>
 		</LevelsData>

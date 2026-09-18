@@ -12,14 +12,14 @@ import { teachingSteps } from "./visual-step";
 const scenes = [
 	{
 		id: "formula",
-		label: ["Scale a contribution", "缩放一项贡献"],
+		label: ["Declare the inputs", "声明输入"],
 		title: [
-			"A sign assumption belongs in the formula",
-			"符号假设属于公式的一部分",
+			"Scope, clock and sign come before the total",
+			"范围、时点与符号先于总量",
 		],
 		prompt: [
-			"Change OI, spot or the assumed position sign. Hold the other inputs fixed and inspect the stated units.",
-			"改变 OI、现价或假设持仓符号，固定其他输入并检查声明单位。",
+			"Read the snapshot date, chain context, gamma input, OI, units and assumed position sign. Then change one input while holding the others fixed.",
+			"先读取快照日期、期权链背景、Gamma 输入、OI、单位与假设持仓符号，再固定其他输入只改变一项。",
 		],
 		steps: teachingSteps(
 			[
@@ -29,8 +29,8 @@ const scenes = [
 				],
 			],
 			[
-				["Read formula inputs", "读取公式输入"],
-				["Change OI, spot or sign", "改变 OI、现价或符号"],
+				["Read snapshot scope", "读取快照范围"],
+				["Check model sign and units", "检查模型符号与单位"],
 				["Recompute contribution", "重新计算贡献"],
 			],
 		),
@@ -107,6 +107,10 @@ export function GexConceptLab({
 				locale={locale}
 				id="gex"
 				label={["Interactive gamma exposure lesson", "Gamma 敞口互动课堂"]}
+				evidenceBoundary={[
+					"Question: what does this GEX snapshot say under this declared model? Keep the chain scope, as-of time, model inputs, units and inventory-sign assumption fixed. Reconsider if any input or coverage changes.",
+					"问题：在声明模型下，这个 GEX 快照说明什么？固定期权链范围、时点、模型输入、单位与库存符号假设。任何输入或覆盖变化都应重新判断。",
+				]}
 				scenes={scenes}
 			/>
 		</GexData>

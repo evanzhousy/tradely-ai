@@ -107,6 +107,10 @@ export function RankSymbolConceptLab({
 				locale={locale}
 				id="rank-symbol"
 				label={["Interactive symbol ranking lesson", "标的排名互动课堂"]}
+				evidenceBoundary={[
+					"Question: which observations rank highest under this declared metric? Keep the admitted peers, session, baseline and coverage fixed. Reconsider the rank when peers or inputs change; do not convert rank into a forecast.",
+					"问题：按声明指标，哪些观测排名最高？固定纳入同组、时段、基准与覆盖。同组或输入变化时重新判断名次，不把排名转成预测。",
+				]}
 				scenes={scenes}
 			/>
 		</RankSymbolData>

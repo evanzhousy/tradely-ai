@@ -7,6 +7,7 @@ import {
 	PointTimeData,
 	RecencyDecayScene,
 	ScoreMeaningScene,
+	SpecificationSearchScene,
 } from "./point-time-concept-scenes";
 import { teachingSteps } from "./visual-step";
 
@@ -81,6 +82,32 @@ const scenes = [
 		Component: ScoreMeaningScene,
 	},
 	{
+		id: "search",
+		label: ["Freeze the search", "冻结规格搜索"],
+		title: [
+			"Trying many specifications changes what the winner means",
+			"尝试多个规格会改变“胜者”的含义",
+		],
+		prompt: [
+			"Compare candidate specifications on development data, freeze one before opening the holdout, then see why any outcome-informed switch requires fresh evaluation data.",
+			"在开发数据上比较候选规格，打开保留集前冻结一个，再观察为何任何受结果影响的切换都需要新的评估数据。",
+		],
+		steps: teachingSteps(
+			[
+				[
+					"Searching across metrics, universes and thresholds is part of model development. The best development result is selected, not independently confirmed.",
+					"在指标、范围与阈值之间搜索属于模型开发。最佳开发结果是被选择出来的，并未得到独立确认。",
+				],
+			],
+			[
+				["Compare development specifications", "比较开发规格"],
+				["Freeze one before reveal", "揭示前冻结一个"],
+				["Require fresh data after reuse", "复用后要求新数据"],
+			],
+		),
+		Component: SpecificationSearchScene,
+	},
+	{
 		id: "holdout",
 		label: ["Protect the holdout", "保护保留集"],
 		title: [
@@ -130,6 +157,10 @@ export function PointTimeConceptLab({
 				label={[
 					"Interactive point-in-time research lesson",
 					"时点研究互动课堂",
+				]}
+				evidenceBoundary={[
+					"Question, population, features, cutoff and evaluation rule must be frozen before the unseen period is opened. Any outcome-informed change becomes a new specification and needs genuinely fresh evaluation data.",
+					"打开未见评估期前，必须固定问题、群体、特征、截止与评价规则。任何受结果影响的修改都成为新规格，并需要真正新的评估数据。",
 				]}
 				scenes={scenes}
 			/>

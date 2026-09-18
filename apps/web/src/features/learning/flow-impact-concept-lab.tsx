@@ -35,8 +35,11 @@ const scenes = [
 	},
 	{
 		id: "denominator",
-		label: ["Change the denominator", "改变分母"],
-		title: ["Same flow, different percentage", "相同成交流，不同百分比"],
+		label: ["Declare the DEI convention", "声明 DEI 约定"],
+		title: [
+			"This DEI percentage exists only under a stated denominator",
+			"这个 DEI 百分比只在声明分母下成立",
+		],
 		prompt: [
 			"Hold the original flow fixed. Adjust typical volume, then inspect proxy and missing-volume cases.",
 			"固定原始成交流，调整典型量，再检查代理与缺失成交量情况。",
@@ -106,6 +109,10 @@ export function FlowImpactConceptLab({
 				label={[
 					"Interactive DEX DEI and GEX lesson",
 					"DEX DEI 与 GEX 互动课堂",
+				]}
+				evidenceBoundary={[
+					"Question: how large is this explicitly defined flow impact? Keep numerator lineage, session clock, units and denominator in scope. Reconsider if any of those definitions change.",
+					"问题：按明确给定定义，这个成交流影响有多大？范围内固定分子来源、时段时钟、单位与分母。任何定义变化都应重新判断。",
 				]}
 				scenes={scenes}
 			/>

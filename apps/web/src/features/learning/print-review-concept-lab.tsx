@@ -106,6 +106,10 @@ export function PrintReviewConceptLab({
 				locale={locale}
 				id="print-review"
 				label={["Interactive execution review lesson", "成交审查互动课堂"]}
+				evidenceBoundary={[
+					"Question: what does this execution record establish right now? Keep contract, timestamp, units and available references inside scope. Revise only when a named missing fact receives new evidence.",
+					"问题：当前这条成交记录究竟能确定什么？范围内保留合约、时间戳、单位和可用参考。只有明确缺失事实获得新证据时才修订。",
+				]}
 				scenes={scenes}
 			/>
 		</PrintReviewData>

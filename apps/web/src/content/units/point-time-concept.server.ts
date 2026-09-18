@@ -95,6 +95,45 @@ export const pointTimeConceptData: PointTimeConceptData = {
 		threshold: 80,
 		developmentPeriod: "2030-08-01 → 2030-08-31",
 		heldoutPeriod: "2030-09-01 → 2030-09-10",
+		freshPeriod: "2030-09-11 → 2030-09-20",
+		specifications: [
+			{
+				id: "A",
+				label: [
+					"Metric A · universe 1 · threshold 60",
+					"指标 A · 范围 1 · 阈值 60",
+				],
+				developmentMatches: 2,
+				heldoutMatches: 2,
+			},
+			{
+				id: "B",
+				label: [
+					"Metric A · universe 1 · threshold 80",
+					"指标 A · 范围 1 · 阈值 80",
+				],
+				developmentMatches: 3,
+				heldoutMatches: 1,
+			},
+			{
+				id: "C",
+				label: [
+					"Metric B · universe 2 · threshold 70",
+					"指标 B · 范围 2 · 阈值 70",
+				],
+				developmentMatches: 4,
+				heldoutMatches: 1,
+			},
+			{
+				id: "D",
+				label: [
+					"Metric C · universe 1 · threshold 75",
+					"指标 C · 范围 1 · 阈值 75",
+				],
+				developmentMatches: 3,
+				heldoutMatches: 2,
+			},
+		],
 		development: [
 			{ id: "D1", score: 40, returnPercent: -1 },
 			{ id: "D2", score: 60, returnPercent: -1 },

@@ -30,6 +30,12 @@ export const sentimentConceptData: SentimentConceptData = {
 	],
 	evidence: [
 		{
+			id: "inside",
+			label: ["Inside spread · no reliable initiator", "价差内 · 主动方未确定"],
+			price: 309,
+			reference: quote,
+		},
+		{
 			id: "ask",
 			label: ["Matched ask · likely buying", "匹配卖价 · 推断买入"],
 			price: 320,
@@ -39,12 +45,6 @@ export const sentimentConceptData: SentimentConceptData = {
 			id: "bid",
 			label: ["Matched bid · likely selling", "匹配买价 · 推断卖出"],
 			price: 300,
-			reference: quote,
-		},
-		{
-			id: "inside",
-			label: ["Inside spread · no reliable initiator", "价差内 · 主动方未确定"],
-			price: 309,
 			reference: quote,
 		},
 		{

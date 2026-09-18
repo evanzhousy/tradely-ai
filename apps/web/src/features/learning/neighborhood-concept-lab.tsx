@@ -107,6 +107,10 @@ export function NeighborhoodConceptLab({
 				locale={locale}
 				id="contract-neighborhood"
 				label={["Interactive contract neighborhood lesson", "合约邻域互动课堂"]}
+				evidenceBoundary={[
+					"Question: where is activity concentrated inside this fixed contract neighborhood? Keep strike, expiry, option type, session and coverage in scope. Reconsider if the neighborhood itself changes.",
+					"问题：在这个固定合约邻域内，活动集中在哪里？固定行权价、到期、期权类型、时段与覆盖。若邻域本身变化，就重新判断。",
+				]}
 				scenes={scenes}
 			/>
 		</NeighborhoodData>

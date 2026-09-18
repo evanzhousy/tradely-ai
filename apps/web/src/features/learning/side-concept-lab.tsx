@@ -101,6 +101,10 @@ export function SideConceptLab({
 				locale={locale}
 				id="side"
 				label={["Interactive execution-side lesson", "成交位置互动课堂"]}
+				evidenceBoundary={[
+					"Question: where did this print occur versus its usable quote? Scope and cutoff stay tied to this contract and print time. Reconsider the location or initiator inference if quote identity, timing or conditions fail.",
+					"问题：这笔成交相对可用报价发生在哪里？范围与截止时点绑定到该合约和成交时刻。若报价身份、时序或成交条件不成立，就重新判断位置或主动方推断。",
+				]}
 				scenes={[
 					{
 						...scenes[0],

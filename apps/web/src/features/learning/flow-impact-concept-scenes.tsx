@@ -295,7 +295,10 @@ export function FlowDenominatorScene({ locale }: Props) {
 		<SceneLayout
 			diagram={
 				<Diagram
-					label={l("DEI volume normalization", "DEI 成交量归一化")}
+					label={l(
+						"This lesson's DEI volume normalization",
+						"本课 DEI 成交量归一化",
+					)}
 					height={460}
 				>
 					<SvgText x={180} y={35}>
@@ -537,13 +540,13 @@ export function FlowLineageScene({ locale }: Props) {
 					<Note>
 						{source === "tape"
 							? l(
-									"Eligible: signed classified flow from the stated session, divided by the positive effective volume. DEI is a magnitude. It does not reveal dealer inventory or predict a price move.",
-									"可计算：声明时段的带符号分类成交流，除以正有效量。DEI 是幅度，不揭示做市商库存，也不预测价格变化。",
+									"Eligible: signed classified flow from the stated session, divided by the positive effective volume. This lesson's DEI convention reports a magnitude. It does not reveal dealer inventory or predict a price move.",
+									"可计算：声明时段的带符号分类成交流，除以正有效量。本课 DEI 约定报告的是幅度，不揭示做市商库存，也不预测价格变化。",
 								)
 							: source === "oi"
 								? l(
-										"This supplied absolute ΔOI-based magnitude describes reported position change. Today's inferred tape direction cannot give it a sign. An OI-impact measure needs its own numerator convention, clock and denominator; it cannot silently replace this flow-based DEI.",
-										"给定的绝对 ΔOI 型幅度描述报告持仓变化。今天推断的成交方向不能为其赋符号。OI 型影响需自己的分子约定、时点与分母，不能悄然替换本课成交流型 DEI。",
+										"This supplied absolute ΔOI-based magnitude describes reported position change. Today's inferred tape direction cannot give it a sign. An OI-impact measure needs its own numerator convention, clock and denominator; it cannot silently replace this lesson's flow-based DEI convention.",
+										"给定的绝对 ΔOI 型幅度描述报告持仓变化。今天推断的成交方向不能为其赋符号。OI 型影响需自己的分子约定、时点与分母，不能悄然替换本课成交流型 DEI 约定。",
 									)
 								: l(
 										"This supplied GEX is a sensitivity report under an assumed inventory-sign convention. Its USD delta-notional change per +1% spot move differs from tape DEX share equivalents. It is neither a trade-flow numerator nor proof of observed dealer hedging.",

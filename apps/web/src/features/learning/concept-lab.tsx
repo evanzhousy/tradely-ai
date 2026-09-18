@@ -42,11 +42,13 @@ export function ConceptLab({
 	id,
 	label,
 	scenes,
+	evidenceBoundary,
 }: {
 	locale: Locale;
 	id: string;
 	label: readonly [string, string];
 	scenes: readonly [ConceptScene, ...ConceptScene[]];
+	evidenceBoundary?: readonly [string, string];
 }) {
 	const lessonId = useContext(VisualLessonIdentity);
 	const { capture, isCapturing } = useAnalytics();
@@ -386,6 +388,25 @@ export function ConceptLab({
 							</p>
 						))}
 					</div>
+					{evidenceBoundary ? (
+						<div
+							className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5 text-xs leading-relaxed"
+							data-evidence-protocol
+						>
+							<div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-medium text-foreground/85">
+								<span>{l("Evidence check", "证据检查")}</span>
+								<span className="text-muted-foreground">
+									{l(
+										"Question · scope · cutoff · revision trigger",
+										"问题 · 范围 · 截止 · 修订触发条件",
+									)}
+								</span>
+							</div>
+							<p className="text-muted-foreground">
+								{evidenceBoundary[language]}
+							</p>
+						</div>
+					) : null}
 				</div>
 				<VisualPlayback
 					value={{

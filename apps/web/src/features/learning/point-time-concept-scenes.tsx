@@ -548,6 +548,170 @@ export function ScoreMeaningScene({ locale }: Props) {
 		/>
 	);
 }
+export function SpecificationSearchScene({ locale }: Props) {
+	const data = useData();
+	const l = copy(locale);
+	const specifications = data.evaluation.specifications;
+	const guidedFrozen =
+		specifications[Math.min(2, specifications.length - 1)]?.id ??
+		specifications[0].id;
+	const guidedReuse =
+		specifications[Math.min(1, specifications.length - 1)]?.id ??
+		specifications[0].id;
+	const [selected, setSelected] = useGuidedState(specifications[0].id, [
+		specifications[0].id,
+		guidedFrozen,
+		guidedReuse,
+	]);
+	const [frozen, setFrozen] = useGuidedState<string | null>(null, [
+		null,
+		guidedFrozen,
+		guidedFrozen,
+	]);
+	const [revealed, setRevealed] = useGuidedState(false, [false, true, true]);
+	const current =
+		specifications.find((specification) => specification.id === selected) ??
+		specifications[0];
+	const frozenSpecification =
+		frozen === null
+			? null
+			: (specifications.find((specification) => specification.id === frozen) ??
+				null);
+	const reused = revealed && frozen !== null && selected !== frozen;
+	const freeze = () => {
+		setFrozen(selected);
+		setRevealed(false);
+	};
+	const reveal = () => {
+		if (frozen !== null) setRevealed(true);
+	};
+	return (
+		<SceneLayout
+			diagram={
+				<Diagram
+					label={l(
+						"Development search and one-shot evaluation",
+						"开发搜索与一次性评估",
+					)}
+					height={485}
+				>
+					<SvgText x={180} y={28}>
+						{l("Development search", "开发搜索")}
+					</SvgText>
+					{specifications.map((specification, index) => {
+						const y = 52 + index * 73;
+						const active = specification.id === selected;
+						return (
+							<g key={specification.id}>
+								<rect
+									x={24}
+									y={y}
+									width={312}
+									height={58}
+									rx={12}
+									fill={active ? "var(--primary)" : "currentColor"}
+									opacity={active ? 0.18 : 0.05}
+								/>
+								<SvgText x={55} y={y + 24} strong={active}>
+									{specification.id}
+								</SvgText>
+								<SvgText x={205} y={y + 24}>
+									{l("development", "开发")} {specification.developmentMatches}
+									/4
+								</SvgText>
+								<SvgText x={205} y={y + 46} muted>
+									{l("holdout", "保留")}{" "}
+									{revealed ? `${specification.heldoutMatches}/2` : "sealed"}
+								</SvgText>
+							</g>
+						);
+					})}
+					<SvgText x={180} y={370}>
+						{frozenSpecification === null
+							? l("No specification frozen", "尚未冻结规格")
+							: `${l("Frozen", "已冻结")}: ${frozenSpecification.id}`}
+					</SvgText>
+					<SvgText x={180} y={405} strong>
+						{reused
+							? l("Seen holdout → development reuse", "已看保留集 → 开发复用")
+							: revealed
+								? l("One frozen result recorded", "已记录一次冻结结果")
+								: frozen !== null
+									? l("Holdout remains sealed", "保留集仍封存")
+									: l("Compare development data only", "只比较开发数据")}
+					</SvgText>
+					<SvgText x={180} y={452} muted>
+						{reused
+							? `${l("Fresh evaluation", "新评估")}: ${data.evaluation.freshPeriod}`
+							: l("Freeze before the first reveal", "首次揭示前先冻结")}
+					</SvgText>
+				</Diagram>
+			}
+			controls={
+				<>
+					<SelectField
+						label={l("Candidate specification", "候选规格")}
+						value={selected}
+						options={specifications.map((specification) => [
+							specification.id,
+							specification.label[locale === "zh" ? 1 : 0],
+						])}
+						onChange={setSelected}
+					/>
+					<button
+						type="button"
+						className="min-h-10 rounded-xl border px-3 text-sm"
+						onClick={freeze}
+						disabled={revealed}
+					>
+						{frozen === null
+							? l("Freeze selected specification", "冻结所选规格")
+							: l("Replace frozen choice before reveal", "揭示前替换冻结选择")}
+					</button>
+					<button
+						type="button"
+						className="min-h-10 rounded-xl border px-3 text-sm"
+						onClick={reveal}
+						disabled={frozen === null || revealed}
+					>
+						{revealed
+							? l("Holdout revealed", "保留集已揭示")
+							: l("Reveal holdout once", "揭示一次保留集")}
+					</button>
+				</>
+			}
+			details={
+				<>
+					<Context locale={locale} />
+					<p className="font-mono text-xs leading-relaxed">
+						{l("Development", "开发")}: {data.evaluation.developmentPeriod}
+						<br />
+						{l("Held out", "保留")}: {data.evaluation.heldoutPeriod}
+						<br />
+						{l("Selected", "所选")}: {current.id} ·{" "}
+						{current.label[locale === "zh" ? 1 : 0]}
+					</p>
+					<Note>
+						{reused
+							? l(
+									`Once the held-out outcomes have influenced specification choice, those outcomes are development data. Keep the first frozen result and evaluate the revised specification on the fresh period ${data.evaluation.freshPeriod}.`,
+									`一旦保留集结果影响规格选择，这些结果就属于开发数据。保留首次冻结结果，并在新时段 ${data.evaluation.freshPeriod} 评估修订后的规格。`,
+								)
+							: revealed
+								? l(
+										"The held-out comparison belongs to the specification frozen before reveal. Comparing other candidates now is useful for development, but it cannot create another independent result from the same outcomes.",
+										"保留比较只属于揭示前冻结的规格。现在比较其他候选可用于开发，但不能从同一批结果生成另一个独立结果。",
+									)
+								: l(
+										"Trying several metrics, universes or thresholds is specification search. A development winner can be selected partly because of noise, so choose and freeze the specification before opening unseen outcomes.",
+										"尝试多个指标、范围或阈值就是规格搜索。开发集胜者可能部分因噪声被选中，因此应在打开未见结果前选择并冻结规格。",
+									)}
+					</Note>
+				</>
+			}
+		/>
+	);
+}
 export function HoldoutScene({ locale }: Props) {
 	const data = useData();
 	const l = copy(locale);
@@ -658,6 +822,9 @@ export function HoldoutScene({ locale }: Props) {
 						{l("Development", "开发")}: {data.evaluation.developmentPeriod}
 						<br />
 						{l("Held out", "保留")}: {data.evaluation.heldoutPeriod}
+						<br />
+						{l("Fresh after reuse", "复用后新评估")}:{" "}
+						{data.evaluation.freshPeriod}
 						<br />
 						{l("Outcome", "结果")}:{" "}
 						{l("positive next-session return", "下一时段收益为正")}

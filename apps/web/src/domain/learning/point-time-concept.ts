@@ -24,6 +24,12 @@ export type EvaluationCase = {
 	score: number;
 	returnPercent: number;
 };
+export type EvaluationSpecification = {
+	id: string;
+	label: Copy;
+	developmentMatches: number;
+	heldoutMatches: number;
+};
 export type PointTimeConceptData = {
 	kind: "point-in-time-research";
 	source: string;
@@ -42,6 +48,11 @@ export type PointTimeConceptData = {
 		threshold: number;
 		developmentPeriod: string;
 		heldoutPeriod: string;
+		freshPeriod: string;
+		specifications: readonly [
+			EvaluationSpecification,
+			...EvaluationSpecification[],
+		];
 		development: readonly EvaluationCase[];
 		heldout: readonly EvaluationCase[];
 	};

@@ -104,6 +104,10 @@ export function RegimeConceptLab({
 				locale={locale}
 				id="regime"
 				label={["Interactive gamma regime lesson", "Gamma 状态互动课堂"]}
+				evidenceBoundary={[
+					"Question: what conditional hedge response follows from the stated portfolio and model? Keep position assumptions, spot grid and expiry scope fixed. Reconsider before translating a modeled response into a market-outcome claim.",
+					"问题：给定组合与模型意味着什么条件性对冲响应？固定持仓假设、现价格点与到期范围。在把模型响应解释成市场结果前必须重新审查证据。",
+				]}
 				scenes={scenes}
 			/>
 		</RegimeData>
