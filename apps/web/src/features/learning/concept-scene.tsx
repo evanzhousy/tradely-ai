@@ -97,21 +97,23 @@ export function SceneLayout({
 		>
 			{toolbar}
 			<div className="scene-visuals">
-				<div className="contract-stage">{diagram}</div>
+				<div className="scene-visual-primary">
+					<div className="contract-stage">{diagram}</div>
+					{controls ? (
+						<fieldset className="visual-controls-inline">
+							<legend className="sr-only">
+								{locale === "zh" ? "调整示例" : "Adjust the example"}
+							</legend>
+							{controls}
+						</fieldset>
+					) : null}
+				</div>
 				{companion ? (
 					<aside className="scene-companion">{companion}</aside>
 				) : null}
 			</div>
 			{outcome ? <div className="scene-outcome">{outcome}</div> : null}
 			{comparison}
-			{controls ? (
-				<details className="visual-controls">
-					<summary>
-						{locale === "zh" ? "自由探索" : "Explore the inputs"}
-					</summary>
-					<div className="flex min-w-0 flex-col gap-5 pt-5">{controls}</div>
-				</details>
-			) : null}
 			{playback && (details || children) ? (
 				<details className="visual-explore">
 					<summary>

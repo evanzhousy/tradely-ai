@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@tradely/ui/components/badge";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
 import {
@@ -340,12 +339,6 @@ export function ConceptLab({
 			data-focus={currentStep.focus}
 			data-contract-lab={id === "contracts" ? "" : undefined}
 		>
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<Badge variant="outline">{l("Visual lesson", "视觉课堂")}</Badge>
-				<span className="text-muted-foreground text-xs">
-					{l("Watch · Explore · Understand", "观看 · 探索 · 理解")}
-				</span>
-			</div>
 			<Tabs value={scene} onValueChange={(value) => selectScene(String(value))}>
 				<TabsList
 					className="contract-scene-tabs"
