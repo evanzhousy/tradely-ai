@@ -180,7 +180,7 @@ export function LessonPlan({
 	return (
 		<section
 			aria-label={title}
-			className="w-full overflow-hidden rounded-2xl border border-border/70 bg-background/50"
+			className="visual-lesson-plan w-full overflow-hidden rounded-2xl border border-border/70 bg-background/50"
 		>
 			<div className="flex min-h-11 items-center gap-2.5 px-3.5 text-left">
 				<span

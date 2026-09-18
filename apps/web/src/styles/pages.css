@@ -1150,6 +1150,21 @@
 	gap: 1.25rem;
 	min-width: 0;
 }
+.visual-stage-copy {
+	min-width: 0;
+}
+.visual-stage-scene {
+	min-width: 0;
+}
+.visual-guide {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: 1.25rem;
+	background: color-mix(in oklab, var(--background) 82%, var(--muted));
+}
 .visual-caption {
 	max-width: 64ch;
 	min-height: 3.25em;
@@ -1168,10 +1183,6 @@
 	visibility: hidden;
 	pointer-events: none;
 	user-select: none;
-}
-.visual-playback > button:first-child {
-	flex: 0 0 12rem;
-	inline-size: 12rem;
 }
 .visual-playback-complete {
 	flex: 0 0 100%;
@@ -1208,10 +1219,18 @@
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	padding: 0.65rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: var(--background);
+	padding: 0.75rem;
+	border: 0;
+	border-bottom: 1px solid var(--border);
+	background: transparent;
+}
+.visual-playback > button:first-child {
+	flex: 1 1 auto;
+}
+.visual-guide .visual-lesson-plan {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
 }
 .visual-timeline {
 	flex: 1;
@@ -1850,24 +1869,6 @@
 		align-items: start;
 	}
 }
-@media (min-width: 1100px) {
-	.visual-stage:has([data-has-companion="true"]) {
-		grid-template-columns: minmax(0, 1fr);
-	}
-	.visual-stage:has([data-has-companion="true"]) > div:first-child {
-		grid-column: 1;
-		grid-row: 1;
-		padding-top: 0;
-	}
-	.visual-stage:has([data-has-companion="true"]) > .visual-playback {
-		grid-column: 1;
-		grid-row: 2;
-	}
-	.visual-stage:has([data-has-companion="true"]) > div:last-child {
-		grid-column: 1;
-		grid-row: 3;
-	}
-}
 .visual-playback {
 	flex-wrap: wrap;
 }
@@ -1887,24 +1888,21 @@
 @media (min-width: 1100px) {
 	.visual-stage {
 		display: grid;
-		grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+		grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.65fr);
 		align-items: start;
 		gap: 1.25rem;
 	}
-	.visual-stage > div:first-child {
-		grid-column: 1;
+	.visual-stage-copy {
+		grid-column: 1 / -1;
 		grid-row: 1;
-		padding-top: 1rem;
 	}
-	.visual-stage > .visual-playback {
+	.visual-stage-scene {
 		grid-column: 1;
 		grid-row: 2;
-		flex-wrap: wrap;
 	}
-	/* biome-ignore lint/style/noDescendingSpecificity: The more specific companion grid intentionally overrides this base layout. */
-	.visual-stage > div:last-child {
+	.visual-guide {
 		grid-column: 2;
-		grid-row: 1 / span 3;
+		grid-row: 2;
 	}
 	.visual-stage .visual-timeline {
 		flex-basis: 60%;
@@ -1912,15 +1910,15 @@
 }
 
 @media (min-width: 1100px) {
-	.visual-stage > div:last-child:has(.contract-comparison) {
+	.visual-stage:has(.contract-comparison) .visual-stage-scene {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+	.visual-stage:has(.contract-comparison) .visual-guide {
 		grid-column: 1 / -1;
 		grid-row: 3;
-	}
-	.visual-stage:has(.contract-comparison) > div:first-child {
-		grid-column: 1 / -1;
-	}
-	.visual-stage:has(.contract-comparison) > .visual-playback {
-		grid-column: 1 / -1;
+		max-width: 38rem;
+		justify-self: end;
 	}
 }
 @media (max-width: 560px) {
@@ -1947,5 +1945,12 @@
 	}
 	.visual-stage {
 		gap: 0.875rem;
+	}
+	.visual-guide {
+		border-radius: 1rem;
+	}
+	.visual-playback {
+		gap: 0.5rem;
+		padding: 0.625rem;
 	}
 }

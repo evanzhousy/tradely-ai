@@ -359,7 +359,7 @@ export function ConceptLab({
 				</TabsList>
 			</Tabs>
 			<div ref={stage} className="visual-stage" id={titleId}>
-				<div className="flex flex-col gap-3">
+				<div className="visual-stage-copy flex flex-col gap-3">
 					<h2 className="font-semibold text-2xl tracking-tight sm:text-3xl">
 						{active.title[language]}
 					</h2>
@@ -387,54 +387,6 @@ export function ConceptLab({
 						))}
 					</div>
 				</div>
-				<fieldset
-					className="visual-playback"
-					aria-label={l("Demonstration controls", "演示控制")}
-				>
-					<Button
-						size="sm"
-						variant="secondary"
-						onClick={toggle}
-						aria-pressed={playing}
-					>
-						{playing ? (
-							<PauseIcon data-icon="inline-start" />
-						) : (
-							<PlayIcon data-icon="inline-start" />
-						)}
-						{playing
-							? l("Pause", "暂停")
-							: exploring
-								? l("Return to lesson", "返回讲解")
-								: reduced
-									? l("Next step", "下一步")
-									: complete
-										? l("Start again", "重新开始")
-										: l("Continue explanation", "继续讲解")}
-					</Button>
-					<Button
-						size="sm"
-						variant="ghost"
-						onClick={() => {
-							autoStarted.current = scene;
-							seek(0);
-							setResetVersion((value) => value + 1);
-							setPlaying(!reduced);
-						}}
-						aria-label={l("Reset demonstration", "重置演示")}
-					>
-						<RotateCcwIcon />
-						{l("Restart", "重启")}
-					</Button>
-					{complete && !exploring && (
-						<div className="visual-playback-complete">
-							<span role="status">
-								{l("Explanation complete", "本段讲解完成")}
-							</span>
-							{continuation}
-						</div>
-					)}
-				</fieldset>
 				<VisualPlayback
 					value={{
 						progress,
@@ -456,6 +408,7 @@ export function ConceptLab({
 					{/* biome-ignore lint/a11y/noStaticElementInteractions: Delegated events from native interactive descendants; this wrapper is not a control. */}
 					{/* biome-ignore lint/a11y/useKeyWithClickEvents: Native controls emit click on keyboard activation; capture pauses keyboard exploration. */}
 					<div
+						className="visual-stage-scene"
 						id={`${titleId}-scene`}
 						key={`${scene}:${resetVersion}`}
 						onPointerDownCapture={() => {
@@ -479,18 +432,71 @@ export function ConceptLab({
 						<Component locale={locale} />
 					</div>
 				</VisualPlayback>
-				<LessonPlan
-					locale={locale}
-					steps={steps}
-					step={step}
-					running={playing && ready && visible && pageVisible}
-					exploring={exploring}
-					reduced={reduced}
-					complete={complete}
-					epoch={epoch}
-					onElapsed={advance}
-					onStepSelect={selectStep}
-				/>
+				<aside
+					className="visual-guide"
+					aria-label={l("Lesson guidance", "课程指引")}
+				>
+					<fieldset
+						className="visual-playback"
+						aria-label={l("Demonstration controls", "演示控制")}
+					>
+						<Button
+							size="sm"
+							variant="secondary"
+							onClick={toggle}
+							aria-pressed={playing}
+						>
+							{playing ? (
+								<PauseIcon data-icon="inline-start" />
+							) : (
+								<PlayIcon data-icon="inline-start" />
+							)}
+							{playing
+								? l("Pause", "暂停")
+								: exploring
+									? l("Return to lesson", "返回讲解")
+									: reduced
+										? l("Next step", "下一步")
+										: complete
+											? l("Start again", "重新开始")
+											: l("Continue explanation", "继续讲解")}
+						</Button>
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={() => {
+								autoStarted.current = scene;
+								seek(0);
+								setResetVersion((value) => value + 1);
+								setPlaying(!reduced);
+							}}
+							aria-label={l("Reset demonstration", "重置演示")}
+						>
+							<RotateCcwIcon />
+							{l("Restart", "重启")}
+						</Button>
+						{complete && !exploring && (
+							<div className="visual-playback-complete">
+								<span role="status">
+									{l("Explanation complete", "本段讲解完成")}
+								</span>
+								{continuation}
+							</div>
+						)}
+					</fieldset>
+					<LessonPlan
+						locale={locale}
+						steps={steps}
+						step={step}
+						running={playing && ready && visible && pageVisible}
+						exploring={exploring}
+						reduced={reduced}
+						complete={complete}
+						epoch={epoch}
+						onElapsed={advance}
+						onStepSelect={selectStep}
+					/>
+				</aside>
 			</div>
 			<div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
 				<Button
