@@ -4,7 +4,7 @@ import { cn } from "@tradely/ui/lib/utils";
 import { Check, ListTodo } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Locale } from "@/i18n/messages";
 import type { VisualStep } from "./visual-step";
 
@@ -91,6 +91,7 @@ function usePlanProgress({
 	reduced,
 	exploring,
 	complete,
+	onElapsed,
 }: {
 	epoch: number;
 	holdMs: number;
@@ -98,23 +99,44 @@ function usePlanProgress({
 	reduced: boolean;
 	exploring: boolean;
 	complete: boolean;
+	onElapsed: () => void;
 }) {
-	const [elapsed, setElapsed] = useState(0);
-	// biome-ignore lint/correctness/useExhaustiveDependencies: epoch resets the secondary clock when the authoritative lesson playback seeks.
+	const elapsed = useRef(0);
+	const [displayElapsed, setDisplayElapsed] = useState(0);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: epoch and duration intentionally reset the timer after a lesson seek.
 	useEffect(() => {
-		if (complete) {
-			setElapsed(holdMs);
-			return;
-		}
-		if (!running || reduced || exploring) return;
+		elapsed.current = 0;
+		setDisplayElapsed(0);
+	}, [epoch, holdMs]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: epoch restarts timing when seeking to the same-duration step.
+	useEffect(() => {
+		if (!running || reduced || exploring || complete) return;
 		const started = performance.now();
-		const tick = () =>
-			setElapsed(Math.min(holdMs, performance.now() - started));
-		setElapsed(0);
+		const previous = elapsed.current;
+		let finished = false;
+		const tick = () => {
+			elapsed.current = Math.min(
+				holdMs,
+				previous + performance.now() - started,
+			);
+			setDisplayElapsed(elapsed.current);
+			if (elapsed.current >= holdMs && !finished) {
+				finished = true;
+				onElapsed();
+			}
+		};
 		const timer = window.setInterval(tick, 100);
-		return () => window.clearInterval(timer);
-	}, [complete, epoch, exploring, holdMs, reduced, running]);
-	return holdMs > 0 ? Math.min(100, (elapsed / holdMs) * 100) : 0;
+		return () => {
+			window.clearInterval(timer);
+			elapsed.current = Math.min(
+				holdMs,
+				previous + performance.now() - started,
+			);
+			setDisplayElapsed(elapsed.current);
+		};
+	}, [complete, epoch, exploring, holdMs, onElapsed, reduced, running]);
+	const value = complete ? holdMs : Math.min(holdMs, displayElapsed);
+	return holdMs > 0 ? Math.min(100, (value / holdMs) * 100) : 0;
 }
 
 export function LessonPlan({
@@ -126,6 +148,8 @@ export function LessonPlan({
 	reduced,
 	complete,
 	epoch,
+	onElapsed,
+	onStepSelect,
 }: {
 	locale: Locale;
 	steps: readonly VisualStep[];
@@ -135,6 +159,8 @@ export function LessonPlan({
 	reduced: boolean;
 	complete: boolean;
 	epoch: number;
+	onElapsed: () => void;
+	onStepSelect: (step: number) => void;
 }) {
 	const reduce = useReducedMotion() ?? false;
 	const language = locale === "zh" ? 1 : 0;
@@ -146,6 +172,7 @@ export function LessonPlan({
 		reduced,
 		exploring,
 		complete,
+		onElapsed,
 	});
 	const completed = complete ? steps.length : Math.max(0, step - 1);
 	const title = locale === "zh" ? "本段步骤" : "Lesson plan";
@@ -195,31 +222,38 @@ export function LessonPlan({
 							initial={reduce ? { opacity: 1 } : { opacity: 0, y: 6 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={reduce ? { duration: 0 } : { duration: 0.18 }}
-							className="flex min-h-9 items-center gap-2.5 rounded-xl px-1.5 py-1"
+							className="rounded-xl"
 						>
-							<StatusIcon
-								status={status}
-								progress={status === "in-progress" ? progress : undefined}
-							/>
-							<span className="sr-only">{statusLabel(status, locale)}: </span>
-							<span
-								className={cn(
-									"min-w-0 flex-1 truncate text-sm leading-5",
-									status === "pending" && "text-muted-foreground/65",
-									status === "in-progress" && "text-foreground",
-									status === "completed" && "text-muted-foreground/60",
-								)}
+							<button
+								type="button"
+								onClick={() => onStepSelect(itemNumber)}
+								aria-current={status === "in-progress" ? "step" : undefined}
+								className="flex min-h-9 w-full items-center gap-2.5 rounded-xl px-1.5 py-1 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
 							>
-								{item.label[language]}
-							</span>
-							{status === "in-progress" && !reduced && !exploring ? (
-								<span className="shrink-0 text-muted-foreground text-xs tabular-nums">
-									{Math.ceil(
-										Math.max(0, item.holdMs * (1 - progress / 100)) / 1000,
+								<StatusIcon
+									status={status}
+									progress={status === "in-progress" ? progress : undefined}
+								/>
+								<span className="sr-only">{statusLabel(status, locale)}: </span>
+								<span
+									className={cn(
+										"min-w-0 flex-1 truncate text-sm leading-5",
+										status === "pending" && "text-muted-foreground/65",
+										status === "in-progress" && "text-foreground",
+										status === "completed" && "text-muted-foreground/60",
 									)}
-									s
+								>
+									{item.label[language]}
 								</span>
-							) : null}
+								{status === "in-progress" && !reduced && !exploring ? (
+									<span className="shrink-0 text-muted-foreground text-xs tabular-nums">
+										{Math.ceil(
+											Math.max(0, item.holdMs * (1 - progress / 100)) / 1000,
+										)}
+										s
+									</span>
+								) : null}
+							</button>
 						</m.li>
 					);
 				})}

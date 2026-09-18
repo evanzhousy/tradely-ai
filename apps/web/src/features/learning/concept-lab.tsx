@@ -1,19 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
-import {
-	Stepper,
-	StepperIndicator,
-	StepperItem,
-	StepperNav,
-	StepperTitle,
-	StepperTrigger,
-} from "@tradely/ui/components/reui/stepper";
 import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
 import {
 	ArrowLeftIcon,
 	ArrowRightIcon,
-	CheckIcon,
 	PauseIcon,
 	PlayIcon,
 	RotateCcwIcon,
@@ -36,7 +27,6 @@ import type { Locale } from "@/i18n/messages";
 import { LessonPlan } from "./lesson-plan";
 import { saveVisualBookmark, useVisualBookmarks } from "./visual-bookmark";
 import { VisualLessonIdentity, VisualPlayback } from "./visual-playback";
-import { VisualPlaybackProgress } from "./visual-playback-progress";
 import { expandSteps, type VisualStep } from "./visual-step";
 export type ConceptScene = {
 	id: string;
@@ -422,50 +412,6 @@ export function ConceptLab({
 										? l("Start again", "重新开始")
 										: l("Continue explanation", "继续讲解")}
 					</Button>
-					<Stepper
-						key={scene}
-						value={step}
-						onValueChange={selectStep}
-						className="visual-stepper"
-						indicators={{
-							completed: <CheckIcon className="size-3.5" aria-hidden="true" />,
-						}}
-						aria-label={l("Explanation steps", "讲解步骤")}
-					>
-						<StepperNav>
-							{steps.map((item, i) => (
-								<StepperItem
-									key={i}
-									step={i + 1}
-									completed={i + 1 < step || (complete && i + 1 === step)}
-								>
-									<StepperTrigger
-										id={`${titleId}-step-${i + 1}`}
-										aria-controls={`${titleId}-scene`}
-										aria-label={`${i + 1}. ${item.label[language]}`}
-									>
-										<StepperIndicator>{i + 1}</StepperIndicator>
-										<StepperTitle className="text-center text-xs leading-tight">
-											{item.label[language]}
-										</StepperTitle>
-									</StepperTrigger>
-									{i + 1 === step && (
-										<VisualPlaybackProgress
-											key={`${scene}:${epoch}`}
-											locale={locale}
-											currentStep={currentStep}
-											step={step}
-											running={playing && ready && visible && pageVisible}
-											exploring={exploring}
-											reduced={reduced}
-											complete={complete}
-											onElapsed={advance}
-										/>
-									)}
-								</StepperItem>
-							))}
-						</StepperNav>
-					</Stepper>
 					<Button
 						size="sm"
 						variant="ghost"
@@ -542,6 +488,8 @@ export function ConceptLab({
 					reduced={reduced}
 					complete={complete}
 					epoch={epoch}
+					onElapsed={advance}
+					onStepSelect={selectStep}
 				/>
 			</div>
 			<div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
