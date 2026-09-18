@@ -14,19 +14,16 @@ const scenes = [
 	{
 		id: "exit",
 		label: ["Close / exercise", "平仓 / 行权"],
-		title: [
-			"Closing is a trade. Exercise uses a right.",
-			"平仓是交易，行权是使用权利。",
-		],
+		title: ["Closing and exercising are different", "平仓和行权是两回事"],
 		prompt: [
-			"Choose a route and play it through. Follow the option, shares and cash.",
-			"选择一条路径并播放，追踪期权、股票与现金。",
+			"Choose close or exercise and follow what changes.",
+			"选择平仓或行权，看看会发生什么变化。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"A closing trade exchanges the option. Exercise uses its contractual right. Watch what changes hands.",
-					"平仓交易转让期权，行权使用合约权利。观察两种流程交付什么。",
+					"Closing trades the option. Exercising uses the contract right and may move shares and cash.",
+					"平仓是交易期权；行权是使用合约权利，并可能带来股票和现金交付。",
 				],
 			],
 			[
@@ -40,7 +37,10 @@ const scenes = [
 	{
 		id: "timing",
 		label: ["Exercise timing", "行权时间"],
-		title: ["One expiry date, different windows", "同一到期日，不同时间窗口"],
+		title: [
+			"Trading and exercise have different windows",
+			"交易和行权有不同时间窗口",
+		],
 		prompt: [
 			"Drag the timeline and compare American and European exercise styles.",
 			"拖动时间轴，比较美式与欧式行权安排。",
@@ -48,8 +48,8 @@ const scenes = [
 		steps: teachingSteps(
 			[
 				[
-					"Trading and exercise have separate windows. The supplied schedule makes that difference visible.",
-					"交易与行权有各自的时间窗口，给定日程展示两者区别。",
+					"Trading and exercise do not always end at the same time.",
+					"交易和行权并不总在同一时间结束。",
 				],
 			],
 			[
@@ -63,35 +63,35 @@ const scenes = [
 	{
 		id: "settlement",
 		label: ["Settlement", "结算"],
-		title: ["What actually changes hands?", "究竟交付什么？"],
+		title: ["What changes hands at settlement?", "结算时会交付什么？"],
 		prompt: [
-			"Compare shares with cash, then inspect the settlement reference.",
-			"比较股票与现金的交付，再检查结算参考值。",
+			"Compare share settlement with cash settlement.",
+			"比较股票结算与现金结算。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"Read the selected product, option type, strike and quantity. These are different illustrative contracts.",
-					"读取所选产品、期权类型、行权价与张数。这是不同的教学合约。",
+					"Read the product, option type, strike and quantity.",
+					"读取产品、期权类型、行权价与张数。",
 				],
 				[
-					"Use the product terms to determine delivery. Cash settlement requires the official reference.",
-					"根据产品条款确定交付，现金结算需要官方参考值。",
+					"The product terms decide what is delivered. Cash settlement uses an official reference value.",
+					"产品条款决定交付什么。现金结算使用官方参考值。",
 				],
 				[
-					"Follow the labelled transfers. Physical settlement is a paired cash-and-share exchange, not two ordered events.",
-					"追踪带标签的交付。实物结算是一组现金与股票交换，不表示两个事件的先后顺序。",
+					"Physical settlement moves cash and shares together.",
+					"实物结算会同时交换现金与股票。",
 				],
 				[
-					"Read the holder's cash and shares. These are settlement movements, not profit. Missing references remain unknown.",
-					"读取持有人的现金与股票变动。这是结算变动，不是利润。参考值缺失时仍保持未知。",
+					"These settlement movements are not profit. If a required reference is missing, the result is unknown.",
+					"这些结算变动不是利润。如果缺少必要参考值，结果就无法确定。",
 				],
 			],
 			[
-				["Contract", "合约"],
-				["Determine delivery", "确定交付"],
-				["Transfer", "交付"],
-				["Holder settlement", "持有人结算"],
+				["Read the contract", "读取合约"],
+				["Find the delivery", "确定交付"],
+				["Follow the transfer", "追踪交付"],
+				["Read the settlement", "读取结算"],
 			],
 		),
 		Component: SettlementComparisonScene,

@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
 import {
-	ArrowLeftIcon,
 	ArrowRightIcon,
 	PauseIcon,
 	PlayIcon,
@@ -386,14 +385,8 @@ export function ConceptLab({
 							className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5 text-xs leading-relaxed"
 							data-evidence-protocol
 						>
-							<div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-medium text-foreground/85">
+							<div className="mb-1 font-medium text-foreground/85">
 								<span>{l("Evidence check", "证据检查")}</span>
-								<span className="text-muted-foreground">
-									{l(
-										"Question · scope · cutoff · revision trigger",
-										"问题 · 范围 · 截止 · 修订触发条件",
-									)}
-								</span>
 							</div>
 							<p className="text-muted-foreground">
 								{evidenceBoundary[language]}
@@ -468,34 +461,31 @@ export function ConceptLab({
 							{playing
 								? l("Pause", "暂停")
 								: exploring
-									? l("Return to lesson", "返回讲解")
-									: reduced
-										? l("Next step", "下一步")
-										: complete
-											? l("Start again", "重新开始")
-											: l("Continue explanation", "继续讲解")}
+									? l("Resume", "继续")
+									: complete
+										? l("Start again", "重新开始")
+										: reduced
+											? l("Next step", "下一步")
+											: l("Continue", "继续")}
 						</Button>
-						<Button
-							size="sm"
-							variant="ghost"
-							onClick={() => {
-								autoStarted.current = scene;
-								seek(0);
-								setResetVersion((value) => value + 1);
-								setPlaying(!reduced);
-							}}
-							aria-label={l("Reset demonstration", "重置演示")}
-						>
-							<RotateCcwIcon />
-							{l("Restart", "重启")}
-						</Button>
+						{!complete ? (
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={() => {
+									autoStarted.current = scene;
+									seek(0);
+									setResetVersion((value) => value + 1);
+									setPlaying(!reduced);
+								}}
+								aria-label={l("Reset demonstration", "重置演示")}
+							>
+								<RotateCcwIcon />
+								{l("Restart", "重启")}
+							</Button>
+						) : null}
 						{complete && !exploring && (
-							<div className="visual-playback-complete">
-								<span role="status">
-									{l("Explanation complete", "本段讲解完成")}
-								</span>
-								{continuation}
-							</div>
+							<div className="visual-playback-complete">{continuation}</div>
 						)}
 					</fieldset>
 					<LessonPlan
@@ -512,24 +502,6 @@ export function ConceptLab({
 					/>
 				</aside>
 			</div>
-			<div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-				<Button
-					variant="ghost"
-					size="sm"
-					disabled={index === 0}
-					onClick={() => selectScene(scenes[index - 1].id)}
-				>
-					<ArrowLeftIcon data-icon="inline-start" />
-					{l("Previous scene", "上一场景")}
-				</Button>
-				{continuation}
-			</div>
-			<p className="text-muted-foreground text-xs">
-				{l(
-					"Illustrative examples · Explore at your own pace. Your last scene is remembered on this device.",
-					"教学示例 · 按自己的节奏探索。本设备会记住上次查看的场景。",
-				)}
-			</p>
 		</section>
 	);
 }

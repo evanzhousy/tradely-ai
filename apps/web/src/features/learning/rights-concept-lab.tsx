@@ -13,14 +13,14 @@ const scenes = [
 		label: ["Rights", "权利"],
 		title: ["One contract, two different roles", "同一合约，两种不同角色"],
 		prompt: [
-			"Switch Call / Put, then choose a role. Follow the right and the obligation.",
-			"切换看涨 / 看跌，再选择角色，追踪权利与义务。",
+			"Choose Call or Put, then buyer or writer. See who has the right and who has the obligation.",
+			"选择看涨或看跌，再选择买方或卖方。看看谁有权利、谁有义务。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"The buyer holds a right. The writer takes the corresponding obligation. Follow the two sides together.",
-					"买方持有权利，卖方承担对应义务，沿两条路径一起看。",
+					"The buyer gets the right. The writer takes the matching obligation.",
+					"买方获得权利，卖方承担对应义务。",
 				],
 			],
 			[
@@ -34,16 +34,16 @@ const scenes = [
 	{
 		id: "position",
 		label: ["Open / close", "开仓 / 平仓"],
-		title: ["A sale can close a long position", "卖出也可以平掉多头持仓"],
+		title: ["Selling can close or open a position", "卖出可以平仓，也可以开仓"],
 		prompt: [
-			"Change the starting position and trade. Watch the option inventory move.",
-			"改变起始持仓与交易，观察期权持仓如何变化。",
+			"Change the starting position and trade. Watch the number of contracts change.",
+			"改变起始持仓和交易，观察合约张数如何变化。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"Compare separate starting positions: selling can close a long or open a short.",
-					"比较不同起始持仓：卖出可以平掉多头，也可以建立空头。",
+					"Selling can close a long position or open a short one, depending on where you start.",
+					"卖出既可能平掉多头，也可能建立空头，取决于起始持仓。",
 				],
 			],
 			[
@@ -59,18 +59,18 @@ const scenes = [
 		label: ["Assignment", "指派"],
 		title: ["Follow the shares and the cash", "追踪股票与现金的去向"],
 		prompt: [
-			"Step through a valid exercise and assignment. Reverse Call / Put to reverse the flows.",
-			"逐步查看一次有效行权与指派，切换看涨 / 看跌，让资金与股票流向反转。",
+			"Step through exercise and assignment. Switch Call / Put to see the flows reverse.",
+			"逐步查看行权与指派。切换看涨 / 看跌，观察资金和股票流向反转。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"Follow the stated strike payment and deliverable shares through assignment.",
-					"沿被指派流程，查看约定行权金额与交付股票。",
+					"Follow the strike payment and shares delivered during assignment.",
+					"沿指派流程，查看行权价对应的付款与交付股票。",
 				],
 			],
 			[
-				["Start with valid exercise", "从有效行权开始"],
+				["Start with exercise", "从行权开始"],
 				["Follow cash and shares", "追踪现金与股票"],
 				["Reverse call and put flows", "反转看涨看跌流向"],
 			],

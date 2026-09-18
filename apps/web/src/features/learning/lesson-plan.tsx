@@ -207,7 +207,7 @@ export function LessonPlan({
 	const completed = complete
 		? plan.length
 		: plan.filter((item) => item.end < step).length;
-	const title = locale === "zh" ? "本段步骤" : "Lesson plan";
+	const title = locale === "zh" ? "步骤" : "Steps";
 
 	return (
 		<section

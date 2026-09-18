@@ -193,9 +193,7 @@ export function VisualLesson({
 							fallback={
 								<div role="status" className="flex flex-col gap-4">
 									<span>
-										{locale === "zh"
-											? "正在加载视觉课堂…"
-											: "Loading the visual lesson…"}
+										{locale === "zh" ? "正在加载课程…" : "Loading lesson…"}
 									</span>
 									<Skeleton className="h-96 w-full" />
 								</div>

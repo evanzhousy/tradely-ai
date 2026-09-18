@@ -217,7 +217,6 @@ function LessonPage() {
 								})}
 							</Badge>
 							<Badge variant="outline">{lesson.category}</Badge>
-							<Badge variant="secondary">{t("common.free")}</Badge>
 							<Link
 								to="/courses/tradingflow-foundations"
 								className="ml-auto text-xs underline underline-offset-4 lg:hidden"
@@ -236,9 +235,7 @@ function LessonPage() {
 						data={page.conceptData}
 					/>
 					<details className="lesson-notes">
-						<summary>
-							{locale === "zh" ? "一图回顾" : "Visual takeaway"}
-						</summary>
+						<summary>{locale === "zh" ? "快速回顾" : "Quick recap"}</summary>
 						<div className="mx-auto max-w-md py-4">
 							<LessonInfographic
 								subject={lesson.id}
@@ -302,9 +299,7 @@ function LessonPage() {
 					</section>
 					<details id="lesson-notes" className="lesson-notes">
 						<summary>
-							{locale === "zh"
-								? "深入阅读：笔记、公式与来源"
-								: "Go deeper: notes, formulas & sources"}
+							{locale === "zh" ? "笔记与来源" : "Notes & sources"}
 						</summary>
 						<article className="lesson-prose max-w-[72ch]">
 							<ReactMarkdown remarkPlugins={[remarkGfm]}>

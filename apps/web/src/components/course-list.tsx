@@ -51,7 +51,6 @@ export function CourseList({
 		>
 			{lessons.map((lesson, index) => {
 				const isCompleted = completed.has(lesson.id);
-				const accessLabel = t("common.free");
 				const completionLabel = isCompleted ? t("common.completed") : "";
 				return (
 					<li
@@ -98,7 +97,7 @@ export function CourseList({
 							size="sm"
 							className="group flex items-start gap-4 rounded-2xl px-3 py-4 transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							aria-current={currentLessonId === lesson.id ? "page" : undefined}
-							aria-label={`${lesson.title}. ${completionLabel ? `${completionLabel}. ` : ""}${accessLabel}. ${t("common.minutes", { minutes: lesson.minutes })}.`}
+							aria-label={`${lesson.title}. ${completionLabel ? `${completionLabel}. ` : ""}${t("common.minutes", { minutes: lesson.minutes })}.`}
 						>
 							<span className="flex size-9 shrink-0 items-center justify-center rounded-3xl bg-muted font-mono text-muted-foreground text-xs group-hover:text-foreground">
 								{isCompleted ? (
@@ -115,7 +114,6 @@ export function CourseList({
 									<span className="font-medium text-foreground">
 										{lesson.title}
 									</span>
-									<Badge variant="secondary">{t("common.free")}</Badge>
 									{getTradingFlowLab(lesson.id) ? (
 										<Badge variant="outline">{t("lab.badge")}</Badge>
 									) : null}

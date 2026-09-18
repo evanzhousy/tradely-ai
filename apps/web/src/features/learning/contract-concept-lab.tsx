@@ -14,20 +14,20 @@ const scenes = [
 		label: ["Anatomy", "构成"],
 		title: ["Take a contract apart", "拆解一张合约"],
 		prompt: [
-			"Select a field in the diagram to find out what it describes.",
-			"点击图中的字段，了解它描述什么。",
+			"Select a field to see what it means.",
+			"点击一个字段，看看它代表什么。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"The highlighted field describes one part of this contract. Product terms define the units and settlement.",
-					"高亮字段描述合约的一部分，产品条款决定单位与结算方式。",
+					"Each field tells you something different about the contract. The contract terms set the units and settlement.",
+					"每个字段都说明合约的一部分。合约条款决定单位与结算方式。",
 				],
 			],
 			[
-				["Inspect contract fields", "检查合约字段"],
-				["Compare identity fields", "比较身份字段"],
-				["Read product terms", "读取产品条款"],
+				["Read the fields", "查看字段"],
+				["See what defines the contract", "查看什么决定合约"],
+				["Read the contract terms", "读取合约条款"],
 			],
 		),
 		Component: AnatomyScene,
@@ -35,22 +35,22 @@ const scenes = [
 	{
 		id: "identity",
 		label: ["Identity", "身份"],
-		title: ["Same underlying. Same contract?", "同一标的，就是同一合约吗？"],
+		title: ["What makes it the same contract?", "什么决定它是不是同一张合约？"],
 		prompt: [
-			"Change one field on B. Watch which differences matter.",
-			"改变 B 的一个字段，观察哪些差异影响合约身份。",
+			"Change one field on B and see whether it is still the same contract.",
+			"改变 B 的一个字段，看看它是否还是同一张合约。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"Change the expiry: the contract changes. Change only the observation: its identity stays the same.",
-					"改变到期日会改变合约；仅改变观测时点，合约身份不变。",
+					"Changing the expiry creates a different contract. Changing only the quote time does not.",
+					"改变到期日会变成另一张合约；只改变报价时间则不会。",
 				],
 			],
 			[
-				["Compare contracts A and B", "比较合约 A 与 B"],
+				["Compare A and B", "比较 A 与 B"],
 				["Change expiration", "改变到期日"],
-				["Change observation time", "改变观测时间"],
+				["Change quote time", "改变报价时间"],
 			],
 		),
 		Component: IdentityScene,
@@ -58,22 +58,22 @@ const scenes = [
 	{
 		id: "units",
 		label: ["Units", "单位"],
-		title: ["Give every number a unit", "让每个数字都有单位"],
+		title: ["Know what each number means", "看懂每个数字代表什么"],
 		prompt: [
-			"Add a contract or move the price slider. Follow what changes.",
-			"增加一张合约，或拖动价格滑块，观察变化。",
+			"Change the contract count or option price and watch the totals.",
+			"改变合约张数或期权价格，观察总额变化。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"More contracts scale both premium and deliverable units. Buying an option does not deliver shares immediately.",
-					"张数增加会同时放大权利金与交付数量；买入期权不会立即交付股票。",
+					"More contracts increase both premium and deliverable shares. Buying an option does not give you shares immediately.",
+					"合约张数增加会同时提高权利金和可交付股票数量。买入期权不会立即得到股票。",
 				],
 			],
 			[
 				["Read one contract", "读取一张合约"],
-				["Increase contract count", "增加合约张数"],
-				["Compare premium and units", "比较权利金与单位"],
+				["Add another contract", "再增加一张合约"],
+				["Compare cost and shares", "比较成本与股票数量"],
 			],
 		),
 		Component: UnitsScene,
@@ -81,16 +81,16 @@ const scenes = [
 	{
 		id: "time",
 		label: ["Source time", "来源时间"],
-		title: ["One contract, different observations", "同一合约，不同时点的观测"],
+		title: ["Same contract, different times", "同一合约，不同时间"],
 		prompt: [
-			"Drag the timeline through three supplied snapshots.",
-			"拖动时间轴，查看三个给定快照。",
+			"Move the timeline through three snapshots.",
+			"拖动时间轴，查看三个快照。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"The contract stays fixed while its price, volume and reporting time change.",
-					"合约不变，价格、成交量与报告时间可以改变。",
+					"The contract stays the same while its price, volume and quote time change.",
+					"合约保持不变，但价格、成交量和报价时间会变化。",
 				],
 			],
 			[

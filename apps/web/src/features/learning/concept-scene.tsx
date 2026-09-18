@@ -116,9 +116,7 @@ export function SceneLayout({
 			{comparison}
 			{playback && (details || children) ? (
 				<details className="visual-explore">
-					<summary>
-						{locale === "zh" ? "详细讲解与假设" : "Explanation & assumptions"}
-					</summary>
+					<summary>{locale === "zh" ? "更多细节" : "More detail"}</summary>
 					<div className="flex min-w-0 flex-col gap-5 pt-5">
 						{details ?? children}
 					</div>
