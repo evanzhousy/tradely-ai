@@ -1,4 +1,11 @@
 import { Button } from "@tradely/ui/components/button";
+import {
+	Menu,
+	MenuContent,
+	MenuItem,
+	MenuTrigger,
+} from "@tradely/ui/components/menu";
+import { ChevronDownIcon, LogOutIcon, UserRoundIcon } from "lucide-react";
 import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { authClient, authIsConfigured, useAuth } from "@/auth/client";
@@ -56,27 +63,54 @@ function ConfiguredAuthControls() {
 		}
 	}
 	return (
-		<div className="flex items-center gap-2">
-			<span
-				className="hidden max-w-36 truncate text-muted-foreground text-sm lg:inline"
-				title={email ?? undefined}
+		<Menu>
+			<MenuTrigger
+				render={
+					<Button
+						size="sm"
+						variant="ghost"
+						className="max-w-44 gap-1.5 px-2"
+						aria-label={
+							email ? `${t("auth.account")}: ${email}` : t("auth.account")
+						}
+					/>
+				}
 			>
-				{email}
-			</span>
-			<Button
-				size="sm"
-				variant="outline"
-				disabled={pending}
-				onClick={() => void signOut()}
-			>
-				{t("auth.signOut")}
-			</Button>
-			{failed ? (
-				<span role="alert" className="text-destructive text-sm">
-					{t("auth.retry")}
+				<UserRoundIcon aria-hidden="true" />
+				<span className="hidden max-w-32 truncate text-muted-foreground sm:inline">
+					{email}
 				</span>
-			) : null}
-		</div>
+				<ChevronDownIcon
+					className="size-3.5 text-muted-foreground"
+					aria-hidden="true"
+				/>
+			</MenuTrigger>
+			<MenuContent>
+				<div className="px-2.5 py-2">
+					<p className="font-medium text-xs">{t("auth.account")}</p>
+					<p
+						className="mt-0.5 max-w-52 truncate text-muted-foreground text-xs"
+						title={email ?? undefined}
+					>
+						{email}
+					</p>
+				</div>
+				<div className="my-1 border-border border-t" />
+				<MenuItem
+					disabled={pending}
+					closeOnClick={false}
+					onClick={() => void signOut()}
+				>
+					<LogOutIcon className="size-4" aria-hidden="true" />
+					{t("auth.signOut")}
+				</MenuItem>
+				{failed ? (
+					<p role="alert" className="px-2.5 py-2 text-destructive text-xs">
+						{t("auth.retry")}
+					</p>
+				) : null}
+			</MenuContent>
+		</Menu>
 	);
 }
 

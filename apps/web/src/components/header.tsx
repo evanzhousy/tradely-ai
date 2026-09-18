@@ -86,6 +86,14 @@ export default function Header() {
 							"hidden sm:inline-flex",
 						)}
 					>
+						<img
+							src="/partners/tradingflow-mark.webp"
+							alt=""
+							width={64}
+							height={64}
+							className="size-4 rounded-[4px]"
+							aria-hidden="true"
+						/>
 						{t("nav.openTradingFlow")}
 						<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
 					</a>
@@ -125,6 +133,14 @@ export default function Header() {
 									}
 									className={cn(buttonVariants({ variant: "outline" }), "mt-4")}
 								>
+									<img
+										src="/partners/tradingflow-mark.webp"
+										alt=""
+										width={64}
+										height={64}
+										className="size-4 rounded-[4px]"
+										aria-hidden="true"
+									/>
 									{t("nav.openTradingFlow")}
 									<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
 								</a>

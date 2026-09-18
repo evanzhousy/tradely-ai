@@ -20,7 +20,7 @@ export function TradelyBrand({ compactOnMobile = false }: TradelyBrandProps) {
 				alt=""
 				width={128}
 				height={128}
-				className="size-9 rounded-lg shadow-sm ring-1 ring-foreground/10"
+				className="size-9 rounded-lg"
 				aria-hidden="true"
 			/>
 			<span
