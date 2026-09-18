@@ -267,6 +267,8 @@ const messages = {
 			"Explore the visual lessons freely. Sign in to save study marks across devices.",
 		"course.yourProgress": "Your progress",
 		"course.curriculum": "Curriculum",
+		"course.collapseSidebar": "Collapse curriculum sidebar",
+		"course.expandSidebar": "Expand curriculum sidebar",
 		"course.curriculumDescription":
 			"Follow the path in order, or open any lesson to review its place in the workflow.",
 		"practice.badge": "Official practice tool",
@@ -572,6 +574,8 @@ const messages = {
 		"complete.previewNote": "自由探索视觉课程，登录后可跨设备保存学习标记。",
 		"course.yourProgress": "你的进度",
 		"course.curriculum": "课程目录",
+		"course.collapseSidebar": "收起课程侧栏",
+		"course.expandSidebar": "展开课程侧栏",
 		"course.curriculumDescription":
 			"按顺序学习，或打开任意课程查看它在整个流程中的位置。",
 		"practice.badge": "官方练习工具",

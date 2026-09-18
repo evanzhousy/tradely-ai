@@ -138,8 +138,7 @@ export function CourseList({
 								</span>
 								<span className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
 									<PlayCircleIcon className="size-3.5" aria-hidden="true" />
-									{t("common.minutes", { minutes: lesson.minutes })} ·{" "}
-									{lesson.category}
+									{t("common.minutes", { minutes: lesson.minutes })}
 								</span>
 							</span>
 						</Item>

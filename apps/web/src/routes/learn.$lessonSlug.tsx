@@ -1,9 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@tradely/ui/components/badge";
-import { buttonVariants } from "@tradely/ui/components/button";
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { Button, buttonVariants } from "@tradely/ui/components/button";
+import {
+	ArrowLeftIcon,
+	ArrowRightIcon,
+	PanelLeftCloseIcon,
+	PanelLeftOpenIcon,
+} from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAnalytics } from "@/analytics/context";
@@ -57,6 +62,7 @@ function LessonPage() {
 	const lesson = source ? getLocalizedLesson(source, locale) : null;
 	const tracked = useRef<string | null>(null);
 	const started = useRef<string | null>(null);
+	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 	useEffect(() => {
 		if (!isCapturing) {
 			tracked.current = null;
@@ -127,17 +133,64 @@ function LessonPage() {
 		(item) => !!item,
 	);
 	return (
-		<main className="lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 lg:grid-cols-[290px_1fr]">
-			<aside className="lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r px-4 py-8 lg:block">
+		<main
+			className={`lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 transition-[grid-template-columns] duration-200 ${sidebarCollapsed ? "lg:grid-cols-[56px_1fr]" : "lg:grid-cols-[290px_1fr]"}`}
+		>
+			<aside
+				className={`lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r py-8 transition-[padding] duration-200 lg:block ${sidebarCollapsed ? "px-2" : "px-4"}`}
+			>
 				<div className="sticky top-24 flex flex-col gap-6">
-					<CourseProgress
-						unavailable={progress.unavailable}
-						completed={progress.completed}
-						total={progress.total}
-						percentage={progress.percentage}
-						compact
-					/>
-					<div className="max-h-[calc(100svh-12rem)] overflow-y-auto pr-1">
+					<div
+						className={
+							sidebarCollapsed
+								? "flex justify-center"
+								: "flex items-start gap-2"
+						}
+					>
+						{sidebarCollapsed ? null : (
+							<div className="min-w-0 flex-1">
+								<CourseProgress
+									unavailable={progress.unavailable}
+									completed={progress.completed}
+									total={progress.total}
+									percentage={progress.percentage}
+									compact
+								/>
+							</div>
+						)}
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							aria-expanded={!sidebarCollapsed}
+							aria-controls="lesson-curriculum-sidebar-content"
+							aria-label={
+								sidebarCollapsed
+									? t("course.expandSidebar")
+									: t("course.collapseSidebar")
+							}
+							title={
+								sidebarCollapsed
+									? t("course.expandSidebar")
+									: t("course.collapseSidebar")
+							}
+							onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+						>
+							{sidebarCollapsed ? (
+								<PanelLeftOpenIcon aria-hidden="true" />
+							) : (
+								<PanelLeftCloseIcon aria-hidden="true" />
+							)}
+						</Button>
+					</div>
+					<div
+						id="lesson-curriculum-sidebar-content"
+						className={
+							sidebarCollapsed
+								? "hidden"
+								: "max-h-[calc(100svh-12rem)] overflow-y-auto pr-1"
+						}
+					>
 						<CourseList
 							lessons={course.lessons}
 							completedIds={completedIds}
