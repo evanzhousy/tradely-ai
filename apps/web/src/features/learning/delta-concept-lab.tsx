@@ -18,12 +18,19 @@ const scenes = [
 			"Move the stock price a little. Compare the supplied call and put without changing other inputs.",
 			"小幅移动股票价格，在其他输入不变时比较给定看涨与看跌期权。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A local slope estimates a small price response while other inputs stay fixed.",
-				"其他输入不变时，局部斜率近似描述小幅价格响应。",
+				[
+					"A local slope estimates a small price response while other inputs stay fixed.",
+					"其他输入不变时，局部斜率近似描述小幅价格响应。",
+				],
 			],
-		]),
+			[
+				["Read the local slope", "读取局部斜率"],
+				["Move stock slightly", "小幅移动股价"],
+				["Compare estimated change", "比较估计变化"],
+			],
+		),
 		Component: DeltaSlopeScene,
 	},
 	{
@@ -34,12 +41,19 @@ const scenes = [
 			"Change long versus short, quantity and contract size. Follow the option's delta into position exposure and estimated dollar change.",
 			"改变多空、张数与合约规模，追踪期权 Delta 如何形成持仓敞口与金额估计变化。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Position direction changes the sign; quantity changes the size of the exposure.",
-				"持仓方向改变符号，数量改变敞口大小。",
+				[
+					"Position direction changes the sign; quantity changes the size of the exposure.",
+					"持仓方向改变符号，数量改变敞口大小。",
+				],
 			],
-		]),
+			[
+				["Read option delta", "读取期权 Delta"],
+				["Apply side and quantity", "应用方向与张数"],
+				["Compute position exposure", "计算持仓敞口"],
+			],
+		),
 		Component: DeltaPositionScene,
 	},
 	{
@@ -50,12 +64,19 @@ const scenes = [
 			"Replay a wider move on a declared teaching curve. Then change the assumptions to see which estimates are no longer supported.",
 			"在声明的教学曲线上回放较大变动，再改变假设，观察哪些估计不再受支持。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Compare the local estimate with the supplied outcomes before extending it to larger moves.",
-				"将局部估计与给定结果对照，再考虑更大的变动。",
+				[
+					"Compare the local estimate with the supplied outcomes before extending it to larger moves.",
+					"将局部估计与给定结果对照，再考虑更大的变动。",
+				],
 			],
-		]),
+			[
+				["Read local estimate", "读取局部估计"],
+				["Widen the stock move", "扩大股价变动"],
+				["Compare with the curve", "与曲线结果比较"],
+			],
+		),
 		Component: DeltaLimitsScene,
 	},
 ] as const satisfies readonly ConceptScene[];

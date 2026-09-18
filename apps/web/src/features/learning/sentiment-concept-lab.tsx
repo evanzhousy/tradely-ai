@@ -18,12 +18,19 @@ const scenes = [
 			"Choose the likely aggressor's action and option type. Follow the isolated leg's directional effect.",
 			"选择推断主动方的买卖行为与期权类型，追踪孤立单腿的方向影响。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Option type and inferred execution direction combine under the stated labeling convention.",
-				"期权类型与推断成交方向，按给定约定共同决定标签。",
+				[
+					"Option type and inferred execution direction combine under the stated labeling convention.",
+					"期权类型与推断成交方向，按给定约定共同决定标签。",
+				],
 			],
-		]),
+			[
+				["Choose option type", "选择期权类型"],
+				["Choose inferred action", "选择推断行为"],
+				["Map directional label", "映射方向标签"],
+			],
+		),
 		Component: DirectionMatrixScene,
 	},
 	{
@@ -34,12 +41,19 @@ const scenes = [
 			"Change the reference evidence for a put execution. See when the mapping can proceed and when it must stop.",
 			"切换一笔看跌成交的参考证据，观察何时可以映射方向、何时必须停止。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Usable evidence supports a conditional label. Indeterminate means the direction is unresolved.",
-				"可用证据支持有条件的标签；无法确定表示方向尚不明确。",
+				[
+					"Usable evidence supports a conditional label. Indeterminate means the direction is unresolved.",
+					"可用证据支持有条件的标签；无法确定表示方向尚不明确。",
+				],
 			],
-		]),
+			[
+				["Read reference evidence", "读取参考证据"],
+				["Test the mapping", "检验标签映射"],
+				["Stop when indeterminate", "无法确定时停止"],
+			],
+		),
 		Component: FlowEvidenceScene,
 	},
 	{
@@ -53,12 +67,19 @@ const scenes = [
 			"Replay the same completed put purchase with different supplied position records. The flow label stays the same.",
 			"结合不同给定持仓记录，回放同一已完成的看跌买入。成交流标签保持不变。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"The same option purchase can sit inside different portfolios. One leg cannot reveal the whole intent.",
-				"同一期权买入可属于不同组合，单腿无法揭示整体意图。",
+				[
+					"The same option purchase can sit inside different portfolios. One leg cannot reveal the whole intent.",
+					"同一期权买入可属于不同组合，单腿无法揭示整体意图。",
+				],
 			],
-		]),
+			[
+				["Read the put purchase", "读取看跌买入"],
+				["Add position context", "加入持仓背景"],
+				["Separate flow from intent", "区分成交流与意图"],
+			],
+		),
 		Component: PositionScopeScene,
 	},
 ] as const satisfies readonly ConceptScene[];

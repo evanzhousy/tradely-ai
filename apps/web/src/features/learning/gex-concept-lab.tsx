@@ -21,12 +21,19 @@ const scenes = [
 			"Change OI, spot or the assumed position sign. Hold the other inputs fixed and inspect the stated units.",
 			"改变 OI、现价或假设持仓符号，固定其他输入并检查声明单位。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Build the contribution from the stated inputs, scale and assumed position sign.",
-				"用给定输入、尺度及假设持仓符号构建贡献值。",
+				[
+					"Build the contribution from the stated inputs, scale and assumed position sign.",
+					"用给定输入、尺度及假设持仓符号构建贡献值。",
+				],
 			],
-		]),
+			[
+				["Read formula inputs", "读取公式输入"],
+				["Change OI, spot or sign", "改变 OI、现价或符号"],
+				["Recompute contribution", "重新计算贡献"],
+			],
+		),
 		Component: GexFormulaScene,
 	},
 	{
@@ -40,12 +47,19 @@ const scenes = [
 			"Select an SVG cell, inspect its expiry slice, then switch distributions. Compare net, gross and location separately.",
 			"选择 SVG 单元格，检查其到期切片，再切换分布，分别比较净值、总幅度与位置。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Different strike distributions can share the same net exposure.",
-				"不同的行权价分布，可以具有相同净敞口。",
+				[
+					"Different strike distributions can share the same net exposure.",
+					"不同的行权价分布，可以具有相同净敞口。",
+				],
 			],
-		]),
+			[
+				["Inspect a strike cell", "检查行权价单元格"],
+				["Switch distribution", "切换分布"],
+				["Compare net and gross", "比较净值与总量"],
+			],
+		),
 		Component: GexDistributionScene,
 	},
 	{
@@ -56,12 +70,19 @@ const scenes = [
 			"Remove a contribution or keep only traded contracts. Explicit zero, missing data and excluded contracts have different meanings.",
 			"移除一项贡献或仅保留有成交合约。明确的零、缺失数据与被排除合约含义不同。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A visible subtotal does not establish the complete chain total.",
-				"可见小计不能确定完整期权链总量。",
+				[
+					"A visible subtotal does not establish the complete chain total.",
+					"可见小计不能确定完整期权链总量。",
+				],
 			],
-		]),
+			[
+				["Read visible subtotal", "读取可见小计"],
+				["Remove coverage", "减少覆盖"],
+				["Mark total incomplete", "标记总量不完整"],
+			],
+		),
 		Component: GexCoverageScene,
 	},
 ] as const satisfies readonly ConceptScene[];

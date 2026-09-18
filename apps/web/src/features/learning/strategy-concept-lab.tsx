@@ -21,12 +21,19 @@ const scenes = [
 			"Inspect the supplied strategy, then switch to the evidence from just one position.",
 			"检查给定策略，再切换到仅有单一持仓证据的视角。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Keep the option leg in view as surrounding positions change the complete structure.",
-				"保留同一期权腿，查看周围持仓如何改变完整结构。",
+				[
+					"Keep the option leg in view as surrounding positions change the complete structure.",
+					"保留同一期权腿，查看周围持仓如何改变完整结构。",
+				],
 			],
-		]),
+			[
+				["Read full strategy", "读取完整策略"],
+				["Isolate one position", "隔离单一持仓"],
+				["Compare structure context", "比较结构背景"],
+			],
+		),
 		Component: CompositionScene,
 	},
 	{
@@ -40,12 +47,19 @@ const scenes = [
 			"Drag the underlying price. Compare the strategy shapes on shared axes, then separate terminal value, entry cost and fees.",
 			"拖动标的价格，在共同坐标轴上比较策略形状，再区分到期价值、入场成本与费用。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Add the signed legs before interpreting the combined expiration profit.",
-				"先汇总带符号的各腿，再解读组合到期盈亏。",
+				[
+					"Add the signed legs before interpreting the combined expiration profit.",
+					"先汇总带符号的各腿，再解读组合到期盈亏。",
+				],
 			],
-		]),
+			[
+				["Add signed legs", "汇总带符号各腿"],
+				["Move underlying price", "移动标的价格"],
+				["Separate payoff and cost", "区分支付与成本"],
+			],
+		),
 		Component: ExpirationStrategyScene,
 	},
 	{
@@ -56,12 +70,19 @@ const scenes = [
 			"Replay the supplied closing and opening fills. Follow contract identity, inventory and cash flow.",
 			"回放给定平仓与开仓成交，追踪合约身份、持仓和现金流。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A roll closes one position and opens another. Follow both transactions and their cash flows.",
-				"展期同时平掉一份持仓、建立另一份，沿两笔交易查看现金流。",
+				[
+					"A roll closes one position and opens another. Follow both transactions and their cash flows.",
+					"展期同时平掉一份持仓、建立另一份，沿两笔交易查看现金流。",
+				],
 			],
-		]),
+			[
+				["Close old contract", "平掉旧合约"],
+				["Open new contract", "建立新合约"],
+				["Combine inventory and cash", "合并持仓与现金流"],
+			],
+		),
 		Component: RollScene,
 	},
 ] as const satisfies readonly ConceptScene[];

@@ -46,12 +46,19 @@ const scenes = [
 			"Inspect a statement and place it in an evidence category. Then add a new record and reconsider.",
 			"检查一项陈述并选择证据类别，再加入新记录，重新判断。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"The highlighted category shows what the supplied evidence supports; the explanation is already available.",
-				"高亮类别显示给定证据所能支持的结论，讲解直接呈现。",
+				[
+					"The highlighted category shows what the supplied evidence supports; the explanation is already available.",
+					"高亮类别显示给定证据所能支持的结论，讲解直接呈现。",
+				],
 			],
-		]),
+			[
+				["Read the statement", "读取陈述"],
+				["Classify current evidence", "分类当前证据"],
+				["Recheck with new record", "用新记录复核"],
+			],
+		),
 		Component: EvidenceBucketsScene,
 	},
 	{
@@ -62,12 +69,19 @@ const scenes = [
 			"Choose one missing fact, request a follow-up record, and see exactly what it resolves.",
 			"选择一个缺失事实，检查一项后续记录，观察它究竟解决了什么。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Compare additional records with the missing fact. Bigger activity alone cannot fill an evidence gap.",
-				"将补充记录与缺失事实对照，成交更大本身不能填补证据缺口。",
+				[
+					"Compare additional records with the missing fact. Bigger activity alone cannot fill an evidence gap.",
+					"将补充记录与缺失事实对照，成交更大本身不能填补证据缺口。",
+				],
 			],
-		]),
+			[
+				["Name the missing fact", "明确缺失事实"],
+				["Inspect follow-up record", "检查后续记录"],
+				["Confirm what it resolves", "确认解决了什么"],
+			],
+		),
 		Component: FollowUpScene,
 	},
 ] as const satisfies readonly ConceptScene[];

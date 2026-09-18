@@ -21,12 +21,19 @@ const scenes = [
 			"Restore the omitted multiplier row by row. Keep R1's correctly reported price and R3's missingness intact.",
 			"逐行恢复遗漏乘数，保留 R1 正确报告的价格与 R3 缺失状态。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Restore the missing multiplier step by step while retaining the valid execution price.",
-				"逐步恢复遗漏的乘数，同时保留有效成交价。",
+				[
+					"Restore the missing multiplier step by step while retaining the valid execution price.",
+					"逐步恢复遗漏的乘数，同时保留有效成交价。",
+				],
 			],
-		]),
+			[
+				["Read source values", "读取来源数值"],
+				["Restore the multiplier", "恢复乘数"],
+				["Verify repaired amount", "核对修复金额"],
+			],
+		),
 		Component: AuditAmountScene,
 	},
 	{
@@ -40,12 +47,19 @@ const scenes = [
 			"Inspect identity, date, scope, scale, coverage and inference. Repair selected defects without discarding supported evidence.",
 			"检查身份、日期、范围、尺度、覆盖与推断，修复所选缺陷而不丢弃受支持证据。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Repair each unsupported transformation without discarding the supported source facts.",
-				"修复每个无依据的转换步骤，同时保留有依据的来源事实。",
+				[
+					"Repair each unsupported transformation without discarding the supported source facts.",
+					"修复每个无依据的转换步骤，同时保留有依据的来源事实。",
+				],
 			],
-		]),
+			[
+				["Audit each claim", "审计每项结论"],
+				["Repair one defect", "修复一个缺陷"],
+				["Recheck the report", "重新检查报告"],
+			],
+		),
 		Component: AuditClaimsScene,
 	},
 	{
@@ -59,12 +73,19 @@ const scenes = [
 			"Inspect a supplied repaired example and assemble its signoff fields. Repairs do not create missing evidence.",
 			"检查给定修复示例并组装签核字段。修复不会创造缺失证据。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A finished signoff states what is supported, repaired and still unresolved.",
-				"完成的签核说明哪些有依据、哪些已修复、哪些仍未解决。",
+				[
+					"A finished signoff states what is supported, repaired and still unresolved.",
+					"完成的签核说明哪些有依据、哪些已修复、哪些仍未解决。",
+				],
 			],
-		]),
+			[
+				["Review repaired evidence", "检查修复后证据"],
+				["List open gaps", "列出未解决缺口"],
+				["Write bounded signoff", "写出有边界的签核"],
+			],
+		),
 		Component: AuditSignoffScene,
 	},
 ] as const satisfies readonly ConceptScene[];

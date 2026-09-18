@@ -45,12 +45,19 @@ const scenes = [
 			"Inspect the actual recorded fields. Remove a field to see what another reader would be missing.",
 			"检查实际记录字段，移除字段以查看其他读者会缺少什么。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Build a complete example with source, method, units and missingness beside the result.",
-				"在结果旁补齐来源、方法、单位与缺失信息，构建完整示例。",
+				[
+					"Build a complete example with source, method, units and missingness beside the result.",
+					"在结果旁补齐来源、方法、单位与缺失信息，构建完整示例。",
+				],
 			],
-		]),
+			[
+				["Inspect packet fields", "检查研究包字段"],
+				["Remove one field", "移除一个字段"],
+				["Check reproducibility", "检查可复现性"],
+			],
+		),
 		Component: PacketFieldsScene,
 	},
 	{
@@ -64,12 +71,19 @@ const scenes = [
 			"Compare a dated rerun with a changed universe, source or formula. Keep the original packet visible.",
 			"比较日期重跑与范围、来源或公式变化，保持原研究包可见。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A permitted rerun gets its own record while preserving the original result.",
-				"允许的重跑建立独立记录，同时保留原结果。",
+				[
+					"A permitted rerun gets its own record while preserving the original result.",
+					"允许的重跑建立独立记录，同时保留原结果。",
+				],
 			],
-		]),
+			[
+				["Read original packet", "读取原研究包"],
+				["Change one permitted input", "改变一个允许输入"],
+				["Save a new record", "保存新记录"],
+			],
+		),
 		Component: PacketRerunScene,
 	},
 ] as const satisfies readonly ConceptScene[];

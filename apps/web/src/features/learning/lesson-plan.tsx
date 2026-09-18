@@ -10,6 +10,35 @@ import type { VisualStep } from "./visual-step";
 
 type LessonPlanStatus = "pending" | "in-progress" | "completed";
 
+type PlanGroup = {
+	key: string;
+	label: VisualStep["label"];
+	start: number;
+	end: number;
+};
+
+function groupPlanSteps(steps: readonly VisualStep[]): PlanGroup[] {
+	const groups: PlanGroup[] = [];
+	steps.forEach((item, index) => {
+		const previous = groups.at(-1);
+		if (
+			previous &&
+			previous.label[0] === item.label[0] &&
+			previous.label[1] === item.label[1]
+		) {
+			previous.end = index + 1;
+			return;
+		}
+		groups.push({
+			key: `${item.id}-${index}`,
+			label: item.label,
+			start: index + 1,
+			end: index + 1,
+		});
+	});
+	return groups;
+}
+
 function statusLabel(status: LessonPlanStatus, locale: Locale) {
 	if (locale === "zh") {
 		return status === "completed"
@@ -165,6 +194,7 @@ export function LessonPlan({
 	const reduce = useReducedMotion() ?? false;
 	const language = locale === "zh" ? 1 : 0;
 	const current = steps[Math.max(0, step - 1)] ?? steps[0];
+	const plan = groupPlanSteps(steps);
 	const progress = usePlanProgress({
 		epoch,
 		holdMs: current?.holdMs ?? 0,
@@ -174,7 +204,9 @@ export function LessonPlan({
 		complete,
 		onElapsed,
 	});
-	const completed = complete ? steps.length : Math.max(0, step - 1);
+	const completed = complete
+		? plan.length
+		: plan.filter((item) => item.end < step).length;
 	const title = locale === "zh" ? "本段步骤" : "Lesson plan";
 
 	return (
@@ -187,7 +219,7 @@ export function LessonPlan({
 					aria-hidden="true"
 					className="grid size-6 shrink-0 place-items-center text-muted-foreground"
 				>
-					{completed === steps.length ? (
+					{completed === plan.length ? (
 						<Check className="size-4 text-emerald-500" strokeWidth={2.5} />
 					) : (
 						<ListTodo className="size-4" />
@@ -198,27 +230,26 @@ export function LessonPlan({
 				</h3>
 				<span className="shrink-0 font-medium text-muted-foreground text-xs tabular-nums">
 					<span className="sr-only">
-						{completed} {locale === "zh" ? "步已完成，共" : "of"} {steps.length}
+						{completed} {locale === "zh" ? "步已完成，共" : "of"} {plan.length}
 						{locale === "zh" ? "步" : "steps completed"}
 					</span>
 					<span aria-hidden="true">
-						{completed}/{steps.length}
+						{completed}/{plan.length}
 					</span>
 				</span>
 			</div>
 			<ol aria-live="polite" className="space-y-0 px-2 pb-2">
-				{steps.map((item, index) => {
-					const itemNumber = index + 1;
+				{plan.map((item) => {
 					const status: LessonPlanStatus =
-						itemNumber < step || (complete && itemNumber === step)
+						complete || item.end < step
 							? "completed"
-							: itemNumber === step
+							: step >= item.start && step <= item.end
 								? "in-progress"
 								: "pending";
 					return (
 						<m.li
 							layout="position"
-							key={item.id}
+							key={item.key}
 							initial={reduce ? { opacity: 1 } : { opacity: 0, y: 6 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={reduce ? { duration: 0 } : { duration: 0.18 }}
@@ -226,7 +257,7 @@ export function LessonPlan({
 						>
 							<button
 								type="button"
-								onClick={() => onStepSelect(itemNumber)}
+								onClick={() => onStepSelect(item.start)}
 								aria-current={status === "in-progress" ? "step" : undefined}
 								className="flex min-h-9 w-full items-center gap-2.5 rounded-xl px-1.5 py-1 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
 							>
@@ -248,7 +279,10 @@ export function LessonPlan({
 								{status === "in-progress" && !reduced && !exploring ? (
 									<span className="shrink-0 text-muted-foreground text-xs tabular-nums">
 										{Math.ceil(
-											Math.max(0, item.holdMs * (1 - progress / 100)) / 1000,
+											Math.max(
+												0,
+												(current?.holdMs ?? 0) * (1 - progress / 100),
+											) / 1000,
 										)}
 										s
 									</span>

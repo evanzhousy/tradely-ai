@@ -18,12 +18,19 @@ const scenes = [
 			"Choose source prints. Check identity and units, then compare weighted price with a simple average.",
 			"选择原始成交。先检查合约与单位，再比较数量加权价格和简单均价。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Expand a row into its executions. Quantity-weighted price and total premium use different calculations.",
-				"把汇总行展开为成交，数量加权价格与总权利金采用不同计算。",
+				[
+					"Expand a row into its executions. Quantity-weighted price and total premium use different calculations.",
+					"把汇总行展开为成交，数量加权价格与总权利金采用不同计算。",
+				],
 			],
-		]),
+			[
+				["Select source prints", "选择来源成交"],
+				["Check identity and units", "检查身份与单位"],
+				["Compute weighted row", "计算加权汇总行"],
+			],
+		),
 		Component: AggregateScene,
 	},
 	{
@@ -37,12 +44,19 @@ const scenes = [
 			"Follow explicit execution IDs through a duplicate, correction and cancellation. Watch the current view change.",
 			"根据明确成交标识追踪重复、更正和撤销，观察当前记录视图如何变化。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A correction replaces its linked report; it is not another execution to add.",
-				"更正替代关联的原报告，不是额外增加的一笔成交。",
+				[
+					"A correction replaces its linked report; it is not another execution to add.",
+					"更正替代关联的原报告，不是额外增加的一笔成交。",
+				],
 			],
-		]),
+			[
+				["Read current reports", "读取当前报告"],
+				["Process report changes", "处理报告变化"],
+				["Rebuild current view", "重建当前视图"],
+			],
+		),
 		Component: MessageReplayScene,
 	},
 	{
@@ -56,12 +70,19 @@ const scenes = [
 			"Inspect a supplied condition definition, then test what it can establish about this large illustrative row.",
 			"检查给定成交条件定义，再判断它能确定这条大额示例记录的哪些信息。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"An execution condition describes the record under its source convention, not the investor's identity.",
-				"成交条件按来源约定描述记录，不揭示投资者身份。",
+				[
+					"An execution condition describes the record under its source convention, not the investor's identity.",
+					"成交条件按来源约定描述记录，不揭示投资者身份。",
+				],
 			],
-		]),
+			[
+				["Read execution condition", "读取成交条件"],
+				["Check source definition", "检查来源定义"],
+				["Bound what it implies", "限定可推断范围"],
+			],
+		),
 		Component: ConditionScene,
 	},
 ] as const satisfies readonly ConceptScene[];

@@ -88,7 +88,7 @@ const scenes = [
 				["First level", "第一档"],
 				["Second level", "第二档"],
 				["Third level", "第三档"],
-				["Result", "结果"],
+				["Filled + unfilled", "已成交 + 未成交"],
 			],
 		),
 		Component: LiquidityScene,

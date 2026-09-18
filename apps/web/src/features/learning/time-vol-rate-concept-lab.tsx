@@ -21,12 +21,19 @@ const scenes = [
 			"Change one input and compare its stated unit with a relative percentage. Apply the supplied sensitivity once.",
 			"改变一个输入，比较声明单位与相对百分比，只应用一次给定敏感度。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Each sensitivity pairs with its own input and unit before contributions can be compared.",
-				"先让每项敏感度匹配自身输入与单位，再比较贡献。",
+				[
+					"Each sensitivity pairs with its own input and unit before contributions can be compared.",
+					"先让每项敏感度匹配自身输入与单位，再比较贡献。",
+				],
 			],
-		]),
+			[
+				["Choose one sensitivity", "选择一项敏感度"],
+				["Match input units", "匹配输入单位"],
+				["Compute one contribution", "计算单项贡献"],
+			],
+		),
 		Component: GreekUnitsScene,
 	},
 	{
@@ -37,12 +44,19 @@ const scenes = [
 			"Compare the supplied call and put, reverse the position, and change quantity without adding unlike units.",
 			"比较给定看涨与看跌期权，反转持仓并改变张数，不把不同单位直接相加。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Reversing the position reverses its signed sensitivity contribution.",
-				"反转持仓方向，会反转其敏感度贡献的符号。",
+				[
+					"Reversing the position reverses its signed sensitivity contribution.",
+					"反转持仓方向，会反转其敏感度贡献的符号。",
+				],
 			],
-		]),
+			[
+				["Read call and put sensitivities", "读取看涨看跌敏感度"],
+				["Reverse position", "反转持仓方向"],
+				["Scale signed exposure", "缩放带符号敞口"],
+			],
+		),
 		Component: GreekSignsScene,
 	},
 	{

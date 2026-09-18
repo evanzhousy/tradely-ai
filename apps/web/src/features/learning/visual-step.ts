@@ -11,9 +11,9 @@ export type VisualStep = {
 /** A step owns the sampled model position, caption, focus and reading time together. */
 export function teachingSteps(
 	captions: readonly SceneCopy[],
-	labels?: readonly SceneCopy[],
+	labels: readonly SceneCopy[],
 ): readonly VisualStep[] {
-	const count = Math.max(3, captions.length, labels?.length ?? 0);
+	const count = Math.max(3, captions.length, labels.length);
 	return Array.from({ length: count }, (_, i) => {
 		const position = i / (count - 1);
 		const caption = captions[Math.round(position * (captions.length - 1))] ?? [
@@ -24,16 +24,7 @@ export function teachingSteps(
 			id: `step-${i + 1}`,
 			state: { position },
 			caption,
-			label:
-				labels?.[i] ??
-				([
-					i === 0
-						? "Starting state"
-						: i === count - 1
-							? "Result"
-							: `Change ${i}`,
-					i === 0 ? "起始状态" : i === count - 1 ? "结果" : `变化 ${i}`,
-				] as const),
+			label: labels[Math.round(position * (labels.length - 1))] ?? labels[0],
 			focus: i === count - 1 ? "result" : "diagram",
 			holdMs: Math.min(
 				6000,
@@ -59,17 +50,9 @@ export function expandSteps(
 	steps: readonly VisualStep[],
 	frameCounts: readonly number[],
 ): readonly VisualStep[] {
-	const generic = steps.every(
-		(step) =>
-			/^(Starting state|Change \d+|Result)$/.test(step.label[0]) &&
-			step.caption[0] === steps[0].caption[0] &&
-			step.caption[1] === steps[0].caption[1],
-	);
-	// A shared caption does not need artificial stops between the actual snapshots.
+	const hasAuthoredFrames = frameCounts.some((count) => count > 1);
 	const positions = new Set(
-		generic && frameCounts.some((count) => count > 1)
-			? []
-			: steps.map((step) => step.state.position),
+		hasAuthoredFrames ? [] : steps.map((step) => step.state.position),
 	);
 	for (const count of frameCounts)
 		for (let i = 0; i < count; i++)
@@ -85,20 +68,6 @@ export function expandSteps(
 			);
 			return {
 				...nearest,
-				label: generic
-					? ([
-							i === 0
-								? "Starting state"
-								: i === all.length - 1
-									? "Result"
-									: `Change ${i}`,
-							i === 0
-								? "起始状态"
-								: i === all.length - 1
-									? "结果"
-									: `变化 ${i}`,
-						] as const)
-					: nearest.label,
 				id: `frame-${i}`,
 				state: { position },
 				focus: i === all.length - 1 ? "result" : "diagram",

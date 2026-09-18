@@ -21,12 +21,19 @@ const scenes = [
 			"Switch between OI and supplied gamma magnitude, choose calls or puts, and change the expiry scope.",
 			"切换 OI 与给定 Gamma 幅度，选择看涨或看跌，并改变到期范围。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Changing the measure changes which strike is selected as a concentration.",
-				"改变衡量指标，会改变被选为集中位置的行权价。",
+				[
+					"Changing the measure changes which strike is selected as a concentration.",
+					"改变衡量指标，会改变被选为集中位置的行权价。",
+				],
 			],
-		]),
+			[
+				["Read strike measures", "读取行权价指标"],
+				["Change rule or scope", "改变规则或范围"],
+				["Identify concentration", "识别集中位置"],
+			],
+		),
 		Component: LevelsConcentrationScene,
 	},
 	{
@@ -40,12 +47,19 @@ const scenes = [
 			"Move hypothetical settlement, separate call and put payouts, and inspect every tied minimum in the candidate set.",
 			"移动假设结算价，区分看涨与看跌支付，并检查候选集合中的所有并列最小值。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"The lowest supplied payout is a model result, not a forecast of settlement.",
-				"给定支付额的最低点是模型结果，不是结算价预测。",
+				[
+					"The lowest supplied payout is a model result, not a forecast of settlement.",
+					"给定支付额的最低点是模型结果，不是结算价预测。",
+				],
 			],
-		]),
+			[
+				["Read payout curve", "读取支付曲线"],
+				["Move settlement price", "移动结算价"],
+				["Find tied minima", "找出并列最低点"],
+			],
+		),
 		Component: LevelsPayoutScene,
 	},
 	{
@@ -59,12 +73,19 @@ const scenes = [
 			"Change reference spot or ATR, then inspect missing ATR and corporate-action price-scale cases.",
 			"改变参考现价或 ATR，再检查 ATR 缺失及公司行动价格尺度案例。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"The same reference level can be expressed in dollars, percent or ATR units.",
-				"同一参考位置的距离，可用美元、百分比或 ATR 单位表达。",
+				[
+					"The same reference level can be expressed in dollars, percent or ATR units.",
+					"同一参考位置的距离，可用美元、百分比或 ATR 单位表达。",
+				],
 			],
-		]),
+			[
+				["Read reference level", "读取参考位置"],
+				["Change spot or ATR", "改变现价或 ATR"],
+				["Compare distance units", "比较距离单位"],
+			],
+		),
 		Component: LevelsDistanceScene,
 	},
 ] as const satisfies readonly ConceptScene[];

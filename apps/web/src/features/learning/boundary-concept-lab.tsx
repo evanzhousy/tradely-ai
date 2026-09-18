@@ -21,12 +21,19 @@ const scenes = [
 			"Open the supplied fields in the SVG. Switch to a forecast design and inspect its extra requirements.",
 			"在 SVG 中打开给定字段，切换预测设计并检查额外要求。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Add subject, quantity, universe and cutoff to turn the example into an answerable question.",
-				"补齐对象、数量、范围与截止时点，让示例问题可以被回答。",
+				[
+					"Add subject, quantity, universe and cutoff to turn the example into an answerable question.",
+					"补齐对象、数量、范围与截止时点，让示例问题可以被回答。",
+				],
 			],
-		]),
+			[
+				["Name the subject", "明确研究对象"],
+				["Set scope and cutoff", "设定范围与截止点"],
+				["Check answerability", "检查是否可回答"],
+			],
+		),
 		Component: BoundaryQuestionScene,
 	},
 	{
@@ -37,12 +44,19 @@ const scenes = [
 			"Pick a statement and try an evidence category. Read why it fits, including cases with more than one role.",
 			"选择陈述并尝试证据类别，阅读其适用原因，包括多种作用的情况。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A statement can have more than one supported evidence role. The supported categories are highlighted.",
-				"一条陈述可以具有多个有依据的证据作用，支持的类别已高亮。",
+				[
+					"A statement can have more than one supported evidence role. The supported categories are highlighted.",
+					"一条陈述可以具有多个有依据的证据作用，支持的类别已高亮。",
+				],
 			],
-		]),
+			[
+				["Read the statement", "读取陈述"],
+				["Test evidence roles", "检验证据作用"],
+				["Keep supported roles", "保留有依据作用"],
+			],
+		),
 		Component: BoundaryEvidenceScene,
 	},
 	{
@@ -56,12 +70,19 @@ const scenes = [
 			"Replay a correction, then compare population, method and coverage changes. Keep the original record visible.",
 			"回放更正，再比较人群、方法与覆盖变化，保持原记录可见。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"New evidence may revise the same answer; changing scope creates a different question.",
-				"新证据可修订同一问题的答案，改变范围则形成不同问题。",
+				[
+					"New evidence may revise the same answer; changing scope creates a different question.",
+					"新证据可修订同一问题的答案，改变范围则形成不同问题。",
+				],
 			],
-		]),
+			[
+				["Read original answer", "读取原答案"],
+				["Apply new evidence", "加入新证据"],
+				["Separate scope changes", "区分范围变化"],
+			],
+		),
 		Component: BoundaryRevisionScene,
 	},
 ] as const satisfies readonly ConceptScene[];

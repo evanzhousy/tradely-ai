@@ -22,12 +22,19 @@ const scenes = [
 			"Choose a route and play it through. Follow the option, shares and cash.",
 			"选择一条路径并播放，追踪期权、股票与现金。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"A closing trade exchanges the option. Exercise uses its contractual right. Watch what changes hands.",
-				"平仓交易转让期权，行权使用合约权利。观察两种流程交付什么。",
+				[
+					"A closing trade exchanges the option. Exercise uses its contractual right. Watch what changes hands.",
+					"平仓交易转让期权，行权使用合约权利。观察两种流程交付什么。",
+				],
 			],
-		]),
+			[
+				["Choose close or exercise", "选择平仓或行权"],
+				["Follow option transfer", "追踪期权转移"],
+				["Compare delivered assets", "比较交付资产"],
+			],
+		),
 		Component: ClosingExerciseScene,
 	},
 	{
@@ -38,12 +45,19 @@ const scenes = [
 			"Drag the timeline and compare American and European exercise styles.",
 			"拖动时间轴，比较美式与欧式行权安排。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Trading and exercise have separate windows. The supplied schedule makes that difference visible.",
-				"交易与行权有各自的时间窗口，给定日程展示两者区别。",
+				[
+					"Trading and exercise have separate windows. The supplied schedule makes that difference visible.",
+					"交易与行权有各自的时间窗口，给定日程展示两者区别。",
+				],
 			],
-		]),
+			[
+				["Read expiry schedule", "读取到期日程"],
+				["Move through timeline", "沿时间轴移动"],
+				["Compare exercise windows", "比较行权窗口"],
+			],
+		),
 		Component: ExerciseTimingScene,
 	},
 	{
@@ -77,7 +91,7 @@ const scenes = [
 				["Contract", "合约"],
 				["Determine delivery", "确定交付"],
 				["Transfer", "交付"],
-				["Result", "结果"],
+				["Holder settlement", "持有人结算"],
 			],
 		),
 		Component: SettlementComparisonScene,

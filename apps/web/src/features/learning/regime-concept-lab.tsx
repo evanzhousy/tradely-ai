@@ -18,12 +18,19 @@ const scenes = [
 			"Move spot up or down for a stated portfolio. Compare option delta change, the offsetting hedge and gross sensitivity.",
 			"让给定组合的现价上涨或下跌，比较期权 Delta 变化、抵消对冲及总敏感度。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"The stated position determines the conditional hedge response, not a guaranteed market move.",
-				"给定持仓决定有条件的对冲响应，并不保证市场走势。",
+				[
+					"The stated position determines the conditional hedge response, not a guaranteed market move.",
+					"给定持仓决定有条件的对冲响应，并不保证市场走势。",
+				],
 			],
-		]),
+			[
+				["Read stated portfolio", "读取给定组合"],
+				["Move spot", "移动现价"],
+				["Compute conditional hedge", "计算条件对冲"],
+			],
+		),
 		Component: RegimeHedgeScene,
 	},
 	{
@@ -37,12 +44,19 @@ const scenes = [
 			"Select a supplied spot sample. Change the assumed positions or expiry scope and inspect adjacent signs without bridging gaps.",
 			"选择给定现价样本，改变假设持仓或到期范围，检查相邻符号且不跨越缺口。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Reprice the modeled positions across spot to inspect where aggregate gamma changes sign.",
-				"沿现价重新定价模型持仓，查看汇总 Gamma 在哪里变号。",
+				[
+					"Reprice the modeled positions across spot to inspect where aggregate gamma changes sign.",
+					"沿现价重新定价模型持仓，查看汇总 Gamma 在哪里变号。",
+				],
 			],
-		]),
+			[
+				["Select a spot sample", "选择现价样本"],
+				["Reprice across spot", "沿现价重定价"],
+				["Locate the sign change", "定位符号变化"],
+			],
+		),
 		Component: RegimeFlipScene,
 	},
 	{
@@ -53,12 +67,19 @@ const scenes = [
 			"Reveal the model packet, fill record and depth snapshot separately. Keep their clocks and meanings attached.",
 			"分别展示模型资料、成交记录与深度快照，保留各自时点与含义。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Position assumptions, hedge demand and market outcomes need distinct supporting evidence.",
-				"持仓假设、对冲需求与市场结果，需要各自的支持证据。",
+				[
+					"Position assumptions, hedge demand and market outcomes need distinct supporting evidence.",
+					"持仓假设、对冲需求与市场结果，需要各自的支持证据。",
+				],
 			],
-		]),
+			[
+				["Read model packet", "读取模型资料"],
+				["Add fill evidence", "加入成交证据"],
+				["Separate market outcome", "区分市场结果"],
+			],
+		),
 		Component: RegimeEvidenceScene,
 	},
 ] as const satisfies readonly ConceptScene[];

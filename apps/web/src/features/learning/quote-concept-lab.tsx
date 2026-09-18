@@ -73,12 +73,19 @@ const scenes = [
 			"Inspect one venue, then change which quotes are eligible for the combined best prices.",
 			"检查一个场所，再改变参与汇总最优价格的合格报价范围。",
 		],
-		steps: teachingSteps([
+		steps: teachingSteps(
 			[
-				"Best bid and best ask can come from different eligible venues.",
-				"最优买价与最优卖价可以来自不同的合格场所。",
+				[
+					"Best bid and best ask can come from different eligible venues.",
+					"最优买价与最优卖价可以来自不同的合格场所。",
+				],
 			],
-		]),
+			[
+				["Inspect one venue", "检查单一场所"],
+				["Change eligible quotes", "改变合格报价"],
+				["Build combined best quote", "形成汇总最优报价"],
+			],
+		),
 		Component: VenueQuoteScene,
 	},
 ] as const satisfies readonly ConceptScene[];
