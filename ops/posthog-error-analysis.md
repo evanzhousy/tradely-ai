@@ -11,19 +11,24 @@ unless the user also authorizes implementation.
 
 ## Agent Handoff
 
-Last updated: 2026-09-12
+Last updated: 2026-09-18
 
-Live read-only execution on 2026-09-12 reached the project-verification gate;
-Tradely error attribution remains blocked. See the
-[execution report](../docs/reviews/posthog-error-analysis-2026-09-12.md).
+The 2026-09-18 read-only run completed project-scoped UI triage and production
+filtering. See the
+[execution report](../docs/reviews/posthog-error-analysis-2026-09-18.md).
 
-- [ ] Obtain explicit direction to switch the connector to Tradely (582920),
-  then recheck schema and the returned query URL before error triage. The live
-  trends result used OptionData.io (90561); fetching metadata for 582920 did not
-  change the query context. The switch tool requires a user-requested switch.
-- [ ] Run the issue inventory, comparison, recurrence, and root-cause analysis
-  in the verified context. No Tradely exception counts or health verdict were
-  established; the earlier report's ingestion-mismatch explanation is unproven.
+- [ ] PostHog connector project routing is still inconsistent: `switch-project`
+  reports Tradely (582920), while subsequent connector query provenance still
+  points to OptionData (90561). Future connector reads must verify the returned
+  project ID before attribution; use an authenticated project-scoped read surface
+  when routing remains wrong.
+- [ ] The production `Learning persistence unavailable` issue needs correlation
+  between its captured operation and authorized server/database evidence. The
+  application intentionally redacts raw database failures; do not weaken that
+  boundary.
+- [ ] The one-off production `allowed` TypeError needs exact release/chunk/frame
+  evidence or release-matched reproduction before an owning expression or repair
+  is assigned.
 
 ## Recommended Invocation
 
@@ -84,21 +89,25 @@ projects or change configuration to make the report proceed.
 
 Verify the query's own project context, for example the project ID in its returned
 `_posthogUrl`. An explicit `project-get(id)` retrieves that project's metadata;
-it does not establish the default context of schema, trends, or issue queries.
-Do not diagnose token/deployment contamination from those mixed reads. If the
-documented `@current` lookup is rejected by a numeric-only connector schema,
-use returned query provenance and project-list metadata. Follow the switch tool's
-authorization requirement, then rerun schema discovery after switching. Redact
-project tokens from metadata responses before displaying or saving them.
+it does not establish the default context of schema, trends, or issue queries. A
+successful `switch-project` response is also insufficient by itself: verify the
+very next query's returned project provenance. If it still routes to another
+project, do not attribute those results to Tradely; use an authenticated,
+project-scoped read surface if available or stop the affected attribution. Do not
+diagnose token/deployment contamination from mixed reads. If the documented
+`@current` lookup is rejected by a numeric-only connector schema, use returned
+query provenance and project-list metadata. Redact project tokens from metadata
+responses before displaying or saving them.
 
 Inspect a bounded recent event sample and schema before selecting filters. Use
 verified `app=tradely` and `environment=production` properties where available;
-validate browser host against deployed Tradely domains. Server errors may lack
+validate browser host against deployed Tradely domains. Apply and verify the
+production filter before ranking customer impact. Keep preview/local and events
+with missing or non-production environment values in a separate unattributed
+bucket unless independent provenance proves production. Server errors may lack
 browser URLs, so establish their app/runtime/release provenance separately.
-Exclude preview/local, staff, test traffic, and bots using actual project rules.
-Reproduce saved-insight test filters explicitly in direct queries. Quantify
-unattributed or missing-property events separately instead of silently dropping
-or treating them as production.
+Exclude staff, test traffic, and bots using actual project rules. Reproduce
+saved-insight test filters explicitly in direct queries.
 
 Check `$exception` delivery and issue coverage, first/last event times, runtime,
 release availability, sampling, truncation, and ingestion delay. Query no more
