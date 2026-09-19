@@ -2,7 +2,7 @@
 
 ## Objective and ownership
 
-Use **[@Browser](plugin://browser@openai-bundled)** to experience Tradely as a first-time learner: discover what to do from the visible platform, use its features, consume its learning resources, and demonstrate what those resources taught you. Finish with a report answering:
+Use **[@Browser](plugin://browser@openai-bundled)** to experience Tradely as a first-time learner with no source-code or internal-product knowledge. First map what the visible platform invites the learner to explore. Then review every discoverable page, feature and learning resource through ordinary and adversarial user journeys, and demonstrate what the platform itself taught you. Finish with a report answering:
 
 1. What bugs did you find?
 2. Which product features were difficult or unintuitive to use, and why?
@@ -14,15 +14,14 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 ## Agent Handoff
 
-Last updated: 2026-09-14
+Last updated: 2026-09-19
 
-Latest run: remediation verification completed on 2026-09-14. External report/state remain `/tmp/tradely-new-user-review/20260914-greenfield/report.md` and `state.md`; remediation GIFs are `/tmp/tradely-findings-fix/consent.gif` and `result.gif`. No production checks, billing mutations, or credentials were used.
+Documentation-only methodology revision; no Browser review was executed in this pass.
 
-- Resume at Round 048 from the external state for final boundary work. Lessons 01–36 are assessed; the consent and guest-result findings were remediated and verified locally. Round 047 opened a linked TradingFlow Recipe in a contaminated existing session and did not run it.
-- Establish Node 24.x and rerun affected checks if runtime qualification matters; the app ran on Node 22.16.0 because the existing 8250 service forced the run-owned server to 8251.
-- Preserve the verified GIF capture method (chronological Browser CDP frames encoded outside the repo) for future rounds; sensitive auth intervals must still be excluded.
-- Obtain an assigned non-production identity/mailbox before testing signup, OTP, saved progress, and cross-device resume; do not use guessed or production credentials.
-- Keep the partial outcome: no confirmed product bug remains in the reviewed journeys; historical Nitro failure, partner Recipe access, authenticated persistence, and Node 24 are still separate boundaries. Close authorized TradingFlow Recipe and authenticated-persistence checks before claiming a fully evidenced audit.
+- Start the next run with a target URL and a fresh isolated Browser session. Do not read repository source, README files, tests, internal docs, prior findings or prior run artifacts before or during the first-time review.
+- Before the first interaction, publish an initial exploration map derived only from the rendered entry page: visible pages, promised capabilities, likely learner tasks and adversarial questions.
+- Freeze a Browser-discovered page inventory, then give every page and feature branch a terminal result through one page or coherent journey per goal round. Expand it only from links encountered in Browser.
+- Keep reports, state and actual GIF evidence outside the repository. Obtain assigned non-production identities before auth/persistence journeys; exclude credentials and OTP entry from capture.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
@@ -30,26 +29,29 @@ On subsequent runs, prune completed items before adding new ones. Keep 3–7 act
 
 ```text
 /goal Run ops/agent/new-user-review.md using @Browser against <target URL>.
-Act as a first-time learner. Choose one meaningful exploration or learning
-objective per round from what the visible platform has shown you so far.
-Discover and study all in-scope resources, keeping source-linked learning
-notes and testing understanding without importing model domain knowledge.
-Finish with bugs, usability problems, and a resource-by-resource assessment
-of what the platform taught you, what you can apply, and what is missing.
+Act as a first-time learner with no source-code or internal-product knowledge.
+Before interacting, list what the visible entry page suggests you should
+explore: pages, functions, learning promises and adversarial user questions.
+Freeze a Browser-discovered page inventory. Review one page or one coherent
+cross-page journey per round, using realistic mistakes and recovery attempts,
+until every discovered page and applicable branch has a terminal result. Keep
+source-linked learning notes using only material consumed in the platform.
+Finish with bugs, usability problems, and a page/resource matrix of what the
+platform taught you, what you can apply, and what remains unknown.
 Keep checkpoints, the final report, and actual browser GIF evidence outside
 the repository. Maintain this runbook and commit any owned documentation edits.
 ```
 
 For a resume, supply the previous external run folder and say `continue`. Reuse its resource IDs and learner record; do not replay completed first impressions as new discoveries. Without `/goal`, use the same bounded rounds and checkpoints in the current task. Start a goal only when the user explicitly requests goal execution; do not start one for document authoring.
 
-**Success:** the discovered resource inventory has been reconciled, every applicable resource and user journey has an evidenced terminal result, every learning objective has an assessment, all three report sections are complete, and GIF evidence and handoff links are valid. Confirmed bugs, poor usability, and demonstrated learning failures are legitimate review results. Missing access, unread content, unsupported media inspection, or missing required evidence prevent a claim of complete review.
+**Success:** the Browser-discovered page and resource inventories have been reconciled; every discoverable page, applicable feature branch, adversarial journey and learning objective has an evidenced terminal result; all three report sections are complete; and GIF evidence and handoff links are valid. Confirmed bugs, poor usability, and demonstrated learning failures are legitimate review results. Missing pages, access, unread content, unsupported media inspection, or missing required evidence prevent a claim of complete review.
 
 **Stop:** completion, user-directed pause, or a genuine global blocker. Continue independent work when only one resource or feature is blocked. Follow the active goal controller's rules; if `update_goal` is available, mark blocked only after the same global blocker persists for at least three consecutive goal turns and no meaningful independent work remains. A resumed blocked goal starts a fresh blocked-turn count. Never mark complete to escape unfinished work or create an automation to continue after a user stop.
 
 ## 1. Establish the learner and environment
 
-1. Use the requested target URL. If none was supplied, use an existing local dev-server URL verified from startup output; otherwise read only local startup prerequisites/commands from the root README and current package configuration. Confirm the actual listening URL and runtime. If no usable target can be established, request the missing URL while preparing the external record. Do not silently switch to production or configure new infrastructure.
-2. Record UTC start time, environment (local/Preview/production), sanitized entry URL, browser/viewport, language, account alias, and available revision evidence. Local `git status --short` and `git rev-parse HEAD` are operational metadata; a local SHA does not establish a hosted deployment's version. Record an unknown hosted revision as unknown. Preserve other work and existing services.
+1. After reading only `AGENTS.md` and this runbook, use the requested target URL. The review agent must not inspect any other repository file, README, package script, route, test or internal doc to discover or start the product. If no usable URL is supplied or already running, request it and stop the Browser review as `BLOCKED`. A separate operator may start the environment and provide the URL plus non-semantic revision/environment metadata without revealing product behavior.
+2. Record UTC start time, environment (local/Preview/production), sanitized entry URL, browser/viewport, language, account alias, and supplied revision/deployment evidence. Record unknown revision evidence as unknown. Do not inspect Git or deployment source from the review context.
 3. Start as a guest in a fresh, isolated @Browser session where supported. Do not clear the user's normal cookies or sign them out. If session isolation is unavailable, record existing login/progress/consent and the resulting first-visit limitation. A returning or pre-completed account cannot prove fresh onboarding.
 4. Default persona: comfortable using websites, new to the platform and the subject it teaches, trying to understand its value and learn enough to use its exercises independently. Pick the user's requested language/device or record the actual default. Do not invent real personal circumstances, trading history, disabilities, or prior experience.
 5. Discover the tools for the named @Browser surface and read their current instructions. Use that surface for page navigation, reading, clicking, typing, scrolling, media controls, and exercises. Check actual capture/export capabilities; do not assume a GIF tool exists. No Playwright/Puppeteer, shell requests, source tests, database reads, or hidden browser state may substitute for the user journey or learning evidence.
@@ -57,9 +59,11 @@ For a resume, supply the previous external run folder and say `continue`. Reuse 
 
 The review request permits ordinary browsing and reversible learner activity in the named environment, within existing authorization. Use an assigned test identity for fresh signup/progress persistence when needed. Resolve missing identity/mailbox access while continuing guest learning. Enter OTPs only in the Browser authentication flow; never retain them in chat, shell, captures, reports, or Git. Do not use another person's account, manipulate entitlements, purchase access, change real billing, enable paid services, or send messages to other people without existing explicit authorization. In-product learning interactions available to the assigned learner can be exercised within the authorized account limits. Do not repair the product during the review unless the user expands the scope.
 
-## 2. Protect the first-visit and learning evidence
+## 2. Enforce the blind-review boundary
 
-**Discover through the UI.** Before completing the learner journey, do not read application source, internal product/curriculum docs, tests, answer keys, older review findings, or route inventories. Do not search the web for subject explanations. Discover destinations through visible links, menus, search, and recommendations. Initial entry and resuming an already-discovered URL are allowed; guessing a hidden route is not evidence that a new user could find it.
+**Discover only through the rendered UI.** Throughout the review—not merely before the first lesson—do not read application source, repository files, internal product/curriculum docs, tests, answer keys, analytics, API/database responses, route inventories, prior reports or older findings. Do not search the web for subject explanations. Discover destinations through visible links, menus, search, recommendations and browser-native back/forward behavior. Initial entry and resuming an already-discovered URL are allowed; guessing a hidden route or using a source-derived path is not evidence that a new user could find it.
+
+Use a separate post-review diagnosis phase only after the blind report is frozen and only when the user requests investigation or remediation. Label its evidence separately. Source inspection may explain a finding; it cannot change the original expectation, observation, severity, learning verdict or discoverability result.
 
 Keep setup metadata separate from learner knowledge. Record any prior task context or accidental exposure to internal/domain answers; exclude affected first-discovery and assessment claims or label them contaminated. Do not pretend the model has forgotten its training. This is a source-bounded demonstration of learning, not proof of zero prior knowledge or a substitute for a human user study.
 
@@ -67,12 +71,17 @@ Keep setup metadata separate from learner knowledge. Record any prior task conte
 
 Visible lesson text, diagrams, examples, quizzes and feedback, media, help/glossaries, downloads, and enabled in-product coaching can count as sources. Record their exact provenance. Coach explanations count as **assisted** learning, separately from what the core material taught. A link merely pointing to another service teaches nothing by itself. Explicitly assigned external readings may be consumed in @Browser and labeled external; arbitrary research and exploring the entire linked service are outside scope. Local parsing of a user-facing download is supporting evidence only after a real Browser download; it does not prove browser rendering or discoverability.
 
-## 3. Keep a live discovery queue and learning record
+## 3. Publish the exploration map, then freeze the page inventory
 
-Do not preload a fixed syllabus from the repository or hard-code resource counts. Start with the entry page. Expand the queue as the UI reveals resources; freeze only the next round's objective. Use stable `J-###` journey, `R-###` resource, `K-###` learning-objective, and `F-###` finding IDs. Keep these tables in external `state.md`:
+Do not preload routes, a sitemap, feature list, syllabus, expected outcomes or resource counts. Start with the entry page and, before clicking anything, publish an **Initial Exploration Map** in the external report and the user-facing progress update. Derive it only from visible copy and controls. Include visible pages, product promises, core first-time-user tasks, skeptical questions, and adversarial journeys such as wrong inputs, empty states, refresh/back behavior, guest/account transitions, language/viewport/keyboard use, repeated safe actions, unavailable dependencies and recovery from errors.
+
+This opening map is a hypothesis, not coverage. After inspecting every visible global navigation, menu, footer, catalog, search/filter and recommendation surface, freeze a **Page Inventory**. Each unique page gets a stable `P-###` ID, visible title, discovery path, expected purpose, applicable states/branches and status. Retain duplicated, redirected, inaccessible and late-discovered pages with their classification and discovery evidence. Expand the inventory only when a reviewed page exposes a previously unseen destination, then record why it was added.
+
+Use stable `P-###` page, `J-###` journey, `R-###` resource, `K-###` learning-objective, and `F-###` finding IDs. Keep these tables in external `state.md`:
 
 | Record | Required fields |
 | --- | --- |
+| Page | ID, visible title, sanitized URL, discovery path/round, expected purpose, visible entry points, applicable states/branches, status, rounds/evidence |
 | Journey | ID, learner's task/question, visible cue and originating resource/round, destination if known, status, dependency, next action, evidence |
 | Resource | ID, visible title/type, sanitized URL plus section/timestamp, discovery path, parent, language/access state, announced versus actually consumed scope, status, rounds/evidence, linked K IDs |
 | Learning objective | ID, platform's stated outcome or explicitly labeled inference from its content, supporting R IDs and exact locators, learner explanation, unknown prerequisites, first attempt, feedback/assistance, later application, learning verdict |
@@ -80,13 +89,15 @@ Do not preload a fixed syllabus from the repository or hard-code resource counts
 
 Resource states: `QUEUED`, `IN PROGRESS`, `REVIEWED`, `BLOCKED`, `NOT APPLICABLE`. `REVIEWED` means the promised content was consumed and assessed; it does not mean bug-free or learned. A bug that prevents consumption leaves that resource `BLOCKED`, with a confirmed finding and its unseen content explicitly unassessed. Use `NOT APPLICABLE` only for a proven duplicate/retired/out-of-scope item with a reason, never for missing access or lack of time. Journeys use the same states, with `REVIEWED` recording an observed success or failure; a failed journey does not mark its unread resources reviewed. Track required GIF evidence separately as `READY` or `BLOCKED`.
 
-Inventory both product journeys and teaching materials: first impression/value proposition, navigation and help, starting/resuming learning, account/progress behavior when offered, and every discoverable lesson, guide, glossary, FAQ, worked example, exercise/lab, assessment, video/transcript, diagram, and assigned download. These are prompts for coverage, not claims that those features exist. Do not assume legacy purchase flows, gated lessons, or optional features are currently available.
+Inventory every discoverable page as well as product journeys and teaching materials: first impression/value proposition, navigation and help, starting/resuming learning, account/progress behavior when offered, legal/trust pages, recovery/error states, and every discoverable lesson, guide, glossary, FAQ, worked example, exercise/lab, assessment, video/transcript, diagram, assigned download and explicitly linked partner handoff. These are prompts for coverage, not claims that those features exist. Do not assume legacy purchase flows, gated lessons, or optional features are currently available.
 
 Treat a lesson as a parent with separately tracked resources where its text, video, diagram, or exercise teaches something distinct. Mark identical repeated material as an alias of the canonical R ID; retain how each presentation was reached. Sampling a few lessons or marking a parent read while skipping its children cannot establish full learning coverage.
 
-## 4. Execute one learner objective per round
+## 4. Execute one page or coherent journey per round, adversarially
 
-Each round is one coherent task, such as deciding where to start, studying one lesson and its immediate practice, understanding one lab, recovering from confusion, or recalling an earlier concept. Related interactions are part of that round; do not sweep unrelated pages just to increase coverage.
+Each goal round reviews exactly one page or one coherent cross-page journey. A page round covers the page's visible purpose and all applicable states that a new user can reach without unrelated navigation. A journey round may cross pages only when the user task inherently does so, such as guest practice → signup → restored work. Do not sweep unrelated pages to inflate coverage. Every frozen `P-###` page must receive its own terminal round or a documented alias/redirect reason.
+
+Adversarial means skeptical and realistic, not destructive. For every applicable page/function, test the happy path plus plausible first-time mistakes and boundaries revealed by the UI: choose the wrong-looking control, submit incomplete or invalid input, use back/refresh, repeat a safe action, change viewport/language, try keyboard navigation, follow an unavailable dependency, and attempt ordinary recovery. State the user hypothesis before acting. Never brute-force, bypass access, inspect hidden state, purchase, alter real billing, spam providers or invent edge cases unsupported by the visible product.
 
 In the first round, before following a call to action, record what the entry page tells you about who the platform is for, what you can learn, access or account requirements, where to begin, and what the next action will do. Leave unclear answers unknown. Later, test offered progress/resume behavior through normal navigation and a return visit; preserve the distinction between guest activity and saved account progress.
 
@@ -98,11 +109,15 @@ In the first round, before following a call to action, record what the entry pag
 6. **Try ordinary recovery.** When stuck, make at most two plausible UI-led recovery attempts (for example, back to the lesson or opening its visible help). Preserve the initial confusion, then use available platform guidance and record assistance. Stop repeated guesses; add an unresolved question or blocker and continue an independent resource. An error disappearing on retry is an intermittent observation, not proof it never happened.
 7. **Assess and checkpoint.** Record expected versus actual behavior, bugs/friction, consumed resources, K entries, first-attempt and assisted outcomes, remaining dependencies, and evidence paths. Expand the queue from newly visible links. Select a next candidate with its reason, then persist the checkpoint before another round or context compaction. Give a brief user progress update during sustained work.
 
+**Page completion gate:** before closing the round, account for the page's visible links, controls, forms, filters, disclosures, language/theme behavior, empty/loading/error states that were encountered, and onward navigation. Mark unexercised branches explicitly; loading the page or reading a snapshot alone is not a completed review.
+
 Use this compact round record in the external report:
 
 ```text
 Round / timestamps / target / account alias / viewport / language:
+Page ID / visible discovery path / page purpose:
 Objective and reason from prior visible evidence:
+Adversarial hypotheses and boundaries attempted:
 Starting learner knowledge (K IDs) and expected outcome:
 Actions and actual visible result (including confusion/recovery):
 Resources consumed (R IDs, sections or media intervals) / newly discovered:
@@ -140,7 +155,7 @@ Track promised outcomes against evidence. Infer unstated goals cautiously and la
 
 ## 6. Reconcile scope and findings
 
-After the natural learning path, perform a Browser-only coverage sweep through visible navigation/footer, learning catalogs, search, help, and resource recommendations. Expand collapsed modules, follow pagination/filters, and inspect nested resources where offered. Record advertised totals and compare them with unique inventory IDs. Queue each newly found in-scope item for its own round, preserving its late discovery and any discoverability problem.
+After the natural learning path, perform a Browser-only page reconciliation sweep through visible navigation/footer, menus, learning catalogs, search, help, legal/trust pages and resource recommendations. Expand collapsed modules, follow pagination/filters, and inspect nested resources where offered. Record advertised totals and compare them with unique page/resource IDs. Queue each newly found in-scope page for its own round, preserving its late discovery and any discoverability problem. This is reconciliation, not a substitute for the page's adversarial round.
 
 Close discovery only when every visible inventory surface and discovered in-scope branch has been inspected and a final reconciliation finds no unclassified resources. Do not stop merely because the main course ended. If a catalog is inaccessible, results are unbounded/dynamic, or content keeps changing, name that boundary and report partial coverage. Treat optional generated conversations as a feature journey with representative documented interactions, not an infinite resource library to exhaust. Do not crawl whole external services; review only the explicitly assigned resources and handoff clarity.
 
@@ -173,7 +188,9 @@ For every usability finding: feature and F ID, what the learner expected before 
 - Name every missing prerequisite, unclear explanation, contradiction, failed application, unconsumed/unavailable resource, and advertised outcome without sufficient teaching. Say what platform explanation/example/exercise would make each gap assessable, without importing an outside answer.
 - Separate core-content learning, coaching-assisted learning, explicitly assigned external material, and any contamination. An unread locked resource or missing audio capability is unknown coverage, not proof that the content teaches nothing.
 
-Reconcile counts: unique resource total equals the sum of all resource states; K total equals the sum of its four verdicts. Report distinct resources consumed in full separately from failed resources and presentation aliases. List every blocked/queued/in-progress item, evidence blocker, unclassified branch, and remaining account/access boundary. Retests add attempts, not duplicate resource totals. Complete review requires no unresolved required work; a complete review may still conclude learning was not demonstrated.
+Include a complete page matrix before the learning matrix. For every `P-###`, show the visible discovery path, purpose, states and adversarial branches exercised, terminal status, findings, and GIF evidence. A resource attached to a page does not replace review of that page's navigation, controls, disclosures and recovery behavior.
+
+Reconcile counts: unique page total equals the sum of all page states; unique resource total equals the sum of all resource states; K total equals the sum of its four verdicts. Report distinct pages reviewed, resources consumed in full, failed pages/resources, aliases and redirects separately. List every blocked/queued/in-progress item, evidence blocker, unclassified branch, and remaining account/access boundary. Retests add attempts, not duplicate inventory counts. Complete review requires no unresolved required work; a complete review may still conclude learning was not demonstrated.
 
 Before finalizing:
 
@@ -188,7 +205,7 @@ For document-only creation/maintenance, validate the procedure and index links a
 
 At the end of execution, use `runbook-maintainer` and the available `greenfield` skill to compare the observed procedure with the ideal next review. For a documentation-only pass, review executability without claiming operational evidence.
 
-- Promote durable lessons about browser setup, source isolation, exploration order, resource reconciliation, learning checks, or evidence gates into the procedure. Correct tool/path drift when verified. Do not preload answers, current syllabus counts, specific product defects, or preferred click paths into future first-visit reviews.
+- Promote durable lessons about browser setup, source isolation, the opening exploration map, adversarial page coverage, resource reconciliation, learning checks, or evidence gates into the procedure. Correct tool/path drift when verified. Do not preload routes, answers, current syllabus counts, specific product defects, or preferred click paths into future first-visit reviews.
 - Keep run-specific knowledge, findings, counts, raw logs, and completed progress in the external report/state only. Maintain one bounded Agent Handoff with the current run path, next action, and unresolved prerequisite evidence; prune obsolete/completed bullets first.
 - Keep this exploratory workflow distinct from the contract-driven E2E procedure. Link shared routing rather than duplicating test inventories or importing source-first expectations. This document applies the installed skill; it is not its mirror and does not authorize edits to installed skills or other repositories.
 - Update the [agent index](README.md) and [operations index](../README.md) when this runbook moves or changes ownership. Validate inbound links when adding, renaming, or removing procedures.

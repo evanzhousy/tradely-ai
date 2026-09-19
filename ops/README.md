@@ -14,5 +14,5 @@ Existing subdirectory runbooks retain their own indexes.
 ## Indexed workflows
 
 - [Agent runbooks](agent/README.md): choose the procedure for the requested review or maintenance task.
-- [New-user platform review](agent/new-user-review.md): discover the platform through @Browser, assess usability, and demonstrate learning from its resources one objective per round.
+- [New-user platform review](agent/new-user-review.md): conduct a blind, adversarial @Browser review of every discoverable page and demonstrate learning only from visible platform resources.
 - [Browser E2E testing](agent/e2e-testing/README.md): refresh coverage from Git history, execute one @Browser case per goal round, and report findings with GIF evidence.
