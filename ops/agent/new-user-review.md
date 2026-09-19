@@ -16,12 +16,13 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 Last updated: 2026-09-19
 
-Documentation-only methodology revision; no Browser review was executed in this pass.
+Latest run: partial blind/adversarial Browser review through Round 005. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`. No credentials, billing actions or source inspection were used.
 
-- Start the next run with a target URL and a fresh isolated Browser session. Do not read repository source, README files, tests, internal docs, prior findings or prior run artifacts before or during the first-time review.
-- Before the first interaction, publish an initial exploration map derived only from the rendered entry page: visible pages, promised capabilities, likely learner tasks and adversarial questions.
-- Freeze a Browser-discovered page inventory, then give every page and feature branch a terminal result through one page or coherent journey per goal round. Expand it only from links encountered in Browser.
+- Resume Round 006 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
+- Continue one `P-###` page or coherent journey per round, including the three partner handoffs, first-lesson back/refresh recovery, and all visible page branches.
+- The Browser profile did not show the consent card, so first-visit consent behavior remains unproven; preserve that limitation rather than clearing the user's browser state.
 - Keep reports, state and actual GIF evidence outside the repository. Obtain assigned non-production identities before auth/persistence journeys; exclude credentials and OTP entry from capture.
+- Current finding F-001 is the contradictory `In progress` sidebar state on an untouched lesson; F-002 is the unexplained but allowed `Next lesson` skip at 0/3.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
