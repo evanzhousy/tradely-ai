@@ -16,10 +16,10 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 Last updated: 2026-09-19
 
-Latest run: partial blind/adversarial Browser review through Round 005. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`. No credentials, billing actions or source inspection were used.
+Latest run: partial blind/adversarial Browser review through Round 007. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/recovery.gif`. No credentials, billing actions or source inspection were used.
 
-- Resume Round 006 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
-- Continue one `P-###` page or coherent journey per round, including the three partner handoffs, first-lesson back/refresh recovery, and all visible page branches.
+- Resume Round 008 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
+- Continue one `P-###` page or coherent journey per round; P-001 through P-005 have been reviewed, P-006 is credential-blocked, and P-007 is partner-access-blocked.
 - The Browser profile did not show the consent card, so first-visit consent behavior remains unproven; preserve that limitation rather than clearing the user's browser state.
 - Keep reports, state and actual GIF evidence outside the repository. Obtain assigned non-production identities before auth/persistence journeys; exclude credentials and OTP entry from capture.
 - Current finding F-001 is the contradictory `In progress` sidebar state on an untouched lesson; F-002 is the unexplained but allowed `Next lesson` skip at 0/3.
