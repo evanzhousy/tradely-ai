@@ -16,12 +16,12 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 Last updated: 2026-09-19
 
-Latest run: partial blind/adversarial Browser review through Round 007. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/recovery.gif`. No credentials, billing actions or source inspection were used.
+Latest run: partial blind/adversarial Browser review through Round 010. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/recovery.gif`. OTP content was not retained.
 
-- Resume Round 008 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
-- Continue one `P-###` page or coherent journey per round; P-001 through P-005 have been reviewed, P-006 is credential-blocked, and P-007 is partner-access-blocked.
+- Resume Round 011 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
+- Continue one `P-###` page or coherent journey per round; P-001 through P-005 have been reviewed, P-006 auth now succeeds with the assigned public mailbox, and P-007 partner access is available under the active trial.
 - The Browser profile did not show the consent card, so first-visit consent behavior remains unproven; preserve that limitation rather than clearing the user's browser state.
-- Keep reports, state and actual GIF evidence outside the repository. Obtain assigned non-production identities before auth/persistence journeys; exclude credentials and OTP entry from capture.
+- Keep reports, state and actual GIF evidence outside the repository. Switch Feishu Mail through `Other Accounts` to `public@tfsharedspace.com`; enter OTPs only in Browser and exclude all code content from capture.
 - Current finding F-001 is the contradictory `In progress` sidebar state on an untouched lesson; F-002 is the unexplained but allowed `Next lesson` skip at 0/3.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
@@ -59,6 +59,17 @@ For a resume, supply the previous external run folder and say `continue`. Reuse 
 6. Create an external folder such as `/tmp/tradely-new-user-review/<UTC-run-id>/` with `report.md`, `state.md`, and `evidence/`. Use absolute paths when linking artifacts. Check that the folder is outside the repository and writable. Establish a supported way to save actual browser interactions as GIFs; pause recording around credentials/OTP entry. If GIF export is unavailable, preserve observations and an evidence blocker while continuing other useful work. Screenshots alone do not satisfy the repository's GIF requirement.
 
 The review request permits ordinary browsing and reversible learner activity in the named environment, within existing authorization. Use an assigned test identity for fresh signup/progress persistence when needed. Resolve missing identity/mailbox access while continuing guest learning. Enter OTPs only in the Browser authentication flow; never retain them in chat, shell, captures, reports, or Git. Do not use another person's account, manipulate entitlements, purchase access, change real billing, enable paid services, or send messages to other people without existing explicit authorization. In-product learning interactions available to the assigned learner can be exercised within the authorized account limits. Do not repair the product during the review unless the user expands the scope.
+
+### Authorized Feishu Mail OTP procedure
+
+When the user assigns `public@tfsharedspace.com` for non-production auth:
+
+1. Open Feishu Mail in a separate Browser page using the authorized Feishu session.
+2. Open the mailbox account switcher (`Other Accounts`) and select `public@tfsharedspace.com`. Confirm the visible current mailbox address before searching.
+3. Start the Tradely or partner sign-in flow in the target Browser page and request the code.
+4. In the selected public mailbox, open the newest matching verification message and read the code only inside the Browser. Enter it directly into the target page's OTP field.
+5. Never print, copy into shell, write to report/state, screenshot, GIF, chat, or Git the OTP or message contents. Record only that delivery and verification succeeded, plus the sanitized target/environment.
+6. After the auth journey, close or release the mail page and record whether the target reached the expected signed-in state. Treat any pre-existing account, billing warning or unrelated mailbox as contamination and do not use it as new-user evidence.
 
 ## 2. Enforce the blind-review boundary
 
