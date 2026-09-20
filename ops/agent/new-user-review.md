@@ -71,6 +71,10 @@ When the user assigns `public@tfsharedspace.com` for non-production auth:
 5. Never print, copy into shell, write to report/state, screenshot, GIF, chat, or Git the OTP or message contents. Record only that delivery and verification succeeded, plus the sanitized target/environment.
 6. After the auth journey, close or release the mail page and record whether the target reached the expected signed-in state. Treat any pre-existing account, billing warning or unrelated mailbox as contamination and do not use it as new-user evidence.
 
+### Test-state reset with Neon Auth
+
+For a clean local/test run, an operator may provide the Neon Auth MCP reset capability. Use it only after confirming the target is the test environment and the exact assigned test identity is `public@tfsharedspace.com`. Reset only that test user's lesson-progress, consent/session state, and other review-owned state; do not touch production or unrelated users. Record the reset timestamp and sanitized result, never tokens or private account data. If the Neon Auth MCP is not exposed to the agent, mark the clean-state gate `BLOCKED`; do not substitute direct database writes, source inspection, guessed endpoints, or a destructive Browser-profile clear.
+
 ## 2. Enforce the blind-review boundary
 
 **Discover only through the rendered UI.** Throughout the review—not merely before the first lesson—do not read application source, repository files, internal product/curriculum docs, tests, answer keys, analytics, API/database responses, route inventories, prior reports or older findings. Do not search the web for subject explanations. Discover destinations through visible links, menus, search, recommendations and browser-native back/forward behavior. Initial entry and resuming an already-discovered URL are allowed; guessing a hidden route or using a source-derived path is not evidence that a new user could find it.
