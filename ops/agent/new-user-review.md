@@ -16,13 +16,13 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 Last updated: 2026-09-19
 
-Latest run: partial blind/adversarial Browser review through Round 010. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/recovery.gif`. OTP content was not retained.
+Latest run: partial blind/adversarial Browser review through Round 012. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/recovery.gif`. OTP content was not retained.
 
-- Resume Round 011 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
-- Continue one `P-###` page or coherent journey per round; P-001 through P-005 have been reviewed, P-006 auth now succeeds with the assigned public mailbox, and P-007 partner access is available under the active trial.
+- Resume Round 013 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
+- Continue one `P-###` page or coherent journey per round; P-001 through P-007 have terminal dispositions, with P-004/P-006/P-007 contaminated by existing state or account boundaries.
 - The Browser profile did not show the consent card, so first-visit consent behavior remains unproven; preserve that limitation rather than clearing the user's browser state.
 - Keep reports, state and actual GIF evidence outside the repository. Switch Feishu Mail through `Other Accounts` to `public@tfsharedspace.com`; enter OTPs only in Browser and exclude all code content from capture.
-- Current finding F-001 is the contradictory `In progress` sidebar state on an untouched lesson; F-002 is the unexplained but allowed `Next lesson` skip at 0/3.
+- Current findings are F-001 contradictory `In progress` sidebar state, F-002 unexplained `Next lesson` skip at 0/3, and F-003 conflicting signed-progress/unavailable status on Curriculum.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
