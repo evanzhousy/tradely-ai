@@ -29,4 +29,7 @@
 ## 2026-09-20 release record
 
 - Prepared the local story and two 4-second reference clips; no generation spend occurred during preparation.
-- The live Sites deployment still needs to be performed from the current static build and then checked at the production URL.
+- Published Sites version 40 from commit `358ac5b858eb963ac93ba4c37798b329161bb271`; deployment completed successfully at the production URL above.
+- Browser check: refreshed the production tab, confirmed the Dreamhouse Park title, 8 themed dollhouses, 5 attractions, collapsed lighting control, virtual joystick, magic button, and 16-second director controls.
+- Browser interaction check: started the director, observed the 0:01 dialogue subtitle `宝宝：今天去哪玩？`, then exited; the park navigation and movement UI returned.
+- Browser note: the requested Browser plugin was not exposed in this session, so verification used the Codex In-app Browser control surface; ego-browser was not used.
