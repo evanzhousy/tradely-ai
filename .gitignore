@@ -149,3 +149,4 @@ artifacts/**/*.webp
 /apps/web/public/models/dollhouse/
 /site-static/dollhouse.js
 /site-static/dollhouse-physics.js
+/site-static/
