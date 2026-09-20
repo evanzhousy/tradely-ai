@@ -14,15 +14,15 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 ## Agent Handoff
 
-Last updated: 2026-09-19
+Last updated: 2026-09-20
 
-Latest run: partial blind/adversarial Browser review through Round 012. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/recovery.gif`. OTP content was not retained.
+Latest run: partial blind/adversarial Browser review through Round 015. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; auth recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/auth-blocker-resolved.gif`. OTP content was not retained.
 
-- Resume Round 013 from `/tmp/tradely-new-user-review/20260919-greenfield/state.md`; the initial exploration map and page inventory are frozen from the visible Home page.
-- Continue one `P-###` page or coherent journey per round; P-001 through P-007 have terminal dispositions, with P-004/P-006/P-007 contaminated by existing state or account boundaries.
-- The Browser profile did not show the consent card, so first-visit consent behavior remains unproven; preserve that limitation rather than clearing the user's browser state.
+- Resume Round 016 in the existing Ego Lite TaskSpace 136; Page p1 is authenticated as the assigned test identity after a verified sign-out/sign-in cycle, and the initial exploration map remains frozen from the visible Home page.
+- P-001 through P-007 have terminal parent-page dispositions. P-006 account access and P-007 partner access are no longer blocked; P-004 still carries Browser-local lesson-progress contamination.
+- Treat the persisted consent/banner state as `UNASSESSED` by user-approved scope. Do not clear Browser storage, and do not let this branch block authenticated review.
+- Expand and reconcile the complete lesson, guide, exercise and learning-objective inventories. The run remains `PARTIAL` because these resources have not all been consumed and assessed; this is queued work, not an access blocker.
 - Keep reports, state and actual GIF evidence outside the repository. Switch Feishu Mail through `Other Accounts` to `public@tfsharedspace.com`; enter OTPs only in Browser and exclude all code content from capture.
-- Current findings are F-001 contradictory `In progress` sidebar state, F-002 unexplained `Next lesson` skip at 0/3, and F-003 conflicting signed-progress/unavailable status on Curriculum.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
