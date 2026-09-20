@@ -73,7 +73,7 @@ When the user assigns `public@tfsharedspace.com` for non-production auth:
 
 ### Test-state reset with Neon Auth
 
-For a clean local/test run, an operator may provide the Neon Auth MCP reset capability. Use it only after confirming the target is the test environment and the exact assigned test identity is `public@tfsharedspace.com`. Reset only that test user's lesson-progress, consent/session state, and other review-owned state; do not touch production or unrelated users. Record the reset timestamp and sanitized result, never tokens or private account data. If the Neon Auth MCP is not exposed to the agent, mark the clean-state gate `BLOCKED`; do not substitute direct database writes, source inspection, guessed endpoints, or a destructive Browser-profile clear.
+For a clean local/test run, an operator may provide a Neon Auth MCP reset capability or the Neon Console Auth UI for the exact test branch. Confirm the branch is test and the exact assigned identity is `public@tfsharedspace.com` before acting. Reset only that user; do not touch production or unrelated users. If using Neon Console, open the branch's Auth → Users view, verify the exact email, delete only that test user, then let the app's normal email-code sign-up recreate and verify the account. Do not recreate it through the Console form alone because that leaves email verification incomplete. Record only the reset timestamp and sanitized result, never tokens or private account data. If neither Neon Auth MCP nor the authorized test-branch Console is available, mark the clean-state gate `BLOCKED`; do not substitute direct database writes, guessed endpoints, or a destructive Browser-profile clear.
 
 ## 2. Enforce the blind-review boundary
 
