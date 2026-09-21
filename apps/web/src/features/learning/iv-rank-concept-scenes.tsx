@@ -3,6 +3,7 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tradely/ui/components/alert";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext } from "react";
 import {
@@ -166,7 +167,7 @@ export function RankFrequencyScene({ locale }: Props) {
 						<circle cx={x} cy="105" r="9" className="contract-svg-handle" />
 					) : null}
 					<foreignObject x="20" y="65" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag current IV", "拖动当前 IV")}
@@ -370,7 +371,7 @@ export function RankOutlierScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="379" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag historical high", "拖动历史高值")}

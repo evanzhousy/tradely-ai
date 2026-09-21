@@ -5,6 +5,7 @@ import {
 	type ButtonVariant,
 	buttonVariants,
 } from "@tradely/ui/components/button";
+import { Link } from "@tradely/ui/components/link";
 import { cn } from "@tradely/ui/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 import {
@@ -38,7 +39,7 @@ export function InteractiveHoverButton({
 	);
 }
 
-/** Navigation stays a native anchor, including open-in-new-tab and keyboard semantics. */
+/** Navigation uses HeroUI link semantics, including open-in-new-tab and keyboard behavior. */
 export function InteractiveHoverLink({
 	children,
 	className,
@@ -46,7 +47,7 @@ export function InteractiveHoverLink({
 	variant,
 	size,
 	...props
-}: Omit<ComponentProps<"a">, "children"> & {
+}: Omit<ComponentProps<typeof Link>, "children" | "render"> & {
 	children: ReactNode;
 	render?: ReactElement<{ children?: ReactNode; className?: string }>;
 	variant?: ButtonVariant;
@@ -67,8 +68,8 @@ export function InteractiveHoverLink({
 		);
 	}
 	return (
-		<a className={mergedClassName} {...props}>
+		<Link className={mergedClassName} {...props}>
 			{contents}
-		</a>
+		</Link>
 	);
 }

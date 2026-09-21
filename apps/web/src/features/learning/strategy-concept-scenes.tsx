@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -353,7 +354,7 @@ export function ExpirationStrategyScene({ locale }: Props) {
 					<path d="M40 348H320" className="contract-svg-line" />
 					<circle cx={x(spot)} cy="348" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="308" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag expiry stock price", "拖动到期股价")}
@@ -584,7 +585,7 @@ export function RollScene({ locale }: Props) {
 						}
 					/>
 					<foreignObject x="20" y="395" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Roll replay timeline", "移仓回放时间轴")}

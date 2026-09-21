@@ -1,15 +1,11 @@
 "use client";
 
+import { Button, type ButtonProps } from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
 import { Moon, Sun } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
-import {
-	type ComponentPropsWithoutRef,
-	forwardRef,
-	useEffect,
-	useState,
-} from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { ActionSwapIcon } from "./action-swap-icon";
 import { EASE_OUT_CSS } from "./beui-motion";
 
@@ -23,7 +19,7 @@ export type ThemeToggleStart =
 	| "bottom-up";
 
 export interface ThemeToggleProps
-	extends Omit<ComponentPropsWithoutRef<"button">, "children"> {
+	extends Omit<ButtonProps, "children" | "size" | "variant"> {
 	variant?: ThemeVariant;
 	start?: ThemeToggleStart;
 	iconClassName?: string;
@@ -136,9 +132,11 @@ export const ThemeToggle = forwardRef<HTMLButtonElement, ThemeToggleProps>(
 	) {
 		const { isDark, mounted, toggle } = useThemeToggle({ variant, start });
 		return (
-			<button
+			<Button
 				ref={ref}
 				type="button"
+				variant="ghost"
+				size="icon"
 				aria-label={
 					rest["aria-label"] ??
 					(mounted && isDark ? "Switch to light mode" : "Switch to dark mode")
@@ -161,7 +159,7 @@ export const ThemeToggle = forwardRef<HTMLButtonElement, ThemeToggleProps>(
 				) : (
 					<span className={iconClassName} aria-hidden="true" />
 				)}
-			</button>
+			</Button>
 		);
 	},
 );

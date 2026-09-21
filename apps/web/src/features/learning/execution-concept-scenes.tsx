@@ -4,7 +4,8 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { Button } from "@tradely/ui/components/button";
-import { FieldGroup } from "@tradely/ui/components/field";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import { FieldGroup, FieldSet } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import {
 	createContext,
@@ -63,19 +64,21 @@ function LiquidityBook({ locale, children }: Props & { children: ReactNode }) {
 		return () => query.removeEventListener("change", update);
 	}, []);
 	return (
-		<details className="liquidity-book" open={wide || expanded}>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: Native summary supports Enter and Space activation. */}
-			<summary
-				data-lesson-action="presentation"
-				onClick={(event) => {
-					event.preventDefault();
-					setExpanded((value) => !value);
-				}}
-			>
-				{locale === "zh" ? "完整订单簿与成交记录" : "Full order book & fills"}
-			</summary>
+		<DisclosurePanel
+			className="liquidity-book"
+			isExpanded={wide || expanded}
+			onExpandedChange={(next) => {
+				if (!wide) setExpanded(next);
+			}}
+			summary={
+				locale === "zh" ? "完整订单簿与成交记录" : "Full order book & fills"
+			}
+			triggerClassName="liquidity-book-trigger"
+			triggerProps={{ "data-lesson-action": "presentation" }}
+			bodyClassName="liquidity-book-body"
+		>
 			{children}
-		</details>
+		</DisclosurePanel>
 	);
 }
 function useExecutionData() {
@@ -426,7 +429,7 @@ export function LiquidityScene({ locale }: Props) {
 	return (
 		<SceneLayout
 			toolbar={
-				<fieldset
+				<FieldSet
 					className="liquidity-examples"
 					aria-label={l("Worked examples", "演示示例")}
 					data-lesson-action="scenario"
@@ -449,7 +452,7 @@ export function LiquidityScene({ locale }: Props) {
 								: l("Watch market order", "观看市价单")}
 						</Button>
 					))}
-				</fieldset>
+				</FieldSet>
 			}
 			diagram={
 				<Suspense fallback={fallback}>

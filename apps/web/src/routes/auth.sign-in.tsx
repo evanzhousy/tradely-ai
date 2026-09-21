@@ -15,6 +15,7 @@ import {
 	FieldLabel,
 	FieldSeparator,
 } from "@tradely/ui/components/field";
+import { Form } from "@tradely/ui/components/form";
 import { Input } from "@tradely/ui/components/input";
 import { InteractiveHoverButton } from "@tradely/ui/components/interactive-hover-button";
 import {
@@ -25,6 +26,7 @@ import {
 	ItemMedia,
 	ItemTitle,
 } from "@tradely/ui/components/item";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { StepIndicator } from "@tradely/ui/components/step-indicator";
 import { BookmarkCheckIcon, BookOpenIcon, ListChecksIcon } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
@@ -160,7 +162,7 @@ function SignInForm({
 		}
 	}
 	return (
-		<form onSubmit={(event) => void submit(event)}>
+		<Form onSubmit={(event) => void submit(event)}>
 			<FieldGroup>
 				<StepIndicator
 					current={step === "email" ? 0 : 1}
@@ -280,7 +282,7 @@ function SignInForm({
 					</p>
 				)}
 			</FieldGroup>
-		</form>
+		</Form>
 	);
 }
 
@@ -310,17 +312,20 @@ export function SignInPage() {
 				</Card>
 				<p className="text-center text-muted-foreground text-sm">
 					{t("auth.termsPrefix")}{" "}
-					<a href="/terms" className="underline">
+					<HeroLink href="/terms" className="underline">
 						{t("footer.terms")}
-					</a>{" "}
+					</HeroLink>{" "}
 					·{" "}
-					<a href="/privacy" className="underline">
+					<HeroLink href="/privacy" className="underline">
 						{t("footer.privacy")}
-					</a>
+					</HeroLink>
 				</p>
-				<a href={returnTo} className={buttonVariants({ variant: "ghost" })}>
+				<HeroLink
+					href={returnTo}
+					className={buttonVariants({ variant: "ghost" })}
+				>
 					{t("auth.back")}
-				</a>
+				</HeroLink>
 			</div>
 			<section className="sign-in-story" aria-labelledby="sign-in-story-title">
 				<DotPattern />

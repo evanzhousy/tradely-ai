@@ -8,6 +8,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useAnalytics } from "@/analytics/context";
@@ -36,9 +38,12 @@ export function TradingFlowLabIntro({ lessonId }: { lessonId: string }) {
 	if (!lab) return null;
 	return (
 		<p className="text-sm">
-			<a className="underline underline-offset-4" href="#tradingflow-lab">
+			<HeroLink
+				className="underline underline-offset-4"
+				href="#tradingflow-lab"
+			>
 				{t("lab.intro")}
-			</a>{" "}
+			</HeroLink>{" "}
 			· {t("lab.accessShort")}
 		</p>
 	);
@@ -100,20 +105,20 @@ function LabContent({ lab }: { lab: Lab }) {
 					<CardDescription>{lab.goal[locale]}</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-6">
-					<details
-						onToggle={(event) => {
-							if (event.currentTarget.open)
+					<DisclosurePanel
+						summary={t("lab.sample")}
+						triggerClassName="font-medium underline underline-offset-4"
+						bodyClassName="pt-3"
+						onExpandedChange={(expanded) => {
+							if (expanded)
 								capture("tradingflow_lab_sample_viewed", properties(lab));
 						}}
 					>
-						<summary className="cursor-pointer font-medium underline underline-offset-4">
-							{t("lab.sample")}
-						</summary>
 						<p className="mt-3 text-muted-foreground text-sm">
 							{t("lab.illustrative")}
 						</p>
 						<p className="mt-2 leading-7">{lab.sample[locale]}</p>
-					</details>
+					</DisclosurePanel>
 					<div>
 						<h3 className="font-semibold">{t("lab.settings")}</h3>
 						<p className="mt-2 text-muted-foreground leading-7">
@@ -135,16 +140,16 @@ function LabContent({ lab }: { lab: Lab }) {
 					<div className="flex flex-col items-start gap-3">
 						<p className="text-muted-foreground text-sm leading-6">
 							{t("lab.access")}{" "}
-							<a
+							<HeroLink
 								href="https://tradingflow.com/pricing/"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="underline underline-offset-4"
 							>
 								{t("lab.accessDetails")}
-							</a>
+							</HeroLink>
 						</p>
-						<a
+						<HeroLink
 							href={tradingFlowLabUrl(lab.id, {
 								attribution: consent === "granted",
 							})}
@@ -163,7 +168,7 @@ function LabContent({ lab }: { lab: Lab }) {
 						>
 							{t("lab.run")}
 							<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
-						</a>
+						</HeroLink>
 						<p className="text-muted-foreground text-xs">{t("lab.keepOpen")}</p>
 					</div>
 				</CardContent>

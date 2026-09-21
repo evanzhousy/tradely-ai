@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -105,14 +106,15 @@ export function BoundaryQuestionScene({ locale }: Props) {
 									opacity={present ? 0.18 : 0.05}
 								/>
 								<foreignObject x={25} y={53 + i * 54} width={310} height={45}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg px-4 text-left text-sm"
 										aria-pressed={present}
 										onClick={() => toggle(id)}
 									>
 										{present ? "●" : "○"} {field?.label[language]}
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -374,14 +376,15 @@ export function BoundaryRevisionScene({ locale }: Props) {
 							width={90}
 							height={44}
 						>
-							<button
+							<Button
+								variant="ghost"
 								type="button"
 								className="h-full w-full rounded-lg border text-xs"
 								aria-pressed={replay.frame === i}
 								onClick={() => replay.select(i)}
 							>
 								{label}
-							</button>
+							</Button>
 						</foreignObject>
 					))}
 					<foreignObject x={25} y={126} width={310} height={135}>

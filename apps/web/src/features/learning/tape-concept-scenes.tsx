@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -422,7 +423,7 @@ export function MessageReplayScene({ locale }: Props) {
 						}
 					/>
 					<foreignObject x="20" y="446" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Message replay timeline", "消息回放时间轴")}

@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -111,7 +112,8 @@ export function LevelsConcentrationScene({ locale }: Props) {
 									{number(v.value)}
 								</SvgText>
 								<foreignObject x={x} y={283} width={60} height={44}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg border text-sm"
 										aria-label={`${l("Strike", "行权价")} ${v.strike}`}
@@ -119,7 +121,7 @@ export function LevelsConcentrationScene({ locale }: Props) {
 										onClick={() => setSelected(v.strike)}
 									>
 										{v.strike}
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -268,7 +270,8 @@ export function LevelsPayoutScene({ locale }: Props) {
 								</>
 							) : null}
 							<foreignObject x={x(p.price) - 24} y={303} width={48} height={40}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-lg border text-xs"
 									aria-label={`${l("Settlement candidate", "结算候选")} ${p.price}`}
@@ -278,7 +281,7 @@ export function LevelsPayoutScene({ locale }: Props) {
 									}}
 								>
 									{p.price}
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

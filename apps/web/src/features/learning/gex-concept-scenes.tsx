@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -271,7 +272,8 @@ function Grid({
 									strokeDasharray={known ? undefined : "4 3"}
 								/>
 								<foreignObject x={x} y={y} width={92} height={88}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg text-center text-sm outline-offset-2 focus-visible:outline-2"
 										aria-pressed={selected === id}
@@ -296,7 +298,7 @@ function Grid({
 														? l("Traded", "有成交")
 														: l("Zero trades", "零成交")}
 										</span>
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);

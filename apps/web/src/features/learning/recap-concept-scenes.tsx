@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -151,7 +152,8 @@ function Chart({
 							</>
 						)}
 						<foreignObject x={x - 42} y={319} width={84} height={43}>
-							<button
+							<Button
+								variant="ghost"
 								type="button"
 								className="h-full w-full rounded-lg border text-xs"
 								aria-label={`${l("Inspect chart row", "检查图表行")} ${r.id}`}
@@ -159,7 +161,7 @@ function Chart({
 								onClick={() => onSelect(r.id)}
 							>
 								{r.strike} · {r.id}
-							</button>
+							</Button>
 						</foreignObject>
 						<SvgText x={x} y={386} muted>
 							{r.value === null
@@ -519,7 +521,8 @@ export function RecapComposeScene({ locale }: Props) {
 								opacity={included.includes(f.id) ? 0.18 : 0.04}
 							/>
 							<foreignObject x={25} y={166 + i * 65} width={310} height={54}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-lg text-center text-sm"
 									aria-pressed={included.includes(f.id)}
@@ -532,7 +535,7 @@ export function RecapComposeScene({ locale }: Props) {
 									}
 								>
 									{included.includes(f.id) ? "●" : "○"} {f.label[language]}
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -555,13 +558,14 @@ export function RecapComposeScene({ locale }: Props) {
 				<>
 					<Context locale={locale} />
 					<p data-recap-verdict>{verdict}</p>
-					<button
+					<Button
+						variant="ghost"
 						type="button"
 						className="rounded-xl border px-4 py-3 text-sm"
 						onClick={() => setHeadline("observed")}
 					>
 						{l("Repair to the supported sample", "修复为受支持示例")}
-					</button>
+					</Button>
 					<div className="rounded-2xl border p-4 text-sm leading-relaxed">
 						<strong>{l("Caption preview", "图注预览")}</strong>
 						<p data-recap-caption>

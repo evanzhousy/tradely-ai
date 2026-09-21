@@ -8,6 +8,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon } from "lucide-react";
 
@@ -52,7 +53,7 @@ export function PracticeCard({ lessonId }: { lessonId: string }) {
 					{practice.goal}
 				</CardDescription>
 				<CardAction>
-					<a
+					<HeroLink
 						href={practice.href}
 						target="_blank"
 						rel="noopener noreferrer"
@@ -64,14 +65,14 @@ export function PracticeCard({ lessonId }: { lessonId: string }) {
 					>
 						{t("practice.open")}
 						<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
-					</a>
+					</HeroLink>
 				</CardAction>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-3">
 				<p className="text-primary-foreground/65 text-xs">
 					{t("practice.disclosure")}
 				</p>
-				<a
+				<HeroLink
 					href={practice.href}
 					target="_blank"
 					rel="noopener noreferrer"
@@ -80,7 +81,7 @@ export function PracticeCard({ lessonId }: { lessonId: string }) {
 				>
 					{t("practice.open")}
 					<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
-				</a>
+				</HeroLink>
 			</CardContent>
 		</Card>
 	);

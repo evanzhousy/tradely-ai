@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -211,7 +212,8 @@ export function RankActivityScene({ locale }: Props) {
 								opacity={selected === r.symbol ? 0.18 : 0.05}
 							/>
 							<foreignObject x={25} y={53 + i * 68} width={310} height={58}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-lg text-center text-sm"
 									aria-label={`${l("Inspect ranked row", "检查排名行")} ${r.symbol}`}
@@ -224,7 +226,7 @@ export function RankActivityScene({ locale }: Props) {
 									<span className="block text-xs">
 										{number(r.row.volume)} / {number(r.row.baseline)}
 									</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -368,7 +370,8 @@ export function RankHandoffScene({ locale }: Props) {
 								opacity={field === item.id ? 0.18 : 0.05}
 							/>
 							<foreignObject x={25} y={53 + i * 78} width={310} height={66}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={field === item.id}
@@ -376,7 +379,7 @@ export function RankHandoffScene({ locale }: Props) {
 								>
 									<span className="block font-medium">{item.label}</span>
 									<span className="block text-xs">{item.value}</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

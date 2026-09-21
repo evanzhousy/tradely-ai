@@ -3,7 +3,9 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tradely/ui/components/alert";
+import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -214,7 +216,7 @@ export function GammaTermsScene({ locale }: Props) {
 					<path d="M40 344H320" className="contract-svg-line" />
 					<circle cx={x(move)} cy="344" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="304" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag gamma stock move", "拖动 Gamma 标的变动")}
@@ -458,7 +460,7 @@ export function GammaHedgeScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="384" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Hedge replay timeline", "对冲回放时间轴")}
@@ -652,7 +654,8 @@ export function GammaSensitivityScene({ locale }: Props) {
 									{number(s.gamma)}
 								</SvgText>
 								<foreignObject x={barX - 24} y="278" width="48" height="44">
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg border border-border bg-background font-mono text-sm"
 										aria-label={`${l("Inspect", "查看")} ${s.label[locale === "zh" ? 1 : 0]}`}
@@ -660,7 +663,7 @@ export function GammaSensitivityScene({ locale }: Props) {
 										onClick={() => setId(s.id)}
 									>
 										{s.id}
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -668,7 +671,7 @@ export function GammaSensitivityScene({ locale }: Props) {
 					<path d="M40 367H320" className="contract-svg-line" />
 					<circle cx={x(move)} cy="367" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="327" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag sensitivity move", "拖动敏感度变动")}

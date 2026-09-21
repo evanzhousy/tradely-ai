@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
 import { Check, ListTodo } from "lucide-react";
 import { useReducedMotion } from "motion/react";
@@ -255,8 +256,9 @@ export function LessonPlan({
 							transition={reduce ? { duration: 0 } : { duration: 0.18 }}
 							className="rounded-xl"
 						>
-							<button
+							<Button
 								type="button"
+								variant="ghost"
 								onClick={() => onStepSelect(item.start)}
 								aria-current={status === "in-progress" ? "step" : undefined}
 								className="flex min-h-9 w-full items-center gap-2.5 rounded-xl px-1.5 py-1 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
@@ -287,7 +289,7 @@ export function LessonPlan({
 										s
 									</span>
 								) : null}
-							</button>
+							</Button>
 						</m.li>
 					);
 				})}

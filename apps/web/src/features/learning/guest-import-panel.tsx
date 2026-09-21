@@ -5,6 +5,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import type { GuestImportFailure } from "@/domain/guest-learning";
@@ -185,12 +186,12 @@ export function GuestImportPanel({
 							{copy.guest[locale]}
 						</Button>
 					) : (
-						<a
+						<HeroLink
 							href={`/learn/${encodeURIComponent(lessonId)}`}
 							className={buttonVariants({ variant: "outline" })}
 						>
 							{copy.returnLesson[locale]}
-						</a>
+						</HeroLink>
 					)}
 				</div>
 			</AlertDescription>

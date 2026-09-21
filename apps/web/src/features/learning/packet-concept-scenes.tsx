@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -98,14 +99,15 @@ function Stages({
 			)}
 			{labels.map((label, i) => (
 				<foreignObject key={label} x={x(i) - 40} y={36} width={80} height={40}>
-					<button
+					<Button
+						variant="ghost"
 						type="button"
 						className="h-full w-full rounded-lg border text-xs"
 						aria-pressed={step === i}
 						onClick={() => choose(i)}
 					>
 						{label}
-					</button>
+					</Button>
 				</foreignObject>
 			))}
 		</>
@@ -176,7 +178,8 @@ export function PacketTraceScene({ locale }: Props) {
 								}
 							/>
 							<foreignObject x={25} y={96 + i * 74} width={310} height={64}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-label={`${l("Inspect row", "检查行")} ${r.id}`}
@@ -192,7 +195,7 @@ export function PacketTraceScene({ locale }: Props) {
 											? money(packetRowPremium(r))
 											: l("Source inputs", "来源输入")}
 									</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -356,7 +359,8 @@ export function PacketFieldsScene({ locale }: Props) {
 								opacity={present.includes(f.id) ? 0.18 : 0.04}
 							/>
 							<foreignObject x={25} y={53 + i * 62} width={310} height={52}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-lg text-center text-sm"
 									aria-pressed={present.includes(f.id)}
@@ -368,7 +372,7 @@ export function PacketFieldsScene({ locale }: Props) {
 											? l("Recorded", "已记录")
 											: l("Omitted", "已省略")}
 									</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import { signedPositionUnits } from "@/domain/learning/local-greeks";
@@ -187,7 +188,7 @@ export function GreekUnitsScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="124" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag Greek input", "拖动希腊值输入")}
@@ -391,7 +392,7 @@ export function GreekSignsScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="345" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag position size", "拖动持仓规模")}
@@ -590,7 +591,7 @@ export function GreekAttributionScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="406" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Contribution build-up timeline", "贡献累加时间轴")}

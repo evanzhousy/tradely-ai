@@ -1,3 +1,5 @@
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { ListIcon } from "lucide-react";
 import { useActiveSection } from "@/hooks/use-active-section";
 
@@ -14,24 +16,28 @@ export function TableOfContents({
 	const activeId = useActiveSection(items.map((item) => item.id));
 	return (
 		<nav aria-label={label} className="table-of-contents">
-			<details open>
-				<summary>
-					<ListIcon size={15} aria-hidden="true" />
-					{label}
-				</summary>
+			<DisclosurePanel
+				defaultExpanded
+				summary={
+					<>
+						<ListIcon size={15} aria-hidden="true" />
+						{label}
+					</>
+				}
+			>
 				<ol>
 					{items.map((item) => (
 						<li key={item.id}>
-							<a
+							<HeroLink
 								href={`#${item.id}`}
 								aria-current={activeId === item.id ? "location" : undefined}
 							>
 								{item.title}
-							</a>
+							</HeroLink>
 						</li>
 					))}
 				</ol>
-			</details>
+			</DisclosurePanel>
 		</nav>
 	);
 }

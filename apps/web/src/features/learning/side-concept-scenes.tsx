@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import { quoteMoney as money } from "@/domain/learning/quote-concept";
@@ -185,7 +186,7 @@ export function LocationMapScene({ locale }: Props) {
 						}
 					/>
 					<foreignObject x="20" y="140" width="320" height="80">
-						<input
+						<RangeSlider
 							className="contract-range contract-svg-range"
 							type="range"
 							aria-label={l("Drag execution marker", "拖动成交标记")}

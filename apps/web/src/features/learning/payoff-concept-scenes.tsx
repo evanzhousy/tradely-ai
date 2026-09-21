@@ -6,6 +6,7 @@ import {
 import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -660,7 +661,7 @@ export function ExpirationProfitScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="286" width="320" height="80">
-						<input
+						<RangeSlider
 							id={id}
 							className="contract-range contract-svg-range"
 							type="range"

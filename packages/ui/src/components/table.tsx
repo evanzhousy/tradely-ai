@@ -1,20 +1,22 @@
 "use client";
 
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
 import { cn } from "@tradely/ui/lib/utils";
 import type * as React from "react";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
 	return (
-		<div
+		<ScrollShadow
 			data-slot="table-container"
-			className="relative w-full overflow-x-auto"
+			orientation="horizontal"
+			className="relative w-full"
 		>
 			<table
 				data-slot="table"
 				className={cn("w-full caption-bottom text-sm", className)}
 				{...props}
 			/>
-		</div>
+		</ScrollShadow>
 	);
 }
 

@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -136,7 +137,7 @@ export function DenominatorScene({ locale }: Props) {
 								className="contract-svg-handle"
 							/>
 							<foreignObject x="20" y="210" width="320" height="80">
-								<input
+								<RangeSlider
 									type="range"
 									className="contract-range contract-svg-range"
 									aria-label={l("Drag the denominator", "拖动分母")}

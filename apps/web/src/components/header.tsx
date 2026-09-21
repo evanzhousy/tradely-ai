@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { buttonVariants } from "@tradely/ui/components/button";
 import { Drawer } from "@tradely/ui/components/drawer";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 import { useState } from "react";
@@ -69,7 +70,7 @@ export default function Header() {
 				</div>
 
 				<div className="flex items-center gap-0.5 sm:gap-1.5">
-					<a
+					<HeroLink
 						href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=header"
 						onClick={() =>
 							capture("tradingflow_link_opened", { surface: "header" })
@@ -89,7 +90,7 @@ export default function Header() {
 						/>
 						{t("nav.openTradingFlow")}
 						<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
-					</a>
+					</HeroLink>
 					<LocaleSwitcher />
 					<ThemeToggle />
 					<AuthControls />
@@ -123,7 +124,7 @@ export default function Header() {
 												onNavigate={() => setMenuOpen(false)}
 											/>
 											<LocaleSwitcher />
-											<a
+											<HeroLink
 												href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=mobile-menu"
 												onClick={() =>
 													capture("tradingflow_link_opened", {
@@ -148,7 +149,7 @@ export default function Header() {
 													data-icon="inline-end"
 													aria-hidden="true"
 												/>
-											</a>
+											</HeroLink>
 										</nav>
 									</Drawer.Body>
 								</Drawer.Dialog>

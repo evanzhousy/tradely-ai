@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -137,7 +138,8 @@ function Grid({
 									strokeDasharray={current ? undefined : "4 3"}
 								/>
 								<foreignObject x={x} y={y} width={90} height={75}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg text-center text-sm"
 										style={{
@@ -154,7 +156,7 @@ function Grid({
 											{number(c?.volume ?? null)}
 										</span>
 										<span className="block text-[10px]">{label}</span>
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -432,14 +434,15 @@ export function NeighborhoodQualityScene({ locale }: Props) {
 					/>
 					{outside ? (
 						<foreignObject x={25} y={356} width={310} height={54}>
-							<button
+							<Button
+								variant="ghost"
 								type="button"
 								className="h-full w-full rounded-xl border text-sm"
 								onClick={() => setSelected(outside.id)}
 							>
 								{l("Inspect outside-scope row", "检查范围外行")}:{" "}
 								{outside.strike} · {number(outside.volume)}
-							</button>
+							</Button>
 						</foreignObject>
 					) : (
 						<SvgText x={180} y={386}>

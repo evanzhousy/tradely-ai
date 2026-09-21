@@ -9,6 +9,7 @@ import {
 } from "@tradely/ui/components/empty";
 import { Field, FieldLabel } from "@tradely/ui/components/field";
 import { Input } from "@tradely/ui/components/input";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import {
 	NativeSelect,
 	NativeSelectOption,
@@ -159,7 +160,7 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 								>
 									{courseModules.map((module, index) =>
 										lessons.some((lesson) => lesson.moduleId === module.id) ? (
-											<a
+											<HeroLink
 												key={module.id}
 												href={`#module-${module.id}`}
 												aria-current={
@@ -170,7 +171,7 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 											>
 												<span>{String(index + 1).padStart(2, "0")}</span>
 												{module[locale]}
-											</a>
+											</HeroLink>
 										) : null,
 									)}
 								</nav>

@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -153,7 +154,8 @@ export function KnowledgeCutoffScene({ locale }: Props) {
 									/>
 								)}
 								<foreignObject x={35} y={y - 19} width={290} height={30}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full text-left text-xs"
 										aria-pressed={selected === r.id}
@@ -163,7 +165,7 @@ export function KnowledgeCutoffScene({ locale }: Props) {
 										{r.receivedSeconds === null
 											? l("· receipt ?", "· 接收 ?")
 											: ""}
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -458,7 +460,8 @@ export function ScoreMeaningScene({ locale }: Props) {
 								opacity={selected === item.id ? 0.18 : 0.04}
 							/>
 							<foreignObject x={25} y={30 + i * 115} width={310} height={92}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={selected === item.id}
@@ -466,7 +469,7 @@ export function ScoreMeaningScene({ locale }: Props) {
 								>
 									<span className="block">{item.label}</span>
 									<span className="block font-mono text-xl">{item.value}</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -658,7 +661,8 @@ export function SpecificationSearchScene({ locale }: Props) {
 						])}
 						onChange={setSelected}
 					/>
-					<button
+					<Button
+						variant="ghost"
 						type="button"
 						className="min-h-10 rounded-xl border px-3 text-sm"
 						onClick={freeze}
@@ -667,8 +671,9 @@ export function SpecificationSearchScene({ locale }: Props) {
 						{frozen === null
 							? l("Freeze selected specification", "冻结所选规格")
 							: l("Replace frozen choice before reveal", "揭示前替换冻结选择")}
-					</button>
-					<button
+					</Button>
+					<Button
+						variant="ghost"
 						type="button"
 						className="min-h-10 rounded-xl border px-3 text-sm"
 						onClick={reveal}
@@ -677,7 +682,7 @@ export function SpecificationSearchScene({ locale }: Props) {
 						{revealed
 							? l("Holdout revealed", "保留集已揭示")
 							: l("Reveal holdout once", "揭示一次保留集")}
-					</button>
+					</Button>
 				</>
 			}
 			details={
@@ -777,7 +782,8 @@ export function HoldoutScene({ locale }: Props) {
 						</g>
 					))}
 					<foreignObject x={25} y={310} width={310} height={54}>
-						<button
+						<Button
+							variant="ghost"
 							type="button"
 							className="h-full w-full rounded-xl border text-sm"
 							onClick={reveal}
@@ -789,7 +795,7 @@ export function HoldoutScene({ locale }: Props) {
 										"First rule and outcome reveal recorded",
 										"首个规则与结果展示已记录",
 									)}
-						</button>
+						</Button>
 					</foreignObject>
 					<SvgText x={180} y={402}>
 						{reused

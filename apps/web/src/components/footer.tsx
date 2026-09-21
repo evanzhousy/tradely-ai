@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { buttonVariants } from "@tradely/ui/components/button";
+import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 
@@ -101,13 +101,15 @@ export function Footer() {
 							{t("footer.cookies")}
 						</Link>
 						{isConfigured ? (
-							<button
+							<Button
 								type="button"
+								variant="link"
+								size="sm"
 								className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
 								onClick={openPreferences}
 							>
 								{t("footer.privacyChoices")}
-							</button>
+							</Button>
 						) : null}
 					</div>
 				</nav>

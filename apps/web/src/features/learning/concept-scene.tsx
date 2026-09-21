@@ -1,5 +1,11 @@
 import { Button } from "@tradely/ui/components/button";
-import { Field, FieldLabel } from "@tradely/ui/components/field";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import {
+	Field,
+	FieldLabel,
+	FieldLegend,
+	FieldSet,
+} from "@tradely/ui/components/field";
 import {
 	NativeSelect,
 	NativeSelectOption,
@@ -100,12 +106,12 @@ export function SceneLayout({
 				<div className="scene-visual-primary">
 					<div className="contract-stage">{diagram}</div>
 					{controls ? (
-						<fieldset className="visual-controls-inline">
-							<legend className="sr-only">
+						<FieldSet className="visual-controls-inline">
+							<FieldLegend className="sr-only">
 								{locale === "zh" ? "调整示例" : "Adjust the example"}
-							</legend>
+							</FieldLegend>
 							{controls}
-						</fieldset>
+						</FieldSet>
 					) : null}
 				</div>
 				{companion ? (
@@ -115,12 +121,14 @@ export function SceneLayout({
 			{outcome ? <div className="scene-outcome">{outcome}</div> : null}
 			{comparison}
 			{playback && (details || children) ? (
-				<details className="visual-explore">
-					<summary>{locale === "zh" ? "更多细节" : "More detail"}</summary>
+				<DisclosurePanel
+					className="visual-explore"
+					summary={locale === "zh" ? "更多细节" : "More detail"}
+				>
 					<div className="flex min-w-0 flex-col gap-5 pt-5">
 						{details ?? children}
 					</div>
-				</details>
+				</DisclosurePanel>
 			) : (
 				<div className="flex min-w-0 flex-col gap-5">{details ?? children}</div>
 			)}

@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -184,7 +185,7 @@ export function DeltaSlopeScene({ locale }: Props) {
 					<path d="M40 343H320" className="contract-svg-line" />
 					<circle cx={x(move)} cy="343" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="303" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag underlying move", "拖动标的变动")}
@@ -419,7 +420,7 @@ export function DeltaPositionScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="372" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag contract quantity", "拖动合约张数")}
@@ -621,7 +622,7 @@ export function DeltaLimitsScene({ locale }: Props) {
 					<path d="M40 348H320" className="contract-svg-line" />
 					<circle cx={x(move)} cy="348" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="308" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag stress move", "拖动压力变动")}

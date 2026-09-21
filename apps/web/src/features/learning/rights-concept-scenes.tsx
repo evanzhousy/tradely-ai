@@ -5,6 +5,7 @@ import {
 } from "@tradely/ui/components/alert";
 import { Badge } from "@tradely/ui/components/badge";
 import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -71,7 +72,8 @@ function CountField({
 				{l("Contract quantity", "合约张数")}:{" "}
 				<output htmlFor={id}>{count}</output>
 			</FieldLabel>
-			<input
+			<RangeSlider
+				aria-label={l("Contract quantity", "合约张数")}
 				className="contract-range"
 				id={id}
 				type="range"

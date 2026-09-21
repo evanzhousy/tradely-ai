@@ -5,6 +5,7 @@ import {
 } from "@tradely/ui/components/alert";
 import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -145,7 +146,7 @@ export function ImpliedVolatilityScene({ locale }: Props) {
 					<path d="M40 344H320" className="contract-svg-line" />
 					<circle cx={x(iv)} cy="344" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="304" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag trial IV", "拖动试算 IV")}
@@ -367,7 +368,7 @@ export function RealizedVolatilityScene({ locale }: Props) {
 						<circle cx={lastX} cy="340" r="9" className="contract-svg-handle" />
 					) : null}
 					<foreignObject x="20" y="300" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag final daily return", "拖动最后日收益")}

@@ -1,3 +1,4 @@
+import { ProgressBar } from "@heroui/react/progress-bar";
 import { CheckIcon } from "lucide-react";
 
 /** A presentation-only stepper; callers own order, advancement, and completion. */
@@ -16,6 +17,7 @@ export function StepIndicator({
 }) {
 	if (!steps.length) return null;
 	const index = Math.max(0, Math.min(current, steps.length - 1));
+	const progress = complete ? 100 : ((index + 1) / steps.length) * 100;
 	return (
 		<div className="step-progress" data-complete={complete}>
 			<p className="step-progress-summary" role="status">
@@ -24,6 +26,11 @@ export function StepIndicator({
 					{complete ? steps.length : index + 1} / {steps.length}
 				</span>
 			</p>
+			<ProgressBar.Root value={progress} aria-label={label} size="sm">
+				<ProgressBar.Track>
+					<ProgressBar.Fill />
+				</ProgressBar.Track>
+			</ProgressBar.Root>
 			<ol className="step-indicator" aria-label={label}>
 				{steps.map((step, index) => (
 					<li

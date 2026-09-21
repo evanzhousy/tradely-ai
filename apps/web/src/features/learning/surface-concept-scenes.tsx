@@ -3,7 +3,9 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tradely/ui/components/alert";
+import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -129,7 +131,8 @@ export function SurfaceSlicesScene({ locale }: Props) {
 									width="84"
 									height="44"
 								>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className={`h-full w-full rounded-lg border border-border font-mono text-sm ${row === r && column === c ? "bg-primary/25" : "bg-background"}`}
 										aria-label={`${l("Inspect", "查看")} ${expiry.date} $${strike}`}
@@ -140,7 +143,7 @@ export function SurfaceSlicesScene({ locale }: Props) {
 										}}
 									>
 										{pct(surfaceCell(data, dataset, r, c))}
-									</button>
+									</Button>
 								</foreignObject>
 							))}
 						</g>
@@ -513,7 +516,7 @@ export function SurfaceInterpolationScene({ locale }: Props) {
 					<path d="M40 335H320" className="contract-svg-line" />
 					<circle cx={x(days)} cy="335" r="9" className="contract-svg-handle" />
 					<foreignObject x="20" y="295" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Drag target tenor", "拖动目标期限")}

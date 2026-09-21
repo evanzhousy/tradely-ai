@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
+import { FieldSet } from "@tradely/ui/components/field";
 import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
 import {
 	ArrowRightIcon,
@@ -443,7 +444,7 @@ export function ConceptLab({
 					className="visual-guide"
 					aria-label={l("Lesson guidance", "课程指引")}
 				>
-					<fieldset
+					<FieldSet
 						className="visual-playback"
 						aria-label={l("Demonstration controls", "演示控制")}
 					>
@@ -487,7 +488,7 @@ export function ConceptLab({
 						{complete && !exploring && (
 							<div className="visual-playback-complete">{continuation}</div>
 						)}
-					</fieldset>
+					</FieldSet>
 					<LessonPlan
 						locale={locale}
 						steps={steps}

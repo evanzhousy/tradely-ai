@@ -1,6 +1,7 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { DotPattern } from "@tradely/ui/components/dot-pattern";
 import {
 	Empty,
@@ -56,14 +57,16 @@ export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 				</EmptyContent>
 			</Empty>
 			{import.meta.env.DEV ? (
-				<details className="w-full rounded-xl border border-border bg-muted/30 p-4 text-sm">
-					<summary className="cursor-pointer font-medium">
-						Development details
-					</summary>
+				<DisclosurePanel
+					className="w-full rounded-xl border border-border bg-muted/30 p-4 text-sm"
+					summary="Development details"
+					triggerClassName="font-medium"
+					bodyClassName="pt-3"
+				>
 					<pre className="mt-3 overflow-auto whitespace-pre-wrap text-muted-foreground text-xs">
 						{error instanceof Error ? error.message : String(error)}
 					</pre>
-				</details>
+				</DisclosurePanel>
 			) : null}
 		</main>
 	);

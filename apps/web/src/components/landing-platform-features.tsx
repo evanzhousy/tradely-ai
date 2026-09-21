@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { BentoCard, BentoGrid } from "@tradely/ui/components/bento-grid";
 import { Button } from "@tradely/ui/components/button";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import {
 	ArrowRightIcon,
 	CloudCheckIcon,
@@ -103,10 +104,10 @@ export function LandingPlatformFeatures() {
 					title={<h3>{t("home.features.pathTitle")}</h3>}
 					description={t("home.features.pathDescription")}
 					footer={
-						<a href="#curriculum" className="observatory-text-link">
+						<HeroLink href="#curriculum" className="observatory-text-link">
 							{t("home.explore")}
 							<ArrowRightIcon size={16} />
-						</a>
+						</HeroLink>
 					}
 				>
 					<ol className="platform-learning-steps">

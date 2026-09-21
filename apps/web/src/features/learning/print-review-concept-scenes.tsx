@@ -5,6 +5,7 @@ import {
 } from "@tradely/ui/components/alert";
 import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -285,7 +286,7 @@ export function PrintInspectorScene({ locale }: Props) {
 						}
 					/>
 					<foreignObject x="20" y="440" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Print inspection timeline", "成交检查时间轴")}

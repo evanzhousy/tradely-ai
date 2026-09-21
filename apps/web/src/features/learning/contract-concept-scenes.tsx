@@ -5,7 +5,9 @@ import {
 } from "@tradely/ui/components/alert";
 import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -207,10 +209,12 @@ export function AnatomyScene({ locale }: Props) {
 							l={l}
 						/>
 					</div>
-					<details className="text-sm leading-7">
-						<summary className="cursor-pointer font-medium">
-							{l("Explore the underlying profile", "探索标的资料")}
-						</summary>
+					<DisclosurePanel
+						className="text-sm leading-7"
+						summary={l("Explore the underlying profile", "探索标的资料")}
+						triggerClassName="font-medium"
+						bodyClassName="pt-3"
+					>
 						<div className="mt-3 flex flex-col gap-3 text-muted-foreground">
 							<p>
 								{product === "stock"
@@ -241,7 +245,7 @@ export function AnatomyScene({ locale }: Props) {
 								)}
 							</p>
 						</div>
-					</details>
+					</DisclosurePanel>
 				</>
 			}
 		/>
@@ -527,7 +531,8 @@ export function UnitsScene({ locale }: Props) {
 								+
 							</Button>
 						</div>
-						<input
+						<RangeSlider
+							aria-label={l("Contract quantity", "合约张数")}
 							id={`${id}-count`}
 							className="contract-range"
 							type="range"
@@ -545,7 +550,8 @@ export function UnitsScene({ locale }: Props) {
 						<output className="font-mono text-lg" htmlFor={`${id}-price`}>
 							{money(cents / 100)}
 						</output>
-						<input
+						<RangeSlider
+							aria-label={l("Option price per share", "每股期权价格")}
 							id={`${id}-price`}
 							className="contract-range"
 							type="range"
@@ -722,7 +728,7 @@ export function SourceTimeScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="25" y="247" width="310" height="80">
-						<input
+						<RangeSlider
 							id={id}
 							className="contract-range contract-svg-range"
 							aria-label={l("Observation timeline", "观测时间轴")}

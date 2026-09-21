@@ -188,7 +188,7 @@
 	padding-block: 8px;
 	font-size: 0.8125rem;
 }
-.table-of-contents summary {
+.table-of-contents [data-slot="disclosure-trigger"] {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -310,25 +310,14 @@
 	border-radius: 20px;
 	box-shadow: 0 0 0 1px var(--border);
 }
-.lesson-notes summary {
+.lesson-notes [data-slot="disclosure-trigger"] {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	gap: 16px;
 }
-.lesson-notes summary::after {
-	content: "+";
-	color: var(--muted-foreground);
-	font-size: 1.25rem;
-}
-.lesson-notes[open] summary::after {
-	content: "−";
-}
-.lesson-notes[open] summary {
+.lesson-notes[data-expanded] [data-slot="disclosure-trigger"] {
 	margin-bottom: 20px;
-}
-.lesson-notes summary::marker {
-	content: "";
 }
 .learning-workspace {
 	box-shadow:
@@ -875,40 +864,24 @@
 	cursor: pointer;
 	touch-action: pan-y;
 }
-.contract-range:focus-visible {
+.contract-range [data-slot="slider-thumb"][data-focus-visible] {
 	outline: 2px solid var(--ring);
 	outline-offset: 3px;
 	border-radius: 0.5rem;
 }
-/* Native range supplies touch, pointer capture and keyboard semantics over the SVG track. */
+/* HeroUI owns input semantics while the lesson SVG remains the visible track. */
 .contract-svg-range {
-	appearance: none;
-	-webkit-appearance: none;
 	height: 80px;
 	margin: 0;
 	padding: 0;
 	background: transparent;
 }
-.contract-svg-range::-webkit-slider-runnable-track {
-	height: 2px;
+.contract-svg-range [data-slot="slider-track"] {
+	height: 100%;
 	background: transparent;
 }
-.contract-svg-range::-webkit-slider-thumb {
-	appearance: none;
-	-webkit-appearance: none;
-	width: 40px;
-	height: 40px;
-	margin-top: -19px;
-	background: transparent;
-}
-.contract-svg-range::-moz-range-track {
-	background: transparent;
-}
-.contract-svg-range::-moz-range-thumb {
-	width: 40px;
-	height: 40px;
-	border: none;
-	background: transparent;
+.contract-svg-range :is([data-slot="slider-fill"], [data-slot="slider-thumb"]) {
+	opacity: 0;
 }
 @media (max-width: 1000px) {
 	.contract-scene-layout {
@@ -947,26 +920,18 @@
 }
 :where(
 	.table-of-contents a,
-	.table-of-contents summary,
+	.table-of-contents [data-slot="disclosure-trigger"],
 	.lesson-sections a,
 	.module-navigation a,
-	.lesson-notes summary,
+	.lesson-notes [data-slot="disclosure-trigger"],
 	.app-navigation a
 ):focus-visible {
 	outline: 2px solid var(--ring);
 	outline-offset: 3px;
 }
-.table-of-contents summary {
+.table-of-contents [data-slot="disclosure-trigger"] {
 	cursor: pointer;
 	min-height: 44px;
-}
-.table-of-contents summary::after {
-	content: "+";
-	margin-left: auto;
-	font-family: var(--font-mono);
-}
-.table-of-contents details[open] summary::after {
-	content: "−";
 }
 .table-of-contents a {
 	min-height: 44px;
@@ -1201,17 +1166,17 @@
 	gap: 0.5rem;
 	margin-bottom: 0.75rem;
 }
-.liquidity-book > summary {
+.liquidity-book-trigger {
 	cursor: pointer;
 	padding: 0.85rem;
 	border: 1px solid var(--border);
 	border-radius: 0.8rem;
 }
-.liquidity-book > section + section {
+.liquidity-book-body > section + section {
 	margin-top: 0.75rem;
 }
 @media (min-width: 760px) {
-	.liquidity-book > summary {
+	.liquidity-book-trigger {
 		display: none;
 	}
 }
@@ -1265,13 +1230,13 @@
 	border-top: 1px solid var(--border);
 	padding-top: 0.75rem;
 }
-.visual-explore > summary {
+.visual-explore [data-slot="disclosure-trigger"] {
 	cursor: pointer;
 	padding: 0.65rem 0;
 	font-size: 0.875rem;
 	font-weight: 500;
 }
-.visual-explore > summary:focus-visible {
+.visual-explore [data-slot="disclosure-trigger"]:focus-visible {
 	outline: 2px solid var(--ring);
 	outline-offset: 3px;
 }

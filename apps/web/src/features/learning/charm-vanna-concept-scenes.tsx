@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -294,7 +295,8 @@ export function CrossDeltaUnitsScene({ locale }: Props) {
 								opacity={selected === row.id ? 0.16 : 0.05}
 							/>
 							<foreignObject x={25} y={60 + i * 125} width={310} height={105}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-label={
@@ -310,7 +312,7 @@ export function CrossDeltaUnitsScene({ locale }: Props) {
 									<span className="block font-mono font-semibold">
 										{signed(row.value)}
 									</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -422,7 +424,8 @@ export function CrossDeltaPositionScene({ locale }: Props) {
 								opacity={side === value ? 0.2 : 0.05}
 							/>
 							<foreignObject x={30 + i * 160} y={142} width={140} height={65}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={side === value}
@@ -431,7 +434,7 @@ export function CrossDeltaPositionScene({ locale }: Props) {
 									{value === "long"
 										? l("Long (+)", "多头 (+)")
 										: l("Short (−)", "空头 (−)")}
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

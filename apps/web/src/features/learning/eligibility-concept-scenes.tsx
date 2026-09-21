@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -147,7 +148,8 @@ export function EligibilityRulesScene({ locale }: Props) {
 									strokeDasharray={unknown ? "4 3" : undefined}
 								/>
 								<foreignObject x={24} y={80 + i * 62} width={312} height={54}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg px-3 text-left text-sm"
 										aria-label={`${l("Inspect source", "检查来源")} ${d.row.symbol}`}
@@ -162,7 +164,7 @@ export function EligibilityRulesScene({ locale }: Props) {
 												? reasonCopy(d.reason, locale)
 												: l("Checks pending", "检查未完成")}
 										</span>
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -444,7 +446,8 @@ export function EligibilityHistoryScene({ locale }: Props) {
 									strokeDasharray={!included ? "4 3" : undefined}
 								/>
 								<foreignObject x={25} y={60 + i * 77} width={310} height={65}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-xl text-center text-sm"
 										aria-label={`${l("Inspect member", "检查成员")} ${m.symbol}`}
@@ -462,7 +465,7 @@ export function EligibilityHistoryScene({ locale }: Props) {
 														"按此成员日期排除",
 													)}
 										</span>
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);

@@ -4,6 +4,7 @@ import {
 	TableBody,
 	TableCell,
 	TableHead,
+	TableHeader,
 	TableRow,
 } from "@tradely/ui/components/table";
 import type { LearningStepView, SourceWork } from "@/domain/learning/types";
@@ -72,13 +73,13 @@ export function Worksheet({
 				</div>
 			) : null}
 			<Table>
-				<thead>
+				<TableHeader>
 					<TableRow>
 						{data.columns.map((column) => (
 							<TableHead key={column.en}>{column[locale]}</TableHead>
 						))}
 					</TableRow>
-				</thead>
+				</TableHeader>
 				<TableBody>
 					{data.rows.map((row, index) => (
 						<TableRow key={row.join("-") + index}>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { buttonVariants } from "@tradely/ui/components/button";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import {
 	ArrowDownIcon,
 	ArrowRightIcon,
@@ -95,10 +96,10 @@ function HomeComponent() {
 									{t("home.startFree")}
 								</InteractiveHoverLink>
 							) : null}
-							<a href="#research-demo" className="observatory-text-link">
+							<HeroLink href="#research-demo" className="observatory-text-link">
 								<BookOpenIcon size={16} aria-hidden="true" />
 								{t("home.seeInside")}
-							</a>
+							</HeroLink>
 						</div>
 						<p className="landing-free-note">
 							{startLesson
@@ -177,10 +178,10 @@ function HomeComponent() {
 						<p className="observatory-label">{t("home.pathLabel")}</p>
 						<h2 id="path-heading">{t("home.pathTitle")}</h2>
 					</div>
-					<a href="#curriculum" className="observatory-text-link">
+					<HeroLink href="#curriculum" className="observatory-text-link">
 						{t("home.explore")}
 						<ArrowDownIcon size={15} aria-hidden="true" />
-					</a>
+					</HeroLink>
 				</div>
 				<ol className="landing-path-stages" data-landing-reveal=":scope > li">
 					{stages.map((stage) => {
@@ -194,7 +195,7 @@ function HomeComponent() {
 						const Icon = stage.icon;
 						return (
 							<li key={stage.start}>
-								<a href={`#lesson-${stage.start}`}>
+								<HeroLink href={`#lesson-${stage.start}`}>
 									<div className="landing-stage-meta">
 										<Icon size={21} aria-hidden="true" />
 										<span>
@@ -207,7 +208,7 @@ function HomeComponent() {
 									</div>
 									<h3>{t(stage.title)}</h3>
 									<p>{t(stage.description)}</p>
-								</a>
+								</HeroLink>
 							</li>
 						);
 					})}

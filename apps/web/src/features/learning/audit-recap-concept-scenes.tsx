@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -163,7 +164,8 @@ export function AuditAmountScene({ locale }: Props) {
 									opacity={repaired.includes(row.id) ? 0.2 : 0.04}
 								/>
 								<foreignObject x={25} y={50 + i * 88} width={310} height={70}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										disabled={!known}
 										className="h-full w-full rounded-xl text-center text-sm disabled:opacity-70"
@@ -185,7 +187,7 @@ export function AuditAmountScene({ locale }: Props) {
 												: l("Missing inputs stay missing", "缺失输入保持缺失")}
 										</span>
 										<span className="block font-mono">{money(value)}</span>
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -358,7 +360,8 @@ export function AuditClaimsScene({ locale }: Props) {
 									opacity={selected === c.id ? 0.18 : 0.04}
 								/>
 								<foreignObject x={25} y={52 + i * 62} width={310} height={52}>
-									<button
+									<Button
+										variant="ghost"
 										type="button"
 										className="h-full w-full rounded-lg text-center text-sm"
 										aria-label={`${l("Inspect audit check", "检查审核项")} ${c.label[language]}`}
@@ -373,7 +376,7 @@ export function AuditClaimsScene({ locale }: Props) {
 													? l("Repaired in example", "示例已修复")
 													: l("Needs repair", "需要修复")}
 										</span>
-									</button>
+									</Button>
 								</foreignObject>
 							</g>
 						);
@@ -443,7 +446,8 @@ export function AuditClaimsScene({ locale }: Props) {
 							</Diagram>
 						</div>
 					)}
-					<button
+					<Button
+						variant="ghost"
 						type="button"
 						className="rounded-xl border px-4 py-3 text-sm disabled:opacity-60"
 						disabled={supported}
@@ -452,7 +456,7 @@ export function AuditClaimsScene({ locale }: Props) {
 						{supported
 							? l("Supported or repaired · retain", "支持或已修复 · 保留")
 							: l("Repair selected issue", "修复所选问题")}
-					</button>
+					</Button>
 					<p data-audit-first>
 						{pending.length
 							? `${l("First unresolved check", "首个未解决检查")}: ${pending[0].label[language]}`
@@ -520,7 +524,8 @@ export function AuditSignoffScene({ locale }: Props) {
 								opacity={included.includes(f.id) ? 0.18 : 0.04}
 							/>
 							<foreignObject x={25} y={65 + i * 78} width={310} height={64}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={included.includes(f.id)}
@@ -533,7 +538,7 @@ export function AuditSignoffScene({ locale }: Props) {
 									}
 								>
 									{included.includes(f.id) ? "●" : "○"} {f.label[language]}
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

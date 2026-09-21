@@ -1,4 +1,12 @@
 import { Button } from "@tradely/ui/components/button";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@tradely/ui/components/table";
 import { useState } from "react";
 import type { Locale } from "@/i18n/messages";
 export type ComparisonValue = {
@@ -59,16 +67,16 @@ export function BeforeAfterComparison({
 						: l("Pin current values", "固定当前值")}
 				</Button>
 			</header>
-			<table>
-				<thead>
-					<tr>
-						<th>{l("Measure", "指标")}</th>
-						<th>{l("Before", "原始")}</th>
-						<th>{l("Current", "当前")}</th>
-						<th>{l("Change", "变化")}</th>
-					</tr>
-				</thead>
-				<tbody>
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead>{l("Measure", "指标")}</TableHead>
+						<TableHead>{l("Before", "原始")}</TableHead>
+						<TableHead>{l("Current", "当前")}</TableHead>
+						<TableHead>{l("Change", "变化")}</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
 					{values.map((v) => {
 						const before = pinned ? pin.values[v.id] : v.before;
 						const valid =
@@ -78,33 +86,33 @@ export function BeforeAfterComparison({
 							v.current !== null &&
 							Number.isFinite(v.current);
 						return (
-							<tr key={v.id}>
-								<th scope="row">
+							<TableRow key={v.id}>
+								<TableHead scope="row">
 									{v.label}
 									<small>{v.unit}</small>
-								</th>
-								<td>
+								</TableHead>
+								<TableCell>
 									{before === null ||
 									before === undefined ||
 									!Number.isFinite(before)
 										? "—"
 										: v.format(before)}
-								</td>
-								<td>
+								</TableCell>
+								<TableCell>
 									{v.current === null || !Number.isFinite(v.current)
 										? "—"
 										: v.format(v.current)}
-								</td>
-								<td data-comparison-delta={v.id}>
+								</TableCell>
+								<TableCell data-comparison-delta={v.id}>
 									{valid
 										? v.format((v.current as number) - before)
 										: l("Unavailable", "不可比较")}
-								</td>
-							</tr>
+								</TableCell>
+							</TableRow>
 						);
 					})}
-				</tbody>
-			</table>
+				</TableBody>
+			</Table>
 			<p className="outcome-note">{note}</p>
 		</section>
 	);

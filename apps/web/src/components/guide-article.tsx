@@ -3,6 +3,7 @@ import { BentoCard } from "@tradely/ui/components/bento-grid";
 import { Breadcrumb, BreadcrumbItem } from "@tradely/ui/components/breadcrumb";
 import { buttonVariants } from "@tradely/ui/components/button";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAnalytics } from "@/analytics/context";
@@ -36,7 +37,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 						By Tradely · Updated{" "}
 						<time dateTime={guide.updated}>{guide.updated}</time> · English
 					</p>
-					<InteractiveHoverLink render={<a href="#example" />}>
+					<InteractiveHoverLink render={<HeroLink href="#example" />}>
 						Try the free example
 					</InteractiveHoverLink>
 				</PageIntro>
@@ -88,12 +89,12 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 							<ul className="flex list-disc flex-col gap-3 pl-5">
 								{guide.sources.map((source) => (
 									<li key={source.href}>
-										<a
+										<HeroLink
 											href={source.href}
 											className="underline underline-offset-4"
 										>
 											{source.title}
-										</a>
+										</HeroLink>
 									</li>
 								))}
 							</ul>
@@ -108,7 +109,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 							title={
 								<h2 id="next-heading">Put your understanding into practice</h2>
 							}
-							description="Explore a free research lesson, or follow the full curriculum for structured practice. Related member lessons require Tradely paid access. Sign in when you want to save course progress."
+							description="Explore a free research lesson, or follow the full curriculum for structured practice. All current Tradely visual lessons are free. Sign in when you want to save study marks across devices."
 						>
 							<div className="flex flex-wrap gap-3">
 								{free ? (

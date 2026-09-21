@@ -5,7 +5,8 @@ import {
 } from "@tradely/ui/components/alert";
 import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
-import { FieldGroup } from "@tradely/ui/components/field";
+import { FieldGroup, FieldSet } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import {
 	createContext,
@@ -406,7 +407,7 @@ export function ExerciseTimingScene({ locale }: Props) {
 						className="contract-svg-handle"
 					/>
 					<foreignObject x="20" y="244" width="320" height="80">
-						<input
+						<RangeSlider
 							id={id}
 							className="contract-range contract-svg-range"
 							type="range"
@@ -724,7 +725,7 @@ export function SettlementComparisonScene({ locale }: Props) {
 	return (
 		<SceneLayout
 			toolbar={
-				<fieldset
+				<FieldSet
 					className="settlement-presets"
 					aria-label={l("Settlement examples", "结算示例")}
 					data-lesson-action="scenario"
@@ -742,7 +743,7 @@ export function SettlementComparisonScene({ locale }: Props) {
 								: l("Cash settlement", "现金结算")}
 						</Button>
 					))}
-				</fieldset>
+				</FieldSet>
 			}
 			diagram={
 				<Suspense fallback={fallback}>

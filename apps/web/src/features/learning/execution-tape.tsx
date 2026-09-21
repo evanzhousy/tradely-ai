@@ -1,3 +1,12 @@
+import {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@tradely/ui/components/table";
 import { executionMoney as money } from "@/domain/learning/execution-concept";
 import type { Locale } from "@/i18n/messages";
 
@@ -42,39 +51,39 @@ export function ExecutionTape({
 			</header>
 			{event ? <p className="market-event">{event}</p> : null}
 			{rows.length ? (
-				<table className="book-table">
-					<caption className="sr-only">
+				<Table className="book-table">
+					<TableCaption className="sr-only">
 						{l(
 							"Execution records · price in stated units · size in contracts",
 							"成交记录 · 价格采用给定单位 · 数量：张",
 						)}
-					</caption>
-					<thead>
-						<tr>
-							<th>{l("Record", "记录")}</th>
-							<th>{l("Price", "价格")}</th>
-							<th>{l("Size", "数量")}</th>
-						</tr>
-					</thead>
-					<tbody>
+					</TableCaption>
+					<TableHeader>
+						<TableRow>
+							<TableHead>{l("Record", "记录")}</TableHead>
+							<TableHead>{l("Price", "价格")}</TableHead>
+							<TableHead>{l("Size", "数量")}</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
 						{rows.map((row) => (
-							<tr key={row.id} data-tape-id={row.id}>
-								<th scope="row">
+							<TableRow key={row.id} data-tape-id={row.id}>
+								<TableHead scope="row">
 									{row.id}
 									{row.contract ? (
 										<small className="block font-normal">{row.contract}</small>
 									) : null}
 									<small className="block font-normal">{row.at}</small>
-								</th>
-								<td>
+								</TableHead>
+								<TableCell>
 									{money(row.price)}
 									<small className="block">{row.unit ?? "USD/share"}</small>
-								</td>
-								<td>{row.quantity}</td>
-							</tr>
+								</TableCell>
+								<TableCell>{row.quantity}</TableCell>
+							</TableRow>
 						))}
-					</tbody>
-				</table>
+					</TableBody>
+				</Table>
 			) : (
 				<p className="market-context">
 					{l("No confirmed executions at this step.", "此步骤尚无已确认成交。")}

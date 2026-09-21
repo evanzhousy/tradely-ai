@@ -5,6 +5,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { foundationIntroductions } from "@/content/foundation-introductions";
 import type { Locale } from "@/i18n/messages";
 
@@ -49,12 +50,15 @@ export function LessonIntroduction({
 							: "Terms you can look up here"}
 					</h3>
 					{intro.terms.map((term) => (
-						<details key={term.name.en} className="rounded-lg border p-3">
-							<summary className="cursor-pointer font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-								{term.name[locale]}
-							</summary>
+						<DisclosurePanel
+							key={term.name.en}
+							className="rounded-lg border p-3"
+							summary={term.name[locale]}
+							triggerClassName="font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							bodyClassName="pt-2"
+						>
 							<p className="mt-2 text-sm">{term.definition[locale]}</p>
-						</details>
+						</DisclosurePanel>
 					))}
 				</div>
 			</CardContent>

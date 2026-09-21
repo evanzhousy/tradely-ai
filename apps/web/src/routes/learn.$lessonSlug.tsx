@@ -2,6 +2,9 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@tradely/ui/components/badge";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import { ScrollShadow } from "@tradely/ui/components/scroll-shadow";
+import { Surface } from "@tradely/ui/components/surface";
 import {
 	ArrowLeftIcon,
 	ArrowRightIcon,
@@ -63,6 +66,7 @@ function LessonPage() {
 	const tracked = useRef<string | null>(null);
 	const started = useRef<string | null>(null);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+	const [notesExpanded, setNotesExpanded] = useState(false);
 	useEffect(() => {
 		if (!isCapturing) {
 			tracked.current = null;
@@ -108,12 +112,7 @@ function LessonPage() {
 	]);
 	useEffect(() => {
 		const reveal = () => {
-			const notes = document.getElementById("lesson-notes");
-			if (
-				window.location.hash === "#lesson-notes" &&
-				notes instanceof HTMLDetailsElement
-			)
-				notes.open = true;
+			if (window.location.hash === "#lesson-notes") setNotesExpanded(true);
 		};
 		reveal();
 		window.addEventListener("hashchange", reveal);
@@ -139,7 +138,10 @@ function LessonPage() {
 			<aside
 				className={`lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r py-8 transition-[padding] duration-200 lg:block ${sidebarCollapsed ? "px-2" : "px-4"}`}
 			>
-				<div className="sticky top-24 flex flex-col gap-6">
+				<Surface
+					variant="secondary"
+					className="sticky top-24 flex flex-col gap-6 rounded-none"
+				>
 					<div
 						className={
 							sidebarCollapsed
@@ -183,12 +185,12 @@ function LessonPage() {
 							)}
 						</Button>
 					</div>
-					<div
+					<ScrollShadow
 						id="lesson-curriculum-sidebar-content"
+						orientation="vertical"
+						size={48}
 						className={
-							sidebarCollapsed
-								? "hidden"
-								: "max-h-[calc(100svh-12rem)] overflow-y-auto pr-1"
+							sidebarCollapsed ? "hidden" : "max-h-[calc(100svh-12rem)] pr-1"
 						}
 					>
 						<CourseList
@@ -196,8 +198,8 @@ function LessonPage() {
 							completedIds={completedIds}
 							currentLessonId={lesson.id}
 						/>
-					</div>
-				</div>
+					</ScrollShadow>
+				</Surface>
 			</aside>
 			<div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
 				<div className="mx-auto flex max-w-[980px] flex-col gap-7">
@@ -234,8 +236,10 @@ function LessonPage() {
 						locale={locale}
 						data={page.conceptData}
 					/>
-					<details className="lesson-notes">
-						<summary>{locale === "zh" ? "快速回顾" : "Quick recap"}</summary>
+					<DisclosurePanel
+						className="lesson-notes"
+						summary={locale === "zh" ? "快速回顾" : "Quick recap"}
+					>
 						<div className="mx-auto max-w-md py-4">
 							<LessonInfographic
 								subject={lesson.id}
@@ -244,7 +248,7 @@ function LessonPage() {
 							/>
 							<p className="text-muted-foreground text-sm">{lesson.summary}</p>
 						</div>
-					</details>
+					</DisclosurePanel>
 					<section id="study-mark" className="flex flex-col gap-4">
 						{progress.signedIn ? (
 							<CompleteLessonButton
@@ -297,31 +301,36 @@ function LessonPage() {
 							)}
 						</nav>
 					</section>
-					<details id="lesson-notes" className="lesson-notes">
-						<summary>
-							{locale === "zh" ? "笔记与来源" : "Notes & sources"}
-						</summary>
+					<DisclosurePanel
+						id="lesson-notes"
+						className="lesson-notes"
+						summary={locale === "zh" ? "笔记与来源" : "Notes & sources"}
+						isExpanded={notesExpanded}
+						onExpandedChange={setNotesExpanded}
+					>
 						<article className="lesson-prose max-w-[72ch]">
 							<ReactMarkdown remarkPlugins={[remarkGfm]}>
 								{(locale === "zh" ? page.bodyZh : page.body) ?? ""}
 							</ReactMarkdown>
 						</article>
-					</details>
+					</DisclosurePanel>
 					{getTradingFlowLab(lesson.id) ? (
-						<details className="lesson-notes">
-							<summary>
-								{locale === "zh"
+						<DisclosurePanel
+							className="lesson-notes"
+							summary={
+								locale === "zh"
 									? "在 TradingFlow 中查看应用示例"
-									: "See the application in TradingFlow"}
-							</summary>
+									: "See the application in TradingFlow"
+							}
+						>
 							<TradingFlowLab lessonId={lesson.id} />
-						</details>
+						</DisclosurePanel>
 					) : null}
 					{page.media ? (
-						<details className="lesson-notes">
-							<summary>
-								{locale === "zh" ? "补充视频" : "Companion video"}
-							</summary>
+						<DisclosurePanel
+							className="lesson-notes"
+							summary={locale === "zh" ? "补充视频" : "Companion video"}
+						>
 							<LessonVideo
 								lesson={lesson}
 								media={page.media}
@@ -331,15 +340,16 @@ function LessonPage() {
 										: 0
 								}
 							/>
-						</details>
+						</DisclosurePanel>
 					) : null}
 					{histories.length > 0 || attempt ? (
-						<details className="lesson-notes" open={!!attempt}>
-							<summary>
-								{locale === "zh"
-									? "以前保存的学习记录"
-									: "Previously saved work"}
-							</summary>
+						<DisclosurePanel
+							className="lesson-notes"
+							defaultExpanded={!!attempt}
+							summary={
+								locale === "zh" ? "以前保存的学习记录" : "Previously saved work"
+							}
+						>
 							<div className="flex flex-col gap-5 pt-4">
 								{histories.map((item) => (
 									<Link
@@ -371,7 +381,7 @@ function LessonPage() {
 									</Suspense>
 								) : null}
 							</div>
-						</details>
+						</DisclosurePanel>
 					) : null}
 				</div>
 			</div>

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@tradely/ui/components/button";
+import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { XIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
@@ -55,10 +56,12 @@ export function CookieConsentBanner() {
 					>
 						{t("analytics.consentSummary")}
 					</p>
-					<details open={preferencesOpen || undefined}>
-						<summary className="cursor-pointer text-sm underline underline-offset-4">
-							{t("analytics.details")}
-						</summary>
+					<DisclosurePanel
+						defaultExpanded={preferencesOpen}
+						summary={t("analytics.details")}
+						triggerClassName="text-sm underline underline-offset-4"
+						bodyClassName="pt-2"
+					>
 						<p
 							id="analytics-consent-description"
 							className="text-muted-foreground text-sm leading-6"
@@ -72,7 +75,7 @@ export function CookieConsentBanner() {
 								{t("footer.cookies")}
 							</Link>
 						</p>
-					</details>
+					</DisclosurePanel>
 				</div>
 				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 					<Button variant="outline" onClick={() => setConsent("denied")}>

@@ -1,3 +1,12 @@
+import {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@tradely/ui/components/table";
 import type { DepthLevel } from "@/domain/learning/execution-concept";
 import { executionMoney as money } from "@/domain/learning/execution-concept";
 import type { Locale } from "@/i18n/messages";
@@ -48,7 +57,7 @@ export function OrderBookPanel({
 		? Math.min(...availableAsks.map((row) => row.price))
 		: null;
 	const row = (level: BookRow, side: "bid" | "ask") => (
-		<tr
+		<TableRow
 			key={`${side}:${level.price}`}
 			data-book-side={side}
 			data-book-active={
@@ -60,11 +69,11 @@ export function OrderBookPanel({
 			data-eligible={level.eligible}
 			data-print-match={print?.price === level.price}
 		>
-			<th scope="row">
+			<TableHead scope="row">
 				{side === "ask" ? l("Ask", "卖价") : l("Bid", "买价")}
-			</th>
-			<td className="book-price">{money(level.price)}</td>
-			<td className="book-size">
+			</TableHead>
+			<TableCell className="book-price">{money(level.price)}</TableCell>
+			<TableCell className="book-size">
 				<span
 					className="book-size-bar"
 					aria-hidden="true"
@@ -73,9 +82,9 @@ export function OrderBookPanel({
 					}}
 				/>
 				<span>{level.size ?? "—"}</span>
-			</td>
+			</TableCell>
 			{depth ? (
-				<td>
+				<TableCell>
 					{level.filled ? (
 						<strong className="book-fill">−{level.filled}</strong>
 					) : level.eligible === false ? (
@@ -83,9 +92,9 @@ export function OrderBookPanel({
 					) : (
 						"—"
 					)}
-				</td>
+				</TableCell>
 			) : null}
-		</tr>
+		</TableRow>
 	);
 	return (
 		<section
@@ -114,34 +123,34 @@ export function OrderBookPanel({
 					{event}
 				</p>
 			) : null}
-			<table className="book-table">
-				<caption className="sr-only">
+			<Table className="book-table">
+				<TableCaption className="sr-only">
 					{l("Price and displayed quantity", "价格与可见数量")}
-				</caption>
-				<thead>
-					<tr>
-						<th>{l("Side", "方向")}</th>
-						<th>{l("Price", "价格")}</th>
-						<th>{l("Size", "数量")}</th>
-						{depth ? <th>{l("Filled", "已成交")}</th> : null}
-					</tr>
-				</thead>
-				<tbody>
+				</TableCaption>
+				<TableHeader>
+					<TableRow>
+						<TableHead>{l("Side", "方向")}</TableHead>
+						<TableHead>{l("Price", "价格")}</TableHead>
+						<TableHead>{l("Size", "数量")}</TableHead>
+						{depth ? <TableHead>{l("Filled", "已成交")}</TableHead> : null}
+					</TableRow>
+				</TableHeader>
+				<TableBody>
 					{[...asks]
 						.sort((a, b) => b.price - a.price)
 						.map((level) => row(level, "ask"))}
-					<tr className="book-spread">
-						<td colSpan={depth ? 4 : 3}>
+					<TableRow className="book-spread">
+						<TableCell colSpan={depth ? 4 : 3}>
 							{bestAsk !== null && bestBid !== null
 								? `${l("Spread", "价差")} ${money(bestAsk - bestBid)}`
 								: l("Reference unavailable", "参考不可用")}
-						</td>
-					</tr>
+						</TableCell>
+					</TableRow>
 					{[...bids]
 						.sort((a, b) => b.price - a.price)
 						.map((level) => row(level, "bid"))}
-				</tbody>
-			</table>
+				</TableBody>
+			</Table>
 			{print ? (
 				<p className="market-print" data-book-print>
 					<strong>

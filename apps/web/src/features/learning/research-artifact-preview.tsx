@@ -1,4 +1,13 @@
 import { Button } from "@tradely/ui/components/button";
+import {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@tradely/ui/components/table";
 import { useState } from "react";
 import {
 	type PacketTeachingRecord,
@@ -122,22 +131,22 @@ export function ResearchArtifactPreview({
 							{l("missing; complete total unavailable", "缺失，完整总量不可用")}
 						</p>
 					) : null}
-					<table className="artifact-source-table">
-						<caption>
+					<Table className="artifact-source-table">
+						<TableCaption>
 							{l("Select a value to follow its source", "选择数值，追踪来源")}
-						</caption>
-						<thead>
-							<tr>
-								<th>{l("Row", "行")}</th>
-								<th>{l("Contracts", "张数")}</th>
-								<th>{l("Price/share", "每股价格")}</th>
-								<th>{l("Multiplier", "乘数")}</th>
-							</tr>
-						</thead>
-						<tbody>
+						</TableCaption>
+						<TableHeader>
+							<TableRow>
+								<TableHead>{l("Row", "行")}</TableHead>
+								<TableHead>{l("Contracts", "张数")}</TableHead>
+								<TableHead>{l("Price/share", "每股价格")}</TableHead>
+								<TableHead>{l("Multiplier", "乘数")}</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
 							{rows.map((row) => (
-								<tr key={row.id} data-selected={selected === row.id}>
-									<th scope="row">
+								<TableRow key={row.id} data-selected={selected === row.id}>
+									<TableHead scope="row">
 										<Button
 											variant="ghost"
 											size="sm"
@@ -146,16 +155,16 @@ export function ResearchArtifactPreview({
 										>
 											{row.id}
 										</Button>
-									</th>
-									<td>{row.contracts ?? "—"}</td>
-									<td>
+									</TableHead>
+									<TableCell>{row.contracts ?? "—"}</TableCell>
+									<TableCell>
 										{row.priceCents === null ? "—" : `$${row.priceCents / 100}`}
-									</td>
-									<td>{row.multiplier ?? "—"}</td>
-								</tr>
+									</TableCell>
+									<TableCell>{row.multiplier ?? "—"}</TableCell>
+								</TableRow>
 							))}
-						</tbody>
-					</table>
+						</TableBody>
+					</Table>
 					<p className="artifact-calculation" data-source-calculation>
 						{current
 							? current.value === null

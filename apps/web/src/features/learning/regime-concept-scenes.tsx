@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -352,7 +353,8 @@ export function RegimeFlipScene({ locale }: Props) {
 								</SvgText>
 							)}
 							<foreignObject x={x(p.spot) - 25} y={382} width={50} height={38}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-lg border text-xs"
 									aria-label={`${l("Spot sample", "现价样本")} ${p.spot}`}
@@ -360,7 +362,7 @@ export function RegimeFlipScene({ locale }: Props) {
 									onClick={() => setIndex(i)}
 								>
 									{p.spot}
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -488,7 +490,8 @@ export function RegimeEvidenceScene({ locale }: Props) {
 								opacity={has(row.id) ? 0.16 : 0.04}
 							/>
 							<foreignObject x={25} y={22 + i * 112} width={310} height={94}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={has(row.id)}
@@ -503,7 +506,7 @@ export function RegimeEvidenceScene({ locale }: Props) {
 											? row.unit
 											: l("Reveal supplied record", "展示给定记录")}
 									</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

@@ -1,6 +1,7 @@
 import { Button } from "@tradely/ui/components/button";
 import { Checkbox } from "@tradely/ui/components/checkbox";
 import { CircularProgress } from "@tradely/ui/components/circular-progress";
+import { FieldSet } from "@tradely/ui/components/field";
 import { CheckIcon, ListChecksIcon, RotateCcwIcon } from "lucide-react";
 import { useId } from "react";
 import { coachingCopy } from "@/features/learning/coaching-copy";
@@ -124,7 +125,7 @@ export function EvidenceChecklistWidget({
 					{copy.remaining[locale].replace("{count}", String(remaining))}
 				</span>
 			</div>
-			<fieldset aria-labelledby={id}>
+			<FieldSet aria-labelledby={id}>
 				{sampleCheckpoints.map((step) => (
 					<Checkbox.Root
 						key={step.id}
@@ -144,7 +145,7 @@ export function EvidenceChecklistWidget({
 						</Checkbox.Content>
 					</Checkbox.Root>
 				))}
-			</fieldset>
+			</FieldSet>
 			<div className="platform-checklist-footer">
 				<Button size="sm" variant="ghost" onClick={onReset}>
 					<RotateCcwIcon data-icon="inline-start" aria-hidden="true" />

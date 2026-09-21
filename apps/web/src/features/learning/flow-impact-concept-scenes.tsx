@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import {
@@ -472,7 +473,8 @@ export function FlowLineageScene({ locale }: Props) {
 								opacity={source === id ? 0.2 : 0.05}
 							/>
 							<foreignObject x={24} y={20 + i * 96} width={312} height={78}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={source === id}
@@ -487,7 +489,7 @@ export function FlowLineageScene({ locale }: Props) {
 												: signed(data.gex.value)}
 									</span>
 									<span className="block text-xs">{unit}</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}

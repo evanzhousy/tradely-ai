@@ -4,6 +4,7 @@ import {
 	AlertTitle,
 } from "@tradely/ui/components/alert";
 import { FieldGroup } from "@tradely/ui/components/field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
 import { createContext, useContext, useState } from "react";
 import { quoteMoney as money } from "@/domain/learning/quote-concept";
@@ -548,7 +549,7 @@ export function PositionScopeScene({ locale }: Props) {
 						}
 					/>
 					<foreignObject x="20" y="416" width="320" height="80">
-						<input
+						<RangeSlider
 							type="range"
 							className="contract-range contract-svg-range"
 							aria-label={l("Position replay timeline", "持仓回放时间轴")}

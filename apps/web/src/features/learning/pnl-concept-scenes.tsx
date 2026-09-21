@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import * as m from "motion/react-m";
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
@@ -179,7 +180,8 @@ export function StockAccountingScene({ locale }: Props) {
 							width={80}
 							height={42}
 						>
-							<button
+							<Button
+								variant="ghost"
 								type="button"
 								className="h-full w-full rounded-lg border text-xs"
 								onClick={() => {
@@ -189,7 +191,7 @@ export function StockAccountingScene({ locale }: Props) {
 								}}
 							>
 								{label}
-							</button>
+							</Button>
 						</foreignObject>
 					))}
 					{result.matched.map((lot, i) => (
@@ -450,7 +452,8 @@ export function AccountCashScene({ locale }: Props) {
 								opacity={selected === row.id ? 0.18 : 0.04}
 							/>
 							<foreignObject x={25} y={57 + i * 97} width={310} height={77}>
-								<button
+								<Button
+									variant="ghost"
 									type="button"
 									className="h-full w-full rounded-xl text-center text-sm"
 									aria-pressed={selected === row.id}
@@ -466,7 +469,7 @@ export function AccountCashScene({ locale }: Props) {
 											? `${number((row.value / result.equity) * 100)}%`
 											: l("Allocation unavailable", "配置比例不可用")}
 									</span>
-								</button>
+								</Button>
 							</foreignObject>
 						</g>
 					))}
@@ -593,7 +596,8 @@ export function OptionValueScene({ locale }: Props) {
 							width={150}
 							height={60}
 						>
-							<button
+							<Button
+								variant="ghost"
 								type="button"
 								className={`h-full w-full rounded-xl border text-sm ${side === value ? "bg-primary/20" : ""}`}
 								aria-pressed={side === value}
@@ -602,7 +606,7 @@ export function OptionValueScene({ locale }: Props) {
 								{value === "long"
 									? l("Long call", "看涨多头")
 									: l("Uncovered short call", "未覆盖看涨空头")}
-							</button>
+							</Button>
 						</foreignObject>
 					))}
 					<SvgText x={180} y={123}>

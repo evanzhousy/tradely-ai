@@ -2,7 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Breadcrumb, BreadcrumbItem } from "@tradely/ui/components/breadcrumb";
 import { Button } from "@tradely/ui/components/button";
 import { Checkbox } from "@tradely/ui/components/checkbox";
+import {
+	Field,
+	FieldLabel,
+	FieldLegend,
+	FieldSet,
+} from "@tradely/ui/components/field";
 import { Kbd, KbdGroup } from "@tradely/ui/components/kbd";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import {
 	NativeSelect,
 	NativeSelectOption,
@@ -132,13 +139,13 @@ function HousePage() {
 						8311 NE 140th Street · Kirkland, Washington
 					</p>
 				</div>
-				<a
+				<HeroLink
 					href="/models/kirkland-house/house.glb"
 					download
 					className="inline-flex items-center gap-2 text-sm underline underline-offset-4"
 				>
 					Download 3D model <ArrowUpRight className="size-4" />
-				</a>
+				</HeroLink>
 			</div>
 			<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3 text-sm">
@@ -171,11 +178,11 @@ function HousePage() {
 				aria-label="Sunlight controls"
 				className="house-chrome mb-5 grid gap-5 rounded-2xl bg-card p-5 md:grid-cols-3"
 			>
-				<label className="flex flex-col gap-3 text-sm">
-					<span className="flex justify-between gap-2">
+				<Field className="gap-3 text-sm">
+					<FieldLabel className="flex w-full justify-between gap-2">
 						<span>Sun direction</span>
 						<output>{direction}°</output>
-					</span>
+					</FieldLabel>
 					<Slider.Root
 						aria-label="Sun direction"
 						minValue={0}
@@ -194,15 +201,15 @@ function HousePage() {
 					<span className="text-muted-foreground text-xs">
 						0° front · 90° right · 180° rear · 270° left
 					</span>
-				</label>
-				<label className="flex flex-col gap-3 text-sm">
-					<span className="flex justify-between gap-2">
+				</Field>
+				<Field className="gap-3 text-sm">
+					<FieldLabel className="flex w-full justify-between gap-2">
 						<span>Sunset timeline</span>
 						<output>
 							{Math.round(sunset * 100)}% · {Math.round(55 - sunset * 61)}°
 							elevation
 						</output>
-					</span>
+					</FieldLabel>
 					<Slider.Root
 						aria-label="Sunset timeline"
 						minValue={0}
@@ -224,7 +231,7 @@ function HousePage() {
 					<span className="text-muted-foreground text-xs">
 						Daylight → golden hour → dusk. Visual simulation.
 					</span>
-				</label>
+				</Field>
 				<div className="flex flex-col gap-3">
 					<div className="flex items-center justify-between gap-3 text-sm">
 						Sunset duration
@@ -417,7 +424,7 @@ function HousePage() {
 						>
 							Reset avatar position
 						</Button>
-						<fieldset
+						<FieldSet
 							className="grid grid-cols-3 gap-1"
 							aria-label="Touch walking controls"
 						>
@@ -457,7 +464,7 @@ function HousePage() {
 									{label}
 								</Button>
 							))}
-						</fieldset>
+						</FieldSet>
 					</section>
 					<section
 						aria-labelledby="house-views"
@@ -497,11 +504,13 @@ function HousePage() {
 							</Button>
 						</div>
 					</section>
-					<fieldset
+					<FieldSet
 						disabled={navigation.area !== "exterior" || busy}
 						className="flex flex-col gap-3"
 					>
-						<legend className="mb-3 font-medium text-sm">Visible layers</legend>
+						<FieldLegend className="mb-3 font-medium text-sm">
+							Visible layers
+						</FieldLegend>
 						{(["Roofs", "Landscape", "Context"] as const).map((layer) => (
 							<Checkbox.Root
 								key={layer}
@@ -519,7 +528,7 @@ function HousePage() {
 								</Checkbox.Content>
 							</Checkbox.Root>
 						))}
-					</fieldset>
+					</FieldSet>
 					<div className="mt-auto border-border border-t pt-5 text-muted-foreground text-xs leading-relaxed">
 						<p>
 							Drag to orbit · Scroll to zoom
@@ -545,14 +554,14 @@ function HousePage() {
 					connections and dimensions are inferred. Enter through the front door
 					to explore two interior levels.
 				</p>
-				<a
+				<HeroLink
 					className="underline underline-offset-4"
 					href="https://www.zillow.com/homedetails/8311-NE-140th-St-8311-Kirkland-WA-98034/59698516_zpid/"
 					target="_blank"
 					rel="noreferrer"
 				>
 					View reference listing ↗
-				</a>
+				</HeroLink>
 			</div>
 		</main>
 	);

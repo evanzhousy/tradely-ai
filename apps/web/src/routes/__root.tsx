@@ -6,6 +6,7 @@ import {
 	useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { Toast } from "@tradely/ui/components/toast";
 
 import { RouteAnalytics } from "../analytics/route-analytics";
@@ -90,11 +91,11 @@ function RootDocument() {
 function SkipLink() {
 	const { t } = useI18n();
 	return (
-		<a
+		<HeroLink
 			href="#main-content"
 			className="sr-only fixed top-3 left-3 z-50 rounded-xl bg-background px-4 py-2 font-medium text-foreground shadow-lg focus:not-sr-only focus:outline-none focus:ring-3 focus:ring-ring/40"
 		>
 			{t("common.skipToContent")}
-		</a>
+		</HeroLink>
 	);
 }

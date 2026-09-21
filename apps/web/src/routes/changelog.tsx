@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { PageIntro } from "@/components/page-intro";
 import { changelog } from "@/content/changelog";
 import { pageHead } from "@/seo/pages";
@@ -28,13 +29,13 @@ function ChangelogPage() {
 						className="grid scroll-mt-24 gap-6 border-border border-b pb-12 md:grid-cols-[180px_1fr] md:gap-12"
 					>
 						<div className="self-start md:sticky md:top-24">
-							<a
+							<HeroLink
 								href={`#${entry.id}`}
 								aria-label={`Permalink to update for ${entry.dateLabel}`}
 								className="inline-flex min-h-11 items-center rounded font-mono text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4"
 							>
 								<time dateTime={entry.date}>{entry.dateLabel}</time>
-							</a>
+							</HeroLink>
 						</div>
 						<div className="flex flex-col gap-6">
 							<h2

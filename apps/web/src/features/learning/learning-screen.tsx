@@ -19,6 +19,7 @@ import {
 	FieldLegend,
 	FieldSet,
 } from "@tradely/ui/components/field";
+import { Link as HeroLink } from "@tradely/ui/components/link";
 import { RadioGroup, RadioGroupItem } from "@tradely/ui/components/radio-group";
 import { Separator } from "@tradely/ui/components/separator";
 import { StepIndicator } from "@tradely/ui/components/step-indicator";
@@ -693,14 +694,14 @@ function LearningScreenContent({
 												: "Your practice result is saved to your account. Your study mark does not change automatically."}
 									</p>
 									{persistence === "account" && !view.archived ? (
-										<a
+										<HeroLink
 											href="#study-mark"
 											className="underline underline-offset-4"
 										>
 											{locale === "zh"
 												? "查看或记录学习标记"
 												: "View or record your study mark"}
-										</a>
+										</HeroLink>
 									) : null}
 								</AlertDescription>
 							</Alert>
