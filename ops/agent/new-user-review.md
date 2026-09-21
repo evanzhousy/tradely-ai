@@ -10,19 +10,25 @@ Use **[@Browser](plugin://browser@openai-bundled)** to experience Tradely as a f
 
 This runbook owns the exploratory review procedure. The external run folder owns the evolving discovery queue, learning record, findings, and evidence. The [agent index](README.md) owns routing. The separate [Browser E2E workflow](e2e-testing/README.md) owns contract-driven regression testing; do not import its source-first refresh or predefined answers into this review.
 
+### Required Browser surface
+
+Use only the user-named **[@Browser](plugin://browser@openai-bundled)** surface for every product interaction, observation, screenshot and capture in this review. Do not use Ego Browser, Ego Lite, the `ego-browser` CLI, a different browser profile, or an external browser-automation process as a substitute. The accessibility, screenshot and DOM controls provided inside @Browser are part of the allowed surface; direct browser automation outside @Browser is not.
+
+The Browser surface is an evidence boundary, not an interchangeable implementation detail. If @Browser is unavailable or cannot reach the target, mark the affected run `BLOCKED` rather than switching tools. Evidence captured in another browser surface cannot satisfy this runbook or be merged into a Browser-only first-visit claim. Start a new labeled external run when correcting a surface mismatch, and retain the older run only as historical, non-authoritative evidence.
+
 Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-maintainer` skill. Writing or maintaining this document alone does not authorize or constitute an operational review.
 
 ## Agent Handoff
 
 Last updated: 2026-09-21
 
-Latest run: `PARTIAL REVIEW` through Round 071. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`. Representative evidence: `/tmp/tradely-new-user-review/20260919-greenfield/evidence/new-user-review.gif` and `auth-blocker-resolved.gif`. OTP content was not retained.
+Latest authoritative run: Browser-only greenfield review started 2026-09-21 at `/tmp/tradely-new-user-review/20260921-browser-greenfield/`. The earlier `/tmp/tradely-new-user-review/20260919-greenfield/` run used Ego Browser and is historical only; none of its coverage, findings, learning verdicts or evidence count toward the Browser-only run.
 
-- The Browser review reconciled 53 unique pages: 52 `REVIEWED`, one `BLOCKED` Previous purchases page, plus two non-page legacy grouping aliases. It reviewed all 42 learning resources and demonstrated all 36 stated lesson objectives through a source-bounded final synthesis.
-- P-046 `/pricing#past-purchases` is the only page blocker: after the authorized test account settles, the page shows `Something went wrong`; Retry reproduces the failure, and the initial Development details expose `No QueryClient set, use QueryClientProvider to set one`. The unread records/empty-state body prevents `COMPLETE REVIEW`.
-- If the user authorizes remediation, freeze the blind report first, diagnose/fix P-046 in a separate source-aware phase, then retest only the affected page and update its terminal status. Do not rewrite the original observation or other findings from source evidence.
-- The persisted consent/banner branch remains `UNASSESSED` by user-approved scope and does not block authenticated review. Do not clear Browser storage to change that classification.
-- Keep reports, screenshots and GIFs outside the repository. The reusable Feishu `Other Accounts` and Neon test-identity procedures remain current; runbook maintenance added no new durable procedure in Round 071.
+- Resume Round 004 in the existing Codex In-app @Browser tab. Rounds 001–003 reviewed Home and lessons 1–2; the current lesson 2 changed-input result is complete, and the visible `Next lesson` handoff leads to premium/payoff/profit. The Home-derived exploration map and initial P-001–P-007 inventory remain frozen.
+- Rebuild every page, resource, finding and learning verdict from @Browser evidence. Do not copy prior Ego Browser observations into the new report, even when the behavior appears similar.
+- Keep first-visit consent `UNASSESSED` if the @Browser session already has a persisted choice; the user explicitly scoped Browser-local clearing out. Continue guest and authenticated review without treating this branch as a global blocker.
+- Use the authorized `public@tfsharedspace.com` Feishu account only when an authenticated journey is reached through the UI. Enter OTPs only inside @Browser and exclude them from all captures and records.
+- Keep the new report, state, screenshots and GIF evidence outside the repository. The run is currently `IN PROGRESS`; no Browser-only finding or learning verdict is final yet.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
@@ -55,7 +61,7 @@ For a resume, supply the previous external run folder and say `continue`. Reuse 
 2. Record UTC start time, environment (local/Preview/production), sanitized entry URL, browser/viewport, language, account alias, and supplied revision/deployment evidence. Record unknown revision evidence as unknown. Do not inspect Git or deployment source from the review context.
 3. Start as a guest in a fresh, isolated @Browser session where supported. Do not clear the user's normal cookies or sign them out. If session isolation is unavailable, record existing login/progress/consent and the resulting first-visit limitation. A returning or pre-completed account cannot prove fresh onboarding.
 4. Default persona: comfortable using websites, new to the platform and the subject it teaches, trying to understand its value and learn enough to use its exercises independently. Pick the user's requested language/device or record the actual default. Do not invent real personal circumstances, trading history, disabilities, or prior experience.
-5. Discover the tools for the named @Browser surface and read their current instructions. Use that surface for page navigation, reading, clicking, typing, scrolling, media controls, and exercises. Check actual capture/export capabilities; do not assume a GIF tool exists. No Playwright/Puppeteer, shell requests, source tests, database reads, or hidden browser state may substitute for the user journey or learning evidence.
+5. Discover the tools for the named @Browser surface and read their current instructions. Use that surface for page navigation, reading, clicking, typing, scrolling, media controls, exercises, screenshots and capture. Check actual capture/export capabilities; do not assume a GIF tool exists. Ego Browser, Ego Lite, `ego-browser`, a different browser profile, external Playwright/Puppeteer, shell requests, source tests, database reads, or hidden browser state may not substitute for @Browser user-journey or learning evidence.
 6. Create an external folder such as `/tmp/tradely-new-user-review/<UTC-run-id>/` with `report.md`, `state.md`, and `evidence/`. Use absolute paths when linking artifacts. Check that the folder is outside the repository and writable. Establish a supported way to save actual browser interactions as GIFs; pause recording around credentials/OTP entry. If GIF export is unavailable, preserve observations and an evidence blocker while continuing other useful work. Screenshots alone do not satisfy the repository's GIF requirement.
 
 For authenticated test journeys, an authorized reset of the assigned test identity in the local/test auth system followed by a normal sign-out/sign-in is sufficient to verify account creation, OTP, saved progress and resume behavior. Do not clear the user's Browser storage to achieve this. Record any existing consent or local-session contamination separately. A clean Browser-storage state is required only when the round explicitly claims a first-visit consent/banner result; if that state cannot be isolated, mark only the consent branch `UNASSESSED` and continue the authenticated review.
