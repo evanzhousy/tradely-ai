@@ -168,6 +168,7 @@ const messages = {
 		"language.chinese": "中文",
 		"theme.light": "Use light theme",
 		"theme.dark": "Use dark theme",
+		"theme.change": "Change color theme",
 		"auth.localPreview": "Local preview",
 		"auth.signIn": "Sign in",
 		"auth.loading": "Loading account",
@@ -224,6 +225,9 @@ const messages = {
 		"progress.signInToSync": "Sign in to sync progress across devices.",
 		"progress.accountCurrent": "Account progress is current.",
 		"progress.signInToRecord": "Sign in to record completion.",
+		"progress.studied": "Studied",
+		"progress.viewedOnDevice": "Viewed on this device",
+		"progress.notStarted": "Not started",
 		"home.coursePractice": "{count} visual lessons",
 		"home.heroTitle": "Read the market. Then verify the story.",
 		"home.heroDescription":
@@ -284,6 +288,8 @@ const messages = {
 			"The written lesson below provides the complete accessible explanation and practice instructions.",
 		"video.browserFallback": "Your browser does not support HTML video.",
 		"lesson.navigation": "Lesson navigation",
+		"lesson.continueNote":
+			"Interactive steps are optional practice. Continue whenever you are ready; moving on does not mark this lesson as studied.",
 		"lesson.courseNavigation":
 			"Course navigation · {percentage}% marked as studied",
 		"lesson.writtenLesson": "Written lesson",
@@ -483,6 +489,7 @@ const messages = {
 		"language.chinese": "中文",
 		"theme.light": "使用浅色主题",
 		"theme.dark": "使用深色主题",
+		"theme.change": "切换颜色主题",
 		"auth.localPreview": "本地预览",
 		"auth.signIn": "登录",
 		"auth.loading": "正在加载账户",
@@ -534,6 +541,9 @@ const messages = {
 		"progress.signInToSync": "登录后可在不同设备同步进度。",
 		"progress.accountCurrent": "账户进度已更新。",
 		"progress.signInToRecord": "登录后记录完成状态。",
+		"progress.studied": "已学习",
+		"progress.viewedOnDevice": "已在本设备查看",
+		"progress.notStarted": "尚未开始",
 		"home.coursePractice": "{count} 节视觉课程",
 		"home.heroTitle": "读懂市场，再验证你的判断。",
 		"home.heroDescription":
@@ -589,6 +599,8 @@ const messages = {
 			"下方文字课程提供完整的无障碍说明和练习步骤。",
 		"video.browserFallback": "你的浏览器不支持 HTML 视频。",
 		"lesson.navigation": "课程导航",
+		"lesson.continueNote":
+			"互动步骤属于可选练习；准备好后可随时继续，进入下一课不会自动标记本课为学过。",
 		"lesson.courseNavigation": "课程导航 · 已标记学过 {percentage}%",
 		"lesson.writtenLesson": "文字课程",
 		"lesson.englishNotice":

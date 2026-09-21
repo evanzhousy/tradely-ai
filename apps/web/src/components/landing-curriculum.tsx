@@ -21,7 +21,7 @@ import { getLearningPath, type Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
-import { useVisualBookmarks } from "@/features/learning/visual-bookmark";
+import { useVisualProgress } from "@/features/learning/visual-bookmark";
 import { useI18n } from "@/i18n/provider";
 import { LessonInfographic } from "./lesson-infographic";
 
@@ -47,7 +47,7 @@ export function LandingCurriculum({
 		lessons: getLearningPath(lessons, path),
 	}));
 	const completed = new Set(completedIds);
-	const bookmarks = useVisualBookmarks();
+	const visualProgress = useVisualProgress();
 	const renderLessons = (items: readonly Lesson[]) => (
 		<ol
 			className="curriculum-grid"
@@ -56,6 +56,11 @@ export function LandingCurriculum({
 		>
 			{items.map((lesson) => {
 				const isCompleted = completed.has(lesson.id);
+				const statusLabel = isCompleted
+					? t("progress.studied")
+					: visualProgress[lesson.id]
+						? t("progress.viewedOnDevice")
+						: t("progress.notStarted");
 				const titleId = `${id}-${lesson.id}-title`;
 				const detailId = `${id}-${lesson.id}-detail`;
 				const accessLabel = t("common.free");
@@ -97,19 +102,7 @@ export function LandingCurriculum({
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="mt-auto">
-									<p className="text-muted-foreground text-xs">
-										{isCompleted
-											? locale === "zh"
-												? "已学习"
-												: "Studied"
-											: bookmarks[lesson.id]
-												? locale === "zh"
-													? "学习中"
-													: "In progress"
-												: locale === "zh"
-													? "尚未开始"
-													: "Not started"}
-									</p>
+									<p className="text-muted-foreground text-xs">{statusLabel}</p>
 									<p className="curriculum-practice">
 										{locale === "zh"
 											? "动画图解与完整示例"

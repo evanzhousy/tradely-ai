@@ -20,6 +20,10 @@ export const env = createEnv({
 		VITE_POSTHOG_KEY: z.string().startsWith("phc_").optional(),
 		VITE_POSTHOG_HOST: posthogHost.optional(),
 		VITE_APP_RELEASE: z.string().min(1).max(120).optional(),
+		VITE_ENABLE_DEVELOPER_UI: z
+			.enum(["true", "false"])
+			.default("false")
+			.transform((value) => value === "true"),
 		VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID: z
 			.string()
 			.regex(/^G-[A-Z0-9]+$/)

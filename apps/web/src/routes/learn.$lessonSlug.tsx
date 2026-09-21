@@ -264,6 +264,9 @@ function LessonPage() {
 								</SignInLink>
 							</p>
 						)}
+						<p className="text-muted-foreground text-xs">
+							{t("lesson.continueNote")}
+						</p>
 						<nav
 							className="flex items-center justify-between gap-4"
 							aria-label={t("lesson.navigation")}

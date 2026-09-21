@@ -56,13 +56,13 @@ function CoursePage() {
 							total={progress.total}
 							percentage={progress.percentage}
 						/>
-						<p className="text-muted-foreground text-xs leading-6">
-							{progress.unavailable
-								? t("complete.unavailable")
-								: progress.signedIn
+						{progress.unavailable ? null : (
+							<p className="text-muted-foreground text-xs leading-6">
+								{progress.signedIn
 									? t("progress.accountCurrent")
 									: t("progress.signInToRecord")}
-						</p>
+							</p>
+						)}
 						<p className="text-muted-foreground text-xs leading-5">
 							{locale === "zh"
 								? "旧课完成记录已保留。新增课程会扩大总课数，不代表旧记录丢失。"

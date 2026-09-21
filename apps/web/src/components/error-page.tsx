@@ -1,5 +1,6 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { env } from "@tradely/env/web";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { DotPattern } from "@tradely/ui/components/dot-pattern";
@@ -56,7 +57,7 @@ export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 					</Link>
 				</EmptyContent>
 			</Empty>
-			{import.meta.env.DEV ? (
+			{env.VITE_ENABLE_DEVELOPER_UI ? (
 				<DisclosurePanel
 					className="w-full rounded-xl border border-border bg-muted/30 p-4 text-sm"
 					summary="Development details"

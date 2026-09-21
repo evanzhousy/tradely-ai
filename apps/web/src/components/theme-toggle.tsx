@@ -12,7 +12,11 @@ export function ThemeToggle() {
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
 	const dark = mounted && resolvedTheme === "dark";
-	const label = dark ? t("theme.light") : t("theme.dark");
+	const label = !mounted
+		? t("theme.change")
+		: dark
+			? t("theme.light")
+			: t("theme.dark");
 	return (
 		<Tooltip>
 			<BeUiThemeToggle

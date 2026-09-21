@@ -8,7 +8,7 @@ import type { Lesson } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
-import { useVisualBookmarks } from "@/features/learning/visual-bookmark";
+import { useVisualProgress } from "@/features/learning/visual-bookmark";
 import { useI18n } from "@/i18n/provider";
 
 export function CourseList({
@@ -23,7 +23,7 @@ export function CourseList({
 }) {
 	const { t, locale } = useI18n();
 	const completed = new Set(completedIds);
-	const bookmarks = useVisualBookmarks();
+	const visualProgress = useVisualProgress();
 	const list = useRef<HTMLOListElement>(null);
 	useEffect(() => {
 		if (!currentLessonId) return;
@@ -51,7 +51,11 @@ export function CourseList({
 		>
 			{lessons.map((lesson, index) => {
 				const isCompleted = completed.has(lesson.id);
-				const completionLabel = isCompleted ? t("common.completed") : "";
+				const statusLabel = isCompleted
+					? t("progress.studied")
+					: visualProgress[lesson.id]
+						? t("progress.viewedOnDevice")
+						: t("progress.notStarted");
 				return (
 					<li
 						key={lesson.id}
@@ -97,7 +101,7 @@ export function CourseList({
 							size="sm"
 							className="group flex items-start gap-4 rounded-2xl px-3 py-4 transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							aria-current={currentLessonId === lesson.id ? "page" : undefined}
-							aria-label={`${lesson.title}. ${completionLabel ? `${completionLabel}. ` : ""}${t("common.minutes", { minutes: lesson.minutes })}.`}
+							aria-label={`${lesson.title}. ${statusLabel}. ${t("common.minutes", { minutes: lesson.minutes })}.`}
 						>
 							<span className="flex size-9 shrink-0 items-center justify-center rounded-3xl bg-muted font-mono text-muted-foreground text-xs group-hover:text-foreground">
 								{isCompleted ? (
@@ -122,17 +126,7 @@ export function CourseList({
 									{lesson.summary}
 								</span>
 								<span className="text-muted-foreground text-xs">
-									{isCompleted
-										? locale === "zh"
-											? "已学习"
-											: "Studied"
-										: bookmarks[lesson.id]
-											? locale === "zh"
-												? "学习中"
-												: "In progress"
-											: locale === "zh"
-												? "尚未开始"
-												: "Not started"}
+									{statusLabel}
 								</span>
 								<span className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
 									<PlayCircleIcon className="size-3.5" aria-hidden="true" />

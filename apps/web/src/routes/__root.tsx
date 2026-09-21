@@ -5,9 +5,10 @@ import {
 	Scripts,
 	useLocation,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { env } from "@tradely/env/web";
 import { Link as HeroLink } from "@tradely/ui/components/link";
 import { Toast } from "@tradely/ui/components/toast";
+import { lazy, Suspense, useEffect } from "react";
 
 import { RouteAnalytics } from "../analytics/route-analytics";
 import { AppProviders } from "../components/app-providers";
@@ -16,6 +17,13 @@ import { Footer } from "../components/footer";
 import Header from "../components/header";
 import { useI18n } from "../i18n/provider";
 import appCss from "../index.css?url";
+import { localizedPageMetadata } from "../seo/pages";
+
+const TanStackRouterDevtools = lazy(() =>
+	import("@tanstack/react-router-devtools").then((module) => ({
+		default: module.TanStackRouterDevtools,
+	})),
+);
 
 export type RouterAppContext = Record<string, never>;
 
@@ -63,6 +71,7 @@ function RootDocument() {
 				  FORM: Research Notebook; the homepage uses landing-* composition and the existing desk-* curriculum from DESIGN.md.
 				*/}
 				<AppProviders>
+					<LocalizedDocumentMetadata />
 					<RouteAnalytics />
 					<div className="flex min-h-svh flex-col">
 						<SkipLink />
@@ -78,14 +87,48 @@ function RootDocument() {
 					</div>
 					{isHouseScene ? null : <CookieConsentBanner />}
 					{isHouseScene ? null : <Toast.Provider />}
-					{import.meta.env.DEV ? (
-						<TanStackRouterDevtools position="bottom-right" />
+					{env.VITE_ENABLE_DEVELOPER_UI ? (
+						<Suspense fallback={null}>
+							<TanStackRouterDevtools position="bottom-right" />
+						</Suspense>
 					) : null}
 				</AppProviders>
 				<Scripts />
 			</body>
 		</html>
 	);
+}
+
+function LocalizedDocumentMetadata() {
+	const location = useLocation();
+	const { locale } = useI18n();
+	useEffect(() => {
+		const metadata = localizedPageMetadata(location.pathname, locale);
+		const updates = [
+			['meta[name="description"]', metadata.description],
+			['meta[property="og:title"]', metadata.title],
+			['meta[property="og:description"]', metadata.description],
+			['meta[name="twitter:title"]', metadata.title],
+			['meta[name="twitter:description"]', metadata.description],
+		] as const;
+		const applyMetadata = () => {
+			if (document.title !== metadata.title) document.title = metadata.title;
+			for (const [selector, content] of updates) {
+				const element = document.querySelector(selector);
+				if (element?.getAttribute("content") !== content)
+					element?.setAttribute("content", content);
+			}
+		};
+		applyMetadata();
+		const observer = new MutationObserver(applyMetadata);
+		observer.observe(document.head, {
+			attributes: true,
+			childList: true,
+			subtree: true,
+		});
+		return () => observer.disconnect();
+	}, [locale, location.pathname]);
+	return null;
 }
 
 function SkipLink() {

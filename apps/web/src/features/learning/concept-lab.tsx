@@ -24,7 +24,12 @@ import type { VisualLessonPlaybackMode } from "@/analytics/events";
 import { getLessonById, getNextLesson } from "@/content/course";
 import type { Locale } from "@/i18n/messages";
 import { LessonPlan } from "./lesson-plan";
-import { saveVisualBookmark, useVisualBookmarks } from "./visual-bookmark";
+import {
+	initializeVisualBookmark,
+	markVisualBookmarkEngaged,
+	saveVisualBookmark,
+	useVisualBookmarks,
+} from "./visual-bookmark";
 import { VisualLessonIdentity, VisualPlayback } from "./visual-playback";
 import { expandSteps, type VisualStep } from "./visual-step";
 export type ConceptScene = {
@@ -107,6 +112,7 @@ export function ConceptLab({
 	const analyticsSceneKey = lessonId ? `${lessonId}:${active.id}` : null;
 	const captureSceneStarted = useCallback(
 		(mode: VisualLessonPlaybackMode) => {
+			if (lessonId) markVisualBookmarkEngaged(lessonId, active.id);
 			if (!lessonId || !analyticsSceneKey || !isCapturing) return;
 			if (!sceneModes.current.has(analyticsSceneKey)) {
 				sceneModes.current.set(analyticsSceneKey, mode);
@@ -232,7 +238,7 @@ export function ConceptLab({
 		restored.current = true;
 		const saved = bookmarks[lessonId];
 		if (saved && scenes.some((item) => item.id === saved)) setScene(saved);
-		else saveVisualBookmark(lessonId, scenes[0].id);
+		else initializeVisualBookmark(lessonId, scenes[0].id);
 	}, [bookmarks, lessonId, scenes]);
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Reconnect visibility observation when the active scene remounts.
 	useEffect(() => {
