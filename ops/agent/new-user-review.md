@@ -14,15 +14,15 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 ## Agent Handoff
 
-Last updated: 2026-09-20
+Last updated: 2026-09-21
 
-Latest run: partial blind/adversarial Browser review through Round 015. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`; auth recovery evidence is `/tmp/tradely-new-user-review/20260919-greenfield/evidence/auth-blocker-resolved.gif`. OTP content was not retained.
+Latest run: `PARTIAL REVIEW` through Round 071. External state/report: `/tmp/tradely-new-user-review/20260919-greenfield/state.md` and `report.md`. Representative evidence: `/tmp/tradely-new-user-review/20260919-greenfield/evidence/new-user-review.gif` and `auth-blocker-resolved.gif`. OTP content was not retained.
 
-- Resume Round 016 in the existing Ego Lite TaskSpace 136; Page p1 is authenticated as the assigned test identity after a verified sign-out/sign-in cycle, and the initial exploration map remains frozen from the visible Home page.
-- P-001 through P-007 have terminal parent-page dispositions. P-006 account access and P-007 partner access are no longer blocked; P-004 still carries Browser-local lesson-progress contamination.
-- Treat the persisted consent/banner state as `UNASSESSED` by user-approved scope. Do not clear Browser storage, and do not let this branch block authenticated review.
-- Expand and reconcile the complete lesson, guide, exercise and learning-objective inventories. The run remains `PARTIAL` because these resources have not all been consumed and assessed; this is queued work, not an access blocker.
-- Keep reports, state and actual GIF evidence outside the repository. Switch Feishu Mail through `Other Accounts` to `public@tfsharedspace.com`; enter OTPs only in Browser and exclude all code content from capture.
+- The Browser review reconciled 53 unique pages: 52 `REVIEWED`, one `BLOCKED` Previous purchases page, plus two non-page legacy grouping aliases. It reviewed all 42 learning resources and demonstrated all 36 stated lesson objectives through a source-bounded final synthesis.
+- P-046 `/pricing#past-purchases` is the only page blocker: after the authorized test account settles, the page shows `Something went wrong`; Retry reproduces the failure, and the initial Development details expose `No QueryClient set, use QueryClientProvider to set one`. The unread records/empty-state body prevents `COMPLETE REVIEW`.
+- If the user authorizes remediation, freeze the blind report first, diagnose/fix P-046 in a separate source-aware phase, then retest only the affected page and update its terminal status. Do not rewrite the original observation or other findings from source evidence.
+- The persisted consent/banner branch remains `UNASSESSED` by user-approved scope and does not block authenticated review. Do not clear Browser storage to change that classification.
+- Keep reports, screenshots and GIFs outside the repository. The reusable Feishu `Other Accounts` and Neon test-identity procedures remain current; runbook maintenance added no new durable procedure in Round 071.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
