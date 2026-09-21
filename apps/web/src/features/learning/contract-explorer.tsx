@@ -214,6 +214,7 @@ export function ContractExplorer({
 				<Field>
 					<FieldLabel htmlFor={`${id}-expiry`}>{text("expiry")}</FieldLabel>
 					<NativeSelect
+						aria-label={text("expiry")}
 						id={`${id}-expiry`}
 						value={expiry ?? "all"}
 						onChange={(event) =>

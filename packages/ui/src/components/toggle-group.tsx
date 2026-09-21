@@ -1,87 +1,81 @@
 "use client";
 
-import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
-import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group";
-import { toggleVariants } from "@tradely/ui/components/toggle";
+import { ToggleButton } from "@heroui/react/toggle-button";
+import { ToggleButtonGroup } from "@heroui/react/toggle-button-group";
 import { cn } from "@tradely/ui/lib/utils";
-import type { VariantProps } from "class-variance-authority";
-import * as React from "react";
+import type { ComponentProps } from "react";
 
-const ToggleGroupContext = React.createContext<
-	VariantProps<typeof toggleVariants> & {
-		spacing?: number;
-		orientation?: "horizontal" | "vertical";
-	}
->({
-	size: "default",
-	variant: "default",
-	spacing: 2,
-	orientation: "horizontal",
-});
+type Key = string | number;
+
+type ToggleVariant = "default" | "outline";
+type ToggleSize = "default" | "sm" | "lg";
+
+type ToggleGroupProps = Omit<
+	ComponentProps<typeof ToggleButtonGroup.Root>,
+	"onSelectionChange" | "selectedKeys" | "size"
+> & {
+	multiple?: boolean;
+	onValueChange?: (values: string[]) => void;
+	size?: ToggleSize;
+	spacing?: number;
+	value?: string[];
+	variant?: ToggleVariant;
+};
+
+function mapSize(size: ToggleSize) {
+	if (size === "sm" || size === "lg") return size;
+	return "md" as const;
+}
 
 function ToggleGroup({
 	className,
-	variant,
-	size,
+	variant = "default",
+	size = "default",
 	spacing = 2,
 	orientation = "horizontal",
-	children,
+	value,
+	onValueChange,
+	multiple,
 	...props
-}: ToggleGroupPrimitive.Props &
-	VariantProps<typeof toggleVariants> & {
-		spacing?: number;
-		orientation?: "horizontal" | "vertical";
-	}) {
+}: ToggleGroupProps) {
 	return (
-		<ToggleGroupPrimitive
+		<ToggleButtonGroup.Root
 			data-slot="toggle-group"
 			data-variant={variant}
 			data-size={size}
 			data-spacing={spacing}
-			data-orientation={orientation}
-			style={{ "--gap": spacing } as React.CSSProperties}
+			orientation={orientation}
+			selectionMode={multiple ? "multiple" : "single"}
+			selectedKeys={value}
+			onSelectionChange={(keys) =>
+				onValueChange?.([...keys].map((key) => String(key)))
+			}
+			size={mapSize(size)}
 			className={cn(
-				"group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-vertical:flex-col data-vertical:items-stretch",
+				"group/toggle-group flex w-fit items-center data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
+				variant === "outline" && "rounded-3xl border border-border",
 				className,
 			)}
 			{...props}
-		>
-			<ToggleGroupContext.Provider
-				value={{ variant, size, spacing, orientation }}
-			>
-				{children}
-			</ToggleGroupContext.Provider>
-		</ToggleGroupPrimitive>
+		/>
 	);
 }
 
 function ToggleGroupItem({
 	className,
-	children,
-	variant = "default",
-	size = "default",
+	value,
 	...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
-	const context = React.useContext(ToggleGroupContext);
-
+}: Omit<ComponentProps<typeof ToggleButton>, "id"> & { value: Key }) {
 	return (
-		<TogglePrimitive
+		<ToggleButton
+			id={value}
 			data-slot="toggle-group-item"
-			data-variant={context.variant || variant}
-			data-size={context.size || size}
-			data-spacing={context.spacing}
 			className={cn(
-				"shrink-0 focus:z-10 focus-visible:z-10 data-[state=on]:bg-muted group-data-[spacing=0]/toggle-group:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-2.5 group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-3xl group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-3xl group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-3xl group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-3xl",
-				toggleVariants({
-					variant: context.variant || variant,
-					size: context.size || size,
-				}),
+				"shrink-0 focus:z-10 focus-visible:z-10 group-data-[variant=outline]/toggle-group:border-0 group-data-[variant=outline]/toggle-group:bg-transparent",
 				className,
 			)}
 			{...props}
-		>
-			{children}
-		</TogglePrimitive>
+		/>
 	);
 }
 

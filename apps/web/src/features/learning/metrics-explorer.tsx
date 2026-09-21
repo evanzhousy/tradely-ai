@@ -116,6 +116,10 @@ export function MetricsExplorer({
 							{text("Effective denominator (shares)", "有效分母（股）")}
 						</FieldLabel>
 						<NativeSelect
+							aria-label={text(
+								"Effective denominator (shares)",
+								"有效分母（股）",
+							)}
 							id={`${id}-denominator`}
 							value={denominator}
 							onChange={(event) => setDenominator(Number(event.target.value))}
@@ -193,6 +197,7 @@ export function MetricsExplorer({
 						{text("Expiry slice", "到期切片")}
 					</FieldLabel>
 					<NativeSelect
+						aria-label={text("Expiry slice", "到期切片")}
 						id={`${id}-expiry`}
 						value={days ?? "all"}
 						onChange={(event) => {

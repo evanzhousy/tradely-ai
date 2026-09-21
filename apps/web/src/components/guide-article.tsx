@@ -1,13 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { BentoCard } from "@tradely/ui/components/bento-grid";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@tradely/ui/components/breadcrumb";
+import { Breadcrumb, BreadcrumbItem } from "@tradely/ui/components/breadcrumb";
 import { buttonVariants } from "@tradely/ui/components/button";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
 import { useRef } from "react";
@@ -29,21 +22,9 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 		<main lang="en" className="page-shell">
 			<ScrollProgress target={article} />
 			<Breadcrumb aria-label="Breadcrumb">
-				<BreadcrumbList>
-					<BreadcrumbItem>
-						<BreadcrumbLink render={<Link to="/" />}>Home</BreadcrumbLink>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<BreadcrumbLink render={<Link to="/guides" />}>
-							Guides
-						</BreadcrumbLink>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<BreadcrumbPage>{guide.title}</BreadcrumbPage>
-					</BreadcrumbItem>
-				</BreadcrumbList>
+				<BreadcrumbItem href="/">Home</BreadcrumbItem>
+				<BreadcrumbItem href="/guides">Guides</BreadcrumbItem>
+				<BreadcrumbItem>{guide.title}</BreadcrumbItem>
 			</Breadcrumb>
 			<article ref={article} className="flex flex-col gap-10">
 				<PageIntro

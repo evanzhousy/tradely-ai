@@ -1,13 +1,15 @@
-// shadcn/ui (Base UI / Luma), also listed on 21st.dev. See docs/21st-components.md.
-
+import { Skeleton as HeroSkeleton } from "@heroui/react/skeleton";
 import { cn } from "@tradely/ui/lib/utils";
 import type * as React from "react";
 
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+function Skeleton({
+	className,
+	...props
+}: React.ComponentProps<typeof HeroSkeleton>) {
 	return (
-		<div
+		<HeroSkeleton
 			data-slot="skeleton"
-			className={cn("animate-pulse rounded-2xl bg-muted", className)}
+			className={cn("rounded-2xl bg-muted", className)}
 			{...props}
 		/>
 	);

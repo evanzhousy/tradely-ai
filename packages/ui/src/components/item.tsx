@@ -1,11 +1,10 @@
-// shadcn/ui (Base UI / Luma), also listed on 21st.dev. See docs/21st-components.md.
+// Tradely's non-selectable content-row composition.
 
-import { mergeProps } from "@base-ui/react/merge-props";
-import { useRender } from "@base-ui/react/use-render";
 import { Separator } from "@tradely/ui/components/separator";
 import { cn } from "@tradely/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
+import { cloneElement, type ReactElement, type ReactNode } from "react";
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"ul">) {
 	return (
@@ -57,27 +56,53 @@ const itemVariants = cva(
 );
 
 function Item({
+	children,
 	className,
 	variant = "default",
 	size = "default",
 	render,
 	...props
-}: useRender.ComponentProps<"div"> & VariantProps<typeof itemVariants>) {
-	return useRender({
-		defaultTagName: "div",
-		props: mergeProps<"div">(
+}: React.ComponentProps<"div"> &
+	VariantProps<typeof itemVariants> & {
+		render?: ReactElement<{
+			children?: ReactNode;
+			className?: string;
+			"data-size"?: string;
+			"data-slot"?: string;
+			"data-variant"?: string;
+		}>;
+	}) {
+	const resolvedSize = size ?? "default";
+	const resolvedVariant = variant ?? "default";
+	const mergedClassName = cn(
+		itemVariants({ variant: resolvedVariant, size: resolvedSize }),
+		render?.props.className,
+		className,
+	);
+	if (render) {
+		return cloneElement(
+			render,
 			{
-				className: cn(itemVariants({ variant, size, className })),
+				...props,
+				className: mergedClassName,
+				"data-size": resolvedSize,
+				"data-slot": "item",
+				"data-variant": resolvedVariant,
 			},
-			props,
-		),
-		render,
-		state: {
-			slot: "item",
-			variant,
-			size,
-		},
-	});
+			children,
+		);
+	}
+	return (
+		<div
+			className={mergedClassName}
+			data-size={resolvedSize}
+			data-slot="item"
+			data-variant={resolvedVariant}
+			{...props}
+		>
+			{children}
+		</div>
+	);
 }
 
 const itemMediaVariants = cva(

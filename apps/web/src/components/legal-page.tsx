@@ -1,12 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@tradely/ui/components/breadcrumb";
+import { Breadcrumb, BreadcrumbItem } from "@tradely/ui/components/breadcrumb";
 import { useRef } from "react";
 import { getLegalDocument, type LegalPageId } from "@/content/legal";
 import { useI18n } from "@/i18n/provider";
@@ -22,17 +14,8 @@ export function LegalPage({ page }: { page: LegalPageId }) {
 		<main className="page-shell" aria-labelledby="legal-title">
 			<ScrollProgress target={article} />
 			<Breadcrumb aria-label={locale === "zh" ? "页面路径" : "Breadcrumb"}>
-				<BreadcrumbList>
-					<BreadcrumbItem>
-						<BreadcrumbLink render={<Link to="/" />}>
-							{t("nav.learn")}
-						</BreadcrumbLink>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<BreadcrumbPage>{document.title}</BreadcrumbPage>
-					</BreadcrumbItem>
-				</BreadcrumbList>
+				<BreadcrumbItem href="/">{t("nav.learn")}</BreadcrumbItem>
+				<BreadcrumbItem>{document.title}</BreadcrumbItem>
 			</Breadcrumb>
 			<article ref={article} className="legal-prose">
 				<PageIntro

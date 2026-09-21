@@ -133,6 +133,7 @@ export function ExecutionLab({
 						{text("Incoming order", "主动订单")}
 					</FieldLabel>
 					<NativeSelect
+						aria-label={text("Incoming order", "主动订单")}
 						id={`${id}-incoming`}
 						value={buyer ? "buy" : "sell"}
 						onChange={(event) =>
@@ -155,6 +156,7 @@ export function ExecutionLab({
 						{text("Requested contracts", "请求张数")}
 					</FieldLabel>
 					<NativeSelect
+						aria-label={text("Requested contracts", "请求张数")}
 						id={`${id}-size`}
 						value={orderSize}
 						onChange={(event) =>
@@ -177,6 +179,7 @@ export function ExecutionLab({
 							{text("Option type", "期权类型")}
 						</FieldLabel>
 						<NativeSelect
+							aria-label={text("Option type", "期权类型")}
 							id={`${id}-type`}
 							value={type}
 							onChange={(event) =>

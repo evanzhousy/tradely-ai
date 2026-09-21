@@ -14,10 +14,8 @@ import {
 	CardTitle,
 } from "@tradely/ui/components/card";
 import {
-	Field,
 	FieldContent,
 	FieldGroup,
-	FieldLabel,
 	FieldLegend,
 	FieldSet,
 } from "@tradely/ui/components/field";
@@ -580,21 +578,14 @@ function LearningScreenContent({
 												disabled={locked}
 											>
 												{question.choices.map((choice) => (
-													<FieldLabel
+													<RadioGroupItem
 														key={choice.id}
-														htmlFor={`${id}-${question.id}-${choice.id}`}
+														id={`${id}-${question.id}-${choice.id}`}
+														value={choice.id}
+														disabled={locked}
 													>
-														<Field
-															orientation="horizontal"
-															data-disabled={locked}
-														>
-															<RadioGroupItem
-																id={`${id}-${question.id}-${choice.id}`}
-																value={choice.id}
-															/>
-															<FieldContent>{local(choice.label)}</FieldContent>
-														</Field>
-													</FieldLabel>
+														<FieldContent>{local(choice.label)}</FieldContent>
+													</RadioGroupItem>
 												))}
 											</RadioGroup>
 										</FieldSet>

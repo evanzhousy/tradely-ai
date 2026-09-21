@@ -1,13 +1,17 @@
+import { Card as HeroCard } from "@heroui/react/card";
 import { cn } from "@tradely/ui/lib/utils";
 import type * as React from "react";
 
 function Card({
+	children,
 	className,
 	size = "default",
 	...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+	size?: "default" | "sm";
+}) {
 	return (
-		<div
+		<HeroCard.Root
 			data-slot="card"
 			data-size={size}
 			className={cn(
@@ -15,13 +19,15 @@ function Card({
 				className,
 			)}
 			{...props}
-		/>
+		>
+			{children}
+		</HeroCard.Root>
 	);
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
+		<HeroCard.Header
 			data-slot="card-header"
 			className={cn(
 				"group/card-header @container/card-header grid auto-rows-min items-start gap-1.5 rounded-t-4xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
@@ -67,7 +73,7 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
+		<HeroCard.Content
 			data-slot="card-content"
 			className={cn("px-(--card-spacing)", className)}
 			{...props}
@@ -77,7 +83,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
+		<HeroCard.Footer
 			data-slot="card-footer"
 			className={cn(
 				"flex items-center rounded-b-4xl px-(--card-spacing) [.border-t]:pt-(--card-spacing)",

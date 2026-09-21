@@ -100,6 +100,7 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 						{locale === "zh" ? "学习模块" : "Learning module"}
 					</FieldLabel>
 					<NativeSelect
+						aria-label={locale === "zh" ? "学习模块" : "Learning module"}
 						id={`${id}-module`}
 						value={moduleId}
 						onChange={(event) => setModuleId(event.target.value)}

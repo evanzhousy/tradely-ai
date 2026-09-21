@@ -1,4 +1,4 @@
-import { NumberField as Primitive } from "@base-ui/react/number-field";
+import { NumberField as HeroNumberField } from "@heroui/react/number-field";
 import { MinusIcon, PlusIcon } from "lucide-react";
 
 /** Bounded numeric entry for teaching controls; callers own the value and units. */
@@ -22,41 +22,42 @@ export function NumberField({
 	onChange: (value: number) => void;
 }) {
 	return (
-		<Primitive.Root
+		<HeroNumberField.Root
+			aria-label={label}
 			id={id}
 			value={value}
-			min={min}
-			max={max}
+			minValue={min}
+			maxValue={max}
 			step={step}
-			format={{
+			formatOptions={{
 				maximumFractionDigits: Number.isInteger(step)
 					? 0
 					: (step.toString().split(".")[1]?.length ??
 						Math.ceil(-Math.log10(step))),
 			}}
-			onValueChange={(next) => {
-				if (next !== null && Number.isFinite(next)) onChange(next);
+			onChange={(next) => {
+				if (Number.isFinite(next)) onChange(next);
 			}}
 		>
-			<Primitive.Group className="number-field-group">
-				<Primitive.Decrement
+			<HeroNumberField.Group className="number-field-group">
+				<HeroNumberField.DecrementButton
 					aria-label={`${label} −`}
 					className="number-field-button"
 				>
 					<MinusIcon aria-hidden="true" size={16} />
-				</Primitive.Decrement>
-				<Primitive.Input
+				</HeroNumberField.DecrementButton>
+				<HeroNumberField.Input
 					aria-label={label}
 					aria-describedby={descriptionId}
 					className="number-field-input"
 				/>
-				<Primitive.Increment
+				<HeroNumberField.IncrementButton
 					aria-label={`${label} +`}
 					className="number-field-button"
 				>
 					<PlusIcon aria-hidden="true" size={16} />
-				</Primitive.Increment>
-			</Primitive.Group>
-		</Primitive.Root>
+				</HeroNumberField.IncrementButton>
+			</HeroNumberField.Group>
+		</HeroNumberField.Root>
 	);
 }

@@ -1894,7 +1894,11 @@
 	fill: var(--diagram-accent, var(--primary));
 }
 .diagram-accent-wash {
-	fill: color-mix(in srgb, var(--diagram-accent, var(--primary)) 22%, var(--card));
+	fill: color-mix(
+		in srgb,
+		var(--diagram-accent, var(--primary)) 22%,
+		var(--card)
+	);
 }
 .diagram-faint-line {
 	stroke: color-mix(in oklch, var(--foreground) 27%, transparent);
@@ -2311,15 +2315,6 @@
 	line-height: 1.5;
 	cursor: pointer;
 }
-.platform-checklist-row input {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	opacity: 0;
-	cursor: pointer;
-	margin: 0;
-}
 .platform-checkbox-mark {
 	display: grid;
 	place-items: center;
@@ -2330,16 +2325,16 @@
 	border-radius: 50%;
 	color: transparent;
 }
-.platform-checklist-row input:checked + .platform-checkbox-mark {
+.platform-checklist-row[data-selected] .platform-checkbox-mark {
 	background: var(--primary);
 	border-color: var(--primary);
 	color: var(--primary-foreground);
 }
-.platform-checklist-row input:focus-visible + .platform-checkbox-mark {
+.platform-checklist-row[data-focus-visible] .platform-checkbox-mark {
 	outline: 2px solid var(--ring);
 	outline-offset: 3px;
 }
-.platform-checklist-row input:checked ~ span:last-child {
+.platform-checklist-row[data-selected] > span:last-child {
 	color: var(--muted-foreground);
 	text-decoration: line-through;
 }

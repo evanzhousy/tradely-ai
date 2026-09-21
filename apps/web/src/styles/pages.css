@@ -705,7 +705,7 @@
 .concept-lab select {
 	min-height: 44px;
 }
-.contract-scene-tabs [data-slot="tabs-trigger"] {
+.contract-scene-tabs [data-slot="tabs-tab"] {
 	min-height: 44px;
 	white-space: normal;
 }

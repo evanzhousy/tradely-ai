@@ -1,3 +1,7 @@
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "@tradely/ui/components/native-select";
 import { LanguagesIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
@@ -8,13 +12,13 @@ export function LocaleSwitcher() {
 	const { locale, setLocale, t } = useI18n();
 	const { capture } = useAnalytics();
 	return (
-		<label className="relative inline-flex items-center">
+		<div className="relative inline-flex items-center">
 			<span className="sr-only">{t("language.label")}</span>
 			<LanguagesIcon
 				className="pointer-events-none absolute left-2.5 size-4 text-muted-foreground"
 				aria-hidden="true"
 			/>
-			<select
+			<NativeSelect
 				value={locale}
 				onChange={(event) => {
 					const nextLocale = event.target.value as typeof locale;
@@ -30,11 +34,11 @@ export function LocaleSwitcher() {
 				className="h-9 rounded-2xl border border-border bg-background pr-7 pl-8 font-medium text-foreground text-xs outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30"
 			>
 				{localeOptions.map((option) => (
-					<option key={option.value} value={option.value}>
+					<NativeSelectOption key={option.value} value={option.value}>
 						{t(option.labelKey)}
-					</option>
+					</NativeSelectOption>
 				))}
-			</select>
-		</label>
+			</NativeSelect>
+		</div>
 	);
 }

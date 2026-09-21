@@ -1,12 +1,13 @@
-// shadcn/ui (Base UI / Luma), also listed on 21st.dev. See docs/21st-components.md.
+// Tradely empty-state composition, backed by HeroUI's EmptyState surface.
 
+import { EmptyState } from "@heroui/react/empty-state";
 import { cn } from "@tradely/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
 function Empty({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
+		<EmptyState.Root
 			data-slot="empty"
 			className={cn(
 				"flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 text-balance rounded-2xl border-dashed p-12 text-center",

@@ -31,6 +31,7 @@ export function PremiumExplorer({
 					{text("What-if contract count", "假设合约数量")}
 				</FieldLabel>
 				<NativeSelect
+					aria-label={text("What-if contract count", "假设合约数量")}
 					id={id}
 					value={size}
 					onChange={(event) => setSize(Number(event.target.value))}

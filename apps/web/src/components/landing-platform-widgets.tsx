@@ -1,4 +1,5 @@
 import { Button } from "@tradely/ui/components/button";
+import { Checkbox } from "@tradely/ui/components/checkbox";
 import { CircularProgress } from "@tradely/ui/components/circular-progress";
 import { CheckIcon, ListChecksIcon, RotateCcwIcon } from "lucide-react";
 import { useId } from "react";
@@ -125,17 +126,23 @@ export function EvidenceChecklistWidget({
 			</div>
 			<fieldset aria-labelledby={id}>
 				{sampleCheckpoints.map((step) => (
-					<label key={step.id} className="platform-checklist-row">
-						<input
-							type="checkbox"
-							checked={checked.includes(step.id)}
-							onChange={() => onToggle(step.id)}
-						/>
-						<span className="platform-checkbox-mark" aria-hidden="true">
-							<CheckIcon size={13} />
-						</span>
-						<span>{copy[step.label][locale]}</span>
-					</label>
+					<Checkbox.Root
+						key={step.id}
+						isSelected={checked.includes(step.id)}
+						onChange={() => onToggle(step.id)}
+					>
+						<Checkbox.Content className="platform-checklist-row">
+							<Checkbox.Control
+								className="platform-checkbox-mark"
+								aria-hidden="true"
+							>
+								<Checkbox.Indicator>
+									<CheckIcon size={13} />
+								</Checkbox.Indicator>
+							</Checkbox.Control>
+							<span>{copy[step.label][locale]}</span>
+						</Checkbox.Content>
+					</Checkbox.Root>
 				))}
 			</fieldset>
 			<div className="platform-checklist-footer">

@@ -1,10 +1,10 @@
-import { Input as InputPrimitive } from "@base-ui/react/input";
+import { Input as HeroInput } from "@heroui/react/input";
 import { cn } from "@tradely/ui/lib/utils";
 import type * as React from "react";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
 	return (
-		<InputPrimitive
+		<HeroInput
 			type={type}
 			data-slot="input"
 			className={cn(

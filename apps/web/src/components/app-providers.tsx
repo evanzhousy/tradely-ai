@@ -1,4 +1,5 @@
-import { TooltipProvider } from "@tradely/ui/components/tooltip";
+import { useRouter } from "@tanstack/react-router";
+import { RouterProvider } from "@tradely/ui/components/router-provider";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { AuthAnalyticsIdentity } from "@/analytics/auth-identity";
@@ -7,19 +8,22 @@ import { authIsConfigured } from "@/auth/client";
 import { LocaleProvider } from "@/i18n/provider";
 
 export function AppProviders({ children }: { children: ReactNode }) {
+	const router = useRouter();
 	return (
-		<LocaleProvider>
-			<AnalyticsProvider>
-				{authIsConfigured ? <AuthAnalyticsIdentity /> : null}
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-				>
-					<TooltipProvider>{children}</TooltipProvider>
-				</ThemeProvider>
-			</AnalyticsProvider>
-		</LocaleProvider>
+		<RouterProvider navigate={(href) => void router.navigate({ to: href })}>
+			<LocaleProvider>
+				<AnalyticsProvider>
+					{authIsConfigured ? <AuthAnalyticsIdentity /> : null}
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+					>
+						{children}
+					</ThemeProvider>
+				</AnalyticsProvider>
+			</LocaleProvider>
+		</RouterProvider>
 	);
 }

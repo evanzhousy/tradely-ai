@@ -1,10 +1,5 @@
-import { Button } from "@tradely/ui/components/button";
-import {
-	Menu,
-	MenuContent,
-	MenuItem,
-	MenuTrigger,
-} from "@tradely/ui/components/menu";
+import { buttonVariants } from "@tradely/ui/components/button";
+import { Dropdown } from "@tradely/ui/components/dropdown";
 import { ChevronDownIcon, LogOutIcon, UserRoundIcon } from "lucide-react";
 import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
@@ -63,17 +58,15 @@ function ConfiguredAuthControls() {
 		}
 	}
 	return (
-		<Menu>
-			<MenuTrigger
-				render={
-					<Button
-						size="sm"
-						variant="ghost"
-						className="max-w-44 gap-1.5 px-2"
-						aria-label={
-							email ? `${t("auth.account")}: ${email}` : t("auth.account")
-						}
-					/>
+		<Dropdown.Root>
+			<Dropdown.Trigger
+				className={buttonVariants({
+					variant: "ghost",
+					size: "sm",
+					className: "max-w-44 gap-1.5 px-2",
+				})}
+				aria-label={
+					email ? `${t("auth.account")}: ${email}` : t("auth.account")
 				}
 			>
 				<UserRoundIcon aria-hidden="true" />
@@ -84,8 +77,8 @@ function ConfiguredAuthControls() {
 					className="size-3.5 text-muted-foreground"
 					aria-hidden="true"
 				/>
-			</MenuTrigger>
-			<MenuContent>
+			</Dropdown.Trigger>
+			<Dropdown.Popover>
 				<div className="px-2.5 py-2">
 					<p className="font-medium text-xs">{t("auth.account")}</p>
 					<p
@@ -96,21 +89,28 @@ function ConfiguredAuthControls() {
 					</p>
 				</div>
 				<div className="my-1 border-border border-t" />
-				<MenuItem
-					disabled={pending}
-					closeOnClick={false}
-					onClick={() => void signOut()}
+				<Dropdown.Menu
+					aria-label={t("auth.account")}
+					onAction={(key) => {
+						if (key === "sign-out") void signOut();
+					}}
 				>
-					<LogOutIcon className="size-4" aria-hidden="true" />
-					{t("auth.signOut")}
-				</MenuItem>
+					<Dropdown.Item
+						id="sign-out"
+						isDisabled={pending}
+						textValue={t("auth.signOut")}
+					>
+						<LogOutIcon className="size-4" aria-hidden="true" />
+						{t("auth.signOut")}
+					</Dropdown.Item>
+				</Dropdown.Menu>
 				{failed ? (
 					<p role="alert" className="px-2.5 py-2 text-destructive text-xs">
 						{t("auth.retry")}
 					</p>
 				) : null}
-			</MenuContent>
-		</Menu>
+			</Dropdown.Popover>
+		</Dropdown.Root>
 	);
 }
 

@@ -1,11 +1,18 @@
 // Adapted from Magic UI's Interactive Hover Button on 21st.dev.
-import { mergeProps } from "@base-ui/react/merge-props";
-import { useRender } from "@base-ui/react/use-render";
-import { Button, buttonVariants } from "@tradely/ui/components/button";
+import {
+	Button,
+	type ButtonSize,
+	type ButtonVariant,
+	buttonVariants,
+} from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
-import type { VariantProps } from "class-variance-authority";
 import { ArrowRightIcon } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import {
+	type ComponentProps,
+	cloneElement,
+	type ReactElement,
+	type ReactNode,
+} from "react";
 
 function HoverContents({ children }: { children: ReactNode }) {
 	return (
@@ -23,7 +30,7 @@ export function InteractiveHoverButton({
 	children,
 	className,
 	...props
-}: ComponentProps<typeof Button>) {
+}: Omit<ComponentProps<typeof Button>, "children"> & { children: ReactNode }) {
 	return (
 		<Button className={cn("interactive-hover-button", className)} {...props}>
 			<HoverContents>{children}</HoverContents>
@@ -39,21 +46,29 @@ export function InteractiveHoverLink({
 	variant,
 	size,
 	...props
-}: useRender.ComponentProps<"a"> & VariantProps<typeof buttonVariants>) {
-	return useRender({
-		defaultTagName: "a",
-		render,
-		state: { slot: "button" },
-		props: mergeProps<"a">(
-			{
-				className: cn(
-					buttonVariants({ variant, size }),
-					"interactive-hover-button",
-					className,
-				),
-				children: <HoverContents>{children}</HoverContents>,
-			},
-			props,
-		),
-	});
+}: Omit<ComponentProps<"a">, "children"> & {
+	children: ReactNode;
+	render?: ReactElement<{ children?: ReactNode; className?: string }>;
+	variant?: ButtonVariant;
+	size?: ButtonSize;
+}) {
+	const mergedClassName = cn(
+		buttonVariants({ variant, size }),
+		"interactive-hover-button",
+		render?.props.className,
+		className,
+	);
+	const contents = <HoverContents>{children}</HoverContents>;
+	if (render) {
+		return cloneElement(
+			render,
+			{ ...props, className: mergedClassName },
+			contents,
+		);
+	}
+	return (
+		<a className={mergedClassName} {...props}>
+			{contents}
+		</a>
+	);
 }

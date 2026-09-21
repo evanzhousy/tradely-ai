@@ -1,11 +1,6 @@
 import { Alert, AlertDescription } from "@tradely/ui/components/alert";
 import { Button } from "@tradely/ui/components/button";
-import {
-	Field,
-	FieldLabel,
-	FieldLegend,
-	FieldSet,
-} from "@tradely/ui/components/field";
+import { FieldLegend, FieldSet } from "@tradely/ui/components/field";
 import { RadioGroup, RadioGroupItem } from "@tradely/ui/components/radio-group";
 import { useId, useState } from "react";
 
@@ -41,10 +36,9 @@ export function UnderstandingCheck({
 					}}
 				>
 					{choices.map((label, index) => (
-						<Field key={label} orientation="horizontal">
-							<RadioGroupItem id={`${id}-${index}`} value={label} />
-							<FieldLabel htmlFor={`${id}-${index}`}>{label}</FieldLabel>
-						</Field>
+						<RadioGroupItem key={label} id={`${id}-${index}`} value={label}>
+							{label}
+						</RadioGroupItem>
 					))}
 				</RadioGroup>
 			</FieldSet>

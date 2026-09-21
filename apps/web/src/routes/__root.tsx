@@ -6,7 +6,7 @@ import {
 	useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { Toaster } from "@tradely/ui/components/sonner";
+import { Toast } from "@tradely/ui/components/toast";
 
 import { RouteAnalytics } from "../analytics/route-analytics";
 import { AppProviders } from "../components/app-providers";
@@ -76,7 +76,7 @@ function RootDocument() {
 						{isHouseScene ? null : <Footer />}
 					</div>
 					{isHouseScene ? null : <CookieConsentBanner />}
-					{isHouseScene ? null : <Toaster richColors />}
+					{isHouseScene ? null : <Toast.Provider />}
 					{import.meta.env.DEV ? (
 						<TanStackRouterDevtools position="bottom-right" />
 					) : null}

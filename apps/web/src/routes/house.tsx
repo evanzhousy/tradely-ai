@@ -1,14 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@tradely/ui/components/breadcrumb";
+import { Breadcrumb, BreadcrumbItem } from "@tradely/ui/components/breadcrumb";
 import { Button } from "@tradely/ui/components/button";
+import { Checkbox } from "@tradely/ui/components/checkbox";
 import { Kbd, KbdGroup } from "@tradely/ui/components/kbd";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "@tradely/ui/components/native-select";
+import { Slider } from "@tradely/ui/components/slider";
 import { ArrowUpRight, Box, Minus, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Quality } from "@/features/house/cinematic";
@@ -120,15 +119,8 @@ function HousePage() {
 			<div className="mb-7 flex flex-wrap items-end justify-between gap-5">
 				<div>
 					<Breadcrumb className="mb-5" aria-label="Breadcrumb">
-						<BreadcrumbList>
-							<BreadcrumbItem>
-								<BreadcrumbLink href="/">Tradely</BreadcrumbLink>
-							</BreadcrumbItem>
-							<BreadcrumbSeparator />
-							<BreadcrumbItem>
-								<BreadcrumbPage>House explorer</BreadcrumbPage>
-							</BreadcrumbItem>
-						</BreadcrumbList>
+						<BreadcrumbItem href="/">Tradely</BreadcrumbItem>
+						<BreadcrumbItem>House explorer</BreadcrumbItem>
 					</Breadcrumb>
 					<p className="page-eyebrow mb-3">
 						<Box className="size-4" /> A house to explore / 001
@@ -149,20 +141,20 @@ function HousePage() {
 				</a>
 			</div>
 			<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-				<label className="flex items-center gap-3 text-sm">
+				<div className="flex items-center gap-3 text-sm">
 					画质 / Quality
-					<select
+					<NativeSelect
 						aria-label="Rendering quality"
 						className="rounded-lg border border-border bg-background px-3 py-2"
 						value={quality}
 						onChange={(e) => setQuality(e.target.value as Quality | "auto")}
 					>
-						<option value="auto">自动 / Auto</option>
-						<option value="high">高 / High</option>
-						<option value="medium">中 / Medium</option>
-						<option value="low">低 / Low</option>
-					</select>
-				</label>
+						<NativeSelectOption value="auto">自动 / Auto</NativeSelectOption>
+						<NativeSelectOption value="high">高 / High</NativeSelectOption>
+						<NativeSelectOption value="medium">中 / Medium</NativeSelectOption>
+						<NativeSelectOption value="low">低 / Low</NativeSelectOption>
+					</NativeSelect>
+				</div>
 				<Button
 					variant="outline"
 					disabled={busy}
@@ -184,17 +176,21 @@ function HousePage() {
 						<span>Sun direction</span>
 						<output>{direction}°</output>
 					</span>
-					<input
+					<Slider.Root
 						aria-label="Sun direction"
-						type="range"
-						min="0"
-						max="360"
-						step="1"
+						minValue={0}
+						maxValue={360}
+						step={1}
 						value={direction}
-						disabled={busy || navigation.area !== "exterior"}
-						onChange={(event) => setDirection(Number(event.target.value))}
-						className="w-full accent-primary"
-					/>
+						isDisabled={busy || navigation.area !== "exterior"}
+						onChange={(value) => setDirection(Number(value))}
+						className="w-full"
+					>
+						<Slider.Track>
+							<Slider.Fill />
+							<Slider.Thumb />
+						</Slider.Track>
+					</Slider.Root>
 					<span className="text-muted-foreground text-xs">
 						0° front · 90° right · 180° rear · 270° left
 					</span>
@@ -207,39 +203,43 @@ function HousePage() {
 							elevation
 						</output>
 					</span>
-					<input
+					<Slider.Root
 						aria-label="Sunset timeline"
-						type="range"
-						min="0"
-						max="100"
-						step="1"
+						minValue={0}
+						maxValue={100}
+						step={1}
 						value={sunset * 100}
-						disabled={busy || navigation.area !== "exterior"}
-						onChange={(event) => {
+						isDisabled={busy || navigation.area !== "exterior"}
+						onChange={(value) => {
 							setPlaying(false);
-							setSunset(Number(event.target.value) / 100);
+							setSunset(Number(value) / 100);
 						}}
-						className="w-full accent-primary"
-					/>
+						className="w-full"
+					>
+						<Slider.Track>
+							<Slider.Fill />
+							<Slider.Thumb />
+						</Slider.Track>
+					</Slider.Root>
 					<span className="text-muted-foreground text-xs">
 						Daylight → golden hour → dusk. Visual simulation.
 					</span>
 				</label>
 				<div className="flex flex-col gap-3">
-					<label className="flex items-center justify-between gap-3 text-sm">
+					<div className="flex items-center justify-between gap-3 text-sm">
 						Sunset duration
-						<select
+						<NativeSelect
 							aria-label="Sunset duration"
 							value={duration}
 							onChange={(event) => setDuration(Number(event.target.value))}
 							className="rounded-md border border-border bg-background px-2 py-1"
 						>
-							<option value="10">10 seconds</option>
-							<option value="30">30 seconds</option>
-							<option value="60">60 seconds</option>
-							<option value="120">2 minutes</option>
-						</select>
-					</label>
+							<NativeSelectOption value="10">10 seconds</NativeSelectOption>
+							<NativeSelectOption value="30">30 seconds</NativeSelectOption>
+							<NativeSelectOption value="60">60 seconds</NativeSelectOption>
+							<NativeSelectOption value="120">2 minutes</NativeSelectOption>
+						</NativeSelect>
+					</div>
 					<div className="flex flex-wrap items-center gap-2">
 						<Button
 							disabled={busy || navigation.area !== "exterior"}
@@ -503,19 +503,21 @@ function HousePage() {
 					>
 						<legend className="mb-3 font-medium text-sm">Visible layers</legend>
 						{(["Roofs", "Landscape", "Context"] as const).map((layer) => (
-							<label
+							<Checkbox.Root
 								key={layer}
-								className="flex cursor-pointer items-center justify-between gap-3 text-sm"
+								isSelected={layers[layer]}
+								isDisabled={busy}
+								onChange={() => toggleLayer(layer)}
 							>
-								<span>{layer === "Context" ? "Neighboring unit" : layer}</span>
-								<input
-									type="checkbox"
-									checked={layers[layer]}
-									disabled={busy}
-									onChange={() => toggleLayer(layer)}
-									className="size-4 accent-primary"
-								/>
-							</label>
+								<Checkbox.Content className="flex cursor-pointer items-center justify-between gap-3 text-sm">
+									<span>
+										{layer === "Context" ? "Neighboring unit" : layer}
+									</span>
+									<Checkbox.Control>
+										<Checkbox.Indicator />
+									</Checkbox.Control>
+								</Checkbox.Content>
+							</Checkbox.Root>
 						))}
 					</fieldset>
 					<div className="mt-auto border-border border-t pt-5 text-muted-foreground text-xs leading-relaxed">

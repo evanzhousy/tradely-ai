@@ -1,9 +1,9 @@
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@tradely/ui/components/button";
+import { toast } from "@tradely/ui/components/toast";
 import { CheckIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 import { useAnalytics } from "@/analytics/context";
 import { BrandOwl } from "@/components/brand-owl";

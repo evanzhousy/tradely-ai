@@ -44,7 +44,6 @@
 		"react-dom": "catalog:",
 		"react-markdown": "^10.1.0",
 		"remark-gfm": "^4.0.1",
-		"sonner": "catalog:",
 		"stripe": "^22.4.0",
 		"tailwindcss": "catalog:",
 		"three": "^0.185.1",

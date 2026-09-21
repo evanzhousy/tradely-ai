@@ -1,3 +1,4 @@
+import { Label as HeroLabel } from "@heroui/react/label";
 import { cn } from "@tradely/ui/lib/utils";
 import type * as React from "react";
 
@@ -8,7 +9,7 @@ function Label({
 	...props
 }: React.ComponentProps<"label">) {
 	return (
-		<label
+		<HeroLabel
 			htmlFor={htmlFor}
 			data-slot="label"
 			className={cn(
@@ -18,7 +19,7 @@ function Label({
 			{...props}
 		>
 			{children}
-		</label>
+		</HeroLabel>
 	);
 }
 

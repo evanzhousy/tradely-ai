@@ -1,3 +1,4 @@
+import { Fieldset } from "@heroui/react/fieldset";
 import { Label } from "@tradely/ui/components/label";
 import { Separator } from "@tradely/ui/components/separator";
 import { cn } from "@tradely/ui/lib/utils";
@@ -6,7 +7,7 @@ import { useMemo } from "react";
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
 	return (
-		<fieldset
+		<Fieldset.Root
 			data-slot="field-set"
 			className={cn(
 				"flex flex-col gap-6 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
@@ -23,7 +24,7 @@ function FieldLegend({
 	...props
 }: React.ComponentProps<"legend"> & { variant?: "legend" | "label" }) {
 	return (
-		<legend
+		<Fieldset.Legend
 			data-slot="field-legend"
 			data-variant={variant}
 			className={cn(
@@ -37,7 +38,7 @@ function FieldLegend({
 
 function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 	return (
-		<div
+		<Fieldset.Group
 			data-slot="field-group"
 			className={cn(
 				"group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",

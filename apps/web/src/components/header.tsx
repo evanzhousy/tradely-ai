@@ -1,13 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Button, buttonVariants } from "@tradely/ui/components/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from "@tradely/ui/components/sheet";
+import { buttonVariants } from "@tradely/ui/components/button";
+import { Drawer } from "@tradely/ui/components/drawer";
 import { cn } from "@tradely/ui/lib/utils";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 import { useState } from "react";
@@ -100,53 +93,68 @@ export default function Header() {
 					<LocaleSwitcher />
 					<ThemeToggle />
 					<AuthControls />
-					<Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-						<SheetTrigger
-							render={
-								<Button
-									variant="ghost"
-									size="icon"
-									className="lg:hidden"
-									aria-label={t("nav.openMenu")}
-								/>
-							}
+					<Drawer.Root isOpen={menuOpen} onOpenChange={setMenuOpen}>
+						<Drawer.Trigger
+							className={cn(
+								buttonVariants({ variant: "ghost", size: "icon" }),
+								"lg:hidden",
+							)}
+							aria-label={t("nav.openMenu")}
 						>
 							<MenuIcon aria-hidden="true" />
-						</SheetTrigger>
-						<SheetContent side="right">
-							<SheetHeader>
-								<SheetTitle>{t("nav.mobileTitle")}</SheetTitle>
-								<SheetDescription>
-									{t("nav.mobileDescription")}
-								</SheetDescription>
-							</SheetHeader>
-							<nav
-								className="flex flex-col gap-1 px-3"
-								aria-label={t("nav.mobile")}
-							>
-								<NavigationLinks mobile onNavigate={() => setMenuOpen(false)} />
-								<LocaleSwitcher />
-								<a
-									href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=mobile-menu"
-									onClick={() =>
-										capture("tradingflow_link_opened", { surface: "header" })
-									}
-									className={cn(buttonVariants({ variant: "outline" }), "mt-4")}
-								>
-									<img
-										src="/partners/tradingflow-mark.webp"
-										alt=""
-										width={64}
-										height={64}
-										className="size-4 rounded-[4px]"
-										aria-hidden="true"
-									/>
-									{t("nav.openTradingFlow")}
-									<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
-								</a>
-							</nav>
-						</SheetContent>
-					</Sheet>
+						</Drawer.Trigger>
+						<Drawer.Backdrop>
+							<Drawer.Content placement="right">
+								<Drawer.Dialog>
+									<Drawer.CloseTrigger aria-label={t("common.close")} />
+									<Drawer.Header>
+										<Drawer.Heading>{t("nav.mobileTitle")}</Drawer.Heading>
+										<p className="text-muted-foreground text-sm">
+											{t("nav.mobileDescription")}
+										</p>
+									</Drawer.Header>
+									<Drawer.Body>
+										<nav
+											className="flex flex-col gap-1"
+											aria-label={t("nav.mobile")}
+										>
+											<NavigationLinks
+												mobile
+												onNavigate={() => setMenuOpen(false)}
+											/>
+											<LocaleSwitcher />
+											<a
+												href="https://app.tradingflow.com/?utm_source=tradely&utm_medium=mobile-menu"
+												onClick={() =>
+													capture("tradingflow_link_opened", {
+														surface: "header",
+													})
+												}
+												className={cn(
+													buttonVariants({ variant: "outline" }),
+													"mt-4",
+												)}
+											>
+												<img
+													src="/partners/tradingflow-mark.webp"
+													alt=""
+													width={64}
+													height={64}
+													className="size-4 rounded-[4px]"
+													aria-hidden="true"
+												/>
+												{t("nav.openTradingFlow")}
+												<ExternalLinkIcon
+													data-icon="inline-end"
+													aria-hidden="true"
+												/>
+											</a>
+										</nav>
+									</Drawer.Body>
+								</Drawer.Dialog>
+							</Drawer.Content>
+						</Drawer.Backdrop>
+					</Drawer.Root>
 				</div>
 			</div>
 		</header>

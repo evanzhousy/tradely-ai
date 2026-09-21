@@ -1,14 +1,13 @@
-// shadcn/ui (Base UI / Luma), also listed on 21st.dev. See docs/21st-components.md.
-
+import { Kbd as HeroKbd } from "@heroui/react/kbd";
 import { cn } from "@tradely/ui/lib/utils";
 import type * as React from "react";
 
-function Kbd({ className, ...props }: React.ComponentProps<"kbd">) {
+function Kbd({ className, ...props }: React.ComponentProps<typeof HeroKbd>) {
 	return (
-		<kbd
+		<HeroKbd
 			data-slot="kbd"
 			className={cn(
-				"pointer-events-none inline-flex h-5.5 w-fit min-w-5.5 select-none items-center justify-center gap-1 rounded-lg bg-muted in-data-[slot=input-group]:bg-input in-data-[slot=tooltip-content]:bg-background/20 px-1.5 font-medium font-sans in-data-[slot=tooltip-content]:text-background text-muted-foreground text-xs [&_svg:not([class*='size-'])]:size-3",
+				"pointer-events-none inline-flex h-5.5 w-fit min-w-5.5 select-none items-center justify-center gap-1 rounded-lg bg-muted px-1.5 font-medium font-sans text-muted-foreground text-xs",
 				className,
 			)}
 			{...props}
@@ -16,9 +15,9 @@ function Kbd({ className, ...props }: React.ComponentProps<"kbd">) {
 	);
 }
 
-function KbdGroup({ className, ...props }: React.ComponentProps<"kbd">) {
+function KbdGroup({ className, ...props }: React.ComponentProps<"span">) {
 	return (
-		<kbd
+		<span
 			data-slot="kbd-group"
 			className={cn("inline-flex items-center gap-1", className)}
 			{...props}

@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "@heroui/styles";
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/jetbrains-mono";
 @source "../../../apps/**/*.{ts,tsx}";
@@ -8,7 +7,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* shadcn preset b6GfB1emu: Luma / neutral / yellow.
+/* Tradely semantic palette: Inter + JetBrains Mono with sunflower-yellow orientation.
    Status colors and categorical charts are intentional product extensions. */
 :root {
 	--background: #fdfcf8;
@@ -436,21 +435,21 @@
 		background: transparent;
 		outline: none;
 	}
-	[data-slot="breadcrumb-link"] {
+	[data-slot="breadcrumbs"] [data-slot="link"] {
 		display: inline-flex;
 		align-items: center;
 		min-height: 32px;
 		gap: 6px;
 		border-radius: 4px;
 	}
-	[data-slot="breadcrumb-link"]:focus-visible {
+	[data-slot="breadcrumbs"] [data-slot="link"]:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: 4px;
 	}
-	[data-slot="tabs-trigger"] {
+	[data-slot="tabs-tab"] {
 		transition-duration: 140ms;
 	}
-	[data-slot="tabs-trigger"][data-active] {
+	[data-slot="tabs-tab"][data-selected] {
 		box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
 	}
 	[data-slot="item-content"] {
@@ -493,8 +492,8 @@
 
 @media (pointer: coarse) {
 	[data-slot="button"],
-	[data-slot="tabs-trigger"],
-	[data-slot="breadcrumb-link"] {
+	[data-slot="tabs-tab"],
+	[data-slot="breadcrumbs"] [data-slot="link"] {
 		min-height: 44px;
 	}
 	[data-slot="tabs-list"] {

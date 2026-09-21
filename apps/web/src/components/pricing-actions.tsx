@@ -1,8 +1,8 @@
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@tradely/ui/components/button";
+import { toast } from "@tradely/ui/components/toast";
 import { CheckIcon, CreditCardIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { useAnalytics } from "@/analytics/context";
 import { billingActionFailureReason } from "@/analytics/events";
 import { useI18n } from "@/i18n/provider";

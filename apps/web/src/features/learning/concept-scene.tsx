@@ -143,6 +143,7 @@ export function SelectField({
 		<Field>
 			<FieldLabel htmlFor={id}>{label}</FieldLabel>
 			<NativeSelect
+				aria-label={label}
 				id={id}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
