@@ -24,11 +24,11 @@ Last updated: 2026-09-22
 
 Latest authoritative run: new Browser-only greenfield review started 2026-09-22 at `/tmp/tradely-new-user-review/20260922-browser-greenfield/`. The earlier 20260921 Browser run and the 20260919 Ego Browser run are historical only; their coverage, findings and learning verdicts do not count toward this run.
 
-- Rounds 001–080 are checkpointed. Home, Guides, Curriculum, all 36 lesson children, trust pages, partner handoffs, all 35 objective application/reuse checks, the authenticated account boundary and the visual UI/UX audit are recorded in the external state/report.
+- Rounds 001–081 are checkpointed. Home, Guides, Curriculum, all 36 lesson children, trust pages, partner handoffs, all 35 objective application/reuse checks, the authenticated account boundary and the visual UI/UX audit are recorded in the external state/report.
 - Rebuild every page, resource, finding and learning verdict from @Browser evidence. Do not copy prior Ego Browser observations into the new report, even when the behavior appears similar.
 - The page/resource and K matrix are now recorded in the external report. The authorized Neon Auth reset on the exact test branch followed by normal @Browser email verification reached the assigned account. Every learning objective now has a Browser-visible application and later-reuse check. One ordinary logout/login temporarily restored the study-mark control, but reloading the lesson reproduced `进度服务暂不可用，课程仍保持打开。` and the login-to-save link; keep saved-progress/resume unverified and carry finding F-001 forward.
 - Keep first-visit consent `UNASSESSED` if the @Browser session already has a persisted choice; Browser-local clearing remains outside scope.
-- Keep the new report, state, screenshots and GIF evidence outside the repository. The current run is `PARTIAL`: authentication and learning coverage are reviewed, F-001 blocks saved-progress/resume verification after reload, and the visual audit records F-002; clean first-visit consent remains outside scope.
+- Keep the new report, state, screenshots and GIF evidence outside the repository. The current run is `PARTIAL`: authentication and learning coverage are reviewed, F-001 blocks saved-progress/resume verification after reload, the visual audit records F-002, and the partner handoff/report surface has a settled visual check; clean first-visit consent remains outside scope.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
