@@ -24,11 +24,11 @@ Last updated: 2026-09-22
 
 Latest authoritative run: new Browser-only greenfield review started 2026-09-22 at `/tmp/tradely-new-user-review/20260922-browser-greenfield/`. The earlier 20260921 Browser run and the 20260919 Ego Browser run are historical only; their coverage, findings and learning verdicts do not count toward this run.
 
-- Rounds 001–079 are checkpointed. Home, Guides, Curriculum, all 36 lesson children, trust pages, partner handoffs, all 35 objective application/reuse checks and the authenticated account boundary are recorded in the external state/report.
+- Rounds 001–080 are checkpointed. Home, Guides, Curriculum, all 36 lesson children, trust pages, partner handoffs, all 35 objective application/reuse checks, the authenticated account boundary and the visual UI/UX audit are recorded in the external state/report.
 - Rebuild every page, resource, finding and learning verdict from @Browser evidence. Do not copy prior Ego Browser observations into the new report, even when the behavior appears similar.
 - The page/resource and K matrix are now recorded in the external report. The authorized Neon Auth reset on the exact test branch followed by normal @Browser email verification reached the assigned account. Every learning objective now has a Browser-visible application and later-reuse check. One ordinary logout/login temporarily restored the study-mark control, but reloading the lesson reproduced `进度服务暂不可用，课程仍保持打开。` and the login-to-save link; keep saved-progress/resume unverified and carry finding F-001 forward.
 - Keep first-visit consent `UNASSESSED` if the @Browser session already has a persisted choice; Browser-local clearing remains outside scope.
-- Keep the new report, state, screenshots and GIF evidence outside the repository. The current run is `PARTIAL`: authentication and learning coverage are reviewed, but F-001 blocks saved-progress/resume verification after reload; clean first-visit consent remains outside scope.
+- Keep the new report, state, screenshots and GIF evidence outside the repository. The current run is `PARTIAL`: authentication and learning coverage are reviewed, F-001 blocks saved-progress/resume verification after reload, and the visual audit records F-002; clean first-visit consent remains outside scope.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
@@ -45,13 +45,17 @@ until every discovered page and applicable branch has a terminal result. Keep
 source-linked learning notes using only material consumed in the platform.
 Finish with bugs, usability problems, and a page/resource matrix of what the
 platform taught you, what you can apply, and what remains unknown.
+Also perform a visual UI/UX audit for every discovered page or shared page
+family: inspect layout hierarchy, spacing, typography, contrast, control
+affordance, responsive fit, loading/error presentation and orientation cues.
+Report both polished strengths and concrete visual findings with evidence.
 Keep checkpoints, the final report, and actual browser GIF evidence outside
 the repository. Maintain this runbook and commit any owned documentation edits.
 ```
 
 For a resume, supply the previous external run folder and say `continue`. Reuse its resource IDs and learner record; do not replay completed first impressions as new discoveries. Without `/goal`, use the same bounded rounds and checkpoints in the current task. Start a goal only when the user explicitly requests goal execution; do not start one for document authoring.
 
-**Success:** the Browser-discovered page and resource inventories have been reconciled; every discoverable page, applicable feature branch, adversarial journey and learning objective has an evidenced terminal result; all three report sections are complete; and GIF evidence and handoff links are valid. Confirmed bugs, poor usability, and demonstrated learning failures are legitimate review results. Missing pages, access, unread content, unsupported media inspection, or missing required evidence prevent a claim of complete review. A clean browser-consent branch may be explicitly `UNASSESSED` when the user scopes it out; it must not block otherwise authorized authenticated review.
+**Success:** the Browser-discovered page and resource inventories have been reconciled; every discoverable page, applicable feature branch, adversarial journey, learning objective and visual UI/UX page-family check has an evidenced terminal result; all three report sections plus the visual UI/UX review are complete; and GIF evidence and handoff links are valid. Confirmed bugs, poor usability, visual contrast/layout findings, and demonstrated learning failures are legitimate review results. Missing pages, access, unread content, unsupported media inspection, or missing required evidence prevent a claim of complete review. A clean browser-consent branch may be explicitly `UNASSESSED` when the user scopes it out; it must not block otherwise authorized authenticated review.
 
 **Stop:** completion, user-directed pause, or a genuine global blocker. Continue independent work when only one resource or feature is blocked. Follow the active goal controller's rules; if `update_goal` is available, mark blocked only after the same global blocker persists for at least three consecutive goal turns and no meaningful independent work remains. A resumed blocked goal starts a fresh blocked-turn count. Never mark complete to escape unfinished work or create an automation to continue after a user stop.
 
@@ -133,7 +137,7 @@ In the first round, before following a call to action, record what the entry pag
 6. **Try ordinary recovery.** When stuck, make at most two plausible UI-led recovery attempts (for example, back to the lesson or opening its visible help). Preserve the initial confusion, then use available platform guidance and record assistance. Stop repeated guesses; add an unresolved question or blocker and continue an independent resource. An error disappearing on retry is an intermittent observation, not proof it never happened.
 7. **Assess and checkpoint.** Record expected versus actual behavior, bugs/friction, consumed resources, K entries, first-attempt and assisted outcomes, remaining dependencies, and evidence paths. Expand the queue from newly visible links. Select a next candidate with its reason, then persist the checkpoint before another round or context compaction. Give a brief user progress update during sustained work.
 
-**Page completion gate:** before closing the round, account for the page's visible links, controls, forms, filters, disclosures, language/theme behavior, empty/loading/error states that were encountered, and onward navigation. Mark unexercised branches explicitly; loading the page or reading a snapshot alone is not a completed review.
+**Page completion gate:** before closing the round, account for the page's visible links, controls, forms, filters, disclosures, language/theme behavior, empty/loading/error states that were encountered, onward navigation, and a settled visual pass. For the visual pass, inspect hierarchy, spacing, typography, contrast, selected/disabled/focus states, responsive fit at the actual viewport, motion/loading treatment, and whether secondary navigation keeps the learner oriented. Record strengths and concrete visual findings separately from functional bugs. Mark unexercised branches explicitly; loading the page or reading a snapshot alone is not a completed review.
 
 Use this compact round record in the external report:
 
