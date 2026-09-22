@@ -75,7 +75,7 @@ When the user assigns `public@tfsharedspace.com` for non-production auth:
 1. Open Feishu Mail in a separate Browser page using the authorized Feishu session.
 2. Open the mailbox account switcher (`Other Accounts`) and select `public@tfsharedspace.com`. Confirm the visible current mailbox address before searching.
 3. Start the Tradely or partner sign-in flow in the target Browser page and request the code.
-4. In the selected public mailbox, open the newest matching verification message and read the code only inside the Browser. Enter it directly into the target page's OTP field.
+4. In the selected public mailbox, open the newest matching verification message and verify its visible timestamp is after the current request; same-subject older messages can remain in search results. Read the code only inside the Browser and enter it directly into the target page's OTP field. If verification rejects it, refresh the mailbox result and select the newest timestamp rather than retrying a stale code.
 5. Never print, copy into shell, write to report/state, screenshot, GIF, chat, or Git the OTP or message contents. Record only that delivery and verification succeeded, plus the sanitized target/environment.
 6. After the auth journey, close or release the mail page and record whether the target reached the expected signed-in state. Treat any pre-existing account, billing warning or unrelated mailbox as contamination and do not use it as new-user evidence.
 
