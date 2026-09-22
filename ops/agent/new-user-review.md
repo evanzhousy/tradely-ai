@@ -139,6 +139,22 @@ In the first round, before following a call to action, record what the entry pag
 
 **Page completion gate:** before closing the round, account for the page's visible links, controls, forms, filters, disclosures, language/theme behavior, empty/loading/error states that were encountered, onward navigation, and a settled visual pass. For the visual pass, inspect hierarchy, spacing, typography, contrast, selected/disabled/focus states, responsive fit at the actual viewport, motion/loading treatment, and whether secondary navigation keeps the learner oriented. Record strengths and concrete visual findings separately from functional bugs. Mark unexercised branches explicitly; loading the page or reading a snapshot alone is not a completed review.
 
+## Mandatory visual UI/UX audit
+
+The new-user review includes a visual product-quality review on every run. Functional success does not count as UI coverage. After the page settles, inspect the rendered screen as a human learner would see it and record both what feels polished and what obstructs understanding.
+
+For every frozen `P-###`, or for a documented shared-template group whose route-specific differences were checked, assess:
+
+1. **Orientation and hierarchy:** brand, page title, breadcrumb, current location, primary action, supporting actions, progress and next step.
+2. **Layout and spacing:** alignment, grouping, density, whitespace, reading order, card boundaries, sticky/fixed elements and viewport clipping.
+3. **Type and content:** heading scale, line length, metadata hierarchy, copy density, localization fit and whether labels describe the control's consequence.
+4. **Visual states:** default, selected, hover/focus when reachable, disabled, loading, empty, error, completed and authenticated/guest variants.
+5. **Contrast and affordance:** text/icon contrast in every offered theme, visible focus, control boundaries, status semantics, charts/diagrams and whether secondary navigation remains legible.
+6. **Responsive and motion behavior:** fit at the actual viewport, scroll/collapse behavior, sticky rails, animation timing, pause/reduced-motion controls and any content hidden behind overlays. If another viewport is unavailable, record that limitation rather than claiming responsive coverage.
+7. **Consistency and handoffs:** shared shell tokens, repeated components, footer/legal treatment, language/theme continuity and the visual boundary when an explicitly linked partner page opens.
+
+Use the `@Browser` screenshot or GIF capture as evidence and keep it outside the repository. Do not infer visual quality from DOM text alone. A visual finding needs a concrete screen, expected hierarchy/affordance, observed result, impact, confidence and an acceptance condition. Keep visual findings in the same `F-###` finding ledger, with category `UI/UX visual`, separate from functional bugs and learning gaps. Review explicitly linked partner handoffs only through the visible handoff and assigned report surface; do not crawl the external service.
+
 Use this compact round record in the external report:
 
 ```text
@@ -204,6 +220,10 @@ Finalize external `report.md` with the environment, dates, persona, actual brows
 ### 1. Bugs found
 
 For every bug: F ID, impact, confidence/reproducibility, affected user task/resources, environment/revision, expected versus actual, numbered reproduction steps, linked GIF and supporting evidence, and suggested next action. State explicitly when none were observed within the reviewed scope. List environment/tool blockers separately.
+
+### UI/UX visual review
+
+Give a page-family matrix with the visual verdict for Home, navigation/catalog, guides, lesson shell, auth/account, trust/support, purchases/changelog, and each explicitly reviewed partner handoff. Include polished strengths, visual limitations, theme/language/viewport scope, and every `UI/UX visual` finding with evidence and an observable acceptance condition. State clearly when no visual problem was confirmed in a family; do not use a functional pass as proof of visual quality.
 
 ### 2. Features that are difficult or unintuitive to use
 
