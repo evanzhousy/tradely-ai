@@ -4,6 +4,7 @@ import { Badge } from "@tradely/ui/components/badge";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { ScrollShadow } from "@tradely/ui/components/scroll-shadow";
+import { Spinner } from "@tradely/ui/components/spinner";
 import { Surface } from "@tradely/ui/components/surface";
 import {
 	ArrowLeftIcon,
@@ -370,7 +371,8 @@ function LessonPage() {
 								{attempt ? (
 									<Suspense
 										fallback={
-											<p role="status">
+											<p role="status" className="flex items-center gap-2">
+												<Spinner size="sm" aria-hidden="true" />
 												{locale === "zh" ? "正在加载…" : "Loading…"}
 											</p>
 										}

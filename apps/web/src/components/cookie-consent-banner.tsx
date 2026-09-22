@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@tradely/ui/components/button";
+import { CloseButton } from "@tradely/ui/components/close-button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
-import { XIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
 import { useI18n } from "@/i18n/provider";
@@ -32,15 +32,11 @@ export function CookieConsentBanner() {
 			aria-live="polite"
 		>
 			{preferencesOpen ? (
-				<Button
-					variant="ghost"
-					size="icon-sm"
+				<CloseButton
 					className="absolute top-3 right-3"
-					onClick={closePreferences}
+					onPress={closePreferences}
 					aria-label={t("common.close")}
-				>
-					<XIcon aria-hidden="true" />
-				</Button>
+				/>
 			) : null}
 			<div className="flex flex-col gap-3">
 				<div className="flex flex-col gap-2">

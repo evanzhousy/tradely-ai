@@ -1,13 +1,16 @@
 // Adapted from Magic UI's Scroll Progress (21st community). No animation runtime needed.
-import { type RefObject, useEffect, useRef } from "react";
+import { Progress } from "@tradely/ui/components/progress";
+import { type RefObject, useEffect, useState } from "react";
 
 /** Article-local reading position; distinct from persisted lesson completion. */
 export function ScrollProgress({
 	target,
+	label,
 }: {
 	target: RefObject<HTMLElement | null>;
+	label: string;
 }) {
-	const bar = useRef<HTMLDivElement>(null);
+	const [progress, setProgress] = useState(0);
 	useEffect(() => {
 		const article = target.current;
 		if (!article) return;
@@ -20,7 +23,7 @@ export function ScrollProgress({
 				distance > 0
 					? Math.min(1, Math.max(0, (100 - bounds.top) / distance))
 					: 1;
-			if (bar.current) bar.current.style.transform = `scaleX(${progress})`;
+			setProgress(progress * 100);
 		};
 		const schedule = () => {
 			if (!frame) frame = requestAnimationFrame(update);
@@ -40,5 +43,11 @@ export function ScrollProgress({
 			window.removeEventListener("resize", schedule);
 		};
 	}, [target]);
-	return <div ref={bar} className="reading-progress" aria-hidden="true" />;
+	return (
+		<Progress
+			value={progress}
+			aria-label={label}
+			className="reading-progress"
+		/>
+	);
 }

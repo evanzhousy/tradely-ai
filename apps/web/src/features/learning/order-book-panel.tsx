@@ -1,3 +1,4 @@
+import { Meter } from "@tradely/ui/components/meter";
 import {
 	Table,
 	TableBody,
@@ -74,13 +75,16 @@ export function OrderBookPanel({
 			</TableHead>
 			<TableCell className="book-price">{money(level.price)}</TableCell>
 			<TableCell className="book-size">
-				<span
+				<Meter.Root
 					className="book-size-bar"
-					aria-hidden="true"
-					style={{
-						width: `${Math.min(100, ((level.size ?? 0) / maximum) * 100)}%`,
-					}}
-				/>
+					aria-label={l("Displayed size", "可见数量")}
+					value={level.size ?? 0}
+					maxValue={maximum}
+				>
+					<Meter.Track>
+						<Meter.Fill />
+					</Meter.Track>
+				</Meter.Root>
 				<span>{level.size ?? "—"}</span>
 			</TableCell>
 			{depth ? (

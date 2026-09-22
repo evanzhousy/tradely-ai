@@ -11,13 +11,13 @@ import {
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
 import { NumberField } from "@tradely/ui/components/number-field";
+import { RangeSlider } from "@tradely/ui/components/slider";
 import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "@tradely/ui/components/toggle-group";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { type ReactNode, useContext, useEffect, useId, useState } from "react";
-import { RangeSlider } from "@/components/motion/range-slider";
 import { VisualLocale, VisualPlayback } from "./visual-playback";
 
 type Copy = (en: string, zh: string) => string;

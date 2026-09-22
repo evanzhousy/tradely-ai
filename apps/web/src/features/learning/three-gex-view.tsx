@@ -1,4 +1,6 @@
 import { Button } from "@tradely/ui/components/button";
+import { Spinner } from "@tradely/ui/components/spinner";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MetricsComparison } from "@/domain/learning/metrics";
 import type { Locale } from "@/i18n/messages";
@@ -63,7 +65,10 @@ export function ThreeGexView({
 						: "Signed GEX: strike, expiry and model contribution. Equivalent values in the table below."
 				}
 			/>
-			<div className="flex flex-wrap gap-2">
+			<Toolbar
+				aria-label={contractCopy.controls[locale]}
+				className="flex flex-wrap gap-2"
+			>
 				<Button
 					variant="outline"
 					size="sm"
@@ -89,9 +94,12 @@ export function ThreeGexView({
 					{contractCopy.reset[locale]}
 				</Button>
 				{!ready ? (
-					<span role="status">{contractCopy.loading[locale]}</span>
+					<span role="status" className="flex items-center gap-2">
+						<Spinner size="sm" aria-hidden="true" />
+						{contractCopy.loading[locale]}
+					</span>
 				) : null}
-			</div>
+			</Toolbar>
 		</div>
 	);
 }

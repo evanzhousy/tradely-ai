@@ -21,7 +21,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 	const free = tradingFlowCourse.lessons[0];
 	return (
 		<main lang="en" className="page-shell">
-			<ScrollProgress target={article} />
+			<ScrollProgress target={article} label="Reading progress" />
 			<Breadcrumb aria-label="Breadcrumb">
 				<BreadcrumbItem href="/">Home</BreadcrumbItem>
 				<BreadcrumbItem href="/guides">Guides</BreadcrumbItem>

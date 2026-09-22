@@ -1,4 +1,6 @@
 import { Button } from "@tradely/ui/components/button";
+import { Spinner } from "@tradely/ui/components/spinner";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import {
 	ArrowDownIcon,
 	PauseIcon,
@@ -94,7 +96,10 @@ export function TradingHall({ children }: { children: ReactNode }) {
 						</i>
 					</div>
 					{state === "ready" ? (
-						<div className="trading-hall-controls">
+						<Toolbar
+							aria-label={t("hall.simulation")}
+							className="trading-hall-controls"
+						>
 							<Button
 								variant="ghost"
 								size="sm"
@@ -120,9 +125,12 @@ export function TradingHall({ children }: { children: ReactNode }) {
 							>
 								<RotateCcwIcon aria-hidden="true" />
 							</Button>
-						</div>
+						</Toolbar>
 					) : (
 						<span className="trading-hall-loading">
+							{state === "loading" ? (
+								<Spinner size="sm" aria-hidden="true" />
+							) : null}
 							{t(state === "loading" ? "hall.loading" : "hall.static")}
 						</span>
 					)}

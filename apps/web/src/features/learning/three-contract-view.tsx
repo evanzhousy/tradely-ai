@@ -1,4 +1,6 @@
 import { Button } from "@tradely/ui/components/button";
+import { Spinner } from "@tradely/ui/components/spinner";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import { RotateCcwIcon, RotateCwIcon } from "lucide-react";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type {
@@ -68,7 +70,10 @@ function ThreeContractViewContent({
 				className="relative h-[340px] w-full overflow-hidden rounded-2xl bg-muted/40 sm:h-[420px]"
 				aria-label={text("title")}
 			/>
-			<div className="flex flex-wrap items-center gap-2">
+			<Toolbar
+				aria-label={text("controls")}
+				className="flex flex-wrap items-center gap-2"
+			>
 				<Button
 					variant="outline"
 					size="sm"
@@ -96,11 +101,15 @@ function ThreeContractViewContent({
 					{text("reset")}
 				</Button>
 				{!ready ? (
-					<span role="status" className="text-muted-foreground text-sm">
+					<span
+						role="status"
+						className="flex items-center gap-2 text-muted-foreground text-sm"
+					>
+						<Spinner size="sm" aria-hidden="true" />
 						{text("loading")}
 					</span>
 				) : null}
-			</div>
+			</Toolbar>
 			<p className="text-muted-foreground text-xs">{text("controls")}</p>
 		</div>
 	);

@@ -1,3 +1,4 @@
+import { Surface } from "@tradely/ui/components/surface";
 import type { ReactNode } from "react";
 import { useContext } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -29,8 +30,9 @@ export function SceneOutcome({
 		>
 			<dl className="outcome-grid">
 				{items.map((item) => (
-					<div
+					<Surface
 						key={item.id}
+						variant="secondary"
 						className="scene-outcome-card"
 						data-outcome={item.id}
 						data-tone={
@@ -46,7 +48,7 @@ export function SceneOutcome({
 								<span className="outcome-unit"> {item.unit}</span>
 							) : null}
 						</dd>
-					</div>
+					</Surface>
 				))}
 			</dl>
 			{note ? <p className="outcome-note">{note}</p> : null}

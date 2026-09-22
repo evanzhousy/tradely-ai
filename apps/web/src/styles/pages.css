@@ -225,11 +225,18 @@
 	z-index: 41;
 	top: 64px;
 	inset-inline: 0;
-	height: 2px;
-	background: var(--ring);
-	transform: scaleX(0);
-	transform-origin: left;
+	display: block;
+	gap: 0;
 	pointer-events: none;
+}
+.reading-progress [data-slot="progress-track"] {
+	height: 2px;
+	border-radius: 0;
+	background: transparent;
+}
+.reading-progress [data-slot="progress-indicator"] {
+	background: var(--ring);
+	transition: none;
 }
 .reading-body {
 	min-width: 0;
@@ -1396,12 +1403,20 @@
 .breakdown-bar {
 	position: absolute;
 	left: 0;
+	right: 0;
 	bottom: 0;
+	display: block;
+}
+.breakdown-bar [data-slot="meter-track"] {
 	height: 3px;
+	background: transparent;
+}
+.breakdown-bar [data-slot="meter-fill"] {
+	height: 100%;
 	background: var(--diagram-gain);
 	transition: width 240ms ease-out;
 }
-.breakdown-row[data-tone="loss"] .breakdown-bar {
+.breakdown-row[data-tone="loss"] .breakdown-bar [data-slot="meter-fill"] {
 	background: var(--diagram-loss);
 }
 .breakdown-row[data-tone="unknown"] {
@@ -1809,9 +1824,19 @@
 }
 .book-size-bar {
 	position: absolute;
+	left: 0;
 	right: 0;
 	top: 15%;
 	height: 70%;
+	display: block;
+	transition: none;
+}
+.book-size-bar [data-slot="meter-track"] {
+	height: 100%;
+	background: transparent;
+}
+.book-size-bar [data-slot="meter-fill"] {
+	height: 100%;
 	background: var(--book-side);
 	opacity: 0.18;
 	transition: width 240ms ease-out;
@@ -1844,7 +1869,7 @@
 	flex-wrap: wrap;
 }
 @media (prefers-reduced-motion: reduce) {
-	.book-size-bar {
+	.book-size-bar [data-slot="meter-fill"] {
 		transition: none;
 	}
 }

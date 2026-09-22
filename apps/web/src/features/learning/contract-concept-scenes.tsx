@@ -8,6 +8,7 @@ import { Button } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { Field, FieldGroup, FieldLabel } from "@tradely/ui/components/field";
 import { RangeSlider } from "@tradely/ui/components/slider";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -505,7 +506,10 @@ export function UnitsScene({ locale }: Props) {
 						<FieldLabel htmlFor={`${id}-count`}>
 							{l("Contracts", "合约张数")}
 						</FieldLabel>
-						<div className="flex items-center gap-3">
+						<Toolbar
+							aria-label={l("Contract quantity controls", "合约张数控制")}
+							className="flex items-center gap-3"
+						>
 							<Button
 								variant="outline"
 								size="sm"
@@ -530,7 +534,7 @@ export function UnitsScene({ locale }: Props) {
 							>
 								+
 							</Button>
-						</div>
+						</Toolbar>
 						<RangeSlider
 							aria-label={l("Contract quantity", "合约张数")}
 							id={`${id}-count`}
@@ -777,7 +781,10 @@ export function SourceTimeScene({ locale }: Props) {
 					<Badge variant="outline" className="self-start">
 						{l("Same contract throughout", "全程为同一合约")}
 					</Badge>
-					<div className="flex flex-wrap gap-2">
+					<Toolbar
+						aria-label={l("Quote snapshot controls", "报价快照控制")}
+						className="flex flex-wrap gap-2"
+					>
 						<Button
 							size="sm"
 							variant="outline"
@@ -808,7 +815,7 @@ export function SourceTimeScene({ locale }: Props) {
 						>
 							{l("Next snapshot", "下一快照")}
 						</Button>
-					</div>
+					</Toolbar>
 					<div
 						aria-live="polite"
 						className="flex flex-col gap-3 text-sm leading-7"

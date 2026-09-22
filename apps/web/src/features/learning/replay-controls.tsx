@@ -4,9 +4,10 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
+import { RangeSlider } from "@tradely/ui/components/slider";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { useId } from "react";
-import { RangeSlider } from "@/components/motion/range-slider";
 import type { ReplayClock, ReplaySource } from "@/domain/learning/replay";
 import { REPLAY_RATES, replayTime } from "@/domain/learning/replay";
 import type { Locale } from "@/i18n/messages";
@@ -48,7 +49,10 @@ export function ReplayControls({
 						<span className="text-muted-foreground text-sm">ET</span>
 					</p>
 				</div>
-				<div className="flex flex-wrap items-center gap-2">
+				<Toolbar
+					aria-label={text("replayTitle")}
+					className="flex flex-wrap items-center gap-2"
+				>
 					<Button
 						onClick={clock.playing ? pause : play}
 						aria-label={text(
@@ -83,7 +87,7 @@ export function ReplayControls({
 							</NativeSelectOption>
 						))}
 					</NativeSelect>
-				</div>
+				</Toolbar>
 			</div>
 			<Field>
 				<FieldLabel htmlFor={`${id}-timeline`} className="sr-only">
@@ -104,7 +108,10 @@ export function ReplayControls({
 					className="h-11"
 				/>
 			</Field>
-			<div className="flex justify-between gap-1">
+			<Toolbar
+				aria-label={text("replayTimeline")}
+				className="flex justify-between gap-1"
+			>
 				{data.replay.frames.map((frame) => (
 					<Button
 						key={frame.position}
@@ -117,7 +124,7 @@ export function ReplayControls({
 						{replayTime(data, frame.position)}
 					</Button>
 				))}
-			</div>
+			</Toolbar>
 			<p className="text-muted-foreground text-xs">{note[locale]}</p>
 			{reducedMotion ? (
 				<p className="text-muted-foreground text-xs">{text("reducedReplay")}</p>

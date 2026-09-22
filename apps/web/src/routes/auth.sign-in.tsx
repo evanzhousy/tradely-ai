@@ -17,6 +17,7 @@ import {
 } from "@tradely/ui/components/field";
 import { Form } from "@tradely/ui/components/form";
 import { Input } from "@tradely/ui/components/input";
+import { InputOTP, REGEXP_ONLY_DIGITS } from "@tradely/ui/components/input-otp";
 import { InteractiveHoverButton } from "@tradely/ui/components/interactive-hover-button";
 import {
 	Item,
@@ -216,22 +217,26 @@ function SignInForm({
 						</p>
 						<Field data-invalid={Boolean(error)}>
 							<FieldLabel htmlFor="auth-code">{t("auth.code")}</FieldLabel>
-							<Input
+							<InputOTP.Root
 								id="auth-code"
 								name="code"
 								autoComplete="one-time-code"
 								inputMode="numeric"
-								pattern="[0-9]{6}"
+								pattern={REGEXP_ONLY_DIGITS}
 								maxLength={6}
 								required
 								value={code}
-								onChange={(event) =>
-									setCode(event.target.value.replace(/\D/g, ""))
-								}
-								disabled={Boolean(pending)}
-								aria-invalid={Boolean(error)}
+								onChange={(value) => setCode(value.replace(/\D/g, ""))}
+								isDisabled={Boolean(pending)}
+								isInvalid={Boolean(error)}
 								aria-describedby={error ? "auth-error" : undefined}
-							/>
+							>
+								<InputOTP.Group>
+									{Array.from({ length: 6 }, (_, index) => (
+										<InputOTP.Slot key={index} index={index} />
+									))}
+								</InputOTP.Group>
+							</InputOTP.Root>
 						</Field>
 					</>
 				)}

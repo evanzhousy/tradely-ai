@@ -7,6 +7,7 @@ import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
 import { FieldGroup } from "@tradely/ui/components/field";
 import { RangeSlider } from "@tradely/ui/components/slider";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import * as m from "motion/react-m";
 import { useId, useState } from "react";
 import type { Locale } from "@/i18n/messages";
@@ -798,7 +799,10 @@ export function ExpirationProfitScene({ locale }: Props) {
 							{money(result.breakEven, locale, 2)}
 						</p>
 					</div>
-					<div className="flex flex-wrap gap-2">
+					<Toolbar
+						aria-label={l("Payoff example controls", "盈亏示例控制")}
+						className="flex flex-wrap gap-2"
+					>
 						<Button
 							variant="outline"
 							size="sm"
@@ -817,7 +821,7 @@ export function ExpirationProfitScene({ locale }: Props) {
 						>
 							{l("Find break-even", "找到盈亏平衡点")}
 						</Button>
-					</div>
+					</Toolbar>
 					<p className="text-muted-foreground text-sm leading-7">
 						{result.moneyness === "ITM" && result.profit < 0
 							? l(

@@ -1,4 +1,7 @@
 import { useServerFn } from "@tanstack/react-start";
+import { Alert, AlertDescription } from "@tradely/ui/components/alert";
+import { Spinner } from "@tradely/ui/components/spinner";
+import { Surface } from "@tradely/ui/components/surface";
 import { useEffect, useState } from "react";
 import type { LearningResponse } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
@@ -32,17 +35,22 @@ export function LearningHistory({
 	}, [lessonId, attemptId, read]);
 	if (!response)
 		return (
-			<p role="status">
-				{locale === "zh" ? "正在读取历史记录…" : "Loading your saved work…"}
+			<p role="status" className="flex items-center gap-2">
+				<Spinner size="sm" aria-hidden="true" />
+				<span>
+					{locale === "zh" ? "正在读取历史记录…" : "Loading your saved work…"}
+				</span>
 			</p>
 		);
 	if (!response.ok)
 		return (
-			<p role="status">
-				{locale === "zh"
-					? "历史记录暂不可用。请确认已登录并重试。"
-					: "Saved work is unavailable. Check that you are signed in and try again."}
-			</p>
+			<Alert role="status">
+				<AlertDescription>
+					{locale === "zh"
+						? "历史记录暂不可用。请确认已登录并重试。"
+						: "Saved work is unavailable. Check that you are signed in and try again."}
+				</AlertDescription>
+			</Alert>
 		);
 	const view = response.view;
 	const work = view.work ?? view.sourceWork;
@@ -66,21 +74,29 @@ export function LearningHistory({
 				</p>
 			)}
 			{view.feedback.map((item) => (
-				<div key={item.questionId} className="flex flex-col gap-2">
+				<Surface
+					key={item.questionId}
+					variant="secondary"
+					className="flex flex-col gap-2 p-3"
+				>
 					<p className="font-medium">{item.prompt[locale]}</p>
 					<p>{item.selected[locale]}</p>
 					<p className="text-muted-foreground text-sm">
 						{item.explanation[locale]}
 					</p>
-				</div>
+				</Surface>
 			))}
 			{work?.fields.map((field, index) => (
-				<div key={`${index}:${field.label.en}`}>
+				<Surface
+					key={`${index}:${field.label.en}`}
+					variant="secondary"
+					className="p-3"
+				>
 					<p className="font-medium">{field.label[locale]}</p>
 					<p className="whitespace-pre-wrap">
 						{field.localizedValue?.[locale] ?? field.value}
 					</p>
-				</div>
+				</Surface>
 			))}
 		</div>
 	);

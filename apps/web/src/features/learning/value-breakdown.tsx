@@ -1,3 +1,4 @@
+import { Meter } from "@tradely/ui/components/meter";
 import { useId } from "react";
 import type { Locale } from "@/i18n/messages";
 
@@ -33,11 +34,16 @@ export function ValueBreakdown({
 					>
 						<dt>{p.label}</dt>
 						<dd>{p.value === null ? "—" : format(p.value)}</dd>
-						<span
+						<Meter.Root
 							className="breakdown-bar"
-							aria-hidden="true"
-							style={{ width: `${(Math.abs(p.value ?? 0) / max) * 100}%` }}
-						/>
+							aria-label={p.label}
+							value={Math.abs(p.value ?? 0)}
+							maxValue={max}
+						>
+							<Meter.Track>
+								<Meter.Fill />
+							</Meter.Track>
+						</Meter.Root>
 					</div>
 				))}
 			</dl>

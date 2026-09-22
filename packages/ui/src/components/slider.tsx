@@ -14,6 +14,7 @@ type RangeSliderProps = {
 	className?: string;
 	disabled?: boolean;
 	id?: string;
+	formatValueText?: (value: number) => string;
 	max: number | string;
 	min: number | string;
 	onBlur?: FocusEventHandler<HTMLDivElement>;
@@ -22,6 +23,7 @@ type RangeSliderProps = {
 	onPointerCancel?: PointerEventHandler<HTMLDivElement>;
 	onPointerDown?: PointerEventHandler<HTMLDivElement>;
 	onPointerUp?: PointerEventHandler<HTMLDivElement>;
+	onValueChange?: (value: number) => void;
 	step: number | string;
 	type?: "range";
 	value: number | string;
@@ -32,9 +34,11 @@ function RangeSlider({
 	"aria-valuetext": ariaValueText,
 	className,
 	disabled,
+	formatValueText,
 	max,
 	min,
 	onChange,
+	onValueChange,
 	step,
 	value,
 	...props
@@ -49,17 +53,24 @@ function RangeSlider({
 			step={Number(step)}
 			value={Number(value)}
 			onChange={(nextValue) => {
-				const stringValue = String(nextValue);
+				const numericValue = Array.isArray(nextValue)
+					? (nextValue[0] ?? Number(min))
+					: nextValue;
+				const stringValue = String(numericValue);
 				onChange?.({
 					target: { value: stringValue },
 					currentTarget: { value: stringValue },
 				} as unknown as React.ChangeEvent<HTMLInputElement>);
+				onValueChange?.(numericValue);
 			}}
 			{...props}
 		>
 			<Slider.Track>
 				<Slider.Fill />
-				<Slider.Thumb aria-label={ariaLabel} aria-valuetext={ariaValueText} />
+				<Slider.Thumb
+					aria-label={ariaLabel}
+					aria-valuetext={formatValueText?.(Number(value)) ?? ariaValueText}
+				/>
 			</Slider.Track>
 		</Slider.Root>
 	);

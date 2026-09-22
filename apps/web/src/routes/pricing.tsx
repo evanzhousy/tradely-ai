@@ -14,6 +14,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
+import { Spinner } from "@tradely/ui/components/spinner";
 import { useEffect, useState } from "react";
 import { authIsConfigured, useAuth } from "@/auth/client";
 import { PageIntro } from "@/components/page-intro";
@@ -78,7 +79,10 @@ function PurchaseSupport({ userId }: { userId: string }) {
 				</p>
 			)}
 			{history.isPending ? (
-				<p role="status">{t("auth.loading")}</p>
+				<p role="status" className="flex items-center gap-2">
+					<Spinner size="sm" aria-hidden="true" />
+					{t("auth.loading")}
+				</p>
 			) : history.isError ||
 				history.data?.access.billingState === "unavailable" ? (
 				<Alert>
@@ -110,7 +114,13 @@ function PurchaseSupport({ userId }: { userId: string }) {
 function AccountSupport() {
 	const { userId, isLoaded } = useAuth();
 	const { t } = useI18n();
-	if (!isLoaded) return <p role="status">{t("auth.loading")}</p>;
+	if (!isLoaded)
+		return (
+			<p role="status" className="flex items-center gap-2">
+				<Spinner size="sm" aria-hidden="true" />
+				{t("auth.loading")}
+			</p>
+		);
 	return userId ? (
 		<PurchaseSupport key={userId} userId={userId} />
 	) : (

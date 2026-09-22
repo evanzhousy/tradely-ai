@@ -8,12 +8,12 @@ import {
 	EmptyTitle,
 } from "@tradely/ui/components/empty";
 import { Field, FieldLabel } from "@tradely/ui/components/field";
-import { Input } from "@tradely/ui/components/input";
 import { Link as HeroLink } from "@tradely/ui/components/link";
 import {
 	NativeSelect,
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
+import { SearchField } from "@tradely/ui/components/search-field";
 import {
 	Tabs,
 	TabsContent,
@@ -120,17 +120,27 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 					<FieldLabel htmlFor={id}>
 						{locale === "zh" ? "查找课程" : "Find a lesson"}
 					</FieldLabel>
-					<div className="catalog-search">
-						<Input
-							id={id}
-							type="search"
-							value={query}
-							onChange={(event) => setQuery(event.target.value)}
-							placeholder={
-								locale === "zh" ? "搜索概念、主题…" : "Search concepts, topics…"
-							}
-						/>
-					</div>
+					<SearchField.Root
+						className="catalog-search"
+						value={query}
+						onChange={setQuery}
+						aria-label={locale === "zh" ? "查找课程" : "Find a lesson"}
+					>
+						<SearchField.Group>
+							<SearchField.SearchIcon aria-hidden="true" />
+							<SearchField.Input
+								id={id}
+								placeholder={
+									locale === "zh"
+										? "搜索概念、主题…"
+										: "Search concepts, topics…"
+								}
+							/>
+							<SearchField.ClearButton
+								aria-label={locale === "zh" ? "清除搜索" : "Clear search"}
+							/>
+						</SearchField.Group>
+					</SearchField.Root>
 				</Field>
 			</div>
 			{query || moduleId !== "all" || filter !== "all" ? (

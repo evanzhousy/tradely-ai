@@ -1,5 +1,6 @@
 import { buttonVariants } from "@tradely/ui/components/button";
 import { Dropdown } from "@tradely/ui/components/dropdown";
+import { Spinner } from "@tradely/ui/components/spinner";
 import { ChevronDownIcon, LogOutIcon, UserRoundIcon } from "lucide-react";
 import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
@@ -18,16 +19,9 @@ function ConfiguredAuthControls() {
 			<div
 				role="status"
 				aria-label={t("auth.loading")}
-				className="inline-flex h-8 w-16 items-center justify-center gap-1 rounded-full border border-border/70 bg-muted/80 sm:w-20"
+				className="inline-flex h-8 w-16 items-center justify-center rounded-full border border-border/70 bg-muted/80 sm:w-20"
 			>
-				{[0, 1, 2].map((index) => (
-					<span
-						key={index}
-						aria-hidden="true"
-						className="size-1.5 animate-pulse rounded-full bg-muted-foreground/70"
-						style={{ animationDelay: `${index * 120}ms` }}
-					/>
-				))}
+				<Spinner size="sm" aria-hidden="true" />
 				<span className="sr-only">{t("auth.loading")}</span>
 			</div>
 		);

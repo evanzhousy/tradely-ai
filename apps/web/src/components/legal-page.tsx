@@ -12,7 +12,10 @@ export function LegalPage({ page }: { page: LegalPageId }) {
 	const document = getLegalDocument(page, locale);
 	return (
 		<main className="page-shell" aria-labelledby="legal-title">
-			<ScrollProgress target={article} />
+			<ScrollProgress
+				target={article}
+				label={locale === "zh" ? "阅读进度" : "Reading progress"}
+			/>
 			<Breadcrumb aria-label={locale === "zh" ? "页面路径" : "Breadcrumb"}>
 				<BreadcrumbItem href="/">{t("nav.learn")}</BreadcrumbItem>
 				<BreadcrumbItem>{document.title}</BreadcrumbItem>

@@ -4,8 +4,9 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
+import { RangeSlider } from "@tradely/ui/components/slider";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import { useEffect, useId, useRef, useState } from "react";
-import { RangeSlider } from "@/components/motion/range-slider";
 import { REPLAY_RATES } from "@/domain/learning/replay";
 import type { Locale } from "@/i18n/messages";
 import { ChangeHighlight } from "./lesson-motion";
@@ -310,7 +311,10 @@ export function ExecutionLab({
 					</p>
 				</div>
 			</div>
-			<div className="flex flex-wrap gap-2">
+			<Toolbar
+				aria-label={text("Replay controls", "回放控制")}
+				className="flex flex-wrap gap-2"
+			>
 				<Button
 					onClick={() => act(replay.clock.playing ? replay.pause : replay.play)}
 				>
@@ -331,7 +335,7 @@ export function ExecutionLab({
 						</NativeSelectOption>
 					))}
 				</NativeSelect>
-			</div>
+			</Toolbar>
 			<Field>
 				<FieldLabel htmlFor={`${id}-position`}>
 					{text("Sequence position", "序列位置")}
@@ -350,7 +354,10 @@ export function ExecutionLab({
 					className="h-11"
 				/>
 			</Field>
-			<div className="flex flex-wrap gap-2">
+			<Toolbar
+				aria-label={text("Sequence snapshots", "序列快照")}
+				className="flex flex-wrap gap-2"
+			>
 				{stages.map((label, index) => (
 					<Button
 						variant="outline"
@@ -361,7 +368,7 @@ export function ExecutionLab({
 						{index + 1}. {label}
 					</Button>
 				))}
-			</div>
+			</Toolbar>
 			<p className="font-mono text-sm">
 				{filled
 					? `${fillSize} × $${price.toFixed(2)} × 100 = $${(fillSize * price * 100).toLocaleString(locale)}`

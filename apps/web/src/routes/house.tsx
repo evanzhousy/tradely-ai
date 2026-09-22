@@ -15,6 +15,7 @@ import {
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
 import { Slider } from "@tradely/ui/components/slider";
+import { Toolbar } from "@tradely/ui/components/toolbar";
 import { ArrowUpRight, Box, Minus, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Quality } from "@/features/house/cinematic";
@@ -247,7 +248,10 @@ function HousePage() {
 							<NativeSelectOption value="120">2 minutes</NativeSelectOption>
 						</NativeSelect>
 					</div>
-					<div className="flex flex-wrap items-center gap-2">
+					<Toolbar
+						aria-label="Sunset playback controls"
+						className="flex flex-wrap items-center gap-2"
+					>
 						<Button
 							disabled={busy || navigation.area !== "exterior"}
 							onClick={() => {
@@ -275,7 +279,7 @@ function HousePage() {
 						<span className="font-mono text-muted-foreground text-xs">
 							{Math.ceil((1 - sunset) * duration)}s left
 						</span>
-					</div>
+					</Toolbar>
 				</div>
 			</section>
 			<div className="grid overflow-hidden rounded-2xl border border-border lg:grid-cols-[1fr_280px]">
@@ -347,7 +351,10 @@ function HousePage() {
 								? "PREVIEW MODE"
 								: "LOADING MODEL"}
 					</div>
-					<div className="absolute right-4 bottom-4 flex gap-1 rounded-full bg-background/95 p-1 shadow-sm">
+					<Toolbar
+						aria-label="Camera controls"
+						className="absolute right-4 bottom-4 flex gap-1 rounded-full bg-background/95 p-1 shadow-sm"
+					>
 						<Button
 							variant="ghost"
 							size="icon"
@@ -375,7 +382,7 @@ function HousePage() {
 						>
 							<RotateCcw />
 						</Button>
-					</div>
+					</Toolbar>
 				</div>
 				<aside className="flex flex-col gap-8 border-border border-t bg-background p-6 lg:max-h-[650px] lg:overflow-y-auto lg:border-t-0 lg:border-l">
 					<div>
@@ -473,7 +480,11 @@ function HousePage() {
 						<h3 id="house-views" className="mb-3 font-medium text-sm">
 							Jump to a view
 						</h3>
-						<div className="flex flex-col gap-2">
+						<Toolbar
+							aria-label="House views"
+							orientation="vertical"
+							className="flex flex-col gap-2"
+						>
 							<Button
 								variant="outline"
 								disabled={busy}
@@ -502,7 +513,7 @@ function HousePage() {
 							>
 								Birdhouse close-up · 鸟巢
 							</Button>
-						</div>
+						</Toolbar>
 					</section>
 					<FieldSet
 						disabled={navigation.area !== "exterior" || busy}
