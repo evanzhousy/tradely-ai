@@ -28,7 +28,7 @@ Latest authoritative run: new Browser-only greenfield review started 2026-09-22 
 - Rebuild every page, resource, finding and learning verdict from @Browser evidence. Do not copy prior Ego Browser observations into the new report, even when the behavior appears similar.
 - The page/resource and K matrix are now recorded in the external report. Remaining work is count/evidence reconciliation and signed-in progress/account verification. The public test mailbox delivered codes, but repeated fresh-looking submissions were rejected as invalid/expired; keep that journey `BLOCKED` with environment attribution unknown and continue independent guest work.
 - Keep first-visit consent `UNASSESSED` if the @Browser session already has a persisted choice; Browser-local clearing remains outside scope.
-- Keep the new report, state, screenshots and GIF evidence outside the repository. The run remains `IN PROGRESS`; do not claim a complete review until the matrix, evidence gate and blocker disposition are reconciled.
+- Keep the new report, state, screenshots and GIF evidence outside the repository. The current run is `PARTIAL`: the matrix/evidence gate are reconciled, but the authenticated journey remains blocked by repeated invalid/expired OTP responses and is not counted as complete.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
