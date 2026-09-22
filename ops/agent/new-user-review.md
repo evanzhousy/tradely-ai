@@ -20,15 +20,15 @@ Read [AGENTS.md](../../AGENTS.md), this handoff, and the installed `runbook-main
 
 ## Agent Handoff
 
-Last updated: 2026-09-21
+Last updated: 2026-09-22
 
-Latest authoritative run: Browser-only greenfield review started 2026-09-21 at `/tmp/tradely-new-user-review/20260921-browser-greenfield/`. The earlier `/tmp/tradely-new-user-review/20260919-greenfield/` run used Ego Browser and is historical only; none of its coverage, findings, learning verdicts or evidence count toward the Browser-only run.
+Latest authoritative run: new Browser-only greenfield review started 2026-09-22 at `/tmp/tradely-new-user-review/20260922-browser-greenfield/`. The earlier 20260921 Browser run and the 20260919 Ego Browser run are historical only; their coverage, findings and learning verdicts do not count toward this run.
 
-- Resume Round 004 in the existing Codex In-app @Browser tab. Rounds 001–003 reviewed Home and lessons 1–2; the current lesson 2 changed-input result is complete, and the visible `Next lesson` handoff leads to premium/payoff/profit. The Home-derived exploration map and initial P-001–P-007 inventory remain frozen.
+- Rounds 001–046 are checkpointed. Home, Guides, Curriculum, all 36 lesson children, trust pages, partner handoffs and five later reuse checks are recorded in the external state/report.
 - Rebuild every page, resource, finding and learning verdict from @Browser evidence. Do not copy prior Ego Browser observations into the new report, even when the behavior appears similar.
-- Keep first-visit consent `UNASSESSED` if the @Browser session already has a persisted choice; the user explicitly scoped Browser-local clearing out. Continue guest and authenticated review without treating this branch as a global blocker.
-- Use the authorized `public@tfsharedspace.com` Feishu account only when an authenticated journey is reached through the UI. Enter OTPs only inside @Browser and exclude them from all captures and records.
-- Keep the new report, state, screenshots and GIF evidence outside the repository. The run is currently `IN PROGRESS`; no Browser-only finding or learning verdict is final yet.
+- The remaining high-value work is final learning-matrix reconciliation and signed-in progress/account verification. The public test mailbox delivered codes, but repeated fresh-looking submissions were rejected as invalid/expired; keep that journey `BLOCKED` with environment attribution unknown and continue independent guest work.
+- Keep first-visit consent `UNASSESSED` if the @Browser session already has a persisted choice; Browser-local clearing remains outside scope.
+- Keep the new report, state, screenshots and GIF evidence outside the repository. The run remains `IN PROGRESS`; do not claim a complete review until the matrix, evidence gate and blocker disposition are reconciled.
 
 On subsequent runs, prune completed items before adding new ones. Keep 3–7 actionable bullets here, never more than 12. Remove findings and learning history from this handoff; they belong in the external report/state.
 
