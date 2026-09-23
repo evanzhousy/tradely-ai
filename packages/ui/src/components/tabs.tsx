@@ -59,7 +59,7 @@ function TabsTrigger({
 		<HeroTabs.Tab
 			id={value}
 			className={cn(
-				"relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-sm transition-colors",
+				"relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-muted-foreground text-sm transition-colors data-[selected=true]:text-foreground",
 				className,
 			)}
 			{...props}

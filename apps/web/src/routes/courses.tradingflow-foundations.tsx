@@ -120,7 +120,6 @@ function CoursePage() {
 					? "核心路径：合约 → 成交 → 成交流 → 比较研究 → 研究产出。定价与模型、组合为扩展路径。先修提示是学习建议，不新增访问锁。"
 					: "Core path: contracts → execution → flow → research → written output. Pricing/models and portfolios form deeper branches. Prerequisites guide learning; they do not add access locks."}
 			</p>
-			<TradingFlowLabs />
 			<CourseCatalog
 				learning={progress.learning}
 				groupByModule
@@ -130,6 +129,7 @@ function CoursePage() {
 					.filter((record) => record.completedAt)
 					.map((record) => record.lessonId)}
 			/>
+			<TradingFlowLabs />
 		</main>
 	);
 }

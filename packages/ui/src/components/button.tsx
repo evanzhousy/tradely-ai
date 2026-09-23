@@ -101,6 +101,7 @@ function Button({
 			className={cn(
 				"group/button shrink-0 whitespace-nowrap transition-[color,box-shadow,background-color,transform] active:scale-[0.97]",
 				variant === "link" && "underline-offset-4 hover:underline",
+				variant === "secondary" && "text-foreground",
 				className,
 			)}
 			onPress={

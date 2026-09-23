@@ -57,7 +57,8 @@ function ConfiguredAuthControls() {
 				className={buttonVariants({
 					variant: "ghost",
 					size: "sm",
-					className: "max-w-44 gap-1.5 px-2",
+					className:
+						"inline-flex h-9 max-w-44 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2 [&>svg]:size-4 [&>svg]:shrink-0",
 				})}
 				aria-label={
 					email ? `${t("auth.account")}: ${email}` : t("auth.account")

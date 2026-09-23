@@ -2,7 +2,7 @@
 
 import { Button } from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
-import { Check, ListTodo } from "lucide-react";
+import { Check } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import { useEffect, useRef, useState } from "react";
@@ -211,24 +211,23 @@ export function LessonPlan({
 	const title = locale === "zh" ? "步骤" : "Steps";
 
 	return (
-		<section
+		<details
 			aria-label={title}
 			className="visual-lesson-plan w-full overflow-hidden rounded-2xl border border-border/70 bg-background/50"
 		>
-			<div className="flex min-h-11 items-center gap-2.5 px-3.5 text-left">
-				<span
-					aria-hidden="true"
-					className="grid size-6 shrink-0 place-items-center text-muted-foreground"
-				>
-					{completed === plan.length ? (
-						<Check className="size-4 text-emerald-500" strokeWidth={2.5} />
-					) : (
-						<ListTodo className="size-4" />
-					)}
+			<summary className="flex min-h-11 cursor-pointer items-center gap-2.5 px-3.5 text-left focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2">
+				<StatusIcon
+					status={complete ? "completed" : "in-progress"}
+					progress={progress}
+				/>
+				<span className="min-w-0 flex-1 text-foreground text-sm">
+					{complete
+						? locale === "zh"
+							? "本场景已完成"
+							: "Scene complete"
+						: current.label[language]}
 				</span>
-				<h3 className="min-w-0 flex-1 truncate font-medium text-foreground/90 text-sm">
-					{title}
-				</h3>
+				<span className="text-muted-foreground text-xs">{title} ▾</span>
 				<span className="shrink-0 font-medium text-muted-foreground text-xs tabular-nums">
 					<span className="sr-only">
 						{completed} {locale === "zh" ? "步已完成，共" : "of"} {plan.length}
@@ -238,7 +237,7 @@ export function LessonPlan({
 						{completed}/{plan.length}
 					</span>
 				</span>
-			</div>
+			</summary>
 			<ol aria-live="polite" className="space-y-0 px-2 pb-2">
 				{plan.map((item) => {
 					const status: LessonPlanStatus =
@@ -271,9 +270,9 @@ export function LessonPlan({
 								<span
 									className={cn(
 										"min-w-0 flex-1 truncate text-sm leading-5",
-										status === "pending" && "text-muted-foreground/65",
+										status === "pending" && "text-muted-foreground",
 										status === "in-progress" && "text-foreground",
-										status === "completed" && "text-muted-foreground/60",
+										status === "completed" && "text-muted-foreground",
 									)}
 								>
 									{item.label[language]}
@@ -294,6 +293,6 @@ export function LessonPlan({
 					);
 				})}
 			</ol>
-		</section>
+		</details>
 	);
 }

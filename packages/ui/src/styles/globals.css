@@ -500,3 +500,28 @@
 		height: auto;
 	}
 }
+
+/* HeroUI muted is a text token; Tradely muted is a surface token. */
+.breadcrumbs {
+	min-width: 0;
+	max-width: 100%;
+	flex-wrap: wrap;
+}
+.breadcrumbs .breadcrumbs__item {
+	min-width: 0;
+	max-width: 100%;
+}
+.breadcrumbs .breadcrumbs__link {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	color: var(--muted-foreground);
+}
+.breadcrumbs .breadcrumbs__link[data-current="true"] {
+	color: var(--foreground);
+}
+.tabs__tab {
+	color: var(--muted-foreground);
+}
+.tabs__tab[aria-selected="true"] {
+	color: var(--foreground);
+}

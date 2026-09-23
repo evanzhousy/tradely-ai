@@ -401,6 +401,82 @@ export function ConceptLab({
 						</div>
 					) : null}
 				</div>
+
+				<aside
+					className="visual-guide"
+					aria-label={l("Lesson guidance", "课程指引")}
+				>
+					<FieldSet
+						className="visual-playback"
+						aria-label={l("Demonstration controls", "演示控制")}
+					>
+						<Button
+							size="sm"
+							variant="secondary"
+							onClick={toggle}
+							aria-pressed={playing}
+						>
+							{playing ? (
+								<PauseIcon data-icon="inline-start" />
+							) : (
+								<PlayIcon data-icon="inline-start" />
+							)}
+							{playing
+								? l("Pause", "暂停")
+								: exploring
+									? l("Resume", "继续")
+									: complete
+										? l("Start again", "重新开始")
+										: reduced
+											? l("Next step", "下一步")
+											: l("Continue", "继续")}
+						</Button>
+						{!complete && !reduced ? (
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={() => {
+									pause();
+									advance();
+								}}
+							>
+								<ArrowRightIcon aria-hidden="true" />
+								{l("Next step", "下一步")}
+							</Button>
+						) : null}
+						{!complete ? (
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={() => {
+									autoStarted.current = scene;
+									seek(0);
+									setResetVersion((value) => value + 1);
+									setPlaying(!reduced);
+								}}
+								aria-label={l("Reset demonstration", "重置演示")}
+							>
+								<RotateCcwIcon />
+								{l("Restart", "重启")}
+							</Button>
+						) : null}
+						{complete && !exploring && (
+							<div className="visual-playback-complete">{continuation}</div>
+						)}
+					</FieldSet>
+					<LessonPlan
+						locale={locale}
+						steps={steps}
+						step={step}
+						running={playing && ready && visible && pageVisible}
+						exploring={exploring}
+						reduced={reduced}
+						complete={complete}
+						epoch={epoch}
+						onElapsed={advance}
+						onStepSelect={selectStep}
+					/>
+				</aside>
 				<VisualPlayback
 					value={{
 						progress,
@@ -446,68 +522,6 @@ export function ConceptLab({
 						<Component locale={locale} />
 					</div>
 				</VisualPlayback>
-				<aside
-					className="visual-guide"
-					aria-label={l("Lesson guidance", "课程指引")}
-				>
-					<FieldSet
-						className="visual-playback"
-						aria-label={l("Demonstration controls", "演示控制")}
-					>
-						<Button
-							size="sm"
-							variant="secondary"
-							onClick={toggle}
-							aria-pressed={playing}
-						>
-							{playing ? (
-								<PauseIcon data-icon="inline-start" />
-							) : (
-								<PlayIcon data-icon="inline-start" />
-							)}
-							{playing
-								? l("Pause", "暂停")
-								: exploring
-									? l("Resume", "继续")
-									: complete
-										? l("Start again", "重新开始")
-										: reduced
-											? l("Next step", "下一步")
-											: l("Continue", "继续")}
-						</Button>
-						{!complete ? (
-							<Button
-								size="sm"
-								variant="ghost"
-								onClick={() => {
-									autoStarted.current = scene;
-									seek(0);
-									setResetVersion((value) => value + 1);
-									setPlaying(!reduced);
-								}}
-								aria-label={l("Reset demonstration", "重置演示")}
-							>
-								<RotateCcwIcon />
-								{l("Restart", "重启")}
-							</Button>
-						) : null}
-						{complete && !exploring && (
-							<div className="visual-playback-complete">{continuation}</div>
-						)}
-					</FieldSet>
-					<LessonPlan
-						locale={locale}
-						steps={steps}
-						step={step}
-						running={playing && ready && visible && pageVisible}
-						exploring={exploring}
-						reduced={reduced}
-						complete={complete}
-						epoch={epoch}
-						onElapsed={advance}
-						onStepSelect={selectStep}
-					/>
-				</aside>
 			</div>
 		</section>
 	);
