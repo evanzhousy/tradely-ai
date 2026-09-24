@@ -1463,16 +1463,20 @@
 	padding: 28px 30px 30px;
 	transition: background-color 160ms ease-out;
 }
-.landing-path-stages li:first-child a {
-	padding-left: 0;
-}
-.landing-path-stages li:last-child a {
-	padding-right: 0;
-}
 .landing-stage-meta {
 	display: flex;
 	align-items: center;
 	gap: 13px;
+}
+.landing-stage-art {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1.6;
+	object-fit: contain;
+	background: #faf5e9;
+	border-radius: 12px;
+	margin-bottom: 24px;
 }
 .landing-stage-meta > span {
 	font-family: var(--font-mono);

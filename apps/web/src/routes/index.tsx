@@ -37,6 +37,8 @@ const stages = [
 		title: "home.pathOne",
 		description: "home.pathOneDescription",
 		icon: BookOpenIcon,
+		image: "owl-options-evidence",
+		imageWidth: 1402,
 	},
 	{
 		start: "delta",
@@ -44,6 +46,8 @@ const stages = [
 		title: "home.pathTwo",
 		description: "home.pathTwoDescription",
 		icon: ScanLineIcon,
+		image: "owl-greeks-explorer",
+		imageWidth: 1162,
 	},
 	{
 		start: "audited-boundary",
@@ -51,6 +55,8 @@ const stages = [
 		title: "home.pathThree",
 		description: "home.pathThreeDescription",
 		icon: WorkflowIcon,
+		image: "owl-research-process",
+		imageWidth: 1192,
 	},
 ] as const;
 
@@ -196,6 +202,15 @@ function HomeComponent() {
 						return (
 							<li key={stage.start}>
 								<HeroLink href={`#lesson-${stage.start}`}>
+									<img
+										className="landing-stage-art"
+										src={`/brand/banners/${stage.image}-card.webp`}
+										alt=""
+										width={stage.imageWidth}
+										height={724}
+										loading="lazy"
+										decoding="async"
+									/>
 									<div className="landing-stage-meta">
 										<Icon size={21} aria-hidden="true" />
 										<span>
