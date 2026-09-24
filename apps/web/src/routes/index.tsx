@@ -37,7 +37,7 @@ const stages = [
 		title: "home.pathOne",
 		description: "home.pathOneDescription",
 		icon: BookOpenIcon,
-		image: "owl-options-evidence",
+		image: "owl-options-evidence-purple",
 		imageWidth: 1402,
 	},
 	{
@@ -46,7 +46,7 @@ const stages = [
 		title: "home.pathTwo",
 		description: "home.pathTwoDescription",
 		icon: ScanLineIcon,
-		image: "owl-greeks-explorer",
+		image: "owl-greeks-explorer-purple",
 		imageWidth: 1162,
 	},
 	{
@@ -55,7 +55,7 @@ const stages = [
 		title: "home.pathThree",
 		description: "home.pathThreeDescription",
 		icon: WorkflowIcon,
-		image: "owl-research-process",
+		image: "owl-research-process-purple",
 		imageWidth: 1192,
 	},
 ] as const;

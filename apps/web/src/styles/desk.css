@@ -1188,10 +1188,10 @@
 	min-height: inherit;
 	border-radius: 4px 12px 12px 4px;
 	background: var(--primary);
-	color: #1b1b17;
+	color: var(--primary-foreground);
 	box-shadow:
-		-3px 3px 0 #b79410,
-		1px 4px 0 2px #e6e1d1,
+		-3px 3px 0 color-mix(in srgb, var(--primary) 75%, black),
+		1px 4px 0 2px var(--border),
 		0 22px 32px -13px #0004;
 }
 .landing-book-spine {
@@ -1474,7 +1474,7 @@
 	height: auto;
 	aspect-ratio: 1.6;
 	object-fit: contain;
-	background: #faf5e9;
+	background: #faf8fc;
 	border-radius: 12px;
 	margin-bottom: 24px;
 }
@@ -1931,10 +1931,10 @@
 	font-size: 8px;
 }
 .lesson-infographic .diagram-on-accent {
-	fill: #1b1b17;
+	fill: var(--primary-foreground);
 }
 .diagram-on-accent-line {
-	stroke: #1b1b17;
+	stroke: var(--primary-foreground);
 }
 @media (hover: hover) and (pointer: fine) {
 	.curriculum-card:hover {
@@ -1978,7 +1978,7 @@
 	pointer-events: none;
 }
 .diagram-motion-trace.diagram-motion-ink {
-	stroke: #1b1b17;
+	stroke: var(--primary-foreground);
 }
 .lesson-infographic [data-diagram-motion="pulse"] {
 	transform-box: fill-box;
@@ -2235,8 +2235,8 @@
 	margin: 22px 0 0;
 	padding: 28px 24px;
 	border-radius: 6px 6px 24px 6px;
-	background: color-mix(in oklch, var(--primary) 38%, white);
-	color: var(--primary-foreground);
+	background: var(--secondary);
+	color: var(--secondary-foreground);
 	box-shadow: 0 12px 25px -20px #0007;
 	transform: rotate(-1deg);
 }

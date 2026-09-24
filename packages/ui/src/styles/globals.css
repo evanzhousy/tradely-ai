@@ -7,23 +7,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Tradely semantic palette: Inter + JetBrains Mono with sunflower-yellow orientation.
+/* Tradely semantic palette: Inter + JetBrains Mono with restrained purple surfaces and golden owl identity.
    Status colors and categorical charts are intentional product extensions. */
 :root {
-	--background: #fdfcf8;
-	--foreground: oklch(0.145 0 0);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.145 0 0);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.145 0 0);
-	--primary: oklch(0.852 0.199 91.936);
-	--primary-foreground: #29200b;
-	--secondary: oklch(0.967 0.001 286.375);
-	--secondary-foreground: oklch(0.21 0.006 285.885);
-	--muted: #f2f0e9;
-	--muted-foreground: #69665c;
-	--accent: oklch(0.97 0 0);
-	--accent-foreground: oklch(0.205 0 0);
+	--background: #faf8fc;
+	--foreground: #292333;
+	--card: #ffffff;
+	--card-foreground: #292333;
+	--popover: #ffffff;
+	--popover-foreground: #292333;
+	--primary: #513a78;
+	--primary-foreground: #ffffff;
+	--secondary: #efe9f6;
+	--secondary-foreground: #513a78;
+	--muted: #f0ecf4;
+	--muted-foreground: #6e647b;
+	--accent: #e9e1f2;
+	--accent-foreground: #432d66;
 	--destructive: oklch(0.577 0.245 27.325);
 	--success: hsl(142 76% 36%);
 	--success-foreground: hsl(0 0% 100%);
@@ -31,41 +31,54 @@
 	--warning-foreground: #ffffff;
 	--info: hsl(199 89% 48%);
 	--info-foreground: hsl(0 0% 100%);
-	--border: #e6e2d7;
-	--input: #ddd8cb;
-	--ring: #8a6a00;
-	--brand: #f2c94c;
+	--border: #e3dceb;
+	--input: #d3c8df;
+	--ring: #72558e;
+	--brand: #513a78;
+	--focus: var(--ring);
+	--link: var(--primary);
+	--surface: var(--card);
+	--surface-foreground: var(--card-foreground);
+	--surface-secondary: var(--secondary);
+	--surface-secondary-foreground: var(--secondary-foreground);
+	--surface-tertiary: var(--muted);
+	--surface-tertiary-foreground: var(--foreground);
+	--overlay: var(--popover);
+	--overlay-foreground: var(--popover-foreground);
+	--default: var(--secondary);
+	--default-foreground: var(--secondary-foreground);
 	--chart-1: #a16207;
 	--chart-2: #2563eb;
 	--chart-3: #0f766e;
 	--chart-4: #9333ea;
 	--chart-5: #c2410c;
 	--radius: 0.625rem;
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.145 0 0);
-	--sidebar-primary: oklch(0.681 0.162 75.834);
-	--sidebar-primary-foreground: oklch(0.987 0.026 102.212);
-	--sidebar-accent: oklch(0.97 0 0);
-	--sidebar-accent-foreground: oklch(0.205 0 0);
-	--sidebar-border: oklch(0.922 0 0);
-	--sidebar-ring: oklch(0.708 0 0);
+	--sidebar: #f3eef8;
+	--sidebar-foreground: #292333;
+	--sidebar-primary: #513a78;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #e9e1f2;
+	--sidebar-accent-foreground: #432d66;
+	--sidebar-border: #e3dceb;
+	--sidebar-ring: #72558e;
 }
 
 .dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.205 0 0);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.205 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.795 0.184 86.047);
-	--primary-foreground: #211b0b;
-	--secondary: oklch(0.274 0.006 286.033);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.269 0 0);
-	--muted-foreground: oklch(0.708 0 0);
-	--accent: oklch(0.269 0 0);
-	--accent-foreground: oklch(0.985 0 0);
+	--brand: #c6ace7;
+	--background: #19151f;
+	--foreground: #f5f0fa;
+	--card: #231d2c;
+	--card-foreground: #f5f0fa;
+	--popover: #231d2c;
+	--popover-foreground: #f5f0fa;
+	--primary: #c6ace7;
+	--primary-foreground: #261638;
+	--secondary: #32273f;
+	--secondary-foreground: #e8dcf4;
+	--muted: #2d2536;
+	--muted-foreground: #b6a9c5;
+	--accent: #392c48;
+	--accent-foreground: #f0e5fb;
 	--destructive: oklch(0.704 0.191 22.216);
 	--success: hsl(142 70% 45%);
 	--success-foreground: hsl(0 0% 100%);
@@ -73,22 +86,22 @@
 	--warning-foreground: #111111;
 	--info: hsl(199 89% 48%);
 	--info-foreground: hsl(0 0% 100%);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.556 0 0);
+	--border: #403449;
+	--input: #51425d;
+	--ring: #c6ace7;
 	--chart-1: #facc15;
 	--chart-2: #60a5fa;
 	--chart-3: #2dd4bf;
 	--chart-4: #c084fc;
 	--chart-5: #fb923c;
-	--sidebar: oklch(0.205 0 0);
-	--sidebar-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.795 0.184 86.047);
-	--sidebar-primary-foreground: oklch(0.987 0.026 102.212);
-	--sidebar-accent: oklch(0.269 0 0);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.556 0 0);
+	--sidebar: #211a29;
+	--sidebar-foreground: #f5f0fa;
+	--sidebar-primary: #c6ace7;
+	--sidebar-primary-foreground: #261638;
+	--sidebar-accent: #392c48;
+	--sidebar-accent-foreground: #f0e5fb;
+	--sidebar-border: #403449;
+	--sidebar-ring: #c6ace7;
 }
 
 @theme inline {
@@ -213,6 +226,17 @@
 
 /* Shared 21st community components, adapted to Tradely's semantic palette. */
 @layer components {
+	/* HeroUI primary buttons use accent by default; align them with our primary token. */
+	.button--primary {
+		--button-bg: var(--primary);
+		--button-bg-hover: color-mix(
+			in srgb,
+			var(--primary) 90%,
+			var(--primary-foreground)
+		);
+		--button-bg-pressed: var(--button-bg-hover);
+		--button-fg: var(--primary-foreground);
+	}
 	.dot-pattern {
 		position: absolute;
 		inset: 0;
