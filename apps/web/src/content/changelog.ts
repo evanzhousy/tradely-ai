@@ -1,6 +1,36 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "syllabus-revision-unreleased",
+		date: "2026-09-26",
+		dateLabel: "Unreleased",
+		title: "A clearer path, and a way to check yourself",
+		summary:
+			"Lessons now follow a core path with two deeper branches, and every lesson ends with an optional check.",
+		changes: [
+			{
+				title: "Check yourself",
+				description:
+					"After each walkthrough, open an optional guided case with feedback, then solve a new case on your own. Your study mark does not depend on it.",
+			},
+			{
+				title: "A core path, then two branches",
+				description:
+					"Contracts, trades, flow, research and written output come first. Greeks and market structure, and portfolios, follow as branches you can take in either order.",
+			},
+			{
+				title: "New material",
+				description:
+					"A new lesson on sweeps, blocks and complex orders; the writer's side of an option and four expiry-day risks; and drawdown in the performance lesson.",
+			},
+			{
+				title: "Clearer names",
+				description:
+					"Plain-language lesson titles and summaries, a corrected risk-reversal sign, and consistent Chinese terms for option writers.",
+			},
+		],
+	},
+	{
 		id: "visual-playback-progress-unreleased",
 		date: "2026-09-16",
 		dateLabel: "Unreleased",
