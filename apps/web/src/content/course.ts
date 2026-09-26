@@ -222,8 +222,8 @@ const legacyCourse = {
 			poster: `${MEDIA_ROOT}/posters/07-dex-dei-gex.jpg`,
 			prerequisites: ["session-flow-vs-structure"],
 			practice: {
-				title: "Let the lenses disagree",
-				goal: "For one symbol, write what DEX, DEI, and GEX each support, what each cannot answer, and where their scopes differ.",
+				title: "Keep direction and size apart",
+				goal: "For one symbol, write what net DEX and DEI each support, what each cannot answer, and which volume denominator the DEI reading uses.",
 				href: "https://app.tradingflow.com/app/rank/symbols?utm_source=tradely&utm_medium=course&utm_campaign=dex-dei-gex",
 				tool: "Rank Symbols",
 			},

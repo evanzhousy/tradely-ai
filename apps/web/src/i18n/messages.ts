@@ -137,7 +137,7 @@ const messages = {
 		"home.curriculumLabel": "Your learning path",
 		"home.curriculumTitle": "The whole path. Nothing hidden.",
 		"home.curriculumIntro":
-			"Explore contracts, flow, Greeks and research through 36 visual lessons. Follow the diagrams and continue freely.",
+			"Explore contracts, flow, Greeks and research through 36 visual lessons. Follow the diagrams, check yourself when you are ready, and continue freely.",
 		"home.accessTitle": "Start with curiosity. Take it further.",
 		"home.accessDescription":
 			"Explore all {count} lessons with no sign-in or payment required. Create a free account when you want to save your work.",
@@ -260,7 +260,7 @@ const messages = {
 			"Open any of these lessons without signing in or paying. Their numbers show where they fit in the full curriculum below.",
 		"course.foundationsTitle": "Free foundations: start here",
 		"course.foundationsDescription":
-			"Learn contracts, rights, premium and settlement in order. All four lessons include exercises and feedback, with no sign-in or payment required.",
+			"Learn contracts, rights, premium and settlement in order through diagrams and worked examples. Each lesson ends with an optional check with feedback. No sign-in or payment required.",
 		"course.researchTitle": "Already know the basics? Try a research lesson.",
 		"course.researchDescription":
 			"Three suggested starting points for evidence-led research. Build on the earlier concepts whenever you need a refresher.",
@@ -459,7 +459,7 @@ const messages = {
 		"home.curriculumLabel": "你的学习路径",
 		"home.curriculumTitle": "完整路径，一目了然。",
 		"home.curriculumIntro":
-			"通过 36 节视觉课程探索合约、成交流、Greeks 与研究方法，跟随图解自由学习。",
+			"通过 36 节视觉课程探索合约、成交流、希腊值与研究方法。跟随图解学习，准备好后自我检查，再自由继续。",
 		"home.accessTitle": "从好奇开始，继续深入。",
 		"home.accessDescription":
 			"无需登录或付款，即可学习全部 {count} 节课程。需要保存学习记录时，可创建免费账户。",
@@ -574,7 +574,7 @@ const messages = {
 			"以下课程无需登录或付款即可学习。课号对应它们在下方完整课程目录中的位置。",
 		"course.foundationsTitle": "免费基础课程：从这里开始",
 		"course.foundationsDescription":
-			"通过图解学习合约、权利、权利金与结算，无需登录或付费。",
+			"按顺序通过图解与示例学习合约、权利、权利金与结算；每课末尾都有带反馈的可选自我检查。无需登录或付费。",
 		"course.researchTitle": "已掌握基础？试学研究课程。",
 		"course.researchDescription":
 			"三个推荐的研究起点，需要已有期权知识；可随时免费回看前面的概念。",

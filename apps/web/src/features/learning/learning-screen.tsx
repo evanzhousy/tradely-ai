@@ -161,6 +161,8 @@ export type LearningScreenProps = {
 	lessonId?: string;
 	initialRenderer?: ContractRenderer;
 	persistence?: "account" | "preview";
+	/** "check" follows a visual walkthrough, so it skips repeating the concept lab. */
+	mode?: "practice" | "check";
 	onRendererChange?: RendererChange;
 	locale: Locale;
 	view: LearningView | null;
@@ -263,6 +265,7 @@ function LearningScreenContent({
 	lessonId,
 	initialRenderer,
 	persistence = "account",
+	mode = "practice",
 	onRendererChange,
 	locale,
 	view,
@@ -280,8 +283,12 @@ function LearningScreenContent({
 	const text = (key: keyof typeof learningCopy) => learningCopy[key][locale];
 	const local = (value: LearningCopy) => value[locale];
 	const answering = view?.phase === "answer";
+	const checkIntro =
+		mode === "check" &&
+		view?.step.kind === "prediction" &&
+		view.step.questions.length === 0;
 	const Concept =
-		view?.step.kind === "prediction" && view.step.conceptLab
+		!checkIntro && view?.step.kind === "prediction" && view.step.conceptLab
 			? conceptLabs[view.step.conceptLab]
 			: null;
 	const [drafts, setDrafts] = useState<Record<string, boolean>>({});
@@ -342,9 +349,19 @@ function LearningScreenContent({
 					</span>
 				</div>
 				<CardTitle>
-					<h2 id={`${id}-title`}>{release?.title[locale] ?? text("label")}</h2>
+					{/* In check mode the surrounding disclosure already shows this title. */}
+					<h2
+						id={`${id}-title`}
+						className={mode === "check" ? "sr-only" : undefined}
+					>
+						{mode === "check"
+							? text("checkTitle")
+							: (release?.title[locale] ?? text("label"))}
+					</h2>
 				</CardTitle>
-				<CardDescription>{release?.intro[locale]}</CardDescription>
+				<CardDescription>
+					{mode === "check" ? text("checkIntro") : release?.intro[locale]}
+				</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-6">
 				{error ? (
@@ -390,14 +407,16 @@ function LearningScreenContent({
 								className="font-medium text-xl focus-visible:outline-offset-4"
 							>
 								{answering
-									? local(view.step.title)
+									? checkIntro
+										? text("checkReadyTitle")
+										: local(view.step.title)
 									: view.result
 										? text(view.result.status)
 										: text("debrief")}
 							</h3>
 							{showResultSave ? guestSaveControl : null}
 							<p className="whitespace-pre-line text-muted-foreground text-sm leading-relaxed">
-								{local(view.step.brief)}
+								{checkIntro ? text("checkReady") : local(view.step.brief)}
 							</p>
 						</LessonReveal>
 						{Concept ? (
@@ -729,9 +748,11 @@ function LearningScreenContent({
 								}
 							>
 								{view.step.questions.length === 0
-									? locale === "zh"
-										? "进入练习"
-										: "Continue to practice"
+									? checkIntro
+										? text("checkStart")
+										: locale === "zh"
+											? "进入练习"
+											: "Continue to practice"
 									: view.step.kind === "prediction"
 										? text("commit")
 										: view.step.kind === "guided" &&

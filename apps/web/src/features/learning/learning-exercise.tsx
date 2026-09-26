@@ -34,11 +34,13 @@ type LearningExerciseProps = {
 	lessonId: string;
 	attemptId?: string;
 	saveGuest?: boolean;
+	mode?: "practice" | "check";
 	onSelectAttempt?: (attemptId: string) => void;
 };
 function LearningSession({
 	lessonId,
 	attemptId,
+	mode,
 	onSelectAttempt,
 }: LearningExerciseProps) {
 	const { locale } = useI18n();
@@ -226,6 +228,7 @@ function LearningSession({
 				coachingTransport={coachingTransport}
 				onCoachingEvent={onCoachingEvent}
 				lessonId={lessonId}
+				mode={mode}
 				onRendererChange={onRendererChange}
 				locale={locale}
 				view={view}
@@ -270,20 +273,36 @@ function AuthenticatedLearning({
 	lessonId,
 	attemptId,
 	saveGuest,
+	mode,
 	onSelectAttempt,
 }: LearningExerciseProps) {
-	const { userId, isLoaded, error, email } = useAuth();
+	const { userId: liveUserId, isLoaded, error, email } = useAuth();
 	const { t } = useI18n();
 	const [guest, setGuest] = useState(false);
+	// A session refetch (for example when the tab regains focus) briefly reports
+	// loading. Keep the last resolved identity so work in progress stays mounted.
+	const live = isLoaded && !error;
+	const [resolved, setResolved] = useState<{ userId: string | null } | null>(
+		null,
+	);
+	useEffect(() => {
+		if (live)
+			setResolved((previous) =>
+				previous?.userId === liveUserId ? previous : { userId: liveUserId },
+			);
+	}, [live, liveUserId]);
+	const identity = live ? { userId: liveUserId } : resolved;
+	const userId = identity?.userId ?? null;
 	if (guest)
 		return (
 			<PreviewLearning
 				key={`${userId ?? "guest"}:${lessonId}`}
 				lessonId={lessonId}
-				currentUserId={isLoaded && !error ? userId : null}
+				currentUserId={identity ? userId : null}
+				mode={mode}
 			/>
 		);
-	if (!isLoaded || error)
+	if (!identity)
 		return (
 			<div className="flex flex-col items-start gap-3">
 				<p role="status">
@@ -296,7 +315,7 @@ function AuthenticatedLearning({
 		);
 	if (!userId)
 		return getLessonById(lessonId) ? (
-			<PreviewLearning key={lessonId} lessonId={lessonId} />
+			<PreviewLearning key={lessonId} lessonId={lessonId} mode={mode} />
 		) : null;
 	if (saveGuest)
 		return (
@@ -307,12 +326,16 @@ function AuthenticatedLearning({
 				email={email}
 				onSaved={(id) => {
 					window.location.replace(
-						`/learn/${encodeURIComponent(lessonId)}?attempt=${encodeURIComponent(id)}`,
+						mode === "check"
+							? `/learn/${encodeURIComponent(lessonId)}#check-yourself`
+							: `/learn/${encodeURIComponent(lessonId)}?attempt=${encodeURIComponent(id)}`,
 					);
 				}}
 				onResume={(id) => {
 					window.location.assign(
-						`/learn/${encodeURIComponent(lessonId)}?attempt=${encodeURIComponent(id)}`,
+						mode === "check"
+							? `/learn/${encodeURIComponent(lessonId)}#check-yourself`
+							: `/learn/${encodeURIComponent(lessonId)}?attempt=${encodeURIComponent(id)}`,
 					);
 				}}
 				onGuest={() => setGuest(true)}
@@ -324,6 +347,7 @@ function AuthenticatedLearning({
 			key={`${userId}:${lessonId}`}
 			lessonId={lessonId}
 			attemptId={attemptId}
+			mode={mode}
 			onSelectAttempt={onSelectAttempt}
 		/>
 	);
@@ -336,6 +360,6 @@ export function LearningExercise({
 	return authIsConfigured ? (
 		<AuthenticatedLearning key={lessonId} lessonId={lessonId} {...props} />
 	) : getLessonById(lessonId) ? (
-		<PreviewLearning key={lessonId} lessonId={lessonId} />
+		<PreviewLearning key={lessonId} lessonId={lessonId} mode={props.mode} />
 	) : null;
 }

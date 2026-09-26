@@ -12,13 +12,13 @@ Tradely serves option traders who want a structured path from market concepts to
 
 ## Product Purpose
 
-Tradely is an interactive options learning hub. Its 36-lesson curriculum connects worked explanations, guided cases, independent practice, saved research and partnered TradingFlow assignments. Current-edition interactive material is primary while replacement lesson videos are pending.
+Tradely is an interactive options learning hub. Each of its 36 lessons opens with a visual walkthrough and ends with an optional Check yourself section: a guided case with feedback, then an independent case. Selected lessons add a partnered TradingFlow assignment. Current-edition interactive material is primary while replacement lesson videos are pending.
 
 Success means a learner can explain a concept, make a bounded judgment from evidence, revise it when warranted, and apply it independently to a different case. Learners can resume saved work and optionally practice the corresponding workflow in TradingFlow.
 
 ## Positioning
 
-Tradely connects options education to an actual analysis workflow. Lessons do not stop at definitions: each relevant lesson ends with a bounded "Practice with TradingFlow" task and a deep link to the appropriate TradingFlow surface.
+Tradely connects options education to an actual analysis workflow. Lessons do not stop at definitions: each ends with an optional check on a new case, and selected lessons add a bounded "Practice with TradingFlow" task with a deep link to the appropriate TradingFlow surface.
 
 ## Operating Context
 

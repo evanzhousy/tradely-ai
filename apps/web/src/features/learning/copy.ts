@@ -2,6 +2,20 @@ import type { LearningCopy } from "@/domain/learning/types";
 
 export const learningCopy = {
 	label: { en: "Interactive practice", zh: "互动练习" },
+	checkTitle: { en: "Check yourself", zh: "自我检查" },
+	checkIntro: {
+		en: "Optional. Work through a guided case with feedback, then try a new case on your own. Your study mark does not depend on it.",
+		zh: "可选。先完成一个带反馈的引导案例，再独立完成一个新案例。学习标记不受影响。",
+	},
+	checkReady: {
+		en: "You have just explored this concept above. Next comes a guided case with feedback, then a new case to solve on your own.",
+		zh: "你刚在上方探索了这个概念。接下来先完成一个带反馈的引导案例，再独立解决一个新案例。",
+	},
+	checkStart: { en: "Start the guided case", zh: "开始引导案例" },
+	checkReadyTitle: {
+		en: "Ready to check yourself?",
+		zh: "准备好自我检查了吗？",
+	},
 	synthetic: { en: "Synthetic cases", zh: "模拟案例" },
 	stages: { en: "Practice stages", zh: "练习阶段" },
 	start: { en: "Start or resume practice", zh: "开始或继续练习" },

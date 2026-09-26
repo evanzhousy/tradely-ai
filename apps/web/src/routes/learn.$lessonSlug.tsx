@@ -27,6 +27,7 @@ import { LessonVideo } from "@/components/video-player";
 import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
+import { CheckYourself } from "@/features/learning/check-yourself";
 import { VisualLesson } from "@/features/learning/visual-lesson";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 
 function LessonPage() {
 	const { lessonSlug } = Route.useParams();
-	const { attempt } = Route.useSearch();
+	const { attempt, saveGuest } = Route.useSearch();
 	const { page, progress } = Route.useLoaderData();
 	const { locale, t } = useI18n();
 	const { capture, isCapturing, captureException } = useAnalytics();
@@ -237,6 +238,14 @@ function LessonPage() {
 						locale={locale}
 						data={page.conceptData}
 					/>
+					{page.learning ? (
+						<CheckYourself
+							key={lesson.id}
+							lessonId={lesson.id}
+							locale={locale}
+							saveGuest={saveGuest === "1"}
+						/>
+					) : null}
 					<DisclosurePanel
 						className="lesson-notes"
 						summary={locale === "zh" ? "快速回顾" : "Quick recap"}

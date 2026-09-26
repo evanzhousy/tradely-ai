@@ -23,9 +23,11 @@ import { LearningScreen } from "./learning-screen";
 export function PreviewLearning({
 	lessonId,
 	currentUserId = null,
+	mode,
 }: {
 	lessonId: string;
 	currentUserId?: string | null;
+	mode?: "practice" | "check";
 }) {
 	const { locale } = useI18n();
 	const { capture, consent } = useAnalytics();
@@ -247,6 +249,7 @@ export function PreviewLearning({
 				busy={busy}
 				error={error}
 				persistence="preview"
+				mode={mode}
 				onOpen={(restart) => {
 					if (pending.current) return;
 					void run(

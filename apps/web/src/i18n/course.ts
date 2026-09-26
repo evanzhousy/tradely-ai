@@ -82,8 +82,8 @@ const chineseLessonCopy: Record<string, LessonCopy> = {
 			"保持有符号流、归一化幅度和模型结构各自独立，即使不同视角产生分歧。",
 		category: "结构",
 		practice: {
-			title: "允许不同视角出现分歧",
-			goal: "针对一个标的写下 DEX、DEI 和 GEX 各自支持的内容、无法回答的内容，以及它们范围的差异。",
+			title: "区分方向与幅度",
+			goal: "针对一个标的写下净 DEX 与 DEI 各自支持的内容、无法回答的内容，以及 DEI 读数使用的成交量分母。",
 		},
 	},
 	"cookbook-research-packet": {
