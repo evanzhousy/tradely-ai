@@ -259,6 +259,8 @@ const messages = {
 		"course.freeLessonsDescription":
 			"Open any of these lessons without signing in or paying. Their numbers show where they fit in the full curriculum below.",
 		"course.startTitle": "New to markets or options? Start here",
+		"course.placementLink":
+			"Already know some of this? Answer 8 quick questions to find your starting lesson",
 		"course.startDescription":
 			"Four short lessons cover shares and quotes, what an option is, how an options trade works and how options lose money. No experience, sign-in or payment needed, and each lesson ends with an optional check with feedback.",
 		"course.researchTitle":
@@ -573,6 +575,7 @@ const messages = {
 		"course.freeLessonsDescription":
 			"以下课程无需登录或付款即可学习。课号对应它们在下方完整课程目录中的位置。",
 		"course.startTitle": "刚接触股票或期权？从这里开始",
+		"course.placementLink": "已经懂一些？回答 8 个小问题，找到适合你的起点",
 		"course.startDescription":
 			"四节短课依次讲解股票与报价、期权是什么、期权交易如何进行，以及期权如何亏钱。无需任何经验，也无需登录或付费；每课末尾都有带反馈的可选自我检查。",
 		"course.researchTitle": "已熟悉报价、成交与未平仓量？从研究课程开始。",

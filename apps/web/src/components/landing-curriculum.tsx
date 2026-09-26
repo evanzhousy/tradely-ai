@@ -170,6 +170,15 @@ export function LandingCurriculum({
 								</li>
 							))}
 						</ul>
+						{path === "start" ? (
+							<Link
+								to="/courses/tradingflow-foundations"
+								hash="placement"
+								className="self-start rounded-md text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							>
+								{t("course.placementLink")}
+							</Link>
+						) : null}
 					</nav>
 				) : null,
 			)}

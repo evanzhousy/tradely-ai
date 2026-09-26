@@ -5,6 +5,7 @@ import { BrandOwl } from "@/components/brand-owl";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseProgress } from "@/components/course-progress";
 import { PageIntro } from "@/components/page-intro";
+import { PlacementCheck } from "@/components/placement-check";
 import { TradingFlowLabs } from "@/components/tradingflow-lab";
 import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -133,6 +134,7 @@ function CoursePage() {
 						: "This course teaches you to read and check options data. It does not tell you which trades to place or how much to risk."}
 				</p>
 			</div>
+			<PlacementCheck />
 			<CourseCatalog
 				learning={progress.learning}
 				groupByModule
