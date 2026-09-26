@@ -1,5 +1,12 @@
 # Agent instructions
 
+## Instruction files
+
+- AGENTS.md files are the only agent-instruction files in this repository: this
+  file, plus nested AGENTS.md files that add rules for their own folder (for
+  example `videos/*/AGENTS.md`). Do not create CLAUDE.md or other tool-specific
+  copies; add new rules to the relevant AGENTS.md instead.
+
 ## Documentation
 
 - Do not create documentation files in this repository unless the user explicitly
@@ -16,11 +23,14 @@ acceptance checks where relevant.
 
 ## Git workflow
 
-- After completing an implementation and running the relevant validation, commit
-  the implementation changes before reporting the task complete.
-- Apply this workflow to every future implementation task automatically; do not
-  wait for a separate user request or confirmation to commit.
+- Commit after each implementation. As soon as a change is implemented and its
+  relevant validation passes, commit it before starting the next change or
+  reporting back. When a task has several parts, make one commit per completed
+  part rather than a single commit at the end.
+- Apply this workflow to every implementation task automatically; do not wait
+  for a separate user request or confirmation to commit.
 - Keep unrelated user changes out of the commit.
+- Commits stay local. Push or deploy only when the user asks.
 
 ## Browser verification evidence
 
