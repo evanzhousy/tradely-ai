@@ -106,10 +106,7 @@ export function FlowImpactConceptLab({
 			<ConceptLab
 				locale={locale}
 				id="flow-impact"
-				label={[
-					"Interactive DEX DEI and GEX lesson",
-					"DEX DEI 与 GEX 互动课堂",
-				]}
+				label={["Interactive DEX and DEI lesson", "DEX 与 DEI 互动课堂"]}
 				evidenceBoundary={[
 					"Question: how large is this explicitly defined flow impact? Keep numerator lineage, session clock, units and denominator in scope. Reconsider if any of those definitions change.",
 					"问题：按明确给定定义，这个成交流影响有多大？范围内固定分子来源、时段时钟、单位与分母。任何定义变化都应重新判断。",

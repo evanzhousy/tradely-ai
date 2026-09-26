@@ -266,7 +266,7 @@ export function ClosingExerciseScene({ locale }: Props) {
 										)
 									: l(
 											"The right was exercised; an assigned writer fulfills the obligation.",
-											"权利已被行使，被指派的卖方履行义务。",
+											"权利已被行使，被指派的义务方履行义务。",
 										)
 								: l(
 										"Step through the example to reveal its supplied outcome.",
@@ -679,7 +679,7 @@ export function SettlementComparisonScene({ locale }: Props) {
 								className="contract-svg-paper"
 							/>
 							<SvgText x={85 + i * 190} y={111} strong>
-								{i === 0 ? l("HOLDER", "持有人") : l("WRITER", "卖方")}
+								{i === 0 ? l("HOLDER", "持有人") : l("WRITER", "义务方")}
 							</SvgText>
 							<SvgText x={85 + i * 190} y={136} muted>
 								{i === 0 ? l("Exercises", "行权") : l("Assigned", "被指派")}

@@ -450,7 +450,7 @@ export function FlowLineageScene({ locale }: Props) {
 		],
 		[
 			"gex",
-			l("Separate GEX report", "独立 GEX 报告"),
+			l("Separate GEX report (next lesson)", "独立 GEX 报告（下一课）"),
 			l("USD change / +1% spot", "美元变化 / 现价 +1%"),
 		],
 	] as const;

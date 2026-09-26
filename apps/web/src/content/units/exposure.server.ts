@@ -268,12 +268,12 @@ export const exposureUnits: TeachingUnit[] = [
 		},
 		sources: [greeks],
 		explanation: t(
-			"A volatility smile is a strike or moneyness slice at one expiry; term structure compares expiries using a comparable reference. A surface joins those dimensions. Delta coordinates such as 25-delta wings depend on model and quote conventions. State whether skew is put IV minus call IV or the reverse. Here 25-delta skew/risk reversal means put minus call; butterfly means the average wing IV minus ATM IV. Values are in volatility points. ATM30 is a standardized reference, not necessarily one quoted listed contract. Interpolation is a modeled estimate between supported observations, not a quote. Leave unsupported cells blank. A traded-only smile has different coverage from a fully quoted chain, and a change of side or expiry can change the comparison.",
-			"波动率微笑是在同一到期日按行权价或价内外程度切片，期限结构按可比参考比较到期日，曲面组合两维。25 Delta 等坐标依赖模型与报价约定，应说明偏斜是看跌 IV 减看涨，还是相反。本课 25 Delta 偏斜/风险逆转为看跌减看涨，蝶式指标为两翼平均 IV 减 ATM IV，单位为波动率点。ATM30 是标准化参考，不一定对应单一挂牌合约。插值是有观测支持区间内的模型估计，不是报价；无支持单元格应留空。仅成交的微笑与完整报价链覆盖不同，切换类型或到期日会改变比较。",
+			"A volatility smile is a strike or moneyness slice at one expiry; term structure compares expiries using a comparable reference. A surface joins those dimensions. Delta coordinates such as 25-delta wings depend on model and quote conventions. State the sign convention. Here 25-delta skew means put IV minus call IV. A risk reversal is usually quoted the other way, call IV minus put IV, so it equals minus this skew and is typically negative for equity indices. Butterfly means the average wing IV minus ATM IV. Values are in volatility points. ATM30 is a standardized reference, not necessarily one quoted listed contract. Interpolation is a modeled estimate between supported observations, not a quote. Leave unsupported cells blank. A traded-only smile has different coverage from a fully quoted chain, and a change of side or expiry can change the comparison.",
+			"波动率微笑是在同一到期日按行权价或价内外程度切片，期限结构按可比参考比较到期日，曲面组合两维。25 Delta 等坐标依赖模型与报价约定，应说明符号约定。本课 25 Delta 偏斜为看跌 IV 减看涨 IV。风险逆转通常反过来报价，即看涨 IV 减看跌 IV，因此等于该偏斜的相反数，股指通常为负。蝶式指标为两翼平均 IV 减 ATM IV，单位为波动率点。ATM30 是标准化参考，不一定对应单一挂牌合约。插值是有观测支持区间内的模型估计，不是报价；无支持单元格应留空。仅成交的微笑与完整报价链覆盖不同，切换类型或到期日会改变比较。",
 		),
 		example: t(
-			"Same expiry: 25Δ put IV 32%, call IV 26%, ATM IV 27%. Put-minus-call skew is 6 points; butterfly is (32+26)/2−27 = 2 points. If the call wing is absent, neither complete comparison can be recovered by assuming its IV is zero.",
-			"同到期：25Δ 看跌 IV 32%、看涨 26%、ATM 27%。看跌减看涨偏斜为 6 点，蝶式为 (32+26)/2−27=2 点。若看涨翼缺失，不能假定其 IV 为零来恢复完整比较。",
+			"Same expiry: 25Δ put IV 32%, call IV 26%, ATM IV 27%. Put-minus-call skew is 6 points, so the call-minus-put risk reversal is −6 points; butterfly is (32+26)/2−27 = 2 points. If the call wing is absent, neither complete comparison can be recovered by assuming its IV is zero.",
+			"同到期：25Δ 看跌 IV 32%、看涨 26%、ATM 27%。看跌减看涨偏斜为 6 点，因此看涨减看跌的风险逆转为 −6 点；蝶式为 (32+26)/2−27=2 点。若看涨翼缺失，不能假定其 IV 为零来恢复完整比较。",
 		),
 		misconception: t(
 			"A smooth surface can hide missingness. Identify which cells were measured and which were fitted before using their precision.",
@@ -395,14 +395,14 @@ export const exposureUnits: TeachingUnit[] = [
 			kind: "dex-dei-gex",
 			data: flowImpactConceptData,
 			intro: t(
-				"Build classified flow, change its volume denominator, and audit the source before comparing DEX, DEI and GEX.",
-				"构建分类成交流，改变成交量分母，并在比较 DEX、DEI 与 GEX 前审计来源。",
+				"Build classified flow, change its volume denominator, and check that each source report measures what this lesson's DEI needs.",
+				"构建分类成交流，改变成交量分母，并检查每份来源报告是否正是本课 DEI 所需的数据。",
 			),
 		},
 		sources: [greeks],
 		explanation: t(
-			"A trade's delta-equivalent magnitude can be |delta|×contracts×multiplier. This lesson signs that magnitude by a stated inferred-flow convention: bullish positive, bearish negative, neutral excluded from directional net but retained in coverage. Net DEX is classified flow, not the dealer's inventory or the buyer's entire portfolio. Net classified premium instead subtracts bearish dollars from bullish dollars; it has money units, not share equivalents. Opposite signed contributions can cancel while gross activity remains large. DEI here is |net DEX| divided by a positive effective typical share-volume denominator ×100. Direction stays in Net DEX. Index proxies need an explicit scale and methodology because an index itself has no ordinary share volume. ΔOI-based impact changes the numerator's lineage to reported position change; it does not inherit today's tape direction. Missing denominators remain unavailable.",
-			"单笔 Delta 等价幅度可用 |Delta|×张数×乘数。本课按推断成交流约定赋符号：看涨正、看跌负，中性不计方向净值，但保留覆盖信息。净 DEX 是分类成交流，不是做市商库存或买方完整组合。分类净权利金则用看涨金额减看跌金额，单位是美元，不是股等价量。相反贡献可抵消，即使总活动很大。本课 DEI=|净 DEX|÷正的有效典型股票成交量×100，方向保留在 DEX。指数本身没有普通股票成交量，代理分母需明确比例与方法。ΔOI 型影响的分子来自报告持仓变化，不能继承今天成交方向。缺失分母应保持不可用。",
+			"A trade's delta-equivalent magnitude can be |delta|×contracts×multiplier. This lesson signs that magnitude by a stated inferred-flow convention: bullish positive, bearish negative, neutral excluded from directional net but retained in coverage. Net DEX is classified flow, not the dealer's inventory or the buyer's entire portfolio. Net classified premium instead subtracts bearish dollars from bullish dollars; it has money units, not share equivalents. Opposite signed contributions can cancel while gross activity remains large. DEI here is |net DEX| divided by a positive effective typical share-volume denominator ×100. Direction stays in Net DEX. Index proxies need an explicit scale and methodology because an index itself has no ordinary share volume. ΔOI-based impact changes the numerator's lineage to reported position change; it does not inherit today's tape direction. Missing denominators remain unavailable. A naming caution: on many other platforms, DEX means delta exposure computed from open interest under assumed dealer positions, a positioning model like the GEX in the next lesson. Check which definition a source uses before comparing numbers.",
+			"单笔 Delta 等价幅度可用 |Delta|×张数×乘数。本课按推断成交流约定赋符号：看涨正、看跌负，中性不计方向净值，但保留覆盖信息。净 DEX 是分类成交流，不是做市商库存或买方完整组合。分类净权利金则用看涨金额减看跌金额，单位是美元，不是股等价量。相反贡献可抵消，即使总活动很大。本课 DEI=|净 DEX|÷正的有效典型股票成交量×100，方向保留在 DEX。指数本身没有普通股票成交量，代理分母需明确比例与方法。ΔOI 型影响的分子来自报告持仓变化，不能继承今天成交方向。缺失分母应保持不可用。命名提示：在许多其他平台上，DEX 指基于未平仓量、按假设做市商持仓计算的 Delta 敞口，是与下一课 GEX 类似的持仓模型。比较数字前，先确认来源使用哪种定义。",
 		),
 		example: t(
 			"Bullish delta equivalents 60,000, bearish 20,000, neutral 10,000. Net DEX +40,000; gross represented magnitude 90,000. Effective volume 1,000,000 shares yields DEI 4%. Doubling only that denominator gives 2%, while signed DEX and any separate GEX report stay fixed.",

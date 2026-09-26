@@ -64,7 +64,7 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 		),
 		outcome: t(
 			"Explain a holder's right, a writer's obligation, and the difference between closing and exercise.",
-			"解释持有人的权利、卖方的义务，以及平仓和行权的区别。",
+			"解释持有人的权利、义务方的义务，以及平仓和行权的区别。",
 		),
 		before: t(
 			"Know how to identify the contract and read its multiplier. Lesson 1 introduces both.",
@@ -72,11 +72,11 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 		),
 		explanation: t(
 			"A call holder has a right to buy; a put holder has a right to sell under the contract's terms. An assigned writer has the corresponding obligation. Trading the option changes an option position. Exercising it uses the contract's right; these are different events.",
-			"看涨持有人有权按条款买入，看跌持有人有权按条款卖出。被指派的卖方承担对应义务。买卖期权改变的是期权持仓，行权才是使用合约权利；两者不是同一事件。",
+			"看涨持有人有权按条款买入，看跌持有人有权按条款卖出。被指派的义务方承担对应义务。买卖期权改变的是期权持仓，行权才是使用合约权利；两者不是同一事件。",
 		),
 		example: t(
 			"One physically settled $50 put specifies 100 shares. If assigned, its writer buys 100 shares for $5,000. Selling an existing long put to close instead ends that option position; it does not invoke exercise.",
-			"一张实物结算、行权价 $50 的看跌期权明确交付 100 股。被指派的卖方需用 $5,000 买入这些股票。若持有人卖出已有看跌期权平仓，则只是结束期权持仓，没有行权。",
+			"一张实物结算、行权价 $50 的看跌期权明确交付 100 股。被指派的义务方需用 $5,000 买入这些股票。若持有人卖出已有看跌期权平仓，则只是结束期权持仓，没有行权。",
 		),
 		terms: [
 			{
@@ -87,7 +87,7 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 				),
 			},
 			{
-				name: t("Writer / short", "卖方／空头"),
+				name: t("Writer / short", "义务方／空头"),
 				definition: t(
 					"The side with the obligation if assigned. A sale can also close an existing long option, so the word 'sell' alone is insufficient.",
 					"被指派时承担义务的一方。卖出也可能是在平掉已有多头，因此仅凭“卖出”不能判断。",
@@ -97,7 +97,7 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 				name: t("Assignment", "指派"),
 				definition: t(
 					"Allocation of an exercise obligation to a writer. The call or put terms determine whether that writer buys or sells the deliverable.",
-					"将行权义务分配给卖方。看涨或看跌条款决定卖方买入还是卖出交付物。",
+					"将行权义务分配给义务方。看涨或看跌条款决定义务方买入还是卖出交付物。",
 				),
 			},
 		],
@@ -158,11 +158,11 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 		),
 		before: t(
 			"Know holder and writer roles, plus payoff versus profit, from lessons 2–3.",
-			"先了解第二至三课中的持有人、卖方，以及到期价值和盈亏的区别。",
+			"先了解第二至三课中的持有人、义务方，以及到期价值和盈亏的区别。",
 		),
 		explanation: t(
 			"Selling a long option to close is a trade. Exercise uses its right, assignment gives a writer the obligation, and settlement fulfills the terms. Physical settlement transfers the specified asset; cash settlement uses the official reference in the contract. A last displayed price may be different.",
-			"卖出期权多头平仓是一笔交易。行权使用权利，指派分配卖方义务，结算则履行条款。实物结算转移指定资产；现金结算使用合约指定的官方参考值。最新展示价格可能与其不同。",
+			"卖出期权多头平仓是一笔交易。行权使用权利，指派把义务分配给义务方，结算则履行条款。实物结算转移指定资产；现金结算使用合约指定的官方参考值。最新展示价格可能与其不同。",
 		),
 		example: t(
 			"A cash-settled call has strike 4,000, official settlement 4,025 and $100 per point. Its cash payoff is $2,500. A displayed price of 4,030 does not replace that reference, and no index shares are delivered.",

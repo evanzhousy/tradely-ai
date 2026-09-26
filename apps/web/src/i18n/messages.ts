@@ -385,7 +385,7 @@ const messages = {
 		"home.pathOneDescription":
 			"先理解合约、报价、交易、成交侧与情绪标签，再解读资金流。",
 		"home.pathTwoDescription":
-			"计算希腊字母与归一化敞口，解读波动率和市场结构模型。",
+			"计算希腊值与归一化敞口，解读波动率和市场结构模型。",
 		"home.pathThreeDescription":
 			"制作并审查研究资料包，再探索投资组合风险与绩效。",
 		"hall.sceneLabel": "走进 Tradely 交易大厅",
@@ -547,7 +547,7 @@ const messages = {
 		"home.coursePractice": "{count} 节视觉课程",
 		"home.heroTitle": "读懂市场，再验证你的判断。",
 		"home.heroDescription":
-			"一套视觉期权课程，通过动画图解与完整示例连接合约、成交流、Greeks 与研究方法。",
+			"一套视觉期权课程，通过动画图解与完整示例连接合约、成交流、希腊值与研究方法。",
 		"home.partnerDisclosure":
 			"Tradely 课程和示例练习免费。合作实践在 TradingFlow 中运行，需要其平台账户和访问权限。",
 		"home.courseEyebrow": "课程",

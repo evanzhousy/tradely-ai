@@ -68,8 +68,8 @@ export const syllabus: readonly Entry[] = [
 	lesson(
 		"option-rights",
 		"contracts",
-		"Buyers, writers, rights and obligations",
-		"买方、卖方、权利与义务",
+		"Holders and writers: rights and obligations",
+		"持有人与义务方：权利和义务",
 		"Separate long and short calls and puts from buying and selling shares.",
 		"区分看涨与看跌期权的多空持仓，以及股票买卖。",
 		["C02", "C09"],
@@ -328,7 +328,7 @@ export const syllabus: readonly Entry[] = [
 		"明确谁属于比较范围",
 		"Derive eligibility from raw facts and keep exclusions visible.",
 		"从原始事实判断资格，并保留可见排除项。",
-		["C23", "C24"],
+		["C01", "C23", "C24"],
 		["audited-boundary"],
 	),
 	lesson(

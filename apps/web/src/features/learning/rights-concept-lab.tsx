@@ -13,19 +13,19 @@ const scenes = [
 		label: ["Rights", "权利"],
 		title: ["One contract, two different roles", "同一合约，两种不同角色"],
 		prompt: [
-			"Choose Call or Put, then buyer or writer. See who has the right and who has the obligation.",
-			"选择看涨或看跌，再选择买方或卖方。看看谁有权利、谁有义务。",
+			"Choose Call or Put, then holder or writer. See who has the right and who has the obligation.",
+			"选择看涨或看跌，再选择持有人或义务方。看看谁有权利、谁有义务。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"The buyer gets the right. The writer takes the matching obligation.",
-					"买方获得权利，卖方承担对应义务。",
+					"The holder gets the right. The writer takes the matching obligation.",
+					"持有人获得权利，义务方承担对应义务。",
 				],
 			],
 			[
 				["Choose option type", "选择期权类型"],
-				["Choose buyer or writer", "选择买方或卖方"],
+				["Choose holder or writer", "选择持有人或义务方"],
 				["Match right and obligation", "匹配权利与义务"],
 			],
 		),

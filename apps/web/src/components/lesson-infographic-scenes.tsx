@@ -226,7 +226,7 @@ function Rights({ l }: Props) {
 				{l("HOLDER", "持有人")}
 			</Label>
 			<Label x={270} y={70} strong>
-				{l("WRITER", "卖方")}
+				{l("WRITER", "义务方")}
 			</Label>
 			<Label x={90} y={96}>
 				{l("May exercise", "可选择行权")}
@@ -1501,7 +1501,7 @@ export const courseCardScenes: Record<string, Scene> = {
 		Diagram: Rights,
 		description: [
 			"The option holder has a right; the writer has an obligation if assigned.",
-			"持有人拥有权利，卖方在指派时承担义务。",
+			"持有人拥有权利，义务方在指派时承担义务。",
 		],
 	},
 	"premium-payoff": {

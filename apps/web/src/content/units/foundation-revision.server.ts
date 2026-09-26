@@ -132,23 +132,23 @@ function rightsCase(variant: number): TeachingCase {
 		return {
 			brief: t(
 				"A writer is assigned on 3 physically settled ALFA calls, strike $65, with 100 shares per contract. Calculate the gross cash received for delivering the shares; ignore premium and fees.",
-				"卖方的 3 张 ALFA 实物结算看涨被指派，行权价 $65，每张 100 股。计算交付股票时收到的总金额，暂不计权利金和费用。",
+				"义务方的 3 张 ALFA 实物结算看涨被指派，行权价 $65，每张 100 股。计算交付股票时收到的总金额，暂不计权利金和费用。",
 			),
 			questions: [
 				n(
 					"obligation",
 					"Gross exercise cash received by the writer?",
-					"卖方收到的行权总金额？",
+					"义务方收到的行权总金额？",
 					19500,
 					"USD",
 					"美元",
 					"$65 × 100 × 3 = $19,500 received in exchange for 300 shares. This is not the writer's profit.",
-					"$65 × 100 × 3 = $19,500，对应交付 300 股。这不是卖方利润。",
+					"$65 × 100 × 3 = $19,500，对应交付 300 股。这不是义务方利润。",
 				),
 				c(
 					"role",
 					"What must the assigned call writer do?",
-					"被指派的看涨卖方需做什么？",
+					"被指派的看涨义务方需做什么？",
 					[
 						["buy", "Buy the shares.", "买入股票。"],
 						["sell", "Deliver the shares at the strike.", "按行权价交付股票。"],
@@ -160,7 +160,7 @@ function rightsCase(variant: number): TeachingCase {
 					],
 					"sell",
 					"A call holder's right to buy creates the writer's obligation to deliver. The put example had the opposite obligation.",
-					"看涨持有人的买入权利对应卖方交付义务，和看跌例子的义务相反。",
+					"看涨持有人的买入权利对应义务方的交付义务，和看跌例子的义务相反。",
 				),
 			],
 		};

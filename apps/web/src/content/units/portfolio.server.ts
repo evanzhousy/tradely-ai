@@ -25,7 +25,7 @@ export const portfolioUnits: TeachingUnit[] = [
 		sources: [basics],
 		explanation: t(
 			"Position quantity, average cost and mark produce a valuation, not necessarily an executable liquidation price. For a long stock position, market value is quantity × mark and unrealized P&L is quantity × (mark − cost), before fees. A closed lot creates realized P&L under a stated lot-matching convention such as FIFO. Cash is a balance; buying power can include credit or margin rules and is not interchangeable with cash or a safe risk budget. Allocation can be measured by market value but options also require notional and sensitivity context. Short positions have different signs and risk; a small received premium does not cap an uncovered option writer's potential loss. Keep missing marks, fees and source dates visible.",
-			"持仓数量、平均成本与估值价得到估值，不一定是可执行清仓价。股票多头价值=数量×估值价，未实现盈亏=数量×(估值价−成本)，暂不计费用。平掉的批次按 FIFO 等明确匹配规则产生已实现盈亏。现金是余额，购买力可能包括授信或保证金，不等于现金或安全风险预算。可按市值计算配置，但期权还需名义金额和敏感度上下文。空头符号与风险不同，收到的小额权利金不限制未覆盖卖方潜在损失。缺失估值、费用与来源日期都应可见。",
+			"持仓数量、平均成本与估值价得到估值，不一定是可执行清仓价。股票多头价值=数量×估值价，未实现盈亏=数量×(估值价−成本)，暂不计费用。平掉的批次按 FIFO 等明确匹配规则产生已实现盈亏。现金是余额，购买力可能包括授信或保证金，不等于现金或安全风险预算。可按市值计算配置，但期权还需名义金额和敏感度上下文。空头符号与风险不同，收到的小额权利金不限制未备兑义务方的潜在损失。缺失估值、费用与来源日期都应可见。",
 		),
 		example: t(
 			"Buy 100 shares at $20. Sell 40 at $23: realized gain $120 before fees. The remaining 60 marked at $22 have value $1,320 and unrealized gain $120. A cash deposit increases account value without being trading profit. Option positions additionally require their stated multiplier.",

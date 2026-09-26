@@ -111,7 +111,7 @@ export function RightsRolesScene({ locale }: Props) {
 				<Diagram
 					label={l(
 						`${type}: holder and writer responsibilities`,
-						`${type}：持有人与卖方的权利义务`,
+						`${type}：持有人与义务方的权利义务`,
 					)}
 					height={352}
 				>
@@ -144,7 +144,9 @@ export function RightsRolesScene({ locale }: Props) {
 								className="contract-svg-paper"
 							/>
 							<SvgText x={85 + i * 190} y={148} strong>
-								{side === "long" ? l("HOLDER", "持有人") : l("WRITER", "卖方")}
+								{side === "long"
+									? l("HOLDER", "持有人")
+									: l("WRITER", "义务方")}
 							</SvgText>
 							<SvgText x={85 + i * 190} y={173} muted>
 								{side === "long"
@@ -177,7 +179,7 @@ export function RightsRolesScene({ locale }: Props) {
 					<SvgText x={180} y={302}>
 						{role === "long"
 							? l("If the holder exercises", "若持有人行权")
-							: l("If the writer is assigned", "若卖方被指派")}
+							: l("If the writer is assigned", "若义务方被指派")}
 					</SvgText>
 					<SvgText x={180} y={330} muted>
 						{l("Stated physical-settlement example", "给定的实物结算示例")}
@@ -204,7 +206,7 @@ export function RightsRolesScene({ locale }: Props) {
 						value={role}
 						options={[
 							["long", l("Holder · long", "持有人 · 多头")],
-							["short", l("Writer · short", "卖方 · 空头")],
+							["short", l("Writer · short", "义务方 · 空头")],
 						]}
 						onChange={setRole}
 					/>
@@ -232,7 +234,7 @@ export function RightsRolesScene({ locale }: Props) {
 									)
 								: l(
 										"Once assigned, the writer must fulfill the contract. A short put is an obligation to buy; a long put is a right to sell.",
-										"一旦被指派，卖方必须履行合约。看跌空头承担买入义务，看跌多头拥有卖出权利。",
+										"一旦被指派，义务方必须履行合约。看跌空头承担买入义务，看跌多头拥有卖出权利。",
 									)}
 						</p>
 					</div>
@@ -530,7 +532,7 @@ export function AssignmentScene({ locale }: Props) {
 								className="contract-svg-paper"
 							/>
 							<SvgText x={85 + i * 190} y={42} strong>
-								{i === 0 ? l("HOLDER", "持有人") : l("WRITER", "卖方")}
+								{i === 0 ? l("HOLDER", "持有人") : l("WRITER", "义务方")}
 							</SvgText>
 							<SvgText x={85 + i * 190} y={67} muted>
 								{i === 0
@@ -604,7 +606,7 @@ export function AssignmentScene({ locale }: Props) {
 						</>
 					)}
 					<SvgText x={180} y={369} muted>
-						{l("Holder on left · writer on right", "左侧持有人 · 右侧卖方")}
+						{l("Holder on left · writer on right", "左侧持有人 · 右侧义务方")}
 					</SvgText>
 				</Diagram>
 			}
@@ -658,11 +660,11 @@ export function AssignmentScene({ locale }: Props) {
 									: type === "PUT"
 										? l(
 												"The assigned put writer pays cash and receives shares.",
-												"被指派的看跌卖方支付现金，接收股票。",
+												"被指派的看跌义务方支付现金，接收股票。",
 											)
 										: l(
 												"The assigned call writer delivers shares and receives cash.",
-												"被指派的看涨卖方交付股票，接收现金。",
+												"被指派的看涨义务方交付股票，接收现金。",
 											)}
 						</p>
 						<p className="text-muted-foreground text-sm">
@@ -696,7 +698,7 @@ export function AssignmentScene({ locale }: Props) {
 					<p className="text-muted-foreground text-xs leading-6">
 						{l(
 							"Teaching terms: physical settlement, 100 shares per contract, valid exercise assumed. Clearing determines assignment; the writer shown need not be the holder's original trading counterparty. Exercise timing and settlement details are covered in Lesson 4.",
-							"教学条款：实物结算，每张 100 股，假定行权有效。指派由清算流程决定，图中的卖方不一定是持有人原始交易的对手方。第 4 课详述行权时间与结算。",
+							"教学条款：实物结算，每张 100 股，假定行权有效。指派由清算流程决定，图中的义务方不一定是持有人原始交易的对手方。第 4 课详述行权时间与结算。",
 						)}
 					</p>
 				</>

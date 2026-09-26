@@ -22,16 +22,16 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 		},
 		sources: [basics],
 		explanation: t(
-			"An underlying is the asset or index referenced by an option. A stock, an ETF share and a cash-settled index are not interchangeable instruments. A ticker identifies an underlying; a contract also needs call/put, strike and expiration. Its multiplier states how a quoted unit converts into a cash amount. Read the product terms rather than assuming every contract delivers 100 shares. Sector is an industry classification; market capitalization is share price times shares outstanding. Share volume counts traded shares; an earnings date identifies an event, not guaranteed news timing. These describe the underlying, not option expiry or traded contract count. A missing sector on an index is not an unknown contract identity. The source date belongs to every price or volume observation: it is not part of the permanent contract key.",
-			"标的是期权参考的资产或指数。股票、ETF 份额与现金结算指数并非同一类工具。代码识别标的，合约还需看涨/看跌、行权价和到期日。乘数决定报价单位如何换算成金额，不能假定所有合约均交付 100 股。行业是产业分类，市值为股价乘流通在外股数。股票成交量按股计，财报日期标识事件，不保证具体公布时刻。这些描述标的，不是期权到期日或成交张数。指数没有行业分类，并不意味着合约身份未知。每项价格或成交量都有来源日期，但该日期不是合约固定身份的一部分。",
+			"An underlying is the asset or index referenced by an option. A stock, an ETF share and a cash-settled index are not interchangeable instruments. A ticker identifies an underlying; a contract also needs call/put, strike and expiration. Its multiplier states how a quoted unit converts into a cash amount. Read the product terms rather than assuming every contract delivers 100 shares. The source date belongs to every price or volume observation: it is not part of the permanent contract key.",
+			"标的是期权参考的资产或指数。股票、ETF 份额与现金结算指数并非同一类工具。代码识别标的，合约还需看涨/看跌、行权价和到期日。乘数决定报价单位如何换算成金额，不能假定所有合约均交付 100 股。每项价格或成交量都有来源日期，但该日期不是合约固定身份的一部分。",
 		),
 		example: t(
-			"ALFA 100 call expiring October 16 and ALFA 100 call expiring November 20 share an underlying and strike but are different contracts. With a stated 100-share multiplier, 3 contracts represent 300 shares of contractual deliverable; this is not their delta-equivalent exposure. A price of $2 per share implies $200 premium for one contract. Separately, a company with 3 million shares at $40 has $120 million market capitalization.",
-			"ALFA 100 看涨、10 月 16 日到期，与 ALFA 100 看涨、11 月 20 日到期，标的和行权价相同，但合约不同。给定每张 100 股，3 张对应 300 股交付数量，不等于 Delta 等价敞口。每股报价 $2，对应每张权利金 $200。另有公司发行在外 300 万股、股价 $40，市值为 $1.2 亿。",
+			"ALFA 100 call expiring October 16 and ALFA 100 call expiring November 20 share an underlying and strike but are different contracts. With a stated 100-share multiplier, 3 contracts represent 300 shares of contractual deliverable. A price of $2 per share implies $200 premium for one contract.",
+			"ALFA 100 看涨、10 月 16 日到期，与 ALFA 100 看涨、11 月 20 日到期，标的和行权价相同，但合约不同。给定每张 100 股，3 张对应 300 股交付数量。每股报价 $2，对应每张权利金 $200。",
 		),
 		misconception: t(
-			"Do not group contracts by ticker alone. Contract count, deliverable shares, dollars and delta equivalents have different units.",
-			"不能只按标的代码合并合约。合约张数、交付股数、金额和 Delta 等价量的单位不同。",
+			"Do not group contracts by ticker alone. Contract count, deliverable shares and dollars have different units.",
+			"不能只按标的代码合并合约。合约张数、交付股数和金额的单位不同。",
 		),
 		case: (v) => {
 			const count = [4, 7, 9, 6][v];
@@ -105,7 +105,7 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 			kind: "option-rights",
 			intro: t(
 				"Switch between holder and writer, track how trades change a position, and follow exercise into assignment. Explore the diagrams before applying the ideas to a new case.",
-				"切换持有人与卖方，追踪交易如何改变持仓，再跟随行权进入指派流程。先探索图示，再将概念用于新案例。",
+				"切换持有人与义务方，追踪交易如何改变持仓，再跟随行权进入指派流程。先探索图示，再将概念用于新案例。",
 			),
 		},
 		sources: [
@@ -117,7 +117,7 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 		],
 		explanation: t(
 			"Long means holding an option; short means having written it. A call holder has a right to buy the underlying on the stated terms; a put holder has a right to sell. The assigned writer has the corresponding obligation. Selling an option can open a short position or close a long one. Buying can open a long position or close a short one. These four position actions are different from buying or selling the underlying itself. Directional exposure also differs: a long put is not a short put, and owning a call does not mean owning the referenced shares. Exercise style and settlement specify when and how rights are used.",
-			"多头表示持有期权，空头表示卖出开立期权。看涨持有人在给定条款下有权买入标的，看跌持有人有权卖出；被指派的卖方承担对应义务。卖出可以开空仓，也可以平多仓；买入可以开多仓，也可以平空仓。这四种动作与直接买卖标的不同。买入看跌不等于卖出看跌，持有看涨也不等于持有股票。行权方式与结算条款决定权利何时、如何使用。",
+			"多头表示持有期权，空头表示卖出开立期权。看涨持有人在给定条款下有权买入标的，看跌持有人有权卖出；被指派的义务方承担对应义务。卖出可以开空仓，也可以平多仓；买入可以开多仓，也可以平空仓。这四种动作与直接买卖标的不同。买入看跌不等于卖出看跌，持有看涨也不等于持有股票。行权方式与结算条款决定权利何时、如何使用。",
 		),
 		example: t(
 			"A writer short one physically settled put at strike $50 may be assigned to buy 100 shares for $5,000 under a stated 100-share contract. The put holder has the right to sell those shares. This gross exercise amount is separate from premium received and from profit or loss.",
@@ -133,13 +133,13 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 			return {
 				brief: t(
 					`A writer is assigned on ${count} physically settled puts at strike $${strike}. Multiplier: 100 shares. Ignore premiums and fees for this gross exercise amount.`,
-					`卖方的 ${count} 张实物结算看跌期权被指派，行权价 $${strike}，每张 100 股。计算行权总额时暂不计权利金与费用。`,
+					`义务方的 ${count} 张实物结算看跌期权被指派，行权价 $${strike}，每张 100 股。计算行权总额时暂不计权利金与费用。`,
 				),
 				questions: [
 					n(
 						"obligation",
 						"What gross cash amount must the writer pay?",
-						"卖方应支付多少行权总额？",
+						"义务方应支付多少行权总额？",
 						strike * count * 100,
 						"USD",
 						"美元",
@@ -149,7 +149,7 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 					c(
 						"role",
 						"What does the assigned put writer do?",
-						"被指派的看跌卖方做什么？",
+						"被指派的看跌义务方做什么？",
 						[
 							[
 								"buy",
@@ -169,7 +169,7 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 						],
 						"buy",
 						"The put holder's right to sell creates the writer's purchase obligation.",
-						"看跌持有人的卖出权利，对应卖方的买入义务。",
+						"看跌持有人的卖出权利，对应义务方的买入义务。",
 					),
 				],
 			};
@@ -267,7 +267,7 @@ export const archivedFoundationUnits: TeachingUnit[] = [
 		],
 		explanation: t(
 			"An exchange trade that closes a position and an exercise are different events. A holder can sell a long option to close it without exercising. Exercise invokes the contract; assignment allocates the writer's obligation. American-style generally permits exercise before expiry under product rules; European-style restricts it to the specified expiry exercise time. The names describe timing, not geography. Physical settlement transfers the stated deliverable; cash settlement pays an amount based on the contract's settlement value. Check the actual product's last trading time, settlement reference and exercise terms. DTE counts time remaining under a stated calendar convention. 0DTE means expiry today, not no risk: prices and sensitivities can change rapidly, and a quoted spot may differ from a product's final settlement value.",
-			"交易平仓与行权不是同一事件。持有人可卖出期权平仓，无需行权；行权使用合约权利，被指派则分配卖方义务。美式通常允许按产品规则在到期前行权，欧式限制为指定到期行权时点；名称描述时间，不是地理位置。实物结算交付条款中的标的，现金结算按结算参考值支付金额。应检查产品的最后交易时间、结算参考及行权条款。DTE 按声明的日历约定计数；0DTE 表示今天到期，不代表没有风险。价格和敏感度仍会快速变化，现价也可能不同于最终结算值。",
+			"交易平仓与行权不是同一事件。持有人可卖出期权平仓，无需行权；行权使用合约权利，指派则把义务分配给义务方。美式通常允许按产品规则在到期前行权，欧式限制为指定到期行权时点；名称描述时间，不是地理位置。实物结算交付条款中的标的，现金结算按结算参考值支付金额。应检查产品的最后交易时间、结算参考及行权条款。DTE 按声明的日历约定计数；0DTE 表示今天到期，不代表没有风险。价格和敏感度仍会快速变化，现价也可能不同于最终结算值。",
 		),
 		example: t(
 			"A cash-settled call has strike 4,000, official settlement 4,025 and $100 per index-point multiplier. Cash payoff is (4,025−4,000)×100 = $2,500. No shares are delivered. A last displayed spot of 4,030 would not replace the specified settlement reference.",
