@@ -42,6 +42,12 @@ export type Lesson = {
 
 const MEDIA_ROOT = "/media/tradingflow";
 
+/** Lessons whose explanation changed after their module's shared version. */
+const contentVersionOverrides: Record<string, number> = {
+	"premium-payoff": 5,
+	"expiration-settlement": 5,
+};
+
 /** Recommended starting paths are independent of public lesson availability. */
 export const learningPaths = {
 	foundations: [
@@ -315,7 +321,9 @@ export const tradingFlowCourse = {
 						? 14
 						: 10,
 			mediaDelivery: prior?.mediaDelivery ?? "signed",
-			contentVersion: entry.moduleId === "contracts" ? 4 : 2,
+			contentVersion:
+				contentVersionOverrides[entry.id] ??
+				(entry.moduleId === "contracts" ? 4 : 2),
 			mediaKey: prior?.mediaKey ?? entry.id,
 			poster: prior?.poster ?? "/media/tradingflow/posters/series-overview.jpg",
 			mediaCurrent: false,

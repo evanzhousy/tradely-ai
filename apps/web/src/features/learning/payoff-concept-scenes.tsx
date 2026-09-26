@@ -36,6 +36,9 @@ import {
 	premiumAmounts,
 	premiumExamples,
 	valueParts,
+	writerChart,
+	writerOutcome,
+	writerPath,
 } from "./payoff-concept-model";
 import { SceneOutcome } from "./scene-outcome";
 import { ValueBreakdown } from "./value-breakdown";
@@ -837,6 +840,250 @@ export function ExpirationProfitScene({ locale }: Props) {
 						{l(
 							"Hypothetical expiration prices, not current option quotes. Strike $100; long options only; before fees. Lines use a fixed per-share scale: quantity scales position totals, not break-even. At expiry, ATM here means stock exactly at strike.",
 							"假设到期价格，不是当前期权报价。行权价 $100，仅展示期权多头，不计费用。曲线使用固定每股刻度：数量影响持仓总额，不改变盈亏平衡点。本例到期 ATM 指股价恰等于行权价。",
+						)}
+					</p>
+				</>
+			}
+		/>
+	);
+}
+
+/** Authored teaching states for the writer walkthrough; direct input overrides them. */
+const writerExamples: readonly { type: PayoffType; spot: number }[] = [
+	{ type: "PUT", spot: 10000 },
+	{ type: "PUT", spot: 9500 },
+	{ type: "PUT", spot: 8500 },
+	{ type: "CALL", spot: 11500 },
+];
+
+export function WriterProfitScene({ locale }: Props) {
+	const l = text(locale);
+	const id = useId();
+	const [example, setExample] = useGuidedState(
+		writerExamples[0],
+		writerExamples,
+	);
+	const { type, spot } = example;
+	const [received, setReceived] = useState(300);
+	const [count, setCount] = useState(1);
+	const result = writerOutcome(type, spot, received, count);
+	const x = writerChart.x;
+	const y = writerChart.y;
+	const resultLabel =
+		result.profit < 0
+			? l("Writer loss", "义务方亏损")
+			: result.profit > 0
+				? l("Writer profit", "义务方盈利")
+				: l("Break-even", "盈亏平衡");
+	return (
+		<SceneLayout
+			diagram={
+				<Diagram
+					label={l(
+						"Short option profit at expiration, USD per share",
+						"期权空头到期盈亏，美元 / 股",
+					)}
+					height={390}
+				>
+					<SvgText x={180} y={26} strong>
+						{l("Short", "空头")} {type}
+					</SvgText>
+					<SvgText x={180} y={49} muted>
+						{l(
+							"Writer at expiration · USD / share",
+							"义务方到期时 · 美元 / 股",
+						)}
+					</SvgText>
+					{[-1200, -600, 0, 600].map((value) => (
+						<g key={value}>
+							<path d={`M40 ${y(value)}H320`} className="contract-svg-line" />
+							<text
+								x="33"
+								y={y(value) + 4}
+								textAnchor="end"
+								className="contract-svg-muted"
+							>
+								{value / 100}
+							</text>
+						</g>
+					))}
+					<path
+						d={`M${x(payoffTerms.strikeCents)} 65V255`}
+						className="contract-svg-line"
+						strokeDasharray="3 4"
+					/>
+					<path
+						d={`M${x(result.breakEven)} 65V255`}
+						className="diagram-boundary"
+					/>
+					<defs>
+						<clipPath id={`${id}-gain`}>
+							<rect x="35" y="60" width="290" height={y(0) - 60} />
+						</clipPath>
+						<clipPath id={`${id}-loss`}>
+							<rect x="35" y={y(0)} width="290" height={260 - y(0)} />
+						</clipPath>
+					</defs>
+					<path
+						d={writerPath(type, received)}
+						data-payoff-curve="writer"
+						className="diagram-profit"
+						clipPath={`url(#${id}-gain)`}
+					/>
+					<path
+						d={writerPath(type, received)}
+						className="diagram-loss"
+						clipPath={`url(#${id}-loss)`}
+					/>
+					{type === "CALL" ? (
+						<SvgText x={262} y={100} muted>
+							{l("No floor →", "没有下限 →")}
+						</SvgText>
+					) : (
+						<SvgText x={104} y={100} muted>
+							{l("← down to $0 stock", "← 直到股价为 $0")}
+						</SvgText>
+					)}
+					<path
+						d={`M${x(spot)} 65V255`}
+						stroke="var(--muted-foreground)"
+						strokeWidth="1"
+						fill="none"
+					/>
+					<circle
+						cx={x(spot)}
+						cy={y(received - result.intrinsic)}
+						r="5"
+						fill={
+							result.profit < 0
+								? "var(--diagram-loss)"
+								: result.profit > 0
+									? "var(--diagram-gain)"
+									: "var(--diagram-unknown)"
+						}
+					/>
+					{[8500, 10000, 11500].map((value) => (
+						<SvgText key={value} x={x(value)} y={279} muted>
+							${value / 100}
+						</SvgText>
+					))}
+					<path d="M40 326h280" className="contract-svg-line" />
+					<circle
+						cx={x(spot)}
+						cy="326"
+						r="11"
+						className="contract-svg-handle"
+					/>
+					<foreignObject x="20" y="286" width="320" height="80">
+						<RangeSlider
+							id={id}
+							className="contract-range contract-svg-range"
+							type="range"
+							min="8500"
+							max="11500"
+							step="25"
+							value={spot}
+							aria-label={l("Expiration stock price", "到期股价")}
+							aria-valuetext={money(spot, locale, 2)}
+							onChange={(event) =>
+								setExample({ type, spot: Number(event.target.value) })
+							}
+						/>
+					</foreignObject>
+					<SvgText x={180} y={373} muted>
+						{l("Drag the stock-price handle", "拖动股价滑块")}
+					</SvgText>
+				</Diagram>
+			}
+			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "received",
+							label: l("Premium received", "收到的权利金"),
+							value: money(result.premium, locale),
+							tone: "gain",
+						},
+						{
+							id: "owed",
+							label: l("Owed to the holder", "需付给持有人"),
+							value: money(-result.owed, locale),
+							tone: result.owed > 0 ? "loss" : "observed",
+						},
+						{
+							id: "result",
+							label: resultLabel,
+							value: money(result.profit, locale),
+							tone: result.profit < 0 ? "loss" : "gain",
+						},
+						{
+							id: "worst",
+							label: l("Worst case", "最坏情况"),
+							value:
+								result.worstCase === null
+									? l("No fixed limit", "没有固定上限")
+									: money(result.worstCase, locale),
+							tone: "loss",
+						},
+					]}
+				/>
+			}
+			controls={
+				<FieldGroup>
+					<TypeField
+						locale={locale}
+						type={type}
+						onChange={(next) => setExample({ type: next, spot })}
+					/>
+					<RangeControl
+						inputScale={100}
+						label={l("Premium received per share", "每股收到的权利金")}
+						value={received}
+						display={money(received, locale, 2)}
+						min={100}
+						max={600}
+						step={25}
+						onChange={setReceived}
+					/>
+					<RangeControl
+						inputScale={1}
+						label={l("Contracts written", "卖出开仓张数")}
+						value={count}
+						display={String(count)}
+						min={1}
+						max={3}
+						onChange={setCount}
+					/>
+				</FieldGroup>
+			}
+			details={
+				<>
+					<p className="font-mono text-sm" data-writer-break-even>
+						{l("Break-even stock price", "盈亏平衡股价")}:{" "}
+						{money(result.breakEven, locale, 2)}
+					</p>
+					<p className="text-muted-foreground text-sm leading-7">
+						{l(
+							"Writer P&L = premium received − payoff owed. Before fees, the writer's result mirrors the holder's: one side's gain is the other side's loss.",
+							"义务方盈亏 = 收到的权利金 − 需支付的到期价值。不计费用时，义务方与持有人的结果互为镜像：一方的收益就是另一方的损失。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-sm leading-7">
+						{result.worstCase === null
+							? l(
+									"An uncovered short call has no fixed maximum loss: each $1 rise in the stock adds $100 per contract to the loss. Owning the shares (a covered call) offsets that risk, although the stock itself can still fall.",
+									"未备兑空头看涨没有固定的最大亏损：股价每涨 $1，每张合约亏损增加 $100。持有对应股票（备兑看涨）可以抵消这项风险，但股票本身仍可能下跌。",
+								)
+							: l(
+									`A short put's worst case is the stock falling to $0: (strike − premium) × 100 × contracts = ${money(result.worstCase, locale)} here.`,
+									`空头看跌的最坏情况是股价跌到 $0：（行权价 − 权利金）× 100 × 张数，本例为 ${money(result.worstCase, locale)}。`,
+								)}
+					</p>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Hypothetical expiration prices. Strike $100; before fees. Early assignment and margin requirements are not shown; the next lesson and your broker's terms cover them.",
+							"假设到期价格。行权价 $100，不计费用。图中未包含提前指派与保证金要求，下一课和券商条款会说明。",
 						)}
 					</p>
 				</>

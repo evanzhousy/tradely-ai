@@ -4,6 +4,7 @@ import {
 	ExpirationProfitScene,
 	PremiumUnitsScene,
 	ValuePartsScene,
+	WriterProfitScene,
 } from "./payoff-concept-scenes";
 import { teachingSteps } from "./visual-step";
 
@@ -105,6 +106,45 @@ const scenes = [
 			],
 		),
 		Component: ExpirationProfitScene,
+	},
+	{
+		id: "writer",
+		label: ["Writer's side", "义务方一侧"],
+		title: [
+			"The writer keeps the premium and carries the risk",
+			"义务方收下权利金，也承担风险",
+		],
+		prompt: [
+			"Switch between a short put and a short call, then drag the expiration price. Compare the premium kept with the payoff owed.",
+			"在空头看跌与空头看涨之间切换，再拖动到期价格。比较保留的权利金与需支付的到期价值。",
+		],
+		steps: teachingSteps(
+			[
+				[
+					"A writer collects the premium up front: $300 for one contract here. That credit is the most this position can earn.",
+					"义务方先收下权利金：本例一张合约 $300。这笔收入就是该持仓能获得的最大收益。",
+				],
+				[
+					"Below the strike, the short put owes the holder the shortfall. At $95 it owes $500, so the writer loses $200. Break-even is $97.",
+					"股价低于行权价时，空头看跌需向持有人支付差额。$95 时需支付 $500，义务方亏损 $200；盈亏平衡点为 $97。",
+				],
+				[
+					"The put's loss stops only when the stock reaches $0: up to $9,700 on one contract, far more than the $300 collected.",
+					"看跌空头的亏损只有在股价跌到 $0 时才停止：一张合约最多亏 $9,700，远超收到的 $300。",
+				],
+				[
+					"An uncovered short call has no such floor. Each $1 the stock rises adds $100 to the loss, and the chart edge is not a maximum loss.",
+					"未备兑的空头看涨没有这样的下限。股价每涨 $1，亏损就增加 $100，图表边缘也不是最大亏损。",
+				],
+			],
+			[
+				["Collect the premium", "收下权利金"],
+				["Owe the shortfall", "支付差额"],
+				["Find the worst case", "找到最坏情况"],
+				["See short-call risk", "认识空头看涨风险"],
+			],
+		),
+		Component: WriterProfitScene,
 	},
 ] as const satisfies readonly ConceptScene[];
 

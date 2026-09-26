@@ -1,4 +1,5 @@
 import "@tanstack/react-start/server-only";
+import type { ScenarioQuestion } from "@/domain/learning/scenario";
 import { archivedFoundationUnits } from "./archive/foundations-original.server";
 import {
 	choose as c,
@@ -219,14 +220,32 @@ function rightsCase(variant: number): TeachingCase {
 	};
 }
 
+/** Case facts for variants 1–3; variant 0 is the archived guided case (2 calls, $3, strike 100, spot 102). */
+function payoffParams(variant: number) {
+	if (variant === 0)
+		return {
+			put: false,
+			strike: 100,
+			paid: 3,
+			spot: 102,
+			count: 2,
+			multiplier: 100,
+			fees: 0,
+		};
+	return {
+		put: variant !== 2,
+		strike: variant === 1 ? 50 : variant === 2 ? 100 : 60,
+		paid: variant === 1 ? 4 : variant === 2 ? 2.5 : 3,
+		spot: variant === 1 ? 48 : variant === 2 ? 95 : 50,
+		count: variant === 1 ? 3 : variant === 2 ? 4 : 2,
+		multiplier: variant === 3 ? 10 : 100,
+		fees: variant === 1 ? 12 : 0,
+	};
+}
+
 function payoffCase(variant: number): TeachingCase {
-	const put = variant !== 2;
-	const strike = variant === 1 ? 50 : variant === 2 ? 100 : 60;
-	const paid = variant === 1 ? 4 : variant === 2 ? 2.5 : 3;
-	const spot = variant === 1 ? 48 : variant === 2 ? 95 : 50;
-	const count = variant === 1 ? 3 : variant === 2 ? 4 : 2;
-	const multiplier = variant === 3 ? 10 : 100;
-	const fees = variant === 1 ? 12 : 0;
+	const { put, strike, paid, spot, count, multiplier, fees } =
+		payoffParams(variant);
 	const premium = paid * count * multiplier;
 	const intrinsic = Math.max(put ? strike - spot : spot - strike, 0);
 	const payoff = intrinsic * count * multiplier;
@@ -445,8 +464,8 @@ const revisions: Record<string, (variant: number) => TeachingCase> = {
 	"expiration-settlement": settlementCase,
 };
 
-export const revisedFoundationUnits: TeachingUnit[] =
-	archivedFoundationUnits.map((unit) => ({
+const foundationV4Units: TeachingUnit[] = archivedFoundationUnits.map(
+	(unit) => ({
 		...unit,
 		version: 4,
 		case: (variant) => {
@@ -454,4 +473,203 @@ export const revisedFoundationUnits: TeachingUnit[] =
 				throw new Error("Unknown foundation variant");
 			return variant === 0 ? unit.case(0) : revisions[unit.id](variant);
 		},
-	}));
+	}),
+);
+
+const money = (value: number) =>
+	`${value < 0 ? "−" : ""}$${Math.abs(value).toLocaleString("en-US")}`;
+
+function writerQuestion(variant: number): ScenarioQuestion {
+	const { put, strike, paid, spot, count, multiplier } = payoffParams(variant);
+	const received = paid * count * multiplier;
+	const owed =
+		Math.max(put ? strike - spot : spot - strike, 0) * count * multiplier;
+	const profit = received - owed;
+	return n(
+		"writer-profit",
+		"The writer on the other side received the same premium. Writer profit at expiration, before fees?",
+		"对手方的义务方收到同样的权利金。到期时义务方盈亏是多少（不计费用）？",
+		profit,
+		"USD; negative for a loss",
+		"美元，亏损填负数",
+		`${money(received)} received − ${money(owed)} owed = ${money(profit)}. Before fees the writer's result mirrors the buyer's, and the premium is the most the writer can keep.`,
+		`收到 ${money(received)} − 需支付 ${money(owed)} = ${money(profit)}。不计费用时，义务方与买方结果互为镜像，权利金就是义务方最多能保留的金额。`,
+	);
+}
+
+const expiryRiskQuestions: ScenarioQuestion[] = [
+	c(
+		"auto-exercise",
+		"No instructions are given for this in-the-money call at expiration. What normally happens?",
+		"到期时未对这张价内看涨发出任何指示，通常会发生什么？",
+		[
+			[
+				"auto",
+				"It is exercised automatically and pays the cash amount.",
+				"会被自动行权并支付现金金额。",
+			],
+			[
+				"lapse",
+				"It lapses unless you actively submit an exercise notice.",
+				"除非你主动提交行权通知，否则作废。",
+			],
+			[
+				"threshold",
+				"It is exercised only if it is at least 50 points in the money.",
+				"只有价内至少 50 点才会被行权。",
+			],
+		],
+		"auto",
+		"An option in the money by $0.01 or more at expiration is normally exercised automatically unless the holder instructs otherwise. Check your broker's cut-off time and policy.",
+		"到期时价内 $0.01 或以上的期权，除非持有人另行指示，通常会被自动行权。请查看券商的截止时间与政策。",
+	),
+	c(
+		"pin-risk",
+		"Now take the writer's side of a $50 call when the stock closes at exactly $50.00. What can the writer know at the close?",
+		"换到 $50 看涨义务方的角度：股价恰好收在 $50.00。义务方在收盘时能知道什么？",
+		[
+			[
+				"unknown",
+				"Not whether assignment will follow; the holder can still decide after the close.",
+				"无法确定是否会被指派；持有人收盘后仍可决定。",
+			],
+			[
+				"safe",
+				"That there will be no assignment, because the call is not in the money.",
+				"不会被指派，因为看涨期权不在价内。",
+			],
+			[
+				"certain",
+				"That assignment is certain, because the stock reached the strike.",
+				"一定会被指派，因为股价到达了行权价。",
+			],
+		],
+		"unknown",
+		"An at-the-money option may or may not be exercised. The holder can act on after-hours moves, so the writer learns the result only from the assignment notice.",
+		"平值期权可能被行权，也可能不被行权。持有人可以根据盘后变动作决定，因此义务方只能从指派通知得知结果。",
+	),
+	c(
+		"am-settlement",
+		"Suppose this put were AM-settled: trading stops the day before, and the settlement value comes from opening prices on expiration morning. When is its payoff fixed?",
+		"假设这张看跌为上午结算：前一天停止交易，结算值来自到期日早上的开盘价格。它的到期支付何时确定？",
+		[
+			[
+				"open",
+				"At the opening-based settlement value, after trading in it has stopped.",
+				"在停止交易之后，按开盘价格计算的结算值确定。",
+			],
+			[
+				"last",
+				"At the last trade you could make the day before.",
+				"在前一天你能完成的最后一笔交易时确定。",
+			],
+			[
+				"choice",
+				"Whenever the holder decides to exercise.",
+				"在持有人决定行权时确定。",
+			],
+		],
+		"open",
+		"An AM-settled contract's payoff depends on a value you cannot trade against: it is set after trading stops, from opening prices on expiration morning.",
+		"上午结算合约的到期支付取决于一个你无法再交易的数值：它在停止交易后，由到期日早上的开盘价格决定。",
+	),
+	c(
+		"early-assignment",
+		"A different, American-style short call on a stock is deep in the money. The stock goes ex-dividend tomorrow with a $0.60 dividend, and the call has $0.05 of time value left. What risk rises today?",
+		"另一张美式股票看涨空头处于深度价内。明天除息、股息 $0.60，而该看涨期权仅剩 $0.05 时间价值。今天哪种风险上升？",
+		[
+			[
+				"early",
+				"Early assignment: the holder may exercise today to collect the dividend.",
+				"提前指派：持有人可能今天行权以获取股息。",
+			],
+			[
+				"none",
+				"None: short calls can be assigned only at expiration.",
+				"没有：空头看涨只能在到期时被指派。",
+			],
+			[
+				"cash",
+				"The call switches to cash settlement because of the dividend.",
+				"因为派息，看涨期权改为现金结算。",
+			],
+		],
+		"early",
+		"American-style options can be exercised before expiration. When the dividend exceeds the call's remaining time value, exercising before the ex-dividend date can pay the holder, so the writer may be assigned early.",
+		"美式期权可在到期前行权。当股息大于看涨期权剩余的时间价值时，在除息日前行权可能对持有人有利，因此义务方可能被提前指派。",
+	),
+];
+
+function withQuestion(
+	unit: TeachingUnit,
+	question: (variant: number) => ScenarioQuestion,
+): TeachingUnit["case"] {
+	return (variant) => {
+		const base = unit.case(variant);
+		return { ...base, questions: [...base.questions, question(variant)] };
+	};
+}
+
+/** Version 5 adds the writer's side to lesson 3 and expiry-day risks to lesson 4. */
+const v5Revisions: Record<string, (unit: TeachingUnit) => TeachingUnit> = {
+	"premium-payoff": (unit) => ({
+		...unit,
+		version: 5,
+		conceptLab: unit.conceptLab && {
+			...unit.conceptLab,
+			intro: t(
+				"Follow the units from price to premium, separate intrinsic and extrinsic value, then drag the expiration price through a payoff chart. Find where an in-the-money option still produces a loss, then see the same contract from the writer's side.",
+				"从价格单位追踪到权利金，分清内在价值与外在价值，再拖动到期价格，探索支付价值曲线。找出期权已实值、买方却仍亏损的位置，再从义务方的角度看同一合约。",
+			),
+		},
+		explanation: t(
+			`${unit.explanation.en} The writer is on the other side: writer profit is the premium received minus the payoff owed. The most a writer can keep is the premium. A short put can lose up to (strike − premium) × multiplier per contract if the stock falls to zero; an uncovered short call has no fixed maximum loss.`,
+			`${unit.explanation.zh}义务方站在另一侧：义务方盈亏 = 收到的权利金 − 需支付的到期价值。义务方最多只能保留权利金。若股价跌到零，空头看跌每张最多亏损（行权价 − 权利金）× 乘数；未备兑空头看涨没有固定的最大亏损。`,
+		),
+		example: t(
+			`${unit.example.en} The writer of those 2 calls received $600 and owes $400 at $102, a $200 profit before fees; at $120 the writer would owe $4,000 and lose $3,400.`,
+			`${unit.example.zh}这 2 张看涨的义务方收到 $600，$102 时需支付 $400，费用前盈利 $200；若到期价为 $120，则需支付 $4,000，亏损 $3,400。`,
+		),
+		misconception: t(
+			`${unit.misconception.en} For a writer, the premium received is the maximum gain; the loss can be many times larger.`,
+			`${unit.misconception.zh}对义务方而言，收到的权利金就是最大收益，而亏损可能是它的许多倍。`,
+		),
+		case: withQuestion(unit, writerQuestion),
+	}),
+	"expiration-settlement": (unit) => ({
+		...unit,
+		version: 5,
+		conceptLab: unit.conceptLab && {
+			...unit.conceptLab,
+			intro: t(
+				`${unit.conceptLab.intro.en} Then step through four expiry-day risks.`,
+				`${unit.conceptLab.intro.zh}最后逐一查看四种到期日风险。`,
+			),
+		},
+		explanation: t(
+			`${unit.explanation.en} Expiration can also surprise you. A long option in the money by $0.01 or more is normally exercised automatically unless you instruct otherwise. A writer whose option closes near the strike may not know about assignment until after the close (pin risk). American-style short calls can be assigned early, especially the day before an ex-dividend date when the dividend exceeds the call's remaining time value. Some index options are AM-settled: trading stops the day before, and the settlement value comes from opening prices on expiration morning.`,
+			`${unit.explanation.zh}到期还可能带来意外。价内 $0.01 或以上的多头期权，除非另行指示，通常会被自动行权。期权收在行权价附近时，义务方可能要到收盘后才知道是否被指派（钉住风险）。美式空头看涨可能被提前指派，尤其在除息日前一天、股息大于看涨期权剩余时间价值时。部分指数期权为上午结算：前一天停止交易，结算值来自到期日早上的开盘价格。`,
+		),
+		example: t(
+			`${unit.example.en} Separately, a long 50 call that closes at $50.02 with no instructions is normally exercised, leaving you with 100 shares bought for $5,000.`,
+			`${unit.example.zh}另外，持有的 50 看涨若收在 $50.02 且未发指示，通常会被行权，你将以 $5,000 买入 100 股。`,
+		),
+		misconception: t(
+			`${unit.misconception.en} A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.`,
+			`${unit.misconception.zh}小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。`,
+		),
+		case: withQuestion(
+			unit,
+			(variant) => expiryRiskQuestions[variant] ?? expiryRiskQuestions[0],
+		),
+	}),
+};
+
+/** Attempts saved against v4 of the revised lessons keep resolving to their original rubrics. */
+export const archivedFoundationV4Units = foundationV4Units.filter((unit) =>
+	Object.hasOwn(v5Revisions, unit.id),
+);
+
+export const revisedFoundationUnits: TeachingUnit[] = foundationV4Units.map(
+	(unit) => v5Revisions[unit.id]?.(unit) ?? unit,
+);

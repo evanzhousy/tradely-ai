@@ -4,6 +4,7 @@ import { ConceptLab, type ConceptScene } from "./concept-lab";
 import {
 	ClosingExerciseScene,
 	ExerciseTimingScene,
+	ExpiryRisksScene,
 	SettlementComparisonScene,
 	SettlementExample,
 	type SettlementKind,
@@ -95,6 +96,45 @@ const scenes = [
 			],
 		),
 		Component: SettlementComparisonScene,
+	},
+	{
+		id: "risks",
+		label: ["Expiry risks", "到期风险"],
+		title: [
+			"Four ways expiration can surprise you",
+			"到期时可能出乎意料的四种情况",
+		],
+		prompt: [
+			"Step through four cases. For each, see who acts, what changes and what to check before expiration.",
+			"逐一查看四种情况：由谁行动、会发生什么，以及到期前应检查什么。",
+		],
+		steps: teachingSteps(
+			[
+				[
+					"A long option that finishes in the money by $0.01 or more is normally exercised automatically unless you instruct otherwise. Here that means buying 100 shares for $5,000.",
+					"到期时价内 $0.01 或以上的多头期权，除非另行指示，通常会被自动行权。本例意味着以 $5,000 买入 100 股。",
+				],
+				[
+					"When the stock closes right at the strike, the writer cannot know whether assignment will follow. An after-hours move can make exercise worthwhile, and the notice arrives later.",
+					"股价恰好收在行权价附近时，义务方无法知道是否会被指派。盘后变动可能让行权变得有利，而指派通知稍后才到。",
+				],
+				[
+					"American-style short calls can be assigned early. The day before an ex-dividend date, a holder may exercise when the dividend is larger than the call's remaining time value.",
+					"美式空头看涨可能被提前指派。除息日前一天，如果股息大于看涨期权剩余的时间价值，持有人可能提前行权。",
+				],
+				[
+					"Some index options stop trading the day before expiration and settle on a value calculated from opening prices. A call that was in the money at the last trade can still pay $0.",
+					"部分指数期权在到期前一天停止交易，并以开盘价格计算的数值结算。最后交易时处于价内的看涨期权，仍可能支付 $0。",
+				],
+			],
+			[
+				["Automatic exercise", "自动行权"],
+				["Pin risk", "钉住风险"],
+				["Early assignment", "提前指派"],
+				["AM settlement", "上午结算"],
+			],
+		),
+		Component: ExpiryRisksScene,
 	},
 ] as const satisfies readonly ConceptScene[];
 

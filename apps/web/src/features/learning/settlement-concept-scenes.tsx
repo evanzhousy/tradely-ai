@@ -32,6 +32,7 @@ import {
 	lessonTransition,
 	useLessonMotion,
 } from "./lesson-motion";
+import { SceneOutcome } from "./scene-outcome";
 import {
 	cashSettlement,
 	cashTerms,
@@ -45,7 +46,7 @@ import {
 	type SettlementOptionType,
 	settlementExamples,
 } from "./settlement-concept-model";
-import { VisualPlayback } from "./visual-playback";
+import { useGuidedState, VisualPlayback } from "./visual-playback";
 
 const SettlementAnimation = lazy(() => import("./settlement-animation"));
 export type SettlementKind = "physical" | "cash";
@@ -879,6 +880,266 @@ export function SettlementComparisonScene({ locale }: Props) {
 						{l(
 							"These are different, explicitly specified teaching products. Exercise style does not determine settlement method. Cash payoff and gross physical exercise cash are different quantities; neither is profit. Actual products specify their own settlement reference and delivery terms.",
 							"这些是条款明确但不同的教学产品。行权方式不能决定结算方式。现金支付与实物行权总金额是不同量，都不是利润；真实产品各自规定结算参考值与交付条款。",
+						)}
+					</p>
+				</>
+			}
+		/>
+	);
+}
+
+type ExpiryRiskId = "auto" | "pin" | "dividend" | "am";
+type RiskCopy = readonly [string, string];
+/** Illustrative cases. Thresholds, cut-offs and settlement rules come from the product terms and broker. */
+const expiryRisks: readonly {
+	id: ExpiryRiskId;
+	label: RiskCopy;
+	position: RiskCopy;
+	ticks: readonly (readonly [label: RiskCopy, value: RiskCopy])[];
+	risk: number;
+	result: RiskCopy;
+	who: RiskCopy;
+	change: RiskCopy;
+	check: RiskCopy;
+}[] = [
+	{
+		id: "auto",
+		label: ["Automatic exercise", "自动行权"],
+		position: ["Long 1 ALFA $50 call", "持有 1 张 ALFA $50 看涨"],
+		ticks: [
+			[
+				["Expiry close", "到期收盘"],
+				["$50.02", "$50.02"],
+			],
+			[
+				["Cut-off", "指示截止"],
+				["No reply", "未发指示"],
+			],
+			[
+				["Next day", "次日"],
+				["+100 sh", "+100 股"],
+			],
+		],
+		risk: 1,
+		result: ["Exercised: −$5,000 cash", "被行权：现金 −$5,000"],
+		who: ["The default exercise rule", "默认行权规则"],
+		change: [
+			"You buy 100 shares per contract for $5,000.",
+			"每张合约以 $5,000 买入 100 股。",
+		],
+		check: [
+			"Close the option or instruct your broker before its cut-off.",
+			"在券商截止时间前平仓或发出指示。",
+		],
+	},
+	{
+		id: "pin",
+		label: ["Pin risk", "钉住风险"],
+		position: ["Short 1 ALFA $50 put", "1 张 ALFA $50 看跌空头"],
+		ticks: [
+			[
+				["Expiry close", "到期收盘"],
+				["$50.00", "$50.00"],
+			],
+			[
+				["After hours", "盘后"],
+				["$49.40", "$49.40"],
+			],
+			[
+				["Notice", "指派通知"],
+				["Assigned?", "被指派？"],
+			],
+		],
+		risk: 2,
+		result: ["Maybe +100 sh at $50", "可能以 $50 买入 100 股"],
+		who: ["The put holder", "看跌期权持有人"],
+		change: [
+			"You may buy 100 shares at $50 while the stock trades near $49.40.",
+			"你可能以 $50 买入 100 股，而股价约为 $49.40。",
+		],
+		check: [
+			"Close short options near the strike before expiration.",
+			"到期前平掉接近行权价的空头期权。",
+		],
+	},
+	{
+		id: "dividend",
+		label: ["Early assignment", "提前指派"],
+		position: ["Short 1 ALFA $40 call", "1 张 ALFA $40 看涨空头"],
+		ticks: [
+			[
+				["Stock", "股价"],
+				["$52", "$52"],
+			],
+			[
+				["Eve of ex-date", "除息前一天"],
+				["Exercised", "被行权"],
+			],
+			[
+				["Ex-date", "除息日"],
+				["$0.80 div", "股息 $0.80"],
+			],
+		],
+		risk: 1,
+		result: ["Deliver 100 sh early", "提前交付 100 股"],
+		who: ["The call holder (American style)", "看涨期权持有人（美式）"],
+		change: [
+			"You must deliver 100 shares early and lose the $80 dividend.",
+			"你必须提前交付 100 股，并损失 $80 股息。",
+		],
+		check: [
+			"Before an ex-dividend date, compare the dividend with the call's time value ($0.10 here).",
+			"除息日前，比较股息与看涨期权的时间价值（本例 $0.10）。",
+		],
+	},
+	{
+		id: "am",
+		label: ["AM settlement", "上午结算"],
+		position: ["IDX monthly 4,000 call", "IDX 月度 4,000 看涨"],
+		ticks: [
+			[
+				["Last trade", "最后交易"],
+				["4,010", "4,010"],
+			],
+			[
+				["Expiry open", "到期开盘"],
+				["3,985", "3,985"],
+			],
+			[
+				["Payoff", "到期支付"],
+				["$0", "$0"],
+			],
+		],
+		risk: 1,
+		result: ["Settles out of the money", "以价外结算"],
+		who: ["The product's settlement rule", "产品的结算规则"],
+		change: [
+			"The call pays $0 although it was in the money at the last trade.",
+			"尽管最后交易时处于价内，看涨期权仍支付 $0。",
+		],
+		check: [
+			"Know whether the product is AM- or PM-settled and when trading stops.",
+			"确认产品是上午还是下午结算，以及何时停止交易。",
+		],
+	},
+];
+const expiryRiskIds = expiryRisks.map((risk) => risk.id);
+const riskTickX = [60, 180, 300] as const;
+
+export function ExpiryRisksScene({ locale }: Props) {
+	const l = text(locale);
+	const pick = ([en, zh]: RiskCopy) => l(en, zh);
+	const motion = useLessonMotion();
+	const [riskId, setRiskId] = useGuidedState<ExpiryRiskId>(
+		"auto",
+		expiryRiskIds,
+	);
+	const risk = expiryRisks.find((item) => item.id === riskId) ?? expiryRisks[0];
+	return (
+		<SceneLayout
+			diagram={
+				<Diagram
+					label={l(
+						`${risk.label[0]}: what happens around expiration`,
+						`${risk.label[1]}：到期前后会发生什么`,
+					)}
+					height={300}
+				>
+					<SvgText x={180} y={30} strong>
+						{pick(risk.label)}
+					</SvgText>
+					<SvgText x={180} y={56} muted>
+						{pick(risk.position)}
+					</SvgText>
+					<path d="M60 160H300" className="contract-svg-line" />
+					<m.path
+						key={risk.id}
+						d={`M60 160H${riskTickX[risk.risk]}`}
+						className="contract-svg-active-line"
+						initial={{ pathLength: motion ? 0 : 1 }}
+						animate={{ pathLength: 1 }}
+						transition={
+							motion
+								? { ...lessonTransition, duration: 0.5 }
+								: instantTransition
+						}
+					/>
+					{risk.ticks.map(([label, value], i) => (
+						<g key={label[0]}>
+							<circle
+								cx={riskTickX[i]}
+								cy={160}
+								r={i === risk.risk ? 9 : 6}
+								fill={i === risk.risk ? "var(--diagram-loss)" : "var(--card)"}
+								stroke="var(--foreground)"
+								strokeWidth="2"
+							/>
+							<SvgText x={riskTickX[i]} y={132}>
+								{pick(value)}
+							</SvgText>
+							<SvgText x={riskTickX[i]} y={194} muted>
+								{pick(label)}
+							</SvgText>
+						</g>
+					))}
+					<rect
+						x="40"
+						y="222"
+						width="280"
+						height="54"
+						rx="12"
+						className="contract-svg-paper"
+					/>
+					<SvgText x={180} y={255}>
+						{pick(risk.result)}
+					</SvgText>
+				</Diagram>
+			}
+			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "who",
+							label: l("Who acts", "由谁行动"),
+							value: pick(risk.who),
+						},
+						{
+							id: "change",
+							label: l("What changes", "会发生什么"),
+							value: pick(risk.change),
+							tone: "loss",
+						},
+						{
+							id: "check",
+							label: l("Check before expiration", "到期前检查"),
+							value: pick(risk.check),
+						},
+					]}
+				/>
+			}
+			controls={
+				<ChoiceField
+					label={l("Case", "案例")}
+					value={riskId}
+					options={expiryRisks.map(
+						(item) => [item.id, pick(item.label)] as const,
+					)}
+					onChange={setRiskId}
+				/>
+			}
+			details={
+				<>
+					<p className="text-muted-foreground text-sm leading-7">
+						{l(
+							"A long option that finishes in the money by $0.01 or more is normally exercised automatically unless you instruct otherwise. Writers learn about assignment only after the fact, and American-style options can be assigned before expiration.",
+							"到期时价内 $0.01 或以上的多头期权，除非另行指示，通常会被自动行权。义务方只能事后得知是否被指派，美式期权还可能在到期前被指派。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Illustrative numbers. Exercise thresholds, instruction cut-offs, last trading times and settlement methods differ by product and broker; read the contract terms and your broker's exercise policy.",
+							"示例数字。行权门槛、指示截止时间、最后交易时间与结算方式因产品和券商而异；请阅读合约条款与券商的行权政策。",
 						)}
 					</p>
 				</>
