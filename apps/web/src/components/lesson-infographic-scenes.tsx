@@ -699,6 +699,34 @@ function OptionChain({ l }: Props) {
 		</>
 	);
 }
+function RiskSides({ l }: Props) {
+	return (
+		<>
+			<Axes
+				xLabel={l("Spot at expiry", "到期现价")}
+				yLabel={l("Result", "盈亏")}
+			/>
+			<path d="M45 103h266M170 47v119" className="diagram-dashed" />
+			<Trace d="M46 112H170L300 56" />
+			<Trace d="M46 94H170L300 150" delay={600} />
+			<Label x={286} y={46} small>
+				{l("Buyer", "买方")}
+			</Label>
+			<Label x={286} y={166} small>
+				{l("Writer", "义务方")}
+			</Label>
+			<Label x={100} y={132} small>
+				{l("Max loss: premium", "最多亏权利金")}
+			</Label>
+			<Caption>
+				{l(
+					"The writer's loss keeps growing as the stock rises",
+					"股价越涨，义务方亏得越多",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Unusual({ l }: Props) {
 	return (
 		<>
@@ -1615,6 +1643,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"An option chain lists calls and puts by strike, each with its own bid and ask.",
 			"期权链按行权价列出看涨与看跌，每份合约都有自己的买价与卖价。",
+		],
+	},
+	"options-risks": {
+		Diagram: RiskSides,
+		description: [
+			"A call buyer can lose at most the premium, while the writer's loss keeps growing as the stock rises.",
+			"看涨期权买方最多损失权利金，而股价越涨，义务方亏得越多。",
 		],
 	},
 	"option-contracts": {

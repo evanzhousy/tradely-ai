@@ -130,6 +130,16 @@ export const syllabus: readonly Entry[] = [
 		["what-options-are"],
 	),
 	lesson(
+		"options-risks",
+		"orientation",
+		"Risk first: how options lose money",
+		"先看风险：期权如何亏钱",
+		"See how a right call can still lose, why writers can lose far more than they collect, and how trading costs add up.",
+		"理解为何方向对了仍可能亏钱、为何义务方的损失可能远超所收权利金，以及交易成本如何累积。",
+		["C03", "C04", "C13"],
+		["trading-options"],
+	),
+	lesson(
 		"option-contracts",
 		"contracts",
 		"Option contracts: what you are buying",

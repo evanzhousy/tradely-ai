@@ -137,6 +137,11 @@ const lessons = {
 			default: m.OrderConceptLab,
 		})),
 	),
+	"options-risks": lazy(() =>
+		import("./risk-concept-lab").then((m) => ({
+			default: m.RiskConceptLab,
+		})),
+	),
 	"option-contracts": lazy(() =>
 		import("./contract-concept-lab").then((m) => ({
 			default: m.ContractConceptLab,

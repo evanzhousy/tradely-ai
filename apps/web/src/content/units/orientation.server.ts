@@ -326,4 +326,105 @@ export const orientationUnits: TeachingUnit[] = [
 			};
 		},
 	},
+	{
+		id: "options-risks",
+		conceptLab: {
+			kind: "options-risks",
+			intro: t(
+				"Watch a call lose value while the stock rises, compare the buyer's and writer's worst cases, and price a round trip through a wide spread.",
+				"观察股价上涨时看涨期权如何贬值，比较买方与义务方的最坏情况，并计算在宽价差中一买一卖的成本。",
+			),
+		},
+		sources: [
+			finraOptions,
+			oicWhatIsAnOption,
+			{ title: "Tradely · Options risk disclosure", href: "/risk-disclosure" },
+		],
+		explanation: t(
+			"Options can lose money in ways stock does not. A buyer can lose the entire premium, and quickly, because an option's time value shrinks as expiry approaches and can drop when implied volatility falls, for example after an earnings announcement. So the stock can move your way while the option still loses value. Leverage cuts both ways: a small premium controls 100 shares, so a small move is a large percentage gain or loss. A writer collects a limited premium but can lose far more; an uncovered call has no fixed maximum loss. Trading costs add up: in a wide bid-ask spread you give up the spread each time you buy at the ask and sell at the bid, plus fees. Before you trade, your broker must give you the Options Clearing Corporation's disclosure, Characteristics and Risks of Standardized Options. Read it, and size every position as if the worst case will happen.",
+			"期权的亏损方式和股票不同。买方可能损失全部权利金，而且可能很快：期权的时间价值会随到期临近而缩水，隐含波动率下降时（例如财报公布后）也会下跌。所以股价朝你预期的方向走，期权仍可能贬值。杠杆是双向的：一小笔权利金控制 100 股，小幅波动就会带来很大的百分比盈亏。义务方收取有限的权利金，却可能损失得多得多；未备兑的看涨空头没有固定的最大亏损。交易成本会累积：价差很宽时，每次按卖价买入、按买价卖出都要付出价差，再加上费用。交易前，券商必须向你提供期权清算公司（OCC）的《标准化期权的特征与风险》披露文件。请认真阅读，并按最坏情况来控制每笔仓位的规模。",
+		),
+		example: t(
+			"You pay $4.00 for a 30-day ALFA 100 call with ALFA at $100. Twenty days later ALFA is $102, but after earnings implied volatility has fallen from 35% to 25%, and the call is worth about $2.85: a $115 loss despite the right direction. A trader who instead sold a call like it for $3.00 would lose $1,700 if ALFA finished at $120.",
+			"ALFA 为 $100 时，你以 $4.00 买入 30 天期的 ALFA 100 看涨。20 天后 ALFA 为 $102，但财报后隐含波动率从 35% 降到 25%，看涨期权只值约 $2.85：方向对了，仍亏 $115。若有人以 $3.00 卖出类似的看涨，而 ALFA 最终为 $120，他将亏损 $1,700。",
+		),
+		misconception: t(
+			"'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+			"“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。",
+		),
+		case: (v) => {
+			const paid = [400, 250, 620, 115][v];
+			const [bid, ask, contracts] = [
+				[190, 210, 5],
+				[95, 105, 3],
+				[320, 360, 2],
+				[140, 155, 4],
+			][v];
+			const roundTrip = ((ask - bid) * 100 * contracts) / 100;
+			return {
+				brief: t(
+					`You bought an ALFA call for $${dollars(paid)} per share. A different ALFA call is quoted $${dollars(bid)} bid and $${dollars(ask)} ask.`,
+					`你以每股 $${dollars(paid)} 买入了一张 ALFA 看涨。另一张 ALFA 看涨的报价为买价 $${dollars(bid)}、卖价 $${dollars(ask)}。`,
+				),
+				questions: [
+					n(
+						"max-loss",
+						`On the call you bought for $${dollars(paid)}, what is the most you can lose, before fees?`,
+						`你以 $${dollars(paid)} 买入的那张看涨，最多可能亏多少（不含费用）？`,
+						paid,
+						"USD",
+						"美元",
+						`A buyer can lose the whole premium: $${dollars(paid)} × 100 = $${dollars(paid * 100)}.`,
+						`买方最多损失全部权利金：$${dollars(paid)} × 100 = $${dollars(paid * 100)}。`,
+						0.01,
+					),
+					c(
+						"no-limit",
+						"Which position has no fixed maximum loss?",
+						"哪种持仓没有固定的最大亏损？",
+						[
+							[
+								"short-call",
+								"Writing a call without owning the shares",
+								"不持有股票而卖出看涨",
+							],
+							["long-call", "Buying a call", "买入看涨"],
+							["long-put", "Buying a put", "买入看跌"],
+						],
+						"short-call",
+						"An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
+						"未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。",
+					),
+					n(
+						"round-trip",
+						`On the quoted call, you buy ${contracts} contracts at the ask and immediately sell them at the bid. Loss before fees?`,
+						`对于有报价的那张看涨，你按卖价买入 ${contracts} 张，随即按买价全部卖出。不含费用的亏损是多少？`,
+						roundTrip,
+						"USD",
+						"美元",
+						`($${dollars(ask)} − $${dollars(bid)}) × 100 × ${contracts} = $${roundTrip.toFixed(2)}, lost before the price has moved at all.`,
+						`（$${dollars(ask)} − $${dollars(bid)}）× 100 × ${contracts} = $${roundTrip.toFixed(2)}，价格还没动就已亏损。`,
+						0.01,
+					),
+					c(
+						"why",
+						"ALFA rose a little, but your call lost value. Which could explain it?",
+						"ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？",
+						[
+							[
+								"time",
+								"Time passed and implied volatility fell",
+								"时间流逝且隐含波动率下降",
+							],
+							["strike", "The broker moved the strike", "券商改了行权价"],
+							["shares", "The call turned into shares", "看涨期权变成了股票"],
+						],
+						"time",
+						"An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
+						"期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。",
+					),
+				],
+			};
+		},
+	},
 ];

@@ -101,6 +101,7 @@ import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { RightsConceptLab } from "./rights-concept-lab";
+import { RiskConceptLab } from "./risk-concept-lab";
 import { SentimentConceptLab } from "./sentiment-concept-lab";
 import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
@@ -143,6 +144,7 @@ const conceptLabs = {
 	"stocks-and-prices": StockConceptLab,
 	"what-options-are": OptionBasicsLab,
 	"trading-options": OrderConceptLab,
+	"options-risks": RiskConceptLab,
 	"option-contracts": ContractConceptLab,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,

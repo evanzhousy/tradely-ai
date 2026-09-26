@@ -21,6 +21,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"stocks-and-prices": "reference",
 	"what-options-are": "reference",
 	"trading-options": "reference",
+	"options-risks": "model",
 	"execution-conditions": "reference",
 	"unusual-activity": "reference",
 	"option-strategies": "model",

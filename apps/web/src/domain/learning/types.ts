@@ -137,6 +137,7 @@ export type LearningStepView = {
 		| "stocks-and-prices"
 		| "what-options-are"
 		| "trading-options"
+		| "options-risks"
 		| "option-contracts"
 		| "option-rights"
 		| "premium-payoff"
