@@ -2,14 +2,23 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { Item } from "@tradely/ui/components/item";
 import { Separator } from "@tradely/ui/components/separator";
-import { CheckCircle2Icon, PlayCircleIcon } from "lucide-react";
+import { CheckCircle2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { Lesson } from "@/content/course";
-import { courseModules } from "@/content/syllabus";
+import { courseModules, coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
 import { useVisualProgress } from "@/features/learning/visual-bookmark";
 import { useI18n } from "@/i18n/provider";
+
+/** True for the first module of the core path and of each deeper branch. */
+const startsPath = (moduleId: string) => {
+	const module = courseModules.find((item) => item.id === moduleId);
+	return (
+		!!module &&
+		courseModules.find((item) => item.path === module.path)?.id === module.id
+	);
+};
 
 export function CourseList({
 	lessons,
@@ -63,6 +72,19 @@ export function CourseList({
 						className="scroll-mt-24"
 					>
 						{lesson.moduleId &&
+						lesson.moduleId !== lessons[index - 1]?.moduleId &&
+						startsPath(lesson.moduleId) ? (
+							<p className="px-3 pt-6 font-medium text-muted-foreground text-xs">
+								{
+									coursePaths[
+										courseModules.find(
+											(module) => module.id === lesson.moduleId,
+										)?.path ?? "core"
+									][locale]
+								}
+							</p>
+						) : null}
+						{lesson.moduleId &&
 						lesson.moduleId !== lessons[index - 1]?.moduleId ? (
 							<div
 								id={!currentLessonId ? `module-${lesson.moduleId}` : undefined}
@@ -101,7 +123,7 @@ export function CourseList({
 							size="sm"
 							className="group flex items-start gap-4 rounded-2xl px-3 py-4 transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							aria-current={currentLessonId === lesson.id ? "page" : undefined}
-							aria-label={`${lesson.title}. ${statusLabel}. ${t("common.minutes", { minutes: lesson.minutes })}.`}
+							aria-label={`${lesson.title}. ${statusLabel}.`}
 						>
 							<span className="flex size-9 shrink-0 items-center justify-center rounded-3xl bg-muted font-mono text-muted-foreground text-xs group-hover:text-foreground">
 								{isCompleted ? (
@@ -127,10 +149,6 @@ export function CourseList({
 								</span>
 								<span className="text-muted-foreground text-xs">
 									{statusLabel}
-								</span>
-								<span className="flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
-									<PlayCircleIcon className="size-3.5" aria-hidden="true" />
-									{t("common.minutes", { minutes: lesson.minutes })}
 								</span>
 							</span>
 						</Item>

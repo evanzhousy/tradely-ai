@@ -1,4 +1,9 @@
-import { courseModules, type ModuleId, syllabus } from "./syllabus";
+import {
+	type CoursePathId,
+	courseModules,
+	type ModuleId,
+	syllabus,
+} from "./syllabus";
 
 export type TradingFlowPractice = {
 	title: string;
@@ -25,7 +30,6 @@ export type Lesson = {
 	title: string;
 	summary: string;
 	category: string;
-	minutes: number;
 	order: number;
 	mediaDelivery: "public" | "signed";
 	contentVersion: number;
@@ -46,6 +50,7 @@ const MEDIA_ROOT = "/media/tradingflow";
 const contentVersionOverrides: Record<string, number> = {
 	"premium-payoff": 5,
 	"expiration-settlement": 5,
+	"portfolio-performance": 3,
 };
 
 /** Recommended starting paths are independent of public lesson availability. */
@@ -73,7 +78,6 @@ const legacyCourse = {
 			summary:
 				"Define one question, source, horizon, owner, and invalidation rule before opening a candidate.",
 			category: "Method",
-			minutes: 12,
 			order: 0,
 			mediaDelivery: "public",
 			contentVersion: 1,
@@ -94,7 +98,6 @@ const legacyCourse = {
 			summary:
 				"Set eligibility, freshness, and like-for-like comparison rules before asking Rank to concentrate attention.",
 			category: "Discovery",
-			minutes: 12,
 			order: 1,
 			mediaDelivery: "public",
 			contentVersion: 1,
@@ -115,7 +118,6 @@ const legacyCourse = {
 			summary:
 				"Read the fields behind a ranked row, test counter-evidence, and promote only a candidate for inspection.",
 			category: "Discovery",
-			minutes: 12,
 			order: 2,
 			mediaDelivery: "public",
 			contentVersion: 1,
@@ -136,7 +138,6 @@ const legacyCourse = {
 			summary:
 				"Freeze symbol identity, name the active lens, audit required fields, and stop when context is stale or missing.",
 			category: "Inspection",
-			minutes: 12,
 			order: 3,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -157,7 +158,6 @@ const legacyCourse = {
 			summary:
 				"Move from symbol to contract while keeping expiry, moneyness, neighborhood, and comparison scope fixed.",
 			category: "Inspection",
-			minutes: 12,
 			order: 4,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -178,7 +178,6 @@ const legacyCourse = {
 			summary:
 				"Read bid/ask location, premium, size, contract context, repetition, and quote evidence without inventing intent.",
 			category: "Validation",
-			minutes: 12,
 			order: 5,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -199,7 +198,6 @@ const legacyCourse = {
 			summary:
 				"Keep today's tape, reported open interest, delta-OI, and modeled GEX on their own clocks.",
 			category: "Structure",
-			minutes: 12,
 			order: 6,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -220,7 +218,6 @@ const legacyCourse = {
 			summary:
 				"Keep signed flow, normalized magnitude, and modeled structure distinct—even when the lenses disagree.",
 			category: "Structure",
-			minutes: 12,
 			order: 7,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -241,7 +238,6 @@ const legacyCourse = {
 			summary:
 				"Version the question, attach inspectable inputs, assign ownership, record missingness, and preserve a challenge path.",
 			category: "Research output",
-			minutes: 12,
 			order: 8,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -262,7 +258,6 @@ const legacyCourse = {
 			summary:
 				"Choose evidence with lineage, use charts that answer the question, and keep caveats beside every claim.",
 			category: "Research output",
-			minutes: 12,
 			order: 9,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -283,7 +278,6 @@ const legacyCourse = {
 			summary:
 				"Freeze the audit contract, trace claim lineage, keep gaps visible, run the challenge path, and sign off with a boundary.",
 			category: "Research output",
-			minutes: 12,
 			order: 10,
 			mediaDelivery: "signed",
 			contentVersion: 1,
@@ -314,12 +308,6 @@ export const tradingFlowCourse = {
 			slug: entry.id,
 			order,
 			category: module.en,
-			minutes:
-				entry.moduleId === "production"
-					? 18
-					: entry.moduleId === "structure"
-						? 14
-						: 10,
 			mediaDelivery: prior?.mediaDelivery ?? "signed",
 			contentVersion:
 				contentVersionOverrides[entry.id] ??
@@ -357,6 +345,24 @@ export function getNextLesson(slug: string): Lesson | undefined {
 	return lesson
 		? tradingFlowCourse.lessons.find((item) => item.order === lesson.order + 1)
 		: undefined;
+}
+
+const lessonPath = (lesson: Lesson) =>
+	courseModules.find((module) => module.id === lesson.moduleId)?.path;
+
+/** At the last core lesson, the first lesson of each deeper branch; otherwise null. */
+export function getBranchChoices(
+	slug: string,
+): { path: Exclude<CoursePathId, "core">; lesson: Lesson }[] | null {
+	const lessons = tradingFlowCourse.lessons;
+	const lastCore = lessons
+		.filter((lesson) => lessonPath(lesson) === "core")
+		.at(-1);
+	if (lastCore?.slug !== slug) return null;
+	return (["models", "portfolio"] as const).flatMap((path) => {
+		const lesson = lessons.find((item) => lessonPath(item) === path);
+		return lesson ? [{ path, lesson }] : [];
+	});
 }
 
 export function getPreviousLesson(slug: string): Lesson | undefined {

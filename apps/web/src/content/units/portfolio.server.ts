@@ -11,6 +11,137 @@ import {
 	t,
 } from "./authoring.server";
 
+/** Version 2 rubric, kept so attempts saved before the drawdown question still project. */
+const performanceV2: TeachingUnit = {
+	id: "portfolio-performance",
+	conceptLab: {
+		kind: "portfolio-performance",
+		data: performanceConceptData,
+		intro: t(
+			"Explore cash flows, payoff distributions and comparison evidence.",
+			"探索资金流、盈亏分布与比较证据。",
+		),
+	},
+	sources: [
+		{
+			title: "Investor.gov · Assessing your performance",
+			href: "https://www.investor.gov/introduction-investing/investing-basics/assessing-your-performance",
+		},
+	],
+	explanation: t(
+		"Account value can rise because of deposits, not investment returns. Time-weighted return chains subperiod returns separated at external cash flows, under a specified valuation convention. A benchmark needs comparable dates, currency, fees and price-versus-total-return treatment. Win rate counts profitable closed trades; average win/loss and profit factor measure different aspects. A high win rate can coexist with losses if losses are large. Profit factor is gross gains divided by absolute gross losses and is undefined when its loss denominator is zero under this lesson's convention. FIFO and other lot rules can change realized attribution and closing dates. Symbol attribution and monthly P&L depend on coverage; missing history must not be presented as the entire account's performance.",
+		"账户价值可能因存款上升，而非投资收益。时间加权收益按外部资金流切分子期间，在给定估值约定下连乘。基准比较需匹配日期、币种、费用及价格收益/总收益处理。胜率统计盈利平仓次数，平均盈亏与盈利因子衡量其他方面。若亏损很大，高胜率仍可亏钱。本课盈利因子=总盈利/总亏损绝对值；亏损分母为零时无定义。FIFO 等批次规则会改变已实现归因与平仓日期。标的归因和月度盈亏依赖覆盖，缺失历史不能当作完整账户表现。",
+	),
+	example: t(
+		"Start $1,000, grow to $1,100, deposit $900, then finish at $2,100. First return 10%; after-deposit base $2,000 gives second return 5%; TWR = 1.10×1.05−1 = 15.5%. Balance growth 110% includes the deposit. Four $20 wins and one $100 loss produce 80% win rate but −$20 total P&L and profit factor 0.8.",
+		"初值 $1,000 增至 $1,100，存入 $900，最终 $2,100。首段 10%，存款后基数 $2,000，第二段 5%，TWR=1.10×1.05−1=15.5%。余额增 110% 包含存款。四次各赚 $20、一次亏 $100，胜率 80%，但总亏 $20，盈利因子 0.8。",
+	),
+	misconception: t(
+		"Define trade, return period and cash-flow timing before computing a percentage. Do not confuse win rate with expected profitability.",
+		"计算百分比前定义交易、期间和资金流时点，不能把胜率当作预期盈利能力。",
+	),
+	case: (v) => {
+		const first = [0.1, 0.05, -0.1, 0.08][v];
+		const second = [0.05, -0.02, 0.1, 0.03][v];
+		const wins = [80, 150, 120, 200][v];
+		const loss = [100, 50, 160, 125][v];
+		return {
+			brief: t(
+				`Returns between correctly valued external cash flows: first ${(first * 100).toFixed(0)}%, second ${(second * 100).toFixed(0)}%. Separately, a fully covered closed-trade sample has gross gains $${wins}, gross losses $${loss}.`,
+				`按正确外部资金流估值切分的收益：第一段 ${(first * 100).toFixed(0)}%，第二段 ${(second * 100).toFixed(0)}%。另有完整平仓样本总盈利 $${wins}、总亏损 $${loss}。`,
+			),
+			questions: [
+				n(
+					"twr",
+					"Chained time-weighted return?",
+					"连乘时间加权收益？",
+					((1 + first) * (1 + second) - 1) * 100,
+					"percent",
+					"百分比",
+					"[(1+r1)×(1+r2)−1]×100.",
+					"[(1+r1)×(1+r2)−1]×100。",
+					0.001,
+				),
+				n(
+					"factor",
+					"Profit factor?",
+					"盈利因子？",
+					wins / loss,
+					"ratio",
+					"比率",
+					"Gross gains ÷ absolute gross losses.",
+					"总盈利÷总亏损绝对值。",
+				),
+			],
+		};
+	},
+};
+
+const drawdownPaths = [
+	[10000, 12000, 9000, 11000],
+	[20000, 25000, 21000, 26000, 23400],
+	[8000, 10000, 7000, 9000],
+	[15000, 18000, 16200, 19000, 15200],
+];
+function maxDrawdownPercent(values: readonly number[]) {
+	let peak = values[0] ?? 0;
+	let worst = 0;
+	for (const value of values) {
+		peak = Math.max(peak, value);
+		worst = Math.max(worst, peak > 0 ? (peak - value) / peak : 0);
+	}
+	return Math.round(worst * 10000) / 100;
+}
+
+const performanceUnit: TeachingUnit = {
+	...performanceV2,
+	version: 3,
+	conceptLab: performanceV2.conceptLab && {
+		...performanceV2.conceptLab,
+		intro: t(
+			"Explore cash flows, payoff distributions, comparison evidence and the largest fall from a peak.",
+			"探索资金流、盈亏分布、比较证据，以及相对高点的最大跌幅。",
+		),
+	},
+	explanation: t(
+		`${performanceV2.explanation.en} Maximum drawdown is the largest fall from a running peak in account value, as a percent of that peak. It shows the worst loss a holder would have sat through, which total return and win rate can hide; a 25% fall needs a 33% gain to recover.`,
+		`${performanceV2.explanation.zh}最大回撤是账户价值相对历史高点的最大跌幅，以该高点的百分比表示。它反映持有人曾经承受的最大损失，而总收益与胜率可能掩盖这一点；下跌 25% 需要上涨约 33% 才能回本。`,
+	),
+	example: t(
+		`${performanceV2.example.en} An account that goes $10,000 → $12,000 → $9,000 → $11,000 returns 10% overall but has a 25% maximum drawdown ($3,000 from the $12,000 peak).`,
+		`${performanceV2.example.zh}账户从 $10,000 → $12,000 → $9,000 → $11,000，总收益 10%，但最大回撤为 25%（从 $12,000 高点下跌 $3,000）。`,
+	),
+	misconception: t(
+		`${performanceV2.misconception.en} Measure drawdown from the running peak, not from the starting balance.`,
+		`${performanceV2.misconception.zh}回撤应从历史高点计算，而不是从起始余额计算。`,
+	),
+	case: (variant) => {
+		const base = performanceV2.case(variant);
+		const path = drawdownPaths[variant] ?? drawdownPaths[0];
+		const usd = path.map((value) => `$${value.toLocaleString("en-US")}`);
+		return {
+			...base,
+			questions: [
+				...base.questions,
+				n(
+					"drawdown",
+					`Month-end account values with no deposits or withdrawals: ${usd.join(", ")}. Maximum drawdown from the running peak?`,
+					`无存取款的月末账户价值：${usd.join("、")}。相对历史高点的最大回撤是多少？`,
+					maxDrawdownPercent(path),
+					"percent",
+					"百分比",
+					"Largest (running peak − later value) ÷ running peak × 100. Measure from the highest value so far, not from the start.",
+					"最大的（历史高点 − 其后价值）÷ 历史高点 × 100。应从截至当时的最高价值计算，而不是从起点计算。",
+					0.01,
+				),
+			],
+		};
+	},
+};
+
+/** Earlier portfolio rubrics that saved attempts may still reference. */
+export const archivedPortfolioUnits: TeachingUnit[] = [performanceV2];
+
 export const portfolioUnits: TeachingUnit[] = [
 	{
 		id: "portfolio-pnl",
@@ -71,70 +202,7 @@ export const portfolioUnits: TeachingUnit[] = [
 			};
 		},
 	},
-	{
-		id: "portfolio-performance",
-		conceptLab: {
-			kind: "portfolio-performance",
-			data: performanceConceptData,
-			intro: t(
-				"Explore cash flows, payoff distributions and comparison evidence.",
-				"探索资金流、盈亏分布与比较证据。",
-			),
-		},
-		sources: [
-			{
-				title: "Investor.gov · Assessing your performance",
-				href: "https://www.investor.gov/introduction-investing/investing-basics/assessing-your-performance",
-			},
-		],
-		explanation: t(
-			"Account value can rise because of deposits, not investment returns. Time-weighted return chains subperiod returns separated at external cash flows, under a specified valuation convention. A benchmark needs comparable dates, currency, fees and price-versus-total-return treatment. Win rate counts profitable closed trades; average win/loss and profit factor measure different aspects. A high win rate can coexist with losses if losses are large. Profit factor is gross gains divided by absolute gross losses and is undefined when its loss denominator is zero under this lesson's convention. FIFO and other lot rules can change realized attribution and closing dates. Symbol attribution and monthly P&L depend on coverage; missing history must not be presented as the entire account's performance.",
-			"账户价值可能因存款上升，而非投资收益。时间加权收益按外部资金流切分子期间，在给定估值约定下连乘。基准比较需匹配日期、币种、费用及价格收益/总收益处理。胜率统计盈利平仓次数，平均盈亏与盈利因子衡量其他方面。若亏损很大，高胜率仍可亏钱。本课盈利因子=总盈利/总亏损绝对值；亏损分母为零时无定义。FIFO 等批次规则会改变已实现归因与平仓日期。标的归因和月度盈亏依赖覆盖，缺失历史不能当作完整账户表现。",
-		),
-		example: t(
-			"Start $1,000, grow to $1,100, deposit $900, then finish at $2,100. First return 10%; after-deposit base $2,000 gives second return 5%; TWR = 1.10×1.05−1 = 15.5%. Balance growth 110% includes the deposit. Four $20 wins and one $100 loss produce 80% win rate but −$20 total P&L and profit factor 0.8.",
-			"初值 $1,000 增至 $1,100，存入 $900，最终 $2,100。首段 10%，存款后基数 $2,000，第二段 5%，TWR=1.10×1.05−1=15.5%。余额增 110% 包含存款。四次各赚 $20、一次亏 $100，胜率 80%，但总亏 $20，盈利因子 0.8。",
-		),
-		misconception: t(
-			"Define trade, return period and cash-flow timing before computing a percentage. Do not confuse win rate with expected profitability.",
-			"计算百分比前定义交易、期间和资金流时点，不能把胜率当作预期盈利能力。",
-		),
-		case: (v) => {
-			const first = [0.1, 0.05, -0.1, 0.08][v];
-			const second = [0.05, -0.02, 0.1, 0.03][v];
-			const wins = [80, 150, 120, 200][v];
-			const loss = [100, 50, 160, 125][v];
-			return {
-				brief: t(
-					`Returns between correctly valued external cash flows: first ${(first * 100).toFixed(0)}%, second ${(second * 100).toFixed(0)}%. Separately, a fully covered closed-trade sample has gross gains $${wins}, gross losses $${loss}.`,
-					`按正确外部资金流估值切分的收益：第一段 ${(first * 100).toFixed(0)}%，第二段 ${(second * 100).toFixed(0)}%。另有完整平仓样本总盈利 $${wins}、总亏损 $${loss}。`,
-				),
-				questions: [
-					n(
-						"twr",
-						"Chained time-weighted return?",
-						"连乘时间加权收益？",
-						((1 + first) * (1 + second) - 1) * 100,
-						"percent",
-						"百分比",
-						"[(1+r1)×(1+r2)−1]×100.",
-						"[(1+r1)×(1+r2)−1]×100。",
-						0.001,
-					),
-					n(
-						"factor",
-						"Profit factor?",
-						"盈利因子？",
-						wins / loss,
-						"ratio",
-						"比率",
-						"Gross gains ÷ absolute gross losses.",
-						"总盈利÷总亏损绝对值。",
-					),
-				],
-			};
-		},
-	},
+	performanceUnit,
 	{
 		id: "portfolio-exposure",
 		conceptLab: {

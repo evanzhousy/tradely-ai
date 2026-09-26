@@ -4,6 +4,7 @@ import { optionContractsV2 } from "../units/archive/option-contracts-v2.server";
 import { unitScenarios } from "../units/authoring.server";
 import { archivedFoundationV4Units } from "../units/foundation-revision.server";
 import { teachingUnits } from "../units/index.server";
+import { archivedPortfolioUnits } from "../units/portfolio.server";
 import { contractNeighborhoodScenarios } from "./contract-neighborhood";
 import { metricLensScenarios } from "./metric-lenses";
 import { optionPrintScenarios } from "./option-print";
@@ -13,6 +14,7 @@ import { sessionFlowScenarios } from "./session-flow";
 const archivedScenarios = [
 	...archivedFoundationUnits.flatMap((unit) => unitScenarios(unit)),
 	...archivedFoundationV4Units.flatMap((unit) => unitScenarios(unit)),
+	...archivedPortfolioUnits.flatMap((unit) => unitScenarios(unit)),
 	...unitScenarios(optionContractsV2),
 	...optionPrintScenarios,
 	...contractNeighborhoodScenarios,

@@ -24,7 +24,13 @@ import { LessonNavigation } from "@/components/lesson-navigation";
 import { SignInLink } from "@/components/sign-in-link";
 import { TradingFlowLab } from "@/components/tradingflow-lab";
 import { LessonVideo } from "@/components/video-player";
-import { getLesson, getNextLesson, getPreviousLesson } from "@/content/course";
+import {
+	getBranchChoices,
+	getLesson,
+	getNextLesson,
+	getPreviousLesson,
+} from "@/content/course";
+import { coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
 import { CheckYourself } from "@/features/learning/check-yourself";
@@ -129,6 +135,7 @@ function LessonPage() {
 	);
 	const previous = getPreviousLesson(lessonSlug);
 	const next = getNextLesson(lessonSlug);
+	const branches = getBranchChoices(lessonSlug);
 	const history = progress.learning.lessons[lesson.id];
 	const histories = [history?.latest, history?.earlier].filter(
 		(item) => !!item,
@@ -294,7 +301,13 @@ function LessonPage() {
 							) : (
 								<span />
 							)}
-							{next ? (
+							{branches ? (
+								<span className="text-muted-foreground text-sm">
+									{locale === "zh"
+										? "核心路径已完成，选择一个深入分支："
+										: "Core path complete. Choose a deeper branch:"}
+								</span>
+							) : next ? (
 								<Link
 									to="/learn/$lessonSlug"
 									params={{ lessonSlug: next.slug }}
@@ -313,6 +326,27 @@ function LessonPage() {
 								</Link>
 							)}
 						</nav>
+						{branches ? (
+							<nav
+								className="flex flex-wrap gap-3"
+								aria-label={locale === "zh" ? "深入分支" : "Deeper branches"}
+							>
+								{branches.map(({ path, lesson: first }) => (
+									<Link
+										key={path}
+										to="/learn/$lessonSlug"
+										params={{ lessonSlug: first.slug }}
+										search={{}}
+										className={buttonVariants({
+											variant: path === "models" ? "default" : "outline",
+										})}
+									>
+										{coursePaths[path][locale]}
+										<ArrowRightIcon data-icon="inline-end" />
+									</Link>
+								))}
+							</nav>
+						) : null}
 					</section>
 					<DisclosurePanel
 						id="lesson-notes"

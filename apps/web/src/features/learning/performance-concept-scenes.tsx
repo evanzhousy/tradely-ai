@@ -583,3 +583,171 @@ export function PerformanceEvidenceScene({ locale }: Props) {
 		/>
 	);
 }
+
+/** Authored lowest month-end values; the path always starts at $10,000, peaks at $12,000 and ends at $11,000. */
+const drawdownTroughs: readonly number[] = [10800, 9000, 8400];
+function maxDrawdown(values: readonly number[]) {
+	let peak = values[0] ?? 0;
+	let peakIndex = 0;
+	let worst = { fraction: 0, peakIndex: 0, troughIndex: 0 };
+	values.forEach((value, i) => {
+		if (value > peak) {
+			peak = value;
+			peakIndex = i;
+		}
+		const fraction = peak > 0 ? (peak - value) / peak : 0;
+		if (fraction > worst.fraction)
+			worst = { fraction, peakIndex, troughIndex: i };
+	});
+	return worst;
+}
+
+export function DrawdownScene({ locale }: Props) {
+	const l = copy(locale);
+	const motion = useLessonMotion();
+	const [trough, setTrough] = useGuidedState(10800, drawdownTroughs);
+	const values = [10000, 12000, trough, 11000];
+	const drawdown = maxDrawdown(values);
+	const peakValue = values[drawdown.peakIndex] ?? 0;
+	const troughValue = values[drawdown.troughIndex] ?? 0;
+	const totalReturn = (values[3] ?? 0) / (values[0] ?? 1) - 1;
+	const recovery = troughValue > 0 ? peakValue / troughValue - 1 : null;
+	const runningPeak = values.map((_, i) => Math.max(...values.slice(0, i + 1)));
+	const x = (i: number) => 70 + i * 80;
+	const y = (value: number) => 50 + ((13000 - value) / 6000) * 200;
+	const usd = (value: number) => `$${value.toLocaleString("en-US")}`;
+	const months = [
+		l("Start", "起点"),
+		l("M1", "第1月"),
+		l("M2", "第2月"),
+		l("End", "期末"),
+	];
+	const path = (series: readonly number[]) =>
+		series.map((v, i) => `${i === 0 ? "M" : "L"}${x(i)} ${y(v)}`).join(" ");
+	return (
+		<SceneLayout
+			diagram={
+				<Diagram
+					label={l(
+						"Month-end account values with the running peak and the largest fall from it",
+						"月末账户价值、历史高点与相对高点的最大跌幅",
+					)}
+					height={320}
+				>
+					{[8000, 10000, 12000].map((value) => (
+						<g key={value}>
+							<path d={`M60 ${y(value)}H320`} className="contract-svg-line" />
+							<text
+								x="54"
+								y={y(value) + 4}
+								textAnchor="end"
+								className="contract-svg-muted"
+							>
+								{value / 1000}k
+							</text>
+						</g>
+					))}
+					<path
+						d={path(runningPeak)}
+						className="diagram-reference"
+						data-drawdown-peak
+					/>
+					<path d={path(values)} className="contract-svg-active-line" />
+					{drawdown.fraction > 0 ? (
+						<m.path
+							key={`${drawdown.peakIndex}:${drawdown.troughIndex}:${troughValue}`}
+							d={`M${x(drawdown.troughIndex)} ${y(peakValue)}V${y(troughValue)}`}
+							className="diagram-loss"
+							initial={{ pathLength: motion ? 0 : 1 }}
+							animate={{ pathLength: 1 }}
+							transition={lessonTransition}
+						/>
+					) : null}
+					{values.map((value, i) => (
+						<g key={months[i]}>
+							<circle
+								cx={x(i)}
+								cy={y(value)}
+								r="5"
+								fill={
+									i === drawdown.troughIndex && drawdown.fraction > 0
+										? "var(--diagram-loss)"
+										: "var(--card)"
+								}
+								stroke="var(--foreground)"
+								strokeWidth="2"
+							/>
+							<SvgText x={x(i)} y={284} muted>
+								{months[i]}
+							</SvgText>
+						</g>
+					))}
+					{drawdown.fraction > 0 ? (
+						<SvgText x={x(drawdown.troughIndex) + 34} y={y(troughValue) + 22}>
+							−{n(drawdown.fraction * 100)}%
+						</SvgText>
+					) : null}
+				</Diagram>
+			}
+			outcome={
+				<SceneOutcome
+					locale={locale}
+					items={[
+						{
+							id: "return",
+							label: l("Total return", "总收益"),
+							value: `+${n(totalReturn * 100)}%`,
+							tone: "gain",
+						},
+						{
+							id: "drawdown",
+							label: l("Maximum drawdown", "最大回撤"),
+							value: `−${n(drawdown.fraction * 100)}%`,
+							tone: "loss",
+						},
+						{
+							id: "range",
+							label: l("Peak → trough", "高点 → 低点"),
+							value: `${usd(peakValue)} → ${usd(troughValue)}`,
+						},
+						{
+							id: "recovery",
+							label: l("Gain needed to recover", "回到高点所需涨幅"),
+							value:
+								recovery === null
+									? null
+									: `+${n(Math.round(recovery * 1000) / 10)}%`,
+						},
+					]}
+				/>
+			}
+			controls={
+				<RangeControl
+					label={l("Lowest month-end value", "最低月末价值")}
+					value={trough}
+					display={usd(trough)}
+					min={8000}
+					max={11800}
+					step={100}
+					onChange={setTrough}
+				/>
+			}
+			details={
+				<>
+					<p className="text-muted-foreground text-sm leading-7">
+						{l(
+							"Maximum drawdown = the largest (running peak − later value) ÷ running peak. Measure it from the highest value reached so far, not from the starting balance, and remove deposits and withdrawals first, as in the time-weighted return scene.",
+							"最大回撤 = 最大的（历史高点 − 其后价值）÷ 历史高点。应从截至当时的最高价值计算，而不是从起始余额计算，并先剔除存取款，做法与时间加权收益场景相同。",
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs leading-6">
+						{l(
+							"Synthetic month-end values with no deposits or withdrawals. Month-end checkpoints can miss a deeper fall inside a month.",
+							"模拟月末价值，无存取款。月末检查点可能遗漏月内更深的下跌。",
+						)}
+					</p>
+				</>
+			}
+		/>
+	);
+}

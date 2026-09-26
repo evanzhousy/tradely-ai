@@ -15,16 +15,19 @@ const scenes = [
 	{
 		id: "cutoff",
 		label: ["Respect the cutoff", "遵守截止"],
-		title: ["An old event can be new information", "旧事件可以是新信息"],
+		title: [
+			"Use only what was known at the decision time",
+			"只用决策时已知的信息",
+		],
 		prompt: [
-			"Move the decision cutoff. Compare event and receipt clocks, and inspect which revision is usable.",
-			"移动决策截止，比较事件与接收时钟，检查可用版本。",
+			"Apply the event and receipt clocks from the source-clock lesson: move the decision cutoff and see which revision was usable then.",
+			"运用来源时钟一课的事件与接收时间：移动决策截止点，看看当时可用的是哪个版本。",
 		],
 		steps: teachingSteps(
 			[
 				[
-					"Records enter the replay when received, not merely when their event occurred.",
-					"记录在被收到时进入回放，而不只是按事件发生时间进入。",
+					"A backtest may use only records received before its decision cutoff, even when the event itself happened earlier.",
+					"回测只能使用在决策截止前已收到的记录，即使事件本身发生得更早。",
 				],
 			],
 			[

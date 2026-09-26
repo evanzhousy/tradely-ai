@@ -32,6 +32,11 @@ function CoursePage() {
 		(lesson) => !studiedIds.has(lesson.id),
 	);
 	const startLesson = nextUnstudied ?? course.lessons[0];
+	const coreLessonCount = course.lessons.filter(
+		(lesson) =>
+			courseModules.find((module) => module.id === lesson.moduleId)?.path ===
+			"core",
+	).length;
 	const continuing =
 		!progress.unavailable &&
 		progress.signedIn &&
@@ -107,19 +112,20 @@ function CoursePage() {
 						<dt>{locale === "zh" ? "学习模块" : "Learning modules"}</dt>
 						<dd>{courseModules.length}</dd>
 					</div>
-					<div>
-						<dt>{t("home.statMinutes")}</dt>
-						<dd>
-							{course.lessons.reduce((sum, lesson) => sum + lesson.minutes, 0)}
-						</dd>
-					</div>
 				</dl>
 			</PageIntro>
-			<p className="text-muted-foreground text-sm">
-				{locale === "zh"
-					? "核心路径：合约 → 成交 → 成交流 → 比较研究 → 研究产出。定价与模型、组合为扩展路径。先修提示是学习建议，不新增访问锁。"
-					: "Core path: contracts → execution → flow → research → written output. Pricing/models and portfolios form deeper branches. Prerequisites guide learning; they do not add access locks."}
-			</p>
+			<div className="flex flex-col gap-2 text-muted-foreground text-sm">
+				<p>
+					{locale === "zh"
+						? `核心路径（第 1–${coreLessonCount} 课）：合约 → 成交 → 成交流 → 比较研究 → 研究产出。之后是两个可按任意顺序学习的深入分支：希腊值、波动率与市场结构，以及投资组合。先修提示是学习建议，不新增访问锁。`
+						: `Core path (lessons 1–${coreLessonCount}): contracts → execution → flow → research → written output. Then two deeper branches, in either order: Greeks, volatility and market structure, and portfolios. Prerequisites guide learning; they do not add access locks.`}
+				</p>
+				<p>
+					{locale === "zh"
+						? "本课程教你读懂并核实期权数据，不告诉你该做哪笔交易或承担多少风险。"
+						: "This course teaches you to read and check options data. It does not tell you which trades to place or how much to risk."}
+				</p>
+			</div>
 			<CourseCatalog
 				learning={progress.learning}
 				groupByModule

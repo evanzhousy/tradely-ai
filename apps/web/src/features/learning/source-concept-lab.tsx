@@ -3,7 +3,6 @@ import type { Locale } from "@/i18n/messages";
 import { ConceptLab, type ConceptScene } from "./concept-lab";
 import {
 	SourceClocksScene,
-	SourceCohortScene,
 	SourceData,
 	SourceRequirementScene,
 } from "./source-concept-scenes";
@@ -55,32 +54,6 @@ const scenes = [
 			],
 		),
 		Component: SourceRequirementScene,
-	},
-	{
-		id: "cohort",
-		label: ["Track the same series", "追踪相同序列"],
-		title: [
-			"A rolling label can hide changing members",
-			"滚动标签可隐藏成员变化",
-		],
-		prompt: [
-			"Replay two reports. Compare fixed series with a rolling DTE window, then withhold a later value.",
-			"回放两份报告，比较固定序列与滚动 DTE 窗口，再隐藏一个后期数值。",
-		],
-		steps: teachingSteps(
-			[
-				[
-					"Changing membership can change a rolling subtotal even when individual records stay fixed.",
-					"即使单条记录不变，成员变动也能改变滚动小计。",
-				],
-			],
-			[
-				["Read first report", "读取第一份报告"],
-				["Replay second report", "回放第二份报告"],
-				["Separate membership change", "区分成员变化"],
-			],
-		),
-		Component: SourceCohortScene,
 	},
 ] as const satisfies readonly ConceptScene[];
 export function SourceConceptLab({

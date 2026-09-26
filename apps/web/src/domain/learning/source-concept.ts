@@ -1,5 +1,3 @@
-import type { CohortSeries } from "./oi-concept";
-
 type Copy = readonly [string, string];
 export type SourceValue =
 	| { state: "observed"; value: number }
@@ -41,14 +39,6 @@ export type SourceConceptData = {
 		asOf: string;
 		requirements: readonly [SourceRequirement, ...SourceRequirement[]];
 		records: readonly [SourceRecord, ...SourceRecord[]];
-	};
-	cohort: {
-		scope: string;
-		reportDates: readonly [string, string];
-		dteRange: readonly [number, number];
-		series: readonly CohortSeries[];
-		expiredId: string;
-		retainedId: string;
 	};
 };
 export function observeSourceClock(

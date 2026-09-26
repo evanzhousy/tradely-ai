@@ -6,12 +6,7 @@ import {
 import { FieldGroup } from "@tradely/ui/components/field";
 import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
-import { createContext, type ReactNode, useContext, useState } from "react";
-import {
-	type CohortMode,
-	cohortMembers,
-	compareCohorts,
-} from "@/domain/learning/oi-concept";
+import { createContext, useContext, useState } from "react";
 import {
 	auditSource,
 	observeSourceClock,
@@ -19,7 +14,6 @@ import {
 } from "@/domain/learning/source-concept";
 import type { Locale } from "@/i18n/messages";
 import {
-	ChoiceField,
 	Diagram,
 	PlaybackButton,
 	SceneLayout,
@@ -45,10 +39,6 @@ const copy = (locale: Locale) => (en: string, zh: string) =>
 	locale === "zh" ? zh : en;
 const number = (value: number | null) =>
 	value === null ? "—" : value.toLocaleString("en-US");
-const signed = (value: number | null) =>
-	value === null
-		? "—"
-		: `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toLocaleString("en-US")}`;
 const time = (minute: number) =>
 	`${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
 
@@ -441,248 +431,6 @@ export function SourceRequirementScene({ locale }: Props) {
 							"即使存在更新已完成时段，选定历史日期也不会改变。这是在所示查看时刻进行的回顾来源审计，不声称之后接收的数据在历史当时已可用。",
 						)}
 					</p>
-				</>
-			}
-		/>
-	);
-}
-
-function CohortPosition({
-	x,
-	y,
-	moving,
-	children,
-}: {
-	x: number;
-	y: number;
-	moving: boolean;
-	children: ReactNode;
-}) {
-	// Native geometry stays correct without animation features and during direct input.
-	if (!moving) return <g transform={`translate(${x} ${y})`}>{children}</g>;
-	return (
-		<m.g initial={false} animate={{ x, y }} transition={lessonTransition}>
-			{children}
-		</m.g>
-	);
-}
-
-export function SourceCohortScene({ locale }: Props) {
-	const { cohort } = useSourceData();
-	const l = copy(locale);
-	const motion = useLessonMotion();
-	const [mode, setMode] = useState<CohortMode>("rolling");
-	const [visibility, setVisibility] = useState("all");
-	const playback = useFrames(2);
-	const report = playback.frame as 0 | 1;
-	const hiddenId =
-		visibility === "expired"
-			? cohort.expiredId
-			: visibility === "retained"
-				? cohort.retainedId
-				: null;
-	const series = cohort.series.map((s) => ({
-		...s,
-		oi: [s.oi[0], s.id === hiddenId ? null : s.oi[1]] as const,
-	}));
-	const comparison = compareCohorts(series, cohort.dteRange, mode);
-	const included = new Set(
-		cohortMembers(series, cohort.dteRange, mode, report).map((s) => s.id),
-	);
-	const changed = comparison.entered.length > 0 || comparison.exited.length > 0;
-	return (
-		<SceneLayout
-			diagram={
-				<Diagram
-					label={l(
-						"Exact expiry series move into or out of the cohort",
-						"实际到期序列进出比较集合",
-					)}
-					height={485}
-				>
-					<SvgText x={180} y={25}>
-						{cohort.reportDates[report]}
-					</SvgText>
-					<SvgText x={95} y={57} muted>
-						{l("Included", "纳入")}
-					</SvgText>
-					<SvgText x={265} y={57} muted>
-						{l("Outside", "范围外")}
-					</SvgText>
-					<path
-						d="M180 68V348"
-						className="contract-svg-line"
-						strokeDasharray="4 4"
-					/>
-					{series.map((s, i) => (
-						<CohortPosition
-							key={s.id}
-							x={included.has(s.id) ? 15 : 185}
-							y={76 + i * 92}
-							moving={playback.playing && motion}
-						>
-							<rect
-								width="160"
-								height="78"
-								rx="10"
-								className={
-									included.has(s.id)
-										? "contract-svg-wash"
-										: "contract-svg-paper"
-								}
-							/>
-							<SvgText x={80} y={22}>
-								{s.id} · {s.expiry.slice(5)}
-							</SvgText>
-							<SvgText x={80} y={46} muted>
-								{s.dte[report] < 0
-									? l("Expired", "已到期")
-									: `${s.dte[report]} DTE`}
-							</SvgText>
-							<SvgText x={80} y={68}>
-								OI {number(s.oi[report])}
-							</SvgText>
-						</CohortPosition>
-					))}
-					<path d="M40 388H320" className="contract-svg-line" />
-					<m.circle
-						initial={false}
-						cx={40 + report * 280}
-						cy="388"
-						r="10"
-						animate={{ cx: 40 + report * 280 }}
-						transition={
-							playback.playing && motion ? lessonTransition : instantTransition
-						}
-						className="contract-svg-handle"
-					/>
-					<foreignObject x="20" y="348" width="320" height="80">
-						<RangeSlider
-							type="range"
-							className="contract-range contract-svg-range"
-							aria-label={l("Cohort report timeline", "比较集合报告时间轴")}
-							aria-valuetext={cohort.reportDates[report]}
-							min={0}
-							max={1}
-							step={1}
-							value={report}
-							onPointerDown={() => playback.select(report)}
-							onKeyDown={() => playback.select(report)}
-							onChange={(e) => playback.select(Number(e.target.value))}
-						/>
-					</foreignObject>
-					<g data-source-cohort-total>
-						<SvgText x={180} y={448} strong>
-							{number(report === 0 ? comparison.first : comparison.second)}{" "}
-							{l("contracts", "张")}
-						</SvgText>
-					</g>
-					<SvgText x={180} y={475} muted>
-						{l("Selected cohort only", "仅选定集合")}
-					</SvgText>
-				</Diagram>
-			}
-			controls={
-				<>
-					<FieldGroup>
-						<ChoiceField
-							label={l("Membership rule", "成员规则")}
-							value={mode}
-							options={[
-								["rolling", l("Rolling DTE", "滚动 DTE")],
-								["fixed", l("Fixed series", "固定序列")],
-							]}
-							onChange={setMode}
-						/>
-						<SelectField
-							label={l("Visible report", "所看报告")}
-							value={String(report)}
-							options={cohort.reportDates.map((date, i) => [String(i), date])}
-							onChange={(value) => playback.select(Number(value))}
-						/>
-						<SelectField
-							label={l("Later report visibility", "后期报告可见性")}
-							value={visibility}
-							options={[
-								["all", l("All supplied values", "全部给定数值")],
-								["expired", l("Withhold expired series A", "隐藏到期序列 A")],
-								["retained", l("Withhold retained series B", "隐藏保留序列 B")],
-							]}
-							onChange={setVisibility}
-						/>
-					</FieldGroup>
-					<PlaybackButton
-						playing={playback.playing}
-						onClick={playback.toggle}
-						l={l}
-					/>
-				</>
-			}
-			details={
-				<>
-					<p className="font-mono text-muted-foreground text-xs">
-						{cohort.scope}
-						<br />
-						{l("Entry rule", "初始规则")}: {cohort.dteRange.join("–")} DTE
-						<br />
-						{cohort.reportDates.join(" → ")}
-					</p>
-					<div className="grid grid-cols-2 gap-3 text-sm">
-						<p data-source-before>
-							{l("Earlier total", "早期合计")}
-							<br />
-							<strong>{number(comparison.first)}</strong>
-						</p>
-						<p data-source-after>
-							{l("Later total", "后期合计")}
-							<br />
-							<strong>{number(comparison.second)}</strong>
-						</p>
-						<p data-source-delta>
-							{l("Total difference", "合计差额")}
-							<br />
-							<strong>{signed(comparison.delta)}</strong>
-						</p>
-						<p data-source-membership>
-							{l("Same members?", "相同成员？")}
-							<br />
-							<strong>{changed ? l("No", "否") : l("Yes", "是")}</strong>
-						</p>
-					</div>
-					<div className="space-y-1 text-sm" data-source-decomposition>
-						<p>
-							{l("Retained-series change", "保留序列变化")}:{" "}
-							{signed(comparison.retainedChange)}
-						</p>
-						<p>
-							{l("Entering OI", "新增成员 OI")}: {number(comparison.entryOi)}
-						</p>
-						<p>
-							{l("Exiting OI", "退出成员 OI")}: {number(comparison.exitOi)}
-						</p>
-						<p className="text-muted-foreground text-xs">
-							{l(
-								"Difference = retained change + entering OI − exiting OI",
-								"差额 = 保留序列变化 + 新增成员 OI − 退出成员 OI",
-							)}
-						</p>
-					</div>
-					<Alert role="note">
-						<AlertTitle>
-							{changed
-								? l(
-										"Same DTE label, different contracts",
-										"相同 DTE 标签，不同合约",
-									)
-								: l("Follow the original series", "追踪原始序列")}
-						</AlertTitle>
-						<AlertDescription>
-							{l(
-								"Fixed membership keeps A and B even after A expires. The supplied later A report explicitly says zero; expiry alone is not permission to fill missing data with zero. Withhold a value to see which comparison becomes unavailable. Rolling totals can change because members enter or exit, and neither total identifies opening trades or investor intent.",
-								"固定成员保留 A 与 B，即使 A 已到期。给定后期 A 报告明确为零；到期本身不允许把缺失填零。隐藏一个值，观察哪些比较不可用。滚动合计可因成员进出而改变，任何合计都不能识别开仓成交或投资者意图。",
-							)}
-						</AlertDescription>
-					</Alert>
 				</>
 			}
 		/>

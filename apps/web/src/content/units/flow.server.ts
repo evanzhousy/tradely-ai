@@ -325,8 +325,8 @@ export const flowUnits: TeachingUnit[] = [
 			kind: "symbol-drawer",
 			data: sourceConceptData,
 			intro: t(
-				"Replay event and receipt clocks, audit each source against a stated requirement, and follow exact expiry-series membership across reports.",
-				"回放事件与接收时钟，对照声明要求审计各来源，并跨报告追踪实际到期序列成员。",
+				"Replay event and receipt clocks, then audit each source against a stated requirement. The volume and open-interest lesson already showed how a rolling expiry bucket can change members.",
+				"回放事件与接收时钟，再对照声明要求审计各来源。成交量与未平仓量一课已展示滚动到期桶如何改变成员。",
 			),
 		},
 		sources: [oi, quotes],

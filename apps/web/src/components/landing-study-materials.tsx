@@ -70,7 +70,7 @@ export function LandingStudyMaterials({ lesson }: { lesson: Lesson }) {
 					))}
 				</div>
 				<span className="landing-note-time">
-					{t("common.minutes", { minutes: lesson.minutes })} <span>↗</span>
+					{t("common.free")} <span>↗</span>
 				</span>
 			</div>
 			<TradelyAvatar />

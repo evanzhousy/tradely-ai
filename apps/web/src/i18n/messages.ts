@@ -56,9 +56,9 @@ const messages = {
 		"home.pathOneDescription":
 			"Understand contracts, quotes, trades, side and sentiment before interpreting flow.",
 		"home.pathTwoDescription":
-			"Calculate Greeks and normalized exposure; interpret volatility and structural models.",
+			"Ask an answerable question, compare fairly, then build and audit a research packet.",
 		"home.pathThreeDescription":
-			"Build and audit a research packet, then explore portfolio risk and performance.",
+			"Two optional branches: Greeks, volatility and market structure, and your own portfolio's risk and performance.",
 		"hall.sceneLabel": "Inside the Tradely trading hall",
 		"hall.simulation": "Trading hall · Simulated market data",
 		"hall.observeLabel": "Read the data",
@@ -79,17 +79,17 @@ const messages = {
 		"home.intro":
 			"A guided path through options flow, market structure, and evidence. Start with contracts and executions, then build toward independent research.",
 		"home.startFree": "Start learning",
-		"home.freeNote": "{minutes} minutes · No account or payment required",
+		"home.freeNote": "Free · No account or payment required",
 		"home.explore": "Explore the curriculum",
 		"home.pauseMotion": "Pause motion",
 		"home.resumeMotion": "Resume motion",
 		"home.observe": "Observe",
 		"home.question": "Question",
 		"home.verify": "Verify",
-		"home.pathLabel": "A connected research process",
-		"home.pathOne": "Define your question",
-		"home.pathTwo": "Inspect the evidence",
-		"home.pathThree": "Build your research",
+		"home.pathLabel": "A core path, then two deeper branches",
+		"home.pathOne": "Read contracts, trades and flow",
+		"home.pathTwo": "Build and audit research",
+		"home.pathThree": "Go deeper",
 		"home.features.label": "Built around your learning",
 		"home.features.title": "See the idea. Follow the change.",
 		"home.features.description":
@@ -245,7 +245,7 @@ const messages = {
 		"home.partnerDescription":
 			"Learn concepts and save your progress in Tradely. Apply them through guided Recipes in TradingFlow, our partner research platform.",
 		"home.statLessons": "Lessons",
-		"home.statMinutes": "Estimated study minutes",
+		"home.statModules": "Learning modules",
 		"home.statPreview": "Free lessons",
 		"home.statProgress": "Marked as studied",
 		"home.statPreviewDetail": "No Tradely membership required",
@@ -261,11 +261,12 @@ const messages = {
 		"course.foundationsTitle": "Free foundations: start here",
 		"course.foundationsDescription":
 			"Learn contracts, rights, premium and settlement in order through diagrams and worked examples. Each lesson ends with an optional check with feedback. No sign-in or payment required.",
-		"course.researchTitle": "Already know the basics? Try a research lesson.",
+		"course.researchTitle":
+			"Comfortable with quotes, trades and open interest? Start the research lessons.",
 		"course.researchDescription":
-			"Three suggested starting points for evidence-led research. Build on the earlier concepts whenever you need a refresher.",
+			"These lessons build on the execution and flow lessons. Revisit those whenever you need a refresher.",
 		"course.foundationCount": "{count} free foundation lessons",
-		"course.researchCount": "{count} optional research previews",
+		"course.researchCount": "{count} research starting points",
 		"complete.signInToSave": "Create a free account to save progress",
 		"complete.previewNote":
 			"Explore the visual lessons freely. Sign in to save study marks across devices.",
@@ -385,9 +386,9 @@ const messages = {
 		"home.pathOneDescription":
 			"先理解合约、报价、交易、成交侧与情绪标签，再解读资金流。",
 		"home.pathTwoDescription":
-			"计算希腊值与归一化敞口，解读波动率和市场结构模型。",
+			"提出可回答的问题、公平比较，再建立并审核研究资料包。",
 		"home.pathThreeDescription":
-			"制作并审查研究资料包，再探索投资组合风险与绩效。",
+			"两个可选分支：希腊值、波动率与市场结构，以及你自己组合的风险与绩效。",
 		"hall.sceneLabel": "走进 Tradely 交易大厅",
 		"hall.simulation": "交易大厅 · 模拟行情",
 		"hall.observeLabel": "读懂数据",
@@ -406,17 +407,17 @@ const messages = {
 		"home.intro":
 			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
 		"home.startFree": "开始学习",
-		"home.freeNote": "{minutes} 分钟 · 无需账户或付费",
+		"home.freeNote": "免费 · 无需账户或付费",
 		"home.explore": "探索课程路径",
 		"home.pauseMotion": "暂停动画",
 		"home.resumeMotion": "继续动画",
 		"home.observe": "观察",
 		"home.question": "提问",
 		"home.verify": "验证",
-		"home.pathLabel": "完整的研究过程",
-		"home.pathOne": "定义研究问题",
-		"home.pathTwo": "检视相关证据",
-		"home.pathThree": "形成研究记录",
+		"home.pathLabel": "一条核心路径，两个深入分支",
+		"home.pathOne": "读懂合约、成交与成交流",
+		"home.pathTwo": "建立并审核研究",
+		"home.pathThree": "继续深入",
 		"home.features.label": "为你的学习而设计",
 		"home.features.title": "看见概念，看懂变化。",
 		"home.features.description":
@@ -559,7 +560,7 @@ const messages = {
 		"home.partnerDescription":
 			"在 Tradely 学习概念并保存进度，在合作研究平台 TradingFlow 中通过 Recipe 引导实践运用所学。",
 		"home.statLessons": "课程数",
-		"home.statMinutes": "预计学习分钟数",
+		"home.statModules": "学习模块",
 		"home.statPreview": "免费课程",
 		"home.statProgress": "已标记学过",
 		"home.statPreviewDetail": "无需账户或付费",
@@ -575,11 +576,11 @@ const messages = {
 		"course.foundationsTitle": "免费基础课程：从这里开始",
 		"course.foundationsDescription":
 			"按顺序通过图解与示例学习合约、权利、权利金与结算；每课末尾都有带反馈的可选自我检查。无需登录或付费。",
-		"course.researchTitle": "已掌握基础？试学研究课程。",
+		"course.researchTitle": "已熟悉报价、成交与未平仓量？从研究课程开始。",
 		"course.researchDescription":
-			"三个推荐的研究起点，需要已有期权知识；可随时免费回看前面的概念。",
+			"这些课程以成交与成交流课程为基础，需要时可随时回看。",
 		"course.foundationCount": "{count} 节免费基础课",
-		"course.researchCount": "{count} 节可选研究试学课",
+		"course.researchCount": "{count} 个研究起点",
 		"complete.signInToSave": "创建免费账户以保存进度",
 		"complete.previewNote": "自由探索视觉课程，登录后可跨设备保存学习标记。",
 		"course.yourProgress": "你的进度",

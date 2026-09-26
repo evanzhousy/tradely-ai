@@ -17,6 +17,7 @@ import { LandingStudyMaterials } from "@/components/landing-study-materials";
 import { LearningProgressCounts } from "@/components/learning-progress";
 import { TradingFlowLabs } from "@/components/tradingflow-lab";
 import { getLearningPath } from "@/content/course";
+import { courseModules } from "@/content/syllabus";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/")({
 	component: HomeComponent,
 });
 
-// Consecutive stages of the existing course, not separate products.
+// The core path, then the two deeper branches, in lesson order.
 const stages = [
 	{
 		start: "option-contracts",
@@ -41,22 +42,22 @@ const stages = [
 		imageWidth: 1402,
 	},
 	{
-		start: "delta",
-		end: "charm-vanna",
+		start: "audited-boundary",
+		end: "audit-market-recap",
 		title: "home.pathTwo",
 		description: "home.pathTwoDescription",
-		icon: ScanLineIcon,
-		image: "owl-greeks-explorer-purple",
-		imageWidth: 1162,
-	},
-	{
-		start: "audited-boundary",
-		end: "portfolio-exposure",
-		title: "home.pathThree",
-		description: "home.pathThreeDescription",
 		icon: WorkflowIcon,
 		image: "owl-research-process-purple",
 		imageWidth: 1192,
+	},
+	{
+		start: "delta",
+		end: "portfolio-exposure",
+		title: "home.pathThree",
+		description: "home.pathThreeDescription",
+		icon: ScanLineIcon,
+		image: "owl-greeks-explorer-purple",
+		imageWidth: 1162,
 	},
 ] as const;
 
@@ -67,10 +68,6 @@ function HomeComponent() {
 	const course = getLocalizedCourse(locale);
 	const freeLessons = course.lessons;
 	const startLesson = getLearningPath(course.lessons, "foundations")[0];
-	const totalMinutes = course.lessons.reduce(
-		(sum, lesson) => sum + lesson.minutes,
-		0,
-	);
 	const previewCount = freeLessons.length;
 	return (
 		<main ref={landingRef} className="observatory landing-notebook">
@@ -109,7 +106,7 @@ function HomeComponent() {
 						</div>
 						<p className="landing-free-note">
 							{startLesson
-								? t("home.freeNote", { minutes: startLesson.minutes })
+								? t("home.freeNote")
 								: t("course.freeLessons", { count: previewCount })}
 						</p>
 					</div>
@@ -124,8 +121,8 @@ function HomeComponent() {
 						</div>
 						<div className="desk-stat">
 							<p className="desk-stat-value">
-								{totalMinutes}
-								<span>{t("home.statMinutes")}</span>
+								{courseModules.length}
+								<span>{t("home.statModules")}</span>
 							</p>
 						</div>
 						<div className="desk-stat">

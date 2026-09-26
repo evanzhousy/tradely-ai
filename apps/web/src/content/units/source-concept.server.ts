@@ -121,16 +121,4 @@ export const sourceConceptData: SourceConceptData = {
 			},
 		],
 	},
-	cohort: {
-		scope: "ALFA $100 CALL · expiry series",
-		reportDates: ["2030-09-06", "2030-09-20"],
-		dteRange: [0, 30],
-		series: [
-			{ id: "A", expiry: "2030-09-13", dte: [7, -7], oi: [600, 0] },
-			{ id: "B", expiry: "2030-09-27", dte: [21, 7], oi: [1000, 900] },
-			{ id: "C", expiry: "2030-10-18", dte: [42, 28], oi: [1800, 2000] },
-		],
-		expiredId: "A",
-		retainedId: "B",
-	},
 };

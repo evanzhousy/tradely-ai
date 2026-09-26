@@ -9,16 +9,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
-import {
-	ArrowUpRightIcon,
-	CheckIcon,
-	Clock3Icon,
-	PauseIcon,
-	PlayIcon,
-} from "lucide-react";
+import { ArrowUpRightIcon, CheckIcon, PauseIcon, PlayIcon } from "lucide-react";
 import { useId, useState } from "react";
 import { getLearningPath, type Lesson } from "@/content/course";
-import { courseModules } from "@/content/syllabus";
+import { courseModules, coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
 import { useVisualProgress } from "@/features/learning/visual-bookmark";
@@ -105,16 +99,12 @@ export function LandingCurriculum({
 									<p className="text-muted-foreground text-xs">{statusLabel}</p>
 									<p className="curriculum-practice">
 										{locale === "zh"
-											? "动画图解与完整示例"
-											: "Animated diagrams & worked examples"}
+											? "动画图解、完整示例与可选自我检查"
+											: "Animated diagrams, worked examples and an optional check"}
 									</p>
 								</CardContent>
 								<CardFooter className="curriculum-card-footer">
 									<div id={detailId} className="curriculum-card-meta">
-										<span>
-											<Clock3Icon size={13} aria-hidden="true" />
-											{t("common.minutes", { minutes: lesson.minutes })}
-										</span>
 										<span data-access="free">{accessLabel}</span>
 										{isCompleted ? (
 											<span className="curriculum-completed">
@@ -171,8 +161,7 @@ export function LandingCurriculum({
 												<Badge variant="outline">{t("lab.badge")}</Badge>
 											) : null}
 											<span className="text-muted-foreground text-xs">
-												{t("common.free")} ·{" "}
-												{t("common.minutes", { minutes: lesson.minutes })}
+												{t("common.free")}
 											</span>
 										</span>
 										<ArrowUpRightIcon
@@ -216,6 +205,9 @@ export function LandingCurriculum({
 								(lesson) => lesson.moduleId === module.id,
 							);
 							if (!items.length) return null;
+							const startsPath =
+								courseModules.find((item) => item.path === module.path)?.id ===
+								module.id;
 							return (
 								<section
 									key={module.id}
@@ -223,6 +215,14 @@ export function LandingCurriculum({
 									className="curriculum-module"
 									aria-labelledby={`${id}-${module.id}`}
 								>
+									{startsPath ? (
+										<Badge
+											variant={module.path === "core" ? "secondary" : "outline"}
+											className="mb-2"
+										>
+											{coursePaths[module.path][locale]}
+										</Badge>
+									) : null}
 									<div className="curriculum-module-heading">
 										<h2 id={`${id}-${module.id}`}>{module[locale]}</h2>
 										<p>
