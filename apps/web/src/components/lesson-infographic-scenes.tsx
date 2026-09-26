@@ -621,6 +621,33 @@ function Sweep({ l }: Props) {
 		</>
 	);
 }
+function StockQuote({ l }: Props) {
+	return (
+		<>
+			{[
+				[l("Bid", "买价"), "$40.00"],
+				[l("Last", "最新价"), "$40.02"],
+				[l("Ask", "卖价"), "$40.05"],
+			].map(([label, value], i) => (
+				<g key={label}>
+					<Panel x={24 + i * 108} y={58} w={96} h={78} accent={i !== 1} />
+					<Label x={72 + i * 108} y={88} small>
+						{label}
+					</Label>
+					<Label x={72 + i * 108} y={116} strong>
+						{value}
+					</Label>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"Buy now at the ask, sell now at the bid",
+					"立即买入按卖价，立即卖出按买价",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Unusual({ l }: Props) {
 	return (
 		<>
@@ -1518,6 +1545,13 @@ function PortfolioExposure({ l }: Props) {
 }
 
 export const courseCardScenes: Record<string, Scene> = {
+	"stocks-and-prices": {
+		Diagram: StockQuote,
+		description: [
+			"A quote shows a bid of 40.00, a last trade of 40.02 and an ask of 40.05 dollars.",
+			"报价显示买价 40.00、最新成交 40.02、卖价 40.05 美元。",
+		],
+	},
 	"option-contracts": {
 		Diagram: Contract,
 		description: [

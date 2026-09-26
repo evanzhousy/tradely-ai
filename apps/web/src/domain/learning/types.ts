@@ -134,6 +134,7 @@ export type LearningStepView = {
 	hint: LearningCopy | null;
 	/** Ungraded teaching interaction; access follows the lesson authorization. */
 	conceptLab?:
+		| "stocks-and-prices"
 		| "option-contracts"
 		| "option-rights"
 		| "premium-payoff"

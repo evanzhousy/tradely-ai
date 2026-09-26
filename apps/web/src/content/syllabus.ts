@@ -1,5 +1,11 @@
 export const courseModules = [
 	{
+		id: "orientation",
+		path: "start",
+		en: "Markets and options from zero",
+		zh: "从零了解市场与期权",
+	},
+	{
 		id: "contracts",
 		path: "core",
 		en: "Contracts and money",
@@ -50,6 +56,10 @@ export const courseModules = [
 ] as const;
 /** The core path runs in lesson order; the two deeper branches follow it in either order. */
 export const coursePaths = {
+	start: {
+		en: "Start here: no experience needed",
+		zh: "从这里开始：无需任何基础",
+	},
 	core: { en: "Core path", zh: "核心路径" },
 	models: {
 		en: "Deeper branch: Greeks, volatility and structure",
@@ -90,6 +100,15 @@ const lesson = (
 	prerequisites,
 });
 export const syllabus: readonly Entry[] = [
+	lesson(
+		"stocks-and-prices",
+		"orientation",
+		"Stocks and prices: what options are built on",
+		"股票与价格：期权的基础",
+		"Read a stock quote, see why you buy at the ask and sell at the bid, and tell a stock from an ETF and an index.",
+		"读懂股票报价，理解为何按卖价买入、按买价卖出，并分清股票、ETF 与指数。",
+		["C01", "C04"],
+	),
 	lesson(
 		"option-contracts",
 		"contracts",

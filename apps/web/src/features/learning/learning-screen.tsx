@@ -103,6 +103,7 @@ import { SentimentConceptLab } from "./sentiment-concept-lab";
 import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
 import { SourceConceptLab } from "./source-concept-lab";
+import { StockConceptLab } from "./stock-concept-lab";
 import { StrategyConceptLab } from "./strategy-concept-lab";
 import { SurfaceConceptLab } from "./surface-concept-lab";
 import { TapeConceptLab } from "./tape-concept-lab";
@@ -137,6 +138,7 @@ const conceptLabs = {
 	"symbol-drawer": SourceConceptLab,
 	"unusual-activity": ActivityConceptLab,
 	"option-strategies": StrategyConceptLab,
+	"stocks-and-prices": StockConceptLab,
 	"option-contracts": ContractConceptLab,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,

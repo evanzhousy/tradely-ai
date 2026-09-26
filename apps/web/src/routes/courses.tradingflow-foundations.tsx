@@ -32,11 +32,18 @@ function CoursePage() {
 		(lesson) => !studiedIds.has(lesson.id),
 	);
 	const startLesson = nextUnstudied ?? course.lessons[0];
-	const coreLessonCount = course.lessons.filter(
-		(lesson) =>
+	// Lesson numbers per path, derived from the ordered catalog so copy never goes stale.
+	const pathRange = (path: "start" | "core") => {
+		const numbers = course.lessons.flatMap((lesson, index) =>
 			courseModules.find((module) => module.id === lesson.moduleId)?.path ===
-			"core",
-	).length;
+			path
+				? [index + 1]
+				: [],
+		);
+		return numbers.length ? `${numbers[0]}–${numbers.at(-1)}` : null;
+	};
+	const startRange = pathRange("start");
+	const coreRange = pathRange("core");
 	const continuing =
 		!progress.unavailable &&
 		progress.signedIn &&
@@ -117,8 +124,8 @@ function CoursePage() {
 			<div className="flex flex-col gap-2 text-muted-foreground text-sm">
 				<p>
 					{locale === "zh"
-						? `核心路径（第 1–${coreLessonCount} 课）：合约 → 成交 → 成交流 → 比较研究 → 研究产出。之后是两个可按任意顺序学习的深入分支：希腊值、波动率与市场结构，以及投资组合。先修提示是学习建议，不新增访问锁。`
-						: `Core path (lessons 1–${coreLessonCount}): contracts → execution → flow → research → written output. Then two deeper branches, in either order: Greeks, volatility and market structure, and portfolios. Prerequisites guide learning; they do not add access locks.`}
+						? `${startRange ? `完全零基础？从第 ${startRange} 课开始。` : ""}核心路径（第 ${coreRange} 课）：合约 → 成交 → 成交流 → 比较研究 → 研究产出。之后是两个可按任意顺序学习的深入分支：希腊值、波动率与市场结构，以及投资组合。先修提示是学习建议，不新增访问锁。`
+						: `${startRange ? `New to markets and options? Start with lessons ${startRange}. ` : ""}Core path (lessons ${coreRange}): contracts → execution → flow → research → written output. Then two deeper branches, in either order: Greeks, volatility and market structure, and portfolios. Prerequisites guide learning; they do not add access locks.`}
 				</p>
 				<p>
 					{locale === "zh"

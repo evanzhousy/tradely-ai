@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
 // The core path, then the two deeper branches, in lesson order.
 const stages = [
 	{
-		start: "option-contracts",
+		start: "stocks-and-prices",
 		end: "symbol-drawer",
 		title: "home.pathOne",
 		description: "home.pathOneDescription",
