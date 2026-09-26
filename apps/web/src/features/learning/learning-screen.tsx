@@ -84,6 +84,7 @@ import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { OiConceptLab } from "./oi-concept-lab";
 import { OptionBasicsLab } from "./option-basics-lab";
+import { OrderConceptLab } from "./order-concept-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PerformanceConceptLab } from "./performance-concept-lab";
@@ -141,6 +142,7 @@ const conceptLabs = {
 	"option-strategies": StrategyConceptLab,
 	"stocks-and-prices": StockConceptLab,
 	"what-options-are": OptionBasicsLab,
+	"trading-options": OrderConceptLab,
 	"option-contracts": ContractConceptLab,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,

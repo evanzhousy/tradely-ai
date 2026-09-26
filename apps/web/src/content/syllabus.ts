@@ -120,6 +120,16 @@ export const syllabus: readonly Entry[] = [
 		["stocks-and-prices"],
 	),
 	lesson(
+		"trading-options",
+		"orientation",
+		"Trading an option: from chain to order",
+		"交易期权：从期权链到下单",
+		"Find one contract in an option chain, choose between market and limit orders, and see the ways a position ends.",
+		"在期权链中找到一份合约，在市价单与限价单之间做出选择，并了解持仓的几种结束方式。",
+		["C04", "C05"],
+		["what-options-are"],
+	),
+	lesson(
 		"option-contracts",
 		"contracts",
 		"Option contracts: what you are buying",

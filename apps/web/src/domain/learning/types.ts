@@ -136,6 +136,7 @@ export type LearningStepView = {
 	conceptLab?:
 		| "stocks-and-prices"
 		| "what-options-are"
+		| "trading-options"
 		| "option-contracts"
 		| "option-rights"
 		| "premium-payoff"

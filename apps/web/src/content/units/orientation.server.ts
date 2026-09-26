@@ -28,6 +28,8 @@ const oicWhatIsAnOption = {
 };
 
 const dollars = (cents: number) => (cents / 100).toFixed(2);
+const signedUsd = (value: number) =>
+	`${value < 0 ? "−" : ""}$${Math.abs(value).toFixed(2)}`;
 
 export const orientationUnits: TeachingUnit[] = [
 	{
@@ -215,6 +217,110 @@ export const orientationUnits: TeachingUnit[] = [
 						"zero",
 						"Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
 						"没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "trading-options",
+		conceptLab: {
+			kind: "trading-options",
+			intro: t(
+				"Find one contract in an option chain, compare a market order with a limit order in a wide spread, and follow a position from purchase to its end.",
+				"在期权链中找到一份合约，比较价差很宽时的市价单与限价单，并追踪一笔持仓从买入到结束的全过程。",
+			),
+		},
+		sources: [orders, finraOptions, basics],
+		explanation: t(
+			"To trade options you need a brokerage account with options approval. Brokers grant levels of approval, and buying calls and puts usually needs less than writing them. You never trade 'an ALFA option' in general: you choose one contract from the option chain, a table listing each expiration date and strike with a call and a put, each with its own bid and ask. Prices are per share, so multiply by 100 for one contract. A market order buys at whatever the best offer is, which can be far from fair value when the bid-ask spread is wide. A limit order sets the most you will pay (or the least you will accept): it fills at that price or better, or not at all. Most traders end a position by selling it back before expiry; exercising means actually buying (for a call) or selling (for a put) the 100 shares at the strike. Each trade can carry a fee.",
+			"交易期权需要开通期权权限的券商账户。券商会按级别授权，买入看涨和看跌通常比卖出开仓所需的级别低。你不会笼统地交易“ALFA 期权”，而是从期权链中选择一份合约：期权链按到期日和行权价列出每份看涨与看跌合约，各自都有买价和卖价。价格按每股计，所以一张合约要乘以 100。市价单按当时最优卖价成交，价差很宽时可能远离合理价格。限价单设定你愿付的最高价（或愿接受的最低价），只会以该价格或更优价格成交，也可能不成交。多数交易者会在到期前卖出平仓；行权则意味着按行权价真正买入（看涨）或卖出（看跌）100 股。每笔交易都可能收费。",
+		),
+		example: t(
+			"The ALFA Nov 20 105 call shows bid $2.80 and ask $2.95. Buying one at the ask costs $295 plus any fee. A limit order at $2.85 might fill at $2.85 or might not fill at all. If you later sell it back at $3.40, you receive $340 minus the fee.",
+			"ALFA 11 月 20 日 105 看涨显示买价 $2.80、卖价 $2.95。按卖价买入一张需 $295 加费用。限价 $2.85 的买单可能以 $2.85 成交，也可能不成交。若之后以 $3.40 卖出平仓，你收回 $340 减去费用。",
+		),
+		misconception: t(
+			"You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+			"要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。",
+		),
+		case: (v) => {
+			const [ask, contracts] = [
+				[220, 3],
+				[145, 2],
+				[310, 4],
+				[85, 5],
+			][v];
+			const bid = ask - 40;
+			const limit = ask - 20;
+			const [bought, sold] = [
+				[200, 250],
+				[120, 90],
+				[340, 410],
+				[80, 135],
+			][v];
+			const result = ((sold - bought) * 100 * 2) / 100 - 0.65 * 2 * 2;
+			return {
+				brief: t(
+					`An ALFA call shows bid $${dollars(bid)} and ask $${dollars(ask)}. Fees are $0.65 per contract on each trade.`,
+					`某 ALFA 看涨显示买价 $${dollars(bid)}、卖价 $${dollars(ask)}。每笔交易每张合约收费 $0.65。`,
+				),
+				questions: [
+					n(
+						"cost",
+						`Cost to buy ${contracts} contracts at the ask, before fees?`,
+						`按卖价买入 ${contracts} 张的成本（不含费用）？`,
+						(ask * 100 * contracts) / 100,
+						"USD",
+						"美元",
+						`$${dollars(ask)} × 100 × ${contracts} = $${dollars(ask * 100 * contracts)}.`,
+						`$${dollars(ask)} × 100 × ${contracts} = $${dollars(ask * 100 * contracts)}。`,
+						0.01,
+					),
+					c(
+						"limit",
+						`You send a limit buy at $${dollars(limit)}, below the $${dollars(ask)} ask. What happens?`,
+						`你以 $${dollars(limit)} 发出限价买单，低于 $${dollars(ask)} 的卖价。会发生什么？`,
+						[
+							[
+								"waits",
+								`It fills only if a seller accepts $${dollars(limit)} or less, and may not fill at all.`,
+								`只有卖方接受 $${dollars(limit)} 或更低价格时才成交，也可能完全不成交。`,
+							],
+							["ask", "It fills immediately at the ask.", "会立即按卖价成交。"],
+							[
+								"mid",
+								"The exchange fills it at the midpoint.",
+								"交易所会按中间价成交。",
+							],
+						],
+						"waits",
+						"A limit order never pays more than its limit. Below the ask, it waits for a seller.",
+						"限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。",
+					),
+					c(
+						"exit",
+						"You own a call and want out before expiry. What do you usually do?",
+						"你持有一张看涨期权，想在到期前退出。通常怎么做？",
+						[
+							["sell", "Sell the same contract to close", "卖出同一份合约平仓"],
+							["exercise", "Exercise it", "行权"],
+							["wait", "Wait for the broker to close it", "等券商替你平仓"],
+						],
+						"sell",
+						"Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
+						"卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。",
+					),
+					n(
+						"result",
+						`You bought 2 calls at $${dollars(bought)} and later sold both at $${dollars(sold)}. Result after fees?`,
+						`你以 $${dollars(bought)} 买入 2 张看涨，之后以 $${dollars(sold)} 全部卖出。扣除费用后的结果？`,
+						Math.round(result * 100) / 100,
+						"USD; negative for a loss",
+						"美元，亏损填负数",
+						`($${dollars(sold)} − $${dollars(bought)}) × 100 × 2 − $0.65 × 2 contracts × 2 trades = ${signedUsd(result)}.`,
+						`（$${dollars(sold)} − $${dollars(bought)}）× 100 × 2 − $0.65 × 2 张 × 2 笔 = ${signedUsd(result)}。`,
+						0.01,
 					),
 				],
 			};

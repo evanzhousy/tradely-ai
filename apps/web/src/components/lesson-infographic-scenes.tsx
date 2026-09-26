@@ -672,6 +672,33 @@ function OptionRight({ l }: Props) {
 		</>
 	);
 }
+function OptionChain({ l }: Props) {
+	return (
+		<>
+			{["95", "100", "105"].map((strike, i) => (
+				<g key={strike}>
+					<Panel x={30} y={40 + i * 44} w={110} h={34} accent={i === 1} />
+					<Label x={85} y={62 + i * 44} small>
+						{["7.10 / 7.30", "3.60 / 3.75", "1.40 / 1.50"][i]}
+					</Label>
+					<Label x={180} y={62 + i * 44} strong={i === 1}>
+						{strike}
+					</Label>
+					<Panel x={220} y={40 + i * 44} w={110} h={34} />
+					<Label x={275} y={62 + i * 44} small>
+						{["0.95 / 1.05", "2.45 / 2.60", "5.20 / 5.40"][i]}
+					</Label>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"Pick one contract, then name the most you will pay",
+					"选定一份合约，再设定你愿付的最高价",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Unusual({ l }: Props) {
 	return (
 		<>
@@ -1581,6 +1608,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"A call is worth using only when the stock ends above its 100 dollar strike.",
 			"看涨期权只有在股价收在 100 美元行权价之上时才值得行使。",
+		],
+	},
+	"trading-options": {
+		Diagram: OptionChain,
+		description: [
+			"An option chain lists calls and puts by strike, each with its own bid and ask.",
+			"期权链按行权价列出看涨与看跌，每份合约都有自己的买价与卖价。",
 		],
 	},
 	"option-contracts": {
