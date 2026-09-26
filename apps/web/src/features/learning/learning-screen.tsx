@@ -83,6 +83,7 @@ import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { OiConceptLab } from "./oi-concept-lab";
+import { OptionBasicsLab } from "./option-basics-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PerformanceConceptLab } from "./performance-concept-lab";
@@ -139,6 +140,7 @@ const conceptLabs = {
 	"unusual-activity": ActivityConceptLab,
 	"option-strategies": StrategyConceptLab,
 	"stocks-and-prices": StockConceptLab,
+	"what-options-are": OptionBasicsLab,
 	"option-contracts": ContractConceptLab,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,

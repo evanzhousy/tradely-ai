@@ -610,7 +610,7 @@ function withQuestion(
 	};
 }
 
-/** Version 5 adds the writer's side to lesson 3 and expiry-day risks to lesson 4. */
+/** Version 5 adds the writer's side to premium-payoff and expiry-day risks to expiration-settlement. */
 const v5Revisions: Record<string, (unit: TeachingUnit) => TeachingUnit> = {
 	"premium-payoff": (unit) => ({
 		...unit,

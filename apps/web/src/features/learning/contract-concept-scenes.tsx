@@ -68,8 +68,8 @@ export function AnatomyScene({ locale }: Props) {
 			"标的是期权参考的股票、ETF 或指数。仅凭代码不能确定一张合约。",
 		),
 		type: l(
-			"CALL and PUT describe different rights. They identify different contracts even when strike and expiration match. You will explore those rights in Lesson 2.",
-			"CALL（看涨）和 PUT（看跌）描述不同权利。即使行权价与到期日相同，它们也是不同合约。第 2 课会进一步讲解权利。",
+			"CALL and PUT describe different rights. They identify different contracts even when strike and expiration match. The next lesson explores those rights.",
+			"CALL（看涨）和 PUT（看跌）描述不同权利。即使行权价与到期日相同，它们也是不同合约。下一课会进一步讲解这些权利。",
 		),
 		strike: l(
 			"The strike is the price specified by the contract. It is separate from the option's quoted price and the underlying's market price.",

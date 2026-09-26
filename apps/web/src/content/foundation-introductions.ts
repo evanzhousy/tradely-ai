@@ -67,8 +67,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"解释持有人的权利、义务方的义务，以及平仓和行权的区别。",
 		),
 		before: t(
-			"Know how to identify the contract and read its multiplier. Lesson 1 introduces both.",
-			"先认识合约和乘数，第一课介绍了这两点。",
+			"Know how to identify the contract and read its multiplier. The option contracts lesson introduces both.",
+			"先认识合约和乘数，期权合约一课介绍了这两点。",
 		),
 		explanation: t(
 			"A call holder has a right to buy; a put holder has a right to sell under the contract's terms. An assigned writer has the corresponding obligation. Trading the option changes an option position. Exercising it uses the contract's right; these are different events.",
@@ -112,8 +112,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"分别计算买方权利金、到期价值与盈亏。",
 		),
 		before: t(
-			"Know calls and puts, the strike, and the stated multiplier from lessons 1–2.",
-			"先了解第一至二课中的看涨、看跌、行权价和给定乘数。",
+			"Know calls and puts, the strike, and the stated multiplier from the two lessons before this one.",
+			"先了解前两课中的看涨、看跌、行权价和给定乘数。",
 		),
 		explanation: t(
 			"At expiration, a call's value per share is the positive part of price minus strike; a put reverses that subtraction. Multiply by the supplied units and quantity. Then subtract the premium paid and fees to find the buyer's profit. A zero payoff can still leave a loss.",
@@ -157,8 +157,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"区分平仓交易与行权，并用指定参考值计算结算。",
 		),
 		before: t(
-			"Know holder and writer roles, plus payoff versus profit, from lessons 2–3.",
-			"先了解第二至三课中的持有人、义务方，以及到期价值和盈亏的区别。",
+			"Know holder and writer roles, plus payoff versus profit, from the two lessons before this one.",
+			"先了解前两课中的持有人、义务方，以及到期价值和盈亏的区别。",
 		),
 		explanation: t(
 			"Selling a long option to close is a trade. Exercise uses its right, assignment gives a writer the obligation, and settlement fulfills the terms. Physical settlement transfers the specified asset; cash settlement uses the official reference in the contract. A last displayed price may be different.",

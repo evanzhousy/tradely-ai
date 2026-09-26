@@ -110,6 +110,16 @@ export const syllabus: readonly Entry[] = [
 		["C01", "C04"],
 	),
 	lesson(
+		"what-options-are",
+		"orientation",
+		"Options: a paid right with a deadline",
+		"期权：有期限的付费权利",
+		"See what a call and a put give you, what the premium pays for, and the three common reasons people use options.",
+		"理解看涨与看跌赋予的权利、权利金买到了什么，以及人们使用期权的三种常见原因。",
+		["C02", "C03"],
+		["stocks-and-prices"],
+	),
+	lesson(
 		"option-contracts",
 		"contracts",
 		"Option contracts: what you are buying",

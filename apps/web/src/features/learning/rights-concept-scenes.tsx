@@ -697,8 +697,8 @@ export function AssignmentScene({ locale }: Props) {
 					</div>
 					<p className="text-muted-foreground text-xs leading-6">
 						{l(
-							"Teaching terms: physical settlement, 100 shares per contract, valid exercise assumed. Clearing determines assignment; the writer shown need not be the holder's original trading counterparty. Exercise timing and settlement details are covered in Lesson 4.",
-							"教学条款：实物结算，每张 100 股，假定行权有效。指派由清算流程决定，图中的义务方不一定是持有人原始交易的对手方。第 4 课详述行权时间与结算。",
+							"Teaching terms: physical settlement, 100 shares per contract, valid exercise assumed. Clearing determines assignment; the writer shown need not be the holder's original trading counterparty. Exercise timing and settlement details are covered in the expiration lesson.",
+							"教学条款：实物结算，每张 100 股，假定行权有效。指派由清算流程决定，图中的义务方不一定是持有人原始交易的对手方。到期一课会详述行权时间与结算。",
 						)}
 					</p>
 				</>

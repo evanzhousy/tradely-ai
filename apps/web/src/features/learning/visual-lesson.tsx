@@ -127,6 +127,11 @@ const lessons = {
 			default: m.StockConceptLab,
 		})),
 	),
+	"what-options-are": lazy(() =>
+		import("./option-basics-lab").then((m) => ({
+			default: m.OptionBasicsLab,
+		})),
+	),
 	"option-contracts": lazy(() =>
 		import("./contract-concept-lab").then((m) => ({
 			default: m.ContractConceptLab,

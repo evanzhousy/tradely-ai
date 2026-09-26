@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only";
 import {
+	basics,
 	choose as c,
 	numberQuestion as n,
 	orders,
@@ -15,6 +16,15 @@ const investorStocks = {
 const investorEtfs = {
 	title: "Investor.gov · Exchange-traded funds (ETFs)",
 	href: "https://www.investor.gov/introduction-investing/investing-basics/investment-products/mutual-funds-and-exchange-traded-2",
+};
+
+const finraOptions = {
+	title: "FINRA · Options",
+	href: "https://www.finra.org/investors/investing/investment-products/options",
+};
+const oicWhatIsAnOption = {
+	title: "OIC · What is an option?",
+	href: "https://www.optionseducation.org/optionsoverview/what-is-an-option",
 };
 
 const dollars = (cents: number) => (cents / 100).toFixed(2);
@@ -108,6 +118,103 @@ export const orientationUnits: TeachingUnit[] = [
 						"index",
 						"An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
 						"指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "what-options-are",
+		conceptLab: {
+			kind: "what-options-are",
+			intro: t(
+				"Move the stock at expiry to see when a call or put is worth using, compare three reasons people use options, and meet the other side of every option.",
+				"移动到期时的股价，看看看涨或看跌期权何时值得行使；比较人们使用期权的三种原因，并认识每份期权的另一方。",
+			),
+		},
+		sources: [oicWhatIsAnOption, finraOptions, basics],
+		explanation: t(
+			"An option is a contract that gives its holder a right, not an obligation, until a set date. A call is the right to buy 100 shares at a set price, called the strike; a put is the right to sell 100 shares at the strike. The holder pays for that right up front. The price is called the premium and is quoted per share, so a $3 quote costs $300 for one contract. On the other side, the writer receives the premium and takes on the obligation to sell (for a call) or buy (for a put) if the holder uses the right. People use options to protect shares they own, to earn income on them, or to take a view with a limited, known cost. A right that is not worth using by the deadline expires worthless, and the premium is gone.",
+			"期权是一份合约，在约定日期前赋予持有人一项权利，而不是义务。看涨期权是按约定价格（行权价）买入 100 股的权利；看跌期权是按行权价卖出 100 股的权利。持有人需要预先为这项权利付费，这个价格叫权利金，按每股报价，所以 $3 的报价买一张合约需 $300。另一方是义务方：他收取权利金，并在持有人行使权利时承担卖出（看涨）或买入（看跌）的义务。人们用期权来保护已有的股票、为持股赚取收入，或以有限且已知的成本表达看法。到期时不值得行使的权利会作废，权利金也随之损失。",
+		),
+		example: t(
+			"A call on ALFA with a $100 strike costs $3. If ALFA ends at $110, the right to buy at $100 is worth $10 a share, or $1,000 for the contract, against $300 paid. If ALFA ends at $95, nobody would use a right to pay $100, so the call expires worthless and the $300 is lost.",
+			"ALFA 行权价 $100 的看涨期权售价 $3。若 ALFA 到期时为 $110，以 $100 买入的权利每股值 $10，整张合约值 $1,000，而你付出了 $300。若 ALFA 到期时为 $95，没人会用 $100 去买，看涨期权作废，$300 全部损失。",
+		),
+		misconception: t(
+			"An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+			"期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。",
+		),
+		case: (v) => {
+			const quote = [250, 180, 320, 95][v];
+			const below = [95, 92, 98, 90][v];
+			return {
+				brief: t(
+					`A call on ALFA has a $100 strike and is quoted at $${dollars(quote)} per share. One contract covers 100 shares.`,
+					`ALFA 行权价 $100 的看涨期权报价为每股 $${dollars(quote)}，一张合约对应 100 股。`,
+				),
+				questions: [
+					n(
+						"cost",
+						"Cost of one contract, before fees?",
+						"一张合约的成本（不含费用）？",
+						quote,
+						"USD",
+						"美元",
+						`$${dollars(quote)} per share × 100 shares = $${dollars(quote * 100)}.`,
+						`每股 $${dollars(quote)} × 100 股 = $${dollars(quote * 100)}。`,
+						0.01,
+					),
+					c(
+						"protect",
+						"You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
+						"你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？",
+						[
+							["put", "A put", "看跌期权"],
+							["call", "A call", "看涨期权"],
+							[
+								"none",
+								"Neither; options can't protect shares",
+								"都不行，期权无法保护股票",
+							],
+						],
+						"put",
+						"A put is the right to sell at the strike, so it can act like insurance on shares you own.",
+						"看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。",
+					),
+					c(
+						"obligation",
+						"If the call holder uses the right to buy, who must deliver the shares?",
+						"若看涨期权持有人行使买入权利，由谁交付股票？",
+						[
+							[
+								"writer",
+								"The writer, who sold the call",
+								"义务方，即卖出这张看涨的人",
+							],
+							["holder", "The holder", "持有人"],
+							["exchange", "The stock exchange", "证券交易所"],
+						],
+						"writer",
+						"The writer received the premium in exchange for the obligation to sell at the strike.",
+						"义务方收取了权利金，作为交换承担按行权价卖出的义务。",
+					),
+					c(
+						"expire",
+						`ALFA ends at $${below} at expiry, below the call's $100 strike. What is the call worth?`,
+						`ALFA 到期时为 $${below}，低于看涨期权的 $100 行权价。看涨期权值多少？`,
+						[
+							[
+								"zero",
+								"Nothing; the premium paid is gone",
+								"一文不值，已付权利金全部损失",
+							],
+							["refund", "The premium is refunded", "权利金会被退还"],
+							["strike", "$100 per share", "每股 $100"],
+						],
+						"zero",
+						"Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
+						"没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。",
 					),
 				],
 			};

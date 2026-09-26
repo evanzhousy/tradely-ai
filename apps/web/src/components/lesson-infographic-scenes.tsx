@@ -648,6 +648,30 @@ function StockQuote({ l }: Props) {
 		</>
 	);
 }
+function OptionRight({ l }: Props) {
+	return (
+		<>
+			<Panel x={180} y={62} w={146} h={62} accent />
+			<Label x={253} y={98}>
+				{l("Worth using", "值得行使")}
+			</Label>
+			<path d="M34 124H326" className="diagram-line" />
+			<path d="M180 50V134" className="diagram-line" strokeDasharray="4 4" />
+			<Label x={180} y={152} small>
+				{l("Strike $100", "行权价 $100")}
+			</Label>
+			<Label x={96} y={98} small>
+				{l("Expires worthless", "作废")}
+			</Label>
+			<Caption>
+				{l(
+					"A call is the right to buy at the strike, until expiry",
+					"看涨期权：到期前按行权价买入的权利",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Unusual({ l }: Props) {
 	return (
 		<>
@@ -1550,6 +1574,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"A quote shows a bid of 40.00, a last trade of 40.02 and an ask of 40.05 dollars.",
 			"报价显示买价 40.00、最新成交 40.02、卖价 40.05 美元。",
+		],
+	},
+	"what-options-are": {
+		Diagram: OptionRight,
+		description: [
+			"A call is worth using only when the stock ends above its 100 dollar strike.",
+			"看涨期权只有在股价收在 100 美元行权价之上时才值得行使。",
 		],
 	},
 	"option-contracts": {

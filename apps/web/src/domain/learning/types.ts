@@ -135,6 +135,7 @@ export type LearningStepView = {
 	/** Ungraded teaching interaction; access follows the lesson authorization. */
 	conceptLab?:
 		| "stocks-and-prices"
+		| "what-options-are"
 		| "option-contracts"
 		| "option-rights"
 		| "premium-payoff"
