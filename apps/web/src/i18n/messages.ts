@@ -54,7 +54,7 @@ const messages = {
 		"home.pathTitle": "Less noise. A clear place to start.",
 		"home.lessonRange": "Lessons {first}–{last}",
 		"home.pathOneDescription":
-			"Understand contracts, quotes, trades, side and sentiment before interpreting flow.",
+			"Start with shares, quotes and your first option, then learn contracts, trades, side and sentiment before interpreting flow.",
 		"home.pathTwoDescription":
 			"Ask an answerable question, compare fairly, then build and audit a research packet.",
 		"home.pathThreeDescription":
@@ -77,7 +77,7 @@ const messages = {
 		"home.titleRead": "Learn options research for free.",
 		"home.titleVerify": "See how it works.",
 		"home.intro":
-			"A guided path through options flow, market structure, and evidence. Start with contracts and executions, then build toward independent research.",
+			"A guided path from your first stock quote to options flow, market structure and independent research. No experience needed: start with shares and quotes, then build up.",
 		"home.startFree": "Start learning",
 		"home.freeNote": "Free · No account or payment required",
 		"home.explore": "Explore the curriculum",
@@ -87,7 +87,7 @@ const messages = {
 		"home.question": "Question",
 		"home.verify": "Verify",
 		"home.pathLabel": "A core path, then two deeper branches",
-		"home.pathOne": "Read contracts, trades and flow",
+		"home.pathOne": "From zero to reading flow",
 		"home.pathTwo": "Build and audit research",
 		"home.pathThree": "Go deeper",
 		"home.features.label": "Built around your learning",
@@ -137,7 +137,7 @@ const messages = {
 		"home.curriculumLabel": "Your learning path",
 		"home.curriculumTitle": "The whole path. Nothing hidden.",
 		"home.curriculumIntro":
-			"Explore contracts, flow, Greeks and research through {count} visual lessons. Follow the diagrams, check yourself when you are ready, and continue freely.",
+			"Start from zero and explore contracts, flow, Greeks and research through {count} visual lessons. Follow the diagrams, check yourself when you are ready, and continue freely.",
 		"home.accessTitle": "Start with curiosity. Take it further.",
 		"home.accessDescription":
 			"Explore all {count} lessons with no sign-in or payment required. Create a free account when you want to save your work.",
@@ -258,14 +258,13 @@ const messages = {
 		"course.freeLessons": "{count} free lessons",
 		"course.freeLessonsDescription":
 			"Open any of these lessons without signing in or paying. Their numbers show where they fit in the full curriculum below.",
-		"course.foundationsTitle": "Free foundations: start here",
-		"course.foundationsDescription":
-			"Learn contracts, rights, premium and settlement in order through diagrams and worked examples. Each lesson ends with an optional check with feedback. No sign-in or payment required.",
+		"course.startTitle": "New to markets or options? Start here",
+		"course.startDescription":
+			"Four short lessons cover shares and quotes, what an option is, how an options trade works and how options lose money. No experience, sign-in or payment needed, and each lesson ends with an optional check with feedback.",
 		"course.researchTitle":
 			"Comfortable with quotes, trades and open interest? Start the research lessons.",
 		"course.researchDescription":
 			"These lessons build on the execution and flow lessons. Revisit those whenever you need a refresher.",
-		"course.foundationCount": "{count} free foundation lessons",
 		"course.researchCount": "{count} research starting points",
 		"complete.signInToSave": "Create a free account to save progress",
 		"complete.previewNote":
@@ -384,7 +383,7 @@ const messages = {
 		"home.pathTitle": "理清思路，找到起点。",
 		"home.lessonRange": "第 {first}–{last} 课",
 		"home.pathOneDescription":
-			"先理解合约、报价、交易、成交侧与情绪标签，再解读资金流。",
+			"先认识股票、报价和第一份期权，再理解合约、交易、成交侧与情绪标签，然后解读资金流。",
 		"home.pathTwoDescription":
 			"提出可回答的问题、公平比较，再建立并审核研究资料包。",
 		"home.pathThreeDescription":
@@ -405,7 +404,7 @@ const messages = {
 		"home.titleRead": "免费学习期权研究。",
 		"home.titleVerify": "看懂它如何运作。",
 		"home.intro":
-			"沿着清晰的路径，理解期权资金流、市场结构与证据。学一个概念，追问眼前的现象，再把方法用于实践。",
+			"从看懂第一个股票报价出发，一路走到期权资金流、市场结构与独立研究。无需任何基础：先学股票与报价，再逐步深入。",
 		"home.startFree": "开始学习",
 		"home.freeNote": "免费 · 无需账户或付费",
 		"home.explore": "探索课程路径",
@@ -415,7 +414,7 @@ const messages = {
 		"home.question": "提问",
 		"home.verify": "验证",
 		"home.pathLabel": "一条核心路径，两个深入分支",
-		"home.pathOne": "读懂合约、成交与成交流",
+		"home.pathOne": "从零基础到读懂成交流",
 		"home.pathTwo": "建立并审核研究",
 		"home.pathThree": "继续深入",
 		"home.features.label": "为你的学习而设计",
@@ -460,7 +459,7 @@ const messages = {
 		"home.curriculumLabel": "你的学习路径",
 		"home.curriculumTitle": "完整路径，一目了然。",
 		"home.curriculumIntro":
-			"通过 {count} 节视觉课程探索合约、成交流、希腊值与研究方法。跟随图解学习，准备好后自我检查，再自由继续。",
+			"从零基础出发，通过 {count} 节视觉课程探索合约、成交流、希腊值与研究方法。跟随图解学习，准备好后自我检查，再自由继续。",
 		"home.accessTitle": "从好奇开始，继续深入。",
 		"home.accessDescription":
 			"无需登录或付款，即可学习全部 {count} 节课程。需要保存学习记录时，可创建免费账户。",
@@ -573,13 +572,12 @@ const messages = {
 		"course.freeLessons": "{count} 节免费课程",
 		"course.freeLessonsDescription":
 			"以下课程无需登录或付款即可学习。课号对应它们在下方完整课程目录中的位置。",
-		"course.foundationsTitle": "免费基础课程：从这里开始",
-		"course.foundationsDescription":
-			"按顺序通过图解与示例学习合约、权利、权利金与结算；每课末尾都有带反馈的可选自我检查。无需登录或付费。",
+		"course.startTitle": "刚接触股票或期权？从这里开始",
+		"course.startDescription":
+			"四节短课依次讲解股票与报价、期权是什么、期权交易如何进行，以及期权如何亏钱。无需任何经验，也无需登录或付费；每课末尾都有带反馈的可选自我检查。",
 		"course.researchTitle": "已熟悉报价、成交与未平仓量？从研究课程开始。",
 		"course.researchDescription":
 			"这些课程以成交与成交流课程为基础，需要时可随时回看。",
-		"course.foundationCount": "{count} 节免费基础课",
 		"course.researchCount": "{count} 个研究起点",
 		"complete.signInToSave": "创建免费账户以保存进度",
 		"complete.previewNote": "自由探索视觉课程，登录后可跨设备保存学习标记。",

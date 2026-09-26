@@ -4,10 +4,15 @@ export const changelog = [
 		id: "syllabus-revision-unreleased",
 		date: "2026-09-26",
 		dateLabel: "Unreleased",
-		title: "A clearer path, and a way to check yourself",
+		title: "Start from zero, and check yourself",
 		summary:
-			"Lessons now follow a core path with two deeper branches, and every lesson ends with an optional check.",
+			"Four new lessons for complete beginners lead into a core path with two deeper branches, and every lesson ends with an optional check.",
 		changes: [
+			{
+				title: "Start from zero",
+				description:
+					"Four short lessons for people new to markets: shares and quotes, what an option is, how an options trade works, and how options lose money.",
+			},
 			{
 				title: "Check yourself",
 				description:

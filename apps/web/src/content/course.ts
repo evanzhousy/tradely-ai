@@ -55,11 +55,11 @@ const contentVersionOverrides: Record<string, number> = {
 
 /** Recommended starting paths are independent of public lesson availability. */
 export const learningPaths = {
-	foundations: [
-		"option-contracts",
-		"option-rights",
-		"premium-payoff",
-		"expiration-settlement",
+	start: [
+		"stocks-and-prices",
+		"what-options-are",
+		"trading-options",
+		"options-risks",
 	],
 	research: ["audited-boundary", "symbol-universe", "rank-symbols"],
 } as const;

@@ -712,7 +712,7 @@ function RiskSides({ l }: Props) {
 			<Label x={286} y={46} small>
 				{l("Buyer", "买方")}
 			</Label>
-			<Label x={286} y={166} small>
+			<Label x={256} y={157} small>
 				{l("Writer", "义务方")}
 			</Label>
 			<Label x={100} y={132} small>

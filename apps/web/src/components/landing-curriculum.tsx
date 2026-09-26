@@ -36,7 +36,7 @@ export function LandingCurriculum({
 	const id = useId();
 	const [motionEnabled, setMotionEnabled] = useState(true);
 	const gridId = `${id}-grid`;
-	const freePaths = (["foundations", "research"] as const).map((path) => ({
+	const freePaths = (["start", "research"] as const).map((path) => ({
 		path,
 		lessons: getLearningPath(lessons, path),
 	}));
@@ -132,15 +132,13 @@ export function LandingCurriculum({
 					>
 						<h2 id={`${id}-${path}-title`} className="font-semibold text-lg">
 							{t(
-								path === "foundations"
-									? "course.foundationsTitle"
-									: "course.researchTitle",
+								path === "start" ? "course.startTitle" : "course.researchTitle",
 							)}
 						</h2>
 						<p className="text-muted-foreground text-sm">
 							{t(
-								path === "foundations"
-									? "course.foundationsDescription"
+								path === "start"
+									? "course.startDescription"
 									: "course.researchDescription",
 							)}
 						</p>

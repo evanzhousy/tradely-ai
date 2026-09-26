@@ -67,7 +67,7 @@ function HomeComponent() {
 	const { locale, t } = useI18n();
 	const course = getLocalizedCourse(locale);
 	const freeLessons = course.lessons;
-	const startLesson = getLearningPath(course.lessons, "foundations")[0];
+	const startLesson = getLearningPath(course.lessons, "start")[0];
 	const previewCount = freeLessons.length;
 	return (
 		<main ref={landingRef} className="observatory landing-notebook">
