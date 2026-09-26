@@ -18,6 +18,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"validate-option-print": "reference",
 	"session-flow-vs-structure": "reference",
 	"trade-records": "reference",
+	"execution-conditions": "reference",
 	"unusual-activity": "reference",
 	"option-strategies": "model",
 	"symbol-drawer": "reference",

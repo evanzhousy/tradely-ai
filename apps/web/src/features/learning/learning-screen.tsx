@@ -60,6 +60,7 @@ import {
 	CoachingPanel,
 	type CoachingTransport,
 } from "./coaching-panel";
+import { ConditionsConceptLab } from "./conditions-concept-lab";
 import { ContractConceptLab } from "./contract-concept-lab";
 import {
 	ContractExplorer,
@@ -147,6 +148,7 @@ const conceptLabs = {
 	"validate-option-print": PrintReviewConceptLab,
 	"session-flow-vs-structure": OiConceptLab,
 	"trade-records": TapeConceptLab,
+	"execution-conditions": ConditionsConceptLab,
 };
 
 import {

@@ -28,7 +28,7 @@ const messages = {
 		"complete.practiceAsGuest": "Practice without saving",
 		"pricing.freeHeading": "Every current lesson is free.",
 		"pricing.freeDescription":
-			"Explore all 36 lessons through animated diagrams and worked examples, without paying or creating an account.",
+			"Explore all {count} lessons through animated diagrams and worked examples, without paying or creating an account.",
 		"pricing.freeAccount": "A free account saves your work",
 		"pricing.freeAccountDescription":
 			"Sign in to save study marks across devices. Your last visual scene is remembered on this device.",
@@ -137,7 +137,7 @@ const messages = {
 		"home.curriculumLabel": "Your learning path",
 		"home.curriculumTitle": "The whole path. Nothing hidden.",
 		"home.curriculumIntro":
-			"Explore contracts, flow, Greeks and research through 36 visual lessons. Follow the diagrams, check yourself when you are ready, and continue freely.",
+			"Explore contracts, flow, Greeks and research through {count} visual lessons. Follow the diagrams, check yourself when you are ready, and continue freely.",
 		"home.accessTitle": "Start with curiosity. Take it further.",
 		"home.accessDescription":
 			"Explore all {count} lessons with no sign-in or payment required. Create a free account when you want to save your work.",
@@ -358,7 +358,7 @@ const messages = {
 		"complete.practiceAsGuest": "不保存记录，直接练习",
 		"pricing.freeHeading": "所有现有课程均免费。",
 		"pricing.freeDescription":
-			"无需付费或注册，通过动画图解与示例学习全部 36 节课。",
+			"无需付费或注册，通过动画图解与示例学习全部 {count} 节课。",
 		"pricing.freeAccount": "免费账户可保存学习记录",
 		"pricing.freeAccountDescription":
 			"登录后可跨设备保存学习标记；上次查看的视觉场景保存在本设备。",
@@ -460,7 +460,7 @@ const messages = {
 		"home.curriculumLabel": "你的学习路径",
 		"home.curriculumTitle": "完整路径，一目了然。",
 		"home.curriculumIntro":
-			"通过 36 节视觉课程探索合约、成交流、希腊值与研究方法。跟随图解学习，准备好后自我检查，再自由继续。",
+			"通过 {count} 节视觉课程探索合约、成交流、希腊值与研究方法。跟随图解学习，准备好后自我检查，再自由继续。",
 		"home.accessTitle": "从好奇开始，继续深入。",
 		"home.accessDescription":
 			"无需登录或付款，即可学习全部 {count} 节课程。需要保存学习记录时，可创建免费账户。",

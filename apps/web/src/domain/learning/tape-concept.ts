@@ -114,26 +114,6 @@ export function replayTape(messages: readonly TapeMessage[], count: number) {
 		unresolved,
 	};
 }
-export type TapeCondition = {
-	id: string;
-	label: readonly [string, string];
-	meaning: readonly [string, string] | null;
-};
-export type ConditionClaim =
-	| "meaning"
-	| "owner"
-	| "institution"
-	| "inside"
-	| "strategy";
-export function conditionSupports(
-	condition: TapeCondition,
-	definitionAvailable: boolean,
-	claim: ConditionClaim,
-) {
-	return (
-		definitionAvailable && condition.meaning !== null && claim === "meaning"
-	);
-}
 export type TapeConceptData = {
 	kind: "trade-records";
 	date: string;
@@ -149,6 +129,4 @@ export type TapeConceptData = {
 		}[],
 	];
 	messages: readonly TapeMessage[];
-	conditionQuantity: number;
-	conditions: readonly [TapeCondition, ...TapeCondition[]];
 };

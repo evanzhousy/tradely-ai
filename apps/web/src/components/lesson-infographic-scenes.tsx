@@ -593,6 +593,34 @@ function Tape({ l }: Props) {
 		</>
 	);
 }
+function Sweep({ l }: Props) {
+	return (
+		<>
+			<Panel x={24} y={70} w={104} h={62} accent />
+			<Label x={76} y={96}>
+				{l("1 order", "1 张订单")}
+			</Label>
+			<Label x={76} y={120} strong>
+				50
+			</Label>
+			{["20 @ $2.10", "15 @ $2.11", "15 @ $2.12"].map((v, i) => (
+				<g key={v}>
+					<Flow x={132} y={101} dx={76} dy={(i - 1) * 50} delay={i * 300} />
+					<Panel x={212} y={32 + i * 50} w={124} h={40} />
+					<Label x={274} y={57 + i * 50}>
+						{v}
+					</Label>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"A sweep label describes routing, not who traded",
+					"扫单标签描述路由，不代表交易者身份",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Unusual({ l }: Props) {
 	return (
 		<>
@@ -1565,6 +1593,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"Two prints combine into 30 contracts and 8000 dollars, retaining their original count.",
 			"两笔成交聚合为 30 张和 8000 美元，保留原始笔数。",
+		],
+	},
+	"execution-conditions": {
+		Diagram: Sweep,
+		description: [
+			"One buy order sweeps three venues and prints three times: 20, 15 and 15 contracts.",
+			"一张买单扫过三个场所，打印三笔成交：20、15 与 15 张。",
 		],
 	},
 	"unusual-activity": {

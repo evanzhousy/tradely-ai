@@ -6,10 +6,12 @@ import {
 	choose as c,
 	numberQuestion as n,
 	oi,
+	orders,
 	quotes,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
+import { conditionsConceptData } from "./conditions-concept.server";
 import { oiConceptData } from "./oi-concept.server";
 import { sourceConceptData } from "./source-concept.server";
 import { strategyConceptData } from "./strategy-concept.server";
@@ -125,14 +127,14 @@ export const flowUnits: TeachingUnit[] = [
 			kind: "trade-records",
 			data: tapeConceptData,
 			intro: t(
-				"Build an aggregate from its source prints, replay duplicate and revised messages, and inspect what an execution condition can establish. Explore these fictional records before reconstructing your own tape row.",
-				"从原始成交建立聚合，回放重复与修订消息，再检查成交条件能确定什么。先探索这些虚构记录，再还原自己的成交行。",
+				"Build an aggregate from its source prints and replay duplicate and revised messages. Explore these fictional records before reconstructing your own tape row.",
+				"从原始成交建立聚合，并回放重复与修订消息。先探索这些虚构记录，再还原自己的成交行。",
 			),
 		},
 		sources: [quotes, oi],
 		explanation: t(
-			"A raw print represents one reported execution. An aggregate can combine several prints according to a stated grouping rule. Its contract count and premium are sums; its trade count records the represented prints. A quantity-weighted execution price differs from an unweighted average. Do not aggregate unlike contracts or mix price units. Duplicate messages and corrections can change a feed without new economic activity; exchange time and receipt time can differ. Execution conditions describe mechanisms: sweep/ISO routing, auction or cross, electronic or floor, and complex or stock-contingent trades. A block may be large, but neither a large row nor a cluster proves common ownership, institutional identity or inside information. An exchange's code needs its own documented definition.",
-			"原始成交是一条执行报告，聚合记录可按明确规则合并多笔。张数与权利金应求和，成交笔数记录所代表原始笔数。按数量加权价格不同于简单平均。不能合并不同合约或不同价格单位。重复消息与更正可能改变数据，却没有新增经济成交；交易所时间与接收时间也可不同。成交条件描述机制，如 sweep/ISO 路由、竞价、交叉、电子或场内、复杂或股票关联交易。大宗或聚集不证明共同持有、机构身份或内幕信息，具体代码需按交易所定义解释。",
+			"A raw print represents one reported execution. An aggregate can combine several prints according to a stated grouping rule. Its contract count and premium are sums; its trade count records the represented prints. A quantity-weighted execution price differs from an unweighted average. Do not aggregate unlike contracts or mix price units. Duplicate messages and corrections can change a feed without new economic activity; exchange time and receipt time can differ. Execution conditions such as sweeps, blocks and complex orders come in the next lesson; a cluster of rows still does not prove common ownership.",
+			"原始成交是一条执行报告，聚合记录可按明确规则合并多笔。张数与权利金应求和，成交笔数记录所代表原始笔数。按数量加权价格不同于简单平均。不能合并不同合约或不同价格单位。重复消息与更正可能改变数据，却没有新增经济成交；交易所时间与接收时间也可不同。扫单、大宗与复杂订单等成交条件在下一课讲解；多行聚集仍不证明共同持有。",
 		),
 		example: t(
 			"Two same-contract prints: 10 at $2 and 30 at $3, multiplier 100. Total size 40, premium $11,000, trade count 2, weighted price $2.75. The simple $2.50 average is wrong for those quantities. The grouping rule says nothing about whether the orders belonged to one strategy.",
@@ -191,6 +193,119 @@ export const flowUnits: TeachingUnit[] = [
 						"no",
 						"No strategy identifier or linked-leg evidence was supplied.",
 						"未给定策略标识或关联腿证据。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "execution-conditions",
+		conceptLab: {
+			kind: "execution-conditions",
+			data: conditionsConceptData,
+			intro: t(
+				"Follow one order across several venues, place a block against its quote, and read two leg prints as one package. Then test what a condition code can and cannot establish.",
+				"追踪一张订单跨多个场所成交，把大宗交易放到报价旁比较，并把两条腿的成交作为整体解读。最后检验条件代码能确定什么、不能确定什么。",
+			),
+		},
+		sources: [orders, quotes],
+		explanation: t(
+			"Execution conditions describe how a trade was executed. A sweep routes one order across several venues at once, often as intermarket sweep orders (ISO); each fill prints separately, and later fills can pay more than the best displayed price. A block is a large trade, often arranged away from the screen and printed through an auction or cross, so its price can sit inside, at or outside the displayed quote. Complex orders price several legs, or options and stock, as one package; individual leg prices can fall outside their own quotes while the package trades inside its market. Each code needs the source's own definition. None of these labels identifies who traded, how informed they were, or whether a position opened.",
+			"成交条件描述一笔交易如何执行。扫单把一张订单同时路由到多个场所，常以跨市场扫单指令（ISO）发出；每次成交分别打印，后面的成交可能高于最优展示价格。大宗交易通常先在屏幕外撮合，再通过竞价或交叉成交打印，因此价格可能在展示报价之内、等于报价或超出报价。复杂订单把多条腿、或期权与股票作为一个整体定价；单腿价格可能超出各自报价，而整体仍在组合市场之内成交。每个代码都需要来源自己的定义。这些标签都不能说明谁在交易、掌握多少信息，或是否开了新仓。",
+		),
+		example: t(
+			"A 50-contract buy sweeps three venues: 20 at $2.10, 15 at $2.11 and 15 at $2.12. That is one order and three prints: 50 contracts, $10,545 premium and a $2.109 average price. Separately, a call spread bought for $3.00 net can print its legs at $5.25 and $2.25, each above its own ask, while the package traded inside its $2.90–$3.30 market.",
+			"一张 50 张的买单扫过三个场所：$2.10 成交 20 张、$2.11 成交 15 张、$2.12 成交 15 张。这是一张订单、三笔成交：共 50 张、权利金 $10,545、均价 $2.109。另外，以净价 $3.00 买入的看涨价差，两条腿可能分别打印在 $5.25 和 $2.25，都高于各自卖价，而整体仍在 $2.90–$3.30 的组合市场内成交。",
+		),
+		misconception: t(
+			"Urgent routing is not proof of conviction, and a large block is not proof of an institution or inside information. Read the leg prints of a complex order as one package.",
+			"急迫的路由不证明确信，大宗交易也不证明机构身份或内幕信息。复杂订单的各腿成交应作为整体解读。",
+		),
+		case: (v) => {
+			const [a, b, d] = [
+				[20, 15, 15],
+				[20, 15, 5],
+				[10, 15, 20],
+				[25, 10, 15],
+			][v];
+			const premium = 210 * a + 211 * b + 212 * d;
+			const average = premium / (100 * (a + b + d));
+			return {
+				brief: t(
+					`One buy order sweeps three venues within milliseconds: ${a} contracts at $2.10, ${b} at $2.11 and ${d} at $2.12. Multiplier 100. Each fill printed separately with a sweep condition.`,
+					`一张买单在几毫秒内扫过三个场所：$2.10 成交 ${a} 张、$2.11 成交 ${b} 张、$2.12 成交 ${d} 张，乘数 100。每次成交都带扫单条件分别打印。`,
+				),
+				questions: [
+					n(
+						"premium",
+						"Total premium across the three prints?",
+						"三笔成交的总权利金？",
+						premium,
+						"USD",
+						"美元",
+						"Sum price × contracts × 100 for each fill. The three prints belong to one order.",
+						"逐笔计算价格 × 张数 × 100 后求和。三笔成交来自同一张订单。",
+					),
+					n(
+						"average",
+						"Quantity-weighted average price, to four decimals?",
+						"数量加权平均价格，保留四位小数？",
+						Math.round(average * 10000) / 10000,
+						"USD/share",
+						"美元/股",
+						"Total premium ÷ (100 × total contracts). Later fills paid more than the best displayed offer.",
+						"总权利金 ÷（100 × 总张数）。后面的成交价格高于最优展示卖价。",
+						0.0001,
+					),
+					c(
+						"sweep-meaning",
+						"What does the sweep condition establish?",
+						"扫单条件能确定什么？",
+						[
+							[
+								"routing",
+								"The order was routed across venues to fill quickly.",
+								"订单被路由到多个场所以尽快成交。",
+							],
+							[
+								"institution",
+								"An institution placed the order.",
+								"订单由机构发出。",
+							],
+							[
+								"opening",
+								"The buyer opened a new bullish position.",
+								"买方开了新的看涨仓位。",
+							],
+						],
+						"routing",
+						"A sweep describes execution routing. Identity, information and opening status need other evidence.",
+						"扫单描述执行路由。身份、信息与开仓状态需要其他证据。",
+					),
+					c(
+						"package",
+						"Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask. The package's market is $2.90–$3.30 and it traded at $3.00 net. How should you read it?",
+						"另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自卖价。该组合市场为 $2.90–$3.30，净价 $3.00 成交。应如何解读？",
+						[
+							[
+								"package",
+								"As one package traded inside its market; the leg locations are not aggressor evidence.",
+								"作为在组合市场内成交的整体；单腿位置不是主动方证据。",
+							],
+							[
+								"buys",
+								"As two aggressive buys, because both legs printed above the ask.",
+								"作为两笔主动买入，因为两条腿都高于卖价。",
+							],
+							[
+								"sells",
+								"As two aggressive sells hidden inside a spread.",
+								"作为隐藏在价差中的两笔主动卖出。",
+							],
+						],
+						"package",
+						"Complex orders are priced as a whole. Leg-by-leg classification would call the sold leg an aggressive buy.",
+						"复杂订单按整体定价。逐腿分类会把卖出的那条腿误判为主动买入。",
 					),
 				],
 			};

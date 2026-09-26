@@ -3,21 +3,17 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@tradely/ui/components/alert";
-import { FieldGroup } from "@tradely/ui/components/field";
 import { RangeSlider } from "@tradely/ui/components/slider";
 import * as m from "motion/react-m";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 import {
 	aggregateTape,
-	type ConditionClaim,
-	conditionSupports,
 	replayTape,
 	type TapeConceptData,
 	type TapeGroupIssue,
 } from "@/domain/learning/tape-concept";
 import type { Locale } from "@/i18n/messages";
 import {
-	ChoiceField,
 	Diagram,
 	PlaybackButton,
 	SceneLayout,
@@ -508,198 +504,6 @@ export function MessageReplayScene({ locale }: Props) {
 							{state.unresolved}
 						</p>
 					) : null}
-				</>
-			}
-		/>
-	);
-}
-
-const claimCopy: Record<ConditionClaim, readonly [string, string]> = {
-	meaning: ["Condition meaning", "条件含义"],
-	owner: ["Common owner", "共同归属"],
-	institution: ["Institutional identity", "机构身份"],
-	inside: ["Inside information", "内幕信息"],
-	strategy: ["Complete strategy", "完整策略"],
-};
-export function ConditionScene({ locale }: Props) {
-	const data = useTapeData();
-	const l = text(locale);
-	const language = locale === "zh" ? 1 : 0;
-	const motion = useLessonMotion();
-	const [id, setId] = useGuidedState(
-		data.conditions[0].id,
-		data.conditions.map((item) => item.id),
-	);
-	const [definition, setDefinition] = useState("supplied");
-	const [claim, setClaim] = useState<ConditionClaim>("meaning");
-	const condition =
-		data.conditions.find((c) => c.id === id) ?? data.conditions[0];
-	const supported = conditionSupports(
-		condition,
-		definition === "supplied",
-		claim,
-	);
-	const meaning = definition === "supplied" ? condition.meaning : null;
-	return (
-		<SceneLayout
-			diagram={
-				<Diagram
-					label={l(
-						"A documented condition defines an execution attribute, not investor identity",
-						"有定义的成交条件解释执行属性，不识别投资者身份",
-					)}
-					height={445}
-				>
-					<rect
-						x="28"
-						y="15"
-						width="304"
-						height="77"
-						rx="12"
-						className="contract-svg-paper"
-					/>
-					<SvgText x={180} y={42} muted>
-						{l("Separate illustrative large row", "独立大额示例记录")}
-					</SvgText>
-					<SvgText x={180} y={74} strong>
-						{number(data.conditionQuantity)} {l("contracts", "张")}
-					</SvgText>
-					<path
-						d="M180 92v29M180 191v28M180 280v31"
-						className="contract-svg-line"
-					/>
-					<rect
-						x="14"
-						y="121"
-						width="332"
-						height="70"
-						rx="12"
-						className="contract-svg-paper"
-					/>
-					<SvgText x={180} y={147} muted>
-						{l("Condition family", "成交条件类别")}
-					</SvgText>
-					<SvgText x={180} y={176}>
-						{condition.label[language]}
-					</SvgText>
-					<rect
-						x="28"
-						y="219"
-						width="304"
-						height="61"
-						rx="12"
-						className="contract-svg-paper"
-					/>
-					<SvgText x={180} y={244} muted>
-						{l("Inspect the claim", "检查结论")}
-					</SvgText>
-					<SvgText x={180} y={268}>
-						{claimCopy[claim][language]}
-					</SvgText>
-					<m.path
-						key={`${id}:${definition}:${claim}`}
-						d="M180 92v29m0 70v28m0 61v31"
-						className={
-							supported ? "contract-svg-active-line" : "contract-svg-line"
-						}
-						strokeDasharray={supported ? undefined : "5 5"}
-						initial={{ pathLength: motion ? 0 : 1 }}
-						animate={{ pathLength: 1 }}
-						transition={
-							motion
-								? { ...lessonTransition, duration: 0.4 }
-								: instantTransition
-						}
-					/>
-					<rect
-						x="14"
-						y="311"
-						width="332"
-						height="77"
-						rx="12"
-						className={supported ? "contract-svg-wash" : "contract-svg-paper"}
-					/>
-					<SvgText x={180} y={337} muted>
-						{l("Supported by this evidence?", "当前证据支持吗？")}
-					</SvgText>
-					<g data-tape-condition-support>
-						<SvgText x={180} y={368} strong>
-							{supported
-								? l("Definition only", "仅条件定义")
-								: l("Not established", "不能确定")}
-						</SvgText>
-					</g>
-					<SvgText x={180} y={427} muted>
-						{l("Size is not an identity credential", "数量不是身份凭证")}
-					</SvgText>
-				</Diagram>
-			}
-			controls={
-				<FieldGroup>
-					<SelectField
-						label={l("Condition example", "成交条件示例")}
-						value={id}
-						options={data.conditions.map((c) => [c.id, c.label[language]])}
-						onChange={setId}
-					/>
-					<ChoiceField
-						label={l("Source codebook", "来源代码手册")}
-						value={definition}
-						options={[
-							["supplied", l("Supplied", "已提供")],
-							["missing", l("Unavailable", "不可用")],
-						]}
-						onChange={setDefinition}
-					/>
-					<SelectField
-						label={l("Test a claim", "检验结论")}
-						value={claim}
-						options={Object.entries(claimCopy).map(([key, copy]) => [
-							key,
-							copy[language],
-						])}
-						onChange={(value) => {
-							if (Object.hasOwn(claimCopy, value))
-								setClaim(value as ConditionClaim);
-						}}
-					/>
-				</FieldGroup>
-			}
-			details={
-				<>
-					<p className="font-mono text-muted-foreground text-xs">
-						{l(
-							"Illustrative condition families · source definitions matter",
-							"示例成交条件类别 · 需核对来源定义",
-						)}
-					</p>
-					<Alert role="status">
-						<AlertTitle>
-							{meaning
-								? l("Read the supplied definition", "阅读给定定义")
-								: l("Meaning remains unmapped", "含义仍未映射")}
-						</AlertTitle>
-						<AlertDescription>
-							{meaning
-								? meaning[language]
-								: l(
-										"Without a documented mapping for this source, do not guess what the condition means. The large quantity does not repair the missing definition.",
-										"没有对应来源的文档映射，就不应猜测条件含义。数量大无法补齐缺失定义。",
-									)}
-						</AlertDescription>
-					</Alert>
-					<p className="text-sm">
-						{l(
-							"A condition can describe routing, matching, execution method, linkage or size. None of these labels alone proves common ownership, institutional identity, inside information or a complete strategy.",
-							"成交条件可描述路由、撮合、执行方式、关联或数量。这些标签本身不证明共同归属、机构身份、内幕信息或完整策略。",
-						)}
-					</p>
-					<p className="text-muted-foreground text-xs">
-						{l(
-							"These are teaching categories, not a universal exchange-code table. Actual flags require the originating venue or feed's codebook.",
-							"这些是教学类别，不是通用交易所代码表。真实标记需要依据原始场所或数据源的代码手册。",
-						)}
-					</p>
 				</>
 			}
 		/>

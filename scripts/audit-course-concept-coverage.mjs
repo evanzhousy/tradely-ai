@@ -377,7 +377,7 @@ console.log(
 );
 if (
 	unmapped.length ||
-	lessons.length !== 36 ||
+	lessons.length !== 37 ||
 	families.length !== 30 ||
 	families.some((family) => !family.lessons.length)
 )

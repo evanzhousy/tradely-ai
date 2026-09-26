@@ -20,6 +20,7 @@ import { authIsConfigured, useAuth } from "@/auth/client";
 import { PageIntro } from "@/components/page-intro";
 import { PricingAccountActions } from "@/components/pricing-actions";
 import { SignInLink } from "@/components/sign-in-link";
+import { tradingFlowCourse } from "@/content/course";
 import { parsePricingSearch } from "@/domain/pricing-search";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
@@ -135,7 +136,9 @@ function PricingPage() {
 			<PageIntro
 				eyebrow={t("common.free")}
 				title={t("pricing.freeHeading")}
-				description={t("pricing.freeDescription")}
+				description={t("pricing.freeDescription", {
+					count: tradingFlowCourse.lessons.length,
+				})}
 			>
 				<Link
 					to="/learn/$lessonSlug"

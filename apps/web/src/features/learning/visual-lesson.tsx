@@ -169,6 +169,11 @@ const lessons = {
 	"trade-records": lazy(() =>
 		import("./tape-concept-lab").then((m) => ({ default: m.TapeConceptLab })),
 	),
+	"execution-conditions": lazy(() =>
+		import("./conditions-concept-lab").then((m) => ({
+			default: m.ConditionsConceptLab,
+		})),
+	),
 };
 export function VisualLesson({
 	lessonId,

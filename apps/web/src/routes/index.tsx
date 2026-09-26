@@ -244,7 +244,7 @@ function HomeComponent() {
 						<p className="observatory-label">{t("home.curriculumLabel")}</p>
 						<h2>{t("home.curriculumTitle")}</h2>
 					</div>
-					<p>{t("home.curriculumIntro")}</p>
+					<p>{t("home.curriculumIntro", { count: course.lessons.length })}</p>
 				</div>
 				<LandingCurriculum
 					learning={progress.learning}

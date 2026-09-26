@@ -3,7 +3,6 @@ import type { Locale } from "@/i18n/messages";
 import { ConceptLab, type ConceptScene } from "./concept-lab";
 import {
 	AggregateScene,
-	ConditionScene,
 	MessageReplayScene,
 	TapeData,
 } from "./tape-concept-scenes";
@@ -59,32 +58,6 @@ const scenes = [
 		),
 		Component: MessageReplayScene,
 	},
-	{
-		id: "conditions",
-		label: ["Read the condition", "解读成交条件"],
-		title: [
-			"An execution label is not an investor identity",
-			"执行标签不等于投资者身份",
-		],
-		prompt: [
-			"Inspect a supplied condition definition, then test what it can establish about this large illustrative row.",
-			"检查给定成交条件定义，再判断它能确定这条大额示例记录的哪些信息。",
-		],
-		steps: teachingSteps(
-			[
-				[
-					"An execution condition describes the record under its source convention, not the investor's identity.",
-					"成交条件按来源约定描述记录，不揭示投资者身份。",
-				],
-			],
-			[
-				["Read execution condition", "读取成交条件"],
-				["Check source definition", "检查来源定义"],
-				["Bound what it implies", "限定可推断范围"],
-			],
-		),
-		Component: ConditionScene,
-	},
 ] as const satisfies readonly ConceptScene[];
 export function TapeConceptLab({
 	locale,
@@ -122,7 +95,6 @@ export function TapeConceptLab({
 							),
 						]),
 					},
-					scenes[2],
 				]}
 			/>
 		</TapeData>

@@ -1,6 +1,6 @@
 # Tradely
 
-All 36 current lessons and interactive exercises are free. Guests can practice without persistence; free accounts save progress and attempts. Stripe supports historical billing only, and new checkout is permanently retired. Optional AI coaching remains a bounded, allowlisted pilot. TradingFlow retains separate accounts and pricing.
+All 37 current lessons and interactive exercises are free. Guests can practice without persistence; free accounts save progress and attempts. Stripe supports historical billing only, and new checkout is permanently retired. Optional AI coaching remains a bounded, allowlisted pilot. TradingFlow retains separate accounts and pricing.
 
 Tradely is the independent options-learning hub for `tradely.ai`. It teaches an ordered evidence workflow and sends learners into TradingFlow for official, bounded practice tasks. Tradely and TradingFlow do not share accounts, billing, databases, or infrastructure; previously promised partner benefits are handled separately through support.
 

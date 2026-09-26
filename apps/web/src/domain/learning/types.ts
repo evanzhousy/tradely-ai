@@ -3,6 +3,7 @@ import type { ActivityConceptData } from "./activity-concept";
 import type { AuditRecapConceptData } from "./audit-recap-concept";
 import type { BoundaryConceptData } from "./boundary-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
+import type { ConditionsConceptData } from "./conditions-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
 import type { EligibilityConceptData } from "./eligibility-concept";
@@ -144,6 +145,7 @@ export type LearningStepView = {
 		| "validate-option-print"
 		| "session-flow-vs-structure"
 		| "trade-records"
+		| "execution-conditions"
 		| "unusual-activity"
 		| "option-strategies"
 		| "symbol-drawer"
@@ -177,6 +179,7 @@ export type LearningStepView = {
 		| PrintReviewConceptData
 		| OiConceptData
 		| TapeConceptData
+		| ConditionsConceptData
 		| ActivityConceptData
 		| StrategyConceptData
 		| SourceConceptData
