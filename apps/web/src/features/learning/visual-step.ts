@@ -8,6 +8,12 @@ export type VisualStep = {
 	state: { position: number };
 };
 
+/** Reading time at about 200 words a minute, plus time to look at the diagram. */
+export function readingHoldMs(caption: string) {
+	const words = caption.trim().split(/\s+/).filter(Boolean).length;
+	return Math.min(16000, Math.max(4000, words * 300 + 1500));
+}
+
 /** A step owns the sampled model position, caption, focus and reading time together. */
 export function teachingSteps(
 	captions: readonly SceneCopy[],
@@ -26,10 +32,7 @@ export function teachingSteps(
 			caption,
 			label: labels[Math.round(position * (labels.length - 1))] ?? labels[0],
 			focus: i === count - 1 ? "result" : "diagram",
-			holdMs: Math.min(
-				6000,
-				Math.max(2600, caption[0].split(/\s+/).length * 160),
-			),
+			holdMs: readingHoldMs(caption[0]),
 		};
 	});
 }

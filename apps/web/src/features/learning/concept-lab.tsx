@@ -256,11 +256,22 @@ export function ConceptLab({
 		};
 		onHide();
 		document.addEventListener("visibilitychange", onHide);
-		const observer = new IntersectionObserver(([entry]) => {
-			if (!stage.current?.contains(entry.target)) return;
-			setVisible(entry.isIntersecting);
-			if (!entry.isIntersecting) setPlaying(false);
-		});
+		// Play only while most of the scene is in view: 60% of it, or 60% of a shorter viewport.
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (!stage.current?.contains(entry.target)) return;
+				const viewport = entry.rootBounds?.height || window.innerHeight;
+				const shown = entry.isIntersecting
+					? Math.max(
+							entry.intersectionRatio,
+							entry.intersectionRect.height / viewport,
+						)
+					: 0;
+				setVisible(shown >= 0.6);
+				if (shown < 0.2) setPlaying(false);
+			},
+			{ threshold: Array.from({ length: 21 }, (_, i) => i / 20) },
+		);
 		const diagram =
 			stage.current?.querySelector(".visual-scene-layout") ?? stage.current;
 		if (diagram) observer.observe(diagram);
