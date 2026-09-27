@@ -240,14 +240,14 @@ function LessonPage() {
 						</h1>
 					</header>
 					<VisualLesson
-						key={lesson.id}
+						key={`visual-${lesson.id}`}
 						lessonId={lesson.id}
 						locale={locale}
 						data={page.conceptData}
 					/>
 					{page.learning ? (
 						<CheckYourself
-							key={lesson.id}
+							key={`check-${lesson.id}`}
 							lessonId={lesson.id}
 							locale={locale}
 							saveGuest={saveGuest === "1"}
