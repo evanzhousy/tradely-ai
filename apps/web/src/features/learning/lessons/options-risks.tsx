@@ -56,6 +56,15 @@ const dateAfter = (days: number): Copy => {
 	return [`${["Sep", "Oct"][month - 8]} ${day}`, `${month + 1}月${day}日`];
 };
 
+/** ALFA's move since you bought: "+$2.00 (2.0%)". */
+const sinceBuy = (spot: number) =>
+	`${signedUsd((spot - 100) * 100)} (${percent((spot - 100) / 100)})`;
+/** The call's value per share and its change on the premium: "$3.10 (−26.2%)". */
+const callValue = (dollars: number) =>
+	`${usd(dollars * 100)} (${percent((dollars * 100 - PAID) / PAID)})`;
+/** Whole dollars per contract from cents. */
+const perContract = (cents: number) => signedUsd(Math.round(cents), 0);
+
 function DecayView({
 	locale,
 	phase,
@@ -126,6 +135,17 @@ function DecayView({
 									tone: result < 0 ? "loss" : "gain",
 								},
 							]}
+							drag={
+								explore
+									? {
+											markerId: "you",
+											min: 90,
+											max: 110,
+											step: 1,
+											onChange: (spot) => setExplore({ ...explore, spot }),
+										}
+									: undefined
+							}
 							xLabel={t(["ALFA price", "ALFA 价格"])}
 							title={t([
 								`${contractLabel(call100)[0]} · model value per share`,
@@ -140,20 +160,23 @@ function DecayView({
 				{
 					id: "stock",
 					label: t(["ALFA since Sep 16", "9月16日 以来 ALFA"]),
-					value: `${signedUsd((shown.spot - 100) * 100)} (${percent((shown.spot - 100) / 100)})`,
+					value: sinceBuy(shown.spot),
+					tween: { to: shown.spot, format: sinceBuy },
 					tone:
 						shown.spot > 100 ? "gain" : shown.spot < 100 ? "loss" : undefined,
 				},
 				{
 					id: "value",
 					label: t(["Call value", "看涨期权价值"]),
-					value: `${usd(now * 100)} (${percent((now * 100 - PAID) / PAID)})`,
+					value: callValue(now),
+					tween: { to: now, format: callValue },
 					evidence: "modeled",
 				},
 				{
 					id: "result",
 					label: t(["Result per contract", "每张合约盈亏"]),
-					value: signedUsd(result, 0),
+					value: perContract(result),
+					tween: { to: result, format: perContract },
 					tone: result > 0 ? "gain" : result < 0 ? "loss" : undefined,
 					note: t([`paid ${usd(PAID)}`, `已付 ${usd(PAID)}`]),
 				},
@@ -267,6 +290,17 @@ function TailView({
 									tone: result < 0 ? "loss" : "gain",
 								},
 							]}
+							drag={
+								explore
+									? {
+											markerId: "result",
+											min: 80,
+											max: 140,
+											step: 1,
+											onChange: (spot) => setExplore({ ...explore, spot }),
+										}
+									: undefined
+							}
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
 								`${contractLabel(call100)[0]} · per contract at expiry`,
@@ -281,6 +315,7 @@ function TailView({
 					id: "result",
 					label: t(["Result at expiry", "到期盈亏"]),
 					value: signedUsd(result * 100, 0),
+					tween: { to: result, format: (v) => signedUsd(v * 100, 0) },
 					tone: result > 0 ? "gain" : result < 0 ? "loss" : undefined,
 				},
 				{
@@ -552,8 +587,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Move ALFA's price, the days that have passed and implied volatility. Compare the call's value with the $4.20 you paid.",
-				"调整 ALFA 价格、已过天数和隐含波动率，把看涨期权的价值与你支付的 $4.20 比较。",
+				"Drag across the chart to move ALFA's price, then set the days that have passed and implied volatility. Compare the call's value with the $4.20 you paid.",
+				"在图上左右拖动来调整 ALFA 价格，再调整已过天数和隐含波动率，把看涨期权的价值与你支付的 $4.20 比较。",
 			],
 			start: (last) => last,
 		},
@@ -613,8 +648,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Switch sides and move ALFA's price on Oct 18. Compare each side's best and worst case.",
-				"切换买卖双方并移动 10月18日 的 ALFA 价格，比较双方的最好与最坏情况。",
+				"Switch sides and drag across the chart to move ALFA's price on Oct 18. Compare each side's best and worst case.",
+				"切换买卖双方，并在图上左右拖动来移动 10月18日 的 ALFA 价格，比较双方的最好与最坏情况。",
 			],
 			start: () => ({ side: "writer", spot: 110 }),
 		},
