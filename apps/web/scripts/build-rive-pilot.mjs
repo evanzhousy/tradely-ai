@@ -11,9 +11,9 @@ const version = execFileSync(cli, ["--version"], { encoding: "utf8" }).trim();
 if (version !== "rive 1.0.3")
 	throw new Error(`Expected Rive CLI 1.0.3; got ${version}`);
 const requested = process.argv[2] ?? "all";
-const scenes = ["liquidity", "settlement"];
+const scenes = ["liquidity"];
 if (requested !== "all" && !scenes.includes(requested))
-	throw new Error("Choose liquidity, settlement, or all");
+	throw new Error("Choose liquidity or all");
 for (const scene of requested === "all" ? scenes : [requested]) {
 	const source = fileURLToPath(
 		new URL(`../src/features/learning/rive/${scene}/`, import.meta.url),

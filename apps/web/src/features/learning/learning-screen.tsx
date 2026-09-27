@@ -77,6 +77,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
@@ -104,7 +105,6 @@ import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { SentimentConceptLab } from "./sentiment-concept-lab";
-import { SettlementConceptLab } from "./settlement-concept-lab";
 import { SideConceptLab } from "./side-concept-lab";
 import { SourceConceptLab } from "./source-concept-lab";
 import { StrategyConceptLab } from "./strategy-concept-lab";
@@ -148,7 +148,7 @@ const conceptLabs = {
 	"option-contracts": OptionContractsWalkthrough,
 	"option-rights": OptionRightsWalkthrough,
 	"premium-payoff": PremiumPayoffWalkthrough,
-	"expiration-settlement": SettlementConceptLab,
+	"expiration-settlement": ExpirationSettlementWalkthrough,
 	"quotes-orders-trades": QuoteConceptLab,
 	"execution-counterparties": ExecutionConceptLab,
 	"execution-side": SideConceptLab,

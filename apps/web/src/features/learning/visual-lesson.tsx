@@ -158,8 +158,8 @@ const lessons = {
 		})),
 	),
 	"expiration-settlement": lazy(() =>
-		import("./settlement-concept-lab").then((m) => ({
-			default: m.SettlementConceptLab,
+		import("./lessons/expiration-settlement").then((m) => ({
+			default: m.ExpirationSettlementWalkthrough,
 		})),
 	),
 	"quotes-orders-trades": lazy(() =>

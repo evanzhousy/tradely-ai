@@ -100,9 +100,11 @@ export const instruments = {
 		holds: 500,
 		price: 5_000,
 	},
+	/** Index options are European-style and settle in cash at $100 per index point. */
 	index: {
 		symbol: "IDX 500",
 		level: 5_000,
+		multiplier: 100,
 	},
 } as const;
 
@@ -124,8 +126,16 @@ const optionQuotes: Record<string, { bid: number; ask: number }> = {
 export function optionQuote(contract: Contract) {
 	const authored =
 		optionQuotes[`${contract.expiry}-${contract.strike}-${contract.right}`];
-	if (authored) return authored;
-	const mid = modelValue(contract).price * 100;
+	return authored ?? quoteAt(contract);
+}
+
+/** A model quote for another day or stock price, with the same spread as the chain. */
+export function quoteAt(
+	contract: Contract,
+	spotCents: number = ALFA.open,
+	on: string = SESSION_DATE,
+) {
+	const mid = modelValue(contract, spotCents, on).price * 100;
 	const half = Math.max(5, mid * 0.02);
 	return {
 		bid: Math.max(0, Math.floor((mid - half) / 5) * 5),

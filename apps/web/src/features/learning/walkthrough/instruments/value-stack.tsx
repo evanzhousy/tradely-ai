@@ -7,7 +7,8 @@ export type StackPart = {
 	label: string;
 	/** Cents. */
 	value: number;
-	kind: "intrinsic" | "time" | "cost" | "gain" | "loss" | "neutral";
+	/** A forfeited part is drawn as an outline and left out of the row's total. */
+	kind: "intrinsic" | "time" | "cost" | "gain" | "loss" | "neutral" | "forfeit";
 };
 
 export type StackRow = {
@@ -33,6 +34,7 @@ const kindClass: Record<StackPart["kind"], string> = {
 	gain: "wt-long",
 	loss: "wt-short",
 	neutral: "wt-panel-shape",
+	forfeit: "wt-ghost",
 };
 
 /**
@@ -70,7 +72,10 @@ export function ValueStack({
 				const y = 30 + i * ROW;
 				const barY = labelWidth ? y + 8 : y + 22;
 				let offset = 0;
-				const total = row.parts.reduce((sum, part) => sum + part.value, 0);
+				const total = row.parts.reduce(
+					(sum, part) => (part.kind === "forfeit" ? sum : sum + part.value),
+					0,
+				);
 				return (
 					<m.g
 						key={row.id}
@@ -115,7 +120,9 @@ export function ValueStack({
 											y={barY + 16}
 											textAnchor="middle"
 											className={`wt-small ${
-												part.kind === "time" || part.kind === "neutral"
+												part.kind === "time" ||
+												part.kind === "neutral" ||
+												part.kind === "forfeit"
 													? "wt-on-soft"
 													: "wt-on-solid"
 											}`}

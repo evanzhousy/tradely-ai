@@ -17,6 +17,7 @@ export function PriceLine({
 	zone,
 	marker,
 	note,
+	tickLabel = (tick: number) => `$${tick}`,
 }: {
 	width: number;
 	/** Dollars. */
@@ -33,6 +34,7 @@ export function PriceLine({
 		before?: number;
 	};
 	note?: string;
+	tickLabel?: (tick: number) => string;
 }) {
 	const motion = useTeachMotion();
 	const left = 18;
@@ -88,7 +90,7 @@ export function PriceLine({
 						anchor="middle"
 						tone="small"
 					>
-						${tick}
+						{tickLabel(tick)}
 					</Label>
 				))}
 			{strike ? (
