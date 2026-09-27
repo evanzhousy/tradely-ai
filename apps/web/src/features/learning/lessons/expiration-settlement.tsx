@@ -13,6 +13,7 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
+import type { AxisDrag } from "../walkthrough/axis-drag";
 import {
 	PRICE_LINE_HEIGHT,
 	PriceLine,
@@ -784,10 +785,13 @@ function ExpiryStage({
 	width,
 	state,
 	locale,
+	drag,
 }: {
 	width: number;
 	state: ExpiryState;
 	locale: Locale;
+	/** Drags the close; off while the marker shows an after-hours price instead. */
+	drag?: AxisDrag;
 }) {
 	const t = tr(locale);
 	const motion = useTeachMotion();
@@ -863,6 +867,7 @@ function ExpiryStage({
 								]),
 					tone: "neutral",
 				}}
+				drag={state.after === null ? drag : undefined}
 			/>
 			<rect
 				x={cardX}
@@ -917,6 +922,7 @@ function ExpiryView({
 					id: "price",
 					label: t(["ALFA close, Oct 18", "10月18日 ALFA 收盘"]),
 					value: usd(shown.close * 100),
+					tween: { to: shown.close, format: (close) => usd(close * 100) },
 					note:
 						gap > 0
 							? t([`${gap}¢ above the strike`, `高于行权价 ${gap} 美分`])
@@ -985,7 +991,25 @@ function ExpiryView({
 					height={EXPIRY_HEIGHT}
 				>
 					{(width) => (
-						<ExpiryStage width={width} state={shown} locale={locale} />
+						<ExpiryStage
+							width={width}
+							state={shown}
+							locale={locale}
+							drag={
+								explore
+									? {
+											min: 99.9,
+											max: 100.1,
+											step: 0.01,
+											onChange: (close) =>
+												setExplore({
+													...explore,
+													close: Math.round(close * 100) / 100,
+												}),
+										}
+									: undefined
+							}
+						/>
 					)}
 				</Stage>
 			}
@@ -1346,8 +1370,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"You hold the call. Move the close and choose whether to decline exercise.",
-				"你持有这张看涨。移动收盘价，并选择是否拒绝行权。",
+				"You hold the call. Drag the close along the price line and choose whether to decline exercise.",
+				"你持有这张看涨。在价格轴上拖动收盘价，并选择是否拒绝行权。",
 			],
 			start: () => ({
 				role: "holder",
