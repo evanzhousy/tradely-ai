@@ -17,6 +17,7 @@ import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
 	PayoffChart,
+	type PayoffDrag,
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
@@ -54,7 +55,9 @@ const signedStock = (dollars: number) =>
 	signedUsd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
 const signedPrice = (dollars: number) => signedUsd(Math.round(dollars * 100));
 const fixed2 = (value: number) =>
-	value < 0 ? `−${Math.abs(value).toFixed(2)}` : value.toFixed(2);
+	value <= -0.005
+		? `−${Math.abs(value).toFixed(2)}`
+		: Math.abs(value).toFixed(2);
 
 const X_RANGE = [88, 112] as const;
 const curve = (right: Right) =>
@@ -75,11 +78,13 @@ function ValueChart({
 	width,
 	lines,
 	markers,
+	drag,
 	locale,
 }: {
 	width: number;
 	lines: PayoffLine[];
 	markers: PayoffMarker[];
+	drag?: PayoffDrag;
 	locale: Locale;
 }) {
 	const t = tr(locale);
@@ -93,6 +98,7 @@ function ValueChart({
 			yTicks={[0, 4, 8, 12, 16]}
 			lines={lines}
 			markers={markers}
+			drag={drag}
 			formatY={(value) => usd(value * 100, 0)}
 			xLabel={t(["ALFA price today", "ALFA 今天的价格"])}
 			title={t([
@@ -166,6 +172,17 @@ function SlopeView({
 									label: price(value),
 								},
 							]}
+							drag={
+								explore
+									? {
+											markerId: "now",
+											min: 90,
+											max: 110,
+											step: 1,
+											onChange: (spot) => setExplore({ ...explore, spot }),
+										}
+									: undefined
+							}
 						/>
 					)}
 				</Stage>
@@ -178,6 +195,7 @@ function SlopeView({
 						`ALFA ${stock(shown.spot)} 时的${pick(rightName(shown.right), "zh")}`,
 					]),
 					value: price(value),
+					tween: { to: value, format: price },
 					note: t(["per share, model", "每股，模型"]),
 					evidence: "modeled",
 				},
@@ -185,6 +203,7 @@ function SlopeView({
 					id: "delta",
 					label: t(["Delta", "Delta"]),
 					value: shown.slope ? fixed2(delta) : "—",
+					tween: shown.slope ? { to: delta, format: fixed2 } : undefined,
 					note: shown.slope
 						? t([
 								`${signedPrice(delta)} per +$1 in ALFA`,
@@ -685,8 +704,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Move ALFA and watch the slope change along the curve.",
-				"移动 ALFA，观察斜率如何沿曲线变化。",
+				"Drag across the chart to move ALFA and watch the slope change along the curve.",
+				"在图上左右拖动来移动 ALFA，观察斜率如何沿曲线变化。",
 			],
 			start: () => ({ right: "call", spot: 106, slope: true }),
 		},
