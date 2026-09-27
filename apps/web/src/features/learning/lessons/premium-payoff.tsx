@@ -15,6 +15,7 @@ import { ChoiceField, RangeControl } from "../concept-scene";
 import {
 	type PayoffBand,
 	PayoffChart,
+	type PayoffDrag,
 	type PayoffLine,
 } from "../walkthrough/instruments/payoff-chart";
 import {
@@ -39,6 +40,27 @@ const rightName = (right: Right): Copy =>
 /** "$102" or "$104.20". */
 const dollars = (value: number) =>
 	usd(Math.round(value * 100), Number.isInteger(value) ? 0 : 2);
+
+/** Whole dollars per contract: "$500", "+$375". A result under 50¢ reads "$0". */
+const perContract = (value: number) => usd(value * 100, 0);
+const signedPerContract = (value: number) =>
+	Math.abs(value) < 0.5 ? "$0" : signedUsd(value * 100, 0);
+
+/** Dragging the chart moves ALFA's closing price in the same steps as the slider. */
+const dragSpot = <S extends { spot: number }>(
+	range: readonly [number, number],
+	explore: S | null,
+	setExplore: (next: S) => void,
+): PayoffDrag | undefined =>
+	explore
+		? {
+				markerId: "you",
+				min: range[0],
+				max: range[1],
+				step: 0.5,
+				onChange: (spot) => setExplore({ ...explore, spot }),
+			}
+		: undefined;
 
 /**
  * Value at expiry in cents per share for a price in dollars. Cents per share equal dollars
@@ -310,14 +332,15 @@ function ProfitView({
 				},
 			]
 		: [];
-	const atBreakEven = shown.profit && Math.abs(result) < 0.5;
+	const atBreakEven = shown.profit && signedPerContract(result) === "$0";
 	const tone = result > 0 ? "gain" : result < 0 ? "loss" : "neutral";
 	const result3: ResultItem[] = shown.profit
 		? [
 				{
 					id: "profit",
 					label: t(["Profit", "盈亏"]),
-					value: atBreakEven ? "$0" : signedUsd(result * 100, 0),
+					value: signedPerContract(result),
+					tween: { to: result, format: signedPerContract },
 					note: t([`break-even ${dollars(be)}`, `盈亏平衡 ${dollars(be)}`]),
 					tone,
 				},
@@ -354,11 +377,12 @@ function ProfitView({
 												`盈亏平衡 ${dollars(be)}`,
 											])
 										: shown.profit
-											? signedUsd(result * 100, 0)
-											: usd(value * 100, 0),
+											? signedPerContract(result)
+											: perContract(value),
 									tone: shown.profit ? tone : "neutral",
 								},
 							]}
+							drag={dragSpot(BUY_RANGE, explore, setExplore)}
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
 								`Long 1 ${contractLabel(contract, false)[0]} · per contract`,
@@ -372,7 +396,8 @@ function ProfitView({
 				{
 					id: "value",
 					label: t(["Value at expiry", "到期价值"]),
-					value: usd(value * 100, 0),
+					value: perContract(value),
+					tween: { to: value, format: perContract },
 					note:
 						value > 0
 							? call
@@ -384,7 +409,8 @@ function ProfitView({
 				{
 					id: "paid",
 					label: t(["Premium paid", "已付权利金"]),
-					value: usd(paid * 100, 0),
+					value: perContract(paid),
+					tween: { to: paid, format: perContract },
 					note: `${usd(paid)} × 100`,
 				},
 				...result3,
@@ -508,10 +534,11 @@ function WriterView({
 									id: "you",
 									x: shown.spot,
 									y: result,
-									label: signedUsd(result * 100, 0),
+									label: signedPerContract(result),
 									tone,
 								},
 							]}
+							drag={dragSpot(WRITE_RANGE, explore, setExplore)}
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
 								`Short 1 ${contractLabel(contract, false)[0]} · per contract`,
@@ -525,7 +552,8 @@ function WriterView({
 				{
 					id: "received",
 					label: t(["Premium received", "收取权利金"]),
-					value: signedUsd(received * 100, 0),
+					value: signedPerContract(received),
+					tween: { to: received, format: signedPerContract },
 					note: t([
 						`${usd(received)} bid × 100`,
 						`买价 ${usd(received)} × 100`,
@@ -534,7 +562,8 @@ function WriterView({
 				{
 					id: "owed",
 					label: t(["Owed at expiry", "到期需支付"]),
-					value: owed > 0 ? signedUsd(-owed * 100, 0) : "$0",
+					value: signedPerContract(-owed),
+					tween: { to: -owed, format: signedPerContract },
 					note:
 						owed > 0
 							? put
@@ -546,7 +575,8 @@ function WriterView({
 				{
 					id: "profit",
 					label: t(["Profit", "盈亏"]),
-					value: result === 0 ? "$0" : signedUsd(result * 100, 0),
+					value: signedPerContract(result),
+					tween: { to: result, format: signedPerContract },
 					note: t([`break-even ${dollars(be)}`, `盈亏平衡 ${dollars(be)}`]),
 					tone,
 				},
@@ -740,8 +770,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Pick an option and move ALFA's closing price. Where does each one break even?",
-				"选择一张期权并移动 ALFA 收盘价。每张期权的盈亏平衡点在哪里？",
+				"Pick an option and drag across the chart to move ALFA's closing price. Where does each one break even?",
+				"选择一张期权，并在图上左右拖动来移动 ALFA 收盘价。每张期权的盈亏平衡点在哪里？",
 			],
 			start: (last) => last,
 		},
@@ -814,8 +844,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Pick the option you wrote and move ALFA's closing price.",
-				"选择你卖出的期权，移动 ALFA 收盘价。",
+				"Pick the option you wrote and drag across the chart to move ALFA's closing price.",
+				"选择你卖出的期权，并在图上左右拖动来移动 ALFA 收盘价。",
 			],
 			start: (last) => last,
 		},
