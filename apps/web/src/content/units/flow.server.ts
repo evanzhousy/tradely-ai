@@ -10,7 +10,6 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-import { sourceConceptData } from "./source-concept.server";
 
 export const flowUnits: TeachingUnit[] = [
 	{
@@ -428,10 +427,9 @@ export const flowUnits: TeachingUnit[] = [
 		id: "symbol-drawer",
 		conceptLab: {
 			kind: "symbol-drawer",
-			data: sourceConceptData,
 			intro: t(
-				"Replay event and receipt clocks, then audit each source against a stated requirement. The volume and open-interest lesson already showed how a rolling expiry bucket can change members.",
-				"回放事件与接收时钟，再对照声明要求审计各来源。成交量与未平仓量一课已展示滚动到期桶如何改变成员。",
+				"Trace when each value in ALFA's symbol drawer was true, judge three sources against three questions, and keep a missing value apart from a measured zero.",
+				"追溯 ALFA 标的抽屉中每个数值成立的时刻，用三个问题检验三个数据源，并把缺失值与实测的零区分开。",
 			),
 		},
 		sources: [oi, quotes],
@@ -440,8 +438,8 @@ export const flowUnits: TeachingUnit[] = [
 			"每个字段都应有自己的身份、来源、时间、单位及覆盖要求。事件时间说明何时发生，接收时间说明系统何时获知。选定历史时段与最新已完成时段不同。延迟成交、前期清算 OI 和带日期模型可共存，但不是同时发生。前期 OI 可作合法上下文，昨日成交却可能不满足今日要求。缺失、观测为零和不适用是三种状态。完整范围结论需要完整覆盖；比较持仓变化需固定实际到期序列，相同滚动 DTE 标签可能掩盖合约进出。",
 		),
 		example: t(
-			"At 10:00 on September 3, a September 3 trade at 09:59 and a September 2 cleared OI report can meet a contract requiring current-session flow plus dated prior OI. A September 2 trade does not meet that flow requirement. A value for BETA cannot silently substitute for ALFA even if its timestamp is newer.",
-			"9 月 3 日 10:00，9 月 3 日 09:59 成交及 9 月 2 日清算 OI，可满足当前时段成交加带日期前期 OI 的要求。9 月 2 日成交不满足当前时段要求。即使 BETA 数据更新，也不能代替 ALFA。",
+			"At 10:30 on Monday September 16, a Monday trade at 10:05 and Friday's cleared open-interest report can meet a requirement for current-session flow plus dated prior OI. A Friday trade does not meet that flow requirement. A value for another symbol cannot silently substitute for ALFA even if its timestamp is newer.",
+			"9 月 16 日周一 10:30，周一 10:05 的成交及周五清算的未平仓量报告，可满足当前时段成交加带日期前期 OI 的要求。周五的成交不满足当前时段要求。即使其他标的的数据更新，也不能代替 ALFA。",
 		),
 		misconception: t(
 			"Freshness is task-relative. Reject the affected comparison, not every valid source on the page.",

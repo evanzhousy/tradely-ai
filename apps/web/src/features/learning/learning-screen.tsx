@@ -87,6 +87,7 @@ import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
+import { SymbolDrawerWalkthrough } from "./lessons/symbol-drawer";
 import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
 import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
@@ -108,7 +109,6 @@ import { RecapConceptLab } from "./recap-concept-lab";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
-import { SourceConceptLab } from "./source-concept-lab";
 import { SurfaceConceptLab } from "./surface-concept-lab";
 import { TimeVolRateConceptLab } from "./time-vol-rate-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
@@ -138,7 +138,7 @@ const conceptLabs = {
 	"theta-vega-rho": TimeVolRateConceptLab,
 	gamma: GammaConceptLab,
 	delta: DeltaConceptLab,
-	"symbol-drawer": SourceConceptLab,
+	"symbol-drawer": SymbolDrawerWalkthrough,
 	"unusual-activity": UnusualActivityWalkthrough,
 	"option-strategies": OptionStrategiesWalkthrough,
 	"stocks-and-prices": StocksAndPricesWalkthrough,

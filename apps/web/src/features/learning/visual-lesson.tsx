@@ -108,8 +108,8 @@ const lessons = {
 		import("./delta-concept-lab").then((m) => ({ default: m.DeltaConceptLab })),
 	),
 	"symbol-drawer": lazy(() =>
-		import("./source-concept-lab").then((m) => ({
-			default: m.SourceConceptLab,
+		import("./lessons/symbol-drawer").then((m) => ({
+			default: m.SymbolDrawerWalkthrough,
 		})),
 	),
 	"unusual-activity": lazy(() =>

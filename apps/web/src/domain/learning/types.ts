@@ -21,7 +21,6 @@ import type { PortfolioExposureData } from "./portfolio-exposure-concept";
 import type { RankSymbolConceptData } from "./rank-symbol-concept";
 import type { RecapConceptData } from "./recap-concept";
 import type { RegimeConceptData } from "./regime-concept";
-import type { SourceConceptData } from "./source-concept";
 import type { SurfaceConceptData } from "./surface-concept";
 import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
 import type { UniverseComparison } from "./universe";
@@ -166,7 +165,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| SourceConceptData
 		| DeltaConceptData
 		| GammaConceptData
 		| TimeVolRateConceptData
