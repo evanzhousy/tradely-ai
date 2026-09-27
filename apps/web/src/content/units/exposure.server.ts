@@ -7,7 +7,6 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-import { gammaConceptData } from "./gamma-concept.server";
 import { ivRankConceptData } from "./iv-rank-concept.server";
 import { surfaceConceptData } from "./surface-concept.server";
 import { timeVolRateConceptData } from "./time-vol-rate-concept.server";
@@ -76,10 +75,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "gamma",
 		conceptLab: {
 			kind: "gamma",
-			data: gammaConceptData,
 			intro: t(
-				"Separate gamma's change in delta from its price term, replay a hedge for a supplied position, and compare near-expiry sensitivity without extrapolating past valid delta bounds.",
-				"区分 Gamma 引起的 Delta 变化与价格项，回放给定持仓对冲，并比较临近到期敏感度而不越过有效 Delta 边界外推。",
+				"Watch the Oct 18 100 call's delta climb from 0.52 to 0.60 on a $2 rise, rehedge your 16 calls and Ben's short 10, and see why the 4-day Sep 20 call's gamma gathers at the strike.",
+				"看 10月18日 100 看涨的 Delta 在上涨 $2 时从 0.52 升到 0.60，为你的 16 张和 Ben 的空头 10 张重新对冲，并理解为什么只剩 4 天的 9月20日 看涨的 Gamma 聚集在行权价。",
 			),
 		},
 		sources: [greeks],
@@ -88,8 +86,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"Gamma 衡量模型 Delta 随标的的变化。Delta 是斜率，Gamma 描述斜率变化。小幅变动后 Delta≈原 Delta+Gamma×变动。期权价格近似可包含 Delta×变动+半个 Gamma×变动平方，两种计算不同。普通期权多头通常正 Gamma，空头相反。对冲针对给定持仓 Delta，不是凭成交推断未知做市商组合。临近到期的平值敏感度可急剧变化，但不意味着所有 0DTE 同样敏感，也不能把局部近似用于任意大幅变动。",
 		),
 		example: t(
-			"Long call delta 0.50, gamma 0.04 per $1. A $2 rise implies delta about 0.58. Two contracts with multiplier 100 change from +100 to +116 shares-equivalent. A delta-neutral hedge would change from −100 to −116 shares: sell 16 more shares under these assumptions.",
-			"多头看涨 Delta 0.50、每 $1 Gamma 0.04。上涨 $2 后 Delta 约 0.58。2 张、乘数 100，股等价量由 +100 到 +116。中性对冲由 −100 股变为 −116 股，在这些假设下需再卖 16 股。",
+			"The Oct 18 100 call at ALFA $100 has delta 0.52 and gamma 0.04 per $1. A $2 rise implies delta about 0.60. Your 16 contracts go from +832 to +960 share-equivalents, so a hedge short 832 shares must sell 128 more; Ben, short 10 calls, goes from −520 to −600 and must buy 80. The price estimate is a different sum: 0.52 × 2 + ½ × 0.04 × 2² = $1.12 a share.",
+			"ALFA $100 时，10月18日 100 看涨的 Delta 为 0.52，Gamma 为每 $1 0.04。上涨 $2 后 Delta 约为 0.60。你的 16 张从 +832 股等价变为 +960，做空 832 股的对冲需要再卖出 128 股；Ben 空头 10 张看涨，从 −520 变为 −600，需要买入 80 股。价格估计是另一种算法：0.52 × 2 + ½ × 0.04 × 2² = 每股 $1.12。",
 		),
 		misconception: t(
 			"For the supplied long-gamma position, selling into a rise maintains the hedge. This conditional example does not prove how dealers are positioned.",

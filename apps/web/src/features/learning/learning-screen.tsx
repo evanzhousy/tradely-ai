@@ -66,7 +66,6 @@ import { learningCopy } from "./copy";
 import { ExecutionLab } from "./execution-lab";
 import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
-import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
@@ -79,6 +78,7 @@ import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterp
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
+import { GammaWalkthrough } from "./lessons/gamma";
 import { MarketRecapWalkthrough } from "./lessons/market-recap";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
@@ -136,7 +136,7 @@ const conceptLabs = {
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
 	"theta-vega-rho": TimeVolRateConceptLab,
-	gamma: GammaConceptLab,
+	gamma: GammaWalkthrough,
 	delta: DeltaWalkthrough,
 	"symbol-drawer": SymbolDrawerWalkthrough,
 	"unusual-activity": UnusualActivityWalkthrough,

@@ -104,7 +104,7 @@ const lessons = {
 		})),
 	),
 	gamma: lazy(() =>
-		import("./gamma-concept-lab").then((m) => ({ default: m.GammaConceptLab })),
+		import("./lessons/gamma").then((m) => ({ default: m.GammaWalkthrough })),
 	),
 	delta: lazy(() =>
 		import("./lessons/delta").then((m) => ({ default: m.DeltaWalkthrough })),
