@@ -65,7 +65,6 @@ import {
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
 import { DeltaConceptLab } from "./delta-concept-lab";
-import { EligibilityConceptLab } from "./eligibility-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
@@ -88,6 +87,7 @@ import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { SymbolDrawerWalkthrough } from "./lessons/symbol-drawer";
+import { SymbolUniverseWalkthrough } from "./lessons/symbol-universe";
 import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
 import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
@@ -123,7 +123,7 @@ const conceptLabs = {
 	"structural-levels": LevelsConceptLab,
 	"charm-vanna": CharmVannaConceptLab,
 	"audited-boundary": AuditedBoundaryWalkthrough,
-	"symbol-universe": EligibilityConceptLab,
+	"symbol-universe": SymbolUniverseWalkthrough,
 	"rank-symbols": RankSymbolConceptLab,
 	"rank-contracts": NeighborhoodConceptLab,
 	"point-in-time-research": PointTimeConceptLab,

@@ -41,8 +41,8 @@ const lessons = {
 		})),
 	),
 	"symbol-universe": lazy(() =>
-		import("./eligibility-concept-lab").then((m) => ({
-			default: m.EligibilityConceptLab,
+		import("./lessons/symbol-universe").then((m) => ({
+			default: m.SymbolUniverseWalkthrough,
 		})),
 	),
 	"rank-symbols": lazy(() =>

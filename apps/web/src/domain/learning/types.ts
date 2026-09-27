@@ -3,7 +3,6 @@ import type { AuditRecapConceptData } from "./audit-recap-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
-import type { EligibilityConceptData } from "./eligibility-concept";
 import type { FlowImpactConceptData } from "./flow-impact-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { GammaConceptData } from "./gamma-concept";
@@ -175,7 +174,6 @@ export type LearningStepView = {
 		| RegimeConceptData
 		| LevelsConceptData
 		| CharmVannaConceptData
-		| EligibilityConceptData
 		| RankSymbolConceptData
 		| NeighborhoodConceptData
 		| PointTimeConceptData

@@ -1,4 +1,3 @@
-import { eligibilityConceptData } from "./eligibility-concept.server";
 import { neighborhoodConceptData } from "./neighborhood-concept.server";
 import { pointTimeConceptData } from "./point-time-concept.server";
 import { rankSymbolConceptData } from "./rank-symbol-concept.server";
@@ -80,10 +79,9 @@ export const researchUnits: TeachingUnit[] = [
 		id: "symbol-universe",
 		conceptLab: {
 			kind: "symbol-universe",
-			data: eligibilityConceptData,
 			intro: t(
-				"Derive eligibility from source facts, separate observed peers from missing candidates, and preserve the membership date of a historical comparison.",
-				"根据来源事实判定资格，区分观测同组与缺失候选，并保留历史比较的成员日期。",
+				"Check eight symbols against a declared rule, keep an unobserved stock apart from the ones you measured, and use the list of names that existed on the date you compare.",
+				"按声明的规则检查八个标的，把未观测的股票与已测量的分开，并使用比较日期当时存在的名单。",
 			),
 		},
 		sources: [oi],
@@ -92,8 +90,8 @@ export const researchUnits: TeachingUnit[] = [
 			"比较范围是声明的合格观测集合。资格应由来源事实决定，不是只信绿色标签：工具身份、时段、必需覆盖与流动性阈值。区分目标人群与实际观测子集。缺失大成交候选可能需从测量比较中排除，但剩余领先者不因此成为未知完整范围的最大值。行业是产业分类，市值为股价乘流通在外股数，财报日期标识计划事件，不保证消息公布时刻。它们可与标的类型一起定义问题，但不能互换使用；指数没有行业分类，并不代表工具未知。历史成员应按当时确定，避免幸存者偏差。分母可能指同组数量，也可能指归一化基准，需明确。",
 		),
 		example: t(
-			"Rule: stock options, September 3, complete source, at least 500 contracts. A: stock/September 3/complete/800; B: ETF/September 3/complete/2,000; C: stock/September 2/complete/3,000; D: stock/September 3/missing. Only A has a valid observed comparison. D is unknown, not zero, and limits full-universe claims.",
-			"规则：股票期权、9 月 3 日、来源完整、至少 500 张。A：股票/9 月 3 日/完整/800；B：ETF/同日/完整/2,000；C：股票/9 月 2 日/完整/3,000；D：股票/同日/缺失。只有 A 可作有效观测比较。D 是未知而不是零，限制完整范围结论。",
+			"Rule: stock options, Monday September 16, data present, at least 500 contracts. DUNE: stock/Monday/900; BRDX: ETF/Monday/4,200; EMBR: stock/Friday/3,100; FJOR: stock/Monday/missing. Only DUNE is a valid observed comparison among these. FJOR is unknown, not zero, and limits full-universe claims.",
+			"规则：股票期权、9 月 16 日周一、有数据、至少 500 张。DUNE：股票/周一/900；BRDX：ETF/周一/4,200；EMBR：股票/周五/3,100；FJOR：股票/周一/缺失。其中只有 DUNE 可作有效观测比较。FJOR 是未知而不是零，限制完整范围结论。",
 		),
 		misconception: t(
 			"Compute eligibility before ranking. Changing exclusions after seeing the winner changes the question.",
