@@ -153,8 +153,8 @@ const lessons = {
 		})),
 	),
 	"premium-payoff": lazy(() =>
-		import("./payoff-concept-lab").then((m) => ({
-			default: m.PayoffConceptLab,
+		import("./lessons/premium-payoff").then((m) => ({
+			default: m.PremiumPayoffWalkthrough,
 		})),
 	),
 	"expiration-settlement": lazy(() =>

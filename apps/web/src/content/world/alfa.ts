@@ -23,11 +23,16 @@ export type Contract = {
 };
 
 /** "ALFA Oct 18 100 call" / "ALFA 10月18日 100 看涨". */
-export function contractLabel({ expiry, strike, right }: Contract): Copy {
+/** "ALFA Oct 18 100 call"; without the symbol where space is tight. */
+export function contractLabel(
+	{ expiry, strike, right }: Contract,
+	withSymbol = true,
+): Copy {
 	const date = expiries[expiry].label;
+	const symbol = withSymbol ? `${ALFA.symbol} ` : "";
 	return [
-		`${ALFA.symbol} ${date[0]} ${strike} ${right}`,
-		`${ALFA.symbol} ${date[1]} ${strike} ${right === "call" ? "看涨" : "看跌"}`,
+		`${symbol}${date[0]} ${strike} ${right}`,
+		`${symbol}${date[1]} ${strike} ${right === "call" ? "看涨" : "看跌"}`,
 	];
 }
 

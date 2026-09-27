@@ -5,7 +5,6 @@ import {
 	type Contract,
 	type Copy,
 	contractLabel,
-	expiries,
 	OCT_100_CALL,
 	optionQuote,
 	pick,
@@ -26,15 +25,6 @@ type Side = "long" | "short";
 const PUT_95: Contract = { expiry: "oct18", strike: 95, right: "put" };
 const contractFor = (right: Right) =>
 	right === "call" ? OCT_100_CALL : PUT_95;
-
-/** "Oct 18 95 put" without the symbol, for tight labels. */
-function shortLabel({ expiry, strike, right }: Contract): Copy {
-	const date = expiries[expiry].label;
-	return [
-		`${date[0]} ${strike} ${right}`,
-		`${date[1]} ${strike} ${right === "call" ? "看涨" : "看跌"}`,
-	];
-}
 
 // ——— Scene 1: rights and obligations ———
 
@@ -656,7 +646,7 @@ function AssignStage({
 				tone="muted"
 			>
 				{t(["long 1 ", "多头 1 张 "])}
-				{t(shortLabel(c.contract))}
+				{t(contractLabel(c.contract, false))}
 			</Label>
 			{youLines.map((line, row) => (
 				<m.text

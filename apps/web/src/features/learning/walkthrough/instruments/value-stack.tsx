@@ -16,6 +16,8 @@ export type StackRow = {
 	parts: readonly StackPart[];
 	/** Optional marker, such as the price paid, in cents. */
 	marker?: { value: number; label: string };
+	/** Hidden rows keep their place, so rows shown later do not push others around. */
+	hidden?: boolean;
 };
 
 const ROW = 64;
@@ -42,12 +44,15 @@ export function ValueStack({
 	rows,
 	max,
 	title,
+	focus,
 }: {
 	width: number;
 	rows: readonly StackRow[];
 	/** Cents represented by the full bar width. */
 	max: number;
 	title?: string;
+	/** Id of the row under discussion. */
+	focus?: string;
 }) {
 	const motion = useTeachMotion();
 	const labelWidth = width < 520 ? 0 : 128;
@@ -67,8 +72,27 @@ export function ValueStack({
 				let offset = 0;
 				const total = row.parts.reduce((sum, part) => sum + part.value, 0);
 				return (
-					<g key={row.id}>
-						<Label x={14} y={labelWidth ? y + 24 : y + 14}>
+					<m.g
+						key={row.id}
+						initial={false}
+						animate={{ opacity: row.hidden ? 0 : 1 }}
+						transition={motion.fade}
+					>
+						{row.id === focus ? (
+							<rect
+								x={6}
+								y={y - 4}
+								width={width - 12}
+								height={labelWidth ? 44 : 56}
+								rx={10}
+								className="wt-focus-shape"
+							/>
+						) : null}
+						<Label
+							x={14}
+							y={labelWidth ? y + 24 : y + 14}
+							tone={row.id === focus ? "accent" : undefined}
+						>
 							{row.label}
 						</Label>
 						{row.parts.map((part) => {
@@ -90,7 +114,11 @@ export function ValueStack({
 										<m.text
 											y={barY + 16}
 											textAnchor="middle"
-											className="wt-small wt-on-bar"
+											className={`wt-small ${
+												part.kind === "time" || part.kind === "neutral"
+													? "wt-on-soft"
+													: "wt-on-solid"
+											}`}
 											initial={false}
 											animate={{ x: x + w / 2 }}
 											transition={motion.move}
@@ -120,7 +148,7 @@ export function ValueStack({
 								</Label>
 							</g>
 						) : null}
-					</g>
+					</m.g>
 				);
 			})}
 		</g>

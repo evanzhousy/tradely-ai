@@ -424,14 +424,34 @@
 .wt-arrow-contract {
 	stroke: var(--diagram-accent);
 }
+.wt-band-loss {
+	fill: color-mix(in oklab, var(--diagram-loss) 14%, transparent);
+}
+.wt-band-gain {
+	fill: color-mix(in oklab, var(--diagram-gain) 14%, transparent);
+}
+.wt-band-neutral {
+	fill: color-mix(in oklab, var(--diagram-accent) 10%, transparent);
+}
 .wt-stack-time {
 	stroke: var(--wt-long);
 	stroke-width: 1.5;
 }
-.wt-svg .wt-on-bar {
+/* Text on a solid bar takes the card colour; on a soft bar, the text colour. */
+.wt-svg .wt-on-solid {
+	fill: var(--card);
+	font-weight: 600;
+}
+.wt-svg .wt-on-soft {
 	fill: var(--foreground);
+}
+/* Labels that sit on lines keep a ring of stage colour so the line never crosses them. */
+.wt-svg .wt-marker-label {
+	font-weight: 600;
+}
+.wt-svg .wt-halo {
 	paint-order: stroke;
 	stroke: var(--muted);
-	stroke-width: 3px;
+	stroke-width: 4px;
 	stroke-linejoin: round;
 }

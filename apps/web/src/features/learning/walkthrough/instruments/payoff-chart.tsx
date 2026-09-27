@@ -20,6 +20,15 @@ export type PayoffMarker = {
 	tone?: "gain" | "loss" | "neutral";
 };
 
+/** A price range to shade, such as where a call is in the money but still losing. */
+export type PayoffBand = {
+	id: string;
+	from: number;
+	to: number;
+	label?: string;
+	tone?: "gain" | "loss" | "neutral";
+};
+
 const PAD_LEFT = 58;
 const PAD_RIGHT = 16;
 const PAD_TOP = 24;
@@ -38,6 +47,7 @@ export function PayoffChart({
 	yTicks,
 	lines,
 	markers = [],
+	bands = [],
 	xLabel,
 	title,
 	formatY = (value: number) => (value === 0 ? "$0" : signedUsd(value * 100, 0)),
@@ -50,6 +60,7 @@ export function PayoffChart({
 	yTicks: readonly number[];
 	lines: readonly PayoffLine[];
 	markers?: readonly PayoffMarker[];
+	bands?: readonly PayoffBand[];
 	xLabel: string;
 	title?: string;
 	/** Axis labels for y values; defaults to signed whole dollars. */
@@ -89,6 +100,33 @@ export function PayoffChart({
 					{title}
 				</Label>
 			) : null}
+			{bands.map((band) => (
+				<m.g
+					key={band.id}
+					initial={motion.enabled ? { opacity: 0 } : false}
+					animate={{ opacity: 1 }}
+					transition={motion.fade}
+				>
+					<rect
+						x={x(band.from)}
+						y={top}
+						width={x(band.to) - x(band.from)}
+						height={bottom - top}
+						className={`wt-band-${band.tone ?? "neutral"}`}
+					/>
+					{band.label ? (
+						<Label
+							x={(x(band.from) + x(band.to)) / 2}
+							y={top + 14}
+							anchor="middle"
+							tone="small"
+							className="wt-halo"
+						>
+							{band.label}
+						</Label>
+					) : null}
+				</m.g>
+			))}
 			{yTicks.map((tick) => (
 				<g key={tick}>
 					<path
@@ -158,7 +196,13 @@ export function PayoffChart({
 					{marker.label ? (
 						<m.text
 							textAnchor="middle"
-							className="wt-accent"
+							className={`wt-halo ${
+								marker.tone === "gain"
+									? "wt-gain wt-marker-label"
+									: marker.tone === "loss"
+										? "wt-loss wt-marker-label"
+										: "wt-accent"
+							}`}
 							initial={false}
 							animate={{
 								x: Math.min(Math.max(x(marker.x), left + 50), right - 50),

@@ -80,6 +80,7 @@ import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
+import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
@@ -89,7 +90,6 @@ import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
-import { PayoffConceptLab } from "./payoff-concept-lab";
 import { PerformanceConceptLab } from "./performance-concept-lab";
 import { PnlConceptLab } from "./pnl-concept-lab";
 import { PointTimeConceptLab } from "./point-time-concept-lab";
@@ -147,7 +147,7 @@ const conceptLabs = {
 	"options-risks": OptionsRisksWalkthrough,
 	"option-contracts": OptionContractsWalkthrough,
 	"option-rights": OptionRightsWalkthrough,
-	"premium-payoff": PayoffConceptLab,
+	"premium-payoff": PremiumPayoffWalkthrough,
 	"expiration-settlement": SettlementConceptLab,
 	"quotes-orders-trades": QuoteConceptLab,
 	"execution-counterparties": ExecutionConceptLab,
