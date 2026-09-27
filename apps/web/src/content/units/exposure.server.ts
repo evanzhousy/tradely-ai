@@ -7,7 +7,6 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-import { ivRankConceptData } from "./iv-rank-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
@@ -319,10 +318,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "iv-rank-percentile",
 		conceptLab: {
 			kind: "iv-rank-percentile",
-			data: ivRankConceptData,
 			intro: t(
-				"Compare range position with strictly-below frequency, isolate one historical outlier, and audit the reference, window and coverage before publishing percentages.",
-				"比较区间位置与严格低于频率，单独改变一个历史极端值，并在发布百分比前审计参考、窗口与覆盖。",
+				"Read ALFA's 35% IV30 against a year of weekly closes as a 28% rank and a 92% percentile, drop one 68% week to see which measure moves, and check the window and coverage behind each number.",
+				"把 ALFA 35% 的 IV30 放到一年的每周收盘中，读出 28% 的 Rank 和 92% 的百分位；去掉一个 68% 的周，看哪个指标会变；并检查每个数字背后的窗口与覆盖。",
 			),
 		},
 		sources: [greeks],
@@ -331,8 +329,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"IV Rank 表示当前标准化 IV 在历史最低到最高区间的位置：(当前−最低)/(最高−最低)×100。IV 百分位统计历史观测低于当前值的比例，必须说明相等值处理规则。两者需要同一 IV 参考、明确窗口及足够覆盖。单个极高值可降低 Rank，却不改变普通日期低于当前值的数量。本课使用严格低于的百分位和明确给定样本，不把短样本当作可靠一年估计。区间为零时该公式无定义，历史缺失应披露。",
 		),
 		example: t(
-			"History 10, 20, 20, 30, 100; current 30. Rank is (30−10)/(100−10) = 22.22%. Strictly-below percentile is 3/5 = 60%. The 100 outlier affects the range much more than the count. A tie at 30 is not counted under this rule.",
-			"历史为 10、20、20、30、100，当前 30。Rank=(30−10)/(100−10)=22.22%；严格低于百分位=3/5=60%。100 的异常高值对区间影响较大，对数量影响较小；按此规则，相等的 30 不计入。",
+			"ALFA's IV30 is 35% today; over the past year's weekly closes it ranged from 22% to 68%. IV rank is (35 − 22) ÷ (68 − 22) = 28%, but 48 of 52 weeks were lower, an IV percentile of 92%. Drop the single 68% week and rank jumps to 59% while percentile moves only to 94%. Over just the last 13 weeks, today is above every close.",
+			"ALFA 今天的 IV30 为 35%；过去一年的每周收盘在 22% 到 68% 之间。IV Rank 为 (35 − 22) ÷ (68 − 22) = 28%，但 52 周中有 48 周更低，IV 百分位为 92%。去掉唯一一周的 68%，Rank 跳到 59%，百分位只变到 94%。只看最近 13 周，今天高于每一个收盘值。",
 		),
 		misconception: t(
 			"Rank is a range location; percentile is a frequency. A high value of either is not a direction or profit forecast.",

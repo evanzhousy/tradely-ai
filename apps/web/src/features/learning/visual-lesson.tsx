@@ -8,8 +8,8 @@ import { VisualLessonIdentity, VisualLocaleProvider } from "./visual-playback";
 
 const lessons = {
 	"iv-rank-percentile": lazy(() =>
-		import("./iv-rank-concept-lab").then((m) => ({
-			default: m.IvRankConceptLab,
+		import("./lessons/iv-rank-percentile").then((m) => ({
+			default: m.IvRankPercentileWalkthrough,
 		})),
 	),
 	"dex-dei-gex": lazy(() =>

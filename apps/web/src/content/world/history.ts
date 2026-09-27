@@ -48,3 +48,15 @@ export function standardDeviation(values: readonly number[]) {
 export function realizedVolatility(returns: readonly number[], periods = 252) {
 	return standardDeviation(returns) * Math.sqrt(periods);
 }
+
+/**
+ * ALFA's 30-day implied volatility (IV30, in vol points) at each weekly close for the year to
+ * Fri Sep 13, oldest first: mid-20s most weeks, a bump into each quarterly report, and one
+ * market shock in February that touched 68. Monday's IV30 is 35, with earnings ahead.
+ */
+export const alfaIv30Weekly: readonly number[] = [
+	29, 33, 27, 26, 25, 26, 25, 24, 25, 24, 23, 22, 24, 27, 32, 27, 25, 26, 25,
+	29, 44, 68, 40, 36, 31, 29, 30, 34, 29, 26, 25, 24, 24, 26, 25, 27, 26, 25,
+	26, 28, 33, 28, 26, 25, 27, 26, 28, 27, 28, 29, 30, 31,
+];
+export const ALFA_IV30_TODAY = 35;

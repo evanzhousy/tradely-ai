@@ -67,7 +67,6 @@ import { ExecutionLab } from "./execution-lab";
 import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { GexConceptLab } from "./gex-concept-lab";
-import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
@@ -80,6 +79,7 @@ import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { GammaWalkthrough } from "./lessons/gamma";
 import { ImpliedRealizedVolatilityWalkthrough } from "./lessons/implied-realized-volatility";
+import { IvRankPercentileWalkthrough } from "./lessons/iv-rank-percentile";
 import { MarketRecapWalkthrough } from "./lessons/market-recap";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
@@ -116,7 +116,7 @@ import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
-	"iv-rank-percentile": IvRankConceptLab,
+	"iv-rank-percentile": IvRankPercentileWalkthrough,
 	"dex-dei-gex": FlowImpactConceptLab,
 	"gamma-exposure": GexConceptLab,
 	"gamma-regimes": RegimeConceptLab,
