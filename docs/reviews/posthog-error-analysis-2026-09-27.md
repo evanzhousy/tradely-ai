@@ -1,5 +1,42 @@
 # PostHog error analysis — 2026-09-27
 
+## Executive assessment
+
+### Doing well
+
+- **Project attribution is trustworthy for this run.** Every project-scoped
+  query returned Tradely project 582920 provenance, resolving the connector
+  routing problem that blocked exact reconciliation in the prior run.
+- **Production and local evidence are separated correctly.** The analysis used
+  `app = tradely` and `environment = production` for customer-impact findings,
+  and kept all 79 local exceptions out of the production result.
+- **The production deployment was available.** The latest deployment was Ready
+  and owned both `tradely.ai` and `www.tradely.ai`; Vercel reported no grouped
+  runtime-error clusters during the seven-day window.
+- **Error evidence is actionable without weakening privacy.** Source maps and
+  release metadata identified the historical `allowed` failure as a
+  client/server deployment-contract mismatch. The persistence diagnostic exposed
+  the bounded `learning_open` operation while still withholding raw database and
+  learner data.
+
+### Doing poorly / needs attention
+
+- **Current PostHog production coverage is insufficient.** Both 24-hour windows
+  contained zero captured production events and zero production page views,
+  despite Vercel recording current production requests. Error absence therefore
+  cannot establish current reliability.
+- **The learning-open persistence failure is unresolved.** Four production
+  occurrences remain attributed only to the redacted `learning_open` operation;
+  the underlying database or request failure has not been correlated.
+- **A deployment broke response compatibility for a cached client.** An older
+  browser release read `page.access.allowed` after the newer server response had
+  removed `access`. It was a one-off historical failure, but it demonstrates that
+  server-function response changes were not safe across deployment skew.
+- **The cause of the analytics coverage gap is not yet determined.** This
+  data-only run did not generate a consented production journey, so it cannot
+  distinguish a lack of consenting users from a managed-proxy or delivery
+  failure. That boundary needs direct verification.
+
 ## Highest-priority finding
 
 No production `$exception` events or Error Tracking issues were observed in the
@@ -215,6 +252,8 @@ No application code, deployment, PostHog issue status/settings, alerts, external
 communications, or production data changed. Browser verification was not
 performed, so GIF evidence is not applicable.
 
-Runbook maintenance: added exposure checking for zero-error windows and explicit
-client-release versus server-deployment comparison for response-contract errors;
-refreshed the live handoff.
+Runbook maintenance: added exposure checking for zero-error windows, explicit
+client-release versus server-deployment comparison for response-contract errors,
+and a required evidence-based `Doing well` / `Doing poorly` executive assessment
+at the start of future reports; refreshed the live handoff. The assessment-format
+follow-up was documentation-only and did not rerun live analysis.

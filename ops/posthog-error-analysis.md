@@ -16,6 +16,8 @@ Last updated: 2026-09-27
 The 2026-09-27 read-only run completed project-scoped issue and raw-event
 reconciliation. See the
 [execution report](../docs/reviews/posthog-error-analysis-2026-09-27.md).
+The subsequent assessment-format update was documentation-only; no live analysis
+was rerun.
 
 - [ ] Verify fresh consented production delivery into project 582920 before using
   empty error windows as a reliability signal. Both 24-hour windows had zero
@@ -36,10 +38,11 @@ reconciliation. See the
 /goal Run ops/posthog-error-analysis.md for Tradely. Investigate PostHog errors
 in the last 24 hours, compare the preceding 24 hours, and use seven days of
 history for recurrence. Verify the project and production scope first. Produce
-a dated evidence report with impact, ranked issues, root-cause confidence,
-recommended fixes, and validation gates. Keep external systems read-only,
-maintain the runbook, and commit only owned documentation. Do not push, deploy,
-change issue status or settings, or send notifications.
+a dated evidence report that starts with what is doing well and what is doing
+poorly, then covers impact, ranked issues, root-cause confidence, recommended
+fixes, and validation gates. Keep external systems read-only, maintain the
+runbook, and commit only owned documentation. Do not push, deploy, change issue
+status or settings, or send notifications.
 ```
 
 Success means the project is verified, coverage and exact windows are recorded,
@@ -226,17 +229,22 @@ production unverified. Do not create a monitor automatically.
 Write `docs/reviews/posthog-error-analysis-YYYY-MM-DD.md`, adding a scope suffix
 for another same-day run rather than overwriting unrelated work. Include:
 
-1. Highest-priority finding and recommended next action.
-2. Project verification, extraction time/windows/timezone, filters, coverage,
+1. An executive assessment at the very start with `Doing well` and
+   `Doing poorly / needs attention` sections. Use short evidence-backed bullets:
+   positively verified controls or outcomes belong under `Doing well`; failures,
+   blind spots, regressions, and unresolved risks belong under `Doing poorly`.
+   Never list zero errors as good when production exposure is zero or unknown.
+2. Highest-priority finding and recommended next action.
+3. Project verification, extraction time/windows/timezone, filters, coverage,
    query limits, exclusions, and whether the run was complete or blocked.
-3. Ranked issue table with impact units, comparison counts, severity, confidence,
+4. Ranked issue table with impact units, comparison counts, severity, confidence,
    evidence links, owner, and disposition.
-4. Deep-dive evidence, release/source mapping, hypotheses, proposed fixes, and
+5. Deep-dive evidence, release/source mapping, hypotheses, proposed fixes, and
    local versus production verification gates.
-5. Reproducibility appendix: executed query text or full tool filters/config,
+6. Reproducibility appendix: executed query text or full tool filters/config,
    timestamps, aggregate results, and evidence links. Do not label example or
    unexecuted queries as evidence.
-6. Remaining actions and limitations; state whether any code or external state
+7. Remaining actions and limitations; state whether any code or external state
    changed and whether browser verification was performed.
 
 Reconcile a headline issue count with an independent bounded event query under
