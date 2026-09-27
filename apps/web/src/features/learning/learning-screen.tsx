@@ -99,6 +99,7 @@ import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
 import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
 import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
+import { VolatilitySurfaceWalkthrough } from "./lessons/volatility-surface";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
@@ -111,7 +112,6 @@ import { QuotePositionExplorer } from "./quote-position-explorer";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
-import { SurfaceConceptLab } from "./surface-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
@@ -133,7 +133,7 @@ const conceptLabs = {
 	"portfolio-pnl": PnlConceptLab,
 	"portfolio-performance": PerformanceConceptLab,
 	"portfolio-exposure": PortfolioExposureConceptLab,
-	"volatility-surface": SurfaceConceptLab,
+	"volatility-surface": VolatilitySurfaceWalkthrough,
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,
 	"theta-vega-rho": ThetaVegaRhoWalkthrough,
 	gamma: GammaWalkthrough,

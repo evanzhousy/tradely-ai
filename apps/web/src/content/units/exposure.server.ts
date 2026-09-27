@@ -8,7 +8,6 @@ import {
 	t,
 } from "./authoring.server";
 import { ivRankConceptData } from "./iv-rank-concept.server";
-import { surfaceConceptData } from "./surface-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
@@ -252,10 +251,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "volatility-surface",
 		conceptLab: {
 			kind: "volatility-surface",
-			data: surfaceConceptData,
 			intro: t(
-				"Select strike and expiry slices, compare compatible delta-wing references, and distinguish supplied nodes from explicit interpolation estimates.",
-				"选择行权价与到期切片，比较兼容的 Delta 翼参考，并区分给定节点与明确的插值估计。",
+				"Slice ALFA's implied volatility grid into a smile and a term structure, pick the Oct 18 wings by delta and state the sign of their difference, and mark interpolated cells while leaving unsupported ones blank.",
+				"把 ALFA 的隐含波动率网格切成微笑和期限结构，按 Delta 选出 10月18日 的两翼并说明其差值的符号，标明插值的格子，同时让没有支持的格子留空。",
 			),
 		},
 		sources: [greeks],
@@ -264,8 +262,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"波动率微笑是在同一到期日按行权价或价内外程度切片，期限结构按可比参考比较到期日，曲面组合两维。25 Delta 等坐标依赖模型与报价约定，应说明符号约定。本课 25 Delta 偏斜为看跌 IV 减看涨 IV。风险逆转通常反过来报价，即看涨 IV 减看跌 IV，因此等于该偏斜的相反数，股指通常为负。蝶式指标为两翼平均 IV 减 ATM IV，单位为波动率点。ATM30 是标准化参考，不一定对应单一挂牌合约。插值是有观测支持区间内的模型估计，不是报价；无支持单元格应留空。仅成交的微笑与完整报价链覆盖不同，切换类型或到期日会改变比较。",
 		),
 		example: t(
-			"Same expiry: 25Δ put IV 32%, call IV 26%, ATM IV 27%. Put-minus-call skew is 6 points, so the call-minus-put risk reversal is −6 points; butterfly is (32+26)/2−27 = 2 points. If the call wing is absent, neither complete comparison can be recovered by assuming its IV is zero.",
-			"同到期：25Δ 看跌 IV 32%、看涨 26%、ATM 27%。看跌减看涨偏斜为 6 点，因此看涨减看跌的风险逆转为 −6 点；蝶式为 (32+26)/2−27=2 点。若看涨翼缺失，不能假定其 IV 为零来恢复完整比较。",
+			"ALFA's Oct 18 smile runs from 37% at the $90 strike to 33% at $110, and at $100 the term structure rises from 33% (Sep 20) to 35% for the October expiries that span earnings, then falls to 31% (Dec 20). The 25Δ put ($93.55) is at 36.3% and the 25Δ call ($107.45) at 33.5%: skew, put minus call, is +2.8 points and the call-minus-put risk reversal −2.8. Dec 20 $105 has no quote, so ≈30% is an interpolation; the 4-day $90 and $110 wings stay blank.",
+			"ALFA 10月18日 的微笑从 $90 行权价的 37% 到 $110 的 33%；在 $100 处，期限结构从 33%（9月20日）升到跨越财报的十月到期日的 35%，再降到 31%（12月20日）。25Δ 看跌（$93.55）为 36.3%，25Δ 看涨（$107.45）为 33.5%：偏斜（看跌减看涨）为 +2.8 点，看涨减看跌的风险逆转为 −2.8 点。12月20日 $105 没有报价，所以 ≈30% 是插值；只剩 4 天的 $90 和 $110 两翼留空。",
 		),
 		misconception: t(
 			"A smooth surface can hide missingness. Identify which cells were measured and which were fitted before using their precision.",

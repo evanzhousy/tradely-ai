@@ -30,6 +30,10 @@ export function StrikeGrid({
 	itmSide = "left",
 	focusRows = [],
 	focusCell,
+	focusStrikes = [],
+	estimated = [],
+	min = 0,
+	format = count,
 	title,
 }: {
 	width: number;
@@ -43,6 +47,13 @@ export function StrikeGrid({
 	itmSide?: "left" | "right";
 	focusRows?: readonly string[];
 	focusCell?: { row: string; strike: number };
+	/** Columns to outline, such as one strike read down the expiries. */
+	focusStrikes?: readonly number[];
+	/** Cells whose value is an interpolated estimate rather than a source value. */
+	estimated?: readonly { row: string; strike: number }[];
+	/** Shading starts here, so values that are all large still differ. */
+	min?: number;
+	format?: (value: number) => string;
 	title?: string;
 }) {
 	const motion = useTeachMotion();
@@ -128,6 +139,9 @@ export function StrikeGrid({
 							const x = colX(j) + 2;
 							const focus =
 								focusCell?.row === row.id && focusCell.strike === strikes[j];
+							const estimate = estimated.some(
+								(cell) => cell.row === row.id && cell.strike === strikes[j],
+							);
 							return (
 								<g key={strikes[j]}>
 									<rect
@@ -139,7 +153,16 @@ export function StrikeGrid({
 										className="wt-panel-shape"
 										style={value === null ? { fill: hatch } : undefined}
 									/>
-									{value !== null && value > 0 ? (
+									{estimate ? (
+										<rect
+											x={x + 1}
+											y={y + 4}
+											width={cellWidth - 6}
+											height={CELL - 10}
+											rx={5}
+											className="wt-ghost"
+										/>
+									) : value !== null && value > min ? (
 										<m.rect
 											x={x}
 											y={y + 3}
@@ -149,7 +172,9 @@ export function StrikeGrid({
 											className="wt-chip"
 											initial={false}
 											animate={{
-												opacity: 0.12 + 0.78 * Math.min(value / max, 1),
+												opacity:
+													0.12 +
+													0.78 * Math.min((value - min) / (max - min), 1),
 											}}
 											transition={motion.fade}
 										/>
@@ -171,12 +196,30 @@ export function StrikeGrid({
 										tone={value === null ? "accent" : undefined}
 										className="wt-halo"
 									>
-										{value === null ? "?" : count(value)}
+										{value === null
+											? "?"
+											: estimate
+												? `≈${format(value)}`
+												: format(value)}
 									</Label>
 								</g>
 							);
 						})}
 					</g>
+				);
+			})}
+			{focusStrikes.map((strike) => {
+				const j = strikes.indexOf(strike);
+				return j < 0 ? null : (
+					<rect
+						key={strike}
+						x={colX(j)}
+						y={HEAD - 2}
+						width={cellWidth}
+						height={bottom - HEAD}
+						rx={7}
+						className="wt-bracket"
+					/>
 				);
 			})}
 			{spotX !== null ? (

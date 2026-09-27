@@ -89,8 +89,8 @@ const lessons = {
 		})),
 	),
 	"volatility-surface": lazy(() =>
-		import("./surface-concept-lab").then((m) => ({
-			default: m.SurfaceConceptLab,
+		import("./lessons/volatility-surface").then((m) => ({
+			default: m.VolatilitySurfaceWalkthrough,
 		})),
 	),
 	"implied-realized-volatility": lazy(() =>

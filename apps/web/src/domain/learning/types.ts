@@ -11,7 +11,6 @@ import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
 import type { RegimeConceptData } from "./regime-concept";
-import type { SurfaceConceptData } from "./surface-concept";
 import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
@@ -153,7 +152,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| SurfaceConceptData
 		| IvRankConceptData
 		| FlowImpactConceptData
 		| GexConceptData
