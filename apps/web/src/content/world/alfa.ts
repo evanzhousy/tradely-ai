@@ -108,16 +108,24 @@ const optionQuotes: Record<string, { bid: number; ask: number }> = {
 	"oct18-95-put": { bid: 205, ask: 215 },
 	"oct18-105-call": { bid: 205, ask: 215 },
 	"oct18-110-call": { bid: 85, ask: 93 },
+	/** Thinly traded: few contracts rest on either side. */
+	"dec20-110-call": { bid: 220, ask: 265 },
 };
 
+/**
+ * The quote for any listed contract: an authored quote where lessons need exact numbers,
+ * otherwise the model value with a spread of about 2% (at least 5 cents) on a 5-cent tick.
+ */
 export function optionQuote(contract: Contract) {
-	const quote =
+	const authored =
 		optionQuotes[`${contract.expiry}-${contract.strike}-${contract.right}`];
-	if (!quote)
-		throw new Error(
-			`No teaching quote for ${contract.expiry} ${contract.strike} ${contract.right}`,
-		);
-	return quote;
+	if (authored) return authored;
+	const mid = modelValue(contract).price * 100;
+	const half = Math.max(5, mid * 0.02);
+	return {
+		bid: Math.max(0, Math.floor((mid - half) / 5) * 5),
+		ask: Math.max(5, Math.ceil((mid + half) / 5) * 5),
+	};
 }
 
 /** Value at expiry per share, in cents, for a price at expiry in cents. */

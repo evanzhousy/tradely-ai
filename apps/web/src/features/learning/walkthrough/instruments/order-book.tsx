@@ -23,6 +23,8 @@ export type BookLabels = {
 	spread: string;
 	last: string;
 	filled: (size: number) => string;
+	/** Tag for the learner's own resting order. */
+	mine?: string;
 };
 
 const HEAD = 44;
@@ -67,8 +69,11 @@ export function OrderBook({
 	const askTop = HEAD;
 	const spreadTop = HEAD + askRows.length * ROW;
 	const bidTop = spreadTop + GAP;
-	const bestBid = bids[0]?.price;
-	const bestAsk = asks[0]?.price;
+	// The best level is the first one that still shows size; emptied levels stay drawn as ghosts.
+	const bestBidIndex = bids.findIndex((level) => level.size > 0);
+	const bestAskIndex = asks.findIndex((level) => level.size > 0);
+	const bestBid = bids[bestBidIndex]?.price;
+	const bestAsk = asks[bestAskIndex]?.price;
 	const fillAt = (price: number) =>
 		fills.find((fill) => fill.price === price)?.size;
 	const row = (
@@ -80,7 +85,7 @@ export function OrderBook({
 		const bar = level.size * k;
 		const ghost = level.before !== undefined ? level.before * k : undefined;
 		const filled = fillAt(level.price);
-		const isBest = index === 0;
+		const isBest = index === (side === "bid" ? bestBidIndex : bestAskIndex);
 		const x =
 			side === "bid"
 				? center - priceWidth / 2 - 8
@@ -147,6 +152,20 @@ export function OrderBook({
 						tone="small"
 					>
 						{level.venue}
+					</Label>
+				) : null}
+				{level.mine && !filled && labels.mine ? (
+					<Label
+						x={
+							side === "bid"
+								? center + priceWidth / 2 + 8
+								: center - priceWidth / 2 - 8
+						}
+						y={y + ROW / 2 + 4}
+						anchor={side === "bid" ? "start" : "end"}
+						tone="accent"
+					>
+						{labels.mine}
 					</Label>
 				) : null}
 				<AnimatePresence>

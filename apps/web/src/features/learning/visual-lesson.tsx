@@ -133,8 +133,8 @@ const lessons = {
 		})),
 	),
 	"trading-options": lazy(() =>
-		import("./order-concept-lab").then((m) => ({
-			default: m.OrderConceptLab,
+		import("./lessons/trading-options").then((m) => ({
+			default: m.TradingOptionsWalkthrough,
 		})),
 	),
 	"options-risks": lazy(() =>

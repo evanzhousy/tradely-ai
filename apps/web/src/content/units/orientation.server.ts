@@ -237,8 +237,8 @@ export const orientationUnits: TeachingUnit[] = [
 			"交易期权需要开通期权权限的券商账户。券商会按级别授权，买入看涨和看跌通常比卖出开仓所需的级别低。你不会笼统地交易“ALFA 期权”，而是从期权链中选择一份合约：期权链按到期日和行权价列出每份看涨与看跌合约，各自都有买价和卖价。价格按每股计，所以一张合约要乘以 100。市价单按当时最优卖价成交，价差很宽时可能远离合理价格。限价单设定你愿付的最高价（或愿接受的最低价），只会以该价格或更优价格成交，也可能不成交。多数交易者会在到期前卖出平仓；行权则意味着按行权价真正买入（看涨）或卖出（看跌）100 股。每笔交易都可能收费。",
 		),
 		example: t(
-			"The ALFA Nov 20 105 call shows bid $2.80 and ask $2.95. Buying one at the ask costs $295 plus any fee. A limit order at $2.85 might fill at $2.85 or might not fill at all. If you later sell it back at $3.40, you receive $340 minus the fee.",
-			"ALFA 11 月 20 日 105 看涨显示买价 $2.80、卖价 $2.95。按卖价买入一张需 $295 加费用。限价 $2.85 的买单可能以 $2.85 成交，也可能不成交。若之后以 $3.40 卖出平仓，你收回 $340 减去费用。",
+			"The ALFA Nov 15 105 call shows bid $3.10 and ask $3.25. Buying one at the ask costs $325 plus any fee. A limit order at $3.15 might fill at $3.15 or might not fill at all. If you later sell it back at $3.70, you receive $370 minus the fee.",
+			"ALFA 11月15日 105 看涨显示买价 $3.10、卖价 $3.25。按卖价买入一张需 $325 加费用。限价 $3.15 的买单可能以 $3.15 成交，也可能不成交。若之后以 $3.70 卖出平仓，你收回 $370 减去费用。",
 		),
 		misconception: t(
 			"You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
