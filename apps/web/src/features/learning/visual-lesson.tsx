@@ -18,7 +18,9 @@ const lessons = {
 		})),
 	),
 	"gamma-exposure": lazy(() =>
-		import("./gex-concept-lab").then((m) => ({ default: m.GexConceptLab })),
+		import("./lessons/gamma-exposure").then((m) => ({
+			default: m.GammaExposureWalkthrough,
+		})),
 	),
 	"gamma-regimes": lazy(() =>
 		import("./regime-concept-lab").then((m) => ({

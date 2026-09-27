@@ -65,7 +65,6 @@ import {
 import { learningCopy } from "./copy";
 import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
-import { GexConceptLab } from "./gex-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
@@ -78,6 +77,7 @@ import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { GammaWalkthrough } from "./lessons/gamma";
+import { GammaExposureWalkthrough } from "./lessons/gamma-exposure";
 import { ImpliedRealizedVolatilityWalkthrough } from "./lessons/implied-realized-volatility";
 import { IvRankPercentileWalkthrough } from "./lessons/iv-rank-percentile";
 import { MarketRecapWalkthrough } from "./lessons/market-recap";
@@ -118,7 +118,7 @@ import { WorkDocument, Worksheet } from "./work-document";
 const conceptLabs = {
 	"iv-rank-percentile": IvRankPercentileWalkthrough,
 	"dex-dei-gex": DexDeiWalkthrough,
-	"gamma-exposure": GexConceptLab,
+	"gamma-exposure": GammaExposureWalkthrough,
 	"gamma-regimes": RegimeConceptLab,
 	"structural-levels": LevelsConceptLab,
 	"charm-vanna": CharmVannaConceptLab,

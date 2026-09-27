@@ -1,5 +1,4 @@
 import { charmVannaConceptData } from "./charm-vanna-concept.server";
-import { gexConceptData } from "./gex-concept.server";
 import { levelsConceptData } from "./levels-concept.server";
 import { regimeConceptData } from "./regime-concept.server";
 import "@tanstack/react-start/server-only";
@@ -17,10 +16,9 @@ export const structureUnits: TeachingUnit[] = [
 		id: "gamma-exposure",
 		conceptLab: {
 			kind: "gamma-exposure",
-			data: gexConceptData,
 			intro: t(
-				"Scale a contribution under explicit assumptions, inspect strike and expiry structure, and distinguish a known subtotal from a complete chain total.",
-				"在明确假设下缩放贡献，检查行权价与到期日结构，并区分已知小计与完整链总和。",
+				"Build the Oct 18 110 call's GEX from gamma, open interest, spot and an assumed dealer sign, read ALFA's Oct 18 profile by strike, and tell the full chain from a traded-only or incomplete subtotal.",
+				"用 Gamma、未平仓量、现价和假设的做市商符号构建 10月18日 110 看涨的 GEX，按行权价读 ALFA 10月18日 的分布，并把完整期权链与仅成交或不完整的小计区分开。",
 			),
 		},
 		sources: [greeks, oi],
@@ -29,8 +27,8 @@ export const structureUnits: TeachingUnit[] = [
 			"GEX 快照把 Gamma、数量与明确持仓符号约定结合。OI 提供未平仓张数，不提供可观测做市商归属。许多模型按期权类型假设符号，该假设必须与结果同时保留。一种常见的每 1% 变动美元约定为 Gamma×OI×乘数×现价平方×0.01×假设符号；其他约定尺度可不同。本课贡献网格已使用标的变动 1% 的美元 Delta 敞口。净值求有符号和，总幅度求绝对值和；相反符号可抵消。完整链包括零成交合约，仅成交样本不能建立完整 GEX。缺一格时可有已知小计，但不能得到完整总和。",
 		),
 		example: t(
-			"Supplied contributions −40, −80, −30, +50, +120, +80 sum to +100; gross is 400. The first expiry slice totals −150 even though the net is positive. A different distribution can share the same net while differing locally. None of these assumed position signs identifies actual dealer trades.",
-			"给定贡献 −40、−80、−30、+50、+120、+80，净值 +100，总幅度 400。第一到期切片为 −150，尽管净值为正。不同分布可有相同净值而局部不同。假设持仓符号均不识别实际做市商成交。",
+			"The Oct 18 110 call: gamma 0.0266 × 2,500 open at Friday's close × 100 shares × $100² × 1% = $665k of delta per 1% move, +$665k if dealers are assumed long the calls and −$665k if short. Across ALFA's Oct 18 chain, calls add +$1.79M and puts −$2.31M for a net of −$512k against a gross of $4.10M. Monday's traded 100, 105 and 110 calls alone give +$1.14M, and with the 95 put's open interest missing the known subtotal is +$330k, not a complete total.",
+			"10月18日 110 看涨：Gamma 0.0266 × 周五收盘未平仓 2,500 × 100 股 × $100² × 1% = 每 1% 变动 $665k 的 Delta；假设做市商做多看涨为 +$665k，做空则为 −$665k。在 ALFA 10月18日 整条期权链上，看涨贡献 +$1.79M，看跌 −$2.31M，净值 −$512k，总幅度 $4.10M。只看周一有成交的 100、105、110 看涨得 +$1.14M；95 看跌的未平仓量缺失时，已知小计为 +$330k，而不是完整总量。",
 		),
 		misconception: t(
 			"Net and gross are different. A positive net does not imply positive contributions everywhere or certainty about dealer positions.",

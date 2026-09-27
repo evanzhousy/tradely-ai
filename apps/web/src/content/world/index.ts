@@ -6,5 +6,6 @@ export * from "./format";
 export * from "./history";
 export * from "./model";
 export * from "./packet";
+export * from "./positioning";
 export * from "./quotes";
 export * from "./universe";
