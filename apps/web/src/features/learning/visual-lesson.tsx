@@ -56,8 +56,8 @@ const lessons = {
 		})),
 	),
 	"point-in-time-research": lazy(() =>
-		import("./point-time-concept-lab").then((m) => ({
-			default: m.PointTimeConceptLab,
+		import("./lessons/point-in-time-research").then((m) => ({
+			default: m.PointInTimeResearchWalkthrough,
 		})),
 	),
 	"cookbook-research-packet": lazy(() =>

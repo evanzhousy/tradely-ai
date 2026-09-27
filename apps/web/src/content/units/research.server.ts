@@ -1,4 +1,3 @@
-import { pointTimeConceptData } from "./point-time-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -374,10 +373,9 @@ export const researchUnits: TeachingUnit[] = [
 		id: "point-in-time-research",
 		conceptLab: {
 			kind: "point-in-time-research",
-			data: pointTimeConceptData,
 			intro: t(
-				"Respect knowledge cutoffs, separate weighted scores from raw activity, read score meanings correctly, and preserve an untouched evaluation boundary.",
-				"遵守获知截止，区分加权分数与原始活动，正确读取分数含义，并保留未触碰评价边界。",
+				"Replay Monday's 105 call facts by when they arrived, watch the block's weight fade with no new trade, read a 97th percentile as a rank, and see a searched-for winner shrink on sealed data.",
+				"按到达时间重放周一 105 看涨的事实，观察没有新成交时大单权重如何淡出，把第 97 百分位读作排名，并看到搜索出的胜者在封存数据上缩水。",
 			),
 		},
 		sources: [oi, quotes],
@@ -386,8 +384,8 @@ export const researchUnits: TeachingUnit[] = [
 			"历史检验必须使用决策时已可用的信息。事件时间与获知/接收时间可能不同，后来收到的更正在早先不可用。看结果前固定问题、合格人群、测量与评价规则。保留独立时段或案例；看完结果再调阈值，就把评估集变成开发数据。近期加权活动可按半衰期衰减，而原始笔数不变，因此无新成交时分数也可变化。百分位、标准分与校准概率不同，需可比基准、足够样本与来源覆盖。异常分数或上涨前关联，不证明因果、归属或可重复样本外收益。",
 		),
 		example: t(
-			"An event at 09:59 is first received at 10:02. A 10:00 replay cannot use it. Separately, activity weight 80 with a 60-second half-life becomes 40 after 60 seconds and 20 after 120, absent new events. The original volume stays unchanged. Calling a 90th-percentile score a 90% chance of profit would change its meaning.",
-			"09:59 事件在 10:02 才收到，10:00 回放不能使用。另有活动权重 80，半衰期 60 秒，无新事件时 60 秒后 40、120 秒后 20，原始成交量不变。把第 90 百分位称为 90% 盈利概率，会改变含义。",
+			"ALFA's 500-lot in the Oct 18 105 call happened at 10:50:00.4 and was first reported at $2.51; the $2.15 correction arrived at 10:50:02.8. A 10:50:01 replay must use $2.51. Separately, with a 30-minute half-life and no new trades, the block's weight of 500 falls to 250 by 11:20 and 125 by 11:50, while its 500 contracts stay unchanged. Calling the call's 97th-percentile volume a 97% chance of a rise would change its meaning.",
+			"ALFA 10月18日 105 看涨的 500 张大单发生在 10:50:00.4，首报价格为 $2.51；$2.15 的更正在 10:50:02.8 才到。10:50:01 的重放必须使用 $2.51。另外，半衰期 30 分钟且没有新成交时，大单的权重 500 到 11:20 降为 250、11:50 降为 125，而它的 500 张不变。把该合约成交量的第 97 百分位称为 97% 的上涨概率，会改变含义。",
 		),
 		misconception: t(
 			"Freeze the knowledge cutoff, not just the event date. Repeatedly testing on the same held-out case consumes its independence.",

@@ -190,7 +190,7 @@ export function PayoffChart({
 						<m.text
 							x={right - 4}
 							textAnchor="end"
-							className="wt-small"
+							className="wt-small wt-halo"
 							initial={false}
 							animate={{ y: labelY.get(line.id) }}
 							transition={motion.move}
