@@ -1347,7 +1347,6 @@
 }
 .comparison-panel,
 .breakdown-panel,
-.transfer-panel,
 .research-artifact {
 	min-width: 0;
 	padding: 1rem;
@@ -1355,8 +1354,7 @@
 	border-radius: 1rem;
 	background: var(--card);
 }
-:is(.comparison-panel, .breakdown-panel, .transfer-panel, .research-artifact)
-	h3 {
+:is(.comparison-panel, .breakdown-panel, .research-artifact) h3 {
 	font-weight: 600;
 	font-size: 1rem;
 	line-height: 1.5;
@@ -1437,27 +1435,6 @@
 	fill: var(--foreground);
 	font-size: 12px;
 	font-family: var(--font-mono);
-}
-.transfer-parties {
-	display: flex;
-	justify-content: space-between;
-	gap: 1rem;
-	margin-top: 1rem;
-	font-size: 0.8rem;
-	font-weight: 600;
-}
-.transfer-row {
-	display: grid;
-	grid-template-columns: 4rem 2rem minmax(0, 1fr);
-	align-items: center;
-	gap: 0.5rem;
-	padding: 1rem 0;
-	font-size: 0.8rem;
-	border-bottom: 1px solid var(--border);
-}
-.transfer-arrow {
-	color: var(--diagram-observed);
-	font-size: 1.5rem;
 }
 .artifact-bars {
 	display: flex;

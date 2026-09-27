@@ -148,8 +148,8 @@ const lessons = {
 		})),
 	),
 	"option-rights": lazy(() =>
-		import("./rights-concept-lab").then((m) => ({
-			default: m.RightsConceptLab,
+		import("./lessons/option-rights").then((m) => ({
+			default: m.OptionRightsWalkthrough,
 		})),
 	),
 	"premium-payoff": lazy(() =>
