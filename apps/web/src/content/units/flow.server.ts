@@ -11,7 +11,6 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-import { conditionsConceptData } from "./conditions-concept.server";
 import { sourceConceptData } from "./source-concept.server";
 import { strategyConceptData } from "./strategy-concept.server";
 
@@ -198,10 +197,9 @@ export const flowUnits: TeachingUnit[] = [
 		id: "execution-conditions",
 		conceptLab: {
 			kind: "execution-conditions",
-			data: conditionsConceptData,
 			intro: t(
-				"Follow one order across several venues, place a block against its quote, and read two leg prints as one package. Then test what a condition code can and cannot establish.",
-				"追踪一张订单跨多个场所成交，把大宗交易放到报价旁比较，并把两条腿的成交作为整体解读。最后检验条件代码能确定什么、不能确定什么。",
+				"Follow one order sweeping three venues, set a 500-contract block against the size that was displayed, and read its two legs as one spread.",
+				"追踪一张扫过三个场所的订单，把 500 张大单与展示数量对比，再把它的两条腿作为一笔价差来解读。",
 			),
 		},
 		sources: [orders, quotes],
@@ -210,8 +208,8 @@ export const flowUnits: TeachingUnit[] = [
 			"成交条件描述一笔交易如何执行。扫单把一张订单同时路由到多个场所，常以跨市场扫单指令（ISO）发出；每次成交分别打印，后面的成交可能高于最优展示价格。大宗交易通常先在屏幕外撮合，再通过竞价或交叉成交打印，因此价格可能在展示报价之内、等于报价或超出报价。复杂订单把多条腿、或期权与股票作为一个整体定价；单腿价格可能超出各自报价，而整体仍在组合市场之内成交。每个代码都需要来源自己的定义。这些标签都不能说明谁在交易、掌握多少信息，或是否开了新仓。",
 		),
 		example: t(
-			"A 50-contract buy sweeps three venues: 20 at $2.10, 15 at $2.11 and 15 at $2.12. That is one order and three prints: 50 contracts, $10,545 premium and a $2.109 average price. Separately, a call spread bought for $3.00 net can print its legs at $5.25 and $2.25, each above its own ask, while the package traded inside its $2.90–$3.30 market.",
-			"一张 50 张的买单扫过三个场所：$2.10 成交 20 张、$2.11 成交 15 张、$2.12 成交 15 张。这是一张订单、三笔成交：共 50 张、权利金 $10,545、均价 $2.109。另外，以净价 $3.00 买入的看涨价差，两条腿可能分别打印在 $5.25 和 $2.25，都高于各自卖价，而整体仍在 $2.90–$3.30 的组合市场内成交。",
+			"A 40-contract buy sweeps three venues: 10 at $0.93, 20 at $0.95 and 10 at $0.98. That is one order and three prints: 40 contracts, $3,810 premium and a $0.9525 average price. Separately, a 105/110 call spread bought for $1.25 net printed its legs at $2.15 and $0.90 while the package traded inside its $1.12–$1.30 market; legs can even print outside their own quotes.",
+			"一张 40 张的买单扫过三个场所：$0.93 成交 10 张、$0.95 成交 20 张、$0.98 成交 10 张。这是一张订单、三笔成交：共 40 张、权利金 $3,810、均价 $0.9525。另外，以净价 $1.25 买入的 105/110 看涨价差，两条腿分别打印在 $2.15 和 $0.90，而整体在 $1.12–$1.30 的组合市场内成交；单腿甚至可以超出各自报价成交。",
 		),
 		misconception: t(
 			"Urgent routing is not proof of conviction, and a large block is not proof of an institution or inside information. Read the leg prints of a complex order as one package.",

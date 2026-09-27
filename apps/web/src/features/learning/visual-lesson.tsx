@@ -198,8 +198,8 @@ const lessons = {
 		})),
 	),
 	"execution-conditions": lazy(() =>
-		import("./conditions-concept-lab").then((m) => ({
-			default: m.ConditionsConceptLab,
+		import("./lessons/execution-conditions").then((m) => ({
+			default: m.ExecutionConditionsWalkthrough,
 		})),
 	),
 };

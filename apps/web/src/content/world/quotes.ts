@@ -120,3 +120,29 @@ export function applyMessages(messages: readonly FeedMessage[]) {
 	}
 	return trades;
 }
+
+/**
+ * The Oct 18 110 call's displayed offers at 11:20 on Monday, by venue, and a 40-contract buy
+ * that sweeps them as intermarket sweep orders (ISO): one order, three prints.
+ */
+export const oct110CallSweep = {
+	time: "11:20:00.1",
+	asks: [
+		{ venue: "A", price: 93, size: 10 },
+		{ venue: "B", price: 95, size: 20 },
+		{ venue: "C", price: 98, size: 25 },
+	],
+	bids: [
+		{ venue: "B", price: 85, size: 12 },
+		{ venue: "A", price: 83, size: 20 },
+		{ venue: "C", price: 80, size: 30 },
+	],
+	quantity: 40,
+	limit: 98,
+} as const;
+
+/** The block's legs against their own quotes at 10:50:00.3, in cents per share. */
+export const oct105BlockLegs = {
+	buy: { strike: 105, bid: 205, ask: 215, price: 215, quantity: 500 },
+	sell: { strike: 110, bid: 85, ask: 93, price: 90, quantity: 500 },
+} as const;

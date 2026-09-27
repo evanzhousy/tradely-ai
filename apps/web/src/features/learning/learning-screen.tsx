@@ -60,7 +60,6 @@ import {
 	CoachingPanel,
 	type CoachingTransport,
 } from "./coaching-panel";
-import { ConditionsConceptLab } from "./conditions-concept-lab";
 import {
 	ContractExplorer,
 	type ContractRenderer,
@@ -76,6 +75,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { ExecutionConditionsWalkthrough } from "./lessons/execution-conditions";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
@@ -156,7 +156,7 @@ const conceptLabs = {
 	"validate-option-print": ValidateOptionPrintWalkthrough,
 	"session-flow-vs-structure": VolumeOpenInterestWalkthrough,
 	"trade-records": TradeRecordsWalkthrough,
-	"execution-conditions": ConditionsConceptLab,
+	"execution-conditions": ExecutionConditionsWalkthrough,
 };
 
 import {
