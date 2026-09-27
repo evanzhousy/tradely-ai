@@ -33,10 +33,15 @@ import {
 	saveVisualBookmark,
 	useVisualBookmarks,
 } from "../visual-bookmark";
-import { VisualLessonIdentity } from "../visual-playback";
-import { readingHoldMs } from "../visual-step";
+import { VisualLessonIdentity } from "../visual-lesson-identity";
 import { CountTo, useTeachMotion } from "./stage";
 import type { Phase, ResultItem, WalkthroughScene } from "./types";
+
+/** Reading time at about 200 words a minute, plus time to look at the diagram. */
+function readingHoldMs(caption: string) {
+	const words = caption.trim().split(/\s+/).filter(Boolean).length;
+	return Math.min(16000, Math.max(4000, words * 300 + 1500));
+}
 
 type FrameContextValue = { locale: Locale; phase: Phase; panel: ReactNode };
 const FrameContext = createContext<FrameContextValue | null>(null);

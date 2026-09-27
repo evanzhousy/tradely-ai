@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 import type { Locale } from "@/i18n/messages";
 import { getDiagramPalette } from "./diagram-palette";
 import { LessonMotion } from "./lesson-motion";
-import { VisualLessonIdentity, VisualLocaleProvider } from "./visual-playback";
+import { VisualLessonIdentity } from "./visual-lesson-identity";
 
 const lessons = {
 	"iv-rank-percentile": lazy(() =>
@@ -219,27 +219,25 @@ export function VisualLesson({
 	if (!Lesson) return null;
 	return (
 		<VisualLessonIdentity value={lessonId}>
-			<VisualLocaleProvider locale={locale}>
-				<div
-					className="visual-color-system"
-					data-visual-palette={getDiagramPalette(lessonId)}
-				>
-					<LessonMotion>
-						<Suspense
-							fallback={
-								<div role="status" className="flex flex-col gap-4">
-									<span>
-										{locale === "zh" ? "正在加载课程…" : "Loading lesson…"}
-									</span>
-									<Skeleton className="h-96 w-full" />
-								</div>
-							}
-						>
-							<Lesson locale={locale} />
-						</Suspense>
-					</LessonMotion>
-				</div>
-			</VisualLocaleProvider>
+			<div
+				className="visual-color-system"
+				data-visual-palette={getDiagramPalette(lessonId)}
+			>
+				<LessonMotion>
+					<Suspense
+						fallback={
+							<div role="status" className="flex flex-col gap-4">
+								<span>
+									{locale === "zh" ? "正在加载课程…" : "Loading lesson…"}
+								</span>
+								<Skeleton className="h-96 w-full" />
+							</div>
+						}
+					>
+						<Lesson locale={locale} />
+					</Suspense>
+				</LessonMotion>
+			</div>
 		</VisualLessonIdentity>
 	);
 }
