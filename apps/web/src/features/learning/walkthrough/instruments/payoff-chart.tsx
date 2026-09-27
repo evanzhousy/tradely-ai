@@ -1,6 +1,7 @@
 import * as m from "motion/react-m";
-import { type PointerEvent, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef } from "react";
 import { signedUsd } from "@/content/world";
+import { type AxisDrag, DragHandle, useAxisDrag } from "../axis-drag";
 import { Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
 
@@ -35,17 +36,8 @@ export type PayoffBand = {
 	tone?: "gain" | "loss" | "neutral";
 };
 
-/**
- * Lets the reader drag one marker along the price axis by pressing anywhere on the plot.
- * The lesson owns the value, and a range control stays the keyboard path to it.
- */
-export type PayoffDrag = {
-	markerId: string;
-	min: number;
-	max: number;
-	step: number;
-	onChange: (x: number) => void;
-};
+/** Drags one marker, named by id, along the price axis. */
+export type PayoffDrag = AxisDrag & { markerId: string };
 
 const PAD_LEFT = 58;
 const PAD_RIGHT = 16;
@@ -98,14 +90,15 @@ export function PayoffChart({
 	});
 	const joins = (id: string) =>
 		motion.enabled && drawn.current !== null && !drawn.current.has(id);
-	const [dragging, setDragging] = useState(false);
-	const reported = useRef<number | null>(null);
-	/** Where a touch began, until it moves sideways enough to be a drag rather than a scroll. */
-	const touchFrom = useRef<{ x: number; y: number } | null>(null);
-	// While dragging, everything tracks the pointer instead of taking the teaching pace.
-	const move = dragging ? motion.follow : motion.move;
 	const left = PAD_LEFT;
 	const right = width - PAD_RIGHT;
+	const { dragging, area } = useAxisDrag(
+		drag,
+		(px) =>
+			xRange[0] + ((px - left) / (right - left)) * (xRange[1] - xRange[0]),
+	);
+	// While dragging, everything tracks the pointer instead of taking the teaching pace.
+	const move = dragging ? motion.follow : motion.move;
 	// A title too wide for the stage breaks at its " · " separators, one part per line.
 	const titleLines =
 		title && textWidth(title, 12) > width - 16
@@ -154,28 +147,6 @@ export function PayoffChart({
 			x: at,
 			y: marker.labelBelow || blocked ? y(marker.y) + 22 * lift : above,
 		};
-	};
-	const report = (event: PointerEvent<SVGRectElement>) => {
-		const ctm = event.currentTarget.getScreenCTM();
-		if (!drag || !ctm) return;
-		const px = new DOMPoint(event.clientX, event.clientY).matrixTransform(
-			ctm.inverse(),
-		).x;
-		const raw =
-			xRange[0] + ((px - left) / (right - left)) * (xRange[1] - xRange[0]);
-		const snapped =
-			drag.min + Math.round((raw - drag.min) / drag.step) * drag.step;
-		const next = Number(
-			Math.min(drag.max, Math.max(drag.min, snapped)).toFixed(6),
-		);
-		if (next === reported.current) return;
-		reported.current = next;
-		drag.onChange(next);
-	};
-	const release = () => {
-		reported.current = null;
-		touchFrom.current = null;
-		setDragging(false);
 	};
 	const className = (tone: PayoffLine["tone"]) =>
 		tone === "position"
@@ -299,24 +270,13 @@ export function PayoffChart({
 			{markers.map((marker) => (
 				<g key={marker.id}>
 					{marker.id === drag?.markerId ? (
-						<>
-							<m.circle
-								r={13}
-								className="wt-drag-ring"
-								data-dragging={dragging || undefined}
-								initial={false}
-								animate={{ cx: x(marker.x), cy: y(marker.y) }}
-								transition={move}
-							/>
-							<m.path
-								className="wt-drag-chevron"
-								initial={false}
-								animate={{
-									d: `M${x(marker.x) - 17} ${y(marker.y) - 4}l-4 4 4 4M${x(marker.x) + 17} ${y(marker.y) - 4}l4 4-4 4`,
-								}}
-								transition={move}
-							/>
-						</>
+						<DragHandle
+							cx={x(marker.x)}
+							cy={y(marker.y)}
+							r={13}
+							dragging={dragging}
+							transition={move}
+						/>
 					) : null}
 					<m.circle
 						r={6}
@@ -359,30 +319,7 @@ export function PayoffChart({
 					y={top}
 					width={right - left}
 					height={bottom - top}
-					className="wt-drag-area"
-					data-dragging={dragging || undefined}
-					onPointerDown={(event) => {
-						if (event.button !== 0) return;
-						event.currentTarget.setPointerCapture(event.pointerId);
-						setDragging(true);
-						// A touch waits to move sideways, so taps and scrolls leave the marker.
-						if (event.pointerType === "touch")
-							touchFrom.current = { x: event.clientX, y: event.clientY };
-						else report(event);
-					}}
-					onPointerMove={(event) => {
-						if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
-						const from = touchFrom.current;
-						if (from) {
-							const dx = Math.abs(event.clientX - from.x);
-							if (dx < 6 || dx < Math.abs(event.clientY - from.y)) return;
-							touchFrom.current = null;
-						}
-						report(event);
-					}}
-					onPointerUp={release}
-					onPointerCancel={release}
-					onLostPointerCapture={release}
+					{...area}
 				/>
 			) : null}
 		</g>
