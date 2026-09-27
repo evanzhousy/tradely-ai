@@ -1,4 +1,5 @@
 import * as m from "motion/react-m";
+import { type AxisDrag, DragHandle, useAxisDrag } from "../axis-drag";
 import { Label, useTeachMotion } from "../stage";
 
 export const PRICE_LINE_HEIGHT = 150;
@@ -17,6 +18,7 @@ export function PriceLine({
 	zone,
 	marker,
 	note,
+	drag,
 	tickLabel = (tick: number) => `$${tick}`,
 }: {
 	width: number;
@@ -34,11 +36,19 @@ export function PriceLine({
 		before?: number;
 	};
 	note?: string;
+	/** Lets the reader drag the marker along the axis. */
+	drag?: AxisDrag;
 	tickLabel?: (tick: number) => string;
 }) {
 	const motion = useTeachMotion();
 	const left = 18;
 	const right = width - 18;
+	const { dragging, area } = useAxisDrag(
+		drag,
+		(px) => min + ((px - left) / (right - left)) * (max - min),
+	);
+	// While dragging, the marker tracks the pointer instead of taking the teaching pace.
+	const move = dragging ? motion.follow : motion.move;
 	const x = (value: number) =>
 		left +
 		((Math.min(Math.max(value, min), max) - min) / (max - min)) *
@@ -108,6 +118,15 @@ export function PriceLine({
 			{marker.before !== undefined && marker.before !== marker.value ? (
 				<circle cx={x(marker.before)} cy={axis} r={7} className="wt-ghost" />
 			) : null}
+			{drag ? (
+				<DragHandle
+					cx={markerX}
+					cy={axis}
+					r={15}
+					dragging={dragging}
+					transition={move}
+				/>
+			) : null}
 			<m.circle
 				cy={axis}
 				r={9}
@@ -122,7 +141,7 @@ export function PriceLine({
 				strokeWidth={2}
 				initial={false}
 				animate={{ cx: markerX }}
-				transition={motion.move}
+				transition={move}
 			/>
 			<m.text
 				y={40}
@@ -130,7 +149,7 @@ export function PriceLine({
 				className="wt-accent"
 				initial={false}
 				animate={{ x: labelX }}
-				transition={motion.move}
+				transition={move}
 			>
 				{marker.label}
 			</m.text>
@@ -141,10 +160,14 @@ export function PriceLine({
 					className="wt-strong"
 					initial={false}
 					animate={{ x: labelX }}
-					transition={motion.move}
+					transition={move}
 				>
 					{note}
 				</m.text>
+			) : null}
+			{drag ? (
+				// Over the axis and the label above it, so a press near the line moves the marker.
+				<rect x={left} y={30} width={right - left} height={axis} {...area} />
 			) : null}
 		</g>
 	);

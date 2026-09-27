@@ -67,6 +67,8 @@ function RightView({
 			id: "value",
 			label: t(["Value at expiry", "到期价值"]),
 			value: value === null ? t(["not yet", "尚未到期"]) : usd(value, 0),
+			tween:
+				value === null ? undefined : { to: value, format: (v) => usd(v, 0) },
 			note:
 				value === null
 					? t(["expires Oct 18", "10月18日 到期"])
@@ -89,6 +91,10 @@ function RightView({
 			id: "result",
 			label: t(["Result", "结果"]),
 			value: value === null ? "—" : signedUsd(value - paid, 0),
+			tween:
+				value === null
+					? undefined
+					: { to: value - paid, format: (v) => signedUsd(v, 0) },
 			tone: value === null ? undefined : value - paid > 0 ? "gain" : "loss",
 			note: t(["value minus premium", "价值减权利金"]),
 		},
@@ -137,6 +143,17 @@ function RightView({
 								tone: value === null ? "neutral" : value > 0 ? "gain" : "loss",
 							}}
 							note={worth}
+							drag={
+								explore
+									? {
+											min: 80,
+											max: 120,
+											step: 1,
+											onChange: (next) =>
+												setExplore({ ...explore, spot: next }),
+										}
+									: undefined
+							}
 						/>
 					)}
 				</Stage>
@@ -647,8 +664,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Choose a call or a put and move ALFA's price on Oct 18. Watch where the right is worth using.",
-				"选择看涨或看跌，并移动 10月18日 的 ALFA 价格，看看权利在哪里值得行使。",
+				"Choose a call or a put and drag along the price line to move ALFA's price on Oct 18. Watch where the right is worth using.",
+				"选择看涨或看跌，并在价格轴上左右拖动来移动 10月18日 的 ALFA 价格，看看权利在哪里值得行使。",
 			],
 			start: () => ({ right: "call", spot: 105 }),
 		},
