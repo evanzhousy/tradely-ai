@@ -398,19 +398,6 @@ export function ConceptLab({
 							</p>
 						))}
 					</div>
-					{evidenceBoundary ? (
-						<div
-							className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5 text-xs leading-relaxed"
-							data-evidence-protocol
-						>
-							<div className="mb-1 font-medium text-foreground/85">
-								<span>{l("Evidence check", "证据检查")}</span>
-							</div>
-							<p className="text-muted-foreground">
-								{evidenceBoundary[language]}
-							</p>
-						</div>
-					) : null}
 				</div>
 
 				<aside
@@ -533,6 +520,20 @@ export function ConceptLab({
 						<Component locale={locale} />
 					</div>
 				</VisualPlayback>
+				{/* Below the scene so the diagram keeps the space above the fold. */}
+				{evidenceBoundary ? (
+					<div
+						className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5 text-xs leading-relaxed"
+						data-evidence-protocol
+					>
+						<div className="mb-1 font-medium text-foreground/85">
+							<span>{l("Evidence check", "证据检查")}</span>
+						</div>
+						<p className="text-muted-foreground">
+							{evidenceBoundary[language]}
+						</p>
+					</div>
+				) : null}
 			</div>
 		</section>
 	);

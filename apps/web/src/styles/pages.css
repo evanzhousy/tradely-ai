@@ -1860,10 +1860,34 @@
 .book-table [data-eligible="false"] td:last-child {
 	color: var(--muted-foreground);
 }
-@media (min-width: 760px) {
-	.visual-scene-layout[data-has-companion="true"] .scene-visuals {
-		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+/* Walkthrough scenes: diagram beside its result and controls on wide screens. */
+.scene-main {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 1rem;
+	min-width: 0;
+}
+.scene-side {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	min-width: 0;
+}
+.scene-side .scene-outcome {
+	margin-top: 0;
+}
+.scene-side .visual-controls-inline {
+	border-top: 1px solid var(--border);
+	border-radius: 1rem;
+}
+@media (min-width: 1024px) {
+	.scene-main {
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
 		align-items: start;
+	}
+	/* Leave room for the scene tabs, title, caption and playback bar on a laptop screen. */
+	.visual-scene-layout .contract-diagram {
+		max-height: clamp(18rem, calc(100svh - 24.5rem), 34rem);
 	}
 }
 .visual-playback {

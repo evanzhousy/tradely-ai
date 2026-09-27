@@ -96,23 +96,59 @@ export function SceneLayout({
 }) {
 	const playback = useContext(VisualPlayback);
 	const locale = useContext(VisualLocale);
+	const controlSet = controls ? (
+		<FieldSet className="visual-controls-inline">
+			<FieldLegend className="sr-only">
+				{locale === "zh" ? "调整示例" : "Adjust the example"}
+			</FieldLegend>
+			{controls}
+		</FieldSet>
+	) : null;
+	if (playback)
+		// The result and controls sit beside the diagram so both stay in view while exploring.
+		return (
+			<div
+				className="visual-scene-layout"
+				data-has-companion={companion ? "true" : undefined}
+			>
+				{toolbar}
+				<div className="scene-main">
+					<div className="scene-visual-primary">
+						<div className="contract-stage">{diagram}</div>
+					</div>
+					{companion || outcome || controlSet ? (
+						<div className="scene-side">
+							{outcome ? <div className="scene-outcome">{outcome}</div> : null}
+							{controlSet}
+							{companion ? (
+								<aside className="scene-companion">{companion}</aside>
+							) : null}
+						</div>
+					) : null}
+				</div>
+				{comparison}
+				{details || children ? (
+					<DisclosurePanel
+						className="visual-explore"
+						summary={locale === "zh" ? "更多细节" : "More detail"}
+					>
+						<div className="flex min-w-0 flex-col gap-5 pt-5">
+							{details ?? children}
+						</div>
+					</DisclosurePanel>
+				) : null}
+			</div>
+		);
 	return (
 		<div
-			className={playback ? "visual-scene-layout" : "contract-scene-layout"}
+			className="contract-scene-layout"
 			data-has-companion={companion ? "true" : undefined}
 		>
 			{toolbar}
 			<div className="scene-visuals">
 				<div className="scene-visual-primary">
 					<div className="contract-stage">{diagram}</div>
-					{controls ? (
-						<FieldSet className="visual-controls-inline">
-							<FieldLegend className="sr-only">
-								{locale === "zh" ? "调整示例" : "Adjust the example"}
-							</FieldLegend>
-							{controls}
-						</FieldSet>
-					) : null}
+					{controlSet}
 				</div>
 				{companion ? (
 					<aside className="scene-companion">{companion}</aside>
@@ -120,18 +156,7 @@ export function SceneLayout({
 			</div>
 			{outcome ? <div className="scene-outcome">{outcome}</div> : null}
 			{comparison}
-			{playback && (details || children) ? (
-				<DisclosurePanel
-					className="visual-explore"
-					summary={locale === "zh" ? "更多细节" : "More detail"}
-				>
-					<div className="flex min-w-0 flex-col gap-5 pt-5">
-						{details ?? children}
-					</div>
-				</DisclosurePanel>
-			) : (
-				<div className="flex min-w-0 flex-col gap-5">{details ?? children}</div>
-			)}
+			<div className="flex min-w-0 flex-col gap-5">{details ?? children}</div>
 		</div>
 	);
 }
