@@ -67,3 +67,6 @@ export const alfaShareVolume = {
 	average60: 1_500_000,
 	mondayByNoon: 600_000,
 } as const;
+
+/** ALFA's 14-session average true range to Sep 13, in dollars, from daily highs and lows. */
+export const ALFA_ATR_14 = 1.6;

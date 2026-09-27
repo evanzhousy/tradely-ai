@@ -1,5 +1,4 @@
 import { charmVannaConceptData } from "./charm-vanna-concept.server";
-import { levelsConceptData } from "./levels-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -201,10 +200,9 @@ export const structureUnits: TeachingUnit[] = [
 		id: "structural-levels",
 		conceptLab: {
 			kind: "structural-levels",
-			data: levelsConceptData,
 			intro: t(
-				"Compare concentration rules, explore candidate payout minima, and measure distances with compatible spot and ATR references.",
-				"比较集中度规则，探索候选支付最小值，并使用兼容现价与 ATR 参考测量距离。",
+				"Pick ALFA's Oct 18 walls by open interest and by gamma and watch the put wall move, find the payout minimum without reading it as a forecast, and measure one level in dollars, percent and ATR.",
+				"分别按未平仓量和 Gamma 选出 ALFA 10月18日 的墙，看看跌墙如何移动；找到支付最小值，但不把它当成预测；并用美元、百分比和 ATR 测量同一个位置。",
 			),
 		},
 		sources: [oi, greeks],
@@ -213,8 +211,8 @@ export const structureUnits: TeachingUnit[] = [
 			"墙位或集中度标签按指定敞口/OI 规则选取行权价。Gamma 加权看涨/看跌墙不同于仅基于 OI 的最大痛点，后者在候选价格集合中最小化到期支付。Gamma 磁点或 Charm 钉住也是模型集中参考，不保证吸引或钉价。到期范围占比说明多少模型幅度位于某期限，需保留范围、来源日期和参考现价。美元距离、现价百分比距离和 ATR 单位距离是不同测量。ATR 按窗口汇总历史真实波幅，不是方向收益预测；公司行动与价格尺度变化会令未调整比较失效。",
 		),
 		example: t(
-			"At strike 100, call OI 10 and put OI 20, multiplier 100. Candidate settlement 95 gives put payout $10,000; 100 gives $0; 105 gives call payout $5,000. In this small supplied set, 100 minimizes payout. It is not a forecast of settlement. With reference spot 102 and ATR 2, strike 100 is one ATR below spot.",
-			"行权价 100、看涨 OI 10、看跌 OI 20、乘数 100。候选结算价 95 时看跌支付 $10,000；100 时 $0；105 时看涨支付 $5,000。在此小集合中 100 最小化支付，不是结算预测。参考现价 102、ATR 2，100 位于现价下方一个 ATR。",
+			"By open interest ALFA's Oct 18 put wall is $90 (3,200 contracts); weighted by gamma it is $95, nearer the money. Paying out Friday's open interest at expiry costs least, $1.17M, if ALFA settles at $100, yet the model's one-standard-deviation range for Oct 18 runs from about $90 to $110. From $100 the $95 put wall is −$5, −5.0% or −3.1 ATR at a 14-session ATR of $1.60.",
+			"按未平仓量，ALFA 10月18日 的看跌墙是 $90（3,200 张）；按 Gamma 加权则是更接近平值的 $95。以周五的未平仓量计算，如果 ALFA 结算在 $100，到期支付最少，为 $1.17M；但模型给出的 10月18日 ±1 个标准差范围大约是 $90 到 $110。从 $100 算起，$95 的看跌墙距离为 −$5、−5.0%，或在 14 日 ATR 为 $1.60 时为 −3.1 个 ATR。",
 		),
 		misconception: t(
 			"An OI-only payout minimum does not require gamma and does not identify who owns the contracts. Never turn a model label into guaranteed support or resistance.",

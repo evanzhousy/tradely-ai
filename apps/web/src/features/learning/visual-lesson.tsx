@@ -28,8 +28,8 @@ const lessons = {
 		})),
 	),
 	"structural-levels": lazy(() =>
-		import("./levels-concept-lab").then((m) => ({
-			default: m.LevelsConceptLab,
+		import("./lessons/structural-levels").then((m) => ({
+			default: m.StructuralLevelsWalkthrough,
 		})),
 	),
 	"charm-vanna": lazy(() =>

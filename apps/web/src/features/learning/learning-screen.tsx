@@ -93,6 +93,7 @@ import { RankContractsWalkthrough } from "./lessons/rank-contracts";
 import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
+import { StructuralLevelsWalkthrough } from "./lessons/structural-levels";
 import { SymbolDrawerWalkthrough } from "./lessons/symbol-drawer";
 import { SymbolUniverseWalkthrough } from "./lessons/symbol-universe";
 import { ThetaVegaRhoWalkthrough } from "./lessons/theta-vega-rho";
@@ -102,7 +103,6 @@ import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
 import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
 import { VolatilitySurfaceWalkthrough } from "./lessons/volatility-surface";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
-import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PerformanceConceptLab } from "./performance-concept-lab";
@@ -120,7 +120,7 @@ const conceptLabs = {
 	"dex-dei-gex": DexDeiWalkthrough,
 	"gamma-exposure": GammaExposureWalkthrough,
 	"gamma-regimes": GammaRegimesWalkthrough,
-	"structural-levels": LevelsConceptLab,
+	"structural-levels": StructuralLevelsWalkthrough,
 	"charm-vanna": CharmVannaConceptLab,
 	"audited-boundary": AuditedBoundaryWalkthrough,
 	"symbol-universe": SymbolUniverseWalkthrough,
