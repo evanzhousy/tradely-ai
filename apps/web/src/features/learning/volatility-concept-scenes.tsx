@@ -43,7 +43,7 @@ const signed = (value: number | null) =>
 	value === null
 		? "—"
 		: `${tidy(value) > 0 ? "+" : tidy(value) < 0 ? "−" : ""}${number(Math.abs(value))}`;
-const pct = (value: number | null, digits = 4) =>
+const pct = (value: number | null, digits = 2) =>
 	value === null ? "—" : `${number(value, digits)}%`;
 const money = (cents: number | null) =>
 	cents === null ? "—" : `$${(cents / 100).toFixed(2)}`;

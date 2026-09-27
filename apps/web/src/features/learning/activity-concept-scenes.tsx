@@ -44,7 +44,10 @@ const text = (locale: Locale) => (en: string, zh: string) =>
 	locale === "zh" ? zh : en;
 const number = (v: number | null) =>
 	v === null ? "—" : v.toLocaleString("en-US", { maximumFractionDigits: 4 });
-const multiple = (v: number | null) => (v === null ? "—" : `${number(v)}×`);
+const multiple = (v: number | null) =>
+	v === null
+		? "—"
+		: `${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}×`;
 function MetricField({
 	locale,
 	metric,
