@@ -61,8 +61,8 @@ const lessons = {
 		})),
 	),
 	"cookbook-research-packet": lazy(() =>
-		import("./packet-concept-lab").then((m) => ({
-			default: m.PacketConceptLab,
+		import("./lessons/cookbook-research-packet").then((m) => ({
+			default: m.ResearchPacketWalkthrough,
 		})),
 	),
 	"market-recap": lazy(() =>

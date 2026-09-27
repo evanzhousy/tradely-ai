@@ -1,5 +1,4 @@
 import { auditRecapConceptData } from "./audit-recap-concept.server";
-import { packetConceptData } from "./packet-concept.server";
 import { recapConceptData } from "./recap-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -54,10 +53,9 @@ export const productionUnits: TeachingUnit[] = [
 		id: "cookbook-research-packet",
 		conceptLab: {
 			kind: "cookbook-research-packet",
-			data: packetConceptData,
 			intro: t(
-				"Trace actual source rows into a premium subtotal, inspect the recorded packet fields, and separate permitted reruns from method revisions.",
-				"沿实际来源行追溯权利金小计，检查研究包记录字段，并区分允许重跑与方法修订。",
+				"Trace Monday's Oct 18 call trades into a premium subtotal, remove a packet field and watch a careful rerun go wrong, and tell a rerun from a method change.",
+				"把周一 10月18日 看涨的成交追溯成权利金小计，移除研究包的一个字段看认真的重跑如何出错，并区分重跑与方法变更。",
 			),
 		},
 		sources: [oi, quotes],
@@ -66,8 +64,8 @@ export const productionUnits: TeachingUnit[] = [
 			"可重现研究包是可使用的记录，不是严谨口号。应明确问题、工具集合、时段截止、来源标识、单位、计算与缺失。区分固定方法参数与允许变化的回放输入，记录计算用到的实际行 ID，使他人能还原。每次重跑保存独立日期与证据；更换来源、范围或方法需显式新问题/修订，不能覆盖结果。研究包可有有效观测小计，同时完整总量仍不可用。个人可维护记录并请他人质疑。视觉课堂组装给定研究包，展示各字段如何支持重现。",
 		),
 		example: t(
-			"A packet records R1: 10×$2×100 and R2: 20×$3×100, giving $8,000 observed premium. R3 is missing, so $8,000 is a subtotal. The method says sum the two observed rows; it does not claim all eligible activity was observed. A replay may change the session date while retaining the predefined instrument-selection rule and preserving the first record.",
-			"研究包记录 R1：10×$2×100，R2：20×$3×100，观测权利金 $8,000。R3 缺失，所以 $8,000 是小计。方法说明累加两条已观测行，不声称所有合格活动都已覆盖。回放可变更日期，同时保留预定工具选择规则与首份记录。",
+			"Packet P1 traces ALFA's Oct 18 105 call to its trades: 5 × $2.00 × 100 + 500 × $2.15 × 100 = $108,500. With the 100, 110 and 115 calls it sums to $165,520, but the 120 call has no data at Monday's cutoff, so $165,520 is an observed subtotal of 4 of 5 series. When the 120 call's 30 contracts at $0.10 arrive Tuesday, the same method saves P2 at $165,820 and P1 stays.",
+			"研究包 P1 把 ALFA 10月18日 105 看涨追溯到成交：5 × $2.00 × 100 + 500 × $2.15 × 100 = $108,500。加上 100、110、115 看涨合计 $165,520，但 120 看涨在周一截止时没有数据，所以 $165,520 是覆盖 5 个系列中 4 个的观测小计。周二 120 看涨的 30 张 $0.10 到达后，用同一方法保存 P2：$165,820，P1 保持不变。",
 		),
 		misconception: t(
 			"Someone should be able to reproduce the result from the fields you wrote. A line drawn to a source is not enough if the transformation and units are absent.",

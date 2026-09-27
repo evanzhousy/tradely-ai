@@ -10,7 +10,6 @@ import type { GexConceptData } from "./gex-concept";
 import type { IvRankConceptData } from "./iv-rank-concept";
 import type { LevelsConceptData } from "./levels-concept";
 import type { MetricsComparison } from "./metrics";
-import type { PacketConceptData } from "./packet-concept";
 import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
@@ -171,7 +170,6 @@ export type LearningStepView = {
 		| RegimeConceptData
 		| LevelsConceptData
 		| CharmVannaConceptData
-		| PacketConceptData
 		| RecapConceptData
 		| AuditRecapConceptData
 		| PnlConceptData

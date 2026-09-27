@@ -1,4 +1,3 @@
-type Copy = readonly [string, string];
 export type PacketRow = {
 	id: string;
 	contracts: number | null;
@@ -18,19 +17,6 @@ export type PacketTeachingRecord = {
 	session: string;
 	method: PacketMethod;
 	rows: readonly PacketRow[];
-};
-export type PacketConceptData = {
-	kind: "cookbook-research-packet";
-	source: string;
-	requiredIds: readonly string[];
-	original: PacketTeachingRecord;
-	fields: readonly { id: string; label: Copy; value: Copy }[];
-	reruns: readonly {
-		id: string;
-		label: Copy;
-		record: PacketTeachingRecord;
-		note: Copy;
-	}[];
 };
 export function packetRowPremium(row: PacketRow) {
 	if (
@@ -68,16 +54,4 @@ export function packetTotals(
 		subtotal,
 		fullTotal: valid && !missing.length ? subtotal : null,
 	};
-}
-/** Session is a declared replay input; these method fields are fixed across an allowed rerun. */
-export function changedPacketMethod(a: PacketMethod, b: PacketMethod) {
-	const keys = [
-		"cutoff",
-		"universe",
-		"source",
-		"transformation",
-		"units",
-		"missingPolicy",
-	] as const;
-	return keys.filter((key) => a[key] !== b[key]);
 }
