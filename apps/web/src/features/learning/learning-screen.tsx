@@ -93,6 +93,7 @@ import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structu
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { SymbolDrawerWalkthrough } from "./lessons/symbol-drawer";
 import { SymbolUniverseWalkthrough } from "./lessons/symbol-universe";
+import { ThetaVegaRhoWalkthrough } from "./lessons/theta-vega-rho";
 import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
 import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
@@ -110,7 +111,6 @@ import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { SurfaceConceptLab } from "./surface-concept-lab";
-import { TimeVolRateConceptLab } from "./time-vol-rate-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { VolatilityConceptLab } from "./volatility-concept-lab";
 import { WorkDocument, Worksheet } from "./work-document";
@@ -135,7 +135,7 @@ const conceptLabs = {
 	"portfolio-exposure": PortfolioExposureConceptLab,
 	"volatility-surface": SurfaceConceptLab,
 	"implied-realized-volatility": VolatilityConceptLab,
-	"theta-vega-rho": TimeVolRateConceptLab,
+	"theta-vega-rho": ThetaVegaRhoWalkthrough,
 	gamma: GammaWalkthrough,
 	delta: DeltaWalkthrough,
 	"symbol-drawer": SymbolDrawerWalkthrough,

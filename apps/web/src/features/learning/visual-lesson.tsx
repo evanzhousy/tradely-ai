@@ -99,8 +99,8 @@ const lessons = {
 		})),
 	),
 	"theta-vega-rho": lazy(() =>
-		import("./time-vol-rate-concept-lab").then((m) => ({
-			default: m.TimeVolRateConceptLab,
+		import("./lessons/theta-vega-rho").then((m) => ({
+			default: m.ThetaVegaRhoWalkthrough,
 		})),
 	),
 	gamma: lazy(() =>

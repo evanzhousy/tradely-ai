@@ -12,7 +12,6 @@ import type { PnlConceptData } from "./pnl-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SurfaceConceptData } from "./surface-concept";
-import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
 import type { UniverseComparison } from "./universe";
 import type { VolatilityConceptData } from "./volatility-concept";
 
@@ -155,7 +154,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| TimeVolRateConceptData
 		| VolatilityConceptData
 		| SurfaceConceptData
 		| IvRankConceptData

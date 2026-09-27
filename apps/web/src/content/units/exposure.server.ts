@@ -9,7 +9,6 @@ import {
 } from "./authoring.server";
 import { ivRankConceptData } from "./iv-rank-concept.server";
 import { surfaceConceptData } from "./surface-concept.server";
-import { timeVolRateConceptData } from "./time-vol-rate-concept.server";
 import { volatilityConceptData } from "./volatility-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
@@ -132,10 +131,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "theta-vega-rho",
 		conceptLab: {
 			kind: "theta-vega-rho",
-			data: timeVolRateConceptData,
 			intro: t(
-				"Read calendar days and percentage-point conventions, scale each signed sensitivity, and build up a local estimate from spot, time, volatility and rate contributions.",
-				"读取自然日与百分点约定，缩放各项带符号敏感度，并从现价、时间、波动率与利率贡献累加局部估计。",
+				"Watch the Oct 18 100 call lose value day by day, read 35% to 38% as three vol points, and add up delta, gamma, theta and vega for a day when ALFA rises but the call still loses.",
+				"看 10月18日 100 看涨一天天损失价值，把 35% 到 38% 读作三个波动率点，并把 Delta、Gamma、Theta 和 Vega 加起来，看 ALFA 上涨时看涨为何仍然亏损。",
 			),
 		},
 		sources: [greeks],
@@ -144,8 +142,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"Theta、Vega、Rho 分别描述时间、隐含波动率和利率的局部敏感度。先读约定：本课 Theta 为每股期权每自然日美元变化，Vega 为 IV 每变动一个百分点的变化，Rho 为利率每变动一个百分点的变化。IV 从 20% 到 23% 是 3 个波动率点，不是相对增长 3%。符号属于给定持仓与模型，做空反转敏感度。其他输入固定是近似成立的条件。即便标的方向有利，时间损耗或 IV 下跌仍可能造成亏损。利率、股息、行权方式与模型假设都需要说明，不能把一种符号当作所有产品的定律。",
 		),
 		example: t(
-			"Given theta −$0.04/day and vega $0.10/vol point: after 2 days and a 3-point IV fall, the per-share estimate is −$0.08−$0.30 = −$0.38. For 2 contracts ×100, that is −$76. This approximation excludes spot changes and interactions.",
-			"给定 Theta −$0.04/天、Vega $0.10/波动率点：2 天后 IV 降 3 点，每股估计 −$0.08−$0.30=−$0.38。2 张×100，合计 −$76，暂不计现价变化和交互效应。",
+			"The Oct 18 100 call at ALFA $100, 35% IV and 32 days has theta −$0.065 a day and vega $0.118 per vol point. Six days later with ALFA up $1 and IV down 3 points: +$0.52 from delta, +$0.02 from gamma, −$0.39 from theta and −$0.35 from vega sum to −$0.20 a share; the model reprices it at −$0.19. Your 16 contracts lose about $320, and Ben, short 10, gains about $200.",
+			"ALFA $100、IV 35%、还剩 32 天时，10月18日 100 看涨的 Theta 为每天 −$0.065，Vega 为每个波动率点 $0.118。六天后 ALFA 上涨 $1、IV 下降 3 点：Delta 带来 +$0.52，Gamma +$0.02，Theta −$0.39，Vega −$0.35，合计每股 −$0.20；模型重新定价为 −$0.19。你的 16 张约亏 $320，Ben 空头 10 张约赚 $200。",
 		),
 		misconception: t(
 			"Use percentage-point changes for the supplied vega/rho convention. State omitted inputs rather than calling an approximation realized P&L.",
