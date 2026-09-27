@@ -87,6 +87,7 @@ import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PointInTimeResearchWalkthrough } from "./lessons/point-in-time-research";
+import { PortfolioPnlWalkthrough } from "./lessons/portfolio-pnl";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { RankContractsWalkthrough } from "./lessons/rank-contracts";
@@ -106,7 +107,6 @@ import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PerformanceConceptLab } from "./performance-concept-lab";
-import { PnlConceptLab } from "./pnl-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
@@ -130,7 +130,7 @@ const conceptLabs = {
 	"cookbook-research-packet": ResearchPacketWalkthrough,
 	"market-recap": MarketRecapWalkthrough,
 	"audit-market-recap": AuditMarketRecapWalkthrough,
-	"portfolio-pnl": PnlConceptLab,
+	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PerformanceConceptLab,
 	"portfolio-exposure": PortfolioExposureConceptLab,
 	"volatility-surface": VolatilitySurfaceWalkthrough,

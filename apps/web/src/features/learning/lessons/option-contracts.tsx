@@ -8,6 +8,7 @@ import {
 	count,
 	type ExpiryId,
 	expiries,
+	oct100CallCloseQuote,
 	optionQuote,
 	pick,
 	usd,
@@ -385,7 +386,7 @@ function UnitView({
 type TimeState = { at: "none" | "morning" | "close" };
 const observations = {
 	morning: { at: 630, time: "10:30", bid: 405, ask: 420, spot: 10_002 },
-	close: { at: 959, time: "15:59", bid: 465, ask: 490, spot: 10_120 },
+	close: { at: 959, ...oct100CallCloseQuote },
 } as const;
 
 function TimeView({

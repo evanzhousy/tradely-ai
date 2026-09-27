@@ -1,3 +1,4 @@
+export * from "./account";
 export * from "./alfa";
 export * from "./book";
 export * from "./calendar";

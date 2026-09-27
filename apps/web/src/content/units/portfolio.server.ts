@@ -1,5 +1,4 @@
 import { performanceConceptData } from "./performance-concept.server";
-import { pnlConceptData } from "./pnl-concept.server";
 import { portfolioExposureData } from "./portfolio-exposure-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -147,10 +146,9 @@ export const portfolioUnits: TeachingUnit[] = [
 		id: "portfolio-pnl",
 		conceptLab: {
 			kind: "portfolio-pnl",
-			data: pnlConceptData,
 			intro: t(
-				"Separate realized and unrealized results, inspect cost and fee conventions, and distinguish cash, buying power and signed marked exposure.",
-				"区分已实现与未实现结果，检查成本及费用约定，并区分现金、购买力与带符号估值敞口。",
+				"Split your Oct 18 100 calls' P&L into realized and unrealized under two lot rules, keep a deposit out of trading P&L, and value Ben's short calls with their sign and no premium cap.",
+				"在两种批次规则下把你的 10月18日 100 看涨盈亏分成已实现与未实现，把存入排除在交易盈亏之外，并带着符号估值 Ben 的看涨空头，明白权利金不是亏损上限。",
 			),
 		},
 		sources: [basics],
@@ -159,8 +157,8 @@ export const portfolioUnits: TeachingUnit[] = [
 			"持仓数量、平均成本与估值价得到估值，不一定是可执行清仓价。股票多头价值=数量×估值价，未实现盈亏=数量×(估值价−成本)，暂不计费用。平掉的批次按 FIFO 等明确匹配规则产生已实现盈亏。现金是余额，购买力可能包括授信或保证金，不等于现金或安全风险预算。可按市值计算配置，但期权还需名义金额和敏感度上下文。空头符号与风险不同，收到的小额权利金不限制未备兑义务方的潜在损失。缺失估值、费用与来源日期都应可见。",
 		),
 		example: t(
-			"Buy 100 shares at $20. Sell 40 at $23: realized gain $120 before fees. The remaining 60 marked at $22 have value $1,320 and unrealized gain $120. A cash deposit increases account value without being trading profit. Option positions additionally require their stated multiplier.",
-			"以 $20 买 100 股，以 $23 卖 40 股，费用前已实现收益 $120。余下 60 股按 $22 估值，市值 $1,320，未实现收益 $120。现金存入增加账户价值，但不是交易利润。期权还需乘给定乘数。",
+			"You bought 10 Oct 18 100 calls at $4.10 and 6 at $4.15. Sell 6 at the $4.65 bid at 15:59: first in, first out, realized P&L is +$330 and the 10 still open are +$645 at the $4.775 mid; at average cost the split is +$318.75 and +$656.25, the same $975 in total. Your account's trading P&L for Monday is +$1,199.60 after $10.40 of fees; Tuesday's $5,000 deposit raises account value, not P&L. Ben, short 10 calls for $4,100, is down $675 at the mark and $15,900 if ALFA settles at $120.",
+			"你以 $4.10 买入 10 张、以 $4.15 买入 6 张 10月18日 100 看涨。15:59 以买价 $4.65 卖出 6 张：按先进先出，已实现盈亏 +$330，仍持有的 10 张按中间价 $4.775 计为 +$645；按平均成本则为 +$318.75 和 +$656.25，合计同样是 $975。扣除 $10.40 费用后，你账户周一的交易盈亏为 +$1,199.60；周二存入的 $5,000 提高账户价值，但不是盈亏。Ben 以 $4,100 卖出 10 张看涨，按估值亏 $675，若 ALFA 结算于 $120 则亏 $15,900。",
 		),
 		misconception: t(
 			"Do not add realized and unrealized figures without checking period, lot basis, fees and whether one already includes the other.",

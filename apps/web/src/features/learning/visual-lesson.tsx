@@ -78,7 +78,9 @@ const lessons = {
 		})),
 	),
 	"portfolio-pnl": lazy(() =>
-		import("./pnl-concept-lab").then((m) => ({ default: m.PnlConceptLab })),
+		import("./lessons/portfolio-pnl").then((m) => ({
+			default: m.PortfolioPnlWalkthrough,
+		})),
 	),
 	"portfolio-performance": lazy(() =>
 		import("./performance-concept-lab").then((m) => ({
