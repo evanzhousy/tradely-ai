@@ -9,7 +9,6 @@ import {
 } from "./authoring.server";
 import { ivRankConceptData } from "./iv-rank-concept.server";
 import { surfaceConceptData } from "./surface-concept.server";
-import { volatilityConceptData } from "./volatility-concept.server";
 
 export const exposureUnits: TeachingUnit[] = [
 	{
@@ -187,10 +186,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "implied-realized-volatility",
 		conceptLab: {
 			kind: "implied-realized-volatility",
-			data: volatilityConceptData,
 			intro: t(
-				"Fit an implied volatility through a stated option model, calculate realized volatility from selected returns, and compare forward and backward references with their definitions intact.",
-				"通过声明的期权模型拟合隐含波动率，根据选定收益计算已实现波动率，并保留定义来比较向前与向后参考。",
+				"Fit the Oct 18 100 call's bid, mid and ask to three implied volatilities, measure ALFA's realized volatility from 20 daily closes, and read the gap between a backward and a forward window.",
+				"把 10月18日 100 看涨的买价、中间价和卖价拟合成三个隐含波动率，用 20 个每日收盘价测量 ALFA 的已实现波动率，并读懂向后与向前两个窗口之间的差距。",
 			),
 		},
 		sources: [greeks],
@@ -199,8 +197,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"隐含波动率是把期权价格代入指定定价模型后反推的输入，不是直接观测到的未来波动。已实现波动率由历史收益按明确窗口、采样与年化规则计算。供应商未说明窗口的历史波动字段，不能自动替代你的已实现估计。IV30 是标准化向前 30 天参考，RV20 可为向后 20 个交易日估计，时间范围不同。相减得到波动率点，不是收益预测或错误定价的证明。事件结束后 IV 可能下跌，使期权在标的方向有利时仍贬值。报价、成交价与模型假设也可产生不同 IV。",
 		),
 		example: t(
-			"IV30 30%, trailing RV20 24%: spread +6 vol points. Relative to RV, the difference is 25%, a different quantity. Neither says the underlying will rise 6%. A daily return standard deviation of 1% annualizes to about 15.87% using sqrt(252), only under that sampling convention.",
-			"IV30 30%、历史 RV20 24%，差为 +6 个波动率点；相对于 RV 的差为 25%，是另一种量。两者都不是标的将上涨 6%。日收益标准差 1% 按 √252 年化约 15.87%，仅在该采样约定下成立。",
+			"The Oct 18 100 call's $4.13 mid fits a 34.9% implied volatility; its bid and ask fit 34.3% and 35.6%. ALFA's last 20 daily returns have a standard deviation of 1.52%, so RV20 is about 24% using √252 (29% using √365, 15% over the last 10 sessions). IV 35% against RV20 24% is +11 vol points: options price more movement ahead, earnings included, not an 11% rise or a 46% overpricing.",
+			"10月18日 100 看涨的中间价 $4.13 拟合出 34.9% 的隐含波动率；买价和卖价分别拟合出 34.3% 和 35.6%。ALFA 最近 20 个每日收益的标准差为 1.52%，按 √252 计 RV20 约 24%（按 √365 计为 29%，只看最近 10 个交易日为 15%）。IV 35% 对 RV20 24% 相差 +11 个波动率点：期权定价的未来波动更大（包括财报），而不是上涨 11% 或高估 46%。",
 		),
 		misconception: t(
 			"Keep units and horizons. A spread between forward-implied and backward-realized estimates is context, not automatic expected profit.",

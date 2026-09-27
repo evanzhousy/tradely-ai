@@ -94,8 +94,8 @@ const lessons = {
 		})),
 	),
 	"implied-realized-volatility": lazy(() =>
-		import("./volatility-concept-lab").then((m) => ({
-			default: m.VolatilityConceptLab,
+		import("./lessons/implied-realized-volatility").then((m) => ({
+			default: m.ImpliedRealizedVolatilityWalkthrough,
 		})),
 	),
 	"theta-vega-rho": lazy(() =>

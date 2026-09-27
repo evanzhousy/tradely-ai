@@ -13,7 +13,6 @@ import type { PortfolioExposureData } from "./portfolio-exposure-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SurfaceConceptData } from "./surface-concept";
 import type { UniverseComparison } from "./universe";
-import type { VolatilityConceptData } from "./volatility-concept";
 
 export type LearningCopy = { en: string; zh: string };
 export type LearningChoice = { id: string; label: LearningCopy };
@@ -154,7 +153,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| VolatilityConceptData
 		| SurfaceConceptData
 		| IvRankConceptData
 		| FlowImpactConceptData

@@ -3,6 +3,7 @@ export * from "./book";
 export * from "./calendar";
 export * from "./flow";
 export * from "./format";
+export * from "./history";
 export * from "./model";
 export * from "./packet";
 export * from "./quotes";
