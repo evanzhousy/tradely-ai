@@ -1,6 +1,46 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "walkthrough-lessons-unreleased",
+		date: "2026-09-27",
+		dateLabel: "Unreleased",
+		title: "Predict, watch and explore every lesson",
+		summary:
+			"All 41 lessons are rebuilt as step-by-step walkthroughs set in one shared market, where a fictional stock called ALFA and its options carry from lesson to lesson.",
+		changes: [
+			{
+				title: "Predict first",
+				description:
+					"Each scene opens with a question about what will happen next. Answer to see how your prediction compares, or skip straight to the explanation.",
+			},
+			{
+				title: "Step through at your pace",
+				description:
+					"Move forward and back one step at a time, or play the steps at reading pace. Each step's result appears with its diagram, and your last scene is remembered on this device.",
+			},
+			{
+				title: "Try it yourself",
+				description:
+					"After the steps, change the example and watch the diagram and its results follow.",
+			},
+			{
+				title: "One market throughout",
+				description:
+					"Quotes, trades, positions and account figures come from the same stock, option chain and trading days, so a number you meet in one lesson means the same thing in the next.",
+			},
+			{
+				title: "Order books in the same format",
+				description:
+					"The execution lessons walk an incoming order through the book one step at a time, replacing the separate animated and simplified views.",
+			},
+			{
+				title: "Comfortable on any screen",
+				description:
+					"Diagrams reflow for phones, and animation turns off when your device asks for reduced motion.",
+			},
+		],
+	},
+	{
 		id: "syllabus-revision-unreleased",
 		date: "2026-09-26",
 		dateLabel: "Unreleased",
@@ -36,41 +76,6 @@ export const changelog = [
 		],
 	},
 	{
-		id: "visual-playback-progress-unreleased",
-		date: "2026-09-16",
-		dateLabel: "Unreleased",
-		title: "Follow the progress of each explanation step",
-		summary:
-			"Only the selected step shows its own progress bar and estimated time remaining. Completed steps show a checkmark, with a clear next action when the explanation finishes.",
-		changes: [
-			{
-				title: "Continue at your own pace",
-				description:
-					"Pause and resume without losing your place, jump between steps, or restart. Exploration and reduced-motion views remain untimed, and you can move on whenever you choose.",
-			},
-		],
-	},
-	{
-		id: "settlement-transfers-unreleased",
-		date: "2026-09-15",
-		dateLabel: "Unreleased",
-		title: "Follow cash and shares through settlement",
-		summary:
-			"Separate physical and cash settlement examples show contract terms, delivery amounts, transfers and the result.",
-		changes: [
-			{
-				title: "Watch a complete settlement",
-				description:
-					"Physical delivery shows cash and shares as a paired exchange. Cash settlement uses its official reference and delivers no stock.",
-			},
-			{
-				title: "Explore without losing the assumptions",
-				description:
-					"Compare calls, puts and quantities, or inspect a missing reference. Unknown amounts stay unknown. Pause, restart and simplified views remain available.",
-			},
-		],
-	},
-	{
 		id: "2026-09-15-animated-liquidity",
 		date: "2026-09-15",
 		dateLabel: "September 15, 2026",
@@ -87,81 +92,6 @@ export const changelog = [
 				title: "Choose a simpler view",
 				description:
 					"Switch to the simplified diagram whenever you prefer. Reduced-motion preferences and animation loading failures automatically use that view.",
-			},
-		],
-	},
-	{
-		id: "worked-visual-results-unreleased",
-		date: "2026-09-15",
-		dateLabel: "Unreleased",
-		title: "See the calculation and its result together",
-		summary:
-			"Visual lessons separate the worked example, optional inputs and detailed explanations, with a clear return to the walkthrough.",
-		changes: [
-			{
-				title: "Compare before and after",
-				description:
-					"Selected payoff, Greek and portfolio scenes keep starting values beside current results. Pin a comparison within the same example, or restart to restore the authored starting state.",
-			},
-			{
-				title: "Follow the parts",
-				description:
-					"Premium breakdowns, contribution waterfalls and cash/share transfers show how the result is formed, with explicit units and signed colors.",
-			},
-			{
-				title: "Trace a research result",
-				description:
-					"Packet, recap and audit examples link their charts to the supplied source rows. Missing values remain unavailable and observed subtotals are distinguished from complete totals.",
-			},
-		],
-	},
-	{
-		id: "order-book-lessons-unreleased",
-		date: "2026-09-15",
-		dateLabel: "Unreleased",
-		title: "Follow an execution through the order book",
-		summary:
-			"Execution lessons now pair their diagrams with a synchronized price ladder and fill list.",
-		changes: [
-			{
-				title: "See where the order can fill",
-				description:
-					"Step through resting liquidity, the incoming order, each displayed level and the result. Filled quantities reduce the book; restarting restores the supplied snapshot.",
-			},
-			{
-				title: "Compare the evidence beside the diagram",
-				description:
-					"Quote and execution-side lessons show their supplied references. Tape lessons show unique executions after corrections and cancellations. Unknown depth remains unavailable.",
-			},
-			{
-				title: "Choose an event directly",
-				description:
-					"Named playback stops follow the demonstrated events. Selecting a step pauses playback; restarting begins again. Mobile layouts keep the market panel visible below the diagram.",
-			},
-		],
-	},
-	{
-		id: "visual-lessons-unreleased",
-		date: "2026-09-15",
-		dateLabel: "Unreleased",
-		title: "Learn through visual explanations",
-		summary:
-			"All 36 lessons put animated diagrams and worked examples first, with free navigation between scenes and lessons.",
-		changes: [
-			{
-				title: "Watch, pause and explore",
-				description:
-					"Follow 110 illustrated scenes with English and Chinese captions. Replay the explanation or change the controls to explore the relationship. Reduced-motion preferences use a manual step-by-step view.",
-			},
-			{
-				title: "Continue without answering questions",
-				description:
-					"Lessons open directly into visual teaching. Study marks are separate from earlier exercise records, which remain available in a read-only history view.",
-			},
-			{
-				title: "Pick up the thread",
-				description:
-					"Your last scene is remembered on this device. Sign in to save study marks across devices; notes, formulas and sources remain available when you want more detail.",
 			},
 		],
 	},
