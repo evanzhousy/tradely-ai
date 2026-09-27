@@ -492,12 +492,14 @@
 	fill: none;
 	pointer-events: all;
 	cursor: ew-resize;
-	touch-action: pan-y;
 }
 .wt-drag-area[data-dragging] {
 	cursor: grabbing;
 }
+/* Sideways touches drag; vertical swipes and pinches stay with the page. Browsers honour
+   touch-action on the svg, not reliably on shapes inside it. */
 .wt-svg:has(.wt-drag-area) {
 	-webkit-user-select: none;
 	user-select: none;
+	touch-action: pan-y pinch-zoom;
 }

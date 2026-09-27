@@ -100,6 +100,8 @@ export function PayoffChart({
 		motion.enabled && drawn.current !== null && !drawn.current.has(id);
 	const [dragging, setDragging] = useState(false);
 	const reported = useRef<number | null>(null);
+	/** Where a touch began, until it moves sideways enough to be a drag rather than a scroll. */
+	const touchFrom = useRef<{ x: number; y: number } | null>(null);
 	// While dragging, everything tracks the pointer instead of taking the teaching pace.
 	const move = dragging ? motion.follow : motion.move;
 	const left = PAD_LEFT;
@@ -172,6 +174,7 @@ export function PayoffChart({
 	};
 	const release = () => {
 		reported.current = null;
+		touchFrom.current = null;
 		setDragging(false);
 	};
 	const className = (tone: PayoffLine["tone"]) =>
@@ -362,12 +365,20 @@ export function PayoffChart({
 						if (event.button !== 0) return;
 						event.currentTarget.setPointerCapture(event.pointerId);
 						setDragging(true);
-						// A touch waits to move, so a tap on the way to scrolling leaves the marker.
-						if (event.pointerType !== "touch") report(event);
+						// A touch waits to move sideways, so taps and scrolls leave the marker.
+						if (event.pointerType === "touch")
+							touchFrom.current = { x: event.clientX, y: event.clientY };
+						else report(event);
 					}}
 					onPointerMove={(event) => {
-						if (event.currentTarget.hasPointerCapture(event.pointerId))
-							report(event);
+						if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+						const from = touchFrom.current;
+						if (from) {
+							const dx = Math.abs(event.clientX - from.x);
+							if (dx < 6 || dx < Math.abs(event.clientY - from.y)) return;
+							touchFrom.current = null;
+						}
+						report(event);
 					}}
 					onPointerUp={release}
 					onPointerCancel={release}
