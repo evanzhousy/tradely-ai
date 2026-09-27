@@ -11,6 +11,8 @@ export type PayoffLine = {
 	tone: "position" | "reference" | "long" | "short";
 	/** Modeled curves are dashed; realized payoffs are solid. */
 	dashed?: boolean;
+	/** Drawn invisibly where it rests, so it can later fade in while it moves. */
+	hidden?: boolean;
 };
 
 export type PayoffMarker = {
@@ -120,6 +122,10 @@ export function PayoffChart({
 		if (previous && ends[i].y - previous.y < 14) ends[i].y = previous.y + 14;
 		labelY.set(ends[i].id, ends[i].y);
 	}
+	// A hidden label rests at its line's end, so one that appears later doesn't fly in from the top.
+	for (const line of lines)
+		if (!labelY.has(line.id))
+			labelY.set(line.id, y(line.points[line.points.length - 1][1]) - 8);
 	return (
 		<g>
 			{titleLines.map((line, i) => (
@@ -186,7 +192,7 @@ export function PayoffChart({
 							className={className(line.tone)}
 							strokeDasharray={line.dashed ? "6 5" : undefined}
 							initial={false}
-							animate={{ d: path(line.points) }}
+							animate={{ d: path(line.points), opacity: line.hidden ? 0 : 1 }}
 							transition={motion.move}
 						/>
 						<m.text

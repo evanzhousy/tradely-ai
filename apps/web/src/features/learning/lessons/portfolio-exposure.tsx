@@ -387,43 +387,48 @@ function HedgeView({
 			const spot = 95 + i * 0.5;
 			return [spot, hedgedPnl(spot, daysPassed)] as const;
 		});
+	// The week curve rests on today's until its scenario, then sinks into place; one
+	// scenario marker travels from today's price to each scenario.
+	const week = shown.stage >= 2;
 	const lines: PayoffLine[] = [
 		{
 			id: "today",
-			label: shown.stage >= 2 ? t(["today", "今天"]) : "",
+			label: week ? t(["today", "今天"]) : "",
 			points: curve(0),
 			tone: "position",
 		},
-	];
-	if (shown.stage >= 2)
-		lines.push({
+		{
 			id: "week",
 			label: "",
-			points: curve(WEEK),
+			points: curve(week ? WEEK : 0),
 			tone: "short",
 			dashed: true,
-		});
-	const markers: PayoffMarker[] = [{ id: "now", x: SPOT, y: 0 }];
-	if (shown.stage === 1)
-		markers.push({
-			id: "up",
-			x: SPOT + UP,
-			y: UP_PNL,
-			label: wholeUsd(UP_PNL),
-			tone: "gain",
-		});
-	if (shown.stage >= 2)
-		markers.push({
-			id: "week",
-			x: SPOT,
-			y: WEEK_PNL,
-			label: t([
-				`a week on · ${wholeUsd(WEEK_PNL)}`,
-				`一周后 · ${wholeUsd(WEEK_PNL)}`,
-			]),
-			tone: "loss",
-			labelBelow: true,
-		});
+			hidden: !week,
+		},
+	];
+	const scenario: PayoffMarker =
+		shown.stage === 0
+			? { id: "scenario", x: SPOT, y: 0 }
+			: shown.stage === 1
+				? {
+						id: "scenario",
+						x: SPOT + UP,
+						y: UP_PNL,
+						label: wholeUsd(UP_PNL),
+						tone: "gain",
+					}
+				: {
+						id: "scenario",
+						x: SPOT,
+						y: WEEK_PNL,
+						label: t([
+							`a week on · ${wholeUsd(WEEK_PNL)}`,
+							`一周后 · ${wholeUsd(WEEK_PNL)}`,
+						]),
+						tone: "loss",
+						labelBelow: true,
+					};
+	const markers: PayoffMarker[] = [{ id: "now", x: SPOT, y: 0 }, scenario];
 	const result: ResultItem[] =
 		shown.stage === 0
 			? [
