@@ -71,8 +71,8 @@ const lessons = {
 		})),
 	),
 	"audit-market-recap": lazy(() =>
-		import("./audit-recap-concept-lab").then((m) => ({
-			default: m.AuditRecapConceptLab,
+		import("./lessons/audit-market-recap").then((m) => ({
+			default: m.AuditMarketRecapWalkthrough,
 		})),
 	),
 	"portfolio-pnl": lazy(() =>

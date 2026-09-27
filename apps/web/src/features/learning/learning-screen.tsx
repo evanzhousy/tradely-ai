@@ -51,7 +51,6 @@ import type {
 } from "@/domain/learning/types";
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
-import { AuditRecapConceptLab } from "./audit-recap-concept-lab";
 import { CharmVannaConceptLab } from "./charm-vanna-concept-lab";
 import {
 	type CoachingEvent,
@@ -72,6 +71,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
 import { ResearchPacketWalkthrough } from "./lessons/cookbook-research-packet";
 import { ExecutionConditionsWalkthrough } from "./lessons/execution-conditions";
@@ -129,7 +129,7 @@ const conceptLabs = {
 	"point-in-time-research": PointInTimeResearchWalkthrough,
 	"cookbook-research-packet": ResearchPacketWalkthrough,
 	"market-recap": MarketRecapWalkthrough,
-	"audit-market-recap": AuditRecapConceptLab,
+	"audit-market-recap": AuditMarketRecapWalkthrough,
 	"portfolio-pnl": PnlConceptLab,
 	"portfolio-performance": PerformanceConceptLab,
 	"portfolio-exposure": PortfolioExposureConceptLab,

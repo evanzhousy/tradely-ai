@@ -1,4 +1,3 @@
-import { auditRecapConceptData } from "./audit-recap-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -196,10 +195,9 @@ export const productionUnits: TeachingUnit[] = [
 		id: "audit-market-recap",
 		conceptLab: {
 			kind: "audit-market-recap",
-			data: auditRecapConceptData,
 			intro: t(
-				"Recalculate a flawed amount, compare report claims with source identity and scale, and assemble a bounded signoff that retains valid evidence.",
-				"重算错误金额，将报告结论与来源身份及尺度比较，并组装保留有效证据的有边界签核。",
+				"Recompute a colleague's $1,655.20 from packet P1's trades, audit each claim in their recap, and write a signoff that keeps what holds and names what is still open.",
+				"根据研究包 P1 的成交重算同事写的 $1,655.20，逐条审计其复盘中的结论，并写一份保留成立部分、列明未解决事项的签核。",
 			),
 		},
 		sources: [oi, quotes],
@@ -208,8 +206,8 @@ export const productionUnits: TeachingUnit[] = [
 			"按来源与变换审核他人结果。润色前先查身份、单位、时间、覆盖与推断。重新算一个数字，检查真实轴尺度，核实报告日期和到期集合与结论一致。找出首个无依据步骤，修复受影响结论，同时保留有效证据。有效签核说明支持什么、修复什么、仍未知什么，以及何时重新检查。漂亮图表或看似正确结果都不能替代来源链路。讲解将原始缺陷与修复说明并列展示。",
 		),
 		example: t(
-			"A report omits the 100 multiplier, calls observed volume 'new positions,' and presents a missing strike as zero. Repair the dollars, replace the position claim with observed executions, and mark missing coverage. Retain a correctly dated R1 execution fact. Rejecting the entire packet would lose valid information without fixing the actual errors.",
-			"报告遗漏 100 乘数，把观测量称为“新增持仓”，并把缺失行权价当零。应修正金额，把持仓结论降为观测成交，标明缺失覆盖；保留正确带日期的 R1 事实。否定整个研究包既丢失有效信息，也未修复具体错误。",
+			"A colleague's recap of packet P1 reports $1,655.20 in premium, calls the 110 call's 540 contracts 'new positions', says the 120 call traded 0, and adds a forecast. Recompute with the 100-share multiplier to get $165,520, rewrite the positions claim as contracts traded, mark the 120 call as no data, and cut the forecast. Keep the correct scope, counts and prices; rejecting the whole recap would throw them away without fixing anything.",
+			"同事根据研究包 P1 写的复盘报告了 $1,655.20 的权利金，把 110 看涨的 540 张称为“新增仓位”，说 120 看涨成交 0 张，还加了一个预测。用每张 100 股的乘数重算得到 $165,520，把持仓说法改写为成交张数，把 120 看涨标为无数据，并删掉预测。保留正确的范围、张数和价格；整篇否决会丢掉这些信息，却什么也没修好。",
 		),
 		misconception: t(
 			"An audit must identify the defect, cite evidence, repair the affected claim and preserve supported work. Merely saying 'uncertain' is not enough.",
