@@ -345,8 +345,8 @@ export const orientationUnits: TeachingUnit[] = [
 			"期权的亏损方式和股票不同。买方可能损失全部权利金，而且可能很快：期权的时间价值会随到期临近而缩水，隐含波动率下降时（例如财报公布后）也会下跌。所以股价朝你预期的方向走，期权仍可能贬值。杠杆是双向的：一小笔权利金控制 100 股，小幅波动就会带来很大的百分比盈亏。义务方收取有限的权利金，却可能损失得多得多；未备兑的看涨空头没有固定的最大亏损。交易成本会累积：价差很宽时，每次按卖价买入、按买价卖出都要付出价差，再加上费用。交易前，券商必须向你提供期权清算公司（OCC）的《标准化期权的特征与风险》披露文件。请认真阅读，并按最坏情况来控制每笔仓位的规模。",
 		),
 		example: t(
-			"You pay $4.00 for a 30-day ALFA 100 call with ALFA at $100. Twenty days later ALFA is $102, but after earnings implied volatility has fallen from 35% to 25%, and the call is worth about $2.85: a $115 loss despite the right direction. A trader who instead sold a call like it for $3.00 would lose $1,700 if ALFA finished at $120.",
-			"ALFA 为 $100 时，你以 $4.00 买入 30 天期的 ALFA 100 看涨。20 天后 ALFA 为 $102，但财报后隐含波动率从 35% 降到 25%，看涨期权只值约 $2.85：方向对了，仍亏 $115。若有人以 $3.00 卖出类似的看涨，而 ALFA 最终为 $120，他将亏损 $1,700。",
+			"On Sep 16 you pay $4.20 for the ALFA Oct 18 100 call with ALFA at $100. Twenty days later ALFA is $102, but after earnings implied volatility has fallen from 35% to 25%, and the call is worth about $3.00: a $120 loss despite the right direction. A trader who instead wrote that call for $4.20 would lose $1,580 if ALFA finished at $120.",
+			"9月16日 ALFA 为 $100 时，你以 $4.20 买入 ALFA 10月18日 100 看涨。20 天后 ALFA 为 $102，但财报后隐含波动率从 35% 降到 25%，看涨期权只值约 $3.00：方向对了，仍亏 $120。若有人以 $4.20 卖出这张看涨，而 ALFA 最终为 $120，他将亏损 $1,580。",
 		),
 		misconception: t(
 			"'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",

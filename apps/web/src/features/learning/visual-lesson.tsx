@@ -138,8 +138,8 @@ const lessons = {
 		})),
 	),
 	"options-risks": lazy(() =>
-		import("./risk-concept-lab").then((m) => ({
-			default: m.RiskConceptLab,
+		import("./lessons/options-risks").then((m) => ({
+			default: m.OptionsRisksWalkthrough,
 		})),
 	),
 	"option-contracts": lazy(() =>

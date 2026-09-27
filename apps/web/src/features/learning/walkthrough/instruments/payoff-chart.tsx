@@ -40,6 +40,7 @@ export function PayoffChart({
 	markers = [],
 	xLabel,
 	title,
+	formatY = (value: number) => (value === 0 ? "$0" : signedUsd(value * 100, 0)),
 }: {
 	width: number;
 	height: number;
@@ -51,6 +52,8 @@ export function PayoffChart({
 	markers?: readonly PayoffMarker[];
 	xLabel: string;
 	title?: string;
+	/** Axis labels for y values; defaults to signed whole dollars. */
+	formatY?: (value: number) => string;
 }) {
 	const motion = useTeachMotion();
 	const left = PAD_LEFT;
@@ -93,7 +96,7 @@ export function PayoffChart({
 						className={tick === 0 ? "wt-axis" : "wt-grid"}
 					/>
 					<Label x={left - 8} y={y(tick) + 4} anchor="end" tone="small">
-						{tick === 0 ? "$0" : signedUsd(tick * 100, 0)}
+						{formatY(tick)}
 					</Label>
 				</g>
 			))}
