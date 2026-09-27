@@ -64,7 +64,6 @@ import {
 } from "./contract-explorer";
 import { learningCopy } from "./copy";
 import { ExecutionLab } from "./execution-lab";
-import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { GexConceptLab } from "./gex-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
@@ -72,6 +71,7 @@ import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
 import { ResearchPacketWalkthrough } from "./lessons/cookbook-research-packet";
 import { DeltaWalkthrough } from "./lessons/delta";
+import { DexDeiWalkthrough } from "./lessons/dex-dei-gex";
 import { ExecutionConditionsWalkthrough } from "./lessons/execution-conditions";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
@@ -117,7 +117,7 @@ import { WorkDocument, Worksheet } from "./work-document";
 
 const conceptLabs = {
 	"iv-rank-percentile": IvRankPercentileWalkthrough,
-	"dex-dei-gex": FlowImpactConceptLab,
+	"dex-dei-gex": DexDeiWalkthrough,
 	"gamma-exposure": GexConceptLab,
 	"gamma-regimes": RegimeConceptLab,
 	"structural-levels": LevelsConceptLab,

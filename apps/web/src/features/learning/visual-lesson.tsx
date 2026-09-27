@@ -13,8 +13,8 @@ const lessons = {
 		})),
 	),
 	"dex-dei-gex": lazy(() =>
-		import("./flow-impact-concept-lab").then((m) => ({
-			default: m.FlowImpactConceptLab,
+		import("./lessons/dex-dei-gex").then((m) => ({
+			default: m.DexDeiWalkthrough,
 		})),
 	),
 	"gamma-exposure": lazy(() =>

@@ -7,6 +7,8 @@ export type Bar = {
 	label: string;
 	/** Null when the source sent nothing: drawn hatched, never as a zero. */
 	value: number | null;
+	/** Not shown yet: the slot and its label stay so bars don't shift. */
+	hidden?: boolean;
 };
 
 const PAD_TOP = 26;
@@ -95,6 +97,7 @@ export function BarChart({
 						{bar.label}
 					</Label>
 				);
+				if (bar.hidden) return <g key={bar.id}>{label}</g>;
 				if (bar.value === null)
 					return (
 						<g key={bar.id}>

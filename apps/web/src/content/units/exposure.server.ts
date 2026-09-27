@@ -1,4 +1,3 @@
-import { flowImpactConceptData } from "./flow-impact-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -381,10 +380,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "dex-dei-gex",
 		conceptLab: {
 			kind: "dex-dei-gex",
-			data: flowImpactConceptData,
 			intro: t(
-				"Build classified flow, change its volume denominator, and check that each source report measures what this lesson's DEI needs.",
-				"构建分类成交流，改变成交量分母，并检查每份来源报告是否正是本课 DEI 所需的数据。",
+				"Weight Monday's Oct 18 call prints by delta and sign them by side for a net flow DEX of +17,532 shares, see DEI change with its denominator, and tell this DEX from an open-interest DEX on another platform.",
+				"用 Delta 给周一 10月18日 看涨的成交加权并按方向赋号，得到 +17,532 股的净成交流 DEX；看 DEI 如何随分母变化；并把这个 DEX 与另一平台基于未平仓量的 DEX 区分开。",
 			),
 		},
 		sources: [greeks],
@@ -393,8 +391,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"单笔 Delta 等价幅度可用 |Delta|×张数×乘数。本课按推断成交流约定赋符号：看涨正、看跌负，中性不计方向净值，但保留覆盖信息。净 DEX 是分类成交流，不是做市商库存或买方完整组合。分类净权利金则用看涨金额减看跌金额，单位是美元，不是股等价量。相反贡献可抵消，即使总活动很大。本课 DEI=|净 DEX|÷正的有效典型股票成交量×100，方向保留在 DEX。指数本身没有普通股票成交量，代理分母需明确比例与方法。ΔOI 型影响的分子来自报告持仓变化，不能继承今天成交方向。缺失分母应保持不可用。命名提示：在许多其他平台上，DEX 指基于未平仓量、按假设做市商持仓计算的 Delta 敞口，是与下一课 GEX 类似的持仓模型。比较数字前，先确认来源使用哪种定义。",
 		),
 		example: t(
-			"Bullish delta equivalents 60,000, bearish 20,000, neutral 10,000. Net DEX +40,000; gross represented magnitude 90,000. Effective volume 1,000,000 shares yields DEI 4%. Doubling only that denominator gives 2%, while signed DEX and any separate GEX report stay fixed.",
-			"看涨股等价量 60,000、看跌 20,000、中性 10,000。净 DEX +40,000，已代表总幅度 90,000。有效量 1,000,000 股得到 DEI 4%。仅将分母翻倍得 2%，带符号 DEX 及独立 GEX 报告保持不变。",
+			"Monday's Oct 18 call prints come to 27,425 delta share-equivalents: 17,740 bought at the ask, 208 sold at the bid and 9,477 at mid or without a quote. Net flow DEX is +17,532; counting the 10:50 105/110 spread as one trade makes it +8,532. Against a 1,200,000-share 20-day average that is a DEI of 1.46%, or 2.92% against 600,000 shares by noon. Another platform's open-interest “DEX” of −89,800 is a different measure.",
+			"周一 10月18日 看涨的成交合计 27,425 个 Delta 股票等价：17,740 按卖价买入，208 按买价卖出，9,477 以中间价或无报价成交。净成交流 DEX 为 +17,532；把 10:50 的 105/110 价差算作一笔交易则为 +8,532。对照 1,200,000 股的 20 日均量，DEI 为 1.46%；对照截至中午的 600,000 股则为 2.92%。另一平台基于未平仓量的“DEX”为 −89,800，是另一种度量。",
 		),
 		misconception: t(
 			"Always name whether a number is trade magnitude, signed position delta, or signed aggregate flow. DEI conventions and aggregation methods are not universal across vendors.",

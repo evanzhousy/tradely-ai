@@ -60,3 +60,10 @@ export const alfaIv30Weekly: readonly number[] = [
 	26, 28, 33, 28, 26, 25, 27, 26, 28, 27, 28, 29, 30, 31,
 ];
 export const ALFA_IV30_TODAY = 35;
+
+/** ALFA share volume: typical days and Monday's session so far at noon. */
+export const alfaShareVolume = {
+	average20: 1_200_000,
+	average60: 1_500_000,
+	mondayByNoon: 600_000,
+} as const;

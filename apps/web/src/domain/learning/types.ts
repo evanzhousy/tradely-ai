@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
-import type { FlowImpactConceptData } from "./flow-impact-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { GexConceptData } from "./gex-concept";
 import type { LevelsConceptData } from "./levels-concept";
@@ -151,7 +150,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| FlowImpactConceptData
 		| GexConceptData
 		| RegimeConceptData
 		| LevelsConceptData
