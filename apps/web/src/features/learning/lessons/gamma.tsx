@@ -17,6 +17,7 @@ import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
 	PayoffChart,
+	type PayoffDrag,
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
@@ -40,8 +41,13 @@ const GAMMA = round2(model(OCT_100_CALL, SPOT).gamma);
 const MOVE = 2;
 const NEW_DELTA = round2(DELTA + GAMMA * MOVE);
 
+// A figure that rounds to zero shows no sign, so a count through zero never reads "−0.00".
 const fixed2 = (value: number) =>
-	value < 0 ? `−${Math.abs(value).toFixed(2)}` : value.toFixed(2);
+	value <= -0.005
+		? `−${Math.abs(value).toFixed(2)}`
+		: Math.abs(value).toFixed(2);
+/** Greeks as shown: rounded to two places, then printed. */
+const greek = (value: number) => fixed2(round2(value));
 const stock = (dollars: number) =>
 	usd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
 const signedStock = (dollars: number) =>
@@ -168,7 +174,8 @@ function SlopeScene({
 							`Delta at ${stock(shown.spot)}`,
 							`${stock(shown.spot)} 时的 Delta`,
 						]),
-						value: fixed2(round2(estimatedDelta)),
+						value: greek(estimatedDelta),
+						tween: { to: estimatedDelta, format: greek },
 						note:
 							move === 0
 								? t(["today", "今天"])
@@ -184,6 +191,7 @@ function SlopeScene({
 						id: "delta-only",
 						label: t(["Delta only", "仅 Delta"]),
 						value: signedPrice(deltaOnly(move)),
+						tween: { to: deltaOnly(move), format: signedPrice },
 						note: t([
 							`${fixed2(DELTA)} × ${signedStock(move)}`,
 							`${fixed2(DELTA)} × ${signedStock(move)}`,
@@ -194,6 +202,7 @@ function SlopeScene({
 						id: "with-gamma",
 						label: t(["Delta + ½ gamma × move²", "Delta + ½ Gamma × 变动²"]),
 						value: signedPrice(withGamma(move)),
+						tween: { to: withGamma(move), format: signedPrice },
 						note: t([
 							`model: ${signedPrice(repriced - base)}`,
 							`模型：${signedPrice(repriced - base)}`,
@@ -201,6 +210,16 @@ function SlopeScene({
 						evidence: "calculated",
 					},
 				];
+	// On the delta chart the moving marker appears once ALFA leaves today's price.
+	const drag: PayoffDrag | undefined = explore
+		? {
+				markerId: shown.view === "delta" && move === 0 ? "from" : "to",
+				min: 90,
+				max: 110,
+				step: 1,
+				onChange: (spot) => setExplore({ ...explore, spot }),
+			}
+		: undefined;
 	return (
 		<SceneFrame
 			stage={
@@ -229,6 +248,7 @@ function SlopeScene({
 								yTicks={[0, 0.5, 1]}
 								lines={deltaLines}
 								markers={markers}
+								drag={drag}
 								formatY={(value) => value.toFixed(1)}
 								xLabel={t(["ALFA price today", "ALFA 今天的价格"])}
 								title={t([
@@ -246,6 +266,7 @@ function SlopeScene({
 								yTicks={[0, 4, 8, 12, 16]}
 								lines={valueLines}
 								markers={markers}
+								drag={drag}
 								formatY={(value) => usd(value * 100, 0)}
 								xLabel={t(["ALFA price today", "ALFA 今天的价格"])}
 								title={t([
@@ -607,7 +628,8 @@ function ExpiryScene({
 				`Oct 18 100 at ${stock(shown.spot)}`,
 				`${stock(shown.spot)} 时 10月18日 100`,
 			]),
-			value: fixed2(round2(oct)),
+			value: greek(oct),
+			tween: { to: oct, format: greek },
 			note: t(["gamma per $1", "每 $1 的 Gamma"]),
 			evidence: "modeled",
 		},
@@ -619,7 +641,8 @@ function ExpiryScene({
 				`Sep 20 100 at ${stock(shown.spot)}`,
 				`${stock(shown.spot)} 时 9月20日 100`,
 			]),
-			value: fixed2(round2(sep)),
+			value: greek(sep),
+			tween: { to: sep, format: greek },
 			note:
 				sep > oct
 					? t([
@@ -650,6 +673,17 @@ function ExpiryScene({
 							yTicks={[0, 0.05, 0.1]}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore
+									? {
+											markerId: "oct",
+											min: 90,
+											max: 110,
+											step: 1,
+											onChange: (spot) => setExplore({ ...explore, spot }),
+										}
+									: undefined
+							}
 							formatY={(value) => value.toFixed(2)}
 							xLabel={t(["ALFA price today", "ALFA 今天的价格"])}
 							title={t([
@@ -725,8 +759,8 @@ const scenes = [
 			],
 			answer: "right",
 			explain: [
-				`${fixed2(DELTA)} + ${fixed2(GAMMA)} × ${MOVE} = ${fixed2(NEW_DELTA)}. The model's delta at ${stock(SPOT + MOVE)} is ${fixed2(round2(model(OCT_100_CALL, SPOT + MOVE).delta))}.`,
-				`${fixed2(DELTA)} + ${fixed2(GAMMA)} × ${MOVE} = ${fixed2(NEW_DELTA)}。模型在 ${stock(SPOT + MOVE)} 的 Delta 是 ${fixed2(round2(model(OCT_100_CALL, SPOT + MOVE).delta))}。`,
+				`${fixed2(DELTA)} + ${fixed2(GAMMA)} × ${MOVE} = ${fixed2(NEW_DELTA)}. The model's delta at ${stock(SPOT + MOVE)} is ${greek(model(OCT_100_CALL, SPOT + MOVE).delta)}.`,
+				`${fixed2(DELTA)} + ${fixed2(GAMMA)} × ${MOVE} = ${fixed2(NEW_DELTA)}。模型在 ${stock(SPOT + MOVE)} 的 Delta 是 ${greek(model(OCT_100_CALL, SPOT + MOVE).delta)}。`,
 			],
 		},
 		beats: [
@@ -759,7 +793,10 @@ const scenes = [
 			},
 		],
 		explore: {
-			prompt: ["Move ALFA on either chart.", "在任一图表上移动 ALFA。"],
+			prompt: [
+				"Drag across either chart to move ALFA.",
+				"在任一图表上左右拖动来移动 ALFA。",
+			],
 			start: () => ({ spot: 106, view: "value" }),
 		},
 		View: SlopeScene,
@@ -873,8 +910,8 @@ const scenes = [
 			answer: "near",
 			revealAt: 1,
 			explain: [
-				`At the strike the Sep 20 call's gamma is ${fixed2(round2(sepAtStrike))} against ${fixed2(round2(octAtStrike))}. With ${SEP_DAYS} days left, its delta has to settle at 0 or 1 soon.`,
-				`在行权价处，9月20日 看涨的 Gamma 是 ${fixed2(round2(sepAtStrike))}，而 10月18日 是 ${fixed2(round2(octAtStrike))}。只剩 ${SEP_DAYS} 天，它的 Delta 很快就要归于 0 或 1。`,
+				`At the strike the Sep 20 call's gamma is ${greek(sepAtStrike)} against ${greek(octAtStrike)}. With ${SEP_DAYS} days left, its delta has to settle at 0 or 1 soon.`,
+				`在行权价处，9月20日 看涨的 Gamma 是 ${greek(sepAtStrike)}，而 10月18日 是 ${greek(octAtStrike)}。只剩 ${SEP_DAYS} 天，它的 Delta 很快就要归于 0 或 1。`,
 			],
 		},
 		beats: [
@@ -882,8 +919,8 @@ const scenes = [
 				id: "oct",
 				label: ["Oct 18", "10月18日"],
 				caption: [
-					`The Oct 18 100 call's gamma is a low, wide hill: about ${fixed2(round2(octAtStrike))} at the strike, still ${fixed2(round2(gammaOf(OCT_100_CALL, FAR)))} at ${stock(FAR)}.`,
-					`10月18日 100 看涨的 Gamma 是一座又低又宽的山：行权价处约 ${fixed2(round2(octAtStrike))}，到 ${stock(FAR)} 仍有 ${fixed2(round2(gammaOf(OCT_100_CALL, FAR)))}。`,
+					`The Oct 18 100 call's gamma is a low, wide hill: about ${greek(octAtStrike)} at the strike, still ${greek(gammaOf(OCT_100_CALL, FAR))} at ${stock(FAR)}.`,
+					`10月18日 100 看涨的 Gamma 是一座又低又宽的山：行权价处约 ${greek(octAtStrike)}，到 ${stock(FAR)} 仍有 ${greek(gammaOf(OCT_100_CALL, FAR))}。`,
 				],
 				state: { spot: SPOT, near: false },
 			},
@@ -891,8 +928,8 @@ const scenes = [
 				id: "sep",
 				label: ["Sep 20", "9月20日"],
 				caption: [
-					`The Sep 20 100 call, ${SEP_DAYS} days out, peaks at ${fixed2(round2(sepAtStrike))} right at the strike, about ${Math.round(sepAtStrike / octAtStrike)} times as high.`,
-					`还剩 ${SEP_DAYS} 天的 9月20日 100 看涨，在行权价处达到 ${fixed2(round2(sepAtStrike))}，约高 ${Math.round(sepAtStrike / octAtStrike)} 倍。`,
+					`The Sep 20 100 call, ${SEP_DAYS} days out, peaks at ${greek(sepAtStrike)} right at the strike, about ${Math.round(sepAtStrike / octAtStrike)} times as high.`,
+					`还剩 ${SEP_DAYS} 天的 9月20日 100 看涨，在行权价处达到 ${greek(sepAtStrike)}，约高 ${Math.round(sepAtStrike / octAtStrike)} 倍。`,
 				],
 				state: { spot: SPOT, near: true },
 			},
@@ -900,16 +937,16 @@ const scenes = [
 				id: "far",
 				label: [stock(FAR), stock(FAR)],
 				caption: [
-					`At ${stock(FAR)} the order flips: the Sep 20 call's gamma is ${fixed2(round2(gammaOf(SEP_20, FAR)))}, below the Oct 18's ${fixed2(round2(gammaOf(OCT_100_CALL, FAR)))}. Short-dated sensitivity sits at the strike, not everywhere.`,
-					`到 ${stock(FAR)} 顺序反过来：9月20日 看涨的 Gamma 为 ${fixed2(round2(gammaOf(SEP_20, FAR)))}，低于 10月18日 的 ${fixed2(round2(gammaOf(OCT_100_CALL, FAR)))}。短期期权的敏感度集中在行权价，而不是处处都高。`,
+					`At ${stock(FAR)} the order flips: the Sep 20 call's gamma is ${greek(gammaOf(SEP_20, FAR))}, below the Oct 18's ${greek(gammaOf(OCT_100_CALL, FAR))}. Short-dated sensitivity sits at the strike, not everywhere.`,
+					`到 ${stock(FAR)} 顺序反过来：9月20日 看涨的 Gamma 为 ${greek(gammaOf(SEP_20, FAR))}，低于 10月18日 的 ${greek(gammaOf(OCT_100_CALL, FAR))}。短期期权的敏感度集中在行权价，而不是处处都高。`,
 				],
 				state: { spot: FAR, near: true },
 			},
 		],
 		explore: {
 			prompt: [
-				"Move ALFA and compare the two gammas.",
-				"移动 ALFA，比较两个 Gamma。",
+				"Drag across the chart to move ALFA and compare the two gammas.",
+				"在图上左右拖动来移动 ALFA，比较两个 Gamma。",
 			],
 			start: () => ({ spot: 104, near: true }),
 		},
