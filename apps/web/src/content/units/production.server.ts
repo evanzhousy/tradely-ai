@@ -1,5 +1,4 @@
 import { auditRecapConceptData } from "./audit-recap-concept.server";
-import { recapConceptData } from "./recap-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -119,10 +118,9 @@ export const productionUnits: TeachingUnit[] = [
 		id: "market-recap",
 		conceptLab: {
 			kind: "market-recap",
-			data: recapConceptData,
 			intro: t(
-				"Match a chart to its claimed quantity, inspect the effect of axis cropping, and compose a bounded headline and source-linked caption.",
-				"将图表与声明量匹配，检查轴裁切影响，并编排有边界标题及关联来源的图注。",
+				"Put packet P1's chart under the claim it measures, watch a raised axis turn 540 against 505 into 8 to 1, and rewrite an overclaiming headline into one the packet supports, caption attached.",
+				"让研究包 P1 的图表对上它所衡量的结论，看提高的坐标轴如何把 540 对 505 画成 8 比 1，并把过度的标题改写成研究包支持的版本，附上图注。",
 			),
 		},
 		sources: [oi, quotes],
@@ -131,8 +129,8 @@ export const productionUnits: TeachingUnit[] = [
 			"复盘传达研究包支持的发现，应从给定行或已标识的保存研究包出发，而非先写夸张标题。每个数字结论都需可追溯计算、日期、单位、人群和覆盖边界。图表宜使用一种可比量，不同指标需明确单位的独立轴或面板。即使算术正确，截断轴、缺少分母或未标缺失行仍会歪曲解读。加强措辞不会把描述变成预测。视觉讲解比较给定标题，并组装带来源引用的有依据图注。",
 		),
 		example: t(
-			"A chart shows 10 and 20 contracts at two strikes and a visibly missing third strike. A supported headline is '30 contracts observed across the two covered strikes; the third is missing.' 'All volume concentrated here' overstates coverage. Showing a GEX model chart instead would not substantiate a session-volume claim.",
-			"图表显示两个行权价成交 10 和 20 张，第三个明确缺失。有依据的标题可为“两条已覆盖行权价观测 30 张，第三条缺失”。“全部成交集中于此”夸大覆盖。换成 GEX 模型图也不能支持时段成交量结论。",
+			"Packet P1 shows 540 contracts in ALFA's Oct 18 110 call and 505 in the 105 call, but $108,500 of premium in the 105 call against $48,810 in the 110. 'Most contracts: the 110 call' needs a contracts chart; 'most premium: the 105 call' needs a premium chart. Starting the axis at 500 draws the 110 call's bar 8 times the 105's, though it traded 7% more. With the 120 call missing, 'Monday's busiest call' overstates coverage.",
+			"研究包 P1 显示 ALFA 10月18日 110 看涨成交 540 张、105 看涨 505 张，但权利金是 105 看涨 $108,500，110 看涨 $48,810。“张数最多：110 看涨”需要张数图，“权利金最多：105 看涨”需要权利金图。把轴的起点设为 500，110 看涨的柱会画成 105 的 8 倍，尽管它只多成交 7%。120 看涨缺失时，“周一最活跃的看涨”夸大了覆盖范围。",
 		),
 		misconception: t(
 			"A caveat belongs beside the claim it limits. A missing row is not a zero-height observed bar.",

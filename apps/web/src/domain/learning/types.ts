@@ -13,7 +13,6 @@ import type { MetricsComparison } from "./metrics";
 import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
-import type { RecapConceptData } from "./recap-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SurfaceConceptData } from "./surface-concept";
 import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
@@ -170,7 +169,6 @@ export type LearningStepView = {
 		| RegimeConceptData
 		| LevelsConceptData
 		| CharmVannaConceptData
-		| RecapConceptData
 		| AuditRecapConceptData
 		| PnlConceptData
 		| PerformanceConceptData

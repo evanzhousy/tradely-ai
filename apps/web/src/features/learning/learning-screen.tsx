@@ -79,6 +79,7 @@ import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterp
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
+import { MarketRecapWalkthrough } from "./lessons/market-recap";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
@@ -105,7 +106,6 @@ import { PnlConceptLab } from "./pnl-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
-import { RecapConceptLab } from "./recap-concept-lab";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
@@ -128,7 +128,7 @@ const conceptLabs = {
 	"rank-contracts": RankContractsWalkthrough,
 	"point-in-time-research": PointInTimeResearchWalkthrough,
 	"cookbook-research-packet": ResearchPacketWalkthrough,
-	"market-recap": RecapConceptLab,
+	"market-recap": MarketRecapWalkthrough,
 	"audit-market-recap": AuditRecapConceptLab,
 	"portfolio-pnl": PnlConceptLab,
 	"portfolio-performance": PerformanceConceptLab,

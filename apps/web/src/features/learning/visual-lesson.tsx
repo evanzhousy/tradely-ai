@@ -66,7 +66,9 @@ const lessons = {
 		})),
 	),
 	"market-recap": lazy(() =>
-		import("./recap-concept-lab").then((m) => ({ default: m.RecapConceptLab })),
+		import("./lessons/market-recap").then((m) => ({
+			default: m.MarketRecapWalkthrough,
+		})),
 	),
 	"audit-market-recap": lazy(() =>
 		import("./audit-recap-concept-lab").then((m) => ({
