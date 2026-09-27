@@ -184,7 +184,9 @@ const lessons = {
 		})),
 	),
 	"session-flow-vs-structure": lazy(() =>
-		import("./oi-concept-lab").then((m) => ({ default: m.OiConceptLab })),
+		import("./lessons/session-flow-vs-structure").then((m) => ({
+			default: m.VolumeOpenInterestWalkthrough,
+		})),
 	),
 	"trade-records": lazy(() =>
 		import("./tape-concept-lab").then((m) => ({ default: m.TapeConceptLab })),

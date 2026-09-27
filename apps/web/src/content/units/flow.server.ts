@@ -12,7 +12,6 @@ import {
 	t,
 } from "./authoring.server";
 import { conditionsConceptData } from "./conditions-concept.server";
-import { oiConceptData } from "./oi-concept.server";
 import { sourceConceptData } from "./source-concept.server";
 import { strategyConceptData } from "./strategy-concept.server";
 import { tapeConceptData } from "./tape-concept.server";
@@ -22,10 +21,9 @@ export const flowUnits: TeachingUnit[] = [
 		id: "session-flow-vs-structure",
 		conceptLab: {
 			kind: "session-flow-vs-structure",
-			data: oiConceptData,
 			intro: t(
-				"Follow opening, closing and transferred contracts, replay the session beside its OI reports, and compare the same expiry set across dates. Explore these fictional ledgers before building your own calculation.",
-				"追踪开仓、平仓与转移合约，对照 OI 报告回放交易时段，再跨日期比较相同到期集合。先探索这些虚构台账，再完成自己的计算。",
+				"Watch trades open, transfer and close contracts, see when the daily open-interest count arrives, and compare one fixed series with a rolling expiry bucket.",
+				"观察成交如何开仓、换手与平仓，看每日未平仓量统计何时发布，并比较固定序列与滚动到期桶。",
 			),
 		},
 		sources: [oi],

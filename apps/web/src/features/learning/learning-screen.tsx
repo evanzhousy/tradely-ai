@@ -78,11 +78,11 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
-import { OiConceptLab } from "./oi-concept-lab";
 import { OptionBasicsLab } from "./option-basics-lab";
 import { OrderConceptLab } from "./order-concept-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
@@ -154,7 +154,7 @@ const conceptLabs = {
 	"execution-side": SideConceptLab,
 	"flow-sentiment": SentimentConceptLab,
 	"validate-option-print": PrintReviewConceptLab,
-	"session-flow-vs-structure": OiConceptLab,
+	"session-flow-vs-structure": VolumeOpenInterestWalkthrough,
 	"trade-records": TapeConceptLab,
 	"execution-conditions": ConditionsConceptLab,
 };

@@ -16,7 +16,6 @@ import type { IvRankConceptData } from "./iv-rank-concept";
 import type { LevelsConceptData } from "./levels-concept";
 import type { MetricsComparison } from "./metrics";
 import type { NeighborhoodConceptData } from "./neighborhood-concept";
-import type { OiConceptData } from "./oi-concept";
 import type { PacketConceptData } from "./packet-concept";
 import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
@@ -181,7 +180,6 @@ export type LearningStepView = {
 		| SideConceptData
 		| SentimentConceptData
 		| PrintReviewConceptData
-		| OiConceptData
 		| TapeConceptData
 		| ConditionsConceptData
 		| ActivityConceptData
