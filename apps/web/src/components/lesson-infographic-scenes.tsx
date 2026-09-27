@@ -1276,7 +1276,7 @@ function Rank({ l }: Props) {
 			{[
 				{ s: "ALFA", a: 80, b: 80 },
 				{ s: "BETA", a: 128, b: 40 },
-				{ s: "GAMMA", a: 104, b: 48 },
+				{ s: "IOTA", a: 104, b: 48 },
 			].map((row, i) => (
 				<g key={row.s}>
 					<Label x={47} y={67 + i * 39} small>

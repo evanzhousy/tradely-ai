@@ -354,10 +354,10 @@ function independent(variant: "a" | "b"): ScenarioStep {
 				"合约",
 				isA
 					? "BETA · 80 put · 21 days to expiry"
-					: "GAMMA · 120 call · 45 days to expiry",
+					: "IOTA · 120 call · 45 days to expiry",
 				isA
 					? "BETA · 80 看跌 · 距到期 21 天"
-					: "GAMMA · 120 看涨 · 距到期 45 天",
+					: "IOTA · 120 看涨 · 距到期 45 天",
 			),
 			fact(
 				"Execution",

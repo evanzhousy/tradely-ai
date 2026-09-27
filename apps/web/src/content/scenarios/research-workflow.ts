@@ -48,7 +48,7 @@ function universe(
 				eligible: true,
 			},
 			{
-				symbol: independent ? "OMEGA" : "GAMMA",
+				symbol: independent ? "OMEGA" : "IOTA",
 				volume: ranking ? (independent && alternate ? 600 : 1300) : 5000,
 				peerVolume: ranking && independent && alternate ? 1300 : 600,
 				fresh: ranking || alternate,
@@ -249,8 +249,8 @@ function discoverySteps(alternate: boolean, ranking: boolean): ScenarioStep[] {
 						],
 						[
 							"gamma",
-							independent ? "OMEGA · 5,000" : "GAMMA · 5,000",
-							independent ? "OMEGA · 5,000" : "GAMMA · 5,000",
+							independent ? "OMEGA · 5,000" : "IOTA · 5,000",
+							independent ? "OMEGA · 5,000" : "IOTA · 5,000",
 						],
 						["outside", "OUTSIDE · 9,000", "OUTSIDE · 9,000"],
 					],

@@ -106,8 +106,8 @@ export const researchUnits: TeachingUnit[] = [
 			const b = [400, 700, 450, 950][v];
 			return {
 				brief: t(
-					"Rule: ALFA/BETA/GAMMA stock options in the same stated session, complete observations, volume ≥500. No other rows belong to the universe.",
-					"规则：给定同一时段的 ALFA/BETA/GAMMA 股票期权，观测完整且量≥500。范围中无其他行。",
+					"Rule: ALFA/BETA/IOTA stock options in the same stated session, complete observations, volume ≥500. No other rows belong to the universe.",
+					"规则：给定同一时段的 ALFA/BETA/IOTA 股票期权，观测完整且量≥500。范围中无其他行。",
 				),
 				worksheet: {
 					columns: [
@@ -118,7 +118,7 @@ export const researchUnits: TeachingUnit[] = [
 					rows: [
 						["ALFA", String(a), "complete / 完整"],
 						["BETA", String(b), "complete / 完整"],
-						["GAMMA", "—", "missing / 缺失"],
+						["IOTA", "—", "missing / 缺失"],
 					],
 					caption: t(
 						"Synthetic fixed-session source · volume in contracts; dash is missing",
@@ -133,8 +133,8 @@ export const researchUnits: TeachingUnit[] = [
 						b >= 500 ? 2 : 1,
 						"rows",
 						"行",
-						"ALFA qualifies; BETA only if ≥500; GAMMA lacks the required observation.",
-						"ALFA 合格，BETA 需≥500，GAMMA 缺少必需观测。",
+						"ALFA qualifies; BETA only if ≥500; IOTA lacks the required observation.",
+						"ALFA 合格，BETA 需≥500，IOTA 缺少必需观测。",
 					),
 					n(
 						"eligible-volume",

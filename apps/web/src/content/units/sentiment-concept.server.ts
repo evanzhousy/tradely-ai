@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 import type { SentimentConceptData } from "@/domain/learning/sentiment-concept";
 import type { SideReference } from "@/domain/learning/side-concept";
 
-const contractBase = "DELTA 2030-09-20 $55";
+const contractBase = "ETA 2030-09-20 $55";
 const quote: SideReference = {
 	id: "aligned",
 	label: ["Matched quote", "匹配报价"],

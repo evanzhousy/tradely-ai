@@ -4,7 +4,7 @@ import type {
 	SideReference,
 } from "@/domain/learning/side-concept";
 
-const contract = "GAMMA 2030-08-16 $75 CALL";
+const contract = "IOTA 2030-08-16 $75 CALL";
 const aligned: SideReference = {
 	id: "matched",
 	label: ["Matched quote", "匹配报价"],
@@ -76,7 +76,7 @@ export const sideConceptData: SideConceptData = {
 			...aligned,
 			id: "mismatch",
 			label: ["Quote belongs to another contract", "报价属于另一张合约"],
-			contract: "GAMMA 2030-08-16 $75 PUT",
+			contract: "IOTA 2030-08-16 $75 PUT",
 		},
 		{
 			...aligned,

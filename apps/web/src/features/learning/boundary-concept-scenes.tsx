@@ -199,12 +199,12 @@ export function BoundaryQuestionScene({ locale }: Props) {
 					<p>
 						{forecast
 							? l(
-									"Forecast sketch: test whether a prespecified session-volume feature predicts RHO's positive next-session return. The supplied design has no evaluation results.",
-									"预测草案：测试预先规定的时段成交量特征能否预测 RHO 下一时段正收益。给定设计没有评价结果。",
+									"Forecast sketch: test whether a prespecified session-volume feature predicts PSI's positive next-session return. The supplied design has no evaluation results.",
+									"预测草案：测试预先规定的时段成交量特征能否预测 PSI 下一时段正收益。给定设计没有评价结果。",
 								)
 							: l(
-									"Descriptive sketch: where did RHO call volume concentrate among the three declared October 18 series during the specified September 13 session?",
-									"描述草案：在指定 9 月 13 日时段内，RHO 看涨成交量在三个声明的 10 月 18 日序列中集中在哪里？",
+									"Descriptive sketch: where did PSI call volume concentrate among the three declared October 18 series during the specified September 13 session?",
+									"描述草案：在指定 9 月 13 日时段内，PSI 看涨成交量在三个声明的 10 月 18 日序列中集中在哪里？",
 								)}
 					</p>
 					<p className="text-muted-foreground text-xs">

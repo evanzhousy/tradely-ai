@@ -5,7 +5,7 @@ import type {
 } from "@/domain/learning/boundary-concept";
 
 const identity: ResearchIdentity = {
-	subject: "RHO",
+	subject: "PSI",
 	population: "calls · 2030-10-18 · strikes 95/100/105",
 	quantity: "session contract volume",
 	interval: "2030-09-13 09:30–16:00 America/New_York",
@@ -18,7 +18,7 @@ export const boundaryConceptData: BoundaryConceptData = {
 		{
 			id: "subject",
 			label: ["Subject", "对象"],
-			value: ["RHO option activity", "RHO 期权活动"],
+			value: ["PSI option activity", "PSI 期权活动"],
 		},
 		{
 			id: "quantity",
@@ -32,8 +32,8 @@ export const boundaryConceptData: BoundaryConceptData = {
 			id: "universe",
 			label: ["Universe", "范围"],
 			value: [
-				"RHO calls expiring 2030-10-18, strikes 95/100/105",
-				"RHO 2030-10-18 到期看涨，行权价 95/100/105",
+				"PSI calls expiring 2030-10-18, strikes 95/100/105",
+				"PSI 2030-10-18 到期看涨，行权价 95/100/105",
 			],
 		},
 		{
