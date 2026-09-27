@@ -1,6 +1,5 @@
 import "@tanstack/react-start/server-only";
 
-import { activityConceptData } from "./activity-concept.server";
 import {
 	basics,
 	choose as c,
@@ -309,10 +308,9 @@ export const flowUnits: TeachingUnit[] = [
 		id: "unusual-activity",
 		conceptLab: {
 			kind: "unusual-activity",
-			data: activityConceptData,
 			intro: t(
-				"Change the denominator, align the comparison window, and test how a screen changes the population. Explore why a high ratio is a research prompt rather than proof of informed trading.",
-				"改变分母、对齐比较窗口，再检验筛选如何改变人群。探索为何高比率只是研究线索，而非知情交易的证明。",
+				"Measure Monday's ALFA call volume against two different baselines, line up the time window, and see which contracts a 2× screen picks.",
+				"用两种不同的基准衡量周一 ALFA 看涨期权的成交量，对齐时间窗口，再看 2× 筛选会选中哪些合约。",
 			),
 		},
 		sources: [oi],
@@ -321,8 +319,8 @@ export const flowUnits: TeachingUnit[] = [
 			"异常是相对于基准，不等于绝对金额大。相对成交量比较当前活动与历史典型量，成交量/OI 比较活动与未平仓合约，分母回答不同问题。完整时段应与完整时段比较，盘中则需明确可比窗口。接近零的分母可让普通分子显得极端。必需分母缺失或非正时结果不可用，不是零或无穷。平均各行比率不同于总分子除总分母。2× 等阈值是声明的筛选规则，不是普遍有效的知情交易证明，还需检查流动性、覆盖、事件与所选人群。",
 		),
 		example: t(
-			"Volume 200, typical volume 100, OI 1,000: relative volume 2× and volume/OI 0.2×. Another contract with volume 10 and OI 1 has volume/OI 10× despite much less activity. This is a denominator effect, not proof that the second contract matters more.",
-			"成交量 200、典型量 100、OI 1,000：相对量 2×，量/OI 为 0.2×。另一合约成交仅 10、OI 为 1，量/OI 却达 10×。这是分母效应，不证明后者更重要。",
+			"The Oct 18 105 call traded 505 against a typical 120 and open interest of 1,200: relative volume 4.2× and volume/OI 0.42×. The Dec 20 110 call traded 12 with open interest of 3: volume/OI 4× despite far less activity. This is a denominator effect, not proof that the second contract matters more.",
+			"10月18日 105 看涨成交 505、典型量 120、OI 1,200：相对量 4.2×，量/OI 为 0.42×。12月20日 110 看涨仅成交 12、OI 为 3，量/OI 却达 4×。这是分母效应，不证明后者更重要。",
 		),
 		misconception: t(
 			"A high ratio is not an opening-position flag. A historical benchmark needs its population, time window and coverage stated.",

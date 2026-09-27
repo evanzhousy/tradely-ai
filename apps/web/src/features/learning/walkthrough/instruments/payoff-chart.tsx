@@ -52,6 +52,7 @@ export function PayoffChart({
 	xLabel,
 	title,
 	formatY = (value: number) => (value === 0 ? "$0" : signedUsd(value * 100, 0)),
+	formatX = (value: number) => `$${value}`,
 }: {
 	width: number;
 	height: number;
@@ -66,6 +67,8 @@ export function PayoffChart({
 	title?: string;
 	/** Axis labels for y values; defaults to signed whole dollars. */
 	formatY?: (value: number) => string;
+	/** Axis labels for x values; defaults to whole dollars. */
+	formatX?: (value: number) => string;
 }) {
 	const motion = useTeachMotion();
 	const left = PAD_LEFT;
@@ -168,7 +171,7 @@ export function PayoffChart({
 					anchor="middle"
 					tone="small"
 				>
-					${tick}
+					{formatX(tick)}
 				</Label>
 			))}
 			<Label x={right} y={bottom + 32} anchor="end" tone="small">

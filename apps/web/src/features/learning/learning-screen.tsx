@@ -51,7 +51,6 @@ import type {
 } from "@/domain/learning/types";
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
-import { ActivityConceptLab } from "./activity-concept-lab";
 import { AuditRecapConceptLab } from "./audit-recap-concept-lab";
 import { BoundaryConceptLab } from "./boundary-concept-lab";
 import { CharmVannaConceptLab } from "./charm-vanna-concept-lab";
@@ -89,6 +88,7 @@ import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structu
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
+import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
 import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { LevelsConceptLab } from "./levels-concept-lab";
@@ -139,7 +139,7 @@ const conceptLabs = {
 	gamma: GammaConceptLab,
 	delta: DeltaConceptLab,
 	"symbol-drawer": SourceConceptLab,
-	"unusual-activity": ActivityConceptLab,
+	"unusual-activity": UnusualActivityWalkthrough,
 	"option-strategies": StrategyConceptLab,
 	"stocks-and-prices": StocksAndPricesWalkthrough,
 	"what-options-are": WhatOptionsAreWalkthrough,

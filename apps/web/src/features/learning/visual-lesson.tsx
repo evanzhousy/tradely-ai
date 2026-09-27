@@ -113,8 +113,8 @@ const lessons = {
 		})),
 	),
 	"unusual-activity": lazy(() =>
-		import("./activity-concept-lab").then((m) => ({
-			default: m.ActivityConceptLab,
+		import("./lessons/unusual-activity").then((m) => ({
+			default: m.UnusualActivityWalkthrough,
 		})),
 	),
 	"option-strategies": lazy(() =>

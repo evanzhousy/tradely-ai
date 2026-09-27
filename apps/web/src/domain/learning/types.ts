@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { ActivityConceptData } from "./activity-concept";
 import type { AuditRecapConceptData } from "./audit-recap-concept";
 import type { BoundaryConceptData } from "./boundary-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
@@ -168,7 +167,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| ActivityConceptData
 		| StrategyConceptData
 		| SourceConceptData
 		| DeltaConceptData

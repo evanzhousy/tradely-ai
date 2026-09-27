@@ -160,3 +160,55 @@ export const weeklyCallOpenInterest: {
 		values: { sep20: 940, sep27: 310, oct4: 130, oct11: 520, oct18: 106 },
 	},
 ];
+
+/**
+ * Monday's activity in four ALFA calls against two baselines: a typical (20-day average)
+ * full-day volume and open interest at Friday's close. The Oct 18 100 call matches the
+ * Monday ledger; the 105 and 110 calls carry the block, its spread leg and the sweep.
+ */
+export const mondayActivity = [
+	{
+		id: "oct18-100",
+		label: ["Oct 18 100 call", "10月18日 100 看涨"] as Copy,
+		volume: 20,
+		typical: 25,
+		openInterest: 100,
+	},
+	{
+		id: "oct18-105",
+		label: ["Oct 18 105 call", "10月18日 105 看涨"] as Copy,
+		volume: 505,
+		typical: 120,
+		openInterest: 1200,
+	},
+	{
+		id: "oct18-110",
+		label: ["Oct 18 110 call", "10月18日 110 看涨"] as Copy,
+		volume: 540,
+		typical: 300,
+		openInterest: 2500,
+	},
+	{
+		id: "dec20-110",
+		label: ["Dec 20 110 call", "12月20日 110 看涨"] as Copy,
+		volume: 12,
+		typical: 4,
+		openInterest: 3,
+	},
+] as const;
+
+/**
+ * Share of a typical day's volume done by each time, in minutes after the 9:30 open.
+ * Mornings and closes are busiest, so the curve is steepest at both ends.
+ */
+export const typicalVolumeProfile: readonly (readonly [number, number])[] = [
+	[0, 0],
+	[30, 0.12],
+	[60, 0.2],
+	[90, 0.3],
+	[150, 0.45],
+	[210, 0.55],
+	[270, 0.65],
+	[330, 0.78],
+	[390, 1],
+];
