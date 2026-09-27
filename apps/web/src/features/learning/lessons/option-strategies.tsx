@@ -201,6 +201,10 @@ const longLeg = (spot: number) => payoff(CALL_105, spot);
 const shortLeg110 = (spot: number) => -payoff(CALL_110, spot);
 const spreadPayoff = (spot: number) => longLeg(spot) + shortLeg110(spot);
 
+/** Whole dollars from dollars: "$500", "+$375". */
+const dollars = (value: number) => usd(value * 100, 0);
+const signedDollars = (value: number) => signedUsd(value * 100, 0);
+
 function AddView({
 	locale,
 	phase,
@@ -253,10 +257,7 @@ function AddView({
 						id: "at",
 						x: shown.spot,
 						y: shown.stage >= 3 ? profit : value,
-						label:
-							shown.stage >= 3
-								? signedUsd(profit * 100, 0)
-								: usd(value * 100, 0),
+						label: shown.stage >= 3 ? signedDollars(profit) : dollars(value),
 						tone:
 							shown.stage >= 3 ? (profit >= 0 ? "gain" : "loss") : "neutral",
 					},
@@ -270,7 +271,8 @@ function AddView({
 		{
 			id: "long",
 			label: t(["Long 105 call", "105 看涨多头"]),
-			value: signedUsd(longLeg(shown.spot) * 100, 0),
+			value: signedDollars(longLeg(shown.spot)),
+			tween: { to: longLeg(shown.spot), format: signedDollars },
 			note: t([`at ALFA $${shown.spot}`, `ALFA $${shown.spot} 时`]),
 		},
 	];
@@ -278,7 +280,8 @@ function AddView({
 		result.push({
 			id: "short",
 			label: t(["Short 110 call", "110 看涨空头"]),
-			value: signedUsd(shortLeg110(shown.spot) * 100, 0),
+			value: signedDollars(shortLeg110(shown.spot)),
+			tween: { to: shortLeg110(shown.spot), format: signedDollars },
 		});
 	if (shown.stage >= 2)
 		result.push({
@@ -287,8 +290,12 @@ function AddView({
 				shown.stage >= 3
 					? t(["Profit", "盈亏"])
 					: t(["Payoff, both legs", "两腿合计到期价值"]),
-			value:
-				shown.stage >= 3 ? signedUsd(profit * 100, 0) : usd(value * 100, 0),
+			value: shown.stage >= 3 ? signedDollars(profit) : dollars(value),
+			// Counting from payoff to profit shows the cost coming off.
+			tween:
+				shown.stage >= 3
+					? { to: profit, format: signedDollars }
+					: { to: value, format: dollars },
 			note:
 				shown.stage >= 3
 					? t([
@@ -320,6 +327,17 @@ function AddView({
 							lines={lines}
 							markers={markers}
 							bands={bands}
+							drag={
+								explore
+									? {
+											markerId: "at",
+											min: RANGE[0],
+											max: RANGE[1],
+											step: 1,
+											onChange: (spot) => setExplore({ ...explore, spot }),
+										}
+									: undefined
+							}
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
 								`105/110 call spread bought for ${usd(NET)} · per spread`,
@@ -771,8 +789,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Move ALFA's price at expiry and read each leg and the total.",
-				"移动到期时 ALFA 的价格，读出每条腿和合计。",
+				"Drag across the chart to move ALFA's price at expiry, and read each leg and the total.",
+				"在图上左右拖动来移动到期时 ALFA 的价格，读出每条腿和合计。",
 			],
 			start: () => ({ stage: 3, spot: 108 }),
 		},
