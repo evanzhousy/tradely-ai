@@ -100,3 +100,31 @@ export const instruments = {
 		level: 5_000,
 	},
 } as const;
+
+/** Quotes on the teaching Monday, in cents per share, around the model values. */
+const optionQuotes: Record<string, { bid: number; ask: number }> = {
+	"oct18-100-call": { bid: 405, ask: 420 },
+	"oct18-100-put": { bid: 405, ask: 420 },
+	"oct18-95-put": { bid: 205, ask: 215 },
+	"oct18-105-call": { bid: 205, ask: 215 },
+	"oct18-110-call": { bid: 85, ask: 93 },
+};
+
+export function optionQuote(contract: Contract) {
+	const quote =
+		optionQuotes[`${contract.expiry}-${contract.strike}-${contract.right}`];
+	if (!quote)
+		throw new Error(
+			`No teaching quote for ${contract.expiry} ${contract.strike} ${contract.right}`,
+		);
+	return quote;
+}
+
+/** Value at expiry per share, in cents, for a price at expiry in cents. */
+export function valueAtExpiry(contract: Contract, spotCents: number) {
+	const strike = contract.strike * 100;
+	return Math.max(
+		contract.right === "call" ? spotCents - strike : strike - spotCents,
+		0,
+	);
+}

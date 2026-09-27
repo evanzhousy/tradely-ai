@@ -201,7 +201,7 @@ export function Walkthrough({
 	const choose = (choice: string) => {
 		setPredictions((all) => ({ ...all, [scene.id]: choice }));
 		// Play on from the setup; feedback appears once the answering step is on screen.
-		goTo(Math.min(1, last));
+		goTo(revealAt === 0 ? 0 : Math.min(1, last));
 	};
 
 	const restart = () => {

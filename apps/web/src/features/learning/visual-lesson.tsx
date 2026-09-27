@@ -128,8 +128,8 @@ const lessons = {
 		})),
 	),
 	"what-options-are": lazy(() =>
-		import("./option-basics-lab").then((m) => ({
-			default: m.OptionBasicsLab,
+		import("./lessons/what-options-are").then((m) => ({
+			default: m.WhatOptionsAreWalkthrough,
 		})),
 	),
 	"trading-options": lazy(() =>

@@ -140,8 +140,8 @@ export const orientationUnits: TeachingUnit[] = [
 			"期权是一份合约，在约定日期前赋予持有人一项权利，而不是义务。看涨期权是按约定价格（行权价）买入 100 股的权利；看跌期权是按行权价卖出 100 股的权利。持有人需要预先为这项权利付费，这个价格叫权利金，按每股报价，所以 $3 的报价买一张合约需 $300。另一方是义务方：他收取权利金，并在持有人行使权利时承担卖出（看涨）或买入（看跌）的义务。人们用期权来保护已有的股票、为持股赚取收入，或以有限且已知的成本表达看法。到期时不值得行使的权利会作废，权利金也随之损失。",
 		),
 		example: t(
-			"A call on ALFA with a $100 strike costs $3. If ALFA ends at $110, the right to buy at $100 is worth $10 a share, or $1,000 for the contract, against $300 paid. If ALFA ends at $95, nobody would use a right to pay $100, so the call expires worthless and the $300 is lost.",
-			"ALFA 行权价 $100 的看涨期权售价 $3。若 ALFA 到期时为 $110，以 $100 买入的权利每股值 $10，整张合约值 $1,000，而你付出了 $300。若 ALFA 到期时为 $95，没人会用 $100 去买，看涨期权作废，$300 全部损失。",
+			"An ALFA Oct 18 call with a $100 strike costs $4.20. If ALFA ends at $110, the right to buy at $100 is worth $10 a share, or $1,000 for the contract, against $420 paid. If ALFA ends at $95, nobody would use a right to pay $100, so the call expires worthless and the $420 is lost.",
+			"ALFA 10月18日 行权价 $100 的看涨期权售价 $4.20。若 ALFA 到期时为 $110，以 $100 买入的权利每股值 $10，整张合约值 $1,000，而你付出了 $420。若 ALFA 到期时为 $95，没人会用 $100 去买，看涨期权作废，$420 全部损失。",
 		),
 		misconception: t(
 			"An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",

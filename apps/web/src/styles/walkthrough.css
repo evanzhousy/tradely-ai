@@ -381,3 +381,44 @@
 		width: 1.4rem;
 	}
 }
+
+/* Payoff lines and transfer arrows. */
+.wt-line-position {
+	fill: none;
+	stroke: var(--diagram-accent);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.wt-line-long {
+	fill: none;
+	stroke: var(--wt-long);
+	stroke-width: 2.5;
+	stroke-linejoin: round;
+}
+.wt-line-short {
+	fill: none;
+	stroke: var(--wt-short);
+	stroke-width: 2.5;
+	stroke-linejoin: round;
+}
+.wt-line-reference {
+	fill: none;
+	stroke: var(--muted-foreground);
+	stroke-width: 1.75;
+	stroke-dasharray: 5 4;
+}
+.wt-arrow {
+	fill: none;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.wt-arrow-cash {
+	stroke: var(--diagram-gain);
+}
+.wt-arrow-shares {
+	stroke: var(--wt-long);
+}
+.wt-arrow-contract {
+	stroke: var(--diagram-accent);
+}

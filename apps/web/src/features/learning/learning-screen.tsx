@@ -80,11 +80,11 @@ import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
+import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
-import { OptionBasicsLab } from "./option-basics-lab";
 import { OrderConceptLab } from "./order-concept-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
 import { PayoffConceptLab } from "./payoff-concept-lab";
@@ -142,7 +142,7 @@ const conceptLabs = {
 	"unusual-activity": ActivityConceptLab,
 	"option-strategies": StrategyConceptLab,
 	"stocks-and-prices": StocksAndPricesWalkthrough,
-	"what-options-are": OptionBasicsLab,
+	"what-options-are": WhatOptionsAreWalkthrough,
 	"trading-options": OrderConceptLab,
 	"options-risks": RiskConceptLab,
 	"option-contracts": ContractConceptLab,
