@@ -119,6 +119,32 @@ export function PayoffChart({
 					`${i ? "L" : "M"}${x(px).toFixed(1)} ${y(py).toFixed(1)}`,
 			)
 			.join("");
+	// Band labels sit in a row at the top of the plot.
+	const bandLabels = bands.flatMap((band) =>
+		band.label
+			? [
+					{
+						x: (x(band.from) + x(band.to)) / 2,
+						half: textWidth(band.label, 11) / 2,
+					},
+				]
+			: [],
+	);
+	/** Above its point, or below when asked or when it would run into a band label. */
+	const markerLabelAt = (marker: PayoffMarker) => {
+		const at = Math.min(Math.max(x(marker.x), left + 50), right - 50);
+		// A draggable marker's label clears its ring.
+		const lift = marker.id === drag?.markerId ? 1.4 : 1;
+		const above = y(marker.y) - 14 * lift;
+		const half = textWidth(marker.label ?? "", 13) / 2;
+		const blocked =
+			above - 12 < top + 18 &&
+			bandLabels.some((band) => Math.abs(band.x - at) < band.half + half + 6);
+		return {
+			x: at,
+			y: marker.labelBelow || blocked ? y(marker.y) + 22 * lift : above,
+		};
+	};
 	const report = (event: PointerEvent<SVGRectElement>) => {
 		const ctm = event.currentTarget.getScreenCTM();
 		if (!drag || !ctm) return;
@@ -296,14 +322,7 @@ export function PayoffChart({
 										: "wt-accent"
 							}`}
 							initial={false}
-							animate={{
-								x: Math.min(Math.max(x(marker.x), left + 50), right - 50),
-								// A draggable marker's label clears its ring.
-								y:
-									y(marker.y) +
-									(marker.labelBelow ? 22 : -14) *
-										(marker.id === drag?.markerId ? 1.4 : 1),
-							}}
+							animate={markerLabelAt(marker)}
 							transition={move}
 						>
 							{marker.label}
