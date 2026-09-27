@@ -81,6 +81,7 @@ import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
+import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
@@ -108,7 +109,6 @@ import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { SourceConceptLab } from "./source-concept-lab";
-import { StrategyConceptLab } from "./strategy-concept-lab";
 import { SurfaceConceptLab } from "./surface-concept-lab";
 import { TimeVolRateConceptLab } from "./time-vol-rate-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
@@ -140,7 +140,7 @@ const conceptLabs = {
 	delta: DeltaConceptLab,
 	"symbol-drawer": SourceConceptLab,
 	"unusual-activity": UnusualActivityWalkthrough,
-	"option-strategies": StrategyConceptLab,
+	"option-strategies": OptionStrategiesWalkthrough,
 	"stocks-and-prices": StocksAndPricesWalkthrough,
 	"what-options-are": WhatOptionsAreWalkthrough,
 	"trading-options": TradingOptionsWalkthrough,

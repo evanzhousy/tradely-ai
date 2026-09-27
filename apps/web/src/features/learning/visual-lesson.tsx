@@ -118,8 +118,8 @@ const lessons = {
 		})),
 	),
 	"option-strategies": lazy(() =>
-		import("./strategy-concept-lab").then((m) => ({
-			default: m.StrategyConceptLab,
+		import("./lessons/option-strategies").then((m) => ({
+			default: m.OptionStrategiesWalkthrough,
 		})),
 	),
 	"stocks-and-prices": lazy(() =>

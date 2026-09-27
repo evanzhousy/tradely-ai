@@ -11,7 +11,6 @@ import {
 	t,
 } from "./authoring.server";
 import { sourceConceptData } from "./source-concept.server";
-import { strategyConceptData } from "./strategy-concept.server";
 
 export const flowUnits: TeachingUnit[] = [
 	{
@@ -364,10 +363,9 @@ export const flowUnits: TeachingUnit[] = [
 		id: "option-strategies",
 		conceptLab: {
 			kind: "option-strategies",
-			data: strategyConceptData,
 			intro: t(
-				"Connect the supplied stock and option legs, explore expiration value and profit, and replay a linked roll. Compare the evidence for a complete structure with what one isolated position can reveal.",
-				"连接给定股票与期权腿，探索到期价值与盈亏，再回放关联移仓。比较完整结构证据与单一持仓能够揭示的信息。",
+				"Place one short call inside three different positions, add a spread's signed legs into its payoff, and watch a roll print as two opposite-looking trades.",
+				"把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再看一次移仓如何打印成两笔看似相反的成交。",
 			),
 		},
 		sources: [basics],
@@ -376,8 +374,8 @@ export const flowUnits: TeachingUnit[] = [
 			"一条腿是一项持仓，策略可组合多腿及股票。保护性看跌是股票加多头看跌；备兑看涨是股票加空头看涨，未备兑空头缺少股票，其上涨风险很不同。垂直价差结合同到期不同执行价；跨式结合同执行价看涨与看跌；领口结合股票、看跌与空头看涨。移仓包含平旧合约和开新合约。单笔情绪因此可能误导完整组合解读，识别结构需开平仓和关联腿记录。到期价值、入场权利金、费用、提前指派及持仓管理过程应分别看待。",
 		),
 		example: t(
-			"A 100/110 long call spread costs $4 net per share, multiplier 100. At expiration spot $115, the long call pays $15 and the short call costs $5: net payoff $1,000 and profit $600. Reading only the short-call print would miss the capped bullish spread.",
-			"100/110 多头看涨价差每股净成本 $4，乘数 100。到期现价 $115，多头价值 $15、空头需付 $5：净价值 $1,000，利润 $600。只看空头看涨成交会漏掉整体有上限的看涨价差。",
+			"The 105/110 call spread bought for $1.25 net per share, multiplier 100: at expiration spot $115, the long call pays $10 and the short call costs $5, so net payoff is $500 and profit $375. Reading only the short-call print would miss the capped bullish spread.",
+			"105/110 看涨价差每股净成本 $1.25，乘数 100。到期现价 $115，多头价值 $10、空头需付 $5：净价值 $500，利润 $375。只看空头看涨成交会漏掉整体有上限的看涨价差。",
 		),
 		misconception: t(
 			"A bullish investor can buy a protective put. The put leg's negative directional exposure does not identify the investor's full outlook.",
