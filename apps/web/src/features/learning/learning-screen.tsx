@@ -78,6 +78,7 @@ import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { GammaWalkthrough } from "./lessons/gamma";
 import { GammaExposureWalkthrough } from "./lessons/gamma-exposure";
+import { GammaRegimesWalkthrough } from "./lessons/gamma-regimes";
 import { ImpliedRealizedVolatilityWalkthrough } from "./lessons/implied-realized-volatility";
 import { IvRankPercentileWalkthrough } from "./lessons/iv-rank-percentile";
 import { MarketRecapWalkthrough } from "./lessons/market-recap";
@@ -109,7 +110,6 @@ import { PnlConceptLab } from "./pnl-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
-import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { UniverseExplorer } from "./universe-explorer";
@@ -119,7 +119,7 @@ const conceptLabs = {
 	"iv-rank-percentile": IvRankPercentileWalkthrough,
 	"dex-dei-gex": DexDeiWalkthrough,
 	"gamma-exposure": GammaExposureWalkthrough,
-	"gamma-regimes": RegimeConceptLab,
+	"gamma-regimes": GammaRegimesWalkthrough,
 	"structural-levels": LevelsConceptLab,
 	"charm-vanna": CharmVannaConceptLab,
 	"audited-boundary": AuditedBoundaryWalkthrough,

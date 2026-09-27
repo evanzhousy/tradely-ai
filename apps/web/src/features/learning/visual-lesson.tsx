@@ -23,8 +23,8 @@ const lessons = {
 		})),
 	),
 	"gamma-regimes": lazy(() =>
-		import("./regime-concept-lab").then((m) => ({
-			default: m.RegimeConceptLab,
+		import("./lessons/gamma-regimes").then((m) => ({
+			default: m.GammaRegimesWalkthrough,
 		})),
 	),
 	"structural-levels": lazy(() =>

@@ -1,6 +1,5 @@
 import { charmVannaConceptData } from "./charm-vanna-concept.server";
 import { levelsConceptData } from "./levels-concept.server";
-import { regimeConceptData } from "./regime-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -137,10 +136,9 @@ export const structureUnits: TeachingUnit[] = [
 		id: "gamma-regimes",
 		conceptLab: {
 			kind: "gamma-regimes",
-			data: regimeConceptData,
 			intro: t(
-				"Explore conditional hedge responses, inspect repriced gamma across spot samples, and separate model targets from execution and liquidity evidence.",
-				"探索条件性对冲响应，检查沿现价样本重定价的 Gamma，并区分模型目标、执行与流动性证据。",
+				"Follow the modeled Oct 18 book's hedge as ALFA moves either side of its flip, find the flip by repricing across spot rather than summing strikes, and keep a hedge target apart from the tape and the order book.",
+				"跟随模型化的 10月18日 账户在 ALFA 于转折点两侧变动时的对冲，用沿现价重新定价而不是累加行权价来找到转折点，并把对冲目标与成交记录和挂单簿区分开。",
 			),
 		},
 		sources: [greeks],
@@ -149,8 +147,8 @@ export const structureUnits: TeachingUnit[] = [
 			"Gamma 状态概括指定模型持仓、日期和到期范围。在连续 Delta 对冲假设下，正 Gamma 持仓通常需上涨后卖标的、下跌后买标的；负 Gamma 的局部响应相反。这依赖假设组合、对冲目标和其他输入，不确定实际做市商库存、交易或市场冲击。零 Gamma 转折是重定价汇总 Gamma 改变符号的模型现价，并非行权价图累计和穿零。接近零的净值可掩盖大量总敞口。Gamma 挤压还需持仓、对冲需求和流动性等条件，单凭标签不能预测。",
 		),
 		example: t(
-			"A stated position's dollar-free share-delta sensitivity is −200 shares per $1 underlying rise. A $0.50 rise changes its delta by −100 shares. To maintain delta neutrality, its hedge changes by +100 shares. This is a conditional short-gamma example, not proof that any market participant must execute that purchase.",
-			"给定持仓股 Delta 敏感度为标的每涨 $1 变化 −200 股。上涨 $0.50，Delta 变化 −100 股；为维持中性，对冲增加 +100 股。这是条件性负 Gamma 示例，不证明任何真实参与者必然买入。",
+			"With dealers assumed long ALFA's Oct 18 calls and short its puts, the book's share-gamma at $100 is −5,121 shares per $1: a $1 rise calls for buying about 5,121 shares to stay hedged, with the move. Repriced at each spot, the book turns long gamma near $102.3; a running sum of per-strike values crosses zero near $94 instead. None of this shows that anyone traded, or how 1,600 offered shares would absorb such an order.",
+			"假设做市商做多 ALFA 10月18日 的看涨、做空看跌，账户在 $100 的股票 Gamma 为每 $1 −5,121 股：上涨 $1 需要买入约 5,121 股来保持对冲，顺着变动方向。在每个现价重新定价后，账户在约 $102.3 转为正 Gamma；按行权价累加的数值却在约 $94 穿零。这些都不能说明有人交易了，也不能说明 1,600 股的卖方挂单能如何消化这样一笔订单。",
 		),
 		misconception: t(
 			"A modeled flip is not a promised support/resistance line. Change the assumed positions and the model can change without a new print.",
