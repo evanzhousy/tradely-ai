@@ -1,5 +1,5 @@
 import * as m from "motion/react-m";
-import { type PointerEvent, useRef, useState } from "react";
+import { type PointerEvent, useEffect, useId, useRef, useState } from "react";
 import { signedUsd } from "@/content/world";
 import { Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
@@ -90,6 +90,14 @@ export function PayoffChart({
 	formatX?: (value: number) => string;
 }) {
 	const motion = useTeachMotion();
+	const clipId = useId().replace(/:/g, "");
+	// Lines already on screen; one that joins later wipes in from the left, its label last.
+	const drawn = useRef<ReadonlySet<string> | null>(null);
+	useEffect(() => {
+		drawn.current = new Set(lines.map((line) => line.id));
+	});
+	const joins = (id: string) =>
+		motion.enabled && drawn.current !== null && !drawn.current.has(id);
 	const [dragging, setDragging] = useState(false);
 	const reported = useRef<number | null>(null);
 	// While dragging, everything tracks the pointer instead of taking the teaching pace.
@@ -252,8 +260,19 @@ export function PayoffChart({
 				{xLabel}
 			</Label>
 			{lines.map((line) => {
+				const clip = `${clipId}-${line.id.replace(/[^\w-]/g, "_")}`;
 				return (
-					<g key={line.id}>
+					<g key={line.id} clipPath={`url(#${clip})`}>
+						<clipPath id={clip}>
+							<m.rect
+								x={left - 4}
+								y={0}
+								height={height}
+								initial={joins(line.id) ? { width: 0 } : false}
+								animate={{ width: right - left + 8 }}
+								transition={motion.move}
+							/>
+						</clipPath>
 						<m.path
 							className={className(line.tone)}
 							strokeDasharray={line.dashed ? "6 5" : undefined}
