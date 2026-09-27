@@ -63,8 +63,13 @@ export function CountTo({
 	const { enabled, fade } = useTeachMotion();
 	const [shown, setShown] = useState(value);
 	const current = useRef(value);
+	const changed = useRef(Number.NEGATIVE_INFINITY);
 	useEffect(() => {
-		if (!enabled) {
+		// A figure that changes again within a count is being scrubbed; it shows the live value.
+		const now = performance.now();
+		const scrubbing = now - changed.current < 350;
+		changed.current = now;
+		if (!enabled || scrubbing) {
 			current.current = value;
 			setShown(value);
 			return;
