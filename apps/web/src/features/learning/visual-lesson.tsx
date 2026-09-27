@@ -46,8 +46,8 @@ const lessons = {
 		})),
 	),
 	"rank-symbols": lazy(() =>
-		import("./rank-symbol-concept-lab").then((m) => ({
-			default: m.RankSymbolConceptLab,
+		import("./lessons/rank-symbols").then((m) => ({
+			default: m.RankSymbolsWalkthrough,
 		})),
 	),
 	"rank-contracts": lazy(() =>

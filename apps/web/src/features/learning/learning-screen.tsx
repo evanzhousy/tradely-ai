@@ -84,6 +84,7 @@ import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
+import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { SymbolDrawerWalkthrough } from "./lessons/symbol-drawer";
@@ -104,7 +105,6 @@ import { PointTimeConceptLab } from "./point-time-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
-import { RankSymbolConceptLab } from "./rank-symbol-concept-lab";
 import { RecapConceptLab } from "./recap-concept-lab";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
@@ -124,7 +124,7 @@ const conceptLabs = {
 	"charm-vanna": CharmVannaConceptLab,
 	"audited-boundary": AuditedBoundaryWalkthrough,
 	"symbol-universe": SymbolUniverseWalkthrough,
-	"rank-symbols": RankSymbolConceptLab,
+	"rank-symbols": RankSymbolsWalkthrough,
 	"rank-contracts": NeighborhoodConceptLab,
 	"point-in-time-research": PointTimeConceptLab,
 	"cookbook-research-packet": PacketConceptLab,

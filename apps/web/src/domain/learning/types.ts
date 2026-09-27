@@ -16,7 +16,6 @@ import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PointTimeConceptData } from "./point-time-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
-import type { RankSymbolConceptData } from "./rank-symbol-concept";
 import type { RecapConceptData } from "./recap-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SurfaceConceptData } from "./surface-concept";
@@ -174,7 +173,6 @@ export type LearningStepView = {
 		| RegimeConceptData
 		| LevelsConceptData
 		| CharmVannaConceptData
-		| RankSymbolConceptData
 		| NeighborhoodConceptData
 		| PointTimeConceptData
 		| PacketConceptData

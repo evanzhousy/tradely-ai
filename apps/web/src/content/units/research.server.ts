@@ -1,6 +1,5 @@
 import { neighborhoodConceptData } from "./neighborhood-concept.server";
 import { pointTimeConceptData } from "./point-time-concept.server";
-import { rankSymbolConceptData } from "./rank-symbol-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -170,10 +169,9 @@ export const researchUnits: TeachingUnit[] = [
 		id: "rank-symbols",
 		conceptLab: {
 			kind: "rank-symbols",
-			data: rankSymbolConceptData,
 			intro: t(
-				"Compare signed and magnitude order, separate raw from relative activity, and carry a candidate forward with its comparison set and revision triggers.",
-				"比较有符号与幅度排序，区分原始与相对活动，并携比较集合及修订触发条件交接候选。",
+				"Rank ALFA's peers by raw and relative activity, keep the sign on a ranked change, and pass a candidate on with the context its rank depends on.",
+				"按原始与相对活跃度给 ALFA 的同组股票排名，在按幅度排序时保留符号，并附上排名所依赖的背景交接候选。",
 			),
 		},
 		sources: [oi],
@@ -182,8 +180,8 @@ export const researchUnits: TeachingUnit[] = [
 			"排名按指标与范围排序，可安排关注顺序，但不证明未来表现。有符号指标按绝对幅度排序不同于按数值排序：−100 可按幅度排在 +60 前，同时方向仍为负。同组变化可改变自身观测未变的排名。原始规模与基准归一化活跃度回答不同问题，应按研究目标选指标，不追逐最突出结果。流动性门槛及覆盖排除可避免小分母极值，但必须披露。候选交接应含观测值、比较集合、检查理由及降级条件。",
 		),
 		example: t(
-			"A stays at volume 1,000. Peers fall from 1,600 and 1,300 to 500 and 600; A moves from third to first without new own-symbol activity. Separately, 1,000 versus a normal 2,000 is 0.5×; 600 versus normal 200 is 3×. A raw-volume question and an unusual-relative-activity question need different leaders.",
-			"A 始终成交 1,000，同组从 1,600 和 1,300 降至 500 和 600，A 从第三升第一而自身无新增活动。另看基准：1,000/通常 2,000=0.5×，600/通常 200=3×。原始量与相对异常活动问题需要不同领先者。",
+			"ALFA stays at 2,400 contracts on Monday and Tuesday. CRUX falls from 5,600 to 1,900; ALFA moves from second to first without new activity of its own. Separately, CRUX's 5,600 against a normal 6,000 is 0.93×, while DUNE's 900 against a normal 300 is 3×. A raw-volume question and an unusual-relative-activity question need different leaders.",
+			"ALFA 周一、周二都成交 2,400 张。CRUX 从 5,600 降到 1,900，ALFA 从第二升到第一，自身并无新增活动。另看基准：CRUX 5,600/平常 6,000=0.93×，DUNE 900/平常 300=3×。原始量与相对异常活动问题需要不同领先者。",
 		),
 		misconception: t(
 			"A higher rank can result from peers or exclusions. Rank change alone is not a change in the focal metric or a directional signal.",
