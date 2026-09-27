@@ -11,24 +11,24 @@ unless the user also authorizes implementation.
 
 ## Agent Handoff
 
-Last updated: 2026-09-18
+Last updated: 2026-09-27
 
-The 2026-09-18 read-only run completed project-scoped UI triage and production
-filtering. See the
-[execution report](../docs/reviews/posthog-error-analysis-2026-09-18.md).
+The 2026-09-27 read-only run completed project-scoped issue and raw-event
+reconciliation. See the
+[execution report](../docs/reviews/posthog-error-analysis-2026-09-27.md).
 
-- [ ] PostHog connector project routing is still inconsistent: `switch-project`
-  reports Tradely (582920), while subsequent connector query provenance still
-  points to OptionData (90561). Future connector reads must verify the returned
-  project ID before attribution; use an authenticated project-scoped read surface
-  when routing remains wrong.
-- [ ] The production `Learning persistence unavailable` issue needs correlation
-  between its captured operation and authorized server/database evidence. The
-  application intentionally redacts raw database failures; do not weaken that
-  boundary.
-- [ ] The one-off production `allowed` TypeError needs exact release/chunk/frame
-  evidence or release-matched reproduction before an owning expression or repair
-  is assigned.
+- [ ] Verify fresh consented production delivery into project 582920 before using
+  empty error windows as a reliability signal. Both 24-hour windows had zero
+  captured production events; the last seven-day production event was on
+  2026-09-24, while Vercel still recorded current production requests.
+- [ ] Correlate the historical `Learning persistence unavailable` issue with
+  authorized server/database evidence for `operation=learning_open` and release
+  `f98df769...`. The application intentionally redacts raw database failures; do
+  not weaken that boundary.
+- [ ] Preserve or explicitly version server-function response contracts across
+  deployments. The historical one-off `allowed` TypeError is now supported as a
+  cached client from `304c1ec...` reading `page.access` after the server response
+  in `f98df769...` removed that field; it did not recur in the current seven days.
 
 ## Recommended Invocation
 
@@ -113,7 +113,11 @@ Check `$exception` delivery and issue coverage, first/last event times, runtime,
 release availability, sampling, truncation, and ingestion delay. Query no more
 than the agreed periods; paginate with stable ordering and record whether all
 pages were read. Empty results require checking access, scope, filters, capture,
-and retention before concluding no observed errors.
+and retention before concluding no observed errors. Pair each current and
+comparison error count with a bounded production-exposure check such as captured
+production page views, people, and latest event time. Zero errors with zero
+captured exposure is an observability limitation, not a production-health result;
+request logs can establish activity but are not a consented analytics denominator.
 
 ### 2. Inventory and rank issues
 
@@ -167,6 +171,13 @@ using local line numbers. Inspect that revision with read-only Git commands if
 available; do not reset or check out over dirty work. Missing symbols or unknown
 release means attribution is provisional. Source-map upload existence alone does
 not prove this event was symbolicated by the correct release.
+
+For browser failures involving server-function response data, compare the
+browser event's release with the server deployment active at the occurrence.
+Cached browser chunks can outlive a deployment and call a newer incompatible
+response contract. Treat this as deployment-version skew only when the old
+consumer and new server response prove the missing or changed field; do not infer
+it from nearby timestamps alone.
 
 For missing capture, inspect consent gating, optional exception-module loading,
 send-boundary redaction, configured hosts, and deployment evidence. Preserve the
