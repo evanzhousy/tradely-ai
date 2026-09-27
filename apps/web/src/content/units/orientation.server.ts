@@ -47,8 +47,8 @@ export const orientationUnits: TeachingUnit[] = [
 			"股票是公司所有权的一小部分，像 ALFA 这样的代码表示你指的是哪家公司的股票。持股价值等于持股数量乘以价格。实时报价有三个价格：买价是此刻有人愿意支付的最高价格；卖价是此刻有人愿意出售的最低价格；最新价是最近一笔成交的价格，可能已经过去几秒或几分钟。立即买入通常按卖价成交，立即卖出通常按买价成交。ETF 是一种基金，它的份额像股票一样交易，同时持有许多公司。指数（例如 500 只股票的平均指标）是一个计算出来的数值：你不能直接买入指数，指数期权以现金结算。",
 		),
 		example: t(
-			"ALFA shows last $40.02, bid $40.00 and ask $40.05. Buying 10 shares right away costs about 10 × $40.05 = $400.50 before fees, not $400.20. Selling 10 right away brings about $400.00. The $0.05 gap between bid and ask is a cost you pay each time you trade immediately.",
-			"ALFA 显示最新价 $40.02、买价 $40.00、卖价 $40.05。立即买入 10 股约需 10 × $40.05 = $400.50（不含费用），而不是 $400.20。立即卖出 10 股约收回 $400.00。买卖价之间 $0.05 的差距，是每次立即成交都要付出的成本。",
+			"ALFA shows last $100.02, bid $100.00 and ask $100.05. Buying 10 shares right away costs about 10 × $100.05 = $1,000.50 before fees, not $1,000.20. Selling 10 right away brings about $1,000.00. The $0.05 gap between bid and ask is a cost you pay each time you trade immediately.",
+			"ALFA 显示最新价 $100.02、买价 $100.00、卖价 $100.05。立即买入 10 股约需 10 × $100.05 = $1,000.50（不含费用），而不是 $1,000.20。立即卖出 10 股约收回 $1,000.00。买卖价之间 $0.05 的差距，是每次立即成交都要付出的成本。",
 		),
 		misconception: t(
 			"The last price is history, not an offer. What you can trade at right now is the bid or the ask.",

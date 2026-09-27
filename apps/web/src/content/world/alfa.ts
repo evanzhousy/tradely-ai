@@ -69,3 +69,34 @@ export const OCT_100_CALL: Contract = {
 	strike: 100,
 	right: "call",
 };
+
+export const ALFA_SHARES_OUTSTANDING = 50_000_000;
+
+/** ALFA's stock quote at 10:30 on the teaching Monday; sizes in shares. */
+export const alfaStockBook = {
+	time: "10:30",
+	last: 10_002,
+	bids: [
+		{ price: 10_000, size: 400 },
+		{ price: 9_998, size: 600 },
+		{ price: 9_995, size: 1_000 },
+	],
+	asks: [
+		{ price: 10_005, size: 300 },
+		{ price: 10_006, size: 500 },
+		{ price: 10_008, size: 800 },
+	],
+} as const;
+
+/** The other instruments Level 0 compares with a single stock. */
+export const instruments = {
+	etf: {
+		symbol: "BRDX",
+		holds: 500,
+		price: 5_000,
+	},
+	index: {
+		symbol: "IDX 500",
+		level: 5_000,
+	},
+} as const;

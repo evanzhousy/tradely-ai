@@ -625,9 +625,9 @@ function StockQuote({ l }: Props) {
 	return (
 		<>
 			{[
-				[l("Bid", "买价"), "$40.00"],
-				[l("Last", "最新价"), "$40.02"],
-				[l("Ask", "卖价"), "$40.05"],
+				[l("Bid", "买价"), "$100.00"],
+				[l("Last", "最新价"), "$100.02"],
+				[l("Ask", "卖价"), "$100.05"],
 			].map(([label, value], i) => (
 				<g key={label}>
 					<Panel x={24 + i * 108} y={58} w={96} h={78} accent={i !== 1} />
@@ -1627,8 +1627,8 @@ export const courseCardScenes: Record<string, Scene> = {
 	"stocks-and-prices": {
 		Diagram: StockQuote,
 		description: [
-			"A quote shows a bid of 40.00, a last trade of 40.02 and an ask of 40.05 dollars.",
-			"报价显示买价 40.00、最新成交 40.02、卖价 40.05 美元。",
+			"A quote shows a bid of 100.00, a last trade of 100.02 and an ask of 100.05 dollars.",
+			"报价显示买价 100.00、最新成交 100.02、卖价 100.05 美元。",
 		],
 	},
 	"what-options-are": {

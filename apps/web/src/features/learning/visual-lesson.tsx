@@ -123,8 +123,8 @@ const lessons = {
 		})),
 	),
 	"stocks-and-prices": lazy(() =>
-		import("./stock-concept-lab").then((m) => ({
-			default: m.StockConceptLab,
+		import("./lessons/stocks-and-prices").then((m) => ({
+			default: m.StocksAndPricesWalkthrough,
 		})),
 	),
 	"what-options-are": lazy(() =>
