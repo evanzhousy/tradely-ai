@@ -1,4 +1,3 @@
-import { charmVannaConceptData } from "./charm-vanna-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
@@ -257,10 +256,9 @@ export const structureUnits: TeachingUnit[] = [
 		id: "charm-vanna",
 		conceptLab: {
 			kind: "charm-vanna",
-			data: charmVannaConceptData,
 			intro: t(
-				"Separate time and IV effects on delta, match derivative conventions to input units, and scale the result into a stated signed position.",
-				"区分时间与 IV 对 Delta 的影响，匹配导数约定与输入单位，并将结果缩放至给定带符号持仓。",
+				"Watch the Oct 18 110 call's delta fall over a week with no trade and no price move, read the same charm quoted per day and per year of time left, and scale the change into the 10:50 spread's position.",
+				"看 10月18日 110 看涨的 Delta 在没有成交、价格不动的一周里如何下降，读懂按每天和按每年剩余期限报价的同一个 Charm，并把变化放大到 10:50 价差的持仓上。",
 			),
 		},
 		sources: [greeks],
@@ -269,8 +267,8 @@ export const structureUnits: TeachingUnit[] = [
 			"没有新成交，Delta 也会变化。Charm 描述 Delta 对时间的敏感度，Vanna 描述对波动率的敏感度，在模型下也等价于 Vega 对现价的交叉敏感度。供应商时间导数的符号与尺度可能不同，需区分已过时间与剩余期限。本课给出每经过自然日和每 IV 百分点变化的敏感度。用匹配的输入变化相乘，再乘带符号数量与乘数。Charm 集中或钉住是近似模型汇总，依赖定价模型、现价、波动率、利率、股息与时间，不是观测成交流或已识别对冲。",
 		),
 		example: t(
-			"Given charm −0.01 delta/day and vanna +0.02 delta/IV point, one day passing plus a 2-point IV rise changes option delta by −0.01+0.04 = +0.03. For 2 long contracts ×100, position delta changes +6 shares-equivalent. A reversed time convention would change how the charm input is read.",
-			"给定 Charm 每天 −0.01 Delta，Vanna 每 IV 点 +0.02 Delta，经过一天且 IV 上升 2 点，Delta 变化 −0.01+0.04=+0.03。2 张多头×100，持仓 Delta 增加 6 股等价量。若时间约定反向，则 Charm 输入解读也需改变。",
+			"With ALFA held at $100, the Oct 18 110 call's model delta slides from 0.177 to about 0.144 over a week (charm, roughly −0.004 a day) and to about 0.120 if IV also falls 3 points (vanna, about +0.008 per point). A vendor quoting charm per year of time remaining would show about +1.5 for the same thing. The 10:50 spread, long 500 105 calls and short 500 110 calls, gains a few hundred shares of delta over that week without a trade.",
+			"ALFA 保持 $100 时，10月18日 110 看涨的模型 Delta 在一周内从 0.177 降到约 0.144（Charm，约每天 −0.004），如果 IV 同时下降 3 点则降到约 0.120（Vanna，约每点 +0.008）。按每一年剩余期限报价的供应商，会把同一件事显示为约 +1.5。10:50 的价差（多头 500 张 105 看涨、空头 500 张 110 看涨）在这一周里不经任何成交就增加了几百股 Delta。",
 		),
 		misconception: t(
 			"Do not add a per-day number to a per-vol-point number until each has been multiplied by its own input change.",

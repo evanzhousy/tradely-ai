@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
@@ -146,11 +145,7 @@ export type LearningStepView = {
 		| "portfolio-pnl"
 		| "portfolio-performance"
 		| "portfolio-exposure";
-	conceptData?:
-		| CharmVannaConceptData
-		| PnlConceptData
-		| PerformanceConceptData
-		| PortfolioExposureData;
+	conceptData?: PnlConceptData | PerformanceConceptData | PortfolioExposureData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

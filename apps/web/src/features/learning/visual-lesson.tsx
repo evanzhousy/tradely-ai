@@ -33,8 +33,8 @@ const lessons = {
 		})),
 	),
 	"charm-vanna": lazy(() =>
-		import("./charm-vanna-concept-lab").then((m) => ({
-			default: m.CharmVannaConceptLab,
+		import("./lessons/charm-vanna").then((m) => ({
+			default: m.CharmVannaWalkthrough,
 		})),
 	),
 	"audited-boundary": lazy(() =>

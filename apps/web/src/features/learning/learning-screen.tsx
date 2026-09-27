@@ -51,7 +51,6 @@ import type {
 } from "@/domain/learning/types";
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
-import { CharmVannaConceptLab } from "./charm-vanna-concept-lab";
 import {
 	type CoachingEvent,
 	CoachingPanel,
@@ -68,6 +67,7 @@ import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
+import { CharmVannaWalkthrough } from "./lessons/charm-vanna";
 import { ResearchPacketWalkthrough } from "./lessons/cookbook-research-packet";
 import { DeltaWalkthrough } from "./lessons/delta";
 import { DexDeiWalkthrough } from "./lessons/dex-dei-gex";
@@ -121,7 +121,7 @@ const conceptLabs = {
 	"gamma-exposure": GammaExposureWalkthrough,
 	"gamma-regimes": GammaRegimesWalkthrough,
 	"structural-levels": StructuralLevelsWalkthrough,
-	"charm-vanna": CharmVannaConceptLab,
+	"charm-vanna": CharmVannaWalkthrough,
 	"audited-boundary": AuditedBoundaryWalkthrough,
 	"symbol-universe": SymbolUniverseWalkthrough,
 	"rank-symbols": RankSymbolsWalkthrough,
