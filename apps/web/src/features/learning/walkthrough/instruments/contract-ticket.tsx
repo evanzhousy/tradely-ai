@@ -13,8 +13,9 @@ export type TicketField = {
 const ROW = 30;
 const TOP = 48;
 
-export function ticketHeight(fields: number) {
-	return TOP + fields * ROW + 76;
+/** Without a symbol line the ticket is just its card. */
+export function ticketHeight(fields: number, withSymbol = true) {
+	return TOP + fields * ROW + (withSymbol ? 76 : 12);
 }
 
 /**
@@ -35,7 +36,8 @@ export function ContractTicket({
 	/** How many fields are filled in, from the top. */
 	shown: number;
 	focus?: string;
-	symbolLabel: string;
+	/** Omit to leave out the symbol line under the card. */
+	symbolLabel?: string;
 }) {
 	const motion = useTeachMotion();
 	const cardWidth = Math.min(width - 16, 420);
@@ -104,34 +106,40 @@ export function ContractTicket({
 					</g>
 				);
 			})}
-			<Label x={width / 2} y={symbolTop} anchor="middle" tone="small">
-				{symbolLabel}
-			</Label>
-			<text
-				x={width / 2}
-				y={symbolTop + 30}
-				textAnchor="middle"
-				className="wt-strong"
-			>
-				{segments.map((field) => {
-					const index = fields.indexOf(field);
-					const visible = index < shown;
-					return (
-						<tspan
-							key={field.id}
-							className={
-								field.id === focus
-									? "wt-accent"
-									: visible
-										? undefined
-										: "wt-small"
-							}
-						>
-							{visible ? field.segment : "·".repeat(field.segment?.length ?? 0)}
-						</tspan>
-					);
-				})}
-			</text>
+			{symbolLabel === undefined ? null : (
+				<Label x={width / 2} y={symbolTop} anchor="middle" tone="small">
+					{symbolLabel}
+				</Label>
+			)}
+			{symbolLabel === undefined ? null : (
+				<text
+					x={width / 2}
+					y={symbolTop + 30}
+					textAnchor="middle"
+					className="wt-strong"
+				>
+					{segments.map((field) => {
+						const index = fields.indexOf(field);
+						const visible = index < shown;
+						return (
+							<tspan
+								key={field.id}
+								className={
+									field.id === focus
+										? "wt-accent"
+										: visible
+											? undefined
+											: "wt-small"
+								}
+							>
+								{visible
+									? field.segment
+									: "·".repeat(field.segment?.length ?? 0)}
+							</tspan>
+						);
+					})}
+				</text>
+			)}
 		</g>
 	);
 }

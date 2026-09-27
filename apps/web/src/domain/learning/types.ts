@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { AuditRecapConceptData } from "./audit-recap-concept";
-import type { BoundaryConceptData } from "./boundary-concept";
 import type { CharmVannaConceptData } from "./charm-vanna-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
@@ -176,7 +175,6 @@ export type LearningStepView = {
 		| RegimeConceptData
 		| LevelsConceptData
 		| CharmVannaConceptData
-		| BoundaryConceptData
 		| EligibilityConceptData
 		| RankSymbolConceptData
 		| NeighborhoodConceptData

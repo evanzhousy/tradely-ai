@@ -52,7 +52,6 @@ import type {
 import { responseComplete } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import { AuditRecapConceptLab } from "./audit-recap-concept-lab";
-import { BoundaryConceptLab } from "./boundary-concept-lab";
 import { CharmVannaConceptLab } from "./charm-vanna-concept-lab";
 import {
 	type CoachingEvent,
@@ -74,6 +73,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
 import { ExecutionConditionsWalkthrough } from "./lessons/execution-conditions";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
@@ -122,7 +122,7 @@ const conceptLabs = {
 	"gamma-regimes": RegimeConceptLab,
 	"structural-levels": LevelsConceptLab,
 	"charm-vanna": CharmVannaConceptLab,
-	"audited-boundary": BoundaryConceptLab,
+	"audited-boundary": AuditedBoundaryWalkthrough,
 	"symbol-universe": EligibilityConceptLab,
 	"rank-symbols": RankSymbolConceptLab,
 	"rank-contracts": NeighborhoodConceptLab,

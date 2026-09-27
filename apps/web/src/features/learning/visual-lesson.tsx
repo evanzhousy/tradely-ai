@@ -36,8 +36,8 @@ const lessons = {
 		})),
 	),
 	"audited-boundary": lazy(() =>
-		import("./boundary-concept-lab").then((m) => ({
-			default: m.BoundaryConceptLab,
+		import("./lessons/audited-boundary").then((m) => ({
+			default: m.AuditedBoundaryWalkthrough,
 		})),
 	),
 	"symbol-universe": lazy(() =>

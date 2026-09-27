@@ -1,4 +1,3 @@
-import { boundaryConceptData } from "./boundary-concept.server";
 import { eligibilityConceptData } from "./eligibility-concept.server";
 import { neighborhoodConceptData } from "./neighborhood-concept.server";
 import { pointTimeConceptData } from "./point-time-concept.server";
@@ -19,10 +18,9 @@ export const researchUnits: TeachingUnit[] = [
 		id: "audited-boundary",
 		conceptLab: {
 			kind: "audited-boundary",
-			data: boundaryConceptData,
 			intro: t(
-				"Declare a reviewable question, separate evidence roles, and preserve the original record when evidence or the research scope changes.",
-				"声明可审核问题，区分证据作用，并在证据或研究范围变化时保留原记录。",
+				"Turn 'where's the action in ALFA?' into a question someone else can check, sort the evidence behind its answer, and keep the record when new data or a new question arrives.",
+				"把“ALFA 哪里最活跃？”变成别人可以核查的问题，区分答案背后的证据，并在新数据或新问题出现时保留记录。",
 			),
 		},
 		sources: [oi, quotes],
@@ -31,8 +29,8 @@ export const researchUnits: TeachingUnit[] = [
 			"先明确问题的对象、测量量、范围、时间区间与证据要求。描述性问题问发生了什么，预测性问题还需可测未来结果、期限与样本外评价。“什么会上涨”是不够明确，不是本质上不可检验。本课不会从单笔成交验证交易预测。区分观测、计算、解读、反证与未知。失效规则说明哪类证据或假设失败需要重新考虑。新证据可检验同一问题，但更换人群、工具或方法会形成新问题；应保留原记录，避免事后迎合突出结果。",
 		),
 		example: t(
-			"Question: among the declared ALFA calls with October 16 expiry, where did September 3 session volume concentrate? Record source tape-A, complete-session cutoff and missing series. A later corrected print tests this question. Replacing calls with puts after seeing the leader changes it. One individual can own the note and revision history; no prior season or organizational role chart is required.",
-			"问题：在声明的 ALFA 10 月 16 日到期看涨集合中，9 月 3 日成交集中在哪里？记录来源 tape-A、完整时段截止及缺失序列。后续更正成交可检验该问题；看完领先者后改为看跌，则改变问题。个人可负责笔记与修订历史，无需前一季课程或组织角色图。",
+			"Question: among ALFA's Oct 18 calls, strikes 100 to 120, where did Monday September 16 session volume concentrate? Record the consolidated tape, the complete-session cutoff and the missing 120 call. Tuesday's delivery of the 120 call tests this question. Replacing calls with puts after seeing the leader changes it. One person can own the note and its revision history.",
+			"问题：在 ALFA 10月18日 看涨（行权价 100 至 120）中，9 月 16 日周一的成交集中在哪里？记录综合成交记录、完整时段截止及缺失的 120 看涨。周二送达的 120 看涨数据可检验该问题；看完领先者后改为看跌，则改变问题。一个人即可负责笔记与修订历史。",
 		),
 		misconception: t(
 			"A good question permits a supported answer and a reason to revise it. Caution alone is not the output; write the actual scope and quantity.",
