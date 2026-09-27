@@ -12,7 +12,6 @@ import {
 import { revisedFoundationUnits } from "./foundation-revision.server";
 import { printReviewConceptData } from "./print-review-concept.server";
 import { sentimentConceptData } from "./sentiment-concept.server";
-import { sideConceptData } from "./side-concept.server";
 
 export const foundationUnits: TeachingUnit[] = [
 	...revisedFoundationUnits,
@@ -165,10 +164,9 @@ export const foundationUnits: TeachingUnit[] = [
 		id: "execution-side",
 		conceptLab: {
 			kind: "execution-side",
-			data: sideConceptData,
 			intro: t(
-				"Move a print across the spread, test its reference quote, and separate location from inference. Explore these fictional examples before classifying new executions.",
-				"移动成交价穿越价差，检查参考报价，再区分位置与推断。先探索这些虚构示例，再为新成交分类。",
+				"Place Monday's three prints against their quotes, test what happens with the wrong quote, and see how far a location can take you.",
+				"把周一的三笔成交对照各自的报价定位，检验用错报价会怎样，再看看成交位置能支持到哪一步。",
 			),
 		},
 		sources: [quotes],
@@ -177,8 +175,8 @@ export const foundationUnits: TeachingUnit[] = [
 			"成交位置是成交价相对于参考报价的位置。本课约定：高于卖价为 AASK，等于卖价为 ASK，在有效价差内为 MID，等于买价为 BID，低于买价为 BBID。MID 不一定等于算术中点。位置可支持主动方推断，但不揭示身份或开平仓指令。过时、缺失、锁定或交叉报价，以及复杂订单条件，都可能令简单分类无效。价差外成交可能来自时间差或特殊条件，不能证明确信或恐慌。先确认报价可比且时间匹配。",
 		),
 		example: t(
-			"With a matched $4.00/$4.20 quote, $4.00 is BID, $4.20 ASK, $4.25 AASK, $3.95 BBID, and $4.07 MID even though the midpoint is $4.10. If the only quote is 90 seconds older, preserve the price but withhold a reliable side interpretation.",
-			"报价与成交匹配为 $4.00/$4.20 时，$4.00 为 BID，$4.20 为 ASK，$4.25 为 AASK，$3.95 为 BBID，$4.07 为 MID，尽管中点是 $4.10。若报价早了 90 秒，应保留成交价，但不作可靠方向分类。",
+			"Against the matched 11:42 quote of $4.10/$4.20, $4.10 is BID, $4.20 ASK, $4.25 AASK, $4.05 BBID, and $4.12 MID even though the midpoint is $4.15. If the only quote is 90 seconds older, keep the price but withhold a side.",
+			"对照匹配的 11:42 报价 $4.10/$4.20，$4.10 为 BID，$4.20 为 ASK，$4.25 为 AASK，$4.05 为 BBID，$4.12 为 MID，尽管中点是 $4.15。若报价早了 90 秒，应保留成交价，但不判断位置。",
 		),
 		misconception: t(
 			"A location code is not proof of market-order type, investor belief or strategy. Feed conventions should be stated rather than assumed.",

@@ -105,6 +105,33 @@ export const oct100CallBookBeforeT1 = {
 	],
 } as const;
 
+/** The consolidated quote in force just before each Monday trade. Cents per share. */
+export const oct100CallQuoteAtTrade: Record<
+	"t1" | "t2" | "t3",
+	{ time: string; bid: number; ask: number }
+> = {
+	t1: { time: "10:05:00.0", bid: 400, ask: 410 },
+	t2: { time: "11:42:00.3", bid: 410, ask: 420 },
+	t3: { time: "14:18:00.1", bid: 405, ask: 415 },
+};
+
+/** Where a print sits against its quote, in the convention these lessons use. */
+export type SideCode = "BBID" | "BID" | "MID" | "ASK" | "AASK";
+
+/** Null when the quote has no usable spread: missing, locked (bid = ask) or crossed. */
+export function sideCode(
+	price: number,
+	bid: number | null,
+	ask: number | null,
+): SideCode | null {
+	if (bid === null || ask === null || ask <= bid) return null;
+	if (price < bid) return "BBID";
+	if (price === bid) return "BID";
+	if (price < ask) return "MID";
+	if (price === ask) return "ASK";
+	return "AASK";
+}
+
 /** How one trade changes open interest: both open adds, both close removes, mixed transfers. */
 export function openInterestChange(
 	trade: Pick<Trade, "quantity" | "buyerEffect" | "sellerEffect">,

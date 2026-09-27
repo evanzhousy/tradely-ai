@@ -77,6 +77,7 @@ import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
+import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
@@ -105,7 +106,6 @@ import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
 import { SentimentConceptLab } from "./sentiment-concept-lab";
-import { SideConceptLab } from "./side-concept-lab";
 import { SourceConceptLab } from "./source-concept-lab";
 import { StrategyConceptLab } from "./strategy-concept-lab";
 import { SurfaceConceptLab } from "./surface-concept-lab";
@@ -151,7 +151,7 @@ const conceptLabs = {
 	"expiration-settlement": ExpirationSettlementWalkthrough,
 	"quotes-orders-trades": QuotesOrdersTradesWalkthrough,
 	"execution-counterparties": ExecutionCounterpartiesWalkthrough,
-	"execution-side": SideConceptLab,
+	"execution-side": ExecutionSideWalkthrough,
 	"flow-sentiment": SentimentConceptLab,
 	"validate-option-print": PrintReviewConceptLab,
 	"session-flow-vs-structure": VolumeOpenInterestWalkthrough,

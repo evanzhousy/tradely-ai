@@ -25,7 +25,6 @@ import type { RankSymbolConceptData } from "./rank-symbol-concept";
 import type { RecapConceptData } from "./recap-concept";
 import type { RegimeConceptData } from "./regime-concept";
 import type { SentimentConceptData } from "./sentiment-concept";
-import type { SideConceptData } from "./side-concept";
 import type { SourceConceptData } from "./source-concept";
 import type { StrategyConceptData } from "./strategy-concept";
 import type { SurfaceConceptData } from "./surface-concept";
@@ -173,7 +172,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| SideConceptData
 		| SentimentConceptData
 		| PrintReviewConceptData
 		| TapeConceptData

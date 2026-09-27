@@ -349,6 +349,21 @@
 	stroke-width: 2;
 }
 /* Evidence code: observed solid, modeled dashed, inferred outlined, unknown hatched. */
+.wt-ev-observed,
+.wt-ev-calculated {
+	fill: var(--diagram-observed);
+}
+.wt-ev-modeled {
+	fill: color-mix(in oklab, var(--diagram-estimated) 30%, transparent);
+	stroke: var(--diagram-estimated);
+	stroke-width: 1.5;
+	stroke-dasharray: 3 2;
+}
+.wt-ev-inferred {
+	fill: none;
+	stroke: var(--diagram-observed);
+	stroke-width: 1.75;
+}
 .ev-modeled {
 	stroke-dasharray: 5 4;
 }

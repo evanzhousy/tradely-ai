@@ -173,7 +173,9 @@ const lessons = {
 		})),
 	),
 	"execution-side": lazy(() =>
-		import("./side-concept-lab").then((m) => ({ default: m.SideConceptLab })),
+		import("./lessons/execution-side").then((m) => ({
+			default: m.ExecutionSideWalkthrough,
+		})),
 	),
 	"flow-sentiment": lazy(() =>
 		import("./sentiment-concept-lab").then((m) => ({
