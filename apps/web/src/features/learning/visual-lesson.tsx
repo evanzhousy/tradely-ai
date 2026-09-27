@@ -163,7 +163,9 @@ const lessons = {
 		})),
 	),
 	"quotes-orders-trades": lazy(() =>
-		import("./quote-concept-lab").then((m) => ({ default: m.QuoteConceptLab })),
+		import("./lessons/quotes-orders-trades").then((m) => ({
+			default: m.QuotesOrdersTradesWalkthrough,
+		})),
 	),
 	"execution-counterparties": lazy(() =>
 		import("./execution-concept-lab").then((m) => ({

@@ -12,7 +12,6 @@ import {
 import { executionConceptData } from "./execution-concept.server";
 import { revisedFoundationUnits } from "./foundation-revision.server";
 import { printReviewConceptData } from "./print-review-concept.server";
-import { quoteConceptData } from "./quote-concept.server";
 import { sentimentConceptData } from "./sentiment-concept.server";
 import { sideConceptData } from "./side-concept.server";
 
@@ -22,10 +21,9 @@ export const foundationUnits: TeachingUnit[] = [
 		id: "quotes-orders-trades",
 		conceptLab: {
 			kind: "quotes-orders-trades",
-			data: quoteConceptData,
 			intro: t(
-				"Move a quote, compare a cancellation with a confirmed trade, and trace the best prices across venues. These fictional examples are yours to explore before practice.",
-				"移动报价，比较撤单与已确认成交，再追踪不同场所的最优价格。先自由探索这些虚构示例，再进入练习。",
+				"Read a quote against its last trade, watch orders change the book without printing, and combine three venues into one best quote.",
+				"对照最新成交读懂报价，观察订单如何改变订单簿却不产生成交记录，再把三个场所合成一个最优报价。",
 			),
 		},
 		sources: [quotes, orders],

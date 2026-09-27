@@ -82,6 +82,7 @@ import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
+import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
@@ -97,7 +98,6 @@ import { PointTimeConceptLab } from "./point-time-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { PrintReviewConceptLab } from "./print-review-concept-lab";
-import { QuoteConceptLab } from "./quote-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { RankSymbolConceptLab } from "./rank-symbol-concept-lab";
 import { RecapConceptLab } from "./recap-concept-lab";
@@ -149,7 +149,7 @@ const conceptLabs = {
 	"option-rights": OptionRightsWalkthrough,
 	"premium-payoff": PremiumPayoffWalkthrough,
 	"expiration-settlement": ExpirationSettlementWalkthrough,
-	"quotes-orders-trades": QuoteConceptLab,
+	"quotes-orders-trades": QuotesOrdersTradesWalkthrough,
 	"execution-counterparties": ExecutionConceptLab,
 	"execution-side": SideConceptLab,
 	"flow-sentiment": SentimentConceptLab,
