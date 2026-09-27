@@ -1,4 +1,3 @@
-import { portfolioExposureData } from "./portfolio-exposure-concept.server";
 import "@tanstack/react-start/server-only";
 import {
 	basics,
@@ -203,10 +202,9 @@ export const portfolioUnits: TeachingUnit[] = [
 		id: "portfolio-exposure",
 		conceptLab: {
 			kind: "portfolio-exposure",
-			data: portfolioExposureData,
 			intro: t(
-				"Aggregate signed sensitivities, test a local hedge, and audit missing or incompatible inputs.",
-				"合并带符号敏感度，检验局部对冲，并审查缺失或不兼容输入。",
+				"Add up delta across your two accounts while one holding's Greeks are missing, hedge it to zero and watch a quiet week cost $964, then align two brokers' units and timestamps before totaling.",
+				"在一项持仓的希腊值缺失时汇总你两个账户的 Delta，把它对冲到零后看平静的一周如何损失 $964，再在合计前对齐两家券商的单位和时间戳。",
 			),
 		},
 		sources: [greeks],
@@ -215,8 +213,8 @@ export const portfolioUnits: TeachingUnit[] = [
 			"组合敞口按统一单位和时间汇总带符号持仓贡献。每股股票多头贡献一股 Delta，空头相反。期权贡献=模型敏感度×带符号张数×乘数。Gamma、Theta、Vega 各有尺度，不换单位直接相加可能无意义。净 Delta 近零时，Gamma、波动率或时间风险仍可很大。对冲改变敞口，不消除所有风险与成本。希腊值缺失意味着覆盖不完整，不是零敞口。披露包含持仓及估值时点。日志记录当时信念与理由，后来盈利不能反证当时推理正确。",
 		),
 		example: t(
-			"100 long shares plus 2 short calls with delta 0.40 and multiplier 100 gives net delta 100−80 = +20 shares-equivalent. Selling 20 shares offsets that local delta. The short calls' gamma and assignment risk remain. If a third holding lacks Greeks, call the total a covered subtotal.",
-			"100 股多头，加 2 张空头看涨、Delta 0.40、乘数 100，净 Delta=100−80=+20 股等价量。卖 20 股可抵消局部 Delta，但空头看涨的 Gamma 与被指派风险仍在。若第三项持仓缺希腊值，应称已覆盖小计。",
+			"At Monday's close (ALFA $101.20), your 100 shares give +100 shares of delta and your 16 Oct 18 100 calls 16 × 100 × 0.566 ≈ +906: a covered subtotal of +1,006 while the 5 Oct 18 95 puts in your second account haven't reported. Their −0.259 delta adds −130, for +876 in all. Short 876 shares and delta is zero, yet gamma is +75 shares per $1, theta −$130 a day and vega +$237 per vol point: a week with ALFA unchanged costs $964. The second broker quotes put vega as 9.70 per 1.00 of volatility, 0.097 per point, and stamps its put delta at Friday's close.",
+			"周一收盘（ALFA $101.20），你的 100 股带来 +100 股 Delta，16 张 10月18日 100 看涨带来 16 × 100 × 0.566 ≈ +906：在第二个账户的 5 张 10月18日 95 看跌尚未报送时，这是 +1,006 的已覆盖小计。看跌的 −0.259 Delta 计入 −130，总计 +876。做空 876 股后 Delta 为零，但 Gamma 为每 $1 +75 股、Theta 每天 −$130、Vega 每个波动率点 +$237：ALFA 不变的一周要损失 $964。第二券商按每 1.00 波动率报看跌 Vega 9.70，即每点 0.097，看跌 Delta 的时间戳还是周五收盘。",
 		),
 		misconception: t(
 			"Delta-neutral is not risk-free. A complete-looking net number cannot hide uncovered holdings.",

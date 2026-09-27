@@ -85,7 +85,6 @@ export type TeachingUnit = {
 	version?: number;
 	conceptLab?: {
 		kind: NonNullable<LearningStepView["conceptLab"]>;
-		data?: LearningStepView["conceptData"];
 		intro: LearningCopy;
 	};
 	demonstration?: LearningStepView["execution"];
@@ -162,7 +161,6 @@ export function unitScenarios(
 					kind: "prediction",
 					title: t("Understand the concept", "理解概念"),
 					conceptLab: unit.conceptLab?.kind,
-					conceptData: unit.conceptLab?.data,
 					brief:
 						unit.conceptLab?.intro ??
 						t(

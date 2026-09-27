@@ -19,6 +19,8 @@ export type PayoffMarker = {
 	y: number;
 	label?: string;
 	tone?: "gain" | "loss" | "neutral";
+	/** Put the label under the point, clear of a curve that rises on both sides of it. */
+	labelBelow?: boolean;
 };
 
 /** A price range to shade, such as where a call is in the money but still losing. */
@@ -230,7 +232,7 @@ export function PayoffChart({
 							initial={false}
 							animate={{
 								x: Math.min(Math.max(x(marker.x), left + 50), right - 50),
-								y: y(marker.y) - 14,
+								y: marker.labelBelow ? y(marker.y) + 22 : y(marker.y) - 14,
 							}}
 							transition={motion.move}
 						>

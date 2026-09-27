@@ -25,3 +25,8 @@ export const yourAccount = {
 	marginMultiple: 2,
 	symbol: ALFA.symbol,
 } as const;
+
+/** Your second account, at another broker: protective ALFA puts bought in August. */
+export const yourSecondAccount = {
+	puts: { expiry: "oct18", strike: 95, quantity: 5 },
+} as const;

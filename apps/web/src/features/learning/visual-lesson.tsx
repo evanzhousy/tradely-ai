@@ -1,6 +1,5 @@
 import { Skeleton } from "@tradely/ui/components/skeleton";
 import { lazy, Suspense } from "react";
-import type { LearningStepView } from "@/domain/learning/types";
 import type { Locale } from "@/i18n/messages";
 import { getDiagramPalette } from "./diagram-palette";
 import { LessonMotion } from "./lesson-motion";
@@ -88,8 +87,8 @@ const lessons = {
 		})),
 	),
 	"portfolio-exposure": lazy(() =>
-		import("./portfolio-exposure-concept-lab").then((m) => ({
-			default: m.PortfolioExposureConceptLab,
+		import("./lessons/portfolio-exposure").then((m) => ({
+			default: m.PortfolioExposureWalkthrough,
 		})),
 	),
 	"volatility-surface": lazy(() =>
@@ -212,11 +211,9 @@ const lessons = {
 export function VisualLesson({
 	lessonId,
 	locale,
-	data,
 }: {
 	lessonId: string;
 	locale: Locale;
-	data?: LearningStepView["conceptData"];
 }) {
 	const Lesson = lessons[lessonId as keyof typeof lessons];
 	if (!Lesson) return null;
@@ -238,7 +235,7 @@ export function VisualLesson({
 								</div>
 							}
 						>
-							<Lesson locale={locale} data={data} />
+							<Lesson locale={locale} />
 						</Suspense>
 					</LessonMotion>
 				</div>

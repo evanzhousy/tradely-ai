@@ -243,7 +243,6 @@ function LessonPage() {
 						key={`visual-${lesson.id}`}
 						lessonId={lesson.id}
 						locale={locale}
-						data={page.conceptData}
 					/>
 					{page.learning ? (
 						<CheckYourself

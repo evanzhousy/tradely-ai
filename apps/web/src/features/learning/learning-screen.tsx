@@ -87,6 +87,7 @@ import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PointInTimeResearchWalkthrough } from "./lessons/point-in-time-research";
+import { PortfolioExposureWalkthrough } from "./lessons/portfolio-exposure";
 import { PortfolioPerformanceWalkthrough } from "./lessons/portfolio-performance";
 import { PortfolioPnlWalkthrough } from "./lessons/portfolio-pnl";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
@@ -107,7 +108,6 @@ import { VolatilitySurfaceWalkthrough } from "./lessons/volatility-surface";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
-import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
@@ -132,7 +132,7 @@ const conceptLabs = {
 	"audit-market-recap": AuditMarketRecapWalkthrough,
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
-	"portfolio-exposure": PortfolioExposureConceptLab,
+	"portfolio-exposure": PortfolioExposureWalkthrough,
 	"volatility-surface": VolatilitySurfaceWalkthrough,
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,
 	"theta-vega-rho": ThetaVegaRhoWalkthrough,
@@ -433,7 +433,6 @@ function LearningScreenContent({
 							<Concept
 								key={`${view.attemptId}:${view.step.id}`}
 								locale={locale}
-								data={view.step.conceptData}
 							/>
 						) : null}
 						{view.initialJudgment && view.step.kind === "guided" ? (
