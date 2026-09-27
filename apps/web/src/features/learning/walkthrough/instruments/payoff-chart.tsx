@@ -1,6 +1,7 @@
 import * as m from "motion/react-m";
 import { signedUsd } from "@/content/world";
 import { Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export type PayoffLine = {
 	id: string;
@@ -28,14 +29,6 @@ export type PayoffBand = {
 	label?: string;
 	tone?: "gain" | "loss" | "neutral";
 };
-
-/** Rough width of 12px mono text: CJK characters are about twice as wide as Latin ones. */
-function textWidth(text: string) {
-	let width = 0;
-	for (const char of text)
-		width += (char.codePointAt(0) ?? 0) > 0x2e80 ? 12 : 7.2;
-	return width;
-}
 
 const PAD_LEFT = 58;
 const PAD_RIGHT = 16;
@@ -79,7 +72,7 @@ export function PayoffChart({
 	const right = width - PAD_RIGHT;
 	// A title too wide for the stage breaks at its " · " separators, one part per line.
 	const titleLines =
-		title && textWidth(title) > width - 16
+		title && textWidth(title, 12) > width - 16
 			? title.split(" · ")
 			: title
 				? [title]

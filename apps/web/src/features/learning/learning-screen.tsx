@@ -88,6 +88,7 @@ import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
+import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
@@ -99,7 +100,6 @@ import { PnlConceptLab } from "./pnl-concept-lab";
 import { PointTimeConceptLab } from "./point-time-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
-import { PrintReviewConceptLab } from "./print-review-concept-lab";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { RankSymbolConceptLab } from "./rank-symbol-concept-lab";
 import { RecapConceptLab } from "./recap-concept-lab";
@@ -153,7 +153,7 @@ const conceptLabs = {
 	"execution-counterparties": ExecutionCounterpartiesWalkthrough,
 	"execution-side": ExecutionSideWalkthrough,
 	"flow-sentiment": FlowSentimentWalkthrough,
-	"validate-option-print": PrintReviewConceptLab,
+	"validate-option-print": ValidateOptionPrintWalkthrough,
 	"session-flow-vs-structure": VolumeOpenInterestWalkthrough,
 	"trade-records": TapeConceptLab,
 	"execution-conditions": ConditionsConceptLab,

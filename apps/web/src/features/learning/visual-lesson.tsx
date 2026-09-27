@@ -183,8 +183,8 @@ const lessons = {
 		})),
 	),
 	"validate-option-print": lazy(() =>
-		import("./print-review-concept-lab").then((m) => ({
-			default: m.PrintReviewConceptLab,
+		import("./lessons/validate-option-print").then((m) => ({
+			default: m.ValidateOptionPrintWalkthrough,
 		})),
 	),
 	"session-flow-vs-structure": lazy(() =>

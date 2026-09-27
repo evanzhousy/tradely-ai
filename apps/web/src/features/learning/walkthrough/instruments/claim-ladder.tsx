@@ -1,5 +1,6 @@
 import * as m from "motion/react-m";
-import { Label, useStage, useTeachMotion } from "../stage";
+import { Label, Stage, useStage, useTeachMotion } from "../stage";
+import { textWidth, wrapText } from "../text-measure";
 import type { EvidenceKind } from "../types";
 
 export type Claim = {
@@ -13,11 +14,39 @@ export type Claim = {
 	focus?: boolean;
 };
 
-const ROW = 62;
-const TOP = 30;
+const TEXT_X = 52;
+const LINE = 15;
+const GAP = 8;
 
-export function claimLadderHeight(rows: number) {
-	return TOP + rows * ROW;
+/**
+ * Row positions for a width: each note wraps to fit, so rows grow on narrow screens. The
+ * title breaks at its " · " separators when it doesn't fit on one line.
+ */
+export function claimLadderLayout(
+	width: number,
+	title: string | undefined,
+	claims: readonly Claim[],
+	evidenceLabels: Record<EvidenceKind, string>,
+) {
+	const titleLines =
+		title && textWidth(title, 12) > width - 16
+			? title.split(" · ")
+			: title
+				? [title]
+				: [];
+	let y = titleLines.length ? 14 + titleLines.length * 14 : 4;
+	const rows = claims.map((claim) => {
+		const notes = wrapText(
+			`${evidenceLabels[claim.evidence]} · ${claim.basis}`,
+			width - TEXT_X - 18,
+			11,
+		);
+		const height = 46 + (notes.length - 1) * LINE;
+		const row = { y, height, notes };
+		y += height + GAP;
+		return row;
+	});
+	return { titleLines, rows, height: y };
 }
 
 /** The evidence code: observed solid, calculated with "=", modeled dashed, inferred outlined, unknown hatched. */
@@ -95,15 +124,16 @@ export function ClaimLadder({
 	evidenceLabels: Record<EvidenceKind, string>;
 }) {
 	const motion = useTeachMotion();
+	const layout = claimLadderLayout(width, title, claims, evidenceLabels);
 	return (
 		<g>
-			{title ? (
-				<Label x={8} y={18} tone="muted">
-					{title}
+			{layout.titleLines.map((line, i) => (
+				<Label key={line} x={8} y={18 + i * 14} tone="muted">
+					{line}
 				</Label>
-			) : null}
+			))}
 			{claims.map((claim, i) => {
-				const y = TOP + i * ROW;
+				const { y, height, notes } = layout.rows[i];
 				return (
 					<m.g
 						key={claim.id}
@@ -115,28 +145,64 @@ export function ClaimLadder({
 							x={8}
 							y={y}
 							width={width - 16}
-							height={ROW - 8}
+							height={height}
 							rx={10}
 							className={claim.focus ? "wt-focus-shape" : "wt-panel-shape"}
 						/>
-						<EvidenceMark x={20} y={y + 17} evidence={claim.evidence} />
-						<Label x={52} y={y + 22} tone={claim.focus ? "accent" : undefined}>
+						<EvidenceMark x={20} y={y + 13} evidence={claim.evidence} />
+						<Label
+							x={TEXT_X}
+							y={y + 20}
+							tone={claim.focus ? "accent" : undefined}
+						>
 							{claim.text}
 						</Label>
-						<m.text
+						<m.g
 							key={`${claim.id}-${claim.evidence}-${claim.basis}`}
-							x={52}
-							y={y + 41}
-							className="wt-small"
 							initial={motion.enabled ? { opacity: 0 } : false}
 							animate={{ opacity: 1 }}
 							transition={motion.fade}
 						>
-							{`${evidenceLabels[claim.evidence]} · ${claim.basis}`}
-						</m.text>
+							{notes.map((note, k) => (
+								<Label key={note} x={TEXT_X} y={y + 38 + k * LINE} tone="small">
+									{note}
+								</Label>
+							))}
+						</m.g>
 					</m.g>
 				);
 			})}
 		</g>
+	);
+}
+
+/** A stage sized to the ladder at whatever width it gets. */
+export function ClaimLadderStage({
+	label,
+	title,
+	claims,
+	evidenceLabels,
+}: {
+	label: string;
+	title?: string;
+	claims: readonly Claim[];
+	evidenceLabels: Record<EvidenceKind, string>;
+}) {
+	return (
+		<Stage
+			label={label}
+			height={(width) =>
+				claimLadderLayout(width, title, claims, evidenceLabels).height
+			}
+		>
+			{(width) => (
+				<ClaimLadder
+					width={width}
+					title={title}
+					claims={claims}
+					evidenceLabels={evidenceLabels}
+				/>
+			)}
+		</Stage>
 	);
 }

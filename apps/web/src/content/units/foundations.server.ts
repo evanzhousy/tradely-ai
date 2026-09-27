@@ -10,7 +10,6 @@ import {
 } from "./authoring.server";
 
 import { revisedFoundationUnits } from "./foundation-revision.server";
-import { printReviewConceptData } from "./print-review-concept.server";
 
 export const foundationUnits: TeachingUnit[] = [
 	...revisedFoundationUnits,
@@ -361,10 +360,9 @@ export const foundationUnits: TeachingUnit[] = [
 		id: "validate-option-print",
 		conceptLab: {
 			kind: "validate-option-print",
-			data: printReviewConceptData,
 			intro: t(
-				"Inspect one execution, separate what its evidence can support, and choose a follow-up that closes a specific gap. These fictional records let you practice the full review before your independent case.",
-				"检查一笔成交，区分证据能支持的结论，再选择填补具体缺口的后续检查。先用这些虚构记录练习完整审查流程，再进入独立案例。",
+				"Read a 500-contract block field by field, sort what it establishes from what it can't, and pick the record that fills each gap.",
+				"逐项读取一笔 500 张的大单，区分它能确定和不能确定的内容，再为每个缺口选择合适的记录。",
 			),
 		},
 		sources: [quotes, basics],
@@ -373,8 +371,8 @@ export const foundationUnits: TeachingUnit[] = [
 			"按顺序检查成交：合约身份、事件时间、单位价格、数量与乘数、匹配报价，然后检查成交条件和关联。权利金应由成交本身计算。同时刻有效报价可支持主动方推断，历史或不兼容报价则不能。开平仓标记与关联策略腿是额外证据，不是金额大小的结论。区分观测、计算、约定下的推断与仍未知信息。下一项检查应针对具体缺口，而不是再找一笔大成交或等待价格上涨。",
 		),
 		example: t(
-			"500 calls at $2.05 with multiplier 100 represent $102,500. A $2.00/$2.05 quote from 90 seconds before the execution does not establish reliable buyer initiation. The amount remains known. Obtain a time-aligned quote; even that will not identify the whole strategy without linkage.",
-			"500 张看涨以 $2.05 成交、乘数 100，总额 $102,500。若 $2.00/$2.05 报价早于成交 90 秒，就不能可靠判断主动买入；金额仍然已知。应获取匹配时间报价，即便得到，也不能在缺少关联时确定完整策略。",
+			"500 calls at $2.15 with multiplier 100 represent $107,500. A $2.00/$2.10 quote from 90 seconds before the execution does not establish reliable buyer initiation. The amount remains known. Obtain a time-aligned quote; even that will not identify the whole strategy without linkage.",
+			"500 张看涨以 $2.15 成交、乘数 100，总额 $107,500。若 $2.00/$2.10 报价早于成交 90 秒，就不能可靠判断主动买入；金额仍然已知。应获取匹配时间报价，即便得到，也不能在缺少关联时确定完整策略。",
 		),
 		misconception: t(
 			"An old quote creates uncertainty, not an automatic reversal of side. Premium is dollars exchanged, not conviction.",

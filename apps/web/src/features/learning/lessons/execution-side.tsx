@@ -17,8 +17,7 @@ import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
 	type Claim,
-	ClaimLadder,
-	claimLadderHeight,
+	ClaimLadderStage,
 } from "../walkthrough/instruments/claim-ladder";
 import {
 	SPREAD_RULER_HEIGHT,
@@ -600,25 +599,18 @@ function ClaimView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<ClaimLadderStage
 					label={t([
 						"Claims about one print, from what it shows directly to what it cannot show",
 						"关于一笔成交的推断，从直接可见到无法得知",
 					])}
-					height={claimLadderHeight(4)}
-				>
-					{(width) => (
-						<ClaimLadder
-							width={width}
-							title={t([
-								`${trade.time} · ${trade.quantity} @ ${usd(trade.price)} · ${LABEL[0]}`,
-								`${trade.time} · ${trade.quantity} 张 @ ${usd(trade.price)} · ${LABEL[1]}`,
-							])}
-							claims={claims}
-							evidenceLabels={evidenceLabels}
-						/>
-					)}
-				</Stage>
+					title={t([
+						`${trade.time} · ${trade.quantity} @ ${usd(trade.price)} · ${LABEL[0]}`,
+						`${trade.time} · ${trade.quantity} 张 @ ${usd(trade.price)} · ${LABEL[1]}`,
+					])}
+					claims={claims}
+					evidenceLabels={evidenceLabels}
+				/>
 			}
 			result={result}
 			controls={

@@ -20,7 +20,6 @@ import type { PerformanceConceptData } from "./performance-concept";
 import type { PnlConceptData } from "./pnl-concept";
 import type { PointTimeConceptData } from "./point-time-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
-import type { PrintReviewConceptData } from "./print-review-concept";
 import type { RankSymbolConceptData } from "./rank-symbol-concept";
 import type { RecapConceptData } from "./recap-concept";
 import type { RegimeConceptData } from "./regime-concept";
@@ -171,7 +170,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| PrintReviewConceptData
 		| TapeConceptData
 		| ConditionsConceptData
 		| ActivityConceptData

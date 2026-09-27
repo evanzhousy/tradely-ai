@@ -34,3 +34,18 @@ export function bestQuote(venues: readonly VenueQuote[]) {
 		ask: { ...ask.ask, venue: ask.venue },
 	};
 }
+
+/**
+ * A 500-contract block in the Oct 18 105 call at 10:50, the print the review lesson checks.
+ * It was one leg of a call spread: at the same instant 500 Oct 18 110 calls sold at $0.90.
+ * Tuesday's open-interest report shows the 105 call up 480, so most of it opened.
+ */
+export const oct105CallBlock = {
+	time: "10:50:00.4",
+	quantity: 500,
+	price: 215,
+	quote: { time: "10:50:00.3", bid: 205, ask: 215 },
+	staleQuote: { time: "10:48:30.4", bid: 200, ask: 210 },
+	pairedLeg: { strike: 110, quantity: 500, price: 90, side: "sell" as const },
+	openInterestChange: 480,
+} as const;
