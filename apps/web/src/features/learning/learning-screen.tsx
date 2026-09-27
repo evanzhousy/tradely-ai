@@ -87,6 +87,7 @@ import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PointInTimeResearchWalkthrough } from "./lessons/point-in-time-research";
+import { PortfolioPerformanceWalkthrough } from "./lessons/portfolio-performance";
 import { PortfolioPnlWalkthrough } from "./lessons/portfolio-pnl";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
@@ -106,7 +107,6 @@ import { VolatilitySurfaceWalkthrough } from "./lessons/volatility-surface";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
-import { PerformanceConceptLab } from "./performance-concept-lab";
 import { PortfolioExposureConceptLab } from "./portfolio-exposure-concept-lab";
 import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
@@ -131,7 +131,7 @@ const conceptLabs = {
 	"market-recap": MarketRecapWalkthrough,
 	"audit-market-recap": AuditMarketRecapWalkthrough,
 	"portfolio-pnl": PortfolioPnlWalkthrough,
-	"portfolio-performance": PerformanceConceptLab,
+	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureConceptLab,
 	"volatility-surface": VolatilitySurfaceWalkthrough,
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,

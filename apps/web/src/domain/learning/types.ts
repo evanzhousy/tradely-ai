@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
-import type { PerformanceConceptData } from "./performance-concept";
 import type { PortfolioExposureData } from "./portfolio-exposure-concept";
 import type { UniverseComparison } from "./universe";
 
@@ -144,7 +143,7 @@ export type LearningStepView = {
 		| "portfolio-pnl"
 		| "portfolio-performance"
 		| "portfolio-exposure";
-	conceptData?: PerformanceConceptData | PortfolioExposureData;
+	conceptData?: PortfolioExposureData;
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

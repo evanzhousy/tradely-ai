@@ -1,4 +1,3 @@
-import { performanceConceptData } from "./performance-concept.server";
 import { portfolioExposureData } from "./portfolio-exposure-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -15,10 +14,9 @@ const performanceV2: TeachingUnit = {
 	id: "portfolio-performance",
 	conceptLab: {
 		kind: "portfolio-performance",
-		data: performanceConceptData,
 		intro: t(
-			"Explore cash flows, payoff distributions and comparison evidence.",
-			"探索资金流、盈亏分布与比较证据。",
+			"Take a $5,000 deposit out of your account's return with a time-weighted calculation, see an 80% win rate still lose money, and find the deep fall hidden inside a 10% gain.",
+			"用时间加权计算把 $5,000 的存入从你账户的收益中剔除，看 80% 的胜率如何仍然亏钱，并找出隐藏在 10% 收益里的深度下跌。",
 		),
 	},
 	sources: [
@@ -32,8 +30,8 @@ const performanceV2: TeachingUnit = {
 		"账户价值可能因存款上升，而非投资收益。时间加权收益按外部资金流切分子期间，在给定估值约定下连乘。基准比较需匹配日期、币种、费用及价格收益/总收益处理。胜率统计盈利平仓次数，平均盈亏与盈利因子衡量其他方面。若亏损很大，高胜率仍可亏钱。本课盈利因子=总盈利/总亏损绝对值；亏损分母为零时无定义。FIFO 等批次规则会改变已实现归因与平仓日期。标的归因和月度盈亏依赖覆盖，缺失历史不能当作完整账户表现。",
 	),
 	example: t(
-		"Start $1,000, grow to $1,100, deposit $900, then finish at $2,100. First return 10%; after-deposit base $2,000 gives second return 5%; TWR = 1.10×1.05−1 = 15.5%. Balance growth 110% includes the deposit. Four $20 wins and one $100 loss produce 80% win rate but −$20 total P&L and profit factor 0.8.",
-		"初值 $1,000 增至 $1,100，存入 $900，最终 $2,100。首段 10%，存款后基数 $2,000，第二段 5%，TWR=1.10×1.05−1=15.5%。余额增 110% 包含存款。四次各赚 $20、一次亏 $100，胜率 80%，但总亏 $20，盈利因子 0.8。",
+		"Your account runs from $29,960 at Monday's open to $31,159.60 at the close (+4.00%), takes a $5,000 deposit on Tuesday and ends Friday at $36,521.20 (+1.00% after the deposit). Balance growth is 21.9%, but the time-weighted return is 1.0400 × 1.0100 − 1 = 5.04%. Four winning trades of $95, $80, $120 and $330 and one $780 loss give an 80% win rate, −$155 in total and a profit factor of 0.80. Two accounts can both gain 10% while one falls 25% from its peak on the way.",
+		"你的账户从周一开盘的 $29,960 到收盘的 $31,159.60（+4.00%），周二存入 $5,000，周五收于 $36,521.20（存入后 +1.00%）。余额增长 21.9%，但时间加权收益是 1.0400 × 1.0100 − 1 = 5.04%。盈利 $95、$80、$120、$330 的四笔交易和一笔 $780 的亏损，胜率 80%，合计 −$155，盈利因子 0.80。两个账户都可能上涨 10%，而其中一个途中从高点下跌了 25%。",
 	),
 	misconception: t(
 		"Define trade, return period and cash-flow timing before computing a percentage. Do not confuse win rate with expected profitability.",

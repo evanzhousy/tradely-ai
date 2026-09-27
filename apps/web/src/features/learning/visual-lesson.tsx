@@ -83,8 +83,8 @@ const lessons = {
 		})),
 	),
 	"portfolio-performance": lazy(() =>
-		import("./performance-concept-lab").then((m) => ({
-			default: m.PerformanceConceptLab,
+		import("./lessons/portfolio-performance").then((m) => ({
+			default: m.PortfolioPerformanceWalkthrough,
 		})),
 	),
 	"portfolio-exposure": lazy(() =>
