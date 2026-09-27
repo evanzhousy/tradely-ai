@@ -61,7 +61,6 @@ import {
 	type CoachingTransport,
 } from "./coaching-panel";
 import { ConditionsConceptLab } from "./conditions-concept-lab";
-import { ContractConceptLab } from "./contract-concept-lab";
 import {
 	ContractExplorer,
 	type ContractRenderer,
@@ -78,6 +77,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
@@ -145,7 +145,7 @@ const conceptLabs = {
 	"what-options-are": WhatOptionsAreWalkthrough,
 	"trading-options": TradingOptionsWalkthrough,
 	"options-risks": OptionsRisksWalkthrough,
-	"option-contracts": ContractConceptLab,
+	"option-contracts": OptionContractsWalkthrough,
 	"option-rights": RightsConceptLab,
 	"premium-payoff": PayoffConceptLab,
 	"expiration-settlement": SettlementConceptLab,

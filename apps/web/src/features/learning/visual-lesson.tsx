@@ -143,8 +143,8 @@ const lessons = {
 		})),
 	),
 	"option-contracts": lazy(() =>
-		import("./contract-concept-lab").then((m) => ({
-			default: m.ContractConceptLab,
+		import("./lessons/option-contracts").then((m) => ({
+			default: m.OptionContractsWalkthrough,
 		})),
 	),
 	"option-rights": lazy(() =>
