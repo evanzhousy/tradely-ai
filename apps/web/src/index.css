@@ -1,6 +1,7 @@
 @import "@tradely/ui/globals.css";
 @import "./styles/desk.css";
 @import "./styles/pages.css";
+@import "./styles/walkthrough.css";
 
 @layer components {
 	.lesson-prose {
