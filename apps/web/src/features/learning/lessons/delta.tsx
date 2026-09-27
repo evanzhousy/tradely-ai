@@ -580,6 +580,17 @@ function LimitView({
 							locale={locale}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore
+									? {
+											markerId: "repriced",
+											min: SPOT - 12,
+											max: SPOT + 12,
+											step: 1,
+											onChange: (x) => setExplore({ move: x - SPOT }),
+										}
+									: undefined
+							}
 						/>
 					)}
 				</Stage>
@@ -589,6 +600,7 @@ function LimitView({
 					id: "estimate",
 					label: t(["Delta-only estimate", "仅用 Delta 的估计"]),
 					value: signedPrice(CALL_DELTA * shown.move),
+					tween: { to: CALL_DELTA * shown.move, format: signedPrice },
 					note: t([
 						`${fixed2(CALL_DELTA)} × ${signedStock(shown.move)}`,
 						`${fixed2(CALL_DELTA)} × ${signedStock(shown.move)}`,
@@ -599,6 +611,7 @@ function LimitView({
 					id: "repriced",
 					label: t(["Model repriced", "模型重新定价"]),
 					value: signedPrice(repriced - base),
+					tween: { to: repriced - base, format: signedPrice },
 					note: t([`at ALFA ${stock(at)}`, `ALFA ${stock(at)} 时`]),
 					evidence: "modeled",
 				},
@@ -606,6 +619,7 @@ function LimitView({
 					id: "gap",
 					label: t(["Missed by delta", "Delta 漏掉的"]),
 					value: signedPrice(gap),
+					tween: { to: gap, format: signedPrice },
 					note:
 						Math.abs(gap) < 0.05
 							? t(["small for a small move", "小变动时很小"])
@@ -852,8 +866,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Move ALFA and compare the line with the curve.",
-				"移动 ALFA，比较直线与曲线。",
+				"Drag across the chart to move ALFA and compare the line with the curve.",
+				"在图上左右拖动来移动 ALFA，比较直线与曲线。",
 			],
 			start: () => ({ move: 5 }),
 		},
