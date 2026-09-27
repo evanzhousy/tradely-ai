@@ -30,8 +30,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"期权参考股票、ETF 或指数。类型、行权价、到期日和产品条款共同说明是哪份合约。价格或观测时间改变，仍可能是同一合约。把报价换成金额前，先读给定乘数。",
 		),
 		example: t(
-			"A teaching contract is quoted at $2 per share and specifies 100 shares per contract. Buying 3 costs $2 × 100 × 3 = $600 before fees. That is the premium paid; it does not say what you will earn.",
-			"教学合约每股报价 $2，明确每张 100 股。买入 3 张需 $2 × 100 × 3 = $600，不含费用。这是已付权利金，并不说明能赚多少。",
+			"The ALFA Oct 18 100 call is quoted at $4.20 per share and covers 100 shares per contract. Buying 3 costs $4.20 × 100 × 3 = $1,260 before fees. That is the premium paid; it does not say what you will earn.",
+			"ALFA 10月18日 100 看涨每股报价 $4.20，每张对应 100 股。买入 3 张需 $4.20 × 100 × 3 = $1,260，不含费用。这是已付权利金，并不说明能赚多少。",
 		),
 		terms: [
 			{
@@ -75,8 +75,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"看涨持有人有权按条款买入，看跌持有人有权按条款卖出。被指派的义务方承担对应义务。买卖期权改变的是期权持仓，行权才是使用合约权利；两者不是同一事件。",
 		),
 		example: t(
-			"One physically settled $50 put specifies 100 shares. If assigned, its writer buys 100 shares for $5,000. Selling an existing long put to close instead ends that option position; it does not invoke exercise.",
-			"一张实物结算、行权价 $50 的看跌期权明确交付 100 股。被指派的义务方需用 $5,000 买入这些股票。若持有人卖出已有看跌期权平仓，则只是结束期权持仓，没有行权。",
+			"One ALFA Oct 18 95 put settles in 100 shares. If assigned, its writer buys 100 shares for $9,500. Selling an existing long put to close instead ends that option position; it does not invoke exercise.",
+			"一张 ALFA 10月18日 95 看跌以 100 股实物交收。被指派的义务方需用 $9,500 买入这些股票。若持有人卖出已有看跌期权平仓，则只是结束期权持仓，没有行权。",
 		),
 		terms: [
 			{
@@ -120,8 +120,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"到期时，看涨每股价值取现价减行权价的正值，看跌则反向相减。再乘给定单位和数量。计算买方盈亏时，减去已付权利金及费用。到期价值为零，仍可能亏损。",
 		),
 		example: t(
-			"Buy 2 calls, strike $100, at $3 per share with a 100 multiplier. If the expiration price is $102, payoff is $400 and premium was $600. Profit is −$200 before fees, despite the calls being in the money.",
-			"买入 2 张行权价 $100 的看涨，每股支付 $3、乘数 100。到期现价 $102 时，价值为 $400，而已付权利金为 $600。虽然实值，不含费用仍亏 $200。",
+			"Buy 2 ALFA Oct 18 100 calls at $4.20 per share with a 100 multiplier. If ALFA is $102 at expiry, payoff is $400 and premium was $840. Profit is −$440 before fees, despite the calls being in the money.",
+			"买入 2 张 ALFA 10月18日 100 看涨，每股支付 $4.20、乘数 100。到期时 ALFA 为 $102，价值为 $400，而已付权利金为 $840。虽然实值，不含费用仍亏 $440。",
 		),
 		terms: [
 			{
@@ -165,8 +165,8 @@ export const foundationIntroductions: Record<string, LessonIntroduction> = {
 			"卖出期权多头平仓是一笔交易。行权使用权利，指派把义务分配给义务方，结算则履行条款。实物结算转移指定资产；现金结算使用合约指定的官方参考值。最新展示价格可能与其不同。",
 		),
 		example: t(
-			"A cash-settled call has strike 4,000, official settlement 4,025 and $100 per point. Its cash payoff is $2,500. A displayed price of 4,030 does not replace that reference, and no index shares are delivered.",
-			"现金结算看涨行权价 4,000，官方结算值 4,025，每点 $100，现金到期价值为 $2,500。展示价格 4,030 不能替代指定参考值，也不交付指数股票。",
+			"An IDX 500 call has strike 5,000, official settlement value 5,025 and $100 per point. Its cash payoff is $2,500. A displayed 5,030 does not replace that reference, and no index units are delivered.",
+			"IDX 500 看涨行权价 5,000，官方结算值 5,025，每点 $100，现金到期价值为 $2,500。展示价格 5,030 不能替代指定参考值，也不交付指数份额。",
 		),
 		terms: [
 			{
