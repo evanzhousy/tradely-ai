@@ -138,6 +138,11 @@ function HedgeScene({
 			tone: "gain",
 		},
 	];
+	const perDollar = (shares: number) =>
+		t([
+			`${signedCount(Math.round(shares))} per $1`,
+			`每 $1 ${signedCount(Math.round(shares))}`,
+		]);
 	const result: ResultItem[] = [
 		{
 			id: "gamma",
@@ -145,7 +150,8 @@ function HedgeScene({
 				`Share-gamma at ${stock(shown.spot)}`,
 				`${stock(shown.spot)} 时的股票 Gamma`,
 			]),
-			value: t([`${signedCount(g)} per $1`, `每 $1 ${signedCount(g)}`]),
+			value: perDollar(g),
+			tween: { to: g, format: perDollar },
 			note: short
 				? t(["short gamma", "负 Gamma"])
 				: t(["long gamma", "正 Gamma"]),
@@ -191,6 +197,18 @@ function HedgeScene({
 							lines={lines}
 							markers={markers}
 							bands={bands}
+							drag={
+								explore
+									? {
+											markerId: "spot",
+											min: 92,
+											max: 110,
+											step: 1,
+											onChange: (spot) =>
+												setExplore({ ...explore, spot, hedge: true }),
+										}
+									: undefined
+							}
 							formatY={(value) =>
 								value === 0
 									? "0"
@@ -684,8 +702,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Move ALFA and flip the direction of the move.",
-				"移动 ALFA，并切换变动方向。",
+				"Drag across the chart to move ALFA, and flip the direction of the move.",
+				"在图上左右拖动来移动 ALFA，并切换变动方向。",
 			],
 			start: () => ({ spot: 98, move: -1, hedge: true }),
 		},
