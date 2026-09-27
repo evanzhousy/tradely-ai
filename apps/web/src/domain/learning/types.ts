@@ -7,7 +7,6 @@ import type { ConditionsConceptData } from "./conditions-concept";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { DeltaConceptData } from "./delta-concept";
 import type { EligibilityConceptData } from "./eligibility-concept";
-import type { ExecutionConceptData } from "./execution-concept";
 import type { FlowImpactConceptData } from "./flow-impact-concept";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { GammaConceptData } from "./gamma-concept";
@@ -174,7 +173,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| ExecutionConceptData
 		| SideConceptData
 		| SentimentConceptData
 		| PrintReviewConceptData

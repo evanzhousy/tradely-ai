@@ -87,6 +87,24 @@ export const oct100CallMonday = {
 	],
 } as const;
 
+/**
+ * The Oct 18 100 call's consolidated book at 10:05, just before t1: Ben's 10 contracts rest at
+ * the $4.10 ask, and your order to buy 10 arrives and takes them. Cents per share.
+ */
+export const oct100CallBookBeforeT1 = {
+	time: "10:05",
+	bids: [
+		{ price: 400, size: 15 },
+		{ price: 395, size: 20 },
+		{ price: 390, size: 25 },
+	],
+	asks: [
+		{ price: 410, size: 10, owner: "ben" as HolderId },
+		{ price: 415, size: 12 },
+		{ price: 420, size: 20 },
+	],
+} as const;
+
 /** How one trade changes open interest: both open adds, both close removes, mixed transfers. */
 export function openInterestChange(
 	trade: Pick<Trade, "quantity" | "buyerEffect" | "sellerEffect">,

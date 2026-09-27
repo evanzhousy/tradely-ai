@@ -9,7 +9,6 @@ import {
 	t,
 } from "./authoring.server";
 
-import { executionConceptData } from "./execution-concept.server";
 import { revisedFoundationUnits } from "./foundation-revision.server";
 import { printReviewConceptData } from "./print-review-concept.server";
 import { sentimentConceptData } from "./sentiment-concept.server";
@@ -87,10 +86,9 @@ export const foundationUnits: TeachingUnit[] = [
 		id: "execution-counterparties",
 		conceptLab: {
 			kind: "execution-counterparties",
-			data: executionConceptData,
 			intro: t(
-				"Follow both sides of one execution, move a price limit through a displayed book, and inspect the evidence behind a trade print. Explore these fictional cases before practicing independently.",
-				"追踪同一成交的双方，移动限价观察可见订单簿，再检查成交记录背后的证据。先探索这些虚构案例，再独立练习。",
+				"Watch your order meet Ben's resting offer in one trade, send a limit order through the book, and see what a print can't tell you.",
+				"观察你的订单与 Ben 的挂单撮合成一笔成交，把限价单送进订单簿，再看看成交记录无法告诉你什么。",
 			),
 		},
 		sources: [quotes, orders],
@@ -99,8 +97,8 @@ export const foundationUnits: TeachingUnit[] = [
 			"每笔成交都有买方和卖方。主动方要求立即与挂单撮合。买方主动接受卖价时买在卖价，挂单卖方也在同一卖价卖出，这是同一笔卖价成交，不是两个相反事件。主动卖方接受买价时，对手是挂单买方。市价单接受可用价格，没有限价保证。限价单限制价格，可挂单，也可在价格可成交时立即执行。因此同一卖价成交可能来自市价单或可成交限价单。深度、排队、取消与路由都会影响成交和滑点。",
 		),
 		example: t(
-			"An incoming buy limit at $2.10 meets 30 contracts offered at $2.10. If it asks for 40 and no other eligible liquidity exists, 30 can fill; 10 remain unfilled under this limit. The resting seller is not the aggressor. With only the print, the original order instructions would remain unknown.",
-			"买入限价 $2.10 遇到同价 30 张卖单。若买方需要 40 张且没有其他合格流动性，最多成交 30 张，余下 10 张在此限价下未成交。挂单卖方不是主动方。若只有成交记录，原订单指令仍未知。",
+			"An incoming buy limit at $4.15 for 30 contracts meets 10 offered at $4.10 and 12 at $4.15. It fills 22, and the other 8 rest as a bid at $4.15 because nothing more is offered within the limit. The resting sellers are not the aggressors. With only the prints, the original order instructions would remain unknown.",
+			"30 张、限价 $4.15 的买单遇到 $4.10 的 10 张和 $4.15 的 12 张卖单。它成交 22 张，其余 8 张作为 $4.15 的买单等待，因为限价以内已没有更多卖单。挂单卖方不是主动方。若只有成交记录，原订单指令仍未知。",
 		),
 		misconception: t(
 			"Seller is a counterparty role, not proof of seller initiation. Keep one execution count even though two parties participate.",

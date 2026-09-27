@@ -168,8 +168,8 @@ const lessons = {
 		})),
 	),
 	"execution-counterparties": lazy(() =>
-		import("./execution-concept-lab").then((m) => ({
-			default: m.ExecutionConceptLab,
+		import("./lessons/execution-counterparties").then((m) => ({
+			default: m.ExecutionCounterpartiesWalkthrough,
 		})),
 	),
 	"execution-side": lazy(() =>

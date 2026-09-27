@@ -69,7 +69,6 @@ import {
 import { learningCopy } from "./copy";
 import { DeltaConceptLab } from "./delta-concept-lab";
 import { EligibilityConceptLab } from "./eligibility-concept-lab";
-import { ExecutionConceptLab } from "./execution-concept-lab";
 import { ExecutionLab } from "./execution-lab";
 import { FlowImpactConceptLab } from "./flow-impact-concept-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
@@ -77,6 +76,7 @@ import { GammaConceptLab } from "./gamma-concept-lab";
 import { GexConceptLab } from "./gex-concept-lab";
 import { IvRankConceptLab } from "./iv-rank-concept-lab";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
@@ -150,7 +150,7 @@ const conceptLabs = {
 	"premium-payoff": PremiumPayoffWalkthrough,
 	"expiration-settlement": ExpirationSettlementWalkthrough,
 	"quotes-orders-trades": QuotesOrdersTradesWalkthrough,
-	"execution-counterparties": ExecutionConceptLab,
+	"execution-counterparties": ExecutionCounterpartiesWalkthrough,
 	"execution-side": SideConceptLab,
 	"flow-sentiment": SentimentConceptLab,
 	"validate-option-print": PrintReviewConceptLab,

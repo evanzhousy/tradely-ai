@@ -103,7 +103,6 @@ function posthogSourceMapsPlugin() {
 const sourceMapsPlugin = posthogSourceMapsPlugin();
 
 export default defineConfig({
-	assetsInclude: ["**/*.riv"],
 	define: {
 		"import.meta.env.VITE_DEPLOYMENT_ENV": JSON.stringify(
 			process.env.VERCEL_ENV ?? "local",

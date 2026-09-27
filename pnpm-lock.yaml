@@ -84,12 +84,6 @@ importers:
       '@neondatabase/auth':
         specifier: 0.5.0-beta
         version: 0.5.0-beta(661471dcc8623a83b549cd5c36a9a4bb)
-      '@rive-app/react-webgl2':
-        specifier: 4.34.2
-        version: 4.34.2(react@19.2.8)
-      '@rive-app/webgl2':
-        specifier: 2.42.1
-        version: 2.42.1
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -2119,14 +2113,6 @@ packages:
     resolution: {integrity: sha512-AzsuD9OfxTOZMMvTRhlN3oHBwOmFN7tDh27LzqmHt4+uOgPhJT7ZM7/kVs/8/o0WxayMUIk3hBmCFRHv1FUoag==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
-  '@rive-app/react-webgl2@4.34.2':
-    resolution: {integrity: sha512-UxXaeKUD76X5APNhY9yXuyOUW5Dfj1fy/mtzCTMD4WUfifHh4xPi/8+uChJNbAnL638oXEBlCJUvr5c54Nn+6Q==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0
-
-  '@rive-app/webgl2@2.42.1':
-    resolution: {integrity: sha512-yOyznVtUTPAew6bsJBHbLmOaUwheWMHHsAXmbI8h6MdnwMxpOqQrP00BuZAHlC86ib5ubUlSBZfzjL84sn+Rsg==}
 
   '@rolldown/binding-android-arm64@1.2.4':
     resolution: {integrity: sha512-jHC2cnyKz5xU2fhECtFl8OZ83cYNt13GZQD+0uMJ/X3o+ijmd56okHhTUwxVSHPx1IRVIJEZ1/1pPzeLCU6XKA==}
@@ -6358,13 +6344,6 @@ snapshots:
   '@react-types/shared@3.36.1(react@19.2.8)':
     dependencies:
       react: 19.2.8
-
-  '@rive-app/react-webgl2@4.34.2(react@19.2.8)':
-    dependencies:
-      '@rive-app/webgl2': 2.42.1
-      react: 19.2.8
-
-  '@rive-app/webgl2@2.42.1': {}
 
   '@rolldown/binding-android-arm64@1.2.4':
     optional: true

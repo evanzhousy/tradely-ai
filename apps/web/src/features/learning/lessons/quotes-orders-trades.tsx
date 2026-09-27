@@ -19,16 +19,15 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
-	type BookFill,
-	type BookLevel,
-	bookHeight,
-	OrderBook,
+	afterTaking,
+	BookTape,
+	bookTapeHeight,
+	type Print,
+} from "../walkthrough/instruments/book-tape";
+import type {
+	BookFill,
+	BookLevel,
 } from "../walkthrough/instruments/order-book";
-import {
-	type TapeRow,
-	TradeTape,
-	tapeHeight,
-} from "../walkthrough/instruments/trade-tape";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
@@ -46,7 +45,6 @@ const BASE_BIDS: Level[] = oct105CallVenues
 	.sort((a, b) => b.price - a.price);
 const BEST = bestQuote(oct105CallVenues);
 
-type Print = { time: string; size: number; price: number };
 const EARLIER: Print = oct105CallLast;
 
 /** "$2.10" for whole cents, "$2.125" for half cents. */
@@ -55,12 +53,9 @@ const cents = (value: number) => usd(value, Number.isInteger(value) ? 2 : 3);
 // ——— Shared stage: the book above its time and sales ———
 
 const TAPE_ROWS = 3;
+const bookTapeRows = () => bookTapeHeight(3, 3, TAPE_ROWS);
 
-function bookTapeHeight() {
-	return bookHeight(3, 3) + 12 + tapeHeight(TAPE_ROWS);
-}
-
-function BookTape({
+function ContractBookTape({
 	width,
 	bids,
 	asks,
@@ -77,57 +72,32 @@ function BookTape({
 	locale: Locale;
 }) {
 	const t = tr(locale);
-	const rows: TapeRow[] = prints.map((print) => ({
-		key: `${print.time}-${print.size}-${print.price}`,
-		cells: [print.time, count(print.size), usd(print.price)],
-	}));
 	return (
-		<g>
-			<OrderBook
-				width={width}
-				bids={bids}
-				asks={asks}
-				last={prints[0]?.price}
-				fills={fills}
-				sizeMax={30}
-				labels={{
-					bid: t(["Bids · contracts", "买单 · 张"]),
-					ask: t(["Asks · contracts", "卖单 · 张"]),
-					price: t(["Price", "价格"]),
-					spread: t(["spread", "价差"]),
-					last: t(["last", "最新"]),
-					filled: (size) => t([`took ${count(size)}`, `成交 ${count(size)}`]),
-				}}
-			/>
-			<TradeTape
-				x={8}
-				y={bookHeight(3, 3) + 12}
-				width={width - 16}
-				title={t([`Time and sales · ${LABEL[0]}`, `逐笔成交 · ${LABEL[1]}`])}
-				columns={[
-					{ label: t(["Time", "时间"]), share: 0.34 },
-					{ label: t(["Contracts", "张数"]), share: 0.33, align: "end" },
-					{ label: t(["Price", "价格"]), share: 0.33, align: "end" },
-				]}
-				rows={rows}
-				maxRows={TAPE_ROWS}
-				empty={t(["No trades yet", "尚无成交"])}
-			/>
-		</g>
+		<BookTape
+			width={width}
+			bids={bids}
+			asks={asks}
+			fills={fills}
+			prints={prints}
+			sizeMax={30}
+			labels={{
+				bid: t(["Bids · contracts", "买单 · 张"]),
+				ask: t(["Asks · contracts", "卖单 · 张"]),
+				price: t(["Price", "价格"]),
+				spread: t(["spread", "价差"]),
+				last: t(["last", "最新"]),
+				filled: (size) => t([`took ${count(size)}`, `成交 ${count(size)}`]),
+			}}
+			tape={{
+				title: t([`Time and sales · ${LABEL[0]}`, `逐笔成交 · ${LABEL[1]}`]),
+				time: t(["Time", "时间"]),
+				size: t(["Contracts", "张数"]),
+				price: t(["Price", "价格"]),
+				empty: t(["No trades yet", "尚无成交"]),
+			}}
+			tapeRows={TAPE_ROWS}
+		/>
 	);
-}
-
-/** Levels after an order takes size from the front of one side; the ghost keeps the old size. */
-function afterTaking(
-	levels: readonly Level[],
-	fills: readonly Level[],
-): BookLevel[] {
-	return levels.map((level) => {
-		const fill = fills.find((item) => item.price === level.price);
-		return fill
-			? { ...level, size: level.size - fill.size, before: level.size }
-			: level;
-	});
 }
 
 // ——— Scene 1: a quote is not a trade ———
@@ -263,10 +233,10 @@ function QuoteView({
 						`The ${LABEL[0]} order book at ${QUOTE_TIME} above its time and sales`,
 						`${QUOTE_TIME} 的 ${LABEL[1]} 订单簿及其逐笔成交`,
 					])}
-					height={bookTapeHeight()}
+					height={bookTapeRows()}
 				>
 					{(width) => (
-						<BookTape
+						<ContractBookTape
 							width={width}
 							bids={bids}
 							asks={asks}
@@ -377,10 +347,10 @@ function EventView({
 						"How adding, cancelling and trading change the ask size, and which of them prints",
 						"新增、撤单与成交如何改变卖价数量，以及哪一种会产生成交记录",
 					])}
-					height={bookTapeHeight()}
+					height={bookTapeRows()}
 				>
 					{(width) => (
-						<BookTape
+						<ContractBookTape
 							width={width}
 							bids={BASE_BIDS}
 							asks={book.asks}

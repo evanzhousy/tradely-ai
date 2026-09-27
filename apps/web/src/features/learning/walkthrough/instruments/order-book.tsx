@@ -14,7 +14,11 @@ export type BookLevel = {
 	mine?: boolean;
 };
 
-export type BookFill = { price: number; size: number };
+/** A fill marked on the level it took; `side` keeps it off a same-priced level opposite. */
+export type BookFill = { price: number; size: number; side?: "bid" | "ask" };
+
+/** An order arriving to trade against the book, drawn beside the level it will meet first. */
+export type BookIncoming = { side: "buy" | "sell"; label: string };
 
 export type BookLabels = {
 	bid: string;
@@ -48,6 +52,7 @@ export function OrderBook({
 	fills = [],
 	sizeMax,
 	labels,
+	incoming,
 }: {
 	width: number;
 	/** Highest first. */
@@ -58,6 +63,7 @@ export function OrderBook({
 	fills?: readonly BookFill[];
 	sizeMax: number;
 	labels: BookLabels;
+	incoming?: BookIncoming;
 }) {
 	const motion = useTeachMotion();
 	const center = width / 2;
@@ -74,8 +80,10 @@ export function OrderBook({
 	const bestAskIndex = asks.findIndex((level) => level.size > 0);
 	const bestBid = bids[bestBidIndex]?.price;
 	const bestAsk = asks[bestAskIndex]?.price;
-	const fillAt = (price: number) =>
-		fills.find((fill) => fill.price === price)?.size;
+	const fillAt = (price: number, side: "bid" | "ask") =>
+		fills.find(
+			(fill) => fill.price === price && (!fill.side || fill.side === side),
+		)?.size;
 	const row = (
 		level: BookLevel,
 		y: number,
@@ -84,7 +92,7 @@ export function OrderBook({
 	) => {
 		const bar = level.size * k;
 		const ghost = level.before !== undefined ? level.before * k : undefined;
-		const filled = fillAt(level.price);
+		const filled = fillAt(level.price, side);
 		const isBest = index === (side === "bid" ? bestBidIndex : bestAskIndex);
 		const x =
 			side === "bid"
@@ -169,6 +177,43 @@ export function OrderBook({
 					</Label>
 				) : null}
 				<AnimatePresence>
+					{incoming &&
+					!filled &&
+					isBest &&
+					side === (incoming.side === "buy" ? "ask" : "bid") ? (
+						<m.g
+							key={`incoming-${incoming.label}`}
+							initial={
+								motion.enabled
+									? { opacity: 0, x: side === "ask" ? -18 : 18 }
+									: false
+							}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0 }}
+							transition={motion.move}
+						>
+							<Label
+								x={
+									side === "ask"
+										? center - priceWidth / 2 - 26
+										: center + priceWidth / 2 + 26
+								}
+								y={y + ROW / 2 + 4}
+								anchor={side === "ask" ? "end" : "start"}
+								tone="accent"
+							>
+								{incoming.label}
+							</Label>
+							<path
+								d={
+									side === "ask"
+										? `M${center - priceWidth / 2 - 22} ${y + ROW / 2}h14l-5 -4m5 4l-5 4`
+										: `M${center + priceWidth / 2 + 22} ${y + ROW / 2}h-14l5 -4m-5 4l5 4`
+								}
+								className="wt-arrow wt-arrow-contract"
+							/>
+						</m.g>
+					) : null}
 					{filled ? (
 						<m.text
 							key={`fill-${level.price}-${filled}`}
