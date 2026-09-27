@@ -71,7 +71,10 @@ function ToggleGroupItem({
 			id={value}
 			data-slot="toggle-group-item"
 			className={cn(
-				"shrink-0 focus:z-10 focus-visible:z-10 group-data-[variant=outline]/toggle-group:border-0 group-data-[variant=outline]/toggle-group:bg-transparent",
+				"shrink-0 focus:z-10 focus-visible:z-10",
+				// HeroUI's soft accent is nearly invisible against this theme, so the selected item uses the primary pill.
+				"[--toggle-button-bg-selected-hover:var(--primary)] [--toggle-button-bg-selected-pressed:var(--primary)] [--toggle-button-bg-selected:var(--primary)] [--toggle-button-fg-selected:var(--primary-foreground)]",
+				"group-data-[variant=outline]/toggle-group:border-0 group-data-[variant=outline]/toggle-group:not-data-selected:bg-transparent group-data-[variant=outline]/toggle-group:not-data-selected:text-muted-foreground group-data-[variant=outline]/toggle-group:not-data-selected:hover:bg-muted group-data-[variant=outline]/toggle-group:not-data-selected:hover:text-foreground",
 				className,
 			)}
 			{...props}
