@@ -178,8 +178,8 @@ const lessons = {
 		})),
 	),
 	"flow-sentiment": lazy(() =>
-		import("./sentiment-concept-lab").then((m) => ({
-			default: m.SentimentConceptLab,
+		import("./lessons/flow-sentiment").then((m) => ({
+			default: m.FlowSentimentWalkthrough,
 		})),
 	),
 	"validate-option-print": lazy(() =>

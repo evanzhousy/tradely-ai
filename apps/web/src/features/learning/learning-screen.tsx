@@ -79,6 +79,7 @@ import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
+import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
@@ -105,7 +106,6 @@ import { RecapConceptLab } from "./recap-concept-lab";
 import { RegimeConceptLab } from "./regime-concept-lab";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
-import { SentimentConceptLab } from "./sentiment-concept-lab";
 import { SourceConceptLab } from "./source-concept-lab";
 import { StrategyConceptLab } from "./strategy-concept-lab";
 import { SurfaceConceptLab } from "./surface-concept-lab";
@@ -152,7 +152,7 @@ const conceptLabs = {
 	"quotes-orders-trades": QuotesOrdersTradesWalkthrough,
 	"execution-counterparties": ExecutionCounterpartiesWalkthrough,
 	"execution-side": ExecutionSideWalkthrough,
-	"flow-sentiment": SentimentConceptLab,
+	"flow-sentiment": FlowSentimentWalkthrough,
 	"validate-option-print": PrintReviewConceptLab,
 	"session-flow-vs-structure": VolumeOpenInterestWalkthrough,
 	"trade-records": TapeConceptLab,

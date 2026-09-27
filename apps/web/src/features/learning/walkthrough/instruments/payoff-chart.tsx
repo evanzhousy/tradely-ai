@@ -29,6 +29,14 @@ export type PayoffBand = {
 	tone?: "gain" | "loss" | "neutral";
 };
 
+/** Rough width of 12px mono text: CJK characters are about twice as wide as Latin ones. */
+function textWidth(text: string) {
+	let width = 0;
+	for (const char of text)
+		width += (char.codePointAt(0) ?? 0) > 0x2e80 ? 12 : 7.2;
+	return width;
+}
+
 const PAD_LEFT = 58;
 const PAD_RIGHT = 16;
 const PAD_TOP = 24;
@@ -69,7 +77,14 @@ export function PayoffChart({
 	const motion = useTeachMotion();
 	const left = PAD_LEFT;
 	const right = width - PAD_RIGHT;
-	const top = PAD_TOP;
+	// A title too wide for the stage breaks at its " · " separators, one part per line.
+	const titleLines =
+		title && textWidth(title) > width - 16
+			? title.split(" · ")
+			: title
+				? [title]
+				: [];
+	const top = PAD_TOP + Math.max(titleLines.length - 1, 0) * 14;
 	const bottom = height - PAD_BOTTOM;
 	const x = (value: number) =>
 		left + ((value - xRange[0]) / (xRange[1] - xRange[0])) * (right - left);
@@ -93,13 +108,27 @@ export function PayoffChart({
 				: tone === "short"
 					? "wt-line-short"
 					: "wt-line-reference";
+	// Line labels sit above each line's right end, pushed apart so none overlap.
+	const labelY = new Map<string, number>();
+	const ends = lines
+		.filter((line) => line.label)
+		.map((line) => ({
+			id: line.id,
+			y: y(line.points[line.points.length - 1][1]) - 8,
+		}))
+		.sort((a, b) => a.y - b.y);
+	for (let i = 0; i < ends.length; i++) {
+		const previous = ends[i - 1];
+		if (previous && ends[i].y - previous.y < 14) ends[i].y = previous.y + 14;
+		labelY.set(ends[i].id, ends[i].y);
+	}
 	return (
 		<g>
-			{title ? (
-				<Label x={left} y={14} tone="muted">
-					{title}
+			{titleLines.map((line, i) => (
+				<Label key={line} x={8} y={14 + i * 14} tone="muted">
+					{line}
 				</Label>
-			) : null}
+			))}
 			{bands.map((band) => (
 				<m.g
 					key={band.id}
@@ -153,7 +182,6 @@ export function PayoffChart({
 				{xLabel}
 			</Label>
 			{lines.map((line) => {
-				const end = line.points[line.points.length - 1];
 				return (
 					<g key={line.id}>
 						<m.path
@@ -168,7 +196,7 @@ export function PayoffChart({
 							textAnchor="end"
 							className="wt-small"
 							initial={false}
-							animate={{ y: y(end[1]) - 8 }}
+							animate={{ y: labelY.get(line.id) }}
 							transition={motion.move}
 						>
 							{line.label}

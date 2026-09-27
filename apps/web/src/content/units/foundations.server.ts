@@ -11,7 +11,6 @@ import {
 
 import { revisedFoundationUnits } from "./foundation-revision.server";
 import { printReviewConceptData } from "./print-review-concept.server";
-import { sentimentConceptData } from "./sentiment-concept.server";
 
 export const foundationUnits: TeachingUnit[] = [
 	...revisedFoundationUnits,
@@ -246,10 +245,9 @@ export const foundationUnits: TeachingUnit[] = [
 		id: "flow-sentiment",
 		conceptLab: {
 			kind: "flow-sentiment",
-			data: sentimentConceptData,
 			intro: t(
-				"Connect option type with likely buying or selling, test the evidence behind a label, and follow the same put purchase into different position contexts. Explore before classifying new records.",
-				"把期权类型与推断买卖方向联系起来，检查标签背后的证据，再追踪同一看跌买入在不同持仓中的含义。先探索，再为新记录分类。",
+				"Map option type and likely aggressor to a flow label, label Monday's three prints once each, and place one put purchase inside different accounts.",
+				"把期权类型与推断的主动方对应到成交流标签，为周一三笔成交各贴一次标签，再把同一笔看跌买入放进不同账户。",
 			),
 		},
 		sources: [quotes, basics],
