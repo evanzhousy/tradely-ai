@@ -107,7 +107,7 @@ const lessons = {
 		import("./gamma-concept-lab").then((m) => ({ default: m.GammaConceptLab })),
 	),
 	delta: lazy(() =>
-		import("./delta-concept-lab").then((m) => ({ default: m.DeltaConceptLab })),
+		import("./lessons/delta").then((m) => ({ default: m.DeltaWalkthrough })),
 	),
 	"symbol-drawer": lazy(() =>
 		import("./lessons/symbol-drawer").then((m) => ({

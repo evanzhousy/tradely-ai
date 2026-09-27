@@ -7,7 +7,6 @@ import {
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-import { deltaConceptData } from "./delta-concept.server";
 import { gammaConceptData } from "./gamma-concept.server";
 import { ivRankConceptData } from "./iv-rank-concept.server";
 import { surfaceConceptData } from "./surface-concept.server";
@@ -19,10 +18,9 @@ export const exposureUnits: TeachingUnit[] = [
 		id: "delta",
 		conceptLab: {
 			kind: "delta",
-			data: deltaConceptData,
 			intro: t(
-				"Explore a local option-price slope, carry its sign and units into position exposure, and test when the delta-only estimate is incomplete.",
-				"探索局部期权价格斜率，将符号与单位带入持仓敞口，并检验何时仅用 Delta 的估计不完整。",
+				"Read delta as the slope of the Oct 18 100 call's model value at ALFA $100, carry it through the multiplier into your 16 contracts and Ben's short 10, and see where one slope stops describing a move.",
+				"把 Delta 读作 ALFA $100 时 10月18日 100 看涨模型价值的斜率，经过乘数算到你的 16 张和 Ben 的空头 10 张上，并看到一个斜率在哪里不再能描述变动。",
 			),
 		},
 		sources: [greeks],
@@ -31,8 +29,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"Delta 近似表示其他输入不变时，标的小幅每单位变动引起的期权价格变化。本例 Delta 0.50 表示标的涨 $1，每股期权价格约涨 $0.50。乘以张数和给定乘数可得到金额变化或持仓股等价敞口。多头看涨通常 Delta 为正，多头看跌为负；做空同一期权反转持仓符号。Delta 是局部值，会随现价、时间和波动率变化，不保证下个价格，也不是普遍成立的概率。期权模型 Delta 不同于先取绝对敞口再添加情绪符号的成交流约定。",
 		),
 		example: t(
-			"Long 2 calls, delta 0.50, multiplier 100: position delta +100 shares-equivalent. A $0.40 underlying rise gives about +$40 using delta alone. Shorting those calls gives −100 and about −$40. Neither estimate includes gamma, time, volatility or fees.",
-			"多头 2 张看涨，Delta 0.50、乘数 100：持仓 Delta 为 +100 股等价量。标的涨 $0.40，单用 Delta 估计约赚 $40。做空则为 −100，约亏 $40。两者都未包含 Gamma、时间、波动率与费用。",
+			"With ALFA at $100 and 32 days left, the Oct 18 100 call has a model delta of 0.52. Your 16 contracts are 0.52 × 100 × 16 = +832 share-equivalents, so a $0.40 rise is about +$333; Ben, short 10, is −520 and about −$208. After a $10 jump the model reprices the call up $6.92 a share, not the $5.20 delta alone suggests. None of this includes gamma, time, volatility or fees.",
+			"ALFA 为 $100、还剩 32 天时，10月18日 100 看涨的模型 Delta 为 0.52。你的 16 张是 0.52 × 100 × 16 = +832 股等价，所以上涨 $0.40 约赚 $333；Ben 空头 10 张，是 −520，约亏 $208。大涨 $10 后，模型把看涨每股重新定价上涨 $6.92，而不是仅用 Delta 给出的 $5.20。这些都没有包含 Gamma、时间、波动率和费用。",
 		),
 		misconception: t(
 			"Do not multiply by 100 twice. A model price sensitivity is not an inferred tape-sentiment sign.",
