@@ -49,3 +49,74 @@ export const oct105CallBlock = {
 	pairedLeg: { strike: 110, quantity: 500, price: 90, side: "sell" as const },
 	openInterestChange: 480,
 } as const;
+
+/** One report on a trade feed. Price in cents; `trade` links reports about the same execution. */
+export type FeedMessage = {
+	id: string;
+	received: string;
+	kind: "new" | "duplicate" | "cancel" | "correct";
+	trade: string;
+	quantity?: number;
+	price?: number;
+};
+
+/**
+ * Every feed message about the Oct 18 105 call on Monday. Only two executions survive: the
+ * 10:12 print and the 10:50 block. A bad 10:40 print is busted, and the block first arrives
+ * with a mistyped price that a correction fixes.
+ */
+export const oct105CallMessages: readonly FeedMessage[] = [
+	{
+		id: "M1",
+		received: "10:12:05.1",
+		kind: "new",
+		trade: "T-1",
+		quantity: 5,
+		price: 200,
+	},
+	{ id: "M2", received: "10:12:05.3", kind: "duplicate", trade: "T-1" },
+	{
+		id: "M3",
+		received: "10:40:10.2",
+		kind: "new",
+		trade: "T-2",
+		quantity: 20,
+		price: 260,
+	},
+	{ id: "M4", received: "10:41:30.0", kind: "cancel", trade: "T-2" },
+	{
+		id: "M5",
+		received: "10:50:00.5",
+		kind: "new",
+		trade: "T-3",
+		quantity: 500,
+		price: 251,
+	},
+	{
+		id: "M6",
+		received: "10:50:02.8",
+		kind: "correct",
+		trade: "T-3",
+		quantity: 500,
+		price: 215,
+	},
+];
+
+/** The trades a feed represents after applying messages in order: duplicates ignored. */
+export function applyMessages(messages: readonly FeedMessage[]) {
+	const trades = new Map<string, { quantity: number; price: number }>();
+	for (const message of messages) {
+		if (message.kind === "new" && !trades.has(message.trade))
+			trades.set(message.trade, {
+				quantity: message.quantity ?? 0,
+				price: message.price ?? 0,
+			});
+		if (message.kind === "cancel") trades.delete(message.trade);
+		if (message.kind === "correct" && trades.has(message.trade))
+			trades.set(message.trade, {
+				quantity: message.quantity ?? 0,
+				price: message.price ?? 0,
+			});
+	}
+	return trades;
+}

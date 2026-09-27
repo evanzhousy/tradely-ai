@@ -14,7 +14,6 @@ import {
 import { conditionsConceptData } from "./conditions-concept.server";
 import { sourceConceptData } from "./source-concept.server";
 import { strategyConceptData } from "./strategy-concept.server";
-import { tapeConceptData } from "./tape-concept.server";
 
 export const flowUnits: TeachingUnit[] = [
 	{
@@ -123,10 +122,9 @@ export const flowUnits: TeachingUnit[] = [
 		id: "trade-records",
 		conceptLab: {
 			kind: "trade-records",
-			data: tapeConceptData,
 			intro: t(
-				"Build an aggregate from its source prints and replay duplicate and revised messages. Explore these fictional records before reconstructing your own tape row.",
-				"从原始成交建立聚合，并回放重复与修订消息。先探索这些虚构记录，再还原自己的成交行。",
+				"Build one row from the 105 call's prints, see why the weighted price is the one paid, and replay a feed full of duplicates, cancels and corrections.",
+				"用 105 看涨的成交建立一行聚合，理解为何加权价格才是实际成交价，再回放充满重复、撤销与更正的数据。",
 			),
 		},
 		sources: [quotes, oi],
@@ -135,8 +133,8 @@ export const flowUnits: TeachingUnit[] = [
 			"原始成交是一条执行报告，聚合记录可按明确规则合并多笔。张数与权利金应求和，成交笔数记录所代表原始笔数。按数量加权价格不同于简单平均。不能合并不同合约或不同价格单位。重复消息与更正可能改变数据，却没有新增经济成交；交易所时间与接收时间也可不同。扫单、大宗与复杂订单等成交条件在下一课讲解；多行聚集仍不证明共同持有。",
 		),
 		example: t(
-			"Two same-contract prints: 10 at $2 and 30 at $3, multiplier 100. Total size 40, premium $11,000, trade count 2, weighted price $2.75. The simple $2.50 average is wrong for those quantities. The grouping rule says nothing about whether the orders belonged to one strategy.",
-			"同合约两笔：10 张 $2、30 张 $3，乘数 100。总量 40、权利金 $11,000、笔数 2、加权价格 $2.75。数量不等时简单平均 $2.50 不正确，分组规则也不能证明同一策略。",
+			"Two same-contract prints: 5 at $2.00 and 500 at $2.15, multiplier 100. Total size 505, premium $108,500, trade count 2, weighted price $2.1485. The simple $2.075 average is wrong for those quantities. The grouping rule says nothing about whether the orders belonged to one strategy.",
+			"同合约两笔：5 张 $2.00、500 张 $2.15，乘数 100。总量 505、权利金 $108,500、笔数 2、加权价格 $2.1485。数量不等时简单平均 $2.075 不正确，分组规则也不能证明同一策略。",
 		),
 		misconception: t(
 			"One aggregate row need not be one order. Repetition is a reason to investigate linkage, not a linkage identifier.",

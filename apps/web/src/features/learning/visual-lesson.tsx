@@ -193,7 +193,9 @@ const lessons = {
 		})),
 	),
 	"trade-records": lazy(() =>
-		import("./tape-concept-lab").then((m) => ({ default: m.TapeConceptLab })),
+		import("./lessons/trade-records").then((m) => ({
+			default: m.TradeRecordsWalkthrough,
+		})),
 	),
 	"execution-conditions": lazy(() =>
 		import("./conditions-concept-lab").then((m) => ({

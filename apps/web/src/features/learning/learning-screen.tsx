@@ -87,6 +87,7 @@ import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
+import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
 import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
@@ -109,7 +110,6 @@ import { ResponseField } from "./response-field";
 import { SourceConceptLab } from "./source-concept-lab";
 import { StrategyConceptLab } from "./strategy-concept-lab";
 import { SurfaceConceptLab } from "./surface-concept-lab";
-import { TapeConceptLab } from "./tape-concept-lab";
 import { TimeVolRateConceptLab } from "./time-vol-rate-concept-lab";
 import { UniverseExplorer } from "./universe-explorer";
 import { VolatilityConceptLab } from "./volatility-concept-lab";
@@ -155,7 +155,7 @@ const conceptLabs = {
 	"flow-sentiment": FlowSentimentWalkthrough,
 	"validate-option-print": ValidateOptionPrintWalkthrough,
 	"session-flow-vs-structure": VolumeOpenInterestWalkthrough,
-	"trade-records": TapeConceptLab,
+	"trade-records": TradeRecordsWalkthrough,
 	"execution-conditions": ConditionsConceptLab,
 };
 

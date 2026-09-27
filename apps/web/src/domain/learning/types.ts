@@ -26,7 +26,6 @@ import type { RegimeConceptData } from "./regime-concept";
 import type { SourceConceptData } from "./source-concept";
 import type { StrategyConceptData } from "./strategy-concept";
 import type { SurfaceConceptData } from "./surface-concept";
-import type { TapeConceptData } from "./tape-concept";
 import type { TimeVolRateConceptData } from "./time-vol-rate-concept";
 import type { UniverseComparison } from "./universe";
 import type { VolatilityConceptData } from "./volatility-concept";
@@ -170,7 +169,6 @@ export type LearningStepView = {
 		| "portfolio-performance"
 		| "portfolio-exposure";
 	conceptData?:
-		| TapeConceptData
 		| ConditionsConceptData
 		| ActivityConceptData
 		| StrategyConceptData
