@@ -22,7 +22,6 @@ import {
 	ChoiceField,
 	Diagram,
 	PlaybackButton,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -273,16 +272,6 @@ export function GreekUnitsScene({ locale }: Props) {
 							}
 						}}
 					/>
-					<RangeControl
-						inputScale={1}
-						label={l("Input after change", "变化后的输入")}
-						value={after}
-						display={inputLabel(after)}
-						min={factor.range[0]}
-						max={factor.range[1]}
-						step={factor.step}
-						onChange={setAfter}
-					/>
 				</FieldGroup>
 			}
 			details={
@@ -424,15 +413,6 @@ export function GreekSignsScene({ locale }: Props) {
 							["short", l("Short", "空头")],
 						]}
 						onChange={setSide}
-					/>
-					<RangeControl
-						inputScale={1}
-						label={l("Number of contracts", "合约张数")}
-						value={quantity}
-						display={String(quantity)}
-						min={1}
-						max={data.quantityMax}
-						onChange={setQuantity}
 					/>
 				</FieldGroup>
 			}

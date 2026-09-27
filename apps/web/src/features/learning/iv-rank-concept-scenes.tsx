@@ -16,7 +16,6 @@ import type { Locale } from "@/i18n/messages";
 import {
 	Diagram,
 	PlaybackButton,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -211,18 +210,6 @@ export function RankFrequencyScene({ locale }: Props) {
 					</SvgText>
 				</Diagram>
 			}
-			controls={
-				<RangeControl
-					inputScale={1}
-					label={l("Hypothetical current IV", "假设当前 IV")}
-					value={current}
-					display={pct(current)}
-					min={data.currentRange[0]}
-					max={data.currentRange[1]}
-					step={1}
-					onChange={setCurrent}
-				/>
-			}
 			details={
 				<>
 					<ExperimentContext locale={locale} />
@@ -391,26 +378,14 @@ export function RankOutlierScene({ locale }: Props) {
 				</Diagram>
 			}
 			controls={
-				<>
-					<RangeControl
-						inputScale={1}
-						label={l("Highest historical observation", "历史最高观测")}
-						value={high}
-						display={pct(high)}
-						min={data.outlierRange[0]}
-						max={data.outlierRange[1]}
-						step={1}
-						onChange={choose}
-					/>
-					<PlaybackButton
-						playing={replay.playing}
-						onClick={() => {
-							setManual(null);
-							replay.toggle();
-						}}
-						l={l}
-					/>
-				</>
+				<PlaybackButton
+					playing={replay.playing}
+					onClick={() => {
+						setManual(null);
+						replay.toggle();
+					}}
+					l={l}
+				/>
 			}
 			details={
 				<>

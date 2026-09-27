@@ -22,7 +22,6 @@ import {
 	ChoiceField,
 	Diagram,
 	PlaybackButton,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -589,16 +588,7 @@ export function PositionScopeScene({ locale }: Props) {
 						<div
 							onPointerDownCapture={() => playback.select(playback.frame)}
 							onKeyDownCapture={() => playback.select(playback.frame)}
-						>
-							<RangeControl
-								label={l("Replay step", "回放阶段")}
-								value={playback.frame}
-								display={stages[playback.frame]}
-								min={0}
-								max={2}
-								onChange={playback.select}
-							/>
-						</div>
+						/>
 					</FieldGroup>
 					<PlaybackButton
 						playing={playback.playing}

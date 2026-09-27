@@ -16,13 +16,7 @@ import {
 	type VolatilityConceptData,
 } from "@/domain/learning/volatility-concept";
 import type { Locale } from "@/i18n/messages";
-import {
-	Diagram,
-	RangeControl,
-	SceneLayout,
-	SelectField,
-	SvgText,
-} from "./concept-scene";
+import { Diagram, SceneLayout, SelectField, SvgText } from "./concept-scene";
 import {
 	instantTransition,
 	lessonTransition,
@@ -194,16 +188,6 @@ export function ImpliedVolatilityScene({ locale }: Props) {
 								setFitting(false);
 								setDays(Number(value));
 							}}
-						/>
-						<RangeControl
-							inputScale={1}
-							label={l("Trial annualized IV", "试算年化 IV")}
-							value={iv}
-							display={pct(iv, 2)}
-							min={model.ivRange[0]}
-							max={model.ivRange[1]}
-							step={0.01}
-							onChange={changeIv}
 						/>
 					</FieldGroup>
 					<Button

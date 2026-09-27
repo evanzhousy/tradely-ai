@@ -368,7 +368,6 @@ export function RecapAxisScene({ locale }: Props) {
 			controls={
 				<>
 					<RangeControl
-						inputScale={1}
 						label={l("Bar-axis minimum", "柱轴下限")}
 						value={minimum}
 						display={String(minimum)}

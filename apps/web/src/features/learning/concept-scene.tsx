@@ -10,7 +10,6 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "@tradely/ui/components/native-select";
-import { NumberField } from "@tradely/ui/components/number-field";
 import { RangeSlider } from "@tradely/ui/components/slider";
 import {
 	ToggleGroup,
@@ -216,16 +215,20 @@ export function useFrames(length: number) {
 			document.removeEventListener("visibilitychange", stopOnHide);
 		};
 	}, [frame, playing, length]);
-	if (shared)
+	if (shared) {
+		const current = Math.round(shared.progress * (length - 1));
 		return {
-			frame: Math.round(shared.progress * (length - 1)),
+			frame: current,
 			playing: shared.playing,
 			select: (value: number) => {
 				shared.pause();
-				shared.seek(length > 1 ? value / (length - 1) : 0);
+				// Re-selecting the current frame only pauses: a seek would discard values the learner is setting.
+				if (value !== current)
+					shared.seek(length > 1 ? value / (length - 1) : 0);
 			},
 			toggle: shared.toggle,
 		};
+	}
 	return {
 		frame,
 		playing,
@@ -304,7 +307,6 @@ export function RangeControl({
 	min,
 	max,
 	step = 1,
-	inputScale,
 	onChange,
 }: {
 	label: string;
@@ -313,8 +315,6 @@ export function RangeControl({
 	min: number;
 	max: number;
 	step?: number;
-	/** Stored units per entered unit, e.g. 100 cents per dollar. Omit for date/index controls. */
-	inputScale?: number;
 	onChange: (value: number) => void;
 }) {
 	const id = useId();
@@ -327,18 +327,6 @@ export function RangeControl({
 				</output>
 			</div>
 
-			{inputScale !== undefined && display !== "—" ? (
-				<NumberField
-					id={`${id}-number`}
-					descriptionId={`${id}-value`}
-					label={label}
-					value={value / inputScale}
-					min={min / inputScale}
-					max={max / inputScale}
-					step={step / inputScale}
-					onChange={(next) => onChange(Number((next * inputScale).toFixed(8)))}
-				/>
-			) : null}
 			<RangeSlider
 				id={id}
 				min={min}

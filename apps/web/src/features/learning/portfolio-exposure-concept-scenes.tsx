@@ -173,7 +173,6 @@ export function ExposureCoverageScene({ locale }: Props) {
 			controls={
 				<>
 					<RangeControl
-						inputScale={1}
 						label={l("Hypothetical stock adjustment", "假设股票调整")}
 						value={hedge}
 						display={`${num(hedge)} ${l("shares", "股")}`}
@@ -348,7 +347,6 @@ export function ExposureRiskScene({ locale }: Props) {
 			controls={
 				<>
 					<RangeControl
-						inputScale={1}
 						label={l("Small underlying move", "标的小幅变动")}
 						value={move}
 						display={money(move)}
@@ -361,7 +359,6 @@ export function ExposureRiskScene({ locale }: Props) {
 						}}
 					/>
 					<RangeControl
-						inputScale={1}
 						label={l("IV change in percentage points", "IV 变化百分点")}
 						value={iv}
 						display={`${num(iv)} pp`}
@@ -374,7 +371,6 @@ export function ExposureRiskScene({ locale }: Props) {
 						}}
 					/>
 					<RangeControl
-						inputScale={1}
 						label={l("Elapsed calendar days", "经过日历天数")}
 						value={days}
 						display={num(days)}

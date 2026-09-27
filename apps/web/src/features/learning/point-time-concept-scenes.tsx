@@ -347,7 +347,6 @@ export function RecencyDecayScene({ locale }: Props) {
 			controls={
 				<>
 					<RangeControl
-						inputScale={1}
 						label={l("Elapsed seconds without new events", "无新事件经过秒数")}
 						value={elapsed}
 						display={`${elapsed}s`}
@@ -811,7 +810,6 @@ export function HoldoutScene({ locale }: Props) {
 			}
 			controls={
 				<RangeControl
-					inputScale={1}
 					label={l("Toy decision threshold", "示例决策阈值")}
 					value={threshold}
 					display={String(threshold)}

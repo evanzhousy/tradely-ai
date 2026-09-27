@@ -20,7 +20,6 @@ import {
 	ChoiceField,
 	Diagram,
 	PlaybackButton,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -285,16 +284,6 @@ export function GammaTermsScene({ locale }: Props) {
 							["price", l("Gamma price term", "Gamma 价格项")],
 						]}
 						onChange={setMeasure}
-					/>
-					<RangeControl
-						inputScale={100}
-						label={l("Underlying price change", "标的价格变动")}
-						value={move}
-						display={money(move)}
-						min={data.moveRange[0]}
-						max={data.moveRange[1]}
-						step={25}
-						onChange={setMove}
 					/>
 				</FieldGroup>
 			}
@@ -697,27 +686,15 @@ export function GammaSensitivityScene({ locale }: Props) {
 				</Diagram>
 			}
 			controls={
-				<>
-					<SelectField
-						label={l("Sensitivity snapshot", "敏感度快照")}
-						value={id}
-						options={data.sensitivity.map((s) => [
-							s.id,
-							s.label[locale === "zh" ? 1 : 0],
-						])}
-						onChange={setId}
-					/>
-					<RangeControl
-						inputScale={100}
-						label={l("Exploratory underlying move", "探索标的变动")}
-						value={move}
-						display={money(move)}
-						min={data.moveRange[0]}
-						max={data.moveRange[1]}
-						step={25}
-						onChange={setMove}
-					/>
-				</>
+				<SelectField
+					label={l("Sensitivity snapshot", "敏感度快照")}
+					value={id}
+					options={data.sensitivity.map((s) => [
+						s.id,
+						s.label[locale === "zh" ? 1 : 0],
+					])}
+					onChange={setId}
+				/>
 			}
 			details={
 				<>

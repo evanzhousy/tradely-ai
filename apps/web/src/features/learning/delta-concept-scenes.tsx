@@ -19,7 +19,6 @@ import {
 	ChoiceField,
 	Diagram,
 	PlaybackButton,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -238,16 +237,6 @@ export function DeltaSlopeScene({ locale }: Props) {
 			controls={
 				<FieldGroup>
 					<OptionField locale={locale} option={option} onChange={setId} />
-					<RangeControl
-						inputScale={100}
-						label={l("Underlying price change", "标的价格变动")}
-						value={move}
-						display={money(move, true)}
-						min={data.localMoveRange[0]}
-						max={data.localMoveRange[1]}
-						step={5}
-						onChange={setMove}
-					/>
 				</FieldGroup>
 			}
 			details={
@@ -457,15 +446,6 @@ export function DeltaPositionScene({ locale }: Props) {
 						])}
 						onChange={(value) => setMultiplier(Number(value))}
 					/>
-					<RangeControl
-						inputScale={1}
-						label={l("Number of contracts", "合约张数")}
-						value={quantity}
-						display={String(quantity)}
-						min={1}
-						max={data.quantityMax}
-						onChange={setQuantity}
-					/>
 				</FieldGroup>
 			}
 			details={
@@ -666,16 +646,6 @@ export function DeltaLimitsScene({ locale }: Props) {
 								playback.select(playback.frame);
 								setCondition(value);
 							}}
-						/>
-						<RangeControl
-							inputScale={100}
-							label={l("Stress-test underlying move", "压力测试标的变动")}
-							value={move}
-							display={money(move, true)}
-							min={curve.moveRange[0]}
-							max={curve.moveRange[1]}
-							step={5}
-							onChange={chooseMove}
 						/>
 					</FieldGroup>
 					<PlaybackButton

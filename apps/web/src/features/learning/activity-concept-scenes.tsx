@@ -214,17 +214,6 @@ export function DenominatorScene({ locale }: Props) {
 						]}
 						onChange={setAvailable}
 					/>
-					{denominator !== null ? (
-						<RangeControl
-							inputScale={1}
-							label={l("What-if denominator", "假设分母")}
-							value={denominator}
-							display={number(denominator)}
-							min={0}
-							max={data.denominatorMax}
-							onChange={change}
-						/>
-					) : null}
 				</FieldGroup>
 			}
 			details={
@@ -566,7 +555,6 @@ export function ScreeningScene({ locale }: Props) {
 				<FieldGroup>
 					<MetricField locale={locale} metric={metric} onChange={setMetric} />
 					<RangeControl
-						inputScale={1}
 						label={l("Declared screening threshold", "声明筛选阈值")}
 						value={threshold}
 						display={multiple(threshold)}

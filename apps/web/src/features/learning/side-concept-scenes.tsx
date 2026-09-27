@@ -22,7 +22,6 @@ import {
 	ChoiceField,
 	Diagram,
 	PlaybackButton,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -96,11 +95,8 @@ export function LocationMapScene({ locale }: Props) {
 		40 +
 		((p - data.priceRange[0]) / (data.priceRange[1] - data.priceRange[0])) *
 			280;
-	const pause = () => playback.select(playback.frame);
-	const changePrice = (value: number) => {
-		pause();
-		setCustomPrice(value);
-	};
+	// The guided setter pauses playback itself; seeking here would discard the new price.
+	const changePrice = (value: number) => setCustomPrice(value);
 	return (
 		<SceneLayout
 			companion={
@@ -195,8 +191,6 @@ export function LocationMapScene({ locale }: Props) {
 							max={data.priceRange[1]}
 							step={1}
 							value={price}
-							onPointerDown={pause}
-							onKeyDown={pause}
 							onChange={(e) => changePrice(Number(e.target.value))}
 						/>
 					</foreignObject>
@@ -239,17 +233,6 @@ export function LocationMapScene({ locale }: Props) {
 			controls={
 				<>
 					<FieldGroup>
-						<div onPointerDownCapture={pause} onKeyDownCapture={pause}>
-							<RangeControl
-								inputScale={100}
-								label={l("Execution price", "成交价格")}
-								value={price}
-								display={money(price)}
-								min={data.priceRange[0]}
-								max={data.priceRange[1]}
-								onChange={changePrice}
-							/>
-						</div>
 						<ChoiceField
 							label={l("Explore a region", "探索位置区间")}
 							value={

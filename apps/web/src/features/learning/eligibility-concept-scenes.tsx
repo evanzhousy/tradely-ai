@@ -195,7 +195,6 @@ export function EligibilityRulesScene({ locale }: Props) {
 						}}
 					/>
 					<RangeControl
-						inputScale={1}
 						label={l("Minimum contract volume", "最低成交张数")}
 						value={minimum}
 						display={number(minimum)}

@@ -246,7 +246,6 @@ export function NeighborhoodExploreScene({ locale }: Props) {
 						onChange={choose}
 					/>
 					<RangeControl
-						inputScale={1}
 						label={l("Hypothetical reference spot", "假设参考现价")}
 						value={spot}
 						display={`$${spot}`}

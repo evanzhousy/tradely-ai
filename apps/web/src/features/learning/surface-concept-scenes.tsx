@@ -19,7 +19,6 @@ import type { Locale } from "@/i18n/messages";
 import {
 	ChoiceField,
 	Diagram,
-	RangeControl,
 	SceneLayout,
 	SelectField,
 	SvgText,
@@ -558,15 +557,6 @@ export function SurfaceInterpolationScene({ locale }: Props) {
 							["missing", l("Later reference withheld", "后期参考被隐藏")],
 						]}
 						onChange={setCoverage}
-					/>
-					<RangeControl
-						inputScale={1}
-						label={l("Target calendar days", "目标自然日数")}
-						value={days}
-						display={String(days)}
-						min={data.targetRange[0]}
-						max={data.targetRange[1]}
-						onChange={setDays}
 					/>
 				</FieldGroup>
 			}
