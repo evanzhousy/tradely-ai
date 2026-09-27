@@ -64,6 +64,8 @@ export type ResultItem = {
 	id: string;
 	label: string;
 	value: string;
+	/** Counts to `to` instead of swapping the text; `format(to)` must equal `value`. */
+	tween?: { to: number; format: (value: number) => string };
 	/** Extra line under the value, such as "was 100". */
 	note?: string;
 	tone?: "gain" | "loss" | "neutral";

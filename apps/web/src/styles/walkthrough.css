@@ -470,3 +470,34 @@
 	stroke-width: 4px;
 	stroke-linejoin: round;
 }
+
+/* A marker the reader can drag: a soft ring and side chevrons say it slides sideways. */
+.wt-drag-ring {
+	fill: color-mix(in oklab, var(--diagram-accent) 12%, transparent);
+	stroke: color-mix(in oklab, var(--diagram-accent) 55%, transparent);
+	stroke-width: 1;
+	transition: fill 150ms ease-out;
+}
+.wt-drag-ring[data-dragging] {
+	fill: color-mix(in oklab, var(--diagram-accent) 24%, transparent);
+}
+.wt-drag-chevron {
+	fill: none;
+	stroke: var(--diagram-accent);
+	stroke-width: 1.75;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.wt-drag-area {
+	fill: none;
+	pointer-events: all;
+	cursor: ew-resize;
+	touch-action: pan-y;
+}
+.wt-drag-area[data-dragging] {
+	cursor: grabbing;
+}
+.wt-svg:has(.wt-drag-area) {
+	-webkit-user-select: none;
+	user-select: none;
+}

@@ -35,7 +35,7 @@ import {
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-playback";
 import { readingHoldMs } from "../visual-step";
-import { useTeachMotion } from "./stage";
+import { CountTo, useTeachMotion } from "./stage";
 import type { Phase, ResultItem, WalkthroughScene } from "./types";
 
 type FrameContextValue = { locale: Locale; phase: Phase; panel: ReactNode };
@@ -572,14 +572,19 @@ function ResultCard({ item }: { item: ResultItem }) {
 		>
 			<dt>{item.label}</dt>
 			<dd>
+				{/* A counted figure keeps its element so it can count; plain text re-enters on change. */}
 				<m.span
-					key={item.value}
+					key={item.tween ? undefined : item.value}
 					className="wt-result-value"
 					initial={motion.enabled ? { opacity: 0.2, y: 3 } : false}
 					animate={{ opacity: 1, y: 0 }}
 					transition={motion.fade}
 				>
-					{item.value}
+					{item.tween ? (
+						<CountTo value={item.tween.to} format={item.tween.format} />
+					) : (
+						item.value
+					)}
 				</m.span>
 				{item.note ? <span className="wt-result-note">{item.note}</span> : null}
 			</dd>

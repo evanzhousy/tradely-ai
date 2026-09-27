@@ -1,4 +1,5 @@
 import * as m from "motion/react-m";
+import { type PointerEvent, useRef, useState } from "react";
 import { signedUsd } from "@/content/world";
 import { Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
@@ -34,6 +35,18 @@ export type PayoffBand = {
 	tone?: "gain" | "loss" | "neutral";
 };
 
+/**
+ * Lets the reader drag one marker along the price axis by pressing anywhere on the plot.
+ * The lesson owns the value, and a range control stays the keyboard path to it.
+ */
+export type PayoffDrag = {
+	markerId: string;
+	min: number;
+	max: number;
+	step: number;
+	onChange: (x: number) => void;
+};
+
 const PAD_LEFT = 58;
 const PAD_RIGHT = 16;
 const PAD_TOP = 24;
@@ -53,6 +66,7 @@ export function PayoffChart({
 	lines,
 	markers = [],
 	bands = [],
+	drag,
 	xLabel,
 	title,
 	formatY = (value: number) => (value === 0 ? "$0" : signedUsd(value * 100, 0)),
@@ -67,6 +81,7 @@ export function PayoffChart({
 	lines: readonly PayoffLine[];
 	markers?: readonly PayoffMarker[];
 	bands?: readonly PayoffBand[];
+	drag?: PayoffDrag;
 	xLabel: string;
 	title?: string;
 	/** Axis labels for y values; defaults to signed whole dollars. */
@@ -75,6 +90,10 @@ export function PayoffChart({
 	formatX?: (value: number) => string;
 }) {
 	const motion = useTeachMotion();
+	const [dragging, setDragging] = useState(false);
+	const reported = useRef<number | null>(null);
+	// While dragging, everything tracks the pointer instead of taking the teaching pace.
+	const move = dragging ? motion.follow : motion.move;
 	const left = PAD_LEFT;
 	const right = width - PAD_RIGHT;
 	// A title too wide for the stage breaks at its " · " separators, one part per line.
@@ -100,6 +119,27 @@ export function PayoffChart({
 					`${i ? "L" : "M"}${x(px).toFixed(1)} ${y(py).toFixed(1)}`,
 			)
 			.join("");
+	const report = (event: PointerEvent<SVGRectElement>) => {
+		const ctm = event.currentTarget.getScreenCTM();
+		if (!drag || !ctm) return;
+		const px = new DOMPoint(event.clientX, event.clientY).matrixTransform(
+			ctm.inverse(),
+		).x;
+		const raw =
+			xRange[0] + ((px - left) / (right - left)) * (xRange[1] - xRange[0]);
+		const snapped =
+			drag.min + Math.round((raw - drag.min) / drag.step) * drag.step;
+		const next = Number(
+			Math.min(drag.max, Math.max(drag.min, snapped)).toFixed(6),
+		);
+		if (next === reported.current) return;
+		reported.current = next;
+		drag.onChange(next);
+	};
+	const release = () => {
+		reported.current = null;
+		setDragging(false);
+	};
 	const className = (tone: PayoffLine["tone"]) =>
 		tone === "position"
 			? "wt-line-position"
@@ -193,7 +233,7 @@ export function PayoffChart({
 							strokeDasharray={line.dashed ? "6 5" : undefined}
 							initial={false}
 							animate={{ d: path(line.points), opacity: line.hidden ? 0 : 1 }}
-							transition={motion.move}
+							transition={move}
 						/>
 						<m.text
 							x={right - 4}
@@ -201,7 +241,7 @@ export function PayoffChart({
 							className="wt-small wt-halo"
 							initial={false}
 							animate={{ y: labelY.get(line.id) }}
-							transition={motion.move}
+							transition={move}
 						>
 							{line.label}
 						</m.text>
@@ -210,6 +250,26 @@ export function PayoffChart({
 			})}
 			{markers.map((marker) => (
 				<g key={marker.id}>
+					{marker.id === drag?.markerId ? (
+						<>
+							<m.circle
+								r={13}
+								className="wt-drag-ring"
+								data-dragging={dragging || undefined}
+								initial={false}
+								animate={{ cx: x(marker.x), cy: y(marker.y) }}
+								transition={move}
+							/>
+							<m.path
+								className="wt-drag-chevron"
+								initial={false}
+								animate={{
+									d: `M${x(marker.x) - 17} ${y(marker.y) - 4}l-4 4 4 4M${x(marker.x) + 17} ${y(marker.y) - 4}l4 4-4 4`,
+								}}
+								transition={move}
+							/>
+						</>
+					) : null}
 					<m.circle
 						r={6}
 						className={
@@ -223,7 +283,7 @@ export function PayoffChart({
 						strokeWidth={1.5}
 						initial={false}
 						animate={{ cx: x(marker.x), cy: y(marker.y) }}
-						transition={motion.move}
+						transition={move}
 					/>
 					{marker.label ? (
 						<m.text
@@ -238,15 +298,44 @@ export function PayoffChart({
 							initial={false}
 							animate={{
 								x: Math.min(Math.max(x(marker.x), left + 50), right - 50),
-								y: marker.labelBelow ? y(marker.y) + 22 : y(marker.y) - 14,
+								// A draggable marker's label clears its ring.
+								y:
+									y(marker.y) +
+									(marker.labelBelow ? 22 : -14) *
+										(marker.id === drag?.markerId ? 1.4 : 1),
 							}}
-							transition={motion.move}
+							transition={move}
 						>
 							{marker.label}
 						</m.text>
 					) : null}
 				</g>
 			))}
+			{drag ? (
+				// Over the whole plot so a press anywhere moves the marker; vertical swipes still scroll.
+				<rect
+					x={left}
+					y={top}
+					width={right - left}
+					height={bottom - top}
+					className="wt-drag-area"
+					data-dragging={dragging || undefined}
+					onPointerDown={(event) => {
+						if (event.button !== 0) return;
+						event.currentTarget.setPointerCapture(event.pointerId);
+						setDragging(true);
+						// A touch waits to move, so a tap on the way to scrolling leaves the marker.
+						if (event.pointerType !== "touch") report(event);
+					}}
+					onPointerMove={(event) => {
+						if (event.currentTarget.hasPointerCapture(event.pointerId))
+							report(event);
+					}}
+					onPointerUp={release}
+					onPointerCancel={release}
+					onLostPointerCapture={release}
+				/>
+			) : null}
 		</g>
 	);
 }

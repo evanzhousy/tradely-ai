@@ -1,4 +1,4 @@
-import type { Transition } from "motion/react";
+import { animate, type Transition } from "motion/react";
 import {
 	createContext,
 	type ReactNode,
@@ -27,6 +27,10 @@ export function usePrefersReducedMotion() {
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const none: Transition = { duration: 0 };
+// Module constants, so each transition keeps its identity between renders.
+const move: Transition = { type: "tween", duration: 0.55, ease };
+const fade: Transition = { type: "tween", duration: 0.35, ease };
+const follow: Transition = { type: "tween", duration: 0.12, ease: "easeOut" };
 
 /**
  * Teaching motion: long enough to follow a cause to its effect, and off when the reader
@@ -36,15 +40,45 @@ export function useTeachMotion() {
 	const reduced = usePrefersReducedMotion();
 	return {
 		enabled: !reduced,
-		move: (reduced
-			? none
-			: { type: "tween", duration: 0.55, ease }) satisfies Transition,
-		fade: (reduced
-			? none
-			: { type: "tween", duration: 0.35, ease }) satisfies Transition,
+		move: reduced ? none : move,
+		fade: reduced ? none : fade,
 		after: (delay: number): Transition =>
 			reduced ? none : { type: "tween", duration: 0.45, ease, delay },
+		/** Tracks a drag: quick enough to stay under the pointer, smooth across snapped steps. */
+		follow: reduced ? none : follow,
 	};
+}
+
+/**
+ * A figure that counts from the number it showed last to `value`, so a change reads as a
+ * change rather than a swap. `format` renders every step, including the last.
+ */
+export function CountTo({
+	value,
+	format,
+}: {
+	value: number;
+	format: (value: number) => string;
+}) {
+	const { enabled, fade } = useTeachMotion();
+	const [shown, setShown] = useState(value);
+	const current = useRef(value);
+	useEffect(() => {
+		if (!enabled) {
+			current.current = value;
+			setShown(value);
+			return;
+		}
+		const controls = animate(current.current, value, {
+			...fade,
+			onUpdate: (latest) => {
+				current.current = latest;
+				setShown(latest);
+			},
+		});
+		return () => controls.stop();
+	}, [value, enabled, fade]);
+	return format(shown);
 }
 
 type StageContextValue = { width: number; hatch: string };
