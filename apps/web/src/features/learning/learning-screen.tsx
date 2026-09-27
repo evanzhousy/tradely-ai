@@ -84,6 +84,7 @@ import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
 import { OptionsRisksWalkthrough } from "./lessons/options-risks";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
+import { RankContractsWalkthrough } from "./lessons/rank-contracts";
 import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
@@ -97,7 +98,6 @@ import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
 import { LevelsConceptLab } from "./levels-concept-lab";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
-import { NeighborhoodConceptLab } from "./neighborhood-concept-lab";
 import { PacketConceptLab } from "./packet-concept-lab";
 import { PerformanceConceptLab } from "./performance-concept-lab";
 import { PnlConceptLab } from "./pnl-concept-lab";
@@ -125,7 +125,7 @@ const conceptLabs = {
 	"audited-boundary": AuditedBoundaryWalkthrough,
 	"symbol-universe": SymbolUniverseWalkthrough,
 	"rank-symbols": RankSymbolsWalkthrough,
-	"rank-contracts": NeighborhoodConceptLab,
+	"rank-contracts": RankContractsWalkthrough,
 	"point-in-time-research": PointTimeConceptLab,
 	"cookbook-research-packet": PacketConceptLab,
 	"market-recap": RecapConceptLab,

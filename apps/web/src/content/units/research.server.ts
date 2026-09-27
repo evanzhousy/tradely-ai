@@ -1,4 +1,3 @@
-import { neighborhoodConceptData } from "./neighborhood-concept.server";
 import { pointTimeConceptData } from "./point-time-concept.server";
 import "@tanstack/react-start/server-only";
 import {
@@ -266,10 +265,9 @@ export const researchUnits: TeachingUnit[] = [
 		id: "rank-contracts",
 		conceptLab: {
 			kind: "rank-contracts",
-			data: neighborhoodConceptData,
 			intro: t(
-				"Inspect strike and expiry context, compare neighborhood breadth, and audit missing, stale or outside-scope values before choosing a candidate.",
-				"检查行权价与到期上下文，比较邻域广度，并在选择候选前审计缺失、过时或范围外数值。",
+				"Read ALFA's Monday call volume across strikes and expiries, compare two expiries with the same total but different breadth, and audit a screen's top values before picking a candidate.",
+				"按行权价与到期日阅读 ALFA 周一看涨成交量，比较两个合计相同但广度不同的到期日，并在选出候选前审计筛选器的最高值。",
 			),
 		},
 		sources: [oi],
@@ -278,8 +276,8 @@ export const researchUnits: TeachingUnit[] = [
 			"合约邻域按行权价与到期日定位活动，同时固定标的、期权类型、时段及质量规则。现价可判断价内外状态，但该状态不告诉你该买哪张。到期切片改变可见行，不会自动纳入范围外合约。总活动与集中度需分开看：相同峰值可能广度不同，相同总量也可能分布不同。缺失不是零，前日值不能赢得当日比较。候选需要带邻近上下文进入下一项检查，形状或聚集不能证明价差策略、共同持有、积累或预测。",
 		),
 		example: t(
-			"Two 3×3 neighborhoods both total 8,000 and peak at 3,000. A has three nonzero cells (3,000, 2,500, 2,500). B has nine (3,000, four 750s, four 500s). B is broader despite identical peak and total. With spot 103, a 105 call is OTM; a 100 call is ITM. Both can be research candidates under a stated question.",
-			"两个 3×3 邻域总量均 8,000、峰值均 3,000。A 有三个非零格（3,000、2,500、2,500），B 有九个（3,000、四个 750、四个 500）。峰值和总量相同，B 仍更广。现价 103 时，105 看涨为虚值、100 看涨为实值；在明确问题下两者都可成为研究候选。",
+			"ALFA's Sep 20 and Nov 15 calls both total 695 contracts and peak at 380. Sep 20 traded in two strikes (380 and 315); Nov 15 in five (380, two 95s, 70 and 55). Nov 15 is broader despite identical peak and total. With ALFA at $100.02, a 105 call is out of the money and a 100 call in the money. Both can be research candidates under a stated question.",
+			"ALFA 9月20日 与 11月15日 看涨合计均 695 张、峰值均 380。9月20日 只在两个行权价成交（380 与 315），11月15日 在五个（380、两个 95、70 与 55）。峰值和总量相同，11月15日 仍更广。ALFA 为 $100.02 时，105 看涨为虚值、100 看涨为实值；在明确问题下两者都可成为研究候选。",
 		),
 		misconception: t(
 			"Count observed nonzero cells without converting missing values to zeros. View controls change visibility, not the declared source data or eligibility.",

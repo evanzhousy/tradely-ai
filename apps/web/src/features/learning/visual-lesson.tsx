@@ -51,8 +51,8 @@ const lessons = {
 		})),
 	),
 	"rank-contracts": lazy(() =>
-		import("./neighborhood-concept-lab").then((m) => ({
-			default: m.NeighborhoodConceptLab,
+		import("./lessons/rank-contracts").then((m) => ({
+			default: m.RankContractsWalkthrough,
 		})),
 	),
 	"point-in-time-research": lazy(() =>
