@@ -24,6 +24,11 @@ export const changelog = [
 					"After the steps, change the example and watch the diagram and its results follow.",
 			},
 			{
+				title: "Drag the price",
+				description:
+					"In lessons with a price chart, drag across the chart in Explore to move ALFA's price, with a mouse or a finger, and watch the results follow as you go. A slider stays available for keyboard use.",
+			},
+			{
 				title: "One market throughout",
 				description:
 					"Quotes, trades, positions and account figures come from the same stock, option chain and trading days, so a number you meet in one lesson means the same thing in the next.",
