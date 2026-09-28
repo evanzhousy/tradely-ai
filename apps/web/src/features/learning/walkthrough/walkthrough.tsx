@@ -112,6 +112,11 @@ export function Walkthrough({
 	const finished = useRef(new Set<string>());
 	const explored = useRef(new Set<string>());
 	const restored = useRef(false);
+	/**
+	 * Where focus goes after a control removes itself, such as "Try it yourself" or
+	 * "Next scene"; otherwise a keyboard or screen reader user is left on the page body.
+	 */
+	const focusNext = useRef<"heading" | "controls" | "feedback" | null>(null);
 	const scene = scenes.find((item) => item.id === sceneId) ?? scenes[0];
 	const index = scenes.indexOf(scene);
 	const last = scene.beats.length - 1;
@@ -201,6 +206,7 @@ export function Walkthrough({
 
 	const startExplore = () => {
 		if (!scene.explore) return;
+		focusNext.current = "controls";
 		record("visual_lesson_scene_started", "manual");
 		record("visual_lesson_explored");
 		setAutoplay(false);
@@ -209,6 +215,7 @@ export function Walkthrough({
 	};
 
 	const choose = (choice: string) => {
+		focusNext.current = "feedback";
 		setPredictions((all) => ({ ...all, [scene.id]: choice }));
 		// Play on from the setup; feedback appears once the answering step is on screen.
 		goTo(revealAt === 0 ? 0 : Math.min(1, last));
@@ -258,11 +265,34 @@ export function Walkthrough({
 		if (autoplay && beat === last && phase === "watch") setAutoplay(false);
 	}, [autoplay, beat, last, phase]);
 
+	useEffect(() => {
+		const target = focusNext.current;
+		const element = root.current;
+		if (!target || !element) return;
+		focusNext.current = null;
+		const heading = element.querySelector<HTMLElement>(`[id="${headingId}"]`);
+		const wanted =
+			target === "controls"
+				? element.querySelector<HTMLElement>(
+						".wt-controls :is(input, button, [role=slider], [tabindex='0'])",
+					)
+				: target === "feedback"
+					? element.querySelector<HTMLElement>("[data-focus=feedback]")
+					: heading;
+		(wanted ?? heading)?.focus();
+	});
+
 	const lesson = lessonId ? getLessonById(lessonId) : undefined;
 	const nextLesson = lesson ? getNextLesson(lesson.slug) : undefined;
 	const onward =
 		index < scenes.length - 1 ? (
-			<Button size="sm" onClick={() => openScene(scenes[index + 1])}>
+			<Button
+				size="sm"
+				onClick={() => {
+					focusNext.current = "heading";
+					openScene(scenes[index + 1]);
+				}}
+			>
 				{t(copy.nextScene)}
 				<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 			</Button>
@@ -312,6 +342,7 @@ export function Walkthrough({
 					type="button"
 					className="wt-link"
 					onClick={() => {
+						focusNext.current = "heading";
 						setPhase("watch");
 						record("visual_lesson_scene_started", "manual");
 					}}
@@ -325,6 +356,8 @@ export function Walkthrough({
 					<m.div
 						className="wt-panel"
 						data-kind={prediction === scene.predict.answer ? "right" : "wrong"}
+						data-focus="feedback"
+						tabIndex={-1}
 						initial={motion.enabled ? { opacity: 0, y: 6 } : false}
 						animate={{ opacity: 1, y: 0 }}
 						transition={motion.fade}
@@ -352,7 +385,14 @@ export function Walkthrough({
 				) : null}
 				{phase === "explore" ? (
 					<div className="wt-panel-actions">
-						<Button size="sm" variant="ghost" onClick={() => goTo(last)}>
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={() => {
+								focusNext.current = "heading";
+								goTo(last);
+							}}
+						>
 							<ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
 							{t(copy.backToSteps)}
 						</Button>
@@ -409,7 +449,7 @@ export function Walkthrough({
 					className="flex min-w-0 flex-col gap-[inherit] text-[length:inherit]"
 				>
 					<div className="wt-head">
-						<h2 id={headingId} className="wt-title">
+						<h2 id={headingId} className="wt-title" tabIndex={-1}>
 							{t(scene.title)}
 						</h2>
 						<div className="wt-caption-stack">
