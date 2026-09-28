@@ -13,7 +13,6 @@ export function LocaleSwitcher() {
 	const { capture } = useAnalytics();
 	return (
 		<div className="relative inline-flex items-center">
-			<span className="sr-only">{t("language.label")}</span>
 			<LanguagesIcon
 				className="pointer-events-none absolute left-2.5 size-4 text-muted-foreground"
 				aria-hidden="true"
@@ -34,7 +33,12 @@ export function LocaleSwitcher() {
 				className="h-9 rounded-2xl border border-border bg-background pr-7 pl-8 font-medium text-foreground text-xs outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30"
 			>
 				{localeOptions.map((option) => (
-					<NativeSelectOption key={option.value} value={option.value}>
+					// Each language is named in itself, so it is read in its own language.
+					<NativeSelectOption
+						key={option.value}
+						value={option.value}
+						lang={option.value}
+					>
 						{t(option.labelKey)}
 					</NativeSelectOption>
 				))}

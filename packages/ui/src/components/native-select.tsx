@@ -8,9 +8,12 @@ import {
 	type ReactNode,
 } from "react";
 
-type NativeSelectProps = {
-	"aria-label"?: string;
-	"aria-labelledby"?: string;
+/** A select needs a name its readers can hear, in the page's language. */
+type NativeSelectName =
+	| { "aria-label": string; "aria-labelledby"?: string }
+	| { "aria-label"?: string; "aria-labelledby": string };
+
+type NativeSelectProps = NativeSelectName & {
 	children: ReactNode;
 	className?: string;
 	disabled?: boolean;
@@ -25,6 +28,8 @@ type NativeSelectProps = {
 type NativeSelectOptionProps = {
 	children: ReactNode;
 	disabled?: boolean;
+	/** The option's language when it differs from the page's, such as a language name. */
+	lang?: string;
 	value: string | number;
 };
 
@@ -72,7 +77,7 @@ function NativeSelect({
 	const options = collectOptions(children);
 	return (
 		<Select.Root
-			aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : "Select option")}
+			aria-label={ariaLabel}
 			aria-labelledby={ariaLabelledBy}
 			className={cn("group/native-select w-fit", className)}
 			isDisabled={disabled}
@@ -111,7 +116,11 @@ function NativeSelect({
 									: String(option.value)
 							}
 						>
-							{option.children}
+							{option.lang ? (
+								<span lang={option.lang}>{option.children}</span>
+							) : (
+								option.children
+							)}
 							<ListBox.ItemIndicator />
 						</ListBox.Item>
 					))}
