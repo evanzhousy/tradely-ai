@@ -4,9 +4,22 @@ import { toast } from "@tradely/ui/components/toast";
 import { CheckIcon, CreditCardIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { useAnalytics } from "@/analytics/context";
-import { billingActionFailureReason } from "@/analytics/events";
+import {
+	type BillingActionFailureReason,
+	billingActionFailureReason,
+} from "@/analytics/events";
+import type { MessageKey } from "@/i18n/messages";
 import { useI18n } from "@/i18n/provider";
 import { openCustomerPortal, restoreCoursePass } from "@/server/billing";
+
+/** Billing errors come back from the server in English, so each reason has its own copy. */
+const failureMessage: Record<BillingActionFailureReason, MessageKey> = {
+	sign_in_required: "pricing.signInHistory",
+	already_active: "pricing.billingAlreadyActive",
+	no_customer: "pricing.billingNoCustomer",
+	not_found: "pricing.billingNotFound",
+	unavailable: "pricing.billingUnavailable",
+};
 
 export function PricingAccountActions({
 	canManageBilling,
@@ -41,11 +54,7 @@ export function PricingAccountActions({
 			if (reason === "unavailable") {
 				captureException(error, { source: "billing_action", action: "portal" });
 			}
-			toast.error(
-				error instanceof Error
-					? error.message
-					: t("pricing.billingUnavailable"),
-			);
+			toast.error(t(failureMessage[reason]));
 			setPending(null);
 		}
 	};
@@ -78,11 +87,7 @@ export function PricingAccountActions({
 					action: "course_pass_restore",
 				});
 			}
-			toast.error(
-				error instanceof Error
-					? error.message
-					: t("pricing.billingUnavailable"),
-			);
+			toast.error(t(failureMessage[reason]));
 		} finally {
 			setPending(null);
 		}

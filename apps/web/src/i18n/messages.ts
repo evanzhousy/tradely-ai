@@ -314,6 +314,10 @@ const messages = {
 		"pricing.verifySuccess": "Previous purchase verified",
 		"pricing.verifyFailure": "The course pass purchase could not be verified",
 		"pricing.billingUnavailable": "Billing is unavailable",
+		"pricing.billingNoCustomer": "No billing record is linked to this account",
+		"pricing.billingNotFound":
+			"No previous purchase was found for this account",
+		"pricing.billingAlreadyActive": "This purchase is already verified",
 		"footer.description":
 			"Evidence-led options learning for traders who want a repeatable research process.",
 		"footer.partner":
@@ -622,6 +626,9 @@ const messages = {
 		"pricing.verifySuccess": "课程终身访问权已验证",
 		"pricing.verifyFailure": "无法验证课程通行证购买",
 		"pricing.billingUnavailable": "账单服务暂不可用",
+		"pricing.billingNoCustomer": "此账户没有关联的账单记录",
+		"pricing.billingNotFound": "未找到此账户的历史购买",
+		"pricing.billingAlreadyActive": "该购买已验证",
 		"footer.description":
 			"为希望建立可重复研究流程的交易者提供证据驱动的期权学习。",
 		"footer.partner": "TradingFlow 是独立运营的合作练习服务。",
