@@ -40,6 +40,7 @@ export function CheckYourself({
 		<section id="check-yourself" className="scroll-mt-24">
 			<DisclosurePanel
 				className="lesson-notes lesson-check"
+				headingLevel={2}
 				isExpanded={expanded}
 				onExpandedChange={(open) => {
 					setExpanded(open);

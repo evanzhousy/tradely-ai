@@ -10,7 +10,7 @@
 		line-height: 1.8;
 	}
 
-	.lesson-prose h2 {
+	.lesson-prose h3 {
 		margin-block: 2.5rem 0.75rem;
 		font-family: var(--font-heading);
 		font-size: 1.75rem;
@@ -19,7 +19,7 @@
 		line-height: 1.2;
 	}
 
-	.lesson-prose h3 {
+	.lesson-prose h4 {
 		margin-block: 2rem 0.6rem;
 		font-family: var(--font-heading);
 		font-size: 1.25rem;

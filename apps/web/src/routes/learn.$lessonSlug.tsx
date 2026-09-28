@@ -145,12 +145,17 @@ function LessonPage() {
 			className={`lesson-shell mx-auto grid w-full max-w-[1480px] gap-0 transition-[grid-template-columns] duration-200 ${sidebarCollapsed ? "lg:grid-cols-[56px_1fr]" : "lg:grid-cols-[290px_1fr]"}`}
 		>
 			<aside
+				aria-labelledby="lesson-sidebar-title"
 				className={`lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r py-8 transition-[padding] duration-200 lg:block ${sidebarCollapsed ? "px-2" : "px-4"}`}
 			>
 				<Surface
 					variant="secondary"
 					className="sticky top-24 flex flex-col gap-6 rounded-none"
 				>
+					{/* Names the sidebar and heads its module headings. */}
+					<h2 id="lesson-sidebar-title" className="sr-only">
+						{t("course.curriculum")}
+					</h2>
 					<div
 						className={
 							sidebarCollapsed
@@ -254,6 +259,7 @@ function LessonPage() {
 					) : null}
 					<DisclosurePanel
 						className="lesson-notes"
+						headingLevel={2}
 						summary={locale === "zh" ? "快速回顾" : "Quick recap"}
 					>
 						<div className="mx-auto max-w-md py-4">
@@ -350,6 +356,7 @@ function LessonPage() {
 					<DisclosurePanel
 						id="lesson-notes"
 						className="lesson-notes"
+						headingLevel={2}
 						summary={locale === "zh" ? "笔记与来源" : "Notes & sources"}
 						isExpanded={notesExpanded}
 						onExpandedChange={setNotesExpanded}
@@ -363,6 +370,7 @@ function LessonPage() {
 					{getTradingFlowLab(lesson.id) ? (
 						<DisclosurePanel
 							className="lesson-notes"
+							headingLevel={2}
 							summary={
 								locale === "zh"
 									? "在 TradingFlow 中查看应用示例"
@@ -375,6 +383,7 @@ function LessonPage() {
 					{page.media ? (
 						<DisclosurePanel
 							className="lesson-notes"
+							headingLevel={2}
 							summary={locale === "zh" ? "补充视频" : "Companion video"}
 						>
 							<LessonVideo
@@ -391,6 +400,7 @@ function LessonPage() {
 					{histories.length > 0 || attempt ? (
 						<DisclosurePanel
 							className="lesson-notes"
+							headingLevel={2}
 							defaultExpanded={!!attempt}
 							summary={
 								locale === "zh" ? "以前保存的学习记录" : "Previously saved work"

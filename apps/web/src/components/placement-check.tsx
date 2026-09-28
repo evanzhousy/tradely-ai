@@ -268,6 +268,7 @@ export function PlacementCheck() {
 		<section id="placement" className="scroll-mt-24">
 			<DisclosurePanel
 				className="lesson-notes lesson-check"
+				headingLevel={2}
 				isExpanded={expanded}
 				onExpandedChange={setExpanded}
 				summary={

@@ -8,6 +8,8 @@ type DisclosurePanelProps = Omit<
 > & {
 	bodyClassName?: string;
 	children: ReactNode;
+	/** The trigger's heading level, which should follow the heading it sits under. */
+	headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 	contentClassName?: string;
 	indicatorClassName?: string;
 	summary: ReactNode;
@@ -22,6 +24,7 @@ function DisclosurePanel({
 	children,
 	className,
 	contentClassName,
+	headingLevel = 3,
 	indicatorClassName,
 	summary,
 	triggerClassName,
@@ -30,7 +33,7 @@ function DisclosurePanel({
 }: DisclosurePanelProps) {
 	return (
 		<Disclosure.Root className={className} {...props}>
-			<Disclosure.Heading>
+			<Disclosure.Heading level={headingLevel}>
 				<Disclosure.Trigger
 					className={cn(
 						"flex w-full items-center justify-between gap-3 text-left",

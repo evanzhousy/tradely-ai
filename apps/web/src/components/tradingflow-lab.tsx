@@ -98,14 +98,16 @@ function LabContent({ lab }: { lab: Lab }) {
 						</span>
 					</div>
 					<CardTitle>
-						<h2 id="tradingflow-lab-title" className="text-xl">
+						{/* The lesson page shows this card under its own section heading. */}
+						<h3 id="tradingflow-lab-title" className="text-xl">
 							{lab.title[locale]}
-						</h2>
+						</h3>
 					</CardTitle>
 					<CardDescription>{lab.goal[locale]}</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-6">
 					<DisclosurePanel
+						headingLevel={4}
 						summary={t("lab.sample")}
 						triggerClassName="font-medium underline underline-offset-4"
 						bodyClassName="pt-3"
@@ -120,13 +122,13 @@ function LabContent({ lab }: { lab: Lab }) {
 						<p className="mt-2 leading-7">{lab.sample[locale]}</p>
 					</DisclosurePanel>
 					<div>
-						<h3 className="font-semibold">{t("lab.settings")}</h3>
+						<h4 className="font-semibold">{t("lab.settings")}</h4>
 						<p className="mt-2 text-muted-foreground leading-7">
 							{lab.settings[locale]}
 						</p>
 					</div>
 					<div>
-						<h3 className="font-semibold">{t("lab.steps")}</h3>
+						<h4 className="font-semibold">{t("lab.steps")}</h4>
 						<ol className="mt-3 flex list-decimal flex-col gap-3 pl-5 leading-7">
 							{lab.steps.map((step) => (
 								<li key={step.en}>{step[locale]}</li>
@@ -134,7 +136,7 @@ function LabContent({ lab }: { lab: Lab }) {
 						</ol>
 					</div>
 					<div>
-						<h3 className="font-semibold">{t("lab.inspect")}</h3>
+						<h4 className="font-semibold">{t("lab.inspect")}</h4>
 						<p className="mt-2 leading-7">{lab.inspect[locale]}</p>
 					</div>
 					<div className="flex flex-col items-start gap-3">

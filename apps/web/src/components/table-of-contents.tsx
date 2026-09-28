@@ -18,6 +18,8 @@ export function TableOfContents({
 		<nav aria-label={label} className="table-of-contents">
 			<DisclosurePanel
 				defaultExpanded
+				// Pages open with it directly under their title.
+				headingLevel={2}
 				summary={
 					<>
 						<ListIcon size={15} aria-hidden="true" />

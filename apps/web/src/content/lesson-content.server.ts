@@ -9,14 +9,15 @@ export function getLessonBody(
 	const unit = getTeachingUnit(slug);
 	if (!unit) return undefined;
 	const heading = (en: string, zh: string) => (locale === "zh" ? zh : en);
+	// Level 3: the notes sit under the lesson page's "Notes & sources" heading.
 	return [
-		`## ${heading("Understand the concept", "理解概念")}`,
+		`### ${heading("Understand the concept", "理解概念")}`,
 		unit.explanation[locale],
-		`## ${heading("Worked example", "示例计算")}`,
+		`### ${heading("Worked example", "示例计算")}`,
 		unit.example[locale],
-		`## ${heading("Check the distinction", "检查关键区别")}`,
+		`### ${heading("Check the distinction", "检查关键区别")}`,
 		unit.misconception[locale],
-		`## ${heading("Background references", "背景参考")}`,
+		`### ${heading("Background references", "背景参考")}`,
 		...unit.sources.map((source) => `- [${source.title}](${source.href})`),
 		heading(
 			"All case numbers are authored teaching fixtures. Model conventions and assumptions are stated in the lesson; they are not observed positions or forecasts.",

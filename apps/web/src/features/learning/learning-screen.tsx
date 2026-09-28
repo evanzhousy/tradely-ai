@@ -359,15 +359,16 @@ function LearningScreenContent({
 					</span>
 				</div>
 				<CardTitle>
-					{/* In check mode the surrounding disclosure already shows this title. */}
-					<h2
-						id={`${id}-title`}
-						className={mode === "check" ? "sr-only" : undefined}
-					>
-						{mode === "check"
-							? text("checkTitle")
-							: (release?.title[locale] ?? text("label"))}
-					</h2>
+					{mode === "check" ? (
+						// The surrounding "Check yourself" heading titles this; the label only names the card.
+						<span id={`${id}-title`} className="sr-only">
+							{text("checkTitle")}
+						</span>
+					) : (
+						<h2 id={`${id}-title`}>
+							{release?.title[locale] ?? text("label")}
+						</h2>
+					)}
 				</CardTitle>
 				<CardDescription>
 					{mode === "check" ? text("checkIntro") : release?.intro[locale]}
