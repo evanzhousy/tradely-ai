@@ -1,9 +1,9 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
-		id: "walkthrough-lessons-unreleased",
-		date: "2026-09-27",
-		dateLabel: "Unreleased",
+		id: "2026-09-28-walkthrough-lessons",
+		date: "2026-09-28",
+		dateLabel: "September 28, 2026",
 		title: "Predict, watch and explore every lesson",
 		summary:
 			"All 41 lessons are rebuilt as step-by-step walkthroughs set in one shared market, where a fictional stock called ALFA and its options carry from lesson to lesson.",
@@ -46,9 +46,9 @@ export const changelog = [
 		],
 	},
 	{
-		id: "syllabus-revision-unreleased",
-		date: "2026-09-26",
-		dateLabel: "Unreleased",
+		id: "2026-09-28-syllabus-revision",
+		date: "2026-09-28",
+		dateLabel: "September 28, 2026",
 		title: "Start from zero, and check yourself",
 		summary:
 			"Four new lessons for complete beginners lead into a core path with two deeper branches, and every lesson ends with an optional check.",
