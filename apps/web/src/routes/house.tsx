@@ -120,6 +120,8 @@ function HousePage() {
 	}
 	return (
 		<main
+			// The explorer is English-only, like the guides, whatever the site language.
+			lang="en"
 			data-area={navigation.area}
 			data-transition={navigation.phase}
 			className="mx-auto min-h-svh max-w-[1600px] px-4 py-8 sm:px-8 sm:py-12"
