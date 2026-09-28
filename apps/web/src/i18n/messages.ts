@@ -2,6 +2,8 @@ export type Locale = "en" | "zh";
 
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_STORAGE_KEY = "tradely.locale";
+/** The same choice, readable by the server so pages render in it from the start. */
+export const LOCALE_COOKIE = "tradely.locale";
 
 const messages = {
 	en: {

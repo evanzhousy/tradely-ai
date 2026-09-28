@@ -15,6 +15,7 @@ import { AppProviders } from "../components/app-providers";
 import { CookieConsentBanner } from "../components/cookie-consent-banner";
 import { Footer } from "../components/footer";
 import Header from "../components/header";
+import { resolveLocale } from "../i18n/locale";
 import { useI18n } from "../i18n/provider";
 import appCss from "../index.css?url";
 import { useReloadOnStaleBuild } from "../lib/stale-build";
@@ -52,15 +53,18 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			},
 		],
 	}),
+	// Resolved per request on the server, so the page and its lang start in the reader's language.
+	loader: () => ({ locale: resolveLocale() }),
 	component: RootDocument,
 });
 
 function RootDocument() {
 	const location = useLocation();
+	const { locale } = Route.useLoaderData();
 	useReloadOnStaleBuild();
 	const isHouseScene = location.pathname === "/house";
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang={locale} suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
@@ -72,7 +76,7 @@ function RootDocument() {
 				  FIRST VIEWPORT: A clear learning thesis, study materials, one start action, sourced course figures, and the independent-practice caveat.
 				  FORM: Research Notebook; the homepage uses landing-* composition and the existing desk-* curriculum from DESIGN.md.
 				*/}
-				<AppProviders>
+				<AppProviders locale={locale}>
 					<LocalizedDocumentMetadata />
 					<RouteAnalytics />
 					<div className="flex min-h-svh flex-col">

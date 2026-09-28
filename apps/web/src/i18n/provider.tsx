@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 
+import { rememberLocale } from "./locale";
 import {
 	DEFAULT_LOCALE,
 	LOCALE_STORAGE_KEY,
@@ -25,16 +26,24 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-	const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+export function LocaleProvider({
+	children,
+	initialLocale = DEFAULT_LOCALE,
+}: {
+	children: ReactNode;
+	/** The language the server rendered in, so hydration starts from the same text. */
+	initialLocale?: Locale;
+}) {
+	const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
 	useEffect(() => {
-		const savedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-		setLocaleState(
-			savedLocale
-				? normalizeLocale(savedLocale)
-				: normalizeLocale(window.navigator.language),
-		);
+		// A choice saved before the cookie existed is only in this browser: apply it and
+		// give the server a copy. Without one, the server's Accept-Language pick stands.
+		const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+		if (!saved) return;
+		const chosen = normalizeLocale(saved);
+		setLocaleState(chosen);
+		rememberLocale(chosen);
 	}, []);
 
 	useEffect(() => {
@@ -44,6 +53,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 	const setLocale = useCallback((nextLocale: Locale) => {
 		setLocaleState(nextLocale);
 		window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
+		rememberLocale(nextLocale);
 		document.documentElement.lang = nextLocale;
 	}, []);
 
