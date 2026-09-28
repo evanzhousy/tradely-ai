@@ -30,7 +30,7 @@ import {
 import { Link as HeroLink } from "@tradely/ui/components/link";
 import { StepIndicator } from "@tradely/ui/components/step-indicator";
 import { BookmarkCheckIcon, BookOpenIcon, ListChecksIcon } from "lucide-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import {
 	clearPendingAuthSignIn,
 	markPendingAuthSignIn,
@@ -86,6 +86,22 @@ function SignInForm({
 		);
 		return () => window.clearTimeout(timer);
 	}, [cooldown]);
+
+	// Each step replaces the field the reader was in, so focus follows to the new one.
+	const firstStep = useRef(true);
+	useEffect(() => {
+		if (firstStep.current) {
+			firstStep.current = false;
+			return;
+		}
+		const field = document.getElementById(
+			step === "code" ? "auth-code" : "auth-email",
+		);
+		(field instanceof HTMLInputElement
+			? field
+			: field?.querySelector("input")
+		)?.focus();
+	}, [step]);
 
 	async function sendCode() {
 		setPending("email");
@@ -208,11 +224,13 @@ function SignInForm({
 							value={email}
 							onChange={(event) => setEmail(event.target.value)}
 							disabled={Boolean(pending)}
+							aria-invalid={error ? true : undefined}
+							aria-describedby={error ? "auth-error" : undefined}
 						/>
 					</Field>
 				) : (
 					<>
-						<p className="text-muted-foreground text-sm">
+						<p id="auth-code-sent" className="text-muted-foreground text-sm">
 							{t("auth.codeSent", { email })}
 						</p>
 						<Field data-invalid={Boolean(error)}>
@@ -229,7 +247,9 @@ function SignInForm({
 								onChange={(value) => setCode(value.replace(/\D/g, ""))}
 								isDisabled={Boolean(pending)}
 								isInvalid={Boolean(error)}
-								aria-describedby={error ? "auth-error" : undefined}
+								aria-describedby={
+									error ? "auth-code-sent auth-error" : "auth-code-sent"
+								}
 							>
 								<InputOTP.Group>
 									{Array.from({ length: 6 }, (_, index) => (
