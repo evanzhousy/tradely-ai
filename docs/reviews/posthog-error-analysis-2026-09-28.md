@@ -1,5 +1,34 @@
 # PostHog error analysis — 2026-09-28
 
+## Resolution follow-up — production delivery verified
+
+The highest-priority delivery finding is resolved. At approximately
+`2026-09-28T05:59Z`, a controlled production browser journey on
+`https://www.tradely.ai` granted analytics consent through the visible privacy
+UI, navigated from the home page to the first lesson, and then withdrew consent.
+
+The managed proxy returned HTTP 200 for configuration and ingestion. PostHog
+project 582920 received 11 bounded production events from the journey:
+
+- 1 `analytics_consent_updated`.
+- 2 `$pageview` and 2 matching `page_viewed` events.
+- 1 `$pageleave`, 1 `lesson_opened`, 1 `visual_lesson_scene_started`, and
+  1 `visual_lesson_scene_completed`.
+- 2 `$web_vitals` events.
+
+Every event carried `app=tradely`, `environment=production`,
+`host=www.tradely.ai`, `runtime=browser`, and release
+`6640e5e961580cdb2119954b8823b60adefff0eb`, matching the active production
+deployment. After choosing **Use necessary only**, the stored choice and cookie
+changed to `denied`; navigation to the next lesson produced zero managed-proxy
+requests over the observation period.
+
+No application change is warranted for this finding. The empty extraction
+windows represented no observed consented production exposure, not a broken
+client, proxy, or ingestion path. This controlled proof validates delivery and
+consent lifecycle; it does not establish organic traffic volume or overall
+production health.
+
 ## Executive assessment
 
 ### Doing well
@@ -20,16 +49,16 @@
   persistence issue remains narrowed to `learning_open`, and the prior
   `allowed` TypeError remains symbolicated without exposing learner or database
   payloads.
+- **Consented production delivery works end to end.** The follow-up verified the
+  visible opt-in, managed proxy, current release metadata, matching page-view
+  pair, lesson events, web vitals, withdrawal, and zero capture afterward.
 
 ### Doing poorly / needs attention
 
-- **Current PostHog production coverage is still absent.** Both 24-hour windows
-  contained zero captured production events and zero production page views,
-  while Vercel recorded hundreds of production responses. PostHog cannot
-  establish current application reliability from these windows.
-- **The analytics coverage gap has no confirmed cause.** This data-only run
-  cannot distinguish no consenting visitors from consent, managed-proxy, or
-  delivery failure.
+- **Organic PostHog exposure remains too sparse for a health conclusion.** The
+  fixed extraction windows contained zero production analytics events while
+  Vercel recorded hundreds of production responses. The later controlled proof
+  validates delivery but is not an organic traffic denominator.
 - **The prior deployment window contained one HTTP 500.** `GET /llms.txt`
   returned 500 on deployment `dpl_9mnXw9sPH3XwiYU6Vy9uAr1BS5C8`; no repository
   route owns that path, and the current window returns it as 404 instead.
@@ -42,16 +71,16 @@
 
 ## Highest-priority finding
 
-No production `$exception` events or Error Tracking issues were observed in the
+At fixed extraction time, no production `$exception` events or Error Tracking
+issues were observed in the
 current 24-hour window, preceding 24-hour window, or seven-day recurrence window.
 This is not a healthy-production verdict: PostHog also captured zero production
 events in both 24-hour windows. The latest production analytics event in the
 recurrence window remains 2026-09-24 15:54:02 -04.
 
-The next action is a normal, authorized, consented production delivery check
-through `https://z.tradely.ai`, followed by project-scoped verification of the
-expected `$pageview` / `page_viewed` pair. Preserve opt-in consent, DNT, bot
-filtering, sanitization, and the existing proxy boundary.
+The prescribed production delivery check subsequently passed, as documented in
+the resolution follow-up. The remaining limitation is lack of comparable organic
+exposure, not an unverified transport path.
 
 ## Scope, project verification, and execution status
 
@@ -72,10 +101,11 @@ The connector's authoritative `learn` command remained unavailable, so the run
 used discovered live tools and current PostHog documentation. All returned
 Error Tracking URLs used `/project/582920/`; no mixed-project result was used.
 
-This was a read-only operational run. It completed PostHog issue and raw-event
-reconciliation plus bounded Vercel deployment/status/path evidence. It remains
-blocked from a production-health conclusion by zero current PostHog production
-exposure. No browser activity was generated.
+The initial analysis was read-only and completed PostHog issue/raw-event
+reconciliation plus bounded Vercel deployment/status/path evidence. The
+authorized follow-up then generated one controlled consented production journey
+to verify delivery. It remains blocked from an overall production-health
+conclusion by lack of comparable organic exposure.
 
 ## Current versus prior activity
 
@@ -107,7 +137,7 @@ are the bounded evidence surface.
 
 | Priority | Finding | Impact and evidence | Confidence | Owner / disposition |
 | --- | --- | --- | --- | --- |
-| P2 observability | Current PostHog error coverage cannot be interpreted | Zero PostHog production events in both 24-hour windows, despite 216 Vercel 200 responses in each | High on the gap; unresolved cause | Analytics delivery/consent. Verify one ordinary consented production journey and ingestion. |
+| P2 observability | Fixed-window PostHog error coverage cannot establish health | Zero organic PostHog production events in both 24-hour windows, despite 216 Vercel 200 responses in each; controlled follow-up delivery passed | High | Delivery blocker resolved. Retain organic exposure counts with every error verdict. |
 | P3 | Prior stale hashed-asset 404 pattern | At least 23 displayed asset 404s in the prior window; none in the current returned path list; no affected people/sessions available | Medium | Deployment/cache boundary. Treat as possible cached-client skew; do not claim customer impact without journey/session evidence. |
 | P3 | One prior `/llms.txt` 500 | One request on `dpl_9mn...`; current path evidence shows one 404 instead; no repository route owner or recurrence | High on occurrence, low on product impact | Framework/fallback boundary. Confirm whether `llms.txt` is intentionally unsupported; otherwise add an explicit static/route response in a separately authorized implementation. |
 | P3 watch | Two current `/api/session/properties` 404s | Same timestamp and current deployment; no source owner, exception, or user impact | Low | Unattributed external/probe request. Revisit only if it recurs or gains an application caller. |
@@ -178,6 +208,10 @@ in all fixed windows. Raw events additionally show 79 local exceptions, excluded
 from production impact. Production exposure is non-zero only in the seven-day
 window and stopped on September 24.
 
+After fixed T, the controlled consented journey added 11 correctly attributed
+production events and proved the managed delivery path. Those events are
+verification fixtures and are not folded into the fixed-window or organic counts.
+
 Vercel's grouped runtime-error surface returned no clusters, but explicit
 status-code logs returned one prior 500. The status-code evidence therefore owns
 that occurrence. The prior detailed 404 read timed out; only the complete grouped
@@ -207,10 +241,13 @@ payload, payment data, or credentials are included.
    path breakdowns. The ungrouped prior 404 query timed out and is not evidence.
 8. Source search found no repository owner for `/llms.txt` or
    `/api/session/properties`.
+9. Production Browser follow-up verified visible grant and withdrawal, HTTP 200
+   managed-proxy delivery, current release attribution, the `$pageview` /
+   `page_viewed` pair, lesson events, web vitals, and zero proxy requests after
+   withdrawal.
 
 ## Remaining actions and maintenance
 
-- Verify fresh consented production delivery into PostHog project 582920.
 - Correlate the historical `learning_open` failure with authorized
   database/request evidence while preserving fixed-message redaction.
 - Check deployment-transition compatibility for cached hashed assets and
@@ -218,10 +255,12 @@ payload, payment data, or credentials are included.
 - Decide whether `/llms.txt` is intentionally unsupported; keep unsupported
   probes fail-closed as 404 rather than 500.
 
-No application code, deployment, issue state/settings, alerts, production data,
-or external communications changed. Browser verification was not performed, so
-GIF evidence is not applicable.
+No application code, deployment, issue state/settings, alerts, or external
+communications changed. Browser verification added one bounded consented journey
+to production analytics and then restored the browser to necessary-only consent.
+GIF evidence is delivered outside the repository with the final response.
 
 Runbook maintenance: added same-window Vercel status/path reconciliation when
 PostHog exposure is absent, and clarified that explicit 5xx logs outrank an empty
-grouped-runtime-error result.
+grouped-runtime-error result. Resolution follow-up: no additional durable runbook
+change; the existing production delivery gate worked as intended.

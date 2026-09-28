@@ -16,11 +16,10 @@ Last updated: 2026-09-28
 The 2026-09-28 read-only rerun completed project-scoped issue/raw-event
 reconciliation and same-window Vercel status/path analysis. See the
 [execution report](../docs/reviews/posthog-error-analysis-2026-09-28.md).
+An authorized follow-up then verified consented production delivery end to end:
+11 bounded events reached project 582920 with the active release, and withdrawal
+stopped subsequent managed-proxy requests. No application fix was required.
 
-- [ ] Verify fresh consented production delivery into project 582920 before using
-  empty error windows as a reliability signal. Both 24-hour windows had zero
-  captured production events; the last seven-day production event was on
-  2026-09-24, while Vercel still recorded current production requests.
 - [ ] Correlate the historical `Learning persistence unavailable` issue with
   authorized server/database evidence for `operation=learning_open` and release
   `f98df769...`. The application intentionally redacts raw database failures; do
