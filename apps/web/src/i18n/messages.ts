@@ -289,7 +289,7 @@ const messages = {
 		"video.unavailableDescription":
 			"The visual lesson and notes provide the complete explanation.",
 		"video.accessibleDescription":
-			"The written lesson below provides the complete accessible explanation and practice instructions.",
+			"The lesson notes on this page give the complete explanation and practice instructions in text.",
 		"video.browserFallback": "Your browser does not support HTML video.",
 		"lesson.navigation": "Lesson navigation",
 		"lesson.continueNote":
@@ -604,7 +604,7 @@ const messages = {
 		"video.unavailableTitle": "视频暂时不可用",
 		"video.unavailableDescription": "视觉课堂与课程笔记提供完整讲解。",
 		"video.accessibleDescription":
-			"下方文字课程提供完整的无障碍说明和练习步骤。",
+			"本页的课程笔记以文字提供完整讲解和练习步骤。",
 		"video.browserFallback": "你的浏览器不支持 HTML 视频。",
 		"lesson.navigation": "课程导航",
 		"lesson.continueNote":
