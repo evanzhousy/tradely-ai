@@ -1,7 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
-import { Tabs, TabsList, TabsTrigger } from "@tradely/ui/components/tabs";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@tradely/ui/components/tabs";
 import {
 	ArrowLeftIcon,
 	ArrowRightIcon,
@@ -369,7 +374,9 @@ export function Walkthrough({
 			data-phase={phase}
 			data-beat={beat}
 		>
+			{/* The open scene is the selected tab's panel, so each tab controls what it shows. */}
 			<Tabs
+				className="gap-[inherit]"
 				value={scene.id}
 				onValueChange={(value) => {
 					const next = scenes.find((item) => item.id === String(value));
@@ -394,122 +401,134 @@ export function Walkthrough({
 						</TabsTrigger>
 					))}
 				</TabsList>
-			</Tabs>
-			<div className="wt-head">
-				<h2 id={headingId} className="wt-title">
-					{t(scene.title)}
-				</h2>
-				<div className="wt-caption-stack">
-					<p className="wt-caption" aria-live={autoplay ? "off" : "polite"}>
-						{t(caption)}
-					</p>
-					{[
-						scene.predict?.prompt,
-						scene.explore?.prompt,
-						...scene.beats.map((item) => item.caption),
-					]
-						.filter((item): item is Copy => Boolean(item))
-						.map((item) => (
-							<p
-								key={item[0]}
-								className="wt-caption wt-caption-reserve"
-								aria-hidden="true"
-							>
-								{t(item)}
+				<TabsContent
+					// A new panel per scene: React Aria keeps a panel's first id, so a reused
+					// one would stay tied to the first scene's tab.
+					key={scene.id}
+					value={scene.id}
+					className="flex min-w-0 flex-col gap-[inherit] text-[length:inherit]"
+				>
+					<div className="wt-head">
+						<h2 id={headingId} className="wt-title">
+							{t(scene.title)}
+						</h2>
+						<div className="wt-caption-stack">
+							<p className="wt-caption" aria-live={autoplay ? "off" : "polite"}>
+								{t(caption)}
 							</p>
-						))}
-				</div>
-			</div>
-			<fieldset className="wt-nav">
-				<legend className="sr-only">{t(copy.controls)}</legend>
-				<Button
-					size="sm"
-					variant="ghost"
-					onClick={() => (phase === "explore" ? goTo(last) : goTo(beat - 1))}
-					disabled={phase === "predict" || (phase === "watch" && beat === 0)}
-				>
-					<ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
-					<span className="wt-nav-text">{t(copy.back)}</span>
-				</Button>
-				<ol className="wt-dots">
-					{scene.beats.map((item, i) => (
-						<li key={item.id}>
-							<button
-								type="button"
-								className="wt-dot"
-								data-state={
-									phase !== "watch" || i > beat
-										? "todo"
-										: i === beat
-											? "current"
-											: "done"
-								}
-								aria-current={
-									phase === "watch" && i === beat ? "step" : undefined
-								}
-								aria-label={`${t(copy.step)} ${i + 1}: ${t(item.label)}`}
-								disabled={phase === "predict"}
-								onClick={() => goTo(i)}
-							/>
-						</li>
-					))}
-				</ol>
-				<span className="wt-step-label">
-					{phase === "explore"
-						? t(copy.explore)
-						: phase === "predict"
-							? t(copy.predictFirst)
-							: `${beat + 1}/${scene.beats.length} · ${t(current.label)}`}
-				</span>
-				<span className="wt-nav-spacer" />
-				<Button
-					size="sm"
-					variant="ghost"
-					aria-label={autoplay ? t(copy.pause) : t(copy.play)}
-					aria-pressed={autoplay}
-					disabled={phase !== "watch" || beat === last}
-					onClick={() => setAutoplay((value) => !value)}
-				>
-					{autoplay ? (
-						<PauseIcon data-icon="inline-start" aria-hidden="true" />
-					) : (
-						<PlayIcon data-icon="inline-start" aria-hidden="true" />
-					)}
-					<span className="wt-nav-text">
-						{autoplay ? t(copy.pause) : t(copy.play)}
-					</span>
-				</Button>
-				<Button
-					size="sm"
-					variant="ghost"
-					aria-label={t(copy.restart)}
-					onClick={restart}
-				>
-					<RotateCcwIcon data-icon="inline-start" aria-hidden="true" />
-					<span className="wt-nav-text">{t(copy.restart)}</span>
-				</Button>
-				<Button
-					size="sm"
-					onClick={() => advance()}
-					disabled={phase !== "watch" || beat === last}
-				>
-					{t(copy.next)}
-					<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-				</Button>
-			</fieldset>
-			<FrameContext value={{ locale, phase, panel }}>
-				<View
-					locale={locale}
-					phase={phase}
-					beat={beat}
-					state={current.state}
-					explore={phase === "explore" ? explore : null}
-					setExplore={(next: unknown) => {
-						record("visual_lesson_explored");
-						setExplore(next);
-					}}
-				/>
-			</FrameContext>
+							{[
+								scene.predict?.prompt,
+								scene.explore?.prompt,
+								...scene.beats.map((item) => item.caption),
+							]
+								.filter((item): item is Copy => Boolean(item))
+								.map((item) => (
+									<p
+										key={item[0]}
+										className="wt-caption wt-caption-reserve"
+										aria-hidden="true"
+									>
+										{t(item)}
+									</p>
+								))}
+						</div>
+					</div>
+					<fieldset className="wt-nav">
+						<legend className="sr-only">{t(copy.controls)}</legend>
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={() =>
+								phase === "explore" ? goTo(last) : goTo(beat - 1)
+							}
+							disabled={
+								phase === "predict" || (phase === "watch" && beat === 0)
+							}
+						>
+							<ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
+							<span className="wt-nav-text">{t(copy.back)}</span>
+						</Button>
+						<ol className="wt-dots">
+							{scene.beats.map((item, i) => (
+								<li key={item.id}>
+									<button
+										type="button"
+										className="wt-dot"
+										data-state={
+											phase !== "watch" || i > beat
+												? "todo"
+												: i === beat
+													? "current"
+													: "done"
+										}
+										aria-current={
+											phase === "watch" && i === beat ? "step" : undefined
+										}
+										aria-label={`${t(copy.step)} ${i + 1}: ${t(item.label)}`}
+										disabled={phase === "predict"}
+										onClick={() => goTo(i)}
+									/>
+								</li>
+							))}
+						</ol>
+						<span className="wt-step-label">
+							{phase === "explore"
+								? t(copy.explore)
+								: phase === "predict"
+									? t(copy.predictFirst)
+									: `${beat + 1}/${scene.beats.length} · ${t(current.label)}`}
+						</span>
+						<span className="wt-nav-spacer" />
+						<Button
+							size="sm"
+							variant="ghost"
+							aria-label={autoplay ? t(copy.pause) : t(copy.play)}
+							aria-pressed={autoplay}
+							disabled={phase !== "watch" || beat === last}
+							onClick={() => setAutoplay((value) => !value)}
+						>
+							{autoplay ? (
+								<PauseIcon data-icon="inline-start" aria-hidden="true" />
+							) : (
+								<PlayIcon data-icon="inline-start" aria-hidden="true" />
+							)}
+							<span className="wt-nav-text">
+								{autoplay ? t(copy.pause) : t(copy.play)}
+							</span>
+						</Button>
+						<Button
+							size="sm"
+							variant="ghost"
+							aria-label={t(copy.restart)}
+							onClick={restart}
+						>
+							<RotateCcwIcon data-icon="inline-start" aria-hidden="true" />
+							<span className="wt-nav-text">{t(copy.restart)}</span>
+						</Button>
+						<Button
+							size="sm"
+							onClick={() => advance()}
+							disabled={phase !== "watch" || beat === last}
+						>
+							{t(copy.next)}
+							<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+						</Button>
+					</fieldset>
+					<FrameContext value={{ locale, phase, panel }}>
+						<View
+							locale={locale}
+							phase={phase}
+							beat={beat}
+							state={current.state}
+							explore={phase === "explore" ? explore : null}
+							setExplore={(next: unknown) => {
+								record("visual_lesson_explored");
+								setExplore(next);
+							}}
+						/>
+					</FrameContext>
+				</TabsContent>
+			</Tabs>
 			<p className="sr-only">{t(label)}</p>
 		</section>
 	);
