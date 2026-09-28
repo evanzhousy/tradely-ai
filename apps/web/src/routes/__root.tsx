@@ -17,6 +17,7 @@ import { Footer } from "../components/footer";
 import Header from "../components/header";
 import { useI18n } from "../i18n/provider";
 import appCss from "../index.css?url";
+import { useReloadOnStaleBuild } from "../lib/stale-build";
 import { localizedPageMetadata } from "../seo/pages";
 
 const TanStackRouterDevtools = lazy(() =>
@@ -56,6 +57,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
 	const location = useLocation();
+	useReloadOnStaleBuild();
 	const isHouseScene = location.pathname === "/house";
 	return (
 		<html lang="en" suppressHydrationWarning>

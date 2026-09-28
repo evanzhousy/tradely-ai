@@ -16,6 +16,7 @@ import { RefreshCwIcon } from "lucide-react";
 import { useEffect } from "react";
 import { capturePostHogExceptionWhenReady } from "@/analytics/client";
 import { analyticsRouteName } from "@/analytics/events";
+import { isStaleBuildError, reloadForStaleBuild } from "@/lib/stale-build";
 
 export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 	useEffect(() => {
@@ -23,6 +24,8 @@ export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 			source: "route_boundary",
 			route_name: analyticsRouteName(window.location.pathname),
 		});
+		// Code from before a deploy can't load its files; the current build can.
+		if (isStaleBuildError(error)) reloadForStaleBuild();
 	}, [error]);
 	return (
 		<main
