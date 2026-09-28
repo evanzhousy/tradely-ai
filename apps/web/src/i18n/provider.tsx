@@ -64,3 +64,14 @@ export function useI18n() {
 	if (!context) throw new Error("useI18n must be used within LocaleProvider");
 	return context;
 }
+
+const fallback: I18nContextValue = {
+	locale: DEFAULT_LOCALE,
+	setLocale: () => {},
+	t: (key, variables) => translate(DEFAULT_LOCALE, key, variables),
+};
+
+/** For screens that can render outside the provider, such as the root error page. */
+export function useI18nOrDefault() {
+	return useContext(I18nContext) ?? fallback;
+}

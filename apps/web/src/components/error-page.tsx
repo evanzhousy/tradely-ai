@@ -16,9 +16,11 @@ import { RefreshCwIcon } from "lucide-react";
 import { useEffect } from "react";
 import { capturePostHogExceptionWhenReady } from "@/analytics/client";
 import { analyticsRouteName } from "@/analytics/events";
+import { useI18nOrDefault } from "@/i18n/provider";
 import { isStaleBuildError, reloadForStaleBuild } from "@/lib/stale-build";
 
 export default function ErrorPage({ error, reset }: ErrorComponentProps) {
+	const { t } = useI18nOrDefault();
 	useEffect(() => {
 		void capturePostHogExceptionWhenReady(error, {
 			source: "route_boundary",
@@ -43,20 +45,17 @@ export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 						id="error-title"
 						className="font-semibold text-4xl text-display sm:text-5xl"
 					>
-						Something went wrong
+						{t("common.errorTitle")}
 					</h1>
-					<EmptyDescription>
-						Tradely could not load this page. Retry the request or return to the
-						learning hub.
-					</EmptyDescription>
+					<EmptyDescription>{t("common.errorDescription")}</EmptyDescription>
 				</EmptyHeader>
 				<EmptyContent>
 					<Button onClick={reset}>
 						<RefreshCwIcon data-icon="inline-start" aria-hidden="true" />
-						Retry
+						{t("common.retry")}
 					</Button>
 					<Link to="/" className={cn(buttonVariants({ variant: "outline" }))}>
-						Return home
+						{t("common.returnHome")}
 					</Link>
 				</EmptyContent>
 			</Empty>
