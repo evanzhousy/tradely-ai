@@ -2384,6 +2384,20 @@
 .platform-bento-language [data-slot="card-description"] {
 	color: inherit;
 }
+/* The card is primary-coloured, so its button takes the card's text colour; the page's
+   foreground is too light on it in the dark theme. */
+.platform-bento-language [data-slot="button"] {
+	border-color: color-mix(in oklab, currentColor 45%, transparent);
+	background: transparent;
+	color: inherit;
+}
+.platform-bento-language [data-slot="button"]:hover {
+	background: color-mix(in oklab, currentColor 12%, transparent);
+}
+.platform-bento-language [data-slot="button"]:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
 .platform-language-pair {
 	display: flex;
 	align-items: center;
