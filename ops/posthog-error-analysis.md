@@ -11,13 +11,11 @@ unless the user also authorizes implementation.
 
 ## Agent Handoff
 
-Last updated: 2026-09-27
+Last updated: 2026-09-28
 
-The 2026-09-27 read-only run completed project-scoped issue and raw-event
-reconciliation. See the
-[execution report](../docs/reviews/posthog-error-analysis-2026-09-27.md).
-The subsequent assessment-format update was documentation-only; no live analysis
-was rerun.
+The 2026-09-28 read-only rerun completed project-scoped issue/raw-event
+reconciliation and same-window Vercel status/path analysis. See the
+[execution report](../docs/reviews/posthog-error-analysis-2026-09-28.md).
 
 - [ ] Verify fresh consented production delivery into project 582920 before using
   empty error windows as a reliability signal. Both 24-hour windows had zero
@@ -28,9 +26,12 @@ was rerun.
   `f98df769...`. The application intentionally redacts raw database failures; do
   not weaken that boundary.
 - [ ] Preserve or explicitly version server-function response contracts across
-  deployments. The historical one-off `allowed` TypeError is now supported as a
-  cached client from `304c1ec...` reading `page.access` after the server response
-  in `f98df769...` removed that field; it did not recur in the current seven days.
+  deployments and check removed hashed assets during transitions. The historical
+  `allowed` TypeError and at least 23 displayed prior-window asset 404s support
+  cached-client/deployment skew; neither recurred in the current evidence.
+- [ ] Decide whether `/llms.txt` is intentionally unsupported. It returned one
+  500 in the prior window on `dpl_9mn...` and a 404 in the current path evidence;
+  unsupported probes should fail as a bounded 404 rather than a server error.
 
 ## Recommended Invocation
 
@@ -121,6 +122,12 @@ comparison error count with a bounded production-exposure check such as captured
 production page views, people, and latest event time. Zero errors with zero
 captured exposure is an observability limitation, not a production-health result;
 request logs can establish activity but are not a consented analytics denominator.
+When PostHog production exposure is zero or stale, query Vercel status-code counts
+for the same current and comparison windows, then inspect every 5xx and group 4xx
+by path. An empty grouped runtime-error result does not override an explicit 5xx
+response in runtime logs. Separate scanner paths from application routes and
+hashed assets; asset 404s can suggest deployment/cache skew but do not establish
+affected users without session or journey evidence.
 
 ### 2. Inventory and rank issues
 
