@@ -91,7 +91,10 @@ export default function Header() {
 						{t("nav.openTradingFlow")}
 						<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
 					</HeroLink>
-					<LocaleSwitcher />
+					{/* On phones the menu carries the language switcher, so the bar fits at 320px. */}
+					<div className="hidden sm:flex">
+						<LocaleSwitcher />
+					</div>
 					<ThemeToggle />
 					<AuthControls />
 					<Drawer.Root isOpen={menuOpen} onOpenChange={setMenuOpen}>

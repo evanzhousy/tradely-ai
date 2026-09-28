@@ -6,6 +6,7 @@ import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { ScrollShadow } from "@tradely/ui/components/scroll-shadow";
 import { Spinner } from "@tradely/ui/components/spinner";
 import { Surface } from "@tradely/ui/components/surface";
+import { cn } from "@tradely/ui/lib/utils";
 import {
 	ArrowLeftIcon,
 	ArrowRightIcon,
@@ -342,9 +343,13 @@ function LessonPage() {
 										to="/learn/$lessonSlug"
 										params={{ lessonSlug: first.slug }}
 										search={{}}
-										className={buttonVariants({
-											variant: path === "models" ? "default" : "outline",
-										})}
+										className={cn(
+											buttonVariants({
+												variant: path === "models" ? "default" : "outline",
+											}),
+											// Branch names are long; they wrap on phones instead of running off.
+											"h-auto min-h-10 max-w-full whitespace-normal py-2.5 text-left",
+										)}
 									>
 										{coursePaths[path][locale]}
 										<ArrowRightIcon data-icon="inline-end" />

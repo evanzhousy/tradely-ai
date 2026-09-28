@@ -12,7 +12,7 @@ export function TradelyBrand({ compactOnMobile = false }: TradelyBrandProps) {
 	return (
 		<Link
 			to="/"
-			className="inline-flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+			className="inline-flex shrink-0 items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
 			aria-label={t("brand.home")}
 		>
 			<img

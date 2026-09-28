@@ -26,6 +26,10 @@ export function SignInLink({
 			isDisabled={disabled}
 			className={cn(
 				buttonVariants({ size }),
+				// Long labels, such as "Sign in to manage previous purchases", wrap on narrow
+				// screens instead of running off them; one line keeps the button's height.
+				"h-auto max-w-full whitespace-normal text-center",
+				size === "sm" ? "min-h-9 py-2" : "min-h-10 py-2.5",
 				disabled && "pointer-events-none opacity-50",
 			)}
 			onPress={() => {
