@@ -347,8 +347,10 @@ function LessonPage() {
 											buttonVariants({
 												variant: path === "models" ? "default" : "outline",
 											}),
-											// Branch names are long; they wrap on phones instead of running off.
-											"h-auto min-h-10 max-w-full whitespace-normal py-2.5 text-left",
+											// Branch names are long; they wrap on phones instead of running off,
+											// and one line keeps HeroUI's button height at each breakpoint. HeroUI's
+											// icon margin only fits a fixed-height button, so it goes here.
+											"h-auto min-h-10 max-w-full whitespace-normal py-1.5 text-left md:min-h-9 [&>svg]:my-0",
 										)}
 									>
 										{coursePaths[path][locale]}

@@ -158,7 +158,10 @@ function LabContent({ lab }: { lab: Lab }) {
 							target="_blank"
 							rel="noopener noreferrer"
 							className={buttonVariants({
-								className: "h-auto min-h-10 max-w-full whitespace-normal",
+								// Wraps a long label; one line keeps HeroUI's height at each breakpoint,
+								// without HeroUI's icon margin, which only fits a fixed height.
+								className:
+									"h-auto min-h-10 max-w-full whitespace-normal py-1.5 md:min-h-9 [&>svg]:my-0",
 							})}
 							onClick={() =>
 								capture("tradingflow_link_opened", {
