@@ -869,9 +869,6 @@
 	max-height: calc(100svh - 24px);
 	overflow-y: auto;
 }
-.sign-in-form input {
-	min-height: 44px;
-}
 .sign-in-form [data-slot="alert"] {
 	overflow-wrap: anywhere;
 }

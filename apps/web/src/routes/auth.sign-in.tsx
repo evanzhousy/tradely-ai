@@ -195,6 +195,7 @@ function SignInForm({
 							type="button"
 							variant="outline"
 							size="lg"
+							className="w-full"
 							disabled={Boolean(pending) || !isLoaded}
 							aria-busy={pending === "google"}
 							onClick={() => void signInWithGoogle()}
@@ -267,6 +268,7 @@ function SignInForm({
 				) : null}
 				<InteractiveHoverButton
 					type="submit"
+					size="lg"
 					disabled={Boolean(pending)}
 					className="w-full"
 				>

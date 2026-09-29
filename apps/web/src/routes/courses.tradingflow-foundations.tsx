@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
+import { AppLink } from "@/components/app-link";
 import { BrandOwl } from "@/components/brand-owl";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseProgress } from "@/components/course-progress";
@@ -89,7 +90,7 @@ function CoursePage() {
 						<InteractiveHoverLink
 							size="lg"
 							render={
-								<Link
+								<AppLink
 									to="/learn/$lessonSlug"
 									params={{ lessonSlug: startLesson.slug }}
 								/>

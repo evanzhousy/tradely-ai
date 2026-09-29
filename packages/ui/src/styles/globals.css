@@ -280,12 +280,13 @@
 		color: var(--muted-foreground);
 		letter-spacing: 0;
 	}
-	.interactive-hover-button {
+	/* Height comes from the button size, like every other button. The doubled class
+	   keeps the gap when HeroUI's link-as-button rule would zero it. */
+	.button.interactive-hover-button {
 		position: relative;
 		overflow: hidden;
 		gap: 20px;
 		padding-inline: 20px;
-		min-height: 44px;
 	}
 	.interactive-hover-button-label {
 		display: inline-flex;

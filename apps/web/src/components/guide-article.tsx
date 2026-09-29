@@ -37,7 +37,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 						By Tradely · Updated{" "}
 						<time dateTime={guide.updated}>{guide.updated}</time> · English
 					</p>
-					<InteractiveHoverLink render={<HeroLink href="#example" />}>
+					<InteractiveHoverLink size="lg" render={<HeroLink href="#example" />}>
 						Try the free example
 					</InteractiveHoverLink>
 				</PageIntro>

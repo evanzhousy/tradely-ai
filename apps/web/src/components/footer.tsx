@@ -1,8 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
-import { Button, buttonVariants } from "@tradely/ui/components/button";
+import { Button } from "@tradely/ui/components/button";
+import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
 import { cn } from "@tradely/ui/lib/utils";
-import { ArrowRightIcon } from "lucide-react";
-
 import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
 import { getLocalizedCourse } from "@/i18n/course";
@@ -34,14 +33,17 @@ export function Footer() {
 						<h2>{t("home.finaleTitle")}</h2>
 						<p>{t("home.finaleDescription")}</p>
 						{firstLesson ? (
-							<AppLink
-								to="/learn/$lessonSlug"
-								params={{ lessonSlug: firstLesson.slug }}
-								className={buttonVariants({ size: "lg" })}
+							<InteractiveHoverLink
+								size="lg"
+								render={
+									<AppLink
+										to="/learn/$lessonSlug"
+										params={{ lessonSlug: firstLesson.slug }}
+									/>
+								}
 							>
 								{t("home.startFree")}
-								<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-							</AppLink>
+							</InteractiveHoverLink>
 						) : null}
 					</div>
 				</div>

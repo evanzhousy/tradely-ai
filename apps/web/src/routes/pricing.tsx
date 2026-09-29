@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
 	Alert,
@@ -14,9 +14,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@tradely/ui/components/card";
+import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
 import { Spinner } from "@tradely/ui/components/spinner";
 import { useEffect, useState } from "react";
 import { authIsConfigured, useAuth } from "@/auth/client";
+import { AppLink } from "@/components/app-link";
 import { PageIntro } from "@/components/page-intro";
 import { PricingAccountActions } from "@/components/pricing-actions";
 import { SignInLink } from "@/components/sign-in-link";
@@ -140,13 +142,17 @@ function PricingPage() {
 					count: tradingFlowCourse.lessons.length,
 				})}
 			>
-				<Link
-					to="/learn/$lessonSlug"
-					params={{ lessonSlug: "option-contracts" }}
-					className={buttonVariants({ size: "lg" })}
+				<InteractiveHoverLink
+					size="lg"
+					render={
+						<AppLink
+							to="/learn/$lessonSlug"
+							params={{ lessonSlug: "option-contracts" }}
+						/>
+					}
 				>
 					{t("home.startFree")}
-				</Link>
+				</InteractiveHoverLink>
 			</PageIntro>
 			<div className="access-options">
 				<Card>
@@ -159,12 +165,12 @@ function PricingPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<Link
+						<AppLink
 							to="/courses/tradingflow-foundations"
 							className={buttonVariants({ variant: "outline" })}
 						>
 							{t("common.returnCourse")}
-						</Link>
+						</AppLink>
 					</CardContent>
 				</Card>
 				<Card>
