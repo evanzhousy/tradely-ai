@@ -1,6 +1,7 @@
 import { Button } from "@tradely/ui/components/button";
 import { CloseButton } from "@tradely/ui/components/close-button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import { useEffect, useRef } from "react";
 
 import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
@@ -16,6 +17,22 @@ export function CookieConsentBanner() {
 		setConsent,
 	} = useAnalytics();
 	const { t } = useI18n();
+	const title = useRef<HTMLHeadingElement>(null);
+	// Opened from "Privacy choices", the panel takes focus so the reader knows it opened, and
+	// gives it back to that control when it closes. The first-visit banner never takes focus.
+	useEffect(() => {
+		if (!preferencesOpen) return;
+		const opener =
+			document.activeElement instanceof HTMLElement
+				? document.activeElement
+				: null;
+		title.current?.focus();
+		return () => {
+			const lost =
+				!document.activeElement || document.activeElement === document.body;
+			if (lost && opener?.isConnected) opener.focus();
+		};
+	}, [preferencesOpen]);
 	if (
 		!isConfigured ||
 		!isConsentResolved ||
@@ -42,7 +59,9 @@ export function CookieConsentBanner() {
 				<div className="flex flex-col gap-2">
 					<h2
 						id="analytics-consent-title"
-						className="pr-8 font-semibold text-sm"
+						ref={title}
+						tabIndex={-1}
+						className="pr-8 font-semibold text-sm outline-none"
 					>
 						{t("analytics.consentTitle")}
 					</h2>
