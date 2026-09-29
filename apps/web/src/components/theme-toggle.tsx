@@ -20,7 +20,7 @@ export function ThemeToggle() {
 	return (
 		<Tooltip>
 			<BeUiThemeToggle
-				className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+				className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}
 				iconClassName="size-4"
 				aria-label={label}
 			/>

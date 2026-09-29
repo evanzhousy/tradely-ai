@@ -22,6 +22,10 @@ type NativeSelectProps = NativeSelectName & {
 	onChange?: ChangeEventHandler<HTMLSelectElement>;
 	required?: boolean;
 	size?: "sm" | "default";
+	/** "outline" matches a small outline button, for a select that sits among buttons. */
+	variant?: "field" | "outline";
+	/** Shown before the value, inside the trigger. */
+	icon?: ReactNode;
 	value?: string | number;
 };
 
@@ -72,6 +76,8 @@ function NativeSelect({
 	onChange,
 	required,
 	size = "default",
+	variant = "field",
+	icon,
 	value,
 }: NativeSelectProps) {
 	const options = collectOptions(children);
@@ -95,12 +101,17 @@ function NativeSelect({
 			<Select.Trigger
 				id={id}
 				className={cn(
-					"min-w-0 rounded-3xl bg-input/50",
-					size === "sm" && "min-h-8",
+					"min-w-0 rounded-3xl",
+					variant === "outline"
+						? "h-9 min-h-0 items-center gap-1.5 border border-border bg-transparent py-0 ps-3 pe-8 font-medium text-default-foreground shadow-none hover:bg-default/60 md:h-8 [&>svg]:size-4 [&>svg]:shrink-0"
+						: cn("bg-input/50", size === "sm" && "min-h-8"),
 				)}
 			>
+				{icon}
 				<Select.Value />
-				<Select.Indicator />
+				<Select.Indicator
+					className={variant === "outline" ? "text-current" : undefined}
+				/>
 			</Select.Trigger>
 			<Select.Popover>
 				<ListBox>

@@ -27,9 +27,12 @@ export function SignInLink({
 			className={cn(
 				buttonVariants({ size }),
 				// Long labels, such as "Sign in to manage previous purchases", wrap on narrow
-				// screens instead of running off them; one line keeps the button's height.
+				// screens instead of running off them; one line keeps HeroUI's button height
+				// at each breakpoint.
 				"h-auto max-w-full whitespace-normal text-center",
-				size === "sm" ? "min-h-9 py-2" : "min-h-10 py-2.5",
+				size === "sm"
+					? "min-h-9 py-2 md:min-h-8 md:py-1.5"
+					: "min-h-10 py-2.5 md:min-h-9 md:py-2",
 				disabled && "pointer-events-none opacity-50",
 			)}
 			onPress={() => {

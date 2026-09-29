@@ -12,37 +12,33 @@ export function LocaleSwitcher() {
 	const { locale, setLocale, t } = useI18n();
 	const { capture } = useAnalytics();
 	return (
-		<div className="relative inline-flex items-center">
-			<LanguagesIcon
-				className="pointer-events-none absolute left-2.5 size-4 text-muted-foreground"
-				aria-hidden="true"
-			/>
-			<NativeSelect
-				value={locale}
-				onChange={(event) => {
-					const nextLocale = event.target.value as typeof locale;
-					if (nextLocale !== locale) {
-						capture("locale_changed", {
-							from_locale: locale,
-							to_locale: nextLocale,
-						});
-						setLocale(nextLocale);
-					}
-				}}
-				aria-label={t("language.label")}
-				className="h-9 rounded-2xl border border-border bg-background pr-7 pl-8 font-medium text-foreground text-xs outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30"
-			>
-				{localeOptions.map((option) => (
-					// Each language is named in itself, so it is read in its own language.
-					<NativeSelectOption
-						key={option.value}
-						value={option.value}
-						lang={option.value}
-					>
-						{t(option.labelKey)}
-					</NativeSelectOption>
-				))}
-			</NativeSelect>
-		</div>
+		<NativeSelect
+			value={locale}
+			onChange={(event) => {
+				const nextLocale = event.target.value as typeof locale;
+				if (nextLocale !== locale) {
+					capture("locale_changed", {
+						from_locale: locale,
+						to_locale: nextLocale,
+					});
+					setLocale(nextLocale);
+				}
+			}}
+			aria-label={t("language.label")}
+			// Sits among the header's buttons, so it takes the small outline button's look.
+			variant="outline"
+			icon={<LanguagesIcon aria-hidden="true" />}
+		>
+			{localeOptions.map((option) => (
+				// Each language is named in itself, so it is read in its own language.
+				<NativeSelectOption
+					key={option.value}
+					value={option.value}
+					lang={option.value}
+				>
+					{t(option.labelKey)}
+				</NativeSelectOption>
+			))}
+		</NativeSelect>
 	);
 }

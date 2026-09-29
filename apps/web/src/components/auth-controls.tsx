@@ -19,7 +19,7 @@ function ConfiguredAuthControls() {
 			<div
 				role="status"
 				aria-label={t("auth.loading")}
-				className="inline-flex h-8 w-16 items-center justify-center rounded-full border border-border/70 bg-muted/80 sm:w-20"
+				className="inline-flex h-9 w-16 items-center justify-center rounded-full border border-border/70 bg-muted/80 sm:w-20 md:h-8"
 			>
 				<Spinner size="sm" aria-hidden="true" />
 				<span className="sr-only">{t("auth.loading")}</span>
@@ -58,7 +58,7 @@ function ConfiguredAuthControls() {
 					variant: "ghost",
 					size: "sm",
 					className:
-						"inline-flex h-9 max-w-44 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2 [&>svg]:size-4 [&>svg]:shrink-0",
+						"inline-flex max-w-44 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2 [&>svg]:size-4 [&>svg]:shrink-0",
 				})}
 				aria-label={
 					email ? `${t("auth.account")}: ${email}` : t("auth.account")

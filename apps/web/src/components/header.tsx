@@ -102,7 +102,7 @@ export default function Header() {
 					<Drawer.Root isOpen={menuOpen} onOpenChange={setMenuOpen}>
 						<Drawer.Trigger
 							className={cn(
-								buttonVariants({ variant: "ghost", size: "icon" }),
+								buttonVariants({ variant: "ghost", size: "icon-sm" }),
 								"lg:hidden",
 							)}
 							aria-label={t("nav.openMenu")}
