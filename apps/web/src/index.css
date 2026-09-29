@@ -4,6 +4,12 @@
 @import "./styles/walkthrough.css";
 
 @layer components {
+	/* HeroUI zeroes the gap on a Link styled as a button, expecting its Link.Icon; ours use
+	   the button's inline icons, which need the button's gap back. */
+	.link.button:has(> [data-icon]) {
+		gap: calc(var(--spacing) * 2);
+	}
+
 	.lesson-prose {
 		color: var(--foreground);
 		font-size: 1rem;
