@@ -11,26 +11,26 @@ unless the user also authorizes implementation.
 
 ## Agent Handoff
 
-Last updated: 2026-09-28
+Last updated: 2026-09-29
 
-The 2026-09-28 read-only rerun completed project-scoped issue/raw-event
-reconciliation and same-window Vercel status/path analysis. See the
-[execution report](../docs/reviews/posthog-error-analysis-2026-09-28.md).
-An authorized follow-up then verified consented production delivery end to end:
-11 bounded events reached project 582920 with the active release, and withdrawal
-stopped subsequent managed-proxy requests. No application fix was required.
+The 2026-09-29 read-only run found no production `$exception` events in its
+fixed windows, limited consented exposure, and sixteen hashed-asset 404s on a
+recent deployment. See the
+[execution report](../docs/reviews/posthog-error-analysis-2026-09-29.md).
 
 - [ ] Correlate the historical `Learning persistence unavailable` issue with
   authorized server/database evidence for `operation=learning_open` and release
   `f98df769...`. The application intentionally redacts raw database failures; do
   not weaken that boundary.
-- [ ] Preserve or explicitly version server-function response contracts across
-  deployments and check removed hashed assets during transitions. The historical
-  `allowed` TypeError and at least 23 displayed prior-window asset 404s support
-  cached-client/deployment skew; neither recurred in the current evidence.
-- [ ] Decide whether `/llms.txt` is intentionally unsupported. It returned one
-  500 in the prior window on `dpl_9mn...` and a 404 in the current path evidence;
-  unsupported probes should fail as a bounded 404 rather than a server error.
+- [ ] Reproduce an old browser page crossing an authorized preview deployment
+  and verify the one-time stale-build reload completes a lesson. Sixteen hashed
+  asset requests returned 404 on deployment `45f7709…` shortly after it became
+  Ready; logs do not show whether a user recovered. Preserve or explicitly
+  version server-function response contracts across deployments as well.
+- [ ] Reproduce the local `useI18n` provider failure on a clean build if it
+  persists. Four active, test-filtered local groups appeared in the current
+  window; source currently wraps the route in `LocaleProvider`, and no
+  production issue was attributed to this error.
 
 ## Recommended Invocation
 
