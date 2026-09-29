@@ -1,9 +1,10 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { cn } from "@tradely/ui/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
+import { AppLink } from "@/components/app-link";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { TradelyBrand } from "./brand";
@@ -33,14 +34,14 @@ export function Footer() {
 						<h2>{t("home.finaleTitle")}</h2>
 						<p>{t("home.finaleDescription")}</p>
 						{firstLesson ? (
-							<Link
+							<AppLink
 								to="/learn/$lessonSlug"
 								params={{ lessonSlug: firstLesson.slug }}
 								className={buttonVariants({ size: "lg" })}
 							>
 								{t("home.startFree")}
 								<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-							</Link>
+							</AppLink>
 						) : null}
 					</div>
 				</div>
@@ -48,22 +49,25 @@ export function Footer() {
 			<div className="mx-auto grid max-w-[1480px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
 				<div className="flex max-w-md flex-col gap-3">
 					<TradelyBrand />
-					<Link
+					<AppLink
 						to="/pricing"
 						hash="past-purchases"
-						className="text-sm underline underline-offset-4"
+						className="plain-link text-sm underline underline-offset-4"
 					>
 						{t("pricing.pastPurchases")}
-					</Link>
-					<Link to="/guides" className="text-sm underline underline-offset-4">
+					</AppLink>
+					<AppLink
+						to="/guides"
+						className="plain-link text-sm underline underline-offset-4"
+					>
 						{t("nav.guides")}
-					</Link>
-					<Link
+					</AppLink>
+					<AppLink
 						to="/changelog"
-						className="text-sm underline underline-offset-4"
+						className="plain-link text-sm underline underline-offset-4"
 					>
 						{t("nav.changelog")}
-					</Link>
+					</AppLink>
 					<p className="text-muted-foreground text-sm leading-6">
 						{t("footer.description")}
 					</p>
@@ -76,30 +80,30 @@ export function Footer() {
 						{t("footer.legal")}
 					</span>
 					<div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-						<Link
-							className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+						<AppLink
+							className="plain-link text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
 							to="/privacy"
 						>
 							{t("footer.privacy")}
-						</Link>
-						<Link
-							className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+						</AppLink>
+						<AppLink
+							className="plain-link text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
 							to="/terms"
 						>
 							{t("footer.terms")}
-						</Link>
-						<Link
-							className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+						</AppLink>
+						<AppLink
+							className="plain-link text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
 							to="/risk-disclosure"
 						>
 							{t("footer.risk")}
-						</Link>
-						<Link
-							className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+						</AppLink>
+						<AppLink
+							className="plain-link text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
 							to="/cookies"
 						>
 							{t("footer.cookies")}
-						</Link>
+						</AppLink>
 						{isConfigured ? (
 							<Button
 								type="button"

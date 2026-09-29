@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import { buttonVariants } from "@tradely/ui/components/button";
 import { Drawer } from "@tradely/ui/components/drawer";
 import { Link as HeroLink } from "@tradely/ui/components/link";
@@ -7,6 +7,7 @@ import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 import { useState } from "react";
 
 import { useAnalytics } from "@/analytics/context";
+import { AppLink } from "@/components/app-link";
 import { useI18n } from "@/i18n/provider";
 import { AuthControls } from "./auth-controls";
 import { TradelyBrand } from "./brand";
@@ -28,19 +29,20 @@ function NavigationLinks({
 }) {
 	const { t } = useI18n();
 	return navigation.map((item) => (
-		<Link
+		<AppLink
 			key={item.to}
 			to={item.to}
 			onClick={onNavigate}
 			activeOptions={{ exact: item.to === "/" }}
 			className={cn(
 				"font-medium text-muted-foreground text-sm transition-colors hover:text-foreground",
-				mobile && "rounded-2xl px-3 py-3 text-base",
+				mobile && "block-link rounded-2xl px-3 py-3 text-base",
 			)}
-			activeProps={{ className: "text-foreground", "aria-current": "page" }}
+			// The router marks the active link with aria-current="page" itself.
+			activeProps={{ className: "text-foreground" }}
 		>
 			{t(item.key)}
-		</Link>
+		</AppLink>
 	));
 }
 

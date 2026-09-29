@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { Button } from "@tradely/ui/components/button";
 import {
@@ -11,6 +10,7 @@ import {
 } from "@tradely/ui/components/card";
 import { ArrowUpRightIcon, CheckIcon, PauseIcon, PlayIcon } from "lucide-react";
 import { useId, useState } from "react";
+import { AppLink } from "@/components/app-link";
 import { getLearningPath, type Lesson } from "@/content/course";
 import { courseModules, coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
@@ -65,10 +65,10 @@ export function LandingCurriculum({
 						id={`lesson-${lesson.slug}`}
 					>
 						<Card className="curriculum-card h-full py-0">
-							<Link
+							<AppLink
 								to="/learn/$lessonSlug"
 								params={{ lessonSlug: lesson.slug }}
-								className="curriculum-card-link"
+								className="curriculum-card-link block-link"
 								aria-labelledby={titleId}
 								aria-describedby={detailId}
 							>
@@ -114,7 +114,7 @@ export function LandingCurriculum({
 										) : null}
 									</div>
 								</CardFooter>
-							</Link>
+							</AppLink>
 						</Card>
 					</li>
 				);
@@ -145,10 +145,10 @@ export function LandingCurriculum({
 						<ul className="grid gap-2 md:grid-cols-2">
 							{freeLessons.map((lesson) => (
 								<li key={lesson.id}>
-									<Link
+									<AppLink
 										to="/learn/$lessonSlug"
 										params={{ lessonSlug: lesson.slug }}
-										className="flex h-full min-h-11 items-start gap-3 rounded-2xl p-3 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+										className="block-link flex h-full min-h-11 items-start gap-3 rounded-2xl p-3 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 									>
 										<span className="font-mono text-muted-foreground">
 											{String(lesson.order + 1).padStart(2, "0")}
@@ -166,18 +166,18 @@ export function LandingCurriculum({
 											className="size-4 shrink-0"
 											aria-hidden="true"
 										/>
-									</Link>
+									</AppLink>
 								</li>
 							))}
 						</ul>
 						{path === "start" ? (
-							<Link
+							<AppLink
 								to="/courses/tradingflow-foundations"
 								hash="placement"
-								className="self-start rounded-md text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								className="plain-link self-start rounded-md text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							>
 								{t("course.placementLink")}
-							</Link>
+							</AppLink>
 						) : null}
 					</nav>
 				) : null,

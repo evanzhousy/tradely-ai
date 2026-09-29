@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { buttonVariants } from "@tradely/ui/components/button";
 import { InteractiveHoverLink } from "@tradely/ui/components/interactive-hover-button";
 import { Link as HeroLink } from "@tradely/ui/components/link";
@@ -9,6 +9,7 @@ import {
 	ScanLineIcon,
 	WorkflowIcon,
 } from "lucide-react";
+import { AppLink } from "@/components/app-link";
 import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
 import { useLandingMotion } from "@/components/landing-motion";
@@ -90,7 +91,7 @@ function HomeComponent() {
 									size="lg"
 									className="self-start"
 									render={
-										<Link
+										<AppLink
 											to="/learn/$lessonSlug"
 											params={{ lessonSlug: startLesson.slug }}
 										/>
@@ -262,13 +263,13 @@ function HomeComponent() {
 						<h3>{t("home.accessTitle")}</h3>
 						<p>{t("home.accessDescription", { count: previewCount })}</p>
 					</div>
-					<Link
+					<AppLink
 						to="/courses/tradingflow-foundations"
 						className={buttonVariants({ variant: "outline", size: "lg" })}
 					>
 						{t("home.accessLink")}
 						<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-					</Link>
+					</AppLink>
 				</div>
 			</section>
 		</main>

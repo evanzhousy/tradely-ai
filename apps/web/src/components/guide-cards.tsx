@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import { BentoCard, BentoGrid } from "@tradely/ui/components/bento-grid";
 import { ArrowUpRightIcon, Clock3Icon } from "lucide-react";
+import { AppLink } from "@/components/app-link";
 import { type Guide, guides } from "@/content/guides";
 import { LessonInfographic } from "./lesson-infographic";
 
@@ -41,26 +41,26 @@ export function GuideCards({
 					}
 					title={
 						<Heading>
-							<Link
-								className="underline-offset-4 hover:underline"
+							<AppLink
+								className="plain-link underline-offset-4 hover:underline"
 								to="/guides/$guideSlug"
 								params={{ guideSlug: guide.slug }}
 							>
 								{guide.title}
-							</Link>
+							</AppLink>
 						</Heading>
 					}
 					description={guide.description}
 					footer={
-						<Link
+						<AppLink
 							to="/guides/$guideSlug"
 							params={{ guideSlug: guide.slug }}
-							className="guide-link"
+							className="guide-link plain-link"
 						>
 							Read the guide
 							<ArrowUpRightIcon size={16} aria-hidden="true" />
 							<span className="sr-only">: {guide.title}</span>
-						</Link>
+						</AppLink>
 					}
 				/>
 			))}

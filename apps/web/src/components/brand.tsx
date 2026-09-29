@@ -1,6 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { cn } from "@tradely/ui/lib/utils";
-
+import { AppLink } from "@/components/app-link";
 import { useI18n } from "@/i18n/provider";
 
 interface TradelyBrandProps {
@@ -10,7 +9,7 @@ interface TradelyBrandProps {
 export function TradelyBrand({ compactOnMobile = false }: TradelyBrandProps) {
 	const { t } = useI18n();
 	return (
-		<Link
+		<AppLink
 			to="/"
 			className="inline-flex shrink-0 items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
 			aria-label={t("brand.home")}
@@ -31,6 +30,6 @@ export function TradelyBrand({ compactOnMobile = false }: TradelyBrandProps) {
 			>
 				Tradely.ai
 			</span>
-		</Link>
+		</AppLink>
 	);
 }

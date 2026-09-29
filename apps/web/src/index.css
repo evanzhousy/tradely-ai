@@ -4,6 +4,28 @@
 @import "./styles/walkthrough.css";
 
 @layer components {
+	/* A HeroUI Link that wraps a card or a row keeps its press and focus handling but not
+	   text-link styling: it fills its container in the surrounding type, never underlined. */
+	.link.block-link {
+		display: flex;
+		align-items: stretch;
+		width: auto;
+		height: auto;
+		border-radius: inherit;
+		color: inherit;
+		font-weight: inherit;
+		text-decoration-line: none;
+	}
+
+	/* A HeroUI Link in running text that keeps the page's own link look: the surrounding
+	   colour and weight, and an underline in the text colour. */
+	.link.plain-link {
+		color: inherit;
+		font-weight: inherit;
+		text-decoration-color: currentColor;
+		text-decoration-thickness: auto;
+	}
+
 	/* HeroUI zeroes the gap on a Link styled as a button, expecting its Link.Icon; ours use
 	   the button's inline icons, which need the button's gap back. */
 	.link.button:has(> [data-icon]) {

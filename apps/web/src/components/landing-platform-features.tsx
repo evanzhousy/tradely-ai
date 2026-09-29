@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { BentoCard, BentoGrid } from "@tradely/ui/components/bento-grid";
 import { Button } from "@tradely/ui/components/button";
 import { Link as HeroLink } from "@tradely/ui/components/link";
@@ -9,6 +8,7 @@ import {
 	MousePointer2Icon,
 	RouteIcon,
 } from "lucide-react";
+import { AppLink } from "@/components/app-link";
 import { useI18n } from "@/i18n/provider";
 import { LessonInfographic } from "./lesson-infographic";
 
@@ -41,14 +41,14 @@ export function LandingPlatformFeatures() {
 						"一起查看价格、权利金与盈亏，保留每个数值的单位。",
 					)}
 					footer={
-						<Link
+						<AppLink
 							to="/learn/$lessonSlug"
 							params={{ lessonSlug: "premium-payoff" }}
 							className="observatory-text-link"
 						>
 							{l("Watch a lesson", "观看一课")}
 							<ArrowRightIcon size={16} />
-						</Link>
+						</AppLink>
 					}
 				>
 					<LessonInfographic subject="premium-payoff" locale={locale} />

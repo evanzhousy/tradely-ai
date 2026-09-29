@@ -1,9 +1,9 @@
-import { Link } from "@tanstack/react-router";
 import { Button } from "@tradely/ui/components/button";
 import { CloseButton } from "@tradely/ui/components/close-button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 
 import { useAnalytics } from "@/analytics/context";
+import { AppLink } from "@/components/app-link";
 import { useI18n } from "@/i18n/provider";
 
 export function CookieConsentBanner() {
@@ -63,13 +63,19 @@ export function CookieConsentBanner() {
 							className="text-muted-foreground text-sm leading-6"
 						>
 							{t("analytics.consentDescription")}{" "}
-							<Link className="underline underline-offset-4" to="/privacy">
+							<AppLink
+								className="plain-link underline underline-offset-4"
+								to="/privacy"
+							>
 								{t("footer.privacy")}
-							</Link>
+							</AppLink>
 							{" · "}
-							<Link className="underline underline-offset-4" to="/cookies">
+							<AppLink
+								className="plain-link underline underline-offset-4"
+								to="/cookies"
+							>
 								{t("footer.cookies")}
-							</Link>
+							</AppLink>
 						</p>
 					</DisclosurePanel>
 				</div>

@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Badge } from "@tradely/ui/components/badge";
 import { buttonVariants } from "@tradely/ui/components/button";
 import {
@@ -13,6 +12,7 @@ import { Link as HeroLink } from "@tradely/ui/components/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useAnalytics } from "@/analytics/context";
+import { AppLink } from "@/components/app-link";
 import { getLessonById } from "@/content/course";
 import {
 	getTradingFlowLab,
@@ -216,14 +216,14 @@ export function TradingFlowLabs() {
 									})
 									.join(" · ")}
 							</p>
-							<Link
+							<AppLink
 								to="/learn/$lessonSlug"
 								params={{ lessonSlug: lab.lessonId }}
 								hash="tradingflow-lab"
 								className={buttonVariants({ variant: "outline" })}
 							>
 								{t("lab.open")}
-							</Link>
+							</AppLink>
 						</CardContent>
 					</Card>
 				))}
