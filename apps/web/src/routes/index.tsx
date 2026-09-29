@@ -273,6 +273,33 @@ function HomeComponent() {
 					</AppLink>
 				</div>
 			</section>
+			{/* The page's closing call to action: content, so in main, not the footer. */}
+			<section
+				className="observatory-finale observatory-finale--closing"
+				aria-labelledby="home-finale-title"
+			>
+				<div className="landing-finale-symbol" aria-hidden="true">
+					↗
+				</div>
+				<div className="observatory-finale-copy">
+					<p className="observatory-label">{t("home.finaleLabel")}</p>
+					<h2 id="home-finale-title">{t("home.finaleTitle")}</h2>
+					<p>{t("home.finaleDescription")}</p>
+					{startLesson ? (
+						<InteractiveHoverLink
+							size="lg"
+							render={
+								<AppLink
+									to="/learn/$lessonSlug"
+									params={{ lessonSlug: startLesson.slug }}
+								/>
+							}
+						>
+							{t("home.startFree")}
+						</InteractiveHoverLink>
+					) : null}
+				</div>
+			</section>
 		</main>
 	);
 }

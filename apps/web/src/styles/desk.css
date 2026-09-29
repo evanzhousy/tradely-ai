@@ -517,13 +517,10 @@
 		transparent 70%
 	);
 }
-.observatory-footer > div:not(.observatory-finale) {
+/* The home footer lines up with the home header's width. */
+.observatory-footer > div {
 	position: relative;
 	max-width: 1344px;
-}
-.observatory-footer > div:nth-child(2) {
-	border-top: 1px solid var(--border);
-	padding-top: 40px;
 }
 @media (hover: hover) and (pointer: fine) {
 	.observatory-text-link:hover {
@@ -1521,17 +1518,18 @@
 	background: var(--muted);
 	border-radius: 10px;
 }
-.observatory-footer .observatory-finale {
+/* The home page's closing call to action, a band between the curriculum and the footer. */
+.observatory-finale--closing {
 	min-height: 0;
 	background: color-mix(in oklch, var(--background) 90%, var(--primary));
-	border-bottom: 1px solid var(--border);
+	border-top: 1px solid var(--border);
 }
-.observatory-footer .observatory-finale-copy {
+.observatory-finale--closing .observatory-finale-copy {
 	max-width: 840px;
 	padding: 78px 24px 84px;
 	margin-inline: auto;
 }
-.observatory-footer .observatory-finale h2 {
+.observatory-finale--closing h2 {
 	font-size: clamp(38px, 4.5vw, 60px);
 	line-height: 1.12;
 	letter-spacing: -0.055em;
@@ -1702,7 +1700,7 @@
 		padding: 24px;
 		margin-top: 28px;
 	}
-	.observatory-footer .observatory-finale-copy {
+	.observatory-finale--closing .observatory-finale-copy {
 		padding: 58px 24px 60px;
 	}
 	.landing-finale-symbol {
