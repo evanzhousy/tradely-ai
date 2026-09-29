@@ -101,10 +101,11 @@ function NativeSelect({
 			<Select.Trigger
 				id={id}
 				className={cn(
-					"min-w-0 rounded-3xl",
+					"min-w-0",
 					variant === "outline"
-						? "h-9 min-h-0 items-center gap-1.5 border border-border bg-transparent py-0 ps-3 pe-8 font-medium text-default-foreground shadow-none hover:bg-default/60 md:h-8 [&>svg]:size-4 [&>svg]:shrink-0"
-						: cn("bg-input/50", size === "sm" && "min-h-8"),
+						? "h-9 min-h-0 items-center gap-1.5 rounded-3xl border border-border bg-transparent py-0 ps-3 pe-8 font-medium text-default-foreground shadow-none hover:bg-default/60 md:h-8 [&>svg]:size-4 [&>svg]:shrink-0"
+						: // HeroUI's field look, as for inputs and the search field.
+							size === "sm" && "min-h-8",
 				)}
 			>
 				{icon}

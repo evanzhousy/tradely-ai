@@ -141,10 +141,6 @@
 	position: relative;
 	width: min(100%, 360px);
 }
-.catalog-search input {
-	min-height: 42px;
-	background: var(--card);
-}
 .catalog-count {
 	font-size: 0.75rem;
 	color: var(--muted-foreground);
@@ -815,12 +811,9 @@
 	border: 1px solid var(--border);
 	border-radius: 20px;
 }
+/* Level with the labelled fields beside it: their label line and gap. */
 .catalog-tools > div:first-child {
-	padding-top: 28px;
-}
-.catalog-tools select,
-.catalog-tools input {
-	min-height: 44px;
+	padding-top: 31px;
 }
 .catalog-search {
 	width: 100%;

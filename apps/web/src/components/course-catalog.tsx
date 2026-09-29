@@ -81,11 +81,13 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 		>
 			<div className="catalog-tools">
 				<div>
+					{/* HeroUI's segmented track, the same 36px as the fields beside it. */}
 					<TabsList
 						aria-label={locale === "zh" ? "筛选课程" : "Filter lessons"}
+						className="h-9 bg-default"
 					>
 						{filters.map((item) => (
-							<TabsTrigger key={item.value} value={item.value}>
+							<TabsTrigger key={item.value} value={item.value} className="h-7">
 								{item.label}
 							</TabsTrigger>
 						))}
