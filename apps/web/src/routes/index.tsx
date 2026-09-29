@@ -88,7 +88,8 @@ function HomeComponent() {
 						<div className="landing-hero-actions">
 							{startLesson ? (
 								<InteractiveHoverLink
-									size="lg"
+									// The page's one hero call to action takes the xl size.
+									size="xl"
 									className="self-start"
 									render={
 										<AppLink

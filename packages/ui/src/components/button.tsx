@@ -16,6 +16,8 @@ type ButtonSize =
 	| "xs"
 	| "sm"
 	| "lg"
+	/** Past HeroUI's scale: one deliberate hero call to action per page, 48px. */
+	| "xl"
 	| "icon"
 	| "icon-xs"
 	| "icon-sm"
@@ -47,7 +49,8 @@ function mapVariant(variant: ButtonVariant) {
 }
 
 function mapSize(size: ButtonSize) {
-	if (size === "lg" || size === "icon-lg") return "lg" as const;
+	if (size === "lg" || size === "xl" || size === "icon-lg")
+		return "lg" as const;
 	if (
 		size === "xs" ||
 		size === "sm" ||
@@ -78,6 +81,7 @@ function buttonVariants({
 			size: mapSize(size),
 			variant: mapVariant(variant),
 		}),
+		size === "xl" && "button--xl",
 		variant === "link" && "underline-offset-4 hover:underline",
 		className,
 	);
@@ -100,6 +104,7 @@ function Button({
 			variant={mapVariant(variant)}
 			className={cn(
 				"group/button shrink-0 whitespace-nowrap transition-[color,box-shadow,background-color,transform] active:scale-[0.97]",
+				size === "xl" && "button--xl",
 				variant === "link" && "underline-offset-4 hover:underline",
 				variant === "secondary" && "text-foreground",
 				className,

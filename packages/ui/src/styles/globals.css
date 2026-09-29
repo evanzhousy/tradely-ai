@@ -288,6 +288,13 @@
 		gap: 20px;
 		padding-inline: 20px;
 	}
+	/* The xl size, one step past HeroUI's large, for a page's single hero call to action. */
+	.button.button--xl {
+		height: calc(var(--spacing) * 12);
+		padding-inline: calc(var(--spacing) * 6);
+		font-size: var(--text-base);
+		line-height: var(--text-base--line-height);
+	}
 	.interactive-hover-button-label {
 		display: inline-flex;
 		align-items: center;
