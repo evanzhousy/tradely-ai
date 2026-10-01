@@ -60,7 +60,7 @@ export const courseModules = [
 		zh: "在 TradingFlow 中构建工作流",
 	},
 ] as const;
-/** The core path runs in lesson order; the two deeper branches follow it in either order. */
+/** The core path runs in lesson order; the three deeper branches follow it in any order. */
 export const coursePaths = {
 	start: {
 		en: "Start here: no experience needed",
