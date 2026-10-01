@@ -568,4 +568,14 @@ export const syllabus: readonly Entry[] = [
 		["C34", "C35"],
 		["research-checklist"],
 	),
+	lesson(
+		"custom-formulas",
+		"workflows",
+		"Build your own Rank column",
+		"构建你自己的 Rank 列",
+		"Write a Rank Symbols formula column whose units make sense, keep thin rows from leading it, and know what a Rank View saves.",
+		"在 Rank Symbols 上写一个单位合理的公式列，不让单薄的行领跑，并了解 Rank View 保存了什么。",
+		["C35", "C36"],
+		["ai-verify", "rank-symbols"],
+	),
 ];

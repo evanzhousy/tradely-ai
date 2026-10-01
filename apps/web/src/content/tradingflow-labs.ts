@@ -427,6 +427,55 @@ export const tradingFlowLabs: readonly TradingFlowLab[] = [
 			"写下三句话及其分类、消耗的积分，以及你不会写进笔记的那一条说法和理由。",
 		),
 	},
+	{
+		id: "custom-formulas",
+		lessonId: "custom-formulas",
+		recipeSlug: null,
+		path: "/app/rank/symbols",
+		tool: "Rank Symbols",
+		version: 1,
+		title: text(
+			"Build a formula column and guard it",
+			"建一个公式列并加上门槛",
+		),
+		recipeTitle: "Rank Symbols",
+		goal: text(
+			"Write a formula column on Rank Symbols, check its unit in the live preview, and keep thin rows from leading it.",
+			"在 Rank Symbols 上写一个公式列，在实时预览中检查它的单位，并不让单薄的行领跑。",
+		),
+		prerequisites: ["ai-verify"],
+		params: {},
+		settings: text(
+			"Rank, Symbols tab, latest session. Saved Views need a paid plan, and a column you create saves into your active Rank View.",
+			"Rank 的 Symbols 标签页，最近一个交易时段。保存视图需要付费方案，你创建的列会保存到当前的 Rank View。",
+		),
+		sample: text(
+			"In the course's market, [Total Premium] / [Trades] puts GLYN first at $32,000 a trade on 3 trades. IF([Trades] >= 20, [Total Premium] / [Trades], NA()) leaves it N/A, and ALFA leads at $6,458.",
+			"在课程的市场里，[Total Premium] / [Trades] 让 GLYN 以每笔 $32,000 排第一，但它只有 3 笔交易。IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 让它显示为 N/A，ALFA 以 $6,458 领先。",
+		),
+		steps: [
+			text(
+				"Open Rank, switch to Symbols, open Columns and choose Custom columns. Note how many of the five slots your view uses.",
+				"打开 Rank，切换到 Symbols，打开 Columns 并选择 Custom columns。记下你的视图用了五个名额中的几个。",
+			),
+			text(
+				"Name a column and type [Total Premium] + [Trades]. Read the message, then change + to / and read the preview's output unit.",
+				"给列命名并输入 [Total Premium] + [Trades]。读一读提示，然后把 + 改成 /，读出预览中的输出单位。",
+			),
+			text(
+				"Try Number, Percent and Currency, and keep the format that matches the unit.",
+				"依次试试 Number（数字）、Percent（百分比）和 Currency（货币），保留与单位相符的格式。",
+			),
+			text(
+				"Change the formula to IF([Trades] >= 20, [Total Premium] / [Trades], NA()). Create the column only if you want it in your view; Cancel leaves the view unchanged.",
+				"把公式改成 IF([Trades] >= 20, [Total Premium] / [Trades], NA())。只有想把它留在视图里时才创建这一列；点 Cancel 则视图保持不变。",
+			),
+		],
+		inspect: text(
+			"Write your formula, its output unit and the format you chose, and, if you created the column, one row that shows N/A and why.",
+			"写下你的公式、输出单位和所选格式；如果创建了这一列，再写下一行显示 N/A 的行及原因。",
+		),
+	},
 ];
 
 export type TradingFlowLabId = TradingFlowLab["id"];

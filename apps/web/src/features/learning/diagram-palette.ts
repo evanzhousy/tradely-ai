@@ -48,6 +48,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"portfolio-pnl": "reference",
 	"portfolio-performance": "model",
 	"portfolio-exposure": "model",
+	"custom-formulas": "reference",
 	"ai-verify": "reference",
 	"research-checklist": "reference",
 	"recipe-inputs": "reference",

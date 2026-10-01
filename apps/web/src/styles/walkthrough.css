@@ -273,6 +273,10 @@
 	fill: var(--muted-foreground);
 	font-size: 12px;
 }
+/* Text a reader types, such as a formula: ">=" must stay two characters, not a ligature. */
+.wt-svg .wt-code {
+	font-variant-ligatures: none;
+}
 .wt-svg .wt-small {
 	fill: var(--muted-foreground);
 	font-size: 11px;

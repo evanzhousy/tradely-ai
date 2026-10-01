@@ -111,6 +111,11 @@ const lessons = {
 			default: m.AiVerifyWalkthrough,
 		})),
 	),
+	"custom-formulas": lazy(() =>
+		import("./lessons/custom-formulas").then((m) => ({
+			default: m.CustomFormulasWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,

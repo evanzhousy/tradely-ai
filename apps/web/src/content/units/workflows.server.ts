@@ -15,6 +15,10 @@ const cookbooksGuide = {
 	title: "TradingFlow · Cookbooks & Recipes",
 	href: "https://tradingflow.com/docs/cookbooks/",
 };
+const rankSymbolsGuide = {
+	title: "TradingFlow · Rank Symbols",
+	href: "https://tradingflow.com/docs/rank-symbols/",
+};
 
 export const workflowUnits: TeachingUnit[] = [
 	{
@@ -619,6 +623,146 @@ export const workflowUnits: TeachingUnit[] = [
 						"annotate",
 						"Annotate attaches the element you pick, so one reply can answer the question you meant.",
 						"Annotate 会附上你选取的元素，这样一条回复就能回答你真正想问的问题。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "custom-formulas",
+		conceptLab: {
+			kind: "custom-formulas",
+			intro: t(
+				"Write a Rank Symbols formula column whose units make sense, keep thin rows from leading it, and see what a Rank View keeps.",
+				"在 Rank Symbols 上写一个单位合理的公式列，不让单薄的行领跑，并看清 Rank View 保存了什么。",
+			),
+		},
+		sources: [rankSymbolsGuide],
+		explanation: t(
+			"On Rank Symbols, Columns › Custom columns adds up to five formula columns to the active Rank View. A formula reads named fields from each symbol's row, such as [Total Premium], [Call Premium] or [Trades], with arithmetic, comparisons and approved functions: ABS, IF, AND, ROUND, MIN, MAX, LOG10, SQRT and NA. Every field carries a unit, and the editor checks units as you type: it refuses to add dollars to a count, and its live preview names the output unit. Match the value format to that unit: Currency is refused for a ratio, but Percent on dollars isn't flagged. Missing inputs and invalid math, such as dividing by zero, stay N/A, and IF with NA() blanks rows by your own rule, such as names with too few trades to average. The view saves the definition, not the values, which recompute from the full-chain snapshot of the session you open. A custom result is descriptive and user-defined, not a canonical TradingFlow metric or a forecast. Saved Views need a paid plan.",
+			"在 Rank Symbols 上，Columns › Custom columns 可以给当前的 Rank View 添加最多五个公式列。公式读取每个标的那一行里的命名字段，比如 [Total Premium]、[Call Premium] 或 [Trades]，配合算术、比较和允许使用的函数：ABS、IF、AND、ROUND、MIN、MAX、LOG10、SQRT 和 NA。每个字段都带单位，编辑器在你输入时就检查单位：它拒绝把美元与计数相加，实时预览会写出输出单位。数值格式要与这个单位相符：比率不能用货币格式，但给美元用百分比格式不会被提示。缺失的输入和无效的运算（比如除以零）显示为 N/A；用 IF 配合 NA() 则可以按你自己的规则留空某些行，比如交易笔数太少、不足以求平均的标的。视图保存的是定义而不是值，值会基于你打开的那个交易时段的全链快照重新计算。自定义结果是描述性的、由用户定义的，不是 TradingFlow 的标准指标，也不是预测。保存视图需要付费方案。",
+		),
+		example: t(
+			"On Monday, [Total Premium] / [Trades] gives ALFA $6,458.33 a trade, output unit usd. Ranked by it, GLYN leads at $32,000 a trade on only 3 trades. IF([Trades] >= 20, [Total Premium] / [Trades], NA()) leaves GLYN N/A, and ALFA leads. Saved in the view, the same column reads Tuesday's data on Tuesday, when DUNE leads at $2,667 a trade.",
+			"周一，[Total Premium] / [Trades] 给出 ALFA 每笔 $6,458.33，输出单位 usd。按它排名，GLYN 以每笔 $32,000 领先，但只有 3 笔交易。IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 让 GLYN 显示为 N/A，ALFA 领先。保存在视图中后，同一列在周二读的是周二的数据，那天 DUNE 以每笔 $2,667 领先。",
+		),
+		misconception: t(
+			"A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+			"公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。",
+		),
+		case: (v) => {
+			const [premium, tradeCount] = [
+				[180_000, 45],
+				[96_000, 3],
+				[520_000, 260],
+				[64_000, 16],
+			][v];
+			const per = premium / tradeCount;
+			const money = (value: number) => `$${value.toLocaleString("en-US")}`;
+			const [accepted, wrongA, wrongB] = [
+				[
+					"[Total Premium] / [Trades]",
+					"[Total Premium] + [Trades]",
+					"[Trades] + [Put Premium]",
+				],
+				[
+					"[Call Premium] / [Put Premium]",
+					"[Call Premium] + [Trades]",
+					"[Trades] + [Total Premium]",
+				],
+				[
+					"[Put Premium] / [Trades]",
+					"[Put Premium] + [Trades]",
+					"[Trades] + [Call Premium]",
+				],
+				[
+					"[Call Premium] / [Total Premium]",
+					"[Total Premium] + [Trades]",
+					"[Trades] + [Call Premium]",
+				],
+			][v];
+			const ratioCase = v % 2 === 1;
+			const formatFormula = ratioCase
+				? "[Call Premium] / [Total Premium]"
+				: "[Total Premium] / [Trades]";
+			return {
+				brief: t(
+					"You build a formula column on Rank Symbols in the course's market.",
+					"你在课程的市场里，在 Rank Symbols 上构建一个公式列。",
+				),
+				questions: [
+					c(
+						"accept",
+						"Which formula does the editor accept as written?",
+						"编辑器会接受下面哪个公式？",
+						[
+							["accepted", accepted, accepted],
+							["wrong-a", wrongA, wrongA],
+							["wrong-b", wrongB, wrongB],
+						],
+						"accepted",
+						"Fields carry units. Dollars divided by a count is dollars per trade, and dollars divided by dollars is a ratio; the editor refuses to add dollars to a count.",
+						"字段带着单位。美元除以计数得到每笔交易的美元数，美元除以美元得到比率；编辑器拒绝把美元与计数相加。",
+					),
+					n(
+						"per",
+						`A name traded ${money(premium)} of premium in ${tradeCount} trades. What does [Total Premium] / [Trades] show for it, in dollars?`,
+						`某个标的成交了 ${money(premium)} 权利金，共 ${tradeCount} 笔交易。[Total Premium] / [Trades] 对它显示多少美元？`,
+						per,
+						"dollars",
+						"美元",
+						`${money(premium)} ÷ ${tradeCount} = ${money(per)} a trade.`,
+						`${money(premium)} ÷ ${tradeCount} = 每笔 ${money(per)}。`,
+					),
+					c(
+						"guard",
+						"With IF([Trades] >= 20, [Total Premium] / [Trades], NA()), what does that name show?",
+						"使用 IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 时，这个标的显示什么？",
+						[
+							["value", "Its premium per trade", "它的每笔权利金"],
+							["na", "N/A", "N/A"],
+							["zero", "0", "0"],
+						],
+						tradeCount >= 20 ? "value" : "na",
+						tradeCount >= 20
+							? `${tradeCount} trades clear the floor, so the column shows ${money(per)}.`
+							: `${tradeCount} trades is under the floor, so NA() leaves the row blank: N/A, not zero.`,
+						tradeCount >= 20
+							? `${tradeCount} 笔交易超过门槛，所以这一列显示 ${money(per)}。`
+							: `${tradeCount} 笔交易低于门槛，所以 NA() 让这一行留空：是 N/A，不是零。`,
+					),
+					c(
+						"format",
+						`Which value format matches ${formatFormula}?`,
+						`哪种数值格式与 ${formatFormula} 相符？`,
+						[
+							["percent", "Percent", "百分比"],
+							["currency", "Currency", "货币"],
+						],
+						ratioCase ? "percent" : "currency",
+						ratioCase
+							? "Dollars over dollars is a ratio: Percent shows it times 100, and Currency is refused for a ratio."
+							: "Dollars over a count is still dollars, output unit usd, so Currency fits; Percent would only add a % sign to dollars.",
+						ratioCase
+							? "美元除以美元是比率：百分比格式把它乘以 100 显示，而比率不能用货币格式。"
+							: "美元除以计数仍是美元，输出单位 usd，所以货币格式合适；百分比格式只会给美元加上 % 号。",
+					),
+					c(
+						"saved",
+						"What does the Rank View save for the column?",
+						"Rank View 为这一列保存了什么？",
+						[
+							[
+								"definition",
+								"Its definition: name, formula, format and display",
+								"它的定义：名称、公式、格式和显示方式",
+							],
+							["values", "The values it calculated", "它算出的值"],
+							["both", "The definition and the values", "定义和值"],
+						],
+						"definition",
+						"Definitions save with the view; values recompute from the full-chain snapshot of each session you open.",
+						"定义随视图保存；值会基于你打开的每个交易时段的全链快照重新计算。",
 					),
 				],
 			};
