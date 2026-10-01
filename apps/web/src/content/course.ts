@@ -359,7 +359,7 @@ export function getBranchChoices(
 		.filter((lesson) => lessonPath(lesson) === "core")
 		.at(-1);
 	if (lastCore?.slug !== slug) return null;
-	return (["models", "portfolio"] as const).flatMap((path) => {
+	return (["models", "portfolio", "workflows"] as const).flatMap((path) => {
 		const lesson = lessons.find((item) => lessonPath(item) === path);
 		return lesson ? [{ path, lesson }] : [];
 	});

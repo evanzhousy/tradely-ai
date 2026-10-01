@@ -53,6 +53,12 @@ export const courseModules = [
 		en: "Portfolio understanding",
 		zh: "理解投资组合",
 	},
+	{
+		id: "workflows",
+		path: "workflows",
+		en: "Workflows in TradingFlow",
+		zh: "在 TradingFlow 中构建工作流",
+	},
 ] as const;
 /** The core path runs in lesson order; the two deeper branches follow it in either order. */
 export const coursePaths = {
@@ -66,6 +72,10 @@ export const coursePaths = {
 		zh: "深入分支：希腊值、波动率与结构",
 	},
 	portfolio: { en: "Deeper branch: portfolios", zh: "深入分支：投资组合" },
+	workflows: {
+		en: "Deeper branch: workflows in TradingFlow",
+		zh: "深入分支：在 TradingFlow 中构建工作流",
+	},
 } as const;
 export type CoursePathId = keyof typeof coursePaths;
 export type ModuleId = (typeof courseModules)[number]["id"];
@@ -507,5 +517,15 @@ export const syllabus: readonly Entry[] = [
 		"用正确的符号与单位汇总组合希腊值，并标明缺失部分。",
 		["C30"],
 		["portfolio-pnl", "theta-vega-rho", "gamma", "expiration-settlement"],
+	),
+	lesson(
+		"tradingflow-recipes",
+		"workflows",
+		"Recipes: research that re-runs on fresh data",
+		"Recipe：在新数据上重跑的研究",
+		"Pick a TradingFlow recipe by the question it answers, read which session a run shows, and see why the official version never changes under you.",
+		"按要回答的问题选择 TradingFlow Recipe，看清一次运行展示的是哪个交易时段，并理解为何官方版本不会在你脚下改变。",
+		["C31"],
+		["cookbook-research-packet"],
 	),
 ];

@@ -142,6 +142,56 @@ export const tradingFlowLabs = [
 			"在复盘中保留交易时段、证据引用和下一步核查。另一个时段使用相同结构复盘，比较变化。",
 		),
 	},
+	{
+		id: "tradingflow-recipes",
+		lessonId: "tradingflow-recipes",
+		recipeSlug: "unusual-options-activity",
+		version: 1,
+		title: text("Read which session a run shows", "看清一次运行展示的交易时段"),
+		recipeTitle: "Unusual Options Activity Screener",
+		goal: text(
+			"Read a recipe's session and run time before any number, then re-run it for an earlier session.",
+			"先看 Recipe 的交易时段和运行时间，再读任何数字；然后针对更早的时段重新运行。",
+		),
+		prerequisites: ["cookbook-research-packet"],
+		params: {
+			min_vol_oi: "1",
+			min_rel_vol: "0",
+			min_volume: "500",
+			min_oi: "200",
+			max_dte: "60",
+		},
+		settings: text(
+			"Latest completed session, at the recipe's default thresholds.",
+			"最近一个完整的交易时段，使用 Recipe 的默认阈值。",
+		),
+		sample: text(
+			"In the course's market, Monday's run at these thresholds passes five contracts, led by the CRUX Oct 4 60 put at 2.67 times its open interest. Opened at 8:00 on Tuesday, the report still shows Monday; after Tuesday's close it shows Tuesday's two.",
+			"在课程的市场里，周一按这些阈值运行，通过五份合约，排在最前的是 CRUX 10月4日 60 看跌，为其未平仓量的 2.67 倍。周二 8:00 打开时报告仍显示周一；周二收盘后则显示周二的两份。",
+		),
+		steps: [
+			text(
+				"Open the recipe and write down the session named in its header and the time it ran.",
+				"打开 Recipe，记下页眉注明的交易时段和运行时间。",
+			),
+			text(
+				"Use the date picker to choose the previous session. Note which figures change and which explanations stay word for word the same.",
+				"用日期选择器选择上一个交易时段。记下哪些数字变了，哪些说明文字一字未变。",
+			),
+			text(
+				"Open Cookbooks and find one quick lookup, one session screen and one multi-step report by the question on each card.",
+				"打开 Cookbooks，按每张卡片上写的问题找到一个快速查询、一个时段筛选和一个多步骤报告。",
+			),
+			text(
+				"Check whether your account shows New recipe or Edit with AI. If it doesn't, recipe editing isn't enabled for it; every official recipe still runs. Don't save anything for this lab.",
+				"看看你的账户是否显示 New recipe 或 Edit with AI。如果没有，说明该账户未开通 Recipe 编辑；所有官方 Recipe 照样可以运行。本练习不要保存任何内容。",
+			),
+		],
+		inspect: text(
+			"Write the session, its run time, and one figure that changed when you picked the earlier session.",
+			"写下交易时段、运行时间，以及选择更早时段后发生变化的一个数字。",
+		),
+	},
 ] as const;
 
 export type TradingFlowLab = (typeof tradingFlowLabs)[number];

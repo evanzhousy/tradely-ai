@@ -48,6 +48,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"portfolio-pnl": "reference",
 	"portfolio-performance": "model",
 	"portfolio-exposure": "model",
+	"tradingflow-recipes": "reference",
 };
 
 export function getDiagramPalette(subject: string): DiagramPalette {

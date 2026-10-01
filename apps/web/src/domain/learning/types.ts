@@ -141,7 +141,8 @@ export type LearningStepView = {
 		| "audit-market-recap"
 		| "portfolio-pnl"
 		| "portfolio-performance"
-		| "portfolio-exposure";
+		| "portfolio-exposure"
+		| "tradingflow-recipes";
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

@@ -102,6 +102,7 @@ import { SymbolUniverseWalkthrough } from "./lessons/symbol-universe";
 import { ThetaVegaRhoWalkthrough } from "./lessons/theta-vega-rho";
 import { TradeRecordsWalkthrough } from "./lessons/trade-records";
 import { TradingOptionsWalkthrough } from "./lessons/trading-options";
+import { TradingflowRecipesWalkthrough } from "./lessons/tradingflow-recipes";
 import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
 import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
 import { VolatilitySurfaceWalkthrough } from "./lessons/volatility-surface";
@@ -133,6 +134,7 @@ const conceptLabs = {
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureWalkthrough,
+	"tradingflow-recipes": TradingflowRecipesWalkthrough,
 	"volatility-surface": VolatilitySurfaceWalkthrough,
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,
 	"theta-vega-rho": ThetaVegaRhoWalkthrough,
