@@ -32,8 +32,8 @@ export const workflowUnits: TeachingUnit[] = [
 			"Recipe（TradingFlow 也称其为 Cookbook）是一份由说明、关键数字、表格和图表组成的报告，它们都绑定到对 TradingFlow 成交流与期权链数据的查询。报告不会预先写好关于数字的结论：每次打开时，它都针对一个真实的交易时段运行。官方 Recipe 分三种：关于单个标的的快速查询、覆盖整个市场的时段筛选，以及多步骤报告。每次运行的页眉都会注明其数字描述的交易时段及最近一次运行的时间。报告默认打开最近一个完整的美国交易时段，它遵循交易日历而不是钟表；“刷新数据”针对该时段重新运行，日期选择器则针对更早的时段运行。官方 Recipe 由 TradingFlow 维护，所有付费账户看到的都相同。你自己的 Recipe（用 Edit with AI 分叉或用 New recipe 新建）只有你能看到，官方 Recipe 从不被原地修改。Cookbooks 需要付费方案，创建或编辑 Recipe 是单独的、有限范围的灰度功能。Recipe 描述的是数据发生了什么，不是交易信号。",
 		),
 		example: t(
-			"On Monday Sep 16 the Unusual Options Activity Screener, at its default thresholds (volume/OI at least 1, volume at least 500, open interest at least 200, at most 60 days to expiry), passes five contracts: the CRUX Oct 4 60 put at 2.67 times its open interest, the DUNE Sep 27 30 call at 2.17, the BRDX Oct 11 25 put at 2.00, the GLYN Oct 18 45 call at 1.25 and the CRUX Nov 15 70 call at 1.20. None of ALFA's calls passes; its busiest, the Oct 18 105 call, traded 505 contracts against 1,200 open interest, 0.42. Opened at 8:00 on Tuesday, the report still shows Monday's session. After Tuesday's close it shows Tuesday's two: the EMBR Oct 4 80 call at 2.75 and the DUNE 30 call at 1.24.",
-			"9月16日周一，Unusual Options Activity Screener 在默认阈值下（成交量/OI 至少 1、成交量至少 500、未平仓量至少 200、最多 60 天到期）筛出五份合约：CRUX 10月4日 60 看跌为其未平仓量的 2.67 倍，DUNE 9月27日 30 看涨 2.17 倍，BRDX 10月11日 25 看跌 2.00 倍，GLYN 10月18日 45 看涨 1.25 倍，CRUX 11月15日 70 看涨 1.20 倍。ALFA 的看涨期权一个也没通过；其中最活跃的 10月18日 105 看涨成交 505 张，未平仓量 1,200，比值 0.42。在周二 8:00 打开时，报告仍显示周一的时段。周二收盘后，它显示周二的两份：EMBR 10月4日 80 看涨 2.75 倍和 DUNE 30 看涨 1.24 倍。",
+			"On Monday Sep 16 the Unusual Options Activity Screener, at its default thresholds (volume/OI at least 1, volume at least 500, open interest at least 200, at most 60 days to expiry), passes five contracts: the CRUX Oct 4 60 put at 2.67 times its open interest, the DUNE Sep 27 30 call at 2.17, the BRDX Oct 11 25 put at 2.00, the BRDX Oct 18 28 call at 1.25 and the CRUX Nov 15 70 call at 1.20. None of ALFA's calls passes; its busiest, the Oct 18 105 call, traded 505 contracts against 1,200 open interest, 0.42. Opened at 8:00 on Tuesday, the report still shows Monday's session. After Tuesday's close it shows Tuesday's two: the EMBR Oct 4 80 call at 2.75 and the DUNE 30 call at 1.24.",
+			"9月16日周一，Unusual Options Activity Screener 在默认阈值下（成交量/OI 至少 1、成交量至少 500、未平仓量至少 200、最多 60 天到期）筛出五份合约：CRUX 10月4日 60 看跌为其未平仓量的 2.67 倍，DUNE 9月27日 30 看涨 2.17 倍，BRDX 10月11日 25 看跌 2.00 倍，BRDX 10月18日 28 看涨 1.25 倍，CRUX 11月15日 70 看涨 1.20 倍。ALFA 的看涨期权一个也没通过；其中最活跃的 10月18日 105 看涨成交 505 张，未平仓量 1,200，比值 0.42。在周二 8:00 打开时，报告仍显示周一的时段。周二收盘后，它显示周二的两份：EMBR 10月4日 80 看涨 2.75 倍和 DUNE 30 看涨 1.24 倍。",
 		),
 		misconception: t(
 			'"Latest" isn\'t "today", and a recipe isn\'t a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.',
@@ -86,7 +86,7 @@ export const workflowUnits: TeachingUnit[] = [
 			][v];
 			const [volume, oi] = [
 				[2_400, 900],
-				[1_300, 600],
+				[780, 360],
 				[620, 310],
 				[1_100, 400],
 			][v];
@@ -178,8 +178,8 @@ export const workflowUnits: TeachingUnit[] = [
 			"“打开 Recipe 地图”会展示报告的构成：输入单元格存放读者可以修改的值；实时数据单元格用这些输入针对所展示的交易时段运行查询；标为 Recipe 内容的文字单元格是一次性写进 Recipe 的，不运行任何查询。地图的运行上下文会再次注明交易时段和最近一次运行时间。要审核一句话，先找到它的单元格，再看它背后的实时数据和输入；凡是由交易时段和阈值提供的内容，都会随它们一起变化。Recipe 内容解释方法及其局限，在每次运行中都一样，所以不是关于该交易时段的发现。筛选的关键数字统计所有通过的合约，而表格只载入按排名指标排在前面的行，其余的不在报告里。关于整个筛选结果的说法要用总数；关于某份合约的说法需要那份合约本身，并在 Option Trades 中核查。",
 		),
 		example: t(
-			"Monday's run of the Unusual Options Activity Screener at its defaults flags 5 contracts across 4 names; their median volume/OI is 2.00 and the highest is 2.67, the CRUX Oct 4 60 put. Its table of the top 3 shows the CRUX put, the DUNE Sep 27 30 call at 2.17 and the BRDX Oct 11 25 put at 2.00; the GLYN and CRUX Nov 15 calls passed but aren't loaded. The Bottom line is fed by the session and all five thresholds, so Tuesday's run reads 2 contracts across 2 names; the Takeaways, recipe content, are word for word the same on both days.",
-			"周一以默认阈值运行 Unusual Options Activity Screener，4 个标的共 5 份合约入选；它们的成交量/OI 中位数为 2.00，最高为 2.67，即 CRUX 10月4日 60 看跌。前 3 名表格显示 CRUX 看跌、DUNE 9月27日 30 看涨（2.17）和 BRDX 10月11日 25 看跌（2.00）；GLYN 与 CRUX 11月15日 的看涨也通过了，但没有载入。核心结论由交易时段和全部五个阈值提供，所以周二的运行写的是 2 个标的共 2 份合约；要点属于 Recipe 内容，两天一字不差。",
+			"Monday's run of the Unusual Options Activity Screener at its defaults flags 5 contracts across 3 names; their median volume/OI is 2.00 and the highest is 2.67, the CRUX Oct 4 60 put. Its table of the top 3 shows the CRUX put, the DUNE Sep 27 30 call at 2.17 and the BRDX Oct 11 25 put at 2.00; the BRDX Oct 18 and CRUX Nov 15 calls passed but aren't loaded. The Bottom line is fed by the session and all five thresholds, so Tuesday's run reads 2 contracts across 2 names; the Takeaways, recipe content, are word for word the same on both days.",
+			"周一以默认阈值运行 Unusual Options Activity Screener，3 个标的共 5 份合约入选；它们的成交量/OI 中位数为 2.00，最高为 2.67，即 CRUX 10月4日 60 看跌。前 3 名表格显示 CRUX 看跌、DUNE 9月27日 30 看涨（2.17）和 BRDX 10月11日 25 看跌（2.00）；BRDX 10月18日 与 CRUX 11月15日 的看涨也通过了，但没有载入。核心结论由交易时段和全部五个阈值提供，所以周二的运行写的是 2 个标的共 2 份合约；要点属于 Recipe 内容，两天一字不差。",
 		),
 		misconception: t(
 			"Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
@@ -518,8 +518,8 @@ export const workflowUnits: TeachingUnit[] = [
 			"TradingFlow AI 在数据旁边工作：它能理解你打开的页面，可以用只读工具查询市场数据，并用图表和表格作答。它的回答是草稿。依赖每句话之前先分类：报告中有的、能从行数据算出的，还是超出数据的。成交流无法识别谁交易、为什么，或一笔交易是否开仓；任何交易时段的数据也都不支持关于价格走向的说法；TradingFlow 自己的报告也说明，这些指标都不能证明身份、意图或未来走势。每条回复消耗积分：普通回复 1 积分，含图表或深度分析 2 积分；侧边栏显示余额，“账单”列出每条回复。Annotate 把页面上的一个元素作为上下文附上。在 Recipe 上，AI Insight 解释一次已完成的运行，不改动任何内容；Edit with AI 则打开一份你可以修改并保存的私有草稿。能否使用 TradingFlow AI 取决于你的方案、AI 授权和灰度范围。",
 		),
 		example: t(
-			'Asked about Monday\'s screener, TradingFlow AI writes five sentences. "The screen flagged 5 contracts across 4 names" is in the key figures. "The CRUX Oct 4 60 put traded 2.67 times its open interest" is 2,400 ÷ 900 from its row, and "3 of the 5 expire within 30 days" is a count of the expiry column. "Someone opened a large bearish bet on CRUX ahead of news" and "CRUX will fall before Oct 4" are not supported. Three questions with one chart cost 1 + 2 + 1 = 4 credits.',
-			"问到周一的筛选器时，TradingFlow AI 写了五句话。“筛选在 4 个标的中标出了 5 份合约”在关键数字里。“CRUX 10月4日 60 看跌的成交量是其未平仓量的 2.67 倍”是从它那一行算出的 2,400 ÷ 900；“5 份中有 3 份在 30 天内到期”是对到期日那列的计数。“有人在消息公布前对 CRUX 建立了大额看空押注”和“CRUX 会在10月4日前下跌”都没有依据。三个问题中一条含图表，消耗 1 + 2 + 1 = 4 积分。",
+			'Asked about Monday\'s screener, TradingFlow AI writes five sentences. "The screen flagged 5 contracts across 3 names" is in the key figures. "The CRUX Oct 4 60 put traded 2.67 times its open interest" is 2,400 ÷ 900 from its row, and "3 of the 5 expire within 30 days" is a count of the expiry column. "Someone opened a large bearish bet on CRUX ahead of news" and "CRUX will fall before Oct 4" are not supported. Three questions with one chart cost 1 + 2 + 1 = 4 credits.',
+			"问到周一的筛选器时，TradingFlow AI 写了五句话。“筛选在 3 个标的中标出了 5 份合约”在关键数字里。“CRUX 10月4日 60 看跌的成交量是其未平仓量的 2.67 倍”是从它那一行算出的 2,400 ÷ 900；“5 份中有 3 份在 30 天内到期”是对到期日那列的计数。“有人在消息公布前对 CRUX 建立了大额看空押注”和“CRUX 会在10月4日前下跌”都没有依据。三个问题中一条含图表，消耗 1 + 2 + 1 = 4 积分。",
 		),
 		misconception: t(
 			"A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
@@ -533,8 +533,8 @@ export const workflowUnits: TeachingUnit[] = [
 					"unsupported",
 				],
 				[
-					"The DUNE Sep 27 30 call traded 1,300 against 600 open interest.",
-					"DUNE 9月27日 30 看涨成交 1,300 张，未平仓量 600。",
+					"The DUNE Sep 27 30 call traded 780 against 360 open interest.",
+					"DUNE 9月27日 30 看涨成交 780 张，未平仓量 360。",
 					"report",
 				],
 				[

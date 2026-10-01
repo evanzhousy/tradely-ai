@@ -141,7 +141,8 @@ const alfaCall = (
 /**
  * Monday's chain snapshot as the screen reads it. ALFA's calls are the Monday ledger's four;
  * none of them clears the default screen, while five peer contracts do. DUNE's 40 call is a
- * thin contract that only a lowered volume or open-interest floor lets in.
+ * thin contract that only a lowered volume or open-interest floor lets in. Each name's rows
+ * stay within its whole-symbol option volume in the Monday universe.
  */
 export const mondayScreen: readonly ScreenContract[] = [
 	{
@@ -160,8 +161,8 @@ export const mondayScreen: readonly ScreenContract[] = [
 		right: "call",
 		strike: 30,
 		expiry: "sep27",
-		volume: 1_300,
-		openInterest: 600,
+		volume: 780,
+		openInterest: 360,
 		typical: 150,
 	},
 	{
@@ -175,10 +176,10 @@ export const mondayScreen: readonly ScreenContract[] = [
 		typical: 200,
 	},
 	{
-		id: "glyn-oct18-45c",
-		symbol: "GLYN",
+		id: "brdx-oct18-28c",
+		symbol: "BRDX",
 		right: "call",
-		strike: 45,
+		strike: 28,
 		expiry: "oct18",
 		volume: 900,
 		openInterest: 720,
@@ -212,7 +213,7 @@ export const mondayScreen: readonly ScreenContract[] = [
 
 /**
  * Tuesday's snapshot. Open interest has absorbed Monday's opening trades, so most of Monday's
- * names fall back below the screen; EMBR, whose Monday figure never arrived, now has one.
+ * contracts fall back below the screen; EMBR, absent on Monday, now passes.
  */
 export const tuesdayScreen: readonly ScreenContract[] = [
 	{
@@ -231,8 +232,8 @@ export const tuesdayScreen: readonly ScreenContract[] = [
 		right: "call",
 		strike: 30,
 		expiry: "sep27",
-		volume: 2_100,
-		openInterest: 1_700,
+		volume: 1_300,
+		openInterest: 1_050,
 		typical: 250,
 	},
 	{

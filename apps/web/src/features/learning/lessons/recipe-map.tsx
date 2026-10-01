@@ -1041,8 +1041,8 @@ const scenes = [
 			answer: "five",
 			revealAt: 1,
 			explain: [
-				"The key figures count every match: five contracts across four names. The table loads only the top three by volume/OI.",
-				"关键数字统计了所有匹配：四个标的共五份合约。表格只载入了成交量/OI 前三名。",
+				"The key figures count every match: five contracts across three names. The table loads only the top three by volume/OI.",
+				"关键数字统计了所有匹配：三个标的共五份合约。表格只载入了成交量/OI 前三名。",
 			],
 		},
 		beats: [
