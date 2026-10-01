@@ -768,4 +768,138 @@ export const workflowUnits: TeachingUnit[] = [
 			};
 		},
 	},
+	{
+		id: "edit-with-ai",
+		conceptLab: {
+			kind: "edit-with-ai",
+			intro: t(
+				"Write a prompt whose result you can review, undo an edit that changed more than you asked, and see what Save keeps.",
+				"写一个结果可以审阅的提示，撤销超出要求的修改，并看清 Save 保留了什么。",
+			),
+		},
+		sources: [cookbooksGuide],
+		explanation: t(
+			"Recipe authoring is separate from Cookbook access: it needs a paid plan, the authoring rollout on your account, and TradingFlow AI consent and credits. Edit with AI forks an official recipe into a private working draft, and New recipe starts a blank one that the assistant drafts from your description; the official template is never edited in place. The most reliable prompt names the question, the part that may change, the reader's inputs, the evidence to show and what must stay untouched, and asks for one bounded change at a time. After each edit, check the title and description, the inputs, where the new block landed and the rest of the report against the previous version; if blocks were removed that you didn't ask for, select Undo before the next edit. Changing an input's value in the preview only sets a draft value for that run; changing its label, default or meaning is a recipe change. A preview is not a save: Save keeps the current recipe and the header shows Saved, while Save as… keeps a separate private copy. TradingFlow validates the recipe before saving, with a read-only dry run when parameters, queries or anchors change. Saved recipes are owner-only, with no public, organization or share-link state.",
+			"编写 Recipe 与使用 Cookbooks 是两回事：它需要付费方案、你的账户开通了编写功能的灰度，以及 TradingFlow AI 授权和积分。Edit with AI 把官方 Recipe 分叉成一份私有工作草稿；New recipe 从空白开始，由助手根据你的描述起草。官方模板从不被原地修改。最可靠的提示会写明问题、允许修改的部分、读者的输入、要展示的证据，以及必须保持不变的内容，并且一次只要求一处有边界的修改。每次修改后，检查标题和说明、输入、新区块的位置，并把报告的其余部分与上一个版本对照；如果有你没要求删除的区块被删了，在下一次修改前先选 Undo。在预览中修改输入的值，只是为这次运行设定草稿值；修改它的标签、默认值或含义才是对 Recipe 的修改。预览不等于保存：Save 保存当前 Recipe，页眉显示 Saved；Save as… 则另存一份私有副本。保存前 TradingFlow 会校验 Recipe；参数、查询或锚点有变化时，还会做一次只读试运行。保存的 Recipe 只属于你，没有公开、组织或分享链接状态。",
+		),
+		example: t(
+			'In the course\'s market you fork Daily Market Recap and ask: "Change Spotlight so the reader can choose a symbol, with ALFA as the default." The preview changes Spotlight, but Index GEX is gone. You select Undo, then repeat the request with "Keep everything else unchanged" and "Do not remove any existing blocks," and only Spotlight differs. You save; the recipe appears under My recipes, visible only to you, and you run it for Monday with ALFA.',
+			"在课程的市场里，你分叉 Daily Market Recap 并提出：“修改 Spotlight，让读者可以选择标的，默认 ALFA。”预览改了 Spotlight，但 Index GEX 不见了。你选 Undo，然后重发请求，加上“其他一切保持不变”和“不要删除任何已有区块”，这次只有 Spotlight 不同。你保存后，Recipe 出现在 My recipes 中，只有你能看到；你用 ALFA 为周一运行了一次。",
+		),
+		misconception: t(
+			'"The preview looks right, so it\'s saved." A preview is a draft: nothing is kept until Save, and nothing you save is shared.',
+			"“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。",
+		),
+		case: (v) => {
+			const symbol = ["ALFA", "CRUX", "DUNE", "BRDX"][v];
+			const other = ["CRUX", "ALFA", "BRDX", "DUNE"][v];
+			const removed = [
+				"Index GEX",
+				"Market tone",
+				"Where the money went",
+				"Index GEX",
+			][v];
+			return {
+				brief: t(
+					"You fork Daily Market Recap in TradingFlow's authoring workspace and change it with AI.",
+					"你在 TradingFlow 的编写工作区分叉 Daily Market Recap，并用 AI 修改它。",
+				),
+				questions: [
+					c(
+						"prompt",
+						"Which prompt sets a boundary you can review?",
+						"哪个提示划定了一个你能审阅的范围？",
+						[
+							[
+								"bounded",
+								`Keep every chapter and change only Spotlight: let the reader choose a symbol, ${symbol} by default.`,
+								`保留所有章节，只修改 Spotlight：让读者可以选择标的，默认 ${symbol}。`,
+							],
+							[
+								"vague",
+								`Make this a ${symbol} report.`,
+								`把它改成一份 ${symbol} 报告。`,
+							],
+							["subjective", "Make it smarter.", "让它更聪明一点。"],
+						],
+						"bounded",
+						"Naming the part that may change and what must stay gives a change you can check; the others leave the assistant to decide.",
+						"写明允许修改的部分和必须保留的内容，修改才可以核对；另外两个都让助手自己决定。",
+					),
+					c(
+						"removed",
+						`After an edit, the preview shows ${removed} was removed, though you didn't ask for that. What do you do first?`,
+						`一次修改之后，预览显示 ${removed} 被删除了，而你并没有要求。你首先做什么？`,
+						[
+							[
+								"undo",
+								"Undo, then repeat the request with what must stay",
+								"撤销，然后重发请求并写明哪些要保留",
+							],
+							["repair", "Ask the assistant to restore it", "让助手把它恢复"],
+							["save", "Save, and fix it later", "先保存，之后再修"],
+						],
+						"undo",
+						"Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
+						"撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。",
+					),
+					c(
+						"input",
+						`In the preview you change the Symbol input from ${symbol} to ${other}. What changed?`,
+						`你在预览中把 Symbol 输入从 ${symbol} 改成 ${other}。改变了什么？`,
+						[
+							[
+								"value",
+								"Only the draft value for this run",
+								"只是这次运行的草稿值",
+							],
+							["default", "The recipe's default symbol", "Recipe 的默认标的"],
+							["official", "The official recipe", "官方 Recipe"],
+						],
+						"value",
+						"An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
+						"输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。",
+					),
+					c(
+						"saved",
+						"You close the tab while the header still shows unsaved changes. What's kept?",
+						"页眉仍显示有未保存的修改时，你关掉了标签页。保留下来的是什么？",
+						[
+							[
+								"nothing",
+								"Nothing: a preview isn't a save",
+								"什么都没有：预览不等于保存",
+							],
+							["draft", "The draft, saved automatically", "草稿，已自动保存"],
+							[
+								"official",
+								"The changes, on the official recipe",
+								"这些修改，落在官方 Recipe 上",
+							],
+						],
+						"nothing",
+						"Only Save keeps a recipe, and the header shows Saved when it has; a fork never edits the official recipe.",
+						"只有 Save 才会保留 Recipe，保存后页眉会显示 Saved；分叉从不修改官方 Recipe。",
+					),
+					c(
+						"share",
+						"A colleague asks for your saved recipe. What does TradingFlow let you do?",
+						"同事想要你保存的 Recipe。TradingFlow 允许你做什么？",
+						[
+							[
+								"none",
+								"Nothing: your recipes are owner-only",
+								"什么都不能：你的 Recipe 只属于你",
+							],
+							["link", "Send a share link", "发送分享链接"],
+							["org", "Publish it to your organization", "发布给你的组织"],
+						],
+						"none",
+						"User recipes have no public, organization or share-link state; describe the prompt and checks instead.",
+						"用户 Recipe 没有公开、组织或分享链接状态；可以改为描述你的提示和检查步骤。",
+					),
+				],
+			};
+		},
+	},
 ];

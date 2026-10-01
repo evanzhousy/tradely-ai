@@ -578,4 +578,14 @@ export const syllabus: readonly Entry[] = [
 		["C35", "C36"],
 		["ai-verify", "rank-symbols"],
 	),
+	lesson(
+		"edit-with-ai",
+		"workflows",
+		"Fork or write a recipe with AI",
+		"用 AI 分叉或编写 Recipe",
+		"Scope an AI edit so you can review it, undo a change you didn't ask for, and save a private recipe on purpose.",
+		"给 AI 修改划定范围以便审阅，撤销你没要求的改动，并有意识地保存私有 Recipe。",
+		["C36", "C37"],
+		["custom-formulas"],
+	),
 ];

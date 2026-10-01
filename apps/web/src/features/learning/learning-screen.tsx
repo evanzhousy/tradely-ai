@@ -73,6 +73,7 @@ import { ResearchPacketWalkthrough } from "./lessons/cookbook-research-packet";
 import { CustomFormulasWalkthrough } from "./lessons/custom-formulas";
 import { DeltaWalkthrough } from "./lessons/delta";
 import { DexDeiWalkthrough } from "./lessons/dex-dei-gex";
+import { EditWithAiWalkthrough } from "./lessons/edit-with-ai";
 import { ExecutionConditionsWalkthrough } from "./lessons/execution-conditions";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
@@ -139,6 +140,7 @@ const conceptLabs = {
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureWalkthrough,
+	"edit-with-ai": EditWithAiWalkthrough,
 	"custom-formulas": CustomFormulasWalkthrough,
 	"ai-verify": AiVerifyWalkthrough,
 	"research-checklist": ResearchChecklistWalkthrough,

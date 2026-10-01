@@ -147,7 +147,8 @@ export type LearningStepView = {
 		| "recipe-inputs"
 		| "research-checklist"
 		| "ai-verify"
-		| "custom-formulas";
+		| "custom-formulas"
+		| "edit-with-ai";
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

@@ -476,6 +476,54 @@ export const tradingFlowLabs: readonly TradingFlowLab[] = [
 			"写下你的公式、输出单位和所选格式；如果创建了这一列，再写下一行显示 N/A 的行及原因。",
 		),
 	},
+	{
+		id: "edit-with-ai",
+		lessonId: "edit-with-ai",
+		recipeSlug: "market-recap",
+		path: null,
+		version: 1,
+		title: text(
+			"Fork a recipe and make one reviewed change",
+			"分叉一个 Recipe，做一次经过审阅的修改",
+		),
+		recipeTitle: "Daily Market Recap",
+		goal: text(
+			"Make one bounded AI edit to a private copy, review it against the previous version, and save only what you checked.",
+			"对一份私有副本做一次有边界的 AI 修改，与上一个版本对照审阅，只保存你核查过的内容。",
+		),
+		prerequisites: ["custom-formulas"],
+		params: {},
+		settings: text(
+			"Latest completed session. Needs recipe authoring on your account, a separate rollout from Cookbooks, plus TradingFlow AI consent and credits. If Edit with AI is missing, write the prompt and your review checklist without running them.",
+			"最近一个完整的交易时段。需要你的账户开通 Recipe 编写（与 Cookbooks 分开的灰度功能），以及 TradingFlow AI 授权和积分。如果没有 Edit with AI，就只写出提示和你的审阅清单，不运行。",
+		),
+		sample: text(
+			'In the course\'s market, a first edit to Spotlight also dropped Index GEX; Undo, then a prompt that said "keep everything else unchanged", gave a change limited to Spotlight.',
+			"在课程的市场里，第一次修改 Spotlight 时 Index GEX 也被删掉了；先撤销，再用写明“其他一切保持不变”的提示，修改就只落在 Spotlight 上。",
+		),
+		steps: [
+			text(
+				"Open Daily Market Recap, note the session, and select Edit with AI. Confirm you're in a private working draft and the official recipe is unchanged.",
+				"打开 Daily Market Recap，记下交易时段，选择 Edit with AI。确认你在一份私有工作草稿中，官方 Recipe 没有变化。",
+			),
+			text(
+				"Write one bounded prompt: the change, the reader input with its default, and what must stay unchanged. Send it once.",
+				"写一个有边界的提示：要做的修改、读者输入及其默认值，以及必须保持不变的内容。只发送一次。",
+			),
+			text(
+				"Review the preview: title and description, inputs, the changed block, and the rest against the previous version. If something you didn't ask for changed or disappeared, select Undo.",
+				"审阅预览：标题和说明、输入、修改过的区块，并把其余部分与上一个版本对照。如果有你没要求的改动或删除，选 Undo。",
+			),
+			text(
+				"Save only if the preview is right and you want to keep it. Then open it from My recipes and run it with one real input.",
+				"只有预览正确且你想保留时才保存。然后从 My recipes 打开它，用一个真实输入运行一次。",
+			),
+		],
+		inspect: text(
+			"Write your prompt, what changed, anything you undid and why, and whether you saved.",
+			"写下你的提示、改变了什么、撤销了什么及原因，以及是否保存。",
+		),
+	},
 ];
 
 export type TradingFlowLabId = TradingFlowLab["id"];
