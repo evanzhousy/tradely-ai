@@ -167,11 +167,11 @@ function LabContent({ lab }: { lab: Lab }) {
 								capture("tradingflow_link_opened", {
 									...properties(lab),
 									surface: "lesson_lab",
-									tool: "Cookbooks",
+									tool: lab.tool ?? "Cookbooks",
 								})
 							}
 						>
-							{t("lab.run")}
+							{lab.recipeSlug ? t("lab.run") : t("lab.openPage")}
 							<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
 						</HeroLink>
 						<p className="text-muted-foreground text-xs">{t("lab.keepOpen")}</p>

@@ -8,7 +8,7 @@ export const LOCALE_COOKIE = "tradely.locale";
 const messages = {
 	en: {
 		"lab.badge": "TradingFlow lab",
-		"lab.intro": "Includes a guided TradingFlow Recipe lab",
+		"lab.intro": "Includes a guided TradingFlow lab",
 		"lab.accessShort": "Platform access required",
 		"lab.sample": "Review the free worked example",
 		"lab.illustrative":
@@ -20,11 +20,12 @@ const messages = {
 			"Tradely lessons and worked examples are free. Running this lab requires TradingFlow access through an eligible trial or subscription. You can go directly to TradingFlow without a Tradely account.",
 		"lab.accessDetails": "Check current access and trial terms ↗",
 		"lab.run": "Run this lesson’s Recipe",
+		"lab.openPage": "Open this page in TradingFlow",
 		"lab.keepOpen":
-			"Opens a new tab. Keep this lesson beside the report. Study marks and Recipe execution are separate.",
+			"Opens a new tab. Keep this lesson beside TradingFlow. Study marks and what you do in TradingFlow are recorded separately.",
 		"lab.collectionTitle": "Put your learning to work in TradingFlow",
 		"lab.collectionDescription":
-			"Three guided Recipe labs connect concepts to a repeatable research routine. Read the lessons and worked examples free; TradingFlow access is required to run the reports.",
+			"Guided labs connect concepts to a repeatable research routine in TradingFlow. Read the lessons and worked examples free; TradingFlow access is required to run the labs.",
 		"lab.prerequisites": "Suggested preparation:",
 		"lab.open": "Explore this lab",
 		"complete.practiceAsGuest": "Practice without saving",
@@ -344,7 +345,7 @@ const messages = {
 	},
 	zh: {
 		"lab.badge": "TradingFlow 实践",
-		"lab.intro": "本课含 TradingFlow Recipe 引导实践",
+		"lab.intro": "本课含 TradingFlow 引导实践",
 		"lab.accessShort": "需要平台访问权限",
 		"lab.sample": "查看免费解析示例",
 		"lab.illustrative": "教学示例 · 示例数值，并非 TradingFlow 当前报告",
@@ -355,11 +356,12 @@ const messages = {
 			"Tradely 课程与示例免费。运行此实践需要符合条件的 TradingFlow 试用或订阅权限，无需先注册 Tradely。",
 		"lab.accessDetails": "查看当前访问和试用条款 ↗",
 		"lab.run": "运行本课 Recipe",
+		"lab.openPage": "在 TradingFlow 中打开此页面",
 		"lab.keepOpen":
-			"在新标签页打开，可将课程放在报告旁。学习标记与 Recipe 运行分别记录。",
+			"在新标签页打开，可将课程放在 TradingFlow 旁。学习标记与你在 TradingFlow 中的操作分别记录。",
 		"lab.collectionTitle": "在 TradingFlow 中运用所学",
 		"lab.collectionDescription":
-			"三个 Recipe 引导实践把概念连接到可重复的研究流程。课程和解析示例免费阅读，运行报告需要 TradingFlow 访问权限。",
+			"引导实践把概念连接到 TradingFlow 中可重复的研究流程。课程和解析示例免费阅读，进行实践需要 TradingFlow 访问权限。",
 		"lab.prerequisites": "建议先学：",
 		"lab.open": "查看本实践",
 		"complete.practiceAsGuest": "不保存记录，直接练习",

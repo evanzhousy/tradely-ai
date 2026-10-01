@@ -15,7 +15,9 @@ export type TradingFlowPractice = {
 		| "Rank Contracts"
 		| "Rank Symbols"
 		| "Cookbooks"
-		| "Market Recap";
+		| "Market Recap"
+		| "TradingFlow AI"
+		| "Agent connection";
 };
 
 export type LessonMedia = {

@@ -1,13 +1,42 @@
+import type { TradingFlowPractice } from "@/content/course";
 import type { Locale } from "@/i18n/messages";
 
 const text = (en: string, zh: string): Record<Locale, string> => ({ en, zh });
 
-/** Teaching metadata only. TradingFlow owns the reports, access and run outcomes. */
-export const tradingFlowLabs = [
+/**
+ * Teaching metadata only. TradingFlow owns the reports, access and run outcomes. A lab runs one
+ * recipe, or, with `path`, opens another TradingFlow page such as Home.
+ */
+type LabText = Readonly<Record<Locale, string>>;
+
+export type TradingFlowLab = {
+	id: string;
+	lessonId: string;
+	/** The recipe the lab runs, or null when the lab opens another page. */
+	recipeSlug: string | null;
+	/** The app page a non-recipe lab opens, such as "/app/home". */
+	path: string | null;
+	version: number;
+	title: LabText;
+	/** What the lab works in: a recipe's name or a TradingFlow page. */
+	recipeTitle: string;
+	/** The TradingFlow surface a page lab opens; recipe labs open Cookbooks. */
+	tool?: TradingFlowPractice["tool"];
+	goal: LabText;
+	prerequisites: readonly string[];
+	params: Readonly<Record<string, string>>;
+	settings: LabText;
+	sample: LabText;
+	steps: readonly LabText[];
+	inspect: LabText;
+};
+
+export const tradingFlowLabs: readonly TradingFlowLab[] = [
 	{
 		id: "unusual-activity",
 		lessonId: "unusual-activity",
 		recipeSlug: "unusual-options-activity",
+		path: null,
 		version: 1,
 		title: text("Investigate unusual activity", "调查异常成交"),
 		recipeTitle: "Unusual Options Activity Screener",
@@ -58,6 +87,7 @@ export const tradingFlowLabs = [
 		id: "gamma-exposure",
 		lessonId: "gamma-exposure",
 		recipeSlug: "gamma-key-levels",
+		path: null,
 		version: 1,
 		title: text("Read a gamma structure map", "解读 Gamma 结构图"),
 		recipeTitle: "Gamma Structure Map",
@@ -102,6 +132,7 @@ export const tradingFlowLabs = [
 		id: "market-recap",
 		lessonId: "market-recap",
 		recipeSlug: "market-recap",
+		path: null,
 		version: 1,
 		title: text("Write an evidence-backed recap", "撰写有证据支持的复盘"),
 		recipeTitle: "Daily Market Recap",
@@ -146,6 +177,7 @@ export const tradingFlowLabs = [
 		id: "tradingflow-recipes",
 		lessonId: "tradingflow-recipes",
 		recipeSlug: "unusual-options-activity",
+		path: null,
 		version: 1,
 		title: text("Read which session a run shows", "看清一次运行展示的交易时段"),
 		recipeTitle: "Unusual Options Activity Screener",
@@ -196,6 +228,7 @@ export const tradingFlowLabs = [
 		id: "recipe-map",
 		lessonId: "recipe-map",
 		recipeSlug: "market-recap",
+		path: null,
 		version: 1,
 		title: text(
 			"Trace a sentence through the recipe map",
@@ -243,6 +276,7 @@ export const tradingFlowLabs = [
 		id: "recipe-inputs",
 		lessonId: "recipe-inputs",
 		recipeSlug: "unusual-options-activity",
+		path: null,
 		version: 1,
 		title: text("Draft, run and discard an input", "草拟、运行并放弃一个输入"),
 		recipeTitle: "Unusual Options Activity Screener",
@@ -289,9 +323,8 @@ export const tradingFlowLabs = [
 			"写下默认设置下的数量、改动后的数量、新的领先合约及其成交量和未平仓量，以及你的改动是重新运行问题还是提出了新问题。",
 		),
 	},
-] as const;
+];
 
-export type TradingFlowLab = (typeof tradingFlowLabs)[number];
 export type TradingFlowLabId = TradingFlowLab["id"];
 
 export function getTradingFlowLab(lessonId: string) {
@@ -312,10 +345,13 @@ export function tradingFlowLabUrl(
 	)
 		throw new Error("Invalid session date");
 	const url = new URL(
-		`https://app.tradingflow.com/app/cookbooks/${lab.recipeSlug}${options.date ? `~${options.date}` : ""}`,
+		lab.recipeSlug
+			? `https://app.tradingflow.com/app/cookbooks/${lab.recipeSlug}${options.date ? `~${options.date}` : ""}`
+			: `https://app.tradingflow.com${lab.path}`,
 	);
-	for (const [key, value] of Object.entries(lab.params))
-		url.searchParams.set(`p_${key}`, value);
+	if (lab.recipeSlug)
+		for (const [key, value] of Object.entries(lab.params))
+			url.searchParams.set(`p_${key}`, value);
 	if (options.attribution) {
 		url.searchParams.set("utm_source", "tradely");
 		url.searchParams.set("utm_medium", "course");
