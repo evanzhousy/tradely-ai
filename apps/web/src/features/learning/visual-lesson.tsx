@@ -91,6 +91,11 @@ const lessons = {
 			default: m.TradingflowRecipesWalkthrough,
 		})),
 	),
+	"recipe-map": lazy(() =>
+		import("./lessons/recipe-map").then((m) => ({
+			default: m.RecipeMapWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,

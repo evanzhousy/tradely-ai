@@ -192,6 +192,53 @@ export const tradingFlowLabs = [
 			"写下交易时段、运行时间，以及选择更早时段后发生变化的一个数字。",
 		),
 	},
+	{
+		id: "recipe-map",
+		lessonId: "recipe-map",
+		recipeSlug: "market-recap",
+		version: 1,
+		title: text(
+			"Trace a sentence through the recipe map",
+			"通过 Recipe 地图追溯一句话",
+		),
+		recipeTitle: "Daily Market Recap",
+		goal: text(
+			"Audit a report's text: find what each sentence is computed from, and what was written in advance.",
+			"审核报告的文字：找出每句话由什么算出，哪些是预先写好的。",
+		),
+		prerequisites: ["tradingflow-recipes"],
+		params: {},
+		settings: text(
+			"Latest completed session. Keep it fixed while you trace.",
+			"使用最近一个完整的交易时段，追溯时保持不变。",
+		),
+		sample: text(
+			"In the course's market, the screener's Bottom line is fed by the session and all five thresholds, so it changes from Monday to Tuesday; its Takeaways are recipe content and read the same on both days.",
+			"在课程的市场里，筛选器的核心结论由交易时段和全部五个阈值提供，所以从周一到周二会变；它的要点是 Recipe 内容，两天读起来一样。",
+		),
+		steps: [
+			text(
+				"Open the recipe, then Open recipe map. Write down the market session and last-run time it shows.",
+				"打开 Recipe，再打开 Recipe 地图。记下它显示的交易时段和最近一次运行时间。",
+			),
+			text(
+				"Pick one sentence in the Bottom line. In the map, find its cell, the live data behind it and the inputs that feed that data.",
+				"在核心结论里选一句话。在地图中找到它的单元格、背后的实时数据，以及为这些数据提供输入的项目。",
+			),
+			text(
+				"Find one text cell marked as recipe content and explain why it isn't evidence about this session.",
+				"找到一个标为 Recipe 内容的文字单元格，并说明它为何不是关于本交易时段的证据。",
+			),
+			text(
+				"Find one table and compare how many rows it shows with the count in the key figures.",
+				"找到一个表格，比较它显示的行数与关键数字中的总数。",
+			),
+		],
+		inspect: text(
+			"Write the sentence you traced, its live data and inputs, one recipe-content cell, and the shown-versus-total counts.",
+			"写下你追溯的句子、它的实时数据和输入、一个 Recipe 内容单元格，以及显示数与总数。",
+		),
+	},
 ] as const;
 
 export type TradingFlowLab = (typeof tradingFlowLabs)[number];

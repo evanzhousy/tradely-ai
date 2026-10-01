@@ -528,4 +528,14 @@ export const syllabus: readonly Entry[] = [
 		["C31"],
 		["cookbook-research-packet"],
 	),
+	lesson(
+		"recipe-map",
+		"workflows",
+		"Read a recipe like an auditor",
+		"像审计员一样读 Recipe",
+		"Trace a report's sentences through the recipe map, tell text written into the recipe from text computed for the session, and keep a top-N table apart from the whole screen.",
+		"通过 Recipe 地图追溯报告中的句子，分清写进 Recipe 的文字与针对交易时段算出的文字，并把前 N 名表格与整个筛选结果区分开。",
+		["C31", "C32"],
+		["tradingflow-recipes"],
+	),
 ];

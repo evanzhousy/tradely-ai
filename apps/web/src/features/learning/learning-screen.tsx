@@ -94,6 +94,7 @@ import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { RankContractsWalkthrough } from "./lessons/rank-contracts";
 import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
+import { RecipeMapWalkthrough } from "./lessons/recipe-map";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { StructuralLevelsWalkthrough } from "./lessons/structural-levels";
@@ -134,6 +135,7 @@ const conceptLabs = {
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureWalkthrough,
+	"recipe-map": RecipeMapWalkthrough,
 	"tradingflow-recipes": TradingflowRecipesWalkthrough,
 	"volatility-surface": VolatilitySurfaceWalkthrough,
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,
