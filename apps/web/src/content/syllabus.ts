@@ -538,4 +538,14 @@ export const syllabus: readonly Entry[] = [
 		["C31", "C32"],
 		["tradingflow-recipes"],
 	),
+	lesson(
+		"recipe-inputs",
+		"workflows",
+		"Change the inputs, keep the question",
+		"改输入，不改问题",
+		"See why an edited input does nothing until you run it, tell a re-run of the same question from a new one, and watch a thin contract take over when the floors drop.",
+		"理解为何修改的输入在运行前不起作用，分清重跑同一个问题与提出新问题，并观察门槛降低后冷门合约如何占据榜首。",
+		["C31", "C33"],
+		["recipe-map"],
+	),
 ];

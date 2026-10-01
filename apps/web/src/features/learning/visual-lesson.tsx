@@ -96,6 +96,11 @@ const lessons = {
 			default: m.RecipeMapWalkthrough,
 		})),
 	),
+	"recipe-inputs": lazy(() =>
+		import("./lessons/recipe-inputs").then((m) => ({
+			default: m.RecipeInputsWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,

@@ -239,6 +239,56 @@ export const tradingFlowLabs = [
 			"写下你追溯的句子、它的实时数据和输入、一个 Recipe 内容单元格，以及显示数与总数。",
 		),
 	},
+	{
+		id: "recipe-inputs",
+		lessonId: "recipe-inputs",
+		recipeSlug: "unusual-options-activity",
+		version: 1,
+		title: text("Draft, run and discard an input", "草拟、运行并放弃一个输入"),
+		recipeTitle: "Unusual Options Activity Screener",
+		goal: text(
+			"See exactly when a report changes, and what the screen's floors keep out.",
+			"弄清报告究竟何时变化，以及筛选门槛挡住了什么。",
+		),
+		prerequisites: ["recipe-map"],
+		params: {
+			min_vol_oi: "1",
+			min_rel_vol: "0",
+			min_volume: "500",
+			min_oi: "200",
+			max_dte: "60",
+		},
+		settings: text(
+			"Latest completed session, starting from the default thresholds.",
+			"最近一个完整的交易时段，从默认阈值开始。",
+		),
+		sample: text(
+			"In the course's market, typing 1,000 into Min OI changes nothing until Run; then one contract passes instead of five. With both floors at 0, a contract with 30 trades against 5 open interest leads at 6.00.",
+			"在课程的市场里，在最低未平仓量里输入 1,000，点“运行”之前什么都不变；运行后只有一份合约通过，而不是五份。两个门槛都为 0 时，一份成交 30 张、未平仓量 5 的合约以 6.00 领先。",
+		),
+		steps: [
+			text(
+				"Open the recipe at its defaults and note how many contracts the key figures count.",
+				"以默认值打开 Recipe，记下关键数字统计的合约数量。",
+			),
+			text(
+				"Change Min OI without running. Check that the key figures and the table haven't moved, then press Discard changes.",
+				"修改最低未平仓量但不运行。确认关键数字和表格没有变化，然后点“放弃更改”。",
+			),
+			text(
+				"Set Min volume and Min OI lower and press Run. Note which contract now leads, with its volume and open interest.",
+				"把最低成交量和最低未平仓量调低后点“运行”。记下现在领先的合约及其成交量和未平仓量。",
+			),
+			text(
+				"Reload the report to return to the defaults before you leave.",
+				"离开前重新加载报告，恢复默认值。",
+			),
+		],
+		inspect: text(
+			"Write the count at the defaults, the count after your change, the new leader with its volume and open interest, and whether your change re-ran the question or asked a new one.",
+			"写下默认设置下的数量、改动后的数量、新的领先合约及其成交量和未平仓量，以及你的改动是重新运行问题还是提出了新问题。",
+		),
+	},
 ] as const;
 
 export type TradingFlowLab = (typeof tradingFlowLabs)[number];
