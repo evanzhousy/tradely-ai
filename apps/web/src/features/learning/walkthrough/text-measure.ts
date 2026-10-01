@@ -8,9 +8,13 @@ export function textWidth(text: string, size: number) {
 	return width;
 }
 
+/** Closing punctuation that may not start a line in CJK text. */
+const NO_LINE_START = /^[、。，．：；！？）」』》〉】〕”’]$/;
+
 /**
  * Greedy line breaks: Latin text breaks at spaces, CJK text between any two characters.
- * Returns at least one line.
+ * A closing mark that would start a line takes the character before it along, so "。"
+ * never sits alone at the start of a line. Returns at least one line.
  */
 export function wrapText(text: string, maxWidth: number, size: number) {
 	const tokens: string[] = [];
@@ -28,14 +32,20 @@ export function wrapText(text: string, maxWidth: number, size: number) {
 	}
 	if (word) tokens.push(word);
 	const lines: string[] = [];
-	let line = "";
+	let line: string[] = [];
 	for (const token of tokens) {
-		const next = line + token;
-		if (line && textWidth(next.trimEnd(), size) > maxWidth) {
-			lines.push(line.trimEnd());
-			line = token === " " ? "" : token;
-		} else line = next;
+		const next = [...line, token].join("");
+		if (line.length && textWidth(next.trimEnd(), size) > maxWidth) {
+			const kept = line.slice(0, -1);
+			const carry =
+				NO_LINE_START.test(token) && line.at(-1) !== " " && kept.join("").trim()
+					? line.slice(-1)
+					: [];
+			lines.push((carry.length ? kept : line).join("").trimEnd());
+			line = token === " " ? carry : [...carry, token];
+		} else line.push(token);
 	}
-	if (line.trim()) lines.push(line.trimEnd());
+	const last = line.join("");
+	if (last.trim()) lines.push(last.trimEnd());
 	return lines.length ? lines : [""];
 }
