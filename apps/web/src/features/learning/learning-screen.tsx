@@ -69,6 +69,7 @@ import { AiVerifyWalkthrough } from "./lessons/ai-verify";
 import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
 import { CharmVannaWalkthrough } from "./lessons/charm-vanna";
+import { ConnectAgentWalkthrough } from "./lessons/connect-agent";
 import { ResearchPacketWalkthrough } from "./lessons/cookbook-research-packet";
 import { CustomFormulasWalkthrough } from "./lessons/custom-formulas";
 import { DeltaWalkthrough } from "./lessons/delta";
@@ -140,6 +141,7 @@ const conceptLabs = {
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureWalkthrough,
+	"connect-agent": ConnectAgentWalkthrough,
 	"edit-with-ai": EditWithAiWalkthrough,
 	"custom-formulas": CustomFormulasWalkthrough,
 	"ai-verify": AiVerifyWalkthrough,

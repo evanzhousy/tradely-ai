@@ -19,6 +19,10 @@ const rankSymbolsGuide = {
 	title: "TradingFlow · Rank Symbols",
 	href: "https://tradingflow.com/docs/rank-symbols/",
 };
+const mcpGuide = {
+	title: "TradingFlow · MCP server reference",
+	href: "https://app.tradingflow.com/docs/mcp.md",
+};
 
 export const workflowUnits: TeachingUnit[] = [
 	{
@@ -897,6 +901,123 @@ export const workflowUnits: TeachingUnit[] = [
 						"none",
 						"User recipes have no public, organization or share-link state; describe the prompt and checks instead.",
 						"用户 Recipe 没有公开、组织或分享链接状态；可以改为描述你的提示和检查步骤。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "connect-agent",
+		conceptLab: {
+			kind: "connect-agent",
+			intro: t(
+				"Pick how your AI client connects to TradingFlow, prove the connection with a check that can fail, and see what a key allows.",
+				"选择你的 AI 客户端如何连接 TradingFlow，用一个可能失败的检查证明连接，并看清一把密钥允许做什么。",
+			),
+		},
+		sources: [mcpGuide],
+		explanation: t(
+			"TradingFlow runs a remote MCP server, one HTTP endpoint at https://app.tradingflow.com/api/mcp, so there's nothing to install. Claude, in claude.ai, Claude Desktop, mobile, Cowork and Claude Code, signs in with your TradingFlow account and needs no API key. Cursor, Codex and OpenClaw connect with an API key, which Copy prompt on the Connect an AI agent page creates; hosted chat sites such as ChatGPT can't connect yet. An agent can report success while nothing is registered, so prove the connection with your client's own check, such as /mcp in Claude Code or codex mcp list. A plain request to the endpoint only shows it's up; a tools/list call with your key lists the tools that key reaches, and an error object still comes back with HTTP 200. Every data tool is read-only; recipe editing is an optional per-key permission, off by default, that Claude's sign-in never includes. The limit is 60 tool calls per key, or per Claude connection, in each 60-second window, and access is re-checked on every call, so a revoked key stops at once. Tool calls use no TradingFlow AI credits; your agent's own reasoning draws on its own budget.",
+			"TradingFlow 运行一个远程 MCP 服务器，只有一个 HTTP 端点 https://app.tradingflow.com/api/mcp，所以无需安装任何东西。Claude（claude.ai、Claude Desktop、移动端、Cowork 和 Claude Code）用你的 TradingFlow 账户登录，无需 API 密钥。Cursor、Codex 和 OpenClaw 通过 API 密钥连接，密钥由 Connect an AI agent 页面上的 Copy prompt 创建；ChatGPT 等托管聊天网站暂时无法连接。智能体可能报告成功，实际却什么都没注册，所以要用客户端自己的检查来证明连接，比如 Claude Code 中的 /mcp 或 codex mcp list。对端点的普通请求只能说明它在线；带密钥调用 tools/list 会列出这把密钥能用的工具，而错误对象返回时 HTTP 状态仍是 200。所有数据工具都是只读的；编辑 Recipe 是可选的按密钥授权，默认关闭，Claude 的登录方式从不包含它。限额是每把密钥（或每个 Claude 连接）每 60 秒窗口 60 次工具调用；每次调用都会重新检查访问权限，所以撤销的密钥会立刻失效。工具调用不消耗 TradingFlow AI 积分；智能体自己的推理使用它自己的额度。",
+		),
+		example: t(
+			"You connect Claude Code with claude mcp add --transport http tradingflow https://app.tradingflow.com/api/mcp and claude mcp login tradingflow, then run claude mcp get tradingflow, which says Connected. A Cursor agent on its own key says \"connected\"; you don't take its word for it, and tools/list with the key returns result.tools. When you revoke that key, its next call fails while Claude's connection keeps working.",
+			"你用 claude mcp add --transport http tradingflow https://app.tradingflow.com/api/mcp 和 claude mcp login tradingflow 连接 Claude Code，然后运行 claude mcp get tradingflow，它显示 Connected。一个使用自己密钥的 Cursor 智能体说“已连接”；你没有只听它的，而是带上密钥调用 tools/list，返回了 result.tools。撤销这把密钥后，它的下一次调用就失败了，而 Claude 的连接照常可用。",
+		),
+		misconception: t(
+			"\"The agent said it's connected, so it is.\" Only a check that can fail proves it: your client's own check, or tools/list with your key.",
+			"“智能体说已连接，那就是连上了。”只有一个可能失败的检查才能证明：客户端自己的检查，或带密钥调用 tools/list。",
+		),
+		case: (v) => {
+			const client = ["Claude Code", "Cursor", "ChatGPT", "Codex"][v];
+			const method = ["signin", "key", "none", "key"][v];
+			const calls = [75, 40, 90, 61][v];
+			return {
+				brief: t(
+					`You want ${client} to work with TradingFlow's live data.`,
+					`你想让 ${client} 使用 TradingFlow 的实时数据。`,
+				),
+				questions: [
+					c(
+						"method",
+						`How does ${client} connect to TradingFlow?`,
+						`${client} 如何连接 TradingFlow？`,
+						[
+							[
+								"signin",
+								"Sign in with your TradingFlow account, no API key",
+								"用 TradingFlow 账户登录，无需 API 密钥",
+							],
+							["key", "With an API key", "通过 API 密钥"],
+							["none", "It can't connect yet", "暂时无法连接"],
+						],
+						method,
+						"Claude signs in with your account; Cursor, Codex and OpenClaw use an API key; hosted chat sites such as ChatGPT can't connect yet.",
+						"Claude 用你的账户登录；Cursor、Codex 和 OpenClaw 使用 API 密钥；ChatGPT 等托管聊天网站暂时无法连接。",
+					),
+					c(
+						"proof",
+						"An agent says it's connected. Which check proves your client registered TradingFlow?",
+						"智能体说它已连接。哪个检查能证明你的客户端注册了 TradingFlow？",
+						[
+							[
+								"client",
+								"Your client's own check, such as /mcp or codex mcp list",
+								"客户端自己的检查，比如 /mcp 或 codex mcp list",
+							],
+							["reply", "The agent's reply", "智能体的回复"],
+							["get", "A plain request to the endpoint", "对端点的普通请求"],
+						],
+						"client",
+						"The agent can report success while nothing is registered, and a plain request only shows the endpoint is up.",
+						"智能体可能报告成功，实际却什么都没注册；普通请求只能说明端点在线。",
+					),
+					c(
+						"http",
+						"tools/list with your key comes back with HTTP 200 and an error object. Are you connected?",
+						"带密钥调用 tools/list 返回 HTTP 200 和一个错误对象。你连上了吗？",
+						[
+							[
+								"no",
+								"No: look the error code up in the reference",
+								"没有：去参考文档里查这个错误代码",
+							],
+							[
+								"yes",
+								"Yes: HTTP 200 means success",
+								"连上了：HTTP 200 表示成功",
+							],
+						],
+						"no",
+						"Only a result.tools array means connected; errors still return HTTP 200.",
+						"只有 result.tools 数组才表示已连接；错误返回时 HTTP 状态仍是 200。",
+					),
+					n(
+						"limit",
+						`An agent fires ${calls} tool calls on one key within a single 60-second window. How many of them can go through?`,
+						`一个智能体在同一个 60 秒窗口内用一把密钥发起了 ${calls} 次工具调用。其中最多能通过多少次？`,
+						Math.min(calls, 60),
+						"calls",
+						"次",
+						"The limit is 60 tool calls per key, or per Claude connection, in each 60-second window.",
+						"限额是每把密钥（或每个 Claude 连接）每 60 秒窗口 60 次工具调用。",
+					),
+					c(
+						"credits",
+						"How many TradingFlow AI credits do your agent's tool calls use?",
+						"智能体的工具调用会消耗多少 TradingFlow AI 积分？",
+						[
+							[
+								"none",
+								"None: the agent's own budget pays for its reasoning",
+								"不消耗：智能体的推理由它自己的额度支付",
+							],
+							["one", "1 credit per tool call", "每次工具调用 1 积分"],
+							["two", "2 credits when it returns a chart", "返回图表时 2 积分"],
+						],
+						"none",
+						"Tool calls run typed queries with no TradingFlow model call. Linking Slack is different: 1 AI credit per question.",
+						"工具调用只运行类型化查询，不调用 TradingFlow 的模型。关联 Slack 则不同：每个问题 1 个 AI 积分。",
 					),
 				],
 			};

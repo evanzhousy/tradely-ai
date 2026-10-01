@@ -121,6 +121,11 @@ const lessons = {
 			default: m.EditWithAiWalkthrough,
 		})),
 	),
+	"connect-agent": lazy(() =>
+		import("./lessons/connect-agent").then((m) => ({
+			default: m.ConnectAgentWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,

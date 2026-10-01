@@ -524,6 +524,55 @@ export const tradingFlowLabs: readonly TradingFlowLab[] = [
 			"写下你的提示、改变了什么、撤销了什么及原因，以及是否保存。",
 		),
 	},
+	{
+		id: "connect-agent",
+		lessonId: "connect-agent",
+		recipeSlug: null,
+		path: "/app/settings/mcp-connect",
+		tool: "Agent connection",
+		version: 1,
+		title: text(
+			"Connect an agent and prove it",
+			"连接一个智能体并证明它已连上",
+		),
+		recipeTitle: "Connect an AI agent",
+		goal: text(
+			"Connect one AI agent to TradingFlow, prove the connection with your client's own check, and check one answer against the app.",
+			"把一个 AI 智能体连接到 TradingFlow，用客户端自己的检查证明连接，并对照应用核对一个回答。",
+		),
+		prerequisites: ["edit-with-ai"],
+		params: {},
+		settings: text(
+			"Settings, Connect an AI agent. Claude signs in with your TradingFlow account; Cursor, Codex and OpenClaw need an API key, which Copy prompt creates. Hosted chat sites such as ChatGPT can't connect yet.",
+			"设置中的 Connect an AI agent。Claude 用你的 TradingFlow 账户登录；Cursor、Codex 和 OpenClaw 需要 API 密钥，由 Copy prompt 创建。ChatGPT 等托管聊天网站暂时无法连接。",
+		),
+		sample: text(
+			"In the course's market, an agent's \"connected\" proves nothing; /mcp listing tradingflow with its tools does, and a tools/list call that returns an error object with HTTP 200 means the key isn't working.",
+			"在课程的市场里，智能体说“已连接”什么都证明不了；/mcp 列出 tradingflow 及其工具才算证明；而 tools/list 返回带错误对象的 HTTP 200，说明密钥没有生效。",
+		),
+		steps: [
+			text(
+				"Pick your client. In Claude Code run claude mcp add --transport http tradingflow https://app.tradingflow.com/api/mcp, then claude mcp login tradingflow. For Cursor, Codex or OpenClaw, use Copy prompt, which creates a key.",
+				"选择你的客户端。在 Claude Code 中运行 claude mcp add --transport http tradingflow https://app.tradingflow.com/api/mcp，再运行 claude mcp login tradingflow。Cursor、Codex 或 OpenClaw 则使用 Copy prompt，它会创建一把密钥。",
+			),
+			text(
+				"Prove it with your client's own check: claude mcp get tradingflow or /mcp, codex mcp list, Cursor's MCP settings, or openclaw mcp doctor tradingflow --probe.",
+				"用客户端自己的检查证明它：claude mcp get tradingflow 或 /mcp、codex mcp list、Cursor 的 MCP 设置，或 openclaw mcp doctor tradingflow --probe。",
+			),
+			text(
+				"Send one of the page's Try it prompts. Note which tools the agent called, and check one number it reports against the same page in TradingFlow.",
+				"发送页面上的一条 Try it 提示。记下智能体调用了哪些工具，并对照 TradingFlow 中的同一页面核对它报告的一个数字。",
+			),
+			text(
+				"Revoke any key you no longer need from Manage keys; in Claude Code, claude mcp logout tradingflow disconnects.",
+				"在 Manage keys 中撤销不再需要的密钥；在 Claude Code 中，claude mcp logout tradingflow 会断开连接。",
+			),
+		],
+		inspect: text(
+			"Write your client, how you proved the connection, one number you checked against TradingFlow, and which keys you kept or revoked.",
+			"写下你的客户端、你如何证明连接、对照 TradingFlow 核对过的一个数字，以及你保留或撤销了哪些密钥。",
+		),
+	},
 ];
 
 export type TradingFlowLabId = TradingFlowLab["id"];

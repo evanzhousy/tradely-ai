@@ -148,7 +148,8 @@ export type LearningStepView = {
 		| "research-checklist"
 		| "ai-verify"
 		| "custom-formulas"
-		| "edit-with-ai";
+		| "edit-with-ai"
+		| "connect-agent";
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

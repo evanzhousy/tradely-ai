@@ -588,4 +588,14 @@ export const syllabus: readonly Entry[] = [
 		["C36", "C37"],
 		["custom-formulas"],
 	),
+	lesson(
+		"connect-agent",
+		"workflows",
+		"Connect your own AI agent",
+		"连接你自己的 AI 智能体",
+		"Connect Claude or another agent to TradingFlow's read-only tools, prove the connection yourself, and know what a key can and can't do.",
+		"把 Claude 或其他智能体连接到 TradingFlow 的只读工具，亲自证明连接成功，并了解一把密钥能做什么、不能做什么。",
+		["C37", "C38"],
+		["edit-with-ai"],
+	),
 ];
