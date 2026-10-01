@@ -106,6 +106,11 @@ const lessons = {
 			default: m.ResearchChecklistWalkthrough,
 		})),
 	),
+	"ai-verify": lazy(() =>
+		import("./lessons/ai-verify").then((m) => ({
+			default: m.AiVerifyWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,

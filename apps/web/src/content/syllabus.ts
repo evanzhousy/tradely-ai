@@ -558,4 +558,14 @@ export const syllabus: readonly Entry[] = [
 		["C33", "C34"],
 		["recipe-inputs"],
 	),
+	lesson(
+		"ai-verify",
+		"workflows",
+		"Ask TradingFlow AI, then verify",
+		"问 TradingFlow AI，然后核查",
+		"Sort an AI answer into what the report shows, what you can calculate and what goes beyond the data, count the credits a conversation uses, and tell AI Insight from Edit with AI.",
+		"把 AI 的回答分成报告中有的、能算出来的和超出数据的，算清一段对话消耗的积分，并分清 AI Insight 与 Edit with AI。",
+		["C34", "C35"],
+		["research-checklist"],
+	),
 ];

@@ -65,6 +65,7 @@ import { learningCopy } from "./copy";
 import { ExecutionLab } from "./execution-lab";
 import { FlowStructureExplorer } from "./flow-structure-explorer";
 import { ChangeHighlight, LessonMotion, LessonReveal } from "./lesson-motion";
+import { AiVerifyWalkthrough } from "./lessons/ai-verify";
 import { AuditMarketRecapWalkthrough } from "./lessons/audit-market-recap";
 import { AuditedBoundaryWalkthrough } from "./lessons/audited-boundary";
 import { CharmVannaWalkthrough } from "./lessons/charm-vanna";
@@ -137,6 +138,7 @@ const conceptLabs = {
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureWalkthrough,
+	"ai-verify": AiVerifyWalkthrough,
 	"research-checklist": ResearchChecklistWalkthrough,
 	"recipe-inputs": RecipeInputsWalkthrough,
 	"recipe-map": RecipeMapWalkthrough,

@@ -372,6 +372,61 @@ export const tradingFlowLabs: readonly TradingFlowLab[] = [
 			"写下你的问题、按顺序排列的步骤及每一步打开的工具，以及你新增或删除的一个步骤和理由。",
 		),
 	},
+	{
+		id: "ai-verify",
+		lessonId: "ai-verify",
+		recipeSlug: "unusual-options-activity",
+		path: null,
+		tool: "TradingFlow AI",
+		version: 1,
+		title: text(
+			"Ask about a report, then sort the answer",
+			"询问一份报告，然后给回答分类",
+		),
+		recipeTitle: "Unusual Options Activity Screener",
+		goal: text(
+			"Use TradingFlow AI on a recipe run and check every sentence before you keep it.",
+			"在一次 Recipe 运行上使用 TradingFlow AI，保留每句话之前先核查。",
+		),
+		prerequisites: ["research-checklist"],
+		params: {
+			min_vol_oi: "1",
+			min_rel_vol: "0",
+			min_volume: "500",
+			min_oi: "200",
+			max_dte: "60",
+		},
+		settings: text(
+			"Latest completed session, at the default thresholds. Needs TradingFlow AI on your account; replies use credits.",
+			"最近一个完整的交易时段，默认阈值。需要你的账户开通 TradingFlow AI；回复会消耗积分。",
+		),
+		sample: text(
+			"In the course's market, an answer about Monday's screen mixes a count from the key figures, a ratio you can recalculate from a row, and a claim that \"someone opened a bearish bet\" that no flow data supports.",
+			"在课程的市场里，关于周一筛选的回答混合了关键数字中的计数、可以从某一行重新计算的比率，以及“有人建立了看空押注”这种任何成交流数据都不支持的说法。",
+		),
+		steps: [
+			text(
+				"Open the recipe and run AI Insight. Note the session it explains and confirm the recipe didn't change.",
+				"打开 Recipe 并运行 AI Insight。记下它解释的交易时段，并确认 Recipe 没有变化。",
+			),
+			text(
+				"Copy three sentences from the answer and sort each: shown in the report, calculable from the rows, or beyond the data.",
+				"从回答中抄下三句话，逐句分类：报告中有、可从行数据计算，还是超出数据。",
+			),
+			text(
+				"Open the AI sidebar, use Annotate to pick one table row, and ask one question about it. Note the credits the reply used.",
+				"打开 AI 侧边栏，用 Annotate 选取表格中的一行，就它问一个问题。记下这条回复消耗的积分。",
+			),
+			text(
+				"Check one calculated sentence yourself against the row it came from.",
+				"自己对照来源行，核对一句可计算的陈述。",
+			),
+		],
+		inspect: text(
+			"Write the three sentences with their sorting, the credits used, and the one claim you would leave out of your notes and why.",
+			"写下三句话及其分类、消耗的积分，以及你不会写进笔记的那一条说法和理由。",
+		),
+	},
 ];
 
 export type TradingFlowLabId = TradingFlowLab["id"];

@@ -145,7 +145,8 @@ export type LearningStepView = {
 		| "tradingflow-recipes"
 		| "recipe-map"
 		| "recipe-inputs"
-		| "research-checklist";
+		| "research-checklist"
+		| "ai-verify";
 	neighborhood: ContractNeighborhood | null;
 	flowStructure: FlowStructureComparison | null;
 	neighborhoodPair?: NeighborhoodPair | null;

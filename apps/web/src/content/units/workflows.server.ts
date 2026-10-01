@@ -503,4 +503,125 @@ export const workflowUnits: TeachingUnit[] = [
 			};
 		},
 	},
+	{
+		id: "ai-verify",
+		conceptLab: {
+			kind: "ai-verify",
+			intro: t(
+				"Sort TradingFlow AI's statements about a report by the evidence behind them, count what a conversation costs in credits, and see which AI action changes a recipe.",
+				"按背后的证据给 TradingFlow AI 关于报告的陈述分类，算清一段对话消耗的积分，并看清哪种 AI 操作会改动 Recipe。",
+			),
+		},
+		sources: [cookbooksGuide],
+		explanation: t(
+			"TradingFlow AI works beside the data: it understands the page you have open, can query market data with read-only tools, and can answer with charts and tables. Its answers are drafts. Sort every sentence before relying on it: shown in the report, calculable from the rows, or beyond the data. Flow can't identify who traded, why, or whether a trade opened a position, and no session's data supports a statement about where a price will go; TradingFlow's own reports say none of these measures proves identity, intent or a future move. Each reply uses credits, 1 for a reply and 2 with a chart or deep analysis; the sidebar shows the balance and Billing lists each reply. Annotate attaches an element on the page as context. On a recipe, AI Insight explains one completed run and changes nothing, while Edit with AI opens a private draft you can change and save. Access to TradingFlow AI depends on your plan, AI consent and rollout.",
+			"TradingFlow AI 在数据旁边工作：它能理解你打开的页面，可以用只读工具查询市场数据，并用图表和表格作答。它的回答是草稿。依赖每句话之前先分类：报告中有的、能从行数据算出的，还是超出数据的。成交流无法识别谁交易、为什么，或一笔交易是否开仓；任何交易时段的数据也都不支持关于价格走向的说法；TradingFlow 自己的报告也说明，这些指标都不能证明身份、意图或未来走势。每条回复消耗积分：普通回复 1 积分，含图表或深度分析 2 积分；侧边栏显示余额，“账单”列出每条回复。Annotate 把页面上的一个元素作为上下文附上。在 Recipe 上，AI Insight 解释一次已完成的运行，不改动任何内容；Edit with AI 则打开一份你可以修改并保存的私有草稿。能否使用 TradingFlow AI 取决于你的方案、AI 授权和灰度范围。",
+		),
+		example: t(
+			'Asked about Monday\'s screener, TradingFlow AI writes five sentences. "The screen flagged 5 contracts across 4 names" is in the key figures. "The CRUX Oct 4 60 put traded 2.67 times its open interest" is 2,400 ÷ 900 from its row, and "3 of the 5 expire within 30 days" is a count of the expiry column. "Someone opened a large bearish bet on CRUX ahead of news" and "CRUX will fall before Oct 4" are not supported. Three questions with one chart cost 1 + 2 + 1 = 4 credits.',
+			"问到周一的筛选器时，TradingFlow AI 写了五句话。“筛选在 4 个标的中标出了 5 份合约”在关键数字里。“CRUX 10月4日 60 看跌的成交量是其未平仓量的 2.67 倍”是从它那一行算出的 2,400 ÷ 900；“5 份中有 3 份在 30 天内到期”是对到期日那列的计数。“有人在消息公布前对 CRUX 建立了大额看空押注”和“CRUX 会在10月4日前下跌”都没有依据。三个问题中一条含图表，消耗 1 + 2 + 1 = 4 积分。",
+		),
+		misconception: t(
+			"A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+			"回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。",
+		),
+		case: (v) => {
+			const statement = [
+				[
+					"A buyer was betting on a CRUX drop.",
+					"有买家在押注 CRUX 下跌。",
+					"unsupported",
+				],
+				[
+					"The DUNE Sep 27 30 call traded 1,300 against 600 open interest.",
+					"DUNE 9月27日 30 看涨成交 1,300 张，未平仓量 600。",
+					"report",
+				],
+				[
+					"Smart money is moving into BRDX puts.",
+					"聪明钱正在流入 BRDX 看跌期权。",
+					"unsupported",
+				],
+				[
+					"Two of the flagged contracts are on CRUX.",
+					"入选合约中有两份是 CRUX 的。",
+					"report",
+				],
+			][v];
+			const [text, chart] = [
+				[2, 1],
+				[3, 1],
+				[1, 2],
+				[4, 0],
+			][v];
+			return {
+				brief: t(
+					"You ask TradingFlow AI about Monday's unusual-activity screen and check its answer before using it.",
+					"你向 TradingFlow AI 询问周一的异常成交筛选，并在使用前核查它的回答。",
+				),
+				questions: [
+					c(
+						"sort",
+						`The AI writes: "${statement[0]}" How do you sort it?`,
+						`AI 写道：“${statement[1]}”你如何给它分类？`,
+						[
+							[
+								"report",
+								"Shown in or calculable from the report",
+								"报告中有或可从报告计算",
+							],
+							["unsupported", "Not supported by the data", "数据不支持"],
+						],
+						statement[2],
+						"Counts and figures in the rows can be checked; claims about who traded, why, or what comes next go beyond flow data.",
+						"行里的数量和数字可以核对；关于谁交易、为什么或接下来怎样的说法则超出了成交流数据。",
+					),
+					n(
+						"credits",
+						`The conversation had ${text} text replies and ${chart} with a chart. How many credits did it use?`,
+						`这段对话有 ${text} 条文字回复和 ${chart} 条含图表的回复。一共消耗多少积分？`,
+						text + 2 * chart,
+						"credits",
+						"积分",
+						`${text} × 1 + ${chart} × 2 = ${text + 2 * chart} credits.`,
+						`${text} × 1 + ${chart} × 2 = ${text + 2 * chart} 积分。`,
+					),
+					c(
+						"insight",
+						"You run AI Insight on the recipe. What changes?",
+						"你对这个 Recipe 运行 AI Insight。会改变什么？",
+						[
+							["nothing", "Nothing in the recipe", "Recipe 中什么都不变"],
+							["draft", "A private draft opens", "会打开一份私有草稿"],
+							["inputs", "The inputs update", "输入会更新"],
+						],
+						"nothing",
+						"AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
+						"AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。",
+					),
+					c(
+						"annotate",
+						"Your question is about one row of the table. How do you give the AI that context?",
+						"你的问题是关于表格中的某一行。如何把这个上下文交给 AI？",
+						[
+							[
+								"annotate",
+								"Use Annotate to pick the row",
+								"用 Annotate 选取那一行",
+							],
+							[
+								"vague",
+								'Ask about "this" and let it guess',
+								"问“这个”，让它去猜",
+							],
+							["chart", "Ask for a chart first", "先让它画一张图"],
+						],
+						"annotate",
+						"Annotate attaches the element you pick, so one reply can answer the question you meant.",
+						"Annotate 会附上你选取的元素，这样一条回复就能回答你真正想问的问题。",
+					),
+				],
+			};
+		},
+	},
 ];
