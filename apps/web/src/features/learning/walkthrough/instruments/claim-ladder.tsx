@@ -15,12 +15,13 @@ export type Claim = {
 };
 
 const TEXT_X = 52;
+const TEXT_LINE = 17;
 const LINE = 15;
 const GAP = 8;
 
 /**
- * Row positions for a width: each note wraps to fit, so rows grow on narrow screens. The
- * title breaks at its " · " separators when it doesn't fit on one line.
+ * Row positions for a width: each claim and note wraps to fit, so rows grow on narrow
+ * screens. The title breaks at its " · " separators when it doesn't fit on one line.
  */
 export function claimLadderLayout(
 	width: number,
@@ -36,13 +37,15 @@ export function claimLadderLayout(
 				: [];
 	let y = titleLines.length ? 14 + titleLines.length * 14 : 4;
 	const rows = claims.map((claim) => {
+		const lines = wrapText(claim.text, width - TEXT_X - 18, 13);
 		const notes = wrapText(
 			`${evidenceLabels[claim.evidence]} · ${claim.basis}`,
 			width - TEXT_X - 18,
 			11,
 		);
-		const height = 46 + (notes.length - 1) * LINE;
-		const row = { y, height, notes };
+		const height =
+			46 + (lines.length - 1) * TEXT_LINE + (notes.length - 1) * LINE;
+		const row = { y, height, lines, notes };
 		y += height + GAP;
 		return row;
 	});
@@ -133,7 +136,8 @@ export function ClaimLadder({
 				</Label>
 			))}
 			{claims.map((claim, i) => {
-				const { y, height, notes } = layout.rows[i];
+				const { y, height, lines, notes } = layout.rows[i];
+				const notesY = y + 38 + (lines.length - 1) * TEXT_LINE;
 				return (
 					<m.g
 						key={claim.id}
@@ -150,13 +154,16 @@ export function ClaimLadder({
 							className={claim.focus ? "wt-focus-shape" : "wt-panel-shape"}
 						/>
 						<EvidenceMark x={20} y={y + 13} evidence={claim.evidence} />
-						<Label
-							x={TEXT_X}
-							y={y + 20}
-							tone={claim.focus ? "accent" : undefined}
-						>
-							{claim.text}
-						</Label>
+						{lines.map((line, k) => (
+							<Label
+								key={line}
+								x={TEXT_X}
+								y={y + 20 + k * TEXT_LINE}
+								tone={claim.focus ? "accent" : undefined}
+							>
+								{line}
+							</Label>
+						))}
 						<m.g
 							key={`${claim.id}-${claim.evidence}-${claim.basis}`}
 							initial={motion.enabled ? { opacity: 0 } : false}
@@ -164,7 +171,7 @@ export function ClaimLadder({
 							transition={motion.fade}
 						>
 							{notes.map((note, k) => (
-								<Label key={note} x={TEXT_X} y={y + 38 + k * LINE} tone="small">
+								<Label key={note} x={TEXT_X} y={notesY + k * LINE} tone="small">
 									{note}
 								</Label>
 							))}
