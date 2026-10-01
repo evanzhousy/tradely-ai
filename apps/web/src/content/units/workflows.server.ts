@@ -387,4 +387,120 @@ export const workflowUnits: TeachingUnit[] = [
 			};
 		},
 	},
+	{
+		id: "research-checklist",
+		conceptLab: {
+			kind: "research-checklist",
+			intro: t(
+				"Spot the forecast hiding in a checklist, see what Home keeps after a refresh, and watch Customize with AI ask before it proposes.",
+				"找出藏在清单里的预测，看看刷新后 Home 保留了什么，并观察 Customize with AI 先提问、再建议。",
+			),
+		},
+		sources: [cookbooksGuide],
+		explanation: t(
+			"TradingFlow's Home starts from \"What are you trying to decide?\" and four common questions: before selling a call, unusual positioning before a catalyst, whether flow preceded a stock move, and whether IV is really elevated. Each question becomes a short, ordered checklist, and every step names something to inspect and opens the tool that shows it, such as Rank Symbols for volatility or Rank Contracts for a contract's spread and open interest. A step must be checkable today: one that asks you to confirm where a price will be is a forecast, not a step. You can reorder steps, change their focus, add a focused step from the analysis tools or remove one, but the checklist resets when the page refreshes, so copy the version you settle on into your notes. Customize with AI opens TradingFlow AI in the sidebar, asks one clarifying question, then proposes changes; replies use AI credits, and a recipe is built only if your account has that feature and you confirm. TradingFlow labels its templates as research checklists, not recommendations.",
+			"TradingFlow 的 Home 从“你想决定什么？”和四个常见问题开始：卖出看涨前、催化事件前是否有异常持仓、成交流是否先于股价变动，以及隐含波动率是否真的偏高。每个问题都会变成一份简短、有顺序的清单，每一步都写明要查看什么，并打开能显示它的工具，比如查看波动率用 Rank Symbols，查看合约价差和未平仓量用 Rank Contracts。每一步都必须是今天就能核查的：要求你确认价格将会在哪里的步骤是预测，不是步骤。你可以调整步骤顺序、改变关注重点、从分析工具中添加一个聚焦的步骤或删掉一步，但页面刷新后清单会重置，所以要把最终版本抄进笔记。Customize with AI 会在侧边栏打开 TradingFlow AI，先问一个澄清问题，再提出修改；回复消耗 AI 积分，而且只有你的账户有该功能并且你确认后才会构建 Recipe。TradingFlow 把自己的模板标注为研究清单，而不是建议。",
+		),
+		example: t(
+			"Before selling an ALFA Oct 18 105 call, Home's template has four steps: compare ALFA's IV with its realized volatility, inspect GEX and open-interest structure, check the call's spread, liquidity and open interest, and review recent call flow. A friend's step, \"confirm ALFA stays below $105 until Oct 18\", is a forecast: no tool can check it. Adding a step for ALFA's Oct 3 earnings, which fall before the Oct 18 expiry, is a fair edit, but a refresh brings back the four-step template unless you copied your version first.",
+			"在卖出 ALFA 10月18日 105 看涨之前，Home 的模板有四步：比较 ALFA 的隐含波动率与已实现波动率、查看 GEX 与未平仓量结构、检查该看涨期权的价差、流动性和未平仓量，以及回顾近期的看涨成交流。朋友写的“确认 ALFA 在10月18日前一直低于 $105”是预测：没有工具能核查它。为 ALFA 10月3日 的财报（在10月18日到期之前）新增一步是合理的修改，但除非你先抄下自己的版本，否则刷新后会恢复四步模板。",
+		),
+		misconception: t(
+			"A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+			"清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。",
+		),
+		case: (v) => {
+			const forecast = [
+				[
+					"Confirm ALFA stays below $105 until Oct 18",
+					"确认 ALFA 在10月18日前一直低于 $105",
+				],
+				[
+					"Make sure earnings won't move ALFA much",
+					"确保财报不会让 ALFA 大幅波动",
+				],
+				[
+					"Check that IV will fall after earnings",
+					"确认财报后隐含波动率会下降",
+				],
+				["Verify the call will expire worthless", "核实该看涨期权会到期作废"],
+			][v];
+			return {
+				brief: t(
+					"You are preparing to research selling an ALFA call, starting from TradingFlow Home's checklist.",
+					"你准备从 TradingFlow Home 的清单出发，研究卖出一份 ALFA 看涨期权。",
+				),
+				questions: [
+					c(
+						"forecast",
+						"Which step doesn't belong in a research checklist?",
+						"哪一步不应列入研究清单？",
+						[
+							["forecast", forecast[0], forecast[1]],
+							[
+								"vol",
+								"Compare ALFA's IV with its realized volatility",
+								"比较 ALFA 的隐含波动率与已实现波动率",
+							],
+							[
+								"trade",
+								"Check the call's spread and open interest",
+								"检查看涨期权的价差与未平仓量",
+							],
+						],
+						"forecast",
+						"Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
+						"每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。",
+					),
+					c(
+						"tool",
+						'"Check the call\'s spread, liquidity and open interest": which tool does that step open?',
+						"“检查看涨期权的价差、流动性与未平仓量”：这一步打开哪个工具？",
+						[
+							["contracts", "Rank Contracts", "Rank Contracts"],
+							["trades", "Option Trades", "Option Trades"],
+							["symbols", "Rank Symbols", "Rank Symbols"],
+						],
+						"contracts",
+						"Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
+						"可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。",
+					),
+					c(
+						"refresh",
+						"You edit the checklist and then refresh the page. What do you see?",
+						"你编辑了清单，然后刷新页面。你会看到什么？",
+						[
+							["template", "The template again", "又是模板"],
+							["edited", "Your edited checklist", "你编辑后的清单"],
+							["empty", "An empty checklist", "空白清单"],
+						],
+						"template",
+						"Home's checklist resets on refresh; copy the steps you want to keep.",
+						"Home 的清单刷新即重置；要保留的步骤需要自己抄下来。",
+					),
+					c(
+						"ai",
+						"You open Customize with AI. What happens before it proposes a change?",
+						"你打开 Customize with AI。在它提出修改之前会发生什么？",
+						[
+							[
+								"clarify",
+								"It asks one clarifying question",
+								"它会问一个澄清问题",
+							],
+							["save", "It saves a new recipe", "它会保存一个新 Recipe"],
+							[
+								"nothing",
+								"Nothing; it rewrites at once",
+								"什么都不发生，它立即改写",
+							],
+						],
+						"clarify",
+						"It asks one clarifying question first; replies cost credits, and a recipe is built only on your confirmation.",
+						"它先问一个澄清问题；回复消耗积分，只有你确认后才会构建 Recipe。",
+					),
+				],
+			};
+		},
+	},
 ];

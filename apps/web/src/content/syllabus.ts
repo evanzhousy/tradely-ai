@@ -548,4 +548,14 @@ export const syllabus: readonly Entry[] = [
 		["C31", "C33"],
 		["recipe-map"],
 	),
+	lesson(
+		"research-checklist",
+		"workflows",
+		"Start from a research checklist",
+		"从研究清单开始",
+		"Turn a decision into steps a tool can check, keep the checklist you build before Home resets it, and see what Customize with AI does before it proposes anything.",
+		"把一个决定变成工具能核查的步骤，在 Home 重置前保存你建立的清单，并了解 Customize with AI 在提出建议之前会做什么。",
+		["C33", "C34"],
+		["recipe-inputs"],
+	),
 ];

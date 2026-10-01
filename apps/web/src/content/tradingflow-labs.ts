@@ -323,6 +323,55 @@ export const tradingFlowLabs: readonly TradingFlowLab[] = [
 			"写下默认设置下的数量、改动后的数量、新的领先合约及其成交量和未平仓量，以及你的改动是重新运行问题还是提出了新问题。",
 		),
 	},
+	{
+		id: "research-checklist",
+		lessonId: "research-checklist",
+		recipeSlug: null,
+		path: "/app/home",
+		tool: "Home",
+		version: 1,
+		title: text(
+			"Build and keep a research checklist",
+			"建立并保存一份研究清单",
+		),
+		recipeTitle: "Home",
+		goal: text(
+			"Turn one decision into steps a tool can check, and keep your version before Home resets it.",
+			"把一个决定变成工具能核查的步骤，并在 Home 重置前保存你的版本。",
+		),
+		prerequisites: ["recipe-inputs"],
+		params: {},
+		settings: text(
+			'Home, with the template "Before I sell a call, what should I check?" selected.',
+			"Home，选择“卖出看涨前应该检查什么？”模板。",
+		),
+		sample: text(
+			"In the course's market, the template's four steps for an ALFA call are IV against realized volatility, GEX and open-interest structure, the call's tradeability, and recent call flow. A step like \"confirm ALFA stays below $105\" is a forecast and doesn't belong.",
+			"在课程的市场里，针对 ALFA 看涨期权的模板四步是：隐含波动率对比已实现波动率、GEX 与未平仓量结构、该看涨期权的可交易性，以及近期看涨成交流。“确认 ALFA 一直低于 $105”这样的步骤是预测，不应列入。",
+		),
+		steps: [
+			text(
+				'Open Home and choose "Before I sell a call, what should I check?". Read the steps and the note under the template.',
+				"打开 Home，选择“卖出看涨前应该检查什么？”，阅读各个步骤和模板下方的说明。",
+			),
+			text(
+				"Reorder one step and change one step's focus, then refresh the page and see what's kept.",
+				"调整一个步骤的顺序，并改变一个步骤的关注重点，然后刷新页面，看看保留了什么。",
+			),
+			text(
+				"Rebuild the checklist you want and copy it into your notes before you leave.",
+				"重新建立你想要的清单，离开前抄进笔记。",
+			),
+			text(
+				"Optional, if your account has TradingFlow AI: open Customize with AI and answer its clarifying question. Each reply costs AI credits; don't confirm building a recipe for this lab.",
+				"可选：如果你的账户有 TradingFlow AI，打开 Customize with AI 并回答它的澄清问题。每条回复消耗 AI 积分；本练习不要确认构建 Recipe。",
+			),
+		],
+		inspect: text(
+			"Write your question, your ordered steps and the tool each opens, and one step you added or removed with the reason.",
+			"写下你的问题、按顺序排列的步骤及每一步打开的工具，以及你新增或删除的一个步骤和理由。",
+		),
+	},
 ];
 
 export type TradingFlowLabId = TradingFlowLab["id"];

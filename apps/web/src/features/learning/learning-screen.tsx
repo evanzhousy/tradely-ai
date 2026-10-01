@@ -96,6 +96,7 @@ import { RankContractsWalkthrough } from "./lessons/rank-contracts";
 import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
 import { RecipeInputsWalkthrough } from "./lessons/recipe-inputs";
 import { RecipeMapWalkthrough } from "./lessons/recipe-map";
+import { ResearchChecklistWalkthrough } from "./lessons/research-checklist";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { StructuralLevelsWalkthrough } from "./lessons/structural-levels";
@@ -136,6 +137,7 @@ const conceptLabs = {
 	"portfolio-pnl": PortfolioPnlWalkthrough,
 	"portfolio-performance": PortfolioPerformanceWalkthrough,
 	"portfolio-exposure": PortfolioExposureWalkthrough,
+	"research-checklist": ResearchChecklistWalkthrough,
 	"recipe-inputs": RecipeInputsWalkthrough,
 	"recipe-map": RecipeMapWalkthrough,
 	"tradingflow-recipes": TradingflowRecipesWalkthrough,

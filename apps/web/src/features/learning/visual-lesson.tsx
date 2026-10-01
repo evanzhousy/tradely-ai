@@ -101,6 +101,11 @@ const lessons = {
 			default: m.RecipeInputsWalkthrough,
 		})),
 	),
+	"research-checklist": lazy(() =>
+		import("./lessons/research-checklist").then((m) => ({
+			default: m.ResearchChecklistWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,
