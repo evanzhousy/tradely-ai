@@ -262,6 +262,11 @@ const lessons = {
 			default: m.ValidateOptionPrintWalkthrough,
 		})),
 	),
+	"checkpoint-execution": lazy(() =>
+		import("./lessons/checkpoint-execution").then((m) => ({
+			default: m.CheckpointExecutionWalkthrough,
+		})),
+	),
 	"session-flow-vs-structure": lazy(() =>
 		import("./lessons/session-flow-vs-structure").then((m) => ({
 			default: m.VolumeOpenInterestWalkthrough,
