@@ -761,4 +761,12 @@ export const syllabus: readonly Entry[] = [
 		["C37", "C38"],
 		["edit-with-ai"],
 	),
+	checkpoint(
+		"workflows",
+		"Checkpoint: workflows in TradingFlow, on a new day",
+		"检查点：在新的一天里运用“在 TradingFlow 中构建工作流”",
+		"Read which session a report opens on, run a screen's rules by hand, check an AI reply and its cost, and rank with a formula column that has a floor, all on a day you haven't seen.",
+		"在你没见过的一天里：判断报告打开的是哪个交易时段、亲手套用筛选规则、核对 AI 回复及其积分消耗，并用带门槛的公式列排名。",
+		["connect-agent"],
+	),
 ];

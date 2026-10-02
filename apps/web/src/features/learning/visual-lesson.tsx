@@ -146,6 +146,11 @@ const lessons = {
 			default: m.ConnectAgentWalkthrough,
 		})),
 	),
+	"checkpoint-workflows": lazy(() =>
+		import("./lessons/checkpoint-workflows").then((m) => ({
+			default: m.CheckpointWorkflowsWalkthrough,
+		})),
+	),
 	"portfolio-exposure": lazy(() =>
 		import("./lessons/portfolio-exposure").then((m) => ({
 			default: m.PortfolioExposureWalkthrough,
