@@ -3,10 +3,14 @@ import "@tanstack/react-start/server-only";
 import {
 	basics,
 	choose as c,
+	money,
 	numberQuestion as n,
 	oi,
 	orders,
+	plain,
 	quotes,
+	signed,
+	signedMoney,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
@@ -31,17 +35,18 @@ export const flowUnits: TeachingUnit[] = [
 			"初始 OI 为 100。10 张双方开仓增加 10，4 张双方平仓减少 4，6 张转移不改变 OI。成交量为 20，期末 OI 为 106。删除开平仓标记后，同样成交量便不能确定期末 OI。昨日报告的 100 不会随今日成交计数器自动更新。",
 		),
 		misconception: t(
-			"A change in a rolling expiry bucket can include membership changes. A matched report delta is net change, not an identified number of one investor's opening trades.",
-			"滚动到期桶的变化可能包含成员变化。匹配报告差值是净变化，不是已识别的某投资者开仓数量。",
+			"A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+			"滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。",
 		),
 		case: (v) => {
 			const opened = [12, 24, 15, 31][v];
 			const closed = [5, 9, 19, 11][v];
 			const transfer = [8, 7, 6, 9][v];
+			const volume = opened + closed + transfer;
 			return {
 				brief: t(
-					`A fixed contract series starts with OI 500. Complete toy ledger: ${opened} open/open contracts, ${closed} close/close, ${transfer} open/close transfers. No exercise, expiration or other changes.`,
-					`固定合约序列初始 OI 500。完整模拟台账：${opened} 张双方开仓、${closed} 张双方平仓、${transfer} 张开平转移。无行权、到期或其他变化。`,
+					`One ALFA call series starts the day with open interest of 500. Today's complete trade record shows ${opened} contracts where both sides opened, ${closed} where both sides closed, and ${transfer} where one side opened and the other closed. Nothing was exercised or expired.`,
+					`一个 ALFA 看涨序列开盘时未平仓量为 500。今天完整的成交记录显示：${opened} 张是双方都开仓，${closed} 张是双方都平仓，${transfer} 张是一方开仓、另一方平仓。没有行权，也没有到期。`,
 				),
 				flowStructure: {
 					id: `oi-ledger-${v}`,
@@ -71,44 +76,44 @@ export const flowUnits: TeachingUnit[] = [
 				questions: [
 					n(
 						"volume",
-						"Session volume?",
-						"时段成交量？",
-						opened + closed + transfer,
+						"How many contracts traded today?",
+						"今天成交了多少张？",
+						volume,
 						"contracts",
 						"张",
-						"Add all executed contract counts, including transfers.",
-						"累加全部成交张数，包含转移。",
+						`${opened} + ${closed} + ${transfer} = ${volume}. Every trade counts in volume, transfers included.`,
+						`${opened} + ${closed} + ${transfer} = ${volume}。每笔成交都计入成交量，包括换手。`,
 					),
 					n(
 						"ending-oi",
-						"Ending OI under these complete stated facts?",
-						"根据完整给定事实，期末 OI 是多少？",
+						"What is open interest at the end of the day?",
+						"收盘时未平仓量是多少？",
 						500 + opened - closed,
 						"contracts",
 						"张",
-						"500 + open/open − close/close; transfers do not change OI.",
-						"500 + 双方开仓 − 双方平仓，转移不改变 OI。",
+						`500 + ${opened} − ${closed} = ${500 + opened - closed}. The ${transfer} transferred contracts changed owners, not the count.`,
+						`500 + ${opened} − ${closed} = ${500 + opened - closed}。换手的 ${transfer} 张只换了持有人，没有改变数量。`,
 					),
 					c(
 						"no-flags",
-						"If only volume were known, would that establish ending OI?",
-						"若仅知道成交量，能确定期末 OI 吗？",
+						"If you knew only today's volume, could you work out the ending open interest?",
+						"如果只知道今天的成交量，能算出收盘时的未平仓量吗？",
 						[
-							[
-								"yes",
-								"Yes, add all volume to initial OI.",
-								"能，将成交量全部加到初始 OI。",
-							],
+							["yes", "Yes: add the volume to 500", "能：把成交量加到 500 上"],
 							[
 								"no",
-								"No, position effects would be unresolved.",
-								"不能，持仓效果仍未知。",
+								"No: you'd need to know which trades opened and which closed",
+								"不能：需要知道哪些成交是开仓、哪些是平仓",
 							],
-							["minus", "Yes, subtract all volume.", "能，将成交量全部扣除。"],
+							[
+								"minus",
+								"Yes: subtract the volume from 500",
+								"能：用 500 减去成交量",
+							],
 						],
 						"no",
-						"The opening/closing information enabled the calculation; volume alone does not contain it.",
-						"计算依赖开平仓信息，成交量本身不包含该信息。",
+						`A volume of ${volume} fits any ending from ${500 - volume}, if every trade closed, to ${500 + volume}, if every trade opened. Only the open and close record pins it at ${500 + opened - closed}.`,
+						`${volume} 的成交量对应的收盘未平仓量，可以从 ${500 - volume}（全部平仓）到 ${500 + volume}（全部开仓）。只有开平仓记录才能确定它是 ${500 + opened - closed}。`,
 					),
 				],
 			};
@@ -133,58 +138,60 @@ export const flowUnits: TeachingUnit[] = [
 			"同合约两笔：5 张 $2.00、500 张 $2.15，乘数 100。总量 505、权利金 $108,500、笔数 2、加权价格 $2.1485。数量不等时简单平均 $2.075 不正确，分组规则也不能证明同一策略。",
 		),
 		misconception: t(
-			"One aggregate row need not be one order. Repetition is a reason to investigate linkage, not a linkage identifier.",
-			"一条聚合记录不一定是一张订单。重复性提示继续检查关联，并非关联标识。",
+			"One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+			"一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。",
 		),
 		case: (v) => {
 			const a = [10, 20, 15, 25][v];
 			const b = [30, 10, 45, 15][v];
+			const premium = (a * 2 + b * 3) * 100;
+			const weighted = (a * 2 + b * 3) / (a + b);
 			return {
 				brief: t(
-					`Same-contract prints: ${a} contracts at $2 and ${b} at $3. Multiplier 100. Two unique, uncorrected reports.`,
-					`同合约成交：${a} 张 $2、${b} 张 $3，乘数 100。两条唯一且未更正的报告。`,
+					`Two prints in the same ALFA call: ${a} contracts at $2.00 and ${b} at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.`,
+					`同一个 ALFA 看涨有两笔成交：${a} 张成交在 $2.00，${b} 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。`,
 				),
 				questions: [
 					n(
 						"premium",
-						"Aggregated premium?",
-						"聚合权利金？",
-						(a * 2 + b * 3) * 100,
-						"USD",
+						"What premium do the two prints add up to?",
+						"两笔成交的权利金合计多少？",
+						premium,
+						"dollars",
 						"美元",
-						"Sum price × size × multiplier for each original print.",
-						"逐笔计算价格×数量×乘数后求和。",
+						`$2.00 × ${a} × 100 = ${money(a * 200, 0)}, and $3.00 × ${b} × 100 = ${money(b * 300, 0)}: ${money(premium, 0)} together.`,
+						`$2.00 × ${a} × 100 = ${money(a * 200, 0)}，$3.00 × ${b} × 100 = ${money(b * 300, 0)}：合计 ${money(premium, 0)}。`,
 					),
 					n(
 						"weighted",
-						"Quantity-weighted price, to four decimals?",
-						"数量加权价格，保留四位小数？",
-						(a * 2 + b * 3) / (a + b),
-						"USD/share",
+						"What is the average price per share, weighted by contracts, to four decimals?",
+						"按张数加权的每股平均价格是多少？保留四位小数。",
+						weighted,
+						"dollars a share",
 						"美元/股",
-						"(2×first size + 3×second size) ÷ total size.",
-						"（2×第一笔数量+3×第二笔数量）÷总量。",
+						`($2.00 × ${a} + $3.00 × ${b}) ÷ ${a + b} = ${money(weighted, 4)}. The simple average, $2.50, ignores that ${a > b ? "more traded at $2.00" : "more traded at $3.00"}.`,
+						`($2.00 × ${a} + $3.00 × ${b}) ÷ ${a + b} = ${money(weighted, 4)}。简单平均 $2.50 忽略了${a > b ? "更多张数成交在 $2.00" : "更多张数成交在 $3.00"}。`,
 						0.0001,
 					),
 					c(
 						"link",
-						"Does aggregation identify a multi-leg strategy?",
-						"聚合能识别多腿策略吗？",
+						"Does adding these prints into one row show they were one strategy?",
+						"把这两笔成交合成一行，能说明它们属于同一个策略吗？",
 						[
 							[
 								"yes",
-								"Yes, matching timestamps establish ownership.",
-								"能，相同时间戳证明归属。",
+								"Yes: matching times show one owner",
+								"能：时间一致说明属于同一个人",
 							],
 							[
 								"no",
-								"No, a grouping rule does not establish order or strategy linkage.",
-								"不能，分组规则不证明订单或策略关联。",
+								"No: grouping prints doesn't show they were linked",
+								"不能：把成交分组不能说明它们有关联",
 							],
 						],
 						"no",
-						"No strategy identifier or linked-leg evidence was supplied.",
-						"未给定策略标识或关联腿证据。",
+						"Nothing here links the prints to one order or strategy. An aggregate row follows a grouping rule; a link needs its own evidence, such as a multi-leg condition code.",
+						"这里没有任何信息把两笔成交连到同一张订单或同一个策略。聚合行只是遵循分组规则；关联需要单独的证据，比如多腿条件代码。",
 					),
 				],
 			};
@@ -209,8 +216,8 @@ export const flowUnits: TeachingUnit[] = [
 			"一张 40 张的买单扫过三个场所：$0.93 成交 10 张、$0.95 成交 20 张、$0.98 成交 10 张。这是一张订单、三笔成交：共 40 张、权利金 $3,810、均价 $0.9525。另外，以净价 $1.25 买入的 105/110 看涨价差，两条腿分别打印在 $2.15 和 $0.90，而整体在 $1.12–$1.30 的组合市场内成交；单腿甚至可以超出各自报价成交。",
 		),
 		misconception: t(
-			"Urgent routing is not proof of conviction, and a large block is not proof of an institution or inside information. Read the leg prints of a complex order as one package.",
-			"急迫的路由不证明确信，大宗交易也不证明机构身份或内幕信息。复杂订单的各腿成交应作为整体解读。",
+			"Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+			"急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。",
 		),
 		case: (v) => {
 			const [a, b, d] = [
@@ -223,80 +230,76 @@ export const flowUnits: TeachingUnit[] = [
 			const average = premium / (100 * (a + b + d));
 			return {
 				brief: t(
-					`One buy order sweeps three venues within milliseconds: ${a} contracts at $2.10, ${b} at $2.11 and ${d} at $2.12. Multiplier 100. Each fill printed separately with a sweep condition.`,
-					`一张买单在几毫秒内扫过三个场所：$2.10 成交 ${a} 张、$2.11 成交 ${b} 张、$2.12 成交 ${d} 张，乘数 100。每次成交都带扫单条件分别打印。`,
+					`One buy order sweeps three venues within milliseconds: ${a} ALFA calls at $2.10, ${b} at $2.11 and ${d} at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.`,
+					`一张买单在几毫秒内扫过三个场所：${a} 张 ALFA 看涨成交在 $2.10，${b} 张在 $2.11，${d} 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。`,
 				),
 				questions: [
 					n(
 						"premium",
-						"Total premium across the three prints?",
-						"三笔成交的总权利金？",
+						"What premium did the order pay across its three prints?",
+						"这张订单在三笔成交中一共支付了多少权利金？",
 						premium,
-						"USD",
+						"dollars",
 						"美元",
-						"Sum price × contracts × 100 for each fill. The three prints belong to one order.",
-						"逐笔计算价格 × 张数 × 100 后求和。三笔成交来自同一张订单。",
+						`$2.10 × ${a} × 100 + $2.11 × ${b} × 100 + $2.12 × ${d} × 100 = ${money(premium, 0)}. Three prints, one order.`,
+						`$2.10 × ${a} × 100 + $2.11 × ${b} × 100 + $2.12 × ${d} × 100 = ${money(premium, 0)}。三笔成交，一张订单。`,
 					),
 					n(
 						"average",
-						"Quantity-weighted average price, to four decimals?",
-						"数量加权平均价格，保留四位小数？",
+						"What average price per share did it pay, weighted by contracts, to four decimals?",
+						"按张数加权，它平均每股付了多少？保留四位小数。",
 						Math.round(average * 10000) / 10000,
-						"USD/share",
+						"dollars a share",
 						"美元/股",
-						"Total premium ÷ (100 × total contracts). Later fills paid more than the best displayed offer.",
-						"总权利金 ÷（100 × 总张数）。后面的成交价格高于最优展示卖价。",
+						`${money(premium, 0)} ÷ (100 × ${a + b + d}) = ${money(average, 4)}. The later fills paid more than the best price shown when the order arrived.`,
+						`${money(premium, 0)} ÷ (100 × ${a + b + d}) = ${money(average, 4)}。后面的成交付出的价格，高于订单到达时展示的最优价格。`,
 						0.0001,
 					),
 					c(
 						"sweep-meaning",
-						"What does the sweep condition establish?",
-						"扫单条件能确定什么？",
+						"What does the sweep condition tell you?",
+						"扫单条件能告诉你什么？",
 						[
 							[
 								"routing",
-								"The order was routed across venues to fill quickly.",
-								"订单被路由到多个场所以尽快成交。",
+								"The order was split across venues to fill fast",
+								"订单被拆到多个场所以便快速成交",
 							],
-							[
-								"institution",
-								"An institution placed the order.",
-								"订单由机构发出。",
-							],
+							["institution", "An institution placed it", "下单的是机构"],
 							[
 								"opening",
-								"The buyer opened a new bullish position.",
-								"买方开了新的看涨仓位。",
+								"The buyer opened a new bullish position",
+								"买方新开了一个看涨仓位",
 							],
 						],
 						"routing",
-						"A sweep describes execution routing. Identity, information and opening status need other evidence.",
-						"扫单描述执行路由。身份、信息与开仓状态需要其他证据。",
+						"A sweep describes how the order was routed. Who sent it, what they knew, and whether it opened a position all need other evidence.",
+						"扫单描述的是订单如何路由。谁下的单、掌握什么信息、是否开了新仓，都需要其他证据。",
 					),
 					c(
 						"package",
-						"Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask. The package's market is $2.90–$3.30 and it traded at $3.00 net. How should you read it?",
-						"另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自卖价。该组合市场为 $2.90–$3.30，净价 $3.00 成交。应如何解读？",
+						"Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?",
+						"另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？",
 						[
 							[
 								"package",
-								"As one package traded inside its market; the leg locations are not aggressor evidence.",
-								"作为在组合市场内成交的整体；单腿位置不是主动方证据。",
+								"As one package that traded inside its market; where each leg printed isn't evidence of who was aggressive",
+								"作为在组合市场内成交的一个整体；各条腿成交在哪里，并不能说明谁是主动方",
 							],
 							[
 								"buys",
-								"As two aggressive buys, because both legs printed above the ask.",
-								"作为两笔主动买入，因为两条腿都高于卖价。",
+								"As two aggressive buys: both legs printed above the ask",
+								"作为两笔主动买入：两条腿都高于卖价",
 							],
 							[
 								"sells",
-								"As two aggressive sells hidden inside a spread.",
-								"作为隐藏在价差中的两笔主动卖出。",
+								"As two aggressive sells hidden inside a spread",
+								"作为藏在价差里的两笔主动卖出",
 							],
 						],
 						"package",
-						"Complex orders are priced as a whole. Leg-by-leg classification would call the sold leg an aggressive buy.",
-						"复杂订单按整体定价。逐腿分类会把卖出的那条腿误判为主动买入。",
+						"A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy.",
+						"复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。",
 					),
 				],
 			};
@@ -321,8 +324,8 @@ export const flowUnits: TeachingUnit[] = [
 			"10月18日 105 看涨成交 505、典型量 120、OI 1,200：相对量 4.2×，量/OI 为 0.42×。12月20日 110 看涨仅成交 12、OI 为 3，量/OI 却达 4×。这是分母效应，不证明后者更重要。",
 		),
 		misconception: t(
-			"A high ratio is not an opening-position flag. A historical benchmark needs its population, time window and coverage stated.",
-			"高比率不是开仓标记，历史基准需明确人群、时间窗口与覆盖。",
+			"A high ratio doesn't flag new positions. Any historical baseline needs its population, time window and coverage stated.",
+			"比率高并不代表有新开仓。任何历史基准都要说明对象范围、时间窗口和覆盖情况。",
 		),
 		case: (v) => {
 			const vol = [600, 900, 1200, 750][v];
@@ -330,29 +333,29 @@ export const flowUnits: TeachingUnit[] = [
 			const open = [1200, 1800, 600, 1500][v];
 			return {
 				brief: t(
-					`Complete comparable session: volume ${vol}; typical session volume ${typ}; reported OI ${open}.`,
-					`完整可比时段：成交量 ${vol}，典型时段量 ${typ}，报告 OI ${open}。`,
+					`Over one complete session, an ALFA call traded ${plain(vol)} contracts. On a typical full session it trades ${plain(typ)}, and ${plain(open)} contracts were open at the last report.`,
+					`在一个完整交易日里，某个 ALFA 看涨成交了 ${plain(vol)} 张。它在典型的完整交易日成交 ${plain(typ)} 张，最近一次报告的未平仓量为 ${plain(open)} 张。`,
 				),
 				questions: [
 					n(
 						"relative",
-						"Relative volume?",
-						"相对成交量？",
+						"What is its relative volume: today's volume against a typical session?",
+						"它的相对成交量是多少：今天的成交量对比典型交易日？",
 						vol / typ,
 						"times",
 						"倍",
-						"Current session volume ÷ typical comparable session volume.",
-						"当前时段量÷典型可比时段量。",
+						`${plain(vol)} ÷ ${plain(typ)} = ${plain(vol / typ)}×.`,
+						`${plain(vol)} ÷ ${plain(typ)} = ${plain(vol / typ)}×。`,
 					),
 					n(
 						"turnover",
-						"Volume/OI?",
-						"成交量/OI？",
+						"What is its volume-to-open-interest ratio?",
+						"它的成交量与未平仓量之比是多少？",
 						vol / open,
 						"times",
 						"倍",
-						"Volume ÷ outstanding contracts; this is not relative volume.",
-						"成交量÷未平仓合约，与相对成交量不同。",
+						`${plain(vol)} ÷ ${plain(open)} = ${plain(vol / open)}×. Same volume, different yardstick: relative volume compares with a normal day, volume/OI with the contracts outstanding.`,
+						`${plain(vol)} ÷ ${plain(open)} = ${plain(vol / open)}×。同样的成交量，不同的量尺：相对成交量对比平常的一天，成交量/未平仓量对比存续的合约。`,
 					),
 				],
 			};
@@ -377,47 +380,50 @@ export const flowUnits: TeachingUnit[] = [
 			"105/110 看涨价差每股净成本 $1.25，乘数 100。到期现价 $115，多头价值 $10、空头需付 $5：净价值 $500，利润 $375。只看空头看涨成交会漏掉整体有上限的看涨价差。",
 		),
 		misconception: t(
-			"A bullish investor can buy a protective put. The put leg's negative directional exposure does not identify the investor's full outlook.",
-			"看涨投资者也可以买保护性看跌，其负向敞口不等于完整观点。",
+			"Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+			"看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。",
 		),
 		case: (v) => {
 			const spot = [108, 114, 103, 111][v];
 			const cost = [3, 4, 2, 6][v];
+			const long = Math.max(spot - 100, 0);
+			const short = Math.max(spot - 110, 0);
+			const perShare = long - short - cost;
 			return {
 				brief: t(
-					`One 100/110 long call spread at expiration. Spot $${spot}, paid net $${cost}/share, multiplier 100, no fees.`,
-					`一组 100/110 多头看涨价差到期，现价 $${spot}，每股净支付 $${cost}，乘数 100，无费用。`,
+					`You bought an ALFA 100/110 call spread for ${money(cost)} a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is ${money(spot)}. One contract covers 100 shares; ignore fees.`,
+					`你以每股净价 ${money(cost)} 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 ${money(spot)}。一张合约对应 100 股，不计费用。`,
 				),
 				questions: [
 					n(
 						"spread-profit",
-						"Net expiration profit?",
-						"净到期盈亏？",
-						(Math.max(spot - 100, 0) - Math.max(spot - 110, 0) - cost) * 100,
-						"USD",
+						"What is your profit or loss on one spread at expiry? Use a minus sign for a loss.",
+						"到期时一组价差盈亏多少？亏损请用负号。",
+						perShare * 100,
+						"dollars",
 						"美元",
-						"Long payoff − short payoff − net premium, all multiplied by 100.",
-						"多头价值−空头支付−净权利金，再乘 100。",
+						`The 100 call is worth ${money(long)} and the short 110 call costs ${money(short)}; minus the ${money(cost)} paid, that's ${signedMoney(perShare)} a share, or ${signedMoney(perShare * 100, 0)} for the spread.`,
+						`100 看涨价值 ${money(long)}，空头 110 看涨要付 ${money(short)}；再减去支付的 ${money(cost)}，每股 ${signedMoney(perShare)}，整组价差 ${signedMoney(perShare * 100, 0)}。`,
 					),
 					c(
 						"isolated",
-						"Can the short-call print alone identify this complete strategy?",
-						"单独空头看涨成交能识别完整策略吗？",
+						"If you saw only the 110 call being sold, could you tell it was part of this spread?",
+						"如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？",
 						[
 							[
 								"can",
-								"Yes, call selling always means a vertical spread.",
-								"能，卖看涨总是垂直价差。",
+								"Yes: selling calls always means a spread",
+								"能：卖出看涨总是意味着价差",
 							],
 							[
 								"cannot",
-								"No; the linkage and other leg were additional evidence.",
-								"不能，关联和另一条腿是额外证据。",
+								"No: you'd need the other leg and a link between them",
+								"不能：需要另一条腿以及两者之间的关联",
 							],
 						],
 						"cannot",
-						"The supplied spread structure is information absent from an isolated print.",
-						"给定价差结构是孤立成交中没有的信息。",
+						"A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
+						"一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。",
 					),
 				],
 			};
@@ -442,8 +448,8 @@ export const flowUnits: TeachingUnit[] = [
 			"9 月 16 日周一 10:30，周一 10:05 的成交及周五清算的未平仓量报告，可满足当前时段成交加带日期前期 OI 的要求。周五的成交不满足当前时段要求。即使其他标的的数据更新，也不能代替 ALFA。",
 		),
 		misconception: t(
-			"Freshness is task-relative. Reject the affected comparison, not every valid source on the page.",
-			"时效取决于任务。拒绝受影响的比较，不必否定所有有效来源。",
+			"Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+			"数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。",
 		),
 		case: (v) => {
 			const current = v % 2 === 0;
@@ -452,36 +458,44 @@ export const flowUnits: TeachingUnit[] = [
 			const later = base + change;
 			return {
 				brief: t(
-					`Requirement: ALFA September 3 session flow plus dated prior OI. Flow record: ALFA, September ${current ? 3 : 2}. OI: same fixed series, September 1 ${base}, September 2 ${later}.`,
-					`要求：ALFA 9 月 3 日成交流及带日期的前期 OI。成交记录为 ALFA 9 月 ${current ? 3 : 2} 日。OI 是同一固定序列：9 月 1 日 ${base}，9 月 2 日 ${later}。`,
+					`You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ALFA's for September ${current ? 3 : 2}. Open-interest reports for one fixed series show ${plain(base)} on September 1 and ${plain(later)} on September 2.`,
+					`你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ALFA 9 月 ${current ? 3 : 2} 日的。同一固定序列的未平仓量报告显示：9 月 1 日 ${plain(base)}，9 月 2 日 ${plain(later)}。`,
 				),
 				questions: [
 					c(
 						"flow-gate",
-						"Does the flow record meet this requirement?",
-						"成交记录满足要求吗？",
+						"Does the flow record meet the requirement?",
+						"这份成交记录满足要求吗？",
 						[
-							["yes", "Yes, its session matches.", "满足，时段匹配。"],
-							["no", "No, its session differs.", "不满足，时段不同。"],
+							["yes", "Yes: its session matches", "满足：交易时段一致"],
+							[
+								"no",
+								"No: it's from a different session",
+								"不满足：来自另一个交易时段",
+							],
 							[
 								"oi",
-								"No, because OI is from a prior date.",
-								"不满足，因为 OI 来自前日。",
+								"No: the open interest is from an earlier date",
+								"不满足：未平仓量来自更早的日期",
 							],
 						],
 						current ? "yes" : "no",
-						"Compare each field to its own requirement; dated prior OI was explicitly allowed.",
-						"逐字段对应要求，前期带日期 OI 明确允许。",
+						current
+							? "The flow is from September 3, as required, and earlier dated open interest was allowed. Check each field against its own requirement."
+							: "The flow is from September 2, not September 3, so it fails. The open interest was allowed to be earlier; that part is fine.",
+						current
+							? "成交流来自 9 月 3 日，符合要求；更早且带日期的未平仓量也是允许的。每个字段要对照它自己的要求。"
+							: "成交流来自 9 月 2 日而不是 9 月 3 日，所以不满足。未平仓量本来就允许更早，这部分没有问题。",
 					),
 					n(
 						"report-delta",
-						"What is the valid September 1→2 OI change?",
-						"有效的 9 月 1→2 日 OI 变化是多少？",
+						"By how much did open interest change from September 1 to September 2? Use a minus sign for a fall.",
+						"从 9 月 1 日到 9 月 2 日，未平仓量变化了多少？下降请用负号。",
 						change,
 						"contracts",
 						"张",
-						`${later} − ${base} = ${change}; this does not describe September 3 intraday positions.`,
-						`${later}−${base}=${change}，不描述 9 月 3 日盘中持仓。`,
+						`${plain(later)} − ${plain(base)} = ${signed(change)}. That's the change between two reports; it says nothing about positions during September 3.`,
+						`${plain(later)} − ${plain(base)} = ${signed(change)}。这是两次报告之间的变化，不能说明 9 月 3 日盘中的持仓。`,
 					),
 				],
 			};
