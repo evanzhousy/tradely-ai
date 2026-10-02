@@ -61,6 +61,11 @@ const lessons = {
 			default: m.PointInTimeResearchWalkthrough,
 		})),
 	),
+	"checkpoint-research": lazy(() =>
+		import("./lessons/checkpoint-research").then((m) => ({
+			default: m.CheckpointResearchWalkthrough,
+		})),
+	),
 	"cookbook-research-packet": lazy(() =>
 		import("./lessons/cookbook-research-packet").then((m) => ({
 			default: m.ResearchPacketWalkthrough,

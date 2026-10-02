@@ -451,6 +451,14 @@ export const syllabus: readonly Entry[] = [
 		["C25", "C26"],
 		["rank-contracts"],
 	),
+	checkpoint(
+		"research",
+		"Checkpoint: comparison and investigation, on a new day",
+		"检查点：在新的一天里运用“比较与研究”",
+		"Apply a comparison rule to five names, rank the survivors by the right metric, and age a recency score with no new trades, all on a day you haven't seen.",
+		"在你没见过的一天里：对五个标的应用比较规则、按正确的指标给留下的标的排名，并在没有新成交时推算近期分数的衰减。",
+		["point-in-time-research"],
+	),
 	lesson(
 		"cookbook-research-packet",
 		"production",
