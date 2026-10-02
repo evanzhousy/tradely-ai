@@ -386,9 +386,10 @@ function LearningScreenContent({
 						</h2>
 					)}
 				</CardTitle>
-				<CardDescription>
-					{mode === "check" ? text("checkIntro") : release?.intro[locale]}
-				</CardDescription>
+				{/* In check mode the lesson's "Check yourself" section introduces it. */}
+				{mode === "check" ? null : (
+					<CardDescription>{release?.intro[locale]}</CardDescription>
+				)}
 			</CardHeader>
 			<CardContent className="flex flex-col gap-6">
 				{error ? (

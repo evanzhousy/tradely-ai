@@ -35,6 +35,8 @@ type LearningExerciseProps = {
 	attemptId?: string;
 	saveGuest?: boolean;
 	mode?: "practice" | "check";
+	/** The learner pressed start in the lesson, so a guest case opens straight away. */
+	startNow?: boolean;
 	onSelectAttempt?: (attemptId: string) => void;
 };
 function LearningSession({
@@ -274,6 +276,7 @@ function AuthenticatedLearning({
 	attemptId,
 	saveGuest,
 	mode,
+	startNow,
 	onSelectAttempt,
 }: LearningExerciseProps) {
 	const { userId: liveUserId, isLoaded, error, email } = useAuth();
@@ -300,6 +303,7 @@ function AuthenticatedLearning({
 				lessonId={lessonId}
 				currentUserId={identity ? userId : null}
 				mode={mode}
+				startNow={startNow}
 			/>
 		);
 	if (!identity)
@@ -315,7 +319,12 @@ function AuthenticatedLearning({
 		);
 	if (!userId)
 		return getLessonById(lessonId) ? (
-			<PreviewLearning key={lessonId} lessonId={lessonId} mode={mode} />
+			<PreviewLearning
+				key={lessonId}
+				lessonId={lessonId}
+				mode={mode}
+				startNow={startNow}
+			/>
 		) : null;
 	if (saveGuest)
 		return (
@@ -360,6 +369,11 @@ export function LearningExercise({
 	return authIsConfigured ? (
 		<AuthenticatedLearning key={lessonId} lessonId={lessonId} {...props} />
 	) : getLessonById(lessonId) ? (
-		<PreviewLearning key={lessonId} lessonId={lessonId} mode={props.mode} />
+		<PreviewLearning
+			key={lessonId}
+			lessonId={lessonId}
+			mode={props.mode}
+			startNow={props.startNow}
+		/>
 	) : null;
 }

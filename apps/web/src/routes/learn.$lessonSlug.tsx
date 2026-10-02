@@ -244,6 +244,10 @@ function LessonPage() {
 						<h1 className="font-semibold text-2xl text-display sm:text-4xl">
 							{lesson.title}
 						</h1>
+						{/* What the learner will be able to do, before the first scene. */}
+						<p className="max-w-[68ch] text-muted-foreground leading-7">
+							{lesson.summary}
+						</p>
 					</header>
 					<VisualLesson
 						key={`visual-${lesson.id}`}

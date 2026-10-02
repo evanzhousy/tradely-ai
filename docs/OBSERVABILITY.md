@@ -126,7 +126,7 @@ The primary learning journey is:
 9. `tradingflow_link_opened` when the learner follows a product-practice handoff
 10. `lesson_completed` when a signed-in learner records the study mark
 
-The older signed-in exercise/coaching event family remains registered for the retained exercise implementation, but the current lesson route renders `VisualLesson` and does not mount `LearningExercise`. Do not use `lesson_exercise_*`, `lesson_hint_opened`, renderer, or coaching events as denominators for the current visual curriculum unless that product surface is mounted again.
+The lesson route renders `VisualLesson` first. Its "Check yourself" section mounts `LearningExercise` in check mode only when the learner presses Start (or follows a `#check-yourself` link), so `lesson_exercise_*` and `lesson_hint_opened` count learners who chose to practise, not lesson visitors. Do not use them, renderer, or coaching events as denominators for the visual curriculum.
 
 The `lesson_attempt.assessment` record is authoritative for a submitted practice result. Analytics remains consented, best-effort journey evidence. Database failures from the learning service are replaced with a fixed error before exception capture so SQL parameters and case content cannot enter telemetry. New event shapes must be observed in a deployed consented session before building live insights; this source addition does not establish delivery or learning efficacy.
 

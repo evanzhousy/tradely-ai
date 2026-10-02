@@ -24,10 +24,13 @@ export function PreviewLearning({
 	lessonId,
 	currentUserId = null,
 	mode,
+	startNow = false,
 }: {
 	lessonId: string;
 	currentUserId?: string | null;
 	mode?: "practice" | "check";
+	/** The learner already chose to start, so skip the card's own start step. */
+	startNow?: boolean;
 }) {
 	const { locale } = useI18n();
 	const { capture, consent } = useAnalytics();
@@ -206,6 +209,7 @@ export function PreviewLearning({
 	useEffect(() => {
 		if (restored.current) return;
 		restored.current = true;
+		let resumed = false;
 		try {
 			const loaded = readGuestHandoff(lessonId, sessionStorage);
 			if (loaded.status === "ready") {
@@ -223,12 +227,14 @@ export function PreviewLearning({
 					contentVersion: work.contentVersion,
 				};
 				setRestoring(true);
+				resumed = true;
 				void run(work.actions, work.variant, false, true);
 			}
 		} catch {
 			/* Guest practice still works when storage is unavailable. */
 		}
-	}, [currentUserId, lessonId, run]);
+		if (!resumed && startNow) void run([], 0, false);
+	}, [currentUserId, lessonId, run, startNow]);
 	return (
 		<>
 			{accountMismatch ? (

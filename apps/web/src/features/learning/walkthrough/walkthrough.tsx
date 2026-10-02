@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { Field, FieldLabel } from "@tradely/ui/components/field";
@@ -10,6 +9,7 @@ import {
 	TabsTrigger,
 } from "@tradely/ui/components/tabs";
 import {
+	ArrowDownIcon,
 	ArrowLeftIcon,
 	ArrowRightIcon,
 	CheckIcon,
@@ -31,7 +31,6 @@ import {
 } from "react";
 import { useAnalytics } from "@/analytics/context";
 import type { VisualLessonPlaybackMode } from "@/analytics/events";
-import { getLessonById, getNextLesson } from "@/content/course";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import {
@@ -93,8 +92,7 @@ const copy = {
 	tryIt: ["Try it yourself", "自己试一试"],
 	backToSteps: ["Back to the steps", "回到步骤"],
 	nextScene: ["Next scene", "下一场景"],
-	nextLesson: ["Next lesson", "下一课"],
-	course: ["Back to the course", "回到课程"],
+	checkYourself: ["Check yourself", "自我检查"],
 	explore: ["Explore", "探索"],
 	step: ["Step", "步骤"],
 	adjust: ["Adjust the example", "调整示例"],
@@ -378,8 +376,6 @@ export function Walkthrough({
 		[capture, isCapturing, lessonId, locale, scene],
 	);
 
-	const lesson = lessonId ? getLessonById(lessonId) : undefined;
-	const nextLesson = lesson ? getNextLesson(lesson.slug) : undefined;
 	// With a task waiting, "Try it yourself" leads and moving on is the quieter choice.
 	const quiet = phase === "watch" && !!scene.explore?.task;
 	const onward =
@@ -395,26 +391,18 @@ export function Walkthrough({
 				{t(copy.nextScene)}
 				<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 			</Button>
-		) : nextLesson ? (
-			<Link
-				to="/learn/$lessonSlug"
-				params={{ lessonSlug: nextLesson.slug }}
-				search={{}}
+		) : (
+			// After the last scene comes the lesson's own practice, just below the walkthrough.
+			<a
+				href="#check-yourself"
 				className={buttonVariants({
 					size: "sm",
 					variant: quiet ? "outline" : undefined,
 				})}
 			>
-				{t(copy.nextLesson)}
-				<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-			</Link>
-		) : (
-			<Link
-				to="/courses/tradingflow-foundations"
-				className={buttonVariants({ size: "sm", variant: "outline" })}
-			>
-				{t(copy.course)}
-			</Link>
+				{t(copy.checkYourself)}
+				<ArrowDownIcon data-icon="inline-end" aria-hidden="true" />
+			</a>
 		);
 
 	const caption =
