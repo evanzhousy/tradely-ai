@@ -592,6 +592,7 @@ function ExpiryScene({
 		{
 			id: "oct",
 			label: t([`Oct 18 · ${DAYS} days`, `10月18日 · ${DAYS} 天`]),
+			shortLabel: t(["Oct 18", "10月18日"]),
 			points: series(
 				(spot) => gammaOf(OCT_100_CALL, spot),
 				X_RANGE[0],
@@ -606,6 +607,7 @@ function ExpiryScene({
 		lines.push({
 			id: "sep",
 			label: t([`Sep 20 · ${SEP_DAYS} days`, `9月20日 · ${SEP_DAYS} 天`]),
+			shortLabel: t(["Sep 20", "9月20日"]),
 			points: series(
 				(spot) => gammaOf(SEP_20, spot),
 				X_RANGE[0],

@@ -3,6 +3,7 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import {
 	type Copy,
+	contractCount,
 	contractLabel,
 	count,
 	holders,
@@ -170,7 +171,7 @@ function MatchView({
 						{
 							id: "volume",
 							label: t(["Volume", "成交量"]),
-							value: t([`${order.filled} contracts`, `${order.filled} 张`]),
+							value: t([contractCount(order.filled), `${order.filled} 张`]),
 							note: t(["one trade, not two", "一笔成交，不是两笔"]),
 						},
 					];

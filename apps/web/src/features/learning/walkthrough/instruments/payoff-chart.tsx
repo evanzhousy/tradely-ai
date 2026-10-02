@@ -170,10 +170,17 @@ export function PayoffChart({
 	const taken: Box[] = [];
 	// A band's label sits at the band's top, or its foot when a line runs across the top.
 	const bandLabelY = new Map<string, number>();
+	const bandLabelX = new Map<string, number>();
 	for (const band of bands) {
 		if (!band.label) continue;
 		const label = band.label;
-		const at = (x(band.from) + x(band.to)) / 2;
+		// Centred on the band, but kept inside the plot so it never runs over the axis labels.
+		const half = textWidth(label, 11) / 2 + 2;
+		const at = Math.min(
+			Math.max((x(band.from) + x(band.to)) / 2, left + half),
+			right - half,
+		);
+		bandLabelX.set(band.id, at);
 		const row = (baseline: number) => ({
 			y: baseline,
 			box: textBox(label, at, baseline, 11, "middle"),
@@ -320,7 +327,7 @@ export function PayoffChart({
 					/>
 					{band.label ? (
 						<Label
-							x={(x(band.from) + x(band.to)) / 2}
+							x={bandLabelX.get(band.id) ?? (x(band.from) + x(band.to)) / 2}
 							y={bandLabelY.get(band.id) ?? top + 14}
 							anchor="middle"
 							tone="small"

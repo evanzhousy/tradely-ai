@@ -79,6 +79,7 @@ function StraddleView({
 		{
 			id: "call",
 			label: t(["long 100 call", "100 看涨多头"]),
+			shortLabel: t(["call", "看涨"]),
 			points: curve((spot) => worth(CALL_100, spot), [100]),
 			tone: shown.stage >= 2 ? "reference" : "long",
 		},
@@ -87,6 +88,7 @@ function StraddleView({
 		lines.push({
 			id: "put",
 			label: t(["long 100 put", "100 看跌多头"]),
+			shortLabel: t(["put", "看跌"]),
 			points: curve((spot) => worth(PUT_100, spot), [100]),
 			tone: shown.stage >= 2 ? "reference" : "long",
 		});

@@ -4,6 +4,7 @@ import {
 	ALFA,
 	type Contract,
 	type Copy,
+	contractCount,
 	contractLabel,
 	count,
 	type ExpiryId,
@@ -343,7 +344,7 @@ function UnitView({
 					id: "premium",
 					label: t(["Premium", "权利金"]),
 					value: usd(premium, 0),
-					note: t([`${shown.contracts} contracts`, `${shown.contracts} 张`]),
+					note: t([contractCount(shown.contracts), `${shown.contracts} 张`]),
 				},
 				{
 					id: "notional",

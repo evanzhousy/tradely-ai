@@ -1,6 +1,7 @@
 import * as m from "motion/react-m";
 import { type SideCode, sideCode, usd } from "@/content/world";
 import { Label, useStage, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export const SPREAD_RULER_HEIGHT = 152;
 
@@ -45,6 +46,11 @@ export function SpreadRuler({
 		left +
 		((Math.min(Math.max(cents, min), max) - min) / (max - min)) *
 			(right - left);
+	// The print's label is centred on its marker, but never runs past the ruler's ends.
+	const halfLabel = textWidth(printLabel, 13) / 2 + 2;
+	const labelShift =
+		Math.min(Math.max(x(price), halfLabel + 2), width - halfLabel - 2) -
+		x(price);
 	const axis = 84;
 	const code = unusable ? null : sideCode(price, bid, ask);
 	// The bid and ask lines stop at the band's top edge, clear of the location label above
@@ -165,7 +171,7 @@ export function SpreadRuler({
 				/>
 				<path d={`M0 ${axis + 8}V${axis + 44}`} className="wt-bracket" />
 				<Label
-					x={0}
+					x={labelShift}
 					y={axis + 58}
 					anchor="middle"
 					tone="accent"

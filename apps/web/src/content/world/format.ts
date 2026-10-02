@@ -21,6 +21,16 @@ export function signedCount(value: number) {
 	return value > 0 ? `+${count(value)}` : count(value);
 }
 
+/** A count of contracts with the right noun: "1 contract", "1,200 contracts". */
+export function contractCount(contracts: number) {
+	return `${count(contracts)} ${contracts === 1 ? "contract" : "contracts"}`;
+}
+
+/** A count of days with the right noun: "1 day", "16 days". */
+export function dayCount(days: number) {
+	return `${days} ${days === 1 ? "day" : "days"}`;
+}
+
 /** Dollars from cents: "$4.15", "−$53.00". Pass digits 0 for "$400". */
 export function usd(cents: number, digits = 2) {
 	const text = (Math.abs(cents) / 100).toLocaleString("en-US", {

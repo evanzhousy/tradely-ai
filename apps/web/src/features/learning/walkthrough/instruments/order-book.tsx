@@ -69,7 +69,15 @@ export function OrderBook({
 	const center = width / 2;
 	const priceWidth = 84;
 	const barSpace = center - priceWidth / 2 - 56;
-	const k = barSpace / sizeMax;
+	// A level larger than the lesson's usual maximum, such as a big order the learner adds,
+	// rescales the bars so the longest one still leaves room for its size label.
+	const largest = Math.max(
+		sizeMax,
+		...[...bids, ...asks].map((level) =>
+			Math.max(level.size, level.before ?? 0),
+		),
+	);
+	const k = barSpace / largest;
 	// Asks are drawn highest price at the top, down to the best ask above the spread.
 	const askRows = [...asks].reverse();
 	const askTop = HEAD;

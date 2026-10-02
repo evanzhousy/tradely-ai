@@ -2,6 +2,7 @@ import * as m from "motion/react-m";
 import {
 	type Contract,
 	type Copy,
+	dayCount,
 	modelValue,
 	pick,
 	usd,
@@ -74,6 +75,10 @@ function RangeAxis({
 				const height = range.tone === "sd" ? 70 : 42;
 				const from = x(SPOT - range.half);
 				const to = x(SPOT + range.half);
+				// A narrow range would put its two price labels on top of each other: keep them
+				// at least a label's width apart around the range's middle.
+				const gap = Math.max(to - from, 64);
+				const ends = [(from + to) / 2 - gap / 2, (from + to) / 2 + gap / 2];
 				return (
 					<m.g
 						key={range.id}
@@ -108,7 +113,7 @@ function RangeAxis({
 								className={range.tone === "sd" ? "wt-accent" : "wt-small"}
 								initial={false}
 								animate={{
-									x: Math.min(Math.max(x(price), left + 22), right - 22),
+									x: Math.min(Math.max(ends[side], left + 22), right - 22),
 								}}
 								transition={motion.move}
 							>
@@ -179,7 +184,7 @@ function SdView({
 					year,
 					{
 						text: t([
-							`${shown.days} days: × √(${shown.days} ÷ 365) = × ${factor.toFixed(3)}`,
+							`${dayCount(shown.days)}: × √(${shown.days} ÷ 365) = × ${factor.toFixed(3)}`,
 							`${shown.days} 天：× √(${shown.days} ÷ 365) = × ${factor.toFixed(3)}`,
 						]),
 					},
@@ -213,7 +218,10 @@ function SdView({
 			label:
 				shown.stage === 0
 					? t(["One SD over a year", "一年的一个标准差"])
-					: t([`One SD in ${shown.days} days`, `${shown.days} 天的一个标准差`]),
+					: t([
+							`One SD in ${dayCount(shown.days)}`,
+							`${shown.days} 天的一个标准差`,
+						]),
 			value: plusMinus(move),
 			note: t([
 				`${share(SPOT - move)} to ${share(SPOT + move)}`,
@@ -239,7 +247,7 @@ function SdView({
 							min={60}
 							max={140}
 							header={t([
-								`ALFA $${SPOT} · IV ${shown.iv}%${shown.stage === 0 ? " · a year" : ` · ${shown.days} days`}`,
+								`ALFA $${SPOT} · IV ${shown.iv}%${shown.stage === 0 ? " · a year" : ` · ${dayCount(shown.days)}`}`,
 								`ALFA $${SPOT} · IV ${shown.iv}%${shown.stage === 0 ? " · 一年" : ` · ${shown.days} 天`}`,
 							])}
 							ranges={[
@@ -270,7 +278,7 @@ function SdView({
 						<RangeControl
 							label={t(["Days to expiry", "到期天数"])}
 							value={explore.days}
-							display={t([`${explore.days} days`, `${explore.days} 天`])}
+							display={t([dayCount(explore.days), `${explore.days} 天`])}
 							min={1}
 							max={60}
 							onChange={(days) => setExplore({ ...explore, days })}

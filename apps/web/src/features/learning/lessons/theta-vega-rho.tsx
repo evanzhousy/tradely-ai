@@ -1,6 +1,7 @@
 import {
 	ALFA,
 	type Copy,
+	dayCount,
 	daysToExpiry,
 	modelVolatility,
 	normalCdf,
@@ -167,7 +168,7 @@ function TimeView({
 						`${price(round(now.theta, 3), 3)} a day`,
 						`每天 ${price(round(now.theta, 3), 3)}`,
 					]),
-					note: t([`${left} days left`, `剩 ${left} 天`]),
+					note: t([`${dayCount(left)} left`, `剩 ${left} 天`]),
 					evidence: "modeled",
 				},
 			]}
@@ -425,6 +426,25 @@ function SumView({
 			hidden: shown.shown < 2,
 		},
 	];
+	// Bars must fit with room for their labels: step the scale up only when a scenario needs it.
+	let running = 0;
+	const ends: number[] = [];
+	for (const step of steps) {
+		if (step.kind) ends.push(Math.abs(step.value));
+		else {
+			running += step.value;
+			ends.push(Math.abs(running));
+		}
+	}
+	const reach = Math.max(...ends);
+	const scale = [
+		{ edge: 0.8, ticks: [-0.5, 0, 0.5] },
+		{ edge: 1.6, ticks: [-1, 0, 1] },
+		{ edge: 2.4, ticks: [-2, -1, 0, 1, 2] },
+	].find((level) => reach * 1.35 <= level.edge) ?? {
+		edge: 3.2,
+		ticks: [-3, -2, -1, 0, 1, 2, 3],
+	};
 	const you = contracts("you");
 	const ben = contracts("ben");
 	const result: ResultItem[] = [
@@ -487,8 +507,8 @@ function SumView({
 							width={width}
 							height={chartHeight(width)}
 							steps={steps}
-							range={[-0.8, 0.8]}
-							ticks={[-0.5, 0, 0.5]}
+							range={[-scale.edge, scale.edge]}
+							ticks={scale.ticks}
 							format={
 								width < 520
 									? (dollars) =>
@@ -521,7 +541,7 @@ function SumView({
 						<RangeControl
 							label={t(["Days passed", "经过天数"])}
 							value={explore.days}
-							display={t([`${explore.days} days`, `${explore.days} 天`])}
+							display={t([dayCount(explore.days), `${explore.days} 天`])}
 							min={0}
 							max={10}
 							step={1}

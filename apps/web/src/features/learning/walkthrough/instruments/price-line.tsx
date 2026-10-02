@@ -57,7 +57,16 @@ export function PriceLine({
 			(right - left);
 	const axis = 92;
 	const markerX = x(marker.value);
-	const labelX = Math.min(Math.max(markerX, left + 60), right - 60);
+	// Labels follow the marker but stay inside the line; a note too wide for its size steps down.
+	const clampTo = (half: number) =>
+		Math.min(Math.max(markerX, left + half), right - half);
+	const labelX = clampTo(
+		Math.min(textWidth(marker.label, 13) / 2 + 2, (right - left) / 2),
+	);
+	const noteSize = note && textWidth(note, 17) > right - left ? 13 : 17;
+	const noteX = note
+		? clampTo(Math.min(textWidth(note, noteSize) / 2 + 2, (right - left) / 2))
+		: labelX;
 	return (
 		<g>
 			{header ? (
@@ -171,8 +180,9 @@ export function PriceLine({
 					y={axis + 48}
 					textAnchor="middle"
 					className="wt-strong"
+					style={noteSize === 17 ? undefined : { fontSize: noteSize }}
 					initial={false}
-					animate={{ x: labelX }}
+					animate={{ x: noteX }}
 					transition={move}
 				>
 					{note}

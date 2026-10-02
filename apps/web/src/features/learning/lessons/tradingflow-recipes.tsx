@@ -567,14 +567,25 @@ function RecipeCard({
 				rx={10}
 				className={focus ? "wt-focus-shape" : "wt-panel-shape"}
 			/>
-			<Label x={x + 12} y={y + 22}>
+			<Label x={x + 12} y={y + 22} maxWidth={width - 24}>
 				{title}
 			</Label>
-			<Label x={x + 12} y={y + 40} tone={focus ? "accent" : "small"}>
+			<Label
+				x={x + 12}
+				y={y + 40}
+				tone={focus ? "accent" : "small"}
+				maxWidth={width - 24}
+			>
 				{t(badge)}
 			</Label>
 			{chapters.map((chapter, i) => (
-				<Label key={chapter[0]} x={x + 12} y={y + 62 + i * 15} tone="small">
+				<Label
+					key={chapter[0]}
+					x={x + 12}
+					y={y + 62 + i * 15}
+					tone="small"
+					maxWidth={width - 24}
+				>
 					{`${i + 1}. ${t(chapter)}`}
 				</Label>
 			))}
@@ -582,6 +593,7 @@ function RecipeCard({
 				x={x + 12}
 				y={y + 62 + chapters.length * 15}
 				tone={focus ? "accent" : "small"}
+				maxWidth={width - 24}
 			>
 				{`${chapters.length + 1}. ${t(spotlight)}`}
 			</Label>

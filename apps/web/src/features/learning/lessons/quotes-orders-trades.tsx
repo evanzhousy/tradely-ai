@@ -5,6 +5,7 @@ import {
 	bestQuote,
 	type Contract,
 	type Copy,
+	contractCount,
 	contractLabel,
 	count,
 	type Level,
@@ -213,7 +214,7 @@ function QuoteView({
 							{
 								id: "filled",
 								label: t(["Filled", "成交"]),
-								value: t([`${order.filled} contracts`, `${order.filled} 张`]),
+								value: t([contractCount(order.filled), `${order.filled} 张`]),
 								note: order.fills
 									.map((fill) => `${fill.size} @ ${usd(fill.price)}`)
 									.join(" · "),
