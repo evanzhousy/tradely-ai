@@ -620,25 +620,26 @@ const scenes = [
 		title: ["Unusual compared with what?", "异常，是和什么比？"],
 		predict: {
 			prompt: [
-				"The Dec 20 110 call traded 12 contracts with 3 outstanding; the Oct 18 105 call traded 505 with 1,200 outstanding. Which has the higher volume-to-OI ratio?",
-				"12月20日 110 看涨成交 12 张、未平仓 3 张；10月18日 105 看涨成交 505 张、未平仓 1,200 张。哪个的成交量/未平仓量比率更高？",
+				"The Oct 18 105 call traded 505 contracts with 1,200 outstanding: a volume-to-OI ratio of 0.42×. The Dec 20 110 call traded 12 with 3 outstanding. What is its ratio?",
+				"10月18日 105 看涨成交 505 张、未平仓 1,200 张：成交量/未平仓量比率为 0.42×。12月20日 110 看涨成交 12 张、未平仓 3 张。它的比率是多少？",
 			],
 			choices: [
-				{
-					id: "thin",
-					label: ["The Dec 20 110 call: 4×", "12月20日 110 看涨：4×"],
-				},
+				{ id: "thin", label: ["4×", "4×"] },
+				{ id: "inverted", label: ["0.25×", "0.25×"] },
 				{
 					id: "busy",
-					label: ["The 105 call: far more traded", "105 看涨：成交多得多"],
+					label: [
+						"Below 0.42×: it traded far less",
+						"低于 0.42×：它成交少得多",
+					],
 				},
-				{ id: "same", label: ["About the same", "差不多"] },
 			],
 			answer: "thin",
+			entry: { answer: 4, tolerance: 0.05, unit: ["×", "×"] },
 			revealAt: 2,
 			explain: [
-				"12 ÷ 3 = 4× while 505 ÷ 1,200 = 0.42×. The tiny denominator does the work; the thin series isn't ten times more important.",
-				"12 ÷ 3 = 4×，而 505 ÷ 1,200 = 0.42×。起作用的是极小的分母；这个冷门合约并不因此重要十倍。",
+				"12 ÷ 3 = 4×, nearly ten times the 105 call's 0.42×. The tiny denominator does the work; the thin series isn't ten times more important.",
+				"12 ÷ 3 = 4×，接近 105 看涨 0.42× 的十倍。起作用的是极小的分母；这个冷门合约并不因此重要十倍。",
 			],
 		},
 		beats: [

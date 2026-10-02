@@ -770,27 +770,28 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				`In ${SCENARIO.days} days ALFA is up $${SCENARIO.move}, but IV is down ${-SCENARIO.volPoints} points. Is the call worth more than today?`,
-				`${SCENARIO.days} 天后 ALFA 上涨 $${SCENARIO.move}，但 IV 下降 ${-SCENARIO.volPoints} 个点。看涨比今天更值钱吗？`,
+				`In ${SCENARIO.days} days ALFA is up $${SCENARIO.move}, but IV is down ${-SCENARIO.volPoints} points. With delta ${DELTA.toFixed(2)}, gamma ${GAMMA.toFixed(2)}, theta ${price(THETA, 3)} a day and vega ${price(VEGA, 3)} a point, about how much does the call's value change per share?`,
+				`${SCENARIO.days} 天后 ALFA 上涨 $${SCENARIO.move}，但 IV 下降 ${-SCENARIO.volPoints} 个点。Delta ${DELTA.toFixed(2)}、Gamma ${GAMMA.toFixed(2)}、Theta 每天 ${price(THETA, 3)}、Vega 每点 ${price(VEGA, 3)}，看涨每股价值大约变化多少？`,
 			],
 			choices: [
 				{
 					id: "less",
 					label: [
-						"No: time and IV outweigh the rise",
-						"不：时间和 IV 抵消了上涨",
+						`${signedPrice(scenario.total)}: time and IV outweigh the rise`,
+						`${signedPrice(scenario.total)}：时间和 IV 抵消了上涨`,
 					],
 				},
 				{
 					id: "more",
 					label: [
-						`Yes: delta alone adds ${price(DELTA * SCENARIO.move)}`,
-						`是：仅 Delta 就增加 ${price(DELTA * SCENARIO.move)}`,
+						`${signedPrice(DELTA * SCENARIO.move)}: the delta from the rise`,
+						`${signedPrice(DELTA * SCENARIO.move)}：上涨带来的 Delta`,
 					],
 				},
-				{ id: "same", label: ["It's unchanged", "不变"] },
+				{ id: "same", label: ["$0: the effects cancel", "$0：各项相互抵消"] },
 			],
 			answer: "less",
+			entry: { answer: scenario.total, tolerance: 0.03, prefix: "$" },
 			revealAt: 1,
 			explain: [
 				`${signedPrice(scenario.delta)} + ${signedPrice(scenario.gamma)} from the move, ${signedPrice(scenario.theta)} from ${SCENARIO.days} days, ${signedPrice(scenario.vega)} from IV: ${signedPrice(scenario.total)}. The model reprices it at ${signedPrice(scenario.repriced)}.`,

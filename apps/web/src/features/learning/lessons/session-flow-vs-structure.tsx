@@ -712,15 +712,16 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				"You buy 10 calls to open. Ben sells them to open. What happens to open interest?",
-				"你买入 10 张看涨开仓，Ben 卖出开仓。未平仓量会怎样？",
+				"100 contracts are open. You buy 10 calls to open, and Ben sells them to open. By how many contracts does open interest change?",
+				"目前有 100 张合约未平仓。你买入 10 张看涨开仓，Ben 卖出开仓。未平仓量变化多少张？",
 			],
 			choices: [
-				{ id: "ten", label: ["It rises by 10", "增加 10"] },
-				{ id: "twenty", label: ["It rises by 20", "增加 20"] },
-				{ id: "same", label: ["It stays at 100", "保持 100"] },
+				{ id: "ten", label: ["+10", "+10"] },
+				{ id: "twenty", label: ["+20: one per side", "+20：每方各算一次"] },
+				{ id: "same", label: ["0: it stays at 100", "0：保持 100"] },
 			],
 			answer: "ten",
+			entry: { answer: 10, unit: [" contracts", " 张"] },
 			explain: [
 				"Both sides opened, so 10 new contracts exist. Open interest counts contracts, not sides: +10, not +20. Volume also rises by 10.",
 				"双方都是开仓，所以新增 10 张合约。未平仓量按合约计，而不是按双方计：+10，而不是 +20。成交量也增加 10。",

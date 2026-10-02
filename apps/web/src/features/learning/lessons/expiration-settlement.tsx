@@ -1066,19 +1066,26 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				"Fri Oct 4: ALFA is $102 and your Oct 18 95 call bids $7.40. Which gets you more?",
-				"10月4日周五：ALFA 为 $102，你的 10月18日 95 看涨买价 $7.40。哪种方式得到更多？",
+				"Fri Oct 4: ALFA is $102 and your Oct 18 95 call bids $7.40, so selling it gets $7.40 a share. How much a share does exercising it get you instead?",
+				"10月4日周五：ALFA 为 $102，你的 10月18日 95 看涨买价 $7.40，卖出可得每股 $7.40。改为行权，每股能得到多少？",
 			],
 			choices: [
-				{ id: "sell", label: ["Selling the call", "卖出看涨"] },
-				{ id: "exercise", label: ["Exercising it", "行权"] },
-				{ id: "same", label: ["They are the same", "两者一样"] },
+				{ id: "intrinsic", label: ["$7.00", "$7.00"] },
+				{
+					id: "same",
+					label: ["$7.40, the same as selling", "$7.40，与卖出相同"],
+				},
+				{
+					id: "share",
+					label: ["$102: you get the share", "$102：你得到了股票"],
+				},
 			],
-			answer: "sell",
+			answer: "intrinsic",
+			entry: { answer: 7, tolerance: 0.01, prefix: "$" },
 			revealAt: 1,
 			explain: [
-				"Selling gets the $7.40 bid, time value included. Exercising captures only the $7.00 intrinsic value, so it gives up $40 on one contract.",
-				"卖出能拿到含时间价值的 $7.40 买价；行权只能拿到 $7.00 的内在价值，一张合约少得 $40。",
+				"Exercising pays $95 for a $102 share: $7.00, the intrinsic value only. Selling gets the $7.40 bid, time value included, so exercising gives up $40 on one contract.",
+				"行权是花 $95 买入价值 $102 的股票：$7.00，只有内在价值。卖出能拿到含时间价值的 $7.40 买价，所以行权一张合约少得 $40。",
 			],
 		},
 		beats: [

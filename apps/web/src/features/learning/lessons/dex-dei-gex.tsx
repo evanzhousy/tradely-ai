@@ -919,24 +919,38 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				`Swap the 20-day average (${count(d20.shares)} shares) for today's volume by noon (${count(noon.shares)}). DEI…`,
-				`把 20 日均量（${count(d20.shares)} 股）换成今天截至中午的成交量（${count(noon.shares)} 股）。DEI……`,
+				`Net flow of ${signedCount(NET)} shares against ALFA's 20-day average of ${count(d20.shares)} is a DEI of ${dei(d20.shares).toFixed(2)}%. What is the DEI against today's volume by noon, ${count(noon.shares)} shares?`,
+				`${signedCount(NET)} 股的净成交流，对照 ALFA 的 20 日均量 ${count(d20.shares)} 股，DEI 为 ${dei(d20.shares).toFixed(2)}%。对照今天截至中午的成交量 ${count(noon.shares)} 股，DEI 是多少？`,
 			],
 			choices: [
 				{
 					id: "double",
 					label: [
-						`Doubles, to ${dei(noon.shares).toFixed(2)}%`,
-						`翻倍，到 ${dei(noon.shares).toFixed(2)}%`,
+						`${dei(noon.shares).toFixed(2)}%`,
+						`${dei(noon.shares).toFixed(2)}%`,
 					],
 				},
 				{
 					id: "same",
-					label: ["Stays: the flow didn't change", "不变：成交流没有变"],
+					label: [
+						`${dei(d20.shares).toFixed(2)}%: the flow didn't change`,
+						`${dei(d20.shares).toFixed(2)}%：成交流没有变`,
+					],
 				},
-				{ id: "half", label: ["Halves", "减半"] },
+				{
+					id: "half",
+					label: [
+						`${(dei(d20.shares) / 2).toFixed(2)}%: a smaller day`,
+						`${(dei(d20.shares) / 2).toFixed(2)}%：成交更少的一天`,
+					],
+				},
 			],
 			answer: "double",
+			entry: {
+				answer: Math.round(dei(noon.shares) * 100) / 100,
+				tolerance: 0.02,
+				unit: ["%", "%"],
+			},
 			revealAt: 2,
 			explain: [
 				`Same numerator, half the denominator: ${count(Math.abs(NET))} ÷ ${count(noon.shares)} = ${dei(noon.shares).toFixed(2)}%. The trades are identical; only the yardstick changed.`,

@@ -976,30 +976,31 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				`Your main broker quotes the calls' vega per vol point (${CALL_VEGA.toFixed(3)}); the second broker quotes the puts' per 1.00 of volatility (${PUT_VEGA_PER_UNIT.toFixed(2)}). To add them you…`,
-				`主券商按每个波动率点报看涨的 Vega（${CALL_VEGA.toFixed(3)}）；第二券商按每 1.00 波动率报看跌的 Vega（${PUT_VEGA_PER_UNIT.toFixed(2)}）。要把它们相加，你需要……`,
+				`Your main broker quotes the calls' vega per vol point (${CALL_VEGA.toFixed(3)}); the second broker quotes the puts' per 1.00 of volatility (${PUT_VEGA_PER_UNIT.toFixed(2)}). Before adding them, what is the puts' vega per vol point?`,
+				`主券商按每个波动率点报看涨的 Vega（${CALL_VEGA.toFixed(3)}）；第二券商按每 1.00 波动率报看跌的 Vega（${PUT_VEGA_PER_UNIT.toFixed(2)}）。相加之前，看跌每个波动率点的 Vega 是多少？`,
 			],
 			choices: [
 				{
 					id: "add",
-					label: [`Add them: ${RAW_SUM}`, `直接相加：${RAW_SUM}`],
+					label: [
+						`${PUT_VEGA_PER_UNIT.toFixed(2)}: it's already comparable`,
+						`${PUT_VEGA_PER_UNIT.toFixed(2)}：已经可以比较`,
+					],
 				},
 				{
 					id: "convert",
-					label: [
-						`Convert the puts' to per point first: ${PUT_VEGA.toFixed(3)}`,
-						`先把看跌的换成每点：${PUT_VEGA.toFixed(3)}`,
-					],
+					label: [`${PUT_VEGA.toFixed(3)}`, `${PUT_VEGA.toFixed(3)}`],
 				},
 				{
 					id: "drop",
 					label: [
-						"Leave the puts out; use one broker",
-						"不计看跌，只用一家券商",
+						`${(PUT_VEGA_PER_UNIT * 100).toFixed(0)}: 100 points to a unit`,
+						`${(PUT_VEGA_PER_UNIT * 100).toFixed(0)}：一个单位是 100 点`,
 					],
 				},
 			],
 			answer: "convert",
+			entry: { answer: PUT_VEGA, tolerance: 0.001 },
 			revealAt: 1,
 			explain: [
 				`One unit of volatility is 100 vol points, so ${PUT_VEGA_PER_UNIT.toFixed(2)} ÷ 100 = ${PUT_VEGA.toFixed(3)} per point. Weighted by position, the book's vega is ${signedUsd(VEGA_TOTAL * 100, 0)} per vol point.`,

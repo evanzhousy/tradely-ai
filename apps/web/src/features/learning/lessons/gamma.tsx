@@ -830,8 +830,8 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				`After a $${MOVE} rise your calls' delta is ${signedCount(hedgeAfter.options)} against ${count(-hedgeAfter.shares)} shares short. To be flat again you…`,
-				`上涨 $${MOVE} 后，你的看涨 Delta 为 ${signedCount(hedgeAfter.options)}，而你空头 ${count(-hedgeAfter.shares)} 股。要重新归零，你需要……`,
+				`After a $${MOVE} rise your calls' delta is ${signedCount(hedgeAfter.options)} against ${count(-hedgeAfter.shares)} shares short. How many shares do you trade to be flat again? Enter a sale as a negative number.`,
+				`上涨 $${MOVE} 后，你的看涨 Delta 为 ${signedCount(hedgeAfter.options)}，而你空头 ${count(-hedgeAfter.shares)} 股。要重新归零，需要交易多少股？卖出请填负数。`,
 			],
 			choices: [
 				{
@@ -854,6 +854,7 @@ const scenes = [
 				},
 			],
 			answer: "sell",
+			entry: { answer: youTrade, tolerance: 2, unit: [" shares", " 股"] },
 			revealAt: 2,
 			explain: [
 				`Net is ${signedCount(youDrift)}: the calls gained delta. Selling ${count(-youTrade)} shares brings it back to 0. Long gamma sells into a rise.`,

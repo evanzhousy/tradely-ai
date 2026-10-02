@@ -800,28 +800,29 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				"The size offered at $2.15 falls from 13 contracts to 8. Did 5 contracts trade?",
-				"$2.15 的卖出数量从 13 张降到 8 张。是否有 5 张成交？",
+				"The size offered at $2.15 falls from 13 contracts to 8, and nothing new appears on the tape. How many contracts do you know traded?",
+				"$2.15 的卖出数量从 13 张降到 8 张，逐笔成交里没有新记录。你能确定成交了几张？",
 			],
 			choices: [
 				{
 					id: "unknown",
-					label: [
-						"Not necessarily: a cancel does the same",
-						"不一定：撤单也会这样",
-					],
+					label: ["None: a cancel does the same", "0 张：撤单也会这样"],
 				},
-				{ id: "traded", label: ["Yes, 5 traded", "是的，成交了 5 张"] },
 				{
-					id: "rose",
-					label: ["Yes, and the price will rise", "是的，而且价格会上涨"],
+					id: "traded",
+					label: ["5: the size fell by 5", "5 张：数量减少了 5"],
+				},
+				{
+					id: "rest",
+					label: ["8: the size still offered", "8 张：仍挂着的数量"],
 				},
 			],
 			answer: "unknown",
+			entry: { answer: 0, unit: [" contracts", " 张"] },
 			revealAt: 1,
 			explain: [
-				"A seller cancelling 5 contracts shrinks the size exactly as a trade would. Only a print on the tape shows that contracts actually traded.",
-				"卖方撤销 5 张，数量减少的方式与成交完全一样。只有逐笔成交里的记录才能证明真的成交了。",
+				"Nothing printed, so nothing traded: a seller cancelling 5 contracts shrinks the size exactly as a trade would. Only a print on the tape shows that contracts actually traded.",
+				"没有成交记录，就没有成交：卖方撤销 5 张，数量减少的方式与成交完全一样。只有逐笔成交里的记录才能证明真的成交了。",
 			],
 		},
 		beats: [

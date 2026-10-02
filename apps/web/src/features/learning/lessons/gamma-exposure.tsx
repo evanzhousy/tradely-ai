@@ -654,8 +654,8 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				`Another model assumes dealers are short the ${FOCUS_STRIKE} calls, not long. Their contribution becomes…`,
-				`另一个模型假设做市商做空而不是做多 ${FOCUS_STRIKE} 看涨。它们的贡献变成……`,
+				`Assuming dealers are long the ${FOCUS_STRIKE} calls, they contribute ${money(LONG)} for each 1% ALFA moves. Another model assumes dealers are short them. What is their contribution under that model?`,
+				`假设做市商做多 ${FOCUS_STRIKE} 看涨，ALFA 每变动 1%，它们贡献 ${money(LONG)}。另一个模型假设做市商做空这些看涨。在那个模型下，它们的贡献是多少？`,
 			],
 			choices: [
 				{
@@ -675,6 +675,7 @@ const scenes = [
 				},
 			],
 			answer: "flip",
+			entry: { answer: -LONG, tolerance: 1_000, prefix: "$" },
 			revealAt: 3,
 			explain: [
 				`Gamma, open interest, spot and size are the same; only the assumed sign changes: ${money(LONG)} becomes ${money(-LONG)}. The sign is a model choice, not something the open interest reports.`,

@@ -626,21 +626,22 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				"The quote is $2.20 bid, $2.65 ask. You send a limit buy at $2.40. What happens right away?",
-				"报价为买价 $2.20、卖价 $2.65。你发出 $2.40 的限价买单。会立即发生什么？",
+				"The quote is $2.20 bid, $2.65 ask. You send a limit buy for 2 contracts at $2.40. How many fill right away?",
+				"报价为买价 $2.20、卖价 $2.65。你发出 2 张、限价 $2.40 的买单。立即成交几张？",
 			],
 			choices: [
 				{
 					id: "wait",
-					label: ["It waits as the new best bid", "它作为新的最优买价等待"],
+					label: [
+						"None: it waits as the new best bid",
+						"0 张：它作为新的最优买价等待",
+					],
 				},
-				{ id: "ask", label: ["It fills at $2.65", "以 $2.65 成交"] },
-				{
-					id: "limit",
-					label: ["It fills at $2.40 at once", "立即以 $2.40 成交"],
-				},
+				{ id: "ask", label: ["Both, at $2.65", "2 张，价格 $2.65"] },
+				{ id: "limit", label: ["Both, at $2.40", "2 张，价格 $2.40"] },
 			],
 			answer: "wait",
+			entry: { answer: 0, unit: [" contracts", " 张"] },
 			revealAt: 2,
 			explain: [
 				"No seller is offering $2.40 yet, so a limit below the ask waits in the book. It fills only if a seller comes down to $2.40, and it may never fill.",

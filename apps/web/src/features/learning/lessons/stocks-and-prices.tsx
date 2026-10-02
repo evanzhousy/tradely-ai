@@ -742,21 +742,28 @@ const scenes = [
 		title: ["You buy at the ask and sell at the bid", "买入按卖价，卖出按买价"],
 		predict: {
 			prompt: [
-				"You buy 10 ALFA shares right away. Which price do you pay?",
-				"你立即买入 10 股 ALFA。你付的是哪个价格？",
+				"ALFA shows bid $100.00, ask $100.05, last trade $100.02. You buy 10 shares right away. What do they cost in total?",
+				"ALFA 显示买价 $100.00、卖价 $100.05、最新成交 $100.02。你立即买入 10 股。总共要花多少？",
 			],
 			choices: [
-				{ id: "bid", label: ["The bid, $100.00", "买价 $100.00"] },
+				{
+					id: "bid",
+					label: ["$1,000.00, at the bid", "$1,000.00，按买价"],
+				},
 				{
 					id: "last",
-					label: ["The last trade, $100.02", "最新成交价 $100.02"],
+					label: ["$1,000.20, at the last trade", "$1,000.20，按最新成交价"],
 				},
-				{ id: "ask", label: ["The ask, $100.05", "卖价 $100.05"] },
+				{
+					id: "ask",
+					label: ["$1,000.50, at the ask", "$1,000.50，按卖价"],
+				},
 			],
 			answer: "ask",
+			entry: { answer: 1000.5, tolerance: 0.01, prefix: "$" },
 			explain: [
-				"An immediate buy takes the best price a seller is offering: the ask. The last trade is history, and the bid is what buyers offer.",
-				"立即买入会接受卖方给出的最优价格，也就是卖价。最新成交价是历史，买价是买方的出价。",
+				"An immediate buy takes the best price a seller is offering, the ask: 10 × $100.05 = $1,000.50. The last trade is history, and the bid is what buyers offer.",
+				"立即买入会接受卖方给出的最优价格，也就是卖价：10 × $100.05 = $1,000.50。最新成交价是历史，买价是买方的出价。",
 			],
 		},
 		beats: [

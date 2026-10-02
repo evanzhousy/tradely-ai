@@ -927,27 +927,34 @@ const scenes = [
 		title: ["Repair the step, keep the source facts", "修复变换，保留来源事实"],
 		predict: {
 			prompt: [
-				`A colleague's recap puts Monday's premium at ${usd(REPORTED)}. Its contracts and prices match the tape. What went wrong?`,
-				`同事的复盘说周一的权利金是 ${usd(REPORTED)}。其中的张数和价格都与成交记录一致。哪里出了错？`,
+				`A colleague's recap puts Monday's premium at ${usd(REPORTED)}, summing price × contracts for the four strikes with data. Its contracts and prices match the tape. What should the premium be?`,
+				`同事的复盘按价格 × 张数，把有数据的四个行权价加总，得出周一的权利金是 ${usd(REPORTED)}。其中的张数和价格都与成交记录一致。权利金应该是多少？`,
 			],
 			choices: [
 				{
 					id: "multiplier",
 					label: [
-						"It left out the 100 shares per contract",
-						"漏掉了每张合约的 100 股",
+						`${dollars(PREMIUM)}: each contract is 100 shares`,
+						`${dollars(PREMIUM)}：每张合约是 100 股`,
 					],
 				},
 				{
 					id: "trades",
-					label: ["It missed some trades", "漏掉了一些成交"],
+					label: [
+						`${usd(REPORTED)}: it matches the tape`,
+						`${usd(REPORTED)}：与成交记录一致`,
+					],
 				},
 				{
 					id: "prices",
-					label: ["It used uncorrected prices", "用了未更正的价格"],
+					label: [
+						"Unknown until the 120 call arrives",
+						"要等 120 看涨的数据到了才知道",
+					],
 				},
 			],
 			answer: "multiplier",
+			entry: { answer: PREMIUM / 100, tolerance: 1, prefix: "$" },
 			explain: [
 				`Recomputing the 105 call with × 100 gives $108,500 against the report's $1,085.00. Every row is off by exactly 100 times: ${dollars(PREMIUM)}, not ${usd(REPORTED)}.`,
 				`用 × 100 重算 105 看涨得到 $108,500，而报告是 $1,085.00。每一行都正好差 100 倍：应为 ${dollars(PREMIUM)}，而不是 ${usd(REPORTED)}。`,
