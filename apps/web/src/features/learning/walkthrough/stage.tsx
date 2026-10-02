@@ -8,6 +8,7 @@ import {
 	useLayoutEffect,
 	useRef,
 	useState,
+	useSyncExternalStore,
 } from "react";
 import { textWidth } from "./text-measure";
 
@@ -21,18 +22,31 @@ const stageWidth = (element: HTMLElement) => {
 	return next > 0 ? Math.max(280, Math.min(next, 820)) : null;
 };
 
-/** True unless the reader has asked the system for reduced motion. */
+let reducedQuery: MediaQueryList | null | undefined;
+const reducedMotionQuery = () => {
+	if (reducedQuery === undefined)
+		reducedQuery =
+			typeof window === "undefined"
+				? null
+				: (window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null);
+	return reducedQuery;
+};
+function subscribeReducedMotion(onChange: () => void) {
+	const query = reducedMotionQuery();
+	query?.addEventListener("change", onChange);
+	return () => query?.removeEventListener("change", onChange);
+}
+
+/**
+ * True when the reader has asked the system for reduced motion. Read during render, so a
+ * scene that opens already knows and plays no entrance.
+ */
 export function usePrefersReducedMotion() {
-	const [reduced, setReduced] = useState(false);
-	useEffect(() => {
-		const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-		if (!query) return;
-		const update = () => setReduced(query.matches);
-		update();
-		query.addEventListener("change", update);
-		return () => query.removeEventListener("change", update);
-	}, []);
-	return reduced;
+	return useSyncExternalStore(
+		subscribeReducedMotion,
+		() => reducedMotionQuery()?.matches ?? false,
+		() => false,
+	);
 }
 
 const ease = [0.22, 1, 0.36, 1] as const;
