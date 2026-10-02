@@ -393,6 +393,14 @@ export const syllabus: readonly Entry[] = [
 		["C24"],
 		["session-flow-vs-structure"],
 	),
+	checkpoint(
+		"flow",
+		"Checkpoint: flow, positions and data quality, on a new day",
+		"检查点：在新的一天里运用“成交流、持仓与数据质量”",
+		"Work out a day's open interest from its record, a sweep's average price and a contract's relative volume, and check a record's date against what you need, all on a day you haven't seen.",
+		"在你没见过的一天里：根据记录算出一天后的未平仓量、一次扫单的均价和一张合约的相对成交量，并对照要求核对记录的日期。",
+		["symbol-drawer"],
+	),
 	lesson(
 		"audited-boundary",
 		"research",

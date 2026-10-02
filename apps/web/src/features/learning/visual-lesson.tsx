@@ -167,6 +167,11 @@ const lessons = {
 			default: m.SymbolDrawerWalkthrough,
 		})),
 	),
+	"checkpoint-flow": lazy(() =>
+		import("./lessons/checkpoint-flow").then((m) => ({
+			default: m.CheckpointFlowWalkthrough,
+		})),
+	),
 	"unusual-activity": lazy(() =>
 		import("./lessons/unusual-activity").then((m) => ({
 			default: m.UnusualActivityWalkthrough,
