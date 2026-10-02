@@ -41,6 +41,11 @@ const lessons = {
 			default: m.CharmVannaWalkthrough,
 		})),
 	),
+	"checkpoint-structure": lazy(() =>
+		import("./lessons/checkpoint-structure").then((m) => ({
+			default: m.CheckpointStructureWalkthrough,
+		})),
+	),
 	"audited-boundary": lazy(() =>
 		import("./lessons/audited-boundary").then((m) => ({
 			default: m.AuditedBoundaryWalkthrough,

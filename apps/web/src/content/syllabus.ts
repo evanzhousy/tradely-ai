@@ -635,6 +635,14 @@ export const syllabus: readonly Entry[] = [
 		["C22"],
 		["gamma", "theta-vega-rho"],
 	),
+	checkpoint(
+		"structure",
+		"Checkpoint: modeled positioning and structure, on a new day",
+		"检查点：在新的一天里运用“模型持仓与结构”",
+		"Build one strike's GEX from stated assumptions, read the hedge on either side of zero gamma, measure a wall in ATRs, and track delta that changes without a trade, all on a day you haven't seen.",
+		"在你没见过的一天里：在明确假设下算出单个行权价的 GEX、判断零 Gamma 两侧的对冲方向、以 ATR 衡量到墙的距离，并追踪没有交易也会变化的 Delta。",
+		["charm-vanna"],
+	),
 	lesson(
 		"portfolio-pnl",
 		"portfolio",
