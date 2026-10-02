@@ -733,6 +733,13 @@ const sepAtStrike = gammaOf(SEP_20, SPOT);
 const octAtStrike = gammaOf(OCT_100_CALL, SPOT);
 const FAR = 92;
 
+/** The whole-dollar price where the Oct 18 call's delta changes fastest: its gamma peak. */
+const STEEPEST = Array.from({ length: 21 }, (_, i) => 90 + i).reduce(
+	(best, spot) =>
+		gammaOf(OCT_100_CALL, spot) > gammaOf(OCT_100_CALL, best) ? spot : best,
+	90,
+);
+
 const scenes = [
 	defineScene<SlopeState, SlopeState>({
 		id: "slope",
@@ -758,6 +765,7 @@ const scenes = [
 				},
 			],
 			answer: "right",
+			entry: { answer: NEW_DELTA, tolerance: 0.01 },
 			explain: [
 				`${fixed2(DELTA)} + ${fixed2(GAMMA)} × ${MOVE} = ${fixed2(NEW_DELTA)}. The model's delta at ${stock(SPOT + MOVE)} is ${greek(model(OCT_100_CALL, SPOT + MOVE).delta)}.`,
 				`${fixed2(DELTA)} + ${fixed2(GAMMA)} × ${MOVE} = ${fixed2(NEW_DELTA)}。模型在 ${stock(SPOT + MOVE)} 的 Delta 是 ${greek(model(OCT_100_CALL, SPOT + MOVE).delta)}。`,
@@ -798,6 +806,18 @@ const scenes = [
 				"在任一图表上左右拖动来移动 ALFA。",
 			],
 			start: () => ({ spot: 106, view: "value" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"On the delta chart, find the price where the call's delta climbs fastest.",
+					"在 Delta 图上，找出看涨期权 Delta 上升最快的价格。",
+				],
+				reached: (e) => e.spot === STEEPEST,
+				done: [
+					`Delta's slope is steepest around ${stock(STEEPEST)}, near the strike: that's where gamma peaks. Far below or far above, delta barely moves.`,
+					`Delta 曲线在 ${stock(STEEPEST)} 附近最陡，接近行权价：Gamma 在那里达到峰值。远低于或远高于行权价时，Delta 几乎不动。`,
+				],
+			},
 		},
 		View: SlopeScene,
 	}),
@@ -875,6 +895,32 @@ const scenes = [
 				"切换持有人，逐步查看对冲。",
 			],
 			start: () => ({ holder: "ben", stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"After the rise, how many ALFA shares does Ben trade to get back to flat?",
+					"上涨之后，Ben 要交易多少股 ALFA 才能回到中性？",
+				],
+				choices: [
+					{
+						id: "buy",
+						label: [`Buys ${count(benTrade)}`, `买入 ${count(benTrade)}`],
+					},
+					{
+						id: "sell",
+						label: [`Sells ${count(benTrade)}`, `卖出 ${count(benTrade)}`],
+					},
+					{
+						id: "you",
+						label: [`Sells ${count(-youTrade)}`, `卖出 ${count(-youTrade)}`],
+					},
+				],
+				answer: "buy",
+				done: [
+					`Ben is short calls, so the rise made his delta more negative: he buys ${count(benTrade)} shares, with the move. You, long the calls, sell ${count(-youTrade)}.`,
+					`Ben 卖空看涨，上涨让他的 Delta 更负：他要买入 ${count(benTrade)} 股，顺着行情。你持有看涨多头，则要卖出 ${count(-youTrade)} 股。`,
+				],
+			},
 		},
 		View: HedgeScene,
 	}),
@@ -949,6 +995,18 @@ const scenes = [
 				"在图上左右拖动来移动 ALFA，比较两个 Gamma。",
 			],
 			start: () => ({ spot: 104, near: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a price where the Oct 18 call's gamma is higher than the 4-day Sep 20 call's.",
+					"找出一个价格，让 10月18日 看涨的 Gamma 高于只剩 4 天的 9月20日 看涨。",
+				],
+				reached: (e) => gammaOf(OCT_100_CALL, e.spot) > gammaOf(SEP_20, e.spot),
+				done: [
+					"Away from the strike the order flips. With 4 days left, the Sep 20 call's delta is already settled near 0 or 1 there, so a $1 move hardly changes it.",
+					"远离行权价时，顺序就反过来了。只剩 4 天时，9月20日 看涨在那里的 Delta 已经接近 0 或 1，$1 的变动几乎改变不了它。",
+				],
+			},
 		},
 		View: ExpiryScene,
 	}),

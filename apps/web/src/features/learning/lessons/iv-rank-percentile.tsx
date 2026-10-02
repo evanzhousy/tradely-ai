@@ -415,6 +415,12 @@ function SampleView(props: {
 	);
 }
 
+/** With the shock week back in, the IV30 that earns the rank today has without it. */
+const SAME_RANK_AT =
+	Array.from({ length: 51 }, (_, i) => 20 + i).find(
+		(today) => stats({ ...base, mark: "both", today }).rank >= noShock.rank,
+	) ?? 70;
+
 const scenes = [
 	defineScene<View, View>({
 		id: "compare",
@@ -443,6 +449,11 @@ const scenes = [
 				},
 			],
 			answer: "rank",
+			entry: {
+				answer: Math.round(year.rank * 100),
+				tolerance: 2,
+				unit: ["%", "%"],
+			},
 			revealAt: 1,
 			explain: [
 				`(${ALFA_IV30_TODAY} − ${year.low}) ÷ (${year.high} − ${year.low}) = ${pct(year.rank)}: today sits low in the range because one week reached ${year.high}%. Yet ${year.below} of ${year.n} weeks were lower, a percentile of ${pct(year.percentile)}.`,
@@ -484,6 +495,20 @@ const scenes = [
 				"移动今天的 IV30，观察两项指标如何不同地变化。",
 			],
 			start: () => ({ ...base, mark: "both", today: 30 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the lowest IV30 at which IV rank passes 50%.",
+					"找出 IV Rank 超过 50% 的最低 IV30。",
+				],
+				reached: (e) =>
+					stats(e).rank >= 0.5 &&
+					stats({ ...e, today: e.today - 1 }).rank < 0.5,
+				done: [
+					"Rank reaches the middle of the year's range only near the top of where IV usually sits, because one spike stretched the range. By then almost every week was lower: the percentile is near 100%.",
+					"Rank 要到 IV 平时所处区间的上端附近，才达到全年区间的中点，因为一次尖峰拉宽了区间。此时几乎每一周都更低：百分位接近 100%。",
+				],
+			},
 		},
 		View: CompareView,
 	}),
@@ -543,6 +568,18 @@ const scenes = [
 				"保留或去掉冲击那一周，并移动今天的 IV30。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Put the shock week back, then find the lowest IV30 that earns the rank today has without it.",
+					"把冲击周放回去，再找出能得到与去掉它时相同 Rank 的最低 IV30。",
+				],
+				reached: (e) => !e.dropShock && e.today === SAME_RANK_AT,
+				done: [
+					`With the shock week in the range, IV30 has to reach ${SAME_RANK_AT}% for the ${pct(noShock.rank)} rank that ${ALFA_IV30_TODAY}% earns without it. One week moved the yardstick by ${SAME_RANK_AT - ALFA_IV30_TODAY} points.`,
+					`冲击周在区间内时，IV30 要到 ${SAME_RANK_AT}%，才能得到去掉它时 ${ALFA_IV30_TODAY}% 就有的 ${pct(noShock.rank)} Rank。一周的数据把标尺移动了 ${SAME_RANK_AT - ALFA_IV30_TODAY} 个点。`,
+				],
+			},
 		},
 		View: OutlierView,
 	}),
@@ -570,6 +607,7 @@ const scenes = [
 				{ id: "rank", label: [pct(year.rank), pct(year.rank)] },
 			],
 			answer: "all",
+			entry: { answer: 100, unit: ["%", "%"] },
 			revealAt: 1,
 			explain: [
 				`The last ${RECENT} weeks ran ${recent.low}% to ${recent.high}%, all below ${ALFA_IV30_TODAY}%. Percentile is 100% and today is above the range's high, so rank has nowhere to put it.`,
@@ -611,6 +649,32 @@ const scenes = [
 				"切换历史，比较读数。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Why does the year with gaps read like the calm quarter?",
+					"为什么有缺口的一年读数看起来像平静的那个季度？",
+				],
+				choices: [
+					{
+						id: "shock",
+						label: [
+							"Its missing weeks include February's shock",
+							"缺失的几周正好包括二月的冲击",
+						],
+					},
+					{ id: "more", label: ["It counts more weeks", "它统计了更多周"] },
+					{
+						id: "today",
+						label: ["Today's IV30 is different", "今天的 IV30 不同"],
+					},
+				],
+				answer: "shock",
+				done: [
+					"Lose those 8 weeks and the year's high drops below today, so every remaining week is lower: percentile 100%, rank off the top. Say the window and the coverage with every reading.",
+					"去掉那 8 周后，全年的最高值低于今天，剩下的每一周都更低：百分位 100%，Rank 超出上限。每个读数都要说明窗口和覆盖范围。",
+				],
+			},
 		},
 		View: SampleView,
 	}),

@@ -566,6 +566,23 @@ const scenes = [
 		explore: {
 			prompt: ["Switch between the slices.", "在切片之间切换。"],
 			start: () => ({ slice: "smile" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Look along the Oct 18 row. Which strike carries the highest IV?",
+					"沿着 10月18日 这一行看。哪个行权价的隐含波动率最高？",
+				],
+				choices: [
+					{ id: "low", label: ["$90", "$90"] },
+					{ id: "atm", label: ["$100", "$100"] },
+					{ id: "high", label: ["$110", "$110"] },
+				],
+				answer: "low",
+				done: [
+					"IV falls from the $90 strike to the $110: lower strikes are richer. That tilt across one expiry is the skew; the column down one strike is the term structure.",
+					"隐含波动率从 $90 行权价到 $110 逐渐下降：较低行权价更贵。同一到期日上的这种倾斜就是偏斜；同一行权价沿到期日向下就是期限结构。",
+				],
+			},
 		},
 		View: SliceView,
 	}),
@@ -599,6 +616,7 @@ const scenes = [
 				},
 			],
 			answer: "negative",
+			entry: { answer: -SKEW, tolerance: 0.15, unit: [" points", " 点"] },
 			revealAt: 2,
 			explain: [
 				`${CALL_IV} − ${PUT_IV} = ${signedPoints(-SKEW)} vol points. The same wings read as skew, put minus call, give ${signedPoints(SKEW)}; a ratio is a different quantity again.`,
@@ -637,6 +655,35 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the wings.", "逐步查看两翼。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Why aren't the two 25Δ wings the same distance from $100?",
+					"为什么两个 25Δ 的翼与 $100 的距离不一样？",
+				],
+				choices: [
+					{
+						id: "delta",
+						label: [
+							"Wings are picked by delta, not by dollars",
+							"翼按 Delta 选取，而不是按美元距离",
+						],
+					},
+					{
+						id: "error",
+						label: ["A quote error on one side", "某一侧的报价有误"],
+					},
+					{
+						id: "cheap",
+						label: ["Puts are cheaper than calls", "看跌比看涨便宜"],
+					},
+				],
+				answer: "delta",
+				done: [
+					`The 25Δ put sits at $${PUT_WING.toFixed(2)} and the 25Δ call at $${CALL_WING.toFixed(2)}: each is where that option's delta is 0.25 in size, and skew shapes where that falls. State the convention before comparing.`,
+					`25Δ 看跌在 $${PUT_WING.toFixed(2)}，25Δ 看涨在 $${CALL_WING.toFixed(2)}：各自是该期权 Delta 绝对值为 0.25 的位置，偏斜决定了它们落在哪里。比较之前先说明约定。`,
+				],
+			},
 		},
 		View: WingsView,
 	}),
@@ -702,6 +749,41 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the estimates.", "逐步查看这些估计。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which cells should stay blank, and why?",
+					"哪些格子应该留空，为什么？",
+				],
+				choices: [
+					{
+						id: "edges",
+						label: [
+							"The Sep 20 wings: filling them is extrapolation",
+							"9月20日 两翼：填上就是外推",
+						],
+					},
+					{
+						id: "dec",
+						label: [
+							"Dec 20 $105: it had no quote",
+							"12月20日 $105：它没有报价",
+						],
+					},
+					{
+						id: "none",
+						label: [
+							"None: a surface needs every cell",
+							"都不留：曲面需要每个格子",
+						],
+					},
+				],
+				answer: "edges",
+				done: [
+					"Dec 20 $105 sits between two quoted cells, so an interpolated estimate, marked as one, is fair. The Sep 20 wings lie beyond every quote in their row: filling them invents a shape.",
+					"12月20日 $105 夹在两个有报价的格子之间，标明是插值的估计是合理的。9月20日 两翼超出该行所有报价：填上就是凭空造出形状。",
+				],
+			},
 		},
 		View: EstimatesView,
 	}),

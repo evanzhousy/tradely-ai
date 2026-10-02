@@ -79,6 +79,7 @@ export function TaskPanel({
 						key={choice.id}
 						variant="outline"
 						className="wt-choice"
+						data-choice={choice.id}
 						data-state={
 							revealed && choice.id === task.answer
 								? "hit"

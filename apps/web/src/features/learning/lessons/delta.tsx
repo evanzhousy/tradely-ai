@@ -660,6 +660,22 @@ const up10 = valueAt("call", SPOT + 10) - valueAt("call", SPOT);
 const down10 = valueAt("call", SPOT - 10) - valueAt("call", SPOT);
 const [you, ben] = holders;
 
+/** The lowest whole-dollar price at which the call's delta passes 0.80. */
+const DEEP =
+	Array.from({ length: 21 }, (_, i) => 90 + i).find(
+		(spot) => deltaAt("call", spot) > 0.8,
+	) ?? 110;
+/** The smallest rise for which delta alone misses the model's price change by over $1. */
+const MISS_AT =
+	Array.from({ length: 12 }, (_, i) => i + 1).find(
+		(move) =>
+			Math.abs(
+				valueAt("call", SPOT + move) -
+					valueAt("call", SPOT) -
+					CALL_DELTA * move,
+			) > 1,
+	) ?? 12;
+
 const scenes = [
 	defineScene<SlopeState, SlopeState>({
 		id: "slope",
@@ -682,6 +698,11 @@ const scenes = [
 				},
 			],
 			answer: "delta",
+			entry: {
+				answer: Math.round(CALL_DELTA * 100) / 100,
+				tolerance: 0.03,
+				prefix: "$",
+			},
 			explain: [
 				`The slope at ${stock(SPOT)} is ${fixed2(CALL_DELTA)}, so +$1 in ALFA adds about ${price(CALL_DELTA)}. The model gives ${price(up1)}.`,
 				`${stock(SPOT)} 处的斜率是 ${fixed2(CALL_DELTA)}，所以 ALFA 涨 $1 约增加 ${price(CALL_DELTA)}。模型结果是 ${price(up1)}。`,
@@ -722,6 +743,18 @@ const scenes = [
 				"在图上左右拖动来移动 ALFA，观察斜率如何沿曲线变化。",
 			],
 			start: () => ({ right: "call", spot: 106, slope: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the lowest price at which the call's delta passes 0.80.",
+					"找出看涨期权 Delta 超过 0.80 的最低价格。",
+				],
+				reached: (e) => e.right === "call" && e.spot === DEEP,
+				done: [
+					`At ${stock(DEEP)} the call is deep enough in the money to move more than $0.80 for each $1 in ALFA. The deeper it goes, the more it moves like the stock itself.`,
+					`在 ${stock(DEEP)} 时，看涨期权已足够深度实值，ALFA 每动 $1，它就动 $0.80 以上。越深度实值，它越像股票本身。`,
+				],
+			},
 		},
 		View: SlopeView,
 	}),
@@ -755,6 +788,11 @@ const scenes = [
 				},
 			],
 			answer: "right",
+			entry: {
+				answer: positionDelta(you.contracts),
+				tolerance: 10,
+				unit: [" shares", " 股"],
+			},
 			revealAt: 2,
 			explain: [
 				`${fixed2(CALL_DELTA)} per share × 100 shares × ${you.contracts} contracts = ${signedCount(positionDelta(you.contracts))} shares. Ben, short ${Math.abs(ben.contracts)}, is ${signedCount(positionDelta(ben.contracts))}.`,
@@ -802,6 +840,41 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the chain.", "逐步查看这条计算链。"],
 			start: () => ({ rows: 4 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Ben is short 10 of these calls. If ALFA rises $0.40, about how much does his position change?",
+					"Ben 卖空了 10 张这种看涨期权。如果 ALFA 上涨 $0.40，他的持仓大约变化多少？",
+				],
+				choices: [
+					{
+						id: "ben",
+						label: [
+							signedUsd(moveDollars(ben.contracts), 0),
+							signedUsd(moveDollars(ben.contracts), 0),
+						],
+					},
+					{
+						id: "flip",
+						label: [
+							signedUsd(-moveDollars(ben.contracts), 0),
+							signedUsd(-moveDollars(ben.contracts), 0),
+						],
+					},
+					{
+						id: "share",
+						label: [
+							signedUsd(moveDollars(ben.contracts) / 10, 2),
+							signedUsd(moveDollars(ben.contracts) / 10, 2),
+						],
+					},
+				],
+				answer: "ben",
+				done: [
+					`Short 10 is ${signedCount(positionDelta(ben.contracts))} share-equivalents, so a $0.40 rise costs about ${signedUsd(moveDollars(ben.contracts), 0)}. Same option, opposite sign: the position decides it.`,
+					`空头 10 张是 ${signedCount(positionDelta(ben.contracts))} 股等价，所以上涨 $0.40 约亏 ${signedUsd(moveDollars(ben.contracts), 0)}。同一期权，符号相反：由持仓决定。`,
+				],
+			},
 		},
 		View: ExposureView,
 	}),
@@ -870,6 +943,18 @@ const scenes = [
 				"在图上左右拖动来移动 ALFA，比较直线与曲线。",
 			],
 			start: () => ({ move: 5 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the smallest rise at which delta alone misses the model's price change by more than $1.",
+					"找出仅用 Delta 的估计与模型价格变化相差超过 $1 的最小涨幅。",
+				],
+				reached: (e) => e.move === MISS_AT,
+				done: [
+					`Up to about $${MISS_AT - 1} the straight line stays within $1 of the curve; at +$${MISS_AT} the curve has pulled away by more. Delta describes small moves; for big ones, reprice.`,
+					`涨幅在约 $${MISS_AT - 1} 以内，直线与曲线相差不到 $1；到 +$${MISS_AT} 时差距超过 $1。Delta 描述的是小幅变动；大幅变动要重新定价。`,
+				],
+			},
 		},
 		View: LimitView,
 	}),

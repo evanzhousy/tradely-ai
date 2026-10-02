@@ -781,6 +781,19 @@ const scenes = [
 				"选择一个价格，尝试不同的波动率，直到模型吻合。",
 			],
 			start: () => ({ guess: 0.4, source: "ask", all: false }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Fit the bid instead: find the guess at which the model matches $4.05.",
+					"改为拟合买价：找出让模型等于 $4.05 的波动率猜测。",
+				],
+				reached: (e) =>
+					e.source === "bid" && Math.abs(e.guess - fitted.bid) < 0.0006,
+				done: [
+					`${percent(fitted.bid)} fits the bid, against ${percent(fitted.mid)} for the mid and ${percent(fitted.ask)} for the ask. Same option, three IVs: always say which price you fitted.`,
+					`${percent(fitted.bid)} 拟合买价，中间价是 ${percent(fitted.mid)}，卖价是 ${percent(fitted.ask)}。同一期权，三个 IV：务必说明拟合的是哪个价格。`,
+				],
+			},
 		},
 		View: FitView,
 	}),
@@ -817,6 +830,11 @@ const scenes = [
 				},
 			],
 			answer: "sqrt",
+			entry: {
+				answer: Math.round(RV20 * 1000) / 10,
+				tolerance: 1.5,
+				unit: ["%", "%"],
+			},
 			revealAt: 1,
 			explain: [
 				`Variance adds up over days, so the standard deviation grows with the square root of time: ${percent(DAILY_SD, 2)} × √252 ≈ ${percent(RV20, 0)}.`,
@@ -858,6 +876,18 @@ const scenes = [
 				"改变窗口和每年天数。",
 			],
 			start: () => ({ window: 20, annualized: true, periods: 365 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the settings that report the lowest realized volatility.",
+					"找出报告的已实现波动率最低的设置。",
+				],
+				reached: (e) => e.window === 10 && e.periods === 252,
+				done: [
+					"The calmer 10 sessions, annualized with 252 trading days, give the smallest number. Same stock and same returns: the window and the convention set the figure.",
+					"较平静的 10 个交易日，用 252 个交易日年化，得到的数字最小。同一股票、同样的收益率：窗口和约定决定了数值。",
+				],
+			},
 		},
 		View: MeasureView,
 	}),
@@ -932,6 +962,26 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the two windows.", "逐步查看两个窗口。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What is the gap between IV and RV measured in?",
+					"IV 与 RV 之间的差距用什么衡量？",
+				],
+				choices: [
+					{ id: "points", label: ["Volatility points", "波动率点"] },
+					{ id: "return", label: ["Percent of return", "收益率百分比"] },
+					{
+						id: "verdict",
+						label: ["How overpriced the options are", "期权被高估的程度"],
+					},
+				],
+				answer: "points",
+				done: [
+					"35% minus 24% is 11 volatility points between two windows: one ahead that holds earnings, one behind that was calm. It isn't a return forecast or a verdict on price.",
+					"35% 减 24% 是两个窗口之间相差 11 个波动率点：前面一个包含财报，后面一个相对平静。它既不是收益预测，也不是价格判断。",
+				],
+			},
 		},
 		View: HorizonView,
 	}),

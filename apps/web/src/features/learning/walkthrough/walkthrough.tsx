@@ -491,6 +491,7 @@ export function Walkthrough({
 								key={item.id}
 								variant="outline"
 								className="wt-choice"
+								data-choice={item.id}
 								onClick={() => choose(item.id)}
 							>
 								{t(item.label)}

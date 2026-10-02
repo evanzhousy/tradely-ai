@@ -881,6 +881,32 @@ const scenes = [
 				"把 10:50 的价差按两笔成交或一笔交易计算。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Counting the 10:50 spread as one trade, what is net flow DEX?",
+					"把 10:50 的价差算作一笔交易时，净成交流 DEX 是多少？",
+				],
+				choices: [
+					{
+						id: "netted",
+						label: [signedCount(netted.net), signedCount(netted.net)],
+					},
+					{
+						id: "printwise",
+						label: [signedCount(printwise.net), signedCount(printwise.net)],
+					},
+					{
+						id: "gross",
+						label: [signedCount(printwise.gross), signedCount(printwise.gross)],
+					},
+				],
+				answer: "netted",
+				done: [
+					`As one trade the spread's legs offset, so net flow DEX is ${signedCount(netted.net)}, not ${signedCount(printwise.net)}. The convention changes the answer; report which one you used.`,
+					`作为一笔交易时，价差的两条腿相互抵消，所以净成交流 DEX 是 ${signedCount(netted.net)}，而不是 ${signedCount(printwise.net)}。约定改变了答案；要说明你用的是哪一种。`,
+				],
+			},
 		},
 		View: FlowView,
 	}),
@@ -949,6 +975,18 @@ const scenes = [
 		explore: {
 			prompt: ["Pick a denominator.", "选择一个分母。"],
 			start: () => ({ shown: 1 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Pick the denominator that makes the same flow look smallest.",
+					"选一个让同样的成交流看起来最小的分母。",
+				],
+				reached: (e) => e.shown === 2,
+				done: [
+					"The 60-day average is the biggest yardstick here, so the same net flow is the smallest percentage. Nothing traded differently; state the denominator with every DEI.",
+					"这里 60 日平均是最大的标尺，所以同样的净成交流得出的百分比最小。成交本身没有任何不同；每个 DEI 都要说明分母。",
+				],
+			},
 		},
 		View: DeiView,
 	}),
@@ -1014,6 +1052,35 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the two sources.", "逐步查看两个来源。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What does the other platform's 'DEX' assume that yours doesn't?",
+					"另一个平台的“DEX”做了哪个你的 DEX 没有做的假设？",
+				],
+				choices: [
+					{
+						id: "dealers",
+						label: [
+							"That dealers are short every call",
+							"做市商卖空了所有看涨",
+						],
+					},
+					{
+						id: "side",
+						label: ["That trades are signed by side", "成交按位置标记符号"],
+					},
+					{
+						id: "monday",
+						label: ["That Monday's prints count", "计入周一的成交"],
+					},
+				],
+				answer: "dealers",
+				done: [
+					"Theirs multiplies Friday's open interest by delta and assumes dealers are short the calls: a modeled position. Yours signs Monday's trades by side. Same name, different numerator, sign and question.",
+					"他们的用周五未平仓量乘以 Delta，并假设做市商卖空看涨：这是模型化的持仓。你的按位置给周一的成交标记符号。名字相同，分子、符号和问题都不同。",
+				],
+			},
 		},
 		View: SourceView,
 	}),

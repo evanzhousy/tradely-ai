@@ -557,6 +557,17 @@ const ivRelative = value(SPOT, DAYS, IV_RELATIVE).price - TODAY.price;
 const SCENARIO = { move: 1, days: 6, volPoints: -3 } as const;
 const scenario = contributions({ ...SCENARIO, shown: 3 });
 
+/** The first day on which the call loses more than $0.10 a day, ALFA and IV unchanged. */
+const FAST_DAY =
+	Array.from({ length: DAYS }, (_, i) => i).find(
+		(elapsed) => -value(SPOT, DAYS - elapsed, IV).theta > 0.1,
+	) ?? DAYS - 1;
+/** The highest IV, in whole points, at which the call is worth at least $1 less than today. */
+const DOLLAR_IV =
+	Array.from({ length: 31 }, (_, i) => 50 - i).find(
+		(point) => TODAY.price - value(SPOT, DAYS, point / 100).price >= 1,
+	) ?? 20;
+
 const scenes = [
 	defineScene<TimeState, TimeState>({
 		id: "time",
@@ -631,6 +642,18 @@ const scenes = [
 				"让时间流逝，观察 Theta 变大。",
 			],
 			start: () => ({ elapsed: 28 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the first day on which the call loses more than $0.10 a day.",
+					"找出看涨期权每天损失首次超过 $0.10 的那一天。",
+				],
+				reached: (e) => e.elapsed === FAST_DAY,
+				done: [
+					`With ${DAYS - FAST_DAY} days left, theta passes $0.10 a day, and it keeps growing to the last day. Most of the time value goes at the end.`,
+					`还剩 ${DAYS - FAST_DAY} 天时，Theta 超过每天 $0.10，并一直增大到最后一天。大部分时间价值在最后流失。`,
+				],
+			},
 		},
 		View: TimeView,
 	}),
@@ -664,6 +687,11 @@ const scenes = [
 				{ id: "dollars", label: ["About $3: $1 a point", "约 $3：每点 $1"] },
 			],
 			answer: "points",
+			entry: {
+				answer: Math.round(ivUp * 100) / 100,
+				tolerance: 0.03,
+				prefix: "$",
+			},
 			revealAt: 1,
 			explain: [
 				`Vega is ${price(VEGA, 3)} per vol point, and ${points(IV)} → ${points(IV_UP)} is 3 points: about ${price(VEGA * 3)}. The model gives ${price(ivUp)}.`,
@@ -702,6 +730,18 @@ const scenes = [
 		explore: {
 			prompt: ["Move IV and read the change.", "移动 IV，读取变化。"],
 			start: () => ({ iv: 0.3 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the highest IV at which the call is worth at least $1.00 less than today.",
+					"找出让看涨期权价值比今天至少低 $1.00 的最高隐含波动率。",
+				],
+				reached: (e) => Math.round(e.iv * 100) === DOLLAR_IV,
+				done: [
+					`At ${DOLLAR_IV}%, ${Math.round(IV * 100) - DOLLAR_IV} vol points below today: at about ${price(VEGA, 3)} a point, it takes that many points to take a dollar off the call. Vega counts points of IV, not percent changes.`,
+					`在 ${DOLLAR_IV}%，比今天低 ${Math.round(IV * 100) - DOLLAR_IV} 个波动率点：每点约 ${price(VEGA, 3)}，需要这么多个点才能让看涨期权少值一美元。Vega 按 IV 的点数计，而不是按百分比变化。`,
+				],
+			},
 		},
 		View: VolView,
 	}),
@@ -776,6 +816,18 @@ const scenes = [
 				"改变变动、天数和 IV，比较合计与模型。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a scenario in which ALFA falls but the call ends up worth more.",
+					"找出一个 ALFA 下跌、看涨期权价值却上升的情景。",
+				],
+				reached: (e) => e.move < 0 && contributions(e).repriced > 0,
+				done: [
+					"A big enough IV rise outweighs a fall when little time passes: vega adds about $0.12 a point, more than delta takes for $1. Read each contribution before the total.",
+					"时间流逝不多时，足够大的 IV 上升可以抵消下跌：Vega 每点约增加 $0.12，多于 Delta 因下跌 $1 减少的金额。先看每项贡献，再看合计。",
+				],
+			},
 		},
 		View: SumView,
 	}),
