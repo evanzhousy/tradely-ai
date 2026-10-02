@@ -109,7 +109,8 @@
 
 /* Scene: stage beside its result, panel and controls once there is room for both. The side
    keeps a phone's width, so the drawing gets the rest and reaches the instruments' wide
-   layouts (520px and up); below that the side stacks under a full-width drawing. */
+   layouts (520px and up): a narrow phone's width on a 1280 laptop, a wider one from 56rem.
+   Below that the side stacks with a full-width drawing. */
 .wt-scene {
 	display: flex;
 	flex-direction: column;
@@ -122,10 +123,15 @@
 	gap: 1rem;
 	min-width: 0;
 }
+@container walkthrough (width >= 52.5rem) {
+	.wt-main {
+		grid-template-columns: minmax(0, 1fr) 16rem;
+		align-items: start;
+	}
+}
 @container walkthrough (width >= 56rem) {
 	.wt-main {
 		grid-template-columns: minmax(0, 1fr) 19rem;
-		align-items: start;
 	}
 }
 .wt-stage {
@@ -167,10 +173,12 @@
 	flex-direction: column;
 	margin-top: 0.15rem;
 }
+/* A value that needs two lines splits evenly, so "−$0.183 a day" keeps "a day" together. */
 .wt-result-value {
 	display: inline-block;
 	max-width: 100%;
 	overflow-wrap: anywhere;
+	text-wrap: balance;
 	font: 600 1.05rem / 1.3 var(--font-mono);
 }
 .wt-result-note {
@@ -258,13 +266,17 @@
 	gap: 0.5rem;
 }
 .wt-entry-row input {
+	min-width: 0;
 	max-width: 12rem;
 	font-family: var(--font-mono);
 }
+/* A unit stays on one line; in a narrow side the box gives up the width instead. */
 .wt-entry-unit {
+	flex: none;
 	color: var(--muted-foreground);
 	font-family: var(--font-mono);
 	font-size: 0.875rem;
+	white-space: nowrap;
 }
 .wt-link {
 	align-self: flex-start;
@@ -458,7 +470,7 @@
 }
 
 /* Stacked: predict before watching, and a short stage stays in view above the controls. */
-@container walkthrough (width < 56rem) {
+@container walkthrough (width < 52.5rem) {
 	.walkthrough[data-phase="predict"] .wt-side {
 		order: -1;
 	}
