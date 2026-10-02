@@ -489,6 +489,14 @@ export const syllabus: readonly Entry[] = [
 		["C26", "C27"],
 		["market-recap"],
 	),
+	checkpoint(
+		"production",
+		"Checkpoint: producing and auditing research, on a new day",
+		"检查点：在新的一天里运用“撰写与审核研究”",
+		"Total a packet with a missing row, catch a chart whose axis exaggerates, and audit a colleague's recap claim by claim, all on a day you haven't seen.",
+		"在你没见过的一天里：为有一行缺失的研究包算出合计、识别夸大差距的坐标轴，并逐条审核同事的复盘。",
+		["audit-market-recap"],
+	),
 	lesson(
 		"delta",
 		"exposure",

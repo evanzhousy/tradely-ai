@@ -81,6 +81,11 @@ const lessons = {
 			default: m.AuditMarketRecapWalkthrough,
 		})),
 	),
+	"checkpoint-production": lazy(() =>
+		import("./lessons/checkpoint-production").then((m) => ({
+			default: m.CheckpointProductionWalkthrough,
+		})),
+	),
 	"portfolio-pnl": lazy(() =>
 		import("./lessons/portfolio-pnl").then((m) => ({
 			default: m.PortfolioPnlWalkthrough,
