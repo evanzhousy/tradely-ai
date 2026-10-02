@@ -26,17 +26,17 @@ export function seededOrder<T>(items: readonly T[], seed: string): T[] {
 
 /**
  * Reads a typed number the way people write money and counts: "$1,260", "−220", "4.2×",
- * "28%" or "1 260". Returns null for anything that isn't one number.
+ * "28%", "1 260", "1.5k", or with a unit word after it ("832 shares", "12 个 ATR").
+ * Returns null for anything that isn't one number.
  */
 export function parseEntry(text: string) {
-	const cleaned = text
-		.trim()
-		.replace(/[−–—]/g, "-")
-		.replace(/^\+/, "")
-		.replace(/[$,\s ]/g, "")
-		.replace(/(\d)[×x%]$/i, "$1");
+	const [, number = "", unit = ""] =
+		/^(.*?\d\.?)\s*(\D*)$/u.exec(text.trim().replace(/[−–—]/g, "-")) ?? [];
+	const scale = /^k$/i.test(unit) ? 1000 : 1;
+	if (unit && scale === 1 && !/^(%|×|[\p{L}\s.·]+)$/u.test(unit)) return null;
+	const cleaned = number.replace(/^\+/, "").replace(/[$,\s ]/g, "");
 	if (!/^-?(\d+\.?\d*|\.\d+)$/.test(cleaned)) return null;
-	return Number(cleaned);
+	return Number(cleaned) * scale;
 }
 
 /** A typed value as the learner meant it: "$1,260", "−$220", "14×". */
@@ -44,7 +44,9 @@ export function formatEntry(
 	value: number,
 	{ prefix = "", suffix = "" }: { prefix?: string; suffix?: string },
 ) {
+	const cents = prefix === "$" && !Number.isInteger(value);
 	const digits = Math.abs(value).toLocaleString("en-US", {
+		minimumFractionDigits: cents ? 2 : 0,
 		maximumFractionDigits: 4,
 	});
 	return `${value < 0 ? "−" : ""}${prefix}${digits}${suffix}`;
