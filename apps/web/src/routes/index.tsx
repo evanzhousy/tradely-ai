@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 	component: HomeComponent,
 });
 
-// The core path, then the two deeper branches, in lesson order.
+// The core path, then the three deeper branches, in lesson order.
 const stages = [
 	{
 		start: "stocks-and-prices",

@@ -229,6 +229,16 @@ export const syllabus: readonly Entry[] = [
 		["execution-side"],
 	),
 	lesson(
+		"option-strategies",
+		"execution",
+		"Strategies: one leg, many possible positions",
+		"策略：一条腿，多种可能的持仓",
+		"See how spreads, covered calls, collars and rolls change what one option leg means.",
+		"看价差、备兑、领口与移仓如何改变单条期权腿的含义。",
+		["C09"],
+		["flow-sentiment"],
+	),
+	lesson(
 		"validate-option-print",
 		"execution",
 		"Checking one trade: facts, inferences and unknowns",
@@ -236,7 +246,7 @@ export const syllabus: readonly Entry[] = [
 		"Work through one trade from its evidence: premium, side, what is known and what to check next.",
 		"从证据出发检查一笔成交：权利金、成交位置、已知信息与下一步检查。",
 		["C03", "C06", "C07", "C24"],
-		["flow-sentiment"],
+		["option-strategies"],
 	),
 	lesson(
 		"session-flow-vs-structure",
@@ -277,16 +287,6 @@ export const syllabus: readonly Entry[] = [
 		"用正确基准比较成交活跃度，并看清极小分母如何制造假异常。",
 		["C12", "C25"],
 		["session-flow-vs-structure"],
-	),
-	lesson(
-		"option-strategies",
-		"flow",
-		"Strategies: one leg, many possible positions",
-		"策略：一条腿，多种可能的持仓",
-		"See how spreads, covered calls, collars and rolls change what one option leg means.",
-		"看价差、备兑、领口与移仓如何改变单条期权腿的含义。",
-		["C09"],
-		["flow-sentiment"],
 	),
 	lesson(
 		"symbol-drawer",

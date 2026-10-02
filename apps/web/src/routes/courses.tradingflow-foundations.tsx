@@ -126,8 +126,8 @@ function CoursePage() {
 			<div className="flex flex-col gap-2 text-muted-foreground text-sm">
 				<p>
 					{locale === "zh"
-						? `${startRange ? `完全零基础？从第 ${startRange} 课开始。` : ""}核心路径（第 ${coreRange} 课）：合约 → 成交 → 成交流 → 比较研究 → 研究产出。之后是两个可按任意顺序学习的深入分支：希腊值、波动率与市场结构，以及投资组合。先修提示是学习建议，不新增访问锁。`
-						: `${startRange ? `New to markets and options? Start with lessons ${startRange}. ` : ""}Core path (lessons ${coreRange}): contracts → execution → flow → research → written output. Then two deeper branches, in either order: Greeks, volatility and market structure, and portfolios. Prerequisites guide learning; they do not add access locks.`}
+						? `${startRange ? `完全零基础？从第 ${startRange} 课开始。` : ""}核心路径（第 ${coreRange} 课）：合约 → 成交 → 成交流 → 比较研究 → 研究产出。之后是三个可按任意顺序学习的深入分支：希腊值、波动率与市场结构；投资组合；以及在 TradingFlow 中构建工作流。先修提示是学习建议，不新增访问锁。`
+						: `${startRange ? `New to markets and options? Start with lessons ${startRange}. ` : ""}Core path (lessons ${coreRange}): contracts → execution → flow → research → written output. Then three deeper branches, in any order: Greeks, volatility and market structure; portfolios; and workflows in TradingFlow. Prerequisites guide learning; they do not add access locks.`}
 				</p>
 				<p>
 					{locale === "zh"
