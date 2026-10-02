@@ -12,7 +12,7 @@ const copy = {
 	found: ["Found it", "找到了"],
 	right: ["That's it", "答对了"],
 	miss: ["Not this one. Look at the diagram again.", "不是这个。再看看图。"],
-	answer: ["The answer", "答案"],
+	answer: ["The answer: ", "答案："],
 } as const satisfies Record<string, Copy>;
 
 /**
@@ -106,7 +106,8 @@ export function TaskPanel({
 					<>
 						{!solved && answer ? (
 							<p className="wt-panel-note">
-								{t(copy.answer)}: {t(answer.label)}
+								{t(copy.answer)}
+								{t(answer.label)}
 							</p>
 						) : null}
 						<p>{t(task.done)}</p>

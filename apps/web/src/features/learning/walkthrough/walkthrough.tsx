@@ -88,7 +88,7 @@ const copy = {
 	skip: ["Skip and watch", "跳过，直接观看"],
 	right: ["You predicted it", "预测正确"],
 	wrong: ["Not quite", "与预测不同"],
-	youChose: ["You chose", "你的选择"],
+	youChose: ["You chose: ", "你的选择："],
 	tryIt: ["Try it yourself", "自己试一试"],
 	backToSteps: ["Back to the steps", "回到步骤"],
 	nextScene: ["Next scene", "下一场景"],
@@ -112,8 +112,8 @@ const copy = {
 	],
 	pickInstead: ["Choose from options instead", "改为从选项中选择"],
 	typeInstead: ["Type a number instead", "改为填写数值"],
-	youEntered: ["You entered", "你填写的是"],
-	answerWas: ["The answer", "答案"],
+	youEntered: ["You entered: ", "你填写的是："],
+	answerWas: ["The answer: ", "答案："],
 } as const satisfies Record<string, Copy>;
 
 /**
@@ -532,14 +532,15 @@ export function Walkthrough({
 						</p>
 						<p className="wt-panel-note">
 							{verdict.typed !== undefined
-								? `${t(copy.youEntered)}: ${asEntry(verdict.typed)}`
+								? `${t(copy.youEntered)}${asEntry(verdict.typed)}`
 								: choice
-									? `${t(copy.youChose)}: ${t(choice.label)}`
+									? `${t(copy.youChose)}${t(choice.label)}`
 									: null}
 						</p>
 						{verdict.typed !== undefined && !verdict.correct && entry ? (
 							<p className="wt-panel-note">
-								{t(copy.answerWas)}: {asEntry(entry.answer)}
+								{t(copy.answerWas)}
+								{asEntry(entry.answer)}
 							</p>
 						) : null}
 						<p>{t(scene.predict.explain)}</p>
