@@ -47,6 +47,9 @@ export function SpreadRuler({
 			(right - left);
 	const axis = 84;
 	const code = unusable ? null : sideCode(price, bid, ask);
+	// The bid and ask lines stop at the band's top edge, clear of the location label above
+	// it; over a hatched band they shrink to ticks so the reason it's unusable stays legible.
+	const lineTop = unusable ? axis - 4 : axis - 26;
 	const zones =
 		bid !== null && ask !== null && ask > bid
 			? {
@@ -132,7 +135,7 @@ export function SpreadRuler({
 			<path d={`M${left} ${axis}H${right}`} className="wt-axis" />
 			{bid !== null ? (
 				<m.g initial={false} animate={{ x: x(bid) }} transition={motion.move}>
-					<path d={`M0 ${axis - 30}V${axis + 6}`} className="wt-line-long" />
+					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-long" />
 					<Label x={0} y={axis + 22} anchor="end" tone="small">
 						{bidLabel}
 					</Label>
@@ -143,7 +146,7 @@ export function SpreadRuler({
 			) : null}
 			{ask !== null ? (
 				<m.g initial={false} animate={{ x: x(ask) }} transition={motion.move}>
-					<path d={`M0 ${axis - 30}V${axis + 6}`} className="wt-line-short" />
+					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-short" />
 					<Label x={0} y={axis + 22} tone="small">
 						{askLabel}
 					</Label>

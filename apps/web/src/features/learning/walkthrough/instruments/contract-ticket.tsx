@@ -1,6 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export type TicketField = {
 	id: string;
@@ -61,6 +62,11 @@ export function ContractTicket({
 				const y = TOP + i * ROW;
 				const visible = i < shown;
 				const active = field.id === focus;
+				// On a narrow card a long value condenses into the room its label leaves.
+				const room = cardWidth - 36 - textWidth(field.label, 12) - 12;
+				const natural = textWidth(field.value, 13);
+				const fitted =
+					natural > room ? Math.max(room, natural * 0.72) : undefined;
 				return (
 					<g key={field.id}>
 						{active ? (
@@ -83,6 +89,8 @@ export function ContractTicket({
 									x={left + cardWidth - 18}
 									y={y + 17}
 									textAnchor="end"
+									textLength={fitted}
+									lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
 									className={active ? "wt-accent" : undefined}
 									initial={motion.enabled ? { opacity: 0, x: 12 } : false}
 									animate={{ opacity: 1, x: 0 }}

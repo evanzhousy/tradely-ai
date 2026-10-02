@@ -81,10 +81,16 @@ function EligibilityTable({
 	return (
 		<g>
 			<Label x={8} y={16} tone="muted">
-				{t([
-					"Rule: stock options · Monday · data present · ≥500 contracts",
-					"规则：股票期权 · 周一 · 有数据 · ≥500 张",
-				])}
+				{/* On a phone the column heads already spell the four checks out. */}
+				{width < 520
+					? t([
+							"Rule: pass all four checks, left to right",
+							"规则：从左到右通过四项检查",
+						])
+					: t([
+							"Rule: stock options · Monday · data present · ≥500 contracts",
+							"规则：股票期权 · 周一 · 有数据 · ≥500 张",
+						])}
 			</Label>
 			{CHECKS.map((check, j) => (
 				<Label

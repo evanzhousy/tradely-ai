@@ -1,6 +1,8 @@
 import * as m from "motion/react-m";
 import { type AxisDrag, DragHandle, useAxisDrag } from "../axis-drag";
+import { fitAnchor } from "../label-place";
 import { Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export const PRICE_LINE_HEIGHT = 150;
 
@@ -91,18 +93,29 @@ export function PriceLine({
 				strokeWidth={2}
 			/>
 			{ticks
-				.filter((tick) => !strike || Math.abs(x(tick) - x(strike.value)) > 34)
-				.map((tick) => (
-					<Label
-						key={tick}
-						x={x(tick)}
-						y={axis + 24}
-						anchor="middle"
-						tone="small"
-					>
-						{tickLabel(tick)}
-					</Label>
-				))}
+				// A tick gives way to the strike's own label wherever the two would touch.
+				.filter(
+					(tick) =>
+						!strike ||
+						Math.abs(x(tick) - x(strike.value)) >
+							textWidth(strike.label, 13) / 2 +
+								textWidth(tickLabel(tick), 11) / 2 +
+								6,
+				)
+				.map((tick) => {
+					const at = fitAnchor(tickLabel(tick), x(tick), 11, 2, width - 2);
+					return (
+						<Label
+							key={tick}
+							x={at.x}
+							y={axis + 24}
+							anchor={at.anchor}
+							tone="small"
+						>
+							{tickLabel(tick)}
+						</Label>
+					);
+				})}
 			{strike ? (
 				<g>
 					<path

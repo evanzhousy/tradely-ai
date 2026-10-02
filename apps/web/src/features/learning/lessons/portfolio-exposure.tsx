@@ -425,6 +425,7 @@ function HedgeView({
 							`a week on · ${wholeUsd(WEEK_PNL)}`,
 							`一周后 · ${wholeUsd(WEEK_PNL)}`,
 						]),
+						shortLabel: wholeUsd(WEEK_PNL),
 						tone: "loss",
 						labelBelow: true,
 					};

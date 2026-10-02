@@ -649,7 +649,9 @@ function populationLayout(width: number, rows: number) {
 	const tableY = top + kpiBlock + 6;
 	const tableH = tapeHeight(rows);
 	const ghostY = tableY + tableH + 8;
-	return { top, tableY, tableH, ghostY, height: ghostY + 2 * 30 + 26 };
+	// Every contract the table doesn't load gets its own ghost row below it.
+	const ghosts = Math.max(0, MONDAY.passed.length - rows);
+	return { top, tableY, tableH, ghostY, height: ghostY + ghosts * 30 + 26 };
 }
 
 function PopulationStage({

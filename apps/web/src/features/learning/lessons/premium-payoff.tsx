@@ -379,6 +379,7 @@ function ProfitView({
 										: shown.profit
 											? signedPerContract(result)
 											: perContract(value),
+									shortLabel: atBreakEven ? dollars(be) : undefined,
 									tone: shown.profit ? tone : "neutral",
 								},
 							]}

@@ -87,15 +87,21 @@ export function BarChart({
 				const cx = left + slot * (i + 0.5);
 				const x = cx - barWidth / 2;
 				const on = bar.id === focus;
+				// A category name wider than its slot condenses rather than run into its neighbour.
+				const natural = textWidth(bar.label, on ? 13 : 11);
+				const fitted =
+					natural > slot - 6 ? Math.max(slot - 6, natural * 0.72) : undefined;
 				const label = (
-					<Label
+					<text
 						x={cx}
 						y={bottom + 16}
-						anchor="middle"
-						tone={on ? "accent" : "small"}
+						textAnchor="middle"
+						textLength={fitted}
+						lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
+						className={on ? "wt-accent" : "wt-small"}
 					>
 						{bar.label}
-					</Label>
+					</text>
 				);
 				if (bar.hidden) return <g key={bar.id}>{label}</g>;
 				if (bar.value === null)

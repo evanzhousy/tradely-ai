@@ -88,6 +88,8 @@ function DecayView({
 			label: t(["Sep 16", "9月16日"]),
 			points: curve(0, 35),
 			tone: "reference",
+			// On the day you buy, today's curve is this one; it appears once they part.
+			hidden: shown.days === 0 && shown.iv === 35,
 		},
 		{
 			id: "paid",

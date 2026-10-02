@@ -317,6 +317,7 @@ function FlipView({
 		lines.push({
 			id: "repriced",
 			label: t(["repriced at each spot", "在每个现价重新定价"]),
+			shortLabel: t(["repriced", "重新定价"]),
 			points: Array.from({ length: 45 }, (_, i) => {
 				const spot = 90 + i * 0.5;
 				return [spot, netGex(spot) / 1_000_000] as const;
@@ -328,6 +329,7 @@ function FlipView({
 		lines.push({
 			id: "shortcut",
 			label: t(["running sum by strike", "按行权价累加"]),
+			shortLabel: t(["strike sum", "行权价累加"]),
 			points: cumulativeByStrike.filter(([strike]) => strike <= 112),
 			tone: "reference",
 		});

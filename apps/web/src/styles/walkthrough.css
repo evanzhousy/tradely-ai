@@ -464,6 +464,16 @@
 .wt-svg .wt-on-soft {
 	fill: var(--foreground);
 }
+/* A line's label takes its line's colour, so a label set apart from its line still names it. */
+.wt-svg .wt-label-position {
+	fill: var(--diagram-accent);
+}
+.wt-svg .wt-label-long {
+	fill: var(--wt-long);
+}
+.wt-svg .wt-label-short {
+	fill: var(--wt-short);
+}
 /* Labels that sit on lines keep a ring of stage colour so the line never crosses them. */
 .wt-svg .wt-marker-label {
 	font-weight: 600;

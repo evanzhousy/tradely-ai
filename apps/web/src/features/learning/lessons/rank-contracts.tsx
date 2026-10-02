@@ -8,6 +8,7 @@ import {
 	strikeGridHeight,
 } from "../walkthrough/instruments/strike-grid";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -370,6 +371,7 @@ function CandidateRows({
 								anchor="end"
 								tone="accent"
 								className="wt-halo"
+								maxWidth={width - 48 - textWidth(t(candidate.source), 11)}
 							>
 								{t(["unknown, not zero", "未知，不是零"])}
 							</Label>

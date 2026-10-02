@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { textWidth } from "./text-measure";
 
 const FALLBACK_WIDTH = 640;
 
@@ -86,6 +87,43 @@ export function CountTo({
 	return format(shown);
 }
 
+/** The narrowest a label may be condensed to fit the stage; past this it needs a new layout. */
+const MIN_CONDENSE = 0.72;
+
+/**
+ * Condenses any label that runs past the stage's edge just enough to fit, so a long title
+ * or value stays whole on a phone instead of being cut off. Labels that fit are untouched.
+ */
+function fitLabels(svg: SVGSVGElement) {
+	const stage = svg.getBoundingClientRect();
+	for (const text of svg.querySelectorAll<SVGTextElement>("text")) {
+		if (text.dataset.fit) {
+			text.removeAttribute("textLength");
+			text.removeAttribute("lengthAdjust");
+			delete text.dataset.fit;
+		}
+		const box = text.getBoundingClientRect();
+		if (!box.width) continue;
+		const overRight = Math.max(0, box.right - (stage.right - 2));
+		const overLeft = Math.max(0, stage.left + 2 - box.left);
+		if (!overRight && !overLeft) continue;
+		const natural = text.getComputedTextLength();
+		const anchor = getComputedStyle(text).textAnchor;
+		const target =
+			anchor === "middle"
+				? natural - 2 * Math.max(overLeft, overRight)
+				: anchor === "end"
+					? natural - overLeft
+					: natural - overRight;
+		text.setAttribute(
+			"textLength",
+			String(Math.max(target, natural * MIN_CONDENSE)),
+		);
+		text.setAttribute("lengthAdjust", "spacingAndGlyphs");
+		text.dataset.fit = "1";
+	}
+}
+
 type StageContextValue = { width: number; hatch: string };
 const StageContext = createContext<StageContextValue>({
 	width: FALLBACK_WIDTH,
@@ -123,9 +161,25 @@ export function Stage({
 		return () => observer.disconnect();
 	}, []);
 	const h = typeof height === "function" ? height(width) : height;
+	const svg = useRef<SVGSVGElement>(null);
+	// Fit after every drawing, again once its moves have settled, and when web fonts arrive.
+	useEffect(() => {
+		const element = svg.current;
+		if (!element) return;
+		const fit = () => fitLabels(element);
+		fit();
+		const settled = window.setTimeout(fit, 700);
+		let live = true;
+		document.fonts?.ready.then(() => live && fit());
+		return () => {
+			live = false;
+			window.clearTimeout(settled);
+		};
+	});
 	return (
 		<div ref={box} className="wt-stage-box">
 			<svg
+				ref={svg}
 				className="wt-svg"
 				viewBox={`0 0 ${width} ${h}`}
 				width={width}
@@ -160,7 +214,11 @@ type TextProps = {
 	anchor?: "start" | "middle" | "end";
 	tone?: "muted" | "strong" | "gain" | "loss" | "accent" | "small";
 	className?: string;
+	/** Room the text has; a longer string condenses to fit, down to MIN_CONDENSE. */
+	maxWidth?: number;
 };
+
+const toneSize = { muted: 12, small: 11, strong: 17 } as const;
 
 /** Diagram text. Numbers and labels share the mono face used across lessons. */
 export function Label({
@@ -170,11 +228,28 @@ export function Label({
 	anchor = "start",
 	tone,
 	className,
+	maxWidth,
 }: TextProps) {
+	const natural =
+		maxWidth !== undefined &&
+		(typeof children === "string" || typeof children === "number")
+			? textWidth(
+					String(children),
+					tone && tone in toneSize
+						? toneSize[tone as keyof typeof toneSize]
+						: 13,
+				)
+			: 0;
+	const fitted =
+		maxWidth !== undefined && natural > maxWidth
+			? Math.max(maxWidth, natural * MIN_CONDENSE)
+			: undefined;
 	return (
 		<text
 			x={x}
 			y={y}
+			textLength={fitted}
+			lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
 			textAnchor={anchor}
 			className={[tone ? `wt-${tone}` : undefined, className]
 				.filter(Boolean)

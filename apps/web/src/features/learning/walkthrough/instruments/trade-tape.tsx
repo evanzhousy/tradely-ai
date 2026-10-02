@@ -108,6 +108,7 @@ export function TradeTape({
 								x={cellX(i)}
 								y={y + HEAD + 18}
 								anchor={columns[i].align === "end" ? "end" : "start"}
+								maxWidth={columns[i].share * inner - 8}
 							>
 								{cell}
 							</Label>

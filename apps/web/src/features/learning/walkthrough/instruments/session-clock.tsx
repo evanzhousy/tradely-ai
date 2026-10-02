@@ -1,5 +1,7 @@
 import * as m from "motion/react-m";
+import { fitAnchor } from "../label-place";
 import { Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 /** Minutes since Monday 00:00 ET. Tuesday times are 1440 + minutes. */
 export type ClockMark = {
@@ -14,11 +16,14 @@ export const MON_CLOSE = 960;
 export const TUE_REPORT = 1440 + 420;
 export const TUE_OPEN = 1440 + 570;
 
-/** Monday's session takes most of the axis; the night is compressed. */
-function position(minute: number, left: number, width: number) {
-	const session = 0.62 * width;
-	const night = 0.16 * width;
-	const morning = width - session - night;
+/**
+ * Monday's session takes most of the axis; the night is compressed, but never so far that
+ * the close and the morning count it separates run into each other.
+ */
+function position(minute: number, left: number, width: number, minNight = 0) {
+	const morning = 0.22 * width;
+	const night = Math.max(0.16 * width, Math.min(minNight, 0.4 * width));
+	const session = width - morning - night;
 	if (minute <= MON_CLOSE)
 		return (
 			left +
@@ -65,8 +70,13 @@ export function SessionClock({
 	const left = x + 8;
 	const span = width - 16;
 	const axis = y + 58;
-	const at = (minute: number) => position(minute, left, span);
+	const edge = (kind: ClockMark["kind"]) =>
+		textWidth(marks.find((mark) => mark.kind === kind)?.label ?? "", 11) / 2;
+	const minNight = edge("close") + edge("report") + 12;
+	const at = (minute: number) => position(minute, left, span, minNight);
 	const cursor = at(now);
+	// The "now" label rides with its cursor but stays on the stage at either end.
+	const nowAt = fitAnchor(nowLabel, cursor, 13, x + 2, x + width - 2);
 	return (
 		<g>
 			<path
@@ -122,9 +132,14 @@ export function SessionClock({
 				);
 			})}
 			<m.g initial={false} animate={{ x: cursor }} transition={motion.move}>
-				<path d={`M0 ${y + 18}V${axis}`} className="wt-bracket" />
-				<path d={`M-6 ${y + 12}h12l-6 7z`} className="wt-chip" />
-				<Label x={0} y={y + 8} anchor="middle" tone="accent">
+				<path d={`M0 ${y + 21}V${axis}`} className="wt-bracket" />
+				<path d={`M-6 ${y + 15}h12l-6 7z`} className="wt-chip" />
+				<Label
+					x={nowAt.x - cursor}
+					y={y + 12}
+					anchor={nowAt.anchor}
+					tone="accent"
+				>
 					{nowLabel}
 				</Label>
 			</m.g>

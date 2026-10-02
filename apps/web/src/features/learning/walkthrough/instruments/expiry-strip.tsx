@@ -39,7 +39,8 @@ export function ExpiryStrip({
 	const step = width / columns.length;
 	const barWidth = Math.min(46, step * 0.5);
 	const base = y + 190;
-	const tall = 120;
+	// With a change row under the labels, the tallest bar's own value stays below that row.
+	const tall = columns.some((column) => column.change !== undefined) ? 96 : 120;
 	const centerOf = (i: number) => x + step * i + step / 2;
 	const members = columns
 		.map((column, i) => (column.member ? i : -1))

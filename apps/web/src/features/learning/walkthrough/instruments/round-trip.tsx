@@ -1,6 +1,8 @@
 import * as m from "motion/react-m";
 import { count, usd } from "@/content/world";
+import { fitAnchor } from "../label-place";
 import { Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export const ROUND_TRIP_HEIGHT = 250;
 
@@ -75,30 +77,39 @@ export function RoundTrip({
 					anchor: "start" as const,
 					dx: 12,
 				},
-			].map((mark) => (
-				<g key={mark.id}>
-					<m.circle
-						cy={64}
-						r={7}
-						className="wt-panel-shape"
-						stroke="var(--foreground)"
-						strokeWidth={2}
-						initial={false}
-						animate={{ cx: x(mark.cents) }}
-						transition={motion.move}
-					/>
-					<m.text
-						y={69}
-						textAnchor={mark.anchor}
-						className="wt-muted"
-						initial={false}
-						animate={{ x: x(mark.cents) + mark.dx }}
-						transition={motion.move}
-					>
-						{mark.label} {usd(mark.cents)}
-					</m.text>
-				</g>
-			))}
+			].map((mark) => {
+				const text = `${mark.label} ${usd(mark.cents)}`;
+				const beside = x(mark.cents) + mark.dx;
+				const room = mark.anchor === "end" ? beside - 4 : width - 4 - beside;
+				// Beside its dot when there's room; above it, kept on the stage, when not.
+				const place =
+					textWidth(text, 12) <= room
+						? { x: beside, y: 69, anchor: mark.anchor }
+						: { ...fitAnchor(text, x(mark.cents), 12, 4, width - 4), y: 44 };
+				return (
+					<g key={mark.id}>
+						<m.circle
+							cy={64}
+							r={7}
+							className="wt-panel-shape"
+							stroke="var(--foreground)"
+							strokeWidth={2}
+							initial={false}
+							animate={{ cx: x(mark.cents) }}
+							transition={motion.move}
+						/>
+						<m.text
+							textAnchor={place.anchor}
+							className="wt-muted"
+							initial={false}
+							animate={{ x: place.x, y: place.y }}
+							transition={motion.move}
+						>
+							{text}
+						</m.text>
+					</g>
+				);
+			})}
 			<m.text
 				y={100}
 				textAnchor="middle"
