@@ -601,8 +601,11 @@ function RecipeCard({
 	);
 }
 
+/** The two recipe cards sit side by side only when each keeps room for its longest line. */
+const FORK_SIDE_BY_SIDE = 640;
+
 function forkLayout(width: number) {
-	const narrow = width < 520;
+	const narrow = width < FORK_SIDE_BY_SIDE;
 	const cardW = narrow ? width - 8 : (width - 8 - 16) / 2;
 	return {
 		narrow,
@@ -614,7 +617,9 @@ function forkLayout(width: number) {
 	};
 }
 const forkHeight = (width: number) =>
-	width < 520 ? 64 + 2 * FORK_CARD_H + 16 + 8 : 64 + FORK_CARD_H + 8;
+	width < FORK_SIDE_BY_SIDE
+		? 64 + 2 * FORK_CARD_H + 16 + 8
+		: 64 + FORK_CARD_H + 8;
 
 function ForkStage({
 	width,

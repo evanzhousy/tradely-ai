@@ -2,6 +2,8 @@
 .walkthrough {
 	--wt-long: #0f766e;
 	--wt-short: #c2410c;
+	/* Layout follows the walkthrough's own width, not the window's: the lesson column caps it. */
+	container: walkthrough / inline-size;
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
@@ -105,7 +107,9 @@
 	flex: 1;
 }
 
-/* Scene: stage beside its result, panel and controls on wide screens. */
+/* Scene: stage beside its result, panel and controls once there is room for both. The side
+   keeps a phone's width, so the drawing gets the rest and reaches the instruments' wide
+   layouts (520px and up); below that the side stacks under a full-width drawing. */
 .wt-scene {
 	display: flex;
 	flex-direction: column;
@@ -118,9 +122,9 @@
 	gap: 1rem;
 	min-width: 0;
 }
-@media (min-width: 1024px) {
+@container walkthrough (width >= 56rem) {
 	.wt-main {
-		grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) 19rem;
 		align-items: start;
 	}
 }
@@ -293,6 +297,7 @@
 .wt-svg {
 	display: block;
 	max-width: 100%;
+	margin-inline: auto;
 	overflow: visible;
 }
 .wt-svg text {
@@ -422,8 +427,8 @@
 	scroll-margin-top: 4.75rem;
 }
 
-/* Narrow screens: predict before watching, and a one-row control bar that scrolls away. */
-@media (max-width: 1023px) {
+/* Stacked: predict before watching, and a short stage stays in view above the controls. */
+@container walkthrough (width < 56rem) {
 	.walkthrough[data-phase="predict"] .wt-side {
 		order: -1;
 	}

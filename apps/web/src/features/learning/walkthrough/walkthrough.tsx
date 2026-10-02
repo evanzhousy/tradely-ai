@@ -324,12 +324,13 @@ export function Walkthrough({
 				: target === "feedback"
 					? element.querySelector<HTMLElement>("[data-focus=feedback]")
 					: heading;
-		// On a phone the stage sits above the controls: bring the stage into view with them,
-		// so the learner sees what each control changes.
-		if (
-			target === "controls" &&
-			window.matchMedia("(max-width: 1023px)").matches
-		) {
+		// When the stage sits above the controls, bring it into view with them, so the learner
+		// sees what each control changes.
+		const main = element.querySelector<HTMLElement>(".wt-main");
+		const stacked =
+			!!main &&
+			getComputedStyle(main).gridTemplateColumns.split(" ").length < 2;
+		if (target === "controls" && stacked) {
 			(wanted ?? heading)?.focus({ preventScroll: true });
 			// A pinned stage always counts as in view, so scroll to where the scene starts.
 			const stage = element.querySelector<HTMLElement>(".wt-stage");

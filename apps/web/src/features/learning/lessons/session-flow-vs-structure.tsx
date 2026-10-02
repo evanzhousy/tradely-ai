@@ -47,7 +47,8 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
+import { Label, Stage } from "../walkthrough/stage";
+import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -437,7 +438,11 @@ function ClockView({
 					height={(width) =>
 						width < 560
 							? CLOCK_HEIGHT + 14 + tapeHeight(3) + 12 + READOUT_HEIGHT * 2 + 10
-							: CLOCK_HEIGHT + 14 + tapeHeight(3)
+							: // Beside the tape, the two readouts stand a little taller than it.
+								CLOCK_HEIGHT +
+								14 +
+								Math.max(tapeHeight(3), READOUT_HEIGHT * 2 + 10) +
+								2
 					}
 				>
 					{(width) => {
@@ -599,6 +604,12 @@ function BucketView({
 		change: column.change,
 	}));
 	const oct4 = facts.columns.find((column) => column.id === "oct4");
+	const title = t([
+		`ALFA 100 calls · counts at the ${date[0]} close`,
+		`ALFA 100 看涨 · ${date[1]} 收盘统计`,
+	]);
+	const titleLines = (width: number) =>
+		textWidth(title, 12) > width - 16 ? title.split(" · ") : [title];
 	const result: ResultItem[] = [
 		{
 			id: "bucket",
@@ -635,19 +646,21 @@ function BucketView({
 						"Open interest by expiry with a bracket over the expiries inside the 14–30 day bucket",
 						"按到期日的未平仓量，括号标出 14–30 天到期桶内的到期日",
 					])}
-					height={STRIP_HEIGHT + 20}
+					height={(width) =>
+						STRIP_HEIGHT + 20 + (titleLines(width).length - 1) * 14
+					}
 				>
 					{(width) => (
 						<>
-							<text x={0} y={16} className="wt-muted">
-								{t([
-									`ALFA 100 calls · counts at the ${date[0]} close`,
-									`ALFA 100 看涨 · ${date[1]} 收盘统计`,
-								])}
-							</text>
+							{/* On a narrow stage the title breaks at its separator rather than shrink. */}
+							{titleLines(width).map((line, i) => (
+								<Label key={line} x={8} y={16 + i * 14} tone="muted">
+									{line}
+								</Label>
+							))}
 							<ExpiryStrip
 								x={0}
-								y={24}
+								y={24 + (titleLines(width).length - 1) * 14}
 								width={width}
 								columns={columns}
 								maxValue={560}

@@ -518,7 +518,7 @@ function OriginStage({
 						</AnimatePresence>
 						{known ? (
 							<m.path
-								d={`M${cx} ${layout.cardTop + layout.cardHeight + 6}L${width / 2 + (i === 0 ? -30 : 30)} ${layout.printTop - 8}`}
+								d={`M${cx} ${layout.cardTop + layout.cardHeight + 6}L${Math.min(Math.max(cx, printX + 24), printX + layout.printWidth - 24)} ${layout.printTop - 8}`}
 								className="wt-arrow wt-arrow-contract"
 								initial={motion.enabled ? { pathLength: 0 } : false}
 								animate={{ pathLength: 1 }}
@@ -528,7 +528,13 @@ function OriginStage({
 					</g>
 				);
 			})}
-			<Label x={printX} y={layout.printTop - 14} tone="muted">
+			{/* The arrows land toward the box's ends, leaving its middle for the label. */}
+			<Label
+				x={printX + layout.printWidth / 2}
+				y={layout.printTop - 14}
+				anchor="middle"
+				tone="muted"
+			>
 				{t(["Public tape", "公开成交记录"])}
 			</Label>
 			<rect

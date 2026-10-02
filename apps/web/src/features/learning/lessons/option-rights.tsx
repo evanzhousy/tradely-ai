@@ -507,7 +507,8 @@ function exerciseCase(right: Right) {
 }
 
 function assignLayout(width: number) {
-	if (width < 560) {
+	// Side by side only when the cards are wide enough for "exercise notice sent".
+	if (width < 640) {
 		const cardWidth = (width - 32) / 3;
 		return {
 			narrow: true,
