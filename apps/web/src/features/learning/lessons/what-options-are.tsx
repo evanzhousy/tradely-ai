@@ -342,7 +342,7 @@ function UsesView({
 							{
 								id: "loss",
 								x: 95,
-								y: -viewCost * 100,
+								y: -viewCost,
 								label: t([
 									`max loss ${signedUsd(-viewCost * 100, 0)}`,
 									`最大亏损 ${signedUsd(-viewCost * 100, 0)}`,

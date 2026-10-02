@@ -76,6 +76,12 @@ export function StrikeGrid({
 					return colX(index - 1) + cellWidth / 2 + fraction * cellWidth;
 				})();
 	const bottom = HEAD + rows.length * CELL;
+	const band =
+		spotX === null
+			? null
+			: itmSide === "left"
+				? { x: colX(0), width: spotX - colX(0) }
+				: { x: spotX, width: colX(strikes.length) - spotX };
 	return (
 		<g>
 			{title ? (
@@ -83,21 +89,15 @@ export function StrikeGrid({
 					{title}
 				</Label>
 			) : null}
-			{spotX !== null ? (
+			{band ? (
 				<m.rect
 					y={HEAD - 4}
 					height={bottom - HEAD + 4}
 					className="wt-long-soft"
 					opacity={0.35}
-					initial={motion.enabled ? { opacity: 0 } : false}
-					animate={{
-						opacity: 0.35,
-						x: itmSide === "left" ? colX(0) : spotX,
-						width:
-							itmSide === "left"
-								? spotX - colX(0)
-								: colX(strikes.length) - spotX,
-					}}
+					// The band fades in where it stands; without a starting width it has none to draw.
+					initial={motion.enabled ? { opacity: 0, ...band } : false}
+					animate={{ opacity: 0.35, ...band }}
 					transition={motion.move}
 				/>
 			) : null}

@@ -53,6 +53,13 @@ export function TradeTape({
 			? starts[i] + columns[i].share * inner
 			: starts[i]);
 	const visible = rows.slice(0, maxRows);
+	// Rows render in a fixed key order and take their place from `index`: a row that React
+	// moves in the DOM never starts its motion, so a reordered row would stay where it was.
+	const placed = visible
+		.map((row, index) => ({ row, index }))
+		.sort((a, b) =>
+			a.row.key < b.row.key ? -1 : a.row.key > b.row.key ? 1 : 0,
+		);
 	return (
 		<g>
 			<rect
@@ -87,7 +94,7 @@ export function TradeTape({
 				</Label>
 			) : null}
 			<AnimatePresence initial={false}>
-				{visible.map((row, index) => (
+				{placed.map(({ row, index }) => (
 					<m.g
 						key={row.key}
 						initial={motion.enabled ? { opacity: 0, y: -10 } : false}

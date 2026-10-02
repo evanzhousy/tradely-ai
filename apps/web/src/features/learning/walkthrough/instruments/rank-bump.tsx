@@ -19,6 +19,9 @@ export type RankColumn = {
 const TOP = 34;
 const ROW = 40;
 
+const byId = (a: RankItem, b: RankItem) =>
+	a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+
 export function rankBumpHeight(rows: number) {
 	return TOP + rows * ROW;
 }
@@ -88,7 +91,8 @@ export function RankBump({
 				});
 			})}
 			{columns.map((column, j) =>
-				column.items.map((item) => {
+				// Fixed id order: a name React moves in the DOM never starts its motion to a new rank.
+				[...column.items].sort(byId).map((item) => {
 					const row = rowOf(column, item.id);
 					const rank = item.excluded ? "—" : String(row + 1);
 					const on = item.id === focus;
