@@ -722,6 +722,18 @@ const scenes = [
 		explore: {
 			prompt: ["Switch the assumed dealer position.", "切换假设的做市商持仓。"],
 			start: () => ({ rows: 5, sign: 1 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Change the assumption so this contract's contribution turns negative.",
+					"改变假设，让这份合约的贡献变成负值。",
+				],
+				reached: (e) => e.sign === -1,
+				done: [
+					"Gamma, open interest, spot and size are unchanged; only the assumed dealer position flipped the sign. The assumption is part of the number, so it travels with it.",
+					"Gamma、未平仓量、现价和规模都没变，只有假设的做市商持仓翻转了符号。假设是数字的一部分，必须随数字一起说明。",
+				],
+			},
 		},
 		View: ChainView,
 	}),
@@ -787,6 +799,26 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the sides.", "逐步查看两侧。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Where does the net profile turn from negative to positive?",
+					"净值分布在哪里由负转正？",
+				],
+				choices: [
+					{
+						id: "between",
+						label: ["Between $100 and $105", "在 $100 与 $105 之间"],
+					},
+					{ id: "low", label: ["Below $90", "低于 $90"] },
+					{ id: "high", label: ["Above $115", "高于 $115"] },
+				],
+				answer: "between",
+				done: [
+					"Puts crowd the strikes up to $100 and calls from $105 up, so the sign changes between them. The profile says where exposure sits; the net total can't.",
+					"看跌集中在 $100 及以下的行权价，看涨集中在 $105 及以上，所以符号在两者之间变化。分布说明敞口在哪里；净合计说明不了。",
+				],
+			},
 		},
 		View: DistributionView,
 	}),
@@ -855,6 +887,29 @@ const scenes = [
 		explore: {
 			prompt: ["Change the coverage.", "改变覆盖范围。"],
 			start: () => ({ stage: 1 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which coverage gives a total you can report as ALFA's Oct 18 net GEX?",
+					"哪种覆盖范围得出的合计，可以作为 ALFA 10月18日 的净 GEX 来报告？",
+				],
+				choices: [
+					{ id: "full", label: ["The full chain", "完整期权链"] },
+					{
+						id: "traded",
+						label: ["Contracts that traded today", "今天有成交的合约"],
+					},
+					{
+						id: "missing",
+						label: ["The chain less one missing put", "缺一份看跌的期权链"],
+					},
+				],
+				answer: "full",
+				done: [
+					"Exposure comes from open interest, traded today or not. With one contract missing, the known part is a subtotal; report it as one, never as the total and never as zero.",
+					"敞口来自未平仓量，不管今天是否有成交。缺一份合约时，已知部分只是小计；要按小计报告，不能当作合计，也不能当作零。",
+				],
+			},
 		},
 		View: CoverageView,
 	}),

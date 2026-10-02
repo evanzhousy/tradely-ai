@@ -693,6 +693,23 @@ const scenes = [
 		explore: {
 			prompt: ["Switch the wall rule.", "切换墙的规则。"],
 			start: () => ({ metric: "gex", walls: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Switch the rule. Which wall stays where it is?",
+					"切换规则。哪个墙位保持不变？",
+				],
+				choices: [
+					{ id: "call", label: ["The call wall", "看涨墙"] },
+					{ id: "put", label: ["The put wall", "看跌墙"] },
+					{ id: "neither", label: ["Neither", "都不是"] },
+				],
+				answer: "call",
+				done: [
+					`The call wall is ${stock(wallOf("oi", "call"))} by either rule; the put wall moves from ${stock(putWallOi)} by open interest to ${stock(putWallGex)} by gamma. Name the rule with every wall.`,
+					`看涨墙按两种规则都在 ${stock(wallOf("oi", "call"))}；看跌墙按未平仓量在 ${stock(putWallOi)}，按 Gamma 在 ${stock(putWallGex)}。每个墙位都要说明规则。`,
+				],
+			},
 		},
 		View: WallView,
 	}),
@@ -764,6 +781,32 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the payouts.", "逐步查看支付。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What could move the payout minimum before Oct 18?",
+					"10月18日 之前，什么会改变赔付最小值的位置？",
+				],
+				choices: [
+					{
+						id: "positions",
+						label: ["Positions opening or closing", "持仓的开立或平仓"],
+					},
+					{ id: "price", label: ["ALFA's price moving", "ALFA 价格变动"] },
+					{
+						id: "fixed",
+						label: [
+							"Nothing: it's set for the expiry",
+							"什么都不会：它已为到期日固定",
+						],
+					},
+				],
+				answer: "positions",
+				done: [
+					"The minimum is computed from today's open interest at every settlement price, so ALFA's price doesn't move it. New or closed positions change the open interest, and with it the minimum.",
+					"最小值是用今天的未平仓量在每个结算价上算出来的，所以 ALFA 的价格不会改变它。新开或平掉的持仓会改变未平仓量，最小值也随之改变。",
+				],
+			},
 		},
 		View: PainView,
 	}),
@@ -797,6 +840,11 @@ const scenes = [
 				},
 			],
 			answer: "atr",
+			entry: {
+				answer: Math.round(((SPOT - PUT_WALL) / ALFA_ATR_14) * 10) / 10,
+				tolerance: 0.15,
+				unit: [" ATRs", " 个 ATR"],
+			},
 			revealAt: 2,
 			explain: [
 				`$${SPOT - PUT_WALL} ÷ $${ALFA_ATR_14.toFixed(2)} ≈ ${((SPOT - PUT_WALL) / ALFA_ATR_14).toFixed(1)} typical daily ranges. As a percent of $${SPOT} it's ${SPOT - PUT_WALL}%; three numbers, one distance.`,
@@ -835,6 +883,23 @@ const scenes = [
 		explore: {
 			prompt: ["Switch the distance unit.", "切换距离单位。"],
 			start: () => ({ unit: "atr" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"In ATRs, how does the call wall's distance compare with the put wall's?",
+					"以 ATR 衡量，看涨墙的距离与看跌墙相比如何？",
+				],
+				choices: [
+					{ id: "double", label: ["About twice as far", "大约远一倍"] },
+					{ id: "same", label: ["About the same", "差不多"] },
+					{ id: "half", label: ["About half as far", "大约一半"] },
+				],
+				answer: "double",
+				done: [
+					`${distanceText(CALL_WALL, "atr")} against ${distanceText(PUT_WALL, "atr")}: twice the distance. ATR measures how far in typical days; it says nothing about which way ALFA will go.`,
+					`${distanceText(CALL_WALL, "atr")} 对比 ${distanceText(PUT_WALL, "atr")}：距离是两倍。ATR 衡量的是隔了多少个典型交易日的波动，不说明 ALFA 会往哪个方向走。`,
+				],
+			},
 		},
 		View: DistanceView,
 	}),

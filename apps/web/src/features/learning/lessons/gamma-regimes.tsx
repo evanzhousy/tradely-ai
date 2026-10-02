@@ -708,6 +708,19 @@ const scenes = [
 				"在图上左右拖动来移动 ALFA，并切换变动方向。",
 			],
 			start: () => ({ spot: 98, move: -1, hedge: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the lowest price at which a $1 rise makes the hedge sell.",
+					"找出 $1 的上涨会让对冲卖出的最低价格。",
+				],
+				reached: (e) =>
+					e.move > 0 && shareGamma(e.spot) > 0 && shareGamma(e.spot - 1) <= 0,
+				done: [
+					`Above the modeled flip near ${level(FLIP)} the book is long gamma, so its hedge sells into a rise, against the move. Below it, the same rise makes the hedge buy.`,
+					`在模型转折点 ${level(FLIP)} 附近之上，账户为多 Gamma，所以对冲在上涨时卖出，逆着行情。低于转折点时，同样的上涨会让对冲买入。`,
+				],
+			},
 		},
 		View: HedgeScene,
 	}),
@@ -782,6 +795,23 @@ const scenes = [
 		explore: {
 			prompt: ["Compare the two calculations.", "比较两种计算。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"If ALFA traded at $96, would the modeled book be long or short gamma?",
+					"如果 ALFA 在 $96 交易，模型账户是多 Gamma 还是空 Gamma？",
+				],
+				choices: [
+					{ id: "short", label: ["Short gamma", "空 Gamma"] },
+					{ id: "long", label: ["Long gamma", "多 Gamma"] },
+					{ id: "flat", label: ["Exactly neutral", "正好中性"] },
+				],
+				answer: "short",
+				done: [
+					`$96 is below the repriced flip at ${level(FLIP)}, so the book is short gamma there. The strike-sum shortcut, crossing near ${level(SHORTCUT ?? 0)}, would wrongly say long.`,
+					`$96 低于重新定价得出的转折点 ${level(FLIP)}，所以账户在那里是空 Gamma。按行权价累加的捷径在 ${level(SHORTCUT ?? 0)} 附近穿零，会错误地给出多 Gamma。`,
+				],
+			},
 		},
 		View: FlipView,
 	}),
@@ -853,6 +883,23 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the evidence.", "逐步查看证据。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which of these could confirm that dealers actually hedged today?",
+					"以下哪项能证实做市商今天确实做了对冲？",
+				],
+				choices: [
+					{ id: "none", label: ["None of them", "都不能"] },
+					{ id: "tape", label: ["The stock tape", "股票成交记录"] },
+					{ id: "book", label: ["The visible order book", "可见的订单簿"] },
+				],
+				answer: "none",
+				done: [
+					"The model gives a conditional target, the tape shows prints without names, and the book shows only displayed size. A hedge target is not evidence that anyone traded.",
+					"模型给的是有条件的目标，成交记录只显示没有名字的成交，订单簿只显示挂出的数量。对冲目标不是任何人已经交易的证据。",
+				],
+			},
 		},
 		View: EvidenceView,
 	}),

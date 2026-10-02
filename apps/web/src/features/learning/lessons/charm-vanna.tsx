@@ -691,6 +691,26 @@ const scenes = [
 		explore: {
 			prompt: ["Toggle the IV drop.", "切换 IV 下降。"],
 			start: () => ({ elapsed: 14, volDrop: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Toggle the IV drop. What does falling IV do to this out-of-the-money call's delta?",
+					"切换 IV 下降。IV 下降对这份虚值看涨的 Delta 有什么影响？",
+				],
+				choices: [
+					{ id: "lower", label: ["Lowers it further", "让它进一步降低"] },
+					{ id: "raise", label: ["Raises it", "让它升高"] },
+					{
+						id: "none",
+						label: ["Nothing: no one traded", "没有影响：没人交易"],
+					},
+				],
+				answer: "lower",
+				done: [
+					`With ${VOL_DROP} points less IV, the out-of-the-money call's delta falls further on top of what time took: that's vanna. Neither change needed a trade.`,
+					`IV 少 ${VOL_DROP} 个点，虚值看涨的 Delta 在时间造成的下降之外进一步降低：这就是 Vanna。两种变化都不需要任何交易。`,
+				],
+			},
 		},
 		View: DriftView,
 	}),
@@ -765,6 +785,29 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the quotes.", "逐步查看这些报法。"],
 			start: () => ({ shown: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"If IV rose 3 points instead, about how would this call's delta change?",
+					"如果 IV 反而上升 3 个点，这份看涨的 Delta 大约怎样变化？",
+				],
+				choices: [
+					{
+						id: "up",
+						label: [fixed3(VANNA_POINT * 3), fixed3(VANNA_POINT * 3)],
+					},
+					{
+						id: "down",
+						label: [fixed3(-VANNA_POINT * 3), fixed3(-VANNA_POINT * 3)],
+					},
+					{ id: "one", label: [fixed3(VANNA_POINT), fixed3(VANNA_POINT)] },
+				],
+				answer: "up",
+				done: [
+					`Vanna per vol point is ${fixed3(VANNA_POINT)}, so +3 points moves delta by about ${fixed3(VANNA_POINT * 3)}. Match each sensitivity to its unit before you scale it.`,
+					`每个波动率点的 Vanna 是 ${fixed3(VANNA_POINT)}，所以上升 3 点让 Delta 变化约 ${fixed3(VANNA_POINT * 3)}。先把每个敏感度对应到它的单位，再去放大。`,
+				],
+			},
 		},
 		View: UnitView,
 	}),
@@ -833,6 +876,23 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the scenarios.", "逐步查看这些情景。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Over the week, which leg's delta changes more?",
+					"这一周里，哪条腿的 Delta 变化更大？",
+				],
+				choices: [
+					{ id: "short", label: ["The short 110 call", "110 看涨空头"] },
+					{ id: "long", label: ["The long 105 call", "105 看涨多头"] },
+					{ id: "same", label: ["Both by the same amount", "两者相同"] },
+				],
+				answer: "short",
+				done: [
+					"The 110 call is further out of the money, so its delta decays faster. Short that leg, the decay adds delta, more than the long 105 leg loses: the spread's delta rises without a trade.",
+					"110 看涨更加虚值，所以它的 Delta 衰减更快。对这条空头腿来说，衰减会增加 Delta，增加的比 105 多头腿减少的还多：没有交易，价差的 Delta 也上升了。",
+				],
+			},
 		},
 		View: SpreadView,
 	}),
