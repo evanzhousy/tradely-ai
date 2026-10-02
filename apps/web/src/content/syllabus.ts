@@ -673,6 +673,14 @@ export const syllabus: readonly Entry[] = [
 		["C30"],
 		["portfolio-pnl", "theta-vega-rho", "gamma", "expiration-settlement"],
 	),
+	checkpoint(
+		"portfolio",
+		"Checkpoint: portfolio understanding, on a new day",
+		"检查点：在新的一天里运用“理解投资组合”",
+		"Split realized from unrealized P&L, take a deposit out of a return, weigh wins against losses, and add up delta with the right signs, all on a day you haven't seen.",
+		"在你没见过的一天里：区分已实现与未实现盈亏、从收益中剔除存款、按金额权衡盈亏，并用正确的符号汇总 Delta。",
+		["portfolio-exposure"],
+	),
 	lesson(
 		"tradingflow-recipes",
 		"workflows",

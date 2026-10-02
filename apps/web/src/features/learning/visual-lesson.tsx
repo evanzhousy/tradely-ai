@@ -151,6 +151,11 @@ const lessons = {
 			default: m.PortfolioExposureWalkthrough,
 		})),
 	),
+	"checkpoint-portfolio": lazy(() =>
+		import("./lessons/checkpoint-portfolio").then((m) => ({
+			default: m.CheckpointPortfolioWalkthrough,
+		})),
+	),
 	"volatility-surface": lazy(() =>
 		import("./lessons/volatility-surface").then((m) => ({
 			default: m.VolatilitySurfaceWalkthrough,
