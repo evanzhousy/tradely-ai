@@ -78,6 +78,36 @@ export const coursePaths = {
 	},
 } as const;
 export type CoursePathId = keyof typeof coursePaths;
+
+/**
+ * Lessons 5–8 are also where experienced learners start, so they teach their ideas in full.
+ * For learners coming from Start here, each names the earlier lesson and what it adds to it.
+ */
+export const buildsOn: Record<
+	string,
+	{ lessons: string[]; en: string; zh: string }
+> = {
+	"option-contracts": {
+		lessons: ["trading-options"],
+		en: "That lesson found a contract in a chain; this one names it exactly, turns its quote into dollars, and ties each price to a moment.",
+		zh: "那一课在期权链中找到了合约；本课准确命名它，把报价换算成金额，并把每个价格对应到具体时刻。",
+	},
+	"option-rights": {
+		lessons: ["what-options-are"],
+		en: "That lesson met the holder and writer of one call; this one adds puts, opening versus closing, and who actually gets assigned.",
+		zh: "那一课认识了一张看涨期权的持有人和义务方；本课加入看跌期权、开仓与平仓之分，以及究竟谁会被指派。",
+	},
+	"premium-payoff": {
+		lessons: ["what-options-are", "options-risks"],
+		en: "Those lessons showed a call's value at expiry and a writer's open-ended loss; this one splits a price into intrinsic and time value, finds the break-even, and works out both sides' results.",
+		zh: "那两课展示了看涨期权到期时的价值，以及义务方没有上限的亏损；本课把价格拆成内在价值与时间价值，找出盈亏平衡点，并算出双方的结果。",
+	},
+	"expiration-settlement": {
+		lessons: ["trading-options"],
+		en: "That lesson listed the ways a position ends; this one shows what exercising early gives up, how share and cash settlement differ, and what can surprise you on expiry day.",
+		zh: "那一课列出了持仓结束的几种方式；本课说明提前行权会放弃什么、股票交割与现金交割有何不同，以及到期日可能出现的意外。",
+	},
+};
 export type ModuleId = (typeof courseModules)[number]["id"];
 
 type Entry = {

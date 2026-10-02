@@ -31,7 +31,7 @@ import {
 	getNextLesson,
 	getPreviousLesson,
 } from "@/content/course";
-import { coursePaths } from "@/content/syllabus";
+import { buildsOn, coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
 import { CheckYourself } from "@/features/learning/check-yourself";
@@ -72,6 +72,10 @@ function LessonPage() {
 	const source = getLesson(lessonSlug);
 	const course = getLocalizedCourse(locale);
 	const lesson = source ? getLocalizedLesson(source, locale) : null;
+	const builds = lesson && buildsOn[lesson.id];
+	const earlierLessons = builds
+		? course.lessons.filter((item) => builds.lessons.includes(item.id))
+		: [];
 	const tracked = useRef<string | null>(null);
 	const started = useRef<string | null>(null);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -248,6 +252,29 @@ function LessonPage() {
 						<p className="max-w-[68ch] text-muted-foreground leading-7">
 							{lesson.summary}
 						</p>
+						{builds ? (
+							<p className="max-w-[68ch] text-muted-foreground text-sm leading-6">
+								<span className="font-medium text-foreground">
+									{locale === "zh" ? "承接" : "Builds on"}{" "}
+								</span>
+								{earlierLessons.map((earlier, i) => (
+									<span key={earlier.id}>
+										{i > 0 ? (locale === "zh" ? "、" : " and ") : null}
+										<Link
+											to="/learn/$lessonSlug"
+											params={{ lessonSlug: earlier.slug }}
+											className="underline underline-offset-4"
+										>
+											{locale === "zh"
+												? `第 ${earlier.order + 1} 课：${earlier.title}`
+												: `Lesson ${earlier.order + 1}, ${earlier.title}`}
+										</Link>
+									</span>
+								))}
+								{locale === "zh" ? "。" : ". "}
+								{builds[locale]}
+							</p>
+						) : null}
 					</header>
 					<VisualLesson
 						key={`visual-${lesson.id}`}
