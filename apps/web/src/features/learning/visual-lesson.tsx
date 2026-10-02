@@ -141,6 +141,11 @@ const lessons = {
 			default: m.ImpliedRealizedVolatilityWalkthrough,
 		})),
 	),
+	"expected-move": lazy(() =>
+		import("./lessons/expected-move").then((m) => ({
+			default: m.ExpectedMoveWalkthrough,
+		})),
+	),
 	"theta-vega-rho": lazy(() =>
 		import("./lessons/theta-vega-rho").then((m) => ({
 			default: m.ThetaVegaRhoWalkthrough,

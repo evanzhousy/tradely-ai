@@ -78,6 +78,7 @@ import { EditWithAiWalkthrough } from "./lessons/edit-with-ai";
 import { ExecutionConditionsWalkthrough } from "./lessons/execution-conditions";
 import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterparties";
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
+import { ExpectedMoveWalkthrough } from "./lessons/expected-move";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { GammaWalkthrough } from "./lessons/gamma";
@@ -153,6 +154,7 @@ const conceptLabs = {
 	"tradingflow-recipes": TradingflowRecipesWalkthrough,
 	"volatility-surface": VolatilitySurfaceWalkthrough,
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,
+	"expected-move": ExpectedMoveWalkthrough,
 	"theta-vega-rho": ThetaVegaRhoWalkthrough,
 	gamma: GammaWalkthrough,
 	delta: DeltaWalkthrough,

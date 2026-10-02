@@ -469,6 +469,16 @@ export const syllabus: readonly Entry[] = [
 		["theta-vega-rho"],
 	),
 	lesson(
+		"expected-move",
+		"exposure",
+		"Expected move: the range options price in",
+		"预期变动：期权定价的区间",
+		"Turn implied volatility into a one-standard-deviation move, see why the straddle prices about 0.8 of it, and how often a stock ends outside the range.",
+		"把隐含波动率换算成一个标准差的变动，理解为何跨式价格约为它的 0.8，以及股价收在区间之外有多常见。",
+		["C41"],
+		["implied-realized-volatility"],
+	),
+	lesson(
 		"volatility-surface",
 		"exposure",
 		"The volatility surface: smile, skew and term structure",

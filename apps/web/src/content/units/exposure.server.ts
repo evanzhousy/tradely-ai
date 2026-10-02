@@ -484,4 +484,89 @@ export const exposureUnits: TeachingUnit[] = [
 			};
 		},
 	},
+	{
+		id: "expected-move",
+		conceptLab: {
+			kind: "expected-move",
+			intro: t(
+				"Turn ALFA's 35% implied volatility into a ±$10.36 move to Oct 18, set the $8.27 straddle beside it at about 0.8 of that move, and count how often twelve past expiries ended outside one and two standard deviations.",
+				"把 ALFA 35% 的隐含波动率换算成到 10月18日 ±$10.36 的变动，把 $8.27 的跨式放在旁边看它约为这个变动的 0.8，再数一数过去 12 个到期日有多少收在一个和两个标准差之外。",
+			),
+		},
+		sources: [greeks],
+		explanation: t(
+			"Implied volatility is an annual standard deviation of returns under a pricing model. To turn it into a dollar move to expiry, multiply the stock price by the IV and by the square root of the fraction of a year left: S × IV × √(days ÷ 365). This course uses calendar days; desks that use trading days divide by 252, so state your convention. Under the model about 68% of outcomes land within one standard deviation and about 95% within two. An at-the-money straddle prices the average move, which under a normal distribution is about 0.8 of one standard deviation, so traders often quote it as a quick expected move. Both describe the size the options price, not a direction, and real prices jump around news more often than the model allows.",
+			"隐含波动率是定价模型下收益率的年化标准差。要把它换算成到期前的美元变动，就用股价乘以 IV，再乘以剩余时间占一年比例的平方根：S × IV × √(天数 ÷ 365)。本课使用自然日；使用交易日的交易台除以 252，所以要说明你的约定。按模型，约 68% 的结果落在一个标准差之内，约 95% 落在两个标准差之内。平值跨式定价的是平均变动，在正态分布下约为一个标准差的 0.8，所以交易者常用它快速报出预期变动。两者描述的都是期权定价的变动幅度，而不是方向；真实价格在消息前后跳空的次数比模型允许的更多。",
+		),
+		example: t(
+			"ALFA at $100 with a 35% IV and 32 days to Oct 18: $100 × 0.35 × √(32 ÷ 365) ≈ $10.36, a range of about $89.64 to $110.36. The Oct 18 100 straddle costs about $8.27 at mid, 0.80 of that move. Over twelve past monthly expiries, 4 ended outside one standard deviation, close to the model's 32%, and the earnings month went 2.2 times its implied move, past two standard deviations.",
+			"ALFA 为 $100、IV 35%、距 10月18日 还有 32 天：$100 × 0.35 × √(32 ÷ 365) ≈ $10.36，区间约为 $89.64 至 $110.36。10月18日 100 跨式的中间价约为 $8.27，是这个变动的 0.80。在过去 12 个月度到期日中，有 4 个收在一个标准差之外，接近模型的 32%；财报那个月达到了隐含变动的 2.2 倍，超出了两个标准差。",
+		),
+		misconception: t(
+			"Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+			"波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。",
+		),
+		case: (v) => {
+			const spot = [100, 50, 200, 80][v];
+			const iv = [35, 40, 25, 60][v];
+			const days = [32, 30, 14, 45][v];
+			const factor = Math.sqrt(days / 365);
+			const move = spot * (iv / 100) * factor;
+			return {
+				brief: t(
+					`A stock trades at ${money(spot, 0)}. Its options expiring in ${days} days imply ${iv}% volatility. Use calendar days over 365 and the course's model.`,
+					`一只股票现价 ${money(spot, 0)}。${days} 天后到期的期权隐含波动率为 ${iv}%。按自然日除以 365，并使用本课的模型。`,
+				),
+				questions: [
+					n(
+						"move",
+						"What is the one-standard-deviation move to expiry, in dollars?",
+						"到期前一个标准差的变动是多少美元？",
+						move,
+						"dollars",
+						"美元",
+						`${money(spot, 0)} × ${iv}% = ${money(spot * (iv / 100))} a year, × √(${days} ÷ 365) = × ${factor.toFixed(3)}, so about ${money(move)}.`,
+						`${money(spot, 0)} × ${iv}% = 一年 ${money(spot * (iv / 100))}，× √(${days} ÷ 365) = × ${factor.toFixed(3)}，约为 ${money(move)}。`,
+						0.05,
+					),
+					n(
+						"low",
+						"What price marks the lower edge of that one-standard-deviation range?",
+						"这个一个标准差区间的下沿是什么价格？",
+						spot - move,
+						"dollars",
+						"美元",
+						`${money(spot, 0)} − ${money(move)} = ${money(spot - move)}. Under the model about 16% of outcomes end below it, and 16% above the upper edge, ${money(spot + move)}.`,
+						`${money(spot, 0)} − ${money(move)} = ${money(spot - move)}。按模型，约 16% 的结果收在它下方，另有 16% 收在上沿 ${money(spot + move)} 之上。`,
+						0.05,
+					),
+					c(
+						"straddle",
+						"About what should the at-the-money straddle for that expiry cost?",
+						"同一到期日的平值跨式大约应该值多少？",
+						[
+							[
+								"eight",
+								`About ${money(move * 0.8)}: 0.8 of the move`,
+								`约 ${money(move * 0.8)}：变动的 0.8`,
+							],
+							[
+								"one",
+								`About ${money(move)}: the whole move`,
+								`约 ${money(move)}：整个变动`,
+							],
+							[
+								"sixtyeight",
+								`About ${money(move * 0.68)}: 68% of the move`,
+								`约 ${money(move * 0.68)}：变动的 68%`,
+							],
+						],
+						"eight",
+						`A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly ${money(move * 0.8)}. The 68% is the share of outcomes inside one SD, a different number.`,
+						`跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 ${money(move * 0.8)}。68% 是落在一个标准差之内的结果所占比例，是另一个数。`,
+					),
+				],
+			};
+		},
+	},
 ];
