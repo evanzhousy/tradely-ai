@@ -35,7 +35,7 @@ type LearningExerciseProps = {
 	attemptId?: string;
 	saveGuest?: boolean;
 	mode?: "practice" | "check";
-	/** The learner pressed start in the lesson, so a guest case opens straight away. */
+	/** The learner pressed start in the lesson, so the case opens straight away. */
 	startNow?: boolean;
 	onSelectAttempt?: (attemptId: string) => void;
 };
@@ -43,6 +43,7 @@ function LearningSession({
 	lessonId,
 	attemptId,
 	mode,
+	startNow,
 	onSelectAttempt,
 }: LearningExerciseProps) {
 	const { locale } = useI18n();
@@ -209,6 +210,13 @@ function LearningSession({
 		if (attemptId && view?.attemptId !== attemptId && !pending.current)
 			void run({ kind: "open", restart: false });
 	}, [attemptId, run, view?.attemptId]);
+	// Opening without a restart resumes the learner's active attempt, so starting from the
+	// lesson never discards work in progress.
+	const hasView = view !== null;
+	useEffect(() => {
+		if (startNow && !attemptId && !hasView && !error && !pending.current)
+			void run({ kind: "open", restart: false });
+	}, [attemptId, error, hasView, run, startNow]);
 	const nextLesson = getNextLesson(lessonId);
 
 	const act = (action: LearningAction) => {
@@ -357,6 +365,7 @@ function AuthenticatedLearning({
 			lessonId={lessonId}
 			attemptId={attemptId}
 			mode={mode}
+			startNow={startNow}
 			onSelectAttempt={onSelectAttempt}
 		/>
 	);

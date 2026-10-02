@@ -365,6 +365,16 @@ function LearningScreenContent({
 	useEffect(() => {
 		if (error) errorPanel.current?.focus();
 	}, [error]);
+	// In a lesson the "Check yourself" section already introduced the case and the learner
+	// pressed start, so continue past the empty intro step instead of asking a second time.
+	const skippedIntro = useRef("");
+	const introKey =
+		checkIntro && answering && view ? `${view.attemptId}:${view.revision}` : "";
+	useEffect(() => {
+		if (!introKey || busy || error || skippedIntro.current === introKey) return;
+		skippedIntro.current = introKey;
+		onAction({ type: "continue" });
+	}, [introKey, busy, error, onAction]);
 
 	return (
 		<Card
