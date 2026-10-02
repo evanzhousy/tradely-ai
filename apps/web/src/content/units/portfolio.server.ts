@@ -3,7 +3,11 @@ import {
 	basics,
 	choose as c,
 	greeks,
+	money,
 	numberQuestion as n,
+	plain,
+	signed,
+	signedMoney,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
@@ -79,15 +83,18 @@ const drawdownPaths = [
 	[8000, 10000, 7000, 9000],
 	[15000, 18000, 16200, 19000, 15200],
 ];
-function maxDrawdownPercent(values: readonly number[]) {
+/** The largest fall from a running peak: the percent, and the peak and low it ran between. */
+function maxDrawdown(values: readonly number[]) {
 	let peak = values[0] ?? 0;
-	let worst = 0;
+	let worst = { percent: 0, peak, low: peak };
 	for (const value of values) {
 		peak = Math.max(peak, value);
-		worst = Math.max(worst, peak > 0 ? (peak - value) / peak : 0);
+		const percent = peak > 0 ? (peak - value) / peak : 0;
+		if (percent > worst.percent) worst = { percent, peak, low: value };
 	}
-	return Math.round(worst * 10000) / 100;
+	return { ...worst, percent: Math.round(worst.percent * 10000) / 100 };
 }
+const percent = (rate: number) => `${signed(rate * 100)}%`;
 
 const performanceUnit: TeachingUnit = {
 	...performanceV2,
@@ -108,26 +115,56 @@ const performanceUnit: TeachingUnit = {
 		`${performanceV2.example.zh}账户从 $10,000 → $12,000 → $9,000 → $11,000，总收益 10%，但最大回撤为 25%（从 $12,000 高点下跌 $3,000）。`,
 	),
 	misconception: t(
-		`${performanceV2.misconception.en} Measure drawdown from the running peak, not from the starting balance.`,
-		`${performanceV2.misconception.zh}回撤应从历史高点计算，而不是从起始余额计算。`,
+		"Before computing a percentage, pin down what counts as a trade, the period, and when cash moved. A high win rate isn't the same as making money. Measure drawdown from the running peak, not from the starting balance.",
+		"计算百分比之前，先确定什么算一笔交易、计算期间，以及资金何时进出。胜率高不等于赚钱。回撤要从历史高点算起，而不是从起始余额算起。",
 	),
 	case: (variant) => {
-		const base = performanceV2.case(variant);
-		const path = drawdownPaths[variant] ?? drawdownPaths[0];
-		const usd = path.map((value) => `$${value.toLocaleString("en-US")}`);
+		const v =
+			Number.isInteger(variant) && variant >= 0 && variant <= 3 ? variant : 0;
+		const first = [0.1, 0.05, -0.1, 0.08][v];
+		const second = [0.05, -0.02, 0.1, 0.03][v];
+		const wins = [80, 150, 120, 200][v];
+		const loss = [100, 50, 160, 125][v];
+		const twr = ((1 + first) * (1 + second) - 1) * 100;
+		const path = drawdownPaths[v];
+		const values = path.map((value) => money(value, 0));
+		const fall = maxDrawdown(path);
 		return {
-			...base,
+			brief: t(
+				`Your account returned ${percent(first)} before a deposit and ${percent(second)} after it, each measured between cash flows at correct values. Separately, a complete record of your closed trades shows ${money(wins, 0)} of gross gains and ${money(loss, 0)} of gross losses.`,
+				`你的账户在一次存入之前收益 ${percent(first)}，之后收益 ${percent(second)}，两段都按正确估值、在资金流之间测量。另外，你已平仓交易的完整记录显示总盈利 ${money(wins, 0)}、总亏损 ${money(loss, 0)}。`,
+			),
 			questions: [
-				...base.questions,
+				n(
+					"twr",
+					"What is the time-weighted return across both periods, in percent?",
+					"两段合起来的时间加权收益是多少（百分比）？",
+					twr,
+					"percent",
+					"%",
+					`${(1 + first).toFixed(2)} × ${(1 + second).toFixed(2)} − 1 = ${percent(twr / 100)}. The deposit itself isn't a return, so it sits between the periods.`,
+					`${(1 + first).toFixed(2)} × ${(1 + second).toFixed(2)} − 1 = ${percent(twr / 100)}。存入本身不是收益，所以它把两段隔开。`,
+					0.001,
+				),
+				n(
+					"factor",
+					"What is the profit factor: gross gains divided by gross losses?",
+					"盈利因子是多少：总盈利除以总亏损？",
+					wins / loss,
+					"ratio",
+					"比率",
+					`${money(wins, 0)} ÷ ${money(loss, 0)} = ${plain(wins / loss)}. ${wins < loss ? "Below 1: the trades lost money overall." : "Above 1: gains outweighed losses."}`,
+					`${money(wins, 0)} ÷ ${money(loss, 0)} = ${plain(wins / loss)}。${wins < loss ? "小于 1：这些交易整体亏钱。" : "大于 1：盈利超过亏损。"}`,
+				),
 				n(
 					"drawdown",
-					`Month-end account values with no deposits or withdrawals: ${usd.join(", ")}. Maximum drawdown from the running peak?`,
-					`无存取款的月末账户价值：${usd.join("、")}。相对历史高点的最大回撤是多少？`,
-					maxDrawdownPercent(path),
+					`Month-end values, with no deposits or withdrawals, ran ${values.join(", ")}. What was the largest fall from a running peak, in percent?`,
+					`没有存取款时，月末价值依次为 ${values.join("、")}。相对历史高点的最大跌幅是多少（百分比）？`,
+					fall.percent,
 					"percent",
-					"百分比",
-					"Largest (running peak − later value) ÷ running peak × 100. Measure from the highest value so far, not from the start.",
-					"最大的（历史高点 − 其后价值）÷ 历史高点 × 100。应从截至当时的最高价值计算，而不是从起点计算。",
+					"%",
+					`From the ${money(fall.peak, 0)} peak to ${money(fall.low, 0)}: (${plain(fall.peak)} − ${plain(fall.low)}) ÷ ${plain(fall.peak)} × 100 = ${plain(fall.percent)}%. Measure from the highest value so far, not from the start.`,
+					`从 ${money(fall.peak, 0)} 的高点到 ${money(fall.low, 0)}：(${plain(fall.peak)} − ${plain(fall.low)}) ÷ ${plain(fall.peak)} × 100 = ${plain(fall.percent)}%。要从截至当时的最高值算起，而不是从起点算起。`,
 					0.01,
 				),
 			],
@@ -158,8 +195,8 @@ export const portfolioUnits: TeachingUnit[] = [
 			"你以 $4.10 买入 10 张、以 $4.15 买入 6 张 10月18日 100 看涨。15:59 以买价 $4.65 卖出 6 张：按先进先出，已实现盈亏 +$330，仍持有的 10 张按中间价 $4.775 计为 +$645；按平均成本则为 +$318.75 和 +$656.25，合计同样是 $975。扣除 $10.40 费用后，你账户周一的交易盈亏为 +$1,199.60；周二存入的 $5,000 提高账户价值，但不是盈亏。Ben 以 $4,100 卖出 10 张看涨，按估值亏 $675，若 ALFA 结算于 $120 则亏 $15,900。",
 		),
 		misconception: t(
-			"Do not add realized and unrealized figures without checking period, lot basis, fees and whether one already includes the other.",
-			"相加已实现与未实现前，检查期间、批次成本、费用和是否存在包含关系。",
+			"Before adding realized and unrealized P&L, check that they cover the same period, use the same lot rule and fees, and that one doesn't already include the other.",
+			"把已实现与未实现盈亏相加之前，先确认它们覆盖同一期间、使用相同的批次规则和费用，而且一方没有已经包含另一方。",
 		),
 		case: (v) => {
 			const qty = [100, 120, 80, 150][v];
@@ -169,29 +206,29 @@ export const portfolioUnits: TeachingUnit[] = [
 			const mark = cost + [2, 3, -1, 4][v];
 			return {
 				brief: t(
-					`One long-stock lot: ${qty} shares bought at $${cost}; ${sold} sold at $${sell}; remaining shares marked $${mark}. No fees or other lots.`,
-					`一笔股票多头：${qty} 股成本 $${cost}，以 $${sell} 卖出 ${sold} 股，剩余估值 $${mark}。无费用或其他批次。`,
+					`You bought ${qty} shares at ${money(cost)}. Later you sold ${sold} of them at ${money(sell)}, and the remaining ${qty - sold} are marked at ${money(mark)}. There are no fees and no other lots.`,
+					`你以 ${money(cost)} 买入 ${qty} 股。之后以 ${money(sell)} 卖出其中 ${sold} 股，剩下的 ${qty - sold} 股估值为 ${money(mark)}。没有费用，也没有其他批次。`,
 				),
 				questions: [
 					n(
 						"realized",
-						"Realized P&L?",
-						"已实现盈亏？",
+						"What is your realized P&L on the shares you sold? Use a minus sign for a loss.",
+						"卖出部分的已实现盈亏是多少？亏损请用负号。",
 						sold * (sell - cost),
-						"USD",
+						"dollars",
 						"美元",
-						"Sold quantity × (sale price − cost).",
-						"卖出数量×(售价−成本)。",
+						`${sold} × (${money(sell)} − ${money(cost)}) = ${signedMoney(sold * (sell - cost), 0)}.`,
+						`${sold} × (${money(sell)} − ${money(cost)}) = ${signedMoney(sold * (sell - cost), 0)}。`,
 					),
 					n(
 						"unrealized",
-						"Remaining unrealized P&L?",
-						"余下未实现盈亏？",
+						"What is the unrealized P&L on the shares you still hold? Use a minus sign for a loss.",
+						"仍持有部分的未实现盈亏是多少？亏损请用负号。",
 						(qty - sold) * (mark - cost),
-						"USD",
+						"dollars",
 						"美元",
-						"Remaining quantity × (mark − cost).",
-						"余下数量×(估值价−成本)。",
+						`${qty - sold} × (${money(mark)} − ${money(cost)}) = ${signedMoney((qty - sold) * (mark - cost), 0)}. It becomes realized only when you sell.`,
+						`${qty - sold} × (${money(mark)} − ${money(cost)}) = ${signedMoney((qty - sold) * (mark - cost), 0)}。只有卖出时才会变成已实现。`,
 					),
 				],
 			};
@@ -217,8 +254,8 @@ export const portfolioUnits: TeachingUnit[] = [
 			"周一收盘（ALFA $101.20），你的 100 股带来 +100 股 Delta，16 张 10月18日 100 看涨带来 16 × 100 × 0.566 ≈ +906：在第二个账户的 5 张 10月18日 95 看跌尚未报送时，这是 +1,006 的已覆盖小计。看跌的 −0.259 Delta 计入 −130，总计 +876。做空 876 股后 Delta 为零，但 Gamma 为每 $1 +75 股、Theta 每天 −$130、Vega 每个波动率点 +$237：ALFA 不变的一周要损失 $964。第二券商按每 1.00 波动率报看跌 Vega 9.70，即每点 0.097，看跌 Delta 的时间戳还是周五收盘。",
 		),
 		misconception: t(
-			"Delta-neutral is not risk-free. A complete-looking net number cannot hide uncovered holdings.",
-			"Delta 中性不等于无风险，完整外观的净值不能掩盖未覆盖持仓。",
+			"Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+			"Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。",
 		),
 		case: (v) => {
 			const stock = [100, 150, 90, 200][v];
@@ -227,45 +264,45 @@ export const portfolioUnits: TeachingUnit[] = [
 			const net = stock - count * d * 100;
 			return {
 				brief: t(
-					`${stock} long shares and ${count} short calls, model delta ${d}, multiplier 100. A separate holding has no Greeks supplied. Compute only the covered subtotal.`,
-					`${stock} 股多头与 ${count} 张空头看涨，模型 Delta ${d}，乘数 100。另一持仓未提供希腊值，只计算已覆盖小计。`,
+					`In one account you hold ${stock} ALFA shares and are short ${count} ALFA calls with a model delta of ${plain(d, 2)} each; one contract covers 100 shares. A holding in your second account hasn't reported its Greeks, so work out only what's covered.`,
+					`在一个账户里，你持有 ${stock} 股 ALFA，并做空 ${count} 张 ALFA 看涨，每张模型 Delta 为 ${plain(d, 2)}；一张合约对应 100 股。你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。`,
 				),
 				questions: [
 					n(
 						"net",
-						"Covered net delta?",
-						"已覆盖净 Delta？",
+						"What is the covered net delta, in share-equivalents?",
+						"已覆盖部分的净 Delta 是多少股等价？",
 						net,
-						"shares-equivalent",
-						"股等价量",
-						"Stock shares − short-call count × delta ×100.",
-						"股票股数−空头看涨张数×Delta×100。",
+						"share-equivalents",
+						"股等价",
+						`+${stock} from the shares, and −${count} × ${plain(d, 2)} × 100 = −${plain(count * d * 100)} from the short calls: ${signed(net)}.`,
+						`股票贡献 +${stock}，空头看涨贡献 −${count} × ${plain(d, 2)} × 100 = −${plain(count * d * 100)}：合计 ${signed(net)}。`,
 					),
 					n(
 						"hedge",
-						"Stock adjustment to offset that covered delta (buy +, sell −)?",
-						"抵消已覆盖 Delta 的股票调整（买正、卖负）？",
+						"How many shares would offset that covered delta? Enter a purchase as positive and a sale as negative.",
+						"需要交易多少股才能抵消已覆盖的 Delta？买入填正数，卖出填负数。",
 						-net,
 						"shares",
 						"股",
-						"Use the opposite sign of covered net delta.",
-						"使用已覆盖净 Delta 的相反符号。",
+						`To cancel ${signed(net)}, trade ${signed(-net)} shares.`,
+						`要抵消 ${signed(net)}，需要交易 ${signed(-net)} 股。`,
 					),
 					c(
 						"coverage",
-						"Is the whole portfolio now proven neutral?",
-						"整个组合已证明中性吗？",
+						"Does that make the whole portfolio neutral?",
+						"这样整个组合就中性了吗？",
 						[
-							["yes", "Yes, the subtotal can be offset.", "是，小计可抵消。"],
+							["yes", "Yes: the subtotal is offset", "是：小计已被抵消"],
 							[
 								"no",
-								"No, the uncovered holding and other risks remain.",
-								"否，未覆盖持仓及其他风险仍在。",
+								"No: the unreported holding and other risks remain",
+								"否：未报送的持仓和其他风险仍在",
 							],
 						],
 						"no",
-						"Neither the missing holding's delta nor non-delta risks were resolved.",
-						"未确定缺失持仓的 Delta，也未消除非 Delta 风险。",
+						"The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place.",
+						"第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。",
 					),
 				],
 			};
