@@ -2,8 +2,12 @@ import "@tanstack/react-start/server-only";
 import {
 	choose as c,
 	greeks,
+	money,
 	numberQuestion as n,
 	oi,
+	plain,
+	signed,
+	signedMoney,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
@@ -28,8 +32,8 @@ export const structureUnits: TeachingUnit[] = [
 			"10月18日 110 看涨：Gamma 0.0266 × 周五收盘未平仓 2,500 × 100 股 × $100² × 1% = 每 1% 变动 $665k 的 Delta；假设做市商做多看涨为 +$665k，做空则为 −$665k。在 ALFA 10月18日 整条期权链上，看涨贡献 +$1.79M，看跌 −$2.31M，净值 −$512k，总幅度 $4.10M。只看周一有成交的 100、105、110 看涨得 +$1.14M；95 看跌的未平仓量缺失时，已知小计为 +$330k，而不是完整总量。",
 		),
 		misconception: t(
-			"Net and gross are different. A positive net does not imply positive contributions everywhere or certainty about dealer positions.",
-			"净值与总幅度不同，净值为正不代表所有位置均为正或做市商持仓已知。",
+			"Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+			"净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。",
 		),
 		case: (v) => {
 			const vals = [
@@ -40,10 +44,20 @@ export const structureUnits: TeachingUnit[] = [
 			][v];
 			const net = vals.reduce((a, b) => a + b, 0);
 			const gross = vals.reduce((a, b) => a + Math.abs(b), 0);
+			const nonzero = vals.filter((value) => value !== 0);
+			const sum = nonzero
+				.map((value, i) =>
+					i === 0
+						? plain(value)
+						: value < 0
+							? `− ${plain(-value)}`
+							: `+ ${plain(value)}`,
+				)
+				.join(" ");
 			return {
 				brief: t(
-					"All grid contributions are supplied synthetic model outputs for one fixed chain snapshot, in USD delta exposure per 1% underlying move. Calculate across every expiry, regardless of display filters.",
-					"网格全部为同一固定期权链快照的给定模拟模型贡献，单位是标的变动 1% 的美元 Delta 敞口。请按所有到期日计算，不受显示筛选影响。",
+					"Two model snapshots of ALFA's option chain at one moment. Each cell is one strike and expiry's GEX, in dollars of delta per 1% move in ALFA, signed by an assumed dealer position rather than observed holdings. Snapshot A has every cell; Snapshot B may have a gap. A 0 is a real reading of zero, while a blank is missing. Count every expiry, whatever the chart filters show.",
+					"ALFA 期权链同一时刻的两个模型快照。每一格是一个行权价与到期日的 GEX，单位是 ALFA 每变动 1% 对应的美元 Delta，符号来自假设的做市商持仓，而不是观测到的持仓。快照 A 每一格都有数据；快照 B 可能有缺口。0 是真实读到的零，空白才是缺失。无论图表筛选显示什么，都要计入每个到期日。",
 				),
 				metrics: {
 					id: `teaching-gex-${v}`,
@@ -79,52 +93,48 @@ export const structureUnits: TeachingUnit[] = [
 				questions: [
 					n(
 						"net",
-						"Snapshot A: complete net GEX?",
-						"快照 A：完整净 GEX？",
+						"What is Snapshot A's net GEX: every cell added with its sign?",
+						"快照 A 的净 GEX 是多少：每一格按符号相加？",
 						net,
-						"USD delta exposure per 1% move",
-						"每 1% 变动美元 Delta 敞口",
-						"Sum all signed contributions.",
-						"求全部有符号贡献之和。",
+						"dollars per 1% move",
+						"美元/每 1% 变动",
+						`${sum} = ${signed(net)}. The zero cells add nothing.`,
+						`${sum} = ${signed(net)}。为零的格子不增加任何数值。`,
 					),
 					n(
 						"gross",
-						"Snapshot A: complete gross magnitude?",
-						"快照 A：完整总幅度？",
+						"What is Snapshot A's gross GEX: every cell's size added, ignoring signs?",
+						"快照 A 的总幅度 GEX 是多少：忽略符号，把每一格的大小相加？",
 						gross,
-						"same units",
-						"相同单位",
-						"Sum absolute contributions, not the absolute net.",
-						"求各项绝对值之和，而非净值的绝对值。",
+						"dollars per 1% move",
+						"美元/每 1% 变动",
+						`${nonzero.map((value) => plain(Math.abs(value))).join(" + ")} = ${plain(gross)}, much more than the net's ${plain(Math.abs(net))}: opposite cells cancel in the net but not here.`,
+						`${nonzero.map((value) => plain(Math.abs(value))).join(" + ")} = ${plain(gross)}，远大于净值的 ${plain(Math.abs(net))}：相反的格子在净值里抵消，在这里不会。`,
 					),
 					c(
 						"compare",
-						"Compare the COMPLETE net totals of A and B.",
-						"比较 A 与 B 的完整净总和。",
+						"Compare the complete net totals of Snapshots A and B.",
+						"比较快照 A 与快照 B 的完整净总和。",
 						[
 							[
 								"equal",
-								"Equal net totals; the near-expiry signs can still differ.",
-								"净总和相等，近到期符号仍可不同。",
+								"They're equal, though the near-expiry cells differ in sign",
+								"相等，但近月的格子符号不同",
 							],
-							[
-								"different",
-								"Different complete net totals.",
-								"完整净总和不同。",
-							],
+							["different", "They're different", "不同"],
 							[
 								"unknown",
-								"B has missing coverage; its complete total is unavailable.",
-								"B 有缺失覆盖，完整总和不可用。",
+								"B has a missing cell, so its complete total isn't known",
+								"B 有一格缺失，所以它的完整总和未知",
 							],
 						],
 						v === 2 ? "unknown" : "equal",
 						v === 2
-							? "The missing cell is not zero. A known subtotal cannot certify the complete total."
-							: "Both complete totals match, but A's 7-day slice is negative and B's is positive. Net aggregation hides location.",
+							? "One of B's cells is blank, and a blank isn't zero. B's known cells give a subtotal, but they can't confirm a complete total."
+							: "Both complete totals match, yet A's 7-day row is negative and B's is positive. A net total hides where the exposure sits.",
 						v === 2
-							? "缺失格不是零，已知小计不能确认完整总和。"
-							: "完整总和相等，但 A 的 7 天切片为负、B 为正，净汇总会隐藏位置差异。",
+							? "B 有一格是空白，而空白不等于零。B 已知的格子能给出小计，但无法确认完整总和。"
+							: "两个完整总和相同，但 A 的 7 天那一行为负，B 的为正。净总和会掩盖敞口所在的位置。",
 					),
 				],
 			};
@@ -149,47 +159,48 @@ export const structureUnits: TeachingUnit[] = [
 			"假设做市商做多 ALFA 10月18日 的看涨、做空看跌，账户在 $100 的股票 Gamma 为每 $1 −5,121 股：上涨 $1 需要买入约 5,121 股来保持对冲，顺着变动方向。在每个现价重新定价后，账户在约 $102.3 转为正 Gamma；按行权价累加的数值却在约 $94 穿零。这些都不能说明有人交易了，也不能说明 1,600 股的卖方挂单能如何消化这样一笔订单。",
 		),
 		misconception: t(
-			"A modeled flip is not a promised support/resistance line. Change the assumed positions and the model can change without a new print.",
-			"模型转折不是保证的支撑阻力。改变假设持仓，即使没有新成交，模型也会变化。",
+			"A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+			"模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。",
 		),
 		case: (v) => {
 			const sensitivity = [150, -240, 180, -120][v];
 			const move = [0.4, 0.5, -0.5, -0.75][v];
+			const drift = sensitivity * move;
 			return {
 				brief: t(
-					`A supplied portfolio's local delta sensitivity is ${sensitivity} shares per $1 underlying change. Spot changes $${move}. Other inputs fixed; maintain a delta-neutral stock hedge.`,
-					`给定组合局部 Delta 敏感度为每 $1 标的变化对应 ${sensitivity} 股。现价变动 $${move}，其他输入固定，维持股票 Delta 中性对冲。`,
+					`A model says a book's delta changes by ${signed(sensitivity)} shares for each $1 ALFA moves, so the book is ${sensitivity > 0 ? "long" : "short"} gamma. Its owner keeps it delta-neutral with ALFA stock. ALFA ${move > 0 ? "rises" : "falls"} ${money(Math.abs(move))} and nothing else changes.`,
+					`一个模型显示，ALFA 每变动 $1，某账户的 Delta 变化 ${signed(sensitivity)} 股，所以这个账户是${sensitivity > 0 ? "正" : "负"} Gamma。账户持有人用 ALFA 股票保持 Delta 中性。ALFA ${move > 0 ? "上涨" : "下跌"} ${money(Math.abs(move))}，其他条件不变。`,
 				),
 				questions: [
 					n(
 						"hedge",
-						"Hedge-share change (buy +, sell −)?",
-						"对冲股数变化（买正、卖负）？",
-						-sensitivity * move,
+						"How many shares must the hedge trade? Enter a purchase as positive and a sale as negative.",
+						"对冲需要交易多少股？买入填正数，卖出填负数。",
+						-drift,
 						"shares",
 						"股",
-						"Hedge offsets the modeled delta change: −sensitivity × spot move.",
-						"对冲抵消模型 Delta 变化：−敏感度×现价变动。",
+						`The book's delta changes by ${signed(sensitivity)} × ${signedMoney(move)} = ${signed(drift)} shares, so the hedge ${drift > 0 ? "sells" : "buys"} ${plain(Math.abs(drift))}: ${signed(-drift)}. ${sensitivity > 0 ? "Long gamma trades against the move." : "Short gamma trades with the move."}`,
+						`账户的 Delta 变化 ${signed(sensitivity)} × ${signedMoney(move)} = ${signed(drift)} 股，所以对冲要${drift > 0 ? "卖出" : "买入"} ${plain(Math.abs(drift))} 股：${signed(-drift)}。${sensitivity > 0 ? "正 Gamma 逆着变动方向交易。" : "负 Gamma 顺着变动方向交易。"}`,
 					),
 					c(
 						"certainty",
-						"Does this prove the market will move in that direction?",
-						"这能证明市场会向该方向变动吗？",
+						"Does this show that ALFA will keep moving that way?",
+						"这能说明 ALFA 会继续朝那个方向变动吗？",
 						[
 							[
 								"yes",
-								"Yes, modeled demand is observed buying/selling.",
-								"能，模型需求就是实际买卖。",
+								"Yes: the model's hedge demand is real buying or selling",
+								"能：模型的对冲需求就是真实的买卖",
 							],
 							[
 								"no",
-								"No; actual positions, execution and liquidity were not established.",
-								"不能，实际持仓、执行与流动性未确定。",
+								"No: the real positions, trades and liquidity aren't known",
+								"不能：真实的持仓、成交和流动性都未知",
 							],
 						],
 						"no",
-						"The calculation is conditional on the supplied portfolio and hedge rule.",
-						"计算以给定组合与对冲规则为条件。",
+						"The calculation holds for the book and hedge rule you were given. Whether anyone holds that book, actually trades the hedge, or moves the price with it are separate questions the model can't answer.",
+						"这个计算只对给定的账户和对冲规则成立。是否真有人持有这样的账户、是否真的执行了对冲、是否因此推动了价格，都是模型回答不了的问题。",
 					),
 				],
 			};
@@ -214,39 +225,40 @@ export const structureUnits: TeachingUnit[] = [
 			"按未平仓量，ALFA 10月18日 的看跌墙是 $90（3,200 张）；按 Gamma 加权则是更接近平值的 $95。以周五的未平仓量计算，如果 ALFA 结算在 $100，到期支付最少，为 $1.17M；但模型给出的 10月18日 ±1 个标准差范围大约是 $90 到 $110。从 $100 算起，$95 的看跌墙距离为 −$5、−5.0%，或在 14 日 ATR 为 $1.60 时为 −3.1 个 ATR。",
 		),
 		misconception: t(
-			"An OI-only payout minimum does not require gamma and does not identify who owns the contracts. Never turn a model label into guaranteed support or resistance.",
-			"仅 OI 支付最小值不需要 Gamma，也不识别持有人。不能把模型标签变成保证支撑阻力。",
+			"Max pain uses only open interest: it needs no gamma and says nothing about who owns the contracts. No model level is guaranteed support or resistance.",
+			"最大痛点只用未平仓量：它不需要 Gamma，也说明不了谁持有这些合约。没有哪个模型位置是保证的支撑或阻力。",
 		),
 		case: (v) => {
 			const spot = [102, 108, 97, 106][v];
 			const level = 100;
 			const atr = [2, 4, 1.5, 3][v];
 			const call = [10, 15, 20, 12][v];
+			const distance = (level - spot) / atr;
 			return {
 				brief: t(
-					`Reference spot ${spot}, level ${level}, ATR ${atr}. Separately, ${call} calls at strike 100, multiplier 100, hypothetical expiration settlement 105. No other contracts in this payout example.`,
-					`参考现价 ${spot}，位置 ${level}，ATR ${atr}。另有 ${call} 张行权价 100 看涨、乘数 100，假设到期结算 105。支付示例没有其他合约。`,
+					`ALFA trades at ${money(spot)}. A level you're watching sits at $100, and ALFA's average true range over the last 14 sessions is ${money(atr)}. Separately, picture ${call} ALFA 100 calls settling with ALFA at $105 at expiry, with no other contracts involved.`,
+					`ALFA 现价 ${money(spot)}。你关注的一个位置在 $100，ALFA 最近 14 个交易日的平均真实波幅（ATR）为 ${money(atr)}。另外，设想 ${call} 张 ALFA 100 看涨在 ALFA 为 $105 时到期结算，不涉及其他合约。`,
 				),
 				questions: [
 					n(
 						"distance",
-						"Signed level distance in ATR units: (level − spot)/ATR?",
-						"带符号 ATR 距离：（位置−现价）/ATR？",
-						(level - spot) / atr,
-						"ATR units",
-						"ATR 单位",
-						"Keep the reference spot and ATR window consistent.",
-						"保持参考现价与 ATR 窗口一致。",
+						"How far is the $100 level from ALFA, in ATRs? Use a minus sign if the level is below ALFA.",
+						"$100 的位置距离 ALFA 有多少个 ATR？如果位置低于 ALFA，请用负号。",
+						distance,
+						"ATRs",
+						"个 ATR",
+						`($100 − ${money(spot)}) ÷ ${money(atr)} = ${signedMoney(level - spot)} ÷ ${money(atr)} = ${signed(distance)} ATR${Math.abs(distance) === 1 ? "" : "s"}. Use the same session's price and ATR.`,
+						`($100 − ${money(spot)}) ÷ ${money(atr)} = ${signedMoney(level - spot)} ÷ ${money(atr)} = ${signed(distance)} 个 ATR。价格和 ATR 要用同一时点的。`,
 					),
 					n(
 						"payout",
-						"Total call expiration payout in the supplied example?",
-						"给定示例看涨到期总支付？",
+						"What do those calls pay out in total at expiry?",
+						"这些看涨到期时一共支付多少？",
 						5 * call * 100,
-						"USD",
+						"dollars",
 						"美元",
-						"max(105−100,0) × call count ×100. This is not a target price.",
-						"max(105−100,0)×看涨数量×100，不是目标价。",
+						`Each call is worth $105 − $100 = $5 a share, so $5 × 100 × ${call} = ${money(5 * call * 100, 0)}. A payout total is arithmetic, not a forecast of where ALFA will settle.`,
+						`每张看涨每股值 $105 − $100 = $5，所以 $5 × 100 × ${call} = ${money(5 * call * 100, 0)}。支付总额只是算术，不是对 ALFA 结算价的预测。`,
 					),
 				],
 			};
@@ -271,38 +283,39 @@ export const structureUnits: TeachingUnit[] = [
 			"ALFA 保持 $100 时，10月18日 110 看涨的模型 Delta 在一周内从 0.177 降到约 0.144（Charm，约每天 −0.004），如果 IV 同时下降 3 点则降到约 0.120（Vanna，约每点 +0.008）。按每一年剩余期限报价的供应商，会把同一件事显示为约 +1.5。10:50 的价差（多头 500 张 105 看涨、空头 500 张 110 看涨）在这一周里不经任何成交就增加了几百股 Delta。",
 		),
 		misconception: t(
-			"Do not add a per-day number to a per-vol-point number until each has been multiplied by its own input change.",
-			"每日量与每波动率点量，应先各自乘相应输入变化后才能相加。",
+			"A per-day number and a per-vol-point number can't be added as they stand. Multiply each by its own change first, then add.",
+			"每天的数和每个波动率点的数不能直接相加。先各自乘以对应的变化，再相加。",
 		),
 		case: (v) => {
 			const days = [2, 3, 1, 4][v];
 			const iv = [1, -2, 3, -1][v];
 			const count = [2, 4, 3, 5][v];
+			const change = -0.01 * days + 0.02 * iv;
 			return {
 				brief: t(
-					`Supplied charm −0.01 delta per elapsed day; vanna +0.02 delta per IV point. ${days} days pass, IV changes ${iv} points. ${count} long contracts, multiplier 100; spot and other inputs fixed.`,
-					`给定 Charm 每经过一天 −0.01 Delta，Vanna 每 IV 点 +0.02 Delta。经过 ${days} 天，IV 变动 ${iv} 点。${count} 张多头、乘数 100，现价及其他输入固定。`,
+					`You hold ${count} ALFA calls. The model gives each a charm of −0.01 delta for every day that passes and a vanna of +0.02 delta per IV point. Over the next ${days === 1 ? "day" : `${days} days`}, IV ${iv > 0 ? "rises" : "falls"} ${plain(Math.abs(iv))} point${Math.abs(iv) === 1 ? "" : "s"} while ALFA stays where it is, and nobody trades your calls.`,
+					`你持有 ${count} 张 ALFA 看涨。模型给出每张的 Charm 为每过一天 −0.01 Delta，Vanna 为每个 IV 点 +0.02 Delta。接下来 ${days} 天，IV ${iv > 0 ? "上升" : "下降"} ${plain(Math.abs(iv))} 个点，ALFA 不动，你的看涨也没有任何成交。`,
 				),
 				questions: [
 					n(
 						"delta-change",
-						"Approximate option delta change?",
-						"期权 Delta 近似变化？",
-						-0.01 * days + 0.02 * iv,
+						"About how much does each call's delta change? Use a minus sign for a fall.",
+						"每张看涨的 Delta 大约变化多少？下降请用负号。",
+						change,
 						"delta",
 						"Delta",
-						"Charm × elapsed days + vanna × IV-point change.",
-						"Charm×经过天数+Vanna×IV 点变化。",
+						`Charm: −0.01 × ${days} = ${signed(-0.01 * days)}. Vanna: +0.02 × ${signed(iv)} = ${signed(0.02 * iv)}. Together: ${signed(change)}.`,
+						`Charm：−0.01 × ${days} = ${signed(-0.01 * days)}。Vanna：+0.02 × ${signed(iv)} = ${signed(0.02 * iv)}。合计：${signed(change)}。`,
 					),
 					n(
 						"position-change",
-						"Approximate position delta change?",
-						"持仓 Delta 近似变化？",
-						(-0.01 * days + 0.02 * iv) * count * 100,
-						"shares-equivalent",
-						"股等价量",
-						"Option delta change × long contracts × multiplier.",
-						"期权 Delta 变化×多头张数×乘数。",
+						"About how much does your position's delta change, in share-equivalents? Use a minus sign for a fall.",
+						"你持仓的 Delta 大约变化多少股等价？下降请用负号。",
+						change * count * 100,
+						"share-equivalents",
+						"股等价",
+						`${signed(change)} × ${count} contracts × 100 shares = ${signed(change * count * 100)} share-equivalents, without a single trade.`,
+						`${signed(change)} × ${count} 张 × 100 股 = ${signed(change * count * 100)} 股等价，没有任何一笔成交。`,
 					),
 				],
 			};

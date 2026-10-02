@@ -2,28 +2,14 @@ import "@tanstack/react-start/server-only";
 import {
 	choose as c,
 	greeks,
+	money,
 	numberQuestion as n,
+	plain,
+	signed,
+	signedMoney,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
-
-/** Fixed places, or with `places` left out as few as the value needs (up to two). */
-const digits = (value: number, places?: number) =>
-	Math.abs(value).toLocaleString("en-US", {
-		minimumFractionDigits: places ?? 0,
-		maximumFractionDigits: places ?? 2,
-	});
-/** "1,200", "−350". */
-const plain = (value: number, places?: number) =>
-	`${value < 0 ? "−" : ""}${digits(value, places)}`;
-/** "+1,200", "−350": a quantity whose direction matters. */
-const signed = (value: number, places?: number) =>
-	`${value < 0 ? "−" : "+"}${digits(value, places)}`;
-/** "$0.50", "−$60.00". */
-const money = (value: number, places = 2) =>
-	`${value < 0 ? "−" : ""}$${digits(value, places)}`;
-const signedMoney = (value: number, places = 2) =>
-	`${value < 0 ? "−" : "+"}$${digits(value, places)}`;
 
 export const exposureUnits: TeachingUnit[] = [
 	{

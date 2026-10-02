@@ -11,6 +11,25 @@ import type {
 } from "@/domain/learning/types";
 
 export const t = (en: string, zh: string): LearningCopy => ({ en, zh });
+
+/** Fixed places, or with `places` left out as few as the value needs (up to two). */
+const digits = (value: number, places?: number) =>
+	Math.abs(value).toLocaleString("en-US", {
+		minimumFractionDigits: places ?? 0,
+		maximumFractionDigits: places ?? 2,
+	});
+/** "1,200", "−350". */
+export const plain = (value: number, places?: number) =>
+	`${value < 0 ? "−" : ""}${digits(value, places)}`;
+/** "+1,200", "−350": a quantity whose direction matters. */
+export const signed = (value: number, places?: number) =>
+	`${value < 0 ? "−" : "+"}${digits(value, places)}`;
+/** "$0.50", "−$60.00". */
+export const money = (value: number, places = 2) =>
+	`${value < 0 ? "−" : ""}$${digits(value, places)}`;
+export const signedMoney = (value: number, places = 2) =>
+	`${value < 0 ? "−" : "+"}$${digits(value, places)}`;
+
 export const fact = (en: string, zh: string, value: string): LearningFact => ({
 	label: t(en, zh),
 	value: t(value, value),
