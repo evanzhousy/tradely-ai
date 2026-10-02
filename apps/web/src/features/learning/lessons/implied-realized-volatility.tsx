@@ -202,6 +202,21 @@ function FitView({
 							yTicks={zoom ? [3.8, 4, 4.2, 4.4] : [2, 3, 4, 5, 6]}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore && !shown.all
+									? {
+											markerId: "guess",
+											min: Math.max(25, xRange[0]),
+											max: Math.min(45, xRange[1]),
+											step: 0.1,
+											onChange: (iv) =>
+												setExplore({
+													...explore,
+													guess: Math.round(iv * 10) / 1000,
+												}),
+										}
+									: undefined
+							}
 							formatX={(iv) => `${iv}%`}
 							formatY={(dollars) =>
 								usd(Math.round(dollars * 100), zoom ? 2 : 0)

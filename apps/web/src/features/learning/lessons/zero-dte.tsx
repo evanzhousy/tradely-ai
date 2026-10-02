@@ -149,6 +149,17 @@ function HourView({
 							yTicks={[0, 0.1, 0.2, 0.3, 0.4]}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore
+									? {
+											markerId: "now",
+											min: OPEN,
+											max: CLOSE,
+											step: 0.5,
+											onChange: (time) => setExplore({ ...explore, time }),
+										}
+									: undefined
+							}
 							formatX={clock}
 							formatY={(value) => share(value)}
 							xLabel={t([

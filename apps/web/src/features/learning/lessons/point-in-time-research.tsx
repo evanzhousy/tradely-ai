@@ -349,6 +349,17 @@ function DecayView({
 							yTicks={[0, 250, 500]}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore
+									? {
+											markerId: "now",
+											min: 0,
+											max: 120,
+											step: 5,
+											onChange: (minute) => setExplore({ ...explore, minute }),
+										}
+									: undefined
+							}
 							formatX={clock}
 							formatY={(value) => count(value)}
 							xLabel={t([

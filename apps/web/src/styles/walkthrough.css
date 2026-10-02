@@ -332,6 +332,7 @@
 .wt-svg :is(rect, path, circle, text, tspan) {
 	transition:
 		fill 0.3s ease,
+		stroke 0.3s ease,
 		fill-opacity 0.3s ease,
 		stroke-opacity 0.3s ease;
 }

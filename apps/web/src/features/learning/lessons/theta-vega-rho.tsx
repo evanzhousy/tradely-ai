@@ -130,6 +130,17 @@ function TimeView({
 							yTicks={[0, 1, 2, 3, 4, 5]}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore
+									? {
+											markerId: "now",
+											min: 0,
+											max: DAYS - 1,
+											step: 1,
+											onChange: (elapsed) => setExplore({ elapsed }),
+										}
+									: undefined
+							}
 							formatX={(elapsed) => dateAfter(elapsed, locale)}
 							formatY={(dollars) => usd(dollars * 100, 0)}
 							xLabel={t([
@@ -267,6 +278,17 @@ function VolView({
 							yTicks={[2, 3, 4, 5, 6]}
 							lines={lines}
 							markers={markers}
+							drag={
+								explore
+									? {
+											markerId: shown.iv !== IV ? "now" : "today",
+											min: 20,
+											max: 50,
+											step: 1,
+											onChange: (iv) => setExplore({ iv: iv / 100 }),
+										}
+									: undefined
+							}
 							formatX={(iv) => `${iv}%`}
 							formatY={(dollars) => usd(dollars * 100, 0)}
 							xLabel={t(["implied volatility", "隐含波动率"])}

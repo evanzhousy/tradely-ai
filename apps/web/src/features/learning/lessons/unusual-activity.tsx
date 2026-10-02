@@ -342,6 +342,17 @@ function WindowView({
 							lines={lines}
 							markers={markers}
 							bands={bands}
+							drag={
+								explore
+									? {
+											markerId: "today",
+											min: 15,
+											max: 390,
+											step: 15,
+											onChange: (value) => setExplore({ minute: value }),
+										}
+									: undefined
+							}
 							formatX={clock}
 							formatY={(value) => count(value)}
 							xLabel={t(["Monday, ET", "周一，美东时间"])}
