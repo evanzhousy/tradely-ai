@@ -459,6 +459,16 @@ export const syllabus: readonly Entry[] = [
 		["delta"],
 	),
 	lesson(
+		"zero-dte",
+		"exposure",
+		"0DTE: options on their last day",
+		"0DTE：最后一天的期权",
+		"Watch a same-day option's value drain by the hour, see its delta swing on a few cents near the strike, and why its volume never shows up in open interest.",
+		"观察当天到期的期权价值如何按小时流失，看它的 Delta 在行权价附近如何随几美分摆动，以及为何它的成交量永远不会出现在未平仓量里。",
+		["C42"],
+		["theta-vega-rho", "session-flow-vs-structure"],
+	),
+	lesson(
 		"implied-realized-volatility",
 		"exposure",
 		"Implied and realized volatility: forward and backward views",

@@ -123,6 +123,7 @@ export type LearningStepView = {
 		| "delta"
 		| "gamma"
 		| "theta-vega-rho"
+		| "zero-dte"
 		| "implied-realized-volatility"
 		| "expected-move"
 		| "volatility-surface"

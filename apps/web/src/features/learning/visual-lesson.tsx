@@ -151,6 +151,11 @@ const lessons = {
 			default: m.ThetaVegaRhoWalkthrough,
 		})),
 	),
+	"zero-dte": lazy(() =>
+		import("./lessons/zero-dte").then((m) => ({
+			default: m.ZeroDteWalkthrough,
+		})),
+	),
 	gamma: lazy(() =>
 		import("./lessons/gamma").then((m) => ({ default: m.GammaWalkthrough })),
 	),

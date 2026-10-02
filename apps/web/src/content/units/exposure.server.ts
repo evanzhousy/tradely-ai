@@ -4,6 +4,7 @@ import {
 	greeks,
 	money,
 	numberQuestion as n,
+	oi,
 	plain,
 	signed,
 	signedMoney,
@@ -564,6 +565,109 @@ export const exposureUnits: TeachingUnit[] = [
 						"eight",
 						`A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly ${money(move * 0.8)}. The 68% is the share of outcomes inside one SD, a different number.`,
 						`跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 ${money(move * 0.8)}。68% 是落在一个标准差之内的结果所占比例，是另一个数。`,
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "zero-dte",
+		conceptLab: {
+			kind: "zero-dte",
+			intro: t(
+				"Watch the Sep 20 100 call fall from $0.36 at the open to nothing at the close with ALFA unchanged, see its delta jump from 0.29 to 0.72 on 40 cents with an hour left, and follow 12,000 same-day contracts that never reach open interest.",
+				"看 9月20日 100 看涨在 ALFA 不变时，从开盘的 $0.36 跌到收盘一文不值；看还剩一小时时它的 Delta 如何随 40 美分从 0.29 跳到 0.72；再追踪当天成交、永远进不了未平仓量的 12,000 张合约。",
+			),
+		},
+		sources: [greeks, oi],
+		explanation: t(
+			"A 0DTE option expires the same day it trades. Its time value shrinks with the square root of the time left, so it drains faster each hour, and an at-the-money option that the stock never moves away from is worth nothing at the close. Gamma piles up at the strike as expiry nears: with an hour left, delta can swing from near 0 to near 1 within cents, so hedging a large position near the strike takes a lot of stock on small moves. Open interest is counted overnight, so contracts opened and closed on the same day never appear in it, and an expiring series has no next-day count at all: whatever is open at the close is exercised, assigned or expires. Volume for a 0DTE contract describes the day's trading, not lasting positions.",
+			"0DTE 期权在交易当天到期。它的时间价值随剩余时间的平方根收缩，所以每小时流失得更快；股价始终没有离开行权价的平值期权，收盘时一文不值。随着到期临近，Gamma 在行权价附近堆积：还剩一小时时，Delta 可能在几美分之内从接近 0 摆到接近 1，所以在行权价附近对冲大笔持仓，需要在小幅变动中交易大量股票。未平仓量在夜间统计，所以同一天开仓又平仓的合约永远不会出现在其中；到期的系列根本没有第二天的统计：收盘时仍未平仓的合约，要么被行权、被指派，要么作废。0DTE 合约的成交量描述的是当天的交易，而不是持续的持仓。",
+		),
+		example: t(
+			"On Fri Sep 20, the Sep 20 100 call is worth $0.36 at 9:30 with ALFA at $100, $0.26 at 12:30, $0.14 at 3:00 pm and nothing at the close if ALFA stays put. At 3:00 pm its delta goes from 0.29 to 0.72 as ALFA moves from $99.80 to $100.20, against 0.51 to 0.53 for the Oct 18 100 call. 12,000 of these calls trade on Friday, and Monday's open interest shows none of them: the series has expired.",
+			"9月20日 周五，ALFA 为 $100 时，9月20日 100 看涨 9:30 值 $0.36，12:30 值 $0.26，下午 3:00 值 $0.14，如果 ALFA 不动，收盘时一文不值。下午 3:00 时，ALFA 从 $99.80 涨到 $100.20，它的 Delta 从 0.29 变到 0.72；而 10月18日 100 看涨只从 0.51 变到 0.53。周五这种看涨成交了 12,000 张，周一的未平仓量里一张都没有：这个系列已经到期了。",
+		),
+		misconception: t(
+			"A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+			"0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。",
+		),
+		case: (v) => {
+			const strike = [100, 50, 200, 76][v];
+			const close = [100.6, 49.4, 201.25, 75][v];
+			const right = v === 3 ? "put" : "call";
+			const held = [10, 5, 20, 8][v];
+			const volume = [12000, 8000, 30000, 5000][v];
+			const worth = Math.max(
+				right === "call" ? close - strike : strike - close,
+				0,
+			);
+			const kind = right === "call" ? t("call", "看涨") : t("put", "看跌");
+			return {
+				brief: t(
+					`A stock's ${strike} ${kind.en}s expire today. You bought ${held} of them at 10:00 and hold them through the 4:00 pm close, when the stock is at ${money(close)}. Over the day, ${plain(volume)} of these contracts traded, all opened today. One contract covers 100 shares.`,
+					`某股票行权价 ${strike} 的${kind.zh}今天到期。你在 10:00 买入 ${held} 张并持有到下午 4:00 收盘，收盘时股价为 ${money(close)}。这一天里这种合约成交了 ${plain(volume)} 张，全部是当天开的仓。一张合约对应 100 股。`,
+				),
+				questions: [
+					n(
+						"close-value",
+						"What is each option worth at the close, per share?",
+						"收盘时每张期权每股值多少？",
+						worth,
+						"dollars a share",
+						"美元/股",
+						worth > 0
+							? `It finishes ${money(worth)} in the money: ${right === "call" ? `${money(close)} − ${money(strike, 0)}` : `${money(strike, 0)} − ${money(close)}`} = ${money(worth)}. No time value is left.`
+							: `It finishes out of the money, so it's worth nothing: no time value is left at the close.`,
+						worth > 0
+							? `它收盘时实值 ${money(worth)}：${right === "call" ? `${money(close)} − ${money(strike, 0)}` : `${money(strike, 0)} − ${money(close)}`} = ${money(worth)}。没有任何时间价值了。`
+							: "它收盘时是虚值，所以一文不值：收盘时已经没有时间价值。",
+						0.01,
+					),
+					n(
+						"shares",
+						`How many shares change hands for you when your ${held} options settle?`,
+						`你的 ${held} 张期权结算时，你要交收多少股？`,
+						worth > 0 ? held * 100 : 0,
+						"shares",
+						"股",
+						worth > 0
+							? `In the money by $0.01 or more, they're exercised automatically: ${held} × 100 = ${plain(held * 100)} shares ${right === "call" ? "bought" : "sold"} at ${money(strike, 0)}.`
+							: "Out of the money, they expire unexercised: no shares change hands.",
+						worth > 0
+							? `实值 $0.01 或以上会被自动行权：${held} × 100 = ${plain(held * 100)} 股，以 ${money(strike, 0)} ${right === "call" ? "买入" : "卖出"}。`
+							: "虚值的期权到期不会被行权：不交收任何股票。",
+					),
+					n(
+						"monday-oi",
+						"How many contracts does this series show in open interest on the next trading day?",
+						"下一个交易日，这个系列的未平仓量显示多少张？",
+						0,
+						"contracts",
+						"张",
+						`None: the series expired at today's close. The ${plain(volume)} contracts traded today appear in today's volume and never in open interest.`,
+						`一张也没有：这个系列在今天收盘时就到期了。今天成交的 ${plain(volume)} 张只出现在今天的成交量里，永远不会出现在未平仓量中。`,
+					),
+					c(
+						"gamma",
+						"An hour before the close the stock sits right at the strike. Why can hedging these options take a lot of stock?",
+						"收盘前一小时，股价正好在行权价上。为什么对冲这些期权可能需要交易大量股票？",
+						[
+							[
+								"gamma",
+								"Their delta swings between near 0 and near 1 within cents",
+								"它们的 Delta 会在几美分之内在接近 0 和接近 1 之间摆动",
+							],
+							[
+								"theta",
+								"Their time value is still large",
+								"它们的时间价值还很大",
+							],
+							["volume", "Their volume is small", "它们的成交量很小"],
+						],
+						"gamma",
+						"Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it.",
+						"临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。",
 					),
 				],
 			};

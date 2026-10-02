@@ -117,6 +117,7 @@ import { UnusualActivityWalkthrough } from "./lessons/unusual-activity";
 import { ValidateOptionPrintWalkthrough } from "./lessons/validate-option-print";
 import { VolatilitySurfaceWalkthrough } from "./lessons/volatility-surface";
 import { WhatOptionsAreWalkthrough } from "./lessons/what-options-are";
+import { ZeroDteWalkthrough } from "./lessons/zero-dte";
 import { MetricsExplorer } from "./metrics-explorer";
 import { NeighborhoodComparison } from "./neighborhood-comparison";
 import { PremiumExplorer } from "./premium-explorer";
@@ -156,6 +157,7 @@ const conceptLabs = {
 	"implied-realized-volatility": ImpliedRealizedVolatilityWalkthrough,
 	"expected-move": ExpectedMoveWalkthrough,
 	"theta-vega-rho": ThetaVegaRhoWalkthrough,
+	"zero-dte": ZeroDteWalkthrough,
 	gamma: GammaWalkthrough,
 	delta: DeltaWalkthrough,
 	"symbol-drawer": SymbolDrawerWalkthrough,

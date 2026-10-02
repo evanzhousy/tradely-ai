@@ -31,6 +31,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	delta: "model",
 	gamma: "model",
 	"theta-vega-rho": "model",
+	"zero-dte": "model",
 	"implied-realized-volatility": "model",
 	"expected-move": "model",
 	"volatility-surface": "model",
