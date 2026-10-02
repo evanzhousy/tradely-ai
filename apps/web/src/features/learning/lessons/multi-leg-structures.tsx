@@ -21,7 +21,8 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
-import { Label, Stage } from "../walkthrough/stage";
+import { Working, workingHeight } from "../walkthrough/instruments/working";
+import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -199,8 +200,8 @@ function StraddleView({
 							}
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
-								`Buy the 100 call and the 100 put at ${share(STRADDLE_COST / 2)} each · per straddle`,
-								`以每张 ${share(STRADDLE_COST / 2)} 买入 100 看涨和 100 看跌 · 每组跨式`,
+								`Buy the 100 call and 100 put · ${share(STRADDLE_COST / 2)} each · per straddle`,
+								`买入 100 看涨和 100 看跌 · 每张 ${share(STRADDLE_COST / 2)} · 每组跨式`,
 							])}
 						/>
 					)}
@@ -380,8 +381,8 @@ function CondorView({
 							}
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
-								`Short 95 put and 105 call, long 90 put and 110 call · ${share(CREDIT)} credit`,
-								`卖出 95 看跌和 105 看涨，买入 90 看跌和 110 看涨 · 收入 ${share(CREDIT)}`,
+								`Short 95 put, 105 call · long 90 put, 110 call · ${share(CREDIT)} credit`,
+								`卖出 95 看跌和 105 看涨 · 买入 90 看跌和 110 看涨 · 收入 ${share(CREDIT)}`,
 							])}
 						/>
 					)}
@@ -461,25 +462,27 @@ function PackageView({
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	const legName = (leg: Leg): string =>
+	// A phone has no room for the time, and names the side in the present tense to save room.
+	const legName = (leg: Leg, narrow: boolean): string =>
 		t([
-			`${leg.side === "buy" ? "Bought" : "Sold"} ${leg.contract.strike} ${leg.contract.right}`,
+			`${leg.side === "buy" ? (narrow ? "Buy" : "Bought") : narrow ? "Sell" : "Sold"} ${leg.contract.strike} ${leg.contract.right}`,
 			`${leg.side === "buy" ? "买入" : "卖出"} ${leg.contract.strike} ${leg.contract.right === "call" ? "看涨" : "看跌"}`,
 		]);
-	const rows: TapeRow[] = LEGS.map((leg) => ({
-		key: leg.key,
-		cells: [
-			"11:20:04",
-			legName(leg),
-			count(SIZE),
-			usd(legPrice(leg)),
-			shown.view === "package"
-				? t(["multi-leg", "多腿"])
-				: leg.label === "bullish"
-					? t(["bullish", "看涨"])
-					: t(["bearish", "看跌"]),
-		],
-	}));
+	const rows = (narrow: boolean): TapeRow[] =>
+		LEGS.map((leg) => ({
+			key: leg.key,
+			cells: [
+				...(narrow ? [] : ["11:20:04"]),
+				legName(leg, narrow),
+				count(SIZE),
+				usd(legPrice(leg)),
+				shown.view === "package"
+					? t(["multi-leg", "多腿"])
+					: leg.label === "bullish"
+						? t(["bullish", "看涨"])
+						: t(["bearish", "看跌"]),
+			],
+		}));
 	const lines: string[] =
 		shown.view === "legs"
 			? [
@@ -566,7 +569,7 @@ function PackageView({
 						"Four ALFA Oct 18 option prints in the same second, read leg by leg and as one iron condor",
 						"同一秒内四笔 ALFA 10月18日 期权成交，逐腿解读与作为一个铁鹰整体解读",
 					])}
-					height={(width) => tapeHeight(4) + (width < 520 ? 64 : 58)}
+					height={(width) => tapeHeight(4) + 18 + workingHeight(width, 2)}
 				>
 					{(width) => (
 						<g>
@@ -581,20 +584,20 @@ function PackageView({
 								columns={
 									width < 520
 										? [
-												{ label: t(["Leg", "腿"]), share: 0.36 },
+												{ label: t(["Leg", "腿"]), share: 0.4 },
 												{
 													label: t(["Qty", "张数"]),
-													share: 0.14,
+													share: 0.13,
 													align: "end",
 												},
 												{
 													label: t(["Price", "价格"]),
-													share: 0.2,
+													share: 0.19,
 													align: "end",
 												},
 												{
 													label: t(["Label", "标签"]),
-													share: 0.3,
+													share: 0.28,
 													align: "end",
 												},
 											]
@@ -614,25 +617,19 @@ function PackageView({
 												},
 											]
 								}
-								rows={
-									width < 520
-										? rows.map((row) => ({ ...row, cells: row.cells.slice(1) }))
-										: rows
-								}
+								rows={rows(width < 520)}
 								maxRows={4}
 								empty={t(["No prints", "没有成交"])}
 							/>
-							{lines.map((text, i) => (
-								<Label
-									key={text}
-									x={14}
-									y={tapeHeight(4) + 26 + i * 20}
-									maxWidth={width - 28}
-									tone={i === 0 ? undefined : "small"}
-								>
-									{text}
-								</Label>
-							))}
+							<Working
+								x={14}
+								y={tapeHeight(4) + 12}
+								width={width - 28}
+								lines={lines.map((text, i) => ({
+									text,
+									tone: i === 0 ? undefined : "small",
+								}))}
+							/>
 						</g>
 					)}
 				</Stage>

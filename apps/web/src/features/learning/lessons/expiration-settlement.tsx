@@ -30,6 +30,7 @@ import {
 	ValueStack,
 } from "../walkthrough/instruments/value-stack";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -163,30 +164,42 @@ function ExitView({
 									`10月18日 95 看涨 · ${exitDays[shown.day].label[1]} · ALFA $102`,
 								])}
 							</Label>
-							<rect x={14} y={32} width={14} height={10} className="wt-long" />
-							<Label x={34} y={41} tone="small">
-								{t(["intrinsic", "内在价值"])}
-							</Label>
-							<rect
-								x={112}
-								y={32}
-								width={14}
-								height={10}
-								className="wt-long-soft ev-modeled wt-stack-time"
-							/>
-							<Label x={132} y={41} tone="small">
-								{t(["time value", "时间价值"])}
-							</Label>
-							<rect
-								x={222}
-								y={32}
-								width={14}
-								height={10}
-								className="wt-ghost"
-							/>
-							<Label x={242} y={41} tone="small">
-								{t(["given up", "被放弃"])}
-							</Label>
+							{/* Each key sits a fixed gap after the one before, so the three fit a phone. */}
+							{[
+								{ className: "wt-long", text: t(["intrinsic", "内在价值"]) },
+								{
+									className: "wt-long-soft ev-modeled wt-stack-time",
+									text: t(["time value", "时间价值"]),
+								},
+								{ className: "wt-ghost", text: t(["given up", "被放弃"]) },
+							]
+								.reduce<{ x: number; className: string; text: string }[]>(
+									(keys, key) => {
+										const last = keys.at(-1);
+										keys.push({
+											...key,
+											x: last
+												? last.x + 20 + textWidth(last.text, 11) + 16
+												: 14,
+										});
+										return keys;
+									},
+									[],
+								)
+								.map((key) => (
+									<g key={key.className}>
+										<rect
+											x={key.x}
+											y={32}
+											width={14}
+											height={10}
+											className={key.className}
+										/>
+										<Label x={key.x + 20} y={41} tone="small">
+											{key.text}
+										</Label>
+									</g>
+								))}
 							<g transform={`translate(0 ${EXIT_TOP})`}>
 								<ValueStack
 									width={width}

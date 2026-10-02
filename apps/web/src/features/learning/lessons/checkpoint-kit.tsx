@@ -4,8 +4,10 @@ import {
 	type TapeRow,
 	TradeTape,
 	tapeHeight,
+	tapeTitle,
 } from "../walkthrough/instruments/trade-tape";
-import { Label } from "../walkthrough/stage";
+import { Working, workingHeight } from "../walkthrough/instruments/working";
+import { Stage } from "../walkthrough/stage";
 
 /** Checkpoints happen on a day the lessons never showed: two weeks on, ALFA near $104. */
 export const CHECKPOINT_DATE = "2030-10-02";
@@ -18,17 +20,19 @@ export type SheetLine = {
 	tone?: "gain" | "loss" | "accent" | "strong";
 };
 
-const LINE = 20;
-
-/** Height of a sheet with `rows` table rows and `lines` lines of working under it. */
-export const sheetHeight = (rows: number, lines: number) =>
-	4 + tapeHeight(rows) + 12 + lines * LINE;
+/** Where the working starts under the table. */
+const linesTop = (
+	width: number,
+	title: string,
+	rows: number,
+	stacked: boolean,
+) => 4 + tapeHeight(rows, tapeTitle(title, width - 16).length, stacked) + 12;
 
 /**
  * A checkpoint's evidence: a table of records, then the working, one line at a time.
  * Lines without a tone are small; the result line carries one.
  */
-export function CaseSheet({
+function CaseSheet({
 	width,
 	title,
 	columns,
@@ -36,6 +40,7 @@ export function CaseSheet({
 	maxRows,
 	lines,
 	empty = "",
+	stacked,
 }: {
 	width: number;
 	title: string;
@@ -44,8 +49,8 @@ export function CaseSheet({
 	maxRows: number;
 	lines: readonly SheetLine[];
 	empty?: string;
+	stacked: boolean;
 }) {
-	const top = 4 + tapeHeight(maxRows) + 12;
 	return (
 		<g>
 			<TradeTape
@@ -57,24 +62,69 @@ export function CaseSheet({
 				rows={rows}
 				maxRows={maxRows}
 				empty={empty}
+				stacked={stacked}
 			/>
-			{lines.map((line, i) => (
-				<Label
-					key={line.text}
-					x={14}
-					y={top + 14 + i * LINE}
-					maxWidth={width - 28}
-					tone={
+			<Working
+				x={14}
+				y={linesTop(width, title, maxRows, stacked)}
+				width={width - 28}
+				lines={lines.map((line) => ({
+					text: line.text,
+					tone:
 						line.tone === "strong"
 							? undefined
 							: line.tone === undefined
 								? "small"
-								: line.tone
-					}
-				>
-					{line.text}
-				</Label>
-			))}
+								: line.tone,
+				}))}
+			/>
 		</g>
+	);
+}
+
+type ByWidth<T> = T | ((width: number) => T);
+const atWidth = <T,>(value: ByWidth<T>, width: number) =>
+	typeof value === "function" ? (value as (width: number) => T)(width) : value;
+
+/** A checkpoint's stage: the case sheet, drawn at a height that holds its fullest step. */
+export function SheetStage({
+	label,
+	lineSlots,
+	columns,
+	rows,
+	stackOnPhone = false,
+	...sheet
+}: {
+	label: string;
+	/** The most lines of working any step shows. */
+	lineSlots: number;
+	/** On a phone each record's name takes a line of its own, its values under it. */
+	stackOnPhone?: boolean;
+	title: string;
+	columns: ByWidth<readonly TapeColumn[]>;
+	rows: ByWidth<readonly TapeRow[]>;
+	maxRows: number;
+	lines: readonly SheetLine[];
+	empty?: string;
+}) {
+	const stacks = (width: number) => stackOnPhone && width < 520;
+	return (
+		<Stage
+			label={label}
+			height={(width) =>
+				linesTop(width, sheet.title, sheet.maxRows, stacks(width)) +
+				workingHeight(width, lineSlots)
+			}
+		>
+			{(width) => (
+				<CaseSheet
+					width={width}
+					columns={atWidth(columns, width)}
+					rows={atWidth(rows, width)}
+					stacked={stacks(width)}
+					{...sheet}
+				/>
+			)}
+		</Stage>
 	);
 }

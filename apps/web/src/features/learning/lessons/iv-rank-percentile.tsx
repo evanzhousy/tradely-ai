@@ -102,10 +102,15 @@ function IvHistory({
 	return (
 		<g>
 			<Label x={8} y={16} tone="muted">
-				{t([
-					"ALFA IV30 · weekly closes · the year to Sep 13",
-					"ALFA IV30 · 每周收盘 · 截至 9月13日 的一年",
-				])}
+				{width < 520
+					? t([
+							"ALFA IV30 · weekly · year to Sep 13",
+							"ALFA IV30 · 每周 · 截至 9月13日 的一年",
+						])
+					: t([
+							"ALFA IV30 · weekly closes · the year to Sep 13",
+							"ALFA IV30 · 每周收盘 · 截至 9月13日 的一年",
+						])}
 			</Label>
 			{/* When the rank bracket takes room on the right, the year narrows rather than jumps. */}
 			{[0, 20, 40, 60].map((tick) => (

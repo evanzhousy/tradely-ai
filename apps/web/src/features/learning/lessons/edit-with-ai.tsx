@@ -3,7 +3,7 @@ import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
-import { textWidth, wrapText } from "../walkthrough/text-measure";
+import { textWidth, twoRows, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -425,9 +425,21 @@ function ReviewStage({
 				animate={{ opacity: 1 }}
 				transition={motion.fade}
 			>
-				<Label x={8} y={MESSAGE_Y} tone="small">
-					{t(message.text)}
-				</Label>
+				{/* A message on its own may take the loss line's row on a phone. */}
+				{(message.loss
+					? [t(message.text)]
+					: twoRows(t(message.text), width - 16, 11)
+				).map((line, i) => (
+					<Label
+						key={line}
+						x={8}
+						y={MESSAGE_Y + i * 17}
+						tone="small"
+						maxWidth={width - 16}
+					>
+						{line}
+					</Label>
+				))}
 				{message.loss ? (
 					<Label x={8} y={MESSAGE_Y + 17} tone="small" className="wt-loss">
 						{t(message.loss)}

@@ -6,12 +6,7 @@ import type { TapeRow } from "../walkthrough/instruments/trade-tape";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
-import {
-	CaseSheet,
-	CHECKPOINT_DAY,
-	type SheetLine,
-	sheetHeight,
-} from "./checkpoint-kit";
+import { CHECKPOINT_DAY, type SheetLine, SheetStage } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -97,32 +92,26 @@ function PacketView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A research packet's trades for three ALFA Oct 18 calls, one of them missing, and the premium they add up to",
 						"一个研究包中三张 ALFA 10月18日 看涨的成交（其中一张缺失），以及它们合计的权利金",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Packet · ALFA Oct 18 calls · ${CHECKPOINT_DAY[0]}`,
-								`研究包 · ALFA 10月18日 看涨 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={[
-								{ label: t(["Row · strike", "行 · 行权价"]), share: 0.3 },
-								{ label: t(["Qty", "张数"]), share: 0.16, align: "end" },
-								{ label: t(["Price", "价格"]), share: 0.22, align: "end" },
-								{ label: t(["Premium", "权利金"]), share: 0.32, align: "end" },
-							]}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Packet · ALFA Oct 18 calls · ${CHECKPOINT_DAY[0]}`,
+						`研究包 · ALFA 10月18日 看涨 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={[
+						{ label: t(["Row · strike", "行 · 行权价"]), share: 0.3 },
+						{ label: t(["Qty", "张数"]), share: 0.16, align: "end" },
+						{ label: t(["Price", "价格"]), share: 0.22, align: "end" },
+						{ label: t(["Premium", "权利金"]), share: 0.32, align: "end" },
+					]}
+					rows={rows}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -297,38 +286,33 @@ function AuditView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A colleague's recap of the packet, claim by claim, with each defect and its repair",
 						"同事根据研究包写的复盘，逐条列出缺陷及其修复",
 					])}
-					height={() => sheetHeight(3, 1)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t(["A colleague's recap", "同事的复盘"])}
-							columns={[
-								{ label: t(["Claim", "结论"]), share: 0.58 },
-								{ label: t(["Audit", "审核"]), share: 0.42, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={
-								shown.stage >= 2
-									? [
-											{
-												text: t([
-													"keep the counts and prices; repair the rest",
-													"保留张数和价格；修复其余部分",
-												]),
-											},
-										]
-									: []
-							}
-						/>
-					)}
-				</Stage>
+					lineSlots={1}
+					stackOnPhone
+					title={t(["A colleague's recap", "同事的复盘"])}
+					columns={[
+						{ label: t(["Claim", "结论"]), share: 0.58 },
+						{ label: t(["Audit", "审核"]), share: 0.42, align: "end" },
+					]}
+					rows={rows}
+					maxRows={3}
+					lines={
+						shown.stage >= 2
+							? [
+									{
+										text: t([
+											"keep the counts and prices; repair the rest",
+											"保留张数和价格；修复其余部分",
+										]),
+									},
+								]
+							: []
+					}
+				/>
 			}
 			result={[
 				{

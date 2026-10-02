@@ -18,6 +18,7 @@ import {
 	PRICE_LINE_HEIGHT,
 	PriceLine,
 } from "../walkthrough/instruments/price-line";
+import { Working, workingHeight } from "../walkthrough/instruments/working";
 import { Label, Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
@@ -96,22 +97,34 @@ function QuoteBoard({
 					</Label>
 				</g>
 			))}
-			{state.stage >= 1 ? (
-				<Label x={14} y={150} maxWidth={width - 28}>
-					{t([
-						`${state.side === "buy" ? "Buy" : "Sell"} ${state.shares} right away: ${state.shares} × ${usd(price)} = ${usd(price * state.shares)}`,
-						`立即${state.side === "buy" ? "买入" : "卖出"} ${state.shares} 股：${state.shares} × ${usd(price)} = ${usd(price * state.shares)}`,
-					])}
-				</Label>
-			) : null}
-			{state.stage >= 2 ? (
-				<Label x={14} y={172} tone="small" maxWidth={width - 28}>
-					{t([
-						`a round trip costs ${usd(STOCK.ask - STOCK.bid)} a share: ${usd((STOCK.ask - STOCK.bid) * state.shares)} on ${state.shares}`,
-						`一买一卖每股成本 ${usd(STOCK.ask - STOCK.bid)}：${state.shares} 股共 ${usd((STOCK.ask - STOCK.bid) * state.shares)}`,
-					])}
-				</Label>
-			) : null}
+			<Working
+				x={14}
+				y={136}
+				width={width - 28}
+				lines={[
+					...(state.stage >= 1
+						? [
+								{
+									text: t([
+										`${state.side === "buy" ? "Buy" : "Sell"} ${state.shares} right away: ${state.shares} × ${usd(price)} = ${usd(price * state.shares)}`,
+										`立即${state.side === "buy" ? "买入" : "卖出"} ${state.shares} 股：${state.shares} × ${usd(price)} = ${usd(price * state.shares)}`,
+									]),
+								},
+							]
+						: []),
+					...(state.stage >= 2
+						? [
+								{
+									text: t([
+										`a round trip costs ${usd(STOCK.ask - STOCK.bid)} a share: ${usd((STOCK.ask - STOCK.bid) * state.shares)} on ${state.shares}`,
+										`一买一卖每股成本 ${usd(STOCK.ask - STOCK.bid)}：${state.shares} 股共 ${usd((STOCK.ask - STOCK.bid) * state.shares)}`,
+									]),
+									tone: "small" as const,
+								},
+							]
+						: []),
+				]}
+			/>
 		</g>
 	);
 }
@@ -162,7 +175,7 @@ function QuoteView({
 						"ALFA's quote on the checkpoint morning, and what trading right away gets or costs",
 						"检查点当天上午 ALFA 的报价，以及立即交易能得到或要付出多少",
 					])}
-					height={() => 186}
+					height={(width) => 146 + workingHeight(width, 2)}
 				>
 					{(width) => (
 						<QuoteBoard width={width} state={shown} locale={locale} />

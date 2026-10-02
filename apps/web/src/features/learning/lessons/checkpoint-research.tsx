@@ -2,15 +2,9 @@ import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
-import {
-	CaseSheet,
-	CHECKPOINT_DAY,
-	type SheetLine,
-	sheetHeight,
-} from "./checkpoint-kit";
+import { CHECKPOINT_DAY, type SheetLine, SheetStage } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -34,13 +28,16 @@ const NAMES: readonly Name[] = [
 const FLOOR = 800;
 const qualifies = (name: Name, floor: number) =>
 	name.kind === "stock" && name.volume !== null && name.volume >= floor;
-const reason = (name: Name, floor: number): Copy =>
+/** Why a name is in or out; a phone gets the short form, its volume cell showing the rest. */
+const reason = (name: Name, floor: number, narrow = false): Copy =>
 	name.kind !== "stock"
 		? ["out: an ETF", "排除：ETF"]
 		: name.volume === null
-			? ["unknown: no data", "未知：无数据"]
+			? [narrow ? "unknown" : "unknown: no data", "未知：无数据"]
 			: name.volume < floor
-				? [`out: under ${count(floor)}`, `排除：低于 ${count(floor)}`]
+				? narrow
+					? [`out: < ${count(floor)}`, `排除：< ${count(floor)}`]
+					: [`out: under ${count(floor)}`, `排除：低于 ${count(floor)}`]
 				: ["in", "纳入"];
 const QUALIFIED = NAMES.filter((name) => qualifies(name, FLOOR)).length;
 
@@ -60,16 +57,17 @@ function UniverseView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const inCount = NAMES.filter((name) => qualifies(name, shown.floor)).length;
-	const rows: TapeRow[] = NAMES.map((name, i) => ({
-		key: String.fromCharCode(97 + i),
-		cells: [
-			name.symbol,
-			t(name.kind === "stock" ? ["stock", "股票"] : ["ETF", "ETF"]),
-			name.volume === null ? "—" : count(name.volume),
-			shown.stage >= 1 ? t(reason(name, shown.floor)) : "",
-		],
-		muted: shown.stage >= 1 && !qualifies(name, shown.floor),
-	}));
+	const rows = (narrow: boolean): TapeRow[] =>
+		NAMES.map((name, i) => ({
+			key: String.fromCharCode(97 + i),
+			cells: [
+				name.symbol,
+				t(name.kind === "stock" ? ["stock", "股票"] : ["ETF", "ETF"]),
+				name.volume === null ? "—" : count(name.volume),
+				shown.stage >= 1 ? t(reason(name, shown.floor, narrow)) : "",
+			],
+			muted: shown.stage >= 1 && !qualifies(name, shown.floor),
+		}));
 	const lines: SheetLine[] = [];
 	if (shown.stage >= 2)
 		lines.push({
@@ -82,32 +80,34 @@ function UniverseView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Five candidate names checked against a stated comparison rule",
 						"按给定的比较规则检查五个候选标的",
 					])}
-					height={() => sheetHeight(5, 1)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Rule: stocks · complete data · ≥ ${count(shown.floor)}`,
-								`规则：股票 · 数据完整 · ≥ ${count(shown.floor)}`,
-							])}
-							columns={[
-								{ label: t(["Name", "标的"]), share: 0.18 },
-								{ label: t(["Type", "类型"]), share: 0.18 },
-								{ label: t(["Volume", "成交量"]), share: 0.22, align: "end" },
-								{ label: t(["Status", "状态"]), share: 0.42, align: "end" },
-							]}
-							rows={rows}
-							maxRows={5}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={1}
+					title={t([
+						`Rule: stocks · complete data · ≥ ${count(shown.floor)}`,
+						`规则：股票 · 数据完整 · ≥ ${count(shown.floor)}`,
+					])}
+					columns={(width) => [
+						{ label: t(["Name", "标的"]), share: width < 520 ? 0.16 : 0.18 },
+						{ label: t(["Type", "类型"]), share: width < 520 ? 0.2 : 0.18 },
+						{
+							label: t(["Volume", "成交量"]),
+							share: width < 520 ? 0.2 : 0.22,
+							align: "end",
+						},
+						{
+							label: t(["Status", "状态"]),
+							share: width < 520 ? 0.44 : 0.42,
+							align: "end",
+						},
+					]}
+					rows={(width) => rows(width < 520)}
+					maxRows={5}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -191,32 +191,26 @@ function RankView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"The qualifying names ranked by raw volume or by volume against their own normal",
 						"合格的标的按原始成交量或相对自身平常水平的成交量排名",
 					])}
-					height={() => sheetHeight(2, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Qualifying names · ${CHECKPOINT_DAY[0]}`,
-								`合格标的 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={[
-								{ label: t(["Name", "标的"]), share: 0.22 },
-								{ label: t(["Volume", "成交量"]), share: 0.26, align: "end" },
-								{ label: t(["Typical", "典型量"]), share: 0.26, align: "end" },
-								{ label: t(["Relative", "相对"]), share: 0.26, align: "end" },
-							]}
-							rows={rows}
-							maxRows={2}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Qualifying names · ${CHECKPOINT_DAY[0]}`,
+						`合格标的 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={[
+						{ label: t(["Name", "标的"]), share: 0.22 },
+						{ label: t(["Volume", "成交量"]), share: 0.26, align: "end" },
+						{ label: t(["Typical", "典型量"]), share: 0.26, align: "end" },
+						{ label: t(["Relative", "相对"]), share: 0.26, align: "end" },
+					]}
+					rows={rows}
+					maxRows={2}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -313,30 +307,24 @@ function DecayView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A recency-weighted activity score fading with no new trades",
 						"一个按近期加权的活跃度分数，在没有新成交时逐渐衰减",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Recency score · ALFA Oct 18 105 call · ${CHECKPOINT_DAY[0]}`,
-								`近期分数 · ALFA 10月18日 105 看涨 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={[
-								{ label: t(["Input", "输入"]), share: 0.6 },
-								{ label: t(["Value", "数值"]), share: 0.4, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Recency score · ALFA Oct 18 105 call · ${CHECKPOINT_DAY[0]}`,
+						`近期分数 · ALFA 10月18日 105 看涨 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={[
+						{ label: t(["Input", "输入"]), share: 0.6 },
+						{ label: t(["Value", "数值"]), share: 0.4, align: "end" },
+					]}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

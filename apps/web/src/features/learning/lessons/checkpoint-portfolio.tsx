@@ -10,16 +10,14 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 import {
-	CaseSheet,
 	CHECKPOINT_ALFA,
 	CHECKPOINT_DATE,
 	CHECKPOINT_DAY,
 	type SheetLine,
-	sheetHeight,
+	SheetStage,
 } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
@@ -133,31 +131,25 @@ function LotView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Two buys of the Oct 18 105 call and one sale, matched lot by lot",
 						"两次买入 10月18日 105 看涨和一次卖出，按批次匹配",
 					])}
-					height={() => sheetHeight(3, 3)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Oct 18 105 calls · your fills",
-								"10月18日 105 看涨 · 你的成交",
-							])}
-							columns={[
-								{ label: t(["Fill", "成交"]), share: 0.52 },
-								{ label: t(["Contracts", "张数"]), share: 0.22, align: "end" },
-								{ label: t(["Price", "价格"]), share: 0.26, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={3}
+					title={t([
+						"Oct 18 105 calls · your fills",
+						"10月18日 105 看涨 · 你的成交",
+					])}
+					columns={[
+						{ label: t(["Fill", "成交"]), share: 0.52 },
+						{ label: t(["Contracts", "张数"]), share: 0.22, align: "end" },
+						{ label: t(["Price", "价格"]), share: 0.26, align: "end" },
+					]}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -260,34 +252,28 @@ function ReturnView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"An account's week, split at a deposit into two periods whose returns are chained",
 						"账户的一周在存款处分成两段，再把两段收益连乘",
 					])}
-					height={() => sheetHeight(4, 3)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Your account · week of Sep 30",
-								"你的账户 · 9月30日 当周",
-							])}
-							columns={[
-								{ label: t(["When", "时间"]), share: 0.6 },
-								{
-									label: t(["Account value", "账户价值"]),
-									share: 0.4,
-									align: "end",
-								},
-							]}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={3}
+					title={t([
+						"Your account · week of Sep 30",
+						"你的账户 · 9月30日 当周",
+					])}
+					columns={[
+						{ label: t(["When", "时间"]), share: 0.6 },
+						{
+							label: t(["Account value", "账户价值"]),
+							share: 0.4,
+							align: "end",
+						},
+					]}
+					rows={rows}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -410,28 +396,22 @@ function TradesView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Five closed trades with their running total, read as profit factor and the worst fall from a peak",
 						"五笔已平仓交易及其累计值，读作盈亏比和从高点的最大回落",
 					])}
-					height={() => sheetHeight(5, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t(["Closed trades · this week", "已平仓交易 · 本周"])}
-							columns={[
-								{ label: t(["Trade", "交易"]), share: 0.34 },
-								{ label: "P&L", share: 0.3, align: "end" },
-								{ label: t(["Running", "累计"]), share: 0.36, align: "end" },
-							]}
-							rows={rows}
-							maxRows={5}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t(["Closed trades · this week", "已平仓交易 · 本周"])}
+					columns={[
+						{ label: t(["Trade", "交易"]), share: 0.34 },
+						{ label: "P&L", share: 0.3, align: "end" },
+						{ label: t(["Running", "累计"]), share: 0.36, align: "end" },
+					]}
+					rows={rows}
+					maxRows={5}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -511,12 +491,15 @@ function DeltaView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const total = shown.shares + OPTIONS;
-	const rows: TapeRow[] = [
+	// A phone writes long and short as signs, as a position screen does.
+	const side = (quantity: number, narrow: boolean) =>
+		narrow ? (quantity < 0 ? "−" : "+") : quantity < 0 ? "Short " : "Long ";
+	const rows = (narrow: boolean): TapeRow[] => [
 		{
 			key: "a",
 			cells: [
 				t([
-					`${shown.shares < 0 ? "Short" : "Long"} ${count(Math.abs(shown.shares))} shares`,
+					`${side(shown.shares, narrow)}${count(Math.abs(shown.shares))} shares`,
 					`${shown.shares < 0 ? "空头" : "多头"} ${count(Math.abs(shown.shares))} 股`,
 				]),
 				"1",
@@ -526,7 +509,10 @@ function DeltaView({
 		{
 			key: "b",
 			cells: [
-				t([`Long ${CALLS} × 105 call`, `多头 ${CALLS} 张 105 看涨`]),
+				t([
+					`${side(CALLS, narrow)}${CALLS} × 105 call`,
+					`多头 ${CALLS} 张 105 看涨`,
+				]),
 				CALL_DELTA.toFixed(3),
 				signedCount(CALL_SHARES),
 			],
@@ -534,7 +520,10 @@ function DeltaView({
 		{
 			key: "c",
 			cells: [
-				t([`Short ${-PUTS} × 100 put`, `空头 ${-PUTS} 张 100 看跌`]),
+				t([
+					`${side(PUTS, narrow)}${-PUTS} × 100 put`,
+					`空头 ${-PUTS} 张 100 看跌`,
+				]),
 				PUT_DELTA.toFixed(3).replace("-", "−"),
 				shown.stage >= 1 ? signedCount(PUT_SHARES) : "?",
 			],
@@ -559,31 +548,25 @@ function DeltaView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Your ALFA shares, long calls and short puts, each turned into share-equivalents and added",
 						"你的 ALFA 股票、看涨多头和看跌空头，各自换算成股等价后相加",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`ALFA and Oct 18 options · ${CHECKPOINT_DAY[0]}`,
-								`ALFA 与 10月18日 期权 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={[
-								{ label: t(["Position", "持仓"]), share: 0.5 },
-								{ label: "Delta", share: 0.22, align: "end" },
-								{ label: t(["Shares", "股等价"]), share: 0.28, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`ALFA and Oct 18 options · ${CHECKPOINT_DAY[0]}`,
+						`ALFA 与 10月18日 期权 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={[
+						{ label: t(["Position", "持仓"]), share: 0.5 },
+						{ label: "Delta", share: 0.22, align: "end" },
+						{ label: t(["Shares", "股等价"]), share: 0.28, align: "end" },
+					]}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

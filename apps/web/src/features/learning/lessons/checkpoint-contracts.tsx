@@ -10,16 +10,14 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 import {
-	CaseSheet,
 	CHECKPOINT_ALFA,
 	CHECKPOINT_DATE,
 	CHECKPOINT_DAY,
 	type SheetLine,
-	sheetHeight,
+	SheetStage,
 } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
@@ -66,7 +64,8 @@ function UnitsView({
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	const rows: TapeRow[] = [
+	// A phone has room for the quote's label only without its spaces.
+	const rows = (narrow: boolean): TapeRow[] => [
 		row("a", t(["Underlying", "标的"]), "ALFA"),
 		row(
 			"b",
@@ -76,7 +75,10 @@ function UnitsView({
 		row("c", t(["Strike", "行权价"]), "$95"),
 		row(
 			"d",
-			t(["Bid / ask, per share", "买价 / 卖价，每股"]),
+			t([
+				narrow ? "Bid/ask per share" : "Bid / ask, per share",
+				"买价 / 卖价，每股",
+			]),
 			`${usd(PUT_QUOTE.bid)} / ${usd(PUT_QUOTE.ask)}`,
 		),
 	];
@@ -99,27 +101,21 @@ function UnitsView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"The ALFA Nov 15 95 put's defining facts and quote on the checkpoint day, and what contracts cost",
 						"检查点当天 ALFA 11月15日 95 看跌的定义要素和报价，以及买入合约的成本",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`The contract · ${CHECKPOINT_DAY[0]}`,
-								`合约 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`The contract · ${CHECKPOINT_DAY[0]}`,
+						`合约 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -174,10 +170,11 @@ function RightsView({
 	const puts = shown.short === "puts";
 	const strike = puts ? SHORT_PUT : SHORT_CALL;
 	const cash = strike * 100 * ASSIGNED;
-	const rows: TapeRow[] = [
+	// On a phone the labels shorten so each value keeps its size.
+	const rows = (narrow: boolean): TapeRow[] => [
 		row(
 			"a",
-			t(["Your position", "你的持仓"]),
+			t([narrow ? "Position" : "Your position", "你的持仓"]),
 			t(
 				puts
 					? [
@@ -193,11 +190,14 @@ function RightsView({
 		row(
 			"b",
 			t(["Settles in", "交割方式"]),
-			t(["shares, 100 a contract", "股票，每张 100 股"]),
+			t([
+				narrow ? "100 shares each" : "shares, 100 a contract",
+				"股票，每张 100 股",
+			]),
 		),
 		row(
 			"c",
-			t(["The holder's right", "持有人的权利"]),
+			t([narrow ? "Holder's right" : "The holder's right", "持有人的权利"]),
 			t(
 				puts
 					? ["to sell at $95", "按 $95 卖出"]
@@ -231,24 +231,18 @@ function RightsView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A short option position that gets assigned, and the cash and shares that move",
 						"一个被指派的期权空头持仓，以及随之转移的现金和股票",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t(["Assignment notice", "指派通知"])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t(["Assignment notice", "指派通知"])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -354,27 +348,21 @@ function ParityView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"The Nov 15 100 call and put on the checkpoint day, priced against each other with put-call parity",
 						"检查点当天的 11月15日 100 看涨与看跌，用看涨看跌平价相互定价",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Model mids · no rates or dividends · ${CHECKPOINT_DAY[0]}`,
-								`模型中间价 · 无利息与股息 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Model mids · no rates or dividends · ${CHECKPOINT_DAY[0]}`,
+						`模型中间价 · 无利息与股息 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -471,24 +459,18 @@ function SettleView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A cash-settled index put at expiry: its strike, the official settlement value and the last level shown",
 						"到期的现金结算指数看跌：行权价、官方结算值和最近显示的指数",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t(["Settlement · Oct 18", "结算 · 10月18日"])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t(["Settlement · Oct 18", "结算 · 10月18日"])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

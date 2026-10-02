@@ -1,6 +1,6 @@
 import * as m from "motion/react-m";
 import { Appear, Label, useStage, useTeachMotion } from "../stage";
-import { textWidth } from "../text-measure";
+import { packParts, textWidth, twoRows } from "../text-measure";
 
 export type Bar = {
 	id: string;
@@ -43,11 +43,7 @@ export function BarChart({
 }) {
 	const motion = useTeachMotion();
 	const { hatch } = useStage();
-	const titleLines = !title
-		? []
-		: textWidth(title, 12) > width - 16
-			? title.split(" · ")
-			: [title];
+	const titleLines = title ? packParts(title, width - 16, 12) : [];
 	const top = PAD_TOP + titleLines.length * 14;
 	const bottom = height - PAD_BOTTOM;
 	const left =
@@ -87,21 +83,36 @@ export function BarChart({
 				const cx = left + slot * (i + 0.5);
 				const x = cx - barWidth / 2;
 				const on = bar.id === focus;
-				// A category name wider than its slot condenses rather than run into its neighbour.
-				const natural = textWidth(bar.label, on ? 13 : 11);
-				const fitted =
-					natural > slot - 6 ? Math.max(slot - 6, natural * 0.72) : undefined;
+				// A category name wider than its slot takes a second row, unless an axis title
+				// needs that row; what still runs long condenses rather than run into its neighbour.
+				const size = on ? 13 : 11;
+				const rows =
+					!axisTitle && textWidth(bar.label, size) > slot - 6
+						? twoRows(bar.label, slot - 6, size)
+						: [bar.label];
 				const label = (
-					<text
-						x={cx}
-						y={bottom + 16}
-						textAnchor="middle"
-						textLength={fitted}
-						lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
-						className={on ? "wt-accent" : "wt-small"}
-					>
-						{bar.label}
-					</text>
+					<g>
+						{rows.map((row, r) => {
+							const natural = textWidth(row, size);
+							const fitted =
+								natural > slot - 6
+									? Math.max(slot - 6, natural * 0.72)
+									: undefined;
+							return (
+								<text
+									key={row}
+									x={cx}
+									y={bottom + 16 + r * 14}
+									textAnchor="middle"
+									textLength={fitted}
+									lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
+									className={on ? "wt-accent" : "wt-small"}
+								>
+									{row}
+								</text>
+							);
+						})}
+					</g>
 				);
 				if (bar.value === null && !bar.hidden)
 					return (

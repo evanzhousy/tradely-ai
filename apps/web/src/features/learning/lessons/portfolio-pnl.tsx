@@ -18,6 +18,7 @@ import {
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { packParts } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -79,6 +80,21 @@ const GAP = 4;
 /** Sixteen across when they fit, else two rows of eight. */
 const squaresPerRow = (width: number) =>
 	width >= 16 * (SQUARE + GAP) + 16 ? 16 : 8;
+/** The title, broken at its " · " where the stage is too narrow for one line. */
+const lotTitle = (width: number, locale: Locale) =>
+	packParts(
+		pick(
+			[
+				"Your Oct 18 100 calls · one square per contract",
+				"你的 10月18日 100 看涨 · 每格一张合约",
+			],
+			locale,
+		),
+		width - 16,
+		12,
+	);
+const lotTop = (width: number, locale: Locale) =>
+	40 + (lotTitle(width, locale).length - 1) * 15;
 
 function LotSquares({
 	width,
@@ -94,7 +110,7 @@ function LotSquares({
 	const perRow = squaresPerRow(width);
 	const rows = Math.ceil(HELD / perRow);
 	const left = (width - perRow * (SQUARE + GAP) + GAP) / 2;
-	const top = 40;
+	const top = lotTop(width, locale);
 	const squares = lots.flatMap((lot, l) =>
 		Array.from({ length: lot.quantity }, (_, k) => ({
 			lot: l,
@@ -104,12 +120,11 @@ function LotSquares({
 	const legendY = top + rows * (SQUARE + GAP) + 22;
 	return (
 		<g>
-			<Label x={8} y={16} tone="muted">
-				{t([
-					"Your Oct 18 100 calls · one square per contract",
-					"你的 10月18日 100 看涨 · 每格一张合约",
-				])}
-			</Label>
+			{lotTitle(width, locale).map((line, i) => (
+				<Label key={line} x={8} y={16 + i * 15} tone="muted">
+					{line}
+				</Label>
+			))}
 			{squares.map((square, i) => {
 				const sold = state.sold && i < SOLD;
 				const x = left + (i % perRow) * (SQUARE + GAP);
@@ -236,7 +251,9 @@ function LotView({
 						"你的 16 张 10月18日 100 看涨，按买入批次着色的方格，其中 6 张在收盘时卖出",
 					])}
 					height={(width) =>
-						40 + Math.ceil(HELD / squaresPerRow(width)) * (SQUARE + GAP) + 52
+						lotTop(width, locale) +
+						Math.ceil(HELD / squaresPerRow(width)) * (SQUARE + GAP) +
+						52
 					}
 				>
 					{(width) => (

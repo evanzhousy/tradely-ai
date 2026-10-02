@@ -2,15 +2,9 @@ import { type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
-import {
-	CaseSheet,
-	CHECKPOINT_DAY,
-	type SheetLine,
-	sheetHeight,
-} from "./checkpoint-kit";
+import { CHECKPOINT_DAY, type SheetLine, SheetStage } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 const twoColumns = (t: (value: Copy) => string) => [
@@ -128,27 +122,21 @@ function OiView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A day's complete opening and closing record for one ALFA call series, and the open interest it leaves",
 						"一个 ALFA 看涨系列一天完整的开平仓记录，以及它留下的未平仓量",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Nov 15 105 call · ${CHECKPOINT_DAY[0]}`,
-								`11月15日 105 看涨 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Nov 15 105 call · ${CHECKPOINT_DAY[0]}`,
+						`11月15日 105 看涨 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				exploring
@@ -269,32 +257,26 @@ function SweepView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"One buy order sweeping three venues in the Nov 15 105 call, and its quantity-weighted price",
 						"一张买单扫过三个场所买入 11月15日 105 看涨，以及它的按数量加权价格",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Sweep · Nov 15 105 call · one order",
-								"扫单 · 11月15日 105 看涨 · 一张订单",
-							])}
-							columns={[
-								{ label: t(["Time", "时间"]), share: 0.3 },
-								{ label: t(["Venue", "场所"]), share: 0.26 },
-								{ label: t(["Qty", "张数"]), share: 0.16, align: "end" },
-								{ label: t(["Price", "价格"]), share: 0.28, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						"Sweep · Nov 15 105 call · one order",
+						"扫单 · 11月15日 105 看涨 · 一张订单",
+					])}
+					columns={[
+						{ label: t(["Time", "时间"]), share: 0.3 },
+						{ label: t(["Venue", "场所"]), share: 0.26 },
+						{ label: t(["Qty", "张数"]), share: 0.16, align: "end" },
+						{ label: t(["Price", "价格"]), share: 0.28, align: "end" },
+					]}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -386,27 +368,21 @@ function RatioView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"One contract's session volume against its typical volume and its open interest",
 						"一张合约的交易日成交量，分别对照典型成交量和未平仓量",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`DUNE Oct 18 40 call · ${CHECKPOINT_DAY[0]}`,
-								`DUNE 10月18日 40 看涨 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`DUNE Oct 18 40 call · ${CHECKPOINT_DAY[0]}`,
+						`DUNE 10月18日 40 看涨 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -456,7 +432,7 @@ function ClockView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const fits = shown.flow === "wed";
-	const rows: TapeRow[] = [
+	const rows = (narrow: boolean): TapeRow[] => [
 		row(
 			"a",
 			t(["Need: flow", "需要：成交流"]),
@@ -464,7 +440,7 @@ function ClockView({
 		),
 		row(
 			"b",
-			t(["Need: open interest", "需要：未平仓量"]),
+			t([narrow ? "Need: OI" : "Need: open interest", "需要：未平仓量"]),
 			t(["earlier, dated", "更早、带日期"]),
 		),
 		row(
@@ -504,24 +480,18 @@ function ClockView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"What a comparison needs from each source, and when each record you have was true",
 						"一项比较对每个来源的要求，以及你手上每条记录成立的时间",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t(["Data clocks · ALFA options", "数据时钟 · ALFA 期权"])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t(["Data clocks · ALFA options", "数据时钟 · ALFA 期权"])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

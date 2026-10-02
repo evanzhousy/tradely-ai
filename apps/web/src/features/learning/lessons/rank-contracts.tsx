@@ -337,6 +337,12 @@ function CandidateRows({
 				const out = removed(candidate);
 				const missing = candidate.value === null;
 				const win = candidate.id === winner;
+				// On a phone a missing row's source keeps only its last part, "not delivered",
+				// leaving room for the note beside it at full size.
+				const source =
+					width < 520 && missing
+						? (t(candidate.source).split(" · ").at(-1) ?? "")
+						: t(candidate.source);
 				return (
 					// A row the audit sets aside keeps its reason legible.
 					<g key={candidate.id} className={out ? "wt-quiet" : undefined}>
@@ -360,7 +366,7 @@ function CandidateRows({
 							{t(candidate.label)}
 						</Label>
 						<Label x={18} y={y + 32} tone="small" className="wt-halo">
-							{t(candidate.source)}
+							{source}
 						</Label>
 						<Label x={width - 18} y={y + 17} anchor="end" className="wt-halo">
 							{candidate.value === null ? "?" : count(candidate.value)}
@@ -378,7 +384,7 @@ function CandidateRows({
 								anchor="end"
 								tone="accent"
 								className="wt-halo"
-								maxWidth={width - 48 - textWidth(t(candidate.source), 11)}
+								maxWidth={width - 48 - textWidth(source, 11)}
 							>
 								{t(["unknown, not zero", "未知，不是零"])}
 							</Label>

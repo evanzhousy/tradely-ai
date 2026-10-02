@@ -183,10 +183,15 @@ function ForecastStage({
 							'TradingFlow Home · "Before I sell a call"',
 							"TradingFlow Home ·“卖出看涨前”",
 						])
-					: t([
-							"A friend's checklist for selling an ALFA call",
-							"朋友列的卖出 ALFA 看涨清单",
-						])}
+					: width < 520
+						? t([
+								"A friend's call-selling checklist",
+								"朋友列的卖出 ALFA 看涨清单",
+							])
+						: t([
+								"A friend's checklist for selling an ALFA call",
+								"朋友列的卖出 ALFA 看涨清单",
+							])}
 			</m.text>
 			{steps.map((step, i) => (
 				<StepRow

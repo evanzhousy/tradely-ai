@@ -10,6 +10,7 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { packParts, twoRows } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -64,6 +65,17 @@ function RangeAxis({
 	const ticks = Array.from(
 		{ length: Math.round((max - min) / step) + 1 },
 		(_, i) => min + i * step,
+	);
+	// On a phone a long line of working takes a second row rather than shrinking.
+	let baseline = axis + 76 - 18;
+	const rows = lines.flatMap((line) =>
+		(width < 520
+			? twoRows(line.text, width - 28, line.strong ? 13 : 11)
+			: [line.text]
+		).map((text, row) => {
+			baseline += row === 0 ? 18 : 15;
+			return { line, text, row, y: baseline };
+		}),
 	);
 	return (
 		<g>
@@ -133,15 +145,15 @@ function RangeAxis({
 				</g>
 			))}
 			<circle cx={x(SPOT)} cy={axis} r={5} className="wt-long" />
-			{lines.map((line, i) => (
+			{rows.map(({ line, text, row, y }) => (
 				<Label
-					key={line.text}
+					key={`${line.text}-${row}`}
 					x={left - 10}
-					y={axis + 76 + i * 18}
+					y={y}
 					tone={line.strong ? undefined : "small"}
 					maxWidth={width - 28}
 				>
-					{line.text}
+					{text}
 				</Label>
 			))}
 		</g>
@@ -322,8 +334,8 @@ function StraddleView({
 		shown.show !== "sd"
 			? {
 					text: t([
-						`straddle: 100 call ${share(modelValue(CALL).price)} + 100 put ${share(modelValue(PUT).price)} = ${share(STRADDLE)}`,
-						`跨式：100 看涨 ${share(modelValue(CALL).price)} + 100 看跌 ${share(modelValue(PUT).price)} = ${share(STRADDLE)}`,
+						`straddle: call ${share(modelValue(CALL).price)} + put ${share(modelValue(PUT).price)} = ${share(STRADDLE)}`,
+						`跨式：看涨 ${share(modelValue(CALL).price)} + 看跌 ${share(modelValue(PUT).price)} = ${share(STRADDLE)}`,
 					]),
 					strong: shown.show === "straddle",
 				}
@@ -467,7 +479,16 @@ function Months({
 	const motion = useTeachMotion();
 	const left = 46;
 	const right = width - 12;
-	const top = 34;
+	// The title breaks at its " · " on a phone, and the chart starts under it.
+	const title = packParts(
+		t([
+			"12 past expiries · move ÷ implied 1 SD · illustrative",
+			"过去 12 个到期日 · 变动 ÷ 隐含 1 个标准差 · 示意",
+		]),
+		width - 16,
+		12,
+	);
+	const top = 34 + (title.length - 1) * 15;
 	const bottom = 170;
 	const y = (ratio: number) =>
 		bottom - (Math.min(ratio, 2.4) / 2.4) * (bottom - top);
@@ -475,12 +496,17 @@ function Months({
 	const barWidth = Math.min(slot * 0.6, 26);
 	return (
 		<g>
-			<Label x={8} y={16} tone="muted" maxWidth={width - 16}>
-				{t([
-					"12 past expiries · move ÷ implied 1 SD · illustrative",
-					"过去 12 个到期日 · 变动 ÷ 隐含 1 个标准差 · 示意",
-				])}
-			</Label>
+			{title.map((line, i) => (
+				<Label
+					key={line}
+					x={8}
+					y={16 + i * 15}
+					tone="muted"
+					maxWidth={width - 16}
+				>
+					{line}
+				</Label>
+			))}
 			<path d={`M${left} ${top}V${bottom}H${right}`} className="wt-axis" />
 			{/* The tick the line sits on names it, clear of the bars. */}
 			{[0, 1, 2].map((tick) => (

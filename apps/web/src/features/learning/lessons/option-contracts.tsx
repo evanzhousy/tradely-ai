@@ -23,6 +23,7 @@ import {
 } from "../walkthrough/instruments/contract-ticket";
 import { TIMELINE_HEIGHT, Timeline } from "../walkthrough/instruments/timeline";
 import { Appear, Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { packParts } from "../walkthrough/text-measure";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -79,6 +80,7 @@ function fieldsFor(contract: Contract, locale: Locale): TicketField[] {
 			id: "multiplier",
 			label: t(["Multiplier", "乘数"]),
 			value: t(["100 shares per contract", "每张 100 股"]),
+			short: t(["100 shares", "100 股"]),
 		},
 		{
 			id: "settlement",
@@ -236,6 +238,23 @@ function unitGrid(width: number) {
 	return { dot, step, block, gapX, perRow, rowHeight: block + 24 };
 }
 
+/** The title, broken at its " · " where the stage is too narrow for one line. */
+const unitTitle = (contracts: number, width: number, locale: Locale) =>
+	packParts(
+		pick(
+			[
+				`${contracts} × ${contractLabel(call100)[0]} · each dot is 1 share`,
+				`${contracts} 张 ${contractLabel(call100)[1]} · 每点 1 股`,
+			],
+			locale,
+		),
+		width - 16,
+		12,
+	);
+/** How far a two-line title pushes everything under it. */
+const unitShift = (width: number, locale: Locale) =>
+	(unitTitle(MAX_CONTRACTS, width, locale).length - 1) * 15;
+
 function UnitStage({
 	width,
 	state,
@@ -250,16 +269,16 @@ function UnitStage({
 	const { dot, step, block, gapX, perRow, rowHeight } = unitGrid(width);
 	const premium = ASK * 100 * state.contracts;
 	const shares = state.contracts * 100;
+	const shift = unitShift(width, locale);
 	return (
 		<g>
-			<Label x={8} y={18} tone="muted">
-				{t([
-					`${state.contracts} × ${contractLabel(call100)[0]} · each dot is 1 share`,
-					`${state.contracts} 张 ${contractLabel(call100)[1]} · 每点 1 股`,
-				])}
-			</Label>
+			{unitTitle(state.contracts, width, locale).map((line, i) => (
+				<Label key={line} x={8} y={18 + i * 15} tone="muted">
+					{line}
+				</Label>
+			))}
 			{/* The sums sit above the blocks, so adding contracts never pushes them down. */}
-			<text x={8} y={46}>
+			<text x={8} y={46 + shift}>
 				<tspan className="wt-muted">{t(["Premium ", "权利金 "])}</tspan>
 				<tspan>
 					{usd(ASK)} × 100 × {state.contracts} ={" "}
@@ -270,7 +289,7 @@ function UnitStage({
 			</text>
 			{state.step === "notional" ? (
 				<Appear>
-					<text x={8} y={70}>
+					<text x={8} y={70 + shift}>
 						<tspan className="wt-muted">{t(["Notional ", "名义价值 "])}</tspan>
 						<tspan>{count(shares)} × $100 = </tspan>
 						<tspan className="wt-strong">{usd(shares * 10_000, 0)}</tspan>
@@ -279,7 +298,7 @@ function UnitStage({
 			) : null}
 			{Array.from({ length: state.contracts }, (_, c) => {
 				const bx = 8 + (c % perRow) * (block + gapX);
-				const by = UNIT_TOP + Math.floor(c / perRow) * rowHeight;
+				const by = UNIT_TOP + shift + Math.floor(c / perRow) * rowHeight;
 				return (
 					<m.g
 						key={c}
@@ -317,9 +336,13 @@ function UnitStage({
 	);
 }
 
-function unitHeight(width: number) {
+function unitHeight(width: number, locale: Locale) {
 	const { perRow, rowHeight } = unitGrid(width);
-	return UNIT_TOP + Math.ceil(MAX_CONTRACTS / perRow) * rowHeight;
+	return (
+		UNIT_TOP +
+		unitShift(width, locale) +
+		Math.ceil(MAX_CONTRACTS / perRow) * rowHeight
+	);
 }
 
 function UnitView({
@@ -346,7 +369,7 @@ function UnitView({
 						"Contracts drawn as blocks of 100 shares, with the premium and notional they represent",
 						"以每块 100 股表示的合约，以及它们对应的权利金与名义价值",
 					])}
-					height={unitHeight}
+					height={(width) => unitHeight(width, locale)}
 				>
 					{(width) => <UnitStage width={width} state={shown} locale={locale} />}
 				</Stage>

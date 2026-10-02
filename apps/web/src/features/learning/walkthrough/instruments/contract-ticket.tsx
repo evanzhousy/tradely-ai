@@ -7,6 +7,8 @@ export type TicketField = {
 	id: string;
 	label: string;
 	value: string;
+	/** A shorter value for a card too narrow for the full one. */
+	short?: string;
 	/** The segment of the OCC-style symbol this field produces, if any. */
 	segment?: string;
 };
@@ -81,9 +83,14 @@ export function ContractTicket({
 				const y = TOP + i * ROW;
 				const visible = i < shown;
 				const active = field.id === focus;
-				// On a narrow card a long value condenses into the room its label leaves.
+				// On a narrow card a long value takes its short form, then condenses into the
+				// room its label leaves.
 				const room = cardWidth - 36 - textWidth(field.label, 12) - 12;
-				const natural = textWidth(field.value, 13);
+				const value =
+					field.short && textWidth(field.value, 13) > room
+						? field.short
+						: field.value;
+				const natural = textWidth(value, 13);
 				const fitted =
 					natural > room ? Math.max(room, natural * 0.72) : undefined;
 				return (
@@ -94,7 +101,7 @@ export function ContractTicket({
 						<AnimatePresence initial={false}>
 							{visible ? (
 								<m.text
-									key={`${field.id}-${field.value}`}
+									key={`${field.id}-${value}`}
 									x={left + cardWidth - 18}
 									y={y + 17}
 									textAnchor="end"
@@ -106,7 +113,7 @@ export function ContractTicket({
 									exit={{ opacity: 0 }}
 									transition={motion.fade}
 								>
-									{field.value}
+									{value}
 								</m.text>
 							) : (
 								<Label

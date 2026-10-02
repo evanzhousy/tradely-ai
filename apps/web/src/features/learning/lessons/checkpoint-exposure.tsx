@@ -10,16 +10,14 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 import {
-	CaseSheet,
 	CHECKPOINT_ALFA,
 	CHECKPOINT_DATE,
 	CHECKPOINT_DAY,
 	type SheetLine,
-	sheetHeight,
+	SheetStage,
 } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
@@ -101,27 +99,21 @@ function DeltaView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A position in the Oct 18 100 call and its delta in share-equivalents",
 						"10月18日 100 看涨的持仓及其以股等价计的 Delta",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Your calls · ${CHECKPOINT_DAY[0]}, 16 days to Oct 18`,
-								`你的看涨 · ${CHECKPOINT_DAY[1]}，距 10月18日 16 天`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Your calls · ${CHECKPOINT_DAY[0]}, 16 days to Oct 18`,
+						`你的看涨 · ${CHECKPOINT_DAY[1]}，距 10月18日 16 天`,
+					])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -199,27 +191,21 @@ function MoveView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"ALFA's one-standard-deviation move implied by its options, for the days left",
 						"由 ALFA 期权隐含的、剩余天数内的一个标准差变动",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Oct 18 options · ${CHECKPOINT_DAY[0]}`,
-								`10月18日 期权 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Oct 18 options · ${CHECKPOINT_DAY[0]}`,
+						`10月18日 期权 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -308,27 +294,21 @@ function RankView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"ALFA's past IV30 readings and today's, read as IV rank and IV percentile",
 						"ALFA 过去的 IV30 读数和今天的读数，分别读作 IV Rank 和 IV 百分位",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"ALFA IV30 · short practice sample",
-								"ALFA IV30 · 练习用的短样本",
-							])}
-							columns={twoColumns(t, 0.36)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						"ALFA IV30 · short practice sample",
+						"ALFA IV30 · 练习用的短样本",
+					])}
+					columns={twoColumns(t, 0.36)}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -387,7 +367,7 @@ function CloseView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const value = valueAt(shown.close);
-	const rows: TapeRow[] = [
+	const rows = (narrow: boolean): TapeRow[] => [
 		row(
 			"a",
 			t(["Contract", "合约"]),
@@ -395,8 +375,11 @@ function CloseView({
 		),
 		row(
 			"b",
-			t(["At 3:00 pm", "下午 3:00"]),
-			t(["ALFA $104.00, an hour left", "ALFA $104.00，还剩一小时"]),
+			t([narrow ? "3:00 pm" : "At 3:00 pm", "下午 3:00"]),
+			t([
+				narrow ? "ALFA $104.00, 1 hr left" : "ALFA $104.00, an hour left",
+				"ALFA $104.00，还剩一小时",
+			]),
 		),
 		row(
 			"c",
@@ -424,27 +407,18 @@ function CloseView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A same-day call an hour before its close, and what it's worth at the close",
 						"一张当天到期的看涨在收盘前一小时的情况，以及它在收盘时的价值",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Fri Oct 4 · expires today",
-								"10月4日 周五 · 今天到期",
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t(["Fri Oct 4 · expires today", "10月4日 周五 · 今天到期"])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

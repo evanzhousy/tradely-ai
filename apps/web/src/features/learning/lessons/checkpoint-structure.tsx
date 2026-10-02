@@ -12,16 +12,14 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 import {
-	CaseSheet,
 	CHECKPOINT_ALFA,
 	CHECKPOINT_DATE,
 	CHECKPOINT_DAY,
 	type SheetLine,
-	sheetHeight,
+	SheetStage,
 } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
@@ -128,27 +126,21 @@ function GexView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"One strike's gamma exposure, built from gamma, open interest, ALFA's price and a stated dealer assumption",
 						"由 Gamma、未平仓量、ALFA 价格和明确的做市商假设得出的单个行权价 Gamma 敞口",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`GEX inputs · ${CHECKPOINT_DAY[0]}`,
-								`GEX 输入 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`GEX inputs · ${CHECKPOINT_DAY[0]}`,
+						`GEX 输入 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={rows}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -221,11 +213,14 @@ function RegimeView({
 	const shown = phase === "explore" && explore ? explore : state;
 	const g = bookGamma(shown.spot);
 	const hedge = hedgeFor(shown.spot);
-	const rows: TapeRow[] = [
+	const rows = (narrow: boolean): TapeRow[] => [
 		row("a", t(["ALFA", "ALFA"]), usd(shown.spot)),
 		row(
 			"b",
-			t(["Zero-gamma level (modeled)", "零 Gamma 位置（模型）"]),
+			t([
+				narrow ? "Zero gamma (modeled)" : "Zero-gamma level (modeled)",
+				"零 Gamma 位置（模型）",
+			]),
 			usd(ZERO),
 		),
 		row(
@@ -274,27 +269,21 @@ function RegimeView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"ALFA against a modeled zero-gamma level, and the hedge a modeled dealer book would trade on a $1.50 rise",
 						"ALFA 相对模型零 Gamma 位置的位置，以及上涨 $1.50 时模型做市商账户的对冲交易",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Modeled dealer book · ${CHECKPOINT_DAY[0]}`,
-								`模型做市商账户 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Modeled dealer book · ${CHECKPOINT_DAY[0]}`,
+						`模型做市商账户 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -353,11 +342,14 @@ function DistanceView({
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	const rows: TapeRow[] = [
+	const rows = (narrow: boolean): TapeRow[] => [
 		row("a", t(["ALFA", "ALFA"]), usd(CHECKPOINT_ALFA)),
 		row(
 			"b",
-			t(["Call wall (largest call GEX)", "看涨墙（最大看涨 GEX）"]),
+			t([
+				narrow ? "Call wall (top call GEX)" : "Call wall (largest call GEX)",
+				"看涨墙（最大看涨 GEX）",
+			]),
 			usd(WALL * 100),
 		),
 		row("c", t(["ATR, 14 sessions", "ATR，14 个交易日"]), `$${ATR.toFixed(2)}`),
@@ -386,27 +378,21 @@ function DistanceView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"The distance from ALFA to its call wall, in dollars, percent and ATRs",
 						"ALFA 到看涨墙的距离，分别以美元、百分比和 ATR 衡量",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Oct 18 call wall · ${CHECKPOINT_DAY[0]}`,
-								`10月18日 看涨墙 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Oct 18 call wall · ${CHECKPOINT_DAY[0]}`,
+						`10月18日 看涨墙 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -490,7 +476,7 @@ function CharmView({
 	const iv = Math.round(
 		(modelVolatility("oct18", shown.strike) - (shown.ivDrop ? 0.05 : 0)) * 100,
 	);
-	const rows: TapeRow[] = [
+	const rows = (narrow: boolean): TapeRow[] => [
 		row(
 			"a",
 			t([
@@ -501,7 +487,10 @@ function CharmView({
 		),
 		row(
 			"b",
-			t(["Charm, per year of time left", "Charm，每一年剩余期限"]),
+			t([
+				narrow ? "Charm per year left" : "Charm, per year of time left",
+				"Charm，每一年剩余期限",
+			]),
 			signed(charm, 2),
 		),
 		row(
@@ -538,27 +527,21 @@ function CharmView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A call position's delta today, its charm, and its delta a week later with no trade",
 						"看涨持仓今天的 Delta、它的 Charm，以及一周后在没有交易时的 Delta",
 					])}
-					height={() => sheetHeight(4, 3)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Your calls · ${CHECKPOINT_DAY[0]}`,
-								`你的看涨 · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={twoColumns(t)}
-							rows={rows}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={3}
+					title={t([
+						`Your calls · ${CHECKPOINT_DAY[0]}`,
+						`你的看涨 · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={twoColumns(t)}
+					rows={(width) => rows(width < 520)}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

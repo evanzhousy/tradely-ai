@@ -74,7 +74,7 @@ function RatioRows({
 							"周一成交量 ÷ 典型日成交量",
 						])
 					: t([
-							"Monday volume ÷ open interest at Friday's close",
+							"Monday volume ÷ Friday's open interest",
 							"周一成交量 ÷ 周五收盘未平仓量",
 						])}
 			</Label>

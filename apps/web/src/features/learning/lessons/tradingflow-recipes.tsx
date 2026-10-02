@@ -672,10 +672,7 @@ function ForkStage({
 					"Official · maintained by TradingFlow",
 					"官方 · 由 TradingFlow 维护",
 				]}
-				spotlight={[
-					"Spotlight: the day's headline name",
-					"焦点：当天的头条标的",
-				]}
+				spotlight={["Spotlight: the headline name", "焦点：当天的头条标的"]}
 				focus={!youSeeCopy}
 				locale={locale}
 			/>

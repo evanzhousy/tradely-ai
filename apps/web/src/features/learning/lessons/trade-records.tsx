@@ -424,11 +424,25 @@ function ReplayView({
 									"Messages received · Oct 18 105 call",
 									"收到的消息 · 10月18日 105 看涨",
 								])}
+								// A phone sizes each column to its longest entry, "10:12:05.1" and "correction".
 								columns={[
-									{ label: t(["Received", "接收时间"]), share: 0.34 },
-									{ label: t(["Type", "类型"]), share: 0.28 },
-									{ label: t(["Trade", "成交"]), share: 0.16 },
-									{ label: t(["Price", "价格"]), share: 0.22, align: "end" },
+									{
+										label: t(["Received", "接收时间"]),
+										share: width < 520 ? 0.345 : 0.34,
+									},
+									{
+										label: t(["Type", "类型"]),
+										share: width < 520 ? 0.345 : 0.28,
+									},
+									{
+										label: t(["Trade", "成交"]),
+										share: width < 520 ? 0.12 : 0.16,
+									},
+									{
+										label: t(["Price", "价格"]),
+										share: width < 520 ? 0.19 : 0.22,
+										align: "end",
+									},
 								]}
 								rows={messageRows}
 								maxRows={6}

@@ -266,20 +266,25 @@ function Balance({
 		},
 	];
 	const rowHeight = narrow ? 50 : 40;
+	const [what, how] = [
+		t(["Oct 18 100 call and put", "10月18日 100 看涨与看跌"]),
+		t([`model mids · ALFA $${spot}`, `模型中间价 · ALFA $${spot}`]),
+	];
+	// On a phone the title takes two lines and the bars start under the second.
+	const top = narrow ? 45 : 30;
 	return (
 		<g>
-			<Label x={14} y={16} tone="muted">
-				{t([
-					`Oct 18 100 call and put · model mids · ALFA $${spot}`,
-					`10月18日 100 看涨与看跌 · 模型中间价 · ALFA $${spot}`,
-				])}
-			</Label>
+			{(narrow ? [what, how] : [`${what} · ${how}`]).map((line, i) => (
+				<Label key={line} x={14} y={16 + i * 15} tone="muted">
+					{line}
+				</Label>
+			))}
 			<path
-				d={`M${zero} 30V${30 + rows.length * rowHeight}`}
+				d={`M${zero} ${top}V${top + rows.length * rowHeight}`}
 				className="wt-axis"
 			/>
 			{rows.map((row, i) => {
-				const y = 34 + i * rowHeight + (narrow ? 18 : 0);
+				const y = top + 4 + i * rowHeight + (narrow ? 18 : 0);
 				const end = zero + row.value * scale;
 				const x = Math.min(zero, end);
 				const barWidth = Math.abs(end - zero);
@@ -481,29 +486,42 @@ function PrintsView({
 			muted: shown.step >= 1,
 		},
 	];
+	// The working in two parts: one line on a wide stage, two on a phone.
 	const check =
 		shown.step === 0
 			? {
 					gap: MORNING.call - MORNING.put - (MORNING.spot - STRIKE),
-					parts: t([
-						`call − put = ${share(MORNING.call - MORNING.put)} · ALFA − $100 = ${share(MORNING.spot - STRIKE)}`,
-						`看涨 − 看跌 = ${share(MORNING.call - MORNING.put)} · ALFA − $100 = ${share(MORNING.spot - STRIKE)}`,
-					]),
+					parts: [
+						t([
+							`call − put = ${share(MORNING.call - MORNING.put)}`,
+							`看涨 − 看跌 = ${share(MORNING.call - MORNING.put)}`,
+						]),
+						`ALFA − $100 = ${share(MORNING.spot - STRIKE)}`,
+					],
+					join: " · ",
 				}
 			: shown.step === 1
 				? {
 						gap: GAP,
-						parts: t([
-							`parity call = put ${share(AFTERNOON.put)} + ${share(AFTERNOON.spot - STRIKE)} = ${share(AFTERNOON_PARITY)} · print ${share(LATE.call)}`,
-							`平价看涨 = 看跌 ${share(AFTERNOON.put)} + ${share(AFTERNOON.spot - STRIKE)} = ${share(AFTERNOON_PARITY)} · 成交 ${share(LATE.call)}`,
-						]),
+						parts: [
+							t([
+								`parity call = put ${share(AFTERNOON.put)} + ${share(AFTERNOON.spot - STRIKE)} = ${share(AFTERNOON_PARITY)}`,
+								`平价看涨 = 看跌 ${share(AFTERNOON.put)} + ${share(AFTERNOON.spot - STRIKE)} = ${share(AFTERNOON_PARITY)}`,
+							]),
+							t([`print ${share(LATE.call)}`, `成交 ${share(LATE.call)}`]),
+						],
+						join: " · ",
 					}
 				: {
 						gap: LATE.call - (LATE_PUT + (LATE.spot - STRIKE)),
-						parts: t([
-							`at 13:58 parity call = put ${share(LATE_PUT)} + ${share(LATE.spot - STRIKE)} = ${share(LATE_PUT + LATE.spot - STRIKE)}`,
-							`13:58 时平价看涨 = 看跌 ${share(LATE_PUT)} + ${share(LATE.spot - STRIKE)} = ${share(LATE_PUT + LATE.spot - STRIKE)}`,
-						]),
+						parts: [
+							t(["at 13:58", "13:58 时"]),
+							t([
+								`parity call = put ${share(LATE_PUT)} + ${share(LATE.spot - STRIKE)} = ${share(LATE_PUT + LATE.spot - STRIKE)}`,
+								`平价看涨 = 看跌 ${share(LATE_PUT)} + ${share(LATE.spot - STRIKE)} = ${share(LATE_PUT + LATE.spot - STRIKE)}`,
+							]),
+						],
+						join: t([" ", ""]),
 					};
 	const off = Math.abs(check.gap) >= 0.1;
 	return (
@@ -522,18 +540,27 @@ function PrintsView({
 								x={8}
 								y={4}
 								width={width - 16}
-								title={t([
-									"Time and sales · ALFA Oct 18 options",
-									"逐笔成交 · ALFA 10月18日 期权",
-								])}
+								// Every print here is at the 100 strike: on a phone the title names it once
+								// and each row keeps only call or put.
+								title={
+									width < 520
+										? t([
+												"Time and sales · ALFA Oct 18 100",
+												"逐笔成交 · ALFA 10月18日 100",
+											])
+										: t([
+												"Time and sales · ALFA Oct 18 options",
+												"逐笔成交 · ALFA 10月18日 期权",
+											])
+								}
 								columns={
 									width < 520
 										? [
-												{ label: t(["Time", "时间"]), share: 0.27 },
-												{ label: t(["Contract", "合约"]), share: 0.27 },
+												{ label: t(["Time", "时间"]), share: 0.34 },
+												{ label: t(["Type", "类型"]), share: 0.16 },
 												{
 													label: t(["Price", "价格"]),
-													share: 0.18,
+													share: 0.22,
 													align: "end",
 												},
 												{
@@ -571,7 +598,8 @@ function PrintsView({
 													row.cells[4]
 														? `${row.cells[0]} ${t(["late", "延迟"])}`
 														: row.cells[0],
-													...row.cells.slice(1, 4),
+													row.cells[1].replace(/^100 /, ""),
+													...row.cells.slice(2, 4),
 												],
 											}))
 										: rows
@@ -579,14 +607,19 @@ function PrintsView({
 								maxRows={4}
 								empty={t(["No prints", "没有成交"])}
 							/>
-							<Label
-								x={14}
-								y={tapeHeight(4) + 26}
-								maxWidth={width - 28}
-								tone="small"
-							>
-								{check.parts}
-							</Label>
+							{(width < 520 ? check.parts : [check.parts.join(check.join)]).map(
+								(part, i) => (
+									<Label
+										key={part}
+										x={14}
+										y={tapeHeight(4) + 26 + i * 15}
+										maxWidth={width - 28}
+										tone="small"
+									>
+										{part}
+									</Label>
+								),
+							)}
 							<Label
 								x={14}
 								y={tapeHeight(4) + (width < 520 ? 70 : 52)}

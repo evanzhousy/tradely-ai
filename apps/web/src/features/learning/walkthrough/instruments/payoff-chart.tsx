@@ -11,7 +11,7 @@ import {
 	textBox,
 } from "../label-place";
 import { Appear, Label, useTeachMotion } from "../stage";
-import { textWidth } from "../text-measure";
+import { packParts, textWidth } from "../text-measure";
 
 type LabelSpot = {
 	x: number;
@@ -148,13 +148,8 @@ export function PayoffChart({
 	);
 	// While dragging, everything tracks the pointer instead of taking the teaching pace.
 	const move = dragging ? motion.follow : motion.move;
-	// A title too wide for the stage breaks at its " · " separators, one part per line.
-	const titleLines =
-		title && textWidth(title, 12) > width - 16
-			? title.split(" · ")
-			: title
-				? [title]
-				: [];
+	// A title too wide for the stage breaks at its " · " separators.
+	const titleLines = title ? packParts(title, width - 16, 12) : [];
 	const top = PAD_TOP + Math.max(titleLines.length - 1, 0) * 14;
 	const bottom = height - PAD_BOTTOM;
 	const x = (value: number) =>

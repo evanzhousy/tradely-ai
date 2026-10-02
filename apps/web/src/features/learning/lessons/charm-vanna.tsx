@@ -18,7 +18,7 @@ import {
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
-import { textWidth, wrapText } from "../walkthrough/text-measure";
+import { packParts, textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -233,7 +233,19 @@ const unitRows: readonly { label: Copy; value: string; note: Copy }[] = [
 ];
 
 function unitLayout(width: number, locale: Locale) {
-	let y = 30;
+	// The title breaks at its " · " on a phone; the cards start under its last line.
+	const title = packParts(
+		pick(
+			[
+				`Oct 18 ${STRIKE} call · one sensitivity, several quotes`,
+				`10月18日 ${STRIKE} 看涨 · 同一敏感度，多种报法`,
+			],
+			locale,
+		),
+		width - 16,
+		12,
+	);
+	let y = 30 + (title.length - 1) * 15;
 	const rows = unitRows.map((row) => {
 		const note = wrapText(pick(row.note, locale), width - 40, 11);
 		const height = 46 + note.length * 14;
@@ -241,7 +253,7 @@ function unitLayout(width: number, locale: Locale) {
 		y += height + 6;
 		return block;
 	});
-	return { rows, height: y };
+	return { title, rows, height: y };
 }
 
 function UnitTable({
@@ -261,12 +273,11 @@ function UnitTable({
 	const layout = unitLayout(width, locale);
 	return (
 		<g>
-			<Label x={8} y={16} tone="muted">
-				{t([
-					`Oct 18 ${STRIKE} call · one sensitivity, several quotes`,
-					`10月18日 ${STRIKE} 看涨 · 同一敏感度，多种报法`,
-				])}
-			</Label>
+			{layout.title.map((line, i) => (
+				<Label key={line} x={8} y={16 + i * 15} tone="muted">
+					{line}
+				</Label>
+			))}
 			{layout.rows.map((block, i) => (
 				<m.g
 					key={pick(block.row.label, "en")}

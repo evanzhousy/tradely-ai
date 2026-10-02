@@ -20,12 +20,11 @@ import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 import {
-	CaseSheet,
 	CHECKPOINT_ALFA,
 	CHECKPOINT_DATE,
 	CHECKPOINT_DAY,
 	type SheetLine,
-	sheetHeight,
+	SheetStage,
 } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
@@ -151,31 +150,27 @@ function PrintsView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Four prints in the Oct 18 105 call on the checkpoint day, against the quote they matched",
 						"检查点当天 10月18日 105 看涨的四笔成交，对照它们匹配的报价",
 					])}
-					height={() => sheetHeight(4, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								`Oct 18 105 call · quote ${usd(QUOTE.bid)} / ${usd(QUOTE.ask)} · ${CHECKPOINT_DAY[0]}`,
-								`10月18日 105 看涨 · 报价 ${usd(QUOTE.bid)} / ${usd(QUOTE.ask)} · ${CHECKPOINT_DAY[1]}`,
-							])}
-							columns={tapeColumns(
-								t,
-								width < 520,
-								labels ? ["Flow label", "成交流标签"] : ["Side", "位置"],
-							)}
-							rows={rows(width < 520)}
-							maxRows={4}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						`Oct 18 105 call · quote ${usd(QUOTE.bid)} / ${usd(QUOTE.ask)} · ${CHECKPOINT_DAY[0]}`,
+						`10月18日 105 看涨 · 报价 ${usd(QUOTE.bid)} / ${usd(QUOTE.ask)} · ${CHECKPOINT_DAY[1]}`,
+					])}
+					columns={(width) =>
+						tapeColumns(
+							t,
+							width < 520,
+							labels ? ["Flow label", "成交流标签"] : ["Side", "位置"],
+						)
+					}
+					rows={(width) => rows(width < 520)}
+					maxRows={4}
+					lines={lines}
+				/>
 			}
 			result={[
 				labels
@@ -383,12 +378,13 @@ function BookView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const traded = shown.event === "trade";
-	const rows: TapeRow[] = [
+	// A phone names the records in fewer words: the times beside them carry the rest.
+	const rows = (narrow: boolean): TapeRow[] => [
 		{
 			key: "a",
 			cells: [
 				"10:44:00",
-				t(["offer size at the ask", "卖价挂单数量"]),
+				t([narrow ? "offer at ask" : "offer size at the ask", "卖价挂单数量"]),
 				count(BEFORE),
 			],
 		},
@@ -396,7 +392,7 @@ function BookView({
 			key: "b",
 			cells: [
 				"10:44:09",
-				t(["offer size at the ask", "卖价挂单数量"]),
+				t([narrow ? "offer at ask" : "offer size at the ask", "卖价挂单数量"]),
 				count(AFTER),
 			],
 		},
@@ -404,7 +400,11 @@ function BookView({
 			key: "c",
 			cells: [
 				"10:44:09",
-				t(["prints since 10:44:00", "10:44:00 以来的成交"]),
+				t(
+					narrow
+						? ["prints in 9s", "9 秒内的成交"]
+						: ["prints since 10:44:00", "10:44:00 以来的成交"],
+				),
 				traded ? `${BEFORE - AFTER} @ ${usd(QUOTE.ask)}` : t(["none", "无"]),
 			],
 			muted: shown.stage === 0,
@@ -434,38 +434,32 @@ function BookView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"The Oct 18 105 call's offer size before and after, and the prints in between",
 						"10月18日 105 看涨卖价挂单数量的前后变化，以及其间的成交",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Book and tape · Oct 18 105 call",
-								"订单簿与成交 · 10月18日 105 看涨",
-							])}
-							columns={[
-								{ label: t(["Time", "时间"]), share: width < 520 ? 0.26 : 0.2 },
-								{
-									label: t(["Record", "记录"]),
-									share: width < 520 ? 0.46 : 0.5,
-								},
-								{
-									label: t(["Value", "数值"]),
-									share: width < 520 ? 0.28 : 0.3,
-									align: "end",
-								},
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						"Book and tape · Oct 18 105 call",
+						"订单簿与成交 · 10月18日 105 看涨",
+					])}
+					columns={(width) => [
+						{ label: t(["Time", "时间"]), share: width < 520 ? 0.27 : 0.2 },
+						{
+							label: t(["Record", "记录"]),
+							share: width < 520 ? 0.39 : 0.5,
+						},
+						{
+							label: t(["Value", "数值"]),
+							share: width < 520 ? 0.34 : 0.3,
+							align: "end",
+						},
+					]}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

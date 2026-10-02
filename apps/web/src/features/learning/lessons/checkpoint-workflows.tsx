@@ -2,10 +2,9 @@ import { type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
-import { CaseSheet, type SheetLine, sheetHeight } from "./checkpoint-kit";
+import { type SheetLine, SheetStage } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -87,30 +86,24 @@ function SessionView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"The time you open a recipe report and the latest completed session it opens on",
 						"打开 Recipe 报告的时间，以及它打开的最近一个完整交易时段",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Daily Market Recap · opening it",
-								"Daily Market Recap · 打开时",
-							])}
-							columns={[
-								{ label: t(["Item", "项目"]), share: 0.55 },
-								{ label: t(["Value", "数值"]), share: 0.45, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						"Daily Market Recap · opening it",
+						"Daily Market Recap · 打开时",
+					])}
+					columns={[
+						{ label: t(["Item", "项目"]), share: 0.55 },
+						{ label: t(["Value", "数值"]), share: 0.45, align: "end" },
+					]}
+					rows={rows}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -226,11 +219,30 @@ function ScreenView({
 	const shown = phase === "explore" && explore ? explore : state;
 	const passed = passing(shown);
 	const top = passed[0];
-	const rows: TapeRow[] = SCREEN.map((row) => ({
-		key: row.id,
-		cells: [t(row.label), count(row.volume), count(row.oi), String(row.dte)],
-		muted: shown.stage >= 1 && miss(row, shown) !== null,
-	}));
+	// A phone writes a contract the way a screen's symbol column does: "ALFA Oct 18 110C".
+	const name = (label: Copy, narrow: boolean): string =>
+		narrow
+			? t([
+					label[0]
+						.replace(/ (\d+) call$/, " $1C")
+						.replace(/ (\d+) put$/, " $1P"),
+					label[1]
+						.replace(/(\d+)月(\d+)日/, "$1/$2")
+						.replace(/ (\d+) 看涨$/, " $1C")
+						.replace(/ (\d+) 看跌$/, " $1P"),
+				])
+			: t(label);
+	const rows = (narrow: boolean): TapeRow[] =>
+		SCREEN.map((row) => ({
+			key: row.id,
+			cells: [
+				name(row.label, narrow),
+				count(row.volume),
+				count(row.oi),
+				String(row.dte),
+			],
+			muted: shown.stage >= 1 && miss(row, shown) !== null,
+		}));
 	const out = SCREEN.flatMap((row) => {
 		const reason = miss(row, shown);
 		return reason ? [`${row.symbol} ${t(reason)}`] : [];
@@ -264,32 +276,33 @@ function ScreenView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Six contracts from Wednesday's session checked against the screen's ratio, volume, open-interest and expiry rules",
 						"用筛选的比率、成交量、未平仓量和到期规则检查周三交易时段的六份合约",
 					])}
-					height={() => sheetHeight(6, 4)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Unusual Options Activity · Wed Oct 2",
-								"异常期权活动 · 10月2日 周三",
-							])}
-							columns={[
-								{ label: t(["Contract", "合约"]), share: 0.47 },
-								{ label: t(["Vol", "成交量"]), share: 0.19, align: "end" },
-								{ label: "OI", share: 0.19, align: "end" },
-								{ label: "DTE", share: 0.15, align: "end" },
-							]}
-							rows={rows}
-							maxRows={6}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={4}
+					title={t([
+						"Unusual Options Activity · Wed Oct 2",
+						"异常期权活动 · 10月2日 周三",
+					])}
+					columns={(width) => [
+						{
+							label: t(["Contract", "合约"]),
+							share: width < 520 ? 0.53 : 0.47,
+						},
+						{
+							label: t(["Vol", "成交量"]),
+							share: 0.19,
+							align: "end",
+						},
+						{ label: "OI", share: 0.19, align: "end" },
+						{ label: "DTE", share: width < 520 ? 0.09 : 0.15, align: "end" },
+					]}
+					rows={(width) => rows(width < 520)}
+					maxRows={6}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -371,13 +384,16 @@ function AiView({
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	const rows: TapeRow[] = [
+	// A phone states each claim in fewer words, so the check beside it keeps its size.
+	const rows = (narrow: boolean): TapeRow[] => [
 		{
 			key: "a",
 			cells: [
 				t([
-					`Put traded ${ratio(PUT).toFixed(1)}× its OI`,
-					`看跌成交为 OI 的 ${ratio(PUT).toFixed(1)} 倍`,
+					`${narrow ? "Put:" : "Put traded"} ${ratio(PUT).toFixed(1)}× its OI`,
+					narrow
+						? `看跌成交 ${ratio(PUT).toFixed(1)}× OI`
+						: `看跌成交为 OI 的 ${ratio(PUT).toFixed(1)} 倍`,
 				]),
 				shown.stage >= 1 ? `${count(PUT.volume)} ÷ ${PUT.oi} ✓` : "?",
 			],
@@ -385,8 +401,13 @@ function AiView({
 		{
 			key: "b",
 			cells: [
-				t(["Funds hedging earnings", "基金在为财报对冲"]),
-				shown.stage >= 2 ? t(["not in the data", "数据里没有"]) : "?",
+				t([
+					narrow ? "Funds hedge earnings" : "Funds hedging earnings",
+					"基金在为财报对冲",
+				]),
+				shown.stage >= 2
+					? t([narrow ? "not in data" : "not in the data", "数据里没有"])
+					: "?",
 			],
 			muted: shown.stage >= 2,
 		},
@@ -415,30 +436,24 @@ function AiView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"A TradingFlow AI reply about CRUX split into statements, each checked against the screen, and the credits the conversation used",
 						"一条关于 CRUX 的 TradingFlow AI 回复被拆成几句陈述，逐一对照筛选核对，以及这段对话消耗的积分",
 					])}
-					height={() => sheetHeight(3, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"TradingFlow AI reply · Wed Oct 2",
-								"TradingFlow AI 回复 · 10月2日 周三",
-							])}
-							columns={[
-								{ label: t(["Statement", "陈述"]), share: 0.58 },
-								{ label: t(["Check", "核对"]), share: 0.42, align: "end" },
-							]}
-							rows={rows}
-							maxRows={3}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						"TradingFlow AI reply · Wed Oct 2",
+						"TradingFlow AI 回复 · 10月2日 周三",
+					])}
+					columns={[
+						{ label: t(["Statement", "陈述"]), share: 0.58 },
+						{ label: t(["Check", "核对"]), share: 0.42, align: "end" },
+					]}
+					rows={(width) => rows(width < 520)}
+					maxRows={3}
+					lines={lines}
+				/>
 			}
 			result={[
 				{
@@ -560,32 +575,26 @@ function FormulaView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
+				<SheetStage
 					label={t([
 						"Five names' premium and trade counts on Wednesday, with a per-trade column that leaves names under a trade floor blank",
 						"五个标的周三的权利金和交易笔数，以及一个对低于笔数门槛的标的留空的每笔列",
 					])}
-					height={() => sheetHeight(5, 2)}
-				>
-					{(width) => (
-						<CaseSheet
-							width={width}
-							title={t([
-								"Rank Symbols · your view · Wed Oct 2",
-								"Rank Symbols · 你的视图 · 10月2日 周三",
-							])}
-							columns={[
-								{ label: t(["Name", "标的"]), share: 0.2 },
-								{ label: t(["Premium", "权利金"]), share: 0.28, align: "end" },
-								{ label: t(["Trades", "笔数"]), share: 0.22, align: "end" },
-								{ label: t(["Per trade", "每笔"]), share: 0.3, align: "end" },
-							]}
-							rows={rows}
-							maxRows={5}
-							lines={lines}
-						/>
-					)}
-				</Stage>
+					lineSlots={2}
+					title={t([
+						"Rank Symbols · your view · Wed Oct 2",
+						"Rank Symbols · 你的视图 · 10月2日 周三",
+					])}
+					columns={[
+						{ label: t(["Name", "标的"]), share: 0.2 },
+						{ label: t(["Premium", "权利金"]), share: 0.28, align: "end" },
+						{ label: t(["Trades", "笔数"]), share: 0.22, align: "end" },
+						{ label: t(["Per trade", "每笔"]), share: 0.3, align: "end" },
+					]}
+					rows={rows}
+					maxRows={5}
+					lines={lines}
+				/>
 			}
 			result={[
 				{

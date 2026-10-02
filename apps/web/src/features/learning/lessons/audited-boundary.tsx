@@ -73,6 +73,7 @@ function questionFields(state: QuestionState, locale: Locale): TicketField[] {
 			id: "interval",
 			label: t(["Interval", "区间"]),
 			value: t(["Mon Sep 16, full session", "9月16日 周一，全天"]),
+			short: t(["Sep 16, full session", "9月16日 周一，全天"]),
 		},
 		{
 			id: "evidence",

@@ -49,3 +49,28 @@ export function wrapText(text: string, maxWidth: number, size: number) {
 	if (last.trim()) lines.push(last.trimEnd());
 	return lines.length ? lines : [""];
 }
+
+/**
+ * Lines for text made of " · " parts: as many whole parts on each line as fit. A part
+ * wider than the room keeps a line to itself.
+ */
+export function packParts(text: string, maxWidth: number, size: number) {
+	const lines: string[] = [];
+	for (const part of text.split(" · ")) {
+		const last = lines.at(-1);
+		if (last !== undefined && textWidth(`${last} · ${part}`, size) <= maxWidth)
+			lines[lines.length - 1] = `${last} · ${part}`;
+		else lines.push(part);
+	}
+	return lines;
+}
+
+/**
+ * At most two rows: the first line `wrapText` would give, then the rest of the text, which
+ * condenses to fit if it still runs long.
+ */
+export function twoRows(text: string, maxWidth: number, size: number) {
+	const [first] = wrapText(text, maxWidth, size);
+	const rest = text.slice(first.length).trimStart();
+	return rest ? [first, rest] : [first];
+}
