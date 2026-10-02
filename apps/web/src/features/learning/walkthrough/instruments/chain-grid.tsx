@@ -1,6 +1,7 @@
 import * as m from "motion/react-m";
 import { usd } from "@/content/world";
 import { Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export type ChainRow = {
 	strike: number;
@@ -45,6 +46,12 @@ export function ChainGrid({
 	const callX = 8;
 	const putX = center + strikeWidth / 2 + 6;
 	const rowY = (i: number) => HEAD + i * ROW;
+	// A narrow cell has room for "10.70/11.15" but not "$10.70 / $11.15"; the header says dollars.
+	const narrow = cellWidth < 120;
+	const quote = (side: { bid: number; ask: number }) =>
+		narrow
+			? `${(side.bid / 100).toFixed(2)}/${(side.ask / 100).toFixed(2)}`
+			: `${usd(side.bid)} / ${usd(side.ask)}`;
 	const selectedIndex = selected
 		? rows.findIndex((row) => row.strike === selected.strike)
 		: -1;
@@ -74,15 +81,26 @@ export function ChainGrid({
 					</g>
 				);
 			})}
-			<Label x={callX + cellWidth / 2} y={56} anchor="middle" tone="muted">
-				{labels.calls}
-			</Label>
-			<Label x={center} y={56} anchor="middle" tone="muted">
-				{labels.strike}
-			</Label>
-			<Label x={putX + cellWidth / 2} y={56} anchor="middle" tone="muted">
-				{labels.puts}
-			</Label>
+			{/* A heading wider than its column breaks at its separator: "Calls" over "bid / ask". */}
+			{[
+				{ x: callX + cellWidth / 2, text: labels.calls },
+				{ x: center, text: labels.strike },
+				{ x: putX + cellWidth / 2, text: labels.puts },
+			].flatMap(({ x, text }) => {
+				const lines =
+					textWidth(text, 12) > cellWidth - 4 ? text.split(" · ") : [text];
+				return lines.map((line, i) => (
+					<Label
+						key={`${text}-${line}`}
+						x={x}
+						y={56 - (lines.length - 1) * 13 + i * 13}
+						anchor="middle"
+						tone="muted"
+					>
+						{line}
+					</Label>
+				));
+			})}
 			{rows.map((row, i) => {
 				const y = rowY(i);
 				const callIn = row.strike < spot;
@@ -112,7 +130,7 @@ export function ChainGrid({
 							y={y + ROW / 2 + 4.5}
 							anchor="middle"
 						>
-							{usd(row.call.bid)} / {usd(row.call.ask)}
+							{quote(row.call)}
 						</Label>
 						<Label
 							x={center}
@@ -127,7 +145,7 @@ export function ChainGrid({
 							y={y + ROW / 2 + 4.5}
 							anchor="middle"
 						>
-							{usd(row.put.bid)} / {usd(row.put.ask)}
+							{quote(row.put)}
 						</Label>
 					</g>
 				);

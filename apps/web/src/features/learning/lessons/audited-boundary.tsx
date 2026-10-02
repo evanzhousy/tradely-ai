@@ -155,7 +155,11 @@ function QuestionView({
 						"A research question built field by field until someone else could check it",
 						"逐项补全研究问题，直到别人可以核查",
 					])}
-					height={ticketHeight(fields.length, false)}
+					// Room for a forecast's three extra fields, so switching kinds doesn't resize.
+					height={ticketHeight(
+						questionFields({ ...shown, forecast: true }, locale).length,
+						false,
+					)}
 				>
 					{(width) => (
 						<ContractTicket

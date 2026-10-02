@@ -55,8 +55,7 @@ function SliceStage({
 	const narrow = width < 520;
 	const perToken = state.shares > 100 ? 10 : 1;
 	const tokens = Math.ceil(state.shares / perToken);
-	const size = narrow ? 13 : 15;
-	const gap = 4;
+	const { perRow, size, gap, gridHeight } = sliceGrid(width);
 	const gridLeft = narrow ? 14 : Math.round(width * 0.46);
 	const gridTop = narrow ? 118 : 30;
 	const value = state.shares * state.price;
@@ -64,9 +63,9 @@ function SliceStage({
 		state.before === undefined
 			? 0
 			: state.shares * (state.price - state.before);
-	const trackTop = narrow
-		? gridTop + Math.ceil(tokens / 10) * (size + gap) + 96
-		: 250;
+	// The grid keeps room for its largest count, so what sits below it never moves.
+	const below = gridTop + gridHeight;
+	const trackTop = narrow ? below + 96 : 250;
 	const x = (price: number) =>
 		14 + ((price - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * (width - 28);
 	return (
@@ -101,8 +100,8 @@ function SliceStage({
 			{Array.from({ length: tokens }, (_, i) => (
 				<m.rect
 					key={`${perToken}-${i}`}
-					x={gridLeft + (i % 10) * (size + gap)}
-					y={gridTop + Math.floor(i / 10) * (size + gap)}
+					x={gridLeft + (i % perRow) * (size + gap)}
+					y={gridTop + Math.floor(i / perRow) * (size + gap)}
 					width={size}
 					height={size}
 					rx={3}
@@ -112,23 +111,13 @@ function SliceStage({
 					transition={motion.after(Math.min(i, 40) * 0.01)}
 				/>
 			))}
-			<Label
-				x={14}
-				y={narrow ? gridTop + Math.ceil(tokens / 10) * (size + gap) + 18 : 128}
-				tone="muted"
-			>
+			<Label x={14} y={narrow ? below + 18 : 128} tone="muted">
 				{t(["Your position", "你的持仓"])}
 			</Label>
-			<Label
-				x={14}
-				y={narrow ? gridTop + Math.ceil(tokens / 10) * (size + gap) + 38 : 150}
-			>
+			<Label x={14} y={narrow ? below + 38 : 150}>
 				{count(state.shares)} × {usd(state.price)}
 			</Label>
-			<text
-				x={14}
-				y={narrow ? gridTop + Math.ceil(tokens / 10) * (size + gap) + 62 : 176}
-			>
+			<text x={14} y={narrow ? below + 62 : 176}>
 				<tspan className="wt-strong">= {usd(value)}</tspan>
 				{change !== 0 ? (
 					<tspan dx="8" className={change > 0 ? "wt-gain" : "wt-loss"}>
@@ -169,10 +158,28 @@ function SliceStage({
 	);
 }
 
-function sliceHeight(width: number, shares: number) {
+/** At most 100 squares: up to 100 shares one square each, then one per 10 shares. */
+const SLICE_TOKENS = 100;
+
+/**
+ * The share grid: ten squares a row beside the text on a wide stage, twenty smaller ones
+ * on a narrow one, so a hundred squares stay short enough to keep the price track in view.
+ */
+function sliceGrid(width: number) {
 	const narrow = width < 520;
-	const tokens = Math.ceil(shares / (shares > 100 ? 10 : 1));
-	return narrow ? 118 + Math.ceil(tokens / 10) * 17 + 126 : 280;
+	const perRow = narrow ? 20 : 10;
+	const gap = narrow ? 3 : 4;
+	const size = narrow ? Math.floor((width - 28) / perRow) - gap : 15;
+	return {
+		perRow,
+		size,
+		gap,
+		gridHeight: Math.ceil(SLICE_TOKENS / perRow) * (size + gap),
+	};
+}
+
+function sliceHeight(width: number) {
+	return width < 520 ? 118 + sliceGrid(width).gridHeight + 126 : 280;
 }
 
 function SliceView({
@@ -226,7 +233,7 @@ function SliceView({
 						"ALFA's price, the company's value, and your shares with their total value",
 						"ALFA 的价格、公司价值，以及你的股票与其总价值",
 					])}
-					height={(width) => sliceHeight(width, Math.max(shown.shares, 100))}
+					height={sliceHeight}
 				>
 					{(width) => (
 						<SliceStage width={width} state={shown} locale={locale} />
@@ -508,7 +515,6 @@ function KindStage({
 	locale: Locale;
 }) {
 	const t = tr(locale);
-	const motion = useTeachMotion();
 	const narrow = width < 520;
 	const cardWidth = narrow ? width - 16 : (width - 32) / 3;
 	const cardHeight = narrow ? 86 : 190;
@@ -520,12 +526,8 @@ function KindStage({
 				const y = narrow ? 8 + i * (cardHeight + 10) : 8;
 				const active = id === focus;
 				return (
-					<m.g
-						key={id}
-						initial={false}
-						animate={{ opacity: active ? 1 : 0.55 }}
-						transition={motion.fade}
-					>
+					// The other instruments stay readable for comparison.
+					<g key={id} className={!active ? "wt-quiet" : undefined}>
 						<rect
 							x={x}
 							y={y}
@@ -566,7 +568,7 @@ function KindStage({
 								</Label>
 							</>
 						)}
-					</m.g>
+					</g>
 				);
 			})}
 		</g>

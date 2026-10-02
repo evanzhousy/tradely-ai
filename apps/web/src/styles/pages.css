@@ -656,15 +656,25 @@
 	border-radius: 1.25rem;
 	background: var(--background);
 }
+/* Each accent reads at 4.5:1 or better on the stage, so diagram text in it stays legible. */
 .visual-color-system,
 .lesson-infographic {
-	--diagram-reference: #2563eb;
-	--diagram-positive: #16a34a;
-	--diagram-negative: #dc2626;
-	--diagram-caution: #d97706;
+	--diagram-reference: #1d4ed8;
+	--diagram-positive: #147535;
+	--diagram-negative: #b91c1c;
+	--diagram-caution: #a34b07;
 	--diagram-model: #7c3aed;
-	--diagram-neutral: #64748b;
+	--diagram-neutral: #5b6779;
 	--diagram-accent: var(--diagram-reference);
+}
+.dark .visual-color-system,
+.dark .lesson-infographic {
+	--diagram-reference: #60a5fa;
+	--diagram-positive: #4ade80;
+	--diagram-negative: #f87171;
+	--diagram-caution: #fbbf24;
+	--diagram-model: #a78bfa;
+	--diagram-neutral: #94a3b8;
 }
 .visual-color-system[data-visual-palette="positive"],
 .lesson-infographic[data-diagram-palette="positive"] {
@@ -703,11 +713,11 @@
 }
 .visual-color-system,
 .lesson-infographic {
-	--diagram-gain: #15803d;
+	--diagram-gain: #147535;
 	--diagram-loss: #be123c;
 	--diagram-observed: #1d4ed8;
 	--diagram-estimated: #7c3aed;
-	--diagram-unknown: #b45309;
+	--diagram-unknown: #a34b07;
 }
 .dark .visual-color-system,
 .dark .lesson-infographic {

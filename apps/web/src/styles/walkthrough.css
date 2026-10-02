@@ -1,7 +1,7 @@
 /* Walkthrough player: predict, watch, explore. The stage and its result share the first screen. */
 .walkthrough {
 	--wt-long: #0f766e;
-	--wt-short: #c2410c;
+	--wt-short: #b23c0a;
 	/* Layout follows the walkthrough's own width, not the window's: the lesson column caps it. */
 	container: walkthrough / inline-size;
 	display: flex;
@@ -317,6 +317,29 @@
 	fill: var(--muted-foreground);
 	font-size: 11px;
 }
+/* Set aside but still read: shapes fade, text drops to the muted colour at full legibility
+   (about 5:1), instead of the whole group fading to 2:1. */
+.wt-svg .wt-quiet :is(rect, path, circle) {
+	fill-opacity: 0.45;
+	stroke-opacity: 0.45;
+}
+.wt-svg .wt-quiet text,
+.wt-svg .wt-quiet tspan {
+	fill: var(--muted-foreground);
+	font-weight: 400;
+}
+/* Colour changes ease; opacity and position belong to Motion and never take a CSS transition. */
+.wt-svg :is(rect, path, circle, text, tspan) {
+	transition:
+		fill 0.3s ease,
+		fill-opacity 0.3s ease,
+		stroke-opacity 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wt-svg :is(rect, path, circle, text, tspan) {
+		transition: none;
+	}
+}
 /* Part of a value not filled in yet: quiet, at the size it will take. */
 .wt-svg .wt-pending {
 	fill: var(--muted-foreground);
@@ -384,9 +407,10 @@
 .wt-hatch-bg {
 	fill: color-mix(in oklab, var(--diagram-unknown) 12%, transparent);
 }
+/* Light enough that text laid over an unknown stays readable; still reads as "unknown". */
 .wt-hatch-line {
-	stroke: var(--diagram-unknown);
-	stroke-width: 1.5;
+	stroke: color-mix(in oklab, var(--diagram-unknown) 55%, transparent);
+	stroke-width: 1.25;
 }
 .wt-bracket {
 	fill: none;

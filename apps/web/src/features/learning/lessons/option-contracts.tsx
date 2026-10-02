@@ -22,7 +22,7 @@ import {
 	ticketHeight,
 } from "../walkthrough/instruments/contract-ticket";
 import { TIMELINE_HEIGHT, Timeline } from "../walkthrough/instruments/timeline";
-import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { Appear, Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -218,6 +218,24 @@ type UnitState = {
 const call100: Contract = { expiry: "oct18", strike: 100, right: "call" };
 const ASK = optionQuote(call100).ask;
 
+/** The most contracts the scene draws: the explore slider's top. */
+const MAX_CONTRACTS = 8;
+const UNIT_TOP = 84;
+
+/**
+ * Blocks of 100 dots, one per contract. Smaller dots on a narrow stage fit five blocks a
+ * row, so eight contracts take two rows there too.
+ */
+function unitGrid(width: number) {
+	const narrow = width < 520;
+	const dot = narrow ? 3 : 5;
+	const step = narrow ? 4.5 : 7;
+	const block = dot + 9 * step;
+	const gapX = narrow ? 10 : 14;
+	const perRow = Math.max(1, Math.floor((width - 16 + gapX) / (block + gapX)));
+	return { dot, step, block, gapX, perRow, rowHeight: block + 24 };
+}
+
 function UnitStage({
 	width,
 	state,
@@ -229,14 +247,9 @@ function UnitStage({
 }) {
 	const t = tr(locale);
 	const motion = useTeachMotion();
-	const narrow = width < 520;
-	const dot = narrow ? 4 : 5;
-	const block = dot * 10 + 9 * 2;
-	const perRow = Math.max(1, Math.floor((width - 16) / (block + 14)));
+	const { dot, step, block, gapX, perRow, rowHeight } = unitGrid(width);
 	const premium = ASK * 100 * state.contracts;
 	const shares = state.contracts * 100;
-	const rows = Math.ceil(state.contracts / perRow);
-	const textTop = 30 + rows * (block + 24) + 10;
 	return (
 		<g>
 			<Label x={8} y={18} tone="muted">
@@ -245,9 +258,28 @@ function UnitStage({
 					`${state.contracts} 张 ${contractLabel(call100)[1]} · 每点 1 股`,
 				])}
 			</Label>
+			{/* The sums sit above the blocks, so adding contracts never pushes them down. */}
+			<text x={8} y={46}>
+				<tspan className="wt-muted">{t(["Premium ", "权利金 "])}</tspan>
+				<tspan>
+					{usd(ASK)} × 100 × {state.contracts} ={" "}
+				</tspan>
+				<tspan className={state.step !== "contract" ? "wt-strong" : undefined}>
+					{usd(premium, 0)}
+				</tspan>
+			</text>
+			{state.step === "notional" ? (
+				<Appear>
+					<text x={8} y={70}>
+						<tspan className="wt-muted">{t(["Notional ", "名义价值 "])}</tspan>
+						<tspan>{count(shares)} × $100 = </tspan>
+						<tspan className="wt-strong">{usd(shares * 10_000, 0)}</tspan>
+					</text>
+				</Appear>
+			) : null}
 			{Array.from({ length: state.contracts }, (_, c) => {
-				const bx = 8 + (c % perRow) * (block + 14);
-				const by = 30 + Math.floor(c / perRow) * (block + 24);
+				const bx = 8 + (c % perRow) * (block + gapX);
+				const by = UNIT_TOP + Math.floor(c / perRow) * rowHeight;
 				return (
 					<m.g
 						key={c}
@@ -258,8 +290,8 @@ function UnitStage({
 						{Array.from({ length: 100 }, (_, i) => (
 							<rect
 								key={i}
-								x={bx + (i % 10) * (dot + 2)}
-								y={by + Math.floor(i / 10) * (dot + 2)}
+								x={bx + (i % 10) * step}
+								y={by + Math.floor(i / 10) * step}
 								width={dot}
 								height={dot}
 								rx={1}
@@ -272,36 +304,22 @@ function UnitStage({
 							anchor="middle"
 							tone="small"
 						>
-							{t([`contract ${c + 1}`, `第 ${c + 1} 张`])}
+							{/* A narrow block has room for the number only. */}
+							{t([
+								width < 520 ? `#${c + 1}` : `contract ${c + 1}`,
+								`第 ${c + 1} 张`,
+							])}
 						</Label>
 					</m.g>
 				);
 			})}
-			<text x={8} y={textTop + 16}>
-				<tspan className="wt-muted">{t(["Premium ", "权利金 "])}</tspan>
-				<tspan>
-					{usd(ASK)} × 100 × {state.contracts} ={" "}
-				</tspan>
-				<tspan className={state.step !== "contract" ? "wt-strong" : undefined}>
-					{usd(premium, 0)}
-				</tspan>
-			</text>
-			{state.step === "notional" ? (
-				<text x={8} y={textTop + 44}>
-					<tspan className="wt-muted">{t(["Notional ", "名义价值 "])}</tspan>
-					<tspan>{count(shares)} × $100 = </tspan>
-					<tspan className="wt-strong">{usd(shares * 10_000, 0)}</tspan>
-				</text>
-			) : null}
 		</g>
 	);
 }
 
-function unitHeight(width: number, contracts: number) {
-	const narrow = width < 520;
-	const block = (narrow ? 4 : 5) * 10 + 18;
-	const perRow = Math.max(1, Math.floor((width - 16) / (block + 14)));
-	return 30 + Math.ceil(contracts / perRow) * (block + 24) + 70;
+function unitHeight(width: number) {
+	const { perRow, rowHeight } = unitGrid(width);
+	return UNIT_TOP + Math.ceil(MAX_CONTRACTS / perRow) * rowHeight;
 }
 
 function UnitView({
@@ -328,7 +346,7 @@ function UnitView({
 						"Contracts drawn as blocks of 100 shares, with the premium and notional they represent",
 						"以每块 100 股表示的合约，以及它们对应的权利金与名义价值",
 					])}
-					height={(width) => unitHeight(width, Math.max(shown.contracts, 3))}
+					height={unitHeight}
 				>
 					{(width) => <UnitStage width={width} state={shown} locale={locale} />}
 				</Stage>

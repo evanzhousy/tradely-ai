@@ -139,36 +139,9 @@ export function SpreadRuler({
 				</g>
 			)}
 			<path d={`M${left} ${axis}H${right}`} className="wt-axis" />
-			{bid !== null ? (
-				<m.g initial={false} animate={{ x: x(bid) }} transition={motion.move}>
-					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-long" />
-					<Label x={0} y={axis + 22} anchor="end" tone="small">
-						{bidLabel}
-					</Label>
-					<Label x={0} y={axis + 36} anchor="end">
-						{usd(bid)}
-					</Label>
-				</m.g>
-			) : null}
-			{ask !== null ? (
-				<m.g initial={false} animate={{ x: x(ask) }} transition={motion.move}>
-					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-short" />
-					<Label x={0} y={axis + 22} tone="small">
-						{askLabel}
-					</Label>
-					<Label x={0} y={axis + 36}>
-						{usd(ask)}
-					</Label>
-				</m.g>
-			) : null}
+			{/* The print's leader is drawn first, so it runs under the bid and ask prices; its
+			    dot is drawn last, over the quote lines. */}
 			<m.g initial={false} animate={{ x: x(price) }} transition={motion.move}>
-				<circle
-					cy={axis}
-					r={7}
-					className="wt-chip"
-					stroke="var(--foreground)"
-					strokeWidth={1.5}
-				/>
 				<path d={`M0 ${axis + 8}V${axis + 44}`} className="wt-bracket" />
 				<Label
 					x={labelShift}
@@ -180,6 +153,44 @@ export function SpreadRuler({
 					{printLabel}
 				</Label>
 			</m.g>
+			{bid !== null ? (
+				<m.g initial={false} animate={{ x: x(bid) }} transition={motion.move}>
+					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-long" />
+					<Label
+						x={0}
+						y={axis + 22}
+						anchor="end"
+						tone="small"
+						className="wt-halo"
+					>
+						{bidLabel}
+					</Label>
+					<Label x={0} y={axis + 36} anchor="end" className="wt-halo">
+						{usd(bid)}
+					</Label>
+				</m.g>
+			) : null}
+			{ask !== null ? (
+				<m.g initial={false} animate={{ x: x(ask) }} transition={motion.move}>
+					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-short" />
+					<Label x={0} y={axis + 22} tone="small" className="wt-halo">
+						{askLabel}
+					</Label>
+					<Label x={0} y={axis + 36} className="wt-halo">
+						{usd(ask)}
+					</Label>
+				</m.g>
+			) : null}
+			<m.circle
+				cy={axis}
+				r={7}
+				className="wt-chip"
+				stroke="var(--foreground)"
+				strokeWidth={1.5}
+				initial={false}
+				animate={{ cx: x(price) }}
+				transition={motion.move}
+			/>
 		</g>
 	);
 }

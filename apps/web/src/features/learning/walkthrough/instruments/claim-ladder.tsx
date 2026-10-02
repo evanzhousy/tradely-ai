@@ -28,6 +28,8 @@ export function claimLadderLayout(
 	title: string | undefined,
 	claims: readonly Claim[],
 	evidenceLabels: Record<EvidenceKind, string>,
+	/** Other states of the same claims; each row keeps room for its tallest. */
+	variants: readonly (readonly Claim[])[] = [],
 ) {
 	const titleLines =
 		title && textWidth(title, 12) > width - 16
@@ -35,16 +37,30 @@ export function claimLadderLayout(
 			: title
 				? [title]
 				: [];
-	let y = titleLines.length ? 14 + titleLines.length * 14 : 4;
-	const rows = claims.map((claim) => {
+	const wrap = (claim: Claim) => {
 		const lines = wrapText(claim.text, width - TEXT_X - 18, 13);
 		const notes = wrapText(
 			`${evidenceLabels[claim.evidence]} · ${claim.basis}`,
 			width - TEXT_X - 18,
 			11,
 		);
-		const height =
-			46 + (lines.length - 1) * TEXT_LINE + (notes.length - 1) * LINE;
+		return {
+			lines,
+			notes,
+			height: 46 + (lines.length - 1) * TEXT_LINE + (notes.length - 1) * LINE,
+		};
+	};
+	let y = titleLines.length ? 14 + titleLines.length * 14 : 4;
+	const rows = claims.map((claim) => {
+		const { lines, notes, height: own } = wrap(claim);
+		const height = Math.max(
+			own,
+			...variants.flatMap((variant) =>
+				variant
+					.filter((other) => other.id === claim.id)
+					.map((other) => wrap(other).height),
+			),
+		);
 		const row = { y, height, lines, notes };
 		y += height + GAP;
 		return row;
@@ -120,14 +136,22 @@ export function ClaimLadder({
 	title,
 	claims,
 	evidenceLabels,
+	variants,
 }: {
 	width: number;
 	title?: string;
 	claims: readonly Claim[];
 	evidenceLabels: Record<EvidenceKind, string>;
+	variants?: readonly (readonly Claim[])[];
 }) {
 	const motion = useTeachMotion();
-	const layout = claimLadderLayout(width, title, claims, evidenceLabels);
+	const layout = claimLadderLayout(
+		width,
+		title,
+		claims,
+		evidenceLabels,
+		variants,
+	);
 	return (
 		<g>
 			{layout.titleLines.map((line, i) => (
@@ -183,23 +207,28 @@ export function ClaimLadder({
 	);
 }
 
-/** A stage sized to the ladder at whatever width it gets. */
+/**
+ * A stage sized to the ladder at whatever width it gets. Pass the scene's other states as
+ * `variants` and the ladder keeps one size as claims gain or lose wording.
+ */
 export function ClaimLadderStage({
 	label,
 	title,
 	claims,
 	evidenceLabels,
+	variants,
 }: {
 	label: string;
 	title?: string;
 	claims: readonly Claim[];
 	evidenceLabels: Record<EvidenceKind, string>;
+	variants?: readonly (readonly Claim[])[];
 }) {
 	return (
 		<Stage
 			label={label}
 			height={(width) =>
-				claimLadderLayout(width, title, claims, evidenceLabels).height
+				claimLadderLayout(width, title, claims, evidenceLabels, variants).height
 			}
 		>
 			{(width) => (
@@ -208,6 +237,7 @@ export function ClaimLadderStage({
 					title={title}
 					claims={claims}
 					evidenceLabels={evidenceLabels}
+					variants={variants}
 				/>
 			)}
 		</Stage>

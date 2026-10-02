@@ -100,8 +100,9 @@ export function RankBump({
 					return (
 						<m.g
 							key={`${column.id}-${item.id}`}
+							className={item.excluded ? "wt-quiet" : undefined}
 							initial={false}
-							animate={{ y: yOf(row), opacity: item.excluded ? 0.5 : 1 }}
+							animate={{ y: yOf(row) }}
 							transition={motion.move}
 						>
 							<Appear>

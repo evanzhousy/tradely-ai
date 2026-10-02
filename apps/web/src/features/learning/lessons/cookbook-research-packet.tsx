@@ -272,7 +272,10 @@ function PacketTable({
 				>
 					{state.reveal >= 3
 						? t([
-								`subtotal · ${COVERED} of ${SERIES} series`,
+								// A phone leaves room beside the total for the short form only.
+								width < 520
+									? `subtotal, ${COVERED} of ${SERIES}`
+									: `subtotal · ${COVERED} of ${SERIES} series`,
 								`小计 · ${SERIES} 个系列中的 ${COVERED} 个`,
 							])
 						: t(["sum of R1–R4", "R1–R4 合计"])}

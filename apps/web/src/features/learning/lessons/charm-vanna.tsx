@@ -18,7 +18,7 @@ import {
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
-import { wrapText } from "../walkthrough/text-measure";
+import { textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -424,6 +424,35 @@ const spreadAt = (stage: SpreadState["stage"]) =>
 			: positionDelta(WEEK, -VOL_DROP);
 
 const SPREAD_ROW = 44;
+const spreadTitle: Copy = [
+	"The 10:50 call spread · position delta, shares",
+	"10:50 看涨价差 · 持仓 Delta（股）",
+];
+
+/**
+ * Wide: each row's label beside its three figures. Narrow: the label on its own line and
+ * the figures below it across the full width, so five-digit deltas keep their columns.
+ */
+function spreadLayout(width: number, locale: Locale) {
+	const narrow = width < 520;
+	const title = pick(spreadTitle, locale);
+	const titleLines =
+		textWidth(title, 12) > width - 16 ? title.split(" · ") : [title];
+	const labelWidth = narrow ? 0 : 210;
+	const rowHeight = narrow ? 52 : SPREAD_ROW;
+	const headY = 40 + (titleLines.length - 1) * 14;
+	const top = headY + 8;
+	return {
+		narrow,
+		titleLines,
+		labelWidth,
+		column: (width - 8 - labelWidth) / 3,
+		rowHeight,
+		headY,
+		rowY: (i: number) => top + i * (rowHeight + 6),
+		height: top + 3 * (rowHeight + 6),
+	};
+}
 
 function SpreadTable({
 	width,
@@ -464,8 +493,8 @@ function SpreadTable({
 			after: now.net,
 		},
 	];
-	const labelWidth = width < 520 ? 124 : 210;
-	const column = (width - 8 - labelWidth) / 3;
+	const layout = spreadLayout(width, locale);
+	const { labelWidth, column, rowHeight } = layout;
 	const heads: Copy[] = [
 		["today", "今天"],
 		state.stage === 0
@@ -477,17 +506,16 @@ function SpreadTable({
 	];
 	return (
 		<g>
-			<Label x={8} y={16} tone="muted">
-				{t([
-					"The 10:50 call spread · position delta, shares",
-					"10:50 看涨价差 · 持仓 Delta（股）",
-				])}
-			</Label>
+			{layout.titleLines.map((line, i) => (
+				<Label key={line} x={8} y={16 + i * 14} tone="muted">
+					{line}
+				</Label>
+			))}
 			{heads.map((head, j) => (
 				<Label
 					key={pick(head, "en") + j}
 					x={labelWidth + column * (j + 0.5)}
-					y={40}
+					y={layout.headY}
 					anchor="middle"
 					tone="small"
 				>
@@ -495,31 +523,28 @@ function SpreadTable({
 				</Label>
 			))}
 			{rows.map((row, i) => {
-				const y = 48 + i * (SPREAD_ROW + 6);
+				const y = layout.rowY(i);
 				const change = row.after - row.before;
 				const net = row.id === "net";
+				const valueY = layout.narrow ? y + 38 : y + rowHeight / 2 + 5;
 				return (
 					<g key={row.id}>
 						<rect
 							x={4}
 							y={y}
 							width={width - 8}
-							height={SPREAD_ROW}
+							height={rowHeight}
 							rx={8}
 							className={net ? "wt-focus-shape" : "wt-panel-shape"}
 						/>
 						<Label
 							x={14}
-							y={y + SPREAD_ROW / 2 + 4}
+							y={layout.narrow ? y + 17 : y + rowHeight / 2 + 4}
 							tone={net ? "accent" : "small"}
 						>
 							{t(row.label)}
 						</Label>
-						<Label
-							x={labelWidth + column * 0.5}
-							y={y + SPREAD_ROW / 2 + 5}
-							anchor="middle"
-						>
+						<Label x={labelWidth + column * 0.5} y={valueY} anchor="middle">
 							{signedCount(row.before)}
 						</Label>
 						<m.g
@@ -527,16 +552,12 @@ function SpreadTable({
 							animate={{ opacity: state.stage === 0 ? 0 : 1 }}
 							transition={motion.fade}
 						>
-							<Label
-								x={labelWidth + column * 1.5}
-								y={y + SPREAD_ROW / 2 + 5}
-								anchor="middle"
-							>
+							<Label x={labelWidth + column * 1.5} y={valueY} anchor="middle">
 								{signedCount(row.after)}
 							</Label>
 							<Label
 								x={labelWidth + column * 2.5}
-								y={y + SPREAD_ROW / 2 + 5}
+								y={valueY}
 								anchor="middle"
 								tone={change > 0 ? "gain" : change < 0 ? "loss" : undefined}
 							>
@@ -605,7 +626,7 @@ function SpreadView({
 						"Position delta of the 10:50 call spread, long 500 105 calls and short 500 110 calls, today and after a week with and without a fall in implied volatility",
 						"10:50 看涨价差（多头 500 张 105 看涨、空头 500 张 110 看涨）的持仓 Delta：今天，以及一周后隐含波动率下降与否的情况",
 					])}
-					height={48 + 3 * (SPREAD_ROW + 6)}
+					height={(width) => spreadLayout(width, locale).height}
 				>
 					{(width) => (
 						<SpreadTable width={width} state={shown} locale={locale} />

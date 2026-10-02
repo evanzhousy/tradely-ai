@@ -609,6 +609,9 @@ function ClaimView({
 						`${trade.time} · ${trade.quantity} 张 @ ${usd(trade.price)} · ${LABEL[1]}`,
 					])}
 					claims={claims}
+					variants={(["t1", "t2", "t3"] as const).map((id) =>
+						claimsFor(id, locale),
+					)}
 					evidenceLabels={evidenceLabels}
 				/>
 			}

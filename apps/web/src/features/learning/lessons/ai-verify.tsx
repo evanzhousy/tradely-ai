@@ -517,7 +517,10 @@ function InsightStage({
 			>
 				{state.stage === 2
 					? t([
-							"Official recipe · unchanged · your private draft opened",
+							// A phone has room for the short form on one line.
+							width < 520
+								? "Official unchanged · your draft opened"
+								: "Official recipe · unchanged · your private draft opened",
 							"官方 Recipe · 未改动 · 已打开你的私有草稿",
 						])
 					: t(["Official recipe · unchanged", "官方 Recipe · 未改动"])}

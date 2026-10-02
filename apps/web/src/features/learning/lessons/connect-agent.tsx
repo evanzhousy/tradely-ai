@@ -671,6 +671,14 @@ function KeyStage({
 			off: true,
 		},
 	];
+	const nextLabel = t(["Next tool call", "下一次工具调用"]);
+	const nextOutcome = state.revoked
+		? t(["refused: key revoked", "被拒绝：密钥已撤销"])
+		: full
+			? t(["stopped by the limit", "被限额挡住"])
+			: t(["accepted", "接受"]);
+	const stackNext =
+		textWidth(nextLabel, 12) + textWidth(nextOutcome, 11) + 40 > barW;
 	return (
 		<g>
 			<m.g
@@ -750,14 +758,15 @@ function KeyStage({
 				rx={8}
 				className={state.revoked ? "wt-focus-shape" : "wt-panel-shape"}
 			/>
-			<Label x={28} y={205} tone="muted">
-				{t(["Next tool call", "下一次工具调用"])}
+			<Label x={28} y={stackNext ? 198 : 205} tone="muted">
+				{nextLabel}
 			</Label>
+			{/* When the label and its outcome don't fit side by side, the outcome goes under it. */}
 			<m.text
 				key={`next-${state.revoked}-${full}`}
-				x={width - 28}
-				y={205}
-				textAnchor="end"
+				x={stackNext ? 28 : width - 28}
+				y={stackNext ? 212 : 205}
+				textAnchor={stackNext ? "start" : "end"}
 				className={
 					state.revoked || full ? "wt-small wt-loss" : "wt-small wt-accent"
 				}
@@ -765,11 +774,7 @@ function KeyStage({
 				animate={{ opacity: 1 }}
 				transition={motion.fade}
 			>
-				{state.revoked
-					? t(["refused: key revoked", "被拒绝：密钥已撤销"])
-					: full
-						? t(["stopped by the limit", "被限额挡住"])
-						: t(["accepted", "接受"])}
+				{nextOutcome}
 			</m.text>
 		</g>
 	);

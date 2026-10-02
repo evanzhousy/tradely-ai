@@ -1,6 +1,5 @@
 import * as m from "motion/react-m";
 import { count, usd } from "@/content/world";
-import { fitAnchor } from "../label-place";
 import { Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
 
@@ -81,11 +80,14 @@ export function RoundTrip({
 				const text = `${mark.label} ${usd(mark.cents)}`;
 				const beside = x(mark.cents) + mark.dx;
 				const room = mark.anchor === "end" ? beside - 4 : width - 4 - beside;
-				// Beside its dot when there's room; above it, kept on the stage, when not.
+				// Above the axis, never on it: beside its dot, outward, or against the stage's edge
+				// when the dot is too close to it. Bid and ask then never meet in the middle.
 				const place =
 					textWidth(text, 12) <= room
-						? { x: beside, y: 69, anchor: mark.anchor }
-						: { ...fitAnchor(text, x(mark.cents), 12, 4, width - 4), y: 44 };
+						? { x: beside, y: 44, anchor: mark.anchor }
+						: mark.anchor === "end"
+							? { x: 4, y: 44, anchor: "start" as const }
+							: { x: width - 4, y: 44, anchor: "end" as const };
 				return (
 					<g key={mark.id}>
 						<m.circle

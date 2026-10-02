@@ -68,7 +68,6 @@ function EligibilityTable({
 	locale: Locale;
 }) {
 	const t = tr(locale);
-	const motion = useTeachMotion();
 	const { hatch } = useStage();
 	const nameWidth = width < 520 ? 76 : 110;
 	const cellWidth = (width - 16 - nameWidth) / CHECKS.length;
@@ -113,11 +112,10 @@ function EligibilityTable({
 				const unknown =
 					state.applied >= 3 && failed === null && row.optionVolume === null;
 				return (
-					<m.g
+					// A name that fails a check keeps its ✗ legible: that is the reason it is out.
+					<g
 						key={row.symbol}
-						initial={false}
-						animate={{ opacity: failed === null ? 1 : 0.35 }}
-						transition={motion.fade}
+						className={failed !== null ? "wt-quiet" : undefined}
 					>
 						<rect
 							x={8}
@@ -159,7 +157,7 @@ function EligibilityTable({
 								</Label>
 							);
 						})}
-					</m.g>
+					</g>
 				);
 			})}
 		</g>

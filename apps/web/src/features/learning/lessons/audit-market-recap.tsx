@@ -139,8 +139,9 @@ function AuditTable({
 	const motion = useTeachMotion();
 	const { hatch } = useStage();
 	const narrow = width < 520;
-	const contractsX = narrow ? 128 : width - 280;
-	const reportX = narrow ? 212 : width - 150;
+	// On a phone the report column moves left so "$1,085.00" and "$108,500" keep a gap.
+	const contractsX = narrow ? 100 : width - 280;
+	const reportX = narrow ? 186 : width - 150;
 	const fixedX = width - 12;
 	const lines = amountLines(state, locale);
 	const repairedRow = (row: PacketRow) =>
@@ -158,7 +159,7 @@ function AuditTable({
 				{t(["strike", "行权价"])}
 			</Label>
 			<Label x={contractsX} y={40} anchor="end" tone="small">
-				{t(["contracts", "张数"])}
+				{t([narrow ? "count" : "contracts", "张数"])}
 			</Label>
 			<Label x={reportX} y={40} anchor="end" tone="small">
 				{t(["report", "报告"])}

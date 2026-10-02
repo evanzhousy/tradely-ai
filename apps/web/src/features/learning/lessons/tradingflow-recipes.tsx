@@ -336,6 +336,42 @@ function SessionStrip({
 					"交易日历 · 2030年9月13–17日",
 				])}
 			</Label>
+			{/* Sessions, then the "now" marker, then the words: the marker never strikes a label. */}
+			{days.map((date, i) => {
+				const session = sessionDays.has(date);
+				if (!session) return null;
+				const x = dayX(date);
+				const done = i < nowIndex || (i === nowIndex && moment.at >= CLOSE);
+				const live = i === nowIndex && moment.at >= OPEN && moment.at < CLOSE;
+				// Before the reveal nothing is marked latest, so the strip doesn't answer the question.
+				const latest = state.header && date === moment.latest;
+				return (
+					<m.rect
+						key={date}
+						x={x + dayFraction(OPEN) * colW}
+						y={STRIP_TOP}
+						width={(dayFraction(CLOSE) - dayFraction(OPEN)) * colW}
+						height={STRIP_H}
+						rx={6}
+						className={latest ? "wt-focus-shape" : "wt-panel-shape"}
+						style={!done && !live ? { fill: hatch } : undefined}
+						initial={false}
+						animate={{ opacity: done || live ? 1 : 0.55 }}
+						transition={motion.fade}
+					/>
+				);
+			})}
+			<m.g initial={false} animate={{ x: nowX }} transition={motion.move}>
+				<line
+					x1={0}
+					x2={0}
+					y1={STRIP_TOP - 2}
+					y2={STRIP_TOP + STRIP_H + 2}
+					className="wt-axis"
+					strokeWidth={2}
+				/>
+				<circle cx={0} cy={STRIP_TOP - 2} r={3.5} className="wt-chip" />
+			</m.g>
 			{days.map((date, i) => {
 				const x = dayX(date);
 				const session = sessionDays.has(date);
@@ -343,7 +379,6 @@ function SessionStrip({
 					session && (i < nowIndex || (i === nowIndex && moment.at >= CLOSE));
 				const live =
 					session && i === nowIndex && moment.at >= OPEN && moment.at < CLOSE;
-				// Before the reveal nothing is marked latest, so the strip doesn't answer the question.
 				const latest = state.header && date === moment.latest;
 				const label = t(dayLabel(date));
 				return (
@@ -353,32 +388,10 @@ function SessionStrip({
 							y={STRIP_TOP - 6}
 							anchor="middle"
 							tone="small"
+							className="wt-halo"
 						>
 							{narrow ? shortDay(date, locale) : label}
 						</Label>
-						{session ? (
-							<m.rect
-								x={x + dayFraction(OPEN) * colW}
-								y={STRIP_TOP}
-								width={(dayFraction(CLOSE) - dayFraction(OPEN)) * colW}
-								height={STRIP_H}
-								rx={6}
-								className={latest ? "wt-focus-shape" : "wt-panel-shape"}
-								style={!done && !live ? { fill: hatch } : undefined}
-								initial={false}
-								animate={{ opacity: done || live ? 1 : 0.55 }}
-								transition={motion.fade}
-							/>
-						) : (
-							<Label
-								x={x + colW / 2}
-								y={STRIP_TOP + STRIP_H / 2 + 4}
-								anchor="middle"
-								tone="small"
-							>
-								{t(["closed", "休市"])}
-							</Label>
-						)}
 						{session ? (
 							<Label
 								x={x + colW / 2}
@@ -394,21 +407,20 @@ function SessionStrip({
 											? t(["done", "已完成"])
 											: ""}
 							</Label>
-						) : null}
+						) : (
+							<Label
+								x={x + colW / 2}
+								y={STRIP_TOP + STRIP_H / 2 + 4}
+								anchor="middle"
+								tone="small"
+								className="wt-halo"
+							>
+								{t(["closed", "休市"])}
+							</Label>
+						)}
 					</g>
 				);
 			})}
-			<m.g initial={false} animate={{ x: nowX }} transition={motion.move}>
-				<line
-					x1={0}
-					x2={0}
-					y1={STRIP_TOP - 2}
-					y2={STRIP_TOP + STRIP_H + 2}
-					className="wt-axis"
-					strokeWidth={2}
-				/>
-				<circle cx={0} cy={STRIP_TOP - 2} r={3.5} className="wt-chip" />
-			</m.g>
 			<g>
 				<rect
 					x={4}

@@ -484,7 +484,12 @@ function OriginStage({
 							className={known ? "wt-focus-shape" : "wt-panel-shape"}
 							style={known ? undefined : { fill: hatch }}
 						/>
-						<Label x={x + 12} y={layout.cardTop + 22} tone="muted">
+						<Label
+							x={x + 12}
+							y={layout.cardTop + 22}
+							tone="muted"
+							className={known ? undefined : "wt-halo"}
+						>
 							{t([`Record ${record.id}`, `记录 ${record.id}`])}
 						</Label>
 						<AnimatePresence initial={false}>
@@ -510,7 +515,12 @@ function OriginStage({
 									animate={{ opacity: 1 }}
 									exit={{ opacity: 0 }}
 								>
-									<Label x={x + 12} y={layout.cardTop + 56} tone="strong">
+									<Label
+										x={x + 12}
+										y={layout.cardTop + 56}
+										tone="strong"
+										className="wt-halo"
+									>
 										?
 									</Label>
 								</m.g>

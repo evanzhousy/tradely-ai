@@ -287,6 +287,9 @@ function SortView({
 						`${BLOCK.time} · ${BLOCK.quantity} 张 @ ${usd(BLOCK.price)} · 10月18日 105 看涨`,
 					])}
 					claims={claims}
+					variants={[true, false].map((stale) =>
+						sortClaims({ reached: shown.reached, stale }, locale),
+					)}
 					evidenceLabels={evidenceLabels(locale)}
 				/>
 			}
@@ -447,6 +450,9 @@ function GapView({
 						"未解问题 · 各自需要的记录",
 					])}
 					claims={gapClaims(shown, locale)}
+					variants={([0, 1, 2, 3] as const).map((stage) =>
+						gapClaims({ stage }, locale),
+					)}
 					evidenceLabels={evidenceLabels(locale)}
 				/>
 			}

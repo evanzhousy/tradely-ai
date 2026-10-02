@@ -187,7 +187,8 @@ function LedgerRowShape({
 	return (
 		<g opacity={row.muted ? 0.72 : 1}>
 			{g.narrow ? (
-				<text x={PAD} y={y + 12}>
+				// Across the centre line on a narrow stage; the halo parts it.
+				<text x={PAD} y={y + 12} className="wt-halo">
 					<tspan>{row.name}</tspan>
 					{row.tag ? (
 						<tspan dx="8" className="wt-accent">

@@ -202,25 +202,45 @@ export function StrikeGrid({
 											/>
 										</Appear>
 									) : null}
-									<Label
-										x={x + (cellWidth - 4) / 2}
-										y={y + CELL / 2 + 3}
-										anchor="middle"
-										tone={value === null ? "accent" : undefined}
-										className="wt-halo"
-									>
-										{value === null
-											? "?"
-											: estimate
-												? `≈${format(value)}`
-												: format(value)}
-									</Label>
 								</g>
 							);
 						})}
 					</g>
 				);
 			})}
+			{spotX !== null ? (
+				<m.path
+					d={`M0 ${HEAD - 4}V${bottom + 4}`}
+					className="wt-bracket"
+					initial={false}
+					animate={{ x: spotX }}
+					transition={motion.move}
+				/>
+			) : null}
+			{/* Values go over the spot line, their halo parting it, so it never strikes a digit. */}
+			{rows.map((row, i) =>
+				row.values.map((value, j) => {
+					const estimate = estimated.some(
+						(cell) => cell.row === row.id && cell.strike === strikes[j],
+					);
+					return (
+						<Label
+							key={`${row.id}-${strikes[j]}`}
+							x={colX(j) + 2 + (cellWidth - 4) / 2}
+							y={HEAD + i * CELL + CELL / 2 + 3}
+							anchor="middle"
+							tone={value === null ? "accent" : undefined}
+							className="wt-halo"
+						>
+							{value === null
+								? "?"
+								: estimate
+									? `≈${format(value)}`
+									: format(value)}
+						</Label>
+					);
+				}),
+			)}
 			{focusStrikes.map((strike) => {
 				const j = strikes.indexOf(strike);
 				return j < 0 ? null : (
@@ -237,12 +257,9 @@ export function StrikeGrid({
 				);
 			})}
 			{spotX !== null ? (
-				<m.g initial={false} animate={{ x: spotX }} transition={motion.move}>
-					<path d={`M0 ${HEAD - 4}V${bottom + 4}`} className="wt-bracket" />
-					<Label x={0} y={bottom + 20} anchor="middle" tone="accent">
-						{spotLabel}
-					</Label>
-				</m.g>
+				<Label x={spotX} y={bottom + 20} anchor="middle" tone="accent">
+					{spotLabel}
+				</Label>
 			) : null}
 		</g>
 	);

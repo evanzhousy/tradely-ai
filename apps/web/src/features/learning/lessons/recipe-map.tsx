@@ -137,7 +137,8 @@ function MapStage({
 	const t = tr(locale);
 	const motion = useTeachMotion();
 	const narrow = width < 520;
-	const gap = narrow ? 18 : 40;
+	// Narrow columns keep their gap tight so "Ranked table" fits a node without shrinking.
+	const gap = narrow ? 12 : 40;
 	const colW = (width - 8 - 2 * gap) / 3;
 	const colX = (i: number) => 4 + i * (colW + gap);
 	const inputY = (i: number) => MAP_TOP + i * ROW_STEP;
@@ -191,10 +192,12 @@ function MapStage({
 				className={focus ? "wt-focus-shape" : "wt-panel-shape"}
 			/>
 			<Label
-				x={x + 8}
+				x={narrow ? x + colW / 2 : x + 8}
 				y={y + NODE_H / 2 + 4}
+				anchor={narrow ? "middle" : "start"}
 				tone="small"
 				className={focus ? "wt-accent" : undefined}
+				maxWidth={colW - 6}
 			>
 				{label}
 			</Label>
@@ -836,7 +839,12 @@ function PopulationView({
 						"The screener's key figures, its top-N table, and the matching contracts that passed but are not loaded into the table",
 						"筛选器的关键数字、前 N 名表格，以及已入选但未载入表格的合约",
 					])}
-					height={(width) => populationLayout(width, shown.rows).height}
+					// The tallest of the row counts on offer, so choosing one doesn't resize.
+					height={(width) =>
+						Math.max(
+							...[1, 3, 5].map((rows) => populationLayout(width, rows).height),
+						)
+					}
 				>
 					{(width) => (
 						<PopulationStage width={width} state={shown} locale={locale} />

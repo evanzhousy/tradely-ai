@@ -87,11 +87,38 @@ const headline = (metric: Metric): Copy =>
 
 type MatchState = { claim: Metric; chart: Metric };
 
-function headlineLayout(width: number, text: string) {
-	const lines = wrapText(text, width - 32, 13);
+const verdict = (state: MatchState, locale: Locale) =>
+	state.claim === state.chart
+		? pick(["the chart below shows this", "下方图表显示了这一点"], locale)
+		: pick(
+				[
+					`the chart below shows ${pick(metricName[state.chart], "en")}, not ${pick(metricName[state.claim], "en")}`,
+					`下方图表显示的是${pick(metricName[state.chart], "zh")}，不是${pick(metricName[state.claim], "zh")}`,
+				],
+				locale,
+			);
+
+/** The headline and its verdict both wrap to the card, rather than shrink on a phone. */
+function headlineLayout(width: number, state: MatchState, locale: Locale) {
+	const lines = wrapText(pick(headline(state.claim), locale), width - 32, 13);
+	const verdictLines = wrapText(verdict(state, locale), width - 32, 13);
 	const verdictY = 42 + lines.length * 17;
-	return { lines, verdictY, height: verdictY + 12 };
+	return {
+		lines,
+		verdictLines,
+		verdictY,
+		height: verdictY + (verdictLines.length - 1) * 17 + 12,
+	};
 }
+/** The card keeps the height of its tallest headline and verdict, so the chart never moves. */
+const headlineHeight = (width: number, locale: Locale) =>
+	Math.max(
+		...(["contracts", "premium"] as const).flatMap((claim) =>
+			(["contracts", "premium"] as const).map(
+				(chart) => headlineLayout(width, { claim, chart }, locale).height,
+			),
+		),
+	);
 const MATCH_CHART = 230;
 
 function MatchStage({
@@ -106,7 +133,8 @@ function MatchStage({
 	const t = tr(locale);
 	const motion = useTeachMotion();
 	const text = t(headline(state.claim));
-	const layout = headlineLayout(width, text);
+	const layout = headlineLayout(width, state, locale);
+	const cardHeight = headlineHeight(width, locale);
 	const backed = state.claim === state.chart;
 	return (
 		<g>
@@ -114,7 +142,7 @@ function MatchStage({
 				x={4}
 				y={4}
 				width={width - 8}
-				height={layout.height - 4}
+				height={cardHeight - 4}
 				rx={10}
 				className={backed ? "wt-panel-shape" : "wt-focus-shape"}
 			/>
@@ -133,15 +161,17 @@ function MatchStage({
 					</Label>
 				))}
 			</m.g>
-			<Label x={16} y={layout.verdictY} tone={backed ? "gain" : "loss"}>
-				{backed
-					? t(["the chart below shows this", "下方图表显示了这一点"])
-					: t([
-							`the chart below shows ${pick(metricName[state.chart], "en")}, not ${pick(metricName[state.claim], "en")}`,
-							`下方图表显示的是${pick(metricName[state.chart], "zh")}，不是${pick(metricName[state.claim], "zh")}`,
-						])}
-			</Label>
-			<g transform={`translate(0 ${layout.height + 8})`}>
+			{layout.verdictLines.map((line, i) => (
+				<Label
+					key={line}
+					x={16}
+					y={layout.verdictY + i * 17}
+					tone={backed ? "gain" : "loss"}
+				>
+					{line}
+				</Label>
+			))}
+			<g transform={`translate(0 ${cardHeight + 8})`}>
 				<BarChart
 					width={width}
 					height={MATCH_CHART}
@@ -182,11 +212,7 @@ function MatchView({
 						"A recap headline above a bar chart by strike, with a note on whether the chart shows the quantity the headline claims",
 						"复盘标题与下方按行权价的柱状图，并注明图表是否显示了标题所说的量",
 					])}
-					height={(width) =>
-						headlineLayout(width, t(headline(shown.claim))).height +
-						8 +
-						MATCH_CHART
-					}
+					height={(width) => headlineHeight(width, locale) + 8 + MATCH_CHART}
 				>
 					{(width) => (
 						<MatchStage width={width} state={shown} locale={locale} />

@@ -2,6 +2,7 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { count, usd } from "@/content/world";
 import { Appear, Label, useTeachMotion } from "../stage";
+import { textWidth } from "../text-measure";
 
 export type BookLevel = {
 	/** Cents. */
@@ -260,15 +261,29 @@ export function OrderBook({
 	};
 	return (
 		<g>
-			<Label x={center - priceWidth / 2 - 8} y={20} anchor="end" tone="muted">
-				{labels.bid}
-			</Label>
-			<Label x={center} y={20} anchor="middle" tone="muted">
-				{labels.price}
-			</Label>
-			<Label x={center + priceWidth / 2 + 8} y={20} tone="muted">
-				{labels.ask}
-			</Label>
+			{/* A heading wider than its side breaks at its separator: "Bids" over "contracts". */}
+			{(
+				[
+					{ x: center - priceWidth / 2 - 8, anchor: "end", text: labels.bid },
+					{ x: center, anchor: "middle", text: labels.price },
+					{ x: center + priceWidth / 2 + 8, anchor: "start", text: labels.ask },
+				] as const
+			).flatMap(({ x, anchor, text }) => {
+				const room =
+					anchor === "middle" ? priceWidth : center - priceWidth / 2 - 16;
+				const lines = textWidth(text, 12) > room ? text.split(" · ") : [text];
+				return lines.map((line, i) => (
+					<Label
+						key={`${anchor}-${line}`}
+						x={x}
+						y={20 - (lines.length - 1) * 7 + i * 13}
+						anchor={anchor}
+						tone="muted"
+					>
+						{line}
+					</Label>
+				));
+			})}
 			<path d={`M8 ${HEAD - 8}H${width - 8}`} className="wt-grid" />
 			{askRows.map((level, i) =>
 				row(level, askTop + i * ROW, "ask", askRows.length - 1 - i),

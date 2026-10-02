@@ -1,5 +1,4 @@
-import * as m from "motion/react-m";
-import { Label, useTeachMotion } from "../stage";
+import { Label } from "../stage";
 
 export type GridLine = {
 	text: string;
@@ -43,7 +42,6 @@ export function CellGrid({
 	cells: readonly (readonly [readonly GridLine[], readonly GridLine[]])[];
 	active: readonly [number, number] | null;
 }) {
-	const motion = useTeachMotion();
 	const layout = cellGridLayout(width, rows.length);
 	return (
 		<g>
@@ -74,11 +72,10 @@ export function CellGrid({
 					const y = layout.rowY(i);
 					const on = active !== null && active[0] === i && active[1] === j;
 					return (
-						<m.g
+						// The other cells step back but stay readable: their shapes fade, their text goes muted.
+						<g
 							key={`${rows[i].long}-${columns[j]}`}
-							initial={false}
-							animate={{ opacity: active === null || on ? 1 : 0.5 }}
-							transition={motion.fade}
+							className={active === null || on ? undefined : "wt-quiet"}
 						>
 							<rect
 								x={x}
@@ -98,7 +95,7 @@ export function CellGrid({
 									{line.text}
 								</Label>
 							))}
-						</m.g>
+						</g>
 					);
 				}),
 			)}

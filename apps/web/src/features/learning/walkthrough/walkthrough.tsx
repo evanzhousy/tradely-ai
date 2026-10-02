@@ -149,7 +149,9 @@ export function Walkthrough({
 	 * Where focus goes after a control removes itself, such as "Try it yourself" or
 	 * "Next scene"; otherwise a keyboard or screen reader user is left on the page body.
 	 */
-	const focusNext = useRef<"heading" | "controls" | "feedback" | null>(null);
+	const focusNext = useRef<
+		"heading" | "controls" | "feedback" | "actions" | null
+	>(null);
 	const scene = scenes.find((item) => item.id === sceneId) ?? scenes[0];
 	const index = scenes.indexOf(scene);
 	const last = scene.beats.length - 1;
@@ -218,6 +220,15 @@ export function Walkthrough({
 	const goTo = useCallback(
 		(target: number, mode: VisualLessonPlaybackMode = "manual") => {
 			const next = Math.max(0, Math.min(last, target));
+			// Next and Play are disabled on the last step; if one had focus, hand it to the scene's
+			// first action rather than drop it on the page.
+			const focused = document.activeElement;
+			if (
+				next === last &&
+				focused instanceof HTMLElement &&
+				(focused.dataset.nav === "next" || focused.dataset.nav === "play")
+			)
+				focusNext.current = "actions";
 			record("visual_lesson_scene_started", mode);
 			setPhase("watch");
 			setExplore(null);
@@ -323,7 +334,11 @@ export function Walkthrough({
 					)
 				: target === "feedback"
 					? element.querySelector<HTMLElement>("[data-focus=feedback]")
-					: heading;
+					: target === "actions"
+						? element.querySelector<HTMLElement>(
+								".wt-panel-actions :is(a, button)",
+							)
+						: heading;
 		// When the stage sits above the controls, bring it into view with them, so the learner
 		// sees what each control changes.
 		const main = element.querySelector<HTMLElement>(".wt-main");
@@ -696,6 +711,7 @@ export function Walkthrough({
 						<Button
 							size="sm"
 							variant="ghost"
+							data-nav="play"
 							aria-label={autoplay ? t(copy.pause) : t(copy.play)}
 							aria-pressed={autoplay}
 							disabled={phase !== "watch" || beat === last}
@@ -721,6 +737,7 @@ export function Walkthrough({
 						</Button>
 						<Button
 							size="sm"
+							data-nav="next"
 							onClick={() => advance()}
 							disabled={phase !== "watch" || beat === last}
 						>

@@ -11,6 +11,7 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -337,6 +338,8 @@ const verdictCopy: Record<Verdict, Copy> = {
 /** Wide rows put the reason beside the detail; narrow rows give it its own line. */
 const auditRow = (width: number) => (width < 520 ? 76 : 62);
 
+const pillWidth = (word: string) => Math.max(56, textWidth(word, 11) + 18);
+
 function AuditRows({
 	width,
 	state,
@@ -385,10 +388,11 @@ function AuditRows({
 								animate={{ opacity: 1 }}
 								transition={motion.fade}
 							>
+								{/* The pill fits its word, so it stays clear of a long source name. */}
 								<rect
-									x={width - 116}
+									x={width - 20 - pillWidth(t(verdictCopy[v.verdict]))}
 									y={y + 8}
-									width={96}
+									width={pillWidth(t(verdictCopy[v.verdict]))}
 									height={20}
 									rx={10}
 									className={
@@ -401,7 +405,7 @@ function AuditRows({
 									style={v.verdict === "partial" ? { fill: hatch } : undefined}
 								/>
 								<Label
-									x={width - 68}
+									x={width - 20 - pillWidth(t(verdictCopy[v.verdict])) / 2}
 									y={y + 22}
 									anchor="middle"
 									tone="small"

@@ -1,4 +1,3 @@
-import * as m from "motion/react-m";
 import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
@@ -7,7 +6,7 @@ import {
 	StrikeGrid,
 	strikeGridHeight,
 } from "../walkthrough/instruments/strike-grid";
-import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import { Label, Stage, useStage } from "../walkthrough/stage";
 import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
@@ -320,7 +319,6 @@ function CandidateRows({
 	locale: Locale;
 }) {
 	const t = tr(locale);
-	const motion = useTeachMotion();
 	const { hatch } = useStage();
 	const removed = (candidate: Candidate) =>
 		(candidate.fails === "stale" && state.applied >= 1) ||
@@ -340,12 +338,8 @@ function CandidateRows({
 				const missing = candidate.value === null;
 				const win = candidate.id === winner;
 				return (
-					<m.g
-						key={candidate.id}
-						initial={false}
-						animate={{ opacity: out ? 0.35 : 1 }}
-						transition={motion.fade}
-					>
+					// A row the audit sets aside keeps its reason legible.
+					<g key={candidate.id} className={out ? "wt-quiet" : undefined}>
 						<rect
 							x={8}
 							y={y}
@@ -389,7 +383,7 @@ function CandidateRows({
 								{t(["unknown, not zero", "未知，不是零"])}
 							</Label>
 						) : null}
-					</m.g>
+					</g>
 				);
 			})}
 		</g>

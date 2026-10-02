@@ -21,7 +21,13 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import { BarChart } from "../walkthrough/instruments/bar-chart";
-import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import {
+	Appear,
+	Label,
+	Stage,
+	useStage,
+	useTeachMotion,
+} from "../walkthrough/stage";
 import { textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
@@ -233,9 +239,13 @@ function FlowRows({
 					"10月18日 看涨 · 周一 · 股票等价",
 				])}
 			</Label>
-			<path
-				d={`M${center} ${FLOW_TOP - 4}V${FLOW_TOP + rows.length * ROW}`}
+			<m.path
 				className="wt-axis"
+				initial={false}
+				animate={{
+					d: `M${center} ${FLOW_TOP - 4}V${FLOW_TOP + rows.length * ROW}`,
+				}}
+				transition={motion.move}
 			/>
 			{state.signed ? (
 				<>
@@ -248,7 +258,9 @@ function FlowRows({
 				</>
 			) : null}
 			{rows.map((row, i) => {
-				const y = FLOW_TOP + i * ROW;
+				// Each row draws at the top and slides to its place: when the spread's two legs
+				// merge into one row, the rows below move up instead of jumping.
+				const y = FLOW_TOP;
 				const sign = state.signed ? signOf(row.lean) : 1;
 				const excluded = state.signed && sign === 0;
 				const w = length(row.value);
@@ -269,55 +281,57 @@ function FlowRows({
 					<m.g
 						key={row.id}
 						initial={false}
-						animate={{ opacity: 1 }}
-						transition={motion.fade}
+						animate={{ y: i * ROW }}
+						transition={motion.move}
 					>
-						<Label x={8} y={y + 18} tone="small">
-							{t(row.label)}
-						</Label>
-						<m.rect
-							y={y + 6}
-							height={ROW - 12}
-							rx={3}
-							className={
-								excluded
-									? "wt-ghost"
-									: !state.signed
-										? "wt-panel-shape"
-										: sign > 0
-											? "wt-long-soft"
-											: "wt-short-soft"
-							}
-							style={excluded ? { fill: hatch } : undefined}
-							initial={false}
-							animate={{ x, width: w }}
-							transition={motion.move}
-						/>
-						<Label
-							x={
-								inside
-									? center + w - 6
-									: sign < 0
-										? center - w - 6
-										: center + w + 6
-							}
-							y={y + 19}
-							anchor={inside || sign < 0 ? "end" : "start"}
-							tone={
-								inside
-									? undefined
-									: excluded
-										? "small"
-										: sign > 0 && state.signed
-											? "gain"
-											: sign < 0
-												? "loss"
-												: undefined
-							}
-							className={inside ? "wt-halo" : undefined}
-						>
-							{text}
-						</Label>
+						<Appear>
+							<Label x={8} y={y + 18} tone="small">
+								{t(row.label)}
+							</Label>
+							<m.rect
+								y={y + 6}
+								height={ROW - 12}
+								rx={3}
+								className={
+									excluded
+										? "wt-ghost"
+										: !state.signed
+											? "wt-panel-shape"
+											: sign > 0
+												? "wt-long-soft"
+												: "wt-short-soft"
+								}
+								style={excluded ? { fill: hatch } : undefined}
+								initial={false}
+								animate={{ x, width: w }}
+								transition={motion.move}
+							/>
+							<Label
+								x={
+									inside
+										? center + w - 6
+										: sign < 0
+											? center - w - 6
+											: center + w + 6
+								}
+								y={y + 19}
+								anchor={inside || sign < 0 ? "end" : "start"}
+								tone={
+									inside
+										? undefined
+										: excluded
+											? "small"
+											: sign > 0 && state.signed
+												? "gain"
+												: sign < 0
+													? "loss"
+													: undefined
+								}
+								className={inside ? "wt-halo" : undefined}
+							>
+								{text}
+							</Label>
+						</Appear>
 					</m.g>
 				);
 			})}
@@ -384,7 +398,8 @@ function FlowView({
 						"Monday's Oct 18 call prints as bars of delta share-equivalents, pointed right when bought at the ask and left when sold at the bid, with mid-priced prints left out",
 						"周一 10月18日 看涨的各笔成交，以 Delta 股票等价的柱表示：按卖价买入向右，按买价卖出向左，中间价成交不计",
 					])}
-					height={flowHeight(flowRows(shown.spreadAsOne).length)}
+					// Room for every print as its own row, so merging the spread doesn't resize.
+					height={flowHeight(flowRows(false).length)}
 				>
 					{(width) => <FlowRows width={width} state={shown} locale={locale} />}
 				</Stage>

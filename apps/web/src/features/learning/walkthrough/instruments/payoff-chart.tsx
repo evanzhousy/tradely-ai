@@ -18,6 +18,8 @@ type LabelSpot = {
 	y: number;
 	anchor: "start" | "middle" | "end";
 	box: Box;
+	/** Which of a label's candidate spots this is, so the chart can keep it next time. */
+	slot: string;
 	/** The text shown: the label, or its short form when only that fits. */
 	text?: string;
 };
@@ -111,6 +113,21 @@ export function PayoffChart({
 }) {
 	const motion = useTeachMotion();
 	const clipId = useId().replace(/:/g, "");
+	// Each label's last spot. While it stays clear the label keeps it, so labels don't hop from
+	// spot to spot as a marker is dragged or a value changes under them.
+	const slots = useRef(new Map<string, string>());
+	const keepSlot =
+		<C extends { slot: string }>(
+			id: string,
+			candidatesFor: (text: string) => C[],
+		) =>
+		(text: string) => {
+			const list = candidatesFor(text);
+			const kept = list.find(
+				(candidate) => candidate.slot === slots.current.get(id),
+			);
+			return kept ? [kept, ...list] : list;
+		};
 	// Lines already on screen; one that joins later wipes in from the left, its label last.
 	const drawn = useRef<ReadonlySet<string> | null>(null);
 	useEffect(() => {
@@ -166,6 +183,17 @@ export function PayoffChart({
 		const points = screen.get(line.id);
 		return line.hidden || !points ? [] : [points];
 	});
+	// The zero axis is an obstacle too: a label lying on it reads as struck through.
+	const obstacles =
+		yRange[0] < 0 && yRange[1] > 0
+			? [
+					...paths,
+					[
+						[left, y(0)],
+						[right, y(0)],
+					] as const,
+				]
+			: paths;
 	const bounds = { x0: left, y0: top, x1: right + 2, y1: bottom - 2 };
 	const taken: Box[] = [];
 	// A band's label sits at the band's top, or its foot when a line runs across the top.
@@ -188,7 +216,7 @@ export function PayoffChart({
 		bandLabelY.set(
 			band.id,
 			placeLabel([row(top + 14), row(bottom - 8), row(top + 30)], {
-				lines: paths,
+				lines: obstacles,
 				taken,
 				bounds,
 			}).y,
@@ -215,6 +243,7 @@ export function PayoffChart({
 					y: baseline,
 					anchor,
 					box: textBox(text, at, baseline, 13, anchor),
+					slot: `${dx},${dy},${anchor}`,
 				};
 			};
 			const above = spot(0, -14, "middle");
@@ -231,14 +260,14 @@ export function PayoffChart({
 				),
 			];
 		};
-		markerLabels.set(
-			marker.id,
-			placeText(marker.label, marker.shortLabel, around, {
-				lines: paths,
-				taken,
-				bounds,
-			}),
+		const placed = placeText(
+			marker.label,
+			marker.shortLabel,
+			keepSlot(`marker:${marker.id}`, around),
+			{ lines: obstacles, taken, bounds },
 		);
+		slots.current.set(`marker:${marker.id}`, placed.slot);
+		markerLabels.set(marker.id, placed);
 	}
 	const className = (tone: PayoffLine["tone"]) =>
 		tone === "position"
@@ -259,11 +288,13 @@ export function PayoffChart({
 				at: number,
 				anchor: LabelSpot["anchor"],
 				baseline: number,
+				slot: string,
 			) => ({
 				x: at,
 				y: baseline,
 				anchor,
 				box: textBox(label, at, baseline, 11, anchor),
+				slot,
 			});
 			// Baselines that clear the line under the whole label, however steep it is there.
 			const clear = (from: number, to: number) => {
@@ -275,34 +306,35 @@ export function PayoffChart({
 			};
 			const end = clear(right - 4 - half * 2, right - 4);
 			return [
-				spot(right - 4, "end", end.above),
-				spot(right - 4, "end", end.below),
-				spot(right - 4, "end", end.above - 14),
-				spot(right - 4, "end", end.below + 14),
+				spot(right - 4, "end", end.above, "end-above"),
+				spot(right - 4, "end", end.below, "end-below"),
+				spot(right - 4, "end", end.above - 14, "end-above-2"),
+				spot(right - 4, "end", end.below + 14, "end-below-2"),
 				...[0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1].flatMap((fraction) => {
 					const at = left + (right - left) * fraction;
 					const there = clear(at - half, at + half);
 					return [
-						spot(at, "middle", there.above),
-						spot(at, "middle", there.below),
-						spot(at, "middle", there.above - 14),
-						spot(at, "middle", there.below + 14),
+						spot(at, "middle", there.above, `${fraction}-above`),
+						spot(at, "middle", there.below, `${fraction}-below`),
+						spot(at, "middle", there.above - 14, `${fraction}-above-2`),
+						spot(at, "middle", there.below + 14, `${fraction}-below-2`),
 					];
 				}),
 			];
 		};
 		// A hidden line's label rests at its line's end, so one that appears later doesn't fly in.
-		lineLabels.set(
-			line.id,
-			line.hidden || !line.label
-				? along(line.label)[0]
-				: placeText(line.label, line.shortLabel, along, {
-						lines: paths,
-						taken,
-						bounds,
-						own,
-					}),
+		if (line.hidden || !line.label) {
+			lineLabels.set(line.id, along(line.label)[0]);
+			continue;
+		}
+		const placed = placeText(
+			line.label,
+			line.shortLabel,
+			keepSlot(`line:${line.id}`, along),
+			{ lines: obstacles, taken, bounds, own },
 		);
+		slots.current.set(`line:${line.id}`, placed.slot);
+		lineLabels.set(line.id, placed);
 	}
 	return (
 		<g>

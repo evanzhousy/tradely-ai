@@ -98,7 +98,6 @@ function MatrixStage({
 	locale: Locale;
 }) {
 	const t = tr(locale);
-	const motion = useTeachMotion();
 	const layout = matrixLayout(width);
 	const rights: Right[] = ["call", "put"];
 	const sides: Side[] = ["long", "short"];
@@ -140,11 +139,10 @@ function MatrixStage({
 					const active = state.right === right && state.side === side;
 					const copy = cellCopy[right][side];
 					return (
-						<m.g
+						// The other three stay readable while this one is discussed.
+						<g
 							key={`${right}-${side}`}
-							initial={false}
-							animate={{ opacity: active ? 1 : 0.5 }}
-							transition={motion.fade}
+							className={active ? undefined : "wt-quiet"}
 						>
 							<rect
 								x={x}
@@ -171,7 +169,7 @@ function MatrixStage({
 							<Label x={x + 14} y={y + 88} tone="small">
 								{t(copy.premium)}
 							</Label>
-						</m.g>
+						</g>
 					);
 				}),
 			)}
@@ -615,8 +613,9 @@ function AssignStage({
 	const pickTo = layout.narrow
 		? { x: eli.x + eli.w / 2, y: eli.y - 8 }
 		: { x: eli.x - 8, y: eli.y + eli.h / 2 };
+	// On a narrow stage the arrow turns just under the clearinghouse, above the writers' caption.
 	const pickPath = layout.narrow
-		? `M${pickFrom.x} ${pickFrom.y}V${(pickFrom.y + pickTo.y) / 2}H${pickTo.x}V${pickTo.y}l-5 -7m5 7l5 -7`
+		? `M${pickFrom.x} ${pickFrom.y}V${pickFrom.y + 4}H${pickTo.x}V${pickTo.y}l-5 -7m5 7l5 -7`
 		: `M${pickFrom.x} ${pickFrom.y}H${(pickFrom.x + pickTo.x) / 2}V${pickTo.y}H${pickTo.x}l-7 -5m7 5l-7 5`;
 	// Settlement: a put sends shares to the writer and cash back; a call the reverse.
 	const flows = [

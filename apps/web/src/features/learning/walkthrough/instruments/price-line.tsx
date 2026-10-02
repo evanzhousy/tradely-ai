@@ -84,18 +84,29 @@ export function PriceLine({
 					transition={motion.move}
 				/>
 			) : null}
-			{zone ? (
-				<m.text
-					y={76}
-					textAnchor="middle"
-					className="wt-accent"
-					initial={false}
-					animate={{ x: (x(zone.from) + x(zone.to)) / 2 }}
-					transition={motion.move}
-				>
-					{zone.label}
-				</m.text>
-			) : null}
+			{zone
+				? (() => {
+						// Inside the zone when it fits; else beside it, on the side with room.
+						const from = x(zone.from);
+						const to = x(zone.to);
+						const inside = textWidth(zone.label, 13) <= to - from - 8;
+						const right = width - 4 - to >= textWidth(zone.label, 13) + 6;
+						return (
+							<m.text
+								y={76}
+								textAnchor={inside ? "middle" : right ? "start" : "end"}
+								className="wt-accent"
+								initial={false}
+								animate={{
+									x: inside ? (from + to) / 2 : right ? to + 6 : from - 6,
+								}}
+								transition={motion.move}
+							>
+								{zone.label}
+							</m.text>
+						);
+					})()
+				: null}
 			<path
 				d={`M${left} ${axis}H${right}`}
 				className="wt-axis"
@@ -113,18 +124,34 @@ export function PriceLine({
 				)
 				.map((tick) => {
 					const at = fitAnchor(tickLabel(tick), x(tick), 11, 2, width - 2);
-					return (
-						<Label
-							key={tick}
-							x={at.x}
-							y={axis + 24}
-							anchor={at.anchor}
-							tone="small"
-						>
-							{tickLabel(tick)}
-						</Label>
-					);
-				})}
+					const w = textWidth(tickLabel(tick), 11);
+					const from =
+						at.anchor === "start"
+							? at.x
+							: at.anchor === "end"
+								? at.x - w
+								: at.x - w / 2;
+					return { tick, at, from, to: from + w };
+				})
+				// On a narrow line a tick that would run into the last one kept drops out.
+				.reduce<
+					{ tick: number; at: ReturnType<typeof fitAnchor>; to: number }[]
+				>((kept, label) => {
+					const last = kept.at(-1);
+					if (!last || label.from >= last.to + 8) kept.push(label);
+					return kept;
+				}, [])
+				.map(({ tick, at }) => (
+					<Label
+						key={tick}
+						x={at.x}
+						y={axis + 24}
+						anchor={at.anchor}
+						tone="small"
+					>
+						{tickLabel(tick)}
+					</Label>
+				))}
 			{strike ? (
 				<g>
 					<path

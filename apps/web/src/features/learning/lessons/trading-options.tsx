@@ -286,7 +286,8 @@ function OrderView({
 						"The order book of a thinly traded call, with your order in it",
 						"一份交易清淡的看涨期权的订单簿，以及其中你的订单",
 					])}
-					height={bookHeight(showMine ? 4 : 3, 3)}
+					// Room for the learner's own bid, so the book doesn't grow when it joins.
+					height={bookHeight(4, 3)}
 				>
 					{(width) => (
 						<OrderBook
