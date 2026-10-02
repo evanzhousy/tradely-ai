@@ -112,6 +112,8 @@ export type ModuleId = (typeof courseModules)[number]["id"];
 
 type Entry = {
 	id: string;
+	/** A checkpoint closes a module with questions on a new day; it has no practice unit. */
+	kind?: "checkpoint";
 	moduleId: ModuleId;
 	title: string;
 	titleZh: string;
@@ -137,6 +139,25 @@ const lesson = (
 	summary,
 	summaryZh,
 	concepts,
+	prerequisites,
+});
+/** A module's closing checkpoint: its lessons' ideas applied, unguided, to a new day. */
+const checkpoint = (
+	moduleId: ModuleId,
+	title: string,
+	titleZh: string,
+	summary: string,
+	summaryZh: string,
+	prerequisites: string[],
+): Entry => ({
+	id: `checkpoint-${moduleId}`,
+	kind: "checkpoint",
+	moduleId,
+	title,
+	titleZh,
+	summary,
+	summaryZh,
+	concepts: [],
 	prerequisites,
 });
 export const syllabus: readonly Entry[] = [
@@ -178,6 +199,14 @@ export const syllabus: readonly Entry[] = [
 		"理解为何方向对了仍可能亏钱、为何义务方的损失可能远超所收权利金，以及交易成本如何累积。",
 		["C03", "C04", "C13"],
 		["trading-options"],
+	),
+	checkpoint(
+		"orientation",
+		"Checkpoint: Start here, on a new day",
+		"检查点：在新的一天里运用“从这里开始”",
+		"Answer four questions on a Wednesday you haven't seen: sell shares at the quote, value a call from both sides, and place a limit order. Then see which lessons to revisit.",
+		"在一个你没见过的周三回答四个问题：按报价卖出股票、从两方计算一张看涨的盈亏、下一张限价单。然后看看需要复习哪些课。",
+		["options-risks"],
 	),
 	lesson(
 		"option-contracts",

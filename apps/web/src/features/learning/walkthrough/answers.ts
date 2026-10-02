@@ -1,3 +1,5 @@
+import type { Prediction } from "./types";
+
 /**
  * A fixed shuffle for a seed: the same order on the server and in every browser, so the
  * right answer isn't always the first button and the page still hydrates cleanly.
@@ -38,4 +40,19 @@ export function formatEntry(
 		maximumFractionDigits: 4,
 	});
 	return `${value < 0 ? "−" : ""}${prefix}${digits}${suffix}`;
+}
+
+/**
+ * Whether a prediction was right. A typed answer is stored as "entry:<number>" and counts
+ * within the entry's tolerance.
+ */
+export function judge(predict: Prediction, value: string) {
+	if (!value.startsWith("entry:")) return { correct: value === predict.answer };
+	const typed = Number(value.slice("entry:".length));
+	const entry = predict.entry;
+	if (!entry) return { typed, correct: false };
+	const off = entry.eitherSign
+		? Math.abs(Math.abs(typed) - Math.abs(entry.answer))
+		: Math.abs(typed - entry.answer);
+	return { typed, correct: off <= (entry.tolerance ?? 0) + 1e-9 };
 }

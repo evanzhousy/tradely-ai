@@ -40,16 +40,11 @@ import {
 	useVisualBookmarks,
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-lesson-identity";
-import { formatEntry, parseEntry, seededOrder } from "./answers";
+import { formatEntry, judge, parseEntry, seededOrder } from "./answers";
 import { TaskPanel } from "./explore-task";
+import { ReviewSummary } from "./review-summary";
 import { CountTo, useTeachMotion } from "./stage";
-import type {
-	ExploreTask,
-	Phase,
-	Prediction,
-	ResultItem,
-	WalkthroughScene,
-} from "./types";
+import type { ExploreTask, Phase, ResultItem, WalkthroughScene } from "./types";
 
 /** Reading time at about 200 words a minute, plus time to look at the diagram. */
 function readingHoldMs(caption: string) {
@@ -65,17 +60,6 @@ type FrameContextValue = {
 };
 
 /** Whether a stored prediction is right; a typed one is kept as "entry:<number>". */
-function judge(predict: Prediction, value: string) {
-	if (!value.startsWith("entry:")) return { correct: value === predict.answer };
-	const typed = Number(value.slice("entry:".length));
-	const entry = predict.entry;
-	if (!entry) return { typed, correct: false };
-	const off = entry.eitherSign
-		? Math.abs(Math.abs(typed) - Math.abs(entry.answer))
-		: Math.abs(typed - entry.answer);
-	return { typed, correct: off <= (entry.tolerance ?? 0) + 1e-9 };
-}
-
 const FrameContext = createContext<FrameContextValue | null>(null);
 
 const copy = {
@@ -125,11 +109,14 @@ export function Walkthrough({
 	id,
 	label,
 	scenes,
+	review = false,
 }: {
 	locale: Locale;
 	id: string;
 	label: Copy;
 	scenes: readonly [WalkthroughScene, ...WalkthroughScene[]];
+	/** A checkpoint: the last scene ends with the results, not a link to practice. */
+	review?: boolean;
 }) {
 	const t = (value: Copy) => pick(value, locale);
 	const lessonId = useContext(VisualLessonIdentity);
@@ -391,7 +378,7 @@ export function Walkthrough({
 				{t(copy.nextScene)}
 				<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 			</Button>
-		) : (
+		) : review ? null : (
 			// After the last scene comes the lesson's own practice, just below the walkthrough.
 			<a
 				href="#check-yourself"
@@ -575,6 +562,15 @@ export function Walkthrough({
 						</Button>
 						{onward}
 					</div>
+				) : null}
+				{review &&
+				index === scenes.length - 1 &&
+				((phase === "watch" && beat === last) || phase === "explore") ? (
+					<ReviewSummary
+						locale={locale}
+						scenes={scenes}
+						predictions={predictions}
+					/>
 				) : null}
 			</>
 		);

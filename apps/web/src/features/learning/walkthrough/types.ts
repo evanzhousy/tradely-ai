@@ -74,6 +74,8 @@ export type WalkthroughScene<S = unknown, E = unknown> = {
 	id: string;
 	label: Copy;
 	title: Copy;
+	/** In a checkpoint, the lesson that teaches this question, offered if it's missed. */
+	revisit?: string;
 	predict?: Prediction;
 	beats: readonly [Beat<S>, ...Beat<S>[]];
 	explore?: {

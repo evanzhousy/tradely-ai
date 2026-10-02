@@ -14,13 +14,15 @@ export const learningRollout: Readonly<
 		}
 	>
 > = Object.fromEntries(
-	syllabus.map((lesson) => [
-		lesson.id,
-		{
-			presentation: "primary" as const,
-			three: ["rank-contracts", "gamma-exposure"].includes(lesson.id),
-			title: { en: lesson.title, zh: lesson.titleZh },
-			intro: { en: lesson.summary, zh: lesson.summaryZh },
-		},
-	]),
+	syllabus
+		.filter((lesson) => lesson.kind !== "checkpoint")
+		.map((lesson) => [
+			lesson.id,
+			{
+				presentation: "primary" as const,
+				three: ["rank-contracts", "gamma-exposure"].includes(lesson.id),
+				title: { en: lesson.title, zh: lesson.titleZh },
+				intro: { en: lesson.summary, zh: lesson.summaryZh },
+			},
+		]),
 );

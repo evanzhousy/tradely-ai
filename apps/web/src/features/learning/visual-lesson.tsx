@@ -202,6 +202,11 @@ const lessons = {
 			default: m.OptionsRisksWalkthrough,
 		})),
 	),
+	"checkpoint-orientation": lazy(() =>
+		import("./lessons/checkpoint-orientation").then((m) => ({
+			default: m.CheckpointOrientationWalkthrough,
+		})),
+	),
 	"option-contracts": lazy(() =>
 		import("./lessons/option-contracts").then((m) => ({
 			default: m.OptionContractsWalkthrough,
