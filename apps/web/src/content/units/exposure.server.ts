@@ -7,6 +7,24 @@ import {
 	t,
 } from "./authoring.server";
 
+/** Fixed places, or with `places` left out as few as the value needs (up to two). */
+const digits = (value: number, places?: number) =>
+	Math.abs(value).toLocaleString("en-US", {
+		minimumFractionDigits: places ?? 0,
+		maximumFractionDigits: places ?? 2,
+	});
+/** "1,200", "−350". */
+const plain = (value: number, places?: number) =>
+	`${value < 0 ? "−" : ""}${digits(value, places)}`;
+/** "+1,200", "−350": a quantity whose direction matters. */
+const signed = (value: number, places?: number) =>
+	`${value < 0 ? "−" : "+"}${digits(value, places)}`;
+/** "$0.50", "−$60.00". */
+const money = (value: number, places = 2) =>
+	`${value < 0 ? "−" : ""}$${digits(value, places)}`;
+const signedMoney = (value: number, places = 2) =>
+	`${value < 0 ? "−" : "+"}$${digits(value, places)}`;
+
 export const exposureUnits: TeachingUnit[] = [
 	{
 		id: "delta",
@@ -27,8 +45,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"ALFA 为 $100、还剩 32 天时，10月18日 100 看涨的模型 Delta 为 0.52。你的 16 张是 0.52 × 100 × 16 = +832 股等价，所以上涨 $0.40 约赚 $333；Ben 空头 10 张，是 −520，约亏 $208。大涨 $10 后，模型把看涨每股重新定价上涨 $6.92，而不是仅用 Delta 给出的 $5.20。这些都没有包含 Gamma、时间、波动率和费用。",
 		),
 		misconception: t(
-			"Do not multiply by 100 twice. A model price sensitivity is not an inferred tape-sentiment sign.",
-			"不要重复乘 100。模型价格敏感度不是成交记录推断的情绪符号。",
+			"Multiply by 100 once, for the shares in a contract, and flip the sign for a short position. Delta is the model's price slope; it says nothing about whether a trade was bullish.",
+			"只乘一次 100（一张合约的股数），空头要把符号反过来。Delta 是模型的价格斜率，与一笔成交是否看涨无关。",
 		),
 		case: (v) => {
 			const delta = [0.4, -0.35, 0.6, -0.25][v];
@@ -36,31 +54,32 @@ export const exposureUnits: TeachingUnit[] = [
 			const short = v === 2;
 			const move = [0.5, 0.8, -0.5, 1.2][v];
 			const position = delta * count * 100 * (short ? -1 : 1);
+			const kind = delta > 0 ? t("calls", "看涨") : t("puts", "看跌");
 			return {
 				brief: t(
-					`${short ? "Short" : "Long"} ${count} options. Model delta ${delta}; multiplier 100. Underlying move $${move}. Other inputs fixed; delta-only approximation.`,
-					`${short ? "空头" : "多头"} ${count} 张期权，模型 Delta ${delta}、乘数 100。标的变动 $${move}。其他输入固定，仅用 Delta 近似。`,
+					`You ${short ? "are short" : "hold"} ${count} ALFA ${kind.en}, each with a model delta of ${plain(delta, 2)}. One contract covers 100 shares. ALFA ${move > 0 ? "rises" : "falls"} ${money(Math.abs(move))} and nothing else changes. Estimate with delta alone.`,
+					`你${short ? "做空" : "持有"} ${count} 张 ALFA ${kind.zh}，每张模型 Delta 为 ${plain(delta, 2)}。一张合约对应 100 股。ALFA ${move > 0 ? "上涨" : "下跌"} ${money(Math.abs(move))}，其他条件不变。只用 Delta 估算。`,
 				),
 				questions: [
 					n(
 						"position-delta",
-						"Signed position delta?",
-						"带符号持仓 Delta？",
+						"What is your position's delta, in share-equivalents? Use a minus sign if the position gains when ALFA falls.",
+						"你的持仓 Delta 是多少股等价？如果 ALFA 下跌时持仓赚钱，请用负号。",
 						position,
-						"shares-equivalent",
-						"股等价量",
-						"Model delta × contracts × multiplier × long/short sign.",
-						"模型 Delta×张数×乘数×多空符号。",
+						"share-equivalents",
+						"股等价",
+						`${plain(delta, 2)} × ${count} contracts × 100 shares${short ? " × −1 for the short side" : ""} = ${signed(position)} share-equivalents.`,
+						`${plain(delta, 2)} × ${count} 张 × 100 股${short ? " × −1（空头）" : ""} = ${signed(position)} 股等价。`,
 					),
 					n(
 						"change",
-						"Approximate position value change?",
-						"持仓价值近似变化？",
+						"About how much does the position gain or lose? Use a minus sign for a loss.",
+						"持仓大约赚或亏多少？亏损请用负号。",
 						position * move,
-						"USD",
+						"dollars",
 						"美元",
-						"Position delta × underlying price change.",
-						"持仓 Delta×标的价格变化。",
+						`${signed(position)} share-equivalents × ${signedMoney(move)} = ${signedMoney(position * move)}. Delta alone leaves out gamma, time and volatility, so treat it as an estimate.`,
+						`${signed(position)} 股等价 × ${signedMoney(move)} = ${signedMoney(position * move)}。仅用 Delta 忽略了 Gamma、时间和波动率，只能算估计。`,
 					),
 				],
 			};
@@ -85,39 +104,40 @@ export const exposureUnits: TeachingUnit[] = [
 			"ALFA $100 时，10月18日 100 看涨的 Delta 为 0.52，Gamma 为每 $1 0.04。上涨 $2 后 Delta 约为 0.60。你的 16 张从 +832 股等价变为 +960，做空 832 股的对冲需要再卖出 128 股；Ben 空头 10 张看涨，从 −520 变为 −600，需要买入 80 股。价格估计是另一种算法：0.52 × 2 + ½ × 0.04 × 2² = 每股 $1.12。",
 		),
 		misconception: t(
-			"For the supplied long-gamma position, selling into a rise maintains the hedge. This conditional example does not prove how dealers are positioned.",
-			"给定正 Gamma 持仓中，上涨时卖出是维持对冲；该条件案例不证明做市商实际持仓。",
+			"If you are long calls, keeping the hedge flat means selling shares as the stock rises and buying as it falls. That is true of the position you are given; it doesn't tell you how dealers are positioned.",
+			"持有多头看涨时，要让对冲保持归零，就得在上涨时卖出股票、下跌时买入。这对给定的持仓成立，但不能说明做市商的实际持仓。",
 		),
 		case: (v) => {
 			const d = [0.45, 0.5, 0.35, 0.6][v];
 			const g = [0.03, 0.02, 0.04, 0.01][v];
 			const move = [1, 2, -1, 3][v];
 			const count = [2, 3, 4, 5][v];
+			const change = g * move * count * 100;
 			return {
 				brief: t(
-					`Long calls: delta ${d}, gamma ${g}/$1, ${count} contracts, multiplier 100. Underlying move $${move}; other inputs fixed.`,
-					`多头看涨 Delta ${d}、每 $1 Gamma ${g}，${count} 张、乘数 100。标的变动 $${move}，其他输入固定。`,
+					`You hold ${count} ALFA calls, each with delta ${plain(d, 2)} and gamma ${plain(g, 2)} per $1, and you're short enough stock that the position starts delta-neutral. One contract covers 100 shares. ALFA ${move > 0 ? "rises" : "falls"} ${money(Math.abs(move))} and nothing else changes.`,
+					`你持有 ${count} 张 ALFA 看涨，每张 Delta 为 ${plain(d, 2)}、每 $1 的 Gamma 为 ${plain(g, 2)}，并做空了足够的股票，让持仓一开始 Delta 中性。一张合约对应 100 股。ALFA ${move > 0 ? "上涨" : "下跌"} ${money(Math.abs(move))}，其他条件不变。`,
 				),
 				questions: [
 					n(
 						"next-delta",
-						"Approximate new option delta?",
-						"期权新 Delta 近似值？",
+						"About what is each call's delta after the move?",
+						"变动后每张看涨的 Delta 大约是多少？",
 						d + g * move,
-						"delta per option-share",
-						"每股期权 Delta",
-						"Old delta + gamma × move.",
-						"原 Delta+Gamma×变动。",
+						"delta",
+						"Delta",
+						`${plain(d, 2)} + ${plain(g, 2)} × ${signed(move)} = ${plain(d + g * move, 2)}.`,
+						`${plain(d, 2)} + ${plain(g, 2)} × ${signed(move)} = ${plain(d + g * move, 2)}。`,
 					),
 					n(
 						"hedge-change",
-						"Additional stock shares to hold for a delta-neutral hedge (buy +, sell −)?",
-						"为维持 Delta 中性需增持多少股票（买入为正，卖出为负）？",
-						-g * move * count * 100,
+						"How many shares must you trade to be delta-neutral again? Enter a purchase as positive and a sale as negative.",
+						"要重新回到 Delta 中性，需要交易多少股？买入填正数，卖出填负数。",
+						-change,
 						"shares",
 						"股",
-						"Hedge change is the negative of the position delta change.",
-						"对冲变化是持仓 Delta 变化的相反数。",
+						`Your calls' delta changed by ${plain(g, 2)} × ${signed(move)} × ${count} × 100 = ${signed(change)} shares, so the hedge must ${change > 0 ? "sell" : "buy"} ${plain(Math.abs(change))}: ${signed(-change)}.`,
+						`看涨的 Delta 变化了 ${plain(g, 2)} × ${signed(move)} × ${count} × 100 = ${signed(change)} 股，所以对冲要${change > 0 ? "卖出" : "买入"} ${plain(Math.abs(change))} 股：${signed(-change)}。`,
 					),
 				],
 			};
@@ -142,38 +162,63 @@ export const exposureUnits: TeachingUnit[] = [
 			"ALFA $100、IV 35%、还剩 32 天时，10月18日 100 看涨的 Theta 为每天 −$0.065，Vega 为每个波动率点 $0.118。六天后 ALFA 上涨 $1、IV 下降 3 点：Delta 带来 +$0.52，Gamma +$0.02，Theta −$0.39，Vega −$0.35，合计每股 −$0.20；模型重新定价为 −$0.19。你的 16 张约亏 $320，Ben 空头 10 张约赚 $200。",
 		),
 		misconception: t(
-			"Use percentage-point changes for the supplied vega/rho convention. State omitted inputs rather than calling an approximation realized P&L.",
-			"按给定 Vega/Rho 约定使用百分点变化，说明遗漏输入，不能把近似称为实际盈亏。",
+			"Vega and rho here are per percentage point, so IV going from 30% to 33% is +3, not +10%. The sum is an estimate that leaves out anything not listed; don't report it as realized P&L.",
+			"这里的 Vega 和 Rho 都按每个百分点计，所以 IV 从 30% 到 33% 是 +3，而不是 +10%。合计只是估计，没有包含未列出的因素，不要把它当作实际盈亏。",
 		),
 		case: (v) => {
 			const days = [2, 3, 1, 4][v];
 			const iv = [-2, 3, -4, 2][v];
 			const rate = [0, 0.5, -0.5, 1][v];
+			const perShare = -0.05 * days + 0.12 * iv + 0.08 * rate;
+			const ivMove = (
+				en: string,
+				zh: string,
+				points: number,
+				[still, up, down]: [string, string, string],
+			) =>
+				t(
+					points === 0
+						? `${en} ${still}`
+						: `${en} ${points > 0 ? up : down} ${plain(Math.abs(points))} point${Math.abs(points) === 1 ? "" : "s"}`,
+					points === 0
+						? `${zh}不变`
+						: `${zh}${points > 0 ? "上升" : "下降"} ${plain(Math.abs(points))} 个点`,
+				);
+			const ivText = ivMove("IV", "IV ", iv, [
+				"doesn't change",
+				"rises",
+				"falls",
+			]);
+			const rateText = ivMove("rates", "利率", rate, [
+				"don't change",
+				"rise",
+				"fall",
+			]);
 			return {
 				brief: t(
-					`One long option, multiplier 100. Theta −$0.05/day, vega $0.12/IV point, rho $0.08/rate point. ${days} days pass, IV changes ${iv} points and rates ${rate} points. Spot fixed.`,
-					`一张多头期权、乘数 100。Theta −$0.05/天，Vega $0.12/IV 点，Rho $0.08/利率点。经过 ${days} 天，IV 变动 ${iv} 点，利率变动 ${rate} 点，现价固定。`,
+					`You hold one ALFA call. Per share, its theta is −$0.05 a day, its vega $0.12 per IV point and its rho $0.08 per rate point. Over the next ${days === 1 ? "day" : `${days} days`}, ${ivText.en} and ${rateText.en}, while ALFA itself doesn't move.`,
+					`你持有一张 ALFA 看涨。按每股计，它的 Theta 为每天 −$0.05，Vega 为每个 IV 点 $0.12，Rho 为每个利率点 $0.08。接下来 ${days} 天，${ivText.zh}，${rateText.zh}，ALFA 本身不动。`,
 				),
 				questions: [
 					n(
 						"vega-effect",
-						"IV-only per-share price effect?",
-						"仅 IV 引起的每股价格变化？",
+						"How much does the IV change alone move the call's price, per share? Use a minus sign for a fall.",
+						"仅 IV 的变化让看涨每股价格变动多少？下跌请用负号。",
 						iv * 0.12,
-						"USD/share",
+						"dollars a share",
 						"美元/股",
-						"Vega × IV point change.",
-						"Vega×IV 点数变化。",
+						`$0.12 × ${signed(iv)} points = ${signedMoney(iv * 0.12)} a share.`,
+						`$0.12 × ${signed(iv)} 点 = 每股 ${signedMoney(iv * 0.12)}。`,
 					),
 					n(
 						"combined",
-						"Combined approximate position change?",
-						"合并后的持仓近似变化？",
-						(-0.05 * days + 0.12 * iv + 0.08 * rate) * 100,
-						"USD",
+						"Adding time, IV and rates, about how much does the whole contract gain or lose? Use a minus sign for a loss.",
+						"把时间、IV 和利率加起来，整张合约大约赚或亏多少？亏损请用负号。",
+						perShare * 100,
+						"dollars",
 						"美元",
-						"(Theta×days + vega×IV points + rho×rate points) × multiplier.",
-						"（Theta×天数+Vega×IV 点数+Rho×利率点数）×乘数。",
+						`Per share: −$0.05 × ${days} + $0.12 × ${signed(iv)} + $0.08 × ${signed(rate)} = ${signedMoney(perShare)}. Times 100 shares: ${signedMoney(perShare * 100)}.`,
+						`每股：−$0.05 × ${days} + $0.12 × ${signed(iv)} + $0.08 × ${signed(rate)} = ${signedMoney(perShare)}。乘以 100 股：${signedMoney(perShare * 100)}。`,
 					),
 				],
 			};
@@ -198,48 +243,52 @@ export const exposureUnits: TeachingUnit[] = [
 			"10月18日 100 看涨的中间价 $4.13 拟合出 34.9% 的隐含波动率；买价和卖价分别拟合出 34.3% 和 35.6%。ALFA 最近 20 个每日收益的标准差为 1.52%，按 √252 计 RV20 约 24%（按 √365 计为 29%，只看最近 10 个交易日为 15%）。IV 35% 对 RV20 24% 相差 +11 个波动率点：期权定价的未来波动更大（包括财报），而不是上涨 11% 或高估 46%。",
 		),
 		misconception: t(
-			"Keep units and horizons. A spread between forward-implied and backward-realized estimates is context, not automatic expected profit.",
-			"保留单位与时间范围。向前隐含与向后已实现估计之差是上下文，不是自动预期利润。",
+			"Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+			"按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。",
 		),
 		case: (v) => {
 			const iv = [28, 35, 22, 31][v];
 			const rv = [20, 28, 26, 25][v];
 			return {
 				brief: t(
-					`IV30 = ${iv}%; trailing RV20 = ${rv}%. Both are annualized, but one looks forward and the other backward.`,
-					`IV30=${iv}%，历史 RV20=${rv}%。两者均年化，但一个向前、一个向后。`,
+					`ALFA's 30-day implied volatility, IV30, is ${iv}%. Its realized volatility over the last 20 sessions, RV20, is ${rv}%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes.`,
+					`ALFA 的 30 天隐含波动率 IV30 为 ${iv}%，最近 20 个交易日的已实现波动率 RV20 为 ${rv}%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。`,
 				),
 				questions: [
 					n(
 						"spread",
-						"IV30 − RV20?",
-						"IV30−RV20？",
+						"How many volatility points is IV30 above RV20? Use a minus sign if it's below.",
+						"IV30 比 RV20 高多少个波动率点？如果更低，请用负号。",
 						iv - rv,
 						"volatility points",
 						"波动率点",
-						"Subtract percentages as point values; preserve the sign.",
-						"百分点数值相减并保留符号。",
+						`${iv}% − ${rv}% = ${signed(iv - rv)} points. Two percentages subtract to points, not to a percent change.`,
+						`${iv}% − ${rv}% = ${signed(iv - rv)} 个点。两个百分比相减得到的是点数，而不是百分比变化。`,
 					),
 					c(
 						"interpretation",
-						"What does this difference establish?",
-						"该差异能确定什么？",
+						"What does that gap tell you?",
+						"这个差值说明了什么？",
 						[
 							[
 								"mispricing",
-								"Certain option mispricing of the same amount.",
-								"相同数额的确定期权错误定价。",
+								"The options are mispriced by that much",
+								"期权被错误定价了这么多",
 							],
 							[
 								"context",
-								"A difference between two specified volatility measures, not a directional forecast.",
-								"两项给定波动指标的差，不是方向预测。",
+								"Options price a different amount of movement ahead than ALFA showed lately; it isn't a forecast of direction",
+								"期权对未来波动的定价与 ALFA 近期的表现不同；这不是方向预测",
 							],
-							["return", "The next stock return.", "下个股票收益。"],
+							[
+								"return",
+								"How far ALFA will move next",
+								"ALFA 接下来会涨跌多少",
+							],
 						],
 						"context",
-						"The estimation windows and information sets differ.",
-						"估计窗口与信息集不同。",
+						"IV30 looks forward from option prices and RV20 back over 20 closes. A gap is a reason to ask why, an event such as earnings, for example, not a measure of mispricing or a direction.",
+						"IV30 从期权价格向前看，RV20 回看 20 个收盘价。差值提示你去问原因（例如财报之类的事件），既不衡量错误定价，也不说明方向。",
 					),
 				],
 			};
@@ -264,17 +313,18 @@ export const exposureUnits: TeachingUnit[] = [
 			"ALFA 10月18日 的微笑从 $90 行权价的 37% 到 $110 的 33%；在 $100 处，期限结构从 33%（9月20日）升到跨越财报的十月到期日的 35%，再降到 31%（12月20日）。25Δ 看跌（$93.55）为 36.3%，25Δ 看涨（$107.45）为 33.5%：偏斜（看跌减看涨）为 +2.8 点，看涨减看跌的风险逆转为 −2.8 点。12月20日 $105 没有报价，所以 ≈30% 是插值；只剩 4 天的 $90 和 $110 两翼留空。",
 		),
 		misconception: t(
-			"A smooth surface can hide missingness. Identify which cells were measured and which were fitted before using their precision.",
-			"平滑曲面可能掩盖缺失。使用数值精度前，先区分测量与拟合。",
+			"A smooth surface can hide gaps. Before trusting a cell's decimals, check whether it was quoted or filled in by the model.",
+			"平滑的曲面可能掩盖缺口。相信某个格子的小数之前，先确认它是实际报价还是模型填出来的。",
 		),
 		case: (v) => {
 			const put = [34, 38, 29, 40][v];
 			const call = [28, 30, 31, 28][v];
 			const atm = [29, 31, 28, 32][v];
+			const wings = (put + call) / 2;
 			return {
 				brief: t(
-					`Same tenor, stated 25Δ convention. Put IV ${put}%, call IV ${call}%, ATM IV ${atm}%. All three are supplied observations.`,
-					`同一期限、明确 25Δ 约定，看跌 IV ${put}%、看涨 ${call}%、ATM ${atm}%，三项均有观测。`,
+					`For one ALFA expiry, the 25-delta put is quoted at ${put}% implied volatility, the at-the-money option at ${atm}% and the 25-delta call at ${call}%. All three are quotes, not interpolations. In this course, skew means put IV minus call IV.`,
+					`在 ALFA 的同一个到期日上，25 Delta 看跌的隐含波动率报价为 ${put}%，平值期权为 ${atm}%，25 Delta 看涨为 ${call}%。三者都是报价，不是插值。本课中，偏斜指看跌 IV 减看涨 IV。`,
 				),
 				worksheet: {
 					columns: [t("Reference", "参考"), t("IV (%)", "IV（%）")],
@@ -291,23 +341,23 @@ export const exposureUnits: TeachingUnit[] = [
 				questions: [
 					n(
 						"skew",
-						"Put-minus-call skew?",
-						"看跌减看涨偏斜？",
+						"What is the 25-delta skew, in volatility points? Use a minus sign if the call's IV is higher.",
+						"25 Delta 偏斜是多少个波动率点？如果看涨的 IV 更高，请用负号。",
 						put - call,
-						"vol points",
+						"volatility points",
 						"波动率点",
-						"Put IV − call IV in the stated convention.",
-						"按约定，用看跌 IV 减看涨 IV。",
+						`${put}% − ${call}% = ${signed(put - call)} points.${put < call ? " Here the call wing is the richer one." : ""}`,
+						`${put}% − ${call}% = ${signed(put - call)} 个点。${put < call ? "这里看涨一翼更贵。" : ""}`,
 					),
 					n(
 						"butterfly",
-						"Butterfly: average wing IV minus ATM?",
-						"蝶式：两翼平均 IV 减 ATM？",
-						(put + call) / 2 - atm,
-						"vol points",
+						"What is the butterfly: the average of the two wings' IV minus the at-the-money IV?",
+						"蝶式值是多少：两翼 IV 的平均值减去平值 IV？",
+						wings - atm,
+						"volatility points",
 						"波动率点",
-						"(Put IV + call IV)/2 − ATM IV.",
-						"（看跌 IV+看涨 IV）/2−ATM IV。",
+						`(${put}% + ${call}%) ÷ 2 = ${plain(wings)}%, and ${plain(wings)}% − ${atm}% = ${signed(wings - atm)} points.`,
+						`(${put}% + ${call}%) ÷ 2 = ${plain(wings)}%，${plain(wings)}% − ${atm}% = ${signed(wings - atm)} 个点。`,
 					),
 				],
 			};
@@ -332,8 +382,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"ALFA 今天的 IV30 为 35%；过去一年的每周收盘在 22% 到 68% 之间。IV Rank 为 (35 − 22) ÷ (68 − 22) = 28%，但 52 周中有 48 周更低，IV 百分位为 92%。去掉唯一一周的 68%，Rank 跳到 59%，百分位只变到 94%。只看最近 13 周，今天高于每一个收盘值。",
 		),
 		misconception: t(
-			"Rank is a range location; percentile is a frequency. A high value of either is not a direction or profit forecast.",
-			"Rank 是区间位置，百分位是频率；任一高值都不是方向或盈利预测。",
+			"Rank says where today sits between the lowest and highest reading; percentile says how often past readings were lower. A high number on either is not a forecast of direction or profit.",
+			"Rank 说明今天位于最低与最高读数之间的什么位置；百分位说明过去的读数有多常低于今天。两者数值高，都不是方向或盈利的预测。",
 		),
 		case: (v) => {
 			const history = [
@@ -343,34 +393,36 @@ export const exposureUnits: TeachingUnit[] = [
 				[15, 25, 35, 45, 75],
 			][v];
 			const current = [30, 28, 25, 35][v];
+			const low = Math.min(...history);
+			const high = Math.max(...history);
+			const rank = ((current - low) / (high - low)) * 100;
+			const below = history.filter((x) => x < current).length;
 			return {
 				brief: t(
-					`Comparable IV history (%): ${history.join(", ")}. Current ${current}%. Percentile counts strictly below today; ties excluded.`,
-					`可比 IV 历史（%）：${history.join("、")}，当前 ${current}%。百分位严格统计低于当前值，相等值不计。`,
+					`ALFA's IV30 had these five past readings: ${history.join("%, ")}%. Today it is ${current}%. A short sample like this is for practice; a real one would cover about a year. For the percentile, count only readings strictly below today.`,
+					`ALFA 的 IV30 过去五次读数为：${history.join("%、")}%。今天是 ${current}%。这么短的样本只用于练习，实际应覆盖约一年。计算百分位时，只计严格低于今天的读数。`,
 				),
 				questions: [
 					n(
 						"rank",
-						"IV rank, to two decimals?",
-						"IV Rank，保留两位小数？",
-						((current - Math.min(...history)) /
-							(Math.max(...history) - Math.min(...history))) *
-							100,
+						"What is today's IV rank, to two decimals?",
+						"今天的 IV Rank 是多少？保留两位小数。",
+						rank,
 						"percent",
-						"百分比",
-						"(Current − min)/(max − min) × 100.",
-						"（当前−最低）/（最高−最低）×100。",
+						"%",
+						`(${current} − ${low}) ÷ (${high} − ${low}) × 100 = ${plain(rank, 2)}.`,
+						`(${current} − ${low}) ÷ (${high} − ${low}) × 100 = ${plain(rank, 2)}。`,
 						0.01,
 					),
 					n(
 						"percentile",
-						"Strictly-below percentile?",
-						"严格低于百分位？",
-						(history.filter((x) => x < current).length / history.length) * 100,
+						"What is today's IV percentile: the share of past readings strictly below today?",
+						"今天的 IV 百分位是多少：过去读数中严格低于今天的比例？",
+						(below / history.length) * 100,
 						"percent",
-						"百分比",
-						"Count strictly lower observations ÷ full supplied sample × 100.",
-						"严格较低观测数÷给定完整样本数×100。",
+						"%",
+						`${below} of the ${history.length} readings are below ${current}%: ${below} ÷ ${history.length} × 100 = ${plain((below / history.length) * 100)}.${history.includes(current) ? ` The reading equal to ${current}% doesn't count.` : ""}`,
+						`${history.length} 个读数中有 ${below} 个低于 ${current}%：${below} ÷ ${history.length} × 100 = ${plain((below / history.length) * 100)}。${history.includes(current) ? `等于 ${current}% 的读数不计入。` : ""}`,
 					),
 				],
 			};
@@ -395,8 +447,8 @@ export const exposureUnits: TeachingUnit[] = [
 			"周一 10月18日 看涨的成交合计 27,425 个 Delta 股票等价：17,740 按卖价买入，208 按买价卖出，9,477 以中间价或无报价成交。净成交流 DEX 为 +17,532；把 10:50 的 105/110 价差算作一笔交易则为 +8,532。对照 1,200,000 股的 20 日均量，DEI 为 1.46%；对照截至中午的 600,000 股则为 2.92%。另一平台基于未平仓量的“DEX”为 −89,800，是另一种度量。",
 		),
 		misconception: t(
-			"Always name whether a number is trade magnitude, signed position delta, or signed aggregate flow. DEI conventions and aggregation methods are not universal across vendors.",
-			"明确数字是单笔幅度、带符号持仓 Delta，还是带符号汇总成交流。DEI 约定和聚合方法并非所有供应商统一。",
+			"Say which number you mean: one trade's size, a position's signed delta, or a day's signed flow. DEI conventions and how flow is added up differ between vendors, so name yours.",
+			"说清你指的是哪个数：单笔成交的幅度、持仓的带符号 Delta，还是一天带符号的成交流。不同供应商的 DEI 约定和汇总方法不同，要写明你用的是哪种。",
 		),
 		case: (v) => {
 			const bull = [60000, 35000, 80000, 24000][v];
@@ -404,41 +456,43 @@ export const exposureUnits: TeachingUnit[] = [
 			const den = [1000000, 1500000, 2000000, 800000][v];
 			const bp = [120000, 80000, 150000, 50000][v];
 			const sp = [80000, 100000, 90000, 80000][v];
+			const net = bull - bear;
+			const dei = (Math.abs(net) / den) * 100;
 			return {
 				brief: t(
-					`Classified delta equivalents: bullish ${bull}, bearish ${bear}, neutral 10,000. Effective typical volume ${den} shares. Bullish premium $${bp}; bearish premium $${sp}. Use magnitude DEI and keep direction in net DEX.`,
-					`分类股等价量：看涨 ${bull}，看跌 ${bear}，中性 10,000。有效典型量 ${den} 股。看涨权利金 $${bp}，看跌权利金 $${sp}。使用幅度 DEI，方向保留于净 DEX。`,
+					`Classifying Monday's ALFA option prints gives ${plain(bull)} bullish delta share-equivalents, ${plain(bear)} bearish and 10,000 neutral. The bullish prints paid ${money(bp, 0)} of premium and the bearish ones ${money(sp, 0)}. ALFA usually trades ${plain(den)} shares a day. Neutral prints carry no direction.`,
+					`对周一 ALFA 期权成交分类后，看涨为 ${plain(bull)} 个 Delta 股等价，看跌为 ${plain(bear)}，中性为 10,000。看涨成交支付了 ${money(bp, 0)} 权利金，看跌成交支付了 ${money(sp, 0)}。ALFA 平常每天成交 ${plain(den)} 股。中性成交不带方向。`,
 				),
 				questions: [
 					n(
 						"net-premium",
-						"Net classified premium?",
-						"分类净权利金？",
+						"What is the net classified premium, bullish minus bearish? Use a minus sign if bearish is larger.",
+						"分类净权利金是多少（看涨减看跌）？如果看跌更多，请用负号。",
 						bp - sp,
-						"USD",
+						"dollars",
 						"美元",
-						"Bullish premium − bearish premium; neutral is not assigned a directional sign.",
-						"看涨权利金−看跌权利金，不给中性赋方向符号。",
+						`${money(bp, 0)} − ${money(sp, 0)} = ${signedMoney(bp - sp, 0)}. Neutral premium gets no sign.`,
+						`${money(bp, 0)} − ${money(sp, 0)} = ${signedMoney(bp - sp, 0)}。中性权利金不带符号。`,
 					),
 					n(
 						"net",
-						"Signed net DEX?",
-						"带符号净 DEX？",
-						bull - bear,
-						"shares-equivalent",
-						"股等价量",
-						"Bullish − bearish; neutral is not assigned a direction.",
-						"看涨−看跌，中性不赋方向。",
+						"What is the net DEX, in share-equivalents? Use a minus sign if bearish is larger.",
+						"净 DEX 是多少股等价？如果看跌更多，请用负号。",
+						net,
+						"share-equivalents",
+						"股等价",
+						`${plain(bull)} − ${plain(bear)} = ${signed(net)}. The 10,000 neutral share-equivalents don't count toward direction.`,
+						`${plain(bull)} − ${plain(bear)} = ${signed(net)}。10,000 个中性股等价不计入方向。`,
 					),
 					n(
 						"dei",
-						"DEI magnitude?",
-						"DEI 幅度？",
-						(Math.abs(bull - bear) / den) * 100,
+						"What is the DEI: net DEX as a percentage of ALFA's usual daily volume? Leave the sign out.",
+						"DEI 是多少：净 DEX 占 ALFA 平常日成交量的百分比？不带符号。",
+						dei,
 						"percent",
-						"百分比",
-						"Absolute net DEX ÷ positive effective volume ×100.",
-						"净 DEX 绝对值÷正有效量×100。",
+						"%",
+						`${plain(Math.abs(net))} ÷ ${plain(den)} × 100 = ${plain(dei)}%. The direction stays with net DEX.`,
+						`${plain(Math.abs(net))} ÷ ${plain(den)} × 100 = ${plain(dei)}%。方向保留在净 DEX 中。`,
 					),
 				],
 			};
