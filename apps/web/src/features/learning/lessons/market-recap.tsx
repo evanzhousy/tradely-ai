@@ -701,6 +701,18 @@ const scenes = [
 				"分别改变标题和图表所衡量的量，看看何时一致。",
 			],
 			start: () => ({ claim: "contracts", chart: "premium" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Make the headline and the chart both about premium.",
+					"让标题和图表都讲权利金。",
+				],
+				reached: (e) => e.claim === "premium" && e.chart === "premium",
+				done: [
+					"Now the claim and the bars measure the same thing, and the 105 call leads both. A chart can only back a claim about the quantity it plots.",
+					"现在结论和柱子衡量的是同一个量，105 看涨在两者中都领先。图表只能支持关于它所绘量的结论。",
+				],
+			},
 		},
 		View: MatchView,
 	}),
@@ -728,6 +740,7 @@ const scenes = [
 				{ id: "double", label: ["About twice as much", "约 2 倍"] },
 			],
 			answer: "seven",
+			entry: { answer: 7, unit: ["%", "%"], tolerance: 1 },
 			revealAt: 2,
 			explain: [
 				`${C110} ÷ ${C105} = ${(C110 / C105).toFixed(2)}. From an axis at 500 the bars are ${C110 - 500} and ${C105 - 500} tall, which draws 8 to 1.`,
@@ -769,6 +782,18 @@ const scenes = [
 				"移动轴的起点，比较柱高与标签。",
 			],
 			start: () => ({ min: 250 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the lowest axis start at which the 110 bar looks at least twice the 105's.",
+					"找出让 110 的柱子看起来至少是 105 两倍的最低轴起点。",
+				],
+				reached: (e) => e.min === 470,
+				done: [
+					"From 470 the bars are 70 and 35 tall, 2 to 1, though the counts are 540 and 505, only 7% apart. The labels stay true; the picture doesn't.",
+					"轴从 470 开始时，柱高是 70 和 35，二比一，但实际张数是 540 和 505，只差 7%。标签依然真实，画面却不是。",
+				],
+			},
 		},
 		View: AxisView,
 	}),
@@ -842,6 +867,35 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the drafts.", "逐步查看各版草稿。"],
 			start: () => ({ step: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What did the first draft claim that packet P1 can't support?",
+					"初稿声称了哪些资料包 P1 无法支持的内容？",
+				],
+				choices: [
+					{
+						id: "buyers",
+						label: ["That call buyers piled in", "看涨买方蜂拥而入"],
+					},
+					{
+						id: "count",
+						label: ["That 540 contracts traded", "成交了 540 张"],
+					},
+					{
+						id: "strike",
+						label: [
+							"That the 110 call led the strikes with data",
+							"110 看涨在有数据的行权价中领先",
+						],
+					},
+				],
+				answer: "buyers",
+				done: [
+					"P1 counts contracts by strike; it doesn't say who bought or sold, and 500 of the 540 were the sold leg of the 10:50 spread. The count and the bounded lead both stand.",
+					"P1 按行权价统计张数，并不说明谁买谁卖，而且 540 张中有 500 张是 10:50 价差卖出的那条腿。张数和有边界的领先结论都成立。",
+				],
+			},
 		},
 		View: ComposeView,
 	}),

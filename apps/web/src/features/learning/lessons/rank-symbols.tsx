@@ -480,6 +480,23 @@ const scenes = [
 				"去掉流动性门槛，观察相对排名。",
 			],
 			start: () => ({ columns: "both", floor: false }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"The most active name by contracts: where does it rank against its own normal?",
+					"按张数最活跃的标的，相对它自己的常态排第几？",
+				],
+				choices: [
+					{ id: "last", label: ["CRUX, last", "CRUX，最后"] },
+					{ id: "first", label: ["CRUX, first again", "CRUX，同样第一"] },
+					{ id: "dune", label: ["DUNE, first", "DUNE，第一"] },
+				],
+				answer: "last",
+				done: [
+					"CRUX trades the most, 5,600 contracts, yet that is 0.93× its usual 6,000: last by relative activity. Raw size and relative activity answer different questions.",
+					"CRUX 成交最多，5,600 张，但这只是它平常 6,000 张的 0.93 倍：按相对活跃度排最后。原始规模和相对活跃度回答的是不同的问题。",
+				],
+			},
 		},
 		View: MetricView,
 	}),
@@ -539,6 +556,23 @@ const scenes = [
 		explore: {
 			prompt: ["Switch what the ranking shows.", "切换排名所显示的内容。"],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which name's open interest grew the most on Monday?",
+					"周一哪个标的的未平仓量增加最多？",
+				],
+				choices: [
+					{ id: "alfa", label: ["ALFA", "ALFA"] },
+					{ id: "crux", label: ["CRUX", "CRUX"] },
+					{ id: "dune", label: ["DUNE", "DUNE"] },
+				],
+				answer: "alfa",
+				done: [
+					"ALFA's +380 is the largest increase. CRUX's 900 was the biggest move, but a fall; ranked by size it came first, ranked by change it comes last.",
+					"ALFA 的 +380 是最大的增加。CRUX 的 900 是最大的变动，但它是减少；按幅度排它第一，按变化排它最后。",
+				],
+			},
 		},
 		View: SignedView,
 	}),
@@ -601,6 +635,35 @@ const scenes = [
 				"在周一、周二和交接说明之间切换。",
 			],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What does ALFA's new #1 depend on?",
+					"ALFA 新的第一名取决于什么？",
+				],
+				choices: [
+					{
+						id: "peers",
+						label: [
+							"A peer falling, with FJOR still missing",
+							"同组标的下降，以及 FJOR 仍然缺失",
+						],
+					},
+					{
+						id: "alfa",
+						label: ["ALFA trading more on Tuesday", "ALFA 周二成交更多"],
+					},
+					{
+						id: "nothing",
+						label: ["Nothing: #1 is #1", "什么都不取决：第一就是第一"],
+					},
+				],
+				answer: "peers",
+				done: [
+					"ALFA traded the same 2,400 both days; CRUX fell from 5,600 to 1,900. The rank is about the peers, and FJOR's missing figure could still change it, which is why the handoff says so.",
+					"ALFA 两天都成交 2,400 张；CRUX 从 5,600 降到 1,900。排名变化来自同组标的，而且 FJOR 缺失的数据仍可能改变它，所以交接说明要写清楚。",
+				],
+			},
 		},
 		View: MoveView,
 	}),

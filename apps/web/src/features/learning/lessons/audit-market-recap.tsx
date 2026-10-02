@@ -988,6 +988,18 @@ const scenes = [
 				"选择一个行权价，根据成交重算。",
 			],
 			start: () => ({ row: "R3" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the strike whose reported premium is off by the most dollars.",
+					"找出报告中权利金偏差金额最大的行权价。",
+				],
+				reached: (e) => e.row === "R2",
+				done: [
+					"The 105 call: $108,500 recomputed against $1,085.00 reported, $107,415 short. Every row is off by the same factor of 100; the biggest row loses the most dollars.",
+					"105 看涨：重算为 $108,500，报告为 $1,085.00，少了 $107,415。每一行都差了同样的 100 倍；金额最大的那一行差得最多。",
+				],
+			},
 		},
 		View: AmountView,
 	}),
@@ -1062,6 +1074,35 @@ const scenes = [
 				"在复盘、审计和修复之间切换。",
 			],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which claim passed the audit exactly as written?",
+					"哪条结论原样通过了审核？",
+				],
+				choices: [
+					{
+						id: "scope",
+						label: [
+							"The scope line: ALFA Oct 18 calls, strikes 100–120, Mon Sep 16",
+							"范围说明：ALFA 10月18日 看涨，行权价 100–120，9月16日 周一",
+						],
+					},
+					{
+						id: "positions",
+						label: [
+							"540 new positions in the 110 call",
+							"110 看涨新增 540 个持仓",
+						],
+					},
+					{ id: "zero", label: ["The 120 call traded 0", "120 看涨成交 0 张"] },
+				],
+				answer: "scope",
+				done: [
+					"The scope matches packet P1, so it stays. Volume isn't new positions, a missing row isn't zero, and the premium needed its × 100 back: those were repaired, and the forecast cut.",
+					"范围与资料包 P1 一致，所以保留。成交量不等于新持仓，缺失的行不等于零，权利金需要补回 × 100：这些都已修复，预测则被删除。",
+				],
+			},
 		},
 		View: ClaimsView,
 	}),
@@ -1136,6 +1177,29 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the signoff.", "逐步查看签核。"],
 			start: () => ({ shown: 4 }),
+			task: {
+				kind: "answer",
+				prompt: ["What would reopen the review?", "什么情况会重新打开审核？"],
+				choices: [
+					{
+						id: "data",
+						label: [
+							"A correction to Monday's tape, or the 120 call's data changing a claim",
+							"周一成交记录被更正，或 120 看涨的数据改变了某条结论",
+						],
+					},
+					{ id: "reader", label: ["A reader disagreeing", "有读者不同意"] },
+					{
+						id: "never",
+						label: ["Nothing, once it's signed", "签署之后什么都不会"],
+					},
+				],
+				answer: "data",
+				done: [
+					"A bounded signoff names its open items and what would change the verdict: new or corrected evidence. Disagreement alone doesn't, and a signature doesn't close the gaps.",
+					"有边界的签署会列出未决事项，以及什么会改变结论：新的或更正的证据。仅有异议不会，签了名也不代表缺口已经补上。",
+				],
+			},
 		},
 		View: SignoffView,
 	}),

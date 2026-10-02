@@ -676,6 +676,23 @@ const scenes = [
 				"按顺序逐条应用规则。",
 			],
 			start: () => ({ applied: 4 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Apply the rules one at a time. Which rule removed EMBR?",
+					"逐条应用规则。哪条规则把 EMBR 排除了？",
+				],
+				choices: [
+					{ id: "session", label: ["Monday's session", "周一时段"] },
+					{ id: "type", label: ["Stock options only", "仅限股票期权"] },
+					{ id: "size", label: ["At least 500 contracts", "至少 500 张"] },
+				],
+				answer: "session",
+				done: [
+					"EMBR's figure is from Friday's session, so it can't stand in for Monday. It is out on the session rule, before data or size are even checked.",
+					"EMBR 的数据来自周五时段，不能代替周一。它在时段规则就被排除了，根本轮不到数据和数量的检查。",
+				],
+			},
 		},
 		View: EligibilityView,
 	}),
@@ -732,6 +749,32 @@ const scenes = [
 				"让 FJOR 的成交量到达，看看领先者是否改变。",
 			],
 			start: () => ({ withGap: true, arrived: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Once FJOR's 7,300 contracts arrive, what happens to 'CRUX leads'?",
+					"FJOR 的 7,300 张到达后，“CRUX 领先”这个说法怎样了？",
+				],
+				choices: [
+					{ id: "falls", label: ["It no longer holds", "不再成立"] },
+					{
+						id: "holds",
+						label: [
+							"It still holds for the eligible group",
+							"对符合条件的范围仍然成立",
+						],
+					},
+					{
+						id: "volume",
+						label: ["CRUX's own volume changes", "CRUX 自己的成交量变了"],
+					},
+				],
+				answer: "falls",
+				done: [
+					"FJOR was eligible all along, only unobserved. With its 7,300 in view it leads, and CRUX is second. 'CRUX leads' was only ever true of the names you could see.",
+					"FJOR 一直都符合条件，只是没被观测到。看到它的 7,300 张后，它领先，CRUX 排第二。“CRUX 领先”只对你看得到的标的成立。",
+				],
+			},
 		},
 		View: ObservedView,
 	}),
@@ -794,6 +837,23 @@ const scenes = [
 				"切换名单的来源。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Using Sep 2's own list of names, which one led that day?",
+					"用 9月2日 当天的名单，那天哪个标的领先？",
+				],
+				choices: [
+					{ id: "halo", label: ["HALO", "HALO"] },
+					{ id: "crux", label: ["CRUX", "CRUX"] },
+					{ id: "alfa", label: ["ALFA", "ALFA"] },
+				],
+				answer: "halo",
+				done: [
+					"HALO led with 6,800 contracts. It was delisted on Sep 6, so today's list silently drops it and makes CRUX look like the leader.",
+					"HALO 以 6,800 张领先。它在 9月6日 退市，所以今天的名单会悄悄漏掉它，让 CRUX 看起来像领先者。",
+				],
+			},
 		},
 		View: MembershipView,
 	}),

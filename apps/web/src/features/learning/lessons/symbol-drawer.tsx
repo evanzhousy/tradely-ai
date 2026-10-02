@@ -824,6 +824,23 @@ const scenes = [
 		explore: {
 			prompt: ["Add the clocks one at a time.", "逐个加入各个时钟。"],
 			start: () => ({ shown: 6 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which value reached the drawer 15 minutes after it happened?",
+					"哪个数值在发生 15 分钟后才到达面板？",
+				],
+				choices: [
+					{ id: "trade", label: ["The last trade", "最新成交"] },
+					{ id: "oi", label: ["Open interest", "未平仓量"] },
+					{ id: "iv", label: ["The model IV", "模型 IV"] },
+				],
+				answer: "trade",
+				done: [
+					"The trade happened at 10:05 but the delayed feed delivered it at 10:20: an event time and a receipt time. Open interest and IV are Friday's, counted and modeled long before.",
+					"这笔成交发生在 10:05，但延迟数据源在 10:20 才送达：一个事件时间，一个接收时间。未平仓量和 IV 是周五的，很早就已统计和建模。",
+				],
+			},
 		},
 		View: ClockView,
 	}),
@@ -895,6 +912,26 @@ const scenes = [
 				"选择一个问题，看看哪些数据源能回答它。",
 			],
 			start: () => ({ requirement: "today" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"For which question is Friday's open interest the right input?",
+					"对于哪个问题，周五的未平仓量是正确的输入？",
+				],
+				choices: [
+					{ id: "positions", label: ["Contracts outstanding", "存续合约数量"] },
+					{
+						id: "today",
+						label: ["Today's flow so far", "今天到目前为止的成交流"],
+					},
+					{ id: "compare", label: ["Comparing full days", "比较完整的交易日"] },
+				],
+				answer: "positions",
+				done: [
+					"Open interest is counted once a day, so Friday's is the newest count that exists all Monday morning. For today's flow or a full-day comparison you need the matching session's trades.",
+					"未平仓量每天只统计一次，所以整个周一上午，周五的数字就是最新的统计。要看今天的成交流或比较完整交易日，需要对应时段的成交。",
+				],
+			},
 		},
 		View: AuditView,
 	}),
@@ -966,6 +1003,20 @@ const scenes = [
 				"逐步查看各行、各自的状态以及合计。",
 			],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: ["Which row holds a measured zero?", "哪一行是测量出来的零？"],
+				choices: [
+					{ id: "c115", label: ["The Oct 18 115 call", "10月18日 115 看涨"] },
+					{ id: "c120", label: ["The Oct 18 120 call", "10月18日 120 看涨"] },
+					{ id: "c100", label: ["The Oct 18 100 call", "10月18日 100 看涨"] },
+				],
+				answer: "c115",
+				done: [
+					"The 115 call's 0 is a measurement: nothing traded. The 120 call's blank is missing data, which is why the total can only be a lower bound.",
+					"115 看涨的 0 是测量结果：没有成交。120 看涨的空白是缺失数据，所以合计只能是一个下限。",
+				],
+			},
 		},
 		View: CoverView,
 	}),

@@ -535,6 +535,23 @@ const scenes = [
 				"逐步加入现价线和背景。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Add the spot line. Which call strikes are in the money with ALFA at $100.02?",
+					"加上现价线。ALFA 为 $100.02 时，哪些看涨行权价是实值？",
+				],
+				choices: [
+					{ id: "itm", label: ["$95 and $100", "$95 和 $100"] },
+					{ id: "otm", label: ["$105 and above", "$105 及以上"] },
+					{ id: "atm", label: ["Only $100", "只有 $100"] },
+				],
+				answer: "itm",
+				done: [
+					"A call is in the money when the stock is above its strike: $95 and $100 here. That places a contract; it isn't advice about it.",
+					"股价高于行权价时看涨期权是实值：这里是 $95 和 $100。这只是在定位合约，不是关于它的建议。",
+				],
+			},
 		},
 		View: LocateView,
 	}),
@@ -606,6 +623,29 @@ const scenes = [
 				"在合计、峰值与广度之间切换。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which expiry concentrated its 695 contracts in just two strikes?",
+					"哪个到期日把 695 张集中在两个行权价上？",
+				],
+				choices: [
+					{ id: "sep", label: ["Sep 20", "9月20日"] },
+					{ id: "nov", label: ["Nov 15", "11月15日"] },
+					{
+						id: "both",
+						label: [
+							"Both: same total, same peak",
+							"两者都是：合计相同，峰值相同",
+						],
+					},
+				],
+				answer: "sep",
+				done: [
+					"Sep 20 traded only in the 100 and 105 strikes; Nov 15 spread the same 695 over five. Same total, same 380 peak, different breadth, so report concentration separately.",
+					"9月20日 只在 100 和 105 行权价成交；11月15日 把同样的 695 张分散在五个行权价上。合计相同、峰值都是 380，但广度不同，所以集中度要单独报告。",
+				],
+			},
 		},
 		View: ShapeView,
 	}),
@@ -677,6 +717,26 @@ const scenes = [
 		explore: {
 			prompt: ["Apply the checks one at a time.", "逐项应用检查。"],
 			start: () => ({ applied: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which check removed the screen's biggest figure, 1,400?",
+					"哪项检查去掉了屏幕上最大的数字 1,400？",
+				],
+				choices: [
+					{
+						id: "session",
+						label: ["Session: it's Friday's", "时段：那是周五的"],
+					},
+					{ id: "scope", label: ["Scope: it's a put", "范围：那是看跌"] },
+					{ id: "missing", label: ["Missing data", "数据缺失"] },
+				],
+				answer: "session",
+				done: [
+					"The 1,400 is Friday's figure for the Nov 15 115 call; Monday's is 55. A stale value can't lead today's comparison, however big it is.",
+					"1,400 是 11月15日 115 看涨的周五数字；周一的是 55。过期的数值再大，也不能在今天的比较中领先。",
+				],
+			},
 		},
 		View: AuditView,
 	}),

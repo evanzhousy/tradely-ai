@@ -722,6 +722,23 @@ const scenes = [
 				"选择卖方还持有什么，观察持仓如何变化。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"With which holding is the call seller's worst case limited to $215?",
+					"卖出看涨的人同时持有什么时，最坏情况被限制在 $215？",
+				],
+				choices: [
+					{ id: "spread", label: ["A long 100 call", "100 看涨多头"] },
+					{ id: "covered", label: ["100 ALFA shares", "100 股 ALFA"] },
+					{ id: "alone", label: ["Nothing", "什么都没有"] },
+				],
+				answer: "spread",
+				done: [
+					"With the long 100 call it is a bull call spread: the most it can lose is the $215 it cost. Covered by shares, the worst case is the shares' fall; alone, the loss has no limit.",
+					"加上 100 看涨多头，它就是牛市看涨价差：最多亏它花的 $215。用股票备兑时，最坏情况是股价下跌的损失；单独卖出时，亏损没有上限。",
+				],
+			},
 		},
 		View: LegView,
 	}),
@@ -743,6 +760,7 @@ const scenes = [
 				{ id: "gross", label: ["+$875", "+$875"] },
 			],
 			answer: "right",
+			entry: { answer: 375, prefix: "$" },
 			revealAt: 3,
 			explain: [
 				"The long 105 call pays $1,000 and the short 110 call costs $500: $500 of payoff. Less the $125 it cost, that's +$375.",
@@ -793,6 +811,18 @@ const scenes = [
 				"在图上左右拖动来移动到期时 ALFA 的价格，读出每条腿和合计。",
 			],
 			start: () => ({ stage: 3, spot: 108 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the lowest price where the spread makes its maximum profit.",
+					"找出价差达到最大盈利的最低价格。",
+				],
+				reached: (e) => e.spot === 110,
+				done: [
+					"From $110 up, the short 110 call gives back every dollar the long 105 call adds: payoff stops at $500, profit at $375. Below $106.25 the spread loses.",
+					"从 $110 起，110 看涨空头会把 105 看涨多头多赚的每一美元都还回去：到期价值封顶于 $500，盈利封顶于 $375。低于 $106.25 时价差亏损。",
+				],
+			},
 		},
 		View: AddView,
 	}),
@@ -870,6 +900,23 @@ const scenes = [
 				"逐条腿查看这次移仓。",
 			],
 			start: () => ({ step: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What did the whole roll cost, net?",
+					"整个移仓的净成本是多少？",
+				],
+				choices: [
+					{ id: "net", label: ["$3,120", "$3,120"] },
+					{ id: "open", label: ["$9,120", "$9,120"] },
+					{ id: "close", label: ["$6,000", "$6,000"] },
+				],
+				answer: "net",
+				done: [
+					"$9,120 out for the November calls less $6,000 in for the October ones: $3,120 for four more weeks at the same strike. One decision, two prints with opposite labels.",
+					"买入 11月 看涨支出 $9,120，减去卖出 10月 看涨收回的 $6,000：花 $3,120 换来同一行权价多四周的时间。一个决定，两笔标签相反的成交。",
+				],
+			},
 		},
 		View: RollView,
 	}),

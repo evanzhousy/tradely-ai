@@ -968,6 +968,18 @@ const scenes = [
 				"选择一行，把它追溯到成交。",
 			],
 			start: () => ({ row: "R3" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the row that can't be traced to any trade yet.",
+					"找出目前还无法追溯到任何成交的那一行。",
+				],
+				reached: (e) => e.row === "R5",
+				done: [
+					"R5, the 120 call, has no trades at the cutoff: missing, not zero. That is why the packet's $165,520 is an observed subtotal over 4 of 5 series.",
+					"R5（120 看涨）在截止时间没有成交：是缺失，不是零。所以资料包里的 $165,520 只是 5 个序列中 4 个的已观测小计。",
+				],
+			},
 		},
 		View: TraceView,
 	}),
@@ -1039,6 +1051,23 @@ const scenes = [
 				"移除一个字段，看看认真的读者会得到什么。",
 			],
 			start: () => ({ removed: "asof" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which missing field sends a careful reader's rerun furthest from $165,520?",
+					"缺少哪个字段，会让认真的读者重算的结果离 $165,520 最远？",
+				],
+				choices: [
+					{ id: "formula", label: ["The formula", "公式"] },
+					{ id: "exclusions", label: ["The exclusions", "排除项"] },
+					{ id: "asof", label: ["The as-of time", "截至时间"] },
+				],
+				answer: "formula",
+				done: [
+					"Without the formula a reader multiplies price by contracts and misses × 100: a hundredth of the true figure. Missing exclusions or as-of times shift it by a few hundred dollars.",
+					"没有公式，读者会用价格乘张数而漏掉 × 100：只得到真实数字的百分之一。缺少排除项或截至时间，只会让结果相差几百美元。",
+				],
+			},
 		},
 		View: FieldsView,
 	}),
@@ -1104,6 +1133,23 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the record log.", "逐步查看记录日志。"],
 			start: () => ({ shown: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which saved record answers a different question from P1?",
+					"哪条保存的记录回答的是与 P1 不同的问题？",
+				],
+				choices: [
+					{ id: "p3", label: ["P3", "P3"] },
+					{ id: "p2", label: ["P2", "P2"] },
+					{ id: "both", label: ["Both P2 and P3", "P2 和 P3 都是"] },
+				],
+				answer: "p3",
+				done: [
+					"P2 reruns P1's method with Tuesday's data: same question, later evidence. P3 leaves trades out, a new method, so it answers a new question and needs its own reason.",
+					"P2 用周二的数据重跑 P1 的方法：同一问题，更晚的证据。P3 去掉了部分成交，是新方法，所以回答的是新问题，需要单独说明理由。",
+				],
+			},
 		},
 		View: RecordsView,
 	}),

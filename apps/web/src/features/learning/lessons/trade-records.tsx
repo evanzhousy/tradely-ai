@@ -529,6 +529,7 @@ const scenes = [
 				{ id: "last", label: ["$2.00", "$2.00"] },
 			],
 			answer: "weighted",
+			entry: { answer: 2.1485, prefix: "$", tolerance: 0.005 },
 			revealAt: 3,
 			explain: [
 				"Weight each price by its size: $108,500 of premium over 505 contracts is $2.1485. The simple average treats 5 contracts as if they counted as much as 500.",
@@ -588,6 +589,29 @@ const scenes = [
 				"选择哪些成交并入这一行。",
 			],
 			start: () => ({ include: ["t1", "t3"], step: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which set of prints makes a row that means something?",
+					"哪一组成交合成的行是有意义的？",
+				],
+				choices: [
+					{ id: "both", label: ["T-1 + T-3", "T-1 + T-3"] },
+					{ id: "leg", label: ["T-1 + T-3 + T-4", "T-1 + T-3 + T-4"] },
+					{
+						id: "one",
+						label: [
+							"None: rows must be single prints",
+							"都不是：一行只能是单笔成交",
+						],
+					},
+				],
+				answer: "both",
+				done: [
+					"T-1 and T-3 are the same contract, so their contracts and premium add. T-4 is the 110 call: folding it in mixes two contracts and two prices into one meaningless row.",
+					"T-1 和 T-3 是同一合约，张数和权利金可以相加。T-4 是 110 看涨：把它并进来，就把两份合约、两种价格混成了一行没有意义的数据。",
+				],
+			},
 		},
 		View: AggregateView,
 	}),
@@ -609,6 +633,7 @@ const scenes = [
 				{ id: "zero", label: ["0 until it's confirmed", "确认前为 0"] },
 			],
 			answer: "five",
+			entry: { answer: 5, unit: [" contracts", " 张"] },
 			revealAt: 1,
 			explain: [
 				"Both messages carry trade ID T-1, so they describe one execution. Count trades by ID, not by message.",
@@ -677,6 +702,18 @@ const scenes = [
 				"选择已到达的消息数量，重建当前视图。",
 			],
 			start: () => ({ received: 6 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the moment the current view counts a trade that later disappears.",
+					"找出当前视图计入了一笔后来消失的成交的那一刻。",
+				],
+				reached: (e) => e.received === 3,
+				done: [
+					"After message 3 the view counts T-2's 20 contracts at $2.60; the cancel in message 4 removes them. A view is only as final as the messages received so far.",
+					"收到第 3 条消息后，视图计入了 T-2 的 20 张（$2.60）；第 4 条撤销消息把它们移除。视图只代表截至目前收到的消息。",
+				],
+			},
 		},
 		View: ReplayView,
 	}),

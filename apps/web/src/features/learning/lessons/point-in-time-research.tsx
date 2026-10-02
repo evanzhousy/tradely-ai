@@ -949,6 +949,18 @@ const scenes = [
 				"移动决策时刻，观察检验可以使用什么。",
 			],
 			start: (last) => ({ cutoff: last.cutoff ?? 0 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the earliest decision time at which the test may use the corrected $2.15.",
+					"找出回测最早可以使用更正后 $2.15 的决策时刻。",
+				],
+				reached: (e) => e.cutoff === 1,
+				done: [
+					"The correction arrived at 10:50:02.8, so a decision at 10:51 may use it and one at 10:50:01 may not. What was known changed; what happened didn't.",
+					"更正在 10:50:02.8 到达，所以 10:51 的决策可以用它，10:50:01 的不行。改变的是当时已知的信息，不是发生的事。",
+				],
+			},
 		},
 		View: CutoffView,
 	}),
@@ -967,6 +979,7 @@ const scenes = [
 				{ id: "same", label: ["500: nothing traded", "500：没有成交"] },
 			],
 			answer: "twice",
+			entry: { answer: 125 },
 			revealAt: 2,
 			explain: [
 				"An hour is two half-lives: 500 → 250 → 125. The block still has 500 contracts; only their weight in the score has faded.",
@@ -1008,6 +1021,18 @@ const scenes = [
 				"改变半衰期，并在时间上移动。",
 			],
 			start: () => ({ minute: 60, halfLife: 60 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"With a 15-minute half-life, find when the block's weight first falls below 100.",
+					"在 15 分钟半衰期下，找出这笔大单的权重首次低于 100 的时刻。",
+				],
+				reached: (e) => e.halfLife === 15 && e.minute === 35,
+				done: [
+					"Every 15 minutes halves it: 250, then 125, then about 99 at 35 minutes. The block still has 500 contracts; only their weight in the score has faded.",
+					"每 15 分钟减半：250，再到 125，35 分钟时约为 99。这笔大单仍是 500 张，变小的只是它在分数里的权重。",
+				],
+			},
 		},
 		View: DecayView,
 	}),
@@ -1081,6 +1106,32 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the reading.", "逐步查看这个解读。"],
 			start: () => ({ reading: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What would it take to turn the 97th percentile into a probability that ALFA rises?",
+					"要把第 97 百分位变成 ALFA 上涨的概率，需要什么？",
+				],
+				choices: [
+					{
+						id: "test",
+						label: [
+							"A test of what followed sessions like this",
+							"检验类似交易日之后发生了什么",
+						],
+					},
+					{
+						id: "more",
+						label: ["More sessions in the history", "历史中更多的交易日"],
+					},
+					{ id: "higher", label: ["A higher percentile", "更高的百分位"] },
+				],
+				answer: "test",
+				done: [
+					"A percentile ranks today among past sessions. A probability of a rise needs evidence about what came next after sessions like it, tested on data you didn't tune on.",
+					"百分位只是把今天放在过去的交易日中排位。上涨概率需要关于类似交易日之后发生了什么的证据，并在没有用来调参的数据上检验。",
+				],
+			},
 		},
 		View: PercentileView,
 	}),
@@ -1149,6 +1200,29 @@ const scenes = [
 				"逐步查看搜索、胜者与保留集。",
 			],
 			start: () => ({ search: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Why is the Jul–Aug figure the one to believe?",
+					"为什么应该相信 7–8 月的数字？",
+				],
+				choices: [
+					{
+						id: "sealed",
+						label: [
+							"The rule was frozen before that data was opened",
+							"规则在打开这部分数据之前就已固定",
+						],
+					},
+					{ id: "recent", label: ["It's more recent", "它更新"] },
+					{ id: "size", label: ["It has more sessions", "它包含更多交易日"] },
+				],
+				answer: "sealed",
+				done: [
+					"The 70% was the best of 10 tries on the same data, partly luck. Frozen first and run once on sealed data, the rule gives 52%, close to a coin flip.",
+					"70% 是在同一份数据上试了 10 次中最好的一次，有一部分是运气。先固定规则、再在封存的数据上只跑一次，结果是 52%，接近抛硬币。",
+				],
+			},
 		},
 		View: HoldoutView,
 	}),

@@ -770,6 +770,19 @@ const scenes = [
 				"选择双方各自是开仓还是平仓，并设定张数。成交量总是增加该张数；未平仓量取决于双方。",
 			],
 			start: () => ({ buyer: "open", seller: "close", quantity: 6 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Make an 8-contract trade that lowers open interest.",
+					"做一笔 8 张的交易，让未平仓量下降。",
+				],
+				reached: (e) =>
+					e.buyer === "close" && e.seller === "close" && e.quantity === 8,
+				done: [
+					"When both sides close, 8 contracts stop existing: volume rises by 8 and open interest falls by 8. Volume alone can't tell you which way open interest moved.",
+					"双方都平仓时，8 张合约就不再存在：成交量增加 8，未平仓量减少 8。仅凭成交量无法判断未平仓量往哪个方向变。",
+				],
+			},
 		},
 		View: LedgerView,
 	}),
@@ -791,6 +804,7 @@ const scenes = [
 				{ id: "sum", label: ["120", "120"] },
 			],
 			answer: "friday",
+			entry: { answer: 100, unit: [" contracts", " 张"] },
 			revealAt: 2,
 			explain: [
 				"Open interest is counted once a day, after the close. All Monday your screen keeps Friday's 100; Monday's 106 arrives Tuesday morning.",
@@ -841,6 +855,18 @@ const scenes = [
 				"拖动时间，观察哪些数字会变化、哪些要等下一次统计。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Move the clock to the last moment the open-interest figure still shows Friday's count.",
+					"把时钟移到未平仓量仍显示周五数字的最后时刻。",
+				],
+				reached: (e) => e.now === MON_CLOSE,
+				done: [
+					"At Monday's close all 20 contracts have traded, yet the figure is still Friday's 100. Monday's count arrives with the report before Tuesday's open.",
+					"周一收盘时 20 张已全部成交，但这个数字仍是周五的 100。周一的统计要到周二开盘前的报告才会公布。",
+				],
+			},
 		},
 		View: ClockView,
 	}),
@@ -912,6 +938,26 @@ const scenes = [
 				"切换统计日期与同一序列视图，看看到期桶加总了哪些到期日。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Turn on the same-series view. How did open interest in the Oct 4 calls change over the week?",
+					"打开同一序列视图。10月4日 看涨的未平仓量在这一周变化了多少？",
+				],
+				choices: [
+					{ id: "ten", label: ["+10", "+10"] },
+					{
+						id: "bucket",
+						label: ["+230, like the bucket", "+230，与分组相同"],
+					},
+					{ id: "all", label: ["+130", "+130"] },
+				],
+				answer: "ten",
+				done: [
+					"The Oct 4 calls went from 120 to 130: +10. The bucket's +230 is mostly Sep 27 leaving and Oct 11 joining, not new positions.",
+					"10月4日 看涨从 120 变为 130：+10。分组的 +230 主要是 9月27日 移出、10月11日 加入，并不是新的持仓。",
+				],
+			},
 		},
 		View: BucketView,
 	}),

@@ -576,10 +576,36 @@ const scenes = [
 				"切换为预测性问题，看看需要补充什么。",
 			],
 			start: () => ({ filled: 9, forecast: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What does the forecasting version need that the descriptive one doesn't?",
+					"预测型问题需要哪些描述型问题不需要的东西？",
+				],
+				choices: [
+					{
+						id: "test",
+						label: [
+							"An outcome, a horizon and unseen dates to test on",
+							"结果、时间跨度和未看过的检验日期",
+						],
+					},
+					{ id: "rows", label: ["More rows of data", "更多数据行"] },
+					{
+						id: "names",
+						label: ["A wider universe of names", "更大的标的范围"],
+					},
+				],
+				answer: "test",
+				done: [
+					"A forecast can be checked only against what happened next: name the outcome, the horizon, and dates you haven't looked at. Without them, nobody can tell it was right or wrong.",
+					"预测只能拿之后发生的事来检验：要说明结果、时间跨度，以及你没看过的日期。缺少这些，就没人能判断它是对是错。",
+				],
+			},
 		},
 		View: QuestionView,
 	}),
-	defineScene<SortState>({
+	defineScene<SortState, SortState>({
 		id: "sort",
 		label: ["Sort the evidence", "区分证据"],
 		title: ["A source fact is different from a story", "来源事实不同于叙事"],
@@ -653,6 +679,36 @@ const scenes = [
 				state: { reached: 4 },
 			},
 		],
+		explore: {
+			prompt: ["Read the sorted evidence once more.", "再读一遍分好类的证据。"],
+			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which of these is an interpretation, not an observation or a calculation?",
+					"以下哪一项是解读，而不是观测或计算？",
+				],
+				choices: [
+					{
+						id: "story",
+						label: ["Traders favor the 110 strike", "交易者青睐 110 行权价"],
+					},
+					{
+						id: "seen",
+						label: ["540 traded in the 110 call", "110 看涨成交了 540 张"],
+					},
+					{
+						id: "share",
+						label: ["51% of covered volume", "占已覆盖成交量的 51%"],
+					},
+				],
+				answer: "story",
+				done: [
+					"540 is on the tape and 51% is arithmetic anyone can redo. 'Traders favor it' is a story laid over them, and 500 of the 540 being one spread leg cuts against it.",
+					"540 张在成交记录里，51% 是任何人都能重算的。“交易者青睐”是叠加在数字上的说法，而 540 张中有 500 张是同一价差的一条腿，这正好与之相悖。",
+				],
+			},
+		},
 		View: SortView,
 	}),
 	defineScene<RecordState, RecordState>({
@@ -714,6 +770,26 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the log.", "逐步查看研究日志。"],
 			start: () => ({ version: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which change opened a new record instead of revising the first?",
+					"哪项变化开了一条新记录，而不是修订第一条？",
+				],
+				choices: [
+					{ id: "puts", label: ["Studying the puts", "改为研究看跌期权"] },
+					{
+						id: "late",
+						label: ["The 120 call's late data", "120 看涨迟到的数据"],
+					},
+					{ id: "leader", label: ["Recomputing the leader", "重新计算领先者"] },
+				],
+				answer: "puts",
+				done: [
+					"New evidence for the same question is a revision: recompute and keep both versions. Puts are a different population, so they get record 2 and record 1 stays as it was.",
+					"同一问题有了新证据就是修订：重算，并保留两个版本。看跌期权是不同的总体，所以是第 2 条记录，第 1 条保持原样。",
+				],
+			},
 		},
 		View: RecordView,
 	}),

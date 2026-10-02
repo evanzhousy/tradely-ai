@@ -685,6 +685,23 @@ const scenes = [
 				"为四个看涨期权切换分母。",
 			],
 			start: () => ({ base: "oi", rows: ALL }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Compare volume with open interest. Which call looks most unusual?",
+					"拿成交量与未平仓量比较。哪份看涨看起来最异常？",
+				],
+				choices: [
+					{ id: "thin", label: ["The Dec 20 110 call", "12月20日 110 看涨"] },
+					{ id: "busy", label: ["The Oct 18 105 call", "10月18日 105 看涨"] },
+					{ id: "atm", label: ["The Oct 18 100 call", "10月18日 100 看涨"] },
+				],
+				answer: "thin",
+				done: [
+					"12 contracts against 3 outstanding is 4×, the highest ratio, on the fewest contracts. The tiny denominator does the work; name it with every ratio.",
+					"12 张对 3 张存续合约是 4 倍，比值最高，但张数最少。是极小的分母造成了这个结果；每个比值都要说明分母。",
+				],
+			},
 		},
 		View: DenominatorView,
 	}),
@@ -706,6 +723,7 @@ const scenes = [
 				{ id: "either", label: ["Either works", "两者都可以"] },
 			],
 			answer: "morning",
+			entry: { answer: 14, unit: ["×", "×"], tolerance: 0.5 },
 			revealAt: 1,
 			explain: [
 				"Numerator and denominator must cover the same window. By 11:00 a typical day has done 36, so 505 is 14× a normal morning.",
@@ -747,6 +765,18 @@ const scenes = [
 				"移动比较时刻，观察比率如何变化。",
 			],
 			start: () => ({ minute: 60 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the earliest comparison time at which the 105 call is running at more than 10× a typical day's pace.",
+					"找出 105 看涨的成交节奏首次超过典型交易日 10 倍的最早比较时刻。",
+				],
+				reached: (e) => e.minute === 90,
+				done: [
+					"By 11:00 the 500-lot has printed and a typical day has done only 36: about 14×. A quarter-hour earlier the block hadn't happened. The window decides the ratio.",
+					"到 11:00，500 张的大单已成交，而典型交易日此时只成交 36 张：约 14 倍。早一刻钟，这笔大单还没发生。比较窗口决定了比值。",
+				],
+			},
 		},
 		View: WindowView,
 	}),
@@ -815,6 +845,22 @@ const scenes = [
 				"移动阈值，观察它选中哪些看涨期权。",
 			],
 			start: () => ({ threshold: 1.5, reveal: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set the threshold so the screen flags exactly one call.",
+					"设定阈值，让筛选只标出一份看涨。",
+				],
+				reached: (e) =>
+					mondayActivity.filter(
+						(row) =>
+							e.threshold !== null && row.volume / row.typical >= e.threshold,
+					).length === 1,
+				done: [
+					"Above 3.0× only the 105 call's 4.2× clears it, and that flag is one 500-contract spread leg. A stricter screen narrows where you look; it doesn't explain what happened.",
+					"高于 3.0 倍时只有 105 看涨的 4.2 倍能通过，而这个标记只是一笔 500 张价差交易的一条腿。更严格的筛选只缩小查看范围，并不能解释发生了什么。",
+				],
+			},
 		},
 		View: ScreenView,
 	}),

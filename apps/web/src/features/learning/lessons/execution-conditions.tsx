@@ -697,6 +697,7 @@ const scenes = [
 				{ id: "forty", label: ["40: one per contract", "40 笔：每张一笔"] },
 			],
 			answer: "three",
+			entry: { answer: 3, unit: [" prints", " 笔"] },
 			revealAt: 1,
 			explain: [
 				"Each venue executes its part separately, so one order prints three times: 10, 20 and 10 contracts.",
@@ -738,10 +739,22 @@ const scenes = [
 				"改变订单数量，观察它留下多少笔成交。",
 			],
 			start: () => ({ step: "cost", quantity: 55 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the order size that leaves exactly two prints.",
+					"找出正好留下两笔成交记录的订单数量。",
+				],
+				reached: (e) => e.quantity === 25,
+				done: [
+					"25 contracts take venue A's 10 and 15 of venue B's 20: two prints from one order. The count of prints follows the venues touched, not the number of decisions.",
+					"25 张会吃掉场所 A 的 10 张和场所 B 20 张中的 15 张：一笔订单，两笔成交记录。成交记录的笔数取决于触及的场所数，而不是决策的次数。",
+				],
+			},
 		},
 		View: SweepView,
 	}),
-	defineScene<BlockState>({
+	defineScene<BlockState, BlockState>({
 		id: "block",
 		label: ["Place a block", "定位大宗"],
 		title: [
@@ -803,6 +816,33 @@ const scenes = [
 				state: { step: "meaning" },
 			},
 		],
+		explore: {
+			prompt: [
+				"Look again at what the block's condition records.",
+				"再看看这笔大宗的条件代码记录了什么。",
+			],
+			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"What does the auction condition on the 500-lot tell you?",
+					"这笔 500 张成交上的竞价条件代码告诉了你什么？",
+				],
+				choices: [
+					{ id: "how", label: ["How it was matched", "它是如何撮合的"] },
+					{
+						id: "who",
+						label: ["That an institution sent it", "它来自一家机构"],
+					},
+					{ id: "open", label: ["That it opened positions", "它开立了新持仓"] },
+				],
+				answer: "how",
+				done: [
+					"The condition records the mechanism: arranged away from the screen, then printed through an auction. Who traded, why, and whether positions opened are not in it.",
+					"条件代码记录的是机制：在屏幕之外安排好，再通过竞价成交。谁在交易、为什么交易、是否开了新仓，都不在其中。",
+				],
+			},
+		},
 		View: BlockView,
 	}),
 	defineScene<PackageState, PackageState>({
@@ -873,6 +913,26 @@ const scenes = [
 				"在单腿、两条腿和整体之间切换。",
 			],
 			start: () => ({ shown: 3 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What is the most the package can be worth at expiry, per spread?",
+					"到期时这个组合每份最多值多少？",
+				],
+				choices: [
+					{ id: "cap", label: ["$500", "$500"] },
+					{
+						id: "none",
+						label: ["No limit: it's 500 calls", "没有上限：它是 500 张看涨"],
+					},
+					{ id: "cost", label: ["$125", "$125"] },
+				],
+				answer: "cap",
+				done: [
+					"Long the 105, short the 110: the gap between strikes, $5.00 a share or $500 a spread, is the cap. It cost $125, so the most it can make is $375.",
+					"买入 105、卖出 110：两个行权价之差，每股 $5.00，即每份 $500，就是上限。它花了 $125，所以最多赚 $375。",
+				],
+			},
 		},
 		View: PackageView,
 	}),
