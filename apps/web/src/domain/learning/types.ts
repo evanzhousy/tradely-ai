@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ContractNeighborhood, NeighborhoodPair } from "./contracts";
 import type { FlowStructureComparison } from "./flow-structure";
 import type { MetricsComparison } from "./metrics";
+import { readNumber } from "./numbers";
 import type { UniverseComparison } from "./universe";
 
 export type LearningCopy = { en: string; zh: string };
@@ -22,12 +23,9 @@ export type LearningQuestion = {
 		| { kind: "text"; minLength: number; maxLength: number };
 };
 
+/** A typed answer as a number: "$1,260", "−2.5", "28%" and "832 shares" all count. */
 export function numericResponse(value: string): number | null {
-	const normalized = value.trim().replace(/^−/, "-");
-	if (!/^[+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/.test(normalized))
-		return null;
-	const number = Number(normalized.replaceAll(",", ""));
-	return Number.isFinite(number) ? number : null;
+	return readNumber(value);
 }
 export function responseComplete(
 	question: LearningQuestion,

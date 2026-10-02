@@ -73,7 +73,7 @@ export function ResponseField({
 			)}
 			<FieldDescription id={`${id}-help`}>
 				{input.kind === "number"
-					? `${input.unit[locale]} · ${locale === "zh" ? "只填数值，例如 1250 或 -2.5，无需填写单位。" : "Enter a number, e.g. 1250 or -2.5, without its unit."}`
+					? `${input.unit[locale]} · ${locale === "zh" ? "填一个数值，例如 1,250 或 −2.5；后面带单位也可以。" : "Enter one number, such as 1,250 or −2.5; a unit after it is fine."}`
 					: locale === "zh"
 						? `写下自己的解释（${input.minLength}–${input.maxLength} 字符）。保存后需对照参考答案自评，系统不自动判断文字质量。`
 						: `Write your own explanation (${input.minLength}–${input.maxLength} characters). Saved for comparison with the reference; prose quality is not automatically graded.`}
