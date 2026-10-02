@@ -4,7 +4,9 @@ import { archivedFoundationUnits } from "./archive/foundations-original.server";
 import {
 	choose as c,
 	fact as f,
+	money,
 	numberQuestion as n,
+	signedMoney,
 	type TeachingCase,
 	type TeachingUnit,
 	t,
@@ -13,15 +15,19 @@ import {
 const identityChoices: [string, string, string][] = [
 	[
 		"same",
-		"Same contract; its observations can change.",
-		"同一合约，观测值可以改变。",
+		"The same contract, seen at two moments",
+		"同一份合约，在两个时刻被观测到",
 	],
 	[
 		"different",
-		"Different contracts; an identity field differs.",
-		"不同合约，身份字段有差异。",
+		"Different contracts: one of the defining terms differs",
+		"不同的合约：有一项定义条款不同",
 	],
-	["unknown", "Insufficient identity information.", "身份信息不足。"],
+	[
+		"unknown",
+		"Can't tell: a defining term is missing",
+		"无法判断：缺少一项定义条款",
+	],
 ];
 const missingAmount = (id: string, en: string, zh: string) =>
 	c(
@@ -29,49 +35,45 @@ const missingAmount = (id: string, en: string, zh: string) =>
 		en,
 		zh,
 		[
-			[
-				"unknown",
-				"Cannot calculate without the missing product terms.",
-				"缺少产品条款，无法计算。",
-			],
+			["unknown", "No: the contract's terms are missing", "不能：缺少合约条款"],
 			[
 				"standard",
-				"Assume every contract represents 100 shares.",
-				"假设每张都代表 100 股。",
+				"Yes: assume 100 shares per contract",
+				"能：假设每张 100 股",
 			],
-			["zero", "Treat the missing amount as zero.", "把缺失金额当成零。"],
+			["zero", "Yes: count the missing amount as zero", "能：把缺失的数当作零"],
 		],
 		"unknown",
-		"The multiplier and deliverable must be supplied. Missing terms are neither a standard 100-share contract nor a zero amount.",
-		"乘数与交付物必须给定。缺少条款不等于标准 100 股合约，也不等于金额为零。",
+		"How many shares a contract covers has to come from its terms. A missing term isn't a standard 100-share contract, and it isn't zero.",
+		"一张合约对应多少股，必须来自它的条款。缺失的条款既不等于标准的 100 股，也不等于零。",
 	);
 
 function contractsCase(variant: number): TeachingCase {
 	if (variant === 2)
 		return {
 			brief: t(
-				"Records A and B both refer to ALFA calls, strike $105. A expires October 16, 2026; B's expiration is missing. You bought 3 of A at $2 per quoted unit, but the product multiplier and deliverable are missing. A later price quote cannot restore those terms.",
-				"A、B 都参考 ALFA 看涨，行权价 $105。A 于 2026 年 10 月 16 日到期，B 到期日缺失。你按每报价单位 $2 买入 3 张 A，但产品乘数与交付物缺失。后续报价不能补全这些条款。",
+				"Records A and B are both ALFA calls with a $105 strike. A expires October 16, 2026; B's expiry is missing. You bought 3 of A at $2.00 per quoted unit, but the record leaves out how many shares each contract covers. A later price can't fill in those terms.",
+				"记录 A 和 B 都是行权价 $105 的 ALFA 看涨。A 于 2026 年 10 月 16 日到期，B 的到期日缺失。你以每报价单位 $2.00 买入 3 张 A，但记录没有写明每张合约对应多少股。之后的价格也补不上这些条款。",
 			),
 			questions: [
 				c(
 					"identity",
-					"Can you establish whether these are the same contract?",
-					"能否确定是同一合约？",
+					"Can you tell whether A and B are the same contract?",
+					"你能判断 A 和 B 是不是同一份合约吗？",
 					identityChoices,
 					"unknown",
-					"B's expiration is missing. Matching ticker and strike do not establish full identity; a changed price would not establish it either.",
-					"B 的到期日缺失。标的与行权价相同不足以确定完整身份，价格变化也不能确定。",
+					"B's expiry is missing. A matching ticker and strike aren't enough to say what a contract is, and a price can't settle it either.",
+					"B 的到期日缺失。标的和行权价相同，不足以确定是哪份合约，价格也无法确定这一点。",
 				),
 				missingAmount(
 					"premium",
-					"Can you calculate total premium paid?",
-					"能否算出总权利金？",
+					"Can you work out the total premium you paid?",
+					"你能算出支付的总权利金吗？",
 				),
 				missingAmount(
 					"deliverable",
-					"Can you calculate the deliverable share count?",
-					"能否算出交付股数？",
+					"Can you work out how many shares the contracts deliver?",
+					"你能算出这些合约交付多少股吗？",
 				),
 			],
 		};
@@ -81,8 +83,8 @@ function contractsCase(variant: number): TeachingCase {
 	const multiplier = different ? 100 : 10;
 	return {
 		brief: t(
-			`The teaching product explicitly delivers ${multiplier} shares per contract, and quotes dollars per share. Record A is an ALFA 105 call expiring October 16, 2026, observed at 10:30 ET. Record B has ${different ? "the same terms except that it is a put" : "identical product terms, underlying, type, strike and expiration, observed at 10:31 ET at a different price"}. Calculate the purchase of A using the supplied execution below.`,
-			`教学产品明确每张交付 ${multiplier} 股，以美元/股报价。A 是 ALFA 105 看涨，2026 年 10 月 16 日到期，10:30 ET 观测。B ${different ? "其余条款相同，但为看跌" : "产品条款、标的、类型、行权价与到期日均相同，在 10:31 ET 观测，价格不同"}。用下方给定成交计算 A 的购买金额。`,
+			`In this exercise each contract delivers ${multiplier} shares, and prices are in dollars per share. Record A is an ALFA 105 call expiring October 16, 2026, seen at 10:30 ET. Record B ${different ? "has the same terms, except that it is a put" : "has the same underlying, type, strike, expiry and terms, seen at 10:31 ET at a different price"}. You bought record A; the purchase is below.`,
+			`在本练习中，每张合约交付 ${multiplier} 股，价格按每股美元计。记录 A 是 2026 年 10 月 16 日到期的 ALFA 105 看涨，10:30 ET 观测到。记录 B ${different ? "条款相同，只是它是看跌" : "的标的、类型、行权价、到期日和条款都相同，在 10:31 ET 观测到，价格不同"}。你买入的是记录 A，成交见下方。`,
 		),
 		facts: [
 			f("Purchased contracts", "买入张数", String(count)),
@@ -93,35 +95,35 @@ function contractsCase(variant: number): TeachingCase {
 			c(
 				"identity",
 				"Are A and B the same contract?",
-				"A、B 是否同一合约？",
+				"A 和 B 是同一份合约吗？",
 				identityChoices,
 				different ? "different" : "same",
 				different
-					? "Call and put specify different rights, even with the same ticker, strike and expiration."
-					: "All identity fields and product terms match. The observation time and price changed, not the contract.",
+					? "A call and a put give different rights, so they're different contracts even with the same ticker, strike and expiry."
+					: "Every defining term matches. What changed is the time it was seen and its price, not the contract.",
 				different
-					? "看涨与看跌规定不同权利，即使代码、行权价和到期日相同也不是同一合约。"
-					: "全部身份字段与产品条款相同。变化的是观测时间和价格，不是合约。",
+					? "看涨和看跌赋予不同的权利，所以即使代码、行权价和到期日都相同，也是不同的合约。"
+					: "每一项定义条款都相同。变化的是观测时间和价格，而不是合约本身。",
 			),
 			n(
 				"premium",
-				"Total premium paid before fees?",
-				"不含费用的已付总权利金？",
+				"What premium did you pay in total, before fees?",
+				"不计费用，你一共支付了多少权利金？",
 				price * count * multiplier,
-				"USD",
+				"dollars",
 				"美元",
-				`$${price} × ${multiplier} shares × ${count} contracts = $${price * count * multiplier}. Use the supplied units, not an assumed multiplier.`,
-				`$${price} × ${multiplier} 股 × ${count} 张 = $${price * count * multiplier}。使用给定单位，不能假定乘数。`,
+				`${money(price)} × ${multiplier} shares × ${count} contracts = ${money(price * count * multiplier, 0)}. Use the contract's own share count, not an assumed 100.`,
+				`${money(price)} × ${multiplier} 股 × ${count} 张 = ${money(price * count * multiplier, 0)}。要用合约自己的股数，而不是想当然的 100。`,
 			),
 			n(
 				"deliverable",
-				"Contractual deliverable shares?",
-				"合约规定交付多少股？",
+				"How many shares would the contracts deliver if exercised?",
+				"如果行权，这些合约会交付多少股？",
 				count * multiplier,
 				"shares",
 				"股",
-				`${count} × ${multiplier} = ${count * multiplier} deliverable shares. Buying the options has not itself delivered the stock.`,
-				`${count} × ${multiplier} = ${count * multiplier} 股交付数量。买入期权本身尚未交付股票。`,
+				`${count} × ${multiplier} = ${count * multiplier} shares. Buying the options hasn't delivered any stock yet.`,
+				`${count} × ${multiplier} = ${count * multiplier} 股。买入期权本身还没有交付任何股票。`,
 			),
 		],
 	};
@@ -131,36 +133,36 @@ function rightsCase(variant: number): TeachingCase {
 	if (variant === 1)
 		return {
 			brief: t(
-				"A writer is assigned on 3 physically settled ALFA calls, strike $65, with 100 shares per contract. Calculate the gross cash received for delivering the shares; ignore premium and fees.",
-				"义务方的 3 张 ALFA 实物结算看涨被指派，行权价 $65，每张 100 股。计算交付股票时收到的总金额，暂不计权利金和费用。",
+				"Ben wrote 3 ALFA calls with a $65 strike, settled in shares, 100 per contract, and he's assigned. Ignore the premium and fees: this is about the exchange of cash and shares.",
+				"Ben 卖出了 3 张行权价 $65 的 ALFA 看涨，以股票交割，每张 100 股，现在他被指派了。不计权利金和费用：这里只看现金和股票的交换。",
 			),
 			questions: [
 				n(
 					"obligation",
-					"Gross exercise cash received by the writer?",
-					"义务方收到的行权总金额？",
+					"How much cash does Ben receive for the shares?",
+					"Ben 交付股票会收到多少现金？",
 					19500,
-					"USD",
+					"dollars",
 					"美元",
-					"$65 × 100 × 3 = $19,500 received in exchange for 300 shares. This is not the writer's profit.",
-					"$65 × 100 × 3 = $19,500，对应交付 300 股。这不是义务方利润。",
+					"$65 × 100 × 3 = $19,500, in exchange for 300 shares. That's the exchange, not Ben's profit.",
+					"$65 × 100 × 3 = $19,500，换出 300 股。这是交换的金额，不是 Ben 的利润。",
 				),
 				c(
 					"role",
-					"What must the assigned call writer do?",
-					"被指派的看涨义务方需做什么？",
+					"What does assignment require Ben to do?",
+					"被指派后，Ben 必须做什么？",
 					[
-						["buy", "Buy the shares.", "买入股票。"],
-						["sell", "Deliver the shares at the strike.", "按行权价交付股票。"],
+						["buy", "Buy the shares", "买入股票"],
+						["sell", "Deliver the shares at the strike", "按行权价交付股票"],
 						[
 							"choice",
-							"Decide whether to honor assignment.",
-							"自行决定是否履行指派。",
+							"Decide whether to go through with it",
+							"自行决定是否履行",
 						],
 					],
 					"sell",
-					"A call holder's right to buy creates the writer's obligation to deliver. The put example had the opposite obligation.",
-					"看涨持有人的买入权利对应义务方的交付义务，和看跌例子的义务相反。",
+					"The call's holder has the right to buy at $65, so Ben, the writer, must deliver at $65. A put writer's duty runs the other way.",
+					"看涨的持有人有权按 $65 买入，所以作为义务方的 Ben 必须按 $65 交付。看跌义务方的义务方向正好相反。",
 				),
 			],
 		};
@@ -168,53 +170,55 @@ function rightsCase(variant: number): TeachingCase {
 	return {
 		brief: t(
 			closeShort
-				? "You are short 3 ALFA puts and buy 3 identical puts to close at $1.20 per share, multiplier 100. The trade is confirmed. No exercise or assignment occurred."
-				: "You own 2 ALFA puts and sell those same 2 puts to close at $2.50 per share, multiplier 100. The trade is confirmed. No exercise or assignment occurred.",
+				? "You're short 3 ALFA puts, and you buy the same 3 puts to close at $1.20 a share. One contract covers 100 shares. The trade is confirmed, and nothing was exercised or assigned."
+				: "You own 2 ALFA puts, and you sell those same 2 puts to close at $2.50 a share. One contract covers 100 shares. The trade is confirmed, and nothing was exercised or assigned.",
 			closeShort
-				? "你持有 3 张 ALFA 看跌空头，以每股 $1.20 买入相同的 3 张平仓，乘数 100。交易已确认，没有行权或指派。"
-				: "你持有 2 张 ALFA 看跌多头，以每股 $2.50 卖出相同的 2 张平仓，乘数 100。交易已确认，没有行权或指派。",
+				? "你做空了 3 张 ALFA 看跌，现在以每股 $1.20 买入同样的 3 张平仓。一张合约对应 100 股。交易已确认，没有行权或指派。"
+				: "你持有 2 张 ALFA 看跌，现在以每股 $2.50 卖出这 2 张平仓。一张合约对应 100 股。交易已确认，没有行权或指派。",
 		),
 		questions: [
 			c(
 				"role",
-				"Which position action occurred?",
-				"发生了哪种持仓动作？",
+				"What did this trade do to your position?",
+				"这笔交易对你的持仓做了什么？",
 				[
 					[
 						"close-long",
-						"Closed an existing long option position.",
-						"平掉已有期权多头。",
+						"Closed a long option position you held",
+						"平掉了你持有的期权多头",
 					],
 					[
 						"close-short",
-						"Closed an existing short option position.",
-						"平掉已有期权空头。",
+						"Closed a short option position you held",
+						"平掉了你持有的期权空头",
 					],
 					[
 						"exercise",
-						"Exercised the option and transferred stock.",
-						"行权并转移股票。",
+						"Exercised the option and moved stock",
+						"行使了期权并转移了股票",
 					],
 				],
 				closeShort ? "close-short" : "close-long",
-				"Use both the starting position and the explicit closing instruction. A trade in an option is not exercise; the word buy or sell alone does not determine opening or closing.",
-				"结合初始持仓与明确的平仓指令判断。期权交易不是行权，仅凭买入或卖出不能确定开平仓。",
+				"Read the starting position together with the instruction to close. Trading an option isn't exercising it, and the words buy and sell alone don't say whether a trade opens or closes.",
+				"要把初始持仓和平仓指令一起看。交易期权不等于行权，仅凭“买入”“卖出”这两个词，也看不出是开仓还是平仓。",
 			),
 			n(
 				"cash",
 				closeShort
-					? "Premium paid to close?"
-					: "Premium received from closing?",
-				closeShort ? "平仓支付多少权利金？" : "平仓收到多少权利金？",
+					? "How much premium did you pay to close, before fees?"
+					: "How much premium did you receive for closing, before fees?",
+				closeShort
+					? "不计费用，平仓支付了多少权利金？"
+					: "不计费用，平仓收到了多少权利金？",
 				closeShort ? 360 : 500,
-				"USD before fees",
-				"美元，不含费用",
+				"dollars",
+				"美元",
 				closeShort
-					? "$1.20 × 100 × 3 = $360 paid. The original sale price is needed to calculate profit."
-					: "$2.50 × 100 × 2 = $500 received. The original purchase price is needed to calculate profit.",
+					? "$1.20 × 100 × 3 = $360 paid. Your profit also depends on what you first sold the puts for."
+					: "$2.50 × 100 × 2 = $500 received. Your profit also depends on what you first paid for the puts.",
 				closeShort
-					? "$1.20 × 100 × 3 = $360 支出，计算利润还需原卖出价格。"
-					: "$2.50 × 100 × 2 = $500 收入，计算利润还需原买入价格。",
+					? "$1.20 × 100 × 3 = 支付 $360。盈亏还取决于你当初卖出这些看跌的价格。"
+					: "$2.50 × 100 × 2 = 收到 $500。盈亏还取决于你当初买入这些看跌的价格。",
 			),
 		],
 	};
@@ -250,54 +254,53 @@ function payoffCase(variant: number): TeachingCase {
 	const intrinsic = Math.max(put ? strike - spot : spot - strike, 0);
 	const payoff = intrinsic * count * multiplier;
 	const profit = payoff - premium - fees;
-	const profitAmount = `${profit < 0 ? "−" : ""}$${Math.abs(profit)}`;
 	return {
 		brief: t(
-			`You bought ${count} ALFA ${strike} ${put ? "puts" : "calls"} at $${paid} per share. Stated multiplier: ${multiplier}. Expiration price: $${spot}. Total fees for the whole position: $${fees}. Use expiration intrinsic value; there is no remaining time value.`,
-			`你买入 ${count} 张 ALFA ${strike} ${put ? "看跌" : "看涨"}，每股支付 $${paid}，给定乘数 ${multiplier}。到期现价 $${spot}，整个持仓总费用 $${fees}。使用到期内在价值，不再有时间价值。`,
+			`You bought ${count} ALFA ${strike} ${put ? "puts" : "calls"} at ${money(paid)} a share, and each contract covers ${multiplier} shares. At expiry ALFA is ${money(spot)}, so only intrinsic value is left. ${fees ? `Fees for the whole position come to ${money(fees, 0)}.` : "There are no fees."}`,
+			`你以每股 ${money(paid)} 买入 ${count} 张 ALFA ${strike} ${put ? "看跌" : "看涨"}，每张合约对应 ${multiplier} 股。到期时 ALFA 为 ${money(spot)}，只剩内在价值。${fees ? `整个持仓的费用合计 ${money(fees, 0)}。` : "没有费用。"}`,
 		),
 		questions: [
 			n(
 				"premium",
-				"Total premium paid, excluding fees?",
-				"不含费用的总权利金？",
+				"What premium did you pay in total, before fees?",
+				"不计费用，你一共支付了多少权利金？",
 				premium,
-				"USD",
+				"dollars",
 				"美元",
-				`$${paid} × ${multiplier} × ${count} = $${premium}.`,
-				`$${paid} × ${multiplier} × ${count} = $${premium}。`,
+				`${money(paid)} × ${multiplier} × ${count} = ${money(premium, 0)}.`,
+				`${money(paid)} × ${multiplier} × ${count} = ${money(premium, 0)}。`,
 			),
 			n(
 				"payoff",
-				"Total expiration payoff, before subtracting costs?",
-				"减成本前的到期总价值？",
+				"What are the options worth at expiry, before subtracting what you paid?",
+				"到期时这些期权值多少（还没减去你支付的成本）？",
 				payoff,
-				"USD",
+				"dollars",
 				"美元",
-				`max(${put ? `${strike} − ${spot}` : `${spot} − ${strike}`}, 0) × ${multiplier} × ${count} = $${payoff}. Floor the option value at zero before subtracting costs.`,
-				`max(${put ? `${strike} − ${spot}` : `${spot} − ${strike}`}, 0) × ${multiplier} × ${count} = $${payoff}。先将期权价值取零下限，再减成本。`,
+				`Each is worth max(${put ? `${strike} − ${spot}` : `${spot} − ${strike}`}, 0) = ${money(intrinsic)} a share, so ${money(intrinsic)} × ${multiplier} × ${count} = ${money(payoff, 0)}. An option's value stops at zero; it never goes negative.`,
+				`每张每股价值 max(${put ? `${strike} − ${spot}` : `${spot} − ${strike}`}, 0) = ${money(intrinsic)}，所以 ${money(intrinsic)} × ${multiplier} × ${count} = ${money(payoff, 0)}。期权价值最低为零，不会为负。`,
 			),
 			n(
 				"profit",
-				"Buyer profit after premium and total fees?",
-				"减去权利金及总费用后的买方盈亏？",
+				"What is your profit or loss after the premium and fees? Use a minus sign for a loss.",
+				"减去权利金和费用后，你盈亏多少？亏损请用负号。",
 				profit,
-				"USD; negative for a loss",
-				"美元，亏损填负数",
-				`$${payoff} − $${premium} − $${fees} = ${profitAmount}. A positive payoff need not cover the purchase cost.`,
-				`$${payoff} − $${premium} − $${fees} = ${profitAmount}。正到期价值不一定覆盖购买成本。`,
+				"dollars",
+				"美元",
+				`${money(payoff, 0)} − ${money(premium, 0)} − ${money(fees, 0)} = ${signedMoney(profit, 0)}. A positive value at expiry doesn't have to cover what you paid.`,
+				`${money(payoff, 0)} − ${money(premium, 0)} − ${money(fees, 0)} = ${signedMoney(profit, 0)}。到期价值为正，不代表能覆盖你付出的成本。`,
 			),
 			c(
 				"moneyness",
-				"Is the option in the money at expiration?",
-				"期权到期是否实值？",
+				"Is the option in the money at expiry?",
+				"期权到期时是实值吗？",
 				[
-					["itm", "Yes; intrinsic value is positive.", "是，内在价值为正。"],
-					["otm", "No; intrinsic value is zero.", "否，内在价值为零。"],
+					["itm", "Yes: it has intrinsic value", "是：它有内在价值"],
+					["otm", "No: its intrinsic value is zero", "否：它的内在价值为零"],
 				],
 				intrinsic > 0 ? "itm" : "otm",
-				"Moneyness compares strike with the underlying price; profitability also depends on what you paid and fees.",
-				"实值状态比较行权价与标的价格，盈利还取决于已付成本和费用。",
+				"In the money compares the strike with ALFA's price. Whether you made money also depends on what you paid and on fees.",
+				"是否实值，比较的是行权价和 ALFA 的价格。是否赚钱，还取决于你支付的价格和费用。",
 			),
 		],
 	};
@@ -307,155 +310,319 @@ function settlementCase(variant: number): TeachingCase {
 	if (variant === 1)
 		return {
 			brief: t(
-				"You exercise 2 physically settled ALFA calls, strike $50, each delivering 100 shares. This is an exercise, not a sale of the options. Ignore premium and fees when calculating the exercise exchange.",
-				"你行使 2 张 ALFA 实物结算看涨，每张交付 100 股，行权价 $50。这是行权，并非卖出期权。计算行权交换时暂不计权利金和费用。",
+				"You exercise 2 ALFA calls with a $50 strike, settled in shares, 100 per contract. You're exercising them, not selling them. Ignore the premium and fees: this is about the exchange of cash and shares.",
+				"你行使 2 张行权价 $50 的 ALFA 看涨，以股票交割，每张 100 股。你是行权，而不是卖出它们。不计权利金和费用：这里只看现金和股票的交换。",
 			),
 			questions: [
 				n(
 					"shares",
-					"Shares received by the holder?",
-					"持有人收到多少股？",
+					"How many shares do you receive?",
+					"你会收到多少股？",
 					200,
 					"shares",
 					"股",
-					"2 × 100 = 200 actual shares on physical settlement.",
-					"实物结算收到 2 × 100 = 200 股实际股票。",
+					"2 × 100 = 200 actual shares, because the calls settle in shares.",
+					"2 × 100 = 200 股真实的股票，因为这些看涨以股票交割。",
 				),
 				n(
 					"cash",
-					"Exercise cash paid by the holder?",
-					"持有人支付多少行权金额？",
+					"How much cash do you pay for them?",
+					"你要为这些股票支付多少现金？",
 					10000,
-					"USD",
+					"dollars",
 					"美元",
-					"$50 × 200 = $10,000 paid for the shares. It is not the cash-settled intrinsic payoff.",
-					"$50 × 200 = $10,000，用于购买股票；不同于现金结算的内在价值支付。",
+					"$50 × 200 = $10,000 for the shares. That's a purchase at the strike, not a cash payout of the option's value.",
+					"$50 × 200 = $10,000，用来买这些股票。这是按行权价买入，而不是以现金支付期权的价值。",
 				),
 				c(
 					"delivery",
-					"What distinguishes this from selling the calls to close?",
-					"这与卖出看涨平仓有何区别？",
+					"How is this different from selling the calls to close?",
+					"这和卖出看涨平仓有什么不同？",
 					[
 						[
 							"exercise",
-							"Exercise invokes the right and transfers the deliverable.",
-							"行权使用权利并转移交付物。",
+							"Exercising uses the right, and the shares change hands",
+							"行权是使用权利，股票会易手",
 						],
-						["same", "They are the same event.", "两者是同一事件。"],
+						[
+							"same",
+							"It isn't: they're the same event",
+							"没有不同：它们是同一件事",
+						],
 					],
 					"exercise",
-					"Closing sells the option. This exercise buys the shares under the contract terms.",
-					"平仓卖出的是期权，而本次行权按条款买入股票。",
+					"Closing sells the option itself. Exercising uses it: you buy the shares on the contract's terms.",
+					"平仓是把期权本身卖掉；行权是使用它：你按合约条款买入股票。",
 				),
 			],
 		};
 	if (variant === 3)
 		return {
 			brief: t(
-				"You bought 2 cash-settled IDX calls at a premium of 3 points per contract, strike 4,000, and $100 per point. The official settlement value required by the terms has not been published. A last displayed index price is 4,030. The contract is not eligible for physical delivery. Ignore fees.",
-				"你按每张 3 点权利金买入 2 张 IDX 现金结算看涨，行权价 4,000，每点 $100。条款要求的官方结算值尚未公布，最新展示指数价格为 4,030。本合约不进行实物交付，不计费用。",
+				"You bought 2 cash-settled IDX calls with a 4,000 strike for a premium of 3 points each, at $100 per point. The official settlement value the terms call for hasn't been published yet; the index last showed 4,030. These contracts never deliver shares. Ignore fees.",
+				"你以每张 3 点的权利金买入 2 张行权价 4,000 的 IDX 现金结算看涨，每点 $100。条款要求的官方结算值还没有公布；指数最近显示为 4,030。这些合约从不交付股票。不计费用。",
 			),
 			questions: [
 				c(
 					"cash",
-					"Can you calculate the final cash payoff yet?",
-					"现在能算最终现金到期价值吗？",
+					"Can you work out the final cash payout yet?",
+					"现在能算出最终的现金支付吗？",
 					[
 						[
 							"unknown",
-							"No; wait for the specified official settlement value.",
-							"不能，需等待指定官方结算值。",
+							"No: wait for the official settlement value",
+							"不能：要等官方结算值",
 						],
 						[
 							"spot",
-							"Yes; substitute the last displayed price.",
-							"能，使用最新展示价格代替。",
+							"Yes: use the last price shown, 4,030",
+							"能：用最近显示的 4,030",
 						],
 						[
 							"zero",
-							"Use zero because the reference is missing.",
-							"参考值缺失，取零。",
+							"Yes: it's zero while the value is missing",
+							"能：数值缺失时就是零",
 						],
 					],
 					"unknown",
-					"The displayed quote is not the settlement reference. Missing reference data prevents a final amount; it does not imply a zero payoff.",
-					"展示报价不是结算参考值。参考数据缺失会阻止计算最终金额，但不代表到期价值为零。",
+					"The last price shown isn't the value the terms name. Until the official value is published, the payout is unknown, not zero.",
+					"最近显示的价格不是条款指定的数值。在官方结算值公布之前，支付金额是未知的，而不是零。",
 				),
 				c(
 					"delivery",
-					"Would the missing reference change cash settlement into share delivery?",
-					"参考值缺失会让现金结算变成股票交付吗？",
+					"Does the missing value turn cash settlement into share delivery?",
+					"缺少结算值，会让现金结算变成股票交付吗？",
 					[
 						[
 							"no",
-							"No; settlement type is fixed by product terms.",
-							"不会，结算方式由产品条款规定。",
+							"No: the contract's terms fix how it settles",
+							"不会：结算方式由合约条款决定",
 						],
 						[
 							"yes",
-							"Yes; deliver 100 shares instead.",
-							"会，改为交付 100 股。",
+							"Yes: 100 shares are delivered instead",
+							"会：改为交付 100 股",
 						],
 					],
 					"no",
-					"A missing observation does not rewrite the product's settlement terms.",
-					"观测值缺失不会改变产品结算条款。",
+					"A value that hasn't arrived doesn't rewrite the contract. It still settles in cash.",
+					"一个还没公布的数值不会改写合约。它仍然以现金结算。",
 				),
 				n(
 					"premium",
-					"What premium was paid before fees, even though final payoff is unknown?",
-					"最终到期价值未知，但已付权利金是多少（不计费用）？",
+					"Even with the payout unknown, what premium did you pay in total?",
+					"即使支付金额还未知，你一共支付了多少权利金？",
 					600,
-					"USD",
+					"dollars",
 					"美元",
-					"3 points × $100 per point × 2 contracts = $600. The known purchase cost remains calculable even while the final settlement value is missing.",
-					"3 点 × 每点 $100 × 2 张 = $600。即使最终结算值缺失，已知购买成本仍可计算。",
+					"3 points × $100 a point × 2 contracts = $600. What you paid is known even while the settlement value isn't.",
+					"3 点 × 每点 $100 × 2 张 = $600。即使结算值还未知，你支付的金额是已知的。",
 				),
 			],
 		};
 	return {
 		brief: t(
-			"Two cash-settled IDX puts: strike 4,000, official settlement 3,990, multiplier $50 per point per contract. Last displayed index price: 3,980. Ignore premium and fees.",
-			"两张 IDX 现金结算看跌：行权价 4,000，官方结算值 3,990，每张每点 $50。最新展示指数价格 3,980，暂不计权利金与费用。",
+			"You hold 2 cash-settled IDX puts with a 4,000 strike, paying $50 per index point per contract. The official settlement value is 3,990, though the index last showed 3,980. Ignore the premium and fees.",
+			"你持有 2 张行权价 4,000 的 IDX 现金结算看跌，每张每个指数点 $50。官方结算值为 3,990，而指数最近显示为 3,980。不计权利金和费用。",
 		),
 		questions: [
 			c(
 				"reference",
-				"Which value belongs in the settlement calculation?",
-				"结算计算应使用哪个值？",
+				"Which value do you settle against?",
+				"结算用哪个数值？",
 				[
-					["official", "Official settlement: 3,990.", "官方结算值 3,990。"],
-					["last", "Last displayed price: 3,980.", "最新展示价格 3,980。"],
+					[
+						"official",
+						"The official settlement value, 3,990",
+						"官方结算值 3,990",
+					],
+					["last", "The last price shown, 3,980", "最近显示的价格 3,980"],
 				],
 				"official",
-				"The terms name the official settlement. A more recent-looking quote cannot replace it.",
-				"条款指定官方结算值，看似更新的报价也不能替代。",
+				"The terms name the official settlement value. A price that looks more recent can't replace it.",
+				"条款指定的是官方结算值。看起来更新的价格也不能替代它。",
 			),
 			n(
 				"cash",
-				"Total cash payoff for both puts?",
-				"两张看跌的总现金到期价值？",
+				"What cash do the two puts pay in total?",
+				"两张看跌一共支付多少现金？",
 				1000,
-				"USD",
+				"dollars",
 				"美元",
-				"max(4,000 − 3,990, 0) × $50 × 2 = $1,000. Puts reverse the call subtraction.",
-				"max(4,000 − 3,990, 0) × $50 × 2 = $1,000。看跌与看涨的相减方向相反。",
+				"max(4,000 − 3,990, 0) × $50 × 2 = $1,000. A put subtracts the other way round from a call.",
+				"max(4,000 − 3,990, 0) × $50 × 2 = $1,000。看跌的相减方向与看涨相反。",
 			),
 			c(
 				"delivery",
-				"What is delivered?",
-				"交付什么？",
+				"What do you receive?",
+				"你会收到什么？",
 				[
-					["cash", "Cash; no index shares.", "现金，不交付指数股票。"],
-					["shares", "100 shares for each contract.", "每张交付 100 股。"],
+					["cash", "Cash; no shares of the index", "现金；不交付指数的股票"],
+					["shares", "100 shares for each contract", "每张 100 股"],
 				],
 				"cash",
-				"The $50 multiplier converts index points to dollars; it does not specify a share deliverable.",
-				"$50 乘数把指数点换成美元，不表示股票交付数量。",
+				"The $50 per point turns index points into dollars; it doesn't mean shares are delivered.",
+				"每点 $50 是把指数点换算成美元，并不表示要交付股票。",
 			),
 		],
 	};
 }
+
+/**
+ * Variant 0, the guided case, in plainer words. Question ids, choices and answers match the
+ * archived originals, so attempts saved against them still read correctly.
+ */
+const guided: Record<string, () => TeachingCase> = {
+	"option-contracts": () => ({
+		brief: t(
+			"Records A and B are both ALFA 105 calls, and each contract covers 100 shares. Record A expires October 16; record B expires November 20. You bought record A; the purchase is below.",
+			"记录 A 和 B 都是 ALFA 105 看涨，每张合约对应 100 股。记录 A 于 10 月 16 日到期，记录 B 于 11 月 20 日到期。你买入的是记录 A，成交见下方。",
+		),
+		facts: [
+			f("Purchased contracts", "买入合约（张）", "4"),
+			f("Execution price (USD per share)", "成交价（美元/股）", "2.00"),
+		],
+		questions: [
+			c(
+				"identity",
+				"Can you treat A and B as the same contract?",
+				"A 和 B 能当作同一份合约吗？",
+				[
+					["same", "Yes: the ticker and strike match", "能：代码和行权价相同"],
+					["different", "No: the expiry differs", "不能：到期日不同"],
+					["unknown", "Only the next price can tell", "只有下一个价格才能判断"],
+				],
+				"different",
+				"The expiry is part of what a contract is, so A and B are different contracts. A price is only an observation of one of them.",
+				"到期日是合约定义的一部分，所以 A 和 B 是不同的合约。价格只是对其中一份合约的观测。",
+			),
+			n(
+				"premium",
+				"What premium did you pay in total, before fees?",
+				"不计费用，你一共支付了多少权利金？",
+				800,
+				"dollars",
+				"美元",
+				"$2.00 a share × 100 shares × 4 contracts = $800. That's what you paid, not a profit.",
+				"每股 $2.00 × 100 股 × 4 张 = $800。这是你支付的金额，不是利润。",
+			),
+			n(
+				"deliverable",
+				"How many shares would your contracts deliver if exercised?",
+				"如果行权，你的合约会交付多少股？",
+				400,
+				"shares",
+				"股",
+				"4 × 100 = 400 shares. That's what exercise would deliver, not a share-equivalent exposure: no delta was given.",
+				"4 × 100 = 400 股。这是行权会交付的股数，而不是股等价敞口：题目没有给出 Delta。",
+			),
+		],
+	}),
+	"option-rights": () => ({
+		brief: t(
+			"Ben wrote 2 ALFA puts with a $40 strike, settled in shares, 100 per contract, and he's assigned. Ignore the premium and fees: this is about the exchange of cash and shares.",
+			"Ben 卖出了 2 张行权价 $40 的 ALFA 看跌，以股票交割，每张 100 股，现在他被指派了。不计权利金和费用：这里只看现金和股票的交换。",
+		),
+		questions: [
+			n(
+				"obligation",
+				"How much cash must Ben pay?",
+				"Ben 必须支付多少现金？",
+				8000,
+				"dollars",
+				"美元",
+				"$40 × 100 × 2 = $8,000, for 200 shares. That's the exchange, not Ben's profit or loss.",
+				"$40 × 100 × 2 = $8,000，换来 200 股。这是交换的金额，不是 Ben 的盈亏。",
+			),
+			c(
+				"role",
+				"What does assignment require Ben to do?",
+				"被指派后，Ben 必须做什么？",
+				[
+					["buy", "Buy the shares at the strike", "按行权价买入股票"],
+					["sell", "Sell the shares at the strike", "按行权价卖出股票"],
+					[
+						"choice",
+						"Decide whether to go through with it",
+						"自行决定是否履行",
+					],
+				],
+				"buy",
+				"The put's holder has the right to sell at $40, so Ben, the writer, must buy at $40. Assignment isn't optional.",
+				"看跌的持有人有权按 $40 卖出，所以作为义务方的 Ben 必须按 $40 买入。指派不是可选的。",
+			),
+		],
+	}),
+	"premium-payoff": () => ({
+		brief: t(
+			"You bought 2 ALFA 100 calls at $3.00 a share, and each contract covers 100 shares. At expiry ALFA is $102. Ignore fees.",
+			"你以每股 $3.00 买入 2 张 ALFA 100 看涨，每张合约对应 100 股。到期时 ALFA 为 $102。不计费用。",
+		),
+		questions: [
+			n(
+				"premium",
+				"What premium did you pay in total?",
+				"你一共支付了多少权利金？",
+				600,
+				"dollars",
+				"美元",
+				"$3.00 × 100 × 2 = $600.",
+				"$3.00 × 100 × 2 = $600。",
+			),
+			n(
+				"profit",
+				"What is your profit or loss at expiry, after the premium? Use a minus sign for a loss.",
+				"算上权利金，你到期盈亏多少？亏损请用负号。",
+				-200,
+				"dollars",
+				"美元",
+				"Each call is worth $102 − $100 = $2.00 a share, $1.00 less than the $3.00 you paid: −$1.00 × 100 × 2 = −$200. In the money, and still a loss.",
+				"每张看涨每股值 $102 − $100 = $2.00，比你支付的 $3.00 少 $1.00：−$1.00 × 100 × 2 = −$200。实值，却仍然亏损。",
+			),
+		],
+	}),
+	"expiration-settlement": () => ({
+		brief: t(
+			"You hold one cash-settled IDX call with a 4,000 strike, paying $100 per index point. The official settlement value comes out at 4,012. Ignore the premium you paid.",
+			"你持有一张行权价 4,000 的 IDX 现金结算看涨，每个指数点 $100。官方结算值公布为 4,012。不计你支付的权利金。",
+		),
+		questions: [
+			n(
+				"settlement-difference",
+				"How far is the settlement value above the strike, in index points? Use a minus sign if it's below.",
+				"结算值比行权价高多少个指数点？如果更低，请用负号。",
+				12,
+				"index points",
+				"指数点",
+				"4,012 − 4,000 = +12 points. Had settlement come in below the strike, this difference would be negative and the payout zero.",
+				"4,012 − 4,000 = +12 点。如果结算值低于行权价，这个差值会是负数，支付则为零。",
+			),
+			n(
+				"cash",
+				"What cash does the call pay?",
+				"这张看涨支付多少现金？",
+				1200,
+				"dollars",
+				"美元",
+				"max(4,012 − 4,000, 0) × $100 = $1,200.",
+				"max(4,012 − 4,000, 0) × $100 = $1,200。",
+			),
+			c(
+				"delivery",
+				"What do you receive?",
+				"你会收到什么？",
+				[
+					["shares", "100 shares of the index", "100 股指数股票"],
+					["cash", "The cash amount; no shares", "现金金额；不交付股票"],
+					["premium", "A refund of the premium you paid", "退还你支付的权利金"],
+				],
+				"cash",
+				"The terms say cash settlement: an index can't be delivered as shares, and the premium is never refunded.",
+				"条款规定现金结算：指数无法以股票形式交付，权利金也不会退还。",
+			),
+		],
+	}),
+};
 
 const revisions: Record<string, (variant: number) => TeachingCase> = {
 	"option-contracts": contractsCase,
@@ -471,13 +638,10 @@ const foundationV4Units: TeachingUnit[] = archivedFoundationUnits.map(
 		case: (variant) => {
 			if (!Number.isInteger(variant) || variant < 0 || variant > 3)
 				throw new Error("Unknown foundation variant");
-			return variant === 0 ? unit.case(0) : revisions[unit.id](variant);
+			return variant === 0 ? guided[unit.id]() : revisions[unit.id](variant);
 		},
 	}),
 );
-
-const money = (value: number) =>
-	`${value < 0 ? "−" : ""}$${Math.abs(value).toLocaleString("en-US")}`;
 
 function writerQuestion(variant: number): ScenarioQuestion {
 	const { put, strike, paid, spot, count, multiplier } = payoffParams(variant);
@@ -487,13 +651,13 @@ function writerQuestion(variant: number): ScenarioQuestion {
 	const profit = received - owed;
 	return n(
 		"writer-profit",
-		"The writer on the other side received the same premium. Writer profit at expiration, before fees?",
-		"对手方的义务方收到同样的权利金。到期时义务方盈亏是多少（不计费用）？",
+		"The writer on the other side received the same premium. What is the writer's profit or loss at expiry, before fees? Use a minus sign for a loss.",
+		"另一边的义务方收到了同样的权利金。不计费用，义务方到期盈亏多少？亏损请用负号。",
 		profit,
-		"USD; negative for a loss",
-		"美元，亏损填负数",
-		`${money(received)} received − ${money(owed)} owed = ${money(profit)}. Before fees the writer's result mirrors the buyer's, and the premium is the most the writer can keep.`,
-		`收到 ${money(received)} − 需支付 ${money(owed)} = ${money(profit)}。不计费用时，义务方与买方结果互为镜像，权利金就是义务方最多能保留的金额。`,
+		"dollars",
+		"美元",
+		`${money(received, 0)} received − ${money(owed, 0)} owed = ${signedMoney(profit, 0)}. Before fees the writer's result mirrors the buyer's, and the premium is the most the writer can keep.`,
+		`收到 ${money(received, 0)} − 需支付 ${money(owed, 0)} = ${signedMoney(profit, 0)}。不计费用时，义务方与买方的结果互为镜像，权利金就是义务方最多能保留的金额。`,
 	);
 }
 
