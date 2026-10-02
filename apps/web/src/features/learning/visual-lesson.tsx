@@ -167,6 +167,11 @@ const lessons = {
 			default: m.OptionStrategiesWalkthrough,
 		})),
 	),
+	"multi-leg-structures": lazy(() =>
+		import("./lessons/multi-leg-structures").then((m) => ({
+			default: m.MultiLegStructuresWalkthrough,
+		})),
+	),
 	"stocks-and-prices": lazy(() =>
 		import("./lessons/stocks-and-prices").then((m) => ({
 			default: m.StocksAndPricesWalkthrough,

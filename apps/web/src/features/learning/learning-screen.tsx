@@ -86,6 +86,7 @@ import { GammaRegimesWalkthrough } from "./lessons/gamma-regimes";
 import { ImpliedRealizedVolatilityWalkthrough } from "./lessons/implied-realized-volatility";
 import { IvRankPercentileWalkthrough } from "./lessons/iv-rank-percentile";
 import { MarketRecapWalkthrough } from "./lessons/market-recap";
+import { MultiLegStructuresWalkthrough } from "./lessons/multi-leg-structures";
 import { OptionContractsWalkthrough } from "./lessons/option-contracts";
 import { OptionRightsWalkthrough } from "./lessons/option-rights";
 import { OptionStrategiesWalkthrough } from "./lessons/option-strategies";
@@ -158,6 +159,7 @@ const conceptLabs = {
 	"symbol-drawer": SymbolDrawerWalkthrough,
 	"unusual-activity": UnusualActivityWalkthrough,
 	"option-strategies": OptionStrategiesWalkthrough,
+	"multi-leg-structures": MultiLegStructuresWalkthrough,
 	"stocks-and-prices": StocksAndPricesWalkthrough,
 	"what-options-are": WhatOptionsAreWalkthrough,
 	"trading-options": TradingOptionsWalkthrough,

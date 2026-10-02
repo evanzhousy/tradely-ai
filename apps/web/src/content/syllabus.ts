@@ -279,6 +279,16 @@ export const syllabus: readonly Entry[] = [
 		["flow-sentiment"],
 	),
 	lesson(
+		"multi-leg-structures",
+		"execution",
+		"Straddles, condors and multi-leg prints",
+		"跨式、铁鹰与多腿成交",
+		"Find a straddle's break-evens and an iron condor's worst case, and read four prints in one second as one package instead of four opinions.",
+		"找出跨式的盈亏平衡点和铁鹰的最坏情况，并把同一秒内的四笔成交作为一个整体来读，而不是四个观点。",
+		["C40"],
+		["option-strategies"],
+	),
+	lesson(
 		"validate-option-print",
 		"execution",
 		"Checking one trade: facts, inferences and unknowns",

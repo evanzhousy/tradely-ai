@@ -501,4 +501,130 @@ export const flowUnits: TeachingUnit[] = [
 			};
 		},
 	},
+	{
+		id: "multi-leg-structures",
+		conceptLab: {
+			kind: "multi-leg-structures",
+			intro: t(
+				"Build the Oct 18 100 straddle from its call and put and find where it breaks even, sell a 90/95/105/110 iron condor and find its worst case, and read its four prints as one package instead of two bullish and two bearish legs.",
+				"用看涨和看跌组合出 10月18日 100 跨式并找出它的盈亏平衡点，卖出 90/95/105/110 铁鹰并找出它的最坏情况，再把它的四笔成交作为一个整体来读，而不是两条看涨腿和两条看跌腿。",
+			),
+		},
+		sources: [basics],
+		explanation: t(
+			"A long straddle buys a call and a put at one strike: it pays on a big move either way, and its break-evens sit the total premium above and below the strike. A strangle buys them at different strikes, which is cheaper but needs a bigger move. An iron condor sells a put spread below the stock and a call spread above it: it keeps the credit if the stock stays between the short strikes, and because at most one side can finish in the money, its worst case is one spread's width minus the credit. Each of these is one decision priced as a package, but the tape prints every leg separately, and a feed that labels legs one at a time can call the same trade bullish, bearish or neutral. Same-second prints with a multi-leg condition and matching sizes suggest a package; linked-leg records confirm it.",
+			"跨式多头在同一行权价买入一张看涨和一张看跌：任一方向的大幅变动都能赚钱，盈亏平衡点在行权价上下各相差总权利金。宽跨式在不同行权价买入两者，更便宜，但需要更大的变动。铁鹰在股价下方卖出一个看跌价差、上方卖出一个看涨价差：股价留在两个卖出行权价之间就能保留收入；由于到期时最多只有一侧是实值，最坏情况是一个价差的宽度减去收入。每一种都是作为整体定价的一个决定，但逐笔成交会把每条腿分开打印，逐腿贴标签的数据可能把同一笔交易标为看涨、看跌或中性。同一秒、带多腿条件、数量一致的成交提示这是一个整体；关联腿记录才能证实。",
+		),
+		example: t(
+			'Buying the Oct 18 100 call and put at $4.20 each costs $8.40 a share, so ALFA must end above $108.40 or below $91.60 to make money. Selling the 95 put and 105 call at $2.05 and buying the 90 put at $1.00 and the 110 call at $0.93 collects $2.17; the worst case is $5.00 − $2.17 = $2.83 a share. Two hundred of those condors print as four legs that a leg-by-leg feed tallies to −$1,400 of "bearish" premium, though the trade is a $43,400 bet that ALFA stays between $95 and $105.',
+			"以每张 $4.20 买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰打印为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看跌”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
+		),
+		misconception: t(
+			"A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+			"多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。",
+		),
+		case: (v) => {
+			const cases = [
+				{
+					kind: "straddle" as const,
+					spot: 100,
+					text: t(
+						"You buy an ALFA 100 call at $4.20 and an ALFA 100 put at $4.20, same expiry: a long straddle.",
+						"你以 $4.20 买入一张 ALFA 100 看涨，并以 $4.20 买入一张同一到期日的 ALFA 100 看跌：跨式多头。",
+					),
+					price: 8.4,
+					top: 100,
+				},
+				{
+					kind: "condor" as const,
+					spot: 100,
+					text: t(
+						"You sell an ALFA iron condor: sell the 95 put at $2.05 and buy the 90 put at $1.00, sell the 105 call at $2.05 and buy the 110 call at $0.93, all one expiry.",
+						"你卖出一组 ALFA 铁鹰：以 $2.05 卖出 95 看跌、以 $1.00 买入 90 看跌，以 $2.05 卖出 105 看涨、以 $0.93 买入 110 看涨，到期日相同。",
+					),
+					price: 2.17,
+					top: 105,
+				},
+				{
+					kind: "strangle" as const,
+					spot: 100,
+					text: t(
+						"You buy an ALFA 105 call at $2.15 and an ALFA 95 put at $2.15, same expiry: a long strangle.",
+						"你以 $2.15 买入一张 ALFA 105 看涨，并以 $2.15 买入一张同一到期日的 ALFA 95 看跌：宽跨式多头。",
+					),
+					price: 4.3,
+					top: 105,
+				},
+				{
+					kind: "condor" as const,
+					spot: 50,
+					text: t(
+						"With a stock at $50 you sell an iron condor: sell the 45 put at $1.10 and buy the 40 put at $0.40, sell the 55 call at $1.00 and buy the 60 call at $0.35, all one expiry.",
+						"一只股票为 $50 时，你卖出一组铁鹰：以 $1.10 卖出 45 看跌、以 $0.40 买入 40 看跌，以 $1.00 卖出 55 看涨、以 $0.35 买入 60 看涨，到期日相同。",
+					),
+					price: 1.35,
+					top: 55,
+				},
+			][v];
+			const condor = cases.kind === "condor";
+			const breakEven = cases.top + cases.price;
+			return {
+				brief: t(
+					`${cases.text.en} One contract covers 100 shares; work at expiry and ignore fees.`,
+					`${cases.text.zh}一张合约对应 100 股；按到期时计算，不计费用。`,
+				),
+				questions: [
+					n(
+						"cost",
+						condor
+							? "What credit does the condor collect, per share?"
+							: "What does the position cost, per share?",
+						condor ? "这组铁鹰每股收入多少？" : "这个持仓每股成本多少？",
+						cases.price,
+						"dollars a share",
+						"美元/股",
+						condor
+							? `Credits from the short legs minus the cost of the wings: ${money(cases.price)} a share. That's also the most the condor can make.`
+							: `${cases.kind === "straddle" ? "$4.20 + $4.20" : "$2.15 + $2.15"} = ${money(cases.price)} a share. That's also the most it can lose.`,
+						condor
+							? `卖出各腿的收入减去两翼的成本：每股 ${money(cases.price)}。这也是这组铁鹰最多能赚的。`
+							: `${cases.kind === "straddle" ? "$4.20 + $4.20" : "$2.15 + $2.15"} = 每股 ${money(cases.price)}。这也是它最多会亏的。`,
+						0.01,
+					),
+					n(
+						"breakeven",
+						"Above the stock's price, where does the position break even at expiry?",
+						"在股价上方，这个持仓到期的盈亏平衡点在哪里？",
+						breakEven,
+						"dollars",
+						"美元",
+						condor
+							? `The short ${cases.top} call starts costing above ${money(cases.top, 0)}; the ${money(cases.price)} credit covers the first ${money(cases.price)} of that: ${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}.`
+							: `Above ${money(cases.top, 0)} only the call pays, and it must be worth the whole ${money(cases.price)}: ${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}.`,
+						condor
+							? `卖出的 ${cases.top} 看涨在 ${money(cases.top, 0)} 以上开始亏钱；${money(cases.price)} 的收入抵掉最开始的 ${money(cases.price)}：${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}。`
+							: `在 ${money(cases.top, 0)} 以上只有看涨赚钱，它必须值满 ${money(cases.price)}：${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}。`,
+						0.01,
+					),
+					c(
+						"view",
+						"What does this position need to make money?",
+						"这个持仓要赚钱需要什么？",
+						[
+							["big", "A big move, either way", "大幅变动，方向不限"],
+							["up", "A rise", "上涨"],
+							["calm", "The stock staying in a range", "股价留在一个区间内"],
+						],
+						condor ? "calm" : "big",
+						condor
+							? "A short iron condor keeps its credit while the stock stays between the short strikes and loses if it breaks out either way."
+							: `A long ${cases.kind} pays only once the stock moves past one of its break-evens, up or down. Staying still is its worst case.`,
+						condor
+							? "铁鹰空头在股价留在两个卖出行权价之间时保留收入，任一方向突破都会亏损。"
+							: `${cases.kind === "straddle" ? "跨式" : "宽跨式"}多头只有在股价越过某个盈亏平衡点时才赚钱，向上向下都可以。原地不动是它的最坏情况。`,
+					),
+				],
+			};
+		},
+	},
 ];

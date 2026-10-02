@@ -118,6 +118,7 @@ export type LearningStepView = {
 		| "execution-conditions"
 		| "unusual-activity"
 		| "option-strategies"
+		| "multi-leg-structures"
 		| "symbol-drawer"
 		| "delta"
 		| "gamma"
