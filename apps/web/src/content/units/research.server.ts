@@ -1,8 +1,10 @@
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
+	money,
 	numberQuestion as n,
 	oi,
+	plain,
 	quotes,
 	type TeachingUnit,
 	t,
@@ -29,43 +31,47 @@ export const researchUnits: TeachingUnit[] = [
 			"问题：在 ALFA 10月18日 看涨（行权价 100 至 120）中，9 月 16 日周一的成交集中在哪里？记录综合成交记录、完整时段截止及缺失的 120 看涨。周二送达的 120 看涨数据可检验该问题；看完领先者后改为看跌，则改变问题。一个人即可负责笔记与修订历史。",
 		),
 		misconception: t(
-			"A good question permits a supported answer and a reason to revise it. Caution alone is not the output; write the actual scope and quantity.",
-			"好问题应能得到有依据的答案，并有修订理由。仅表达谨慎不够，需写出实际范围与测量量。",
+			"A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+			"好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。",
 		),
 		case: (v) => {
 			const day = [3, 4, 8, 9][v];
 			return {
 				brief: t(
-					`Original contract: BETA calls, October 16 expiry, September ${day}, source tape-B. A proposed rerun ${v % 2 ? "switches to puts after viewing the highest-volume row" : "adds a corrected same-session call execution without changing method"}.`,
-					`原规则：BETA 看涨、10 月 16 日到期、9 月 ${day} 日、来源 tape-B。建议${v % 2 ? "看到最大成交后改为看跌" : "添加同日看涨更正成交，方法不变"}。`,
+					`Your research record asks about BETA calls expiring October 16, from tape-B, for the September ${day} session. A colleague proposes a rerun that ${v % 2 ? "switches to puts after seeing which call had the most volume" : "adds one corrected call trade from the same session and keeps the method"}.`,
+					`你的研究记录问的是 10 月 16 日到期的 BETA 看涨，来源 tape-B，9 月 ${day} 日交易时段。一位同事建议重跑：${v % 2 ? "在看到哪张看涨成交最多之后，改为研究看跌" : "加入同一时段的一笔更正后的看涨成交，方法不变"}。`,
 				),
 				questions: [
 					c(
 						"change",
-						"Does the proposal change the research question?",
-						"建议改变研究问题吗？",
+						"Does the proposal change your research question?",
+						"这个建议会改变你的研究问题吗？",
 						[
 							[
 								"new",
-								"Yes: define a new question and retain the original.",
-								"是，声明新问题并保留原件。",
+								"Yes: write it as a new question and keep the original record",
+								"会：把它写成新问题，并保留原来的记录",
 							],
 							[
 								"same",
-								"No: corrected evidence tests the existing question.",
-								"否，更正证据检验原问题。",
+								"No: corrected evidence tests the same question",
+								"不会：更正后的证据检验的是同一个问题",
 							],
 						],
 						v % 2 ? "new" : "same",
-						"A changed instrument population differs from corrected observations inside the existing population.",
-						"更换工具人群与修正原人群内观测不同。",
+						v % 2
+							? "Switching to puts after seeing the results changes what's being studied, so it's a new question. The original record stays as it was."
+							: "A corrected trade from the same session and population is new evidence for the same question, so rerun it under the existing record.",
+						v % 2
+							? "看到结果后改研究看跌，改变了研究对象，所以这是一个新问题。原来的记录保持不变。"
+							: "同一时段、同一范围内的一笔更正成交，是同一问题的新证据，所以在原记录下重跑即可。",
 					),
 					write(
 						"question",
-						"Write the actual question, source, cutoff and one invalidation rule.",
-						"写出实际问题、来源、截止时间与一条失效规则。",
-						"A reviewable answer names BETA calls/October 16, the stated session, tape-B and a complete-session cutoff, then explains how missing required coverage limits the claim. Evaluate your wording against those fields; it is not machine-certified.",
-						"可审核回答应明确 BETA 看涨/10 月 16 日、给定时段、tape-B 和完整时段截止，并说明必需覆盖缺失如何限制结论。按这些字段自评，文字不由机器认证。",
+						"Write the question you're actually answering: what you measure, the source, the cutoff, and one thing that would make you revise the answer.",
+						"写出你实际要回答的问题：测量什么、来源、截止时间，以及一件会让你修订答案的事。",
+						`For example: "Among BETA calls expiring October 16, which strike had the most volume in the September ${day} session, from tape-B with a complete-session cutoff? Revise if a required strike's data is still missing at the cutoff." Check that your wording has each of those parts; it isn't graded by a machine.`,
+						`例如：“在 10 月 16 日到期的 BETA 看涨中，哪个行权价在 9 月 ${day} 日交易时段成交最多？来源 tape-B，以完整交易时段为截止。如果截止时仍缺少必要行权价的数据，则修订。”检查你的写法是否包含这些部分；这一题不由机器评分。`,
 						40,
 					),
 				],
@@ -91,16 +97,16 @@ export const researchUnits: TeachingUnit[] = [
 			"规则：股票期权、9 月 16 日周一、有数据、至少 500 张。DUNE：股票/周一/900；BRDX：ETF/周一/4,200；EMBR：股票/周五/3,100；FJOR：股票/周一/缺失。其中只有 DUNE 可作有效观测比较。FJOR 是未知而不是零，限制完整范围结论。",
 		),
 		misconception: t(
-			"Compute eligibility before ranking. Changing exclusions after seeing the winner changes the question.",
-			"先计算资格再排名，看到领先者后更改排除项会改变问题。",
+			"Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+			"先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。",
 		),
 		case: (v) => {
 			const a = [800, 900, 650, 750][v];
 			const b = [400, 700, 450, 950][v];
 			return {
 				brief: t(
-					"Rule: ALFA/BETA/IOTA stock options in the same stated session, complete observations, volume ≥500. No other rows belong to the universe.",
-					"规则：给定同一时段的 ALFA/BETA/IOTA 股票期权，观测完整且量≥500。范围中无其他行。",
+					"Your comparison covers stock options on ALFA, BETA and IOTA in one stated session. A name counts only if its observation is complete and its volume is at least 500 contracts. No other names belong.",
+					"你的比较范围是 ALFA、BETA 和 IOTA 在同一给定时段的股票期权。只有观测完整、成交量至少 500 张的标的才计入。没有其他标的属于这个范围。",
 				),
 				worksheet: {
 					columns: [
@@ -121,43 +127,43 @@ export const researchUnits: TeachingUnit[] = [
 				questions: [
 					n(
 						"admitted",
-						"How many rows qualify for the observed-volume comparison?",
-						"多少行可进入已观测成交量比较？",
+						"How many names qualify for the comparison of observed volume?",
+						"有多少个标的有资格进入已观测成交量的比较？",
 						b >= 500 ? 2 : 1,
-						"rows",
-						"行",
-						"ALFA qualifies; BETA only if ≥500; IOTA lacks the required observation.",
-						"ALFA 合格，BETA 需≥500，IOTA 缺少必需观测。",
+						"names",
+						"个",
+						`ALFA's ${plain(a)} qualifies, and BETA's ${plain(b)} ${b >= 500 ? "clears 500 too" : "falls short of 500"}. IOTA's volume is missing, so it can't be measured: ${b >= 500 ? 2 : 1} ${b >= 500 ? "names" : "name"}.`,
+						`ALFA 的 ${plain(a)} 合格，BETA 的 ${plain(b)} ${b >= 500 ? "也超过 500" : "不足 500"}。IOTA 的成交量缺失，无法测量：共 ${b >= 500 ? 2 : 1} 个。`,
 					),
 					n(
 						"eligible-volume",
-						"What is the volume subtotal of qualifying observed rows?",
-						"合格已观测行的成交量小计是多少？",
+						"What volume do the qualifying names add up to?",
+						"有资格的标的成交量合计多少？",
 						a + (b >= 500 ? b : 0),
 						"contracts",
 						"张",
-						"Sum only rows that meet the stated threshold and coverage rule. This is not the missing full-universe total.",
-						"仅累加满足门槛和覆盖规则的行；这不是存在缺失的完整范围总量。",
+						`${b >= 500 ? `${plain(a)} + ${plain(b)} = ${plain(a + b)}` : `ALFA alone: ${plain(a)}`} contracts. That's the observed subtotal, not the total for all three names: IOTA is missing.`,
+						`${b >= 500 ? `${plain(a)} + ${plain(b)} = ${plain(a + b)}` : `只有 ALFA：${plain(a)}`} 张。这是已观测的小计，而不是三个标的的总量：IOTA 缺失。`,
 					),
 					c(
 						"claim",
-						"Can the observed leader be called the largest in the complete intended universe?",
-						"观测领先者可称完整目标范围最大吗？",
+						"Can you call the observed leader the most active of all three names?",
+						"你能把已观测的领先者称为三个标的中最活跃的吗？",
 						[
 							[
 								"full",
-								"Yes, missing rows count as zero.",
-								"可以，缺失按零计。",
+								"Yes: count the missing name as zero",
+								"能：把缺失的标的当作零",
 							],
 							[
 								"limited",
-								"No; report the observed subset and missing coverage.",
-								"不可以，应说明观测子集与缺失覆盖。",
+								"No: say it leads the names you observed, and that IOTA is missing",
+								"不能：要说它在已观测的标的中领先，并注明 IOTA 缺失",
 							],
 						],
 						"limited",
-						"Unknown volume can change the full-universe order.",
-						"未知成交量可能改变完整范围排序。",
+						"IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed.",
+						"IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。",
 					),
 				],
 			};
@@ -182,8 +188,8 @@ export const researchUnits: TeachingUnit[] = [
 			"ALFA 周一、周二都成交 2,400 张。CRUX 从 5,600 降到 1,900，ALFA 从第二升到第一，自身并无新增活动。另看基准：CRUX 5,600/平常 6,000=0.93×，DUNE 900/平常 300=3×。原始量与相对异常活动问题需要不同领先者。",
 		),
 		misconception: t(
-			"A higher rank can result from peers or exclusions. Rank change alone is not a change in the focal metric or a directional signal.",
-			"升名次可能来自同组或排除项，不能单凭名次确定自身指标变化或方向信号。",
+			"A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+			"排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。",
 		),
 		case: (v) => {
 			const rawA = [1200, 1800, 1600, 1400][v];
@@ -192,8 +198,8 @@ export const researchUnits: TeachingUnit[] = [
 			const normalB = [300, 1200, 500, 1100][v];
 			return {
 				brief: t(
-					"Research question: which of two fully covered eligible names is more active relative to its own comparable-session baseline?",
-					"研究问题：两个完整覆盖的合格标的，谁相对于自身可比时段基准更活跃？",
+					"Two fully covered names are eligible. Your question: which one is more active relative to its own usual full-session volume?",
+					"两个数据完整的标的都有资格。你的问题是：相对于各自平常的完整交易日成交量，哪一个更活跃？",
 				),
 				universe: {
 					id: `peer-lab-${v}`,
@@ -236,25 +242,25 @@ export const researchUnits: TeachingUnit[] = [
 				questions: [
 					n(
 						"ratio-a",
-						"ALFA relative volume?",
-						"ALFA 相对成交量？",
+						"What is ALFA's relative volume: today's volume against its typical session?",
+						"ALFA 的相对成交量是多少：今天的成交量对比它的典型交易日？",
 						rawA / normalA,
 						"times",
 						"倍",
-						"ALFA current ÷ ALFA baseline.",
-						"ALFA 当前量÷自身基准。",
+						`${plain(rawA)} ÷ ${plain(normalA)} = ${plain(rawA / normalA)}×.`,
+						`${plain(rawA)} ÷ ${plain(normalA)} = ${plain(rawA / normalA)}×。`,
 					),
 					c(
 						"leader",
-						"Which name answers this relative-activity question?",
-						"哪个标的符合此相对活动问题？",
+						"Which name answers your question?",
+						"哪个标的回答了你的问题？",
 						[
 							["a", "ALFA", "ALFA"],
 							["b", "BETA", "BETA"],
 						],
 						rawA / normalA > rawB / normalB ? "a" : "b",
-						"Compare ratios for this question, not raw volume or expected returns.",
-						"此问题比较比率，不比较原始量或预期收益。",
+						`ALFA: ${plain(rawA / normalA)}×. BETA: ${plain(rawB)} ÷ ${plain(normalB)} = ${plain(rawB / normalB)}×. ${rawA / normalA > rawB / normalB ? "ALFA" : "BETA"} is further above its own normal${(rawA > rawB) !== rawA / normalA > rawB / normalB ? `, even though ${rawA > rawB ? "ALFA" : "BETA"} traded more contracts` : ""}.`,
+						`ALFA：${plain(rawA / normalA)}×。BETA：${plain(rawB)} ÷ ${plain(normalB)} = ${plain(rawB / normalB)}×。${rawA / normalA > rawB / normalB ? "ALFA" : "BETA"} 超出自身平常水平更多${(rawA > rawB) !== rawA / normalA > rawB / normalB ? `，尽管 ${rawA > rawB ? "ALFA" : "BETA"} 成交的张数更多` : ""}。`,
 					),
 				],
 			};
@@ -279,8 +285,8 @@ export const researchUnits: TeachingUnit[] = [
 			"ALFA 9月20日 与 11月15日 看涨合计均 695 张、峰值均 380。9月20日 只在两个行权价成交（380 与 315），11月15日 在五个（380、两个 95、70 与 55）。峰值和总量相同，11月15日 仍更广。ALFA 为 $100.02 时，105 看涨为虚值、100 看涨为实值；在明确问题下两者都可成为研究候选。",
 		),
 		misconception: t(
-			"Count observed nonzero cells without converting missing values to zeros. View controls change visibility, not the declared source data or eligibility.",
-			"只计有观测的非零格，不能把缺失变零。显示控件不改变声明的来源或资格。",
+			"Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+			"只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。",
 		),
 		case: (v) => {
 			const spot = [100, 98, 108, 104][v];
@@ -290,8 +296,8 @@ export const researchUnits: TeachingUnit[] = [
 			const grids = v % 2 ? [b, a] : [a, b];
 			return {
 				brief: t(
-					`At 16:00, both fixed call neighborhoods total 8,000 contracts and peak at 3,000. Replay values between checkpoints are illustrative. Spot reference ${spot}. Compare observed breadth; all zero cells are explicitly observed, not missing.`,
-					`16:00 时，两个固定看涨邻域总量均 8,000、峰值均 3,000，回放检查点之间为示意值。现价参考 ${spot}，比较观测广度；所有零均为明确观测，而非缺失。`,
+					`At the 16:00 close, two ALFA call neighborhoods each total 8,000 contracts, with a 3,000 peak in one cell. ALFA is at ${money(spot, 0)}. Every zero in the grids was actually observed, not missing; the replay between checkpoints is only an illustration.`,
+					`16:00 收盘时，两个 ALFA 看涨邻域的总量都是 8,000 张，其中一格峰值为 3,000。ALFA 现价 ${money(spot, 0)}。网格中的每个零都是实际观测到的，不是缺失；检查点之间的回放只是示意。`,
 				),
 				neighborhoodPair: {
 					id: `breadth-v2-${v}`,
@@ -344,26 +350,42 @@ export const researchUnits: TeachingUnit[] = [
 				questions: [
 					n(
 						"breadth-a",
-						"At the 16:00 close, number of nonzero cells in Case A?",
-						"16:00 收盘时，案例 A 非零格数量？",
+						"At the close, how many of Case A's cells have any volume?",
+						"收盘时，案例 A 中有多少格有成交？",
 						v % 2 ? 9 : 3,
 						"cells",
 						"格",
-						"Count the complete Case A grid, regardless of selected display slice.",
-						"按案例 A 完整网格计数，不受显示切片影响。",
+						v % 2
+							? "All 9 cells traded: Case A spreads its 8,000 contracts widely. Count the whole grid, whatever slice the display shows."
+							: "Only 3 cells traded, 3,000, 2,500 and 2,500: the same total and peak as Case B, packed into far fewer cells. Count the whole grid, whatever slice the display shows.",
+						v % 2
+							? "9 格全部有成交：案例 A 的 8,000 张分布得很广。要数整个网格，不管显示的是哪个切片。"
+							: "只有 3 格有成交，分别是 3,000、2,500 和 2,500：总量和峰值与案例 B 相同，却集中在少得多的合约上。要数整个网格，不管显示的是哪个切片。",
 					),
 					c(
 						"moneyness",
-						"The 105 call is…",
-						"105 看涨属于……",
+						`With ALFA at ${money(spot, 0)}, the 105 call is…`,
+						`ALFA 为 ${money(spot, 0)} 时，105 看涨属于……`,
 						[
-							["itm", "ITM: strike below spot.", "实值：行权价低于现价。"],
-							["otm", "OTM: strike above spot.", "虚值：行权价高于现价。"],
-							["atm", "ATM: equal to the stated spot.", "平值：等于给定现价。"],
+							[
+								"itm",
+								"In the money: the strike is below ALFA's price",
+								"实值：行权价低于 ALFA 的价格",
+							],
+							[
+								"otm",
+								"Out of the money: the strike is above ALFA's price",
+								"虚值：行权价高于 ALFA 的价格",
+							],
+							[
+								"atm",
+								"At the money: the strike equals ALFA's price",
+								"平值：行权价等于 ALFA 的价格",
+							],
 						],
 						105 < spot ? "itm" : 105 > spot ? "otm" : "atm",
-						"For calls compare strike with the stated spot; this says nothing about future direction.",
-						"看涨应比较行权价与给定现价，不说明未来方向。",
+						`A call is in the money when its strike is below the stock. $105 is ${105 < spot ? "below" : "above"} ${money(spot, 0)}, so it's ${105 < spot ? "in" : "out of"} the money. That says nothing about where ALFA goes next.`,
+						`看涨在行权价低于股价时为实值。$105 ${105 < spot ? "低于" : "高于"} ${money(spot, 0)}，所以是${105 < spot ? "实值" : "虚值"}。这不能说明 ALFA 接下来会怎么走。`,
 					),
 				],
 			};
@@ -388,47 +410,47 @@ export const researchUnits: TeachingUnit[] = [
 			"ALFA 10月18日 105 看涨的 500 张大单发生在 10:50:00.4，首报价格为 $2.51；$2.15 的更正在 10:50:02.8 才到。10:50:01 的重放必须使用 $2.51。另外，半衰期 30 分钟且没有新成交时，大单的权重 500 到 11:20 降为 250、11:50 降为 125，而它的 500 张不变。把该合约成交量的第 97 百分位称为 97% 的上涨概率，会改变含义。",
 		),
 		misconception: t(
-			"Freeze the knowledge cutoff, not just the event date. Repeatedly testing on the same held-out case consumes its independence.",
-			"固定获知截止时间，不只是事件日期。反复用同一保留案例调试会失去独立性。",
+			"Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+			"要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。",
 		),
 		case: (v) => {
 			const initial = [80, 120, 160, 96][v];
 			const halves = [2, 3, 1, 4][v];
 			return {
 				brief: t(
-					`No new events: starting weight ${initial}, half-life 60 seconds, elapsed ${halves * 60} seconds. A correction about a 09:59 event arrives at 10:02; the decision cutoff is 10:00.`,
-					`无新事件：初始权重 ${initial}，半衰期 60 秒，已过 ${halves * 60} 秒。09:59 事件的更正在 10:02 到达，决策截止 10:00。`,
+					`A recency-weighted score starts at ${initial} and halves every 60 seconds, and nothing new happens for ${halves * 60} seconds. Separately, a correction to a 09:59 trade arrives at 10:02, and your decision is made at 10:00.`,
+					`一个按近期加权的分数从 ${initial} 开始，每 60 秒减半，之后 ${halves * 60} 秒内没有任何新事件。另外，一笔 09:59 成交的更正在 10:02 才到，而你的决策是在 10:00 做出的。`,
 				),
 				questions: [
 					n(
 						"weight",
-						"Remaining recency weight?",
-						"余下近期权重？",
+						"What is the score now?",
+						"现在这个分数是多少？",
 						initial / 2 ** halves,
 						"weight units",
 						"权重单位",
-						"Initial × (1/2)^(elapsed/half-life). Raw executions were not removed.",
-						"初值×(1/2)^(经过时间/半衰期)，原始成交并未被移除。",
+						`${halves * 60} seconds is ${halves} half-li${halves === 1 ? "fe" : "ves"}: ${initial} × (½)^${halves} = ${plain(initial / 2 ** halves)}. The trades behind it haven't changed; only their weight has faded.`,
+						`${halves * 60} 秒是 ${halves} 个半衰期：${initial} × (½)^${halves} = ${plain(initial / 2 ** halves)}。背后的成交没有变，只是它们的权重衰减了。`,
 					),
 					c(
 						"cutoff",
-						"May the 10:00 decision use that correction?",
-						"10:00 决策可使用该更正吗？",
+						"Can the 10:00 decision use that correction?",
+						"10:00 的决策能使用这笔更正吗？",
 						[
 							[
 								"yes",
-								"Yes, its event time is before the cutoff.",
-								"可，事件时间早于截止。",
+								"Yes: the trade happened before 10:00",
+								"能：这笔成交发生在 10:00 之前",
 							],
 							[
 								"no",
-								"No, the correction was only available at 10:02.",
-								"不可，更正到 10:02 才可用。",
+								"No: the correction only arrived at 10:02",
+								"不能：更正到 10:02 才到",
 							],
 						],
 						"no",
-						"Use availability as well as event time to avoid look-ahead.",
-						"同时检查可用时间和事件时间以避免前视。",
+						"What matters is when you could have known it. The trade happened at 09:59, but its correction arrived after your decision, so using it would be hindsight.",
+						"关键是你什么时候能知道。成交发生在 09:59，但更正在你决策之后才到，用它就是后见之明。",
 					),
 				],
 			};
