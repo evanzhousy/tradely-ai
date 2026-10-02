@@ -809,7 +809,8 @@ export function SceneFrame({
 					{stage}
 				</div>
 				<div className="wt-side">
-					{result?.length ? (
+					{/* Results would answer the prediction, so they wait until the learner commits. */}
+					{result?.length && frame?.phase !== "predict" ? (
 						<section className="wt-results" aria-label={t(copy.keyResult)}>
 							<dl>
 								{result.map((item) => (

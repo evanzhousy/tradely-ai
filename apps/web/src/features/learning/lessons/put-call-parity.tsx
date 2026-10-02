@@ -218,11 +218,14 @@ function Balance({
 	width,
 	spot,
 	stage,
+	putUnknown,
 	locale,
 }: {
 	width: number;
 	spot: number;
 	stage: 0 | 1;
+	/** While the learner predicts the put, its bar is the question. */
+	putUnknown: boolean;
 	locale: Locale;
 }) {
 	const t = tr(locale);
@@ -243,8 +246,9 @@ function Balance({
 		{
 			id: "put",
 			label: t(["Put", "看跌"]),
-			value: putMid(spot),
+			value: putUnknown ? 0 : putMid(spot),
 			className: "wt-short-soft",
+			unknown: putUnknown,
 		},
 		{
 			id: "diff",
@@ -305,7 +309,7 @@ function Balance({
 							animate={{ x: end + (row.value >= 0 ? 6 : -6) }}
 							transition={motion.move}
 						>
-							{signedShare(row.value)}
+							{"unknown" in row && row.unknown ? "?" : signedShare(row.value)}
 						</m.text>
 					</m.g>
 				);
@@ -373,6 +377,7 @@ function BalanceView({
 							width={width}
 							spot={shown.spot}
 							stage={shown.stage}
+							putUnknown={phase === "predict"}
 							locale={locale}
 						/>
 					)}

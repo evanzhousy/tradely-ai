@@ -1,6 +1,7 @@
 import {
 	type Copy,
 	count,
+	dayCount,
 	modelValue,
 	OCT_100_CALL,
 	pick,
@@ -126,7 +127,10 @@ function DeltaView({
 				{
 					id: "delta",
 					label: t(["Position delta", "持仓 Delta"]),
-					value: `+${count(positionDelta(shown.contracts))}`,
+					value:
+						shown.stage >= 1
+							? `+${count(positionDelta(shown.contracts))}`
+							: "…",
 					note: t(["share-equivalents", "股等价"]),
 					evidence: "modeled",
 				},
@@ -221,10 +225,10 @@ function MoveView({
 				{
 					id: "move",
 					label: t([
-						`One SD in ${shown.days} days`,
+						`One SD in ${dayCount(shown.days)}`,
 						`${shown.days} 天的一个标准差`,
 					]),
-					value: `±${usd(Math.round(move * 100))}`,
+					value: shown.stage >= 2 ? `±${usd(Math.round(move * 100))}` : "…",
 					evidence: "modeled",
 				},
 			]}
@@ -330,13 +334,13 @@ function RankView({
 				{
 					id: "rank",
 					label: t(["IV rank", "IV Rank"]),
-					value: `${m.rank.toFixed(1)}%`,
+					value: shown.stage >= 1 ? `${m.rank.toFixed(1)}%` : "…",
 					evidence: "calculated",
 				},
 				{
 					id: "pct",
 					label: t(["IV percentile", "IV 百分位"]),
-					value: `${m.percentile.toFixed(1)}%`,
+					value: shown.stage >= 2 ? `${m.percentile.toFixed(1)}%` : "…",
 					evidence: "calculated",
 				},
 			]}
@@ -446,9 +450,9 @@ function CloseView({
 				{
 					id: "value",
 					label: t(["Worth at the close", "收盘时价值"]),
-					value: usd(value),
+					value: shown.stage >= 2 ? usd(value) : "…",
 					note: t(["per share", "每股"]),
-					tone: value > 0 ? "gain" : "loss",
+					tone: shown.stage >= 2 ? (value > 0 ? "gain" : "loss") : undefined,
 				},
 			]}
 			controls={

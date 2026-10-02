@@ -247,10 +247,13 @@ function unitLayout(width: number, locale: Locale) {
 function UnitTable({
 	width,
 	state,
+	asking,
 	locale,
 }: {
 	width: number;
 	state: UnitState;
+	/** While the learner predicts, the per-year quote is given and the per-day change is the question. */
+	asking: boolean;
 	locale: Locale;
 }) {
 	const t = tr(locale);
@@ -268,7 +271,7 @@ function UnitTable({
 				<m.g
 					key={pick(block.row.label, "en")}
 					initial={false}
-					animate={{ opacity: i < state.shown ? 1 : 0.2 }}
+					animate={{ opacity: (asking ? i <= 1 : i < state.shown) ? 1 : 0.2 }}
 					transition={motion.fade}
 				>
 					<rect
@@ -285,7 +288,15 @@ function UnitTable({
 						{t(block.row.label)}
 					</Label>
 					<Label x={width - 16} y={block.y + 21} anchor="end" tone="strong">
-						{i < state.shown ? block.row.value : "—"}
+						{asking
+							? i === 0
+								? "?"
+								: i === 1
+									? block.row.value
+									: "—"
+							: i < state.shown
+								? block.row.value
+								: "—"}
 					</Label>
 					{block.note.map((line, k) => (
 						<Label key={line} x={16} y={block.y + 40 + k * 14} tone="small">
@@ -351,7 +362,14 @@ function UnitView({
 					])}
 					height={(width) => unitLayout(width, locale).height}
 				>
-					{(width) => <UnitTable width={width} state={shown} locale={locale} />}
+					{(width) => (
+						<UnitTable
+							width={width}
+							state={shown}
+							asking={phase === "predict"}
+							locale={locale}
+						/>
+					)}
 				</Stage>
 			}
 			result={result}
