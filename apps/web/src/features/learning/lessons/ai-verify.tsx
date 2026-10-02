@@ -702,6 +702,38 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the statements.", "逐条查看陈述。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which statement can you check by counting a column?",
+					"哪条陈述可以靠数一列来核实？",
+				],
+				choices: [
+					{
+						id: "expiry",
+						label: [
+							"3 of the 5 flagged contracts expire within 30 days",
+							"5 份入选合约中有 3 份在 30 天内到期",
+						],
+					},
+					{
+						id: "bet",
+						label: [
+							"Someone opened a large bearish bet on CRUX",
+							"有人在 CRUX 上开了一笔大额看跌押注",
+						],
+					},
+					{
+						id: "fall",
+						label: ["CRUX will fall before Oct 4", "CRUX 会在 10月4日 前下跌"],
+					},
+				],
+				answer: "expiry",
+				done: [
+					"Count the expiry column and you can confirm it. A bet's author and motive aren't in any screen, and a forecast isn't something one session's data can support.",
+					"数一数到期日那一列就能核实。押注的人和动机不在任何屏幕上，而预测也不是一个时段的数据能支持的。",
+				],
+			},
 		},
 		View: SortView,
 	}),
@@ -720,6 +752,7 @@ const scenes = [
 				{ id: "six", label: ["6", "6"] },
 			],
 			answer: "four",
+			entry: { answer: 4, unit: [" credits", " 积分"] },
 			revealAt: 1,
 			explain: [
 				"Two plain replies at 1 credit each, and one with a chart at 2: 4 credits.",
@@ -758,6 +791,18 @@ const scenes = [
 		explore: {
 			prompt: ["Change the conversation.", "改变这段对话。"],
 			start: () => ({ text: 3, chart: 2, costs: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set up a conversation that costs exactly 5 credits.",
+					"设定一段正好花费 5 积分的对话。",
+				],
+				reached: (e) => e.text * COST.text + e.chart * COST.chart === 5,
+				done: [
+					"Text replies cost 1 credit and replies with a chart 2: three text and one chart, or one text and two charts, make 5. Pointing a question at one table with Annotate saves the follow-ups.",
+					"文字回复 1 积分，含图表的回复 2 积分：三条文字加一条图表，或一条文字加两条图表，都是 5 积分。用 Annotate 把问题指向某个表格，可以省掉追问。",
+				],
+			},
 		},
 		View: CreditView,
 	}),
@@ -832,6 +877,29 @@ const scenes = [
 		explore: {
 			prompt: ["Choose an AI action.", "选择一种 AI 操作。"],
 			start: () => ({ stage: 1 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which AI action can change a recipe?",
+					"哪种 AI 操作可以改变 Recipe？",
+				],
+				choices: [
+					{
+						id: "edit",
+						label: [
+							"Edit with AI, in a private draft",
+							"Edit with AI，在私有草稿中",
+						],
+					},
+					{ id: "insight", label: ["AI Insight", "AI Insight"] },
+					{ id: "neither", label: ["Neither", "都不能"] },
+				],
+				answer: "edit",
+				done: [
+					"AI Insight explains one completed run and leaves the recipe alone. Edit with AI forks a private draft that changes only when you review and save it; the official recipe never does.",
+					"AI Insight 解释一次已完成的运行，不改动 Recipe。Edit with AI 会分叉出一份私有草稿，只有你审阅并保存时才会改变；官方 Recipe 永远不变。",
+				],
+			},
 		},
 		View: InsightView,
 	}),

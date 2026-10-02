@@ -825,6 +825,18 @@ const scenes = [
 		explore: {
 			prompt: ["Try a prompt.", "试一个提示。"],
 			start: () => ({ prompt: "subjective", reveal: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Pick the prompt that leaves only one block for you to review.",
+					"选出只留下一个板块需要你审阅的提示。",
+				],
+				reached: (e) => e.prompt === "bounded",
+				done: [
+					"Naming what may change and what must stay leaves one block to review and four to confirm unchanged. A vague or subjective prompt makes every block suspect.",
+					"说明哪些可以改、哪些必须保留，就只剩一个板块需要审阅，另外四个只需确认未改动。含糊或主观的提示会让每个板块都可疑。",
+				],
+			},
 		},
 		View: ScopeView,
 	}),
@@ -908,6 +920,23 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the versions.", "逐个查看版本。"],
 			start: () => ({ step: 1 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"At which version is a block missing that you never asked to remove?",
+					"在哪个版本中，少了一个你从未要求删除的板块？",
+				],
+				choices: [
+					{ id: "edit", label: ["Edit", "编辑"] },
+					{ id: "undo", label: ["Undo", "撤销"] },
+					{ id: "again", label: ["Edit again", "再次编辑"] },
+				],
+				answer: "edit",
+				done: [
+					"The first edit changed Spotlight as asked and dropped Index GEX. Undo returns to the reviewed draft; the repeated request names what must stay, so only Spotlight differs.",
+					"第一次编辑按要求改了 Spotlight，却删掉了 Index GEX。撤销回到审阅过的草稿；重新提出的请求写明了必须保留的内容，于是只有 Spotlight 不同。",
+				],
+			},
 		},
 		View: ReviewView,
 	}),
@@ -979,6 +1008,26 @@ const scenes = [
 		explore: {
 			prompt: ["Choose what happens next.", "选择接下来做什么。"],
 			start: () => ({ action: "saved" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"After you save, who can open the recipe?",
+					"保存之后，谁能打开这个 Recipe？",
+				],
+				choices: [
+					{ id: "you", label: ["Only you", "只有你"] },
+					{ id: "everyone", label: ["Every paid account", "所有付费账户"] },
+					{
+						id: "link",
+						label: ["Anyone you share a link with", "任何拿到你分享链接的人"],
+					},
+				],
+				answer: "you",
+				done: [
+					"Saved recipes appear under My recipes, visible only to you, with no share link or public state. The official recipe stays as it was for everyone else.",
+					"保存的 Recipe 出现在“我的 Recipe”下，只有你能看到，没有分享链接，也不公开。官方 Recipe 对其他人保持原样。",
+				],
+			},
 		},
 		View: SaveView,
 	}),

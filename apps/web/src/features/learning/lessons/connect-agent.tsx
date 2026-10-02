@@ -948,6 +948,18 @@ const scenes = [
 		explore: {
 			prompt: ["Pick a client.", "选择一个客户端。"],
 			start: () => ({ client: "chatgpt", reveal: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a client that connects with an API key rather than your sign-in.",
+					"找出一个用 API 密钥、而不是用你的登录来连接的客户端。",
+				],
+				reached: (e) => CLIENTS[e.client].method === "key",
+				done: [
+					"Cursor, Codex and OpenClaw need an API key, which Copy prompt creates for you; Claude signs in as your account instead. Hosted chat sites can't connect yet.",
+					"Cursor、Codex 和 OpenClaw 需要 API 密钥，Copy prompt 会为你创建；Claude 则直接用你的账户登录。网页版聊天应用暂时还不能连接。",
+				],
+			},
 		},
 		View: WayView,
 	}),
@@ -1022,6 +1034,29 @@ const scenes = [
 		explore: {
 			prompt: ["Revoke the key and look again.", "撤销密钥，再看一次。"],
 			start: () => ({ stage: 2, keyWorks: false }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"With the key revoked, what does tools/list return?",
+					"密钥被撤销后，tools/list 返回什么？",
+				],
+				choices: [
+					{
+						id: "error",
+						label: ["HTTP 200 with an error object", "HTTP 200，附带错误对象"],
+					},
+					{ id: "tools", label: ["The same list of tools", "同样的工具列表"] },
+					{
+						id: "down",
+						label: ["Nothing: the endpoint is down", "什么都没有：端点宕机了"],
+					},
+				],
+				answer: "error",
+				done: [
+					"The endpoint is still up, so the status is 200, but the body carries an error instead of tools. Read the result, not just the status code, and look the code up in the reference.",
+					"端点仍然在线，所以状态是 200，但响应里是错误而不是工具。要读结果本身，而不只是状态码，并到参考文档里查错误代码。",
+				],
+			},
 		},
 		View: ProveView,
 	}),
@@ -1087,6 +1122,18 @@ const scenes = [
 		explore: {
 			prompt: ["Change the calls and the key.", "改变调用次数和密钥状态。"],
 			start: () => ({ calls: 60, revoked: false }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a state in which the next tool call goes through.",
+					"找出下一次工具调用能够成功的状态。",
+				],
+				reached: (e) => e.calls < 60 && !e.revoked,
+				done: [
+					"Under 60 calls in the window and with an active key, the next call is allowed. A full window stops it until the window moves on; a revoked key stops it for good.",
+					"窗口内调用少于 60 次且密钥有效时，下一次调用就会成功。窗口用满会暂停调用，直到窗口滚动；撤销密钥则永久停止。",
+				],
+			},
 		},
 		View: KeyView,
 	}),

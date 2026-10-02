@@ -907,6 +907,18 @@ const scenes = [
 				"选择一个公式和一种数值格式。",
 			],
 			start: () => ({ formula: "share", format: "currency", reveal: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a formula and a value format the editor accepts as Currency.",
+					"找出编辑器接受为“货币”格式的公式和数值格式。",
+				],
+				reached: (e) => e.formula === "perTrade" && e.format === "currency",
+				done: [
+					"Premium divided by trades is dollars per trade, unit usd, so Currency fits. A call-to-total share is a ratio, and premium plus trades has no unit at all.",
+					"权利金除以笔数是每笔多少美元，单位 usd，所以适合货币格式。看涨占总额的比例是比值，权利金加笔数则根本没有单位。",
+				],
+			},
 		},
 		View: UnitView,
 	}),
@@ -975,6 +987,18 @@ const scenes = [
 		explore: {
 			prompt: ["Set the trade floor.", "设置交易笔数门槛。"],
 			start: () => ({ perTrade: true, floor: 100 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set the trade floor at which ALFA leads the per-trade column.",
+					"设定让 ALFA 在“每笔”列中领先的交易笔数门槛。",
+				],
+				reached: (e) => e.floor === 20,
+				done: [
+					"At 20 trades GLYN's three prints are N/A and ALFA leads; at 100 ALFA is out too and CRUX leads. The floor is your choice, so say what it is, and look at the trades behind the leader.",
+					"门槛为 20 笔时，GLYN 的三笔成交显示 N/A，ALFA 领先；门槛为 100 时 ALFA 也被排除，CRUX 领先。门槛由你决定，所以要说明它，并查看领先者背后的成交。",
+				],
+			},
 		},
 		View: GuardView,
 	}),
@@ -1049,6 +1073,23 @@ const scenes = [
 		explore: {
 			prompt: ["Switch the session.", "切换交易时段。"],
 			start: () => ({ session: "monday", notice: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"On Tuesday, which name leads the saved column?",
+					"周二时，保存的列中哪个标的领先？",
+				],
+				choices: [
+					{ id: "dune", label: ["DUNE", "DUNE"] },
+					{ id: "alfa", label: ["ALFA, as on Monday", "ALFA，与周一相同"] },
+					{ id: "crux", label: ["CRUX", "CRUX"] },
+				],
+				answer: "dune",
+				done: [
+					"The view saved the formula, not Monday's numbers, so Tuesday's snapshot is recomputed and DUNE leads. The column describes each session; it isn't a TradingFlow metric or a forecast.",
+					"视图保存的是公式，而不是周一的数字，所以会用周二的快照重新计算，DUNE 领先。这一列描述的是每个时段，不是 TradingFlow 的指标，也不是预测。",
+				],
+			},
 		},
 		View: SaveView,
 	}),

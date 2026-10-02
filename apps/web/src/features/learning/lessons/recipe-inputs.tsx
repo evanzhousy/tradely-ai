@@ -719,6 +719,7 @@ const scenes = [
 				{ id: "zero", label: ["None: the table clears", "0 份：表格会清空"] },
 			],
 			answer: "five",
+			entry: { answer: 5, unit: [" contracts", " 张"] },
 			revealAt: 1,
 			explain: [
 				"An edited input is a draft. The report keeps the last run until you press Run, so every cell always matches one set of inputs.",
@@ -760,6 +761,18 @@ const scenes = [
 				"修改最低未平仓量，然后运行或放弃。",
 			],
 			start: () => ({ applied: 200, draft: 500, action: "draft" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Get the report to show what a Min OI of 1,000 finds.",
+					"让报告显示最低未平仓量设为 1,000 时的结果。",
+				],
+				reached: (e) => e.applied === 1_000,
+				done: [
+					"Typing 1,000 only makes a draft; pressing Run applies it and every cell refreshes together. Until then the report keeps showing the last run.",
+					"输入 1,000 只是草稿；按下运行才会生效，所有单元格一起刷新。在此之前，报告一直显示上一次运行的结果。",
+				],
+			},
 		},
 		View: DraftView,
 	}),
@@ -834,6 +847,26 @@ const scenes = [
 		explore: {
 			prompt: ["Look at each change.", "逐个查看每种改动。"],
 			start: () => ({ reveal: 2, focus: "zeroDte" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which change keeps you asking the same question?",
+					"哪项改动让你仍然在问同一个问题？",
+				],
+				choices: [
+					{ id: "date", label: ["Picking Tuesday", "选择周二"] },
+					{ id: "premium", label: ["Ranking by premium", "按权利金排名"] },
+					{
+						id: "zeroDte",
+						label: ["Letting same-day expiries in", "纳入当日到期合约"],
+					},
+				],
+				answer: "date",
+				done: [
+					"Another session is an input to the same screen, so the answers stay comparable. Ranking by premium or admitting 0DTE changes what the screen measures: a new question that deserves its own recipe.",
+					"换一个时段只是同一筛选的输入，答案仍可比较。按权利金排名或纳入 0DTE 会改变筛选衡量的内容：这是一个新问题，应该有自己的 Recipe。",
+				],
+			},
 		},
 		View: ChangeView,
 	}),
@@ -908,6 +941,18 @@ const scenes = [
 		explore: {
 			prompt: ["Raise or lower the floors.", "提高或降低门槛。"],
 			start: () => ({ minVolume: 100, minOpenInterest: 0 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set floors at which a contract with only 5 open interest tops the ranking.",
+					"设定门槛，让一份未平仓量只有 5 张的合约排在榜首。",
+				],
+				reached: (e) => e.minVolume === 0 && e.minOpenInterest === 0,
+				done: [
+					"With both floors at 0, the DUNE Oct 11 40 call's 30 contracts against 5 open interest give 6.00, double anything real. A tiny denominator makes a big ratio; floors keep it out.",
+					"两个门槛都设为 0 时，DUNE 10月11日 40 看涨以 30 张对 5 张未平仓量得出 6.00，是真实活跃合约的两倍。极小的分母会制造很大的比值；门槛就是用来把它挡在外面的。",
+				],
+			},
 		},
 		View: FloorView,
 	}),

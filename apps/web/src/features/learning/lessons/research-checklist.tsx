@@ -739,6 +739,38 @@ const scenes = [
 		explore: {
 			prompt: ["Compare the two checklists.", "比较这两份清单。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which template step looks at the contract you'd sell rather than at ALFA?",
+					"模板中哪一步看的是你要卖出的合约，而不是 ALFA？",
+				],
+				choices: [
+					{
+						id: "trade",
+						label: [
+							"The call's spread, liquidity and open interest",
+							"该看涨的价差、流动性和未平仓量",
+						],
+					},
+					{
+						id: "vol",
+						label: [
+							"ALFA's IV against its realized volatility",
+							"ALFA 的 IV 与已实现波动率对比",
+						],
+					},
+					{
+						id: "gex",
+						label: ["GEX and open-interest structure", "GEX 与未平仓量结构"],
+					},
+				],
+				answer: "trade",
+				done: [
+					"Spread, liquidity and open interest decide what selling that call would cost and whether it can be closed later. Every step opens a tool that shows today's evidence; none predicts ALFA.",
+					"价差、流动性和未平仓量决定了卖出这份看涨的成本，以及之后能否平仓。每一步都打开一个显示今天证据的工具；没有一步在预测 ALFA。",
+				],
+			},
 		},
 		View: ForecastView,
 	}),
@@ -795,6 +827,35 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the checklist's states.", "查看清单的各个状态。"],
 			start: () => ({ stage: 1 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What should you do before you refresh Home?",
+					"刷新 Home 之前你应该做什么？",
+				],
+				choices: [
+					{
+						id: "copy",
+						label: [
+							"Copy the edited steps somewhere you keep",
+							"把编辑后的步骤复制到你会保留的地方",
+						],
+					},
+					{ id: "save", label: ["Press Save", "按保存"] },
+					{
+						id: "nothing",
+						label: [
+							"Nothing: Home keeps your edits",
+							"什么都不用做：Home 会保留编辑",
+						],
+					},
+				],
+				answer: "copy",
+				done: [
+					"Home's checklists aren't saved anywhere: a refresh brings back the template. It's a working plan, so the steps you settle on belong in your own notes.",
+					"Home 的清单不会保存在任何地方：一刷新就回到模板。它只是工作计划，你确定下来的步骤应该写进自己的笔记。",
+				],
+			},
 		},
 		View: EditView,
 	}),
@@ -860,6 +921,32 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the conversation.", "逐步查看这段对话。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"What did the conversation cost, and what was saved?",
+					"这段对话花了多少，保存了什么？",
+				],
+				choices: [
+					{
+						id: "two",
+						label: ["2 credits; nothing saved", "2 积分；什么都没保存"],
+					},
+					{
+						id: "one",
+						label: ["1 credit; the checklist saved", "1 积分；清单已保存"],
+					},
+					{
+						id: "free",
+						label: ["Nothing; a recipe was built", "不花钱；生成了一个 Recipe"],
+					},
+				],
+				answer: "two",
+				done: [
+					"Two AI replies at 1 credit each, and nothing changed until you accept the proposal. A recipe is built only if your account has the feature and you confirm.",
+					"两条 AI 回复各 1 积分，在你接受建议之前什么都没改变。只有你的账户有该功能并且你确认，才会生成 Recipe。",
+				],
+			},
 		},
 		View: ChatView,
 	}),

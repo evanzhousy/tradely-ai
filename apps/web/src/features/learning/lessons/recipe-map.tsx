@@ -940,6 +940,18 @@ const scenes = [
 		explore: {
 			prompt: ["Trace any cell.", "追溯任意一个单元格。"],
 			start: () => ({ cell: "table" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the cell that no live query feeds.",
+					"找出没有任何实时查询为其提供数据的单元格。",
+				],
+				reached: (e) => e.cell === "takeaways",
+				done: [
+					"The Takeaways have no line in: they're recipe content, written once and the same every session. Read them as method, not as findings about the data.",
+					"要点没有任何输入线：它是 Recipe 内容，写一次，每个时段都一样。要把它当作方法来读，而不是关于数据的发现。",
+				],
+			},
 		},
 		View: MapView,
 	}),
@@ -1011,6 +1023,23 @@ const scenes = [
 		explore: {
 			prompt: ["Compare the two runs.", "比较两次运行。"],
 			start: () => ({ tuesday: true, tags: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which text is evidence about Tuesday's session?",
+					"哪段文字是关于周二交易时段的证据？",
+				],
+				choices: [
+					{ id: "bottom", label: ["Tuesday's Bottom line", "周二的核心结论"] },
+					{ id: "takeaways", label: ["Tuesday's Takeaways", "周二的要点"] },
+					{ id: "both", label: ["Both", "两者都是"] },
+				],
+				answer: "bottom",
+				done: [
+					"The Bottom line is computed from Tuesday's rows and changed with the session. The Takeaways read word for word the same on both days: they're written into the recipe.",
+					"核心结论根据周二的数据计算，随时段而变。要点在两天里一字不差：它们是写进 Recipe 里的。",
+				],
+			},
 		},
 		View: ContentView,
 	}),
@@ -1041,6 +1070,7 @@ const scenes = [
 				{ id: "unknown", label: ["The report can't say", "报告无法说明"] },
 			],
 			answer: "five",
+			entry: { answer: 5, unit: [" contracts", " 张"] },
 			revealAt: 1,
 			explain: [
 				"The key figures count every match: five contracts across three names. The table loads only the top three by volume/OI.",
@@ -1079,6 +1109,18 @@ const scenes = [
 		explore: {
 			prompt: ["Change how many rows the table loads.", "改变表格载入的行数。"],
 			start: () => ({ kpis: true, unloaded: true, rows: 1 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Make the table show every contract that passed the screen.",
+					"让表格显示所有通过筛选的合约。",
+				],
+				reached: (e) => e.rows === MONDAY.passed.length,
+				done: [
+					"Now the table holds all five matches the key figures count. With fewer rows it's a top-N subset; check the key figures before saying how many passed.",
+					"现在表格包含关键数字统计的全部五个结果。行数更少时它只是前 N 名子集；在说有多少通过之前先看关键数字。",
+				],
+			},
 		},
 		View: PopulationView,
 	}),

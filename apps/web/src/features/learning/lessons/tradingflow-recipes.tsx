@@ -834,6 +834,29 @@ const scenes = [
 				"选择一个问题，找到对应的 Recipe。",
 			],
 			start: () => ({ question: "recap" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					'Which recipe answers "Where are ALFA\'s gamma levels today?"',
+					"哪个 Recipe 回答“ALFA 今天的 Gamma 位置在哪里？”",
+				],
+				choices: [
+					{ id: "levels", label: ["Gamma Levels", "Gamma Levels"] },
+					{ id: "recap", label: ["Daily Market Recap", "Daily Market Recap"] },
+					{
+						id: "uoa",
+						label: [
+							"Unusual Options Activity Screener",
+							"Unusual Options Activity Screener",
+						],
+					},
+				],
+				answer: "levels",
+				done: [
+					"One symbol, one structural question: a quick lookup. The recap walks a whole session and the screener filters the whole market; neither is built for it.",
+					"一个标的、一个结构问题：这是快速查询。复盘覆盖整个交易时段，筛选器过滤整个市场；两者都不是为此设计的。",
+				],
+			},
 		},
 		View: CatalogView,
 	}),
@@ -896,6 +919,18 @@ const scenes = [
 		explore: {
 			prompt: ["Open the report at different times.", "在不同时间打开报告。"],
 			start: () => ({ now: "sat-1200", header: true }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a time at which the report opens on Monday's session.",
+					"找出一个打开报告时显示周一交易时段的时间。",
+				],
+				reached: (e) => moments[e.now].latest === SESSION_DATE,
+				done: [
+					"From Monday's close until Tuesday's session finishes, the latest completed session is Monday's. The header names the session, so check it before you read a single number.",
+					"从周一收盘到周二交易时段结束，最新完成的时段都是周一。标题会写明时段，读任何数字之前先看它。",
+				],
+			},
 		},
 		View: SessionView,
 	}),
@@ -958,6 +993,20 @@ const scenes = [
 		explore: {
 			prompt: ["Switch who opens the recipe.", "切换打开 Recipe 的人。"],
 			start: () => ({ forked: true, viewer: "you" }),
+			task: {
+				kind: "answer",
+				prompt: ["Who can open your forked copy?", "谁能打开你分叉出的副本？"],
+				choices: [
+					{ id: "you", label: ["Only you", "只有你"] },
+					{ id: "team", label: ["Your team", "你的团队"] },
+					{ id: "link", label: ["Anyone with the link", "任何拿到链接的人"] },
+				],
+				answer: "you",
+				done: [
+					"Your recipes are owner-only, with no public, team or share-link state. A colleague who opens Daily Market Recap gets the official version, unchanged.",
+					"你的 Recipe 只有你自己能看，没有公开、团队或分享链接状态。同事打开 Daily Market Recap 时看到的是官方版本，未被改动。",
+				],
+			},
 		},
 		View: ForkView,
 	}),
