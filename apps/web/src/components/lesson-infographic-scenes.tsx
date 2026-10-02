@@ -639,6 +639,11 @@ function StockQuote({ l }: Props) {
 					</Label>
 				</g>
 			))}
+			<path d="M72 150H288" className="diagram-faint-line" />
+			<Flow x={288} y={150} dx={-216} />
+			<Label x={180} y={170} small>
+				{l("buy at $100.05 → sell at $100.00", "按 $100.05 买 → 按 $100.00 卖")}
+			</Label>
 			<Caption>
 				{l(
 					"Buy now at the ask, sell now at the bid",
@@ -663,6 +668,7 @@ function OptionRight({ l }: Props) {
 			<Label x={96} y={98} small>
 				{l("Expires worthless", "作废")}
 			</Label>
+			<Flow x={60} y={124} dx={240} />
 			<Caption>
 				{l(
 					"A call is the right to buy at the strike, until expiry",
@@ -675,6 +681,15 @@ function OptionRight({ l }: Props) {
 function OptionChain({ l }: Props) {
 	return (
 		<>
+			<rect
+				x="24"
+				y="80"
+				width="122"
+				height="42"
+				rx="10"
+				className="diagram-faint-line"
+				data-diagram-motion="focus"
+			/>
 			{["95", "100", "105"].map((strike, i) => (
 				<g key={strike}>
 					<Panel x={30} y={40 + i * 44} w={110} h={34} accent={i === 1} />
@@ -852,7 +867,7 @@ function Delta({ l }: Props) {
 			<Label x={275} y={109}>
 				+$0.40
 			</Label>
-			<Label x={125} y={44} strong>
+			<Label x={196} y={40} strong>
 				Δ = 0.40
 			</Label>
 			<Caption>
@@ -1623,6 +1638,620 @@ function PortfolioExposure({ l }: Props) {
 	);
 }
 
+/** Left-aligned diagram text; the drawing centres text by default. */
+function Text({
+	x,
+	y,
+	children,
+	small = false,
+	accent = false,
+}: {
+	x: number;
+	y: number;
+	children: ReactNode;
+	small?: boolean;
+	accent?: boolean;
+}) {
+	return (
+		<text
+			x={x}
+			y={y}
+			textAnchor="start"
+			className={
+				accent ? "diagram-accent" : small ? "diagram-muted-text" : undefined
+			}
+		>
+			{children}
+		</text>
+	);
+}
+
+function Parity({ l }: Props) {
+	return (
+		<>
+			<Axes
+				xLabel={l("ALFA at expiry", "到期 ALFA")}
+				yLabel={l("Per share", "每股")}
+			/>
+			<path d="M45 103h266" className="diagram-dashed" />
+			<path d="M46 103H180L300 51" className="diagram-faint-line" />
+			<path d="M60 157L180 103H310" className="diagram-faint-line" />
+			<Trace d="M60 155L300 51" />
+			<Label x={292} y={70} small>
+				{l("call", "看涨")}
+			</Label>
+			<Label x={84} y={132} small>
+				{l("− put", "− 看跌")}
+			</Label>
+			<Label x={210} y={45}>
+				{l("= stock − $100", "= 股票 − $100")}
+			</Label>
+			<circle
+				cx={180}
+				cy={103}
+				r="5"
+				className="diagram-accent"
+				data-diagram-motion="pulse"
+				data-diagram-delay="1200"
+			/>
+			<Caption>
+				{l(
+					"A call minus a put moves like the stock less the strike",
+					"看涨减看跌，走势如同股票减行权价",
+				)}
+			</Caption>
+		</>
+	);
+}
+function Straddle({ l }: Props) {
+	return (
+		<>
+			<Axes
+				xLabel={l("ALFA at expiry", "到期 ALFA")}
+				yLabel={l("Profit", "盈亏")}
+			/>
+			<path d="M45 112h266" className="diagram-dashed" />
+			<Trace d="M52 52L180 150L308 52" />
+			<Label x={70} y={44} small>
+				{l("put leg", "看跌腿")}
+			</Label>
+			<Label x={292} y={44} small>
+				{l("call leg", "看涨腿")}
+			</Label>
+			<circle
+				cx={180}
+				cy={150}
+				r="5"
+				className="diagram-accent"
+				data-diagram-motion="pulse"
+				data-diagram-delay="1300"
+			/>
+			<Label x={250} y={156} small>
+				{l("worst: both premiums", "最坏：两份权利金")}
+			</Label>
+			<Caption>
+				{l(
+					"Two legs, one position: read the prints together",
+					"两条腿，一个持仓：成交要放在一起读",
+				)}
+			</Caption>
+		</>
+	);
+}
+function ExpectedMove({ l }: Props) {
+	return (
+		<>
+			<Label x={180} y={40} small>
+				{l("ALFA $100 · IV 35% · 32 days", "ALFA $100 · IV 35% · 32 天")}
+			</Label>
+			<rect
+				x="108"
+				y="62"
+				width="144"
+				height="58"
+				rx="8"
+				className="diagram-accent-wash"
+			/>
+			<path d="M36 120H324" className="diagram-line" />
+			<path d="M180 56V128" className="diagram-dashed" />
+			<Flow x={180} y={92} dx={-66} />
+			<Flow x={180} y={92} dx={66} delay={150} />
+			<Label x={180} y={84} strong>
+				±$10.36
+			</Label>
+			<Label x={108} y={140} small>
+				$89.64
+			</Label>
+			<Label x={180} y={140} small>
+				$100
+			</Label>
+			<Label x={252} y={140} small>
+				$110.36
+			</Label>
+			<Label x={180} y={166}>
+				{l("one standard deviation", "一个标准差")}
+			</Label>
+			<Caption>
+				{l(
+					"About 68% of outcomes land inside, under the model",
+					"在模型下，约 68% 的结果落在其中",
+				)}
+			</Caption>
+		</>
+	);
+}
+function ZeroDte({ l }: Props) {
+	return (
+		<>
+			<path d="M45 40v126h275" className="diagram-faint-line" />
+			<Label x={70} y={29} small>
+				{l("Call value", "看涨价值")}
+			</Label>
+			<Trace d="M50 58C150 66 248 84 312 164" />
+			<Label x={78} y={50}>
+				$0.36
+			</Label>
+			<circle
+				cx={312}
+				cy={164}
+				r="5"
+				className="diagram-accent"
+				data-diagram-motion="pulse"
+				data-diagram-delay="1300"
+			/>
+			<Label x={332} y={160}>
+				$0
+			</Label>
+			<Label x={56} y={182} small>
+				10:00
+			</Label>
+			<Label x={180} y={182} small>
+				13:00
+			</Label>
+			<Label x={312} y={182} small>
+				16:00
+			</Label>
+			<Caption>
+				{l(
+					"On its last day, time value runs out by the close",
+					"最后一天，时间价值在收盘前耗尽",
+				)}
+			</Caption>
+		</>
+	);
+}
+function Recipes({ l }: Props) {
+	return (
+		<>
+			<Panel x={24} y={66} w={120} h={62} accent />
+			<Label x={84} y={89} small>
+				{l("Official recipe", "官方 Recipe")}
+			</Label>
+			<Label x={84} y={111}>
+				UOA Screener
+			</Label>
+			{[
+				[l("Mon · run", "周一 · 运行"), false],
+				[l("Tue · run", "周二 · 运行"), false],
+				[l("Wed · latest", "周三 · 最新"), true],
+			].map(([label, latest], i) => (
+				<g key={String(label)}>
+					<Panel
+						x={214}
+						y={36 + i * 46}
+						w={122}
+						h={34}
+						accent={latest === true}
+					/>
+					<Label x={275} y={57 + i * 46} small={latest !== true}>
+						{label}
+					</Label>
+					<Flow x={144} y={97} dx={70} dy={i * 46 - 44} delay={i * 350} />
+				</g>
+			))}
+			<Caption>
+				{l(
+					"One official recipe, re-run on each new session",
+					"同一份官方 Recipe，在每个新交易时段重跑",
+				)}
+			</Caption>
+		</>
+	);
+}
+function RecipeMapScene({ l }: Props) {
+	const node = (x: number, y: number, text: string, accent = false) => (
+		<g key={`${x}-${y}`}>
+			<Panel x={x} y={y} w={84} h={26} accent={accent} />
+			<Label x={x + 42} y={y + 17} small={!accent}>
+				{text}
+			</Label>
+		</g>
+	);
+	return (
+		<>
+			<Label x={64} y={34} small>
+				{l("Inputs", "输入")}
+			</Label>
+			<Label x={180} y={34} small>
+				{l("Live data", "实时数据")}
+			</Label>
+			<Label x={296} y={34} small>
+				{l("Cells", "单元格")}
+			</Label>
+			<path d="M106 63C122 63 122 95 138 95" className="diagram-faint-line" />
+			<path d="M106 133C122 133 122 95 138 95" className="diagram-faint-line" />
+			<Trace d="M222 95C238 95 238 133 254 133" delay={600} />
+			<path d="M222 95C238 95 238 63 254 63" className="diagram-faint-line" />
+			{node(22, 50, l("Session", "交易时段"))}
+			{node(22, 120, l("Min OI", "最小 OI"))}
+			{node(138, 82, l("Live data", "实时数据"))}
+			{node(254, 50, l("Takeaways", "要点"))}
+			{node(254, 120, l("Ranked table", "排名表"), true)}
+			<Caption>
+				{l(
+					"Trace each sentence back to the input behind it",
+					"把每句话追溯到背后的输入",
+				)}
+			</Caption>
+		</>
+	);
+}
+function RecipeInputsScene({ l }: Props) {
+	return (
+		<>
+			<Panel x={24} y={40} w={150} h={118} />
+			<Text x={38} y={64} small>
+				{l("Min volume", "最小成交量")}
+			</Text>
+			<Label x={150} y={64}>
+				500
+			</Label>
+			<Text x={38} y={94} small>
+				{l("Min OI", "最小 OI")}
+			</Text>
+			<rect
+				x="116"
+				y="80"
+				width="50"
+				height="20"
+				rx="5"
+				className="diagram-accent-wash"
+				data-diagram-motion="pulse"
+			/>
+			<Label x={141} y={94}>
+				1,000
+			</Label>
+			<Text x={38} y={124} small>
+				{l("Max DTE", "最长到期")}
+			</Text>
+			<Label x={150} y={124}>
+				60
+			</Label>
+			<Flow x={174} y={99} dx={40} delay={500} />
+			<Panel x={214} y={66} w={122} h={66} accent />
+			<Label x={275} y={90} small>
+				{l("After Run", "运行后")}
+			</Label>
+			<Label x={275} y={116} strong>
+				{l("1 flagged", "1 个入选")}
+			</Label>
+			<Caption>
+				{l(
+					"An edited input changes nothing until you run it",
+					"改了输入，运行之前什么都不变",
+				)}
+			</Caption>
+		</>
+	);
+}
+function Checklist({ l }: Props) {
+	const rows = [
+		[l("IV vs realized", "IV 对已实现"), l("Rank Symbols", "Rank Symbols")],
+		[l("Spread & OI", "价差与 OI"), l("Rank Contracts", "Rank Contracts")],
+		[l("Recent call flow", "近期看涨流"), l("Option Trades", "Option Trades")],
+		[
+			l("ALFA below $105?", "ALFA 低于 $105？"),
+			l("no tool can check", "无工具可核查"),
+		],
+	];
+	return (
+		<>
+			{rows.map(([step, tool], i) => (
+				<g key={step}>
+					<Panel x={28} y={30 + i * 37} w={304} h={30} accent={i < 3} />
+					<circle
+						cx={46}
+						cy={45 + i * 37}
+						r="6"
+						className={i < 3 ? "diagram-accent" : "diagram-faint-fill"}
+						data-diagram-motion={i < 3 ? "pulse" : undefined}
+						data-diagram-delay={i * 300}
+					/>
+					<Text x={60} y={49 + i * 37}>
+						{step}
+					</Text>
+					<text
+						x={322}
+						y={49 + i * 37}
+						textAnchor="end"
+						className="diagram-muted-text"
+					>
+						{tool}
+					</text>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"Each step names the tool that can check it",
+					"每一步都写明能核查它的工具",
+				)}
+			</Caption>
+		</>
+	);
+}
+function AiVerifyScene({ l }: Props) {
+	const rows = [
+		{
+			mark: "observed",
+			text: l("5 contracts flagged", "5 份合约入选"),
+			note: l("shown", "显示的"),
+		},
+		{
+			mark: "calculated",
+			text: l("2,400 ÷ 900 = 2.67", "2,400 ÷ 900 = 2.67"),
+			note: l("calculated", "算出的"),
+		},
+		{
+			mark: "unknown",
+			text: l("CRUX will fall", "CRUX 会下跌"),
+			note: l("beyond the data", "数据之外"),
+		},
+	] as const;
+	return (
+		<>
+			{rows.map((row, i) => (
+				<g key={row.mark}>
+					<Panel x={28} y={36 + i * 46} w={304} h={36} />
+					<rect
+						x="40"
+						y={46 + i * 46}
+						width="16"
+						height="16"
+						rx="3"
+						className={
+							row.mark === "observed"
+								? "diagram-accent"
+								: row.mark === "calculated"
+									? "diagram-accent-wash"
+									: "diagram-faint-fill"
+						}
+						data-diagram-motion="pulse"
+						data-diagram-delay={i * 350}
+					/>
+					<Label x={48} y={58 + i * 46} small>
+						{row.mark === "calculated"
+							? "="
+							: row.mark === "unknown"
+								? "?"
+								: ""}
+					</Label>
+					<Text x={68} y={58 + i * 46}>
+						{row.text}
+					</Text>
+					<text
+						x={320}
+						y={58 + i * 46}
+						textAnchor="end"
+						className="diagram-muted-text"
+					>
+						{row.note}
+					</text>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"Sort each answer: shown, calculated, or beyond the data",
+					"把回答分成：显示的、算出的、数据之外的",
+				)}
+			</Caption>
+		</>
+	);
+}
+function FormulaColumn({ l }: Props) {
+	return (
+		<>
+			<Panel x={40} y={30} w={280} h={34} accent />
+			<Label x={180} y={51}>
+				[Total Premium] / [Trades]
+			</Label>
+			<Label x={180} y={80} small>
+				{l("usd ÷ count = usd per trade", "美元 ÷ 笔数 = 每笔美元")}
+			</Label>
+			{[
+				["ALFA", 112, "$6.5K"],
+				["CRUX", 64, "$2.9K"],
+				["DUNE", 30, "$1.2K"],
+			].map(([symbol, w, value], i) => (
+				<g key={String(symbol)}>
+					<Label x={70} y={109 + i * 24} small>
+						{symbol}
+					</Label>
+					<rect
+						x="96"
+						y={98 + i * 24}
+						width={Number(w)}
+						height="14"
+						rx="3"
+						className={i === 0 ? "diagram-accent" : "diagram-ink"}
+						data-diagram-motion="grow-x"
+						data-diagram-delay={i * 250}
+					/>
+					<Text x={104 + Number(w)} y={109 + i * 24}>
+						{value}
+					</Text>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"A new column is only as good as its units",
+					"新列好不好，先看单位对不对",
+				)}
+			</Caption>
+		</>
+	);
+}
+function EditDraft({ l }: Props) {
+	const chapters = [
+		l("Market tone", "市场基调"),
+		l("Where it went", "资金去向"),
+		l("Spotlight", "焦点"),
+	];
+	return (
+		<>
+			{[0, 1].map((side) => (
+				<g key={side}>
+					<Panel
+						x={24 + side * 176}
+						y={36}
+						w={136}
+						h={130}
+						accent={side === 1}
+					/>
+					<Label x={92 + side * 176} y={58} small>
+						{side === 0
+							? l("Official · unchanged", "官方 · 未改动")
+							: l("Your draft · private", "你的草稿 · 私有")}
+					</Label>
+					{chapters.map((chapter, i) => (
+						<Text key={chapter} x={38 + side * 176} y={88 + i * 24}>
+							{`${i + 1}. ${chapter}`}
+						</Text>
+					))}
+				</g>
+			))}
+			<rect
+				x="208"
+				y="124"
+				width="120"
+				height="22"
+				rx="5"
+				className="diagram-accent"
+				opacity="0.25"
+				data-diagram-motion="pulse"
+				data-diagram-delay="900"
+			/>
+			<Flow x={160} y={100} dx={40} />
+			<Caption>
+				{l(
+					"Changes land in your private draft; the official stays",
+					"改动只进你的私有草稿，官方版本不变",
+				)}
+			</Caption>
+		</>
+	);
+}
+function Agent({ l }: Props) {
+	return (
+		<>
+			<Panel x={20} y={44} w={96} h={50} />
+			<Label x={68} y={74}>
+				{l("Your agent", "你的代理")}
+			</Label>
+			<Panel x={134} y={44} w={92} h={50} accent />
+			<Label x={180} y={66} small>
+				{l("API key", "API 密钥")}
+			</Label>
+			<Label x={180} y={84}>
+				{l("read-only", "只读")}
+			</Label>
+			<Panel x={244} y={44} w={96} h={50} />
+			<Label x={292} y={66} small>
+				TradingFlow
+			</Label>
+			<Label x={292} y={84}>
+				{l("tools", "工具")}
+			</Label>
+			<Flow x={116} y={69} dx={18} />
+			<Flow x={226} y={69} dx={18} delay={300} />
+			<Text x={40} y={128} small>
+				{l("Tool calls this minute", "本分钟工具调用")}
+			</Text>
+			<rect
+				x="40"
+				y="138"
+				width="280"
+				height="12"
+				rx="6"
+				className="diagram-faint-fill"
+			/>
+			<rect
+				x="40"
+				y="138"
+				width="56"
+				height="12"
+				rx="6"
+				className="diagram-accent"
+				data-diagram-motion="grow-x"
+				data-diagram-delay="500"
+			/>
+			<text x={320} y={130} textAnchor="end" className="diagram-muted-text">
+				12 / 60
+			</text>
+			<Caption>
+				{l(
+					"Prove the connection, and know what the key allows",
+					"验证连接，弄清密钥能做什么",
+				)}
+			</Caption>
+		</>
+	);
+}
+/** A checkpoint: four (or three) questions on a day no lesson showed. */
+function Checkpoint({
+	l,
+	items,
+}: Props & { items: readonly (readonly [string, string])[] }) {
+	return (
+		<>
+			<Panel x={40} y={28} w={280} h={146} />
+			<Label x={180} y={50} small>
+				{l(
+					"Wed Oct 2, 2030 · an unseen day",
+					"2030年10月2日 周三 · 未见过的一天",
+				)}
+			</Label>
+			{items.map(([en, zh], i) => (
+				<g key={en}>
+					<circle
+						cx={68}
+						cy={76 + i * 26}
+						r="7"
+						className="diagram-accent"
+						data-diagram-motion="pulse"
+						data-diagram-delay={i * 350}
+					/>
+					<path
+						d={`M64 ${76 + i * 26}l3 3 5-6`}
+						className="diagram-on-accent-line"
+					/>
+					<Text x={86} y={80 + i * 26}>
+						{l(en, zh)}
+					</Text>
+				</g>
+			))}
+			<Caption>
+				{l(
+					"Unguided questions, then the lessons to revisit",
+					"无引导作答，再看该复习哪一课",
+				)}
+			</Caption>
+		</>
+	);
+}
+const checkpoint =
+	(items: readonly (readonly [string, string])[]) =>
+	({ l }: Props) => <Checkpoint l={l} items={items} />;
+
 export const courseCardScenes: Record<string, Scene> = {
 	"stocks-and-prices": {
 		Diagram: StockQuote,
@@ -1909,6 +2538,208 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"Stock delta +100 and short-call delta −80 net to +20 in covered positions, while an unmeasured holding remains unknown.",
 			"股票 Delta +100 与空头看涨 −80，使已覆盖净值为 +20；未测量持仓仍为未知。",
+		],
+	},
+	"put-call-parity": {
+		Diagram: Parity,
+		description: [
+			"A long call plus a short put at the same strike moves like the stock less the strike.",
+			"同一行权价的看涨多头加看跌空头，走势如同股票减行权价。",
+		],
+	},
+	"multi-leg-structures": {
+		Diagram: Straddle,
+		description: [
+			"A straddle's two legs form one V-shaped position whose worst case is both premiums.",
+			"跨式的两条腿组成一个 V 形持仓，最坏情况是两份权利金。",
+		],
+	},
+	"expected-move": {
+		Diagram: ExpectedMove,
+		description: [
+			"With ALFA at 100, IV 35 percent and 32 days left, one standard deviation is about 10.36 dollars either way.",
+			"ALFA 100、IV 35%、剩 32 天时，一个标准差约为上下 10.36 美元。",
+		],
+	},
+	"zero-dte": {
+		Diagram: ZeroDte,
+		description: [
+			"A call expiring today loses its time value through the day, from 36 cents at 10:00 to zero at the close.",
+			"当天到期的看涨期权，时间价值在一天中流失，从 10:00 的 0.36 美元到收盘归零。",
+		],
+	},
+	"tradingflow-recipes": {
+		Diagram: Recipes,
+		description: [
+			"One official recipe runs again on each new session; the latest run is the one to read.",
+			"同一份官方 Recipe 在每个新交易时段重跑，要读的是最新一次。",
+		],
+	},
+	"recipe-map": {
+		Diagram: RecipeMapScene,
+		description: [
+			"A recipe map links each input through its live data to the cells it fills.",
+			"Recipe 地图把每个输入经由实时数据连到它填充的单元格。",
+		],
+	},
+	"recipe-inputs": {
+		Diagram: RecipeInputsScene,
+		description: [
+			"Raising the minimum open interest to 1,000 leaves one contract flagged, but only after the recipe runs.",
+			"把最小未平仓量提高到 1,000 后只剩一份合约入选，但要等运行之后。",
+		],
+	},
+	"research-checklist": {
+		Diagram: Checklist,
+		description: [
+			"A research checklist names the tool that checks each step, and marks the step no tool can check.",
+			"研究清单写明每一步由哪个工具核查，并标出没有工具能核查的那一步。",
+		],
+	},
+	"ai-verify": {
+		Diagram: AiVerifyScene,
+		description: [
+			"An AI answer sorted into what the report shows, what can be calculated, and what goes beyond the data.",
+			"把 AI 回答分成：报告显示的、能算出来的、超出数据的。",
+		],
+	},
+	"custom-formulas": {
+		Diagram: FormulaColumn,
+		description: [
+			"A custom column divides total premium by trades, in dollars per trade, and ranks symbols by it.",
+			"自定义列用总权利金除以成交笔数，单位是每笔美元，并按它给标的排名。",
+		],
+	},
+	"edit-with-ai": {
+		Diagram: EditDraft,
+		description: [
+			"An AI edit changes the Spotlight chapter in a private draft while the official recipe stays unchanged.",
+			"AI 编辑在私有草稿里修改焦点章节，官方 Recipe 保持不变。",
+		],
+	},
+	"connect-agent": {
+		Diagram: Agent,
+		description: [
+			"Your agent reaches TradingFlow's read-only tools through an API key, within a per-minute call limit.",
+			"你的代理通过 API 密钥访问 TradingFlow 的只读工具，并受每分钟调用上限约束。",
+		],
+	},
+	"checkpoint-orientation": {
+		Diagram: checkpoint([
+			["Sell shares at the quote", "按报价卖出股票"],
+			["Buy a call", "买入看涨"],
+			["The writer's side", "义务方一边"],
+			["Place a limit order", "下限价单"],
+		]),
+		description: [
+			"A checkpoint of four questions on an unseen day: sell shares, buy a call, the writer's side and a limit order.",
+			"在未见过的一天回答四道题：卖出股票、买入看涨、义务方、限价单。",
+		],
+	},
+	"checkpoint-contracts": {
+		Diagram: checkpoint([
+			["What it costs", "成本"],
+			["Assigned", "被指派"],
+			["Price the put", "为看跌定价"],
+			["Cash settlement", "现金结算"],
+		]),
+		description: [
+			"A checkpoint on contracts and money: cost, assignment, parity and cash settlement.",
+			"合约与资金检查点：成本、指派、平价与现金结算。",
+		],
+	},
+	"checkpoint-execution": {
+		Diagram: checkpoint([
+			["Where they printed", "成交位置"],
+			["Flow labels", "成交流标签"],
+			["One package", "一个整体"],
+			["Book vs tape", "订单簿与成交"],
+		]),
+		description: [
+			"A checkpoint on quotes, executions and sentiment labels for a day the lessons never showed.",
+			"关于报价、成交与情绪标签的检查点，日期是课程从未出现过的一天。",
+		],
+	},
+	"checkpoint-flow": {
+		Diagram: checkpoint([
+			["Open interest", "未平仓量"],
+			["A sweep", "扫单"],
+			["Unusual?", "异常？"],
+			["Data clocks", "数据时钟"],
+		]),
+		description: [
+			"A checkpoint on flow, positions and data quality: open interest, a sweep, unusual activity and data clocks.",
+			"成交流、持仓与数据质量检查点：未平仓量、扫单、异常活动与数据时钟。",
+		],
+	},
+	"checkpoint-research": {
+		Diagram: checkpoint([
+			["Who qualifies", "谁有资格"],
+			["Ranked by what?", "按什么排名？"],
+			["A fading score", "衰减的分数"],
+		]),
+		description: [
+			"A checkpoint on comparison and investigation: eligibility, ranking and a decaying score.",
+			"比较与调查检查点：资格、排名与衰减分数。",
+		],
+	},
+	"checkpoint-production": {
+		Diagram: checkpoint([
+			["The subtotal", "小计"],
+			["The chart", "图表"],
+			["Audit the recap", "审核复盘"],
+		]),
+		description: [
+			"A checkpoint on producing and auditing research: a subtotal, a chart and a recap audit.",
+			"研究产出与审核检查点：小计、图表与复盘审核。",
+		],
+	},
+	"checkpoint-exposure": {
+		Diagram: checkpoint([
+			["Position delta", "持仓 Delta"],
+			["Expected move", "预期变动"],
+			["IV rank", "IV Rank"],
+			["At the close", "收盘时"],
+		]),
+		description: [
+			"A checkpoint on Greeks, volatility and exposure: position delta, expected move, IV rank and expiry.",
+			"希腊字母、波动率与敞口检查点：持仓 Delta、预期变动、IV Rank 与到期。",
+		],
+	},
+	"checkpoint-structure": {
+		Diagram: checkpoint([
+			["GEX", "GEX"],
+			["Gamma regime", "Gamma 状态"],
+			["Distance", "距离"],
+			["Charm", "Charm"],
+		]),
+		description: [
+			"A checkpoint on modeled positioning and structure: GEX, the gamma regime, distance and charm.",
+			"模型化持仓与结构检查点：GEX、Gamma 状态、距离与 Charm。",
+		],
+	},
+	"checkpoint-portfolio": {
+		Diagram: checkpoint([
+			["Realized P&L", "已实现盈亏"],
+			["Return", "收益率"],
+			["Profit factor", "盈亏比"],
+			["Portfolio delta", "组合 Delta"],
+		]),
+		description: [
+			"A checkpoint on understanding a portfolio: realized P&L, return, profit factor and portfolio delta.",
+			"组合理解检查点：已实现盈亏、收益率、盈亏比与组合 Delta。",
+		],
+	},
+	"checkpoint-workflows": {
+		Diagram: checkpoint([
+			["Which session?", "哪个交易时段？"],
+			["Run the screen", "运行筛选"],
+			["Check the AI", "核对 AI"],
+			["Formula column", "公式列"],
+		]),
+		description: [
+			"A checkpoint on workflows in TradingFlow: the session, a screen, an AI check and a formula column.",
+			"TradingFlow 工作流检查点：交易时段、筛选、核对 AI 与公式列。",
 		],
 	},
 };
