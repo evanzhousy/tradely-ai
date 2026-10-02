@@ -5,12 +5,21 @@ import {
 	useContext,
 	useEffect,
 	useId,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
 import { textWidth } from "./text-measure";
 
 const FALLBACK_WIDTH = 640;
+
+/** Every stage on a lesson page sits in the same column; a new one starts at the last width. */
+let lastWidth: number | null = null;
+
+const stageWidth = (element: HTMLElement) => {
+	const next = Math.round(element.clientWidth);
+	return next > 0 ? Math.max(280, Math.min(next, 820)) : null;
+};
 
 /** True unless the reader has asked the system for reduced motion. */
 export function usePrefersReducedMotion() {
@@ -135,6 +144,10 @@ export const useStage = () => useContext(StageContext);
 /**
  * An SVG drawn at the width of its container so text renders at its true size.
  * `height` may depend on the width, which lets instruments reflow on narrow screens.
+ *
+ * The drawing waits for its width, measured before the first paint, so nothing slides in
+ * from a guessed layout. A new width redraws it in place rather than animating every
+ * element across: a resize is not a change the lesson is teaching.
  */
 export function Stage({
 	label,
@@ -146,20 +159,23 @@ export function Stage({
 	children: (width: number) => ReactNode;
 }) {
 	const box = useRef<HTMLDivElement>(null);
-	const [width, setWidth] = useState(FALLBACK_WIDTH);
+	const [measured, setMeasured] = useState<number | null>(() => lastWidth);
 	const id = useId().replace(/:/g, "");
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const element = box.current;
 		if (!element) return;
 		const measure = () => {
-			const next = Math.round(element.clientWidth);
-			if (next > 0) setWidth(Math.max(280, Math.min(next, 820)));
+			const next = stageWidth(element);
+			if (next === null) return;
+			lastWidth = next;
+			setMeasured(next);
 		};
 		measure();
 		const observer = new ResizeObserver(measure);
 		observer.observe(element);
 		return () => observer.disconnect();
 	}, []);
+	const width = measured ?? FALLBACK_WIDTH;
 	const h = typeof height === "function" ? height(width) : height;
 	const svg = useRef<SVGSVGElement>(null);
 	// Fit after every drawing, again once its moves have settled, and when web fonts arrive.
@@ -200,7 +216,9 @@ export function Stage({
 					</pattern>
 				</defs>
 				<StageContext value={{ width, hatch: `url(#hatch-${id})` }}>
-					{children(width)}
+					{measured === null ? null : (
+						<g key={measured}>{children(measured)}</g>
+					)}
 				</StageContext>
 			</svg>
 		</div>
