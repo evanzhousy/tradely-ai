@@ -196,7 +196,8 @@
 	font-size: 0.875rem;
 	line-height: 1.55;
 }
-.wt-panel[data-kind="predict"] {
+.wt-panel[data-kind="predict"],
+.wt-panel[data-kind="task"] {
 	border-color: color-mix(in oklab, var(--primary) 55%, var(--border));
 }
 .wt-panel[data-kind="right"] {
@@ -230,6 +231,36 @@
 	padding-block: 0.5rem;
 	white-space: normal;
 	text-align: left;
+}
+/* A choice already tried reads as ruled out; the answer, once shown, as the answer. */
+.walkthrough .wt-choice[data-state="miss"] {
+	text-decoration: line-through;
+	opacity: 0.6;
+}
+.walkthrough .wt-choice[data-state="hit"] {
+	border-color: var(--diagram-gain);
+	color: var(--diagram-gain);
+	opacity: 1;
+}
+/* A typed prediction: the number between its unit marks, then the check button. */
+.wt-entry {
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+}
+.wt-entry-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.wt-entry-row input {
+	max-width: 12rem;
+	font-family: var(--font-mono);
+}
+.wt-entry-unit {
+	color: var(--muted-foreground);
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
 }
 .wt-link {
 	align-self: flex-start;
@@ -377,10 +408,42 @@
 	stroke-width: 1.5;
 }
 
+/* Exploring: the task first, then what changes beside the controls that change it. */
+.walkthrough[data-phase="explore"] .wt-side > .wt-task {
+	order: -3;
+}
+.walkthrough[data-phase="explore"] .wt-side > .wt-results {
+	order: -2;
+}
+.walkthrough[data-phase="explore"] .wt-side > .wt-controls {
+	order: -1;
+}
+.wt-stage {
+	scroll-margin-top: 4.75rem;
+}
+
 /* Narrow screens: predict before watching, and a one-row control bar that scrolls away. */
 @media (max-width: 1023px) {
 	.walkthrough[data-phase="predict"] .wt-side {
 		order: -1;
+	}
+	/* Controls come straight after the task, and a short stage stays in view above them. */
+	.walkthrough[data-phase="explore"] .wt-side > .wt-controls {
+		order: -2;
+	}
+	.walkthrough[data-phase="explore"] .wt-side > .wt-results {
+		order: -1;
+	}
+	.walkthrough[data-phase="explore"] .wt-nav {
+		position: static;
+	}
+	.walkthrough[data-phase="explore"] .wt-stage[data-pinnable] {
+		position: sticky;
+		top: 4.5rem;
+		/* Above the controls' own layers (a selected toggle has one), below the site header. */
+		z-index: 30;
+		box-shadow: 0 8px 16px -12px
+			color-mix(in oklab, var(--foreground) 35%, transparent);
 	}
 }
 @media (max-width: 640px) {

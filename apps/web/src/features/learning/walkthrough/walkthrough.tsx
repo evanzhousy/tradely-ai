@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
+import { Field, FieldLabel } from "@tradely/ui/components/field";
+import { Input } from "@tradely/ui/components/input";
 import {
 	Tabs,
 	TabsContent,
@@ -39,8 +41,16 @@ import {
 	useVisualBookmarks,
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-lesson-identity";
+import { formatEntry, parseEntry, seededOrder } from "./answers";
+import { TaskPanel } from "./explore-task";
 import { CountTo, useTeachMotion } from "./stage";
-import type { Phase, ResultItem, WalkthroughScene } from "./types";
+import type {
+	ExploreTask,
+	Phase,
+	Prediction,
+	ResultItem,
+	WalkthroughScene,
+} from "./types";
 
 /** Reading time at about 200 words a minute, plus time to look at the diagram. */
 function readingHoldMs(caption: string) {
@@ -48,7 +58,25 @@ function readingHoldMs(caption: string) {
 	return Math.min(16000, Math.max(4000, words * 300 + 1500));
 }
 
-type FrameContextValue = { locale: Locale; phase: Phase; panel: ReactNode };
+type FrameContextValue = {
+	locale: Locale;
+	phase: Phase;
+	panel: ReactNode;
+	task: ReactNode;
+};
+
+/** Whether a stored prediction is right; a typed one is kept as "entry:<number>". */
+function judge(predict: Prediction, value: string) {
+	if (!value.startsWith("entry:")) return { correct: value === predict.answer };
+	const typed = Number(value.slice("entry:".length));
+	const entry = predict.entry;
+	return {
+		typed,
+		correct:
+			!!entry &&
+			Math.abs(typed - entry.answer) <= (entry.tolerance ?? 0) + 1e-9,
+	};
+}
 const FrameContext = createContext<FrameContextValue | null>(null);
 
 const copy = {
@@ -74,6 +102,20 @@ const copy = {
 	scenes: ["Lesson scenes", "课程场景"],
 	controls: ["Walkthrough controls", "演示控制"],
 	keyResult: ["Key result", "关键结果"],
+	yourAnswer: ["Your answer", "你的答案"],
+	check: ["Check my answer", "核对答案"],
+	entryHelp: [
+		"One number, such as 1260 or -2.5.",
+		"填一个数值，例如 1260 或 -2.5。",
+	],
+	notNumber: [
+		"That isn't one number. Try, for example, 1260 or -2.5.",
+		"这不是一个数值。例如可以填 1260 或 -2.5。",
+	],
+	pickInstead: ["Choose from options instead", "改为从选项中选择"],
+	typeInstead: ["Type a number instead", "改为填写数值"],
+	youEntered: ["You entered", "你填写的是"],
+	answerWas: ["The answer", "答案"],
 } as const satisfies Record<string, Copy>;
 
 /**
@@ -108,6 +150,12 @@ export function Walkthrough({
 	const [autoplay, setAutoplay] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [completed, setCompleted] = useState<ReadonlySet<string>>(new Set());
+	/** Scenes where the learner asked for the choices instead of typing a number. */
+	const [choosing, setChoosing] = useState<ReadonlySet<string>>(new Set());
+	const [draft, setDraft] = useState("");
+	const [invalid, setInvalid] = useState(false);
+	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
+	const entryId = useId();
 	const started = useRef(new Set<string>());
 	const finished = useRef(new Set<string>());
 	const explored = useRef(new Set<string>());
@@ -158,6 +206,8 @@ export function Walkthrough({
 			setPhase(next.predict && !predictions[next.id] ? "predict" : "watch");
 			setExplore(null);
 			setAutoplay(false);
+			setDraft("");
+			setInvalid(false);
 			if (lessonId) saveVisualBookmark(lessonId, next.id);
 		},
 		[lessonId, predictions],
@@ -217,11 +267,21 @@ export function Walkthrough({
 	const choose = (choice: string) => {
 		focusNext.current = "feedback";
 		setPredictions((all) => ({ ...all, [scene.id]: choice }));
+		if (scene.predict && lessonId && isCapturing)
+			capture("visual_lesson_predicted", {
+				lesson_id: lessonId,
+				scene_id: scene.id,
+				locale,
+				kind: choice.startsWith("entry:") ? "entry" : "choice",
+				correct: judge(scene.predict, choice).correct,
+			});
 		// Play on from the setup; feedback appears once the answering step is on screen.
 		goTo(revealAt === 0 ? 0 : Math.min(1, last));
 	};
 
 	const restart = () => {
+		setDraft("");
+		setInvalid(false);
 		setPredictions((all) => {
 			const next = { ...all };
 			delete next[scene.id];
@@ -274,20 +334,59 @@ export function Walkthrough({
 		const wanted =
 			target === "controls"
 				? element.querySelector<HTMLElement>(
-						".wt-controls :is(input, button, [role=slider], [tabindex='0'])",
+						":is(.wt-task, .wt-controls) :is(input, button, [role=slider], [tabindex='0'])",
 					)
 				: target === "feedback"
 					? element.querySelector<HTMLElement>("[data-focus=feedback]")
 					: heading;
+		// On a phone the stage sits above the controls: bring the stage into view with them,
+		// so the learner sees what each control changes.
+		if (
+			target === "controls" &&
+			window.matchMedia("(max-width: 1023px)").matches
+		) {
+			(wanted ?? heading)?.focus({ preventScroll: true });
+			// A pinned stage always counts as in view, so scroll to where the scene starts.
+			const stage = element.querySelector<HTMLElement>(".wt-stage");
+			const scene = stage?.parentElement;
+			if (stage && scene)
+				window.scrollTo({
+					top:
+						window.scrollY +
+						scene.getBoundingClientRect().top -
+						Number.parseFloat(getComputedStyle(stage).scrollMarginTop),
+					behavior: motion.enabled ? "smooth" : "auto",
+				});
+			return;
+		}
 		(wanted ?? heading)?.focus();
 	});
 
+	const onSolved = useCallback(
+		(attempts: number) => {
+			setSolved((all) => new Set(all).add(scene.id));
+			const task = scene.explore?.task;
+			if (!task || !lessonId || !isCapturing) return;
+			capture("visual_lesson_task_completed", {
+				lesson_id: lessonId,
+				scene_id: scene.id,
+				locale,
+				kind: task.kind,
+				attempts,
+			});
+		},
+		[capture, isCapturing, lessonId, locale, scene],
+	);
+
 	const lesson = lessonId ? getLessonById(lessonId) : undefined;
 	const nextLesson = lesson ? getNextLesson(lesson.slug) : undefined;
+	// With a task waiting, "Try it yourself" leads and moving on is the quieter choice.
+	const quiet = phase === "watch" && !!scene.explore?.task;
 	const onward =
 		index < scenes.length - 1 ? (
 			<Button
 				size="sm"
+				variant={quiet ? "outline" : undefined}
 				onClick={() => {
 					focusNext.current = "heading";
 					openScene(scenes[index + 1]);
@@ -301,7 +400,10 @@ export function Walkthrough({
 				to="/learn/$lessonSlug"
 				params={{ lessonSlug: nextLesson.slug }}
 				search={{}}
-				className={buttonVariants({ size: "sm" })}
+				className={buttonVariants({
+					size: "sm",
+					variant: quiet ? "outline" : undefined,
+				})}
 			>
 				{t(copy.nextLesson)}
 				<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
@@ -322,22 +424,96 @@ export function Walkthrough({
 				? scene.explore.prompt
 				: current.caption;
 	const choice = scene.predict?.choices.find((item) => item.id === prediction);
+	const verdict =
+		scene.predict && prediction ? judge(scene.predict, prediction) : null;
+	const entry = scene.predict?.entry;
+	const typing = !!entry && !choosing.has(scene.id);
+	const asEntry = (value: number) =>
+		formatEntry(value, {
+			prefix: entry?.prefix,
+			suffix: entry?.unit ? t(entry.unit) : undefined,
+		});
 	const panel =
 		phase === "predict" && scene.predict ? (
 			<div className="wt-panel" data-kind="predict">
 				<p className="wt-panel-title">{t(copy.predictFirst)}</p>
-				<div className="wt-choices">
-					{scene.predict.choices.map((item) => (
-						<Button
-							key={item.id}
-							variant="outline"
-							className="wt-choice"
-							onClick={() => choose(item.id)}
-						>
-							{t(item.label)}
+				{typing && entry ? (
+					<form
+						className="wt-entry"
+						noValidate
+						onSubmit={(event) => {
+							event.preventDefault();
+							const value = parseEntry(draft);
+							setInvalid(value === null);
+							if (value !== null) choose(`entry:${value}`);
+						}}
+					>
+						<Field data-invalid={invalid || undefined}>
+							<FieldLabel htmlFor={entryId}>{t(copy.yourAnswer)}</FieldLabel>
+							<div className="wt-entry-row">
+								{entry.prefix ? (
+									<span className="wt-entry-unit">{entry.prefix}</span>
+								) : null}
+								<Input
+									id={entryId}
+									inputMode="decimal"
+									autoComplete="off"
+									maxLength={24}
+									value={draft}
+									aria-invalid={invalid || undefined}
+									aria-describedby={`${entryId}-help`}
+									onChange={(event) => {
+										setDraft(event.target.value);
+										setInvalid(false);
+									}}
+								/>
+								{entry.unit ? (
+									<span className="wt-entry-unit">{t(entry.unit).trim()}</span>
+								) : null}
+							</div>
+							<p
+								id={`${entryId}-help`}
+								className="wt-panel-note"
+								role={invalid ? "alert" : undefined}
+							>
+								{invalid ? t(copy.notNumber) : t(copy.entryHelp)}
+							</p>
+						</Field>
+						<Button type="submit" size="sm" className="self-start">
+							{t(copy.check)}
 						</Button>
-					))}
-				</div>
+					</form>
+				) : (
+					<div className="wt-choices">
+						{/* A fixed shuffle per scene: the right answer isn't always first. */}
+						{seededOrder(scene.predict.choices, scene.id).map((item) => (
+							<Button
+								key={item.id}
+								variant="outline"
+								className="wt-choice"
+								onClick={() => choose(item.id)}
+							>
+								{t(item.label)}
+							</Button>
+						))}
+					</div>
+				)}
+				{entry ? (
+					<button
+						type="button"
+						className="wt-link"
+						onClick={() =>
+							setChoosing((all) => {
+								const next = new Set(all);
+								if (typing) next.add(scene.id);
+								else next.delete(scene.id);
+								return next;
+							})
+						}
+					>
+						{typing ? t(copy.pickInstead) : t(copy.typeInstead)}
+					</button>
+				) : null}
 				<button
 					type="button"
 					className="wt-link"
@@ -352,10 +528,10 @@ export function Walkthrough({
 			</div>
 		) : (
 			<>
-				{phase === "watch" && scene.predict && choice && beat >= revealAt ? (
+				{phase === "watch" && scene.predict && verdict && beat >= revealAt ? (
 					<m.div
 						className="wt-panel"
-						data-kind={prediction === scene.predict.answer ? "right" : "wrong"}
+						data-kind={verdict.correct ? "right" : "wrong"}
 						data-focus="feedback"
 						tabIndex={-1}
 						initial={motion.enabled ? { opacity: 0, y: 6 } : false}
@@ -363,20 +539,31 @@ export function Walkthrough({
 						transition={motion.fade}
 					>
 						<p className="wt-panel-title">
-							{prediction === scene.predict.answer
-								? t(copy.right)
-								: t(copy.wrong)}
+							{verdict.correct ? t(copy.right) : t(copy.wrong)}
 						</p>
 						<p className="wt-panel-note">
-							{t(copy.youChose)}: {t(choice.label)}
+							{verdict.typed !== undefined
+								? `${t(copy.youEntered)}: ${asEntry(verdict.typed)}`
+								: choice
+									? `${t(copy.youChose)}: ${t(choice.label)}`
+									: null}
 						</p>
+						{verdict.typed !== undefined && !verdict.correct && entry ? (
+							<p className="wt-panel-note">
+								{t(copy.answerWas)}: {asEntry(entry.answer)}
+							</p>
+						) : null}
 						<p>{t(scene.predict.explain)}</p>
 					</m.div>
 				) : null}
 				{phase === "watch" && beat === last ? (
 					<div className="wt-panel-actions">
 						{scene.explore ? (
-							<Button size="sm" variant="outline" onClick={startExplore}>
+							<Button
+								size="sm"
+								variant={quiet ? undefined : "outline"}
+								onClick={startExplore}
+							>
 								{t(copy.tryIt)}
 							</Button>
 						) : null}
@@ -554,7 +741,25 @@ export function Walkthrough({
 							<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 						</Button>
 					</fieldset>
-					<FrameContext value={{ locale, phase, panel }}>
+					<FrameContext
+						value={{
+							locale,
+							phase,
+							panel,
+							task:
+								phase === "explore" && scene.explore?.task ? (
+									<TaskPanel
+										key={scene.id}
+										task={scene.explore.task as ExploreTask<unknown>}
+										explore={explore}
+										locale={locale}
+										seed={scene.id}
+										solved={solved.has(scene.id)}
+										onSolved={onSolved}
+									/>
+								) : null,
+						}}
+					>
 						<View
 							locale={locale}
 							phase={phase}
@@ -589,10 +794,34 @@ export function SceneFrame({
 	const frame = useContext(FrameContext);
 	const locale = frame?.locale ?? "en";
 	const t = (value: Copy) => pick(value, locale);
+	// A stage short enough to share a phone screen with its controls stays pinned while
+	// the learner adjusts them; a taller one would leave no room and scrolls as usual.
+	const stageBox = useRef<HTMLDivElement>(null);
+	const [pinnable, setPinnable] = useState(false);
+	useEffect(() => {
+		const element = stageBox.current;
+		if (!element) return;
+		const measure = () =>
+			setPinnable(element.offsetHeight <= window.innerHeight * 0.55);
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(element);
+		window.addEventListener("resize", measure);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("resize", measure);
+		};
+	}, []);
 	return (
 		<div className="wt-scene">
 			<div className="wt-main">
-				<div className="wt-stage">{stage}</div>
+				<div
+					ref={stageBox}
+					className="wt-stage"
+					data-pinnable={pinnable || undefined}
+				>
+					{stage}
+				</div>
 				<div className="wt-side">
 					{result?.length ? (
 						<section className="wt-results" aria-label={t(copy.keyResult)}>
@@ -604,6 +833,7 @@ export function SceneFrame({
 						</section>
 					) : null}
 					{frame?.panel}
+					{frame?.task}
 					{frame?.phase === "explore" && controls ? (
 						<fieldset className="wt-controls">
 							<legend className="sr-only">{t(copy.adjust)}</legend>

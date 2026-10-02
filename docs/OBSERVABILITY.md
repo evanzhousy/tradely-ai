@@ -118,11 +118,13 @@ The primary learning journey is:
 1. `$pageview` and `page_viewed`
 2. `lesson_opened`
 3. `visual_lesson_scene_started`
-4. `visual_lesson_explored` when the learner directly manipulates a scene
-5. `visual_lesson_scene_completed`
-6. `lesson_video_started` / `lesson_video_completed` when companion media exists
-7. `tradingflow_link_opened` when the learner follows a product-practice handoff
-8. `lesson_completed` when a signed-in learner records the study mark
+4. `visual_lesson_predicted` when the learner answers a scene's prediction, by choice or typed number, with whether it was right
+5. `visual_lesson_explored` when the learner directly manipulates a scene
+6. `visual_lesson_task_completed` when the learner reaches or answers a scene's explore task, with the attempts it took
+7. `visual_lesson_scene_completed`
+8. `lesson_video_started` / `lesson_video_completed` when companion media exists
+9. `tradingflow_link_opened` when the learner follows a product-practice handoff
+10. `lesson_completed` when a signed-in learner records the study mark
 
 The older signed-in exercise/coaching event family remains registered for the retained exercise implementation, but the current lesson route renders `VisualLesson` and does not mount `LearningExercise`. Do not use `lesson_exercise_*`, `lesson_hint_opened`, renderer, or coaching events as denominators for the current visual curriculum unless that product surface is mounted again.
 

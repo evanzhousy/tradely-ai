@@ -167,6 +167,14 @@ export type AnalyticsEventMap = {
 		mode: VisualLessonPlaybackMode;
 	};
 	visual_lesson_explored: VisualLessonEventProperties;
+	visual_lesson_predicted: VisualLessonEventProperties & {
+		kind: "choice" | "entry";
+		correct: boolean;
+	};
+	visual_lesson_task_completed: VisualLessonEventProperties & {
+		kind: "reach" | "answer";
+		attempts: number;
+	};
 	tradingflow_link_opened: Partial<LabEventProperties> & {
 		surface: "header" | "home_hero" | "lesson_practice" | "lesson_lab";
 		lesson_id?: string;
@@ -259,6 +267,8 @@ export const ANALYTICS_EVENT_NAMES = {
 	visual_lesson_scene_started: true,
 	visual_lesson_scene_completed: true,
 	visual_lesson_explored: true,
+	visual_lesson_predicted: true,
+	visual_lesson_task_completed: true,
 	tradingflow_link_opened: true,
 	lesson_opened: true,
 	lesson_video_started: true,
@@ -322,6 +332,20 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 	visual_lesson_scene_started: ["lesson_id", "scene_id", "locale", "mode"],
 	visual_lesson_scene_completed: ["lesson_id", "scene_id", "locale", "mode"],
 	visual_lesson_explored: ["lesson_id", "scene_id", "locale"],
+	visual_lesson_predicted: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"kind",
+		"correct",
+	],
+	visual_lesson_task_completed: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"kind",
+		"attempts",
+	],
 	tradingflow_link_opened: ["surface", "tool", ...labPropertyKeys],
 	lesson_opened: [
 		"lesson_id",

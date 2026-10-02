@@ -670,6 +670,7 @@ const scenes = [
 			],
 			answer: "hundred",
 			revealAt: 2,
+			entry: { answer: 100, prefix: "$" },
 			explain: [
 				"Each share gains $1 and you own 100 of them: 100 × $1 = $100. Value is shares × price, so gains grow with the number of shares you hold.",
 				"每股涨 $1，你持有 100 股：100 × $1 = $100。价值 = 股数 × 价格，所以收益随持股数量增加。",
@@ -719,6 +720,19 @@ const scenes = [
 				"改变持股数量和 ALFA 价格，观察持仓价值及其变化。",
 			],
 			start: () => ({ shares: 100, price: 10_000, before: 10_000 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set up a position that is down exactly $500 from ALFA's $100 starting price.",
+					"调出一个比 ALFA 起始价 $100 正好亏损 $500 的持仓。",
+				],
+				reached: (e) =>
+					e.shares * (e.price - (e.before ?? e.price)) === -50_000,
+				done: [
+					"Shares × price change: 100 shares × −$5, 250 × −$2 and 500 × −$1 all lose $500. The more shares you hold, the smaller the move that costs the same.",
+					"股数 × 价格变化：100 股 × −$5、250 股 × −$2、500 股 × −$1 都亏 $500。持股越多，造成同样亏损所需的价格变动越小。",
+				],
+			},
 		},
 		View: SliceView,
 	}),
@@ -789,6 +803,19 @@ const scenes = [
 				"选择买入或卖出以及数量，观察订单吃掉哪些价位、花费多少。",
 			],
 			start: () => ({ side: "buy", quantity: 300 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Sell enough shares at once that your average price falls below the $100.00 bid.",
+					"一次卖出足够多的股票，让你的平均成交价低于 $100.00 的买价。",
+				],
+				reached: (e) =>
+					e.side === "sell" && e.quantity > alfaStockBook.bids[0].size,
+				done: [
+					"Only 400 shares are bid at $100.00. Sell more and the rest fills at lower bids, so your average slips below $100. What you receive depends on size as well as price.",
+					"$100.00 的买价只有 400 股。卖得更多，剩下的就会成交在更低的买价上，平均价随之低于 $100。你能拿到多少，取决于价格，也取决于数量。",
+				],
+			},
 		},
 		View: QuoteView,
 	}),
@@ -854,6 +881,29 @@ const scenes = [
 				"逐一查看：你将持有什么，以及它的期权如何结算。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Your option is exercised. Which underlying leaves you holding shares or fund units afterwards?",
+					"你的期权被行权。哪种标的会让你之后持有股票或基金份额？",
+				],
+				choices: [
+					{ id: "both", label: ["ALFA or BRDX", "ALFA 或 BRDX"] },
+					{ id: "index", label: ["IDX 500", "IDX 500"] },
+					{
+						id: "none",
+						label: [
+							"None of them: options always pay cash",
+							"都不会：期权总是现金结算",
+						],
+					},
+				],
+				answer: "both",
+				done: [
+					"Stock and ETF options deliver shares or fund units. An index can't be delivered, so IDX 500 options settle in cash.",
+					"股票和 ETF 期权交付股票或基金份额。指数无法交付，所以 IDX 500 期权以现金结算。",
+				],
+			},
 		},
 		View: KindView,
 	}),

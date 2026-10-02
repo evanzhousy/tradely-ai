@@ -4,7 +4,21 @@ import type { Locale } from "@/i18n/messages";
 
 export type Phase = "predict" | "watch" | "explore";
 
-/** One question asked before a scene plays, answered by a gesture rather than typing. */
+/**
+ * A number the learner works out and types before watching. The prediction's choices stay
+ * available as a fallback; a typed answer can't be recognised from a list.
+ */
+export type PredictionEntry = {
+	answer: number;
+	/** How far off still counts as right, in the answer's own units. */
+	tolerance?: number;
+	/** Written before the number, such as "$". */
+	prefix?: string;
+	/** Written after it, with any space it needs: [" contracts", " 张"], ["×", "×"]. */
+	unit?: Copy;
+};
+
+/** One question asked before a scene plays, answered by a choice or a typed number. */
 export type Prediction = {
 	prompt: Copy;
 	choices: readonly { id: string; label: Copy }[];
@@ -13,7 +27,28 @@ export type Prediction = {
 	explain: Copy;
 	/** Index of the beat that reveals the answer; defaults to 1. */
 	revealAt?: number;
+	entry?: PredictionEntry;
 };
+
+/**
+ * What the learner does in explore. "reach": get the example into a state, confirmed the
+ * moment it happens. "answer": read something off the explored diagram.
+ */
+export type ExploreTask<E> =
+	| {
+			kind: "reach";
+			prompt: Copy;
+			reached: (explore: E) => boolean;
+			/** Why that state answers the task, shown once reached. */
+			done: Copy;
+	  }
+	| {
+			kind: "answer";
+			prompt: Copy;
+			choices: readonly { id: string; label: Copy }[];
+			answer: string;
+			done: Copy;
+	  };
 
 /** One cause-and-effect step: a caption and the instrument state it shows. */
 export type Beat<S> = {
@@ -42,6 +77,7 @@ export type WalkthroughScene<S = unknown, E = unknown> = {
 	explore?: {
 		prompt: Copy;
 		start: (last: S) => E;
+		task?: ExploreTask<E>;
 	};
 	View: ComponentType<SceneViewProps<S, E>>;
 };

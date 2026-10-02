@@ -47,6 +47,8 @@ Paths below are relative to `apps/web/src`.
 | `visual_lesson_scene_started` | A visual scene walkthrough starts. `mode=autoplay` is visibility-driven playback; `mode=manual` is learner-started navigation. Deduplicated per scene for the page visit. | `features/learning/concept-lab.tsx` |
 | `visual_lesson_scene_completed` | A visual scene reaches its final authored step. Records bounded lesson/scene IDs, locale, and start mode. | `features/learning/concept-lab.tsx` |
 | `visual_lesson_explored` | First direct interaction with the interactive scene for the page visit. | `features/learning/concept-lab.tsx` |
+| `visual_lesson_predicted` | The learner answers a scene's prediction. `kind=choice` for a picked option, `kind=entry` for a typed number; `correct` records whether it matched. The answer itself is not sent. | `features/learning/walkthrough/walkthrough.tsx` |
+| `visual_lesson_task_completed` | The learner reaches (`kind=reach`) or answers (`kind=answer`) a scene's explore task, once per scene for the page visit. `attempts` counts tries for an answer task. | `features/learning/walkthrough/walkthrough.tsx` |
 | `lesson_exercise_started` | Signed-in exercise successfully opens, resumes, or restarts. This is not a unique-attempt count. | `features/learning/learning-exercise.tsx` |
 | `lesson_hint_opened` | Server successfully processes a hint request; scenario IDs/version and current stage only. | `features/learning/learning-exercise.tsx` |
 | `lesson_exercise_submitted` | An update returns an assessment; once per returned attempt within the mounted learning session. Records criteria counts and `practiced`/`demonstrated`, not answers. | `features/learning/learning-exercise.tsx` |
