@@ -232,6 +232,11 @@ const lessons = {
 			default: m.ExpirationSettlementWalkthrough,
 		})),
 	),
+	"checkpoint-contracts": lazy(() =>
+		import("./lessons/checkpoint-contracts").then((m) => ({
+			default: m.CheckpointContractsWalkthrough,
+		})),
+	),
 	"quotes-orders-trades": lazy(() =>
 		import("./lessons/quotes-orders-trades").then((m) => ({
 			default: m.QuotesOrdersTradesWalkthrough,

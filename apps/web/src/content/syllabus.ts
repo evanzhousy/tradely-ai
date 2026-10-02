@@ -257,6 +257,14 @@ export const syllabus: readonly Entry[] = [
 		["C02", "C24"],
 		["premium-payoff"],
 	),
+	checkpoint(
+		"contracts",
+		"Checkpoint: contracts and money, on a new day",
+		"检查点：在新的一天里运用“合约与金额”",
+		"Price contracts from a quote, follow an assignment, price a put from its call, and settle an index option in cash, all on a day you haven't seen.",
+		"在你没见过的一天里：按报价计算合约成本、跟随一次指派、由看涨推出看跌的价格，并以现金结算一张指数期权。",
+		["expiration-settlement"],
+	),
 	lesson(
 		"quotes-orders-trades",
 		"execution",
