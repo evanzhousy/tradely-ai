@@ -1,7 +1,7 @@
 import * as m from "motion/react-m";
 import { count, usd } from "@/content/world";
 import { Label, useTeachMotion } from "../stage";
-import { textWidth } from "../text-measure";
+import { startAt, textWidth } from "../text-measure";
 
 export const ROUND_TRIP_HEIGHT = 250;
 
@@ -100,11 +100,16 @@ export function RoundTrip({
 							animate={{ cx: x(mark.cents) }}
 							transition={motion.move}
 						/>
+						{/* Start-anchored, so a label that moves to the stage's edge slides there. */}
 						<m.text
-							textAnchor={place.anchor}
+							textAnchor="start"
 							className="wt-muted"
 							initial={false}
-							animate={{ x: place.x, y: place.y }}
+							data-tx={startAt(text, place.x, 12, place.anchor)}
+							animate={{
+								x: startAt(text, place.x, 12, place.anchor),
+								y: place.y,
+							}}
 							transition={motion.move}
 						>
 							{text}
@@ -117,6 +122,7 @@ export function RoundTrip({
 				textAnchor="middle"
 				className="wt-small"
 				initial={false}
+				data-tx={(x(bid) + x(ask)) / 2}
 				animate={{ x: (x(bid) + x(ask)) / 2 }}
 				transition={motion.move}
 			>

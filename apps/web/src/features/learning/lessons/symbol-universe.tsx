@@ -339,6 +339,7 @@ function VolumeBars({
 								<m.text
 									y={y + 20}
 									initial={false}
+									data-tx={left + (row.value / max) * span + 6}
 									animate={{ x: left + (row.value / max) * span + 6 }}
 									transition={motion.move}
 								>

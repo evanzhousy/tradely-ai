@@ -22,6 +22,7 @@ import {
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { startAt } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -265,6 +266,8 @@ function Balance({
 			hidden: stage < 1,
 		},
 	];
+	const valueText = (row: (typeof rows)[number]) =>
+		"unknown" in row && row.unknown ? "?" : signedShare(row.value);
 	const rowHeight = narrow ? 50 : 40;
 	const [what, how] = [
 		t(["Oct 18 100 call and put", "10月18日 100 看涨与看跌"]),
@@ -307,14 +310,28 @@ function Balance({
 							animate={{ x, width: Math.max(barWidth, 1) }}
 							transition={motion.move}
 						/>
+						{/* Start-anchored, so a value whose bar changes side slides across. */}
 						<m.text
 							y={y + 17}
-							textAnchor={row.value >= 0 ? "start" : "end"}
+							textAnchor="start"
 							initial={false}
-							animate={{ x: end + (row.value >= 0 ? 6 : -6) }}
+							data-tx={startAt(
+								valueText(row),
+								end + (row.value >= 0 ? 6 : -6),
+								13,
+								row.value >= 0 ? "start" : "end",
+							)}
+							animate={{
+								x: startAt(
+									valueText(row),
+									end + (row.value >= 0 ? 6 : -6),
+									13,
+									row.value >= 0 ? "start" : "end",
+								),
+							}}
 							transition={motion.move}
 						>
-							{"unknown" in row && row.unknown ? "?" : signedShare(row.value)}
+							{valueText(row)}
 						</m.text>
 					</m.g>
 				);

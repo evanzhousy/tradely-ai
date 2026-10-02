@@ -24,6 +24,13 @@ type LabelSpot = {
 	text?: string;
 };
 
+/**
+ * Where a placed label starts. Labels are drawn start-anchored at this point, so one that
+ * moves to a spot with another anchor glides there instead of jumping by half its width.
+ */
+const startOf = (spot: LabelSpot | undefined) =>
+	spot === undefined ? undefined : spot.box.x0 + 2;
+
 export type PayoffLine = {
 	id: string;
 	label: string;
@@ -413,11 +420,12 @@ export function PayoffChart({
 							transition={move}
 						/>
 						<m.text
-							textAnchor={lineLabels.get(line.id)?.anchor}
+							textAnchor="start"
 							className={`wt-small wt-halo wt-label-${line.tone}`}
 							initial={false}
+							data-tx={startOf(lineLabels.get(line.id))}
 							animate={{
-								x: lineLabels.get(line.id)?.x,
+								x: startOf(lineLabels.get(line.id)),
 								y: lineLabels.get(line.id)?.y,
 								opacity: line.hidden ? 0 : 1,
 							}}
@@ -457,7 +465,7 @@ export function PayoffChart({
 					/>
 					{marker.label ? (
 						<m.text
-							textAnchor={markerLabels.get(marker.id)?.anchor}
+							textAnchor="start"
 							className={`wt-halo ${
 								marker.tone === "gain"
 									? "wt-gain wt-marker-label"
@@ -466,8 +474,9 @@ export function PayoffChart({
 										: "wt-accent"
 							}`}
 							initial={false}
+							data-tx={startOf(markerLabels.get(marker.id))}
 							animate={{
-								x: markerLabels.get(marker.id)?.x,
+								x: startOf(markerLabels.get(marker.id)),
 								y: markerLabels.get(marker.id)?.y,
 							}}
 							transition={move}

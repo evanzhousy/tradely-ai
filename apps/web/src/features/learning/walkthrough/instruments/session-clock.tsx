@@ -1,7 +1,7 @@
 import * as m from "motion/react-m";
 import { fitAnchor } from "../label-place";
 import { Label, useTeachMotion } from "../stage";
-import { textWidth } from "../text-measure";
+import { startAt, textWidth } from "../text-measure";
 
 /** Minutes since Monday 00:00 ET. Tuesday times are 1440 + minutes. */
 export type ClockMark = {
@@ -139,15 +139,16 @@ export function SessionClock({
 			<m.g initial={false} animate={{ x: cursor }} transition={motion.move}>
 				<path d={`M0 ${y + 21}V${axis}`} className="wt-bracket" />
 				<path d={`M-6 ${y + 15}h12l-6 7z`} className="wt-chip" />
-				<Label
-					x={nowAt.x - cursor}
-					y={y + 12}
-					anchor={nowAt.anchor}
-					tone="accent"
-				>
-					{nowLabel}
-				</Label>
 			</m.g>
+			{/* The time travels on its own, start-anchored, so near either end it slides into
+			    its new alignment rather than jumping, and is fitted where it stops. */}
+			<Label
+				x={startAt(nowLabel, nowAt.x, 13, nowAt.anchor)}
+				y={y + 12}
+				tone="accent"
+			>
+				{nowLabel}
+			</Label>
 		</g>
 	);
 }

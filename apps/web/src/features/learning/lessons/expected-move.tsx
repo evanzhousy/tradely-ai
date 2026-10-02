@@ -112,6 +112,7 @@ function RangeAxis({
 							textAnchor="middle"
 							className="wt-small"
 							initial={false}
+							data-tx={(from + to) / 2}
 							animate={{ x: (from + to) / 2 }}
 							transition={motion.move}
 						>
@@ -124,6 +125,7 @@ function RangeAxis({
 								textAnchor="middle"
 								className={range.tone === "sd" ? "wt-accent" : "wt-small"}
 								initial={false}
+								data-tx={Math.min(Math.max(ends[side], left + 22), right - 22)}
 								animate={{
 									x: Math.min(Math.max(ends[side], left + 22), right - 22),
 								}}

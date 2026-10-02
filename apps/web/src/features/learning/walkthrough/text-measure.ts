@@ -74,3 +74,22 @@ export function twoRows(text: string, maxWidth: number, size: number) {
 	const rest = text.slice(first.length).trimStart();
 	return rest ? [first, rest] : [first];
 }
+
+/**
+ * The start of text placed at `x` with `anchor`. A label whose anchor changes between steps
+ * is drawn start-anchored from here, so it glides to its new place instead of first jumping
+ * by its width.
+ */
+export function startAt(
+	text: string,
+	x: number,
+	size: number,
+	anchor: "start" | "middle" | "end",
+) {
+	const width = textWidth(text, size);
+	return anchor === "start"
+		? x
+		: anchor === "middle"
+			? x - width / 2
+			: x - width;
+}

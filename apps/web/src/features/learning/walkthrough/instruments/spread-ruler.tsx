@@ -107,6 +107,7 @@ export function SpreadRuler({
 									textAnchor="middle"
 									className={active ? "wt-accent" : "wt-small"}
 									initial={false}
+									data-tx={(from + to) / 2}
 									animate={{ x: (from + to) / 2 }}
 									transition={motion.move}
 								>

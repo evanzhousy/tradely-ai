@@ -28,7 +28,7 @@ import {
 	useStage,
 	useTeachMotion,
 } from "../walkthrough/stage";
-import { textWidth, wrapText } from "../walkthrough/text-measure";
+import { startAt, textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -306,16 +306,19 @@ function FlowRows({
 								animate={{ x, width: w }}
 								transition={motion.move}
 							/>
+							{/* Start-anchored, so a value that moves inside its bar slides there. */}
 							<Label
-								x={
+								x={startAt(
+									text,
 									inside
 										? center + w - 6
 										: sign < 0
 											? center - w - 6
-											: center + w + 6
-								}
+											: center + w + 6,
+									!inside && excluded ? 11 : 13,
+									inside || sign < 0 ? "end" : "start",
+								)}
 								y={y + 19}
-								anchor={inside || sign < 0 ? "end" : "start"}
 								tone={
 									inside
 										? undefined

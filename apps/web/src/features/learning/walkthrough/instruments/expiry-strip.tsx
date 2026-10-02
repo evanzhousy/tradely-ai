@@ -63,6 +63,7 @@ export function ExpiryStrip({
 					/>
 					<m.text
 						initial={false}
+						data-tx={(first + last) / 2}
 						animate={{ x: (first + last) / 2 }}
 						transition={motion.move}
 						y={y + 14}

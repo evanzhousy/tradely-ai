@@ -116,6 +116,7 @@ function RatioRows({
 							y={y + 34}
 							className="wt-small"
 							initial={false}
+							data-tx={14 + Math.max(row.volume * k, 2) + 6}
 							animate={{ x: 14 + Math.max(row.volume * k, 2) + 6 }}
 							transition={motion.move}
 						>
@@ -135,6 +136,7 @@ function RatioRows({
 							y={y + 50}
 							className="wt-small"
 							initial={false}
+							data-tx={14 + Math.max(bottom * k, 2) + 6}
 							animate={{ x: 14 + Math.max(bottom * k, 2) + 6 }}
 							transition={motion.move}
 						>

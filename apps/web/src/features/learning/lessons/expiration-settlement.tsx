@@ -30,7 +30,7 @@ import {
 	ValueStack,
 } from "../walkthrough/instruments/value-stack";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
-import { textWidth } from "../walkthrough/text-measure";
+import { startAt, textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -527,6 +527,9 @@ function WindowStage({
 	const layout = windowLayout(width);
 	const x = (day: number) =>
 		layout.left + (day / WINDOW_DAYS) * (layout.right - layout.left);
+	/** Where a lane's words start: at the lane's left, or ending at its right. */
+	const laneStart = (text: string, atLeft: boolean) =>
+		atLeft ? layout.left + 12 : startAt(text, x(WINDOW_DAYS) - 12, 11, "end");
 	const american = state.style === "american";
 	const unknown = state.style === null;
 	const lanes = [
@@ -588,17 +591,16 @@ function WindowStage({
 							transition={motion.move}
 						/>
 						{layout.narrow ? null : (
+							// Start-anchored, so moving to the lane's other end is one slide.
 							<m.text
 								y={y + 18}
 								className={`wt-small wt-on-soft${unknown && i === 1 ? "wt-halo" : ""}`}
 								initial={false}
+								data-tx={laneStart(lane.inLane, american || unknown || i === 0)}
 								animate={{
-									x:
-										american || unknown || i === 0
-											? layout.left + 12
-											: x(WINDOW_DAYS) - 12,
+									x: laneStart(lane.inLane, american || unknown || i === 0),
 								}}
-								textAnchor={american || unknown || i === 0 ? "start" : "end"}
+								textAnchor="start"
 								transition={motion.move}
 							>
 								{lane.inLane}

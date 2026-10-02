@@ -130,6 +130,7 @@ export function ValueStack({
 														: "wt-on-solid"
 												}`}
 												initial={false}
+												data-tx={x + w / 2}
 												animate={{ x: x + w / 2 }}
 												transition={motion.move}
 											>

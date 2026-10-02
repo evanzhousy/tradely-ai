@@ -134,9 +134,23 @@ function fitLabels(svg: SVGSVGElement) {
 		}
 		const box = text.getBoundingClientRect();
 		if (!box.width) continue;
-		const overRight = Math.max(0, box.right - (stage.right - 2));
-		const overLeft = Math.max(0, stage.left + 2 - box.left);
-		if (!overRight && !overLeft) continue;
+		// A label gliding to a new place is judged where it will stop, not where it is now, so
+		// it doesn't condense on the way and relax when it lands. `data-x` is where its x
+		// attribute is heading, `data-tx` where its translation is.
+		const { x: toX, tx: toTx } = text.dataset;
+		const transform = getComputedStyle(text).transform;
+		const ahead =
+			(toX === undefined
+				? 0
+				: Number(toX) - Number(text.getAttribute("x") ?? toX)) +
+			(toTx === undefined
+				? 0
+				: Number(toTx) -
+					(transform === "none" ? 0 : new DOMMatrix(transform).m41));
+		const overRight = Math.max(0, box.right + ahead - (stage.right - 2));
+		const overLeft = Math.max(0, stage.left + 2 - (box.left + ahead));
+		// Under half a pixel is measuring noise, not a label running off the stage.
+		if (overRight < 0.5 && overLeft < 0.5) continue;
 		const natural = text.getComputedTextLength();
 		const anchor = getComputedStyle(text).textAnchor;
 		const target =
@@ -347,6 +361,7 @@ export function Label({
 			textLength={fitted}
 			lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
 			textAnchor={anchor}
+			data-x={x}
 			className={[tone ? `wt-${tone}` : undefined, className]
 				.filter(Boolean)
 				.join(" ")}

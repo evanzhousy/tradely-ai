@@ -2,7 +2,7 @@ import * as m from "motion/react-m";
 import { type AxisDrag, DragHandle, useAxisDrag } from "../axis-drag";
 import { fitAnchor } from "../label-place";
 import { Appear, Label, useTeachMotion } from "../stage";
-import { textWidth } from "../text-measure";
+import { startAt, textWidth } from "../text-measure";
 
 export const PRICE_LINE_HEIGHT = 150;
 
@@ -91,15 +91,21 @@ export function PriceLine({
 						const to = x(zone.to);
 						const inside = textWidth(zone.label, 13) <= to - from - 8;
 						const right = width - 4 - to >= textWidth(zone.label, 13) + 6;
+						// Start-anchored, so moving inside or out of the zone is one slide.
+						const start = startAt(
+							zone.label,
+							inside ? (from + to) / 2 : right ? to + 6 : from - 6,
+							13,
+							inside ? "middle" : right ? "start" : "end",
+						);
 						return (
 							<m.text
 								y={76}
-								textAnchor={inside ? "middle" : right ? "start" : "end"}
+								textAnchor="start"
 								className="wt-accent"
 								initial={false}
-								animate={{
-									x: inside ? (from + to) / 2 : right ? to + 6 : from - 6,
-								}}
+								data-tx={start}
+								animate={{ x: start }}
 								transition={motion.move}
 							>
 								{zone.label}
@@ -199,6 +205,7 @@ export function PriceLine({
 				textAnchor="middle"
 				className="wt-accent"
 				initial={false}
+				data-tx={labelX}
 				animate={{ x: labelX }}
 				transition={move}
 			>
@@ -211,6 +218,7 @@ export function PriceLine({
 					className="wt-strong"
 					style={noteSize === 17 ? undefined : { fontSize: noteSize }}
 					initial={false}
+					data-tx={noteX}
 					animate={{ x: noteX }}
 					transition={move}
 				>
