@@ -663,6 +663,7 @@ const scenes = [
 				{ id: "none", label: ["0 until Ben confirms", "Ben 确认前为 0"] },
 			],
 			answer: "ten",
+			entry: { answer: 10, unit: [" contracts", " 张"] },
 			revealAt: 2,
 			explain: [
 				"Your buy and Ben's sell are the same execution seen from two sides. It prints once and adds 10 to volume.",
@@ -704,6 +705,23 @@ const scenes = [
 				"改为发送卖单，看看哪一方是挂单。",
 			],
 			start: () => ({ step: "match", side: "sell" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"When you sell 10 at market, whose order was already waiting in the book?",
+					"当你以市价卖出 10 张时，谁的订单已经在订单簿里等待？",
+				],
+				choices: [
+					{ id: "bid", label: ["A buyer's bid", "一位买方的挂单"] },
+					{ id: "you", label: ["Yours", "你的"] },
+					{ id: "ben", label: ["Ben's offer", "Ben 的卖出挂单"] },
+				],
+				answer: "bid",
+				done: [
+					"A market sell takes the best bid: a buyer's order that was resting there. Yours arrived and traded at once, so you are the aggressor. The trade still prints once.",
+					"市价卖单会成交在最优买价：那是一位买方早已挂着的订单。你的订单一到就成交，所以你是主动方。这笔成交仍然只记录一次。",
+				],
+			},
 		},
 		View: MatchView,
 	}),
@@ -734,6 +752,7 @@ const scenes = [
 				},
 			],
 			answer: "some",
+			entry: { answer: 22, unit: [" contracts", " 张"] },
 			revealAt: 3,
 			explain: [
 				"The limit lets you take 10 at $4.10 and 12 at $4.15, but nothing else is offered at $4.15 or less. The other 8 rest as your bid.",
@@ -784,6 +803,18 @@ const scenes = [
 				"改变限价和数量，看看哪些成交、哪些等待。",
 			],
 			start: () => ({ limit: 415, size: 30, step: 3 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the lowest limit that fills all 30 contracts right away.",
+					"找出能让 30 张全部立即成交的最低限价。",
+				],
+				reached: (e) => e.size === 30 && e.limit === 420,
+				done: [
+					"At $4.20 the order reaches the third level: 10 + 12 + the last 8 at $4.20 make 30. One step lower and those 8 would wait as your bid.",
+					"限价 $4.20 时，订单能吃到第三档：10 + 12 + 最后 8 张（$4.20）共 30 张。再低一档，这 8 张就会作为你的买单等待。",
+				],
+			},
 		},
 		View: LimitView,
 	}),
@@ -849,6 +880,29 @@ const scenes = [
 				"提高记录 B 的限价。成交记录会变吗？",
 			],
 			start: () => ({ known: 2, limit: 420 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Raise record B's limit to $4.20. What changes on the tape?",
+					"把记录 B 的限价提高到 $4.20。成交记录上有什么变化？",
+				],
+				choices: [
+					{
+						id: "nothing",
+						label: ["Nothing: still 10 at $4.10", "没有变化：仍是 10 张 $4.10"],
+					},
+					{
+						id: "price",
+						label: ["The print moves to $4.20", "成交价变成 $4.20"],
+					},
+					{ id: "two", label: ["A second print appears", "出现第二笔成交"] },
+				],
+				answer: "nothing",
+				done: [
+					"The order still meets the $4.10 offer, so it prints 10 at $4.10 either way. A limit caps what you'd pay; it never shows on the tape.",
+					"订单仍然成交在 $4.10 的卖价上，所以两种情况都记录为 10 张 $4.10。限价只是你愿付的上限，不会出现在成交记录里。",
+				],
+			},
 		},
 		View: OriginView,
 	}),

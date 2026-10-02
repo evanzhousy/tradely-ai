@@ -709,6 +709,18 @@ const scenes = [
 				"在 11:42 报价上滑动测试价格，观察位置如何变化。",
 			],
 			start: () => ({ trade: "t2", test: 412 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find a test price the feed would label AASK.",
+					"找出一个会被数据源标记为 AASK 的测试价格。",
+				],
+				reached: (e) => (e.test ?? 0) > 420,
+				done: [
+					"Above the $4.20 ask is AASK. A print outside the quote is worth a check of its timing and conditions before you read anything into it.",
+					"高于 $4.20 卖价就是 AASK。成交价落在报价之外时，先核查它的时间和条件，再下任何结论。",
+				],
+			},
 		},
 		View: PlaceView,
 	}),
@@ -780,6 +792,23 @@ const scenes = [
 				"用同一笔成交逐一试验各个参考报价。",
 			],
 			start: () => ({ ref: "put" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which reference quote lets you name this print's side?",
+					"用哪个参考报价才能判断这笔成交的位置？",
+				],
+				choices: [
+					{ id: "matched", label: ["The matched quote", "匹配的报价"] },
+					{ id: "stale", label: ["The older quote", "较早的报价"] },
+					{ id: "later", label: ["The later quote", "较晚的报价"] },
+				],
+				answer: "matched",
+				done: [
+					"Only the quote in force just before the print describes the market it met. An older, later or other contract's quote describes a different market; with none, the side stays unknown.",
+					"只有成交前一刻有效的报价，才描述它所面对的市场。较早、较晚或其他合约的报价描述的是另一个市场；没有报价时，位置只能是未知。",
+				],
+			},
 		},
 		View: RefView,
 	}),
@@ -872,6 +901,23 @@ const scenes = [
 				"选择另一笔周一成交，看看它的证据能走多远。",
 			],
 			start: () => ({ trade: "t1", reached: 3, ledger: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Check each Monday print against the ledger. Which one opened positions on both sides?",
+					"对照台账逐一查看周一的成交。哪一笔让买卖双方都开了仓？",
+				],
+				choices: [
+					{ id: "t1", label: ["10:05 · $4.10", "10:05 · $4.10"] },
+					{ id: "t2", label: ["11:42 · $4.15", "11:42 · $4.15"] },
+					{ id: "t3", label: ["14:18 · $4.05", "14:18 · $4.05"] },
+				],
+				answer: "t1",
+				done: [
+					"At 10:05 you and Ben both opened. At 11:42 you opened while Cara closed, and at 14:18 both sides closed. The tape gives no hint of any of it.",
+					"10:05 你和 Ben 都是开仓。11:42 你开仓而 Cara 平仓，14:18 双方都是平仓。成交记录对此毫无提示。",
+				],
+			},
 		},
 		View: ClaimView,
 	}),

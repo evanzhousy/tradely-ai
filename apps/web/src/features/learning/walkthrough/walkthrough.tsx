@@ -70,13 +70,13 @@ function judge(predict: Prediction, value: string) {
 	if (!value.startsWith("entry:")) return { correct: value === predict.answer };
 	const typed = Number(value.slice("entry:".length));
 	const entry = predict.entry;
-	return {
-		typed,
-		correct:
-			!!entry &&
-			Math.abs(typed - entry.answer) <= (entry.tolerance ?? 0) + 1e-9,
-	};
+	if (!entry) return { typed, correct: false };
+	const off = entry.eitherSign
+		? Math.abs(Math.abs(typed) - Math.abs(entry.answer))
+		: Math.abs(typed - entry.answer);
+	return { typed, correct: off <= (entry.tolerance ?? 0) + 1e-9 };
 }
+
 const FrameContext = createContext<FrameContextValue | null>(null);
 
 const copy = {

@@ -725,6 +725,7 @@ const scenes = [
 				{ id: "mid", label: ["$2.10, the midpoint", "$2.10，中点"] },
 			],
 			answer: "ask",
+			entry: { answer: 2.15, prefix: "$", unit: [" a share", " 每股"] },
 			revealAt: 3,
 			explain: [
 				"A market buy takes the best offer to sell: $2.15. The last trade is history and the midpoint is arithmetic; neither is a price on offer.",
@@ -775,6 +776,18 @@ const scenes = [
 				"发送买入或卖出的市价单，并改变数量。",
 			],
 			start: () => ({ step: "trade", side: "buy", size: 10 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Send the market order that leaves exactly 7 contracts on the best bid.",
+					"发出一笔市价单，让最优买价上正好剩下 7 张。",
+				],
+				reached: (e) => e.side === "sell" && e.size === 5,
+				done: [
+					"A market sell hits the best bid: 12 contracts at $2.05, less your 5, leaves 7. The bid price only moves once its size is used up.",
+					"市价卖单会成交在最优买价上：$2.05 的 12 张减去你的 5 张，剩 7 张。只有这一价位的数量用完，买价才会变。",
+				],
+			},
 		},
 		View: QuoteView,
 	}),
@@ -846,6 +859,23 @@ const scenes = [
 				"选择 $2.15 卖单发生的事，比较订单簿与逐笔成交。",
 			],
 			start: () => ({ event: "cancel" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which of the three events adds to the day's volume?",
+					"三个事件中，哪一个会增加当天的成交量？",
+				],
+				choices: [
+					{ id: "trade", label: ["The trade", "成交"] },
+					{ id: "cancel", label: ["The cancel", "撤单"] },
+					{ id: "add", label: ["The added offer", "新增挂单"] },
+				],
+				answer: "trade",
+				done: [
+					"Only a trade prints on the tape and counts in volume. Adding or cancelling an offer changes the book's size without anyone trading.",
+					"只有成交会出现在成交记录里并计入成交量。新增或撤销挂单只改变订单簿的数量，没有人成交。",
+				],
+			},
 		},
 		View: EventView,
 	}),
@@ -920,6 +950,18 @@ const scenes = [
 				"移动场所 C 的卖价，看看它何时不再是最优。",
 			],
 			start: () => ({ shown: 3, best: true, cAsk: 215 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Raise venue C's ask until another venue sets the best ask.",
+					"提高场所 C 的卖价，直到由另一个场所给出最优卖价。",
+				],
+				reached: (e) => (e.cAsk ?? 215) > 220,
+				done: [
+					"Above $2.20, venue A's ask is the lowest, so it becomes the best ask. The best quote is whichever venue is best at that moment.",
+					"高于 $2.20 后，场所 A 的卖价最低，于是成为最优卖价。最优报价属于此刻报价最好的那个场所。",
+				],
+			},
 		},
 		View: VenueView,
 	}),

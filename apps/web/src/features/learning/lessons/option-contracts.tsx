@@ -585,6 +585,21 @@ const scenes = [
 				"改变到期日、类型和行权价，观察代码的变化：每一种都是不同的合约。",
 			],
 			start: (last) => ({ ...last, shown: 6, focus: "strike" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Build the Nov 15 95 put and read its symbol.",
+					"组出 11月15日 95 看跌期权，并读出它的代码。",
+				],
+				reached: (e) =>
+					e.contract.expiry === "nov15" &&
+					e.contract.right === "put" &&
+					e.contract.strike === 95,
+				done: [
+					"ALFA301115P00095000: the date 30-11-15, P for put, then the strike times 1,000 in eight digits. Change any one of the four and you have a different contract.",
+					"ALFA301115P00095000：日期 30-11-15，P 代表看跌，然后是行权价乘以 1,000 的八位数字。四项中任意一项改变，就是另一份合约。",
+				],
+			},
 		},
 		View: AnatomyView,
 	}),
@@ -606,6 +621,7 @@ const scenes = [
 				{ id: "tenth", label: ["$126", "$126"] },
 			],
 			answer: "right",
+			entry: { answer: 1260, prefix: "$" },
 			explain: [
 				"$4.20 is per share. One contract is 100 shares, so $420, and three contracts are $1,260.",
 				"$4.20 是每股价格。一张合约 100 股，即 $420，三张就是 $1,260。",
@@ -646,6 +662,18 @@ const scenes = [
 				"改变合约张数，观察股数、权利金和名义价值如何同步变化。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find how many contracts put $50,000 of ALFA shares behind your premium.",
+					"找出多少张合约对应 $50,000 的 ALFA 股票名义价值。",
+				],
+				reached: (e) => e.contracts === 5,
+				done: [
+					"Each contract stands for 100 shares, $10,000 of ALFA at $100. Five contracts are $50,000 of notional, though the premium you pay is only 5 × $420 = $2,100.",
+					"每张合约对应 100 股，ALFA 为 $100 时就是 $10,000。5 张合约的名义价值是 $50,000，而你付的权利金只有 5 × $420 = $2,100。",
+				],
+			},
 		},
 		View: UnitView,
 	}),
@@ -708,6 +736,32 @@ const scenes = [
 		explore: {
 			prompt: ["Switch between the two observations.", "在两次观测之间切换。"],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"ALFA rose $1.18 between the two observations. How much did the call's ask rise?",
+					"两次观测之间 ALFA 上涨了 $1.18。看涨期权的卖价上涨了多少？",
+				],
+				choices: [
+					{ id: "part", label: ["$0.70", "$0.70"] },
+					{
+						id: "same",
+						label: ["$1.18, the same as ALFA", "$1.18，与 ALFA 相同"],
+					},
+					{
+						id: "none",
+						label: [
+							"Nothing: same contract, same price",
+							"没有变：同一合约，同一价格",
+						],
+					},
+				],
+				answer: "part",
+				done: [
+					"From $4.20 to $4.90 is $0.70, a little over half of ALFA's move. The contract didn't change; its price did, and each price is only true with its time.",
+					"从 $4.20 到 $4.90 是 $0.70，略多于 ALFA 涨幅的一半。合约没有变，变的是它的价格；每个价格只在它的时间点上成立。",
+				],
+			},
 		},
 		View: TimeView,
 	}),

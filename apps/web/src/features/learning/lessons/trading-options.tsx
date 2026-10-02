@@ -601,6 +601,19 @@ const scenes = [
 				"选择到期日、行权价以及看涨或看跌，读出报价和一张合约的成本。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"In the Oct 18 chain, find the call that costs the same as this put: $215 for one contract.",
+					"在 10月18日 的期权链中，找出与这份看跌期权价格相同的看涨期权：一张 $215。",
+				],
+				reached: (e) =>
+					e.expiry === "oct18" && e.right === "call" && e.strike === 105,
+				done: [
+					"The Oct 18 105 call asks $2.15 too: $215 for 100 shares. A call above the stock and a put below it can cost the same; each row has its own price.",
+					"10月18日 105 看涨的卖价也是 $2.15：100 股共 $215。高于股价的看涨和低于股价的看跌可以价格相同；每一行都有自己的价格。",
+				],
+			},
 		},
 		View: ChainView,
 	}),
@@ -678,6 +691,18 @@ const scenes = [
 				"试试市价单，或设定限价，看看它是立即成交还是等待。",
 			],
 			start: () => ({ kind: "limit", limit: 250, filledByArrival: false }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set the lowest limit price that still fills right away.",
+					"设定仍能立即成交的最低限价。",
+				],
+				reached: (e) => e.kind === "limit" && e.limit === 265,
+				done: [
+					"A buy limit at or above the $2.65 ask fills at once, at the ask. One step lower and it joins the book as a bid, filling only if a seller comes down to it.",
+					"买入限价等于或高于 $2.65 的卖价就会立即成交，成交价为卖价。再低一档，它就作为买单进入订单簿，只有卖方降到这个价才会成交。",
+				],
+			},
 		},
 		View: OrderView,
 	}),
@@ -751,6 +776,23 @@ const scenes = [
 				"比较三种结束方式，以及每种方式中流动的东西。",
 			],
 			start: () => ({ route: "sell" }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which ending needs $10,500 of cash in your account?",
+					"哪种结束方式需要你账户里有 $10,500 现金？",
+				],
+				choices: [
+					{ id: "exercise", label: ["Exercise", "行权"] },
+					{ id: "sell", label: ["Sell to close", "卖出平仓"] },
+					{ id: "expire", label: ["Expire", "到期作废"] },
+				],
+				answer: "exercise",
+				done: [
+					"Exercising the 105 call buys 100 shares at $105: $10,500. Selling to close brings cash in instead, and letting it expire moves nothing.",
+					"行使 105 看涨意味着以 $105 买入 100 股：$10,500。卖出平仓反而会收回现金，到期作废则什么都不动。",
+				],
+			},
 		},
 		View: EndView,
 	}),

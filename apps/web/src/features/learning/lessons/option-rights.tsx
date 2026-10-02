@@ -1040,6 +1040,18 @@ const scenes = [
 				"选择类型与方向，看看它带来的权利或义务。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the position that must sell 100 ALFA shares if it is assigned.",
+					"找出被指派时必须卖出 100 股 ALFA 的持仓。",
+				],
+				reached: (e) => e.right === "call" && e.side === "short",
+				done: [
+					"The writer of a call, short the call, must deliver: sell 100 ALFA at $100 when assigned, whatever ALFA trades at.",
+					"看涨期权的义务方（看涨空头）必须交付：被指派时以 $100 卖出 100 股 ALFA，不论 ALFA 当时价格多少。",
+				],
+			},
 		},
 		View: MatrixView,
 	}),
@@ -1129,6 +1141,18 @@ const scenes = [
 				"选择起始持仓和买卖方向，看看同样的交易何时开仓、何时平仓。",
 			],
 			start: () => ({ from: 1, trade: "buy" }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the trade that removes an obligation.",
+					"找出解除义务的那笔交易。",
+				],
+				reached: (e) => e.from === -1 && e.trade === "buy",
+				done: [
+					"Short one call, you carry the obligation. Buying one back closes it: buy to close. The same buy from flat would open a long instead.",
+					"做空一张看涨，你就承担义务。买回一张就平掉了它：买入平仓。同样的买入如果从空仓开始，则会开出多头。",
+				],
+			},
 		},
 		View: TrackView,
 	}),
@@ -1206,6 +1230,29 @@ const scenes = [
 				"切换到看涨再走一遍：股票和现金的方向会反过来。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Switch to the call. When your call exercise is assigned, who hands over the shares?",
+					"切换到看涨期权。你的看涨行权被指派后，由谁交出股票？",
+				],
+				choices: [
+					{ id: "writer", label: ["The assigned writer", "被指派的义务方"] },
+					{ id: "holder", label: ["You, the holder", "你，持有人"] },
+					{
+						id: "house",
+						label: [
+							"The clearinghouse, from its own shares",
+							"清算所，用自己的股票",
+						],
+					},
+				],
+				answer: "writer",
+				done: [
+					"Exercising a call buys at the strike. The clearinghouse assigns a writer, who delivers 100 shares and receives the strike price. It matches the two sides; it doesn't supply the shares.",
+					"行使看涨期权就是以行权价买入。清算所指派一名义务方，由他交付 100 股并收取行权价款。清算所只负责匹配双方，不提供股票。",
+				],
+			},
 		},
 		View: AssignView,
 	}),

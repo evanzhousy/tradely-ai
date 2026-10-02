@@ -619,6 +619,7 @@ const scenes = [
 				{ id: "minus", label: ["−$500", "−$500"] },
 			],
 			answer: "zero",
+			entry: { answer: 0, prefix: "$" },
 			explain: [
 				"A call is a right to buy at $100. At $95 you can buy shares cheaper in the market, so the right is worth nothing. You lose the premium, but no more.",
 				"看涨期权是以 $100 买入的权利。股价 $95 时在市场上买更便宜，这项权利一文不值。你损失权利金，但不会更多。",
@@ -668,6 +669,18 @@ const scenes = [
 				"选择看涨或看跌，并在价格轴上左右拖动来移动 10月18日 的 ALFA 价格，看看权利在哪里值得行使。",
 			],
 			start: () => ({ right: "call", spot: 105 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Switch to the put and find the price on Oct 18 where it is worth exactly $1,000.",
+					"切换到看跌期权，找出 10月18日 它正好价值 $1,000 的价格。",
+				],
+				reached: (e) => e.right === "put" && e.spot === 90,
+				done: [
+					"A put is the right to sell at $100. At $90 that right is worth $10 a share, $1,000 a contract, and each $1 lower adds another $100.",
+					"看跌期权是以 $100 卖出的权利。在 $90 时这项权利每股值 $10，每张 $1,000；每再低 $1 就再多 $100。",
+				],
+			},
 		},
 		View: RightView,
 	}),
@@ -738,6 +751,32 @@ const scenes = [
 				"切换不同用途，把每条线与仅持股比较。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which use caps how much you can gain, in return for cash today?",
+					"哪种用途以今天收到现金为代价，封顶了你的收益？",
+				],
+				choices: [
+					{
+						id: "earn",
+						label: ["Earn: sell the 110 call", "收入：卖出 110 看涨"],
+					},
+					{
+						id: "protect",
+						label: ["Protect: buy the 95 put", "保护：买入 95 看跌"],
+					},
+					{
+						id: "view",
+						label: ["View: buy the 105 call", "看法：买入 105 看涨"],
+					},
+				],
+				answer: "earn",
+				done: [
+					"Selling the 110 call brings in $85 now, but above $110 every further gain goes to its buyer: the line goes flat.",
+					"卖出 110 看涨现在收取 $85，但在 $110 以上，所有进一步的收益都归买方：盈亏线变平。",
+				],
+			},
 		},
 		View: UsesView,
 	}),
@@ -805,6 +844,23 @@ const scenes = [
 				"改变 10月18日 的 ALFA 价格，看看你和 Ben 之间有什么流动。",
 			],
 			start: () => ({ stage: "net", spot: 95 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Compare both closing prices. At which one does Ben end the trade ahead?",
+					"比较两个收盘价。Ben 在哪个价格下这笔交易是赚的？",
+				],
+				choices: [
+					{ id: "low", label: ["$95", "$95"] },
+					{ id: "high", label: ["$110", "$110"] },
+					{ id: "both", label: ["Both", "两个都是"] },
+				],
+				answer: "low",
+				done: [
+					"At $95 nobody exercises a right to buy at $100: Ben keeps your $420 and no shares move. At $110 he delivers $11,000 of shares for $10,000 and ends $580 down.",
+					"在 $95 时没人会行使以 $100 买入的权利：Ben 保留你的 $420，没有股票交付。在 $110 时，他以 $10,000 交付价值 $11,000 的股票，最终亏 $580。",
+				],
+			},
 		},
 		View: SidesView,
 	}),

@@ -498,6 +498,7 @@ const scenes = [
 				{ id: "price", label: ["$215", "$215"] },
 			],
 			answer: "right",
+			entry: { answer: 107500, prefix: "$" },
 			revealAt: 3,
 			explain: [
 				"$2.15 a share × 100 shares × 500 contracts = $107,500. Every unit in that product comes from the record.",
@@ -548,6 +549,38 @@ const scenes = [
 				"从记录中去掉乘数，看看还能算出什么。",
 			],
 			start: () => ({ shown: 6, multiplier: false }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"With the multiplier missing from the record, what can you still state?",
+					"记录中缺少乘数时，你还能确定说出什么？",
+				],
+				choices: [
+					{
+						id: "facts",
+						label: [
+							"500 contracts traded at $2.15 a share",
+							"以每股 $2.15 成交了 500 张",
+						],
+					},
+					{
+						id: "dollars",
+						label: [
+							"$107,500 of premium changed hands",
+							"成交了 $107,500 权利金",
+						],
+					},
+					{
+						id: "small",
+						label: ["$1,075 of premium changed hands", "成交了 $1,075 权利金"],
+					},
+				],
+				answer: "facts",
+				done: [
+					"Price and size are on the record; a dollar total needs the shares per contract too. Without the multiplier, leave the premium uncalculated rather than assume it.",
+					"价格和数量都在记录中；美元总额还需要每张合约的股数。缺少乘数时，宁可不算权利金，也不要凭假设去算。",
+				],
+			},
 		},
 		View: ReadView,
 	}),
@@ -640,6 +673,32 @@ const scenes = [
 				"切换现有报价，观察哪些陈述随之改变。",
 			],
 			start: () => ({ reached: reachedAt[3], stale: false }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Switch to the 90-second-old quote. Which statement still stands?",
+					"切换到 90 秒前的报价。哪条陈述仍然成立？",
+				],
+				choices: [
+					{
+						id: "amount",
+						label: [
+							"$107,500 of premium changed hands",
+							"成交了 $107,500 权利金",
+						],
+					},
+					{
+						id: "buyer",
+						label: ["A buyer probably started it", "很可能是买方发起的"],
+					},
+					{ id: "ask", label: ["It printed at the ask", "它成交在卖价"] },
+				],
+				answer: "amount",
+				done: [
+					"The amount comes from the print alone. Its location, and the buyer inference built on it, need the quote in force at the time, so with an old quote both drop to unknown.",
+					"金额只来自成交本身。成交位置及由此推断的买方，都需要当时有效的报价；报价过旧时，这两项都退回为未知。",
+				],
+			},
 		},
 		View: SortView,
 	}),
@@ -717,6 +776,38 @@ const scenes = [
 				"逐项加入记录，观察每项记录填补了哪个缺口。",
 			],
 			start: () => ({ stage: 0 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Add the records. Which question does none of them answer?",
+					"把记录逐一加上。哪个问题是任何记录都回答不了的？",
+				],
+				choices: [
+					{
+						id: "belief",
+						label: [
+							"Whether the trader expects ALFA to rise",
+							"交易者是否预期 ALFA 上涨",
+						],
+					},
+					{
+						id: "opened",
+						label: [
+							"Whether the block opened positions",
+							"这笔大宗是否开了新仓",
+						],
+					},
+					{
+						id: "spread",
+						label: ["Whether it was part of a spread", "它是否是价差的一部分"],
+					},
+				],
+				answer: "belief",
+				done: [
+					"The open-interest report answers the opening question and the multi-leg code the spread. What anyone believes is in no market record, and ALFA's next move won't reveal it either.",
+					"未平仓量报告回答了开仓问题，多腿条件代码回答了价差问题。任何人的想法都不在市场记录里，ALFA 之后的走势也揭示不了。",
+				],
+			},
 		},
 		View: GapView,
 	}),

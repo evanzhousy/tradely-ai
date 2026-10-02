@@ -56,6 +56,12 @@ const dateAfter = (days: number): Copy => {
 	return [`${["Sep", "Oct"][month - 8]} ${day}`, `${month + 1}月${day}日`];
 };
 
+/** With 20 of the 32 days gone and IV unchanged, the lowest whole dollar that earns the premium back. */
+const RECOVER_AT =
+	Array.from({ length: 21 }, (_, i) => 90 + i).find(
+		(spot) => value(spot, 20, 35) * 100 >= PAID,
+	) ?? 110;
+
 /** ALFA's move since you bought: "+$2.00 (2.0%)". */
 const sinceBuy = (spot: number) =>
 	`${signedUsd((spot - 100) * 100)} (${percent((spot - 100) / 100)})`;
@@ -593,6 +599,18 @@ const scenes = [
 				"在图上左右拖动来调整 ALFA 价格，再调整已过天数和隐含波动率，把看涨期权的价值与你支付的 $4.20 比较。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Set IV back to 35% with 20 days gone, then find the lowest whole-dollar price at which the call is worth what you paid.",
+					"把隐含波动率调回 35%、已过 20 天，再找出看涨期权价值回到买入价的最低整数美元价格。",
+				],
+				reached: (e) => e.days === 20 && e.iv === 35 && e.spot === RECOVER_AT,
+				done: [
+					`About $${RECOVER_AT}: ALFA has to rise roughly $${RECOVER_AT - 100} just to earn back 20 days of lost time value. Being right about direction isn't enough on its own.`,
+					`大约 $${RECOVER_AT}：ALFA 要上涨约 $${RECOVER_AT - 100}，才能弥补 20 天流失的时间价值。仅仅看对方向是不够的。`,
+				],
+			},
 		},
 		View: DecayView,
 	}),
@@ -614,6 +632,7 @@ const scenes = [
 				{ id: "premium", label: ["−$420", "−$420"] },
 			],
 			answer: "loss",
+			entry: { answer: -1580, prefix: "$" },
 			explain: [
 				"He must deliver shares worth $120 for $100: −$2,000, softened only by the $420 he collected. Every further $1 rise costs him another $100.",
 				"他必须以 $100 交付价值 $120 的股票：−$2,000，只被他收取的 $420 抵消一部分。股价每再涨 $1，他就再亏 $100。",
@@ -654,6 +673,19 @@ const scenes = [
 				"切换买卖双方，并在图上左右拖动来移动 10月18日 的 ALFA 价格，比较双方的最好与最坏情况。",
 			],
 			start: () => ({ side: "writer", spot: 110 }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"As the uncovered writer, find where ALFA has to finish for your loss to pass $2,000.",
+					"作为未备兑的义务方，找出 ALFA 收在哪里时你的亏损会超过 $2,000。",
+				],
+				reached: (e) =>
+					e.side === "writer" && atExpiry("writer", e.spot) < -2_000,
+				done: [
+					"Above $104.20, the strike plus the $4.20 collected, the writer loses $100 for every $1. Past $124.20 that is more than $2,000, and nothing stops it growing.",
+					"在 $104.20（行权价加上收取的 $4.20）以上，ALFA 每涨 $1，义务方就亏 $100。超过 $124.20，亏损就超过 $2,000，而且没有上限。",
+				],
+			},
 		},
 		View: TailView,
 	}),
@@ -675,6 +707,7 @@ const scenes = [
 				{ id: "fees", label: ["$6.50", "$6.50"] },
 			],
 			answer: "full",
+			entry: { answer: 231.5, prefix: "$", tolerance: 0.5, eitherSign: true },
 			revealAt: 1,
 			explain: [
 				"The $0.45 spread on 500 shares is $225, plus $6.50 in fees for two trades of 5 contracts: $231.50 gone before ALFA moves.",
@@ -716,6 +749,18 @@ const scenes = [
 				"选择合约与张数，比较一买一卖的成本。",
 			],
 			start: () => ({ kind: "active", contracts: 10, breakeven: false }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find how many thin Dec 20 contracts make a round trip cost more than $500.",
+					"找出交易多少张清淡的 12月20日 合约，一买一卖的成本会超过 $500。",
+				],
+				reached: (e) => e.kind === "thin" && e.contracts >= 11,
+				done: [
+					"Each thin round trip loses $45 of spread plus $1.30 of fees: $46.30. Eleven contracts lose $509.30 before ALFA moves at all.",
+					"每张清淡合约一买一卖损失 $45 价差加 $1.30 费用：$46.30。11 张在 ALFA 还没动之前就亏 $509.30。",
+				],
+			},
 		},
 		View: CostView,
 	}),

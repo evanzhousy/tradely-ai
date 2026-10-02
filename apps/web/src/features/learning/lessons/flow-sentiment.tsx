@@ -653,10 +653,22 @@ const scenes = [
 				"选择期权类型和主动方的操作。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the combination a feed labels bearish although it involves a call.",
+					"找出虽然涉及看涨期权、却被数据源标为看跌的组合。",
+				],
+				reached: (e) => e.right === "call" && e.action === "sell",
+				done: [
+					"A call sold at the bid: the likely seller gains if ALFA falls or stalls, so the feed calls it bearish. The label follows what the aggressor did with which option.",
+					"在买价被卖出的看涨：可能的卖方在 ALFA 下跌或横盘时获益，所以数据源称之为看跌。标签取决于主动方对哪种期权做了什么。",
+				],
+			},
 		},
 		View: MatrixView,
 	}),
-	defineScene<TallyState>({
+	defineScene<TallyState, TallyState>({
 		id: "tally",
 		label: ["A day of labels", "一天的标签"],
 		title: [
@@ -727,6 +739,42 @@ const scenes = [
 				state: { shown: 3, ledger: true },
 			},
 		],
+		explore: {
+			prompt: [
+				"Read the day's tally and the ledger beside it.",
+				"读一读当天的标签统计，以及旁边的台账。",
+			],
+			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"The feed's day reads 10 bullish, 6 neutral, 4 bearish. What does that tally establish?",
+					"数据源的当日统计是：看涨 10、中性 6、看跌 4。这个统计能确定什么？",
+				],
+				choices: [
+					{
+						id: "places",
+						label: [
+							"Where 20 contracts printed against their quotes",
+							"20 张合约相对各自报价的成交位置",
+						],
+					},
+					{
+						id: "buyers",
+						label: ["That buyers outnumbered sellers", "买方多于卖方"],
+					},
+					{
+						id: "rise",
+						label: ["That ALFA is more likely to rise", "ALFA 更可能上涨"],
+					},
+				],
+				answer: "places",
+				done: [
+					"Each label sums where a print met its quote. Every trade had a buyer and a seller, and the ledger shows the 'bullish' 10 opened while the 'bearish' 4 were two people closing.",
+					"每个标签统计的是成交与报价的相对位置。每笔成交都有一买一卖；台账显示“看涨”的 10 张是开仓，“看跌”的 4 张则是两个人在平仓。",
+				],
+			},
+		},
 		View: TallyView,
 	}),
 	defineScene<PutState, PutState>({
@@ -797,6 +845,29 @@ const scenes = [
 				"选择买方在交易前已持有什么。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"In which case does buying this 'bearish' put leave the buyer with no position at all?",
+					"在哪种情况下，买入这份“看跌”的看跌期权后，买方完全没有持仓？",
+				],
+				choices: [
+					{
+						id: "close",
+						label: ["They were short the put", "他原本是看跌空头"],
+					},
+					{
+						id: "stock",
+						label: ["They owned 100 ALFA", "他原本持有 100 股 ALFA"],
+					},
+					{ id: "alone", label: ["They held nothing", "他原本什么都没有"] },
+				],
+				answer: "close",
+				done: [
+					"Buying back a short put closes it: flat. The same print the feed calls bearish removed a bullish position and added no view at all.",
+					"买回看跌空头就是平仓：没有持仓。数据源称之为看跌的同一笔成交，其实是去掉了一个看涨的持仓，并没有增加任何观点。",
+				],
+			},
 		},
 		View: PutView,
 	}),

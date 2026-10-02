@@ -1116,6 +1116,23 @@ const scenes = [
 				"选择日期，观察卖出与行权之间的差距。",
 			],
 			start: () => ({ day: "oct4", exercise: true }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"On which date do selling and exercising pay the same?",
+					"在哪个日期卖出和行权得到的一样多？",
+				],
+				choices: [
+					{ id: "oct18", label: ["Expiry day, Oct 18", "到期日，10月18日"] },
+					{ id: "oct4", label: ["Fri Oct 4", "10月4日 周五"] },
+					{ id: "oct11", label: ["Fri Oct 11", "10月11日 周五"] },
+				],
+				answer: "oct18",
+				done: [
+					"Before expiry the bid includes time value that an exercise throws away. On Oct 18 none is left, so both capture the same $7.00 a share.",
+					"到期前，买价里包含时间价值，行权会把它丢掉。10月18日 时间价值归零，两种方式都得到每股 $7.00。",
+				],
+			},
 		},
 		View: ExitView,
 	}),
@@ -1137,6 +1154,7 @@ const scenes = [
 				{ id: "points", label: ["$25", "$25"] },
 			],
 			answer: "cash",
+			entry: { answer: 2500, prefix: "$" },
 			revealAt: 2,
 			explain: [
 				"An index can't be delivered, so the option pays cash: 25 points above the strike × $100 per point = $2,500.",
@@ -1187,6 +1205,18 @@ const scenes = [
 				"在两种期权之间切换，并移动最终价格。",
 			],
 			start: () => ({ product: "index", step: "settle", level: INDEX_SETTLES }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the IDX 500 settlement value that pays the call holder exactly $5,000.",
+					"找出让看涨持有人正好得到 $5,000 的 IDX 500 结算值。",
+				],
+				reached: (e) => e.product === "index" && e.level === 5_050,
+				done: [
+					"50 points above the 5,000 strike × $100 a point = $5,000, paid in cash. No index units change hands; only the official settlement value counts.",
+					"比 5,000 行权价高 50 点 × 每点 $100 = $5,000，以现金支付。没有任何指数单位易手，只有官方结算值算数。",
+				],
+			},
 		},
 		View: SettleView,
 	}),
@@ -1258,6 +1288,26 @@ const scenes = [
 		explore: {
 			prompt: ["Switch between the two styles.", "在两种行权方式之间切换。"],
 			start: () => ({ style: "american", early: false }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"It's Oct 4 and you own an IDX 500 Oct 18 call. How can you take its value now?",
+					"现在是 10月4日，你持有 IDX 500 10月18日 看涨。你怎样现在就兑现它的价值？",
+				],
+				choices: [
+					{ id: "sell", label: ["Sell it", "卖出它"] },
+					{ id: "exercise", label: ["Exercise it", "行权"] },
+					{
+						id: "wait",
+						label: ["You can't until Oct 18", "要等到 10月18日 才行"],
+					},
+				],
+				answer: "sell",
+				done: [
+					"European-style options can't be exercised before expiry, but they trade every day. Selling is the way out, and it keeps the time value too.",
+					"欧式期权到期前不能行权，但每天都可以交易。卖出就是退出的方式，而且还能保留时间价值。",
+				],
+			},
 		},
 		View: WindowView,
 	}),
@@ -1380,6 +1430,18 @@ const scenes = [
 				decline: false,
 				reveal: true,
 			}),
+			task: {
+				kind: "reach",
+				prompt: [
+					"As the holder, find a close where your call finishes in the money but you end the weekend without shares.",
+					"作为持有人，找出一个收盘价：看涨期权以实值到期，但你周末过后并没有持有股票。",
+				],
+				reached: (e) => e.close >= 100.01 && e.decline,
+				done: [
+					"An instruction not to exercise, given before your broker's cutoff, overrides automatic exercise. Without it, $0.01 in the money is enough to buy 100 shares for $10,000.",
+					"在券商截止时间前发出不行权指示，就能取消自动行权。没有这项指示，只要实值 $0.01，你就会以 $10,000 买入 100 股。",
+				],
+			},
 		},
 		View: ExpiryView,
 	}),

@@ -12,6 +12,8 @@ export type PredictionEntry = {
 	answer: number;
 	/** How far off still counts as right, in the answer's own units. */
 	tolerance?: number;
+	/** For a question about a size, such as "what do you lose?": −231.50 counts too. */
+	eitherSign?: boolean;
 	/** Written before the number, such as "$". */
 	prefix?: string;
 	/** Written after it, with any space it needs: [" contracts", " 张"], ["×", "×"]. */

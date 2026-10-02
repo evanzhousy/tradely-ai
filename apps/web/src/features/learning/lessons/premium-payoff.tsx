@@ -652,6 +652,7 @@ const scenes = [
 				{ id: "zero", label: ["$0", "$0"] },
 			],
 			answer: "five",
+			entry: { answer: 5, prefix: "$", unit: [" a share", " 每股"] },
 			revealAt: 3,
 			explain: [
 				"At expiry only intrinsic value is left: the right to buy at $95 a stock worth $100 is worth $5.00 a share. The other $2.30 was time value, and time has run out.",
@@ -707,6 +708,19 @@ const scenes = [
 				"切换到看跌，选择行权价，比较 9月16日 与到期时。",
 			],
 			start: () => ({ right: "call", focus: 95, moment: "now", shown: ALL }),
+			task: {
+				kind: "reach",
+				prompt: [
+					"Find the put that would still be worth $5.00 a share at expiry if ALFA stays at $100.",
+					"找出若 ALFA 到期时仍为 $100，每股仍值 $5.00 的看跌期权。",
+				],
+				reached: (e) =>
+					e.right === "put" && e.focus === 105 && e.moment === "expiry",
+				done: [
+					"The 105 put lets you sell at $105 a stock worth $100: $5.00 a share of intrinsic value. At expiry that is all that's left; the time value is gone.",
+					"105 看跌让你以 $105 卖出价值 $100 的股票：每股 $5.00 的内在价值。到期时只剩下这部分，时间价值已经归零。",
+				],
+			},
 		},
 		View: PartsView,
 	}),
@@ -725,6 +739,7 @@ const scenes = [
 				{ id: "zero", label: ["$0: about even", "$0：大致持平"] },
 			],
 			answer: "loss",
+			entry: { answer: -220, prefix: "$" },
 			revealAt: 1,
 			explain: [
 				"The call is worth $200 at $102, but it cost $420. Being in the money only means the value is above zero; to profit you need ALFA above $104.20.",
@@ -775,6 +790,18 @@ const scenes = [
 				"选择一张期权，并在图上左右拖动来移动 ALFA 收盘价。每张期权的盈亏平衡点在哪里？",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Pick the 105 call and find the lowest price on the slider where it makes money.",
+					"选择 105 看涨，找出滑块上让它开始盈利的最低价格。",
+				],
+				reached: (e) => e.id === "c105" && e.spot === 107.5,
+				done: [
+					"The 105 call cost $2.15, so it breaks even at $107.15. At $107.50 it is up $35; at $107 it is still down $15, although it is $2 in the money.",
+					"105 看涨花费 $2.15，所以盈亏平衡点在 $107.15。在 $107.50 时赚 $35；在 $107 时虽然实值 $2，却仍亏 $15。",
+				],
+			},
 		},
 		View: ProfitView,
 	}),
@@ -799,6 +826,7 @@ const scenes = [
 				{ id: "owe", label: ["−$500", "−$500"] },
 			],
 			answer: "loss",
+			entry: { answer: -295, prefix: "$" },
 			revealAt: 1,
 			explain: [
 				"You owe the holder $5 a share, $500, but you kept the $205 premium: −$295. The premium cushions the loss; it does not cancel it.",
@@ -849,6 +877,18 @@ const scenes = [
 				"选择你卖出的期权，并在图上左右拖动来移动 ALFA 收盘价。",
 			],
 			start: (last) => last,
+			task: {
+				kind: "reach",
+				prompt: [
+					"Switch to the 95 put you wrote and find a close where your loss is more than $500.",
+					"切换到你卖出的 95 看跌，找出让你亏损超过 $500 的收盘价。",
+				],
+				reached: (e) => e.id === "p95" && e.spot <= 87.5,
+				done: [
+					"The put writer kept $205, so the loss starts below $92.95 and grows $100 for every $1. Under $87.95 it passes $500, though the most the writer could ever make was $205.",
+					"看跌义务方收取了 $205，所以在 $92.95 以下开始亏损，ALFA 每跌 $1 就多亏 $100。低于 $87.95 时亏损超过 $500，而义务方最多只能赚 $205。",
+				],
+			},
 		},
 		View: WriterView,
 	}),
