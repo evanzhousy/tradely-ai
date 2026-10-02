@@ -1,7 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { count, signedCount } from "@/content/world";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 
 export type Holding = { long: number; short: number };
 
@@ -106,7 +106,7 @@ export function PositionLedger({
 			</text>
 			{/* Totals: all shorts on the left, all longs on the right, always equal. */}
 			{openInterestBefore !== undefined && oiDelta !== 0 ? (
-				<>
+				<Appear>
 					<rect
 						x={g.center - openInterestBefore * k}
 						y={56}
@@ -121,7 +121,7 @@ export function PositionLedger({
 						height={14}
 						className="wt-ghost"
 					/>
-				</>
+				</Appear>
 			) : null}
 			<m.rect
 				y={56}
@@ -220,22 +220,26 @@ function LedgerRowShape({
 				</>
 			)}
 			{shortChanged && before ? (
-				<rect
-					x={g.center - before.short * k}
-					y={barY}
-					width={before.short * k}
-					height={barHeight}
-					className="wt-ghost"
-				/>
+				<Appear>
+					<rect
+						x={g.center - before.short * k}
+						y={barY}
+						width={before.short * k}
+						height={barHeight}
+						className="wt-ghost"
+					/>
+				</Appear>
 			) : null}
 			{longChanged && before ? (
-				<rect
-					x={g.center}
-					y={barY}
-					width={before.long * k}
-					height={barHeight}
-					className="wt-ghost"
-				/>
+				<Appear>
+					<rect
+						x={g.center}
+						y={barY}
+						width={before.long * k}
+						height={barHeight}
+						className="wt-ghost"
+					/>
+				</Appear>
 			) : null}
 			<m.rect
 				y={barY}
@@ -257,21 +261,21 @@ function LedgerRowShape({
 				transition={motion.move}
 			/>
 			{short > 0 || shortChanged ? (
-				<text
+				<Label
 					x={g.center - Math.max(short, before?.short ?? 0) * k - 6}
 					y={valueY}
-					textAnchor="end"
+					anchor="end"
 				>
-					<tspan>{short > 0 ? `−${count(short)}` : "0"}</tspan>
-				</text>
+					{short > 0 ? `−${count(short)}` : "0"}
+				</Label>
 			) : null}
 			{long > 0 || longChanged ? (
-				<text
+				<Label
 					x={g.center + Math.max(long, before?.long ?? 0) * k + 6}
 					y={valueY}
 				>
-					<tspan>{long > 0 ? `+${count(long)}` : "0"}</tspan>
-				</text>
+					{long > 0 ? `+${count(long)}` : "0"}
+				</Label>
 			) : null}
 			{long === 0 && short === 0 && !longChanged && !shortChanged ? (
 				<Label x={g.center + 6} y={valueY} tone="small">

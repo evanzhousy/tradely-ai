@@ -1,5 +1,5 @@
 import * as m from "motion/react-m";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 
 export type RankItem = {
 	id: string;
@@ -77,16 +77,17 @@ export function RankBump({
 					const y2 = yOf(b) + ROW / 2 - 4;
 					const on = id === focus;
 					return (
-						<m.path
-							key={`${column.id}-${id}`}
-							className={on ? "wt-bracket" : "wt-axis"}
-							fill="none"
-							initial={false}
-							animate={{
-								d: `M${x1} ${y1}C${x1 + gap / 2} ${y1} ${x2 - gap / 2} ${y2} ${x2} ${y2}`,
-							}}
-							transition={motion.move}
-						/>
+						<Appear key={`${column.id}-${id}`} delay={0.2}>
+							<m.path
+								className={on ? "wt-bracket" : "wt-axis"}
+								fill="none"
+								initial={false}
+								animate={{
+									d: `M${x1} ${y1}C${x1 + gap / 2} ${y1} ${x2 - gap / 2} ${y2} ${x2} ${y2}`,
+								}}
+								transition={motion.move}
+							/>
+						</Appear>
 					);
 				});
 			})}
@@ -103,14 +104,17 @@ export function RankBump({
 							animate={{ y: yOf(row), opacity: item.excluded ? 0.5 : 1 }}
 							transition={motion.move}
 						>
-							<rect
-								x={colX(j)}
-								y={0}
-								width={colWidth}
-								height={ROW - 8}
-								rx={8}
-								className={on ? "wt-focus-shape" : "wt-panel-shape"}
-							/>
+							<Appear>
+								<m.rect
+									y={0}
+									height={ROW - 8}
+									rx={8}
+									className={on ? "wt-focus-shape" : "wt-panel-shape"}
+									initial={false}
+									animate={{ x: colX(j), width: colWidth }}
+									transition={motion.move}
+								/>
+							</Appear>
 							<Label x={colX(j) + 10} y={21} tone="small">
 								{rank}
 							</Label>

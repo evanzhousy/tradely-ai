@@ -473,6 +473,7 @@ function EndView({
 							width={width}
 							parties={parties}
 							transfers={transfers}
+							slots={2}
 						/>
 					)}
 				</Stage>

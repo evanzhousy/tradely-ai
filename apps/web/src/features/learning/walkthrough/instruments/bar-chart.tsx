@@ -1,5 +1,5 @@
 import * as m from "motion/react-m";
-import { Label, useStage, useTeachMotion } from "../stage";
+import { Appear, Label, useStage, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
 
 export type Bar = {
@@ -103,31 +103,34 @@ export function BarChart({
 						{bar.label}
 					</text>
 				);
-				if (bar.hidden) return <g key={bar.id}>{label}</g>;
-				if (bar.value === null)
+				if (bar.value === null && !bar.hidden)
 					return (
 						<g key={bar.id}>
-							<rect
-								x={x}
-								y={bottom - MISSING_HEIGHT}
-								width={barWidth}
-								height={MISSING_HEIGHT}
-								rx={3}
-								className="wt-ghost"
-								style={{ fill: hatch }}
-							/>
-							<Label
-								x={cx}
-								y={bottom - MISSING_HEIGHT - 6}
-								anchor="middle"
-								tone="accent"
-							>
-								?
-							</Label>
+							<Appear>
+								<rect
+									x={x}
+									y={bottom - MISSING_HEIGHT}
+									width={barWidth}
+									height={MISSING_HEIGHT}
+									rx={3}
+									className="wt-ghost"
+									style={{ fill: hatch }}
+								/>
+								<Label
+									x={cx}
+									y={bottom - MISSING_HEIGHT - 6}
+									anchor="middle"
+									tone="accent"
+								>
+									?
+								</Label>
+							</Appear>
 							{label}
 						</g>
 					);
-				const barTop = y(bar.value);
+				// A bar not shown yet waits flat on the axis, so it grows up when it arrives.
+				const shown = !bar.hidden && bar.value !== null;
+				const barTop = shown && bar.value !== null ? y(bar.value) : bottom;
 				return (
 					<g key={bar.id}>
 						<m.rect
@@ -141,7 +144,7 @@ export function BarChart({
 						/>
 						<m.g
 							initial={false}
-							animate={{ y: barTop - 6 }}
+							animate={{ y: barTop - 6, opacity: shown ? 1 : 0 }}
 							transition={motion.move}
 						>
 							<text
@@ -150,7 +153,7 @@ export function BarChart({
 								className={on ? "wt-accent" : undefined}
 								style={{ fontSize: valueSize }}
 							>
-								{format(bar.value)}
+								{bar.value === null ? "" : format(bar.value)}
 							</text>
 						</m.g>
 						{label}

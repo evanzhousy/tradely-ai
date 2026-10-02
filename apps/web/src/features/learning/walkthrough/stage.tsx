@@ -1,4 +1,5 @@
 import { animate, type Transition } from "motion/react";
+import * as m from "motion/react-m";
 import {
 	createContext,
 	type ReactNode,
@@ -120,9 +121,15 @@ const MIN_CONDENSE = 0.72;
 function fitLabels(svg: SVGSVGElement) {
 	const stage = svg.getBoundingClientRect();
 	for (const text of svg.querySelectorAll<SVGTextElement>("text")) {
-		if (text.dataset.fit) {
-			text.removeAttribute("textLength");
-			text.removeAttribute("lengthAdjust");
+		if (text.dataset.fit !== undefined) {
+			// Put back any length the label was drawn with; React won't set it again.
+			if (text.dataset.fit) {
+				text.setAttribute("textLength", text.dataset.fit);
+				text.setAttribute("lengthAdjust", "spacingAndGlyphs");
+			} else {
+				text.removeAttribute("textLength");
+				text.removeAttribute("lengthAdjust");
+			}
 			delete text.dataset.fit;
 		}
 		const box = text.getBoundingClientRect();
@@ -138,22 +145,63 @@ function fitLabels(svg: SVGSVGElement) {
 				: anchor === "end"
 					? natural - overLeft
 					: natural - overRight;
+		text.dataset.fit = text.getAttribute("textLength") ?? "";
 		text.setAttribute(
 			"textLength",
 			String(Math.max(target, natural * MIN_CONDENSE)),
 		);
 		text.setAttribute("lengthAdjust", "spacingAndGlyphs");
-		text.dataset.fit = "1";
 	}
 }
 
-type StageContextValue = { width: number; hatch: string };
+type StageContextValue = {
+	width: number;
+	hatch: string;
+	/** The width the drawing was last painted at; null until its first paint. */
+	painted: { readonly current: number | null };
+};
 const StageContext = createContext<StageContextValue>({
 	width: FALLBACK_WIDTH,
 	hatch: "none",
+	painted: { current: null },
 });
 /** Measured drawing width and the id of the unknown-value hatch pattern. */
 export const useStage = () => useContext(StageContext);
+
+/**
+ * Whether an element mounting now joins a drawing that is already on screen, as a step's
+ * new mark does, rather than arriving with the scene. Fixed for the element's lifetime.
+ */
+export function useJoins() {
+	const { painted, width } = useContext(StageContext);
+	const [joins] = useState(() => painted.current === width);
+	return joins;
+}
+
+/**
+ * Wraps marks that come and go between steps, such as a highlight or a ghost: they fade in
+ * when they join a drawing on screen, and are simply there when the scene opens.
+ */
+export function Appear({
+	children,
+	delay = 0,
+}: {
+	children: ReactNode;
+	/** Seconds to wait, so an effect can follow its cause. */
+	delay?: number;
+}) {
+	const motion = useTeachMotion();
+	const joins = useJoins();
+	return (
+		<m.g
+			initial={joins && motion.enabled ? { opacity: 0 } : false}
+			animate={{ opacity: 1 }}
+			transition={delay ? motion.after(delay) : motion.fade}
+		>
+			{children}
+		</m.g>
+	);
+}
 
 /**
  * An SVG drawn at the width of its container so text renders at its true size.
@@ -191,6 +239,10 @@ export function Stage({
 	}, []);
 	const width = measured ?? FALLBACK_WIDTH;
 	const h = typeof height === "function" ? height(width) : height;
+	const painted = useRef<number | null>(null);
+	useEffect(() => {
+		painted.current = measured;
+	});
 	const svg = useRef<SVGSVGElement>(null);
 	// Fit after every drawing, again once its moves have settled, and when web fonts arrive.
 	useEffect(() => {
@@ -229,7 +281,7 @@ export function Stage({
 						<line x1="0" y1="0" x2="0" y2="6" className="wt-hatch-line" />
 					</pattern>
 				</defs>
-				<StageContext value={{ width, hatch: `url(#hatch-${id})` }}>
+				<StageContext value={{ width, hatch: `url(#hatch-${id})`, painted }}>
 					{measured === null ? null : (
 						<g key={measured}>{children(measured)}</g>
 					)}
@@ -248,11 +300,17 @@ type TextProps = {
 	className?: string;
 	/** Room the text has; a longer string condenses to fit, down to MIN_CONDENSE. */
 	maxWidth?: number;
+	/** How the label travels when its position changes; defaults to the teaching move. */
+	transition?: Transition;
 };
 
 const toneSize = { muted: 12, small: 11, strong: 17 } as const;
 
-/** Diagram text. Numbers and labels share the mono face used across lessons. */
+/**
+ * Diagram text. Numbers and labels share the mono face used across lessons. A label that
+ * moves between steps travels with the mark it names, and one that joins a drawing already
+ * on screen fades in.
+ */
 export function Label({
 	x,
 	y,
@@ -261,7 +319,10 @@ export function Label({
 	tone,
 	className,
 	maxWidth,
+	transition,
 }: TextProps) {
+	const motion = useTeachMotion();
+	const joins = useJoins();
 	const natural =
 		maxWidth !== undefined &&
 		(typeof children === "string" || typeof children === "number")
@@ -277,9 +338,12 @@ export function Label({
 			? Math.max(maxWidth, natural * MIN_CONDENSE)
 			: undefined;
 	return (
-		<text
-			x={x}
-			y={y}
+		<m.text
+			initial={
+				joins && motion.enabled ? { attrX: x, attrY: y, opacity: 0 } : false
+			}
+			animate={{ attrX: x, attrY: y, opacity: 1 }}
+			transition={{ default: transition ?? motion.move, opacity: motion.fade }}
 			textLength={fitted}
 			lengthAdjust={fitted ? "spacingAndGlyphs" : undefined}
 			textAnchor={anchor}
@@ -288,6 +352,6 @@ export function Label({
 				.join(" ")}
 		>
 			{children}
-		</text>
+		</m.text>
 	);
 }

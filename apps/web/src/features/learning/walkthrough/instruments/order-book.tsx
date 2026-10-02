@@ -1,7 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { count, usd } from "@/content/world";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 
 export type BookLevel = {
 	/** Cents. */
@@ -92,9 +92,11 @@ export function OrderBook({
 		fills.find(
 			(fill) => fill.price === price && (!fill.side || fill.side === side),
 		)?.size;
+	// Each row draws at its own origin and slides to its place, so a level that joins the
+	// book moves the levels below it instead of making them jump.
 	const row = (
 		level: BookLevel,
-		y: number,
+		rowY: number,
 		side: "bid" | "ask",
 		index: number,
 	) => {
@@ -107,142 +109,153 @@ export function OrderBook({
 				? center - priceWidth / 2 - 8
 				: center + priceWidth / 2 + 8;
 		return (
-			<g key={`${side}-${level.price}-${level.venue ?? ""}`}>
-				{isBest ? (
-					<rect
-						x={8}
-						y={y + 2}
-						width={width - 16}
-						height={ROW - 4}
-						rx={6}
-						className="wt-focus-shape"
-						opacity={0.55}
-					/>
-				) : null}
-				{ghost !== undefined && ghost !== bar ? (
-					<rect
-						x={side === "bid" ? x - ghost : x}
-						y={y + 7}
-						width={ghost}
+			<m.g
+				key={`${side}-${level.price}-${level.venue ?? ""}`}
+				initial={false}
+				animate={{ y: rowY }}
+				transition={motion.move}
+			>
+				<Appear>
+					{isBest ? (
+						<Appear>
+							<rect
+								x={8}
+								y={2}
+								width={width - 16}
+								height={ROW - 4}
+								rx={6}
+								className="wt-focus-shape"
+								opacity={0.55}
+							/>
+						</Appear>
+					) : null}
+					{ghost !== undefined && ghost !== bar ? (
+						<Appear>
+							<rect
+								x={side === "bid" ? x - ghost : x}
+								y={7}
+								width={ghost}
+								height={ROW - 14}
+								className="wt-ghost"
+							/>
+						</Appear>
+					) : null}
+					<m.rect
+						y={7}
 						height={ROW - 14}
-						className="wt-ghost"
+						rx={3}
+						className={
+							level.mine ? "wt-chip" : side === "bid" ? "wt-long" : "wt-short"
+						}
+						initial={false}
+						animate={
+							side === "bid" ? { x: x - bar, width: bar } : { x, width: bar }
+						}
+						transition={motion.move}
 					/>
-				) : null}
-				<m.rect
-					y={y + 7}
-					height={ROW - 14}
-					rx={3}
-					className={
-						level.mine ? "wt-chip" : side === "bid" ? "wt-long" : "wt-short"
-					}
-					initial={false}
-					animate={
-						side === "bid" ? { x: x - bar, width: bar } : { x, width: bar }
-					}
-					transition={motion.move}
-				/>
-				<Label
-					x={
-						side === "bid"
-							? x - Math.max(bar, ghost ?? 0) - 6
-							: x + Math.max(bar, ghost ?? 0) + 6
-					}
-					y={y + ROW / 2 + 4.5}
-					anchor={side === "bid" ? "end" : "start"}
-				>
-					{count(level.size)}
-				</Label>
-				<Label
-					x={center}
-					y={y + ROW / 2 + 4.5}
-					anchor="middle"
-					tone={isBest ? "accent" : undefined}
-				>
-					{usd(level.price)}
-				</Label>
-				{level.venue ? (
-					<Label
-						x={side === "bid" ? 16 : width - 16}
-						y={y + ROW / 2 + 4}
-						anchor={side === "bid" ? "start" : "end"}
-						tone="small"
-					>
-						{level.venue}
-					</Label>
-				) : null}
-				{level.mine && !filled && labels.mine ? (
 					<Label
 						x={
 							side === "bid"
-								? center + priceWidth / 2 + 8
-								: center - priceWidth / 2 - 8
+								? x - Math.max(bar, ghost ?? 0) - 6
+								: x + Math.max(bar, ghost ?? 0) + 6
 						}
-						y={y + ROW / 2 + 4}
-						anchor={side === "bid" ? "start" : "end"}
-						tone="accent"
+						y={ROW / 2 + 4.5}
+						anchor={side === "bid" ? "end" : "start"}
 					>
-						{labels.mine}
+						{count(level.size)}
 					</Label>
-				) : null}
-				<AnimatePresence>
-					{incoming &&
-					!filled &&
-					isBest &&
-					side === (incoming.side === "buy" ? "ask" : "bid") ? (
-						<m.g
-							key={`incoming-${incoming.label}`}
-							initial={
-								motion.enabled
-									? { opacity: 0, x: side === "ask" ? -18 : 18 }
-									: false
-							}
-							animate={{ opacity: 1, x: 0 }}
-							exit={{ opacity: 0 }}
-							transition={motion.move}
+					<Label
+						x={center}
+						y={ROW / 2 + 4.5}
+						anchor="middle"
+						tone={isBest ? "accent" : undefined}
+					>
+						{usd(level.price)}
+					</Label>
+					{level.venue ? (
+						<Label
+							x={side === "bid" ? 16 : width - 16}
+							y={ROW / 2 + 4}
+							anchor={side === "bid" ? "start" : "end"}
+							tone="small"
 						>
-							<Label
-								x={
-									side === "ask"
-										? center - priceWidth / 2 - 26
-										: center + priceWidth / 2 + 26
-								}
-								y={y + ROW / 2 + 4}
-								anchor={side === "ask" ? "end" : "start"}
-								tone="accent"
-							>
-								{incoming.label}
-							</Label>
-							<path
-								d={
-									side === "ask"
-										? `M${center - priceWidth / 2 - 22} ${y + ROW / 2}h14l-5 -4m5 4l-5 4`
-										: `M${center + priceWidth / 2 + 22} ${y + ROW / 2}h-14l5 -4m-5 4l5 4`
-								}
-								className="wt-arrow wt-arrow-contract"
-							/>
-						</m.g>
+							{level.venue}
+						</Label>
 					) : null}
-					{filled ? (
-						<m.text
-							key={`fill-${level.price}-${filled}`}
+					{level.mine && !filled && labels.mine ? (
+						<Label
 							x={
 								side === "bid"
 									? center + priceWidth / 2 + 8
 									: center - priceWidth / 2 - 8
 							}
-							y={y + ROW / 2 + 4}
-							textAnchor={side === "bid" ? "start" : "end"}
-							className="wt-accent"
-							initial={motion.enabled ? { opacity: 0 } : false}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							transition={motion.after(0.25)}
+							y={ROW / 2 + 4}
+							anchor={side === "bid" ? "start" : "end"}
+							tone="accent"
 						>
-							{labels.filled(filled)}
-						</m.text>
+							{labels.mine}
+						</Label>
 					) : null}
-				</AnimatePresence>
-			</g>
+					<AnimatePresence>
+						{incoming &&
+						!filled &&
+						isBest &&
+						side === (incoming.side === "buy" ? "ask" : "bid") ? (
+							<m.g
+								key={`incoming-${incoming.label}`}
+								initial={
+									motion.enabled
+										? { opacity: 0, x: side === "ask" ? -18 : 18 }
+										: false
+								}
+								animate={{ opacity: 1, x: 0 }}
+								exit={{ opacity: 0 }}
+								transition={motion.move}
+							>
+								<Label
+									x={
+										side === "ask"
+											? center - priceWidth / 2 - 26
+											: center + priceWidth / 2 + 26
+									}
+									y={ROW / 2 + 4}
+									anchor={side === "ask" ? "end" : "start"}
+									tone="accent"
+								>
+									{incoming.label}
+								</Label>
+								<path
+									d={
+										side === "ask"
+											? `M${center - priceWidth / 2 - 22} ${ROW / 2}h14l-5 -4m5 4l-5 4`
+											: `M${center + priceWidth / 2 + 22} ${ROW / 2}h-14l5 -4m-5 4l5 4`
+									}
+									className="wt-arrow wt-arrow-contract"
+								/>
+							</m.g>
+						) : null}
+						{filled ? (
+							<m.text
+								key={`fill-${level.price}-${filled}`}
+								x={
+									side === "bid"
+										? center + priceWidth / 2 + 8
+										: center - priceWidth / 2 - 8
+								}
+								y={ROW / 2 + 4}
+								textAnchor={side === "bid" ? "start" : "end"}
+								className="wt-accent"
+								initial={motion.enabled ? { opacity: 0 } : false}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+								transition={motion.after(0.25)}
+							>
+								{labels.filled(filled)}
+							</m.text>
+						) : null}
+					</AnimatePresence>
+				</Appear>
+			</m.g>
 		);
 	};
 	return (

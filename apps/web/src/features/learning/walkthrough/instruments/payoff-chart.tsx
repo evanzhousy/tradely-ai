@@ -10,7 +10,7 @@ import {
 	placeText,
 	textBox,
 } from "../label-place";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
 
 type LabelSpot = {
@@ -312,18 +312,15 @@ export function PayoffChart({
 				</Label>
 			))}
 			{bands.map((band) => (
-				<m.g
-					key={band.id}
-					initial={motion.enabled ? { opacity: 0 } : false}
-					animate={{ opacity: 1 }}
-					transition={motion.fade}
-				>
-					<rect
-						x={x(band.from)}
+				<Appear key={band.id}>
+					{/* A band that changes range slides with its edges, at the drag's pace if dragged. */}
+					<m.rect
 						y={top}
-						width={x(band.to) - x(band.from)}
 						height={bottom - top}
 						className={`wt-band-${band.tone ?? "neutral"}`}
+						initial={false}
+						animate={{ x: x(band.from), width: x(band.to) - x(band.from) }}
+						transition={move}
 					/>
 					{band.label ? (
 						<Label
@@ -332,11 +329,12 @@ export function PayoffChart({
 							anchor="middle"
 							tone="small"
 							className="wt-halo"
+							transition={move}
 						>
 							{band.label}
 						</Label>
 					) : null}
-				</m.g>
+				</Appear>
 			))}
 			{yTicks.map((tick) => (
 				<g key={tick}>
@@ -404,7 +402,8 @@ export function PayoffChart({
 				);
 			})}
 			{markers.map((marker) => (
-				<g key={marker.id}>
+				// A marker that joins a step fades in where it lands.
+				<Appear key={marker.id}>
 					{marker.id === drag?.markerId ? (
 						<DragHandle
 							cx={x(marker.x)}
@@ -449,7 +448,7 @@ export function PayoffChart({
 							{markerLabels.get(marker.id)?.text ?? marker.label}
 						</m.text>
 					) : null}
-				</g>
+				</Appear>
 			))}
 			{drag ? (
 				// Over the whole plot so a press anywhere moves the marker; vertical swipes still scroll.

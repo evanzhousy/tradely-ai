@@ -1,7 +1,7 @@
 import * as m from "motion/react-m";
 import { type AxisDrag, DragHandle, useAxisDrag } from "../axis-drag";
 import { fitAnchor } from "../label-place";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
 
 export const PRICE_LINE_HEIGHT = 150;
@@ -138,7 +138,9 @@ export function PriceLine({
 				</g>
 			) : null}
 			{marker.before !== undefined && marker.before !== marker.value ? (
-				<circle cx={x(marker.before)} cy={axis} r={7} className="wt-ghost" />
+				<Appear>
+					<circle cx={x(marker.before)} cy={axis} r={7} className="wt-ghost" />
+				</Appear>
 			) : null}
 			{drag ? (
 				<DragHandle

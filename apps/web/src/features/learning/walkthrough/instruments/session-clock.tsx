@@ -112,7 +112,12 @@ export function SessionClock({
 				const markX = at(mark.at);
 				const reached = now >= mark.at;
 				return (
-					<g key={mark.key} opacity={reached ? 1 : 0.45}>
+					<m.g
+						key={mark.key}
+						initial={false}
+						animate={{ opacity: reached ? 1 : 0.45 }}
+						transition={motion.fade}
+					>
 						{mark.kind === "report" ? (
 							<path
 								d={`M${markX} ${axis - 8}l8 8-8 8-8-8z`}
@@ -128,7 +133,7 @@ export function SessionClock({
 						<Label x={markX} y={axis + 18} anchor="middle" tone="small">
 							{mark.label}
 						</Label>
-					</g>
+					</m.g>
 				);
 			})}
 			<m.g initial={false} animate={{ x: cursor }} transition={motion.move}>

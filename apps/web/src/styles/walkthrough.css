@@ -317,6 +317,11 @@
 	fill: var(--muted-foreground);
 	font-size: 11px;
 }
+/* Part of a value not filled in yet: quiet, at the size it will take. */
+.wt-svg .wt-pending {
+	fill: var(--muted-foreground);
+	opacity: 0.6;
+}
 .wt-svg .wt-strong {
 	font-size: 17px;
 	font-weight: 600;

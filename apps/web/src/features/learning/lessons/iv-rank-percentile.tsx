@@ -8,7 +8,13 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
-import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import {
+	Appear,
+	Label,
+	Stage,
+	useStage,
+	useTeachMotion,
+} from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -101,11 +107,14 @@ function IvHistory({
 					"ALFA IV30 · 每周收盘 · 截至 9月13日 的一年",
 				])}
 			</Label>
+			{/* When the rank bracket takes room on the right, the year narrows rather than jumps. */}
 			{[0, 20, 40, 60].map((tick) => (
 				<g key={tick}>
-					<path
-						d={`M${left} ${y(tick)}H${right}`}
+					<m.path
 						className={tick === 0 ? "wt-axis" : "wt-grid"}
+						initial={false}
+						animate={{ d: `M${left} ${y(tick)}H${right}` }}
+						transition={motion.move}
 					/>
 					<Label x={left - 6} y={y(tick) + 4} anchor="end" tone="small">
 						{`${tick}%`}
@@ -120,22 +129,22 @@ function IvHistory({
 				const inWindow = counts.has(i);
 				if (missing)
 					return (
-						<rect
-							key={i}
-							x={x}
-							y={y(8)}
-							width={w}
-							height={y(0) - y(8)}
-							style={{ fill: hatch }}
-							className="wt-panel-shape"
-						/>
+						<Appear key={`gap-${i}`}>
+							<m.rect
+								y={y(8)}
+								height={y(0) - y(8)}
+								style={{ fill: hatch }}
+								className="wt-panel-shape"
+								initial={false}
+								animate={{ x, width: w }}
+								transition={motion.move}
+							/>
+						</Appear>
 					);
 				return (
 					<m.rect
 						key={i}
-						x={x}
 						y={y(value)}
-						width={w}
 						height={y(0) - y(value)}
 						rx={1}
 						className={
@@ -146,8 +155,8 @@ function IvHistory({
 									: "wt-panel-shape"
 						}
 						initial={false}
-						animate={{ opacity: inWindow || dropped ? 1 : 0.25 }}
-						transition={motion.fade}
+						animate={{ x, width: w, opacity: inWindow || dropped ? 1 : 0.25 }}
+						transition={motion.move}
 					/>
 				);
 			})}
@@ -156,17 +165,19 @@ function IvHistory({
 				animate={{ y: y(view.today) }}
 				transition={motion.move}
 			>
-				<path
-					d={`M${left} 0H${right}`}
+				<m.path
 					className="wt-bracket"
 					strokeDasharray="5 4"
+					initial={false}
+					animate={{ d: `M${left} 0H${right}` }}
+					transition={motion.move}
 				/>
 				<Label x={left + 4} y={-5} tone="accent" className="wt-halo">
 					{t([`today ${view.today}%`, `今天 ${view.today}%`])}
 				</Label>
 			</m.g>
 			{showRank ? (
-				<g>
+				<Appear delay={0.3}>
 					<path
 						d={`M${bracketX - 5} ${y(s.low)}H${bracketX}V${y(s.high)}H${bracketX - 5}`}
 						className="wt-axis"
@@ -177,13 +188,15 @@ function IvHistory({
 					<Label x={bracketX + 4} y={y(s.low) + 4} tone="small">
 						{`${s.low}%`}
 					</Label>
-					<circle
+					<m.circle
 						cx={bracketX}
-						cy={y(Math.min(Math.max(view.today, s.low), s.high))}
 						r={4}
 						className="wt-chip"
+						initial={false}
+						animate={{ cy: y(Math.min(Math.max(view.today, s.low), s.high)) }}
+						transition={motion.move}
 					/>
-				</g>
+				</Appear>
 			) : null}
 			<Label x={left} y={CHART_BOTTOM + 18} tone="small">
 				{t(["Sep 2029", "2029年9月"])}

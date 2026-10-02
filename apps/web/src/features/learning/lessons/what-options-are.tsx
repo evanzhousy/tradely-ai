@@ -541,6 +541,7 @@ function SidesView({
 							width={width}
 							parties={parties}
 							transfers={transfers}
+							slots={3}
 						/>
 					)}
 				</Stage>

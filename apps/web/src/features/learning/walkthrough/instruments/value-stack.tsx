@@ -1,6 +1,6 @@
 import * as m from "motion/react-m";
 import { usd } from "@/content/world";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 
 export type StackPart = {
 	id: string;
@@ -84,14 +84,16 @@ export function ValueStack({
 						transition={motion.fade}
 					>
 						{row.id === focus ? (
-							<rect
-								x={6}
-								y={y - 4}
-								width={width - 12}
-								height={labelWidth ? 44 : 56}
-								rx={10}
-								className="wt-focus-shape"
-							/>
+							<Appear>
+								<rect
+									x={6}
+									y={y - 4}
+									width={width - 12}
+									height={labelWidth ? 44 : 56}
+									rx={10}
+									className="wt-focus-shape"
+								/>
+							</Appear>
 						) : null}
 						<Label
 							x={14}
@@ -116,22 +118,24 @@ export function ValueStack({
 										transition={motion.move}
 									/>
 									{w > 64 ? (
-										<m.text
-											y={barY + 16}
-											textAnchor="middle"
-											className={`wt-small ${
-												part.kind === "time" ||
-												part.kind === "neutral" ||
-												part.kind === "forfeit"
-													? "wt-on-soft"
-													: "wt-on-solid"
-											}`}
-											initial={false}
-											animate={{ x: x + w / 2 }}
-											transition={motion.move}
-										>
-											{part.label}
-										</m.text>
+										<Appear>
+											<m.text
+												y={barY + 16}
+												textAnchor="middle"
+												className={`wt-small ${
+													part.kind === "time" ||
+													part.kind === "neutral" ||
+													part.kind === "forfeit"
+														? "wt-on-soft"
+														: "wt-on-solid"
+												}`}
+												initial={false}
+												animate={{ x: x + w / 2 }}
+												transition={motion.move}
+											>
+												{part.label}
+											</m.text>
+										</Appear>
 									) : null}
 								</g>
 							);
@@ -140,7 +144,7 @@ export function ValueStack({
 							{usd(total)}
 						</Label>
 						{row.marker ? (
-							<g>
+							<Appear>
 								<path
 									d={`M${left + row.marker.value * k} ${barY - 6}V${barY + 30}`}
 									className="wt-bracket"
@@ -153,7 +157,7 @@ export function ValueStack({
 								>
 									{row.marker.label}
 								</Label>
-							</g>
+							</Appear>
 						) : null}
 					</m.g>
 				);

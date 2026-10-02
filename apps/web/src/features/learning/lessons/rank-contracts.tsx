@@ -47,6 +47,18 @@ const peak = (key: ExpiryKey) =>
 const active = (key: ExpiryKey) =>
 	volume[key].filter((value) => (value ?? 0) > 0).length;
 
+/** The cells each comparison reads: none for totals, each row's peak, then every traded strike. */
+const shapeMarks = (stage: 0 | 1 | 2) =>
+	stage === 0
+		? []
+		: (["sep20", "nov15"] as const).flatMap((key) =>
+				STRIKES.flatMap((strike, j) => {
+					const value = volume[key][j] ?? 0;
+					const read = stage === 1 ? value === peak(key) : value > 0;
+					return read ? [{ row: key, strike }] : [];
+				}),
+			);
+
 // ——— Scene 1: a cell needs its neighbors ———
 
 type LocateState = { spot: boolean; focus: boolean };
@@ -210,6 +222,7 @@ function ShapeView({
 							rows={rowsFor(locale)}
 							max={MAX}
 							focusRows={["sep20", "nov15"]}
+							marked={shapeMarks(shown.stage)}
 							title={t([
 								"ALFA calls · Monday contracts",
 								"ALFA 看涨 · 周一成交张数",

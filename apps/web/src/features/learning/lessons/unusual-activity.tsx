@@ -16,7 +16,7 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
-import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { Appear, Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 
@@ -450,6 +450,49 @@ function ScreenBars({
 			<Label x={14} y={16} tone="muted">
 				{t(["Relative volume, Monday", "周一相对成交量"])}
 			</Label>
+			{/* Highlights first, then the threshold line, then the rows: the line runs under the
+			    labels' halos instead of striking through them. */}
+			{mondayActivity.map((row, i) => {
+				const value = row.volume / row.typical;
+				const pass = state.threshold !== null && value >= state.threshold;
+				return pass ? (
+					<Appear key={row.id}>
+						<rect
+							x={8}
+							y={top + i * SCREEN_ROW - 2}
+							width={width - 16}
+							height={SCREEN_ROW - 6}
+							rx={10}
+							className="wt-focus-shape"
+						/>
+					</Appear>
+				) : null;
+			})}
+			{state.threshold !== null ? (
+				<Appear>
+					<m.g
+						initial={false}
+						animate={{ x: x(state.threshold) }}
+						transition={motion.move}
+					>
+						<path
+							d={`M0 ${top - 6}V${top + mondayActivity.length * SCREEN_ROW - 4}`}
+							className="wt-bracket"
+						/>
+						<Label
+							x={0}
+							y={top + mondayActivity.length * SCREEN_ROW + 12}
+							anchor="middle"
+							tone="accent"
+						>
+							{t([
+								`screen ${ratio(state.threshold)}`,
+								`筛选 ${ratio(state.threshold)}`,
+							])}
+						</Label>
+					</m.g>
+				</Appear>
+			) : null}
 			{mondayActivity.map((row, i) => {
 				const value = row.volume / row.typical;
 				const pass = state.threshold !== null && value >= state.threshold;
@@ -457,16 +500,6 @@ function ScreenBars({
 				const barY = narrow ? y + 20 : y + 6;
 				return (
 					<g key={row.id}>
-						{pass ? (
-							<rect
-								x={8}
-								y={y - 2}
-								width={width - 16}
-								height={SCREEN_ROW - 6}
-								rx={10}
-								className="wt-focus-shape"
-							/>
-						) : null}
 						<Label
 							x={14}
 							y={narrow ? y + 14 : y + 20}
@@ -491,29 +524,6 @@ function ScreenBars({
 					</g>
 				);
 			})}
-			{state.threshold !== null ? (
-				<m.g
-					initial={false}
-					animate={{ x: x(state.threshold) }}
-					transition={motion.move}
-				>
-					<path
-						d={`M0 ${top - 6}V${top + mondayActivity.length * SCREEN_ROW - 4}`}
-						className="wt-bracket"
-					/>
-					<Label
-						x={0}
-						y={top + mondayActivity.length * SCREEN_ROW + 12}
-						anchor="middle"
-						tone="accent"
-					>
-						{t([
-							`screen ${ratio(state.threshold)}`,
-							`筛选 ${ratio(state.threshold)}`,
-						])}
-					</Label>
-				</m.g>
-			) : null}
 		</g>
 	);
 }

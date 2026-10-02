@@ -1,6 +1,6 @@
 import * as m from "motion/react-m";
 import { count } from "@/content/world";
-import { Label, useStage, useTeachMotion } from "../stage";
+import { Appear, Label, useStage, useTeachMotion } from "../stage";
 
 export type GridRow = {
 	id: string;
@@ -30,6 +30,7 @@ export function StrikeGrid({
 	itmSide = "left",
 	focusRows = [],
 	focusCell,
+	marked = [],
 	focusStrikes = [],
 	estimated = [],
 	min = 0,
@@ -47,6 +48,8 @@ export function StrikeGrid({
 	itmSide?: "left" | "right";
 	focusRows?: readonly string[];
 	focusCell?: { row: string; strike: number };
+	/** Further cells to outline, such as each row's peak or every strike that traded. */
+	marked?: readonly { row: string; strike: number }[];
 	/** Columns to outline, such as one strike read down the expiries. */
 	focusStrikes?: readonly number[];
 	/** Cells whose value is an interpolated estimate rather than a source value. */
@@ -118,15 +121,17 @@ export function StrikeGrid({
 				return (
 					<g key={row.id}>
 						{rowFocus ? (
-							<rect
-								x={4}
-								y={y - 2}
-								width={width - 8}
-								height={CELL}
-								rx={8}
-								className="wt-focus-shape"
-								opacity={0.6}
-							/>
+							<Appear>
+								<rect
+									x={4}
+									y={y - 2}
+									width={width - 8}
+									height={CELL}
+									rx={8}
+									className="wt-focus-shape"
+									opacity={0.6}
+								/>
+							</Appear>
 						) : null}
 						<Label
 							x={8}
@@ -138,7 +143,11 @@ export function StrikeGrid({
 						{row.values.map((value, j) => {
 							const x = colX(j) + 2;
 							const focus =
-								focusCell?.row === row.id && focusCell.strike === strikes[j];
+								(focusCell?.row === row.id &&
+									focusCell.strike === strikes[j]) ||
+								marked.some(
+									(cell) => cell.row === row.id && cell.strike === strikes[j],
+								);
 							const estimate = estimated.some(
 								(cell) => cell.row === row.id && cell.strike === strikes[j],
 							);
@@ -154,14 +163,16 @@ export function StrikeGrid({
 										style={value === null ? { fill: hatch } : undefined}
 									/>
 									{estimate ? (
-										<rect
-											x={x + 1}
-											y={y + 4}
-											width={cellWidth - 6}
-											height={CELL - 10}
-											rx={5}
-											className="wt-ghost"
-										/>
+										<Appear>
+											<rect
+												x={x + 1}
+												y={y + 4}
+												width={cellWidth - 6}
+												height={CELL - 10}
+												rx={5}
+												className="wt-ghost"
+											/>
+										</Appear>
 									) : value !== null && value > min ? (
 										<m.rect
 											x={x}
@@ -180,14 +191,16 @@ export function StrikeGrid({
 										/>
 									) : null}
 									{focus ? (
-										<rect
-											x={x - 2}
-											y={y + 1}
-											width={cellWidth}
-											height={CELL - 4}
-											rx={6}
-											className="wt-bracket"
-										/>
+										<Appear>
+											<rect
+												x={x - 2}
+												y={y + 1}
+												width={cellWidth}
+												height={CELL - 4}
+												rx={6}
+												className="wt-bracket"
+											/>
+										</Appear>
 									) : null}
 									<Label
 										x={x + (cellWidth - 4) / 2}
@@ -211,15 +224,16 @@ export function StrikeGrid({
 			{focusStrikes.map((strike) => {
 				const j = strikes.indexOf(strike);
 				return j < 0 ? null : (
-					<rect
-						key={strike}
-						x={colX(j)}
-						y={HEAD - 2}
-						width={cellWidth}
-						height={bottom - HEAD}
-						rx={7}
-						className="wt-bracket"
-					/>
+					<Appear key={strike}>
+						<rect
+							x={colX(j)}
+							y={HEAD - 2}
+							width={cellWidth}
+							height={bottom - HEAD}
+							rx={7}
+							className="wt-bracket"
+						/>
+					</Appear>
 				);
 			})}
 			{spotX !== null ? (

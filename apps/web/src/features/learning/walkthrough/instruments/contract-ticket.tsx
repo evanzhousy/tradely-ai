@@ -1,6 +1,6 @@
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
-import { Label, useTeachMotion } from "../stage";
+import { Appear, Label, useTeachMotion } from "../stage";
 import { textWidth } from "../text-measure";
 
 export type TicketField = {
@@ -45,16 +45,35 @@ export function ContractTicket({
 	const left = (width - cardWidth) / 2;
 	const segments = fields.filter((field) => field.segment);
 	const symbolTop = TOP + fields.length * ROW + 22;
+	const focusIndex = fields.findIndex((field) => field.id === focus);
 	return (
 		<g>
-			<rect
+			{/* The card grows with the fields a step adds, and the highlight travels to the field
+			    being discussed. */}
+			<m.rect
 				x={left}
 				y={8}
 				width={cardWidth}
-				height={TOP + fields.length * ROW - 4}
 				rx={14}
 				className="wt-panel-shape"
+				initial={false}
+				animate={{ height: TOP + fields.length * ROW - 4 }}
+				transition={motion.move}
 			/>
+			{focusIndex >= 0 ? (
+				<Appear>
+					<m.rect
+						x={left + 8}
+						width={cardWidth - 16}
+						height={ROW - 4}
+						rx={8}
+						className="wt-focus-shape"
+						initial={false}
+						animate={{ y: TOP + focusIndex * ROW - 2 }}
+						transition={motion.move}
+					/>
+				</Appear>
+			) : null}
 			<Label x={left + 16} y={32} tone="muted">
 				{title}
 			</Label>
@@ -69,16 +88,6 @@ export function ContractTicket({
 					natural > room ? Math.max(room, natural * 0.72) : undefined;
 				return (
 					<g key={field.id}>
-						{active ? (
-							<rect
-								x={left + 8}
-								y={y - 2}
-								width={cardWidth - 16}
-								height={ROW - 4}
-								rx={8}
-								className="wt-focus-shape"
-							/>
-						) : null}
 						<Label x={left + 18} y={y + 17} tone="muted">
 							{field.label}
 						</Label>
@@ -132,12 +141,13 @@ export function ContractTicket({
 						return (
 							<tspan
 								key={field.id}
+								// A segment not filled in yet keeps its width, so the symbol doesn't shift.
 								className={
 									field.id === focus
 										? "wt-accent"
 										: visible
 											? undefined
-											: "wt-small"
+											: "wt-pending"
 								}
 							>
 								{visible
