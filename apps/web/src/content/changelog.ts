@@ -1,6 +1,56 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-10-01-tradingflow-workflows",
+		date: "2026-10-01",
+		dateLabel: "October 1, 2026",
+		title: "Build your own workflows in TradingFlow",
+		summary:
+			"A third deeper branch, Workflows in TradingFlow, follows the core path with eight lessons on recipes, TradingFlow AI and your own agents, each paired with a lab in the live product.",
+		changes: [
+			{
+				title: "Run recipes, then read them like an auditor",
+				description:
+					"Pick an official recipe by the question it answers, check which session a run shows, trace each sentence through the recipe map, and change its inputs without changing the question.",
+			},
+			{
+				title: "Start from a checklist",
+				description:
+					"Turn a decision into steps a tool can check, and keep your version before Home resets it.",
+			},
+			{
+				title: "Ask TradingFlow AI, then verify",
+				description:
+					"Sort each sentence of an AI answer into what the report shows, what you can calculate and what no data supports, and count the credits a conversation uses.",
+			},
+			{
+				title: "Build your own Rank column",
+				description:
+					"Write a formula column on Rank Symbols whose units make sense, and keep a name with only a few trades from leading it.",
+			},
+			{
+				title: "Change a recipe with AI",
+				description:
+					"Scope an edit so you can review it, undo one that changed more than you asked, and save a private recipe on purpose.",
+			},
+			{
+				title: "Connect your own AI agent",
+				description:
+					"Connect Claude, Cursor, Codex or OpenClaw to TradingFlow's read-only tools, and prove the connection with a check that can fail.",
+			},
+			{
+				title: "Labs open the right page",
+				description:
+					"A lesson's TradingFlow lab now opens the page it practices, such as Home, Rank Symbols or the agent connection settings, as well as recipes.",
+			},
+			{
+				title: "Tidier text on phones",
+				description:
+					"Long statements in diagrams wrap inside their cards, and Chinese text no longer starts a line with a closing punctuation mark.",
+			},
+		],
+	},
+	{
 		id: "2026-09-28-walkthrough-lessons",
 		date: "2026-09-28",
 		dateLabel: "September 28, 2026",
