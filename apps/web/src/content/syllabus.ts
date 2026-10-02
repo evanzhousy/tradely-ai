@@ -587,6 +587,14 @@ export const syllabus: readonly Entry[] = [
 		["C17", "C18"],
 		["delta", "unusual-activity"],
 	),
+	checkpoint(
+		"exposure",
+		"Checkpoint: Greeks, volatility and exposure, on a new day",
+		"检查点：在新的一天里运用“希腊值、波动率与敞口”",
+		"Size a position's delta, scale implied volatility into a move, read IV rank against percentile, and value a same-day option at the close, all on a day you haven't seen.",
+		"在你没见过的一天里：算出持仓的 Delta、把隐含波动率换算成变动幅度、区分 IV Rank 与百分位，并给当天到期的期权在收盘时估值。",
+		["dex-dei-gex"],
+	),
 	lesson(
 		"gamma-exposure",
 		"structure",

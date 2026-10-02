@@ -16,6 +16,11 @@ const lessons = {
 			default: m.DexDeiWalkthrough,
 		})),
 	),
+	"checkpoint-exposure": lazy(() =>
+		import("./lessons/checkpoint-exposure").then((m) => ({
+			default: m.CheckpointExposureWalkthrough,
+		})),
+	),
 	"gamma-exposure": lazy(() =>
 		import("./lessons/gamma-exposure").then((m) => ({
 			default: m.GammaExposureWalkthrough,
