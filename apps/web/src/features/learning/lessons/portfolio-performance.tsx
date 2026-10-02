@@ -540,6 +540,11 @@ const scenes = [
 				},
 			],
 			answer: "twr",
+			entry: {
+				answer: Math.round(TWR * 10_000) / 100,
+				tolerance: 0.1,
+				unit: ["%", "%"],
+			},
 			revealAt: 2,
 			explain: [
 				`Cut at the deposit: ${pct(R1)} before it, ${pct(R2)} after. Chained: ${(1 + R1).toFixed(4)} × ${(1 + R2).toFixed(4)} − 1 = ${pct(TWR)}. The ${pct(GROWTH, 1)} balance growth includes your own ${dollars(yourAccount.deposit)}.`,
@@ -578,6 +583,32 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the measures.", "逐步查看这些度量。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Why is balance growth so much bigger than the time-weighted return?",
+					"为什么余额增长远大于时间加权收益？",
+				],
+				choices: [
+					{
+						id: "deposit",
+						label: ["It counts your own deposit", "它把你自己的存款也算进去了"],
+					},
+					{
+						id: "luck",
+						label: ["The second half of the week was better", "后半周表现更好"],
+					},
+					{
+						id: "fees",
+						label: ["Fees are left out of the return", "收益里没算费用"],
+					},
+				],
+				answer: "deposit",
+				done: [
+					`Balance growth includes the ${dollars(yourAccount.deposit)} you added. Cutting at the deposit and chaining the two periods measures only what the money earned: ${pct(TWR)}.`,
+					`余额增长包含你存入的 ${dollars(yourAccount.deposit)}。在存款处切开、把两段收益连乘，衡量的才是资金本身赚到的：${pct(TWR)}。`,
+				],
+			},
 		},
 		View: FlowView,
 	}),
@@ -646,6 +677,26 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the measures.", "逐步查看这些度量。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which figure tells you whether the five trades made money together?",
+					"哪个数字能说明这五笔交易合起来是否赚钱？",
+				],
+				choices: [
+					{
+						id: "factor",
+						label: ["The total, or the profit factor", "合计，或盈利因子"],
+					},
+					{ id: "rate", label: ["The win rate", "胜率"] },
+					{ id: "best", label: ["The largest win", "最大的一笔盈利"] },
+				],
+				answer: "factor",
+				done: [
+					"A win rate counts trades, not dollars. The total, or gross wins over gross losses, weighs each trade by its size, and one large loss outweighs four small wins.",
+					"胜率数的是交易笔数，不是金额。合计，或总盈利除以总亏损，会按金额给每笔交易加权；一笔大亏可以超过四笔小赚。",
+				],
+			},
 		},
 		View: TradeView,
 	}),
@@ -705,6 +756,41 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the two paths.", "逐步查看两条路径。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Account B's worst fall ran from which month's peak to which month's low?",
+					"账户 B 的最大跌幅是从哪个月的高点到哪个月的低点？",
+				],
+				choices: [
+					{
+						id: "worst",
+						label: [
+							`${MONTHS[deepWorst.peakAt][0]} → ${MONTHS[deepWorst.troughAt][0]}`,
+							`${MONTHS[deepWorst.peakAt][1]} → ${MONTHS[deepWorst.troughAt][1]}`,
+						],
+					},
+					{
+						id: "start",
+						label: [
+							`${MONTHS[0][0]} → ${MONTHS[deepWorst.peakAt][0]}`,
+							`${MONTHS[0][1]} → ${MONTHS[deepWorst.peakAt][1]}`,
+						],
+					},
+					{
+						id: "recovery",
+						label: [
+							`${MONTHS[deepWorst.troughAt][0]} → ${MONTHS[MONTHS.length - 1][0]}`,
+							`${MONTHS[deepWorst.troughAt][1]} → ${MONTHS[MONTHS.length - 1][1]}`,
+						],
+					},
+				],
+				answer: "worst",
+				done: [
+					`B fell ${pct(deepWorst.fall, 0)} from its ${MONTHS[deepWorst.peakAt][0]} peak to its ${MONTHS[deepWorst.troughAt][0]} low before recovering. Both accounts ended up 10%; only the path shows the risk.`,
+					`B 从 ${MONTHS[deepWorst.peakAt][1]} 的高点跌到 ${MONTHS[deepWorst.troughAt][1]} 的低点，跌幅 ${pct(deepWorst.fall, 0)}，之后才回升。两个账户最终都赚 10%；只有路径能显示风险。`,
+				],
+			},
 		},
 		View: DrawdownView,
 	}),

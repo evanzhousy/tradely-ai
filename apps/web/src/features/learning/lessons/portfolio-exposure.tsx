@@ -840,6 +840,35 @@ const scenes = [
 				"在缺失与已报送之间切换看跌的希腊值。",
 			],
 			start: () => ({ stage: 1 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"If you had hedged the covered subtotal, what would you have been left with?",
+					"如果你按已覆盖的小计做了对冲，最后会剩下什么？",
+				],
+				choices: [
+					{
+						id: "short",
+						label: [
+							`Net short ${count(SUBTOTAL - TOTAL)} shares`,
+							`净空头 ${count(SUBTOTAL - TOTAL)} 股`,
+						],
+					},
+					{ id: "flat", label: ["Exactly flat", "正好持平"] },
+					{
+						id: "long",
+						label: [
+							`Net long ${count(SUBTOTAL - TOTAL)} shares`,
+							`净多头 ${count(SUBTOTAL - TOTAL)} 股`,
+						],
+					},
+				],
+				answer: "short",
+				done: [
+					`Shorting ${count(SUBTOTAL)} shares against ${signedCount(TOTAL)} of real delta leaves you net short ${count(SUBTOTAL - TOTAL)}. The missing puts were negative delta, so treating them as zero overstated the total.`,
+					`针对实际 ${signedCount(TOTAL)} 的 Delta 卖空 ${count(SUBTOTAL)} 股，会让你净空头 ${count(SUBTOTAL - TOTAL)} 股。缺失的看跌是负 Delta，把它们当作零就高估了合计。`,
+				],
+			},
 		},
 		View: CoverView,
 	}),
@@ -876,6 +905,7 @@ const scenes = [
 				},
 			],
 			answer: "theta",
+			entry: { answer: Math.round(WEEK_PNL), tolerance: 15, prefix: "$" },
 			revealAt: 2,
 			explain: [
 				`Delta was zero, but theta wasn't: about ${wholeUsd(THETA)} a day and growing toward expiry. Gamma only pays when ALFA moves; a quiet week costs ${wholeUsd(WEEK_PNL)}.`,
@@ -914,6 +944,26 @@ const scenes = [
 		explore: {
 			prompt: ["Switch between the scenarios.", "在各情景之间切换。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"In which scenario does the delta-hedged book make money?",
+					"在哪种情景下，Delta 已对冲的账户会赚钱？",
+				],
+				choices: [
+					{ id: "jump", label: [`ALFA jumps $${UP}`, `ALFA 跳涨 $${UP}`] },
+					{ id: "week", label: ["A quiet week", "平静的一周"] },
+					{
+						id: "none",
+						label: ["Neither: delta is zero", "都不会：Delta 为零"],
+					},
+				],
+				answer: "jump",
+				done: [
+					`Long gamma pays when ALFA moves: ${wholeUsd(UP_PNL)} on a $${UP} jump. A quiet week costs ${wholeUsd(WEEK_PNL)} in time decay. Zero delta says nothing about either.`,
+					`多 Gamma 在 ALFA 变动时获利：跳涨 $${UP} 赚 ${wholeUsd(UP_PNL)}。平静的一周因时间损耗亏 ${wholeUsd(WEEK_PNL)}。Delta 为零对这两者都说明不了什么。`,
+				],
+			},
 		},
 		View: HedgeView,
 	}),
@@ -988,6 +1038,32 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the feeds.", "逐步查看各数据源。"],
 			start: () => ({ stage: 0 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"Which number on these feeds is stale?",
+					"这些数据源里哪个数字是过时的？",
+				],
+				choices: [
+					{
+						id: "putDelta",
+						label: ["The second broker's put delta", "第二家券商的看跌 Delta"],
+					},
+					{
+						id: "callVega",
+						label: ["The main broker's call vega", "主券商的看涨 Vega"],
+					},
+					{
+						id: "putVega",
+						label: ["The second broker's put vega", "第二家券商的看跌 Vega"],
+					},
+				],
+				answer: "putDelta",
+				done: [
+					`It's stamped Friday, when ALFA closed at $${FRIDAY_SPOT.toFixed(2)}: it gives ${signedCount(PUT_DELTA_FRIDAY)} shares, not Monday's ${signedCount(PUT_DELTA)}. Recompute everything at one time, or say which inputs are stale.`,
+					`它的时间戳是周五，当时 ALFA 收于 $${FRIDAY_SPOT.toFixed(2)}：得出 ${signedCount(PUT_DELTA_FRIDAY)} 股，而不是周一的 ${signedCount(PUT_DELTA)}。要么在同一时点重算所有数据，要么说明哪些输入已过时。`,
+				],
+			},
 		},
 		View: FeedView,
 	}),

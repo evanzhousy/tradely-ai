@@ -722,6 +722,7 @@ const scenes = [
 				},
 			],
 			answer: "fifo",
+			entry: { answer: fifo.realized / 100, tolerance: 0.5, prefix: "$" },
 			revealAt: 1,
 			explain: [
 				`First in, first out matches the sale to the oldest lot: ${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 = ${signed(fifo.realized)}. The other ${HELD - SOLD} stay open at ${signed(fifo.unrealized)}.`,
@@ -760,6 +761,23 @@ const scenes = [
 		explore: {
 			prompt: ["Switch the lot method.", "切换批次方法。"],
 			start: (last) => last,
+			task: {
+				kind: "answer",
+				prompt: [
+					"Switch the lot method. Which figure stays the same?",
+					"切换批次方法。哪个数字保持不变？",
+				],
+				choices: [
+					{ id: "total", label: ["Total P&L", "总盈亏"] },
+					{ id: "realized", label: ["Realized P&L", "已实现盈亏"] },
+					{ id: "unrealized", label: ["Unrealized P&L", "未实现盈亏"] },
+				],
+				answer: "total",
+				done: [
+					`The method only decides which cost the sale is matched against, so realized and unrealized split differently; together they are ${signed(fifo.realized + fifo.unrealized)} either way.`,
+					`批次方法只决定卖出对应哪笔成本，所以已实现和未实现的划分不同；两者合计无论哪种方法都是 ${signed(fifo.realized + fifo.unrealized)}。`,
+				],
+			},
 		},
 		View: LotView,
 	}),
@@ -787,6 +805,7 @@ const scenes = [
 				{ id: "zero", label: ["$0", "$0"] },
 			],
 			answer: "same",
+			entry: { answer: PNL / 100, tolerance: 0.5, prefix: "$" },
 			revealAt: 2,
 			explain: [
 				`The deposit is your money moving in, not something your positions earned. P&L stays ${signed(PNL)}; account value becomes ${dollars(afterDeposit)}.`,
@@ -825,6 +844,29 @@ const scenes = [
 		explore: {
 			prompt: ["Step through the account.", "逐步查看账户。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					`Buying power reads ${dollars(buyingPower)}. How much of that is cash?`,
+					`购买力显示 ${dollars(buyingPower)}。其中有多少是现金？`,
+				],
+				choices: [
+					{
+						id: "cash",
+						label: [dollars(cashAfterDeposit), dollars(cashAfterDeposit)],
+					},
+					{ id: "power", label: [dollars(buyingPower), dollars(buyingPower)] },
+					{
+						id: "value",
+						label: [dollars(afterDeposit), dollars(afterDeposit)],
+					},
+				],
+				answer: "cash",
+				done: [
+					`Only ${dollars(cashAfterDeposit)} is cash; the rest of the buying power is credit your broker would lend against it. Spending credit isn't spending profit.`,
+					`只有 ${dollars(cashAfterDeposit)} 是现金；购买力的其余部分是券商以此为抵押愿意借给你的信用额度。动用信用不等于花掉盈利。`,
+				],
+			},
 		},
 		View: AccountView,
 	}),
@@ -890,6 +932,29 @@ const scenes = [
 		explore: {
 			prompt: ["Step through Ben's position.", "逐步查看 Ben 的持仓。"],
 			start: () => ({ stage: 2 }),
+			task: {
+				kind: "answer",
+				prompt: [
+					"If ALFA settles at $140, what is Ben's result?",
+					"如果 ALFA 结算在 $140，Ben 的结果是多少？",
+				],
+				choices: [
+					{
+						id: "far",
+						label: [signed(benAtExpiry(140)), signed(benAtExpiry(140))],
+					},
+					{
+						id: "mid",
+						label: [signed(benAtExpiry(120)), signed(benAtExpiry(120))],
+					},
+					{ id: "premium", label: [signed(-RECEIVED), signed(-RECEIVED)] },
+				],
+				answer: "far",
+				done: [
+					`Each dollar above $100 costs Ben ${dollars(BEN * 100 * 100)} across his ${BEN} calls: ${signed(benAtExpiry(140))} at $140. The ${dollars(RECEIVED)} he received only offsets the first part.`,
+					`ALFA 每高于 $100 一美元，Ben 的 ${BEN} 张看涨就要多付 ${dollars(BEN * 100 * 100)}：在 $140 时是 ${signed(benAtExpiry(140))}。他收到的 ${dollars(RECEIVED)} 只抵消了开头的一部分。`,
+				],
+			},
 		},
 		View: ShortView,
 	}),
