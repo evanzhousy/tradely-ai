@@ -2,6 +2,7 @@ import "@tanstack/react-start/server-only";
 import {
 	basics,
 	choose as c,
+	money,
 	numberQuestion as n,
 	orders,
 	quotes,
@@ -32,48 +33,44 @@ export const foundationUnits: TeachingUnit[] = [
 			"买价 $2.00×40、卖价 $2.10×30：价差 $0.10，中点 $2.05。未成交卖单取消可令卖价数量下降，而成交量不变。10 张成交不代表报价中的 30 张全数成交。",
 		),
 		misconception: t(
-			"Displayed quote size and executed size are different quantities. A midpoint calculation does not prove someone traded at that price.",
-			"报价数量与成交数量不同，算出中点不代表有人按该价成交。",
+			"The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+			"报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。",
 		),
 		case: (v) => {
 			const bid = [2, 3.2, 4.1, 5.3][v];
 			const ask = bid + [0.1, 0.2, 0.4, 0.3][v];
 			return {
 				brief: t(
-					`Bid $${bid.toFixed(2)}, ask $${ask.toFixed(2)}. An unfilled sell order is canceled; there is no execution message.`,
-					`买价 $${bid.toFixed(2)}，卖价 $${ask.toFixed(2)}。一笔未成交卖单被取消，没有执行消息。`,
+					`An ALFA call is quoted ${money(bid)} bid and ${money(ask)} ask. Then a seller cancels an offer that never filled, and no trade message follows.`,
+					`某 ALFA 看涨报价为买价 ${money(bid)}、卖价 ${money(ask)}。随后一位卖方撤销了一张从未成交的卖单，之后没有任何成交消息。`,
 				),
 				questions: [
 					n(
 						"midpoint",
-						"Arithmetic midpoint?",
-						"算术中点是多少？",
+						"What is the quote's midpoint, per share?",
+						"这个报价的中点是每股多少？",
 						(bid + ask) / 2,
-						"USD/share",
+						"dollars a share",
 						"美元/股",
-						"(Bid + ask) ÷ 2; this is a reference, not an observed execution.",
-						"（买价+卖价）÷2，这是参考值，不是已观测成交。",
+						`(${money(bid)} + ${money(ask)}) ÷ 2 = ${money((bid + ask) / 2)}. A midpoint is a reference price; nobody has traded there.`,
+						`(${money(bid)} + ${money(ask)}) ÷ 2 = ${money((bid + ask) / 2)}。中点只是参考价格，没有人在那里成交。`,
 					),
 					c(
 						"event",
-						"What can this cancellation establish?",
-						"此次取消能确定什么？",
+						"What does the cancellation tell you?",
+						"这次撤单能说明什么？",
 						[
-							["trade", "The canceled size traded.", "取消的数量已成交。"],
+							["trade", "The cancelled contracts traded", "被撤销的合约成交了"],
 							[
 								"quote",
-								"An order was removed; no trade is established.",
-								"订单被移除，不能据此确定成交。",
+								"An order left the book; nothing traded",
+								"一张订单离开了订单簿；没有成交",
 							],
-							[
-								"buyer",
-								"A buyer consumed the offer.",
-								"买方吃掉了该卖价数量。",
-							],
+							["buyer", "A buyer took the offer", "有买方吃掉了这张卖单"],
 						],
 						"quote",
-						"Cancellation is an order event. No execution was supplied.",
-						"取消是订单事件，没有给定成交。",
+						"A cancel is an order event. With no trade message, nothing traded.",
+						"撤单是订单事件。没有成交消息，就没有成交。",
 					),
 				],
 			};
@@ -98,61 +95,66 @@ export const foundationUnits: TeachingUnit[] = [
 			"30 张、限价 $4.15 的买单遇到 $4.10 的 10 张和 $4.15 的 12 张卖单。它成交 22 张，其余 8 张作为 $4.15 的买单等待，因为限价以内已没有更多卖单。挂单卖方不是主动方。若只有成交记录，原订单指令仍未知。",
 		),
 		misconception: t(
-			"Seller is a counterparty role, not proof of seller initiation. Keep one execution count even though two parties participate.",
-			"卖方是对手角色，不证明卖方主动发起。两方参与仍只计一笔成交。",
+			"Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+			"每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。",
 		),
 		case: (v) => {
 			const available = [30, 25, 18, 35][v];
 			const requested = available + [10, 15, 12, 5][v];
 			const buyer = v < 2;
 			return {
-				brief: t(
-					`An incoming ${buyer ? "buyer" : "seller"} has a marketable limit of $${buyer ? "2.10" : "2.00"} for ${requested} contracts. The only eligible resting ${buyer ? "offer" : "bid"} is ${available} contracts at that price. No replenishment, cancellation or other orders.`,
-					`主动${buyer ? "买方" : "卖方"}以可成交限价 $${buyer ? "2.10" : "2.00"} 请求 ${requested} 张。唯一合格挂${buyer ? "卖" : "买"}单为该价格的 ${available} 张，无补单、取消或其他订单。`,
-				),
+				brief: buyer
+					? t(
+							`You send a limit buy for ${requested} ALFA calls at $2.10. The ask is $2.10, so it can trade at once, but only ${available} contracts are offered there. Nobody adds, cancels or sends other orders.`,
+							`你发出 ${requested} 张 ALFA 看涨、限价 $2.10 的买单。卖价是 $2.10，所以可以立即成交，但那里只挂着 ${available} 张。没有人新增、撤销或发出其他订单。`,
+						)
+					: t(
+							`You send a limit sell for ${requested} ALFA calls at $2.00. The bid is $2.00, so it can trade at once, but only ${available} contracts are bid there. Nobody adds, cancels or sends other orders.`,
+							`你发出 ${requested} 张 ALFA 看涨、限价 $2.00 的卖单。买价是 $2.00，所以可以立即成交，但那里只挂着 ${available} 张买单。没有人新增、撤销或发出其他订单。`,
+						),
 				questions: [
 					n(
 						"unfilled",
-						"How many requested contracts cannot immediately fill?",
-						"多少张不能立即成交？",
+						"How many of your contracts can't fill right away?",
+						"你的订单中有多少张不能立即成交？",
 						requested - available,
 						"contracts",
 						"张",
-						"Requested quantity − eligible opposite-side quantity.",
-						"请求数量−合格对手方数量。",
+						`${requested} − ${available} = ${requested - available}. They wait in the book at your limit until someone ${buyer ? "sells" : "buys"} there.`,
+						`${requested} − ${available} = ${requested - available}。它们按你的限价留在订单簿中，等有人在那里${buyer ? "卖出" : "买入"}。`,
 					),
 					c(
 						"aggressor",
-						"Who initiates the execution?",
-						"谁主动发起成交？",
+						"Who started the trade?",
+						"这笔成交是谁发起的？",
 						[
 							[
 								"seller",
 								buyer
-									? "The resting seller, because it supplies the offer."
-									: "The incoming seller; both parties trade at the bid.",
+									? "The resting seller, who supplied the offer"
+									: "You, the incoming seller; both sides trade at the bid",
 								buyer
-									? "挂单卖方，因为提供了卖价。"
-									: "主动到来的卖方，双方都在买价成交。",
+									? "挂单的卖方，因为卖单是他挂的"
+									: "你，主动到来的卖方；双方都在买价成交",
 							],
 							[
 								"buyer",
 								buyer
-									? "The incoming buyer; both parties trade at the ask."
-									: "The resting buyer, because the print is at bid.",
+									? "You, the incoming buyer; both sides trade at the ask"
+									: "The resting buyer, since it printed at the bid",
 								buyer
-									? "主动到来的买方，双方都在卖价成交。"
-									: "挂单买方，因为成交在买价。",
+									? "你，主动到来的买方；双方都在卖价成交"
+									: "挂单的买方，因为成交在买价",
 							],
 							[
 								"both",
-								"Count buyer and seller as two separate prints.",
-								"将买方与卖方计为两笔成交。",
+								"Neither: count the buyer and the seller as two prints",
+								"都不是：把买方和卖方算作两笔成交",
 							],
 						],
 						buyer ? "buyer" : "seller",
-						"The incoming order demands immediacy; the resting counterparty participates in the SAME execution.",
-						"主动订单要求立即执行，挂单对手参与的是同一笔成交。",
+						"Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
+						"你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。",
 					),
 				],
 			};
@@ -177,64 +179,83 @@ export const foundationUnits: TeachingUnit[] = [
 			"对照匹配的 11:42 报价 $4.10/$4.20，$4.10 为 BID，$4.20 为 ASK，$4.25 为 AASK，$4.05 为 BBID，$4.12 为 MID，尽管中点是 $4.15。若报价早了 90 秒，应保留成交价，但不判断位置。",
 		),
 		misconception: t(
-			"A location code is not proof of market-order type, investor belief or strategy. Feed conventions should be stated rather than assumed.",
-			"位置代码不证明市价单类型、投资者信念或策略，应明确数据源分类约定。",
+			"A location code doesn't prove the order type, the trader's belief or their strategy. State the feed's convention rather than assuming it.",
+			"位置代码不能证明订单类型、交易者的看法或策略。要写明数据源的约定，而不是想当然。",
 		),
 		case: (v) => {
 			const bid = [4, 2.1, 5.5, 3.3][v];
 			const ask = bid + 0.2;
 			const items = [
-				{ price: ask + 0.05, code: "AASK" },
-				{ price: ask, code: "ASK" },
-				{ price: bid + 0.07, code: "MID" },
-				{ price: bid, code: "BID" },
-				{ price: bid - 0.05, code: "BBID" },
+				{
+					price: ask + 0.05,
+					code: "AASK",
+					why: t(`above the ${money(ask)} ask`, `高于 ${money(ask)} 的卖价`),
+				},
+				{
+					price: ask,
+					code: "ASK",
+					why: t("exactly the ask", "正好等于卖价"),
+				},
+				{
+					price: bid + 0.07,
+					code: "MID",
+					why: t(
+						`between the bid and the ask, though not the exact middle, ${money(bid + 0.1)}`,
+						`在买价与卖价之间，虽然不是正中间的 ${money(bid + 0.1)}`,
+					),
+				},
+				{
+					price: bid,
+					code: "BID",
+					why: t("exactly the bid", "正好等于买价"),
+				},
+				{
+					price: bid - 0.05,
+					code: "BBID",
+					why: t(`below the ${money(bid)} bid`, `低于 ${money(bid)} 的买价`),
+				},
 			];
 			const shift = v % items.length;
 			const events = [...items.slice(shift), ...items.slice(0, shift)];
 			return {
 				brief: t(
-					`Five separate prints share a matched, valid reference quote $${bid.toFixed(2)}/$${ask.toFixed(2)}. Apply the declared location convention to EACH execution; no special conditions.`,
-					`五笔不同成交共享匹配有效报价 $${bid.toFixed(2)}/$${ask.toFixed(2)}。按声明的位置约定逐笔分类，无特殊条件。`,
+					`Five separate ALFA call prints share one valid quote from the same moment: ${money(bid)} bid, ${money(ask)} ask. Use this lesson's codes: AASK above the ask, ASK at it, MID inside the spread, BID at the bid, BBID below it.`,
+					`五笔不同的 ALFA 看涨成交共用同一时刻的一个有效报价：买价 ${money(bid)}、卖价 ${money(ask)}。使用本课的代码：高于卖价为 AASK，等于卖价为 ASK，在价差内为 MID，等于买价为 BID，低于买价为 BBID。`,
 				),
 				questions: [
 					...events.map((item, i) =>
 						c(
 							`location-${i}`,
-							`Execution ${i + 1}: $${item.price.toFixed(2)}. Which location code?`,
-							`成交 ${i + 1}：$${item.price.toFixed(2)}，属于哪个位置代码？`,
+							`Print ${i + 1} is at ${money(item.price)}. Which code does it get?`,
+							`第 ${i + 1} 笔成交在 ${money(item.price)}。它属于哪个代码？`,
 							["ASK", "MID", "BBID", "AASK", "BID"].map(
 								(code) => [code, code, code] as [string, string, string],
 							),
 							item.code,
-							"Compare the execution with both quote boundaries. Inside-spread includes prices away from the exact midpoint.",
-							"同时比较买卖价边界，价差内包含非精确中点。",
+							`${money(item.price)} is ${item.why.en}: ${item.code}.`,
+							`${money(item.price)} ${item.why.zh}：${item.code}。`,
 						),
 					),
 					c(
 						"stale",
-						"If the quote is actually 90 seconds old, what can you retain?",
-						"若报价其实早了 90 秒，可保留什么？",
+						"If that quote turns out to be 90 seconds old, what can you still keep?",
+						"如果发现这个报价其实早了 90 秒，你还能保留什么？",
 						[
-							[
-								"same",
-								"All classifications remain reliable.",
-								"全部分类仍然可靠。",
-							],
+							["same", "All five codes, unchanged", "全部五个代码，保持不变"],
 							[
 								"unknown",
-								"Keep execution prices; reliable quote-side inference is unavailable.",
-								"保留成交价，不能可靠进行报价侧推断。",
+								"The five prices, but not their codes",
+								"五个成交价，但不保留代码",
 							],
 							[
 								"reverse",
-								"Reverse every buyer into seller.",
-								"把所有买方反转为卖方。",
+								"The codes, flipped from buys to sells",
+								"代码，但把买入全部改成卖出",
 							],
 						],
 						"unknown",
-						"Staleness weakens the reference; it does not reverse the side.",
-						"过时削弱参考，不会反转方向。",
+						"An old quote can't place a new print, so the codes become unreliable. The prices are still facts, and nothing says to flip them.",
+						"旧报价无法给新成交定位，所以代码变得不可靠。成交价仍然是事实，也没有理由把它们反过来。",
 					),
 				],
 			};
@@ -259,21 +280,53 @@ export const foundationUnits: TeachingUnit[] = [
 			"买方主动接受看跌期权卖价，本约定标为看跌成交流。但该投资者可能持有股票，用看跌作保护，也可能买入平掉原有空头看跌。单一标签不能确定完整策略、组合或未来收益预期。",
 		),
 		misconception: t(
-			"Option type alone does not give sentiment. An inferred flow label does not establish a participant's belief, opening status, or complete portfolio.",
-			"仅凭期权类型不能判断情绪。推断的成交流标签不确定信念、开仓状态或完整组合。",
+			"A call isn't bullish by itself and a put isn't bearish by itself; it depends on who started the trade. Even then, a flow label doesn't show the trader's belief, whether they opened, or their whole portfolio.",
+			"看涨期权本身不代表看涨，看跌期权本身也不代表看跌，要看谁发起了成交。即便如此，成交流标签也不能说明交易者的看法、是否开仓，或其完整组合。",
 		),
 		case: (v) => {
 			const rows = [
-				{ type: "CALL", side: "ASK", answer: "bull" },
-				{ type: "CALL", side: "BID", answer: "bear" },
-				{ type: "PUT", side: "ASK", answer: "bear" },
-				{ type: "PUT", side: "BID", answer: "bull" },
+				{
+					type: "CALL",
+					side: "ASK",
+					answer: "bull",
+					why: t(
+						"A call bought at the ask: the buyer who started it gains if ALFA rises, so bullish flow.",
+						"在卖价买入看涨：发起的买方在 ALFA 上涨时获利，所以是看涨成交流。",
+					),
+				},
+				{
+					type: "CALL",
+					side: "BID",
+					answer: "bear",
+					why: t(
+						"A call sold at the bid: the seller who started it gives up ALFA's upside, so bearish flow.",
+						"在买价卖出看涨：发起的卖方放弃了 ALFA 的上涨空间，所以是看跌成交流。",
+					),
+				},
+				{
+					type: "PUT",
+					side: "ASK",
+					answer: "bear",
+					why: t(
+						"A put bought at the ask: the buyer who started it gains if ALFA falls, so bearish flow.",
+						"在卖价买入看跌：发起的买方在 ALFA 下跌时获利，所以是看跌成交流。",
+					),
+				},
+				{
+					type: "PUT",
+					side: "BID",
+					answer: "bull",
+					why: t(
+						"A put sold at the bid: the seller who started it collects premium and loses if ALFA falls, so bullish flow.",
+						"在买价卖出看跌：发起的卖方收取权利金、在 ALFA 下跌时亏损，所以是看涨成交流。",
+					),
+				},
 			];
 			const order = [...rows.slice(v), ...rows.slice(0, v)];
 			return {
 				brief: t(
-					"Four different executions, with matched quotes and reliable aggressor evidence. Each row is one print, not both counterparties counted separately. Use the isolated-leg convention.",
-					"四笔不同成交均有匹配报价与可靠主动方证据。每行是一笔成交，不是重复统计两方。使用孤立单腿约定。",
+					"Four ALFA option prints, each with a quote from the same moment and reliable evidence of who started it. Each row is one trade, counted once. Label each print by its own leg, as the lesson did.",
+					"四笔 ALFA 期权成交，每笔都有同一时刻的报价，以及谁发起成交的可靠证据。每一行是一笔成交，只计一次。像本课那样，按每笔成交自身那条腿来标注。",
 				),
 				worksheet: {
 					columns: [
@@ -295,62 +348,62 @@ export const foundationUnits: TeachingUnit[] = [
 					...order.map((row, i) =>
 						c(
 							`classification-${i}`,
-							`Classify record P${v + 1}-${i + 1}.`,
-							`分类记录 P${v + 1}-${i + 1}。`,
+							`Which flow label does print P${v + 1}-${i + 1} get?`,
+							`成交 P${v + 1}-${i + 1} 应该贴哪个成交流标签？`,
 							[
 								["bull", "Bullish flow", "看涨成交流"],
 								["bear", "Bearish flow", "看跌成交流"],
-								["neutral", "Direction indeterminate", "方向无法确定"],
+								["neutral", "Direction can't be told", "无法判断方向"],
 							],
 							row.answer,
-							"Call buy / put sell: bullish; call sell / put buy: bearish under this isolated-leg convention.",
-							"本孤立单腿约定：买看涨/卖看跌为看涨，卖看涨/买看跌为看跌。",
+							row.why.en,
+							row.why.zh,
 						),
 					),
 					c(
 						"neutral",
-						"A separate inside-spread print has no reliable aggressor evidence. What does neutral mean here?",
-						"另一笔价差内成交无可靠主动方证据，此处中性表示什么？",
+						"Another print lands inside the spread with no reliable evidence of who started it. What does a neutral label mean here?",
+						"另一笔成交落在价差之内，没有谁发起的可靠证据。这里的中性标签是什么意思？",
 						[
 							[
 								"flat",
-								"The investor expects a flat market.",
-								"投资者预期横盘。",
+								"The trader expects ALFA to stay flat",
+								"交易者预期 ALFA 横盘",
 							],
 							[
 								"unknown",
-								"Direction is indeterminate from this execution evidence.",
-								"无法从此执行证据确定方向。",
+								"This evidence can't tell the direction",
+								"这些证据无法判断方向",
 							],
 							[
 								"hedged",
-								"The whole portfolio is delta-neutral.",
-								"整个组合 Delta 中性。",
+								"The trader's whole book is delta-neutral",
+								"交易者的整个账户 Delta 中性",
 							],
 						],
 						"unknown",
-						"Unknown classification is not known portfolio neutrality or an investor's view.",
-						"分类未知不等于已知组合中性或投资者观点。",
+						"Neutral means the evidence can't settle the direction. It says nothing about the trader's view or their portfolio.",
+						"中性表示证据无法确定方向，并不说明交易者的看法或其组合。",
 					),
 					c(
 						"portfolio",
-						"Does the put-buy row establish a bearish complete portfolio?",
-						"买看跌这一行证明完整组合看跌吗？",
+						"Does the put-buying print show the trader's whole portfolio is bearish?",
+						"买入看跌的那笔成交，能说明交易者的整个组合看跌吗？",
 						[
 							[
 								"yes",
-								"Yes, a put buyer must be bearish overall.",
-								"是，买看跌必然整体看跌。",
+								"Yes: a put buyer must be bearish overall",
+								"能：买看跌的人整体上必然看跌",
 							],
 							[
 								"no",
-								"No, the put can hedge stock or close an existing short put.",
-								"否，可保护股票或平掉原有空头看跌。",
+								"No: the put could protect shares or close a short put",
+								"不能：这张看跌可能是在保护持股，或平掉原有的看跌空头",
 							],
 						],
 						"no",
-						"Position linkage and the rest of the portfolio are not supplied.",
-						"未给定持仓关联与组合其他部分。",
+						"Nothing links this put to the trader's other positions. A shareholder buying protection gets the same bearish flow label.",
+						"没有任何信息把这张看跌和交易者的其他持仓联系起来。一位买保护的持股者，也会得到同样的看跌成交流标签。",
 					),
 				],
 			};
@@ -375,8 +428,8 @@ export const foundationUnits: TeachingUnit[] = [
 			"500 张看涨以 $2.15 成交、乘数 100，总额 $107,500。若 $2.00/$2.10 报价早于成交 90 秒，就不能可靠判断主动买入；金额仍然已知。应获取匹配时间报价，即便得到，也不能在缺少关联时确定完整策略。",
 		),
 		misconception: t(
-			"An old quote creates uncertainty, not an automatic reversal of side. Premium is dollars exchanged, not conviction.",
-			"旧报价带来不确定性，不会自动反转方向。权利金是交换金额，不是确信程度。",
+			"An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+			"旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。",
 		),
 		case: (v) => {
 			const count = [300, 400, 250, 600][v];
@@ -384,44 +437,44 @@ export const foundationUnits: TeachingUnit[] = [
 			const stale = v === 2;
 			return {
 				brief: t(
-					`${count} contracts trade at $${price}. Multiplier 100. The supplied bid equals the trade price and ask is $0.10 higher. ${stale ? "The quote is 90 seconds old." : "The quote is matched, uncrossed and contemporaneous."} No opening/closing or multi-leg linkage is supplied.`,
-					`${count} 张以 $${price} 成交，乘数 100。所给买价等于成交价，卖价高 $0.10。${stale ? "报价早了 90 秒。" : "报价匹配、未交叉且同时刻。"}未给定开平仓或多腿关联。`,
+					`${count} ALFA calls trade at ${money(price)}, and one contract covers 100 shares. The quote you have shows the bid at the trade price and the ask $0.10 higher. ${stale ? "That quote is 90 seconds older than the trade." : "That quote is from the same moment and isn't crossed."} Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.`,
+					`${count} 张 ALFA 看涨以 ${money(price)} 成交，一张合约对应 100 股。你手上的报价显示买价等于成交价，卖价高 $0.10。${stale ? "这个报价比成交早了 90 秒。" : "这个报价与成交同一时刻，且没有交叉。"}没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。`,
 				),
 				questions: [
 					n(
 						"premium",
-						"Execution premium?",
-						"成交总权利金？",
+						"How much premium changed hands?",
+						"这笔成交交换了多少权利金？",
 						count * price * 100,
-						"USD",
+						"dollars",
 						"美元",
-						"Execution price × contract count × stated multiplier.",
-						"成交价格 × 张数 × 给定乘数。",
+						`${money(price)} × ${count} × 100 = ${money(count * price * 100, 0)}.`,
+						`${money(price)} × ${count} × 100 = ${money(count * price * 100, 0)}。`,
 					),
 					c(
 						"inference",
-						"Which aggressor interpretation is supported?",
-						"哪项主动方解读有依据？",
+						"What can you say about who started the trade?",
+						"关于谁发起了这笔成交，你能得出什么结论？",
 						[
-							["buyer", "Likely buyer-initiated.", "可能由买方主动发起。"],
+							["buyer", "A buyer probably started it", "大概是买方发起的"],
 							[
 								"seller",
-								"Likely seller-initiated, with strategy unresolved.",
-								"可能由卖方主动发起，策略仍未知。",
+								"A seller probably started it; the strategy is still unknown",
+								"大概是卖方发起的；策略仍然未知",
 							],
 							[
 								"unknown",
-								"Reliable aggressor classification is unavailable.",
-								"无法可靠分类主动方。",
+								"You can't reliably say who started it",
+								"无法可靠判断是谁发起的",
 							],
 						],
 						stale ? "unknown" : "seller",
 						stale
-							? "The earlier quote cannot classify this execution reliably."
-							: "The matched bid-side location supports a seller inference, not opening intent.",
+							? "The quote is 90 seconds older than the trade, so it can't place the print. The premium is still known; the side isn't."
+							: "It printed at a bid from the same moment, which points to a seller starting it. That says nothing about whether it opened a position or what strategy it served.",
 						stale
-							? "较早报价不能可靠分类本笔成交。"
-							: "匹配买价位置支持卖方推断，不证明开仓意图。",
+							? "报价比成交早了 90 秒，无法给这笔成交定位。权利金仍然已知，方向则不知道。"
+							: "它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。",
 					),
 				],
 			};
