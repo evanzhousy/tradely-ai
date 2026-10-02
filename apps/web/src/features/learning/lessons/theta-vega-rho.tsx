@@ -305,6 +305,13 @@ function VolView({
 							note: t(["per vol point", "每个波动率点"]),
 							evidence: "modeled",
 						},
+				{
+					id: "rho",
+					label: t(["Rho", "Rho"]),
+					value: price(RHO, 3),
+					note: t(["per rate point", "每个利率点"]),
+					evidence: "modeled",
+				},
 			]}
 			controls={
 				explore ? (
@@ -725,6 +732,15 @@ const scenes = [
 					`把“IV 上涨 3%”理解成 ${points(IV)} 的百分之三，只到 ${points(IV_RELATIVE)}：${signedPrice(ivRelative)}。同样的说法，变化只有三分之一。`,
 				],
 				state: { iv: IV_RELATIVE },
+			},
+			{
+				id: "rho",
+				label: ["Rates: rho", "利率：Rho"],
+				caption: [
+					`Rho is the same idea for interest rates: a 1-point rise in rates adds about ${price(RHO, 3)} to this one-month call, against ${price(VEGA, 3)} for one vol point. It grows with time to expiry.`,
+					`Rho 是同一概念在利率上的体现：利率上升 1 个百分点，这份一个月期看涨约增加 ${price(RHO, 3)}，而一个波动率点是 ${price(VEGA, 3)}。到期时间越长，Rho 越大。`,
+				],
+				state: { iv: IV },
 			},
 		],
 		explore: {
