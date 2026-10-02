@@ -106,6 +106,7 @@ export type LearningStepView = {
 		| "option-contracts"
 		| "option-rights"
 		| "premium-payoff"
+		| "put-call-parity"
 		| "expiration-settlement"
 		| "quotes-orders-trades"
 		| "execution-counterparties"

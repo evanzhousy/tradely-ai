@@ -209,6 +209,16 @@ export const syllabus: readonly Entry[] = [
 		["option-rights"],
 	),
 	lesson(
+		"put-call-parity",
+		"contracts",
+		"Put-call parity: how calls, puts and shares line up",
+		"看涨看跌平价：看涨、看跌与股票如何对齐",
+		"Build 100 shares from a call and a put, price one option from the other, and check a print against parity before reading anything into it.",
+		"用一张看涨和一张看跌组合出 100 股，由一个期权推出另一个的价格，并在解读一笔成交之前先用平价关系核对它。",
+		["C39"],
+		["premium-payoff"],
+	),
+	lesson(
 		"expiration-settlement",
 		"contracts",
 		"Expiration: exercise, assignment and settlement",

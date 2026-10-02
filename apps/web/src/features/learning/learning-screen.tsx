@@ -95,6 +95,7 @@ import { PortfolioExposureWalkthrough } from "./lessons/portfolio-exposure";
 import { PortfolioPerformanceWalkthrough } from "./lessons/portfolio-performance";
 import { PortfolioPnlWalkthrough } from "./lessons/portfolio-pnl";
 import { PremiumPayoffWalkthrough } from "./lessons/premium-payoff";
+import { PutCallParityWalkthrough } from "./lessons/put-call-parity";
 import { QuotesOrdersTradesWalkthrough } from "./lessons/quotes-orders-trades";
 import { RankContractsWalkthrough } from "./lessons/rank-contracts";
 import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
@@ -164,6 +165,7 @@ const conceptLabs = {
 	"option-contracts": OptionContractsWalkthrough,
 	"option-rights": OptionRightsWalkthrough,
 	"premium-payoff": PremiumPayoffWalkthrough,
+	"put-call-parity": PutCallParityWalkthrough,
 	"expiration-settlement": ExpirationSettlementWalkthrough,
 	"quotes-orders-trades": QuotesOrdersTradesWalkthrough,
 	"execution-counterparties": ExecutionCounterpartiesWalkthrough,

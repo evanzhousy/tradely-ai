@@ -202,6 +202,11 @@ const lessons = {
 			default: m.PremiumPayoffWalkthrough,
 		})),
 	),
+	"put-call-parity": lazy(() =>
+		import("./lessons/put-call-parity").then((m) => ({
+			default: m.PutCallParityWalkthrough,
+		})),
+	),
 	"expiration-settlement": lazy(() =>
 		import("./lessons/expiration-settlement").then((m) => ({
 			default: m.ExpirationSettlementWalkthrough,

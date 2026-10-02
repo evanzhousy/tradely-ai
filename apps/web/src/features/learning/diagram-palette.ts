@@ -10,6 +10,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"option-contracts": "reference",
 	"option-rights": "reference",
 	"premium-payoff": "reference",
+	"put-call-parity": "reference",
 	"expiration-settlement": "reference",
 	"quotes-orders-trades": "reference",
 	"execution-counterparties": "reference",

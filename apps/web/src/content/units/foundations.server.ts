@@ -5,7 +5,9 @@ import {
 	money,
 	numberQuestion as n,
 	orders,
+	plain,
 	quotes,
+	signedMoney,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
@@ -475,6 +477,92 @@ export const foundationUnits: TeachingUnit[] = [
 						stale
 							? "报价比成交早了 90 秒，无法给这笔成交定位。权利金仍然已知，方向则不知道。"
 							: "它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。",
+					),
+				],
+			};
+		},
+	},
+	{
+		id: "put-call-parity",
+		conceptLab: {
+			kind: "put-call-parity",
+			intro: t(
+				"Add a long Oct 18 100 call to a short 100 put and get a line like 100 shares, price the put from the call with ALFA at $102, and check a $5.90 call print against parity at its own time.",
+				"把 10月18日 100 看涨多头加上 100 看跌空头，得到一条像 100 股一样的线；在 ALFA 为 $102 时由看涨推出看跌的价格；并按成交自身的时间，用平价关系核对一笔 $5.90 的看涨成交。",
+			),
+		},
+		sources: [
+			basics,
+			{
+				title: "Investopedia · Put-call parity",
+				href: "https://www.investopedia.com/terms/p/putcallparity.asp",
+			},
+		],
+		explanation: t(
+			"A long call and a short put with the same strike and expiry together behave like owning the stock and owing the strike: at expiry one of the two is exercised or assigned, so the pair always ends as shares bought at the strike. Their prices therefore line up. With no interest or dividends, call minus put equals stock minus strike: C − P = S − K. With interest the strike is discounted, and expected dividends come off the stock: C − P = S − PV(K) − PV(dividends). American-style early exercise loosens the relationship slightly. Quotes respect parity within their spreads; a print that seems to break it usually comes from comparing prices from different moments, a late or corrected report, or one leg of a complex order.",
+			"同一行权价和到期日的看涨多头加看跌空头，合起来就像持有股票、同时欠下行权价：到期时两者之一会被行权或指派，所以这一组最后总是以行权价买入股票。因此它们的价格必须对得上。没有利息和股息时，看涨减看跌等于股价减行权价：C − P = S − K。有利息时行权价要折现，预期股息要从股价中扣除：C − P = S − PV(K) − PV(股息)。美式期权可提前行权，会让这个关系略微放松。报价会在买卖价差之内遵守平价；看似违反平价的成交，通常来自拿不同时刻的价格比较、延迟或更正的报告，或者复杂订单中的一条腿。",
+		),
+		example: t(
+			"With ALFA at $102, the Oct 18 100 call's model mid is $5.25, so the 100 put's must be $5.25 − $2.00 = $3.25. Buy the call at the $4.20 ask and sell the put at the $4.05 bid with ALFA at $100, and the pair acts like 100 shares bought at $100.15. A 14:12 call print at $5.90 looks $0.65 rich against the 14:12 put, but it executed at 13:58 with ALFA at $103.05, when parity put it at $5.90.",
+			"ALFA 为 $102 时，10月18日 100 看涨的模型中间价为 $5.25，所以 100 看跌必须是 $5.25 − $2.00 = $3.25。在 ALFA 为 $100 时以 $4.20 的卖价买入看涨、以 $4.05 的买价卖出看跌，这一组就相当于以 $100.15 买入 100 股。14:12 一笔 $5.90 的看涨成交，对照 14:12 的看跌似乎贵了 $0.65，但它实际成交于 13:58，当时 ALFA 为 $103.05，平价给出的价格正是 $5.90。",
+		),
+		misconception: t(
+			"Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+			"平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。",
+		),
+		case: (v) => {
+			const spot = [102, 97, 105, 100][v];
+			const strike = [100, 100, 100, 95][v];
+			const call = [5.25, 1.7, 7.6, 7.1][v];
+			const put = call - (spot - strike);
+			const expiry = [92, 104, 110, 90][v];
+			return {
+				brief: t(
+					`ALFA is ${money(spot)}. Its ${strike} call for one expiry has a mid of ${money(call)} a share. There's no interest and no dividend to account for, and one contract covers 100 shares.`,
+					`ALFA 为 ${money(spot)}。它某个到期日的 ${strike} 看涨中间价为每股 ${money(call)}。不需要考虑利息和股息，一张合约对应 100 股。`,
+				),
+				questions: [
+					n(
+						"put",
+						`What should the ${strike} put's mid be, per share?`,
+						`${strike} 看跌的中间价应该是每股多少？`,
+						put,
+						"dollars a share",
+						"美元/股",
+						`C − P = S − K, so P = C − (S − K) = ${money(call)} − (${signedMoney(spot - strike)}) = ${money(put)}.`,
+						`C − P = S − K，所以 P = C − (S − K) = ${money(call)} − (${signedMoney(spot - strike)}) = ${money(put)}。`,
+						0.01,
+					),
+					n(
+						"synthetic",
+						`You buy one ${strike} call and sell one ${strike} put. At expiry ALFA is ${money(expiry)}. Before premiums, what are the two legs worth together? Use a minus sign for a loss.`,
+						`你买入一张 ${strike} 看涨，卖出一张 ${strike} 看跌。到期时 ALFA 为 ${money(expiry)}。不计权利金，两条腿合计价值多少？亏损请用负号。`,
+						(expiry - strike) * 100,
+						"dollars",
+						"美元",
+						`The call is worth ${money(Math.max(expiry - strike, 0))} a share and the short put costs ${money(Math.max(strike - expiry, 0))}: together (${plain(expiry)} − ${strike}) × 100 = ${signedMoney((expiry - strike) * 100, 0)}, exactly like 100 shares bought at ${money(strike, 0)}.`,
+						`看涨每股值 ${money(Math.max(expiry - strike, 0))}，看跌空头每股要付 ${money(Math.max(strike - expiry, 0))}：合计 (${plain(expiry)} − ${strike}) × 100 = ${signedMoney((expiry - strike) * 100, 0)}，和以 ${money(strike, 0)} 买入的 100 股完全一样。`,
+					),
+					c(
+						"print",
+						"A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
+						"一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？",
+						[
+							[
+								"time",
+								"The print's own execution time and ALFA's price then",
+								"这笔成交自身的成交时间，以及当时的 ALFA 价格",
+							],
+							[
+								"news",
+								"Whether the buyer has inside news",
+								"买方是否掌握内幕消息",
+							],
+							["put", "Whether the put is mispriced", "看跌是否定价错误"],
+						],
+						"time",
+						"Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
+						"平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。",
 					),
 				],
 			};
