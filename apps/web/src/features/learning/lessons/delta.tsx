@@ -1,13 +1,7 @@
 import * as m from "motion/react-m";
 import {
-	ALFA,
-	type Contract,
 	type Copy,
 	count,
-	daysToExpiry,
-	modelValue,
-	OCT_100_CALL,
-	oct100CallMonday,
 	pick,
 	signedCount,
 	signedUsd,
@@ -26,52 +20,37 @@ import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame } from "../walkthrough/walkthrough";
+import { deltaFilm } from "./delta-film";
+import {
+	CALL_DELTA,
+	curve,
+	DAYS,
+	DEEP,
+	deltaAt,
+	down10,
+	fixed2,
+	holders,
+	MISS_AT,
+	MOVE,
+	moveDollars,
+	PUT_DELTA,
+	perContract,
+	positionDelta,
+	price,
+	type Right,
+	rightName,
+	SPOT,
+	signedPrice,
+	signedStock,
+	stock,
+	tangent,
+	up1,
+	up10,
+	valueAt,
+	X_RANGE,
+} from "./delta-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-type Right = "call" | "put";
-const contractFor = (right: Right): Contract => ({ ...OCT_100_CALL, right });
-const rightName = (right: Right): Copy =>
-	right === "call" ? ["call", "看涨"] : ["put", "看跌"];
-
-/** ALFA's price in dollars. */
-const SPOT = ALFA.open / 100;
-const DAYS = daysToExpiry(OCT_100_CALL.expiry);
-const model = (right: Right, spot: number) =>
-	modelValue(contractFor(right), Math.round(spot * 100));
-/** Deltas are shown to two places and every estimate uses the shown figure. */
-const round2 = (value: number) => Math.round(value * 100) / 100;
-const deltaAt = (right: Right, spot: number) =>
-	round2(model(right, spot).delta);
-const valueAt = (right: Right, spot: number) => model(right, spot).price;
-const CALL_DELTA = deltaAt("call", SPOT);
-const PUT_DELTA = deltaAt("put", SPOT);
-
-/** Dollars per share: "$4.13". */
-const price = (dollars: number) => usd(Math.round(dollars * 100));
-/** ALFA prices and moves in whole dollars: "$100", "+$10". */
-const stock = (dollars: number) =>
-	usd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
-const signedStock = (dollars: number) =>
-	signedUsd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
-const signedPrice = (dollars: number) => signedUsd(Math.round(dollars * 100));
-const fixed2 = (value: number) =>
-	value <= -0.005
-		? `−${Math.abs(value).toFixed(2)}`
-		: Math.abs(value).toFixed(2);
-
-const X_RANGE = [88, 112] as const;
-const curve = (right: Right) =>
-	Array.from({ length: X_RANGE[1] - X_RANGE[0] + 1 }, (_, i) => {
-		const spot = X_RANGE[0] + i;
-		return [spot, valueAt(right, spot)] as const;
-	});
-/** The tangent at `at`: the straight line delta alone predicts. */
-const tangent = (right: Right, at: number) => {
-	const slope = deltaAt(right, at);
-	const base = valueAt(right, at);
-	return X_RANGE.map((spot) => [spot, base + slope * (spot - at)] as const);
-};
 
 const chartHeight = (width: number) => (width < 520 ? 260 : 290);
 
@@ -253,24 +232,6 @@ function SlopeView({
 // ——— Scene 2: sign and multiplier make a position ———
 
 type ExposureState = { rows: 1 | 2 | 3 | 4 };
-
-const MOVE = 0.4;
-const endPosition = (holder: "you" | "ben") =>
-	oct100CallMonday.trades.reduce(
-		(sum, trade) =>
-			sum +
-			(trade.buyer === holder ? trade.quantity : 0) -
-			(trade.seller === holder ? trade.quantity : 0),
-		oct100CallMonday.startPositions[holder],
-	);
-const holders = [
-	{ id: "you", name: ["You", "你"] as Copy, contracts: endPosition("you") },
-	{ id: "ben", name: ["Ben", "Ben"] as Copy, contracts: endPosition("ben") },
-] as const;
-const perContract = Math.round(CALL_DELTA * ALFA.multiplier);
-const positionDelta = (contracts: number) => contracts * perContract;
-const moveDollars = (contracts: number) =>
-	Math.round(positionDelta(contracts) * MOVE * 100);
 
 const exposureRows: readonly {
 	label: Copy;
@@ -656,26 +617,7 @@ function LimitView({
 
 // ——— Lesson ———
 
-const up1 = valueAt("call", SPOT + 1) - valueAt("call", SPOT);
-const up10 = valueAt("call", SPOT + 10) - valueAt("call", SPOT);
-const down10 = valueAt("call", SPOT - 10) - valueAt("call", SPOT);
 const [you, ben] = holders;
-
-/** The lowest whole-dollar price at which the call's delta passes 0.80. */
-const DEEP =
-	Array.from({ length: 21 }, (_, i) => 90 + i).find(
-		(spot) => deltaAt("call", spot) > 0.8,
-	) ?? 110;
-/** The smallest rise for which delta alone misses the model's price change by over $1. */
-const MISS_AT =
-	Array.from({ length: 12 }, (_, i) => i + 1).find(
-		(move) =>
-			Math.abs(
-				valueAt("call", SPOT + move) -
-					valueAt("call", SPOT) -
-					CALL_DELTA * move,
-			) > 1,
-	) ?? 12;
 
 const scenes = [
 	defineScene<SlopeState, SlopeState>({
@@ -967,6 +909,7 @@ export function DeltaWalkthrough({ locale }: { locale: Locale }) {
 			locale={locale}
 			id="delta"
 			label={["Interactive lesson on delta", "Delta 互动课"]}
+			film={deltaFilm}
 			scenes={scenes}
 		/>
 	);
