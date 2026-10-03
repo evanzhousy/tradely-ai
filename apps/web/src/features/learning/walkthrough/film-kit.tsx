@@ -252,16 +252,16 @@ export function TitleCard({
 					{title}
 				</text>
 			</g>
-			<Word
+			<Lines
 				name="title-sub"
+				text={sub}
 				x={margin}
 				y={H * 0.5 + T.head * 1.7}
 				size={T.head}
+				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-dim"
-			>
-				{sub}
-			</Word>
+			/>
 		</>
 	);
 }
