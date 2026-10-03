@@ -47,7 +47,7 @@ import { CountTo, useTeachMotion } from "./stage";
 import type { ExploreTask, Phase, ResultItem, WalkthroughScene } from "./types";
 
 /** Reading time at about 200 words a minute, plus time to look at the diagram. */
-function readingHoldMs(caption: string) {
+export function readingHoldMs(caption: string) {
 	const words = caption.trim().split(/\s+/).filter(Boolean).length;
 	return Math.min(16000, Math.max(4000, words * 300 + 1500));
 }
@@ -59,10 +59,10 @@ type FrameContextValue = {
 	task: ReactNode;
 };
 
-/** Whether a stored prediction is right; a typed one is kept as "entry:<number>". */
-const FrameContext = createContext<FrameContextValue | null>(null);
+/** What a scene's frame shows beside the stage: the player's panel and any task. */
+export const FrameContext = createContext<FrameContextValue | null>(null);
 
-const copy = {
+export const copy = {
 	back: ["Back", "上一步"],
 	next: ["Next", "下一步"],
 	play: ["Play", "自动播放"],

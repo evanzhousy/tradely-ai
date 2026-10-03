@@ -21,10 +21,11 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -962,7 +963,7 @@ const scenes = [
 
 export function DeltaWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="delta"
 			label={["Interactive lesson on delta", "Delta 互动课"]}

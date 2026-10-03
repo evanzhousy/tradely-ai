@@ -107,6 +107,88 @@
 	flex: 1;
 }
 
+/* Player: the lesson runs as one timeline, a segment per frame and a gap between scenes. */
+.walkthrough .wt-modes {
+	width: fit-content;
+	min-width: 0;
+	align-self: flex-start;
+	border: 1px solid var(--border);
+	background: var(--muted);
+}
+.walkthrough .wt-modes [role="tab"] {
+	min-height: 2.25rem;
+	padding-inline: 0.875rem;
+}
+.wt-modes [role="tab"][data-selected="true"] {
+	background: var(--card);
+	box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 12%, transparent);
+}
+.wt-timeline {
+	display: flex;
+	flex: 1;
+	gap: 0.5rem;
+	min-width: 8rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.wt-chapter {
+	flex: var(--frames, 1) 1 0;
+	display: flex;
+	min-width: 0;
+}
+.wt-chapter > ol {
+	display: flex;
+	flex: 1;
+	gap: 2px;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.wt-frame {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+.walkthrough .wt-segment {
+	position: relative;
+	flex: 1;
+	min-width: 0.625rem;
+	min-height: 2.25rem;
+	cursor: pointer;
+}
+.wt-segment::before,
+.wt-segment-fill {
+	content: "";
+	position: absolute;
+	inset: calc(50% - 2px) 0 auto;
+	height: 4px;
+	border-radius: 999px;
+}
+.wt-segment::before {
+	background: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+}
+.wt-segment[data-state="done"]::before {
+	background: var(--primary);
+}
+.wt-segment-fill {
+	background: var(--primary);
+	transform: scaleX(0);
+	transform-origin: left;
+}
+.wt-segment:focus-visible {
+	outline: none;
+}
+.wt-segment:focus-visible::before {
+	outline: 2px solid var(--ring);
+	outline-offset: 3px;
+}
+.walkthrough .wt-rate {
+	min-width: 3rem;
+	font-family: var(--font-mono);
+}
+
 /* Scene: stage beside its result, panel and controls once there is room for both. The side
    keeps a phone's width, so the drawing gets the rest and reaches the instruments' wide
    layouts (520px and up): a narrow phone's width on a 1280 laptop, a wider one from 56rem.
@@ -456,6 +538,9 @@
 }
 
 /* Exploring: the task first, then what changes beside the controls that change it. */
+.walkthrough[data-phase="explore"] .wt-side > .wt-done {
+	order: -4;
+}
 .walkthrough[data-phase="explore"] .wt-side > .wt-task {
 	order: -3;
 }
