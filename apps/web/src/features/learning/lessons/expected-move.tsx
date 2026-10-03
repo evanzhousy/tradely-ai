@@ -1,34 +1,31 @@
 import * as m from "motion/react-m";
-import {
-	type Contract,
-	type Copy,
-	dayCount,
-	modelValue,
-	pick,
-	usd,
-} from "@/content/world";
+import { type Copy, dayCount, modelValue, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { packParts, twoRows } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { expectedMoveFilm } from "./expected-move-film";
+import {
+	CALL,
+	DAYS,
+	IV,
+	MODEL_OUTSIDE,
+	MONTHS,
+	MOVE,
+	oneSd,
+	outside,
+	PAST,
+	PUT,
+	plusMinus,
+	SPOT,
+	STRADDLE,
+	share,
+} from "./expected-move-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = 100;
-const IV = 35;
-const DAYS = 32;
-/** One standard deviation of the price at expiry, in dollars, under the model. */
-const oneSd = (iv: number, days: number) =>
-	SPOT * (iv / 100) * Math.sqrt(days / 365);
-const MOVE = oneSd(IV, DAYS);
-const share = (dollars: number) => usd(Math.round(dollars * 100));
-const plusMinus = (dollars: number) => `±${share(dollars)}`;
-
-const CALL: Contract = { expiry: "oct18", strike: 100, right: "call" };
-const PUT: Contract = { expiry: "oct18", strike: 100, right: "put" };
-const STRADDLE = modelValue(CALL).price + modelValue(PUT).price;
 
 /** A price axis with the stock at its center and up to two ranges around it. */
 function RangeAxis({
@@ -448,24 +445,6 @@ function StraddleView({
 
 type OutsideState = { stage: 0 | 1 | 2; band: 1 | 2 };
 
-/** Twelve past monthly expiries: each move at expiry as a multiple of its implied one-SD move. */
-const PAST = [0.4, 1.3, 0.7, 0.2, 1.1, 0.9, 0.5, 2.2, 0.3, 0.8, 1.2, 0.6];
-const MONTHS: readonly Copy[] = [
-	["Oct", "10月"],
-	["Nov", "11月"],
-	["Dec", "12月"],
-	["Jan", "1月"],
-	["Feb", "2月"],
-	["Mar", "3月"],
-	["Apr", "4月"],
-	["May", "5月"],
-	["Jun", "6月"],
-	["Jul", "7月"],
-	["Aug", "8月"],
-	["Sep", "9月"],
-];
-const outside = (band: number) => PAST.filter((ratio) => ratio > band).length;
-
 function Months({
 	width,
 	band,
@@ -576,7 +555,7 @@ function OutsideView({
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	const model = shown.band === 1 ? 31.7 : 4.6;
+	const model = MODEL_OUTSIDE[shown.band];
 	const result: ResultItem[] = [
 		{
 			id: "model",
@@ -909,10 +888,11 @@ const scenes = [
 
 export function ExpectedMoveWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="expected-move"
 			label={["Interactive lesson on the expected move", "预期变动互动课"]}
+			film={expectedMoveFilm}
 			scenes={scenes}
 		/>
 	);
