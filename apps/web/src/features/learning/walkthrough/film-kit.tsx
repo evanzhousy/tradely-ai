@@ -225,18 +225,19 @@ export function TitleCard({
 	sub: string;
 }) {
 	const id = useId().replace(/:/g, "");
-	const { type: T, height: H, margin } = frame;
+	const { type: T, height: H, margin, room } = frame;
+	// A long name sets smaller rather than run off the frame: about 0.56 em a Latin glyph
+	// in the sans, a full em a CJK one.
+	const ems = [...title].reduce(
+		(sum, char) => sum + ((char.codePointAt(0) ?? 0) > 0x2e80 ? 1 : 0.56),
+		0,
+	);
+	const size = Math.min(T.title, room / Math.max(ems, 1));
 	return (
 		<>
 			<defs>
 				<clipPath id={`wipe-${id}`}>
-					<rect
-						data-f="wipe"
-						x={-4}
-						y={-T.title}
-						width={0}
-						height={T.title * 1.35}
-					/>
+					<rect data-f="wipe" x={-4} y={-size} width={0} height={size * 1.35} />
 				</clipPath>
 			</defs>
 			<g data-f="title-group">
@@ -245,7 +246,7 @@ export function TitleCard({
 					x={0}
 					y={0}
 					className="wt-film-type"
-					style={{ fontSize: T.title }}
+					style={{ fontSize: size }}
 					clipPath={`url(#wipe-${id})`}
 				>
 					{title}
@@ -472,9 +473,10 @@ export function createDirector(
 	if (titleSub) hidden(titleSub);
 	// The name is set in the sans, wider than the mono estimate: measure it, and leave room
 	// for a web font that arrives after the measure.
+	const titleSize = Number.parseFloat(title?.style.fontSize ?? "") || T.title;
 	const measured =
 		title?.getComputedTextLength() ||
-		textWidth(title?.textContent ?? "", T.title);
+		textWidth(title?.textContent ?? "", titleSize);
 	const open = (at: number) => {
 		tl.to(
 			one("wipe"),
@@ -498,7 +500,7 @@ export function createDirector(
 		tl.to(
 			titleGroup,
 			{
-				x: width - margin * 0.45 - measured * (tagSize / T.title),
+				x: width - margin * 0.45 - measured * (tagSize / titleSize),
 				y: frame.tagY,
 				duration: 0.9,
 				ease: "power3.inOut",
