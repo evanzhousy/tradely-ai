@@ -1,11 +1,4 @@
-import {
-	type Copy,
-	count,
-	modelVolatility,
-	pick,
-	priceOption,
-	usd,
-} from "@/content/world";
+import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import { BarChart } from "../walkthrough/instruments/bar-chart";
@@ -14,45 +7,35 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { zeroDteFilm } from "./zero-dte-film";
+import {
+	AT_OPEN,
+	CLOSE,
+	clock,
+	FRIDAY_CLOSE,
+	FRIDAY_VOLUME,
+	fixed2,
+	HALF_GONE,
+	HEDGE_CONTRACTS,
+	HIGH,
+	LATEST_CALM,
+	LOW,
+	OPEN,
+	oct18Delta,
+	sep20,
+	share,
+	THURSDAY_OI,
+} from "./zero-dte-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-/** Friday Sep 20, the Sep 20 options' last day. Times are hours of the clock: 9.5 is 9:30. */
-const OPEN = 9.5;
-const CLOSE = 16;
-const STRIKE = 100;
-const IV = modelVolatility("sep20", STRIKE);
-const sep20 = (time: number, spot = STRIKE) =>
-	priceOption({
-		spot,
-		strike: STRIKE,
-		days: Math.max(CLOSE - time, 0) / 24,
-		iv: IV,
-		right: "call",
-	});
-/** The Oct 18 100 call a month out, for contrast. */
-const oct18Delta = (spot: number) =>
-	priceOption({ spot, strike: STRIKE, days: 32, iv: 0.35, right: "call" })
-		.delta;
-const clock = (time: number) => `${Math.floor(time)}:${time % 1 ? "30" : "00"}`;
-const share = (dollars: number) => usd(Math.round(dollars * 100));
-const fixed2 = (value: number) => value.toFixed(2);
 
 // ——— Scene 1: value drains by the hour ———
 
 type HourState = { stage: 0 | 1 | 2 | 3; time: number };
-
-const AT_OPEN = sep20(OPEN).price;
-const steps = Array.from(
-	{ length: (CLOSE - OPEN) * 2 + 1 },
-	(_, i) => OPEN + i / 2,
-);
-/** The first half-hour by which the call has lost half its opening value. */
-const HALF_GONE =
-	steps.find((time) => sep20(time).price <= AT_OPEN / 2) ?? CLOSE;
 
 function HourView({
 	locale,
@@ -204,18 +187,6 @@ function HourView({
 
 type SwingState = { stage: 0 | 1 | 2; time: number };
 
-const LOW = 99.8;
-const HIGH = 100.2;
-const swingAt = (time: number) =>
-	sep20(time, HIGH).delta - sep20(time, LOW).delta;
-/** The latest half-hour at which a 40-cent move still shifts delta by less than 0.3. */
-const LATEST_CALM =
-	[...steps]
-		.filter((time) => time < CLOSE)
-		.reverse()
-		.find((time) => swingAt(time) < 0.3) ?? OPEN;
-const HEDGE_CONTRACTS = 1_000;
-
 function SwingView({
 	locale,
 	phase,
@@ -351,10 +322,6 @@ function SwingView({
 // ——— Scene 3: same-day flow never reaches open interest ———
 
 type DayState = { stage: 0 | 1 | 2; holder: "closed" | "held" };
-
-const THURSDAY_OI = 3_400;
-const FRIDAY_VOLUME = 12_000;
-const FRIDAY_CLOSE = 100.6;
 
 function DayView({
 	locale,
@@ -748,10 +715,11 @@ const scenes = [
 
 export function ZeroDteWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="zero-dte"
 			label={["Interactive lesson on 0DTE options", "0DTE 期权互动课"]}
+			film={zeroDteFilm}
 			scenes={scenes}
 		/>
 	);

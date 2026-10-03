@@ -273,6 +273,9 @@
 .wt-film-bar[data-tone="loss"] {
 	fill: color-mix(in oklab, var(--diagram-loss) 80%, transparent);
 }
+.wt-film-bar[data-tone="neutral"] {
+	fill: color-mix(in oklab, var(--muted-foreground) 55%, transparent);
+}
 .wt-film-bar[data-tone="total"] {
 	fill: var(--diagram-accent);
 }
