@@ -1,18 +1,4 @@
-import {
-	ALFA,
-	type Copy,
-	dayCount,
-	daysToExpiry,
-	modelVolatility,
-	normalCdf,
-	OCT_100_CALL,
-	oct100CallMonday,
-	pick,
-	priceOption,
-	SESSION_DATE,
-	signedUsd,
-	usd,
-} from "@/content/world";
+import { type Copy, dayCount, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { RangeControl } from "../concept-scene";
 import {
@@ -24,53 +10,44 @@ import {
 	Waterfall,
 	type WaterfallStep,
 } from "../walkthrough/instruments/waterfall";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { thetaVegaRhoFilm } from "./theta-vega-rho-film";
+import {
+	afterWeek,
+	contracts,
+	contributions,
+	DAYS,
+	DELTA,
+	DOLLAR_IV,
+	dateAfter,
+	FAST_DAY,
+	GAMMA,
+	IV,
+	IV_RELATIVE,
+	IV_UP,
+	ivRelative,
+	ivUp,
+	lastDay,
+	lastWeek,
+	points,
+	price,
+	RHO,
+	round,
+	SCENARIO,
+	SPOT,
+	scenario,
+	signedPrice,
+	THETA,
+	TODAY,
+	VEGA,
+	value,
+	WEEK,
+} from "./theta-vega-rho-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-const STRIKE = OCT_100_CALL.strike;
-const DAYS = daysToExpiry(OCT_100_CALL.expiry);
-const IV = modelVolatility(OCT_100_CALL.expiry, STRIKE);
-const value = (spot: number, days: number, iv: number) =>
-	priceOption({ spot, strike: STRIKE, days, iv, right: "call" });
-
-const round = (value: number, places: number) =>
-	Math.round(value * 10 ** places) / 10 ** places;
-const TODAY = value(SPOT, DAYS, IV);
-/** Delta and gamma as the last two lessons showed them; theta and vega to the tenth of a cent. */
-const DELTA = round(TODAY.delta, 2);
-const GAMMA = round(TODAY.gamma, 2);
-const THETA = round(TODAY.theta, 3);
-const VEGA = round(TODAY.vega, 3);
-/** Rho at a zero rate: strike × years × N(d2), per percentage point. */
-const RHO = (() => {
-	const years = DAYS / 365;
-	const sd = IV * Math.sqrt(years);
-	return round((STRIKE * years * normalCdf(-sd / 2)) / 100, 3);
-})();
-
-/** Per-share dollars: "$4.13", or "−$0.065" with three places. */
-const price = (dollars: number, places = 2) =>
-	usd(round(dollars * 100, places - 2), places);
-const signedPrice = (dollars: number, places = 2) =>
-	signedUsd(round(dollars * 100, places - 2), places);
-const points = (iv: number) => `${round(iv * 100, 2)}%`;
-
-/** A date `days` after the session, "Sep 23" / "9月23日". */
-const dateAfter = (days: number, locale: Locale) => {
-	const date = new Date(`${SESSION_DATE}T12:00:00Z`);
-	date.setUTCDate(date.getUTCDate() + days);
-	return locale === "zh"
-		? `${date.getUTCMonth() + 1}月${date.getUTCDate()}日`
-		: date.toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-				timeZone: "UTC",
-			});
-};
 
 const chartHeight = (width: number) => (width < 520 ? 260 : 290);
 
@@ -370,28 +347,6 @@ type SumState = {
 	shown: 1 | 2 | 3;
 };
 
-const contracts = (holder: "you" | "ben") =>
-	oct100CallMonday.trades.reduce(
-		(sum, trade) =>
-			sum +
-			(trade.buyer === holder ? trade.quantity : 0) -
-			(trade.seller === holder ? trade.quantity : 0),
-		oct100CallMonday.startPositions[holder],
-	);
-
-function contributions(state: SumState) {
-	const delta = DELTA * state.move;
-	const gamma = 0.5 * GAMMA * state.move * state.move;
-	const theta = THETA * state.days;
-	const vega = VEGA * state.volPoints;
-	const total =
-		round(delta, 2) + round(gamma, 2) + round(theta, 2) + round(vega, 2);
-	const repriced =
-		value(SPOT + state.move, DAYS - state.days, IV + state.volPoints / 100)
-			.price - TODAY.price;
-	return { delta, gamma, theta, vega, total: round(total, 2), repriced };
-}
-
 function SumView({
 	locale,
 	phase,
@@ -594,28 +549,6 @@ function SumView({
 }
 
 // ——— Lesson ———
-
-const WEEK = 7;
-const afterWeek = value(SPOT, DAYS - WEEK, IV);
-const lastWeek = value(SPOT, WEEK, IV);
-const lastDay = value(SPOT, 1, IV);
-const IV_UP = IV + 0.03;
-const ivUp = value(SPOT, DAYS, IV_UP).price - TODAY.price;
-const IV_RELATIVE = round(IV * 1.03, 4);
-const ivRelative = value(SPOT, DAYS, IV_RELATIVE).price - TODAY.price;
-const SCENARIO = { move: 1, days: 6, volPoints: -3 } as const;
-const scenario = contributions({ ...SCENARIO, shown: 3 });
-
-/** The first day on which the call loses more than $0.10 a day, ALFA and IV unchanged. */
-const FAST_DAY =
-	Array.from({ length: DAYS }, (_, i) => i).find(
-		(elapsed) => -value(SPOT, DAYS - elapsed, IV).theta > 0.1,
-	) ?? DAYS - 1;
-/** The highest IV, in whole points, at which the call is worth at least $1 less than today. */
-const DOLLAR_IV =
-	Array.from({ length: 31 }, (_, i) => 50 - i).find(
-		(point) => TODAY.price - value(SPOT, DAYS, point / 100).price >= 1,
-	) ?? 20;
 
 const scenes = [
 	defineScene<TimeState, TimeState>({
@@ -894,13 +827,14 @@ const scenes = [
 
 export function ThetaVegaRhoWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="theta-vega-rho"
 			label={[
 				"Interactive lesson on theta, vega and rho",
 				"Theta、Vega 与 Rho 互动课",
 			]}
+			film={thetaVegaRhoFilm}
 			scenes={scenes}
 		/>
 	);

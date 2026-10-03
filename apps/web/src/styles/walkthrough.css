@@ -266,6 +266,28 @@
 .wt-svg .wt-film-warn {
 	fill: var(--diagram-unknown);
 }
+/* A film's waterfall: gains and losses solid, the sum in the accent, the model dashed. */
+.wt-film-bar[data-tone="gain"] {
+	fill: color-mix(in oklab, var(--diagram-gain) 80%, transparent);
+}
+.wt-film-bar[data-tone="loss"] {
+	fill: color-mix(in oklab, var(--diagram-loss) 80%, transparent);
+}
+.wt-film-bar[data-tone="total"] {
+	fill: var(--diagram-accent);
+}
+.wt-film-bar[data-tone="model"] {
+	fill: color-mix(in oklab, var(--diagram-accent) 18%, transparent);
+	stroke: var(--diagram-accent);
+	stroke-width: 1.5;
+	stroke-dasharray: 4 3;
+}
+.wt-film-link {
+	fill: none;
+	stroke: var(--muted-foreground);
+	stroke-width: 1;
+	stroke-dasharray: 3 3;
+}
 .wt-svg .wt-film-tag {
 	fill: var(--muted-foreground);
 	font-family: var(--font-mono);
