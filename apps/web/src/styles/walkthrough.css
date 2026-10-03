@@ -234,11 +234,12 @@
 	font-size: 15px;
 	font-weight: 600;
 }
-.wt-film-svg {
+/* The camera is the viewBox: whatever it leaves outside the frame must not show. */
+.wt-svg.wt-film-svg {
 	display: block;
 	max-width: 100%;
 	margin-inline: auto;
-	overflow: visible;
+	overflow: hidden;
 }
 .wt-film-tangent {
 	fill: none;
