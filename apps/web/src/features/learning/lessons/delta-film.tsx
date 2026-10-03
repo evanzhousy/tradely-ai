@@ -1,9 +1,19 @@
 import { gsap } from "gsap";
-import { type ReactNode, useId } from "react";
+import { useId } from "react";
 import { type Copy, pick, signedCount, signedUsd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
-import { textWidth, wrapText } from "../walkthrough/text-measure";
+import {
+	Backdrop,
+	createDirector,
+	EndCard,
+	filmFrame,
+	Hatch,
+	Lines,
+	TitleCard,
+	Word,
+} from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	CALL_DELTA,
 	curve,
@@ -48,21 +58,10 @@ const UP = 10;
 const DOWN = -10;
 const END = 45;
 
-const clamp = (low: number, value: number, high: number) =>
-	Math.max(low, Math.min(high, value));
-
 function layout(width: number) {
-	const narrow = width < 520;
-	const height = Math.round(narrow ? width * 0.75 : (width * 9) / 16);
-	const type = {
-		big: clamp(32, width * 0.105, 100),
-		title: clamp(24, width * 0.06, 56),
-		head: clamp(15, width * 0.027, 25),
-		num: clamp(20, width * 0.044, 42),
-		body: clamp(12, width * 0.018, 17),
-		small: clamp(10, width * 0.013, 13),
-	};
-	const left = Math.max(34, width * 0.085);
+	const frame = filmFrame(width);
+	const { height, narrow } = frame;
+	const left = frame.margin;
 	const right = width * 0.965;
 	const top = height * 0.17;
 	const bottom = height * 0.84;
@@ -86,10 +85,7 @@ function layout(width: number) {
 	const equivY = height * (narrow ? 0.8 : 0.83);
 	const payY = height * (narrow ? 0.88 : 0.93);
 	return {
-		width,
-		height,
-		narrow,
-		type,
+		...frame,
 		left,
 		right,
 		top,
@@ -154,84 +150,11 @@ const copy = {
 	],
 	nextBig: ["Next: gamma", "下一课：Gamma"],
 	nextSub: ["the bend you just watched", "你刚才看到的那段弯曲"],
-	cta: ["Try it in the playground ↓", "到探索区自己试一试 ↓"],
 	axis: ["ALFA price today", "ALFA 今天的价格"],
 	callLabel: ["call value, model", "看涨价值（模型）"],
 	putLabel: ["put value, model", "看跌价值（模型）"],
 	putShort: ["put, model", "看跌（模型）"],
 } as const satisfies Record<string, Copy>;
-
-/** A block of stage type, wrapped to its room. Words are set in the sans, a little narrower than mono. */
-function Lines({
-	name,
-	text,
-	x,
-	y,
-	size,
-	maxWidth,
-	anchor = "middle",
-	className = "wt-film-type",
-	lineHeight = 1.35,
-}: {
-	name: string;
-	text: string;
-	x: number;
-	y: number;
-	size: number;
-	maxWidth: number;
-	anchor?: "start" | "middle" | "end";
-	className?: string;
-	lineHeight?: number;
-}) {
-	const lines = wrapText(text, maxWidth, size * 0.92);
-	return (
-		<text
-			data-f={name}
-			x={x}
-			y={y}
-			textAnchor={anchor}
-			className={className}
-			style={{ fontSize: size }}
-		>
-			{lines.map((line, i) => (
-				<tspan key={line} x={x} dy={i === 0 ? 0 : size * lineHeight}>
-					{line}
-				</tspan>
-			))}
-		</text>
-	);
-}
-
-function Word({
-	name,
-	x,
-	y,
-	size,
-	anchor = "middle",
-	className = "wt-film-type",
-	children,
-}: {
-	name: string;
-	x: number;
-	y: number;
-	size: number;
-	anchor?: "start" | "middle" | "end";
-	className?: string;
-	children: ReactNode;
-}) {
-	return (
-		<text
-			data-f={name}
-			x={x}
-			y={y}
-			textAnchor={anchor}
-			className={className}
-			style={{ fontSize: size }}
-		>
-			{children}
-		</text>
-	);
-}
 
 function Scene({
 	width,
@@ -248,52 +171,16 @@ function Scene({
 	const id = useId().replace(/:/g, "");
 	const mx = L.x(SPOT);
 	const my = L.y(V0);
-	const room = W * 0.84;
-	const gridStep = Math.round(W / 14);
+	const room = L.room;
 	const nextWidth = textWidth(t(copy.qNext), T.num);
 	const stepX = W / 2 + 8 + nextWidth / 2;
 	const stepY = H * 0.4 - T.num * 1.15;
 	const stepW = textWidth("+$1", T.small) + 14;
 	return (
 		<>
+			<Backdrop frame={L} />
 			<defs>
-				<pattern
-					id={`grid-${id}`}
-					width={gridStep}
-					height={gridStep}
-					patternUnits="userSpaceOnUse"
-				>
-					<path d={`M${gridStep} 0H0V${gridStep}`} className="wt-film-grid" />
-				</pattern>
-				<radialGradient id={`vig-${id}`} cx="50%" cy="45%" r="72%">
-					<stop
-						offset="55%"
-						style={{ stopColor: "var(--film-bg)", stopOpacity: 0 }}
-					/>
-					<stop
-						offset="100%"
-						style={{ stopColor: "var(--film-bg)", stopOpacity: 0.8 }}
-					/>
-				</radialGradient>
-				<pattern
-					id={`hatch-${id}`}
-					width="6"
-					height="6"
-					patternUnits="userSpaceOnUse"
-					patternTransform="rotate(45)"
-				>
-					<rect width="6" height="6" className="wt-hatch-bg" />
-					<line x1="0" y1="0" x2="0" y2="6" className="wt-hatch-line" />
-				</pattern>
-				<clipPath id={`wipe-${id}`}>
-					<rect
-						data-f="wipe"
-						x={-4}
-						y={-T.title}
-						width={0}
-						height={T.title * 1.35}
-					/>
-				</clipPath>
+				<Hatch id={`hatch-${id}`} />
 				<clipPath id={`left-${id}`}>
 					<rect data-f="clip-left" x={mx} y={0} width={0} height={H} />
 				</clipPath>
@@ -301,17 +188,6 @@ function Scene({
 					<rect data-f="clip-right" x={mx} y={0} width={0} height={H} />
 				</clipPath>
 			</defs>
-			<rect x={0} y={0} width={W} height={H} className="wt-film-bg" />
-			<rect
-				data-f="drift"
-				x={-W * 0.1}
-				y={0}
-				width={W * 1.3}
-				height={H}
-				fill={`url(#grid-${id})`}
-			/>
-			<rect x={0} y={0} width={W} height={H} fill={`url(#vig-${id})`} />
-
 			{/* The chart: the proof. It rises from the depth when a shot needs it. */}
 			<g data-f="depth">
 				<g data-f="world">
@@ -490,28 +366,7 @@ function Scene({
 			</g>
 
 			{/* The type: the claims. */}
-			<g data-f="title-group">
-				<text
-					data-f="title"
-					x={0}
-					y={0}
-					className="wt-film-type"
-					style={{ fontSize: T.title }}
-					clipPath={`url(#wipe-${id})`}
-				>
-					{t(copy.title)}
-				</text>
-			</g>
-			<Word
-				name="title-sub"
-				x={L.left}
-				y={H * 0.5 + T.head * 1.7}
-				size={T.head}
-				anchor="start"
-				className="wt-film-type wt-film-dim"
-			>
-				{t(copy.titleSub)}
-			</Word>
+			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
 			<g data-f="q">
 				<Word
 					name="q-price"
@@ -731,51 +586,24 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
-			<g data-f="next">
-				<Lines
-					name="next-big"
-					text={t(copy.nextBig)}
-					x={W / 2}
-					y={H * 0.46}
-					size={T.title}
-					maxWidth={room}
-				/>
-				<Lines
-					name="next-sub"
-					text={t(copy.nextSub)}
-					x={W / 2}
-					y={H * 0.46 + T.title * 1.0}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
-				<Lines
-					name="next-cta"
-					text={t(copy.cta)}
-					x={W / 2}
-					y={H * 0.46 + T.title * 1.0 + T.body * 2.6}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-accent"
-				/>
-			</g>
+			<EndCard
+				frame={L}
+				locale={locale}
+				next={t(copy.nextBig)}
+				why={t(copy.nextSub)}
+			/>
 		</>
 	);
 }
 
-function build({ stage, width, height, locale }: FilmContext) {
-	const t = (value: Copy) => pick(value, locale);
-	const L = layout(width);
+function build(context: FilmContext) {
+	const { width: W, height: H } = context;
+	const L = layout(W);
 	const { type: T, narrow } = L;
-	const W = width;
-	const H = height;
-	const q = gsap.utils.selector(stage);
-	const one = <E extends Element = SVGElement>(name: string) =>
-		q<E>(`[data-f="${name}"]`)[0];
+	const d = createDirector(context, L, END);
+	const { tl, one, kids, t, show, hide, pop, rise, sink, cam, home, world } = d;
 	const mx = L.x(SPOT);
 	const my = L.y(V0);
-	const depth = one("depth");
-	const world = one("world");
 	const marker = one("marker");
 	const ghost = one("ghost");
 	const num = one("num");
@@ -790,18 +618,6 @@ function build({ stage, width, height, locale }: FilmContext) {
 	const putTangent = (spot: number) => P0 + PUT_DELTA * (spot - SPOT);
 	const riserX = L.x(SPOT + 1);
 	const riserTop = L.y(V0 + CALL_DELTA);
-	const titleWidth = textWidth(t(copy.title), T.title) + 8;
-	/** Camera: the drawing scaled about its origin so `focus` lands on `target`. */
-	const cam = (
-		scale: number,
-		focus: { x: number; y: number },
-		target: { x: number; y: number },
-	) => ({
-		scale,
-		x: target.x - scale * focus.x,
-		y: target.y - scale * focus.y,
-	});
-	const home = { scale: 1, x: 0, y: 0 };
 	const pushIn = cam(
 		narrow ? 1.7 : 2.1,
 		{ x: mx, y: my },
@@ -812,141 +628,49 @@ function build({ stage, width, height, locale }: FilmContext) {
 		{ x: L.cx, y: L.cy },
 		{ x: W * (narrow ? 0.72 : 0.7), y: H * 0.58 },
 	);
-	const tagScale = (T.small * 1.15) / T.title;
-	const center = { x: W / 2, y: H * 0.5 };
 
 	// Everything at rest: hidden until its shot needs it.
-	gsap.set(one("title-group"), { x: L.left, y: H * 0.5 });
-	gsap.set(depth, { opacity: 0, scale: 0.92, svgOrigin: `${W / 2} ${H / 2}` });
-	gsap.set(world, { ...home, transformOrigin: "0 0" });
 	gsap.set(marker, { x: mx, y: my - 90, opacity: 0 });
 	gsap.set(one("dot"), { transformOrigin: "50% 100%" });
 	gsap.set(one("ripple"), { opacity: 0, attr: { r: 6 } });
-	gsap.set(
-		[
-			one("marker-label-call"),
-			one("marker-label-put"),
-			one("curve-label-call"),
-			one("curve-label-put"),
-			tangentLine,
-			one("step"),
-			one("riser"),
-			one("below"),
-			one("below-label"),
-			ghost,
-			ghostLabel,
-			gap,
-			gapLabel,
-			moveLabel,
-			one("title-sub"),
-			...q("[data-f='q'] > *"),
-			numCall,
-			numPut,
-			one("num-word"),
-			one("num-sub"),
-			one("put-head"),
-			one("put-sub"),
-			...q("[data-f='chain'] > *"),
-			one("lim-head"),
-			...q("[data-f='local'] > *"),
-			...q("[data-f='next'] > *"),
-		],
-		{ opacity: 0 },
-	);
+	d.hidden([
+		one("marker-label-call"),
+		one("marker-label-put"),
+		one("curve-label-call"),
+		one("curve-label-put"),
+		tangentLine,
+		one("step"),
+		one("riser"),
+		one("below"),
+		one("below-label"),
+		ghost,
+		ghostLabel,
+		gap,
+		gapLabel,
+		moveLabel,
+		...kids("q"),
+		numCall,
+		numPut,
+		one("num-word"),
+		one("num-sub"),
+		one("put-head"),
+		one("put-sub"),
+		...kids("chain"),
+		one("lim-head"),
+		...kids("local"),
+	]);
 	gsap.set(one("step-line"), { attr: { x2: mx } });
 	gsap.set(ghost, { x: mx, y: my });
-	gsap.set(num, { x: center.x, y: center.y, transformOrigin: "0 0" });
+	gsap.set(num, { x: W / 2, y: H * 0.5 });
 	gsap.set([numCall, numPut], { transformOrigin: "50% 50%" });
-	gsap.set(
-		[
-			one("q-step"),
-			one("q-mark"),
-			one("ch-per"),
-			one("ch-pos-you"),
-			one("ch-pos-ben"),
-		],
-		{
-			transformOrigin: "50% 50%",
-		},
-	);
-
-	const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
-	/** A line of type arrives from just below its place; a cut sends it up and away. */
-	const show = (
-		el: Element | Element[],
-		at: number,
-		from: "below" | "above" | "right" = "below",
-		duration = 0.5,
-	) =>
-		tl.fromTo(
-			el,
-			{
-				opacity: 0,
-				y: from === "below" ? 14 : from === "above" ? -14 : 0,
-				x: from === "right" ? 18 : 0,
-			},
-			{ opacity: 1, y: 0, x: 0, duration },
-			at,
-		);
-	const hide = (el: Element | Element[], at: number, duration = 0.35) =>
-		tl.to(el, { opacity: 0, y: -12, duration, ease: "power2.in" }, at);
-	const pop = (el: Element, at: number, duration = 0.5) =>
-		tl.fromTo(
-			el,
-			{ opacity: 0, scale: 0.6 },
-			{ opacity: 1, scale: 1, duration, ease: "back.out(1.8)" },
-			at,
-		);
-	/** The chart rises from the depth, or sinks back into it. */
-	const rise = (at: number) =>
-		tl.to(
-			depth,
-			{ opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" },
-			at,
-		);
-	const sink = (at: number) =>
-		tl.to(
-			depth,
-			{ opacity: 0, scale: 0.9, duration: 0.4, ease: "power2.in" },
-			at,
-		);
-
-	// The grid drifts the whole way through: the stage is never quite still.
-	tl.fromTo(
-		one("drift"),
-		{ x: 0 },
-		{ x: -W * 0.06, duration: END, ease: "none" },
-		0,
-	);
 
 	// ——— open: the title ———
 	tl.addLabel("open", 0);
-	tl.to(
-		one("wipe"),
-		{ attr: { width: titleWidth }, duration: 0.9, ease: "power3.out" },
-		0.3,
-	);
-	show(one("title-sub"), 1.0);
+	d.open(0);
 
 	// ——— question: ALFA $100 → $101, the call moves by… ? ———
 	tl.addLabel("question", 4);
-	hide(one("title-sub"), 4.0);
-	tl.to(
-		one("title-group"),
-		{
-			x: L.left,
-			y: H * 0.1,
-			scale: tagScale,
-			duration: 0.9,
-			ease: "power3.inOut",
-		},
-		4.0,
-	);
-	tl.to(
-		one("title"),
-		{ attr: { class: "wt-film-type wt-film-dim" }, duration: 0.3 },
-		4.4,
-	);
+	d.tag(4.0);
 	show(one("q-price"), 4.7);
 	show(one("q-next"), 5.4, "right");
 	pop(one("q-step"), 5.9);
@@ -955,7 +679,7 @@ function build({ stage, width, height, locale }: FilmContext) {
 
 	// ——— slope: the chart proves it; cut to the number ———
 	tl.addLabel("slope", 9);
-	hide(q("[data-f='q'] > *"), 9.0);
+	hide(kids("q"), 9.0);
 	rise(9.2);
 	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.0);
 	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.0);
@@ -1027,12 +751,7 @@ function build({ stage, width, height, locale }: FilmContext) {
 	);
 	// Cut: the chart sinks, the number lands.
 	sink(16.3);
-	tl.fromTo(
-		numCall,
-		{ opacity: 0, scale: 1.12, y: 6 },
-		{ opacity: 1, scale: 1, y: 0, duration: 0.55, ease: "back.out(2)" },
-		16.7,
-	);
+	d.slam(numCall, 16.7);
 	show(one("num-word"), 17.1);
 	show(one("num-sub"), 17.5);
 
@@ -1070,13 +789,7 @@ function build({ stage, width, height, locale }: FilmContext) {
 		},
 		19.45,
 	);
-	tl.to(numCall, { scaleY: 0, duration: 0.3, ease: "power2.in" }, 19.8);
-	tl.fromTo(
-		numPut,
-		{ opacity: 1, scaleY: 0 },
-		{ scaleY: 1, duration: 0.35, ease: "power2.out" },
-		20.1,
-	);
+	d.flip(numCall, numPut, 19.8);
 	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 20.4);
 	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 20.6);
 	show(one("put-sub"), 20.8);
@@ -1085,8 +798,7 @@ function build({ stage, width, height, locale }: FilmContext) {
 	tl.addLabel("position", 24);
 	hide([one("put-head"), one("put-sub"), one("num-word")], 24.0);
 	sink(24.0);
-	tl.to(numPut, { scaleY: 0, duration: 0.25, ease: "power2.in" }, 24.0);
-	tl.to(numCall, { scaleY: 1, duration: 0.3, ease: "power2.out" }, 24.25);
+	d.flip(numPut, numCall, 24.0);
 	// The number shrinks about its own centre to head the chain; a group would scale about
 	// its box corner.
 	tl.to(
@@ -1105,38 +817,33 @@ function build({ stage, width, height, locale }: FilmContext) {
 		24.6,
 	);
 	show(one("ch-head"), 24.6, "above");
-	const count = (name: string, target: number, at: number) => {
-		const el = one<SVGTextElement>(name);
-		const counter = { value: 0 };
-		tl.to(
-			counter,
-			{
-				value: target,
-				duration: 0.7,
-				ease: "power2.out",
-				onUpdate: () => {
-					el.textContent = signedCount(Math.round(counter.value));
-				},
-			},
-			at,
-		);
-	};
+	const shares = (value: number) => signedCount(Math.round(value));
 	show(one("ch-op100"), 25.4);
 	pop(one("ch-per"), 25.9);
 	show(one("ch-op-you"), 26.7);
 	pop(one("ch-pos-you"), 27.2);
-	count("ch-pos-you", positionDelta(you.contracts), 27.2);
+	d.count(
+		one<SVGTextElement>("ch-pos-you"),
+		positionDelta(you.contracts),
+		27.2,
+		shares,
+	);
 	show(one("ch-equiv"), 27.8);
 	// Ben: the same chain, the sign flipped.
 	hide([one("ch-op-you"), one("ch-pos-you")], 29.2, 0.3);
 	show(one("ch-op-ben"), 29.4);
 	pop(one("ch-pos-ben"), 29.9);
-	count("ch-pos-ben", positionDelta(ben.contracts), 29.9);
+	d.count(
+		one<SVGTextElement>("ch-pos-ben"),
+		positionDelta(ben.contracts),
+		29.9,
+		shares,
+	);
 	show(one("ch-pay"), 31.3);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 34);
-	hide([...q("[data-f='chain'] > *"), numCall], 34.0);
+	hide([...kids("chain"), numCall], 34.0);
 	tl.set(world, home, 34.2);
 	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 34.2);
 	tl.set(marker, { y: my }, 34.2);
@@ -1227,11 +934,8 @@ function build({ stage, width, height, locale }: FilmContext) {
 
 	// ——— next ———
 	tl.addLabel("next", 43);
-	hide(q("[data-f='local'] > *"), 43.0);
-	show(one("next-big"), 43.2, "above");
-	show(one("next-sub"), 43.6);
-	show(one("next-cta"), 44.0);
-	tl.to({}, { duration: END - 44.0 }, 44.0);
+	hide(kids("local"), 43.0);
+	d.close(43.0);
 	return tl;
 }
 
