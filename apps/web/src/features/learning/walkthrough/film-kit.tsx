@@ -43,6 +43,11 @@ export type FilmFrame = ReturnType<typeof filmFrame>;
 
 type Anchor = "start" | "middle" | "end";
 
+/** How many lines `Lines` breaks a text into, so whatever follows it can make room. */
+export function lineCount(text: string, maxWidth: number, size: number) {
+	return wrapText(text, maxWidth, size * 0.92).length;
+}
+
 /** A block of stage type, wrapped to its room. Words are set in the sans, a little narrower than mono. */
 export function Lines({
 	name,
@@ -244,13 +249,16 @@ export function EndCard({
 	why: string;
 }) {
 	const { type: T, width: W, height: H, room } = frame;
+	// A name that wraps pushes the lines under it down, and the block stays centred.
+	const extra = (lineCount(next, room, T.title) - 1) * T.title * 1.35;
+	const top = H * 0.46 - extra / 2;
 	return (
 		<g data-f="end">
 			<Lines
 				name="end-next"
 				text={next}
 				x={W / 2}
-				y={H * 0.46}
+				y={top}
 				size={T.title}
 				maxWidth={room}
 			/>
@@ -258,7 +266,7 @@ export function EndCard({
 				name="end-why"
 				text={why}
 				x={W / 2}
-				y={H * 0.46 + T.title}
+				y={top + extra + T.title}
 				size={T.body}
 				maxWidth={room}
 				className="wt-film-type wt-film-dim"
@@ -267,7 +275,7 @@ export function EndCard({
 				name="end-cta"
 				text={pick(endCopy.cta, locale)}
 				x={W / 2}
-				y={H * 0.46 + T.title + T.body * 2.6}
+				y={top + extra + T.title + T.body * 2.6}
 				size={T.body}
 				maxWidth={room}
 				className="wt-film-type wt-film-accent"
@@ -318,6 +326,11 @@ export function createDirector(
 	/** A cut sends type up and away. */
 	const hide = (targets: Targets, at: number, duration = 0.35) =>
 		tl.to(targets, { opacity: 0, y: -12, duration, ease: "power2.in" }, at);
+	/** One line of type gives way to the next in the same place, never both at once. */
+	const swap = (from: Targets, to: Targets, at: number) => {
+		hide(from, at);
+		show(to, at + 0.35, "above");
+	};
 	/** A number or a chip lands with a little overshoot, about its own centre. */
 	const pop = (target: Element, at: number, duration = 0.5) =>
 		tl.fromTo(
@@ -424,12 +437,16 @@ export function createDirector(
 	const titleSub = one("title-sub");
 	if (titleGroup) gsap.set(titleGroup, { x: margin, y: H * 0.5 });
 	if (titleSub) hidden(titleSub);
+	// The name is set in the sans, wider than the mono estimate: measure it, and leave room
+	// for a web font that arrives after the measure.
+	const measured =
+		title?.getComputedTextLength() ||
+		textWidth(title?.textContent ?? "", T.title);
 	const open = (at: number) => {
-		const name = title?.textContent ?? "";
 		tl.to(
 			one("wipe"),
 			{
-				attr: { width: textWidth(name, T.title) + 8 },
+				attr: { width: measured * 1.15 + 12 },
 				duration: 0.9,
 				ease: "power3.out",
 			},
@@ -437,17 +454,27 @@ export function createDirector(
 		);
 		show(titleSub, at + 1.0);
 	};
+	/**
+	 * The name shrinks into the top-right corner, where it stays as the film's tag, clear of
+	 * every headline (they align left or centre). It shrinks by its type size, not a scale:
+	 * GSAP scales an SVG element about its box corner, which would lift it off its baseline.
+	 */
+	const tagSize = T.small * 1.15;
 	const tag = (at: number) => {
 		hide(titleSub, at);
 		tl.to(
 			titleGroup,
 			{
-				x: margin,
-				y: H * 0.1,
-				scale: (T.small * 1.15) / T.title,
+				x: width - margin * 0.45 - measured * (tagSize / T.title),
+				y: tagSize + Math.max(10, H * 0.035),
 				duration: 0.9,
 				ease: "power3.inOut",
 			},
+			at,
+		);
+		tl.to(
+			title,
+			{ fontSize: tagSize, duration: 0.9, ease: "power3.inOut" },
 			at,
 		);
 		tl.to(
@@ -475,6 +502,7 @@ export function createDirector(
 		hidden,
 		show,
 		hide,
+		swap,
 		pop,
 		slam,
 		flip,
