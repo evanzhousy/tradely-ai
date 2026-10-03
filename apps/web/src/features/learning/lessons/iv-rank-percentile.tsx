@@ -8,6 +8,7 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import {
 	Appear,
 	Label,
@@ -16,60 +17,27 @@ import {
 	useTeachMotion,
 } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { ivRankPercentileFilm } from "./iv-rank-percentile-film";
+import {
+	base,
+	counted,
+	GAP,
+	gapped,
+	noShock,
+	pct,
+	RECENT,
+	rankText,
+	recent,
+	SAME_RANK_AT,
+	SHOCK,
+	stats,
+	type View,
+	WEEKS,
+	year,
+} from "./iv-rank-percentile-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const WEEKS = alfaIv30Weekly.length;
-const SHOCK = alfaIv30Weekly.indexOf(Math.max(...alfaIv30Weekly));
-/** A vendor outage that lost eight weeks of history, shock included. */
-const GAP = { from: 20, to: 27 } as const;
-const RECENT = 13;
-
-type Mark = "none" | "rank" | "percentile" | "both";
-type View = {
-	mark: Mark;
-	today: number;
-	dropShock: boolean;
-	recent: boolean;
-	gaps: boolean;
-};
-
-/** The weeks a view counts, by index. */
-function counted(view: View) {
-	return alfaIv30Weekly
-		.map((value, i) => ({ value, i }))
-		.filter(
-			({ i }) =>
-				(!view.recent || i >= WEEKS - RECENT) &&
-				!(view.dropShock && i === SHOCK) &&
-				!(view.gaps && i >= GAP.from && i <= GAP.to),
-		);
-}
-
-function stats(view: View) {
-	const weeks = counted(view);
-	const values = weeks.map((week) => week.value);
-	const low = Math.min(...values);
-	const high = Math.max(...values);
-	const below = values.filter((value) => value < view.today).length;
-	return {
-		n: values.length,
-		low,
-		high,
-		below,
-		rank: (view.today - low) / (high - low),
-		percentile: below / values.length,
-	};
-}
-
-const pct = (fraction: number) => `${Math.round(fraction * 100)}%`;
-const rankText = (rank: number, locale: Locale) =>
-	rank > 1
-		? pick(["above the high", "高于最高值"], locale)
-		: rank < 0
-			? pick(["below the low", "低于最低值"], locale)
-			: pct(rank);
 
 const CHART_TOP = 34;
 const CHART_BOTTOM = 196;
@@ -312,18 +280,6 @@ const todayControl = (
 
 // ——— Scenes ———
 
-const base: View = {
-	mark: "none",
-	today: ALFA_IV30_TODAY,
-	dropShock: false,
-	recent: false,
-	gaps: false,
-};
-const year = stats({ ...base, mark: "both" });
-const noShock = stats({ ...base, mark: "both", dropShock: true });
-const recent = stats({ ...base, mark: "both", recent: true });
-const gapped = stats({ ...base, mark: "both", gaps: true });
-
 function CompareView(props: {
 	locale: Locale;
 	phase: Phase;
@@ -432,12 +388,6 @@ function SampleView(props: {
 		/>
 	);
 }
-
-/** With the shock week back in, the IV30 that earns the rank today has without it. */
-const SAME_RANK_AT =
-	Array.from({ length: 51 }, (_, i) => 20 + i).find(
-		(today) => stats({ ...base, mark: "both", today }).rank >= noShock.rank,
-	) ?? 70;
 
 const scenes = [
 	defineScene<View, View>({
@@ -700,13 +650,14 @@ const scenes = [
 
 export function IvRankPercentileWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="iv-rank-percentile"
 			label={[
 				"Interactive lesson on IV rank and IV percentile",
 				"IV Rank 与 IV 百分位互动课",
 			]}
+			film={ivRankPercentileFilm}
 			scenes={scenes}
 		/>
 	);
