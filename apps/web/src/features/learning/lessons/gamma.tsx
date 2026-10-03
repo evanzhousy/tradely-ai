@@ -1,16 +1,11 @@
 import * as m from "motion/react-m";
 import {
 	ALFA,
-	type Contract,
 	type Copy,
 	count,
-	daysToExpiry,
-	modelValue,
 	OCT_100_CALL,
-	oct100CallMonday,
 	pick,
 	signedCount,
-	signedUsd,
 	usd,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -21,60 +16,53 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { gammaFilm } from "./gamma-film";
+import {
+	benTrade,
+	contracts,
+	DAYS,
+	DELTA,
+	deltaOnly,
+	FAR,
+	fixed2,
+	GAMMA,
+	gammaOf,
+	greek,
+	hedgeAfter,
+	hedgeBefore,
+	hedgeColumns,
+	MOVE,
+	model,
+	NEW_DELTA,
+	octAtStrike,
+	repricedUp,
+	SEP_20,
+	SEP_DAYS,
+	SPOT,
+	STEEPEST,
+	sepAtStrike,
+	series,
+	signedPrice,
+	signedStock,
+	stock,
+	withGamma,
+	X_RANGE,
+	youDrift,
+	youTrade,
+} from "./gamma-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const SPOT = ALFA.open / 100;
-const SEP_20: Contract = { expiry: "sep20", strike: 100, right: "call" };
-const DAYS = daysToExpiry(OCT_100_CALL.expiry);
-const SEP_DAYS = daysToExpiry(SEP_20.expiry);
-const model = (contract: Contract, spot: number) =>
-	modelValue(contract, Math.round(spot * 100));
-
-/** Greeks are taught to two places, and the arithmetic uses the shown figures. */
-const round2 = (value: number) => Math.round(value * 100) / 100;
-const DELTA = round2(model(OCT_100_CALL, SPOT).delta);
-const GAMMA = round2(model(OCT_100_CALL, SPOT).gamma);
-const MOVE = 2;
-const NEW_DELTA = round2(DELTA + GAMMA * MOVE);
-
-// A figure that rounds to zero shows no sign, so a count through zero never reads "−0.00".
-const fixed2 = (value: number) =>
-	value <= -0.005
-		? `−${Math.abs(value).toFixed(2)}`
-		: Math.abs(value).toFixed(2);
-/** Greeks as shown: rounded to two places, then printed. */
-const greek = (value: number) => fixed2(round2(value));
-const stock = (dollars: number) =>
-	usd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
-const signedStock = (dollars: number) =>
-	signedUsd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
-const signedPrice = (dollars: number) => signedUsd(Math.round(dollars * 100));
-
-const X_RANGE = [88, 112] as const;
-const series = (
-	read: (spot: number) => number,
-	from = X_RANGE[0],
-	to = X_RANGE[1],
-	step = 0.5,
-) =>
-	Array.from({ length: Math.round((to - from) / step) + 1 }, (_, i) => {
-		const spot = from + i * step;
-		return [spot, read(spot)] as const;
-	});
 const chartHeight = (width: number) => (width < 520 ? 260 : 290);
 
 // ——— Scene 1: gamma is how fast delta moves ———
 
 type SlopeView = "delta" | "value";
 type SlopeState = { spot: number; view: SlopeView };
-
-/** The price change delta alone predicts, and with the gamma term added. */
-const deltaOnly = (move: number) => DELTA * move;
-const withGamma = (move: number) => DELTA * move + 0.5 * GAMMA * move * move;
 
 function SlopeScene({
 	locale,
@@ -319,28 +307,6 @@ function SlopeScene({
 
 type HedgeState = { holder: "you" | "ben"; stage: 0 | 1 | 2 };
 
-const endPosition = (holder: "you" | "ben") =>
-	oct100CallMonday.trades.reduce(
-		(sum, trade) =>
-			sum +
-			(trade.buyer === holder ? trade.quantity : 0) -
-			(trade.seller === holder ? trade.quantity : 0),
-		oct100CallMonday.startPositions[holder],
-	);
-const contracts = { you: endPosition("you"), ben: endPosition("ben") };
-const optionDelta = (holder: "you" | "ben", delta: number) =>
-	Math.round(contracts[holder] * delta * ALFA.multiplier);
-
-function hedgeColumns(holder: "you" | "ben") {
-	const before = optionDelta(holder, DELTA);
-	const after = optionDelta(holder, NEW_DELTA);
-	return [
-		{ id: "before", options: before, shares: -before },
-		{ id: "after", options: after, shares: -before },
-		{ id: "rehedged", options: after, shares: -after },
-	] as const;
-}
-
 const HEDGE_ROW = 40;
 
 function HedgeTable({
@@ -568,9 +534,6 @@ function HedgeScene({
 
 type ExpiryState = { spot: number; near: boolean };
 
-const gammaOf = (contract: Contract, spot: number) =>
-	model(contract, spot).gamma;
-
 function ExpiryScene({
 	locale,
 	phase,
@@ -723,24 +686,6 @@ function ExpiryScene({
 }
 
 // ——— Lesson ———
-
-const [hedgeBefore, hedgeAfter, hedgeFixed] = hedgeColumns("you");
-const youDrift = hedgeAfter.options + hedgeAfter.shares;
-const youTrade = hedgeFixed.shares - hedgeAfter.shares;
-const benColumns = hedgeColumns("ben");
-const benTrade = benColumns[2].shares - benColumns[1].shares;
-const base = model(OCT_100_CALL, SPOT).price;
-const repricedUp = model(OCT_100_CALL, SPOT + MOVE).price - base;
-const sepAtStrike = gammaOf(SEP_20, SPOT);
-const octAtStrike = gammaOf(OCT_100_CALL, SPOT);
-const FAR = 92;
-
-/** The whole-dollar price where the Oct 18 call's delta changes fastest: its gamma peak. */
-const STEEPEST = Array.from({ length: 21 }, (_, i) => 90 + i).reduce(
-	(best, spot) =>
-		gammaOf(OCT_100_CALL, spot) > gammaOf(OCT_100_CALL, best) ? spot : best,
-	90,
-);
 
 const scenes = [
 	defineScene<SlopeState, SlopeState>({
@@ -1017,10 +962,11 @@ const scenes = [
 
 export function GammaWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="gamma"
 			label={["Interactive lesson on gamma", "Gamma 互动课"]}
+			film={gammaFilm}
 			scenes={scenes}
 		/>
 	);
