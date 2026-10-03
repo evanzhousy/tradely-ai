@@ -1,17 +1,10 @@
 import * as m from "motion/react-m";
 import {
-	ALFA,
 	ALFA_EARNINGS_DATE,
 	alfaCloses,
 	type Copy,
-	dailyReturns,
-	daysToExpiry,
 	expiries,
-	OCT_100_CALL,
-	optionQuote,
 	pick,
-	priceOption,
-	realizedVolatility,
 	SESSION_DATE,
 	standardDeviation,
 	usd,
@@ -23,52 +16,38 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { impliedRealizedVolatilityFilm } from "./implied-realized-volatility-film";
+import {
+	callAt,
+	DAILY_SD,
+	DAYS,
+	dayIndex,
+	fitted,
+	GAP,
+	GUESS,
+	IV_POINTS,
+	percent,
+	price,
+	prices,
+	RV_POINTS,
+	RV10,
+	RV20,
+	returns,
+	rv,
+	type Source,
+	SPOT,
+	shortDate,
+	sourceName,
+	TIMELINE_END,
+	type Window,
+	windowReturns,
+} from "./implied-realized-volatility-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-const STRIKE = OCT_100_CALL.strike;
-const DAYS = daysToExpiry(OCT_100_CALL.expiry);
-const callAt = (iv: number) =>
-	priceOption({ spot: SPOT, strike: STRIKE, days: DAYS, iv, right: "call" })
-		.price;
-
-/** The volatility at which the model reproduces a price: bisection, since price rises with IV. */
-function impliedVolatility(target: number) {
-	let low = 0.01;
-	let high = 2;
-	for (let i = 0; i < 60; i++) {
-		const mid = (low + high) / 2;
-		if (callAt(mid) < target) low = mid;
-		else high = mid;
-	}
-	return (low + high) / 2;
-}
-
-const quote = optionQuote(OCT_100_CALL);
-type Source = "bid" | "mid" | "ask";
-const prices: Record<Source, number> = {
-	bid: quote.bid / 100,
-	mid: (quote.bid + quote.ask) / 200,
-	ask: quote.ask / 100,
-};
-const fitted: Record<Source, number> = {
-	bid: impliedVolatility(prices.bid),
-	mid: impliedVolatility(prices.mid),
-	ask: impliedVolatility(prices.ask),
-};
-const sourceName: Record<Source, Copy> = {
-	bid: ["bid", "买价"],
-	mid: ["mid", "中间价"],
-	ask: ["ask", "卖价"],
-};
-
-const percent = (fraction: number, places = 1) =>
-	`${fraction < 0 ? "−" : ""}${Math.abs(fraction * 100).toFixed(places)}%`;
-const price = (dollars: number) => usd(Math.round(dollars * 100));
 
 const chartHeight = (width: number) => (width < 520 ? 260 : 290);
 
@@ -272,27 +251,7 @@ function FitView({
 
 // ——— Scene 2: realized volatility depends on the measurement ———
 
-type Window = 20 | 10;
 type MeasureState = { window: Window; annualized: boolean; periods: 252 | 365 };
-
-const returns = dailyReturns(alfaCloses);
-const windowReturns = (window: Window) =>
-	returns.slice(returns.length - window);
-const rv = (window: Window, periods: 252 | 365 = 252) =>
-	realizedVolatility(windowReturns(window), periods);
-const RV20 = rv(20);
-
-/** "Aug 16" / "8月16日". */
-const shortDate = (iso: string, locale: Locale) => {
-	const [, month, day] = iso.split("-").map(Number);
-	return locale === "zh"
-		? `${month}月${day}日`
-		: new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-				timeZone: "UTC",
-			});
-};
 
 const RETURN_TOP = 34;
 const RETURN_BOTTOM = 196;
@@ -501,18 +460,6 @@ function MeasureView({
 // ——— Scene 3: forward and backward horizons ———
 
 type HorizonState = { stage: 0 | 1 | 2 };
-
-const IV_POINTS = Math.round(fitted.mid * 100);
-const RV_POINTS = Math.round(RV20 * 100);
-const GAP = IV_POINTS - RV_POINTS;
-
-const dayIndex = (iso: string) =>
-	Math.round(
-		(Date.parse(`${iso}T12:00:00Z`) -
-			Date.parse(`${alfaCloses[0].date}T12:00:00Z`)) /
-			86_400_000,
-	);
-const TIMELINE_END = dayIndex(expiries.oct18.date);
 
 function Horizons({
 	width,
@@ -723,10 +670,6 @@ function HorizonView({
 }
 
 // ——— Lesson ———
-
-const GUESS = 0.3;
-const RV10 = rv(10);
-const DAILY_SD = standardDeviation(windowReturns(20));
 
 const scenes = [
 	defineScene<FitState, FitState>({
@@ -1008,13 +951,14 @@ export function ImpliedRealizedVolatilityWalkthrough({
 	locale: Locale;
 }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="implied-realized-volatility"
 			label={[
 				"Interactive lesson on implied and realized volatility",
 				"隐含与已实现波动率互动课",
 			]}
+			film={impliedRealizedVolatilityFilm}
 			scenes={scenes}
 		/>
 	);
