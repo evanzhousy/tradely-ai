@@ -1,13 +1,12 @@
 import { gsap } from "gsap";
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { type Copy, pick, signedCount, signedUsd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
-import { textWidth } from "../walkthrough/text-measure";
+import { textWidth, wrapText } from "../walkthrough/text-measure";
 import {
 	CALL_DELTA,
 	curve,
-	DAYS,
 	fixed2,
 	holders,
 	MOVE,
@@ -24,23 +23,22 @@ import {
 } from "./delta-model";
 
 /*
- * Delta, as a film. Subject: the marker on the option's value curve; it keeps its shape
- * from the first frame to the last. Secondary: the tangent and the numbers it produces.
- * Background: the axes, which only ever fade. Each shot has one job, every mark moves for
- * a reason, and nothing moves at the same moment as something else: the marker leads,
- * the tangent follows, the labels last. No glow, no synchronized fades, no camera move
- * without a thing to look at.
+ * Delta, as a film. A dark stage; type carries the claims and the chart carries the proof,
+ * each in its own shot, cut together. Subject: the number 0.52, born on the chart and
+ * carried through the rest of the film. Secondary: the marker and its tangent. Background:
+ * a grid that drifts, slowly, the whole way through.
  *
- *   price     0–7     the marker lands on today's price; the curve grows out of it
- *   slope     7–16.5  push in; the tangent, a $1 step, the $0.52 rise, the number "delta"
- *   put       16.5–23 pull out; the curve folds into the put, the slope turns over
- *   position  23–34   the chart quiets; the delta chip builds two positions in a ledger
- *   limits    34–44   the marker rides the curve, a ghost rides the line; they part
+ *   open      0–4    "Delta" wipes on; the title shrinks into the corner as a tag
+ *   question  4–9    ALFA $100 → $101: the call moves by… ?
+ *   slope     9–18   the chart rises from the depth; push in; the $1 step, the $0.52 rise;
+ *                    cut to 0.52, full frame
+ *   put       18–24  the number flips to −0.48 while the curve folds into the put
+ *   position  24–34  0.52 × 100 × 16 = +832, one line per beat; Ben's sign flips it red
+ *   limits    34–43  the marker rides the curve, a ghost rides the line; cut: "Delta is local."
+ *   next      43–45  Next: gamma
  */
 
 const Y_RANGE = [-2, 16] as const;
-const PAD = { left: 46, right: 14, top: 18, bottom: 40 };
-
 const V0 = valueAt("call", SPOT);
 const P0 = valueAt("put", SPOT);
 const [you, ben] = holders;
@@ -48,14 +46,26 @@ const call = curve("call");
 const put = curve("put");
 const UP = 10;
 const DOWN = -10;
-const CHIP_H = 26;
+const END = 45;
+
+const clamp = (low: number, value: number, high: number) =>
+	Math.max(low, Math.min(high, value));
 
 function layout(width: number) {
-	const height = width < 520 ? 320 : 380;
-	const left = PAD.left;
-	const right = width - PAD.right;
-	const top = PAD.top;
-	const bottom = height - PAD.bottom;
+	const narrow = width < 520;
+	const height = Math.round(narrow ? width * 0.75 : (width * 9) / 16);
+	const type = {
+		big: clamp(32, width * 0.105, 100),
+		title: clamp(24, width * 0.06, 56),
+		head: clamp(15, width * 0.027, 25),
+		num: clamp(20, width * 0.044, 42),
+		body: clamp(12, width * 0.018, 17),
+		small: clamp(10, width * 0.013, 13),
+	};
+	const left = Math.max(34, width * 0.085);
+	const right = width * 0.965;
+	const top = height * 0.17;
+	const bottom = height * 0.84;
 	const x = (value: number) =>
 		left + ((value - X_RANGE[0]) / (X_RANGE[1] - X_RANGE[0])) * (right - left);
 	const y = (value: number) =>
@@ -68,24 +78,18 @@ function layout(width: number) {
 					`${i ? "L" : "M"}${x(px).toFixed(1)} ${y(py).toFixed(1)}`,
 			)
 			.join("");
-	// The ledger: three chips and two operators per row, sized to the plot.
-	const opWidth = Math.max(textWidth("× −10", 13), textWidth("× 100", 13)) + 14;
-	const gap = 8;
-	const chip = Math.max(
-		48,
-		Math.min(84, (right - left - 2 * opWidth - 4 * gap) / 3),
-	);
-	const rowWidth = 3 * chip + 2 * opWidth + 4 * gap;
-	const rowLeft = left + (right - left - rowWidth) / 2;
-	const slot = (i: number) =>
-		rowLeft + i * (chip + opWidth + 2 * gap) + chip / 2;
-	const op = (i: number) =>
-		rowLeft + chip + gap + i * (chip + opWidth + 2 * gap) + opWidth / 2;
-	const row1 = top + (bottom - top) * 0.38;
-	const row2 = top + (bottom - top) * 0.74;
+	/** The chain of a position: one line per beat, down the middle of the frame. */
+	// A phone's headline wraps, so its chain starts lower and packs a little tighter.
+	const rows = (
+		narrow ? [0.35, 0.45, 0.55, 0.64, 0.73] : [0.31, 0.42, 0.53, 0.64, 0.75]
+	).map((f) => height * f);
+	const equivY = height * (narrow ? 0.8 : 0.83);
+	const payY = height * (narrow ? 0.88 : 0.93);
 	return {
 		width,
 		height,
+		narrow,
+		type,
 		left,
 		right,
 		top,
@@ -93,128 +97,139 @@ function layout(width: number) {
 		x,
 		y,
 		path,
-		chip,
-		slot,
-		op,
-		row1,
-		row2,
+		cx: (left + right) / 2,
+		cy: (top + bottom) / 2,
+		rows,
+		equivY,
+		payY,
 	};
 }
 
 const copy = {
-	title1: [
-		`ALFA is at ${stock(SPOT)}. The Oct 18 100 call is worth ${price(V0)} a share.`,
-		`ALFA 现价 ${stock(SPOT)}。10月18日 100 看涨每股值 ${price(V0)}。`,
+	title: ["Delta", "Delta"],
+	titleSub: ["a local price sensitivity", "局部的价格敏感度"],
+	qPrice: [`ALFA ${stock(SPOT)}`, `ALFA ${stock(SPOT)}`],
+	qNext: [`→ ${stock(SPOT + 1)}`, `→ ${stock(SPOT + 1)}`],
+	qLine: ["The Oct 18 100 call moves by", "10月18日 100 看涨会变动"],
+	perDollar: [
+		`per $1 of ALFA, at ${stock(SPOT)}`,
+		`ALFA 在 ${stock(SPOT)} 时，每变动 $1`,
 	],
-	sub1: [
-		`Model value today, ${DAYS} days to expiry.`,
-		`今天的模型价值，距到期 ${DAYS} 天。`,
+	deltaWord: ["delta", "delta"],
+	putHead: ["Puts slope the other way.", "看跌期权的斜率方向相反。"],
+	putSub: [
+		`+$1 in ALFA takes ${price(Math.abs(PUT_DELTA))} off the put.`,
+		`ALFA 涨 $1，看跌约减少 ${price(Math.abs(PUT_DELTA))}。`,
 	],
-	title2: [
-		"Delta is the slope of that curve at today's price.",
-		"Delta 是这条曲线在今天价格处的斜率。",
+	chainHead: ["Keep the sign and the multiplier attached.", "保留符号与乘数。"],
+	op100: ["× 100 shares per contract", "× 每张 100 股"],
+	opYou: [
+		`× ${signedCount(you.contracts)} contracts, you`,
+		`× 你持有 ${signedCount(you.contracts)} 张`,
 	],
-	sub2: [
-		`+$1 in ALFA is about ${signedPrice(CALL_DELTA)} in the call.`,
-		`ALFA 涨 $1，看涨约变动 ${signedPrice(CALL_DELTA)}。`,
+	opBen: [
+		`× ${signedCount(ben.contracts)} contracts, Ben`,
+		`× Ben 持有 ${signedCount(ben.contracts)} 张`,
 	],
-	title3: ["The put slopes the other way.", "看跌期权的斜率方向相反。"],
-	sub3: [
-		`Delta ${fixed2(PUT_DELTA)}: a $1 rise takes ${price(Math.abs(PUT_DELTA))} off it.`,
-		`Delta ${fixed2(PUT_DELTA)}：ALFA 涨 $1，它约减少 ${price(Math.abs(PUT_DELTA))}。`,
+	equivalents: ["share-equivalents of ALFA", "相当于这么多股 ALFA"],
+	pay: [
+		`ALFA +$${MOVE.toFixed(2)} → about ${signedUsd(moveDollars(you.contracts), 0)} for you, ${signedUsd(moveDollars(ben.contracts), 0)} for Ben`,
+		`ALFA +$${MOVE.toFixed(2)} → 你约 ${signedUsd(moveDollars(you.contracts), 0)}，Ben 约 ${signedUsd(moveDollars(ben.contracts), 0)}`,
 	],
-	title4: ["Keep the sign and the multiplier attached.", "保留符号与乘数。"],
-	sub4: [
-		"Per share → per contract → per position.",
-		"每股 → 每张 → 每个持仓。",
+	/** A phone's headline must stay on one line above the chart. */
+	limitHeadShort: ["Where the straight line stops.", "直线在哪里不再成立。"],
+	limitHead: [
+		"Where the straight line stops being true.",
+		"直线在哪里不再成立。",
 	],
-	sub4b: [
-		`A $${MOVE.toFixed(2)} rise in ALFA: about ${signedUsd(moveDollars(you.contracts), 0)} for you, ${signedUsd(moveDollars(ben.contracts), 0)} for Ben.`,
-		`ALFA 上涨 $${MOVE.toFixed(2)}：你约 ${signedUsd(moveDollars(you.contracts), 0)}，Ben 约 ${signedUsd(moveDollars(ben.contracts), 0)}。`,
+	model: ["model", "模型"],
+	deltaAlone: ["delta alone", "仅用 delta"],
+	missed: ["missed by", "相差"],
+	below: ["no option is worth less than zero", "期权不可能为负"],
+	belowShort: ["can't go below zero", "不会低于零"],
+	localBig: ["Delta is local.", "Delta 是局部的。"],
+	localSub: [
+		"It describes a small move. For a big one, reprice.",
+		"它描述的是小幅变动；大幅变动要重新定价。",
 	],
-	title5: [
-		"One slope can't describe every move.",
-		"一个斜率不能描述所有变动。",
-	],
-	sub5: [
-		"Delta describes small moves. For big ones, reprice.",
-		"Delta 描述的是小幅变动；大幅变动要重新定价。",
-	],
-	title6: [
-		"That bend is gamma, the next lesson.",
-		"这种弯曲就是 Gamma，下一课。",
-	],
-	sub6: ["Try it yourself in the playground.", "到探索区自己试一试。"],
+	nextBig: ["Next: gamma", "下一课：Gamma"],
+	nextSub: ["the bend you just watched", "你刚才看到的那段弯曲"],
+	cta: ["Try it in the playground ↓", "到探索区自己试一试 ↓"],
 	axis: ["ALFA price today", "ALFA 今天的价格"],
 	callLabel: ["call value, model", "看涨价值（模型）"],
 	putLabel: ["put value, model", "看跌价值（模型）"],
-	/** On a phone the put's label must fit over the flat end of its curve. */
 	putShort: ["put, model", "看跌（模型）"],
-	delta: ["delta", "Delta"],
-	you: [
-		`${pick(you.name, "en")} · ${signedCount(you.contracts)} contracts`,
-		`${pick(you.name, "zh")} · ${signedCount(you.contracts)} 张`,
-	],
-	ben: [
-		`${pick(ben.name, "en")} · ${signedCount(ben.contracts)} contracts`,
-		`${pick(ben.name, "zh")} · ${signedCount(ben.contracts)} 张`,
-	],
-	equivalents: ["share-equivalents", "股票等价"],
-	model: ["model", "模型"],
-	deltaAlone: ["delta alone", "仅用 Delta"],
-	missed: ["missed by", "相差"],
-	below: ["no option is worth less than zero", "期权不可能为负"],
-	/** On a phone the band's label shares its row with the −$10 labels. */
-	belowShort: ["can't go below zero", "不会低于零"],
 } as const satisfies Record<string, Copy>;
 
-const titles = [
-	copy.title1,
-	copy.title2,
-	copy.title3,
-	copy.title4,
-	copy.title5,
-	copy.title6,
-] as const;
-const subs = [
-	copy.sub1,
-	copy.sub2,
-	copy.sub3,
-	copy.sub4,
-	copy.sub4b,
-	copy.sub5,
-	copy.sub6,
-] as const;
-/** Each caption step: which title and which line under it. A title that stays put stays put. */
-const steps = [
-	{ title: 0, sub: 0 },
-	{ title: 1, sub: 1 },
-	{ title: 2, sub: 2 },
-	{ title: 3, sub: 3 },
-	{ title: 3, sub: 4 },
-	{ title: 4, sub: 5 },
-	{ title: 5, sub: 6 },
-] as const;
-
-function Head({ locale }: { locale: Locale }) {
-	const t = (value: Copy) => pick(value, locale);
+/** A block of stage type, wrapped to its room. Words are set in the sans, a little narrower than mono. */
+function Lines({
+	name,
+	text,
+	x,
+	y,
+	size,
+	maxWidth,
+	anchor = "middle",
+	className = "wt-film-type",
+	lineHeight = 1.35,
+}: {
+	name: string;
+	text: string;
+	x: number;
+	y: number;
+	size: number;
+	maxWidth: number;
+	anchor?: "start" | "middle" | "end";
+	className?: string;
+	lineHeight?: number;
+}) {
+	const lines = wrapText(text, maxWidth, size * 0.92);
 	return (
-		<>
-			<div className="wt-film-titles">
-				{titles.map((title, i) => (
-					<p key={title[0]} className="wt-film-title" data-f={`title-${i}`}>
-						{t(title)}
-					</p>
-				))}
-			</div>
-			<div className="wt-film-subs">
-				{subs.map((sub, i) => (
-					<p key={sub[0]} className="wt-film-sub" data-f={`sub-${i}`}>
-						{t(sub)}
-					</p>
-				))}
-			</div>
-		</>
+		<text
+			data-f={name}
+			x={x}
+			y={y}
+			textAnchor={anchor}
+			className={className}
+			style={{ fontSize: size }}
+		>
+			{lines.map((line, i) => (
+				<tspan key={line} x={x} dy={i === 0 ? 0 : size * lineHeight}>
+					{line}
+				</tspan>
+			))}
+		</text>
+	);
+}
+
+function Word({
+	name,
+	x,
+	y,
+	size,
+	anchor = "middle",
+	className = "wt-film-type",
+	children,
+}: {
+	name: string;
+	x: number;
+	y: number;
+	size: number;
+	anchor?: "start" | "middle" | "end";
+	className?: string;
+	children: ReactNode;
+}) {
+	return (
+		<text
+			data-f={name}
+			x={x}
+			y={y}
+			textAnchor={anchor}
+			className={className}
+			style={{ fontSize: size }}
+		>
+			{children}
+		</text>
 	);
 }
 
@@ -228,17 +243,38 @@ function Scene({
 }) {
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
+	const { height: H, type: T } = L;
+	const W = width;
 	const id = useId().replace(/:/g, "");
 	const mx = L.x(SPOT);
 	const my = L.y(V0);
-	const chipWidth = Math.max(textWidth("−0.48", 13) + 16, 44);
-	const rows = [
-		{ id: "you", y: L.row1, label: copy.you, contracts: you.contracts },
-		{ id: "ben", y: L.row2, label: copy.ben, contracts: ben.contracts },
-	] as const;
+	const room = W * 0.84;
+	const gridStep = Math.round(W / 14);
+	const nextWidth = textWidth(t(copy.qNext), T.num);
+	const stepX = W / 2 + 8 + nextWidth / 2;
+	const stepY = H * 0.4 - T.num * 1.15;
+	const stepW = textWidth("+$1", T.small) + 14;
 	return (
 		<>
 			<defs>
+				<pattern
+					id={`grid-${id}`}
+					width={gridStep}
+					height={gridStep}
+					patternUnits="userSpaceOnUse"
+				>
+					<path d={`M${gridStep} 0H0V${gridStep}`} className="wt-film-grid" />
+				</pattern>
+				<radialGradient id={`vig-${id}`} cx="50%" cy="45%" r="72%">
+					<stop
+						offset="55%"
+						style={{ stopColor: "var(--film-bg)", stopOpacity: 0 }}
+					/>
+					<stop
+						offset="100%"
+						style={{ stopColor: "var(--film-bg)", stopOpacity: 0.8 }}
+					/>
+				</radialGradient>
 				<pattern
 					id={`hatch-${id}`}
 					width="6"
@@ -249,352 +285,502 @@ function Scene({
 					<rect width="6" height="6" className="wt-hatch-bg" />
 					<line x1="0" y1="0" x2="0" y2="6" className="wt-hatch-line" />
 				</pattern>
+				<clipPath id={`wipe-${id}`}>
+					<rect
+						data-f="wipe"
+						x={-4}
+						y={-T.title}
+						width={0}
+						height={T.title * 1.35}
+					/>
+				</clipPath>
 				<clipPath id={`left-${id}`}>
-					<rect data-f="clip-left" x={mx} y={0} width={0} height={L.height} />
+					<rect data-f="clip-left" x={mx} y={0} width={0} height={H} />
 				</clipPath>
 				<clipPath id={`right-${id}`}>
-					<rect data-f="clip-right" x={mx} y={0} width={0} height={L.height} />
+					<rect data-f="clip-right" x={mx} y={0} width={0} height={H} />
 				</clipPath>
 			</defs>
-			<g data-f="axes">
-				{[0, 4, 8, 12, 16].map((tick) => (
-					<g key={tick}>
-						<path
-							d={`M${L.left} ${L.y(tick)}H${L.right}`}
-							className={tick === 0 ? "wt-axis" : "wt-grid"}
-						/>
+			<rect x={0} y={0} width={W} height={H} className="wt-film-bg" />
+			<rect
+				data-f="drift"
+				x={-W * 0.1}
+				y={0}
+				width={W * 1.3}
+				height={H}
+				fill={`url(#grid-${id})`}
+			/>
+			<rect x={0} y={0} width={W} height={H} fill={`url(#vig-${id})`} />
+
+			{/* The chart: the proof. It rises from the depth when a shot needs it. */}
+			<g data-f="depth">
+				<g data-f="world">
+					<g data-f="axes">
+						{[0, 4, 8, 12, 16].map((tick) => (
+							<g key={tick}>
+								<path
+									d={`M${L.left} ${L.y(tick)}H${L.right}`}
+									className={tick === 0 ? "wt-axis" : "wt-grid"}
+								/>
+								<text
+									x={L.left - 8}
+									y={L.y(tick) + 4}
+									textAnchor="end"
+									className="wt-small"
+								>
+									{`$${tick}`}
+								</text>
+							</g>
+						))}
+						{[90, 95, 100, 105, 110].map((tick) => (
+							<text
+								key={tick}
+								x={L.x(tick)}
+								y={L.bottom + 18}
+								textAnchor="middle"
+								className="wt-small"
+							>
+								{`$${tick}`}
+							</text>
+						))}
 						<text
-							x={L.left - 8}
-							y={L.y(tick) + 4}
+							x={L.right}
+							y={L.bottom + 32}
 							textAnchor="end"
 							className="wt-small"
 						>
-							{`$${tick}`}
+							{t(copy.axis)}
 						</text>
 					</g>
-				))}
-				{[90, 95, 100, 105, 110].map((tick) => (
+					<rect
+						data-f="below"
+						x={L.left}
+						y={L.y(0)}
+						width={L.right - L.left}
+						height={L.y(Y_RANGE[0]) - L.y(0)}
+						fill={`url(#hatch-${id})`}
+					/>
 					<text
-						key={tick}
-						data-f="x-tick"
-						x={L.x(tick)}
-						y={L.bottom + 18}
-						textAnchor="middle"
-						className="wt-small"
+						data-f="below-label"
+						x={L.right - 8}
+						y={L.y(-1) + 4}
+						textAnchor="end"
+						className="wt-small wt-halo"
 					>
-						{`$${tick}`}
+						{t(L.narrow ? copy.belowShort : copy.below)}
 					</text>
-				))}
-				<text
-					x={L.right}
-					y={L.bottom + 32}
-					textAnchor="end"
-					className="wt-small"
-				>
-					{t(copy.axis)}
-				</text>
-			</g>
-			<g data-f="chart">
-				<rect
-					data-f="below"
-					x={L.left}
-					y={L.y(0)}
-					width={L.right - L.left}
-					height={L.y(Y_RANGE[0]) - L.y(0)}
-					fill={`url(#hatch-${id})`}
-				/>
-				<text
-					data-f="below-label"
-					x={L.right - 8}
-					y={L.y(-1) + 4}
-					textAnchor="end"
-					className="wt-small wt-halo"
-				>
-					{t(width < 520 ? copy.belowShort : copy.below)}
-				</text>
-				<g clipPath={`url(#left-${id})`}>
-					<path
-						data-f="curve-a"
-						className="wt-line-position"
-						strokeDasharray="6 5"
-						d={L.path(call)}
-					/>
-				</g>
-				<g clipPath={`url(#right-${id})`}>
-					<path
-						data-f="curve-b"
-						className="wt-line-position"
-						strokeDasharray="6 5"
-						d={L.path(call)}
-					/>
-				</g>
-				<text
-					data-f="curve-label-call"
-					x={L.right - 4}
-					y={L.y(call[call.length - 1][1]) - 8}
-					textAnchor="end"
-					className="wt-small wt-halo wt-label-position"
-				>
-					{t(copy.callLabel)}
-				</text>
-				<text
-					data-f="curve-label-put"
-					x={L.right - 4}
-					y={L.y(put[put.length - 1][1]) - 16}
-					textAnchor="end"
-					className="wt-small wt-halo wt-label-position"
-				>
-					{t(width < 520 ? copy.putShort : copy.putLabel)}
-				</text>
-				<line
-					data-f="tangent"
-					className="wt-film-tangent"
-					x1={mx}
-					y1={my}
-					x2={mx}
-					y2={my}
-				/>
-				<g data-f="step">
+					<g clipPath={`url(#left-${id})`}>
+						<path
+							data-f="curve-a"
+							className="wt-line-position"
+							strokeDasharray="6 5"
+							d={L.path(call)}
+						/>
+					</g>
+					<g clipPath={`url(#right-${id})`}>
+						<path
+							data-f="curve-b"
+							className="wt-line-position"
+							strokeDasharray="6 5"
+							d={L.path(call)}
+						/>
+					</g>
+					<text
+						data-f="curve-label-call"
+						x={L.right - 4}
+						y={L.y(call[call.length - 1][1]) - 8}
+						textAnchor="end"
+						className="wt-small wt-halo wt-label-position"
+					>
+						{t(copy.callLabel)}
+					</text>
+					<text
+						data-f="curve-label-put"
+						x={L.right - 4}
+						y={L.y(put[put.length - 1][1]) - 16}
+						textAnchor="end"
+						className="wt-small wt-halo wt-label-position"
+					>
+						{t(L.narrow ? copy.putShort : copy.putLabel)}
+					</text>
 					<line
-						data-f="step-line"
-						className="wt-film-step"
+						data-f="tangent"
+						className="wt-film-tangent"
 						x1={mx}
 						y1={my}
-						x2={L.x(SPOT + 1)}
+						x2={mx}
 						y2={my}
 					/>
+					<g data-f="step">
+						<line
+							data-f="step-line"
+							className="wt-film-step"
+							x1={mx}
+							y1={my}
+							x2={L.x(SPOT + 1)}
+							y2={my}
+						/>
+						<text
+							data-f="step-label"
+							x={(mx + L.x(SPOT + 1)) / 2}
+							y={my + 16}
+							textAnchor="middle"
+							className="wt-small wt-halo wt-accent"
+						>
+							+$1
+						</text>
+					</g>
+					<g data-f="riser">
+						<line
+							data-f="riser-line"
+							className="wt-film-riser"
+							x1={L.x(SPOT + 1)}
+							y1={my}
+							x2={L.x(SPOT + 1)}
+							y2={my}
+						/>
+						<text
+							data-f="riser-label"
+							x={L.x(SPOT + 1) + 8}
+							y={L.y(V0 + CALL_DELTA) + 14}
+							className="wt-halo wt-accent wt-marker-label"
+						>
+							{signedPrice(CALL_DELTA)}
+						</text>
+					</g>
+					<g data-f="ghost">
+						<circle r={6} className="wt-film-ghost" />
+					</g>
+					<text data-f="ghost-label" className="wt-small wt-halo" />
+					<line data-f="gap" className="wt-film-gap" />
 					<text
-						data-f="step-label"
-						x={(mx + L.x(SPOT + 1)) / 2}
-						y={my + 16}
+						data-f="gap-label"
+						className="wt-small wt-halo wt-loss wt-marker-label"
+					/>
+					<g data-f="marker">
+						<circle data-f="ripple" r={6} className="wt-film-ripple" />
+						<circle
+							data-f="dot"
+							r={6}
+							className="wt-chip"
+							stroke="var(--foreground)"
+							strokeWidth={1.5}
+						/>
+					</g>
+					<text
+						data-f="marker-label-call"
+						x={mx}
+						y={my - 14}
 						textAnchor="middle"
-						className="wt-small wt-halo wt-accent"
+						className="wt-halo wt-accent wt-marker-label"
+					>
+						{price(V0)}
+					</text>
+					<text
+						data-f="marker-label-put"
+						x={mx}
+						y={L.y(P0) - 14}
+						textAnchor="middle"
+						className="wt-halo wt-accent wt-marker-label"
+					>
+						{price(P0)}
+					</text>
+					<text data-f="move-label" className="wt-halo wt-marker-label" />
+				</g>
+			</g>
+
+			{/* The type: the claims. */}
+			<g data-f="title-group">
+				<text
+					data-f="title"
+					x={0}
+					y={0}
+					className="wt-film-type"
+					style={{ fontSize: T.title }}
+					clipPath={`url(#wipe-${id})`}
+				>
+					{t(copy.title)}
+				</text>
+			</g>
+			<Word
+				name="title-sub"
+				x={L.left}
+				y={H * 0.5 + T.head * 1.7}
+				size={T.head}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.titleSub)}
+			</Word>
+			<g data-f="q">
+				<Word
+					name="q-price"
+					x={W / 2 - 8}
+					y={H * 0.4}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num"
+				>
+					{t(copy.qPrice)}
+				</Word>
+				<Word
+					name="q-next"
+					x={W / 2 + 8}
+					y={H * 0.4}
+					size={T.num}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{t(copy.qNext)}
+				</Word>
+				<g data-f="q-step">
+					<rect
+						x={stepX - stepW / 2}
+						y={stepY - T.small - 4}
+						width={stepW}
+						height={T.small + 10}
+						rx={6}
+						className="wt-chip"
+					/>
+					<text
+						x={stepX}
+						y={stepY}
+						textAnchor="middle"
+						className="wt-chip-text"
+						style={{ fontSize: T.small }}
 					>
 						+$1
 					</text>
 				</g>
-				<g data-f="riser">
-					<line
-						data-f="riser-line"
-						className="wt-film-riser"
-						x1={L.x(SPOT + 1)}
-						y1={my}
-						x2={L.x(SPOT + 1)}
-						y2={my}
-					/>
-					<text
-						data-f="riser-label"
-						x={L.x(SPOT + 1) + 8}
-						y={L.y(V0 + CALL_DELTA) + 14}
-						className="wt-halo wt-accent wt-marker-label"
-					>
-						{signedPrice(CALL_DELTA)}
-					</text>
-				</g>
-				<g data-f="ghost">
-					<circle r={6} className="wt-film-ghost" />
-				</g>
-				<text data-f="ghost-label" className="wt-small wt-halo" />
-				<line data-f="gap" className="wt-film-gap" />
-				<text
-					data-f="gap-label"
-					className="wt-small wt-halo wt-loss wt-marker-label"
+				<Lines
+					name="q-line"
+					text={t(copy.qLine)}
+					x={W / 2}
+					y={H * 0.58}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
 				/>
-				<g data-f="marker">
-					<circle data-f="ripple" r={6} className="wt-film-ripple" />
-					<circle
-						data-f="dot"
-						r={6}
-						className="wt-chip"
-						stroke="var(--foreground)"
-						strokeWidth={1.5}
-					/>
-				</g>
-				<text
-					data-f="marker-label-call"
-					x={mx}
-					y={my - 14}
-					textAnchor="middle"
-					className="wt-halo wt-accent wt-marker-label"
-				>
-					{price(V0)}
-				</text>
-				<text
-					data-f="marker-label-put"
-					x={mx}
-					y={L.y(P0) - 14}
-					textAnchor="middle"
-					className="wt-halo wt-accent wt-marker-label"
-				>
-					{price(P0)}
-				</text>
-				<text data-f="move-label" className="wt-halo wt-marker-label" />
+				<Word name="q-mark" x={W / 2} y={H * 0.78} size={T.title}>
+					?
+				</Word>
 			</g>
-			<g data-f="chip">
-				<rect
-					className="wt-chip"
-					rx={7}
-					x={-chipWidth / 2}
-					y={-11}
-					width={chipWidth}
-					height={22}
-				/>
-				<text
-					data-f="chip-call"
-					y={4}
-					textAnchor="middle"
-					className="wt-chip-text"
+			<g data-f="num">
+				<Word
+					name="num-call"
+					x={0}
+					y={T.big * 0.36}
+					size={T.big}
+					className="wt-film-num"
 				>
 					{fixed2(CALL_DELTA)}
-				</text>
-				<text
-					data-f="chip-put"
-					y={4}
-					textAnchor="middle"
-					className="wt-chip-text"
+				</Word>
+				<Word
+					name="num-put"
+					x={0}
+					y={T.big * 0.36}
+					size={T.big}
+					className="wt-film-num"
 				>
 					{fixed2(PUT_DELTA)}
-				</text>
+				</Word>
+				<Word
+					name="num-word"
+					x={0}
+					y={T.big * 0.36 + T.head * 1.9}
+					size={T.head}
+					className="wt-film-type wt-film-accent"
+				>
+					{t(copy.deltaWord)}
+				</Word>
+				<Lines
+					name="num-sub"
+					text={t(copy.perDollar)}
+					x={0}
+					y={T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
 			</g>
-			<text data-f="delta-word" className="wt-accent">
-				{t(copy.delta)}
-			</text>
-			<g data-f="ledger">
-				{rows.map((row, r) => (
-					<g key={row.id} data-f={`row-${row.id}`}>
-						<text
-							data-f={`row-label-${row.id}`}
-							x={L.slot(0) - L.chip / 2}
-							y={row.y - CHIP_H / 2 - 10}
-							className="wt-small"
-						>
-							{t(row.label)}
-						</text>
-						{r === 1 ? (
-							<g data-f="chip-2">
-								<rect
-									className="wt-chip"
-									rx={8}
-									x={-L.chip / 2}
-									y={-CHIP_H / 2}
-									width={L.chip}
-									height={CHIP_H}
-								/>
-								<text
-									y={5}
-									textAnchor="middle"
-									className="wt-chip-text wt-film-big"
-								>
-									{fixed2(CALL_DELTA)}
-								</text>
-							</g>
-						) : null}
-						<text
-							data-f={`op-100-${row.id}`}
-							x={L.op(0)}
-							y={row.y + 5}
-							textAnchor="middle"
-							className="wt-muted"
-						>
-							× 100
-						</text>
-						<g data-f={`per-${row.id}`}>
-							<rect
-								className="wt-panel-shape"
-								rx={8}
-								x={L.slot(1) - L.chip / 2}
-								y={row.y - CHIP_H / 2}
-								width={L.chip}
-								height={CHIP_H}
-							/>
-							<text
-								x={L.slot(1)}
-								y={row.y + 5}
-								textAnchor="middle"
-								className="wt-film-big"
-							>
-								{perContract}
-							</text>
-						</g>
-						<text
-							data-f={`op-held-${row.id}`}
-							x={L.op(1)}
-							y={row.y + 5}
-							textAnchor="middle"
-							className="wt-muted"
-						>
-							{`× ${signedCount(row.contracts)}`}
-						</text>
-						<g data-f={`position-${row.id}`}>
-							<rect
-								className="wt-focus-shape"
-								rx={8}
-								x={L.slot(2) - L.chip / 2}
-								y={row.y - CHIP_H / 2}
-								width={L.chip}
-								height={CHIP_H}
-							/>
-							<text
-								data-f={`position-value-${row.id}`}
-								x={L.slot(2)}
-								y={row.y + 5}
-								textAnchor="middle"
-								className={
-									row.contracts < 0
-										? "wt-loss wt-film-big"
-										: "wt-gain wt-film-big"
-								}
-							>
-								{signedCount(positionDelta(row.contracts))}
-							</text>
-						</g>
-						<text
-							data-f={`equiv-${row.id}`}
-							x={L.slot(2) + L.chip / 2}
-							y={row.y + CHIP_H / 2 + 14}
-							textAnchor="end"
-							className="wt-small"
-						>
-							{t(copy.equivalents)}
-						</text>
-					</g>
-				))}
+			<Lines
+				name="put-head"
+				text={t(copy.putHead)}
+				x={L.left}
+				y={H * 0.17}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Lines
+				name="put-sub"
+				text={t(copy.putSub)}
+				x={L.left}
+				y={H * 0.17 + T.head * 1.7}
+				size={T.body}
+				maxWidth={L.narrow ? room : W * 0.42}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			/>
+			<g data-f="chain">
+				<Lines
+					name="ch-head"
+					text={t(copy.chainHead)}
+					x={W / 2}
+					y={H * 0.17}
+					size={T.head}
+					maxWidth={room}
+				/>
+				<Lines
+					name="ch-op100"
+					text={t(copy.op100)}
+					x={W / 2}
+					y={L.rows[1]}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Word
+					name="ch-per"
+					x={W / 2}
+					y={L.rows[2]}
+					size={T.num}
+					className="wt-film-num"
+				>
+					{perContract}
+				</Word>
+				<Lines
+					name="ch-op-you"
+					text={t(copy.opYou)}
+					x={W / 2}
+					y={L.rows[3]}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Word
+					name="ch-pos-you"
+					x={W / 2}
+					y={L.rows[4]}
+					size={T.num}
+					className="wt-film-num wt-film-gain"
+				>
+					{signedCount(positionDelta(you.contracts))}
+				</Word>
+				<Lines
+					name="ch-op-ben"
+					text={t(copy.opBen)}
+					x={W / 2}
+					y={L.rows[3]}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Word
+					name="ch-pos-ben"
+					x={W / 2}
+					y={L.rows[4]}
+					size={T.num}
+					className="wt-film-num wt-film-loss"
+				>
+					{signedCount(positionDelta(ben.contracts))}
+				</Word>
+				<Lines
+					name="ch-equiv"
+					text={t(copy.equivalents)}
+					x={W / 2}
+					y={L.equivY}
+					size={T.small}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Lines
+					name="ch-pay"
+					text={t(copy.pay)}
+					x={W / 2}
+					y={L.payY}
+					size={T.body}
+					maxWidth={room}
+				/>
+			</g>
+			<Lines
+				name="lim-head"
+				text={t(L.narrow ? copy.limitHeadShort : copy.limitHead)}
+				x={L.left}
+				y={H * 0.11}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<g data-f="local">
+				<Lines
+					name="local-big"
+					text={t(copy.localBig)}
+					x={W / 2}
+					y={H * 0.48}
+					size={T.title}
+					maxWidth={room}
+				/>
+				<Lines
+					name="local-sub"
+					text={t(copy.localSub)}
+					x={W / 2}
+					y={H * 0.48 + T.title * 1.1}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+			</g>
+			<g data-f="next">
+				<Lines
+					name="next-big"
+					text={t(copy.nextBig)}
+					x={W / 2}
+					y={H * 0.46}
+					size={T.title}
+					maxWidth={room}
+				/>
+				<Lines
+					name="next-sub"
+					text={t(copy.nextSub)}
+					x={W / 2}
+					y={H * 0.46 + T.title * 1.0}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Lines
+					name="next-cta"
+					text={t(copy.cta)}
+					x={W / 2}
+					y={H * 0.46 + T.title * 1.0 + T.body * 2.6}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-accent"
+				/>
 			</g>
 		</>
 	);
 }
 
-function build({ stage, svg, width, height, locale }: FilmContext) {
+function build({ stage, width, height, locale }: FilmContext) {
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
+	const { type: T, narrow } = L;
+	const W = width;
+	const H = height;
 	const q = gsap.utils.selector(stage);
-	const one = <T extends Element = SVGElement>(name: string) =>
-		q<T>(`[data-f="${name}"]`)[0];
+	const one = <E extends Element = SVGElement>(name: string) =>
+		q<E>(`[data-f="${name}"]`)[0];
 	const mx = L.x(SPOT);
 	const my = L.y(V0);
-	const narrow = width < 520;
-	const zoom = narrow ? 1.6 : 2;
-	const camera = (
-		scale: number,
-		fx: number,
-		fy: number,
-		ax: number,
-		ay: number,
-	) => {
-		const vw = width / scale;
-		const vh = height / scale;
-		const vx = Math.max(0, Math.min(width - vw, fx - vw * ax));
-		const vy = Math.max(0, Math.min(height - vh, fy - vh * ay));
-		return `${vx.toFixed(1)} ${vy.toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}`;
-	};
-	const home = `0 0 ${width} ${height}`;
-	const titleEls = q<HTMLElement>(".wt-film-title");
-	const subEls = q<HTMLElement>(".wt-film-sub");
+	const depth = one("depth");
+	const world = one("world");
 	const marker = one("marker");
 	const ghost = one("ghost");
-	const chip = one("chip");
-	const chip2 = one("chip-2");
-	const deltaWord = one<SVGTextElement>("delta-word");
+	const num = one("num");
+	const numCall = one("num-call");
+	const numPut = one("num-put");
 	const moveLabel = one<SVGTextElement>("move-label");
 	const ghostLabel = one<SVGTextElement>("ghost-label");
 	const gap = one<SVGLineElement>("gap");
@@ -602,26 +788,37 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 	const tangentLine = one<SVGLineElement>("tangent");
 	const callTangent = (spot: number) => V0 + CALL_DELTA * (spot - SPOT);
 	const putTangent = (spot: number) => P0 + PUT_DELTA * (spot - SPOT);
-	const chipWidth = Number(
-		chip.querySelector("rect")?.getAttribute("width") ?? 44,
-	);
 	const riserX = L.x(SPOT + 1);
 	const riserTop = L.y(V0 + CALL_DELTA);
-	// The chip rests below the tangent, right of the rise it names: the curve stays above
-	// the line, so that corner is the one place clear of both.
-	const chipHome = { x: riserX + 8 + chipWidth / 2, y: riserTop + 40 };
-	/** The word "delta" sits to the right of whichever chip it names. */
-	const wordBeside = (at: { x: number; y: number }) => ({
-		x: at.x + chipWidth / 2 + 8,
-		y: at.y + 4,
+	const titleWidth = textWidth(t(copy.title), T.title) + 8;
+	/** Camera: the drawing scaled about its origin so `focus` lands on `target`. */
+	const cam = (
+		scale: number,
+		focus: { x: number; y: number },
+		target: { x: number; y: number },
+	) => ({
+		scale,
+		x: target.x - scale * focus.x,
+		y: target.y - scale * focus.y,
 	});
-	const wordAt = wordBeside(chipHome);
+	const home = { scale: 1, x: 0, y: 0 };
+	const pushIn = cam(
+		narrow ? 1.7 : 2.1,
+		{ x: mx, y: my },
+		{ x: W * 0.36, y: H * 0.5 },
+	);
+	const aside = cam(
+		narrow ? 0.5 : 0.62,
+		{ x: L.cx, y: L.cy },
+		{ x: W * (narrow ? 0.72 : 0.7), y: H * 0.58 },
+	);
+	const tagScale = (T.small * 1.15) / T.title;
+	const center = { x: W / 2, y: H * 0.5 };
 
 	// Everything at rest: hidden until its shot needs it.
-	gsap.set([...titleEls, ...subEls], { opacity: 0, y: 8 });
-	gsap.set([titleEls[0], subEls[0]], { opacity: 1, y: 0 });
-	gsap.set(one("axes"), { opacity: 0 });
-	gsap.set(q("[data-f='x-tick']"), { opacity: 0 });
+	gsap.set(one("title-group"), { x: L.left, y: H * 0.5 });
+	gsap.set(depth, { opacity: 0, scale: 0.92, svgOrigin: `${W / 2} ${H / 2}` });
+	gsap.set(world, { ...home, transformOrigin: "0 0" });
 	gsap.set(marker, { x: mx, y: my - 90, opacity: 0 });
 	gsap.set(one("dot"), { transformOrigin: "50% 100%" });
 	gsap.set(one("ripple"), { opacity: 0, attr: { r: 6 } });
@@ -631,7 +828,7 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 			one("marker-label-put"),
 			one("curve-label-call"),
 			one("curve-label-put"),
-			one("tangent"),
+			tangentLine,
 			one("step"),
 			one("riser"),
 			one("below"),
@@ -641,91 +838,143 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 			gap,
 			gapLabel,
 			moveLabel,
-			deltaWord,
-			one("chip-put"),
-			one("ledger"),
+			one("title-sub"),
+			...q("[data-f='q'] > *"),
+			numCall,
+			numPut,
+			one("num-word"),
+			one("num-sub"),
+			one("put-head"),
+			one("put-sub"),
+			...q("[data-f='chain'] > *"),
+			one("lim-head"),
+			...q("[data-f='local'] > *"),
+			...q("[data-f='next'] > *"),
 		],
 		{ opacity: 0 },
 	);
 	gsap.set(one("step-line"), { attr: { x2: mx } });
-	gsap.set(chip, {
-		x: chipHome.x,
-		y: chipHome.y,
-		opacity: 0,
-		transformOrigin: "50% 50%",
-	});
-	gsap.set(deltaWord, {
-		attr: { x: wordAt.x, y: wordAt.y },
-	});
 	gsap.set(ghost, { x: mx, y: my });
-	gsap.set(chip2, {
-		x: L.slot(0),
-		y: L.row1,
-		opacity: 0,
-		transformOrigin: "50% 50%",
-	});
-	for (const row of ["you", "ben"]) {
-		gsap.set(
-			[
-				one(`row-label-${row}`),
-				one(`op-100-${row}`),
-				one(`per-${row}`),
-				one(`op-held-${row}`),
-				one(`position-${row}`),
-				one(`equiv-${row}`),
-			],
-			{ opacity: 0 },
-		);
-		gsap.set([one(`per-${row}`), one(`position-${row}`)], {
+	gsap.set(num, { x: center.x, y: center.y, transformOrigin: "0 0" });
+	gsap.set([numCall, numPut], { transformOrigin: "50% 50%" });
+	gsap.set(
+		[
+			one("q-step"),
+			one("q-mark"),
+			one("ch-per"),
+			one("ch-pos-you"),
+			one("ch-pos-ben"),
+		],
+		{
 			transformOrigin: "50% 50%",
-		});
-	}
+		},
+	);
 
 	const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
-	const out = { opacity: 0, y: -8, duration: 0.35, ease: "power2.in" };
-	const enter = { opacity: 1, y: 0, duration: 0.5 };
-	let shownTitle = 0;
-	let shownSub = 0;
-	const caption = (step: number, at: number) => {
-		const { title, sub } = steps[step];
-		if (title !== shownTitle) {
-			tl.to(titleEls[shownTitle], out, at);
-			tl.fromTo(titleEls[title], { opacity: 0, y: 8 }, enter, at + 0.25);
-			shownTitle = title;
-		}
-		tl.to(subEls[shownSub], out, at);
-		tl.fromTo(subEls[sub], { opacity: 0, y: 8 }, enter, at + 0.25);
-		shownSub = sub;
-	};
+	/** A line of type arrives from just below its place; a cut sends it up and away. */
+	const show = (
+		el: Element | Element[],
+		at: number,
+		from: "below" | "above" | "right" = "below",
+		duration = 0.5,
+	) =>
+		tl.fromTo(
+			el,
+			{
+				opacity: 0,
+				y: from === "below" ? 14 : from === "above" ? -14 : 0,
+				x: from === "right" ? 18 : 0,
+			},
+			{ opacity: 1, y: 0, x: 0, duration },
+			at,
+		);
+	const hide = (el: Element | Element[], at: number, duration = 0.35) =>
+		tl.to(el, { opacity: 0, y: -12, duration, ease: "power2.in" }, at);
+	const pop = (el: Element, at: number, duration = 0.5) =>
+		tl.fromTo(
+			el,
+			{ opacity: 0, scale: 0.6 },
+			{ opacity: 1, scale: 1, duration, ease: "back.out(1.8)" },
+			at,
+		);
+	/** The chart rises from the depth, or sinks back into it. */
+	const rise = (at: number) =>
+		tl.to(
+			depth,
+			{ opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" },
+			at,
+		);
+	const sink = (at: number) =>
+		tl.to(
+			depth,
+			{ opacity: 0, scale: 0.9, duration: 0.4, ease: "power2.in" },
+			at,
+		);
 
-	// ——— Shot 1: a price and a curve ———
-	tl.addLabel("price", 0);
-	tl.to(one("axes"), { opacity: 1, duration: 0.7 }, 0);
+	// The grid drifts the whole way through: the stage is never quite still.
+	tl.fromTo(
+		one("drift"),
+		{ x: 0 },
+		{ x: -W * 0.06, duration: END, ease: "none" },
+		0,
+	);
+
+	// ——— open: the title ———
+	tl.addLabel("open", 0);
 	tl.to(
-		q("[data-f='x-tick']"),
-		{ opacity: 1, duration: 0.4, stagger: 0.06 },
+		one("wipe"),
+		{ attr: { width: titleWidth }, duration: 0.9, ease: "power3.out" },
 		0.3,
 	);
-	// The marker drops onto today's price, lands with a squash and settles.
-	tl.to(marker, { opacity: 1, duration: 0.2 }, 0.9);
-	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 0.9);
+	show(one("title-sub"), 1.0);
+
+	// ——— question: ALFA $100 → $101, the call moves by… ? ———
+	tl.addLabel("question", 4);
+	hide(one("title-sub"), 4.0);
+	tl.to(
+		one("title-group"),
+		{
+			x: L.left,
+			y: H * 0.1,
+			scale: tagScale,
+			duration: 0.9,
+			ease: "power3.inOut",
+		},
+		4.0,
+	);
+	tl.to(
+		one("title"),
+		{ attr: { class: "wt-film-type wt-film-dim" }, duration: 0.3 },
+		4.4,
+	);
+	show(one("q-price"), 4.7);
+	show(one("q-next"), 5.4, "right");
+	pop(one("q-step"), 5.9);
+	show(one("q-line"), 6.6);
+	pop(one("q-mark"), 7.3, 0.6);
+
+	// ——— slope: the chart proves it; cut to the number ———
+	tl.addLabel("slope", 9);
+	hide(q("[data-f='q'] > *"), 9.0);
+	rise(9.2);
+	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.0);
+	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.0);
 	tl.to(
 		one("dot"),
 		{ scaleY: 0.72, scaleX: 1.2, duration: 0.1, ease: "power1.out" },
-		1.45,
+		10.55,
 	);
 	tl.to(
 		one("dot"),
 		{ scaleY: 1, scaleX: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" },
-		1.55,
+		10.65,
 	);
 	tl.fromTo(
 		one("ripple"),
 		{ opacity: 0.6, attr: { r: 6 } },
 		{ opacity: 0, attr: { r: 26 }, duration: 0.7, ease: "power2.out" },
-		1.5,
+		10.6,
 	);
-	// The curve grows out of the marker in both directions.
 	tl.to(
 		one("clip-left"),
 		{
@@ -733,35 +982,23 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 			duration: 1.3,
 			ease: "power2.inOut",
 		},
-		1.9,
+		10.8,
 	);
 	tl.to(
 		one("clip-right"),
 		{ attr: { width: L.right - mx + 4 }, duration: 1.3, ease: "power2.inOut" },
-		1.9,
+		10.8,
 	);
 	tl.fromTo(
 		one("marker-label-call"),
 		{ opacity: 0, attr: { y: my - 4 } },
 		{ opacity: 1, attr: { y: my - 14 }, duration: 0.5 },
-		2.3,
+		11.3,
 	);
-	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 3.1);
-
-	// ——— Shot 2: push in to the slope ———
-	tl.addLabel("slope", 7);
-	caption(1, 7.1);
-	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.4 }, 7);
-	tl.to(
-		svg,
-		{
-			attr: { viewBox: camera(zoom, mx, my, 0.3, narrow ? 0.42 : 0.55) },
-			duration: 1.4,
-			ease: "power2.inOut",
-		},
-		7,
-	);
-	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 8.0);
+	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 12.0);
+	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.4);
+	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.4);
+	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 13.3);
 	tl.to(
 		tangentLine,
 		{
@@ -771,51 +1008,56 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 				x2: L.x(X_RANGE[1]),
 				y2: L.y(callTangent(X_RANGE[1])),
 			},
-			duration: 1.1,
+			duration: 1.0,
 			ease: "power2.inOut",
 		},
-		8.0,
+		13.3,
 	);
-	tl.to(one("step"), { opacity: 1, duration: 0.2 }, 9.4);
+	tl.to(one("step"), { opacity: 1, duration: 0.2 }, 14.4);
 	tl.to(
 		one("step-line"),
-		{ attr: { x2: riserX }, duration: 0.5, ease: "power2.out" },
-		9.4,
+		{ attr: { x2: riserX }, duration: 0.45, ease: "power2.out" },
+		14.4,
 	);
-	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 10.1);
+	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 15.0);
 	tl.to(
 		one("riser-line"),
 		{ attr: { y2: riserTop }, duration: 0.6, ease: "back.out(1.6)" },
-		10.1,
+		15.0,
 	);
+	// Cut: the chart sinks, the number lands.
+	sink(16.3);
 	tl.fromTo(
-		chip,
-		{ opacity: 0, scale: 0.6 },
-		{ opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-		11.4,
+		numCall,
+		{ opacity: 0, scale: 1.12, y: 6 },
+		{ opacity: 1, scale: 1, y: 0, duration: 0.55, ease: "back.out(2)" },
+		16.7,
 	);
-	tl.fromTo(
-		deltaWord,
-		{ opacity: 0, attr: { x: wordAt.x - 8, y: wordAt.y } },
-		{ opacity: 1, attr: { x: wordAt.x, y: wordAt.y }, duration: 0.5 },
-		11.9,
-	);
+	show(one("num-word"), 17.1);
+	show(one("num-sub"), 17.5);
 
-	// ——— Shot 3: the put ———
-	tl.addLabel("put", 16.5);
-	caption(2, 16.6);
+	// ——— put: the number flips while the curve folds ———
+	tl.addLabel("put", 18);
+	show(one("put-head"), 18.2, "above");
+	hide(one("num-sub"), 18.2);
 	tl.to(
-		svg,
-		{ attr: { viewBox: home }, duration: 1.2, ease: "power2.inOut" },
-		16.5,
+		num,
+		{ x: W * 0.27, y: H * 0.58, duration: 0.9, ease: "power3.inOut" },
+		18.2,
 	);
-	tl.to([one("step"), one("riser")], { opacity: 0, duration: 0.3 }, 16.5);
+	tl.set(world, aside, 18.3);
+	tl.set(
+		[one("step"), one("riser"), one("marker-label-call")],
+		{ opacity: 0 },
+		18.3,
+	);
+	rise(18.4);
 	tl.to(
 		[one("curve-a"), one("curve-b")],
-		{ attr: { d: L.path(put) }, duration: 1.4, ease: "power2.inOut" },
-		17.0,
+		{ attr: { d: L.path(put) }, duration: 1.3, ease: "power2.inOut" },
+		19.3,
 	);
-	tl.to(marker, { y: L.y(P0), duration: 1.4, ease: "power2.inOut" }, 17.0);
+	tl.to(marker, { y: L.y(P0), duration: 1.3, ease: "power2.inOut" }, 19.3);
 	tl.to(
 		tangentLine,
 		{
@@ -823,107 +1065,49 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 				y1: L.y(putTangent(X_RANGE[0])),
 				y2: L.y(putTangent(X_RANGE[1])),
 			},
-			duration: 1.4,
+			duration: 1.3,
 			ease: "power2.inOut",
 		},
-		17.15,
+		19.45,
 	);
-	tl.to(one("marker-label-call"), { opacity: 0, duration: 0.3 }, 17.0);
-	// The put's curve runs down through the chip's corner; the clear corner is now below left.
-	const putChip = { x: mx - 36, y: L.y(P0) + 44 };
-	tl.to(
-		chip,
-		{ x: putChip.x, y: putChip.y, duration: 1.4, ease: "power2.inOut" },
-		17.0,
-	);
-	tl.to(
-		deltaWord,
-		{ attr: wordBeside(putChip), duration: 1.4, ease: "power2.inOut" },
-		17.0,
-	);
-	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 18.3);
-	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 18.3);
-	tl.to(one("chip-call"), { opacity: 0, duration: 0.25 }, 18.9);
-	tl.to(one("chip-put"), { opacity: 1, duration: 0.25 }, 19.0);
+	tl.to(numCall, { scaleY: 0, duration: 0.3, ease: "power2.in" }, 19.8);
 	tl.fromTo(
-		chip,
-		{ scale: 0.85 },
-		{ scale: 1, duration: 0.5, ease: "back.out(2)" },
-		18.9,
+		numPut,
+		{ opacity: 1, scaleY: 0 },
+		{ scaleY: 1, duration: 0.35, ease: "power2.out" },
+		20.1,
 	);
+	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 20.4);
+	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 20.6);
+	show(one("put-sub"), 20.8);
 
-	// ——— Shot 4: from a share to a position ———
-	tl.addLabel("position", 23);
-	caption(3, 23.1);
-	// Back to the call under the quiet; the ledger is about the call.
+	// ——— position: the chain ———
+	tl.addLabel("position", 24);
+	hide([one("put-head"), one("put-sub"), one("num-word")], 24.0);
+	sink(24.0);
+	tl.to(numPut, { scaleY: 0, duration: 0.25, ease: "power2.in" }, 24.0);
+	tl.to(numCall, { scaleY: 1, duration: 0.3, ease: "power2.out" }, 24.25);
+	// The number shrinks about its own centre to head the chain; a group would scale about
+	// its box corner.
 	tl.to(
-		[one("curve-a"), one("curve-b")],
-		{ attr: { d: L.path(call) }, duration: 0.8 },
-		23,
-	);
-	tl.to(marker, { y: my, duration: 0.8 }, 23);
-	tl.to(
-		tangentLine,
+		num,
 		{
-			attr: {
-				y1: L.y(callTangent(X_RANGE[0])),
-				y2: L.y(callTangent(X_RANGE[1])),
-			},
+			x: W / 2,
+			y: L.rows[0] - T.num * 0.36,
 			duration: 0.8,
+			ease: "power3.inOut",
 		},
-		23,
+		24.6,
 	);
 	tl.to(
-		[one("marker-label-put"), one("curve-label-put")],
-		{ opacity: 0, duration: 0.3 },
-		23,
+		numCall,
+		{ scale: T.num / T.big, duration: 0.8, ease: "power3.inOut" },
+		24.6,
 	);
-	tl.to(one("chip-put"), { opacity: 0, duration: 0.25 }, 23.2);
-	tl.to(one("chip-call"), { opacity: 1, duration: 0.25 }, 23.3);
-	tl.to(one("chart"), { opacity: 0.12, duration: 0.8 }, 23.2);
-	tl.to(deltaWord, { opacity: 0, duration: 0.3 }, 23.4);
-	tl.to(one("ledger"), { opacity: 1, duration: 0.3 }, 23.6);
-	tl.to(
-		chip,
-		{
-			x: L.slot(0),
-			y: L.row1,
-			scale: CHIP_H / 22,
-			duration: 1.0,
-			ease: "power2.inOut",
-		},
-		23.8,
-	);
-	tl.to(one("row-label-you"), { opacity: 1, duration: 0.4 }, 24.6);
-	// Each operator slides in and bumps the number it makes into place.
-	const chain = (row: "you" | "ben", at: number) => {
-		const value = one<SVGTextElement>(`position-value-${row}`);
-		const target = positionDelta(row === "you" ? you.contracts : ben.contracts);
+	show(one("ch-head"), 24.6, "above");
+	const count = (name: string, target: number, at: number) => {
+		const el = one<SVGTextElement>(name);
 		const counter = { value: 0 };
-		tl.fromTo(
-			one(`op-100-${row}`),
-			{ opacity: 0, x: 24 },
-			{ opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.4)" },
-			at,
-		);
-		tl.fromTo(
-			one(`per-${row}`),
-			{ opacity: 0, scale: 0.6 },
-			{ opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-			at + 0.4,
-		);
-		tl.fromTo(
-			one(`op-held-${row}`),
-			{ opacity: 0, x: 24 },
-			{ opacity: 1, x: 0, duration: 0.45, ease: "back.out(1.4)" },
-			at + 1.0,
-		);
-		tl.fromTo(
-			one(`position-${row}`),
-			{ opacity: 0, scale: 0.6 },
-			{ opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-			at + 1.4,
-		);
 		tl.to(
 			counter,
 			{
@@ -931,31 +1115,49 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 				duration: 0.7,
 				ease: "power2.out",
 				onUpdate: () => {
-					value.textContent = signedCount(Math.round(counter.value));
+					el.textContent = signedCount(Math.round(counter.value));
 				},
 			},
-			at + 1.4,
+			at,
 		);
-		tl.to(one(`equiv-${row}`), { opacity: 1, duration: 0.4 }, at + 2.1);
 	};
-	chain("you", 25.0);
-	tl.to(one("row-label-ben"), { opacity: 1, duration: 0.4 }, 28.0);
-	tl.fromTo(
-		chip2,
-		{ opacity: 0, y: L.row1 },
-		{ opacity: 1, y: L.row2, duration: 0.6, ease: "power2.inOut" },
-		28.0,
-	);
-	chain("ben", 28.6);
-	caption(4, 31.2);
-	tl.to(one("ledger"), { opacity: 0, duration: 0.7, ease: "power2.in" }, 33.0);
-	tl.to(chip, { opacity: 0, duration: 0.4 }, 33.0);
-	tl.to(one("chart"), { opacity: 1, duration: 0.8 }, 33.3);
+	show(one("ch-op100"), 25.4);
+	pop(one("ch-per"), 25.9);
+	show(one("ch-op-you"), 26.7);
+	pop(one("ch-pos-you"), 27.2);
+	count("ch-pos-you", positionDelta(you.contracts), 27.2);
+	show(one("ch-equiv"), 27.8);
+	// Ben: the same chain, the sign flipped.
+	hide([one("ch-op-you"), one("ch-pos-you")], 29.2, 0.3);
+	show(one("ch-op-ben"), 29.4);
+	pop(one("ch-pos-ben"), 29.9);
+	count("ch-pos-ben", positionDelta(ben.contracts), 29.9);
+	show(one("ch-pay"), 31.3);
 
-	// ——— Shot 5: where the slope lies ———
+	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 34);
-	caption(5, 34.1);
-	tl.to(ghost, { opacity: 1, duration: 0.3 }, 34.2);
+	hide([...q("[data-f='chain'] > *"), numCall], 34.0);
+	tl.set(world, home, 34.2);
+	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 34.2);
+	tl.set(marker, { y: my }, 34.2);
+	tl.set(
+		tangentLine,
+		{
+			attr: {
+				y1: L.y(callTangent(X_RANGE[0])),
+				y2: L.y(callTangent(X_RANGE[1])),
+			},
+		},
+		34.2,
+	);
+	tl.set(
+		[one("marker-label-put"), one("curve-label-put")],
+		{ opacity: 0 },
+		34.2,
+	);
+	show(one("lim-head"), 34.3, "above");
+	rise(34.3);
+	tl.to(ghost, { opacity: 1, duration: 0.3 }, 35.1);
 	const slide = { spot: SPOT };
 	const place = () => {
 		const spot = slide.spot;
@@ -993,45 +1195,63 @@ function build({ stage, svg, width, height, locale }: FilmContext) {
 	place();
 	tl.to(
 		slide,
-		{ spot: SPOT + UP, duration: 1.7, ease: "power2.inOut", onUpdate: place },
-		34.5,
+		{ spot: SPOT + UP, duration: 1.6, ease: "power2.inOut", onUpdate: place },
+		35.3,
 	);
-	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 35.0);
-	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 35.4);
+	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 35.8);
+	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 36.2);
 	tl.fromTo(
 		gap,
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 0%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		36.3,
+		37.0,
 	);
-	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 36.6);
+	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 37.3);
 	tl.to(
 		slide,
-		{ spot: SPOT + DOWN, duration: 2.0, ease: "power2.inOut", onUpdate: place },
-		38.2,
+		{ spot: SPOT + DOWN, duration: 1.9, ease: "power2.inOut", onUpdate: place },
+		38.4,
 	);
-	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 39.4);
-	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 39.8);
-	caption(6, 41.8);
-	tl.to({}, { duration: 2.2 }, 41.8);
+	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 39.5);
+	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 39.9);
+	// Cut: the claim.
+	hide(one("lim-head"), 41.0);
+	sink(41.0);
+	tl.fromTo(
+		one("local-big"),
+		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+		41.4,
+	);
+	show(one("local-sub"), 41.9);
+
+	// ——— next ———
+	tl.addLabel("next", 43);
+	hide(q("[data-f='local'] > *"), 43.0);
+	show(one("next-big"), 43.2, "above");
+	show(one("next-sub"), 43.6);
+	show(one("next-cta"), 44.0);
+	tl.to({}, { duration: END - 44.0 }, 44.0);
 	return tl;
 }
 
 export const deltaFilm: Film = {
 	id: "delta",
 	label: [
-		"The value of ALFA's Oct 18 100 option against ALFA's price: the slope at today's price, the same slope on a position, and where a straight line stops describing the curve",
-		"ALFA 10月18日 100 期权的价值随 ALFA 价格变化：今天价格处的斜率、同一斜率放到持仓上，以及直线在哪里不再能描述曲线",
+		"Delta, as a short film: the value of ALFA's Oct 18 100 option against ALFA's price, the slope at today's price, that slope carried onto a position, and where a straight line stops describing the curve",
+		"Delta 短片：ALFA 10月18日 100 期权的价值随 ALFA 价格变化、今天价格处的斜率、同一斜率放到持仓上，以及直线在哪里不再能描述曲线",
 	],
+	stage: "dark",
 	shots: [
-		{ id: "price", label: ["A price and a curve", "价格与曲线"] },
+		{ id: "open", label: ["Delta", "Delta"] },
+		{ id: "question", label: ["The question", "问题"] },
 		{ id: "slope", label: ["The slope", "斜率"] },
 		{ id: "put", label: ["The put", "看跌"] },
 		{ id: "position", label: ["A position", "持仓"] },
 		{ id: "limits", label: ["The limits", "局限"] },
+		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
-	Head,
 	Scene,
 	build,
 };

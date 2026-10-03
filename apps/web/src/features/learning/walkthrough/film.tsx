@@ -22,16 +22,17 @@ export type FilmContext = {
 
 /**
  * A lesson's motion graphic. `Scene` draws every mark the film will ever show, at rest,
- * in a drawing `width` wide; `Head` holds the on-canvas text for each shot; `build` makes
- * the one paused timeline that moves them all, with a label at the start of every shot.
- * The drawing is laid out at the width it gets, so text keeps its true size on a phone.
+ * in a frame `width` wide and `height(width)` tall; `build` makes the one paused timeline
+ * that moves them all, with a label at the start of every shot. The frame is laid out at
+ * the width it gets, so text keeps its true size on a phone. A "dark" stage brings its
+ * own colours, whatever the page's theme: it reads as a video embedded in the page.
  */
 export type Film = {
 	id: string;
 	label: Copy;
+	stage?: "dark";
 	shots: readonly [FilmShot, ...FilmShot[]];
 	height: (width: number) => number;
-	Head: ComponentType<{ locale: Locale }>;
 	Scene: ComponentType<{ width: number; height: number; locale: Locale }>;
 	build: (context: FilmContext) => gsap.core.Timeline;
 };
@@ -94,32 +95,35 @@ export function FilmStage({
 			context.revert();
 		};
 	}, [film, locale, width]);
-	const { Head, Scene } = film;
+	const { Scene } = film;
 	const height = width === null ? 0 : film.height(width);
 	return (
-		<div ref={stage} className="wt-film" data-film={film.id}>
+		<div
+			ref={stage}
+			className="wt-film"
+			data-film={film.id}
+			data-stage={film.stage}
+			style={{
+				aspectRatio: width === null ? undefined : `${width} / ${height}`,
+			}}
+		>
 			{width === null ? null : (
-				<>
-					<div className="wt-film-head">
-						<Head locale={locale} />
-					</div>
-					<svg
-						ref={svg}
-						className="wt-svg wt-film-svg"
-						viewBox={`0 0 ${width} ${height}`}
+				<svg
+					ref={svg}
+					className="wt-svg wt-film-svg"
+					viewBox={`0 0 ${width} ${height}`}
+					width={width}
+					height={height}
+					role="img"
+					aria-label={pick(film.label, locale)}
+				>
+					<Scene
+						key={`${width}:${locale}`}
 						width={width}
 						height={height}
-						role="img"
-						aria-label={pick(film.label, locale)}
-					>
-						<Scene
-							key={`${width}:${locale}`}
-							width={width}
-							height={height}
-							locale={locale}
-						/>
-					</svg>
-				</>
+						locale={locale}
+					/>
+				</svg>
 			)}
 		</div>
 	);
