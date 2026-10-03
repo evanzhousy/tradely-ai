@@ -60,7 +60,20 @@ type Anchor = "start" | "middle" | "end";
  */
 function wrapSans(text: string, maxWidth: number, size: number) {
 	const cjk = /[\u2e80-\u9fff\uff00-\uffef]/.test(text);
-	return wrapText(text, maxWidth, size * (cjk ? 0.95 : 0.86));
+	const wrap = (width: number) =>
+		wrapText(text, width, size * (cjk ? 0.95 : 0.86));
+	const lines = wrap(maxWidth);
+	if (lines.length < 2) return lines;
+	// Balanced, like CSS text-wrap: the narrowest width that keeps the same number of
+	// lines, so a claim that needs two lines splits evenly instead of leaving a word alone.
+	let low = maxWidth / lines.length;
+	let high = maxWidth;
+	for (let i = 0; i < 12; i++) {
+		const mid = (low + high) / 2;
+		if (wrap(mid).length > lines.length) low = mid;
+		else high = mid;
+	}
+	return wrap(high);
 }
 
 /** How many lines `Lines` breaks a text into, so whatever follows it can make room. */
