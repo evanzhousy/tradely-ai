@@ -1,12 +1,9 @@
 import {
-	ALFA,
 	type Copy,
-	daysToExpiry,
 	type ExpiryId,
 	expiries,
 	modelVolatility,
 	pick,
-	priceOption,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
@@ -20,25 +17,29 @@ import {
 	StrikeGrid,
 	strikeGridHeight,
 } from "../walkthrough/instruments/strike-grid";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { volatilitySurfaceFilm } from "./volatility-surface-film";
+import {
+	ATM_IV,
+	CALL_IV,
+	CALL_WING,
+	EXPIRIES,
+	INTERPOLATED,
+	ivPoints,
+	MISSING,
+	OCT18_DAYS,
+	PUT_IV,
+	PUT_WING,
+	SKEW,
+	STRIKES,
+	signedPoints,
+	term,
+} from "./volatility-surface-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-const STRIKES = [90, 95, 100, 105, 110] as const;
-const EXPIRIES: readonly ExpiryId[] = [
-	"sep20",
-	"sep27",
-	"oct4",
-	"oct18",
-	"nov15",
-	"dec20",
-];
-/** Implied volatility in whole vol points, as the grid shows it. */
-const ivPoints = (expiry: ExpiryId, strike: number) =>
-	Math.round(modelVolatility(expiry, strike) * 100);
 
 const rows = (
 	locale: Locale,
@@ -176,36 +177,6 @@ function SliceView({
 // ——— Scene 2: wings by delta, with a stated sign ———
 
 type WingState = { stage: 0 | 1 | 2 };
-
-const OCT18_DAYS = daysToExpiry("oct18");
-const deltaAt = (strike: number, right: "call" | "put") =>
-	priceOption({
-		spot: SPOT,
-		strike,
-		days: OCT18_DAYS,
-		iv: modelVolatility("oct18", strike),
-		right,
-	}).delta;
-/** The strike whose delta is `target`, found by bisection: delta falls as strike rises. */
-function strikeForDelta(right: "call" | "put", target: number) {
-	let low = 60;
-	let high = 140;
-	for (let i = 0; i < 60; i++) {
-		const mid = (low + high) / 2;
-		if (deltaAt(mid, right) > target) low = mid;
-		else high = mid;
-	}
-	return (low + high) / 2;
-}
-const round1 = (value: number) => Math.round(value * 10) / 10;
-const CALL_WING = strikeForDelta("call", 0.25);
-const PUT_WING = strikeForDelta("put", -0.25);
-const CALL_IV = round1(modelVolatility("oct18", CALL_WING) * 100);
-const PUT_IV = round1(modelVolatility("oct18", PUT_WING) * 100);
-const ATM_IV = round1(modelVolatility("oct18", 100) * 100);
-const SKEW = round1(PUT_IV - CALL_IV);
-const signedPoints = (value: number) =>
-	`${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toFixed(1)}`;
 
 function WingsView({
 	locale,
@@ -371,16 +342,6 @@ function WingsView({
 
 type EstimateState = { stage: 0 | 1 | 2 };
 
-/** No IV where there was no usable price: the 4-day wings had no bid, Dec 20 105 no quote. */
-const MISSING: readonly { row: ExpiryId; strike: number }[] = [
-	{ row: "sep20", strike: 90 },
-	{ row: "sep20", strike: 110 },
-	{ row: "dec20", strike: 105 },
-];
-const INTERPOLATED = Math.round(
-	(ivPoints("dec20", 100) + ivPoints("dec20", 110)) / 2,
-);
-
 function EstimatesView({
 	locale,
 	phase,
@@ -500,8 +461,6 @@ function EstimatesView({
 }
 
 // ——— Lesson ———
-
-const term = EXPIRIES.map((expiry) => ivPoints(expiry, 100));
 
 const scenes = [
 	defineScene<SliceState, SliceState>({
@@ -791,13 +750,14 @@ const scenes = [
 
 export function VolatilitySurfaceWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="volatility-surface"
 			label={[
 				"Interactive lesson on the volatility surface",
 				"波动率曲面互动课",
 			]}
+			film={volatilitySurfaceFilm}
 			scenes={scenes}
 		/>
 	);
