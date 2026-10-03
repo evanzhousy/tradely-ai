@@ -21,6 +21,10 @@ export const clamp = (low: number, value: number, high: number) =>
 export function filmFrame(width: number) {
 	const narrow = width < 520;
 	const height = Math.round(narrow ? width * 0.75 : (width * 9) / 16);
+	const small = clamp(10, width * 0.013, 13);
+	const head = clamp(15, width * 0.027, 25);
+	/** The corner tag's baseline: see `director.tag`. */
+	const tagY = small * 1.15 + Math.max(10, height * 0.035);
 	return {
 		width,
 		height,
@@ -29,13 +33,19 @@ export function filmFrame(width: number) {
 		margin: Math.max(34, width * 0.085),
 		/** The widest a line of type may run. */
 		room: width * 0.84,
+		/**
+		 * The baseline of a headline at the top left. On a phone a headline is as wide as the
+		 * frame, so it sits under the corner tag instead of beside it.
+		 */
+		headY: narrow ? tagY + 4 + head * 1.05 : height * 0.1,
+		tagY,
 		type: {
 			big: clamp(32, width * 0.105, 100),
 			title: clamp(24, width * 0.06, 56),
-			head: clamp(15, width * 0.027, 25),
+			head,
 			num: clamp(20, width * 0.044, 42),
 			body: clamp(12, width * 0.018, 17),
-			small: clamp(10, width * 0.013, 13),
+			small,
 		},
 	};
 }
@@ -43,12 +53,22 @@ export type FilmFrame = ReturnType<typeof filmFrame>;
 
 type Anchor = "start" | "middle" | "end";
 
-/** How many lines `Lines` breaks a text into, so whatever follows it can make room. */
-export function lineCount(text: string, maxWidth: number, size: number) {
-	return wrapText(text, maxWidth, size * 0.92).length;
+/**
+ * Line breaks for stage type set in the sans. The measure behind `wrapText` is the mono's:
+ * 0.6 em a Latin glyph, a full em a CJK one. Latin in the sans runs near 0.52 em, so
+ * Latin text is measured at 0.86 of its size; CJK stays close to its em.
+ */
+function wrapSans(text: string, maxWidth: number, size: number) {
+	const cjk = /[\u2e80-\u9fff\uff00-\uffef]/.test(text);
+	return wrapText(text, maxWidth, size * (cjk ? 0.95 : 0.86));
 }
 
-/** A block of stage type, wrapped to its room. Words are set in the sans, a little narrower than mono. */
+/** How many lines `Lines` breaks a text into, so whatever follows it can make room. */
+export function lineCount(text: string, maxWidth: number, size: number) {
+	return wrapSans(text, maxWidth, size).length;
+}
+
+/** A block of stage type, wrapped to its room. */
 export function Lines({
 	name,
 	text,
@@ -70,7 +90,7 @@ export function Lines({
 	className?: string;
 	lineHeight?: number;
 }) {
-	const lines = wrapText(text, maxWidth, size * 0.92);
+	const lines = wrapSans(text, maxWidth, size);
 	return (
 		<text
 			data-f={name}
@@ -466,7 +486,7 @@ export function createDirector(
 			titleGroup,
 			{
 				x: width - margin * 0.45 - measured * (tagSize / T.title),
-				y: tagSize + Math.max(10, H * 0.035),
+				y: frame.tagY,
 				duration: 0.9,
 				ease: "power3.inOut",
 			},

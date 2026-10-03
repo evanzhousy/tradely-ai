@@ -91,7 +91,7 @@ function layout(width: number) {
 	const { height, narrow, room } = frame;
 	const left = frame.margin;
 	const right = width * 0.965;
-	const top = height * (narrow ? 0.26 : 0.2);
+	const top = height * (narrow ? 0.3 : 0.2);
 	const bottom = height * 0.84;
 	const x = (value: number) =>
 		left + ((value - X_RANGE[0]) / (X_RANGE[1] - X_RANGE[0])) * (right - left);
@@ -752,7 +752,7 @@ function Scene({
 				name="e-head"
 				text={t(narrow ? copy.expiryHeadShort : copy.expiryHead)}
 				x={L.margin}
-				y={H * 0.1}
+				y={L.headY}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"
@@ -761,7 +761,7 @@ function Scene({
 				name="e-far"
 				text={t(copy.farLine)}
 				x={L.margin}
-				y={H * 0.1}
+				y={L.headY}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"

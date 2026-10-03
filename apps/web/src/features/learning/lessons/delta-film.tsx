@@ -624,9 +624,9 @@ function build(context: FilmContext) {
 		{ x: W * 0.36, y: H * 0.5 },
 	);
 	const aside = cam(
-		narrow ? 0.5 : 0.62,
+		narrow ? 0.5 : 0.58,
 		{ x: L.cx, y: L.cy },
-		{ x: W * (narrow ? 0.72 : 0.7), y: H * 0.58 },
+		{ x: W * (narrow ? 0.72 : 0.73), y: H * 0.58 },
 	);
 
 	// Everything at rest: hidden until its shot needs it.
@@ -761,7 +761,7 @@ function build(context: FilmContext) {
 	hide(one("num-sub"), 18.2);
 	tl.to(
 		num,
-		{ x: W * 0.27, y: H * 0.58, duration: 0.9, ease: "power3.inOut" },
+		{ x: W * 0.24, y: H * 0.58, duration: 0.9, ease: "power3.inOut" },
 		18.2,
 	);
 	tl.set(world, aside, 18.3);
@@ -887,7 +887,7 @@ function build(context: FilmContext) {
 			`wt-halo wt-marker-label ${repriced >= V0 ? "wt-gain" : "wt-loss"}`,
 		);
 		ghostLabel.setAttribute("x", String(lx));
-		ghostLabel.setAttribute("y", String(gy + 16));
+		ghostLabel.setAttribute("y", String(Math.min(gy + 16, L.bottom + 5)));
 		ghostLabel.setAttribute("text-anchor", anchor);
 		ghostLabel.textContent = `${t(copy.deltaAlone)} ${signedPrice(estimate - V0)}`;
 		gap.setAttribute("x1", String(px));
