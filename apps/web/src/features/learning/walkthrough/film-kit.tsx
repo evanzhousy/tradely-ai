@@ -17,12 +17,15 @@ import { textWidth, wrapText } from "./text-measure";
 export const clamp = (low: number, value: number, high: number) =>
 	Math.max(low, Math.min(high, value));
 
-/** The frame at a width: 16:9, or 4:3 on a phone, with type sized to the frame. */
+/**
+ * The frame at a width: 16:9, or a portrait 4:5 on a phone, which has height to spare and
+ * no width, with type sized to the frame.
+ */
 export function filmFrame(width: number) {
 	const narrow = width < 520;
-	const height = Math.round(narrow ? width * 0.75 : (width * 9) / 16);
-	const small = clamp(10, width * 0.013, 13);
-	const head = clamp(15, width * 0.027, 25);
+	const height = Math.round(narrow ? width * 1.25 : (width * 9) / 16);
+	const small = clamp(narrow ? 11 : 10, width * 0.013, 13);
+	const head = clamp(narrow ? 16 : 15, width * 0.027, 25);
 	/** The corner tag's baseline: see `director.tag`. */
 	const tagY = small * 1.15 + Math.max(10, height * 0.035);
 	return {
@@ -44,7 +47,7 @@ export function filmFrame(width: number) {
 			title: clamp(24, width * 0.06, 56),
 			head,
 			num: clamp(20, width * 0.044, 42),
-			body: clamp(12, width * 0.018, 17),
+			body: clamp(narrow ? 13 : 12, width * 0.018, 17),
 			small,
 		},
 	};

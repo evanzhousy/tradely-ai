@@ -418,7 +418,8 @@ function Scene({
 									PUT_IV,
 									copy.putWing,
 									copy.putWingShort,
-									"below-left",
+									// On a phone the left is the axis's: label the put above, to its right.
+									narrow ? "above-right" : "below-left",
 								],
 								[
 									"call",
@@ -426,7 +427,7 @@ function Scene({
 									CALL_IV,
 									copy.callWing,
 									copy.callWingShort,
-									"below-right",
+									narrow ? "below-left" : "below-right",
 								],
 							] as const
 						).map(([name, strike, iv, label, short, side]) => (

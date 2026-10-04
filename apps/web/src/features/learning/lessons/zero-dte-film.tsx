@@ -79,7 +79,8 @@ const bars = [
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
-	const left = frame.margin;
+	// On a phone the dollar ticks sit left of the plot: leave them room.
+	const left = narrow ? frame.margin + 10 : frame.margin;
 	const right = width * 0.965;
 	const top = height * (narrow ? 0.3 : 0.22);
 	const bottom = height * 0.8;

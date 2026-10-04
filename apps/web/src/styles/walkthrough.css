@@ -199,6 +199,14 @@
 	border-radius: 1rem;
 	background: var(--muted);
 }
+/* On a phone the film runs to the lesson card's inner edge: the card's padding and the tab
+   panel's would otherwise take 40px of a 358px card. */
+@media (max-width: 560px) {
+	.wt-player .wt-film {
+		margin-inline: calc(-0.75rem - 8px);
+		border-radius: 1.125rem;
+	}
+}
 .wt-film[data-stage="dark"] {
 	--film-bg: #0c0e17;
 	--background: var(--film-bg);

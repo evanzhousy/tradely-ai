@@ -80,7 +80,8 @@ function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
 	const left = Math.max(frame.margin, narrow ? 46 : 0);
-	const right = width * 0.965;
+	// On a phone the last price label is centred on the edge of the plot: leave it room.
+	const right = narrow ? width - 26 : width * 0.965;
 	const top = height * (narrow ? 0.36 : 0.28);
 	const bottom = height * 0.84;
 	const middle = (top + bottom) / 2;
