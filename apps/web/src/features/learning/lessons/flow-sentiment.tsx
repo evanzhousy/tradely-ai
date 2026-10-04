@@ -1,22 +1,13 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import {
-	type Contract,
 	type Copy,
-	contractLabel,
 	count,
 	holders,
-	OCT_100_CALL,
-	oct100CallMonday,
-	oct100CallQuoteAtTrade,
-	optionQuote,
 	pick,
-	type SideCode,
-	sideCode,
 	signedUsd,
 	type Trade,
 	usd,
-	valueAtExpiry,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
@@ -35,19 +26,30 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { flowSentimentFilm } from "./flow-sentiment-film";
+import {
+	type Action,
+	type Context,
+	FLOOR,
+	type Flow,
+	flowLabel,
+	LABEL,
+	PUT_95,
+	PUT_ASK,
+	PUT_BID,
+	printFlow,
+	putValue,
+	RANGE,
+	type Right,
+	stock,
+	TRADES,
+} from "./flow-sentiment-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-type Right = "call" | "put";
-type Action = "buy" | "sell";
-type Flow = "bullish" | "bearish" | "neutral";
-
-/** The feed convention: buying calls or selling puts reads bullish; the reverse, bearish. */
-const flowLabel = (right: Right, action: Action): Flow =>
-	(right === "call") === (action === "buy") ? "bullish" : "bearish";
 
 const flowCopy: Record<Flow, Copy> = {
 	bullish: ["bullish", "看涨"],
@@ -208,22 +210,6 @@ function MatrixView({
 }
 
 // ——— Scene 2: a day of labels ———
-
-type TradeId = "t1" | "t2" | "t3";
-const TRADES = oct100CallMonday.trades as readonly Trade[];
-const LABEL = contractLabel(OCT_100_CALL, false);
-
-function printFlow(trade: Trade): { side: SideCode | null; flow: Flow } {
-	const quote = oct100CallQuoteAtTrade[trade.id as TradeId];
-	const side = sideCode(trade.price, quote.bid, quote.ask);
-	const flow: Flow =
-		side === "ASK" || side === "AASK"
-			? flowLabel("call", "buy")
-			: side === "BID" || side === "BBID"
-				? flowLabel("call", "sell")
-				: "neutral";
-	return { side, flow };
-}
 
 type TallyState = { shown: number; ledger: boolean };
 
@@ -396,19 +382,7 @@ function TallyView({ locale, state }: { locale: Locale; state: TallyState }) {
 
 // ——— Scene 3: one put purchase, different portfolios ———
 
-type Context = "alone" | "stock" | "close";
 type PutState = { context: Context };
-
-const PUT_95: Contract = { expiry: "oct18", strike: 95, right: "put" };
-/** Cents per share, which equals dollars per contract. */
-const PUT_ASK = optionQuote(PUT_95).ask;
-const PUT_BID = optionQuote(PUT_95).bid;
-const STOCK_COST = 100;
-const RANGE = [80, 120] as const;
-
-const putValue = (spot: number) =>
-	valueAtExpiry(PUT_95, Math.round(spot * 100));
-const stock = (spot: number) => (spot - STOCK_COST) * 100;
 
 function contextLines(context: Context, locale: Locale): PayoffLine[] {
 	const t = tr(locale);
@@ -470,7 +444,7 @@ function PutView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const lines = contextLines(shown.context, locale);
-	const floor = (PUT_95.strike - STOCK_COST) * 100 - PUT_ASK;
+	const floor = FLOOR;
 	const bands: PayoffBand[] =
 		shown.context === "stock"
 			? [
@@ -875,13 +849,14 @@ const scenes = [
 
 export function FlowSentimentWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="flow-sentiment"
 			label={[
 				"Interactive lesson on bullish and bearish flow labels",
 				"看涨与看跌成交流标签互动课",
 			]}
+			film={flowSentimentFilm}
 			scenes={scenes}
 		/>
 	);
