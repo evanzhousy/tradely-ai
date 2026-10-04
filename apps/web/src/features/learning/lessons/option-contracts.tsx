@@ -1,7 +1,6 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
 import {
-	ALFA,
 	type Contract,
 	type Copy,
 	contractCount,
@@ -9,8 +8,6 @@ import {
 	count,
 	type ExpiryId,
 	expiries,
-	oct100CallCloseQuote,
-	optionQuote,
 	pick,
 	usd,
 } from "@/content/world";
@@ -22,25 +19,22 @@ import {
 	ticketHeight,
 } from "../walkthrough/instruments/contract-ticket";
 import { TIMELINE_HEIGHT, Timeline } from "../walkthrough/instruments/timeline";
+import { Player } from "../walkthrough/player";
 import { Appear, Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { packParts } from "../walkthrough/text-measure";
 import { defineScene, type Phase } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { optionContractsFilm } from "./option-contracts-film";
+import {
+	ASK,
+	call100,
+	observations,
+	symbolParts,
+} from "./option-contracts-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
 // ——— Scene 1: anatomy ———
-
-/** OCC-style option symbol: root padded to six characters, YYMMDD, C or P, strike × 1000. */
-function symbolParts(contract: Contract) {
-	const date = expiries[contract.expiry].date;
-	return {
-		root: `${ALFA.symbol}  `,
-		date: `${date.slice(2, 4)}${date.slice(5, 7)}${date.slice(8, 10)}`,
-		right: contract.right === "call" ? "C" : "P",
-		strike: String(contract.strike * 1000).padStart(8, "0"),
-	};
-}
 
 type AnatomyState = { contract: Contract; shown: number; focus: string };
 
@@ -217,8 +211,6 @@ type UnitState = {
 	contracts: number;
 	step: "contract" | "premium" | "notional";
 };
-const call100: Contract = { expiry: "oct18", strike: 100, right: "call" };
-const ASK = optionQuote(call100).ask;
 
 /** The most contracts the scene draws: the explore slider's top. */
 const MAX_CONTRACTS = 8;
@@ -426,10 +418,6 @@ function UnitView({
 // ——— Scene 3: price at a time ———
 
 type TimeState = { at: "none" | "morning" | "close" };
-const observations = {
-	morning: { at: 630, time: "10:30", bid: 405, ask: 420, spot: 10_002 },
-	close: { at: 959, ...oct100CallCloseQuote },
-} as const;
 
 function TimeView({
 	locale,
@@ -811,10 +799,11 @@ const scenes = [
 
 export function OptionContractsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="option-contracts"
 			label={["Interactive lesson on option contracts", "期权合约互动课"]}
+			film={optionContractsFilm}
 			scenes={scenes}
 		/>
 	);
