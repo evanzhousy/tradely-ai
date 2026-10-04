@@ -3,7 +3,6 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import {
 	bestQuote,
-	type Contract,
 	type Copy,
 	contractCount,
 	contractLabel,
@@ -15,7 +14,6 @@ import {
 	QUOTE_TIME,
 	sweep,
 	usd,
-	type VenueQuote,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
@@ -29,22 +27,24 @@ import type {
 	BookFill,
 	BookLevel,
 } from "../walkthrough/instruments/order-book";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { quotesOrdersTradesFilm } from "./quotes-orders-trades-film";
+import {
+	ADDED,
+	BASE_ASKS,
+	BASE_BIDS,
+	BEST,
+	CALL_105,
+	TAKEN,
+	venuesFor,
+} from "./quotes-orders-trades-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const CALL_105: Contract = { expiry: "oct18", strike: 105, right: "call" };
 const LABEL = contractLabel(CALL_105, false);
-/** Every venue's levels combined into one book, best first. */
-const BASE_ASKS: Level[] = oct105CallVenues
-	.map((quote) => quote.ask)
-	.sort((a, b) => a.price - b.price);
-const BASE_BIDS: Level[] = oct105CallVenues
-	.map((quote) => quote.bid)
-	.sort((a, b) => b.price - a.price);
-const BEST = bestQuote(oct105CallVenues);
 
 const EARLIER: Print = oct105CallLast;
 
@@ -293,9 +293,6 @@ function QuoteView({
 type BookEvent = "add" | "cancel" | "trade";
 type EventState = { event: BookEvent };
 
-const ADDED = 5;
-const TAKEN = 3;
-
 function eventBook(event: BookEvent): {
 	asks: BookLevel[];
 	fills: BookFill[];
@@ -426,20 +423,6 @@ type VenueState = {
 	/** Venue C's ask in cents, or null once its size has traded away. */
 	cAsk: number | null;
 };
-
-function venuesFor(state: VenueState): VenueQuote[] {
-	return oct105CallVenues.map((quote) =>
-		quote.venue === "C"
-			? {
-					...quote,
-					ask:
-						state.cAsk === null
-							? { ...quote.ask, size: 0 }
-							: { ...quote.ask, price: state.cAsk },
-				}
-			: quote,
-	);
-}
 
 function venueLayout(width: number) {
 	const narrow = width < 520;
@@ -971,13 +954,14 @@ const scenes = [
 
 export function QuotesOrdersTradesWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="quotes-orders-trades"
 			label={[
 				"Interactive lesson on quotes, orders and trades",
 				"报价、订单与成交互动课",
 			]}
+			film={quotesOrdersTradesFilm}
 			scenes={scenes}
 		/>
 	);
