@@ -43,14 +43,16 @@ import { FrameContext, copy as walkthroughCopy } from "./walkthrough";
 const RATES = [1, 1.5, 2] as const;
 type Rate = (typeof RATES)[number];
 const rateKey = "tradely:player-rate:v1";
+/** Films play at 2× until a learner picks another speed. */
+const DEFAULT_RATE: Rate = 2;
 const isRate = (value: number): value is Rate =>
 	(RATES as readonly number[]).includes(value);
 function readRate(): Rate {
 	try {
 		const stored = Number(localStorage.getItem(rateKey));
-		return isRate(stored) ? stored : 1;
+		return isRate(stored) ? stored : DEFAULT_RATE;
 	} catch {
-		return 1;
+		return DEFAULT_RATE;
 	}
 }
 function writeRate(rate: Rate) {
@@ -115,14 +117,14 @@ export function Player({
 	/** Film time, kept across rebuilds so a resize doesn't restart the film. */
 	const time = useRef(0);
 	const shotRef = useRef(0);
-	const rateRef = useRef<Rate>(1);
+	const rateRef = useRef<Rate>(DEFAULT_RATE);
 	const [ready, setReady] = useState(0);
 	const [shot, setShot] = useState(0);
 	const [playing, setPlaying] = useState(true);
 	const [ended, setEnded] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [hidden, setHidden] = useState(false);
-	const [rate, setRate] = useState<Rate>(1);
+	const [rate, setRate] = useState<Rate>(DEFAULT_RATE);
 	const [mode, setMode] = useState<Mode>("watch");
 	const [playScene, setPlayScene] = useState(0);
 	const [explore, setExplore] = useState<unknown>(null);
