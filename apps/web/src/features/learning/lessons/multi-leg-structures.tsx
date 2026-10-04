@@ -1,12 +1,10 @@
 import {
-	type Contract,
 	type Copy,
 	count,
 	optionQuote,
 	pick,
 	signedUsd,
 	usd,
-	valueAtExpiry,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
@@ -22,43 +20,49 @@ import {
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
 import { Working, workingHeight } from "../walkthrough/instruments/working";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { multiLegStructuresFilm } from "./multi-leg-structures-film";
+import {
+	BEARISH,
+	BULLISH,
+	CALL_100,
+	CALL_CREDIT,
+	CREDIT,
+	callSpread,
+	condor,
+	curve,
+	LEGS,
+	type Leg,
+	legPrice,
+	MAX_LOSS,
+	oct18,
+	PACKAGE_CREDIT,
+	PACKAGE_RISK,
+	PUT_100,
+	PUT_CREDIT,
+	putSpread,
+	RANGE,
+	SIZE,
+	STRADDLE_COST,
+	STRADDLE_HIGH,
+	STRADDLE_LOW,
+	STRIKES,
+	straddle,
+	worth,
+} from "./multi-leg-structures-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const oct18 = (strike: number, right: "call" | "put"): Contract => ({
-	expiry: "oct18",
-	strike,
-	right,
-});
-/** Value at expiry in dollars a share. */
-const worth = (contract: Contract, spot: number) =>
-	valueAtExpiry(contract, Math.round(spot * 100)) / 100;
-const RANGE = [80, 120] as const;
 /** Dollars a share to whole dollars a contract: "+$375", "−$283". */
 const perContract = (perShare: number) =>
 	signedUsd(Math.round(perShare * 100) * 100, 0);
 const share = (dollars: number) => usd(Math.round(dollars * 100));
-/** Points along a payoff in dollars a contract, with a kink at every strike. */
-const curve = (f: (spot: number) => number, strikes: readonly number[]) =>
-	[RANGE[0], ...strikes, RANGE[1]].map(
-		(spot) => [spot, f(spot) * 100] as const,
-	);
-
 // ——— Scene 1: a long straddle ———
 
 type StraddleState = { stage: 0 | 1 | 2 | 3; spot: number };
-
-const CALL_100 = oct18(100, "call");
-const PUT_100 = oct18(100, "put");
-/** Both legs bought at their asks, dollars a share. */
-const STRADDLE_COST =
-	(optionQuote(CALL_100).ask + optionQuote(PUT_100).ask) / 100;
-const STRADDLE_LOW = 100 - STRADDLE_COST;
-const STRADDLE_HIGH = 100 + STRADDLE_COST;
-const straddle = (spot: number) => worth(CALL_100, spot) + worth(PUT_100, spot);
 
 function StraddleView({
 	locale,
@@ -236,24 +240,6 @@ function StraddleView({
 
 type CondorState = { stage: 0 | 1 | 2 | 3; spot: number };
 
-const PUT_95 = oct18(95, "put");
-const PUT_90 = oct18(90, "put");
-const CALL_105 = oct18(105, "call");
-const CALL_110 = oct18(110, "call");
-/** Short legs at their bids, long wings at their asks, dollars a share. */
-const PUT_CREDIT = (optionQuote(PUT_95).bid - optionQuote(PUT_90).ask) / 100;
-const CALL_CREDIT =
-	(optionQuote(CALL_105).bid - optionQuote(CALL_110).ask) / 100;
-const CREDIT = PUT_CREDIT + CALL_CREDIT;
-const WIDTH = 5;
-const MAX_LOSS = WIDTH - CREDIT;
-const putSpread = (spot: number) =>
-	PUT_CREDIT - worth(PUT_95, spot) + worth(PUT_90, spot);
-const callSpread = (spot: number) =>
-	CALL_CREDIT - worth(CALL_105, spot) + worth(CALL_110, spot);
-const condor = (spot: number) => putSpread(spot) + callSpread(spot);
-const STRIKES = [90, 95, 105, 110] as const;
-
 function CondorView({
 	locale,
 	phase,
@@ -416,36 +402,6 @@ function CondorView({
 // ——— Scene 3: four prints, one package ———
 
 type PackageState = { view: "legs" | "tally" | "package" };
-
-const SIZE = 200;
-type Leg = {
-	key: string;
-	contract: Contract;
-	side: "buy" | "sell";
-	label: "bullish" | "bearish";
-};
-const LEGS: readonly Leg[] = [
-	{ key: "a", contract: PUT_95, side: "sell", label: "bullish" },
-	{ key: "b", contract: PUT_90, side: "buy", label: "bearish" },
-	{ key: "c", contract: CALL_105, side: "sell", label: "bearish" },
-	{ key: "d", contract: CALL_110, side: "buy", label: "bullish" },
-];
-const legPrice = (leg: Leg) =>
-	leg.side === "buy"
-		? optionQuote(leg.contract).ask
-		: optionQuote(leg.contract).bid;
-/** Premium of one leg's print, in cents. */
-const legPremium = (leg: Leg) => legPrice(leg) * SIZE * 100;
-const BULLISH = LEGS.filter((leg) => leg.label === "bullish").reduce(
-	(sum, leg) => sum + legPremium(leg),
-	0,
-);
-const BEARISH = LEGS.filter((leg) => leg.label === "bearish").reduce(
-	(sum, leg) => sum + legPremium(leg),
-	0,
-);
-const PACKAGE_CREDIT = Math.round(CREDIT * 100) * SIZE * 100;
-const PACKAGE_RISK = Math.round(MAX_LOSS * 100) * SIZE * 100;
 
 function PackageView({
 	locale,
@@ -930,13 +886,14 @@ const scenes = [
 
 export function MultiLegStructuresWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="multi-leg-structures"
 			label={[
 				"Interactive lesson on straddles, condors and multi-leg prints",
 				"跨式、铁鹰与多腿成交互动课",
 			]}
+			film={multiLegStructuresFilm}
 			scenes={scenes}
 		/>
 	);
