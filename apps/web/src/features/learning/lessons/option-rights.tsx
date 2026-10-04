@@ -2,74 +2,37 @@ import { FieldGroup } from "@tradely/ui/components/field";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import {
-	type Contract,
 	type Copy,
 	contractLabel,
-	OCT_100_CALL,
-	optionQuote,
 	pick,
 	signedUsd,
 	usd,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { optionRightsFilm } from "./option-rights-film";
+import {
+	ASSIGNED,
+	cellCopy,
+	contractFor,
+	exerciseCase,
+	positionCopy,
+	type Right,
+	type Side,
+	type Trade,
+	tradeCopy,
+	writers,
+} from "./option-rights-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-type Right = "call" | "put";
-type Side = "long" | "short";
-
-const PUT_95: Contract = { expiry: "oct18", strike: 95, right: "put" };
-const contractFor = (right: Right) =>
-	right === "call" ? OCT_100_CALL : PUT_95;
 
 // ——— Scene 1: rights and obligations ———
 
 type CellState = { right: Right; side: Side };
-
-const cellCopy: Record<
-	Right,
-	Record<
-		Side,
-		{ duty: Copy; terms: Copy; brief: Copy; when: Copy; premium: Copy }
-	>
-> = {
-	call: {
-		long: {
-			duty: ["Right to buy", "有权买入"],
-			terms: ["100 ALFA at $100", "按 $100 买 100 股"],
-			brief: ["100 at $100", "100 股 · $100"],
-			when: ["if you exercise", "若你行权"],
-			premium: ["paid the premium", "已支付权利金"],
-		},
-		short: {
-			duty: ["Must sell", "必须卖出"],
-			terms: ["100 ALFA at $100", "按 $100 卖 100 股"],
-			brief: ["100 at $100", "100 股 · $100"],
-			when: ["if you're assigned", "若你被指派"],
-			premium: ["received premium", "已收取权利金"],
-		},
-	},
-	put: {
-		long: {
-			duty: ["Right to sell", "有权卖出"],
-			terms: ["100 ALFA at $95", "按 $95 卖 100 股"],
-			brief: ["100 at $95", "100 股 · $95"],
-			when: ["if you exercise", "若你行权"],
-			premium: ["paid the premium", "已支付权利金"],
-		},
-		short: {
-			duty: ["Must buy", "必须买入"],
-			terms: ["100 ALFA at $95", "按 $95 买 100 股"],
-			brief: ["100 at $95", "100 股 · $95"],
-			when: ["if you're assigned", "若你被指派"],
-			premium: ["received premium", "已收取权利金"],
-		},
-	},
-};
 
 const CELL = 96;
 
@@ -269,27 +232,10 @@ function MatrixView({
 
 // ——— Scene 2: open and close ———
 
-type Trade = "buy" | "sell";
 type TrackState = { from: number; trade: Trade | null };
 
 const after = ({ from, trade }: TrackState) =>
 	trade === "buy" ? from + 1 : trade === "sell" ? from - 1 : from;
-
-function tradeCopy(from: number, trade: Trade): Copy {
-	if (trade === "buy")
-		return from < 0
-			? ["Buy to close", "买入平仓"]
-			: ["Buy to open", "买入开仓"];
-	return from > 0
-		? ["Sell to close", "卖出平仓"]
-		: ["Sell to open", "卖出开仓"];
-}
-
-function positionCopy(position: number): Copy {
-	if (position > 0) return [`Long ${position} call`, `多头 ${position} 张`];
-	if (position < 0) return [`Short ${-position} call`, `空头 ${-position} 张`];
-	return ["Flat", "空仓"];
-}
 
 const TRACK_HEIGHT = 186;
 
@@ -485,24 +431,6 @@ const assignSteps: readonly AssignStep[] = [
 	"settle",
 ];
 type AssignState = { right: Right; step: AssignStep };
-
-/** Everyone short the contract. Ben sold the learner theirs; the clearinghouse picks Eli. */
-const writers = [
-	{ id: "ben", name: "Ben", short: 1 },
-	{ id: "cara", name: "Cara", short: 2 },
-	{ id: "eli", name: "Eli", short: 3 },
-] as const;
-const ASSIGNED = "eli";
-
-/** At expiry ALFA closes $7 below the put's strike, or $8 above the call's. Cents. */
-function exerciseCase(right: Right) {
-	const contract = contractFor(right);
-	const close = right === "put" ? 88 : 108;
-	const premium = optionQuote(contract).ask * 100;
-	const cash = contract.strike * 100 * 100;
-	const gain = Math.abs(cash - close * 100 * 100);
-	return { contract, close, premium, cash, gain, net: gain - premium };
-}
 
 function assignLayout(width: number) {
 	// Side by side only when the cards are wide enough for "exercise notice sent".
@@ -1260,13 +1188,14 @@ const scenes = [
 
 export function OptionRightsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="option-rights"
 			label={[
 				"Interactive lesson on holders and writers",
 				"持有人与义务方互动课",
 			]}
+			film={optionRightsFilm}
 			scenes={scenes}
 		/>
 	);
