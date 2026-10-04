@@ -1,16 +1,6 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import * as m from "motion/react-m";
-import {
-	type Contract,
-	type Copy,
-	count,
-	instruments,
-	pick,
-	quoteAt,
-	signedUsd,
-	usd,
-	valueAtExpiry,
-} from "@/content/world";
+import { type Copy, count, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { AxisDrag } from "../walkthrough/axis-drag";
@@ -29,42 +19,34 @@ import {
 	stackHeight,
 	ValueStack,
 } from "../walkthrough/instruments/value-stack";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { startAt, textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { expirationSettlementFilm } from "./expiration-settlement-film";
+import {
+	CALL_95,
+	CALL_100,
+	EARLY_DAY,
+	type ExitDay,
+	type ExpiryState,
+	exitDays,
+	exitValues,
+	expiryOutcome,
+	INDEX_LAST,
+	INDEX_SETTLES,
+	INDEX_STRIKE,
+	indexPayout,
+	WINDOW_DAYS,
+	windowTicks,
+} from "./expiration-settlement-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const CALL_95: Contract = { expiry: "oct18", strike: 95, right: "call" };
-const CALL_100: Contract = { expiry: "oct18", strike: 100, right: "call" };
-/** ALFA's price in the close-or-exercise and settlement scenes, in cents. */
-const ALFA_AT = 10_200;
-const INDEX = instruments.index;
-
 // ——— Scene 1: close or exercise ———
 
-type ExitDay = "oct4" | "oct11" | "oct18";
 type ExitState = { day: ExitDay; exercise: boolean };
-
-const exitDays: Record<ExitDay, { date: string; label: Copy }> = {
-	oct4: { date: "2030-10-04", label: ["Fri Oct 4", "10月4日 周五"] },
-	oct11: { date: "2030-10-11", label: ["Fri Oct 11", "10月11日 周五"] },
-	oct18: { date: "2030-10-18", label: ["expiry day", "到期日"] },
-};
-
-/**
- * Cents per share for the Oct 18 95 call with ALFA at $102: the bid a seller gets, and the
- * intrinsic value an exercise captures. At expiry the call trades at intrinsic value.
- */
-function exitValues(day: ExitDay) {
-	const intrinsic = valueAtExpiry(CALL_95, ALFA_AT);
-	const bid =
-		day === "oct18"
-			? intrinsic
-			: quoteAt(CALL_95, ALFA_AT, exitDays[day].date).bid;
-	return { intrinsic, bid, time: Math.max(bid - intrinsic, 0) };
-}
 
 const EXIT_TOP = 30;
 
@@ -243,14 +225,6 @@ function ExitView({
 type Product = "alfa" | "index";
 type SettleStep = "terms" | "settle" | "reference";
 type SettleState = { product: Product; step: SettleStep; level: number };
-
-const INDEX_STRIKE = 5_000;
-const INDEX_SETTLES = 5_025;
-const INDEX_LAST = 5_030;
-
-/** Cash-settled payout in cents for a settlement value in index points. */
-const indexPayout = (level: number) =>
-	Math.max(level - INDEX_STRIKE, 0) * INDEX.multiplier * 100;
 
 function SettleView({
 	locale,
@@ -486,17 +460,6 @@ function SettleView({
 type Style = "american" | "european";
 /** No style yet means the exercise window is still unknown. */
 type WindowState = { style: Style | null; early: boolean };
-
-/** Days from Mon Sep 16 to Fri Oct 18. */
-const WINDOW_DAYS = 32;
-const windowTicks: readonly { day: number; label: Copy }[] = [
-	{ day: 0, label: ["Sep 16", "9月16日"] },
-	{ day: 7, label: ["Sep 23", "9月23日"] },
-	{ day: 14, label: ["Sep 30", "9月30日"] },
-	{ day: 21, label: ["Oct 7", "10月7日"] },
-	{ day: 32, label: ["Oct 18", "10月18日"] },
-];
-const EARLY_DAY = 30;
 
 function windowLayout(width: number) {
 	const narrow = width < 520;
@@ -769,33 +732,8 @@ function WindowView({
 
 // ——— Scene 4: expiry-day surprises ———
 
-type ExpiryRole = "holder" | "writer";
-type ExpiryState = {
-	role: ExpiryRole;
-	/** ALFA's close on Oct 18, in dollars. */
-	close: number;
-	/** Where ALFA trades after the close, when it moves. */
-	after: number | null;
-	/** The holder told the broker not to exercise. */
-	decline: boolean;
-	/** False while the learner is still asked what will happen. */
-	reveal: boolean;
-};
-
 const EXPIRY_CARD_TOP = PRICE_LINE_HEIGHT - 4;
 const EXPIRY_HEIGHT = EXPIRY_CARD_TOP + 96;
-
-/** What happens to the Oct 18 100 call, and what the account shows on Monday Oct 21. */
-function expiryOutcome(state: ExpiryState) {
-	const finalPrice = state.after ?? state.close;
-	const exercised =
-		state.role === "holder"
-			? state.close >= CALL_100.strike + 0.01 && !state.decline
-			: state.after !== null && finalPrice > CALL_100.strike;
-	const known =
-		state.reveal && (state.role === "holder" || state.after !== null);
-	return { exercised, known };
-}
 
 function ExpiryStage({
 	width,
@@ -1476,13 +1414,14 @@ export function ExpirationSettlementWalkthrough({
 	locale: Locale;
 }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="expiration-settlement"
 			label={[
 				"Interactive lesson on expiration and settlement",
 				"到期与结算互动课",
 			]}
+			film={expirationSettlementFilm}
 			scenes={scenes}
 		/>
 	);
