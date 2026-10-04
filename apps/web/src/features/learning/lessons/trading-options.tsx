@@ -13,11 +13,7 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
-import {
-	ChainGrid,
-	type ChainRow,
-	chainHeight,
-} from "../walkthrough/instruments/chain-grid";
+import { ChainGrid, chainHeight } from "../walkthrough/instruments/chain-grid";
 import {
 	type BookLevel,
 	bookHeight,
@@ -29,26 +25,28 @@ import {
 	TransferFlow,
 	transferFlowHeight,
 } from "../walkthrough/instruments/transfer-flow";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { tradingOptionsFilm } from "./trading-options-film";
+import {
+	chainExpiries,
+	chainRows,
+	FEE,
+	nov105,
+	type Route,
+	routeFacts,
+	strikes,
+	thin,
+	thinBook,
+} from "./trading-options-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-const FEE = 65;
 
 // ——— Scene 1: read a chain ———
 
-const chainExpiries: readonly ExpiryId[] = ["sep20", "oct18", "nov15"];
-const strikes = [90, 95, 100, 105, 110];
 type ChainState = { expiry: ExpiryId; strike: number; right: "call" | "put" };
-
-function chainRows(expiry: ExpiryId): ChainRow[] {
-	return strikes.map((strike) => ({
-		strike,
-		call: optionQuote({ expiry, strike, right: "call" }),
-		put: optionQuote({ expiry, strike, right: "put" }),
-	}));
-}
 
 function ChainView({
 	locale,
@@ -164,20 +162,6 @@ function ChainView({
 }
 
 // ——— Scene 2: market or limit ———
-
-const thin: Contract = { expiry: "dec20", strike: 110, right: "call" };
-const thinBook = {
-	asks: [
-		{ price: 265, size: 3 },
-		{ price: 275, size: 5 },
-		{ price: 290, size: 8 },
-	],
-	bids: [
-		{ price: 220, size: 4 },
-		{ price: 210, size: 6 },
-		{ price: 195, size: 10 },
-	],
-};
 
 type OrderState = {
 	kind: "none" | "market" | "limit";
@@ -361,19 +345,7 @@ function OrderView({
 
 // ——— Scene 3: how it ends ———
 
-const nov105: Contract = { expiry: "nov15", strike: 105, right: "call" };
-type Route = "hold" | "sell" | "expire" | "exercise";
 type EndState = { route: Route };
-
-function routeFacts(route: Route) {
-	const paid = optionQuote(nov105).ask * 100 + FEE;
-	if (route === "sell")
-		return { cash: 370 * 100 - FEE, result: 370 * 100 - FEE - paid };
-	if (route === "expire") return { cash: 0, result: -paid };
-	if (route === "exercise")
-		return { cash: 0, result: (112 - 105) * 100 * 100 - paid };
-	return { cash: 0, result: -paid };
-}
 
 function EndView({
 	locale,
@@ -803,10 +775,11 @@ const scenes = [
 
 export function TradingOptionsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="trading-options"
 			label={["Interactive lesson on trading an option", "期权交易互动课"]}
+			film={tradingOptionsFilm}
 			scenes={scenes}
 		/>
 	);
