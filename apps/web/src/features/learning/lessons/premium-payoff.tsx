@@ -1,14 +1,11 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import {
-	ALFA,
-	type Contract,
 	type Copy,
 	contractLabel,
 	optionQuote,
 	pick,
 	signedUsd,
 	usd,
-	valueAtExpiry,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
@@ -23,18 +20,26 @@ import {
 	stackHeight,
 	ValueStack,
 } from "../walkthrough/instruments/value-stack";
+import { Player } from "../walkthrough/player";
 import { Label, Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { premiumPayoffFilm } from "./premium-payoff-film";
+import {
+	type BuyId,
+	breakEven,
+	buys,
+	type Moment,
+	payoffAt,
+	priceParts,
+	type Right,
+	STRIKES,
+	type WriteId,
+	writes,
+} from "./premium-payoff-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-type Right = "call" | "put";
-const oct18 = (strike: number, right: Right): Contract => ({
-	expiry: "oct18",
-	strike,
-	right,
-});
 const rightName = (right: Right): Copy =>
 	right === "call" ? ["call", "看涨"] : ["put", "看跌"];
 /** "$102" or "$104.20". */
@@ -62,31 +67,14 @@ const dragSpot = <S extends { spot: number }>(
 			}
 		: undefined;
 
-/**
- * Value at expiry in cents per share for a price in dollars. Cents per share equal dollars
- * per 100-share contract, which is how the charts below are drawn.
- */
-const payoffAt = (contract: Contract, spot: number) =>
-	valueAtExpiry(contract, Math.round(spot * 100));
-
 // ——— Scene 1: what the premium pays for ———
 
-const STRIKES = [90, 95, 100, 105, 110] as const;
-type Moment = "now" | "expiry";
 type PartsState = {
 	right: Right;
 	focus: number;
 	moment: Moment;
 	shown: readonly number[];
 };
-
-/** Cents per share with ALFA at $100: the Sep 16 ask, or what is left at expiry. */
-function priceParts(strike: number, right: Right, moment: Moment) {
-	const contract = oct18(strike, right);
-	const intrinsic = valueAtExpiry(contract, ALFA.open);
-	const price = moment === "now" ? optionQuote(contract).ask : intrinsic;
-	return { price, intrinsic, time: price - intrinsic };
-}
 
 const PARTS_TOP = 30;
 
@@ -259,12 +247,6 @@ function PartsView({
 
 // ——— Scene 2: payoff and profit for the buyer ———
 
-type BuyId = "c100" | "c105" | "p95";
-const buys: Record<BuyId, Contract> = {
-	c100: oct18(100, "call"),
-	c105: oct18(105, "call"),
-	p95: oct18(95, "put"),
-};
 type ProfitState = {
 	id: BuyId;
 	spot: number;
@@ -273,12 +255,6 @@ type ProfitState = {
 };
 
 const BUY_RANGE = [85, 115] as const;
-
-/** Price at which a bought option's value at expiry repays its premium, in dollars. */
-const breakEven = (contract: Contract, paid: number) =>
-	contract.right === "call"
-		? contract.strike + paid / 100
-		: contract.strike - paid / 100;
 
 function ProfitView({
 	locale,
@@ -454,11 +430,6 @@ function ProfitView({
 
 // ——— Scene 3: the writer's side ———
 
-type WriteId = "p95" | "c105";
-const writes: Record<WriteId, Contract> = {
-	p95: oct18(95, "put"),
-	c105: oct18(105, "call"),
-};
 type WriteState = { id: WriteId; spot: number };
 
 const WRITE_RANGE = [80, 120] as const;
@@ -896,13 +867,14 @@ const scenes = [
 
 export function PremiumPayoffWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="premium-payoff"
 			label={[
 				"Interactive lesson on premium, payoff and profit",
 				"权利金、到期价值与盈亏互动课",
 			]}
+			film={premiumPayoffFilm}
 			scenes={scenes}
 		/>
 	);
