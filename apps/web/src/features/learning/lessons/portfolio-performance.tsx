@@ -1,14 +1,4 @@
-import {
-	alfaCloses,
-	CONTRACT_FEE,
-	type Copy,
-	oct100CallCloseQuote,
-	oct100CallMonday,
-	pick,
-	signedUsd,
-	usd,
-	yourAccount,
-} from "@/content/world";
+import { type Copy, pick, usd, yourAccount } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import { type Bar, BarChart } from "../walkthrough/instruments/bar-chart";
@@ -18,43 +8,41 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { portfolioPerformanceFilm } from "./portfolio-performance-film";
+import {
+	AFTER_DEPOSIT,
+	CLOSE,
+	deep,
+	dollars,
+	GROSS_LOSS,
+	GROSS_WIN,
+	GROWTH,
+	LOSSES,
+	MONTHS,
+	maxDrawdown,
+	OPEN,
+	PROFIT_FACTOR,
+	pct,
+	R1,
+	R2,
+	SALE_REALIZED,
+	signed,
+	steady,
+	TOTAL,
+	TWR,
+	trades,
+	WEEK_END,
+	WIN_RATE,
+	WINS,
+} from "./portfolio-performance-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-const places = (cents: number) => (Math.round(cents) % 100 === 0 ? 0 : 2);
-const dollars = (cents: number) => usd(Math.round(cents), places(cents));
-const signed = (cents: number) => signedUsd(Math.round(cents), places(cents));
-const pct = (fraction: number, digits = 2) =>
-	`${fraction < 0 ? "−" : fraction > 0 ? "+" : ""}${Math.abs(fraction * 100).toFixed(digits)}%`;
 
 // ——— Scene 1: flows and returns ———
-
-/** Your account from the P&L lesson: Monday's open and close, then Tuesday's deposit. */
-const yours = oct100CallMonday.trades.filter((trade) => trade.buyer === "you");
-const paid = yours.reduce(
-	(sum, trade) => sum + trade.quantity * trade.price * 100,
-	0,
-);
-const held = yours.reduce((sum, trade) => sum + trade.quantity, 0);
-const FRIDAY = Math.round(alfaCloses[alfaCloses.length - 1].close * 100);
-const MID = (oct100CallCloseQuote.bid + oct100CallCloseQuote.ask) / 2;
-const OPEN = yourAccount.cashAtOpen + yourAccount.shares * FRIDAY;
-const CLOSE =
-	yourAccount.cashAtOpen -
-	paid -
-	held * CONTRACT_FEE +
-	yourAccount.shares * oct100CallCloseQuote.spot +
-	held * MID * 100;
-const AFTER_DEPOSIT = CLOSE + yourAccount.deposit;
-/** The account at Friday Sep 20's close: a 1.00% gain on the week after the deposit. */
-const WEEK_END = Math.round(AFTER_DEPOSIT * 1.01);
-
-const R1 = CLOSE / OPEN - 1;
-const R2 = WEEK_END / AFTER_DEPOSIT - 1;
-const TWR = (1 + R1) * (1 + R2) - 1;
-const GROWTH = WEEK_END / OPEN - 1;
 
 type FlowState = { stage: 0 | 1 | 2 };
 
@@ -200,23 +188,6 @@ function FlowView({
 
 type TradeState = { stage: 0 | 1 | 2 };
 
-const SALE_REALIZED = 6 * (oct100CallCloseQuote.bid - yours[0].price) * 100;
-/** Your last five closed trades, in cents: the call sale from the P&L lesson and four others. */
-const trades: readonly { id: string; label: Copy; pnl: number }[] = [
-	{ id: "a", label: ["Aug 22", "8月22日"], pnl: 9_500 },
-	{ id: "b", label: ["Aug 29", "8月29日"], pnl: 8_000 },
-	{ id: "c", label: ["Sep 5", "9月5日"], pnl: -78_000 },
-	{ id: "d", label: ["Sep 10", "9月10日"], pnl: 12_000 },
-	{ id: "e", label: ["Sep 16", "9月16日"], pnl: SALE_REALIZED },
-];
-const WINS = trades.filter((trade) => trade.pnl > 0);
-const LOSSES = trades.filter((trade) => trade.pnl < 0);
-const WIN_RATE = WINS.length / trades.length;
-const GROSS_WIN = WINS.reduce((sum, trade) => sum + trade.pnl, 0);
-const GROSS_LOSS = -LOSSES.reduce((sum, trade) => sum + trade.pnl, 0);
-const TOTAL = GROSS_WIN - GROSS_LOSS;
-const PROFIT_FACTOR = GROSS_WIN / GROSS_LOSS;
-
 function TradeView({
 	locale,
 	phase,
@@ -343,35 +314,6 @@ function TradeView({
 // ——— Scene 3: the worst fall ———
 
 type DrawdownState = { stage: 0 | 1 | 2 };
-
-const MONTHS: readonly Copy[] = [
-	["Jan", "1月"],
-	["Feb", "2月"],
-	["Mar", "3月"],
-	["Apr", "4月"],
-	["May", "5月"],
-	["Jun", "6月"],
-	["Jul", "7月"],
-	["Aug", "8月"],
-];
-/** Two accounts' month-end values with the same start and end, in dollars. */
-const steady = [30_000, 30_600, 31_200, 30_900, 31_800, 32_400, 32_100, 33_000];
-const deep = [30_000, 31_500, 32_000, 27_000, 24_000, 26_500, 30_000, 33_000];
-
-function maxDrawdown(values: readonly number[]) {
-	let peak = values[0];
-	let worst = { fall: 0, peakAt: 0, troughAt: 0 };
-	let peakAt = 0;
-	values.forEach((value, i) => {
-		if (value > peak) {
-			peak = value;
-			peakAt = i;
-		}
-		const fall = value / peak - 1;
-		if (fall < worst.fall) worst = { fall, peakAt, troughAt: i };
-	});
-	return worst;
-}
 
 function DrawdownView({
 	locale,
@@ -802,10 +744,11 @@ export function PortfolioPerformanceWalkthrough({
 	locale: Locale;
 }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="portfolio-performance"
 			label={["Interactive lesson on performance measures", "绩效度量互动课"]}
+			film={portfolioPerformanceFilm}
 			scenes={scenes}
 		/>
 	);
