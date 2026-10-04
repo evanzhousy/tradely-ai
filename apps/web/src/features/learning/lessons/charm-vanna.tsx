@@ -1,15 +1,5 @@
 import * as m from "motion/react-m";
-import {
-	ALFA,
-	type Copy,
-	count,
-	daysToExpiry,
-	modelVolatility,
-	oct105BlockLegs,
-	pick,
-	priceOption,
-	signedCount,
-} from "@/content/world";
+import { type Copy, count, pick, signedCount } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import {
@@ -17,38 +7,32 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { packParts, textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { charmVannaFilm } from "./charm-vanna-film";
+import {
+	AFTER_BOTH,
+	AFTER_WEEK,
+	CHARM_DAY,
+	delta,
+	fixed3,
+	LONG,
+	PER_YEAR,
+	plain3,
+	SHORT,
+	SPOT,
+	STRIKE,
+	spreadAt,
+	TODAY,
+	VANNA_POINT,
+	VOL_DROP,
+	WEEK,
+} from "./charm-vanna-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-const DAYS = daysToExpiry("oct18");
-const WEEK = 7;
-const VOL_DROP = 3;
-/** Model delta of an Oct 18 call, to three places: the small changes here need them. */
-const delta = (strike: number, elapsed = 0, volPoints = 0) =>
-	Math.round(
-		priceOption({
-			spot: SPOT,
-			strike,
-			days: DAYS - elapsed,
-			iv: modelVolatility("oct18", strike) + volPoints / 100,
-			right: "call",
-		}).delta * 1000,
-	) / 1000;
-const fixed3 = (value: number) =>
-	`${value < 0 ? "−" : value > 0 ? "+" : ""}${Math.abs(value).toFixed(3)}`;
-const plain3 = (value: number) => value.toFixed(3);
-
-const STRIKE = 110;
-const TODAY = delta(STRIKE);
-const AFTER_WEEK = delta(STRIKE, WEEK);
-const AFTER_BOTH = delta(STRIKE, WEEK, -VOL_DROP);
-const CHARM_DAY = delta(STRIKE, 1) - TODAY;
-const VANNA_POINT = Math.round((delta(STRIKE, 0, 1) - TODAY) * 10_000) / 10_000;
 
 // ——— Scene 1: delta moves with no trade ———
 
@@ -216,7 +200,7 @@ const unitRows: readonly { label: Copy; value: string; note: Copy }[] = [
 	},
 	{
 		label: ["Charm, per year of time left", "Charm，每一年剩余期限"],
-		value: `${-CHARM_DAY * 365 > 0 ? "+" : "−"}${Math.abs(CHARM_DAY * 365).toFixed(2)}`,
+		value: PER_YEAR,
 		note: [
 			"the same event: time left shrinks as days pass, so the sign flips",
 			"同一件事：日子过去，剩余期限变短，所以符号相反",
@@ -415,24 +399,6 @@ function UnitView({
 // ——— Scene 3: scale a signed position ———
 
 type SpreadState = { stage: 0 | 1 | 2 };
-
-const LONG = oct105BlockLegs.buy;
-const SHORT = oct105BlockLegs.sell;
-const positionDelta = (elapsed: number, volPoints: number) => {
-	const long = Math.round(
-		LONG.quantity * 100 * delta(LONG.strike, elapsed, volPoints),
-	);
-	const short = -Math.round(
-		SHORT.quantity * 100 * delta(SHORT.strike, elapsed, volPoints),
-	);
-	return { long, short, net: long + short };
-};
-const spreadAt = (stage: SpreadState["stage"]) =>
-	stage === 0
-		? positionDelta(0, 0)
-		: stage === 1
-			? positionDelta(WEEK, 0)
-			: positionDelta(WEEK, -VOL_DROP);
 
 const SPREAD_ROW = 44;
 const spreadTitle: Copy = [
@@ -950,10 +916,11 @@ const scenes = [
 
 export function CharmVannaWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="charm-vanna"
 			label={["Interactive lesson on charm and vanna", "Charm 与 Vanna 互动课"]}
+			film={charmVannaFilm}
 			scenes={scenes}
 		/>
 	);
