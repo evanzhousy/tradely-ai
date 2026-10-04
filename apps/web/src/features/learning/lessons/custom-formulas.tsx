@@ -4,7 +4,6 @@ import {
 	count,
 	dayLabel,
 	pick,
-	type SymbolFlowRow,
 	symbolFlowSessions,
 	usd,
 } from "@/content/world";
@@ -21,84 +20,36 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { customFormulasFilm } from "./custom-formulas-film";
+import {
+	ALFA,
+	byDesc,
+	compact,
+	dollars,
+	FORMULAS,
+	type FormatId,
+	type FormulaId,
+	GLYN,
+	guardFormula,
+	MONDAY,
+	NOTICE,
+	perTrade,
+	REFUSED,
+	SAVED_FLOOR,
+	trades,
+	type Unit,
+} from "./custom-formulas-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const MONDAY = symbolFlowSessions.monday.rows;
-const rowOf = (rows: readonly SymbolFlowRow[], symbol: string) => {
-	const row = rows.find((item) => item.symbol === symbol);
-	if (!row) throw new Error(`Unknown symbol ${symbol}`);
-	return row;
-};
-const ALFA = rowOf(MONDAY, "ALFA");
-const GLYN = rowOf(MONDAY, "GLYN");
-
-/** Whole dollars: "$6,458". */
-const dollars = (value: number) => usd(Math.round(value * 100), 0);
-/** "$1.18M", "$310K". */
-const compact = (value: number) =>
-	value >= 1_000_000
-		? `$${(value / 1_000_000).toFixed(2)}M`
-		: `$${Math.round(value / 1_000)}K`;
-/** "1 trade", "3 trades". */
-const trades = (value: number) =>
-	`${count(value)} ${value === 1 ? "trade" : "trades"}`;
-const perTrade = (row: SymbolFlowRow) => row.totalPremium / row.trades;
-const byDesc = <T,>(rows: readonly T[], score: (row: T) => number) =>
-	[...rows].sort((a, b) => score(b) - score(a));
-
 // ——— Scene 1: units decide what a formula can say ———
 
-type FormulaId = "sum" | "perTrade" | "share";
-type FormatId = "number" | "percent" | "currency";
-type Unit = "usd" | "count" | "ratio";
 type UnitState = { formula: FormulaId; format: FormatId; reveal: boolean };
-
-const FORMULAS: Record<
-	FormulaId,
-	{
-		name: Copy;
-		tokens: readonly { text: string; unit?: Unit }[];
-		/** The output unit the live preview names, or null when the editor refuses the formula. */
-		output: Unit | null;
-		value: (row: SymbolFlowRow) => number;
-	}
-> = {
-	sum: {
-		name: ["Premium plus trades", "权利金加笔数"],
-		tokens: [
-			{ text: "[Total Premium]", unit: "usd" },
-			{ text: " + " },
-			{ text: "[Trades]", unit: "count" },
-		],
-		output: null,
-		value: (row) => row.totalPremium + row.trades,
-	},
-	perTrade: {
-		name: ["Premium per trade", "每笔权利金"],
-		tokens: [
-			{ text: "[Total Premium]", unit: "usd" },
-			{ text: " / " },
-			{ text: "[Trades]", unit: "count" },
-		],
-		output: "usd",
-		value: perTrade,
-	},
-	share: {
-		name: ["Call share", "看涨占比"],
-		tokens: [
-			{ text: "[Call Premium]", unit: "usd" },
-			{ text: " / " },
-			{ text: "[Total Premium]", unit: "usd" },
-		],
-		output: "ratio",
-		value: (row) => row.callPremium / row.totalPremium,
-	},
-};
 
 const FORMATS: Record<FormatId, Copy> = {
 	number: ["Number", "数字"],
@@ -117,7 +68,6 @@ function previewValue(value: number, unit: Unit, format: FormatId) {
 	return plain(value);
 }
 
-const REFUSED = "Cannot add usd and count.";
 const CURRENCY_WARNING = "Currency format requires a USD or price formula.";
 
 const PAD = 16;
@@ -416,10 +366,6 @@ function UnitView({
 
 type GuardState = { perTrade: boolean; floor: 0 | 20 | 100 };
 
-const guardFormula = (floor: number) =>
-	floor > 0
-		? `IF([Trades] >= ${floor}, [Total Premium] / [Trades], NA())`
-		: "[Total Premium] / [Trades]";
 /** Room above the ranking for the longest formula, so the stage keeps one height. */
 const guardTop = (width: number) =>
 	14 + wrapText(guardFormula(100), width - 16, 12).length * 16;
@@ -598,12 +544,6 @@ function GuardView({
 
 type Session = keyof typeof symbolFlowSessions;
 type SaveState = { session: Session; notice: boolean };
-
-const SAVED_FLOOR = 20;
-const NOTICE: Copy = [
-	"A custom result is descriptive and user-defined, not a canonical TradingFlow metric or forecast.",
-	"自定义结果是描述性的、由用户定义的，不是 TradingFlow 的标准指标或预测。",
-];
 
 function saveLayout(width: number, locale: Locale) {
 	const formula = wrapText(guardFormula(SAVED_FLOOR), width - 40, 12);
@@ -1097,10 +1037,11 @@ const scenes = [
 
 export function CustomFormulasWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="custom-formulas"
 			label={["Interactive lesson on formula columns", "公式列互动课"]}
+			film={customFormulasFilm}
 			scenes={scenes}
 		/>
 	);
