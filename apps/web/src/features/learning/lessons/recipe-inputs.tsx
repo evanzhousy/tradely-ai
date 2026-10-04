@@ -4,7 +4,6 @@ import {
 	contractDte,
 	dayLabel,
 	mondayScreen,
-	NEXT_SESSION_DATE,
 	pick,
 	runScreen,
 	type ScreenContract,
@@ -13,7 +12,6 @@ import {
 	screenContractLabel,
 	screenDefaults,
 	screenMiss,
-	tuesdayScreen,
 	volumeToOi,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -23,18 +21,23 @@ import {
 	type RankItem,
 	rankBumpHeight,
 } from "../walkthrough/instruments/rank-bump";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { recipeInputsFilm } from "./recipe-inputs-film";
+import {
+	type ChangeId,
+	changes,
+	contracts,
+	count,
+	INPUT_ROWS,
+	raised,
+	run,
+} from "./recipe-inputs-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-const run = (inputs: Partial<ScreenInputs>) =>
-	runScreen(mondayScreen, { ...screenDefaults, ...inputs }, SESSION_DATE);
-const count = (value: number) => value.toLocaleString("en-US");
-/** "1 contract", "5 contracts". */
-const contracts = (value: number) =>
-	`${value} ${value === 1 ? "contract" : "contracts"}`;
 
 // ——— Scene 1: a draft isn't a run ———
 
@@ -48,13 +51,6 @@ function resolve(state: DraftState) {
 	return { shown, ran, pending: state.action === "draft" && shown !== ran };
 }
 
-const INPUT_ROWS: readonly { id: keyof ScreenInputs; label: Copy }[] = [
-	{ id: "minVolumeToOi", label: ["Min volume / OI", "最低成交量/OI"] },
-	{ id: "minRelativeVolume", label: ["Min relative volume", "最低相对成交量"] },
-	{ id: "minVolume", label: ["Min volume", "最低成交量"] },
-	{ id: "minOpenInterest", label: ["Min OI", "最低未平仓量"] },
-	{ id: "maxDte", label: ["Max DTE", "最长到期天数"] },
-];
 const INPUT_ROW = 30;
 const DOCK_H = 40;
 const draftLayout = (width: number) => {
@@ -300,55 +296,7 @@ function DraftView({
 
 // ——— Scene 2: tune or re-ask ———
 
-type ChangeId = "volOi" | "date" | "premium" | "zeroDte";
 type ChangeState = { reveal: 0 | 1 | 2; focus: ChangeId | null };
-
-const changes: readonly {
-	id: ChangeId;
-	text: Copy;
-	kind: "input" | "method";
-	effect: Copy;
-}[] = [
-	{
-		id: "volOi",
-		text: ["Raise Min volume/OI to 2", "把最低成交量/OI 提高到 2"],
-		kind: "input",
-		effect: [
-			`Same screen, stricter: ${run({ minVolumeToOi: 2 }).length} of ${run({}).length} contracts stay`,
-			`同一个筛选，更严格：${run({}).length} 份中留下 ${run({ minVolumeToOi: 2 }).length} 份`,
-		],
-	},
-	{
-		id: "date",
-		text: ["Pick Tuesday in the date picker", "在日期选择器中选择周二"],
-		kind: "input",
-		effect: [
-			`Same question, Tuesday's data: ${runScreen(tuesdayScreen, screenDefaults, NEXT_SESSION_DATE).length} contracts`,
-			`同一个问题，周二的数据：${runScreen(tuesdayScreen, screenDefaults, NEXT_SESSION_DATE).length} 份合约`,
-		],
-	},
-	{
-		id: "premium",
-		text: [
-			"Rank by premium instead of volume/OI",
-			"改为按权利金而不是成交量/OI 排名",
-		],
-		kind: "method",
-		effect: [
-			'A different measure: "biggest money" isn\'t "unusual against open interest"',
-			"换了一种度量：“金额最大”不等于“相对未平仓量异常”",
-		],
-	},
-	{
-		id: "zeroDte",
-		text: ["Include same-day expiries", "纳入当天到期的合约"],
-		kind: "method",
-		effect: [
-			"The recipe excludes 0DTE by design; including it changes what the screen is for",
-			"这个 Recipe 刻意排除当天到期合约；纳入它们就改变了筛选的用途",
-		],
-	},
-];
 
 const CHANGE_H = 46;
 /** Each change's text wraps beside its tag. */
@@ -689,8 +637,6 @@ function FloorView({
 
 // ——— Lesson ———
 
-const raised = run({ minOpenInterest: 1_000 }).length;
-
 const scenes = [
 	defineScene<DraftState, DraftState>({
 		id: "draft",
@@ -960,10 +906,11 @@ const scenes = [
 
 export function RecipeInputsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="recipe-inputs"
 			label={["Interactive lesson on recipe inputs", "Recipe 输入互动课"]}
+			film={recipeInputsFilm}
 			scenes={scenes}
 		/>
 	);
