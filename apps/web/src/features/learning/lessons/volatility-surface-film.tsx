@@ -230,7 +230,7 @@ function Scene({
 			<defs>
 				<Hatch id={`hatch-${id}`} />
 				<clipPath id={`smile-${id}`}>
-					<rect data-f="smile-clip" x={L.left - 4} y={0} width={4} height={H} />
+					<rect data-f="smile-clip" x={L.left - 4} y={0} width={0} height={H} />
 				</clipPath>
 			</defs>
 

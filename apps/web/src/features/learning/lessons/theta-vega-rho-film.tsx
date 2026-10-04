@@ -312,7 +312,7 @@ function Scene({
 			<Backdrop frame={L} />
 			<defs>
 				<clipPath id={`decay-${id}`}>
-					<rect data-f="decay-clip" x={L.left - 4} y={0} width={4} height={H} />
+					<rect data-f="decay-clip" x={L.left - 4} y={0} width={0} height={H} />
 				</clipPath>
 			</defs>
 

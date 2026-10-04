@@ -266,7 +266,7 @@ function Scene({
 					/>
 				</clipPath>
 				<clipPath id={`draw-${id}`}>
-					<rect data-f="draw" x={L.left - 4} y={0} width={4} height={H} />
+					<rect data-f="draw" x={L.left - 4} y={0} width={0} height={H} />
 				</clipPath>
 			</defs>
 
