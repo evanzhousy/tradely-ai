@@ -1,14 +1,5 @@
 import * as m from "motion/react-m";
-import {
-	type Contract,
-	type Copy,
-	modelValue,
-	optionQuote,
-	pick,
-	signedUsd,
-	usd,
-	valueAtExpiry,
-} from "@/content/world";
+import { type Copy, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
@@ -21,16 +12,32 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { startAt } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { putCallParityFilm } from "./put-call-parity-film";
+import {
+	AFTERNOON,
+	AFTERNOON_PARITY,
+	CALL_PAID,
+	callLeg,
+	callMid,
+	GAP,
+	LATE,
+	LATE_PUT,
+	MORNING,
+	NET_DEBIT,
+	PUT_RECEIVED,
+	putLeg,
+	putMid,
+	RANGE,
+	STRIKE,
+	synthetic,
+} from "./put-call-parity-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const CALL: Contract = { expiry: "oct18", strike: 100, right: "call" };
-const PUT: Contract = { expiry: "oct18", strike: 100, right: "put" };
-const STRIKE = 100;
 
 /** Whole dollars per contract from dollars per share: "+$1,000", "−$1,000". */
 const signedPerContract = (perShare: number) =>
@@ -43,16 +50,6 @@ const signedShare = (dollars: number) => signedUsd(Math.round(dollars * 100));
 
 type SyntheticState = { stage: 0 | 1 | 2 | 3; spot: number };
 
-const RANGE = [80, 120] as const;
-/** Buy the call at its ask, sell the put at its bid: cents a share. */
-const CALL_PAID = optionQuote(CALL).ask;
-const PUT_RECEIVED = optionQuote(PUT).bid;
-const NET_DEBIT = (CALL_PAID - PUT_RECEIVED) / 100;
-const callLeg = (spot: number) =>
-	valueAtExpiry(CALL, Math.round(spot * 100)) / 100;
-const putLeg = (spot: number) =>
-	-valueAtExpiry(PUT, Math.round(spot * 100)) / 100;
-const synthetic = (spot: number) => callLeg(spot) + putLeg(spot);
 /** Lines in dollars per contract, with a kink at the strike. */
 const line = (f: (spot: number) => number) =>
 	[RANGE[0], STRIKE, RANGE[1]].map((spot) => [spot, f(spot) * 100] as const);
@@ -209,10 +206,6 @@ function SyntheticView({
 // ——— Scene 2: price one from the other ———
 
 type BalanceState = { stage: 0 | 1; spot: number };
-
-const callMid = (spot: number) =>
-	modelValue(CALL, Math.round(spot * 100)).price;
-const putMid = (spot: number) => modelValue(PUT, Math.round(spot * 100)).price;
 
 /** Two diverging bars from zero: call minus put, and ALFA minus the strike. */
 function Balance({
@@ -433,14 +426,6 @@ function BalanceView({
 // ——— Scene 3: check a print against parity ———
 
 type PrintState = { step: 0 | 1 | 2 };
-
-const MORNING = { spot: 100.02, call: 4.15, put: 4.1 };
-const AFTERNOON = { spot: 102, put: 3.25 };
-/** The call print that arrives at 14:12 but executed at 13:58, with ALFA higher. */
-const LATE = { spot: 103.05, call: 5.9 };
-const LATE_PUT = putMid(LATE.spot);
-const AFTERNOON_PARITY = AFTERNOON.put + (AFTERNOON.spot - STRIKE);
-const GAP = LATE.call - AFTERNOON_PARITY;
 
 function PrintsView({
 	locale,
@@ -951,10 +936,11 @@ const scenes = [
 
 export function PutCallParityWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="put-call-parity"
 			label={["Interactive lesson on put-call parity", "看涨看跌平价互动课"]}
+			film={putCallParityFilm}
 			scenes={scenes}
 		/>
 	);
