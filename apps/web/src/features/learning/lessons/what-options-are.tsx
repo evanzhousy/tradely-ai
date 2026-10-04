@@ -1,6 +1,5 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import {
-	type Contract,
 	type Copy,
 	contractLabel,
 	optionQuote,
@@ -26,17 +25,24 @@ import {
 	TransferFlow,
 	transferFlowHeight,
 } from "../walkthrough/instruments/transfer-flow";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { whatOptionsAreFilm } from "./what-options-are-film";
+import {
+	call100,
+	callIncome,
+	positionPayoff,
+	put100,
+	putCost,
+	SPOTS,
+	shares,
+	type Use,
+	viewCost,
+} from "./what-options-are-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const call100: Contract = { expiry: "oct18", strike: 100, right: "call" };
-const put100: Contract = { expiry: "oct18", strike: 100, right: "put" };
-const put95: Contract = { expiry: "oct18", strike: 95, right: "put" };
-const call105: Contract = { expiry: "oct18", strike: 105, right: "call" };
-const call110: Contract = { expiry: "oct18", strike: 110, right: "call" };
 
 // ——— Scene 1: the right ———
 
@@ -196,23 +202,7 @@ function RightView({
 
 // ——— Scene 2: three uses ———
 
-type Use = "shares" | "protect" | "earn" | "view";
 type UseState = { use: Use };
-
-const SPOTS = [80, 85, 90, 95, 100, 105, 110, 115, 120];
-const shares = (spot: number) => (spot - 100) * 100;
-const putCost = optionQuote(put95).ask;
-const callIncome = optionQuote(call110).bid;
-const viewCost = optionQuote(call105).ask;
-const positionPayoff: Record<
-	Exclude<Use, "shares">,
-	(spot: number) => number
-> = {
-	protect: (spot) => shares(spot) + valueAtExpiry(put95, spot * 100) - putCost,
-	earn: (spot) =>
-		shares(spot) - valueAtExpiry(call110, spot * 100) + callIncome,
-	view: (spot) => valueAtExpiry(call105, spot * 100) - viewCost,
-};
 
 function useFacts(use: Use, locale: Locale) {
 	const t = tr(locale);
@@ -869,10 +859,11 @@ const scenes = [
 
 export function WhatOptionsAreWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="what-options-are"
 			label={["Interactive lesson on what options are", "期权是什么互动课"]}
+			film={whatOptionsAreFilm}
 			scenes={scenes}
 		/>
 	);
