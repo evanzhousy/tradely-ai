@@ -1,15 +1,5 @@
 import * as m from "motion/react-m";
-import {
-	type Contract,
-	type Copy,
-	count,
-	optionQuote,
-	pick,
-	quoteAt,
-	signedUsd,
-	usd,
-	valueAtExpiry,
-} from "@/content/world";
+import { type Copy, count, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
@@ -23,42 +13,35 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { optionStrategiesFilm } from "./option-strategies-film";
+import {
+	BUY_NOV,
+	CASH_IN,
+	CASH_OUT,
+	type Context,
+	kinks,
+	longLeg,
+	NET,
+	RANGE,
+	ROLL_QUANTITY,
+	SELL_OCT,
+	SOLD,
+	STOCK_COST,
+	shortLeg,
+	shortLeg110,
+	spreadPayoff,
+	structures,
+} from "./option-strategies-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const oct18 = (strike: number, right: "call" | "put"): Contract => ({
-	expiry: "oct18",
-	strike,
-	right,
-});
-/** Dollars per contract at expiry (cents per share equal dollars per 100 shares). */
-const payoff = (contract: Contract, spot: number) =>
-	valueAtExpiry(contract, Math.round(spot * 100));
-const RANGE = [80, 120] as const;
-const kinks = (f: (spot: number) => number, strikes: readonly number[]) =>
-	[RANGE[0], ...strikes, RANGE[1]].map((spot) => [spot, f(spot)] as const);
-
 // ——— Scene 1: one leg, three positions ———
 
-type Context = "alone" | "covered" | "spread";
 type LegState = { context: Context };
-
-const CALL_105 = oct18(105, "call");
-const CALL_100 = oct18(100, "call");
-/** The short leg sells at the bid; the long call in the spread buys at the ask. Cents a share. */
-const SOLD = optionQuote(CALL_105).bid;
-const BOUGHT_100 = optionQuote(CALL_100).ask;
-const STOCK_COST = 100;
-
-const shortLeg = (spot: number) => SOLD - payoff(CALL_105, spot);
-const structures: Record<Context, (spot: number) => number> = {
-	alone: shortLeg,
-	covered: (spot) => (spot - STOCK_COST) * 100 + shortLeg(spot),
-	spread: (spot) => payoff(CALL_100, spot) - BOUGHT_100 + shortLeg(spot),
-};
 
 function LegView({
 	locale,
@@ -193,13 +176,6 @@ function LegView({
 // ——— Scene 2: add signed legs ———
 
 type AddState = { stage: 0 | 1 | 2 | 3; spot: number };
-
-const CALL_110 = oct18(110, "call");
-/** The Monday block: bought the 105 call at $2.15, sold the 110 call at $0.90. */
-const NET = 215 - 90;
-const longLeg = (spot: number) => payoff(CALL_105, spot);
-const shortLeg110 = (spot: number) => -payoff(CALL_110, spot);
-const spreadPayoff = (spot: number) => longLeg(spot) + shortLeg110(spot);
 
 /** Whole dollars from dollars: "$500", "+$375". */
 const dollars = (value: number) => usd(value * 100, 0);
@@ -376,14 +352,6 @@ function AddView({
 
 type RollState = { step: 0 | 1 | 2 | 3 };
 
-const ROLL_DATE = "2030-10-04";
-const ROLL_SPOT = 10_200;
-const ROLL_QUANTITY = 16;
-const NOV_100: Contract = { expiry: "nov15", strike: 100, right: "call" };
-const SELL_OCT = quoteAt(CALL_100, ROLL_SPOT, ROLL_DATE).bid;
-const BUY_NOV = quoteAt(NOV_100, ROLL_SPOT, ROLL_DATE).ask;
-const CASH_IN = SELL_OCT * ROLL_QUANTITY * 100;
-const CASH_OUT = BUY_NOV * ROLL_QUANTITY * 100;
 const POSITION_TOP = 30;
 const POSITION_ROW = 44;
 
@@ -924,13 +892,14 @@ const scenes = [
 
 export function OptionStrategiesWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="option-strategies"
 			label={[
 				"Interactive lesson on strategies and their legs",
 				"策略与各条腿互动课",
 			]}
+			film={optionStrategiesFilm}
 			scenes={scenes}
 		/>
 	);
