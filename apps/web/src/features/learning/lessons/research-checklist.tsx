@@ -2,56 +2,21 @@ import * as m from "motion/react-m";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { researchChecklistFilm } from "./research-checklist-film";
+import {
+	EDITED,
+	FRIEND,
+	MESSAGES,
+	type Step,
+	TEMPLATE,
+} from "./research-checklist-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-/** A checklist step: what to check, and the TradingFlow tool it opens. */
-type Step = { id: string; text: Copy; tool: Copy };
-
-/** Home's template for "Before I sell a call, what should I check?", applied to ALFA. */
-const TEMPLATE: readonly Step[] = [
-	{
-		id: "vol",
-		text: [
-			"Compare ALFA's IV with its realized volatility",
-			"比较 ALFA 的隐含波动率与已实现波动率",
-		],
-		tool: ["Rank Symbols · volatility", "Rank Symbols · 波动率"],
-	},
-	{
-		id: "gex",
-		text: [
-			"Inspect GEX and open-interest structure",
-			"查看 GEX 与未平仓量结构",
-		],
-		tool: ["Rank Symbols · gamma", "Rank Symbols · Gamma"],
-	},
-	{
-		id: "trade",
-		text: [
-			"Check the call's spread, liquidity and open interest",
-			"检查该看涨期权的价差、流动性与未平仓量",
-		],
-		tool: ["Rank Contracts · tradeability", "Rank Contracts · 可交易性"],
-	},
-	{
-		id: "flow",
-		text: ["Review recent call flow", "回顾近期的看涨成交流"],
-		tool: ["Option Trades · history", "Option Trades · 历史"],
-	},
-];
-const EARNINGS: Step = {
-	id: "earnings",
-	text: [
-		"Check that ALFA reports on Oct 3, before the Oct 18 expiry",
-		"确认 ALFA 在10月18日到期前的10月3日发布财报",
-	],
-	tool: ["Rank Symbols · earnings", "Rank Symbols · 财报"],
-};
 
 const ROW_GAP = 8;
 const stepLines = (text: string, width: number) =>
@@ -140,19 +105,6 @@ const stackHeight = (steps: readonly Step[], width: number, locale: Locale) =>
 // ——— Scene 1: a checklist inspects; it doesn't forecast ———
 
 type ForecastState = { stage: 0 | 1 | 2 };
-
-const FRIEND: readonly Step[] = [
-	TEMPLATE[0],
-	TEMPLATE[2],
-	{
-		id: "forecast",
-		text: [
-			"Confirm ALFA stays below $105 until Oct 18",
-			"确认 ALFA 在10月18日前一直低于 $105",
-		],
-		tool: ["no tool can check this", "没有工具能核查这一点"],
-	},
-];
 
 function ForecastStage({
 	width,
@@ -320,14 +272,6 @@ function ForecastView({
 
 type EditState = { stage: 0 | 1 | 2 };
 
-const EDITED: readonly Step[] = [
-	TEMPLATE[0],
-	EARNINGS,
-	TEMPLATE[3],
-	TEMPLATE[2],
-	TEMPLATE[1],
-];
-
 function EditStage({
 	width,
 	state,
@@ -474,47 +418,6 @@ function EditView({
 // ——— Scene 3: Customize with AI asks first ———
 
 type ChatState = { stage: 0 | 1 | 2 };
-
-const MESSAGES: readonly {
-	id: string;
-	from: "you" | "ai";
-	text: Copy;
-	at: 0 | 1 | 2;
-}[] = [
-	{
-		id: "ask",
-		from: "you",
-		text: [
-			"Adapt this checklist for ALFA's earnings on Oct 3.",
-			"把这份清单改成针对 ALFA 10月3日 财报的版本。",
-		],
-		at: 0,
-	},
-	{
-		id: "clarify",
-		from: "ai",
-		text: [
-			"One question first: should it focus on how much the move is priced before earnings, or on positioning in the calls you'd sell?",
-			"先问一个问题：清单应该聚焦财报前市场为波动定了多少价，还是聚焦你要卖出的看涨期权的持仓？",
-		],
-		at: 1,
-	},
-	{
-		id: "answer",
-		from: "you",
-		text: ["How much the move is priced.", "财报前的波动定价。"],
-		at: 2,
-	},
-	{
-		id: "proposal",
-		from: "ai",
-		text: [
-			"Proposed: add an expected-move step before the volatility step. Nothing is saved; a recipe is built only if your account has that feature and you confirm.",
-			"建议：在波动率步骤之前加一步预期波动。不会保存任何内容；只有你的账户有该功能并且你确认后，才会构建 Recipe。",
-		],
-		at: 2,
-	},
-];
 
 const BUBBLE_PAD = 12;
 const bubbleW = (width: number) => Math.min(width - 8, 420);
@@ -959,10 +862,11 @@ const scenes = [
 
 export function ResearchChecklistWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="research-checklist"
 			label={["Interactive lesson on research checklists", "研究清单互动课"]}
+			film={researchChecklistFilm}
 			scenes={scenes}
 		/>
 	);
