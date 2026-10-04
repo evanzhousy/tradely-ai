@@ -2,41 +2,26 @@ import * as m from "motion/react-m";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { textWidth, twoRows, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { editWithAiFilm } from "./edit-with-ai-film";
+import {
+	BLOCKS,
+	type BlockId,
+	FIRST_EDIT,
+	FOCUS,
+	PROMPT_IDS,
+	PROMPTS,
+	type PromptId,
+	SECOND_EDIT,
+	STATUS,
+	type Status,
+} from "./edit-with-ai-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-/** The recap's blocks as a draft shows them; chapter titles stay as the report prints them. */
-type BlockId = "title" | "tone" | "money" | "gex" | "spotlight";
-const BLOCKS: readonly { id: BlockId; label: Copy }[] = [
-	{ id: "title", label: ["Title and description", "标题与说明"] },
-	{ id: "tone", label: ["Market tone", "Market tone"] },
-	{ id: "money", label: ["Where the money went", "Where the money went"] },
-	{ id: "gex", label: ["Index GEX", "Index GEX"] },
-	{ id: "spotlight", label: ["Spotlight", "Spotlight"] },
-];
-
-type Status =
-	| "unknown"
-	| "recheck"
-	| "review"
-	| "confirm"
-	| "changed"
-	| "removed"
-	| "same";
-const STATUS: Record<Status, Copy> = {
-	unknown: ["?", "?"],
-	recheck: ["re-check: may have changed", "重新检查：可能已改动"],
-	review: ["review the change", "审阅这处修改"],
-	confirm: ["confirm unchanged", "确认没有改动"],
-	changed: ["changed", "已修改"],
-	removed: ["removed", "已删除"],
-	same: ["unchanged", "未改动"],
-};
-const FOCUS: ReadonlySet<Status> = new Set(["recheck", "review", "changed"]);
 
 /** One row per block; on a phone the status drops under the title. */
 const outlineRow = (width: number) =>
@@ -171,18 +156,7 @@ const promptLines = (text: string, width: number) =>
 
 // ——— Scene 1: a prompt sets what you must review ———
 
-type PromptId = "vague" | "bounded" | "subjective";
 type ScopeState = { prompt: PromptId; reveal: boolean };
-
-const PROMPTS: Record<PromptId, Copy> = {
-	vague: ["Make this an ALFA report.", "把它改成一份 ALFA 报告。"],
-	bounded: [
-		"Keep every existing chapter. Change Spotlight so the reader can choose a symbol, with ALFA as the default. Keep Market tone and Index GEX unchanged.",
-		"保留所有现有章节。修改 Spotlight，让读者可以选择标的，默认 ALFA。Market tone 和 Index GEX 保持不变。",
-	],
-	subjective: ["Make it smarter.", "让它更聪明一点。"],
-};
-const PROMPT_IDS = Object.keys(PROMPTS) as PromptId[];
 
 function scopeStatuses(state: ScopeState): Record<BlockId, Status> {
 	if (!state.reveal) return allBlocks("unknown");
@@ -311,14 +285,6 @@ const STEPS: readonly Copy[] = [
 	["Edit", "修改"],
 	["Undo", "撤销"],
 	["Edit again", "再次修改"],
-];
-const FIRST_EDIT: Copy = [
-	"Change Spotlight so the reader can choose a symbol, with ALFA as the default.",
-	"修改 Spotlight，让读者可以选择标的，默认 ALFA。",
-];
-const SECOND_EDIT: Copy = [
-	"Keep everything else unchanged. Change only Spotlight so the reader can choose a symbol, with ALFA as the default. Do not remove any existing blocks.",
-	"其他一切保持不变。只修改 Spotlight，让读者可以选择标的，默认 ALFA。不要删除任何已有区块。",
 ];
 
 function reviewStatuses(step: ReviewStep): Record<BlockId, Status> {
@@ -1047,13 +1013,14 @@ const scenes = [
 
 export function EditWithAiWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="edit-with-ai"
 			label={[
 				"Interactive lesson on editing recipes with AI",
 				"用 AI 编辑 Recipe 互动课",
 			]}
+			film={editWithAiFilm}
 			scenes={scenes}
 		/>
 	);
