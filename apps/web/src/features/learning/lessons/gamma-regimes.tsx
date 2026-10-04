@@ -1,17 +1,5 @@
 import * as m from "motion/react-m";
-import {
-	ALFA,
-	alfaStockBook,
-	type Copy,
-	count,
-	daysToExpiry,
-	modelVolatility,
-	oct18OpenInterest,
-	pick,
-	priceOption,
-	signedCount,
-	usd,
-} from "@/content/world";
+import { type Copy, count, pick, signedCount } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
@@ -20,62 +8,30 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { gammaRegimesFilm } from "./gamma-regimes-film";
+import {
+	ABOVE,
+	BOOK,
+	cumulativeByStrike,
+	FLIP,
+	lastAsk,
+	level,
+	money,
+	netGex,
+	offered,
+	SHORTCUT,
+	SPOT,
+	shareGamma,
+	stock,
+	TARGET,
+} from "./gamma-regimes-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-const DAYS = daysToExpiry("oct18");
-/** Model gamma to four places at a given ALFA price, as the GEX lesson rounded it. */
-const gammaAt = (spot: number, strike: number) =>
-	Math.round(
-		priceOption({
-			spot,
-			strike,
-			days: DAYS,
-			iv: modelVolatility("oct18", strike),
-			right: "call",
-		}).gamma * 10_000,
-	) / 10_000;
-
-/**
- * The modeled book from the GEX lesson: dealers long every Oct 18 call and short every put.
- * Share-gamma is the change in its delta, in shares, for a $1 rise.
- */
-const shareGamma = (spot: number) =>
-	oct18OpenInterest.reduce(
-		(sum, row) => sum + gammaAt(spot, row.strike) * (row.call - row.put) * 100,
-		0,
-	);
-/** Net GEX in dollars per 1% move at a given spot. */
-const netGex = (spot: number) => shareGamma(spot) * spot * spot * 0.01;
-
-const money = (dollars: number) => {
-	const sign = dollars < 0 ? "−" : dollars > 0 ? "+" : "";
-	const size = Math.abs(dollars);
-	return size >= 1_000_000
-		? `${sign}$${(size / 1_000_000).toFixed(2)}M`
-		: `${sign}$${Math.round(size / 1_000)}k`;
-};
-const stock = (dollars: number) =>
-	usd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
-/** A modeled price level to one decimal: "$102.3". */
-const level = (dollars: number) => `$${dollars.toFixed(1)}`;
-
-/** The spot where the repriced book's gamma changes sign. */
-const FLIP = (() => {
-	let low = 95;
-	let high = 110;
-	for (let i = 0; i < 50; i++) {
-		const mid = (low + high) / 2;
-		if (shareGamma(mid) < 0) low = mid;
-		else high = mid;
-	}
-	return Math.round(((low + high) / 2) * 10) / 10;
-})();
 
 // ——— Scene 1: the hedge response ———
 
@@ -270,33 +226,6 @@ function HedgeScene({
 
 type FlipState = { stage: 0 | 1 | 2 };
 
-/** The strike-chart shortcut: running sum of per-strike net GEX from the top strike down. */
-const cumulativeByStrike = (() => {
-	const rows = [...oct18OpenInterest].sort((a, b) => b.strike - a.strike);
-	let running = 0;
-	return rows
-		.map((row) => {
-			running +=
-				gammaAt(SPOT, row.strike) *
-				(row.call - row.put) *
-				100 *
-				SPOT *
-				SPOT *
-				0.01;
-			return [row.strike, running / 1_000_000] as const;
-		})
-		.reverse();
-})();
-const SHORTCUT = (() => {
-	for (let i = 0; i < cumulativeByStrike.length - 1; i++) {
-		const [k1, v1] = cumulativeByStrike[i];
-		const [k2, v2] = cumulativeByStrike[i + 1];
-		if (v1 < 0 !== v2 < 0)
-			return Math.round((k1 + ((0 - v1) / (v2 - v1)) * (k2 - k1)) * 10) / 10;
-	}
-	return null;
-})();
-
 function FlipView({
 	locale,
 	phase,
@@ -440,10 +369,6 @@ function FlipView({
 // ——— Scene 3: a hedge target is not an outcome ———
 
 type EvidenceState = { stage: 0 | 1 | 2 };
-
-const TARGET = Math.round(-shareGamma(SPOT));
-const offered = alfaStockBook.asks.reduce((sum, level) => sum + level.size, 0);
-const lastAsk = alfaStockBook.asks[alfaStockBook.asks.length - 1];
 
 const evidence: readonly {
 	id: string;
@@ -635,9 +560,6 @@ function EvidenceView({
 }
 
 // ——— Lesson ———
-
-const BOOK = Math.round(shareGamma(SPOT));
-const ABOVE = 105;
 
 const scenes = [
 	defineScene<HedgeState, HedgeState>({
@@ -907,10 +829,11 @@ const scenes = [
 
 export function GammaRegimesWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="gamma-regimes"
 			label={["Interactive lesson on gamma regimes", "Gamma 状态互动课"]}
+			film={gammaRegimesFilm}
 			scenes={scenes}
 		/>
 	);
