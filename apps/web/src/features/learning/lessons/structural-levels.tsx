@@ -1,17 +1,5 @@
 import * as m from "motion/react-m";
-import {
-	ALFA,
-	ALFA_ATR_14,
-	type Copy,
-	count,
-	daysToExpiry,
-	gammaExposure,
-	modelValue,
-	modelVolatility,
-	oct18OpenInterest,
-	pick,
-	usd,
-} from "@/content/world";
+import { ALFA_ATR_14, type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import {
@@ -20,40 +8,31 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { structuralLevelsFilm } from "./structural-levels-film";
+import {
+	CALL_WALL,
+	CANDIDATES,
+	distanceText,
+	MAX_PAIN,
+	type Metric,
+	metricAt,
+	metricText,
+	millions,
+	ONE_SD,
+	PUT_WALL,
+	payout,
+	SPOT,
+	STRIKES,
+	stock,
+	type Unit,
+	wallOf,
+} from "./structural-levels-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-const STRIKES = oct18OpenInterest.map((row) => row.strike);
-const stock = (dollars: number) =>
-	usd(Math.round(dollars * 100), Number.isInteger(dollars) ? 0 : 2);
-const gammaAt = (strike: number) =>
-	Math.round(
-		modelValue({ expiry: "oct18", strike, right: "call" }).gamma * 10_000,
-	) / 10_000;
-
-type Side = "call" | "put";
-type Metric = "oi" | "gex";
-
-/** Open interest, or gamma exposure in dollars per 1% move, by strike and side. */
-const metricAt = (metric: Metric, strike: number, side: Side) => {
-	const row = oct18OpenInterest.find((entry) => entry.strike === strike);
-	if (!row) return 0;
-	return metric === "oi"
-		? row[side]
-		: Math.abs(gammaExposure(gammaAt(strike), row[side], SPOT, 1));
-};
-const wallOf = (metric: Metric, side: Side) =>
-	STRIKES.reduce((best, strike) =>
-		metricAt(metric, strike, side) > metricAt(metric, best, side)
-			? strike
-			: best,
-	);
-const metricText = (metric: Metric, value: number) =>
-	metric === "oi" ? count(value) : `$${Math.round(value / 1000)}k`;
 
 // ——— Scene 1: the rule picks the wall ———
 
@@ -248,25 +227,6 @@ function WallView({
 
 type PainState = { stage: 0 | 1 | 2 };
 
-/** What Oct 18 holders would collect at expiry, in dollars, if ALFA settled at `settle`. */
-const payout = (settle: number, side?: Side) =>
-	oct18OpenInterest.reduce(
-		(sum, row) =>
-			sum +
-			(side !== "put" ? row.call * Math.max(settle - row.strike, 0) * 100 : 0) +
-			(side !== "call" ? row.put * Math.max(row.strike - settle, 0) * 100 : 0),
-		0,
-	);
-const CANDIDATES = Array.from({ length: 36 }, (_, i) => 85 + i);
-const MAX_PAIN = CANDIDATES.reduce((best, settle) =>
-	payout(settle) < payout(best) ? settle : best,
-);
-/** The model's one-standard-deviation range for ALFA at Oct 18, from its at-the-money IV. */
-const ONE_SD =
-	SPOT * modelVolatility("oct18", 100) * Math.sqrt(daysToExpiry("oct18") / 365);
-
-const millions = (dollars: number) => `$${(dollars / 1_000_000).toFixed(2)}M`;
-
 function PainView({
 	locale,
 	phase,
@@ -425,18 +385,7 @@ function PainView({
 
 // ——— Scene 3: one level, three units ———
 
-type DistanceState = { unit: "dollars" | "percent" | "atr" };
-
-const PUT_WALL = wallOf("gex", "put");
-const CALL_WALL = wallOf("gex", "call");
-const distanceText = (level: number, unit: DistanceState["unit"]) => {
-	const dollars = level - SPOT;
-	const sign = dollars < 0 ? "−" : "+";
-	if (unit === "dollars") return `${sign}$${Math.abs(dollars)}`;
-	if (unit === "percent")
-		return `${sign}${Math.abs((dollars / SPOT) * 100).toFixed(1)}%`;
-	return `${sign}${Math.abs(dollars / ALFA_ATR_14).toFixed(1)} ATR`;
-};
+type DistanceState = { unit: Unit };
 
 function DistanceRuler({
 	width,
@@ -907,10 +856,11 @@ const scenes = [
 
 export function StructuralLevelsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="structural-levels"
 			label={["Interactive lesson on walls and max pain", "墙与最大痛点互动课"]}
+			film={structuralLevelsFilm}
 			scenes={scenes}
 		/>
 	);
