@@ -1,13 +1,9 @@
 import * as m from "motion/react-m";
 import {
-	alfaCloses,
 	CONTRACT_FEE,
 	type Copy,
-	oct100CallCloseQuote,
-	oct100CallMonday,
 	pick,
 	signedUsd,
-	usd,
 	yourAccount,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -17,59 +13,46 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { packParts } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { portfolioPnlFilm } from "./portfolio-pnl-film";
+import {
+	AVERAGE_TEXT,
+	afterDeposit,
+	BEN,
+	BEN_PRICE,
+	benAtExpiry,
+	benMarked,
+	buyFees,
+	buyingPower,
+	CLOSE_SPOT,
+	callsClose,
+	cashAfterBuys,
+	cashAfterDeposit,
+	dollars,
+	FRIDAY,
+	HELD,
+	lots,
+	MARK,
+	type Method,
+	PAID,
+	PNL,
+	price,
+	RECEIVED,
+	SALE,
+	SOLD,
+	signed,
+	split,
+	stockClose,
+	stockOpen,
+	valueClose,
+	valueOpen,
+} from "./portfolio-pnl-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-/** Your two Monday buys of the Oct 18 100 call, oldest first, in cents per share. */
-const lots = oct100CallMonday.trades
-	.filter((trade) => trade.buyer === "you")
-	.map((trade) => ({
-		id: trade.id,
-		time: trade.time,
-		quantity: trade.quantity,
-		price: trade.price,
-	}));
-const HELD = lots.reduce((sum, lot) => sum + lot.quantity, 0);
-const PAID = lots.reduce((sum, lot) => sum + lot.quantity * lot.price, 0);
-const AVERAGE = PAID / HELD;
-const SOLD = 6;
-const SALE = oct100CallCloseQuote.bid;
-const MARK = (oct100CallCloseQuote.bid + oct100CallCloseQuote.ask) / 2;
-/** Whole dollars when there are no cents: "$5,000", "+$318.75". */
-const places = (cents: number) => (Math.round(cents) % 100 === 0 ? 0 : 2);
-const dollars = (cents: number) => usd(Math.round(cents), places(cents));
-const signed = (cents: number) => signedUsd(Math.round(cents), places(cents));
-/** Per-share prices keep their cents; a mid can fall on a half cent. */
-const price = (cents: number) =>
-	cents % 1 === 0 ? usd(cents) : `$${(cents / 100).toFixed(3)}`;
-/** Average cost to three places: "$4.119". */
-const AVERAGE_TEXT = `$${(AVERAGE / 100).toFixed(3)}`;
-
-type Method = "fifo" | "average";
-
-/** Realized and unrealized P&L in cents after selling `sold` contracts at `SALE`, marked at `MARK`. */
-function split(sold: number, method: Method) {
-	if (method === "average") {
-		return {
-			realized: sold * (SALE - AVERAGE) * 100,
-			unrealized: (HELD - sold) * (MARK - AVERAGE) * 100,
-		};
-	}
-	let toSell = sold;
-	let realized = 0;
-	let unrealized = 0;
-	for (const lot of lots) {
-		const out = Math.min(toSell, lot.quantity);
-		toSell -= out;
-		realized += out * (SALE - lot.price) * 100;
-		unrealized += (lot.quantity - out) * (MARK - lot.price) * 100;
-	}
-	return { realized, unrealized };
-}
 
 // ——— Scene 1: realized and unrealized ———
 
@@ -290,20 +273,6 @@ function LotView({
 // ——— Scene 2: cash is not profit ———
 
 type AccountState = { stage: 0 | 1 | 2 };
-
-const FRIDAY = Math.round(alfaCloses[alfaCloses.length - 1].close * 100);
-const CLOSE_SPOT = oct100CallCloseQuote.spot;
-const buyFees = HELD * CONTRACT_FEE;
-const cashAfterBuys = yourAccount.cashAtOpen - PAID * 100 - buyFees;
-const stockOpen = yourAccount.shares * FRIDAY;
-const stockClose = yourAccount.shares * CLOSE_SPOT;
-const callsClose = HELD * MARK * 100;
-const valueOpen = yourAccount.cashAtOpen + stockOpen;
-const valueClose = cashAfterBuys + stockClose + callsClose;
-const PNL = valueClose - valueOpen;
-const afterDeposit = valueClose + yourAccount.deposit;
-const cashAfterDeposit = cashAfterBuys + yourAccount.deposit;
-const buyingPower = cashAfterDeposit * yourAccount.marginMultiple;
 
 const accountColumns = [
 	{
@@ -538,14 +507,6 @@ function AccountView({
 // ——— Scene 3: a short option's loss has no premium cap ———
 
 type ShortState = { stage: 0 | 1 | 2 };
-
-const benLot = oct100CallMonday.trades.find((trade) => trade.seller === "ben");
-const BEN = benLot?.quantity ?? 0;
-const BEN_PRICE = benLot?.price ?? 0;
-const RECEIVED = BEN * BEN_PRICE * 100;
-const benAtExpiry = (spot: number) =>
-	RECEIVED - BEN * Math.max(spot - 100, 0) * 100 * 100;
-const benMarked = RECEIVED - BEN * MARK * 100;
 
 function ShortView({
 	locale,
@@ -979,10 +940,11 @@ const scenes = [
 
 export function PortfolioPnlWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="portfolio-pnl"
 			label={["Interactive lesson on P&L", "盈亏互动课"]}
+			film={portfolioPnlFilm}
 			scenes={scenes}
 		/>
 	);
