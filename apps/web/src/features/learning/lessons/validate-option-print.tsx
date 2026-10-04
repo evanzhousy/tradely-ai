@@ -1,11 +1,4 @@
-import {
-	type Copy,
-	count,
-	oct105CallBlock,
-	pick,
-	sideCode,
-	usd,
-} from "@/content/world";
+import { type Copy, count, pick, sideCode, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import {
@@ -17,6 +10,7 @@ import {
 	type TicketField,
 	ticketHeight,
 } from "../walkthrough/instruments/contract-ticket";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import {
 	defineScene,
@@ -24,15 +18,16 @@ import {
 	type Phase,
 	type ResultItem,
 } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { validateOptionPrintFilm } from "./validate-option-print-film";
+import {
+	BLOCK,
+	CONTRACT,
+	MULTIPLIER,
+	PREMIUM,
+} from "./validate-option-print-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const BLOCK = oct105CallBlock;
-const MULTIPLIER = 100;
-/** Premium in cents: price per share × contracts × shares per contract. */
-const PREMIUM = BLOCK.price * BLOCK.quantity * MULTIPLIER;
-const CONTRACT: Copy = ["ALFA Oct 18 105 call", "ALFA 10月18日 105 看涨"];
 
 function evidenceLabels(locale: Locale): Record<EvidenceKind, string> {
 	const t = tr(locale);
@@ -821,10 +816,11 @@ const scenes = [
 
 export function ValidateOptionPrintWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="validate-option-print"
 			label={["Interactive lesson on checking one trade", "检查一笔成交互动课"]}
+			film={validateOptionPrintFilm}
 			scenes={scenes}
 		/>
 	);
