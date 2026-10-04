@@ -1,62 +1,41 @@
 import * as m from "motion/react-m";
-import {
-	ALFA,
-	type Copy,
-	count,
-	gammaExposure,
-	modelValue,
-	oct18OpenInterest,
-	pick,
-} from "@/content/world";
+import { type Copy, count, gammaExposure, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { gammaExposureFilm } from "./gamma-exposure-film";
+import {
+	type BarsView,
+	CALLS,
+	contribution,
+	counts,
+	FOCUS_GAMMA,
+	FOCUS_OI,
+	FOCUS_STRIKE,
+	GROSS,
+	key,
+	LONG,
+	MISSING,
+	money,
+	NET,
+	PUTS,
+	SHARES,
+	SPOT,
+	STRIKES,
+	TRADED,
+	tradedOnly,
+	withGap,
+} from "./gamma-exposure-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const SPOT = ALFA.open / 100;
-/** Gamma to four places, the figure the arithmetic below uses. */
-const gammaAt = (strike: number) =>
-	Math.round(
-		modelValue({ expiry: "oct18", strike, right: "call" }).gamma * 10_000,
-	) / 10_000;
-
-/** "+$665k", "−$2.31M". */
-const money = (dollars: number, signed = true) => {
-	const sign = dollars < 0 ? "−" : signed && dollars > 0 ? "+" : "";
-	const size = Math.abs(dollars);
-	return size >= 1_000_000
-		? `${sign}$${(size / 1_000_000).toFixed(2)}M`
-		: `${sign}$${Math.round(size / 1_000)}k`;
-};
-
-type Side = "call" | "put";
-/** Dealers assumed long calls and short puts: a common convention, not an observation. */
-const assumedSign = (side: Side): 1 | -1 => (side === "call" ? 1 : -1);
-const contribution = (strike: number, side: Side, sign = assumedSign(side)) => {
-	const row = oct18OpenInterest.find((entry) => entry.strike === strike);
-	return row ? gammaExposure(gammaAt(strike), row[side], SPOT, sign) : 0;
-};
-const STRIKES = oct18OpenInterest.map((row) => row.strike);
-const sum = (values: number[]) =>
-	values.reduce((total, value) => total + value, 0);
-const CALLS = sum(STRIKES.map((strike) => contribution(strike, "call")));
-const PUTS = sum(STRIKES.map((strike) => contribution(strike, "put")));
-const NET = CALLS + PUTS;
-const GROSS = CALLS - PUTS;
 
 // ——— Scene 1: one contribution, every input declared ———
 
 type ChainState = { rows: 3 | 4 | 5; sign: 1 | -1 };
-
-const FOCUS_STRIKE = 110;
-const focusRow = oct18OpenInterest.find((row) => row.strike === FOCUS_STRIKE);
-const FOCUS_OI = focusRow?.call ?? 0;
-const FOCUS_GAMMA = gammaAt(FOCUS_STRIKE);
-const SHARES = Math.round(FOCUS_GAMMA * FOCUS_OI * 100);
 
 const chainRows = (sign: 1 | -1): readonly { label: Copy; value: Copy }[] => [
 	{
@@ -274,33 +253,6 @@ function ChainView({
 }
 
 // ——— Shared: GEX by strike ———
-
-type BarsView = {
-	calls: boolean;
-	puts: boolean;
-	net: boolean;
-	/** Only these contracts count; the rest are drawn faint. */
-	only?: readonly string[];
-	/** Contracts whose open interest never arrived. */
-	missing?: readonly string[];
-};
-
-const key = (strike: number, side: Side) =>
-	`${strike}${side === "call" ? "C" : "P"}`;
-const counts = (view: BarsView, strike: number, side: Side) =>
-	(side === "call" ? view.calls : view.puts) &&
-	(!view.only || view.only.includes(key(strike, side))) &&
-	!view.missing?.includes(key(strike, side));
-
-function totalOf(view: BarsView) {
-	return sum(
-		STRIKES.flatMap((strike) =>
-			(["call", "put"] as const).map((side) =>
-				counts(view, strike, side) ? contribution(strike, side) : 0,
-			),
-		),
-	);
-}
 
 const BARS_TOP = 52;
 const BARS_BOTTOM = 232;
@@ -523,21 +475,6 @@ function DistributionView({
 
 type CoverageState = { stage: 0 | 1 | 2 };
 
-const TRADED = ["100C", "105C", "110C"];
-const MISSING = ["95P"];
-const tradedOnly = totalOf({
-	calls: true,
-	puts: true,
-	net: true,
-	only: TRADED,
-});
-const withGap = totalOf({
-	calls: true,
-	puts: true,
-	net: true,
-	missing: MISSING,
-});
-
 function CoverageView({
 	locale,
 	phase,
@@ -641,8 +578,6 @@ function CoverageView({
 }
 
 // ——— Lesson ———
-
-const LONG = gammaExposure(FOCUS_GAMMA, FOCUS_OI, SPOT, 1);
 
 const scenes = [
 	defineScene<ChainState, ChainState>({
@@ -918,13 +853,14 @@ const scenes = [
 
 export function GammaExposureWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="gamma-exposure"
 			label={[
 				"Interactive lesson on building a GEX snapshot",
 				"构建 GEX 快照互动课",
 			]}
+			film={gammaExposureFilm}
 			scenes={scenes}
 		/>
 	);
