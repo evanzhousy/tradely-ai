@@ -7,10 +7,7 @@ import {
 	contractLabel,
 	count,
 	holders,
-	type Level,
 	OCT_100_CALL,
-	oct100CallBookBeforeT1,
-	oct100CallMonday,
 	pick,
 	sweep,
 	usd,
@@ -29,17 +26,24 @@ import {
 	bookHeight,
 	OrderBook,
 } from "../walkthrough/instruments/order-book";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { executionCounterpartiesFilm } from "./execution-counterparties-film";
+import {
+	ASKS,
+	BIDS,
+	BOOK,
+	LIMIT_ORDER,
+	type LimitState,
+	limitOutcome,
+	T1,
+} from "./execution-counterparties-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const BOOK = oct100CallBookBeforeT1;
-const T1 = oct100CallMonday.trades[0];
 const LABEL = contractLabel(OCT_100_CALL, false);
-const BIDS: readonly Level[] = BOOK.bids;
-const ASKS: readonly Level[] = BOOK.asks;
 
 function bookLabels(locale: Locale): BookLabels {
 	const t = tr(locale);
@@ -259,30 +263,6 @@ function MatchView({
 }
 
 // ——— Scene 2: a limit cannot create liquidity ———
-
-type LimitState = {
-	/** Cents per share. */
-	limit: number;
-	size: number;
-	/** 0: the order arrives; 1–2: levels taken; 3: the remainder rests. */
-	step: number;
-};
-
-function limitOutcome(state: LimitState) {
-	const eligible = ASKS.filter((level) => level.price <= state.limit);
-	const order = sweep(eligible, state.size);
-	const fills = order.fills.slice(0, state.step >= 3 ? undefined : state.step);
-	const filled = fills.reduce((sum, fill) => sum + fill.size, 0);
-	const notional = fills.reduce((sum, fill) => sum + fill.price * fill.size, 0);
-	const rests = state.step >= 3 ? state.size - filled : 0;
-	return {
-		fills,
-		filled,
-		notional,
-		rests,
-		unfilled: state.size - order.filled,
-	};
-}
 
 function LimitView({
 	locale,
@@ -784,7 +764,7 @@ const scenes = [
 					"Suppose instead you want 30 contracts and will pay at most $4.15. The book offers 10 at $4.10, 12 at $4.15 and 20 at $4.20.",
 					"假设你想买 30 张，最多付 $4.15。订单簿上有 $4.10 的 10 张、$4.15 的 12 张和 $4.20 的 20 张。",
 				],
-				state: { limit: 415, size: 30, step: 0 },
+				state: { ...LIMIT_ORDER, step: 0 },
 			},
 			{
 				id: "first",
@@ -793,7 +773,7 @@ const scenes = [
 					"Your order takes the best offer first: 10 contracts at $4.10.",
 					"你的订单先吃最优卖价：$4.10 的 10 张。",
 				],
-				state: { limit: 415, size: 30, step: 1 },
+				state: { ...LIMIT_ORDER, step: 1 },
 			},
 			{
 				id: "second",
@@ -802,7 +782,7 @@ const scenes = [
 					"Then all 12 at $4.15, still within your limit. That makes 22.",
 					"接着吃下 $4.15 的全部 12 张，仍在限价以内。合计 22 张。",
 				],
-				state: { limit: 415, size: 30, step: 2 },
+				state: { ...LIMIT_ORDER, step: 2 },
 			},
 			{
 				id: "rest",
@@ -811,7 +791,7 @@ const scenes = [
 					"$4.20 is above your limit, so the last 8 stop there. They wait in the book as your bid at $4.15, now the best bid.",
 					"$4.20 超过你的限价，最后 8 张就此停下。它们作为你在 $4.15 的买单留在订单簿，成为新的最优买价。",
 				],
-				state: { limit: 415, size: 30, step: 3 },
+				state: { ...LIMIT_ORDER, step: 3 },
 			},
 		],
 		explore: {
@@ -819,7 +799,7 @@ const scenes = [
 				"Change your limit and size, and see what fills and what waits.",
 				"改变限价和数量，看看哪些成交、哪些等待。",
 			],
-			start: () => ({ limit: 415, size: 30, step: 3 }),
+			start: () => ({ ...LIMIT_ORDER, step: 3 }),
 			task: {
 				kind: "reach",
 				prompt: [
@@ -931,13 +911,14 @@ export function ExecutionCounterpartiesWalkthrough({
 	locale: Locale;
 }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="execution-counterparties"
 			label={[
 				"Interactive lesson on counterparties in one trade",
 				"一笔成交中的交易双方互动课",
 			]}
+			film={executionCounterpartiesFilm}
 			scenes={scenes}
 		/>
 	);
