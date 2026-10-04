@@ -1,16 +1,12 @@
 import * as m from "motion/react-m";
 import {
 	type Copy,
-	contractLabel,
 	count,
 	holders,
-	OCT_100_CALL,
-	oct100CallMonday,
 	oct100CallQuoteAtTrade,
 	pick,
 	type SideCode,
 	sideCode,
-	type Trade,
 	usd,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -28,6 +24,7 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import {
 	defineScene,
@@ -35,17 +32,21 @@ import {
 	type Phase,
 	type ResultItem,
 } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { executionSideFilm } from "./execution-side-film";
+import {
+	LABEL,
+	OUTSIDE,
+	PRINT_TIME,
+	type RefId,
+	RULER,
+	references,
+	TRADES,
+	type TradeId,
+	tradeById,
+} from "./execution-side-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-type TradeId = "t1" | "t2" | "t3";
-const TRADES = oct100CallMonday.trades;
-const tradeById = (id: TradeId): Trade =>
-	TRADES.find((trade) => trade.id === id) as Trade;
-const LABEL = contractLabel(OCT_100_CALL, false);
-/** The ruler's price range, in cents. */
-const RULER: readonly [number, number] = [395, 430];
 
 /** What a location suggests about who started the trade, and how firmly. */
 function sideReading(code: SideCode | null): Copy {
@@ -245,56 +246,7 @@ function PlaceView({
 
 // ——— Scene 2: is the quote usable? ———
 
-type RefId = "matched" | "stale" | "later" | "put" | "missing";
 type RefState = { ref: RefId };
-
-const PRINT_TIME = "11:42:00.4";
-const references: Record<
-	RefId,
-	{
-		time: string | null;
-		bid: number | null;
-		ask: number | null;
-		contract: Copy;
-		problem: Copy | null;
-	}
-> = {
-	matched: {
-		time: oct100CallQuoteAtTrade.t2.time,
-		bid: oct100CallQuoteAtTrade.t2.bid,
-		ask: oct100CallQuoteAtTrade.t2.ask,
-		contract: LABEL,
-		problem: null,
-	},
-	stale: {
-		time: "11:40:30.4",
-		bid: 400,
-		ask: 410,
-		contract: LABEL,
-		problem: ["90 seconds too old", "早了 90 秒"],
-	},
-	later: {
-		time: "11:42:02.1",
-		bid: 415,
-		ask: 425,
-		contract: LABEL,
-		problem: ["arrived after the print", "晚于这笔成交"],
-	},
-	put: {
-		time: oct100CallQuoteAtTrade.t2.time,
-		bid: 405,
-		ask: 420,
-		contract: ["Oct 18 100 put", "10月18日 100 看跌"],
-		problem: ["quote for another contract", "另一张合约的报价"],
-	},
-	missing: {
-		time: null,
-		bid: null,
-		ask: null,
-		contract: LABEL,
-		problem: ["no quote recorded", "没有记录报价"],
-	},
-};
 
 function RefView({
 	locale,
@@ -703,7 +655,7 @@ const scenes = [
 					"A price outside the quote, such as $4.25 against $4.10 / $4.20, is AASK. Check timing and trade conditions before reading anything into it.",
 					"报价之外的价格，比如对照 $4.10 / $4.20 的 $4.25，属于 AASK。在解读之前，先检查时间和成交条件。",
 				],
-				state: { trade: "t2", test: 425 },
+				state: { trade: "t2", test: OUTSIDE },
 			},
 		],
 		explore: {
@@ -928,10 +880,11 @@ const scenes = [
 
 export function ExecutionSideWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="execution-side"
 			label={["Interactive lesson on where a trade printed", "成交位置互动课"]}
+			film={executionSideFilm}
 			scenes={scenes}
 		/>
 	);
