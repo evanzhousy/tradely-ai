@@ -2,47 +2,26 @@ import * as m from "motion/react-m";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { connectAgentFilm } from "./connect-agent-film";
+import {
+	CLIENT_IDS,
+	CLIENTS,
+	type ClientId,
+	ENDPOINT,
+	GROUPS,
+	LIMIT,
+} from "./connect-agent-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
-const ENDPOINT = "https://app.tradingflow.com/api/mcp";
-
 // ——— Scene 1: which way in ———
 
-type Method = "signin" | "key" | "none";
-type ClientId = "claudeCode" | "claudeApp" | "cursor" | "codex" | "chatgpt";
 type WayState = { client: ClientId; reveal: boolean };
-
-const CLIENTS: Record<ClientId, { label: string; method: Method }> = {
-	claudeCode: { label: "Claude Code", method: "signin" },
-	claudeApp: { label: "claude.ai", method: "signin" },
-	cursor: { label: "Cursor", method: "key" },
-	codex: { label: "Codex", method: "key" },
-	chatgpt: { label: "ChatGPT", method: "none" },
-};
-const CLIENT_IDS = Object.keys(CLIENTS) as ClientId[];
-
-const GROUPS: readonly { method: Method; title: Copy; members: string }[] = [
-	{
-		method: "signin",
-		title: ["Sign in · no API key", "登录 · 无需 API 密钥"],
-		members: "Claude Code · claude.ai · Desktop · mobile · Cowork",
-	},
-	{
-		method: "key",
-		title: ["API key", "API 密钥"],
-		members: "Cursor · Codex · OpenClaw",
-	},
-	{
-		method: "none",
-		title: ["Not supported yet", "暂不支持"],
-		members: "ChatGPT · Gemini · Grok.com",
-	},
-];
 
 /** What setting up looks like for a client: commands are typed as shown. */
 function setupLines(client: ClientId): { code: boolean; text: Copy }[] {
@@ -641,7 +620,6 @@ function ProveView({
 
 type KeyState = { calls: 12 | 60 | 75; revoked: boolean };
 
-const LIMIT = 60;
 const KEY_H = 236;
 
 function KeyStage({
@@ -1146,13 +1124,14 @@ const scenes = [
 
 export function ConnectAgentWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="connect-agent"
 			label={[
 				"Interactive lesson on connecting an AI agent",
 				"连接 AI 智能体互动课",
 			]}
+			film={connectAgentFilm}
 			scenes={scenes}
 		/>
 	);
