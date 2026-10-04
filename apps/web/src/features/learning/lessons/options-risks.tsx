@@ -1,16 +1,12 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import {
-	type Contract,
 	type Copy,
 	contractLabel,
 	count,
-	optionQuote,
 	percent,
 	pick,
-	priceOption,
 	signedUsd,
 	usd,
-	valueAtExpiry,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
@@ -22,45 +18,38 @@ import {
 	ROUND_TRIP_HEIGHT,
 	RoundTrip,
 } from "../walkthrough/instruments/round-trip";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { optionsRisksFilm } from "./options-risks-film";
+import {
+	atExpiry,
+	call100,
+	costContracts,
+	costFacts,
+	curve,
+	DAYS,
+	FEE,
+	type Kind,
+	PAID,
+	RECOVER_AT,
+	type Side,
+	value,
+} from "./options-risks-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-const call100: Contract = { expiry: "oct18", strike: 100, right: "call" };
-const PAID = optionQuote(call100).ask;
-const DAYS = 32;
-const FEE = 65;
 
 // ——— Scene 1: right, still losing ———
 
 type DecayState = { spot: number; days: number; iv: 35 | 25 };
 
-const value = (spot: number, days: number, iv: number) =>
-	priceOption({
-		spot,
-		strike: 100,
-		days: DAYS - days,
-		iv: iv / 100,
-		right: "call",
-	}).price;
-const curve = (days: number, iv: number) =>
-	Array.from({ length: 41 }, (_, i) => {
-		const spot = 90 + i / 2;
-		return [spot, value(spot, days, iv)] as const;
-	});
 const dateAfter = (days: number): Copy => {
 	const date = new Date(Date.UTC(2030, 8, 16 + days));
 	const month = date.getUTCMonth();
 	const day = date.getUTCDate();
 	return [`${["Sep", "Oct"][month - 8]} ${day}`, `${month + 1}月${day}日`];
 };
-
-/** With 20 of the 32 days gone and IV unchanged, the lowest whole dollar that earns the premium back. */
-const RECOVER_AT =
-	Array.from({ length: 21 }, (_, i) => 90 + i).find(
-		(spot) => value(spot, 20, 35) * 100 >= PAID,
-	) ?? 110;
 
 /** ALFA's move since you bought: "+$2.00 (2.0%)". */
 const sinceBuy = (spot: number) =>
@@ -239,12 +228,7 @@ function DecayView({
 
 // ——— Scene 2: buyer vs writer ———
 
-type Side = "buyer" | "writer";
 type TailState = { side: Side; spot: number };
-const atExpiry = (side: Side, spot: number) => {
-	const buyer = valueAtExpiry(call100, spot * 100) - PAID;
-	return side === "buyer" ? buyer : -buyer;
-};
 const tailPoints = (side: Side) =>
 	[80, 100, 140].map((spot) => [spot, atExpiry(side, spot)] as const);
 
@@ -387,23 +371,7 @@ function TailView({
 
 // ——— Scene 3: trading costs ———
 
-type Kind = "active" | "thin";
 type CostState = { kind: Kind; contracts: number; breakeven: boolean };
-const costContracts: Record<Kind, Contract> = {
-	active: call100,
-	thin: { expiry: "dec20", strike: 110, right: "call" },
-};
-
-function costFacts(state: CostState) {
-	const quote = optionQuote(costContracts[state.kind]);
-	const shares = state.contracts * 100;
-	const spread = (quote.ask - quote.bid) * shares;
-	const fees = FEE * state.contracts * 2;
-	const paid = quote.ask * shares;
-	// The bid has to reach the price paid plus both fees before selling breaks even.
-	const breakeven = quote.ask + fees / shares;
-	return { quote, spread, fees, loss: spread + fees, paid, breakeven };
-}
 
 function CostView({
 	locale,
@@ -768,13 +736,14 @@ const scenes = [
 
 export function OptionsRisksWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="options-risks"
 			label={[
 				"Interactive lesson on how options lose money",
 				"期权如何亏钱互动课",
 			]}
+			film={optionsRisksFilm}
 			scenes={scenes}
 		/>
 	);
