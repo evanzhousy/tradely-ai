@@ -1,18 +1,11 @@
 import * as m from "motion/react-m";
 import {
-	alfaCloses,
 	type Copy,
 	count,
-	daysToExpiry,
-	modelVolatility,
-	oct100CallCloseQuote,
-	oct100CallMonday,
 	pick,
-	priceOption,
 	signedCount,
 	signedUsd,
 	yourAccount,
-	yourSecondAccount,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
@@ -21,56 +14,47 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { portfolioExposureFilm } from "./portfolio-exposure-film";
+import {
+	CALL,
+	CALL_DELTA,
+	CALL_VEGA,
+	CALLS,
+	FRIDAY_SPOT,
+	fixed3,
+	GAMMA,
+	HEDGE,
+	hedgedPnl,
+	PUT,
+	PUT_DELTA,
+	PUT_DELTA_FRIDAY,
+	PUT_FRIDAY,
+	PUT_STRIKE,
+	PUT_VEGA,
+	PUT_VEGA_PER_UNIT,
+	PUTS,
+	RAW_SUM,
+	round3,
+	SPOT,
+	STOCK_DELTA,
+	SUBTOTAL,
+	THETA,
+	TOTAL,
+	UP,
+	UP_DELTA,
+	UP_PNL,
+	VEGA,
+	VEGA_TOTAL,
+	WEEK,
+	WEEK_PNL,
+	wholeUsd,
+} from "./portfolio-exposure-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-/** Monday's close: ALFA's last trade, and 32 days to the Oct 18 expiry. */
-const SPOT = oct100CallCloseQuote.spot / 100;
-const FRIDAY_SPOT = alfaCloses[alfaCloses.length - 1].close;
-const DAYS = daysToExpiry("oct18");
-const CALLS = oct100CallMonday.trades
-	.filter((trade) => trade.buyer === "you")
-	.reduce((sum, trade) => sum + trade.quantity, 0);
-const PUTS = yourSecondAccount.puts.quantity;
-const PUT_STRIKE = yourSecondAccount.puts.strike;
-
-/** Model Greeks per share for an Oct 18 contract. */
-const greeks = (
-	right: "call" | "put",
-	strike: number,
-	spot: number,
-	days = DAYS,
-) =>
-	priceOption({
-		spot,
-		strike,
-		days,
-		iv: modelVolatility("oct18", strike),
-		right,
-	});
-const CALL = greeks("call", 100, SPOT);
-const PUT = greeks("put", PUT_STRIKE, SPOT);
-/** The puts as the second broker last valued them: at Friday's close, three days earlier. */
-const PUT_FRIDAY = greeks("put", PUT_STRIKE, FRIDAY_SPOT, DAYS + 3);
-
-const round3 = (value: number) => Math.round(value * 1000) / 1000;
-/** Signed per-share sensitivity to three places: "+0.566", "−0.259". */
-const fixed3 = (value: number) =>
-	`${value < 0 ? "−" : value > 0 ? "+" : ""}${Math.abs(value).toFixed(3)}`;
-/** A holding's delta in shares: contracts × 100 × delta per share. */
-const shares = (contracts: number, delta: number) =>
-	Math.round(contracts * 100 * delta);
-const STOCK_DELTA = yourAccount.shares;
-const CALL_DELTA = shares(CALLS, CALL.delta);
-const PUT_DELTA = shares(PUTS, PUT.delta);
-const PUT_DELTA_FRIDAY = shares(PUTS, PUT_FRIDAY.delta);
-const SUBTOTAL = STOCK_DELTA + CALL_DELTA;
-const TOTAL = SUBTOTAL + PUT_DELTA;
-/** Whole dollars from dollars: "+$875", "−$964". */
-const wholeUsd = (value: number) => signedUsd(Math.round(value) * 100, 0);
 
 // ——— Scene 1: a covered subtotal ———
 
@@ -343,30 +327,6 @@ function CoverView({
 
 type HedgeState = { stage: 0 | 1 | 2 };
 
-const HEDGE = TOTAL;
-const UP = 5;
-const WEEK = 7;
-/** Your holdings' value in dollars at a price, with `days` left to expiry. */
-const holdingsValue = (spot: number, days: number) =>
-	yourAccount.shares * spot +
-	CALLS * 100 * greeks("call", 100, spot, days).price +
-	PUTS * 100 * greeks("put", PUT_STRIKE, spot, days).price;
-const holdingsDelta = (spot: number) =>
-	yourAccount.shares +
-	CALLS * 100 * greeks("call", 100, spot).delta +
-	PUTS * 100 * greeks("put", PUT_STRIKE, spot).delta;
-/** The hedged book's P&L in dollars from Monday's close: holdings repriced, less the short shares. */
-const hedgedPnl = (spot: number, daysPassed: number) =>
-	holdingsValue(spot, DAYS - daysPassed) -
-	holdingsValue(SPOT, DAYS) -
-	HEDGE * (spot - SPOT);
-const GAMMA = CALLS * 100 * CALL.gamma + PUTS * 100 * PUT.gamma;
-const THETA = CALLS * 100 * CALL.theta + PUTS * 100 * PUT.theta;
-const VEGA = CALLS * 100 * CALL.vega + PUTS * 100 * PUT.vega;
-const UP_PNL = hedgedPnl(SPOT + UP, 0);
-const UP_DELTA = Math.round(holdingsDelta(SPOT + UP) - HEDGE);
-const WEEK_PNL = hedgedPnl(SPOT, WEEK);
-
 function HedgeView({
 	locale,
 	phase,
@@ -564,13 +524,6 @@ function HedgeView({
 // ——— Scene 3: units and timestamps ———
 
 type FeedState = { stage: 0 | 1 | 2 };
-
-const CALL_VEGA = round3(CALL.vega);
-/** The second broker's convention: vega per 1.00 of volatility, 100 vol points. */
-const PUT_VEGA_PER_UNIT = Math.round(PUT.vega * 100 * 100) / 100;
-const PUT_VEGA = round3(PUT_VEGA_PER_UNIT / 100);
-const VEGA_TOTAL = Math.round(CALLS * 100 * CALL_VEGA + PUTS * 100 * PUT_VEGA);
-const RAW_SUM = (CALL_VEGA + PUT_VEGA_PER_UNIT).toFixed(3);
 
 const FEED_ROW = (width: number) => (width < 520 ? 58 : 44);
 
@@ -1072,10 +1025,11 @@ const scenes = [
 
 export function PortfolioExposureWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="portfolio-exposure"
 			label={["Interactive lesson on portfolio Greeks", "组合希腊值互动课"]}
+			film={portfolioExposureFilm}
 			scenes={scenes}
 		/>
 	);
