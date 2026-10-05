@@ -1,5 +1,5 @@
 import * as m from "motion/react-m";
-import { type Copy, count, mondayActivity, pick } from "@/content/world";
+import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import {
@@ -11,6 +11,7 @@ import {
 	type TicketField,
 	ticketHeight,
 } from "../walkthrough/instruments/contract-ticket";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import {
 	defineScene,
@@ -18,7 +19,9 @@ import {
 	type Phase,
 	type ResultItem,
 } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { auditedBoundaryFilm } from "./audited-boundary-film";
+import { COVERED, LEADER, share, WITH_LATE } from "./audited-boundary-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -32,20 +35,6 @@ function evidenceLabels(locale: Locale): Record<EvidenceKind, string> {
 		unknown: t(["unknown", "未知"]),
 	};
 }
-
-/** Monday volume by Oct 18 call series; the 120 call's arrives only on Tuesday. */
-const SERIES = [
-	{ strike: 100, volume: mondayActivity[0].volume },
-	{ strike: 105, volume: mondayActivity[1].volume },
-	{ strike: 110, volume: mondayActivity[2].volume },
-	{ strike: 115, volume: 0 },
-	{ strike: 120, volume: null as number | null, late: 30 },
-];
-const COVERED = SERIES.reduce((sum, row) => sum + (row.volume ?? 0), 0);
-const WITH_LATE = COVERED + 30;
-const LEADER = SERIES[2];
-const share = (part: number, whole: number) =>
-	`${Math.round((part / whole) * 100)}%`;
 
 // ——— Scene 1: a question someone else can check ———
 
@@ -802,10 +791,11 @@ const scenes = [
 
 export function AuditedBoundaryWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="audited-boundary"
 			label={["Interactive lesson on research questions", "研究问题互动课"]}
+			film={auditedBoundaryFilm}
 			scenes={scenes}
 		/>
 	);
