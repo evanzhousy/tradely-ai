@@ -2,11 +2,7 @@ import * as m from "motion/react-m";
 import {
 	type Copy,
 	count,
-	type Level,
-	oct105BlockLegs,
 	oct105CallBlock,
-	oct105CallVenues,
-	oct110CallSweep,
 	pick,
 	sweep,
 	usd,
@@ -21,13 +17,24 @@ import {
 } from "../walkthrough/instruments/book-tape";
 import {
 	type BookLabels,
-	type BookLevel,
 	bookHeight,
 	OrderBook,
 } from "../walkthrough/instruments/order-book";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { executionConditionsFilm } from "./execution-conditions-film";
+import {
+	BLOCK_ASKS,
+	BLOCK_BIDS,
+	LEGS,
+	PACKAGE,
+	price4,
+	SWEEP,
+	SWEEP_ASKS,
+	SWEEP_BIDS,
+} from "./execution-conditions-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -43,29 +50,10 @@ function bookLabels(locale: Locale): BookLabels {
 	};
 }
 
-/** "$0.9525": prices that need more than two decimals. */
-const price4 = (cents: number) =>
-	`$${(cents / 100).toLocaleString("en-US", {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 4,
-	})}`;
-
 // ——— Scene 1: one order, several prints ———
 
 type SweepStep = "order" | "sweep" | "cost";
 type SweepState = { step: SweepStep; quantity: number };
-
-const SWEEP = oct110CallSweep;
-const SWEEP_ASKS: BookLevel[] = SWEEP.asks.map((ask) => ({
-	price: ask.price,
-	size: ask.size,
-	venue: ask.venue,
-}));
-const SWEEP_BIDS: BookLevel[] = SWEEP.bids.map((bid) => ({
-	price: bid.price,
-	size: bid.size,
-	venue: bid.venue,
-}));
 
 function SweepView({
 	locale,
@@ -257,12 +245,6 @@ function SweepView({
 type BlockStep = "displayed" | "block" | "meaning";
 type BlockState = { step: BlockStep };
 
-const BLOCK_ASKS: Level[] = oct105CallVenues
-	.map((quote) => quote.ask)
-	.sort((a, b) => a.price - b.price);
-const BLOCK_BIDS: Level[] = oct105CallVenues
-	.map((quote) => quote.bid)
-	.sort((a, b) => b.price - a.price);
 const COMPARE_HEIGHT = 108;
 
 function SizeCompare({
@@ -428,12 +410,6 @@ function BlockView({ locale, state }: { locale: Locale; state: BlockState }) {
 
 type PackageState = { shown: 1 | 2 | 3 };
 
-const LEGS = oct105BlockLegs;
-const PACKAGE = {
-	bid: LEGS.buy.bid - LEGS.sell.ask,
-	ask: LEGS.buy.ask - LEGS.sell.bid,
-	price: LEGS.buy.price - LEGS.sell.price,
-};
 const ROW_HEIGHT = 92;
 
 function QuoteRow({
@@ -940,13 +916,14 @@ const scenes = [
 
 export function ExecutionConditionsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="execution-conditions"
 			label={[
 				"Interactive lesson on sweeps, blocks and complex orders",
 				"扫单、大宗与复杂订单互动课",
 			]}
+			film={executionConditionsFilm}
 			scenes={scenes}
 		/>
 	);
