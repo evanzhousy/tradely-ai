@@ -447,7 +447,7 @@ export function Player({
 								const prompt = scenes[index].explore?.prompt;
 								return prompt ? (
 									<p
-										key={prompt[0]}
+										key={scenes[index].id}
 										className="wt-caption wt-caption-reserve"
 										aria-hidden="true"
 									>
