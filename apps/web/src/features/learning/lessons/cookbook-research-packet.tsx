@@ -3,34 +3,37 @@ import {
 	type Copy,
 	count,
 	mondayPacket,
-	oct105CallMessages,
 	type PacketRow,
 	packetContracts,
-	packetPremium,
 	pick,
 	rowPremium,
-	tuesdayPacket,
 	usd,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { textWidth, wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { researchPacketFilm } from "./cookbook-research-packet-film";
+import {
+	COVERED,
+	dollars,
+	fields,
+	MONDAY,
+	type Removed,
+	records,
+	reruns,
+	rerunText,
+	rowById,
+	SERIES,
+	series,
+	TUESDAY,
+	WITHOUT_SPREAD,
+} from "./cookbook-research-packet-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-const dollars = (cents: number) => usd(cents, 0);
-const series = (row: PacketRow): Copy => [
-	`${row.strike} call`,
-	`${row.strike} 看涨`,
-];
-
-const MONDAY = packetPremium(mondayPacket);
-const TUESDAY = packetPremium(tuesdayPacket);
-const SERIES = mondayPacket.length;
-const COVERED = mondayPacket.filter((row) => row.trades !== null).length;
-const rowById = (id: string) => mondayPacket.find((row) => row.id === id);
 
 /** A small hatched cell for a value the source never sent. */
 function Unknown({ x, y, width }: { x: number; y: number; width: number }) {
@@ -421,56 +424,7 @@ function TraceView({
 
 // ——— Scene 2: a reader reruns from the fields ———
 
-type Removed = "formula" | "exclusions" | "asof";
 type FieldsState = { removed: Removed | null };
-
-const cancelled = oct105CallMessages.find((message) => message.id === "M3");
-const repeated = oct105CallMessages.find((message) => message.id === "M1");
-const extra = (message?: { quantity?: number; price?: number }) =>
-	(message?.quantity ?? 0) * (message?.price ?? 0) * 100;
-
-const fields: readonly { id: Removed | "rows"; label: Copy; value: Copy }[] = [
-	{
-		id: "asof",
-		label: ["Data as of", "数据截至"],
-		value: ["corrected tape, Mon 16:05", "更正后成交记录，周一 16:05"],
-	},
-	{
-		id: "rows",
-		label: ["Rows", "行"],
-		value: ["R1–R4 traded; R5 no data", "R1–R4 有成交；R5 无数据"],
-	},
-	{
-		id: "formula",
-		label: ["Formula", "公式"],
-		value: ["price × contracts × 100, summed", "价格 × 张数 × 100，求和"],
-	},
-	{
-		id: "exclusions",
-		label: ["Exclusions", "排除"],
-		value: ["T-2 cancelled; M2 repeats T-1", "T-2 已取消；M2 重复 T-1"],
-	},
-];
-
-const reruns: Record<"none" | Removed, { cents: number; why: Copy }> = {
-	none: { cents: MONDAY, why: ["every field present", "所有字段齐全"] },
-	formula: {
-		cents: MONDAY / 100,
-		why: ["price × contracts, no × 100", "价格 × 张数，漏了 × 100"],
-	},
-	exclusions: {
-		cents: MONDAY + extra(cancelled) + extra(repeated),
-		why: ["counted T-2 and M2", "计入了 T-2 和 M2"],
-	},
-	asof: {
-		cents: TUESDAY,
-		why: ["reran Tuesday: R5 had arrived", "周二重跑：R5 已到达"],
-	},
-};
-const rerunText = (removed: Removed | null) => {
-	const cents = reruns[removed ?? "none"].cents;
-	return cents % 100 ? usd(cents) : dollars(cents);
-};
 
 const FIELD_H = 46;
 const FIELD_GAP = 6;
@@ -687,50 +641,6 @@ function FieldsView({
 // ——— Scene 3: rerun into a new record ———
 
 type RecordsState = { shown: 1 | 2 | 3 };
-
-const r2 = rowById("R2");
-const r3 = rowById("R3");
-const spreadLegs =
-	extra(r2?.trades?.find((trade) => trade.id === "T-3")) +
-	extra(r3?.trades?.find((trade) => trade.id === "leg"));
-const WITHOUT_SPREAD = TUESDAY - spreadLegs;
-
-const records: readonly {
-	id: string;
-	head: Copy;
-	cents: number;
-	note: Copy;
-	tag: Copy;
-	method: 1 | 2;
-}[] = [
-	{
-		id: "P1",
-		head: ["P1 · as of Mon 16:05 · method v1", "P1 · 截至周一 16:05 · 方法 v1"],
-		cents: MONDAY,
-		note: [
-			`observed subtotal, ${COVERED} of ${SERIES} series`,
-			`观测小计，${SERIES} 个系列中的 ${COVERED} 个`,
-		],
-		tag: ["original", "原始记录"],
-		method: 1,
-	},
-	{
-		id: "P2",
-		head: ["P2 · as of Tue 09:00 · method v1", "P2 · 截至周二 09:00 · 方法 v1"],
-		cents: TUESDAY,
-		note: ["all 5 series; R5 is 30 × $0.10", "全部 5 个系列；R5 为 30 × $0.10"],
-		tag: ["rerun of P1", "P1 的重跑"],
-		method: 1,
-	},
-	{
-		id: "P3",
-		head: ["P3 · as of Tue 09:00 · method v2", "P3 · 截至周二 09:00 · 方法 v2"],
-		cents: WITHOUT_SPREAD,
-		note: ["without the 10:50 spread's two legs", "去掉 10:50 价差的两条腿"],
-		tag: ["new question", "新问题"],
-		method: 2,
-	},
-];
 
 const RECORD_H = 70;
 const RECORD_GAP = 10;
@@ -1160,13 +1070,14 @@ const scenes = [
 
 export function ResearchPacketWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="cookbook-research-packet"
 			label={[
 				"Interactive lesson on reproducible research packets",
 				"可复现研究包互动课",
 			]}
+			film={researchPacketFilm}
 			scenes={scenes}
 		/>
 	);
