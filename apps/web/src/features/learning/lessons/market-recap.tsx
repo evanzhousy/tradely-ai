@@ -3,34 +3,38 @@ import {
 	type Copy,
 	count,
 	mondayPacket,
-	type PacketRow,
 	packetContracts,
 	pick,
 	rowContracts,
-	rowPremium,
-	usd,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import { type Bar, BarChart } from "../walkthrough/instruments/bar-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { marketRecapFilm } from "./market-recap-film";
+import {
+	C105,
+	C110,
+	CONTRACTS_MAX,
+	caption,
+	chartMax,
+	dollars,
+	drafts,
+	headline,
+	leader,
+	leaderOf,
+	leadValue,
+	type Metric,
+	measureOf,
+	premiumLeader,
+} from "./market-recap-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-const dollars = (cents: number) => usd(cents, 0);
 
-type Metric = "contracts" | "premium";
-
-const measureOf = (row: PacketRow, metric: Metric) =>
-	metric === "contracts" ? rowContracts(row) : rowPremium(row);
-const leaderOf = (metric: Metric) =>
-	mondayPacket.reduce((best, row) =>
-		(measureOf(row, metric) ?? -1) > (measureOf(best, metric) ?? -1)
-			? row
-			: best,
-	);
 const bars = (metric: Metric): Bar[] =>
 	mondayPacket.map((row) => ({
 		id: row.id,
@@ -47,11 +51,6 @@ const formatter = (metric: Metric, width: number) =>
 					cents === 0 ? "$0" : `$${Number((cents / 100_000).toFixed(1))}K`
 			: dollars;
 
-const PREMIUM_MAX = 12_000_000;
-const CONTRACTS_MAX = 600;
-const chartMax = (metric: Metric) =>
-	metric === "contracts" ? CONTRACTS_MAX : PREMIUM_MAX;
-
 const metricName: Record<Metric, Copy> = {
 	contracts: ["contracts", "张数"],
 	premium: ["premium", "权利金"],
@@ -67,21 +66,6 @@ const chartTitle = (metric: Metric): Copy =>
 				"各行权价权利金 · ALFA 10月18日 看涨 · 周一",
 			];
 const strikeAxis: Copy = ["strike", "行权价"];
-
-const leadValue = (metric: Metric) => {
-	const value = measureOf(leaderOf(metric), metric) ?? 0;
-	return metric === "contracts" ? count(value) : dollars(value);
-};
-const headline = (metric: Metric): Copy =>
-	metric === "contracts"
-		? [
-				`Most contracts: the ${leaderOf(metric).strike} call, ${leadValue(metric)}`,
-				`成交张数最多：${leaderOf(metric).strike} 看涨，${leadValue(metric)} 张`,
-			]
-		: [
-				`Most premium: the ${leaderOf(metric).strike} call, ${leadValue(metric)}`,
-				`权利金最多：${leaderOf(metric).strike} 看涨，${leadValue(metric)}`,
-			];
 
 // ——— Scene 1: the chart must show the claimed quantity ———
 
@@ -285,10 +269,6 @@ function MatchView({
 
 type AxisState = { min: number };
 
-const r2 = mondayPacket.find((row) => row.strike === 105);
-const r3 = mondayPacket.find((row) => row.strike === 110);
-const C105 = (r2 && rowContracts(r2)) ?? 0;
-const C110 = (r3 && rowContracts(r3)) ?? 0;
 const AXIS_CHART = 250;
 
 function AxisView({
@@ -396,21 +376,6 @@ function AxisView({
 
 type ComposeState = { step: 0 | 1 | 2 };
 
-const leader = leaderOf("contracts");
-const drafts: Record<"over" | "bounded", Copy> = {
-	over: [
-		`Call buyers piled into ALFA's ${leader.strike} strike, Monday's busiest call`,
-		`看涨买家涌入 ALFA ${leader.strike} 行权价，周一最活跃的看涨`,
-	],
-	bounded: [
-		`${count(rowContracts(leader) ?? 0)} contracts traded in ALFA's Oct 18 ${leader.strike} call on Monday, the most of the four strikes with data`,
-		`周一 ALFA 10月18日 ${leader.strike} 看涨成交 ${count(rowContracts(leader) ?? 0)} 张，在有数据的四个行权价中最多`,
-	],
-};
-const caption: Copy = [
-	"Contracts by strike, axis from 0. ALFA Oct 18 calls, Mon Sep 16, corrected tape as of 16:05 (packet P1). 120 call: no data yet.",
-	"按行权价的成交张数，轴从 0 开始。ALFA 10月18日 看涨，9月16日周一，截至 16:05 的更正后成交记录（研究包 P1）。120 看涨：尚无数据。",
-];
 const CARD_CHART = 160;
 
 function composeLayout(width: number, locale: Locale, step: number) {
@@ -650,8 +615,6 @@ function ComposeView({
 }
 
 // ——— Lesson ———
-
-const premiumLeader = leaderOf("premium");
 
 const scenes = [
 	defineScene<MatchState, MatchState>({
@@ -929,13 +892,14 @@ const scenes = [
 
 export function MarketRecapWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="market-recap"
 			label={[
 				"Interactive lesson on recaps your evidence supports",
 				"有依据的复盘互动课",
 			]}
+			film={marketRecapFilm}
 			scenes={scenes}
 		/>
 	);
