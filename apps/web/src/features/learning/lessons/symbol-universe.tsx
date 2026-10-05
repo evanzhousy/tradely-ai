@@ -10,46 +10,24 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { symbolUniverseFilm } from "./symbol-universe-film";
+import {
+	CANDIDATES,
+	CHECKS,
+	type Check,
+	checkResult,
+	FJOR_LATE,
+	firstFail,
+	SEP_2,
+	sep2Volume,
+	THRESHOLD,
+} from "./symbol-universe-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const THRESHOLD = 500;
-/** Symbols listed on the teaching Monday: the candidates a Monday comparison starts from. */
-const CANDIDATES = mondayUniverse.filter((row) => listedOn(row, SESSION_DATE));
-
-type Check = "type" | "session" | "data" | "threshold";
-const CHECKS: readonly Check[] = ["type", "session", "data", "threshold"];
-
-/** "pass", "fail", or "unknown" when the check can't be made. */
-function checkResult(
-	row: UniverseRow,
-	check: Check,
-): "pass" | "fail" | "unknown" {
-	switch (check) {
-		case "type":
-			return row.type === "stock" ? "pass" : "fail";
-		case "session":
-			return row.session === SESSION_DATE ? "pass" : "fail";
-		case "data":
-			return row.optionVolume === null ? "unknown" : "pass";
-		case "threshold":
-			return row.optionVolume === null
-				? "unknown"
-				: row.optionVolume >= THRESHOLD
-					? "pass"
-					: "fail";
-	}
-}
-
-/** The first check a row fails, or null if it hasn't failed any of the first `applied`. */
-function firstFail(row: UniverseRow, applied: number) {
-	for (let i = 0; i < applied; i++)
-		if (checkResult(row, CHECKS[i]) === "fail") return i;
-	return null;
-}
 
 // ——— Scene 1: derive eligibility from the facts ———
 
@@ -257,7 +235,6 @@ function EligibilityView({
 
 type ObservedState = { withGap: boolean; arrived: boolean };
 
-const FJOR_LATE = 7_300;
 const BAR_ROW = 40;
 
 function VolumeBars({
@@ -473,15 +450,6 @@ function ObservedView({
 // ——— Scene 3: membership has a date ———
 
 type MembershipState = { pointInTime: boolean };
-
-const SEP_2 = "2030-09-02";
-/** Option volume on Monday Sep 2 for the stocks listed then. */
-const sep2Volume: Record<string, number> = {
-	HALO: 6_800,
-	CRUX: 4_900,
-	ALFA: 1_800,
-	DUNE: 700,
-};
 
 function MembershipView({
 	locale,
@@ -860,10 +828,11 @@ const scenes = [
 
 export function SymbolUniverseWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="symbol-universe"
 			label={["Interactive lesson on comparison groups", "比较组互动课"]}
+			film={symbolUniverseFilm}
 			scenes={scenes}
 		/>
 	);
