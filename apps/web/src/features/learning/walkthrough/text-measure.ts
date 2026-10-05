@@ -9,28 +9,98 @@ export function textWidth(text: string, size: number) {
 }
 
 /** Closing punctuation that may not start a line in CJK text. */
-const NO_LINE_START = /^[、。，．：；！？）」』》〉】〕”’]$/;
+export const NO_LINE_START = /^[、。，．：；！？）」』》〉】〕”’]$/;
+
+/** Chinese words, where the runtime can find them (see `tokenize`'s `words`). */
+const segmenter =
+	typeof Intl.Segmenter === "function"
+		? new Intl.Segmenter("zh", { granularity: "word" })
+		: undefined;
+
+/** The course's terms, which the runtime's dictionary splits (标|的, 权利|金): kept whole. */
+const TERMS = new RegExp(
+	[
+		"盈亏平衡点",
+		"隐含波动率",
+		"未平仓量",
+		"时间价值",
+		"内在价值",
+		"逐笔成交",
+		"权利金",
+		"行权价",
+		"中间价",
+		"订单簿",
+		"成交量",
+		"标的",
+		"看涨",
+		"看跌",
+		"卖出",
+		"买入",
+		"盈亏",
+		"实值",
+		"虚值",
+		"平值",
+		"合约",
+	].join("|"),
+	"g",
+);
 
 /**
- * Greedy line breaks: Latin text breaks at spaces, CJK text between any two characters.
- * A closing mark that would start a line takes the character before it along, so "。"
- * never sits alone at the start of a line. Returns at least one line.
+ * The pieces a line may break between: Latin words, single spaces, and CJK characters, or
+ * with `words` whole CJK words, so 成交 never splits across lines.
  */
-export function wrapText(text: string, maxWidth: number, size: number) {
+export function tokenize(text: string, words = false) {
 	const tokens: string[] = [];
 	let word = "";
+	let wide = "";
+	const flushWide = () => {
+		if (!wide) return;
+		if (words && segmenter) {
+			const split = (part: string) => {
+				for (const { segment } of segmenter.segment(part)) tokens.push(segment);
+			};
+			let from = 0;
+			for (const term of wide.matchAll(TERMS)) {
+				split(wide.slice(from, term.index));
+				tokens.push(term[0]);
+				from = term.index + term[0].length;
+			}
+			split(wide.slice(from));
+		} else tokens.push(...wide);
+		wide = "";
+	};
 	for (const char of text) {
 		if (char === " ") {
+			flushWide();
 			if (word) tokens.push(word);
 			tokens.push(" ");
 			word = "";
 		} else if (isWide(char)) {
 			if (word) tokens.push(word);
-			tokens.push(char);
 			word = "";
-		} else word += char;
+			wide += char;
+		} else {
+			flushWide();
+			word += char;
+		}
 	}
+	flushWide();
 	if (word) tokens.push(word);
+	return tokens;
+}
+
+/**
+ * Greedy line breaks between `tokenize`'s pieces. A closing mark that would start a line
+ * takes the token before it along, so "。" never sits alone at the start of a line.
+ * Returns at least one line.
+ */
+export function wrapText(
+	text: string,
+	maxWidth: number,
+	size: number,
+	{ words = false }: { words?: boolean } = {},
+) {
+	const tokens = tokenize(text, words);
 	const lines: string[] = [];
 	let line: string[] = [];
 	for (const token of tokens) {

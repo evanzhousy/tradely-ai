@@ -3,7 +3,7 @@ import { type ReactNode, useId } from "react";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { FilmContext } from "./film";
-import { textWidth, wrapText } from "./text-measure";
+import { NO_LINE_START, textWidth, tokenize, wrapText } from "./text-measure";
 
 /*
  * The grammar every lesson film shares. A film is a dark frame that is its own stage: type
@@ -71,20 +71,90 @@ type Anchor = "start" | "middle" | "end";
  */
 function wrapSans(text: string, maxWidth: number, size: number) {
 	const cjk = /[\u2e80-\u9fff\uff00-\uffef]/.test(text);
-	const wrap = (width: number) =>
-		wrapText(text, width, size * (cjk ? 0.95 : 0.86));
-	const lines = wrap(maxWidth);
+	const measure = size * (cjk ? 0.95 : 0.86);
+	const lines = wrapText(text, maxWidth, measure, { words: true });
 	if (lines.length < 2) return lines;
-	// Balanced, like CSS text-wrap: the narrowest width that keeps the same number of
-	// lines, so a claim that needs two lines splits evenly instead of leaving a word alone.
-	let low = maxWidth / lines.length;
-	let high = maxWidth;
-	for (let i = 0; i < 12; i++) {
-		const mid = (low + high) / 2;
-		if (wrap(mid).length > lines.length) low = mid;
-		else high = mid;
+	return (
+		breakEvenly(tokenize(text, true), lines.length, maxWidth, measure) ?? lines
+	);
+}
+
+/** Where a sentence pauses: a line may end here at a small discount. */
+const PAUSE = /[，。；：！？,;:.!?·—]$/;
+/** Opening marks that may not end a line. */
+const NO_LINE_END = /^[“‘（「『《〈【〔]$/;
+
+/**
+ * The same number of lines as greedy wrapping, broken as evenly as they can be (like CSS
+ * `text-wrap: balance`), and at a pause where one is close: the smallest sum of squared
+ * line widths, less a small discount for each line that ends a clause. A line breaks at a
+ * space, or between two CJK words, never inside "10月" or before a closing mark. Returns
+ * undefined when no such breaks exist.
+ */
+function breakEvenly(
+	tokens: string[],
+	count: number,
+	maxWidth: number,
+	measure: number,
+) {
+	const n = tokens.length;
+	const sums = [0];
+	for (const [i, token] of tokens.entries())
+		sums.push(sums[i] + textWidth(token, measure));
+	const wide = (token: string) => (token.codePointAt(0) ?? 0) > 0x2e80;
+	// A line may start at 0 or at token j when a break before j is allowed.
+	const starts = [0];
+	for (let j = 1; j < n; j++) {
+		const before = tokens[j - 1];
+		const token = tokens[j];
+		// A number keeps its measure word: never "4 | 点" or "3 | 个".
+		if (token === " ") {
+			if (!(/\d$/.test(before) && wide(tokens[j + 1] ?? ""))) starts.push(j);
+		} else if (
+			before !== " " &&
+			wide(before) &&
+			wide(token) &&
+			!NO_LINE_START.test(token) &&
+			!NO_LINE_END.test(before)
+		)
+			starts.push(j);
 	}
-	return wrap(high);
+	const line = (i: number, j: number) => {
+		const from = tokens[i] === " " ? i + 1 : i;
+		const to = tokens[j - 1] === " " ? j - 1 : j;
+		const width = sums[to] - sums[from];
+		const pieces = tokens.slice(from, to).filter((t) => t !== " ").length;
+		if (width > maxWidth && pieces > 1) return Number.POSITIVE_INFINITY;
+		const ratio = width / maxWidth;
+		const pause = j < n && PAUSE.test(tokens[to - 1] ?? "") ? 0.12 : 0;
+		return ratio * ratio - pause;
+	};
+	const ends = [...starts.slice(1), n];
+	// best[k].get(j): the cheapest k lines over tokens [0, j), and where the last one began.
+	const best: Map<number, { cost: number; from: number }>[] = [
+		new Map([[0, { cost: 0, from: -1 }]]),
+	];
+	for (let k = 1; k <= count; k++) {
+		const row = new Map<number, { cost: number; from: number }>();
+		for (const j of ends) {
+			for (const [i, prev] of best[k - 1]) {
+				if (i >= j || (k === count) !== (j === n)) continue;
+				const cost = prev.cost + line(i, j);
+				if (cost < (row.get(j)?.cost ?? Number.POSITIVE_INFINITY))
+					row.set(j, { cost, from: i });
+			}
+		}
+		best.push(row);
+	}
+	if (!Number.isFinite(best[count].get(n)?.cost ?? Number.POSITIVE_INFINITY))
+		return undefined;
+	const lines: string[] = [];
+	for (let k = count, j = n; k > 0; k--) {
+		const from = best[k].get(j)?.from ?? 0;
+		lines.unshift(tokens.slice(from, j).join("").trim());
+		j = from;
+	}
+	return lines;
 }
 
 /** How many lines `Lines` breaks a text into, so whatever follows it can make room. */
@@ -428,10 +498,13 @@ export function createDirector(
 	/** A cut sends type up and away. */
 	const hide = (targets: Targets, at: number, duration = 0.35) =>
 		tl.to(targets, { opacity: 0, y: -12, duration, ease: "power2.in" }, at);
-	/** One line of type gives way to the next in the same place, never both at once. */
+	/**
+	 * One line of type gives way to the next in the same place, never both at once: the old
+	 * one leaves upwards and the new one follows it up from below, clear of the corner tag.
+	 */
 	const swap = (from: Targets, to: Targets, at: number) => {
 		hide(from, at);
-		show(to, at + 0.35, "above");
+		show(to, at + 0.35);
 	};
 	/** A number or a chip lands with a little overshoot, about its own centre. */
 	const pop = (target: Element, at: number, duration = 0.5) =>
@@ -544,6 +617,40 @@ export function createDirector(
 			},
 			{ opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" },
 			at,
+		);
+	};
+	/**
+	 * One element travels into another's place and becomes it: `from` moves and scales onto
+	 * `to`'s box, then hands over. Both must sit in the same coordinates, untransformed then.
+	 */
+	const carry = (
+		from: SVGGraphicsElement,
+		to: SVGGraphicsElement,
+		at: number,
+		duration = 0.9,
+	) => {
+		const a = from.getBBox();
+		const b = to.getBBox();
+		const ax = a.x + a.width / 2;
+		const ay = a.y + a.height / 2;
+		tl.to(
+			from,
+			{
+				x: b.x + b.width / 2 - ax,
+				y: b.y + b.height / 2 - ay,
+				scale: b.height / a.height,
+				svgOrigin: `${ax} ${ay}`,
+				duration,
+				ease: "power3.inOut",
+			},
+			at,
+		);
+		tl.set(from, { opacity: 0 }, at + duration);
+		tl.fromTo(
+			to,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.12 },
+			at + duration - 0.1,
 		);
 	};
 	/**
@@ -675,6 +782,7 @@ export function createDirector(
 		count,
 		trace,
 		lock,
+		carry,
 		morph,
 		rise,
 		sink,
