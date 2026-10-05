@@ -1,16 +1,10 @@
 import { FieldGroup } from "@tradely/ui/components/field";
 import {
 	type Copy,
-	contractLabel,
 	count,
 	dayLabel,
-	daysBetween,
-	type ExpiryId,
 	expiries,
-	type HolderId,
 	holders,
-	OCT_100_CALL,
-	oct100CallMonday,
 	openInterestChange,
 	type PositionEffect,
 	PREVIOUS_SESSION_DATE,
@@ -18,7 +12,6 @@ import {
 	signedCount,
 	type Trade,
 	usd,
-	weeklyCallOpenInterest,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
@@ -28,7 +21,6 @@ import {
 	type StripColumn,
 } from "../walkthrough/instruments/expiry-strip";
 import {
-	type Holding,
 	type LedgerRow,
 	ledgerHeight,
 	PositionLedger,
@@ -47,37 +39,26 @@ import {
 	TradeTape,
 	tapeHeight,
 } from "../walkthrough/instruments/trade-tape";
+import { Player } from "../walkthrough/player";
 import { Label, Stage } from "../walkthrough/stage";
 import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
-
-type Holdings = Record<HolderId, Holding>;
-const order: readonly HolderId[] = ["you", "ben", "cara", "eli", "others"];
-const day = oct100CallMonday;
-const contract = contractLabel(OCT_100_CALL);
-
-const start: Holdings = {
-	you: { long: 0, short: 0 },
-	ben: { long: 0, short: 0 },
-	cara: { long: 20, short: 0 },
-	eli: { long: 0, short: 30 },
-	others: { long: day.othersGross.long, short: day.othersGross.short },
-};
-
-/** Buyers who open add a long; buyers who close retire a short. Sellers mirror them. */
-function apply(holdings: Holdings, trade: Trade): Holdings {
-	const next = { ...holdings };
-	const buyer = { ...next[trade.buyer] };
-	const seller = { ...next[trade.seller] };
-	if (trade.buyerEffect === "open") buyer.long += trade.quantity;
-	else buyer.short -= trade.quantity;
-	if (trade.sellerEffect === "open") seller.short += trade.quantity;
-	else seller.long -= trade.quantity;
-	next[trade.buyer] = buyer;
-	next[trade.seller] = seller;
-	return next;
-}
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { sessionFlowVsStructureFilm } from "./session-flow-vs-structure-film";
+import {
+	apply,
+	type BucketState,
+	bucketFacts,
+	contract,
+	day,
+	earlier,
+	type LedgerState,
+	later,
+	ledgerBeats,
+	minuteOf,
+	order,
+	start,
+} from "./session-flow-vs-structure-model";
 
 const effectCopy = (
 	side: "buys" | "sells",
@@ -100,35 +81,6 @@ const tradeEffect = (trade: Trade): Copy => {
 };
 
 // ——— Scene 1: open, close, transfer ———
-
-type LedgerState = {
-	holdings: Holdings;
-	before?: Holdings;
-	trade?: Trade;
-	volume: number;
-	volumeBefore?: number;
-	openInterest: number;
-	openInterestBefore?: number;
-};
-
-const ledgerBeats = (() => {
-	const beats: LedgerState[] = [
-		{ holdings: start, volume: 0, openInterest: day.startOpenInterest },
-	];
-	for (const trade of day.trades) {
-		const previous = beats[beats.length - 1];
-		beats.push({
-			holdings: apply(previous.holdings, trade),
-			before: previous.holdings,
-			trade,
-			volume: previous.volume + trade.quantity,
-			volumeBefore: previous.volume,
-			openInterest: previous.openInterest + openInterestChange(trade),
-			openInterestBefore: previous.openInterest,
-		});
-	}
-	return beats;
-})();
 
 type LedgerExplore = {
 	buyer: PositionEffect;
@@ -329,10 +281,6 @@ type ClockState = {
 	published: boolean;
 };
 
-const minuteOf = (time: string) => {
-	const [hours, minutes] = time.split(":").map(Number);
-	return hours * 60 + minutes;
-};
 const clockStops: readonly ClockState[] = [
 	{ now: MON_OPEN, printed: 0, published: false },
 	...day.trades.map((trade, i) => ({
@@ -542,37 +490,6 @@ function ClockView({
 }
 
 // ——— Scene 3: compare like with like ———
-
-const stripExpiries: readonly ExpiryId[] = ["sep27", "oct4", "oct11", "oct18"];
-const [earlier, later] = weeklyCallOpenInterest;
-const inBucket = (days: number) => days >= 14 && days <= 30;
-
-type BucketState = { later: boolean; compare: boolean };
-
-function bucketFacts(state: BucketState) {
-	const snapshot = state.later ? later : earlier;
-	const columns = stripExpiries.map((id) => {
-		const days = daysBetween(snapshot.date, expiries[id].date);
-		const value = snapshot.values[id] ?? 0;
-		return {
-			id,
-			days,
-			value,
-			member: inBucket(days),
-			change:
-				state.later && state.compare
-					? value - (earlier.values[id] ?? 0)
-					: undefined,
-		};
-	});
-	const members = columns.filter((column) => column.member);
-	return {
-		date: snapshot.date,
-		columns,
-		members,
-		total: members.reduce((sum, column) => sum + column.value, 0),
-	};
-}
 
 function BucketView({
 	locale,
@@ -979,13 +896,14 @@ const scenes = [
 
 export function VolumeOpenInterestWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="session-flow-vs-structure"
 			label={[
 				"Interactive lesson on volume and open interest",
 				"成交量与未平仓量互动课",
 			]}
+			film={sessionFlowVsStructureFilm}
 			scenes={scenes}
 		/>
 	);
