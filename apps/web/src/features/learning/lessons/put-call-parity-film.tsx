@@ -85,7 +85,7 @@ function layout(width: number) {
 }
 
 const copy = {
-	title: ["Put-call parity", "看跌-看涨平价"],
+	title: ["Put-call parity", "看涨看跌平价"],
 	titleSub: ["how calls, puts and shares line up", "看涨、看跌与股票如何对齐"],
 	qTag: [
 		"long Oct 18 100 call + short Oct 18 100 put",
@@ -680,7 +680,7 @@ export const putCallParityFilm: Film = {
 	id: "put-call-parity",
 	label: [
 		`Put-call parity, as a short film: a long Oct 18 100 call and a short 100 put, worth $0 and −$1,000 at $90, summing at every price to one straight line, 100 shares bought at $100, or $${(STRIKE + NET_DEBIT).toFixed(2)} after the $${NET_DEBIT.toFixed(2)} net debit; call minus put equal to ALFA minus the strike, at $102 and at $97; and a call print $${GAP.toFixed(2)} above parity that executed at 13:58 with ALFA at $103.05, where it is in line`,
-		`看跌-看涨平价短片：10月18日 100 看涨多头和 100 看跌空头，在 $90 时分别值 $0 和 −$1,000，每个价格相加成一条直线，就像以 $100 买入 100 股，扣除 $${NET_DEBIT.toFixed(2)} 净支出后是 $${(STRIKE + NET_DEBIT).toFixed(2)}；看涨减看跌等于 ALFA 减行权价，$102 和 $97 时都成立；以及一笔看似比平价高 $${GAP.toFixed(2)} 的看涨成交，实际在 13:58 ALFA 为 $103.05 时成交，其实符合平价`,
+		`看涨看跌平价短片：10月18日 100 看涨多头和 100 看跌空头，在 $90 时分别值 $0 和 −$1,000，每个价格相加成一条直线，就像以 $100 买入 100 股，扣除 $${NET_DEBIT.toFixed(2)} 净支出后是 $${(STRIKE + NET_DEBIT).toFixed(2)}；看涨减看跌等于 ALFA 减行权价，$102 和 $97 时都成立；以及一笔看似比平价高 $${GAP.toFixed(2)} 的看涨成交，实际在 13:58 ALFA 为 $103.05 时成交，其实符合平价`,
 	],
 	stage: "dark",
 	shots: [
