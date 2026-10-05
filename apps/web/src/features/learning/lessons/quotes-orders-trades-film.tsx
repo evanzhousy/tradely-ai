@@ -10,6 +10,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -31,18 +32,21 @@ import {
  * $2.05, ask $2.15, last $2.00, and asks what a market buy pays. The book answers: bids
  * and asks are offers, the midpoint is arithmetic, the last is history, and the buy takes
  * the $2.15 ask; only then does a trade print. Then orders: an added offer and a cancel
- * change the size with nothing on the tape; a trade prints. Last, three venues whose best
- * bid and best ask together are the NBBO, $2.05 by $2.15.
+ * change the size with nothing on the tape; a trade prints. Every print stays on the tape,
+ * and the size carries from shot to shot: 8, 7 after the buy, 12, 7, then 4. Last, the
+ * book turns out to be three venues, whose best bid and best ask are the NBBO, $2.05 by
+ * $2.15, until a buyer takes C's last 4 and it prints.
  *
  *   open      0–4      "Quotes, orders and trades"
  *   question  4–9.5    bid $2.05 · ask $2.15 · last $2.00: a market buy pays?
- *   quote     9.5–20   the book; spread and mid; last; buy 1 at $2.15
- *   orders    20–30    add 5; cancel; take 3, a print
- *   venues    30–39.5  A, B, C; NBBO $2.05 × $2.15; C traded away; cut: the claim
- *   next      39.5–42  Next: counterparties
+ *   quote     9.5–21   the numbers fly into the book; spread and mid; last; buy 1 at $2.15
+ *   orders    21–31    add 5; cancel; take 3, a print; volume 5 → 6 → 9
+ *   venues    31–39.8  A, B, C; NBBO $2.05 × $2.15; C's last 4 trade and print
+ *   claim     39.8–44  a quote is an offer; only a trade prints
+ *   next      44–46.5  Next: counterparties
  */
 
-const END = 42;
+const END = 46.5;
 const ASKS = [...BASE_ASKS].reverse();
 const BIDS = BASE_BIDS;
 const ASK = BASE_ASKS[0];
@@ -55,6 +59,9 @@ const MAX = Math.max(
 const price = (cents: number) =>
 	Number.isInteger(cents) ? usd(cents) : `$${(cents / 100).toFixed(3)}`;
 const VENUES = oct105CallVenues;
+/** What is left at the best ask after the film's two trades: the venue shot starts here. */
+const LEFT = ASK.size - 1 - TAKEN;
+const PRIOR = oct105CallLast.size;
 const NEXT_ASK = [...VENUES]
 	.filter((v) => v.venue !== BEST.ask.venue)
 	.sort((a, b) => a.ask.price - b.ask.price)[0];
@@ -62,7 +69,7 @@ const NEXT_ASK = [...VENUES]
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
-	const rowStep = H * (narrow ? 0.06 : 0.075);
+	const rowStep = H * (narrow ? 0.06 : 0.085);
 	const bookTop = H * 0.27;
 	const bookW = narrow ? room : room * 0.56;
 	const priceW = narrow ? 52 : width * 0.08;
@@ -106,26 +113,26 @@ const copy = {
 		"你用市价单买 1 张。要付多少？",
 	],
 	bookHead: [
-		"The book: offers to buy and to sell. None of them is a trade.",
-		"订单簿：买入与卖出的出价。没有一个是成交。",
+		"The book: offers to buy and to sell, not trades.",
+		"订单簿：买入和卖出的挂单，不是成交。",
 	],
-	bookHeadShort: ["The book: offers, not trades.", "订单簿：出价，不是成交。"],
+	bookHeadShort: ["The book: offers, not trades.", "订单簿：挂单，不是成交。"],
 	midHead: [
-		`The spread is $0.10; the midpoint, ${price(MID)}, is arithmetic. Nobody traded there.`,
-		`价差 $0.10；中间价 ${price(MID)} 只是算出来的，没人在那成交。`,
+		`Spread $0.10; the ${price(MID)} midpoint is just arithmetic.`,
+		`价差 $0.10；中间价 ${price(MID)} 是算出来的，没人成交。`,
 	],
 	midHeadShort: [
 		`Mid ${price(MID)}: just arithmetic.`,
-		`中间价 ${price(MID)}：只是算术。`,
+		`中间价 ${price(MID)}：算出来的。`,
 	],
 	lastHead: [
-		"The last trade, $2.00 at 10:12, is below today's bid: history, not a price on offer.",
-		"最新成交 10:12 的 $2.00 低于现在的买价：是历史，不是可成交的价格。",
+		"The last trade, $2.00 at 10:12, is history: you can't buy at it now.",
+		"最新成交 10:12 的 $2.00 是历史：现在买不到这个价。",
 	],
 	lastHeadShort: ["Last $2.00: history.", "最新 $2.00：历史。"],
 	buyHead: [
-		"A market buy takes the $2.15 ask. Only now does a trade print.",
-		"市价买单吃掉 $2.15 的卖价。直到现在才有成交记录。",
+		"A market buy takes the $2.15 ask: now a trade prints.",
+		"市价买单吃掉 $2.15 的卖价：这才产生成交。",
 	],
 	buyHeadShort: ["Market buy: $2.15. A print.", "市价买入：$2.15。成交。"],
 	addHead: [
@@ -139,17 +146,18 @@ const copy = {
 	],
 	cancelHeadShort: ["Cancel: no print.", "撤单：无成交。"],
 	takeHead: [
-		`A buyer takes ${TAKEN}: the size falls and a print appears. Volume +${TAKEN}.`,
-		`买方吃掉 ${TAKEN} 张：数量下降，出现一笔成交。成交量 +${TAKEN}。`,
+		`A buyer takes ${TAKEN}: a print, and volume +${TAKEN}.`,
+		`买方吃掉 ${TAKEN} 张：出现一笔成交，成交量 +${TAKEN}。`,
 	],
 	takeHeadShort: [`Take ${TAKEN}: a print.`, `吃掉 ${TAKEN} 张：成交。`],
 	tape: ["time and sales", "逐笔成交"],
+	volume: ["volume", "成交量"],
 	mid: ["mid", "中间价"],
 	venueHead: [
-		"Three venues quote the same call at the same moment.",
-		"三个交易场所在同一时刻为同一张看涨报价。",
+		"That book was three venues' quotes, combined.",
+		"刚才的订单簿，是三个交易场所报价的合并。",
 	],
-	venueHeadShort: ["Three venues, one call.", "三个场所，一张看涨。"],
+	venueHeadShort: ["Three venues, one book.", "三个场所，一本订单簿。"],
 	nbboHead: [
 		`Best bid ${usd(BEST.bid.price)} at ${BEST.bid.venue}, best ask ${usd(BEST.ask.price)} at ${BEST.ask.venue}: the NBBO.`,
 		`最优买价 ${usd(BEST.bid.price)} 在 ${BEST.bid.venue}，最优卖价 ${usd(BEST.ask.price)} 在 ${BEST.ask.venue}：NBBO。`,
@@ -159,22 +167,22 @@ const copy = {
 		`NBBO ${usd(BEST.bid.price)} × ${usd(BEST.ask.price)}。`,
 	],
 	goneHead: [
-		`A buyer takes all ${BEST.ask.size} at ${BEST.ask.venue}: the best ask becomes ${NEXT_ASK.venue}'s ${usd(NEXT_ASK.ask.price)}.`,
-		`买方吃掉 ${BEST.ask.venue} 的全部 ${BEST.ask.size} 张：最优卖价变成 ${NEXT_ASK.venue} 的 ${usd(NEXT_ASK.ask.price)}。`,
+		`A buyer takes ${BEST.ask.venue}'s last ${LEFT}: the best ask becomes ${NEXT_ASK.venue}'s ${usd(NEXT_ASK.ask.price)}.`,
+		`买方吃光 ${BEST.ask.venue} 剩下的 ${LEFT} 张：最优卖价变成 ${NEXT_ASK.venue} 的 ${usd(NEXT_ASK.ask.price)}。`,
 	],
 	goneHeadShort: [
-		`${BEST.ask.venue} traded away: ${usd(NEXT_ASK.ask.price)}.`,
-		`${BEST.ask.venue} 成交完：${usd(NEXT_ASK.ask.price)}。`,
+		`${BEST.ask.venue}'s offer gone: ${usd(NEXT_ASK.ask.price)}.`,
+		`${BEST.ask.venue} 的卖单被吃光：${usd(NEXT_ASK.ask.price)}。`,
 	],
 	venue: ["venue", "场所"],
 	nbbo: ["NBBO", "NBBO"],
 	claimBig: [
 		"A quote is an offer; only a trade prints.",
-		"报价是出价；只有成交才会留下记录。",
+		"报价只是挂单；只有成交才会留下记录。",
 	],
 	claimSub: [
-		"You buy at the ask and sell at the bid; the last price and the midpoint are not on offer.",
-		"按卖价买，按买价卖；最新成交价和中间价都不是可成交的价格。",
+		"Buy at the ask, sell at the bid; the last and the mid aren't on offer.",
+		"按卖价买、按买价卖；最新价和中间价都不可成交。",
 	],
 	nextBig: ["Next: counterparties", "下一课：交易对手"],
 	nextSub: ["who buys and who sells in one trade", "一笔成交里谁买谁卖"],
@@ -223,6 +231,7 @@ function Scene({
 					className="wt-focus-shape"
 				/>
 				<text
+					data-f={`px-${key}`}
 					x={margin + L.priceW}
 					y={rowText(y)}
 					textAnchor="end"
@@ -246,7 +255,7 @@ function Scene({
 					x={margin + L.bookW - 6}
 					y={rowText(y)}
 					textAnchor="end"
-					className="wt-film-num wt-film-dim"
+					className="wt-film-num"
 					style={{ fontSize: text }}
 				>
 					{count(at.size)}
@@ -259,6 +268,24 @@ function Scene({
 		["pr-take", `10:31 · ${TAKEN} @ ${usd(ASK.price)}`],
 	] as const;
 	const venueLine = (k: number) => L.venueY + L.venueH * [0.18, 0.48, 0.78][k];
+	/** The best ask's row: where a market buy trades, and where its print sets off for the tape. */
+	const bestRow = ASKS.length - 1;
+	const venueLock = (
+		venue: string,
+		line: number,
+		tone: "gain" | "loss",
+		name: string,
+	) => (
+		<Brackets
+			name={name}
+			x={L.venueX(VENUES.findIndex((v) => v.venue === venue)) + L.pillInset}
+			y={venueLine(line) - text * 1.2}
+			width={L.venueW - 2 * L.pillInset}
+			height={text * 1.7}
+			arm={8}
+			tone={tone}
+		/>
+	);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -371,6 +398,16 @@ function Scene({
 					{t(copy.tape).toUpperCase()}
 				</text>
 				<text
+					data-f="vol"
+					x={L.tapeX + L.tapeW}
+					y={L.tapeY + T.small}
+					textAnchor="end"
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{`${t(copy.volume).toUpperCase()} ${PRIOR}`}
+				</text>
+				<text
 					data-f="pr-last"
 					x={L.tapeX}
 					y={L.tapeRow(0) + L.rowH * 0.6}
@@ -380,6 +417,26 @@ function Scene({
 					{`${oct105CallLast.time} · ${oct105CallLast.size} @ ${usd(oct105CallLast.price)}`}
 				</text>
 			</g>
+			<Brackets
+				name="lock-ask"
+				x={margin - 5}
+				y={L.askY(bestRow) - 4}
+				width={L.bookW + 10}
+				height={L.rowH + 8}
+			/>
+			{/* Each print leaves the book as a chip and lands on the tape. */}
+			{prints.map(([name, label]) => (
+				<text
+					key={`carry-${name}`}
+					data-f={`carry-${name}`}
+					x={L.barX + 6}
+					y={rowText(L.askY(bestRow))}
+					className="wt-film-num wt-film-accent wt-halo"
+					style={{ fontSize: text }}
+				>
+					{label.split(" · ")[1]}
+				</text>
+			))}
 			{prints.map(([name, label]) => (
 				<text
 					key={name}
@@ -435,49 +492,13 @@ function Scene({
 							className="wt-film-num"
 							style={{ fontSize: narrow ? T.body : T.head }}
 						>
-							{`${usd(v.ask.price)} × ${v.ask.size}`}
+							{`${usd(v.ask.price)} × ${v.venue === BEST.ask.venue ? LEFT : v.ask.size}`}
 						</text>
 					</g>
 				))}
-				<rect
-					data-f="best-bid"
-					x={
-						L.venueX(VENUES.findIndex((v) => v.venue === BEST.bid.venue)) +
-						L.pillInset
-					}
-					y={venueLine(1) - text * 1.2}
-					width={L.venueW - 2 * L.pillInset}
-					height={text * 1.7}
-					rx={text * 0.85}
-					className="wt-focus-shape"
-					style={{ fillOpacity: 0, stroke: "var(--diagram-gain)" }}
-				/>
-				<rect
-					data-f="best-ask"
-					x={
-						L.venueX(VENUES.findIndex((v) => v.venue === BEST.ask.venue)) +
-						L.pillInset
-					}
-					y={venueLine(2) - text * 1.2}
-					width={L.venueW - 2 * L.pillInset}
-					height={text * 1.7}
-					rx={text * 0.85}
-					className="wt-focus-shape"
-					style={{ fillOpacity: 0, stroke: "var(--diagram-loss)" }}
-				/>
-				<rect
-					data-f="next-ask"
-					x={
-						L.venueX(VENUES.findIndex((v) => v.venue === NEXT_ASK.venue)) +
-						L.pillInset
-					}
-					y={venueLine(2) - text * 1.2}
-					width={L.venueW - 2 * L.pillInset}
-					height={text * 1.7}
-					rx={text * 0.85}
-					className="wt-focus-shape"
-					style={{ fillOpacity: 0, stroke: "var(--diagram-loss)" }}
-				/>
+				{venueLock(BEST.bid.venue, 1, "gain", "best-bid")}
+				{venueLock(BEST.ask.venue, 2, "loss", "best-ask")}
+				{venueLock(NEXT_ASK.venue, 2, "loss", "next-ask")}
 			</g>
 			{(
 				[
@@ -506,6 +527,48 @@ function Scene({
 					</text>
 				</g>
 			))}
+			{/* C's last contracts leave its card and print on a strip of tape. */}
+			<text
+				data-f="carry-gone"
+				x={
+					L.venueX(VENUES.findIndex((v) => v.venue === BEST.ask.venue)) +
+					L.venueW / 2
+				}
+				y={venueLine(2) + text * 1.6}
+				textAnchor="middle"
+				className="wt-film-num wt-film-accent wt-halo"
+				style={{ fontSize: text }}
+			>
+				{`${LEFT} @ ${usd(BEST.ask.price)}`}
+			</text>
+			<g data-f="strip">
+				<text
+					x={W / 2}
+					y={L.venueY + L.venueH + H * 0.08 + T.num * 1.3 + T.small * 3.2}
+					textAnchor="middle"
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.tape).toUpperCase()}
+				</text>
+				<text
+					data-f="pr-gone"
+					x={W / 2}
+					y={
+						L.venueY +
+						L.venueH +
+						H * 0.08 +
+						T.num * 1.3 +
+						T.small * 3.2 +
+						text * 1.6
+					}
+					textAnchor="middle"
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{`10:32 · ${LEFT} @ ${usd(BEST.ask.price)}`}
+				</text>
+			</g>
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -550,11 +613,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const askKey = `ask-${ASK.price}`;
@@ -570,16 +634,52 @@ function build(context: FilmContext) {
 		);
 		d.count(size, to, time, (v) => count(Math.round(v)), from, 0.5);
 	};
-	/** A print enters at the top of the tape and pushes the rest down a row. */
+	const volume = one<SVGTextElement>("vol");
+	const volumeTo = (to: number, from: number, time: number) =>
+		d.count(
+			volume,
+			to,
+			time,
+			(v) => `${d.t(copy.volume).toUpperCase()} ${Math.round(v)}`,
+			from,
+			0.4,
+		);
+	/**
+	 * A trade leaves the book as a chip, travels to the top of the tape and becomes its print,
+	 * pushing the older prints down a row. Prints never leave the tape.
+	 */
+	const text = L.narrow ? L.type.small * 1.1 : L.type.body;
+	const bestRow = ASKS.length - 1;
+	const carryX = L.tapeX - (L.barX + 6);
+	const carryY =
+		L.tapeRow(0) + L.rowH * 0.6 - (L.askY(bestRow) + L.rowH / 2 + text * 0.36);
 	const print = (name: string, below: Element[], time: number) => {
-		tl.to(below, { y: L.rowStep, duration: 0.4, ease: "power2.inOut" }, time);
+		const chip = one(`carry-${name}`);
+		tl.fromTo(
+			chip,
+			{ opacity: 0, x: 0, y: 0 },
+			{ opacity: 1, duration: 0.15 },
+			time,
+		);
+		tl.to(
+			chip,
+			{ x: carryX, y: carryY, duration: 0.6, ease: "power2.inOut" },
+			time + 0.15,
+		);
+		tl.to(
+			below,
+			{ y: `+=${L.rowStep}`, duration: 0.4, ease: "power2.inOut" },
+			time + 0.3,
+		);
+		tl.set(chip, { opacity: 0 }, time + 0.75);
 		tl.fromTo(
 			one(name),
-			{ opacity: 0, x: 18 },
-			{ opacity: 1, x: 0, duration: 0.45 },
-			time + 0.2,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.2 },
+			time + 0.75,
 		);
 	};
+	const lockAsk = one<SVGGraphicsElement>("lock-ask");
 	const heads = [
 		"k-head",
 		"m-head",
@@ -596,6 +696,9 @@ function build(context: FilmContext) {
 		...ASKS.map((at) => one(`lv-ask-${at.price}`)),
 		...BIDS.map((at) => one(`lv-bid-${at.price}`)),
 	];
+	const pxAsk = one<SVGGraphicsElement>(`px-ask-${ASK.price}`);
+	const pxBid = one<SVGGraphicsElement>(`px-bid-${BID.price}`);
+	const last = one<SVGGraphicsElement>("pr-last");
 
 	d.hidden([
 		...flat("q"),
@@ -604,15 +707,22 @@ function build(context: FilmContext) {
 			(el) => !el.getAttribute("data-f")?.startsWith("lv-"),
 		),
 		...levels,
+		pxAsk,
+		pxBid,
 		...ASKS.map((at) => one(`hit-ask-${at.price}`)),
 		...BIDS.map((at) => one(`hit-bid-${at.price}`)),
 		one("mid"),
 		...kids("tape"),
 		one("pr-buy"),
 		one("pr-take"),
+		one("carry-pr-buy"),
+		one("carry-pr-take"),
+		lockAsk,
 		...kids("venues"),
 		one("nbbo-1"),
 		one("nbbo-2"),
+		one("carry-gone"),
+		...kids("strip"),
 		...kids("claim"),
 	]);
 
@@ -630,10 +740,17 @@ function build(context: FilmContext) {
 	});
 	show(one("q-line"), 6.6);
 
-	// ——— quote: offers, a midpoint, a last, a trade ———
+	// ——— quote: the three numbers take their places in the book and on the tape ———
 	tl.addLabel("quote", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
+	hide(
+		[
+			one("q-tag"),
+			one("q-line"),
+			...(["q-bid", "q-ask", "q-last"] as const).map((n) => one(`${n}-tag`)),
+		],
+		9.5,
+	);
+	show(heads[0], 9.7);
 	show(
 		flat("book").filter((el) => !el.getAttribute("data-f")),
 		10.0,
@@ -641,38 +758,45 @@ function build(context: FilmContext) {
 	levels.forEach((lv, i) => {
 		show(lv, 10.1 + i * 0.08, "right");
 	});
-	show(kids("tape"), 10.6);
-	d.swap(heads[0], heads[1], 12.0);
-	show(one("mid"), 12.4);
-	d.swap(heads[1], heads[2], 14.2);
-	tl.to(
-		one("pr-last"),
-		{ attr: { class: "wt-film-num wt-film-warn" }, duration: 0.01 },
-		14.6,
+	show(
+		kids("tape").filter((el) => el !== last),
+		10.6,
 	);
-	d.swap(heads[2], heads[3], 16.6);
-	hide(one("mid"), 16.6);
-	tl.to(hit, { opacity: 1, duration: 0.3 }, 17.0);
-	sizeTo(ASK.size - 1, ASK.size, 17.2);
-	print("pr-buy", [one("pr-last")], 17.4);
+	d.carry(one<SVGGraphicsElement>("q-bid-num"), pxBid, 9.9, 1.0);
+	d.carry(one<SVGGraphicsElement>("q-ask-num"), pxAsk, 9.95, 1.0);
+	d.carry(one<SVGGraphicsElement>("q-last-num"), last, 10.0, 1.0);
+	d.swap(heads[0], heads[1], 12.4);
+	show(one("mid"), 12.8);
+	d.swap(heads[1], heads[2], 15.0);
+	tl.to(
+		last,
+		{ attr: { class: "wt-film-num wt-film-warn" }, duration: 0.01 },
+		15.4,
+	);
+	d.swap(heads[2], heads[3], 17.6);
+	hide(one("mid"), 17.6);
+	tl.to(hit, { opacity: 1, duration: 0.3 }, 18.0);
+	d.lock(lockAsk, 18.0);
+	sizeTo(ASK.size - 1, ASK.size, 18.2);
+	print("pr-buy", [last], 18.4);
+	volumeTo(PRIOR + 1, PRIOR, 19.2);
 
 	// ——— orders: only trades print ———
-	tl.addLabel("orders", 20);
-	d.swap(heads[3], heads[4], 20.0);
-	tl.to(hit, { opacity: 0, duration: 0.3 }, 20.0);
-	hide(one("pr-buy"), 20.0, 0.3);
-	tl.to(one("pr-last"), { y: 0, duration: 0.3 }, 20.3);
-	sizeTo(ASK.size, ASK.size - 1, 20.2);
-	sizeTo(ASK.size + ADDED, ASK.size, 20.8);
-	d.swap(heads[4], heads[5], 23.0);
-	sizeTo(ASK.size, ASK.size + ADDED, 23.4);
-	d.swap(heads[5], heads[6], 25.6);
-	tl.to(hit, { opacity: 1, duration: 0.3 }, 26.0);
-	sizeTo(ASK.size - TAKEN, ASK.size, 26.2);
-	print("pr-take", [one("pr-last")], 26.4);
+	tl.addLabel("orders", 21);
+	d.swap(heads[3], heads[4], 21.0);
+	tl.to([hit, lockAsk], { opacity: 0, duration: 0.3 }, 21.0);
+	sizeTo(ASK.size - 1 + ADDED, ASK.size - 1, 21.6);
+	d.swap(heads[4], heads[5], 24.0);
+	sizeTo(ASK.size - 1, ASK.size - 1 + ADDED, 24.4);
+	d.swap(heads[5], heads[6], 26.6);
+	tl.to(hit, { opacity: 1, duration: 0.3 }, 27.0);
+	d.lock(lockAsk, 27.0);
+	sizeTo(LEFT, ASK.size - 1, 27.2);
+	print("pr-take", [one("pr-buy"), last], 27.4);
+	volumeTo(PRIOR + 1 + TAKEN, PRIOR + 1, 28.2);
 
 	// ——— venues: the best of three ———
-	tl.addLabel("venues", 30);
+	tl.addLabel("venues", 31);
 	hide(
 		[
 			heads[6],
@@ -681,51 +805,70 @@ function build(context: FilmContext) {
 			),
 			...levels,
 			hit,
+			lockAsk,
 			...kids("tape"),
+			one("pr-buy"),
 			one("pr-take"),
 		],
-		30.0,
+		31.0,
 	);
-	show(heads[7], 30.2, "above");
+	show(heads[7], 31.2);
 	VENUES.forEach((v, i) => {
-		show(one(`venue-${v.venue}`), 30.5 + i * 0.3);
+		show(one(`venue-${v.venue}`), 31.5 + i * 0.3);
 	});
-	d.swap(heads[7], heads[8], 32.4);
-	tl.to(one("best-bid"), { opacity: 1, duration: 0.3 }, 32.8);
-	tl.to(one("best-ask"), { opacity: 1, duration: 0.3 }, 33.0);
-	word(one("nbbo-1"), 33.3);
-	d.swap(heads[8], heads[9], 35.0);
-	// The best ask's size runs out, and that venue drops out of the NBBO.
+	d.swap(heads[7], heads[8], 33.8);
+	d.lock(one<SVGGraphicsElement>("best-bid"), 34.2);
+	d.lock(one<SVGGraphicsElement>("best-ask"), 34.4);
+	word(one("nbbo-1"), 34.7);
+	d.swap(heads[8], heads[9], 36.8);
+	// C's last contracts trade: its size runs out, they print, and C drops out of the NBBO.
+	const gone = one("carry-gone");
 	d.count(
 		one(`va-${BEST.ask.venue}`),
 		0,
-		35.2,
-		(v) => `${usd(BEST.ask.price)} × ${Math.round(v)}`,
-		BEST.ask.size,
+		37.2,
+		(v) =>
+			Math.round(v) > 0 ? `${usd(BEST.ask.price)} × ${Math.round(v)}` : "—",
+		LEFT,
 		0.5,
 	);
-	tl.to(one("best-ask"), { opacity: 0, duration: 0.3 }, 35.7);
-	tl.to(one(`venue-${BEST.ask.venue}`), { opacity: 0.4, duration: 0.3 }, 35.7);
-	tl.to(one("next-ask"), { opacity: 1, duration: 0.3 }, 35.9);
-	d.flip(one("nbbo-1"), one("nbbo-2"), 35.9);
-	tl.set(one("nbbo-1"), { opacity: 0 }, 36.2);
-	// Cut: the claim.
-	hide([heads[9], ...kids("venues"), one("nbbo-2")], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	tl.fromTo(
+		gone,
+		{ opacity: 0, y: -text * 0.8 },
+		{ opacity: 1, y: 0, duration: 0.2 },
+		37.2,
+	);
+	show(kids("strip")[0], 37.6);
+	d.carry(
+		gone as SVGGraphicsElement,
+		one<SVGGraphicsElement>("pr-gone"),
+		37.4,
+		0.8,
+	);
+	tl.to(one("best-ask"), { opacity: 0, duration: 0.3 }, 37.7);
+	tl.to(one(`venue-${BEST.ask.venue}`), { opacity: 0.4, duration: 0.3 }, 37.7);
+	d.lock(one<SVGGraphicsElement>("next-ask"), 37.8);
+	d.flip(one("nbbo-1"), one("nbbo-2"), 37.8);
+	tl.set(one("nbbo-1"), { opacity: 0 }, 38.1);
+
+	// ——— claim ———
+	tl.addLabel("claim", 39.8);
+	hide([heads[9], ...kids("venues"), one("nbbo-2"), ...kids("strip")], 39.8);
+	word(one("z-big"), 40.1);
+	show(one("z-sub"), 40.5);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 44);
+	hide(kids("claim"), 44.0);
+	d.close(44.0);
 	return tl;
 }
 
 export const quotesOrdersTradesFilm: Film = {
 	id: "quotes-orders-trades",
 	label: [
-		`Quotes, orders and trades, as a short film: the Oct 18 105 call at bid ${usd(BID.price)}, ask ${usd(ASK.price)} and last ${usd(oct105CallLast.price)}, and what a market buy pays; the book's offers, a ${price(MID)} midpoint nobody traded at, a last price that is history, and the buy that takes the ${usd(ASK.price)} ask and prints; an order added and cancelled with nothing on the tape, then ${TAKEN} contracts taken and printed; and three venues whose best bid and ask form the NBBO, ${usd(BEST.bid.price)} by ${usd(BEST.ask.price)}, until ${BEST.ask.venue}'s offer trades away`,
-		`报价、订单与成交短片：10月18日 105 看涨买价 ${usd(BID.price)}、卖价 ${usd(ASK.price)}、最新成交 ${usd(oct105CallLast.price)}，市价买入要付多少；订单簿上的出价、没人成交过的中间价 ${price(MID)}、属于历史的最新成交价，以及吃掉 ${usd(ASK.price)} 卖价并留下记录的买单；加挂再撤单都不留成交记录，然后 ${TAKEN} 张被吃掉并成交；以及三个场所的最优买卖价组成 NBBO：${usd(BEST.bid.price)} × ${usd(BEST.ask.price)}，直到 ${BEST.ask.venue} 的卖单成交完`,
+		`Quotes, orders and trades, as a short film: the Oct 18 105 call at bid ${usd(BID.price)}, ask ${usd(ASK.price)} and last ${usd(oct105CallLast.price)}, and what a market buy pays; the book's offers, a ${price(MID)} midpoint nobody traded at, a last price that is history, and the buy that takes the ${usd(ASK.price)} ask and prints; an order added and cancelled with nothing on the tape, then ${TAKEN} contracts taken and printed; and the three venues behind the book, whose best bid and ask form the NBBO, ${usd(BEST.bid.price)} by ${usd(BEST.ask.price)}, until ${BEST.ask.venue}'s last ${LEFT} trade and print`,
+		`报价、订单与成交短片：10月18日 105 看涨买价 ${usd(BID.price)}、卖价 ${usd(ASK.price)}、最新成交 ${usd(oct105CallLast.price)}，市价买入要付多少；订单簿上的出价、没人成交过的中间价 ${price(MID)}、属于历史的最新成交价，以及吃掉 ${usd(ASK.price)} 卖价并留下记录的买单；加挂再撤单都不留成交记录，然后 ${TAKEN} 张被吃掉并成交；以及订单簿背后的三个场所，最优买卖价组成 NBBO：${usd(BEST.bid.price)} × ${usd(BEST.ask.price)}，直到 ${BEST.ask.venue} 剩下的 ${LEFT} 张成交并留下记录`,
 	],
 	stage: "dark",
 	shots: [
@@ -734,6 +877,7 @@ export const quotesOrdersTradesFilm: Film = {
 		{ id: "quote", label: ["A quote", "报价"] },
 		{ id: "orders", label: ["Orders", "订单"] },
 		{ id: "venues", label: ["Venues", "场所"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
