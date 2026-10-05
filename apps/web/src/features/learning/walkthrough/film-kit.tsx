@@ -18,6 +18,14 @@ export const clamp = (low: number, value: number, high: number) =>
 	Math.max(low, Math.min(high, value));
 
 /**
+ * Films are written on a 4 s title card: `director.tag` runs at 4 s. Playing, the card lasts
+ * 2 s: `director.close` moves everything after it 2 s earlier, so the question comes in at
+ * 2 s (1 s at the default 2×) and a film runs 2 s shorter than its `end`.
+ */
+const TITLE_END = 4;
+const TITLE_CUT = 2;
+
+/**
  * The frame at a width: 16:9, or a portrait 4:5 on a phone, which has height to spare and
  * no width, with type sized to the frame.
  */
@@ -321,6 +329,63 @@ export function EndCard({
 	);
 }
 
+/**
+ * A softly glowing pen tip for `director.trace`: a bright core inside a wide, faint halo.
+ * Put it in the same group as the line it leads, so they share coordinates.
+ */
+export function PenTip({ name, r = 4 }: { name: string; r?: number }) {
+	const id = useId().replace(/:/g, "");
+	return (
+		<g data-f={name}>
+			<defs>
+				<radialGradient id={`tip-${id}`}>
+					<stop
+						offset="0%"
+						style={{ stopColor: "var(--diagram-accent)", stopOpacity: 0.5 }}
+					/>
+					<stop
+						offset="100%"
+						style={{ stopColor: "var(--diagram-accent)", stopOpacity: 0 }}
+					/>
+				</radialGradient>
+			</defs>
+			<circle r={r * 4} fill={`url(#tip-${id})`} />
+			<circle r={r} className="wt-film-tip" />
+		</g>
+	);
+}
+
+/** Corner brackets around a box, for `director.lock` to snap onto the thing in focus. */
+export function Brackets({
+	name,
+	x,
+	y,
+	width,
+	height,
+	arm = 10,
+	tone,
+}: {
+	name: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	arm?: number;
+	/** The accent by default; a bid or an ask can lock in its own colour. */
+	tone?: "gain" | "loss";
+}) {
+	const r = x + width;
+	const b = y + height;
+	return (
+		<path
+			data-f={name}
+			d={`M${x} ${y + arm}V${y}H${x + arm}M${r - arm} ${y}H${r}V${y + arm}M${r} ${b - arm}V${b}H${r - arm}M${x + arm} ${b}H${x}V${b - arm}`}
+			className="wt-film-lock"
+			data-tone={tone}
+		/>
+	);
+}
+
 type Point = { x: number; y: number };
 type Targets = Element | Element[];
 
@@ -426,6 +491,67 @@ export function createDirector(
 			at,
 		);
 	};
+	/**
+	 * A line draws itself from its start; with a `tip` (see `PenTip`), a glowing pen tip leads
+	 * it and goes out when the line is done. A dashed line gets its dashes back once drawn.
+	 */
+	const trace = (
+		path: SVGPathElement,
+		at: number,
+		{
+			tip,
+			duration = 1,
+			ease = "power1.inOut",
+		}: { tip?: Element; duration?: number; ease?: string } = {},
+	) => {
+		const length = path.getTotalLength();
+		const dash = getComputedStyle(path).strokeDasharray;
+		tl.fromTo(
+			path,
+			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
+			{ opacity: 1, strokeDashoffset: 0, duration, ease },
+			at,
+		);
+		tl.set(path, { strokeDasharray: dash || "none" }, at + duration);
+		if (!tip) return;
+		const pen = { done: 0 };
+		const place = () => {
+			const point = path.getPointAtLength(pen.done * length);
+			gsap.set(tip, { x: point.x, y: point.y });
+		};
+		tl.fromTo(
+			pen,
+			{ done: 0 },
+			{ done: 1, duration, ease, onStart: place, onUpdate: place },
+			at,
+		);
+		tl.fromTo(tip, { opacity: 0 }, { opacity: 1, duration: 0.12 }, at);
+		tl.to(
+			tip,
+			{ opacity: 0, duration: 0.35, ease: "power2.in" },
+			at + duration,
+		);
+	};
+	/** Brackets (see `Brackets`) snap onto the thing in focus: from 1.4× to 1× about their centre. */
+	const lock = (target: SVGGraphicsElement, at: number) => {
+		const box = target.getBBox();
+		tl.fromTo(
+			target,
+			{
+				opacity: 0,
+				scale: 1.4,
+				svgOrigin: `${box.x + box.width / 2} ${box.y + box.height / 2}`,
+			},
+			{ opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" },
+			at,
+		);
+	};
+	/**
+	 * One shape becomes the next. Both paths need the same commands, so every number in one
+	 * has a partner in the other: draw curves through the same knots.
+	 */
+	const morph = (path: Element, d: string, at: number, duration = 0.8) =>
+		tl.to(path, { attr: { d }, duration, ease: "power2.inOut" }, at);
 
 	// The chart lives in [data-f=depth] > [data-f=world]: depth rises and sinks, world is
 	// what the camera moves.
@@ -464,7 +590,7 @@ export function createDirector(
 		tl.fromTo(
 			drift,
 			{ x: 0 },
-			{ x: -width * 0.06, duration: end, ease: "none" },
+			{ x: -width * 0.06, duration: end - TITLE_CUT, ease: "none" },
 			0,
 		);
 
@@ -485,12 +611,12 @@ export function createDirector(
 			one("wipe"),
 			{
 				attr: { width: measured * 1.15 + 12 },
-				duration: 0.9,
+				duration: 0.7,
 				ease: "power3.out",
 			},
-			at + 0.3,
+			at + 0.1,
 		);
-		show(titleSub, at + 1.0);
+		show(titleSub, at + 0.5);
 	};
 	/**
 	 * The name shrinks into the top-right corner, where it stays as the film's tag, clear of
@@ -530,6 +656,8 @@ export function createDirector(
 		show(one("end-why"), at + 0.6);
 		show(one("end-cta"), at + 1.0);
 		tl.to({}, { duration: Math.max(0, end - (at + 1.0)) }, at + 1.0);
+		// The title card plays short: everything after it, labels too, comes in sooner.
+		tl.shiftChildren(-TITLE_CUT, true, TITLE_END - 0.01);
 	};
 
 	return {
@@ -545,6 +673,9 @@ export function createDirector(
 		slam,
 		flip,
 		count,
+		trace,
+		lock,
+		morph,
 		rise,
 		sink,
 		cam,

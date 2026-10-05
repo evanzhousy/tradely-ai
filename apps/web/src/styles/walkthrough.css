@@ -323,6 +323,24 @@
 	stroke-width: 2;
 	stroke-linecap: round;
 }
+/* The core of a pen tip (`PenTip`); its halo is a gradient in the accent. */
+.wt-svg .wt-film-tip {
+	fill: color-mix(in oklab, var(--diagram-accent) 35%, white);
+}
+/* Corner brackets (`Brackets`) that snap onto the thing in focus. */
+.wt-film-lock {
+	fill: none;
+	stroke: var(--diagram-accent);
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.wt-film-lock[data-tone="gain"] {
+	stroke: var(--diagram-gain);
+}
+.wt-film-lock[data-tone="loss"] {
+	stroke: var(--diagram-loss);
+}
 .wt-film-ghost {
 	fill: var(--muted);
 	stroke: var(--muted-foreground);
