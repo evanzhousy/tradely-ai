@@ -6,31 +6,27 @@ import {
 	StrikeGrid,
 	strikeGridHeight,
 } from "../walkthrough/instruments/strike-grid";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage } from "../walkthrough/stage";
 import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { rankContractsFilm } from "./rank-contracts-film";
+import {
+	active,
+	type Candidate,
+	candidates,
+	type ExpiryKey,
+	expiryLabel,
+	MAX,
+	peak,
+	SPOT,
+	STRIKES,
+	total,
+	volume,
+} from "./rank-contracts-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const STRIKES = [95, 100, 105, 110, 115, 120] as const;
-const SPOT = 100.02;
-/**
- * ALFA calls, Monday option volume by expiry and strike. The Oct 18 row matches the tape
- * lessons (the 105/110 spread legs, the 120 call that only arrives on Tuesday).
- */
-const volume = {
-	sep20: [0, 380, 315, 0, 0, 0],
-	oct18: [45, 20, 505, 540, 0, null],
-	nov15: [95, 380, 95, 70, 55, 0],
-} as const satisfies Record<string, readonly (number | null)[]>;
-type ExpiryKey = keyof typeof volume;
-const expiryLabel: Record<ExpiryKey, Copy> = {
-	sep20: ["Sep 20", "9月20日"],
-	oct18: ["Oct 18", "10月18日"],
-	nov15: ["Nov 15", "11月15日"],
-};
-const MAX = 540;
 
 const rowsFor = (locale: Locale): GridRow[] =>
 	(Object.keys(volume) as ExpiryKey[]).map((key) => ({
@@ -38,13 +34,6 @@ const rowsFor = (locale: Locale): GridRow[] =>
 		label: pick(expiryLabel[key], locale),
 		values: volume[key],
 	}));
-
-const total = (key: ExpiryKey) =>
-	volume[key].reduce<number>((sum, value) => sum + (value ?? 0), 0);
-const peak = (key: ExpiryKey) =>
-	Math.max(...volume[key].map((value) => value ?? 0));
-const active = (key: ExpiryKey) =>
-	volume[key].filter((value) => (value ?? 0) > 0).length;
 
 /** The cells each comparison reads: none for totals, each row's peak, then every traded strike. */
 const shapeMarks = (stage: 0 | 1 | 2) =>
@@ -262,50 +251,6 @@ function ShapeView({
 // ——— Scene 3: audit the candidates ———
 
 type AuditState = { applied: number };
-
-type Candidate = {
-	id: string;
-	label: Copy;
-	value: number | null;
-	source: Copy;
-	/** The first audit that removes it, if any. */
-	fails?: "stale" | "scope";
-};
-
-const candidates: readonly Candidate[] = [
-	{
-		id: "nov115",
-		label: ["Nov 15 115 call", "11月15日 115 看涨"],
-		value: 1_400,
-		source: ["Friday's session", "周五时段"],
-		fails: "stale",
-	},
-	{
-		id: "put110",
-		label: ["Oct 18 110 put", "10月18日 110 看跌"],
-		value: 900,
-		source: ["Monday · a put", "周一 · 看跌"],
-		fails: "scope",
-	},
-	{
-		id: "oct110",
-		label: ["Oct 18 110 call", "10月18日 110 看涨"],
-		value: 540,
-		source: ["Monday", "周一"],
-	},
-	{
-		id: "oct105",
-		label: ["Oct 18 105 call", "10月18日 105 看涨"],
-		value: 505,
-		source: ["Monday", "周一"],
-	},
-	{
-		id: "oct120",
-		label: ["Oct 18 120 call", "10月18日 120 看涨"],
-		value: null,
-		source: ["Monday · not delivered", "周一 · 未送达"],
-	},
-];
 
 const AUDIT_ROW = 44;
 
@@ -757,10 +702,11 @@ const scenes = [
 
 export function RankContractsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="rank-contracts"
 			label={["Interactive lesson on contract neighborhoods", "合约邻域互动课"]}
+			film={rankContractsFilm}
 			scenes={scenes}
 		/>
 	);
