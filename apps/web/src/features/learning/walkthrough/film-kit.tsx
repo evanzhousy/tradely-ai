@@ -579,12 +579,17 @@ export function createDirector(
 	) => {
 		const length = path.getTotalLength();
 		const dash = getComputedStyle(path).strokeDasharray;
+		// Dash and gap both the line's length: a single number would be merged into a dashed
+		// line's own pattern ("736px, 4px") and show the line ahead of the pen.
 		tl.fromTo(
 			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration, ease },
+			{ strokeDasharray: `${length} ${length}`, strokeDashoffset: length },
+			{ strokeDashoffset: 0, duration, ease },
 			at,
 		);
+		// Up at once: the dash already hides what isn't drawn. Starting from 0 keeps a round
+		// cap from showing as a dot before the draw.
+		tl.fromTo(path, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
 		tl.set(path, { strokeDasharray: dash || "none" }, at + duration);
 		if (!tip) return;
 		const pen = { done: 0 };

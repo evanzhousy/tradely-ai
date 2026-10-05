@@ -602,6 +602,10 @@
 		transition: none;
 	}
 }
+/* A film is scrubbed: every frame is a function of its timeline, so colour changes too are the timeline's. */
+.wt-film-svg :is(rect, path, circle, text, tspan) {
+	transition: none;
+}
 /* Part of a value not filled in yet: quiet, at the size it will take. */
 .wt-svg .wt-pending {
 	fill: var(--muted-foreground);
