@@ -1,12 +1,5 @@
 import * as m from "motion/react-m";
-import {
-	type Copy,
-	count,
-	oct105CallBlock,
-	oct105CallMessages,
-	pick,
-	usd,
-} from "@/content/world";
+import { type Copy, count, oct105CallBlock, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
@@ -14,10 +7,31 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { textWidth } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { pointInTimeResearchFilm } from "./point-in-time-research-film";
+import {
+	arrivals,
+	BLOCK,
+	BUCKET,
+	best,
+	CORRECTED,
+	CORRECTED_AT,
+	clock,
+	cutoffs,
+	HOLDOUT,
+	history,
+	LOWER,
+	PERCENTILE,
+	REPORTED,
+	SESSIONS,
+	TODAY,
+	tried,
+	weightAt,
+} from "./point-in-time-research-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 
@@ -26,58 +40,6 @@ const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 type Cutoff = 0 | 1 | 2;
 type CutoffState = { cutoff: Cutoff | null };
 type CutoffExplore = { cutoff: Cutoff };
-
-const report = oct105CallMessages.find((message) => message.id === "M5");
-const correction = oct105CallMessages.find((message) => message.id === "M6");
-const REPORTED = report?.price ?? 0;
-const CORRECTED = correction?.price ?? 0;
-const CORRECTED_AT = correction?.received ?? "";
-
-/** Monday's facts in the order they reached the system, each with the time it happened. */
-const arrivals: readonly {
-	id: string;
-	arrived: Copy;
-	fact: Copy;
-	event: Copy;
-}[] = [
-	{
-		id: "t1",
-		arrived: ["Mon 10:12:05.1", "周一 10:12:05.1"],
-		fact: ["T-1: 5 @ $2.00", "T-1：5 张 @ $2.00"],
-		event: ["event 10:12:05.0", "事件 10:12:05.0"],
-	},
-	{
-		id: "t3",
-		arrived: [
-			`Mon ${report?.received ?? ""}`,
-			`周一 ${report?.received ?? ""}`,
-		],
-		fact: [`T-3: 500 @ ${usd(REPORTED)}`, `T-3：500 张 @ ${usd(REPORTED)}`],
-		event: [`event ${oct105CallBlock.time}`, `事件 ${oct105CallBlock.time}`],
-	},
-	{
-		id: "fix",
-		arrived: [`Mon ${CORRECTED_AT}`, `周一 ${CORRECTED_AT}`],
-		fact: [
-			`T-3 corrected to ${usd(CORRECTED)}`,
-			`T-3 更正为 ${usd(CORRECTED)}`,
-		],
-		event: [`event ${oct105CallBlock.time}`, `事件 ${oct105CallBlock.time}`],
-	},
-	{
-		id: "late",
-		arrived: ["Tue 09:00", "周二 09:00"],
-		fact: ["Oct 18 120 call: 30", "10月18日 120 看涨：30"],
-		event: ["event: Monday's session", "事件：周一交易时段"],
-	},
-];
-
-/** Each decision time and the first arrival it can't see yet. */
-const cutoffs: readonly { time: Copy; before: number }[] = [
-	{ time: ["Mon 10:50:01", "周一 10:50:01"], before: 2 },
-	{ time: ["Mon 10:51", "周一 10:51"], before: 3 },
-	{ time: ["Mon 16:05", "周一 16:05"], before: 3 },
-];
 
 const ARRIVAL_TOP = 28;
 const ARRIVAL_ROW = 64;
@@ -273,15 +235,6 @@ function CutoffView({
 type HalfLife = 15 | 30 | 60;
 type DecayState = { minute: number; halfLife: HalfLife };
 
-const BLOCK = oct105CallBlock.quantity;
-const weightAt = (minute: number, halfLife: number) =>
-	BLOCK * 0.5 ** (minute / halfLife);
-/** Minutes after the 10:50 block as a clock time. */
-const clock = (minute: number) => {
-	const total = 10 * 60 + 50 + minute;
-	return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-};
-
 function DecayView({
 	locale,
 	phase,
@@ -439,28 +392,6 @@ function DecayView({
 
 type Reading = 0 | 1 | 2;
 type PercentileState = { reading: Reading };
-
-/** The 105 call's volume against its typical level on each of the last 60 sessions. */
-const history: readonly { from: number; days: number }[] = [
-	{ from: 0, days: 9 },
-	{ from: 0.5, days: 21 },
-	{ from: 1, days: 16 },
-	{ from: 1.5, days: 7 },
-	{ from: 2, days: 3 },
-	{ from: 2.5, days: 2 },
-	{ from: 3, days: 0 },
-	{ from: 3.5, days: 0 },
-	{ from: 4, days: 0 },
-	{ from: 4.5, days: 2 },
-];
-const BUCKET = 0.5;
-/** Monday: 505 contracts against a typical 120. */
-const TODAY = 4.2;
-const SESSIONS = history.reduce((sum, bucket) => sum + bucket.days, 0);
-const LOWER = history
-	.filter((bucket) => bucket.from + BUCKET <= TODAY)
-	.reduce((sum, bucket) => sum + bucket.days, 0);
-const PERCENTILE = Math.round((LOWER / SESSIONS) * 100);
 
 const HIST_TOP = 48;
 const HIST_BOTTOM = 170;
@@ -667,23 +598,6 @@ function PercentileView({
 
 type Search = 0 | 1 | 2;
 type HoldoutState = { search: Search };
-
-/** How often ALFA rose the next day after its call volume topped each threshold, Jan–Jun. */
-const tried: readonly { threshold: number; rose: number }[] = [
-	{ threshold: 1.5, rose: 51 },
-	{ threshold: 2, rose: 53 },
-	{ threshold: 2.5, rose: 49 },
-	{ threshold: 3, rose: 56 },
-	{ threshold: 3.5, rose: 54 },
-	{ threshold: 4, rose: 70 },
-	{ threshold: 4.5, rose: 58 },
-	{ threshold: 5, rose: 50 },
-	{ threshold: 5.5, rose: 47 },
-	{ threshold: 6, rose: 55 },
-];
-const best = tried.reduce((a, b) => (b.rose > a.rose ? b : a));
-/** The frozen rule, run once on July and August. */
-const HOLDOUT = 52;
 
 const SEARCH_TOP = 40;
 const SEARCH_BOTTOM = 170;
@@ -1241,13 +1155,14 @@ const scenes = [
 
 export function PointInTimeResearchWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="point-in-time-research"
 			label={[
 				"Interactive lesson on testing without hindsight",
 				"无后见之明的检验互动课",
 			]}
+			film={pointInTimeResearchFilm}
 			scenes={scenes}
 		/>
 	);
