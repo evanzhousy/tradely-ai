@@ -1,10 +1,4 @@
-import {
-	type Copy,
-	count,
-	mondayUniverse,
-	pick,
-	signedCount,
-} from "@/content/world";
+import { type Copy, count, pick, signedCount } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
 import {
@@ -13,29 +7,25 @@ import {
 	type RankItem,
 	rankBumpHeight,
 } from "../walkthrough/instruments/rank-bump";
+import { Player } from "../walkthrough/player";
 import { Stage } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { rankSymbolsFilm } from "./rank-symbols-film";
+import {
+	byDesc,
+	FLOOR,
+	MOVERS,
+	oiChange,
+	PEERS,
+	type Peer,
+	ratio,
+	tuesday,
+	typical,
+	volumeOf,
+} from "./rank-symbols-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-const FLOOR = 500;
-const volumeOf = (symbol: string) =>
-	mondayUniverse.find((row) => row.symbol === symbol)?.optionVolume ?? 0;
-
-/** Each stock's typical (20-day average) daily option volume. */
-const typical: Record<string, number> = {
-	CRUX: 6_000,
-	ALFA: 1_200,
-	DUNE: 300,
-	GLYN: 150,
-};
-const PEERS = ["CRUX", "ALFA", "DUNE", "GLYN"] as const;
-type Peer = (typeof PEERS)[number];
-
-const ratio = (value: number) => `${value.toFixed(value < 1 ? 2 : 1)}×`;
-const byDesc = <T,>(rows: readonly T[], score: (row: T) => number) =>
-	[...rows].sort((a, b) => score(b) - score(a));
 
 // ——— Scene 1: raw size or relative activity ———
 
@@ -178,9 +168,6 @@ function MetricView({
 /** `signs`: show which way each change went; `both`: add the signed order beside it. */
 type SignedState = { signs: boolean; both: boolean };
 
-/** Monday's change in whole-symbol open interest, published Tuesday morning. */
-const oiChange: Record<string, number> = { ALFA: 380, DUNE: 150, CRUX: -900 };
-
 function signedColumns(state: SignedState, locale: Locale): RankColumn[] {
 	const t = tr(locale);
 	const symbols = Object.keys(oiChange);
@@ -292,14 +279,6 @@ function SignedView({
 // ——— Scene 3: a rank can move without you ———
 
 type MoveState = { stage: 0 | 1 | 2 };
-
-/** Tuesday's option volume: ALFA is unchanged, its peers are not. */
-const tuesday: Record<string, number> = {
-	CRUX: 1_900,
-	ALFA: 2_400,
-	DUNE: 1_100,
-};
-const MOVERS = ["CRUX", "ALFA", "DUNE"];
 
 function moveColumns(state: MoveState, locale: Locale): RankColumn[] {
 	const t = tr(locale);
@@ -671,10 +650,11 @@ const scenes = [
 
 export function RankSymbolsWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="rank-symbols"
 			label={["Interactive lesson on rankings", "排名互动课"]}
+			film={rankSymbolsFilm}
 			scenes={scenes}
 		/>
 	);
