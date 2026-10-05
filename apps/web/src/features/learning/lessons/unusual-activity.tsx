@@ -3,7 +3,6 @@ import {
 	type Copy,
 	count,
 	mondayActivity,
-	oct105CallBlock,
 	oct105CallLast,
 	pick,
 	typicalVolumeProfile,
@@ -16,20 +15,25 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
+import { Player } from "../walkthrough/player";
 import { Appear, Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
-import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
+import { SceneFrame } from "../walkthrough/walkthrough";
+import { unusualActivityFilm } from "./unusual-activity-film";
+import {
+	type ActivityId,
+	ALL,
+	BLOCK_MINUTE,
+	byId,
+	CALL_105,
+	clock,
+	ratio,
+	T1_MINUTE,
+	todayBy,
+	typicalBy,
+} from "./unusual-activity-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
-
-type ActivityId = (typeof mondayActivity)[number]["id"];
-const byId = (id: ActivityId) =>
-	mondayActivity.find(
-		(row) => row.id === id,
-	) as (typeof mondayActivity)[number];
-
-/** "4.2×", or "0.42×" below one so small ratios keep two digits. */
-const ratio = (value: number) => `${value.toFixed(value < 1 ? 2 : 1)}×`;
 
 // ——— Scene 1: the denominator decides ———
 
@@ -221,36 +225,6 @@ function DenominatorView({
 // ——— Scene 2: compare the same window ———
 
 type WindowState = { minute: number | null };
-
-const CALL_105 = byId("oct18-105");
-const minutesAfterOpen = (time: string) => {
-	const [hour, minute] = time.split(":").map(Number);
-	return hour * 60 + minute - 570;
-};
-const T1_MINUTE = minutesAfterOpen(oct105CallLast.time);
-const BLOCK_MINUTE = minutesAfterOpen(oct105CallBlock.time.slice(0, 5));
-
-function typicalBy(minute: number) {
-	const points = typicalVolumeProfile;
-	for (let i = 1; i < points.length; i++) {
-		const [x0, y0] = points[i - 1];
-		const [x1, y1] = points[i];
-		if (minute <= x1)
-			return CALL_105.typical * (y0 + ((minute - x0) / (x1 - x0)) * (y1 - y0));
-	}
-	return CALL_105.typical;
-}
-
-function todayBy(minute: number) {
-	if (minute >= BLOCK_MINUTE) return CALL_105.volume;
-	if (minute >= T1_MINUTE) return oct105CallLast.size;
-	return 0;
-}
-
-const clock = (minute: number) => {
-	const total = 570 + minute;
-	return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-};
 
 function WindowView({
 	locale,
@@ -634,8 +608,6 @@ function ScreenView({
 
 // ——— Lesson ———
 
-const ALL: readonly ActivityId[] = mondayActivity.map((row) => row.id);
-
 const scenes = [
 	defineScene<DenominatorState, DenominatorState>({
 		id: "denominator",
@@ -892,10 +864,11 @@ const scenes = [
 
 export function UnusualActivityWalkthrough({ locale }: { locale: Locale }) {
 	return (
-		<Walkthrough
+		<Player
 			locale={locale}
 			id="unusual-activity"
 			label={["Interactive lesson on unusual activity", "异常活动互动课"]}
+			film={unusualActivityFilm}
 			scenes={scenes}
 		/>
 	);
