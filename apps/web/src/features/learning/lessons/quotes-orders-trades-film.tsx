@@ -509,7 +509,7 @@ function Scene({
 				<g key={name} data-f={name}>
 					<text
 						x={W / 2}
-						y={L.venueY + L.venueH + H * 0.08}
+						y={L.venueY + L.venueH + H * (narrow ? 0.15 : 0.08)}
 						textAnchor="middle"
 						className="wt-film-tag"
 						style={{ fontSize: T.small }}
@@ -518,7 +518,7 @@ function Scene({
 					</text>
 					<text
 						x={W / 2}
-						y={L.venueY + L.venueH + H * 0.08 + T.num * 1.3}
+						y={L.venueY + L.venueH + H * (narrow ? 0.15 : 0.08) + T.num * 1.3}
 						textAnchor="middle"
 						className="wt-film-num wt-film-accent"
 						style={{ fontSize: T.num }}
@@ -541,11 +541,12 @@ function Scene({
 			>
 				{`${LEFT} @ ${usd(BEST.ask.price)}`}
 			</text>
+			{/* The tape strip sits right under C, so its last contracts drop a short way, clear of the NBBO. */}
 			<g data-f="strip">
 				<text
-					x={W / 2}
-					y={L.venueY + L.venueH + H * 0.08 + T.num * 1.3 + T.small * 3.2}
-					textAnchor="middle"
+					x={margin + room}
+					y={L.venueY + L.venueH + T.small * 1.7}
+					textAnchor="end"
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -553,16 +554,9 @@ function Scene({
 				</text>
 				<text
 					data-f="pr-gone"
-					x={W / 2}
-					y={
-						L.venueY +
-						L.venueH +
-						H * 0.08 +
-						T.num * 1.3 +
-						T.small * 3.2 +
-						text * 1.6
-					}
-					textAnchor="middle"
+					x={margin + room}
+					y={L.venueY + L.venueH + T.small * 1.7 + text * 1.5}
+					textAnchor="end"
 					className="wt-film-num wt-film-accent"
 					style={{ fontSize: text }}
 				>
@@ -838,7 +832,8 @@ function build(context: FilmContext) {
 		{ opacity: 1, y: 0, duration: 0.2 },
 		37.2,
 	);
-	show(kids("strip")[0], 37.6);
+	// The strip's label comes in as the print lands under it.
+	show(kids("strip")[0], 38.1);
 	d.carry(
 		gone as SVGGraphicsElement,
 		one<SVGGraphicsElement>("pr-gone"),
