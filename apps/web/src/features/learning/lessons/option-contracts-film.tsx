@@ -31,13 +31,13 @@ import {
  *   open      0–4        "Option contracts"
  *   question  4–8.8      Oct 18 100 call, Nov 15 100 call: the same contract?
  *   symbol    8.8–17.2   ALFA · 301018 · C · 00100000; Nov 15 changes it
- *   units     17.2–31.3  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000
- *   time      31.3–35.7  10:30 $4.20; 15:59 $4.90
- *   claim     35.7–40    name the contract, count the shares, stamp the time
- *   next      40–42.5    Next: holders and writers
+ *   units     17.2–31.8  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000
+ *   time      31.8–36.2  10:30 $4.20; 15:59 $4.90
+ *   claim     36.2–40.5  name the contract, count the shares, stamp the time
+ *   next      40.5–43    Next: holders and writers
  */
 
-const END = 42.5;
+const END = 43;
 const PARTS = ["root", "date", "right", "strike"] as const;
 const OCT = symbolParts(call100);
 const NOV = symbolParts({ ...call100, expiry: "nov15" });
@@ -100,25 +100,20 @@ const copy = {
 		"再加上产品条款：每张 100 股，以交付股票结算。",
 	],
 	unitHead: [
-		"$4.20 a share; a contract is 100 shares.",
-		"每股 $4.20；一张合约是 100 股。",
+		"Quotes are per share; contracts, 100.",
+		"报价按每股计；一张合约 100 股。",
 	],
-	unitHeadShort: ["$4.20 a share, 100 shares.", "每股 $4.20，100 股。"],
+	unitHeadShort: ["Per share; 100 a contract.", "按每股；一张 100 股。"],
 	threeHead: [
-		`Three contracts: ${usd(THREE * ASK * 100, 0)} of premium.`,
-		`三张合约：权利金 ${usd(THREE * ASK * 100, 0)}。`,
+		"Three contracts, three times the premium.",
+		"三张合约，三倍权利金。",
 	],
-	threeHeadShort: [
-		`Three: ${usd(THREE * ASK * 100, 0)}.`,
-		`三张：${usd(THREE * ASK * 100, 0)}。`,
-	],
-	notionalHead: [
-		`Those ${count(THREE * 100)} shares are worth ${usd(THREE * 100 * SPOT * 100, 0)}.`,
-		`这 ${count(THREE * 100)} 股价值 ${usd(THREE * 100 * SPOT * 100, 0)}。`,
-	],
-	notionalHeadShort: [
-		`Notional: ${usd(THREE * 100 * SPOT * 100, 0)}.`,
-		`名义价值：${usd(THREE * 100 * SPOT * 100, 0)}。`,
+	threeHeadShort: ["Three contracts: three times.", "三张：三倍。"],
+	notionalHead: ["And the shares behind them?", "那背后的股票呢？"],
+	notionalHeadShort: ["And the shares behind?", "背后的股票呢？"],
+	notionalHead2: [
+		`Worth ${usd(THREE * 100 * SPOT * 100, 0)}.`,
+		`价值 ${usd(THREE * 100 * SPOT * 100, 0)}。`,
 	],
 	premium: ["premium", "权利金"],
 	notional: ["notional · not what you pay", "名义价值 · 不是你付的钱"],
@@ -302,6 +297,25 @@ function Scene({
 			{headline("u-head", copy.unitHead, copy.unitHeadShort)}
 			{headline("t-head", copy.threeHead, copy.threeHeadShort)}
 			{headline("v-head", copy.notionalHead, copy.notionalHeadShort)}
+			{/* The answer, a line under the question, as the brackets lock on the count. */}
+			<Lines
+				name="v2-head"
+				text={t(copy.notionalHead2)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.notionalHeadShort : copy.notionalHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="units">
 				{[0, 1, 2].map((i) => (
 					<g key={`b-${i + 1}`} data-f={`block-${i}`}>
@@ -478,6 +492,7 @@ function build(context: FilmContext) {
 		"t-head",
 		"v-head",
 		"o-head",
+		"v2-head",
 	].map((name) => one(name));
 
 	d.hidden([
@@ -582,34 +597,36 @@ function build(context: FilmContext) {
 	});
 	d.lock(g("lock-notional"), 28.3, { around: g("f-notional"), pad: 8 });
 	tl.addLabel("hero-lock", 28.3);
+	show(heads[6], 28.3);
 
 	// ——— time: a price is an observation ———
-	tl.addLabel("time", 31.3);
+	tl.addLabel("time", 31.8);
 	hide(
 		[
 			heads[4],
+			heads[6],
 			...blocks,
 			one("u-shares-3"),
 			one("f-three"),
 			one("f-notional"),
 			g("lock-notional"),
 		],
-		31.3,
+		31.8,
 	);
-	show(heads[5], 31.5);
-	show(one("obs-morning"), 31.9);
-	show(one("obs-close"), 32.9);
+	show(heads[5], 32);
+	show(one("obs-morning"), 32.4);
+	show(one("obs-close"), 33.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 35.7);
-	hide([heads[5], one("obs-morning"), one("obs-close")], 35.7);
-	word(one("z-big"), 36);
-	show(one("z-sub"), 36.4);
+	tl.addLabel("claim", 36.2);
+	hide([heads[5], one("obs-morning"), one("obs-close")], 36.2);
+	word(one("z-big"), 36.5);
+	show(one("z-sub"), 36.9);
 
 	// ——— next ———
-	tl.addLabel("next", 40);
-	hide(kids("claim"), 40);
-	d.close(40);
+	tl.addLabel("next", 40.5);
+	hide(kids("claim"), 40.5);
+	d.close(40.5);
 	return tl;
 }
 
