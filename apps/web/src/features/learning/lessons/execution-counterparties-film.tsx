@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -22,20 +23,22 @@ import {
 
 /*
  * Counterparties, as a film. Ben offers 10 Oct 18 100 calls at $4.10 and you buy all 10:
- * does the day's volume rise by 10 or by 20? The book answers: Ben's offer was resting,
- * your market buy arrived and took it, and the one trade prints once, volume +10. Then a
- * limit: 30 contracts at most $4.15 takes 10 at $4.10 and 12 at $4.15, and the last 8 wait
- * as your bid. Last, the tape: a market buy and a $4.10 limit print the same line.
+ * does the day's volume rise by 10 or by 20? The book answers: Ben's offer rests, your
+ * market buy arrives and takes it, and the one trade prints once, volume +10. The hero is a
+ * limit: buy 30 at most $4.15. It takes 10 at $4.10, then 12 at $4.15, and the last 8 drop
+ * into the bids as your bid, where glowing brackets lock. Last, the tape: a market buy and a
+ * $4.10 limit print the same line.
  *
- *   open      0–4      "Counterparties"
- *   question  4–9.5    Ben offers 10 at $4.10, you buy them: volume +10 or +20?
- *   match     9.5–20   resting; incoming; one trade, one print, volume +10
- *   limit     20–30.5  buy 30, limit $4.15; 10 and 12 fill; 8 rest as your bid
- *   print     30.5–39.5 the tape; record A, market; record B, limit; cut: the claim
- *   next      39.5–42  Next: execution side
+ *   open      0–4        "Counterparties"
+ *   question  4–8.8      Ben offers 10 at $4.10, you buy them: volume +10 or +20?
+ *   match     8.8–18.2   resting; incoming; one trade, one print, volume +10
+ *   limit     18.2–27.6  hero: buy 30, limit $4.15; 10 and 12 fill; 8 rest as your bid
+ *   print     27.6–31.6  record A, market; record B, limit; one line on the tape
+ *   claim     31.6–36    one trade, two sides, one print
+ *   next      36–38.5    Next: execution side
  */
 
-const END = 42;
+const END = 38.5;
 /** Asks from the top of the book down to the best, as a ladder reads. */
 const LADDER = [...ASKS].reverse();
 const BEST = ASKS[0];
@@ -113,54 +116,21 @@ const copy = {
 		`Volume +${BEST.size} or +${BEST.size * 2}?`,
 		`成交量 +${BEST.size} 还是 +${BEST.size * 2}？`,
 	],
-	restHead: [
-		`Ben offers ${count(BEST.size)} at ${usd(BEST.price)} and waits: a resting order.`,
-		`Ben 以 ${usd(BEST.price)} 挂出 ${count(BEST.size)} 张并等待：这是挂单。`,
-	],
-	restHeadShort: ["Ben's offer rests.", "Ben 的卖单在等待。"],
-	inHead: [
-		"Your market buy arrives and takes the best offer now: you're the aggressor.",
-		"你的市价买单到达，立即吃掉最优卖价：你是主动方。",
-	],
-	inHeadShort: ["Your buy takes it.", "你的买单吃掉它。"],
+	restHead: ["Ben's offer rests in the book.", "Ben 的卖单挂在订单簿里。"],
+	inHead: ["Your market buy takes it.", "你的市价买单吃掉了它。"],
 	oneHead: [
-		`One trade: you buy ${count(BEST.size)}, Ben sells ${count(BEST.size)}. One print, volume +${BEST.size}.`,
-		`一笔成交：你买 ${count(BEST.size)} 张，Ben 卖 ${count(BEST.size)} 张。一条记录，成交量 +${BEST.size}。`,
+		`One trade: volume +${BEST.size}.`,
+		`一笔成交：成交量 +${BEST.size}。`,
 	],
-	oneHeadShort: [`One trade: +${BEST.size}.`, `一笔成交：+${BEST.size}。`],
 	limHead: [
-		`Suppose instead: buy ${SIZE}, and pay at most ${usd(LIMIT)}.`,
-		`换个情况：买 ${SIZE} 张，最多付 ${usd(LIMIT)}。`,
+		`Now buy ${SIZE}, at most ${usd(LIMIT)}.`,
+		`换成买 ${SIZE} 张，最多付 ${usd(LIMIT)}。`,
 	],
-	limHeadShort: [
-		`Buy ${SIZE}, limit ${usd(LIMIT)}.`,
-		`买 ${SIZE} 张，限价 ${usd(LIMIT)}。`,
-	],
-	fillHead: [
-		`Best price first: ${count(TAKEN[0].size)} at ${usd(TAKEN[0].price)}, then all ${TAKEN[1].size} at ${usd(TAKEN[1].price)}.`,
-		`价格优先：先吃 ${usd(TAKEN[0].price)} 的 ${count(TAKEN[0].size)} 张，再吃 ${usd(TAKEN[1].price)} 的全部 ${TAKEN[1].size} 张。`,
-	],
-	fillHeadShort: ["Best price first.", "价格优先。"],
 	restsHead: [
-		`Nothing is left at ${usd(LIMIT)} or less: the last ${RESTS} wait as your bid.`,
-		`${usd(LIMIT)} 及以下已无卖单：最后 ${RESTS} 张作为你的买单等待。`,
+		`The last ${RESTS} wait as your bid.`,
+		`最后 ${RESTS} 张作为你的买单等待。`,
 	],
-	restsHeadShort: [`The last ${RESTS} wait.`, `最后 ${RESTS} 张等待。`],
-	tapeHead: [
-		`The tape shows ${count(T1.quantity)} at ${usd(T1.price)}, ${T1.time}: no order type.`,
-		`成交记录：${T1.time}，${usd(T1.price)} 成交 ${count(T1.quantity)} 张，没有订单类型。`,
-	],
-	tapeHeadShort: ["The tape: no order type.", "成交记录：无订单类型。"],
-	aHead: [
-		`A market buy of ${T1.quantity} prints this line.`,
-		`市价买入 ${T1.quantity} 张会产生这条记录。`,
-	],
-	aHeadShort: ["A market buy prints it.", "市价单会产生它。"],
-	bHead: [
-		`So does a buy limit at ${usd(T1.price)}: the tape can't tell them apart.`,
-		`${usd(T1.price)} 的买入限价单也一样：成交记录无法区分。`,
-	],
-	bHeadShort: ["So does a limit.", "限价单也一样。"],
+	tapeHead: ["Either order prints the same line.", "两种订单打出同一条记录。"],
 	ask: ["ask", "卖单"],
 	bid: ["bid", "买单"],
 	ben: ["Ben", "Ben"],
@@ -184,10 +154,7 @@ const copy = {
 	publicTape: ["public tape", "公开成交记录"],
 	printSub: ["price, size, time", "价格、数量、时间"],
 	claimBig: ["One trade, two sides, one print.", "一笔成交，两方，一条记录。"],
-	claimSub: [
-		"The incoming order takes and the resting one waits. A limit caps the price, never the size, and the tape shows neither order.",
-		"主动订单成交，挂单等待。限价只限制价格，不能创造数量；成交记录也不显示任何一方的订单。",
-	],
+	claimSub: ["The tape never shows the orders.", "成交记录从不显示订单。"],
 	nextBig: ["Next: execution side", "下一课：成交位置"],
 	nextSub: ["where a trade printed against the quote", "成交价相对报价的位置"],
 } as const satisfies Record<string, Copy>;
@@ -204,10 +171,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -374,12 +341,39 @@ function Scene({
 			</g>
 
 			{/* The book. */}
-			{headline("r-head", copy.restHead, copy.restHeadShort)}
-			{headline("i-head", copy.inHead, copy.inHeadShort)}
-			{headline("o-head", copy.oneHead, copy.oneHeadShort)}
-			{headline("l-head", copy.limHead, copy.limHeadShort)}
-			{headline("f-head", copy.fillHead, copy.fillHeadShort)}
-			{headline("s-head", copy.restsHead, copy.restsHeadShort)}
+			{headline("r-head", copy.restHead)}
+			{headline("i-head", copy.inHead)}
+			{/* The answer, a line under the buy, as the volume counts once. */}
+			<Lines
+				name="o-head"
+				text={t(copy.oneHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.inHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("l-head", copy.limHead)}
+			{/* The hero's answer, as the rest drops into the bids. */}
+			<Lines
+				name="l2-head"
+				text={t(copy.restsHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.limHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="frame">
 				<text
 					x={margin}
@@ -389,8 +383,9 @@ function Scene({
 				>
 					{t(copy.ask).toUpperCase()}
 				</text>
+				{/* The spread, open where an incoming order waits. */}
 				<path
-					d={`M${margin} ${L.chipY + L.rowH / 2}H${margin + L.bookW}`}
+					d={`M${margin} ${L.chipY + L.rowH / 2}H${L.chipRight - L.chipW(true) - 8}M${L.chipRight + 8} ${L.chipY + L.rowH / 2}H${margin + L.bookW}`}
 					className="wt-film-link"
 				/>
 				<text
@@ -410,6 +405,7 @@ function Scene({
 			</g>
 			{level("mine", "bid", L.bidY(0), { price: LIMIT, size: RESTS })}
 			{owner("ben", L.askY(LADDER.length - 1), BEST.size, copy.ben)}
+			<Brackets name="lock-mine" glow />
 			{owner("yours", L.bidY(0), RESTS, copy.yours)}
 			{chip("chip-m", t(copy.chipMarket), false)}
 			{chip("chip-l", limitChip(t(copy.buy), SIZE), true)}
@@ -477,9 +473,7 @@ function Scene({
 			))}
 
 			{/* Two records, one print. */}
-			{headline("t-head", copy.tapeHead, copy.tapeHeadShort)}
-			{headline("a-head", copy.aHead, copy.aHeadShort)}
-			{headline("b-head", copy.bHead, copy.bHeadShort)}
+			{headline("t-head", copy.tapeHead)}
 			{(
 				[
 					[copy.recordA, copy.market],
@@ -582,25 +576,16 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	const g = (name: string) => one<SVGGraphicsElement>(name);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const width = (n: number) => (n / MAX) * L.barMax;
-	/** A line draws itself from its start, then takes back its own dashes, if any. */
-	const draw = (path: SVGPathElement, time: number, dash?: string) => {
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration: 0.5, ease: "power2.out" },
-			time,
-		);
-		if (dash) tl.set(path, { strokeDasharray: dash }, time + 0.5);
-	};
 	/** A level's size runs to `to`: its bar and its number together. */
 	const sizeTo = (name: string, to: number, from: number, time: number) => {
 		tl.to(
@@ -629,11 +614,8 @@ function build(context: FilmContext) {
 		"i-head",
 		"o-head",
 		"l-head",
-		"f-head",
-		"s-head",
+		"l2-head",
 		"t-head",
-		"a-head",
-		"b-head",
 	].map((name) => one(name));
 	const bestRow = LADDER.length - 1;
 	const best = `a${BEST.price}`;
@@ -659,6 +641,7 @@ function build(context: FilmContext) {
 		one("rest"),
 		one("role-b"),
 		one("role-s"),
+		g("lock-mine"),
 		one("card-0"),
 		one("card-1"),
 		one("wire-0"),
@@ -676,41 +659,42 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.0);
-	word(one("q-big"), 6.4);
+	word(one("q-big"), 6.2);
 
-	// ——— match: resting, incoming, one trade ———
-	tl.addLabel("match", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show(kids("frame"), 10.0);
+	// ——— match: Ben's offer rests; your market buy takes it; one trade ———
+	tl.addLabel("match", 8.8);
+	hide(flat("q"), 8.8);
+	show(heads[0], 9.0);
+	show(kids("frame"), 9.2);
 	[...asks, ...bids].forEach((lv, i) => {
-		show(lv, 10.1 + i * 0.08, "right");
+		show(lv, 9.3 + i * 0.08, "right");
 	});
-	d.pop(one("ben"), 10.9);
-	show(kids("tape"), 11.0);
-	show(one("vol"), 11.2);
-	d.swap(heads[0], heads[1], 12.2);
-	d.pop(one("chip-m"), 12.7);
-	ride("chip-m", bestRow, 13.5);
-	d.swap(heads[1], heads[2], 15.0);
-	hide([one("chip-m"), one("ben")], 15.3, 0.3);
-	sizeTo(best, 0, BEST.size, 15.4);
-	d.flip(one("tape-empty"), one("tape-print"), 15.6);
-	tl.set(one("tape-empty"), { opacity: 0 }, 15.9);
+	show(one("ben"), 10.0, "right");
+	show(kids("tape"), 10.2);
+	show(one("vol"), 10.4);
+	d.swap(heads[0], heads[1], 12.6);
+	d.pop(one("chip-m"), 13.2);
+	ride("chip-m", bestRow, 13.6);
+	// It takes the offer: the size drains, the print lands, the volume counts once.
+	hide([one("chip-m"), one("ben")], 14.15, 0.3);
+	sizeTo(best, 0, BEST.size, 14.2);
+	d.flip(one("tape-empty"), one("tape-print"), 14.3);
+	tl.set(one("tape-empty"), { opacity: 0 }, 14.6);
 	d.count(
 		one<SVGTextElement>("vol-n"),
 		BEST.size,
-		15.8,
+		14.5,
 		(v) => count(Math.round(v)),
 		0,
 		0.6,
 	);
-	show(one("role-b"), 16.6);
-	show(one("role-s"), 16.9);
+	show(heads[2], 14.6);
+	show(one("role-b"), 15.2);
+	show(one("role-s"), 15.5);
 
-	// ——— limit: the price is capped, the size is not created ———
-	tl.addLabel("limit", 20);
-	d.swap(heads[2], heads[3], 20.0);
+	// ——— limit: the hero. Buy 30, at most $4.15: best price first, and the rest waits. ———
+	tl.addLabel("limit", 18.2);
+	d.swap([heads[1], heads[2]], heads[3], 18.2);
 	hide(
 		[
 			...kids("tape"),
@@ -719,100 +703,103 @@ function build(context: FilmContext) {
 			one("role-b"),
 			one("role-s"),
 		],
-		20.0,
+		18.2,
 	);
 	// The same book as before the trade.
-	sizeTo(best, BEST.size, 0, 20.2);
-	draw(one<SVGPathElement>("limit"), 20.8, "5 4");
+	sizeTo(best, BEST.size, 0, 18.4);
+	tl.set(one("chip-m"), { y: 0 }, 18.2);
+	d.pop(one("chip-l"), 18.6);
+	d.trace(one<SVGPathElement>("limit"), 18.9, { duration: 0.6 });
 	// Above the limit: out of reach.
-	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 21.0);
-	tl.set(one("chip-m"), { y: 0 }, 20.0);
-	d.pop(one("chip-l"), 21.2);
-	show(one("fill"), 21.4);
-	d.swap(heads[3], heads[4], 22.8);
-	ride("chip-l", bestRow, 23.2);
-	sizeTo(best, 0, BEST.size, 23.7);
+	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 19.3);
+	show(one("fill"), 19.4);
+	ride("chip-l", bestRow, 20.2);
+	sizeTo(best, 0, BEST.size, 20.7);
 	const chipText = one<SVGTextElement>("chip-l-text");
 	const chipLabel = (n: number) =>
 		limitChip(pick(copy.buy, context.locale), Math.round(n));
-	d.count(chipText, SIZE - FIRST, 23.7, chipLabel, SIZE, 0.5);
+	d.count(chipText, SIZE - FIRST, 20.7, chipLabel, SIZE, 0.5);
 	d.count(
 		one<SVGTextElement>("fill-n"),
 		FIRST,
-		23.7,
+		20.7,
 		(v) => `${Math.round(v)} / ${SIZE}`,
 		0,
 		0.5,
 	);
-	ride("chip-l", bestRow - 1, 24.6);
-	sizeTo(second, 0, TAKEN[1].size, 25.1);
-	d.count(chipText, RESTS, 25.1, chipLabel, SIZE - FIRST, 0.5);
+	ride("chip-l", bestRow - 1, 21.5);
+	sizeTo(second, 0, TAKEN[1].size, 22.0);
+	d.count(chipText, RESTS, 22.0, chipLabel, SIZE - FIRST, 0.5);
 	d.count(
 		one<SVGTextElement>("fill-n"),
 		DONE.filled,
-		25.1,
+		22.0,
 		(v) => `${Math.round(v)} / ${SIZE}`,
 		FIRST,
 		0.5,
 	);
-	d.swap(heads[4], heads[5], 26.6);
 	tl.to(
 		[one(`lv-${best}`), one(`lv-${second}`)],
 		{ opacity: 0.3, duration: 0.4 },
-		27.0,
+		22.8,
 	);
 	// The rest drops into the bids as the new best bid, and the old ones step down.
-	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 27.1);
+	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 22.9);
 	tl.to(
 		one("chip-l"),
 		{ y: L.bidY(0) - L.chipY, opacity: 0, duration: 0.5, ease: "power2.inOut" },
-		27.1,
+		22.9,
 	);
-	show(one("lv-mine"), 27.5, "right");
-	d.pop(one("yours"), 27.8);
-	show(one("rest"), 28.0);
+	show(one("lv-mine"), 23.3, "right");
+	show(one("yours"), 23.6, "right");
+	show(one("rest"), 23.7);
+	d.lock(g("lock-mine"), 24.0, { around: one("lv-mine"), pad: 5 });
+	tl.addLabel("hero-lock", 24.0);
+	show(heads[4], 24.0);
 
-	// ——— print: two records, one line ———
-	tl.addLabel("print", 30.5);
+	// ——— print: two orders, one line on the tape ———
+	tl.addLabel("print", 27.6);
 	hide(
 		[
-			heads[5],
+			heads[3],
+			heads[4],
 			...book,
 			one("lv-mine"),
 			one("yours"),
 			one("limit"),
 			one("fill"),
 			one("rest"),
+			g("lock-mine"),
 		],
-		30.5,
+		27.6,
 	);
-	show(heads[6], 30.7, "above");
-	show(one("print"), 31.0);
-	d.swap(heads[6], heads[7], 32.6);
-	show(one("card-0"), 33.0);
-	draw(one<SVGPathElement>("wire-0"), 33.4);
-	d.swap(heads[7], heads[8], 34.6);
-	show(one("card-1"), 35.0);
-	draw(one<SVGPathElement>("wire-1"), 35.4);
-	// Cut: the claim.
+	show(heads[5], 27.95);
+	show(one("print"), 28.2);
+	show(one("card-0"), 28.8);
+	d.trace(one<SVGPathElement>("wire-0"), 29.2, { duration: 0.5 });
+	show(one("card-1"), 29.6);
+	d.trace(one<SVGPathElement>("wire-1"), 30.0, { duration: 0.5 });
+
+	// ——— claim ———
+	tl.addLabel("claim", 31.6);
 	hide(
 		[
-			heads[8],
+			heads[5],
 			one("card-0"),
 			one("card-1"),
 			one("wire-0"),
 			one("wire-1"),
 			one("print"),
 		],
-		37.0,
+		31.6,
 	);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	word(one("z-big"), 31.9);
+	show(one("z-sub"), 32.2);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 36.0);
+	hide(kids("claim"), 36.0);
+	d.close(36.0);
 	return tl;
 }
 
@@ -829,6 +816,7 @@ export const executionCounterpartiesFilm: Film = {
 		{ id: "match", label: ["One trade", "一笔成交"] },
 		{ id: "limit", label: ["A limit", "限价"] },
 		{ id: "print", label: ["The print", "成交记录"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
