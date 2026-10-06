@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -33,27 +34,27 @@ import {
 /*
  * Strategies, as a film. One Oct 18 105 call sold at the $2.05 bid: a bet ALFA won't rise?
  * The chart answers with three positions it can belong to: alone, its loss has no limit;
- * against 100 shares it is a covered call that gains up to +$705; beside a long 100 call it
- * caps a bull spread. Then a 105/110 spread built from signed legs at $115: +$1,000, −$500,
- * $500 together, +$375 after its cost. Last, a roll: a sale at the bid and a purchase at
- * the ask, labelled bearish and bullish, that are one decision.
+ * against 100 shares it is a covered call; beside a long 100 call it caps a bull spread.
+ * The hero adds a 105/110 spread's signed legs at $115: +$1,000, −$500, $500 together, and
+ * glowing brackets lock on +$375 after its cost. Last, a roll: a sale at the bid and a
+ * purchase at the ask, labelled bearish and bullish, that are one decision.
  *
- *   open      0–4      "Strategies"
- *   question  4–9.5    the 105 call sold at $2.05: a bet ALFA won't rise?
- *   leg       9.5–20   alone; covered by shares; capping a spread
- *   add       20–30.5  long 105; short 110; together; less the cost
- *   roll      30.5–39.5 sell October at the bid; buy November at the ask; one roll; cut
- *   next      39.5–42  Next: straddles and condors
+ *   open      0–4        "Strategies"
+ *   question  4–8.6      the 105 call sold at $2.05: a bet ALFA won't rise?
+ *   leg       8.6–20.4   alone; covered by shares; capping a spread
+ *   add       20.4–29.4  hero: long 105; short 110; together; +$375 after the cost
+ *   roll      29.4–35.7  sell October at the bid; buy November at the ask; one roll
+ *   claim     35.7–40.4  one leg, many positions
+ *   next      40.4–42.9  Next: straddles and condors
  */
 
-const END = 42;
+const END = 42.9;
 const Y = [-2200, 2200] as const;
 const SPOT = 115;
 const COVERED_TOP = structures.covered(RANGE[1]);
 const SPREAD_LOW = structures.spread(RANGE[0]);
 const SPREAD_HIGH = structures.spread(RANGE[1]);
 const profit = (spot: number) => spreadPayoff(spot) - NET;
-const BREAK_EVEN = CALL_105.strike + NET / 100;
 const stockLine = (spot: number) => (spot - STOCK_COST) * 100;
 /** Dollars per contract as a whole-dollar figure: "$500", "+$375". */
 const dollars = (value: number) => usd(value * 100, 0);
@@ -90,81 +91,29 @@ const copy = {
 	qTag: ["Oct 18 105 call · at the bid", "10月18日 105 看涨 · 买价成交"],
 	qLine: [`Someone sells it at ${usd(SOLD)}.`, `有人以 ${usd(SOLD)} 卖出它。`],
 	qBig: ["A bet ALFA won't rise?", "押注 ALFA 不涨？"],
-	l0: [
-		`Sold alone at ${usd(SOLD)}, it keeps $${SOLD} below $105, and its loss above has no limit.`,
-		`单独以 ${usd(SOLD)} 卖出：低于 $105 留下 $${SOLD}，高于此价亏损没有上限。`,
-	],
-	l0Short: ["Alone: no limit.", "单独卖出：亏损无上限。"],
-	l1: [
-		`Against 100 shares bought at $${STOCK_COST}: a covered call, up to ${signedDollars(COVERED_TOP)}.`,
-		`对着以 $${STOCK_COST} 买入的 100 股：备兑看涨，最多 ${signedDollars(COVERED_TOP)}。`,
-	],
-	l1Short: [
-		`With shares: up to ${signedDollars(COVERED_TOP)}.`,
-		`有股票：最多 ${signedDollars(COVERED_TOP)}。`,
-	],
-	l2: [
-		`Beside a long 100 call, it caps a bull spread: ${signedDollars(SPREAD_LOW)} at worst, ${signedDollars(SPREAD_HIGH)} at best.`,
-		`配上 100 看涨多头，它是看涨价差的上限：最坏 ${signedDollars(SPREAD_LOW)}，最好 ${signedDollars(SPREAD_HIGH)}。`,
-	],
-	l2Short: ["With a 100 call: a spread.", "配 100 看涨：价差。"],
+	lHead: ["Alone, its loss has no limit.", "单独卖出：亏损没有上限。"],
+	cHead: ["With 100 shares: a covered call.", "配上 100 股：备兑看涨。"],
+	sHead: ["Beside a 100 call: a spread's cap.", "配上 100 看涨：价差的上限。"],
 	sold: ["105 call, sold", "105 看涨，卖出"],
 	stock: ["stock alone", "仅股票"],
 	covered: ["covered call", "备兑看涨"],
 	spread: ["bull call spread", "牛市看涨价差"],
 	axis: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
-	a0: [
-		`Add signed legs. The long 105 call is worth ${dollars(longLeg(SPOT))} at $${SPOT}.`,
-		`把带符号的腿相加。$${SPOT} 时，105 看涨多头值 ${dollars(longLeg(SPOT))}。`,
+	aHead: [
+		`Now add a spread's legs at $${SPOT}.`,
+		`把价差的腿在 $${SPOT} 相加。`,
 	],
-	a0Short: [
-		`Long 105: ${signedDollars(longLeg(SPOT))}.`,
-		`105 多头：${signedDollars(longLeg(SPOT))}。`,
-	],
-	a1: [
-		`The short 110 call works against you above $110: ${signedDollars(shortLeg110(SPOT))} at $${SPOT}.`,
-		`110 看涨空头在 $110 以上对你不利：$${SPOT} 时 ${signedDollars(shortLeg110(SPOT))}。`,
-	],
-	a1Short: [
-		`Short 110: ${signedDollars(shortLeg110(SPOT))}.`,
-		`110 空头：${signedDollars(shortLeg110(SPOT))}。`,
-	],
-	a2: [
-		`Added at every price, it stops at ${dollars(spreadPayoff(RANGE[1]))} above $110: the short call caps it.`,
-		`在每个价格上相加，$110 以上停在 ${dollars(spreadPayoff(RANGE[1]))}：空头看涨给它封了顶。`,
-	],
-	a2Short: [
-		`Together: capped at ${dollars(spreadPayoff(RANGE[1]))}.`,
-		`合计：封顶 ${dollars(spreadPayoff(RANGE[1]))}。`,
-	],
-	a3: [
-		`Less the $${(NET / 100).toFixed(2)} a share paid: ${signedDollars(profit(SPOT))} at $${SPOT}, break-even $${BREAK_EVEN.toFixed(2)}.`,
-		`减去每股已付的 $${(NET / 100).toFixed(2)}：$${SPOT} 时 ${signedDollars(profit(SPOT))}，盈亏平衡 $${BREAK_EVEN.toFixed(2)}。`,
-	],
-	a3Short: [
-		`Less $${NET}: ${signedDollars(profit(SPOT))}.`,
-		`减去 $${NET}：${signedDollars(profit(SPOT))}。`,
+	a2Head: [
+		`${signedDollars(profit(SPOT))} after its cost.`,
+		`扣除成本后 ${signedDollars(profit(SPOT))}。`,
 	],
 	long105: ["long 105", "105 多头"],
 	short110: ["short 110", "110 空头"],
 	together: ["together", "合计"],
 	lessCost: [`less $${NET}`, `减 $${NET}`],
 	spot: [`ALFA $${SPOT}`, `ALFA $${SPOT}`],
-	r0: [
-		`Fri Oct 4: you sell ${ROLL_QUANTITY} Oct 18 100 calls at the ${usd(SELL_OCT)} bid. A feed says bearish.`,
-		`10月4日周五：你以 ${usd(SELL_OCT)} 的买价卖出 ${ROLL_QUANTITY} 张 10月18日 100 看涨。数据说：看跌。`,
-	],
-	r0Short: ["Leg 1: sold at the bid.", "第一腿：买价卖出。"],
-	r1: [
-		`A second later you buy ${ROLL_QUANTITY} Nov 15 100 calls at the ${usd(BUY_NOV)} ask. A feed says bullish.`,
-		`一秒后你以 ${usd(BUY_NOV)} 的卖价买入 ${ROLL_QUANTITY} 张 11月15日 100 看涨。数据说：看涨。`,
-	],
-	r1Short: ["Leg 2: bought at the ask.", "第二腿：卖价买入。"],
-	r2: [
-		`One decision: the same strike, four weeks later, for a net ${usd(ROLL_NET, 0)}.`,
-		`一个决定：同一行权价，晚四周到期，净支出 ${usd(ROLL_NET, 0)}。`,
-	],
-	r2Short: ["One roll.", "一次移仓。"],
+	rHead: ["Sold at the bid, bought at the ask.", "买价卖出，卖价买入。"],
+	r2Head: ["Two labels, one decision: a roll.", "两个标签，一个决定：移仓。"],
 	rollTag: [
 		`Fri Oct 4 · ALFA ${usd(ROLL_SPOT)}`,
 		`10月4日 周五 · ALFA ${usd(ROLL_SPOT)}`,
@@ -197,8 +146,8 @@ const copy = {
 	],
 	claimBig: ["One leg, many positions.", "一条腿，多种持仓。"],
 	claimSub: [
-		"Read a print with the legs beside it: a sale can cover shares, cap a spread or close half a roll.",
-		"读一笔成交时要看旁边的腿：一笔卖出可能是备兑、价差的上限，或移仓的一半。",
+		"A sale can cover, cap or roll.",
+		"一笔卖出可以是备兑、封顶或移仓。",
 	],
 	nextBig: ["Next: straddles and condors", "下一课：跨式与铁鹰"],
 	nextSub: [
@@ -219,10 +168,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -319,13 +268,25 @@ function Scene({
 			</g>
 
 			{/* The chart: three positions, then signed legs. */}
-			{headline("l0", copy.l0, copy.l0Short)}
-			{headline("l1", copy.l1, copy.l1Short)}
-			{headline("l2", copy.l2, copy.l2Short)}
-			{headline("a0", copy.a0, copy.a0Short)}
-			{headline("a1", copy.a1, copy.a1Short)}
-			{headline("a2", copy.a2, copy.a2Short)}
-			{headline("a3", copy.a3, copy.a3Short)}
+			{headline("l-head", copy.lHead)}
+			{headline("c-head", copy.cHead)}
+			{headline("s-head", copy.sHead)}
+			{headline("a-head", copy.aHead)}
+			{/* The hero's answer, as the profit after the cost comes up. */}
+			<Lines
+				name="a2-head"
+				text={t(copy.a2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.aHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
@@ -485,10 +446,25 @@ function Scene({
 				</g>
 			))}
 
+			<Brackets name="lock-profit" glow />
+
 			{/* A roll: two prints, one decision. */}
-			{headline("r0", copy.r0, copy.r0Short)}
-			{headline("r1", copy.r1, copy.r1Short)}
-			{headline("r2", copy.r2, copy.r2Short)}
+			{headline("r-head", copy.rHead)}
+			{/* The answer, as the bracket joins the two prints. */}
+			<Lines
+				name="r2-head"
+				text={t(copy.r2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.rHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<text
 				data-f="roll-tag"
 				x={margin}
@@ -595,11 +571,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A line lands slightly large and settles, without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	/** A line draws itself from its start, then takes back its own dashes, if any. */
@@ -616,18 +593,16 @@ function build(context: FilmContext) {
 	};
 	const line = (name: string) => one<SVGPathElement>(`l-${name}`);
 	const heads = [
-		"l0",
-		"l1",
-		"l2",
-		"a0",
-		"a1",
-		"a2",
-		"a3",
-		"r0",
-		"r1",
-		"r2",
+		"l-head",
+		"c-head",
+		"s-head",
+		"a-head",
+		"a2-head",
+		"r-head",
+		"r2-head",
 	].map((name) => one(name));
 	const readouts = [0, 1, 2, 3].map((i) => one(`ro-${i}`));
+	const lockProfit = one<SVGGraphicsElement>("lock-profit");
 	const rows = [one("row-0"), one("row-1")];
 	const axes = kids("chart").filter(
 		(el) => !el.getAttribute("data-f")?.match(/^(l|g|k)-|^spot$/),
@@ -638,6 +613,7 @@ function build(context: FilmContext) {
 		...heads,
 		...kids("chart"),
 		...readouts,
+		lockProfit,
 		one("roll-tag"),
 		...rows,
 		one("bracket"),
@@ -657,74 +633,78 @@ function build(context: FilmContext) {
 	word(one("q-big"), 6.4);
 
 	// ——— leg: the same sale in three positions ———
-	tl.addLabel("leg", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	d.rise(9.8);
-	show(axes, 10.0);
-	draw(line("alone"), 10.6);
-	show(one("g-alone"), 11.2);
-	d.swap(heads[0], heads[1], 13.0);
-	hide([line("alone"), one("g-alone")], 13.0, 0.3);
-	draw(line("stock"), 13.4);
-	show(one("g-stock"), 13.9);
-	draw(line("covered"), 13.9);
-	show(one("g-covered"), 14.5);
-	d.swap(heads[1], heads[2], 16.2);
+	tl.addLabel("leg", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	d.rise(8.9);
+	show(axes, 9.1);
+	draw(line("alone"), 9.7);
+	show(one("g-alone"), 10.3);
+	d.swap(heads[0], heads[1], 12.4);
+	hide([line("alone"), one("g-alone")], 12.4, 0.3);
+	draw(line("stock"), 12.8);
+	show(one("g-stock"), 13.3);
+	draw(line("covered"), 13.4);
+	show(one("g-covered"), 14.0);
+	d.swap(heads[1], heads[2], 16.4);
 	hide(
 		[line("stock"), line("covered"), one("g-stock"), one("g-covered")],
-		16.2,
+		16.4,
 		0.3,
 	);
-	draw(line("spread"), 16.6);
-	show(one("g-spread"), 17.2);
+	draw(line("spread"), 16.8);
+	show(one("g-spread"), 17.4);
 
-	// ——— add: signed legs at $115 ———
-	tl.addLabel("add", 20);
-	d.swap(heads[2], heads[3], 20.0);
-	hide([line("spread"), one("g-spread")], 20.0, 0.3);
-	show(one("spot"), 20.3);
-	show([one("k-105"), one("k-110")], 20.3);
-	draw(line("long"), 20.5);
-	show(readouts[0], 21.0, "right");
-	d.swap(heads[3], heads[4], 22.6);
-	draw(line("short"), 22.9);
-	show(readouts[1], 23.4, "right");
-	d.swap(heads[4], heads[5], 25.0);
-	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 25.2);
-	draw(line("sum"), 25.3);
-	show(readouts[2], 25.8, "right");
-	d.swap(heads[5], heads[6], 27.4);
-	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 27.6);
-	draw(line("profit"), 27.7);
-	show(readouts[3], 28.2, "right");
+	// ——— add: the hero. Signed legs at $115, then the cost. ———
+	tl.addLabel("add", 20.4);
+	d.swap(heads[2], heads[3], 20.4);
+	hide([line("spread"), one("g-spread")], 20.4, 0.3);
+	show(one("spot"), 20.5);
+	show([one("k-105"), one("k-110")], 20.5);
+	draw(line("long"), 20.9);
+	show(readouts[0], 21.4, "right");
+	draw(line("short"), 22.2);
+	show(readouts[1], 22.7, "right");
+	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 23.4);
+	draw(line("sum"), 23.5);
+	show(readouts[2], 24.0, "right");
+	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 24.7);
+	draw(line("profit"), 24.8);
+	show(readouts[3], 25.3, "right");
+	d.lock(lockProfit, 25.8, { around: readouts[3], pad: 5 });
+	tl.addLabel("hero-lock", 25.8);
+	show(heads[4], 25.8);
 
 	// ——— roll: two prints, one decision ———
-	tl.addLabel("roll", 30.5);
-	hide([heads[6], ...readouts], 30.5);
-	d.sink(30.5);
-	show(heads[7], 30.8, "above");
-	show(one("roll-tag"), 31.0);
-	show(rows[0], 31.2, "right");
-	d.swap(heads[7], heads[8], 32.6);
-	show(rows[1], 33.0, "right");
-	d.swap(heads[8], heads[9], 34.6);
+	tl.addLabel("roll", 29.4);
+	hide([heads[3], heads[4], ...readouts, lockProfit], 29.4);
+	d.sink(29.4);
+	show(heads[5], 29.75);
+	show(one("roll-tag"), 29.8);
+	show(rows[0], 30.0, "right");
+	show(rows[1], 30.8, "right");
 	tl.fromTo(
 		one("bracket"),
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 50%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		35.0,
+		31.8,
 	);
-	show(one("roll"), 35.3);
-	// Cut: the claim.
-	hide([heads[9], one("roll-tag"), ...rows, one("bracket"), one("roll")], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	show(one("roll"), 32.1);
+	show(heads[6], 32.1);
+
+	// ——— claim ———
+	tl.addLabel("claim", 35.7);
+	hide(
+		[heads[5], heads[6], one("roll-tag"), ...rows, one("bracket"), one("roll")],
+		35.7,
+	);
+	word(one("z-big"), 36.0);
+	show(one("z-sub"), 36.4);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 40.4);
+	hide(kids("claim"), 40.4);
+	d.close(40.4);
 	return tl;
 }
 
@@ -741,6 +721,7 @@ export const optionStrategiesFilm: Film = {
 		{ id: "leg", label: ["One leg", "一条腿"] },
 		{ id: "add", label: ["Signed legs", "带符号的腿"] },
 		{ id: "roll", label: ["A roll", "移仓"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
