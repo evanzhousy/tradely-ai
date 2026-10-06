@@ -27,7 +27,7 @@ const coachingPropertyKeys = [
 
 export type AnalyticsEnvironment = "production" | "preview" | "local";
 
-export const ANALYTICS_EVENT_SCHEMA_VERSION = 1;
+export const ANALYTICS_EVENT_SCHEMA_VERSION = 2;
 
 export type BillingActionFailureReason =
 	| "sign_in_required"
@@ -39,11 +39,13 @@ export type BillingActionFailureReason =
 export type BillingAction = "portal" | "course_pass_restore";
 
 export type VisualLessonPlaybackMode = "autoplay" | "manual";
+export type VisualLessonSurface = "film" | "walkthrough" | "playground";
 
 type VisualLessonEventProperties = {
 	lesson_id: string;
 	scene_id: string;
 	locale: Locale;
+	surface: VisualLessonSurface;
 };
 
 export type AnalyticsRouteName =
@@ -167,6 +169,7 @@ export type AnalyticsEventMap = {
 		mode: VisualLessonPlaybackMode;
 	};
 	visual_lesson_explored: VisualLessonEventProperties;
+	visual_lesson_interacted: VisualLessonEventProperties;
 	visual_lesson_predicted: VisualLessonEventProperties & {
 		kind: "choice" | "entry";
 		correct: boolean;
@@ -267,6 +270,7 @@ export const ANALYTICS_EVENT_NAMES = {
 	visual_lesson_scene_started: true,
 	visual_lesson_scene_completed: true,
 	visual_lesson_explored: true,
+	visual_lesson_interacted: true,
 	visual_lesson_predicted: true,
 	visual_lesson_task_completed: true,
 	tradingflow_link_opened: true,
@@ -329,13 +333,27 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 	auth_sign_in_opened: ["surface"],
 	auth_sign_in_completed: ["provider", "method"],
 	auth_session_established: ["provider"],
-	visual_lesson_scene_started: ["lesson_id", "scene_id", "locale", "mode"],
-	visual_lesson_scene_completed: ["lesson_id", "scene_id", "locale", "mode"],
-	visual_lesson_explored: ["lesson_id", "scene_id", "locale"],
+	visual_lesson_scene_started: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"surface",
+		"mode",
+	],
+	visual_lesson_scene_completed: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"surface",
+		"mode",
+	],
+	visual_lesson_explored: ["lesson_id", "scene_id", "locale", "surface"],
+	visual_lesson_interacted: ["lesson_id", "scene_id", "locale", "surface"],
 	visual_lesson_predicted: [
 		"lesson_id",
 		"scene_id",
 		"locale",
+		"surface",
 		"kind",
 		"correct",
 	],
@@ -343,6 +361,7 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 		"lesson_id",
 		"scene_id",
 		"locale",
+		"surface",
 		"kind",
 		"attempts",
 	],

@@ -1,7 +1,7 @@
 # Analytics scenarios
 
 This is the implementation contract for Tradely's registered application events, reviewed
-on 2026-09-17. The typed names and permitted properties live in
+on 2026-10-06. The typed names and permitted properties live in
 [`events.ts`](../apps/web/src/analytics/events.ts). Consent, identity, and delivery
 belong to [`AnalyticsProvider`](../apps/web/src/analytics/provider.tsx), with SDK
 imports restricted to the shared browser and server clients.
@@ -13,7 +13,7 @@ imports restricted to the shared browser and server clients.
   `tradely_analytics_consent_v2=granted` cookie. Version 2 includes masked replay
   and heatmaps; the previous event-only consent does not opt visitors into them.
 - PostHog events carry `app=tradely`, `environment`, `runtime`, `release`, and
-  `event_schema_version=1`. Custom properties are pruned to the typed allowlist.
+  `event_schema_version=2`. Custom properties are pruned to the typed allowlist.
 - Route URLs omit query strings and fragments. Learner answers, case bodies,
   protected media URLs, email, payment details, and secrets are excluded from
   application event properties. Exceptions pass through bounded redaction.
@@ -46,7 +46,8 @@ Paths below are relative to `apps/web/src`.
 | `lesson_progress_save_failed` | Completion save is rejected (`signed_out`, `access_denied`) or throws (`unavailable`). Optional video-position writes do not emit this event. | `components/complete-lesson-button.tsx` |
 | `visual_lesson_scene_started` | A visual scene walkthrough starts. `mode=autoplay` is visibility-driven playback; `mode=manual` is learner-started navigation. Deduplicated per scene for the page visit. | `features/learning/concept-lab.tsx` |
 | `visual_lesson_scene_completed` | A visual scene reaches its final authored step. Records bounded lesson/scene IDs, locale, and start mode. | `features/learning/concept-lab.tsx` |
-| `visual_lesson_explored` | First direct interaction with the interactive scene for the page visit. | `features/learning/concept-lab.tsx` |
+| `visual_lesson_explored` | Legacy exploration-entry signal; opening a playground can qualify. Do not treat it as a control interaction. | `features/learning/walkthrough/player.tsx`, `walkthrough.tsx` |
+| `visual_lesson_interacted` | First user-driven playground control-state change per lesson/scene/surface for the mounted visit. No control value or learner answer is sent. | `features/learning/walkthrough/player.tsx`, `walkthrough.tsx` |
 | `visual_lesson_predicted` | The learner answers a scene's prediction. `kind=choice` for a picked option, `kind=entry` for a typed number; `correct` records whether it matched. The answer itself is not sent. | `features/learning/walkthrough/walkthrough.tsx` |
 | `visual_lesson_task_completed` | The learner reaches (`kind=reach`) or answers (`kind=answer`) a scene's explore task, once per scene for the page visit. `attempts` counts tries for an answer task. | `features/learning/walkthrough/walkthrough.tsx` |
 | `lesson_exercise_started` | Signed-in exercise successfully opens, resumes, or restarts. This is not a unique-attempt count. | `features/learning/learning-exercise.tsx` |
@@ -61,6 +62,17 @@ Paths below are relative to `apps/web/src`.
 | `server_route_timing` | Course-progress read takes at least 1,000 ms; duration capped at 60,000 ms, plus status and signed-in state. | `server/progress.server.ts`, `server/analytics/posthog.server.ts` |
 
 ## SDK scenarios
+
+Visual events carry `surface=film|walkthrough|playground` to separate shot playback
+from scene exploration. The shared visual recorder deduplicates only after the
+consented emitter accepts an event. Playback/bookmarks work independently of
+capture. `capture()` returning true means acceptance by a provider or the bounded
+consented PostHog queue, not confirmed remote ingestion. Pre-consent actions are
+not replayed, withdrawal clears queued captures, and Do Not Track prevents queue
+acceptance. Schema-1 rows without a surface retain their historical semantics.
+The initial film start is recorded when playback actually starts, not when a
+timeline is constructed or a hidden player is mounted. These changes require
+deployment and live observation before production measurement claims.
 
 - `$pageview` accompanies `page_viewed` for the same visit. Do not add them together
   as separate visits.

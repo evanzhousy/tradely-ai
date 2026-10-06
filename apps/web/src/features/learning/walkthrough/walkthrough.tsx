@@ -30,7 +30,11 @@ import {
 	useState,
 } from "react";
 import { useAnalytics } from "@/analytics/context";
-import type { VisualLessonPlaybackMode } from "@/analytics/events";
+import type {
+	VisualLessonPlaybackMode,
+	VisualLessonSurface,
+} from "@/analytics/events";
+import { useVisualLessonAnalytics } from "@/analytics/visual-lesson";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import {
@@ -121,7 +125,8 @@ export function Walkthrough({
 	const t = (value: Copy) => pick(value, locale);
 	const lessonId = useContext(VisualLessonIdentity);
 	const bookmarks = useVisualBookmarks();
-	const { capture, isCapturing } = useAnalytics();
+	const { capture } = useAnalytics();
+	const recordVisual = useVisualLessonAnalytics(lessonId, locale);
 	const motion = useTeachMotion();
 	const root = useRef<HTMLElement>(null);
 	const headingId = useId();
@@ -141,9 +146,6 @@ export function Walkthrough({
 	const [invalid, setInvalid] = useState(false);
 	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
 	const entryId = useId();
-	const started = useRef(new Set<string>());
-	const finished = useRef(new Set<string>());
-	const explored = useRef(new Set<string>());
 	const restored = useRef(false);
 	/**
 	 * Where focus goes after a control removes itself, such as "Try it yourself" or
@@ -166,24 +168,13 @@ export function Walkthrough({
 				| "visual_lesson_scene_completed"
 				| "visual_lesson_explored",
 			mode?: VisualLessonPlaybackMode,
+			surface: VisualLessonSurface = "walkthrough",
 		) => {
-			if (!lessonId) return;
-			const seen =
-				event === "visual_lesson_scene_started"
-					? started
-					: event === "visual_lesson_scene_completed"
-						? finished
-						: explored;
-			if (seen.current.has(scene.id)) return;
-			seen.current.add(scene.id);
-			if (event === "visual_lesson_scene_started")
+			if (lessonId && event === "visual_lesson_scene_started")
 				markVisualBookmarkEngaged(lessonId, scene.id);
-			if (!isCapturing) return;
-			const base = { lesson_id: lessonId, scene_id: scene.id, locale };
-			if (event === "visual_lesson_explored") capture(event, base);
-			else capture(event, { ...base, mode: mode ?? "manual" });
+			return recordVisual(event, scene.id, surface, mode);
 		},
-		[capture, isCapturing, lessonId, locale, scene.id],
+		[lessonId, recordVisual, scene.id],
 	);
 
 	const openScene = useCallback(
@@ -253,8 +244,8 @@ export function Walkthrough({
 	const startExplore = () => {
 		if (!scene.explore) return;
 		focusNext.current = "controls";
-		record("visual_lesson_scene_started", "manual");
-		record("visual_lesson_explored");
+		record("visual_lesson_scene_started", "manual", "playground");
+		record("visual_lesson_explored", undefined, "playground");
 		setAutoplay(false);
 		setExplore(scene.explore.start(current.state));
 		setPhase("explore");
@@ -263,11 +254,12 @@ export function Walkthrough({
 	const choose = (choice: string) => {
 		focusNext.current = "feedback";
 		setPredictions((all) => ({ ...all, [scene.id]: choice }));
-		if (scene.predict && lessonId && isCapturing)
+		if (scene.predict && lessonId)
 			capture("visual_lesson_predicted", {
 				lesson_id: lessonId,
 				scene_id: scene.id,
 				locale,
+				surface: "walkthrough",
 				kind: choice.startsWith("entry:") ? "entry" : "choice",
 				correct: judge(scene.predict, choice).correct,
 			});
@@ -367,16 +359,17 @@ export function Walkthrough({
 		(attempts: number) => {
 			setSolved((all) => new Set(all).add(scene.id));
 			const task = scene.explore?.task;
-			if (!task || !lessonId || !isCapturing) return;
+			if (!task || !lessonId) return;
 			capture("visual_lesson_task_completed", {
 				lesson_id: lessonId,
 				scene_id: scene.id,
 				locale,
+				surface: "playground",
 				kind: task.kind,
 				attempts,
 			});
 		},
-		[capture, isCapturing, lessonId, locale, scene],
+		[capture, lessonId, locale, scene],
 	);
 
 	// With a task waiting, "Try it yourself" leads and moving on is the quieter choice.
@@ -771,7 +764,12 @@ export function Walkthrough({
 							state={current.state}
 							explore={phase === "explore" ? explore : null}
 							setExplore={(next: unknown) => {
-								record("visual_lesson_explored");
+								record("visual_lesson_explored", undefined, "playground");
+								recordVisual(
+									"visual_lesson_interacted",
+									scene.id,
+									"playground",
+								);
 								setExplore(next);
 							}}
 						/>

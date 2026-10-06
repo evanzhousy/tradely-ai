@@ -25,6 +25,7 @@ import {
 	captureGoogleAnalyticsEvent,
 	captureGoogleAnalyticsPageView,
 	disableGoogleAnalytics,
+	doNotTrackEnabled,
 	enableGoogleAnalytics,
 } from "./google";
 
@@ -307,8 +308,9 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 			event: EventName,
 			properties: AnalyticsEventMap[EventName],
 		): boolean => {
+			if (consentRef.current !== "granted" || doNotTrackEnabled()) return false;
 			const client = clientRef.current;
-			const postHogCaptured =
+			let postHogCaptured =
 				postHogCapturingRef.current && client
 					? capturePostHogEvent(client, event, properties)
 					: false;
@@ -329,6 +331,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 					properties: { ...properties },
 					queuedAt: Date.now(),
 				});
+				postHogCaptured = true;
 			}
 			let googleCaptured = false;
 			try {
@@ -343,6 +346,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 
 	const capturePageView = useCallback(
 		(properties: AnalyticsEventMap["page_viewed"]): boolean => {
+			if (consentRef.current !== "granted" || doNotTrackEnabled()) return false;
 			let postHogCaptured = false;
 			if (postHogCapturingRef.current && clientRef.current) {
 				postHogCaptured = capturePostHogPageView(
@@ -365,6 +369,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 					properties: { ...properties },
 					queuedAt: Date.now(),
 				});
+				postHogCaptured = true;
 			}
 			let googleCaptured = false;
 			try {

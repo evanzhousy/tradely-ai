@@ -25,7 +25,11 @@ import {
 	useState,
 } from "react";
 import { useAnalytics } from "@/analytics/context";
-import type { VisualLessonPlaybackMode } from "@/analytics/events";
+import type {
+	VisualLessonPlaybackMode,
+	VisualLessonSurface,
+} from "@/analytics/events";
+import { useVisualLessonAnalytics } from "@/analytics/visual-lesson";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import {
@@ -108,7 +112,8 @@ export function Player({
 	const t = (value: Copy) => pick(value, locale);
 	const wc = walkthroughCopy;
 	const lessonId = useContext(VisualLessonIdentity);
-	const { capture, isCapturing } = useAnalytics();
+	const { capture } = useAnalytics();
+	const recordVisual = useVisualLessonAnalytics(lessonId, locale);
 	const reduced = usePrefersReducedMotion();
 	const root = useRef<HTMLElement>(null);
 	const fill = useRef<HTMLSpanElement>(null);
@@ -129,9 +134,6 @@ export function Player({
 	const [playScene, setPlayScene] = useState(0);
 	const [explore, setExplore] = useState<unknown>(null);
 	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
-	const started = useRef(new Set<string>());
-	const finished = useRef(new Set<string>());
-	const explored = useRef(new Set<string>());
 	const focusNext = useRef<"heading" | "play" | null>(null);
 	const shots = film.shots;
 	const last = shots.length - 1;
@@ -157,24 +159,13 @@ export function Player({
 				| "visual_lesson_explored",
 			sceneId: string,
 			how?: VisualLessonPlaybackMode,
+			surface: VisualLessonSurface = "film",
 		) => {
-			if (!lessonId) return;
-			const seen =
-				event === "visual_lesson_scene_started"
-					? started
-					: event === "visual_lesson_scene_completed"
-						? finished
-						: explored;
-			if (seen.current.has(sceneId)) return;
-			seen.current.add(sceneId);
-			if (event === "visual_lesson_scene_started")
+			if (lessonId && event === "visual_lesson_scene_started")
 				markVisualBookmarkEngaged(lessonId, sceneId);
-			if (!isCapturing) return;
-			const base = { lesson_id: lessonId, scene_id: sceneId, locale };
-			if (event === "visual_lesson_explored") capture(event, base);
-			else capture(event, { ...base, mode: how ?? "manual" });
+			return recordVisual(event, sceneId, surface, how);
 		},
-		[capture, isCapturing, lessonId, locale],
+		[lessonId, recordVisual],
 	);
 
 	/** The start and end of a shot on the timeline. */
@@ -279,11 +270,16 @@ export function Player({
 	// long as the shot would have taken, then the next.
 	useEffect(() => {
 		const tl = timeline.current;
-		if (!tl) return;
+		if (!ready || !tl) return;
 		if (!active) {
 			tl.pause();
 			return;
 		}
+		record(
+			"visual_lesson_scene_started",
+			shots[shotRef.current].id,
+			"autoplay",
+		);
 		if (!reduced) {
 			tl.play();
 			return () => {
@@ -356,8 +352,8 @@ export function Player({
 			chosen.explore.start(chosen.beats[chosen.beats.length - 1].state),
 		);
 		setMode("play");
-		record("visual_lesson_scene_started", chosen.id, "manual");
-		record("visual_lesson_explored", chosen.id);
+		record("visual_lesson_scene_started", chosen.id, "manual", "playground");
+		record("visual_lesson_explored", chosen.id, undefined, "playground");
 		if (lessonId) saveVisualBookmark(lessonId, chosen.id);
 		focusNext.current = "heading";
 	};
@@ -373,16 +369,17 @@ export function Player({
 			const chosen = scenes[playScene];
 			setSolved((all) => new Set(all).add(chosen.id));
 			const task = chosen.explore?.task;
-			if (!task || !lessonId || !isCapturing) return;
+			if (!task || !lessonId) return;
 			capture("visual_lesson_task_completed", {
 				lesson_id: lessonId,
 				scene_id: chosen.id,
 				locale,
+				surface: "playground",
 				kind: task.kind,
 				attempts,
 			});
 		},
-		[capture, isCapturing, lessonId, locale, playScene, scenes],
+		[capture, lessonId, locale, playScene, scenes],
 	);
 
 	const checkYourself = (
@@ -490,7 +487,14 @@ export function Player({
 							beat={chosen.beats.length - 1}
 							state={lastBeat.state}
 							explore={explore}
-							setExplore={setExplore}
+							setExplore={(next: unknown) => {
+								recordVisual(
+									"visual_lesson_interacted",
+									chosen.id,
+									"playground",
+								);
+								setExplore(next);
+							}}
 						/>
 					</FrameContext>
 				</TabsContent>
