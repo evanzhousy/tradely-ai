@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -15,7 +16,6 @@ import {
 	BEARISH,
 	BULLISH,
 	CALL_100,
-	CALL_CREDIT,
 	CREDIT,
 	callSpread,
 	condor,
@@ -26,7 +26,6 @@ import {
 	PACKAGE_CREDIT,
 	PACKAGE_RISK,
 	PUT_100,
-	PUT_CREDIT,
 	putSpread,
 	RANGE,
 	SIZE,
@@ -40,20 +39,22 @@ import {
 /*
  * Straddles, condors and multi-leg prints, as a film. Four ALFA prints in one second, 200
  * each: sold 95 puts, bought 90 puts, sold 105 calls, bought 110 calls. Bullish or
- * bearish? First a straddle, a V that needs a move of $8.40 either way; then an iron
- * condor, two credit spreads that keep $2.17 inside $95–$105 and risk $2.83 outside. Then
- * the four prints: labelled one by one they net −$1,400, "slightly bearish"; read as one
- * package they are 200 short iron condors, a range.
+ * bearish? First a straddle, a V that needs a move of $8.40 either way. The hero is an
+ * iron condor: two credit spreads that together keep $2.17 inside $95–$105 and risk $2.83
+ * outside, and glowing brackets lock on what it keeps: it sells a range. Then the four
+ * prints: labelled one by one they net −$1,400, "slightly bearish"; read as one package
+ * they are 200 short iron condors.
  *
- *   open      0–4      "Straddles and condors"
- *   question  4–9.5    four prints in one second: bullish or bearish?
- *   straddle  9.5–19.5 call and put; a V at $100; break-even $91.60 and $108.40
- *   condor    19.5–29.5 put spread and call spread; together; break-evens
- *   package   29.5–39.5 four labels; a −$1,400 tally; one package; cut: the claim
- *   next      39.5–42  Next: checking one trade
+ *   open      0–4        "Straddles and condors"
+ *   question  4–8.6      four prints in one second: bullish or bearish?
+ *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
+ *   condor    18.2–30    hero: put spread and call spread; together; it sells a range
+ *   package   30–37.6    four labels; a −$1,400 tally; one package
+ *   claim     37.6–42    four prints, one trade
+ *   next      42–44.5    Next: checking one trade
  */
 
-const END = 42;
+const END = 44.5;
 const CENTS = (perShare: number) => Math.round(perShare * 100);
 /** Dollars a share as whole dollars a contract: "+$375", "−$283". */
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
@@ -115,66 +116,21 @@ const copy = {
 		"卖出 95 看跌 · 买入 90 看跌 · 卖出 105 看涨 · 买入 110 看涨",
 	],
 	qBig: ["Bullish or bearish?", "看涨还是看跌？"],
-	s0: [
-		`Buy the 100 call and the 100 put for ${share(STRADDLE_COST)}: the call pays above $100, the put below.`,
-		`以 ${share(STRADDLE_COST)} 买入 100 看涨和 100 看跌：看涨在 $100 以上赚钱，看跌在以下。`,
-	],
-	s0Short: ["Call above, put below.", "看涨在上，看跌在下。"],
-	s1: [
-		"Together they pay either way: a straddle, a V with its point at $100.",
-		"合起来哪个方向都赚：跨式，一个尖点在 $100 的 V。",
-	],
-	s1Short: ["A V at $100.", "$100 处的 V。"],
-	s2: [
-		`Less the ${share(STRADDLE_COST)} paid: break-even at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}. It needs a big move.`,
-		`减去已付的 ${share(STRADDLE_COST)}：盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}。它需要大幅变动。`,
-	],
-	s2Short: [
-		`Break-even ${share(STRADDLE_LOW)} / ${share(STRADDLE_HIGH)}.`,
-		`平衡点 ${share(STRADDLE_LOW)} / ${share(STRADDLE_HIGH)}。`,
-	],
-	c0: [
-		`An iron condor: a put spread sold for ${share(PUT_CREDIT)}, a call spread for ${share(CALL_CREDIT)}.`,
-		`铁鹰：${share(PUT_CREDIT)} 卖出看跌价差，${share(CALL_CREDIT)} 卖出看涨价差。`,
-	],
-	c0Short: ["Two credit spreads.", "两个收入价差。"],
-	c1: [
-		`Together: ${perContract(CREDIT)} kept from $95 to $105, and only one side can lose: ${perContract(-MAX_LOSS)} at worst.`,
-		`合起来：$95 到 $105 之间保留 ${perContract(CREDIT)}，只有一侧可能亏损：最多 ${perContract(-MAX_LOSS)}。`,
-	],
-	c1Short: [
-		`Keep ${perContract(CREDIT)}; risk ${perContract(-MAX_LOSS)}.`,
-		`保留 ${perContract(CREDIT)}；风险 ${perContract(-MAX_LOSS)}。`,
-	],
-	c2: [
-		`Break-even at ${share(CONDOR_LOW)} and ${share(CONDOR_HIGH)}: it wins if ALFA stays inside.`,
-		`盈亏平衡在 ${share(CONDOR_LOW)} 和 ${share(CONDOR_HIGH)}：ALFA 留在区间内就赢。`,
-	],
-	c2Short: ["It sells a range.", "它卖出一个区间。"],
+	sHead: ["A straddle: a call plus a put.", "跨式：看涨加看跌。"],
+	s2Head: ["It needs a big move either way.", "它需要大幅变动，方向不限。"],
+	cHead: ["An iron condor: two credit spreads.", "铁鹰：两个收入价差。"],
+	c2Head: ["It sells a range.", "它卖出的是一个区间。"],
 	callLeg: ["100 call", "100 看涨"],
 	putLeg: ["100 put", "100 看跌"],
 	both: ["both", "合计"],
 	putSpread: ["put spread", "看跌价差"],
 	callSpread: ["call spread", "看涨价差"],
 	axis: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
-	p0: [
-		"Labelled one by one, the four prints read bullish, bearish, bearish, bullish.",
-		"逐笔贴标签，四笔成交读作：看涨、看跌、看跌、看涨。",
+	pHead: ["Label the four prints one by one.", "四笔成交逐笔贴标签。"],
+	p2Head: [
+		`As one package: ${SIZE} short condors.`,
+		`作为整体：${SIZE} 组铁鹰空头。`,
 	],
-	p0Short: ["Four labels.", "四个标签。"],
-	p1: [
-		`Summed by label: ${signedUsd(NET_LABELS, 0)}, "slightly bearish". A view nobody chose.`,
-		`按标签加总：${signedUsd(NET_LABELS, 0)}，“略偏看跌”。一个没人选择过的方向。`,
-	],
-	p1Short: [
-		`Net ${signedUsd(NET_LABELS, 0)}?`,
-		`净额 ${signedUsd(NET_LABELS, 0)}？`,
-	],
-	p2: [
-		`Read as one package: ${SIZE} short iron condors, a bet ALFA stays between $95 and $105.`,
-		`作为整体来读：${SIZE} 组铁鹰空头，押注 ALFA 留在 $95 到 $105 之间。`,
-	],
-	p2Short: ["One package: a range.", "一个整体：区间。"],
 	bullish: ["bullish", "看涨"],
 	bearish: ["bearish", "看跌"],
 	tally: [
@@ -196,8 +152,8 @@ const copy = {
 	],
 	claimBig: ["Four prints, one trade.", "四笔成交，一笔交易。"],
 	claimSub: [
-		"Legs that print together are read together: the package is the view, not the sum of its labels.",
-		"一起成交的腿要一起读：整体才是观点，而不是各个标签的加总。",
+		"The package is the view, not the labels.",
+		"整体才是观点，不是标签。",
 	],
 	nextBig: ["Next: checking one trade", "下一课：核查一笔成交"],
 	nextSub: ["facts, inferences and unknowns", "事实、推断与未知"],
@@ -215,10 +171,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -296,11 +252,11 @@ function Scene({
 			{value}
 		</text>
 	);
-	/** A break-even: a dashed riser across the chart with its price at the top. */
+	/** A break-even: a dashed riser across the chart, starting under its price at the top. */
 	const even = (name: string, spot: number) => (
 		<g data-f={name}>
 			<path
-				d={`M${L.x(spot)} ${L.top}V${L.bottom}`}
+				d={`M${L.x(spot)} ${L.top + 22}V${L.bottom}`}
 				className="wt-bracket"
 				strokeDasharray="4 3"
 			/>
@@ -335,7 +291,7 @@ function Scene({
 					{t(copy.qTag).toUpperCase()}
 				</Word>
 				<Lines
-					name="q-legs"
+					name="q-line"
 					text={t(copy.qLegs)}
 					x={W / 2}
 					y={H * 0.42}
@@ -353,12 +309,38 @@ function Scene({
 				/>
 			</g>
 
-			{headline("s0", copy.s0, copy.s0Short)}
-			{headline("s1", copy.s1, copy.s1Short)}
-			{headline("s2", copy.s2, copy.s2Short)}
-			{headline("c0", copy.c0, copy.c0Short)}
-			{headline("c1", copy.c1, copy.c1Short)}
-			{headline("c2", copy.c2, copy.c2Short)}
+			{headline("s-head", copy.sHead)}
+			{/* The straddle's answer, as its break-evens come up. */}
+			<Lines
+				name="s2-head"
+				text={t(copy.s2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.sHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("c-head", copy.cHead)}
+			{/* The hero's answer, as the brackets lock on what the condor keeps. */}
+			<Lines
+				name="c2-head"
+				text={t(copy.c2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="depth">
 				<g data-f="world">
 					{/* The straddle, on its own scale. */}
@@ -430,7 +412,8 @@ function Scene({
 					{label(
 						"c-put-tag",
 						L.x(84) + 6,
-						L.y(C_Y, putSpread(84) * 100) - 10,
+						// Under the line on a phone: above it, the name runs into the rise.
+						L.y(C_Y, putSpread(84) * 100) + (narrow ? 18 : -10),
 						t(copy.putSpread),
 						"wt-film-type",
 						"start",
@@ -438,7 +421,7 @@ function Scene({
 					{label(
 						"c-call-tag",
 						L.x(116) - 6,
-						L.y(C_Y, callSpread(116) * 100) - 10,
+						L.y(C_Y, callSpread(116) * 100) + (narrow ? 18 : -10),
 						t(copy.callSpread),
 						"wt-film-type",
 						"end",
@@ -446,7 +429,9 @@ function Scene({
 					{label(
 						"c-keep",
 						L.x(100),
-						L.y(C_Y, condor(100) * 100) - 12,
+						// High enough that the brackets locking on it clear the plateau, low
+						// enough that they clear the break-evens' prices as they close in.
+						L.y(C_Y, condor(100) * 100) - 14,
 						perContract(CREDIT),
 						"wt-film-gain",
 					)}
@@ -460,13 +445,27 @@ function Scene({
 					)}
 					{even("c-low", CONDOR_LOW)}
 					{even("c-high", CONDOR_HIGH)}
+					<Brackets name="lock-keep" glow />
 				</g>
 			</g>
 
 			{/* Four prints, one package. */}
-			{headline("p0", copy.p0, copy.p0Short)}
-			{headline("p1", copy.p1, copy.p1Short)}
-			{headline("p2", copy.p2, copy.p2Short)}
+			{headline("p-head", copy.pHead)}
+			{/* The answer, as the four rows become one package. */}
+			<Lines
+				name="p2-head"
+				text={t(copy.p2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.pHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{LEGS.map((leg, i) => (
 				<g key={leg.key} data-f={`leg-${i}`}>
 					<rect
@@ -600,11 +599,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A line lands slightly large and settles, without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	/** A line draws itself from its start, then takes back its own dashes, if any. */
@@ -620,10 +620,16 @@ function build(context: FilmContext) {
 		if (dash) tl.set(path, { strokeDasharray: dash }, time + 0.7);
 	};
 	const p = (name: string) => one<SVGPathElement>(name);
-	const heads = ["s0", "s1", "s2", "c0", "c1", "c2", "p0", "p1", "p2"].map(
-		(name) => one(name),
-	);
+	const heads = [
+		"s-head",
+		"s2-head",
+		"c-head",
+		"c2-head",
+		"p-head",
+		"p2-head",
+	].map((name) => one(name));
 	const legs = LEGS.map((_, i) => one(`leg-${i}`));
+	const lockKeep = one<SVGGraphicsElement>("lock-keep");
 
 	d.hidden([
 		...flat("q"),
@@ -643,32 +649,31 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	show(one("q-legs"), 5.1);
-	word(one("q-big"), 6.6);
+	show(one("q-line"), 5.1);
+	word(one("q-big"), 6.4);
 
 	// ——— straddle: a V that needs a move ———
-	tl.addLabel("straddle", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	d.rise(9.8);
-	show(one("axes-s"), 10.0);
-	draw(p("s-call"), 10.4);
-	show(one("s-call-tag"), 10.9);
-	draw(p("s-put"), 11.1);
-	show(one("s-put-tag"), 11.6);
-	d.swap(heads[0], heads[1], 13.0);
-	tl.to([p("s-call"), p("s-put")], { opacity: 0.3, duration: 0.4 }, 13.2);
-	hide([one("s-call-tag"), one("s-put-tag")], 13.2, 0.3);
-	draw(p("s-sum"), 13.4);
-	d.swap(heads[1], heads[2], 15.6);
-	tl.to(p("s-sum"), { opacity: 0.35, duration: 0.4 }, 15.8);
-	draw(p("s-profit"), 16.0);
-	show(one("s-cost"), 16.6);
-	show([one("s-low"), one("s-high")], 17.0);
+	tl.addLabel("straddle", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	d.rise(8.9);
+	show(one("axes-s"), 9.1);
+	draw(p("s-call"), 9.6);
+	show(one("s-call-tag"), 10.1);
+	draw(p("s-put"), 10.4);
+	show(one("s-put-tag"), 10.9);
+	tl.to([p("s-call"), p("s-put")], { opacity: 0.3, duration: 0.4 }, 12.0);
+	hide([one("s-call-tag"), one("s-put-tag")], 12.0, 0.3);
+	draw(p("s-sum"), 12.2);
+	tl.to(p("s-sum"), { opacity: 0.35, duration: 0.4 }, 13.4);
+	draw(p("s-profit"), 13.6);
+	show(one("s-cost"), 14.2);
+	show([one("s-low"), one("s-high")], 14.6);
+	show(heads[1], 14.6);
 
-	// ——— condor: a range sold ———
-	tl.addLabel("condor", 19.5);
-	d.swap(heads[2], heads[3], 19.5);
+	// ——— condor: the hero. Two credit spreads that sell a range. ———
+	tl.addLabel("condor", 18.2);
+	d.swap([heads[0], heads[1]], heads[2], 18.2);
 	hide(
 		[
 			one("axes-s"),
@@ -680,46 +685,48 @@ function build(context: FilmContext) {
 			one("s-low"),
 			one("s-high"),
 		],
-		19.5,
+		18.2,
 		0.3,
 	);
-	show(one("axes-c"), 19.9);
-	draw(p("c-put"), 20.3);
-	show(one("c-put-tag"), 20.8);
-	draw(p("c-call"), 21.2);
-	show(one("c-call-tag"), 21.7);
-	d.swap(heads[3], heads[4], 23.4);
-	tl.to([p("c-put"), p("c-call")], { opacity: 0.3, duration: 0.4 }, 23.6);
-	hide([one("c-put-tag"), one("c-call-tag")], 23.6, 0.3);
-	draw(p("c-sum"), 23.8);
-	show(one("c-keep"), 24.4);
-	show(one("c-risk"), 24.7);
-	d.swap(heads[4], heads[5], 26.2);
-	show([one("c-low"), one("c-high")], 26.6);
+	show(one("axes-c"), 18.6);
+	draw(p("c-put"), 19.2);
+	// Sideways: on a phone the tags sit under their lines, just above the price axis.
+	show(one("c-put-tag"), 19.7, "right");
+	draw(p("c-call"), 20.4);
+	show(one("c-call-tag"), 20.9, "right");
+	tl.to([p("c-put"), p("c-call")], { opacity: 0.3, duration: 0.4 }, 22.2);
+	hide([one("c-put-tag"), one("c-call-tag")], 22.2, 0.3);
+	draw(p("c-sum"), 22.4);
+	show(one("c-keep"), 23.6);
+	show(one("c-risk"), 24.4);
+	show([one("c-low"), one("c-high")], 25.4);
+	d.lock(lockKeep, 26.4, { around: one("c-keep"), pad: 4 });
+	tl.addLabel("hero-lock", 26.4);
+	show(heads[3], 26.4);
 
 	// ——— package: four labels, one trade ———
-	tl.addLabel("package", 29.5);
-	hide([heads[5]], 29.5);
-	d.sink(29.5);
-	show(heads[6], 29.8, "above");
+	tl.addLabel("package", 30);
+	d.swap([heads[2], heads[3]], heads[4], 30.0);
+	d.sink(30.0);
 	legs.forEach((leg, i) => {
-		show(leg, 30.1 + i * 0.3, "right");
+		show(leg, 30.6 + i * 0.3, "right");
 	});
-	d.swap(heads[6], heads[7], 32.2);
-	show(one("tally"), 32.6);
-	d.swap(heads[7], heads[8], 34.6);
-	hide(one("tally"), 34.6, 0.3);
-	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 34.8);
-	d.pop(one("pkg"), 35.0);
-	// Cut: the claim.
-	hide([heads[8], ...legs, one("pkg")], 37.4);
-	word(one("z-big"), 37.7);
-	show(one("z-sub"), 38.1);
+	show(one("tally"), 32.2);
+	hide(one("tally"), 33.6, 0.3);
+	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 33.8);
+	show(one("pkg"), 34.0);
+	show(heads[5], 34.0);
+
+	// ——— claim ———
+	tl.addLabel("claim", 37.6);
+	hide([heads[4], heads[5], ...legs, one("pkg")], 37.6);
+	word(one("z-big"), 37.9);
+	show(one("z-sub"), 38.3);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 42);
+	hide(kids("claim"), 42.0);
+	d.close(42.0);
 	return tl;
 }
 
@@ -736,6 +743,7 @@ export const multiLegStructuresFilm: Film = {
 		{ id: "straddle", label: ["A straddle", "跨式"] },
 		{ id: "condor", label: ["An iron condor", "铁鹰"] },
 		{ id: "package", label: ["One package", "一个整体"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
