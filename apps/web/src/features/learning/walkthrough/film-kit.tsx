@@ -854,6 +854,11 @@ export function createDirector(
 		const flyer = layer ? (from.cloneNode(true) as SVGGraphicsElement) : from;
 		if (flyer !== from && layer) {
 			flyer.removeAttribute("data-f");
+			// For the audit: what the copy lands on, and whether it becomes that text or lands
+			// on a figure that is already there (fit: false, a ticket onto a total).
+			flyer.setAttribute("data-to", to.getAttribute("data-f") ?? "");
+			flyer.setAttribute("data-mode", fit ? "become" : "onto");
+			if (match) flyer.setAttribute("data-match", match);
 			flyer.removeAttribute("transform");
 			flyer.style.removeProperty("transform");
 			flyer.style.removeProperty("opacity");
@@ -929,6 +934,21 @@ export function createDirector(
 		// over at once shows no double image.
 		tl.set(flyer, { opacity: 0 }, at + duration);
 		if (reveal) tl.set(to, { opacity: 1 }, at + duration);
+		// A copy landing on one tspan of a line ("15" in "$2.20 · 15") keeps that tspan hidden
+		// until it lands, though another carry has shown the rest of the line: no double glyph.
+		const part = match
+			? [...to.querySelectorAll("tspan")].find(
+					(t) => t.textContent?.trim() === match,
+				)
+			: undefined;
+		if (part) {
+			gsap.set(part, { attr: { "fill-opacity": 0, "stroke-opacity": 0 } });
+			tl.set(
+				part,
+				{ attr: { "fill-opacity": 1, "stroke-opacity": 1 } },
+				at + duration,
+			);
+		}
 	};
 	/**
 	 * A shape turns over about the vertical line at `x`, like a card: the shape a mirror
