@@ -111,29 +111,26 @@ const copy = {
 		`一股：ALFA ${count(SHARES)} 份中的一份。`,
 	],
 	sliceHeadShort: ["A share: one slice of ALFA.", "一股：ALFA 的一份。"],
-	moveHead: [
-		"Each $1 move: $100 to you, $50 million to ALFA.",
-		"每动 $1：你 $100，ALFA 5,000 万美元。",
-	],
+	moveHead: ["Each $1 move: $100 to you.", "每动 $1：你 $100。"],
 	moveHeadShort: ["Each $1: $100 to you.", "每动 $1：你 $100。"],
 	yours: [`your ${MINE} shares`, `你的 ${MINE} 股`],
 	company: [`ALFA, ${count(SHARES)} shares`, `ALFA，${count(SHARES)} 股`],
 	companyShort: ["ALFA, all shares", "ALFA，全部股份"],
 	bookHead: [
-		`Bid ${usd(BIDS[0].price)}, ask ${usd(alfaStockBook.asks[0].price)}; last ${usd(alfaStockBook.last)}.`,
-		`买价 ${usd(BIDS[0].price)}，卖价 ${usd(alfaStockBook.asks[0].price)}；最新 ${usd(alfaStockBook.last)}。`,
+		`Bid ${usd(BIDS[0].price)}, ask ${usd(alfaStockBook.asks[0].price)}.`,
+		`买价 ${usd(BIDS[0].price)}，卖价 ${usd(alfaStockBook.asks[0].price)}。`,
 	],
 	bookHeadShort: [
 		`Bid ${usd(BIDS[0].price)}, ask ${usd(alfaStockBook.asks[0].price)}.`,
 		`买价 ${usd(BIDS[0].price)}，卖价 ${usd(alfaStockBook.asks[0].price)}。`,
 	],
 	buyHead: [
-		`Buy 10: ${usd(BUY10.notional)}. Sell 10: ${usd(SELL10.notional)}.`,
-		`买 10 股：${usd(BUY10.notional)}；卖 10 股：${usd(SELL10.notional)}。`,
+		`Buying 10 costs ${Math.round(BUY10.notional - SELL10.notional)}¢ more than selling.`,
+		`买 10 股比卖出多付 ${Math.round(BUY10.notional - SELL10.notional)} 美分。`,
 	],
 	buyHeadShort: [
-		`Buy ${usd(BUY10.notional)}, sell ${usd(SELL10.notional)}.`,
-		`买 ${usd(BUY10.notional)}，卖 ${usd(SELL10.notional)}。`,
+		`Buying 10: ${Math.round(BUY10.notional - SELL10.notional)}¢ more than selling.`,
+		`买 10 股比卖出多付 ${Math.round(BUY10.notional - SELL10.notional)} 美分。`,
 	],
 	bigHead: [
 		`Buy ${count(BIG)} at once: the offers run out.`,
@@ -169,10 +166,7 @@ const copy = {
 		"You trade against the quote, not the last price.",
 		"你按报价成交，而不是按最新成交价。",
 	],
-	claimSub: [
-		"Buy at the ask, sell at the bid, and know what the underlying is.",
-		"按卖价买，按买价卖，并弄清标的是什么。",
-	],
+	claimSub: ["Buy at the ask, sell at the bid.", "按卖价买，按买价卖。"],
 	nextBig: ["Next: options, a paid right", "下一课：期权，付费的权利"],
 	nextSub: ["what a call and a put give you", "看涨与看跌赋予你什么"],
 } as const;
@@ -443,12 +437,13 @@ function Scene({
 				] as const
 			).map(([name, side, i, cents]) => {
 				const y = side === "ask" ? L.askY(i) : L.bidY(i);
-				// Born just right of the book, clear of the size that is counting down.
+				// Born just right of the book, clear of the size that is counting down and of
+				// the brackets on its row.
 				return (
 					<text
 						key={name}
 						data-f={name}
-						x={L.bookX + L.bookW + 8}
+						x={L.bookX + L.bookW + 14}
 						y={y + L.rowH / 2 + rowText * 0.36}
 						textAnchor="start"
 						className="wt-film-num wt-film-accent wt-halo"
@@ -706,7 +701,7 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.4);
 	word(one("q-big"), 4.6);
-	show(one("q-line"), 5.8);
+	show(one("q-line"), 5.4);
 
 	// ——— slice: a share and the company ———
 	tl.addLabel("slice", 9.0);
@@ -794,6 +789,8 @@ function build(context: FilmContext) {
 	d.swap(one("p-get"), one("p-pay"), 27.2);
 	d.count(total, 0, 27.5, dollars, SELL10.notional, 0.3);
 	take("ask", BUY_BIG.fills, 27.9, 31.6, { step: 0.8, paid: { from: 0 } });
+	// The hero's lock: the brackets reach the last level the sweep takes.
+	tl.addLabel("hero-lock", 27.9 + (BUY_BIG.fills.length - 1) * 0.8);
 	show(one("p-avg"), 27.9 + BUY_BIG.fills.length * 0.8);
 
 	// ——— kinds: what the underlying is ———
@@ -820,7 +817,7 @@ function build(context: FilmContext) {
 	kindOrder.forEach((kind, i) => {
 		show(one(`col-${kind}`), 32.8 + i * 0.3);
 	});
-	d.swap(heads[5], heads[6], 35.8);
+	d.swap(heads[5], heads[6], 35.7);
 	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 36.2);
 	d.lock(one<SVGGraphicsElement>("lock-index"), 36.2, {
 		around: one("colbg-index"),
