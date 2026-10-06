@@ -28,10 +28,9 @@ export function clearPendingAuthSignIn(): void {
 	}
 }
 
-export function consumePendingAuthSignIn(): AuthSignInMethod | null {
+export function readPendingAuthSignIn(): AuthSignInMethod | null {
 	try {
 		const raw = window.sessionStorage.getItem(PENDING_AUTH_SIGN_IN_KEY);
-		window.sessionStorage.removeItem(PENDING_AUTH_SIGN_IN_KEY);
 		if (!raw) return null;
 		const value = JSON.parse(raw) as Partial<PendingAuthSignIn>;
 		if (
@@ -39,10 +38,12 @@ export function consumePendingAuthSignIn(): AuthSignInMethod | null {
 			typeof value.createdAt !== "number" ||
 			Date.now() - value.createdAt > MAX_PENDING_AUTH_SIGN_IN_AGE_MS
 		) {
+			clearPendingAuthSignIn();
 			return null;
 		}
 		return value.method;
 	} catch {
+		clearPendingAuthSignIn();
 		return null;
 	}
 }

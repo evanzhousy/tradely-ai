@@ -36,11 +36,15 @@ export function GuestImportPanel({
 	onGuest: () => void;
 }) {
 	const { locale } = useI18n();
-	const { capture } = useAnalytics();
+	const { capture, captureException } = useAnalytics();
 	const submit = useServerFn(importGuestLearning);
 	const [handoff, setHandoff] = useState<GuestHandoff | null>(null);
 	const [failure, setFailure] = useState<Failure | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [saved, setSaved] = useState<{
+		attemptId: string;
+		completed: boolean;
+	} | null>(null);
 	const [existingId, setExistingId] = useState<string>();
 	const [canSeparate, setCanSeparate] = useState(false);
 	const active = useRef(true);
@@ -96,6 +100,10 @@ export function GuestImportPanel({
 					});
 					return;
 				}
+				setSaved({
+					attemptId: result.view.attemptId,
+					completed: result.completed,
+				});
 				if (!result.replayed)
 					capture("guest_work_import_succeeded", {
 						lesson_id: lessonId,
@@ -107,7 +115,15 @@ export function GuestImportPanel({
 				} catch {
 					/* Server confirmation is durable; a retained copy is safe to retry. */
 				}
-				onSaved(result.view.attemptId);
+				try {
+					onSaved(result.view.attemptId);
+				} catch (error) {
+					// Persistence already succeeded; navigation cannot turn it into a save failure.
+					captureException(error, {
+						source: "lesson_completion",
+						lesson_id: lessonId,
+					});
+				}
 			} catch {
 				if (active.current) {
 					setFailure("unavailable");
@@ -121,7 +137,7 @@ export function GuestImportPanel({
 				if (active.current) setBusy(false);
 			}
 		},
-		[capture, handoff, lessonId, onSaved, submit, userId],
+		[capture, captureException, handoff, lessonId, onSaved, submit, userId],
 	);
 	useEffect(() => {
 		if (handoff && !failure && !attempted.current) {
@@ -145,6 +161,23 @@ export function GuestImportPanel({
 		failure && Object.hasOwn(copy, failure)
 			? copy[failure as keyof typeof copy][locale]
 			: copy.unavailable[locale];
+	if (saved) {
+		return (
+			<Alert>
+				<AlertTitle>
+					{saved.completed ? copy.saved[locale] : copy.savedDraft[locale]}
+				</AlertTitle>
+				<AlertDescription>
+					<HeroLink
+						href={`/learn/${encodeURIComponent(lessonId)}?attempt=${encodeURIComponent(saved.attemptId)}`}
+						className={buttonVariants({ variant: "outline" })}
+					>
+						{copy.openSaved[locale]}
+					</HeroLink>
+				</AlertDescription>
+			</Alert>
+		);
+	}
 	return (
 		<Alert aria-busy={busy}>
 			<AlertTitle>

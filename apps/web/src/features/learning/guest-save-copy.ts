@@ -26,6 +26,7 @@ export const guestSaveCopy = {
 	},
 	saved: { en: "Your result is saved", zh: "结果已保存" },
 	savedDraft: { en: "Your progress is saved", zh: "进度已保存" },
+	openSaved: { en: "Open saved exercise", zh: "打开已保存的练习" },
 	next: { en: "Continue to the next lesson", zh: "继续下一节课" },
 	recovery: { en: "Keep your guest work", zh: "保留访客练习" },
 	existing_work: {

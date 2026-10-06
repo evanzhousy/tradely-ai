@@ -61,7 +61,10 @@ function persistConsentStorage(consent: Exclude<AnalyticsConsent, "unknown">) {
 
 const SEND_BEACON_EVENTS = new Set<AnalyticsEventName>([
 	"analytics_consent_updated",
+	"auth_sign_in_completed",
 	"billing_action_redirected",
+	"guest_work_save_requested",
+	"guest_work_import_succeeded",
 	"lesson_completed",
 	"lesson_video_completed",
 	"tradingflow_link_opened",

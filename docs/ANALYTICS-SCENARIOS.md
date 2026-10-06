@@ -74,6 +74,14 @@ The initial film start is recorded when playback actually starts, not when a
 timeline is constructed or a hidden player is mounted. These changes require
 deployment and live observation before production measurement claims.
 
+Sign-in markers are acknowledged only after capture acceptance, with up to three
+brief retries for local rejection and cancellation on consent withdrawal.
+Restored sessions do not emit sign-in completion without a fresh pending marker.
+Sign-in completion and guest-save navigation milestones use the existing immediate
+transport. Guest import success remains server-confirmed and idempotent; a failed
+post-save navigation emits a bounded UI exception and keeps a confirmed-save
+fallback, never a false `guest_work_import_failed` event.
+
 - `$pageview` accompanies `page_viewed` for the same visit. Do not add them together
   as separate visits.
 - `$identify`/`$set` associate the permitted Tradely user ID and `auth_provider`.
