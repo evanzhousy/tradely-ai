@@ -340,7 +340,9 @@ function Scene({
 							textAnchor="end"
 							className="wt-small wt-halo"
 						>
-							{t(copy.premium)}
+							{/* The figure white, like the question's $420 that lands on it. */}
+							{t(copy.premium).replace(usd(PREMIUM * 100, 0), "")}
+							<tspan className="wt-film-num">{usd(PREMIUM * 100, 0)}</tspan>
 						</text>
 						<path
 							data-f="call-line"
