@@ -34,8 +34,8 @@ import {
  *   open      0–4        "Holders and writers"
  *   question  4–8.8      short 1 Oct 18 95 put: if assigned?
  *   rights    8.8–16.6   holders may, writers must; yours: buy at $95
- *   track     16.6–23.8  buy to open, sell to close, sell to open, buy to close
- *   assign    23.8–27.4  you exercise; the notice goes to the clearinghouse
+ *   track     16.6–23.6  buy to open, sell to close, sell to open, buy to close
+ *   assign    23.6–27.4  you exercise; the notice goes to the clearinghouse
  *   pick      27.4–32.4  hero: assigned at random, Eli, not Ben
  *   settle    32.4–37    Eli pays $9,500 for $8,800 of shares
  *   claim     37–41.4    the holder decides; a writer is assigned
@@ -598,10 +598,10 @@ function build(context: FilmContext) {
 		d.lock(lockCell, 10.2 + i * 0.7, { around: box(key), pad: 5 });
 	});
 	// Yours: the short put. The others step back.
-	d.swap(heads[0], heads[1], 13.0);
-	fade(lockCell, 13.2);
-	fade(order.filter((key) => key !== "put-short").map(cell), 13.3, 0.35);
-	d.lock(g("lock-you"), 13.5, { around: box("put-short"), pad: 5 });
+	d.swap(heads[0], heads[1], 12.7);
+	fade(lockCell, 12.9);
+	fade(order.filter((key) => key !== "put-short").map(cell), 13, 0.35);
+	d.lock(g("lock-you"), 13.2, { around: box("put-short"), pad: 5 });
 
 	// ——— track: the same trade opens or closes ———
 	tl.addLabel("track", 16.6);
@@ -629,9 +629,9 @@ function build(context: FilmContext) {
 	});
 
 	// ——— assign: the exercise goes to the clearinghouse ———
-	tl.addLabel("assign", 23.8);
-	hide([heads[2], ...flat("track"), moves[3]], 23.8);
-	show(heads[3], 24.0);
+	tl.addLabel("assign", 23.6);
+	hide([heads[2], ...flat("track"), moves[3]], 23.6);
+	show(heads[3], 23.75);
 	show(nodes[0], 24.4);
 	tl.fromTo(
 		one("arrow-in"),
@@ -653,11 +653,12 @@ function build(context: FilmContext) {
 	tl.addLabel("pick", 27.4);
 	d.swap(heads[3], heads[4], 27.4);
 	const spin = ["ben", "cara", "eli", "ben", "cara", "eli"];
-	let at = 27.8;
+	let at = 27.6;
 	spin.forEach((id, i) => {
 		d.lock(lockPick, at, { around: g(`n-${id}-box`), pad: 5 });
-		at += [0.22, 0.26, 0.32, 0.4, 0.52, 0][i];
+		at += [0.2, 0.24, 0.3, 0.38, 0.48, 0][i];
 	});
+	tl.addLabel("hero-lock", at);
 	writers.forEach((w) => {
 		if (w.id !== ASSIGNED)
 			fade([one(`arrow-${w.id}`), one(`n-${w.id}`)], at + 0.3, 0.3);
