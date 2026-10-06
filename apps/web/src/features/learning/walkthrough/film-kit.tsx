@@ -500,6 +500,10 @@ export function createDirector(
 	/** The children of a named group, to bring in or send off one by one. */
 	const kids = (name: string) => q<SVGElement>(`[data-f="${name}"] > *`);
 	const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+	/** The top layer carries fly in; cleared on every build, so a rebuild starts empty. */
+	const layer = one("carry-layer");
+	layer?.replaceChildren();
+	const svgNS = "http://www.w3.org/2000/svg";
 
 	const hidden = (targets: Targets) => gsap.set(targets, { opacity: 0 });
 	/** A line of type arrives from just beside its place. */
@@ -519,8 +523,13 @@ export function createDirector(
 			{ opacity: 1, y: 0, x: 0, duration },
 			at,
 		);
-	/** A cut sends type up and away. */
-	const hide = (targets: Targets, at: number, duration = 0.35, lift = 12) =>
+	/** A cut sends type up and away; on a phone it fades where it is, clear of the corner tag. */
+	const hide = (
+		targets: Targets,
+		at: number,
+		duration = 0.35,
+		lift = frame.narrow ? 0 : 12,
+	) =>
 		tl.to(targets, { opacity: 0, y: -lift, duration, ease: "power2.in" }, at);
 	/**
 	 * One line of type gives way to the next in the same place, never both at once: the old
@@ -604,18 +613,53 @@ export function createDirector(
 	) => {
 		const length = path.getTotalLength();
 		const dash = getComputedStyle(path).strokeDasharray;
-		// Dash and gap both the line's length: a single number would be merged into a dashed
-		// line's own pattern ("736px, 4px") and show the line ahead of the pen.
-		tl.fromTo(
-			path,
-			{ strokeDasharray: `${length} ${length}`, strokeDashoffset: length },
-			{ strokeDashoffset: 0, duration, ease },
-			at,
-		);
-		// Up at once: the dash already hides what isn't drawn. Starting from 0 keeps a round
-		// cap from showing as a dot before the draw.
+		const dashed = Boolean(dash) && dash !== "none";
+		if (dashed && layer) {
+			// A dashed line keeps its dashes while it draws: a solid copy of it in a mask is
+			// what draws, and the mask comes off once the line is whole.
+			const id = `trace-${Math.random().toString(36).slice(2, 9)}`;
+			const mask = document.createElementNS(svgNS, "mask");
+			mask.setAttribute("id", id);
+			mask.setAttribute("maskUnits", "userSpaceOnUse");
+			const reveal = document.createElementNS(svgNS, "path");
+			reveal.setAttribute("d", path.getAttribute("d") ?? "");
+			reveal.setAttribute("fill", "none");
+			reveal.setAttribute("stroke", "white");
+			reveal.setAttribute(
+				"stroke-width",
+				String(
+					(Number.parseFloat(getComputedStyle(path).strokeWidth) || 2) + 6,
+				),
+			);
+			reveal.setAttribute("stroke-linecap", "round");
+			mask.append(reveal);
+			layer.append(mask);
+			tl.set(
+				path,
+				{ attr: { mask: `url(#${id})` }, immediateRender: false },
+				at,
+			);
+			tl.fromTo(
+				reveal,
+				{ strokeDasharray: `${length} ${length}`, strokeDashoffset: length },
+				{ strokeDashoffset: 0, duration, ease },
+				at,
+			);
+			tl.set(path, { attr: { mask: "none" } }, at + duration);
+		} else {
+			// Dash and gap both the line's length: a single number would be merged into a
+			// dashed line's own pattern ("736px, 4px") and show the line ahead of the pen.
+			tl.fromTo(
+				path,
+				{ strokeDasharray: `${length} ${length}`, strokeDashoffset: length },
+				{ strokeDashoffset: 0, duration, ease },
+				at,
+			);
+			tl.set(path, { strokeDasharray: dash || "none" }, at + duration);
+		}
+		// Up at once: what isn't drawn is hidden already. Starting from 0 keeps a round cap
+		// from showing as a dot before the draw.
 		tl.fromTo(path, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
-		tl.set(path, { strokeDasharray: dash || "none" }, at + duration);
 		if (!tip) return;
 		const pen = { done: 0 };
 		const place = () => {
@@ -763,8 +807,36 @@ export function createDirector(
 		const ay = a.y + a.height / 2;
 		const lead = "power3.out";
 		const trail = "power2.in";
+		// What flies is a copy in the top layer, so nothing drawn later covers it; it reads
+		// the original's text and colour as it goes, in case a count changed them.
+		const flyer = layer ? (from.cloneNode(true) as SVGGraphicsElement) : from;
+		if (flyer !== from && layer) {
+			flyer.removeAttribute("data-f");
+			flyer.removeAttribute("transform");
+			flyer.style.removeProperty("transform");
+			flyer.style.removeProperty("opacity");
+			layer.append(flyer);
+			gsap.set(flyer, { opacity: 0 });
+			const sync = () => {
+				if (!from.firstElementChild) flyer.textContent = from.textContent;
+				flyer.setAttribute("class", from.getAttribute("class") ?? "");
+			};
+			tl.set(from, { opacity: 0 }, at);
+			tl.fromTo(
+				flyer,
+				{ opacity: 1 },
+				{
+					opacity: 1,
+					duration,
+					immediateRender: false,
+					onStart: sync,
+					onUpdate: sync,
+				},
+				at,
+			);
+		}
 		tl.to(
-			from,
+			flyer,
 			{
 				x: b.x + b.width / 2 - ax,
 				duration,
@@ -773,7 +845,7 @@ export function createDirector(
 			at,
 		);
 		tl.to(
-			from,
+			flyer,
 			{
 				y: b.y + b.height / 2 - ay,
 				scale: fit ? b.height / a.height : 1,
@@ -783,7 +855,7 @@ export function createDirector(
 			},
 			at,
 		);
-		tl.set(from, { opacity: 0 }, at + duration);
+		tl.set(flyer, { opacity: 0 }, at + duration);
 		if (reveal)
 			tl.fromTo(
 				to,

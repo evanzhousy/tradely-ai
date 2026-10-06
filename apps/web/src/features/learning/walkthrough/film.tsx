@@ -123,6 +123,8 @@ export function FilmStage({
 						height={height}
 						locale={locale}
 					/>
+					{/* Above everything the Scene draws: what `director.carry` flies. */}
+					<g key={`carry:${width}:${locale}`} data-f="carry-layer" />
 				</svg>
 			)}
 		</div>
