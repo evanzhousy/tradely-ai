@@ -47,7 +47,9 @@ await page.evaluate(() => {
 		o(...a);
 	};
 });
-await page.click('loc=css:[data-nav="play"]', { label: "pause the film" });
+// Pause through the player's own button, clicked in the page: a layout's overlay can sit
+// over it on a phone, and the player would otherwise keep driving the timeline.
+await page.evaluate(() => document.querySelector('[data-nav="play"]').click());
 const clip = await page.evaluate(() => {
 	const el = document.querySelector(".wt-player");
 	window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 70);

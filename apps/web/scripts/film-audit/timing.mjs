@@ -1,8 +1,9 @@
 // One page of the film audit (run by film-audit.sh in ego-browser). Audits a film's timing and
 // copy from its timeline: every headline's hold, the question line, the claim and its second
 // line, headline length and figures, the hero lock's share of the runtime (label "hero-lock"),
-// the runtime and class names. Warns when a headline states a figure the stage doesn't show
-// yet ("made, not stated"). env: SPACE, LESSON, SIZE, LOCALE, PORT
+// the runtime, class names, and headlines stacked on one another. Warns when a headline
+// states a figure the stage doesn't show yet ("made, not stated").
+// env: SPACE, LESSON, SIZE, LOCALE, PORT
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
 const [w, h, dpr] = env.SIZE.replace("m", "").split("x").map(Number);
@@ -24,7 +25,9 @@ await page.waitForSelector("loc=css:.wt-film-svg", {
 	timeout: 90000,
 });
 await page.waitForTimeout(1200);
-await page.click('loc=css:[data-nav="play"]', { label: "pause the film" });
+// Pause through the player's own button, clicked in the page: a layout's overlay can sit
+// over it on a phone, and the player would otherwise keep driving the timeline.
+await page.evaluate(() => document.querySelector('[data-nav="play"]').click());
 const out = await page.evaluate(() => {
 	const tl = window.__tradelyFilm;
 	tl.pause();
@@ -48,7 +51,8 @@ const out = await page.evaluate(() => {
 			const v = tw.vars;
 			if (!("opacity" in v)) continue;
 			const s = Math.round(tw.startTime() * 100) / 100;
-			if (v.opacity === 0) ev.push(["hide", s]);
+			// A hide's third value: when it is gone.
+			if (v.opacity === 0) ev.push(["hide", s, s + tw.duration()]);
 			else if (Number(v.opacity) >= 0.9) ev.push(["show", s]);
 		}
 		return ev.sort((a, b) => a[1] - b[1]);
@@ -107,6 +111,33 @@ const out = await page.evaluate(() => {
 					`${r.name} at ${r.show.toFixed(2)} states ${f} before the stage shows it`,
 				);
 	}
+	// Two headlines never share the stage where they overlap: one that comes up while another
+	// is still on, or still fading out, in the same place.
+	const spans = [];
+	for (const el of lines) {
+		const name = el.getAttribute("data-f");
+		if (!/-head$/.test(name)) continue;
+		const ev = events(el);
+		const box = el.getBBox();
+		for (const [, s] of ev.filter(([k, s]) => k === "show" && s > 0.05)) {
+			const next = ev.find(([k, t]) => k === "hide" && t > s);
+			spans.push({ name, from: s, to: next ? next[2] : duration, box });
+		}
+	}
+	const meet = (a, b) =>
+		a.x < b.x + b.width - 2 &&
+		b.x < a.x + a.width - 2 &&
+		a.y < b.y + b.height - 2 &&
+		b.y < a.y + a.height - 2;
+	const stacked = [];
+	for (const [i, a] of spans.entries())
+		for (const b of spans.slice(i + 1)) {
+			const both = Math.min(a.to, b.to) - Math.max(a.from, b.from);
+			if (a.name !== b.name && both > 0.02 && meet(a.box, b.box))
+				stacked.push(
+					`${a.name} and ${b.name} share their place for ${both.toFixed(2)} s at ${Math.max(a.from, b.from).toFixed(2)}`,
+				);
+		}
 	const bad = new Set();
 	for (let t = 0; t <= duration; t += 1) {
 		tl.seek(t, false);
@@ -119,6 +150,7 @@ const out = await page.evaluate(() => {
 		heroLock: tl.labels["hero-lock"],
 		rows,
 		badClasses: [...bad],
+		stacked,
 		stated,
 	};
 });
@@ -166,6 +198,7 @@ else {
 		);
 }
 for (const c of out.badClasses) fails.push(`class "${c}"`);
+for (const s of out.stacked) fails.push(`stacked: ${s}`);
 console.log(
 	JSON.stringify({
 		lesson: env.LESSON,

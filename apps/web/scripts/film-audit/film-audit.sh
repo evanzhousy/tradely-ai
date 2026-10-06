@@ -51,14 +51,23 @@ server_down() { if [ -n "$VITE" ]; then pkill -P "$VITE" 2>/dev/null; kill "$VIT
 trap server_down EXIT
 
 # run SCRIPT KEY=VALUE... : one page script in ego-browser with an `env` object in front of it.
+# A page that returns nothing gets one retry; the raw output of a failed attempt is kept in
+# $OUT/run-failed.txt.
 run() {
-	local script="$1"; shift
-	{
-		printf 'const env = {'
-		for kv in "$@"; do printf ' %s: %s,' "${kv%%=*}" "$(python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${kv#*=}")"; done
-		printf ' };\n'
-		cat "$HERE/$script"
-	} | ego-browser nodejs 2>&1 | grep '^{' | head -1
+	local script="$1" raw out; shift
+	for _ in 1 2; do
+		raw="$({
+			printf 'const env = {'
+			for kv in "$@"; do printf ' %s: %s,' "${kv%%=*}" "$(python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${kv#*=}")"; done
+			printf ' };\n'
+			cat "$HERE/$script"
+		} | ego-browser nodejs 2>&1)"
+		# The result is the first JSON object, even with a warning printed in front of it.
+		out="$(sed -n 's/^[^{]*\({".*\)$/\1/p' <<< "$raw" | head -1)"
+		[ -n "$out" ] && break
+		printf '%s %s\n%s\n' "$script" "$*" "$raw" > "$OUT/run-failed.txt"
+	done
+	echo "$out"
 }
 
 CONFIGS="1440x900x1:en 1440x900x1:zh 390x844x2m:en 390x844x2m:zh"

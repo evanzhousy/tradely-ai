@@ -308,7 +308,8 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
    - the claim held under 4 s, or its second line over 9 words (22 Chinese characters) unless held 4.5 s;
    - a headline over 8 words (18 Chinese characters) or with more than two figures;
    - a runtime over 45.5 s, or a `hero-lock` label missing or outside 55–65 % of it;
-   - a class token with two `wt-` names run together.
+   - a class token with two `wt-` names run together;
+   - two headlines on stage at once where their boxes overlap, counting the 0.35 s an outgoing one takes to fade: after a cut's `hide`, show the next headline 0.35 s later (as `swap` does), not 0.2 s.
 
    It warns (without failing) when a headline names a dollar figure or a percentage that no stage text shows 0.3 s after the headline appears: made, not stated.
 

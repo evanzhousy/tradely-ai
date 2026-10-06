@@ -31,7 +31,9 @@ await page.waitForSelector("loc=css:.wt-film-svg", {
 	timeout: 90000,
 });
 await page.waitForTimeout(1200);
-await page.click('loc=css:[data-nav="play"]', { label: "pause the film" });
+// Pause through the player's own button, clicked in the page: a layout's overlay can sit
+// over it on a phone, and the player would otherwise keep driving the timeline.
+await page.evaluate(() => document.querySelector('[data-nav="play"]').click());
 const hits = await page.evaluate((end) => {
 	const tl = window.__tradelyFilm;
 	tl.pause();
