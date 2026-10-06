@@ -630,7 +630,8 @@ function build(context: FilmContext) {
 
 	// ——— assign: the exercise goes to the clearinghouse ———
 	tl.addLabel("assign", 23.6);
-	hide([heads[2], ...flat("track"), moves[3]], 23.6);
+	// Quickly: the next headline comes up 0.15 s later in the same place.
+	hide([heads[2], ...flat("track"), moves[3]], 23.6, 0.15);
 	show(heads[3], 23.75);
 	show(nodes[0], 24.4);
 	tl.fromTo(
@@ -668,14 +669,17 @@ function build(context: FilmContext) {
 	// ——— settle: Eli pays the strike for shares worth less ———
 	tl.addLabel("settle", 32.4);
 	d.swap(heads[4], heads[5], 32.4);
+	// Quickly: the settlement's figures come up where the nodes were.
 	hide(
 		[...nodes, one("arrow-in"), ...writers.map((w) => one(`arrow-${w.id}`))],
 		32.4,
+		0.15,
 	);
 	fade(lockPick, 32.4);
-	show([one("s-pays-tag"), one("s-worth-tag")], 32.8);
-	word(one("s-pays-num"), 32.9);
-	word(one("s-worth-num"), 33.3);
+	// The figures come up with the headline that names them.
+	show([one("s-pays-tag"), one("s-worth-tag")], 32.45);
+	word(one("s-pays-num"), 32.5);
+	word(one("s-worth-num"), 32.6);
 	show(one("s-line"), 33.9);
 
 	// ——— claim ———

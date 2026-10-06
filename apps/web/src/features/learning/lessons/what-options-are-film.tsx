@@ -193,10 +193,7 @@ const copy = {
 		`最多 ${signedUsd(-viewCost * 100, 0)}`,
 	],
 	result: ["result at Oct 18", "10月18日 的结果"],
-	sidesHead: [
-		`At $${HIGH}, your gain is Ben's loss.`,
-		`在 $${HIGH}，你的盈利就是 Ben 的亏损。`,
-	],
+	sidesHead: ["Your gain is Ben's loss.", "你的盈利就是 Ben 的亏损。"],
 	sidesHeadShort: ["Your gain is Ben's loss.", "你赚的就是 Ben 亏的。"],
 	you: ["you · holder", "你 · 持有人"],
 	ben: ["Ben · writer", "Ben · 义务方"],

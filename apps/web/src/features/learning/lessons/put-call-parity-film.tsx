@@ -107,10 +107,7 @@ const copy = {
 		"ALFA ends at $90. What are both worth?",
 		"ALFA 收于 $90，两者合计值多少？",
 	],
-	legsHead: [
-		"Long call $0, short put −$1,000.",
-		"看涨多头 $0，看跌空头 −$1,000。",
-	],
+	legsHead: ["Two legs, valued at $90.", "两条腿，在 $90 估值。"],
 	sumHead: [
 		"Together: one line, like 100 shares.",
 		"合起来：一条直线，就像 100 股。",
@@ -128,10 +125,7 @@ const copy = {
 	alfa: ["ALFA", "ALFA"],
 	call: ["call", "看涨"],
 	put: ["put", "看跌"],
-	offHead: [
-		`A 14:12 call print looks $${GAP.toFixed(2)} off.`,
-		`14:12 一笔看涨成交，看似偏离 $${GAP.toFixed(2)}。`,
-	],
+	offHead: ["One 14:12 print looks off.", "14:12 有一笔成交看似偏离。"],
 	lateHead: ["It executed at 13:58: in line.", "它在 13:58 成交：符合平价。"],
 	inLine: ["in line", "符合"],
 	off: ["off", "偏离"],
@@ -709,7 +703,8 @@ function build(context: FilmContext) {
 	// ——— debit: net of premiums ———
 	tl.addLabel("debit", 17.0);
 	d.swap(heads[1], heads[2], 17.0);
-	show(one("debit"), 17.6);
+	// Its line first: the headline that names $100.15 follows.
+	show(one("debit"), 17.05);
 
 	// ——— identity: the hero. ALFA walks from $97 to $102 and both sides move together. ———
 	tl.addLabel("identity", 21);

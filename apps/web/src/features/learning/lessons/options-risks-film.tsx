@@ -110,14 +110,8 @@ const copy = {
 		"Right about the direction, and still down. How?",
 		"方向判断对了，却还在亏。为什么？",
 	],
-	boughtHead: [
-		"Bought at $4.20, 32 days out.",
-		"以 $4.20 买入，距到期 32 天。",
-	],
-	boughtHeadShort: [
-		"Bought at $4.20, 32 days out.",
-		"以 $4.20 买入，距到期 32 天。",
-	],
+	boughtHead: ["Bought with 32 days to go.", "距到期 32 天时买入。"],
+	boughtHeadShort: ["Bought, 32 days out.", "距到期 32 天买入。"],
 	timeHead: ["Time wears the call down.", "时间磨损看涨期权。"],
 	timeHeadShort: ["Time wears it down.", "时间磨损它。"],
 	crushHead: ["Then implied volatility falls.", "接着隐含波动率下降。"],
@@ -130,10 +124,7 @@ const copy = {
 	lowIvShort: ["IV 25%", "IV 25%"],
 	value: ["call value", "看涨价值"],
 	pnl: ["your result", "你的盈亏"],
-	writerHead: [
-		"Ben writes it for $420: no floor.",
-		"Ben 以 $420 卖出：亏损没有下限。",
-	],
+	writerHead: ["Ben writes it: no floor.", "Ben 卖出：亏损没有下限。"],
 	writerHeadShort: ["Ben writes it: no floor.", "Ben 卖出：没有下限。"],
 	buyerHead: ["And the buyer?", "那买方呢？"],
 	buyerFloorHead: ["At most −$420.", "最多 −$420。"],
@@ -147,14 +138,8 @@ const copy = {
 		"5 张一来一回：价差就是成本。",
 	],
 	costHeadShort: ["A round trip of 5.", "5 张的一来一回。"],
-	beHead: [
-		`Thin call: the bid must reach $${(THIN.breakeven / 100).toFixed(2)}.`,
-		`冷门看涨：买价要涨到 $${(THIN.breakeven / 100).toFixed(2)}。`,
-	],
-	beHeadShort: [
-		`Break even: bid $${(THIN.breakeven / 100).toFixed(2)}.`,
-		`保本：买价 $${(THIN.breakeven / 100).toFixed(2)}。`,
-	],
+	beHead: ["A thin call needs a higher bid.", "冷门看涨需要更高的买价。"],
+	beHeadShort: ["Thin: a higher bid.", "冷门：买价要更高。"],
 	beOnStageShort: [
 		`break even $${(THIN.breakeven / 100).toFixed(2)}`,
 		`保本 $${(THIN.breakeven / 100).toFixed(2)}`,

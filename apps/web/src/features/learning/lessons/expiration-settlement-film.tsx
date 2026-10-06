@@ -86,10 +86,7 @@ const copy = {
 	sell: ["sell at the bid", "按买价卖出"],
 	exercise: ["exercise", "行权"],
 	qLine: ["Which gets you more?", "哪个拿到的更多？"],
-	exitHead: [
-		"Exercise gives up the $0.40 time value.",
-		"行权会放弃 $0.40 的时间价值。",
-	],
+	exitHead: ["Exercise gives up the time value.", "行权会放弃时间价值。"],
 	exitHeadShort: ["Exercise drops the time value.", "行权丢掉时间价值。"],
 	sameHead: ["On Oct 18, both are $7.00.", "10月18日，两者都是 $7.00。"],
 	intrinsic: ["intrinsic", "内在价值"],
@@ -112,7 +109,10 @@ const copy = {
 	],
 	american: ["American", "美式"],
 	european: ["European", "欧式"],
-	pinHead: ["Oct 18: ALFA closes at $100.02.", "10月18日：ALFA 收于 $100.02。"],
+	pinHead: [
+		"Oct 18: ALFA closes just over $100.",
+		"10月18日：ALFA 收在 $100 上方一点。",
+	],
 	autoHead: ["Two cents in: exercised.", "实值 2 美分：自动行权。"],
 	writerHead: [
 		"A writer can be assigned after hours.",
@@ -770,7 +770,8 @@ function build(context: FilmContext) {
 
 	// ——— settle: shares for ALFA ———
 	tl.addLabel("settle", 15.6);
-	hide([heads[0], heads[1], ...flat("exit")], 15.6);
+	// Quickly: the next headline comes up 0.15 s later in the same place.
+	hide([heads[0], heads[1], ...flat("exit")], 15.6, 0.15);
 	show(heads[2], 15.75);
 	show(
 		kids("shares").filter((el) => !el.getAttribute("data-f")),
@@ -820,9 +821,10 @@ function build(context: FilmContext) {
 	tl.addLabel("pin", 27.6);
 	hide([heads[4], ...flat("window")], 27.6);
 	show(heads[5], 27.9);
+	// The scale and its strike first: the headline that follows names $100.
 	show(
 		flat("pin").filter((el) => el !== dot),
-		28.1,
+		27.7,
 	);
 	pop(dot, 28.4);
 	d.lock(g("lock-pin"), 28.9, { around: dot, pad: 5 });

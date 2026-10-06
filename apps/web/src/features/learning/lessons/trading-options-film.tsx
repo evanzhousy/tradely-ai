@@ -100,14 +100,8 @@ const copy = {
 	qLine: ["Which costs more?", "哪个更贵？"],
 	chainHead: ["The chain: one row per contract.", "期权链：每份合约一行。"],
 	chainHeadShort: ["Every contract has its own row.", "每份合约各占一行。"],
-	novHead: [
-		`Nov 15 costs ${usd(NOV_ASK * 100, 0)} a contract.`,
-		`11月15日：一张 ${usd(NOV_ASK * 100, 0)}。`,
-	],
-	novHeadShort: [
-		`Nov 15: ${usd(NOV_ASK)}, more time.`,
-		`11月15日：${usd(NOV_ASK)}，时间更长。`,
-	],
+	novHead: ["A later date costs more.", "到期越晚越贵。"],
+	novHeadShort: ["Later costs more.", "越晚越贵。"],
 	contract: [
 		`100 × ${usd(NOV_ASK)} = ${usd(NOV_ASK * 100, 0)} a contract`,
 		`100 × ${usd(NOV_ASK)} = 每张 ${usd(NOV_ASK * 100, 0)}`,
@@ -116,24 +110,12 @@ const copy = {
 	puts: ["puts", "看跌"],
 	strike: ["strike", "行权价"],
 	bidAsk: ["bid · ask", "买价 · 卖价"],
-	thinHead: [
-		"A thin call: $2.20 bid, $2.65 ask.",
-		"冷门看涨：买价 $2.20，卖价 $2.65。",
-	],
-	thinHeadShort: ["A thin call: $2.20 / $2.65.", "冷门看涨：$2.20 / $2.65。"],
-	marketHead: [
-		`Market buy: the ask, ${usd(ASK * 100, 0)}, now.`,
-		`市价买：按卖价，立即 ${usd(ASK * 100, 0)}。`,
-	],
-	marketHeadShort: [
-		`Market: ${usd(ASK * 100, 0)}, now.`,
-		`市价：${usd(ASK * 100, 0)}，立即。`,
-	],
-	limitHead: [
-		"A $2.40 limit waits as the best bid.",
-		"$2.40 限价单成为最优买价，等待。",
-	],
-	limitHeadShort: ["Limit $2.40: it waits.", "限价 $2.40：等待。"],
+	thinHead: ["A thin call: a wide spread.", "冷门看涨：价差很宽。"],
+	thinHeadShort: ["A thin call: a wide spread.", "冷门看涨：价差很宽。"],
+	marketHead: ["A market buy pays the ask, now.", "市价买入：立即按卖价成交。"],
+	marketHeadShort: ["Market: the ask, now.", "市价：立即按卖价。"],
+	limitHead: ["A limit waits as the best bid.", "限价单作为最优买价等待。"],
+	limitHeadShort: ["A limit waits.", "限价单等待。"],
 	fillHead: ["It fills only when a seller comes.", "有卖方来才成交。"],
 	fillHeadShort: ["Fills only if a seller comes.", "有卖方才成交。"],
 	saved: [
@@ -149,14 +131,8 @@ const copy = {
 	pay: ["you pay", "你付出"],
 	waiting: ["waiting", "等待中"],
 	filled: ["filled at $2.40", "以 $2.40 成交"],
-	endHead: [
-		`Bought for ${cents(PAID)}: three ways out.`,
-		`${cents(PAID)} 买入：三种结局。`,
-	],
-	endHeadShort: [
-		`Bought for ${cents(PAID)}: three endings.`,
-		`${cents(PAID)} 买入：三种结局。`,
-	],
+	endHead: ["Bought: three ways out.", "买入之后：三种结局。"],
+	endHeadShort: ["Three ways out.", "三种结局。"],
 	routes: {
 		sell: {
 			name: ["sell to close", "卖出平仓"],

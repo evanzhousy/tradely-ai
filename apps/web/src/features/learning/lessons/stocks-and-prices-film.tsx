@@ -116,14 +116,8 @@ const copy = {
 	yours: [`your ${MINE} shares`, `你的 ${MINE} 股`],
 	company: [`ALFA, ${count(SHARES)} shares`, `ALFA，${count(SHARES)} 股`],
 	companyShort: ["ALFA, all shares", "ALFA，全部股份"],
-	bookHead: [
-		`Bid ${usd(BIDS[0].price)}, ask ${usd(alfaStockBook.asks[0].price)}.`,
-		`买价 ${usd(BIDS[0].price)}，卖价 ${usd(alfaStockBook.asks[0].price)}。`,
-	],
-	bookHeadShort: [
-		`Bid ${usd(BIDS[0].price)}, ask ${usd(alfaStockBook.asks[0].price)}.`,
-		`买价 ${usd(BIDS[0].price)}，卖价 ${usd(alfaStockBook.asks[0].price)}。`,
-	],
+	bookHead: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
+	bookHeadShort: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
 	buyHead: [
 		`Buying 10 costs ${Math.round(BUY10.notional - SELL10.notional)}¢ more than selling.`,
 		`买 10 股比卖出多付 ${Math.round(BUY10.notional - SELL10.notional)} 美分。`,
