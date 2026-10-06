@@ -252,6 +252,17 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 
 The repository forbids unit tests. Verify with type checks, lint, a build and browser checks, and keep every report, screenshot and GIF outside the repository.
 
+The browser checks below are scripted in `apps/web/scripts/film-audit/film-audit.sh` (they drive pages in ego-browser and start a dev server on 8262 for the run; reports go to `$FILM_AUDIT_OUT`, by default `$TMPDIR/tradely-film-audit`):
+
+```bash
+apps/web/scripts/film-audit/film-audit.sh check <id> <END>     # scan + flight check + timing audit, problems only
+apps/web/scripts/film-audit/film-audit.sh timing <id> rows     # every headline's hold
+apps/web/scripts/film-audit/film-audit.sh frames <id> <prefix> 12.5,20 1440x900x1 en
+apps/web/scripts/film-audit/film-audit.sh play <id>...          # real-time playback; FILM_AUDIT_THROTTLE=4 slows the CPU
+```
+
+A film is done when `check` prints nothing but its stamp, warnings included, or each warning has been read and judged deliberate.
+
 1. **Static checks**
    ```bash
    # from the repository root
@@ -298,6 +309,10 @@ The repository forbids unit tests. Verify with type checks, lint, a build and br
    - a headline over 8 words (18 Chinese characters) or with more than two figures;
    - a runtime over 45.5 s, or a `hero-lock` label missing or outside 55–65 % of it;
    - a class token with two `wt-` names run together.
+
+   It warns (without failing) when a headline names a dollar figure or a percentage that no stage text shows 0.3 s after the headline appears: made, not stated.
+
+   The flight check also fails a carry whose target shows before the copy that becomes it lands (the kit tags each copy with `data-to`, `data-mode` and `data-match` for this), and a line whose entrance rises through settled text, sampled every 0.05 s.
 4. **Read the frames yourself.** The scan ignores text inside the camera's world group, so look at contact sheets of the 1440 English and 390 Chinese frames for labels crossing a curve, labels clipped at a plot edge, wrong numbers and awkward copy.
 5. **Play it for real.** Load the lesson with no saved speed, let the film autoplay, and confirm the speed button reads 2×, the player reaches `data-ended` in about half the film's length, "Try the playground" opens the playground (`data-player-mode="play"`), and every playground scene opens without console errors. Radix tabs need real pointer events in automation.
 6. **Build.** `pnpm build` in `apps/web`.
