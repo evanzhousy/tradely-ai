@@ -808,8 +808,10 @@ export function createDirector(
 		const b = boxOfText(to, match ?? from.textContent ?? undefined, last);
 		const ax = a.x + a.width / 2;
 		const ay = a.y + a.height / 2;
+		// The leading axis goes first; the trailing one starts late but also settles, so the
+		// mark lands slowing on both axes instead of hitting its place at speed.
 		const lead = "power3.out";
-		const trail = "power2.in";
+		const trail = "power2.inOut";
 		// What flies is a copy in the top layer, so nothing drawn later covers it; it reads
 		// the original's text and colour as it goes, in case a count changed them.
 		const flyer = layer ? (from.cloneNode(true) as SVGGraphicsElement) : from;
