@@ -530,14 +530,30 @@ export function createDirector(
 			{ opacity: 1, y: 0, x: 0, duration },
 			at,
 		);
-	/** A cut sends type up and away; on a phone it fades where it is, clear of the corner tag. */
+	/**
+	 * A cut sends type up and away; on a phone it fades where it is, clear of the corner tag.
+	 * A mark already moved (a print stepped down the tape) fades where it is too: lifting it
+	 * to a fixed height would slide a whole stack into one row as it went.
+	 */
 	const hide = (
 		targets: Targets,
 		at: number,
 		duration = 0.35,
 		lift = frame.narrow ? 0 : 12,
 	) =>
-		tl.to(targets, { opacity: 0, y: -lift, duration, ease: "power2.in" }, at);
+		tl.to(
+			targets,
+			{
+				opacity: 0,
+				y: (_: number, el: Element) => {
+					const y = Number(gsap.getProperty(el, "y")) || 0;
+					return y === 0 ? -lift : y;
+				},
+				duration,
+				ease: "power2.in",
+			},
+			at,
+		);
 	/**
 	 * One line of type gives way to the next in the same place, never both at once: the old
 	 * one leaves upwards and the new one follows it up from below. On a phone a headline sits
@@ -872,14 +888,27 @@ export function createDirector(
 				at,
 			);
 		}
+		// A kept copy first lifts straight up off its original, so the two never slide apart
+		// along one baseline as a smeared double; then it travels.
+		const rise = keep && flyer !== from ? 0.2 : 0;
+		if (rise)
+			tl.to(
+				flyer,
+				{
+					y: -Math.min(a.height * 0.9, 16),
+					duration: rise,
+					ease: "power2.out",
+				},
+				at,
+			);
 		tl.to(
 			flyer,
 			{
 				x: b.x + b.width / 2 - ax,
-				duration,
+				duration: duration - rise,
 				ease: arc === "x" ? lead : arc === "y" ? trail : "power3.inOut",
 			},
-			at,
+			at + rise,
 		);
 		tl.to(
 			flyer,
@@ -887,10 +916,10 @@ export function createDirector(
 				y: b.y + b.height / 2 - ay,
 				scale: fit ? b.height / a.height : 1,
 				...(flyer === from ? { svgOrigin: `${ax} ${ay}` } : {}),
-				duration,
+				duration: duration - rise,
 				ease: arc === "y" ? lead : arc === "x" ? trail : "power3.inOut",
 			},
-			at,
+			at + rise,
 		);
 		// One swap at the moment it lands: the flyer sits exactly on its text, so handing
 		// over at once shows no double image.
