@@ -9,6 +9,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -30,20 +31,20 @@ import {
  * Audits, as a film. A colleague's recap puts Monday's premium at $1,655.20, and its
  * contracts and prices match the tape: does it pass? The rows answer: recomputed from the
  * trades each is 100 times the report; the multiplier is missing, and the total is
- * $165,520. Then the recap's five claims audited: one supported, three repaired, one
- * removed. Last, the signoff: what passed, what changed, what is still open, and what
- * would reopen it.
+ * $165,520. The hero audits the recap's five claims: one supported, three repaired, and
+ * the forecast cut, where glowing brackets lock. Last, the signoff: what passed, what
+ * changed, what is still open, and what would reopen it.
  *
- *   open      0–4      "Audits"
- *   question  4–9.5    $1,655.20 in premium: pass it?
- *   amount    9.5–19   the report's rows; recomputed; × 100 missing
- *   claims    19–29.5  five claims; supported, defects; repairs
- *   signoff   29.5–37  supported, repaired, open, reopen if
- *   claim     37–39.5  find it, fix it, say what's open
- *   next      39.5–42  Next: the module checkpoint
+ *   open      0–4        "Audits"
+ *   question  4–8.6      $1,655.20 in premium: pass it?
+ *   amount    8.6–19     the report's rows; recomputed; × 100 missing
+ *   claims    19–28.6    hero: five claims; supported, defects; repairs; the forecast cut
+ *   signoff   28.6–35    supported, repaired, open, reopen if
+ *   claim     35–39.4    find it, fix it, say what's open
+ *   next      39.4–41.9  Next: the module checkpoint
  */
 
-const END = 42;
+const END = 41.9;
 const ROWS = mondayPacket;
 const statusTone: Record<Status, string> = {
 	supported: "wt-film-gain",
@@ -86,65 +87,32 @@ const copy = {
 		`权利金：${usd(REPORTED)}。张数和价格都和成交记录一致。`,
 	],
 	qBig: ["Pass it?", "通过吗？"],
-	m0: [
-		"Start from the source rows, not the prose: the report's premium by strike.",
-		"从原始行开始，而不是从文字：报告里各行权价的权利金。",
+	mHead: ["Recompute each row from its trades.", "按成交逐行重算。"],
+	m2Head: [
+		`Every row is 100×: restored, ${dollars(PREMIUM)}.`,
+		`每行都是 100 倍：补回后 ${dollars(PREMIUM)}。`,
 	],
-	m0Short: ["The report's rows.", "报告的各行。"],
-	m1: [
-		"Recompute each from its trades: every row is exactly 100 times the report.",
-		"按成交逐行重算：每一行都恰好是报告的 100 倍。",
-	],
-	m1Short: ["Recomputed: × 100.", "重算：× 100。"],
-	m2: [
-		`The multiplier is missing. Restored: ${dollars(PREMIUM)}, with the 120 call still missing.`,
-		`漏了乘数。补回后：${dollars(PREMIUM)}，120 看涨仍然缺失。`,
-	],
-	m2Short: [`Restored: ${dollars(PREMIUM)}.`, `补回：${dollars(PREMIUM)}。`],
 	report: ["report", "报告"],
 	recomputed: ["recomputed", "重算"],
 	noData: ["no data", "无数据"],
-	c0: [
-		"The recap makes five claims. The premium is only one of them.",
-		"复盘提出了五个结论。权利金只是其中之一。",
+	cHead: ["Then check all five claims.", "再检查全部五个结论。"],
+	c2Head: [
+		"One holds; three repaired, one cut.",
+		"一个成立；三个修复，一个删除。",
 	],
-	c0Short: ["Five claims.", "五个结论。"],
-	c1: [
-		"Checked against packet P1: the scope holds; units, positions, the missing strike and the forecast don't.",
-		"对照研究包 P1：范围成立；单位、持仓、缺失的行权价和预测都不成立。",
-	],
-	c1Short: ["One holds; four don't.", "一个成立，四个不成立。"],
-	c2: [
-		"Rewrite each defect to what P1 shows, and cut the forecast.",
-		"把每个缺陷改写成 P1 能显示的内容，删掉预测。",
-	],
-	c2Short: ["Repair; cut the forecast.", "修复；删掉预测。"],
 	supported: ["supported", "有依据"],
 	scopeShort: ["Oct 18 calls, 100–120, Mon", "10月18日 看涨 100–120，周一"],
 	repaired: ["repaired", "已修复"],
 	removed: ["removed", "已删除"],
-	s0: [
-		"The signoff: what the evidence supports, with its scope and packet.",
-		"签核：证据支持什么，附上范围和研究包。",
-	],
-	s0Short: ["Supported.", "有依据。"],
-	s1: [
-		"Then each repair, and what is still open, with where it will come from.",
-		"然后是每项修复，以及仍未解决的问题和数据来源。",
-	],
-	s1Short: ["Repaired; open.", "已修复；未解决。"],
-	s2: [
-		"Last, what would reopen it. It passes without pretending the gaps are closed.",
-		"最后是重新审查的条件。通过，但不假装缺口已经补上。",
-	],
-	s2Short: ["And what reopens it.", "以及何时重审。"],
+	sHead: ["The signoff keeps the gaps in view.", "签核时把缺口摆在明处。"],
+	s2Head: ["It passes, with what would reopen it.", "通过，并写明何时重审。"],
 	claimBig: [
 		"Find it, fix it, say what's open.",
 		"找到它，修好它，说明未解决的。",
 	],
 	claimSub: [
-		"Recompute from the source, check every claim, not only the one that failed, and sign off with the gaps in view.",
-		"从源头重算，检查每一个结论而不只是出错的那个，签核时把缺口摆在明处。",
+		"Recompute from the source; check every claim.",
+		"从源头重算；检查每一个结论。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
@@ -165,10 +133,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -213,9 +181,22 @@ function Scene({
 			</g>
 
 			{/* The amount, row by row. */}
-			{headline("m0", copy.m0, copy.m0Short)}
-			{headline("m1", copy.m1, copy.m1Short)}
-			{headline("m2", copy.m2, copy.m2Short)}
+			{headline("m-head", copy.mHead)}
+			{/* Each answer, a line under its headline, as the stage makes it. */}
+			<Lines
+				name="m2-head"
+				text={t(copy.m2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.mHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="cols">
 				<text
 					x={margin + room * L.colReport}
@@ -311,9 +292,22 @@ function Scene({
 			</text>
 
 			{/* Five claims. */}
-			{headline("c0", copy.c0, copy.c0Short)}
-			{headline("c1", copy.c1, copy.c1Short)}
-			{headline("c2", copy.c2, copy.c2Short)}
+			{headline("c-head", copy.cHead)}
+			<Lines
+				name="c2-head"
+				text={t(copy.c2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-cut" glow />
 			{claims.map((claim, i) => (
 				<g key={claim.id}>
 					<g data-f={`claim-${i}`}>
@@ -361,9 +355,21 @@ function Scene({
 			))}
 
 			{/* The signoff. */}
-			{headline("s0", copy.s0, copy.s0Short)}
-			{headline("s1", copy.s1, copy.s1Short)}
-			{headline("s2", copy.s2, copy.s2Short)}
+			{headline("s-head", copy.sHead)}
+			<Lines
+				name="s2-head"
+				text={t(copy.s2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.sHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{sections.map((section, i) => (
 				<g key={section.id} data-f={`sec-${i}`}>
 					<rect
@@ -439,16 +445,23 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = ["m0", "m1", "m2", "c0", "c1", "c2", "s0", "s1", "s2"].map(
-		(name) => one(name),
-	);
+	const heads = [
+		"m-head",
+		"m2-head",
+		"c-head",
+		"c2-head",
+		"s-head",
+		"s2-head",
+	].map((name) => one(name));
+	const lockCut = one<SVGGraphicsElement>("lock-cut");
 	const rows = ROWS.map((_, i) => one(`row-${i}`));
 	const fixed = ROWS.flatMap((_, i) => {
 		const el = one(`fixed-${i}`);
@@ -475,6 +488,7 @@ function build(context: FilmContext) {
 		...tags,
 		...fixes,
 		...secs,
+		lockCut,
 		...kids("claim"),
 	]);
 
@@ -487,33 +501,32 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— amount: recompute from the rows ———
-	tl.addLabel("amount", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show(kids("cols"), 10.0);
+	tl.addLabel("amount", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	show(kids("cols"), 9.2);
 	rows.forEach((row, i) => {
-		show(row, 10.1 + i * 0.12, "right");
+		show(row, 9.3 + i * 0.12, "right");
 	});
-	show(one("total-report"), 10.9);
-	tl.set(one("total-report"), { textDecoration: "none" }, 10.9);
-	d.swap(heads[0], heads[1], 12.4);
-	show(one("col-fixed"), 12.8);
+	show(one("total-report"), 10.1);
+	tl.set(one("total-report"), { textDecoration: "none" }, 10.1);
+	show(one("col-fixed"), 11.8);
 	fixed.forEach((el, i) => {
-		d.pop(el, 13.0 + i * 0.25);
+		word(el, 12.0 + i * 0.25);
 	});
-	d.swap(heads[1], heads[2], 15.4);
-	tl.set(one("total-report"), { textDecoration: "line-through" }, 15.8);
-	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 15.8);
-	d.slam(one("total-fixed"), 16.0);
+	tl.set(one("total-report"), { textDecoration: "line-through" }, 14.0);
+	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 14.0);
+	word(one("total-fixed"), 14.2);
+	show(heads[1], 14.6);
 
-	// ——— claims: five, audited ———
+	// ——— claims: the hero. All five, audited and repaired. ———
 	tl.addLabel("claims", 19);
+	d.swap([heads[0], heads[1]], heads[2], 19.0);
 	hide(
 		[
-			heads[2],
 			...kids("cols"),
 			one("col-fixed"),
 			...rows,
@@ -523,55 +536,58 @@ function build(context: FilmContext) {
 		],
 		19.0,
 	);
-	show(heads[3], 19.2, "above");
 	claimRows.forEach((row, i) => {
-		show(row, 19.5 + i * 0.15, "right");
+		show(row, 19.8 + i * 0.15, "right");
 	});
-	d.swap(heads[3], heads[4], 21.4);
 	tags.forEach((tag, i) => {
-		d.pop(tag, 21.8 + i * 0.3);
+		word(tag, 21.4 + i * 0.3);
 	});
-	tl.set(one("claim-0-box"), { attr: { class: "wt-focus-shape" } }, 21.8);
-	d.swap(heads[4], heads[5], 24.6);
+	tl.set(one("claim-0-box"), { attr: { class: "wt-focus-shape" } }, 21.4);
 	claims.forEach((claim, i) => {
 		if (claim.status === "supported") return;
 		tl.to(
 			one(`claim-${i}-text`),
 			{ opacity: 0.4, duration: 0.3 },
-			25.0 + i * 0.3,
+			23.0 + i * 0.3,
 		);
 	});
 	fixes.forEach((fix, i) => {
-		show(fix, 25.1 + i * 0.3, "right");
+		show(fix, 23.1 + i * 0.3, "right");
 	});
 	// A phone has one line for the tag and the repair: the repair takes it.
 	if (L.narrow)
 		claims.forEach((claim, i) => {
 			if (claim.status !== "supported")
-				tl.to(tags[i], { opacity: 0, duration: 0.25 }, 24.9 + i * 0.3);
+				tl.to(tags[i], { opacity: 0, duration: 0.25 }, 22.8 + i * 0.3);
 		});
+	// The forecast, cut: the repair that removes a claim outright.
+	const cut = claims.findIndex((claim) => claim.status === "removed");
+	d.lock(lockCut, 25.0, {
+		around: [claimRows[cut], one(`fix-${cut}`)],
+		pad: 3,
+	});
+	tl.addLabel("hero-lock", 25.0);
+	show(heads[3], 25.0);
 
 	// ——— signoff ———
-	tl.addLabel("signoff", 29.5);
-	hide([heads[5], ...claimRows, ...tags, ...fixes], 29.5);
-	show(heads[6], 29.7, "above");
-	show(secs[0], 30.0, "right");
-	d.swap(heads[6], heads[7], 31.6);
-	show(secs[1], 32.0, "right");
-	show(secs[2], 32.6, "right");
-	d.swap(heads[7], heads[8], 34.2);
-	show(secs[3], 34.6, "right");
+	tl.addLabel("signoff", 28.6);
+	d.swap([heads[2], heads[3]], heads[4], 28.6);
+	hide([...claimRows, ...tags, ...fixes, lockCut], 28.6);
+	secs.forEach((sec, i) => {
+		show(sec, 29.4 + i * 0.6, "right");
+	});
+	show(heads[5], 31.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
-	hide([heads[8], ...secs], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	tl.addLabel("claim", 35);
+	hide([heads[4], heads[5], ...secs], 35.0);
+	word(one("z-big"), 35.3);
+	show(one("z-sub"), 35.7);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 39.4);
+	hide(kids("claim"), 39.4);
+	d.close(39.4);
 	return tl;
 }
 
