@@ -732,7 +732,8 @@ export function createDirector(
 	/**
 	 * One element travels into another's place and becomes it: `from` moves and scales onto
 	 * the matching text inside `to` (its own text, or `match`), then hands over, unless
-	 * `reveal` is false because another carry reveals `to`. `arc: "x"` travels sideways first
+	 * `reveal` is false because another carry reveals `to`. With `fit: false` it keeps its own
+	 * size, for a ticket landing on a total rather than becoming it. `arc: "x"` travels sideways first
 	 * and `"y"` up or down first, to go round what lies between. Both marks must sit in the
 	 * same coordinates, untransformed at that moment, and `from` should start clear of others.
 	 */
@@ -746,12 +747,14 @@ export function createDirector(
 			match,
 			last = false,
 			reveal = true,
+			fit = true,
 		}: {
 			duration?: number;
 			arc?: "x" | "y";
 			match?: string;
 			last?: boolean;
 			reveal?: boolean;
+			fit?: boolean;
 		} = {},
 	) => {
 		const a = from.getBBox();
@@ -773,7 +776,7 @@ export function createDirector(
 			from,
 			{
 				y: b.y + b.height / 2 - ay,
-				scale: b.height / a.height,
+				scale: fit ? b.height / a.height : 1,
 				svgOrigin: `${ax} ${ay}`,
 				duration,
 				ease: arc === "y" ? lead : arc === "x" ? trail : "power3.inOut",
