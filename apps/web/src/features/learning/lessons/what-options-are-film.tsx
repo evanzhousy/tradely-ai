@@ -43,15 +43,16 @@ import {
  * Last, the other side: at $110 you are up $580 and Ben, who wrote the call, is down $580.
  *
  *   open      0–4        "Options"
- *   question  4–9        $420 for the Oct 18 100 call; ALFA ends at $95?
- *   right     9–21.6     the call: $0 at $95, $1,000 at $110; the put at $90
- *   uses      21.6–39.2  shares; hero: protect, the floor at −$715; earn; a view
- *   sides     39.2–43.6  you +$580, Ben −$580
- *   claim     43.6–47.4  a right for you, an obligation for someone else
- *   next      47.4–49.9  Next: trading an option
+ *   question  4–8.6      $420 for the Oct 18 100 call; ALFA ends at $95?
+ *   right     8.6–21.4   the call: $0 at $95, $1,000 at $110; the put at $90
+ *   uses      21.4–37    hero: shares, then with a 95 put as ALFA falls, the floor at −$715;
+ *                        earn; a view
+ *   sides     37–41      you +$580, Ben −$580
+ *   claim     41–45.3    a right for you, an obligation for someone else
+ *   next      45.3–47.8  Next: trading an option
  */
 
-const END = 49.9;
+const END = 47.8;
 const X = [80, 120] as const;
 const VALUE_TOP = 2_100;
 const USE_Y = [-2_000, 2_000] as const;
@@ -151,11 +152,9 @@ const copy = {
 	net: ["after premium", "扣除权利金"],
 	sharesAlone: ["100 shares", "100 股"],
 	withPut: ["with the 95 put", "加 95 看跌"],
-	usesHead: ["100 shares: no floor, no cap.", "100 股：无下限、无上限。"],
-	usesHeadShort: ["100 shares: no floor, no cap.", "100 股：无下限、无上限。"],
 	protectHead: [
-		`Add a 95 put: a floor at ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
-		`加一张 95 看跌：下限 ${signedUsd(positionPayoff.protect(80) * 100, 0)}。`,
+		`Add a 95 put to shares: floor ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
+		`股票加一张 95 看跌：下限 ${signedUsd(positionPayoff.protect(80) * 100, 0)}。`,
 	],
 	protectHeadShort: [
 		`Protect: floor ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
@@ -578,7 +577,7 @@ function Scene({
 			{headline("r-head", copy.rightHead, copy.rightHeadShort)}
 			{headline("c-head", copy.callHead, copy.callHeadShort)}
 			{headline("p-head", copy.putHead, copy.putHeadShort)}
-			{headline("s-head", copy.usesHead, copy.usesHeadShort)}
+
 			{headline("v-head", copy.protectHead, copy.protectHeadShort)}
 			{headline("e-head", copy.earnHead, copy.earnHeadShort)}
 			{headline("w-head", copy.viewHead, copy.viewHeadShort)}
@@ -760,7 +759,6 @@ function build(context: FilmContext) {
 		"r-head",
 		"c-head",
 		"p-head",
-		"s-head",
 		"v-head",
 		"e-head",
 		"w-head",
@@ -806,73 +804,69 @@ function build(context: FilmContext) {
 	// ——— question: a call for $420 ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	show(one("q-tag"), 4.5);
-	word(one("q-big"), 4.7);
-	show(one("q-line"), 6.0);
+	show(one("q-tag"), 4.4);
+	word(one("q-big"), 4.6);
+	show(one("q-line"), 5.6);
 
 	// ——— right: what the call is worth at expiry ———
-	tl.addLabel("right", 9);
-	hide([one("q-tag"), one("q-line")], 9.0);
-	rise(9.1);
-	show([one("strike"), one("strike-label")], 9.6);
+	tl.addLabel("right", 8.6);
+	hide([one("q-tag"), one("q-line")], 8.6);
+	rise(8.7);
+	show([one("strike"), one("strike-label")], 9.2);
 	// The $420 the question named lands on the chart as the premium line.
 	d.carry(
 		one<SVGGraphicsElement>("q-big"),
 		one<SVGGraphicsElement>("premium-label"),
-		9.2,
-		{
-			duration: 1.1,
-			arc: "y",
-		},
+		8.8,
+		{ duration: 1.1, arc: "y" },
 	);
-	tl.to(one("premium"), { opacity: 1, duration: 0.4 }, 10.1);
-	show(heads[0], 10.4);
-	d.trace(line("call-line"), 10.8, { tip, duration: 1.2 });
-	show(one("call-tag"), 11.8);
+	tl.to(one("premium"), { opacity: 1, duration: 0.4 }, 9.7);
+	show(heads[0], 10.0);
+	d.trace(line("call-line"), 10.4, { tip, duration: 1.2 });
+	show(one("call-tag"), 11.4);
 	// The call at $95, then at $110: the meter reads from the marker.
-	d.swap(heads[0], heads[1], 13.6);
-	pop(marker, 14.0);
-	show(kids("meter"), 14.1);
-	walk(HIGH, HIGH, 13.99, 0.01, () => onRight(callValue, PREMIUM)(LOW));
-	walk(LOW, HIGH, 15.6, 1.2, onRight(callValue, PREMIUM));
+	d.swap(heads[0], heads[1], 13.5);
+	pop(marker, 13.9);
+	show(kids("meter"), 14.0);
+	walk(HIGH, HIGH, 13.89, 0.01, () => onRight(callValue, PREMIUM)(LOW));
+	walk(LOW, HIGH, 15.5, 1.2, onRight(callValue, PREMIUM));
 	// The put: the opposite right, walked down to $90.
-	d.swap(heads[1], heads[2], 17.8);
+	d.swap(heads[1], heads[2], 17.5);
 	tl.to(
 		[one("call-line"), one("call-tag")],
 		{ opacity: 0.3, duration: 0.4 },
-		18.2,
+		17.9,
 	);
 	// The meter turns to the put where the marker stands, $110: worth $0, −$420.
-	walk(HIGH, HIGH, 18.19, 0.01, onRight(putValue, PUT_COST));
-	d.trace(line("put-line"), 18.2, { tip, duration: 1.0 });
-	show(one("put-tag"), 19.0);
-	walk(HIGH, PUT_AT, 19.2, 1.2, onRight(putValue, PUT_COST));
+	walk(HIGH, HIGH, 17.89, 0.01, onRight(putValue, PUT_COST));
+	d.trace(line("put-line"), 17.9, { tip, duration: 1.0 });
+	show(one("put-tag"), 18.7);
+	walk(HIGH, PUT_AT, 18.9, 1.2, onRight(putValue, PUT_COST));
 
-	// ——— uses: protect, earn, a view ———
-	tl.addLabel("uses", 21.6);
-	hide([heads[2], ...kids("meter")], 21.6);
-	sink(21.6);
-	tl.set(one("value-chart"), { opacity: 0 }, 22.0);
-	tl.set(one("use-chart"), { opacity: 1 }, 22.0);
-	show(heads[3], 22.0);
-	rise(22.1);
-	d.trace(line("shares-line"), 22.5, { tip, duration: 1.0 });
-	show(one("shares-tag"), 23.4);
-	// The hero: ALFA falls to $80. The shares lose $2,000; with the put they stop at the
-	// floor, and what the put saved fills in between.
-	d.swap(heads[3], heads[4], 25.6);
-	d.trace(line("protect-line"), 26.0, { tip, duration: 1.0 });
-	show(kids("umeter"), 26.4);
-	tl.set([sMarker, pMarker, one("save-area")], { opacity: 1 }, 26.9);
-	walk(100, FALL_TO, 27.0, 1.6, onFall);
-	show(one("floor-tag"), 28.4);
-	d.lock(one<SVGGraphicsElement>("lock-floor"), 28.6, {
+	// ——— uses: the hero first. Shares alone, then shares with a 95 put as ALFA falls. ———
+	tl.addLabel("uses", 21.4);
+	hide([heads[2], ...kids("meter")], 21.4);
+	sink(21.4);
+	tl.set(one("value-chart"), { opacity: 0 }, 21.8);
+	tl.set(one("use-chart"), { opacity: 1 }, 21.8);
+	show(heads[3], 21.8);
+	rise(21.9);
+	d.trace(line("shares-line"), 22.2, { tip, duration: 1.0 });
+	show(one("shares-tag"), 23.0);
+	d.trace(line("protect-line"), 23.6, { tip, duration: 1.0 });
+	show(kids("umeter"), 24.0);
+	// ALFA falls to $80: the shares lose $2,000; with the put they stop at the floor, and
+	// what the put saved fills in between.
+	tl.set([sMarker, pMarker, one("save-area")], { opacity: 1 }, 24.5);
+	walk(100, FALL_TO, 24.6, 1.6, onFall);
+	show(one("floor-tag"), 26.0);
+	d.lock(one<SVGGraphicsElement>("lock-floor"), 26.2, {
 		around: one("floor-tag"),
 		pad: 5,
 	});
-	// Held: −$2,000 against −$715, until the next use.
-	d.swap(heads[4], heads[5], 31.4);
-	hide([...kids("umeter"), sMarker, pMarker], 31.4);
+	// Held: −$2,000 against −$715. Then the other two uses.
+	d.swap(heads[3], heads[4], 29.2);
+	hide([...kids("umeter"), sMarker, pMarker], 29.2);
 	tl.to(
 		[
 			one("protect-line"),
@@ -881,45 +875,45 @@ function build(context: FilmContext) {
 			one("lock-floor"),
 		],
 		{ opacity: 0.2, duration: 0.4 },
-		31.8,
+		29.6,
 	);
 	// The shares stay as a faint reference behind the next two uses.
-	tl.to(one("shares-line"), { opacity: 0.35, duration: 0.4 }, 31.8);
-	d.trace(line("earn-line"), 31.8, { tip, duration: 1.0 });
-	show(one("cap-tag"), 32.6);
-	d.swap(heads[5], heads[6], 35.2);
+	tl.to(one("shares-line"), { opacity: 0.35, duration: 0.4 }, 29.6);
+	d.trace(line("earn-line"), 29.6, { tip, duration: 1.0 });
+	show(one("cap-tag"), 30.4);
+	d.swap(heads[4], heads[5], 33.1);
 	tl.to(
 		[one("earn-line"), one("cap-tag")],
 		{ opacity: 0.2, duration: 0.4 },
-		35.6,
+		33.5,
 	);
-	d.trace(line("view-line"), 35.6, { tip, duration: 1.0 });
-	show(one("most-tag"), 36.4);
+	d.trace(line("view-line"), 33.5, { tip, duration: 1.0 });
+	show(one("most-tag"), 34.3);
 
 	// ——— sides: holder and writer ———
-	tl.addLabel("sides", 39.2);
-	hide(heads[6], 39.2);
-	sink(39.2);
-	show(heads[7], 39.5);
-	show([one("you-tag"), one("ben-tag")], 39.8);
-	word(one("you-before"), 40.0);
-	word(one("ben-before"), 40.3);
-	d.flip(one("you-before"), one("you-after"), 41.2);
-	tl.set(one("you-before"), { opacity: 0 }, 41.5);
-	d.flip(one("ben-before"), one("ben-after"), 41.4);
-	tl.set(one("ben-before"), { opacity: 0 }, 41.7);
-	show(one("sides-line"), 41.8);
+	tl.addLabel("sides", 37.0);
+	hide(heads[5], 37.0);
+	sink(37.0);
+	show(heads[6], 37.3);
+	show([one("you-tag"), one("ben-tag")], 37.6);
+	word(one("you-before"), 37.8);
+	word(one("ben-before"), 38.1);
+	d.flip(one("you-before"), one("you-after"), 39.0);
+	tl.set(one("you-before"), { opacity: 0 }, 39.3);
+	d.flip(one("ben-before"), one("ben-after"), 39.2);
+	tl.set(one("ben-before"), { opacity: 0 }, 39.5);
+	show(one("sides-line"), 39.6);
 
 	// ——— claim ———
-	tl.addLabel("claim", 43.6);
-	hide([heads[7], ...flat("sides")], 43.6);
-	word(one("z-big"), 44.0);
-	show(one("z-sub"), 44.5);
+	tl.addLabel("claim", 41.0);
+	hide([heads[6], ...flat("sides")], 41.0);
+	word(one("z-big"), 41.3);
+	show(one("z-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 47.4);
-	hide(kids("claim"), 47.4);
-	d.close(47.4);
+	tl.addLabel("next", 45.3);
+	hide(kids("claim"), 45.3);
+	d.close(45.3);
 	return tl;
 }
 
