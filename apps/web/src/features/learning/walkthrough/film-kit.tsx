@@ -777,7 +777,8 @@ export function createDirector(
 	 * One element travels into another's place and becomes it: `from` moves and scales onto
 	 * the matching text inside `to` (its own text, or `match`), then hands over, unless
 	 * `reveal` is false because another carry reveals `to`. With `fit: false` it keeps its own
-	 * size, for a ticket landing on a total rather than becoming it. `arc: "x"` travels sideways first
+	 * size, for a ticket landing on a total rather than becoming it; with `keep`, a copy flies
+	 * and the original stays where it is. `arc: "x"` travels sideways first
 	 * and `"y"` up or down first, to go round what lies between. Both marks must sit in the
 	 * same coordinates, untransformed at that moment, and `from` should start clear of others.
 	 */
@@ -792,6 +793,7 @@ export function createDirector(
 			last = false,
 			reveal = true,
 			fit = true,
+			keep = false,
 		}: {
 			duration?: number;
 			arc?: "x" | "y";
@@ -799,6 +801,7 @@ export function createDirector(
 			last?: boolean;
 			reveal?: boolean;
 			fit?: boolean;
+			keep?: boolean;
 		} = {},
 	) => {
 		const a = from.getBBox();
@@ -821,7 +824,7 @@ export function createDirector(
 				if (!from.firstElementChild) flyer.textContent = from.textContent;
 				flyer.setAttribute("class", from.getAttribute("class") ?? "");
 			};
-			tl.set(from, { opacity: 0 }, at);
+			if (!keep) tl.set(from, { opacity: 0 }, at);
 			tl.fromTo(
 				flyer,
 				{ opacity: 1 },
