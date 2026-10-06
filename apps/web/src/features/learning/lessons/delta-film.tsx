@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -38,14 +39,15 @@ import {
  * carried through the rest of the film. Secondary: the marker and its tangent. Background:
  * a grid that drifts, slowly, the whole way through.
  *
- *   open      0–4    "Delta" wipes on; the title shrinks into the corner as a tag
- *   question  4–9    ALFA $100 → $101: the call moves by… ?
- *   slope     9–18   the chart rises from the depth; push in; the $1 step, the $0.52 rise;
- *                    cut to 0.52, full frame
- *   put       18–24  the number flips to −0.48 while the curve folds into the put
- *   position  24–34  0.52 × 100 × 16 = +832, one line per beat; Ben's sign flips it red
- *   limits    34–43  the marker rides the curve, a ghost rides the line; cut: "Delta is local."
- *   next      43–45  Next: gamma
+ *   open      0–4        "Delta" wipes on; the title shrinks into the corner as a tag
+ *   question  4–10.1     ALFA $100 → $101: the call moves by… ?
+ *   slope     10.1–19.1  the chart rises from the depth; push in; the $1 step, the $0.52
+ *                        rise; cut to 0.52, full frame
+ *   put       19.1–25.1  the number flips to −0.48 while the curve folds into the put
+ *   position  25.1–35.1  hero: 0.52 × 100 × 16 = +832, locked; Ben's sign flips it red
+ *   limits    35.1–44.1  the marker rides the curve, a ghost rides the line; cut: "Delta is
+ *                        local."
+ *   next      44.1–46.1  Next: gamma
  */
 
 const Y_RANGE = [-2, 16] as const;
@@ -56,12 +58,13 @@ const call = curve("call");
 const put = curve("put");
 const UP = 10;
 const DOWN = -10;
-const END = 45;
+const END = 46.1;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
-	const left = frame.margin;
+	// A phone's axis labels sit left of the plot: room for them inside the frame's edge.
+	const left = frame.margin + (narrow ? 18 : 0);
 	const right = width * 0.965;
 	const top = height * 0.17;
 	const bottom = height * 0.84;
@@ -270,11 +273,12 @@ function Scene({
 					>
 						{t(copy.callLabel)}
 					</text>
+					{/* At the put's high left end: to its right the curve falls away from it. */}
 					<text
 						data-f="curve-label-put"
-						x={L.right - 4}
-						y={L.y(put[put.length - 1][1]) - 16}
-						textAnchor="end"
+						x={L.left + 4}
+						y={L.y(put[0][1]) - 16}
+						textAnchor="start"
 						className="wt-small wt-halo wt-label-position"
 					>
 						{t(L.narrow ? copy.putShort : copy.putLabel)}
@@ -567,6 +571,7 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
+			<Brackets name="lock-pos" glow />
 			<g data-f="local">
 				<Lines
 					name="local-big"
@@ -601,7 +606,16 @@ function build(context: FilmContext) {
 	const L = layout(W);
 	const { type: T, narrow } = L;
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, t, show, hide, pop, rise, sink, cam, home, world } = d;
+	const { tl, one, kids, t, show, hide, rise, sink, cam, home, world } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
+	const lockPos = one<SVGGraphicsElement>("lock-pos");
 	const mx = L.x(SPOT);
 	const my = L.y(V0);
 	const marker = one("marker");
@@ -634,6 +648,7 @@ function build(context: FilmContext) {
 	gsap.set(one("dot"), { transformOrigin: "50% 100%" });
 	gsap.set(one("ripple"), { opacity: 0, attr: { r: 6 } });
 	d.hidden([
+		lockPos,
 		one("marker-label-call"),
 		one("marker-label-put"),
 		one("curve-label-call"),
@@ -673,31 +688,31 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-price"), 4.7);
 	show(one("q-next"), 5.4, "right");
-	pop(one("q-step"), 5.9);
-	show(one("q-line"), 6.6);
-	pop(one("q-mark"), 7.3, 0.6);
+	land(one("q-step"), 5.9);
+	show(one("q-line"), 6.4);
+	land(one("q-mark"), 8.4);
 
 	// ——— slope: the chart proves it; cut to the number ———
-	tl.addLabel("slope", 9);
-	hide(kids("q"), 9.0);
-	rise(9.2);
-	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.0);
-	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.0);
+	tl.addLabel("slope", 10.1);
+	hide(kids("q"), 10.1);
+	rise(10.3);
+	tl.to(marker, { opacity: 1, duration: 0.2 }, 11.1);
+	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 11.1);
 	tl.to(
 		one("dot"),
 		{ scaleY: 0.72, scaleX: 1.2, duration: 0.1, ease: "power1.out" },
-		10.55,
+		11.65,
 	);
 	tl.to(
 		one("dot"),
 		{ scaleY: 1, scaleX: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" },
-		10.65,
+		11.75,
 	);
 	tl.fromTo(
 		one("ripple"),
 		{ opacity: 0.6, attr: { r: 6 } },
 		{ opacity: 0, attr: { r: 26 }, duration: 0.7, ease: "power2.out" },
-		10.6,
+		11.7,
 	);
 	tl.to(
 		one("clip-left"),
@@ -706,23 +721,27 @@ function build(context: FilmContext) {
 			duration: 1.3,
 			ease: "power2.inOut",
 		},
-		10.8,
+		11.9,
 	);
 	tl.to(
 		one("clip-right"),
 		{ attr: { width: L.right - mx + 4 }, duration: 1.3, ease: "power2.inOut" },
-		10.8,
+		11.9,
 	);
 	tl.fromTo(
 		one("marker-label-call"),
 		{ opacity: 0, attr: { y: my - 4 } },
 		{ opacity: 1, attr: { y: my - 14 }, duration: 0.5 },
-		11.3,
+		12.4,
 	);
-	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 12.0);
-	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.4);
-	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.4);
-	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 13.3);
+	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 13.1);
+	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 13.5);
+	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 13.5);
+	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
+	const axisText = [...one("axes").querySelectorAll("text")];
+	tl.to(axisText, { opacity: 0, duration: 0.3 }, 13.5);
+	tl.set(axisText, { opacity: 1 }, 19.4);
+	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 14.4);
 	tl.to(
 		tangentLine,
 		{
@@ -735,48 +754,49 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power2.inOut",
 		},
-		13.3,
+		14.4,
 	);
-	tl.to(one("step"), { opacity: 1, duration: 0.2 }, 14.4);
+	tl.to(one("step"), { opacity: 1, duration: 0.2 }, 15.5);
 	tl.to(
 		one("step-line"),
 		{ attr: { x2: riserX }, duration: 0.45, ease: "power2.out" },
-		14.4,
+		15.5,
 	);
-	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 15.0);
+	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 16.1);
 	tl.to(
 		one("riser-line"),
-		{ attr: { y2: riserTop }, duration: 0.6, ease: "back.out(1.6)" },
-		15.0,
+		{ attr: { y2: riserTop }, duration: 0.6, ease: "power3.out" },
+		16.1,
 	);
 	// Cut: the chart sinks, the number lands.
-	sink(16.3);
-	d.slam(numCall, 16.7);
-	show(one("num-word"), 17.1);
-	show(one("num-sub"), 17.5);
+	sink(17.4);
+	land(numCall, 17.8);
+	show(one("num-word"), 18.2);
+	show(one("num-sub"), 18.6);
 
 	// ——— put: the number flips while the curve folds ———
-	tl.addLabel("put", 18);
-	show(one("put-head"), 18.2, "above");
-	hide(one("num-sub"), 18.2);
+	tl.addLabel("put", 19.1);
+	show(one("put-head"), 19.3, "above");
+	hide(one("num-sub"), 19.3);
 	tl.to(
 		num,
 		{ x: W * 0.24, y: H * 0.58, duration: 0.9, ease: "power3.inOut" },
-		18.2,
+		19.3,
 	);
-	tl.set(world, aside, 18.3);
+	tl.set(world, aside, 19.4);
 	tl.set(
 		[one("step"), one("riser"), one("marker-label-call")],
 		{ opacity: 0 },
-		18.3,
+		19.4,
 	);
-	rise(18.4);
+	// The chart comes up once the number has moved aside, clear of its labels.
+	rise(20.2);
 	tl.to(
 		[one("curve-a"), one("curve-b")],
 		{ attr: { d: L.path(put) }, duration: 1.3, ease: "power2.inOut" },
-		19.3,
+		20.8,
 	);
-	tl.to(marker, { y: L.y(P0), duration: 1.3, ease: "power2.inOut" }, 19.3);
+	tl.to(marker, { y: L.y(P0), duration: 1.3, ease: "power2.inOut" }, 20.8);
 	tl.to(
 		tangentLine,
 		{
@@ -787,18 +807,18 @@ function build(context: FilmContext) {
 			duration: 1.3,
 			ease: "power2.inOut",
 		},
-		19.45,
+		20.95,
 	);
-	d.flip(numCall, numPut, 19.8);
-	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 20.4);
-	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 20.6);
-	show(one("put-sub"), 20.8);
+	d.flip(numCall, numPut, 21.3);
+	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 21.9);
+	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 22.1);
+	show(one("put-sub"), 22.3);
 
 	// ——— position: the chain ———
-	tl.addLabel("position", 24);
-	hide([one("put-head"), one("put-sub"), one("num-word")], 24.0);
-	sink(24.0);
-	d.flip(numPut, numCall, 24.0);
+	tl.addLabel("position", 25.1);
+	hide([one("put-head"), one("put-sub"), one("num-word")], 25.1);
+	sink(25.1);
+	d.flip(numPut, numCall, 25.1);
 	// The number shrinks about its own centre to head the chain; a group would scale about
 	// its box corner.
 	tl.to(
@@ -809,44 +829,47 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power3.inOut",
 		},
-		24.6,
+		25.7,
 	);
 	tl.to(
 		numCall,
 		{ scale: T.num / T.big, duration: 0.8, ease: "power3.inOut" },
-		24.6,
+		25.7,
 	);
-	show(one("ch-head"), 24.6, "above");
+	show(one("ch-head"), 25.7, "above");
 	const shares = (value: number) => signedCount(Math.round(value));
-	show(one("ch-op100"), 25.4);
-	pop(one("ch-per"), 25.9);
-	show(one("ch-op-you"), 26.7);
-	pop(one("ch-pos-you"), 27.2);
+	show(one("ch-op100"), 26.5);
+	land(one("ch-per"), 27);
+	show(one("ch-op-you"), 27.8);
+	land(one("ch-pos-you"), 28.3);
 	d.count(
 		one<SVGTextElement>("ch-pos-you"),
 		positionDelta(you.contracts),
-		27.2,
+		28.3,
 		shares,
 	);
-	show(one("ch-equiv"), 27.8);
+	show(one("ch-equiv"), 28.9);
+	// The hero: your position's delta, counted, held, then locked.
+	d.lock(lockPos, 29.3, { around: one("ch-pos-you"), pad: 6 });
+	tl.addLabel("hero-lock", 29.3);
 	// Ben: the same chain, the sign flipped.
-	hide([one("ch-op-you"), one("ch-pos-you")], 29.2, 0.3);
-	show(one("ch-op-ben"), 29.4);
-	pop(one("ch-pos-ben"), 29.9);
+	hide([one("ch-op-you"), one("ch-pos-you"), lockPos], 31.1, 0.3);
+	show(one("ch-op-ben"), 31.3);
+	land(one("ch-pos-ben"), 31.8);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
-		29.9,
+		31.8,
 		shares,
 	);
-	show(one("ch-pay"), 31.3);
+	show(one("ch-pay"), 33.2);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
-	tl.addLabel("limits", 34);
-	hide([...kids("chain"), numCall], 34.0);
-	tl.set(world, home, 34.2);
-	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 34.2);
-	tl.set(marker, { y: my }, 34.2);
+	tl.addLabel("limits", 35.1);
+	hide([...kids("chain"), numCall], 35.1);
+	tl.set(world, home, 35.3);
+	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 35.3);
+	tl.set(marker, { y: my }, 35.3);
 	tl.set(
 		tangentLine,
 		{
@@ -855,17 +878,23 @@ function build(context: FilmContext) {
 				y2: L.y(callTangent(X_RANGE[1])),
 			},
 		},
-		34.2,
+		35.3,
 	);
 	tl.set(
 		[one("marker-label-put"), one("curve-label-put")],
 		{ opacity: 0 },
-		34.2,
+		35.3,
 	);
-	show(one("lim-head"), 34.3, "above");
-	rise(34.3);
-	tl.to(ghost, { opacity: 1, duration: 0.3 }, 35.1);
+	show(one("lim-head"), 35.4, "above");
+	rise(35.4);
+	tl.to(ghost, { opacity: 1, duration: 0.3 }, 36.2);
 	const slide = { spot: SPOT };
+	/**
+	 * The three readings stand still in the plot's empty top left, between its top two
+	 * gridlines: riding beside the marker, they ran across the curve and the line.
+	 */
+	const readX = L.left + 12;
+	const readY = (i: number) => L.y(Y_RANGE[1]) + 18 + i * 18;
 	const place = () => {
 		const spot = slide.spot;
 		const repriced = valueAt("call", spot);
@@ -873,69 +902,66 @@ function build(context: FilmContext) {
 		const px = L.x(spot);
 		const py = L.y(repriced);
 		const gy = L.y(estimate);
-		const right = spot >= SPOT;
-		const lx = right ? px - 12 : px + 12;
-		const anchor = right ? "end" : "start";
 		gsap.set(marker, { x: px, y: py });
 		gsap.set(ghost, { x: px, y: gy });
-		moveLabel.setAttribute("x", String(lx));
-		moveLabel.setAttribute("y", String(py - 10));
-		moveLabel.setAttribute("text-anchor", anchor);
+		moveLabel.setAttribute("x", String(readX));
+		moveLabel.setAttribute("y", String(readY(0)));
+		moveLabel.setAttribute("text-anchor", "start");
 		moveLabel.textContent = `${t(copy.model)} ${signedPrice(repriced - V0)}`;
 		moveLabel.setAttribute(
 			"class",
 			`wt-halo wt-marker-label ${repriced >= V0 ? "wt-gain" : "wt-loss"}`,
 		);
-		ghostLabel.setAttribute("x", String(lx));
-		ghostLabel.setAttribute("y", String(Math.min(gy + 16, L.bottom + 5)));
-		ghostLabel.setAttribute("text-anchor", anchor);
+		ghostLabel.setAttribute("x", String(readX));
+		ghostLabel.setAttribute("y", String(readY(1)));
+		ghostLabel.setAttribute("text-anchor", "start");
 		ghostLabel.textContent = `${t(copy.deltaAlone)} ${signedPrice(estimate - V0)}`;
 		gap.setAttribute("x1", String(px));
 		gap.setAttribute("x2", String(px));
 		gap.setAttribute("y1", String(Math.min(py, gy) + 8));
 		gap.setAttribute("y2", String(Math.max(py, gy) - 8));
-		gapLabel.setAttribute("x", String(lx));
-		gapLabel.setAttribute("y", String((py + gy) / 2 + 4));
-		gapLabel.setAttribute("text-anchor", anchor);
+		gapLabel.setAttribute("x", String(readX));
+		gapLabel.setAttribute("y", String(readY(2)));
+		gapLabel.setAttribute("text-anchor", "start");
 		gapLabel.textContent = `${t(copy.missed)} ${price(Math.abs(repriced - estimate))}`;
 	};
 	place();
 	tl.to(
 		slide,
 		{ spot: SPOT + UP, duration: 1.6, ease: "power2.inOut", onUpdate: place },
-		35.3,
+		36.4,
 	);
-	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 35.8);
-	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 36.2);
+	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 36.9);
+	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 37.3);
 	tl.fromTo(
 		gap,
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 0%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		37.0,
+		38.1,
 	);
-	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 37.3);
+	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 38.4);
 	tl.to(
 		slide,
 		{ spot: SPOT + DOWN, duration: 1.9, ease: "power2.inOut", onUpdate: place },
-		38.4,
+		39.5,
 	);
-	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 39.5);
-	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 39.9);
+	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 40.6);
+	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 41);
 	// Cut: the claim.
-	hide(one("lim-head"), 41.0);
-	sink(41.0);
+	hide(one("lim-head"), 42.1);
+	sink(42.1);
 	tl.fromTo(
 		one("local-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		41.4,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		42.5,
 	);
-	show(one("local-sub"), 41.9);
+	show(one("local-sub"), 43);
 
 	// ——— next ———
-	tl.addLabel("next", 43);
-	hide(kids("local"), 43.0);
-	d.close(43.0);
+	tl.addLabel("next", 44.1);
+	hide(kids("local"), 44.1);
+	d.close(44.1);
 	return tl;
 }
 
