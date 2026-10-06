@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -25,20 +26,20 @@ import {
  * Comparison groups, as a film. FJOR's option volume never arrived: is FJOR in Monday's
  * comparison? Eight listed symbols meet four rules in order: stocks only, Monday's
  * session, data present, at least 500 contracts. BRDX and IDX 500 leave, EMBR leaves,
- * GLYN leaves, and FJOR stays as an unknown. Then "CRUX leads" holds only for the observed
- * three, until FJOR's 7,300 arrive. Last, Sep 2 compared with today's list of names misses
- * HALO, that day's real leader.
+ * GLYN leaves, and FJOR stays as an unknown. The hero: "CRUX leads" holds for the observed
+ * three, until FJOR's 7,300 arrive and glowing brackets lock on the new leader. Last, Sep 2
+ * compared with today's list of names misses HALO, that day's real leader.
  *
- *   open      0–4      "Comparison groups"
- *   question  4–9.5    FJOR's volume never arrived: in or out?
- *   rules     9.5–20.5 stocks; Monday; data present (FJOR unknown); ≥ 500
- *   leader    20.5–29  CRUX leads the observed; FJOR arrives with 7,300
- *   past      29–37    Sep 2 on today's list: CRUX; on Sep 2's list: HALO
- *   claim     37–39.5  who belongs comes from the facts
- *   next      39.5–42  Next: rankings
+ *   open      0–4        "Comparison groups"
+ *   question  4–8.6      FJOR's volume never arrived: in or out?
+ *   rules     8.6–19.4   stocks; Monday; data present (FJOR unknown); ≥ 500
+ *   leader    19.4–28.4  hero: CRUX leads the observed; FJOR arrives with 7,300
+ *   past      28.4–33.8  Sep 2 on today's list: CRUX; on Sep 2's list: HALO
+ *   claim     33.8–38.2  who belongs comes from the facts
+ *   next      38.2–40.7  Next: rankings
  */
 
-const END = 42;
+const END = 40.7;
 const ROWS = CANDIDATES;
 const ELIGIBLE = ROWS.filter((row) => firstFail(row, CHECKS.length) === null);
 const OBSERVED = ELIGIBLE.filter((row) => row.optionVolume !== null).sort(
@@ -89,66 +90,24 @@ const copy = {
 	qTag: ["Monday's option activity · peers", "周一期权活动 · 同类"],
 	qLine: ["FJOR's option volume never arrived.", "FJOR 的期权成交量一直没到。"],
 	qBig: ["In the comparison, or out?", "纳入比较，还是排除？"],
-	r0: [
-		`Eight symbols listed Monday. The rule: stock options, Monday's session, data present, at least ${count(THRESHOLD)}.`,
-		`周一挂牌的八个代码。规则：股票期权、周一的交易时段、有数据、至少 ${count(THRESHOLD)} 张。`,
+	rHead: ["Four rules, applied in order.", "四条规则，依次套用。"],
+	r2Head: ["FJOR stays in, as an unknown.", "FJOR 留下，作为未知。"],
+	lHead: [
+		`${OBSERVED[0].symbol} leads the three observed.`,
+		`${OBSERVED[0].symbol} 在已观测的三个中领先。`,
 	],
-	r0Short: ["Eight symbols, four rules.", "八个代码，四条规则。"],
-	r1: [
-		"An ETF and an index aren't stocks; EMBR's figure is Friday's. Out.",
-		"ETF 和指数不是股票；EMBR 的数字是周五的。排除。",
+	l2Head: [
+		`Then FJOR's ${count(FJOR_LATE)} arrive: a new leader.`,
+		`FJOR 的 ${count(FJOR_LATE)} 张到了：领先者换了。`,
 	],
-	r1Short: ["Not stocks; not Monday.", "非股票；非周一。"],
-	r2: [
-		"FJOR's volume never came: not zero, not out. It stays, as an unknown.",
-		"FJOR 的成交量没来：不是零，也不排除。它留下，作为未知。",
-	],
-	r2Short: ["FJOR: unknown, stays.", "FJOR：未知，保留。"],
-	r3: [
-		`GLYN traded ${count(300)}, below the threshold. Three eligible, plus FJOR unknown.`,
-		`GLYN 成交 ${count(300)} 张，低于门槛。三个合格，外加未知的 FJOR。`,
-	],
-	r3Short: ["Three in, one unknown.", "三个纳入，一个未知。"],
-	l0: [
-		`Among those you can observe, ${OBSERVED[0].symbol} leads with ${count(OBSERVED[0].optionVolume ?? 0)}.`,
-		`在能观测到的里，${OBSERVED[0].symbol} 以 ${count(OBSERVED[0].optionVolume ?? 0)} 张领先。`,
-	],
-	l0Short: [
-		`${OBSERVED[0].symbol} leads the observed.`,
-		`${OBSERVED[0].symbol} 在已观测中领先。`,
-	],
-	l1: [
-		`FJOR is eligible but unseen: "${OBSERVED[0].symbol} leads" holds for the observed three only.`,
-		`FJOR 合格但看不到：“${OBSERVED[0].symbol} 领先”只对已观测的三个成立。`,
-	],
-	l1Short: ["FJOR: unseen.", "FJOR：看不到。"],
-	l2: [
-		`Then FJOR's ${count(FJOR_LATE)} arrive, and the leader changes.`,
-		`接着 FJOR 的 ${count(FJOR_LATE)} 张到了，领先者变了。`,
-	],
-	l2Short: [`FJOR: ${count(FJOR_LATE)}.`, `FJOR：${count(FJOR_LATE)}。`],
-	p0: [
-		`Compare Sep 2 using today's list of names: ${TODAY_SEP2[0][0]} led with ${count(TODAY_SEP2[0][1])}.`,
-		`用今天的代码名单比较 9月2日：${TODAY_SEP2[0][0]} 以 ${count(TODAY_SEP2[0][1])} 张领先。`,
-	],
-	p0Short: [
-		`Today's list: ${TODAY_SEP2[0][0]}.`,
-		`今天的名单：${TODAY_SEP2[0][0]}。`,
-	],
-	p1: [
-		`Sep 2's own list had HALO, delisted Sep 6, and it led with ${count(sep2Volume.HALO)}.`,
-		`9月2日自己的名单里有 HALO（9月6日退市），它以 ${count(sep2Volume.HALO)} 张领先。`,
-	],
-	p1Short: ["Sep 2's list: HALO.", "9月2日的名单：HALO。"],
+	pHead: ["Sep 2, on today's list of names.", "9月2日，用今天的名单。"],
+	p2Head: ["Sep 2's own list: HALO led.", "9月2日自己的名单：HALO 领先。"],
 	todayList: ["today's list", "今天的名单"],
 	sep2List: ["Sep 2's list", "9月2日的名单"],
 	delisted: ["delisted Sep 6", "9月6日退市"],
 	unknown: ["unknown", "未知"],
 	claimBig: ["Who belongs comes from the facts.", "谁该纳入，由事实决定。"],
-	claimSub: [
-		"Apply the rules to each name, keep the unknowns in, and use the list of names that was true on the day you study.",
-		"对每个代码逐条套用规则，把未知的留在里面，并使用研究当天成立的那份名单。",
-	],
+	claimSub: ["Use the list that was true that day.", "用当天成立的那份名单。"],
 	nextBig: ["Next: rankings", "下一课：排名"],
 	nextSub: ["order without prediction", "排序不等于预测"],
 } as const satisfies Record<string, Copy>;
@@ -165,10 +124,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -257,10 +216,22 @@ function Scene({
 			</g>
 
 			{/* Eight names, four rules. */}
-			{headline("r0", copy.r0, copy.r0Short)}
-			{headline("r1", copy.r1, copy.r1Short)}
-			{headline("r2", copy.r2, copy.r2Short)}
-			{headline("r3", copy.r3, copy.r3Short)}
+			{headline("r-head", copy.rHead)}
+			{/* The question's answer, once the last rule has run. */}
+			<Lines
+				name="r2-head"
+				text={t(copy.r2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.rHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{CHECKS.map((check, c) => (
 				<text
 					key={check}
@@ -315,9 +286,23 @@ function Scene({
 			)}
 
 			{/* The leader board. */}
-			{headline("l0", copy.l0, copy.l0Short)}
-			{headline("l1", copy.l1, copy.l1Short)}
-			{headline("l2", copy.l2, copy.l2Short)}
+			{headline("l-head", copy.lHead)}
+			{/* The hero's answer, as FJOR's bar runs past the leader's. */}
+			<Lines
+				name="l2-head"
+				text={t(copy.l2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.lHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-fjor" glow />
 			{BOARD.map((row, i) => {
 				const value = row.optionVolume;
 				const w = value === null ? 0 : (value / VOL_MAX) * L.barMax;
@@ -398,8 +383,22 @@ function Scene({
 			})}
 
 			{/* A past date, two lists of names. */}
-			{headline("p0", copy.p0, copy.p0Short)}
-			{headline("p1", copy.p1, copy.p1Short)}
+			{headline("p-head", copy.pHead)}
+			{/* The answer, as Sep 2's own list comes up. */}
+			<Lines
+				name="p2-head"
+				text={t(copy.p2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.pHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="sep-today">
 				<text
 					x={L.sepX(0)}
@@ -483,16 +482,23 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = ["r0", "r1", "r2", "r3", "l0", "l1", "l2", "p0", "p1"].map(
-		(name) => one(name),
-	);
+	const heads = [
+		"r-head",
+		"r2-head",
+		"l-head",
+		"l2-head",
+		"p-head",
+		"p2-head",
+	].map((name) => one(name));
+	const lockFjor = one<SVGGraphicsElement>("lock-fjor");
 	const cols = CHECKS.map((_, c) => one(`col-${c}`));
 	const syms = ROWS.map((_, i) => one(`sym-${i}`));
 	const marks = (c: number) => ROWS.map((_, i) => one(`mark-${i}-${c}`));
@@ -507,6 +513,7 @@ function build(context: FilmContext) {
 		...board,
 		one("fjor-bar"),
 		one("fjor-n"),
+		lockFjor,
 		one("sep-today"),
 		one("sep-then"),
 		...kids("claim"),
@@ -540,41 +547,34 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— rules: one at a time ———
-	tl.addLabel("rules", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
+	tl.addLabel("rules", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
 	syms.forEach((sym, i) => {
-		show(sym, 10.0 + i * 0.08, "right");
+		show(sym, 9.2 + i * 0.08, "right");
 	});
-	d.swap(heads[0], heads[1], 12.0);
-	apply(0, 12.4);
-	apply(1, 13.6);
-	d.swap(heads[1], heads[2], 15.0);
-	apply(2, 15.4);
+	apply(0, 10.4);
+	apply(1, 11.9);
+	apply(2, 13.4);
 	ROWS.forEach((row, i) => {
 		if (row.optionVolume === null)
-			tl.set(one(`sym-${i}-box`), { attr: { class: "wt-focus-shape" } }, 15.8);
+			tl.set(one(`sym-${i}-box`), { attr: { class: "wt-focus-shape" } }, 13.8);
 	});
-	d.swap(heads[2], heads[3], 17.4);
-	apply(3, 17.8);
+	apply(3, 14.9);
+	show(heads[1], 15.6);
 
-	// ——— leader: observed, then complete ———
-	tl.addLabel("leader", 20.5);
-	hide(
-		[heads[3], ...cols, ...syms, ...CHECKS.flatMap((_, c) => marks(c))],
-		20.5,
-	);
-	show(heads[4], 20.7, "above");
+	// ——— leader: the hero. The observed, then the complete set. ———
+	tl.addLabel("leader", 19.4);
+	d.swap([heads[0], heads[1]], heads[2], 19.4);
+	hide([...cols, ...syms, ...CHECKS.flatMap((_, c) => marks(c))], 19.4);
 	OBSERVED.forEach((_, i) => {
-		show(board[i], 21.0 + i * 0.2, "right");
+		show(board[i], 20.2 + i * 0.2, "right");
 	});
-	d.swap(heads[4], heads[5], 23.0);
-	show(board[OBSERVED.length], 23.4, "right");
-	d.swap(heads[5], heads[6], 25.4);
-	hide([one("fjor-ghost"), one("fjor-q")], 25.8, 0.3);
+	show(board[OBSERVED.length], 21.6, "right");
+	hide([one("fjor-ghost"), one("fjor-q")], 23.0, 0.3);
 	tl.fromTo(
 		one("fjor-bar"),
 		{ opacity: 1, attr: { width: 0 } },
@@ -583,29 +583,35 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.out",
 		},
-		26.0,
+		23.2,
 	);
-	d.pop(one("fjor-n"), 26.6);
-	tl.set(one("board-0-bar"), { attr: { "data-tone": "neutral" } }, 26.6);
+	word(one("fjor-n"), 24.0);
+	tl.set(one("board-0-bar"), { attr: { "data-tone": "neutral" } }, 24.0);
+	d.lock(lockFjor, 24.8, {
+		around: [board[OBSERVED.length], one("fjor-bar"), one("fjor-n")],
+		pad: 3,
+	});
+	tl.addLabel("hero-lock", 24.8);
+	show(heads[3], 24.8);
 
 	// ——— past: the day's own list ———
-	tl.addLabel("past", 29);
-	hide([heads[6], ...board, one("fjor-bar"), one("fjor-n")], 29.0);
-	show(heads[7], 29.2, "above");
-	show(one("sep-today"), 29.5, "right");
-	d.swap(heads[7], heads[8], 32.0);
-	show(one("sep-then"), 32.4, "right");
+	tl.addLabel("past", 28.4);
+	d.swap([heads[2], heads[3]], heads[4], 28.4);
+	hide([...board, one("fjor-bar"), one("fjor-n"), lockFjor], 28.4);
+	show(one("sep-today"), 29.0, "right");
+	show(one("sep-then"), 30.0, "right");
+	show(heads[5], 30.2);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
-	hide([heads[8], one("sep-today"), one("sep-then")], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	tl.addLabel("claim", 33.8);
+	hide([heads[4], heads[5], one("sep-today"), one("sep-then")], 33.8);
+	word(one("z-big"), 34.1);
+	show(one("z-sub"), 34.5);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 38.2);
+	hide(kids("claim"), 38.2);
+	d.close(38.2);
 	return tl;
 }
 
