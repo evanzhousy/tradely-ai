@@ -11,26 +11,28 @@ unless the user also authorizes implementation.
 
 ## Agent Handoff
 
-Last updated: 2026-09-29
+Last updated: 2026-10-06
 
-The 2026-09-29 read-only run found no production `$exception` events in its
-fixed windows, limited consented exposure, and sixteen hashed-asset 404s on a
-recent deployment. See the
-[execution report](../docs/reviews/posthog-error-analysis-2026-09-29.md).
+The 2026-10-06 read-only run found zero project-wide `$exception` events in
+seven days, sparse consented production exposure, and 22 hashed-asset 404s
+in the current window. Five production builds were blocked by a vulnerable
+TanStack Start version before a later Ready deployment. The
+[execution report](/Users/evansmacbookpro/.codex/visualizations/2026/09/27/01a0e445-5804-7260-995c-97767475daf3/posthog-error-analysis-2026-10-06.md)
+is outside this repository while the user's `docs/reviews` deletion work is
+in progress.
 
 - [ ] Correlate the historical `Learning persistence unavailable` issue with
   authorized server/database evidence for `operation=learning_open` and release
   `f98df769...`. The application intentionally redacts raw database failures; do
   not weaken that boundary.
 - [ ] Reproduce an old browser page crossing an authorized preview deployment
-  and verify the one-time stale-build reload completes a lesson. Sixteen hashed
-  asset requests returned 404 on deployment `45f7709…` shortly after it became
-  Ready; logs do not show whether a user recovered. Preserve or explicitly
-  version server-function response contracts across deployments as well.
-- [ ] Reproduce the local `useI18n` provider failure on a clean build if it
-  persists. Four active, test-filtered local groups appeared in the current
-  window; source currently wraps the route in `LocaleProvider`, and no
-  production issue was attributed to this error.
+  and verify the one-time stale-build reload completes a lesson. Twenty-two
+  hashed asset requests returned 404 on `www.tradely.ai` in the current 24h;
+  logs do not show whether a user recovered. Preserve or explicitly version
+  server-function response contracts across deployments as well.
+- [ ] Recheck the zero-error verdict after comparable consented exposure.
+  Current PostHog capture contains three page views from one observed person
+  across two sessions; the preceding 24h contained no captured events.
 
 ## Recommended Invocation
 
@@ -127,6 +129,13 @@ by path. An empty grouped runtime-error result does not override an explicit 5xx
 response in runtime logs. Separate scanner paths from application routes and
 hashed assets; asset 404s can suggest deployment/cache skew but do not establish
 affected users without session or journey evidence.
+If the connected Vercel log tool lacks a status-code filter, first verify the
+linked project with `vercel project inspect --non-interactive`, then use bounded
+`vercel logs` reads with `--environment production --no-branch --since <ISO>
+--until <ISO> --status-code 5xx` (and `404` plus a path query when relevant).
+Use `vercel inspect <deployment-id> --logs` for a failed build. Resolve team and
+project from the verified `.vercel/project.json`; do not infer a failed build
+from a quiet runtime-error cluster or treat a Ready build as a browser journey.
 
 ### 2. Inventory and rank issues
 
