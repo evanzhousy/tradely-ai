@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -29,20 +30,20 @@ import {
 /*
  * Recaps, as a film. A recap says the 105 call drew the most premium, over a chart of
  * contracts: does the chart back it? The chart answers: by contracts the 110 call leads;
- * plotted as premium, the 105 does. Then the same contracts from an axis at 480: 540 and
- * 505 look 2.4 to 1. Last, a headline that claims buyers and a busiest call, rewritten to
- * what the packet shows, with its caption.
+ * plotted as premium, the 105 does. The hero is the same contracts from an axis at 480:
+ * 540 and 505 look 2.4 to 1, and glowing brackets lock on the pair. Last, a headline that
+ * claims buyers and a busiest call, rewritten to what the packet shows, with its caption.
  *
- *   open      0–4      "Recaps"
- *   question  4–9.5    a premium claim over a contracts chart?
- *   match     9.5–19   contracts: 110 leads; premium: 105 leads
- *   axis      19–28    from zero, nearly equal; from 480, 2.4 to 1
- *   compose   28–37    the draft; the bounded headline; the caption
- *   claim     37–39.5  claims your evidence supports
- *   next      39.5–42  Next: audits
+ *   open      0–4        "Recaps"
+ *   question  4–8.6      a premium claim over a contracts chart?
+ *   match     8.6–19     contracts: 110 leads; premium: 105 leads
+ *   axis      19–28.6    hero: from zero, nearly equal; from 480, 2.4 to 1
+ *   compose   28.6–35    the draft; the bounded headline; the caption
+ *   claim     35–39.4    claims your evidence supports
+ *   next      39.4–41.9  Next: audits
  */
 
-const END = 42;
+const END = 41.9;
 const ROWS = mondayPacket;
 const CUT = 480;
 
@@ -74,58 +75,29 @@ const copy = {
 		`“${premiumLeader.strike} 看涨吸引了最多权利金。”`,
 	],
 	qBig: ["Does its chart back that?", "它的图表支持这句话吗？"],
-	m0: [
-		`The chart plots contracts: the ${leader.strike} call leads with ${leadValue("contracts")}.`,
-		`图表画的是张数：${leader.strike} 看涨以 ${leadValue("contracts")} 张领先。`,
+	mHead: [
+		`The chart plots contracts: ${leader.strike} leads.`,
+		`图表画的是张数：${leader.strike} 领先。`,
 	],
-	m0Short: [
-		`Contracts: ${leader.strike} leads.`,
-		`张数：${leader.strike} 领先。`,
+	m2Head: [
+		`Plot premium, and the ${premiumLeader.strike} leads.`,
+		`改画权利金，${premiumLeader.strike} 领先。`,
 	],
-	m1: [
-		`So it can't back a claim about premium. Plot premium and the ${premiumLeader.strike} leads, ${leadValue("premium")}.`,
-		`所以它支持不了关于权利金的说法。改画权利金，${premiumLeader.strike} 领先，${leadValue("premium")}。`,
+	aHead: ["The same contracts, from zero.", "同样的张数，从零开始。"],
+	a2Head: [
+		`From ${count(CUT)}, one bar looks ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}× the other.`,
+		`从 ${count(CUT)} 起，看着差 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} 倍。`,
 	],
-	m1Short: [
-		`Premium: ${premiumLeader.strike} leads.`,
-		`权利金：${premiumLeader.strike} 领先。`,
-	],
-	a0: [
-		`From zero, the ${leader.strike} and 105 calls look nearly equal, as they are: ${count(C110)} and ${count(C105)}.`,
-		`从零开始，${leader.strike} 和 105 看涨看起来几乎一样，事实也是：${count(C110)} 和 ${count(C105)}。`,
-	],
-	a0Short: ["From zero: nearly equal.", "从零开始：几乎一样。"],
-	a1: [
-		`Start the axis at ${count(CUT)} and the gap looks ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} to 1. No number changed.`,
-		`把轴从 ${count(CUT)} 开始，差距看起来是 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} 比 1。没有任何数字变化。`,
-	],
-	a1Short: [
-		`From ${CUT}: ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} to 1.`,
-		`从 ${CUT}：${((C110 - CUT) / (C105 - CUT)).toFixed(1)} 比 1。`,
-	],
-	c0: [
-		"The first draft names buyers the packet can't see, and a busiest call it didn't fully cover.",
-		"初稿说出了研究包看不到的买方，以及它没有完全覆盖的“最活跃看涨”。",
-	],
-	c0Short: ["The draft claims too much.", "初稿说多了。"],
-	c1: [
-		"The rewrite says only what the packet shows: the count, the contract, the day, the coverage.",
-		"改写后只说研究包显示的：数量、合约、日期、覆盖范围。",
-	],
-	c1Short: ["Only what it shows.", "只说它显示的。"],
-	c2: [
-		"And a caption travels with the chart: units, axis, source, date and the gap.",
-		"图表附上说明：单位、坐标轴、来源、日期和缺口。",
-	],
-	c2Short: ["Plus a caption.", "再加上说明。"],
+	cHead: ["The draft claims more than it shows.", "初稿说的比它显示的多。"],
+	c2Head: ["Rewrite it, and add a caption.", "改写它，再加上说明。"],
 	contracts: ["contracts", "张数"],
 	premium: ["premium", "权利金"],
 	noData: ["no data", "无数据"],
 	axisFrom: [`axis from ${count(CUT)}`, `轴从 ${count(CUT)} 开始`],
 	claimBig: ["Claim only what your evidence shows.", "只说证据能显示的。"],
 	claimSub: [
-		"Chart the quantity you claim, start bars at zero, and keep the headline inside the packet's coverage.",
-		"图表画你所说的那个量，柱子从零开始，标题不越出研究包的覆盖范围。",
+		"Chart what you claim; start bars at zero.",
+		"画你所说的量；柱子从零开始。",
 	],
 	nextBig: ["Next: audits", "下一课：审核"],
 	nextSub: ["finding and repairing a flawed recap", "发现并修复有缺陷的复盘"],
@@ -143,10 +115,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -203,10 +175,38 @@ function Scene({
 			</g>
 
 			{/* The chart: one quantity, then another, then a cut axis. */}
-			{headline("m0", copy.m0, copy.m0Short)}
-			{headline("m1", copy.m1, copy.m1Short)}
-			{headline("a0", copy.a0, copy.a0Short)}
-			{headline("a1", copy.a1, copy.a1Short)}
+			{headline("m-head", copy.mHead)}
+			{/* Each answer, a line under its headline, as the bars make it. */}
+			<Lines
+				name="m2-head"
+				text={t(copy.m2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.mHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("a-head", copy.aHead)}
+			<Lines
+				name="a2-head"
+				text={t(copy.a2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.aHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-bars" glow />
 			<g data-f="frame">
 				<path d={`M${margin} ${L.base}H${margin + room}`} className="wt-axis" />
 				{ROWS.map((row, i) => (
@@ -294,9 +294,21 @@ function Scene({
 			})}
 
 			{/* The headline and its caption. */}
-			{headline("c0", copy.c0, copy.c0Short)}
-			{headline("c1", copy.c1, copy.c1Short)}
-			{headline("c2", copy.c2, copy.c2Short)}
+			{headline("c-head", copy.cHead)}
+			<Lines
+				name="c2-head"
+				text={t(copy.c2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<Lines
 				name="draft"
 				text={`“${t(drafts.over)}”`}
@@ -372,17 +384,24 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A line lands slightly large and settles, without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const span = L.base - L.top;
-	const heads = ["m0", "m1", "a0", "a1", "c0", "c1", "c2"].map((name) =>
-		one(name),
-	);
+	const heads = [
+		"m-head",
+		"m2-head",
+		"a-head",
+		"a2-head",
+		"c-head",
+		"c2-head",
+	].map((name) => one(name));
+	const lockBars = one<SVGGraphicsElement>("lock-bars");
 	const bars = ROWS.map((_, i) => one(`bar-${i}`));
 	const vals = (metric: Metric) =>
 		ROWS.map((_, i) => one(`val-${metric}-${i}`));
@@ -433,6 +452,7 @@ function build(context: FilmContext) {
 		one("draft"),
 		one("bounded"),
 		one("caption"),
+		lockBars,
 		...kids("claim"),
 	]);
 
@@ -445,14 +465,14 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— match: the quantity on the chart ———
-	tl.addLabel("match", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show(kids("frame"), 10.0);
-	show(one("unit-contracts"), 10.2);
+	tl.addLabel("match", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	show(kids("frame"), 9.2);
+	show(one("unit-contracts"), 9.4);
 	bars.forEach((bar, i) => {
 		const height = Number(bar.getAttribute("height"));
 		const y = Number(bar.getAttribute("y"));
@@ -460,20 +480,19 @@ function build(context: FilmContext) {
 			bar,
 			{ opacity: 1, attr: { y: L.base, height: 0 } },
 			{ attr: { y, height }, duration: 0.6, ease: "power2.out" },
-			10.4 + i * 0.12,
+			9.6 + i * 0.12,
 		);
 	});
-	show(vals("contracts"), 11.2);
-	d.swap(heads[0], heads[1], 13.6);
-	d.flip(one("unit-contracts"), one("unit-premium"), 14.0);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 14.3);
-	hide(vals("contracts"), 14.0, 0.25);
-	barsTo("premium", 0, chartMax("premium"), 14.2, vals("premium"));
-	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "neutral" } }, 14.6);
+	show(vals("contracts"), 10.4);
+	d.flip(one("unit-contracts"), one("unit-premium"), 13.2);
+	tl.set(one("unit-contracts"), { opacity: 0 }, 13.5);
+	hide(vals("contracts"), 13.2, 0.25);
+	barsTo("premium", 0, chartMax("premium"), 13.4, vals("premium"));
+	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "neutral" } }, 13.8);
 	tl.set(
 		bars[leadIndex(premiumLeader)],
 		{ attr: { "data-tone": "total" } },
-		14.6,
+		13.8,
 	);
 	ROWS.forEach((_, i) => {
 		tl.set(
@@ -481,14 +500,15 @@ function build(context: FilmContext) {
 			{
 				attr: { y: Number(one(`val-contracts-${i}`).getAttribute("y")) },
 			},
-			14.2,
+			13.4,
 		);
 	});
-	show(vals("premium"), 15.0);
+	show(vals("premium"), 14.2);
+	show(heads[1], 14.6);
 
-	// ——— axis: the same contracts from 0, then from 480 ———
+	// ——— axis: the hero. The same contracts from 0, then from 480. ———
 	tl.addLabel("axis", 19);
-	d.swap(heads[1], heads[2], 19.0);
+	d.swap([heads[0], heads[1]], heads[2], 19.0);
 	hide(vals("premium"), 19.0, 0.25);
 	d.flip(one("unit-premium"), one("unit-contracts"), 19.2);
 	tl.set(one("unit-premium"), { opacity: 0 }, 19.5);
@@ -500,47 +520,57 @@ function build(context: FilmContext) {
 	);
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 19.6);
 	show(vals("contracts"), 20.2);
-	d.swap(heads[2], heads[3], 23.0);
-	d.flip(one("unit-contracts"), one("unit-cut"), 23.4);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 23.7);
+	d.flip(one("unit-contracts"), one("unit-cut"), 23.0);
+	tl.set(one("unit-contracts"), { opacity: 0 }, 23.3);
 	barsTo(
 		"contracts",
 		CUT,
 		CUT + (CONTRACTS_MAX - CUT) * 0.55,
-		23.6,
+		23.2,
 		vals("contracts"),
 	);
+	// Round the two bars the cut axis pulls apart, with their figures.
+	const pair = [leadIndex(leader), leadIndex(premiumLeader)];
+	d.lock(lockBars, 25.0, {
+		around: pair.flatMap((i) => [bars[i], vals("contracts")[i]]),
+		// Close in at the foot, where the strikes are labelled.
+		pad: 3,
+	});
+	tl.addLabel("hero-lock", 25.0);
+	show(heads[3], 25.0);
 
 	// ——— compose: the headline and caption ———
-	tl.addLabel("compose", 28);
+	tl.addLabel("compose", 28.6);
+	d.swap([heads[2], heads[3]], heads[4], 28.6);
 	hide(
 		[
-			heads[3],
 			...kids("frame"),
 			one("unit-cut"),
 			...bars,
 			...vals("contracts"),
+			lockBars,
 		],
-		28.0,
+		28.6,
 	);
-	show(heads[4], 28.2, "above");
-	show(one("draft"), 28.6);
-	d.swap(heads[4], heads[5], 30.8);
-	tl.to(one("draft"), { opacity: 0.35, duration: 0.4 }, 31.0);
-	show(one("bounded"), 31.2);
-	d.swap(heads[5], heads[6], 33.6);
-	show(one("caption"), 34.0);
+	show(one("draft"), 29.4);
+	tl.to(one("draft"), { opacity: 0.35, duration: 0.4 }, 30.4);
+	show(one("bounded"), 30.6);
+	show(one("caption"), 31.4);
+	show(heads[5], 31.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
-	hide([heads[6], one("draft"), one("bounded"), one("caption")], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	tl.addLabel("claim", 35);
+	hide(
+		[heads[4], heads[5], one("draft"), one("bounded"), one("caption")],
+		35.0,
+	);
+	word(one("z-big"), 35.3);
+	show(one("z-sub"), 35.7);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 39.4);
+	hide(kids("claim"), 39.4);
+	d.close(39.4);
 	return tl;
 }
 
