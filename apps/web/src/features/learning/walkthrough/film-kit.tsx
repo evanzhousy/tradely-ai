@@ -870,14 +870,10 @@ export function createDirector(
 			},
 			at,
 		);
+		// One swap at the moment it lands: the flyer sits exactly on its text, so handing
+		// over at once shows no double image.
 		tl.set(flyer, { opacity: 0 }, at + duration);
-		if (reveal)
-			tl.fromTo(
-				to,
-				{ opacity: 0 },
-				{ opacity: 1, duration: 0.12 },
-				at + duration - 0.1,
-			);
+		if (reveal) tl.set(to, { opacity: 1 }, at + duration);
 	};
 	/**
 	 * A shape turns over about the vertical line at `x`, like a card: the shape a mirror
