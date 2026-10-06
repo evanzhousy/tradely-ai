@@ -6,6 +6,7 @@ handoff before execution.
 | Task | Canonical runbook |
 | --- | --- |
 | Investigate errors reported by PostHog | [PostHog error analysis](posthog-error-analysis.md) |
+| Analyze web traffic and learner behavior with PostHog | [PostHog analysis](../docs/runbook/posthog-analysis.md) |
 
 This index owns root-level operational runbooks. Keep one canonical procedure
 per task and update this index when a root runbook is added, moved, or removed.
