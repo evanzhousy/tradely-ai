@@ -11,6 +11,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -35,22 +36,21 @@ import {
 /*
  * Research packets, as a film. Someone else reruns your packet: will they get $165,520?
  * The packet's rows answer: R2 traced to its trades, 5 × $2.00 and 500 × $2.15, × 100;
- * four rows summed to $165,520, an observed subtotal with the 120 call missing. Then the
- * fields a reader reruns from: drop the formula and they get $1,655.20; drop the exclusions
- * and $218,520. Last, the log: Tuesday's rerun saves P2, and leaving out the spread is a
- * new method, P3, a new question.
+ * four rows summed to $165,520, an observed subtotal with the 120 call missing. The hero is
+ * the fields a reader reruns from: drop the formula and they get $1,655.20; drop the
+ * exclusions and $171,720, where glowing brackets lock. Last, the log: Tuesday's rerun
+ * saves P2, and leaving out the spread is a new method, P3, a new question.
  *
- *   open      0–4      "Research packets"
- *   question  4–9.5    will a reader get $165,520?
- *   rows      9.5–19.5 five rows; R2 traced; summed; a subtotal of 4 of 5
- *   fields    19.5–29  as of, rows, formula, exclusions; without the formula; without
- *                      the exclusions
- *   log       29–37    P1; P2 a rerun; P3 a new question
- *   claim     37–39.5  work someone else can rerun
- *   next      39.5–42  Next: recaps
+ *   open      0–4        "Research packets"
+ *   question  4–8.6      will a reader get $165,520?
+ *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
+ *   fields    18.6–28.6  hero: every field; without the formula; without the exclusions
+ *   log       28.6–35.4  P1; P2 a rerun; P3 a new question
+ *   claim     35.4–39.8  work someone else can rerun
+ *   next      39.8–42.3  Next: recaps
  */
 
-const END = 42;
+const END = 42.3;
 const R2 = rowById("R2");
 const R2_TRADES = R2?.trades ?? [];
 
@@ -86,70 +86,28 @@ const copy = {
 		`它说成交的权利金是 ${dollars(MONDAY)}。`,
 	],
 	qBig: ["Would someone else get the same?", "别人重跑会得到同样的数吗？"],
-	p0: [
-		"One row per Oct 18 call from 100 to 120, from the corrected tape as of Monday 16:05.",
-		"10月18日 100 到 120 的看涨，每个一行，来自截至周一 16:05 的更正后成交记录。",
+	pHead: [
+		"One row per series, traced to trades.",
+		"每个序列一行，可追溯到成交。",
 	],
-	p0Short: ["One row per series.", "每个序列一行。"],
-	p1: [
-		`Trace R2 to its trades: anyone can redo the ${dollars(rowPremium(R2 ?? mondayPacket[0]) ?? 0)}.`,
-		`把 R2 追溯到它的成交：谁都能重算出 ${dollars(rowPremium(R2 ?? mondayPacket[0]) ?? 0)}。`,
-	],
-	p1Short: ["Trace a row.", "追溯一行。"],
-	p2: [
-		`R5 has no data yet, so ${dollars(MONDAY)} covers ${COVERED} of ${SERIES} series: a subtotal, not the total.`,
-		`R5 还没有数据，所以 ${dollars(MONDAY)} 只覆盖 ${SERIES} 个中的 ${COVERED} 个：是小计，不是合计。`,
-	],
-	p2Short: [
-		`${COVERED} of ${SERIES}: a subtotal.`,
-		`${SERIES} 中 ${COVERED} 个：小计。`,
+	p2Head: [
+		"A subtotal: one series has no data.",
+		"是小计：有一个序列没有数据。",
 	],
 	noData: ["no data yet", "尚无数据"],
 	subtotal: [
 		`≥ ${dollars(MONDAY)} · ${COVERED} of ${SERIES} series`,
 		`≥ ${dollars(MONDAY)} · ${SERIES} 个中 ${COVERED} 个`,
 	],
-	f0: [
-		"A reader reruns P1 from its fields. With every field, they match.",
-		"读者按研究包的字段重跑。字段齐全时，结果一致。",
-	],
-	f0Short: ["Every field: a match.", "字段齐全：一致。"],
-	f1: [
-		`Without the formula they multiply price by contracts and miss × 100: ${rerunText("formula")}.`,
-		`没有公式，读者用价格乘张数，漏了 × 100：${rerunText("formula")}。`,
-	],
-	f1Short: [
-		`No formula: ${rerunText("formula")}.`,
-		`没有公式：${rerunText("formula")}。`,
-	],
-	f2: [
-		`Without the exclusions they count the cancelled T-2 and the repeated M2: ${rerunText("exclusions")}.`,
-		`没有排除项，读者会计入已取消的 T-2 和重复的 M2：${rerunText("exclusions")}。`,
-	],
-	f2Short: [
-		`No exclusions: ${rerunText("exclusions")}.`,
-		`没有排除项：${rerunText("exclusions")}。`,
-	],
+	fHead: ["A reader reruns it from its fields.", "读者按它的字段重跑。"],
+	f2Head: ["Drop a field, and the number breaks.", "少一个字段，数字就错了。"],
 	reader: ["a reader's rerun", "读者重跑"],
-	l0: [
-		`P1 is saved with its as-of time and method: ${dollars(MONDAY)}.`,
-		`P1 连同截至时间和方法一起保存：${dollars(MONDAY)}。`,
-	],
-	l0Short: ["P1 saved.", "保存 P1。"],
-	l1: [
-		`Tuesday the 120 call's trades arrive: the same method gives P2, ${dollars(TUESDAY)}. P1 stays.`,
-		`周二 120 看涨的成交到了：同一方法得到 P2，${dollars(TUESDAY)}。P1 保持不变。`,
-	],
-	l1Short: ["Same method: P2.", "同一方法：P2。"],
-	l2: [
-		`Leaving out the spread's legs changes the method: ${dollars(WITHOUT_SPREAD)} answers a new question, P3.`,
-		`去掉价差的两条腿就改变了方法：${dollars(WITHOUT_SPREAD)} 回答的是新问题，P3。`,
-	],
-	l2Short: ["New method: P3.", "新方法：P3。"],
+	lHead: ["Save each rerun as its own record.", "每次重跑另存一条记录。"],
+	l2Head: ["A new method is a new question.", "新方法就是新问题。"],
 	claimBig: ["Leave work someone else can rerun.", "留下别人能重跑的工作。"],
 	claimSub: [
-		"Write the as-of time, the formula and the exclusions; keep each rerun as a new record, and a new method as a new question.",
-		"写明截至时间、公式和排除项；每次重跑另存一条记录，新方法就是新问题。",
+		"Write the as-of time, formula and exclusions.",
+		"写明截至时间、公式和排除项。",
 	],
 	nextBig: ["Next: recaps", "下一课：复盘"],
 	nextSub: ["claims your evidence supports", "证据支持的结论"],
@@ -167,10 +125,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -218,9 +176,22 @@ function Scene({
 			</g>
 
 			{/* The rows. */}
-			{headline("p0", copy.p0, copy.p0Short)}
-			{headline("p1", copy.p1, copy.p1Short)}
-			{headline("p2", copy.p2, copy.p2Short)}
+			{headline("p-head", copy.pHead)}
+			{/* Each answer, a line under its headline, as the stage makes it. */}
+			<Lines
+				name="p2-head"
+				text={t(copy.p2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.pHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{mondayPacket.map((row, i) => {
 				const premium = rowPremium(row);
 				return (
@@ -308,9 +279,22 @@ function Scene({
 			</text>
 
 			{/* The fields a reader reruns from. */}
-			{headline("f0", copy.f0, copy.f0Short)}
-			{headline("f1", copy.f1, copy.f1Short)}
-			{headline("f2", copy.f2, copy.f2Short)}
+			{headline("f-head", copy.fHead)}
+			<Lines
+				name="f2-head"
+				text={t(copy.f2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.fHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-rerun" glow />
 			{fields.map((field, i) => (
 				<g key={field.id} data-f={`field-${field.id}`}>
 					<rect
@@ -369,9 +353,21 @@ function Scene({
 			))}
 
 			{/* The log. */}
-			{headline("l0", copy.l0, copy.l0Short)}
-			{headline("l1", copy.l1, copy.l1Short)}
-			{headline("l2", copy.l2, copy.l2Short)}
+			{headline("l-head", copy.lHead)}
+			<Lines
+				name="l2-head"
+				text={t(copy.l2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.lHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{records.map((record, i) => (
 				<g key={record.id} data-f={`rec-${i}`}>
 					<rect
@@ -464,16 +460,23 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = ["p0", "p1", "p2", "f0", "f1", "f2", "l0", "l1", "l2"].map(
-		(name) => one(name),
-	);
+	const heads = [
+		"p-head",
+		"p2-head",
+		"f-head",
+		"f2-head",
+		"l-head",
+		"l2-head",
+	].map((name) => one(name));
+	const lockRerun = one<SVGGraphicsElement>("lock-rerun");
 	const rows = mondayPacket.map((_, i) => one(`row-${i}`));
 	const r2 = mondayPacket.findIndex((row) => row.id === "R2");
 	const missing = mondayPacket.findIndex((row) => row.trades === null);
@@ -500,6 +503,7 @@ function build(context: FilmContext) {
 		...fieldRows,
 		one("rerun-tag"),
 		...reruns,
+		lockRerun,
 		...recs,
 		...kids("claim"),
 	]);
@@ -513,76 +517,76 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— rows: traced and summed ———
-	tl.addLabel("rows", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
+	tl.addLabel("rows", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
 	rows.forEach((row, i) => {
-		show(row, 10.0 + i * 0.15, "right");
+		show(row, 9.2 + i * 0.15, "right");
 	});
-	d.swap(heads[0], heads[1], 12.0);
-	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-focus-shape" } }, 12.4);
-	show(one("trace"), 12.6);
-	d.swap(heads[1], heads[2], 15.0);
-	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-panel-shape" } }, 15.0);
+	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-focus-shape" } }, 10.8);
+	show(one("trace"), 11.0);
+	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-panel-shape" } }, 12.4);
 	d.count(
 		one<SVGTextElement>("sum"),
 		MONDAY,
-		15.4,
+		12.6,
 		(v) => dollars(Math.round(v / 100) * 100),
 		0,
 		0.8,
 	);
-	tl.set(one("sum"), { opacity: 1 }, 15.4);
+	tl.set(one("sum"), { opacity: 1 }, 12.6);
 	tl.fromTo(
 		rows[missing],
 		{ x: 0 },
 		{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
-		16.4,
+		14.0,
 	);
-	show(one("subtotal"), 16.6);
+	show(one("subtotal"), 14.2);
+	show(heads[1], 14.6);
 
-	// ——— fields: what a reader reruns ———
-	tl.addLabel("fields", 19.5);
-	hide([heads[2], ...rows, one("trace"), one("sum"), one("subtotal")], 19.5);
-	show(heads[3], 19.7, "above");
+	// ——— fields: the hero. A reader reruns it from its fields. ———
+	tl.addLabel("fields", 18.6);
+	d.swap([heads[0], heads[1]], heads[2], 18.6);
+	hide([...rows, one("trace"), one("sum"), one("subtotal")], 18.6);
 	fieldRows.forEach((row, i) => {
-		show(row, 20.0 + i * 0.15, "right");
+		show(row, 19.4 + i * 0.15, "right");
 	});
-	show(one("rerun-tag"), 20.8);
-	d.slam(reruns[0], 21.0);
-	d.swap(heads[3], heads[4], 22.6);
-	drop("formula", 23.0);
-	d.flip(reruns[0], reruns[1], 23.2);
-	tl.set(reruns[0], { opacity: 0 }, 23.5);
-	d.swap(heads[4], heads[5], 25.6);
-	restore("formula", 26.0);
-	drop("exclusions", 26.0);
-	d.flip(reruns[1], reruns[2], 26.2);
-	tl.set(reruns[1], { opacity: 0 }, 26.5);
+	show(one("rerun-tag"), 20.4);
+	word(reruns[0], 20.6);
+	drop("formula", 22.0);
+	d.flip(reruns[0], reruns[1], 22.2);
+	tl.set(reruns[0], { opacity: 0 }, 22.5);
+	restore("formula", 23.8);
+	drop("exclusions", 23.8);
+	d.flip(reruns[1], reruns[2], 24.0);
+	tl.set(reruns[1], { opacity: 0 }, 24.3);
+	// Round the rerun and its label, so no arm runs through the label.
+	d.lock(lockRerun, 25.0, { around: [one("rerun-tag"), reruns[2]], pad: 6 });
+	tl.addLabel("hero-lock", 25.0);
+	show(heads[3], 25.0);
 
 	// ——— log: rerun, or a new question ———
-	tl.addLabel("log", 29);
-	hide([heads[5], ...fieldRows, one("rerun-tag"), reruns[2]], 29.0);
-	show(heads[6], 29.2, "above");
-	show(recs[0], 29.5, "right");
-	d.swap(heads[6], heads[7], 31.2);
-	show(recs[1], 31.6, "right");
-	d.swap(heads[7], heads[8], 33.6);
-	show(recs[2], 34.0, "right");
+	tl.addLabel("log", 28.6);
+	d.swap([heads[2], heads[3]], heads[4], 28.6);
+	hide([...fieldRows, one("rerun-tag"), reruns[2], lockRerun], 28.6);
+	show(recs[0], 29.4, "right");
+	show(recs[1], 30.6, "right");
+	show(recs[2], 31.8, "right");
+	show(heads[5], 31.8);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
-	hide([heads[8], ...recs], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	tl.addLabel("claim", 35.4);
+	hide([heads[4], heads[5], ...recs], 35.4);
+	word(one("z-big"), 35.7);
+	show(one("z-sub"), 36.1);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 39.8);
+	hide(kids("claim"), 39.8);
+	d.close(39.8);
 	return tl;
 }
 
