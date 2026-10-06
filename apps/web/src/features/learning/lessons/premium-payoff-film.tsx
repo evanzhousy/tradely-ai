@@ -42,16 +42,16 @@ import {
  * the writer of the 95 put keeps $205 above $95 and loses below $92.95; turned over about
  * $100, the same line is the 105 call written for $205, whose loss has no limit.
  *
- *   open      0–4      "Premium, payoff and profit"
- *   question  4–9      the 95 call at $7.30: worth what on Oct 18?
- *   parts     9–19     $7.30 lands on the 95 bar: $5.00 + $2.30; at expiry, $5.00
- *   profit    19–31.4  value drops into profit; $102; hero: break-even $104.20; $110
- *   writer    31.4–44  the 95 put written for $205; $92.95; mirrored into a written call
- *   claim     44–48    in the money isn't the same as profitable
- *   next      48–50.5  Next: put-call parity
+ *   open      0–4        "Premium, payoff and profit"
+ *   question  4–8.8      the 95 call at $7.30: worth what on Oct 18?
+ *   parts     8.8–18.6   $7.30 lands on the 95 bar: $5.00 + $2.30; at expiry, $5.00
+ *   profit    18.6–31    value drops into profit; $102; hero: break-even $104.20; $110
+ *   writer    31–41.6    the 95 put written: +$205, down to −$9,295; as a call, no limit
+ *   claim     41.6–45.2  in the money isn't the same as profitable
+ *   next      45.2–47.7  Next: put-call parity
  */
 
-const END = 50.5;
+const END = 47.7;
 const X = [80, 120] as const;
 const Y = [-2_000, 2_000] as const;
 const CALL = buys.c100;
@@ -176,11 +176,21 @@ const copy = {
 		`低于 $${PUT_BE.toFixed(2)}：亏损。`,
 	],
 	callHead: [
-		"Turned over: a written call, losses without limit.",
-		"翻过来就是卖出看涨：亏损没有上限。",
+		"A written call: losses without limit.",
+		"卖出看涨：亏损没有上限。",
 	],
 	callHeadShort: ["Written call: no limit.", "卖出看涨：亏损无上限。"],
-	putWriter: ["95 put, written", "95 看跌，卖出"],
+	putWriter: [
+		`95 put, written: ${signedUsd(GOT * 100, 0)}`,
+		`95 看跌，卖出：${signedUsd(GOT * 100, 0)}`,
+	],
+	putFloor: [
+		`↙ to ${signedUsd((GOT - PUT.strike * 100) * 100, 0)} at $0`,
+		`↙ 跌到 $0 时 ${signedUsd((GOT - PUT.strike * 100) * 100, 0)}`,
+	],
+	noLimit: ["no limit ↘", "亏损无上限 ↘"],
+	profitFrom: ["profit from here →", "从这里开始盈利 →"],
+	profitFromShort: ["profit →", "盈利 →"],
 	callWriter: ["105 call, written", "105 看涨，卖出"],
 	claimBig: ["In the money isn't the same as profitable.", "实值不等于盈利。"],
 	claimSub: [
@@ -477,7 +487,7 @@ function Scene({
 							data-f="profit-tag"
 							// On a phone the rising part is steep: name the line under its flat part instead.
 							x={narrow ? L.x(81) : L.x(119)}
-							y={narrow ? L.y(-PAID / 100) + 16 : L.y(buyerProfit(119)) + 20}
+							y={narrow ? L.y(-PAID / 100) + 16 : L.y(buyerProfit(119)) + 26}
 							textAnchor={narrow ? "start" : "end"}
 							className="wt-small wt-halo wt-accent"
 						>
@@ -519,13 +529,46 @@ function Scene({
 						>
 							{`$${BE.toFixed(2)}`}
 						</text>
-						{/* Struck through as the marker leaves the band. */}
-						<path data-f="itm-strike" className="wt-film-riser" />
+						{/* Past break-even, the profit starts: below the axis, right of the line. */}
+						<text
+							data-f="profit-from"
+							// Clear of the break-even brackets.
+							x={beX + 28}
+							y={L.y(0) + 18}
+							className="wt-small wt-halo"
+							style={{ fill: "var(--diagram-gain)" }}
+						>
+							{t(narrow ? copy.profitFromShort : copy.profitFrom)}
+						</text>
+						{/* The written put's worst case, off the chart's left edge. */}
+						<text
+							data-f="put-floor"
+							x={L.left + 4}
+							y={L.y(writerProfit(X[0])) + 18}
+							className="wt-small wt-halo"
+							style={{ fill: "var(--wt-short)" }}
+						>
+							{t(copy.putFloor)}
+						</text>
+						{/* Turned into a call, it has no worst case. */}
+						<text
+							data-f="no-limit"
+							x={L.right - 4}
+							y={L.y(callWriter(X[1])) + 18}
+							textAnchor="end"
+							className="wt-small wt-halo"
+							style={{ fill: "var(--wt-short)" }}
+						>
+							{t(copy.noLimit)}
+						</text>
+						<Brackets name="lock-205" arm={8} />
+						{/* Down to −$900: below it the worst-case note runs along the floor. */}
 						<path
 							data-f="put-be"
-							d={`M${L.x(PUT_BE)} ${L.top}V${L.bottom}`}
+							d={`M${L.x(PUT_BE)} ${L.top}V${L.y(-900)}`}
 							className="wt-bracket"
 							strokeDasharray="4 3"
+							style={{ stroke: "var(--wt-short)" }}
 						/>
 						<text
 							data-f="put-be-label"
@@ -591,10 +634,16 @@ function Scene({
 			<g data-f="meter">
 				{(
 					[
-						["m-value", copy.valueLine, "$200", "wt-film-num"],
-						["m-profit", copy.profitLine, "−$220", "wt-film-num wt-film-loss"],
+						["m-value", copy.valueLine, "$200", "wt-film-num wt-film-dim", 0.9],
+						[
+							"m-profit",
+							copy.profitLine,
+							"−$220",
+							"wt-film-num wt-film-loss",
+							1.3,
+						],
 					] as const
-				).map(([name, tag, start, className], i) => (
+				).map(([name, tag, start, className, scale], i) => (
 					<g key={name}>
 						<Word
 							name={`${name}-tag`}
@@ -610,7 +659,7 @@ function Scene({
 							name={name}
 							x={margin + i * (narrow ? 120 : 220)}
 							y={L.meterNum}
-							size={T.head * 1.15}
+							size={T.head * scale}
 							anchor="start"
 							className={className}
 						>
@@ -646,9 +695,9 @@ function Scene({
 					text={t(copy.qLine)}
 					x={W / 2}
 					y={H * 0.72}
-					size={T.body}
+					size={T.head}
 					maxWidth={room}
-					className="wt-film-type wt-film-dim"
+					className="wt-film-type"
 				/>
 			</g>
 			{headline("s-head", copy.partsHead, copy.partsHeadShort)}
@@ -695,7 +744,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, pop, rise, sink } = d;
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -732,13 +781,6 @@ function build(context: FilmContext) {
 	const putLine = one("put-line");
 	const putBe = one("put-be");
 
-	// The strike through "in the money, still losing", measured from the label itself.
-	const itm = one<SVGTextElement>("itm-label").getBBox();
-	one("itm-strike").setAttribute(
-		"d",
-		`M${itm.x - 2} ${itm.y + itm.height * 0.55}H${itm.x + itm.width + 2}`,
-	);
-
 	d.hidden([
 		...flat("q"),
 		...heads,
@@ -749,7 +791,6 @@ function build(context: FilmContext) {
 			"lock-asked",
 			"itm-band",
 			"itm-label",
-			"itm-strike",
 			"value-line",
 			"profit-line",
 			"put-line",
@@ -759,8 +800,12 @@ function build(context: FilmContext) {
 			"callw-tag",
 			"be",
 			"be-label",
+			"profit-from",
 			"put-be",
 			"put-be-label",
+			"put-floor",
+			"no-limit",
+			"lock-205",
 			"callw-be-label",
 			"marker",
 			"lock-be",
@@ -783,24 +828,24 @@ function build(context: FilmContext) {
 	// ——— question: the 95 call at $7.30 ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	show(one("q-tag"), 4.5);
-	word(one("q-big"), 4.7);
-	show(one("q-line"), 5.8);
+	show(one("q-tag"), 4.4);
+	word(one("q-big"), 4.6);
+	show(one("q-line"), 5.6);
 
 	// ——— parts: the $7.30 lands on its bar, then the time value goes ———
-	tl.addLabel("parts", 9);
-	hide([one("q-tag"), one("q-line")], 9.0);
-	tl.set(one("bars"), { opacity: 1 }, 9.2);
+	tl.addLabel("parts", 8.8);
+	hide([one("q-tag"), one("q-line")], 8.8);
+	tl.set(one("bars"), { opacity: 1 }, 9.0);
 	show(
 		// The strike labels and the caption; the prices come in with their bars.
 		flat("bars").filter(
 			(el) => el.tagName === "text" && !el.hasAttribute("data-f"),
 		),
-		9.2,
+		9.0,
 	);
 	STRIKES.forEach((k, i) => {
 		const now = priceParts(k, "call", "now");
-		const at = 9.2 + i * 0.15;
+		const at = 9.0 + i * 0.15;
 		tl.fromTo(
 			one(`in-${k}`),
 			{ opacity: 1, attr: { y: L.barBottom, height: 0 } },
@@ -829,27 +874,27 @@ function build(context: FilmContext) {
 		);
 		if (k !== ASKED) show(one(`p-${k}`), at + 0.6);
 	});
-	// The question's $7.30 flies down onto its own bar, then the headline names its parts.
-	d.carry(one<SVGTextElement>("q-big"), asked, 9.2, {
+	// The question's $7.30 drops onto its own bar, then the headline names its parts.
+	d.carry(one<SVGTextElement>("q-big"), asked, 9.0, {
 		duration: 1.2,
 		arc: "y",
 	});
-	show(heads[0], 10.5);
-	show(one("legend"), 10.8);
+	show(heads[0], 10.3);
+	show(one("legend"), 10.6);
 	tl.to(
 		STRIKES.filter((k) => k !== ASKED).flatMap((k) => [
 			...bars(k),
 			one(`p-${k}`),
 		]),
 		{ opacity: 0.3, duration: 0.4 },
-		12.0,
+		11.8,
 	);
 	// At expiry: time value is gone, and the 95 call answers the question.
-	d.swap(heads[0], heads[1], 14.8);
+	d.swap(heads[0], heads[1], 14.4);
 	tl.to(
 		STRIKES.flatMap((k) => [...bars(k), one(`p-${k}`)]),
 		{ opacity: 1, duration: 0.3 },
-		15.1,
+		14.7,
 	);
 	STRIKES.forEach((k) => {
 		const now = priceParts(k, "call", "now");
@@ -860,7 +905,7 @@ function build(context: FilmContext) {
 				duration: 0.8,
 				ease: "power2.inOut",
 			},
-			15.4,
+			15.0,
 		);
 		if (k === ASKED) {
 			tl.to(
@@ -870,20 +915,20 @@ function build(context: FilmContext) {
 					duration: 0.8,
 					ease: "power2.inOut",
 				},
-				15.4,
+				15.0,
 			);
 			d.count(
 				asked,
 				now.intrinsic,
-				15.4,
+				15.0,
 				(v) => usd(Math.round(v)),
 				now.price,
 				0.8,
 			);
-			tl.set(asked, { attr: { class: "wt-film-num wt-film-accent" } }, 16.2);
+			tl.set(asked, { attr: { class: "wt-film-num wt-film-accent" } }, 15.8);
 		} else {
-			hide(one(`p-${k}`), 15.4, 0.3);
-			show(one(`e-${k}`), 16.1);
+			hide(one(`p-${k}`), 15.0, 0.3);
+			show(one(`e-${k}`), 15.7);
 		}
 	});
 	// Fitted to the bar and its price where they end up: the price has moved down by then.
@@ -897,7 +942,7 @@ function build(context: FilmContext) {
 			label.x + label.width,
 			L.barX(ASKED_AT) + L.barW / 2,
 		);
-		d.lock(one<SVGGraphicsElement>("lock-asked"), 16.2, {
+		d.lock(one<SVGGraphicsElement>("lock-asked"), 15.8, {
 			around: [
 				{
 					getBBox: () => ({
@@ -913,7 +958,7 @@ function build(context: FilmContext) {
 	}
 
 	// ——— profit: the buyer of the 100 call ———
-	tl.addLabel("profit", 19);
+	tl.addLabel("profit", 18.6);
 	hide(
 		[
 			heads[1],
@@ -923,29 +968,29 @@ function build(context: FilmContext) {
 			one("lock-asked"),
 			one("legend"),
 		],
-		19.0,
+		18.6,
 	);
-	show(heads[2], 19.2);
-	rise(19.3);
+	show(heads[2], 18.8);
+	rise(18.9);
 	const tip = one("tip");
-	d.trace(one<SVGPathElement>("value-line"), 19.6, { tip, duration: 1.3 });
-	show(one("value-tag"), 20.7);
+	d.trace(one<SVGPathElement>("value-line"), 19.2, { tip, duration: 1.3 });
+	show(one("value-tag"), 20.3);
 	// The premium moves the whole line down: value becomes profit.
-	show(one("drop"), 21.1);
-	tl.set(one("profit-line"), { opacity: 1 }, 21.2);
-	d.morph(one("profit-line"), L.path(buyerProfit), 21.2, 0.9);
-	tl.to(one("value-line"), { opacity: 0.45, duration: 0.4 }, 21.4);
-	show(one("profit-tag"), 22.2);
-	hide(one("drop"), 22.6);
-	pop(marker, 22.8);
-	show(kids("meter"), 23.0);
+	show(one("drop"), 20.7);
+	tl.set(one("profit-line"), { opacity: 1 }, 20.8);
+	d.morph(one("profit-line"), L.path(buyerProfit), 20.8, 0.9);
+	tl.to(one("value-line"), { opacity: 0.45, duration: 0.4 }, 21.0);
+	show(one("profit-tag"), 21.8);
+	hide(one("drop"), 22.2);
+	pop(marker, 22.4);
+	show(kids("meter"), 22.6);
 
 	// Break-even, the hero: the marker walks to it, the meter holds $420 and $0, the
 	// brackets lock on, and past it the profit line turns green with the area under it.
-	d.swap(heads[2], heads[3], 23.6);
-	tl.to(one("itm-band"), { opacity: 1, duration: 0.5 }, 24.2);
-	show(one("itm-label"), 24.4);
-	show(one("be"), 24.6);
+	d.swap(heads[2], heads[3], 23.2);
+	tl.to(one("itm-band"), { opacity: 1, duration: 0.5 }, 23.8);
+	show(one("itm-label"), 24.0);
+	show(one("be"), 24.2);
 	const place = (spot: number) => {
 		gsap.set(marker, {
 			attr: { cx: L.x(spot), cy: L.y(buyerProfit(spot)) },
@@ -975,23 +1020,23 @@ function build(context: FilmContext) {
 			at,
 		);
 	};
-	tl.set([one("win-area"), one("win-line")], { opacity: 1 }, 25.0);
-	walk(102, BE, 25.0, 1.2);
-	d.lock(one<SVGGraphicsElement>("lock-be"), 26.2);
-	slam(one("be-label"), 26.3);
-	// Held: $420 and $0 at $104.20. Then on past it.
-	walk(BE, 110, 28.2, 1.2);
-	d.trace(one<SVGPathElement>("itm-strike"), 28.3, { duration: 0.4 });
-	tl.to(one("itm-label"), { opacity: 0.55, duration: 0.3 }, 28.6);
+	tl.set([one("win-area"), one("win-line")], { opacity: 1 }, 24.6);
+	walk(102, BE, 24.6, 1.2);
+	d.lock(one<SVGGraphicsElement>("lock-be"), 25.8);
+	word(one("be-label"), 25.9);
+	// Held: $420 and $0 at $104.20. Then on past it: the band stays true, dimmed.
+	walk(BE, 110, 27.8, 1.2);
+	tl.to(one("itm-label"), { opacity: 0.55, duration: 0.3 }, 28.0);
+	show(one("profit-from"), 28.2);
 	tl.to(
 		winClip,
 		{ attr: { width: L.right - beX }, duration: 0.7, ease: "power2.out" },
-		29.4,
+		29.0,
 	);
 
 	// ——— writer: the premium is the best case ———
-	tl.addLabel("writer", 31.4);
-	d.swap(heads[3], heads[4], 31.4);
+	tl.addLabel("writer", 31);
+	d.swap(heads[3], heads[4], 31.0);
 	hide(
 		[
 			...kids("meter"),
@@ -1001,7 +1046,7 @@ function build(context: FilmContext) {
 			one("be-label"),
 			one("itm-band"),
 			one("itm-label"),
-			one("itm-strike"),
+			one("profit-from"),
 			one("value-tag"),
 			one("profit-tag"),
 			one("win-area"),
@@ -1009,40 +1054,59 @@ function build(context: FilmContext) {
 			one("value-line"),
 			one("profit-line"),
 		],
-		31.4,
+		31.0,
 	);
-	d.trace(one<SVGPathElement>("put-line"), 31.8, { tip });
-	show(one("put-tag"), 32.6);
-	d.swap(heads[4], heads[5], 35.6);
-	show([putBe, one("put-be-label")], 36.0);
-	pop(one("put-marker"), 36.4);
-	show(one("put-loss"), 36.6, "right");
-	// Turned over about $100, the written put is the written call: its flat side and its
-	// loss side change ends, and its break-even moves from $92.95 to $107.05.
-	d.swap(heads[5], heads[6], 39.8);
+	d.trace(one<SVGPathElement>("put-line"), 31.4, { tip });
+	show(one("put-tag"), 32.2);
+	d.lock(one<SVGGraphicsElement>("lock-205"), 32.4, {
+		around: one("put-tag"),
+		pad: 4,
+	});
+	d.swap(heads[4], heads[5], 34.8);
+	tl.to(one("lock-205"), { opacity: 0, duration: 0.3 }, 34.8);
+	show([putBe, one("put-be-label")], 35.2);
+	pop(one("put-marker"), 35.6);
+	show(one("put-loss"), 35.8, "right");
+	show(one("put-floor"), 36.2);
+	// The same writer's line, on a call: turned over about $100, its loss side has no end.
+	d.swap(heads[5], heads[6], 38.2);
 	hide(
-		[one("put-marker"), one("put-loss"), one("put-tag"), one("put-be-label")],
-		39.8,
+		[
+			one("put-marker"),
+			one("put-loss"),
+			one("put-tag"),
+			one("put-be-label"),
+			one("put-floor"),
+		],
+		38.2,
 	);
-	d.mirror(putLine, L.x(100), 40.3, 1.2);
-	d.mirror(putBe, L.x(100), 40.3, 1.2);
-	show(one("callw-be-label"), 41.5);
-	show(one("callw-tag"), 41.7);
+	d.mirror(putLine, L.x(100), 38.6, 1.2);
+	d.mirror(putBe, L.x(100), 38.6, 1.2);
+	show(one("callw-be-label"), 39.8);
+	show(one("callw-tag"), 40.0);
+	show(one("no-limit"), 40.2);
 
 	// ——— claim ———
-	tl.addLabel("claim", 44);
+	tl.addLabel("claim", 41.6);
 	hide(
-		[heads[6], putLine, putBe, one("callw-be-label"), one("callw-tag")],
-		44.0,
+		[
+			heads[6],
+			putLine,
+			putBe,
+			one("callw-be-label"),
+			one("callw-tag"),
+			one("no-limit"),
+		],
+		41.6,
 	);
-	sink(44.0);
-	word(one("z-big"), 44.4);
-	show(one("z-sub"), 44.9);
+	sink(41.6);
+	word(one("z-big"), 42.0);
+	show(one("z-sub"), 42.5);
 
 	// ——— next ———
-	tl.addLabel("next", 48);
-	hide(kids("claim"), 48.0);
-	d.close(48.0);
+	tl.addLabel("next", 45.2);
+	hide(kids("claim"), 45.2);
+	d.close(45.2);
 	return tl;
 }
 
