@@ -557,7 +557,7 @@ function WindowStage({
 							// Start-anchored, so moving to the lane's other end is one slide.
 							<m.text
 								y={y + 18}
-								className={`wt-small wt-on-soft${unknown && i === 1 ? "wt-halo" : ""}`}
+								className={`wt-small wt-on-soft ${unknown && i === 1 ? "wt-halo" : ""}`}
 								initial={false}
 								data-tx={laneStart(lane.inLane, american || unknown || i === 0)}
 								animate={{
