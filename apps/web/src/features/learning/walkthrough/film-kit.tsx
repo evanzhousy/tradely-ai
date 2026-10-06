@@ -471,7 +471,7 @@ export function Brackets({
 	height?: number;
 	arm?: number;
 	/** The accent by default; a bid or an ask can lock in its own colour. */
-	tone?: "gain" | "loss";
+	tone?: "gain" | "loss" | "short";
 	/** A tight and a wide glow, for the film's one hero lock. */
 	glow?: boolean;
 }) {
@@ -738,15 +738,26 @@ export function createDirector(
 		}
 		// No smoothOrigin: one set of brackets locks on one thing after another, and GSAP would
 		// otherwise offset each new origin to make up for the last one.
-		// From at most 24 px larger on each side: a wide row's brackets at 1.4× would leave a
-		// phone's frame.
-		const from = Math.min(1.4, 1 + 48 / Math.max(box.width, box.height));
+		// From at most 24 px larger on each side, and never past 12 px from the frame's sides
+		// or 4 px from its top and bottom: a wide row's brackets would otherwise leave a phone.
+		const cx = box.x + box.width / 2;
+		const cy = box.y + box.height / 2;
+		const fits = Math.min(
+			(cx - 12) / (box.width / 2),
+			(width - 12 - cx) / (box.width / 2),
+			(cy - 4) / (box.height / 2),
+			(H - 4 - cy) / (box.height / 2),
+		);
+		const from = Math.max(
+			1,
+			Math.min(1.4, 1 + 48 / Math.max(box.width, box.height), fits),
+		);
 		tl.fromTo(
 			target,
 			{
 				opacity: 0,
 				scale: from,
-				svgOrigin: `${box.x + box.width / 2} ${box.y + box.height / 2}`,
+				svgOrigin: `${cx} ${cy}`,
 				smoothOrigin: false,
 			},
 			{
@@ -831,12 +842,23 @@ export function createDirector(
 			flyer.style.removeProperty("transform");
 			flyer.style.removeProperty("opacity");
 			layer.append(flyer);
-			gsap.set(flyer, { opacity: 0 });
+			// The origin is set now, while the copy is untransformed: GSAP reads an svgOrigin
+			// through the mark's current transform, so set when the tween first renders, after
+			// a seek has already moved the copy, it lands the copy off its text.
+			gsap.set(flyer, { opacity: 0, svgOrigin: `${ax} ${ay}` });
 			const sync = () => {
 				if (!from.firstElementChild) flyer.textContent = from.textContent;
 				flyer.setAttribute("class", from.getAttribute("class") ?? "");
 			};
+			// A kept original dims while its copy leaves, so the two never read as one smeared
+			// mark; it comes back as the copy lands.
 			if (!keep) tl.set(from, { opacity: 0 }, at);
+			else {
+				tl.set(from, { opacity: 0.3 }, at);
+				tl.to(from, { opacity: 1, duration: 0.3 }, at + duration);
+			}
+			// Shown by a set as well as the tween, so a seek to exactly `at` draws it.
+			tl.set(flyer, { opacity: 1 }, at);
 			tl.fromTo(
 				flyer,
 				{ opacity: 1 },
@@ -864,7 +886,7 @@ export function createDirector(
 			{
 				y: b.y + b.height / 2 - ay,
 				scale: fit ? b.height / a.height : 1,
-				svgOrigin: `${ax} ${ay}`,
+				...(flyer === from ? { svgOrigin: `${ax} ${ay}` } : {}),
 				duration,
 				ease: arc === "y" ? lead : arc === "x" ? trail : "power3.inOut",
 			},
@@ -882,8 +904,8 @@ export function createDirector(
 	const mirror = (target: Element, x: number, at: number, duration = 1) =>
 		tl.fromTo(
 			target,
-			{ scaleX: 1, svgOrigin: `${x} 0` },
-			{ scaleX: -1, duration, ease: "power2.inOut" },
+			{ scaleX: 1, svgOrigin: `${x} 0`, smoothOrigin: false },
+			{ scaleX: -1, duration, ease: "power2.inOut", smoothOrigin: false },
 			at,
 		);
 	/**
@@ -969,7 +991,11 @@ export function createDirector(
 		tl.to(
 			titleGroup,
 			{
-				x: width - margin * 0.45 - measured * (tagSize / titleSize),
+				// A phone's tag sits further in: a web font can land wider than the measure.
+				x:
+					width -
+					margin * (frame.narrow ? 0.6 : 0.45) -
+					measured * (tagSize / titleSize),
 				y: frame.tagY,
 				duration: 0.9,
 				ease: "power3.inOut",
