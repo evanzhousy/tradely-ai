@@ -94,14 +94,14 @@ function capturePostHogEvent(
 ): boolean {
 	try {
 		if (SEND_BEACON_EVENTS.has(event)) {
-			client.capture(event, properties, {
-				transport: "sendBeacon",
-				send_instantly: true,
-			});
-			return true;
+			return Boolean(
+				client.capture(event, properties, {
+					transport: "sendBeacon",
+					send_instantly: true,
+				}),
+			);
 		}
-		client.capture(event, properties);
-		return true;
+		return Boolean(client.capture(event, properties));
 	} catch {
 		return false;
 	}
