@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -26,20 +27,21 @@ import {
 /*
  * Rankings, as a film. Which of ALFA's peers is most unusual today? Two columns answer
  * with lines between them: by contracts CRUX leads; against each name's own normal DUNE
- * leads and CRUX falls to last, and GLYN sits under the floor. Then a ranking by size of
- * open-interest change puts CRUX's −900 first; signed, it is last. Last, ALFA rises from
- * #2 to #1 on the same 2,400 contracts, because CRUX fell.
+ * leads and CRUX falls to last, and GLYN sits under the floor. The hero is a ranking by
+ * size of open-interest change, which puts CRUX's −900 first; signed, it is last, and
+ * glowing brackets lock on it. Last, ALFA rises from #2 to #1 on the same 2,400
+ * contracts, because CRUX fell.
  *
- *   open      0–4      "Rankings"
- *   question  4–9.5    most unusual today?
- *   metric    9.5–20   by contracts; against its own normal; under the floor
- *   sign      20–28.5  by size; by signed change
- *   move      28.5–37  Monday; Tuesday: ALFA #1, standing still
- *   claim     37–39.5  order without prediction
- *   next      39.5–42  Next: contract neighborhoods
+ *   open      0–4        "Rankings"
+ *   question  4–8.6      most unusual today?
+ *   metric    8.6–18.4   by contracts; against its own normal; under the floor
+ *   sign      18.4–28    hero: by size; by signed change
+ *   move      28–33.6    Monday; Tuesday: ALFA #1, standing still
+ *   claim     33.6–38    order without prediction
+ *   next      38–40.5    Next: contract neighborhoods
  */
 
-const END = 42;
+const END = 40.5;
 type Entry = { name: string; value: string; dim?: boolean; tone?: string };
 type Board = { title: Copy; entries: Entry[] };
 
@@ -118,44 +120,21 @@ const copy = {
 	qTag: ["ALFA and its peers · Monday", "ALFA 与同类 · 周一"],
 	qLine: ["Which one is most unusual today?", "今天哪一个最异常？"],
 	qBig: ["Rank them.", "排个名。"],
-	m0: [
-		`By contracts traded, ${RAW.entries[0].name} leads.`,
+	mHead: [
+		`By contracts, ${RAW.entries[0].name} leads.`,
 		`按成交张数，${RAW.entries[0].name} 领先。`,
 	],
-	m0Short: [
-		`By contracts: ${RAW.entries[0].name}.`,
-		`按张数：${RAW.entries[0].name}。`,
+	m2Head: [
+		`Against normal: ${RELATIVE.entries[0].name} first, ${RAW.entries[0].name} last.`,
+		`对比常态：${RELATIVE.entries[0].name} 第一，${RAW.entries[0].name} 最后。`,
 	],
-	m1: [
-		`Against each one's own normal, the order flips: ${RELATIVE.entries[0].name} first, ${RAW.entries[0].name} last.`,
-		`对比各自的常态，顺序翻转：${RELATIVE.entries[0].name} 第一，${RAW.entries[0].name} 最后。`,
+	sHead: [
+		"Ranked by size of change, CRUX is first.",
+		"按变化大小排名，CRUX 第一。",
 	],
-	m1Short: ["Against normal: flipped.", "对比常态：翻转。"],
-	m2: [
-		`GLYN's 2× rests on ${count(volumeOf("GLYN"))} contracts, under a ${count(FLOOR)} floor. Leave it out, and say so.`,
-		`GLYN 的 2× 只靠 ${count(volumeOf("GLYN"))} 张，低于 ${count(FLOOR)} 张门槛。排除它，并说明。`,
-	],
-	m2Short: ["GLYN: under the floor.", "GLYN：低于门槛。"],
-	s0: [
-		"Ranked by the size of Monday's open-interest change, CRUX comes first.",
-		"按周一未平仓量变化的大小排名，CRUX 第一。",
-	],
-	s0Short: ["By size: CRUX first.", "按大小：CRUX 第一。"],
-	s1: [
-		"Put the sign back: CRUX's change was a fall, and it drops to last.",
-		"把符号放回去：CRUX 是减少，它掉到最后。",
-	],
-	s1Short: ["Signed: CRUX last.", "带符号：CRUX 最后。"],
-	d0: [
-		`Monday by contracts: ALFA is second with ${count(volumeOf("ALFA"))}.`,
-		`周一按张数：ALFA 以 ${count(volumeOf("ALFA"))} 张排第二。`,
-	],
-	d0Short: ["Monday: ALFA #2.", "周一：ALFA 第二。"],
-	d1: [
-		`Tuesday ALFA trades the same ${count(tuesday.ALFA)}, but CRUX falls to ${count(tuesday.CRUX)}. ALFA is #1 without doing anything new.`,
-		`周二 ALFA 仍成交 ${count(tuesday.ALFA)} 张，但 CRUX 跌到 ${count(tuesday.CRUX)}。ALFA 什么都没变就成了第一。`,
-	],
-	d1Short: ["Tuesday: ALFA #1, unchanged.", "周二：ALFA 第一，没变。"],
+	s2Head: ["Signed, its fall puts it last.", "带上符号，它的减少排到最后。"],
+	dHead: ["Monday by contracts: ALFA is #2.", "周一按张数：ALFA 排第二。"],
+	d2Head: ["Tuesday: #1, without trading more.", "周二：第一，成交量没变。"],
 	under: [`under ${count(FLOOR)}`, `低于 ${count(FLOOR)}`],
 	note: [
 		"#1 of three by contracts · up because a peer fell",
@@ -163,8 +142,8 @@ const copy = {
 	],
 	claimBig: ["A rank is an order, not a forecast.", "排名是顺序，不是预测。"],
 	claimSub: [
-		"Say what it ranks by, which way the sign runs and who is left out, and read a new rank against what its neighbours did.",
-		"说清按什么排、符号朝哪个方向、谁被排除，并结合邻居的变化去读新的名次。",
+		"Say what it ranks by, and which way.",
+		"说清按什么排，以及朝哪个方向。",
 	],
 	nextBig: ["Next: contract neighborhoods", "下一课：合约邻域"],
 	nextSub: ["strikes and expiries in context", "结合行权价与到期日来看"],
@@ -182,10 +161,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -300,13 +279,52 @@ function Scene({
 				/>
 			</g>
 
-			{headline("m0", copy.m0, copy.m0Short)}
-			{headline("m1", copy.m1, copy.m1Short)}
-			{headline("m2", copy.m2, copy.m2Short)}
-			{headline("s0", copy.s0, copy.s0Short)}
-			{headline("s1", copy.s1, copy.s1Short)}
-			{headline("d0", copy.d0, copy.d0Short)}
-			{headline("d1", copy.d1, copy.d1Short)}
+			{headline("m-head", copy.mHead)}
+			{/* Each answer, a line under its question, as the second column lands. */}
+			<Lines
+				name="m2-head"
+				text={t(copy.m2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.mHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("s-head", copy.sHead)}
+			<Lines
+				name="s2-head"
+				text={t(copy.s2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.sHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("d-head", copy.dHead)}
+			<Lines
+				name="d2-head"
+				text={t(copy.d2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.dHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{PAIRS.map(([key, from, to]) => (
 				<g key={key}>
 					{column(key, from, 0)}
@@ -314,6 +332,7 @@ function Scene({
 					{column(key, to, 1)}
 				</g>
 			))}
+			<Brackets name="lock-rank" glow />
 			<text
 				data-f="under"
 				x={L.colX[0] + L.colW - 12}
@@ -379,11 +398,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A line lands slightly large and settles, without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	/** A line draws itself from its start, then takes back its own dashes, if any. */
@@ -402,9 +422,15 @@ function build(context: FilmContext) {
 			time + 0.6,
 		);
 	};
-	const heads = ["m0", "m1", "m2", "s0", "s1", "d0", "d1"].map((name) =>
-		one(name),
-	);
+	const heads = [
+		"m-head",
+		"m2-head",
+		"s-head",
+		"s2-head",
+		"d-head",
+		"d2-head",
+	].map((name) => one(name));
+	const lockRank = one<SVGGraphicsElement>("lock-rank");
 	const col = (key: string, side: 0 | 1) => one(`${key}-col${side}`);
 	const linksOf = (key: string, board: Board) =>
 		board.entries.map((entry) =>
@@ -432,6 +458,7 @@ function build(context: FilmContext) {
 		]),
 		one("under"),
 		one("note"),
+		lockRank,
 		...kids("claim"),
 	]);
 
@@ -444,48 +471,55 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— metric: size, or against normal ———
-	tl.addLabel("metric", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	pair("m", RAW, 10.0, 12.8);
-	d.swap(heads[0], heads[1], 12.4);
-	d.swap(heads[1], heads[2], 16.0);
-	show(one("under"), 16.4);
+	tl.addLabel("metric", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	pair("m", RAW, 9.2, 12.4);
+	show(heads[1], 13.4);
+	show(one("under"), 14.6);
 
-	// ——— sign: size, or direction ———
-	tl.addLabel("sign", 20);
-	hide(
-		[heads[2], col("m", 0), col("m", 1), ...linksOf("m", RAW), one("under")],
-		20.0,
-	);
-	show(heads[3], 20.2, "above");
-	pair("s", SIZE, 20.5, 23.8);
-	d.swap(heads[3], heads[4], 23.4);
+	// ——— sign: the hero. Size, or direction? ———
+	tl.addLabel("sign", 18.4);
+	d.swap([heads[0], heads[1]], heads[2], 18.4);
+	hide([col("m", 0), col("m", 1), ...linksOf("m", RAW), one("under")], 18.4);
+	pair("s", SIZE, 19.4, 22.8);
+	// CRUX's row in the signed column: first by size, last once the sign is back.
+	const crux = SIGNED.entries.findIndex((entry) => entry.name === "CRUX");
+	d.lock(lockRank, 24.4, { around: rows("s", 1)[1 + crux], pad: 4 });
+	tl.addLabel("hero-lock", 24.4);
+	show(heads[3], 24.4);
 
 	// ——— move: a rank that moves while the name doesn't ———
-	tl.addLabel("move", 28.5);
-	hide([heads[4], col("s", 0), col("s", 1), ...linksOf("s", SIZE)], 28.5);
-	show(heads[5], 28.7, "above");
-	pair("d", MONDAY, 29.0, 31.8);
-	d.swap(heads[5], heads[6], 31.4);
-	show(one("note"), 34.0);
+	tl.addLabel("move", 28);
+	d.swap([heads[2], heads[3]], heads[4], 28.0);
+	hide([col("s", 0), col("s", 1), ...linksOf("s", SIZE), lockRank], 28.0);
+	pair("d", MONDAY, 28.6, 29.4);
+	show(one("note"), 30.0);
+	show(heads[5], 30.0);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
+	tl.addLabel("claim", 33.6);
 	hide(
-		[heads[6], col("d", 0), col("d", 1), ...linksOf("d", MONDAY), one("note")],
-		37.0,
+		[
+			heads[4],
+			heads[5],
+			col("d", 0),
+			col("d", 1),
+			...linksOf("d", MONDAY),
+			one("note"),
+		],
+		33.6,
 	);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	word(one("z-big"), 33.9);
+	show(one("z-sub"), 34.3);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 38);
+	hide(kids("claim"), 38.0);
+	d.close(38.0);
 	return tl;
 }
 
