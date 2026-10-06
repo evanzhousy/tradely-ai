@@ -5,7 +5,6 @@ import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import { ScrollShadow } from "@tradely/ui/components/scroll-shadow";
 import { Spinner } from "@tradely/ui/components/spinner";
-import { Surface } from "@tradely/ui/components/surface";
 import { cn } from "@tradely/ui/lib/utils";
 import {
 	ArrowLeftIcon,
@@ -153,10 +152,7 @@ function LessonPage() {
 				aria-labelledby="lesson-sidebar-title"
 				className={`lesson-sidebar hidden min-h-[calc(100svh-4rem)] border-border/60 border-r py-8 transition-[padding] duration-200 lg:block ${sidebarCollapsed ? "px-2" : "px-4"}`}
 			>
-				<Surface
-					variant="secondary"
-					className="sticky top-24 flex flex-col gap-6 rounded-none"
-				>
+				<div className="sticky top-24 flex flex-col gap-4">
 					{/* Names the sidebar and heads its module headings. */}
 					<h2 id="lesson-sidebar-title" className="sr-only">
 						{t("course.curriculum")}
@@ -165,7 +161,7 @@ function LessonPage() {
 						className={
 							sidebarCollapsed
 								? "flex justify-center"
-								: "flex items-start gap-2"
+								: "flex items-start gap-2 px-3"
 						}
 					>
 						{sidebarCollapsed ? null : (
@@ -209,7 +205,9 @@ function LessonPage() {
 						orientation="vertical"
 						size={48}
 						className={
-							sidebarCollapsed ? "hidden" : "max-h-[calc(100svh-12rem)] pr-1"
+							sidebarCollapsed
+								? "hidden"
+								: "-mx-1 max-h-[calc(100svh-12rem)] p-1"
 						}
 					>
 						<CourseList
@@ -218,7 +216,7 @@ function LessonPage() {
 							currentLessonId={lesson.id}
 						/>
 					</ScrollShadow>
-				</Surface>
+				</div>
 			</aside>
 			<div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
 				<div className="mx-auto flex max-w-[980px] flex-col gap-7">

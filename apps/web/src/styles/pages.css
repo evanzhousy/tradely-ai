@@ -269,19 +269,12 @@
 .lesson-sidebar {
 	background: color-mix(in oklch, var(--muted) 35%, var(--background));
 }
-.lesson-sidebar-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 4px;
-	font-size: 0.75rem;
-	font-weight: 600;
+.lesson-sidebar .course-path a {
+	border-radius: 12px;
 }
 .course-path a[aria-current="page"] {
 	background: var(--card);
-	box-shadow:
-		0 0 0 1px var(--border),
-		0 3px 12px rgb(0 0 0 / 3%);
+	border-color: var(--border);
 }
 .course-path a {
 	font-size: 0.8125rem;

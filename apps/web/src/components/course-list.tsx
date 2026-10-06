@@ -55,7 +55,7 @@ export function CourseList({
 	return (
 		<ol
 			ref={list}
-			className="course-path flex flex-col"
+			className={`course-path flex flex-col ${currentLessonId ? "gap-2" : ""}`}
 			aria-label={t("course.curriculum")}
 		>
 			{lessons.map((lesson, index) => {
@@ -152,7 +152,9 @@ export function CourseList({
 								</span>
 							</span>
 						</Item>
-						{index < lessons.length - 1 ? <Separator /> : null}
+						{!currentLessonId && index < lessons.length - 1 ? (
+							<Separator />
+						) : null}
 					</li>
 				);
 			})}
