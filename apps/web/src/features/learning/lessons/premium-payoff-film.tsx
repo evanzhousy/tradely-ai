@@ -810,7 +810,7 @@ function build(context: FilmContext) {
 		);
 		// The question's $7.30 flies down onto its own bar; the others just appear.
 		if (k === ASKED)
-			d.carry(one<SVGTextElement>("q-big"), asked, at - 0.2, 0.9);
+			d.carry(one<SVGTextElement>("q-big"), asked, at - 0.2, { duration: 0.9 });
 		else show(one(`p-${k}`), at + 0.6);
 	});
 	show(one("legend"), 11.6);

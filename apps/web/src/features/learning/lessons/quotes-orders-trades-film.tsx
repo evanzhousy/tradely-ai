@@ -756,9 +756,9 @@ function build(context: FilmContext) {
 		kids("tape").filter((el) => el !== last),
 		10.6,
 	);
-	d.carry(one<SVGGraphicsElement>("q-bid-num"), pxBid, 9.9, 1.0);
-	d.carry(one<SVGGraphicsElement>("q-ask-num"), pxAsk, 9.95, 1.0);
-	d.carry(one<SVGGraphicsElement>("q-last-num"), last, 10.0, 1.0);
+	d.carry(one<SVGGraphicsElement>("q-bid-num"), pxBid, 9.9, { duration: 1 });
+	d.carry(one<SVGGraphicsElement>("q-ask-num"), pxAsk, 9.95, { duration: 1 });
+	d.carry(one<SVGGraphicsElement>("q-last-num"), last, 10.0, { duration: 1 });
 	d.swap(heads[0], heads[1], 12.4);
 	show(one("mid"), 12.8);
 	d.swap(heads[1], heads[2], 15.0);
@@ -838,7 +838,7 @@ function build(context: FilmContext) {
 		gone as SVGGraphicsElement,
 		one<SVGGraphicsElement>("pr-gone"),
 		37.4,
-		0.8,
+		{ duration: 0.8 },
 	);
 	tl.to(one("best-ask"), { opacity: 0, duration: 0.3 }, 37.7);
 	tl.to(one(`venue-${BEST.ask.venue}`), { opacity: 0.4, duration: 0.3 }, 37.7);

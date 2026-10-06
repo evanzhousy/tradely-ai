@@ -81,6 +81,9 @@ function wrapSans(text: string, maxWidth: number, size: number) {
 
 /** Where a sentence pauses: a line may end here at a small discount. */
 const PAUSE = /[，。；：！？,;:.!?·—]$/;
+/** Words a line should not end on: they belong to what follows ("isn't the / same"). */
+const LEAN =
+	/^(a|an|the|at|of|to|in|on|by|for|from|with|and|or|is|are|的|在|把|被|和|与)$/i;
 /** Opening marks that may not end a line. */
 const NO_LINE_END = /^[“‘（「『《〈【〔]$/;
 
@@ -126,8 +129,10 @@ function breakEvenly(
 		const pieces = tokens.slice(from, to).filter((t) => t !== " ").length;
 		if (width > maxWidth && pieces > 1) return Number.POSITIVE_INFINITY;
 		const ratio = width / maxWidth;
-		const pause = j < n && PAUSE.test(tokens[to - 1] ?? "") ? 0.12 : 0;
-		return ratio * ratio - pause;
+		const last = tokens[to - 1] ?? "";
+		const pause = j < n && PAUSE.test(last) ? 0.12 : 0;
+		const lean = j < n && LEAN.test(last) ? 0.3 : 0;
+		return ratio * ratio - pause + lean;
 	};
 	const ends = [...starts.slice(1), n];
 	// best[k].get(j): the cheapest k lines over tokens [0, j), and where the last one began.
@@ -425,33 +430,52 @@ export function PenTip({ name, r = 4 }: { name: string; r?: number }) {
 	);
 }
 
-/** Corner brackets around a box, for `director.lock` to snap onto the thing in focus. */
+/** The four corners of a box as one path, each arm `arm` long. */
+const bracketPath = (
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	arm: number,
+) => {
+	const r = x + width;
+	const b = y + height;
+	return `M${x} ${y + arm}V${y}H${x + arm}M${r - arm} ${y}H${r}V${y + arm}M${r} ${b - arm}V${b}H${r - arm}M${x + arm} ${b}H${x}V${b - arm}`;
+};
+
+/**
+ * Corner brackets around a box, for `director.lock` to snap onto the thing in focus. Give
+ * `lock` an `around` to fit them to what they hold; then the box here is only a start.
+ */
 export function Brackets({
 	name,
-	x,
-	y,
-	width,
-	height,
+	x = 0,
+	y = 0,
+	width = 0,
+	height = 0,
 	arm = 10,
 	tone,
+	glow,
 }: {
 	name: string;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
+	x?: number;
+	y?: number;
+	width?: number;
+	height?: number;
 	arm?: number;
 	/** The accent by default; a bid or an ask can lock in its own colour. */
 	tone?: "gain" | "loss";
+	/** A tight and a wide glow, for the film's one hero lock. */
+	glow?: boolean;
 }) {
-	const r = x + width;
-	const b = y + height;
 	return (
 		<path
 			data-f={name}
-			d={`M${x} ${y + arm}V${y}H${x + arm}M${r - arm} ${y}H${r}V${y + arm}M${r} ${b - arm}V${b}H${r - arm}M${x + arm} ${b}H${x}V${b - arm}`}
+			d={bracketPath(x, y, width, height, arm)}
 			className="wt-film-lock"
 			data-tone={tone}
+			data-glow={glow ? "" : undefined}
+			data-arm={arm}
 		/>
 	);
 }
@@ -496,14 +520,15 @@ export function createDirector(
 			at,
 		);
 	/** A cut sends type up and away. */
-	const hide = (targets: Targets, at: number, duration = 0.35) =>
-		tl.to(targets, { opacity: 0, y: -12, duration, ease: "power2.in" }, at);
+	const hide = (targets: Targets, at: number, duration = 0.35, lift = 12) =>
+		tl.to(targets, { opacity: 0, y: -lift, duration, ease: "power2.in" }, at);
 	/**
 	 * One line of type gives way to the next in the same place, never both at once: the old
-	 * one leaves upwards and the new one follows it up from below, clear of the corner tag.
+	 * one leaves upwards and the new one follows it up from below. On a phone a headline sits
+	 * just under the corner tag, so it fades where it is instead of rising into the tag.
 	 */
 	const swap = (from: Targets, to: Targets, at: number) => {
-		hide(from, at);
+		hide(from, at, 0.35, frame.narrow ? 0 : 12);
 		show(to, at + 0.35);
 	};
 	/** A number or a chip lands with a little overshoot, about its own centre. */
@@ -610,8 +635,41 @@ export function createDirector(
 			at + duration,
 		);
 	};
-	/** Brackets (see `Brackets`) snap onto the thing in focus: from 1.4× to 1× about their centre. */
-	const lock = (target: SVGGraphicsElement, at: number) => {
+	/** The box around some marks, in their (shared, untransformed) coordinates. */
+	const boxOf = (marks: Targets) => {
+		const boxes = (Array.isArray(marks) ? marks : [marks]).map((mark) =>
+			(mark as SVGGraphicsElement).getBBox(),
+		);
+		const x = Math.min(...boxes.map((b) => b.x));
+		const y = Math.min(...boxes.map((b) => b.y));
+		const right = Math.max(...boxes.map((b) => b.x + b.width));
+		const bottom = Math.max(...boxes.map((b) => b.y + b.height));
+		return { x, y, width: right - x, height: bottom - y };
+	};
+	/**
+	 * Brackets (see `Brackets`) snap onto the thing in focus: from 1.4× to 1× about their
+	 * centre. With `around`, they are first fitted to those marks plus `pad` on every side, so
+	 * they never touch the glyphs at any frame size.
+	 */
+	const lock = (
+		target: SVGGraphicsElement,
+		at: number,
+		{ around, pad = 6 }: { around?: Targets; pad?: number } = {},
+	) => {
+		if (around) {
+			const fit = boxOf(around);
+			const arm = Number(target.getAttribute("data-arm")) || 10;
+			target.setAttribute(
+				"d",
+				bracketPath(
+					fit.x - pad,
+					fit.y - pad,
+					fit.width + 2 * pad,
+					fit.height + 2 * pad,
+					Math.min(arm, (fit.height + 2 * pad) / 2.5),
+				),
+			);
+		}
 		const box = target.getBBox();
 		tl.fromTo(
 			target,
@@ -625,39 +683,100 @@ export function createDirector(
 		);
 	};
 	/**
+	 * Where `text` sits inside a text mark: the box of its first (or `last`) occurrence, so a
+	 * carried "$2.00" lands on the "$2.00" of "10:12 · 5 @ $2.00". The whole box otherwise.
+	 */
+	const boxOfText = (mark: SVGGraphicsElement, text?: string, last = false) => {
+		const content = mark.textContent ?? "";
+		const at = text
+			? last
+				? content.lastIndexOf(text)
+				: content.indexOf(text)
+			: -1;
+		if (
+			!text ||
+			at < 0 ||
+			!(mark instanceof SVGTextContentElement) ||
+			mark.getNumberOfChars() !== content.length
+		)
+			return mark.getBBox();
+		return boxOf(
+			Array.from({ length: text.length }, (_, i) => ({
+				getBBox: () => mark.getExtentOfChar(at + i),
+			})) as unknown as Element[],
+		);
+	};
+	/**
 	 * One element travels into another's place and becomes it: `from` moves and scales onto
-	 * `to`'s box, then hands over. Both must sit in the same coordinates, untransformed then.
+	 * the matching text inside `to` (its own text, or `match`), then hands over, unless
+	 * `reveal` is false because another carry reveals `to`. `arc: "x"` travels sideways first
+	 * and `"y"` up or down first, to go round what lies between. Both marks must sit in the
+	 * same coordinates, untransformed at that moment, and `from` should start clear of others.
 	 */
 	const carry = (
 		from: SVGGraphicsElement,
 		to: SVGGraphicsElement,
 		at: number,
-		duration = 0.9,
+		{
+			duration = 1,
+			arc,
+			match,
+			last = false,
+			reveal = true,
+		}: {
+			duration?: number;
+			arc?: "x" | "y";
+			match?: string;
+			last?: boolean;
+			reveal?: boolean;
+		} = {},
 	) => {
 		const a = from.getBBox();
-		const b = to.getBBox();
+		const b = boxOfText(to, match ?? from.textContent ?? undefined, last);
 		const ax = a.x + a.width / 2;
 		const ay = a.y + a.height / 2;
+		const lead = "power3.out";
+		const trail = "power2.in";
 		tl.to(
 			from,
 			{
 				x: b.x + b.width / 2 - ax,
+				duration,
+				ease: arc === "x" ? lead : arc === "y" ? trail : "power3.inOut",
+			},
+			at,
+		);
+		tl.to(
+			from,
+			{
 				y: b.y + b.height / 2 - ay,
 				scale: b.height / a.height,
 				svgOrigin: `${ax} ${ay}`,
 				duration,
-				ease: "power3.inOut",
+				ease: arc === "y" ? lead : arc === "x" ? trail : "power3.inOut",
 			},
 			at,
 		);
 		tl.set(from, { opacity: 0 }, at + duration);
-		tl.fromTo(
-			to,
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.12 },
-			at + duration - 0.1,
-		);
+		if (reveal)
+			tl.fromTo(
+				to,
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.12 },
+				at + duration - 0.1,
+			);
 	};
+	/**
+	 * A shape turns over about the vertical line at `x`, like a card: the shape a mirror
+	 * makes, where a morph would pass through shapes nobody holds.
+	 */
+	const mirror = (target: Element, x: number, at: number, duration = 1) =>
+		tl.fromTo(
+			target,
+			{ scaleX: 1, svgOrigin: `${x} 0` },
+			{ scaleX: -1, duration, ease: "power2.inOut" },
+			at,
+		);
 	/**
 	 * One shape becomes the next. Both paths need the same commands, so every number in one
 	 * has a partner in the other: draw curves through the same knots.
@@ -788,6 +907,7 @@ export function createDirector(
 		trace,
 		lock,
 		carry,
+		mirror,
 		morph,
 		rise,
 		sink,

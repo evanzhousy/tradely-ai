@@ -341,6 +341,13 @@
 .wt-film-lock[data-tone="loss"] {
 	stroke: var(--diagram-loss);
 }
+.wt-film-lock[data-glow] {
+	stroke-width: 2.5;
+	filter: drop-shadow(0 0 2px var(--diagram-accent))
+		drop-shadow(
+			0 0 9px color-mix(in oklab, var(--diagram-accent) 60%, transparent)
+		);
+}
 .wt-film-ghost {
 	fill: var(--muted);
 	stroke: var(--muted-foreground);
