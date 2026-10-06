@@ -984,10 +984,11 @@ export function createDirector(
 	const endKids = kids("end");
 	if (endKids.length) hidden(endKids);
 	const close = (at: number) => {
-		show(one("end-next"), at + 0.2, "above");
-		show(one("end-why"), at + 0.6);
-		show(one("end-cta"), at + 1.0);
-		tl.to({}, { duration: Math.max(0, end - (at + 1.0)) }, at + 1.0);
+		// After the claim has gone (a hide takes 0.35 s), never across it.
+		show(one("end-next"), at + 0.4);
+		show(one("end-why"), at + 0.75);
+		show(one("end-cta"), at + 1.1);
+		tl.to({}, { duration: Math.max(0, end - (at + 1.1)) }, at + 1.1);
 		// The title card plays short: everything after it, labels too, comes in sooner.
 		tl.shiftChildren(-TITLE_CUT, true, TITLE_END - 0.01);
 	};
