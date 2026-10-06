@@ -547,7 +547,7 @@ function build(context: FilmContext) {
 	// ——— units: per share, per contract ———
 	tl.addLabel("units", 17.2);
 	hide([heads[1], ...flat("symbol"), one("terms")], 17.2);
-	show(heads[2], 17.4);
+	show(heads[2], 17.55);
 	tl.fromTo(
 		blocks[0],
 		{ opacity: 0, y: 10 },
@@ -613,7 +613,7 @@ function build(context: FilmContext) {
 		],
 		31.8,
 	);
-	show(heads[5], 32);
+	show(heads[5], 32.15);
 	show(one("obs-morning"), 32.4);
 	show(one("obs-close"), 33.4);
 

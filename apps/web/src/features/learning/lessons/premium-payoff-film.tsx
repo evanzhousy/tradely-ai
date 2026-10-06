@@ -1042,7 +1042,7 @@ function build(context: FilmContext) {
 		],
 		18.4,
 	);
-	show(heads[2], 18.6);
+	show(heads[2], 18.75);
 	rise(18.7);
 	const tip = one("tip");
 	d.trace(one<SVGPathElement>("value-line"), 19.0, { tip, duration: 1.3 });

@@ -614,7 +614,7 @@ function build(context: FilmContext) {
 		],
 		16.6,
 	);
-	show(heads[2], 16.8);
+	show(heads[2], 16.95);
 	show(flat("track"), 17.0);
 	MOVES.forEach((move, i) => {
 		const at = 17.6 + i * 1.6;

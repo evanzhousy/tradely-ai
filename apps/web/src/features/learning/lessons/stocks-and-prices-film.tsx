@@ -42,12 +42,12 @@ import {
  *   question  4–9        last $100.02: what do 10 shares cost?
  *   slice     9–17.6     50M × $100 = $5B; each $1: $100 for you, $50M for ALFA
  *   quote     17.6–32    the book; buy 10: $1,000.50, sell 10: $1,000.00; hero: buy 1,000
- *   kinds     32–39.6    stock, ETF, index; the index is a number, cash-settled
- *   claim     39.6–44    you trade against the quote, not the last price
- *   next      44–46.5    Next: options, a paid right
+ *   kinds     32–39.75   stock, ETF, index; the index is a number, cash-settled
+ *   claim     39.75–44.15 you trade against the quote, not the last price
+ *   next      44.15–46.65 Next: options, a paid right
  */
 
-const END = 46.5;
+const END = 46.65;
 const OPEN = ALFA.open;
 const MINE = 100;
 const SHARES = ALFA_SHARES_OUTSTANDING;
@@ -738,7 +738,7 @@ function build(context: FilmContext) {
 	// ——— quote: you trade against the book ———
 	tl.addLabel("quote", 17.6);
 	hide([heads[1], ...flat("slice")], 17.6);
-	show(heads[2], 17.8);
+	show(heads[2], 17.95);
 	show(one("asks-tag"), 18.0);
 	ASKS.forEach((at, i) => {
 		show(one(`lv-${key("ask", at.price)}`), 18.1 + i * 0.1, "right");
@@ -750,7 +750,7 @@ function build(context: FilmContext) {
 	show(one("bids-tag"), 19.0);
 	// Buy 10, then sell 10, under one headline: each ticket leaves the level it takes and
 	// lands on what you pay or get.
-	d.swap(heads[2], heads[3], 21.4);
+	d.swap(heads[2], heads[3], 21.45);
 	take("ask", BUY10.fills, 21.8, 24.2);
 	tl.fromTo(
 		one("chip-buy"),
@@ -803,7 +803,7 @@ function build(context: FilmContext) {
 		],
 		32.0,
 	);
-	show(heads[5], 32.2);
+	show(heads[5], 32.35);
 	show(
 		flat("kinds").filter((el) => el.tagName === "text"),
 		32.6,
@@ -811,20 +811,20 @@ function build(context: FilmContext) {
 	kindOrder.forEach((kind, i) => {
 		show(one(`col-${kind}`), 32.8 + i * 0.3);
 	});
-	d.swap(heads[5], heads[6], 35.7);
-	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 36.2);
-	d.lock(one<SVGGraphicsElement>("lock-index"), 36.2, {
+	d.swap(heads[5], heads[6], 35.85);
+	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 36.35);
+	d.lock(one<SVGGraphicsElement>("lock-index"), 36.35, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
 	tl.to(
 		[one("col-stock"), one("col-etf")],
 		{ opacity: 0.4, duration: 0.4 },
-		36.2,
+		36.35,
 	);
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.6);
+	tl.addLabel("claim", 39.75);
 	hide(
 		[
 			heads[6],
@@ -832,15 +832,15 @@ function build(context: FilmContext) {
 			...kindOrder.map((kind) => one(`col-${kind}`)),
 			...flat("kinds").filter((el) => el.tagName === "text"),
 		],
-		39.6,
+		39.75,
 	);
-	word(one("z-big"), 40.0);
-	show(one("z-sub"), 40.5);
+	word(one("z-big"), 40.15);
+	show(one("z-sub"), 40.65);
 
 	// ——— next ———
-	tl.addLabel("next", 44);
-	hide(kids("claim"), 44.0);
-	d.close(44.0);
+	tl.addLabel("next", 44.15);
+	hide(kids("claim"), 44.15);
+	d.close(44.15);
 	return tl;
 }
 

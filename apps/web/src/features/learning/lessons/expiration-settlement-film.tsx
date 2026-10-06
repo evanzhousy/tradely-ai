@@ -795,7 +795,7 @@ function build(context: FilmContext) {
 	// ——— window: which days ———
 	tl.addLabel("window", 23.2);
 	hide([heads[3], ...kids("cash")], 23.2);
-	show(heads[4], 23.5);
+	show(heads[4], 23.55);
 	show(
 		flat("window").filter(
 			(el) =>
@@ -820,7 +820,7 @@ function build(context: FilmContext) {
 	// ——— pin: the hero. ALFA closes two cents above the strike, and that is enough. ———
 	tl.addLabel("pin", 27.6);
 	hide([heads[4], ...flat("window")], 27.6);
-	show(heads[5], 27.9);
+	show(heads[5], 27.95);
 	// The scale and its strike first: the headline that follows names $100.
 	show(
 		flat("pin").filter((el) => el !== dot),

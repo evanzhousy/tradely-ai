@@ -744,7 +744,7 @@ function build(context: FilmContext) {
 	// ——— order: market or limit ———
 	tl.addLabel("order", 18);
 	hide([heads[1], ...chainParts, g("lock-cell")], 18.0);
-	show(heads[2], 18.2);
+	show(heads[2], 18.35);
 	show(one("asks-tag"), 18.5);
 	ASKS.forEach((at, i) => {
 		show(one(`ask-${at.price}`), 18.6 + i * 0.1, "right");
@@ -841,7 +841,7 @@ function build(context: FilmContext) {
 		],
 		34.0,
 	);
-	show(heads[6], 34.2);
+	show(heads[6], 34.35);
 	cards.forEach((card, i) => {
 		show(card, 34.6 + i * 0.4);
 	});

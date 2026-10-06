@@ -878,7 +878,7 @@ function build(context: FilmContext) {
 	tl.addLabel("costs", 32.25);
 	hide([heads[4], heads[7], ...kids("smeter")], 32.25);
 	sink(32.25);
-	show(heads[5], 32.45);
+	show(heads[5], 32.6);
 	(["active", "thin"] as const).forEach((name, i) => {
 		const at = 32.85 + i * 1.0;
 		show([one(`k-${name}-tag`), one(`k-${name}-quote`)], at);

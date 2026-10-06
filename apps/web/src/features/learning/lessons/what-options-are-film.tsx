@@ -909,7 +909,7 @@ function build(context: FilmContext) {
 	tl.addLabel("sides", 35.6);
 	hide(heads[4], 35.6);
 	sink(35.6);
-	show(heads[5], 35.9);
+	show(heads[5], 35.95);
 	show([one("you-tag"), one("ben-tag")], 36.2);
 	word(one("you-before"), 36.4);
 	word(one("ben-before"), 36.7);

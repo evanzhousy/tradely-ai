@@ -806,7 +806,7 @@ function build(context: FilmContext) {
 		],
 		31.3,
 	);
-	show(heads[4], 31.5);
+	show(heads[4], 31.65);
 	claimRows.forEach((row, i) => {
 		show(row, [32.0, 32.8, 33.6, 34.2][i], "right");
 	});

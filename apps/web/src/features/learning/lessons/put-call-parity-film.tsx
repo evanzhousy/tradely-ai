@@ -710,7 +710,7 @@ function build(context: FilmContext) {
 	tl.addLabel("identity", 21);
 	hide(heads[2], 21);
 	sink(21);
-	show(heads[3], 21.3);
+	show(heads[3], 21.35);
 	walk(97, 97, 21.6, 0.01);
 	show([one("b-alfa"), spot], 21.7);
 	show(one("b-c"), 21.9);
@@ -724,7 +724,7 @@ function build(context: FilmContext) {
 	// ——— prints: one looks off ———
 	tl.addLabel("prints", 28);
 	hide([heads[3], ...kids("balance"), g("lock-eq")], 28);
-	show(heads[4], 28.2);
+	show(heads[4], 28.35);
 	show(rows[0], 28.6);
 	show(rows[1], 29.1);
 	d.lock(g("lock-off"), 29.8, { around: gap, pad: 5 });
