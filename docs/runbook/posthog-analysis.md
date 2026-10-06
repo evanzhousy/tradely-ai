@@ -13,17 +13,22 @@ for deeper incident triage.
 
 Last updated: 2026-10-06
 
-This was a documentation creation and migration only; no live traffic analysis,
-production checks, or PostHog writes were executed. Local event emitters were
-reviewed. Plugin tool inventory was available, but the skill lookup and docs
-schema lookup did not complete; no query payload or HogQL example was validated.
+The read-only run verified project `582920`, its timezone, live taxonomy, and
+production host evidence. Connector transport failures required an authenticated
+browser query fallback. The report, native query configurations/results, and
+reviewed UI GIF are outside the repository at
+`/tmp/tradely-posthog-analysis/2026-10-06/`. No PostHog objects/settings or
+production application records were changed.
 
-- [ ] At the first execution, verify the connected project and query provenance,
-  then load current PostHog skills/docs and live schema before querying. Project
-  `582920` is the source reference, not current proof of the connector context.
-- [ ] Check deployed coverage of film/playground, guest-save, and sign-in events.
-  The current player reuses visual event names across film shots and playground
-  scenes; source presence does not prove capture or distinguish every surface.
+- [ ] Verify the serving release's film/playground, sign-in, task/prediction,
+  and guest-import emitters. Historical captured visual activity does not prove
+  current local films are deployed; required outcome coverage remains incomplete.
+- [ ] Reconcile Web Analytics view/session totals with event aggregates and the
+  session funnel before mixing their denominators. The independent visitor
+  aggregate matched; missing session properties did not explain other differences.
+- [ ] Investigate the lesson-to-playground handoff and route/device performance
+  with a larger eligible sample; one observed explorer is insufficient to infer
+  prevalence, causality, or a general retention result. See the external report.
 
 ## Recommended Invocation
 
@@ -101,6 +106,15 @@ PostHog docs for session, attribution, funnel, retention, and HogQL semantics.
 Attempt unavailable checks once, record the limitation, and continue with other
 verified evidence. Do not guess unsupported payloads or syntax.
 
+If the connector advertises a metric catalog, consult it for governed definitions.
+If catalog access is scope-gated, label derived results as one-off definitions;
+do not claim they are saved canonical metrics or broaden permissions silently.
+If connector transport fails, complete available discovery and use an authorized
+project-scoped browser read surface where available. Inspect the UI's actual
+query configuration and preserve normal authentication/CSRF checks. A read-only
+query POST does not authorize saving an insight or editing settings. Keep
+session credentials runtime-only and save only aggregate results/configurations.
+
 Verify organization, project ID/name, timezone, and a bounded recent aggregate
 of hosts/routes/events. The source reference is
 [Tradely project 582920](https://us.posthog.com/project/582920). Check the actual
@@ -160,6 +174,11 @@ Preserve these interpretation rules:
 - People, anonymous browser IDs, sessions, and event totals are different units.
   Verify identity merging and missing session IDs. Person properties can reflect
   ingestion-time state; confirm current instance semantics before segmentation.
+- Daily unique-user/session series can return a `count` that sums daily units.
+  For period-wide uniqueness, request a supported total-value visualization
+  (such as `ActionsTable`) and inspect its `aggregated_value`. In that shape,
+  `count=0` with empty daily data does not mean the aggregate is zero. Verify
+  result shape before extracting any headline number.
 - Registry entries and saved insight names do not prove an active emitter,
   deployed delivery, or a trustworthy business outcome.
 
@@ -289,6 +308,12 @@ aggregate query or existing insight under identical definitions/filters. Explain
 discrepancies. Check deduplication, sequential funnel counts, consistent rate
 denominators, equal comparison exposure, mature retention, and zero baselines.
 Every material conclusion must link to evidence; do not select favorable results.
+
+Reconcile native Web Analytics, event-based views, and session funnels separately;
+matching property filters alone do not guarantee matching definitions. Prefer a
+verified person-level funnel if session denominators disagree and keep the
+unresolved difference in the handoff. Do not substitute daily summed uniques for
+period-wide people or interpret event totals as sequential conversion.
 
 Re-read the runbook/report, validate changed relative links and `git diff --check`,
 and perform the self-maintenance decision. Documentation-only work needs no app
