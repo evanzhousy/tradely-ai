@@ -408,24 +408,31 @@ export function EndCard({
  * A softly glowing pen tip for `director.trace`: a bright core inside a wide, faint halo.
  * Put it in the same group as the line it leads, so they share coordinates.
  */
-export function PenTip({ name, r = 4 }: { name: string; r?: number }) {
+export function PenTip({
+	name,
+	r = 4,
+	color = "var(--diagram-accent)",
+}: {
+	name: string;
+	r?: number;
+	/** The line's own colour: a writer's orange line gets an orange pen. */
+	color?: string;
+}) {
 	const id = useId().replace(/:/g, "");
 	return (
 		<g data-f={name}>
 			<defs>
 				<radialGradient id={`tip-${id}`}>
-					<stop
-						offset="0%"
-						style={{ stopColor: "var(--diagram-accent)", stopOpacity: 0.5 }}
-					/>
-					<stop
-						offset="100%"
-						style={{ stopColor: "var(--diagram-accent)", stopOpacity: 0 }}
-					/>
+					<stop offset="0%" style={{ stopColor: color, stopOpacity: 0.5 }} />
+					<stop offset="100%" style={{ stopColor: color, stopOpacity: 0 }} />
 				</radialGradient>
 			</defs>
 			<circle r={r * 4} fill={`url(#tip-${id})`} />
-			<circle r={r} className="wt-film-tip" />
+			<circle
+				r={r}
+				className="wt-film-tip"
+				style={{ fill: `color-mix(in oklab, ${color} 35%, white)` }}
+			/>
 		</g>
 	);
 }
@@ -731,11 +738,14 @@ export function createDirector(
 		}
 		// No smoothOrigin: one set of brackets locks on one thing after another, and GSAP would
 		// otherwise offset each new origin to make up for the last one.
+		// From at most 24 px larger on each side: a wide row's brackets at 1.4× would leave a
+		// phone's frame.
+		const from = Math.min(1.4, 1 + 48 / Math.max(box.width, box.height));
 		tl.fromTo(
 			target,
 			{
 				opacity: 0,
-				scale: 1.4,
+				scale: from,
 				svgOrigin: `${box.x + box.width / 2} ${box.y + box.height / 2}`,
 				smoothOrigin: false,
 			},
