@@ -131,7 +131,7 @@ cmd_timing() { # LESSON [rows]
 }
 
 cmd_check() { # LESSON END
-	{ cmd_scan "$1" "$2"; cmd_flight "$1" "$2"; cmd_timing "$1"; } | grep -v -e "hits=0$" -e "edges=0$" -e "fails=0$" -e "^/"
+	{ cmd_scan "$1" "$2"; cmd_flight "$1" "$2"; cmd_timing "$1"; } | grep -v -e " clean$" -e "^/"
 }
 
 cmd_play() { # LESSON...
