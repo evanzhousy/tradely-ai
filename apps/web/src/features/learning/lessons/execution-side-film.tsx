@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -34,19 +35,21 @@ import {
  * Execution side, as a film. At 11:42 the quote is $4.10 bid, $4.20 ask and 6 contracts
  * print at $4.15: at the bid, the ask, or between? A ruler of five places answers, print by
  * print, each against its own quote: ASK at 10:05, MID at 11:42, BID at 14:18, and AASK for
- * a test price outside. Then the same 11:42 print against an older quote, a later one and
- * none: only the quote in force at the print can name its side. Last, how far a side goes:
- * a location, a likely starter, and nothing about opening or belief.
+ * a test price outside. The hero keeps the 11:42 print and changes the quote under it: one
+ * 90 seconds old says AASK, one 2 seconds late says BID, none says nothing; the quote in
+ * force says MID, and glowing brackets lock on it. Last, how far the 14:18 print at the bid
+ * goes: a location and a likely seller, but both sides were closing.
  *
- *   open      0–4      "Execution side"
- *   question  4–9.5    $4.10 × $4.20, 6 at $4.15: bid, ask or between?
- *   place     9.5–21   five places; 10:05 ASK; 11:42 MID; 14:18 BID; $4.25 AASK
- *   quote     21–30.5  matched MID; 90 s old; 2 s late; none
- *   claims    30.5–39.5 calculated, inferred, unknown, unknown; the ledger; cut: the claim
- *   next      39.5–42  Next: sentiment labels
+ *   open      0–4        "Execution side"
+ *   question  4–8.8      $4.10 × $4.20, 6 at $4.15: bid, ask or between?
+ *   place     8.8–19.2   five places; 10:05 ASK; 11:42 MID; 14:18 BID; $4.25 AASK
+ *   quote     19.2–31.3  hero: 90 s old AASK; 2 s late BID; none; in force MID
+ *   claims    31.3–38.9  calculated, inferred, unknown, unknown; both were closing
+ *   claim     38.9–43.3  a side is a place, not a reason
+ *   next      43.3–45.8  Next: sentiment labels
  */
 
-const END = 42;
+const END = 45.8;
 /** The film's ruler runs a little wider than the lesson's, so the outer places have room. */
 const LO = 390;
 const HI = 435;
@@ -62,24 +65,22 @@ const codeOf = (id: TradeId) =>
 const pair = (bid: number, ask: number) => `${usd(bid)} / ${usd(ask)}`;
 const printText = (size: number, cents: number) =>
 	`${count(size)} @ ${usd(cents)}`;
-/** The same print in a sentence: tape notation stays on the tape. */
-const proseEn = (size: number, cents: number) =>
-	`${count(size)} at ${usd(cents)}`;
-const proseZh = (size: number, cents: number) =>
-	`${count(size)} 张 ${usd(cents)}`;
-/** The big figure's run, one value after another: the place shot, then the quote shot. */
+/**
+ * The big figure's run, one value after another: the place shot, then the quote shot, which
+ * ends on the quote in force.
+ */
 const SIDES = [
 	codeOf("t1"),
 	codeOf("t2"),
 	codeOf("t3"),
 	sideCode(OUTSIDE, quoteAt("t2").bid, quoteAt("t2").ask),
-	codeOf("t2"),
 	STALE_SAYS,
 	LATER_SAYS,
 	null,
+	codeOf("t2"),
 ] as const;
 /** Which of the run are withheld: measured against a quote that can't be used. */
-const WITHHELD = [false, false, false, false, false, true, true, false];
+const WITHHELD = [false, false, false, false, true, true, false, false];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -117,61 +118,20 @@ const copy = {
 		`${quoteAt("t2").time.slice(0, 5)} · Oct 18 100 call`,
 		`${quoteAt("t2").time.slice(0, 5)} · 10月18日 100 看涨`,
 	],
-	qPrint: [
+	qLine: [
 		`${count(PRINT.quantity)} contracts print at ${usd(PRINT.price)}.`,
 		`${count(PRINT.quantity)} 张以 ${usd(PRINT.price)} 成交。`,
 	],
 	qBig: ["At the bid, the ask, or between?", "在买价、卖价，还是之间？"],
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
-	fiveHead: [
-		"Five places a print can land against its quote.",
-		"成交相对报价可能落在五个位置。",
+	pHead: ["Five places against the quote.", "对照报价，共有五个位置。"],
+	eHead: ["Each print, against its own quote.", "每笔成交，对照自己的报价。"],
+	rHead: [
+		`Same ${PRINT.time} print, other quotes.`,
+		`同一笔 ${PRINT.time} 成交，换个报价。`,
 	],
-	fiveHeadShort: ["Five places.", "五个位置。"],
-	t1Head: [
-		`${TRADES[0].time}: ${proseEn(TRADES[0].quantity, TRADES[0].price)}, the ask at that moment.`,
-		`${TRADES[0].time}：${proseZh(TRADES[0].quantity, TRADES[0].price)}，正是当时的卖价。`,
-	],
-	t1HeadShort: [
-		`${TRADES[0].time}: at the ask.`,
-		`${TRADES[0].time}：在卖价。`,
-	],
-	t2Head: [
-		`${PRINT.time}: ${proseEn(PRINT.quantity, PRINT.price)} against ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}: inside.`,
-		`${PRINT.time}：对照 ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}，${proseZh(PRINT.quantity, PRINT.price)} 在价差之内。`,
-	],
-	t2HeadShort: [`${PRINT.time}: inside.`, `${PRINT.time}：价差之内。`],
-	t3Head: [
-		`${LAST.time}: ${proseEn(LAST.quantity, LAST.price)}, the bid. Each print against its own quote.`,
-		`${LAST.time}：${proseZh(LAST.quantity, LAST.price)}，正是买价。每笔成交对照自己的报价。`,
-	],
-	t3HeadShort: [`${LAST.time}: at the bid.`, `${LAST.time}：在买价。`],
-	outHead: [
-		`${usd(OUTSIDE)} against ${pair(quoteAt("t2").bid, quoteAt("t2").ask)} is outside: check its timing first.`,
-		`对照 ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}，${usd(OUTSIDE)} 在报价之外：先查时间。`,
-	],
-	outHeadShort: ["Outside: check first.", "报价之外：先核查。"],
-	refHead: [
-		`Keep the ${PRINT.time} print, and check the quote it's measured against.`,
-		`保留 ${PRINT.time} 的成交，审查它所对照的报价。`,
-	],
-	refHeadShort: ["Now check the quote.", "再审查报价。"],
-	staleHead: [
-		`A quote 90 seconds old would say ${STALE_SAYS}: too old to use.`,
-		`90 秒前的报价会说 ${STALE_SAYS}：太旧，不能用。`,
-	],
-	staleHeadShort: ["90 s old: unusable.", "早 90 秒：不可用。"],
-	laterHead: [
-		`One from 2 seconds after would say ${LATER_SAYS}: too late.`,
-		`成交 2 秒后的报价会说 ${LATER_SAYS}：太晚。`,
-	],
-	laterHeadShort: ["2 s late: unusable.", "晚 2 秒：不可用。"],
-	noneHead: [
-		"No quote on record: the side stays unknown.",
-		"没有记录报价：位置只能是未知。",
-	],
-	noneHeadShort: ["No quote: unknown.", "无报价：未知。"],
+	r2Head: ["Only the quote in force counts.", "只有成交时有效的报价才算数。"],
 	side: ["side", "位置"],
 	test: [`test ${usd(OUTSIDE)}`, `测试 ${usd(OUTSIDE)}`],
 	tape: ["time and sales", "逐笔成交"],
@@ -182,10 +142,10 @@ const copy = {
 	missing: ["no quote on record: unknown", "没有报价记录：未知"],
 	none: ["none", "无"],
 	cHead: [
-		`${proseEn(LAST.quantity, LAST.price)}, the bid, at ${LAST.time}: how far does that go?`,
-		`${LAST.time}，${proseZh(LAST.quantity, LAST.price)}，在买价。能推出多少？`,
+		`${LAST.time} at the bid: what follows?`,
+		`${LAST.time} 在买价成交：能推出什么？`,
 	],
-	cHeadShort: ["How far does it go?", "能推出多少？"],
+	c2Head: ["Both sides were closing.", "双方其实都在平仓。"],
 	c1: ["Printed at the bid", "在买价成交"],
 	c2: ["A seller probably started it", "可能是卖方发起"],
 	c3: ["It opened a new short", "它开立了新空头"],
@@ -193,15 +153,10 @@ const copy = {
 	calculated: ["calculated", "计算"],
 	inferred: ["inferred", "推断"],
 	unknown: ["unknown", "未知"],
-	ledgerHead: [
-		"Behind the scenes, both sides were closing.",
-		"幕后实情：双方都在平仓。",
-	],
-	ledgerHeadShort: ["Both were closing.", "双方都在平仓。"],
 	claimBig: ["A side is a place, not a reason.", "位置只是位置，不是理由。"],
 	claimSub: [
-		"Measure each print against the quote in force when it traded. Past who probably started it, the tape is silent.",
-		"每笔成交都要对照成交时有效的报价。除了可能的发起方，成交记录什么也说不了。",
+		"Use the quote in force at the print.",
+		"以成交时有效的报价为准。",
 	],
 	nextBig: ["Next: sentiment labels", "下一课：情绪标签"],
 	nextSub: ["when bullish or bearish is justified", "何时能称为看涨或看跌"],
@@ -219,10 +174,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -325,8 +280,8 @@ function Scene({
 					</g>
 				))}
 				<Lines
-					name="q-print"
-					text={t(copy.qPrint)}
+					name="q-line"
+					text={t(copy.qLine)}
 					x={W / 2}
 					y={H * 0.53}
 					size={T.head}
@@ -344,15 +299,24 @@ function Scene({
 			</g>
 
 			{/* The ruler: five places, moving with the quote. */}
-			{headline("p0", copy.fiveHead, copy.fiveHeadShort)}
-			{headline("p1", copy.t1Head, copy.t1HeadShort)}
-			{headline("p2", copy.t2Head, copy.t2HeadShort)}
-			{headline("p3", copy.t3Head, copy.t3HeadShort)}
-			{headline("p4", copy.outHead, copy.outHeadShort)}
-			{headline("r0", copy.refHead, copy.refHeadShort)}
-			{headline("r1", copy.staleHead, copy.staleHeadShort)}
-			{headline("r2", copy.laterHead, copy.laterHeadShort)}
-			{headline("r3", copy.noneHead, copy.noneHeadShort)}
+			{headline("p-head", copy.pHead)}
+			{headline("e-head", copy.eHead)}
+			{headline("r-head", copy.rHead)}
+			{/* The hero's answer, a line under the question, as the quote in force returns. */}
+			<Lines
+				name="r2-head"
+				text={t(copy.r2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.rHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="axis">
 				<path
 					d={`M${L.x(LO)} ${L.rulerY}H${L.x(HI)}`}
@@ -447,6 +411,7 @@ function Scene({
 					{code ?? "?"}
 				</text>
 			))}
+			<Brackets name="lock-side" glow />
 
 			{/* The tape of Monday's prints, and the reference card that replaces it. */}
 			<g data-f="tape">
@@ -524,8 +489,22 @@ function Scene({
 			))}
 
 			{/* How far one side goes. */}
-			{headline("c0", copy.cHead, copy.cHeadShort)}
-			{headline("c1", copy.ledgerHead, copy.ledgerHeadShort)}
+			{headline("c-head", copy.cHead)}
+			{/* The answer, as the ledger shows both sides. */}
+			<Lines
+				name="c2-head"
+				text={t(copy.c2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{claims.map(([claim, evidence, tone], i) => (
 				<g key={t(claim)} data-f={`claim-${i}`}>
 					<rect
@@ -610,11 +589,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const fade = (targets: gsap.TweenTarget, to: number, time: number) =>
@@ -675,21 +655,17 @@ function build(context: FilmContext) {
 		tl.set(sides[i - 1], { opacity: 0 }, time + 0.3);
 	};
 	const heads = [
-		"p0",
-		"p1",
-		"p2",
-		"p3",
-		"p4",
-		"r0",
-		"r1",
-		"r2",
-		"r3",
-		"c0",
-		"c1",
+		"p-head",
+		"e-head",
+		"r-head",
+		"r2-head",
+		"c-head",
+		"c2-head",
 	].map((name) => one(name));
 	const rows = TRADES.map((trade) => one(`row-${trade.id}`));
 	const refs = [0, 1, 2, 3].map((i) => one(`ref-${i}`));
 	const claimRows = [0, 1, 2, 3].map((i) => one(`claim-${i}`));
+	const lockSide = one<SVGGraphicsElement>("lock-side");
 	const first = quoteAt("t1");
 	const start = quoteProps(first.bid, first.ask);
 	gsap.set(bidM, start.bid);
@@ -714,6 +690,7 @@ function build(context: FilmContext) {
 		one("pl-test"),
 		one("side-tag"),
 		...sides,
+		lockSide,
 		...kids("tape"),
 		...rows,
 		...kids("card"),
@@ -732,40 +709,39 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	(["q-bid", "q-ask"] as const).forEach((name, i) => {
-		show(one(`${name}-tag`), 4.9 + i * 0.3);
-		word(one(`${name}-num`), 5.0 + i * 0.3);
+		show(one(`${name}-tag`), 4.8 + i * 0.25);
+		word(one(`${name}-num`), 4.9 + i * 0.25);
 	});
-	show(one("q-print"), 6.0);
-	word(one("q-big"), 7.0);
+	show(one("q-line"), 5.2);
+	word(one("q-big"), 6.2);
 
 	// ——— place: each print against its own quote ———
-	tl.addLabel("place", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show(kids("axis"), 10.0);
-	fade([band, bidM, askM], 1, 10.4);
+	tl.addLabel("place", 8.8);
+	hide(flat("q"), 8.8);
+	show(heads[0], 9.0);
+	show(kids("axis"), 9.2);
+	fade([band, bidM, askM], 1, 9.6);
 	zones.forEach((zone, i) => {
-		fade(zone, 1, 10.7 + i * 0.15);
+		fade(zone, 1, 9.9 + i * 0.12);
 	});
-	d.swap(heads[0], heads[1], 11.8);
-	d.pop(dot, 12.2);
-	show(one("pl-t1"), 12.3);
-	light(codeOf("t1"), 12.6);
-	show(one("side-tag"), 12.5);
-	word(sides[0], 12.6);
-	show(kids("tape"), 12.8);
-	show(rows[0], 13.0, "right");
+	d.pop(dot, 11.0);
+	show(one("pl-t1"), 11.1);
+	show(one("side-tag"), 11.2);
+	light(codeOf("t1"), 11.3);
+	word(sides[0], 11.3);
+	show(kids("tape"), 11.5);
+	show(rows[0], 11.7, "right");
+	d.swap(heads[0], heads[1], 12.6);
 
 	const steps: [TradeId | "test", number, number][] = [
-		["t2", 14.2, 1],
-		["t3", 16.6, 2],
-		["test", 19.0, 3],
+		["t2", 13.0, 1],
+		["t3", 15.0, 2],
+		["test", 17.0, 3],
 	];
 	steps.forEach(([id, time, i]) => {
 		const quote = quoteAt(id === "test" ? "t2" : id);
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
 		const before = ["pl-t1", "pl-t2", "pl-t3"][i - 1];
-		d.swap(heads[i], heads[i + 1], time);
 		quoteTo(quote.bid, quote.ask, time + 0.3);
 		hide(one(before), time + 0.3, 0.25);
 		dotTo(cents, time + 0.4);
@@ -775,36 +751,46 @@ function build(context: FilmContext) {
 		if (id !== "test") show(rows[i], time + 1.0, "right");
 	});
 
-	// ——— quote: the same print, other references ———
-	tl.addLabel("quote", 21);
-	d.swap(heads[4], heads[5], 21.0);
-	hide([...kids("tape"), ...rows], 21.0);
-	hide(one("pl-test"), 21.0, 0.25);
-	dotTo(PRINT.price, 21.2);
-	show(one("pl-t2"), 21.7);
-	light(SIDES[4], 21.6);
-	sideTo(4, 21.6);
-	show(kids("card"), 21.6);
-	show(refs[0], 21.9);
-	const refSteps: [number, number, number | null, number | null][] = [
-		[23.6, 1, STALE.bid, STALE.ask],
-		[25.8, 2, LATER.bid, LATER.ask],
-		[28.0, 3, null, null],
-	];
-	refSteps.forEach(([time, i, bid, ask]) => {
-		d.swap(heads[5 + i - 1], heads[5 + i], time);
-		d.swap(refs[i - 1], refs[i], time + 0.2);
-		if (bid !== null && ask !== null) quoteTo(bid, ask, time + 0.3);
-		else fade([band, bidM, askM, ...zones], 0.15, time + 0.3);
-		light(SIDES[4 + i], time + 0.8);
-		sideTo(4 + i, time + 0.8);
-	});
+	// ——— quote: the hero. The 11:42 print stays; the quote under it changes. ———
+	tl.addLabel("quote", 19.2);
+	d.swap(heads[1], heads[2], 19.2);
+	hide([...kids("tape"), ...rows], 19.2);
+	hide(one("pl-test"), 19.2, 0.25);
+	show(kids("card"), 19.5);
+	show(refs[1], 19.6);
+	// A quote 90 seconds old: the print reads as above the ask, and is withheld.
+	quoteTo(STALE.bid ?? 0, STALE.ask ?? 0, 19.6);
+	dotTo(PRINT.price, 19.6);
+	show(one("pl-t2"), 20.1);
+	light(SIDES[4], 20.2);
+	sideTo(4, 20.2);
+	// One from 2 seconds after the print: at the bid, and withheld too.
+	d.swap(refs[1], refs[2], 22.0);
+	quoteTo(LATER.bid ?? 0, LATER.ask ?? 0, 22.1);
+	light(SIDES[5], 22.6);
+	sideTo(5, 22.6);
+	// No quote at all: nothing to measure against.
+	d.swap(refs[2], refs[3], 24.2);
+	fade([band, bidM, askM, ...zones], 0.15, 24.3);
+	light(SIDES[6], 24.8);
+	sideTo(6, 24.8);
+	// The quote in force at the print: inside the spread, and the brackets lock on it.
+	d.swap(refs[3], refs[0], 26.4);
+	fade([band, bidM, askM, ...zones], 1, 26.5);
+	quoteTo(quoteAt("t2").bid, quoteAt("t2").ask, 26.5);
+	light(SIDES[7], 27.0);
+	sideTo(7, 27.0);
+	// Around the figure and its tag together, so no arm runs through the tag.
+	d.lock(lockSide, 27.7, { around: [one("side-tag"), sides[7]], pad: 6 });
+	tl.addLabel("hero-lock", 27.7);
+	show(heads[3], 27.7);
 
 	// ——— claims: how far a side goes ———
-	tl.addLabel("claims", 30.5);
+	tl.addLabel("claims", 31.3);
 	hide(
 		[
-			heads[8],
+			heads[2],
+			heads[3],
 			...kids("axis"),
 			band,
 			bidM,
@@ -814,34 +800,38 @@ function build(context: FilmContext) {
 			one("pl-t2"),
 			one("side-tag"),
 			sides[SIDES.length - 1],
+			lockSide,
 			...kids("card"),
-			refs[3],
+			refs[0],
 		],
-		30.5,
+		31.3,
 	);
-	show(heads[9], 30.7, "above");
+	show(heads[4], 31.5);
 	claimRows.forEach((row, i) => {
-		show(row, [31.2, 32.4, 33.6, 34.2][i], "right");
+		show(row, [32.0, 32.8, 33.6, 34.2][i], "right");
 	});
-	d.swap(heads[9], heads[10], 35.4);
-	show(one("ledger"), 35.8);
-	// Cut: the claim.
-	hide([heads[10], ...claimRows, one("ledger")], 37.4);
-	word(one("z-big"), 37.7);
-	show(one("z-sub"), 38.1);
+	// The ledger: both sides were closing, so the print neither opened nor bet.
+	show(one("ledger"), 35.3);
+	show(heads[5], 35.3);
+
+	// ——— claim ———
+	tl.addLabel("claim", 38.9);
+	hide([heads[4], heads[5], ...claimRows, one("ledger")], 38.9);
+	word(one("z-big"), 39.2);
+	show(one("z-sub"), 39.6);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 43.3);
+	hide(kids("claim"), 43.3);
+	d.close(43.3);
 	return tl;
 }
 
 export const executionSideFilm: Film = {
 	id: "execution-side",
 	label: [
-		`Execution side, as a short film: a ruler of five places, below the bid, at the bid, inside the spread, at the ask and above it, with Monday's three prints each placed against its own quote, ${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join(", ")}, and a test price of ${usd(OUTSIDE)} outside it; the ${PRINT.time} print against a quote 90 seconds old, one 2 seconds late and none, where only the quote in force can name the side; and how far the ${LAST.time} print at the bid goes, a location and a likely seller, but nothing about opening or belief`,
-		`成交位置短片：五个位置的标尺，低于买价、等于买价、价差之内、等于卖价和高于卖价，周一三笔成交各自对照当时的报价：${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join("，")}，以及报价之外的测试价 ${usd(OUTSIDE)}；${PRINT.time} 的成交对照 90 秒前、2 秒后和缺失的报价，只有成交时有效的报价才能判断位置；以及 ${LAST.time} 在买价的成交能推出多少：位置和可能的卖方发起，但无法得知开平仓或观点`,
+		`Execution side, as a short film: a ruler of five places, below the bid, at the bid, inside the spread, at the ask and above it, with Monday's three prints each placed against its own quote, ${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join(", ")}, and a test price of ${usd(OUTSIDE)} outside it; the ${PRINT.time} print against a quote 90 seconds old, which would say ${STALE_SAYS}, one 2 seconds late, which would say ${LATER_SAYS}, and none, before the quote in force names it ${codeOf("t2")}; and how far the ${LAST.time} print at the bid goes, a location and a likely seller, while both sides were closing`,
+		`成交位置短片：五个位置的标尺，低于买价、等于买价、价差之内、等于卖价和高于卖价，周一三笔成交各自对照当时的报价：${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join("，")}，以及报价之外的测试价 ${usd(OUTSIDE)}；${PRINT.time} 的成交对照 90 秒前的报价会得出 ${STALE_SAYS}，对照 2 秒后的报价会得出 ${LATER_SAYS}，没有报价则无从判断，只有成交时有效的报价给出 ${codeOf("t2")}；以及 ${LAST.time} 在买价的成交能推出多少：位置和可能的卖方发起，而双方其实都在平仓`,
 	],
 	stage: "dark",
 	shots: [
@@ -850,6 +840,7 @@ export const executionSideFilm: Film = {
 		{ id: "place", label: ["Five places", "五个位置"] },
 		{ id: "quote", label: ["The quote", "报价"] },
 		{ id: "claims", label: ["How far", "能推出多少"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
