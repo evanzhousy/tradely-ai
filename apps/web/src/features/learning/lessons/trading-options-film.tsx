@@ -35,11 +35,11 @@ import {
  *   chain     8.8–18     the dates fly to the tabs; Oct 18; Nov 15: $5.45, $545
  *   order     18–34      a thin book; market at the ask; hero: a limit joins, waits, fills
  *   end       34–38      sell, expire, exercise
- *   claim     38–41.8    pick the row, name your price, know how it ends
- *   next      41.8–44.3  Next: risk first
+ *   claim     38–42.3    pick the row, name your price, know how it ends
+ *   next      42.3–44.8  Next: risk first
  */
 
-const END = 44.3;
+const END = 44.8;
 const TABS = ["oct18", "nov15"] as const;
 const ROWS = Object.fromEntries(
 	TABS.map((id) => [id, chainRows(id)]),
@@ -871,9 +871,9 @@ function build(context: FilmContext) {
 	show(one("z-sub"), 38.8);
 
 	// ——— next ———
-	tl.addLabel("next", 41.8);
-	hide(kids("claim"), 41.8);
-	d.close(41.8);
+	tl.addLabel("next", 42.3);
+	hide(kids("claim"), 42.3);
+	d.close(42.3);
 	return tl;
 }
 
