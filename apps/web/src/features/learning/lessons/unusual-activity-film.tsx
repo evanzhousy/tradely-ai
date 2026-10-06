@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -25,20 +26,21 @@ import {
 /*
  * Unusual activity, as a film. The Oct 18 105 call trades 505 on Monday: unusual compared
  * with what? Four calls against their typical volume, 0.8× to 4.2×; then against open
- * interest, where a thin Dec 20 110 call with 3 outstanding jumps to 4×. Then the window:
- * 505 by 11:00 against a typical 36 by then is 14×; against a full day, 4.2×. Last, a 2×
- * screen that flags two calls, one a spread leg and one 12 contracts in a thin series.
+ * interest, where a thin Dec 20 110 call with 3 outstanding jumps to 4×. The hero is the
+ * window: 505 by 11:00 against a typical 36 by then is 14×; the cursor runs to the close
+ * and the same trades read 4.2× as glowing brackets lock. Last, a 2× screen that flags two
+ * calls, one a spread leg and one 12 contracts in a thin series.
  *
- *   open      0–4      "Unusual activity"
- *   question  4–9.5    505 contracts: unusual compared with what?
- *   ratio     9.5–19.5 against typical volume; against open interest
- *   window    19.5–29.5 by 11:00, 14×; by the close, 4.2×
- *   screen    29.5–37  a 2× screen flags two; what each one was
- *   claim     37–39.5  name the denominator and the window
- *   next      39.5–42  Next: data clocks
+ *   open      0–4        "Unusual activity"
+ *   question  4–8.6      505 contracts: unusual compared with what?
+ *   ratio     8.6–18.2   against typical volume; against open interest
+ *   window    18.2–30.6  hero: by 11:00, 14×; by the close, 4.2×
+ *   screen    30.6–37.5  a 2× screen flags two; what each one was
+ *   claim     37.5–41.9  name the denominator and the window
+ *   next      41.9–44.4  Next: data clocks
  */
 
-const END = 42;
+const END = 44.4;
 const ROWS = (
 	["oct18-105", "dec20-110", "oct18-110", "oct18-100"] as const
 ).map((id) => byId(id));
@@ -93,49 +95,31 @@ const copy = {
 		`成交 ${count(CALL_105.volume)} 张。`,
 	],
 	qBig: ["Unusual compared with what?", "异常，是与什么相比？"],
-	r0: [
-		`Against typical volume, four ALFA calls run from ${ratio(Math.min(...ROWS.map(vsTypical)))} to ${ratio(vsTypical(CALL_105))}.`,
-		`与平常成交量相比，四张 ALFA 看涨在 ${ratio(Math.min(...ROWS.map(vsTypical)))} 到 ${ratio(vsTypical(CALL_105))} 之间。`,
-	],
-	r0Short: ["Against typical volume.", "对比平常成交量。"],
-	r1: [
-		`Against open interest, the thin Dec 20 110 call leads: ${THIN.volume} of ${THIN.openInterest}, ${ratio(vsOi(THIN))}.`,
-		`对比未平仓量，排序就变了：稀薄的 12月20日 110 看涨，${THIN.openInterest} 张中成交 ${THIN.volume} 张，以 ${ratio(vsOi(THIN))} 居首。`,
-	],
-	r1Short: [
-		`Against open interest: ${ratio(vsOi(THIN))} leads.`,
-		`对比未平仓量：${ratio(vsOi(THIN))} 居首。`,
+	rHead: ["Divide by typical volume.", "除以平常成交量。"],
+	oHead: ["Divide by open interest instead.", "改为除以未平仓量。"],
+	o2Head: [
+		`A thin series leads: ${ratio(vsOi(THIN))}.`,
+		`稀薄合约居首：${ratio(vsOi(THIN))}。`,
 	],
 	typical: ["÷ typical volume", "÷ 平常成交量"],
 	oi: ["÷ open interest", "÷ 未平仓量"],
-	w0: [
-		`Monday's 105 call (solid) against a typical day (dashed), contracts traded so far.`,
-		"周一 105 看涨（实线）对比平常一天（虚线）的累计成交。",
+	wHead: ["Today against a typical day.", "今天对比平常一天。"],
+	w2Head: [
+		`By 11:00: ${ratio(AT_ELEVEN)} a typical day.`,
+		`截至 11:00：平常的 ${ratio(AT_ELEVEN)}。`,
 	],
-	w0Short: ["Today against a typical day.", "今天对比平常一天。"],
-	w1: [
-		`At 11:00: ${count(CALL_105.volume)} against ${Math.round(typicalBy(ELEVEN))} by then on a typical day, ${ratio(AT_ELEVEN)}.`,
-		`11:00：${count(CALL_105.volume)} 张，平常此时为 ${Math.round(typicalBy(ELEVEN))} 张，${ratio(AT_ELEVEN)}。`,
+	w3Head: [
+		`By the close: ${ratio(AT_CLOSE)}, same trades.`,
+		`到收盘：${ratio(AT_CLOSE)}，同样的成交。`,
 	],
-	w1Short: [`At 11:00: ${ratio(AT_ELEVEN)}.`, `11:00：${ratio(AT_ELEVEN)}。`],
-	w2: [
-		`At the close, a full day against a full day: ${ratio(AT_CLOSE)}. Same trades, another window.`,
-		`收盘时，整天对比整天：${ratio(AT_CLOSE)}。同样的成交，不同的窗口。`,
-	],
-	w2Short: [`At the close: ${ratio(AT_CLOSE)}.`, `收盘：${ratio(AT_CLOSE)}。`],
 	today: ["today", "今天"],
 	typicalDay: ["typical", "平常"],
 	axis: ["contracts traded so far", "累计成交张数"],
-	s0: [
-		`A screen flags anything above ${THRESHOLD}× its typical volume: two calls.`,
-		`筛选器标出成交量超过平常 ${THRESHOLD} 倍的合约：两张。`,
+	sHead: [
+		`A ${THRESHOLD}× screen flags two calls.`,
+		`${THRESHOLD}× 筛选标出两张看涨。`,
 	],
-	s0Short: [`A ${THRESHOLD}× screen: two flags.`, `${THRESHOLD}× 筛选：两个。`],
-	s1: [
-		"One flag is a single spread leg; the other, 12 contracts in a thin series.",
-		"一个是单笔价差的一条腿，另一个是稀薄合约里的 12 张。",
-	],
-	s1Short: ["A spread leg; a thin series.", "价差的一条腿；稀薄合约。"],
+	s2Head: ["A spread leg and a thin series.", "价差的一条腿，和一张稀薄合约。"],
 	flag: ["flag", "标记"],
 	legNote: [
 		`${LEG.label[0]}: one ${count(500)}-lot spread leg`,
@@ -147,8 +131,8 @@ const copy = {
 	],
 	claimBig: ["Name the denominator and the window.", "说清分母，也说清窗口。"],
 	claimSub: [
-		"A ratio is only as meaningful as what it divides by and when. A flag says where to look, not what happened.",
-		"比率的意义取决于除以什么、截至何时。标记只告诉你去哪里看，而不是发生了什么。",
+		"A flag says where to look, not why.",
+		"标记只说去哪看，不说为什么。",
 	],
 	nextBig: ["Next: data clocks", "下一课：数据时钟"],
 	nextSub: ["when each source was true", "每个来源在何时成立"],
@@ -166,10 +150,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -232,10 +216,39 @@ function Scene({
 			</g>
 
 			{/* Four calls, two denominators. */}
-			{headline("r0", copy.r0, copy.r0Short)}
-			{headline("r1", copy.r1, copy.r1Short)}
-			{headline("s0", copy.s0, copy.s0Short)}
-			{headline("s1", copy.s1, copy.s1Short)}
+			{headline("r-head", copy.rHead)}
+			{headline("o-head", copy.oHead)}
+			{/* The answer, as the bars settle on the new denominator. */}
+			<Lines
+				name="o2-head"
+				text={t(copy.o2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.oHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("s-head", copy.sHead)}
+			{/* The answer, as each flag's note comes up. */}
+			<Lines
+				name="s2-head"
+				text={t(copy.s2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.sHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{(
 				[
 					["base-typical", copy.typical],
@@ -359,9 +372,36 @@ function Scene({
 			))}
 
 			{/* The window. */}
-			{headline("w0", copy.w0, copy.w0Short)}
-			{headline("w1", copy.w1, copy.w1Short)}
-			{headline("w2", copy.w2, copy.w2Short)}
+			{headline("w-head", copy.wHead)}
+			{/* The window's two readings, one after the other in one place. */}
+			<Lines
+				name="w2-head"
+				text={t(copy.w2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.wHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Lines
+				name="w3-head"
+				text={t(copy.w3Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.wHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
@@ -402,10 +442,12 @@ function Scene({
 							strokeDasharray="6 5"
 						/>
 						<path data-f="today" d={path(today)} className="wt-line-position" />
+						{/* Left of the block's jump: the window's cursor only ever runs right of it. */}
 						<text
 							data-f="today-tag"
-							x={L.x(BLOCK_MINUTE) + 8}
+							x={L.x(BLOCK_MINUTE) - 6}
 							y={L.y(todayBy(DAY)) - 10}
+							textAnchor="end"
 							className="wt-small wt-halo wt-accent"
 						>
 							{`${t(copy.today)} ${count(CALL_105.volume)}`}
@@ -446,6 +488,7 @@ function Scene({
 			>
 				{ratio(AT_ELEVEN)}
 			</text>
+			<Brackets name="lock-window" glow />
 
 			<g data-f="claim">
 				<Lines
@@ -491,11 +534,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	/** A line draws itself from its start, then takes back its own dashes, if any. */
@@ -510,17 +554,34 @@ function build(context: FilmContext) {
 		);
 		if (dash) tl.set(path, { strokeDasharray: dash }, time + duration);
 	};
-	const heads = ["r0", "r1", "w0", "w1", "w2", "s0", "s1"].map((name) =>
-		one(name),
-	);
+	const heads = [
+		"r-head",
+		"o-head",
+		"o2-head",
+		"w-head",
+		"w2-head",
+		"w3-head",
+		"s-head",
+		"s2-head",
+	].map((name) => one(name));
+	const lockWindow = one<SVGGraphicsElement>("lock-window");
 	const rows = ROWS.map((_, i) => one(`row-${i}`));
-	/** Every bar and its figure move to a new denominator together. */
+	const lineX = L.barX + L.barW(THRESHOLD);
+	/**
+	 * Every bar and its figure move to a new denominator together. With `clear`, a figure
+	 * that would straddle the threshold line sits just past it instead.
+	 */
 	const ratiosTo = (
 		f: (row: (typeof ROWS)[number]) => number,
 		from: (row: (typeof ROWS)[number]) => number,
 		time: number,
+		clear = false,
 	) => {
 		ROWS.forEach((row, i) => {
+			const val = one<SVGTextElement>(`val-${i}`);
+			const end = L.barX + L.barW(f(row)) + 8;
+			const crosses =
+				end < lineX + 4 && end + val.getComputedTextLength() > lineX - 4;
 			tl.to(
 				one(`bar-${i}`),
 				{
@@ -533,7 +594,7 @@ function build(context: FilmContext) {
 			tl.to(
 				one(`val-${i}`),
 				{
-					attr: { x: L.barX + L.barW(f(row)) + 8 },
+					attr: { x: clear && crosses ? lineX + 6 : end },
 					duration: 0.7,
 					ease: "power2.inOut",
 				},
@@ -590,6 +651,7 @@ function build(context: FilmContext) {
 		...kids("chart"),
 		one("cursor"),
 		one("window"),
+		lockWindow,
 		...kids("claim"),
 	]);
 
@@ -605,53 +667,64 @@ function build(context: FilmContext) {
 	word(one("q-big"), 6.4);
 
 	// ——— ratio: two denominators ———
-	tl.addLabel("ratio", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show(one("base-typical"), 10.0);
+	tl.addLabel("ratio", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	show(one("base-typical"), 9.2);
 	rows.forEach((row, i) => {
-		show(row, 10.2 + i * 0.2, "right");
+		show(row, 9.4 + i * 0.2, "right");
 	});
 	// The counts under each name explain the key; a phone has no room for either.
-	if (!L.narrow) show(one("key"), 11.0);
-	d.swap(heads[0], heads[1], 13.6);
-	d.flip(one("base-typical"), one("base-oi"), 14.0);
-	tl.set(one("base-typical"), { opacity: 0 }, 14.3);
-	ratiosTo(vsOi, vsTypical, 14.2);
+	if (!L.narrow) show(one("key"), 10.2);
+	d.swap(heads[0], heads[1], 12.6);
+	d.flip(one("base-typical"), one("base-oi"), 13.0);
+	tl.set(one("base-typical"), { opacity: 0 }, 13.3);
+	ratiosTo(vsOi, vsTypical, 13.2);
 	tl.to(
 		one(`bar-${ROWS.indexOf(THIN)}`),
 		{ attr: { "data-tone": "total" } },
-		14.9,
+		13.9,
 	);
-	tl.to(one("bar-0"), { attr: { "data-tone": "neutral" } }, 14.9);
+	tl.to(one("bar-0"), { attr: { "data-tone": "neutral" } }, 13.9);
+	show(heads[2], 14.2);
 
-	// ——— window: the same trades, two windows ———
-	tl.addLabel("window", 19.5);
-	hide([heads[1], one("base-oi"), ...rows, one("key")], 19.5);
-	show(heads[2], 19.7, "above");
-	d.rise(19.8);
+	// ——— window: the hero. The same trades, two windows. ———
+	tl.addLabel("window", 18.2);
+	hide([heads[1], heads[2], one("base-oi"), ...rows, one("key")], 18.2);
+	show(heads[3], 18.55);
+	d.rise(18.6);
 	show(
 		kids("chart").filter((el) => !el.getAttribute("data-f")),
-		20.0,
+		18.8,
 	);
-	draw(one<SVGPathElement>("typical"), 20.4, 1.2);
-	show(one("typical-tag"), 21.4);
-	draw(one<SVGPathElement>("today"), 20.8, 1.4);
-	show(one("today-tag"), 22.2);
-	d.swap(heads[2], heads[3], 23.2);
-	show(one("cursor"), 23.4);
-	tl.set(one("cursor"), { x: L.x(ELEVEN) - L.x(0) }, 23.4);
-	tl.set(one("cursor-typ"), { attr: { cy: L.y(typicalBy(ELEVEN)) } }, 23.4);
-	d.slam(one("window"), 23.8);
-	d.swap(heads[3], heads[4], 26.0);
-	cursorTo(DAY, ELEVEN, 26.4);
+	draw(one<SVGPathElement>("typical"), 19.2, 1.2);
+	show(one("typical-tag"), 20.2);
+	draw(one<SVGPathElement>("today"), 19.6, 1.4);
+	show(one("today-tag"), 21.0);
+	// The cursor fades in at 11:00 itself: show() would bring it in at x 0, at the open.
+	tl.fromTo(
+		one("cursor"),
+		{ opacity: 0, x: L.x(ELEVEN) - L.x(0) },
+		{ opacity: 1, x: L.x(ELEVEN) - L.x(0), duration: 0.4 },
+		21.8,
+	);
+	tl.set(one("cursor-typ"), { attr: { cy: L.y(typicalBy(ELEVEN)) } }, 21.8);
+	word(one("window"), 22.2);
+	show(heads[4], 22.6);
+	// To the close: the reading counts down, and the second one takes the first's place.
+	hide(heads[4], 26.2);
+	cursorTo(DAY, ELEVEN, 26.1);
+	d.lock(lockWindow, 27.0, { around: one("window"), pad: 6 });
+	tl.addLabel("hero-lock", 27.0);
+	show(heads[5], 27.0);
 
 	// ——— screen: a threshold picks where to look ———
-	tl.addLabel("screen", 29.5);
-	hide([heads[4], one("cursor"), one("window")], 29.5);
-	d.sink(29.5);
+	tl.addLabel("screen", 30.6);
+	d.swap([heads[3], heads[5]], heads[6], 30.6);
+	hide([one("cursor"), one("window"), lockWindow], 30.6);
+	d.sink(30.6);
 	// Back to typical volume for the screen.
-	ratiosTo(vsTypical, vsOi, 29.5);
+	ratiosTo(vsTypical, vsOi, 30.6, true);
 	ROWS.forEach((row, i) => {
 		tl.set(
 			one(`bar-${i}`),
@@ -660,31 +733,31 @@ function build(context: FilmContext) {
 					"data-tone": vsTypical(row) >= THRESHOLD ? "total" : "neutral",
 				},
 			},
-			29.5,
+			30.6,
 		);
 	});
-	show(heads[5], 29.9, "above");
-	show(one("base-typical"), 30.1);
+	show(one("base-typical"), 31.2);
 	rows.forEach((row, i) => {
-		show(row, 30.2 + i * 0.15, "right");
+		show(row, 31.3 + i * 0.15, "right");
 	});
 	draw(
 		one<SVGPathElement>("line").firstElementChild as SVGPathElement,
-		30.9,
+		32.0,
 		0.5,
 	);
-	tl.set(one("line"), { opacity: 1 }, 30.9);
-	d.pop(one("flag-0"), 31.6);
-	d.pop(one("flag-1"), 31.8);
-	d.swap(heads[5], heads[6], 33.4);
-	show(one("note-0"), 33.8);
-	show(one("note-1"), 34.2);
+	tl.set(one("line"), { opacity: 1 }, 32.0);
+	show(one("flag-0"), 32.7);
+	show(one("flag-1"), 32.9);
+	show(one("note-0"), 33.5);
+	show(one("note-1"), 33.9);
+	show(heads[7], 33.9);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
+	tl.addLabel("claim", 37.5);
 	hide(
 		[
 			heads[6],
+			heads[7],
 			one("base-typical"),
 			...rows,
 			one("line"),
@@ -693,15 +766,15 @@ function build(context: FilmContext) {
 			one("note-0"),
 			one("note-1"),
 		],
-		37.0,
+		37.5,
 	);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	word(one("z-big"), 37.8);
+	show(one("z-sub"), 38.2);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 41.9);
+	hide(kids("claim"), 41.9);
+	d.close(41.9);
 	return tl;
 }
 
