@@ -52,7 +52,7 @@ import {
  *   next      45.3–47.8  Next: trading an option
  */
 
-const END = 47.8;
+const END = 46.4;
 const X = [80, 120] as const;
 const VALUE_TOP = 2_100;
 const USE_Y = [-2_000, 2_000] as const;
@@ -130,13 +130,10 @@ const copy = {
 	],
 	rightHeadShort: ["The right to buy at $100.", "以 $100 买入的权利。"],
 	callHead: [
-		`Worthless at $${LOW}; $1,000 at $${HIGH}.`,
-		`$${LOW} 时作废；$${HIGH} 时值 $1,000。`,
+		"Worth what ALFA is above $100.",
+		"价值 = ALFA 高出 $100 的部分。",
 	],
-	callHeadShort: [
-		`$${LOW}: $0. $${HIGH}: $1,000.`,
-		`$${LOW}：$0。$${HIGH}：$1,000。`,
-	],
+	callHeadShort: ["Worth ALFA above $100.", "价值 = ALFA 高出 $100 的部分。"],
 	putHead: ["A put: the right to sell at $100.", "看跌：以 $100 卖出的权利。"],
 	putHeadShort: ["A put: sell at $100.", "看跌：以 $100 卖出。"],
 	axis: ["value at Oct 18, one contract", "10月18日 的价值，一张合约"],
@@ -152,13 +149,19 @@ const copy = {
 	net: ["after premium", "扣除权利金"],
 	sharesAlone: ["100 shares", "100 股"],
 	withPut: ["with the 95 put", "加 95 看跌"],
-	protectHead: [
-		`Add a 95 put to shares: floor ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
-		`股票加一张 95 看跌：下限 ${signedUsd(positionPayoff.protect(80) * 100, 0)}。`,
+	protectHead: ["Add a 95 put to the shares.", "股票加一张 95 看跌。"],
+	protectHeadShort: ["Shares plus a 95 put.", "股票加一张 95 看跌。"],
+	floorHead: [
+		`The floor: ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
+		`下限：${signedUsd(positionPayoff.protect(80) * 100, 0)}。`,
 	],
-	protectHeadShort: [
-		`Protect: floor ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
-		`保护：下限 ${signedUsd(positionPayoff.protect(80) * 100, 0)}。`,
+	moreHead: [
+		"Two more uses: earn, or bet small.",
+		"另外两种用法：收租，或小注押方向。",
+	],
+	moreHeadShort: [
+		"Two more: earn, or bet small.",
+		"另两种：收租，或小注押方向。",
 	],
 	earnHead: [
 		`Sell a 110 call: capped at ${signedUsd(positionPayoff.earn(120) * 100, 0)}.`,
@@ -191,23 +194,17 @@ const copy = {
 	],
 	result: ["result at Oct 18", "10月18日 的结果"],
 	sidesHead: [
-		`At $${HIGH}: you ${signedUsd(NET_HIGH * 100, 0)}, Ben the writer ${signedUsd(-NET_HIGH * 100, 0)}.`,
-		`在 $${HIGH}：你 ${signedUsd(NET_HIGH * 100, 0)}，义务方 Ben ${signedUsd(-NET_HIGH * 100, 0)}。`,
+		`At $${HIGH}, your gain is Ben's loss.`,
+		`在 $${HIGH}，你的盈利就是 Ben 的亏损。`,
 	],
-	sidesHeadShort: [
-		`You ${signedUsd(NET_HIGH * 100, 0)}, Ben ${signedUsd(-NET_HIGH * 100, 0)}.`,
-		`你 ${signedUsd(NET_HIGH * 100, 0)}，Ben ${signedUsd(-NET_HIGH * 100, 0)}。`,
-	],
+	sidesHeadShort: ["Your gain is Ben's loss.", "你赚的就是 Ben 亏的。"],
 	you: ["you · holder", "你 · 持有人"],
 	ben: ["Ben · writer", "Ben · 义务方"],
 	claimBig: [
 		"A right for you, an obligation for someone else.",
 		"你的权利，就是别人的义务。",
 	],
-	claimSub: [
-		"The premium is the most the writer can gain and the most the buyer can lose.",
-		"权利金是义务方最多能赚的，也是买方最多会亏的。",
-	],
+	claimSub: ["The buyer can lose only the premium.", "买方最多只亏权利金。"],
 	nextBig: ["Next: trading an option", "下一课：交易期权"],
 	nextSub: ["from chain to order", "从期权链到下单"],
 } as const satisfies Record<string, Copy>;
@@ -581,8 +578,26 @@ function Scene({
 			{headline("p-head", copy.putHead, copy.putHeadShort)}
 
 			{headline("v-head", copy.protectHead, copy.protectHeadShort)}
-			{headline("e-head", copy.earnHead, copy.earnHeadShort)}
-			{headline("w-head", copy.viewHead, copy.viewHeadShort)}
+			{/* The floor, a line under the headline, revealed as the fall reaches it. */}
+			<Lines
+				name="v2-head"
+				text={t(copy.floorHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.protectHeadShort : copy.protectHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("e-head", copy.moreHead, copy.moreHeadShort)}
 			{headline("d-head", copy.sidesHead, copy.sidesHeadShort)}
 			<g data-f="sides">
 				{(
@@ -763,8 +778,8 @@ function build(context: FilmContext) {
 		"p-head",
 		"v-head",
 		"e-head",
-		"w-head",
 		"d-head",
+		"v2-head",
 	].map((name) => one(name));
 
 	d.hidden([
@@ -808,7 +823,7 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.4);
 	word(one("q-big"), 4.6);
-	show(one("q-line"), 5.6);
+	show(one("q-line"), 5.1);
 
 	// ——— right: what the call is worth at expiry ———
 	tl.addLabel("right", 8.6);
@@ -855,20 +870,22 @@ function build(context: FilmContext) {
 	rise(21.9);
 	d.trace(line("shares-line"), 22.2, { tip, duration: 1.0 });
 	show(one("shares-tag"), 23.0);
-	d.trace(line("protect-line"), 23.6, { tip, duration: 1.0 });
-	show(kids("umeter"), 24.0);
+	d.trace(line("protect-line"), 24.0, { tip, duration: 1.0 });
+	show(kids("umeter"), 24.4);
 	// ALFA falls to $80: the shares lose $2,000; with the put they stop at the floor, and
-	// what the put saved fills in between.
-	tl.set([sMarker, pMarker, one("save-area")], { opacity: 1 }, 24.5);
-	walk(100, FALL_TO, 24.6, 1.6, onFall);
-	show(one("floor-tag"), 26.0);
-	d.lock(one<SVGGraphicsElement>("lock-floor"), 26.2, {
+	// what the put saved fills in between. The floor's figure arrives with the lock.
+	tl.set([sMarker, pMarker, one("save-area")], { opacity: 1 }, 25.4);
+	walk(100, FALL_TO, 25.5, 1.6, onFall);
+	show(one("floor-tag"), 26.9);
+	d.lock(one<SVGGraphicsElement>("lock-floor"), 27.1, {
 		around: one("floor-tag"),
 		pad: 5,
 	});
-	// Held: −$2,000 against −$715. Then the other two uses.
-	d.swap(heads[3], heads[4], 29.2);
-	hide([...kids("umeter"), sMarker, pMarker], 29.2);
+	tl.addLabel("hero-lock", 27.1);
+	show(heads[6], 27.1);
+	// Held: −$2,000 against −$715. Then the other two uses, under one headline.
+	d.swap([heads[3], heads[6]], heads[4], 30.7);
+	hide([...kids("umeter"), sMarker, pMarker], 30.7);
 	tl.to(
 		[
 			one("protect-line"),
@@ -877,45 +894,44 @@ function build(context: FilmContext) {
 			one("lock-floor"),
 		],
 		{ opacity: 0.2, duration: 0.4 },
-		29.6,
+		31.1,
 	);
 	// The shares stay as a faint reference behind the next two uses.
-	tl.to(one("shares-line"), { opacity: 0.35, duration: 0.4 }, 29.6);
-	d.trace(line("earn-line"), 29.6, { tip, duration: 1.0 });
-	show(one("cap-tag"), 30.4);
-	d.swap(heads[4], heads[5], 33.1);
+	tl.to(one("shares-line"), { opacity: 0.35, duration: 0.4 }, 31.1);
+	d.trace(line("earn-line"), 31.1, { tip, duration: 1.0 });
+	show(one("cap-tag"), 31.9);
 	tl.to(
 		[one("earn-line"), one("cap-tag")],
 		{ opacity: 0.2, duration: 0.4 },
-		33.5,
+		32.9,
 	);
-	d.trace(line("view-line"), 33.5, { tip, duration: 1.0 });
-	show(one("most-tag"), 34.3);
+	d.trace(line("view-line"), 32.9, { tip, duration: 1.0 });
+	show(one("most-tag"), 33.7);
 
 	// ——— sides: holder and writer ———
-	tl.addLabel("sides", 37.0);
-	hide(heads[5], 37.0);
-	sink(37.0);
-	show(heads[6], 37.3);
-	show([one("you-tag"), one("ben-tag")], 37.6);
-	word(one("you-before"), 37.8);
-	word(one("ben-before"), 38.1);
-	d.flip(one("you-before"), one("you-after"), 39.0);
-	tl.set(one("you-before"), { opacity: 0 }, 39.3);
-	d.flip(one("ben-before"), one("ben-after"), 39.2);
-	tl.set(one("ben-before"), { opacity: 0 }, 39.5);
-	show(one("sides-line"), 39.6);
+	tl.addLabel("sides", 35.6);
+	hide(heads[4], 35.6);
+	sink(35.6);
+	show(heads[5], 35.9);
+	show([one("you-tag"), one("ben-tag")], 36.2);
+	word(one("you-before"), 36.4);
+	word(one("ben-before"), 36.7);
+	d.flip(one("you-before"), one("you-after"), 37.6);
+	tl.set(one("you-before"), { opacity: 0 }, 37.9);
+	d.flip(one("ben-before"), one("ben-after"), 37.8);
+	tl.set(one("ben-before"), { opacity: 0 }, 38.1);
+	show(one("sides-line"), 38.2);
 
 	// ——— claim ———
-	tl.addLabel("claim", 41.0);
-	hide([heads[6], ...flat("sides")], 41.0);
-	word(one("z-big"), 41.3);
-	show(one("z-sub"), 41.8);
+	tl.addLabel("claim", 39.5);
+	hide([heads[5], ...flat("sides")], 39.5);
+	word(one("z-big"), 39.8);
+	show(one("z-sub"), 40.1);
 
 	// ——— next ———
-	tl.addLabel("next", 45.3);
-	hide(kids("claim"), 45.3);
-	d.close(45.3);
+	tl.addLabel("next", 43.9);
+	hide(kids("claim"), 43.9);
+	d.close(43.9);
 	return tl;
 }
 
