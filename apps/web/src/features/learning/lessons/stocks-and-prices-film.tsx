@@ -452,13 +452,14 @@ function Scene({
 				] as const
 			).map(([name, side, i, cents]) => {
 				const y = side === "ask" ? L.askY(i) : L.bidY(i);
+				// Born just right of the book, clear of the size that is counting down.
 				return (
 					<text
 						key={name}
 						data-f={name}
-						x={L.bookX + L.bookW - 8}
+						x={L.bookX + L.bookW + 8}
 						y={y + L.rowH / 2 + rowText * 0.36}
-						textAnchor="end"
+						textAnchor="start"
 						className="wt-film-num wt-film-accent wt-halo"
 						style={{ fontSize: rowText }}
 					>
