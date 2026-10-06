@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -24,21 +25,24 @@ import {
 
 /*
  * Holders and writers, as a film. It opens on a short Oct 18 95 put and asks what being
- * assigned means. The grid of four positions answers: the holder of a call may buy, its
- * writer must sell; the holder of a put may sell, its writer must buy at $95. Then the
- * same buy or sell opens or closes depending on where you start. Last, an exercise goes
- * to the clearinghouse, which assigns it at random: Eli, not Ben, pays $9,500 for shares
- * worth $8,800.
+ * assigned means. The grid of four positions answers, brackets reading it row by row: a
+ * holder may, a writer must; your short put must buy at $95. Then the same buy or sell
+ * opens or closes depending on where you start. Then the hero: you exercise a put you
+ * bought from Ben, the notice goes to the clearinghouse, and brackets search its writers,
+ * slow, and stop on Eli, not Ben. Eli pays $9,500 for shares worth $8,800.
  *
- *   open      0–4      "Holders and writers"
- *   question  4–9.5    short 1 Oct 18 95 put: if assigned?
- *   matrix    9.5–19   long call, short call, long put, short put
- *   track     19–29    buy to open, sell to close, sell to open, buy to close
- *   assign    29–39.5  exercise; the clearinghouse; Eli; settle; cut: the claim
- *   next      39.5–42  Next: premium, payoff and profit
+ *   open      0–4        "Holders and writers"
+ *   question  4–8.8      short 1 Oct 18 95 put: if assigned?
+ *   rights    8.8–16.6   holders may, writers must; yours: buy at $95
+ *   track     16.6–23.8  buy to open, sell to close, sell to open, buy to close
+ *   assign    23.8–27.4  you exercise; the notice goes to the clearinghouse
+ *   pick      27.4–32.4  hero: assigned at random, Eli, not Ben
+ *   settle    32.4–37    Eli pays $9,500 for $8,800 of shares
+ *   claim     37–41.4    the holder decides; a writer is assigned
+ *   next      41.4–43.9  Next: premium, payoff and profit
  */
 
-const END = 42;
+const END = 43.9;
 const RIGHTS: readonly Right[] = ["call", "put"];
 const SIDES: readonly Side[] = ["long", "short"];
 const PUT = exerciseCase("put");
@@ -87,56 +91,29 @@ const copy = {
 	longShort: ["long", "多头"],
 	short: ["short · writer", "空头 · 义务方"],
 	shortShort: ["short", "空头"],
-	heads: {
-		"call-long": [
-			"Long a call: the right to buy 100 ALFA at $100, if you choose.",
-			"看涨多头：有权按 $100 买 100 股 ALFA，由你决定。",
-		],
-		"call-short": [
-			"Its writer received the premium and must sell at $100 if assigned.",
-			"它的义务方收了权利金，被指派时必须按 $100 卖出。",
-		],
-		"put-long": [
-			"A put turns it around: the right to sell 100 ALFA at $95.",
-			"看跌正好相反：有权按 $95 卖 100 股 ALFA。",
-		],
-		"put-short": [
-			"Its writer must buy at $95 if assigned, however far ALFA has fallen.",
-			"它的义务方被指派时必须按 $95 买入，无论 ALFA 跌了多少。",
-		],
-	},
-	headsShort: {
-		"call-long": ["Long call: the right to buy.", "看涨多头：有权买入。"],
-		"call-short": ["Short call: must sell.", "看涨空头：必须卖出。"],
-		"put-long": ["Long put: the right to sell.", "看跌多头：有权卖出。"],
-		"put-short": ["Short put: must buy at $95.", "看跌空头：必须按 $95 买入。"],
-	},
-	trackHead: [
-		"The same buy or sell can open a position or close one.",
-		"同样的买入或卖出，可能是开仓，也可能是平仓。",
+	rightsHead: [
+		"A holder may; a writer must.",
+		"持有人可以选择；义务方必须履约。",
 	],
-	trackHeadShort: ["A trade can open or close.", "交易可能开仓或平仓。"],
+	yoursHead: ["Your short put: buy at $95.", "你的看跌空头：按 $95 买入。"],
+	trackHead: ["One trade can open or close.", "同一笔交易，可开仓也可平仓。"],
 	assignHead: [
-		`Oct 18: ALFA closes at $${PUT.close}. You exercise the 95 put you bought from Ben.`,
-		`10月18日：ALFA 收于 $${PUT.close}。你对从 Ben 那里买的 95 看跌行权。`,
+		"You exercise a put bought from Ben.",
+		"你对从 Ben 买入的看跌行权。",
 	],
-	assignHeadShort: [
-		`ALFA $${PUT.close}: you exercise.`,
-		`ALFA $${PUT.close}：你行权。`,
-	],
-	clearHead: [
-		"The notice goes to the clearinghouse, not to Ben.",
-		"行权通知交给清算所，而不是 Ben。",
-	],
-	clearHeadShort: ["It goes to the clearinghouse.", "通知交给清算所。"],
+	assignHeadShort: ["You exercise your 95 put.", "你对 95 看跌行权。"],
 	pickHead: [
-		"It assigns one writer at random. This time: Eli.",
-		"清算所随机指派一位义务方。这次是 Eli。",
+		"Assigned at random: Eli, not Ben.",
+		"随机指派：是 Eli，不是 Ben。",
 	],
-	pickHeadShort: ["Assigned at random: Eli.", "随机指派：Eli。"],
+	settleHead: [
+		`Eli pays ${usd(PUT.cash, 0)} for ${usd(PUT.close * 100 * 100, 0)} of shares.`,
+		`Eli 付 ${usd(PUT.cash, 0)}，股票只值 ${usd(PUT.close * 100 * 100, 0)}。`,
+	],
 	you: ["you · holder", "你 · 持有人"],
 	youShort: ["you", "你"],
 	clearing: ["clearinghouse", "清算所"],
+	put95: ["95 put", "95 看跌"],
 	shortN: (n: number): Copy => [`short ${n}`, `空头 ${n} 张`],
 	sold: ["sold you yours", "卖给你的那位"],
 	paysTag: ["Eli pays", "Eli 支付"],
@@ -150,8 +127,8 @@ const copy = {
 		"持有人决定；义务方被指派。",
 	],
 	claimSub: [
-		"Buying or selling opens or closes; assignment goes to a random writer, not your counterparty.",
-		"买卖可能开仓或平仓；指派落在随机的义务方身上，而不是你的交易对手。",
+		"Trades open or close; assignment picks a random writer.",
+		"交易可开仓或平仓；指派随机落在一位义务方。",
 	],
 	nextBig: [
 		"Next: premium, payoff and profit",
@@ -186,10 +163,17 @@ function Scene({
 	const text = narrow ? T.small * 1.15 : T.body;
 	const cellLine = (r: number, k: number) =>
 		L.cellY(r) + L.cellH * [0.32, 0.56, 0.8][k];
-	const writerX = margin + room - L.nodeW;
+	// Wide: you, the clearinghouse and its writers left to right. A phone has no room for
+	// three columns: you above the clearinghouse, its three writers in a row below.
+	const writerX = (i: number) =>
+		narrow
+			? margin + i * (L.nodeW + (room - 3 * L.nodeW) / 2)
+			: margin + room - L.nodeW;
+	const writerY = (i: number) => (narrow ? H * 0.66 : L.writerY(i));
 	const clearX = W / 2 - L.nodeW / 2;
-	const clearY = L.writerY(1);
-	const youY = L.writerY(1);
+	const clearY = narrow ? H * 0.46 : L.writerY(1);
+	const youX = narrow ? clearX : margin;
+	const youY = narrow ? H * 0.27 : L.writerY(1);
 	const mid = (y: number) => y + L.nodeH / 2;
 	const node = (
 		name: string,
@@ -201,6 +185,7 @@ function Scene({
 	) => (
 		<g data-f={name}>
 			<rect
+				data-f={`${name}-box`}
 				x={x}
 				y={y}
 				width={L.nodeW}
@@ -265,13 +250,8 @@ function Scene({
 			</g>
 
 			{/* Four positions. */}
-			{(["call-long", "call-short", "put-long", "put-short"] as const).map(
-				(key) => (
-					<g key={key}>
-						{headline(`h-${key}`, copy.heads[key], copy.headsShort[key])}
-					</g>
-				),
-			)}
+			{headline("a-head", copy.rightsHead, copy.rightsHead)}
+			{headline("y-head", copy.yoursHead, copy.yoursHead)}
 			<g data-f="matrix">
 				{RIGHTS.map((right, c) => (
 					<text
@@ -308,59 +288,64 @@ function Scene({
 					SIDES.map((side, r) => {
 						const cell = cellCopy[right][side];
 						return (
-							<g key={`${right}-${side}`} data-f={`cell-${right}-${side}`}>
+							<g key={`${right}-${side}`}>
+								{/* The cell's box, for brackets: outside the cell, so a dimmed cell keeps them bright. */}
 								<rect
+									data-f={`cellb-${right}-${side}`}
 									x={L.cellX(c)}
 									y={L.cellY(r)}
 									width={L.cellW}
 									height={L.cellH}
-									rx={12}
-									className="wt-panel-shape"
+									fill="none"
 								/>
-								<rect
-									data-f={`cellf-${right}-${side}`}
-									x={L.cellX(c)}
-									y={L.cellY(r)}
-									width={L.cellW}
-									height={L.cellH}
-									rx={12}
-									className="wt-focus-shape"
-								/>
-								<text
-									x={L.cellX(c) + L.cellW / 2}
-									y={cellLine(r, 0)}
-									textAnchor="middle"
-									className={`wt-film-type ${side === "long" ? "wt-film-accent" : "wt-film-warn"}`}
-									style={{ fontSize: text * 1.1 }}
-								>
-									{t(cell.duty)}
-								</text>
-								<text
-									x={L.cellX(c) + L.cellW / 2}
-									y={cellLine(r, 1)}
-									textAnchor="middle"
-									className="wt-film-type"
-									style={{ fontSize: text }}
-								>
-									{t(narrow ? cell.brief : cell.terms)}
-								</text>
-								<text
-									x={L.cellX(c) + L.cellW / 2}
-									y={cellLine(r, 2)}
-									textAnchor="middle"
-									className="wt-film-type wt-film-dim"
-									style={{ fontSize: T.small }}
-								>
-									{t(cell.when)}
-								</text>
+								<g data-f={`cell-${right}-${side}`}>
+									<rect
+										x={L.cellX(c)}
+										y={L.cellY(r)}
+										width={L.cellW}
+										height={L.cellH}
+										rx={12}
+										className="wt-panel-shape"
+									/>
+
+									<text
+										x={L.cellX(c) + L.cellW / 2}
+										y={cellLine(r, 0)}
+										textAnchor="middle"
+										className={`wt-film-type ${side === "long" ? "wt-film-accent" : "wt-film-warn"}`}
+										style={{ fontSize: text * 1.1 }}
+									>
+										{t(cell.duty)}
+									</text>
+									<text
+										x={L.cellX(c) + L.cellW / 2}
+										y={cellLine(r, 1)}
+										textAnchor="middle"
+										className="wt-film-type"
+										style={{ fontSize: text }}
+									>
+										{t(narrow ? cell.brief : cell.terms)}
+									</text>
+									<text
+										x={L.cellX(c) + L.cellW / 2}
+										y={cellLine(r, 2)}
+										textAnchor="middle"
+										className="wt-film-type wt-film-dim"
+										style={{ fontSize: T.small }}
+									>
+										{t(cell.when)}
+									</text>
+								</g>
 							</g>
 						);
 					}),
 				)}
 			</g>
+			<Brackets name="lock-cell" />
+			<Brackets name="lock-you" glow />
 
 			{/* Open or close. */}
-			{headline("k-head", copy.trackHead, copy.trackHeadShort)}
+			{headline("k-head", copy.trackHead, copy.trackHead)}
 			<g data-f="track">
 				<path
 					d={`M${L.stopX(-1)} ${L.trackY}H${L.stopX(1)}`}
@@ -410,21 +395,25 @@ function Scene({
 			))}
 
 			{/* Exercise and assignment. */}
-			{headline("a-head", copy.assignHead, copy.assignHeadShort)}
-			{headline("c-head", copy.clearHead, copy.clearHeadShort)}
-			{headline("p-head", copy.pickHead, copy.pickHeadShort)}
+			{headline("e-head", copy.assignHead, copy.assignHeadShort)}
+			{headline("p-head", copy.pickHead, copy.pickHead)}
+			{headline("s-head", copy.settleHead, copy.settleHead)}
 			<g data-f="assign">
 				{node(
 					"n-you",
-					margin,
+					youX,
 					youY,
 					t(narrow ? copy.youShort : copy.you),
-					"95 put",
+					t(copy.put95),
 					true,
 				)}
 				<path
 					data-f="arrow-in"
-					d={`M${margin + L.nodeW + 6} ${mid(youY)}H${clearX - 6}`}
+					d={
+						narrow
+							? `M${W / 2} ${youY + L.nodeH + 6}V${clearY - 6}`
+							: `M${margin + L.nodeW + 6} ${mid(youY)}H${clearX - 6}`
+					}
 					className="wt-film-riser"
 				/>
 				{node("n-clear", clearX, clearY, t(copy.clearing), "OCC")}
@@ -432,31 +421,27 @@ function Scene({
 					<g key={w.id}>
 						{node(
 							`n-${w.id}`,
-							writerX,
-							L.writerY(i),
+							writerX(i),
+							writerY(i),
 							w.name,
 							w.id === "ben" && !narrow
 								? `${t(copy.shortN(w.short))} · ${t(copy.sold)}`
 								: t(copy.shortN(w.short)),
 						)}
-						<rect
-							data-f={`pick-${w.id}`}
-							x={writerX}
-							y={L.writerY(i)}
-							width={L.nodeW}
-							height={L.nodeH}
-							rx={10}
-							className="wt-focus-shape"
-							style={{ fillOpacity: 0 }}
-						/>
+
 						<path
 							data-f={`arrow-${w.id}`}
-							d={`M${clearX + L.nodeW + 6} ${mid(clearY)}L${writerX - 6} ${mid(L.writerY(i))}`}
+							d={
+								narrow
+									? `M${W / 2} ${clearY + L.nodeH + 6}L${writerX(i) + L.nodeW / 2} ${writerY(i) - 6}`
+									: `M${clearX + L.nodeW + 6} ${mid(clearY)}L${writerX(i) - 6} ${mid(writerY(i))}`
+							}
 							className={w.id === ASSIGNED ? "wt-film-riser" : "wt-film-link"}
 						/>
 					</g>
 				))}
 			</g>
+			<Brackets name="lock-pick" glow />
 			<g data-f="settle">
 				{(
 					[
@@ -539,37 +524,49 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	const g = (name: string) => one<SVGGraphicsElement>(name);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const order = ["call-long", "call-short", "put-long", "put-short"] as const;
+	const fade = (target: Element | Element[], time: number, to = 0) =>
+		tl.to(target, { opacity: to, duration: 0.3 }, time);
+	const order = ["call-long", "put-long", "call-short", "put-short"] as const;
 	const cell = (key: string) => one(`cell-${key}`);
-	const focus = (key: string) => one(`cellf-${key}`);
-	const heads = order.map((key) => one(`h-${key}`));
+	const box = (key: string) => g(`cellb-${key}`);
+	const heads = [
+		"a-head",
+		"y-head",
+		"k-head",
+		"e-head",
+		"p-head",
+		"s-head",
+	].map((name) => one(name));
 	const dot = one("dot");
 	const moves = MOVES.map((_, i) => one(`move-${i}`));
 	const nodes = ["n-you", "n-clear", ...writers.map((w) => `n-${w.id}`)].map(
 		one,
 	);
+	const lockCell = g("lock-cell");
+	const lockPick = g("lock-pick");
 
 	d.hidden([
 		...flat("q"),
 		...heads,
 		...flat("matrix").filter((el) => el.tagName === "text"),
-		...order.flatMap((key) => [cell(key), focus(key)]),
-		one("k-head"),
+		...order.map((key) => cell(key)),
+		lockCell,
+		g("lock-you"),
 		...flat("track"),
 		...moves,
-		one("a-head"),
-		one("c-head"),
-		one("p-head"),
 		...nodes,
 		one("arrow-in"),
-		...writers.flatMap((w) => [one(`pick-${w.id}`), one(`arrow-${w.id}`)]),
+		...writers.map((w) => one(`arrow-${w.id}`)),
+		lockPick,
 		...flat("settle"),
 		...kids("claim"),
 	]);
@@ -581,41 +578,46 @@ function build(context: FilmContext) {
 	// ——— question: a short put ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	show(one("q-tag"), 4.6);
-	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.4);
+	show(one("q-tag"), 4.4);
+	word(one("q-big"), 4.6);
+	show(one("q-line"), 5.2);
 
-	// ——— matrix: four positions ———
-	tl.addLabel("matrix", 9.5);
-	hide(flat("q"), 9.5);
+	// ——— rights: four positions; holders may, writers must ———
+	tl.addLabel("rights", 8.8);
+	hide(flat("q"), 8.8);
+	show(heads[0], 9.0);
 	show(
 		flat("matrix").filter((el) => el.tagName === "text"),
-		9.8,
+		9.2,
 	);
 	order.forEach((key, i) => {
-		const at = 10.0 + i * 2.2;
-		if (i === 0) show(heads[0], at, "above");
-		else d.swap(heads[i - 1], heads[i], at);
-		show(cell(key), at + 0.35);
-		if (i > 0)
-			tl.to(focus(order[i - 1]), { opacity: 0, duration: 0.3 }, at + 0.35);
-		tl.to(focus(key), { opacity: 1, duration: 0.3 }, at + 0.5);
+		show(cell(key), 9.3 + i * 0.15);
 	});
+	// Brackets read the grid: the holders' row, then the writers'.
+	order.forEach((key, i) => {
+		d.lock(lockCell, 10.2 + i * 0.7, { around: box(key), pad: 5 });
+	});
+	// Yours: the short put. The others step back.
+	d.swap(heads[0], heads[1], 13.0);
+	fade(lockCell, 13.2);
+	fade(order.filter((key) => key !== "put-short").map(cell), 13.3, 0.35);
+	d.lock(g("lock-you"), 13.5, { around: box("put-short"), pad: 5 });
 
-	// ——— track: open and close ———
-	tl.addLabel("track", 19);
+	// ——— track: the same trade opens or closes ———
+	tl.addLabel("track", 16.6);
 	hide(
 		[
-			heads[3],
+			heads[1],
 			...flat("matrix").filter((el) => el.tagName === "text"),
-			...order.flatMap((key) => [cell(key), focus(key)]),
+			...order.map((key) => cell(key)),
+			g("lock-you"),
 		],
-		19.0,
+		16.6,
 	);
-	show(one("k-head"), 19.2, "above");
-	show(flat("track"), 19.5);
+	show(heads[2], 16.8);
+	show(flat("track"), 17.0);
 	MOVES.forEach((move, i) => {
-		const at = 20.4 + i * 2.0;
+		const at = 17.6 + i * 1.6;
 		const to = move.trade === "buy" ? move.from + 1 : move.from - 1;
 		if (i > 0) hide(moves[i - 1], at - 0.1, 0.25);
 		word(moves[i], at);
@@ -626,61 +628,65 @@ function build(context: FilmContext) {
 		);
 	});
 
-	// ——— assign: a random writer ———
-	tl.addLabel("assign", 29);
-	hide([one("k-head"), ...flat("track"), moves[3]], 29.0);
-	show(one("a-head"), 29.2, "above");
-	show(nodes[0], 29.5);
-	d.swap(one("a-head"), one("c-head"), 30.8);
+	// ——— assign: the exercise goes to the clearinghouse ———
+	tl.addLabel("assign", 23.8);
+	hide([heads[2], ...flat("track"), moves[3]], 23.8);
+	show(heads[3], 24.0);
+	show(nodes[0], 24.4);
 	tl.fromTo(
 		one("arrow-in"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.4 },
-		31.2,
+		25.0,
 	);
-	show(nodes[1], 31.4, "right");
+	show(nodes[1], 25.2, L.narrow ? "below" : "right");
 	writers.forEach((w, i) => {
-		show(nodes[2 + i], 31.8 + i * 0.2, "right");
+		show(nodes[2 + i], 25.6 + i * 0.2, L.narrow ? "below" : "right");
 		tl.to(
 			one(`arrow-${w.id}`),
 			{ opacity: 0.6, duration: 0.3 },
-			32.0 + i * 0.2,
+			25.8 + i * 0.2,
 		);
 	});
-	d.swap(one("c-head"), one("p-head"), 33.2);
+
+	// ——— pick: the hero. Brackets search the writers, slow, and stop on Eli. ———
+	tl.addLabel("pick", 27.4);
+	d.swap(heads[3], heads[4], 27.4);
+	const spin = ["ben", "cara", "eli", "ben", "cara", "eli"];
+	let at = 27.8;
+	spin.forEach((id, i) => {
+		d.lock(lockPick, at, { around: g(`n-${id}-box`), pad: 5 });
+		at += [0.22, 0.26, 0.32, 0.4, 0.52, 0][i];
+	});
 	writers.forEach((w) => {
 		if (w.id !== ASSIGNED)
-			tl.to(
-				[one(`arrow-${w.id}`), one(`n-${w.id}`)],
-				{ opacity: 0.3, duration: 0.3 },
-				33.6,
-			);
+			fade([one(`arrow-${w.id}`), one(`n-${w.id}`)], at + 0.3, 0.3);
 	});
-	tl.to(one(`arrow-${ASSIGNED}`), { opacity: 1, duration: 0.3 }, 33.6);
-	tl.to(one(`pick-${ASSIGNED}`), { opacity: 1, duration: 0.3 }, 33.7);
-	// Cut: what moves.
+	tl.to(one(`arrow-${ASSIGNED}`), { opacity: 1, duration: 0.3 }, at + 0.3);
+
+	// ——— settle: Eli pays the strike for shares worth less ———
+	tl.addLabel("settle", 32.4);
+	d.swap(heads[4], heads[5], 32.4);
 	hide(
-		[
-			one("p-head"),
-			...nodes,
-			one("arrow-in"),
-			...writers.flatMap((w) => [one(`pick-${w.id}`), one(`arrow-${w.id}`)]),
-		],
-		35.0,
+		[...nodes, one("arrow-in"), ...writers.map((w) => one(`arrow-${w.id}`))],
+		32.4,
 	);
-	show([one("s-pays-tag"), one("s-worth-tag")], 35.3);
-	word(one("s-pays-num"), 35.4);
-	word(one("s-worth-num"), 35.7);
-	show(one("s-line"), 36.2);
-	// The claim.
-	hide(flat("settle"), 37.6);
-	word(one("z-big"), 37.9);
-	show(one("z-sub"), 38.3);
+	fade(lockPick, 32.4);
+	show([one("s-pays-tag"), one("s-worth-tag")], 32.8);
+	word(one("s-pays-num"), 32.9);
+	word(one("s-worth-num"), 33.3);
+	show(one("s-line"), 33.9);
+
+	// ——— claim ———
+	tl.addLabel("claim", 37.0);
+	hide([heads[5], ...flat("settle")], 37.0);
+	word(one("z-big"), 37.3);
+	show(one("z-sub"), 37.6);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 41.4);
+	hide(kids("claim"), 41.4);
+	d.close(41.4);
 	return tl;
 }
 
@@ -694,9 +700,12 @@ export const optionRightsFilm: Film = {
 	shots: [
 		{ id: "open", label: ["Holders and writers", "持有人与义务方"] },
 		{ id: "question", label: ["The question", "问题"] },
-		{ id: "matrix", label: ["Four positions", "四种持仓"] },
+		{ id: "rights", label: ["Four positions", "四种持仓"] },
 		{ id: "track", label: ["Open or close", "开仓或平仓"] },
-		{ id: "assign", label: ["Assignment", "指派"] },
+		{ id: "assign", label: ["Exercise", "行权"] },
+		{ id: "pick", label: ["Assignment", "指派"] },
+		{ id: "settle", label: ["Settlement", "交割"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
