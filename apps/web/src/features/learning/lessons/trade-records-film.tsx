@@ -11,6 +11,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -23,20 +24,23 @@ import { aggregate, price4, sources } from "./trade-records-model";
 
 /*
  * Tape rows, as a film. The Oct 18 105 call printed 5 at $2.00 and 500 at $2.15: is the
- * average $2.075? One row built from those two prints answers: 505 contracts and 2 trades,
- * $108,500 of premium, $2.1485 a share, and the 110 leg doesn't belong in it. Then the
- * feed: six messages, a duplicate, a bust and a correction, that come to two trades and
- * 505 contracts.
+ * average $2.075? First what one row holds: two prints, 505 contracts, 2 trades. Then what
+ * feeds it: six messages, a duplicate, a bust and a correction, that come to two trades.
+ * The hero weighs the clean trades by size: $108,500 of premium, and the average counts
+ * from $2.075 to $2.1485 as glowing brackets lock. Last, the block's 110 leg, another
+ * contract that doesn't belong in the row.
  *
- *   open      0–4      "Tape rows"
- *   question  4–9.5    5 at $2.00, 500 at $2.15: average $2.075?
- *   row       9.5–20   two prints; 505 and 2; $108,500; $2.1485; not the 110 leg
- *   feed      20–36.5  new, duplicate, new, cancel, new, correct: 6 messages, 2 trades
- *   claim     36.5–39.5 one row, many prints; one trade, many messages
- *   next      39.5–42  Next: execution conditions
+ *   open      0–4        "Tape rows"
+ *   question  4–8.6      5 at $2.00, 500 at $2.15: average $2.075?
+ *   row       8.6–13.6   two prints; 505 contracts and 2 trades
+ *   feed      13.6–24    new, duplicate, new, cancel, new, correct: 6 messages, 2 trades
+ *   average   24–31      hero: $108,500 over 50,500 shares, $2.1485, not $2.075
+ *   leg       31–35.6    not the 110 leg
+ *   claim     35.6–40    one row, many prints; one trade, many messages
+ *   next      40–42.5    Next: execution conditions
  */
 
-const END = 42;
+const END = 42.5;
 const PRINTS = [sources.t1, sources.t3];
 const ROW = aggregate(["t1", "t3"]);
 const MIXED = aggregate(["t1", "t3", "leg"]);
@@ -97,32 +101,13 @@ const copy = {
 		`${count(PRINTS[0].quantity)} 张 ${usd(PRINTS[0].price)}，${count(PRINTS[1].quantity)} 张 ${usd(PRINTS[1].price)}。`,
 	],
 	qBig: [`Average ${price4(ROW.simple)}?`, `平均 ${price4(ROW.simple)}？`],
-	r0: [
-		"One row can stand for several prints of one contract.",
-		"一行可以代表同一合约的多笔成交。",
+	rHead: ["One row can hold several prints.", "一行可以包含多笔成交。"],
+	aHead: ["Now weight each price by its size.", "再按数量给每个价格加权。"],
+	a2Head: [
+		`${price4(ROW.weighted)}, not ${price4(ROW.simple)}.`,
+		`${price4(ROW.weighted)}，不是 ${price4(ROW.simple)}。`,
 	],
-	r0Short: ["One row, two prints.", "一行，两笔成交。"],
-	r1: [
-		`Contracts add to ${count(ROW.contracts)}; the row is ${ROW.trades} trades. Keep both counts.`,
-		`张数合计 ${count(ROW.contracts)}；这一行是 ${ROW.trades} 笔成交。两个数都要保留。`,
-	],
-	r1Short: [
-		`${count(ROW.contracts)} contracts, ${ROW.trades} trades.`,
-		`${count(ROW.contracts)} 张，${ROW.trades} 笔。`,
-	],
-	r2: [
-		`Premium adds print by print: ${usd(ROW.premium, 0)}. Over ${count(ROW.contracts * 100)} shares, that's ${price4(ROW.weighted)}.`,
-		`权利金逐笔相加：${usd(ROW.premium, 0)}。除以 ${count(ROW.contracts * 100)} 股，为 ${price4(ROW.weighted)}。`,
-	],
-	r2Short: [
-		`Weighted: ${price4(ROW.weighted)}.`,
-		`加权：${price4(ROW.weighted)}。`,
-	],
-	r3: [
-		`The block's 110 call leg is another contract: it doesn't belong in this row.`,
-		"大单的 110 看涨腿是另一张合约：不能并进这一行。",
-	],
-	r3Short: ["Not the 110 leg.", "不并入 110 那条腿。"],
+	xHead: ["Never mix in another contract.", "不要混入另一张合约。"],
 	contracts: ["contracts", "张数"],
 	trades: ["trades", "笔数"],
 	premium: ["premium", "权利金"],
@@ -137,26 +122,11 @@ const copy = {
 		`+ 110 leg → ${price4(MIXED.weighted)} of what?`,
 		`+ 110 腿 → ${price4(MIXED.weighted)}？`,
 	],
-	f0: [
-		"A feed sends messages, not trades: one new print, then the same report again.",
-		"数据源发送的是消息，不是成交：一条新成交，接着同一份报告又来一次。",
+	fHead: [
+		"A feed sends messages, not trades.",
+		"数据源发送的是消息，不是成交。",
 	],
-	f0Short: ["Messages, not trades.", "是消息，不是成交。"],
-	f1: [
-		"T-2 arrives far above the quote; the venue busts it and a cancel removes it.",
-		"T-2 成交价远高于报价；交易场所取消了它，撤销消息把它移除。",
-	],
-	f1Short: ["A bust: cancelled.", "被取消：撤销。"],
-	f2: [
-		"The block arrives with a mistyped $2.51, and a correction sets it to $2.15.",
-		"大单以误录的 $2.51 到达，更正消息把它改为 $2.15。",
-	],
-	f2Short: ["A typo: corrected.", "录错：已更正。"],
-	f3: [
-		`${MESSAGES.length} messages, ${LAST.trades} trades, ${count(LAST.contracts)} contracts. Count by trade ID.`,
-		`${MESSAGES.length} 条消息，${LAST.trades} 笔成交，${count(LAST.contracts)} 张。按成交编号计数。`,
-	],
-	f3Short: [
+	f2Head: [
 		`${MESSAGES.length} messages, ${LAST.trades} trades.`,
 		`${MESSAGES.length} 条消息，${LAST.trades} 笔成交。`,
 	],
@@ -166,8 +136,8 @@ const copy = {
 		"一行是加总；一条消息不是一笔成交。",
 	],
 	claimSub: [
-		"Sum prints of one contract with their sizes, keep the trade count, and rebuild the view by trade ID after every duplicate, cancel and correction.",
-		"只把同一合约的成交按数量加总，保留成交笔数；每次重复、撤销和更正之后，都按成交编号重建视图。",
+		"Sum one contract's prints; count by trade ID.",
+		"只加总同一合约；按成交编号计数。",
 	],
 	nextBig: ["Next: execution conditions", "下一课：成交条件"],
 	nextSub: ["sweeps, blocks and complex orders", "扫单、大宗与复杂订单"],
@@ -185,10 +155,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -251,10 +221,24 @@ function Scene({
 			</g>
 
 			{/* One row from two prints. */}
-			{headline("r0", copy.r0, copy.r0Short)}
-			{headline("r1", copy.r1, copy.r1Short)}
-			{headline("r2", copy.r2, copy.r2Short)}
-			{headline("r3", copy.r3, copy.r3Short)}
+			{headline("r-head", copy.rHead)}
+			{headline("a-head", copy.aHead)}
+			{/* The hero's answer, as the average lands. */}
+			<Lines
+				name="a2-head"
+				text={t(copy.a2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.aHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("x-head", copy.xHead)}
 			{PRINTS.map((print, i) => (
 				<g key={print.trade} data-f={`print-${i}`}>
 					<rect
@@ -333,11 +317,25 @@ function Scene({
 				className="wt-film-type wt-film-loss"
 			/>
 
+			<Brackets name="lock-average" glow />
+
 			{/* The feed: messages in, trades out. */}
-			{headline("f0", copy.f0, copy.f0Short)}
-			{headline("f1", copy.f1, copy.f1Short)}
-			{headline("f2", copy.f2, copy.f2Short)}
-			{headline("f3", copy.f3, copy.f3Short)}
+			{headline("f-head", copy.fHead)}
+			{/* The answer, as the counts settle. */}
+			<Lines
+				name="f2-head"
+				text={t(copy.f2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.fHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{MESSAGES.map((message, i) => (
 				<g key={message.id} data-f={`msg-${i}`}>
 					<rect
@@ -450,17 +448,23 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A line lands slightly large and settles, without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const num = (name: string) => one<SVGTextElement>(name);
-	const heads = ["r0", "r1", "r2", "r3", "f0", "f1", "f2", "f3"].map((name) =>
-		one(name),
-	);
+	const heads = [
+		"r-head",
+		"f-head",
+		"f2-head",
+		"a-head",
+		"a2-head",
+		"x-head",
+	].map((name) => one(name));
 	const prints = PRINTS.map((_, i) => one(`print-${i}`));
 	const stats = ["s-contracts", "s-trades", "s-premium", "s-average"].map(
 		(name) => one(name),
@@ -469,6 +473,7 @@ function build(context: FilmContext) {
 	const counters = ["c-messages", "c-trades", "c-contracts"].map((name) =>
 		one(name),
 	);
+	const lockAverage = one<SVGGraphicsElement>("lock-average");
 
 	d.hidden([
 		...flat("q"),
@@ -478,6 +483,7 @@ function build(context: FilmContext) {
 		...stats,
 		one("simple"),
 		one("mixed"),
+		lockAverage,
 		...msgs,
 		...counters,
 		...kids("claim"),
@@ -492,21 +498,20 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— row: two prints, one row ———
-	tl.addLabel("row", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show(prints[0], 10.0, "right");
-	show(prints[1], 10.3, "right");
-	d.swap(heads[0], heads[1], 11.6);
-	show(one("sum-rule"), 11.9);
-	show([stats[0], stats[1]], 12.1);
+	tl.addLabel("row", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	show(prints[0], 9.3, "right");
+	show(prints[1], 9.6, "right");
+	show(one("sum-rule"), 10.2);
+	show([stats[0], stats[1]], 10.4);
 	d.count(
 		num("s-contracts-n"),
 		ROW.contracts,
-		12.2,
+		10.5,
 		(v) => count(Math.round(v)),
 		0,
 		0.6,
@@ -514,56 +519,20 @@ function build(context: FilmContext) {
 	d.count(
 		num("s-trades-n"),
 		ROW.trades,
-		12.2,
+		10.5,
 		(v) => String(Math.round(v)),
 		0,
 		0.6,
 	);
-	d.swap(heads[1], heads[2], 14.0);
-	show(stats[2], 14.4);
-	d.count(
-		num("s-premium-n"),
-		ROW.premium,
-		14.5,
-		(v) => usd(Math.round(v / 100) * 100, 0),
-		0,
-		0.7,
-	);
-	show(stats[3], 15.3);
-	d.count(
-		num("s-average-n"),
-		ROW.weighted,
-		15.4,
-		(v) => price4(Math.round(v * 100) / 100),
-		ROW.simple,
-		0.7,
-	);
-	show(one("simple"), 16.0);
-	d.swap(heads[2], heads[3], 17.4);
-	show(one("mixed"), 17.8);
 
 	// ——— feed: six messages, two trades ———
-	tl.addLabel("feed", 20);
-	hide(
-		[
-			heads[3],
-			...prints,
-			one("sum-rule"),
-			...stats,
-			one("simple"),
-			one("mixed"),
-		],
-		20.0,
-	);
-	show(heads[4], 20.2, "above");
-	show(counters, 20.4);
-	const at = [20.8, 22.2, 24.4, 25.8, 28.4, 29.8];
-	const heads2 = [null, null, heads[5], null, heads[6], null];
+	tl.addLabel("feed", 13.6);
+	hide([heads[0], ...prints, one("sum-rule"), stats[0], stats[1]], 13.6);
+	show(heads[1], 13.95);
+	show(counters, 14.2);
 	let before = { trades: 0, contracts: 0 };
 	MESSAGES.forEach((message, i) => {
-		const time = at[i];
-		const head = heads2[i];
-		if (head) d.swap(heads[i === 2 ? 4 : 5], head, time - 0.4);
+		const time = 14.6 + i;
 		show(msgs[i], time, "right");
 		d.count(
 			num("c-messages-n"),
@@ -613,29 +582,66 @@ function build(context: FilmContext) {
 		}
 		before = view;
 	});
-	d.swap(heads[6], heads[7], 32.2);
-	tl.to(
-		[one("c-trades"), one("c-contracts")],
-		{
-			scale: 1.06,
-			transformOrigin: "0% 50%",
-			duration: 0.25,
-			yoyo: true,
-			repeat: 1,
-		},
-		32.6,
+	show(heads[2], 20.4);
+
+	// ——— average: the hero. The two clean trades, weighted by size. ———
+	tl.addLabel("average", 24);
+	hide([heads[1], heads[2], ...msgs, ...counters], 24.0);
+	show(heads[3], 24.35);
+	show(prints[0], 24.4, "right");
+	show(prints[1], 24.6, "right");
+	show(one("sum-rule"), 24.8);
+	show([stats[0], stats[1]], 24.9);
+	show(stats[2], 25.3);
+	d.count(
+		num("s-premium-n"),
+		ROW.premium,
+		25.4,
+		(v) => usd(Math.round(v / 100) * 100, 0),
+		0,
+		0.7,
 	);
+	show(stats[3], 26.1);
+	d.count(
+		num("s-average-n"),
+		ROW.weighted,
+		26.2,
+		(v) => price4(Math.round(v * 100) / 100),
+		ROW.simple,
+		0.8,
+	);
+	show(one("simple"), 27.1);
+	// Round the average and the simple one struck under it: the pair is the answer.
+	d.lock(lockAverage, 27.4, { around: [stats[3], one("simple")], pad: 6 });
+	tl.addLabel("hero-lock", 27.4);
+	show(heads[4], 27.4);
+
+	// ——— leg: another contract stays out ———
+	tl.addLabel("leg", 31);
+	d.swap([heads[3], heads[4]], heads[5], 31.0);
+	hide(lockAverage, 31.0);
+	show(one("mixed"), 31.6);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.5);
-	hide([heads[7], ...msgs, ...counters], 36.5);
-	word(one("z-big"), 36.8);
-	show(one("z-sub"), 37.2);
+	tl.addLabel("claim", 35.6);
+	hide(
+		[
+			heads[5],
+			...prints,
+			one("sum-rule"),
+			...stats,
+			one("simple"),
+			one("mixed"),
+		],
+		35.6,
+	);
+	word(one("z-big"), 35.9);
+	show(one("z-sub"), 36.3);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 40);
+	hide(kids("claim"), 40.0);
+	d.close(40.0);
 	return tl;
 }
 
@@ -651,6 +657,8 @@ export const tradeRecordsFilm: Film = {
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "row", label: ["One row", "一行"] },
 		{ id: "feed", label: ["The feed", "数据消息"] },
+		{ id: "average", label: ["The average", "平均价"] },
+		{ id: "leg", label: ["Another contract", "另一张合约"] },
 		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
