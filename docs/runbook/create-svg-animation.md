@@ -11,7 +11,7 @@ Updated October 5, 2026. Every lesson in the course (53 of them) opens with a sh
 - **Real cuts between shots.** Each shot replaces the last; the film never piles one figure on top of another.
 - **Pure autoplay.** The film starts when it is on screen, pauses off screen or in a hidden tab, plays at **2× by default** (1× and 1.5× are offered and the learner's choice is remembered), and can be scrubbed by shot. With reduced motion it shows the end of each shot for as long as the shot would have lasted.
 - **Two frames.** 16:9 on wider screens; a portrait 4:5 frame below 520 px, where the film also runs to the lesson card's inner edge. Type is sized to the frame, so text keeps a readable size on a phone.
-- **About 40–45 seconds at 1×** (about 20–22 s at the default 2×), in 6–8 shots, with one hero moment at 60–65 % of the runtime. The last film of a module ends on "Next: the module checkpoint". Module checkpoints have no film; they stay quizzes.
+- **About 40–45 seconds at 1×** (about 20–22 s at the default 2×), in 6–8 shots, with one hero moment at 55–65 % of the runtime. The last film of a module ends on "Next: the module checkpoint". Module checkpoints have no film; they stay quizzes.
 
 ## 2. Where things live
 
@@ -144,7 +144,9 @@ Every film follows the same arc, so a learner always knows where they are.
 
 At most seven beats (one headline each) and about 45 s played (`END` about 47). Hold every headline at least 3.5 s at 1×. To shorten a film, merge or cut beats; never shorten the holds.
 
-**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. A hero the learner passes through in half a second isn't one.
+**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. Mark the moment the hero's brackets lock with `tl.addLabel("hero-lock", t)`; the timing audit measures it. A hero the learner passes through in half a second isn't one.
+
+**Made, not stated.** A headline's figure appears no earlier than the event that makes it. When the answer is the hero's, split the headline: the question half goes up with the beat ("Profit doesn't start at $100."), the answer half appears as a second line under it, at the lock ("It starts at $104.20."). A second half is a headline too: hold it 3.5 s.
 
 ## 5. Film kit reference
 
@@ -289,6 +291,13 @@ The repository forbids unit tests. Verify with type checks, lint, a build and br
    - a copy whose colour differs from the text it lands on (compare against the `tspan` under the point, not just the `text`).
 
    Stamp every scan and contact sheet with the commit, a hash of the film and of the kit, and the time, and re-run after the last save: a sheet made before the final edit reads as current.
+
+   Then **the timing audit**, read from the timeline itself rather than worked out by hand, in all four configurations. It fails the film on:
+   - any headline (`*-head`) or the question line held under 3.5 s, from the start of its entry to the start of its exit;
+   - the claim held under 4 s, or its second line over 9 words (22 Chinese characters) unless held 4.5 s;
+   - a headline over 8 words (18 Chinese characters) or with more than two figures;
+   - a runtime over 45.5 s, or a `hero-lock` label missing or outside 55–65 % of it;
+   - a class token with two `wt-` names run together.
 4. **Read the frames yourself.** The scan ignores text inside the camera's world group, so look at contact sheets of the 1440 English and 390 Chinese frames for labels crossing a curve, labels clipped at a plot edge, wrong numbers and awkward copy.
 5. **Play it for real.** Load the lesson with no saved speed, let the film autoplay, and confirm the speed button reads 2×, the player reaches `data-ended` in about half the film's length, "Try the playground" opens the playground (`data-player-mode="play"`), and every playground scene opens without console errors. Radix tabs need real pointer events in automation.
 6. **Build.** `pnpm build` in `apps/web`.
@@ -319,7 +328,8 @@ The repository forbids unit tests. Verify with type checks, lint, a build and br
 - **A carry's path can cross what the learner is reading.** A print flying from venue C to a strip under the NBBO crossed the NBBO figure; the strip moved under C. Start a carry clear of other marks and land it on the matching text.
 - **GSAP reads an `svgOrigin` through the mark's current transform.** A carry that set its origin in the tween landed tens of pixels off its text whenever a seek or scrub had already moved the copy before that tween first rendered. Set the origin once at build time, while the mark is untransformed (the kit's `carry` does), and give `fromTo`s with an origin `smoothOrigin: false`.
 - **Two sets at one time on one mark fight.** A carry that reveals a waypoint at the moment the next carry hides it left the waypoint showing; pass `reveal: false` to the first leg.
-- **A class built by template needs its space.** `` `wt-film-num${tone}` `` gave `wt-film-numwt-film-loss`, and the best ask and bid lost their colour at landing. The flight check's colour test now catches it.
+- **A class built by template needs its space, outside the expression.** `` `wt-film-num${tone}` `` gave `wt-film-numwt-film-loss`, and the best ask and bid lost their colour at landing. Writing the space inside the expression's string (`` `wt-a${on ? " wt-b" : ""}` ``) doesn't survive either: Biome's class sorter trims it on every save. Write `` `wt-a ${on ? "wt-b" : ""}` ``. The timing audit fails any class token with two `wt-` names in it.
+- **`hide()` once lifted every mark to −12 px.** Prints stepped down the tape all slid into the top row as they faded at the cut. It now fades a mark that already sits on an offset where it is.
 - **A `fromTo` renders its start at build time.** A tween whose `onUpdate` writes a meter or moves a marker will write its start state the moment it is created, so a later walk overwrote an earlier one's readout before either began. Give such tweens `immediateRender: false`.
 
 ## 9. Style direction: what we take from motion-design references
