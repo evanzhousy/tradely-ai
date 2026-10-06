@@ -39,15 +39,15 @@ import {
  * C's last 4, which print on the same tape: volume 13.
  *
  *   open      0–4        "Quotes, orders and trades"
- *   question  4–9.5      bid $2.05 · ask $2.15 · last $2.00: a market buy pays?
- *   quote     9.5–23.6   the numbers fly into the book; mid and last; buy 1 at $2.15
- *   orders    23.6–31.6  add 5 and cancel: no print; take 3, a print; volume 5 → 6 → 9
- *   venues    31.6–43.6  the book splits into A, B, C; NBBO; C's last 4 print: 13
- *   claim     43.6–47.6  a quote is an offer; only a trade prints
- *   next      47.6–50.1  Next: counterparties
+ *   question  4–8.8      bid $2.05 · ask $2.15 · last $2.00: a market buy pays?
+ *   quote     8.8–21.8   the numbers fly into the book; mid and last; buy 1 at $2.15
+ *   orders    21.8–29.8  add 5 and cancel: no print; take 3, a print; volume 5 → 6 → 9
+ *   venues    29.8–41.6  the book splits into A, B, C; NBBO; C's last 4 print: 13
+ *   claim     41.6–45    a quote is an offer; only a trade prints
+ *   next      45–47.5    Next: counterparties
  */
 
-const END = 50.1;
+const END = 47.5;
 const ASKS = [...BASE_ASKS].reverse();
 const BIDS = BASE_BIDS;
 const ASK = BASE_ASKS[0];
@@ -70,45 +70,58 @@ const NEXT_ASK = [...VENUES]
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
+	const T = frame.type;
 	const rowStep = H * (narrow ? 0.06 : 0.085);
+	const rowH = rowStep * 0.78;
 	const bookTop = H * 0.27;
 	const bookW = narrow ? room : room * 0.56;
 	const priceW = narrow ? 52 : width * 0.08;
-	const tapeX = narrow ? margin : margin + room * 0.62;
-	const tapeY = narrow ? bookTop + 7 * rowStep + H * 0.05 : bookTop;
-	// The venue cards take the book's place: the book was these three venues.
+	const askY = (i: number) => bookTop + i * rowStep;
+	const bidY = (i: number) =>
+		bookTop + (ASKS.length + i) * rowStep + rowStep * 0.5;
+	const bookBottom = bidY(BIDS.length - 1) + rowH;
+	// The venue cards take the book's place and its height: each level flies sideways into
+	// its venue, asks to the card's upper line, bids to its lower one.
 	const gap = narrow ? 8 : 12;
 	const venueW = (bookW - 2 * gap) / 3;
-	const venueY = bookTop;
-	const venueH = H * (narrow ? 0.3 : 0.36);
+	const venueY = bookTop - T.small * 2.4;
+	const venueH = bookBottom + T.small * 0.8 - venueY;
+	const rowText = (y: number) =>
+		y + rowH / 2 + (narrow ? T.small * 1.1 : T.body) * 0.36;
+	// On a phone the tape sits under the book, below the NBBO, with tighter rows for four prints.
+	const tapeX = narrow ? margin : margin + room * 0.62;
+	const tapeY = narrow ? bookBottom + H * 0.1 : bookTop;
+	const tapeStep = narrow ? H * 0.052 : rowStep;
 	return {
 		...frame,
 		rowStep,
-		rowH: rowStep * 0.78,
-		askY: (i: number) => bookTop + i * rowStep,
-		bidY: (i: number) => bookTop + (ASKS.length + i) * rowStep + rowStep * 0.5,
+		rowH,
+		askY,
+		bidY,
 		spreadY: bookTop + ASKS.length * rowStep + rowStep * 0.12,
 		bookW,
+		bookBottom,
 		priceW,
 		barX: margin + priceW + 10,
 		barMax: bookW - priceW - 10 - (narrow ? 40 : 56),
 		tapeX,
 		tapeY,
 		tapeW: narrow ? room : room * 0.38,
-		tapeRow: (i: number) => tapeY + T(frame) * 1.6 + i * rowStep,
+		tapeRow: (i: number) => tapeY + T.small * 1.6 + i * tapeStep,
+		tapeStep,
 		venueX: (i: number) => margin + i * (venueW + gap),
 		venueW,
 		venueY,
 		venueH,
-		/** A card's lines: its name, its ask, its bid (asks above bids, as in the book). */
-		venueLine: (k: number) => venueY + venueH * [0.2, 0.52, 0.8][k],
-		/** The NBBO under the cards, centred on them. */
-		nbboX: margin + bookW / 2,
-		nbboY: venueY + venueH + H * (narrow ? 0.07 : 0.08),
+		/** A card's lines: its name, its ask (level with the middle ask), its bid (the middle bid). */
+		venueLine: (k: number) =>
+			[venueY + T.small * 1.7, rowText(askY(1)), rowText(bidY(1))][k],
+		/** The NBBO: under the tape on the wide frame, between the cards and the tape on a phone. */
+		nbboX: narrow ? margin + room / 2 : tapeX,
+		nbboY: narrow ? bookBottom + H * 0.058 : bookTop + H * 0.42,
+		nbboAnchor: narrow ? ("middle" as const) : ("start" as const),
 	};
 }
-const T = (frame: ReturnType<typeof filmFrame>) => frame.type.small;
-
 const copy = {
 	title: ["Quotes, orders and trades", "报价、订单与成交"],
 	titleSub: ["three different events", "三种不同的事件"],
@@ -134,7 +147,7 @@ const copy = {
 	buyHeadShort: ["Market buy at $2.15: a print.", "市价买入，按 $2.15 成交。"],
 	acHead: [
 		"Adds and cancels move size, not the tape.",
-		"加挂、撤单只改数量，不留成交。",
+		"挂单、撤单只改数量，不产生成交。",
 	],
 	acHeadShort: ["Add, cancel: no print.", "加挂、撤单：无成交。"],
 	takeHead: [
@@ -159,12 +172,12 @@ const copy = {
 		`NBBO ${usd(BEST.bid.price)} × ${usd(BEST.ask.price)}。`,
 	],
 	goneHead: [
-		`${BEST.ask.venue}'s last ${LEFT} trade: best ask ${usd(NEXT_ASK.ask.price)}.`,
-		`${BEST.ask.venue} 剩下的 ${LEFT} 张成交：最优卖价升到 ${usd(NEXT_ASK.ask.price)}。`,
+		`${BEST.ask.venue}'s last ${LEFT} are bought: best ask ${usd(NEXT_ASK.ask.price)}.`,
+		`${BEST.ask.venue} 的卖单被吃光，最优卖价升到 ${usd(NEXT_ASK.ask.price)}。`,
 	],
 	goneHeadShort: [
 		`${BEST.ask.venue}'s offer gone: ${usd(NEXT_ASK.ask.price)}.`,
-		`${BEST.ask.venue} 被吃光，最优卖价升到 ${usd(NEXT_ASK.ask.price)}。`,
+		`${BEST.ask.venue} 的卖单没了：${usd(NEXT_ASK.ask.price)}。`,
 	],
 	venue: ["venue", "场所"],
 	nbbo: ["NBBO · bid × ask", "NBBO · 买价 × 卖价"],
@@ -205,6 +218,7 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const rowText = (y: number) => y + L.rowH / 2 + text * 0.36;
+	const spreadAt = L.spreadY + L.rowStep * 0.2;
 	const level = (
 		side: "ask" | "bid",
 		y: number,
@@ -264,7 +278,10 @@ function Scene({
 	const bestRow = ASKS.length - 1;
 	const venueAt = (venue: string) => VENUES.findIndex((v) => v.venue === venue);
 	const cardText = narrow ? text : text * 1.15;
-	/** Where each trade sets off: the book's size column, or C's card for its last 4. */
+	/**
+	 * Where each trade sets off, clear of the counts it changes: just right of the book on the
+	 * wide frame, on the empty spread line on a phone; C's last 4 take its ask line's place.
+	 */
 	const chipFrom = (name: string) =>
 		name === "pr-gone"
 			? {
@@ -272,11 +289,17 @@ function Scene({
 					y: L.venueLine(1),
 					anchor: "middle" as const,
 				}
-			: {
-					x: margin + L.bookW - 6,
-					y: rowText(L.askY(bestRow)),
-					anchor: "end" as const,
-				};
+			: narrow
+				? {
+						x: margin + L.bookW / 2,
+						y: spreadAt - 4,
+						anchor: "middle" as const,
+					}
+				: {
+						x: margin + L.bookW + 8,
+						y: rowText(L.askY(bestRow)),
+						anchor: "start" as const,
+					};
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -364,17 +387,19 @@ function Scene({
 					{t(copy.bid).toUpperCase()}
 				</text>
 			</g>
+			{/* The midpoint, made from the bid and the ask on the spread line between them. */}
 			<g data-f="mid">
 				<path
-					d={`M${L.barX} ${L.spreadY + L.rowStep * 0.2}H${L.barX + L.barMax}`}
+					d={`M${L.barX} ${spreadAt}H${L.barX + L.barMax}`}
 					className="wt-film-riser"
 				/>
 				<text
-					x={margin + L.bookW - 6}
-					y={L.spreadY + L.rowStep * 0.2 - 5}
-					textAnchor="end"
-					className="wt-film-num wt-film-accent"
-					style={{ fontSize: T.small * 1.1 }}
+					data-f="mid-label"
+					x={L.barX + L.barMax / 2}
+					y={spreadAt - 4}
+					textAnchor="middle"
+					className="wt-film-num wt-film-accent wt-halo"
+					style={{ fontSize: text }}
 				>
 					{`${t(copy.mid)} ${price(MID)}`}
 				</text>
@@ -478,6 +503,18 @@ function Scene({
 							{`${t(copy.venue).toUpperCase()} ${v.venue}`}
 						</text>
 						{/* Price · size, the ask in red above the bid in green, as in the book. */}
+						{v.venue === BEST.ask.venue && (
+							<text
+								data-f="va-gone"
+								x={L.venueX(i) + L.venueW / 2}
+								y={L.venueLine(1)}
+								textAnchor="middle"
+								className="wt-film-num wt-film-dim"
+								style={{ fontSize: cardText }}
+							>
+								—
+							</text>
+						)}
 						<text
 							data-f={`va-${v.venue}`}
 							x={L.venueX(i) + L.venueW / 2}
@@ -511,23 +548,26 @@ function Scene({
 				] as const
 			).map(([name, label]) => (
 				<g key={name} data-f={name}>
+					{/* On a phone it is one line, so the tape keeps room for four prints. */}
+					{!narrow && (
+						<text
+							x={L.nbboX}
+							y={L.nbboY}
+							textAnchor={L.nbboAnchor}
+							className="wt-film-tag"
+							style={{ fontSize: T.small }}
+						>
+							{t(copy.nbbo).toUpperCase()}
+						</text>
+					)}
 					<text
 						x={L.nbboX}
-						y={L.nbboY}
-						textAnchor="middle"
-						className="wt-film-tag"
-						style={{ fontSize: T.small }}
-					>
-						{t(copy.nbbo).toUpperCase()}
-					</text>
-					<text
-						x={L.nbboX}
-						y={L.nbboY + T.num * 1.3}
-						textAnchor="middle"
+						y={narrow ? L.nbboY : L.nbboY + T.num * 1.3}
+						textAnchor={L.nbboAnchor}
 						className="wt-film-num wt-film-accent"
-						style={{ fontSize: T.num }}
+						style={{ fontSize: narrow ? T.body * 1.1 : T.num }}
 					>
-						{label}
+						{narrow ? `NBBO ${label}` : label}
 					</text>
 				</g>
 			))}
@@ -609,9 +649,9 @@ function build(context: FilmContext) {
 		fade(lockVol, time + 1.4);
 	};
 	/**
-	 * A trade: its chip appears where it trades, flies to the top of the tape and lands on its
-	 * own text in the new print, while the older prints step down a row and back in tone.
-	 * Prints never leave the tape.
+	 * A trade: its chip appears clear of the count it changed, flies to the top of the tape
+	 * and lands on its own text in the new print, while the older prints step down a row and
+	 * back in tone. Prints never leave the tape.
 	 */
 	const stack: Element[] = [one("pr-last")];
 	const print = (name: string, time: number) => {
@@ -621,7 +661,7 @@ function build(context: FilmContext) {
 		const older = [...stack];
 		tl.to(
 			older,
-			{ y: `+=${L.rowStep}`, duration: 0.45, ease: "power2.inOut" },
+			{ y: `+=${L.tapeStep}`, duration: 0.45, ease: "power2.inOut" },
 			time + 0.45,
 		);
 		older.forEach((el, k) => {
@@ -660,6 +700,11 @@ function build(context: FilmContext) {
 		one(`va-${v.venue}`),
 		one(`vb-${v.venue}`),
 	]);
+	const cardFrames = VENUES.map((v) =>
+		[...one(`venue-${v.venue}`).children].filter(
+			(el) => !el.getAttribute("data-f"),
+		),
+	);
 
 	d.hidden([
 		...flat("q"),
@@ -672,6 +717,7 @@ function build(context: FilmContext) {
 		pxBid,
 		...bars.map((key) => one(`hit-${key}`)),
 		one("mid"),
+		g("mid-label"),
 		...kids("tape"),
 		...["pr-buy", "pr-take", "pr-gone"].flatMap((n) => [
 			one(n),
@@ -680,8 +726,12 @@ function build(context: FilmContext) {
 		lockAsk,
 		g("lock-last"),
 		lockVol,
-		...kids("venues"),
+		...cardFrames.flat(),
 		...cardLines,
+		g("va-gone"),
+		g("best-bid"),
+		g("best-ask"),
+		g("next-ask"),
 		one("nbbo-1"),
 		one("nbbo-2"),
 		...kids("claim"),
@@ -694,75 +744,94 @@ function build(context: FilmContext) {
 	// ——— question: three numbers on a screen ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	show(one("q-tag"), 4.5);
+	show(one("q-tag"), 4.4);
 	(["q-bid", "q-ask", "q-last"] as const).forEach((name, i) => {
-		show(one(`${name}-tag`), 4.8 + i * 0.3);
-		word(one(`${name}-num`), 4.9 + i * 0.3);
+		show(one(`${name}-tag`), 4.6 + i * 0.3);
+		word(one(`${name}-num`), 4.7 + i * 0.3);
 	});
-	show(one("q-line"), 6.2);
+	show(one("q-line"), 5.8);
 
-	// ——— quote: the three numbers fly to their places, then the book fills in ———
-	tl.addLabel("quote", 9.5);
-	hide([one("q-tag"), one("q-line")], 9.5);
-	// The spread line comes in once the numbers have left the middle of the frame.
-	show(
-		flat("book").filter((el) => !el.getAttribute("data-f")),
-		10.6,
-	);
+	// ——— quote: the three numbers fly to their places, and the book forms round them ———
+	tl.addLabel("quote", 8.8);
+	hide([one("q-tag"), one("q-line"), one("q-last-tag")], 8.8);
+	// Each number takes its label along: ask first, then bid, then the last onto the tape.
+	d.carry(g("q-ask-num"), pxAsk, 8.9);
+	d.carry(g("q-ask-tag"), g("book-ask-tag"), 8.9);
+	d.carry(g("q-bid-num"), pxBid, 9.1);
+	d.carry(g("q-bid-tag"), g("book-bid-tag"), 9.1);
+	d.carry(g("q-last-num"), last, 9.3);
+	// The rows come in as the numbers arrive, in place; their bars grow once they have.
 	levels.forEach((lv, i) => {
-		show(lv, 9.8 + i * 0.06, "right");
+		tl.fromTo(
+			lv,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.4 },
+			9.6 + i * 0.05,
+		);
 	});
+	show(
+		kids("tape").filter((el) => el !== last),
+		9.7,
+	);
 	bars.forEach((key, i) => {
 		const at = [...ASKS, ...BIDS][i];
 		tl.fromTo(
 			one(`bar-${key}`),
 			{ attr: { width: 0 } },
 			{ attr: { width: width(at.size) }, duration: 0.5, ease: "power2.out" },
-			11.0 + i * 0.06,
+			10.4 + i * 0.05,
 		);
 	});
 	show(
-		kids("tape").filter((el) => el !== last),
-		10.6,
+		flat("book").filter((el) => !el.getAttribute("data-f")),
+		10.5,
 	);
-	// Each number takes its label along: ask first, then bid, then the last onto the tape.
-	d.carry(g("q-ask-num"), pxAsk, 9.7);
-	d.carry(g("q-ask-tag"), g("book-ask-tag"), 9.7);
-	d.carry(g("q-bid-num"), pxBid, 10.0);
-	d.carry(g("q-bid-tag"), g("book-bid-tag"), 10.0);
-	d.carry(g("q-last-num"), last, 10.3);
-	hide(one("q-last-tag"), 10.9);
-	show(heads[0], 11.2);
-	// Mid is arithmetic; the last is history, and brackets point at it on the tape.
-	d.swap(heads[0], heads[1], 15.2);
-	show(one("mid"), 15.6);
-	d.lock(g("lock-last"), 17.0, { around: last, pad: 5 });
-	// A market buy takes the ask, and a print appears.
-	d.swap(heads[1], heads[2], 19.6);
-	hide(one("mid"), 19.6);
-	fade(g("lock-last"), 19.6);
-	fade(hit, 20.0, 1);
-	d.lock(lockAsk, 20.0, { around: hit, pad: 4 });
-	print("pr-buy", 20.2);
-	sizeTo(ASK.size - 1, ASK.size, 20.3);
-	volumeTo(PRIOR + 1, PRIOR, 21.4);
+	show(heads[0], 10.4);
+	// Mid is arithmetic: copies of the bid and the ask slide together into it. The last is
+	// history, and brackets point at it on the tape.
+	d.swap(heads[0], heads[1], 14.0);
+	tl.to(one("mid"), { opacity: 1, duration: 0.01 }, 14.4);
+	show(one("mid").querySelector("path") as Element, 14.4);
+	d.carry(pxAsk, g("mid-label"), 14.5, {
+		duration: 0.8,
+		keep: true,
+		fit: false,
+		match: price(MID),
+	});
+	d.carry(pxBid, g("mid-label"), 14.5, {
+		duration: 0.8,
+		keep: true,
+		fit: false,
+		match: price(MID),
+		reveal: false,
+	});
+	d.lock(g("lock-last"), 16.0, { around: last, pad: 5 });
+	// A market buy takes the ask; the count drops, then the trade leaves as a ticket.
+	d.swap(heads[1], heads[2], 18.0);
+	hide(one("mid"), 18.0);
+	fade(g("lock-last"), 18.0);
+	fade(hit, 18.4, 1);
+	d.lock(lockAsk, 18.4, { around: hit, pad: 4 });
+	sizeTo(ASK.size - 1, ASK.size, 18.4);
+	print("pr-buy", 19.0);
+	volumeTo(PRIOR + 1, PRIOR, 20.2);
 
 	// ——— orders: size moves, the tape doesn't, until a trade ———
-	tl.addLabel("orders", 23.6);
-	d.swap(heads[2], heads[3], 23.6);
-	fade([hit, lockAsk], 23.6);
-	sizeTo(ASK.size - 1 + ADDED, ASK.size - 1, 24.2);
-	sizeTo(ASK.size - 1, ASK.size - 1 + ADDED, 26.0);
-	d.swap(heads[3], heads[4], 27.6);
-	fade(hit, 28.0, 1);
-	d.lock(lockAsk, 28.0, { around: hit, pad: 4 });
-	print("pr-take", 28.2);
-	sizeTo(LEFT, ASK.size - 1, 28.3);
-	volumeTo(PRIOR + 1 + TAKEN, PRIOR + 1, 29.4);
+	tl.addLabel("orders", 21.8);
+	d.swap(heads[2], heads[3], 21.8);
+	fade([hit, lockAsk], 21.8);
+	sizeTo(ASK.size - 1 + ADDED, ASK.size - 1, 22.4);
+	sizeTo(ASK.size - 1, ASK.size - 1 + ADDED, 24.0);
+	d.swap(heads[3], heads[4], 25.8);
+	fade(hit, 26.2, 1);
+	d.lock(lockAsk, 26.2, { around: hit, pad: 4 });
+	sizeTo(LEFT, ASK.size - 1, 26.2);
+	print("pr-take", 26.8);
+	volumeTo(PRIOR + 1 + TAKEN, PRIOR + 1, 28.0);
 
 	// ——— venues: the hero. The book splits into the three venues it was made of. ———
-	tl.addLabel("venues", 31.6);
-	d.swap(heads[4], heads[5], 31.6);
+	tl.addLabel("venues", 29.8);
+	d.swap(heads[4], heads[5], 29.8);
 	fade(
 		[
 			hit,
@@ -771,59 +840,56 @@ function build(context: FilmContext) {
 			g("book-ask-tag"),
 			g("book-bid-tag"),
 		],
-		31.6,
+		29.8,
 	);
 	tl.to(
 		bars.map((key) => one(`bar-${key}`)),
 		{ attr: { width: 0 }, opacity: 0, duration: 0.4, ease: "power2.in" },
-		31.7,
+		29.9,
 	);
 	VENUES.forEach((v, i) => {
-		show(one(`venue-${v.venue}`), 31.8 + i * 0.15);
-		const at = 32.0 + i * 0.2;
+		const at = 30.2 + i * 0.15;
 		const ask = `ask-${v.ask.price}`;
 		const bid = `bid-${v.bid.price}`;
 		const askSize = v.venue === BEST.ask.venue ? LEFT : v.ask.size;
-		d.carry(g(`px-${ask}`), g(`va-${v.venue}`), at);
+		const sideways = { duration: 1, arc: "x" as const };
+		d.carry(g(`px-${ask}`), g(`va-${v.venue}`), at, sideways);
 		d.carry(g(`size-${ask}`), g(`va-${v.venue}`), at, {
+			...sideways,
 			match: String(askSize),
 			last: true,
 			reveal: false,
 		});
-		d.carry(g(`px-${bid}`), g(`vb-${v.venue}`), at + 0.1);
-		d.carry(g(`size-${bid}`), g(`vb-${v.venue}`), at + 0.1, {
+		d.carry(g(`px-${bid}`), g(`vb-${v.venue}`), at + 0.05, sideways);
+		d.carry(g(`size-${bid}`), g(`vb-${v.venue}`), at + 0.05, {
+			...sideways,
 			match: String(v.bid.size),
 			last: true,
 			reveal: false,
 		});
+		// The card draws round its numbers as they arrive.
+		tl.to(cardFrames[i], { opacity: 1, duration: 0.4 }, at + 0.7);
 	});
-	tl.set(levels, { opacity: 0 }, 33.6);
+	tl.set(levels, { opacity: 0 }, 31.6);
 	// The best of the three: the NBBO.
-	d.swap(heads[5], heads[6], 35.6);
-	d.lock(g("best-bid"), 36.0, { around: g(`vb-${BEST.bid.venue}`), pad: 5 });
-	d.lock(g("best-ask"), 36.2, { around: g(`va-${BEST.ask.venue}`), pad: 5 });
-	word(one("nbbo-1"), 36.5);
-	// C's last 4 trade: they print on the same tape, and C drops out of the NBBO.
-	d.swap(heads[6], heads[7], 39.6);
-	d.count(
-		one(`va-${BEST.ask.venue}`),
-		0,
-		40.0,
-		(v) =>
-			Math.round(v) > 0 ? `${usd(BEST.ask.price)} · ${Math.round(v)}` : "—",
-		LEFT,
-		0.5,
-	);
-	print("pr-gone", 40.0);
-	volumeTo(PRIOR + 1 + TAKEN + LEFT, PRIOR + 1 + TAKEN, 41.2);
-	fade(g("best-ask"), 40.5);
-	fade(one(`venue-${BEST.ask.venue}`), 40.5, 0.4);
-	d.lock(g("next-ask"), 40.7, { around: g(`va-${NEXT_ASK.venue}`), pad: 5 });
-	d.flip(one("nbbo-1"), one("nbbo-2"), 40.7);
-	tl.set(one("nbbo-1"), { opacity: 0 }, 41.0);
+	d.swap(heads[5], heads[6], 33.8);
+	d.lock(g("best-bid"), 34.2, { around: g(`vb-${BEST.bid.venue}`), pad: 5 });
+	d.lock(g("best-ask"), 34.4, { around: g(`va-${BEST.ask.venue}`), pad: 5 });
+	word(one("nbbo-1"), 34.7);
+	// C's last 4 are bought: its offer leaves the card as a ticket and prints on the tape;
+	// only C's ask goes, its bid stays.
+	d.swap(heads[6], heads[7], 37.8);
+	tl.set(g(`va-${BEST.ask.venue}`), { opacity: 0 }, 38.2);
+	fade(g("best-ask"), 38.2);
+	print("pr-gone", 38.2);
+	fade(g("va-gone"), 39.0, 1);
+	d.lock(g("next-ask"), 38.7, { around: g(`va-${NEXT_ASK.venue}`), pad: 5 });
+	d.flip(one("nbbo-1"), one("nbbo-2"), 38.7);
+	tl.set(one("nbbo-1"), { opacity: 0 }, 39.0);
+	volumeTo(PRIOR + 1 + TAKEN + LEFT, PRIOR + 1 + TAKEN, 39.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 43.6);
+	tl.addLabel("claim", 41.6);
 	hide(
 		[
 			heads[7],
@@ -833,15 +899,15 @@ function build(context: FilmContext) {
 			...stack,
 			lockVol,
 		],
-		43.6,
+		41.6,
 	);
-	word(one("z-big"), 43.9);
-	show(one("z-sub"), 44.4);
+	word(one("z-big"), 41.9);
+	show(one("z-sub"), 42.4);
 
 	// ——— next ———
-	tl.addLabel("next", 47.6);
-	hide(kids("claim"), 47.6);
-	d.close(47.6);
+	tl.addLabel("next", 45);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
