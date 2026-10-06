@@ -118,10 +118,10 @@ for (const lesson of lessons) {
 			r.startDelay = Math.round(first[0] / 100) / 10;
 			r.hidden = pts.some((q) => q[2] !== "visible");
 		}
-		await page.click(
-			`text=${env.LOCALE === "zh" ? "进入探索区" : "Try the playground"}`,
-			{ label: "open the playground" },
-		);
+		// The ended panel's first action, found by place rather than by its words, which change.
+		await page.click("css=.wt-ended .wt-panel-actions button >> nth=0", {
+			label: "open the playground",
+		});
 		await page.waitForSelector("loc=css:.wt-player[data-player-mode='play']", {
 			state: "visible",
 			timeout: 8000,

@@ -62,8 +62,9 @@ run() {
 			printf ' };\n'
 			cat "$HERE/$script"
 		} | ego-browser nodejs 2>&1)"
-		# The result is the first JSON object, even with a warning printed in front of it.
-		out="$(sed -En 's/^[^{]*(\{(\}|").*)$/\1/p' <<< "$raw" | head -1)"
+		# The results are the JSON objects, one a line (the playthrough prints one a lesson),
+		# even with a warning printed in front of one.
+		out="$(sed -En 's/^[^{]*(\{(\}|").*)$/\1/p' <<< "$raw")"
 		[ -n "$out" ] && break
 		printf '%s %s\n%s\n' "$script" "$*" "$raw" > "$OUT/run-failed.txt"
 	done

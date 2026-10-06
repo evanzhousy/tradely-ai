@@ -315,7 +315,7 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
 
    The flight check also fails a carry whose target shows before the copy that becomes it lands (the kit tags each copy with `data-to`, `data-mode` and `data-match` for this), and a line whose entrance rises through settled text, sampled every 0.05 s.
 4. **Read the frames yourself.** The scan ignores text inside the camera's world group, so look at contact sheets of the 1440 English and 390 Chinese frames for labels crossing a curve, labels clipped at a plot edge, wrong numbers and awkward copy.
-5. **Play it for real.** Load the lesson with no saved speed, let the film autoplay, and confirm the speed button reads 2×, the player reaches `data-ended` in about half the film's length, "Try the playground" opens the playground (`data-player-mode="play"`), and every playground scene opens without console errors. Radix tabs need real pointer events in automation.
+5. **Play it for real.** Load the lesson with no saved speed, let the film autoplay, and confirm the speed button reads 2×, the player reaches `data-ended` in about half the film's length, the ended panel's button ("Try it yourself") opens the playground (`data-player-mode="play"`), and every playground scene opens without console errors. Radix tabs need real pointer events in automation.
 6. **Build.** `pnpm build` in `apps/web`.
 7. **Make the GIF evidence** from the 1440 English frames and link it in the report:
    ```bash
