@@ -40,6 +40,7 @@ import {
 import { VisualLessonIdentity } from "../visual-lesson-identity";
 import { TaskPanel } from "./explore-task";
 import { type Film, FilmStage } from "./film";
+import { playerCopy as copy } from "./player-copy";
 import { usePrefersReducedMotion } from "./stage";
 import type { ExploreTask, WalkthroughScene } from "./types";
 import { FrameContext, copy as walkthroughCopy } from "./walkthrough";
@@ -68,28 +69,6 @@ function writeRate(rate: Rate) {
 }
 
 type Mode = "watch" | "play";
-
-const copy = {
-	modes: ["Lesson views", "课程视图"],
-	watch: ["Watch", "观看"],
-	playground: ["Playground", "探索区"],
-	timeline: ["Film timeline", "影片时间轴"],
-	shot: ["Shot", "镜头"],
-	speed: ["Speed", "速度"],
-	openPlayground: ["Try the playground", "进入探索区"],
-	replay: ["Replay", "重播"],
-	challenges: ["Challenges", "挑战"],
-	allDone: ["Every challenge done", "所有挑战已完成"],
-	allDoneNote: [
-		"Now check yourself on a new case.",
-		"现在用一个新案例检验自己。",
-	],
-	ended: ["That's the whole idea", "这就是全部要点"],
-	endedNote: [
-		"Now try it: the playground sets one challenge per scene.",
-		"现在自己试试：探索区每个场景有一个挑战。",
-	],
-} as const satisfies Record<string, Copy>;
 
 /**
  * Plays a lesson's film, then opens its playground. The film runs by itself once it is on

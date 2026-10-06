@@ -20,7 +20,15 @@ reviewed UI GIF are outside the repository at
 `/tmp/tradely-posthog-analysis/2026-10-06/`. No PostHog objects/settings or
 production application records were changed.
 
-- [ ] Verify the serving release's film/playground, sign-in, task/prediction,
+The subsequent local implementation added schema-2 surface/interaction signals,
+capture-acceptance deduplication, sign-in outcome recovery, a confirmed guest-save
+fallback, responsive loading frames, and clearer interactive-entry copy. Local
+browser/component checks and builds passed; no deployment or live delivery proof
+of these changes was performed. Implementation captures are external at
+`/tmp/tradely-posthog-implementation/2026-10-06/`.
+
+- [ ] After an authorized deployment, verify the serving release's schema-2
+  surface/interaction, sign-in, task/prediction,
   and guest-import emitters. Historical captured visual activity does not prove
   current local films are deployed; required outcome coverage remains incomplete.
 - [ ] Reconcile Web Analytics view/session totals with event aggregates and the
@@ -257,6 +265,13 @@ playground). `auth_session_established` includes restored sessions and is not
 signup. Exercise starts can include resume/restart; repeated predictions/tasks
 are not unique attempts without a verified attempt key. Do not assume anonymous
 activity is linked across browsers or after a sign-in identity reset.
+
+For schema-2 releases, distinguish `visual_lesson_explored` (legacy exploration
+entry) from `visual_lesson_interacted` (first user-driven control change), and
+filter by the verified `surface`. Film starts now include actual initial playback.
+Use interaction or supported task completion as the stronger activation signal
+only after deployed capture is verified. Do not compare a new interaction funnel
+with the old exploration-entry proxy as if their definitions were unchanged.
 
 Define active learners by the chosen meaningful event, not page views. Report
 D1/D7 and weekly retention only when cohort size/history permits. Specify

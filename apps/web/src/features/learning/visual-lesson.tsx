@@ -7,10 +7,12 @@ import {
 } from "@tradely/ui/components/tabs";
 import { lazy, Suspense } from "react";
 import { syllabus } from "@/content/syllabus";
+import { pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { getDiagramPalette } from "./diagram-palette";
 import { LessonMotion } from "./lesson-motion";
 import { VisualLessonIdentity } from "./visual-lesson-identity";
+import { playerCopy } from "./walkthrough/player-copy";
 
 function LessonLoading({
 	locale,
@@ -38,10 +40,10 @@ function LessonLoading({
 			<Tabs value="watch" className="gap-[inherit]">
 				<TabsList className="wt-modes">
 					<TabsTrigger value="watch" isDisabled>
-						{locale === "zh" ? "观看" : "Watch"}
+						{pick(playerCopy.watch, locale)}
 					</TabsTrigger>
 					<TabsTrigger value="play" isDisabled>
-						{locale === "zh" ? "探索区" : "Playground"}
+						{pick(playerCopy.playground, locale)}
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent
