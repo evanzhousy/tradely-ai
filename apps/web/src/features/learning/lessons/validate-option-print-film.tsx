@@ -1,8 +1,9 @@
-import { type Copy, count, pick, sideCode, usd } from "@/content/world";
+import { type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -23,26 +24,22 @@ import {
  * ALFA rises? The amount comes first, built from the record: $2.15 × 500 × 100. Then a
  * ladder of claims, each tagged with its evidence, from observed down to unknown; with only
  * a 90-second-old quote, the location and the buyer drop to unknown and the amount stays.
- * Last, the record that could close each gap: an open-interest report, the linked leg that
- * makes it a $1.25 call spread, and none at all for belief.
+ * Then the record that could close each gap: an open-interest report, and the hero, the
+ * linked leg that makes the "bet" half of a $1.25 call spread, where glowing brackets lock.
+ * Last, belief, which no record shows.
  *
- *   open      0–4      "Checking one trade"
- *   question  4–9.5    500 at $2.15: a $107,500 bet ALFA rises?
- *   amount    9.5–17.5 $2.15 a share × 500 contracts × 100 shares = $107,500
- *   claims    17.5–28  observed, calculated, inferred, unknown; a stale quote
- *   gaps      28–37    OI +480; a linked 110 leg; no record of belief
- *   claim     37–39.5  facts, inferences, unknowns
- *   next      39.5–42  Next: the module checkpoint
+ *   open      0–4        "Checking one trade"
+ *   question  4–8.6      500 at $2.15: a $107,500 bet ALFA rises?
+ *   amount    8.6–14     $2.15 a share × 500 contracts × 100 shares = $107,500
+ *   claims    14–23.6    observed, calculated, inferred, unknown; an old quote
+ *   gaps      23.6–30.6  OI +480; hero: a linked 110 leg, a $1.25 call spread
+ *   belief    30.6–35    no record of belief
+ *   claim     35–39.8    facts, inferences, unknowns
+ *   next      39.8–42.3  Next: the module checkpoint
  */
 
-const END = 42;
+const END = 42.3;
 type Evidence = "observed" | "calculated" | "inferred" | "unknown";
-const CODE = sideCode(BLOCK.price, BLOCK.quote.bid, BLOCK.quote.ask);
-const STALE_CODE = sideCode(
-	BLOCK.price,
-	BLOCK.staleQuote.bid,
-	BLOCK.staleQuote.ask,
-);
 const LEG = BLOCK.pairedLeg;
 const tone = (evidence: Evidence) =>
 	evidence === "unknown"
@@ -174,55 +171,16 @@ const copy = {
 		`A ${usd(PREMIUM, 0)} bet that ALFA rises?`,
 		`一笔 ${usd(PREMIUM, 0)} 的看涨押注？`,
 	],
-	m0: [
-		"Start with the amount, built from the record itself.",
-		"先算金额，只用记录本身。",
-	],
-	m0Short: ["The amount first.", "先算金额。"],
-	m1: [
-		"A price per share, a count of contracts, and the shares each one covers.",
-		"每股价格、合约张数、每张对应的股数。",
-	],
-	m1Short: ["Three factors.", "三个因子。"],
+	mHead: ["The amount comes from the record.", "金额直接来自记录。"],
 	perShare: ["per share", "每股"],
 	contracts: ["contracts", "张合约"],
 	shares: ["shares each", "股/张"],
 	premium: ["premium", "权利金"],
-	l0: [
-		"Now each claim, with the evidence behind it.",
-		"再看每个结论，以及它背后的证据。",
-	],
-	l0Short: ["Each claim, its evidence.", "每个结论，它的证据。"],
-	l1: [
-		`Against the ${BLOCK.quote.time} quote it printed at the ${CODE === "ASK" ? "ask" : "quote"}: a buyer probably started it.`,
-		`对照 ${BLOCK.quote.time} 的报价，它在卖价成交：可能是买方发起。`,
-	],
-	l1Short: ["At the ask: inferred.", "在卖价：推断。"],
-	l2: [
-		"Opening and intent stay unknown, however large the premium.",
-		"开仓与意图仍然未知，权利金再大也一样。",
-	],
-	l2Short: ["The rest: unknown.", "其余：未知。"],
-	l3: [
-		`A 90-second-old quote would say ${STALE_CODE}: location and buyer drop to unknown.`,
-		`如果只有 90 秒前的报价，它会读成 ${STALE_CODE}：位置和买方都降为未知。金额不变。`,
-	],
-	l3Short: ["Old quote: unknown.", "旧报价：未知。"],
-	g0: [
-		"For each open question, name the record that could answer it.",
-		"为每个未决问题，找出能回答它的记录。",
-	],
-	g0Short: ["Name the record.", "找出那份记录。"],
-	g1: [
-		"Open interest and the linked prints close two gaps.",
-		"未平仓量和关联成交填补了两个缺口。",
-	],
-	g1Short: ["Two gaps closed.", "两个缺口已填补。"],
-	g2: [
-		"No market record shows what anyone believes.",
-		"没有任何市场记录能显示谁怎么想。",
-	],
-	g2Short: ["Belief: no record.", "观点：无记录。"],
+	lHead: ["Each claim, tagged with its evidence.", "每个结论，标上它的证据。"],
+	l2Head: ["An old quote: two drop to unknown.", "换成旧报价：两条降为未知。"],
+	gHead: ["Which record could close each gap?", "哪份记录能填补每个缺口？"],
+	g2Head: ["The bet was half a spread.", "这笔“押注”其实是价差的一半。"],
+	g3Head: ["Belief leaves no record at all.", "观点不会留下任何记录。"],
 	observed: ["observed", "观测"],
 	calculated: ["calculated", "计算"],
 	inferred: ["inferred", "推断"],
@@ -232,8 +190,8 @@ const copy = {
 		"先事实，再推断，最后是未知。",
 	],
 	claimSub: [
-		"Say what the record shows, what follows from it, and which record would answer the rest.",
-		"说清记录显示了什么、由此能推出什么，以及哪份记录能回答其余问题。",
+		"Say what the record shows, then what follows.",
+		"先说记录显示了什么，再说能推出什么。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
@@ -254,10 +212,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -328,8 +286,7 @@ function Scene({
 			</g>
 
 			{/* The amount. */}
-			{headline("m0", copy.m0, copy.m0Short)}
-			{headline("m1", copy.m1, copy.m1Short)}
+			{headline("m-head", copy.mHead)}
 			{terms.map(([name, value, tag], i) => (
 				<g key={name} data-f={name}>
 					<text
@@ -388,10 +345,22 @@ function Scene({
 			</g>
 
 			{/* The ladder of claims. */}
-			{headline("l0", copy.l0, copy.l0Short)}
-			{headline("l1", copy.l1, copy.l1Short)}
-			{headline("l2", copy.l2, copy.l2Short)}
-			{headline("l3", copy.l3, copy.l3Short)}
+			{headline("l-head", copy.lHead)}
+			{/* The answer, as two evidence tags fall to unknown. */}
+			<Lines
+				name="l2-head"
+				text={t(copy.l2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.lHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{claims.map((claim, i) => (
 				<g key={claim.id} data-f={`row-${i}`}>
 					<rect
@@ -435,9 +404,23 @@ function Scene({
 			)}
 
 			{/* The records that close the gaps. */}
-			{headline("g0", copy.g0, copy.g0Short)}
-			{headline("g1", copy.g1, copy.g1Short)}
-			{headline("g2", copy.g2, copy.g2Short)}
+			{headline("g-head", copy.gHead)}
+			{/* The hero's answer, as the linked leg's record comes up. */}
+			<Lines
+				name="g2-head"
+				text={t(copy.g2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.gHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("g3-head", copy.g3Head)}
 			{gaps.map((gap, i) => (
 				<g key={gap.id} data-f={`gap-${i}`}>
 					<rect
@@ -494,6 +477,8 @@ function Scene({
 				</g>
 			))}
 
+			<Brackets name="lock-leg" glow />
+
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -538,22 +523,37 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = ["m0", "m1", "l0", "l1", "l2", "l3", "g0", "g1", "g2"].map(
-		(name) => one(name),
-	);
+	const heads = [
+		"m-head",
+		"l-head",
+		"l2-head",
+		"g-head",
+		"g2-head",
+		"g3-head",
+	].map((name) => one(name));
 	const terms = ["f-price", "f-qty", "f-mult"].map((name) => one(name));
 	const times = [one("times-0"), one("times-1")];
 	const rows = claims.map((_, i) => one(`row-${i}`));
 	const staleRows = claims.flatMap((claim, i) => (claim.stale ? [i] : []));
 	const gapCards = gaps.map((_, i) => one(`gap-${i}`));
 	const found = gaps.map((_, i) => one(`found-${i}`));
+	const lockLeg = one<SVGGraphicsElement>("lock-leg");
+	/** A gap's record comes up where its question's need was. */
+	const close = (i: number, at: number) => {
+		d.flip(one(`needs-${i}`), found[i], at);
+		tl.set(one(`needs-${i}`), { opacity: 0 }, at + 0.3);
+		if (gaps[i].evidence === "unknown") return;
+		d.flip(one(`gq-${i}`), one(`gf-${i}`), at);
+		tl.set(one(`gq-${i}`), { opacity: 0 }, at + 0.3);
+	};
 
 	d.hidden([
 		...flat("q"),
@@ -565,6 +565,7 @@ function build(context: FilmContext) {
 		...staleRows.map((i) => one(`ev-${i}-stale`)),
 		...gapCards,
 		...found,
+		lockLeg,
 		...kids("claim"),
 	]);
 
@@ -580,40 +581,33 @@ function build(context: FilmContext) {
 	word(one("q-big"), 6.4);
 
 	// ——— amount: three factors from the record ———
-	tl.addLabel("amount", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	d.swap(heads[0], heads[1], 11.0);
+	tl.addLabel("amount", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
 	terms.forEach((term, i) => {
-		d.slam(term, 11.4 + i * 0.7);
-		if (i) show(times[i - 1], 11.2 + i * 0.7);
+		word(term, 9.4 + i * 0.7);
+		if (i) show(times[i - 1], 9.2 + i * 0.7);
 	});
-	show(one("sum"), 13.8);
+	show(one("sum"), 11.6);
 	d.count(
 		one<SVGTextElement>("sum-n"),
 		PREMIUM,
-		13.9,
+		11.7,
 		(v) => usd(Math.round(v / 100) * 100, 0),
 		0,
 		1.0,
 	);
 
 	// ——— claims: each with its evidence ———
-	tl.addLabel("claims", 17.5);
-	hide([heads[1], ...terms, ...times, one("sum")], 17.5);
-	show(heads[2], 17.7, "above");
-	show(rows[0], 18.0, "right");
-	show(rows[1], 18.4, "right");
-	d.swap(heads[2], heads[3], 19.8);
-	show(rows[2], 20.2, "right");
-	show(rows[3], 20.6, "right");
-	d.swap(heads[3], heads[4], 22.2);
-	show(rows[4], 22.6, "right");
-	show(rows[5], 23.0, "right");
-	// A stale quote: two claims fall to unknown; the amount doesn't move.
-	d.swap(heads[4], heads[5], 24.8);
+	tl.addLabel("claims", 14);
+	hide([heads[0], ...terms, ...times, one("sum")], 14.0);
+	show(heads[1], 14.35);
+	rows.forEach((row, i) => {
+		show(row, 14.7 + i * 0.5, "right");
+	});
+	// An old quote: two claims fall to unknown; the amount doesn't move.
 	staleRows.forEach((i, k) => {
-		const at = 25.3 + k * 0.3;
+		const at = 19.6 + k * 0.3;
 		d.flip(one(`ev-${i}`), one(`ev-${i}-stale`), at);
 		tl.set(one(`ev-${i}`), { opacity: 0 }, at + 0.3);
 		tl.to(
@@ -623,45 +617,55 @@ function build(context: FilmContext) {
 		);
 		tl.to(rows[i], { opacity: 0.6, duration: 0.3 }, at + 0.3);
 	});
+	show(heads[2], 20.0);
 	tl.fromTo(
 		[rows[0], rows[1]],
 		{ scale: 1, transformOrigin: "0% 50%" },
 		{ scale: 1.02, duration: 0.25, yoyo: true, repeat: 1 },
-		26.0,
+		20.6,
 	);
 
-	// ——— gaps: the record for each question ———
-	tl.addLabel("gaps", 28);
+	// ——— gaps: the record for each question; the hero is the linked leg ———
+	tl.addLabel("gaps", 23.6);
 	hide(
-		[heads[5], ...rows, ...staleRows.map((i) => one(`ev-${i}-stale`))],
-		28.0,
+		[
+			heads[1],
+			heads[2],
+			...rows,
+			...staleRows.map((i) => one(`ev-${i}-stale`)),
+		],
+		23.6,
 	);
-	show(heads[6], 28.2, "above");
+	show(heads[3], 23.95);
 	gapCards.forEach((card, i) => {
-		show(card, 28.5 + i * 0.3, "right");
+		show(card, 24.3 + i * 0.3, "right");
 	});
-	d.swap(heads[6], heads[7], 30.6);
-	[0, 1].forEach((i) => {
-		const at = 31.0 + i * 1.2;
-		d.flip(one(`needs-${i}`), found[i], at);
-		tl.set(one(`needs-${i}`), { opacity: 0 }, at + 0.3);
-		d.flip(one(`gq-${i}`), one(`gf-${i}`), at);
-		tl.set(one(`gq-${i}`), { opacity: 0 }, at + 0.3);
+	close(0, 25.6);
+	close(1, 26.4);
+	// On the record's line itself: the card's question and tag stay outside.
+	d.lock(lockLeg, 27.0, {
+		around: found[1].firstElementChild as SVGGraphicsElement,
+		pad: 5,
 	});
-	d.swap(heads[7], heads[8], 33.8);
-	d.flip(one("needs-2"), found[2], 34.2);
-	tl.set(one("needs-2"), { opacity: 0 }, 34.5);
+	tl.addLabel("hero-lock", 27.0);
+	show(heads[4], 27.0);
+
+	// ——— belief: no record shows it ———
+	tl.addLabel("belief", 30.6);
+	d.swap([heads[3], heads[4]], heads[5], 30.6);
+	hide(lockLeg, 30.6);
+	close(2, 31.2);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
-	hide([heads[8], ...gapCards, ...found], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	tl.addLabel("claim", 35);
+	hide([heads[5], ...gapCards, ...found], 35.0);
+	word(one("z-big"), 35.3);
+	show(one("z-sub"), 35.7);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 39.8);
+	hide(kids("claim"), 39.8);
+	d.close(39.8);
 	return tl;
 }
 
@@ -678,6 +682,7 @@ export const validateOptionPrintFilm: Film = {
 		{ id: "amount", label: ["The amount", "金额"] },
 		{ id: "claims", label: ["Claims", "结论"] },
 		{ id: "gaps", label: ["The gaps", "缺口"] },
+		{ id: "belief", label: ["Belief", "观点"] },
 		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一步"] },
 	],
