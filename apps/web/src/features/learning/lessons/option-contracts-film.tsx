@@ -31,13 +31,13 @@ import {
  *   open      0–4        "Option contracts"
  *   question  4–8.8      Oct 18 100 call, Nov 15 100 call: the same contract?
  *   symbol    8.8–17.2   ALFA · 301018 · C · 00100000; Nov 15 changes it
- *   units     17.2–30.2  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000
- *   time      30.2–34.2  10:30 $4.20; 15:59 $4.90
- *   claim     34.2–38.5  name the contract, count the shares, stamp the time
- *   next      38.5–41    Next: holders and writers
+ *   units     17.2–31.3  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000
+ *   time      31.3–35.7  10:30 $4.20; 15:59 $4.90
+ *   claim     35.7–40    name the contract, count the shares, stamp the time
+ *   next      40–42.5    Next: holders and writers
  */
 
-const END = 41;
+const END = 42.5;
 const PARTS = ["root", "date", "right", "strike"] as const;
 const OCT = symbolParts(call100);
 const NOV = symbolParts({ ...call100, expiry: "nov15" });
@@ -581,9 +581,10 @@ function build(context: FilmContext) {
 		);
 	});
 	d.lock(g("lock-notional"), 28.3, { around: g("f-notional"), pad: 8 });
+	tl.addLabel("hero-lock", 28.3);
 
 	// ——— time: a price is an observation ———
-	tl.addLabel("time", 30.2);
+	tl.addLabel("time", 31.3);
 	hide(
 		[
 			heads[4],
@@ -593,22 +594,22 @@ function build(context: FilmContext) {
 			one("f-notional"),
 			g("lock-notional"),
 		],
-		30.2,
+		31.3,
 	);
-	show(heads[5], 30.4);
-	show(one("obs-morning"), 30.8);
-	show(one("obs-close"), 31.8);
+	show(heads[5], 31.5);
+	show(one("obs-morning"), 31.9);
+	show(one("obs-close"), 32.9);
 
 	// ——— claim ———
-	tl.addLabel("claim", 34.2);
-	hide([heads[5], one("obs-morning"), one("obs-close")], 34.2);
-	word(one("z-big"), 34.5);
-	show(one("z-sub"), 34.9);
+	tl.addLabel("claim", 35.7);
+	hide([heads[5], one("obs-morning"), one("obs-close")], 35.7);
+	word(one("z-big"), 36);
+	show(one("z-sub"), 36.4);
 
 	// ——— next ———
-	tl.addLabel("next", 38.5);
-	hide(kids("claim"), 38.5);
-	d.close(38.5);
+	tl.addLabel("next", 40);
+	hide(kids("claim"), 40);
+	d.close(40);
 	return tl;
 }
 
