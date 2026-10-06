@@ -4,11 +4,13 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
 	Lines,
 	lineCount,
+	PenTip,
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
@@ -17,20 +19,22 @@ import { atExpiry, costFacts, curve, PAID, value } from "./options-risks-model";
 /*
  * Risk first, as a film. It opens on a right call that still lost: ALFA up $2, the call
  * down $52. The call's value across ALFA's price sinks as 20 days pass, to $3.68 at $102,
- * and sinks again when implied volatility drops after earnings, to $3.00. Then the writer:
- * Ben collects $420 and loses $1,580 if ALFA ends at $120, more for every dollar above,
- * while the buyer's worst case stops at $420. Last, the spread: a round trip in a busy
- * call costs $81.50, in a thin one $231.50, before ALFA moves at all.
+ * and sinks again when implied volatility drops after earnings, to $3.00; the meter reads
+ * from the marker. The hero is the writer: as ALFA climbs, Ben's loss passes −$1,580 at
+ * $120 and keeps going, no floor; the buyer's falls only to the $420 paid. Last, the
+ * spread: a round trip of 5 costs $81.50 in a busy call and $231.50 in a thin one, where
+ * the bid must climb to break even.
  *
- *   open      0–4      "Risk first"
- *   question  4–9.5    ALFA +$2, the call −$52
- *   decay     9.5–21   bought at $4.20; 20 days: $3.68; IV 25%: $3.00
- *   writer    21–30    Ben +$420 to −$1,580 at $120; the buyer stops at −$420
- *   costs     30–39.5  round trips: −$81.50 and −$231.50; cut: the claim
- *   next      39.5–42  Next: the module checkpoint
+ *   open      0–4        "Risk first"
+ *   question  4–8.8      ALFA +$2, the call −$52
+ *   decay     8.8–21.2   bought at $4.20; 20 days: $3.68; IV 25%: $3.00
+ *   writer    21.2–31.6  hero: Ben +$420 to −$1,580 at $120 and on; the buyer stops at −$420
+ *   costs     31.6–39.4  round trips: −$81.50 and −$231.50; break-even bid
+ *   claim     39.4–43.7  being right isn't enough
+ *   next      43.7–46.2  Next: the module checkpoint
  */
 
-const END = 42;
+const END = 46.2;
 const DECAY_X = [90, 110] as const;
 const DECAY_Y = 12;
 const TAIL_X = [80, 140] as const;
@@ -41,7 +45,6 @@ const AFTER = value(UP, DAYS_GONE, 35);
 const CRUSH = value(UP, DAYS_GONE, 25);
 /** Per contract, in cents: 100 shares. */
 const LOSS_AFTER = Math.round((AFTER * 100 - PAID) * 100);
-const LOSS_CRUSH = Math.round((CRUSH * 100 - PAID) * 100);
 const FAR = 120;
 const ACTIVE = costFacts({ kind: "active", contracts: 5 });
 const THIN = costFacts({ kind: "thin", contracts: 5 });
@@ -49,11 +52,15 @@ const tailSpots = [80, 100, 140];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
-	const { height: H, narrow, margin } = frame;
+	const { height: H, narrow, margin, type: T } = frame;
 	const left = Math.max(margin, narrow ? 46 : 0);
 	const right = width * 0.965;
-	// On a phone the charts start under the meter in the corner.
-	const top = H * (narrow ? 0.5 : 0.3);
+	/** The meter sits under the headline (two lines of it, at most), the chart under it. */
+	const meterY = frame.headY + T.head * 2.6;
+	const meterNum = meterY + T.head * 1.3;
+	const top = narrow
+		? H * 0.44
+		: Math.max(H * 0.3, meterNum + T.small * 2.2 + 16);
 	const bottom = H * 0.84;
 	const dx = (spot: number) =>
 		left + ((spot - DECAY_X[0]) / (DECAY_X[1] - DECAY_X[0])) * (right - left);
@@ -87,6 +94,9 @@ function layout(width: number) {
 				)
 				.join(""),
 		pair: narrow ? [0.27, 0.73] : [0.3, 0.7],
+		meterY,
+		meterNum,
+		meterCol: narrow ? 130 : 230,
 	};
 }
 
@@ -101,24 +111,21 @@ const copy = {
 		"方向判断对了，却还在亏。为什么？",
 	],
 	boughtHead: [
-		"Sep 16: the Oct 18 100 call at the $4.20 ask, 32 days out, IV 35%.",
-		"9月16日：以卖价 $4.20 买入 10月18日 100 看涨，距到期 32 天，IV 35%。",
+		"Sep 16: bought at $4.20, 32 days out.",
+		"9月16日：以 $4.20 买入，距到期 32 天。",
 	],
 	boughtHeadShort: [
 		"Bought at $4.20, 32 days out.",
 		"以 $4.20 买入，距到期 32 天。",
 	],
 	timeHead: [
-		`20 days later ALFA is $${UP}, but time has worn the curve down: $3.68.`,
-		`20 天后 ALFA 在 $${UP}，但时间把曲线磨低了：$3.68。`,
+		`Time wears it down: $3.68 at $${UP}.`,
+		`时间磨损：$${UP} 时只值 $3.68。`,
 	],
-	timeHeadShort: [
-		`20 days, ALFA $${UP}: $3.68.`,
-		`20 天，ALFA $${UP}：$3.68。`,
-	],
+	timeHeadShort: [`20 days, ALFA $${UP}: $3.68.`, "20 天后：$3.68。"],
 	crushHead: [
-		"Earnings pass and IV falls to 25%: the same call is worth $3.00.",
-		"财报过后 IV 降到 25%：同一张看涨只值 $3.00。",
+		"IV falls to 25%: the call is $3.00.",
+		"IV 降到 25%：看涨只剩 $3.00。",
 	],
 	crushHeadShort: ["IV 25%: $3.00.", "IV 25%：$3.00。"],
 	axis: ["the call's value per share", "看涨每股价值"],
@@ -128,40 +135,35 @@ const copy = {
 	lowIv: ["+20 days, IV 25%", "+20 天，IV 25%"],
 	lowIvShort: ["IV 25%", "IV 25%"],
 	value: ["call value", "看涨价值"],
+	pnl: ["your result", "你的盈亏"],
 	writerHead: [
-		"Ben writes the call without owning ALFA and collects $420.",
-		"Ben 在不持有 ALFA 的情况下卖出看涨，收取 $420。",
+		"Ben writes it for $420: no floor.",
+		"Ben 以 $420 卖出：亏损没有下限。",
 	],
-	writerHeadShort: ["Ben writes it for $420.", "Ben 卖出，收 $420。"],
-	farHead: [
-		`ALFA ends at $${FAR}: Ben is down $1,580, and each $1 more costs $100.`,
-		`ALFA 收在 $${FAR}：Ben 亏 $1,580，每多涨 $1 再亏 $100。`,
-	],
-	farHeadShort: [
-		`At $${FAR}: −$1,580, no floor.`,
-		`在 $${FAR}：−$1,580，没有底。`,
-	],
-	buyerHead: [
-		"The buyer's worst case is fixed: the $420 paid.",
-		"买方的最坏结果是固定的：付出的 $420。",
-	],
+	writerHeadShort: ["Ben writes it: no floor.", "Ben 卖出：没有下限。"],
+	buyerHead: ["The buyer can lose only the $420.", "买方最多只亏 $420。"],
 	buyerHeadShort: ["The buyer: at most −$420.", "买方：最多 −$420。"],
+	noFloor: ["no floor ↘", "没有下限 ↘"],
 	tailAxis: ["result at Oct 18, one contract", "10月18日 的结果，一张合约"],
 	tailAxisShort: ["result at expiry", "到期结果"],
 	writer: ["Ben, writer", "Ben，义务方"],
 	buyer: ["buyer", "买方"],
 	costHead: [
-		"Buy 5 and sell straight back: the spread is the cost.",
-		"买 5 张再立即卖回：价差就是成本。",
+		"Round trip of 5: the spread is the cost.",
+		"5 张一来一回：价差就是成本。",
 	],
 	costHeadShort: ["A round trip of 5.", "5 张的一来一回。"],
 	beHead: [
-		`In the thin call the bid must climb from $2.20 to $${(THIN.breakeven / 100).toFixed(2)} just to break even.`,
-		`在冷门看涨上，买价要从 $2.20 涨到 $${(THIN.breakeven / 100).toFixed(2)} 才能保本。`,
+		`Thin call: the bid must reach $${(THIN.breakeven / 100).toFixed(2)}.`,
+		`冷门看涨：买价要涨到 $${(THIN.breakeven / 100).toFixed(2)}。`,
 	],
 	beHeadShort: [
 		`Break even: bid $${(THIN.breakeven / 100).toFixed(2)}.`,
 		`保本：买价 $${(THIN.breakeven / 100).toFixed(2)}。`,
+	],
+	beOnStage: [
+		`break even: bid $${(THIN.breakeven / 100).toFixed(2)}`,
+		`保本：买价 $${(THIN.breakeven / 100).toFixed(2)}`,
 	],
 	active: ["busy · Oct 18 100", "活跃 · 10月18日 100"],
 	thin: ["thin · Dec 20 110", "冷门 · 12月20日 110"],
@@ -262,10 +264,12 @@ function Scene({
 							d={L.decayPath(DAYS_GONE, 35)}
 							className="wt-line-position"
 						/>
+						{/* A value under a changed assumption: the caution colour, not a short leg. */}
 						<path
 							data-f="c-crush"
 							d={L.decayPath(DAYS_GONE, 25)}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ stroke: "var(--diagram-unknown)" }}
 						/>
 						<text
 							data-f="l-today"
@@ -291,7 +295,7 @@ function Scene({
 							x={L.left + 8}
 							y={L.top + T.small * (1.3 + 2 * 1.45)}
 							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							style={{ fill: "var(--diagram-unknown)" }}
 						>
 							{t(narrow ? copy.lowIvShort : copy.lowIv)}
 						</text>
@@ -305,6 +309,8 @@ function Scene({
 							strokeWidth={1.5}
 						/>
 					</g>
+					<PenTip name="tip" />
+					<PenTip name="tip-short" color="var(--wt-short)" />
 
 					{/* Each side at expiry. */}
 					<g data-f="tail">
@@ -376,13 +382,15 @@ function Scene({
 							cy={L.ty(atExpiry("writer", FAR))}
 							r={6}
 							className="wt-chip"
+							style={{ fill: "var(--wt-short)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
 						<text
 							data-f="far-label"
-							x={L.tx(FAR) + 12}
-							y={L.ty(atExpiry("writer", FAR)) + 4}
+							// Above and right of the dot: the line falls away below it.
+							x={L.tx(FAR) + 10}
+							y={L.ty(atExpiry("writer", FAR)) - 10}
 							className="wt-halo wt-loss wt-marker-label"
 						>
 							{signedUsd(atExpiry("writer", FAR) * 100, 0)}
@@ -395,41 +403,106 @@ function Scene({
 						>
 							{signedUsd(atExpiry("buyer", 90) * 100, 0)}
 						</text>
+						<text
+							data-f="no-floor"
+							// Below the falling line a little before its end, where the line has already
+							// passed above, clear of the last price tick.
+							x={L.tx(133)}
+							y={L.ty(atExpiry("writer", 133)) + 20}
+							textAnchor="end"
+							className="wt-small wt-halo"
+							style={{ fill: "var(--wt-short)" }}
+						>
+							{t(copy.noFloor)}
+						</text>
+						<circle
+							data-f="w-marker"
+							cx={L.tx(100)}
+							cy={L.ty(atExpiry("writer", 100))}
+							r={6}
+							className="wt-chip"
+							style={{ fill: "var(--wt-short)" }}
+							stroke="var(--foreground)"
+							strokeWidth={1.5}
+						/>
+						<circle
+							data-f="b-marker"
+							cx={L.tx(120)}
+							cy={L.ty(atExpiry("buyer", 120))}
+							r={6}
+							className="wt-chip"
+							stroke="var(--foreground)"
+							strokeWidth={1.5}
+						/>
+						<Brackets name="lock-far" glow />
+						<Brackets name="lock-floor" />
 					</g>
 				</g>
 			</g>
-			<g data-f="meter">
-				<Word
-					name="m-tag"
-					x={L.right}
-					y={L.headY + T.head * 1.25}
-					size={T.small}
-					anchor="end"
-					className="wt-film-tag"
-				>
-					{t(copy.value).toUpperCase()}
-				</Word>
-				<Word
-					name="m-value"
-					x={L.right}
-					y={L.headY + T.head * 1.25 + T.num * 1.05}
-					size={T.num}
-					anchor="end"
-					className="wt-film-num wt-film-accent"
-				>
-					{usd(PAID)}
-				</Word>
-				<Word
-					name="m-net"
-					x={L.right}
-					y={L.headY + T.head * 1.25 + T.num * 1.05 + T.body * 1.7}
-					size={T.body}
-					anchor="end"
-					className="wt-film-num wt-film-loss"
-				>
-					$0
-				</Word>
-			</g>
+			{/* Readouts under the headline: the call, then each side at expiry. */}
+			{(
+				[
+					[
+						"meter",
+						[
+							[
+								"m-value",
+								copy.value,
+								usd(PAID),
+								"wt-film-num wt-film-dim",
+								0.9,
+							],
+							["m-net", copy.pnl, "$0", "wt-film-num", 1.3],
+						],
+					],
+					[
+						"smeter",
+						[
+							[
+								"s-writer",
+								copy.writer,
+								signedUsd(atExpiry("writer", 100) * 100, 0),
+								"wt-film-num wt-film-gain",
+								1.3,
+							],
+							[
+								"s-buyer",
+								copy.buyer,
+								signedUsd(atExpiry("buyer", 120) * 100, 0),
+								"wt-film-num wt-film-gain",
+								1.3,
+							],
+						],
+					],
+				] as const
+			).map(([group, cells]) => (
+				<g key={group} data-f={group}>
+					{cells.map(([name, tag, start, className, scale], i) => (
+						<g key={name} data-f={`${name}-cell`}>
+							<Word
+								name={`${name}-tag`}
+								x={margin + i * L.meterCol}
+								y={L.meterY}
+								size={T.small}
+								anchor="start"
+								className="wt-film-tag"
+							>
+								{t(tag).toUpperCase()}
+							</Word>
+							<Word
+								name={name}
+								x={margin + i * L.meterCol}
+								y={L.meterNum}
+								size={T.head * scale}
+								anchor="start"
+								className={className}
+							>
+								{start}
+							</Word>
+						</g>
+					))}
+				</g>
+			))}
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -489,7 +562,6 @@ function Scene({
 			{headline("t-head", copy.timeHead, copy.timeHeadShort)}
 			{headline("c-head", copy.crushHead, copy.crushHeadShort)}
 			{headline("w-head", copy.writerHead, copy.writerHeadShort)}
-			{headline("f-head", copy.farHead, copy.farHeadShort)}
 			{headline("u-head", copy.buyerHead, copy.buyerHeadShort)}
 			{headline("o-head", copy.costHead, copy.costHeadShort)}
 			{headline("e-head", copy.beHead, copy.beHeadShort)}
@@ -541,6 +613,16 @@ function Scene({
 						</Word>
 					</g>
 				))}
+				<Word
+					name="k-thin-be"
+					x={W * L.pair[1]}
+					y={H * 0.32 + T.body * 2 + T.big * 0.95 + T.body * 4.4}
+					size={T.body}
+					className="wt-film-num wt-film-accent"
+				>
+					{t(copy.beOnStage)}
+				</Word>
+				<Brackets name="lock-be" glow />
 			</g>
 			<g data-f="claim">
 				<Lines
@@ -586,54 +668,81 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	const g = (name: string) => one<SVGGraphicsElement>(name);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const draw = (path: SVGPathElement, time: number, duration = 1.0) => {
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration, ease: "power2.inOut" },
-			time,
-		);
-	};
+	const tip = one("tip");
+	const pen = one("tip-short");
 	const marker = one("marker");
 	const meterValue = one<SVGTextElement>("m-value");
 	const meterNet = one<SVGTextElement>("m-net");
-	const perShare = (cents: number) => usd(Math.round(cents));
+	const sWriter = one<SVGTextElement>("s-writer");
+	const sBuyer = one<SVGTextElement>("s-buyer");
+	const perShare = (dollars: number) => usd(Math.round(dollars * 100));
 	const perContract = (cents: number) =>
 		Math.round(cents) === 0 ? "$0" : signedUsd(Math.round(cents), 0);
-	/** The marker rides from one curve and price to another. */
-	const move = (
-		from: { spot: number; v: number },
-		to: { spot: number; v: number },
-		time: number,
+	const tone = (cents: number) =>
+		`wt-film-num ${Math.round(cents) > 0 ? "wt-film-gain" : Math.round(cents) < 0 ? "wt-film-loss" : ""}`;
+	/**
+	 * A tween that walks a value from `from` to `to` and draws everything from it each frame.
+	 * Not rendered up front, so nothing reads the walk's end before it begins.
+	 */
+	const walk = (
+		from: number,
+		to: number,
+		at: number,
+		duration: number,
+		place: (v: number) => void,
+		ease = "power2.inOut",
 	) => {
-		const at = { ...from };
-		tl.to(
-			at,
+		const v = { at: from };
+		tl.fromTo(
+			v,
+			{ at: from },
 			{
-				spot: to.spot,
-				v: to.v,
-				duration: 0.9,
-				ease: "power2.inOut",
-				onUpdate: () =>
-					gsap.set(marker, { attr: { cx: L.dx(at.spot), cy: L.dy(at.v) } }),
+				at: to,
+				duration,
+				ease,
+				immediateRender: false,
+				onUpdate: () => place(v.at),
 			},
-			time,
+			at,
 		);
 	};
+	/** The marker between two points on the value chart, and the meter read from it. */
+	const decayMove =
+		(a: { spot: number; v: number }, b: { spot: number; v: number }) =>
+		(k: number) => {
+			const spot = a.spot + (b.spot - a.spot) * k;
+			const v = a.v + (b.v - a.v) * k;
+			gsap.set(marker, { attr: { cx: L.dx(spot), cy: L.dy(v) } });
+			meterValue.textContent = perShare(v);
+			const net = (v * 100 - PAID) * 100;
+			meterNet.textContent = perContract(net);
+			meterNet.setAttribute("class", tone(net));
+		};
+	/** A side's marker on its line at expiry, and its readout. */
+	const tailMove =
+		(side: "writer" | "buyer", dot: Element, out: SVGTextElement) =>
+		(spot: number) => {
+			const cents = atExpiry(side, spot) * 100;
+			gsap.set(dot, {
+				attr: { cx: L.tx(spot), cy: L.ty(atExpiry(side, spot)) },
+			});
+			out.textContent = perContract(cents);
+			out.setAttribute("class", tone(cents));
+		};
 	const heads = [
 		"b-head",
 		"t-head",
 		"c-head",
 		"w-head",
-		"f-head",
 		"u-head",
 		"o-head",
 		"e-head",
@@ -650,6 +759,8 @@ function build(context: FilmContext) {
 		one("l-later"),
 		one("l-crush"),
 		marker,
+		tip,
+		pen,
 		one("writer-line"),
 		one("buyer-line"),
 		one("writer-tag"),
@@ -657,7 +768,13 @@ function build(context: FilmContext) {
 		one("far-dot"),
 		one("far-label"),
 		one("floor-label"),
+		one("no-floor"),
+		one("w-marker"),
+		one("b-marker"),
+		g("lock-far"),
+		g("lock-floor"),
 		...kids("meter"),
+		...kids("smeter"),
 		...flat("q"),
 		...heads,
 		...flat("costs"),
@@ -671,86 +788,126 @@ function build(context: FilmContext) {
 	// ——— question: right, and still down ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	show(one("q-tag"), 4.6);
-	show(one("q-alfa-tag"), 4.8);
-	word(one("q-alfa-num"), 5.0);
-	show(one("q-call-tag"), 5.6);
-	word(one("q-call-num"), 5.8);
-	show(one("q-line"), 6.8);
+	show(one("q-tag"), 4.4);
+	show(one("q-alfa-tag"), 4.6);
+	word(one("q-alfa-num"), 4.8);
+	show(one("q-call-tag"), 5.2);
+	word(one("q-call-num"), 5.4);
+	show(one("q-line"), 6.2);
 
 	// ——— decay: time and volatility ———
-	tl.addLabel("decay", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("b-head"), 9.7, "above");
-	rise(9.8);
-	draw(one<SVGPathElement>("c-today"), 10.3);
-	show(one("l-today"), 11.0);
-	tl.to(one("paid"), { opacity: 1, duration: 0.4 }, 11.2);
-	show(one("paid-label"), 11.3);
-	pop(marker, 11.6);
-	show(kids("meter"), 11.8, "above");
-	d.count(meterNet, 0, 11.8, perContract, 0, 0.01);
-	// 20 days later.
-	d.swap(one("b-head"), one("t-head"), 13.4);
-	draw(one<SVGPathElement>("c-later"), 13.8);
-	show(one("l-later"), 14.6);
-	move({ spot: 100, v: PAID / 100 }, { spot: UP, v: AFTER }, 14.8);
-	d.count(meterValue, AFTER * 100, 14.8, perShare, PAID, 0.9);
-	d.count(meterNet, LOSS_AFTER, 14.8, perContract, 0, 0.9);
-	// IV falls.
-	d.swap(one("t-head"), one("c-head"), 17.2);
-	draw(one<SVGPathElement>("c-crush"), 17.6);
-	show(one("l-crush"), 18.4);
-	move({ spot: UP, v: AFTER }, { spot: UP, v: CRUSH }, 18.6);
-	d.count(meterValue, CRUSH * 100, 18.6, perShare, AFTER * 100, 0.9);
-	d.count(meterNet, LOSS_CRUSH, 18.6, perContract, LOSS_AFTER, 0.9);
+	tl.addLabel("decay", 8.8);
+	hide(flat("q"), 8.8);
+	show(heads[0], 9.0);
+	rise(9.1);
+	d.trace(one<SVGPathElement>("c-today"), 9.4, { tip, duration: 1.2 });
+	show(one("l-today"), 10.4);
+	tl.to(one("paid"), { opacity: 1, duration: 0.4 }, 10.6);
+	show(one("paid-label"), 10.7);
+	pop(marker, 11.0);
+	show(kids("meter"), 11.2);
+	// 20 days later: the marker rides to $102 on the worn curve.
+	d.swap(heads[0], heads[1], 12.8);
+	d.trace(one<SVGPathElement>("c-later"), 13.2, { tip, duration: 1.0 });
+	show(one("l-later"), 14.0);
+	walk(
+		0,
+		1,
+		14.2,
+		1.2,
+		decayMove({ spot: 100, v: PAID / 100 }, { spot: UP, v: AFTER }),
+	);
+	// IV falls after earnings.
+	d.swap(heads[1], heads[2], 17.0);
+	d.trace(one<SVGPathElement>("c-crush"), 17.4, { tip, duration: 1.0 });
+	show(one("l-crush"), 18.2);
+	walk(
+		0,
+		1,
+		18.4,
+		1.0,
+		decayMove({ spot: UP, v: AFTER }, { spot: UP, v: CRUSH }),
+	);
 
-	// ——— writer: no floor ———
-	tl.addLabel("writer", 21);
-	hide([one("c-head"), ...kids("meter")], 21.0);
-	sink(21.0);
-	tl.set(one("decay"), { opacity: 0 }, 21.4);
-	tl.set(one("tail"), { opacity: 1 }, 21.4);
-	show(one("w-head"), 21.4, "above");
-	rise(21.5);
-	draw(one<SVGPathElement>("writer-line"), 22.0);
+	// ——— writer: the hero. Ben's loss has no floor; the buyer's stops at $420. ———
+	tl.addLabel("writer", 21.2);
+	hide([heads[2], ...kids("meter")], 21.2);
+	sink(21.2);
+	tl.set(one("decay"), { opacity: 0 }, 21.6);
+	tl.set(one("tail"), { opacity: 1 }, 21.6);
+	show(heads[3], 21.6);
+	rise(21.7);
+	d.trace(one<SVGPathElement>("writer-line"), 22.0, {
+		tip: pen,
+		duration: 1.0,
+	});
 	show(one("writer-tag"), 22.8);
-	d.swap(one("w-head"), one("f-head"), 24.2);
+	show(one("s-writer-cell"), 23.0);
+	pop(one("w-marker"), 23.0);
+	// ALFA climbs from $100 to $140: past −$1,580 at $120, and on.
+	walk(
+		100,
+		140,
+		23.4,
+		2.4,
+		tailMove("writer", one("w-marker"), sWriter),
+		"power1.inOut",
+	);
 	pop(one("far-dot"), 24.6);
-	show(one("far-label"), 24.8, "right");
-	d.swap(one("f-head"), one("u-head"), 26.6);
-	draw(one<SVGPathElement>("buyer-line"), 27.0);
-	show(one("buyer-tag"), 27.8);
-	show(one("floor-label"), 28.0);
+	show(one("far-label"), 24.6, "right");
+	d.lock(g("lock-far"), 24.6, {
+		around: [g("far-dot"), g("far-label")],
+		pad: 5,
+	});
+	show(one("no-floor"), 25.9);
+	// The buyer: from +$1,580 at $120 down to $80, and the loss stops at the $420 paid.
+	d.swap(heads[3], heads[4], 27.6);
+	tl.to(
+		[g("lock-far"), one("w-marker")],
+		{ opacity: 0.25, duration: 0.3 },
+		27.6,
+	);
+	d.trace(one<SVGPathElement>("buyer-line"), 28.0, { tip, duration: 1.0 });
+	show(one("buyer-tag"), 28.8);
+	show(one("s-buyer-cell"), 29.0);
+	pop(one("b-marker"), 29.0);
+	walk(120, 80, 29.3, 1.4, tailMove("buyer", one("b-marker"), sBuyer));
+	show(one("floor-label"), 30.6);
+	d.lock(g("lock-floor"), 30.6, { around: g("floor-label"), pad: 5 });
 
 	// ——— costs: the spread before anything moves ———
-	tl.addLabel("costs", 30);
-	hide(one("u-head"), 30.0);
-	sink(30.0);
-	show(one("o-head"), 30.3, "above");
+	tl.addLabel("costs", 31.6);
+	hide([heads[4], ...kids("smeter")], 31.6);
+	sink(31.6);
+	show(heads[5], 31.8);
 	(["active", "thin"] as const).forEach((name, i) => {
-		const at = 30.7 + i * 1.0;
+		const at = 32.2 + i * 1.0;
 		show([one(`k-${name}-tag`), one(`k-${name}-quote`)], at);
 		word(one(`k-${name}-loss`), at + 0.3);
 		show(one(`k-${name}-pct`), at + 0.7);
 	});
-	d.swap(one("o-head"), one("e-head"), 33.4);
+	// The thin call: the bid has to climb to break even.
+	d.swap(heads[5], heads[6], 35.6);
 	tl.to(
 		["k-active-tag", "k-active-quote", "k-active-loss", "k-active-pct"].map(
-			one,
+			(n) => one(n),
 		),
 		{ opacity: 0.35, duration: 0.4 },
-		33.8,
+		36.0,
 	);
-	// Cut: the claim.
-	hide([one("e-head"), ...flat("costs")], 35.6);
-	word(one("z-big"), 36.0);
-	show(one("z-sub"), 36.5);
+	show(one("k-thin-be"), 36.2);
+	d.lock(g("lock-be"), 36.4, { around: g("k-thin-be"), pad: 5 });
+
+	// ——— claim ———
+	tl.addLabel("claim", 39.4);
+	hide([heads[6], ...flat("costs")], 39.4);
+	word(one("z-big"), 39.7);
+	show(one("z-sub"), 40.1);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 43.7);
+	hide(kids("claim"), 43.7);
+	d.close(43.7);
 	return tl;
 }
 
@@ -767,6 +924,7 @@ export const optionsRisksFilm: Film = {
 		{ id: "decay", label: ["Time and IV", "时间与 IV"] },
 		{ id: "writer", label: ["The writer", "义务方"] },
 		{ id: "costs", label: ["The spread", "价差"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一步"] },
 	],
 	height: (width) => layout(width).height,
