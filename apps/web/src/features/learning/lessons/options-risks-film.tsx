@@ -53,7 +53,7 @@ const tailSpots = [80, 100, 140];
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, type: T } = frame;
-	const left = Math.max(margin, narrow ? 46 : 0);
+	const left = Math.max(margin, narrow ? 56 : 0);
 	const right = width * 0.965;
 	/** The meter sits under the headline (two lines of it, at most), the chart under it. */
 	const meterY = frame.headY + T.head * 2.6;
@@ -160,6 +160,10 @@ const copy = {
 	beHeadShort: [
 		`Break even: bid $${(THIN.breakeven / 100).toFixed(2)}.`,
 		`保本：买价 $${(THIN.breakeven / 100).toFixed(2)}。`,
+	],
+	beOnStageShort: [
+		`break even $${(THIN.breakeven / 100).toFixed(2)}`,
+		`保本 $${(THIN.breakeven / 100).toFixed(2)}`,
 	],
 	beOnStage: [
 		`break even: bid $${(THIN.breakeven / 100).toFixed(2)}`,
@@ -620,7 +624,7 @@ function Scene({
 					size={T.body}
 					className="wt-film-num wt-film-accent"
 				>
-					{t(copy.beOnStage)}
+					{t(narrow ? copy.beOnStageShort : copy.beOnStage)}
 				</Word>
 				<Brackets name="lock-be" glow />
 			</g>
