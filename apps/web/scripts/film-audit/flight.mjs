@@ -229,9 +229,15 @@ const hits = await page.evaluate((end) => {
 				const sb = boxes(s);
 				if (a === b) continue;
 				if (a.includes(b) || b.includes(a)) continue;
-				// A landing, not a crossing: the flyer's centre sits on the text it is handing over to.
+				// A landing, not a crossing: a copy whose centre sits on its own target (data-to).
+				// Any other text under it is a collision.
 				const sc = centre(sb);
+				const target = layer?.contains(f)
+					? svg.querySelector(`[data-f="${f.getAttribute("data-to")}"]`)
+					: null;
 				if (
+					target &&
+					(s === target || target.contains(s)) &&
 					Math.abs(fc.x - sc.x) < sc.w * 0.35 &&
 					Math.abs(fc.y - sc.y) < Math.max(sc.h, 6)
 				)

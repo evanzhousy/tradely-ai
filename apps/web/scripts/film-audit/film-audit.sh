@@ -28,11 +28,12 @@ mkdir -p "$OUT"
 space() {
 	local id
 	id="$(cat "$OUT/space.txt" 2>/dev/null)"
-	if [ -n "$id" ] && ego-browser nodejs -e "await taskSpace(Number($id));" >/dev/null 2>&1; then
+	# stdin closed: with -e, ego-browser otherwise waits on it.
+	if [ -n "$id" ] && ego-browser nodejs -e "await taskSpace(Number($id));" </dev/null >/dev/null 2>&1; then
 		echo "$id"
 		return
 	fi
-	id="$(ego-browser nodejs -e 'const t = await taskSpace("tradely film audit"); console.log("SPACE " + t.spaceId);' 2>/dev/null | sed -n 's/^SPACE //p')"
+	id="$(ego-browser nodejs -e 'const t = await taskSpace("tradely film audit"); console.log("SPACE " + t.spaceId);' </dev/null 2>/dev/null | sed -n 's/^SPACE //p')"
 	echo "$id" > "$OUT/space.txt"
 	echo "$id"
 }
