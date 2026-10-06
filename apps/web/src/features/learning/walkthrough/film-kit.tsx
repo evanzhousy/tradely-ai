@@ -648,29 +648,43 @@ export function createDirector(
 	};
 	/**
 	 * Brackets (see `Brackets`) snap onto the thing in focus: from 1.4× to 1× about their
-	 * centre. With `around`, they are first fitted to those marks plus `pad` on every side, so
-	 * they never touch the glyphs at any frame size.
+	 * centre. With `around`, they are fitted at that moment to those marks plus `pad` on every
+	 * side, so they never touch the glyphs at any frame size, and one set of brackets can
+	 * lock on one thing after another.
 	 */
 	const lock = (
 		target: SVGGraphicsElement,
 		at: number,
 		{ around, pad = 6 }: { around?: Targets; pad?: number } = {},
 	) => {
+		let box: { x: number; y: number; width: number; height: number } =
+			target.getBBox();
 		if (around) {
 			const fit = boxOf(around);
 			const arm = Number(target.getAttribute("data-arm")) || 10;
-			target.setAttribute(
-				"d",
-				bracketPath(
-					fit.x - pad,
-					fit.y - pad,
-					fit.width + 2 * pad,
-					fit.height + 2 * pad,
-					Math.min(arm, (fit.height + 2 * pad) / 2.5),
-				),
+			box = {
+				x: fit.x - pad,
+				y: fit.y - pad,
+				width: fit.width + 2 * pad,
+				height: fit.height + 2 * pad,
+			};
+			tl.set(
+				target,
+				{
+					attr: {
+						d: bracketPath(
+							box.x,
+							box.y,
+							box.width,
+							box.height,
+							Math.min(arm, box.height / 2.5),
+						),
+					},
+					immediateRender: false,
+				},
+				at,
 			);
 		}
-		const box = target.getBBox();
 		tl.fromTo(
 			target,
 			{
