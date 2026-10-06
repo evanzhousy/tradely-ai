@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -42,22 +43,24 @@ import {
 
 /*
  * Theta, vega and rho, as a film. It opens on a puzzle: ALFA rose $1 and the call still
- * lost money. Each Greek then takes a shot in its own unit (theta per day, vega per vol
- * point, rho per rate point) and the waterfall adds them up to answer the puzzle. Subject:
- * the call's value, per share. Type carries the claims; a decay chart and a waterfall take
+ * lost money. Theta and vega each take a shot in their own unit (per day, per vol point);
+ * then the waterfall adds the parts up to answer the puzzle, and glowing brackets lock on
+ * its sum beside the model's figure. Rho, per rate point, follows briefly. Subject: the
+ * call's value, per share. Type carries the claims; a decay chart and a waterfall take
  * turns as the proof.
  *
- *   open       0–4      "Theta, vega and rho"
- *   question   4–10     ALFA +$1, six days later; the call −$0.19. Where did it go?
- *   theta      10–22.5  the value drains to expiry, slowly then fast; cut to −$0.065 a day
- *   vega       22.5–31.5  "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
- *   rho        31.5–35  $0.042 a rate point
- *   sum        35–44    the waterfall: +0.52, +0.02, −0.39, −0.35 = −$0.20; the model −$0.19
- *   positions  44–51.5  you −$320, Ben +$200; cut: "A good move can still lose."
- *   next       51.5–54  Next: 0DTE
+ *   open       0–4        "Theta, vega and rho"
+ *   question   4–9.6      ALFA +$1, six days later; the call −$0.19. Where did it go?
+ *   theta      9.6–18.4   the value drains to expiry, slowly then fast; cut to −$0.065 a day
+ *   vega       18.4–23.6  "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
+ *   sum        23.6–31.6  hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
+ *                         the model's −$0.19, locked
+ *   rho        31.6–34.4  $0.042 a rate point
+ *   positions  34.4–43.4  you −$320, Ben +$200; cut: "A good move can still lose."
+ *   next       43.4–45.9  Next: 0DTE
  */
 
-const END = 54;
+const END = 45.9;
 const you = contracts("you");
 const ben = contracts("ben");
 const decay = (elapsed: number) =>
@@ -94,9 +97,11 @@ const pnl = (contracts: number) =>
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
-	const left = frame.margin;
+	// A phone's axis labels sit left of the plot: room for them inside the frame's edge.
+	const left = frame.margin + (narrow ? 18 : 0);
 	const right = width * 0.965;
-	const top = height * (narrow ? 0.3 : 0.22);
+	// Headroom for a two-line headline above the charts' captions.
+	const top = height * (narrow ? 0.3 : 0.25);
 	const bottom = height * 0.8;
 	const xT = (elapsed: number) => left + (elapsed / DAYS) * (right - left);
 	const yT = (dollars: number) => bottom - (dollars / T_TOP) * (bottom - top);
@@ -263,7 +268,6 @@ function Scene({
 	const W = width;
 	const id = useId().replace(/:/g, "");
 	const ticksT = narrow ? [0, 16, DAYS] : [0, 8, 16, 24, DAYS];
-	const evenAt = 13;
 	const cellText = [
 		{
 			tag: copy.cellPoints,
@@ -373,9 +377,11 @@ function Scene({
 						/>
 						<text
 							data-f="even-label"
-							x={L.xT(evenAt)}
-							y={L.yT(TODAY.price * (1 - evenAt / DAYS)) + 18}
-							textAnchor="middle"
+							// Under the even line, where the decay curve never goes: between the $1
+							// and $2 gridlines, left of where the line crosses $1.50.
+							x={L.xT(DAYS * (1 - 1.5 / TODAY.price)) - 10}
+							y={L.yT(1.5) + 12}
+							textAnchor="end"
 							className="wt-small wt-halo"
 						>
 							{t(copy.even)}
@@ -626,15 +632,17 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
+			{/* The hero's answer, a line under the puzzle, as the brackets lock. */}
 			<Lines
 				name="s-answer"
 				text={t(narrow ? copy.sumAnswerShort : copy.sumAnswer)}
 				x={L.margin}
-				y={L.headY}
+				y={L.headY + lineCount(t(copy.sumHead), room, T.head) * T.head * 1.35}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"
 			/>
+			<Brackets name="lock-sum" glow />
 			<g data-f="p">
 				<Lines
 					name="p-head"
@@ -718,7 +726,16 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
+	const lockSum = one<SVGGraphicsElement>("lock-sum");
 	const marker = one("t-marker");
 	const clip = one("decay-clip");
 	const chartTheta = one("chart-theta");
@@ -728,6 +745,7 @@ function build(context: FilmContext) {
 	gsap.set(marker, { attr: { cx: L.xT(0), cy: L.yT(TODAY.price) } });
 	gsap.set(chartSum, { opacity: 0 });
 	d.hidden([
+		lockSum,
 		marker,
 		one("even"),
 		one("even-label"),
@@ -764,33 +782,33 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag-0"), 4.6);
-	slam(one("q-num-0"), 4.8);
-	show(one("q-tag-1"), 5.7);
-	slam(one("q-num-1"), 5.9);
-	show(one("q-line"), 7.0);
+	land(one("q-num-0"), 4.8);
+	show(one("q-tag-1"), 5.3);
+	land(one("q-num-1"), 5.5);
+	show(one("q-line"), 6.0);
 
 	// ——— theta: the value drains, slowly and then fast ———
-	tl.addLabel("theta", 10);
+	tl.addLabel("theta", 9.6);
 	hide(
 		kids("q").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		10.0,
+		9.6,
 	);
-	show(one("t-head"), 10.2, "above");
-	rise(10.3);
-	pop(marker, 11.1);
-	show(one("t-today"), 11.4, "right");
+	show(one("t-head"), 9.8);
+	rise(9.9);
+	land(marker, 10.4);
+	show(one("t-today"), 10.6, "right");
 	// The even line: what an equal share per day would look like.
-	tl.to(one("even"), { opacity: 1, duration: 0.2 }, 12.0);
+	tl.to(one("even"), { opacity: 1, duration: 0.2 }, 11.0);
 	tl.to(
 		one("even"),
 		{
 			attr: { x2: L.xT(DAYS), y2: L.yT(0) },
-			duration: 0.9,
+			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		12.0,
+		11.0,
 	);
-	show(one("even-label"), 12.8);
+	show(one("even-label"), 11.6);
 	// The marker walks the curve, drawing it behind it.
 	const walk = { elapsed: 0 };
 	const place = () => {
@@ -800,65 +818,58 @@ function build(context: FilmContext) {
 	};
 	tl.to(
 		walk,
-		{ elapsed: WEEK, duration: 1.3, ease: "power1.inOut", onUpdate: place },
-		13.4,
+		{ elapsed: WEEK, duration: 1.1, ease: "power1.inOut", onUpdate: place },
+		11.9,
 	);
-	hide(one("t-today"), 14.6, 0.3);
-	show(one("t-week"), 14.7, "right");
+	hide(one("t-today"), 12.9, 0.3);
+	show(one("t-week"), 13.0, "right");
 	tl.to(
 		walk,
-		{ elapsed: 25, duration: 1.6, ease: "power1.in", onUpdate: place },
-		15.7,
+		{ elapsed: 25, duration: 1.3, ease: "power1.in", onUpdate: place },
+		13.6,
 	);
 	tl.to(
 		[one("even"), one("even-label")],
 		{ opacity: 0.25, duration: 0.5 },
-		16.9,
+		14.6,
 	);
 	tl.to(
 		walk,
-		{ elapsed: LAST, duration: 0.9, ease: "power2.in", onUpdate: place },
-		17.3,
+		{ elapsed: LAST, duration: 0.8, ease: "power2.in", onUpdate: place },
+		14.9,
 	);
-	show(one("t-last"), 18.3);
-	tl.to(clip, { attr: { width: L.right - L.left + 6 }, duration: 0.4 }, 18.3);
+	show(one("t-last"), 15.6);
+	tl.to(clip, { attr: { width: L.right - L.left + 6 }, duration: 0.4 }, 15.6);
 	// Cut: the unit.
-	hide([one("t-head")], 19.8);
-	sink(19.8);
-	slam(one("th-num"), 20.2);
-	show(one("th-word"), 20.6);
-	show(one("th-sub"), 21.0);
+	hide([one("t-head")], 16.2);
+	sink(16.2);
+	land(one("th-num"), 16.5);
+	show(one("th-word"), 16.8);
+	show(one("th-sub"), 17.1);
 
 	// ——— vega: points, not percent ———
-	tl.addLabel("vega", 22.5);
-	hide(kids("th"), 22.5);
-	show(one("v-head"), 22.7, "above");
-	show(one("v-tag-0"), 23.5);
-	show(one("v-from-0"), 23.7);
-	pop(one("v-result-0"), 24.5);
-	show(one("v-tag-1"), 25.6);
-	show(one("v-from-1"), 25.8);
-	pop(one("v-result-1"), 26.6);
-	show(one("v-line"), 27.8);
+	tl.addLabel("vega", 18.4);
+	hide(kids("th"), 18.4);
+	// The two readings' tags come up with the headline that names "3%", once theta's
+	// figure has gone from where they stand.
+	show([one("v-tag-0"), one("v-tag-1")], 18.8);
+	show(one("v-head"), 18.8);
+	show(one("v-from-0"), 19.1);
+	land(one("v-result-0"), 19.6);
+	show(one("v-from-1"), 20.3);
+	land(one("v-result-1"), 20.8);
+	show(one("v-line"), 21.6);
 
-	// ——— rho: rates, briefly ———
-	tl.addLabel("rho", 31.5);
+	// ——— sum: the hero. The waterfall answers the puzzle. ———
+	tl.addLabel("sum", 23.6);
 	hide(
 		kids("v").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		31.5,
+		23.6,
 	);
-	slam(one("rh-num"), 31.9);
-	show(one("rh-word"), 32.3);
-	show(one("rh-sub"), 32.7);
-	show(one("rh-compare"), 33.3);
-
-	// ——— sum: the waterfall answers the puzzle ———
-	tl.addLabel("sum", 35);
-	hide([...kids("rh"), one("rh-compare")], 35.0);
-	tl.set(chartTheta, { opacity: 0 }, 35.2);
-	tl.set(chartSum, { opacity: 1 }, 35.2);
-	show(one("s-head"), 35.3, "above");
-	rise(35.4);
+	tl.set(chartTheta, { opacity: 0 }, 23.8);
+	tl.set(chartSum, { opacity: 1 }, 23.8);
+	show(one("s-head"), 23.95);
+	rise(24.0);
 	const grow = (index: number, at: number) => {
 		const bar = bars[index];
 		const top = Math.min(L.yW(bar.from), L.yW(bar.to));
@@ -869,7 +880,7 @@ function build(context: FilmContext) {
 			{
 				attr: { y: top, height },
 				duration: 0.55,
-				ease: "back.out(1.4)",
+				ease: "power3.out",
 			},
 			at,
 		);
@@ -878,41 +889,52 @@ function build(context: FilmContext) {
 		if (link)
 			tl.fromTo(link, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.5);
 	};
-	grow(0, 36.3);
-	grow(1, 37.0);
-	grow(2, 37.7);
-	grow(3, 38.5);
-	grow(4, 39.5);
-	grow(5, 40.4);
-	d.swap(one("s-head"), one("s-answer"), 41.6);
+	bars.forEach((_, i) => {
+		grow(i, 24.6 + i * 0.5);
+	});
+	// The parts' sum, beside the model's figure: they account for the move.
+	d.lock(lockSum, 28.0, {
+		around: [one("w-bar-sum"), one("w-value-sum")],
+		pad: 6,
+	});
+	tl.addLabel("hero-lock", 28.0);
+	show(one("s-answer"), 28.0);
+
+	// ——— rho: rates, briefly ———
+	tl.addLabel("rho", 31.6);
+	hide([one("s-head"), one("s-answer"), lockSum], 31.6);
+	sink(31.6);
+	land(one("rh-num"), 32.0);
+	show(one("rh-word"), 32.3);
+	show(one("rh-sub"), 32.6);
+	show(one("rh-compare"), 33.0);
 
 	// ——— positions: scale last, with signs ———
-	tl.addLabel("positions", 44);
-	hide(one("s-answer"), 44.0);
-	sink(44.0);
-	show(one("p-head"), 44.3, "above");
-	show(one("p-who-0"), 44.9);
-	pop(one("p-num-0"), 45.2);
-	show(one("p-who-1"), 45.9);
-	pop(one("p-num-1"), 46.2);
-	show(one("p-note"), 47.0);
+	tl.addLabel("positions", 34.4);
+	hide([...kids("rh"), one("rh-compare")], 34.4);
+	show(one("p-head"), 34.75);
+	show(one("p-who-0"), 35.1);
+	land(one("p-num-0"), 35.3);
+	show(one("p-who-1"), 35.8);
+	land(one("p-num-1"), 36.0);
+	show(one("p-note"), 36.6);
 	// Cut: the claim.
 	hide(
 		kids("p").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		48.7,
+		39.0,
 	);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		49.1,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		39.3,
 	);
-	show(one("c-sub"), 49.6);
+	show(one("c-sub"), 39.7);
 
 	// ——— next ———
-	tl.addLabel("next", 51.5);
-	hide(kids("claim"), 51.5);
-	d.close(51.5);
+	tl.addLabel("next", 43.4);
+	hide(kids("claim"), 43.4);
+	d.close(43.4);
 	return tl;
 }
 
