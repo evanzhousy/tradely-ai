@@ -51,7 +51,7 @@ import {
  *   next      44.65–47.15 Next: put-call parity
  */
 
-const END = 47.15;
+const END = 47.45;
 const X = [80, 120] as const;
 const Y = [-2_000, 2_000] as const;
 const CALL = buys.c100;
@@ -83,7 +83,9 @@ function layout(width: number) {
 	const left = Math.max(margin, narrow ? 46 : 0);
 	const right = width * 0.965;
 	/** The meter's tags and figures sit under the headline (two lines of it, at most). */
-	const meterY = frame.headY + T.head * 2.6;
+	// A phone's headline lines sit closer together: its meter starts a little lower, so a
+	// second line rising into place never touches the meter's tags.
+	const meterY = frame.headY + T.head * (narrow ? 3.0 : 2.6);
 	// The meter's figures stay below the headline's size: it is evidence, not the claim.
 	const meterNum = meterY + T.head * 1.3;
 	// The chart starts below the meter and the chart's caption above it.
@@ -139,16 +141,13 @@ const copy = {
 		"拆开：内在价值 $5.00 + 时间价值 $2.30。",
 	],
 	partsHeadShort: ["Its parts: $5.00 + $2.30.", "拆开：$5.00 + $2.30。"],
-	expiryHead: [
-		"At expiry: $5.00. Time value gone.",
-		"到期时值 $5.00：时间价值归零。",
-	],
-	expiryHeadShort: ["At expiry: $5.00.", "到期：$5.00。"],
+	expiryHead: ["At expiry, the time value is gone.", "到期时，时间价值归零。"],
+	expiryHeadShort: ["At expiry: time value gone.", "到期：时间价值归零。"],
 	intrinsic: ["intrinsic", "内在价值"],
 	time: ["time value", "时间价值"],
 	calls: ["Oct 18 calls · ALFA $100", "10月18日 看涨 · ALFA $100"],
-	profitHead: ["Buy the 100 call for $420.", "以 $420 买入 100 看涨。"],
-	profitHeadShort: ["Buy the 100 call for $420.", "以 $420 买入 100 看涨。"],
+	profitHead: ["Buy the 100 call.", "买入 100 看涨。"],
+	profitHeadShort: ["Buy the 100 call.", "买入 100 看涨。"],
 	beHead: ["Profit doesn't start at $100.", "盈利不是从 $100 开始。"],
 	beHeadShort: ["Profit after $100?", "过了 $100 就盈利？"],
 	beHead2: [`It starts at $${BE.toFixed(2)}.`, `从 $${BE.toFixed(2)} 开始。`],
@@ -162,8 +161,8 @@ const copy = {
 	premiumDrop: [`− $${PAID} premium`, `− $${PAID} 权利金`],
 	itmLoss: ["in the money, still losing", "实值，仍在亏"],
 	itmLossShort: ["ITM, losing", "实值仍亏"],
-	writerHead: ["Write the 95 put: keep $205.", "卖出 95 看跌：留下 $205。"],
-	writerHeadShort: ["Write the 95 put for $205.", "以 $205 卖出 95 看跌。"],
+	writerHead: ["Now write the 95 put.", "换成卖出 95 看跌。"],
+	writerHeadShort: ["Now write the 95 put.", "换成卖出 95 看跌。"],
 	callHead: [
 		"A written call: losses without limit.",
 		"卖出看涨：亏损没有上限。",
@@ -190,8 +189,8 @@ const copy = {
 	],
 	claimBig: ["In the money isn't the same as profitable.", "实值不等于盈利。"],
 	claimSub: [
-		"Profit starts past break-even; writers' best case: the premium.",
-		"过了盈亏平衡点才盈利；义务方最多赚权利金。",
+		"A writer's best case is the premium.",
+		"义务方最好的结果就是权利金。",
 	],
 	nextBig: ["Next: put-call parity", "下一课：看涨看跌平价"],
 	nextSub: ["how calls, puts and shares line up", "看涨、看跌与股票如何对齐"],
@@ -959,7 +958,8 @@ function build(context: FilmContext) {
 		{ opacity: 0.3, duration: 0.4 },
 		11.0,
 	);
-	show(parts, 11.4);
+	// With the headline that names them.
+	show(parts, 10.5);
 	// At expiry: time value is gone, and the 95 call answers the question.
 	d.swap(heads[0], heads[1], 14.5);
 	hide(parts, 14.5);
@@ -1093,30 +1093,31 @@ function build(context: FilmContext) {
 			at,
 		);
 	};
-	tl.set([one("win-area"), one("win-line")], { opacity: 1 }, 25.35);
-	walk(102, BE, 25.35, 1.6);
-	d.lock(one<SVGGraphicsElement>("lock-be"), 26.95);
-	tl.addLabel("hero-lock", 26.95);
-	show(heads[6], 26.95);
-	word(one("be-label"), 27.05);
-	walk(BE, 110, 29.65, 1.2);
-	tl.to(one("itm-label"), { opacity: 0.55, duration: 0.3 }, 29.85);
-	show(one("profit-from"), 30.05);
+	tl.set([one("win-area"), one("win-line")], { opacity: 1 }, 26.15);
+	walk(102, BE, 26.15, 1.6);
+	d.lock(one<SVGGraphicsElement>("lock-be"), 27.75);
+	tl.addLabel("hero-lock", 27.75);
+	show(heads[6], 27.75);
+	word(one("be-label"), 27.85);
+	walk(BE, 110, 30.45, 1.2);
+	tl.to(one("itm-label"), { opacity: 0.55, duration: 0.3 }, 30.65);
+	// On a phone the green fill says it: no room for the note by the brackets.
+	if (!L.narrow) show(one("profit-from"), 30.85);
 	tl.to(
 		winClip,
 		{ attr: { width: L.right - beX }, duration: 0.7, ease: "power2.out" },
-		30.65,
+		31.45,
 	);
 
 	// ——— writer: the premium is the best case, and the loss below break-even ———
-	tl.addLabel("writer", 31.85);
-	d.swap([heads[3], heads[6]], heads[4], 31.85);
+	tl.addLabel("writer", 32.65);
+	d.swap([heads[3], heads[6]], heads[4], 32.65);
 	// On a phone the chart rises into the room the meter leaves.
 	if (L.narrow)
 		tl.to(
 			one("world"),
 			{ y: -L.height * 0.12, duration: 0.8, ease: "power2.inOut" },
-			31.85,
+			32.65,
 		);
 	hide(
 		[
@@ -1135,22 +1136,22 @@ function build(context: FilmContext) {
 			one("value-line"),
 			one("profit-line"),
 		],
-		31.85,
+		32.65,
 	);
 	const pen = one("tip-short");
-	d.trace(one<SVGPathElement>("put-line"), 32.25, { tip: pen });
-	show(one("put-tag"), 33.05);
-	d.lock(one<SVGGraphicsElement>("lock-205"), 33.25, {
+	d.trace(one<SVGPathElement>("put-line"), 33.05, { tip: pen });
+	show(one("put-tag"), 33.85);
+	d.lock(one<SVGGraphicsElement>("lock-205"), 34.05, {
 		around: one("put-tag"),
 		pad: 4,
 	});
-	tl.to(one("lock-205"), { opacity: 0, duration: 0.3 }, 34.45);
-	show([putBe, one("put-be-label")], 34.35);
-	pop(one("put-marker"), 34.65);
-	show(one("put-loss"), 34.85, "right");
-	show(one("put-floor"), 35.05);
+	tl.to(one("lock-205"), { opacity: 0, duration: 0.3 }, 35.25);
+	show([putBe, one("put-be-label")], 35.15);
+	pop(one("put-marker"), 35.45);
+	show(one("put-loss"), 35.65, "right");
+	show(one("put-floor"), 35.85);
 	// The same writer's line, on a call: turned over about $100, its loss side has no end.
-	d.swap(heads[4], heads[5], 36.2);
+	d.swap(heads[4], heads[5], 36.6);
 	hide(
 		[
 			one("put-marker"),
@@ -1159,16 +1160,16 @@ function build(context: FilmContext) {
 			one("put-be-label"),
 			one("put-floor"),
 		],
-		36.2,
+		36.6,
 	);
-	d.mirror(putLine, L.x(100), 36.6, 1.2);
-	d.mirror(putBe, L.x(100), 36.6, 1.2);
-	show(one("callw-be-label"), 37.8);
-	show(one("callw-tag"), 38.0);
-	show(one("no-limit"), 38.2);
+	d.mirror(putLine, L.x(100), 37, 1.2);
+	d.mirror(putBe, L.x(100), 37, 1.2);
+	show(one("callw-be-label"), 38.2);
+	show(one("callw-tag"), 38.4);
+	show(one("no-limit"), 38.6);
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.2);
+	tl.addLabel("claim", 40.6);
 	hide(
 		[
 			heads[5],
@@ -1178,16 +1179,16 @@ function build(context: FilmContext) {
 			one("callw-tag"),
 			one("no-limit"),
 		],
-		40.2,
+		40.6,
 	);
-	sink(40.2);
-	word(one("z-big"), 40.5);
-	show(one("z-sub"), 40.8);
+	sink(40.6);
+	word(one("z-big"), 40.9);
+	show(one("z-sub"), 41.2);
 
 	// ——— next ———
-	tl.addLabel("next", 44.65);
-	hide(kids("claim"), 44.65);
-	d.close(44.65);
+	tl.addLabel("next", 44.95);
+	hide(kids("claim"), 44.95);
+	d.close(44.95);
 	return tl;
 }
 
