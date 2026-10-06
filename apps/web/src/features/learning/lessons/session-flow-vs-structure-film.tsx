@@ -11,6 +11,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -37,20 +38,21 @@ import {
 /*
  * Volume and open interest, as a film. A hundred contracts are open; you buy 10 to open and
  * Ben sells 10 to open: does open interest rise by 10 or by 20? Two counters answer, trade
- * by trade: both open, +10; one opens and one closes, ±0; both close, −4. Then the clock:
- * volume moves at every print while open interest holds Friday's 100 until Tuesday's
- * report. Last, a 14–30 day bucket that jumps from 420 to 650 because a week moved its
- * members, not because 230 contracts opened.
+ * by trade: both open, +10; one opens and one closes, ±0; both close, −4. The hero is the
+ * clock: volume moves at every print while open interest holds Friday's 100, until
+ * Tuesday's report turns it to 106 and glowing brackets lock. Last, a 14–30 day bucket that
+ * jumps from 420 to 650 because a week moved its members, not because 230 contracts opened.
  *
- *   open      0–4      "Volume and open interest"
- *   question  4–9.5    100 open; 10 bought to open, 10 sold to open: +10 or +20?
- *   ledger    9.5–20   both open +10; changed hands ±0; both close −4
- *   clock     20–30    volume all day; open interest waits for the count
- *   bucket    30–39.5  420 → 650; the members changed; each series +10, +10, +20
- *   next      39.5–42  Next: tape rows
+ *   open      0–4        "Volume and open interest"
+ *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
+ *   ledger    8.6–19.6   both open +10; changed hands ±0; both close −4
+ *   clock     19.6–30.2  hero: volume all day; open interest waits for Tuesday's count
+ *   bucket    30.2–37.8  420 → 650; the members changed; each series +10, +10, +20
+ *   claim     37.8–42.2  volume counts trades; open interest counts contracts
+ *   next      42.2–44.7  Next: tape rows
  */
 
-const END = 42;
+const END = 44.7;
 const TRADES = day.trades;
 const START_OI = day.startOpenInterest;
 const AFTER = ledgerBeats.slice(1);
@@ -140,45 +142,27 @@ const copy = {
 		`Open interest +${TRADES[0].quantity} or +${TRADES[0].quantity * 2}?`,
 		`未平仓量 +${TRADES[0].quantity} 还是 +${TRADES[0].quantity * 2}？`,
 	],
-	l0: [
-		`Every open contract has one long and one short: ${START_OI} of each.`,
-		`每张未平仓合约都有一个多头和一个空头：各 ${START_OI} 张。`,
+	lHead: [
+		"Every contract: one long, one short.",
+		"每张合约：一个多头，一个空头。",
 	],
-	l0Short: [`${START_OI} longs, ${START_OI} shorts.`, `多空各 ${START_OI}。`],
-	l1: [
-		`Both sides open: ${TRADES[0].quantity} new contracts exist. Open interest +${TRADES[0].quantity}, not +${TRADES[0].quantity * 2}.`,
-		`双方都开仓：新增 ${TRADES[0].quantity} 张合约。未平仓量 +${TRADES[0].quantity}，而不是 +${TRADES[0].quantity * 2}。`,
+	l2Head: [
+		`Both open: +${TRADES[0].quantity}, not +${TRADES[0].quantity * 2}.`,
+		`双方开仓：+${TRADES[0].quantity}，不是 +${TRADES[0].quantity * 2}。`,
 	],
-	l1Short: ["Both open: +10.", "双方开仓：+10。"],
-	l2: [
-		"One opens, one closes: the contracts only change hands. Volume rises; open interest doesn't.",
-		"一方开仓、一方平仓：合约只是换手。成交量增加，未平仓量不变。",
+	l3Head: [
+		`Changed hands ±0; both closed −${TRADES[2].quantity}.`,
+		`换手 ±0；双方平仓 −${TRADES[2].quantity}。`,
 	],
-	l2Short: ["Changed hands: ±0.", "换手：±0。"],
-	l3: [
-		`Both close: ${TRADES[2].quantity} contracts stop existing. Volume ${FINAL.volume}, open interest ${FINAL.openInterest}.`,
-		`双方平仓：${TRADES[2].quantity} 张合约不复存在。成交量 ${FINAL.volume}，未平仓量 ${FINAL.openInterest}。`,
-	],
-	l3Short: ["Both close: −4.", "双方平仓：−4。"],
 	volume: ["volume today", "今日成交量"],
 	openInterest: ["open interest", "未平仓量"],
 	longs: ["longs", "多头"],
 	shorts: ["shorts", "空头"],
-	c0: [
-		"On Monday's screen, volume counts every print as it happens.",
-		"周一的屏幕上，成交量随每笔成交即时变化。",
+	cHead: ["Open interest waits for the daily count.", "未平仓量要等每日统计。"],
+	c2Head: [
+		`Tuesday, it reads ${FINAL.openInterest}.`,
+		`周二才显示 ${FINAL.openInterest}。`,
 	],
-	c0Short: ["Volume: live.", "成交量：实时。"],
-	c1: [
-		`Open interest still reads Friday's ${START_OI}: it is counted once a day.`,
-		`未平仓量仍显示周五的 ${START_OI}：它每天只统计一次。`,
-	],
-	c1Short: ["Open interest: daily.", "未平仓量：每日。"],
-	c2: [
-		`Before Tuesday's open, Monday's count arrives: ${FINAL.openInterest}.`,
-		`周二开盘前，周一的统计到了：${FINAL.openInterest}。`,
-	],
-	c2Short: [`Tuesday: ${FINAL.openInterest}.`, `周二：${FINAL.openInterest}。`],
 	open930: ["Mon open", "周一开盘"],
 	close: ["close", "收盘"],
 	report: ["Tue report", "周二报告"],
@@ -186,21 +170,11 @@ const copy = {
 	shown: ["open interest shown", "显示的未平仓量"],
 	friday: [`Friday's count`, "周五的统计"],
 	monday: [`Monday's count`, "周一的统计"],
-	b0: [
-		`Sep 9: the 14–30 day bucket holds Sep 27 and Oct 4, ${BEFORE.total} contracts.`,
-		`9月9日：14–30 天到期桶包含 9月27日 与 10月4日，共 ${BEFORE.total} 张。`,
+	bHead: ["One expiry bucket, a week later.", "同一个到期桶，一周之后。"],
+	b2Head: [
+		`${BEFORE.total} to ${AFTER_WEEK.total}: new members, not trades.`,
+		`${BEFORE.total} 变 ${AFTER_WEEK.total}：换了成员，不是新成交。`,
 	],
-	b0Short: [`Bucket: ${BEFORE.total}.`, `到期桶：${BEFORE.total}。`],
-	b1: [
-		`A week later every expiry is 7 days closer: Sep 27 leaves, Oct 11 joins. ${AFTER_WEEK.total}.`,
-		`一周后每个到期日都近了 7 天：9月27日 移出，10月11日 加入。${AFTER_WEEK.total}。`,
-	],
-	b1Short: [`A week on: ${AFTER_WEEK.total}.`, `一周后：${AFTER_WEEK.total}。`],
-	b2: [
-		"Compare each series with itself: the new positions are tens, not hundreds.",
-		"每个序列与自身比较：新持仓是几十张，不是几百张。",
-	],
-	b2Short: ["Like with like.", "同类相比。"],
 	bucket: ["14–30 days", "14–30 天"],
 	inBucket: ["in the bucket", "桶内合计"],
 	days: ["days to expiry", "距到期天数"],
@@ -208,10 +182,7 @@ const copy = {
 		"Volume counts trades; open interest counts contracts.",
 		"成交量数成交，未平仓量数合约。",
 	],
-	claimSub: [
-		"Volume moves with every print; open interest waits for the daily count and nets opens against closes. Compare a series with itself.",
-		"成交量随每笔成交变化；未平仓量等每日统计，并以开仓抵消平仓。要把同一个序列与自己比较。",
-	],
+	claimSub: ["Compare a series with itself.", "要把同一序列与自己比较。"],
 	nextBig: ["Next: tape rows", "下一课：成交记录"],
 	nextSub: ["what one record represents", "一行代表什么"],
 } as const satisfies Record<string, Copy>;
@@ -228,10 +199,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -305,12 +276,26 @@ function Scene({
 			</g>
 
 			{/* Two counters and the balance of longs and shorts. */}
-			{headline("l0", copy.l0, copy.l0Short)}
-			{headline("l1", copy.l1, copy.l1Short)}
-			{headline("l2", copy.l2, copy.l2Short)}
-			{headline("l3", copy.l3, copy.l3Short)}
+			{headline("l-head", copy.lHead)}
+			{/* The question's answer, as the first trade's count lands. */}
+			<Lines
+				name="l2-head"
+				text={t(copy.l2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.lHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("l3-head", copy.l3Head)}
 			{stat("vol", copy.volume, "0", 0)}
 			{stat("oi", copy.openInterest, count(START_OI), 1)}
+			<Brackets name="lock-oi" glow />
 			{(
 				[
 					["long", copy.longs, "gain"],
@@ -381,9 +366,22 @@ function Scene({
 			))}
 
 			{/* The clock: Monday's session and Tuesday's report. */}
-			{headline("c0", copy.c0, copy.c0Short)}
-			{headline("c1", copy.c1, copy.c1Short)}
-			{headline("c2", copy.c2, copy.c2Short)}
+			{headline("c-head", copy.cHead)}
+			{/* The hero's answer, as Tuesday's report turns the count. */}
+			<Lines
+				name="c2-head"
+				text={t(copy.c2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="clock">
 				<path
 					d={`M${L.clockX(MON_OPEN)} ${L.clockY}H${L.clockX(MON_CLOSE)}`}
@@ -437,9 +435,10 @@ function Scene({
 					</text>
 				</g>
 			))}
+			{/* The playhead spans the track only, so it passes under no label. */}
 			<g data-f="head">
 				<path
-					d={`M${L.clockX(MON_OPEN)} ${L.clockY - 26}V${L.clockY + 26}`}
+					d={`M${L.clockX(MON_OPEN)} ${L.clockY - 11}V${L.clockY + 11}`}
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 				/>
 			</g>
@@ -472,9 +471,22 @@ function Scene({
 			))}
 
 			{/* A bucket defined by days, as the days move. */}
-			{headline("b0", copy.b0, copy.b0Short)}
-			{headline("b1", copy.b1, copy.b1Short)}
-			{headline("b2", copy.b2, copy.b2Short)}
+			{headline("b-head", copy.bHead)}
+			{/* The answer, as the bucket's count lands. */}
+			<Lines
+				name="b2-head"
+				text={t(copy.b2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.bHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="strip">
 				<rect
 					data-f="band"
@@ -638,11 +650,12 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A line lands slightly large and settles, without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const num = (name: string) => one<SVGTextElement>(name);
@@ -662,23 +675,29 @@ function build(context: FilmContext) {
 			counter(`bar-${side}-n`, to, from, time);
 		}
 	};
+	/** Open interest doesn't move: its figure shakes its head. */
+	const still = (time: number) =>
+		tl.fromTo(
+			one("oi"),
+			{ x: 0 },
+			{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
+			time,
+		);
 	const heads = [
-		"l0",
-		"l1",
-		"l2",
-		"l3",
-		"c0",
-		"c1",
-		"c2",
-		"b0",
-		"b1",
-		"b2",
+		"l-head",
+		"l2-head",
+		"l3-head",
+		"c-head",
+		"c2-head",
+		"b-head",
+		"b2-head",
 	].map((name) => one(name));
 	const trades = TRADES.map((_, i) => one(`trade-${i}`));
 	const ticks = TRADES.map((_, i) => one(`tick-${i}`));
 	const cols = stripExpiries.map((id) => one(`col-${id}`));
 	const changes = stripExpiries.map((id) => one(`colc-${id}`));
 	const clockTime = num("clock-time");
+	const lockOi = one<SVGGraphicsElement>("lock-oi");
 
 	d.hidden([
 		...flat("q"),
@@ -694,6 +713,7 @@ function build(context: FilmContext) {
 		clockTime,
 		one("oi-fri"),
 		one("oi-mon"),
+		lockOi,
 		...kids("strip"),
 		...cols,
 		...changes,
@@ -712,54 +732,55 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— ledger: three trades, two counters ———
-	tl.addLabel("ledger", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
-	show([one("vol"), one("oi")], 10.0);
-	show(one("bal-long"), 10.4, "right");
-	show(one("bal-short"), 10.6, "right");
-	AFTER.forEach((beat, i) => {
-		const at = 11.6 + i * 2.8;
-		d.swap(heads[i], heads[i + 1], at);
-		if (i) hide(trades[i - 1], at, 0.3);
-		show(trades[i], at + 0.35, "right");
-		counter("vol-n", beat.volume, beat.volumeBefore ?? 0, at + 0.8);
-		if (beat.openInterest !== beat.openInterestBefore) {
-			counter(
-				"oi-n",
-				beat.openInterest,
-				beat.openInterestBefore ?? START_OI,
-				at + 1.0,
-			);
-			balanceTo(
-				beat.openInterest,
-				beat.openInterestBefore ?? START_OI,
-				at + 1.0,
-			);
-		} else {
-			tl.fromTo(
-				one("oi"),
-				{ x: 0 },
-				{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
-				at + 1.0,
-			);
+	tl.addLabel("ledger", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
+	show([one("vol"), one("oi")], 9.2);
+	show(one("bal-long"), 9.6, "right");
+	show(one("bal-short"), 9.8, "right");
+	/** One trade: its row comes up, volume adds it, open interest moves or doesn't. */
+	const trade = (i: number, at: number) => {
+		const beat = AFTER[i];
+		if (i) hide(trades[i - 1], at - 0.35, 0.3);
+		show(trades[i], at, "right");
+		counter("vol-n", beat.volume, beat.volumeBefore ?? 0, at + 0.45);
+		if (beat.openInterest === beat.openInterestBefore) {
+			still(at + 0.65);
+			return;
 		}
-	});
+		counter(
+			"oi-n",
+			beat.openInterest,
+			beat.openInterestBefore ?? START_OI,
+			at + 0.65,
+		);
+		balanceTo(
+			beat.openInterest,
+			beat.openInterestBefore ?? START_OI,
+			at + 0.65,
+		);
+	};
+	trade(0, 10.6);
+	// The answer comes up with open interest's count.
+	show(heads[1], 11.25);
+	d.swap([heads[0], heads[1]], heads[2], 15.5);
+	trade(1, 15.85);
+	trade(2, 17.65);
 
-	// ——— clock: volume live, open interest daily ———
-	tl.addLabel("clock", 20);
-	d.swap(heads[3], heads[4], 20.0);
-	hide([trades[2], one("bal-long"), one("bal-short")], 20.0);
+	// ——— clock: the hero. Volume live, open interest daily. ———
+	tl.addLabel("clock", 19.6);
+	d.swap(heads[2], heads[3], 19.6);
+	hide([trades[2], one("bal-long"), one("bal-short")], 19.6);
 	// Back to Monday's open: the counters start again.
-	counter("vol-n", 0, FINAL.volume, 20.2);
-	counter("oi-n", START_OI, FINAL.openInterest, 20.2);
-	show(kids("clock"), 20.3);
-	show(one("head"), 20.5);
-	show(clockTime, 20.5);
-	show(one("oi-fri"), 20.6);
+	counter("vol-n", 0, FINAL.volume, 19.8);
+	counter("oi-n", START_OI, FINAL.openInterest, 19.8);
+	show(kids("clock"), 19.9);
+	show(one("head"), 20.1);
+	show(clockTime, 20.1);
+	show(one("oi-fri"), 20.2);
 	/** The playhead runs from one minute to another, its time counting with it. */
 	const clockTo = (to: number, from: number, at: number, duration: number) => {
 		tl.to(
@@ -778,34 +799,32 @@ function build(context: FilmContext) {
 	};
 	let volume = 0;
 	let minuteNow = MON_OPEN;
-	TRADES.forEach((trade, i) => {
-		const at = 21.0 + i * 0.9;
-		const minute = minuteOf(trade.time);
+	TRADES.forEach((t, i) => {
+		const at = 20.6 + i * 0.9;
+		const minute = minuteOf(t.time);
 		clockTo(minute, minuteNow, at, 0.7);
 		minuteNow = minute;
 		d.pop(ticks[i], at + 0.6);
-		counter("vol-n", volume + trade.quantity, volume, at + 0.6);
-		volume += trade.quantity;
+		counter("vol-n", volume + t.quantity, volume, at + 0.6);
+		volume += t.quantity;
 	});
-	d.swap(heads[4], heads[5], 24.0);
-	clockTo(MON_CLOSE, minuteNow, 24.4, 0.8);
-	tl.fromTo(
-		one("oi"),
-		{ x: 0 },
-		{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
-		25.3,
-	);
-	d.swap(heads[5], heads[6], 26.6);
-	clockTo(TUE_REPORT, MON_CLOSE, 27.0, 0.9);
-	d.flip(one("oi-fri"), one("oi-mon"), 27.9);
-	tl.set(one("oi-fri"), { opacity: 0 }, 28.2);
-	counter("oi-n", FINAL.openInterest, START_OI, 28.0);
+	clockTo(MON_CLOSE, minuteNow, 23.4, 0.8);
+	still(24.3);
+	clockTo(TUE_REPORT, MON_CLOSE, 24.9, 0.9);
+	d.flip(one("oi-fri"), one("oi-mon"), 25.8);
+	tl.set(one("oi-fri"), { opacity: 0 }, 26.1);
+	counter("oi-n", FINAL.openInterest, START_OI, 25.9);
+	// Round the whole stat, its tag too, so no arm runs through the tag.
+	d.lock(lockOi, 26.6, { around: [one("oi"), one("oi-mon")], pad: 6 });
+	tl.addLabel("hero-lock", 26.6);
+	show(heads[4], 26.6);
 
 	// ——— bucket: a week moves the members ———
-	tl.addLabel("bucket", 30);
+	tl.addLabel("bucket", 30.2);
 	hide(
 		[
-			heads[6],
+			heads[3],
+			heads[4],
 			one("vol"),
 			one("oi"),
 			...kids("clock"),
@@ -813,20 +832,22 @@ function build(context: FilmContext) {
 			one("head"),
 			clockTime,
 			one("oi-mon"),
+			lockOi,
 		],
-		30.0,
+		30.2,
 	);
-	show(heads[7], 30.2, "above");
-	show(kids("strip"), 30.4);
+	show(heads[5], 30.55);
+	show(kids("strip"), 30.7);
 	cols.forEach((col, i) => {
-		show(col, 30.6 + i * 0.15);
+		show(col, 30.9 + i * 0.15);
 	});
-	show(one("bt-0"), 31.0);
-	show(one("bucket-n"), 31.2);
+	show(one("bt-0"), 31.3);
+	show(one("bucket-n"), 31.5);
 	// A week passes: each expiry slides 7 days closer; the band stays.
-	d.swap(heads[7], heads[8], 32.8);
 	const shift = L.dayX(0) - L.dayX(7);
-	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, 33.2);
+	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, 32.6);
+	d.flip(one("bt-0"), one("bt-1"), 32.6);
+	tl.set(one("bt-0"), { opacity: 0 }, 32.9);
 	const after = AFTER_WEEK.columns;
 	stripExpiries.forEach((id) => {
 		const column = after.find((c) => c.id === id);
@@ -836,17 +857,17 @@ function build(context: FilmContext) {
 		tl.to(
 			one(`colbar-${id}`),
 			{ attr: { y: L.floor - h, height: h }, duration: 0.6 },
-			34.0,
+			33.4,
 		);
 		tl.to(
 			one(`colv-${id}`),
 			{ attr: { y: L.floor - h - 6 }, duration: 0.6 },
-			34.0,
+			33.4,
 		);
 		d.count(
 			num(`colv-${id}`),
 			column.value,
-			34.0,
+			33.4,
 			(v) => count(Math.round(v)),
 			before.value,
 			0.6,
@@ -855,35 +876,37 @@ function build(context: FilmContext) {
 		tl.set(
 			one(`colbar-${id}`),
 			{ attr: { "data-tone": column.member ? "total" : "neutral" } },
-			34.2,
+			33.6,
 		);
 	});
-	counter("bucket-n", AFTER_WEEK.total, BEFORE.total, 34.0);
-	d.flip(one("bt-0"), one("bt-1"), 33.2);
-	tl.set(one("bt-0"), { opacity: 0 }, 33.5);
-	d.swap(heads[8], heads[9], 35.4);
+	counter("bucket-n", AFTER_WEEK.total, BEFORE.total, 33.4);
+	show(heads[6], 34.2);
+	// In place, without travel: each change comes up over its own column's figure.
 	changes.forEach((change, i) => {
-		d.pop(change, 35.8 + i * 0.25);
+		word(change, 34.6 + i * 0.25);
 	});
-	// Cut: the claim.
+
+	// ——— claim ———
+	tl.addLabel("claim", 37.8);
 	hide(
 		[
-			heads[9],
+			heads[5],
+			heads[6],
 			...kids("strip"),
 			...cols,
 			...changes,
 			one("bt-1"),
 			one("bucket-n"),
 		],
-		37.4,
+		37.8,
 	);
-	word(one("z-big"), 37.7);
-	show(one("z-sub"), 38.1);
+	word(one("z-big"), 38.1);
+	show(one("z-sub"), 38.5);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 42.2);
+	hide(kids("claim"), 42.2);
+	d.close(42.2);
 	return tl;
 }
 
@@ -900,6 +923,7 @@ export const sessionFlowVsStructureFilm: Film = {
 		{ id: "ledger", label: ["Three trades", "三笔成交"] },
 		{ id: "clock", label: ["The clock", "时间"] },
 		{ id: "bucket", label: ["A bucket", "到期桶"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
