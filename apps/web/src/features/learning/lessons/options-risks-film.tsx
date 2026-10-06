@@ -27,14 +27,14 @@ import { atExpiry, costFacts, curve, PAID, value } from "./options-risks-model";
  *
  *   open      0–4        "Risk first"
  *   question  4–8.8      ALFA +$2, the call −$52
- *   decay     8.8–21.2   bought at $4.20; 20 days: $3.68; IV 25%: $3.00
- *   writer    21.2–31.6  hero: Ben +$420 to −$1,580 at $120 and on; the buyer stops at −$420
- *   costs     31.6–39.4  round trips: −$81.50 and −$231.50; break-even bid
- *   claim     39.4–43.7  being right isn't enough
- *   next      43.7–46.2  Next: the module checkpoint
+ *   decay     8.8–20.45  bought at $4.20; 20 days: $3.68; IV 25%: $3.00
+ *   writer    20.45–32.25 Ben +$420 to −$1,580 at $120 and on; hero: the buyer stops at −$420
+ *   costs     32.25–40.2 round trips: −$81.50 and −$231.50; break-even bid
+ *   claim     40.2–44.5  being right isn't enough
+ *   next      44.5–47    Next: the module checkpoint
  */
 
-const END = 46.2;
+const END = 47;
 const DECAY_X = [90, 110] as const;
 const DECAY_Y = 12;
 const TAIL_X = [80, 140] as const;
@@ -111,23 +111,17 @@ const copy = {
 		"方向判断对了，却还在亏。为什么？",
 	],
 	boughtHead: [
-		"Sep 16: bought at $4.20, 32 days out.",
-		"9月16日：以 $4.20 买入，距到期 32 天。",
+		"Bought at $4.20, 32 days out.",
+		"以 $4.20 买入，距到期 32 天。",
 	],
 	boughtHeadShort: [
 		"Bought at $4.20, 32 days out.",
 		"以 $4.20 买入，距到期 32 天。",
 	],
-	timeHead: [
-		`Time wears it down: $3.68 at $${UP}.`,
-		`时间磨损：$${UP} 时只值 $3.68。`,
-	],
-	timeHeadShort: [`20 days, ALFA $${UP}: $3.68.`, "20 天后：$3.68。"],
-	crushHead: [
-		"IV falls to 25%: the call is $3.00.",
-		"IV 降到 25%：看涨只剩 $3.00。",
-	],
-	crushHeadShort: ["IV 25%: $3.00.", "IV 25%：$3.00。"],
+	timeHead: ["Time wears the call down.", "时间磨损看涨期权。"],
+	timeHeadShort: ["Time wears it down.", "时间磨损它。"],
+	crushHead: ["Then implied volatility falls.", "接着隐含波动率下降。"],
+	crushHeadShort: ["Then IV falls.", "接着 IV 下降。"],
 	axis: ["the call's value per share", "看涨每股价值"],
 	paid: ["paid $4.20", "买价 $4.20"],
 	today: ["Sep 16", "9月16日"],
@@ -141,15 +135,15 @@ const copy = {
 		"Ben 以 $420 卖出：亏损没有下限。",
 	],
 	writerHeadShort: ["Ben writes it: no floor.", "Ben 卖出：没有下限。"],
-	buyerHead: ["The buyer can lose only the $420.", "买方最多只亏 $420。"],
-	buyerHeadShort: ["The buyer: at most −$420.", "买方：最多 −$420。"],
+	buyerHead: ["And the buyer?", "那买方呢？"],
+	buyerFloorHead: ["At most −$420.", "最多 −$420。"],
 	noFloor: ["no floor ↘", "没有下限 ↘"],
 	tailAxis: ["result at Oct 18, one contract", "10月18日 的结果，一张合约"],
 	tailAxisShort: ["result at expiry", "到期结果"],
 	writer: ["Ben, writer", "Ben，义务方"],
 	buyer: ["buyer", "买方"],
 	costHead: [
-		"Round trip of 5: the spread is the cost.",
+		"Round trip of 5: the spread costs.",
 		"5 张一来一回：价差就是成本。",
 	],
 	costHeadShort: ["A round trip of 5.", "5 张的一来一回。"],
@@ -174,8 +168,8 @@ const copy = {
 	of: ["of what you paid", "占你付出的"],
 	claimBig: ["Being right isn't enough.", "判断对了还不够。"],
 	claimSub: [
-		"Time, falling volatility, an open-ended short and the spread can each make you lose.",
-		"时间、波动率下降、无上限的空头和价差，每一样都能让你亏钱。",
+		"Time, IV, an open short, the spread: each costs.",
+		"时间、IV、无上限的空头、价差：都会让你亏。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["Start here, on a new day", "在新的一天里运用“从这里开始”"],
@@ -438,8 +432,8 @@ function Scene({
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
-						<Brackets name="lock-far" glow />
-						<Brackets name="lock-floor" />
+						<Brackets name="lock-far" tone="short" />
+						<Brackets name="lock-floor" glow />
 					</g>
 				</g>
 			</g>
@@ -566,7 +560,17 @@ function Scene({
 			{headline("t-head", copy.timeHead, copy.timeHeadShort)}
 			{headline("c-head", copy.crushHead, copy.crushHeadShort)}
 			{headline("w-head", copy.writerHead, copy.writerHeadShort)}
-			{headline("u-head", copy.buyerHead, copy.buyerHeadShort)}
+			{headline("u-head", copy.buyerHead, copy.buyerHead)}
+			{/* The answer, a line under the question, as the buyer's floor locks. */}
+			<Lines
+				name="u2-head"
+				text={t(copy.buyerFloorHead)}
+				x={margin}
+				y={L.headY + T.head * 1.35}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("o-head", copy.costHead, copy.costHeadShort)}
 			{headline("e-head", copy.beHead, copy.beHeadShort)}
 
@@ -689,10 +693,12 @@ function build(context: FilmContext) {
 	const sWriter = one<SVGTextElement>("s-writer");
 	const sBuyer = one<SVGTextElement>("s-buyer");
 	const perShare = (dollars: number) => usd(Math.round(dollars * 100));
+	// Whole dollars first, then the sign: −20¢ reads "$0", never "−$0".
+	const dollars = (cents: number) => Math.round(cents / 100);
 	const perContract = (cents: number) =>
-		Math.round(cents) === 0 ? "$0" : signedUsd(Math.round(cents), 0);
+		dollars(cents) === 0 ? "$0" : signedUsd(dollars(cents) * 100, 0);
 	const tone = (cents: number) =>
-		`wt-film-num ${Math.round(cents) > 0 ? "wt-film-gain" : Math.round(cents) < 0 ? "wt-film-loss" : ""}`;
+		`wt-film-num ${dollars(cents) > 0 ? "wt-film-gain" : dollars(cents) < 0 ? "wt-film-loss" : ""}`;
 	/**
 	 * A tween that walks a value from `from` to `to` and draws everything from it each frame.
 	 * Not rendered up front, so nothing reads the walk's end before it begins.
@@ -750,6 +756,7 @@ function build(context: FilmContext) {
 		"u-head",
 		"o-head",
 		"e-head",
+		"u2-head",
 	].map((name) => one(name));
 
 	d.hidden([
@@ -797,7 +804,7 @@ function build(context: FilmContext) {
 	word(one("q-alfa-num"), 4.8);
 	show(one("q-call-tag"), 5.2);
 	word(one("q-call-num"), 5.4);
-	show(one("q-line"), 6.2);
+	show(one("q-line"), 5.3);
 
 	// ——— decay: time and volatility ———
 	tl.addLabel("decay", 8.8);
@@ -811,107 +818,110 @@ function build(context: FilmContext) {
 	pop(marker, 11.0);
 	show(kids("meter"), 11.2);
 	// 20 days later: the marker rides to $102 on the worn curve.
-	d.swap(heads[0], heads[1], 12.8);
-	d.trace(one<SVGPathElement>("c-later"), 13.2, { tip, duration: 1.0 });
-	show(one("l-later"), 14.0);
+	d.swap(heads[0], heads[1], 12.55);
+	d.trace(one<SVGPathElement>("c-later"), 12.95, { tip, duration: 1.0 });
+	show(one("l-later"), 13.75);
 	walk(
 		0,
 		1,
-		14.2,
+		13.95,
 		1.2,
 		decayMove({ spot: 100, v: PAID / 100 }, { spot: UP, v: AFTER }),
 	);
 	// IV falls after earnings.
-	d.swap(heads[1], heads[2], 17.0);
-	d.trace(one<SVGPathElement>("c-crush"), 17.4, { tip, duration: 1.0 });
-	show(one("l-crush"), 18.2);
+	d.swap(heads[1], heads[2], 16.5);
+	d.trace(one<SVGPathElement>("c-crush"), 16.9, { tip, duration: 1.0 });
+	show(one("l-crush"), 17.7);
 	walk(
 		0,
 		1,
-		18.4,
+		17.9,
 		1.0,
 		decayMove({ spot: UP, v: AFTER }, { spot: UP, v: CRUSH }),
 	);
 
 	// ——— writer: the hero. Ben's loss has no floor; the buyer's stops at $420. ———
-	tl.addLabel("writer", 21.2);
-	hide([heads[2], ...kids("meter")], 21.2);
-	sink(21.2);
-	tl.set(one("decay"), { opacity: 0 }, 21.6);
-	tl.set(one("tail"), { opacity: 1 }, 21.6);
-	show(heads[3], 21.6);
-	rise(21.7);
-	d.trace(one<SVGPathElement>("writer-line"), 22.0, {
+	tl.addLabel("writer", 20.45);
+	hide([heads[2], ...kids("meter")], 20.45);
+	sink(20.45);
+	tl.set(one("decay"), { opacity: 0 }, 20.85);
+	tl.set(one("tail"), { opacity: 1 }, 20.85);
+	show(heads[3], 20.85);
+	rise(20.95);
+	d.trace(one<SVGPathElement>("writer-line"), 21.25, {
 		tip: pen,
 		duration: 1.0,
 	});
-	show(one("writer-tag"), 22.8);
-	show(one("s-writer-cell"), 23.0);
-	pop(one("w-marker"), 23.0);
+	show(one("writer-tag"), 22.05);
+	show(one("s-writer-cell"), 22.25);
+	pop(one("w-marker"), 22.25);
 	// ALFA climbs from $100 to $140: past −$1,580 at $120, and on.
 	walk(
 		100,
 		140,
-		23.4,
+		22.65,
 		2.4,
 		tailMove("writer", one("w-marker"), sWriter),
 		"power1.inOut",
 	);
-	pop(one("far-dot"), 24.6);
-	show(one("far-label"), 24.6, "right");
-	d.lock(g("lock-far"), 24.6, {
+	pop(one("far-dot"), 23.85);
+	show(one("far-label"), 23.85, "right");
+	d.lock(g("lock-far"), 23.85, {
 		around: [g("far-dot"), g("far-label")],
 		pad: 5,
 	});
-	show(one("no-floor"), 25.9);
+	show(one("no-floor"), 25.15);
 	// The buyer: from +$1,580 at $120 down to $80, and the loss stops at the $420 paid.
-	d.swap(heads[3], heads[4], 27.6);
+	d.swap(heads[3], heads[4], 25.75);
 	tl.to(
 		[g("lock-far"), one("w-marker")],
 		{ opacity: 0.25, duration: 0.3 },
-		27.6,
+		25.75,
 	);
-	d.trace(one<SVGPathElement>("buyer-line"), 28.0, { tip, duration: 1.0 });
-	show(one("buyer-tag"), 28.8);
-	show(one("s-buyer-cell"), 29.0);
-	pop(one("b-marker"), 29.0);
-	walk(120, 80, 29.3, 1.4, tailMove("buyer", one("b-marker"), sBuyer));
-	show(one("floor-label"), 30.6);
-	d.lock(g("lock-floor"), 30.6, { around: g("floor-label"), pad: 5 });
+	d.trace(one<SVGPathElement>("buyer-line"), 26.15, { tip, duration: 1.0 });
+	show(one("buyer-tag"), 26.95);
+	show(one("s-buyer-cell"), 27.15);
+	pop(one("b-marker"), 27.15);
+	walk(120, 80, 27.45, 1.4, tailMove("buyer", one("b-marker"), sBuyer));
+	show(one("floor-label"), 28.75);
+	d.lock(g("lock-floor"), 28.75, { around: g("floor-label"), pad: 5 });
+	// The hero: the buyer stops at −$420 while the writer's line runs on.
+	tl.addLabel("hero-lock", 28.75);
+	show(heads[7], 28.75);
 
 	// ——— costs: the spread before anything moves ———
-	tl.addLabel("costs", 31.6);
-	hide([heads[4], ...kids("smeter")], 31.6);
-	sink(31.6);
-	show(heads[5], 31.8);
+	tl.addLabel("costs", 32.25);
+	hide([heads[4], heads[7], ...kids("smeter")], 32.25);
+	sink(32.25);
+	show(heads[5], 32.45);
 	(["active", "thin"] as const).forEach((name, i) => {
-		const at = 32.2 + i * 1.0;
+		const at = 32.85 + i * 1.0;
 		show([one(`k-${name}-tag`), one(`k-${name}-quote`)], at);
 		word(one(`k-${name}-loss`), at + 0.3);
 		show(one(`k-${name}-pct`), at + 0.7);
 	});
 	// The thin call: the bid has to climb to break even.
-	d.swap(heads[5], heads[6], 35.6);
+	d.swap(heads[5], heads[6], 36.25);
 	tl.to(
 		["k-active-tag", "k-active-quote", "k-active-loss", "k-active-pct"].map(
 			(n) => one(n),
 		),
 		{ opacity: 0.35, duration: 0.4 },
-		36.0,
+		36.65,
 	);
-	show(one("k-thin-be"), 36.2);
-	d.lock(g("lock-be"), 36.4, { around: g("k-thin-be"), pad: 5 });
+	show(one("k-thin-be"), 36.85);
+	d.lock(g("lock-be"), 37.05, { around: g("k-thin-be"), pad: 5 });
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.4);
-	hide([heads[6], ...flat("costs")], 39.4);
-	word(one("z-big"), 39.7);
-	show(one("z-sub"), 40.1);
+	tl.addLabel("claim", 40.2);
+	hide([heads[6], ...flat("costs")], 40.2);
+	word(one("z-big"), 40.5);
+	show(one("z-sub"), 40.9);
 
 	// ——— next ———
-	tl.addLabel("next", 43.7);
-	hide(kids("claim"), 43.7);
-	d.close(43.7);
+	tl.addLabel("next", 44.5);
+	hide(kids("claim"), 44.5);
+	d.close(44.5);
 	return tl;
 }
 
