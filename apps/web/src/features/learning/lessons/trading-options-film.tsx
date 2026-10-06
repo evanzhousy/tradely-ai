@@ -101,8 +101,8 @@ const copy = {
 	chainHead: ["The chain: one row per contract.", "期权链：每份合约一行。"],
 	chainHeadShort: ["Every contract has its own row.", "每份合约各占一行。"],
 	novHead: [
-		`Nov 15: ${usd(NOV_ASK)} a share, ${usd(NOV_ASK * 100, 0)} a contract.`,
-		`11月15日：每股 ${usd(NOV_ASK)}，一张 ${usd(NOV_ASK * 100, 0)}。`,
+		`Nov 15 costs ${usd(NOV_ASK * 100, 0)} a contract.`,
+		`11月15日：一张 ${usd(NOV_ASK * 100, 0)}。`,
 	],
 	novHeadShort: [
 		`Nov 15: ${usd(NOV_ASK)}, more time.`,
@@ -130,14 +130,11 @@ const copy = {
 		`市价：${usd(ASK * 100, 0)}，立即。`,
 	],
 	limitHead: [
-		"A limit at $2.40 waits as the best bid.",
+		"A $2.40 limit waits as the best bid.",
 		"$2.40 限价单成为最优买价，等待。",
 	],
 	limitHeadShort: ["Limit $2.40: it waits.", "限价 $2.40：等待。"],
-	fillHead: [
-		`It fills only if a seller comes: ${usd((ASK - LIMIT) * 100, 0)} saved.`,
-		`有卖方来才成交：省 ${usd((ASK - LIMIT) * 100, 0)}。`,
-	],
+	fillHead: ["It fills only when a seller comes.", "有卖方来才成交。"],
 	fillHeadShort: ["Fills only if a seller comes.", "有卖方才成交。"],
 	saved: [
 		`saved ${usd((ASK - LIMIT) * 100, 0)}`,
@@ -185,8 +182,8 @@ const copy = {
 		"选对那一行，定好价格，弄清怎么结束。",
 	],
 	claimSub: [
-		"A limit caps what you pay but not when; most positions end with a sale.",
-		"限价控制价格但控制不了时间；多数持仓以卖出结束。",
+		"A limit caps the price, not the time.",
+		"限价控制价格，控制不了时间。",
 	],
 	nextBig: ["Next: risk first", "下一课：先看风险"],
 	nextSub: ["how options lose money", "期权如何亏钱"],
@@ -236,7 +233,8 @@ function Scene({
 				x={margin + L.priceW}
 				y={bookText(y)}
 				textAnchor="end"
-				className="wt-film-num"
+				// Your bid in the accent of the tickets that land on it.
+				className={`wt-film-num ${name === "bid-you" ? "wt-film-accent" : ""}`}
 				style={{ fontSize: rowText }}
 			>
 				{usd(price)}
@@ -736,7 +734,7 @@ function build(context: FilmContext) {
 	show(one("q-tag"), 4.4);
 	word(one("q-oct18"), 4.6);
 	word(one("q-nov15"), 5.0);
-	show(one("q-line"), 5.8);
+	show(one("q-line"), 5.3);
 
 	// ——— chain: the two dates become its tabs ———
 	tl.addLabel("chain", 8.8);
@@ -809,7 +807,8 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.15 },
 		26.5,
 	);
-	tl.to(otherBids, { y: 0, duration: 0.5, ease: "power2.inOut" }, 26.9);
+	// Room first: the bids step down before the ticket sets off.
+	tl.to(otherBids, { y: 0, duration: 0.5, ease: "power2.inOut" }, 26.0);
 	// The row appears as the ticket lands on it: it never slides across the row's own marks.
 	tl.fromTo(
 		one("bid-you"),
@@ -824,6 +823,7 @@ function build(context: FilmContext) {
 		arc: "y",
 	});
 	d.lock(g("lock-bid"), 27.7, { around: one("bid-hit"), pad: 4 });
+	tl.addLabel("hero-lock", 27.7);
 	show(one("s-waiting"), 27.9);
 	// A seller comes: their ticket lands on your bid, and it fills $25 cheaper.
 	d.swap(heads[4], heads[5], 30.0);
@@ -833,6 +833,12 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.15 },
 		30.4,
 	);
+	// The seller's ticket comes down through the spread line and into your row's brackets:
+	// both step back while it travels, and the brackets lock again on the fill.
+	fade(one("spread"), 30.3, 0.25);
+	fade(g("lock-bid"), 30.3);
+	fade(one("spread"), 31.5, 1);
+	d.lock(g("lock-bid"), 31.5, { around: one("bid-hit"), pad: 4 });
 	d.carry(g("chip-sell"), g("bid-you-px"), 30.55, {
 		duration: 0.9,
 		fit: false,
