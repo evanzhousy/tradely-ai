@@ -862,9 +862,13 @@ export function createDirector(
 			// through the mark's current transform, so set when the tween first renders, after
 			// a seek has already moved the copy, it lands the copy off its text.
 			gsap.set(flyer, { opacity: 0, svgOrigin: `${ax} ${ay}` });
+			// Only when they differ: writing text or a class every frame forces a style pass.
 			const sync = () => {
-				if (!from.firstElementChild) flyer.textContent = from.textContent;
-				flyer.setAttribute("class", from.getAttribute("class") ?? "");
+				if (!from.firstElementChild && flyer.textContent !== from.textContent)
+					flyer.textContent = from.textContent;
+				const cls = from.getAttribute("class") ?? "";
+				if (flyer.getAttribute("class") !== cls)
+					flyer.setAttribute("class", cls);
 			};
 			// A kept original dims while its copy leaves, so the two never read as one smeared
 			// mark; it comes back as the copy lands.
