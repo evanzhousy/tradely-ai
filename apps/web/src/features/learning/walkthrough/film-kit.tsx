@@ -685,14 +685,23 @@ export function createDirector(
 				at,
 			);
 		}
+		// No smoothOrigin: one set of brackets locks on one thing after another, and GSAP would
+		// otherwise offset each new origin to make up for the last one.
 		tl.fromTo(
 			target,
 			{
 				opacity: 0,
 				scale: 1.4,
 				svgOrigin: `${box.x + box.width / 2} ${box.y + box.height / 2}`,
+				smoothOrigin: false,
 			},
-			{ opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" },
+			{
+				opacity: 1,
+				scale: 1,
+				duration: 0.45,
+				ease: "power3.out",
+				smoothOrigin: false,
+			},
 			at,
 		);
 	};
