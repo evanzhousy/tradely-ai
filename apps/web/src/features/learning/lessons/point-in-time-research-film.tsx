@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -18,7 +19,6 @@ import {
 	CORRECTED,
 	HOLDOUT,
 	history,
-	LOWER,
 	PERCENTILE,
 	REPORTED,
 	SESSIONS,
@@ -29,21 +29,21 @@ import {
 /*
  * Backtests, as a film. A backtest replays a decision at 10:50:01 on Monday: which price
  * may it use for the 500-lot? The arrivals answer: only the first report, $2.51; the
- * correction to $2.15 arrives later, and the 120 call's volume not until Tuesday. Then a
- * percentile: today's 4.2× beats 58 of 60 sessions, the 97th percentile, which is a rank,
- * not a probability. Last, ten thresholds tried on Jan–Jun, the best at 70%, and the same
- * rule frozen and run once on Jul–Aug: 52%.
+ * correction to $2.15 arrives later, and the 120 call's volume not until Tuesday. The hero
+ * is a percentile: today's 4.2× beats 58 of 60 sessions, the 97th percentile, and glowing
+ * brackets lock on a rank that is not a probability. Last, ten thresholds tried on
+ * Jan–Jun, the best at 70%, and the same rule frozen and run once on Jul–Aug: 52%.
  *
- *   open      0–4      "Backtests"
- *   question  4–9.5    a decision at 10:50:01: which price?
- *   cutoff    9.5–19.5 arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
- *   rank      19.5–28  60 sessions; 4.2× at the 97th percentile; not a probability
- *   holdout   28–37    ten thresholds; the winner 70%; the holdout 52%
- *   claim     37–39.5  only what was known, and test once
- *   next      39.5–42  Next: the module checkpoint
+ *   open      0–4        "Backtests"
+ *   question  4–8.6      a decision at 10:50:01: which price?
+ *   cutoff    8.6–20.8   arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
+ *   rank      20.8–29.4  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
+ *   holdout   29.4–36.4  ten thresholds; the winner 70%; the holdout 52%
+ *   claim     36.4–40.8  only what was known, and test once
+ *   next      40.8–43.3  Next: the module checkpoint
  */
 
-const END = 42;
+const END = 43.3;
 const MAX_DAYS = Math.max(...history.map((b) => b.days));
 const TODAY_BUCKET = history.findIndex(
 	(b) => TODAY >= b.from && TODAY < b.from + BUCKET,
@@ -85,67 +85,33 @@ const copy = {
 		"它重放 500 张大单之后一刻的决策。",
 	],
 	qBig: ["Which price may it use?", "它可以用哪个价格？"],
-	c0: [
-		"Monday's facts about the 105 call, in the order they arrived.",
-		"周一关于 105 看涨的事实，按到达顺序排列。",
+	cHead: ["Monday's facts, in order of arrival.", "周一的事实，按到达顺序。"],
+	c2Head: [
+		`At 10:50:01 it may use only ${usd(REPORTED)}.`,
+		`10:50:01 时只能用 ${usd(REPORTED)}。`,
 	],
-	c0Short: ["Facts, by arrival.", "按到达排列的事实。"],
-	c1: [
-		`At 10:50:01 the block's first report is in, at ${usd(REPORTED)}. The correction isn't. The test must use ${usd(REPORTED)}.`,
-		`10:50:01 时，大单的首次报告已到，${usd(REPORTED)}；更正还没到。回测必须用 ${usd(REPORTED)}。`,
-	],
-	c1Short: [`10:50:01: ${usd(REPORTED)}.`, `10:50:01：${usd(REPORTED)}。`],
-	c2: [
-		`By 10:51 the correction is in: ${usd(CORRECTED)}. What changed is what was known, not what happened.`,
-		`到 10:51，更正已到：${usd(CORRECTED)}。变的是已知的东西，不是发生的事。`,
-	],
-	c2Short: [`10:51: ${usd(CORRECTED)}.`, `10:51：${usd(CORRECTED)}。`],
-	c3: [
-		"Tuesday's data never reaches a Monday decision, however late you run the test.",
-		"周二的数据永远进不了周一的决策，无论你多晚运行回测。",
-	],
-	c3Short: ["Tuesday: never.", "周二：永远不行。"],
+	c3Head: ["Later facts count once they arrive.", "后来的事实，到了才算数。"],
 	known: ["known", "已知"],
 	notYet: ["not yet", "还没到"],
 	decision: ["decision", "决策时刻"],
-	r0: [
-		`Today's ${TODAY}× against the 105 call's last ${SESSIONS} sessions.`,
-		`今天的 ${TODAY}× 对照 105 看涨近 ${SESSIONS} 个交易日。`,
+	rHead: [
+		`Today's ${TODAY}× against ${SESSIONS} sessions.`,
+		`今天的 ${TODAY}× 对照 ${SESSIONS} 个交易日。`,
 	],
-	r0Short: [
-		`${TODAY}× vs ${SESSIONS} sessions.`,
-		`${TODAY}× 对比 ${SESSIONS} 天。`,
+	r2Head: [
+		`The ${PERCENTILE}th percentile: a rank, not a chance.`,
+		`第 ${PERCENTILE} 百分位：是排名，不是概率。`,
 	],
-	r1: [
-		`${LOWER} of ${SESSIONS} were lower: the ${PERCENTILE}th percentile. A rank among past days.`,
-		`${SESSIONS} 天中有 ${LOWER} 天更低：第 ${PERCENTILE} 百分位。是在过去日子里的排名。`,
-	],
-	r1Short: [`${PERCENTILE}th percentile.`, `第 ${PERCENTILE} 百分位。`],
-	r2: [
-		`Not a ${PERCENTILE}% chance of a rise: that needs a test on what followed days like this.`,
-		`不是 ${PERCENTILE}% 的上涨概率：那需要检验类似日子之后发生了什么。`,
-	],
-	r2Short: ["A rank, not a chance.", "是排名，不是概率。"],
 	today: [`today ${TODAY}×`, `今天 ${TODAY}×`],
 	axis: ["volume ÷ typical", "成交量 ÷ 常态"],
-	h0: [
-		`${tried.length} thresholds for "call volume above X× typical", tried on Jan–Jun.`,
-		`“看涨成交量超过常态 X 倍”的 ${tried.length} 个门槛，在 1–6 月数据上试验。`,
+	hHead: [
+		`${tried.length} thresholds, tried on Jan–Jun.`,
+		`${tried.length} 个门槛，在上半年数据上试验。`,
 	],
-	h0Short: [
-		`${tried.length} thresholds tried.`,
-		`试了 ${tried.length} 个门槛。`,
+	h2Head: [
+		`Frozen, then run once: ${HOLDOUT}%.`,
+		`冻结后只跑一次：${HOLDOUT}%。`,
 	],
-	h1: [
-		`"Above ${best.threshold}×" was followed by a rise ${best.rose}% of the time: picked after seeing every result.`,
-		`“超过 ${best.threshold}×”之后上涨的比例是 ${best.rose}%：是看过所有结果后挑出来的。`,
-	],
-	h1Short: [`Best: ${best.rose}%.`, `最好：${best.rose}%。`],
-	h2: [
-		`Frozen, then run once on sealed Jul–Aug data: ${HOLDOUT}%.`,
-		`冻结规则，再在封存的 7–8 月数据上只跑一次：${HOLDOUT}%。`,
-	],
-	h2Short: [`Holdout: ${HOLDOUT}%.`, `样本外：${HOLDOUT}%。`],
 	rose: ["rose next day", "次日上涨"],
 	holdout: [`Jul–Aug holdout ${HOLDOUT}%`, `7–8 月样本外 ${HOLDOUT}%`],
 	claimBig: [
@@ -153,8 +119,8 @@ const copy = {
 		"只用当时已知的，并且只检验一次。",
 	],
 	claimSub: [
-		"Replay each decision with the data that had arrived, read a percentile as a rank, and freeze a rule before opening the holdout.",
-		"每个决策只用当时已到的数据重放，把百分位当排名来读，打开样本外数据前先冻结规则。",
+		"Freeze the rule before the holdout.",
+		"打开样本外数据前先冻结规则。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
@@ -175,10 +141,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
-	const headline = (name: string, text: Copy, short: Copy) => (
+	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
-			text={t(narrow ? short : text)}
+			text={t(text)}
 			x={margin}
 			y={L.headY}
 			size={T.head}
@@ -223,10 +189,23 @@ function Scene({
 			</g>
 
 			{/* What had arrived by the decision. */}
-			{headline("c0", copy.c0, copy.c0Short)}
-			{headline("c1", copy.c1, copy.c1Short)}
-			{headline("c2", copy.c2, copy.c2Short)}
-			{headline("c3", copy.c3, copy.c3Short)}
+			{headline("c-head", copy.cHead)}
+			{/* The question's answer, as the first report counts as known. */}
+			<Lines
+				name="c2-head"
+				text={t(copy.c2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			{headline("c3-head", copy.c3Head)}
 			{arrivals.map((a, i) => (
 				<g key={a.id} data-f={`arr-${i}`}>
 					<rect
@@ -304,9 +283,23 @@ function Scene({
 			))}
 
 			{/* A percentile. */}
-			{headline("r0", copy.r0, copy.r0Short)}
-			{headline("r1", copy.r1, copy.r1Short)}
-			{headline("r2", copy.r2, copy.r2Short)}
+			{headline("r-head", copy.rHead)}
+			{/* The hero's answer, as the brackets lock on the percentile. */}
+			<Lines
+				name="r2-head"
+				text={t(copy.r2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.rHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-pct" glow />
 			<g data-f="hist">
 				<path
 					d={`M${margin} ${L.histBottom}H${margin + room}`}
@@ -386,9 +379,22 @@ function Scene({
 			</text>
 
 			{/* Many rules tried, one test kept. */}
-			{headline("h0", copy.h0, copy.h0Short)}
-			{headline("h1", copy.h1, copy.h1Short)}
-			{headline("h2", copy.h2, copy.h2Short)}
+			{headline("h-head", copy.hHead)}
+			{/* The answer, as the frozen rule's result lands. */}
+			<Lines
+				name="h2-head"
+				text={t(copy.h2Head)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.hHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="search-axis">
 				<path
 					d={`M${margin} ${L.pctY(50)}H${margin + room}`}
@@ -513,25 +519,24 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const heads = [
-		"c0",
-		"c1",
-		"c2",
-		"c3",
-		"r0",
-		"r1",
-		"r2",
-		"h0",
-		"h1",
-		"h2",
+		"c-head",
+		"c2-head",
+		"c3-head",
+		"r-head",
+		"r2-head",
+		"h-head",
+		"h2-head",
 	].map((name) => one(name));
+	const lockPct = one<SVGGraphicsElement>("lock-pct");
 	const arrs = arrivals.map((_, i) => one(`arr-${i}`));
 	const marks = arrivals.flatMap((_, i) => [
 		one(`arr-${i}-known`),
@@ -560,6 +565,7 @@ function build(context: FilmContext) {
 		...bins,
 		one("today"),
 		one("pct"),
+		lockPct,
 		one("not-chance"),
 		...kids("search-axis"),
 		...tries,
@@ -577,44 +583,46 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.6);
+	word(one("q-big"), 6.4);
 
 	// ——— cutoff: what had arrived ———
-	tl.addLabel("cutoff", 9.5);
-	hide(flat("q"), 9.5);
-	show(heads[0], 9.7, "above");
+	tl.addLabel("cutoff", 8.6);
+	hide(flat("q"), 8.6);
+	show(heads[0], 8.8);
 	arrs.forEach((a, i) => {
-		show(a, 10.0 + i * 0.2, "right");
+		show(a, 9.2 + i * 0.2, "right");
 	});
-	d.swap(heads[0], heads[1], 11.6);
 	tl.fromTo(
 		one("cut-2"),
 		{ opacity: 0, x: -20 },
 		{ opacity: 1, x: 0, duration: 0.4 },
-		12.0,
+		10.8,
 	);
-	knownTo(2, 12.3);
-	tl.set(one("arr-1-box"), { attr: { class: "wt-focus-shape" } }, 12.3);
-	d.swap(heads[1], heads[2], 14.6);
-	hide(one("cut-2"), 14.9, 0.25);
+	knownTo(2, 11.1);
+	tl.set(one("arr-1-box"), { attr: { class: "wt-focus-shape" } }, 11.1);
+	show(heads[1], 11.6);
+	// A minute later the correction is in; Tuesday's data never is.
+	d.swap([heads[0], heads[1]], heads[2], 15.4);
+	hide(one("cut-2"), 15.6, 0.25);
+	// In place, not slid down: a slide would carry its label through the correction's row.
 	tl.fromTo(
 		one("cut-3"),
-		{ opacity: 0, y: -(L.arrY(3) - L.arrY(2)) },
-		{ opacity: 1, y: 0, duration: 0.5 },
-		15.0,
+		{ opacity: 0, x: -20 },
+		{ opacity: 1, x: 0, duration: 0.4 },
+		15.7,
 	);
-	knownTo(3, 15.3);
-	tl.set(one("arr-1-box"), { attr: { class: "wt-panel-shape" } }, 15.3);
-	tl.set(one("arr-2-box"), { attr: { class: "wt-focus-shape" } }, 15.3);
-	d.swap(heads[2], heads[3], 17.0);
-	tl.to(arrs[3], { opacity: 0.25, duration: 0.3 }, 17.4);
+	// The marks turn as the rule sets off, so it never passes a stale "not yet".
+	knownTo(3, 15.7);
+	tl.set(one("arr-1-box"), { attr: { class: "wt-panel-shape" } }, 15.7);
+	tl.set(one("arr-2-box"), { attr: { class: "wt-focus-shape" } }, 15.7);
+	tl.to(arrs[3], { opacity: 0.25, duration: 0.3 }, 16.8);
 
-	// ——— rank: a percentile ———
-	tl.addLabel("rank", 19.5);
-	tl.set(one("arr-2-box"), { attr: { class: "wt-panel-shape" } }, 19.5);
-	hide([heads[3], ...arrs, ...marks, one("cut-3")], 19.5);
-	show(heads[4], 19.7, "above");
-	show(kids("hist"), 20.0);
+	// ——— rank: the hero. A percentile is a rank. ———
+	tl.addLabel("rank", 20.8);
+	tl.set(one("arr-2-box"), { attr: { class: "wt-panel-shape" } }, 20.8);
+	d.swap(heads[2], heads[3], 20.8);
+	hide([...arrs, ...marks, one("cut-3")], 20.8);
+	show(kids("hist"), 21.4);
 	bins.forEach((bin, i) => {
 		const h = Number(bin.getAttribute("height"));
 		tl.fromTo(
@@ -625,66 +633,74 @@ function build(context: FilmContext) {
 				duration: 0.5,
 				ease: "power2.out",
 			},
-			20.2 + i * 0.06,
+			21.6 + i * 0.06,
 		);
 	});
-	show(one("today"), 21.2);
-	d.swap(heads[4], heads[5], 22.6);
-	d.slam(one("pct"), 23.0);
-	d.swap(heads[5], heads[6], 25.0);
-	show(one("not-chance"), 25.4);
+	show(one("today"), 23.4);
+	word(one("pct"), 24.8);
+	show(one("not-chance"), 25.3);
+	// Round the percentile and what it isn't: the pair is the answer.
+	d.lock(lockPct, 25.8, { around: [one("pct"), one("not-chance")], pad: 6 });
+	tl.addLabel("hero-lock", 25.8);
+	show(heads[4], 25.8);
 
 	// ——— holdout: many tried, one kept ———
-	tl.addLabel("holdout", 28);
+	tl.addLabel("holdout", 29.4);
+	d.swap([heads[3], heads[4]], heads[5], 29.4);
 	hide(
 		[
-			heads[6],
 			...kids("hist"),
 			...bins,
 			one("today"),
 			one("pct"),
+			lockPct,
 			one("not-chance"),
 		],
-		28.0,
+		29.4,
 	);
-	show(heads[7], 28.2, "above");
-	show(kids("search-axis"), 28.4);
+	show(kids("search-axis"), 29.8);
 	tries.forEach((tr, i) => {
-		show(tr, 28.6 + i * 0.1);
+		show(tr, 30.0 + i * 0.1);
 	});
-	d.swap(heads[7], heads[8], 30.6);
 	tl.set(
 		one(`try-${BEST_INDEX}-bar`),
 		{ attr: { "data-tone": "total" } },
-		31.0,
+		31.2,
 	);
-	d.pop(one("best"), 31.0);
+	word(one("best"), 31.2);
 	tl.to(
 		tries.filter((_, i) => i !== BEST_INDEX),
 		{ opacity: 0.35, duration: 0.4 },
-		31.2,
+		31.4,
 	);
-	d.swap(heads[8], heads[9], 33.4);
 	tl.fromTo(
 		one("hold"),
 		{ opacity: 0, y: -(L.pctY(HOLDOUT) - L.pctY(best.rose)) },
 		{ opacity: 1, y: 0, duration: 0.8, ease: "power2.inOut" },
-		33.8,
+		32.0,
 	);
+	show(heads[6], 32.8);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37);
+	tl.addLabel("claim", 36.4);
 	hide(
-		[heads[9], ...kids("search-axis"), ...tries, one("best"), one("hold")],
-		37.0,
+		[
+			heads[5],
+			heads[6],
+			...kids("search-axis"),
+			...tries,
+			one("best"),
+			one("hold"),
+		],
+		36.4,
 	);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.7);
+	word(one("z-big"), 36.7);
+	show(one("z-sub"), 37.1);
 
 	// ——— next ———
-	tl.addLabel("next", 39.5);
-	hide(kids("claim"), 39.5);
-	d.close(39.5);
+	tl.addLabel("next", 40.8);
+	hide(kids("claim"), 40.8);
+	d.close(40.8);
 	return tl;
 }
 
