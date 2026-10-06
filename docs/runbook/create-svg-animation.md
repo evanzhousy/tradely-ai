@@ -137,12 +137,14 @@ Every film follows the same arc, so a learner always knows where they are.
 | Shot | Time (1×) | What happens |
 |---|---|---|
 | `open` | 0–4 s | The lesson's name wipes on with its subtitle (`d.open`). At 4 s it shrinks into the top-right corner as the film's tag (`d.tag`). Playing, the card lasts 2 s: `d.close` moves everything after 4 s 2 s earlier, so the question arrives at 2 s (1 s at 2×) and the film plays 2 s shorter than its `END`. Keep writing times on the 4 s card. |
-| `question` | 4–9.5 s | The question the lesson answers, set big, with the one number or scene that makes it concrete. |
-| 3 teaching shots | 9.5–about 40 s | Each shot makes one claim: a headline at the top left, and a chart, table or card below it as proof. Headlines change with `d.swap`; charts rise from the depth (`d.rise`) and sink when the claim is made (`d.sink`). |
-| `claim` | about 40–44 s | Cut to big type: the one sentence to remember and why it holds. Hold it at least 3.5 s. |
+| `question` | 4–about 9 s | The question the lesson answers, set big, with the one number or scene that makes it concrete. Hold its line at least 3.5 s. |
+| 2–3 teaching shots | about 9–40 s | Each shot makes one claim: a headline at the top left, and a chart, table or card below it as proof. Headlines change with `d.swap`; charts rise from the depth (`d.rise`) and sink when the claim is made (`d.sink`). |
+| `claim` | about 40–44 s | Cut to big type: the one sentence to remember and why it holds. Hold it at least 4 s; the line under it is at most 9 words, or held 4.5 s. |
 | `next` | about 44–46.5 s | The end card: the next lesson's name, its subtitle and "Try it in the playground ↓" (`d.close`). |
 
-**The hero moment.** Each film has one visual peak at 60–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. A hero the learner passes through in half a second isn't one.
+At most seven beats (one headline each) and about 45 s played (`END` about 47). Hold every headline at least 3.5 s at 1×. To shorten a film, merge or cut beats; never shorten the holds.
+
+**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. A hero the learner passes through in half a second isn't one.
 
 ## 5. Film kit reference
 
@@ -169,7 +171,7 @@ Every film follows the same arc, so a learner always knows where they are.
 | `TitleCard` | The opening name and subtitle |
 | `EndCard` | The closing next card and the call to the playground |
 | `PenTip` | A glowing pen tip for `trace`: a bright core in a wide, faint halo. Put it in the same group as the line it leads. |
-| `Brackets` | Corner brackets around a box, for `lock`; `tone="gain"` or `"loss"` for a bid or an ask |
+| `Brackets` | Corner brackets around a box, for `lock`; `tone="gain"` or `"loss"` for a bid or an ask, `"short"` for a writer; `glow` for the hero's |
 
 ### Director moves: `createDirector(context, frame, end)`
 
@@ -185,8 +187,9 @@ Every film follows the same arc, so a learner always knows where they are.
 | `flip(from, to, at)` | One value folds shut and the next opens; follow it with `tl.set(from, { opacity: 0 }, at + 0.3)` |
 | `count(target, to, at, format, from, duration)` | A figure counts from `from` to `to` |
 | `trace(path, at, { tip, duration, ease })` | A line draws itself from its start; with a `PenTip` the tip leads it and goes out at the end. Dashed lines get their dashes back. |
-| `lock(brackets, at)` | `Brackets` snap from 1.4× to 1× onto the thing in focus |
-| `carry(from, to, at, duration)` | `from` moves and scales onto `to`'s box, then hands over to it: the question's number flying into its row, a trade into the tape. Both must be untransformed at that moment. |
+| `lock(brackets, at, { around, pad })` | `Brackets` snap onto the thing in focus, from at most 24 px larger on each side and never past 12 px from the frame's sides. With `around` they are fitted to those marks plus `pad` at that time, so one set can step from level to level. |
+| `carry(from, to, at, { duration, arc, match, last, reveal, fit, keep })` | A copy of `from` flies in the top layer (`carry-layer`, drawn after everything) and lands on the matching text inside `to` (its own text, or `match`; `last` for the last occurrence), then hands over in one step. `arc: "x"` or `"y"` leads on one axis; both axes slow into the landing. `reveal: false` when another carry reveals `to`; `fit: false` keeps its size; `keep` leaves the original, dimmed while the copy leaves. Both must be untransformed at that moment. |
+| `mirror(target, x, at, duration)` | A shape turns over about the vertical line at `x`, like a card: a written put into a written call |
 | `morph(path, d, at, duration)` | A path becomes another with the same commands (draw both through the same points, e.g. with one `path(f)` helper): value into profit, a written put into a written call |
 | `rise(at)`, `sink(at)` | The chart layer (`depth`) rises into view or sinks away |
 | `cam(scale, focus, target)`, `home` | Camera props for the `world` group: scale about the chart so `focus` lands on `target` |
@@ -212,7 +215,7 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 
 **Type and layout**
 - A headline sits at `L.headY`, left-aligned at `margin`, with `maxWidth: room * 0.74` on the wide frame so it never meets the corner tag. On a phone it uses its short variant and the full `room`.
-- One idea per headline, about 8–10 words on the wide frame. At the default 2× a headline is read in half its hold, so hold each one at least 2.6 s at 1× and put the numbers on the stage rather than in the sentence. If it doesn't fit two lines, shorten it.
+- One idea per headline, at most 8 words on the wide frame. At the default 2× a headline is read in half its hold, so hold each one at least 3.5 s at 1× and put the numbers on the stage rather than in the sentence. If it doesn't fit two lines, shorten it.
 - Tape notation (`10 @ $4.10`) belongs on tapes and tickets, never in a headline. In a sentence, write "10 at $4.10" or "10 张 $4.10".
 - Keep text off the frame edges: anchor the last tick label of an axis to its end, and leave a right margin on the phone for labels near the edge.
 - On a phone, prefer short labels and stacked layouts over shrinking type below the frame's minimums.
@@ -220,10 +223,17 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 **Motion**
 - One thing moves at a time; stagger a group by 0.1–0.3 s.
 - Numbers, bars and lines never overshoot: data lands exactly, a big figure included (`power3.out`). Overshoot (`pop`, `slam`) is for chips and tags only.
-- Carry, don't cut, where an element has somewhere to go: the question's numbers fly to their places in the first teaching shot; a trade flies from the book to the tape. Route a carry so it never crosses a figure the learner is reading.
+- Carry, don't cut, where an element has somewhere to go: the question's numbers fly to their places in the first teaching shot; a trade flies from the book to the tape.
+- A carry starts clear of other marks, keeps 6 px clear of every settled label and never crosses a bar, line or bracket on its way, nor another flight. Its target appears only as it lands, and it keeps its colour: colour the target the way the source is coloured (asks red, bids green, in the book and on the cards). Where no straight path is clear, give it two legs through an invisible waypoint (a phone's trade drops down a clear lane, stops level with the tape's top row, then slides in), or let what it must pass step back to 0.3 first.
+- Make room first: a stack shifts down, then the new item arrives.
+- Headlines run at most 8 words (18 characters in Chinese) with at most two figures, and every figure in a headline is on the stage while it is up. Name the event exactly ("bought", not "gone"; "Add 5, cancel 5"), and reveal a headline's second half only when its event happens.
 - Lines draw on with `getTotalLength()` dash drawing, or are revealed by a clip rectangle that starts at width 0.
 - Cut to big type rather than overlaying a claim on a chart.
 - Every count names its `from`, so scrubbing backwards never jumps.
+
+- Keep every mark at least 12 px from a phone frame's sides, brackets as they scale in included.
+- One colour per meaning: a line, its label, its marker and its pen share one colour, and a loss figure is red even on a writer's orange line.
+- Never strike out a true statement; a value that stops being true turns over (`flip`) or steps back.
 
 **Honesty**
 - Every number on screen comes from the lesson's model. If the film needs a new figure, add it to the model so the playground shows the same one.
@@ -270,7 +280,15 @@ The repository forbids unit tests. Verify with type checks, lint, a build and br
    // bottom of each line box, and flag pairs that overlap by more than 2 × 3 px.
    ```
 
-   Also record console errors. A film passes when every size and language reports no errors, no spills and no overlaps. Sample the hero moves again every 0.1 s: a carry can cross a label between two half-second frames.
+   Also record console errors. A text held at a scale is settled, not moving: judge "moving" by a running tween on the text or a parent, never by its transform. Also check text against stroked lines, and text and lock brackets against the frame edge (12 px on a phone). A film passes when every size and language reports no errors, no spills, no overlaps, no crossings and no edges.
+
+   Then **the flight check**, every 0.1 s in all four configurations, for everything in flight (the carry layer, and text moved by a running tween that isn't an exit):
+   - flight over settled text (closer than 6 px), and flight over flight;
+   - flight over a bar, dot, line or bracket before the last 15 % of its travel, except a mark it sets off from or comes to rest on;
+   - a kept copy on top of its own original for 0.2 s or more;
+   - a copy whose colour differs from the text it lands on (compare against the `tspan` under the point, not just the `text`).
+
+   Stamp every scan and contact sheet with the commit, a hash of the film and of the kit, and the time, and re-run after the last save: a sheet made before the final edit reads as current.
 4. **Read the frames yourself.** The scan ignores text inside the camera's world group, so look at contact sheets of the 1440 English and 390 Chinese frames for labels crossing a curve, labels clipped at a plot edge, wrong numbers and awkward copy.
 5. **Play it for real.** Load the lesson with no saved speed, let the film autoplay, and confirm the speed button reads 2×, the player reaches `data-ended` in about half the film's length, "Try the playground" opens the playground (`data-player-mode="play"`), and every playground scene opens without console errors. Radix tabs need real pointer events in automation.
 6. **Build.** `pnpm build` in `apps/web`.
@@ -291,7 +309,7 @@ The repository forbids unit tests. Verify with type checks, lint, a build and br
 - **Scale only single text elements.** GSAP scales an SVG `<g>` about its box corner and lifts it off its baseline.
 - **Dashed lines lose their dashes when drawn on.** Dash drawing overwrites `strokeDasharray`; set the dash pattern back when the draw finishes. A round-capped line drawn by dash must start at opacity 0, or its caps show as dots.
 - **Resets must be tweens, not `tl.set` of `textContent`.** To return a counter to an earlier value, count back with explicit `from` and `to`, so scrubbing in either direction shows the right number.
-- **Cents and dollars.** `usd()` and `signedUsd()` take cents. One film showed $0.05 − $0.03 for $5.25 − $3.25 because a model value already in cents was divided by 100 again.
+- **Cents and dollars.** `usd()` and `signedUsd()` take cents. One film showed $0.05 − $0.03 for $5.25 − $3.25 because a model value already in cents was divided by 100 again; another drew a $420 drop 0.2 px tall for the same reason.
 - **Model extraction by script must assert every replacement.** Biome reformats lines after each save, so an edit that silently matches nothing leaves the file half-changed.
 - **Keys must not be copy.** The player once keyed its reserved captions by prompt text; two scenes with the same prompt gave React duplicate keys. Key by id.
 - **The phone frame is not a scaled desktop.** Each film needs its own phone choices: short labels, stacked layouts, labels anchored away from curves and edges.
@@ -299,13 +317,16 @@ The repository forbids unit tests. Verify with type checks, lint, a build and br
 - **A single-number dash array merges into a dashed line's own pattern.** Drawing a `5 4` dashed line with `strokeDasharray: length` gave `736px, 4px`, and the whole line showed ahead of the pen. Give dash and gap both: `` `${length} ${length}` `` (the kit's `trace` does).
 - **Film colours change on the timeline.** The diagrams' 0.3 s CSS colour transition made a scrubbed frame show a colour on its way; film marks take no CSS transition, so a class or fill set at a time is that colour at that time.
 - **A carry's path can cross what the learner is reading.** A print flying from venue C to a strip under the NBBO crossed the NBBO figure; the strip moved under C. Start a carry clear of other marks and land it on the matching text.
+- **GSAP reads an `svgOrigin` through the mark's current transform.** A carry that set its origin in the tween landed tens of pixels off its text whenever a seek or scrub had already moved the copy before that tween first rendered. Set the origin once at build time, while the mark is untransformed (the kit's `carry` does), and give `fromTo`s with an origin `smoothOrigin: false`.
+- **Two sets at one time on one mark fight.** A carry that reveals a waypoint at the moment the next carry hides it left the waypoint showing; pass `reveal: false` to the first leg.
+- **A class built by template needs its space.** `` `wt-film-num${tone}` `` gave `wt-film-numwt-film-loss`, and the best ask and bid lost their colour at landing. The flight check's colour test now catches it.
 - **A `fromTo` renders its start at build time.** A tween whose `onUpdate` writes a meter or moves a marker will write its start state the moment it is created, so a later walk overwrote an earlier one's readout before either began. Give such tweens `immediateRender: false`.
 
 ## 9. Style direction: what we take from motion-design references
 
 In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-styles-15) (MIT), fifteen 10-second motion-design styles, each made by an AI from one prompt. Its films are rendered to MP4 with synthesised sound, so its pipeline does not apply to us, but several techniques and its review process do.
 
-**Status:** "In use" is in the film kit today. "Piloted" is built and used in premium-payoff and quotes-orders-trades (October 5, 2026), not yet rolled out to the other films. "Planned" is agreed direction, not yet built.
+**Status:** "In use" is in the film kit today. "Piloted" is built and used in premium-payoff and quotes-orders-trades (October 5, 2026) and is being rolled out module by module. "Planned" is agreed direction, not yet built.
 
 | Source style | What we take | Where | Status |
 |---|---|---|---|
@@ -326,11 +347,11 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 
 **Craft rules from the same source**
 - **Hook in the first 0.5 s.** The title card now lasts 2 s (1 s at 2×); the name wipes on from the first frame.
-- **One hero moment at 60–75 % of the runtime.** Piloted at 60–65 % (section 4); name it in the treatment.
+- **One hero moment at 60–75 % of the runtime.** We use 55–65 % (section 4); name it in the treatment.
 - **Transitions carried by elements, not crossfades.** Piloted with `carry` and `morph`.
 - **Key frames as poster-worthy stills** and **every frame a pure function of time**: in use.
 
-**Before rolling the pilots' pattern out**, the October 5 jury (premium-payoff 5.3 → 6.4, quotes 4.9 → 6.0) asked for: carry that lands on the matching text inside its target and never starts on another mark; a mirror or flip helper, since a straight morph between two payoffs passes through shapes nobody holds; brackets sized to their content plus padding at 390 px; an English line-break penalty for ending on "a", "the", "at", "of" or "to"; phone headlines that leave without lifting into the corner tag; and a scan that also checks text against lines and edges inside the camera's world group.
+**The pilots' reviews.** Five jury rounds on October 5–6 took premium-payoff from 5.3 to 7.2 and quotes from 4.9 to 6.6 before the last round of fixes. Each round's findings are now kit behaviour (carry, lock, mirror, line breaks, phone headline exits) or rules in sections 4, 6 and 7 and the checklist below.
 
 **Review by an independent jury (in use).** After a film passes section 7, give a separate AI session its frames (a contact sheet every 0.5 s, plus full frames at the key moments) and ask it to judge harshly, score 1–10 on the dimensions below (5 = competent student work, 7 = solid professional, 8 = high-end agency, 9 = award shortlist), and list 5–10 fixes ordered by impact, each with times, what is wrong, why it matters and a concrete fix. Apply the fixes, then review once more.
 
@@ -352,11 +373,14 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - [ ] Every headline has a phone variant; copy is idiomatic in both languages; no tape notation in headlines
 - [ ] Every moving mark has a unique `data-f`; counts name their `from`
 - [ ] Colours follow their meanings; data never overshoots
-- [ ] One hero moment at 60–65 %, named in the treatment; headlines held at least 2.6 s, the claim at least 3.5 s
+- [ ] At most seven beats and about 45 s played; headlines of at most 8 words (18 Chinese characters) and two figures, held at least 3.5 s; the question line 3.5 s; the claim 4 s
+- [ ] One hero moment at 55–65 %, named in the treatment, its figure the loudest mark, held 2 s with an after-beat; its payoff staggered
+- [ ] Every carry: top layer, starts clear, path clear of marks and flights, slows on both axes, target shown on arrival, colour kept
 - [ ] Numbers carry across shots; nothing that happened un-happens
 - [ ] Next card matches the syllabus (or "the module checkpoint")
 - [ ] `tsc` and `biome` clean
-- [ ] Scan clean at 1440 and 390, English and Chinese; frames read by eye
+- [ ] Scan and flight check clean at 1440 and 390, English and Chinese, stamped after the last save; frames read by eye
+- [ ] Phone: every mark 12 px from the sides, brackets included
 - [ ] Real playback reaches the end at 2× and opens the playground; no console errors
 - [ ] `pnpm build` passes
 - [ ] GIF made outside the repository and linked
