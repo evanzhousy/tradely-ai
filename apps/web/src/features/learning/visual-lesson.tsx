@@ -1,9 +1,64 @@
 import { Skeleton } from "@tradely/ui/components/skeleton";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@tradely/ui/components/tabs";
 import { lazy, Suspense } from "react";
+import { syllabus } from "@/content/syllabus";
 import type { Locale } from "@/i18n/messages";
 import { getDiagramPalette } from "./diagram-palette";
 import { LessonMotion } from "./lesson-motion";
 import { VisualLessonIdentity } from "./visual-lesson-identity";
+
+function LessonLoading({
+	locale,
+	checkpoint,
+}: {
+	locale: Locale;
+	checkpoint: boolean;
+}) {
+	const label = locale === "zh" ? "正在加载课程…" : "Loading lesson…";
+	if (checkpoint)
+		return (
+			<div role="status" className="flex flex-col gap-4">
+				<span>{label}</span>
+				<Skeleton className="h-96 w-full" />
+			</div>
+		);
+	return (
+		<section
+			role="status"
+			aria-label={label}
+			className="walkthrough concept-lab visual-classroom wt-player"
+			aria-busy="true"
+		>
+			<span className="sr-only">{label}</span>
+			<Tabs value="watch" className="gap-[inherit]">
+				<TabsList className="wt-modes">
+					<TabsTrigger value="watch" isDisabled>
+						{locale === "zh" ? "观看" : "Watch"}
+					</TabsTrigger>
+					<TabsTrigger value="play" isDisabled>
+						{locale === "zh" ? "探索区" : "Playground"}
+					</TabsTrigger>
+				</TabsList>
+				<TabsContent
+					value="watch"
+					className="flex min-w-0 flex-col gap-[inherit]"
+				>
+					<div className="wt-film-frame">
+						<Skeleton className="wt-film w-full" />
+					</div>
+					<div className="wt-nav" aria-hidden="true">
+						<Skeleton className="h-6 w-full" />
+					</div>
+				</TabsContent>
+			</Tabs>
+		</section>
+	);
+}
 
 const lessons = {
 	"iv-rank-percentile": lazy(() =>
@@ -336,12 +391,13 @@ export function VisualLesson({
 				<LessonMotion>
 					<Suspense
 						fallback={
-							<div role="status" className="flex flex-col gap-4">
-								<span>
-									{locale === "zh" ? "正在加载课程…" : "Loading lesson…"}
-								</span>
-								<Skeleton className="h-96 w-full" />
-							</div>
+							<LessonLoading
+								locale={locale}
+								checkpoint={
+									syllabus.find((lesson) => lesson.id === lessonId)?.kind ===
+									"checkpoint"
+								}
+							/>
 						}
 					>
 						<Lesson locale={locale} />

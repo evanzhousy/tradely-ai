@@ -191,7 +191,13 @@
 
 /* Film: a fixed-aspect frame that is its own stage. A dark stage brings its own tokens, so
    the diagram classes draw on it the same way whatever the page's theme. */
+.wt-film-frame {
+	container: film / inline-size;
+	min-width: 0;
+}
 .wt-film {
+	/* Reserve the authored frame while JS measures it and the SVG loads. */
+	aspect-ratio: 16 / 9;
 	position: relative;
 	min-width: 0;
 	overflow: hidden;
@@ -202,9 +208,16 @@
 /* On a phone the film runs to the lesson card's inner edge: the card's padding and the tab
    panel's would otherwise take 40px of a 358px card. */
 @media (max-width: 560px) {
-	.wt-player .wt-film {
+	.wt-player .wt-film-frame {
 		margin-inline: calc(-0.75rem - 8px);
+	}
+	.wt-player .wt-film {
 		border-radius: 1.125rem;
+	}
+}
+@container film (width < 522px) {
+	.wt-film {
+		aspect-ratio: 4 / 5;
 	}
 }
 .wt-film[data-stage="dark"] {

@@ -98,35 +98,37 @@ export function FilmStage({
 	const { Scene } = film;
 	const height = width === null ? 0 : film.height(width);
 	return (
-		<div
-			ref={stage}
-			className="wt-film"
-			data-film={film.id}
-			data-stage={film.stage}
-			style={{
-				aspectRatio: width === null ? undefined : `${width} / ${height}`,
-			}}
-		>
-			{width === null ? null : (
-				<svg
-					ref={svg}
-					className="wt-svg wt-film-svg"
-					viewBox={`0 0 ${width} ${height}`}
-					width={width}
-					height={height}
-					role="img"
-					aria-label={pick(film.label, locale)}
-				>
-					<Scene
-						key={`${width}:${locale}`}
+		<div className="wt-film-frame">
+			<div
+				ref={stage}
+				className="wt-film"
+				data-film={film.id}
+				data-stage={film.stage}
+				style={{
+					aspectRatio: width === null ? undefined : `${width} / ${height}`,
+				}}
+			>
+				{width === null ? null : (
+					<svg
+						ref={svg}
+						className="wt-svg wt-film-svg"
+						viewBox={`0 0 ${width} ${height}`}
 						width={width}
 						height={height}
-						locale={locale}
-					/>
-					{/* Above everything the Scene draws: what `director.carry` flies. */}
-					<g key={`carry:${width}:${locale}`} data-f="carry-layer" />
-				</svg>
-			)}
+						role="img"
+						aria-label={pick(film.label, locale)}
+					>
+						<Scene
+							key={`${width}:${locale}`}
+							width={width}
+							height={height}
+							locale={locale}
+						/>
+						{/* Above everything the Scene draws: what `director.carry` flies. */}
+						<g key={`carry:${width}:${locale}`} data-f="carry-layer" />
+					</svg>
+				)}
+			</div>
 		</div>
 	);
 }
