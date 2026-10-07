@@ -10,6 +10,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -25,7 +26,6 @@ import {
 	dollars,
 	GLYN,
 	MONDAY,
-	NOTICE,
 	perTrade,
 	REFUSED,
 	SAVED_FLOOR,
@@ -39,15 +39,15 @@ import {
  * 20 trades leaves GLYN N/A and ALFA in front. Saved as a view, the formula recomputes on
  * Tuesday, where DUNE leads: the view keeps the definition, not Monday's numbers.
  *
- *   open      0–4      "Build your own Rank column"
- *   question  4–9.5    [Total Premium] + [Trades]
- *   units     9.5–18   usd + count: refused; ÷: usd, $6,458
- *   rank      18–27.6  total premium; per trade; a floor of 20
- *   view      27.6–33.5 Tuesday recomputes; cut: the claim
- *   next      33.5–36  Next: fork or write a recipe with AI
+ *   open      0–4        "Build your own Rank column"
+ *   question  4–9.6      [Total Premium] + [Trades]
+ *   units     9.6–17.3   usd + count: refused; ÷: usd, $6,458
+ *   rank      17.3–27    total premium; per trade; a floor of 20, ALFA locked
+ *   view      27–37.6    Tuesday recomputes; the definition, not the numbers; cut: the claim
+ *   next      37.6–40.1  Next: fork or write a recipe with AI
  */
 
-const END = 36;
+const END = 40.1;
 const TUESDAY = symbolFlowSessions.tuesday.rows;
 const SYMBOLS = MONDAY.map((row) => row.symbol);
 type State = 0 | 1 | 2 | 3;
@@ -120,11 +120,6 @@ const copy = {
 	qTag: ["New column · Rank Symbols", "新列 · Rank Symbols"],
 	qLine: ["What does the editor show for ALFA?", "编辑器对 ALFA 显示什么？"],
 	unitHead: ["Every field carries a unit.", "每个字段都带着单位。"],
-	refuseHead: [
-		"Dollars plus a count has no unit: the editor refuses it.",
-		"美元加计数没有单位：编辑器直接拒绝。",
-	],
-	refuseHeadShort: ["usd + count: refused.", "usd + count：拒绝。"],
 	divideHead: [
 		"Divide instead: dollars per trade, unit usd.",
 		"改为相除：每笔多少美元，单位 usd。",
@@ -137,15 +132,15 @@ const copy = {
 	],
 	totalHeadShort: ["By total premium.", "按总权利金。"],
 	perHead: [
-		`Per trade, GLYN leads: ${dollars(perTrade(GLYN))} on just ${GLYN.trades} trades.`,
-		`按每笔，GLYN 领先：${dollars(perTrade(GLYN))}，只有 ${GLYN.trades} 笔。`,
+		`Per trade, GLYN leads on ${GLYN.trades} trades.`,
+		`按每笔，GLYN 领先，只有 ${GLYN.trades} 笔。`,
 	],
 	perHeadShort: [
 		`Per trade: GLYN, on ${GLYN.trades} trades.`,
 		`每笔：GLYN，只有 ${GLYN.trades} 笔。`,
 	],
 	floorHead: [
-		`A floor of ${SAVED_FLOOR} trades: GLYN is N/A, ALFA leads.`,
+		`A floor of ${SAVED_FLOOR}: GLYN N/A, ALFA leads.`,
 		`门槛 ${SAVED_FLOOR} 笔：GLYN 为 N/A，ALFA 领先。`,
 	],
 	floorHeadShort: [
@@ -153,8 +148,8 @@ const copy = {
 		`门槛 ${SAVED_FLOOR}：ALFA 领先。`,
 	],
 	viewHead: [
-		`Saved as a view, the formula recomputes Tuesday: ${TUE_LEADER} leads.`,
-		`保存为视图后，公式在周二重新计算：${TUE_LEADER} 领先。`,
+		`Tuesday, it recomputes: ${TUE_LEADER} leads.`,
+		`周二重新计算：${TUE_LEADER} 领先。`,
 	],
 	viewHeadShort: [
 		`Tuesday recomputes: ${TUE_LEADER}.`,
@@ -162,7 +157,13 @@ const copy = {
 	],
 	trades: ["trades", "笔数"],
 	columnTotal: ["column · Total Premium", "列 · Total Premium"],
+	keepHead: ["The view keeps the definition.", "视图保存的是定义。"],
+	keepHeadShort: ["It keeps the definition.", "保存的是定义。"],
 	claimBig: ["A Rank column is yours to define.", "Rank 列由你来定义。"],
+	claimSub: [
+		"Descriptive and yours, not a TradingFlow metric.",
+		"描述性的、由你定义，不是 TradingFlow 指标。",
+	],
 	nextBig: [
 		"Next: fork or write a recipe with AI",
 		"下一课：用 AI 分叉或编写 Recipe",
@@ -266,7 +267,6 @@ function Scene({
 				/>
 			</g>
 			{headline("u-head", copy.unitHead, copy.unitHead)}
-			{headline("x-head", copy.refuseHead, copy.refuseHeadShort)}
 			{headline("d-head", copy.divideHead, copy.divideHeadShort)}
 
 			{/* The column editor. */}
@@ -352,8 +352,44 @@ function Scene({
 			{/* The ranking. */}
 			{headline("t-head", copy.totalHead, copy.totalHeadShort)}
 			{headline("p-head", copy.perHead, copy.perHeadShort)}
-			{headline("f-head", copy.floorHead, copy.floorHeadShort)}
+			<Lines
+				name="f-head"
+				text={t(narrow ? copy.floorHeadShort : copy.floorHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.perHeadShort : copy.perHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("v-head", copy.viewHead, copy.viewHeadShort)}
+			<Lines
+				name="w-head"
+				text={t(narrow ? copy.keepHeadShort : copy.keepHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.viewHeadShort : copy.viewHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-floor" glow />
 			<g data-f="rank">
 				<text
 					data-f="f-0"
@@ -475,7 +511,7 @@ function Scene({
 				/>
 				<Lines
 					name="z-sub"
-					text={t(NOTICE)}
+					text={t(copy.claimSub)}
 					x={W / 2}
 					y={
 						H * 0.42 +
@@ -501,7 +537,15 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop } = d;
+	const { tl, one, kids, show, hide } = d;
+	/** A mark lands slightly large and settles, without overshoot. */
+	const land = (target: Element, time: number, duration = 0.55) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -512,7 +556,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const row = (symbol: string) => one(`row-${symbol}`);
@@ -521,9 +565,16 @@ function build(context: FilmContext) {
 		order(k).indexOf(symbol) * L.rowStep;
 	const width = (k: State, symbol: string) =>
 		((score(k, rowOf(k, symbol)) ?? 0) / top(k)) * L.barMax;
-	/** Every row to its place and size under state k, with its value swapped in. */
+	/**
+	 * Every row to its place and size under state k, with its value swapped in. A row that
+	 * changes place dims while it passes the others, so no two read over each other.
+	 */
 	const rank = (from: State, k: State, time: number) => {
 		for (const symbol of SYMBOLS) {
+			if (lift(from, symbol) !== lift(k, symbol)) {
+				tl.to(row(symbol), { opacity: 0.25, duration: 0.15 }, time - 0.1);
+				tl.to(row(symbol), { opacity: 1, duration: 0.25 }, time + 0.65);
+			}
 			tl.to(
 				row(symbol),
 				{ y: lift(k, symbol), duration: 0.7, ease: "power2.inOut" },
@@ -543,17 +594,20 @@ function build(context: FilmContext) {
 		}
 	};
 
+	const lockFloor = one<SVGGraphicsElement>("lock-floor");
+
 	d.hidden([
 		...flat("q"),
 		...[
 			"u-head",
-			"x-head",
 			"d-head",
 			"t-head",
 			"p-head",
 			"f-head",
 			"v-head",
+			"w-head",
 		].map((name) => one(name)),
+		lockFloor,
 		...kids("editor"),
 		...kids("rank"),
 		...SYMBOLS.flatMap((symbol) => [
@@ -562,6 +616,7 @@ function build(context: FilmContext) {
 		]),
 		...kids("claim"),
 	]);
+
 	// Rows start in the total-premium order.
 	for (const symbol of SYMBOLS) tl.set(row(symbol), { y: lift(0, symbol) }, 0);
 
@@ -574,83 +629,87 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.4);
+	show(one("q-line"), 6.0);
 
 	// ——— units: the editor checks them first ———
-	tl.addLabel("units", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("u-head"), 9.7, "above");
-	show([one("box"), one("box-tag")], 10.0);
-	show([one("tok-a"), one("tok-plus"), one("tok-b")], 10.3);
-	pop(one("unit-a"), 11.0, 0.4);
-	pop(one("unit-b"), 11.3, 0.4);
-	d.swap(one("u-head"), one("x-head"), 12.4);
-	show(one("refused"), 12.8, "right");
-	tl.to(one("box-bad"), { opacity: 1, duration: 0.3 }, 12.8);
+	tl.addLabel("units", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("u-head"), 9.8, "above");
+	show([one("box"), one("box-tag")], 10.1);
+	show([one("tok-a"), one("tok-plus"), one("tok-b")], 10.4);
+	land(one("unit-a"), 11.0, 0.4);
+	land(one("unit-b"), 11.3, 0.4);
+	// Dollars plus a count has no unit: refused.
+	show(one("refused"), 12.2, "right");
+	tl.to(one("box-bad"), { opacity: 1, duration: 0.3 }, 12.2);
 	// Divide instead.
-	d.swap(one("x-head"), one("d-head"), 14.6);
-	hide(one("refused"), 15.0);
-	tl.to(one("box-bad"), { opacity: 0, duration: 0.3 }, 15.0);
-	d.flip(one("tok-plus"), one("tok-div"), 15.0);
-	tl.set(one("tok-plus"), { opacity: 0 }, 15.3);
-	show(one("output"), 15.4);
+	d.swap(one("u-head"), one("d-head"), 13.4);
+	hide(one("refused"), 13.75);
+	tl.to(one("box-bad"), { opacity: 0, duration: 0.3 }, 13.75);
+	d.flip(one("tok-plus"), one("tok-div"), 14.0);
+	tl.set(one("tok-plus"), { opacity: 0 }, 14.3);
+	show(one("output"), 14.4);
 	tl.fromTo(
 		one("preview"),
 		{ opacity: 0, y: 6 },
-		{ opacity: 1, y: 0, duration: 0.55, ease: "back.out(2)" },
-		15.8,
+		{ opacity: 1, y: 0, duration: 0.55, ease: "power3.out" },
+		14.8,
 	);
 
 	// ——— rank: totals, per trade, a floor ———
-	tl.addLabel("rank", 18);
-	hide([one("d-head"), ...kids("editor")], 18.0);
-	show(one("t-head"), 18.2, "above");
-	show([one("f-0"), one("day-mon"), one("col-trades")], 18.5);
+	tl.addLabel("rank", 17.3);
+	hide([one("d-head"), ...kids("editor")], 17.3);
+	show(one("t-head"), 17.65, "above");
+	show([one("f-0"), one("day-mon"), one("col-trades")], 17.9);
 	SYMBOLS.forEach((symbol) => {
 		const i = order(0).indexOf(symbol);
 		tl.fromTo(
 			row(symbol),
 			{ opacity: 0, x: 24 },
 			{ opacity: 1, x: 0, duration: 0.45 },
-			18.7 + i * 0.12,
+			18.1 + i * 0.12,
 		);
 		tl.to(
 			one(`bar-${symbol}`),
 			{ attr: { width: width(0, symbol) }, duration: 0.6, ease: "power2.out" },
-			18.9 + i * 0.12,
+			18.3 + i * 0.12,
 		);
-		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, 19.1 + i * 0.12);
+		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, 18.5 + i * 0.12);
 	});
 	// Per trade.
 	d.swap(one("t-head"), one("p-head"), 21.2);
 	d.flip(one("f-0"), one("f-1"), 21.6);
 	tl.set(one("f-0"), { opacity: 0 }, 21.9);
 	rank(0, 1, 21.7);
-	// A floor.
-	d.swap(one("p-head"), one("f-head"), 24.2);
-	d.flip(one("f-1"), one("f-2"), 24.6);
-	tl.set(one("f-1"), { opacity: 0 }, 24.9);
-	rank(1, 2, 24.7);
+	// A floor. The hero: ALFA back in front.
+	show(one("f-head"), 23.4);
+	d.flip(one("f-1"), one("f-2"), 23.6);
+	tl.set(one("f-1"), { opacity: 0 }, 23.9);
+	rank(1, 2, 23.7);
+	d.lock(lockFloor, 24.6, { around: row(ALFA.symbol), pad: 6 });
+	tl.addLabel("hero-lock", 24.6);
 
 	// ——— view: the formula recomputes, the numbers don't stay ———
-	tl.addLabel("view", 27.6);
-	d.swap(one("f-head"), one("v-head"), 27.6);
-	d.flip(one("day-mon"), one("day-tue"), 28.0);
-	tl.set(one("day-mon"), { opacity: 0 }, 28.3);
+	tl.addLabel("view", 27);
+	hide([one("p-head"), one("f-head"), lockFloor], 27.0);
+	show(one("v-head"), 27.35, "above");
+	d.flip(one("day-mon"), one("day-tue"), 27.7);
+	tl.set(one("day-mon"), { opacity: 0 }, 28.0);
 	for (const symbol of SYMBOLS) {
-		d.flip(one(`n-${symbol}-mon`), one(`n-${symbol}-tue`), 28.1);
-		tl.set(one(`n-${symbol}-mon`), { opacity: 0 }, 28.4);
+		d.flip(one(`n-${symbol}-mon`), one(`n-${symbol}-tue`), 27.8);
+		tl.set(one(`n-${symbol}-mon`), { opacity: 0 }, 28.1);
 	}
-	rank(2, 3, 28.3);
+	rank(2, 3, 28.0);
+	show(one("w-head"), 29.5);
 	// Cut: the claim.
-	hide([one("v-head"), ...kids("rank")], 30.4);
-	word(one("z-big"), 30.8);
-	show(one("z-sub"), 31.3);
+	hide([one("v-head"), one("w-head"), ...kids("rank")], 33.1);
+	word(one("z-big"), 33.5);
+	show(one("z-sub"), 33.9);
 
 	// ——— next ———
-	tl.addLabel("next", 33.5);
-	hide(kids("claim"), 33.5);
-	d.close(33.5);
+	tl.addLabel("next", 37.6);
+	hide(kids("claim"), 37.6);
+	d.close(37.6);
 	return tl;
 }
 
