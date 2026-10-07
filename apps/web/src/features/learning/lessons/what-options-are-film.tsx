@@ -45,14 +45,14 @@ import {
  *   open      0–4        "Options"
  *   question  4–8.6      $420 for the Oct 18 100 call; ALFA ends at $95?
  *   right     8.6–21.4   the call: $0 at $95, $1,000 at $110; the put at $90
- *   uses      21.4–37    hero: shares, then with a 95 put as ALFA falls, the floor at −$715;
+ *   uses      21.4–35.2  hero: shares, then with a 95 put as ALFA falls, the floor at −$715;
  *                        earn; a view
- *   sides     37–41      you +$580, Ben −$580
- *   claim     41–45.3    a right for you, an obligation for someone else
- *   next      45.3–47.8  Next: trading an option
+ *   sides     35.2–40.3  you +$580, Ben −$580
+ *   claim     40.3–44.7  a right for you, an obligation for someone else
+ *   next      44.7–46.7  Next: trading an option
  */
 
-const END = 46.4;
+const END = 46.7;
 const X = [80, 120] as const;
 const VALUE_TOP = 2_100;
 const USE_Y = [-2_000, 2_000] as const;
@@ -906,29 +906,29 @@ function build(context: FilmContext) {
 	show(one("most-tag"), 33.7);
 
 	// ——— sides: holder and writer ———
-	tl.addLabel("sides", 35.6);
-	hide(heads[4], 35.6);
-	sink(35.6);
-	show(heads[5], 35.95);
-	show([one("you-tag"), one("ben-tag")], 36.2);
-	word(one("you-before"), 36.4);
-	word(one("ben-before"), 36.7);
-	d.flip(one("you-before"), one("you-after"), 37.6);
-	tl.set(one("you-before"), { opacity: 0 }, 37.9);
-	d.flip(one("ben-before"), one("ben-after"), 37.8);
-	tl.set(one("ben-before"), { opacity: 0 }, 38.1);
-	show(one("sides-line"), 38.2);
+	tl.addLabel("sides", 35.2);
+	hide(heads[4], 35.2);
+	sink(35.2);
+	show(heads[5], 35.55);
+	show([one("you-tag"), one("ben-tag")], 35.8);
+	word(one("you-before"), 35.95);
+	word(one("ben-before"), 36.15);
+	d.flip(one("you-before"), one("you-after"), 36.8);
+	tl.set(one("you-before"), { opacity: 0 }, 37.1);
+	d.flip(one("ben-before"), one("ben-after"), 36.95);
+	tl.set(one("ben-before"), { opacity: 0 }, 37.25);
+	show(one("sides-line"), 36.8);
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.5);
-	hide([heads[5], ...flat("sides")], 39.5);
-	word(one("z-big"), 39.8);
-	show(one("z-sub"), 40.1);
+	tl.addLabel("claim", 40.3);
+	hide([heads[5], ...flat("sides")], 40.3);
+	word(one("z-big"), 40.6);
+	show(one("z-sub"), 40.9);
 
 	// ——— next ———
-	tl.addLabel("next", 43.9);
-	hide(kids("claim"), 43.9);
-	d.close(43.9);
+	tl.addLabel("next", 44.7);
+	hide(kids("claim"), 44.7);
+	d.close(44.7);
 	return tl;
 }
 
