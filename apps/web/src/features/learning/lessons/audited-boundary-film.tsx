@@ -31,16 +31,17 @@ import {
  * to that. The question gets a subject, a universe, a measure, an interval, the evidence
  * it needs and a rule for revising it. The hero is its answer, claim by claim, each
  * stamped with its evidence: 540 observed, 51% calculated, and "traders favor 110", an
- * interpretation; then the 110 bar splits, 500 of it one spread leg, the interpretation
- * fades and glowing brackets lock on it; the 120 call's volume stays unknown. Last, the
- * log: Tuesday's data revises record 1 in place; a switch to puts opens record 2.
+ * interpretation; then the 110 bar splits, 500 of it one spread leg, the interpretation is
+ * struck through and glowing brackets lock on it; after the lock, the 120 call's volume
+ * stays unknown. Last, the log: Tuesday's 30 contracts for the 120 call come in and revise
+ * record 1 in place; a switch to puts opens record 2.
  *
  *   open      0–4        "Research questions"
  *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
- *   answer    17.6–30.4  hero: five strikes; observed; calculated; interpretation; the
- *                        split; locked; the gap
- *   log       30.4–39.1  record 1, revised in place; record 2 for puts
+ *   answer    17.6–30.9  hero: five strikes; observed; calculated; interpretation; the
+ *                        split, struck through; locked; then the gap
+ *   log       30.9–39.1  record 1; Tuesday's 120 call revises it in place; record 2 for puts
  *   claim     39.1–43.4  a question someone else can check
  *   next      43.4–45.4  Next: comparison groups
  */
@@ -183,6 +184,8 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 ];
 
 /** Record 1, once Tuesday's data is in: its title, answer and tag turn over in place. */
+/** Tuesday's figure for the 120 call, as record 1's revised answer writes it. */
+const LATE_TEXT: Copy = [`120: ${LATE}`, `120：${LATE}`];
 const revised = {
 	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
 	answer: [
@@ -196,8 +199,9 @@ const copy = {
 	title: ["Research questions", "研究问题"],
 	titleSub: ["what evidence can answer", "证据能回答什么"],
 	qTag: ["a research question", "一个研究问题"],
-	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪？」"],
+	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
+	lateDay: ["Tue 09:00", "周二 09:00"],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
 	a2Head: [
@@ -286,7 +290,7 @@ function Scene({
 					text={t(copy.qBig)}
 					x={W / 2}
 					y={H * 0.64}
-					size={T.head}
+					size={T.head * 1.2}
 					maxWidth={room}
 					className="wt-film-type"
 				/>
@@ -537,6 +541,28 @@ function Scene({
 					</text>
 				</g>
 			))}
+			{/* Tuesday's data for the 120 call: it comes in over record 1 and lands in its answer. */}
+			<g data-f="late">
+				{/* Under record 1, where record 2 will be: it rises straight into the answer line. */}
+				<text
+					data-f="late-n"
+					x={margin + 16}
+					y={L.recY(0) + L.recH + T.body * 1.8}
+					className="wt-film-type wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{t(LATE_TEXT)}
+				</text>
+				<text
+					data-f="late-day"
+					x={margin + 16 + textWidth(t(LATE_TEXT), text) + 12}
+					y={L.recY(0) + L.recH + T.body * 1.8}
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.lateDay).toUpperCase()}
+				</text>
+			</g>
 			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
 			<g data-f="rev">
 				<text
@@ -644,6 +670,7 @@ function build(context: FilmContext) {
 		lockClaim,
 		...recs,
 		...revs,
+		...kids("late"),
 		...kids("claim"),
 	]);
 	// The strike runs the story's own length, measured as set.
@@ -713,37 +740,24 @@ function build(context: FilmContext) {
 	);
 	show(claimRows[3], 24.8, "right");
 	stamp(tags[3], 25.2);
-	// And what the data doesn't hold.
-	show(claimRows[4], 25.6, "right");
-	stamp(tags[4], 26.0);
-	// The story is struck through, not erased.
+	// The story is struck through, right after the evidence against it, not erased.
 	tl.fromTo(
 		one("story-strike"),
 		{ opacity: 1, scaleX: 0, transformOrigin: "0% 50%" },
 		{ scaleX: 1, duration: 0.4, ease: "power2.out" },
-		26.2,
+		25.65,
 	);
-	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 26.2);
+	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 25.65);
 	d.lock(lockClaim, 26.8, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
 	tl.addLabel("hero-lock", 26.8);
 	show(heads[2], 26.8);
-	// After the lock: the hatch and its card answer each other.
-	tl.fromTo(
-		[one("spread-seg"), one("spread-swatch")],
-		{ attr: { "stroke-width": 1.5 } },
-		{
-			attr: { "stroke-width": 3.5 },
-			duration: 0.3,
-			yoyo: true,
-			repeat: 1,
-			immediateRender: false,
-		},
-		27.6,
-	);
+	// After the lock: what the data doesn't hold.
+	show(claimRows[4], 27.4, "right");
+	stamp(tags[4], 27.8);
 
 	// ——— log: revise, or start anew ———
-	tl.addLabel("log", 30.4);
-	d.swap([heads[1], heads[2]], heads[3], 30.4);
+	tl.addLabel("log", 30.9);
+	d.swap([heads[1], heads[2]], heads[3], 30.9);
 	hide(
 		[
 			...strikes,
@@ -753,22 +767,32 @@ function build(context: FilmContext) {
 			one("story-strike"),
 			lockClaim,
 		],
-		30.4,
+		30.9,
 	);
-	show(recs[0], 31.1, "right");
-	// Tuesday's data: record 1 turns over in place.
-	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.7);
-	d.flip(one("rec-0-title"), revs[0], 34.7);
-	tl.set(one("rec-0-title"), { opacity: 0 }, 35.0);
-	d.flip(one("rec-0-tag"), revs[1], 34.7);
-	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.0);
-	d.flip(one("rec-0-answer"), revs[2], 34.8);
-	tl.set(one("rec-0-answer"), { opacity: 0 }, 35.1);
+	show(recs[0], 31.4, "right");
+	// Tuesday's data for the 120 call comes in under record 1…
+	show(kids("late"), 33.9, "right");
+	// …and rises into its answer: record 1 turns over in place, caused.
+	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.6);
+	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.2 }, 35.0);
+	d.carry(
+		one<SVGGraphicsElement>("late-n"),
+		one<SVGGraphicsElement>("rev-answer"),
+		35.05,
+		{
+			duration: 0.6,
+		},
+	);
+	hide(one("late-day"), 35.05);
+	d.flip(one("rec-0-title"), revs[0], 35.0);
+	tl.set(one("rec-0-title"), { opacity: 0 }, 35.3);
+	d.flip(one("rec-0-tag"), revs[1], 35.0);
+	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.3);
 	// A new question: a new record.
-	show(recs[1], 35.5, "right");
-	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 35.5);
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 35.5);
-	show(heads[4], 35.5);
+	show(recs[1], 35.7, "right");
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 35.7);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 35.7);
+	show(heads[4], 35.6);
 
 	// ——— claim ———
 	tl.addLabel("claim", 39.1);
