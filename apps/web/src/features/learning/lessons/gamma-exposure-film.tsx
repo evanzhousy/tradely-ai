@@ -544,6 +544,27 @@ function Scene({
 				>
 					{t(copy.share)}
 				</Word>
+				{/* How small: the gross as a track, the net's share of it lit, under the sliver. */}
+				<rect
+					data-f="two-track"
+					className="wt-film-bar"
+					data-tone="neutral"
+					x={L.two.x0}
+					y={L.two.netY + T.body * 3.9}
+					width={L.two.span}
+					height={6}
+					rx={3}
+				/>
+				<rect
+					data-f="two-track-net"
+					className="wt-film-bar"
+					data-tone="total"
+					x={L.two.x0 + L.two.calls}
+					y={L.two.netY + T.body * 3.9}
+					width={L.two.puts - L.two.calls}
+					height={6}
+					rx={3}
+				/>
 			</g>
 			{headline("w1-head", copy.sidesHead, copy.sidesHead)}
 			<Lines
@@ -756,6 +777,15 @@ function build(context: FilmContext) {
 	show(one("w-head"), 29.25);
 	// After the lock: how small, against the gross the bars just spanned.
 	show(one("two-share"), 29.7, "below");
+	// Then how small, drawn: the gross as a track; the net's share of it lights under the sliver.
+	tl.set(one("two-track"), { opacity: 1 }, 30.4);
+	tl.fromTo(
+		one("two-track"),
+		{ attr: { width: 0 } },
+		{ attr: { width: L.two.span }, duration: 0.6, ease: "power2.out" },
+		30.4,
+	);
+	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 31.1);
 
 	// ——— coverage: which contracts, and what's missing ———
 	tl.addLabel("coverage", 33.25);
