@@ -32,12 +32,12 @@ import {
  *   open       0–4        "Start from a research checklist"
  *   question   4–9.6      "Before I sell a call, what should I check?"
  *   inspect    9.6–19.5   a friend's three steps; one is a forecast; Home's four
- *   edits      19.5–29.2  add earnings, move flow; refresh; cut: a working plan, locked
- *   customize  29.2–41.2  a request, its question, an answer, a proposal; cut: the claim
- *   next       41.2–43.7  Next: ask TradingFlow AI, then verify
+ *   edits      19.5–30.3  add earnings, move flow; refresh; cut: a working plan, locked
+ *   customize  30.3–44    a request, its question, an answer, a proposal; cut: the claim
+ *   next       44–46.5    Next: ask TradingFlow AI, then verify
  */
 
-const END = 43.7;
+const END = 46.5;
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
@@ -622,28 +622,28 @@ function build(context: FilmContext) {
 		26.2,
 	);
 	word(one("plan-big"), 26.6);
-	show(one("plan-sub"), 27.0);
-	d.lock(lockPlan, 27.2, {
+	show(one("plan-sub"), 26.8);
+	d.lock(lockPlan, 27.6, {
 		around: [one("plan-big"), one("plan-sub")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 27.2);
+	tl.addLabel("hero-lock", 27.6);
 
 	// ——— customize: the AI asks before it proposes ———
-	tl.addLabel("customize", 29.2);
-	hide([...kids("plan"), lockPlan], 29.2);
-	show(one("a-head"), 29.55, "above");
-	show([one("m-tag"), one("m-0")], 29.7, "above");
-	show(bubbles[0], 30.0);
-	show(bubbles[1], 31.0);
-	d.flip(one("m-0"), one("m-1"), 31.2);
-	tl.set(one("m-0"), { opacity: 0 }, 31.5);
-	show(one("o-head"), 33.1);
-	hide([bubbles[0], bubbles[1]], 33.1);
-	show(bubbles[2], 33.4);
-	show(bubbles[3], 34.2);
-	d.flip(one("m-1"), one("m-2"), 34.4);
-	tl.set(one("m-1"), { opacity: 0 }, 34.7);
+	tl.addLabel("customize", 30.3);
+	hide([...kids("plan"), lockPlan], 30.3);
+	show(one("a-head"), 30.65, "above");
+	show([one("m-tag"), one("m-0")], 30.8, "above");
+	show(bubbles[0], 31.1);
+	show(bubbles[1], 31.8);
+	d.flip(one("m-0"), one("m-1"), 32.0);
+	tl.set(one("m-0"), { opacity: 0 }, 32.3);
+	show(one("o-head"), 35.3);
+	hide([bubbles[0], bubbles[1]], 35.3);
+	show(bubbles[2], 35.6);
+	show(bubbles[3], 36.1);
+	d.flip(one("m-1"), one("m-2"), 36.3);
+	tl.set(one("m-1"), { opacity: 0 }, 36.6);
 	// Cut: the claim.
 	hide(
 		[
@@ -654,15 +654,15 @@ function build(context: FilmContext) {
 			one("m-tag"),
 			one("m-2"),
 		],
-		36.7,
+		39.6,
 	);
-	word(one("claim-big"), 37.1);
-	show(one("claim-sub"), 37.5);
+	word(one("claim-big"), 40.0);
+	show(one("claim-sub"), 40.4);
 
 	// ——— next ———
-	tl.addLabel("next", 41.2);
-	hide(kids("claim"), 41.2);
-	d.close(41.2);
+	tl.addLabel("next", 44.0);
+	hide(kids("claim"), 44.0);
+	d.close(44.0);
 	return tl;
 }
 
