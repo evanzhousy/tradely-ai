@@ -883,7 +883,7 @@ function build(context: FilmContext) {
 		const at = 32.85 + i * 1.0;
 		show([one(`k-${name}-tag`), one(`k-${name}-quote`)], at);
 		word(one(`k-${name}-loss`), at + 0.3);
-		show(one(`k-${name}-pct`), at + 0.7);
+		show(one(`k-${name}-pct`), at + 0.55);
 	});
 	// The thin call: the bid has to climb to break even.
 	d.swap(heads[5], heads[6], 36.25);
@@ -892,10 +892,10 @@ function build(context: FilmContext) {
 			(n) => one(n),
 		),
 		{ opacity: 0.35, duration: 0.4 },
-		36.65,
+		36.95,
 	);
-	show(one("k-thin-be"), 36.85);
-	d.lock(g("lock-be"), 37.05, { around: g("k-thin-be"), pad: 5 });
+	show(one("k-thin-be"), 37.1);
+	d.lock(g("lock-be"), 37.3, { around: g("k-thin-be"), pad: 5 });
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.2);
