@@ -38,16 +38,16 @@ import {
  *
  *   open      0–4        "Expected move"
  *   question  4–9.6      IV 35% → ±$? by Oct 18
- *   scale     9.6–15.8   $100 × 35% = $35; × √(32 ÷ 365) = × 0.296; ±$10.36
- *   bell      15.8–23.1  what the range covers: the ±1 SD band grows to 68% of outcomes
- *   straddle  23.1–31    hero: the straddle's bracket, $8.27; cut: 0.80 of one SD, locked
- *   outside   31–40.4    the tails, 16% each side; twelve past months, 4 outside one SD,
+ *   scale     9.6–16     $100 × 35% = $35; × √(32 ÷ 365) = × 0.296; ±$10.36
+ *   bell      16–23.3    what the range covers: the ±1 SD band grows to 68% of outcomes
+ *   straddle  23.3–31.8  hero: the straddle's bracket, $8.27; cut: 0.80 of one SD, locked
+ *   outside   31.8–40.5  the tails, 16% each side; twelve past months, 4 outside one SD,
  *                        May's earnings among them
- *   claim     40.4–44.8  "A range is a scale, not a wall."
- *   next      44.8–47.3  Next: the volatility surface
+ *   claim     40.5–44.85 "A range is a scale, not a wall."
+ *   next      44.85–47.35 Next: the volatility surface
  */
 
-const END = 47.3;
+const END = 47.35;
 const B_X = [68, 132] as const;
 const B_TOP = 1.3;
 const M_TOP = 2.4;
@@ -602,16 +602,16 @@ function build(context: FilmContext) {
 	tl.addLabel("scale", 9.6);
 	hide(flat("q"), 9.6);
 	for (const i of [0, 1, 2]) {
-		show(one(`e-tag-${i}`), 9.9 + i * 1.2);
-		land(one(`e-num-${i}`), 10.1 + i * 1.2);
+		show(one(`e-tag-${i}`), 9.9 + i * 1.0);
+		land(one(`e-num-${i}`), 10.1 + i * 1.0);
 	}
-	show(one("e-note"), 13.4);
+	show(one("e-note"), 12.5);
 
 	// ——— bell: what the range covers ———
-	tl.addLabel("bell", 15.8);
-	hide(flat("e"), 15.8);
-	show(one("b-head"), 16);
-	rise(16.1);
+	tl.addLabel("bell", 16);
+	hide(flat("e"), 16);
+	show(one("b-head"), 16.2);
+	rise(16.3);
 	tl.to(
 		one("bell-clip"),
 		{
@@ -619,9 +619,9 @@ function build(context: FilmContext) {
 			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		16.7,
+		16.9,
 	);
-	show(one("b-center"), 17.4, "above", 0.4);
+	show(one("b-center"), 17.6, "above", 0.4);
 	const spread = { half: 0 };
 	const grow = () => {
 		band.setAttribute("d", L.area(SPOT - spread.half, SPOT + spread.half));
@@ -629,42 +629,42 @@ function build(context: FilmContext) {
 	tl.to(
 		spread,
 		{ half: MOVE, duration: 1.0, ease: "power2.out", onUpdate: grow },
-		18,
+		18.2,
 	);
-	show([one("b-edge-low"), one("b-edge-high")], 18.8, "above", 0.4);
-	land(one("b-inside"), 19.2);
+	show([one("b-edge-low"), one("b-edge-high")], 19, "above", 0.4);
+	land(one("b-inside"), 19.4);
 	// The answer, as the share inside lands.
-	show(one("b2-head"), 19.5);
+	show(one("b2-head"), 19.7);
 
 	// ——— straddle: the hero. A narrower bracket, and its ratio. ———
-	tl.addLabel("straddle", 23.1);
-	d.swap([one("b-head"), one("b2-head")], one("s-head"), 23.1);
+	tl.addLabel("straddle", 23.3);
+	d.swap([one("b-head"), one("b2-head")], one("s-head"), 23.3);
 	for (const [i, side] of (["low", "high"] as const).entries())
 		tl.fromTo(
 			one(`s-line-${side}`),
 			{ opacity: 1, scaleY: 0, transformOrigin: "50% 100%" },
 			{ scaleY: 1, duration: 0.6, ease: "power2.out" },
-			23.6 + i * 0.15,
+			23.8 + i * 0.15,
 		);
 	tl.fromTo(
 		one("s-bracket"),
 		{ opacity: 0, scaleX: 0, transformOrigin: "50% 50%" },
 		{ opacity: 1, scaleX: 1, duration: 0.5, ease: "power2.out" },
-		24.3,
+		24.5,
 	);
-	show(one("s-label"), 24.6, "below", 0.4);
+	show(one("s-label"), 24.8, "below", 0.4);
 	// Cut: the ratio, locked.
-	hide(one("s-head"), 27.1);
-	sink(27.1);
-	land(one("r-num"), 27.5);
-	show(one("r-word"), 27.9);
-	d.lock(lockRatio, 28.2, { around: [one("r-num"), one("r-word")], pad: 5 });
-	tl.addLabel("hero-lock", 28.2);
-	show(one("r-sub"), 28.6);
+	hide(one("s-head"), 27.2);
+	sink(27.2);
+	land(one("r-num"), 27.55);
+	show(one("r-word"), 27.85);
+	d.lock(lockRatio, 28.1, { around: [one("r-num"), one("r-word")], pad: 5 });
+	tl.addLabel("hero-lock", 28.1);
+	show(one("r-sub"), 28.3);
 
 	// ——— outside: the tails, then real months ———
-	tl.addLabel("outside", 31);
-	hide([...kids("r"), lockRatio], 31);
+	tl.addLabel("outside", 31.8);
+	hide([...kids("r"), lockRatio], 31.8);
 	tl.set(
 		[
 			one("s-line-low"),
@@ -674,20 +674,20 @@ function build(context: FilmContext) {
 			one("b-inside"),
 		],
 		{ opacity: 0 },
-		31.2,
+		32,
 	);
-	show(one("o-head"), 31.75);
-	rise(31.4);
+	show(one("o-head"), 32.55);
+	rise(32.2);
 	tl.to(
 		[one("b-tail-low"), one("b-tail-high")],
 		{ opacity: 1, duration: 0.6 },
-		32,
+		32.8,
 	);
-	show([one("b-tail-label-low"), one("b-tail-label-high")], 32.4, "below", 0.4);
-	sink(33.8);
-	tl.set(charts.bell, { opacity: 0 }, 34.2);
-	tl.set(charts.months, { opacity: 1 }, 34.2);
-	rise(34.3);
+	show([one("b-tail-label-low"), one("b-tail-label-high")], 33.2, "below", 0.4);
+	sink(34.2);
+	tl.set(charts.bell, { opacity: 0 }, 34.6);
+	tl.set(charts.months, { opacity: 1 }, 34.6);
+	rise(34.7);
 	PAST.forEach((multiple, i) => {
 		tl.fromTo(
 			one(`m-bar-${i}`),
@@ -697,28 +697,28 @@ function build(context: FilmContext) {
 				duration: 0.45,
 				ease: "power3.out",
 			},
-			34.8 + i * 0.08,
+			35.1 + i * 0.07,
 		);
 	});
-	show(one("m-line-1"), 36, "right", 0.4);
-	show(one("m-line-2"), 36.4, "right", 0.4);
-	show(one("m-may"), 36.8, "below", 0.4);
-	show(one("m-head"), 36.8);
+	show(one("m-line-1"), 36.2, "right", 0.4);
+	show(one("m-line-2"), 36.6, "right", 0.4);
+	show(one("m-may"), 37.0, "below", 0.4);
+	show(one("m-head"), 37.0);
 	// Cut: the claim.
-	hide([one("o-head"), one("m-head")], 40.4);
-	sink(40.4);
+	hide([one("o-head"), one("m-head")], 40.5);
+	sink(40.5);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.7,
+		40.85,
 	);
-	show(one("c-sub"), 41.1);
+	show(one("c-sub"), 41.25);
 
 	// ——— next ———
-	tl.addLabel("next", 44.8);
-	hide(kids("claim"), 44.8);
-	d.close(44.8);
+	tl.addLabel("next", 44.85);
+	hide(kids("claim"), 44.85);
+	d.close(44.85);
 	return tl;
 }
 
