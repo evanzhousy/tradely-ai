@@ -47,12 +47,12 @@ import {
  *   orders    22.2–27.55 add 5 and cancel 5, no print; take 3, a print; volume 5 → 6 → 9
  *   venues    27.55–34.1 hero: the book splits into A, B, C; the best bid and ask fly into
  *                        the NBBO, $2.05 × $2.15
- *   gone      34.1–39.8  C's last 4 print: volume 13; best ask $2.20
- *   claim     39.8–44.25 a quote is an offer; only a trade prints
- *   next      44.25–46.75 Next: counterparties
+ *   gone      34.1–40.55 C's last 4 print: volume 13; best ask $2.20
+ *   claim     40.55–45   a quote is an offer; only a trade prints
+ *   next      45–47.5    Next: counterparties
  */
 
-const END = 46.75;
+const END = 47.5;
 const ASKS = [...BASE_ASKS].reverse();
 const BIDS = BASE_BIDS;
 const ASK = BASE_ASKS[0];
@@ -1088,7 +1088,8 @@ function build(context: FilmContext) {
 	// The bid's brackets step back once its copy has landed; the ask's hold as the hero.
 	fade(g("best-bid"), 31.9, 0.3);
 	show(heads[8], 30.5);
-	show(nbbo[0], 30.6);
+	// The NBBO's caption once its first figure has landed.
+	show(nbbo[0], 31.6);
 	// The NBBO is made from the bracketed figures: copies fly down out of B and C.
 	d.carry(g("nbsrc-bid"), nbbo[1] as SVGGraphicsElement, 30.8, {
 		duration: 0.9,
@@ -1127,7 +1128,7 @@ function build(context: FilmContext) {
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.8);
+	tl.addLabel("claim", 40.55);
 	hide(
 		[
 			heads[6],
@@ -1138,15 +1139,15 @@ function build(context: FilmContext) {
 			...stack,
 			lockVol,
 		],
-		39.8,
+		40.55,
 	);
-	word(one("z-big"), 40.1);
-	show(one("z-sub"), 40.4);
+	word(one("z-big"), 40.85);
+	show(one("z-sub"), 41.15);
 
 	// ——— next ———
-	tl.addLabel("next", 44.25);
-	hide(kids("claim"), 44.25);
-	d.close(44.25);
+	tl.addLabel("next", 45.0);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
