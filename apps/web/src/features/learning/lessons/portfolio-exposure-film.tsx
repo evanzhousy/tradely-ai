@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -33,13 +34,11 @@ import {
 	hedgedPnl,
 	PUT,
 	PUT_DELTA,
-	PUT_DELTA_FRIDAY,
 	PUT_FRIDAY,
 	PUT_STRIKE,
 	PUT_VEGA,
 	PUT_VEGA_PER_UNIT,
 	PUTS,
-	RAW_SUM,
 	round3,
 	SPOT,
 	STOCK_DELTA,
@@ -47,10 +46,8 @@ import {
 	THETA,
 	TOTAL,
 	UP,
-	UP_DELTA,
 	UP_PNL,
 	VEGA,
-	VEGA_TOTAL,
 	WEEK,
 	WEEK_PNL,
 	wholeUsd,
@@ -61,21 +58,20 @@ import {
  * done. The book in rows: 100 shares, 16 calls, and 5 puts in a second account whose Greeks
  * haven't arrived, so +1,006 is a covered subtotal; the puts report −130 and the total is
  * +876. Short 876 shares and delta is zero, yet a $5 jump makes +$875 and a quiet week costs
- * −$964. Last, two brokers' feeds: a vega per 1.00 of volatility, 100 times the per-point
- * figure, and a put delta stamped Friday.
+ * −$964: the book's gamma, theta and vega. Last, two brokers' feeds: a vega per 1.00 of
+ * volatility, 100 times the per-point figure, and a put delta stamped Friday.
  *
- *   open      0–4      "Portfolio Greeks"
- *   question  4–9.5    +1,006 shares: hedged?
- *   holdings  9.5–21.5 stock, calls, puts missing: +1,006 subtotal; puts −130: +876;
- *                       cut: +1,006 against +876
- *   hedge     21.5–33.5 delta 0 at $101.20; +$5: +$875; a quiet week: −$964;
- *                       cut: zero delta is not zero risk
- *   feeds     33.5–45  0.118 + 9.70; ÷ 100: 0.097; Friday's put delta;
- *                       cut: "One unit, one time, nothing missing."
- *   next      45–47.5  Next: the module checkpoint
+ *   open      0–4        "Portfolio Greeks"
+ *   question  4–9.6      +1,006 shares: hedged?
+ *   holdings  9.6–17.3   stock, calls, puts missing: +1,006 subtotal; puts −130: +876
+ *   hedge     17.3–29.6  delta 0 at $101.20; +$5: +$875; a quiet week: −$964;
+ *                        cut: zero delta is not zero risk, its Greeks locked
+ *   feeds     29.6–43.3  0.118 against 9.70; ÷ 100: 0.097; Friday's put delta;
+ *                        cut: "One unit, one time, nothing missing."
+ *   next      43.3–45.8  Next: the module checkpoint
  */
 
-const END = 47.5;
+const END = 45.8;
 const PNL_X = [95, 107] as const;
 const PNL_Y = [-1_500, 2_000] as const;
 const LABEL_SPOT = 106.4;
@@ -134,29 +130,12 @@ const copy = {
 		`做空 ${count(SUBTOTAL)} 股就对冲好了。真的吗？`,
 	],
 	bookHead: [
-		`Your book at Monday's close, ALFA $${SPOT.toFixed(2)}.`,
-		`你在周一收盘的持仓，ALFA $${SPOT.toFixed(2)}。`,
+		"Your book at Monday's close: puts missing.",
+		"你在周一收盘的持仓：看跌缺失。",
 	],
-	bookHeadShort: [
-		`Your book, ALFA $${SPOT.toFixed(2)}.`,
-		`你的持仓，ALFA $${SPOT.toFixed(2)}。`,
-	],
-	missingHead: [
-		`The puts haven't reported: ${signedCount(SUBTOTAL)} is a subtotal.`,
-		`看跌还没报送：${signedCount(SUBTOTAL)} 只是小计。`,
-	],
-	missingHeadShort: [
-		`${signedCount(SUBTOTAL)} is a subtotal.`,
-		`${signedCount(SUBTOTAL)} 只是小计。`,
-	],
-	reportHead: [
-		`The puts report ${signedCount(PUT_DELTA)}: the total is ${signedCount(TOTAL)}.`,
-		`看跌报送 ${signedCount(PUT_DELTA)}：合计 ${signedCount(TOTAL)}。`,
-	],
-	reportHeadShort: [
-		`Puts ${signedCount(PUT_DELTA)}: total ${signedCount(TOTAL)}.`,
-		`看跌 ${signedCount(PUT_DELTA)}：合计 ${signedCount(TOTAL)}。`,
-	],
+	bookHeadShort: ["Your book: puts missing.", "你的持仓：看跌缺失。"],
+	reportHead: ["Then the second account reports.", "然后第二个账户报送了。"],
+	reportHeadShort: ["The puts report.", "看跌报送了。"],
 	perShare: ["per share", "每股"],
 	sharesTag: ["shares", "股"],
 	stock: [`${yourAccount.shares} ALFA shares`, `${yourAccount.shares} 股 ALFA`],
@@ -173,12 +152,6 @@ const copy = {
 	subtotalShort: ["subtotal", "小计"],
 	total: ["portfolio delta", "组合 Delta"],
 	totalShort: ["total", "合计"],
-	subtotalTag: ["subtotal", "小计"],
-	totalTag: ["total", "合计"],
-	pairLine: [
-		`Missing is unknown, not zero: hedging ${signedCount(SUBTOTAL)} would leave you short ${count(SUBTOTAL - TOTAL)} shares.`,
-		`缺失是未知，不是零：按 ${signedCount(SUBTOTAL)} 对冲会让你净空 ${count(SUBTOTAL - TOTAL)} 股。`,
-	],
 	hedgeHead: [
 		`Short ${count(HEDGE)} shares: delta is zero at $${SPOT.toFixed(2)}.`,
 		`做空 ${count(HEDGE)} 股：在 $${SPOT.toFixed(2)} 处 Delta 为零。`,
@@ -187,22 +160,11 @@ const copy = {
 		`Short ${count(HEDGE)}: delta zero.`,
 		`做空 ${count(HEDGE)} 股：Delta 为零。`,
 	],
-	jumpHead: [
-		`ALFA +$${UP} at once: ${wholeUsd(UP_PNL)}, and delta is back to ${signedCount(UP_DELTA)}.`,
-		`ALFA 立即 +$${UP}：${wholeUsd(UP_PNL)}，Delta 回到 ${signedCount(UP_DELTA)}。`,
-	],
-	jumpHeadShort: [
-		`ALFA +$${UP}: ${wholeUsd(UP_PNL)}.`,
-		`ALFA +$${UP}：${wholeUsd(UP_PNL)}。`,
-	],
 	weekHead: [
-		`A quiet week instead: ${wholeUsd(WEEK_PNL)}, with the price unchanged.`,
-		`换成平静的一周：${wholeUsd(WEEK_PNL)}，价格没动。`,
+		"A quiet week instead: the hedge loses.",
+		"换成平静的一周：对冲后照样亏钱。",
 	],
-	weekHeadShort: [
-		`A quiet week: ${wholeUsd(WEEK_PNL)}.`,
-		`平静的一周：${wholeUsd(WEEK_PNL)}。`,
-	],
+	weekHeadShort: ["A quiet week: it loses.", "平静的一周：照样亏钱。"],
 	pnlAxis: [
 		`hedged book · P&L from Monday's close`,
 		"对冲后的账户 · 自周一收盘的盈亏",
@@ -223,21 +185,13 @@ const copy = {
 	vegaUnit: ["per vol point", "每个波动率点"],
 	feedHead: ["Two brokers' Greeks, as sent.", "两家券商发来的希腊值，原样。"],
 	rawHead: [
-		`Added as sent, ${CALL_VEGA.toFixed(3)} + ${PUT_VEGA_PER_UNIT.toFixed(2)} = ${RAW_SUM}: two units, meaningless.`,
-		`按原样相加，${CALL_VEGA.toFixed(3)} + ${PUT_VEGA_PER_UNIT.toFixed(2)} = ${RAW_SUM}：两种单位，没有意义。`,
+		"The put vega is per 1.00: ÷ 100.",
+		"看跌 Vega 按每 1.00 报价：÷ 100。",
 	],
-	rawHeadShort: ["Added as sent: meaningless.", "原样相加：没有意义。"],
-	convertHead: [
-		`÷ 100: ${PUT_VEGA.toFixed(3)} per point. The book's vega: ${signedUsd(VEGA_TOTAL * 100, 0)} per vol point.`,
-		`÷ 100：每点 ${PUT_VEGA.toFixed(3)}。账户 Vega：每个波动率点 ${signedUsd(VEGA_TOTAL * 100, 0)}。`,
-	],
-	convertHeadShort: [
-		`÷ 100: ${PUT_VEGA.toFixed(3)} per point.`,
-		`÷ 100：每点 ${PUT_VEGA.toFixed(3)}。`,
-	],
+	rawHeadShort: ["Put vega: ÷ 100.", "看跌 Vega：÷ 100。"],
 	staleHead: [
-		`The put delta is Friday's: ${signedCount(PUT_DELTA_FRIDAY)} shares, not Monday's ${signedCount(PUT_DELTA)}.`,
-		`看跌 Delta 是周五的：${signedCount(PUT_DELTA_FRIDAY)} 股，而不是周一的 ${signedCount(PUT_DELTA)}。`,
+		"The put delta is Friday's, not Monday's.",
+		"看跌 Delta 是周五的，不是周一的。",
 	],
 	staleHeadShort: [`The put delta is Friday's.`, "看跌 Delta 是周五的。"],
 	callVega: ["Call vega · main broker", "看涨 Vega · 主券商"],
@@ -254,7 +208,7 @@ const copy = {
 		"同一单位，同一时点，没有缺失。",
 	],
 	claimSub: [
-		"A missing or stale Greek is unknown, not zero and not current.",
+		"Missing or stale is unknown, not zero, not current.",
 		"缺失或过时的希腊值是未知，不是零，也不是当前值。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
@@ -461,7 +415,6 @@ function Scene({
 				/>
 			</g>
 			{headline("b-head", copy.bookHead, copy.bookHeadShort)}
-			{headline("m-head", copy.missingHead, copy.missingHeadShort)}
 			{headline("r-head", copy.reportHead, copy.reportHeadShort)}
 			<g data-f="book">
 				<Word
@@ -573,47 +526,9 @@ function Scene({
 					{signedCount(SUBTOTAL)}
 				</Word>
 			</g>
-			<g data-f="two">
-				{(
-					[
-						[copy.subtotalTag, signedCount(SUBTOTAL), ""],
-						[copy.totalTag, signedCount(TOTAL), "wt-film-accent"],
-					] as const
-				).map(([tag, num, tone], i) => (
-					<g key={tag[0]}>
-						<Word
-							name={`w-tag-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`w-num-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3 + T.big * 0.95}
-							size={T.big * 0.85}
-							className={`wt-film-num ${tone}`}
-						>
-							{num}
-						</Word>
-					</g>
-				))}
-				<Lines
-					name="w-line"
-					text={t(copy.pairLine)}
-					x={W / 2}
-					y={H * 0.72}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
-			</g>
 			{headline("g-head", copy.hedgeHead, copy.hedgeHeadShort)}
-			{headline("j-head", copy.jumpHead, copy.jumpHeadShort)}
 			{headline("k-head", copy.weekHead, copy.weekHeadShort)}
+			<Brackets name="lock-risk" glow />
 			<g data-f="risk">
 				<Lines
 					name="risk-big"
@@ -656,8 +571,15 @@ function Scene({
 				))}
 			</g>
 			{headline("f-head", copy.feedHead, copy.feedHead)}
-			{headline("x-head", copy.rawHead, copy.rawHeadShort)}
-			{headline("c-head", copy.convertHead, copy.convertHeadShort)}
+			<Lines
+				name="x-head"
+				text={t(narrow ? copy.rawHeadShort : copy.rawHead)}
+				x={L.margin}
+				y={L.headY + lineCount(t(copy.feedHead), room, T.head) * T.head * 1.35}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{headline("s-head", copy.staleHead, copy.staleHeadShort)}
 			<g data-f="feeds">
 				{(
@@ -778,7 +700,15 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
 	/** A group's marks, opening unnamed row groups but keeping named ones whole. */
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
@@ -802,12 +732,14 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			at,
 		);
 	const usd = (value: number) =>
 		Math.round(value) === 0 ? "$0" : wholeUsd(value);
 	const shares = (value: number) => signedCount(Math.round(value));
+
+	const lockRisk = one<SVGGraphicsElement>("lock-risk");
 
 	d.hidden([
 		one("curve-today"),
@@ -819,20 +751,17 @@ function build(context: FilmContext) {
 		...flat("q"),
 		...[
 			"b-head",
-			"m-head",
 			"r-head",
 			"g-head",
-			"j-head",
 			"k-head",
 			"f-head",
 			"x-head",
-			"c-head",
 			"s-head",
 		].map((name) => one(name)),
 		...flat("book"),
 		one("h-missing"),
-		...flat("two"),
 		...flat("risk"),
+		lockRisk,
 		...flat("feeds"),
 		...kids("claim"),
 	]);
@@ -845,14 +774,14 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	slam(one("q-big"), 4.8);
-	show(one("q-line"), 6.4);
+	land(one("q-big"), 4.8);
+	show(one("q-line"), 6.0);
 
 	// ——— holdings: a missing holding makes a subtotal ———
-	tl.addLabel("holdings", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("b-head"), 9.7, "above");
-	show([one("col-per"), one("col-shares")], 10.0);
+	tl.addLabel("holdings", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("b-head"), 9.8, "above");
+	show([one("col-per"), one("col-shares")], 10.1);
 	holdings.forEach((row, i) => {
 		const at = 10.4 + i * 0.5;
 		show(one(`h-label-${row.key}`), at);
@@ -862,35 +791,27 @@ function build(context: FilmContext) {
 			show(one(`h-shares-${row.key}`), at + 0.25, "right");
 		}
 	});
-	d.swap(one("b-head"), one("m-head"), 12.6);
-	tl.to(one("h-rule"), { opacity: 1, duration: 0.4 }, 13.0);
-	show(one("h-sub-label"), 13.1);
-	slam(sum, 13.3);
+	tl.to(one("h-rule"), { opacity: 1, duration: 0.4 }, 11.9);
+	show(one("h-sub-label"), 12.0);
+	land(sum, 12.2);
 	// The second account reports.
-	d.swap(one("m-head"), one("r-head"), 15.0);
-	hide(one("h-missing"), 15.4);
-	show(one("h-per-puts"), 15.6, "right");
-	show(one("h-shares-puts"), 15.7, "right");
-	d.swap(one("h-sub-label"), one("h-total-label"), 16.0);
-	d.count(sum, TOTAL, 16.1, shares, SUBTOTAL, 0.7);
-	// Cut: the subtotal against the total.
-	hide([one("r-head"), ...flat("book")], 17.4);
-	show(one("w-tag-0"), 17.8);
-	slam(one("w-num-0"), 18.0);
-	show(one("w-tag-1"), 18.6);
-	slam(one("w-num-1"), 18.8);
-	show(one("w-line"), 19.6);
+	d.swap(one("b-head"), one("r-head"), 13.4);
+	hide(one("h-missing"), 13.75);
+	show(one("h-per-puts"), 13.95, "right");
+	show(one("h-shares-puts"), 14.05, "right");
+	d.swap(one("h-sub-label"), one("h-total-label"), 14.3);
+	d.count(sum, TOTAL, 14.4, shares, SUBTOTAL, 0.7);
 
 	// ——— hedge: zero delta, other sensitivities ———
-	tl.addLabel("hedge", 21.5);
-	hide(flat("two"), 21.5);
-	show(one("g-head"), 21.7, "above");
-	rise(21.8);
-	draw(one<SVGPathElement>("curve-today"), 22.4, 1.2);
-	pop(marker, 23.4);
-	show(kids("meter"), 23.6, "above");
-	d.count(meter, 0, 23.6, usd, 0, 0.01);
-	d.swap(one("g-head"), one("j-head"), 24.4);
+	tl.addLabel("hedge", 17.3);
+	hide([one("r-head"), ...flat("book")], 17.3);
+	show(one("g-head"), 17.65, "above");
+	rise(17.7);
+	draw(one<SVGPathElement>("curve-today"), 18.2, 1.2);
+	land(marker, 19.2);
+	show(kids("meter"), 19.4, "above");
+	d.count(meter, 0, 19.4, usd, 0, 0.01);
+	// ALFA jumps $5 at once.
 	const walk = { spot: SPOT };
 	tl.to(
 		walk,
@@ -903,14 +824,14 @@ function build(context: FilmContext) {
 					attr: { cx: L.px(walk.spot), cy: L.py(hedgedPnl(walk.spot, 0)) },
 				}),
 		},
-		24.8,
+		20.0,
 	);
-	d.count(meter, UP_PNL, 24.8, usd, 0, 1.2);
-	show(one("today-label"), 25.6);
+	d.count(meter, UP_PNL, 20.0, usd, 0, 1.2);
+	show(one("today-label"), 20.8);
 	// A quiet week instead.
-	d.swap(one("j-head"), one("k-head"), 26.8);
-	draw(one<SVGPathElement>("curve-week"), 27.2, 1.0);
-	show(one("week-label"), 28.0);
+	d.swap(one("g-head"), one("k-head"), 21.2);
+	draw(one<SVGPathElement>("curve-week"), 21.6, 1.0);
+	show(one("week-label"), 22.4);
 	tl.to(
 		marker,
 		{
@@ -918,52 +839,60 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		28.2,
+		22.6,
 	);
-	d.count(meter, WEEK_PNL, 28.2, usd, UP_PNL, 0.8);
-	// Cut: what zero delta leaves.
-	hide([one("k-head"), ...kids("meter")], 29.8);
-	sink(29.8);
-	word(one("risk-big"), 30.2);
+	d.count(meter, WEEK_PNL, 22.6, usd, UP_PNL, 0.8);
+	// Cut: what zero delta leaves. The hero: the book's other Greeks.
+	hide([one("k-head"), ...kids("meter")], 25.1);
+	sink(25.1);
+	word(one("risk-big"), 25.5);
 	[0, 1, 2].forEach((i) => {
-		show(one(`k-tag-${i}`), 30.8 + i * 0.35);
-		slam(one(`k-num-${i}`), 30.9 + i * 0.35);
-		show(one(`k-unit-${i}`), 31.1 + i * 0.35);
+		show(one(`k-tag-${i}`), 26.0 + i * 0.3);
+		land(one(`k-num-${i}`), 26.1 + i * 0.3);
+		show(one(`k-unit-${i}`), 26.3 + i * 0.3);
 	});
+	d.lock(lockRisk, 27.6, {
+		around: [0, 1, 2].flatMap((i) => [
+			one(`k-tag-${i}`),
+			one(`k-num-${i}`),
+			one(`k-unit-${i}`),
+		]),
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 27.6);
 
 	// ——— feeds: units and timestamps ———
-	tl.addLabel("feeds", 33.5);
-	hide(flat("risk"), 33.5);
-	show(one("f-head"), 33.7, "above");
+	tl.addLabel("feeds", 29.6);
+	hide([...flat("risk"), lockRisk], 29.6);
+	show(one("f-head"), 29.95, "above");
 	(["call-vega", "put-vega", "put-delta"] as const).forEach((key, i) => {
-		const at = 34.0 + i * 0.4;
+		const at = 30.3 + i * 0.4;
 		show(one(`f-label-${key}`), at);
 		show(one(`f-value-${key}`), at + 0.1, "right");
 		show(one(`f-unit-${key}`), at + 0.2);
 	});
-	d.swap(one("f-head"), one("x-head"), 35.8);
-	// Convert the puts' vega to points.
-	d.swap(one("x-head"), one("c-head"), 37.8);
-	d.flip(one("f-value-put-vega"), one("f-value-put-vega-point"), 38.2);
-	tl.set(one("f-value-put-vega"), { opacity: 0 }, 38.5);
-	d.swap(one("f-unit-put-vega"), one("f-unit-put-vega-point"), 38.2);
+	// The puts' vega comes per 1.00 of volatility: convert it to points.
+	show(one("x-head"), 31.4);
+	d.flip(one("f-value-put-vega"), one("f-value-put-vega-point"), 31.8);
+	tl.set(one("f-value-put-vega"), { opacity: 0 }, 32.1);
+	d.swap(one("f-unit-put-vega"), one("f-unit-put-vega-point"), 31.8);
 	// The put delta is Friday's.
-	d.swap(one("c-head"), one("s-head"), 40.0);
-	d.swap(one("f-unit-put-delta"), one("f-unit-put-delta-stale"), 40.4);
+	d.swap([one("f-head"), one("x-head")], one("s-head"), 35.0);
+	d.swap(one("f-unit-put-delta"), one("f-unit-put-delta-stale"), 35.4);
 	tl.to(
 		[one("f-label-call-vega"), one("f-label-put-vega")],
 		{ opacity: 0.4, duration: 0.4 },
-		40.4,
+		35.4,
 	);
 	// Cut: the claim.
-	hide([one("s-head"), ...flat("feeds")], 42.0);
-	word(one("z-big"), 42.4);
-	show(one("z-sub"), 42.9);
+	hide([one("s-head"), ...flat("feeds")], 38.9);
+	word(one("z-big"), 39.3);
+	show(one("z-sub"), 39.7);
 
 	// ——— next ———
-	tl.addLabel("next", 45);
-	hide(kids("claim"), 45.0);
-	d.close(45.0);
+	tl.addLabel("next", 43.3);
+	hide(kids("claim"), 43.3);
+	d.close(43.3);
 	return tl;
 }
 
