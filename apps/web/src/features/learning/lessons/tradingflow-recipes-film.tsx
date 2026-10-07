@@ -13,6 +13,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -35,24 +36,23 @@ import {
 /*
  * Recipes, as a film. It opens on a question, "Which contracts traded far above their open
  * interest on Monday?", and the six official recipes in three kinds: the question lights
- * the session screen that answers it, and a one-symbol question lights a quick lookup. Then
- * the session a report shows: opened at 8:00 on Tuesday, before the open, the screener
- * shows Monday, the latest completed session; opened at 10:00 on Monday it would show
- * Friday. Last, Daily Market Recap forked into a private copy: you open your copy, and a
- * colleague still opens the official one.
+ * the session screen that answers it. Then the session a report shows: opened at 8:00 on
+ * Tuesday, before the open, the screener shows Monday, the latest completed session; opened
+ * at 10:00 on Monday it shows Friday. Last, Daily Market Recap forked into a private copy:
+ * you open your copy, and a colleague still opens the official one.
  *
- *   open      0–4      "Recipes"
- *   question  4–9.5    "Which contracts traded far above their open interest?"
- *   catalog   9.5–19   three kinds; the screen; the lookup; cut: start from the question
- *   session   19–30.5  Tue 8:00 → Monday; Mon 10:00 → Friday; cut: the calendar, not the clock
- *   fork      30.5–41.5 official; your private copy; a colleague's view; cut: the claim
- *   next      41.5–44  Next: read a recipe like an auditor
+ *   open      0–4        "Recipes"
+ *   question  4–9.6      "Which contracts traded far above their open interest?"
+ *   catalog   9.6–18.6   three kinds; the screen; cut: start from the question
+ *   session   18.6–29.1  Tue 8:00 → Monday; Mon 10:00 → Friday, locked: the calendar,
+ *                        not the clock
+ *   fork      29.1–41.4  official; your private copy; a colleague's view; cut: the claim
+ *   next      41.4–43.9  Next: read a recipe like an auditor
  */
 
-const END = 44;
+const END = 43.9;
 const KINDS: readonly RecipeKind[] = ["lookup", "screen", "report"];
 const SCREEN = "unusual-options-activity";
-const LOOKUP = "ticker-snapshot";
 /** Titles that fit half a phone's width. */
 const shortTitles: Record<string, string> = {
 	"ticker-snapshot": "Ticker Snapshot",
@@ -126,23 +126,18 @@ const copy = {
 		"六个官方 Recipe，三种类型。",
 	],
 	screenHead: [
-		"Far above open interest, across the market: a session screen.",
-		"远超未平仓量，覆盖整个市场：时段筛选。",
+		"The whole market, one session: a screen.",
+		"整个市场的一个时段：筛选。",
 	],
 	screenHeadShort: ["Across the market: a screen.", "覆盖整个市场：筛选。"],
-	lookupHead: [
-		"Everything about ALFA's options today: one symbol, a quick lookup.",
-		"ALFA 今天期权的全部概况：一个标的，快速查询。",
-	],
-	lookupHeadShort: ["One symbol: a quick lookup.", "一个标的：快速查询。"],
 	pickBig: ["Start from the question.", "从问题出发。"],
 	pickSub: [
-		"Lookups answer one symbol, screens filter the whole market for a session, reports walk a session chapter by chapter.",
-		"查询回答一个标的，筛选在一个时段内过滤整个市场，报告逐章讲解一个时段。",
+		"Lookups: one symbol. Screens: the market. Reports: a session.",
+		"查询：一个标的。筛选：整个市场。报告：一个时段。",
 	],
 	openHead: [
-		"You open the screener at 8:00 on Tuesday, before the open.",
-		"你在周二 8:00、开盘前打开筛选器。",
+		"You open it Tuesday, 8:00, before the open.",
+		"你在周二 8:00、开盘前打开它。",
 	],
 	openHeadShort: ["Tuesday, 8:00, before the open.", "周二 8:00，开盘前。"],
 	latestHead: [
@@ -150,11 +145,6 @@ const copy = {
 		"它显示周一：最近一个完整的交易时段。",
 	],
 	latestHeadShort: ["It shows Monday.", "它显示周一。"],
-	mondayHead: [
-		"Opened at 10:00 on Monday, it would show Friday.",
-		"如果周一 10:00 打开，它会显示周五。",
-	],
-	mondayHeadShort: ["Mon 10:00: it shows Friday.", "周一 10:00：显示周五。"],
 	closed: ["closed", "休市"],
 	latest: ["latest", "最新"],
 	trading: ["trading", "交易中"],
@@ -164,22 +154,14 @@ const copy = {
 	],
 	screenerShort: ["UOA Screener", "UOA Screener"],
 	sessionUnknown: ["Session · ?", "交易时段 · ?"],
-	calendarBig: [
+	calendarHead: [
 		"“Latest” follows the market calendar, not the clock.",
 		"“最新”遵循交易日历，而不是钟表。",
 	],
-	calendarSub: [
-		"Every number in a report belongs to the session in its header.",
-		"报告里的每个数字都属于页眉上写的那个交易时段。",
-	],
-	officialHead: [
-		"Daily Market Recap is official: every paid account runs the same one.",
-		"Daily Market Recap 是官方 Recipe：所有付费账户运行同一个版本。",
-	],
-	officialHeadShort: ["An official recipe.", "一个官方 Recipe。"],
+	calendarHeadShort: ["The calendar, not the clock.", "看日历，不看钟表。"],
 	forkHead: [
-		"Edit with AI forks it into a private copy you can change.",
-		"Edit with AI 把它分叉成一个你可以修改的私有副本。",
+		"Edit with AI forks a private copy.",
+		"Edit with AI 分叉出一个私有副本。",
 	],
 	forkHeadShort: ["Fork: a private copy.", "分叉：私有副本。"],
 	colleagueHead: [
@@ -203,8 +185,8 @@ const copy = {
 		"按问题挑选，读清时段，认清版本。",
 	],
 	claimSub: [
-		"A recipe is research saved to run again; its header says what it shows.",
-		"Recipe 是保存下来可以重跑的研究；页眉说明它展示的是什么。",
+		"A recipe reruns; its header names the session.",
+		"Recipe 会重跑；页眉写明它的时段。",
 	],
 	nextBig: [
 		"Next: read a recipe like an auditor",
@@ -608,15 +590,43 @@ function Scene({
 				/>
 			</g>
 			{headline("k-head", copy.kindsHead, copy.kindsHead)}
-			{headline("s-head", copy.screenHead, copy.screenHeadShort)}
-			{headline("l-head", copy.lookupHead, copy.lookupHeadShort)}
+			<Lines
+				name="s-head"
+				text={t(narrow ? copy.screenHeadShort : copy.screenHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(t(narrow ? copy.kindsHead : copy.kindsHead), room, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{claim("pick", copy.pickBig, copy.pickSub)}
 			{headline("o-head", copy.openHead, copy.openHeadShort)}
-			{headline("t-head", copy.latestHead, copy.latestHeadShort)}
-			{headline("m-head", copy.mondayHead, copy.mondayHeadShort)}
-			{claim("calendar-claim", copy.calendarBig, copy.calendarSub)}
-			{headline("f-head", copy.officialHead, copy.officialHeadShort)}
-			{headline("p-head", copy.forkHead, copy.forkHeadShort)}
+			<Lines
+				name="t-head"
+				text={t(narrow ? copy.latestHeadShort : copy.latestHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.openHeadShort : copy.openHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			{headline("m-head", copy.calendarHead, copy.calendarHeadShort)}
+			<Brackets name="lock-session" glow />
+			{headline("f-head", copy.forkHead, copy.forkHeadShort)}
 			{headline("c-head", copy.colleagueHead, copy.colleagueHeadShort)}
 			{claim("claim", copy.claimBig, copy.claimSub)}
 			<EndCard
@@ -633,7 +643,15 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A mark lands slightly large and settles, without overshoot. */
+	const land = (target: Element, time: number, duration = 0.55) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const cards = officialRecipes.map((recipe) => one(`card-${recipe.id}`));
@@ -644,12 +662,14 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			at,
 		);
 	const sessions = [PREVIOUS_SESSION_DATE, SESSION_DATE, NEXT_SESSION_DATE].map(
 		(date) => one(`session-${date}`),
 	);
+
+	const lockSession = one<SVGGraphicsElement>("lock-session");
 
 	d.hidden([
 		one("calendar"),
@@ -682,16 +702,14 @@ function build(context: FilmContext) {
 		...[
 			"k-head",
 			"s-head",
-			"l-head",
 			"o-head",
 			"t-head",
 			"m-head",
 			"f-head",
-			"p-head",
 			"c-head",
 		].map((name) => one(name)),
+		lockSession,
 		...kids("pick"),
-		...kids("calendar-claim"),
 		...kids("claim"),
 	]);
 
@@ -704,16 +722,16 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.6);
+	show(one("q-line"), 6.0);
 
 	// ——— catalog: the question picks the recipe ———
-	tl.addLabel("catalog", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("k-head"), 9.7, "above");
-	rise(9.8);
+	tl.addLabel("catalog", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("k-head"), 9.8, "above");
+	rise(9.9);
 	kids("catalog").forEach((row, k) => {
 		const label = [...row.children].find((el) => el.tagName === "text");
-		if (label) show(label, 10.2 + k * 0.4);
+		if (label) show(label, 10.3 + k * 0.4);
 	});
 	officialRecipes.forEach((recipe) => {
 		const k = KINDS.indexOf(recipe.kind);
@@ -721,42 +739,38 @@ function build(context: FilmContext) {
 			.filter((r) => r.kind === recipe.kind)
 			.findIndex((r) => r.id === recipe.id);
 		// A card is a group: it slides in rather than scaling about its corner.
-		show(one(`card-${recipe.id}`), 10.3 + k * 0.4 + i * 0.12, "below", 0.4);
+		show(one(`card-${recipe.id}`), 10.4 + k * 0.4 + i * 0.12, "below", 0.4);
 	});
-	d.swap(one("k-head"), one("s-head"), 12.0);
+	// The question's answer: the session screen.
+	show(one("s-head"), 12.2);
 	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 12.4);
 	tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 12.4);
-	d.swap(one("s-head"), one("l-head"), 14.4);
-	tl.to(focus(SCREEN), { opacity: 0, duration: 0.3 }, 14.8);
-	tl.to(one(`card-${SCREEN}`), { opacity: 0.35, duration: 0.3 }, 14.8);
-	tl.to(one(`card-${LOOKUP}`), { opacity: 1, duration: 0.3 }, 14.8);
-	tl.to(focus(LOOKUP), { opacity: 1, duration: 0.4 }, 14.9);
 	// Cut: the rule.
-	hide(one("l-head"), 16.6);
-	sink(16.6);
-	word(one("pick-big"), 17.0);
-	show(one("pick-sub"), 17.5);
+	hide([one("k-head"), one("s-head")], 15.8);
+	sink(15.8);
+	word(one("pick-big"), 16.2);
+	show(one("pick-sub"), 16.6);
 
 	// ——— session: the calendar, not the clock ———
-	tl.addLabel("session", 19);
-	hide(kids("pick"), 19.0);
-	tl.set(one("catalog"), { opacity: 0 }, 19.1);
-	tl.set(one("calendar"), { opacity: 1 }, 19.1);
-	show(one("o-head"), 19.2, "above");
-	rise(19.3);
+	tl.addLabel("session", 18.6);
+	hide(kids("pick"), 18.6);
+	tl.set(one("catalog"), { opacity: 0 }, 18.7);
+	tl.set(one("calendar"), { opacity: 1 }, 18.7);
+	show(one("o-head"), 18.95, "above");
+	rise(19.0);
 	// At Tuesday 8:00 Friday and Monday are done; Tuesday hasn't opened.
-	tl.to(sessions.slice(0, 2), { opacity: 1, duration: 0.4 }, 19.9);
-	tl.to(sessions[2], { opacity: 0.35, duration: 0.4 }, 19.9);
-	tl.to(one("now-line"), { opacity: 1, duration: 0.3 }, 20.5);
-	pop(one("now-dot"), 20.5, 0.35);
-	show(one("header"), 21.0);
-	show([one("sess-unknown"), one("ran-tue")], 21.2);
-	d.swap(one("o-head"), one("t-head"), 22.6);
-	tl.to(one(`latest-box-${SESSION_DATE}`), { opacity: 1, duration: 0.4 }, 23.0);
-	show(one("latest-mon"), 23.1);
-	d.flip(one("sess-unknown"), one("sess-mon"), 23.2);
+	tl.to(sessions.slice(0, 2), { opacity: 1, duration: 0.4 }, 19.5);
+	tl.to(sessions[2], { opacity: 0.35, duration: 0.4 }, 19.5);
+	tl.to(one("now-line"), { opacity: 1, duration: 0.3 }, 20.1);
+	land(one("now-dot"), 20.1, 0.35);
+	show(one("header"), 20.5);
+	show([one("sess-unknown"), one("ran-tue")], 20.7);
+	show(one("t-head"), 21.6);
+	tl.to(one(`latest-box-${SESSION_DATE}`), { opacity: 1, duration: 0.4 }, 21.6);
+	show(one("latest-mon"), 21.7);
+	d.flip(one("sess-unknown"), one("sess-mon"), 21.8);
 	// Opened on Monday morning instead.
-	d.swap(one("t-head"), one("m-head"), 25.0);
+	d.swap([one("o-head"), one("t-head")], one("m-head"), 25.2);
 	tl.to(
 		[one("now-line"), one("now-dot")],
 		{
@@ -784,27 +798,25 @@ function build(context: FilmContext) {
 	show([one("latest-fri"), one("trading-mon")], 26.2);
 	d.flip(one("sess-mon"), one("sess-fri"), 26.3);
 	d.swap(one("ran-tue"), one("ran-mon"), 26.3);
-	// Cut: the rule.
-	hide(one("m-head"), 27.8);
-	sink(27.8);
-	word(one("calendar-claim-big"), 28.2);
-	show(one("calendar-claim-sub"), 28.7);
+	// The hero: Monday morning's report shows Friday.
+	d.lock(lockSession, 27.1, { around: one("sess-fri"), pad: 5 });
+	tl.addLabel("hero-lock", 27.1);
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 30.5);
-	hide(kids("calendar-claim"), 30.5);
-	tl.set(one("calendar"), { opacity: 0 }, 30.6);
-	tl.set(one("fork"), { opacity: 1 }, 30.6);
-	show(one("f-head"), 30.7, "above");
-	rise(30.8);
-	show(one("fork-official"), 31.3);
-	d.swap(one("f-head"), one("p-head"), 33.0);
-	show(one("fork-copy"), 33.4, "right");
-	pop(one("viewer"), 34.4);
-	show(one("viewer-you"), 34.6);
+	tl.addLabel("fork", 29.1);
+	hide([one("m-head"), lockSession], 29.1);
+	sink(29.1);
+	tl.set(one("calendar"), { opacity: 0 }, 29.5);
+	tl.set(one("fork"), { opacity: 1 }, 29.5);
+	show(one("f-head"), 29.45, "above");
+	rise(29.55);
+	show(one("fork-official"), 30.0);
+	show(one("fork-copy"), 30.8, "right");
+	land(one("viewer"), 31.6);
+	show(one("viewer-you"), 31.8);
 	// A colleague opens the same recipe.
-	d.swap(one("p-head"), one("c-head"), 36.0);
-	hide(one("viewer-you"), 36.4);
+	d.swap(one("f-head"), one("c-head"), 33.0);
+	hide(one("viewer-you"), 33.4);
 	tl.to(
 		one("viewer"),
 		{
@@ -812,28 +824,28 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		36.4,
+		33.4,
 	);
-	show(one("viewer-colleague"), 37.1);
-	tl.to(one("fork-copy"), { opacity: 0.4, duration: 0.4 }, 37.1);
+	show(one("viewer-colleague"), 34.1);
+	tl.to(one("fork-copy"), { opacity: 0.4, duration: 0.4 }, 34.1);
 	// Cut: the claim.
-	hide(one("c-head"), 38.6);
-	sink(38.6);
-	word(one("claim-big"), 39.0);
-	show(one("claim-sub"), 39.5);
+	hide(one("c-head"), 36.9);
+	sink(36.9);
+	word(one("claim-big"), 37.3);
+	show(one("claim-sub"), 37.7);
 
 	// ——— next ———
-	tl.addLabel("next", 41.5);
-	hide(kids("claim"), 41.5);
-	d.close(41.5);
+	tl.addLabel("next", 41.4);
+	hide(kids("claim"), 41.4);
+	d.close(41.4);
 	return tl;
 }
 
 export const tradingflowRecipesFilm: Film = {
 	id: "tradingflow-recipes",
 	label: [
-		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it and a one-symbol question lighting a quick lookup; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday shows Friday; and Daily Market Recap forked into a private copy that only you open, while a colleague opens the official recipe, unchanged",
-		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选，一个单标的问题点亮快速查询；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00 打开则显示周五；以及 Daily Market Recap 被分叉成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
+		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday shows Friday; and Daily Market Recap forked into a private copy that only you open, while a colleague opens the official recipe, unchanged",
+		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00 打开则显示周五；以及 Daily Market Recap 被分叉成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
 	],
 	stage: "dark",
 	shots: [
