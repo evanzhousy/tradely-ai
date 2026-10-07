@@ -39,14 +39,15 @@ import {
  *   open      0–4        "Research questions"
  *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
- *   answer    17.6–30.9  hero: five strikes; observed; calculated; interpretation; the
+ *   answer    17.6–30.8  hero: five strikes; observed; calculated; interpretation; the
  *                        split, struck through; locked; then the gap
- *   log       30.9–39.1  record 1; Tuesday's 120 call revises it in place; record 2 for puts
- *   claim     39.1–43.4  a question someone else can check
- *   next      43.4–45.4  Next: comparison groups
+ *   log       30.8–39.9  record 1; Tuesday's 120 call revises it in place, 51% → 49%, held;
+ *                        record 2 for puts
+ *   claim     39.9–44.2  a question someone else can check
+ *   next      44.2–46.2  Next: comparison groups
  */
 
-const END = 45.4;
+const END = 46.2;
 const MAX = 560;
 /** The claim cards: the interpretation, and the observed spread leg that undercuts it. */
 const STORY_CARD = 2;
@@ -156,7 +157,7 @@ const claims: { text: Copy; short: Copy; evidence: Evidence }[] = [
 		evidence: "observed",
 	},
 	{
-		text: ["The 120 call's volume", "120 看涨的成交量"],
+		text: ["120 call volume", "120 看涨的成交量"],
 		short: ["120 call's volume", "120 看涨成交量"],
 		evidence: "unknown",
 	},
@@ -201,7 +202,8 @@ const copy = {
 	qTag: ["a research question", "一个研究问题"],
 	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
-	lateDay: ["Tue 09:00", "周二 09:00"],
+	lateDay: ["120 call, delivered Tue 09:00", "120 看涨，周二 09:00 送达"],
+	revDelta: ["51% → 49%", "51% → 49%"],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
 	a2Head: [
@@ -563,6 +565,19 @@ function Scene({
 					{t(copy.lateDay).toUpperCase()}
 				</text>
 			</g>
+			{/* The revision's effect at the end of the answer row; a phone's row is full. */}
+			{narrow ? null : (
+				<text
+					data-f="rev-delta"
+					x={margin + room - 16}
+					y={L.recY(0) + L.recH * 0.82}
+					textAnchor="end"
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{t(copy.revDelta)}
+				</text>
+			)}
 			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
 			<g data-f="rev">
 				<text
@@ -671,6 +686,7 @@ function build(context: FilmContext) {
 		...recs,
 		...revs,
 		...kids("late"),
+		...(L.narrow ? [] : [one("rev-delta")]),
 		...kids("claim"),
 	]);
 	// The strike runs the story's own length, measured as set.
@@ -745,19 +761,19 @@ function build(context: FilmContext) {
 		one("story-strike"),
 		{ opacity: 1, scaleX: 0, transformOrigin: "0% 50%" },
 		{ scaleX: 1, duration: 0.4, ease: "power2.out" },
-		25.65,
+		26.15,
 	);
-	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 25.65);
-	d.lock(lockClaim, 26.8, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
-	tl.addLabel("hero-lock", 26.8);
-	show(heads[2], 26.8);
-	// After the lock: what the data doesn't hold.
-	show(claimRows[4], 27.4, "right");
-	stamp(tags[4], 27.8);
+	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 26.15);
+	d.lock(lockClaim, 27.3, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
+	tl.addLabel("hero-lock", 27.3);
+	show(heads[2], 27.3);
+	// After the lock, once it has been seen: what the data doesn't hold.
+	show(claimRows[4], 28.2, "right");
+	stamp(tags[4], 28.6);
 
 	// ——— log: revise, or start anew ———
-	tl.addLabel("log", 30.9);
-	d.swap([heads[1], heads[2]], heads[3], 30.9);
+	tl.addLabel("log", 30.8);
+	d.swap([heads[1], heads[2]], heads[3], 30.8);
 	hide(
 		[
 			...strikes,
@@ -767,43 +783,51 @@ function build(context: FilmContext) {
 			one("story-strike"),
 			lockClaim,
 		],
-		30.9,
+		30.8,
 	);
-	show(recs[0], 31.4, "right");
+	show(recs[0], 31.05, "right");
 	// Tuesday's data for the 120 call comes in under record 1…
-	show(kids("late"), 33.9, "right");
-	// …and rises into its answer: record 1 turns over in place, caused.
-	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.6);
-	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.2 }, 35.0);
+	show(kids("late"), 33.1, "right");
+	// …and rises into its answer: record 1 turns over in place, caused, and keeps the stage.
+	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.0);
+	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.2 }, 34.7);
 	d.carry(
 		one<SVGGraphicsElement>("late-n"),
 		one<SVGGraphicsElement>("rev-answer"),
-		35.05,
-		{
-			duration: 0.6,
-		},
+		34.75,
+		{ duration: 0.6 },
 	);
-	hide(one("late-day"), 35.05);
-	d.flip(one("rec-0-title"), revs[0], 35.0);
-	tl.set(one("rec-0-title"), { opacity: 0 }, 35.3);
-	d.flip(one("rec-0-tag"), revs[1], 35.0);
-	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.3);
-	// A new question: a new record.
-	show(recs[1], 35.7, "right");
-	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 35.7);
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 35.7);
-	show(heads[4], 35.6);
+	hide(one("late-day"), 34.75);
+	d.flip(one("rec-0-title"), revs[0], 34.7);
+	tl.set(one("rec-0-title"), { opacity: 0 }, 35.0);
+	d.flip(one("rec-0-tag"), revs[1], 34.7);
+	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.0);
+	if (!L.narrow) show(one("rev-delta"), 35.5, "right");
+	// A new question: a new record, once the revision has been read.
+	show(recs[1], 36.4, "right");
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 36.4);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 36.4);
+	show(heads[4], 36.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.1);
-	hide([heads[3], heads[4], ...recs, ...revs], 39.1);
-	word(one("z-big"), 39.4);
-	show(one("z-sub"), 39.8);
+	tl.addLabel("claim", 39.9);
+	hide(
+		[
+			heads[3],
+			heads[4],
+			...recs,
+			...revs,
+			...(L.narrow ? [] : [one("rev-delta")]),
+		],
+		39.9,
+	);
+	word(one("z-big"), 40.2);
+	show(one("z-sub"), 40.6);
 
 	// ——— next ———
-	tl.addLabel("next", 43.4);
-	hide(kids("claim"), 43.4);
-	d.close(43.4);
+	tl.addLabel("next", 44.2);
+	hide(kids("claim"), 44.2);
+	d.close(44.2);
 	return tl;
 }
 
