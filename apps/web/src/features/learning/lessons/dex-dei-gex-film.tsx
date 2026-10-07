@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -29,22 +30,23 @@ import {
  * DEX and DEI, as a film. It opens on how much traded in Monday's Oct 18 calls, 27,425
  * share-equivalents, and asks how much of it pointed one way. The tape answers: each print
  * a bar as long as its delta-weighted size, then signed by the side it traded on, mid and
- * unquoted prints dropping out, for a net of +17,532. Counting the 10:50 spread as one
- * trade halves it. DEI divides that net by share volume, and three denominators give three
- * percentages. Last, another site's "DEX" of −89,800 that isn't the same quantity at all.
+ * unquoted prints dropping out, for a net of +17,532. DEI divides that net by share volume,
+ * and three denominators give three percentages. Then the numerator itself: counting the
+ * 10:50 spread as one trade halves it. Last, another site's "DEX" of −89,800 that isn't the
+ * same quantity at all.
  *
- *   open      0–4     "DEX and DEI"
- *   question  4–9.5   gross 27,425; net ?
- *   tape      9.5–21  seven prints, delta-weighted; signed by side: net +17,532
- *   spread    21–29.5 the 10:50 block as one spread: +7,500, net +8,532; cut: two answers
- *   dei       29.5–38.5  +17,532 ÷ 1.2M, 1.5M, 600k: 1.46%, 1.17%, 2.92%
- *   source    38.5–48  another site's "DEX" −89,800: OI × delta, dealers assumed short;
- *                      cut: "Same label, different numerator."
- *   next      48–50.5  Next: the module checkpoint
+ *   open      0–4        "DEX and DEI"
+ *   question  4–9.6      gross 27,425; net ?
+ *   tape      9.6–17.8   seven prints, delta-weighted; signed by side: net +17,532
+ *   dei       17.8–22.3  +17,532 ÷ 1.2M, 1.5M, 600k: 1.46%, 1.17%, 2.92%
+ *   spread    22.3–32.2  the 10:50 block as one spread: +7,500, net +8,532; cut: two
+ *                        answers, locked
+ *   source    32.2–41.8  another site's "DEX" −89,800: OI × delta, dealers assumed short;
+ *                        cut: "Same label, different numerator."
+ *   next      41.8–44.3  Next: the module checkpoint
  */
 
-const END = 50.5;
-const MAX = Math.max(...prints.map((print) => magnitude(print)));
+const END = 44.3;
 const SPREAD = netted.bullish - (printwise.bullish - magnitude(prints[4]));
 
 const leanTag: Record<Lean, Copy> = {
@@ -75,8 +77,19 @@ function layout(width: number, locale: Locale = "en") {
 			...prints.map((_, i) => textWidth(rowLabel(i, locale), labelSize)),
 		) + 10;
 	const zero = left + labelWidth + (right - left - labelWidth) * 0.12;
-	// Room right of the longest bar for its value and its side.
-	const unit = (right - zero - (narrow ? 74 : 72)) / MAX;
+	// Room right of each bar for its value and its side, measured in this locale.
+	const unit = Math.min(
+		...prints.map(
+			(print) =>
+				(right -
+					zero -
+					16 -
+					textWidth(count(magnitude(print)), labelSize + 1) -
+					textWidth(pick(leanTag[print.lean], locale), labelSize) -
+					12) /
+				magnitude(print),
+		),
+	);
 	const rowHeight = (bottom - top) / prints.length;
 	return {
 		...frame,
@@ -113,16 +126,13 @@ const copy = {
 	],
 	tapeHeadShort: ["Each print × delta × 100.", "每笔 × Delta × 100。"],
 	signHead: [
-		"Sign by side: ask right, bid left, mid and unquoted out.",
-		"按方向赋号：卖价向右，买价向左，中间价与无报价不计。",
+		"Sign by side: ask right, bid left.",
+		"按方向赋号：卖价向右，买价向左。",
 	],
 	signHeadShort: ["Ask right, bid left, mid out.", "卖价向右，买价向左。"],
 	gross: ["gross", "总量"],
 	net: ["net DEX", "净 DEX"],
-	spreadHead: [
-		"The 10:50 block was one spread: buy 105s, sell 110s.",
-		"10:50 的大单是一个价差：买 105、卖 110。",
-	],
+	spreadHead: ["The 10:50 block was one spread.", "10:50 的大单是一个价差。"],
 	spreadHeadShort: ["10:50 was one spread.", "10:50 是一个价差。"],
 	spreadRow: ["10:50 spread ×500", "10:50 价差 ×500"],
 	twoPrints: ["as two prints", "按两笔成交"],
@@ -142,13 +152,10 @@ const copy = {
 	],
 	deiLineShort: ["State the denominator.", "要说明分母。"],
 	sourceHead: [
-		`Another site shows ALFA "DEX" at ${signedCount(POSITIONING)}.`,
-		`另一个网站显示 ALFA 的“DEX”为 ${signedCount(POSITIONING)}。`,
+		`Another site shows an ALFA "DEX" too.`,
+		"另一个网站也显示了 ALFA 的“DEX”。",
 	],
-	sourceHeadShort: [
-		`Another site: "DEX" ${signedCount(POSITIONING)}.`,
-		`另一网站：“DEX” ${signedCount(POSITIONING)}。`,
-	],
+	sourceHeadShort: [`Another site's "DEX".`, "另一网站的“DEX”。"],
 	flowCard: ["flow DEX · this lesson", "成交流 DEX · 本课"],
 	siteCard: ["“DEX” · another site", "“DEX” · 另一网站"],
 	flowFrom: ["Monday's prints, by side", "周一的成交，按方向"],
@@ -157,7 +164,7 @@ const copy = {
 	siteSign: ["dealers assumed short calls", "假设做市商做空看涨"],
 	claimBig: ["Same label, different numerator.", "同样的标签，不同的分子。"],
 	claimSub: [
-		"Name the source, the sign rule and the denominator before comparing.",
+		"Name the source, sign rule and denominator first.",
 		"比较之前，先说明来源、符号规则和分母。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
@@ -427,6 +434,7 @@ function Scene({
 			{headline("t-head", copy.tapeHead, copy.tapeHeadShort)}
 			{headline("g-head", copy.signHead, copy.signHeadShort)}
 			{headline("p-head", copy.spreadHead, copy.spreadHeadShort)}
+			<Brackets name="lock-two" glow />
 			<g data-f="two">
 				{(
 					[
@@ -448,7 +456,11 @@ function Scene({
 							name={`w-num-${i}`}
 							x={W * L.pair[i]}
 							y={H * 0.3 + T.big * 0.95}
-							size={Math.min(T.big * 0.8, (W * 0.42) / (7 * 0.62))}
+							// Two seven-character figures, with clear space between them.
+							size={Math.min(
+								T.big * 0.8,
+								(W * (L.pair[1] - L.pair[0]) * 0.8) / (7 * 0.62),
+							)}
 							className={`wt-film-num ${tone}`}
 						>
 							{signedCount(num)}
@@ -567,12 +579,21 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W, context.locale);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const meter = one<SVGTextElement>("meter-value");
 	const shares = (value: number) => signedCount(Math.round(value));
 	const plain = (value: number) => count(Math.round(value));
+	const lockTwo = one<SVGGraphicsElement>("lock-two");
 
 	d.hidden([
 		one("zero"),
@@ -589,6 +610,7 @@ function build(context: FilmContext) {
 		one("g-head"),
 		one("p-head"),
 		...flat("two"),
+		lockTwo,
 		...kids("dei"),
 		...flat("src"),
 		...kids("claim"),
@@ -602,21 +624,21 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag-0"), 4.6);
-	slam(one("q-num-0"), 4.8);
-	show(one("q-tag-1"), 5.6);
-	slam(one("q-num-1"), 5.8);
-	show(one("q-line"), 6.8);
+	land(one("q-num-0"), 4.8);
+	show(one("q-tag-1"), 5.3);
+	land(one("q-num-1"), 5.5);
+	show(one("q-line"), 6.0);
 
 	// ——— tape: each print, weighted by delta ———
-	tl.addLabel("tape", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("t-head"), 9.7, "above");
-	rise(9.8);
+	tl.addLabel("tape", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("t-head"), 9.8, "above");
+	rise(9.9);
 	tl.to(one("zero"), { opacity: 1, duration: 0.4 }, 10.2);
 	show([one("meter-tag"), meter], 10.3, "above");
 	let running = 0;
 	prints.forEach((print, i) => {
-		const at = 10.5 + i * 0.4;
+		const at = 10.5 + i * 0.38;
 		show(one(`row-${i}`), at, "right", 0.35);
 		tl.to(
 			one(`bar-${i}`),
@@ -631,13 +653,15 @@ function build(context: FilmContext) {
 		d.count(meter, running + magnitude(print), at + 0.1, plain, running, 0.5);
 		running += magnitude(print);
 	});
-	// Sign by side.
-	d.swap(one("t-head"), one("g-head"), 14.3);
-	d.swap(one("meter-tag"), one("meter-tag-net"), 14.4);
+	// Sign by side: mid and unquoted prints drop out.
+	d.swap(one("t-head"), one("g-head"), 13.6);
+	// The net's tag comes down from above: from below it would cross the figure.
+	hide(one("meter-tag"), 13.7);
+	show(one("meter-tag-net"), 14.05, "above");
 	prints.forEach((_, i) => {
-		show(one(`tag-${i}`), 14.9 + i * 0.12, "right", 0.3);
+		show(one(`tag-${i}`), 14.2 + i * 0.12, "right", 0.3);
 	});
-	const signAt = 16.0;
+	const signAt = 15.2;
 	prints.forEach((print, i) => {
 		const sign = signOf(print.lean);
 		const bar = one(`bar-${i}`);
@@ -654,74 +678,83 @@ function build(context: FilmContext) {
 	});
 	d.count(meter, printwise.net, signAt, shares, printwise.gross, 0.9);
 
-	// ——— spread: one trade, not two prints ———
-	tl.addLabel("spread", 21);
-	d.swap(one("g-head"), one("p-head"), 21.0);
-	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 21.4);
-	show(one("spread"), 21.6, "right", 0.4);
-	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 22.8);
-	show(one("spread-row"), 23.0, "right");
-	d.count(meter, netted.net, 23.4, shares, printwise.net, 0.8);
-	// Cut: two answers.
-	hide([one("p-head"), ...kids("meter")], 25.0);
-	sink(25.0);
-	show(one("w-tag-0"), 25.4);
-	slam(one("w-num-0"), 25.6);
-	show(one("w-tag-1"), 26.3);
-	slam(one("w-num-1"), 26.5);
-	show(one("w-line"), 27.4);
-
 	// ——— dei: one numerator, three denominators ———
-	tl.addLabel("dei", 29.5);
-	hide(flat("two"), 29.5);
-	show(one("d-head"), 29.8, "above");
-	slam(one("d-net"), 30.2);
+	tl.addLabel("dei", 17.8);
+	hide([one("g-head"), ...kids("meter")], 17.8);
+	sink(17.8);
+	show(one("d-head"), 18.15, "above");
+	land(one("d-net"), 18.5);
 	denominators.forEach((_, i) => {
-		show(one(`d-row-${i}`), 31.2 + i * 0.9);
-		show(one(`d-tag-${i}`), 31.4 + i * 0.9);
+		show(one(`d-row-${i}`), 19.1 + i * 0.7);
+		show(one(`d-tag-${i}`), 19.3 + i * 0.7);
 	});
-	show(one("d-line"), 34.4);
+	show(one("d-line"), 21.0);
+
+	// ——— spread: one trade, not two prints ———
+	tl.addLabel("spread", 22.3);
+	hide(kids("dei"), 22.3);
+	rise(22.5);
+	show(one("p-head"), 22.65, "above");
+	show([one("meter-tag-net"), meter], 22.8, "above");
+	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 22.8);
+	show(one("spread"), 23.0, "right", 0.4);
+	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 24.0);
+	show(one("spread-row"), 24.2, "right");
+	d.count(meter, netted.net, 24.6, shares, printwise.net, 0.8);
+	// Cut: two answers. The hero: one convention halves the net.
+	hide([one("p-head"), ...kids("meter")], 26.2);
+	sink(26.2);
+	show(one("w-tag-0"), 26.5);
+	land(one("w-num-0"), 26.7);
+	show(one("w-tag-1"), 27.0);
+	land(one("w-num-1"), 27.2);
+	d.lock(lockTwo, 27.8, {
+		around: [one("w-tag-0"), one("w-num-0"), one("w-tag-1"), one("w-num-1")],
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 27.8);
+	show(one("w-line"), 28.2);
 
 	// ——— source: a number with the same name ———
-	tl.addLabel("source", 38.5);
-	hide(kids("dei"), 38.5);
-	show(one("s-head"), 38.8, "above");
-	show(one("s-title-0"), 39.5);
-	pop(one("s-num-0"), 39.7);
-	show(one("s-from-0"), 40.2);
-	show(one("s-title-1"), 41.0);
-	pop(one("s-num-1"), 41.2);
-	show(one("s-from-1"), 41.7);
+	tl.addLabel("source", 32.2);
+	hide([...flat("two"), lockTwo], 32.2);
+	show(one("s-head"), 32.55, "above");
+	show(one("s-title-0"), 33.0);
+	land(one("s-num-0"), 33.2);
+	show(one("s-from-0"), 33.6);
+	show(one("s-title-1"), 34.3);
+	land(one("s-num-1"), 34.5);
+	show(one("s-from-1"), 34.9);
 	// Cut: the claim.
-	hide(flat("src"), 44.4);
+	hide(flat("src"), 37.0);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		44.8,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		37.4,
 	);
-	show(one("c-sub"), 45.3);
+	show(one("c-sub"), 37.8);
 
 	// ——— next ———
-	tl.addLabel("next", 48);
-	hide(kids("claim"), 48.0);
-	d.close(48.0);
+	tl.addLabel("next", 41.8);
+	hide(kids("claim"), 41.8);
+	d.close(41.8);
 	return tl;
 }
 
 export const dexDeiGexFilm: Film = {
 	id: "dex-dei-gex",
 	label: [
-		"DEX and DEI, as a short film: Monday's seven Oct 18 call prints weighted by delta, 27,425 share-equivalents gross; signed by the side each traded on, a net of +17,532; the 10:50 block counted as one spread, +8,532; that net divided by three share-volume denominators, 1.46%, 1.17% and 2.92%; and another site's −89,800 'DEX', built from open interest with dealers assumed short",
-		"DEX 与 DEI 短片：周一 10月18日 看涨的七笔成交用 Delta 加权，总量 27,425 股等价；按各自成交方向赋号，净额 +17,532；把 10:50 的大单算作一个价差，+8,532；这个净额除以三种股票成交量分母，1.46%、1.17% 和 2.92%；以及另一个网站用未平仓量并假设做市商做空得出的 −89,800 “DEX”",
+		"DEX and DEI, as a short film: Monday's seven Oct 18 call prints weighted by delta, 27,425 share-equivalents gross; signed by the side each traded on, a net of +17,532; that net divided by three share-volume denominators, 1.46%, 1.17% and 2.92%; the 10:50 block counted as one spread, +8,532; and another site's −89,800 'DEX', built from open interest with dealers assumed short",
+		"DEX 与 DEI 短片：周一 10月18日 看涨的七笔成交用 Delta 加权，总量 27,425 股等价；按各自成交方向赋号，净额 +17,532；这个净额除以三种股票成交量分母，1.46%、1.17% 和 2.92%；把 10:50 的大单算作一个价差，+8,532；以及另一个网站用未平仓量并假设做市商做空得出的 −89,800 “DEX”",
 	],
 	stage: "dark",
 	shots: [
 		{ id: "open", label: ["DEX and DEI", "DEX 与 DEI"] },
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "tape", label: ["The tape", "成交"] },
-		{ id: "spread", label: ["The spread", "价差"] },
 		{ id: "dei", label: ["DEI", "DEI"] },
+		{ id: "spread", label: ["The spread", "价差"] },
 		{ id: "source", label: ["Another DEX", "另一个 DEX"] },
 		{ id: "next", label: ["Next", "下一步"] },
 	],
