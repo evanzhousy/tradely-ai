@@ -48,14 +48,14 @@ import {
  *   open       0–4        "The volatility surface"
  *   question   4–9.6      "ALFA's IV: 35%", struck out: which strike, which expiry?
  *   grid       9.6–19.8   the grid; a row, the skew; a column, the term structure
- *   wings      19.8–32    the Oct 18 smile, ATM 35%, the 25Δ put and call, not the same
+ *   wings      19.8–33    the Oct 18 smile, ATM 35%, the 25Δ put and call, not the same
  *                         distance; hero: cut to +2.8 or −2.8, locked
- *   estimates  32–39.4    no quote in three cells; interpolate between quotes, never past
- *   claim      39.4–43.8  "A surface, not a number."
- *   next       43.8–46.3  Next: IV rank and IV percentile
+ *   estimates  33–40.4    no quote in three cells; interpolate between quotes, never past
+ *   claim      40.4–44.8  "A surface, not a number."
+ *   next       44.8–46.8  Next: IV rank and IV percentile
  */
 
-const END = 46.3;
+const END = 46.8;
 const IV_LOW = 29;
 const IV_HIGH = 37;
 const SMILE_X = [85, 115] as const;
@@ -772,10 +772,10 @@ function build(context: FilmContext) {
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 29.5);
-	show(one("s-line"), 29.8);
+	show(one("s-line"), 29.5);
 
 	// ——— estimates: what the quotes don't cover ———
-	tl.addLabel("estimates", 32);
+	tl.addLabel("estimates", 33);
 	hide(
 		[
 			...kids("s").flatMap((el) =>
@@ -783,28 +783,28 @@ function build(context: FilmContext) {
 			),
 			lockSigns,
 		],
-		32.0,
+		33,
 	);
-	tl.set(charts.smile, { opacity: 0 }, 32.3);
-	tl.set(charts.grid, { opacity: 1 }, 32.3);
-	tl.set([one("g-col-frame"), one("g-earnings")], { opacity: 0 }, 32.3);
+	tl.set(charts.smile, { opacity: 0 }, 33.3);
+	tl.set(charts.grid, { opacity: 1 }, 33.3);
+	tl.set([one("g-col-frame"), one("g-earnings")], { opacity: 0 }, 33.3);
 	tl.set(
 		cells.map((cell) => cell.el),
 		{ opacity: 1 },
-		32.3,
+		33.3,
 	);
-	show(one("m-head"), 32.35);
-	rise(32.5);
+	show(one("m-head"), 33.35);
+	rise(33.5);
 	for (const [i, cell] of missing.entries()) {
 		tl.to(
 			one(`g-value-${cell.row}-${cell.col}`),
 			{ opacity: 0, duration: 0.3 },
-			33.4 + i * 0.2,
+			34.4 + i * 0.2,
 		);
 		tl.to(
 			one(`g-missing-${cell.row}-${cell.col}`),
 			{ opacity: 1, duration: 0.4 },
-			33.4 + i * 0.2,
+			34.4 + i * 0.2,
 		);
 	}
 	tl.to(
@@ -812,31 +812,31 @@ function build(context: FilmContext) {
 			.filter((cell) => !isMissing(cell.row, cell.col))
 			.map((cell) => cell.el),
 		{ opacity: 0.35, duration: 0.4 },
-		35.0,
+		36,
 	);
-	land(one("g-estimate"), 35.4);
+	land(one("g-estimate"), 36.4);
 	tl.fromTo(
 		edges.map((cell) => one(`g-missing-${cell.row}-${cell.col}`)),
 		{ scale: 1, transformOrigin: "50% 50%" },
 		{ scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" },
-		35.8,
+		36.8,
 	);
-	show(one("i-head"), 35.8);
+	show(one("i-head"), 36.8);
 	// Cut: the claim.
-	hide([one("m-head"), one("i-head")], 39.4);
-	sink(39.4);
+	hide([one("m-head"), one("i-head")], 40.4);
+	sink(40.4);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.7,
+		40.7,
 	);
-	show(one("c-sub"), 40.1);
+	show(one("c-sub"), 41.1);
 
 	// ——— next ———
-	tl.addLabel("next", 43.8);
-	hide(kids("claim"), 43.8);
-	d.close(43.8);
+	tl.addLabel("next", 44.8);
+	hide(kids("claim"), 44.8);
+	d.close(44.8);
 	return tl;
 }
 
