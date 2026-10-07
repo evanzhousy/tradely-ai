@@ -25,10 +25,12 @@ import {
 	dollars,
 	HELD,
 	lots,
+	MARK,
 	PAID,
 	PNL,
 	price,
 	RECEIVED,
+	SALE,
 	SOLD,
 	signed,
 	split,
@@ -52,14 +54,14 @@ import {
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
  *   account   10.4–19.7  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
  *                        buying power $36,799.20
- *   calls     19.7–31.4  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
- *                        and +$645 become +$975, locked
- *   short     31.4–43.5  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
+ *   calls     19.7–31.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
+ *                        and +$645 become +$975, locked; then the $75: 6 × 100 × (mid − bid)
+ *   short     31.7–43.8  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
  *                        cut: "P&L is what your positions earned."
- *   next      43.5–46    Next: performance
+ *   next      43.8–46.3  Next: performance
  */
 
-const END = 46;
+const END = 46.3;
 const ACCOUNT = [29_000, 37_000] as const;
 const BEN_X = [90, 140] as const;
 const BEN_Y = [-20_000, 6_000] as const;
@@ -176,10 +178,18 @@ const copy = {
 		`按买价，不是中间价：少 ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}。`,
 	],
 	marked: [
-		`at the mid: ${signed(held.unrealized)} · −${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
-		`按中间价：${signed(held.unrealized)} · −${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
+		`at the mid: ${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
+		`按中间价：${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
 	],
-	bpNote: ["2 × cash", "现金 × 2"],
+	/** Where the $75 comes from: six sold at the bid, not the mid. */
+	gap: [
+		`${SOLD} × 100 × (mid ${price(MARK)} − bid ${price(SALE)}) = ${dollars(SOLD * (MARK - SALE) * 100)}`,
+		`${SOLD} × 100 × (中间价 ${price(MARK)} − 买价 ${price(SALE)}) = ${dollars(SOLD * (MARK - SALE) * 100)}`,
+	],
+	bpNote: [
+		`2 × cash ${dollars(buyingPower / 2)}`,
+		`现金 ${dollars(buyingPower / 2)} × 2`,
+	],
 	benHead: [
 		`Ben wrote ${BEN} of these calls.`,
 		`Ben 卖出了 ${BEN} 张同样的看涨。`,
@@ -200,7 +210,7 @@ const copy = {
 		`15:59 mark ${signed(benMarked)}`,
 		`15:59 估值 ${signed(benMarked)}`,
 	],
-	benMarkShort: [signed(benMarked), signed(benMarked)],
+	benMarkShort: [`mark ${signed(benMarked)}`, `估值 ${signed(benMarked)}`],
 	far: [
 		`$120: ${signed(benAtExpiry(120))}`,
 		`$120：${signed(benAtExpiry(120))}`,
@@ -680,15 +690,6 @@ function Scene({
 					{signed(fifo.realized)}
 				</Word>
 				<Word
-					name="t-plus"
-					x={partX - T.num * 0.7}
-					y={H * 0.3 + T.big * 1.05}
-					size={T.num}
-					className="wt-film-num wt-film-dim"
-				>
-					+
-				</Word>
-				<Word
 					name="t-part"
 					x={partX}
 					y={H * 0.3 + T.big * 1.05}
@@ -701,11 +702,20 @@ function Scene({
 				<Word
 					name="t-was"
 					x={W / 2}
-					y={H * 0.3 + T.big * 1.05 + T.body * 3.4}
+					y={H * 0.3 + T.big * 1.05 + T.body * 3.9}
 					size={T.body}
 					className="wt-film-type wt-film-dim"
 				>
 					{t(copy.marked)}
+				</Word>
+				<Word
+					name="t-gap"
+					x={W / 2}
+					y={H * 0.3 + T.big * 1.05 + T.body * 5.7}
+					size={narrow ? T.small * 1.1 : T.body}
+					className="wt-film-num"
+				>
+					{t(copy.gap)}
 				</Word>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
@@ -894,21 +904,16 @@ function build(context: FilmContext) {
 	// One part lands, then the other lands on it, and the two count as one.
 	const total = one<SVGTextElement>("t-num");
 	d.carry(realized, total, 24.9, { duration: 0.8 });
-	show(one("t-plus"), 25.7);
 	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 25.7, {
 		duration: 0.8,
 	});
-	// The two are added: the second part and its "+" fold into the first as it counts.
-	const fold = W / 2 - Number(one("t-part").getAttribute("x"));
-	tl.to(
-		[one("t-plus"), one("t-part")],
-		{ x: fold, opacity: 0, duration: 0.45, ease: "power2.in" },
-		26.6,
-	);
+	// The two are added: the part goes where it stands, then the total counts it in. No frame
+	// shows a total beside a part it already holds.
+	tl.to(one("t-part"), { opacity: 0, duration: 0.25 }, 26.6);
 	d.count(
 		total,
 		fifo.realized + fifo.unrealized,
-		26.6,
+		26.85,
 		(v) => signed(Math.round(v / 100) * 100),
 		fifo.realized,
 		0.6,
@@ -920,43 +925,45 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 27.5);
 	show(one("t-head"), 27.5);
+	// After the lock: the $75, made from the two prices.
+	show(one("t-gap"), 28.15, "below");
 
 	// ——— short: the other side of the same calls ———
-	tl.addLabel("short", 31.4);
-	hide([...flat("total"), lockTotal, one("l-head"), one("t-head")], 31.4);
-	tl.set(one("acct"), { opacity: 0 }, 31.5);
-	tl.set(one("ben"), { opacity: 1 }, 31.5);
-	show(one("b-head"), 31.75, "above");
-	rise(31.8);
-	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 32.3);
-	show(one("premium-label"), 32.6);
-	land(one("mark-dot"), 33);
-	show(one("mark-label"), 33.2);
-	d.swap(one("b-head"), one("x-head"), 35.3);
-	draw(one<SVGPathElement>("expiry"), 35.4, 1.4);
+	tl.addLabel("short", 31.7);
+	hide([...flat("total"), lockTotal, one("l-head"), one("t-head")], 31.7);
+	tl.set(one("acct"), { opacity: 0 }, 31.8);
+	tl.set(one("ben"), { opacity: 1 }, 31.8);
+	show(one("b-head"), 32.05, "above");
+	rise(32.1);
+	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 32.6);
+	show(one("premium-label"), 32.9);
+	land(one("mark-dot"), 33.3);
+	show(one("mark-label"), 33.5);
+	d.swap(one("b-head"), one("x-head"), 35.6);
+	draw(one<SVGPathElement>("expiry"), 35.7, 1.4);
 	tl.fromTo(
 		one("expiry-arrow"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.2 },
-		36.8,
+		37.1,
 	);
-	land(one("far-dot"), 36.6);
-	show(one("far-label"), 36.8);
+	land(one("far-dot"), 36.9);
+	show(one("far-label"), 37.1);
 	// Cut: the claim.
-	hide(one("x-head"), 39.15);
-	sink(39.15);
+	hide(one("x-head"), 39.45);
+	sink(39.45);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.5,
+		39.8,
 	);
-	show(one("z-sub"), 39.9);
+	show(one("z-sub"), 40.2);
 
 	// ——— next ———
-	tl.addLabel("next", 43.5);
-	hide(kids("claim"), 43.5);
-	d.close(43.5);
+	tl.addLabel("next", 43.8);
+	hide(kids("claim"), 43.8);
+	d.close(43.8);
 	return tl;
 }
 
