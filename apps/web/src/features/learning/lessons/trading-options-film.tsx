@@ -34,12 +34,12 @@ import {
  *   question  4–8.8      Oct 18 or Nov 15: which 100 call costs more?
  *   chain     8.8–18     the dates fly to the tabs; Oct 18; Nov 15: $5.45, $545
  *   order     18–34      a thin book; market at the ask; hero: a limit joins, waits, fills
- *   end       34–38      sell, expire, exercise
- *   claim     38–42.3    pick the row, name your price, know how it ends
- *   next      42.3–44.8  Next: risk first
+ *   end       34–38.6    sell, expire, exercise
+ *   claim     38.6–42.9  pick the row, name your price, know how it ends
+ *   next      42.9–45.4  Next: risk first
  */
 
-const END = 44.8;
+const END = 45.4;
 const TABS = ["oct18", "nov15"] as const;
 const ROWS = Object.fromEntries(
 	TABS.map((id) => [id, chainRows(id)]),
@@ -843,19 +843,19 @@ function build(context: FilmContext) {
 	);
 	show(heads[6], 34.35);
 	cards.forEach((card, i) => {
-		show(card, 34.6 + i * 0.4);
+		show(card, 34.6 + i * 0.25);
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 38);
-	hide([heads[6], ...cards], 38.0);
-	word(one("z-big"), 38.3);
-	show(one("z-sub"), 38.8);
+	tl.addLabel("claim", 38.6);
+	hide([heads[6], ...cards], 38.6);
+	word(one("z-big"), 38.9);
+	show(one("z-sub"), 39.4);
 
 	// ——— next ———
-	tl.addLabel("next", 42.3);
-	hide(kids("claim"), 42.3);
-	d.close(42.3);
+	tl.addLabel("next", 42.9);
+	hide(kids("claim"), 42.9);
+	d.close(42.9);
 	return tl;
 }
 
