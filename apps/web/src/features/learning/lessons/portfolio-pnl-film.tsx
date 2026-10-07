@@ -12,6 +12,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	afterDeposit,
 	BEN,
@@ -164,8 +165,8 @@ const copy = {
 		`以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
 	],
 	lotsHeadShort: [
-		`Sell ${SOLD}: still ${signed(held.unrealized)}?`,
-		`卖出 ${SOLD} 张：还是 ${signed(held.unrealized)}？`,
+		`Sell ${SOLD} at the bid: ${signed(held.unrealized)}?`,
+		`按买价卖 ${SOLD} 张：${signed(held.unrealized)}？`,
 	],
 	realized: ["realized", "已实现"],
 	unrealized: ["unrealized", "未实现"],
@@ -175,9 +176,10 @@ const copy = {
 		`按买价，不是中间价：少 ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}。`,
 	],
 	marked: [
-		`marked ${signed(held.unrealized)}`,
-		`估值 ${signed(held.unrealized)}`,
+		`at the mid: ${signed(held.unrealized)} · −${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
+		`按中间价：${signed(held.unrealized)} · −${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
 	],
+	bpNote: ["2 × cash", "现金 × 2"],
 	benHead: [
 		`Ben wrote ${BEN} of these calls.`,
 		`Ben 卖出了 ${BEN} 张同样的看涨。`,
@@ -198,7 +200,7 @@ const copy = {
 		`15:59 mark ${signed(benMarked)}`,
 		`15:59 估值 ${signed(benMarked)}`,
 	],
-	benMarkShort: [`15:59 ${signed(benMarked)}`, `15:59 ${signed(benMarked)}`],
+	benMarkShort: [signed(benMarked), signed(benMarked)],
 	far: [
 		`$120: ${signed(benAtExpiry(120))}`,
 		`$120：${signed(benAtExpiry(120))}`,
@@ -218,7 +220,7 @@ const segments = [
 	{ name: "seg-stock", from: EARNED_FROM, to: STOCK_TO, tone: "gain" },
 	{ name: "seg-calls", from: STOCK_TO, to: CALLS_TO, tone: "gain" },
 	{ name: "seg-fees", from: CLOSE_TO, to: CALLS_TO, tone: "loss" },
-	{ name: "seg-deposit", from: CLOSE_TO, to: TUESDAY, tone: "model" },
+	{ name: "seg-deposit", from: CLOSE_TO, to: TUESDAY, tone: "neutral" },
 ] as const;
 
 function Scene({
@@ -248,6 +250,9 @@ function Scene({
 	const fit = (text: string, share = 0.84) =>
 		Math.min(T.big, (W * share) / (text.length * 0.62));
 	const x0 = L.ax(EARNED_FROM);
+	/** Where the total's second part lands: right of the first, past a "+". */
+	const partX =
+		W / 2 + textWidth(signed(fifo.realized), T.big) / 2 + T.num * 1.4;
 	const x1 = L.ax(CLOSE_TO);
 	const bracketY = L.barTop - 10;
 	const markX = L.bx(CLOSE_SPOT / 100);
@@ -394,7 +399,12 @@ function Scene({
 						</text>
 						<path
 							data-f="expiry"
-							d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${offX} ${offY}M${offX - arrow.dx * 9 - arrow.dy * 6} ${offY - arrow.dy * 9 + arrow.dx * 6}L${offX} ${offY}L${offX - arrow.dx * 9 + arrow.dy * 6} ${offY - arrow.dy * 9 - arrow.dx * 6}`}
+							d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${offX} ${offY}`}
+							className="wt-line-short"
+						/>
+						<path
+							data-f="expiry-arrow"
+							d={`M${offX - arrow.dx * 9 - arrow.dy * 6} ${offY - arrow.dy * 9 + arrow.dx * 6}L${offX} ${offY}L${offX - arrow.dx * 9 + arrow.dy * 6} ${offY - arrow.dy * 9 - arrow.dx * 6}`}
 							className="wt-line-short"
 						/>
 						<circle
@@ -478,6 +488,16 @@ function Scene({
 					{dollars(buyingPower)}
 				</Word>
 			</g>
+			<Word
+				name="m-bp-note"
+				x={L.right}
+				y={L.headY + T.head * 1.25 + T.num * 1.05 + T.small * 1.9}
+				size={T.small}
+				anchor="end"
+				className="wt-film-tag"
+			>
+				{t(copy.bpNote).toUpperCase()}
+			</Word>
 			<g data-f="answer">
 				<Word
 					name="earned-tag"
@@ -660,9 +680,28 @@ function Scene({
 					{signed(fifo.realized)}
 				</Word>
 				<Word
+					name="t-plus"
+					x={partX - T.num * 0.7}
+					y={H * 0.3 + T.big * 1.05}
+					size={T.num}
+					className="wt-film-num wt-film-dim"
+				>
+					+
+				</Word>
+				<Word
+					name="t-part"
+					x={partX}
+					y={H * 0.3 + T.big * 1.05}
+					size={T.num}
+					anchor="start"
+					className="wt-film-num wt-film-gain"
+				>
+					{signed(fifo.unrealized)}
+				</Word>
+				<Word
 					name="t-was"
 					x={W / 2}
-					y={H * 0.3 + T.big * 1.05 + T.body * 2.2}
+					y={H * 0.3 + T.big * 1.05 + T.body * 3.4}
 					size={T.body}
 					className="wt-film-type wt-film-dim"
 				>
@@ -755,6 +794,8 @@ function build(context: FilmContext) {
 		one("premium"),
 		one("premium-label"),
 		one("expiry"),
+		one("expiry-arrow"),
+		one("m-bp-note"),
 		one("mark-dot"),
 		one("mark-label"),
 		one("far-dot"),
@@ -827,10 +868,14 @@ function build(context: FilmContext) {
 	tl.set(one("m-tag"), { opacity: 0 }, 17.9);
 	d.flip(meter, one("m-bp"), 17.6);
 	tl.set(meter, { opacity: 0 }, 17.9);
+	show(one("m-bp-note"), 17.9);
 
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.7);
-	hide([one("e-head"), ...kids("meter"), ...kids("answer")], 19.7);
+	hide(
+		[one("e-head"), ...kids("meter"), one("m-bp-note"), ...kids("answer")],
+		19.7,
+	);
 	sink(19.7);
 	squares.forEach((square, i) => {
 		land(square, 20.1 + i * 0.04, 0.4);
@@ -849,16 +894,22 @@ function build(context: FilmContext) {
 	// One part lands, then the other lands on it, and the two count as one.
 	const total = one<SVGTextElement>("t-num");
 	d.carry(realized, total, 24.9, { duration: 0.8 });
-	d.carry(unrealized, total, 25.7, {
+	show(one("t-plus"), 25.7);
+	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 25.7, {
 		duration: 0.8,
-		fit: false,
-		reveal: false,
 	});
+	// The two are added: the second part and its "+" fold into the first as it counts.
+	const fold = W / 2 - Number(one("t-part").getAttribute("x"));
+	tl.to(
+		[one("t-plus"), one("t-part")],
+		{ x: fold, opacity: 0, duration: 0.45, ease: "power2.in" },
+		26.6,
+	);
 	d.count(
 		total,
 		fifo.realized + fifo.unrealized,
-		26.5,
-		signed,
+		26.6,
+		(v) => signed(Math.round(v / 100) * 100),
 		fifo.realized,
 		0.6,
 	);
@@ -883,6 +934,12 @@ function build(context: FilmContext) {
 	show(one("mark-label"), 33.2);
 	d.swap(one("b-head"), one("x-head"), 35.3);
 	draw(one<SVGPathElement>("expiry"), 35.4, 1.4);
+	tl.fromTo(
+		one("expiry-arrow"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.2 },
+		36.8,
+	);
 	land(one("far-dot"), 36.6);
 	show(one("far-label"), 36.8);
 	// Cut: the claim.
