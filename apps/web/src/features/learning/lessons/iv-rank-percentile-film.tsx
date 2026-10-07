@@ -595,7 +595,7 @@ function build(context: FilmContext) {
 	tl.to(one("bracket"), { opacity: 0.25, duration: 0.4 }, 18.4);
 	tl.to(above, { opacity: 0.25, duration: 0.4 }, 18.8);
 	tl.to(below, { opacity: 1, duration: 0.2 }, 18.8);
-	show(one("p-formula"), 19.5);
+	show(one("p-formula"), 19.1);
 
 	// ——— outlier: one week sets the high ———
 	tl.addLabel("outlier", 22.6);
