@@ -10,6 +10,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -36,15 +37,16 @@ import {
  * for word the same: live data against recipe content. Last, the table shows the top three
  * contracts by volume/OI, the key figures count five, and two passed without being loaded.
  *
- *   open        0–4      "Read a recipe like an auditor"
- *   question    4–9.5    "Mon Sep 16: 5 contracts flagged…" — where does it come from?
- *   map         9.5–19.5 inputs, live data, cells; trace the Bottom line; the Takeaways
- *   content     19.5–30.5 Monday's two text cells; Tuesday's; labels; cut: evidence vs method
- *   population  30.5–41  top three; five counted; two not loaded; cut: the claim
- *   next        41–43.5  Next: change the inputs, keep the question
+ *   open        0–4        "Read a recipe like an auditor"
+ *   question    4–9.6      "Mon Sep 16: 5 contracts flagged…" — where does it come from?
+ *   map         9.6–19.6   inputs, live data, cells; trace the Bottom line; the Takeaways
+ *   content     19.6–29    Monday's two text cells; Tuesday's, labelled; cut: evidence vs
+ *                          method, locked
+ *   population  29–41.3    top three; five counted, two not loaded; cut: the claim
+ *   next        41.3–43.8  Next: change the inputs, keep the question
  */
 
-const END = 43.5;
+const END = 43.8;
 const TOP_N = 3;
 const BOTTOM = CELLS.findIndex((cell) => cell.id === "bottom");
 const TAKE = CELLS.findIndex((cell) => cell.id === "takeaways");
@@ -119,14 +121,11 @@ const copy = {
 	],
 	mapHeadShort: ["The recipe map.", "Recipe 地图。"],
 	traceHead: [
-		"Trace the Bottom line: Live data 1, then the session and five thresholds.",
-		"追溯核心结论：实时数据 1，再到交易时段和五个阈值。",
+		"Trace the Bottom line back to its inputs.",
+		"把核心结论追溯到它的输入。",
 	],
 	traceHeadShort: ["Trace the Bottom line.", "追溯核心结论。"],
-	takeHead: [
-		"The Takeaways have no line in: written once, run by no query.",
-		"要点没有任何输入线：只写一次，不运行任何查询。",
-	],
+	takeHead: ["The Takeaways have no line in.", "要点没有任何输入线。"],
 	takeHeadShort: ["Takeaways: no line in.", "要点：没有输入线。"],
 	inputs: ["Inputs", "输入"],
 	live: ["Live data", "实时数据"],
@@ -137,15 +136,10 @@ const copy = {
 	],
 	runHeadShort: ["Monday's run.", "周一的运行。"],
 	tuesdayHead: [
-		"Run it for Tuesday: one cell changes, one doesn't.",
-		"针对周二运行：一个单元格变了，一个没变。",
+		"Tuesday's run: one cell changes, one doesn't.",
+		"周二的运行：一个单元格变了，一个没变。",
 	],
 	tuesdayHeadShort: ["Tuesday: one cell changes.", "周二：一个单元格变了。"],
-	tagsHead: [
-		"The recipe map labels which is which.",
-		"Recipe 地图标明了谁是谁。",
-	],
-	tagsHeadShort: ["The map labels them.", "地图标明了它们。"],
 	bottomTitle: ["Bottom line", "核心结论"],
 	takeTitle: ["Takeaways", "要点"],
 	liveTag: ["live data", "实时数据"],
@@ -163,17 +157,9 @@ const copy = {
 		`表格：成交量/OI 前 ${TOP_N} 名。`,
 	],
 	tableHeadShort: [`The table: top ${TOP_N}.`, `表格：前 ${TOP_N} 名。`],
-	countHead: [
-		`The key figures count ${MONDAY.passed.length}, across ${MONDAY.names} names.`,
-		`关键数字统计了 ${MONDAY.passed.length} 份，分布在 ${MONDAY.names} 个标的。`,
-	],
-	countHeadShort: [
-		`The key figures count ${MONDAY.passed.length}.`,
-		`关键数字统计了 ${MONDAY.passed.length} 份。`,
-	],
 	restHead: [
-		`${MONDAY.passed.length - TOP_N} more passed but aren't loaded into the report.`,
-		`另外 ${MONDAY.passed.length - TOP_N} 份也通过了，只是没有载入报告。`,
+		`${MONDAY.passed.length - TOP_N} more passed but aren't loaded.`,
+		`另外 ${MONDAY.passed.length - TOP_N} 份也通过了，只是没有载入。`,
 	],
 	restHeadShort: [
 		`${MONDAY.passed.length - TOP_N} passed, not loaded.`,
@@ -191,8 +177,8 @@ const copy = {
 	highest: ["highest vol/OI", "成交量/OI 最高"],
 	claimBig: ["Trace it, label it, count it.", "追溯、标注、计数。"],
 	claimSub: [
-		"Find a sentence's inputs, tell computed from written, and take counts from the key figures.",
-		"找到一句话的输入，分清算出的与写好的，计数以关键数字为准。",
+		"Trace inputs, label what's written, count key figures.",
+		"追溯输入，标注写好的内容，按关键数字计数。",
 	],
 	nextBig: [
 		"Next: change the inputs, keep the question",
@@ -597,7 +583,24 @@ function Scene({
 			</g>
 			{headline("m-head", copy.mapHead, copy.mapHeadShort)}
 			{headline("b-head", copy.traceHead, copy.traceHeadShort)}
-			{headline("t-head", copy.takeHead, copy.takeHeadShort)}
+			<Lines
+				name="t-head"
+				text={t(narrow ? copy.takeHeadShort : copy.takeHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.traceHeadShort : copy.traceHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 
 			{/* Two text cells, run for two sessions. */}
 			<g data-f="cells">
@@ -660,11 +663,27 @@ function Scene({
 				))}
 			</g>
 			{headline("r-head", copy.runHead, copy.runHeadShort)}
-			{headline("u-head", copy.tuesdayHead, copy.tuesdayHeadShort)}
-			{headline("g-head", copy.tagsHead, copy.tagsHeadShort)}
+			<Lines
+				name="u-head"
+				text={t(narrow ? copy.tuesdayHeadShort : copy.tuesdayHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.runHeadShort : copy.runHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Brackets name="lock-evidence" glow />
 			{claim("evidence", copy.evidenceBig, copy.evidenceSub)}
 			{headline("p-head", copy.tableHead, copy.tableHeadShort)}
-			{headline("k-head", copy.countHead, copy.countHeadShort)}
 			{headline("x-head", copy.restHead, copy.restHeadShort)}
 			{claim("claim", copy.claimBig, copy.claimSub)}
 			<EndCard
@@ -707,11 +726,13 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			at,
 		);
 	const traceIns = INPUTS.map((_, i) => one<SVGPathElement>(`trace-in-${i}`));
 	const rows = MONDAY.passed.map((_, i) => one(`row-${i}`));
+
+	const lockEvidence = one<SVGGraphicsElement>("lock-evidence");
 
 	d.hidden([
 		one("screen"),
@@ -737,12 +758,11 @@ function build(context: FilmContext) {
 			"t-head",
 			"r-head",
 			"u-head",
-			"g-head",
 			"p-head",
-			"k-head",
 			"x-head",
 		].map((name) => one(name)),
 		...kids("evidence"),
+		lockEvidence,
 		...kids("claim"),
 	]);
 
@@ -755,85 +775,84 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.8);
+	show(one("q-line"), 6.0);
 
 	// ——— map: trace a sentence back ———
-	tl.addLabel("map", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("m-head"), 9.7, "above");
-	rise(9.8);
+	tl.addLabel("map", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("m-head"), 9.8, "above");
+	rise(9.9);
 	[0, 1, 2].forEach((i) => {
-		show(one(`col-${i}`), 10.2 + i * 0.25);
+		show(one(`col-${i}`), 10.3 + i * 0.25);
 	});
 	INPUTS.forEach((input, i) => {
-		show(nodes(input.id), 10.4 + i * 0.08, "right");
+		show(nodes(input.id), 10.5 + i * 0.08, "right");
 	});
 	SOURCES.forEach((source, j) => {
-		show(nodes(source.id), 10.9 + j * 0.12, "right");
+		show(nodes(source.id), 11.0 + j * 0.12, "right");
 	});
 	CELLS.forEach((cell, i) => {
-		show(nodes(cell.id), 11.2 + i * 0.1, "right");
+		show(nodes(cell.id), 11.3 + i * 0.1, "right");
 	});
-	tl.to(one("edges"), { opacity: 1, duration: 0.6 }, 11.6);
+	tl.to(one("edges"), { opacity: 1, duration: 0.6 }, 11.7);
 	// The Bottom line, back to its inputs.
-	d.swap(one("m-head"), one("b-head"), 12.8);
+	d.swap(one("m-head"), one("b-head"), 13.4);
 	const dim = [
 		...SOURCES.filter((_, j) => j !== LIVE).flatMap((s) => nodes(s.id)),
 		...CELLS.filter((_, i) => i !== BOTTOM).flatMap((c) => nodes(c.id)),
 	];
-	tl.to(dim, { opacity: 0.3, duration: 0.4 }, 13.2);
-	tl.to(one("edges"), { opacity: 0.35, duration: 0.4 }, 13.2);
-	tl.to(one(`f-${CELLS[BOTTOM].id}`), { opacity: 1, duration: 0.3 }, 13.2);
-	draw(one<SVGPathElement>("trace-cell"), 13.5);
-	tl.to(one(`f-${SOURCES[LIVE].id}`), { opacity: 1, duration: 0.3 }, 14.0);
+	tl.to(dim, { opacity: 0.3, duration: 0.4 }, 13.8);
+	tl.to(one("edges"), { opacity: 0.35, duration: 0.4 }, 13.8);
+	tl.to(one(`f-${CELLS[BOTTOM].id}`), { opacity: 1, duration: 0.3 }, 13.8);
+	draw(one<SVGPathElement>("trace-cell"), 14.1);
+	tl.to(one(`f-${SOURCES[LIVE].id}`), { opacity: 1, duration: 0.3 }, 14.6);
 	traceIns.forEach((path) => {
-		draw(path, 14.2, 0.6);
+		draw(path, 14.8, 0.6);
 	});
 	tl.to(
 		INPUTS.map((input) => one(`f-${input.id}`)),
 		{ opacity: 1, duration: 0.3 },
-		14.8,
+		15.4,
 	);
 	// The Takeaways: nothing in.
-	d.swap(one("b-head"), one("t-head"), 16.2);
+	show(one("t-head"), 16.0);
 	tl.to(
 		[one("trace-cell"), ...traceIns, ...ids.map((id) => one(`f-${id}`))],
 		{ opacity: 0, duration: 0.4 },
-		16.6,
+		16.0,
 	);
 	tl.to(
 		ids.filter((id) => id !== CELLS[TAKE].id).flatMap((id) => nodes(id)),
 		{ opacity: 0.3, duration: 0.4 },
-		16.6,
+		16.0,
 	);
-	tl.to(nodes(CELLS[TAKE].id), { opacity: 1, duration: 0.3 }, 16.6);
-	tl.to(one(`f-${CELLS[TAKE].id}`), { opacity: 1, duration: 0.4 }, 16.9);
+	tl.to(nodes(CELLS[TAKE].id), { opacity: 1, duration: 0.3 }, 16.0);
+	tl.to(one(`f-${CELLS[TAKE].id}`), { opacity: 1, duration: 0.4 }, 16.3);
 
 	// ——— content: computed and written ———
-	tl.addLabel("content", 19.5);
-	hide(one("t-head"), 19.5);
-	sink(19.5);
-	show(one("r-head"), 19.9, "above");
+	tl.addLabel("content", 19.6);
+	hide([one("b-head"), one("t-head")], 19.6);
+	sink(19.6);
+	show(one("r-head"), 19.95, "above");
 	show(one("run-mon"), 20.2);
 	show([one("bl-box"), one("bl-title")], 20.4);
 	show(one("bl-mon"), 20.6);
 	show([one("tk-box"), one("tk-title")], 20.9);
 	show(one("tk-text"), 21.1);
-	// Tuesday's run: the Bottom line flips, the Takeaways hold still.
-	d.swap(one("r-head"), one("u-head"), 22.8);
-	d.flip(one("run-mon"), one("run-tue"), 23.2);
-	tl.set(one("run-mon"), { opacity: 0 }, 23.5);
-	d.flip(one("bl-mon"), one("bl-tue"), 23.4);
-	tl.set(one("bl-mon"), { opacity: 0 }, 23.7);
-	tl.to(one("bl-focus"), { opacity: 1, duration: 0.4 }, 23.6);
-	// The labels.
-	d.swap(one("u-head"), one("g-head"), 25.4);
-	show(one("bl-tag"), 25.8, "right");
-	show(one("tk-tag"), 26.2, "right");
-	// Cut: evidence against method.
+	// Tuesday's run: the Bottom line flips, the Takeaways hold still. The map's labels.
+	show(one("u-head"), 22.2);
+	d.flip(one("run-mon"), one("run-tue"), 22.4);
+	tl.set(one("run-mon"), { opacity: 0 }, 22.7);
+	d.flip(one("bl-mon"), one("bl-tue"), 22.6);
+	tl.set(one("bl-mon"), { opacity: 0 }, 22.9);
+	tl.to(one("bl-focus"), { opacity: 1, duration: 0.4 }, 22.8);
+	show(one("bl-tag"), 23.2, "right");
+	show(one("tk-tag"), 23.6, "right");
+	// Cut: evidence against method. The hero.
 	hide(
 		[
-			one("g-head"),
+			one("r-head"),
+			one("u-head"),
 			...flat("cells"),
 			one("bl-box"),
 			one("tk-box"),
@@ -843,42 +862,44 @@ function build(context: FilmContext) {
 			one("bl-tag"),
 			one("tk-tag"),
 		],
-		27.6,
+		25.8,
 	);
-	word(one("evidence-big"), 28.0);
-	show(one("evidence-sub"), 28.5);
+	word(one("evidence-big"), 26.2);
+	show(one("evidence-sub"), 26.6);
+	d.lock(lockEvidence, 26.8, { around: one("evidence-big"), pad: 10 });
+	tl.addLabel("hero-lock", 26.8);
 
 	// ——— population: the table and the count ———
-	tl.addLabel("population", 30.5);
-	hide(kids("evidence"), 30.5);
-	tl.set(one("map"), { opacity: 0 }, 30.6);
-	tl.set(one("screen"), { opacity: 1 }, 30.6);
-	show(one("p-head"), 30.7, "above");
-	rise(30.8);
-	show(one("table-head"), 31.3);
+	tl.addLabel("population", 29);
+	hide([...kids("evidence"), lockEvidence], 29.0);
+	tl.set(one("map"), { opacity: 0 }, 29.1);
+	tl.set(one("screen"), { opacity: 1 }, 29.1);
+	show(one("p-head"), 29.35, "above");
+	rise(29.4);
+	show(one("table-head"), 29.9);
 	rows.slice(0, TOP_N).forEach((row, i) => {
-		show(row, 31.5 + i * 0.25);
+		show(row, 30.1 + i * 0.25);
 	});
-	d.swap(one("p-head"), one("k-head"), 33.2);
+	// The key figures count every contract that passed; two never reached the table.
+	d.swap(one("p-head"), one("x-head"), 32.9);
+	rows.slice(TOP_N).forEach((row, i) => {
+		show(row, 32.95 + i * 0.2);
+	});
 	kids("screen")
 		.filter((el) => el.getAttribute("data-f")?.startsWith("kpi-"))
 		.forEach((kpi, i) => {
-			show(kpi, 33.6 + i * 0.2, "above");
+			show(kpi, 33.3 + i * 0.2, "above");
 		});
-	d.swap(one("k-head"), one("x-head"), 35.4);
-	rows.slice(TOP_N).forEach((row, i) => {
-		show(row, 35.8 + i * 0.3);
-	});
 	// Cut: the claim.
-	hide(one("x-head"), 37.6);
-	sink(37.6);
-	word(one("claim-big"), 38.0);
-	show(one("claim-sub"), 38.5);
+	hide(one("x-head"), 36.8);
+	sink(36.8);
+	word(one("claim-big"), 37.2);
+	show(one("claim-sub"), 37.6);
 
 	// ——— next ———
-	tl.addLabel("next", 41);
-	hide(kids("claim"), 41.0);
-	d.close(41.0);
+	tl.addLabel("next", 41.3);
+	hide(kids("claim"), 41.3);
+	d.close(41.3);
 	return tl;
 }
 
