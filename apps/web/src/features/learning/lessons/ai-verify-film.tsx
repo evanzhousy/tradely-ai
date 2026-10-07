@@ -124,7 +124,7 @@ const copy = {
 	],
 	restHeadShort: ["A count; and a forecast.", "一个计数；一个预测。"],
 	draftBig: [
-		"An AI answer is a draft until you sort it.",
+		"An AI answer is a draft until sorted.",
 		"分类之前，AI 的回答只是草稿。",
 	],
 	draftSub: [
