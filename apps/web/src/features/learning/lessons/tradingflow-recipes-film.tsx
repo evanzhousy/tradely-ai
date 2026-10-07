@@ -150,10 +150,13 @@ const copy = {
 	],
 	screenerShort: ["UOA Screener", "UOA Screener"],
 	mondayHead: [
-		"Open it Monday, 10:00: still trading.",
+		"Open it Monday at 10:00: still trading.",
 		"周一 10:00 打开：仍在交易。",
 	],
-	mondayHeadShort: ["Monday, 10:00: still trading.", "周一 10:00：仍在交易。"],
+	mondayHeadShort: [
+		"Monday at 10:00: still trading.",
+		"周一 10:00：仍在交易。",
+	],
 	fridayHead: ["It shows Friday.", "它显示周五。"],
 	editChip: ["Edit with AI", "Edit with AI"],
 	forkHead: [
@@ -442,6 +445,18 @@ function Scene({
 							rx={6}
 							className="wt-focus-shape"
 						/>
+						{/* Friday's date in the header's own type, read off Friday's box: what travels
+						    into the report's header, so it lands in its own face and width. */}
+						<text
+							data-f="fri-date"
+							x={L.dayX(PREVIOUS_SESSION_DATE) + L.colW / 2}
+							y={statusY}
+							textAnchor="middle"
+							className="wt-film-type wt-film-accent"
+							style={{ fontSize: T.small * 1.1 }}
+						>
+							{t(dayLabel(PREVIOUS_SESSION_DATE))}
+						</text>
 						{(
 							[
 								["latest-mon", SESSION_DATE, copy.latest, "wt-accent"],
@@ -780,6 +795,7 @@ function build(context: FilmContext) {
 		...sessions,
 		one("mon-done"),
 		one("mon-rest"),
+		one("fri-date"),
 		one("latest-box"),
 		one("latest-mon"),
 		one("trading-mon"),
@@ -885,6 +901,7 @@ function build(context: FilmContext) {
 		},
 		22.75,
 	);
+	d.swap(one("ran-tue"), one("ran-mon"), 22.85);
 	// "latest" steps out from under Monday, and Monday shows it is trading.
 	hide(one("latest-mon"), 22.75, 0.25, 0);
 	show(one("trading-mon"), 23.05);
@@ -923,35 +940,37 @@ function build(context: FilmContext) {
 		{ attr: { x: L.dayX(SESSION_DATE) + L.colW / 2 + back } },
 		23.1,
 	);
-	d.swap(one("ran-tue"), one("ran-mon"), 25.0);
-	if (L.narrow) {
-		show(one("latest-mon"), 24.9);
-		d.flip(one("sess-mon"), one("sess-fri"), 25.0);
-	} else {
-		const title = one("header").querySelector("text");
-		// Monday's date fades out of its line; then Friday's line, its date held back for the
-		// carry, takes the line's place: "Session · " never moves or doubles.
-		tl.to(
-			one("sess-mon-date"),
-			{ attr: { "fill-opacity": 0 }, duration: 0.25 },
-			25.0,
-		);
-		tl.set(one("sess-mon"), { opacity: 0 }, 25.25);
-		tl.set(one("sess-fri"), { opacity: 1 }, 25.25);
-		if (title) {
-			tl.to(title, { opacity: 0.25, duration: 0.2 }, 25.0);
-			tl.to(title, { opacity: 1, duration: 0.3 }, 25.85);
-		}
-		// Friday is the latest now: its date lights before it travels, in the header's accent.
-		const friday = one<SVGGraphicsElement>(`day-${PREVIOUS_SESSION_DATE}`);
-		tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 24.9);
-		d.carry(friday, one<SVGGraphicsElement>("sess-fri"), 25.0, {
-			duration: 0.8,
-			keep: true,
-			match: d.t(dayLabel(PREVIOUS_SESSION_DATE)),
-		});
-		show(one("latest-mon"), 25.8);
+	// Friday is the latest: its date lights, is read off its box, and comes down into the
+	// header in the header's own type. Monday's date fades out of its line first; Friday's
+	// line takes the place with its date held back for the carry, so "Session · " never moves.
+	const title = one("header").querySelector("text");
+	const friday = one(`day-${PREVIOUS_SESSION_DATE}`);
+	tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 24.85);
+	// In before the carry takes it: a show would still be fading in when it flies.
+	tl.fromTo(
+		one("fri-date"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.2 },
+		24.85,
+	);
+	tl.to(
+		one("sess-mon-date"),
+		{ attr: { "fill-opacity": 0 }, duration: 0.25 },
+		25.0,
+	);
+	tl.set(one("sess-mon"), { opacity: 0 }, 25.25);
+	tl.set(one("sess-fri"), { opacity: 1 }, 25.25);
+	if (title) {
+		tl.to(title, { opacity: 0.25, duration: 0.2 }, 25.0);
+		tl.to(title, { opacity: 1, duration: 0.3 }, 25.85);
 	}
+	d.carry(
+		one<SVGGraphicsElement>("fri-date"),
+		one<SVGGraphicsElement>("sess-fri"),
+		25.1,
+		{ duration: 0.7, match: d.t(dayLabel(PREVIOUS_SESSION_DATE)) },
+	);
+	show(one("latest-mon"), 25.8);
 	// The hero: Monday morning's report shows Friday.
 	d.lock(lockSession, 26.1, { around: one("sess-fri"), pad: 10 });
 	tl.addLabel("hero-lock", 26.1);
