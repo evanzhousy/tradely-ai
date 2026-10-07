@@ -515,7 +515,7 @@ function Scene({
 				text={t(narrow ? copy.tallyShort : copy.tally)}
 				x={margin}
 				y={L.tallyY}
-				size={narrow ? T.body : T.head}
+				size={narrow ? T.body : T.body * 1.2}
 				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-warn"
