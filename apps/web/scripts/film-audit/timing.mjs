@@ -169,11 +169,19 @@ const out = await page.evaluate(() => {
 			else if (last && last.to === null) last.to = t;
 		}
 	}
+	// The kit's type scale, from the frame's width: a sentence is set at body size or larger
+	// (halfway between small and body), so labels and tags aren't held as sentences.
+	const width = svg.viewBox.baseVal.width || svg.getBoundingClientRect().width;
+	const narrow = width < 520;
+	const clamp = (lo, v, hi) => Math.min(hi, Math.max(lo, v));
+	const bodySize = clamp(narrow ? 13 : 12, width * 0.018, 17);
+	const smallSize = clamp(narrow ? 11 : 10, width * 0.013, 13);
+	const floor = (bodySize + smallSize) / 2;
 	const sentences = [];
 	for (const [el, runs] of seen) {
 		const text = textOf(el);
 		const size = Number.parseFloat(getComputedStyle(el).fontSize) || 0;
-		const long = words(text) >= 4 || cjk(text) >= 8;
+		const long = (words(text) >= 4 || cjk(text) >= 8) && size >= floor;
 		for (const r of runs)
 			if (r.from > 0.05)
 				sentences.push({
@@ -181,15 +189,29 @@ const out = await page.evaluate(() => {
 					text,
 					size,
 					long,
+					top: el.getBBox().y,
 					from: Math.round(r.from * 10) / 10,
 					hold: Math.round(((r.to ?? duration) - r.from) * 10) / 10,
 				});
 	}
-	// The claim: the last sentence to come up, among the largest.
+	// The claim: the last named claim to come up (z-big, c-big, claim-big…), or failing
+	// that the last of the largest sentences of three words or more.
 	const largest = Math.max(0, ...sentences.map((x) => x.size));
-	const claimRun = sentences
-		.filter((x) => x.size >= largest * 0.85 && !/^q-/.test(x.name))
-		.sort((a, b) => b.from - a.from)[0];
+	const last = (xs) => xs.sort((a, b) => b.from - a.from)[0];
+	const claimRun =
+		last(
+			sentences.filter(
+				(x) => /^z-big$|^(c|claim|local)-big$/.test(x.name) && x.from > 0,
+			),
+		) ??
+		last(
+			sentences.filter(
+				(x) =>
+					x.size >= largest * 0.85 &&
+					!/^q-/.test(x.name) &&
+					(words(x.text) >= 3 || cjk(x.text) >= 6),
+			),
+		);
 	// Beats: headlines, and any other sentence set at headline size or larger, the
 	// question and the claim aside.
 	const heads = sentences.filter((x) => /-head$/.test(x.name));
@@ -198,7 +220,11 @@ const out = await page.evaluate(() => {
 				Math.floor(heads.length / 2)
 			]
 		: largest;
-	const beatNames = new Set(heads.map((x) => x.name));
+	// A beat is one headline: an answer half set under it (a second line) belongs to its beat.
+	const headTop = Math.min(...heads.map((x) => x.top));
+	const beatNames = new Set(
+		heads.filter((x) => x.top <= headTop + 4).map((x) => x.name),
+	);
 	for (const x of sentences)
 		if (
 			!/-head$|^q-/.test(x.name) &&
