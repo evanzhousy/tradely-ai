@@ -314,7 +314,7 @@ function Scene({
 				text={`“${t(drafts.over)}”`}
 				x={margin}
 				y={L.cardY + T.head}
-				size={narrow ? T.body : T.head}
+				size={narrow ? T.body : T.body * 1.2}
 				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-loss"
@@ -324,7 +324,7 @@ function Scene({
 				text={`“${t(drafts.bounded)}”`}
 				x={margin}
 				y={L.cardY + T.head + (narrow ? T.body : T.head) * 3.6}
-				size={narrow ? T.body : T.head}
+				size={narrow ? T.body : T.body * 1.2}
 				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-gain"
