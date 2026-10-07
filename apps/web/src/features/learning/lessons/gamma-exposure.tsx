@@ -51,7 +51,7 @@ const chainRows = (sign: 1 | -1): readonly { label: Copy; value: Copy }[] => [
 		value: [`${count(SHARES)} shares per $1`, `每 $1 ${count(SHARES)} 股`],
 	},
 	{
-		label: [`× $${SPOT} spot × 1%`, `× 现价 $${SPOT} × 1%`],
+		label: [`× $${SPOT}² × 1%`, `× 现价 $${SPOT}² × 1%`],
 		value: [
 			`${money(gammaExposure(FOCUS_GAMMA, FOCUS_OI, SPOT, 1), false)} per 1%`,
 			`每 1% ${money(gammaExposure(FOCUS_GAMMA, FOCUS_OI, SPOT, 1), false)}`,

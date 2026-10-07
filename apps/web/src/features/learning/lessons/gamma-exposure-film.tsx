@@ -38,27 +38,53 @@ import {
 /*
  * GEX, as a film. It opens on a dashboard number, ALFA GEX −$512k, and asks what it
  * stands on. One contract is built as a chain of type: gamma × open interest × 100 ×
- * spot × 1%, then a sign that is an assumption, and flipping it flips the number. Then
+ * spot² × 1%, then a sign that is an assumption, and flipping it flips the number. Then
  * the whole Oct 18 chain as bars by strike, calls up and puts down, collapsing to a net
- * profile that changes sign between $100 and $105: −$512k is the small difference of
- * $4.10M. Last, coverage: only the traded contracts give +$1.14M, and a missing put
- * leaves a subtotal, not a total.
+ * profile that changes sign between $100 and $105. The two sides' totals become two bars:
+ * end to end they are the gross, $4.10M; side by side, the net is the sliver by which the
+ * puts overhang the calls, −$512k. Last, coverage: only the traded contracts give
+ * +$1.14M, and a missing put leaves a subtotal, not a total.
  *
  *   open      0–4        "GEX"
- *   question  4–9.6      "ALFA GEX: −$512k" — which sign? which contracts? which close?
- *   chain     9.6–19     0.0266 × 2,500 × 100 = 6,650 a $1; × $100 × 1% = $665k; × sign
- *   profile   19–32      calls +$1.79M, puts −$2.31M, net by strike; cut: −$512k of
- *                        $4.10M, locked
- *   coverage  32–44.3    traded only +$1.14M; the 95 put missing, +$330k known;
+ *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts? which close?
+ *   chain     8.9–19.3   0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
+ *   profile   19.3–33.2  calls +$1.79M, puts −$2.31M, net by strike; cut: the sides end to
+ *                        end, $4.10M; side by side, the −$512k sliver, locked
+ *   coverage  33.2–45.3  traded only +$1.14M; the 95 put missing, +$330k known;
  *                        cut: "GEX is a model, not a reading."
- *   next      44.3–46.8  Next: gamma regimes
+ *   next      45.3–47.3  Next: gamma regimes
  */
 
-const END = 46.8;
+const END = 47.3;
 const RANGE = 900_000;
 const NET_BY_STRIKE = STRIKES.map(
 	(strike) => contribution(strike, "call") + contribution(strike, "put"),
 );
+
+/**
+ * The hero's two bars, the calls' total above the puts': end to end they span the gross;
+ * side by side, the puts overhang the calls by the net.
+ */
+function sides(frame: ReturnType<typeof filmFrame>) {
+	const { width, height, narrow, room, type: T } = frame;
+	const span = narrow ? room : room * 0.7;
+	const x0 = (width - span) / 2;
+	const unit = span / GROSS;
+	const h = narrow ? 20 : 28;
+	const y1 = height * 0.42;
+	const y2 = y1 + h + 14;
+	return {
+		x0,
+		span,
+		h,
+		y1,
+		y2,
+		calls: CALLS * unit,
+		puts: -PUTS * unit,
+		grossY: y1 + h + T.small + 22,
+		netY: y2 + h + T.small + 4,
+	};
+}
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -81,7 +107,7 @@ function layout(width: number) {
 		barX: (i: number) => left + slot * (i + 0.5),
 		barWidth: Math.min(slot * 0.5, 44),
 		y: (dollars: number) => middle - (dollars / RANGE) * ((bottom - top) / 2),
-		pair: narrow ? [0.27, 0.73] : [0.32, 0.68],
+		two: sides(frame),
 	};
 }
 
@@ -92,9 +118,10 @@ const copy = {
 		"Gamma 敞口快照，以及它建立在什么之上",
 	],
 	qTag: ["ALFA GEX, on a dashboard", "ALFA GEX，某个面板"],
-	q1: ["which sign?", "哪个符号？"],
-	q2: ["which contracts?", "哪些合约？"],
-	q3: ["which close?", "哪个收盘？"],
+	qLine: [
+		"Which sign? Which contracts? Which close?",
+		"哪个符号？哪些合约？哪个收盘？",
+	],
 	chainHead: [
 		`One contract: the Oct 18 ${FOCUS_STRIKE} call.`,
 		`一个合约：10月18日 ${FOCUS_STRIKE} 看涨。`,
@@ -102,7 +129,7 @@ const copy = {
 	tGamma: ["gamma, model, per $1", "Gamma（模型），每 $1"],
 	tOi: ["× open interest, Friday's close", "× 未平仓量（周五收盘）"],
 	tShares: ["× 100 shares", "× 100 股"],
-	tSpot: [`× $${SPOT} × 1%: per 1% move`, `× $${SPOT} × 1%：每 1% 变动`],
+	tSpot: [`× $${SPOT}² × 1%: per 1% move`, `× $${SPOT}² × 1%：每 1% 变动`],
 	tLong: ["× sign: dealers assumed long", "× 符号：假设做市商做多"],
 	tShort: ["× sign: dealers assumed short", "× 符号：假设做市商做空"],
 	signHead: [
@@ -115,23 +142,12 @@ const copy = {
 		"完整的 10月18日 期权链，按行权价。",
 	],
 	profileHeadShort: ["The whole chain, by strike.", "整条链，按行权价。"],
-	netHead: [
-		"Net: negative to $100, positive from $105.",
-		"净值：$100 及以下为负，$105 起为正。",
-	],
-	netHeadShort: [
-		"Net: − up to $100, + from $105.",
-		"净值：$100 及以下负，$105 起正。",
-	],
 	axis: ["$ of delta per 1% move", "每 1% 变动的 Delta 金额"],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
 	net: ["net", "净值"],
 	gross: ["gross", "总幅度"],
-	twoLine: [
-		"The net is a small difference of two large sides. Show the profile.",
-		"净值是两个大部分之间的小差额。要展示分布。",
-	],
+	twoHead: ["Small net, large sides.", "净值小，两边大。"],
 	tradedHead: [
 		"Only the traded contracts: the sign flips.",
 		"只算有成交的合约：符号翻转。",
@@ -246,7 +262,7 @@ function Scene({
 									key={key(strike, side)}
 									data-f={`bar-${key(strike, side)}`}
 									className="wt-film-bar"
-									data-tone={side === "call" ? "gain" : "loss"}
+									data-tone="neutral"
 									x={L.barX(i) - L.barWidth / 2}
 									y={L.y(0)}
 									width={L.barWidth}
@@ -331,22 +347,19 @@ function Scene({
 					x={W / 2}
 					y={H * 0.27 + T.big * 1.05}
 					size={T.big}
-					className="wt-film-num wt-film-loss"
+					className="wt-film-num wt-film-accent"
 				>
 					{money(NET)}
 				</Word>
-				{([copy.q1, copy.q2, copy.q3] as const).map((question, i) => (
-					<Word
-						key={question[0]}
-						name={`q-${i}`}
-						x={narrow ? W / 2 : W * (0.22 + i * 0.28)}
-						y={narrow ? H * (0.66 + i * 0.1) : H * 0.74}
-						size={T.head}
-						className="wt-film-type wt-film-accent"
-					>
-						{t(question)}
-					</Word>
-				))}
+				<Lines
+					name="q-line"
+					text={t(copy.qLine)}
+					x={W / 2}
+					y={H * 0.72}
+					size={T.head}
+					maxWidth={room}
+					className="wt-film-type wt-film-accent"
+				/>
 			</g>
 			<g data-f="chain">
 				{headline("c-head", copy.chainHead, copy.chainHead)}
@@ -400,7 +413,7 @@ function Scene({
 					y={rowY(4) + figure * 0.3}
 					size={figure * 1.5}
 					anchor="end"
-					className="wt-film-num wt-film-gain"
+					className="wt-film-num wt-film-accent"
 				>
 					{money(LONG)}
 				</Word>
@@ -410,7 +423,7 @@ function Scene({
 					y={rowY(4) + figure * 0.3}
 					size={figure * 1.5}
 					anchor="end"
-					className="wt-film-num wt-film-loss"
+					className="wt-film-num wt-film-accent"
 				>
 					{money(-LONG)}
 				</Word>
@@ -425,51 +438,97 @@ function Scene({
 				anchor="start"
 			/>
 			{headline("p-head", copy.profileHead, copy.profileHeadShort)}
-			{headline("n-head", copy.netHead, copy.netHeadShort)}
 			<Brackets name="lock-two" glow />
 			<g data-f="two">
-				{(
-					[
-						[copy.net, money(NET), "wt-film-loss"],
-						[copy.gross, money(GROSS, false), ""],
-					] as const
-				).map(([tag, num, tone], i) => (
-					<g key={tag[0]}>
-						<Word
-							name={`w-tag-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`w-num-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3 + T.big * 0.95}
-							// Both figures at one size, the longer's six characters leaving clear space
-							// between them.
-							size={Math.min(
-								T.big * 0.85,
-								(W * (L.pair[1] - L.pair[0]) * 0.7) / (6 * 0.62),
-							)}
-							className={`wt-film-num ${tone}`}
-						>
-							{num}
-						</Word>
-					</g>
-				))}
-				<Lines
-					name="w-line"
-					text={t(copy.twoLine)}
-					x={W / 2}
-					y={H * 0.72}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
+				<g data-f="two-calls">
+					<rect
+						data-f="two-calls-bar"
+						className="wt-film-bar"
+						data-tone="neutral"
+						x={L.two.x0}
+						y={L.two.y1}
+						width={L.two.calls}
+						height={L.two.h}
+						rx={2}
+					/>
+					<Word
+						name="two-calls-tag"
+						x={L.two.x0}
+						y={L.two.y1 - 8}
+						size={T.small}
+						anchor="start"
+						className="wt-film-tag"
+					>
+						{`${t(copy.calls).toUpperCase()} ${money(CALLS)}`}
+					</Word>
+				</g>
+				<g data-f="two-puts">
+					<rect
+						data-f="two-puts-bar"
+						className="wt-film-bar"
+						data-tone="neutral"
+						x={L.two.x0}
+						y={L.two.y2}
+						width={L.two.puts}
+						height={L.two.h}
+						rx={2}
+					/>
+					<Word
+						name="two-puts-tag"
+						x={L.two.x0}
+						y={L.two.y2 + L.two.h + T.small + 4}
+						size={T.small}
+						anchor="start"
+						className="wt-film-tag"
+					>
+						{`${t(copy.puts).toUpperCase()} ${money(PUTS)}`}
+					</Word>
+				</g>
+				<g data-f="two-gross">
+					<path
+						d={`M${L.two.x0} ${L.two.grossY - 5}V${L.two.grossY + 5}M${L.two.x0} ${L.two.grossY}H${L.two.x0 + L.two.span}M${L.two.x0 + L.two.span} ${L.two.grossY - 5}V${L.two.grossY + 5}`}
+						className="wt-axis"
+					/>
+					<Word
+						name="two-gross-tag"
+						x={L.two.x0 + L.two.span / 2}
+						y={L.two.grossY + T.small + 8}
+						size={T.small}
+						className="wt-film-tag"
+					>
+						{`${t(copy.gross).toUpperCase()} ${money(GROSS, false)}`}
+					</Word>
+				</g>
+				<rect
+					data-f="two-sliver"
+					className="wt-film-bar"
+					data-tone="total"
+					x={L.two.x0 + L.two.calls}
+					y={L.two.y2}
+					width={L.two.puts - L.two.calls}
+					height={L.two.h}
+					rx={2}
 				/>
+				<Word
+					name="two-net-tag"
+					x={L.two.x0 + (L.two.calls + L.two.puts) / 2}
+					y={L.two.netY}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.net).toUpperCase()}
+				</Word>
+				<Word
+					name="two-net-num"
+					x={L.two.x0 + (L.two.calls + L.two.puts) / 2}
+					y={L.two.netY + T.num * 1.05}
+					size={T.num}
+					className="wt-film-num wt-film-accent"
+				>
+					{money(NET)}
+				</Word>
 			</g>
+			{headline("w-head", copy.twoHead, copy.twoHead)}
 			{headline("t-head", copy.tradedHead, copy.tradedHeadShort)}
 			{headline("x-head", copy.missingHead, copy.missingHeadShort)}
 			<g data-f="claim">
@@ -551,7 +610,7 @@ function build(context: FilmContext) {
 		...kids("meter"),
 		...flat("q"),
 		...flat("chain"),
-		...["s-head", "p-head", "n-head", "t-head", "x-head"].map((name) =>
+		...["s-head", "p-head", "w-head", "t-head", "x-head"].map((name) =>
 			one(name),
 		),
 		...flat("two"),
@@ -568,95 +627,121 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	land(one("q-big"), 4.8);
-	for (const i of [0, 1, 2]) show(one(`q-${i}`), 5.8 + i * 0.5, "below");
+	show(one("q-line"), 5.4, "below");
 
 	// ——— chain: one contract, every input declared ———
-	tl.addLabel("chain", 9.6);
-	hide(flat("q"), 9.6);
-	show(one("c-head"), 9.8, "above");
+	tl.addLabel("chain", 8.9);
+	hide(flat("q"), 8.9);
+	show(one("c-head"), 9.1, "above");
 	chainSteps.forEach((_, i) => {
-		show(one(`c-tag-${i}`), 10.3 + i);
-		show(one(`c-num-${i}`), 10.5 + i, "right");
+		show(one(`c-tag-${i}`), 9.4 + i * 0.6);
+		show(one(`c-num-${i}`), 9.6 + i * 0.6, "right");
 	});
-	show(one("c-tag-long"), 14.2);
-	land(one("c-long"), 14.4);
+	show(one("c-tag-long"), 11.9);
+	land(one("c-long"), 12.1);
 	// The other sign: same inputs, opposite number.
 	show(one("s-head"), 15.4);
 	d.swap(one("c-tag-long"), one("c-tag-short"), 15.4);
 	d.flip(one("c-long"), one("c-short"), 15.6);
 
 	// ——— profile: the whole chain, calls up, puts down ———
-	tl.addLabel("profile", 19);
-	hide([...flat("chain"), one("s-head")], 19.0);
-	show(one("p-head"), 19.35, "above");
-	rise(19.4);
-	show([one("m-tag-calls"), meter], 20.0, "above");
+	tl.addLabel("profile", 19.3);
+	hide([...flat("chain"), one("s-head")], 19.3);
+	show(one("p-head"), 19.65, "above");
+	rise(19.7);
+	show([one("m-tag-calls"), meter], 20.1, "above");
+	// Each strike's count lands before the next starts: every reading is a real sum.
 	let calls = 0;
 	STRIKES.forEach((strike, i) => {
 		const value = contribution(strike, "call");
-		grow(bar(strike, "call"), value, 20.2 + i * 0.12);
-		d.count(meter, calls + value, 20.2 + i * 0.12, dollars, calls, 0.4);
+		grow(bar(strike, "call"), value, 20.3 + i * 0.12);
+		d.count(meter, calls + value, 20.3 + i * 0.12, dollars, calls, 0.12);
 		calls += value;
 	});
-	retag("m-tag-calls", "m-tag-puts", 21.6);
+	retag("m-tag-calls", "m-tag-puts", 21.3);
 	let puts = 0;
 	STRIKES.forEach((strike, i) => {
 		const value = contribution(strike, "put");
-		grow(bar(strike, "put"), value, 21.9 + i * 0.12);
-		d.count(
-			meter,
-			puts + value,
-			21.9 + i * 0.12,
-			dollars,
-			i ? puts : CALLS,
-			0.4,
-		);
+		grow(bar(strike, "put"), value, 21.5 + i * 0.12);
+		d.count(meter, puts + value, 21.5 + i * 0.12, dollars, puts, 0.12);
 		puts += value;
 	});
-	// Net by strike.
-	d.swap(one("p-head"), one("n-head"), 23.4);
-	retag("m-tag-puts", "m-tag-net", 23.4);
+	// Net by strike: negative up to $100, positive from $105.
+	retag("m-tag-puts", "m-tag-net", 22.8);
 	tl.to(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 0.22, duration: 0.5 },
-		23.7,
+		23.0,
 	);
 	NET_BY_STRIKE.forEach((value, i) => {
-		tl.set(one(`net-${i}`), { opacity: 1 }, 23.9);
-		grow(one(`net-${i}`), value, 23.9 + i * 0.1, 0.45);
+		tl.set(one(`net-${i}`), { opacity: 1 }, 23.1);
+		grow(one(`net-${i}`), value, 23.1 + i * 0.1, 0.45);
 	});
-	d.count(meter, NET, 23.9, dollars, PUTS, 0.9);
-	// Cut: the net against the gross. The hero: a small difference of two large sides.
-	hide([one("n-head"), ...kids("meter")], 27.3);
-	sink(27.3);
-	show(one("w-tag-0"), 27.6);
-	land(one("w-num-0"), 27.8);
-	show(one("w-tag-1"), 28.2);
-	land(one("w-num-1"), 28.4);
-	d.lock(lockTwo, 29.0, {
-		around: [one("w-tag-0"), one("w-num-0"), one("w-tag-1"), one("w-num-1")],
-		pad: 10,
+	d.count(meter, NET, 23.1, dollars, PUTS, 0.9);
+	// Cut: the two sides' totals as bars. End to end, the gross; side by side, the net.
+	hide(one("p-head"), 25.3);
+	sink(25.3);
+	const callsSide = one("two-calls");
+	const putsSide = one("two-puts");
+	const widen = (target: Element, width: number, at: number) =>
+		tl.fromTo(
+			target,
+			{ attr: { width: 0 } },
+			{ attr: { width }, duration: 0.5, ease: "power3.out" },
+			at,
+		);
+	tl.set([...callsSide.children], { opacity: 1 }, 25.6);
+	widen(one("two-calls-bar"), L.two.calls, 25.6);
+	tl.set([...putsSide.children], { opacity: 1 }, 25.9);
+	widen(one("two-puts-bar"), L.two.puts, 25.9);
+	tl.to(
+		putsSide,
+		{
+			x: L.two.calls,
+			y: L.two.y1 - L.two.y2,
+			duration: 0.6,
+			ease: "power2.inOut",
+		},
+		26.5,
+	);
+	const gross = [...one("two-gross").children];
+	show(gross, 27.1);
+	hide(gross, 28.3, 0.3);
+	tl.to(putsSide, { x: 0, y: 0, duration: 0.6, ease: "power2.inOut" }, 28.3);
+	// The overhang is the net: the meter's figure comes down to it.
+	tl.set(one("two-sliver"), { opacity: 1 }, 28.9);
+	widen(one("two-sliver"), L.two.puts - L.two.calls, 28.9);
+	hide(one("m-tag-net"), 28.9);
+	d.carry(meter, one<SVGGraphicsElement>("two-net-num"), 28.9, {
+		duration: 0.8,
+		arc: "y",
 	});
-	tl.addLabel("hero-lock", 29.0);
-	show(one("w-line"), 29.4);
+	show(one("two-net-tag"), 29.4);
+	// The hero: a small net between two large sides.
+	d.lock(lockTwo, 29.7, {
+		around: [one("two-sliver"), one("two-net-tag"), one("two-net-num")],
+		pad: 6,
+	});
+	tl.addLabel("hero-lock", 29.7);
+	show(one("w-head"), 29.7, "above");
 
 	// ——— coverage: which contracts, and what's missing ———
-	tl.addLabel("coverage", 32);
-	hide([...flat("two"), lockTwo], 32.0);
+	tl.addLabel("coverage", 33.2);
+	hide([...flat("two"), lockTwo, one("w-head")], 33.2);
 	tl.set(
 		STRIKES.map((_, i) => one(`net-${i}`)),
 		{ opacity: 0 },
-		32.2,
+		33.4,
 	);
 	tl.set(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 1 },
-		32.2,
+		33.4,
 	);
-	show(one("t-head"), 32.35, "above");
-	rise(32.4);
-	show([one("m-tag-net"), meter], 32.8, "above");
-	d.count(meter, NET, 32.8, dollars, NET, 0.01);
+	rise(33.4);
+	show([one("m-tag-net"), meter], 33.5, "above");
+	d.count(meter, NET, 33.5, dollars, NET, 0.01);
+	show(one("t-head"), 33.55, "above");
 	tl.to(
 		STRIKES.flatMap((strike) =>
 			(["call", "put"] as const)
@@ -664,43 +749,43 @@ function build(context: FilmContext) {
 				.map((side) => bar(strike, side)),
 		),
 		{ opacity: 0.12, duration: 0.5 },
-		33.0,
+		33.6,
 	);
-	d.count(meter, tradedOnly, 33.2, dollars, NET, 0.8);
+	d.count(meter, tradedOnly, 33.8, dollars, NET, 0.8);
 	// Back to the whole chain, but the 95 put never arrived.
+	d.swap(one("t-head"), one("x-head"), 37.05);
 	tl.to(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 1, duration: 0.4 },
-		36.0,
+		37.05,
 	);
-	d.swap(one("t-head"), one("x-head"), 35.9);
-	retag("m-tag-net", "m-tag-known", 36.2);
-	tl.to(bar(95, "put"), { opacity: 0, duration: 0.4 }, 36.4);
-	tl.to(one("missing"), { opacity: 1, duration: 0.5 }, 36.6);
-	d.count(meter, withGap, 36.6, dollars, tradedOnly, 0.8);
+	retag("m-tag-net", "m-tag-known", 37.25);
+	tl.to(bar(95, "put"), { opacity: 0, duration: 0.4 }, 37.4);
+	tl.to(one("missing"), { opacity: 1, duration: 0.5 }, 37.6);
+	d.count(meter, withGap, 37.6, dollars, tradedOnly, 0.8);
 	// Cut: the claim.
-	hide([one("x-head"), ...kids("meter")], 39.8);
-	sink(39.8);
+	hide([one("x-head"), ...kids("meter")], 40.9);
+	sink(40.9);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.2,
+		41.3,
 	);
-	show(one("z-sub"), 40.6);
+	show(one("z-sub"), 41.7);
 
 	// ——— next ———
-	tl.addLabel("next", 44.3);
-	hide(kids("claim"), 44.3);
-	d.close(44.3);
+	tl.addLabel("next", 45.3);
+	hide(kids("claim"), 45.3);
+	d.close(45.3);
 	return tl;
 }
 
 export const gammaExposureFilm: Film = {
 	id: "gamma-exposure",
 	label: [
-		"GEX, as a short film: a dashboard's −$512k and the questions under it; one contract, the Oct 18 110 call, built from gamma, open interest, 100 shares and a 1% move to $665k, then a sign that is an assumption; the whole Oct 18 chain by strike, calls +$1.79M and puts −$2.31M netting to −$512k of $4.10M gross; and coverage, where the traded contracts alone give +$1.14M and a missing put leaves only a subtotal",
-		"GEX 短片：面板上的 −$512k 以及它背后的问题；一个合约，10月18日 110 看涨，由 Gamma、未平仓量、100 股和 1% 变动得出 $665k，再加上一个本身是假设的符号；按行权价的完整 10月18日 期权链，看涨 +$1.79M、看跌 −$2.31M，在 $4.10M 总幅度中净值为 −$512k；以及覆盖范围：只算有成交的合约得到 +$1.14M，缺了一个看跌就只剩小计",
+		"GEX, as a short film: a dashboard's −$512k and the questions under it; one contract, the Oct 18 110 call, built from gamma, open interest, 100 shares and spot squared times 1% to $665k, then a sign that is an assumption; the whole Oct 18 chain by strike, calls +$1.79M and puts −$2.31M, end to end a gross of $4.10M and side by side a net of −$512k, the sliver by which the puts overhang the calls; and coverage, where the traded contracts alone give +$1.14M and a missing put leaves only a subtotal",
+		"GEX 短片：面板上的 −$512k 以及它背后的问题；一个合约，10月18日 110 看涨，由 Gamma、未平仓量、100 股和现价平方乘 1% 得出 $665k，再加上一个本身是假设的符号；按行权价的完整 10月18日 期权链，看涨 +$1.79M、看跌 −$2.31M，首尾相接是 $4.10M 的总幅度，并排对比时看跌多出看涨的那一小段就是 −$512k 的净值；以及覆盖范围：只算有成交的合约得到 +$1.14M，缺了一个看跌就只剩小计",
 	],
 	stage: "dark",
 	shots: [
