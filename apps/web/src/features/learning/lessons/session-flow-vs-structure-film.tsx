@@ -48,12 +48,13 @@ import {
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
  *   ledger    8.6–22.45  both open +10; changed hands ±0; both closed −4
  *   clock     22.45–32.35 hero: volume all day; open interest shown waits for Tuesday's count
- *   bucket    32.35–39.45 420 → 620 as the members change, → 650 as each series adds 10s
- *   claim     39.45–43.8 volume counts trading; open interest, positions
- *   next      43.8–45.8  Next: tape rows
+ *   bucket    32.35–40.35 420 → 620 as the members change (+500 in, −300 out), held; → 650
+ *                        as each series adds 10s
+ *   claim     40.35–44.7 volume counts trading; open interest, positions
+ *   next      44.7–46.7  Next: tape rows
  */
 
-const END = 45.8;
+const END = 46.7;
 const TRADES = day.trades;
 const START_OI = day.startOpenInterest;
 const AFTER = ledgerBeats.slice(1);
@@ -71,6 +72,18 @@ const MOVED = AFTER_WEEK.columns
 			sum + (BEFORE.columns.find((c) => c.id === column.id)?.value ?? 0),
 		0,
 	);
+/** What membership alone moved: last week's figures that came into the bucket and left it. */
+const MOVED_IN = AFTER_WEEK.columns
+	.filter((c) => c.member && !BEFORE.columns.find((b) => b.id === c.id)?.member)
+	.reduce(
+		(sum, c) => sum + (BEFORE.columns.find((b) => b.id === c.id)?.value ?? 0),
+		0,
+	);
+const MOVED_OUT = BEFORE.columns
+	.filter(
+		(c) => c.member && !AFTER_WEEK.columns.find((a) => a.id === c.id)?.member,
+	)
+	.reduce((sum, c) => sum + c.value, 0);
 /** "100 + 10 ± 0 − 4": the true count, trade by trade. */
 const SUM_LINE = [
 	count(START_OI),
@@ -117,7 +130,7 @@ function layout(width: number) {
 		statY: H * (narrow ? 0.27 : 0.28),
 		/** The true count's place while the screen shows Friday's: to the right, or below. */
 		ghostX: narrow ? margin : margin + 2 * statW,
-		ghostDY: narrow ? frame.type.num * 2.8 : 0,
+		ghostDY: narrow ? frame.type.num * 2 : 0,
 		barY: (i: number) =>
 			H * (narrow ? 0.5 : 0.5) + i * H * (narrow ? 0.07 : 0.08),
 		barH: H * (narrow ? 0.045 : 0.05),
@@ -162,7 +175,7 @@ const copy = {
 	],
 	qLine: [
 		`You buy ${TRADES[0].quantity} to open; Ben sells ${TRADES[0].quantity} to open.`,
-		`你买入 ${TRADES[0].quantity} 张开仓；Ben 卖出 ${TRADES[0].quantity} 张开仓。`,
+		`你买 ${TRADES[0].quantity} 张开仓；Ben 卖 ${TRADES[0].quantity} 张开仓。`,
 	],
 	qBig: [
 		`Open interest +${TRADES[0].quantity} or +${TRADES[0].quantity * 2}?`,
@@ -206,8 +219,16 @@ const copy = {
 	monday: [`Monday's count`, "周一的统计"],
 	bHead: ["A bucket by days to expiry.", "按距到期天数划分的到期桶。"],
 	b2Head: [
-		`${BEFORE.total} to ${AFTER_WEEK.total}: mostly new members.`,
-		`${BEFORE.total} 变 ${AFTER_WEEK.total}：主要是换了成员。`,
+		"Mostly new members, not new trades.",
+		"主要是换了成员，不是新成交。",
+	],
+	movedNote: [
+		`+${count(MOVED_IN)} in · −${count(MOVED_OUT)} out`,
+		`移入 +${count(MOVED_IN)} · 移出 −${count(MOVED_OUT)}`,
+	],
+	newNote: [
+		`+${count(AFTER_WEEK.total - MOVED)} new contracts`,
+		`新增 ${count(AFTER_WEEK.total - MOVED)} 张`,
 	],
 	bucket: ["14–30 days", "14–30 天"],
 	inBucket: ["in the bucket", "桶内合计"],
@@ -349,7 +370,7 @@ function Scene({
 					x={L.ghostX}
 					y={L.statY + L.ghostDY + T.small}
 					className="wt-film-tag"
-					style={{ fontSize: T.small, opacity: 0.6 }}
+					style={{ fontSize: T.small }}
 				>
 					{t(copy.trueCount).toUpperCase()}
 				</text>
@@ -577,8 +598,8 @@ function Scene({
 				data-f="sum-line"
 				x={L.statX(1)}
 				y={L.statY + T.small + T.num * 1.68 + T.small * 5.8}
-				className="wt-film-num wt-film-dim"
-				style={{ fontSize: T.small * 1.15 }}
+				className="wt-film-num"
+				style={{ fontSize: T.body }}
 			>
 				{SUM_LINE}
 			</text>
@@ -718,6 +739,23 @@ function Scene({
 			>
 				{count(BEFORE.total)}
 			</text>
+			{(
+				[
+					["note-moved", copy.movedNote],
+					["note-new", copy.newNote],
+				] as const
+			).map(([name, label]) => (
+				<text
+					key={name}
+					data-f={name}
+					x={margin}
+					y={L.bucketY + T.small + T.small * 1.9}
+					className="wt-film-type wt-film-dim"
+					style={{ fontSize: T.small }}
+				>
+					{t(label)}
+				</text>
+			))}
 
 			<g data-f="claim">
 				<Lines
@@ -839,6 +877,8 @@ function build(context: FilmContext) {
 		one("bt-0"),
 		one("bt-1"),
 		one("bucket-n"),
+		one("note-moved"),
+		one("note-new"),
 		...kids("claim"),
 	]);
 
@@ -905,7 +945,7 @@ function build(context: FilmContext) {
 	hide(one("oi"), 22.65, 0.3);
 	// Unpublished, it steps back.
 	tl.set(one("ghost"), { opacity: 1 }, 23.25);
-	tl.to(one("ghost"), { opacity: 0.55, duration: 0.4 }, 23.35);
+	tl.to(one("ghost"), { opacity: 0.7, duration: 0.4 }, 23.35);
 	show(one("ghost-note"), 23.35);
 	show(one("shown"), 23.05);
 	show(one("oi-fri"), 23.25);
@@ -1004,6 +1044,7 @@ function build(context: FilmContext) {
 		);
 	});
 	counter("bucket-n", MOVED, BEFORE.total, 35.15);
+	show(one("note-moved"), 35.25);
 	// Then the week's new contracts: each series grows by tens.
 	stripExpiries.forEach((id) => {
 		const column = after.find((c) => c.id === id);
@@ -1013,17 +1054,17 @@ function build(context: FilmContext) {
 		tl.to(
 			one(`colbar-${id}`),
 			{ attr: { y: L.floor - h, height: h }, duration: 0.6 },
-			35.95,
+			36.85,
 		);
 		tl.to(
 			one(`colv-${id}`),
 			{ attr: { y: L.floor - h - 6 }, duration: 0.6 },
-			35.95,
+			36.85,
 		);
 		d.count(
 			num(`colv-${id}`),
 			column.value,
-			35.95,
+			36.85,
 			(v) => count(Math.round(v)),
 			before.value,
 			0.6,
@@ -1032,19 +1073,21 @@ function build(context: FilmContext) {
 	d.count(
 		num("bucket-n"),
 		AFTER_WEEK.total,
-		35.95,
+		36.85,
 		(v) => count(Math.round(v)),
 		MOVED,
 		0.6,
 	);
-	show(heads[7], 35.95);
+	d.flip(one("note-moved"), one("note-new"), 36.85);
+	tl.set(one("note-moved"), { opacity: 0 }, 37.15);
+	show(heads[7], 36.85);
 	// In place, without travel: each change comes up over its own column's figure.
 	changes.forEach((change, i) => {
-		word(change, 36.35 + i * 0.2);
+		word(change, 37.25 + i * 0.2);
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.45);
+	tl.addLabel("claim", 40.35);
 	hide(
 		[
 			heads[6],
@@ -1054,16 +1097,17 @@ function build(context: FilmContext) {
 			...changes,
 			one("bt-1"),
 			one("bucket-n"),
+			one("note-new"),
 		],
-		39.45,
+		40.35,
 	);
-	word(one("z-big"), 39.75);
-	show(one("z-sub"), 40.15);
+	word(one("z-big"), 40.65);
+	show(one("z-sub"), 41.05);
 
 	// ——— next ———
-	tl.addLabel("next", 43.8);
-	hide(kids("claim"), 43.8);
-	d.close(43.8);
+	tl.addLabel("next", 44.7);
+	hide(kids("claim"), 44.7);
+	d.close(44.7);
 	return tl;
 }
 

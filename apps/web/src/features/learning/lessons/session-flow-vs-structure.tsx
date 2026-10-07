@@ -637,8 +637,8 @@ const scenes = [
 		id: "ledger",
 		label: ["Open, close, transfer", "开仓、平仓与换手"],
 		title: [
-			"Volume counts trades; open interest counts contracts",
-			"成交量统计成交，未平仓量统计合约",
+			"Volume counts trading; open interest counts positions",
+			"成交量统计交易，未平仓量统计持仓",
 		],
 		predict: {
 			prompt: [
