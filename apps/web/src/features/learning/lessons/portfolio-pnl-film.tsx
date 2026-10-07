@@ -21,16 +21,13 @@ import {
 	buyingPower,
 	CLOSE_SPOT,
 	callsClose,
-	cashAfterDeposit,
 	dollars,
 	HELD,
 	lots,
-	MARK,
 	PAID,
 	PNL,
 	price,
 	RECEIVED,
-	SALE,
 	SOLD,
 	signed,
 	split,
@@ -43,27 +40,30 @@ import {
 /*
  * P&L, as a film. It opens on an account that rose $6,199.60 from Monday's open to
  * Tuesday and asks how much of that was earned. The account as one bar: ALFA +$160, the
- * calls +$1,050, fees −$10.40, so +$1,199.60 earned; then a $5,000 deposit that lifts the
- * value without being profit, and buying power of $36,799.20, half of it credit. Then the
- * calls' +$1,050 as sixteen contracts in two lots: unrealized until six are sold at the
- * bid, split +$330 realized and +$645 unrealized first in, first out: +$975 in all. Last,
- * Ben's ten short calls: $4,100 received, and no floor.
+ * calls +$1,050, fees −$10.40, so +$1,199.60 earned, lifted out as the answer; then a
+ * $5,000 deposit that lifts the value without being profit, and buying power, larger
+ * still. Then the calls' +$1,050 as sixteen contracts in two lots, and a question: sold
+ * at the bid, is it still +$1,050? Six sold oldest first leave +$330 realized and +$645
+ * unrealized, and the two become +$975: the bid, not the mid. Last, Ben's ten short
+ * calls: $4,100 received, and no floor.
  *
  *   open      0–4        "P&L"
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
- *   account   10.4–21.6  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
- *                        cut: buying power $36,799.20, half of it credit
- *   calls     21.6–31    16 contracts, +$1,050 unrealized; sell 6, oldest first;
- *                        cut: +$975, locked
- *   short     31–43.3    Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
+ *   account   10.4–19.7  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
+ *                        buying power $36,799.20
+ *   calls     19.7–31.4  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
+ *                        and +$645 become +$975, locked
+ *   short     31.4–43.5  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
  *                        cut: "P&L is what your positions earned."
- *   next      43.3–45.8  Next: performance
+ *   next      43.5–46    Next: performance
  */
 
-const END = 45.8;
+const END = 46;
 const ACCOUNT = [29_000, 37_000] as const;
 const BEN_X = [90, 140] as const;
-const BEN_Y = [-40_000, 10_000] as const;
+const BEN_Y = [-20_000, 6_000] as const;
+/** Where the expiry line leaves the chart's floor: past it, the loss goes on. */
+const OFF_FLOOR = 100 + (RECEIVED / 100 - BEN_Y[0]) / (BEN * 100);
 const fifo = split(SOLD, "fifo");
 const held = split(0, "fifo");
 const EARNED_FROM = valueOpen / 100;
@@ -144,7 +144,7 @@ const copy = {
 	],
 	earnedHeadShort: ["A deposit isn't earned.", "存入不是赚到的。"],
 	meter: ["account", "账户"],
-	earned: [`${signed(PNL)} earned`, `赚了 ${signed(PNL)}`],
+	earned: ["earned", "赚到"],
 	breakdown: [
 		`ALFA ${signed(stockClose - stockOpen)} · calls ${signed(callsClose - PAID * 100)} · fees ${signed(-buyFees)}`,
 		`ALFA ${signed(stockClose - stockOpen)} · 看涨 ${signed(callsClose - PAID * 100)} · 费用 ${signed(-buyFees)}`,
@@ -159,26 +159,24 @@ const copy = {
 		`存入 +${dollars(yourAccount.deposit)}`,
 	],
 	bpTag: ["buying power", "购买力"],
-	bpLine: [
-		`${dollars(cashAfterDeposit)} of cash, doubled by margin: half is credit.`,
-		`${dollars(cashAfterDeposit)} 现金，经保证金翻倍：一半是授信。`,
+	lotsHead: [
+		`Sell ${SOLD} at the bid: still ${signed(held.unrealized)}?`,
+		`以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
 	],
-	lotsHead: ["The calls are marked, not sold.", "看涨只是估值，没有卖出。"],
-	lotsHeadShort: ["Marked, not sold.", "估值，没有卖出。"],
-	fifoHead: [
-		`Sell ${SOLD} at the bid, oldest lot first.`,
-		`以买价卖出 ${SOLD} 张，先卖最早的一批。`,
-	],
-	fifoHeadShort: [
-		`Sell ${SOLD}, oldest first.`,
-		`卖出 ${SOLD} 张，先卖最早的。`,
+	lotsHeadShort: [
+		`Sell ${SOLD}: still ${signed(held.unrealized)}?`,
+		`卖出 ${SOLD} 张：还是 ${signed(held.unrealized)}？`,
 	],
 	realized: ["realized", "已实现"],
 	unrealized: ["unrealized", "未实现"],
 	totalTag: ["realized + unrealized", "已实现 + 未实现"],
-	totalLine: [
-		`Not ${signed(held.unrealized)}: selling paid the ${price(SALE)} bid, not the ${price(MARK)} mid.`,
-		`不是 ${signed(held.unrealized)}：卖出拿到的是买价 ${price(SALE)}，不是中间价 ${price(MARK)}。`,
+	totalHead: [
+		`The bid, not the mid: ${dollars(held.unrealized - fifo.realized - fifo.unrealized)} less.`,
+		`按买价，不是中间价：少 ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}。`,
+	],
+	marked: [
+		`marked ${signed(held.unrealized)}`,
+		`估值 ${signed(held.unrealized)}`,
 	],
 	benHead: [
 		`Ben wrote ${BEN} of these calls.`,
@@ -196,11 +194,11 @@ const copy = {
 	],
 	priceAxis: ["ALFA price", "ALFA 价格"],
 	received: [`received ${signed(RECEIVED)}`, `收到 ${signed(RECEIVED)}`],
-	marked: [
+	benMark: [
 		`15:59 mark ${signed(benMarked)}`,
 		`15:59 估值 ${signed(benMarked)}`,
 	],
-	markedShort: [`15:59 ${signed(benMarked)}`, `15:59 ${signed(benMarked)}`],
+	benMarkShort: [`15:59 ${signed(benMarked)}`, `15:59 ${signed(benMarked)}`],
 	far: [
 		`$120: ${signed(benAtExpiry(120))}`,
 		`$120：${signed(benAtExpiry(120))}`,
@@ -256,6 +254,14 @@ function Scene({
 	const markY = L.by(benMarked / 100);
 	const farX = L.bx(120);
 	const farY = L.by(benAtExpiry(120) / 100);
+	const offX = L.bx(OFF_FLOOR);
+	const offY = L.by(BEN_Y[0]);
+	const arrow = (() => {
+		const dx = offX - L.bx(100);
+		const dy = offY - L.by(benAtExpiry(100) / 100);
+		const length = Math.hypot(dx, dy);
+		return { dx: dx / length, dy: dy / length };
+	})();
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -271,9 +277,16 @@ function Scene({
 								className="wt-film-bar"
 								data-tone={tone}
 								x={L.ax(from)}
-								y={L.barTop}
-								width={Math.max(L.ax(to) - L.ax(from), 1.5)}
-								height={L.barBottom - L.barTop}
+								y={name === "seg-fees" ? L.barTop - 6 : L.barTop}
+								width={
+									name === "seg-fees"
+										? 3
+										: Math.max(
+												L.ax(to) - L.ax(from) - (name === "seg-stock" ? 2 : 0),
+												1.5,
+											)
+								}
+								height={L.barBottom - L.barTop + (name === "seg-fees" ? 6 : 0)}
 							/>
 						))}
 						<path
@@ -306,17 +319,18 @@ function Scene({
 								}}
 							/>
 							<text
+								data-f="earned-num"
 								x={x0}
 								y={bracketY - 8}
 								className="wt-halo wt-gain wt-marker-label"
 							>
-								{t(copy.earned)}
+								{signed(PNL)}
 							</text>
 						</g>
 						<text
 							data-f="breakdown"
 							x={narrow ? L.left : x0}
-							y={bracketY - 8 - T.body * 1.6}
+							y={L.barBottom + 18 + T.body * 1.6}
 							className="wt-small wt-halo"
 						>
 							{t(narrow ? copy.breakdownShort : copy.breakdown)}
@@ -337,7 +351,7 @@ function Scene({
 						<text x={L.left} y={L.bTop - 12} className="wt-small">
 							{t(copy.benAxis)}
 						</text>
-						{[0, -15_000, -30_000].map((tick) => (
+						{[0, -10_000, -20_000].map((tick) => (
 							<g key={tick}>
 								<path
 									d={`M${L.left} ${L.by(tick)}H${L.right}`}
@@ -380,7 +394,7 @@ function Scene({
 						</text>
 						<path
 							data-f="expiry"
-							d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${L.bx(140)} ${L.by(benAtExpiry(140) / 100)}`}
+							d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${offX} ${offY}M${offX - arrow.dx * 9 - arrow.dy * 6} ${offY - arrow.dy * 9 + arrow.dx * 6}L${offX} ${offY}L${offX - arrow.dx * 9 + arrow.dy * 6} ${offY - arrow.dy * 9 - arrow.dx * 6}`}
 							className="wt-line-short"
 						/>
 						<circle
@@ -399,7 +413,7 @@ function Scene({
 							textAnchor={narrow ? "start" : "end"}
 							className="wt-halo wt-loss wt-marker-label"
 						>
-							{t(narrow ? copy.markedShort : copy.marked)}
+							{t(narrow ? copy.benMarkShort : copy.benMark)}
 						</text>
 						<circle
 							data-f="far-dot"
@@ -442,6 +456,48 @@ function Scene({
 					className="wt-film-num wt-film-accent"
 				>
 					{dollars(valueOpen)}
+				</Word>
+				<Word
+					name="m-tag-bp"
+					x={L.right}
+					y={L.headY + T.head * 1.25}
+					size={T.small}
+					anchor="end"
+					className="wt-film-tag"
+				>
+					{t(copy.bpTag).toUpperCase()}
+				</Word>
+				<Word
+					name="m-bp"
+					x={L.right}
+					y={L.headY + T.head * 1.25 + T.num * 1.05}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{dollars(buyingPower)}
+				</Word>
+			</g>
+			<g data-f="answer">
+				<Word
+					name="earned-tag"
+					x={L.margin}
+					y={L.headY + T.head * 1.25}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.earned).toUpperCase()}
+				</Word>
+				<Word
+					name="earned-big"
+					x={L.margin}
+					y={L.headY + T.head * 1.25 + T.num * 1.3 * 1.05}
+					size={T.num * 1.3}
+					anchor="start"
+					className="wt-film-num wt-film-gain"
+				>
+					{signed(PNL)}
 				</Word>
 			</g>
 
@@ -496,36 +552,6 @@ function Scene({
 			</g>
 			{headline("a-head", copy.mondayHead, copy.mondayHeadShort)}
 			{headline("e-head", copy.earnedHead, copy.earnedHeadShort)}
-			<g data-f="bp">
-				<Word
-					name="bp-tag"
-					x={W / 2}
-					y={H * 0.3}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(copy.bpTag).toUpperCase()}
-				</Word>
-				<Word
-					name="bp-num"
-					x={W / 2}
-					y={H * 0.3 + fit(dollars(buyingPower)) * 1.05}
-					size={fit(dollars(buyingPower))}
-					className="wt-film-num"
-				>
-					{dollars(buyingPower)}
-				</Word>
-				<Lines
-					name="bp-line"
-					text={t(copy.bpLine)}
-					x={W / 2}
-					y={H * 0.72}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
-			</g>
-
 			{/* Sixteen contracts in two lots. */}
 			<g data-f="lots">
 				{Array.from({ length: HELD }, (_, i) => {
@@ -535,7 +561,7 @@ function Scene({
 							key={`sq-${x}-${y}`}
 							data-f={`sq-${i}`}
 							className="wt-film-bar"
-							data-tone={i < lots[0].quantity ? "total" : "model"}
+							data-tone={i < lots[0].quantity ? "total" : "neutral"}
 							x={x}
 							y={y}
 							width={L.square}
@@ -557,7 +583,7 @@ function Scene({
 									height={12}
 									rx={3}
 									className="wt-film-bar"
-									data-tone={l === 0 ? "total" : "model"}
+									data-tone={l === 0 ? "total" : "neutral"}
 								/>
 								<text x={x + 18} y={y} className="wt-small">
 									{`${narrow ? "" : `${lot.time} · `}${lot.quantity} @ ${price(lot.price)}`}
@@ -587,7 +613,7 @@ function Scene({
 							x={W * L.pair[i]}
 							y={H * (narrow ? 0.76 : 0.68) + T.num * 1.15}
 							size={T.num}
-							className="wt-film-num wt-film-accent"
+							className="wt-film-num wt-film-gain"
 						>
 							{value}
 						</Word>
@@ -596,8 +622,8 @@ function Scene({
 			</g>
 			{headline("l-head", copy.lotsHead, copy.lotsHeadShort)}
 			<Lines
-				name="f-head"
-				text={t(narrow ? copy.fifoHeadShort : copy.fifoHead)}
+				name="t-head"
+				text={t(copy.totalHead)}
 				x={L.margin}
 				y={
 					L.headY +
@@ -631,17 +657,17 @@ function Scene({
 					size={T.big}
 					className="wt-film-num wt-film-gain"
 				>
-					{signed(fifo.realized + fifo.unrealized)}
+					{signed(fifo.realized)}
 				</Word>
-				<Lines
-					name="t-line"
-					text={t(copy.totalLine)}
+				<Word
+					name="t-was"
 					x={W / 2}
-					y={H * 0.72}
+					y={H * 0.3 + T.big * 1.05 + T.body * 2.2}
 					size={T.body}
-					maxWidth={room}
 					className="wt-film-type wt-film-dim"
-				/>
+				>
+					{t(copy.marked)}
+				</Word>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
 			{headline("x-head", copy.expiryHead, copy.expiryHeadShort)}
@@ -735,10 +761,10 @@ function build(context: FilmContext) {
 		one("far-label"),
 		...kids("meter"),
 		...flat("q"),
-		...["a-head", "e-head", "l-head", "f-head", "b-head", "x-head"].map(
+		...["a-head", "e-head", "l-head", "t-head", "b-head", "x-head"].map(
 			(name) => one(name),
 		),
-		...flat("bp"),
+		...kids("answer"),
 		...squares,
 		one("legend-lots"),
 		one("r-tag"),
@@ -769,7 +795,7 @@ function build(context: FilmContext) {
 		1.0,
 	);
 	show(one("q-up"), 6.7);
-	show(one("q-line"), 6.9);
+	show(one("q-line"), 6.8);
 
 	// ——— account: what moved it ———
 	tl.addLabel("account", 10.4);
@@ -785,86 +811,95 @@ function build(context: FilmContext) {
 	d.count(meter, valueClose, 11.9, dollars, valueOpen, 1.2);
 	show(one("earned"), 13.4);
 	show(one("breakdown"), 13.7);
+	// The answer: what was earned lifts out of the bar, and stays while the deposit lands.
+	d.carry(one("earned-num"), one<SVGGraphicsElement>("earned-big"), 14.2, {
+		duration: 0.8,
+		keep: true,
+	});
+	show(one("earned-tag"), 14.7);
 	// Tuesday: money in, not money made.
-	d.swap(one("a-head"), one("e-head"), 14.4);
-	grow("seg-deposit", 14.4, 1.0);
-	d.count(meter, afterDeposit, 14.4, dollars, valueClose, 1.0);
-	show(one("deposited"), 14.7);
-	// Cut: buying power.
-	hide([one("e-head"), ...kids("meter")], 18.3);
-	sink(18.3);
-	show(one("bp-tag"), 18.7);
-	land(one("bp-num"), 18.9);
-	show(one("bp-line"), 19.4);
+	d.swap(one("a-head"), one("e-head"), 15.4);
+	grow("seg-deposit", 15.4, 1.0);
+	d.count(meter, afterDeposit, 15.4, dollars, valueClose, 1.0);
+	show(one("deposited"), 15.7);
+	// And buying power, larger still: margin, not money made either.
+	d.flip(one("m-tag"), one("m-tag-bp"), 17.6);
+	tl.set(one("m-tag"), { opacity: 0 }, 17.9);
+	d.flip(meter, one("m-bp"), 17.6);
+	tl.set(meter, { opacity: 0 }, 17.9);
 
 	// ——— calls: realized and unrealized ———
-	tl.addLabel("calls", 21.6);
-	hide(flat("bp"), 21.6);
-	show(one("l-head"), 21.95, "above");
+	tl.addLabel("calls", 19.7);
+	hide([one("e-head"), ...kids("meter"), ...kids("answer")], 19.7);
+	sink(19.7);
 	squares.forEach((square, i) => {
-		land(square, 22.0 + i * 0.04, 0.4);
+		land(square, 20.1 + i * 0.04, 0.4);
 	});
-	show(one("legend-lots"), 22.6);
-	show([one("r-tag"), one("u-tag")], 22.9);
-	show([realized, unrealized], 23.1);
+	show([one("r-tag"), one("u-tag")], 20.4);
+	show([realized, unrealized], 20.6);
+	show(one("legend-lots"), 20.7);
+	show(one("l-head"), 20.9, "above");
 	// Sell six, oldest first.
-	show(one("f-head"), 24.0);
-	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.1);
-	d.count(realized, fifo.realized, 24.3, zeroed, 0, 0.8);
-	d.count(unrealized, fifo.unrealized, 24.3, signed, held.unrealized, 0.8);
-	// Cut: the total. The hero: less than the mark said.
-	hide(
-		[
-			one("l-head"),
-			one("f-head"),
-			...squares,
-			one("legend-lots"),
-			one("r-tag"),
-			one("u-tag"),
-			realized,
-			unrealized,
-		],
-		27.55,
+	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 23.0);
+	d.count(realized, fifo.realized, 23.2, zeroed, 0, 0.8);
+	d.count(unrealized, fifo.unrealized, 23.2, signed, held.unrealized, 0.8);
+	// The hero: the two parts become one figure, less than the mark said.
+	hide([...squares, one("legend-lots"), one("r-tag"), one("u-tag")], 24.7);
+	show(one("t-tag"), 25.0);
+	// One part lands, then the other lands on it, and the two count as one.
+	const total = one<SVGTextElement>("t-num");
+	d.carry(realized, total, 24.9, { duration: 0.8 });
+	d.carry(unrealized, total, 25.7, {
+		duration: 0.8,
+		fit: false,
+		reveal: false,
+	});
+	d.count(
+		total,
+		fifo.realized + fifo.unrealized,
+		26.5,
+		signed,
+		fifo.realized,
+		0.6,
 	);
-	show(one("t-tag"), 27.85);
-	land(one("t-num"), 28.05);
-	d.lock(lockTotal, 28.6, {
-		around: [one("t-tag"), one("t-num")],
+	show(one("t-was"), 27.2);
+	d.lock(lockTotal, 27.5, {
+		around: [one("t-tag"), total],
 		pad: 8,
 	});
-	tl.addLabel("hero-lock", 28.6);
-	show(one("t-line"), 29.0);
+	tl.addLabel("hero-lock", 27.5);
+	show(one("t-head"), 27.5);
 
 	// ——— short: the other side of the same calls ———
-	tl.addLabel("short", 31);
-	hide([...flat("total"), lockTotal], 31.0);
-	tl.set(one("acct"), { opacity: 0 }, 31.1);
-	tl.set(one("ben"), { opacity: 1 }, 31.1);
-	show(one("b-head"), 31.35, "above");
-	rise(31.4);
-	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 32.0);
-	show(one("premium-label"), 32.4);
-	land(one("mark-dot"), 33.2);
-	show(one("mark-label"), 33.4);
-	d.swap(one("b-head"), one("x-head"), 34.9);
-	draw(one<SVGPathElement>("expiry"), 35.3, 1.4);
-	land(one("far-dot"), 36.8);
-	show(one("far-label"), 37.0);
+	tl.addLabel("short", 31.4);
+	hide([...flat("total"), lockTotal, one("l-head"), one("t-head")], 31.4);
+	tl.set(one("acct"), { opacity: 0 }, 31.5);
+	tl.set(one("ben"), { opacity: 1 }, 31.5);
+	show(one("b-head"), 31.75, "above");
+	rise(31.8);
+	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 32.3);
+	show(one("premium-label"), 32.6);
+	land(one("mark-dot"), 33);
+	show(one("mark-label"), 33.2);
+	d.swap(one("b-head"), one("x-head"), 35.3);
+	draw(one<SVGPathElement>("expiry"), 35.4, 1.4);
+	land(one("far-dot"), 36.6);
+	show(one("far-label"), 36.8);
 	// Cut: the claim.
-	hide(one("x-head"), 38.8);
-	sink(38.8);
+	hide(one("x-head"), 39.15);
+	sink(39.15);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.2,
+		39.5,
 	);
-	show(one("z-sub"), 39.6);
+	show(one("z-sub"), 39.9);
 
 	// ——— next ———
-	tl.addLabel("next", 43.3);
-	hide(kids("claim"), 43.3);
-	d.close(43.3);
+	tl.addLabel("next", 43.5);
+	hide(kids("claim"), 43.5);
+	d.close(43.5);
 	return tl;
 }
 
