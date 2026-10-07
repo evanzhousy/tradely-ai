@@ -56,12 +56,12 @@ import {
  *                        mid; push in on the bid, mid and ask: same option, three IVs
  *   rv        22.1–31.4  hero: twenty daily returns, ±1.52% a day, 24% a year; the last
  *                        ten only, 15%, locked
- *   horizons  31.4–40.3  RV behind today, IV ahead with earnings; cut: +11 vol points
- *   claim     40.3–44.7  "IV looks ahead. RV looks back."
- *   next      44.7–47.2  Next: the expected move
+ *   horizons  31.4–40.5  RV behind today, IV ahead with earnings; cut: +11 vol points
+ *   claim     40.5–44.8  "IV looks ahead. RV looks back."
+ *   next      44.8–47.3  Next: the expected move
  */
 
-const END = 47.2;
+const END = 47.3;
 const F_X = [0.2, 0.5] as const;
 const F_Y = [2, 6] as const;
 const R_RANGE = 0.03;
@@ -895,51 +895,51 @@ function build(context: FilmContext) {
 		one("z-rv"),
 		{
 			attr: { width: L.xZ(rvEnd) - L.xZ(0) },
-			duration: 0.9,
+			duration: 0.8,
 			ease: "power2.out",
 		},
-		32.6,
+		32.3,
 	);
-	show(one("z-rv-label"), 33.2);
-	show(one("z-rv-caption"), 33.4);
+	show(one("z-rv-label"), 32.8);
+	show(one("z-rv-caption"), 33.0);
 	tl.fromTo(
 		one("z-today"),
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 100%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		33.9,
+		33.3,
 	);
-	show(one("z-today-label"), 34.1);
+	show(one("z-today-label"), 33.5);
 	tl.to(
 		one("z-iv"),
 		{
 			attr: { width: L.right - L.xZ(today) - 4 },
-			duration: 1.0,
+			duration: 0.9,
 			ease: "power2.out",
 		},
-		34.5,
+		33.8,
 	);
-	show(one("z-iv-label"), 35.2);
-	show(one("z-iv-caption"), 35.4);
-	show(one("z-earnings"), 35.9);
-	// Cut: the gap, and what it isn't.
-	hide(one("z-head"), 37.4);
-	sink(37.4);
-	land(one("g-num"), 37.8);
-	show(one("g-word"), 38.2);
-	show(one("g-sub"), 38.6);
-	hide(kids("gap"), 40.3);
+	show(one("z-iv-label"), 34.4);
+	show(one("z-iv-caption"), 34.6);
+	show(one("z-earnings"), 34.9);
+	// Cut: the gap, and what it isn't, held to be read.
+	hide(one("z-head"), 36.1);
+	sink(36.1);
+	land(one("g-num"), 36.5);
+	show(one("g-word"), 36.8);
+	show(one("g-sub"), 37.0);
+	hide(kids("gap"), 40.5);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.6,
+		40.8,
 	);
-	show(one("c-sub"), 41.0);
+	show(one("c-sub"), 41.2);
 
 	// ——— next ———
-	tl.addLabel("next", 44.7);
-	hide(kids("claim"), 44.7);
-	d.close(44.7);
+	tl.addLabel("next", 44.8);
+	hide(kids("claim"), 44.8);
+	d.close(44.8);
 	return tl;
 }
 
