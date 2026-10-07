@@ -20,10 +20,17 @@ export function companyValue(cents: number, locale: Locale) {
 		: `$${(dollars / 1e9).toFixed(2)} billion`;
 }
 
-/** A market order of `quantity` against ALFA's book: the levels after it and what it filled. */
-export function tradeAgainst(side: "buy" | "sell" | null, quantity: number) {
-	const asks: Level[] = alfaStockBook.asks.map((level) => ({ ...level }));
-	const bids: Level[] = alfaStockBook.bids.map((level) => ({ ...level }));
+/**
+ * A market order of `quantity` against ALFA's book, or against the book an earlier trade
+ * left (`from`): the levels after it and what it filled.
+ */
+export function tradeAgainst(
+	side: "buy" | "sell" | null,
+	quantity: number,
+	from: { asks: readonly Level[]; bids: readonly Level[] } = alfaStockBook,
+) {
+	const asks: Level[] = from.asks.map((level) => ({ ...level }));
+	const bids: Level[] = from.bids.map((level) => ({ ...level }));
 	if (!side)
 		return { asks, bids, fills: [] as Level[], filled: 0, notional: 0 };
 	const result = sweep(side === "buy" ? asks : bids, quantity);

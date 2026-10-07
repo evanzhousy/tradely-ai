@@ -1,3 +1,4 @@
+import type { Level } from "@/content/world";
 import {
 	ALFA,
 	ALFA_SHARES_OUTSTANDING,
@@ -35,26 +36,29 @@ import {
  * company, so each $1 move is $10 on your 10 shares and $50 million on ALFA. Then the
  * quote: buy 10 and the ticket lands on what you pay, $1,000.50 at the $100.05 ask; sell 10
  * and it lands beside it on what you get, $1,000.00 at the $100.00 bid: 50¢ apart, and
- * neither is the last trade. The hero: 1,000 shares at once climb the offers, one level
- * after another, to an average of $100.061. Last, a stock, an ETF and an index.
+ * neither is the last trade. Those trades stay done. The hero: 1,000 shares at once climb
+ * the offers that are left, one level after another, to an average of $100.061. Last, a
+ * stock, an ETF and an index.
  *
  *   open      0–4        "Stocks and prices"
  *   question  4–9        last $100.02: what do 10 shares cost?
- *   slice     9–17.6     50M × $100 = $5B; each $1: $100 for you, $50M for ALFA
- *   quote     17.6–32    the book; buy 10: $1,000.50, sell 10: $1,000.00; hero: buy 1,000
- *   kinds     32–39.75   stock, ETF, index; the index is a number, cash-settled
- *   claim     39.75–44.15 you trade against the quote, not the last price
- *   next      44.15–46.65 Next: options, a paid right
+ *   slice     9–16.55    50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
+ *   quote     16.55–31.9 the book; buy 10: $1,000.50, sell 10: $1,000.00, 50¢ more to buy;
+ *                        hero: buy 1,000
+ *   kinds     31.9–39.65 stock, ETF, index; the index is a number, cash-settled
+ *   claim     39.65–44.05 you trade against the quote, not the last price
+ *   next      44.05–46.05 Next: options, a paid right
  */
 
-const END = 46.65;
+const END = 46.05;
 const OPEN = ALFA.open;
 const MINE = 10;
 const SHARES = ALFA_SHARES_OUTSTANDING;
 const BUY10 = tradeAgainst("buy", 10);
 const SELL10 = tradeAgainst("sell", 10);
 const BIG = 1_000;
-const BUY_BIG = tradeAgainst("buy", BIG);
+/** The 1,000 climb the book the 10-share trades left: a trade never un-happens. */
+const BUY_BIG = tradeAgainst("buy", BIG, BUY10);
 const ASKS = [...alfaStockBook.asks].reverse();
 const BIDS = alfaStockBook.bids;
 const MAX_SIZE = Math.max(
@@ -118,7 +122,10 @@ const copy = {
 		`Each $1 move: $${MINE} to you.`,
 		`ALFA 每动 $1，你变动 $${MINE}。`,
 	],
-	moveHeadShort: [`Each $1: $${MINE} to you.`, `每动 $1：你变 $${MINE}。`],
+	moveHeadShort: [
+		`Each $1: $${MINE} to you.`,
+		`每动 $1：你的股票变 $${MINE}。`,
+	],
 	yours: [`your ${MINE} shares`, `你的 ${MINE} 股`],
 	company: [`ALFA, ${count(SHARES)} shares`, `ALFA，${count(SHARES)} 股`],
 	companyShort: ["ALFA, all shares", "ALFA，全部股份"],
@@ -131,15 +138,15 @@ const copy = {
 	buyHeadShort: ["Buying costs more than selling.", "买比卖花得多。"],
 	bigHead: [
 		`Buy ${count(BIG)} at once: you climb the book.`,
-		`一次买 ${count(BIG)} 股：沿卖单往上吃。`,
+		`一次买 ${count(BIG)} 股：一档档往上买。`,
 	],
 	bigHeadShort: [
 		`Buy ${count(BIG)}: you climb the book.`,
-		`买 ${count(BIG)} 股：往上吃。`,
+		`买 ${count(BIG)} 股：逐档往上买。`,
 	],
 	diff: [
-		`${Math.round(BUY10.notional - SELL10.notional)}¢ more to buy`,
-		`买入多付 ${Math.round(BUY10.notional - SELL10.notional)} 美分`,
+		`${Math.round(BUY10.notional - SELL10.notional)}¢ more to buy.`,
+		`买比卖多付 ${Math.round(BUY10.notional - SELL10.notional)} 美分。`,
 	],
 	asks: ["asks · sellers", "卖价 · 卖方"],
 	bids: ["bids · buyers", "买价 · 买方"],
@@ -254,13 +261,12 @@ function Scene({
 	};
 	// What you pay and what you get, in two slots: side by side under the book on a phone,
 	// stacked beside it on a desktop. The hero's average takes the second slot.
-	const fig = narrow ? T.num * 0.9 : T.num;
-	const heroFig = narrow ? T.num : T.num * 1.3;
+	const fig = narrow ? T.num * 0.8 : T.num;
+	const heroFig = narrow ? T.num * 1.25 : T.num * 1.3;
 	const slotX = (k: number) => (narrow ? margin + k * room * 0.5 : L.panelX);
 	const tagY = (k: number) =>
 		L.panelY + T.small * 1.4 + (narrow ? 0 : k * (fig * 1.25 + T.small * 2.4));
 	const valY = (k: number, size = fig) => tagY(k) + size * 1.15;
-	const diffY = narrow ? valY(0) + T.body * 1.7 : valY(1) + T.body * 1.9;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -361,6 +367,25 @@ function Scene({
 			{/* The book. */}
 			{headline("b-head", copy.bookHead, copy.bookHeadShort)}
 			{headline("y-head", copy.buyHead, copy.buyHeadShort)}
+			{/* The answer, made by the two tickets side by side. */}
+			<Lines
+				name="y2-head"
+				text={t(copy.diff)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.buyHeadShort : copy.buyHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("g-head", copy.bigHead, copy.bigHeadShort)}
 			<g data-f="book">
 				<text
@@ -442,16 +467,6 @@ function Scene({
 				className="wt-film-num wt-film-accent"
 			>
 				{usd(0)}
-			</Word>
-			<Word
-				name="p-diff"
-				x={slotX(0)}
-				y={diffY}
-				size={T.body}
-				anchor="start"
-				className="wt-film-num wt-film-loss"
-			>
-				{t(copy.diff)}
 			</Word>
 			{/* The hero: the average price of 1,000 shares, the loudest figure on stage. */}
 			<Word
@@ -643,6 +658,7 @@ function build(context: FilmContext) {
 		"m-head",
 		"b-head",
 		"y-head",
+		"y2-head",
 		"g-head",
 		"k-head",
 		"i-head",
@@ -658,9 +674,17 @@ function build(context: FilmContext) {
 		time: number,
 		/** When the book refills; null leaves the taken levels taken (a trade never un-happens). */
 		restore: number | null,
-		{ step = 0.4, paid }: { step?: number; paid?: { from: number } } = {},
+		{
+			step = 0.4,
+			paid,
+			from = alfaStockBook,
+		}: {
+			step?: number;
+			paid?: { from: number };
+			from?: { asks: readonly Level[]; bids: readonly Level[] };
+		} = {},
 	) => {
-		const book = side === "ask" ? alfaStockBook.asks : alfaStockBook.bids;
+		const book = side === "ask" ? from.asks : from.bids;
 		let sum = paid?.from ?? 0;
 		fills.forEach((fill, i) => {
 			const at = book.find((item) => item.price === fill.price);
@@ -723,7 +747,6 @@ function build(context: FilmContext) {
 		one("p-avg-tag"),
 		total,
 		one("p-sell"),
-		one("p-diff"),
 		one("p-avg"),
 		one("lock-avg"),
 		one("chip-buy"),
@@ -753,106 +776,106 @@ function build(context: FilmContext) {
 	show([one("px-tag"), px], 9.5);
 	show([one("mine-tag"), mineVal], 10.1);
 	show([one("co-tag"), coVal], 10.5);
-	// Each $1 move, up and then down, under one headline.
-	d.swap(heads[0], heads[1], 13.0);
-	d.count(px, OPEN + 100, 13.4, dollars, OPEN, 0.8);
-	d.count(mineVal, MINE * (OPEN + 100), 13.4, whole, MINE * OPEN, 0.8);
-	d.count(coVal, SHARES * (OPEN + 100), 13.4, company, SHARES * OPEN, 0.8);
-	show([mineChg, coChg], 13.6);
-	d.count(mineChg, MINE * 100, 13.6, signed, 0, 0.8);
-	d.count(coChg, SHARES * 100, 13.6, signedMillions, 0, 0.8);
+	// Each $1 move, under its own headline.
+	d.swap(heads[0], heads[1], 12.7);
+	d.count(px, OPEN + 100, 13.1, dollars, OPEN, 0.8);
+	d.count(mineVal, MINE * (OPEN + 100), 13.1, whole, MINE * OPEN, 0.8);
+	d.count(coVal, SHARES * (OPEN + 100), 13.1, company, SHARES * OPEN, 0.8);
+	show([mineChg, coChg], 13.3);
+	d.count(mineChg, MINE * 100, 13.3, signed, 0, 0.8);
+	d.count(coChg, SHARES * 100, 13.3, signedMillions, 0, 0.8);
 	tl.set(
 		[mineChg, coChg],
 		{ attr: { class: "wt-film-num wt-film-gain" } },
-		13.6,
-	);
-	d.count(px, OPEN - 100, 15.6, dollars, OPEN + 100, 0.9);
-	d.count(mineVal, MINE * (OPEN - 100), 15.6, whole, MINE * (OPEN + 100), 0.9);
-	d.count(
-		coVal,
-		SHARES * (OPEN - 100),
-		15.6,
-		company,
-		SHARES * (OPEN + 100),
-		0.9,
-	);
-	d.count(mineChg, -MINE * 100, 15.6, signed, MINE * 100, 0.9);
-	d.count(coChg, -SHARES * 100, 15.6, signedMillions, SHARES * 100, 0.9);
-	tl.set(
-		[mineChg, coChg],
-		{ attr: { class: "wt-film-num wt-film-loss" } },
-		16.0,
+		13.3,
 	);
 
 	// ——— quote: you trade against the book ———
-	tl.addLabel("quote", 17.6);
-	hide([heads[1], ...flat("slice")], 17.6);
-	show(heads[2], 17.95);
-	show(one("asks-tag"), 18.0);
+	tl.addLabel("quote", 16.55);
+	hide([heads[1], ...flat("slice")], 16.55);
+	show(heads[2], 16.9);
+	show(one("asks-tag"), 16.95);
 	ASKS.forEach((at, i) => {
-		show(one(`lv-${key("ask", at.price)}`), 18.1 + i * 0.1, "right");
+		show(one(`lv-${key("ask", at.price)}`), 17.05 + i * 0.1, "right");
 	});
-	show([one("spread"), one("last")], 18.5);
+	show([one("spread"), one("last")], 17.45);
 	BIDS.forEach((at, i) => {
-		show(one(`lv-${key("bid", at.price)}`), 18.6 + i * 0.1, "right");
+		show(one(`lv-${key("bid", at.price)}`), 17.55 + i * 0.1, "right");
 	});
-	show(one("bids-tag"), 19.0);
+	show(one("bids-tag"), 17.95);
 	// Buy 10, then sell 10, under one headline: each ticket leaves the level it takes and
-	// lands in its own slot, so what you pay and what you get stand side by side.
+	// lands in its own slot, so what you pay and what you get stand side by side. The
+	// trades stay done: the levels keep what they lost.
 	const sell = one<SVGTextElement>("p-sell");
 	// On a phone the slots are under the book: a ticket goes down first, clear of the sizes.
 	const lane = L.narrow ? ("y" as const) : undefined;
-	d.swap(heads[2], heads[3], 21.45);
-	take("ask", BUY10.fills, 21.8, 24.0);
+	d.swap(heads[2], heads[3], 20.4);
+	take("ask", BUY10.fills, 20.75, null);
 	tl.fromTo(
 		one("chip-buy"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.15 },
-		21.9,
+		20.85,
 	);
-	show(one("p-pay"), 22.2);
-	d.carry(one<SVGGraphicsElement>("chip-buy"), total, 22.05, {
+	show(one("p-pay"), 21.15);
+	d.carry(one<SVGGraphicsElement>("chip-buy"), total, 21.0, {
 		duration: 1,
 		fit: false,
 		arc: lane,
 	});
-	d.count(total, BUY10.notional, 23.05, dollars, 0, 0.5);
-	take("bid", SELL10.fills, 24.0, 26.2);
+	d.count(total, BUY10.notional, 22.0, dollars, 0, 0.5);
+	take("bid", SELL10.fills, 21.55, null);
 	tl.fromTo(
 		one("chip-sell"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.15 },
-		24.1,
+		21.65,
 	);
 	// On a phone the ticket comes down past this slot's tag: the tag comes in as it lands.
-	show(one("p-get"), L.narrow ? 25.3 : 24.2, "above");
-	d.carry(one<SVGGraphicsElement>("chip-sell"), sell, 24.25, {
+	show(one("p-get"), L.narrow ? 22.75 : 21.75, "above");
+	d.carry(one<SVGGraphicsElement>("chip-sell"), sell, 21.8, {
 		duration: 1,
 		fit: false,
 		arc: lane,
 	});
-	d.count(sell, SELL10.notional, 25.25, dollars, 0, 0.5);
-	// Both on stage: the difference is made, then named.
-	show(one("p-diff"), 26.0);
-	// The hero: 1,000 at once climb the offers, and the average is what they paid.
-	d.swap(heads[3], heads[4], 26.8);
-	hide([one("p-get"), sell, one("p-diff")], 26.8);
-	d.count(total, 0, 27.1, dollars, BUY10.notional, 0.3);
-	take("ask", BUY_BIG.fills, 27.5, null, { step: 0.65, paid: { from: 0 } });
-	show(one("p-avg-tag"), 29.2);
-	word(one("p-avg"), 29.4);
-	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 29.8);
-	d.lock(one<SVGGraphicsElement>("lock-avg"), 29.8, {
+	d.count(sell, SELL10.notional, 22.8, dollars, 0, 0.5);
+	// Both on stage: the difference is named, and held. The taken levels step back.
+	show(heads[4], 23.35);
+	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 23.35);
+	tl.to(
+		[hit("ask", BUY10.fills[0].price), hit("bid", SELL10.fills[0].price)],
+		{ opacity: 0, duration: 0.3 },
+		23.35,
+	);
+	// The hero: 1,000 at once climb the offers that are left; the average is what they paid.
+	d.swap([heads[3], heads[4]], heads[5], 26.9);
+	hide([one("p-get"), sell], 26.9);
+	hide(total, 26.9, 0.25);
+	tl.to(total, { opacity: 1, duration: 0.2 }, 27.4);
+	take("ask", BUY_BIG.fills, 27.4, null, {
+		step: 0.6,
+		paid: { from: 0 },
+		from: BUY10,
+	});
+	show(one("p-avg-tag"), 29.05);
+	word(one("p-avg"), 29.25);
+	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 29.7);
+	tl.to(
+		BUY_BIG.fills.map((fill) => hit("ask", fill.price)),
+		{ opacity: 0.3, duration: 0.3 },
+		29.7,
+	);
+	d.lock(one<SVGGraphicsElement>("lock-avg"), 29.7, {
 		around: [one("p-avg-tag"), one("p-avg")],
 		pad: 8,
 	});
-	tl.addLabel("hero-lock", 29.8);
+	tl.addLabel("hero-lock", 29.7);
 
 	// ——— kinds: what the underlying is ———
-	tl.addLabel("kinds", 32);
+	tl.addLabel("kinds", 31.9);
 	hide(
 		[
-			heads[4],
+			heads[5],
 			one("asks-tag"),
 			one("bids-tag"),
 			one("spread"),
@@ -864,54 +887,54 @@ function build(context: FilmContext) {
 			one("p-avg"),
 			one("lock-avg"),
 		],
-		32.0,
+		31.9,
 	);
-	show(heads[5], 32.35);
+	show(heads[6], 32.25);
 	show(
 		flat("kinds").filter((el) => el.tagName === "text"),
-		32.6,
+		32.5,
 	);
 	kindOrder.forEach((kind, i) => {
-		show(one(`col-${kind}`), 32.8 + i * 0.3);
+		show(one(`col-${kind}`), 32.7 + i * 0.3);
 	});
-	d.swap(heads[5], heads[6], 35.85);
-	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 36.35);
-	d.lock(one<SVGGraphicsElement>("lock-index"), 36.35, {
+	d.swap(heads[6], heads[7], 35.75);
+	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 36.25);
+	d.lock(one<SVGGraphicsElement>("lock-index"), 36.25, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
 	tl.to(
 		[one("col-stock"), one("col-etf")],
 		{ opacity: 0.4, duration: 0.4 },
-		36.35,
+		36.25,
 	);
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.75);
+	tl.addLabel("claim", 39.65);
 	hide(
 		[
-			heads[6],
+			heads[7],
 			one("lock-index"),
 			...kindOrder.map((kind) => one(`col-${kind}`)),
 			...flat("kinds").filter((el) => el.tagName === "text"),
 		],
-		39.75,
+		39.65,
 	);
-	word(one("z-big"), 40.15);
-	show(one("z-sub"), 40.65);
+	word(one("z-big"), 40.05);
+	show(one("z-sub"), 40.55);
 
 	// ——— next ———
-	tl.addLabel("next", 44.15);
-	hide(kids("claim"), 44.15);
-	d.close(44.15);
+	tl.addLabel("next", 44.05);
+	hide(kids("claim"), 44.05);
+	d.close(44.05);
 	return tl;
 }
 
 export const stocksAndPricesFilm: Film = {
 	id: "stocks-and-prices",
 	label: [
-		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $100 on your 100 shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an ETF and an index, the last a number you can't buy whose options settle in cash`,
-		`股票与价格短片：ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 100 股就多 $100；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、ETF 和指数，指数是一个不能买入的数，它的期权以现金结算`,
+		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an ETF and an index, the last a number you can't buy whose options settle in cash`,
+		`股票与价格短片：ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、ETF 和指数，指数是一个不能买入的数，它的期权以现金结算`,
 	],
 	stage: "dark",
 	shots: [
