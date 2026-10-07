@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -28,15 +29,15 @@ import {
  * because Home doesn't save. Last, Customize with AI asks one question before it proposes,
  * two replies cost two credits, and nothing is saved.
  *
- *   open       0–4      "Start from a research checklist"
- *   question   4–9.5    "Before I sell a call, what should I check?"
- *   inspect    9.5–17   a friend's three steps; one is a forecast; Home's four
- *   edits      17–24.8  add earnings, move flow; refresh; cut: a working plan
- *   customize  24.8–35  a request, its question, an answer, a proposal; cut: the claim
- *   next       35–37.5  Next: ask TradingFlow AI, then verify
+ *   open       0–4        "Start from a research checklist"
+ *   question   4–9.6      "Before I sell a call, what should I check?"
+ *   inspect    9.6–19.5   a friend's three steps; one is a forecast; Home's four
+ *   edits      19.5–29.2  add earnings, move flow; refresh; cut: a working plan, locked
+ *   customize  29.2–41.2  a request, its question, an answer, a proposal; cut: the claim
+ *   next       41.2–43.7  Next: ask TradingFlow AI, then verify
  */
 
-const END = 37.5;
+const END = 43.7;
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
@@ -94,10 +95,7 @@ const copy = {
 		"朋友列的卖出 ALFA 看涨清单。",
 	],
 	friendHeadShort: ["A friend's checklist.", "朋友的清单。"],
-	flagHead: [
-		"“Stays below $105” is a forecast: no tool can check it.",
-		"“一直低于 $105”是预测：没有工具能核查。",
-	],
+	flagHead: ["“Stays below $105” is a forecast.", "“一直低于 $105”是预测。"],
 	flagHeadShort: ["The last step is a forecast.", "最后一步是预测。"],
 	templateHead: [
 		"Home's template: four steps, each opening a tool.",
@@ -105,8 +103,8 @@ const copy = {
 	],
 	templateHeadShort: ["Home's template: four steps.", "Home 模板：四步。"],
 	editHead: [
-		"Add ALFA's Oct 3 earnings, and move call flow up.",
-		"新增 ALFA 10月3日 财报，把看涨成交流上移。",
+		"Add Oct 3 earnings; move call flow up.",
+		"新增 10月3日 财报，上移看涨成交流。",
 	],
 	editHeadShort: ["Add earnings, move flow up.", "加财报，上移成交流。"],
 	refreshHead: [
@@ -120,8 +118,8 @@ const copy = {
 		"Home 的清单是临时工作计划。",
 	],
 	planSub: [
-		"Copy the steps you keep into your own notes before you leave.",
-		"离开前，把要保留的步骤抄进自己的笔记。",
+		"Copy the steps you keep into your notes.",
+		"把要保留的步骤抄进自己的笔记。",
 	],
 	askHead: [
 		"Customize with AI asks one question first.",
@@ -140,8 +138,8 @@ const copy = {
 		"清单是核查，不是预测。",
 	],
 	claimSub: [
-		"Every step opens a tool that shows today's evidence; an AI proposal gets the same test.",
-		"每一步都打开一个显示今天证据的工具；AI 的建议也用同样的标准检验。",
+		"Each step opens today's evidence; test AI proposals too.",
+		"每一步都打开今天的证据；AI 建议也照此检验。",
 	],
 	nextBig: [
 		"Next: ask TradingFlow AI, then verify",
@@ -260,10 +258,44 @@ function Scene({
 				/>
 			</g>
 			{headline("f-head", copy.friendHead, copy.friendHeadShort)}
-			{headline("x-head", copy.flagHead, copy.flagHeadShort)}
+			<Lines
+				name="x-head"
+				text={t(narrow ? copy.flagHeadShort : copy.flagHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.friendHeadShort : copy.friendHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("p-head", copy.templateHead, copy.templateHeadShort)}
 			{headline("e-head", copy.editHead, copy.editHeadShort)}
-			{headline("r-head", copy.refreshHead, copy.refreshHeadShort)}
+			<Lines
+				name="r-head"
+				text={t(narrow ? copy.refreshHeadShort : copy.refreshHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.editHeadShort : copy.editHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 
 			{/* The slots' numbers stay; the steps move between them. */}
 			<g data-f="nums">
@@ -345,11 +377,29 @@ function Scene({
 					);
 				})}
 			</g>
+			<Brackets name="lock-plan" glow />
 			{claim("plan", copy.planBig, copy.planSub)}
 
 			{/* Customize with AI. */}
 			{headline("a-head", copy.askHead, copy.askHeadShort)}
-			{headline("o-head", copy.proposeHead, copy.proposeHeadShort)}
+			<Lines
+				name="o-head"
+				text={t(narrow ? copy.proposeHeadShort : copy.proposeHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.askHeadShort : copy.askHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<g data-f="meter">
 				<Word
 					name="m-tag"
@@ -437,7 +487,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const row = (id: string) => one(`row-${id}`);
@@ -468,6 +518,8 @@ function build(context: FilmContext) {
 		);
 	const bubbles = MESSAGES.map((message) => one(`b-${message.id}`));
 
+	const lockPlan = one<SVGGraphicsElement>("lock-plan");
+
 	d.hidden([
 		...flat("q"),
 		...[
@@ -483,6 +535,7 @@ function build(context: FilmContext) {
 		...ROWS.flatMap((step) => [row(step.id), focus(step.id)]),
 		one("forecast-note"),
 		...kids("plan"),
+		lockPlan,
 		...kids("meter"),
 		...bubbles,
 		...kids("claim"),
@@ -497,95 +550,119 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.6);
+	show(one("q-line"), 6.0);
 
 	// ——— inspect: three steps, one a forecast; then Home's four ———
-	tl.addLabel("inspect", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("f-head"), 9.7, "above");
-	show([num(0), num(1), num(2)], 10.0);
+	tl.addLabel("inspect", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("f-head"), 9.8, "above");
+	show([num(0), num(1), num(2)], 10.1);
 	FRIEND.forEach((step, k) => {
-		enter(step.id, k, 10.2 + k * 0.25);
+		enter(step.id, k, 10.3 + k * 0.25);
 	});
-	d.swap(one("f-head"), one("x-head"), 11.8);
-	tl.to(focus(FORECAST.id), { opacity: 1, duration: 0.4 }, 12.2);
-	show(one("forecast-note"), 12.4, "right");
-	d.swap(one("x-head"), one("p-head"), 14.0);
-	leave(FORECAST.id, 14.4);
-	move("trade", at(TEMPLATE, "trade"), 14.6);
-	enter("gex", at(TEMPLATE, "gex"), 15.0);
-	show(num(3), 15.1);
-	enter("flow", at(TEMPLATE, "flow"), 15.3);
+	show(one("x-head"), 12.0);
+	tl.to(focus(FORECAST.id), { opacity: 1, duration: 0.4 }, 12.3);
+	show(one("forecast-note"), 12.5, "right");
+	// Home's template.
+	d.swap([one("f-head"), one("x-head")], one("p-head"), 15.6);
+	tl.to(focus(FORECAST.id), { opacity: 0, duration: 0.3 }, 15.6);
+	hide(one("forecast-note"), 15.6);
+	leave(FORECAST.id, 16.0);
+	move("trade", at(TEMPLATE, "trade"), 16.2);
+	enter("gex", at(TEMPLATE, "gex"), 16.6);
+	show(num(3), 16.7);
+	enter("flow", at(TEMPLATE, "flow"), 16.9);
 
 	// ——— edits: Home doesn't keep them ———
-	tl.addLabel("edits", 17);
-	d.swap(one("p-head"), one("e-head"), 17.0);
-	for (const step of TEMPLATE)
-		if (step.id !== "vol") move(step.id, at(EDITED, step.id), 17.4);
-	show(num(4), 17.5);
-	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 17.9);
+	tl.addLabel("edits", 19.5);
+	d.swap(one("p-head"), one("e-head"), 19.5);
+	// Make room: the rows that only shift fade and return in place; call flow moves up.
+	const shifted = ["gex", "trade"].map((id) => row(id));
+	tl.to(shifted, { opacity: 0, duration: 0.2 }, 19.9);
+	for (const id of ["gex", "trade"])
+		tl.set(row(id), { y: lift(at(EDITED, id)) }, 20.15);
+	move("flow", at(EDITED, "flow"), 20.15);
+	tl.to(shifted, { opacity: 1, duration: 0.3 }, 20.8);
+	show(num(4), 20.0);
+	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 20.4);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
 		{ opacity: 1, duration: 0.4 },
-		18.2,
+		20.7,
 	);
 	// Refresh.
-	d.swap(one("e-head"), one("r-head"), 19.8);
+	show(one("r-head"), 22.6);
 	tl.to(
 		TEMPLATE.map((step) => row(step.id)),
 		{ opacity: 0.25, duration: 0.2 },
-		20.2,
+		22.8,
 	);
-	leave(EARNINGS.id, 20.2);
+	leave(EARNINGS.id, 22.8);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
 		{ opacity: 0, duration: 0.2 },
-		20.2,
+		22.8,
 	);
-	hide(num(4), 20.2);
+	hide(num(4), 22.8);
 	for (const step of TEMPLATE)
-		tl.set(row(step.id), { y: lift(at(TEMPLATE, step.id)) }, 20.45);
+		tl.set(row(step.id), { y: lift(at(TEMPLATE, step.id)) }, 23.05);
 	tl.to(
 		TEMPLATE.map((step) => row(step.id)),
 		{ opacity: 1, duration: 0.35 },
-		20.5,
+		23.1,
 	);
-	// Cut: a working plan.
+	// Cut: a working plan. The hero.
 	hide(
 		[
+			one("e-head"),
 			one("r-head"),
 			...TEMPLATE.map((step) => row(step.id)),
 			...Array.from({ length: 4 }, (_, k) => num(k)),
 		],
-		21.9,
+		26.2,
 	);
-	word(one("plan-big"), 22.3);
-	show(one("plan-sub"), 22.8);
+	word(one("plan-big"), 26.6);
+	show(one("plan-sub"), 27.0);
+	d.lock(lockPlan, 27.2, {
+		around: [one("plan-big"), one("plan-sub")],
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 27.2);
 
 	// ——— customize: the AI asks before it proposes ———
-	tl.addLabel("customize", 24.8);
-	hide(kids("plan"), 24.8);
-	show(one("a-head"), 25.0, "above");
-	show([one("m-tag"), one("m-0")], 25.2, "above");
-	show(bubbles[0], 25.5);
-	show(bubbles[1], 26.6);
-	d.flip(one("m-0"), one("m-1"), 26.8);
-	tl.set(one("m-0"), { opacity: 0 }, 27.1);
-	d.swap(one("a-head"), one("o-head"), 28.6);
-	hide([bubbles[0], bubbles[1]], 29.0);
-	show(bubbles[2], 29.3);
-	show(bubbles[3], 30.2);
-	d.flip(one("m-1"), one("m-2"), 30.4);
-	tl.set(one("m-1"), { opacity: 0 }, 30.7);
+	tl.addLabel("customize", 29.2);
+	hide([...kids("plan"), lockPlan], 29.2);
+	show(one("a-head"), 29.55, "above");
+	show([one("m-tag"), one("m-0")], 29.7, "above");
+	show(bubbles[0], 30.0);
+	show(bubbles[1], 31.0);
+	d.flip(one("m-0"), one("m-1"), 31.2);
+	tl.set(one("m-0"), { opacity: 0 }, 31.5);
+	show(one("o-head"), 33.1);
+	hide([bubbles[0], bubbles[1]], 33.1);
+	show(bubbles[2], 33.4);
+	show(bubbles[3], 34.2);
+	d.flip(one("m-1"), one("m-2"), 34.4);
+	tl.set(one("m-1"), { opacity: 0 }, 34.7);
 	// Cut: the claim.
-	hide([one("o-head"), bubbles[2], bubbles[3], one("m-tag"), one("m-2")], 32.4);
-	word(one("claim-big"), 32.8);
-	show(one("claim-sub"), 33.3);
+	hide(
+		[
+			one("a-head"),
+			one("o-head"),
+			bubbles[2],
+			bubbles[3],
+			one("m-tag"),
+			one("m-2"),
+		],
+		36.7,
+	);
+	word(one("claim-big"), 37.1);
+	show(one("claim-sub"), 37.5);
 
 	// ——— next ———
-	tl.addLabel("next", 35);
-	hide(kids("claim"), 35.0);
-	d.close(35.0);
+	tl.addLabel("next", 41.2);
+	hide(kids("claim"), 41.2);
+	d.close(41.2);
 	return tl;
 }
 
