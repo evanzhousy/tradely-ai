@@ -50,7 +50,7 @@ import {
  *   next      42.8–45.3  Next: the module checkpoint
  */
 
-const END = 45.3;
+const END = 45.6;
 const DAYS_SHOWN = 28;
 const Y_TOP = 0.2;
 const LABEL_DAY = 17;
@@ -679,45 +679,45 @@ function build(context: FilmContext) {
 	sink(26.3);
 	word("vanna-word", 26.7);
 	show(one("vanna-def"), 26.9);
-	land(one("vanna-num"), 27.5);
+	land(one("vanna-num"), 27.0);
 	d.lock(lockVanna, 28.1, { around: one("vanna-num"), pad: 8 });
 	tl.addLabel("hero-lock", 28.1);
 
 	// ——— spread: a signed position turns it into shares ———
-	tl.addLabel("spread", 30.5);
-	hide([...kids("vanna"), lockVanna], 30.5);
-	show(one("s-head"), 30.85, "above");
-	show(one("s-shares"), 31.1);
+	tl.addLabel("spread", 30.8);
+	hide([...kids("vanna"), lockVanna], 30.8);
+	show(one("s-head"), 31.15, "above");
+	show(one("s-shares"), 31.4);
 	LEGS.forEach((leg, i) => {
-		show(one(`s-label-${leg}`), 31.3 + i * 0.4);
-		show(one(`s-value-${leg}`), 31.5 + i * 0.4, "right");
+		show(one(`s-label-${leg}`), 31.6 + i * 0.4);
+		show(one(`s-value-${leg}`), 31.8 + i * 0.4, "right");
 	});
-	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 32.2);
+	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 32.5);
 	// A week later: each leg's delta moves, and the short leg's move is a gain.
-	d.swap(one("s-head"), one("l-head"), 34.4);
+	d.swap(one("s-head"), one("l-head"), 34.7);
 	LEGS.forEach((leg) => {
 		d.count(
 			one<SVGTextElement>(`s-value-${leg}`),
 			SPREAD[1][leg],
-			34.8,
+			35.1,
 			(value) => signedCount(Math.round(value)),
 			SPREAD[0][leg],
 			0.9,
 		);
 	});
-	show(one("s-change"), 35.8);
-	show(one("s-delta-long"), 35.9, "right");
-	show(one("s-delta-short"), 36.1, "right");
-	land(one("s-delta-net"), 36.4);
+	show(one("s-change"), 36.1);
+	show(one("s-delta-long"), 36.2, "right");
+	show(one("s-delta-short"), 36.4, "right");
+	land(one("s-delta-net"), 36.7);
 	// Cut: the claim.
-	hide([one("l-head"), ...flat("spread")], 38.3);
-	word("z-big", 38.7);
-	show(one("z-sub"), 39.1);
+	hide([one("l-head"), ...flat("spread")], 38.6);
+	word("z-big", 39);
+	show(one("z-sub"), 39.4);
 
 	// ——— next ———
-	tl.addLabel("next", 42.8);
-	hide(kids("claim"), 42.8);
-	d.close(42.8);
+	tl.addLabel("next", 43.1);
+	hide(kids("claim"), 43.1);
+	d.close(43.1);
 	return tl;
 }
 
