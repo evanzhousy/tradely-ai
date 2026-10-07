@@ -145,7 +145,7 @@ const copy = {
 	liveTag: ["live data", "实时数据"],
 	contentTag: ["recipe content", "Recipe 内容"],
 	evidenceBig: [
-		"Cite live data as evidence; read recipe content as method.",
+		"Live data is evidence; recipe text is method.",
 		"实时数据可作证据；Recipe 内容要当方法来读。",
 	],
 	evidenceSub: [
