@@ -45,15 +45,15 @@ import {
  * both made 10%, and one of them fell 25% on the way.
  *
  *   open      0–4        "Performance"
- *   question  4–9.6      +21.9% · 80% · +10%
- *   returns   9.6–20.6   the account's week and its deposit; +4.00% and +1.00%; cut: +5.04%
- *   trades    20.6–32.8  five trades, 80% won, −$155; cut: 80% against −$155, locked
- *   drawdown  32.8–44.6  A and B, both +10%; B's −25%; cut: "Each measure answers one
+ *   question  4–9.4      +21.9% · 80% · +10%
+ *   returns   9.4–21     the account's week and its deposit; +4.00% and +1.00%; cut: +5.04%
+ *   trades    21–33.95   five trades, 80% won, −$155; cut: 80% against −$155, locked
+ *   drawdown  33.95–45.2 A and B, both +10%; B's −25%; cut: "Each measure answers one
  *                        question."
- *   next      44.6–47.1  Next: portfolio Greeks
+ *   next      45.2–47.2  Next: portfolio Greeks
  */
 
-const END = 47.1;
+const END = 47.2;
 const VALUE_Y = [28_000, 38_000] as const;
 const DD_Y = [22_000, 35_000] as const;
 const POINTS = [
@@ -771,40 +771,40 @@ function build(context: FilmContext) {
 		show(one(`q-tag-${i}`), 4.6 + i * 0.5);
 		land(one(`q-num-${i}`), 4.8 + i * 0.5);
 	});
-	show(one("q-line"), 6.0);
+	show(one("q-line"), 5.9);
 
 	// ——— returns: a deposit is not a return ———
-	tl.addLabel("returns", 9.6);
-	hide(flat("q"), 9.6);
-	show(one("w-head"), 9.8, "above");
-	rise(9.9);
-	draw(one<SVGPathElement>("value-line"), 10.3, 1.4);
+	tl.addLabel("returns", 9.4);
+	hide(flat("q"), 9.4);
+	show(one("w-head"), 9.6, "above");
+	rise(9.7);
+	draw(one<SVGPathElement>("value-line"), 10.1, 1.4);
 	dots.forEach((dot, i) => {
-		land(dot, 10.3 + [0, 0.35, 1.0, 1.4][i], 0.35);
+		land(dot, 10.1 + [0, 0.35, 1.0, 1.4][i], 0.35);
 	});
-	show([one("m-growth"), meter], 10.5, "above");
-	d.count(meter, GROWTH, 10.5, percent, 0, 1.4);
-	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 12.0);
-	show(one("jump-label"), 12.2);
+	show([one("m-growth"), meter], 10.3, "above");
+	d.count(meter, GROWTH, 10.3, percent, 0, 1.4);
+	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 11.8);
+	show(one("jump-label"), 12);
 	// Cut at the flow: two periods, each from its own start.
-	show(one("c-head"), 13.5);
-	tl.to(one("band-1"), { opacity: 1, duration: 0.5 }, 13.6);
-	tl.to(one("band-2"), { opacity: 1, duration: 0.5 }, 14.1);
+	show(one("c-head"), 12.9);
+	tl.to(one("band-1"), { opacity: 1, duration: 0.5 }, 13.0);
+	tl.to(one("band-2"), { opacity: 1, duration: 0.5 }, 13.5);
 	// Cut: the chained return.
-	hide([one("w-head"), one("c-head"), ...kids("meter")], 17.0);
-	sink(17.0);
-	show(one("twr-tag"), 17.3);
-	show(one("twr-sum"), 17.6);
-	land(one("twr-num"), 18.1);
-	show(one("twr-line"), 18.6);
+	hide([one("w-head"), one("c-head"), ...kids("meter")], 16.4);
+	sink(16.4);
+	show(one("twr-tag"), 16.7);
+	show(one("twr-sum"), 16.9);
+	land(one("twr-num"), 17.2);
+	show(one("twr-line"), 17.5);
 
 	// ——— trades: a rate is not a total ———
-	tl.addLabel("trades", 20.6);
-	hide(kids("twr"), 20.6);
-	tl.set(one("week"), { opacity: 0 }, 20.7);
-	tl.set(one("bars"), { opacity: 1 }, 20.7);
-	show(one("t-head"), 20.95, "above");
-	rise(21.0);
+	tl.addLabel("trades", 21);
+	hide(kids("twr"), 21);
+	tl.set(one("week"), { opacity: 0 }, 21.1);
+	tl.set(one("bars"), { opacity: 1 }, 21.1);
+	show(one("t-head"), 21.35, "above");
+	rise(21.4);
 	trades.forEach((trade, i) => {
 		const at = 21.5 + i * 0.3;
 		const y = L.barY(trade.pnl);
@@ -820,60 +820,60 @@ function build(context: FilmContext) {
 		);
 		show([one(`bar-value-${i}`), one(`bar-date-${i}`)], at + 0.2);
 	});
-	show([one("m-rate"), meter], 22.4, "above");
-	d.count(meter, WIN_RATE * 100, 22.4, whole, 0, 0.8);
-	d.swap(one("t-head"), one("o-head"), 24.5);
+	show([one("m-rate"), meter], 22.8, "above");
+	d.count(meter, WIN_RATE * 100, 22.8, whole, 0, 0.8);
+	d.swap(one("t-head"), one("o-head"), 24.9);
 	tl.to(
 		trades.flatMap((trade, i) => (trade.pnl > 0 ? [one(`bar-${i}`)] : [])),
 		{ opacity: 0.35, duration: 0.4 },
-		24.6,
+		25,
 	);
 	// The meter's tag changes from above: from below it would cross the figure.
-	hide(one("m-rate"), 24.5);
-	show(one("m-total"), 24.85, "above");
-	d.count(meter, TOTAL, 24.85, signed, WIN_RATE * 100, 0.01);
+	hide(one("m-rate"), 24.9);
+	show(one("m-total"), 25.25, "above");
+	d.count(meter, TOTAL, 25.25, signed, WIN_RATE * 100, 0.01);
 	// Cut: the rate against the total. The hero: one loss outweighs four wins.
-	hide([one("o-head"), ...kids("meter")], 28.4);
-	sink(28.4);
-	show(one("w-tag-0"), 28.7);
-	land(one("w-num-0"), 28.9);
-	show(one("w-tag-1"), 29.2);
-	land(one("w-num-1"), 29.4);
-	d.lock(lockTotal, 30.0, { around: one("w-num-1"), pad: 8 });
-	tl.addLabel("hero-lock", 30.0);
-	show(one("w-line"), 30.3);
+	hide([one("o-head"), ...kids("meter")], 28.75);
+	sink(28.75);
+	show(one("w-tag-0"), 29.05);
+	land(one("w-num-0"), 29.25);
+	show(one("w-tag-1"), 29.55);
+	land(one("w-num-1"), 29.75);
+	d.lock(lockTotal, 30.35, { around: one("w-num-1"), pad: 8 });
+	tl.addLabel("hero-lock", 30.35);
+	show(one("w-line"), 30.35);
 
 	// ——— drawdown: the same return, two paths ———
-	tl.addLabel("drawdown", 32.8);
-	hide([...flat("two"), lockTotal], 32.8);
-	tl.set(one("bars"), { opacity: 0 }, 32.9);
-	tl.set(one("dd"), { opacity: 1 }, 32.9);
-	show(one("d-head"), 33.15, "above");
-	rise(33.2);
-	draw(one<SVGPathElement>("line-a"), 33.7, 1.2);
-	show(one("label-a"), 34.6);
-	draw(one<SVGPathElement>("line-b"), 34.9, 1.2);
-	show(one("label-b"), 35.9);
-	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 36.0);
-	land(one("peak"), 36.1, 0.35);
-	land(one("trough"), 36.3);
-	show(one("fall-label"), 36.4);
-	show(one("f-head"), 36.65);
+	tl.addLabel("drawdown", 33.95);
+	hide([...flat("two"), lockTotal], 33.95);
+	tl.set(one("bars"), { opacity: 0 }, 34.05);
+	tl.set(one("dd"), { opacity: 1 }, 34.05);
+	show(one("d-head"), 34.3, "above");
+	rise(34.35);
+	draw(one<SVGPathElement>("line-a"), 34.75, 1.0);
+	show(one("label-a"), 35.55);
+	draw(one<SVGPathElement>("line-b"), 35.75, 1.0);
+	show(one("label-b"), 36.55);
+	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 36.65);
+	land(one("peak"), 36.75, 0.35);
+	land(one("trough"), 36.95);
+	show(one("fall-label"), 37.05);
+	show(one("f-head"), 37.25);
 	// Cut: the claim.
-	hide([one("d-head"), one("f-head")], 40.2);
-	sink(40.2);
+	hide([one("d-head"), one("f-head")], 40.8);
+	sink(40.8);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.6,
+		41.2,
 	);
-	show(one("z-sub"), 41.0);
+	show(one("z-sub"), 41.6);
 
 	// ——— next ———
-	tl.addLabel("next", 44.6);
-	hide(kids("claim"), 44.6);
-	d.close(44.6);
+	tl.addLabel("next", 45.2);
+	hide(kids("claim"), 45.2);
+	d.close(45.2);
 	return tl;
 }
 
