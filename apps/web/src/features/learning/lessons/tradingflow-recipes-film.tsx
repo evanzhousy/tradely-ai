@@ -1,4 +1,5 @@
 import { gsap } from "gsap";
+import { useId } from "react";
 import {
 	type Copy,
 	dayLabel,
@@ -18,6 +19,7 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
@@ -40,19 +42,19 @@ import {
  * interest on Monday?", and the six official recipes in three kinds: the question lights
  * the session screen that answers it. Then the session a report shows: opened at 8:00 on
  * Tuesday, before the open, the screener shows Monday, the latest completed session; opened
- * at 10:00 on Monday, mid-session, "latest" slides back over the weekend and it shows
- * Friday. Last, Edit with AI copies Daily Market Recap into a private copy that slides out
+ * at 10:00 on Monday, with most of Monday's session still to trade, "latest" slides back over
+ * the weekend and it shows Friday, whose date comes down into the report's header. Last, Edit with AI copies Daily Market Recap into a private copy that slides out
  * and changes: you open your copy, and a colleague still opens the official one.
  *
  *   open      0–4        "Recipes"
  *   question  4–9.6      "Which contracts traded far above their open interest?"
  *   catalog   9.6–15.8   three kinds; the screen
- *   session   15.8–28.8  Tue 8:00 → Monday; Mon 10:00, mid-session → Friday, locked
- *   fork      28.8–40.3  Edit with AI; your private copy; a colleague's view; cut: the claim
- *   next      40.3–42.3  Next: read a recipe like an auditor
+ *   session   15.8–29.7  Tue 8:00 → Monday; Mon 10:00, still trading → Friday, locked
+ *   fork      29.7–41.2  Edit with AI; your private copy; a colleague's view; cut: the claim
+ *   next      41.2–43.2  Next: read a recipe like an auditor
  */
 
-const END = 42.3;
+const END = 43.2;
 const KINDS: readonly RecipeKind[] = ["lookup", "screen", "report"];
 const SCREEN = "unusual-options-activity";
 /** Titles that fit half a phone's width. */
@@ -119,10 +121,7 @@ const copy = {
 		"Which contracts traded far above their open interest on Monday?",
 		"周一哪些合约的成交远超其未平仓量？",
 	],
-	qLine: [
-		"Six official recipes. One answers it.",
-		"六个官方 Recipe，只有一个回答它。",
-	],
+	qLine: ["One official recipe answers it.", "只有一个官方 Recipe 回答它。"],
 	kindsHead: [
 		"Six official recipes, three kinds.",
 		"六个官方 Recipe，三种类型。",
@@ -150,12 +149,11 @@ const copy = {
 		"Unusual Options Activity Screener",
 	],
 	screenerShort: ["UOA Screener", "UOA Screener"],
-	sessionUnknown: ["Session · ?", "交易时段 · ?"],
 	mondayHead: [
-		"Open it Monday, 10:00, mid-session.",
-		"周一 10:00、盘中打开它。",
+		"Open it Monday, 10:00: still trading.",
+		"周一 10:00 打开：仍在交易。",
 	],
-	mondayHeadShort: ["Monday, 10:00, mid-session.", "周一 10:00，盘中。"],
+	mondayHeadShort: ["Monday, 10:00: still trading.", "周一 10:00：仍在交易。"],
 	fridayHead: ["It shows Friday.", "它显示周五。"],
 	editChip: ["Edit with AI", "Edit with AI"],
 	forkHead: [
@@ -174,7 +172,6 @@ const copy = {
 	],
 	officialShort: ["Official", "官方"],
 	private: ["Private · only you", "私有 · 仅你可见"],
-	spotlightOfficial: ["Spotlight: the headline name", "焦点：当天的头条标的"],
 	spotlightOfficialShort: ["Spotlight: headline", "焦点：头条"],
 	spotlightCopy: ["Spotlight: ALFA", "焦点：ALFA"],
 	you: ["you", "你"],
@@ -203,6 +200,7 @@ function Scene({
 	locale: Locale;
 }) {
 	const t = (value: Copy) => pick(value, locale);
+	const id = useId().replace(/:/g, "");
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
@@ -253,11 +251,7 @@ function Scene({
 		const C = L.cardType;
 		const line = (i: number) => L.forkTop + C.pad + C.title + i * C.step;
 		const spotlight =
-			side === "copy"
-				? copy.spotlightCopy
-				: narrow
-					? copy.spotlightOfficialShort
-					: copy.spotlightOfficial;
+			side === "copy" ? copy.spotlightCopy : copy.spotlightOfficialShort;
 		return (
 			<g data-f={`fork-${side}`}>
 				<rect
@@ -384,8 +378,9 @@ function Scene({
 							return (
 								<g key={date}>
 									<text
+										data-f={`day-${date}`}
 										x={x + L.colW / 2}
-										y={L.stripTop - (narrow ? 14 : 10)}
+										y={L.stripTop - 14}
 										textAnchor="middle"
 										className="wt-small"
 									>
@@ -415,6 +410,29 @@ function Scene({
 								</g>
 							);
 						})}
+						{/* Monday at 10:00: the part that has traded, and the rest still to come. */}
+						<defs>
+							<Hatch id={`hatch-${id}`} />
+						</defs>
+						<rect
+							data-f="mon-done"
+							x={L.dayX(SESSION_DATE) + dayFraction(OPEN) * L.colW}
+							y={L.stripTop}
+							width={(dayFraction(MONDAY.at) - dayFraction(OPEN)) * L.colW}
+							height={L.stripH}
+							rx={3}
+							className="wt-film-bar"
+							data-tone="total"
+						/>
+						<rect
+							data-f="mon-rest"
+							x={L.nowX(MONDAY)}
+							y={L.stripTop}
+							width={(dayFraction(CLOSE) - dayFraction(MONDAY.at)) * L.colW}
+							height={L.stripH}
+							rx={3}
+							fill={`url(#hatch-${id})`}
+						/>
 						<rect
 							data-f="latest-box"
 							x={L.dayX(SESSION_DATE) + dayFraction(OPEN) * L.colW}
@@ -453,7 +471,7 @@ function Scene({
 						<circle
 							data-f="now-dot"
 							cx={L.nowX(TUESDAY)}
-							cy={L.stripTop - (narrow ? 2 : 4)}
+							cy={L.stripTop - 2}
 							r={4.5}
 							className="wt-chip"
 						/>
@@ -475,27 +493,14 @@ function Scene({
 								{t(narrow ? copy.screenerShort : copy.screener)}
 							</text>
 						</g>
+						{/* Each session line's date is a part of its own: Monday's fades out of its line,
+						    and the calendar's Friday lands in Friday's. */}
 						{(
 							[
-								["sess-unknown", t(copy.sessionUnknown), "wt-film-dim"],
-								[
-									"sess-mon",
-									t([
-										`Session · ${dayLabel(SESSION_DATE)[0]}`,
-										`交易时段 · ${dayLabel(SESSION_DATE)[1]}`,
-									]),
-									"wt-film-accent",
-								],
-								[
-									"sess-fri",
-									t([
-										`Session · ${dayLabel(PREVIOUS_SESSION_DATE)[0]}`,
-										`交易时段 · ${dayLabel(PREVIOUS_SESSION_DATE)[1]}`,
-									]),
-									"wt-film-accent",
-								],
+								["sess-unknown", "?", "wt-film-dim"],
+								["sess-mon", t(dayLabel(SESSION_DATE)), "wt-film-accent"],
 							] as const
-						).map(([name, text, tone]) => (
+						).map(([name, date, tone]) => (
 							<text
 								key={name}
 								data-f={name}
@@ -504,9 +509,20 @@ function Scene({
 								className={`wt-film-type ${tone}`}
 								style={{ fontSize: T.head * 1.3 }}
 							>
-								{text}
+								{t(["Session · ", "交易时段 · "])}
+								<tspan data-f={`${name}-date`}>{date}</tspan>
 							</text>
 						))}
+						<text
+							data-f="sess-fri"
+							x={margin + 16}
+							y={headerLine(1)}
+							className="wt-film-type wt-film-accent"
+							style={{ fontSize: T.head * 1.3 }}
+						>
+							{t(["Session · ", "交易时段 · "])}
+							<tspan>{t(dayLabel(PREVIOUS_SESSION_DATE))}</tspan>
+						</text>
 						{(
 							[
 								["ran-tue", TUESDAY.label],
@@ -762,6 +778,8 @@ function build(context: FilmContext) {
 			[...row.children].filter((el) => el.tagName === "text"),
 		),
 		...sessions,
+		one("mon-done"),
+		one("mon-rest"),
 		one("latest-box"),
 		one("latest-mon"),
 		one("trading-mon"),
@@ -870,13 +888,26 @@ function build(context: FilmContext) {
 	// "latest" steps out from under Monday, and Monday shows it is trading.
 	hide(one("latest-mon"), 22.75, 0.25, 0);
 	show(one("trading-mon"), 23.05);
+	// Monday is not done: the half hour it has traded, and the rest of its session hatched.
+	tl.set(one("mon-done"), { opacity: 1 }, 23.35);
+	tl.fromTo(
+		one("mon-done"),
+		{ attr: { width: 0 } },
+		{
+			attr: { width: (dayFraction(MONDAY.at) - dayFraction(OPEN)) * L.colW },
+			duration: 0.3,
+			ease: "power2.out",
+		},
+		23.35,
+	);
+	tl.to(one("mon-rest"), { opacity: 1, duration: 0.45 }, 23.5);
 	const back = L.dayX(PREVIOUS_SESSION_DATE) - L.dayX(SESSION_DATE);
 	// The weekend's labels step back while the box passes over them.
 	const closed = days
 		.filter((date) => !sessionDays.has(date))
 		.map((date) => one(`closed-${date}`));
-	tl.to(closed, { opacity: 0.25, duration: 0.25 }, 23.4);
-	tl.to(closed, { opacity: 1, duration: 0.3 }, 24.45);
+	tl.to(closed, { opacity: 0.25, duration: 0.25 }, 24);
+	tl.to(closed, { opacity: 1, duration: 0.3 }, 25.05);
 	tl.to(
 		one("latest-box"),
 		{
@@ -884,7 +915,7 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		23.6,
+		24.2,
 	);
 	// …and comes back under Friday once the box has arrived.
 	tl.set(
@@ -892,57 +923,83 @@ function build(context: FilmContext) {
 		{ attr: { x: L.dayX(SESSION_DATE) + L.colW / 2 + back } },
 		23.1,
 	);
-	show(one("latest-mon"), 24.3);
-	d.flip(one("sess-mon"), one("sess-fri"), 24.4);
-	d.swap(one("ran-tue"), one("ran-mon"), 24.4);
+	d.swap(one("ran-tue"), one("ran-mon"), 25.0);
+	if (L.narrow) {
+		show(one("latest-mon"), 24.9);
+		d.flip(one("sess-mon"), one("sess-fri"), 25.0);
+	} else {
+		const title = one("header").querySelector("text");
+		// Monday's date fades out of its line; then Friday's line, its date held back for the
+		// carry, takes the line's place: "Session · " never moves or doubles.
+		tl.to(
+			one("sess-mon-date"),
+			{ attr: { "fill-opacity": 0 }, duration: 0.25 },
+			25.0,
+		);
+		tl.set(one("sess-mon"), { opacity: 0 }, 25.25);
+		tl.set(one("sess-fri"), { opacity: 1 }, 25.25);
+		if (title) {
+			tl.to(title, { opacity: 0.25, duration: 0.2 }, 25.0);
+			tl.to(title, { opacity: 1, duration: 0.3 }, 25.85);
+		}
+		// Friday is the latest now: its date lights before it travels, in the header's accent.
+		const friday = one<SVGGraphicsElement>(`day-${PREVIOUS_SESSION_DATE}`);
+		tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 24.9);
+		d.carry(friday, one<SVGGraphicsElement>("sess-fri"), 25.0, {
+			duration: 0.8,
+			keep: true,
+			match: d.t(dayLabel(PREVIOUS_SESSION_DATE)),
+		});
+		show(one("latest-mon"), 25.8);
+	}
 	// The hero: Monday morning's report shows Friday.
-	d.lock(lockSession, 25.2, { around: one("sess-fri"), pad: 10 });
-	tl.addLabel("hero-lock", 25.2);
-	show(one("m2-head"), 25.2);
-	tl.to(one("ran-mon"), { opacity: 0.4, duration: 0.4 }, 25.6);
+	d.lock(lockSession, 26.1, { around: one("sess-fri"), pad: 10 });
+	tl.addLabel("hero-lock", 26.1);
+	show(one("m2-head"), 26.1);
+	tl.to(one("ran-mon"), { opacity: 0.4, duration: 0.4 }, 26.5);
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 28.8);
-	hide([one("m-head"), one("m2-head"), lockSession], 28.8);
-	sink(28.8);
-	tl.set(one("calendar"), { opacity: 0 }, 29.2);
-	tl.set(one("fork"), { opacity: 1 }, 29.2);
-	rise(29.25);
-	show(one("fork-official"), 29.3);
-	land(one("edit-chip"), 29.8);
+	tl.addLabel("fork", 29.7);
+	hide([one("m-head"), one("m2-head"), lockSession], 29.7);
+	sink(29.7);
+	tl.set(one("calendar"), { opacity: 0 }, 30.1);
+	tl.set(one("fork"), { opacity: 1 }, 30.1);
+	rise(30.15);
+	show(one("fork-official"), 30.2);
+	land(one("edit-chip"), 30.7);
 	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
 	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 30.3);
-	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 30.3);
-	show(one("f-head"), 30.3, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 31);
-	tl.set(one("copy-frame"), { opacity: 0 }, 31.4);
+	tl.set(one("copy-frame"), { opacity: 1 }, 31.2);
+	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 31.2);
+	show(one("f-head"), 31.2, "above");
+	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 31.9);
+	tl.set(one("copy-frame"), { opacity: 0 }, 32.3);
 	// Your copy's spotlight turns over from the official one's to ALFA.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 31.6);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 31.9);
-	land(one("viewer"), 31.8);
-	show(one("viewer-you"), 32);
+	d.flip(one("spot-copy-was"), one("spot-copy"), 32.5);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 32.8);
+	land(one("viewer"), 32.7);
+	show(one("viewer-you"), 32.9);
 	// A colleague opens the same recipe: the official one.
-	show(one("c-head"), 32.4);
-	land(one("viewer-colleague-dot"), 32.4);
-	show(one("viewer-colleague"), 32.6);
+	show(one("c-head"), 33.3);
+	land(one("viewer-colleague-dot"), 33.3);
+	show(one("viewer-colleague"), 33.5);
 	// Cut: the claim.
-	hide([one("f-head"), one("c-head")], 35.9);
-	sink(35.9);
-	word(one("z-big"), 36.3);
-	show(one("z-sub"), 36.7);
+	hide([one("f-head"), one("c-head")], 36.8);
+	sink(36.8);
+	word(one("z-big"), 37.2);
+	show(one("z-sub"), 37.6);
 
 	// ——— next ———
-	tl.addLabel("next", 40.3);
-	hide(kids("claim"), 40.3);
-	d.close(40.3);
+	tl.addLabel("next", 41.2);
+	hide(kids("claim"), 41.2);
+	d.close(41.2);
 	return tl;
 }
 
 export const tradingflowRecipesFilm: Film = {
 	id: "tradingflow-recipes",
 	label: [
-		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, mid-session, shows Friday; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
+		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
 		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00、盘中打开则显示周五；以及 Edit with AI 把 Daily Market Recap 复制成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
 	],
 	stage: "dark",
