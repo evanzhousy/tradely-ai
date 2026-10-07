@@ -100,7 +100,7 @@ export const records: readonly {
 		cents: MONDAY,
 		note: [
 			`observed subtotal, ${COVERED} of ${SERIES} series`,
-			`观测小计，${SERIES} 个系列中的 ${COVERED} 个`,
+			`观测小计，${SERIES} 个序列中的 ${COVERED} 个`,
 		],
 		tag: ["original", "原始记录"],
 		method: 1,
@@ -109,7 +109,7 @@ export const records: readonly {
 		id: "P2",
 		head: ["P2 · as of Tue 09:00 · method v1", "P2 · 截至周二 09:00 · 方法 v1"],
 		cents: TUESDAY,
-		note: ["all 5 series; R5 is 30 × $0.10", "全部 5 个系列；R5 为 30 × $0.10"],
+		note: ["all 5 series; R5 is 30 × $0.10", "全部 5 个序列；R5 为 30 × $0.10"],
 		tag: ["rerun of P1", "P1 的重跑"],
 		method: 1,
 	},

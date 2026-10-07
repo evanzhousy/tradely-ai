@@ -143,7 +143,7 @@ function workLines(state: TraceState, locale: Locale): WorkLine[] {
 			{
 				text: t([
 					`${dollars(MONDAY)} covers ${COVERED} of ${SERIES} series`,
-					`${dollars(MONDAY)} 覆盖 ${SERIES} 个系列中的 ${COVERED} 个`,
+					`${dollars(MONDAY)} 覆盖 ${SERIES} 个序列中的 ${COVERED} 个`,
 				]),
 			},
 			{
@@ -204,7 +204,7 @@ function PacketTable({
 				{t(["row", "行"])}
 			</Label>
 			<Label x={48} y={40} tone="small">
-				{t(["series", "系列"])}
+				{t(["series", "序列"])}
 			</Label>
 			<Label x={contractsX} y={40} anchor="end" tone="small">
 				{t(["contracts", "张数"])}
@@ -279,7 +279,7 @@ function PacketTable({
 								width < 520
 									? `subtotal, ${COVERED} of ${SERIES}`
 									: `subtotal · ${COVERED} of ${SERIES} series`,
-								`小计 · ${SERIES} 个系列中的 ${COVERED} 个`,
+								`小计 · ${SERIES} 个序列中的 ${COVERED} 个`,
 							])
 						: t(["sum of R1–R4", "R1–R4 合计"])}
 				</Label>
@@ -371,7 +371,7 @@ function TraceView({
 				shown.reveal >= 3
 					? t([
 							`${COVERED} of ${SERIES} series`,
-							`${SERIES} 个系列中的 ${COVERED} 个`,
+							`${SERIES} 个序列中的 ${COVERED} 个`,
 						])
 					: t(["the rows with data", "有数据的行"]),
 			evidence: "calculated",
@@ -737,7 +737,7 @@ function RecordsView({
 					? t(["kept as it was", "保持原样"])
 					: t([
 							`${COVERED} of ${SERIES} series`,
-							`${SERIES} 个系列中的 ${COVERED} 个`,
+							`${SERIES} 个序列中的 ${COVERED} 个`,
 						]),
 			evidence: "calculated",
 		},
@@ -818,7 +818,7 @@ const scenes = [
 					id: "subtotal",
 					label: [
 						`An observed subtotal: ${COVERED} of ${SERIES} series`,
-						`观测小计：${SERIES} 个系列中的 ${COVERED} 个`,
+						`观测小计：${SERIES} 个序列中的 ${COVERED} 个`,
 					],
 				},
 				{
@@ -834,7 +834,7 @@ const scenes = [
 			revealAt: 3,
 			explain: [
 				`R5 is missing, not zero. ${dollars(MONDAY)} covers ${COVERED} of ${SERIES} series, so the chain's total is unknown: at least ${dollars(MONDAY)}.`,
-				`R5 是缺失，不是零。${dollars(MONDAY)} 覆盖 ${SERIES} 个系列中的 ${COVERED} 个，所以全链合计未知：至少 ${dollars(MONDAY)}。`,
+				`R5 是缺失，不是零。${dollars(MONDAY)} 覆盖 ${SERIES} 个序列中的 ${COVERED} 个，所以全链合计未知：至少 ${dollars(MONDAY)}。`,
 			],
 		},
 		beats: [
@@ -870,7 +870,7 @@ const scenes = [
 				label: ["Coverage", "覆盖"],
 				caption: [
 					`R5 has no data yet, so ${dollars(MONDAY)} covers ${COVERED} of ${SERIES} series: an observed subtotal. The chain total is at least that, not equal to it.`,
-					`R5 尚无数据，所以 ${dollars(MONDAY)} 只覆盖 ${SERIES} 个系列中的 ${COVERED} 个：这是观测小计。全链合计至少是这个数，而不是等于它。`,
+					`R5 尚无数据，所以 ${dollars(MONDAY)} 只覆盖 ${SERIES} 个序列中的 ${COVERED} 个：这是观测小计。全链合计至少是这个数，而不是等于它。`,
 				],
 				state: { reveal: 3, work: "coverage", row: "R5" },
 			},
@@ -1020,7 +1020,7 @@ const scenes = [
 				label: ["P1", "P1"],
 				caption: [
 					`P1 is saved with its as-of time and method: ${dollars(MONDAY)} over ${COVERED} of ${SERIES} series.`,
-					`P1 连同截至时间和方法一起保存：${dollars(MONDAY)}，覆盖 ${SERIES} 个系列中的 ${COVERED} 个。`,
+					`P1 连同截至时间和方法一起保存：${dollars(MONDAY)}，覆盖 ${SERIES} 个序列中的 ${COVERED} 个。`,
 				],
 				state: { shown: 1 },
 			},
@@ -1029,7 +1029,7 @@ const scenes = [
 				label: ["Rerun", "重跑"],
 				caption: [
 					`Tuesday 09:00 the 120 call's trades arrive: 30 at $0.10. The same method as of Tuesday gives P2, ${dollars(TUESDAY)} over all ${SERIES} series. P1 stays as it was.`,
-					`周二 09:00，120 看涨的成交到达：30 张 $0.10。同一方法截至周二得到 P2：${dollars(TUESDAY)}，覆盖全部 ${SERIES} 个系列。P1 保持原样。`,
+					`周二 09:00，120 看涨的成交到达：30 张 $0.10。同一方法截至周二得到 P2：${dollars(TUESDAY)}，覆盖全部 ${SERIES} 个序列。P1 保持原样。`,
 				],
 				state: { shown: 2 },
 			},
