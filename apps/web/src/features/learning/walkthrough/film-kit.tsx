@@ -1044,11 +1044,12 @@ export function createDirector(
 		tl.to(
 			titleGroup,
 			{
-				// A phone's tag sits further in: a web font can land wider than the measure.
+				// A phone's tag sits further in: a web font can land wider than the measure, by
+				// more on a long name.
 				x:
 					width -
 					margin * (frame.narrow ? 0.6 : 0.45) -
-					measured * (tagSize / titleSize),
+					measured * (tagSize / titleSize) * (frame.narrow ? 1.05 : 1),
 				y: frame.tagY,
 				duration: 0.9,
 				ease: "power3.inOut",
