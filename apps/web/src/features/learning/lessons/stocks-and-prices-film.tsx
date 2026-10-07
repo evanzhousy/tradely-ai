@@ -132,7 +132,10 @@ const copy = {
 	],
 	yours: [`your ${MINE} shares`, `你的 ${MINE} 股`],
 	company: [`ALFA, ${count(SHARES)} shares`, `ALFA，${count(SHARES)} 股`],
-	companyShort: ["ALFA, all shares", "ALFA，全部股份"],
+	companyShort: [
+		`ALFA, ${SHARES / 1_000_000}M shares`,
+		`ALFA，${SHARES / 10_000} 万股`,
+	],
 	bookHead: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
 	bookHeadShort: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
 	buyHead: [
@@ -226,6 +229,8 @@ function Scene({
 	const lastY = narrow
 		? L.askY(0) - T.small * 0.9
 		: L.spreadY + L.rowStep * 0.2 - 5;
+	/** A phone's after-beat: beside the bids, the free space nearest the hero. */
+	const phoneVsY = L.bidY(0) + T.small;
 	const level = (
 		side: "ask" | "bid",
 		i: number,
@@ -332,7 +337,7 @@ function Scene({
 					size={T.small}
 					className="wt-film-tag"
 				>
-					ALFA
+					{t(["ALFA · open", "ALFA · 开盘"]).toUpperCase()}
 				</Word>
 				<Word
 					name="px"
@@ -511,18 +516,20 @@ function Scene({
 			    only beside the book, under the "last" tag it extends. */}
 			<g data-f="vs-last">
 				{narrow ? (
-					[`× ${count(BIG)}`, `= ${usd(AT_LAST, 0)}`].map((line, i) => (
-						<text
-							key={line}
-							data-f={i ? "vs-eq" : "vs-x"}
-							x={L.bookX + L.bookW + 14}
-							y={lastY + T.small * (1.7 + i * 1.5)}
-							className="wt-film-num wt-film-dim"
-							style={{ fontSize: T.small }}
-						>
-							{line}
-						</text>
-					))
+					[`${t(copy.last)} × ${count(BIG)}`, `= ${usd(AT_LAST, 0)}`].map(
+						(line, i) => (
+							<text
+								key={line}
+								data-f={i ? "vs-eq" : "vs-x"}
+								x={L.bookX + L.bookW + 14}
+								y={phoneVsY + T.small * i * 1.5}
+								className="wt-film-num wt-film-dim"
+								style={{ fontSize: T.small }}
+							>
+								{line}
+							</text>
+						),
+					)
 				) : (
 					<text
 						data-f="vs-calc"
@@ -540,13 +547,26 @@ function Scene({
 			<Word
 				name="p-over"
 				x={narrow ? L.bookX + L.bookW + 14 : L.panelX}
-				y={narrow ? lastY + T.small * 3.2 + T.body * 1.5 : vsY + T.body * 1.9}
+				y={
+					narrow ? phoneVsY + T.small * 1.5 + T.body * 1.5 : vsY + T.body * 1.9
+				}
 				size={narrow ? T.body : T.body * 1.25}
 				anchor="start"
 				className="wt-film-num wt-film-loss"
 			>
 				{signedUsd(0, 2)}
 			</Word>
+			{narrow ? (
+				<text
+					data-f="p-over-tag"
+					x={L.bookX + L.bookW + 14}
+					y={phoneVsY + T.small * 1.5 + T.body * 1.5 + T.small * 1.5}
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.overLast).toUpperCase()}
+				</text>
+			) : null}
 			{/* An order leaves the book as a ticket at the level it takes. */}
 			{(
 				[
@@ -819,6 +839,7 @@ function build(context: FilmContext) {
 		one("diff-label"),
 		...kids("vs-last"),
 		one("p-over"),
+		...(L.narrow ? [one("p-over-tag")] : []),
 		one("p-sell"),
 		one("p-avg"),
 		one("lock-avg"),
@@ -942,11 +963,11 @@ function build(context: FilmContext) {
 		fit: false,
 		arc: lane,
 	});
-	d.count(sell, SELL10.notional, 22.8, dollars, 0, 0.5);
+	d.count(sell, SELL10.notional, 22.8, dollars, 0, 0.3);
 	// Both on stage: a bracket makes the difference, the line names it, and both hold. The
 	// taken levels step back.
-	d.trace(one<SVGPathElement>("diff-gap"), 23.0, { duration: 0.35 });
-	show(one("diff-label"), 23.2);
+	d.trace(one<SVGPathElement>("diff-gap"), 23.1, { duration: 0.3 });
+	show(one("diff-label"), 23.25);
 	show(heads[4], 23.35);
 	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 23.35);
 	tl.to(
@@ -978,6 +999,8 @@ function build(context: FilmContext) {
 		pad: 8,
 	});
 	tl.addLabel("hero-lock", 29.7);
+	tl.to(total, { opacity: 0.45, duration: 0.3 }, 29.7);
+	tl.to(total, { opacity: 1, duration: 0.3 }, 30.5);
 	const last = one<SVGGraphicsElement>("last");
 	tl.set(last, { attr: { class: "wt-film-num wt-film-accent" } }, 30.4);
 	if (L.narrow) {
@@ -987,6 +1010,7 @@ function build(context: FilmContext) {
 		show(one("vs-calc"), 30.5);
 	}
 	tl.set(one("p-over"), { opacity: 1 }, 31.25);
+	if (L.narrow) show(one("p-over-tag"), 31.5);
 	d.count(
 		one<SVGTextElement>("p-over"),
 		OVER_LAST,
@@ -1017,6 +1041,7 @@ function build(context: FilmContext) {
 			one("lock-avg"),
 			...kids("vs-last"),
 			one("p-over"),
+			...(L.narrow ? [one("p-over-tag")] : []),
 		],
 		33.3,
 	);
@@ -1043,7 +1068,6 @@ function build(context: FilmContext) {
 	ROWS.forEach((row, r) => {
 		const cell = one(`cell-index-${row}`);
 		const at = 38.1 + r * 0.45;
-		tl.set(cell, { attr: { class: "wt-film-type wt-film-accent" } }, at);
 		tl.fromTo(
 			cell,
 			{ scale: 1.08, transformOrigin: "50% 50%" },
