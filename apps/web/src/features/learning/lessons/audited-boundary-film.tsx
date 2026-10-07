@@ -1,3 +1,4 @@
+import { gsap } from "gsap";
 import { useId } from "react";
 import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -14,6 +15,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	COVERED,
 	LATE,
@@ -45,6 +47,9 @@ import {
 
 const END = 45.4;
 const MAX = 560;
+/** The claim cards: the interpretation, and the observed spread leg that undercuts it. */
+const STORY_CARD = 2;
+const SPREAD_CARD = 3;
 const LEAD = LEADER.volume ?? 0;
 type Evidence = "observed" | "calculated" | "interpretation" | "unknown";
 const tone: Record<Evidence, string> = {
@@ -72,8 +77,8 @@ function layout(width: number) {
 		claimX: narrow ? margin : margin + room * 0.5,
 		claimW: narrow ? room : room * 0.5,
 		claimY: (i: number) =>
-			narrow ? H * 0.58 + i * H * 0.068 : H * 0.28 + i * H * 0.095,
-		claimH: H * (narrow ? 0.05 : 0.068),
+			narrow ? H * 0.58 + i * H * 0.072 : H * 0.28 + i * H * 0.095,
+		claimH: H * (narrow ? 0.048 : 0.068),
 		recY: (i: number) =>
 			H * (narrow ? 0.27 : 0.27) + i * H * (narrow ? 0.19 : 0.19),
 		recH: H * (narrow ? 0.16 : 0.16),
@@ -164,8 +169,8 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 			"10月18日 看涨：各行权价成交量",
 		],
 		answer: [
-			"110 leads what's covered · 120 missing",
-			"110 在已覆盖中领先 · 缺 120",
+			`110 leads what's covered · ≤ ${share(LEAD, COVERED)} of all`,
+			`110 在已覆盖中领先 · 占全部 ≤ ${share(LEAD, COVERED)}`,
 		],
 		tag: ["kept", "保留"],
 	},
@@ -191,7 +196,7 @@ const copy = {
 	title: ["Research questions", "研究问题"],
 	titleSub: ["what evidence can answer", "证据能回答什么"],
 	qTag: ["a research question", "一个研究问题"],
-	qLine: ["“Where’s the action in ALFA?”", "“ALFA 的热点在哪？”"],
+	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪？」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
@@ -283,7 +288,7 @@ function Scene({
 					y={H * 0.64}
 					size={T.head}
 					maxWidth={room}
-					className="wt-film-type wt-film-dim"
+					className="wt-film-type"
 				/>
 			</g>
 
@@ -397,7 +402,7 @@ function Scene({
 				height={L.barH}
 				rx={3}
 				fill={`url(#hatch-${id})`}
-				stroke="var(--diagram-unknown)"
+				stroke="var(--diagram-gain)"
 				strokeWidth={1.5}
 			/>
 			{claims.map((claim, i) => (
@@ -412,15 +417,47 @@ function Scene({
 							claim.evidence === "unknown" ? "wt-panel-shape" : "wt-focus-shape"
 						}
 					/>
+					{i === SPREAD_CARD ? (
+						<rect
+							data-f="spread-swatch"
+							x={L.claimX + 12}
+							y={L.claimY(i) + L.claimH / 2 - 6}
+							width={12}
+							height={12}
+							rx={2}
+							fill={`url(#hatch-${id})`}
+							stroke="var(--diagram-gain)"
+							strokeWidth={1.5}
+						/>
+					) : null}
 					<text
 						data-f={`claim-${i}-text`}
-						x={L.claimX + 12}
+						x={L.claimX + 12 + (i === SPREAD_CARD ? 20 : 0)}
 						y={L.claimY(i) + L.claimH / 2 + text * 0.36}
 						className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
 						style={{ fontSize: text }}
 					>
 						{t(narrow ? claim.short : claim.text)}
 					</text>
+					{i === STORY_CARD ? (
+						<line
+							data-f="story-strike"
+							x1={L.claimX + 10}
+							x2={
+								L.claimX +
+								14 +
+								textWidth(
+									t(narrow ? claim.short : claim.text),
+									text * (locale === "zh" ? 0.95 : 0.86),
+								)
+							}
+							y1={L.claimY(i) + L.claimH / 2}
+							y2={L.claimY(i) + L.claimH / 2}
+							stroke="var(--diagram-unknown)"
+							strokeWidth={2}
+							strokeLinecap="round"
+						/>
+					) : null}
 					<text
 						data-f={`claim-${i}-tag`}
 						x={L.claimX + L.claimW - 12}
@@ -603,11 +640,17 @@ function build(context: FilmContext) {
 		...claimRows,
 		...tags,
 		one("spread-seg"),
+		one("story-strike"),
 		lockClaim,
 		...recs,
 		...revs,
 		...kids("claim"),
 	]);
+	// The strike runs the story's own length, measured as set.
+	const story = one<SVGTextElement>("claim-2-text").getBBox();
+	gsap.set(one("story-strike"), {
+		attr: { x1: story.x - 2, x2: story.x + story.width + 2 },
+	});
 	/** An evidence tag is stamped on its card: in slightly large, settling. */
 	const stamp = (target: Element, at: number) =>
 		tl.fromTo(
@@ -670,18 +713,48 @@ function build(context: FilmContext) {
 	);
 	show(claimRows[3], 24.8, "right");
 	stamp(tags[3], 25.2);
-	tl.to(one("claim-2-text"), { opacity: 0.5, duration: 0.5 }, 26.2);
+	// And what the data doesn't hold.
+	show(claimRows[4], 25.6, "right");
+	stamp(tags[4], 26.0);
+	// The story is struck through, not erased.
+	tl.fromTo(
+		one("story-strike"),
+		{ opacity: 1, scaleX: 0, transformOrigin: "0% 50%" },
+		{ scaleX: 1, duration: 0.4, ease: "power2.out" },
+		26.2,
+	);
+	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 26.2);
 	d.lock(lockClaim, 26.8, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
 	tl.addLabel("hero-lock", 26.8);
 	show(heads[2], 26.8);
-	// And what the data doesn't hold.
-	show(claimRows[4], 26.85, "right");
-	stamp(tags[4], 27.25);
+	// After the lock: the hatch and its card answer each other.
+	tl.fromTo(
+		[one("spread-seg"), one("spread-swatch")],
+		{ attr: { "stroke-width": 1.5 } },
+		{
+			attr: { "stroke-width": 3.5 },
+			duration: 0.3,
+			yoyo: true,
+			repeat: 1,
+			immediateRender: false,
+		},
+		27.6,
+	);
 
 	// ——— log: revise, or start anew ———
 	tl.addLabel("log", 30.4);
 	d.swap([heads[1], heads[2]], heads[3], 30.4);
-	hide([...strikes, ...claimRows, ...tags, one("spread-seg"), lockClaim], 30.4);
+	hide(
+		[
+			...strikes,
+			...claimRows,
+			...tags,
+			one("spread-seg"),
+			one("story-strike"),
+			lockClaim,
+		],
+		30.4,
+	);
 	show(recs[0], 31.1, "right");
 	// Tuesday's data: record 1 turns over in place.
 	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.7);
