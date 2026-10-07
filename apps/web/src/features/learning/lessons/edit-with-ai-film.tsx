@@ -32,11 +32,11 @@ import {
  *   question  4–9.6      "Make this an ALFA report."
  *   scope     9.6–17.7   every block to re-check; bounded: one to review
  *   review    17.7–28.6  edit: Index GEX gone; undo; edit again, only Spotlight, locked
- *   save      28.6–40.5  unsaved; closed; saved; cut: the claim
- *   next      40.5–43    Next: connect your own AI agent
+ *   save      28.6–41.6  unsaved; closed; saved; cut: the claim
+ *   next      41.6–44.1  Next: connect your own AI agent
  */
 
-const END = 43;
+const END = 44.1;
 /** The states a block's status moves through, in the order the film uses them. */
 const SHOWN: readonly Status[] = [
 	"recheck",
@@ -140,7 +140,7 @@ const copy = {
 	savedHeadShort: ["Save: private to you.", "保存：仅你可见。"],
 	draft: ["Your draft · private", "你的草稿 · 私有"],
 	unsaved: ["Unsaved changes", "有未保存的修改"],
-	closed: ["Tab closed: changes not kept", "标签页已关闭：修改没有保留"],
+	closed: ["Closed: draft gone", "已关闭：草稿没了"],
 	saved: ["Saved", "已保存"],
 	mine: ["My recipes", "我的 Recipe"],
 	none: ["No recipes yet", "还没有 Recipe"],
@@ -667,11 +667,11 @@ function build(context: FilmContext) {
 	d.flip(one("m-dash"), one("m-none"), 30.4);
 	tl.set(one("m-dash"), { opacity: 0 }, 30.7);
 	// Or save.
-	show(one("s-head"), 32.4);
-	d.flip(one("d-closed"), one("d-saved"), 32.6);
-	tl.set(one("d-closed"), { opacity: 0 }, 32.9);
-	d.flip(one("m-none"), one("m-entry"), 32.9);
-	tl.set(one("m-none"), { opacity: 0 }, 33.2);
+	show(one("s-head"), 32.8);
+	d.flip(one("d-closed"), one("d-saved"), 33);
+	tl.set(one("d-closed"), { opacity: 0 }, 33.3);
+	d.flip(one("m-none"), one("m-entry"), 33.3);
+	tl.set(one("m-none"), { opacity: 0 }, 33.6);
 	// Cut: the claim.
 	hide(
 		[
@@ -684,15 +684,15 @@ function build(context: FilmContext) {
 			one("m-entry"),
 			one("o-line"),
 		],
-		36,
+		37.1,
 	);
-	word(one("z-big"), 36.4);
-	show(one("z-sub"), 36.8);
+	word(one("z-big"), 37.5);
+	show(one("z-sub"), 37.9);
 
 	// ——— next ———
-	tl.addLabel("next", 40.5);
-	hide(kids("claim"), 40.5);
-	d.close(40.5);
+	tl.addLabel("next", 41.6);
+	hide(kids("claim"), 41.6);
+	d.close(41.6);
 	return tl;
 }
 
