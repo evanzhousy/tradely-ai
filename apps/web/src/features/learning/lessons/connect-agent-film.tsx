@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -21,15 +22,15 @@ import { ENDPOINT, GROUPS, LIMIT, type Method } from "./connect-agent-model";
  * with your key shows what that key reaches. Last, what a key allows: read-only tools, 60
  * calls a minute, and a revoke that refuses the very next call.
  *
- *   open      0–4      "Connect your own AI agent"
- *   question  4–9.5    sign in, or an API key?
- *   way       9.5–18.5 Claude signs in; agents use a key; chat sites can't yet
- *   prove     18.5–27.5 "Connected!"; /mcp; curl and tools/list
- *   key       27.5–38  60 a minute; 75: 15 refused; revoke; cut: the claim
- *   next      38–40.5  Next: the module checkpoint
+ *   open      0–4        "Connect your own AI agent"
+ *   question  4–9.6      sign in, or an API key?
+ *   way       9.6–16.6   Claude signs in; agents use a key; chat sites can't yet
+ *   prove     16.6–22.2  "Connected!"; /mcp; curl and tools/list
+ *   key       22.2–37.8  60 a minute; 75: 15 refused, locked; revoke; cut: the claim
+ *   next      37.8–40.3  Next: the module checkpoint
  */
 
-const END = 40.5;
+const END = 40.3;
 const BURST = 75;
 const METHODS: readonly Method[] = ["signin", "key", "none"];
 /** The sign-in group's clients as a phone's card can hold them. */
@@ -70,20 +71,15 @@ const copy = {
 	qBig: ["Sign in, or an API key?", "登录，还是 API 密钥？"],
 	qLine: ["It depends on the agent.", "取决于是哪个智能体。"],
 	signinHead: [
-		"Claude signs in with your TradingFlow account: no key.",
-		"Claude 用你的 TradingFlow 账户登录：不需要密钥。",
+		"Claude signs in with your account: no key.",
+		"Claude 用你的账户登录：不需要密钥。",
 	],
 	signinHeadShort: ["Claude: sign in, no key.", "Claude：登录，无需密钥。"],
 	keyHead: [
-		"Cursor, Codex and OpenClaw connect with an API key.",
+		"Cursor, Codex and OpenClaw use an API key.",
 		"Cursor、Codex 和 OpenClaw 用 API 密钥连接。",
 	],
 	keyHeadShort: ["Other agents: a key.", "其他智能体：密钥。"],
-	noneHead: [
-		"Hosted chat sites can't connect yet.",
-		"托管的聊天网站暂时无法连接。",
-	],
-	noneHeadShort: ["Chat sites: not yet.", "聊天网站：暂不支持。"],
 	keyNote: [
 		"Copy prompt creates a key and puts it in the prompt you paste to your agent.",
 		"Copy prompt 会创建一把密钥，并放进你粘贴给智能体的提示里。",
@@ -100,39 +96,31 @@ const copy = {
 		"Link Slack instead: 1 credit a question",
 		"改用 Slack：每问 1 积分",
 	],
-	agentHead: [
-		"“Connected, ready!” proves nothing: an agent can say it while nothing is registered.",
-		"“已连接，准备好了！”什么都证明不了：什么都没注册时它也会这么说。",
-	],
+	agentHead: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
 	agentHeadShort: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
 	clientHead: [
-		"Check it yourself: your client lists tradingflow and its tools.",
-		"自己检查：客户端列出了 tradingflow 和它的工具。",
+		"Check it yourself: client, then server.",
+		"自己检查：先客户端，再服务器。",
 	],
-	clientHeadShort: ["Your client's own check.", "客户端自己的检查。"],
-	serverHead: [
-		"Or ask the server: tools/list with your key shows what it reaches.",
-		"或者问服务器：带密钥的 tools/list 显示它能用什么。",
-	],
-	serverHeadShort: ["Ask the server, with your key.", "带上密钥问服务器。"],
+	clientHeadShort: ["Check it yourself.", "自己检查。"],
 	rateHead: [
-		`Every data tool is read-only, and a key gets ${LIMIT} calls a minute.`,
-		`所有数据工具都是只读的，每把密钥每分钟 ${LIMIT} 次调用。`,
+		`Read-only tools, ${LIMIT} calls a minute.`,
+		`只读工具，每分钟 ${LIMIT} 次。`,
 	],
 	rateHeadShort: [
 		`Read-only, ${LIMIT} calls a minute.`,
 		`只读，每分钟 ${LIMIT} 次。`,
 	],
 	burstHead: [
-		`A burst of ${BURST}: ${BURST - LIMIT} are refused until the window rolls on.`,
-		`一口气 ${BURST} 次：${BURST - LIMIT} 次被拒，直到窗口滚过去。`,
+		`A burst of ${BURST}: ${BURST - LIMIT} are refused.`,
+		`一口气 ${BURST} 次：${BURST - LIMIT} 次被拒。`,
 	],
 	burstHeadShort: [
 		`${BURST} calls: ${BURST - LIMIT} refused.`,
 		`${BURST} 次：${BURST - LIMIT} 次被拒。`,
 	],
 	revokeHead: [
-		"Revoke the key: its very next call is refused.",
+		"Revoke the key: the next call fails.",
 		"撤销密钥：它的下一次调用就被拒绝。",
 	],
 	revokeHeadShort: ["Revoke: the next call fails.", "撤销：下一次调用失败。"],
@@ -143,11 +131,11 @@ const copy = {
 	revoked: ["revoked · next call refused", "已撤销 · 下一次调用被拒"],
 	otherKeys: ["your other keys keep working", "你的其他密钥照常可用"],
 	claimBig: [
-		"Connect it, prove it yourself, know what the key can do.",
+		"Connect it, prove it, know the key's reach.",
 		"连接它，亲自证明，弄清密钥能做什么。",
 	],
 	claimSub: [
-		"An agent's word isn't proof; access is checked on every call.",
+		"An agent's word isn't proof; every call is checked.",
 		"智能体说的不算证明；每次调用都会检查访问权限。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
@@ -262,8 +250,24 @@ function Scene({
 				/>
 			</g>
 			{headline("s-head", copy.signinHead, copy.signinHeadShort)}
-			{headline("k-head", copy.keyHead, copy.keyHeadShort)}
-			{headline("n-head", copy.noneHead, copy.noneHeadShort)}
+			<Lines
+				name="k-head"
+				text={t(narrow ? copy.keyHeadShort : copy.keyHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.signinHeadShort : copy.signinHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 
 			{/* Three ways in. */}
 			{METHODS.map((method, i) => {
@@ -349,9 +353,25 @@ function Scene({
 			))}
 
 			{/* Four checks. */}
-			{headline("a-head", copy.agentHead, copy.agentHeadShort)}
-			{headline("c-head", copy.clientHead, copy.clientHeadShort)}
-			{headline("v-head", copy.serverHead, copy.serverHeadShort)}
+			{headline("a-head", copy.agentHead, copy.agentHead)}
+			<Lines
+				name="c-head"
+				text={t(narrow ? copy.clientHeadShort : copy.clientHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.agentHead : copy.agentHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{CHECKS.map((check, i) => (
 				<g key={check.id} data-f={`chk-${check.id}`}>
 					<rect
@@ -395,7 +415,25 @@ function Scene({
 
 			{/* What a key allows. */}
 			{headline("r-head", copy.rateHead, copy.rateHeadShort)}
-			{headline("b-head", copy.burstHead, copy.burstHeadShort)}
+			<Lines
+				name="b-head"
+				text={t(narrow ? copy.burstHeadShort : copy.burstHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.rateHeadShort : copy.rateHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-burst" glow />
 			{headline("x-head", copy.revokeHead, copy.revokeHeadShort)}
 			<g data-f="meter">
 				<text
@@ -562,7 +600,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const way = (method: Method) => one(`way-${method}`);
@@ -573,19 +611,20 @@ function build(context: FilmContext) {
 	const calls = (value: number) => String(Math.round(value));
 	const fillTo = (n: number) => (Math.min(n, LIMIT) / BURST) * L.room;
 
+	const lockBurst = one<SVGGraphicsElement>("lock-burst");
+
 	d.hidden([
 		...flat("q"),
 		...[
 			"s-head",
 			"k-head",
-			"n-head",
 			"a-head",
 			"c-head",
-			"v-head",
 			"r-head",
 			"b-head",
 			"x-head",
 		].map((name) => one(name)),
+		lockBurst,
 		...METHODS.flatMap((method) => [way(method), on(method)]),
 		one("panel"),
 		one("cmd"),
@@ -611,87 +650,96 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.4);
+	show(one("q-line"), 6.0);
 
 	// ——— way: sign in, a key, or not yet ———
-	tl.addLabel("way", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("s-head"), 9.7, "above");
+	tl.addLabel("way", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("s-head"), 9.8, "above");
 	METHODS.forEach((method, i) => {
-		show(way(method), 10.0 + i * 0.2);
+		show(way(method), 10.1 + i * 0.2);
 	});
-	tl.to(on("signin"), { opacity: 1, duration: 0.3 }, 10.8);
-	tl.to([way("key"), way("none")], { opacity: 0.4, duration: 0.3 }, 10.8);
-	show(one("panel"), 11.0);
-	show(one("cmd"), 11.3);
-	d.swap(one("s-head"), one("k-head"), 13.0);
-	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 13.4);
-	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 13.4);
-	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 13.4);
-	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 13.4);
-	d.swap(one("cmd"), one("note-key"), 13.4);
-	d.swap(one("k-head"), one("n-head"), 15.6);
-	tl.to(on("key"), { opacity: 0, duration: 0.3 }, 16.0);
-	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 16.0);
-	tl.to(way("none"), { opacity: 1, duration: 0.3 }, 16.0);
-	d.swap(one("note-key"), one("note-none"), 16.0);
+	tl.to(on("signin"), { opacity: 1, duration: 0.3 }, 10.9);
+	tl.to([way("key"), way("none")], { opacity: 0.4, duration: 0.3 }, 10.9);
+	show(one("panel"), 11.1);
+	show(one("cmd"), 11.4);
+	show(one("k-head"), 13.0);
+	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 13.2);
+	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 13.2);
+	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 13.2);
+	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 13.2);
+	d.swap(one("cmd"), one("note-key"), 13.2);
+	// Hosted chat sites: not yet.
+	tl.to(on("key"), { opacity: 0, duration: 0.3 }, 15.0);
+	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 15.0);
+	tl.to(way("none"), { opacity: 1, duration: 0.3 }, 15.0);
+	d.swap(one("note-key"), one("note-none"), 15.0);
 
 	// ——— prove: check it yourself ———
-	tl.addLabel("prove", 18.5);
-	hide(
-		[one("n-head"), ...METHODS.map(way), one("panel"), one("note-none")],
-		18.5,
-	);
-	show(one("a-head"), 18.8, "above");
-	show(check("agent"), 19.1);
-	show(verdict("agent"), 19.8, "right");
-	d.swap(one("a-head"), one("c-head"), 21.6);
-	show(check("client"), 22.0);
-	show(verdict("client"), 22.6, "right");
-	d.swap(one("c-head"), one("v-head"), 24.2);
-	show(check("reach"), 24.6);
-	show(verdict("reach"), 25.0, "right");
-	show(check("tools"), 25.4);
-	show(verdict("tools"), 25.8, "right");
-
-	// ——— key: read-only, rate-limited, revocable ———
-	tl.addLabel("key", 27.5);
+	tl.addLabel("prove", 16.6);
 	hide(
 		[
-			one("v-head"),
+			one("s-head"),
+			one("k-head"),
+			...METHODS.map(way),
+			one("panel"),
+			one("note-none"),
+		],
+		16.6,
+	);
+	show(one("a-head"), 16.95, "above");
+	show(check("agent"), 17.2);
+	show(verdict("agent"), 17.8, "right");
+	show(one("c-head"), 18.6);
+	show(check("client"), 18.8);
+	show(verdict("client"), 19.3, "right");
+	show(check("reach"), 19.8);
+	show(verdict("reach"), 20.2, "right");
+	show(check("tools"), 20.6);
+	show(verdict("tools"), 21.0, "right");
+
+	// ——— key: read-only, rate-limited, revocable ———
+	tl.addLabel("key", 22.2);
+	hide(
+		[
+			one("a-head"),
+			one("c-head"),
 			...CHECKS.flatMap((item) => [check(item.id), verdict(item.id)]),
 		],
-		27.5,
+		22.2,
 	);
-	show(one("r-head"), 27.7, "above");
-	show(one("meter"), 28.0);
-	show(counter, 28.2);
+	show(one("r-head"), 22.55, "above");
+	show(one("meter"), 22.8);
+	show(counter, 23.0);
 	tl.to(
 		one("m-fill"),
 		{ attr: { width: fillTo(LIMIT) }, duration: 1.0, ease: "power2.out" },
-		28.4,
+		23.2,
 	);
-	d.count(counter, LIMIT, 28.4, calls, 0, 1.0);
-	show([one("key"), one("k-active")], 29.0);
-	d.swap(one("r-head"), one("b-head"), 30.4);
-	tl.to(one("m-over"), { opacity: 1, duration: 0.4 }, 30.8);
-	d.count(counter, BURST, 30.8, calls, LIMIT, 0.6);
-	show(one("m-refused"), 31.2);
-	d.swap(one("b-head"), one("x-head"), 32.6);
-	d.flip(one("k-active"), one("k-revoked"), 33.0);
-	tl.set(one("k-active"), { opacity: 0 }, 33.3);
+	d.count(counter, LIMIT, 23.2, calls, 0, 1.0);
+	show([one("key"), one("k-active")], 23.8);
+	show(one("b-head"), 24.8);
+	tl.to(one("m-over"), { opacity: 1, duration: 0.4 }, 25.0);
+	d.count(counter, BURST, 25.0, calls, LIMIT, 0.6);
+	show(one("m-refused"), 25.4);
+	// The hero: the window's limit, enforced.
+	d.lock(lockBurst, 26.0, { around: [counter, one("m-refused")], pad: 6 });
+	tl.addLabel("hero-lock", 26.0);
+	d.swap([one("r-head"), one("b-head"), lockBurst], one("x-head"), 28.4);
+	d.flip(one("k-active"), one("k-revoked"), 29.1);
+	tl.set(one("k-active"), { opacity: 0 }, 29.4);
 	// Cut: the claim.
 	hide(
 		[one("x-head"), one("meter"), counter, one("key"), one("k-revoked")],
-		34.8,
+		33.0,
 	);
-	word(one("z-big"), 35.2);
-	show(one("z-sub"), 35.7);
+	word(one("z-big"), 33.4);
+	show(one("z-sub"), 33.8);
 
 	// ——— next ———
-	tl.addLabel("next", 38);
-	hide(kids("claim"), 38.0);
-	d.close(38.0);
+	tl.addLabel("next", 37.8);
+	hide(kids("claim"), 37.8);
+	d.close(37.8);
 	return tl;
 }
 
