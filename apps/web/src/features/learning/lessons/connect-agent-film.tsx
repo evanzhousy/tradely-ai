@@ -24,13 +24,13 @@ import { ENDPOINT, GROUPS, LIMIT, type Method } from "./connect-agent-model";
  *
  *   open      0–4        "Connect your own AI agent"
  *   question  4–9.6      sign in, or an API key?
- *   way       9.6–16.6   Claude signs in; agents use a key; chat sites can't yet
- *   prove     16.6–22.2  "Connected!"; /mcp; curl and tools/list
- *   key       22.2–37.8  60 a minute; 75: 15 refused, locked; revoke; cut: the claim
- *   next      37.8–40.3  Next: the module checkpoint
+ *   way       9.6–20.6   Claude signs in; agents use a key; chat sites can't yet
+ *   prove     20.6–26.2  "Connected!"; /mcp; curl and tools/list
+ *   key       26.2–44    60 a minute; 75: 15 refused, locked; revoke; cut: the claim
+ *   next      44–46.5    Next: the module checkpoint
  */
 
-const END = 40.3;
+const END = 46.5;
 const BURST = 75;
 const METHODS: readonly Method[] = ["signin", "key", "none"];
 /** The sign-in group's clients as a phone's card can hold them. */
@@ -663,20 +663,20 @@ function build(context: FilmContext) {
 	tl.to([way("key"), way("none")], { opacity: 0.4, duration: 0.3 }, 10.9);
 	show(one("panel"), 11.1);
 	show(one("cmd"), 11.4);
-	show(one("k-head"), 13.0);
-	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 13.2);
-	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 13.2);
-	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 13.2);
-	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 13.2);
-	d.swap(one("cmd"), one("note-key"), 13.2);
+	show(one("k-head"), 12.8);
+	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 12.8);
+	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 12.8);
+	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 12.8);
+	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 12.8);
+	d.swap(one("cmd"), one("note-key"), 12.8);
 	// Hosted chat sites: not yet.
-	tl.to(on("key"), { opacity: 0, duration: 0.3 }, 15.0);
-	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 15.0);
-	tl.to(way("none"), { opacity: 1, duration: 0.3 }, 15.0);
-	d.swap(one("note-key"), one("note-none"), 15.0);
+	tl.to(on("key"), { opacity: 0, duration: 0.3 }, 16.7);
+	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 16.7);
+	tl.to(way("none"), { opacity: 1, duration: 0.3 }, 16.7);
+	d.swap(one("note-key"), one("note-none"), 16.7);
 
 	// ——— prove: check it yourself ———
-	tl.addLabel("prove", 16.6);
+	tl.addLabel("prove", 20.6);
 	hide(
 		[
 			one("s-head"),
@@ -685,61 +685,61 @@ function build(context: FilmContext) {
 			one("panel"),
 			one("note-none"),
 		],
-		16.6,
+		20.6,
 	);
-	show(one("a-head"), 16.95, "above");
-	show(check("agent"), 17.2);
-	show(verdict("agent"), 17.8, "right");
-	show(one("c-head"), 18.6);
-	show(check("client"), 18.8);
-	show(verdict("client"), 19.3, "right");
-	show(check("reach"), 19.8);
-	show(verdict("reach"), 20.2, "right");
-	show(check("tools"), 20.6);
-	show(verdict("tools"), 21.0, "right");
+	show(one("a-head"), 20.95, "above");
+	show(check("agent"), 21.2);
+	show(verdict("agent"), 21.8, "right");
+	show(one("c-head"), 22.6);
+	show(check("client"), 22.8);
+	show(verdict("client"), 23.3, "right");
+	show(check("reach"), 23.8);
+	show(verdict("reach"), 24.2, "right");
+	show(check("tools"), 24.6);
+	show(verdict("tools"), 25, "right");
 
 	// ——— key: read-only, rate-limited, revocable ———
-	tl.addLabel("key", 22.2);
+	tl.addLabel("key", 26.2);
 	hide(
 		[
 			one("a-head"),
 			one("c-head"),
 			...CHECKS.flatMap((item) => [check(item.id), verdict(item.id)]),
 		],
-		22.2,
+		26.2,
 	);
-	show(one("r-head"), 22.55, "above");
-	show(one("meter"), 22.8);
-	show(counter, 23.0);
+	show(one("r-head"), 26.55, "above");
+	show(one("meter"), 26.8);
+	show(counter, 27);
 	tl.to(
 		one("m-fill"),
 		{ attr: { width: fillTo(LIMIT) }, duration: 1.0, ease: "power2.out" },
-		23.2,
+		27.2,
 	);
-	d.count(counter, LIMIT, 23.2, calls, 0, 1.0);
-	show([one("key"), one("k-active")], 23.8);
-	show(one("b-head"), 24.8);
-	tl.to(one("m-over"), { opacity: 1, duration: 0.4 }, 25.0);
-	d.count(counter, BURST, 25.0, calls, LIMIT, 0.6);
-	show(one("m-refused"), 25.4);
+	d.count(counter, LIMIT, 27.2, calls, 0, 1.0);
+	show([one("key"), one("k-active")], 27.8);
+	show(one("b-head"), 28.8);
+	tl.to(one("m-over"), { opacity: 1, duration: 0.4 }, 29);
+	d.count(counter, BURST, 29, calls, LIMIT, 0.6);
+	show(one("m-refused"), 29.4);
 	// The hero: the window's limit, enforced.
-	d.lock(lockBurst, 26.0, { around: [counter, one("m-refused")], pad: 6 });
-	tl.addLabel("hero-lock", 26.0);
-	d.swap([one("r-head"), one("b-head"), lockBurst], one("x-head"), 28.4);
-	d.flip(one("k-active"), one("k-revoked"), 29.1);
-	tl.set(one("k-active"), { opacity: 0 }, 29.4);
+	d.lock(lockBurst, 30, { around: [counter, one("m-refused")], pad: 6 });
+	tl.addLabel("hero-lock", 30);
+	d.swap([one("r-head"), one("b-head"), lockBurst], one("x-head"), 33.4);
+	d.flip(one("k-active"), one("k-revoked"), 34.1);
+	tl.set(one("k-active"), { opacity: 0 }, 34.4);
 	// Cut: the claim.
 	hide(
 		[one("x-head"), one("meter"), counter, one("key"), one("k-revoked")],
-		33.0,
+		38.6,
 	);
-	word(one("z-big"), 33.4);
-	show(one("z-sub"), 33.8);
+	word(one("z-big"), 39);
+	show(one("z-sub"), 39.4);
 
 	// ——— next ———
-	tl.addLabel("next", 37.8);
-	hide(kids("claim"), 37.8);
-	d.close(37.8);
+	tl.addLabel("next", 44);
+	hide(kids("claim"), 44);
+	d.close(44);
 	return tl;
 }
 
