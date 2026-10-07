@@ -71,7 +71,8 @@ run() {
 	echo "$out"
 }
 
-CONFIGS="1440x900x1:en 1440x900x1:zh 390x844x2m:en 390x844x2m:zh"
+# FILM_AUDIT_CONFIGS narrows a run, e.g. to "1440x900x1:en" for a quick sweep.
+CONFIGS="${FILM_AUDIT_CONFIGS:-1440x900x1:en 1440x900x1:zh 390x844x2m:en 390x844x2m:zh}"
 
 stamp() {
 	local f="$WEB/src/features/learning/lessons/$1-film.tsx"

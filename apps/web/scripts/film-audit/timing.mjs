@@ -36,7 +36,9 @@ const out = await page.evaluate(() => {
 	const tweens = tl.getChildren(true, true, false);
 	const lines = [...svg.querySelectorAll("[data-f]")].filter((el) => {
 		const n = el.getAttribute("data-f");
-		return /-head$/.test(n) || ["q-line", "z-big", "z-sub"].includes(n);
+		return (
+			/-head$/.test(n) || ["q-big", "q-line", "z-big", "z-sub"].includes(n)
+		);
 	});
 	const textOf = (el) =>
 		el.querySelectorAll("tspan").length
@@ -92,7 +94,11 @@ const out = await page.evaluate(() => {
 					/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d+/g,
 					" ",
 				)
-				.match(/[-+]?\$[\d,.]+\d|\d[\d,.]*%/g) || [];
+				// Money, percentages and cents, and any other number standing as a word ("−4",
+				// "50,000,000"); not digits inside a name ("IV30") or a time ("10:05").
+				.match(
+					/[-+±]?\$[\d,.]*\d|\d[\d,.]*[%¢]|(?<![\w$.,:])[-+±]?\d[\d,.]*\d(?![\w%¢:])|(?<![\w$.,:])[-+±]?\d(?![\w%¢.,:])/g,
+				) || [];
 		if (!figs.length) continue;
 		tl.seek(r.show + 0.3, false);
 		const stage = [...svg.querySelectorAll("text")]
@@ -106,7 +112,7 @@ const out = await page.evaluate(() => {
 			})
 			.map((t) => norm(t.textContent));
 		for (const f of figs)
-			if (!stage.some((t) => t.includes(f.replace(/^[-+]/, ""))))
+			if (!stage.some((t) => t.includes(f.replace(/^[-+±]/, ""))))
 				stated.push(
 					`${r.name} at ${r.show.toFixed(2)} states ${f} before the stage shows it`,
 				);
@@ -138,6 +144,59 @@ const out = await page.evaluate(() => {
 					`${a.name} and ${b.name} share their place for ${both.toFixed(2)} s at ${Math.max(a.from, b.from).toFixed(2)}`,
 				);
 		}
+	// The hero's lock: exactly one glowing bracket, at full strength within 0.5 s of the
+	// hero-lock label and held there at least 1 s.
+	const glows = [...svg.querySelectorAll(".wt-film-lock[data-glow]")];
+	const hero = tl.labels["hero-lock"];
+	const glow = { count: glows.length, on: null, held: 0 };
+	if (hero !== undefined && glows.length) {
+		const strong = (t) => {
+			tl.seek(t, false);
+			return glows.some((g) => alpha(g) >= 0.8);
+		};
+		for (let t = hero; t <= hero + 0.5; t += 0.05)
+			if (strong(t)) {
+				glow.on = t;
+				break;
+			}
+		if (glow.on !== null)
+			for (let t = glow.on; t <= duration; t += 0.05) {
+				if (!strong(t)) break;
+				glow.held = t - glow.on;
+			}
+	}
+	// Still spans: from the question to the last label, any stretch over 2 s in which no tween
+	// runs (the backdrop's slow drift aside, and sets, which are cuts rather than motion).
+	const runs = tweens
+		.filter((tw) => tw.duration() > 0.01 && tw.duration() < 10)
+		.map((tw) => [tw.startTime(), tw.startTime() + tw.duration()])
+		.sort((a, b) => a[0] - b[0]);
+	// The question shot and the closing claim are read standing still; measure between them.
+	const labels = Object.values(tl.labels).sort((a, b) => a - b);
+	const from =
+		labels.find((t) => t > (tl.labels.question ?? 2)) ??
+		tl.labels.question ??
+		2;
+	const claim = [...svg.querySelectorAll("[data-f]")].find((el) =>
+		/^(z|c|claim)-big$/.test(el.getAttribute("data-f")),
+	);
+	const claimAt = claim
+		? Math.min(
+				...tweens
+					.filter((tw) => tw.targets().includes(claim) && tw.startTime() > 0.05)
+					.map((tw) => tw.startTime()),
+			)
+		: Number.POSITIVE_INFINITY;
+	const to = Math.min(labels.at(-1) ?? duration, claimAt);
+	const still = [];
+	let reach = from;
+	for (const [a, b] of runs) {
+		if (b <= from) continue;
+		if (a >= to) break;
+		if (a - reach > 2) still.push([reach, a - reach]);
+		reach = Math.max(reach, b);
+	}
+	if (to - reach > 2) still.push([reach, to - reach]);
 	const bad = new Set();
 	for (let t = 0; t <= duration; t += 1) {
 		tl.seek(t, false);
@@ -148,6 +207,8 @@ const out = await page.evaluate(() => {
 	return {
 		duration,
 		heroLock: tl.labels["hero-lock"],
+		glow,
+		still,
 		rows,
 		badClasses: [...bad],
 		stacked,
@@ -172,7 +233,7 @@ const figures = (t) =>
 const fails = [];
 for (const r of out.rows) {
 	const head = /-head$/.test(r.name);
-	if ((head || r.name === "q-line") && r.hold < 3.5)
+	if ((head || r.name === "q-line" || r.name === "q-big") && r.hold < 3.5)
 		fails.push(`hold ${r.name} ${r.hold}s < 3.5`);
 	if (r.name === "z-big" && r.hold < 4) fails.push(`hold z-big ${r.hold}s < 4`);
 	if (
@@ -200,6 +261,16 @@ else {
 			`hero-lock at ${(pct * 100).toFixed(1)} % (${out.heroLock.toFixed(2)} s)`,
 		);
 }
+if (out.glow.count !== 1)
+	fails.push(`glow: ${out.glow.count} glowing locks (one, on the hero)`);
+else if (out.heroLock !== undefined && out.glow.on === null)
+	fails.push(
+		"glow: the glowing lock isn't at full strength within 0.5 s of hero-lock",
+	);
+else if (out.heroLock !== undefined && out.glow.held < 1)
+	fails.push(
+		`glow: the hero lock holds ${out.glow.held.toFixed(2)} s at full strength (< 1 s)`,
+	);
 for (const c of out.badClasses) fails.push(`class "${c}"`);
 for (const s of out.stacked) fails.push(`stacked: ${s}`);
 console.log(
@@ -209,7 +280,12 @@ console.log(
 		runtime: Math.round(play * 10) / 10,
 		heroLock: out.heroLock,
 		fails,
-		warnings: out.stated,
+		warnings: [
+			...out.stated,
+			...out.still.map(
+				([at, length]) => `still ${length.toFixed(1)} s at ${at.toFixed(1)}`,
+			),
+		],
 		rows: out.rows.map(
 			(r) => `${r.show.toFixed(2)} ${r.hold.toFixed(2)} ${r.name} ${r.text}`,
 		),

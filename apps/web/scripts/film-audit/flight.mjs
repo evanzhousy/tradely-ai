@@ -263,8 +263,27 @@ const hits = await page.evaluate((end) => {
 			// one it sets off from is where it was born.
 			const rest = restOf(f, time);
 			const born = restOf(f, time, true);
+			// Brackets locked round where it was born are its starting place too: it leaves
+			// through them.
+			const round = (m) => {
+				if (!m.classList.contains("wt-film-lock")) return false;
+				const r = m.getBoundingClientRect();
+				return born.some(
+					(q) =>
+						q.l >= r.left - 2 &&
+						q.r <= r.right + 2 &&
+						q.t >= r.top - 2 &&
+						q.b <= r.bottom + 2,
+				);
+			};
 			for (const m of marks) {
-				if (m.closest("text") || strikes(rest, m) || strikes(born, m)) continue;
+				if (
+					m.closest("text") ||
+					strikes(rest, m) ||
+					strikes(born, m) ||
+					round(m)
+				)
+					continue;
 				if (strikes(fb, m)) add(`mark ${a.slice(0, 18)} × ${name(m)}`, time);
 			}
 		}
