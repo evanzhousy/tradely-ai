@@ -25,19 +25,21 @@ import {
  * date, and the symbol is built part by part: the underlying, the expiry, call or put, the
  * strike; change the date and it is a different contract. Then units: a $4.20 quote is
  * per share, one contract is 100 shares, three are $1,260 of premium. The hero: the 300
- * shares light up block by block as their notional counts to $30,000, against the $1,260
- * paid. Last, a price belongs to a time: $4.20 at 10:30, $4.90 at 15:59.
+ * shares light up block by block as their notional counts to $30,000, and the $1,260
+ * paid comes back beside it: 4.2% of it. Last, a price belongs to a time: the same call,
+ * its clock run from 10:30 to 15:59, goes from $4.20 to $4.90.
  *
  *   open      0–4        "Option contracts"
  *   question  4–8.8      Oct 18 100 call, Nov 15 100 call: the same contract?
  *   symbol    8.8–17.2   ALFA · 301018 · C · 00100000; Nov 15 changes it
- *   units     17.2–31.8  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000
- *   time      31.8–36.2  10:30 $4.20; 15:59 $4.90
- *   claim     36.2–40.5  name the contract, count the shares, stamp the time
- *   next      40.5–43    Next: holders and writers
+ *   units     17.2–32.4  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000; you
+ *                        pay 4.2% of it
+ *   time      32.4–38    10:30 $4.20 → 15:59 $4.90
+ *   claim     38–42.4    name the contract, count the shares, stamp the time
+ *   next      42.4–44.9  Next: holders and writers
  */
 
-const END = 43;
+const END = 44.9;
 const PARTS = ["root", "date", "right", "strike"] as const;
 const OCT = symbolParts(call100);
 const NOV = symbolParts({ ...call100, expiry: "nov15" });
@@ -51,8 +53,8 @@ function layout(width: number) {
 	const chars = 21;
 	const sym = Math.min(T.title * 1.1, room / (chars * 0.62));
 	const symW = sym * 0.6;
-	const dot = narrow ? 2.4 : 3.2;
-	const gap = narrow ? 6.2 : 8.5;
+	const dot = narrow ? 3 : 3.2;
+	const gap = narrow ? 7.5 : 8.5;
 	const block = gap * 10;
 	return {
 		...frame,
@@ -63,12 +65,12 @@ function layout(width: number) {
 		dot,
 		gap,
 		block,
-		gridY: H * (narrow ? 0.38 : 0.34),
+		gridY: H * (narrow ? 0.36 : 0.34),
 		blockX: (i: number) =>
 			width / 2 -
 			(THREE * block + (THREE - 1) * block * 0.3) / 2 +
 			i * block * 1.3,
-		timeY: H * 0.32,
+		timeY: H * (narrow ? 0.38 : 0.32),
 	};
 }
 
@@ -117,6 +119,10 @@ const copy = {
 	],
 	premium: ["premium", "权利金"],
 	notional: ["notional · not what you pay", "名义价值 · 不是你付的钱"],
+	share: [
+		`you pay ${(((ASK * THREE * 100) / (THREE * 100 * SPOT * 100)) * 100).toFixed(1)}% of it`,
+		`你只付其中的 ${(((ASK * THREE * 100) / (THREE * 100 * SPOT * 100)) * 100).toFixed(1)}%`,
+	],
 	shares: ["shares", "股"],
 	timeHead: [
 		"Same contract, two times, two prices.",
@@ -183,7 +189,7 @@ function Scene({
 	// A phone's rows leave room for the notional's brackets under the premium.
 	const figRowY = (row: number) => figY + row * T.num * (narrow ? 2.3 : 1.9);
 	const figSize = (row: number) =>
-		(narrow ? T.small * 1.25 : T.num * 0.8) * (row ? 1.3 : 1);
+		narrow ? T.head * (row ? 1.25 : 0.95) : T.num * 0.8 * (row ? 1.3 : 1);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -389,6 +395,15 @@ function Scene({
 				</g>
 			))}
 
+			<Word
+				name="f-share"
+				x={figX()}
+				y={figRowY(1) + figSize(1) * 1.35 + T.body * 2.3}
+				size={T.body}
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.share)}
+			</Word>
 			<Brackets name="lock-notional" glow />
 
 			{/* One contract, two observations. */}
@@ -400,15 +415,17 @@ function Scene({
 					return (
 						<g key={key} data-f={`obs-${key}`}>
 							<text
+								data-f={`obs-${key}-time`}
 								x={x}
 								y={L.timeY}
 								textAnchor="middle"
-								className="wt-film-tag"
-								style={{ fontSize: T.small }}
+								className="wt-film-num wt-film-dim"
+								style={{ fontSize: T.body * 1.2 }}
 							>
 								{o.time}
 							</text>
 							<text
+								data-f={`obs-${key}-ask`}
 								x={x}
 								y={L.timeY + T.big * 1.05}
 								textAnchor="middle"
@@ -418,6 +435,7 @@ function Scene({
 								{usd(o.ask)}
 							</text>
 							<text
+								data-f={`obs-${key}-sub`}
 								x={x}
 								y={L.timeY + T.big * 1.05 + T.body * 2}
 								textAnchor="middle"
@@ -506,6 +524,7 @@ function build(context: FilmContext) {
 		one("f-one"),
 		one("f-three"),
 		one("f-notional"),
+		one("f-share"),
 		g("lock-notional"),
 		one("obs-morning"),
 		one("obs-close"),
@@ -598,9 +617,12 @@ function build(context: FilmContext) {
 	d.lock(g("lock-notional"), 28.3, { around: g("f-notional"), pad: 8 });
 	tl.addLabel("hero-lock", 28.3);
 	show(heads[6], 28.3);
+	// After the lock: what you pay comes back beside what it controls.
+	tl.to(one("f-three"), { opacity: 1, duration: 0.4 }, 28.8);
+	show(one("f-share"), 28.9);
 
 	// ——— time: a price is an observation ———
-	tl.addLabel("time", 31.8);
+	tl.addLabel("time", 32.4);
 	hide(
 		[
 			heads[4],
@@ -609,24 +631,49 @@ function build(context: FilmContext) {
 			one("u-shares-3"),
 			one("f-three"),
 			one("f-notional"),
+			one("f-share"),
 			g("lock-notional"),
 		],
-		31.8,
+		32.4,
 	);
-	show(heads[5], 32.15);
-	show(one("obs-morning"), 32.4);
-	show(one("obs-close"), 33.4);
+	show(heads[5], 32.75);
+	show(one("obs-morning"), 33.0);
+	// The same call later: its clock, its ask and ALFA run on together; the morning stays.
+	const [am, pm] = [observations.morning, observations.close];
+	const minutes = (v: number) =>
+		`${String(Math.floor(v / 60)).padStart(2, "0")}:${String(Math.round(v) % 60).padStart(2, "0")}`;
+	// The later slot starts on the morning's values, then runs on.
+	const at = (
+		el: string,
+		to: number,
+		from: number,
+		format: (v: number) => string,
+	) => {
+		d.count(one<SVGTextElement>(el), from, 33.95, format, from, 0.01);
+		d.count(one<SVGTextElement>(el), to, 34.3, format, from, 1.5);
+	};
+	show(one("obs-close"), 34.0);
+	tl.to(one("obs-morning"), { opacity: 0.45, duration: 0.4 }, 34.0);
+	at("obs-close-time", pm.at, am.at, minutes);
+	at("obs-close-ask", pm.ask, am.ask, (v) => usd(Math.round(v)));
+	at(
+		"obs-close-sub",
+		pm.spot,
+		am.spot,
+		(v) =>
+			`${pick(copy.ask, context.locale)} · ${pick(copy.alfaAt, context.locale)} ${usd(Math.round(v))}`,
+	);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.2);
-	hide([heads[5], one("obs-morning"), one("obs-close")], 36.2);
-	word(one("z-big"), 36.5);
-	show(one("z-sub"), 36.9);
+	tl.addLabel("claim", 38.0);
+	hide([heads[5], one("obs-morning"), one("obs-close")], 38.0);
+	word(one("z-big"), 38.3);
+	show(one("z-sub"), 38.7);
 
 	// ——— next ———
-	tl.addLabel("next", 40.5);
-	hide(kids("claim"), 40.5);
-	d.close(40.5);
+	tl.addLabel("next", 42.4);
+	hide(kids("claim"), 42.4);
+	d.close(42.4);
 	return tl;
 }
 
