@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -44,16 +45,17 @@ import {
  * same wings can carry. Last, the cells with no quote: interpolate between quotes, never
  * past them.
  *
- *   open       0–4      "The volatility surface"
- *   question   4–9.5    "ALFA's IV: 35%", struck out: which strike, which expiry?
- *   grid       9.5–19.5  the grid; a row, the skew; a column, the term structure
- *   wings      19.5–31  the Oct 18 smile, ATM 35%, the 25Δ put and call; cut: +2.8 or −2.8
- *   estimates  31–43    no quote in three cells; interpolate one, leave two blank;
- *                       cut: "A surface, not a number."
- *   next       43–45.5  Next: IV rank and IV percentile
+ *   open       0–4        "The volatility surface"
+ *   question   4–9.6      "ALFA's IV: 35%", struck out: which strike, which expiry?
+ *   grid       9.6–19.8   the grid; a row, the skew; a column, the term structure
+ *   wings      19.8–32    the Oct 18 smile, ATM 35%, the 25Δ put and call, not the same
+ *                         distance; hero: cut to +2.8 or −2.8, locked
+ *   estimates  32–39.4    no quote in three cells; interpolate between quotes, never past
+ *   claim      39.4–43.8  "A surface, not a number."
+ *   next       43.8–46.3  Next: IV rank and IV percentile
  */
 
-const END = 45.5;
+const END = 46.3;
 const IV_LOW = 29;
 const IV_HIGH = 37;
 const SMILE_X = [85, 115] as const;
@@ -81,10 +83,13 @@ function layout(width: number) {
 	const cellsLeft = left - (narrow ? 22 : 30) + labelWidth;
 	const cellWidth = (right - cellsLeft) / STRIKES.length;
 	const rowHeight = (bottom - top) / EXPIRIES.length;
-	const smileTop = height * (narrow ? 0.3 : 0.22);
+	// On a phone the smile's IV labels need room left of its axis.
+	const smileLeft = left + (narrow ? 22 : 0);
+	const smileTop = height * (narrow ? 0.3 : 0.25);
 	const smileBottom = height * 0.8;
 	const xS = (strike: number) =>
-		left + ((strike - SMILE_X[0]) / (SMILE_X[1] - SMILE_X[0])) * (right - left);
+		smileLeft +
+		((strike - SMILE_X[0]) / (SMILE_X[1] - SMILE_X[0])) * (right - smileLeft);
 	const yS = (iv: number) =>
 		smileBottom -
 		((iv - SMILE_Y[0]) / (SMILE_Y[1] - SMILE_Y[0])) * (smileBottom - smileTop);
@@ -100,6 +105,7 @@ function layout(width: number) {
 		rowHeight,
 		cellX: (col: number) => cellsLeft + cellWidth * col,
 		cellY: (row: number) => top + rowHeight * row,
+		smileLeft,
 		smileTop,
 		smileBottom,
 		xS,
@@ -122,19 +128,11 @@ const copy = {
 		"每个行权价、每个到期日各一个 IV。",
 	],
 	gridHeadShort: ["One IV per strike and expiry.", "每格一个 IV。"],
-	rowHead: [
-		`Across a row, the skew: ${ivPoints("oct18", 90)}% at $90, ${ivPoints("oct18", 110)}% at $110.`,
-		`横向是偏斜：$90 为 ${ivPoints("oct18", 90)}%，$110 为 ${ivPoints("oct18", 110)}%。`,
-	],
-	rowHeadShort: [
-		`A row is the skew: ${ivPoints("oct18", 90)}% → ${ivPoints("oct18", 110)}%.`,
-		`横向是偏斜：${ivPoints("oct18", 90)}% → ${ivPoints("oct18", 110)}%。`,
-	],
+	rowHead: ["A row across strikes is the skew.", "横向（各行权价）是偏斜。"],
 	colHead: [
-		"Down a column, the term structure, highest across earnings.",
-		"纵向是期限结构，跨越财报处最高。",
+		"Down a column: the term structure.",
+		"纵向（各到期日）是期限结构。",
 	],
-	colHeadShort: ["A column: the term structure.", "纵向是期限结构。"],
 	strike: ["strike", "行权价"],
 	expiry: ["expiry", "到期日"],
 	earnings: ["earnings Oct 3", "10月3日 财报"],
@@ -144,12 +142,8 @@ const copy = {
 	],
 	wingsHeadShort: ["Wings are picked by delta.", "两翼按 Delta 选取。"],
 	distanceHead: [
-		`$${(100 - PUT_WING).toFixed(2)} below, $${(CALL_WING - 100).toFixed(2)} above: not the same distance.`,
-		`下方 $${(100 - PUT_WING).toFixed(2)}，上方 $${(CALL_WING - 100).toFixed(2)}：距离并不相同。`,
-	],
-	distanceHeadShort: [
-		`$${(100 - PUT_WING).toFixed(2)} below, $${(CALL_WING - 100).toFixed(2)} above.`,
-		`下方 $${(100 - PUT_WING).toFixed(2)}，上方 $${(CALL_WING - 100).toFixed(2)}。`,
+		"Not the same distance from $100.",
+		"离 $100 的距离并不相同。",
 	],
 	smileAxis: ["Oct 18 implied volatility, model", "10月18日 隐含波动率，模型"],
 	strikeAxis: ["strike", "行权价"],
@@ -173,20 +167,14 @@ const copy = {
 	missingHead: ["Three cells have no usable quote.", "有三格没有可用报价。"],
 	missingHeadShort: ["Three cells have no quote.", "三格没有报价。"],
 	interpolateHead: [
-		"Between two quotes: interpolate, and mark it.",
-		"两个报价之间：插值，并标明。",
+		"Interpolate between quotes; never past them.",
+		"报价之间可插值；超出范围不行。",
 	],
-	interpolateHeadShort: ["Between quotes: interpolate.", "报价之间：插值。"],
-	edgeHead: [
-		"Past the last quote: leave it blank.",
-		"超出最后一个报价：留空。",
-	],
-	edgeHeadShort: ["Past the quotes: blank.", "超出报价：留空。"],
 	interpolated: ["interpolated", "插值"],
 	claimBig: ["A surface, not a number.", "是一个曲面，不是一个数。"],
 	claimSub: [
-		"Name the strike, the expiry and the convention, and mark what's estimated.",
-		"说明行权价、到期日和约定，并标出哪些是估计值。",
+		"Name the strike, expiry and convention; mark estimates.",
+		"说明行权价、到期日和约定；标出估计值。",
 	],
 	nextBig: ["Next: IV rank and IV percentile", "下一课：IV Rank 与 IV 百分位"],
 	nextSub: [
@@ -230,7 +218,13 @@ function Scene({
 			<defs>
 				<Hatch id={`hatch-${id}`} />
 				<clipPath id={`smile-${id}`}>
-					<rect data-f="smile-clip" x={L.left - 4} y={0} width={0} height={H} />
+					<rect
+						data-f="smile-clip"
+						x={L.smileLeft - 4}
+						y={0}
+						width={0}
+						height={H}
+					/>
 				</clipPath>
 			</defs>
 
@@ -375,11 +369,11 @@ function Scene({
 						{[32, 34, 36, 38].map((tick) => (
 							<g key={tick}>
 								<path
-									d={`M${L.left} ${L.yS(tick)}H${L.right}`}
+									d={`M${L.smileLeft} ${L.yS(tick)}H${L.right}`}
 									className="wt-grid"
 								/>
 								<text
-									x={L.left - 8}
+									x={L.smileLeft - 8}
 									y={L.yS(tick) + 4}
 									textAnchor="end"
 									className="wt-small"
@@ -399,7 +393,7 @@ function Scene({
 								{`$${tick}`}
 							</text>
 						))}
-						<text x={L.left} y={L.smileTop - 12} className="wt-small">
+						<text x={L.smileLeft} y={L.smileTop - 12} className="wt-small">
 							{t(copy.smileAxis)}
 						</text>
 						<g clipPath={`url(#smile-${id})`}>
@@ -427,7 +421,8 @@ function Scene({
 									CALL_IV,
 									copy.callWing,
 									copy.callWingShort,
-									narrow ? "below-left" : "below-right",
+									// The curve falls to the right: label the call above it.
+									narrow ? "below-left" : "above-right",
 								],
 							] as const
 						).map(([name, strike, iv, label, short, side]) => (
@@ -492,10 +487,37 @@ function Scene({
 				/>
 			</g>
 			{headline("g-head", copy.gridHead, copy.gridHeadShort)}
-			{headline("r-head", copy.rowHead, copy.rowHeadShort)}
-			{headline("c-head", copy.colHead, copy.colHeadShort)}
+			{headline("r-head", copy.rowHead, copy.rowHead)}
+			{/* Each answer, a line under its headline, as the stage makes it. */}
+			<Lines
+				name="c-head"
+				text={t(copy.colHead)}
+				x={L.margin}
+				y={L.headY + lineCount(t(copy.rowHead), room, T.head) * T.head * 1.35}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{headline("w-head", copy.wingsHead, copy.wingsHeadShort)}
-			{headline("d-head", copy.distanceHead, copy.distanceHeadShort)}
+			<Lines
+				name="d-head"
+				text={t(copy.distanceHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.wingsHeadShort : copy.wingsHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Brackets name="lock-signs" glow />
 			<g data-f="s">
 				{(
 					[
@@ -535,8 +557,24 @@ function Scene({
 				/>
 			</g>
 			{headline("m-head", copy.missingHead, copy.missingHeadShort)}
-			{headline("i-head", copy.interpolateHead, copy.interpolateHeadShort)}
-			{headline("e-head", copy.edgeHead, copy.edgeHeadShort)}
+			<Lines
+				name="i-head"
+				text={t(copy.interpolateHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.missingHeadShort : copy.missingHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -574,7 +612,16 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
+	const lockSigns = one<SVGGraphicsElement>("lock-signs");
 	const cells = EXPIRIES.flatMap((_, row) =>
 		STRIKES.map((_, col) => ({ row, col, el: one(`g-cell-${row}-${col}`) })),
 	);
@@ -589,7 +636,6 @@ function build(context: FilmContext) {
 		"d-head",
 		"m-head",
 		"i-head",
-		"e-head",
 	].map((name) => one(name));
 
 	gsap.set(charts.smile, { opacity: 0 });
@@ -613,6 +659,7 @@ function build(context: FilmContext) {
 		]),
 		...kids("q"),
 		...heads,
+		lockSigns,
 		...kids("s").flatMap((el) =>
 			el.tagName === "g" ? [...el.children] : [el],
 		),
@@ -626,21 +673,21 @@ function build(context: FilmContext) {
 	// ——— question: one number for a stock? ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	slam(one("q-big"), 4.8);
+	land(one("q-big"), 4.8);
 	tl.fromTo(
 		one("q-strike"),
 		{ opacity: 1, scaleX: 0, transformOrigin: "0% 50%" },
 		{ scaleX: 1, duration: 0.45, ease: "power2.out" },
-		6.0,
+		5.4,
 	);
-	tl.to(one("q-big"), { opacity: 0.45, duration: 0.4 }, 6.2);
-	show(one("q-line"), 6.6);
+	tl.to(one("q-big"), { opacity: 0.45, duration: 0.4 }, 5.6);
+	show(one("q-line"), 6.0);
 
 	// ——— grid: one IV per strike and expiry ———
-	tl.addLabel("grid", 9.5);
-	hide(kids("q"), 9.5);
-	show(one("g-head"), 9.7, "above");
-	rise(9.8);
+	tl.addLabel("grid", 9.6);
+	hide(kids("q"), 9.6);
+	show(one("g-head"), 9.8);
+	rise(9.9);
 	show(
 		STRIKES.map((_, col) => one(`g-col-${col}`)),
 		10.3,
@@ -657,54 +704,54 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			cell.el,
 			{ opacity: 0, scale: 0.6 },
-			{ opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.8)" },
+			{ opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" },
 			10.8 + (cell.row + cell.col) * 0.07,
 		);
 	// A row: the skew.
-	d.swap(one("g-head"), one("r-head"), 12.9);
+	d.swap(one("g-head"), one("r-head"), 13.4);
 	tl.to(
 		cells.filter((cell) => cell.row !== OCT18).map((cell) => cell.el),
 		{ opacity: 0.25, duration: 0.4 },
-		13.1,
+		13.6,
 	);
-	show(one("g-row-frame"), 13.3, "right", 0.4);
+	show(one("g-row-frame"), 13.8, "right", 0.4);
 	// A column: the term structure, and the earnings between the rows.
-	d.swap(one("r-head"), one("c-head"), 15.6);
 	tl.to(
 		cells.map((cell) => cell.el),
 		{ opacity: (i) => (cells[i].col === ATM ? 1 : 0.25), duration: 0.4 },
-		15.8,
+		16.0,
 	);
-	tl.to(one("g-row-frame"), { opacity: 0, duration: 0.3 }, 15.8);
-	show(one("g-col-frame"), 16.0, "below", 0.4);
-	show(one("g-earnings"), 16.8, "right", 0.4);
+	tl.to(one("g-row-frame"), { opacity: 0, duration: 0.3 }, 16.0);
+	show(one("g-col-frame"), 16.2, "below", 0.4);
+	show(one("c-head"), 16.2);
+	show(one("g-earnings"), 17.0, "right", 0.4);
 
 	// ——— wings: the Oct 18 smile ———
-	tl.addLabel("wings", 19.5);
-	hide(one("c-head"), 19.5);
-	sink(19.5);
-	tl.set(charts.grid, { opacity: 0 }, 19.9);
-	tl.set(charts.smile, { opacity: 1 }, 19.9);
-	show(one("w-head"), 20.0, "above");
-	rise(20.1);
+	tl.addLabel("wings", 19.8);
+	hide([one("r-head"), one("c-head")], 19.8);
+	sink(19.8);
+	tl.set(charts.grid, { opacity: 0 }, 20.1);
+	tl.set(charts.smile, { opacity: 1 }, 20.1);
+	show(one("w-head"), 20.15);
+	rise(20.2);
 	tl.to(
 		one("smile-clip"),
 		{
-			attr: { width: L.right - L.left + 8 },
+			attr: { width: L.right - L.smileLeft + 8 },
 			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		20.7,
+		20.8,
 	);
 	for (const [i, name] of (["atm", "put", "call"] as const).entries()) {
-		const at = 21.8 + i * 0.7;
+		const at = 21.9 + i * 0.7;
 		tl.fromTo(
 			one(`w-drop-${name}`),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.3 },
 			at,
 		);
-		pop(one(`w-dot-${name}`), at, 0.4);
+		land(one(`w-dot-${name}`), at);
 		show(
 			one(`w-label-${name}`),
 			at + 0.2,
@@ -712,75 +759,84 @@ function build(context: FilmContext) {
 			0.4,
 		);
 	}
-	d.swap(one("w-head"), one("d-head"), 24.2);
-	// Cut: the signs.
-	hide(one("d-head"), 26.4);
-	sink(26.4);
-	show(one("s-tag-0"), 26.8);
-	slam(one("s-num-0"), 27.0);
-	show(one("s-tag-1"), 27.6);
-	slam(one("s-num-1"), 27.8);
-	show(one("s-line"), 28.8);
+	show(one("d-head"), 23.8);
+	// Cut: the signs the same wings can carry, locked.
+	hide([one("w-head"), one("d-head")], 27.4);
+	sink(27.4);
+	show(one("s-tag-0"), 27.8);
+	land(one("s-num-0"), 28.0);
+	show(one("s-tag-1"), 28.6);
+	land(one("s-num-1"), 28.8);
+	d.lock(lockSigns, 29.5, {
+		around: [one("s-tag-0"), one("s-num-0"), one("s-tag-1"), one("s-num-1")],
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 29.5);
+	show(one("s-line"), 29.8);
 
 	// ——— estimates: what the quotes don't cover ———
-	tl.addLabel("estimates", 31);
+	tl.addLabel("estimates", 32);
 	hide(
-		kids("s").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		31.0,
+		[
+			...kids("s").flatMap((el) =>
+				el.tagName === "g" ? [...el.children] : [el],
+			),
+			lockSigns,
+		],
+		32.0,
 	);
-	tl.set(charts.smile, { opacity: 0 }, 31.3);
-	tl.set(charts.grid, { opacity: 1 }, 31.3);
-	tl.set([one("g-col-frame"), one("g-earnings")], { opacity: 0 }, 31.3);
+	tl.set(charts.smile, { opacity: 0 }, 32.3);
+	tl.set(charts.grid, { opacity: 1 }, 32.3);
+	tl.set([one("g-col-frame"), one("g-earnings")], { opacity: 0 }, 32.3);
 	tl.set(
 		cells.map((cell) => cell.el),
 		{ opacity: 1 },
-		31.3,
+		32.3,
 	);
-	show(one("m-head"), 31.4, "above");
-	rise(31.5);
+	show(one("m-head"), 32.35);
+	rise(32.5);
 	for (const [i, cell] of missing.entries()) {
 		tl.to(
 			one(`g-value-${cell.row}-${cell.col}`),
 			{ opacity: 0, duration: 0.3 },
-			32.4 + i * 0.2,
+			33.4 + i * 0.2,
 		);
 		tl.to(
 			one(`g-missing-${cell.row}-${cell.col}`),
 			{ opacity: 1, duration: 0.4 },
-			32.4 + i * 0.2,
+			33.4 + i * 0.2,
 		);
 	}
-	d.swap(one("m-head"), one("i-head"), 34.4);
 	tl.to(
 		cells
 			.filter((cell) => !isMissing(cell.row, cell.col))
 			.map((cell) => cell.el),
 		{ opacity: 0.35, duration: 0.4 },
-		34.6,
+		35.0,
 	);
-	pop(one("g-estimate"), 35.0);
-	d.swap(one("i-head"), one("e-head"), 37.0);
+	land(one("g-estimate"), 35.4);
 	tl.fromTo(
 		edges.map((cell) => one(`g-missing-${cell.row}-${cell.col}`)),
 		{ scale: 1, transformOrigin: "50% 50%" },
 		{ scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" },
-		37.4,
+		35.8,
 	);
+	show(one("i-head"), 35.8);
 	// Cut: the claim.
-	hide(one("e-head"), 39.6);
-	sink(39.6);
+	hide([one("m-head"), one("i-head")], 39.4);
+	sink(39.4);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		40.0,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		39.7,
 	);
-	show(one("c-sub"), 40.5);
+	show(one("c-sub"), 40.1);
 
 	// ——— next ———
-	tl.addLabel("next", 43);
-	hide(kids("claim"), 43.0);
-	d.close(43.0);
+	tl.addLabel("next", 43.8);
+	hide(kids("claim"), 43.8);
+	d.close(43.8);
 	return tl;
 }
 
