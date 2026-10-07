@@ -49,12 +49,12 @@ import {
  *   question  4–8.6      four prints in one second: bullish or bearish?
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
  *   condor    18.2–30    hero: put spread and call spread; together; it sells a range
- *   package   30–37.6    four labels; a −$1,400 tally; one package
- *   claim     37.6–42    four prints, one trade
- *   next      42–44.5    Next: checking one trade
+ *   package   30–39      four labels; a −$1,400 tally; one package
+ *   claim     39–43.4    four prints, one trade
+ *   next      43.4–45.9  Next: checking one trade
  */
 
-const END = 44.5;
+const END = 45.9;
 const CENTS = (perShare: number) => Math.round(perShare * 100);
 /** Dollars a share as whole dollars a contract: "+$375", "−$283". */
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
@@ -709,24 +709,24 @@ function build(context: FilmContext) {
 	d.swap([heads[2], heads[3]], heads[4], 30.0);
 	d.sink(30.0);
 	legs.forEach((leg, i) => {
-		show(leg, 30.6 + i * 0.3, "right");
+		show(leg, 30.5 + i * 0.25, "right");
 	});
-	show(one("tally"), 32.2);
-	hide(one("tally"), 33.6, 0.3);
-	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 33.8);
-	show(one("pkg"), 34.0);
-	show(heads[5], 34.0);
+	show(one("tally"), 31.5);
+	hide(one("tally"), 35.0, 0.3);
+	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 35.2);
+	show(one("pkg"), 35.4);
+	show(heads[5], 35.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37.6);
-	hide([heads[4], heads[5], ...legs, one("pkg")], 37.6);
-	word(one("z-big"), 37.9);
-	show(one("z-sub"), 38.3);
+	tl.addLabel("claim", 39);
+	hide([heads[4], heads[5], ...legs, one("pkg")], 39);
+	word(one("z-big"), 39.3);
+	show(one("z-sub"), 39.7);
 
 	// ——— next ———
-	tl.addLabel("next", 42);
-	hide(kids("claim"), 42.0);
-	d.close(42.0);
+	tl.addLabel("next", 43.4);
+	hide(kids("claim"), 43.4);
+	d.close(43.4);
 	return tl;
 }
 
