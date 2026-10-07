@@ -88,10 +88,11 @@ function layout(width: number) {
 	).map((f) => height * f);
 	const T = frame.type;
 	const posY = rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95;
-	const equivY = posY + T.num * 0.45 + T.small * 1.6;
+	// The caption clears the locked figure's brackets by more than the arms' own width.
+	const equivY = posY + T.num * 0.45 + T.small * 2.2;
 	// On a phone the move's chip sits under the two positions, not between them.
 	const chipY = narrow ? equivY + T.num * 1.3 : posY - T.num * 0.35;
-	const payY = narrow ? chipY + T.num * 1.6 : equivY + T.num * 1.4;
+	const payY = narrow ? chipY + T.num * 1.45 : equivY + T.num * 1.1;
 	return {
 		...frame,
 		left,
@@ -921,29 +922,30 @@ function build(context: FilmContext) {
 	);
 	show(one("ch-equiv"), 28.3);
 	// The hero: your position's delta, counted, held, then locked; its inputs step back.
-	d.lock(lockPos, 28.7, { around: one("ch-pos-you"), pad: 6 });
+	d.lock(lockPos, 28.7, { around: one("ch-pos-you"), pad: 4 });
 	tl.addLabel("hero-lock", 28.7);
 	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 28.7);
 	// Ben: the same chain beside yours, the sign flipped.
-	hide(lockPos, 30.3, 0.3);
+	// The lock holds 2.6 s before the column makes room for Ben.
+	hide(lockPos, 31.3, 0.3);
 	tl.to(
 		[one("ch-op-you"), one("ch-pos-you"), one("ch-equiv")],
 		{ x: -L.side, duration: 0.6, ease: "power2.inOut" },
-		30.4,
+		31.4,
 	);
-	show(one("ch-op-ben"), 30.9);
-	land(one("ch-pos-ben"), 31.3);
-	show(one("ch-equiv-ben"), 31.6);
+	show(one("ch-op-ben"), 31.9);
+	land(one("ch-pos-ben"), 32.3);
+	show(one("ch-equiv-ben"), 32.6);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
-		31.3,
+		32.3,
 		shares,
 	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
-	show(one("ch-chip"), 32.0);
-	show(one("ch-usd-you"), 32.5);
-	show(one("ch-usd-ben"), 32.9);
+	show(one("ch-chip"), 33.0);
+	show(one("ch-usd-you"), 33.5);
+	show(one("ch-usd-ben"), 33.9);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 35.3);
