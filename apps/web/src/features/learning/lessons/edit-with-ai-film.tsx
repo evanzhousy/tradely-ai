@@ -30,13 +30,13 @@ import {
  *
  *   open      0–4        "Fork or write a recipe with AI"
  *   question  4–9.6      "Make this an ALFA report."
- *   scope     9.6–16.6   every block to re-check; bounded: one to review
- *   review    16.6–27.5  edit: Index GEX gone; undo; edit again, only Spotlight, locked
- *   save      27.5–38.5  unsaved; closed; saved; cut: the claim
- *   next      38.5–41    Next: connect your own AI agent
+ *   scope     9.6–17.7   every block to re-check; bounded: one to review
+ *   review    17.7–28.6  edit: Index GEX gone; undo; edit again, only Spotlight, locked
+ *   save      28.6–40.5  unsaved; closed; saved; cut: the claim
+ *   next      40.5–43    Next: connect your own AI agent
  */
 
-const END = 41;
+const END = 43;
 /** The states a block's status moves through, in the order the film uses them. */
 const SHOWN: readonly Status[] = [
 	"recheck",
@@ -601,52 +601,52 @@ function build(context: FilmContext) {
 		show(one(`blk-${id}`), 10.4 + i * 0.1);
 	});
 	set({}, every("recheck"), 11.1);
-	show(one("b-head"), 13.0);
-	d.flip(one("pr-vague"), one("pr-bounded"), 13.2);
-	tl.set(one("pr-vague"), { opacity: 0 }, 13.5);
+	show(one("b-head"), 13.7);
+	d.flip(one("pr-vague"), one("pr-bounded"), 13.9);
+	tl.set(one("pr-vague"), { opacity: 0 }, 14.2);
 	const bounded = { ...every("confirm"), spotlight: "review" } as const;
-	set(every("recheck"), bounded, 13.6);
-	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 13.9);
+	set(every("recheck"), bounded, 14.9);
+	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 15.2);
 
 	// ——— review: undo before the next edit ———
-	tl.addLabel("review", 16.6);
-	d.swap([one("v-head"), one("b-head")], one("e-head"), 16.6);
-	hide([one("bar"), one("pr-bounded")], 16.6);
+	tl.addLabel("review", 17.7);
+	d.swap([one("v-head"), one("b-head")], one("e-head"), 17.7);
+	hide([one("bar"), one("pr-bounded")], 17.7);
 	show(
 		flat("pills").filter(
 			(el) => !el.getAttribute("data-f")?.startsWith("pill-on"),
 		),
-		17.0,
+		18.1,
 	);
-	pill(1, true, 17.2);
+	pill(1, true, 18.3);
 	const edited = {
 		...every("same"),
 		spotlight: "changed",
 		gex: "removed",
 	} as const;
-	set(bounded, edited, 17.4);
-	tl.to(one("gone-gex"), { opacity: 1, duration: 0.3 }, 17.7);
+	set(bounded, edited, 18.5);
+	tl.to(one("gone-gex"), { opacity: 1, duration: 0.3 }, 18.8);
 	// Undo.
-	show(one("u-head"), 20.0);
-	pill(1, false, 20.2);
-	pill(2, true, 20.2);
-	set(edited, every("same"), 20.3);
+	show(one("u-head"), 21.1);
+	pill(1, false, 21.3);
+	pill(2, true, 21.3);
+	set(edited, every("same"), 21.4);
 	tl.to(
 		[one("gone-gex"), one("hl-spotlight")],
 		{ opacity: 0, duration: 0.3 },
-		20.3,
+		21.4,
 	);
 	// Ask again, bounded. The hero: one block changed, as asked.
-	d.swap([one("e-head"), one("u-head")], one("a-head"), 23.6);
-	pill(2, false, 24.0);
-	pill(3, true, 24.0);
-	set(every("same"), { ...every("same"), spotlight: "changed" }, 24.2);
-	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 24.5);
-	d.lock(lockSpotlight, 25.2, { around: one("blk-spotlight"), pad: 6 });
-	tl.addLabel("hero-lock", 25.2);
+	d.swap([one("e-head"), one("u-head")], one("a-head"), 24.7);
+	pill(2, false, 25.1);
+	pill(3, true, 25.1);
+	set(every("same"), { ...every("same"), spotlight: "changed" }, 25.3);
+	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 25.6);
+	d.lock(lockSpotlight, 26.3, { around: one("blk-spotlight"), pad: 6 });
+	tl.addLabel("hero-lock", 26.3);
 
 	// ——— save: a preview isn't a save ———
-	tl.addLabel("save", 27.5);
+	tl.addLabel("save", 28.6);
 	hide(
 		[
 			one("a-head"),
@@ -655,23 +655,23 @@ function build(context: FilmContext) {
 			...ids.flatMap((id) => [one(`blk-${id}`), one(`hl-${id}`)]),
 			...ids.map((id) => status(id, id === "spotlight" ? "changed" : "same")),
 		],
-		27.5,
+		28.6,
 	);
-	show(one("p-head"), 27.85, "above");
-	show([one("card-draft"), one("d-unsaved")], 28.1);
-	show([one("card-mine"), one("m-dash")], 28.4);
-	show([one("card-official"), one("o-line")], 28.7);
+	show(one("p-head"), 28.95, "above");
+	show([one("card-draft"), one("d-unsaved")], 29.2);
+	show([one("card-mine"), one("m-dash")], 29.5);
+	show([one("card-official"), one("o-line")], 29.8);
 	// Close the tab: the draft is gone.
-	d.flip(one("d-unsaved"), one("d-closed"), 29.0);
-	tl.set(one("d-unsaved"), { opacity: 0 }, 29.3);
-	d.flip(one("m-dash"), one("m-none"), 29.3);
-	tl.set(one("m-dash"), { opacity: 0 }, 29.6);
+	d.flip(one("d-unsaved"), one("d-closed"), 30.1);
+	tl.set(one("d-unsaved"), { opacity: 0 }, 30.4);
+	d.flip(one("m-dash"), one("m-none"), 30.4);
+	tl.set(one("m-dash"), { opacity: 0 }, 30.7);
 	// Or save.
-	show(one("s-head"), 30.4);
-	d.flip(one("d-closed"), one("d-saved"), 30.6);
-	tl.set(one("d-closed"), { opacity: 0 }, 30.9);
-	d.flip(one("m-none"), one("m-entry"), 30.9);
-	tl.set(one("m-none"), { opacity: 0 }, 31.2);
+	show(one("s-head"), 32.4);
+	d.flip(one("d-closed"), one("d-saved"), 32.6);
+	tl.set(one("d-closed"), { opacity: 0 }, 32.9);
+	d.flip(one("m-none"), one("m-entry"), 32.9);
+	tl.set(one("m-none"), { opacity: 0 }, 33.2);
 	// Cut: the claim.
 	hide(
 		[
@@ -684,15 +684,15 @@ function build(context: FilmContext) {
 			one("m-entry"),
 			one("o-line"),
 		],
-		34.0,
+		36,
 	);
-	word(one("z-big"), 34.4);
-	show(one("z-sub"), 34.8);
+	word(one("z-big"), 36.4);
+	show(one("z-sub"), 36.8);
 
 	// ——— next ———
-	tl.addLabel("next", 38.5);
-	hide(kids("claim"), 38.5);
-	d.close(38.5);
+	tl.addLabel("next", 40.5);
+	hide(kids("claim"), 40.5);
+	d.close(40.5);
 	return tl;
 }
 
