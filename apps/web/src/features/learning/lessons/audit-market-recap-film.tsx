@@ -548,7 +548,7 @@ function build(context: FilmContext) {
 		tl.to(
 			one(`claim-${i}-text`),
 			{ opacity: 0.4, duration: 0.3 },
-			23.0 + i * 0.3,
+			23.2 + i * 0.3,
 		);
 	});
 	fixes.forEach((fix, i) => {
