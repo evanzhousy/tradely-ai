@@ -894,8 +894,8 @@ function build(context: FilmContext) {
 		{ opacity: 0.35, duration: 0.4 },
 		36.95,
 	);
-	show(one("k-thin-be"), 37.1);
-	d.lock(g("lock-be"), 37.3, { around: g("k-thin-be"), pad: 5 });
+	show(one("k-thin-be"), 36.7);
+	d.lock(g("lock-be"), 36.9, { around: g("k-thin-be"), pad: 5 });
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.2);
