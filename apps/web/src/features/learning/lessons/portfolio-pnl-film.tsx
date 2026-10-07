@@ -55,7 +55,7 @@ import {
  *   account   10.4–19.7  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
  *                        buying power $36,799.20
  *   calls     19.7–31.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
- *                        and +$645 become +$975, locked; then the $75: 6 × 100 × (mid − bid)
+ *                        and +$645 become +$975, locked; then the $75, drawn: bid to mid
  *   short     31.7–43.8  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
  *                        cut: "P&L is what your positions earned."
  *   next      43.8–46.3  Next: performance
@@ -68,6 +68,9 @@ const BEN_Y = [-20_000, 6_000] as const;
 /** Where the expiry line leaves the chart's floor: past it, the loss goes on. */
 const OFF_FLOOR = 100 + (RECEIVED / 100 - BEN_Y[0]) / (BEN * 100);
 const fifo = split(SOLD, "fifo");
+/** What selling at the bid, not the mid, takes off: six contracts × $0.125 × 100. */
+const GAP = SOLD * (MARK - SALE) * 100;
+const GAP_EQ = `${price(MARK - SALE)} × ${SOLD} × 100 =`;
 const held = split(0, "fifo");
 const EARNED_FROM = valueOpen / 100;
 const STOCK_TO = EARNED_FROM + (stockClose - stockOpen) / 100;
@@ -182,10 +185,8 @@ const copy = {
 		`按中间价：${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
 	],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
-	gap: [
-		`${SOLD} × 100 × (mid ${price(MARK)} − bid ${price(SALE)}) = ${dollars(SOLD * (MARK - SALE) * 100)}`,
-		`${SOLD} × 100 × (中间价 ${price(MARK)} − 买价 ${price(SALE)}) = ${dollars(SOLD * (MARK - SALE) * 100)}`,
-	],
+	bid: ["bid", "买价"],
+	mid: ["mid", "中间价"],
 	bpNote: [
 		`2 × cash ${dollars(buyingPower / 2)}`,
 		`现金 ${dollars(buyingPower / 2)} × 2`,
@@ -261,6 +262,14 @@ function Scene({
 		Math.min(T.big, (W * share) / (text.length * 0.62));
 	const x0 = L.ax(EARNED_FROM);
 	/** Where the total's second part lands: right of the first, past a "+". */
+	// The drawn gap, under the mid line.
+	const gapText = narrow ? T.small * 1.15 : T.body;
+	const gapHalf = room * (narrow ? 0.14 : 0.08);
+	const gapY = H * 0.3 + T.big * 1.05 + T.body * 6.2;
+	const eqX =
+		W / 2 -
+		(textWidth(GAP_EQ, gapText) + 8 + textWidth(dollars(GAP), gapText * 1.3)) /
+			2;
 	const partX =
 		W / 2 + textWidth(signed(fifo.realized), T.big) / 2 + T.num * 1.4;
 	const x1 = L.ax(CLOSE_TO);
@@ -575,9 +584,9 @@ function Scene({
 					text={t(copy.qLine)}
 					x={W / 2}
 					y={H * 0.8}
-					size={T.body}
+					size={T.head}
 					maxWidth={room}
-					className="wt-film-type wt-film-dim"
+					className="wt-film-type"
 				/>
 			</g>
 			{headline("a-head", copy.mondayHead, copy.mondayHeadShort)}
@@ -708,15 +717,52 @@ function Scene({
 				>
 					{t(copy.marked)}
 				</Word>
-				<Word
-					name="t-gap"
-					x={W / 2}
-					y={H * 0.3 + T.big * 1.05 + T.body * 5.7}
-					size={narrow ? T.small * 1.1 : T.body}
-					className="wt-film-num"
+			</g>
+			{/* The $75, drawn: the bid and the mid as the two ends of a gap, then what six
+			    contracts of it come to. */}
+			<g data-f="gapdraw">
+				<path
+					data-f="gap-rule"
+					d={`M${W / 2 - gapHalf} ${gapY - 6}V${gapY + 6}M${W / 2 - gapHalf} ${gapY}H${W / 2 + gapHalf}M${W / 2 + gapHalf} ${gapY - 6}V${gapY + 6}`}
+					className="wt-film-gap"
+				/>
+				<text
+					data-f="gap-bid"
+					x={W / 2 - gapHalf - 10}
+					y={gapY + gapText * 0.36}
+					textAnchor="end"
+					className="wt-film-num wt-film-dim"
+					style={{ fontSize: gapText }}
 				>
-					{t(copy.gap)}
-				</Word>
+					{`${t(copy.bid)} ${price(SALE)}`}
+				</text>
+				<text
+					data-f="gap-mid"
+					x={W / 2 + gapHalf + 10}
+					y={gapY + gapText * 0.36}
+					className="wt-film-num wt-film-dim"
+					style={{ fontSize: gapText }}
+				>
+					{`${t(copy.mid)} ${price(MARK)}`}
+				</text>
+				<text
+					data-f="gap-eq"
+					x={eqX}
+					y={gapY + gapText * 2.6}
+					className="wt-film-num wt-film-dim"
+					style={{ fontSize: gapText }}
+				>
+					{GAP_EQ}
+				</text>
+				<text
+					data-f="gap-n"
+					x={eqX + textWidth(GAP_EQ, gapText) + 8}
+					y={gapY + gapText * 2.6}
+					className="wt-film-num wt-film-loss"
+					style={{ fontSize: gapText * 1.3 }}
+				>
+					{dollars(GAP)}
+				</text>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
 			{headline("x-head", copy.expiryHead, copy.expiryHeadShort)}
@@ -823,6 +869,7 @@ function build(context: FilmContext) {
 		realized,
 		unrealized,
 		...flat("total"),
+		...kids("gapdraw").filter((el) => el.tagName === "text"),
 		lockTotal,
 		...kids("claim"),
 	]);
@@ -925,12 +972,34 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 27.5);
 	show(one("t-head"), 27.5);
-	// After the lock: the $75, made from the two prices.
-	show(one("t-gap"), 28.15, "below");
+	// After the lock: the $75, drawn. The bid and the mid are the ends of a gap; six
+	// contracts of it come to $75.
+	d.trace(one<SVGPathElement>("gap-rule"), 28.0, { duration: 0.45 });
+	show(one("gap-bid"), 28.0);
+	show(one("gap-mid"), 28.3);
+	show(one("gap-eq"), 28.75);
+	tl.set(one("gap-n"), { opacity: 1 }, 28.95);
+	d.count(
+		one<SVGTextElement>("gap-n"),
+		GAP,
+		28.95,
+		(v) => dollars(Math.round(v / 100) * 100),
+		0,
+		0.5,
+	);
 
 	// ——— short: the other side of the same calls ———
 	tl.addLabel("short", 31.7);
-	hide([...flat("total"), lockTotal, one("l-head"), one("t-head")], 31.7);
+	hide(
+		[
+			...flat("total"),
+			...kids("gapdraw"),
+			lockTotal,
+			one("l-head"),
+			one("t-head"),
+		],
+		31.7,
+	);
 	tl.set(one("acct"), { opacity: 0 }, 31.8);
 	tl.set(one("ben"), { opacity: 1 }, 31.8);
 	show(one("b-head"), 32.05, "above");
