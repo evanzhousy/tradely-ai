@@ -33,6 +33,7 @@ import {
 	gammaOf,
 	hedgeAfter,
 	hedgeBefore,
+	hedgeFixed,
 	MOVE,
 	model,
 	NEW_DELTA,
@@ -58,15 +59,17 @@ import {
  *
  *   open      0–4        "Gamma" wipes on and becomes the corner tag
  *   question  4–9.4      delta 0.52 → ? if ALFA rises $2
- *   curve     9.4–22.8   the delta curve; push in; +$2 along, +0.08 up; cut to 0.04, "gamma"
- *   hedge     22.8–36.8  hero: your hedge drifts +128 and you sell; Ben's, in its place,
- *                        drifts −80 and he buys
- *   expiry    36.8–45.4  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
+ *   curve     9.4–22.8   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
+ *                        0.04, "gamma"
+ *   hedge     22.8–34    you and Ben, one under the other; ALFA +$2 once; hero: your
+ *                        hedge drifts +128, locked, and you sell to flat; Ben's drifts −80
+ *                        and he buys
+ *   expiry    34–43.4    gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
  *                        the strike."
- *   next      45.4–47.4  Next: theta, vega and rho
+ *   next      43.4–45.4  Next: theta, vega and rho
  */
 
-const END = 47.4;
+const END = 45.4;
 const DELTA_TOP = 1.15;
 const GAMMA_TOP = 0.13;
 const deltaAt = (spot: number) => model(OCT_100_CALL, spot).delta;
@@ -152,6 +155,9 @@ const copy = {
 	priceAxis: ["ALFA price today", "ALFA 今天的价格"],
 	gammaWord: ["gamma", "gamma"],
 	gammaSub: ["delta's change per $1 of ALFA", "ALFA 每变动 $1，Delta 的变化"],
+	curveHead: ["Delta climbs as ALFA rises.", "ALFA 上涨，Delta 随之上升。"],
+	colCallsShort: ["delta", "Delta"],
+	colSharesShort: ["shares", "股票"],
 	hedgeHead: ["Gamma moves the hedge.", "Gamma 会推动对冲。"],
 	hedgeClaim: [
 		"Long gamma sells a rise; short gamma buys.",
@@ -180,9 +186,9 @@ const copy = {
 	],
 	expiryHeadShort: ["Near expiry, gamma gathers.", "临近到期，Gamma 聚集。"],
 	octLabel: [`Oct 18 · ${DAYS} days`, `10月18日 · ${DAYS} 天`],
-	octShort: ["Oct 18", "10月18日"],
+	octShort: [`${DAYS} days`, `${DAYS} 天`],
 	sepLabel: [`Sep 20 · ${SEP_DAYS} days`, `9月20日 · ${SEP_DAYS} 天`],
-	sepShort: ["Sep 20", "9月20日"],
+	sepShort: [`${SEP_DAYS} days`, `${SEP_DAYS} 天`],
 	claimBig: ["Gamma lives near the strike.", "Gamma 集中在行权价。"],
 	claimSub: [
 		"Sharper near expiry; gone a few dollars away.",
@@ -272,11 +278,10 @@ function Scene({
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
 	const hedgeRows = {
-		who: H * 0.3,
-		labels: H * 0.42,
-		numbers: H * 0.53,
-		chip: H * 0.66,
-		trade: H * 0.79,
+		chip: H * (narrow ? 0.27 : 0.28),
+		labels: H * 0.36,
+		you: H * (narrow ? 0.49 : 0.5),
+		ben: H * (narrow ? 0.68 : 0.69),
 	};
 	const column = (values: readonly number[], who: "you" | "ben") =>
 		values.map((value, i) => (
@@ -284,7 +289,7 @@ function Scene({
 				key={L.columns[i]}
 				name={`h-${who}-${i}`}
 				x={L.columns[i]}
-				y={hedgeRows.numbers}
+				y={hedgeRows[who]}
 				size={T.num}
 				className="wt-film-num"
 			>
@@ -519,9 +524,8 @@ function Scene({
 					text={t(copy.qLine)}
 					x={W / 2}
 					y={H * 0.6}
-					size={T.body}
+					size={T.head}
 					maxWidth={room}
-					className="wt-film-type wt-film-dim"
 				/>
 			</g>
 			<g data-f="g">
@@ -558,38 +562,45 @@ function Scene({
 				<Lines
 					name="h-head"
 					text={t(copy.hedgeHead)}
-					x={W / 2}
-					y={H * 0.17}
+					x={L.margin}
+					y={L.headY}
 					size={T.head}
 					maxWidth={room}
+					anchor="start"
 				/>
 				<Lines
 					name="h-claim"
 					text={t(copy.hedgeClaim)}
-					x={W / 2}
-					y={H * 0.17}
+					x={L.margin}
+					y={
+						L.headY + lineCount(t(copy.hedgeHead), room, T.head) * T.head * 1.35
+					}
 					size={T.head}
 					maxWidth={room}
+					anchor="start"
 				/>
-				<Word
-					name="h-who-you"
-					x={W / 2}
-					y={hedgeRows.who}
-					size={T.body}
-					className="wt-film-type wt-film-dim"
-				>
-					{t(copy.you)}
-				</Word>
-				<Word
-					name="h-who-ben"
-					x={W / 2}
-					y={hedgeRows.who}
-					size={T.body}
-					className="wt-film-type wt-film-dim"
-				>
-					{t(copy.ben)}
-				</Word>
-				{[copy.colCalls, copy.colShares, copy.colNet].map((label, i) => (
+				{(
+					[
+						["h-who-you", copy.you, hedgeRows.you],
+						["h-who-ben", copy.ben, hedgeRows.ben],
+					] as const
+				).map(([name, label, y]) => (
+					<Word
+						key={name}
+						name={name}
+						x={L.margin}
+						y={y - T.num * 1.15}
+						size={T.small}
+						anchor="start"
+						className="wt-film-tag"
+					>
+						{t(label).toUpperCase()}
+					</Word>
+				))}
+				{(narrow
+					? [copy.colCallsShort, copy.colSharesShort, copy.colNet]
+					: [copy.colCalls, copy.colShares, copy.colNet]
+				).map((label, i) => (
 					<Word
 						key={label[0]}
 						name={`h-col-${i}`}
@@ -622,25 +633,42 @@ function Scene({
 						{t(copy.chip)}
 					</text>
 				</g>
-				<Word
-					name="h-trade-you"
-					x={W / 2}
-					y={hedgeRows.trade}
-					size={T.body}
-					className="wt-film-type wt-film-accent"
-				>
-					{t(copy.youTrade)}
-				</Word>
-				<Word
-					name="h-trade-ben"
-					x={W / 2}
-					y={hedgeRows.trade}
-					size={T.body}
-					className="wt-film-type wt-film-accent"
-				>
-					{t(copy.benTrade)}
-				</Word>
+				{(
+					[
+						["h-trade-you", copy.youTrade, hedgeRows.you],
+						["h-trade-ben", copy.benTrade, hedgeRows.ben],
+					] as const
+				).map(([name, label, y]) => (
+					<Word
+						key={name}
+						name={name}
+						x={W / 2}
+						y={y + T.body * 1.75}
+						size={T.body}
+						className="wt-film-type wt-film-accent"
+					>
+						{t(label)}
+					</Word>
+				))}
 			</g>
+			<Lines
+				name="k-head"
+				text={t(copy.curveHead)}
+				x={L.margin}
+				y={L.headY}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Word
+				name="g-calc"
+				x={W / 2}
+				y={H * 0.5 - T.big * 0.55}
+				size={T.head}
+				className="wt-film-num wt-film-dim"
+			>
+				{`+${fixed2(NEW_DELTA - DELTA)} ÷ $${MOVE}`}
+			</Word>
 			<Lines
 				name="e-head"
 				text={t(narrow ? copy.expiryHeadShort : copy.expiryHead)}
@@ -731,6 +759,8 @@ function build(context: FilmContext) {
 		...kids("g"),
 		one<SVGGraphicsElement>("lock-hedge"),
 		...kids("hedge"),
+		one("k-head"),
+		one("g-calc"),
 		one("e-head"),
 		...kids("claim"),
 	]);
@@ -753,15 +783,11 @@ function build(context: FilmContext) {
 	rise(9.6);
 	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.4);
 	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.4);
-	tl.to(
+	tl.fromTo(
 		one("d-dot"),
-		{ scaleY: 0.72, scaleX: 1.2, duration: 0.1, ease: "power1.out" },
+		{ scale: 1.3 },
+		{ scale: 1, duration: 0.45, ease: "power3.out" },
 		10.95,
-	);
-	tl.to(
-		one("d-dot"),
-		{ scaleY: 1, scaleX: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" },
-		11.05,
 	);
 	tl.fromTo(
 		one("d-ripple"),
@@ -790,6 +816,7 @@ function build(context: FilmContext) {
 		{ opacity: 1, attr: { y: my - 12 }, duration: 0.5 },
 		11.7,
 	);
+	show(one("k-head"), 11.4, "above");
 	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 13);
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
 	const axisText = [
@@ -838,85 +865,90 @@ function build(context: FilmContext) {
 		{ spot: SPOT + MOVE, duration: 1.1, ease: "power2.inOut", onUpdate: place },
 		16.6,
 	);
-	// Cut: the slope gets its name.
+	// Cut: the slope gets its name, worked out: +0.08 over $2.
+	hide(one("k-head"), 18.2);
 	sink(18.2);
-	land(one("g-num"), 18.6);
-	show(one("g-word"), 19);
-	show(one("g-sub"), 19.2);
+	show(one("g-calc"), 18.6);
+	land(one("g-num"), 19.0);
+	show(one("g-word"), 19.15);
+	show(one("g-sub"), 19.25);
 
 	// ——— hedge: the same delta, carried onto a position ———
 	tl.addLabel("hedge", 22.8);
-	hide(kids("g"), 22.8);
+	hide([...kids("g"), one("g-calc")], 22.8);
 	show(one("h-head"), 23.0, "above");
-	show(one("h-who-you"), 23.5);
-	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.8);
-	land(one("h-you-0"), 24.1);
-	land(one("h-you-1"), 24.3);
-	land(one("h-you-2"), 24.5);
-	land(one("h-chip"), 25.3);
+	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.4);
+	show(one("h-who-you"), 23.6);
+	land(one("h-you-0"), 23.7);
+	land(one("h-you-1"), 23.85);
+	land(one("h-you-2"), 24.0);
+	show(one("h-who-ben"), 24.2);
+	land(one("h-ben-0"), 24.3);
+	land(one("h-ben-1"), 24.45);
+	land(one("h-ben-2"), 24.6);
+	// ALFA rises $2, once, for both.
+	show(one("h-chip"), 25.0);
 	d.count(
 		one<SVGTextElement>("h-you-0"),
 		hedgeAfter.options,
-		25.9,
+		25.5,
 		shares,
 		hedgeBefore.options,
 	);
-	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.6, shares);
-	tl.to(
-		one("h-you-2"),
-		{ attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 },
-		26.6,
+	d.count(
+		one<SVGTextElement>("h-ben-0"),
+		benColumns[1].options,
+		25.5,
+		shares,
+		benColumns[0].options,
 	);
-	show(one("h-trade-you"), 27.9);
+	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
+	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
+	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.3, shares);
+	tl.to(one("h-you-2"), warn, 26.3);
+	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.7, shares);
+	tl.to(one("h-ben-2"), warn, 26.7);
 	// The hero: your hedge's drift, locked once its count has landed. The brackets are
 	// fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
 	const youNetText = youNet.textContent;
 	youNet.textContent = shares(youDrift);
-	d.lock(lockHedge, 28.0, { around: [one("h-col-2"), youNet], pad: 6 });
+	d.lock(lockHedge, 28.0, { around: youNet, pad: 6 });
 	youNet.textContent = youNetText;
 	tl.addLabel("hero-lock", 28.0);
-	// Ben takes your place under the same columns: short the same calls, so the move
-	// pushes him the other way.
-	d.swap(
-		[
-			one("h-who-you"),
-			one("h-you-0"),
-			one("h-you-1"),
-			one("h-you-2"),
-			one("h-trade-you"),
-			one("h-chip"),
-			lockHedge,
-		],
-		[one("h-who-ben"), one("h-ben-0"), one("h-ben-1"), one("h-ben-2")],
-		31.4,
-	);
-	land(one("h-chip"), 31.9);
+	// After the lock, the trades are made: each hedge back to flat.
+	show(one("h-trade-you"), 28.3);
+	hide(lockHedge, 29.2, 0.3);
 	d.count(
-		one<SVGTextElement>("h-ben-0"),
-		benColumns[1].options,
-		32.15,
+		one<SVGTextElement>("h-you-1"),
+		hedgeFixed.shares,
+		29.2,
 		shares,
-		benColumns[0].options,
+		hedgeAfter.shares,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 32.45, shares);
-	tl.to(
-		one("h-ben-2"),
-		{ attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 },
-		32.45,
+	d.count(one<SVGTextElement>("h-you-2"), 0, 29.2, shares, youDrift);
+	tl.to(one("h-you-2"), flat, 29.6);
+	show(one("h-trade-ben"), 29.8);
+	d.count(
+		one<SVGTextElement>("h-ben-1"),
+		benColumns[2].shares,
+		30.4,
+		shares,
+		benColumns[1].shares,
 	);
-	// The rule both rows made, up with Ben's trade.
-	d.swap(one("h-head"), one("h-claim"), 32.95);
-	show(one("h-trade-ben"), 33.3);
+	d.count(one<SVGTextElement>("h-ben-2"), 0, 30.4, shares, benDrift);
+	tl.to(one("h-ben-2"), flat, 30.8);
+	// The rule both rows made.
+	show(one("h-claim"), 30.4);
 
 	// ——— expiry: where gamma lives ———
-	tl.addLabel("expiry", 36.8);
-	hide(kids("hedge"), 36.8);
-	tl.set(world, home, 37.0);
-	tl.set(chartDelta, { opacity: 0 }, 37.0);
-	tl.set(chartGamma, { opacity: 1 }, 37.0);
-	show(one("e-head"), 37.2, "above");
-	rise(37.2);
+	tl.addLabel("expiry", 34.0);
+	hide(kids("hedge"), 34.0);
+	tl.set(world, home, 34.2);
+	tl.set(chartDelta, { opacity: 0 }, 34.2);
+	tl.set(chartGamma, { opacity: 1 }, 34.2);
+	show(one("e-head"), 34.4, "above");
+	rise(34.4);
 	tl.to(
 		one("clip-gl"),
 		{
@@ -924,16 +956,16 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		37.5,
+		34.7,
 	);
 	tl.to(
 		one("clip-gr"),
 		{ attr: { width: L.right - mx + 4 }, duration: 0.9, ease: "power2.inOut" },
-		37.5,
+		34.7,
 	);
-	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 38.3);
+	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 35.5);
 	// The 4-day call starts as the same hill, then rises into a spike at the strike.
-	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 38.5);
+	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 35.7);
 	tl.to(
 		one("g-sep"),
 		{
@@ -941,25 +973,25 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power3.inOut",
 		},
-		38.5,
+		35.7,
 	);
-	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 39.3);
-	land(one("g-times"), 39.5);
+	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 36.5);
+	land(one("g-times"), 36.7);
 	// Cut: the claim, held to be read.
-	hide(one("e-head"), 41.0);
-	sink(41.0);
+	hide(one("e-head"), 39.0);
+	sink(39.0);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.4,
+		39.4,
 	);
-	show(one("c-sub"), 41.8);
+	show(one("c-sub"), 39.8);
 
 	// ——— next ———
-	tl.addLabel("next", 45.4);
-	hide(kids("claim"), 45.4);
-	d.close(45.4);
+	tl.addLabel("next", 43.4);
+	hide(kids("claim"), 43.4);
+	d.close(43.4);
 	return tl;
 }
 
