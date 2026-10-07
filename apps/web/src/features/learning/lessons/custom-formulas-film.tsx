@@ -41,13 +41,13 @@ import {
  *
  *   open      0–4        "Build your own Rank column"
  *   question  4–9.6      [Total Premium] + [Trades]
- *   units     9.6–17.3   usd + count: refused; ÷: usd, $6,458
- *   rank      17.3–27    total premium; per trade; a floor of 20, ALFA locked
- *   view      27–37.6    Tuesday recomputes; the definition, not the numbers; cut: the claim
- *   next      37.6–40.1  Next: fork or write a recipe with AI
+ *   units     9.6–19.25  usd + count: refused; ÷: usd, $6,458
+ *   rank      19.25–28.95 total premium; per trade; a floor of 20, ALFA locked
+ *   view      28.95–39.55 Tuesday recomputes; the definition, not the numbers; cut: the claim
+ *   next      39.55–42.05 Next: fork or write a recipe with AI
  */
 
-const END = 40.1;
+const END = 42.05;
 const TUESDAY = symbolFlowSessions.tuesday.rows;
 const SYMBOLS = MONDAY.map((row) => row.symbol);
 type State = 0 | 1 | 2 | 3;
@@ -643,73 +643,73 @@ function build(context: FilmContext) {
 	show(one("refused"), 12.2, "right");
 	tl.to(one("box-bad"), { opacity: 1, duration: 0.3 }, 12.2);
 	// Divide instead.
-	d.swap(one("u-head"), one("d-head"), 13.4);
-	hide(one("refused"), 13.75);
-	tl.to(one("box-bad"), { opacity: 0, duration: 0.3 }, 13.75);
-	d.flip(one("tok-plus"), one("tok-div"), 14.0);
-	tl.set(one("tok-plus"), { opacity: 0 }, 14.3);
-	show(one("output"), 14.4);
+	d.swap(one("u-head"), one("d-head"), 15.35);
+	hide(one("refused"), 15.7);
+	tl.to(one("box-bad"), { opacity: 0, duration: 0.3 }, 15.7);
+	d.flip(one("tok-plus"), one("tok-div"), 15.95);
+	tl.set(one("tok-plus"), { opacity: 0 }, 16.25);
+	show(one("output"), 16.35);
 	tl.fromTo(
 		one("preview"),
 		{ opacity: 0, y: 6 },
 		{ opacity: 1, y: 0, duration: 0.55, ease: "power3.out" },
-		14.8,
+		16.75,
 	);
 
 	// ——— rank: totals, per trade, a floor ———
-	tl.addLabel("rank", 17.3);
-	hide([one("d-head"), ...kids("editor")], 17.3);
-	show(one("t-head"), 17.65, "above");
-	show([one("f-0"), one("day-mon"), one("col-trades")], 17.9);
+	tl.addLabel("rank", 19.25);
+	hide([one("d-head"), ...kids("editor")], 19.25);
+	show(one("t-head"), 19.6, "above");
+	show([one("f-0"), one("day-mon"), one("col-trades")], 19.85);
 	SYMBOLS.forEach((symbol) => {
 		const i = order(0).indexOf(symbol);
 		tl.fromTo(
 			row(symbol),
 			{ opacity: 0, x: 24 },
 			{ opacity: 1, x: 0, duration: 0.45 },
-			18.1 + i * 0.12,
+			20.05 + i * 0.12,
 		);
 		tl.to(
 			one(`bar-${symbol}`),
 			{ attr: { width: width(0, symbol) }, duration: 0.6, ease: "power2.out" },
-			18.3 + i * 0.12,
+			20.25 + i * 0.12,
 		);
-		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, 18.5 + i * 0.12);
+		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, 20.45 + i * 0.12);
 	});
 	// Per trade.
-	d.swap(one("t-head"), one("p-head"), 21.2);
-	d.flip(one("f-0"), one("f-1"), 21.6);
-	tl.set(one("f-0"), { opacity: 0 }, 21.9);
-	rank(0, 1, 21.7);
+	d.swap(one("t-head"), one("p-head"), 23.15);
+	d.flip(one("f-0"), one("f-1"), 23.55);
+	tl.set(one("f-0"), { opacity: 0 }, 23.85);
+	rank(0, 1, 23.65);
 	// A floor. The hero: ALFA back in front.
-	show(one("f-head"), 23.4);
-	d.flip(one("f-1"), one("f-2"), 23.6);
-	tl.set(one("f-1"), { opacity: 0 }, 23.9);
-	rank(1, 2, 23.7);
-	d.lock(lockFloor, 24.6, { around: row(ALFA.symbol), pad: 6 });
-	tl.addLabel("hero-lock", 24.6);
+	show(one("f-head"), 25.35);
+	d.flip(one("f-1"), one("f-2"), 25.55);
+	tl.set(one("f-1"), { opacity: 0 }, 25.85);
+	rank(1, 2, 25.65);
+	d.lock(lockFloor, 26.55, { around: row(ALFA.symbol), pad: 6 });
+	tl.addLabel("hero-lock", 26.55);
 
 	// ——— view: the formula recomputes, the numbers don't stay ———
-	tl.addLabel("view", 27);
-	hide([one("p-head"), one("f-head"), lockFloor], 27.0);
-	show(one("v-head"), 27.35, "above");
-	d.flip(one("day-mon"), one("day-tue"), 27.7);
-	tl.set(one("day-mon"), { opacity: 0 }, 28.0);
+	tl.addLabel("view", 28.95);
+	hide([one("p-head"), one("f-head"), lockFloor], 28.95);
+	show(one("v-head"), 29.3, "above");
+	d.flip(one("day-mon"), one("day-tue"), 29.65);
+	tl.set(one("day-mon"), { opacity: 0 }, 29.95);
 	for (const symbol of SYMBOLS) {
-		d.flip(one(`n-${symbol}-mon`), one(`n-${symbol}-tue`), 27.8);
-		tl.set(one(`n-${symbol}-mon`), { opacity: 0 }, 28.1);
+		d.flip(one(`n-${symbol}-mon`), one(`n-${symbol}-tue`), 29.75);
+		tl.set(one(`n-${symbol}-mon`), { opacity: 0 }, 30.05);
 	}
-	rank(2, 3, 28.0);
-	show(one("w-head"), 29.5);
+	rank(2, 3, 29.95);
+	show(one("w-head"), 31.45);
 	// Cut: the claim.
-	hide([one("v-head"), one("w-head"), ...kids("rank")], 33.1);
-	word(one("z-big"), 33.5);
-	show(one("z-sub"), 33.9);
+	hide([one("v-head"), one("w-head"), ...kids("rank")], 35.05);
+	word(one("z-big"), 35.45);
+	show(one("z-sub"), 35.85);
 
 	// ——— next ———
-	tl.addLabel("next", 37.6);
-	hide(kids("claim"), 37.6);
-	d.close(37.6);
+	tl.addLabel("next", 39.55);
+	hide(kids("claim"), 39.55);
+	d.close(39.55);
 	return tl;
 }
 
