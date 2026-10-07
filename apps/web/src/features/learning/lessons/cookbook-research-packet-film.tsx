@@ -387,6 +387,7 @@ function Scene({
 					["rerun-none", null],
 					["rerun-formula", "formula"],
 					["rerun-exclusions", "exclusions"],
+					["rerun-back", null],
 				] as const
 			).map(([name, removed]) => (
 				<text
@@ -402,9 +403,8 @@ function Scene({
 			))}
 			<text
 				data-f="p1-says"
-				x={margin + room}
+				x={margin + textWidth(rerunText("formula"), rerunSize) + 24}
 				y={L.rerunY + rerunSize * 1.3}
-				textAnchor="end"
 				className="wt-film-num wt-film-dim"
 				style={{ fontSize: text }}
 			>
@@ -581,6 +581,7 @@ function build(context: FilmContext) {
 		...fieldRows,
 		one("rerun-tag"),
 		...rerunMarks,
+		one("rerun-back"),
 		one("p1-says"),
 		one("why-formula"),
 		one("why-exclusions"),
@@ -622,31 +623,24 @@ function build(context: FilmContext) {
 		{ attr: { class: "wt-film-num" }, duration: 0.2 },
 		12.4,
 	);
-	// The sum, built row by row: each premium lights as it is added.
-	tl.set(one("sum"), { opacity: 1 }, 12.6);
+	// The sum, built row by row: each premium lights while it is added.
+	tl.set(one("sum"), { opacity: 1 }, 12.4);
 	let total = 0;
 	let step = 0;
 	mondayPacket.forEach((row, i) => {
 		const premium = rowPremium(row);
 		if (premium === null) return;
-		const at = 12.6 + step * 0.4;
-		tl.fromTo(
-			one(`row-${i}-premium`),
-			{ attr: { class: "wt-film-num wt-film-accent" } },
-			{
-				attr: { class: "wt-film-num" },
-				duration: 0.35,
-				immediateRender: false,
-			},
-			at,
-		);
+		const at = 12.4 + step * 0.6;
+		const figure = one(`row-${i}-premium`);
+		tl.set(figure, { attr: { class: "wt-film-num wt-film-accent" } }, at);
+		tl.set(figure, { attr: { class: "wt-film-num" } }, at + 0.55);
 		d.count(
 			one<SVGTextElement>("sum"),
 			total + premium,
 			at,
 			(v) => dollars(Math.round(v / 100) * 100),
 			total,
-			0.35,
+			0.45,
 		);
 		total += premium;
 		step += 1;
@@ -656,12 +650,12 @@ function build(context: FilmContext) {
 		rows[missing],
 		{ x: 0 },
 		{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
-		14.4,
+		14.8,
 	);
-	d.flip(one("sum"), one("sum-ge"), 14.6);
-	tl.set(one("sum"), { opacity: 0 }, 14.9);
-	show(one("subtotal"), 14.8);
-	show(heads[1], 14.8);
+	d.flip(one("sum"), one("sum-ge"), 15.0);
+	tl.set(one("sum"), { opacity: 0 }, 15.3);
+	show(one("subtotal"), 15.05);
+	show(heads[1], 15.05);
 
 	// ——— fields: the hero. A reader reruns it from its fields. ———
 	tl.addLabel("fields", 18.6);
@@ -687,6 +681,8 @@ function build(context: FilmContext) {
 	tl.set(rerunMarks[0], { opacity: 0 }, 22.1);
 	show(one("p1-says"), 21.9);
 	show(one("why-formula"), 22.1);
+	// The answer, with the first break.
+	show(heads[3], 21.9);
 	// Without the exclusions instead.
 	restore("formula", 25.4);
 	drop("exclusions", 25.4);
@@ -702,10 +698,14 @@ function build(context: FilmContext) {
 			one("p1-says"),
 			one("why-exclusions"),
 		],
-		pad: 6,
+		pad: 10,
 	});
 	tl.addLabel("hero-lock", 26.2);
-	show(heads[3], 26.2);
+	// After the lock: the field goes back, and the figure is P1's again.
+	restore("exclusions", 27.4);
+	d.flip(rerunMarks[2], one("rerun-back"), 27.6);
+	tl.set(rerunMarks[2], { opacity: 0 }, 27.9);
+	hide(one("why-exclusions"), 27.6);
 
 	// ——— log: rerun, or a new question ———
 	tl.addLabel("log", 29.8);
@@ -714,9 +714,8 @@ function build(context: FilmContext) {
 		[
 			...fieldRows,
 			one("rerun-tag"),
-			rerunMarks[2],
+			one("rerun-back"),
 			one("p1-says"),
-			one("why-exclusions"),
 			lockRerun,
 		],
 		29.8,
