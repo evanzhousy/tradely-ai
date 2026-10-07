@@ -13,6 +13,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -34,20 +35,20 @@ import {
  * Recipe inputs, as a film. It opens on an edit, Min OI from 200 to 1,000, and asks what
  * the report shows before Run. A draft: the input reads 1,000, the report still counts the
  * last run's 5 contracts; Run refreshes every cell together, and 1 contract clears the new
- * floor. Then four changes to the screener: a stricter threshold and another session re-run
- * the same question, ranking by premium and admitting same-day expiries ask a new one. Last,
- * the floors: drop volume and open interest to 0 and a contract with 30 against 5 open
- * interest leads the volume/OI ranking at 6.00.
+ * floor. Then the floors: drop volume and open interest to 0 and a contract with 30 against
+ * 5 open interest leads the volume/OI ranking at 6.00. Last, four changes to the screener:
+ * a stricter threshold and another session re-run the same question, ranking by premium
+ * and admitting same-day expiries ask a new one.
  *
- *   open      0–4      "Change the inputs, keep the question"
- *   question  4–9.5    Min OI 200 → 1,000: what does the report show?
- *   draft     9.5–20   5 flagged; a draft still shows 5; Run: 1; cut: a draft isn't a run
- *   tune      20–27.8  four changes: same question, new question
- *   floors    27.8–38.5 defaults; floors at 0; 6.00; cut: a tiny denominator
- *   next      38.5–41  Next: start from a research checklist
+ *   open      0–4        "Change the inputs, keep the question"
+ *   question  4–9.6      Min OI 200 → 1,000: what does the report show?
+ *   draft     9.6–20.9   5 flagged; a draft still shows 5; Run: 1
+ *   floors    20.9–31    defaults; floors at 0; 6.00, locked
+ *   tune      31–40.5    four changes: same question, new question; cut: the claim
+ *   next      40.5–43    Next: start from a research checklist
  */
 
-const END = 41;
+const END = 43;
 const FROM = screenDefaults.minOpenInterest;
 const TO = 1_000;
 const BASE = run({});
@@ -121,49 +122,38 @@ const copy = {
 		"你还没点“运行”。报告显示多少份合约？",
 	],
 	runHead: [
-		`Monday's run at the default floors flags ${BASE.length}.`,
-		`周一按默认门槛运行，${BASE.length} 份入选。`,
+		`Monday's run at the default floors: ${BASE.length}.`,
+		`周一按默认门槛运行：${BASE.length} 份。`,
 	],
 	runHeadShort: [
 		`The last run: ${BASE.length}.`,
 		`上次运行：${BASE.length} 份。`,
 	],
 	draftHead: [
-		`A draft: the input says ${count(TO)}, the report still says ${BASE.length}.`,
-		`草稿：输入框是 ${count(TO)}，报告仍是 ${BASE.length} 份。`,
+		`A draft isn't a run: still ${BASE.length}.`,
+		`草稿不是运行：仍是 ${BASE.length} 份。`,
 	],
 	draftHeadShort: [
 		`A draft: still ${BASE.length}.`,
 		`草稿：仍是 ${BASE.length} 份。`,
 	],
 	ranHead: [
-		`Run: every cell refreshes together, and ${raised} clears ${count(TO)}.`,
-		`运行：所有单元格一起刷新，只有 ${raised} 份过了 ${count(TO)}。`,
+		`Run: every cell refreshes, and ${raised} clears.`,
+		`运行：所有单元格一起刷新，${raised} 份过线。`,
 	],
 	ranHeadShort: [`Run: ${raised} contract.`, `运行：${raised} 份。`],
 	dock: ["Draft · Run · Discard changes", "草稿 · 运行 · 放弃更改"],
 	dockShort: ["Draft · Run · Discard", "草稿 · 运行 · 放弃"],
-	draftBig: ["A draft isn't a run.", "草稿不是一次运行。"],
-	draftSub: [
-		"Until you press Run, every cell describes the last run; Discard puts its values back.",
-		"点“运行”之前，每个单元格描述的都是上一次运行；“放弃”会恢复它的值。",
+	tuneHead: [
+		"Four changes: two re-run, two ask anew.",
+		"四种改动：两种重跑，两种换问题。",
 	],
-	tuneHead: ["Four changes to the screener.", "对筛选器的四种改动。"],
-	inputHead: [
-		"A stricter threshold or another session re-runs the same question.",
-		"更严格的阈值或另一个时段，是重跑同一个问题。",
-	],
-	inputHeadShort: ["Inputs: the same question.", "输入：同一个问题。"],
-	methodHead: [
-		"Ranking or eligibility asks a new one: fork the recipe.",
-		"改排名或入选资格是新问题：分叉 Recipe。",
-	],
-	methodHeadShort: ["Methods: a new question.", "方法：新问题。"],
+	tuneHeadShort: ["Re-run, or a new question?", "重跑，还是新问题？"],
 	same: ["same question", "同一个问题"],
 	fresh: ["new question", "新问题"],
 	defaultsHead: [
-		`At the default floors, the ${pick(screenContractLabel(BASE[0]), "en")} leads at ${volumeToOi(BASE[0]).toFixed(2)}.`,
-		`默认门槛下，${pick(screenContractLabel(BASE[0]), "zh")} 以 ${volumeToOi(BASE[0]).toFixed(2)} 领先。`,
+		`At the default floors, ${volumeToOi(BASE[0]).toFixed(2)} leads.`,
+		`默认门槛下，${volumeToOi(BASE[0]).toFixed(2)} 领先。`,
 	],
 	defaultsHeadShort: [
 		`Defaults: ${volumeToOi(BASE[0]).toFixed(2)} leads.`,
@@ -171,12 +161,12 @@ const copy = {
 	],
 	zeroHead: ["Drop both floors to 0.", "把两个门槛都降为 0。"],
 	thinHead: [
-		`${THIN.volume} contracts against ${THIN.openInterest} open interest: ${volumeToOi(THIN).toFixed(2)}.`,
-		`成交 ${THIN.volume} 张，未平仓量 ${THIN.openInterest}：${volumeToOi(THIN).toFixed(2)}。`,
+		`A thin contract leads at ${volumeToOi(THIN).toFixed(2)}.`,
+		`一份冷门合约以 ${volumeToOi(THIN).toFixed(2)} 领先。`,
 	],
 	thinHeadShort: [
-		`${THIN.volume} vs ${THIN.openInterest} OI: ${volumeToOi(THIN).toFixed(2)}.`,
-		`${THIN.volume} 对 ${THIN.openInterest}：${volumeToOi(THIN).toFixed(2)}。`,
+		`Thin, and first: ${volumeToOi(THIN).toFixed(2)}.`,
+		`冷门却第一：${volumeToOi(THIN).toFixed(2)}。`,
 	],
 	rankTitle: ["Monday · ranked by volume/OI", "周一 · 按成交量/OI 排名"],
 	rankTitleShort: ["by volume/OI", "按成交量/OI"],
@@ -193,10 +183,10 @@ const copy = {
 		`${FAR ? contractDte(FAR, SESSION_DATE) : 0} days`,
 		`${FAR ? contractDte(FAR, SESSION_DATE) : 0} 天`,
 	],
-	claimBig: ["A tiny denominator makes a big ratio.", "分母越小，比率越大。"],
+	claimBig: ["Change the inputs, keep the question.", "改输入，不改问题。"],
 	claimSub: [
-		"Floors keep thin contracts from leading; lower them only if you say so.",
-		"门槛不让冷门合约领跑；要降低就得说明。",
+		"Run before you read; keep the floors; fork new methods.",
+		"先运行再读；守住门槛；新方法就分叉。",
 	],
 	nextBig: ["Next: start from a research checklist", "下一课：从研究清单开始"],
 	nextSub: ["steps a tool can check", "工具能核查的步骤"],
@@ -388,7 +378,24 @@ function Scene({
 			</g>
 			{headline("a-head", copy.runHead, copy.runHeadShort)}
 			{headline("d-head", copy.draftHead, copy.draftHeadShort)}
-			{headline("n-head", copy.ranHead, copy.ranHeadShort)}
+			<Lines
+				name="n-head"
+				text={t(narrow ? copy.ranHeadShort : copy.ranHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.draftHeadShort : copy.draftHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 
 			{/* The inputs and the last run. */}
 			<g data-f="draft">
@@ -523,12 +530,9 @@ function Scene({
 							</text>
 						))}
 			</g>
-			{claim("draft-claim", copy.draftBig, copy.draftSub)}
 
 			{/* Four changes. */}
-			{headline("t-head", copy.tuneHead, copy.tuneHead)}
-			{headline("i-head", copy.inputHead, copy.inputHeadShort)}
-			{headline("m-head", copy.methodHead, copy.methodHeadShort)}
+			{headline("t-head", copy.tuneHead, copy.tuneHeadShort)}
 			<g data-f="changes">
 				{changes.map((change, i) => (
 					<g key={change.id} data-f={`ch-${change.id}`}>
@@ -574,7 +578,21 @@ function Scene({
 			{/* The floors. */}
 			{headline("f-head", copy.defaultsHead, copy.defaultsHeadShort)}
 			{headline("z-head", copy.zeroHead, copy.zeroHead)}
-			{headline("h-head", copy.thinHead, copy.thinHeadShort)}
+			<Lines
+				name="h-head"
+				text={t(narrow ? copy.thinHeadShort : copy.thinHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(t(narrow ? copy.zeroHead : copy.zeroHead), room, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Brackets name="lock-thin" glow />
 			{claim("claim", copy.claimBig, copy.claimSub)}
 			<EndCard
 				frame={L}
@@ -601,7 +619,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			at,
 		);
 	const flagged = one<SVGTextElement>("flagged");
@@ -619,18 +637,18 @@ function build(context: FilmContext) {
 			? `${Math.round(value)} 份合约`
 			: `${Math.round(value)} ${shown(value)}`;
 
+	const lockThin = one<SVGGraphicsElement>("lock-thin");
+
 	d.hidden([
 		...flat("q"),
 		...[
 			"a-head",
 			"d-head",
 			"n-head",
-			"t-head",
-			"i-head",
-			"m-head",
 			"f-head",
 			"z-head",
 			"h-head",
+			"t-head",
 		].map((name) => one(name)),
 		...inputs,
 		one("field-focus"),
@@ -644,7 +662,6 @@ function build(context: FilmContext) {
 		...(["top-from", "top-to"]
 			.map((name) => one(name))
 			.filter(Boolean) as Element[]),
-		...kids("draft-claim"),
 		...cards,
 		...changes.flatMap((change) => [focusOf(change.id), tagOf(change.id)]),
 		one("floors-on"),
@@ -652,6 +669,7 @@ function build(context: FilmContext) {
 		thinRow,
 		...baseRows,
 		...(farRow ? [farRow] : []),
+		lockThin,
 		...kids("claim"),
 	]);
 
@@ -664,40 +682,43 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.4);
+	show(one("q-line"), 6.0);
 
 	// ——— draft: the report keeps the last run until Run ———
-	tl.addLabel("draft", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("a-head"), 9.7, "above");
+	tl.addLabel("draft", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("a-head"), 9.8, "above");
 	inputs.forEach((input, i) => {
-		show(input, 10.0 + i * 0.1);
+		show(input, 10.1 + i * 0.1);
 	});
-	show(one("oi-from"), 10.4);
+	show(one("oi-from"), 10.5);
 	show([one("result"), one("last-from")], 10.8);
 	show(flagged, 11.0);
 	const topFrom = one("top-from");
 	if (topFrom) show(topFrom, 11.2);
 	// Type 1,000: a draft.
-	d.swap(one("a-head"), one("d-head"), 12.4);
-	tl.to(one("field-focus"), { opacity: 1, duration: 0.3 }, 12.8);
-	d.flip(one("oi-from"), one("oi-to"), 13.0);
-	tl.set(one("oi-from"), { opacity: 0 }, 13.3);
-	show(one("dock"), 13.5, "above");
+	d.swap(one("a-head"), one("d-head"), 13.4);
+	tl.to(one("field-focus"), { opacity: 1, duration: 0.3 }, 13.8);
+	d.flip(one("oi-from"), one("oi-to"), 14.0);
+	tl.set(one("oi-from"), { opacity: 0 }, 14.3);
+	show(one("dock"), 14.5, "above");
 	// Run: everything together.
-	d.swap(one("d-head"), one("n-head"), 15.4);
-	tl.to(one("dock"), { opacity: 0, duration: 0.3 }, 15.8);
-	tl.to(one("field-focus"), { opacity: 0, duration: 0.3 }, 15.8);
-	d.flip(one("last-from"), one("last-to"), 16.0);
-	tl.set(one("last-from"), { opacity: 0 }, 16.3);
-	d.count(flagged, AFTER.length, 16.1, flaggedText, BASE.length, 0.5);
+	show(one("n-head"), 17.3);
+	tl.to(one("dock"), { opacity: 0, duration: 0.3 }, 17.3);
+	tl.to(one("field-focus"), { opacity: 0, duration: 0.3 }, 17.3);
+	d.flip(one("last-from"), one("last-to"), 17.5);
+	tl.set(one("last-from"), { opacity: 0 }, 17.8);
+	d.count(flagged, AFTER.length, 17.6, flaggedText, BASE.length, 0.5);
 	if (topFrom) {
-		d.flip(topFrom, one("top-to"), 16.1);
-		tl.set(topFrom, { opacity: 0 }, 16.4);
+		d.flip(topFrom, one("top-to"), 17.6);
+		tl.set(topFrom, { opacity: 0 }, 17.9);
 	}
-	// Cut: a draft isn't a run.
+
+	// ——— floors: a ratio's denominator ———
+	tl.addLabel("floors", 20.9);
 	hide(
 		[
+			one("d-head"),
 			one("n-head"),
 			...inputs,
 			one("oi-to"),
@@ -706,44 +727,11 @@ function build(context: FilmContext) {
 			flagged,
 			...(["top-to"].map((name) => one(name)).filter(Boolean) as Element[]),
 		],
-		17.6,
+		20.9,
 	);
-	word(one("draft-claim-big"), 18.0);
-	show(one("draft-claim-sub"), 18.5);
-
-	// ——— tune: same question or a new one ———
-	tl.addLabel("tune", 20);
-	hide(kids("draft-claim"), 20.0);
-	show(one("t-head"), 20.2, "above");
-	cards.forEach((card, i) => {
-		show(card, 20.5 + i * 0.15);
-	});
-	d.swap(one("t-head"), one("i-head"), 21.9);
-	changes.forEach((change, i) => {
-		if (change.kind !== "input") return;
-		tl.to(focusOf(change.id), { opacity: 1, duration: 0.3 }, 22.3 + i * 0.2);
-		show(tagOf(change.id), 22.4 + i * 0.2, "right");
-	});
-	d.swap(one("i-head"), one("m-head"), 24.2);
-	changes.forEach((change, i) => {
-		if (change.kind === "input")
-			tl.to(focusOf(change.id), { opacity: 0, duration: 0.3 }, 24.6);
-		else {
-			tl.to(
-				focusOf(change.id),
-				{ opacity: 1, duration: 0.3 },
-				24.6 + (i - 2) * 0.2,
-			);
-			show(tagOf(change.id), 24.7 + (i - 2) * 0.2, "right");
-		}
-	});
-
-	// ——— floors: a ratio's denominator ———
-	tl.addLabel("floors", 27.8);
-	hide([one("m-head"), ...cards], 27.8);
-	show(one("f-head"), 28.0, "above");
-	rise(28.1);
-	show(one("floors-on"), 28.5);
+	show(one("f-head"), 21.25, "above");
+	rise(21.3);
+	show(one("floors-on"), 21.7);
 	// At the defaults the rows sit one place higher: the thin contract isn't there yet.
 	tl.set(baseRows, { y: -L.rankStep }, 0);
 	baseRows.forEach((row, i) => {
@@ -752,14 +740,14 @@ function build(context: FilmContext) {
 			row,
 			{ opacity: 0, x: 18 },
 			{ opacity: 1, x: 0, duration: 0.5 },
-			28.7 + i * 0.12,
+			21.9 + i * 0.12,
 		);
 	});
-	d.swap(one("f-head"), one("z-head"), 30.4);
-	d.flip(one("floors-on"), one("floors-off"), 30.8);
-	tl.set(one("floors-on"), { opacity: 0 }, 31.1);
-	tl.to(baseRows, { y: 0, duration: 0.6, ease: "power2.inOut" }, 31.2);
-	tl.to(thinRow, { opacity: 1, duration: 0.4 }, 31.6);
+	d.swap(one("f-head"), one("z-head"), 24.8);
+	d.flip(one("floors-on"), one("floors-off"), 25.2);
+	tl.set(one("floors-on"), { opacity: 0 }, 25.5);
+	tl.to(baseRows, { y: 0, duration: 0.6, ease: "power2.inOut" }, 25.6);
+	tl.to(thinRow, { opacity: 1, duration: 0.4 }, 26.0);
 	const thinBar = one(`bar-${THIN.id}`);
 	tl.fromTo(
 		thinBar,
@@ -769,36 +757,64 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.out",
 		},
-		31.6,
+		26.0,
 	);
-	d.swap(one("z-head"), one("h-head"), 32.8);
-	if (farRow) show(farRow, 33.4);
+	show(one("h-head"), 27.0);
+	if (farRow) show(farRow, 27.2);
+	// The hero: the thinnest contract, first.
+	d.lock(lockThin, 27.6, { around: thinRow, pad: 6 });
+	tl.addLabel("hero-lock", 27.6);
+
+	// ——— tune: same question or a new one ———
+	tl.addLabel("tune", 31);
+	hide([one("z-head"), one("h-head"), lockThin], 31.0);
+	sink(31.0);
+	show(one("t-head"), 31.35, "above");
+	cards.forEach((card, i) => {
+		show(card, 31.6 + i * 0.15);
+	});
+	changes.forEach((change, i) => {
+		if (change.kind !== "input") return;
+		tl.to(focusOf(change.id), { opacity: 1, duration: 0.3 }, 32.6 + i * 0.2);
+		show(tagOf(change.id), 32.7 + i * 0.2, "right");
+	});
+	changes.forEach((change, i) => {
+		if (change.kind === "input")
+			tl.to(focusOf(change.id), { opacity: 0, duration: 0.3 }, 34.0);
+		else {
+			tl.to(
+				focusOf(change.id),
+				{ opacity: 1, duration: 0.3 },
+				34.0 + (i - 2) * 0.2,
+			);
+			show(tagOf(change.id), 34.1 + (i - 2) * 0.2, "right");
+		}
+	});
 	// Cut: the claim.
-	hide(one("h-head"), 35.2);
-	sink(35.2);
-	word(one("claim-big"), 35.6);
-	show(one("claim-sub"), 36.1);
+	hide([one("t-head"), ...cards], 36.1);
+	word(one("claim-big"), 36.5);
+	show(one("claim-sub"), 36.9);
 
 	// ——— next ———
-	tl.addLabel("next", 38.5);
-	hide(kids("claim"), 38.5);
-	d.close(38.5);
+	tl.addLabel("next", 40.5);
+	hide(kids("claim"), 40.5);
+	d.close(40.5);
 	return tl;
 }
 
 export const recipeInputsFilm: Film = {
 	id: "recipe-inputs",
 	label: [
-		`Recipe inputs, as a short film: Min OI edited from ${count(FROM)} to ${count(TO)} before Run, the input showing a draft while the report still counts the last run's ${BASE.length} contracts, then Run refreshing every cell together to ${raised}; four changes to the screener, a stricter threshold and another session re-running the same question while ranking by premium and admitting same-day expiries ask a new one; and the volume and open-interest floors dropped to 0, where a contract with ${THIN.volume} against ${THIN.openInterest} open interest leads the volume/OI ranking at ${volumeToOi(THIN).toFixed(2)}`,
-		`Recipe 输入短片：点“运行”之前把最低未平仓量从 ${count(FROM)} 改成 ${count(TO)}，输入框显示草稿，报告仍统计上一次运行的 ${BASE.length} 份合约，点“运行”后所有单元格一起刷新为 ${raised} 份；对筛选器的四种改动，更严格的阈值和另一个时段是重跑同一个问题，按权利金排名和纳入当天到期合约则是新问题；以及把成交量和未平仓量门槛降为 0 后，一份成交 ${THIN.volume}、未平仓量 ${THIN.openInterest} 的合约以 ${volumeToOi(THIN).toFixed(2)} 领跑成交量/OI 排名`,
+		`Recipe inputs, as a short film: Min OI edited from ${count(FROM)} to ${count(TO)} before Run, the input showing a draft while the report still counts the last run's ${BASE.length} contracts, then Run refreshing every cell together to ${raised}; the volume and open-interest floors dropped to 0, where a contract with ${THIN.volume} against ${THIN.openInterest} open interest leads the volume/OI ranking at ${volumeToOi(THIN).toFixed(2)}; and four changes to the screener, a stricter threshold and another session re-running the same question while ranking by premium and admitting same-day expiries ask a new one`,
+		`Recipe 输入短片：点“运行”之前把最低未平仓量从 ${count(FROM)} 改成 ${count(TO)}，输入框显示草稿，报告仍统计上一次运行的 ${BASE.length} 份合约，点“运行”后所有单元格一起刷新为 ${raised} 份；把成交量和未平仓量门槛降为 0 后，一份成交 ${THIN.volume}、未平仓量 ${THIN.openInterest} 的合约以 ${volumeToOi(THIN).toFixed(2)} 领跑成交量/OI 排名；以及对筛选器的四种改动，更严格的阈值和另一个时段是重跑同一个问题，按权利金排名和纳入当天到期合约则是新问题`,
 	],
 	stage: "dark",
 	shots: [
 		{ id: "open", label: ["Inputs", "输入"] },
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "draft", label: ["Draft, then run", "先草稿，再运行"] },
-		{ id: "tune", label: ["Tune or re-ask", "调参还是换问题"] },
 		{ id: "floors", label: ["Floors", "门槛"] },
+		{ id: "tune", label: ["Tune or re-ask", "调参还是换问题"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
