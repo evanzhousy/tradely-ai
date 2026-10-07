@@ -42,15 +42,15 @@ import {
  *
  *   open      0–4        "Charm and vanna"
  *   question  4–9.6      0.177 — a week passes, ALFA stays at $100, nobody trades
- *   charm     9.6–21     delta across days; a week: 0.177 → 0.144; cut: Charm, −0.004 a
+ *   charm     9.6–22.4   delta across days; a week: 0.177 → 0.144; cut: Charm, −0.004 a
  *                        day, +1.46 per year left
- *   vanna     21–28.7    IV −3: 0.144 → 0.120; cut: Vanna, +0.008 per vol point, locked
- *   spread    28.7–41    +16,600 and −8,850 → +15,350 and −7,200: net +400;
+ *   vanna     22.4–30.5  IV −3: 0.144 → 0.120; cut: Vanna, +0.008 per vol point, locked
+ *   spread    30.5–42.8  +16,600 and −8,850 → +15,350 and −7,200: net +400;
  *                        cut: "Delta can change while nothing trades."
- *   next      41–43.5    Next: the module checkpoint
+ *   next      42.8–45.3  Next: the module checkpoint
  */
 
-const END = 43.5;
+const END = 45.3;
 const DAYS_SHOWN = 28;
 const Y_TOP = 0.2;
 const LABEL_DAY = 17;
@@ -621,7 +621,7 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	land(one("q-big"), 4.8);
-	for (const i of [0, 1, 2]) show(one(`q-${i}`), 5.8 + i * 0.5, "below");
+	for (const i of [0, 1, 2]) show(one(`q-${i}`), 5.6 + i * 0.3, "below");
 
 	// ——— charm: time alone moves delta ———
 	tl.addLabel("charm", 9.6);
@@ -654,70 +654,70 @@ function build(context: FilmContext) {
 	hide([one("w-head"), ...kids("meter")], 17.3);
 	sink(17.3);
 	word("charm-word", 17.7);
-	show(one("charm-def"), 18.1);
-	land(one("charm-num"), 18.5);
-	show(one("charm-alt"), 19.2);
+	show(one("charm-def"), 17.9);
+	land(one("charm-num"), 18.3);
+	show(one("charm-alt"), 18.8);
 
 	// ——— vanna: and implied volatility moves it too ———
-	tl.addLabel("vanna", 21);
-	hide(kids("charm"), 21.0);
-	show(one("v-head"), 21.35, "above");
-	rise(21.4);
-	show(kids("meter"), 21.7, "above");
-	reveal("draw-low", 21.8, 1.4);
-	show([one("same-label"), one("low-label")], 23.2);
+	tl.addLabel("vanna", 22.4);
+	hide(kids("charm"), 22.4);
+	show(one("v-head"), 22.75, "above");
+	rise(22.8);
+	show(kids("meter"), 23.1, "above");
+	reveal("draw-low", 23.2, 1.4);
+	show([one("same-label"), one("low-label")], 24.6);
 	tl.to(
 		marker,
 		{ attr: { cy: L.y(AFTER_BOTH) }, duration: 0.6, ease: "power2.inOut" },
-		23.5,
+		24.9,
 	);
-	d.count(meter, AFTER_BOTH, 23.5, plain3, AFTER_WEEK, 0.6);
-	draw(one<SVGPathElement>("vanna-step"), 24.0);
-	show(one("vanna-change"), 24.2);
+	d.count(meter, AFTER_BOTH, 24.9, plain3, AFTER_WEEK, 0.6);
+	draw(one<SVGPathElement>("vanna-step"), 25.4);
+	show(one("vanna-change"), 25.6);
 	// Cut: the word. The hero: vanna, made from the fall.
-	hide([one("v-head"), ...kids("meter")], 24.9);
-	sink(24.9);
-	word("vanna-word", 25.3);
-	show(one("vanna-def"), 25.7);
-	land(one("vanna-num"), 26.1);
-	d.lock(lockVanna, 26.7, { around: one("vanna-num"), pad: 8 });
-	tl.addLabel("hero-lock", 26.7);
+	hide([one("v-head"), ...kids("meter")], 26.3);
+	sink(26.3);
+	word("vanna-word", 26.7);
+	show(one("vanna-def"), 26.9);
+	land(one("vanna-num"), 27.5);
+	d.lock(lockVanna, 28.1, { around: one("vanna-num"), pad: 8 });
+	tl.addLabel("hero-lock", 28.1);
 
 	// ——— spread: a signed position turns it into shares ———
-	tl.addLabel("spread", 28.7);
-	hide([...kids("vanna"), lockVanna], 28.7);
-	show(one("s-head"), 29.05, "above");
-	show(one("s-shares"), 29.3);
+	tl.addLabel("spread", 30.5);
+	hide([...kids("vanna"), lockVanna], 30.5);
+	show(one("s-head"), 30.85, "above");
+	show(one("s-shares"), 31.1);
 	LEGS.forEach((leg, i) => {
-		show(one(`s-label-${leg}`), 29.5 + i * 0.4);
-		show(one(`s-value-${leg}`), 29.7 + i * 0.4, "right");
+		show(one(`s-label-${leg}`), 31.3 + i * 0.4);
+		show(one(`s-value-${leg}`), 31.5 + i * 0.4, "right");
 	});
-	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 30.4);
+	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 32.2);
 	// A week later: each leg's delta moves, and the short leg's move is a gain.
-	d.swap(one("s-head"), one("l-head"), 32.6);
+	d.swap(one("s-head"), one("l-head"), 34.4);
 	LEGS.forEach((leg) => {
 		d.count(
 			one<SVGTextElement>(`s-value-${leg}`),
 			SPREAD[1][leg],
-			33.0,
+			34.8,
 			(value) => signedCount(Math.round(value)),
 			SPREAD[0][leg],
 			0.9,
 		);
 	});
-	show(one("s-change"), 34.0);
-	show(one("s-delta-long"), 34.1, "right");
-	show(one("s-delta-short"), 34.3, "right");
-	land(one("s-delta-net"), 34.6);
+	show(one("s-change"), 35.8);
+	show(one("s-delta-long"), 35.9, "right");
+	show(one("s-delta-short"), 36.1, "right");
+	land(one("s-delta-net"), 36.4);
 	// Cut: the claim.
-	hide([one("l-head"), ...flat("spread")], 36.5);
-	word("z-big", 36.9);
-	show(one("z-sub"), 37.3);
+	hide([one("l-head"), ...flat("spread")], 38.3);
+	word("z-big", 38.7);
+	show(one("z-sub"), 39.1);
 
 	// ——— next ———
-	tl.addLabel("next", 41);
-	hide(kids("claim"), 41.0);
-	d.close(41.0);
+	tl.addLabel("next", 42.8);
+	hide(kids("claim"), 42.8);
+	d.close(42.8);
 	return tl;
 }
 
