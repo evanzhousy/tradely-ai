@@ -34,13 +34,13 @@ import {
  *
  *   open      0–4        "Ask TradingFlow AI, then verify"
  *   question  4–9.6      "Someone opened a large bearish bet on CRUX…"
- *   sort      9.6–22.2   five sentences, sorted; cut: a draft until sorted
- *   credits   22.2–28.1  1 + 1 + 2 = 4 credits, locked
- *   insight   28.1–40.4  AI Insight; Edit with AI; cut: the claim
- *   next      40.4–42.9  Next: build your own Rank column
+ *   sort      9.6–23.5   five sentences, sorted; cut: a draft until sorted
+ *   credits   23.5–29.4  1 + 1 + 2 = 4 credits, locked
+ *   insight   29.4–42.5  AI Insight; Edit with AI; cut: the claim
+ *   next      42.5–44.9  Next: build your own Rank column
  */
 
-const END = 42.9;
+const END = 44.9;
 const BET = STATEMENTS.find((item) => item.id === "bet") ?? STATEMENTS[0];
 const REPLIES = [
 	{ kind: "text", cost: COST.text },
@@ -680,28 +680,28 @@ function build(context: FilmContext) {
 		19.4,
 	);
 	word(one("draft-big"), 19.8);
-	show(one("draft-sub"), 20.2);
+	show(one("draft-sub"), 20.0);
 
 	// ——— credits: every reply has a price ———
-	tl.addLabel("credits", 22.2);
-	hide(kids("draft"), 22.2);
-	show(one("c-head"), 22.55, "above");
-	show(one("billing"), 22.7);
+	tl.addLabel("credits", 23.5);
+	hide(kids("draft"), 23.5);
+	show(one("c-head"), 23.85, "above");
+	show(one("billing"), 24);
 	replies.forEach((reply, i) => {
-		show(reply, 22.9 + i * 0.3);
+		show(reply, 24.2 + i * 0.3);
 	});
-	show(one("t-head"), 24.2);
+	show(one("t-head"), 25.5);
 	costs.forEach((cost, i) => {
-		show(cost, 24.4 + i * 0.3, "right");
+		show(cost, 25.7 + i * 0.3, "right");
 	});
-	show([one("total-row"), total], 25.4);
-	d.count(total, TOTAL, 25.6, credits, 0, 0.8);
+	show([one("total-row"), total], 26.7);
+	d.count(total, TOTAL, 26.9, credits, 0, 0.8);
 	// The hero: what three replies cost.
-	d.lock(lockTotal, 26.8, { around: total, pad: 6 });
-	tl.addLabel("hero-lock", 26.8);
+	d.lock(lockTotal, 28.1, { around: total, pad: 6 });
+	tl.addLabel("hero-lock", 28.1);
 
 	// ——— insight: explain, or edit a draft ———
-	tl.addLabel("insight", 28.1);
+	tl.addLabel("insight", 29.4);
 	hide(
 		[
 			one("c-head"),
@@ -713,18 +713,18 @@ function build(context: FilmContext) {
 			total,
 			lockTotal,
 		],
-		28.1,
+		29.4,
 	);
-	show(one("i-head"), 28.45, "above");
-	show([one("bar"), one("bar-title")], 28.7);
-	show(one("st-official"), 28.9);
-	show(one("p-insight"), 29.3);
-	d.swap(one("i-head"), one("e-head"), 32.0);
+	show(one("i-head"), 29.75, "above");
+	show([one("bar"), one("bar-title")], 30);
+	show(one("st-official"), 30.2);
+	show(one("p-insight"), 30.6);
+	d.swap(one("i-head"), one("e-head"), 33.6);
 	// On a phone the panels share one place: Edit with AI replaces AI Insight.
-	if (narrow) hide(one("p-insight"), 32.4);
-	show(one("p-edit"), narrow ? 32.7 : 32.4, narrow ? "below" : "right");
-	d.flip(one("st-official"), one("st-draft"), 33.0);
-	tl.set(one("st-official"), { opacity: 0 }, 33.3);
+	if (narrow) hide(one("p-insight"), 34.1);
+	show(one("p-edit"), narrow ? 34.4 : 34.0, narrow ? "below" : "right");
+	d.flip(one("st-official"), one("st-draft"), 34.6);
+	tl.set(one("st-official"), { opacity: 0 }, 34.9);
 	// Cut: the claim.
 	hide(
 		[
@@ -735,15 +735,15 @@ function build(context: FilmContext) {
 			one("p-insight"),
 			one("p-edit"),
 		],
-		35.9,
+		38,
 	);
-	word(one("claim-big"), 36.3);
-	show(one("claim-sub"), 36.7);
+	word(one("claim-big"), 38.4);
+	show(one("claim-sub"), 38.8);
 
 	// ——— next ———
-	tl.addLabel("next", 40.4);
-	hide(kids("claim"), 40.4);
-	d.close(40.4);
+	tl.addLabel("next", 42.5);
+	hide(kids("claim"), 42.5);
+	d.close(42.5);
 	return tl;
 }
 
