@@ -318,6 +318,19 @@
 	font-weight: 500;
 	letter-spacing: 0.12em;
 }
+/* A tag keeps its tone: evidence, sides and records are told apart by colour. */
+.wt-svg .wt-film-tag.wt-film-accent {
+	fill: var(--diagram-accent);
+}
+.wt-svg .wt-film-tag.wt-film-gain {
+	fill: var(--diagram-gain);
+}
+.wt-svg .wt-film-tag.wt-film-loss {
+	fill: var(--diagram-loss);
+}
+.wt-svg .wt-film-tag.wt-film-warn {
+	fill: var(--diagram-unknown);
+}
 .wt-film-tangent {
 	fill: none;
 	stroke: var(--muted-foreground);

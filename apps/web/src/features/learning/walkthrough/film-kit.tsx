@@ -84,6 +84,8 @@ const PAUSE = /[，。；：！？,;:.!?·—]$/;
 /** Words a line should not end on: they belong to what follows ("isn't the / same"). */
 const LEAN =
 	/^(a|an|the|at|of|to|in|on|by|for|from|with|and|or|is|are|的|在|把|被|和|与)$/i;
+/** Words that hold together: a line never ends between them ("open / interest"). */
+const BOUND = /^(open interest|someone else|anyone else)\W*$/i;
 /** Opening marks that may not end a line. */
 const NO_LINE_END = /^[“‘（「『《〈【〔]$/;
 
@@ -132,7 +134,9 @@ function breakEvenly(
 		const last = tokens[to - 1] ?? "";
 		const pause = j < n && PAUSE.test(last) ? 0.12 : 0;
 		const lean = j < n && LEAN.test(last) ? 0.3 : 0;
-		return ratio * ratio - pause + lean;
+		const next = tokens[j] === " " ? tokens[j + 1] : tokens[j];
+		const bound = j < n && BOUND.test(`${last} ${next ?? ""}`) ? 1 : 0;
+		return ratio * ratio - pause + lean + bound;
 	};
 	const ends = [...starts.slice(1), n];
 	// best[k].get(j): the cheapest k lines over tokens [0, j), and where the last one began.
