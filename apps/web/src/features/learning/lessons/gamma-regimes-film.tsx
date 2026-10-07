@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -39,16 +40,18 @@ import {
  * different calculation. Last, what the target is not: the tape shows no names and the
  * visible book holds 1,600 shares.
  *
- *   open      0–4     "Gamma regimes"
- *   question  4–9.5   ALFA +$1: buy or sell?
- *   regime    9.5–22  net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip $102.3
- *   shortcut  22–30   the strike-sum line crosses at $94.1; cut: $102.3 against $94.1
- *   target    30–40.5  buy 5,121 if…; the tape; the book: 1,600 offered;
- *                      cut: "A regime describes a response, not a forecast."
- *   next      40.5–43  Next: walls and max pain
+ *   open      0–4        "Gamma regimes"
+ *   question  4–9.6      ALFA +$1: buy or sell?
+ *   regime    9.6–21.2   net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip
+ *                        $102.3
+ *   shortcut  21.2–30.2  the strike-sum line crosses at $94.1; cut: $102.3 against $94.1,
+ *                        the flip locked
+ *   target    30.2–40.6  buy 5,121 if…; the tape; the book: 1,600 offered;
+ *                        cut: "A regime describes a response, not a forecast."
+ *   next      40.6–43.1  Next: walls and max pain
  */
 
-const END = 43;
+const END = 43.1;
 const X = [88, 112] as const;
 const Y = 2_000_000;
 const curve = Array.from({ length: (X[1] - X[0]) * 2 + 1 }, (_, i) => {
@@ -111,15 +114,15 @@ const copy = {
 	shortZone: ["short gamma", "空 Gamma"],
 	longZone: ["long gamma", "多 Gamma"],
 	shortHead: [
-		`At ${stock(SPOT)}, short gamma: a $1 rise makes the hedge buy.`,
-		`在 ${stock(SPOT)} 是空 Gamma：上涨 $1，对冲买入。`,
+		`At ${stock(SPOT)}: short gamma, the hedge buys.`,
+		`在 ${stock(SPOT)} 是空 Gamma：上涨时对冲买入。`,
 	],
 	shortHeadShort: [
 		"Short gamma: the hedge buys a rise.",
 		"空 Gamma：上涨时买入。",
 	],
 	longHead: [
-		`At ${stock(ABOVE)}, long gamma: the same rise makes it sell.`,
+		`At ${stock(ABOVE)}: long gamma, the hedge sells.`,
 		`在 ${stock(ABOVE)} 是多 Gamma：同样的上涨让它卖出。`,
 	],
 	longHeadShort: [
@@ -134,8 +137,8 @@ const copy = {
 	againstMove: ["against the move", "逆着变动"],
 	flip: [`flip ${level(FLIP)}`, `转折 ${level(FLIP)}`],
 	shortcutHead: [
-		"A running sum of today's strike bars crosses elsewhere.",
-		"把今天各行权价的柱子累加，穿零点在别处。",
+		"A running sum of strike bars crosses elsewhere.",
+		"把各行权价的柱子累加，穿零点在别处。",
 	],
 	shortcutHeadShort: [
 		"The strike sum crosses elsewhere.",
@@ -194,8 +197,8 @@ const copy = {
 		"状态描述的是响应，不是预测。",
 	],
 	claimSub: [
-		"The flip is a modeled level; what hedgers do depends on who holds what.",
-		"转折点是模型得出的位置；对冲者怎么做，取决于谁持有什么。",
+		"A modeled flip; hedging depends on who holds what.",
+		"转折点是模型得出的；对冲取决于谁持有什么。",
 	],
 	nextBig: ["Next: walls and max pain", "下一课：墙位与最大痛点"],
 	nextSub: ["reference levels, not targets", "参考位置，不是目标"],
@@ -469,8 +472,26 @@ function Scene({
 			</g>
 			{headline("c-head", copy.curveHead, copy.curveHeadShort)}
 			{headline("s-head", copy.shortHead, copy.shortHeadShort)}
-			{headline("l-head", copy.longHead, copy.longHeadShort)}
+			<Lines
+				name="l-head"
+				text={t(narrow ? copy.longHeadShort : copy.longHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.shortHeadShort : copy.shortHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{headline("k-head", copy.shortcutHead, copy.shortcutHeadShort)}
+			<Brackets name="lock-flip" glow />
 			<g data-f="two">
 				{(
 					[
@@ -496,7 +517,12 @@ function Scene({
 							name={`w-num-${i}`}
 							x={W * L.pair[i]}
 							y={H * 0.3 + T.big * 0.95}
-							size={Math.min(T.big * 0.85, (W * 0.42) / (num.length * 0.62))}
+							// Both figures at one size, the longer's six characters leaving clear space
+							// between them.
+							size={Math.min(
+								T.big * 0.85,
+								(W * (L.pair[1] - L.pair[0]) * 0.7) / (6 * 0.62),
+							)}
 							className={`wt-film-num ${tone}`}
 						>
 							{num}
@@ -591,10 +617,19 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const marker = one("marker");
+	const lockFlip = one<SVGGraphicsElement>("lock-flip");
 
 	d.hidden([
 		one("zone-short"),
@@ -610,6 +645,7 @@ function build(context: FilmContext) {
 		...kids("q"),
 		...["c-head", "s-head", "l-head", "k-head"].map((name) => one(name)),
 		...flat("two"),
+		lockFlip,
 		...flat("target"),
 		...kids("claim"),
 	]);
@@ -621,16 +657,16 @@ function build(context: FilmContext) {
 	// ——— question: a rise, and two possible responses ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	slam(one("q-move"), 4.7);
-	pop(one("q-buy"), 5.7);
-	pop(one("q-sell"), 6.1);
-	show(one("q-line"), 7.0);
+	land(one("q-move"), 4.7);
+	land(one("q-buy"), 5.3);
+	land(one("q-sell"), 5.6);
+	show(one("q-line"), 6.0);
 
 	// ——— regime: the curve answers by where ALFA is ———
-	tl.addLabel("regime", 9.5);
-	hide(kids("q"), 9.5);
-	show(one("c-head"), 9.7, "above");
-	rise(9.8);
+	tl.addLabel("regime", 9.6);
+	hide(kids("q"), 9.6);
+	show(one("c-head"), 9.8, "above");
+	rise(9.9);
 	tl.to(
 		one("draw"),
 		{
@@ -638,21 +674,20 @@ function build(context: FilmContext) {
 			duration: 1.6,
 			ease: "power2.inOut",
 		},
-		10.4,
+		10.3,
 	);
 	tl.to(
 		[one("zone-short"), one("zone-long")],
 		{ opacity: 1, duration: 0.6 },
-		12.0,
+		11.9,
 	);
-	show([one("zone-short-label"), one("zone-long-label")], 12.2, "below", 0.4);
+	show([one("zone-short-label"), one("zone-long-label")], 12.1, "below", 0.4);
 	// At $100: short gamma, the hedge buys a rise.
-	d.swap(one("c-head"), one("s-head"), 13.2);
-	pop(marker, 13.6);
-	show(one("buy"), 14.0, "right");
+	d.swap(one("c-head"), one("s-head"), 13.4);
+	land(marker, 13.9);
+	show(one("buy"), 14.3, "right");
 	// At $105: long gamma, it sells.
-	d.swap(one("s-head"), one("l-head"), 16.6);
-	tl.to(one("buy"), { opacity: 0.3, duration: 0.3 }, 16.6);
+	tl.to(one("buy"), { opacity: 0.3, duration: 0.3 }, 17.2);
 	const walk = { spot: SPOT };
 	tl.to(
 		walk,
@@ -665,50 +700,57 @@ function build(context: FilmContext) {
 					attr: { cx: L.x(walk.spot), cy: L.y(netGex(walk.spot)) },
 				}),
 		},
-		17.0,
+		17.2,
 	);
-	show(one("sell"), 18.3, "right");
-	pop(one("flip"), 19.5);
+	show(one("l-head"), 17.6);
+	show(one("sell"), 18.5, "right");
+	land(one("flip"), 19.4);
 
 	// ——— shortcut: a sum across strikes is a different number ———
-	tl.addLabel("shortcut", 22);
-	d.swap(one("l-head"), one("k-head"), 22.0);
-	tl.to([one("buy"), one("sell"), marker], { opacity: 0, duration: 0.3 }, 22.0);
-	tl.to(one("sum-line"), { opacity: 1, duration: 0.6 }, 22.6);
-	pop(one("sum-dot"), 23.4);
-	// Cut: the two numbers.
-	hide(one("k-head"), 25.2);
-	sink(25.2);
-	show(one("w-tag-0"), 25.6);
-	slam(one("w-num-0"), 25.8);
-	show(one("w-tag-1"), 26.4);
-	slam(one("w-num-1"), 26.6);
-	show(one("w-line"), 27.4);
+	tl.addLabel("shortcut", 21.2);
+	hide([one("s-head"), one("l-head")], 21.2);
+	show(one("k-head"), 21.55, "above");
+	tl.to([one("buy"), one("sell"), marker], { opacity: 0, duration: 0.3 }, 21.2);
+	tl.to(one("sum-line"), { opacity: 1, duration: 0.6 }, 21.7);
+	land(one("sum-dot"), 22.4);
+	// Cut: the two numbers. The hero: only the repriced one is the flip.
+	hide(one("k-head"), 25.1);
+	sink(25.1);
+	show(one("w-tag-0"), 25.4);
+	land(one("w-num-0"), 25.6);
+	show(one("w-tag-1"), 26.0);
+	land(one("w-num-1"), 26.2);
+	d.lock(lockFlip, 26.8, {
+		around: [one("w-tag-0"), one("w-num-0")],
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 26.8);
+	show(one("w-line"), 27.2);
 
 	// ——— target: what the model's number isn't ———
-	tl.addLabel("target", 30);
-	hide(flat("two"), 30.0);
-	show(one("t-head"), 30.3, "above");
+	tl.addLabel("target", 30.2);
+	hide([...flat("two"), lockFlip], 30.2);
+	show(one("t-head"), 30.55, "above");
 	[0, 1, 2].forEach((i) => {
-		const at = 30.9 + i * 1.4;
+		const at = 31.0 + i * 1.3;
 		show(one(`t-tag-${i}`), at);
-		slam(one(`t-value-${i}`), at + 0.2);
+		land(one(`t-value-${i}`), at + 0.2);
 		show(one(`t-note-${i}`), at + 0.6);
 	});
 	// Cut: the claim.
-	hide(flat("target"), 36.6);
+	hide(flat("target"), 36.0);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		37.0,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		36.4,
 	);
-	show(one("z-sub"), 37.5);
+	show(one("z-sub"), 36.8);
 
 	// ——— next ———
-	tl.addLabel("next", 40.5);
-	hide(kids("claim"), 40.5);
-	d.close(40.5);
+	tl.addLabel("next", 40.6);
+	hide(kids("claim"), 40.6);
+	d.close(40.6);
 	return tl;
 }
 
