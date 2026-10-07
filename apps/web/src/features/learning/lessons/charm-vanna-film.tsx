@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -35,21 +36,21 @@ import {
 /*
  * Charm and vanna, as a film. It opens on the Oct 18 110 call's delta, 0.177, and a week
  * in which ALFA stays at $100 and nobody trades. Delta falls anyway: to 0.144 from time
- * alone (charm, −0.004 a day), and to 0.120 if IV also drops three points (vanna, +0.008
- * per vol point). The same charm reads +1.46 quoted per year of time left. Last, a signed
- * position: the 10:50 spread's delta rises from +7,750 to +8,150 shares with no trade.
+ * alone (charm, −0.004 a day, the same charm as +1.46 per year of time left), and to 0.120
+ * if IV also drops three points (vanna, +0.008 per vol point). Last, a signed position:
+ * the 10:50 spread's delta rises from +7,750 to +8,150 shares with no trade.
  *
- *   open      0–4     "Charm and vanna"
- *   question  4–9.5   0.177 — a week passes, ALFA stays at $100, nobody trades
- *   charm     9.5–20  delta across days; a week: 0.177 → 0.144; cut: Charm, −0.004 a day
- *   vanna     20–29.5 IV −3: 0.144 → 0.120; cut: Vanna, +0.008 per vol point
- *   units     29.5–36 −0.004 per day against +1.46 per year left
- *   spread    36–46.5 +16,600 and −8,850 → +15,350 and −7,200: net +400;
- *                      cut: "Delta can change while nothing trades."
- *   next      46.5–49  Next: the module checkpoint
+ *   open      0–4        "Charm and vanna"
+ *   question  4–9.6      0.177 — a week passes, ALFA stays at $100, nobody trades
+ *   charm     9.6–21     delta across days; a week: 0.177 → 0.144; cut: Charm, −0.004 a
+ *                        day, +1.46 per year left
+ *   vanna     21–28.7    IV −3: 0.144 → 0.120; cut: Vanna, +0.008 per vol point, locked
+ *   spread    28.7–41    +16,600 and −8,850 → +15,350 and −7,200: net +400;
+ *                        cut: "Delta can change while nothing trades."
+ *   next      41–43.5    Next: the module checkpoint
  */
 
-const END = 49;
+const END = 43.5;
 const DAYS_SHOWN = 28;
 const Y_TOP = 0.2;
 const LABEL_DAY = 17;
@@ -102,18 +103,15 @@ const copy = {
 	q1: [`ALFA stays at $${SPOT}`, `ALFA 停在 $${SPOT}`],
 	q2: ["nobody trades", "没人交易"],
 	curveHead: [
-		`The ${STRIKE} call's delta as days pass, ALFA held at $${SPOT}.`,
-		`ALFA 保持 $${SPOT} 时，${STRIKE} 看涨的 Delta 随天数变化。`,
+		`The ${STRIKE} call's delta, day by day.`,
+		`${STRIKE} 看涨的 Delta，逐日变化。`,
 	],
 	curveHeadShort: ["Delta as days pass.", "Delta 随天数变化。"],
 	weekHead: [
-		`A week, no trade: delta falls to ${plain3(AFTER_WEEK)}.`,
-		`一周，没有成交：Delta 降到 ${plain3(AFTER_WEEK)}。`,
+		"A week, no trade: delta falls anyway.",
+		"一周，没有成交：Delta 照样下降。",
 	],
-	weekHeadShort: [
-		`A week, no trade: ${plain3(AFTER_WEEK)}.`,
-		`一周，无成交：${plain3(AFTER_WEEK)}。`,
-	],
+	weekHeadShort: ["A week, no trade: it falls.", "一周无成交：照样下降。"],
 	volHead: [
 		`Now IV falls ${VOL_DROP} points as well.`,
 		`现在 IV 也下降 ${VOL_DROP} 个点。`,
@@ -133,6 +131,10 @@ const copy = {
 		"价格与 IV 不变时，Delta 随天数流逝的变化",
 	],
 	charmNum: [`${fixed3(CHARM_DAY)} a day`, `每天 ${fixed3(CHARM_DAY)}`],
+	charmAlt: [
+		`the same charm: ${PER_YEAR} per year of time left`,
+		`同一个 Charm：按每一年剩余期限为 ${PER_YEAR}`,
+	],
 	vannaWord: ["Vanna", "Vanna"],
 	vannaDef: [
 		"how delta changes with implied volatility",
@@ -142,23 +144,11 @@ const copy = {
 		`${fixed3(VANNA_POINT)} per vol point`,
 		`每个波动率点 ${fixed3(VANNA_POINT)}`,
 	],
-	unitsHead: ["One charm, two quotes.", "同一个 Charm，两种报法。"],
-	perDay: ["per day passed", "每经过一天"],
-	perDayShort: ["per day", "每天"],
-	perYear: ["per year of time left", "每一年剩余期限"],
-	perYearShort: ["per year left", "每年剩余"],
-	unitsLine: [
-		"Time left runs the other way, and a year is 365 days. Read the unit before you scale.",
-		"剩余期限方向相反，一年是 365 天。先读单位，再去放大。",
-	],
-	spreadHead: [
-		`The 10:50 spread: long ${LONG.quantity} ${LONG.strike} calls, short ${SHORT.quantity} ${SHORT.strike} calls.`,
-		`10:50 价差：多头 ${LONG.quantity} 张 ${LONG.strike} 看涨，空头 ${SHORT.quantity} 张 ${SHORT.strike} 看涨。`,
-	],
+	spreadHead: ["The 10:50 call spread, two legs.", "10:50 看涨价差，两条腿。"],
 	spreadHeadShort: ["The 10:50 call spread.", "10:50 看涨价差。"],
 	laterHead: [
-		"A week later, nothing traded: the short leg's decay adds delta.",
-		"一周后，没有成交：空头腿的衰减增加了 Delta。",
+		"A week later, no trade: delta rises.",
+		"一周后，没有成交：Delta 上升。",
 	],
 	laterHeadShort: ["A week later, no trade.", "一周后，没有成交。"],
 	long: [
@@ -177,8 +167,8 @@ const copy = {
 		"没有成交，Delta 也会变。",
 	],
 	claimSub: [
-		"Charm and vanna are model sensitivities on a stated position, not observed flow.",
-		"Charm 与 Vanna 是模型对给定持仓的敏感度，不是观测到的成交流。",
+		"Model sensitivities on a stated position, not flow.",
+		"Charm 与 Vanna 是模型敏感度，不是成交流。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
@@ -212,7 +202,13 @@ function Scene({
 		/>
 	);
 	/** A cut to one word: the name, what it measures, and its size here. */
-	const card = (name: string, word: Copy, definition: Copy, figure: Copy) => (
+	const card = (
+		name: string,
+		word: Copy,
+		definition: Copy,
+		figure: Copy,
+		alt?: Copy,
+	) => (
 		<g data-f={name}>
 			<Word
 				name={`${name}-word`}
@@ -246,6 +242,23 @@ function Scene({
 			>
 				{t(figure)}
 			</Word>
+			{alt ? (
+				<Lines
+					name={`${name}-alt`}
+					text={t(alt)}
+					x={W / 2}
+					y={
+						H * 0.42 +
+						T.big * 0.62 +
+						lineCount(t(definition), room, T.body) * T.body * 1.35 +
+						T.head * 1.6 +
+						T.body * 2
+					}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type wt-film-dim"
+				/>
+			) : null}
 		</g>
 	);
 	const x7 = L.x(WEEK);
@@ -428,56 +441,15 @@ function Scene({
 			{headline("c-head", copy.curveHead, copy.curveHeadShort)}
 			{headline("w-head", copy.weekHead, copy.weekHeadShort)}
 			{headline("v-head", copy.volHead, copy.volHead)}
-			{card("charm", copy.charmWord, copy.charmDef, copy.charmNum)}
+			{card(
+				"charm",
+				copy.charmWord,
+				copy.charmDef,
+				copy.charmNum,
+				copy.charmAlt,
+			)}
 			{card("vanna", copy.vannaWord, copy.vannaDef, copy.vannaNum)}
-			<g data-f="units">
-				{headline("u-head", copy.unitsHead, copy.unitsHead)}
-				{(
-					[
-						[narrow ? copy.perDayShort : copy.perDay, fixed3(CHARM_DAY)],
-						[narrow ? copy.perYearShort : copy.perYear, PER_YEAR],
-					] as const
-				).map(([tag, num], i) => (
-					<g key={tag[0]}>
-						<Word
-							name={`u-tag-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.34}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`u-num-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.34 + T.big * 0.95}
-							size={T.big * 0.8}
-							className={`wt-film-num ${i ? "" : "wt-film-accent"}`}
-						>
-							{num}
-						</Word>
-					</g>
-				))}
-				<Word
-					name="u-equation"
-					x={W / 2}
-					y={H * 0.66}
-					size={T.head}
-					className="wt-film-num"
-				>
-					{`${PER_YEAR} × −1/365 = ${fixed3(CHARM_DAY)}`}
-				</Word>
-				<Lines
-					name="u-line"
-					text={t(copy.unitsLine)}
-					x={W / 2}
-					y={H * 0.8}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
-			</g>
+			<Brackets name="lock-vanna" glow />
 			{headline("s-head", copy.spreadHead, copy.spreadHeadShort)}
 			{headline("l-head", copy.laterHead, copy.laterHeadShort)}
 			<g data-f="spread">
@@ -582,7 +554,15 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const marker = one("marker");
@@ -606,9 +586,10 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			one(name),
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			at,
 		);
+	const lockVanna = one<SVGGraphicsElement>("lock-vanna");
 
 	d.hidden([
 		one("same-label"),
@@ -626,7 +607,7 @@ function build(context: FilmContext) {
 		),
 		...kids("charm"),
 		...kids("vanna"),
-		...flat("units"),
+		lockVanna,
 		...flat("spread"),
 		...kids("claim"),
 	]);
@@ -639,18 +620,18 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	slam(one("q-big"), 4.8);
-	for (const i of [0, 1, 2]) show(one(`q-${i}`), 6.0 + i * 0.6, "below");
+	land(one("q-big"), 4.8);
+	for (const i of [0, 1, 2]) show(one(`q-${i}`), 5.8 + i * 0.5, "below");
 
 	// ——— charm: time alone moves delta ———
-	tl.addLabel("charm", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("c-head"), 9.7, "above");
-	rise(9.8);
-	reveal("draw-same", 10.4, 1.6);
-	show(kids("meter"), 12.0, "above");
-	pop(marker, 12.2);
-	tl.to(one("level"), { opacity: 1, duration: 0.4 }, 12.4);
+	tl.addLabel("charm", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("c-head"), 9.8, "above");
+	rise(9.9);
+	reveal("draw-same", 10.3, 1.6);
+	show(kids("meter"), 11.9, "above");
+	land(marker, 12.1);
+	tl.to(one("level"), { opacity: 1, duration: 0.4 }, 12.3);
 	d.swap(one("c-head"), one("w-head"), 13.4);
 	const walk = { day: 0 };
 	tl.to(
@@ -669,90 +650,82 @@ function build(context: FilmContext) {
 	d.count(meter, AFTER_WEEK, 13.8, plain3, TODAY, 1.2);
 	draw(one<SVGPathElement>("charm-step"), 15.0);
 	show(one("charm-change"), 15.2, "right");
-	// Cut: the word.
-	hide([one("w-head"), ...kids("meter")], 16.6);
-	sink(16.6);
-	word("charm-word", 17.0);
-	show(one("charm-def"), 17.5);
-	slam(one("charm-num"), 18.0);
+	// Cut: the word, and the same charm in its other unit.
+	hide([one("w-head"), ...kids("meter")], 17.3);
+	sink(17.3);
+	word("charm-word", 17.7);
+	show(one("charm-def"), 18.1);
+	land(one("charm-num"), 18.5);
+	show(one("charm-alt"), 19.2);
 
 	// ——— vanna: and implied volatility moves it too ———
-	tl.addLabel("vanna", 20);
-	hide(kids("charm"), 20.0);
-	show(one("v-head"), 20.2, "above");
-	rise(20.3);
-	show(kids("meter"), 20.6, "above");
-	reveal("draw-low", 20.8, 1.4);
-	show([one("same-label"), one("low-label")], 22.3);
+	tl.addLabel("vanna", 21);
+	hide(kids("charm"), 21.0);
+	show(one("v-head"), 21.35, "above");
+	rise(21.4);
+	show(kids("meter"), 21.7, "above");
+	reveal("draw-low", 21.8, 1.4);
+	show([one("same-label"), one("low-label")], 23.2);
 	tl.to(
 		marker,
 		{ attr: { cy: L.y(AFTER_BOTH) }, duration: 0.6, ease: "power2.inOut" },
-		22.8,
+		23.5,
 	);
-	d.count(meter, AFTER_BOTH, 22.8, plain3, AFTER_WEEK, 0.6);
-	draw(one<SVGPathElement>("vanna-step"), 23.3);
-	show(one("vanna-change"), 23.5);
-	// Cut: the word.
-	hide([one("v-head"), ...kids("meter")], 25.2);
-	sink(25.2);
-	word("vanna-word", 25.6);
-	show(one("vanna-def"), 26.1);
-	slam(one("vanna-num"), 26.6);
-
-	// ——— units: the same charm, quoted two ways ———
-	tl.addLabel("units", 29.5);
-	hide(kids("vanna"), 29.5);
-	show(one("u-head"), 29.7, "above");
-	show(one("u-tag-0"), 30.0);
-	slam(one("u-num-0"), 30.2);
-	show(one("u-tag-1"), 30.8);
-	slam(one("u-num-1"), 31.0);
-	show(one("u-equation"), 32.0);
-	show(one("u-line"), 32.8);
+	d.count(meter, AFTER_BOTH, 23.5, plain3, AFTER_WEEK, 0.6);
+	draw(one<SVGPathElement>("vanna-step"), 24.0);
+	show(one("vanna-change"), 24.2);
+	// Cut: the word. The hero: vanna, made from the fall.
+	hide([one("v-head"), ...kids("meter")], 24.9);
+	sink(24.9);
+	word("vanna-word", 25.3);
+	show(one("vanna-def"), 25.7);
+	land(one("vanna-num"), 26.1);
+	d.lock(lockVanna, 26.7, { around: one("vanna-num"), pad: 8 });
+	tl.addLabel("hero-lock", 26.7);
 
 	// ——— spread: a signed position turns it into shares ———
-	tl.addLabel("spread", 36);
-	hide(flat("units"), 36.0);
-	show(one("s-head"), 36.2, "above");
-	show(one("s-shares"), 36.6);
+	tl.addLabel("spread", 28.7);
+	hide([...kids("vanna"), lockVanna], 28.7);
+	show(one("s-head"), 29.05, "above");
+	show(one("s-shares"), 29.3);
 	LEGS.forEach((leg, i) => {
-		show(one(`s-label-${leg}`), 36.8 + i * 0.5);
-		show(one(`s-value-${leg}`), 37.0 + i * 0.5, "right");
+		show(one(`s-label-${leg}`), 29.5 + i * 0.4);
+		show(one(`s-value-${leg}`), 29.7 + i * 0.4, "right");
 	});
-	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 37.8);
+	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 30.4);
 	// A week later: each leg's delta moves, and the short leg's move is a gain.
-	d.swap(one("s-head"), one("l-head"), 39.6);
+	d.swap(one("s-head"), one("l-head"), 32.6);
 	LEGS.forEach((leg) => {
 		d.count(
 			one<SVGTextElement>(`s-value-${leg}`),
 			SPREAD[1][leg],
-			40.0,
+			33.0,
 			(value) => signedCount(Math.round(value)),
 			SPREAD[0][leg],
 			0.9,
 		);
 	});
-	show(one("s-change"), 41.0);
-	show(one("s-delta-long"), 41.1, "right");
-	show(one("s-delta-short"), 41.4, "right");
-	slam(one("s-delta-net"), 41.9);
+	show(one("s-change"), 34.0);
+	show(one("s-delta-long"), 34.1, "right");
+	show(one("s-delta-short"), 34.3, "right");
+	land(one("s-delta-net"), 34.6);
 	// Cut: the claim.
-	hide([one("l-head"), ...flat("spread")], 43.6);
-	word("z-big", 44.0);
-	show(one("z-sub"), 44.5);
+	hide([one("l-head"), ...flat("spread")], 36.5);
+	word("z-big", 36.9);
+	show(one("z-sub"), 37.3);
 
 	// ——— next ———
-	tl.addLabel("next", 46.5);
-	hide(kids("claim"), 46.5);
-	d.close(46.5);
+	tl.addLabel("next", 41);
+	hide(kids("claim"), 41.0);
+	d.close(41.0);
 	return tl;
 }
 
 export const charmVannaFilm: Film = {
 	id: "charm-vanna",
 	label: [
-		`Charm and vanna, as a short film: the Oct 18 ${STRIKE} call's model delta of ${plain3(TODAY)} through a week in which ALFA stays at $${SPOT} and nobody trades; time alone takes it to ${plain3(AFTER_WEEK)}, which is charm, ${fixed3(CHARM_DAY)} a day; a ${VOL_DROP}-point fall in IV takes it to ${plain3(AFTER_BOTH)}, which is vanna, ${fixed3(VANNA_POINT)} per vol point; the same charm quoted as ${PER_YEAR} per year of time left; and the 10:50 call spread's delta rising from ${signedCount(SPREAD[0].net)} to ${signedCount(SPREAD[1].net)} shares with no trade`,
-		`Charm 与 Vanna 短片：10月18日 ${STRIKE} 看涨的模型 Delta ${plain3(TODAY)}，经过 ALFA 停在 $${SPOT}、无人交易的一周；仅时间就让它降到 ${plain3(AFTER_WEEK)}，这是 Charm，每天 ${fixed3(CHARM_DAY)}；IV 下降 ${VOL_DROP} 点让它降到 ${plain3(AFTER_BOTH)}，这是 Vanna，每个波动率点 ${fixed3(VANNA_POINT)}；同一个 Charm 按每一年剩余期限报价为 ${PER_YEAR}；以及 10:50 看涨价差的 Delta 在没有成交的情况下从 ${signedCount(SPREAD[0].net)} 股升到 ${signedCount(SPREAD[1].net)} 股`,
+		`Charm and vanna, as a short film: the Oct 18 ${STRIKE} call's model delta of ${plain3(TODAY)} through a week in which ALFA stays at $${SPOT} and nobody trades; time alone takes it to ${plain3(AFTER_WEEK)}, which is charm, ${fixed3(CHARM_DAY)} a day or ${PER_YEAR} per year of time left; a ${VOL_DROP}-point fall in IV takes it to ${plain3(AFTER_BOTH)}, which is vanna, ${fixed3(VANNA_POINT)} per vol point; and the 10:50 call spread's delta rising from ${signedCount(SPREAD[0].net)} to ${signedCount(SPREAD[1].net)} shares with no trade`,
+		`Charm 与 Vanna 短片：10月18日 ${STRIKE} 看涨的模型 Delta ${plain3(TODAY)}，经过 ALFA 停在 $${SPOT}、无人交易的一周；仅时间就让它降到 ${plain3(AFTER_WEEK)}，这是 Charm，每天 ${fixed3(CHARM_DAY)}，按每一年剩余期限为 ${PER_YEAR}；IV 下降 ${VOL_DROP} 点让它降到 ${plain3(AFTER_BOTH)}，这是 Vanna，每个波动率点 ${fixed3(VANNA_POINT)}；以及 10:50 看涨价差的 Delta 在没有成交的情况下从 ${signedCount(SPREAD[0].net)} 股升到 ${signedCount(SPREAD[1].net)} 股`,
 	],
 	stage: "dark",
 	shots: [
@@ -760,7 +733,6 @@ export const charmVannaFilm: Film = {
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "charm", label: ["Charm", "Charm"] },
 		{ id: "vanna", label: ["Vanna", "Vanna"] },
-		{ id: "units", label: ["Units", "单位"] },
 		{ id: "spread", label: ["The position", "持仓"] },
 		{ id: "next", label: ["Next", "下一步"] },
 	],
