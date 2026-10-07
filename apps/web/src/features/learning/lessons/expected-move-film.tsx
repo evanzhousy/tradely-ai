@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -35,17 +36,18 @@ import {
  * outcomes, under the model), the straddle's narrower bracket (the average move, 0.80
  * of it), the tails, and twelve past months that jumped past them.
  *
- *   open      0–4     "Expected move"
- *   question  4–9.5   IV 35% → ±$? by Oct 18
- *   scale     9.5–16  $100 × 35% = $35; × √(32 ÷ 365) = × 0.296; ±$10.36
- *   bell      16–22   the ±1 SD band grows to 68% of outcomes
- *   straddle  22–29   the straddle's bracket, $8.27; cut: 0.80 of one SD
- *   outside   29–44   the tails, 16% each side; twelve past months, 4 outside one SD and
- *                     May's 2.2×; cut: "A range is a scale, not a wall."
- *   next      44–46.5  Next: the volatility surface
+ *   open      0–4        "Expected move"
+ *   question  4–9.6      IV 35% → ±$? by Oct 18
+ *   scale     9.6–15.8   $100 × 35% = $35; × √(32 ÷ 365) = × 0.296; ±$10.36
+ *   bell      15.8–23.1  what the range covers: the ±1 SD band grows to 68% of outcomes
+ *   straddle  23.1–31    hero: the straddle's bracket, $8.27; cut: 0.80 of one SD, locked
+ *   outside   31–40.4    the tails, 16% each side; twelve past months, 4 outside one SD,
+ *                        May's earnings among them
+ *   claim     40.4–44.8  "A range is a scale, not a wall."
+ *   next      44.8–47.3  Next: the volatility surface
  */
 
-const END = 46.5;
+const END = 47.3;
 const B_X = [68, 132] as const;
 const B_TOP = 1.3;
 const M_TOP = 2.4;
@@ -62,7 +64,8 @@ function layout(width: number) {
 	const { height, narrow } = frame;
 	const left = frame.margin;
 	const right = width * 0.965;
-	const top = height * (narrow ? 0.3 : 0.22);
+	// Headroom for a two-line headline above the charts' captions.
+	const top = height * (narrow ? 0.3 : 0.25);
 	const bottom = height * 0.8;
 	const xB = (price: number) =>
 		left + ((price - B_X[0]) / (B_X[1] - B_X[0])) * (right - left);
@@ -126,6 +129,7 @@ const copy = {
 		`Not × ${DAYS}/365: that would give ${share(((SPOT * IV) / 100) * (DAYS / 365))}.`,
 		`不是乘以 ${DAYS}/365：那样只有 ${share(((SPOT * IV) / 100) * (DAYS / 365))}。`,
 	],
+	bellQuestion: ["What does that range cover?", "这个区间覆盖多少？"],
 	bellHead: ["Under the model, 68% land inside.", "按模型，68% 落在区间内。"],
 	bellHeadShort: ["68% land inside, in the model.", "按模型，68% 在区间内。"],
 	bellAxis: ["ALFA on Oct 18, model", "10月18日 的 ALFA，模型"],
@@ -137,25 +141,17 @@ const copy = {
 	straddle: [`straddle ${share(STRADDLE)}`, `跨式 ${share(STRADDLE)}`],
 	ratioWord: ["of one SD", "个标准差"],
 	ratioSub: [
-		`${share(STRADDLE)} ÷ ${share(MOVE)}. The straddle pays the distance from $${SPOT}, so it prices the average move. 68% is a different number: the share inside.`,
-		`${share(STRADDLE)} ÷ ${share(MOVE)}。跨式支付与 $${SPOT} 的距离，所以它定价的是平均变动。68% 是另一个数：落在区间内的比例。`,
+		`${share(STRADDLE)} ÷ ${share(MOVE)}: the average move, not the range.`,
+		`${share(STRADDLE)} ÷ ${share(MOVE)}：平均变动，不是区间。`,
 	],
-	outsideHead: [
-		"About a third of the time, it ends outside.",
-		"约三分之一的时候，收在区间之外。",
-	],
-	outsideHeadShort: ["About a third end outside.", "约三分之一收在区间外。"],
+	outsideHead: ["About a third end outside.", "约三分之一收在区间外。"],
 	tail: [
 		`${Math.round(MODEL_OUTSIDE[1] / 2)}%`,
 		`${Math.round(MODEL_OUTSIDE[1] / 2)}%`,
 	],
 	monthsHead: [
-		`${outside(1)} of 12 ended outside 1 SD.`,
-		`12 个中 ${outside(1)} 个在 1 个标准差之外。`,
-	],
-	jumpHead: [
-		`May's earnings jump: ${PAST[MAY]}×.`,
-		`五月财报跳空：${PAST[MAY]} 倍。`,
+		`${outside(1)} of 12 past months did.`,
+		`过去 12 个月中有 ${outside(1)} 个如此。`,
 	],
 	monthsAxis: [
 		"move ÷ implied 1 SD · 12 past expiries · illustrative",
@@ -168,8 +164,8 @@ const copy = {
 	earnings: ["earnings", "财报"],
 	claimBig: ["A range is a scale, not a wall.", "区间是一把尺子，不是一堵墙。"],
 	claimSub: [
-		"IV × √time sets one SD; the straddle prices the average move; jumps fatten the tails.",
-		"IV × √时间 给出一个标准差；跨式定价平均变动；跳空让尾部更厚。",
+		"IV × √time sets one SD; jumps fatten the tails.",
+		"IV × √时间 给出一个标准差；跳空让尾部更厚。",
 	],
 	nextBig: ["Next: the volatility surface", "下一课：波动率曲面"],
 	nextSub: [
@@ -452,8 +448,22 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
-			{headline("b-head", copy.bellHead, copy.bellHeadShort)}
+			{headline("b-head", copy.bellQuestion, copy.bellQuestion)}
+			{/* The answer, a line under the question, as the share inside lands. */}
+			<Lines
+				name="b2-head"
+				text={t(narrow ? copy.bellHeadShort : copy.bellHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(t(copy.bellQuestion), room, T.head) * T.head * 1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{headline("s-head", copy.straddleHead, copy.straddleHeadShort)}
+			<Brackets name="lock-ratio" glow />
 			<g data-f="r">
 				<Word
 					name="r-num"
@@ -483,9 +493,19 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
-			{headline("o-head", copy.outsideHead, copy.outsideHeadShort)}
-			{headline("m-head", copy.monthsHead, copy.monthsHead)}
-			{headline("j-head", copy.jumpHead, copy.jumpHead)}
+			{headline("o-head", copy.outsideHead, copy.outsideHead)}
+			{/* The answer from real months, a line under the model's third. */}
+			<Lines
+				name="m-head"
+				text={t(copy.monthsHead)}
+				x={L.margin}
+				y={
+					L.headY + lineCount(t(copy.outsideHead), room, T.head) * T.head * 1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -523,7 +543,16 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
+	const lockRatio = one<SVGGraphicsElement>("lock-ratio");
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const charts = { bell: one("chart-bell"), months: one("chart-months") };
@@ -548,7 +577,8 @@ function build(context: FilmContext) {
 		one("m-may"),
 		...flat("q"),
 		...flat("e"),
-		...["b-head", "s-head", "o-head", "m-head", "j-head"].map((name) =>
+		lockRatio,
+		...["b-head", "b2-head", "s-head", "o-head", "m-head"].map((name) =>
 			one(name),
 		),
 		...kids("r"),
@@ -563,25 +593,25 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag-0"), 4.6);
-	slam(one("q-num-0"), 4.8);
-	show(one("q-tag-1"), 5.6);
-	slam(one("q-num-1"), 5.8);
-	show(one("q-line"), 6.8);
+	land(one("q-num-0"), 4.8);
+	show(one("q-tag-1"), 5.3);
+	land(one("q-num-1"), 5.5);
+	show(one("q-line"), 6.0);
 
 	// ——— scale: a year's move, scaled by the square root of time ———
-	tl.addLabel("scale", 9.5);
-	hide(flat("q"), 9.5);
+	tl.addLabel("scale", 9.6);
+	hide(flat("q"), 9.6);
 	for (const i of [0, 1, 2]) {
-		show(one(`e-tag-${i}`), 9.8 + i * 1.3);
-		slam(one(`e-num-${i}`), 10.0 + i * 1.3);
+		show(one(`e-tag-${i}`), 9.9 + i * 1.2);
+		land(one(`e-num-${i}`), 10.1 + i * 1.2);
 	}
-	show(one("e-note"), 13.6);
+	show(one("e-note"), 13.4);
 
 	// ——— bell: what the range covers ———
-	tl.addLabel("bell", 16);
-	hide(flat("e"), 16.0);
-	show(one("b-head"), 16.2, "above");
-	rise(16.3);
+	tl.addLabel("bell", 15.8);
+	hide(flat("e"), 15.8);
+	show(one("b-head"), 16);
+	rise(16.1);
 	tl.to(
 		one("bell-clip"),
 		{
@@ -589,9 +619,9 @@ function build(context: FilmContext) {
 			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		16.9,
+		16.7,
 	);
-	show(one("b-center"), 17.6, "above", 0.4);
+	show(one("b-center"), 17.4, "above", 0.4);
 	const spread = { half: 0 };
 	const grow = () => {
 		band.setAttribute("d", L.area(SPOT - spread.half, SPOT + spread.half));
@@ -599,38 +629,42 @@ function build(context: FilmContext) {
 	tl.to(
 		spread,
 		{ half: MOVE, duration: 1.0, ease: "power2.out", onUpdate: grow },
-		18.2,
+		18,
 	);
-	show([one("b-edge-low"), one("b-edge-high")], 19.0, "above", 0.4);
-	pop(one("b-inside"), 19.4);
+	show([one("b-edge-low"), one("b-edge-high")], 18.8, "above", 0.4);
+	land(one("b-inside"), 19.2);
+	// The answer, as the share inside lands.
+	show(one("b2-head"), 19.5);
 
-	// ——— straddle: a narrower bracket ———
-	tl.addLabel("straddle", 22);
-	d.swap(one("b-head"), one("s-head"), 22.0);
+	// ——— straddle: the hero. A narrower bracket, and its ratio. ———
+	tl.addLabel("straddle", 23.1);
+	d.swap([one("b-head"), one("b2-head")], one("s-head"), 23.1);
 	for (const [i, side] of (["low", "high"] as const).entries())
 		tl.fromTo(
 			one(`s-line-${side}`),
 			{ opacity: 1, scaleY: 0, transformOrigin: "50% 100%" },
 			{ scaleY: 1, duration: 0.6, ease: "power2.out" },
-			22.6 + i * 0.15,
+			23.6 + i * 0.15,
 		);
 	tl.fromTo(
 		one("s-bracket"),
 		{ opacity: 0, scaleX: 0, transformOrigin: "50% 50%" },
 		{ opacity: 1, scaleX: 1, duration: 0.5, ease: "power2.out" },
-		23.3,
+		24.3,
 	);
-	show(one("s-label"), 23.6, "below", 0.4);
-	// Cut: the ratio.
-	hide(one("s-head"), 25.0);
-	sink(25.0);
-	slam(one("r-num"), 25.4);
-	show(one("r-word"), 25.8);
-	show(one("r-sub"), 26.3);
+	show(one("s-label"), 24.6, "below", 0.4);
+	// Cut: the ratio, locked.
+	hide(one("s-head"), 27.1);
+	sink(27.1);
+	land(one("r-num"), 27.5);
+	show(one("r-word"), 27.9);
+	d.lock(lockRatio, 28.2, { around: [one("r-num"), one("r-word")], pad: 5 });
+	tl.addLabel("hero-lock", 28.2);
+	show(one("r-sub"), 28.6);
 
 	// ——— outside: the tails, then real months ———
-	tl.addLabel("outside", 29);
-	hide(kids("r"), 29.0);
+	tl.addLabel("outside", 31);
+	hide([...kids("r"), lockRatio], 31);
 	tl.set(
 		[
 			one("s-line-low"),
@@ -640,21 +674,20 @@ function build(context: FilmContext) {
 			one("b-inside"),
 		],
 		{ opacity: 0 },
-		29.2,
+		31.2,
 	);
-	show(one("o-head"), 29.3, "above");
-	rise(29.4);
+	show(one("o-head"), 31.75);
+	rise(31.4);
 	tl.to(
 		[one("b-tail-low"), one("b-tail-high")],
 		{ opacity: 1, duration: 0.6 },
-		30.1,
+		32,
 	);
-	show([one("b-tail-label-low"), one("b-tail-label-high")], 30.5, "below", 0.4);
-	hide(one("o-head"), 32.6);
-	sink(32.6);
-	tl.set(charts.bell, { opacity: 0 }, 33.0);
-	tl.set(charts.months, { opacity: 1 }, 33.0);
-	rise(33.1);
+	show([one("b-tail-label-low"), one("b-tail-label-high")], 32.4, "below", 0.4);
+	sink(33.8);
+	tl.set(charts.bell, { opacity: 0 }, 34.2);
+	tl.set(charts.months, { opacity: 1 }, 34.2);
+	rise(34.3);
 	PAST.forEach((multiple, i) => {
 		tl.fromTo(
 			one(`m-bar-${i}`),
@@ -662,31 +695,30 @@ function build(context: FilmContext) {
 			{
 				attr: { y: L.yM(multiple), height: L.yM(0) - L.yM(multiple) },
 				duration: 0.45,
-				ease: "back.out(1.4)",
+				ease: "power3.out",
 			},
-			33.7 + i * 0.08,
+			34.8 + i * 0.08,
 		);
 	});
-	show(one("m-line-1"), 34.9, "right", 0.4);
-	show(one("m-head"), 35.2, "above");
-	show(one("m-line-2"), 37.0, "right", 0.4);
-	show(one("m-may"), 37.4, "below", 0.4);
-	d.swap(one("m-head"), one("j-head"), 37.6);
+	show(one("m-line-1"), 36, "right", 0.4);
+	show(one("m-line-2"), 36.4, "right", 0.4);
+	show(one("m-may"), 36.8, "below", 0.4);
+	show(one("m-head"), 36.8);
 	// Cut: the claim.
-	hide(one("j-head"), 40.6);
-	sink(40.6);
+	hide([one("o-head"), one("m-head")], 40.4);
+	sink(40.4);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		41.0,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		40.7,
 	);
-	show(one("c-sub"), 41.5);
+	show(one("c-sub"), 41.1);
 
 	// ——— next ———
-	tl.addLabel("next", 44);
-	hide(kids("claim"), 44.0);
-	d.close(44.0);
+	tl.addLabel("next", 44.8);
+	hide(kids("claim"), 44.8);
+	d.close(44.8);
 	return tl;
 }
 
