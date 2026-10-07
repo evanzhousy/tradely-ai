@@ -47,12 +47,12 @@ import {
  *   open      0–4        "Recipes"
  *   question  4–9.6      "Which contracts traded far above their open interest?"
  *   catalog   9.6–15.8   three kinds; the screen
- *   session   15.8–28.5  Tue 8:00 → Monday; Mon 10:00, mid-session → Friday, locked
- *   fork      28.5–40    Edit with AI; your private copy; a colleague's view; cut: the claim
- *   next      40–42      Next: read a recipe like an auditor
+ *   session   15.8–28.8  Tue 8:00 → Monday; Mon 10:00, mid-session → Friday, locked
+ *   fork      28.8–40.3  Edit with AI; your private copy; a colleague's view; cut: the claim
+ *   next      40.3–42.3  Next: read a recipe like an auditor
  */
 
-const END = 42;
+const END = 42.3;
 const KINDS: readonly RecipeKind[] = ["lookup", "screen", "report"];
 const SCREEN = "unusual-options-activity";
 /** Titles that fit half a phone's width. */
@@ -184,8 +184,8 @@ const copy = {
 		"按问题挑选，读清时段。",
 	],
 	claimSub: [
-		"Lookups: one symbol. Screens: the market. Reports: a session.",
-		"查询：一个标的。筛选：整个市场。报告：一个时段。",
+		"Edit a private copy; the official one stays.",
+		"改私有副本；官方版本保持不变。",
 	],
 	nextBig: [
 		"Next: read a recipe like an auditor",
@@ -247,7 +247,7 @@ function Scene({
 	/** The opening question is a sentence: on a phone it takes a smaller size. */
 	const qSize = narrow ? T.head * 1.2 : T.title;
 	const headerLine = (i: number) =>
-		L.headerY + L.headerH * (i === 0 ? 0.25 : i === 1 ? 0.6 : 0.88);
+		L.headerY + L.headerH * (i === 0 ? 0.2 : i === 1 ? 0.6 : 0.88);
 	const card = (side: "official" | "copy") => {
 		const x = L.cardX(side === "official" ? 0 : 1);
 		const C = L.cardType;
@@ -301,6 +301,17 @@ function Scene({
 						{`${i + 1}. ${t(chapter)}`}
 					</text>
 				))}
+				{side === "copy" ? (
+					<text
+						data-f="spot-copy-was"
+						x={x + C.pad}
+						y={line(chapters.length + 2.4)}
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: C.size }}
+					>
+						{`${chapters.length + 1}. ${t(copy.spotlightOfficialShort)}`}
+					</text>
+				) : null}
 				<text
 					data-f={`spot-${side}`}
 					x={x + C.pad}
@@ -392,6 +403,7 @@ function Scene({
 										/>
 									) : (
 										<text
+											data-f={`closed-${date}`}
 											x={x + L.colW / 2}
 											y={L.stripTop + L.stripH / 2 + 4}
 											textAnchor="middle"
@@ -764,6 +776,7 @@ function build(context: FilmContext) {
 		one("fork-official"),
 		one("fork-copy"),
 		one("copy-frame"),
+		one("spot-copy"),
 		one("edit-chip"),
 		one("viewer"),
 		one("viewer-you"),
@@ -854,8 +867,16 @@ function build(context: FilmContext) {
 		},
 		22.75,
 	);
-	tl.to(sessions[1], { opacity: 0.7, duration: 0.4 }, 23.2);
+	// "latest" steps out from under Monday, and Monday shows it is trading.
+	hide(one("latest-mon"), 22.75, 0.25, 0);
+	show(one("trading-mon"), 23.05);
 	const back = L.dayX(PREVIOUS_SESSION_DATE) - L.dayX(SESSION_DATE);
+	// The weekend's labels step back while the box passes over them.
+	const closed = days
+		.filter((date) => !sessionDays.has(date))
+		.map((date) => one(`closed-${date}`));
+	tl.to(closed, { opacity: 0.25, duration: 0.25 }, 23.4);
+	tl.to(closed, { opacity: 1, duration: 0.3 }, 24.45);
 	tl.to(
 		one("latest-box"),
 		{
@@ -863,58 +884,58 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		23.3,
+		23.6,
 	);
-	tl.to(
+	// …and comes back under Friday once the box has arrived.
+	tl.set(
 		one("latest-mon"),
-		{
-			attr: { x: L.dayX(SESSION_DATE) + L.colW / 2 + back },
-			duration: 0.8,
-			ease: "power2.inOut",
-		},
-		23.3,
+		{ attr: { x: L.dayX(SESSION_DATE) + L.colW / 2 + back } },
+		23.1,
 	);
-	show(one("trading-mon"), 24.0);
-	d.flip(one("sess-mon"), one("sess-fri"), 24.1);
-	d.swap(one("ran-tue"), one("ran-mon"), 24.1);
+	show(one("latest-mon"), 24.3);
+	d.flip(one("sess-mon"), one("sess-fri"), 24.4);
+	d.swap(one("ran-tue"), one("ran-mon"), 24.4);
 	// The hero: Monday morning's report shows Friday.
-	d.lock(lockSession, 24.9, { around: one("sess-fri"), pad: 10 });
-	tl.addLabel("hero-lock", 24.9);
-	show(one("m2-head"), 24.9);
-	tl.to(one("ran-mon"), { opacity: 0.4, duration: 0.4 }, 25.3);
+	d.lock(lockSession, 25.2, { around: one("sess-fri"), pad: 10 });
+	tl.addLabel("hero-lock", 25.2);
+	show(one("m2-head"), 25.2);
+	tl.to(one("ran-mon"), { opacity: 0.4, duration: 0.4 }, 25.6);
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 28.5);
-	hide([one("m-head"), one("m2-head"), lockSession], 28.5);
-	sink(28.5);
-	tl.set(one("calendar"), { opacity: 0 }, 28.9);
-	tl.set(one("fork"), { opacity: 1 }, 28.9);
-	rise(28.95);
-	show(one("fork-official"), 29.0);
-	land(one("edit-chip"), 29.5);
+	tl.addLabel("fork", 28.8);
+	hide([one("m-head"), one("m2-head"), lockSession], 28.8);
+	sink(28.8);
+	tl.set(one("calendar"), { opacity: 0 }, 29.2);
+	tl.set(one("fork"), { opacity: 1 }, 29.2);
+	rise(29.25);
+	show(one("fork-official"), 29.3);
+	land(one("edit-chip"), 29.8);
 	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
 	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 30.0);
-	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 30.0);
-	show(one("f-head"), 30.0, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 30.7);
-	tl.set(one("copy-frame"), { opacity: 0 }, 31.1);
-	land(one("viewer"), 31.5);
-	show(one("viewer-you"), 31.7);
+	tl.set(one("copy-frame"), { opacity: 1 }, 30.3);
+	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 30.3);
+	show(one("f-head"), 30.3, "above");
+	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 31);
+	tl.set(one("copy-frame"), { opacity: 0 }, 31.4);
+	// Your copy's spotlight turns over from the official one's to ALFA.
+	d.flip(one("spot-copy-was"), one("spot-copy"), 31.6);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 31.9);
+	land(one("viewer"), 31.8);
+	show(one("viewer-you"), 32);
 	// A colleague opens the same recipe: the official one.
-	show(one("c-head"), 32.1);
-	land(one("viewer-colleague-dot"), 32.1);
-	show(one("viewer-colleague"), 32.3);
+	show(one("c-head"), 32.4);
+	land(one("viewer-colleague-dot"), 32.4);
+	show(one("viewer-colleague"), 32.6);
 	// Cut: the claim.
-	hide([one("f-head"), one("c-head")], 35.6);
-	sink(35.6);
-	word(one("z-big"), 36.0);
-	show(one("z-sub"), 36.4);
+	hide([one("f-head"), one("c-head")], 35.9);
+	sink(35.9);
+	word(one("z-big"), 36.3);
+	show(one("z-sub"), 36.7);
 
 	// ——— next ———
-	tl.addLabel("next", 40.0);
-	hide(kids("claim"), 40.0);
-	d.close(40.0);
+	tl.addLabel("next", 40.3);
+	hide(kids("claim"), 40.3);
+	d.close(40.3);
 	return tl;
 }
 
