@@ -47,13 +47,14 @@ import {
  *   open      0–4        "Research packets"
  *   question  4–8.6      will a reader get $165,520?
  *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
- *   fields    18.6–29.8  hero: every field; without the formula; without the exclusions
- *   log       29.8–36.6  P1; P2 a rerun; P3 a new question
- *   claim     36.6–41    work someone else can rerun
- *   next      41–43.5    Next: recaps
+ *   fields    18.6–30.8  hero: every field; without the formula; without the exclusions,
+ *                        held; then the field goes back and the figure is P1's again
+ *   log       30.8–36.4  P1; P2 a rerun; P3 a new question
+ *   claim     36.4–40.8  work someone else can rerun
+ *   next      40.8–43.3  Next: recaps
  */
 
-const END = 43.5;
+const END = 43.3;
 const R2 = rowById("R2");
 const R2_TRADES = R2?.trades ?? [];
 
@@ -124,7 +125,10 @@ const copy = {
 	reader: ["a reader's rerun", "读者重跑"],
 	lHead: ["Save each rerun as its own record.", "每次重跑另存一条记录。"],
 	l2Head: ["A new method is a new question.", "新方法就是新问题。"],
-	claimBig: ["Leave work someone else can rerun.", "留下别人能重跑的工作。"],
+	claimBig: [
+		"Leave work that someone else can rerun.",
+		"留下别人能重跑的工作。",
+	],
 	claimSub: [
 		"Write the as-of time, formula and exclusions.",
 		"写明截至时间、公式和排除项。",
@@ -656,6 +660,13 @@ function build(context: FilmContext) {
 	tl.set(one("sum"), { opacity: 0 }, 15.3);
 	show(one("subtotal"), 15.05);
 	show(heads[1], 15.05);
+	// "4 of 5": the four rows the floor counts light together; R5 stays out.
+	mondayPacket.forEach((row, i) => {
+		if (rowPremium(row) === null) return;
+		const box = one(`row-${i}-box`);
+		tl.set(box, { attr: { class: "wt-focus-shape" } }, 16.5);
+		tl.set(box, { attr: { class: "wt-panel-shape" } }, 17.7);
+	});
 
 	// ——— fields: the hero. A reader reruns it from its fields. ———
 	tl.addLabel("fields", 18.6);
@@ -701,40 +712,37 @@ function build(context: FilmContext) {
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 26.2);
-	// After the lock: the field goes back, and the figure is P1's again.
-	restore("exclusions", 27.4);
-	d.flip(rerunMarks[2], one("rerun-back"), 27.6);
-	tl.set(rerunMarks[2], { opacity: 0 }, 27.9);
-	hide(one("why-exclusions"), 27.6);
+	// After the lock, once its reason has been read: the brackets let go, the field goes
+	// back, and the figure is P1's again.
+	hide([lockRerun, one("why-exclusions")], 29.45);
+	restore("exclusions", 29.5);
+	d.flip(rerunMarks[2], one("rerun-back"), 29.7);
+	tl.set(rerunMarks[2], { opacity: 0 }, 30.0);
 
 	// ——— log: rerun, or a new question ———
-	tl.addLabel("log", 29.8);
-	d.swap([heads[2], heads[3]], heads[4], 29.8);
+	tl.addLabel("log", 30.8);
+	d.swap([heads[2], heads[3]], heads[4], 30.8);
 	hide(
-		[
-			...fieldRows,
-			one("rerun-tag"),
-			one("rerun-back"),
-			one("p1-says"),
-			lockRerun,
-		],
-		29.8,
+		[...fieldRows, one("rerun-tag"), one("rerun-back"), one("p1-says")],
+		30.8,
 	);
-	show(recs[0], 30.6, "right");
-	show(recs[1], 31.8, "right");
-	show(recs[2], 33.0, "right");
-	show(heads[5], 33.0);
+	show(recs[0], 31.3, "right");
+	show(recs[1], 31.95, "right");
+	show(recs[2], 32.6, "right");
+	show(heads[5], 32.85);
+	// The new question stands out: the two runs of the old one step back.
+	tl.to([recs[0], recs[1]], { opacity: 0.45, duration: 0.5 }, 34.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.6);
-	hide([heads[4], heads[5], ...recs], 36.6);
-	word(one("z-big"), 36.9);
-	show(one("z-sub"), 37.3);
+	tl.addLabel("claim", 36.4);
+	hide([heads[4], heads[5], ...recs], 36.4);
+	word(one("z-big"), 36.7);
+	show(one("z-sub"), 37.1);
 
 	// ——— next ———
-	tl.addLabel("next", 41.0);
-	hide(kids("claim"), 41.0);
-	d.close(41.0);
+	tl.addLabel("next", 40.8);
+	hide(kids("claim"), 40.8);
+	d.close(40.8);
 	return tl;
 }
 
