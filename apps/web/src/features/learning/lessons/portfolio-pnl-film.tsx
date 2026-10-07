@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -12,10 +13,8 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
-	AVERAGE_TEXT,
 	afterDeposit,
 	BEN,
-	BEN_PRICE,
 	benAtExpiry,
 	benMarked,
 	buyFees,
@@ -47,26 +46,25 @@ import {
  * calls +$1,050, fees −$10.40, so +$1,199.60 earned; then a $5,000 deposit that lifts the
  * value without being profit, and buying power of $36,799.20, half of it credit. Then the
  * calls' +$1,050 as sixteen contracts in two lots: unrealized until six are sold at the
- * bid, split +$330 and +$645 first in, first out, or +$318.75 and +$656.25 at average
- * cost: +$975 either way. Last, Ben's ten short calls: $4,100 received, and no floor.
+ * bid, split +$330 realized and +$645 unrealized first in, first out: +$975 in all. Last,
+ * Ben's ten short calls: $4,100 received, and no floor.
  *
- *   open      0–4      "P&L"
- *   question  4–10     $29,960 → $36,159.60: how much did you earn?
- *   account   10–22    +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
- *                       cut: buying power $36,799.20, half of it credit
- *   calls     22–33.5  16 contracts, +$1,050 unrealized; sell 6: FIFO, then average;
- *                       cut: +$975 either way
- *   short     33.5–44.5 Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
- *                       cut: "P&L is what your positions earned."
- *   next      44.5–47  Next: performance
+ *   open      0–4        "P&L"
+ *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
+ *   account   10.4–21.6  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
+ *                        cut: buying power $36,799.20, half of it credit
+ *   calls     21.6–31    16 contracts, +$1,050 unrealized; sell 6, oldest first;
+ *                        cut: +$975, locked
+ *   short     31–43.3    Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
+ *                        cut: "P&L is what your positions earned."
+ *   next      43.3–45.8  Next: performance
  */
 
-const END = 47;
+const END = 45.8;
 const ACCOUNT = [29_000, 37_000] as const;
 const BEN_X = [90, 140] as const;
 const BEN_Y = [-40_000, 10_000] as const;
 const fifo = split(SOLD, "fifo");
-const average = split(SOLD, "average");
 const held = split(0, "fifo");
 const EARNED_FROM = valueOpen / 100;
 const STOCK_TO = EARNED_FROM + (stockClose - stockOpen) / 100;
@@ -79,7 +77,8 @@ const zeroed = (cents: number) =>
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow, margin } = frame;
-	const left = Math.max(margin, narrow ? 46 : 0);
+	// On a phone the Ben chart's "−$30k" needs room left of the axis.
+	const left = Math.max(margin, narrow ? 60 : 0);
 	const right = width * 0.965;
 	// The account bar.
 	const barBottom = height * (narrow ? 0.7 : 0.66);
@@ -135,19 +134,15 @@ const copy = {
 	],
 	qLine: ["How much of that did you earn?", "其中有多少是你赚的？"],
 	mondayHead: [
-		"Monday: ALFA rose, your calls rose, you paid fees.",
-		"周一：ALFA 上涨，你的看涨上涨，你付了费用。",
+		"Monday: ALFA up, calls up, fees paid.",
+		"周一：ALFA 上涨，看涨上涨，付了费用。",
 	],
 	mondayHeadShort: ["Monday: ALFA, calls, fees.", "周一：ALFA、看涨、费用。"],
-	depositHead: [
-		`Tuesday: you deposit ${dollars(yourAccount.deposit)}.`,
-		`周二：你存入 ${dollars(yourAccount.deposit)}。`,
-	],
 	earnedHead: [
-		`The account rose ${dollars(afterDeposit - valueOpen)}; you earned ${dollars(PNL)}.`,
-		`账户增加 ${dollars(afterDeposit - valueOpen)}；你赚了 ${dollars(PNL)}。`,
+		`Tuesday's ${dollars(yourAccount.deposit)} deposit is not earned.`,
+		`周二存入的 ${dollars(yourAccount.deposit)} 不是赚到的。`,
 	],
-	earnedHeadShort: [`Earned: ${dollars(PNL)}.`, `赚到的：${dollars(PNL)}。`],
+	earnedHeadShort: ["A deposit isn't earned.", "存入不是赚到的。"],
 	meter: ["account", "账户"],
 	earned: [`${signed(PNL)} earned`, `赚了 ${signed(PNL)}`],
 	breakdown: [
@@ -165,57 +160,36 @@ const copy = {
 	],
 	bpTag: ["buying power", "购买力"],
 	bpLine: [
-		`${dollars(cashAfterDeposit)} of cash, doubled by margin: half of it is credit, not money you have.`,
-		`${dollars(cashAfterDeposit)} 现金，经保证金翻倍：一半是授信，不是你拥有的钱。`,
+		`${dollars(cashAfterDeposit)} of cash, doubled by margin: half is credit.`,
+		`${dollars(cashAfterDeposit)} 现金，经保证金翻倍：一半是授信。`,
 	],
-	lotsHead: [
-		`The calls' ${signed(held.unrealized)} is a mark at the ${price(MARK)} mid, not a sale.`,
-		`看涨的 ${signed(held.unrealized)} 是按中间价 ${price(MARK)} 的估值，不是卖出。`,
-	],
-	lotsHeadShort: [
-		`The calls' ${signed(held.unrealized)} is a mark.`,
-		`看涨的 ${signed(held.unrealized)} 是估值。`,
-	],
+	lotsHead: ["The calls are marked, not sold.", "看涨只是估值，没有卖出。"],
+	lotsHeadShort: ["Marked, not sold.", "估值，没有卖出。"],
 	fifoHead: [
-		`Sell ${SOLD} at the ${price(SALE)} bid, first in, first out.`,
-		`以买价 ${price(SALE)} 卖出 ${SOLD} 张，先进先出。`,
+		`Sell ${SOLD} at the bid, oldest lot first.`,
+		`以买价卖出 ${SOLD} 张，先卖最早的一批。`,
 	],
 	fifoHeadShort: [
-		`Sell ${SOLD}, first in, first out.`,
-		`卖出 ${SOLD} 张，先进先出。`,
-	],
-	averageHead: [
-		"Average cost: the same sale, another split.",
-		"平均成本：同一笔卖出，另一种分配。",
-	],
-	averageHeadShort: ["Average cost: another split.", "平均成本：另一种分配。"],
-	averageLegend: [
-		`every contract at the ${AVERAGE_TEXT} average`,
-		`每张按平均成本 ${AVERAGE_TEXT} 计`,
+		`Sell ${SOLD}, oldest first.`,
+		`卖出 ${SOLD} 张，先卖最早的。`,
 	],
 	realized: ["realized", "已实现"],
 	unrealized: ["unrealized", "未实现"],
-	totalTag: ["total, either rule", "合计，两种规则相同"],
+	totalTag: ["realized + unrealized", "已实现 + 未实现"],
 	totalLine: [
 		`Not ${signed(held.unrealized)}: selling paid the ${price(SALE)} bid, not the ${price(MARK)} mid.`,
 		`不是 ${signed(held.unrealized)}：卖出拿到的是买价 ${price(SALE)}，不是中间价 ${price(MARK)}。`,
 	],
 	benHead: [
-		`Ben wrote ${BEN} of the same calls at ${price(BEN_PRICE)}.`,
-		`Ben 以 ${price(BEN_PRICE)} 卖出了 ${BEN} 张同样的看涨。`,
+		`Ben wrote ${BEN} of these calls.`,
+		`Ben 卖出了 ${BEN} 张同样的看涨。`,
 	],
-	benHeadShort: [
-		`Ben wrote ${BEN} at ${price(BEN_PRICE)}.`,
-		`Ben 以 ${price(BEN_PRICE)} 卖出 ${BEN} 张。`,
-	],
+	benHeadShort: [`Ben wrote ${BEN} calls.`, `Ben 卖出 ${BEN} 张。`],
 	expiryHead: [
-		`At expiry, every dollar above $100 costs him ${dollars(BEN * 100 * 100)}.`,
-		`到期时，高于 $100 的每一美元让他付出 ${dollars(BEN * 100 * 100)}。`,
+		"At expiry, his loss has no floor.",
+		"到期时，他的亏损没有下限。",
 	],
-	expiryHeadShort: [
-		`Each $1 above $100: −${dollars(BEN * 100 * 100)}.`,
-		`高于 $100 每 $1：−${dollars(BEN * 100 * 100)}。`,
-	],
+	expiryHeadShort: ["At expiry: no floor.", "到期：亏损无下限。"],
 	benAxis: [
 		`Ben · short ${BEN} Oct 18 100 calls`,
 		`Ben · 空头 ${BEN} 张 10月18日 100 看涨`,
@@ -233,8 +207,8 @@ const copy = {
 	],
 	claimBig: ["P&L is what your positions earned.", "盈亏是持仓赚到的。"],
 	claimSub: [
-		"Not a deposit, not buying power, and for a short call, not capped by the premium.",
-		"不是存入，不是购买力；对卖出看涨来说，也不以权利金为上限。",
+		"Not deposits, not buying power; short-call losses are uncapped.",
+		"不是存入或购买力；卖出看涨的亏损没有上限。",
 	],
 	nextBig: ["Next: performance", "下一课：绩效"],
 	nextSub: ["returns, win rate and drawdown", "收益、胜率与回撤"],
@@ -521,7 +495,6 @@ function Scene({
 				/>
 			</g>
 			{headline("a-head", copy.mondayHead, copy.mondayHeadShort)}
-			{headline("d-head", copy.depositHead, copy.depositHead)}
 			{headline("e-head", copy.earnedHead, copy.earnedHeadShort)}
 			<g data-f="bp">
 				<Word
@@ -571,22 +544,6 @@ function Scene({
 						/>
 					);
 				})}
-				{Array.from({ length: HELD }, (_, i) => {
-					const { x, y } = L.cell(i);
-					return (
-						<rect
-							key={`av-${x}-${y}`}
-							data-f={`av-${i}`}
-							className="wt-film-bar"
-							data-tone="neutral"
-							x={x}
-							y={y}
-							width={L.square}
-							height={L.square}
-							rx={4}
-						/>
-					);
-				})}
 				<g data-f="legend-lots">
 					{lots.map((lot, l) => {
 						const x = L.gridLeft + (l * L.gridWidth) / 2;
@@ -609,14 +566,6 @@ function Scene({
 						);
 					})}
 				</g>
-				<text
-					data-f="legend-avg"
-					x={L.gridLeft}
-					y={L.gridBottom + T.body * 2}
-					className="wt-small"
-				>
-					{t(copy.averageLegend)}
-				</text>
 				{(
 					[
 						["r", copy.realized, zeroed(0)],
@@ -646,8 +595,25 @@ function Scene({
 				))}
 			</g>
 			{headline("l-head", copy.lotsHead, copy.lotsHeadShort)}
-			{headline("f-head", copy.fifoHead, copy.fifoHeadShort)}
-			{headline("v-head", copy.averageHead, copy.averageHeadShort)}
+			<Lines
+				name="f-head"
+				text={t(narrow ? copy.fifoHeadShort : copy.fifoHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.lotsHeadShort : copy.lotsHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Brackets name="lock-total" glow />
 			<g data-f="total">
 				<Word
 					name="t-tag"
@@ -716,14 +682,21 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number, duration = 0.55) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const meter = one<SVGTextElement>("m-value");
 	const realized = one<SVGTextElement>("r-val");
 	const unrealized = one<SVGTextElement>("u-val");
 	const squares = Array.from({ length: HELD }, (_, i) => one(`sq-${i}`));
-	const averaged = Array.from({ length: HELD }, (_, i) => one(`av-${i}`));
 	/** A segment of the account bar grows rightward from where it starts. */
 	const grow = (name: string, at: number, duration = 0.5) => {
 		const el = one(name);
@@ -745,6 +718,8 @@ function build(context: FilmContext) {
 		);
 	};
 
+	const lockTotal = one<SVGGraphicsElement>("lock-total");
+
 	d.hidden([
 		one("ben"),
 		...segments.map(({ name }) => one(name)),
@@ -760,26 +735,18 @@ function build(context: FilmContext) {
 		one("far-label"),
 		...kids("meter"),
 		...flat("q"),
-		...[
-			"a-head",
-			"d-head",
-			"e-head",
-			"l-head",
-			"f-head",
-			"v-head",
-			"b-head",
-			"x-head",
-		].map((name) => one(name)),
+		...["a-head", "e-head", "l-head", "f-head", "b-head", "x-head"].map(
+			(name) => one(name),
+		),
 		...flat("bp"),
 		...squares,
-		...averaged,
 		one("legend-lots"),
-		one("legend-avg"),
 		one("r-tag"),
 		one("u-tag"),
 		realized,
 		unrealized,
 		...flat("total"),
+		lockTotal,
 		...kids("claim"),
 	]);
 
@@ -791,124 +758,121 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-open"), 4.6);
-	slam(one("q-num"), 4.8);
-	d.swap(one("q-open"), one("q-tue"), 5.9);
+	land(one("q-num"), 4.8);
+	d.swap(one("q-open"), one("q-tue"), 5.5);
 	d.count(
 		one<SVGTextElement>("q-num"),
 		afterDeposit,
-		6.0,
+		5.6,
 		dollars,
 		valueOpen,
 		1.0,
 	);
-	show(one("q-up"), 7.1);
-	show(one("q-line"), 7.7);
+	show(one("q-up"), 6.7);
+	show(one("q-line"), 6.9);
 
 	// ——— account: what moved it ———
-	tl.addLabel("account", 10);
-	hide(flat("q"), 10.0);
-	show(one("a-head"), 10.2, "above");
-	rise(10.3);
-	show(kids("meter"), 10.8, "above");
-	d.count(meter, valueOpen, 10.8, dollars, valueOpen, 0.01);
-	grow("seg-base", 10.8);
-	grow("seg-stock", 11.5, 0.4);
-	grow("seg-calls", 11.9, 0.5);
-	tl.to(one("seg-fees"), { opacity: 1, duration: 0.3 }, 12.4);
-	d.count(meter, valueClose, 11.5, dollars, valueOpen, 1.2);
-	show(one("earned"), 13.0);
-	show(one("breakdown"), 13.3);
+	tl.addLabel("account", 10.4);
+	hide(flat("q"), 10.4);
+	show(one("a-head"), 10.6, "above");
+	rise(10.7);
+	show(kids("meter"), 11.2, "above");
+	d.count(meter, valueOpen, 11.2, dollars, valueOpen, 0.01);
+	grow("seg-base", 11.2);
+	grow("seg-stock", 11.9, 0.4);
+	grow("seg-calls", 12.3, 0.5);
+	tl.to(one("seg-fees"), { opacity: 1, duration: 0.3 }, 12.8);
+	d.count(meter, valueClose, 11.9, dollars, valueOpen, 1.2);
+	show(one("earned"), 13.4);
+	show(one("breakdown"), 13.7);
 	// Tuesday: money in, not money made.
-	d.swap(one("a-head"), one("d-head"), 14.6);
-	grow("seg-deposit", 15.0, 1.0);
-	d.count(meter, afterDeposit, 15.0, dollars, valueClose, 1.0);
-	show(one("deposited"), 15.8);
-	d.swap(one("d-head"), one("e-head"), 16.6);
+	d.swap(one("a-head"), one("e-head"), 14.4);
+	grow("seg-deposit", 14.4, 1.0);
+	d.count(meter, afterDeposit, 14.4, dollars, valueClose, 1.0);
+	show(one("deposited"), 14.7);
 	// Cut: buying power.
-	hide([one("e-head"), ...kids("meter")], 18.4);
-	sink(18.4);
-	show(one("bp-tag"), 18.8);
-	slam(one("bp-num"), 19.0);
-	show(one("bp-line"), 19.8);
+	hide([one("e-head"), ...kids("meter")], 18.3);
+	sink(18.3);
+	show(one("bp-tag"), 18.7);
+	land(one("bp-num"), 18.9);
+	show(one("bp-line"), 19.4);
 
 	// ——— calls: realized and unrealized ———
-	tl.addLabel("calls", 22);
-	hide(flat("bp"), 22.0);
-	show(one("l-head"), 22.2, "above");
+	tl.addLabel("calls", 21.6);
+	hide(flat("bp"), 21.6);
+	show(one("l-head"), 21.95, "above");
 	squares.forEach((square, i) => {
-		pop(square, 22.6 + i * 0.04, 0.4);
+		land(square, 22.0 + i * 0.04, 0.4);
 	});
-	show(one("legend-lots"), 23.4);
-	show([one("r-tag"), one("u-tag")], 23.8);
-	show([realized, unrealized], 24.0);
+	show(one("legend-lots"), 22.6);
+	show([one("r-tag"), one("u-tag")], 22.9);
+	show([realized, unrealized], 23.1);
 	// Sell six, oldest first.
-	d.swap(one("l-head"), one("f-head"), 25.2);
-	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 25.6);
-	d.count(realized, fifo.realized, 25.8, zeroed, 0, 0.8);
-	d.count(unrealized, fifo.unrealized, 25.8, signed, held.unrealized, 0.8);
-	// The same sale at average cost.
-	d.swap(one("f-head"), one("v-head"), 27.6);
-	tl.to(averaged.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 28.0);
-	tl.to(averaged.slice(SOLD), { opacity: 1, duration: 0.4 }, 28.0);
-	d.swap(one("legend-lots"), one("legend-avg"), 28.0);
-	d.count(realized, average.realized, 28.2, signed, fifo.realized, 0.8);
-	d.count(unrealized, average.unrealized, 28.2, signed, fifo.unrealized, 0.8);
-	// Cut: the total.
+	show(one("f-head"), 24.0);
+	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.1);
+	d.count(realized, fifo.realized, 24.3, zeroed, 0, 0.8);
+	d.count(unrealized, fifo.unrealized, 24.3, signed, held.unrealized, 0.8);
+	// Cut: the total. The hero: less than the mark said.
 	hide(
 		[
-			one("v-head"),
+			one("l-head"),
+			one("f-head"),
 			...squares,
-			...averaged,
-			one("legend-avg"),
+			one("legend-lots"),
 			one("r-tag"),
 			one("u-tag"),
 			realized,
 			unrealized,
 		],
-		29.8,
+		27.55,
 	);
-	show(one("t-tag"), 30.2);
-	slam(one("t-num"), 30.4);
-	show(one("t-line"), 31.2);
+	show(one("t-tag"), 27.85);
+	land(one("t-num"), 28.05);
+	d.lock(lockTotal, 28.6, {
+		around: [one("t-tag"), one("t-num")],
+		pad: 8,
+	});
+	tl.addLabel("hero-lock", 28.6);
+	show(one("t-line"), 29.0);
 
 	// ——— short: the other side of the same calls ———
-	tl.addLabel("short", 33.5);
-	hide(flat("total"), 33.5);
-	tl.set(one("acct"), { opacity: 0 }, 33.6);
-	tl.set(one("ben"), { opacity: 1 }, 33.6);
-	show(one("b-head"), 33.7, "above");
-	rise(33.8);
-	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 34.4);
-	show(one("premium-label"), 34.8);
-	pop(one("mark-dot"), 35.8);
-	show(one("mark-label"), 36.0);
-	d.swap(one("b-head"), one("x-head"), 37.2);
-	draw(one<SVGPathElement>("expiry"), 37.6, 1.4);
-	pop(one("far-dot"), 39.2);
-	show(one("far-label"), 39.4);
+	tl.addLabel("short", 31);
+	hide([...flat("total"), lockTotal], 31.0);
+	tl.set(one("acct"), { opacity: 0 }, 31.1);
+	tl.set(one("ben"), { opacity: 1 }, 31.1);
+	show(one("b-head"), 31.35, "above");
+	rise(31.4);
+	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 32.0);
+	show(one("premium-label"), 32.4);
+	land(one("mark-dot"), 33.2);
+	show(one("mark-label"), 33.4);
+	d.swap(one("b-head"), one("x-head"), 34.9);
+	draw(one<SVGPathElement>("expiry"), 35.3, 1.4);
+	land(one("far-dot"), 36.8);
+	show(one("far-label"), 37.0);
 	// Cut: the claim.
-	hide(one("x-head"), 40.8);
-	sink(40.8);
+	hide(one("x-head"), 38.8);
+	sink(38.8);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		41.2,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		39.2,
 	);
-	show(one("z-sub"), 41.7);
+	show(one("z-sub"), 39.6);
 
 	// ——— next ———
-	tl.addLabel("next", 44.5);
-	hide(kids("claim"), 44.5);
-	d.close(44.5);
+	tl.addLabel("next", 43.3);
+	hide(kids("claim"), 43.3);
+	d.close(43.3);
 	return tl;
 }
 
 export const portfolioPnlFilm: Film = {
 	id: "portfolio-pnl",
 	label: [
-		`P&L, as a short film: your account rising from ${dollars(valueOpen)} at Monday's open to ${dollars(afterDeposit)} on Tuesday; ALFA ${signed(stockClose - stockOpen)}, the calls ${signed(callsClose - PAID * 100)} and fees ${signed(-buyFees)} making ${signed(PNL)} earned, and a ${dollars(yourAccount.deposit)} deposit that is not profit; buying power of ${dollars(buyingPower)}, half of it credit; ${HELD} calls in two lots, ${signed(held.unrealized)} unrealized until ${SOLD} are sold at the bid, split ${signed(fifo.realized)} and ${signed(fifo.unrealized)} first in, first out or ${signed(average.realized)} and ${signed(average.unrealized)} at average cost, ${signed(fifo.realized + fifo.unrealized)} either way; and Ben's ${BEN} short calls, ${dollars(RECEIVED)} received and ${signed(benAtExpiry(120))} if ALFA settles at $120`,
-		`盈亏短片：你的账户从周一开盘的 ${dollars(valueOpen)} 升到周二的 ${dollars(afterDeposit)}；ALFA ${signed(stockClose - stockOpen)}、看涨 ${signed(callsClose - PAID * 100)}、费用 ${signed(-buyFees)}，合计赚了 ${signed(PNL)}，而 ${dollars(yourAccount.deposit)} 的存入不是利润；购买力 ${dollars(buyingPower)}，一半是授信；${HELD} 张看涨分两批，卖出 ${SOLD} 张之前都是未实现的 ${signed(held.unrealized)}，按买价卖出后先进先出分为 ${signed(fifo.realized)} 和 ${signed(fifo.unrealized)}，平均成本分为 ${signed(average.realized)} 和 ${signed(average.unrealized)}，合计都是 ${signed(fifo.realized + fifo.unrealized)}；以及 Ben 的 ${BEN} 张看涨空头：收到 ${dollars(RECEIVED)}，若 ALFA 结算于 $120 则为 ${signed(benAtExpiry(120))}`,
+		`P&L, as a short film: your account rising from ${dollars(valueOpen)} at Monday's open to ${dollars(afterDeposit)} on Tuesday; ALFA ${signed(stockClose - stockOpen)}, the calls ${signed(callsClose - PAID * 100)} and fees ${signed(-buyFees)} making ${signed(PNL)} earned, and a ${dollars(yourAccount.deposit)} deposit that is not profit; buying power of ${dollars(buyingPower)}, half of it credit; ${HELD} calls in two lots, ${signed(held.unrealized)} unrealized until ${SOLD} are sold at the bid, split ${signed(fifo.realized)} realized and ${signed(fifo.unrealized)} unrealized first in, first out, ${signed(fifo.realized + fifo.unrealized)} in all; and Ben's ${BEN} short calls, ${dollars(RECEIVED)} received and ${signed(benAtExpiry(120))} if ALFA settles at $120`,
+		`盈亏短片：你的账户从周一开盘的 ${dollars(valueOpen)} 升到周二的 ${dollars(afterDeposit)}；ALFA ${signed(stockClose - stockOpen)}、看涨 ${signed(callsClose - PAID * 100)}、费用 ${signed(-buyFees)}，合计赚了 ${signed(PNL)}，而 ${dollars(yourAccount.deposit)} 的存入不是利润；购买力 ${dollars(buyingPower)}，一半是授信；${HELD} 张看涨分两批，卖出 ${SOLD} 张之前都是未实现的 ${signed(held.unrealized)}，按买价卖出后先进先出分为已实现 ${signed(fifo.realized)} 和未实现 ${signed(fifo.unrealized)}，合计 ${signed(fifo.realized + fifo.unrealized)}；以及 Ben 的 ${BEN} 张看涨空头：收到 ${dollars(RECEIVED)}，若 ALFA 结算于 $120 则为 ${signed(benAtExpiry(120))}`,
 	],
 	stage: "dark",
 	shots: [
