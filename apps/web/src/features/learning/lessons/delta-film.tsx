@@ -44,8 +44,8 @@ import {
  *   slope     9.5–18.5   the chart rises from the depth; push in; the $1 step, the $0.52
  *                        rise; cut to 0.52, full frame
  *   put       18.5–24.5  the number flips to −0.48 while the curve folds into the put
- *   position  24.5–35.3  hero: 0.52 × 100 × 16 = +832, locked; Ben's sign flips it red;
- *                        what +$0.40 in ALFA does to each
+ *   position  24.5–35.3  hero: 0.52 × 100 × 16 = +832, locked; Ben's chain beside it, the
+ *                        sign flipped; +$0.40 in ALFA, in dollars, for each
  *   limits    35.3–40.9  the marker rides the curve, a ghost rides the line; cut: "Delta is
  *                        local."
  *   next      45.4–47.4  Next: gamma
@@ -102,6 +102,8 @@ function layout(width: number) {
 		rows,
 		equivY,
 		payY,
+		/** How far the two positions stand from the middle once both are on stage. */
+		side: width * (narrow ? 0.25 : 0.2),
 	};
 }
 
@@ -115,7 +117,8 @@ const copy = {
 		`per $1 of ALFA, at ${stock(SPOT)}`,
 		`ALFA 在 ${stock(SPOT)} 时，每变动 $1`,
 	],
-	deltaWord: ["delta", "delta"],
+	deltaWord: ["delta, per $1 of ALFA", "Delta：ALFA 每变动 $1"],
+	slopeHead: ["Up $1: what does the call gain?", "ALFA 涨 $1：看涨涨多少？"],
 	putHead: ["Puts slope the other way.", "看跌期权的斜率方向相反。"],
 	putSub: [
 		`+$1 in ALFA takes about ${price(Math.abs(PUT_DELTA))} off the put.`,
@@ -131,6 +134,15 @@ const copy = {
 		`× ${signedCount(ben.contracts)} contracts, Ben`,
 		`× Ben 持有 ${signedCount(ben.contracts)} 张`,
 	],
+	opYouShort: [
+		`× ${signedCount(you.contracts)}, you`,
+		`× 你 ${signedCount(you.contracts)} 张`,
+	],
+	opBenShort: [
+		`× ${signedCount(ben.contracts)}, Ben`,
+		`× Ben ${signedCount(ben.contracts)} 张`,
+	],
+	chip: [`ALFA +$${MOVE.toFixed(2)}`, `ALFA +$${MOVE.toFixed(2)}`],
 	equivalents: ["share-equivalents of ALFA", "相当于这么多股 ALFA"],
 	pay: [
 		`If ALFA rises $${MOVE.toFixed(2)}: about ${signedUsd(moveDollars(you.contracts), 0)} for you, ${signedUsd(moveDollars(ben.contracts), 0)} for Ben.`,
@@ -180,6 +192,7 @@ function Scene({
 	const stepX = W / 2 + 8 + nextWidth / 2;
 	const stepY = H * 0.4 - T.num * 1.15;
 	const stepW = textWidth("+$1", T.small) + 14;
+	const chipW = textWidth(t(copy.chip), T.small) + 16;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -444,15 +457,15 @@ function Scene({
 				>
 					{fixed2(PUT_DELTA)}
 				</Word>
-				<Word
+				<Lines
 					name="num-word"
+					text={t(copy.deltaWord)}
 					x={0}
 					y={T.big * 0.36 + T.head * 1.9}
 					size={T.head}
+					maxWidth={L.narrow ? W * 0.44 : room}
 					className="wt-film-type wt-film-accent"
-				>
-					{t(copy.deltaWord)}
-				</Word>
+				/>
 				<Lines
 					name="num-sub"
 					text={t(copy.perDollar)}
@@ -464,10 +477,19 @@ function Scene({
 				/>
 			</g>
 			<Lines
+				name="s-head"
+				text={t(copy.slopeHead)}
+				x={L.margin}
+				y={L.headY}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Lines
 				name="put-head"
 				text={t(copy.putHead)}
-				x={L.left}
-				y={H * 0.17}
+				x={L.margin}
+				y={L.headY}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"
@@ -475,8 +497,8 @@ function Scene({
 			<Lines
 				name="put-sub"
 				text={t(copy.putSub)}
-				x={L.left}
-				y={H * 0.17 + T.head * 1.7}
+				x={L.margin}
+				y={L.headY + T.head * 1.7}
 				size={T.body}
 				maxWidth={L.narrow ? room : W * 0.42}
 				anchor="start"
@@ -486,10 +508,11 @@ function Scene({
 				<Lines
 					name="ch-head"
 					text={t(copy.chainHead)}
-					x={W / 2}
-					y={H * 0.17}
+					x={L.margin}
+					y={L.headY}
 					size={T.head}
 					maxWidth={room}
+					anchor="start"
 				/>
 				<Lines
 					name="ch-op100"
@@ -511,7 +534,7 @@ function Scene({
 				</Word>
 				<Lines
 					name="ch-op-you"
-					text={t(copy.opYou)}
+					text={t(L.narrow ? copy.opYouShort : copy.opYou)}
 					x={W / 2}
 					y={L.rows[3]}
 					size={T.body}
@@ -521,16 +544,16 @@ function Scene({
 				<Word
 					name="ch-pos-you"
 					x={W / 2}
-					y={L.rows[4]}
-					size={T.num}
+					y={L.rows[4] + T.num * 0.2}
+					size={T.num * 1.35}
 					className="wt-film-num wt-film-gain"
 				>
 					{signedCount(positionDelta(you.contracts))}
 				</Word>
 				<Lines
 					name="ch-op-ben"
-					text={t(copy.opBen)}
-					x={W / 2}
+					text={t(L.narrow ? copy.opBenShort : copy.opBen)}
+					x={W / 2 + L.side}
 					y={L.rows[3]}
 					size={T.body}
 					maxWidth={room}
@@ -538,13 +561,49 @@ function Scene({
 				/>
 				<Word
 					name="ch-pos-ben"
-					x={W / 2}
-					y={L.rows[4]}
-					size={T.num}
+					x={W / 2 + L.side}
+					y={L.rows[4] + T.num * 0.2}
+					size={T.num * 1.35}
 					className="wt-film-num wt-film-loss"
 				>
 					{signedCount(positionDelta(ben.contracts))}
 				</Word>
+				<g data-f="ch-chip">
+					<rect
+						x={W / 2 - chipW / 2}
+						y={L.rows[4] - T.body - 2}
+						width={chipW}
+						height={T.body + 12}
+						rx={7}
+						className="wt-chip"
+					/>
+					<text
+						x={W / 2}
+						y={L.rows[4] + 4}
+						textAnchor="middle"
+						className="wt-chip-text"
+						style={{ fontSize: T.small }}
+					>
+						{t(copy.chip)}
+					</text>
+				</g>
+				{(
+					[
+						["ch-usd-you", -L.side, you.contracts, "wt-film-gain"],
+						["ch-usd-ben", L.side, ben.contracts, "wt-film-loss"],
+					] as const
+				).map(([name, dx, contracts, tone]) => (
+					<Word
+						key={name}
+						name={name}
+						x={W / 2 + dx}
+						y={L.payY}
+						size={T.body * 1.15}
+						className={`wt-film-num ${tone}`}
+					>
+						{`≈ ${signedUsd(moveDollars(contracts), 0)}`}
+					</Word>
+				))}
 				<Lines
 					name="ch-equiv"
 					text={t(copy.equivalents)}
@@ -566,8 +625,8 @@ function Scene({
 			<Lines
 				name="lim-head"
 				text={t(L.narrow ? copy.limitHeadShort : copy.limitHead)}
-				x={L.left}
-				y={H * 0.11}
+				x={L.margin}
+				y={L.headY}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"
@@ -669,6 +728,7 @@ function build(context: FilmContext) {
 		numPut,
 		one("num-word"),
 		one("num-sub"),
+		one("s-head"),
 		one("put-head"),
 		one("put-sub"),
 		...kids("chain"),
@@ -699,15 +759,11 @@ function build(context: FilmContext) {
 	rise(9.7);
 	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.5);
 	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.5);
-	tl.to(
+	tl.fromTo(
 		one("dot"),
-		{ scaleY: 0.72, scaleX: 1.2, duration: 0.1, ease: "power1.out" },
+		{ scale: 1.3 },
+		{ scale: 1, duration: 0.45, ease: "power3.out" },
 		11.05,
-	);
-	tl.to(
-		one("dot"),
-		{ scaleY: 1, scaleX: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" },
-		11.15,
 	);
 	tl.fromTo(
 		one("ripple"),
@@ -738,6 +794,7 @@ function build(context: FilmContext) {
 	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 12.5);
 	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.9);
 	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.9);
+	show(one("s-head"), 13.3, "above");
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
 	const axisText = [...one("axes").querySelectorAll("text")];
 	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.9);
@@ -770,6 +827,7 @@ function build(context: FilmContext) {
 		15.5,
 	);
 	// Cut: the chart sinks, the number lands.
+	hide(one("s-head"), 16.8);
 	sink(16.8);
 	land(numCall, 17.2);
 	show(one("num-word"), 17.6);
@@ -848,20 +906,28 @@ function build(context: FilmContext) {
 		shares,
 	);
 	show(one("ch-equiv"), 28.3);
-	// The hero: your position's delta, counted, held, then locked.
+	// The hero: your position's delta, counted, held, then locked; its inputs step back.
 	d.lock(lockPos, 28.7, { around: one("ch-pos-you"), pad: 6 });
 	tl.addLabel("hero-lock", 28.7);
-	// Ben: the same chain, the sign flipped.
-	hide([one("ch-op-you"), one("ch-pos-you"), lockPos], 30.5, 0.3);
-	show(one("ch-op-ben"), 30.7);
-	land(one("ch-pos-ben"), 31.2);
+	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 28.7);
+	// Ben: the same chain beside yours, the sign flipped.
+	hide(lockPos, 30.3, 0.3);
+	tl.to(
+		[one("ch-op-you"), one("ch-pos-you")],
+		{ x: -L.side, duration: 0.6, ease: "power2.inOut" },
+		30.4,
+	);
+	show(one("ch-op-ben"), 30.9);
+	land(one("ch-pos-ben"), 31.3);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
-		31.2,
+		31.3,
 		shares,
 	);
-	show(one("ch-pay"), 31.8);
+	// One move, both positions: ALFA +$0.40, in dollars, for each.
+	show(one("ch-chip"), 32.0);
+	show([one("ch-usd-you"), one("ch-usd-ben")], 32.5);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 35.3);
