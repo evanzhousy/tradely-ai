@@ -50,17 +50,17 @@ import {
  * turns as the proof.
  *
  *   open       0–4        "Theta, vega and rho"
- *   question   4–9.6      ALFA +$1, six days later; the call −$0.19. Where did it go?
- *   theta      9.6–18.4   the value drains to expiry, slowly then fast; cut to −$0.065 a day
- *   vega       18.4–23.6  "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
- *   sum        23.6–31.6  hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
+ *   question   4–9.5      ALFA +$1, six days later; the call −$0.19. Where did it go?
+ *   theta      9.5–19.55  the value drains to expiry, slowly then fast; cut to −$0.065 a day
+ *   vega       19.55–25.45 "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
+ *   sum        25.45–31.9 hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
  *                         the model's −$0.19, locked
- *   rho        31.6–34.4  $0.042 a rate point
- *   positions  34.4–43.4  you −$320, Ben +$200; cut: "A good move can still lose."
- *   next       43.4–45.9  Next: 0DTE
+ *   rho        31.9–36    $0.042 a rate point
+ *   positions  36–45.4    you −$320, Ben +$200; cut: "A good move can still lose."
+ *   next       45.4–47.4  Next: 0DTE
  */
 
-const END = 45.9;
+const END = 47.4;
 const you = contracts("you");
 const ben = contracts("ben");
 const decay = (elapsed: number) =>
@@ -788,17 +788,17 @@ function build(context: FilmContext) {
 	show(one("q-line"), 6.0);
 
 	// ——— theta: the value drains, slowly and then fast ———
-	tl.addLabel("theta", 9.6);
+	tl.addLabel("theta", 9.5);
 	hide(
 		kids("q").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		9.6,
+		9.5,
 	);
-	show(one("t-head"), 9.8);
-	rise(9.9);
-	land(marker, 10.4);
-	show(one("t-today"), 10.6, "right");
+	show(one("t-head"), 9.7);
+	rise(9.8);
+	land(marker, 10.2);
+	show(one("t-today"), 10.4, "right");
 	// The even line: what an equal share per day would look like.
-	tl.to(one("even"), { opacity: 1, duration: 0.2 }, 11.0);
+	tl.to(one("even"), { opacity: 1, duration: 0.2 }, 10.7);
 	tl.to(
 		one("even"),
 		{
@@ -806,9 +806,9 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		11.0,
+		10.7,
 	);
-	show(one("even-label"), 11.6);
+	show(one("even-label"), 11.2);
 	// The marker walks the curve, drawing it behind it.
 	const walk = { elapsed: 0 };
 	const place = () => {
@@ -818,58 +818,58 @@ function build(context: FilmContext) {
 	};
 	tl.to(
 		walk,
-		{ elapsed: WEEK, duration: 1.1, ease: "power1.inOut", onUpdate: place },
-		11.9,
+		{ elapsed: WEEK, duration: 1.0, ease: "power1.inOut", onUpdate: place },
+		11.4,
 	);
-	hide(one("t-today"), 12.9, 0.3);
-	show(one("t-week"), 13.0, "right");
+	hide(one("t-today"), 12.3, 0.3);
+	show(one("t-week"), 12.4, "right");
 	tl.to(
 		walk,
-		{ elapsed: 25, duration: 1.3, ease: "power1.in", onUpdate: place },
-		13.6,
+		{ elapsed: 25, duration: 1.2, ease: "power1.in", onUpdate: place },
+		12.9,
 	);
 	tl.to(
 		[one("even"), one("even-label")],
 		{ opacity: 0.25, duration: 0.5 },
-		14.6,
+		13.8,
 	);
 	tl.to(
 		walk,
-		{ elapsed: LAST, duration: 0.8, ease: "power2.in", onUpdate: place },
-		14.9,
+		{ elapsed: LAST, duration: 0.7, ease: "power2.in", onUpdate: place },
+		14.1,
 	);
-	show(one("t-last"), 15.6);
-	tl.to(clip, { attr: { width: L.right - L.left + 6 }, duration: 0.4 }, 15.6);
-	// Cut: the unit.
-	hide([one("t-head")], 16.2);
-	sink(16.2);
-	land(one("th-num"), 16.5);
-	show(one("th-word"), 16.8);
-	show(one("th-sub"), 17.1);
+	show(one("t-last"), 14.8);
+	tl.to(clip, { attr: { width: L.right - L.left + 6 }, duration: 0.4 }, 14.8);
+	// Cut: the unit, its sub-line held to be read.
+	hide([one("t-head")], 15.3);
+	sink(15.3);
+	land(one("th-num"), 15.6);
+	show(one("th-word"), 15.85);
+	show(one("th-sub"), 16.05);
 
 	// ——— vega: points, not percent ———
-	tl.addLabel("vega", 18.4);
-	hide(kids("th"), 18.4);
+	tl.addLabel("vega", 19.55);
+	hide(kids("th"), 19.55);
 	// The two readings' tags come up with the headline that names "3%", once theta's
 	// figure has gone from where they stand.
-	show([one("v-tag-0"), one("v-tag-1")], 18.8);
-	show(one("v-head"), 18.8);
-	show(one("v-from-0"), 19.1);
-	land(one("v-result-0"), 19.6);
-	show(one("v-from-1"), 20.3);
-	land(one("v-result-1"), 20.8);
-	show(one("v-line"), 21.6);
+	show([one("v-tag-0"), one("v-tag-1")], 19.95);
+	show(one("v-head"), 19.95);
+	show(one("v-from-0"), 20.15);
+	land(one("v-result-0"), 20.55);
+	show(one("v-from-1"), 21.05);
+	land(one("v-result-1"), 21.45);
+	show(one("v-line"), 21.95);
 
 	// ——— sum: the hero. The waterfall answers the puzzle. ———
-	tl.addLabel("sum", 23.6);
+	tl.addLabel("sum", 25.45);
 	hide(
 		kids("v").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		23.6,
+		25.45,
 	);
-	tl.set(chartTheta, { opacity: 0 }, 23.8);
-	tl.set(chartSum, { opacity: 1 }, 23.8);
-	show(one("s-head"), 23.95);
-	rise(24.0);
+	tl.set(chartTheta, { opacity: 0 }, 25.65);
+	tl.set(chartSum, { opacity: 1 }, 25.65);
+	show(one("s-head"), 25.8);
+	rise(25.85);
 	const grow = (index: number, at: number) => {
 		const bar = bars[index];
 		const top = Math.min(L.yW(bar.from), L.yW(bar.to));
@@ -890,51 +890,51 @@ function build(context: FilmContext) {
 			tl.fromTo(link, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.5);
 	};
 	bars.forEach((_, i) => {
-		grow(i, 24.6 + i * 0.5);
+		grow(i, 26.15 + i * 0.3);
 	});
 	// The parts' sum, beside the model's figure: they account for the move.
-	d.lock(lockSum, 28.0, {
+	d.lock(lockSum, 28.4, {
 		around: [one("w-bar-sum"), one("w-value-sum")],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 28.0);
-	show(one("s-answer"), 28.0);
+	tl.addLabel("hero-lock", 28.4);
+	show(one("s-answer"), 28.4);
 
 	// ——— rho: rates, briefly ———
-	tl.addLabel("rho", 31.6);
-	hide([one("s-head"), one("s-answer"), lockSum], 31.6);
-	sink(31.6);
-	land(one("rh-num"), 32.0);
-	show(one("rh-word"), 32.3);
-	show(one("rh-sub"), 32.6);
-	show(one("rh-compare"), 33.0);
+	tl.addLabel("rho", 31.9);
+	hide([one("s-head"), one("s-answer"), lockSum], 31.9);
+	sink(31.9);
+	land(one("rh-num"), 32.2);
+	show(one("rh-word"), 32.4);
+	show(one("rh-sub"), 32.5);
+	show(one("rh-compare"), 32.8);
 
 	// ——— positions: scale last, with signs ———
-	tl.addLabel("positions", 34.4);
-	hide([...kids("rh"), one("rh-compare")], 34.4);
-	show(one("p-head"), 34.75);
-	show(one("p-who-0"), 35.1);
-	land(one("p-num-0"), 35.3);
-	show(one("p-who-1"), 35.8);
-	land(one("p-num-1"), 36.0);
-	show(one("p-note"), 36.6);
+	tl.addLabel("positions", 36.0);
+	hide([...kids("rh"), one("rh-compare")], 36.0);
+	show(one("p-head"), 36.35);
+	show(one("p-who-0"), 36.6);
+	land(one("p-num-0"), 36.8);
+	show(one("p-who-1"), 37.1);
+	land(one("p-num-1"), 37.3);
+	show(one("p-note"), 37.6);
 	// Cut: the claim.
 	hide(
 		kids("p").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		39.0,
+		41.1,
 	);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.3,
+		41.4,
 	);
-	show(one("c-sub"), 39.7);
+	show(one("c-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 43.4);
-	hide(kids("claim"), 43.4);
-	d.close(43.4);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
