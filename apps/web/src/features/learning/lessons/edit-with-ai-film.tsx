@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -27,15 +28,15 @@ import {
  * "keep everything else unchanged". Last, a preview isn't a save: close the tab and the
  * draft is gone; save it and it is validated and listed under My recipes, private to you.
  *
- *   open      0–4      "Fork or write a recipe with AI"
- *   question  4–9.5    "Make this an ALFA report."
- *   scope     9.5–16.5 every block to re-check; bounded: one to review
- *   review    16.5–25  edit: Index GEX gone; undo; edit again
- *   save      25–35.5  unsaved; closed; saved; cut: the claim
- *   next      35.5–38  Next: connect your own AI agent
+ *   open      0–4        "Fork or write a recipe with AI"
+ *   question  4–9.6      "Make this an ALFA report."
+ *   scope     9.6–16.6   every block to re-check; bounded: one to review
+ *   review    16.6–27.5  edit: Index GEX gone; undo; edit again, only Spotlight, locked
+ *   save      27.5–38.5  unsaved; closed; saved; cut: the claim
+ *   next      38.5–41    Next: connect your own AI agent
  */
 
-const END = 38;
+const END = 41;
 /** The states a block's status moves through, in the order the film uses them. */
 const SHOWN: readonly Status[] = [
 	"recheck",
@@ -106,44 +107,35 @@ const copy = {
 	],
 	qLine: ["Which blocks do you now have to check?", "现在你得检查哪些区块？"],
 	vagueHead: [
-		"A prompt with no boundary: every block may have changed.",
+		"No boundary: every block may have changed.",
 		"没有范围的提示：每个区块都可能被改过。",
 	],
 	vagueHeadShort: ["No boundary: re-check all.", "没有范围：全部重查。"],
 	boundedHead: [
-		"Name what may change: one block to review, four to confirm.",
-		"写明可以改什么：一个区块要审阅，四个只需确认。",
+		"Bound it: review one, confirm four.",
+		"划定范围：审阅一个，确认四个。",
 	],
 	boundedHeadShort: ["Bounded: review one.", "划定范围：审阅一个。"],
 	boundedShort: ["Only Spotlight may change.", "只改 Spotlight，其余不变。"],
 	editHead: [
-		"The first edit changes Spotlight, and Index GEX is gone.",
-		"第一次修改改了 Spotlight，Index GEX 却不见了。",
+		"Edit 1 changes Spotlight; Index GEX is gone.",
+		"修改 1 改了 Spotlight；Index GEX 不见了。",
 	],
 	editHeadShort: ["Edit 1: Index GEX is gone.", "修改 1：Index GEX 不见了。"],
 	undoHead: [
-		"Undo first: back to the version you reviewed.",
+		"Undo first: back to what you reviewed.",
 		"先撤销：回到你审阅过的版本。",
 	],
 	undoHeadShort: ["Undo first.", "先撤销。"],
 	againHead: [
-		"Ask again with “keep everything else unchanged”: only Spotlight differs.",
-		"带上“其他一切保持不变”再问一次：只有 Spotlight 不同。",
+		"Ask again, bounded: only Spotlight differs.",
+		"带上范围再问：只有 Spotlight 不同。",
 	],
 	againHeadShort: ["Ask again: only Spotlight.", "再问：只有 Spotlight。"],
-	previewHead: [
-		"The preview looks right; nothing is saved yet.",
-		"预览看起来没问题；还什么都没保存。",
-	],
-	previewHeadShort: ["A preview, not a save.", "预览不是保存。"],
-	closedHead: [
-		"Close the tab now and the draft is gone.",
-		"现在关掉标签页，草稿就没了。",
-	],
-	closedHeadShort: ["Close the tab: gone.", "关掉标签页：没了。"],
+	previewHead: ["A preview isn't a save.", "预览不是保存。"],
 	savedHead: [
-		"Save instead: validated, Saved, and private to you.",
-		"改为保存：通过校验，显示 Saved，只有你可见。",
+		"Save it: validated, and private to you.",
+		"保存：通过校验，只有你可见。",
 	],
 	savedHeadShort: ["Save: private to you.", "保存：仅你可见。"],
 	draft: ["Your draft · private", "你的草稿 · 私有"],
@@ -166,8 +158,8 @@ const copy = {
 		"划定范围，逐次审阅，有意保存。",
 	],
 	claimSub: [
-		"Undo what you didn't ask for before the next edit; the official recipe never changes.",
-		"在下一次修改前撤销你没要求的改动；官方 Recipe 从不改变。",
+		"Undo the unasked; the official recipe never changes.",
+		"撤销没要求的改动；官方 Recipe 从不改变。",
 	],
 	nextBig: [
 		"Next: connect your own AI agent",
@@ -283,10 +275,45 @@ function Scene({
 				/>
 			</g>
 			{headline("v-head", copy.vagueHead, copy.vagueHeadShort)}
-			{headline("b-head", copy.boundedHead, copy.boundedHeadShort)}
+			<Lines
+				name="b-head"
+				text={t(narrow ? copy.boundedHeadShort : copy.boundedHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.vagueHeadShort : copy.vagueHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("e-head", copy.editHead, copy.editHeadShort)}
-			{headline("u-head", copy.undoHead, copy.undoHeadShort)}
+			<Lines
+				name="u-head"
+				text={t(narrow ? copy.undoHeadShort : copy.undoHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.editHeadShort : copy.editHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("a-head", copy.againHead, copy.againHeadShort)}
+			<Brackets name="lock-spotlight" glow />
 
 			{/* The prompt, or the edit's steps. */}
 			<rect
@@ -407,9 +434,25 @@ function Scene({
 			</g>
 
 			{/* Unsaved, closed, saved. */}
-			{headline("p-head", copy.previewHead, copy.previewHeadShort)}
-			{headline("c-head", copy.closedHead, copy.closedHeadShort)}
-			{headline("s-head", copy.savedHead, copy.savedHeadShort)}
+			{headline("p-head", copy.previewHead, copy.previewHead)}
+			<Lines
+				name="s-head"
+				text={t(narrow ? copy.savedHeadShort : copy.savedHead)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.previewHead : copy.previewHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{card(0, "card-draft", copy.draft, [
 				["d-unsaved", copy.unsaved, "wt-film-warn"],
 				["d-closed", copy.closed, "wt-film-loss"],
@@ -480,7 +523,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const ids = BLOCKS.map((block) => block.id);
@@ -505,6 +548,8 @@ function build(context: FilmContext) {
 	const pill = (i: number, on: boolean, time: number) =>
 		tl.to(one(`pill-on-${i}`), { opacity: on ? 1 : 0, duration: 0.3 }, time);
 
+	const lockSpotlight = one<SVGGraphicsElement>("lock-spotlight");
+
 	d.hidden([
 		...flat("q"),
 		...[
@@ -514,9 +559,9 @@ function build(context: FilmContext) {
 			"u-head",
 			"a-head",
 			"p-head",
-			"c-head",
 			"s-head",
 		].map((name) => one(name)),
+		lockSpotlight,
 		one("bar"),
 		one("pr-vague"),
 		one("pr-bounded"),
@@ -545,18 +590,18 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.6);
+	show(one("q-line"), 6.0);
 
 	// ——— scope: the prompt decides what you check ———
-	tl.addLabel("scope", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("v-head"), 9.7, "above");
-	show([one("bar"), one("pr-vague")], 10.0);
+	tl.addLabel("scope", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("v-head"), 9.8, "above");
+	show([one("bar"), one("pr-vague")], 10.1);
 	ids.forEach((id, i) => {
-		show(one(`blk-${id}`), 10.3 + i * 0.1);
+		show(one(`blk-${id}`), 10.4 + i * 0.1);
 	});
-	set({}, every("recheck"), 11.0);
-	d.swap(one("v-head"), one("b-head"), 12.8);
+	set({}, every("recheck"), 11.1);
+	show(one("b-head"), 13.0);
 	d.flip(one("pr-vague"), one("pr-bounded"), 13.2);
 	tl.set(one("pr-vague"), { opacity: 0 }, 13.5);
 	const bounded = { ...every("confirm"), spotlight: "review" } as const;
@@ -564,70 +609,73 @@ function build(context: FilmContext) {
 	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 13.9);
 
 	// ——— review: undo before the next edit ———
-	tl.addLabel("review", 16.5);
-	d.swap(one("b-head"), one("e-head"), 16.5);
-	hide([one("bar"), one("pr-bounded")], 16.5);
+	tl.addLabel("review", 16.6);
+	d.swap([one("v-head"), one("b-head")], one("e-head"), 16.6);
+	hide([one("bar"), one("pr-bounded")], 16.6);
 	show(
 		flat("pills").filter(
 			(el) => !el.getAttribute("data-f")?.startsWith("pill-on"),
 		),
-		16.8,
+		17.0,
 	);
-	pill(1, true, 17.0);
+	pill(1, true, 17.2);
 	const edited = {
 		...every("same"),
 		spotlight: "changed",
 		gex: "removed",
 	} as const;
-	set(bounded, edited, 17.2);
-	tl.to(one("gone-gex"), { opacity: 1, duration: 0.3 }, 17.5);
+	set(bounded, edited, 17.4);
+	tl.to(one("gone-gex"), { opacity: 1, duration: 0.3 }, 17.7);
 	// Undo.
-	d.swap(one("e-head"), one("u-head"), 19.4);
-	pill(1, false, 19.8);
-	pill(2, true, 19.8);
-	set(edited, every("same"), 19.9);
+	show(one("u-head"), 20.0);
+	pill(1, false, 20.2);
+	pill(2, true, 20.2);
+	set(edited, every("same"), 20.3);
 	tl.to(
 		[one("gone-gex"), one("hl-spotlight")],
 		{ opacity: 0, duration: 0.3 },
-		19.9,
+		20.3,
 	);
-	// Ask again, bounded.
-	d.swap(one("u-head"), one("a-head"), 21.8);
-	pill(2, false, 22.2);
-	pill(3, true, 22.2);
-	set(every("same"), { ...every("same"), spotlight: "changed" }, 22.4);
-	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 22.7);
+	// Ask again, bounded. The hero: one block changed, as asked.
+	d.swap([one("e-head"), one("u-head")], one("a-head"), 23.6);
+	pill(2, false, 24.0);
+	pill(3, true, 24.0);
+	set(every("same"), { ...every("same"), spotlight: "changed" }, 24.2);
+	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 24.5);
+	d.lock(lockSpotlight, 25.2, { around: one("blk-spotlight"), pad: 6 });
+	tl.addLabel("hero-lock", 25.2);
 
 	// ——— save: a preview isn't a save ———
-	tl.addLabel("save", 25);
+	tl.addLabel("save", 27.5);
 	hide(
 		[
 			one("a-head"),
+			lockSpotlight,
 			...flat("pills"),
 			...ids.flatMap((id) => [one(`blk-${id}`), one(`hl-${id}`)]),
 			...ids.map((id) => status(id, id === "spotlight" ? "changed" : "same")),
 		],
-		25.0,
+		27.5,
 	);
-	show(one("p-head"), 25.3, "above");
-	show([one("card-draft"), one("d-unsaved")], 25.6);
-	show([one("card-mine"), one("m-dash")], 25.9);
-	show([one("card-official"), one("o-line")], 26.2);
-	// Close the tab.
-	d.swap(one("p-head"), one("c-head"), 27.6);
-	d.flip(one("d-unsaved"), one("d-closed"), 28.0);
-	tl.set(one("d-unsaved"), { opacity: 0 }, 28.3);
-	d.flip(one("m-dash"), one("m-none"), 28.3);
-	tl.set(one("m-dash"), { opacity: 0 }, 28.6);
+	show(one("p-head"), 27.85, "above");
+	show([one("card-draft"), one("d-unsaved")], 28.1);
+	show([one("card-mine"), one("m-dash")], 28.4);
+	show([one("card-official"), one("o-line")], 28.7);
+	// Close the tab: the draft is gone.
+	d.flip(one("d-unsaved"), one("d-closed"), 29.0);
+	tl.set(one("d-unsaved"), { opacity: 0 }, 29.3);
+	d.flip(one("m-dash"), one("m-none"), 29.3);
+	tl.set(one("m-dash"), { opacity: 0 }, 29.6);
 	// Or save.
-	d.swap(one("c-head"), one("s-head"), 30.0);
-	d.flip(one("d-closed"), one("d-saved"), 30.4);
-	tl.set(one("d-closed"), { opacity: 0 }, 30.7);
-	d.flip(one("m-none"), one("m-entry"), 30.7);
-	tl.set(one("m-none"), { opacity: 0 }, 31.0);
+	show(one("s-head"), 30.4);
+	d.flip(one("d-closed"), one("d-saved"), 30.6);
+	tl.set(one("d-closed"), { opacity: 0 }, 30.9);
+	d.flip(one("m-none"), one("m-entry"), 30.9);
+	tl.set(one("m-none"), { opacity: 0 }, 31.2);
 	// Cut: the claim.
 	hide(
 		[
+			one("p-head"),
 			one("s-head"),
 			one("card-draft"),
 			one("card-mine"),
@@ -636,15 +684,15 @@ function build(context: FilmContext) {
 			one("m-entry"),
 			one("o-line"),
 		],
-		32.4,
+		34.0,
 	);
-	word(one("z-big"), 32.8);
-	show(one("z-sub"), 33.3);
+	word(one("z-big"), 34.4);
+	show(one("z-sub"), 34.8);
 
 	// ——— next ———
-	tl.addLabel("next", 35.5);
-	hide(kids("claim"), 35.5);
-	d.close(35.5);
+	tl.addLabel("next", 38.5);
+	hide(kids("claim"), 38.5);
+	d.close(38.5);
 	return tl;
 }
 
