@@ -32,13 +32,13 @@ import {
  *   question  4–8.6      500 at $2.15: a $107,500 bet ALFA rises?
  *   amount    8.6–14     $2.15 a share × 500 contracts × 100 shares = $107,500
  *   claims    14–23.6    observed, calculated, inferred, unknown; an old quote
- *   gaps      23.6–30.6  OI +480; hero: a linked 110 leg, a $1.25 call spread
- *   belief    30.6–35    no record of belief
- *   claim     35–39.8    facts, inferences, unknowns
- *   next      39.8–42.3  Next: the module checkpoint
+ *   gaps      23.6–32.6  OI +480; hero: a linked 110 leg, a $1.25 call spread
+ *   belief    32.6–37.8  no record of belief
+ *   claim     37.8–42.6  facts, inferences, unknowns
+ *   next      42.6–45.1  Next: the module checkpoint
  */
 
-const END = 42.3;
+const END = 45.1;
 type Evidence = "observed" | "calculated" | "inferred" | "unknown";
 const LEG = BLOCK.pairedLeg;
 const tone = (evidence: Evidence) =>
@@ -638,34 +638,34 @@ function build(context: FilmContext) {
 	);
 	show(heads[3], 23.95);
 	gapCards.forEach((card, i) => {
-		show(card, 24.3 + i * 0.3, "right");
+		show(card, 24.3 + i * 0.2, "right");
 	});
-	close(0, 25.6);
-	close(1, 26.4);
+	close(0, 27.8);
+	close(1, 28.4);
 	// On the record's line itself: the card's question and tag stay outside.
-	d.lock(lockLeg, 27.0, {
+	d.lock(lockLeg, 29.0, {
 		around: found[1].firstElementChild as SVGGraphicsElement,
 		pad: 5,
 	});
-	tl.addLabel("hero-lock", 27.0);
-	show(heads[4], 27.0);
+	tl.addLabel("hero-lock", 29.0);
+	show(heads[4], 29.0);
 
 	// ——— belief: no record shows it ———
-	tl.addLabel("belief", 30.6);
-	d.swap([heads[3], heads[4]], heads[5], 30.6);
-	hide(lockLeg, 30.6);
-	close(2, 31.2);
+	tl.addLabel("belief", 32.6);
+	d.swap([heads[3], heads[4]], heads[5], 32.6);
+	hide(lockLeg, 32.6);
+	close(2, 33.2);
 
 	// ——— claim ———
-	tl.addLabel("claim", 35);
-	hide([heads[5], ...gapCards, ...found], 35.0);
-	word(one("z-big"), 35.3);
-	show(one("z-sub"), 35.7);
+	tl.addLabel("claim", 37.8);
+	hide([heads[5], ...gapCards, ...found], 37.8);
+	word(one("z-big"), 38.1);
+	show(one("z-sub"), 38.5);
 
 	// ——— next ———
-	tl.addLabel("next", 39.8);
-	hide(kids("claim"), 39.8);
-	d.close(39.8);
+	tl.addLabel("next", 42.6);
+	hide(kids("claim"), 42.6);
+	d.close(42.6);
 	return tl;
 }
 
