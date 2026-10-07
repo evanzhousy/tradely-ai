@@ -521,7 +521,7 @@ function Scene({
 				text={t(narrow ? copy.rollShort : copy.roll)}
 				x={margin}
 				y={L.sumY}
-				size={narrow ? T.body : T.head}
+				size={narrow ? T.body : T.body * 1.2}
 				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-accent"
