@@ -38,15 +38,15 @@ import {
  *   open      0–4        "DEX and DEI"
  *   question  4–9.6      gross 27,425; net ?
  *   tape      9.6–17.8   seven prints, delta-weighted; signed by side: net +17,532
- *   dei       17.8–22.3  +17,532 ÷ 1.2M, 1.5M, 600k: 1.46%, 1.17%, 2.92%
- *   spread    22.3–32.2  the 10:50 block as one spread: +7,500, net +8,532; cut: two
+ *   dei       17.8–24.4  +17,532 ÷ 1.2M, 1.5M, 600k: 1.46%, 1.17%, 2.92%
+ *   spread    24.4–34.3  the 10:50 block as one spread: +7,500, net +8,532; cut: two
  *                        answers, locked
- *   source    32.2–41.8  another site's "DEX" −89,800: OI × delta, dealers assumed short;
+ *   source    34.3–44.9  another site's "DEX" −89,800: OI × delta, dealers assumed short;
  *                        cut: "Same label, different numerator."
- *   next      41.8–44.3  Next: the module checkpoint
+ *   next      44.9–47.4  Next: the module checkpoint
  */
 
-const END = 44.3;
+const END = 47.4;
 const SPREAD = netted.bullish - (printwise.bullish - magnitude(prints[4]));
 
 const leanTag: Record<Lean, Copy> = {
@@ -688,57 +688,57 @@ function build(context: FilmContext) {
 		show(one(`d-row-${i}`), 19.1 + i * 0.7);
 		show(one(`d-tag-${i}`), 19.3 + i * 0.7);
 	});
-	show(one("d-line"), 21.0);
+	show(one("d-line"), 20.9);
 
 	// ——— spread: one trade, not two prints ———
-	tl.addLabel("spread", 22.3);
-	hide(kids("dei"), 22.3);
-	rise(22.5);
-	show(one("p-head"), 22.65, "above");
-	show([one("meter-tag-net"), meter], 22.8, "above");
-	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 22.8);
-	show(one("spread"), 23.0, "right", 0.4);
-	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 24.0);
-	show(one("spread-row"), 24.2, "right");
-	d.count(meter, netted.net, 24.6, shares, printwise.net, 0.8);
+	tl.addLabel("spread", 24.4);
+	hide(kids("dei"), 24.4);
+	rise(24.6);
+	show(one("p-head"), 24.75, "above");
+	show([one("meter-tag-net"), meter], 24.9, "above");
+	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 24.9);
+	show(one("spread"), 25.1, "right", 0.4);
+	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 26.1);
+	show(one("spread-row"), 26.3, "right");
+	d.count(meter, netted.net, 26.7, shares, printwise.net, 0.8);
 	// Cut: two answers. The hero: one convention halves the net.
-	hide([one("p-head"), ...kids("meter")], 26.2);
-	sink(26.2);
-	show(one("w-tag-0"), 26.5);
-	land(one("w-num-0"), 26.7);
-	show(one("w-tag-1"), 27.0);
-	land(one("w-num-1"), 27.2);
-	d.lock(lockTwo, 27.8, {
+	hide([one("p-head"), ...kids("meter")], 28.3);
+	sink(28.3);
+	show(one("w-tag-0"), 28.6);
+	land(one("w-num-0"), 28.8);
+	show(one("w-tag-1"), 29.1);
+	land(one("w-num-1"), 29.3);
+	d.lock(lockTwo, 29.9, {
 		around: [one("w-tag-0"), one("w-num-0"), one("w-tag-1"), one("w-num-1")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 27.8);
-	show(one("w-line"), 28.2);
+	tl.addLabel("hero-lock", 29.9);
+	show(one("w-line"), 30.3);
 
 	// ——— source: a number with the same name ———
-	tl.addLabel("source", 32.2);
-	hide([...flat("two"), lockTwo], 32.2);
-	show(one("s-head"), 32.55, "above");
-	show(one("s-title-0"), 33.0);
-	land(one("s-num-0"), 33.2);
-	show(one("s-from-0"), 33.6);
-	show(one("s-title-1"), 34.3);
-	land(one("s-num-1"), 34.5);
-	show(one("s-from-1"), 34.9);
+	tl.addLabel("source", 34.3);
+	hide([...flat("two"), lockTwo], 34.3);
+	show(one("s-head"), 34.65, "above");
+	show(one("s-title-0"), 35.1);
+	land(one("s-num-0"), 35.3);
+	show(one("s-from-0"), 35.7);
+	show(one("s-title-1"), 36.0);
+	land(one("s-num-1"), 36.2);
+	show(one("s-from-1"), 36.6);
 	// Cut: the claim.
-	hide(flat("src"), 37.0);
+	hide(flat("src"), 40.1);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		37.4,
+		40.5,
 	);
-	show(one("c-sub"), 37.8);
+	show(one("c-sub"), 40.9);
 
 	// ——— next ———
-	tl.addLabel("next", 41.8);
-	hide(kids("claim"), 41.8);
-	d.close(41.8);
+	tl.addLabel("next", 44.9);
+	hide(kids("claim"), 44.9);
+	d.close(44.9);
 	return tl;
 }
 
