@@ -64,14 +64,14 @@ import {
  *   open      0–4        "Portfolio Greeks"
  *   question  4–9.6      +1,006 shares: hedged?
  *   holdings  9.6–17.3   stock, calls, puts missing: +1,006 subtotal; puts −130: +876
- *   hedge     17.3–29.6  delta 0 at $101.20; +$5: +$875; a quiet week: −$964;
+ *   hedge     17.3–29.3  delta 0 at $101.20; +$5: +$875; a quiet week: −$964;
  *                        cut: zero delta is not zero risk, its Greeks locked
- *   feeds     29.6–43.3  0.118 against 9.70; ÷ 100: 0.097; Friday's put delta;
+ *   feeds     29.3–44.25 0.118 against 9.70; ÷ 100: 0.097; Friday's put delta;
  *                        cut: "One unit, one time, nothing missing."
- *   next      43.3–45.8  Next: the module checkpoint
+ *   next      44.25–46.75 Next: the module checkpoint
  */
 
-const END = 45.8;
+const END = 46.75;
 const PNL_X = [95, 107] as const;
 const PNL_Y = [-1_500, 2_000] as const;
 const LABEL_SPOT = 106.4;
@@ -652,16 +652,6 @@ function Scene({
 				>
 					{t(copy.perPoint)}
 				</Word>
-				<Word
-					name="f-unit-put-delta-stale"
-					x={L.margin}
-					y={L.feedY(2) + T.body * 1.7}
-					size={T.body}
-					anchor="start"
-					className="wt-film-type wt-film-warn"
-				>
-					{t(copy.perShareFriday)}
-				</Word>
 			</g>
 			<g data-f="claim">
 				<Lines
@@ -791,16 +781,16 @@ function build(context: FilmContext) {
 			show(one(`h-shares-${row.key}`), at + 0.25, "right");
 		}
 	});
-	tl.to(one("h-rule"), { opacity: 1, duration: 0.4 }, 11.9);
-	show(one("h-sub-label"), 12.0);
-	land(sum, 12.2);
+	tl.to(one("h-rule"), { opacity: 1, duration: 0.4 }, 11.7);
+	show(one("h-sub-label"), 11.8);
+	land(sum, 12.0);
 	// The second account reports.
 	d.swap(one("b-head"), one("r-head"), 13.4);
 	hide(one("h-missing"), 13.75);
 	show(one("h-per-puts"), 13.95, "right");
 	show(one("h-shares-puts"), 14.05, "right");
-	d.swap(one("h-sub-label"), one("h-total-label"), 14.3);
-	d.count(sum, TOTAL, 14.4, shares, SUBTOTAL, 0.7);
+	d.swap(one("h-sub-label"), one("h-total-label"), 15.3);
+	d.count(sum, TOTAL, 15.4, shares, SUBTOTAL, 0.7);
 
 	// ——— hedge: zero delta, other sensitivities ———
 	tl.addLabel("hedge", 17.3);
@@ -862,37 +852,41 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 27.6);
 
 	// ——— feeds: units and timestamps ———
-	tl.addLabel("feeds", 29.6);
-	hide([...flat("risk"), lockRisk], 29.6);
-	show(one("f-head"), 29.95, "above");
+	tl.addLabel("feeds", 29.3);
+	hide([...flat("risk"), lockRisk], 29.3);
+	show(one("f-head"), 29.65, "above");
 	(["call-vega", "put-vega", "put-delta"] as const).forEach((key, i) => {
-		const at = 30.3 + i * 0.4;
+		const at = 30.0 + i * 0.4;
 		show(one(`f-label-${key}`), at);
 		show(one(`f-value-${key}`), at + 0.1, "right");
 		show(one(`f-unit-${key}`), at + 0.2);
 	});
-	// The puts' vega comes per 1.00 of volatility: convert it to points.
-	show(one("x-head"), 31.4);
-	d.flip(one("f-value-put-vega"), one("f-value-put-vega-point"), 31.8);
-	tl.set(one("f-value-put-vega"), { opacity: 0 }, 32.1);
-	d.swap(one("f-unit-put-vega"), one("f-unit-put-vega-point"), 31.8);
-	// The put delta is Friday's.
-	d.swap([one("f-head"), one("x-head")], one("s-head"), 35.0);
-	d.swap(one("f-unit-put-delta"), one("f-unit-put-delta-stale"), 35.4);
+	// The puts' vega comes per 1.00 of volatility: once read, convert it to points.
+	show(one("x-head"), 32.5);
+	d.flip(one("f-value-put-vega"), one("f-value-put-vega-point"), 34.1);
+	tl.set(one("f-value-put-vega"), { opacity: 0 }, 34.4);
+	d.swap(one("f-unit-put-vega"), one("f-unit-put-vega-point"), 34.1);
+	// The put delta is Friday's: its timestamp turns warn where it is.
+	d.swap([one("f-head"), one("x-head")], one("s-head"), 36.0);
+	tl.to(
+		one("f-unit-put-delta"),
+		{ attr: { class: "wt-film-type wt-film-warn" }, duration: 0.2 },
+		36.4,
+	);
 	tl.to(
 		[one("f-label-call-vega"), one("f-label-put-vega")],
 		{ opacity: 0.4, duration: 0.4 },
-		35.4,
+		36.4,
 	);
 	// Cut: the claim.
-	hide([one("s-head"), ...flat("feeds")], 38.9);
-	word(one("z-big"), 39.3);
-	show(one("z-sub"), 39.7);
+	hide([one("s-head"), ...flat("feeds")], 39.85);
+	word(one("z-big"), 40.25);
+	show(one("z-sub"), 40.65);
 
 	// ——— next ———
-	tl.addLabel("next", 43.3);
-	hide(kids("claim"), 43.3);
-	d.close(43.3);
+	tl.addLabel("next", 44.25);
+	hide(kids("claim"), 44.25);
+	d.close(44.25);
 	return tl;
 }
 
