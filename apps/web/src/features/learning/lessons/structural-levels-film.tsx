@@ -41,15 +41,15 @@ import {
  *
  *   open      0–4        "Walls and max pain"
  *   question  4–9.6      $90 or $95?
- *   walls     9.6–24     open interest: $110 and $90; by gamma: the put wall moves to $95;
+ *   walls     9.6–24.45  open interest: $110 and $90; by gamma: the put wall moves to $95;
  *                        cut: $90 by open interest against $95 by gamma
- *   pain      24–32.9    paid to puts, to calls, in total; minimum $100, locked; model
+ *   pain      24.45–32.4 paid to puts, to calls, in total; minimum $100, locked; model
  *                        range $90–$110
- *   distance  32.9–44.1  −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
- *   next      44.1–46.6  Next: charm and vanna
+ *   distance  32.4–45.25 −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
+ *   next      45.25–47.25 Next: charm and vanna
  */
 
-const END = 46.6;
+const END = 47.25;
 const SIDES = ["call", "put"] as const;
 const PUT_OI = wallOf("oi", "put");
 const PUT_GEX = wallOf("gex", "put");
@@ -197,10 +197,9 @@ const copy = {
 	alfa: [`ALFA ${stock(SPOT)}`, `ALFA ${stock(SPOT)}`],
 	putWall: [`put wall ${stock(PUT_WALL)}`, `看跌墙 ${stock(PUT_WALL)}`],
 	callWall: [`call wall ${stock(CALL_WALL)}`, `看涨墙 ${stock(CALL_WALL)}`],
-	noteDollars: ["one tick = $1", "每格 = $1"],
-	notePercent: [
-		`one tick = 1% of ${stock(SPOT)} = $1`,
-		`每格 = ${stock(SPOT)} 的 1% = $1`,
+	noteDollars: [
+		`one tick = $1 = 1% of ${stock(SPOT)}`,
+		`每格 = $1 = ${stock(SPOT)} 的 1%`,
 	],
 	noteAtr: [
 		`one tick = 1 ATR = $${ALFA_ATR_14.toFixed(2)}, a typical day's range, not a direction`,
@@ -676,7 +675,6 @@ function Scene({
 			{(
 				[
 					["note-dollars", copy.noteDollars],
-					["note-percent", copy.notePercent],
 					["note-atr", narrow ? copy.noteAtrShort : copy.noteAtr],
 				] as const
 			).map(([name, text]) => (
@@ -824,17 +822,17 @@ function build(context: FilmContext) {
 		});
 	});
 	// The most contracts on each side.
-	show(one("w-head"), 12.9);
+	show(one("w-head"), 12.3);
 	tl.to(
 		[one("hi-call"), one("hi-put-oi")],
 		{ opacity: 1, duration: 0.4 },
-		12.9,
+		12.3,
 	);
-	show([one("wl-call-oi"), one("wl-put-oi")], 13.1);
+	show([one("wl-call-oi"), one("wl-put-oi")], 12.5);
 	// Weighted by gamma: the bars near the money grow, and the put wall moves.
-	d.swap([one("o-head"), one("w-head")], one("g-head"), 16.4);
-	d.swap(one("axis-oi"), one("axis-gex"), 16.4);
-	hide([one("wl-call-oi"), one("wl-put-oi")], 16.4);
+	d.swap([one("o-head"), one("w-head")], one("g-head"), 15.8);
+	d.swap(one("axis-oi"), one("axis-gex"), 15.8);
+	hide([one("wl-call-oi"), one("wl-put-oi")], 15.8);
 	SIDES.forEach((side) => {
 		STRIKES.forEach((strike) => {
 			tl.to(
@@ -844,7 +842,7 @@ function build(context: FilmContext) {
 					duration: 0.9,
 					ease: "power2.inOut",
 				},
-				16.7,
+				16.1,
 			);
 		});
 	});
@@ -855,7 +853,7 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		16.7,
+		16.1,
 	);
 	tl.to(
 		one("hi-put-oi"),
@@ -865,79 +863,78 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		16.7,
+		16.1,
 	);
-	tl.to(one("hi-put-gex"), { opacity: 1, duration: 0.5 }, 17.3);
-	show([one("wl-call-gex"), one("wl-put-gex")], 17.7);
+	tl.to(one("hi-put-gex"), { opacity: 1, duration: 0.5 }, 16.7);
+	show([one("wl-call-gex"), one("wl-put-gex")], 17.1);
 	// Cut: the two put walls.
-	hide([one("g-head"), one("axis-gex")], 20.3);
-	sink(20.3);
-	show(one("w-tag-0"), 20.6);
-	land(one("w-num-0"), 20.8);
-	show(one("w-tag-1"), 21.2);
-	land(one("w-num-1"), 21.4);
-	show(one("w-line"), 22.0);
+	hide([one("g-head"), one("axis-gex")], 19.65);
+	sink(19.65);
+	show(one("w-tag-0"), 19.95);
+	land(one("w-num-0"), 20.15);
+	show(one("w-tag-1"), 20.45);
+	land(one("w-num-1"), 20.65);
+	show(one("w-line"), 20.95);
 
 	// ——— pain: the payout minimum ———
-	tl.addLabel("pain", 24);
-	hide(flat("two"), 24.0);
-	tl.set(one("bars"), { opacity: 0 }, 24.1);
-	tl.set(one("pain"), { opacity: 1 }, 24.1);
-	show(one("p-head"), 24.35, "above");
-	rise(24.4);
-	draw(one<SVGPathElement>("pay-put"), 24.9, 1.0);
-	show(one("pay-put-label"), 25.5);
-	draw(one<SVGPathElement>("pay-call"), 25.6, 1.0);
-	show(one("pay-call-label"), 26.2);
-	draw(one<SVGPathElement>("pay-total"), 26.5, 1.2);
-	land(one("min-dot"), 27.6);
-	show(one("min-label"), 27.8);
+	tl.addLabel("pain", 24.45);
+	hide(flat("two"), 24.45);
+	tl.set(one("bars"), { opacity: 0 }, 24.55);
+	tl.set(one("pain"), { opacity: 1 }, 24.55);
+	show(one("p-head"), 24.8, "above");
+	rise(24.85);
+	draw(one<SVGPathElement>("pay-put"), 25.25, 0.8);
+	show(one("pay-put-label"), 25.75);
+	draw(one<SVGPathElement>("pay-call"), 25.85, 0.8);
+	show(one("pay-call-label"), 26.35);
+	draw(one<SVGPathElement>("pay-total"), 26.55, 1.0);
+	land(one("min-dot"), 27.45);
+	show(one("min-label"), 27.65);
 	// The hero: the least paid out, at $100.
-	d.lock(lockPain, 28.4, {
+	d.lock(lockPain, 28.25, {
 		around: [one("min-dot"), one("min-label")],
 		pad: 8,
 	});
-	tl.addLabel("hero-lock", 28.4);
+	tl.addLabel("hero-lock", 28.25);
 	// The model's range for the same date.
-	d.swap(one("p-head"), one("r-head"), 29.0);
-	tl.to(one("band"), { opacity: 1, duration: 0.6 }, 29.6);
-	show(one("band-label"), 29.9);
+	d.swap(one("p-head"), one("r-head"), 28.55);
+	tl.to(one("band"), { opacity: 1, duration: 0.6 }, 29.15);
+	show(one("band-label"), 29.45);
 
 	// ——— distance: one level, three units ———
-	tl.addLabel("distance", 32.9);
-	hide([one("r-head"), lockPain], 32.9);
-	sink(32.9);
-	tl.set(one("pain"), { opacity: 0 }, 33.3);
-	tl.set(one("ruler"), { opacity: 1 }, 33.3);
-	show(one("u-head"), 33.25, "above");
-	rise(33.35);
-	show([one("d-put-dollars"), one("d-call-dollars")], 34.0);
-	show(one("note-dollars"), 34.3);
-	// Percent of $100 is a dollar a tick: the same marks, new numbers.
+	tl.addLabel("distance", 32.4);
+	hide([one("r-head"), lockPain], 32.4);
+	sink(32.4);
+	tl.set(one("pain"), { opacity: 0 }, 32.8);
+	tl.set(one("ruler"), { opacity: 1 }, 32.8);
+	show(one("u-head"), 32.75, "above");
+	rise(32.85);
+	show([one("d-put-dollars"), one("d-call-dollars")], 33.3);
+	show(one("note-dollars"), 33.5);
+	// Percent of $100 is a dollar a tick: the same marks, new numbers, the same note.
 	for (const side of SIDES)
-		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 35.6);
-	d.swap(one("note-dollars"), one("note-percent"), 35.6);
+		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 34.6);
 	// ATR: wider ticks, smaller numbers.
 	for (const side of SIDES)
-		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.2);
-	d.swap(one("note-percent"), one("note-atr"), 37.2);
-	tl.to(one("ticks-unit"), { opacity: 0.25, duration: 0.4 }, 37.2);
-	tl.to(one("ticks-atr"), { opacity: 1, duration: 0.5 }, 37.4);
+		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.0);
+	d.swap(one("note-dollars"), one("note-atr"), 37.0);
+	tl.to(one("ticks-unit"), { opacity: 0.25, duration: 0.4 }, 37.0);
+	tl.to(one("ticks-atr"), { opacity: 1, duration: 0.5 }, 37.2);
 	// Cut: the claim.
-	hide([one("u-head"), one("note-atr")], 39.6);
-	sink(39.6);
+	hide([one("u-head"), one("note-atr")], 40.85);
+	sink(40.85);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.0,
+		41.25,
 	);
-	show(one("z-sub"), 40.4);
+	show(one("z-sub"), 41.65);
 
 	// ——— next ———
-	tl.addLabel("next", 44.1);
-	hide(kids("claim"), 44.1);
-	d.close(44.1);
+	tl.addLabel("next", 45.25);
+	hide(kids("claim"), 45.25);
+	d.close(45.25);
 	return tl;
 }
 
