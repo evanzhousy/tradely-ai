@@ -43,14 +43,15 @@ import {
  *   open      0–4        "Stocks and prices"
  *   question  4–9        last $100.02: what do 10 shares cost?
  *   slice     9–16.55    50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
- *   quote     16.55–31.9 the book; buy 10: $1,000.50, sell 10: $1,000.00, 50¢ more to buy;
- *                        hero: buy 1,000
- *   kinds     31.9–39.65 stock, ETF, index; the index is a number, cash-settled
- *   claim     39.65–44.05 you trade against the quote, not the last price
- *   next      44.05–46.05 Next: options, a paid right
+ *   quote     16.55–33.3 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
+ *                        more to buy; hero: buy 1,000; after it, the same 1,000 at the last
+ *                        price, and what the sweep added
+ *   kinds     33.3–41.05 stock, ETF, index; the index is a number, cash-settled
+ *   claim     41.05–45.45 you trade against the quote, not the last price
+ *   next      45.45–47.45 Next: options, a paid right
  */
 
-const END = 46.05;
+const END = 47.45;
 const OPEN = ALFA.open;
 const MINE = 10;
 const SHARES = ALFA_SHARES_OUTSTANDING;
@@ -59,6 +60,9 @@ const SELL10 = tradeAgainst("sell", 10);
 const BIG = 1_000;
 /** The 1,000 climb the book the 10-share trades left: a trade never un-happens. */
 const BUY_BIG = tradeAgainst("buy", BIG, BUY10);
+/** The same 1,000 shares at the last price, and what climbing the book added to that. */
+const AT_LAST = BIG * alfaStockBook.last;
+const OVER_LAST = BUY_BIG.notional - AT_LAST;
 const ASKS = [...alfaStockBook.asks].reverse();
 const BIDS = alfaStockBook.bids;
 const MAX_SIZE = Math.max(
@@ -120,7 +124,7 @@ const copy = {
 	sliceHeadShort: ["A share: one slice of ALFA.", "一股：ALFA 的一份。"],
 	moveHead: [
 		`Each $1 move: $${MINE} to you.`,
-		`ALFA 每动 $1，你变动 $${MINE}。`,
+		`ALFA 每涨跌 $1，你的股票变动 $${MINE}。`,
 	],
 	moveHeadShort: [
 		`Each $1: $${MINE} to you.`,
@@ -132,10 +136,13 @@ const copy = {
 	bookHead: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
 	bookHeadShort: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
 	buyHead: [
-		"Buying 10 costs more than selling 10.",
-		"买 10 股比卖 10 股花得多。",
+		"Buy 10 and sell 10: two prices.",
+		"买 10 股和卖 10 股：两个价格。",
 	],
-	buyHeadShort: ["Buying costs more than selling.", "买比卖花得多。"],
+	buyHeadShort: [
+		"Buy 10, sell 10: two prices.",
+		"买 10 股、卖 10 股：两个价。",
+	],
 	bigHead: [
 		`Buy ${count(BIG)} at once: you climb the book.`,
 		`一次买 ${count(BIG)} 股：一档档往上买。`,
@@ -151,8 +158,15 @@ const copy = {
 	asks: ["asks · sellers", "卖价 · 卖方"],
 	bids: ["bids · buyers", "买价 · 买方"],
 	last: ["last", "最新"],
-	fill: ["you pay", "你付出"],
-	get: ["you get", "你收到"],
+	fill: ["10 shares · you pay", "10 股 · 你付出"],
+	fillBig: ["1,000 shares · you pay", "1,000 股 · 你付出"],
+	fillBigShort: ["1,000 · you pay", "1,000 股 · 你付出"],
+	/** On a phone the two slots share one line. */
+	fillShort: ["10 · you pay", "10 股 · 你付出"],
+	getShort: ["10 · you get", "10 股 · 你收到"],
+	get: ["10 shares · you get", "10 股 · 你收到"],
+	/** What the sweep added to the same shares at the last price. */
+	overLast: ["over last", "高于最新价"],
 	avg: ["average", "均价"],
 	avgShort: ["avg", "均价"],
 	kindsHead: [
@@ -209,6 +223,9 @@ function Scene({
 		/>
 	);
 	const rowText = narrow ? T.small * 1.15 : T.body;
+	const lastY = narrow
+		? L.askY(0) - T.small * 0.9
+		: L.spreadY + L.rowStep * 0.2 - 5;
 	const level = (
 		side: "ask" | "bid",
 		i: number,
@@ -267,6 +284,8 @@ function Scene({
 	const tagY = (k: number) =>
 		L.panelY + T.small * 1.4 + (narrow ? 0 : k * (fig * 1.25 + T.small * 2.4));
 	const valY = (k: number, size = fig) => tagY(k) + size * 1.15;
+	// Under the locked average, clear of its brackets.
+	const vsY = valY(1, heroFig) + heroFig * 0.3 + 10 + T.body * 1.5;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -408,9 +427,7 @@ function Scene({
 					// A phone's rows leave no room on the spread line: it moves beside the book, on the
 					// asks' tag line, above where the tickets set off.
 					x={narrow ? L.bookX + L.bookW + 14 : L.bookX + L.bookW}
-					y={
-						narrow ? L.askY(0) - T.small * 0.9 : L.spreadY + L.rowStep * 0.2 - 5
-					}
+					y={lastY}
 					textAnchor={narrow ? "start" : "end"}
 					className="wt-film-num wt-film-dim"
 					style={{ fontSize: T.small }}
@@ -431,8 +448,9 @@ function Scene({
 			<g data-f="panel">
 				{(
 					[
-						["p-pay", copy.fill, 0],
-						["p-get", copy.get, 1],
+						["p-pay", narrow ? copy.fillShort : copy.fill, 0],
+						["p-pay-big", narrow ? copy.fillBigShort : copy.fillBig, 0],
+						["p-get", narrow ? copy.getShort : copy.get, 1],
 						["p-avg-tag", copy.avg, 1],
 					] as const
 				).map(([name, tag, k]) => (
@@ -478,6 +496,56 @@ function Scene({
 				className="wt-film-num wt-film-accent"
 			>
 				{price(BUY_BIG.notional / BUY_BIG.filled)}
+			</Word>
+			{/* The 50¢ between what you pay and what you get: drawn when the build has measured
+			    both figures as they will read. */}
+			<path data-f="diff-gap" className="wt-film-gap" />
+			<text
+				data-f="diff-label"
+				className="wt-film-num wt-film-loss"
+				style={{ fontSize: narrow ? T.small * 1.15 : T.body }}
+			>
+				{`${Math.round(BUY10.notional - SELL10.notional)}¢`}
+			</text>
+			{/* After the hero, the same 1,000 shares at the last price. A phone has room for it
+			    only beside the book, under the "last" tag it extends. */}
+			<g data-f="vs-last">
+				{narrow ? (
+					[`× ${count(BIG)}`, `= ${usd(AT_LAST, 0)}`].map((line, i) => (
+						<text
+							key={line}
+							data-f={i ? "vs-eq" : "vs-x"}
+							x={L.bookX + L.bookW + 14}
+							y={lastY + T.small * (1.7 + i * 1.5)}
+							className="wt-film-num wt-film-dim"
+							style={{ fontSize: T.small }}
+						>
+							{line}
+						</text>
+					))
+				) : (
+					<text
+						data-f="vs-calc"
+						x={L.panelX}
+						y={vsY}
+						className="wt-film-num wt-film-dim"
+						style={{ fontSize: T.body }}
+					>
+						{`${count(BIG)} × `}
+						<tspan className="wt-film-accent">{`${t(copy.last)} ${usd(alfaStockBook.last)}`}</tspan>
+						{` = ${usd(AT_LAST, 0)}`}
+					</text>
+				)}
+			</g>
+			<Word
+				name="p-over"
+				x={narrow ? L.bookX + L.bookW + 14 : L.panelX}
+				y={narrow ? lastY + T.small * 3.2 + T.body * 1.5 : vsY + T.body * 1.9}
+				size={narrow ? T.body : T.body * 1.25}
+				anchor="start"
+				className="wt-film-num wt-film-loss"
+			>
+				{signedUsd(0, 2)}
 			</Word>
 			{/* An order leaves the book as a ticket at the level it takes. */}
 			{(
@@ -544,10 +612,11 @@ function Scene({
 						{ROWS.map((row, r) => (
 							<text
 								key={row}
+								data-f={`cell-${kind}-${row}`}
 								x={L.colX(i) + L.colW / 2}
 								y={H * (0.52 + r * 0.13)}
 								textAnchor="middle"
-								className={`wt-film-type ${kind === "index" ? "wt-film-accent" : ""}`}
+								className="wt-film-type"
 								style={{ fontSize: rowText }}
 							>
 								{t(
@@ -743,9 +812,13 @@ function build(context: FilmContext) {
 		...ASKS.map((at) => hit("ask", at.price)),
 		...BIDS.map((at) => hit("bid", at.price)),
 		one("p-pay"),
+		one("p-pay-big"),
 		one("p-get"),
 		one("p-avg-tag"),
 		total,
+		one("diff-label"),
+		...kids("vs-last"),
+		one("p-over"),
 		one("p-sell"),
 		one("p-avg"),
 		one("lock-avg"),
@@ -809,6 +882,37 @@ function build(context: FilmContext) {
 	const sell = one<SVGTextElement>("p-sell");
 	// On a phone the slots are under the book: a ticket goes down first, clear of the sizes.
 	const lane = L.narrow ? ("y" as const) : undefined;
+	const measured = (el: SVGTextElement, text: string) => {
+		const was = el.textContent;
+		el.textContent = text;
+		const box = el.getBBox();
+		el.textContent = was;
+		return box;
+	};
+	{
+		const paid = measured(total, dollars(BUY10.notional));
+		const got = measured(sell, dollars(SELL10.notional));
+		const gap = one<SVGPathElement>("diff-gap");
+		const label = one("diff-label");
+		if (L.narrow) {
+			// Side by side: a bracket under the two, its label beneath it.
+			const y = Math.max(paid.y + paid.height, got.y + got.height) + 3;
+			const x1 = paid.x + paid.width / 2;
+			const x2 = got.x + got.width / 2;
+			gap.setAttribute("d", `M${x1} ${y - 5}V${y}H${x2}V${y - 5}`);
+			label.setAttribute("x", `${(x1 + x2) / 2}`);
+			label.setAttribute("y", `${y + L.type.small * 1.35}`);
+			label.setAttribute("text-anchor", "middle");
+		} else {
+			// One above the other: a bracket to their right, its label beside it.
+			const x = Math.max(paid.x + paid.width, got.x + got.width) + 14;
+			const y1 = paid.y + paid.height / 2;
+			const y2 = got.y + got.height / 2;
+			gap.setAttribute("d", `M${x - 7} ${y1}H${x}V${y2}H${x - 7}`);
+			label.setAttribute("x", `${x + 10}`);
+			label.setAttribute("y", `${(y1 + y2) / 2 + L.type.body * 0.36}`);
+		}
+	}
 	d.swap(heads[2], heads[3], 20.4);
 	take("ask", BUY10.fills, 20.75, null);
 	tl.fromTo(
@@ -817,7 +921,7 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.15 },
 		20.85,
 	);
-	show(one("p-pay"), 21.15);
+	show(one("p-pay"), L.narrow ? 21.95 : 21.15, "above");
 	d.carry(one<SVGGraphicsElement>("chip-buy"), total, 21.0, {
 		duration: 1,
 		fit: false,
@@ -839,7 +943,10 @@ function build(context: FilmContext) {
 		arc: lane,
 	});
 	d.count(sell, SELL10.notional, 22.8, dollars, 0, 0.5);
-	// Both on stage: the difference is named, and held. The taken levels step back.
+	// Both on stage: a bracket makes the difference, the line names it, and both hold. The
+	// taken levels step back.
+	d.trace(one<SVGPathElement>("diff-gap"), 23.0, { duration: 0.35 });
+	show(one("diff-label"), 23.2);
 	show(heads[4], 23.35);
 	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 23.35);
 	tl.to(
@@ -849,7 +956,8 @@ function build(context: FilmContext) {
 	);
 	// The hero: 1,000 at once climb the offers that are left; the average is what they paid.
 	d.swap([heads[3], heads[4]], heads[5], 26.9);
-	hide([one("p-get"), sell], 26.9);
+	hide([one("p-get"), sell, one("diff-gap"), one("diff-label")], 26.9);
+	d.flip(one("p-pay"), one("p-pay-big"), 26.9);
 	hide(total, 26.9, 0.25);
 	tl.to(total, { opacity: 1, duration: 0.2 }, 27.4);
 	take("ask", BUY_BIG.fills, 27.4, null, {
@@ -870,9 +978,29 @@ function build(context: FilmContext) {
 		pad: 8,
 	});
 	tl.addLabel("hero-lock", 29.7);
+	const last = one<SVGGraphicsElement>("last");
+	tl.set(last, { attr: { class: "wt-film-num wt-film-accent" } }, 30.4);
+	if (L.narrow) {
+		show(one("vs-x"), 30.45);
+		show(one("vs-eq"), 30.75);
+	} else {
+		show(one("vs-calc"), 30.5);
+	}
+	tl.set(one("p-over"), { opacity: 1 }, 31.25);
+	d.count(
+		one<SVGTextElement>("p-over"),
+		OVER_LAST,
+		31.25,
+		(v) =>
+			L.narrow
+				? signedUsd(Math.round(v), 2)
+				: `${signedUsd(Math.round(v), 2)} ${d.t(copy.overLast)}`,
+		0,
+		0.5,
+	);
 
 	// ——— kinds: what the underlying is ———
-	tl.addLabel("kinds", 31.9);
+	tl.addLabel("kinds", 33.3);
 	hide(
 		[
 			heads[5],
@@ -882,35 +1010,50 @@ function build(context: FilmContext) {
 			one("last"),
 			...levels,
 			one("p-pay"),
+			one("p-pay-big"),
 			total,
 			one("p-avg-tag"),
 			one("p-avg"),
 			one("lock-avg"),
+			...kids("vs-last"),
+			one("p-over"),
 		],
-		31.9,
+		33.3,
 	);
-	show(heads[6], 32.25);
+	show(heads[6], 33.65);
 	show(
 		flat("kinds").filter((el) => el.tagName === "text"),
-		32.5,
+		33.9,
 	);
 	kindOrder.forEach((kind, i) => {
-		show(one(`col-${kind}`), 32.7 + i * 0.3);
+		show(one(`col-${kind}`), 34.1 + i * 0.3);
 	});
-	d.swap(heads[6], heads[7], 35.75);
-	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 36.25);
-	d.lock(one<SVGGraphicsElement>("lock-index"), 36.25, {
+	d.swap(heads[6], heads[7], 37.15);
+	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 37.65);
+	d.lock(one<SVGGraphicsElement>("lock-index"), 37.65, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
 	tl.to(
 		[one("col-stock"), one("col-etf")],
 		{ opacity: 0.4, duration: 0.4 },
-		36.25,
+		37.65,
 	);
+	// Down the index column: a number, can't buy it, settles in cash.
+	ROWS.forEach((row, r) => {
+		const cell = one(`cell-index-${row}`);
+		const at = 38.1 + r * 0.45;
+		tl.set(cell, { attr: { class: "wt-film-type wt-film-accent" } }, at);
+		tl.fromTo(
+			cell,
+			{ scale: 1.08, transformOrigin: "50% 50%" },
+			{ scale: 1, duration: 0.4, ease: "power3.out" },
+			at,
+		);
+	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.65);
+	tl.addLabel("claim", 41.05);
 	hide(
 		[
 			heads[7],
@@ -918,15 +1061,15 @@ function build(context: FilmContext) {
 			...kindOrder.map((kind) => one(`col-${kind}`)),
 			...flat("kinds").filter((el) => el.tagName === "text"),
 		],
-		39.65,
+		41.05,
 	);
-	word(one("z-big"), 40.05);
-	show(one("z-sub"), 40.55);
+	word(one("z-big"), 41.45);
+	show(one("z-sub"), 41.95);
 
 	// ——— next ———
-	tl.addLabel("next", 44.05);
-	hide(kids("claim"), 44.05);
-	d.close(44.05);
+	tl.addLabel("next", 45.45);
+	hide(kids("claim"), 45.45);
+	d.close(45.45);
 	return tl;
 }
 
