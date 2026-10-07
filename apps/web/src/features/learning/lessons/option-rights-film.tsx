@@ -37,12 +37,12 @@ import {
  *   track     16.6–23.6  buy to open, sell to close, sell to open, buy to close
  *   assign    23.6–27.4  you exercise; the notice goes to the clearinghouse
  *   pick      27.4–32.4  hero: assigned at random, Eli, not Ben
- *   settle    32.4–37    Eli pays $9,500 for $8,800 of shares
- *   claim     37–41.4    the holder decides; a writer is assigned
- *   next      41.4–43.9  Next: premium, payoff and profit
+ *   settle    32.4–38    Eli pays $9,500 for $8,800 of shares
+ *   claim     38–42.8    the holder decides; a writer is assigned
+ *   next      42.8–45.3  Next: premium, payoff and profit
  */
 
-const END = 43.9;
+const END = 45.3;
 const RIGHTS: readonly Right[] = ["call", "put"];
 const SIDES: readonly Side[] = ["long", "short"];
 const PUT = exerciseCase("put");
@@ -680,18 +680,18 @@ function build(context: FilmContext) {
 	show([one("s-pays-tag"), one("s-worth-tag")], 32.45);
 	word(one("s-pays-num"), 32.5);
 	word(one("s-worth-num"), 32.6);
-	show(one("s-line"), 33.9);
+	show(one("s-line"), 33.6);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37.0);
-	hide([heads[5], ...flat("settle")], 37.0);
-	word(one("z-big"), 37.3);
-	show(one("z-sub"), 37.6);
+	tl.addLabel("claim", 38.0);
+	hide([heads[5], ...flat("settle")], 38.0);
+	word(one("z-big"), 38.3);
+	show(one("z-sub"), 38.6);
 
 	// ——— next ———
-	tl.addLabel("next", 41.4);
-	hide(kids("claim"), 41.4);
-	d.close(41.4);
+	tl.addLabel("next", 42.8);
+	hide(kids("claim"), 42.8);
+	d.close(42.8);
 	return tl;
 }
 
