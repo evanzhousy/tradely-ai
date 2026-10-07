@@ -469,6 +469,7 @@ function Scene({
 						{t(record.head).toUpperCase()}
 					</text>
 					<text
+						data-f={`rec-${i}-n`}
 						x={margin + 16}
 						y={L.recY(i) + L.recH * 0.6}
 						className="wt-film-num"
@@ -477,6 +478,7 @@ function Scene({
 						{dollars(record.cents)}
 					</text>
 					<text
+						data-f={`rec-${i}-note`}
 						x={margin + 16}
 						y={L.recY(i) + L.recH * 0.85}
 						className="wt-film-type wt-film-dim"
@@ -586,6 +588,8 @@ function build(context: FilmContext) {
 		one("rerun-tag"),
 		...rerunMarks,
 		one("rerun-back"),
+		one("rec-0-n"),
+		one("rec-0-note"),
 		one("p1-says"),
 		one("why-formula"),
 		one("why-exclusions"),
@@ -722,13 +726,22 @@ function build(context: FilmContext) {
 	// ——— log: rerun, or a new question ———
 	tl.addLabel("log", 30.8);
 	d.swap([heads[2], heads[3]], heads[4], 30.8);
-	hide(
-		[...fieldRows, one("rerun-tag"), one("rerun-back"), one("p1-says")],
-		30.8,
+	hide([...fieldRows, one("rerun-tag"), one("p1-says")], 30.8);
+	// The rerun's match stays up, then becomes P1's record: the figure a reader got back is
+	// the one the log keeps.
+	show(recs[0], 31.25, "right");
+	tl.set(one("rerun-back"), { attr: { class: "wt-film-num" } }, 31.5);
+	d.carry(
+		one<SVGGraphicsElement>("rerun-back"),
+		one<SVGGraphicsElement>("rec-0-n"),
+		31.55,
+		{
+			duration: 0.65,
+		},
 	);
-	show(recs[0], 31.3, "right");
-	show(recs[1], 31.95, "right");
-	show(recs[2], 32.6, "right");
+	show(one("rec-0-note"), 32.25);
+	show(recs[1], 32.3, "right");
+	show(recs[2], 32.65, "right");
 	show(heads[5], 32.85);
 	// The new question stands out: the two runs of the old one step back.
 	tl.to([recs[0], recs[1]], { opacity: 0.45, duration: 0.5 }, 34.4);
