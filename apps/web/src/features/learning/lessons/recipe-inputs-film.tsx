@@ -185,7 +185,7 @@ const copy = {
 	],
 	claimBig: ["Change the inputs, keep the question.", "改输入，不改问题。"],
 	claimSub: [
-		"Run before you read; keep the floors; fork new methods.",
+		"Run first; keep the floors; fork new methods.",
 		"先运行再读；守住门槛；新方法就分叉。",
 	],
 	nextBig: ["Next: start from a research checklist", "下一课：从研究清单开始"],
