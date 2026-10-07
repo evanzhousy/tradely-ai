@@ -154,7 +154,7 @@ const copy = {
 	gammaSub: ["delta's change per $1 of ALFA", "ALFA 每变动 $1，Delta 的变化"],
 	hedgeHead: ["Gamma moves the hedge.", "Gamma 会推动对冲。"],
 	hedgeClaim: [
-		"Long gamma sells into a rise. Short gamma buys.",
+		"Long gamma sells a rise; short gamma buys.",
 		"正 Gamma 涨时卖出，负 Gamma 买入。",
 	],
 	you: [`You · long ${you} calls`, `你 · 多头 ${you} 张看涨`],
@@ -185,8 +185,8 @@ const copy = {
 	sepShort: ["Sep 20", "9月20日"],
 	claimBig: ["Gamma lives near the strike.", "Gamma 集中在行权价。"],
 	claimSub: [
-		"It sharpens as expiry nears, and fades a few dollars away.",
-		"越临近到期越集中；离行权价几美元，它就消退了。",
+		"Sharper near expiry; gone a few dollars away.",
+		"越近到期越尖；离行权价几美元就消失。",
 	],
 	nextBig: ["Next: theta, vega and rho", "下一课：Theta、Vega 与 Rho"],
 	nextSub: [
