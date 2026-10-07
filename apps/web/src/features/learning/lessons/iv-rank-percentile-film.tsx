@@ -9,6 +9,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -38,25 +39,27 @@ import {
  * the history itself: a calm quarter, or a year with the shock lost in a gap, puts today
  * above everything.
  *
- *   open        0–4     "IV rank and IV percentile"
- *   question    4–9.5   ALFA's IV30 35% today: rank 28%, percentile 92%, same day
- *   year        9.5–14.5  a year of weekly IV30 and today's line
- *   rank        14.5–21   the range 22% to 68%, today 28% of the way up
- *   percentile  21–27     48 of 52 weeks below today: 92%
- *   outlier     27–34     drop the 68% week: rank 59%, percentile 94%
- *   sample      34–43.5   the last 13 weeks: 100%; the year with a gap: 100% of 44;
+ *   open        0–4       "IV rank and IV percentile"
+ *   question    4–9.6     ALFA's IV30 35% today: rank 28%, percentile 92%, same day
+ *   year        9.6–13.4  a year of weekly IV30 and today's line
+ *   rank        13.4–18.2 the range 22% to 68%, today 28% of the way up
+ *   percentile  18.2–22.6 48 of 52 weeks below today: 92%
+ *   outlier     22.6–31.6 drop the 68% week; cut: rank 28% → 59%, locked, percentile
+ *                         92% → 94%
+ *   sample      31.6–44   the last 13 weeks: 100%; the year with a gap: 100% of 44;
  *                         cut: "Say the measure, the window and the coverage."
- *   next        43.5–46  Next: from delta to DEX and DEI
+ *   next        44–46.5   Next: from delta to DEX and DEI
  */
 
-const END = 46;
+const END = 46.5;
 const Y_MAX = 72;
 const TODAY = ALFA_IV30_TODAY;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
-	const left = frame.margin;
+	// On a phone the IV labels need room left of the axis.
+	const left = frame.margin + (narrow ? 18 : 0);
 	/** Room on the right for the range bracket and its labels. */
 	const right = width * (narrow ? 0.8 : 0.84);
 	const top = height * (narrow ? 0.42 : 0.31);
@@ -94,7 +97,7 @@ const copy = {
 	axis: ["ALFA IV30, weekly", "ALFA IV30，每周"],
 	today: [`today ${TODAY}%`, `今天 ${TODAY}%`],
 	rankHead: [
-		"Rank: where today sits between the low and the high.",
+		"Rank: today's place between low and high.",
 		"Rank：今天在最低与最高之间的位置。",
 	],
 	rankHeadShort: [
@@ -116,7 +119,7 @@ const copy = {
 	],
 	outlierHead: ["One week set the high: drop it.", "最高值来自一周：去掉它。"],
 	sampleHead: [
-		`The last ${RECENT} weeks only: today is above them all.`,
+		`The last ${RECENT} weeks: today tops them all.`,
 		`只看最近 ${RECENT} 周：今天高于所有周。`,
 	],
 	sampleHeadShort: [
@@ -124,7 +127,7 @@ const copy = {
 		`只看最近 ${RECENT} 周。`,
 	],
 	gapHead: [
-		`A year with ${GAP.to - GAP.from + 1} weeks lost, the shock among them.`,
+		`A year missing ${GAP.to - GAP.from + 1} weeks, the shock too.`,
 		`一年中丢了 ${GAP.to - GAP.from + 1} 周，冲击那周也在其中。`,
 	],
 	gapHeadShort: [
@@ -141,8 +144,8 @@ const copy = {
 		"说明指标、窗口和覆盖范围。",
 	],
 	claimSub: [
-		"Rank and percentile answer different questions about the same day.",
-		"Rank 和百分位对同一天回答的是不同的问题。",
+		"Rank and percentile answer different questions.",
+		"Rank 和百分位回答的是不同的问题。",
 	],
 	nextBig: ["Next: DEX and DEI", "下一课：DEX 与 DEI"],
 	nextSub: [
@@ -378,6 +381,7 @@ function Scene({
 			{headline("p-head", copy.pctHead, copy.pctHeadShort)}
 			{formula("p-formula", t(copy.pctFormula), "wt-film-accent")}
 			{headline("o-head", copy.outlierHead)}
+			<Brackets name="lock-rank" glow />
 			<g data-f="o">
 				{(
 					[
@@ -446,7 +450,15 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const bars = alfaIv30Weekly.map((_, i) => one(`bar-${i}`));
@@ -496,6 +508,8 @@ function build(context: FilmContext) {
 		);
 	};
 
+	const lockRank = one<SVGGraphicsElement>("lock-rank");
+
 	d.hidden([
 		one("gap"),
 		one("gap-label"),
@@ -513,6 +527,7 @@ function build(context: FilmContext) {
 			"g-head",
 		].map((name) => one(name)),
 		...flat("o"),
+		lockRank,
 		...kids("claim"),
 	]);
 
@@ -524,16 +539,16 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag-0"), 4.6);
-	slam(one("q-num-0"), 4.8);
-	show(one("q-tag-1"), 5.6);
-	slam(one("q-num-1"), 5.8);
-	show(one("q-line"), 6.8);
+	land(one("q-num-0"), 4.8);
+	show(one("q-tag-1"), 5.3);
+	land(one("q-num-1"), 5.5);
+	show(one("q-line"), 6.0);
 
 	// ——— year: the history ———
-	tl.addLabel("year", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("y-head"), 9.7, "above");
-	rise(9.8);
+	tl.addLabel("year", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("y-head"), 9.8, "above");
+	rise(9.9);
 	alfaIv30Weekly.forEach((iv, i) => {
 		tl.fromTo(
 			bars[i],
@@ -541,52 +556,52 @@ function build(context: FilmContext) {
 			{
 				attr: { y: L.y(iv), height: L.y(0) - L.y(iv) },
 				duration: 0.4,
-				ease: "back.out(1.4)",
+				ease: "power3.out",
 			},
-			10.4 + i * 0.035,
+			10.3 + i * 0.035,
 		);
 	});
 	tl.fromTo(
 		one("today"),
 		{ opacity: 0, x: -20 },
 		{ opacity: 1, x: 0, duration: 0.6 },
-		12.6,
+		12.4,
 	);
 
 	// ——— rank: between the extremes ———
-	tl.addLabel("rank", 14.5);
-	d.swap(one("y-head"), one("r-head"), 14.5);
+	tl.addLabel("rank", 13.4);
+	d.swap(one("y-head"), one("r-head"), 13.4);
 	tl.fromTo(
 		one("bracket"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		15.2,
+		13.9,
 	);
 	tl.fromTo(
 		one("bracket-dot"),
 		{ attr: { cy: L.y(year.low) } },
 		{ attr: { cy: L.y(TODAY) }, duration: 0.8, ease: "power2.out" },
-		15.5,
+		14.1,
 	);
-	d.count(rank, year.rank * 100, 15.5, (value) => `${Math.round(value)}%`);
+	d.count(rank, year.rank * 100, 14.1, (value) => `${Math.round(value)}%`);
 	// The week that sets the high, picked out.
-	tl.set(bars[SHOCK], { attr: { "data-tone": "total" } }, 16.4);
-	show(one("r-formula"), 17.0);
+	tl.set(bars[SHOCK], { attr: { "data-tone": "total" } }, 14.9);
+	show(one("r-formula"), 15.4);
 
 	// ——— percentile: the weeks below ———
-	tl.addLabel("percentile", 21);
-	hide([one("r-head"), one("r-formula")], 21.0);
-	show(one("p-head"), 21.35, "above");
-	tl.to(one("bracket"), { opacity: 0.25, duration: 0.4 }, 21.2);
-	tl.to(above, { opacity: 0.25, duration: 0.4 }, 21.6);
-	tl.to(below, { opacity: 1, duration: 0.2 }, 21.6);
-	show(one("p-formula"), 22.4);
+	tl.addLabel("percentile", 18.2);
+	hide([one("r-head"), one("r-formula")], 18.2);
+	show(one("p-head"), 18.55, "above");
+	tl.to(one("bracket"), { opacity: 0.25, duration: 0.4 }, 18.4);
+	tl.to(above, { opacity: 0.25, duration: 0.4 }, 18.8);
+	tl.to(below, { opacity: 1, duration: 0.2 }, 18.8);
+	show(one("p-formula"), 19.5);
 
 	// ——— outlier: one week sets the high ———
-	tl.addLabel("outlier", 27);
-	hide([one("p-head"), one("p-formula")], 27.0);
-	show(one("o-head"), 27.35, "above");
-	tl.to([...above, one("bracket")], { opacity: 1, duration: 0.4 }, 27.2);
+	tl.addLabel("outlier", 22.6);
+	hide([one("p-head"), one("p-formula")], 22.6);
+	show(one("o-head"), 22.95, "above");
+	tl.to([...above, one("bracket")], { opacity: 1, duration: 0.4 }, 22.8);
 	tl.to(
 		bars[SHOCK],
 		{
@@ -594,21 +609,27 @@ function build(context: FilmContext) {
 			duration: 0.6,
 			ease: "power2.in",
 		},
-		28.0,
+		23.6,
 	);
-	bracketTo(year, noShock, 28.6);
-	hide(one("o-head"), 30.2);
-	sink(30.2);
-	show(one("o-tag-0"), 30.6);
-	slam(one("o-num-0"), 30.8);
-	show(one("o-tag-1"), 31.5);
-	slam(one("o-num-1"), 31.7);
+	bracketTo(year, noShock, 24.2);
+	// Cut: the two readings, before and after. The hero: rank doubles.
+	hide(one("o-head"), 26.6);
+	sink(26.6);
+	show(one("o-tag-0"), 26.9);
+	land(one("o-num-0"), 27.1);
+	show(one("o-tag-1"), 27.6);
+	land(one("o-num-1"), 27.8);
+	d.lock(lockRank, 28.5, {
+		around: [one("o-tag-0"), one("o-num-0")],
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 28.5);
 
 	// ——— sample: the history itself ———
-	tl.addLabel("sample", 34);
-	hide(flat("o"), 34.0);
-	rise(34.2);
-	show(one("s-head"), 34.35, "above");
+	tl.addLabel("sample", 31.6);
+	hide([...flat("o"), lockRank], 31.6);
+	rise(31.8);
+	show(one("s-head"), 31.95, "above");
 	// Put the shock back, then keep only the last 13 weeks.
 	tl.to(
 		bars[SHOCK],
@@ -619,33 +640,34 @@ function build(context: FilmContext) {
 			},
 			duration: 0.4,
 		},
-		34.2,
+		31.8,
 	);
-	tl.to(bars.slice(0, WEEKS - RECENT), { opacity: 0.12, duration: 0.6 }, 34.8);
-	bracketTo(noShock, recent, 35.3);
+	tl.to(bars.slice(0, WEEKS - RECENT), { opacity: 0.12, duration: 0.6 }, 32.4);
+	bracketTo(noShock, recent, 32.9);
 	// Above the high, the formula passes 100%: shown as it is, not capped.
-	tl.set(rank, { attr: { class: "wt-halo wt-loss wt-marker-label" } }, 35.6);
+	tl.set(rank, { attr: { class: "wt-halo wt-loss wt-marker-label" } }, 33.2);
 	// The full year again, with the outage's gap.
-	d.swap(one("s-head"), one("g-head"), 38.5);
-	tl.to(bars.slice(0, WEEKS - RECENT), { opacity: 1, duration: 0.5 }, 38.7);
-	tl.to(bars.slice(GAP.from, GAP.to + 1), { opacity: 0, duration: 0.4 }, 39.1);
-	tl.to([one("gap"), one("gap-label")], { opacity: 1, duration: 0.5 }, 39.3);
-	bracketTo(recent, gapped, 39.4);
+	d.swap(one("s-head"), one("g-head"), 35.6);
+	tl.to(bars.slice(0, WEEKS - RECENT), { opacity: 1, duration: 0.5 }, 35.8);
+	tl.to(bars.slice(GAP.from, GAP.to + 1), { opacity: 0, duration: 0.4 }, 36.2);
+	tl.to([one("gap"), one("gap-label")], { opacity: 1, duration: 0.5 }, 36.4);
+	bracketTo(recent, gapped, 36.5);
+
 	// Cut: the claim.
-	hide(one("g-head"), 41.0);
-	sink(41.0);
+	hide(one("g-head"), 39.5);
+	sink(39.5);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		41.4,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		39.9,
 	);
-	show(one("c-sub"), 41.9);
+	show(one("c-sub"), 40.3);
 
 	// ——— next ———
-	tl.addLabel("next", 43.5);
-	hide(kids("claim"), 43.5);
-	d.close(43.5);
+	tl.addLabel("next", 44);
+	hide(kids("claim"), 44);
+	d.close(44);
 	return tl;
 }
 
