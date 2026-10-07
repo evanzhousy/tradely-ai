@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -7,6 +8,7 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
@@ -25,21 +27,23 @@ import {
 /*
  * Research questions, as a film. "Where's the action in ALFA?" Nobody can check an answer
  * to that. The question gets a subject, a universe, a measure, an interval, the evidence
- * it needs and a rule for revising it. The hero is its answer, claim by claim: 540
- * observed, 51% calculated, and "traders favor 110", where glowing brackets lock on an
- * interpretation; then the spread leg that cuts against it and the 120 call's missing
- * volume. Last, the log: Tuesday's data revises record 1; a switch to puts opens record 2.
+ * it needs and a rule for revising it. The hero is its answer, claim by claim, each
+ * stamped with its evidence: 540 observed, 51% calculated, and "traders favor 110", an
+ * interpretation; then the 110 bar splits, 500 of it one spread leg, the interpretation
+ * fades and glowing brackets lock on it; the 120 call's volume stays unknown. Last, the
+ * log: Tuesday's data revises record 1 in place; a switch to puts opens record 2.
  *
  *   open      0–4        "Research questions"
- *   question  4–8.6      "Where's the action in ALFA?" Checkable?
+ *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
- *   answer    17.6–29.4  hero: five strikes; observed; calculated; interpretation; against; gap
- *   log       29.4–36.6  record 1; revised Tuesday; record 2 for puts
- *   claim     36.6–41    a question someone else can check
- *   next      41–43.5    Next: comparison groups
+ *   answer    17.6–30.4  hero: five strikes; observed; calculated; interpretation; the
+ *                        split; locked; the gap
+ *   log       30.4–39.1  record 1, revised in place; record 2 for puts
+ *   claim     39.1–43.4  a question someone else can check
+ *   next      43.4–45.4  Next: comparison groups
  */
 
-const END = 43.5;
+const END = 45.4;
 const MAX = 560;
 const LEAD = LEADER.volume ?? 0;
 type Evidence = "observed" | "calculated" | "interpretation" | "unknown";
@@ -68,8 +72,8 @@ function layout(width: number) {
 		claimX: narrow ? margin : margin + room * 0.5,
 		claimW: narrow ? room : room * 0.5,
 		claimY: (i: number) =>
-			narrow ? H * 0.58 + i * H * 0.062 : H * 0.3 + i * H * 0.085,
-		claimH: H * (narrow ? 0.052 : 0.068),
+			narrow ? H * 0.58 + i * H * 0.068 : H * 0.28 + i * H * 0.095,
+		claimH: H * (narrow ? 0.05 : 0.068),
 		recY: (i: number) =>
 			H * (narrow ? 0.27 : 0.27) + i * H * (narrow ? 0.19 : 0.19),
 		recH: H * (narrow ? 0.16 : 0.16),
@@ -120,8 +124,8 @@ const claims: { text: Copy; short: Copy; evidence: Evidence }[] = [
 	},
 	{
 		text: [
-			`${share(LEAD, COVERED)} of covered volume`,
-			`占已覆盖成交量的 ${share(LEAD, COVERED)}`,
+			`${share(LEAD, COVERED)} of the ${count(COVERED)} covered`,
+			`占已覆盖 ${count(COVERED)} 张的 ${share(LEAD, COVERED)}`,
 		],
 		short: [
 			`${share(LEAD, COVERED)} of ${count(COVERED)}`,
@@ -166,15 +170,6 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 		tag: ["kept", "保留"],
 	},
 	{
-		title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00 修订"],
-		question: ["same question, new evidence", "同一问题，新证据"],
-		answer: [
-			`120: ${LATE} · 110 leads, ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
-			`120：${LATE} · 110 领先，占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
-		],
-		tag: ["revises 1", "修订 1"],
-	},
-	{
 		title: ["record 2 · Tue 10:00", "记录 2 · 周二 10:00"],
 		question: ["Oct 18 puts: a new question", "10月18日 看跌：新问题"],
 		answer: ["own universe, own answer", "独立范围，独立答案"],
@@ -182,11 +177,21 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 	},
 ];
 
+/** Record 1, once Tuesday's data is in: its title, answer and tag turn over in place. */
+const revised = {
+	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
+	answer: [
+		`120: ${LATE} · 110 leads, ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
+		`120：${LATE} · 110 领先，占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
+	],
+	tag: ["revised", "已修订"],
+} as const satisfies Record<string, Copy>;
+
 const copy = {
 	title: ["Research questions", "研究问题"],
 	titleSub: ["what evidence can answer", "证据能回答什么"],
 	qTag: ["a research question", "一个研究问题"],
-	qLine: ["“Where's the action in ALFA?”", "“ALFA 的热点在哪？”"],
+	qLine: ["“Where’s the action in ALFA?”", "“ALFA 的热点在哪？”"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
@@ -195,6 +200,7 @@ const copy = {
 		"“偏好 110”是叙事，不是事实。",
 	],
 	missing: ["not delivered", "未送达"],
+	spreadLeg: ["one spread leg", "一条价差腿"],
 	observed: ["observed", "观测"],
 	calculated: ["calculated", "计算"],
 	interpretation: ["interpretation", "解读"],
@@ -240,9 +246,14 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const id = useId().replace(/:/g, "");
+	const leaderRow = SERIES.indexOf(LEADER);
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<Hatch id={`hatch-${id}`} />
+			</defs>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -286,7 +297,7 @@ function Scene({
 						width={room}
 						height={L.fieldH}
 						rx={10}
-						className="wt-focus-shape"
+						className="wt-panel-shape"
 					/>
 					<text
 						x={margin + 14}
@@ -377,6 +388,18 @@ function Scene({
 					)}
 				</g>
 			))}
+			{/* The 110 bar's 500 that is one spread leg, laid over the bar when it splits. */}
+			<rect
+				data-f="spread-seg"
+				x={L.barX}
+				y={L.barRowY(leaderRow)}
+				width={(SPREAD_LEG / MAX) * L.barMax}
+				height={L.barH}
+				rx={3}
+				fill={`url(#hatch-${id})`}
+				stroke="var(--diagram-unknown)"
+				strokeWidth={1.5}
+			/>
 			{claims.map((claim, i) => (
 				<g key={t(claim.text)} data-f={`claim-${i}`}>
 					<rect
@@ -390,6 +413,7 @@ function Scene({
 						}
 					/>
 					<text
+						data-f={`claim-${i}-text`}
 						x={L.claimX + 12}
 						y={L.claimY(i) + L.claimH / 2 + text * 0.36}
 						className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
@@ -398,6 +422,7 @@ function Scene({
 						{t(narrow ? claim.short : claim.text)}
 					</text>
 					<text
+						data-f={`claim-${i}-tag`}
 						x={L.claimX + L.claimW - 12}
 						y={L.claimY(i) + L.claimH / 2 + T.small * 0.36}
 						textAnchor="end"
@@ -438,6 +463,7 @@ function Scene({
 						className="wt-panel-shape"
 					/>
 					<text
+						data-f={`rec-${i}-title`}
 						x={margin + 16}
 						y={L.recY(i) + L.recH * 0.26}
 						className="wt-film-tag"
@@ -446,6 +472,7 @@ function Scene({
 						{t(record.title).toUpperCase()}
 					</text>
 					<text
+						data-f={`rec-${i}-tag`}
 						x={margin + room - 16}
 						y={L.recY(i) + L.recH * 0.26}
 						textAnchor="end"
@@ -463,15 +490,47 @@ function Scene({
 						{t(record.question)}
 					</text>
 					<text
+						data-f={`rec-${i}-answer`}
 						x={margin + 16}
 						y={L.recY(i) + L.recH * 0.82}
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: T.small * 1.05 }}
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: text }}
 					>
 						{t(record.answer)}
 					</text>
 				</g>
 			))}
+			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
+			<g data-f="rev">
+				<text
+					data-f="rev-title"
+					x={margin + 16}
+					y={L.recY(0) + L.recH * 0.26}
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(revised.title).toUpperCase()}
+				</text>
+				<text
+					data-f="rev-tag"
+					x={margin + room - 16}
+					y={L.recY(0) + L.recH * 0.26}
+					textAnchor="end"
+					className="wt-film-tag wt-film-accent"
+					style={{ fontSize: T.small }}
+				>
+					{t(revised.tag).toUpperCase()}
+				</text>
+				<text
+					data-f="rev-answer"
+					x={margin + 16}
+					y={L.recY(0) + L.recH * 0.82}
+					className="wt-film-type wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{t(revised.answer)}
+				</text>
+			</g>
 
 			<g data-f="claim">
 				<Lines
@@ -533,6 +592,8 @@ function build(context: FilmContext) {
 	const claimRows = claims.map((_, i) => one(`claim-${i}`));
 	const recs = records.map((_, i) => one(`rec-${i}`));
 	const lockClaim = one<SVGGraphicsElement>("lock-claim");
+	const tags = claims.map((_, i) => one(`claim-${i}-tag`));
+	const revs = ["rev-title", "rev-tag", "rev-answer"].map((name) => one(name));
 
 	d.hidden([
 		...flat("q"),
@@ -540,10 +601,21 @@ function build(context: FilmContext) {
 		...fieldRows,
 		...strikes,
 		...claimRows,
+		...tags,
+		one("spread-seg"),
 		lockClaim,
 		...recs,
+		...revs,
 		...kids("claim"),
 	]);
+	/** An evidence tag is stamped on its card: in slightly large, settling. */
+	const stamp = (target: Element, at: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.25, transformOrigin: "100% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" },
+			at,
+		);
 
 	// ——— open ———
 	tl.addLabel("open", 0);
@@ -564,43 +636,77 @@ function build(context: FilmContext) {
 		show(row, 9.4 + Math.floor(i / 2) * 2.2 + (i % 2) * 0.5, "right");
 	});
 
-	// ——— answer: the hero. Claim by claim, each with its evidence. ———
+	// ——— answer: the hero. Claim by claim, each stamped with its evidence. ———
 	tl.addLabel("answer", 17.6);
 	hide([heads[0], ...fieldRows], 17.6);
 	show(heads[1], 17.95);
 	strikes.forEach((row, i) => {
 		show(row, 18.4 + i * 0.15, "right");
 	});
-	[20.2, 21.4, 22.6, 23.8, 24.8].forEach((at, i) => {
-		show(claimRows[i], at, "right");
-	});
-	// Close in: the rows stand a few pixels apart on a phone.
-	d.lock(lockClaim, 25.8, { around: claimRows[2], pad: 2 });
-	tl.addLabel("hero-lock", 25.8);
-	show(heads[2], 25.8);
+	show(claimRows[0], 20.2, "right");
+	stamp(tags[0], 20.6);
+	show(claimRows[1], 21.4, "right");
+	stamp(tags[1], 21.8);
+	// The interpretation reads the 110 bar: the bar answers.
+	show(claimRows[2], 22.6, "right");
+	tl.fromTo(
+		strikes[SERIES.indexOf(LEADER)],
+		{ x: 0 },
+		{ x: 6, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" },
+		22.7,
+	);
+	stamp(tags[2], 23.0);
+	// Against it: 500 of the 540 is one spread leg. The bar splits; the story fades.
+	tl.fromTo(
+		one("spread-seg"),
+		{ opacity: 0, attr: { width: 0 } },
+		{
+			opacity: 1,
+			attr: { width: (SPREAD_LEG / MAX) * L.barMax },
+			duration: 0.6,
+			ease: "power2.out",
+		},
+		24.4,
+	);
+	show(claimRows[3], 24.8, "right");
+	stamp(tags[3], 25.2);
+	tl.to(one("claim-2-text"), { opacity: 0.5, duration: 0.5 }, 26.2);
+	d.lock(lockClaim, 26.8, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
+	tl.addLabel("hero-lock", 26.8);
+	show(heads[2], 26.8);
+	// And what the data doesn't hold.
+	show(claimRows[4], 26.85, "right");
+	stamp(tags[4], 27.25);
 
 	// ——— log: revise, or start anew ———
-	tl.addLabel("log", 29.4);
-	d.swap([heads[1], heads[2]], heads[3], 29.4);
-	hide([...strikes, ...claimRows, lockClaim], 29.4);
-	show(recs[0], 30.2, "right");
-	show(recs[1], 31.4, "right");
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 31.4);
-	show(recs[2], 32.6, "right");
-	tl.set(one("rec-1-box"), { attr: { class: "wt-panel-shape" } }, 32.6);
-	tl.set(one("rec-2-box"), { attr: { class: "wt-focus-shape" } }, 32.6);
-	show(heads[4], 33.0);
+	tl.addLabel("log", 30.4);
+	d.swap([heads[1], heads[2]], heads[3], 30.4);
+	hide([...strikes, ...claimRows, ...tags, one("spread-seg"), lockClaim], 30.4);
+	show(recs[0], 31.1, "right");
+	// Tuesday's data: record 1 turns over in place.
+	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.7);
+	d.flip(one("rec-0-title"), revs[0], 34.7);
+	tl.set(one("rec-0-title"), { opacity: 0 }, 35.0);
+	d.flip(one("rec-0-tag"), revs[1], 34.7);
+	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.0);
+	d.flip(one("rec-0-answer"), revs[2], 34.8);
+	tl.set(one("rec-0-answer"), { opacity: 0 }, 35.1);
+	// A new question: a new record.
+	show(recs[1], 35.5, "right");
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 35.5);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 35.5);
+	show(heads[4], 35.5);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.6);
-	hide([heads[3], heads[4], ...recs], 36.6);
-	word(one("z-big"), 36.9);
-	show(one("z-sub"), 37.3);
+	tl.addLabel("claim", 39.1);
+	hide([heads[3], heads[4], ...recs, ...revs], 39.1);
+	word(one("z-big"), 39.4);
+	show(one("z-sub"), 39.8);
 
 	// ——— next ———
-	tl.addLabel("next", 41);
-	hide(kids("claim"), 41.0);
-	d.close(41.0);
+	tl.addLabel("next", 43.4);
+	hide(kids("claim"), 43.4);
+	d.close(43.4);
 	return tl;
 }
 
