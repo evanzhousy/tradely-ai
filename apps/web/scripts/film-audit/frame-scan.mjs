@@ -87,6 +87,10 @@ for (let i = 0; i < times.length; i++) {
 			let a = 1;
 			for (let e = el; e && e !== svg; e = e.parentElement)
 				a *= Number(getComputedStyle(e).opacity);
+			// Folded shut is hidden too: a flip squashes its marks to scaleY 0 at full opacity.
+			const m = el.getCTM?.();
+			if (m && (Math.hypot(m.a, m.b) < 0.02 || Math.hypot(m.c, m.d) < 0.02))
+				return 0;
 			return a;
 		};
 		// In flight: in the carry layer, or moved by a running tween on itself or a parent other

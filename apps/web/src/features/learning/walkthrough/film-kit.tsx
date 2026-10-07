@@ -602,6 +602,8 @@ export function createDirector(
 			at + 0.3,
 		);
 	};
+	/** What each count leaves a figure reading, and from when: a carry measures by it. */
+	const counted = new Map<Element, { at: number; text: string }[]>();
 	/** A figure counts up to `target`, written by `format` at every step. */
 	const count = (
 		target: SVGTextElement,
@@ -611,6 +613,10 @@ export function createDirector(
 		from = 0,
 		duration = 0.7,
 	) => {
+		counted.set(target, [
+			...(counted.get(target) ?? []),
+			{ at, text: format(to) },
+		]);
 		const counter = { value: from };
 		tl.to(
 			counter,
@@ -845,8 +851,20 @@ export function createDirector(
 			keep?: boolean;
 		} = {},
 	) => {
+		// A counted figure is measured as its last count before `at` leaves it, not as the build
+		// does (its markup's "0"): a short build-time text puts the origin off the real figure,
+		// and the copy lands beside its place, then jumps.
+		const reads = (counted.get(from) ?? [])
+			.filter((c) => c.at <= at)
+			.sort((p, q) => p.at - q.at)
+			.at(-1)?.text;
+		const built = from.textContent;
+		const measureAs =
+			reads !== undefined && reads !== built && !from.firstElementChild;
+		if (measureAs) from.textContent = reads;
 		const a = from.getBBox();
 		const b = boxOfText(to, match ?? from.textContent ?? undefined, last);
+		if (measureAs) from.textContent = built;
 		const ax = a.x + a.width / 2;
 		const ay = a.y + a.height / 2;
 		// The leading axis goes first; the trailing one starts late but also settles, so the
