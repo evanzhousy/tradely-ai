@@ -553,8 +553,8 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	word(one("q-line"), 5.1);
-	show(one("q-big"), 6.4);
+	word(one("q-line"), 4.8);
+	show(one("q-big"), 5.1);
 
 	// ——— frame: field by field, in pairs ———
 	tl.addLabel("frame", 8.6);

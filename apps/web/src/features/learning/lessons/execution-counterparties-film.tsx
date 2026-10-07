@@ -659,7 +659,7 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 5.0);
-	word(one("q-big"), 6.2);
+	word(one("q-big"), 5.3);
 
 	// ——— match: Ben's offer rests; your market buy takes it; one trade ———
 	tl.addLabel("match", 8.8);

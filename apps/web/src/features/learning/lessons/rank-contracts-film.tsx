@@ -578,8 +578,8 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	show(one("q-line"), 5.1);
-	word(one("q-big"), 6.4);
+	show(one("q-line"), 4.8);
+	word(one("q-big"), 5.1);
 
 	// ——— grid: the neighborhood ———
 	tl.addLabel("grid", 8.6);

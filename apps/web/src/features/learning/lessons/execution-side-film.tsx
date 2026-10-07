@@ -712,8 +712,8 @@ function build(context: FilmContext) {
 		show(one(`${name}-tag`), 4.8 + i * 0.25);
 		word(one(`${name}-num`), 4.9 + i * 0.25);
 	});
-	show(one("q-line"), 5.2);
-	word(one("q-big"), 6.2);
+	show(one("q-line"), 5.0);
+	word(one("q-big"), 5.3);
 
 	// ——— place: each print against its own quote ———
 	tl.addLabel("place", 8.8);
