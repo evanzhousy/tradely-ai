@@ -40,13 +40,13 @@ import {
  *   open        0–4        "Read a recipe like an auditor"
  *   question    4–9.6      "Mon Sep 16: 5 contracts flagged…" — where does it come from?
  *   map         9.6–19.6   inputs, live data, cells; trace the Bottom line; the Takeaways
- *   content     19.6–29    Monday's two text cells; Tuesday's, labelled; cut: evidence vs
+ *   content     19.6–31.4  Monday's two text cells; Tuesday's, labelled; cut: evidence vs
  *                          method, locked
- *   population  29–41.3    top three; five counted, two not loaded; cut: the claim
- *   next        41.3–43.8  Next: change the inputs, keep the question
+ *   population  31.4–43.7  top three; five counted, two not loaded; cut: the claim
+ *   next        43.7–46.2  Next: change the inputs, keep the question
  */
 
-const END = 43.8;
+const END = 46.2;
 const TOP_N = 3;
 const BOTTOM = CELLS.findIndex((cell) => cell.id === "bottom");
 const TAKE = CELLS.findIndex((cell) => cell.id === "takeaways");
@@ -840,14 +840,14 @@ function build(context: FilmContext) {
 	show([one("tk-box"), one("tk-title")], 20.9);
 	show(one("tk-text"), 21.1);
 	// Tuesday's run: the Bottom line flips, the Takeaways hold still. The map's labels.
-	show(one("u-head"), 22.2);
-	d.flip(one("run-mon"), one("run-tue"), 22.4);
-	tl.set(one("run-mon"), { opacity: 0 }, 22.7);
-	d.flip(one("bl-mon"), one("bl-tue"), 22.6);
-	tl.set(one("bl-mon"), { opacity: 0 }, 22.9);
-	tl.to(one("bl-focus"), { opacity: 1, duration: 0.4 }, 22.8);
-	show(one("bl-tag"), 23.2, "right");
-	show(one("tk-tag"), 23.6, "right");
+	show(one("u-head"), 23.7);
+	d.flip(one("run-mon"), one("run-tue"), 23.9);
+	tl.set(one("run-mon"), { opacity: 0 }, 24.2);
+	d.flip(one("bl-mon"), one("bl-tue"), 24.1);
+	tl.set(one("bl-mon"), { opacity: 0 }, 24.4);
+	tl.to(one("bl-focus"), { opacity: 1, duration: 0.4 }, 24.3);
+	show(one("bl-tag"), 24.7, "right");
+	show(one("tk-tag"), 25.1, "right");
 	// Cut: evidence against method. The hero.
 	hide(
 		[
@@ -862,44 +862,44 @@ function build(context: FilmContext) {
 			one("bl-tag"),
 			one("tk-tag"),
 		],
-		25.8,
+		27.3,
 	);
-	word(one("evidence-big"), 26.2);
-	show(one("evidence-sub"), 26.6);
-	d.lock(lockEvidence, 26.8, { around: one("evidence-big"), pad: 10 });
-	tl.addLabel("hero-lock", 26.8);
+	word(one("evidence-big"), 27.7);
+	show(one("evidence-sub"), 27.9);
+	d.lock(lockEvidence, 28.3, { around: one("evidence-big"), pad: 10 });
+	tl.addLabel("hero-lock", 28.3);
 
 	// ——— population: the table and the count ———
-	tl.addLabel("population", 29);
-	hide([...kids("evidence"), lockEvidence], 29.0);
-	tl.set(one("map"), { opacity: 0 }, 29.1);
-	tl.set(one("screen"), { opacity: 1 }, 29.1);
-	show(one("p-head"), 29.35, "above");
-	rise(29.4);
-	show(one("table-head"), 29.9);
+	tl.addLabel("population", 31.4);
+	hide([...kids("evidence"), lockEvidence], 31.4);
+	tl.set(one("map"), { opacity: 0 }, 31.5);
+	tl.set(one("screen"), { opacity: 1 }, 31.5);
+	show(one("p-head"), 31.75, "above");
+	rise(31.8);
+	show(one("table-head"), 32.3);
 	rows.slice(0, TOP_N).forEach((row, i) => {
-		show(row, 30.1 + i * 0.25);
+		show(row, 32.5 + i * 0.25);
 	});
 	// The key figures count every contract that passed; two never reached the table.
-	d.swap(one("p-head"), one("x-head"), 32.9);
+	d.swap(one("p-head"), one("x-head"), 35.3);
 	rows.slice(TOP_N).forEach((row, i) => {
-		show(row, 32.95 + i * 0.2);
+		show(row, 35.35 + i * 0.2);
 	});
 	kids("screen")
 		.filter((el) => el.getAttribute("data-f")?.startsWith("kpi-"))
 		.forEach((kpi, i) => {
-			show(kpi, 33.3 + i * 0.2, "above");
+			show(kpi, 35.7 + i * 0.2, "above");
 		});
 	// Cut: the claim.
-	hide(one("x-head"), 36.8);
-	sink(36.8);
-	word(one("claim-big"), 37.2);
-	show(one("claim-sub"), 37.6);
+	hide(one("x-head"), 39.2);
+	sink(39.2);
+	word(one("claim-big"), 39.6);
+	show(one("claim-sub"), 40);
 
 	// ——— next ———
-	tl.addLabel("next", 41.3);
-	hide(kids("claim"), 41.3);
-	d.close(41.3);
+	tl.addLabel("next", 43.7);
+	hide(kids("claim"), 43.7);
+	d.close(43.7);
 	return tl;
 }
 
