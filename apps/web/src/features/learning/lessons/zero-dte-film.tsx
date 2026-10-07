@@ -40,14 +40,14 @@ import {
  *   question  4–9.6      9:30, $0.36 → the 4:00 pm close, ?
  *   hours     9.6–20.4   the value drains with the clock: $0.26 at 12:30, $0.14 at 15:00,
  *                        $0 at the close, all of it time value
- *   swing     20.4–31.6  hero: 40 cents moves a month-out delta 0.51 → 0.53; the last
+ *   swing     20.4–32.2  hero: 40 cents moves a month-out delta 0.51 → 0.53; the last
  *                        day's, as the clock runs to 15:00, 0.29 → 0.72, locked; the hedge
- *   oi        31.6–40    3,400 open Thursday, 12,000 traded Friday, 0 on Monday
- *   claim     40–44.4    "0DTE: cheap, fast, gone by 4 pm."
- *   next      44.4–46.9  Next: implied and realized volatility
+ *   oi        32.2–40.6  3,400 open Thursday, 12,000 traded Friday, 0 on Monday
+ *   claim     40.6–45    "0DTE: cheap, fast, gone by 4 pm."
+ *   next      45–47      Next: implied and realized volatility
  */
 
-const END = 46.9;
+const END = 47;
 const MIDDAY = 12.5;
 const LATE = 15;
 const H_TOP = 0.4;
@@ -854,19 +854,19 @@ function build(context: FilmContext) {
 	hide([one("s-head"), swingClock], 27.5);
 	sink(27.5);
 	land(one("w-big"), 27.9);
-	show(one("w-word"), 28.3);
-	d.lock(lockSwing, 28.7, { around: [one("w-big"), one("w-word")], pad: 8 });
-	tl.addLabel("hero-lock", 28.7);
-	show(one("w-hedge"), 29.3);
-	show(one("w-caveat"), 30.0);
+	show(one("w-word"), 28.2);
+	d.lock(lockSwing, 28.5, { around: [one("w-big"), one("w-word")], pad: 8 });
+	tl.addLabel("hero-lock", 28.5);
+	show(one("w-hedge"), 28.7);
+	show(one("w-caveat"), 29.2);
 
 	// ——— oi: the day's flow and open interest ———
-	tl.addLabel("oi", 31.6);
-	hide([...kids("w"), lockSwing], 31.6);
-	tl.set(charts.swing, { opacity: 0 }, 31.8);
-	tl.set(charts.oi, { opacity: 1 }, 31.8);
-	show(one("o-head"), 31.95);
-	rise(32.0);
+	tl.addLabel("oi", 32.2);
+	hide([...kids("w"), lockSwing], 32.2);
+	tl.set(charts.swing, { opacity: 0 }, 32.4);
+	tl.set(charts.oi, { opacity: 1 }, 32.4);
+	show(one("o-head"), 32.55);
+	rise(32.6);
 	const grow = (index: number, at: number) => {
 		const bar = bars[index];
 		tl.fromTo(
@@ -893,27 +893,27 @@ function build(context: FilmContext) {
 			at,
 		);
 	};
-	grow(0, 32.7);
-	grow(1, 33.7);
-	tl.to(one("o-value-mon"), { opacity: 1, duration: 0.3 }, 35.1);
+	grow(0, 33.3);
+	grow(1, 34.3);
+	tl.to(one("o-value-mon"), { opacity: 1, duration: 0.3 }, 35.7);
 	// In place: rising, it would pass through Monday's 0.
-	land(one("o-expired"), 35.4);
-	show(one("o-answer"), 36.4);
+	land(one("o-expired"), 36);
+	show(one("o-answer"), 37);
 	// Cut: the claim.
-	hide([one("o-head"), one("o-answer")], 40.0);
-	sink(40.0);
+	hide([one("o-head"), one("o-answer")], 40.6);
+	sink(40.6);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.3,
+		40.9,
 	);
-	show(one("c-sub"), 40.7);
+	show(one("c-sub"), 41.3);
 
 	// ——— next ———
-	tl.addLabel("next", 44.4);
-	hide(kids("claim"), 44.4);
-	d.close(44.4);
+	tl.addLabel("next", 45);
+	hide(kids("claim"), 45);
+	d.close(45);
 	return tl;
 }
 
