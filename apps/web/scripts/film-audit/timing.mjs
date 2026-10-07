@@ -149,10 +149,15 @@ const out = await page.evaluate(() => {
 	const words = (t) =>
 		t.split(/\s+/).filter((x) => /[A-Za-z0-9$]/.test(x)).length;
 	const cjk = (t) => (t.match(/[㐀-鿿]/g) || []).length;
+	// Figures set as a sentence ("50¢ more to buy") are prose too: a number-styled text with
+	// two or more words of letters.
+	const lettered = (t) =>
+		t.split(/\s+/).filter((x) => /[A-Za-z]{2,}/.test(x)).length;
 	const prose = [...svg.querySelectorAll("text[data-f]")].filter((el) => {
 		const cls = el.getAttribute("class") || "";
 		return (
-			/\bwt-film-type\b/.test(cls) &&
+			(/\bwt-film-type\b/.test(cls) ||
+				(/\bwt-film-num\b/.test(cls) && lettered(textOf(el)) >= 2)) &&
 			!el.closest('[data-f="end"], [data-f="title-group"]') &&
 			el.getAttribute("data-f") !== "title-sub"
 		);
@@ -177,6 +182,7 @@ const out = await page.evaluate(() => {
 	const bodySize = clamp(narrow ? 13 : 12, width * 0.018, 17);
 	const smallSize = clamp(narrow ? 11 : 10, width * 0.013, 13);
 	const floor = (bodySize + smallSize) / 2;
+	const typeHead = clamp(narrow ? 16 : 15, width * 0.027, 25);
 	const sentences = [];
 	for (const [el, runs] of seen) {
 		const text = textOf(el);
@@ -188,6 +194,9 @@ const out = await page.evaluate(() => {
 					name: el.getAttribute("data-f"),
 					text,
 					size,
+					kind: /\bwt-film-type\b/.test(el.getAttribute("class") || "")
+						? "type"
+						: "num",
 					long,
 					top: el.getBBox().y,
 					from: Math.round(r.from * 10) / 10,
@@ -296,6 +305,7 @@ const out = await page.evaluate(() => {
 	}
 	return {
 		duration,
+		headSize: typeHead,
 		heroLock: tl.labels["hero-lock"],
 		glow,
 		sentences,
@@ -364,6 +374,43 @@ for (const x of out.sentences)
 		x.hold < 3.5
 	)
 		fails.push(`hold ${x.name} ${x.hold}s < 3.5: "${x.text.slice(0, 48)}"`);
+// A sentence set at headline size is held to a headline's length, whatever its name.
+const sized = (x) => x.size >= out.headSize * 0.9;
+const isClaim = (x) =>
+	out.claim && x.name === out.claim.name && x.from === out.claim.from;
+const told = new Set();
+for (const x of out.sentences) {
+	if (
+		!x.long ||
+		x.kind !== "type" ||
+		!sized(x) ||
+		/-head$|^q-|^z-big$/.test(x.name) ||
+		isClaim(x)
+	)
+		continue;
+	if (told.has(x.name)) continue;
+	told.add(x.name);
+	if (zh ? cjk(x.text) > 18 : words(x.text) > 8)
+		fails.push(
+			`long ${x.name} at headline size: ${zh ? `${cjk(x.text)} chars` : `${words(x.text)} words`} "${x.text}"`,
+		);
+	if (figures(x.text) > 2)
+		fails.push(`figures ${x.name}: ${figures(x.text)} "${x.text}"`);
+}
+// The claim's second line, found by role: what comes up with it, under it.
+if (out.claim)
+	for (const x of out.sentences)
+		if (
+			x.name !== out.claim.name &&
+			x.name !== "z-sub" &&
+			x.from >= out.claim.from &&
+			x.from <= out.claim.from + 1 &&
+			(zh ? cjk(x.text) > 22 : words(x.text) > 9) &&
+			x.hold < 4.5
+		)
+			fails.push(
+				`claim line ${x.name}: ${zh ? `${cjk(x.text)} chars` : `${words(x.text)} words`} held ${x.hold}s (≤${zh ? 22 : 9} or 4.5 s)`,
+			);
 if (!out.claim) fails.push("no claim");
 else if (!named.test(out.claim.name) && out.claim.hold < 4)
 	fails.push(
