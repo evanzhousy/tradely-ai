@@ -934,32 +934,34 @@ function build(context: FilmContext) {
 		one("h-ben-2"),
 	];
 	tl.to(rest, { opacity: 0.45, duration: 0.4 }, 28.0);
-	// After the lock, the trades are made, one step at a time: each hedge back to flat.
+	// After the lock, both drifts lit side by side: Ben's goes the other way, and the rule
+	// is named while the two stand together. Then the trades, one step at a time.
 	show(one("h-trade-you"), 28.4);
 	hide(lockHedge, 29.8, 0.3);
 	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.8);
+	tl.to(one("h-ben-2"), warn, 30.0);
+	show(one("h-claim"), 30.3);
+	// On a phone the rule's second line sits on the move's chip: the chip has done its work.
+	if (L.narrow) tl.to(one("h-chip"), { opacity: 0, duration: 0.3 }, 30.3);
 	d.count(
 		one<SVGTextElement>("h-you-1"),
 		hedgeFixed.shares,
-		30.0,
+		31.0,
 		shares,
 		hedgeAfter.shares,
 	);
-	d.count(one<SVGTextElement>("h-you-2"), 0, 30.4, shares, youDrift);
-	tl.to(one("h-you-2"), flat, 30.8);
-	tl.to(one("h-ben-2"), warn, 30.4);
-	show(one("h-trade-ben"), 30.7);
+	d.count(one<SVGTextElement>("h-you-2"), 0, 31.4, shares, youDrift);
+	tl.to(one("h-you-2"), flat, 31.8);
+	show(one("h-trade-ben"), 31.7);
 	d.count(
 		one<SVGTextElement>("h-ben-1"),
 		benColumns[2].shares,
-		31.0,
+		32.0,
 		shares,
 		benColumns[1].shares,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), 0, 31.4, shares, benDrift);
-	tl.to(one("h-ben-2"), flat, 31.8);
-	// The rule both rows made.
-	show(one("h-claim"), 31.9);
+	d.count(one<SVGTextElement>("h-ben-2"), 0, 32.4, shares, benDrift);
+	tl.to(one("h-ben-2"), flat, 32.8);
 
 	// ——— expiry: where gamma lives ———
 	tl.addLabel("expiry", 35.4);
