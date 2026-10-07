@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -43,15 +44,16 @@ import {
  * trades won, but one loss outweighs them: −$155, a profit factor of 0.80. Two accounts
  * both made 10%, and one of them fell 25% on the way.
  *
- *   open      0–4      "Performance"
- *   question  4–9.5    +21.9% · 80% · +10%
- *   returns   9.5–21.5 the account's week; the deposit; +4.00% and +1.00%; cut: +5.04%
- *   trades    21.5–32.5 five trades, 80% won, −$155; cut: 80% against −$155
- *   drawdown  32.5–43  A and B, both +10%; B's −25%; cut: "Each measure answers one question."
- *   next      43–45.5  Next: portfolio Greeks
+ *   open      0–4        "Performance"
+ *   question  4–9.6      +21.9% · 80% · +10%
+ *   returns   9.6–20.6   the account's week and its deposit; +4.00% and +1.00%; cut: +5.04%
+ *   trades    20.6–32.8  five trades, 80% won, −$155; cut: 80% against −$155, locked
+ *   drawdown  32.8–44.6  A and B, both +10%; B's −25%; cut: "Each measure answers one
+ *                        question."
+ *   next      44.6–47.1  Next: portfolio Greeks
  */
 
-const END = 45.5;
+const END = 47.1;
 const VALUE_Y = [28_000, 38_000] as const;
 const DD_Y = [22_000, 35_000] as const;
 const POINTS = [
@@ -64,7 +66,6 @@ const POINTS = [
 const WIN_HIGH = Math.max(...trades.map((trade) => trade.pnl));
 const LOSS_LOW = -Math.min(...trades.map((trade) => trade.pnl));
 const worstB = maxDrawdown(deep);
-const worstA = maxDrawdown(steady);
 const totalReturn = (values: readonly number[]) =>
 	values[values.length - 1] / values[0] - 1;
 
@@ -132,17 +133,13 @@ const copy = {
 		"三个好看的数字，每个都藏着一些东西。",
 	],
 	weekHead: [
-		`Your account, Monday's open to Friday's close: ${dollars(OPEN)} to ${dollars(WEEK_END)}.`,
-		`你的账户，周一开盘到周五收盘：${dollars(OPEN)} 到 ${dollars(WEEK_END)}。`,
+		"Your week, with your own deposit in it.",
+		"你的这一周，含你自己的存入。",
 	],
-	weekHeadShort: ["Your account, Monday to Friday.", "你的账户，周一到周五。"],
-	depositHead: [
-		`But ${dollars(yourAccount.deposit)} of it is your own deposit.`,
-		`但其中 ${dollars(yourAccount.deposit)} 是你自己存入的。`,
-	],
+	weekHeadShort: ["Your week, deposit included.", "这一周，含存入。"],
 	cutHead: [
-		"Cut at the deposit, and measure each piece from its start.",
-		"在存入处切开，每一段从它的起点算起。",
+		"Cut at the deposit; measure each piece.",
+		"在存入处切开，每段从起点算起。",
 	],
 	cutHeadShort: ["Cut at the deposit.", "在存入处切开。"],
 	growthTag: ["balance growth", "余额增长"],
@@ -164,13 +161,12 @@ const copy = {
 	],
 	twrTag: ["time-weighted return", "时间加权收益"],
 	twrLine: [
-		`Balance growth, ${pct(GROWTH, 1)}, counts your own money. ${pct(TWR)} is what the money earned.`,
-		`余额增长 ${pct(GROWTH, 1)} 算进了你自己的钱。${pct(TWR)} 才是资金赚到的。`,
+		`Growth counts your own money; ${pct(TWR)} is what it earned.`,
+		`增长算进了你自己的钱；${pct(TWR)} 才是资金赚到的。`,
 	],
-	tradesHead: ["Your last five closed trades.", "你最近五笔已平仓交易。"],
-	rateHead: [
-		`${WINS.length} of ${trades.length} made money: a win rate of ${Math.round(WIN_RATE * 100)}%.`,
-		`${trades.length} 笔中 ${WINS.length} 笔赚钱：胜率 ${Math.round(WIN_RATE * 100)}%。`,
+	tradesHead: [
+		`Your last ${trades.length} trades: ${WINS.length} won.`,
+		`最近 ${trades.length} 笔交易：${WINS.length} 笔赚钱。`,
 	],
 	totalHead: [
 		`One loss outweighs them: ${signed(TOTAL)} in total.`,
@@ -179,20 +175,20 @@ const copy = {
 	winRate: ["win rate", "胜率"],
 	total: ["total", "合计"],
 	tradesLine: [
-		`A win rate counts trades, not dollars. Profit factor: ${dollars(GROSS_WIN)} ÷ ${dollars(GROSS_LOSS)} = ${PROFIT_FACTOR.toFixed(2)}.`,
+		`Win rate counts trades, not dollars. Profit factor: ${dollars(GROSS_WIN)} ÷ ${dollars(GROSS_LOSS)} = ${PROFIT_FACTOR.toFixed(2)}.`,
 		`胜率数的是笔数，不是金额。盈利因子：${dollars(GROSS_WIN)} ÷ ${dollars(GROSS_LOSS)} = ${PROFIT_FACTOR.toFixed(2)}。`,
 	],
 	ddHead: [
 		`Two accounts, both ${pct(totalReturn(steady), 0)} from January to August.`,
-		`两个账户，1 月到 8 月都是 ${pct(totalReturn(steady), 0)}。`,
+		`两个账户，一月到八月都是 ${pct(totalReturn(steady), 0)}。`,
 	],
 	ddHeadShort: [
 		`Two accounts, both ${pct(totalReturn(steady), 0)}.`,
 		`两个账户，都是 ${pct(totalReturn(steady), 0)}。`,
 	],
 	fallHead: [
-		`B fell ${pct(-worstB.fall, 0).replace("+", "")} from its ${MONTHS[worstB.peakAt][0]} peak to its ${MONTHS[worstB.troughAt][0]} low; A, at worst, ${pct(-worstA.fall, 1).replace("+", "")}.`,
-		`B 从 ${MONTHS[worstB.peakAt][1]} 的高点跌到 ${MONTHS[worstB.troughAt][1]} 的低点，跌了 ${pct(-worstB.fall, 0).replace("+", "")}；A 最多只跌 ${pct(-worstA.fall, 1).replace("+", "")}。`,
+		`B fell ${pct(-worstB.fall, 0).replace("+", "")} on the way; A held.`,
+		`B 途中跌了 ${pct(-worstB.fall, 0).replace("+", "")}；A 几乎没跌。`,
 	],
 	fallHeadShort: [
 		`B fell ${pct(-worstB.fall, 0).replace("+", "")} on the way.`,
@@ -203,8 +199,8 @@ const copy = {
 	accountB: ["account B", "账户 B"],
 	claimBig: ["Each measure answers one question.", "每个度量只回答一个问题。"],
 	claimSub: [
-		"Take out deposits, weigh trades by size, and look at the path, not only the end.",
-		"剔除存入，按金额衡量交易，看路径而不只看终点。",
+		"Remove deposits, weigh trades by size, watch the path.",
+		"剔除存入，按金额衡量交易，看路径。",
 	],
 	nextBig: ["Next: portfolio Greeks", "下一课：组合希腊值"],
 	nextSub: ["adding up exposure", "汇总敞口"],
@@ -550,8 +546,24 @@ function Scene({
 				/>
 			</g>
 			{headline("w-head", copy.weekHead, copy.weekHeadShort)}
-			{headline("p-head", copy.depositHead, copy.depositHead)}
-			{headline("c-head", copy.cutHead, copy.cutHeadShort)}
+			<Lines
+				name="c-head"
+				text={t(narrow ? copy.cutHeadShort : copy.cutHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.weekHeadShort : copy.weekHead),
+						room,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			<g data-f="twr">
 				<Word
 					name="twr-tag"
@@ -591,8 +603,8 @@ function Scene({
 				/>
 			</g>
 			{headline("t-head", copy.tradesHead, copy.tradesHead)}
-			{headline("r-head", copy.rateHead, copy.rateHead)}
 			{headline("o-head", copy.totalHead, copy.totalHead)}
+			<Brackets name="lock-total" glow />
 			<g data-f="two">
 				{(
 					[
@@ -632,7 +644,20 @@ function Scene({
 				/>
 			</g>
 			{headline("d-head", copy.ddHead, copy.ddHeadShort)}
-			{headline("f-head", copy.fallHead, copy.fallHeadShort)}
+			<Lines
+				name="f-head"
+				text={t(narrow ? copy.fallHeadShort : copy.fallHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(t(narrow ? copy.ddHeadShort : copy.ddHead), room, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -670,7 +695,15 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, slam, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
+	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const land = (target: Element, time: number, duration = 0.55) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
+			time,
+		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const meter = one<SVGTextElement>("m-value");
@@ -691,6 +724,8 @@ function build(context: FilmContext) {
 	};
 	const percent = (fraction: number) => pct(fraction, 1);
 	const whole = (value: number) => `${Math.round(value)}%`;
+
+	const lockTotal = one<SVGGraphicsElement>("lock-total");
 
 	d.hidden([
 		one("bars"),
@@ -716,18 +751,12 @@ function build(context: FilmContext) {
 		one("fall-label"),
 		...kids("meter"),
 		...flat("q"),
-		...[
-			"w-head",
-			"p-head",
-			"c-head",
-			"t-head",
-			"r-head",
-			"o-head",
-			"d-head",
-			"f-head",
-		].map((name) => one(name)),
+		...["w-head", "c-head", "t-head", "o-head", "d-head", "f-head"].map(
+			(name) => one(name),
+		),
 		...kids("twr"),
 		...flat("two"),
+		lockTotal,
 		...kids("claim"),
 	]);
 
@@ -739,46 +768,45 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	[0, 1, 2].forEach((i) => {
-		show(one(`q-tag-${i}`), 4.6 + i * 0.8);
-		slam(one(`q-num-${i}`), 4.8 + i * 0.8);
+		show(one(`q-tag-${i}`), 4.6 + i * 0.5);
+		land(one(`q-num-${i}`), 4.8 + i * 0.5);
 	});
-	show(one("q-line"), 7.4);
+	show(one("q-line"), 6.0);
 
 	// ——— returns: a deposit is not a return ———
-	tl.addLabel("returns", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("w-head"), 9.7, "above");
-	rise(9.8);
-	draw(one<SVGPathElement>("value-line"), 10.4, 1.4);
+	tl.addLabel("returns", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("w-head"), 9.8, "above");
+	rise(9.9);
+	draw(one<SVGPathElement>("value-line"), 10.3, 1.4);
 	dots.forEach((dot, i) => {
-		pop(dot, 10.4 + [0, 0.35, 1.0, 1.4][i], 0.35);
+		land(dot, 10.3 + [0, 0.35, 1.0, 1.4][i], 0.35);
 	});
-	show([one("m-growth"), meter], 10.6, "above");
-	d.count(meter, GROWTH, 10.6, percent, 0, 1.4);
-	d.swap(one("w-head"), one("p-head"), 12.9);
-	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 13.3);
-	show(one("jump-label"), 13.5);
+	show([one("m-growth"), meter], 10.5, "above");
+	d.count(meter, GROWTH, 10.5, percent, 0, 1.4);
+	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 12.0);
+	show(one("jump-label"), 12.2);
 	// Cut at the flow: two periods, each from its own start.
-	d.swap(one("p-head"), one("c-head"), 15.2);
-	tl.to(one("band-1"), { opacity: 1, duration: 0.5 }, 15.6);
-	tl.to(one("band-2"), { opacity: 1, duration: 0.5 }, 16.1);
+	show(one("c-head"), 13.5);
+	tl.to(one("band-1"), { opacity: 1, duration: 0.5 }, 13.6);
+	tl.to(one("band-2"), { opacity: 1, duration: 0.5 }, 14.1);
 	// Cut: the chained return.
-	hide([one("c-head"), ...kids("meter")], 17.6);
-	sink(17.6);
-	show(one("twr-tag"), 18.0);
-	show(one("twr-sum"), 18.3);
-	slam(one("twr-num"), 18.9);
-	show(one("twr-line"), 19.7);
+	hide([one("w-head"), one("c-head"), ...kids("meter")], 17.0);
+	sink(17.0);
+	show(one("twr-tag"), 17.3);
+	show(one("twr-sum"), 17.6);
+	land(one("twr-num"), 18.1);
+	show(one("twr-line"), 18.6);
 
 	// ——— trades: a rate is not a total ———
-	tl.addLabel("trades", 21.5);
-	hide(kids("twr"), 21.5);
-	tl.set(one("week"), { opacity: 0 }, 21.6);
-	tl.set(one("bars"), { opacity: 1 }, 21.6);
-	show(one("t-head"), 21.7, "above");
-	rise(21.8);
+	tl.addLabel("trades", 20.6);
+	hide(kids("twr"), 20.6);
+	tl.set(one("week"), { opacity: 0 }, 20.7);
+	tl.set(one("bars"), { opacity: 1 }, 20.7);
+	show(one("t-head"), 20.95, "above");
+	rise(21.0);
 	trades.forEach((trade, i) => {
-		const at = 22.4 + i * 0.3;
+		const at = 21.5 + i * 0.3;
 		const y = L.barY(trade.pnl);
 		tl.fromTo(
 			one(`bar-${i}`),
@@ -786,64 +814,66 @@ function build(context: FilmContext) {
 			{
 				attr: { y: Math.min(y, L.zero), height: Math.abs(y - L.zero) },
 				duration: 0.45,
-				ease: "back.out(1.3)",
+				ease: "power3.out",
 			},
 			at,
 		);
 		show([one(`bar-value-${i}`), one(`bar-date-${i}`)], at + 0.2);
 	});
-	d.swap(one("t-head"), one("r-head"), 24.4);
-	show([one("m-rate"), meter], 24.8, "above");
-	d.count(meter, WIN_RATE * 100, 24.8, whole, 0, 0.8);
-	d.swap(one("r-head"), one("o-head"), 26.4);
+	show([one("m-rate"), meter], 22.4, "above");
+	d.count(meter, WIN_RATE * 100, 22.4, whole, 0, 0.8);
+	d.swap(one("t-head"), one("o-head"), 24.5);
 	tl.to(
 		trades.flatMap((trade, i) => (trade.pnl > 0 ? [one(`bar-${i}`)] : [])),
 		{ opacity: 0.35, duration: 0.4 },
-		26.8,
+		24.6,
 	);
-	hide(one("m-rate"), 26.8);
-	show(one("m-total"), 27.1, "above");
-	d.count(meter, TOTAL, 27.1, signed, WIN_RATE * 100, 0.01);
-	// Cut: the rate against the total.
+	// The meter's tag changes from above: from below it would cross the figure.
+	hide(one("m-rate"), 24.5);
+	show(one("m-total"), 24.85, "above");
+	d.count(meter, TOTAL, 24.85, signed, WIN_RATE * 100, 0.01);
+	// Cut: the rate against the total. The hero: one loss outweighs four wins.
 	hide([one("o-head"), ...kids("meter")], 28.4);
 	sink(28.4);
-	show(one("w-tag-0"), 28.8);
-	slam(one("w-num-0"), 29.0);
-	show(one("w-tag-1"), 29.6);
-	slam(one("w-num-1"), 29.8);
-	show(one("w-line"), 30.6);
+	show(one("w-tag-0"), 28.7);
+	land(one("w-num-0"), 28.9);
+	show(one("w-tag-1"), 29.2);
+	land(one("w-num-1"), 29.4);
+	d.lock(lockTotal, 30.0, { around: one("w-num-1"), pad: 8 });
+	tl.addLabel("hero-lock", 30.0);
+	show(one("w-line"), 30.3);
 
 	// ——— drawdown: the same return, two paths ———
-	tl.addLabel("drawdown", 32.5);
-	hide(flat("two"), 32.5);
-	tl.set(one("bars"), { opacity: 0 }, 32.6);
-	tl.set(one("dd"), { opacity: 1 }, 32.6);
-	show(one("d-head"), 32.7, "above");
-	rise(32.8);
-	draw(one<SVGPathElement>("line-a"), 33.4, 1.2);
-	show(one("label-a"), 34.4);
-	draw(one<SVGPathElement>("line-b"), 34.8, 1.2);
-	show(one("label-b"), 35.8);
-	d.swap(one("d-head"), one("f-head"), 37.0);
-	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 37.4);
-	pop(one("peak"), 37.6, 0.35);
-	pop(one("trough"), 37.9);
-	show(one("fall-label"), 38.1);
+	tl.addLabel("drawdown", 32.8);
+	hide([...flat("two"), lockTotal], 32.8);
+	tl.set(one("bars"), { opacity: 0 }, 32.9);
+	tl.set(one("dd"), { opacity: 1 }, 32.9);
+	show(one("d-head"), 33.15, "above");
+	rise(33.2);
+	draw(one<SVGPathElement>("line-a"), 33.7, 1.2);
+	show(one("label-a"), 34.6);
+	draw(one<SVGPathElement>("line-b"), 34.9, 1.2);
+	show(one("label-b"), 35.9);
+	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 36.0);
+	land(one("peak"), 36.1, 0.35);
+	land(one("trough"), 36.3);
+	show(one("fall-label"), 36.4);
+	show(one("f-head"), 36.65);
 	// Cut: the claim.
-	hide(one("f-head"), 39.6);
-	sink(39.6);
+	hide([one("d-head"), one("f-head")], 40.2);
+	sink(40.2);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-		{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
-		40.0,
+		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+		40.6,
 	);
-	show(one("z-sub"), 40.5);
+	show(one("z-sub"), 41.0);
 
 	// ——— next ———
-	tl.addLabel("next", 43);
-	hide(kids("claim"), 43.0);
-	d.close(43.0);
+	tl.addLabel("next", 44.6);
+	hide(kids("claim"), 44.6);
+	d.close(44.6);
 	return tl;
 }
 
