@@ -36,11 +36,11 @@ import {
  *   question  4–9.6      "Someone opened a large bearish bet on CRUX…"
  *   sort      9.6–23.5   five sentences, sorted; cut: a draft until sorted
  *   credits   23.5–29.4  1 + 1 + 2 = 4 credits, locked
- *   insight   29.4–42.5  AI Insight; Edit with AI; cut: the claim
- *   next      42.5–44.9  Next: build your own Rank column
+ *   insight   29.4–42.95 AI Insight; Edit with AI; cut: the claim
+ *   next      42.95–45.35 Next: build your own Rank column
  */
 
-const END = 44.9;
+const END = 45.35;
 const BET = STATEMENTS.find((item) => item.id === "bet") ?? STATEMENTS[0];
 const REPLIES = [
 	{ kind: "text", cost: COST.text },
@@ -735,15 +735,15 @@ function build(context: FilmContext) {
 			one("p-insight"),
 			one("p-edit"),
 		],
-		38,
+		38.45,
 	);
-	word(one("claim-big"), 38.4);
-	show(one("claim-sub"), 38.8);
+	word(one("claim-big"), 38.85);
+	show(one("claim-sub"), 39.25);
 
 	// ——— next ———
-	tl.addLabel("next", 42.5);
-	hide(kids("claim"), 42.5);
-	d.close(42.5);
+	tl.addLabel("next", 42.95);
+	hide(kids("claim"), 42.95);
+	d.close(42.95);
 	return tl;
 }
 
