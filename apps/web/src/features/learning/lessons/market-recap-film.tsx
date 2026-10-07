@@ -37,13 +37,13 @@ import {
  *   open      0–4        "Recaps"
  *   question  4–8.6      a premium claim over a contracts chart?
  *   match     8.6–19     contracts: 110 leads; premium: 105 leads
- *   axis      19–28.6    hero: from zero, nearly equal; from 480, 2.4 to 1
- *   compose   28.6–35    the draft; the bounded headline; the caption
- *   claim     35–39.4    claims your evidence supports
- *   next      39.4–41.9  Next: audits
+ *   axis      19–29      hero: from zero, nearly equal; from 480, 2.4 to 1
+ *   compose   29–36.9    the draft, read; the bounded headline; the caption
+ *   claim     36.9–41.2  claims your evidence supports
+ *   next      41.2–43.2  Next: audits
  */
 
-const END = 41.9;
+const END = 43.2;
 const ROWS = mondayPacket;
 const CUT = 480;
 
@@ -520,28 +520,28 @@ function build(context: FilmContext) {
 	);
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 19.6);
 	show(vals("contracts"), 20.2);
-	d.flip(one("unit-contracts"), one("unit-cut"), 23.0);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 23.3);
+	d.flip(one("unit-contracts"), one("unit-cut"), 23.3);
+	tl.set(one("unit-contracts"), { opacity: 0 }, 23.6);
 	barsTo(
 		"contracts",
 		CUT,
 		CUT + (CONTRACTS_MAX - CUT) * 0.55,
-		23.2,
+		23.5,
 		vals("contracts"),
 	);
 	// Round the two bars the cut axis pulls apart, with their figures.
 	const pair = [leadIndex(leader), leadIndex(premiumLeader)];
-	d.lock(lockBars, 25.0, {
+	d.lock(lockBars, 25.5, {
 		around: pair.flatMap((i) => [bars[i], vals("contracts")[i]]),
 		// Close in at the foot, where the strikes are labelled.
 		pad: 3,
 	});
-	tl.addLabel("hero-lock", 25.0);
-	show(heads[3], 25.0);
+	tl.addLabel("hero-lock", 25.5);
+	show(heads[3], 25.5);
 
 	// ——— compose: the headline and caption ———
-	tl.addLabel("compose", 28.6);
-	d.swap([heads[2], heads[3]], heads[4], 28.6);
+	tl.addLabel("compose", 29.0);
+	d.swap([heads[2], heads[3]], heads[4], 29.0);
 	hide(
 		[
 			...kids("frame"),
@@ -550,27 +550,28 @@ function build(context: FilmContext) {
 			...vals("contracts"),
 			lockBars,
 		],
-		28.6,
+		29.0,
 	);
+	// The draft is read before the bounded headline replaces its claims.
 	show(one("draft"), 29.4);
-	tl.to(one("draft"), { opacity: 0.35, duration: 0.4 }, 30.4);
-	show(one("bounded"), 30.6);
-	show(one("caption"), 31.4);
-	show(heads[5], 31.4);
+	tl.to(one("draft"), { opacity: 0.35, duration: 0.4 }, 33.1);
+	show(one("bounded"), 33.25);
+	show(one("caption"), 33.4);
+	show(heads[5], 33.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 35);
+	tl.addLabel("claim", 36.9);
 	hide(
 		[heads[4], heads[5], one("draft"), one("bounded"), one("caption")],
-		35.0,
+		36.9,
 	);
-	word(one("z-big"), 35.3);
-	show(one("z-sub"), 35.7);
+	word(one("z-big"), 37.2);
+	show(one("z-sub"), 37.6);
 
 	// ——— next ———
-	tl.addLabel("next", 39.4);
-	hide(kids("claim"), 39.4);
-	d.close(39.4);
+	tl.addLabel("next", 41.2);
+	hide(kids("claim"), 41.2);
+	d.close(41.2);
 	return tl;
 }
 
