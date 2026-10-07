@@ -28,11 +28,9 @@ import {
 	contracts,
 	DAYS,
 	DELTA,
-	FAR,
 	fixed2,
 	GAMMA,
 	gammaOf,
-	greek,
 	hedgeAfter,
 	hedgeBefore,
 	MOVE,
@@ -60,15 +58,15 @@ import {
  *
  *   open      0–4        "Gamma" wipes on and becomes the corner tag
  *   question  4–9.4      delta 0.52 → ? if ALFA rises $2
- *   curve     9.4–21.5   the delta curve; push in; +$2 along, +0.08 up; cut to 0.04, "gamma"
- *   hedge     21.5–33.2  hero: your hedge drifts +128 and you sell; Ben's drifts −80 and he
- *                        buys
- *   expiry    33.2–42.7  gamma's hill; the 4-day call's spike, 3×; at $92 the order flips;
- *                        cut: "Gamma lives near the strike."
- *   next      42.7–44.7  Next: theta, vega and rho
+ *   curve     9.4–22.8   the delta curve; push in; +$2 along, +0.08 up; cut to 0.04, "gamma"
+ *   hedge     22.8–36.8  hero: your hedge drifts +128 and you sell; Ben's, in its place,
+ *                        drifts −80 and he buys
+ *   expiry    36.8–45.4  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
+ *                        the strike."
+ *   next      45.4–47.4  Next: theta, vega and rho
  */
 
-const END = 44.7;
+const END = 47.4;
 const DELTA_TOP = 1.15;
 const GAMMA_TOP = 0.13;
 const deltaAt = (spot: number) => model(OCT_100_CALL, spot).delta;
@@ -185,7 +183,6 @@ const copy = {
 	octShort: ["Oct 18", "10月18日"],
 	sepLabel: [`Sep 20 · ${SEP_DAYS} days`, `9月20日 · ${SEP_DAYS} 天`],
 	sepShort: ["Sep 20", "9月20日"],
-	farLine: [`At $${FAR} the order flips.`, `到 $${FAR}，顺序反过来。`],
 	claimBig: ["Gamma lives near the strike.", "Gamma 集中在行权价。"],
 	claimSub: [
 		"It sharpens as expiry nears, and fades a few dollars away.",
@@ -274,8 +271,6 @@ function Scene({
 	const chipY = H * 0.4 - T.num * 1.15;
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
-	const farOct = gammaOf(OCT_100_CALL, FAR);
-	const farSep = gammaOf(SEP_20, FAR);
 	const hedgeRows = {
 		who: H * 0.3,
 		labels: H * 0.42,
@@ -473,47 +468,6 @@ function Scene({
 						>
 							{`${times}×`}
 						</Word>
-						<line
-							data-f="g-far-line"
-							className="wt-grid"
-							strokeDasharray="3 3"
-							x1={L.x(FAR)}
-							x2={L.x(FAR)}
-							y1={L.yG(0)}
-							y2={L.yG(0.06)}
-						/>
-						<circle
-							data-f="g-far-oct"
-							cx={L.x(FAR)}
-							cy={L.yG(farOct)}
-							r={5}
-							className="wt-chip"
-						/>
-						<circle
-							data-f="g-far-sep"
-							cx={L.x(FAR)}
-							cy={L.yG(farSep)}
-							r={5}
-							className="wt-long"
-						/>
-						<text
-							data-f="g-far-oct-label"
-							x={L.x(FAR) - 10}
-							y={L.yG(farOct) - 6}
-							textAnchor="end"
-							className="wt-halo wt-label-position wt-marker-label"
-						>
-							{greek(farOct)}
-						</text>
-						<text
-							data-f="g-far-sep-label"
-							x={L.x(FAR) - 10}
-							y={L.yG(farSep) - 6}
-							textAnchor="end"
-							className="wt-halo wt-label-long wt-marker-label"
-						>
-							{greek(farSep)}
-						</text>
 					</g>
 				</g>
 			</g>
@@ -696,15 +650,6 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
-			<Lines
-				name="e-far"
-				text={t(copy.farLine)}
-				x={L.margin}
-				y={L.headY}
-				size={T.head}
-				maxWidth={room}
-				anchor="start"
-			/>
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -782,17 +727,11 @@ function build(context: FilmContext) {
 		one("g-oct-label"),
 		one("g-sep-label"),
 		one("g-times"),
-		one("g-far-line"),
-		one("g-far-oct"),
-		one("g-far-sep"),
-		one("g-far-oct-label"),
-		one("g-far-sep-label"),
 		...kids("q"),
 		...kids("g"),
 		one<SVGGraphicsElement>("lock-hedge"),
 		...kids("hedge"),
 		one("e-head"),
-		one("e-far"),
 		...kids("claim"),
 	]);
 
@@ -903,42 +842,43 @@ function build(context: FilmContext) {
 	sink(18.2);
 	land(one("g-num"), 18.6);
 	show(one("g-word"), 19);
-	show(one("g-sub"), 19.4);
+	show(one("g-sub"), 19.2);
 
 	// ——— hedge: the same delta, carried onto a position ———
-	tl.addLabel("hedge", 21.5);
-	hide(kids("g"), 21.5);
-	show(one("h-head"), 21.7, "above");
-	show(one("h-who-you"), 22.2);
-	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 22.5);
-	land(one("h-you-0"), 22.8);
-	land(one("h-you-1"), 23);
-	land(one("h-you-2"), 23.2);
-	land(one("h-chip"), 23.9);
+	tl.addLabel("hedge", 22.8);
+	hide(kids("g"), 22.8);
+	show(one("h-head"), 23.0, "above");
+	show(one("h-who-you"), 23.5);
+	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.8);
+	land(one("h-you-0"), 24.1);
+	land(one("h-you-1"), 24.3);
+	land(one("h-you-2"), 24.5);
+	land(one("h-chip"), 25.3);
 	d.count(
 		one<SVGTextElement>("h-you-0"),
 		hedgeAfter.options,
-		24.4,
+		25.9,
 		shares,
 		hedgeBefore.options,
 	);
-	d.count(one<SVGTextElement>("h-you-2"), youDrift, 24.8, shares);
+	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.6, shares);
 	tl.to(
 		one("h-you-2"),
 		{ attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 },
-		24.8,
+		26.6,
 	);
-	show(one("h-trade-you"), 25.8);
+	show(one("h-trade-you"), 27.9);
 	// The hero: your hedge's drift, locked once its count has landed. The brackets are
 	// fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
 	const youNetText = youNet.textContent;
 	youNet.textContent = shares(youDrift);
-	d.lock(lockHedge, 25.9, { around: [one("h-col-2"), youNet], pad: 6 });
+	d.lock(lockHedge, 28.0, { around: [one("h-col-2"), youNet], pad: 6 });
 	youNet.textContent = youNetText;
-	tl.addLabel("hero-lock", 25.9);
-	// Ben: short the same calls, so the move pushes him the other way.
-	hide(
+	tl.addLabel("hero-lock", 28.0);
+	// Ben takes your place under the same columns: short the same calls, so the move
+	// pushes him the other way.
+	d.swap(
 		[
 			one("h-who-you"),
 			one("h-you-0"),
@@ -948,92 +888,78 @@ function build(context: FilmContext) {
 			one("h-chip"),
 			lockHedge,
 		],
-		27.9,
-		0.3,
+		[one("h-who-ben"), one("h-ben-0"), one("h-ben-1"), one("h-ben-2")],
+		31.4,
 	);
-	show(one("h-who-ben"), 28.2);
-	land(one("h-ben-0"), 28.4);
-	land(one("h-ben-1"), 28.6);
-	land(one("h-ben-2"), 28.8);
-	land(one("h-chip"), 29.2);
+	land(one("h-chip"), 31.9);
 	d.count(
 		one<SVGTextElement>("h-ben-0"),
 		benColumns[1].options,
-		29.6,
+		32.15,
 		shares,
 		benColumns[0].options,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 29.9, shares);
+	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 32.45, shares);
 	tl.to(
 		one("h-ben-2"),
 		{ attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 },
-		29.9,
+		32.45,
 	);
-	show(one("h-trade-ben"), 30.7);
-	d.swap([one("h-head"), one("h-who-ben")], one("h-claim"), 31.1);
+	// The rule both rows made, up with Ben's trade.
+	d.swap(one("h-head"), one("h-claim"), 32.95);
+	show(one("h-trade-ben"), 33.3);
 
 	// ——— expiry: where gamma lives ———
-	tl.addLabel("expiry", 33.2);
-	hide(kids("hedge"), 33.2);
-	tl.set(world, home, 33.4);
-	tl.set(chartDelta, { opacity: 0 }, 33.4);
-	tl.set(chartGamma, { opacity: 1 }, 33.4);
-	show(one("e-head"), 33.6, "above");
-	rise(33.6);
+	tl.addLabel("expiry", 36.8);
+	hide(kids("hedge"), 36.8);
+	tl.set(world, home, 37.0);
+	tl.set(chartDelta, { opacity: 0 }, 37.0);
+	tl.set(chartGamma, { opacity: 1 }, 37.0);
+	show(one("e-head"), 37.2, "above");
+	rise(37.2);
 	tl.to(
 		one("clip-gl"),
 		{
 			attr: { x: L.left - 4, width: mx - L.left + 4 },
-			duration: 1.2,
+			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		34.3,
+		37.5,
 	);
 	tl.to(
 		one("clip-gr"),
-		{ attr: { width: L.right - mx + 4 }, duration: 1.2, ease: "power2.inOut" },
-		34.3,
+		{ attr: { width: L.right - mx + 4 }, duration: 0.9, ease: "power2.inOut" },
+		37.5,
 	);
-	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 35.3);
+	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 38.3);
 	// The 4-day call starts as the same hill, then rises into a spike at the strike.
-	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 35.9);
+	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 38.5);
 	tl.to(
 		one("g-sep"),
 		{
 			attr: { d: L.path(sepCurve, L.yG) },
-			duration: 1.3,
+			duration: 1.0,
 			ease: "power3.inOut",
 		},
-		35.9,
+		38.5,
 	);
-	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 37);
-	land(one("g-times"), 37.3);
-	tl.fromTo(
-		one("g-far-line"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.4 },
-		38.3,
-	);
-	land(one("g-far-oct"), 38.6);
-	land(one("g-far-sep"), 38.8);
-	show(one("g-far-oct-label"), 39, "below", 0.4);
-	show(one("g-far-sep-label"), 39.2, "below", 0.4);
-	d.swap(one("e-head"), one("e-far"), 39.4);
-	// Cut: the claim.
-	hide(one("e-far"), 40.9);
-	sink(40.9);
+	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 39.3);
+	land(one("g-times"), 39.5);
+	// Cut: the claim, held to be read.
+	hide(one("e-head"), 41.0);
+	sink(41.0);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.3,
+		41.4,
 	);
 	show(one("c-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 42.7);
-	hide(kids("claim"), 42.7);
-	d.close(42.7);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
