@@ -144,6 +144,70 @@ const out = await page.evaluate(() => {
 					`${a.name} and ${b.name} share their place for ${both.toFixed(2)} s at ${Math.max(a.from, b.from).toFixed(2)}`,
 				);
 		}
+	// Every sentence on the stage, by role rather than name: when it is actually visible
+	// (its own opacity and its groups'), sampled every 0.1 s.
+	const words = (t) =>
+		t.split(/\s+/).filter((x) => /[A-Za-z0-9$]/.test(x)).length;
+	const cjk = (t) => (t.match(/[㐀-鿿]/g) || []).length;
+	const prose = [...svg.querySelectorAll("text[data-f]")].filter((el) => {
+		const cls = el.getAttribute("class") || "";
+		return (
+			/\bwt-film-type\b/.test(cls) &&
+			!el.closest('[data-f="end"], [data-f="title-group"]') &&
+			el.getAttribute("data-f") !== "title-sub"
+		);
+	});
+	const seen = new Map(prose.map((el) => [el, []]));
+	for (let t = 0; t <= duration + 0.001; t += 0.1) {
+		tl.seek(t, false);
+		for (const el of prose) {
+			const runs = seen.get(el);
+			const on = alpha(el) >= 0.6;
+			const last = runs.at(-1);
+			if (on && last && last.to === null) continue;
+			if (on) runs.push({ from: t, to: null });
+			else if (last && last.to === null) last.to = t;
+		}
+	}
+	const sentences = [];
+	for (const [el, runs] of seen) {
+		const text = textOf(el);
+		const size = Number.parseFloat(getComputedStyle(el).fontSize) || 0;
+		const long = words(text) >= 4 || cjk(text) >= 8;
+		for (const r of runs)
+			if (r.from > 0.05)
+				sentences.push({
+					name: el.getAttribute("data-f"),
+					text,
+					size,
+					long,
+					from: Math.round(r.from * 10) / 10,
+					hold: Math.round(((r.to ?? duration) - r.from) * 10) / 10,
+				});
+	}
+	// The claim: the last sentence to come up, among the largest.
+	const largest = Math.max(0, ...sentences.map((x) => x.size));
+	const claimRun = sentences
+		.filter((x) => x.size >= largest * 0.85 && !/^q-/.test(x.name))
+		.sort((a, b) => b.from - a.from)[0];
+	// Beats: headlines, and any other sentence set at headline size or larger, the
+	// question and the claim aside.
+	const heads = sentences.filter((x) => /-head$/.test(x.name));
+	const headSize = heads.length
+		? heads.map((x) => x.size).sort((a, b) => a - b)[
+				Math.floor(heads.length / 2)
+			]
+		: largest;
+	const beatNames = new Set(heads.map((x) => x.name));
+	for (const x of sentences)
+		if (
+			!/-head$|^q-/.test(x.name) &&
+			x !== claimRun &&
+			x.long &&
+			x.size >= headSize * 0.9 &&
+			!(claimRun && x.from >= claimRun.from)
+		)
+			beatNames.add(x.name);
 	// The hero's lock: exactly one glowing bracket, at full strength within 0.5 s of the
 	// hero-lock label and held there at least 1 s.
 	const glows = [...svg.querySelectorAll(".wt-film-lock[data-glow]")];
@@ -208,6 +272,9 @@ const out = await page.evaluate(() => {
 		duration,
 		heroLock: tl.labels["hero-lock"],
 		glow,
+		sentences,
+		claim: claimRun ?? null,
+		beats: [...beatNames],
 		still,
 		rows,
 		badClasses: [...bad],
@@ -261,6 +328,23 @@ else {
 			`hero-lock at ${(pct * 100).toFixed(1)} % (${out.heroLock.toFixed(2)} s)`,
 		);
 }
+// Sentences the name rules don't cover are held to be read too; the claim is found by role.
+const named = /-head$|^(q-line|q-big|z-big|z-sub)$/;
+for (const x of out.sentences)
+	if (
+		x.long &&
+		!named.test(x.name) &&
+		!(out.claim && x.name === out.claim.name && x.from === out.claim.from) &&
+		x.hold < 3.5
+	)
+		fails.push(`hold ${x.name} ${x.hold}s < 3.5: "${x.text.slice(0, 48)}"`);
+if (!out.claim) fails.push("no claim");
+else if (!named.test(out.claim.name) && out.claim.hold < 4)
+	fails.push(
+		`hold claim ${out.claim.name} ${out.claim.hold}s < 4: "${out.claim.text.slice(0, 48)}"`,
+	);
+if (out.beats.length > 7)
+	fails.push(`beats: ${out.beats.length} (${out.beats.join(", ")}) > 7`);
 if (out.glow.count !== 1)
 	fails.push(`glow: ${out.glow.count} glowing locks (one, on the hero)`);
 else if (out.heroLock !== undefined && out.glow.on === null)
