@@ -46,12 +46,12 @@ import {
  *                        $102.3
  *   shortcut  21.2–30.2  the strike-sum line crosses at $94.1; cut: $102.3 against $94.1,
  *                        the flip locked
- *   target    30.2–40.6  buy 5,121 if…; the tape; the book: 1,600 offered;
+ *   target    30.8–42.3  buy 5,121 if…; the tape; the book: 1,600 offered;
  *                        cut: "A regime describes a response, not a forecast."
- *   next      40.6–43.1  Next: walls and max pain
+ *   next      42.3–44.8  Next: walls and max pain
  */
 
-const END = 43.1;
+const END = 44.8;
 const X = [88, 112] as const;
 const Y = 2_000_000;
 const curve = Array.from({ length: (X[1] - X[0]) * 2 + 1 }, (_, i) => {
@@ -728,29 +728,29 @@ function build(context: FilmContext) {
 	show(one("w-line"), 27.2);
 
 	// ——— target: what the model's number isn't ———
-	tl.addLabel("target", 30.2);
-	hide([...flat("two"), lockFlip], 30.2);
-	show(one("t-head"), 30.55, "above");
+	tl.addLabel("target", 30.8);
+	hide([...flat("two"), lockFlip], 30.8);
+	show(one("t-head"), 31.15, "above");
 	[0, 1, 2].forEach((i) => {
-		const at = 31.0 + i * 1.3;
+		const at = 31.6 + i * 1.0;
 		show(one(`t-tag-${i}`), at);
 		land(one(`t-value-${i}`), at + 0.2);
 		show(one(`t-note-${i}`), at + 0.6);
 	});
 	// Cut: the claim.
-	hide(flat("target"), 36.0);
+	hide(flat("target"), 37.7);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		36.4,
+		38.1,
 	);
-	show(one("z-sub"), 36.8);
+	show(one("z-sub"), 38.5);
 
 	// ——— next ———
-	tl.addLabel("next", 40.6);
-	hide(kids("claim"), 40.6);
-	d.close(40.6);
+	tl.addLabel("next", 42.3);
+	hide(kids("claim"), 42.3);
+	d.close(42.3);
 	return tl;
 }
 
