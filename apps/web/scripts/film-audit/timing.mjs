@@ -158,13 +158,16 @@ const zh = env.LOCALE === "zh";
 const words = (t) =>
 	t.split(/\s+/).filter((x) => /[A-Za-z0-9$]/.test(x)).length;
 const cjk = (t) => (t.match(/[㐀-鿿]/g) || []).length;
-// A date is one figure: "Oct 18", "10月18日".
+// A date is one figure: "Oct 18", "10月18日". Its stand-in can't occur in copy ("Delta" has a D).
 const figures = (t) =>
 	(
 		t
-			.replace(/\d+月\d+日/g, "D")
-			.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d+/g, "D")
-			.match(/[−+]?[$¥]?\d[\d,.:]*%?|D/g) || []
+			.replace(/\d+月\d+日/g, "\uE000")
+			.replace(
+				/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d+/g,
+				"\uE000",
+			)
+			.match(/[−+]?[$¥]?\d[\d,.:]*%?|\uE000/g) || []
 	).length;
 const fails = [];
 for (const r of out.rows) {
