@@ -188,8 +188,8 @@ const copy = {
 		"0DTE：便宜、快，4 点就没了。",
 	],
 	claimSub: [
-		"Value drains by the hour, delta swings on cents, and open interest never sees it.",
-		"价值按小时流失，Delta 随几美分摆动，而未平仓量从不记录它。",
+		"Hours drain it, cents swing it, OI misses it.",
+		"按小时流失，随几美分摆动，未平仓量看不到它。",
 	],
 	nextBig: [
 		"Next: implied and realized volatility",
