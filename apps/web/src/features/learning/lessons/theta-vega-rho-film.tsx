@@ -200,7 +200,7 @@ const copy = {
 	],
 	sumHead: ["Back to the puzzle: add each part.", "回到开头：逐项相加。"],
 	sumAnswer: [
-		"Time and IV took more than the move gave.",
+		"Time and IV outweighed the move.",
 		"时间和 IV 拿走的，比上涨带来的多。",
 	],
 	sumAnswerShort: [
@@ -220,7 +220,7 @@ const copy = {
 	],
 	claimBig: ["A good move can still lose.", "上涨也可能亏钱。"],
 	claimSub: [
-		"Time and volatility count too, each in its own unit.",
+		"Time and volatility count, each in its own unit.",
 		"时间和波动率同样算数，各有各的单位。",
 	],
 	nextBig: ["Next: 0DTE", "下一课：0DTE"],
