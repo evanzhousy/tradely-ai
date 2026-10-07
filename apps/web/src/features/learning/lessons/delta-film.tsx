@@ -86,8 +86,12 @@ function layout(width: number) {
 	const rows = (
 		narrow ? [0.35, 0.45, 0.55, 0.64, 0.73] : [0.31, 0.42, 0.53, 0.64, 0.75]
 	).map((f) => height * f);
-	const equivY = height * (narrow ? 0.8 : 0.83);
-	const payY = height * (narrow ? 0.88 : 0.93);
+	const T = frame.type;
+	const posY = rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95;
+	const equivY = posY + T.num * 0.45 + T.small * 1.6;
+	// On a phone the move's chip sits under the two positions, not between them.
+	const chipY = narrow ? equivY + T.num * 1.3 : posY - T.num * 0.35;
+	const payY = narrow ? chipY + T.num * 1.6 : equivY + T.num * 1.4;
 	return {
 		...frame,
 		left,
@@ -100,7 +104,9 @@ function layout(width: number) {
 		cx: (left + right) / 2,
 		cy: (top + bottom) / 2,
 		rows,
+		posY,
 		equivY,
+		chipY,
 		payY,
 		/** How far the two positions stand from the middle once both are on stage. */
 		side: width * (narrow ? 0.25 : 0.2),
@@ -430,9 +436,8 @@ function Scene({
 					text={t(copy.qLine)}
 					x={W / 2}
 					y={H * 0.58}
-					size={T.body}
+					size={T.head}
 					maxWidth={room}
-					className="wt-film-type wt-film-dim"
 				/>
 				<Word name="q-mark" x={W / 2} y={H * 0.78} size={T.title}>
 					?
@@ -544,7 +549,7 @@ function Scene({
 				<Word
 					name="ch-pos-you"
 					x={W / 2}
-					y={L.rows[4] + T.num * 0.2}
+					y={L.posY}
 					size={T.num * 1.35}
 					className="wt-film-num wt-film-gain"
 				>
@@ -562,7 +567,7 @@ function Scene({
 				<Word
 					name="ch-pos-ben"
 					x={W / 2 + L.side}
-					y={L.rows[4] + T.num * 0.2}
+					y={L.posY}
 					size={T.num * 1.35}
 					className="wt-film-num wt-film-loss"
 				>
@@ -571,7 +576,7 @@ function Scene({
 				<g data-f="ch-chip">
 					<rect
 						x={W / 2 - chipW / 2}
-						y={L.rows[4] - T.body - 2}
+						y={L.chipY - T.body - 2}
 						width={chipW}
 						height={T.body + 12}
 						rx={7}
@@ -579,7 +584,7 @@ function Scene({
 					/>
 					<text
 						x={W / 2}
-						y={L.rows[4] + 4}
+						y={L.chipY + 4}
 						textAnchor="middle"
 						className="wt-chip-text"
 						style={{ fontSize: T.small }}
@@ -598,10 +603,10 @@ function Scene({
 						name={name}
 						x={W / 2 + dx}
 						y={L.payY}
-						size={T.body * 1.15}
+						size={T.body * 1.3}
 						className={`wt-film-num ${tone}`}
 					>
-						{`≈ ${signedUsd(moveDollars(contracts), 0)}`}
+						{`× $${MOVE.toFixed(2)} ≈ ${signedUsd(moveDollars(contracts), 0)}`}
 					</Word>
 				))}
 				<Lines
@@ -610,7 +615,16 @@ function Scene({
 					x={W / 2}
 					y={L.equivY}
 					size={T.small}
-					maxWidth={room}
+					maxWidth={L.narrow ? L.side * 1.8 : room}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Lines
+					name="ch-equiv-ben"
+					text={t(copy.equivalents)}
+					x={W / 2 + L.side}
+					y={L.equivY}
+					size={T.small}
+					maxWidth={L.narrow ? L.side * 1.8 : room}
 					className="wt-film-type wt-film-dim"
 				/>
 				<Lines
@@ -913,12 +927,13 @@ function build(context: FilmContext) {
 	// Ben: the same chain beside yours, the sign flipped.
 	hide(lockPos, 30.3, 0.3);
 	tl.to(
-		[one("ch-op-you"), one("ch-pos-you")],
+		[one("ch-op-you"), one("ch-pos-you"), one("ch-equiv")],
 		{ x: -L.side, duration: 0.6, ease: "power2.inOut" },
 		30.4,
 	);
 	show(one("ch-op-ben"), 30.9);
 	land(one("ch-pos-ben"), 31.3);
+	show(one("ch-equiv-ben"), 31.6);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
@@ -927,7 +942,8 @@ function build(context: FilmContext) {
 	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
 	show(one("ch-chip"), 32.0);
-	show([one("ch-usd-you"), one("ch-usd-ben")], 32.5);
+	show(one("ch-usd-you"), 32.5);
+	show(one("ch-usd-ben"), 32.9);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 35.3);
@@ -952,7 +968,7 @@ function build(context: FilmContext) {
 	);
 	show(one("lim-head"), 35.65, "above");
 	rise(35.65);
-	tl.to(ghost, { opacity: 1, duration: 0.3 }, 36.3);
+	tl.to(ghost, { opacity: 1, duration: 0.3 }, 36.1);
 	const slide = { spot: SPOT };
 	/**
 	 * The three readings stand still in the plot's empty top left, between its top two
@@ -993,25 +1009,25 @@ function build(context: FilmContext) {
 	place();
 	tl.to(
 		slide,
-		{ spot: SPOT + UP, duration: 1.4, ease: "power2.inOut", onUpdate: place },
-		36.5,
+		{ spot: SPOT + UP, duration: 1.0, ease: "power2.inOut", onUpdate: place },
+		36.3,
 	);
-	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 36.9);
-	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 37.2);
+	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 36.6);
+	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 36.9);
 	tl.fromTo(
 		gap,
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 0%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		37.9,
+		37.3,
 	);
-	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 38.2);
+	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 37.5);
 	tl.to(
 		slide,
-		{ spot: SPOT + DOWN, duration: 1.4, ease: "power2.inOut", onUpdate: place },
+		{ spot: SPOT + DOWN, duration: 1.0, ease: "power2.inOut", onUpdate: place },
 		38.9,
 	);
-	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 39.6);
-	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 40.0);
+	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 39.5);
+	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 39.8);
 	// Cut: the claim, held to be read.
 	hide(one("lim-head"), 40.9);
 	sink(40.9);
