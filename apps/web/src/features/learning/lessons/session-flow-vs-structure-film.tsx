@@ -48,13 +48,13 @@ import {
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
  *   ledger    8.6–22.45  both open +10; changed hands ±0; both closed −4
  *   clock     22.45–32.35 hero: volume all day; open interest shown waits for Tuesday's count
- *   bucket    32.35–40.35 420 → 620 as the members change (+500 in, −300 out), held; → 650
- *                        as each series adds 10s
- *   claim     40.35–44.7 volume counts trading; open interest, positions
- *   next      44.7–46.7  Next: tape rows
+ *   bucket    32.35–40.6 420 → 620 as the members change (+500 in, −300 out) at Sep 9's
+ *                        figures, named and held; → 650 as each series adds 10s
+ *   claim     40.6–44.95 volume counts trading; open interest, positions
+ *   next      44.95–46.95 Next: tape rows
  */
 
-const END = 46.7;
+const END = 46.95;
 const TRADES = day.trades;
 const START_OI = day.startOpenInterest;
 const AFTER = ledgerBeats.slice(1);
@@ -215,6 +215,8 @@ const copy = {
 		"Mostly new members, not new positions.",
 		"主要是换了成员，不是新开仓。",
 	],
+	/** 620 is Sep 16's members counted at Sep 9's figures: say so while it stands. */
+	wasNote: ["at Sep 9 figures", "按9月9日数据"],
 	newNote: [
 		`+${count(AFTER_WEEK.total - MOVED)} new contracts`,
 		`新增 ${count(AFTER_WEEK.total - MOVED)} 张`,
@@ -738,15 +740,23 @@ function Scene({
 			>
 				{count(BEFORE.total)}
 			</text>
-			<text
-				data-f="note-new"
-				x={margin}
-				y={L.bucketY + T.small + T.small * 1.9}
-				className="wt-film-type wt-film-dim"
-				style={{ fontSize: T.small }}
-			>
-				{t(copy.newNote)}
-			</text>
+			{(
+				[
+					["note-was", copy.wasNote],
+					["note-new", copy.newNote],
+				] as const
+			).map(([name, label]) => (
+				<text
+					key={name}
+					data-f={name}
+					x={margin}
+					y={L.bucketY + T.small + T.small * 1.9}
+					className="wt-film-type wt-film-dim"
+					style={{ fontSize: T.small }}
+				>
+					{t(label)}
+				</text>
+			))}
 
 			<g data-f="claim">
 				<Lines
@@ -868,6 +878,7 @@ function build(context: FilmContext) {
 		one("bt-1"),
 		one("bucket-n"),
 		...stripExpiries.filter((id) => moved(id)).map((id) => one(`colm-${id}`)),
+		one("note-was"),
 		one("note-new"),
 		...kids("claim"),
 	]);
@@ -1051,7 +1062,10 @@ function build(context: FilmContext) {
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
 	show(marks, 35.25, "above");
-	hide(marks, 36.75, 0.2);
+	show(one("note-was"), 35.35);
+	// The headline names the membership step while its marks are up.
+	show(heads[7], 35.4);
+	hide(marks, 37.0, 0.2);
 	// Then the week's new contracts: each series grows by tens.
 	stripExpiries.forEach((id) => {
 		const column = after.find((c) => c.id === id);
@@ -1061,17 +1075,17 @@ function build(context: FilmContext) {
 		tl.to(
 			one(`colbar-${id}`),
 			{ attr: { y: L.floor - h, height: h }, duration: 0.6 },
-			36.85,
+			37.1,
 		);
 		tl.to(
 			one(`colv-${id}`),
 			{ attr: { y: L.floor - h - 6 }, duration: 0.6 },
-			36.85,
+			37.1,
 		);
 		d.count(
 			num(`colv-${id}`),
 			column.value,
-			36.85,
+			37.1,
 			(v) => count(Math.round(v)),
 			before.value,
 			0.6,
@@ -1080,20 +1094,20 @@ function build(context: FilmContext) {
 	d.count(
 		num("bucket-n"),
 		AFTER_WEEK.total,
-		36.85,
+		37.1,
 		(v) => count(Math.round(v)),
 		MOVED,
 		0.6,
 	);
-	show(one("note-new"), 36.95);
-	show(heads[7], 36.85);
+	d.flip(one("note-was"), one("note-new"), 37.1);
+	tl.set(one("note-was"), { opacity: 0 }, 37.4);
 	// In place, without travel: each change comes up over its own column's figure.
 	changes.forEach((change, i) => {
-		word(change, 37.25 + i * 0.2);
+		word(change, 37.5 + i * 0.2);
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.35);
+	tl.addLabel("claim", 40.6);
 	hide(
 		[
 			heads[6],
@@ -1104,16 +1118,17 @@ function build(context: FilmContext) {
 			one("bt-1"),
 			one("bucket-n"),
 			one("note-new"),
+			one("note-was"),
 		],
-		40.35,
+		40.6,
 	);
-	word(one("z-big"), 40.65);
-	show(one("z-sub"), 41.05);
+	word(one("z-big"), 40.9);
+	show(one("z-sub"), 41.3);
 
 	// ——— next ———
-	tl.addLabel("next", 44.7);
-	hide(kids("claim"), 44.7);
-	d.close(44.7);
+	tl.addLabel("next", 44.95);
+	hide(kids("claim"), 44.95);
+	d.close(44.95);
 	return tl;
 }
 
