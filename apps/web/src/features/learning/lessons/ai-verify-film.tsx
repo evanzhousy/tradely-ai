@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
+	Brackets,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -31,15 +32,15 @@ import {
  * a recipe: AI Insight explains a run and changes nothing; Edit with AI opens a private
  * draft.
  *
- *   open      0–4      "Ask TradingFlow AI, then verify"
- *   question  4–9.5    "Someone opened a large bearish bet on CRUX…"
- *   sort      9.5–21   five sentences, sorted; cut: a draft until sorted
- *   credits   21–28.5  1 + 1 + 2 = 4 credits
- *   insight   28.5–38  AI Insight; Edit with AI; cut: the claim
- *   next      38–40.5  Next: build your own Rank column
+ *   open      0–4        "Ask TradingFlow AI, then verify"
+ *   question  4–9.6      "Someone opened a large bearish bet on CRUX…"
+ *   sort      9.6–22.2   five sentences, sorted; cut: a draft until sorted
+ *   credits   22.2–28.1  1 + 1 + 2 = 4 credits, locked
+ *   insight   28.1–40.4  AI Insight; Edit with AI; cut: the claim
+ *   next      40.4–42.9  Next: build your own Rank column
  */
 
-const END = 40.5;
+const END = 42.9;
 const BET = STATEMENTS.find((item) => item.id === "bet") ?? STATEMENTS[0];
 const REPLIES = [
 	{ kind: "text", cost: COST.text },
@@ -113,13 +114,13 @@ const copy = {
 	sortHead: ["Sort every sentence by what backs it.", "按依据给每句话分类。"],
 	sortHeadShort: ["Sort each sentence.", "给每句话分类。"],
 	betHead: [
-		"“A large bearish bet”: no screen shows who traded, why, or whether it opened.",
-		"“大额看空押注”：没有筛选能显示谁、为什么、是否开仓。",
+		"“A large bearish bet”: no screen shows who.",
+		"“大额看空押注”：没有筛选能显示是谁。",
 	],
 	betHeadShort: ["The bet: not in any screen.", "押注：任何筛选都看不到。"],
 	restHead: [
-		"A count you can check; a forecast nothing supports.",
-		"一个可以核对的计数；一个无据可依的预测。",
+		"One count checks out; one forecast doesn't.",
+		"一个计数可核对；一个预测无依据。",
 	],
 	restHeadShort: ["A count; and a forecast.", "一个计数；一个预测。"],
 	draftBig: [
@@ -134,10 +135,7 @@ const copy = {
 		"Three replies, one with a chart.",
 		"三条回复，其中一条含图表。",
 	],
-	totalHead: [
-		`Billing: 1 + 1 + 2 = ${TOTAL} credits.`,
-		`账单：1 + 1 + 2 = ${TOTAL} 积分。`,
-	],
+	totalHead: ["The chart reply costs double.", "含图表的回复收费翻倍。"],
 	billing: ["Billing · AI usage history", "账单 · AI 使用记录"],
 	total: ["total", "合计"],
 	screener: [
@@ -155,19 +153,19 @@ const copy = {
 		"官方未改动 · 草稿已打开",
 	],
 	insightHead: [
-		"AI Insight explains one run; the recipe is untouched.",
-		"AI Insight 解释一次运行；Recipe 不受影响。",
+		"AI Insight explains a run; nothing changes.",
+		"AI Insight 解释一次运行；什么都不变。",
 	],
 	insightHeadShort: ["AI Insight explains.", "AI Insight 只解释。"],
 	editHead: [
-		"Edit with AI opens a private draft for you to review.",
-		"Edit with AI 打开一份由你审阅的私有草稿。",
+		"Edit with AI opens a private draft.",
+		"Edit with AI 打开一份私有草稿。",
 	],
 	editHeadShort: ["Edit with AI: a draft.", "Edit with AI：草稿。"],
 	claimBig: ["The AI drafts; you verify.", "AI 起草，你来核查。"],
 	claimSub: [
-		"Sort each sentence, count the credits, and change a recipe only in a draft you review.",
-		"给每句话分类，算清积分，只在你审阅的草稿里修改 Recipe。",
+		"Sort sentences, count credits, edit only in drafts.",
+		"给句子分类，算清积分，只在草稿里修改。",
 	],
 	nextBig: ["Next: build your own Rank column", "下一课：构建你自己的 Rank 列"],
 	nextSub: [
@@ -289,7 +287,24 @@ function Scene({
 			</g>
 			{headline("s-head", copy.sortHead, copy.sortHeadShort)}
 			{headline("b-head", copy.betHead, copy.betHeadShort)}
-			{headline("r-head", copy.restHead, copy.restHeadShort)}
+			<Lines
+				name="r-head"
+				text={t(narrow ? copy.restHeadShort : copy.restHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.betHeadShort : copy.betHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 
 			{/* Five sentences and their verdicts. */}
 			<g data-f="rows">
@@ -378,7 +393,25 @@ function Scene({
 
 			{/* The bill. */}
 			{headline("c-head", copy.creditHead, copy.creditHead)}
-			{headline("t-head", copy.totalHead, copy.totalHead)}
+			<Lines
+				name="t-head"
+				text={t(narrow ? copy.totalHead : copy.totalHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.creditHead : copy.creditHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
+			<Brackets name="lock-total" glow />
 			<g data-f="ledger">
 				<text
 					data-f="billing"
@@ -554,7 +587,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
 	const row = (id: string) => one(`row-${id}`);
@@ -571,6 +604,8 @@ function build(context: FilmContext) {
 	const total = one<SVGTextElement>("total");
 	const credits = (n: number) => pick(creditText(Math.round(n)), locale);
 	const narrow = L.narrow;
+
+	const lockTotal = one<SVGGraphicsElement>("lock-total");
 
 	d.hidden([
 		...flat("q"),
@@ -594,6 +629,7 @@ function build(context: FilmContext) {
 		...costs,
 		one("total-row"),
 		total,
+		lockTotal,
 		one("bar"),
 		one("bar-title"),
 		one("st-official"),
@@ -612,27 +648,28 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
-	show(one("q-line"), 6.6);
+	show(one("q-line"), 6.0);
 
 	// ——— sort: what backs each sentence ———
-	tl.addLabel("sort", 9.5);
-	hide(flat("q"), 9.5);
-	show(one("s-head"), 9.7, "above");
+	tl.addLabel("sort", 9.6);
+	hide(flat("q"), 9.6);
+	show(one("s-head"), 9.8, "above");
 	STATEMENTS.forEach((item, i) => {
-		show(row(item.id), 10.0 + i * 0.15);
+		show(row(item.id), 10.1 + i * 0.15);
 	});
 	verdict("count", 11.0);
 	verdict("ratio", 11.6);
-	d.swap(one("s-head"), one("b-head"), 13.0);
-	tl.to(flag("bet"), { opacity: 1, duration: 0.4 }, 13.4);
-	verdict("bet", 13.6);
-	d.swap(one("b-head"), one("r-head"), 15.4);
-	verdict("near", 15.8);
-	tl.to(flag("fall"), { opacity: 1, duration: 0.4 }, 16.4);
-	verdict("fall", 16.6);
+	d.swap(one("s-head"), one("b-head"), 13.4);
+	tl.to(flag("bet"), { opacity: 1, duration: 0.4 }, 13.8);
+	verdict("bet", 14.0);
+	show(one("r-head"), 15.8);
+	verdict("near", 16.1);
+	tl.to(flag("fall"), { opacity: 1, duration: 0.4 }, 16.7);
+	verdict("fall", 16.9);
 	// Cut: a draft until sorted.
 	hide(
 		[
+			one("b-head"),
 			one("r-head"),
 			...STATEMENTS.flatMap((item) =>
 				[row(item.id), chip(item.id), basis(item.id), flag(item.id)].filter(
@@ -640,49 +677,54 @@ function build(context: FilmContext) {
 				),
 			),
 		],
-		18.2,
+		19.4,
 	);
-	word(one("draft-big"), 18.6);
-	show(one("draft-sub"), 19.1);
+	word(one("draft-big"), 19.8);
+	show(one("draft-sub"), 20.2);
 
 	// ——— credits: every reply has a price ———
-	tl.addLabel("credits", 21);
-	hide(kids("draft"), 21.0);
-	show(one("c-head"), 21.2, "above");
-	show(one("billing"), 21.4);
+	tl.addLabel("credits", 22.2);
+	hide(kids("draft"), 22.2);
+	show(one("c-head"), 22.55, "above");
+	show(one("billing"), 22.7);
 	replies.forEach((reply, i) => {
-		show(reply, 21.6 + i * 0.3);
+		show(reply, 22.9 + i * 0.3);
 	});
-	d.swap(one("c-head"), one("t-head"), 23.4);
+	show(one("t-head"), 24.2);
 	costs.forEach((cost, i) => {
-		show(cost, 23.8 + i * 0.3, "right");
+		show(cost, 24.4 + i * 0.3, "right");
 	});
-	show([one("total-row"), total], 24.8);
-	d.count(total, TOTAL, 25.0, credits, 0, 0.8);
+	show([one("total-row"), total], 25.4);
+	d.count(total, TOTAL, 25.6, credits, 0, 0.8);
+	// The hero: what three replies cost.
+	d.lock(lockTotal, 26.8, { around: total, pad: 6 });
+	tl.addLabel("hero-lock", 26.8);
 
 	// ——— insight: explain, or edit a draft ———
-	tl.addLabel("insight", 28.5);
+	tl.addLabel("insight", 28.1);
 	hide(
 		[
+			one("c-head"),
 			one("t-head"),
 			one("billing"),
 			...replies,
 			...costs,
 			one("total-row"),
 			total,
+			lockTotal,
 		],
-		28.5,
+		28.1,
 	);
-	show(one("i-head"), 28.7, "above");
-	show([one("bar"), one("bar-title")], 29.0);
-	show(one("st-official"), 29.2);
-	show(one("p-insight"), 29.6);
-	d.swap(one("i-head"), one("e-head"), 31.6);
+	show(one("i-head"), 28.45, "above");
+	show([one("bar"), one("bar-title")], 28.7);
+	show(one("st-official"), 28.9);
+	show(one("p-insight"), 29.3);
+	d.swap(one("i-head"), one("e-head"), 32.0);
 	// On a phone the panels share one place: Edit with AI replaces AI Insight.
-	if (narrow) hide(one("p-insight"), 32.0);
-	show(one("p-edit"), narrow ? 32.3 : 32.0, narrow ? "below" : "right");
-	d.flip(one("st-official"), one("st-draft"), 32.6);
-	tl.set(one("st-official"), { opacity: 0 }, 32.9);
+	if (narrow) hide(one("p-insight"), 32.4);
+	show(one("p-edit"), narrow ? 32.7 : 32.4, narrow ? "below" : "right");
+	d.flip(one("st-official"), one("st-draft"), 33.0);
+	tl.set(one("st-official"), { opacity: 0 }, 33.3);
 	// Cut: the claim.
 	hide(
 		[
@@ -693,15 +735,15 @@ function build(context: FilmContext) {
 			one("p-insight"),
 			one("p-edit"),
 		],
-		34.6,
+		35.9,
 	);
-	word(one("claim-big"), 35.0);
-	show(one("claim-sub"), 35.5);
+	word(one("claim-big"), 36.3);
+	show(one("claim-sub"), 36.7);
 
 	// ——— next ———
-	tl.addLabel("next", 38);
-	hide(kids("claim"), 38.0);
-	d.close(38.0);
+	tl.addLabel("next", 40.4);
+	hide(kids("claim"), 40.4);
+	d.close(40.4);
 	return tl;
 }
 
