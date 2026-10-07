@@ -61,15 +61,15 @@ import {
  *   question  4–9.4      delta 0.52 → ? if ALFA rises $2
  *   curve     9.4–22.8   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
  *                        0.04, "gamma"
- *   hedge     22.8–34    you and Ben, one under the other; ALFA +$2 once; hero: your
+ *   hedge     22.8–35.4  you and Ben, one under the other; ALFA +$2 once; hero: your
  *                        hedge drifts +128, locked, and you sell to flat; Ben's drifts −80
  *                        and he buys
- *   expiry    34–43.4    gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
+ *   expiry    35.4–44.8  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
  *                        the strike."
- *   next      43.4–45.4  Next: theta, vega and rho
+ *   next      44.8–46.8  Next: theta, vega and rho
  */
 
-const END = 45.4;
+const END = 46.8;
 const DELTA_TOP = 1.15;
 const GAMMA_TOP = 0.13;
 const deltaAt = (spot: number) => model(OCT_100_CALL, spot).delta;
@@ -153,7 +153,7 @@ const copy = {
 	deltaAxis: ["call delta", "看涨 Delta"],
 	gammaAxis: ["gamma per $1", "每 $1 的 Gamma"],
 	priceAxis: ["ALFA price today", "ALFA 今天的价格"],
-	gammaWord: ["gamma", "gamma"],
+	gammaWord: ["gamma", "Gamma"],
 	gammaSub: ["delta's change per $1 of ALFA", "ALFA 每变动 $1，Delta 的变化"],
 	curveHead: ["Delta climbs as ALFA rises.", "ALFA 上涨，Delta 随之上升。"],
 	colCallsShort: ["delta", "Delta"],
@@ -290,7 +290,7 @@ function Scene({
 				name={`h-${who}-${i}`}
 				x={L.columns[i]}
 				y={hedgeRows[who]}
-				size={T.num}
+				size={i === 2 ? T.num * 1.35 : T.num}
 				className="wt-film-num"
 			>
 				{shares(value)}
@@ -463,13 +463,22 @@ function Scene({
 								</text>
 							</g>
 						))}
+						<line
+							data-f="g-riser"
+							x1={L.x(100)}
+							x2={L.x(100)}
+							y1={L.yG(octAtStrike)}
+							y2={L.yG(sepAtStrike)}
+							className="wt-line-long"
+							strokeWidth={2}
+						/>
 						<Word
 							name="g-times"
 							x={L.x(101.6)}
 							y={L.yG(sepAtStrike) + T.num * 0.3}
 							size={T.num}
 							anchor="start"
-							className="wt-film-num wt-film-accent"
+							className="wt-film-num wt-label-long"
 						>
 							{`${times}×`}
 						</Word>
@@ -642,9 +651,10 @@ function Scene({
 					<Word
 						key={name}
 						name={name}
-						x={W / 2}
+						x={narrow ? L.margin : W / 2}
 						y={y + T.body * 1.75}
 						size={T.body}
+						anchor={narrow ? "start" : "middle"}
 						className="wt-film-type wt-film-accent"
 					>
 						{t(label)}
@@ -663,7 +673,7 @@ function Scene({
 			<Word
 				name="g-calc"
 				x={W / 2}
-				y={H * 0.5 - T.big * 0.55}
+				y={H * 0.5 - T.big * (narrow ? 0.75 : 0.55)}
 				size={T.head}
 				className="wt-film-num wt-film-dim"
 			>
@@ -755,6 +765,7 @@ function build(context: FilmContext) {
 		one("g-oct-label"),
 		one("g-sep-label"),
 		one("g-times"),
+		one("g-riser"),
 		...kids("q"),
 		...kids("g"),
 		one<SVGGraphicsElement>("lock-hedge"),
@@ -907,48 +918,57 @@ function build(context: FilmContext) {
 	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.3, shares);
 	tl.to(one("h-you-2"), warn, 26.3);
 	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.7, shares);
-	tl.to(one("h-ben-2"), warn, 26.7);
-	// The hero: your hedge's drift, locked once its count has landed. The brackets are
-	// fitted now, so measure the figure with the text its count ends on.
+	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
+	// The brackets are fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
 	const youNetText = youNet.textContent;
 	youNet.textContent = shares(youDrift);
 	d.lock(lockHedge, 28.0, { around: youNet, pad: 6 });
 	youNet.textContent = youNetText;
 	tl.addLabel("hero-lock", 28.0);
-	// After the lock, the trades are made: each hedge back to flat.
-	show(one("h-trade-you"), 28.3);
-	hide(lockHedge, 29.2, 0.3);
+	const rest = [
+		one("h-you-0"),
+		one("h-you-1"),
+		one("h-ben-0"),
+		one("h-ben-1"),
+		one("h-ben-2"),
+	];
+	tl.to(rest, { opacity: 0.45, duration: 0.4 }, 28.0);
+	// After the lock, the trades are made, one step at a time: each hedge back to flat.
+	show(one("h-trade-you"), 28.4);
+	hide(lockHedge, 29.8, 0.3);
+	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.8);
 	d.count(
 		one<SVGTextElement>("h-you-1"),
 		hedgeFixed.shares,
-		29.2,
+		30.0,
 		shares,
 		hedgeAfter.shares,
 	);
-	d.count(one<SVGTextElement>("h-you-2"), 0, 29.2, shares, youDrift);
-	tl.to(one("h-you-2"), flat, 29.6);
-	show(one("h-trade-ben"), 29.8);
+	d.count(one<SVGTextElement>("h-you-2"), 0, 30.4, shares, youDrift);
+	tl.to(one("h-you-2"), flat, 30.8);
+	tl.to(one("h-ben-2"), warn, 30.4);
+	show(one("h-trade-ben"), 30.7);
 	d.count(
 		one<SVGTextElement>("h-ben-1"),
 		benColumns[2].shares,
-		30.4,
+		31.0,
 		shares,
 		benColumns[1].shares,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), 0, 30.4, shares, benDrift);
-	tl.to(one("h-ben-2"), flat, 30.8);
+	d.count(one<SVGTextElement>("h-ben-2"), 0, 31.4, shares, benDrift);
+	tl.to(one("h-ben-2"), flat, 31.8);
 	// The rule both rows made.
-	show(one("h-claim"), 30.4);
+	show(one("h-claim"), 31.9);
 
 	// ——— expiry: where gamma lives ———
-	tl.addLabel("expiry", 34.0);
-	hide(kids("hedge"), 34.0);
-	tl.set(world, home, 34.2);
-	tl.set(chartDelta, { opacity: 0 }, 34.2);
-	tl.set(chartGamma, { opacity: 1 }, 34.2);
-	show(one("e-head"), 34.4, "above");
-	rise(34.4);
+	tl.addLabel("expiry", 35.4);
+	hide(kids("hedge"), 35.4);
+	tl.set(world, home, 35.6);
+	tl.set(chartDelta, { opacity: 0 }, 35.6);
+	tl.set(chartGamma, { opacity: 1 }, 35.6);
+	show(one("e-head"), 35.8, "above");
+	rise(35.8);
 	tl.to(
 		one("clip-gl"),
 		{
@@ -956,16 +976,16 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		34.7,
+		36.1,
 	);
 	tl.to(
 		one("clip-gr"),
 		{ attr: { width: L.right - mx + 4 }, duration: 0.9, ease: "power2.inOut" },
-		34.7,
+		36.1,
 	);
-	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 35.5);
+	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 36.9);
 	// The 4-day call starts as the same hill, then rises into a spike at the strike.
-	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 35.7);
+	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 37.1);
 	tl.to(
 		one("g-sep"),
 		{
@@ -973,25 +993,31 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power3.inOut",
 		},
-		35.7,
+		37.1,
 	);
-	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 36.5);
-	land(one("g-times"), 36.7);
+	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 37.9);
+	tl.fromTo(
+		one("g-riser"),
+		{ opacity: 1, scaleY: 0, transformOrigin: "50% 100%" },
+		{ scaleY: 1, duration: 0.4, ease: "power2.out" },
+		37.7,
+	);
+	land(one("g-times"), 38.1);
 	// Cut: the claim, held to be read.
-	hide(one("e-head"), 39.0);
-	sink(39.0);
+	hide(one("e-head"), 40.4);
+	sink(40.4);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.4,
+		40.8,
 	);
-	show(one("c-sub"), 39.8);
+	show(one("c-sub"), 41.2);
 
 	// ——— next ———
-	tl.addLabel("next", 43.4);
-	hide(kids("claim"), 43.4);
-	d.close(43.4);
+	tl.addLabel("next", 44.8);
+	hide(kids("claim"), 44.8);
+	d.close(44.8);
 	return tl;
 }
 
