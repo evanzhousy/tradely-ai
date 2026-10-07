@@ -703,15 +703,15 @@ function build(context: FilmContext) {
 	tl.set(one("oi-from"), { opacity: 0 }, 14.3);
 	show(one("dock"), 14.5, "above");
 	// Run: everything together.
-	show(one("n-head"), 17.3);
-	tl.to(one("dock"), { opacity: 0, duration: 0.3 }, 17.3);
-	tl.to(one("field-focus"), { opacity: 0, duration: 0.3 }, 17.3);
-	d.flip(one("last-from"), one("last-to"), 17.5);
-	tl.set(one("last-from"), { opacity: 0 }, 17.8);
-	d.count(flagged, AFTER.length, 17.6, flaggedText, BASE.length, 0.5);
+	show(one("n-head"), 16.9);
+	tl.to(one("dock"), { opacity: 0, duration: 0.3 }, 16.9);
+	tl.to(one("field-focus"), { opacity: 0, duration: 0.3 }, 16.9);
+	d.flip(one("last-from"), one("last-to"), 17.1);
+	tl.set(one("last-from"), { opacity: 0 }, 17.4);
+	d.count(flagged, AFTER.length, 17.2, flaggedText, BASE.length, 0.5);
 	if (topFrom) {
-		d.flip(topFrom, one("top-to"), 17.6);
-		tl.set(topFrom, { opacity: 0 }, 17.9);
+		d.flip(topFrom, one("top-to"), 17.2);
+		tl.set(topFrom, { opacity: 0 }, 17.5);
 	}
 
 	// ——— floors: a ratio's denominator ———
