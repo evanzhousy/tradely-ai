@@ -342,7 +342,7 @@ function Scene({
 				)}
 			</g>
 			<Brackets name="lock-cell" />
-			<Brackets name="lock-you" glow />
+			<Brackets name="lock-you" />
 
 			{/* Open or close. */}
 			{headline("k-head", copy.trackHead, copy.trackHead)}

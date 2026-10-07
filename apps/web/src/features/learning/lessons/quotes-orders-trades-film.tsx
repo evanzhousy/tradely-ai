@@ -663,7 +663,7 @@ function Scene({
 					</g>
 				))}
 				<Brackets name="best-bid" tone="gain" arm={8} />
-				<Brackets name="best-ask" tone="loss" arm={8} />
+				<Brackets name="best-ask" tone="loss" arm={8} glow />
 				<Brackets name="next-ask" tone="loss" arm={8} />
 			</g>
 			{/* Copies of the best bid and ask, over their figures on B's and C's cards: they fly
@@ -1084,9 +1084,9 @@ function build(context: FilmContext) {
 	tl.set(levels, { opacity: 0 }, 29.8);
 	d.lock(g("best-bid"), 30.3, { around: g(`vb-${BEST.bid.venue}`), pad: 5 });
 	d.lock(g("best-ask"), 30.5, { around: g(`va-${BEST.ask.venue}`), pad: 5 });
-	// The brackets step back as the copies leave through them.
-	fade([g("best-bid"), g("best-ask")], 30.75, 0.3);
 	tl.addLabel("hero-lock", 30.5);
+	// The bid's brackets step back once its copy has landed; the ask's hold as the hero.
+	fade(g("best-bid"), 31.9, 0.3);
 	show(heads[8], 30.5);
 	show(nbbo[0], 30.6);
 	// The NBBO is made from the bracketed figures: copies fly down out of B and C.
@@ -1099,6 +1099,9 @@ function build(context: FilmContext) {
 		duration: 0.9,
 		arc: "y",
 	});
+	// The ask's copy drops past the same card's bid: that line steps back while it passes.
+	fade(g(`vb-${BEST.ask.venue}`), 30.9, 0.3);
+	fade(g(`vb-${BEST.ask.venue}`), 31.9, 1);
 
 	// ——— gone: C's last 4 are bought, one step at a time: the ticket leaves C's ask and
 	// prints; the volume counts; then only the NBBO's ask turns over, with the headline's
@@ -1112,9 +1115,6 @@ function build(context: FilmContext) {
 	if (!L.narrow) tl.set(g(`va-${BEST.ask.venue}`), { opacity: 0 }, born);
 	else {
 		fade(g(`va-${BEST.ask.venue}`), born, 0);
-		// The ticket goes down past the NBBO: it steps back while it passes.
-		fade(kids("nbbo"), born + 0.15, 0.25);
-		fade(kids("nbbo"), landed - 0.45, 1);
 	}
 	// The dash, once the ticket has gone from where it stands.
 	fade(g("va-gone"), born + 0.7, 1);

@@ -615,7 +615,7 @@ function Scene({
 				>
 					{t(narrow ? copy.beOnStageShort : copy.beOnStage)}
 				</Word>
-				<Brackets name="lock-be" glow />
+				<Brackets name="lock-be" />
 			</g>
 			<g data-f="claim">
 				<Lines
