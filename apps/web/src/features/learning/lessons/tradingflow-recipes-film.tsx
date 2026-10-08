@@ -55,8 +55,8 @@ import {
  *   question  4–9.6      "Which contracts traded far above their open interest?"
  *   catalog   9.6–15.8   three kinds; the screen
  *   session   15.8–29.6  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
- *   completed 29.6–34.85 Mon 16:30 → Monday: the latest completed session
- *   fork      34.85–45.4 Edit with AI; your private copy; a colleague's view; cut: the claim
+ *   completed 29.6–35.65 Mon 16:00 holds, then 16:30 → Monday: the latest completed session
+ *   fork      35.65–45.4 Edit with AI; your private copy; a colleague's view; cut: the claim
  *   next      45.4–47.4  Next: read a recipe like an auditor
  */
 
@@ -168,6 +168,7 @@ const copy = {
 	],
 	latestHeadShort: ["It shows Monday.", "它显示周一。"],
 	closed: ["closed", "休市"],
+	marketClosed: ["closed", "已收盘"],
 	latest: ["latest", "最新"],
 	trading: ["trading", "交易中"],
 	screener: [
@@ -580,6 +581,7 @@ function Scene({
 							[
 								["latest-mon", SESSION_DATE, copy.latest, "wt-accent"],
 								["trading-mon", SESSION_DATE, copy.trading, ""],
+								["closed-mon", SESSION_DATE, copy.marketClosed, "wt-accent"],
 							] as const
 						).map(([name, date, label, tone]) => (
 							<text
@@ -699,7 +701,8 @@ function Scene({
 								data-f={name}
 								x={margin + 16}
 								y={headerLine(2)}
-								className="wt-small"
+								className={narrow ? "wt-film-type" : "wt-small"}
+								style={narrow ? { fontSize: T.body } : undefined}
 							>
 								{t([`Ran · ${label[0]}`, `运行于 · ${label[1]}`])}
 							</text>
@@ -965,6 +968,7 @@ function build(context: FilmContext) {
 		one("latest-box"),
 		one("latest-mon"),
 		one("trading-mon"),
+		one("closed-mon"),
 		one("now-line"),
 		one("now-dot"),
 		one("header"),
@@ -1249,7 +1253,11 @@ function build(context: FilmContext) {
 	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
 	tl.addLabel("hero-lock", 28.0);
 	show(one("m2-head"), 26.1);
-	tl.to(one("ran-mon"), { opacity: 0.4, duration: 0.4 }, 26.5);
+	tl.to(
+		one("ran-mon"),
+		{ opacity: L.narrow ? 0.85 : 0.4, duration: 0.4 },
+		26.5,
+	);
 
 	// ——— completed: Monday closes ———
 	tl.addLabel("completed", 29.6);
@@ -1264,56 +1272,73 @@ function build(context: FilmContext) {
 	const readout = one<SVGTextElement>("completion-clock");
 	// The clock replaces the elapsed label without crossing it. Its position
 	// and HH:MM are written by the same state that moves the line and traded fill.
+	const updateClock = () => {
+		const now = L.dayX(AFTER_CLOSE.day) + dayFraction(clock.at) * L.colW;
+		const minutes = Math.round(clock.at * 24 * 60);
+		readout.textContent = `${Math.floor(minutes / 60)
+			.toString()
+			.padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`;
+		gsap.set(readout, { attr: { x: now } });
+		const traded = dayFraction(Math.min(clock.at, CLOSE));
+		const end = L.dayX(AFTER_CLOSE.day) + traded * L.colW;
+		gsap.set(one("now-line"), { attr: { x1: now, x2: now } });
+		gsap.set(one("now-dot"), { attr: { cx: now } });
+		gsap.set(one("mon-done"), {
+			attr: { width: (traded - dayFraction(OPEN)) * L.colW },
+		});
+		gsap.set(one("mon-rest"), {
+			attr: { x: end, width: (dayFraction(CLOSE) - traded) * L.colW },
+		});
+	};
 	tl.fromTo(readout, { opacity: 0 }, { opacity: 1, duration: 0.15 }, 29.6);
 	tl.fromTo(
 		clock,
 		{ at: MONDAY.at },
 		{
-			at: AFTER_CLOSE.at,
-			duration: 1.0,
+			at: CLOSE,
+			duration: 0.6,
 			ease: "none",
 			immediateRender: false,
-			onUpdate: () => {
-				const now = L.dayX(AFTER_CLOSE.day) + dayFraction(clock.at) * L.colW;
-				const minutes = Math.round(clock.at * 24 * 60);
-				readout.textContent = `${Math.floor(minutes / 60)
-					.toString()
-					.padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`;
-				gsap.set(readout, { attr: { x: now } });
-				const traded = dayFraction(Math.min(clock.at, CLOSE));
-				const end = L.dayX(AFTER_CLOSE.day) + traded * L.colW;
-				gsap.set(one("now-line"), { attr: { x1: now, x2: now } });
-				gsap.set(one("now-dot"), { attr: { cx: now } });
-				gsap.set(one("mon-done"), {
-					attr: { width: (traded - dayFraction(OPEN)) * L.colW },
-				});
-				gsap.set(one("mon-rest"), {
-					attr: { x: end, width: (dayFraction(CLOSE) - traded) * L.colW },
-				});
-			},
+			onUpdate: updateClock,
 		},
 		29.6,
+	);
+	// A full second at the exact close: time, marker, fill and hatch all stop.
+	// Only then does time advance beyond the completed session to the new run.
+	tl.set(one("closed-mon"), { opacity: 1 }, 30.2);
+	tl.fromTo(
+		clock,
+		{ at: CLOSE },
+		{
+			at: AFTER_CLOSE.at,
+			duration: 0.2,
+			ease: "none",
+			immediateRender: false,
+			onUpdate: updateClock,
+		},
+		31.2,
 	);
 	// Read the finished clock, then the run time, then the report date, then latest.
 	// The two lines have identical stationary prefixes. Only their named dates fade;
 	// an atomic line handoff keeps "Session · " visible throughout, as in Friday's carry.
-	hide(one("ran-mon"), 30.6, 0.15, 0);
-	show(one("ran-close"), 30.75, "below", 0.15);
+	hide(one("ran-mon"), 31.4, 0.15, 0);
+	show(one("ran-close"), 31.55, "below", 0.15);
 	gsap.set(one("sess-close-date"), { attr: { "fill-opacity": 0 } });
 	tl.to(
 		one("sess-fri-date"),
 		{ attr: { "fill-opacity": 0 }, duration: 0.2 },
-		30.95,
+		31.75,
 	);
-	tl.set(one("sess-fri"), { opacity: 0 }, 31.15);
-	tl.set(one("sess-close"), { opacity: 1 }, 31.15);
+	tl.set(one("sess-fri"), { opacity: 0 }, 31.95);
+	tl.set(one("sess-close"), { opacity: 1 }, 31.95);
 	tl.to(
 		one("sess-close-date"),
 		{ attr: { "fill-opacity": 1 }, duration: 0.2 },
-		31.15,
+		31.95,
 	);
-	tl.to(closed, { opacity: 0.25, duration: 0.15 }, 31.5);
-	tl.to(closed, { opacity: 1, duration: 0.3 }, 32.15);
+	tl.to(closed, { opacity: 0.25, duration: 0.15 }, 32.3);
+	tl.to(closed, { opacity: 1, duration: 0.3 }, 32.95);
+	hide(one("closed-mon"), 32.35, 0.2, 0);
 	tl.to(
 		one("latest-box"),
 		{
@@ -1321,54 +1346,51 @@ function build(context: FilmContext) {
 			duration: 0.5,
 			ease: "power2.inOut",
 		},
-		31.55,
+		32.35,
 	);
 	tl.set(
 		one("latest-mon"),
 		{
 			attr: { x: L.dayX(AFTER_CLOSE.latest) + L.colW / 2 },
 		},
-		32.05,
+		32.85,
 	);
-	show(one("latest-mon"), 32.05, "below", 0.15);
-	tl.set(friday, { attr: { class: "wt-small" } }, 32.05);
+	show(one("latest-mon"), 32.85, "below", 0.15);
+	tl.set(friday, { attr: { class: "wt-small" } }, 32.85);
 	tl.set(
 		one(`day-${AFTER_CLOSE.latest}`),
 		{ attr: { class: "wt-small wt-accent" } },
-		32.05,
+		32.85,
 	);
-	show(one("after-close-head"), 31.35, "above");
+	show(one("after-close-head"), 32.15, "above");
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 34.85);
-	hide(one("after-close-head"), 34.85);
-	sink(34.85);
-	tl.set(one("calendar"), { opacity: 0 }, 35.25);
-	tl.set(one("fork"), { opacity: 1 }, 35.25);
-	rise(35.3);
-	show(one("fork-official"), 35.25, "below", 0.35);
-	land(one("edit-chip"), 35.55, 0.4);
+	tl.addLabel("fork", 35.65);
+	hide(one("after-close-head"), 35.65);
+	sink(35.65);
+	tl.set(one("calendar"), { opacity: 0 }, 36.05);
+	tl.set(one("fork"), { opacity: 1 }, 36.05);
+	rise(36.1);
+	show(one("fork-official"), 36.05, "below", 0.35);
+	land(one("edit-chip"), 36.1, 0.4);
 	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
 	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 35.95);
-	tl.to(
-		one("copy-frame"),
-		{ x: 0, duration: 0.7, ease: "power2.inOut" },
-		35.95,
-	);
-	show(one("f-head"), 35.95, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.3 }, 36.65);
-	tl.set(one("copy-frame"), { opacity: 0 }, 36.95);
-	// The inherited content holds fully settled from 36.95 to 37.95 before
-	// your copy's spotlight turns over from the official one's to ALFA.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 37.95);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.25);
-	land(one("viewer"), 37.2);
-	show(one("viewer-you"), 37.4);
+	tl.set(one("copy-frame"), { opacity: 1 }, 36.5);
+	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 36.5);
+	show(one("f-head"), 36.5, "above");
+	tl.to(one("fork-copy"), { opacity: 1, duration: 0.3 }, 37.2);
+	tl.set(one("copy-frame"), { opacity: 0 }, 37.5);
+	// Establish both viewers before the inherited-content pause begins.
+	land(one("viewer"), 36.8);
+	show(one("viewer-you"), 36.95);
 	// A colleague opens the same recipe: the official one.
-	show(one("c-head"), 37.5);
-	land(one("viewer-colleague-dot"), 37.5);
-	show(one("viewer-colleague"), 37.7);
+	show(one("c-head"), 37.0);
+	land(one("viewer-colleague-dot"), 36.4);
+	show(one("viewer-colleague"), 36.6);
+	// The inherited content holds fully settled from 37.5 to 38.5 before
+	// your copy's spotlight turns over from the official one's to ALFA.
+	d.flip(one("spot-copy-was"), one("spot-copy"), 38.5);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.8);
 	// Cut: the claim.
 	hide([one("f-head"), one("c-head")], 41.0);
 	sink(41.0);
