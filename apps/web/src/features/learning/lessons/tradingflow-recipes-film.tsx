@@ -86,7 +86,7 @@ function layout(width: number) {
 	const colW = (width - 2 * margin) / days.length;
 	const dayX = (date: string) => margin + days.indexOf(date) * colW;
 	const cardH = H * (narrow ? 0.11 : 0.1);
-	const screenCardH = H * (narrow ? 0.205 : 0.22);
+	const screenCardH = H * (narrow ? 0.225 : 0.22);
 	// Reserve the label's full type height above its baseline, plus 10 px of
 	// clearance from UOA. Keep the report cards 12 px inside the frame too.
 	const reportY = Math.max(
@@ -105,6 +105,12 @@ function layout(width: number) {
 			k === 0 ? H * (narrow ? 0.3 : 0.27) : k === 1 ? H * 0.6 : reportY,
 		cardH,
 		screenCardH,
+		screenProof: {
+			width: width - 2 * margin,
+			size: narrow ? frame.type.num : frame.type.body,
+			barW: Math.min(120, (width - 2 * margin) * 0.33),
+			volumeY: H * 0.6 + frame.type.body * 2.4 + 10 + frame.type.num * 1.35,
+		},
 		reportCardH,
 		// The calendar.
 		colW,
@@ -364,6 +370,7 @@ function Scene({
 						{KINDS.map((kind, k) => (
 							<g key={kind}>
 								<text
+									data-f={`kind-${kind}`}
 									x={margin}
 									y={L.rowY(k) - 8}
 									className="wt-film-tag"
@@ -376,6 +383,7 @@ function Scene({
 									.map((recipe, i) => (
 										<g key={recipe.id} data-f={`card-${recipe.id}`}>
 											<rect
+												data-f={`panel-${recipe.id}`}
 												x={L.cardX(i)}
 												y={L.rowY(k)}
 												width={L.half}
@@ -460,6 +468,7 @@ function Scene({
 																	{`${label} ${value.toLocaleString("en-US")}`}
 																</Word>
 																<rect
+																	data-f={`uoa-${name}-bar`}
 																	x={L.cardX(i) + L.half - 14 - barW}
 																	y={y - T.body * 0.65}
 																	width={(value / SCREEN_EXAMPLE.volume) * barW}
@@ -597,6 +606,15 @@ function Scene({
 									`已交易${MINUTES_TRADED}分钟`,
 								])}
 							</tspan>
+						</Word>
+						<Word
+							name="completion-clock"
+							x={L.nowX(MONDAY)}
+							y={statusY + T.small * 1.4}
+							size={T.body}
+							className="wt-film-num wt-film-accent"
+						>
+							10:00
 						</Word>
 						<line
 							data-f="now-line"
@@ -942,6 +960,7 @@ function build(context: FilmContext) {
 		one("mon-done"),
 		one("mon-rest"),
 		one("mon-elapsed"),
+		one("completion-clock"),
 		one("fri-date"),
 		one("latest-box"),
 		one("latest-mon"),
@@ -1003,7 +1022,8 @@ function build(context: FilmContext) {
 		flat("q").filter((el) => el !== one("q-signal")),
 		9.6,
 	);
-	// UOA and its row settle at 11.2 before the question selects it. The phrase waits
+	// All six cards settle at 10.75 and hold for a second before UOA widens.
+	// The phrase waits
 	// in the gap above UOA, clear of the catalog, and both marks stay untransformed.
 	d.carry(
 		one<SVGGraphicsElement>("q-signal"),
@@ -1015,7 +1035,7 @@ function build(context: FilmContext) {
 	rise(9.9);
 	kids("catalog").forEach((row, k) => {
 		const label = [...row.children].find((el) => el.tagName === "text");
-		if (label) show(label, 10.3 + k * 0.4);
+		if (label) show(label, 10.0 + k * 0.2, "below", 0.35);
 	});
 	officialRecipes.forEach((recipe) => {
 		const k = KINDS.indexOf(recipe.kind);
@@ -1025,9 +1045,9 @@ function build(context: FilmContext) {
 		// A card is a group: it slides in rather than scaling about its corner.
 		show(
 			one(`card-${recipe.id}`),
-			10.4 + k * 0.4 + i * 0.12,
+			9.9 + k * 0.2 + i * 0.1,
 			L.narrow && recipe.kind === "report" ? "above" : "below",
-			0.4,
+			0.35,
 		);
 	});
 	// The question's answer: the session screen.
@@ -1049,7 +1069,75 @@ function build(context: FilmContext) {
 	});
 	show(one("s-head"), 12.2);
 	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 12.05);
-	tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 12.4);
+	if (L.narrow) {
+		// Make room before the selected panel widens. Both proof rows use one
+		// scale and settle at 12.3, preserving the full 3.5 s comparison hold.
+		const neighbour = one("card-sweeps-vs-blocks");
+		tl.to(
+			others(SCREEN).filter((card) => card !== neighbour),
+			{ opacity: 0.2, duration: 0.2 },
+			11.75,
+		);
+		tl.to(neighbour, { opacity: 0, duration: 0.2 }, 11.75);
+		tl.to(
+			KINDS.map((kind) => one(`kind-${kind}`)),
+			{ opacity: 0.25, duration: 0.2 },
+			11.75,
+		);
+		tl.fromTo(
+			[one(`panel-${SCREEN}`), focus(SCREEN)],
+			{ attr: { width: L.half } },
+			{
+				attr: { width: L.screenProof.width },
+				duration: 0.35,
+				ease: "power2.out",
+			},
+			11.95,
+		);
+		["volume", "oi"].forEach((name, i) => {
+			const y = L.screenProof.volumeY + i * L.screenProof.size * 1.25;
+			const oldY = L.rowY(1) + L.type.body * (3.8 + i * 1.4) + 10;
+			const oldBarW = Math.min(100, L.half * 0.26);
+			const value =
+				name === "volume" ? SCREEN_EXAMPLE.volume : SCREEN_EXAMPLE.openInterest;
+			const ratio = value / SCREEN_EXAMPLE.volume;
+			tl.fromTo(
+				one(`uoa-${name}-value`),
+				{ fontSize: L.type.body, attr: { y: oldY } },
+				{
+					fontSize: L.screenProof.size,
+					attr: { y },
+					duration: 0.35,
+					ease: "power2.out",
+				},
+				11.95,
+			);
+			tl.fromTo(
+				one(`uoa-${name}-bar`),
+				{
+					attr: {
+						x: L.cardX(0) + L.half - 14 - oldBarW,
+						y: oldY - L.type.body * 0.65,
+						width: ratio * oldBarW,
+						height: L.type.body * 0.55,
+					},
+				},
+				{
+					attr: {
+						x: L.cardX(0) + L.screenProof.width - 14 - L.screenProof.barW,
+						y: y - L.screenProof.size * 0.65,
+						width: ratio * L.screenProof.barW,
+						height: L.screenProof.size * 0.55,
+					},
+					duration: 0.35,
+					ease: "power2.out",
+				},
+				11.95,
+			);
+		});
+	} else {
+		tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 12.4);
+	}
 
 	// ——— session: the calendar, not the clock ———
 	tl.addLabel("session", 15.8);
@@ -1170,13 +1258,13 @@ function build(context: FilmContext) {
 	hide(lockSession, 29.5, 0.1, 0);
 	hide(one("m-head"), 29.6);
 	hide(one("m2-head"), 29.7);
-	hide(
-		[one("trading-mon"), one("mon-elapsed"), one("latest-mon")],
-		29.6,
-		0.2,
-		0,
-	);
+	hide(one("mon-elapsed"), 29.4, 0.2, 0);
+	hide([one("trading-mon"), one("latest-mon")], 29.6, 0.2, 0);
 	const clock = { at: MONDAY.at };
+	const readout = one<SVGTextElement>("completion-clock");
+	// The clock replaces the elapsed label without crossing it. Its position
+	// and HH:MM are written by the same state that moves the line and traded fill.
+	tl.fromTo(readout, { opacity: 0 }, { opacity: 1, duration: 0.15 }, 29.6);
 	tl.fromTo(
 		clock,
 		{ at: MONDAY.at },
@@ -1187,6 +1275,11 @@ function build(context: FilmContext) {
 			immediateRender: false,
 			onUpdate: () => {
 				const now = L.dayX(AFTER_CLOSE.day) + dayFraction(clock.at) * L.colW;
+				const minutes = Math.round(clock.at * 24 * 60);
+				readout.textContent = `${Math.floor(minutes / 60)
+					.toString()
+					.padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`;
+				gsap.set(readout, { attr: { x: now } });
 				const traded = dayFraction(Math.min(clock.at, CLOSE));
 				const end = L.dayX(AFTER_CLOSE.day) + traded * L.colW;
 				gsap.set(one("now-line"), { attr: { x1: now, x2: now } });
@@ -1266,9 +1359,10 @@ function build(context: FilmContext) {
 	show(one("f-head"), 35.95, "above");
 	tl.to(one("fork-copy"), { opacity: 1, duration: 0.3 }, 36.65);
 	tl.set(one("copy-frame"), { opacity: 0 }, 36.95);
-	// Your copy's spotlight turns over from the official one's to ALFA.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 36.95);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 37.25);
+	// The inherited content holds fully settled from 36.95 to 37.95 before
+	// your copy's spotlight turns over from the official one's to ALFA.
+	d.flip(one("spot-copy-was"), one("spot-copy"), 37.95);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.25);
 	land(one("viewer"), 37.2);
 	show(one("viewer-you"), 37.4);
 	// A colleague opens the same recipe: the official one.
