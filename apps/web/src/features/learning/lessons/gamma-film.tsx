@@ -156,7 +156,7 @@ const copy = {
 	gammaWord: ["gamma", "Gamma"],
 	gammaSub: ["delta's change per $1 of ALFA", "ALFA 每变动 $1，Delta 的变化"],
 	curveHead: ["Delta climbs as ALFA rises.", "ALFA 上涨，Delta 随之上升。"],
-	colCallsShort: ["delta", "Delta"],
+	colCallsShort: ["calls' Δ", "看涨 Δ"],
 	colSharesShort: ["shares", "股票"],
 	hedgeHead: ["Gamma moves the hedge.", "Gamma 会推动对冲。"],
 	hedgeClaim: [
@@ -191,8 +191,8 @@ const copy = {
 	sepShort: [`${SEP_DAYS} days`, `${SEP_DAYS} 天`],
 	claimBig: ["Gamma lives near the strike.", "Gamma 集中在行权价。"],
 	claimSub: [
-		"Sharper near expiry; gone a few dollars away.",
-		"越近到期越尖；离行权价几美元就消失。",
+		"Sharper near expiry; weaker away from the strike.",
+		"越近到期越尖；远离行权价则减弱。",
 	],
 	nextBig: ["Next: theta, vega and rho", "下一课：Theta、Vega 与 Rho"],
 	nextSub: [
@@ -906,18 +906,18 @@ function build(context: FilmContext) {
 		shares,
 		hedgeBefore.options,
 	);
+	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
+	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
+	d.count(one<SVGTextElement>("h-you-2"), youDrift, 25.5, shares);
+	tl.to(one("h-you-2"), warn, 25.5);
 	d.count(
 		one<SVGTextElement>("h-ben-0"),
 		benColumns[1].options,
-		25.5,
+		25.9,
 		shares,
 		benColumns[0].options,
 	);
-	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
-	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
-	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.3, shares);
-	tl.to(one("h-you-2"), warn, 26.3);
-	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.7, shares);
+	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 25.9, shares);
 	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
 	// The brackets are fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
@@ -946,22 +946,22 @@ function build(context: FilmContext) {
 	d.count(
 		one<SVGTextElement>("h-you-1"),
 		hedgeFixed.shares,
-		31.0,
+		31.7,
 		shares,
 		hedgeAfter.shares,
 	);
-	d.count(one<SVGTextElement>("h-you-2"), 0, 31.4, shares, youDrift);
-	tl.to(one("h-you-2"), flat, 31.8);
-	show(one("h-trade-ben"), 31.7);
+	d.count(one<SVGTextElement>("h-you-2"), 0, 31.7, shares, youDrift);
+	tl.to(one("h-you-2"), flat, 32.4);
+	show(one("h-trade-ben"), 31.85);
 	d.count(
 		one<SVGTextElement>("h-ben-1"),
 		benColumns[2].shares,
-		32.0,
+		32.5,
 		shares,
 		benColumns[1].shares,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), 0, 32.4, shares, benDrift);
-	tl.to(one("h-ben-2"), flat, 32.8);
+	d.count(one<SVGTextElement>("h-ben-2"), 0, 32.5, shares, benDrift);
+	tl.to(one("h-ben-2"), flat, 33.2);
 
 	// ——— expiry: where gamma lives ———
 	tl.addLabel("expiry", 35.4);
