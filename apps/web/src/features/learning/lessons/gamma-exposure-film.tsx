@@ -48,15 +48,15 @@ import {
  *   open      0–4        "GEX"
  *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts?
  *   chain     8.9–18.65  0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
- *   profile   18.65–33.25 calls +$1.79M, puts −$2.31M, net by strike; cut: the sides end to
+ *   profile   18.65–33.75 calls +$1.79M, puts −$2.31M, net by strike; cut: the sides end to
  *                        end, $4.10M; side by side, the −$512k sliver, locked; then how
  *                        small: 12% of the gross
- *   coverage  33.25–45.35 traded only +$1.14M; the 95 put missing, +$330k known;
+ *   coverage  33.75–45.85 traded only +$1.14M; the 95 put missing, +$330k known;
  *                        cut: "GEX is a model, not a reading."
- *   next      45.35–47.35 Next: gamma regimes
+ *   next      45.85–47.45 Next: gamma regimes
  */
 
-const END = 47.35;
+const END = 47.45;
 const RANGE = 900_000;
 const NET_BY_STRIKE = STRIKES.map(
 	(strike) => contribution(strike, "call") + contribution(strike, "put"),
@@ -115,6 +115,20 @@ function layout(width: number) {
 	};
 }
 
+/** Leave room for both sign results even on a narrower phone. */
+function signComparison(frame: ReturnType<typeof filmFrame>) {
+	const { width, narrow, margin, type: T } = frame;
+	const figure = narrow ? T.body * 1.15 : T.head;
+	const figX = narrow ? width - margin * 0.5 : width * 0.7;
+	const longX = narrow ? width * 0.38 : figX - figure * 1.5 * 6 - T.small * 8;
+	return {
+		figure,
+		figX,
+		longX,
+		inputsX: (longX + figX - figure * 1.5 * 4.2) / 2,
+	};
+}
+
 const copy = {
 	title: ["GEX", "GEX"],
 	titleSub: [
@@ -132,6 +146,9 @@ const copy = {
 		`One contract: the Oct 18 ${FOCUS_STRIKE} call.`,
 		`一个合约：10月18日 ${FOCUS_STRIKE} 看涨。`,
 	],
+	contract: [`Oct 18 ${FOCUS_STRIKE} call`, `10月18日 ${FOCUS_STRIKE} 看涨`],
+	sameInputs: ["same inputs", "相同输入"],
+	trackGross: [`${money(GROSS, false)} gross`, `总幅度 ${money(GROSS, false)}`],
 	tGamma: ["gamma, model, per $1", "Gamma（模型），每 $1"],
 	tOi: ["× open interest, Friday's close", "× 未平仓量（周五收盘）"],
 	tShares: ["× 100 shares", "× 100 股"],
@@ -209,9 +226,8 @@ function Scene({
 	/** The chain rows: a tag on the left, the figure on the right. */
 	const rowY = (i: number) =>
 		H * (narrow ? 0.34 : 0.3) + i * H * (narrow ? 0.12 : 0.115);
-	const figure = narrow ? T.body * 1.15 : T.head;
+	const { figure, figX, inputsX } = signComparison(L);
 	// The figures close to their tags, so each row reads as one line.
-	const figX = narrow ? W - L.margin * 0.5 : W * 0.7;
 	const tagX = L.margin;
 	const shareLabel = (text: string) =>
 		locale === "zh" ? text.replace("shares/$1", "股/$1") : text;
@@ -369,6 +385,16 @@ function Scene({
 			</g>
 			<g data-f="chain">
 				{headline("c-head", copy.chainHead, copy.chainHead)}
+				<Word
+					name="c-contract"
+					x={figX}
+					y={rowY(0) - figure * 1.7}
+					size={T.small}
+					anchor="end"
+					className="wt-film-tag"
+				>
+					{t(copy.contract)}
+				</Word>
 				{chainSteps.map((step, i) => (
 					<g key={step.tag[0]}>
 						<Lines
@@ -407,7 +433,7 @@ function Scene({
 					name="c-tag-short"
 					text={t(copy.tShort)}
 					x={tagX}
-					y={rowY(4)}
+					y={rowY(4) - figure}
 					size={narrow ? T.small : T.body}
 					maxWidth={W * 0.5}
 					anchor="start"
@@ -426,12 +452,21 @@ function Scene({
 				<Word
 					name="c-short"
 					x={figX}
-					y={rowY(4) + figure * 0.3}
+					y={rowY(4) + figure * 2}
 					size={figure * 1.5}
 					anchor="end"
 					className="wt-film-num wt-film-accent"
 				>
 					{money(-LONG)}
+				</Word>
+				<Word
+					name="c-same-inputs"
+					x={inputsX}
+					y={rowY(4) + figure * 2}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.sameInputs)}
 				</Word>
 			</g>
 			<Lines
@@ -515,6 +550,11 @@ function Scene({
 					height={L.two.h}
 					rx={2}
 				/>
+				<path
+					data-f="two-net-link"
+					d={`M${L.two.netX + (L.two.puts - L.two.calls) / 2} ${L.two.y2 + L.two.h + 2}H${L.two.netX - 12}V${L.two.netY - T.num * 0.8}H${L.two.netX - 8}`}
+					className="wt-axis"
+				/>
 				<Word
 					name="two-net-num"
 					x={L.two.netX}
@@ -566,6 +606,16 @@ function Scene({
 					height={6}
 					rx={3}
 				/>
+				<Word
+					name="two-track-label"
+					x={L.two.x0}
+					y={L.two.netY + T.body * 3.9 + T.small + 16}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.trackGross)}
+				</Word>
 			</g>
 			{headline("w1-head", copy.sidesHead, copy.sidesHead)}
 			<Lines
@@ -615,6 +665,7 @@ function Scene({
 function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
+	const { figure, figX, longX } = signComparison(L);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide, rise, sink } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
@@ -680,6 +731,12 @@ function build(context: FilmContext) {
 	// ——— chain: one contract, every input declared ———
 	tl.addLabel("chain", 8.9);
 	hide(flat("q"), 8.9);
+	tl.fromTo(
+		one("c-contract"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.1 },
+		8.95,
+	);
 	show(one("c-head"), 9.1, "above");
 	chainSteps.forEach((_, i) => {
 		show(one(`c-tag-${i}`), 9.4 + i * 0.5);
@@ -689,8 +746,27 @@ function build(context: FilmContext) {
 	land(one("c-long"), 11.6);
 	// The other sign: same inputs, opposite number.
 	show(one("s-head"), 14.9);
-	d.swap(one("c-tag-long"), one("c-tag-short"), 14.9);
-	d.flip(one("c-long"), one("c-short"), 15.1);
+	hide(one("c-tag-long"), 14.9);
+	show(one("c-tag-short"), 15.15, "above");
+	// Keep the first assumption beside the second, rather than erasing it.
+	// Step down before moving sideways, clear of the incoming assumption label.
+	tl.to(one("c-long"), { y: figure * 1.7, opacity: 0.3, duration: 0.2 }, 14.9);
+	tl.to(
+		one("c-long"),
+		{
+			x: longX - figX,
+			duration: 0.35,
+			ease: "power2.inOut",
+		},
+		15.1,
+	);
+	show(one("c-short"), 15.45, "below", 0.35);
+	tl.fromTo(
+		one("c-same-inputs"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		15.8,
+	);
 
 	// ——— profile: the whole chain, calls up, puts down ———
 	tl.addLabel("profile", 18.65);
@@ -757,53 +833,60 @@ function build(context: FilmContext) {
 	const gross = [...one("two-gross").children];
 	show(gross, 26.5);
 	// Back: the gross has gone; down first, then along.
-	hide(gross, 27.5, 0.25);
-	tl.to(putsSide, { y: 0, duration: 0.3, ease: "power2.inOut" }, 27.75);
-	tl.to(putsSide, { x: 0, duration: 0.35, ease: "power2.inOut" }, 28.05);
+	hide(gross, 28, 0.25);
+	tl.to(putsSide, { y: 0, duration: 0.3, ease: "power2.inOut" }, 28.25);
+	tl.to(putsSide, { x: 0, duration: 0.35, ease: "power2.inOut" }, 28.55);
 	// The overhang is the net: the meter's figure comes down beside it.
-	tl.set(one("two-sliver"), { opacity: 1 }, 28.4);
-	widen(one("two-sliver"), L.two.puts - L.two.calls, 28.4);
-	hide(one("m-tag-net"), 28.4);
-	d.carry(meter, one<SVGGraphicsElement>("two-net-num"), 28.4, {
+	tl.set(one("two-sliver"), { opacity: 1 }, 28.9);
+	widen(one("two-sliver"), L.two.puts - L.two.calls, 28.9);
+	hide(one("m-tag-net"), 28.9);
+	d.carry(meter, one<SVGGraphicsElement>("two-net-num"), 28.9, {
 		duration: 0.8,
 		arc: "y",
 	});
-	show(one("two-net-tag"), 29.2, "above");
+	tl.fromTo(
+		one("two-net-tag"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.2 },
+		29.7,
+	);
 	// The hero: a small net between two large sides, and how small.
-	d.lock(lockTwo, 29.25, {
-		around: [one("two-sliver"), one("two-net-num"), one("two-net-tag")],
+	d.lock(lockTwo, 29.75, {
+		around: [one("two-net-num"), one("two-net-tag")],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 29.25);
-	show(one("w-head"), 29.25);
+	tl.addLabel("hero-lock", 29.75);
+	show(one("w-head"), 29.75);
+	d.trace(one<SVGPathElement>("two-net-link"), 30.2, { duration: 0.35 });
 	// After the lock: how small, against the gross the bars just spanned.
-	show(one("two-share"), 29.7, "below");
+	show(one("two-share"), 30.2, "below");
 	// Then how small, drawn: the gross as a track; the net's share of it lights under the sliver.
-	tl.set(one("two-track"), { opacity: 1 }, 30.4);
+	tl.set(one("two-track"), { opacity: 1 }, 30.9);
 	tl.fromTo(
 		one("two-track"),
 		{ attr: { width: 0 } },
 		{ attr: { width: L.two.span }, duration: 0.6, ease: "power2.out" },
-		30.4,
+		30.9,
 	);
-	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 31.1);
+	show(one("two-track-label"), 30.9, "below");
+	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 31.6);
 
 	// ——— coverage: which contracts, and what's missing ———
-	tl.addLabel("coverage", 33.25);
-	hide([...flat("two"), lockTwo, one("w1-head"), one("w-head")], 33.25);
+	tl.addLabel("coverage", 33.75);
+	hide([...flat("two"), lockTwo, one("w1-head"), one("w-head")], 33.75);
 	tl.set(
 		STRIKES.map((_, i) => one(`net-${i}`)),
 		{ opacity: 0 },
-		33.45,
+		33.95,
 	);
 	tl.set(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 1 },
-		33.45,
+		33.95,
 	);
-	rise(33.45);
-	show([one("m-tag-net"), meter], 33.55, "above");
-	d.count(meter, NET, 33.55, dollars, NET, 0.01);
+	rise(33.95);
+	show([one("m-tag-net"), meter], 34.05, "above");
+	d.count(meter, NET, 34.05, dollars, NET, 0.01);
 	tl.to(
 		STRIKES.flatMap((strike) =>
 			(["call", "put"] as const)
@@ -811,36 +894,37 @@ function build(context: FilmContext) {
 				.map((side) => bar(strike, side)),
 		),
 		{ opacity: 0.12, duration: 0.5 },
-		33.65,
+		34.15,
 	);
-	show(one("t-head"), 33.7, "above");
-	d.count(meter, tradedOnly, 33.8, dollars, NET, 0.8);
+	show(one("t-head"), 34.2, "above");
+	d.count(meter, tradedOnly, 34.3, dollars, NET, 0.8);
 	// Back to the whole chain, but the 95 put never arrived.
-	d.swap(one("t-head"), one("x-head"), 37.2);
+	d.swap(one("t-head"), one("x-head"), 37.7);
 	tl.to(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 1, duration: 0.4 },
-		37.2,
+		37.7,
 	);
-	retag("m-tag-net", "m-tag-known", 37.4);
-	tl.to(bar(95, "put"), { opacity: 0, duration: 0.4 }, 37.55);
-	tl.to(one("missing"), { opacity: 1, duration: 0.5 }, 37.75);
-	d.count(meter, withGap, 37.75, dollars, tradedOnly, 0.8);
+	retag("m-tag-net", "m-tag-known", 37.9);
+	tl.to(bar(95, "put"), { opacity: 0, duration: 0.4 }, 38.05);
+	tl.to(one("missing"), { opacity: 1, duration: 0.5 }, 38.25);
+	d.count(meter, withGap, 38.25, dollars, tradedOnly, 0.8);
 	// Cut: the claim.
-	hide([one("x-head"), ...kids("meter")], 41.05);
-	sink(41.05);
+	hide([one("x-head"), ...kids("meter")], 41.55);
+	sink(41.55);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.35,
+		41.85,
 	);
-	show(one("z-sub"), 41.75);
+	show(one("z-sub"), 42.25);
 
 	// ——— next ———
-	tl.addLabel("next", 45.35);
-	hide(kids("claim"), 45.35);
-	d.close(45.35);
+	// Coverage is at minimum holds: recover 0.4 s from the end card and use 0.1 s of headroom.
+	tl.addLabel("next", 45.85);
+	hide(kids("claim"), 45.85);
+	d.close(45.85);
 	return tl;
 }
 
