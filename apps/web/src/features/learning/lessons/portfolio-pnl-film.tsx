@@ -185,7 +185,7 @@ const copy = {
 		`按中间价：${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
 	],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
-	fifo: ["first in, first out · oldest 6 sold", "先进先出 · 卖出最早的 6 张"],
+	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
 	bid: ["bid", "买价"],
 	mid: ["mid", "中间价"],
 	bpNote: [
@@ -262,15 +262,25 @@ function Scene({
 	const fit = (text: string, share = 0.84) =>
 		Math.min(T.big, (W * share) / (text.length * 0.62));
 	const x0 = L.ax(EARNED_FROM);
-	/** Where the total's second part lands: right of the first, past a "+". */
 	// The drawn gap, under the mid line.
-	const gapText = narrow ? T.small * 1.15 : T.body;
-	const gapHalf = room * (narrow ? 0.14 : 0.08);
-	const gapY = H * 0.3 + T.big * 1.05 + T.body * 6.2;
+	const gapText = T.body;
+	const gapHalf = narrow
+		? Math.min(
+				room * 0.14,
+				W / 2 -
+					22 -
+					Math.max(
+						textWidth(`${t(copy.bid)} ${price(SALE)}`, gapText),
+						textWidth(`${t(copy.mid)} ${price(MARK)}`, gapText),
+					),
+			)
+		: room * 0.08;
+	const gapY = narrow ? H * 0.66 : H * 0.3 + T.big * 1.05 + T.body * 6.2;
 	const eqX =
 		W / 2 -
 		(textWidth(GAP_EQ, gapText) + 8 + textWidth(dollars(GAP), gapText * 1.3)) /
 			2;
+	/** The second part lands to the right, then merges into the subtotal. */
 	const partX =
 		W / 2 + textWidth(signed(fifo.realized), T.big) / 2 + T.num * 1.4;
 	const x1 = L.ax(CLOSE_TO);
@@ -512,11 +522,11 @@ function Scene({
 				name="m-bp-note"
 				x={L.right}
 				y={L.headY + T.head * 1.25 + T.num * 1.05 + T.small * 1.9}
-				size={T.small}
+				size={T.body}
 				anchor="end"
-				className="wt-film-tag"
+				className="wt-film-num wt-film-dim"
 			>
-				{t(copy.bpNote).toUpperCase()}
+				{t(copy.bpNote)}
 			</Word>
 			<g data-f="answer">
 				<Word
@@ -632,15 +642,15 @@ function Scene({
 						);
 					})}
 				</g>
-				{/* The rule behind the split, named while it is applied. */}
+				{/* Read the rule before the oldest contracts leave. */}
 				<text
 					data-f="fifo-tag"
 					x={L.gridLeft}
 					y={L.gridBottom + T.body * 2 + T.small * 2.4}
-					className="wt-film-tag wt-film-accent"
-					style={{ fontSize: T.small }}
+					className="wt-film-type wt-film-accent"
+					style={{ fontSize: T.body }}
 				>
-					{t(copy.fifo).toUpperCase()}
+					{t(copy.fifo)}
 				</text>
 				{(
 					[
@@ -701,13 +711,22 @@ function Scene({
 					{t(copy.totalTag).toUpperCase()}
 				</Word>
 				<Word
-					name="t-num"
+					name="t-subtotal"
 					x={W / 2}
 					y={H * 0.3 + T.big * 1.05}
 					size={T.big}
 					className="wt-film-num wt-film-gain"
 				>
 					{signed(fifo.realized)}
+				</Word>
+				<Word
+					name="t-num"
+					x={W / 2}
+					y={H * 0.3 + T.big * 1.05}
+					size={T.big}
+					className="wt-film-num wt-film-gain"
+				>
+					{signed(fifo.realized + fifo.unrealized)}
 				</Word>
 				<Word
 					name="t-part"
@@ -929,15 +948,16 @@ function build(context: FilmContext) {
 	show(one("earned-tag"), 14.7);
 	// Tuesday: money in, not money made.
 	d.swap(one("a-head"), one("e-head"), 15.4);
-	grow("seg-deposit", 15.4, 1.0);
-	d.count(meter, afterDeposit, 15.4, dollars, valueClose, 1.0);
+	grow("seg-deposit", 15.4, 0.7);
+	d.count(meter, afterDeposit, 15.4, dollars, valueClose, 0.7);
 	show(one("deposited"), 15.7);
 	// And buying power, larger still: margin, not money made either.
-	d.flip(one("m-tag"), one("m-tag-bp"), 17.6);
-	tl.set(one("m-tag"), { opacity: 0 }, 17.9);
-	d.flip(meter, one("m-bp"), 17.6);
-	tl.set(meter, { opacity: 0 }, 17.9);
-	show(one("m-bp-note"), 17.9);
+	d.flip(one("m-tag"), one("m-tag-bp"), 15.55);
+	tl.set(one("m-tag"), { opacity: 0 }, 15.85);
+	d.flip(meter, one("m-bp"), 15.55);
+	tl.set(meter, { opacity: 0 }, 15.85);
+	// Name the cash multiplier only after the buying-power figure has unfolded.
+	show(one("m-bp-note"), 16.2, "below", 0.2);
 
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.7);
@@ -954,7 +974,7 @@ function build(context: FilmContext) {
 	show(one("legend-lots"), 20.7);
 	show(one("l-head"), 20.9, "above");
 	// Sell six, oldest first, and say so.
-	show(one("fifo-tag"), 22.8);
+	show(one("fifo-tag"), 21.0, "below", 0.2);
 	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 23.0);
 	// In whole dollars as they count: cents in motion read as noise.
 	const wholeDollars = (cents: number) => Math.round(cents / 100) * 100;
@@ -986,22 +1006,32 @@ function build(context: FilmContext) {
 		24.7,
 	);
 	show(one("t-tag"), 25.0);
-	// One part lands, then the other lands on it, and the two count as one.
+	// Land both parts separately before the second one merges into the first.
+	const subtotal = one<SVGTextElement>("t-subtotal");
 	const total = one<SVGTextElement>("t-num");
-	d.carry(realized, total, 24.9, { duration: 0.8 });
+	d.carry(realized, subtotal, 24.9, { duration: 0.8 });
 	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 25.7, {
 		duration: 0.8,
 	});
-	// The two are added: the part goes where it stands, then the total counts it in. No frame
-	// shows a total beside a part it already holds.
-	tl.to(one("t-part"), { opacity: 0, duration: 0.25 }, 26.6);
-	d.count(
+	// Step the subtotal back while $645 travels into its place, clear of settled text.
+	// The completed total unfolds only after the incoming part has been absorbed.
+	tl.set(subtotal, { opacity: 0.2 }, 26.6);
+	d.carry(one<SVGGraphicsElement>("t-part"), total, 26.6, {
+		duration: 0.5,
+		fit: false,
+		reveal: false,
+	});
+	tl.to(
+		subtotal,
+		{ scaleY: 0, transformOrigin: "50% 50%", duration: 0.2, ease: "power2.in" },
+		26.9,
+	);
+	tl.set(subtotal, { opacity: 0 }, 27.1);
+	tl.fromTo(
 		total,
-		fifo.realized + fifo.unrealized,
-		26.85,
-		(v) => signed(Math.round(v / 100) * 100),
-		fifo.realized,
-		0.6,
+		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
+		{ scaleY: 1, duration: 0.35, ease: "power2.out", immediateRender: false },
+		27.1,
 	);
 	show(one("t-was"), 27.2);
 	d.lock(lockTotal, 27.5, {
