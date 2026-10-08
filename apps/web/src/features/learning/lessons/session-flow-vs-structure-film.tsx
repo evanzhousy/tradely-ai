@@ -48,13 +48,13 @@ import {
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
  *   ledger    8.6–22.45  both open +10; changed hands ±0; both closed −4
  *   clock     22.45–32.35 hero: volume all day; open interest shown waits for Tuesday's count
- *   bucket    32.35–40.6 420 → 620 as the members change (+500 in, −300 out) at Sep 9's
+ *   bucket    32.35–41.0 420 → 620 as the members change (+500 in, −300 out) at Sep 9's
  *                        figures, named and held; → 650 as each series adds 10s
- *   claim     40.6–44.95 volume counts trading; open interest, positions
- *   next      44.95–46.95 Next: tape rows
+ *   claim     41.0–45.35 volume counts trading; open interest, positions
+ *   next      45.35–47.35 Next: tape rows
  */
 
-const END = 46.95;
+const END = 47.35;
 const TRADES = day.trades;
 const START_OI = day.startOpenInterest;
 const AFTER = ledgerBeats.slice(1);
@@ -189,6 +189,9 @@ const copy = {
 		`双方平仓：−${TRADES[2].quantity}。`,
 	],
 	trueCount: ["contracts open", "未平仓合约"],
+	/** What waits beside the screen while Monday replays: the count Monday ends on. */
+	finalCount: ["Monday's final count", "周一最终统计"],
+	finalCountShort: ["Monday final", "周一最终统计"],
 	unpublished: ["not published yet", "尚未公布"],
 	oiTag: ["OI", "未平仓"],
 	volume: ["volume today", "今日成交量"],
@@ -363,7 +366,7 @@ function Scene({
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
-					{t(copy.trueCount).toUpperCase()}
+					{t(narrow ? copy.finalCountShort : copy.finalCount).toUpperCase()}
 				</text>
 				<text
 					data-f="ghost-n"
@@ -1043,29 +1046,29 @@ function build(context: FilmContext) {
 	// A week passes: each expiry slides 7 days closer; the band stays. Counted with last
 	// week's figures first: what the members' change alone does.
 	const shift = L.dayX(0) - L.dayX(7);
-	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, 34.55);
-	d.flip(one("bt-0"), one("bt-1"), 35.15);
-	tl.set(one("bt-0"), { opacity: 0 }, 35.45);
+	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, 34.3);
+	d.flip(one("bt-0"), one("bt-1"), 35.3);
+	tl.set(one("bt-0"), { opacity: 0 }, 35.6);
 	const after = AFTER_WEEK.columns;
 	stripExpiries.forEach((id) => {
 		const column = after.find((c) => c.id === id);
 		if (!column) return;
-		// In the bucket or out of it, by its days now.
+		// In the bucket or out of it, by its days now: once the slide has brought it there.
 		tl.set(
 			one(`colbar-${id}`),
 			{ attr: { "data-tone": column.member ? "total" : "neutral" } },
-			35.15,
+			35.3,
 		);
 	});
-	counter("bucket-n", MOVED, BEFORE.total, 35.15);
+	counter("bucket-n", MOVED, BEFORE.total, 35.3);
 	const marks = stripExpiries
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
-	show(marks, 35.25, "above");
-	show(one("note-was"), 35.35);
+	show(marks, 35.35, "above");
+	show(one("note-was"), 35.4);
 	// The headline names the membership step while its marks are up.
-	show(heads[7], 35.4);
-	hide(marks, 37.0, 0.2);
+	show(heads[7], 35.45);
+	hide(marks, 37.4, 0.2);
 	// Then the week's new contracts: each series grows by tens.
 	stripExpiries.forEach((id) => {
 		const column = after.find((c) => c.id === id);
@@ -1075,17 +1078,17 @@ function build(context: FilmContext) {
 		tl.to(
 			one(`colbar-${id}`),
 			{ attr: { y: L.floor - h, height: h }, duration: 0.6 },
-			37.1,
+			37.5,
 		);
 		tl.to(
 			one(`colv-${id}`),
 			{ attr: { y: L.floor - h - 6 }, duration: 0.6 },
-			37.1,
+			37.5,
 		);
 		d.count(
 			num(`colv-${id}`),
 			column.value,
-			37.1,
+			37.5,
 			(v) => count(Math.round(v)),
 			before.value,
 			0.6,
@@ -1094,20 +1097,20 @@ function build(context: FilmContext) {
 	d.count(
 		num("bucket-n"),
 		AFTER_WEEK.total,
-		37.1,
+		37.5,
 		(v) => count(Math.round(v)),
 		MOVED,
 		0.6,
 	);
-	d.flip(one("note-was"), one("note-new"), 37.1);
-	tl.set(one("note-was"), { opacity: 0 }, 37.4);
+	d.flip(one("note-was"), one("note-new"), 37.5);
+	tl.set(one("note-was"), { opacity: 0 }, 37.8);
 	// In place, without travel: each change comes up over its own column's figure.
 	changes.forEach((change, i) => {
-		word(change, 37.5 + i * 0.2);
+		word(change, 37.9 + i * 0.2);
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.6);
+	tl.addLabel("claim", 41);
 	hide(
 		[
 			heads[6],
@@ -1120,15 +1123,15 @@ function build(context: FilmContext) {
 			one("note-new"),
 			one("note-was"),
 		],
-		40.6,
+		41,
 	);
-	word(one("z-big"), 40.9);
-	show(one("z-sub"), 41.3);
+	word(one("z-big"), 41.3);
+	show(one("z-sub"), 41.7);
 
 	// ——— next ———
-	tl.addLabel("next", 44.95);
-	hide(kids("claim"), 44.95);
-	d.close(44.95);
+	tl.addLabel("next", 45.35);
+	hide(kids("claim"), 45.35);
+	d.close(45.35);
 	return tl;
 }
 
