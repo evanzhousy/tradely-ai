@@ -23,14 +23,18 @@ import {
 import { textWidth } from "../walkthrough/text-measure";
 import {
 	COVERED,
+	cancelled,
 	dollars,
+	extra,
 	fields,
 	MONDAY,
 	records,
+	repeated,
 	reruns,
 	rerunText,
 	rowById,
 	SERIES,
+	spreadLegs,
 	TUESDAY,
 	WITHOUT_SPREAD,
 } from "./cookbook-research-packet-model";
@@ -49,12 +53,12 @@ import {
  *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
  *   fields    18.6–30.8  hero: every field; without the formula; without the exclusions,
  *                        held; then the field goes back and the figure is P1's again
- *   log       30.8–36.4  P1; P2 a rerun; P3 a new question
- *   claim     36.4–40.8  work someone else can rerun
- *   next      40.8–43.3  Next: recaps
+ *   log       30.8–37.7  P1; P2 a rerun; P3 a new question
+ *   claim     37.7–42.1  work someone else can rerun
+ *   next      42.1–44.6  Next: recaps
  */
 
-const END = 43.3;
+const END = 44.6;
 const R2 = rowById("R2");
 const R2_TRADES = R2?.trades ?? [];
 
@@ -120,6 +124,17 @@ const copy = {
 		`+${dollars(reruns.exclusions.cents - MONDAY)} · ${reruns.exclusions.why[1]}`,
 	],
 	noData: ["no data yet", "尚无数据"],
+	coveredZero: ["covered, zero", "已覆盖，零"],
+	cancelled: ["cancelled T-2", "T-2 已取消"],
+	repeated: ["repeated T-1", "T-1 重复计入"],
+	r5Cause: [
+		`+${dollars(TUESDAY - MONDAY)} · R5 arrived`,
+		`+${dollars(TUESDAY - MONDAY)} · R5 已到达`,
+	],
+	spreadCause: [
+		`−${dollars(spreadLegs)} · spread legs`,
+		`−${dollars(spreadLegs)} · 价差两条腿`,
+	],
 	fHead: ["A reader reruns it from its fields.", "读者按它的字段重跑。"],
 	f2Head: ["Drop a field, and the number breaks.", "少一个字段，数字就错了。"],
 	reader: ["a reader's rerun", "读者重跑"],
@@ -163,6 +178,21 @@ function Scene({
 	const text = narrow ? T.small * 1.1 : T.body;
 	/** The rerun's figure: on a phone, larger than the type scale's floor. */
 	const rerunSize = narrow ? T.num * 1.4 : T.num;
+	// Keep the after-beat below the lock: one compact row on desktop, two on phone.
+	const extraSize = T.small * 1.1;
+	const extraY = L.rerunY + rerunSize * 1.3 + text * 1.9 + T.small * 2.8;
+	const repeatedX = narrow
+		? margin
+		: margin +
+			textWidth(dollars(extra(cancelled)), extraSize) +
+			textWidth(t(copy.cancelled), T.small) +
+			24;
+	const repeatedY = extraY + (narrow ? T.small * 1.5 : 0);
+	const extraTotalX =
+		repeatedX +
+		textWidth(`+ ${dollars(extra(repeated))}`, extraSize) +
+		textWidth(t(copy.repeated), T.small) +
+		24;
 	const trace = R2_TRADES.map(
 		(trade) => `${count(trade.quantity)} × ${usd(trade.price)} × 100`,
 	).join(" + ");
@@ -255,7 +285,11 @@ function Scene({
 							className="wt-film-num wt-film-dim"
 							style={{ fontSize: text }}
 						>
-							{rowContracts(row) === null ? "" : count(rowContracts(row) ?? 0)}
+							{rowContracts(row) === null
+								? ""
+								: premium === 0
+									? t(copy.coveredZero)
+									: count(rowContracts(row) ?? 0)}
 						</text>
 						<text
 							data-f={`row-${i}-premium`}
@@ -300,7 +334,7 @@ function Scene({
 			</text>
 			{(
 				[
-					["sum", dollars(MONDAY), "wt-film-accent"],
+					["sum", dollars(0), "wt-film-accent"],
 					["sum-ge", t(copy.subtotalGe), "wt-film-warn"],
 				] as const
 			).map(([name, value, tone]) => (
@@ -316,6 +350,28 @@ function Scene({
 					{value}
 				</text>
 			))}
+			{mondayPacket.map((row, i) => {
+				const premium = rowPremium(row);
+				if (premium === null) return null;
+				return (
+					<text
+						key={row.id}
+						data-f={`sum-ticket-${i}`}
+						x={margin + room - 12}
+						y={
+							L.traceY +
+							(narrow ? T.small * 2 + T.head * 1.2 : T.small) -
+							(narrow ? T.head : T.num) * 1.2 -
+							text
+						}
+						textAnchor="end"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{dollars(premium)}
+					</text>
+				);
+			})}
 			<text
 				data-f="subtotal"
 				x={margin + room - 12}
@@ -432,6 +488,82 @@ function Scene({
 				</text>
 			))}
 
+			{[
+				["formula-base", dollars(MONDAY), margin],
+				[
+					"formula-divisor",
+					"÷ 100",
+					margin + textWidth(dollars(MONDAY), text) + 12,
+				],
+				[
+					"formula-result",
+					`= ${rerunText("formula")}`,
+					margin + textWidth(`${dollars(MONDAY)} ÷ 100`, text) + 24,
+				],
+			].map(([name, value, x]) => (
+				<text
+					key={name}
+					data-f={name}
+					x={x}
+					y={L.rerunY + rerunSize * 1.3 + text * 3.5}
+					className="wt-film-num wt-film-loss"
+					style={{ fontSize: text }}
+				>
+					{value}
+				</text>
+			))}
+			{(
+				[
+					[
+						"extra-cancelled",
+						dollars(extra(cancelled)),
+						copy.cancelled,
+						margin,
+						extraY,
+					],
+					[
+						"extra-repeated",
+						`+ ${dollars(extra(repeated))}`,
+						copy.repeated,
+						repeatedX,
+						repeatedY,
+					],
+				] as const
+			).map(([name, value, label, x, y]) => (
+				<g key={name} data-f={name}>
+					<text
+						x={x}
+						y={y}
+						className="wt-film-num wt-film-loss"
+						style={{ fontSize: extraSize }}
+					>
+						{value}
+					</text>
+					<text
+						x={x + textWidth(value, extraSize) + 12}
+						y={y}
+						className="wt-film-tag wt-film-loss"
+						style={{ fontSize: T.small, letterSpacing: 0 }}
+					>
+						{t(label)}
+					</text>
+				</g>
+			))}
+			<text
+				data-f="extra-total"
+				x={extraTotalX}
+				y={repeatedY}
+				className="wt-film-num wt-film-loss"
+				style={{ fontSize: extraSize }}
+			>{`= ${dollars(extra(cancelled) + extra(repeated))}`}</text>
+			<path
+				data-f="exclusions-link"
+				d={`M ${margin + room} ${L.fieldY(3) + L.fieldH} H ${margin + room + 4} V ${repeatedY + extraSize} H ${extraTotalX + textWidth(`= ${dollars(extra(cancelled) + extra(repeated))}`, extraSize) / 2}`}
+				fill="none"
+				className="wt-film-link"
+				style={{ stroke: "var(--diagram-loss)", strokeWidth: 1.5 }}
+			/>
+
 			{/* The log. */}
 			{headline("l-head", copy.lHead)}
 			<Lines
@@ -448,6 +580,23 @@ function Scene({
 				maxWidth={narrow ? room : room * 0.74}
 				anchor="start"
 			/>
+			{(
+				[
+					["log-r5-cause", copy.r5Cause, 1],
+					["log-spread-cause", copy.spreadCause, 2],
+				] as const
+			).map(([name, value, i]) => (
+				<text
+					key={name}
+					data-f={name}
+					x={margin + 16}
+					y={L.recY(i) - H * 0.009}
+					className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+					style={{ fontSize: T.small }}
+				>
+					{t(value)}
+				</text>
+			))}
 			{records.map((record, i) => (
 				<g key={record.id} data-f={`rec-${i}`}>
 					<rect
@@ -582,6 +731,9 @@ function build(context: FilmContext) {
 		one("trace"),
 		one("trace-result"),
 		one("sum"),
+		...mondayPacket.flatMap((row, i) =>
+			rowPremium(row) === null ? [] : [one(`sum-ticket-${i}`)],
+		),
 		one("sum-ge"),
 		one("subtotal"),
 		...fieldRows,
@@ -594,6 +746,17 @@ function build(context: FilmContext) {
 		one("why-formula"),
 		one("why-exclusions"),
 		lockRerun,
+		...[
+			"formula-base",
+			"formula-divisor",
+			"formula-result",
+			"extra-cancelled",
+			"extra-repeated",
+			"extra-total",
+			"exclusions-link",
+			"log-r5-cause",
+			"log-spread-cause",
+		].map((name) => one(name)),
 		...recs,
 		...kids("claim"),
 	]);
@@ -631,28 +794,61 @@ function build(context: FilmContext) {
 		{ attr: { class: "wt-film-num" }, duration: 0.2 },
 		12.4,
 	);
-	// The sum, built row by row: each premium lights while it is added.
+	// Kept premiums travel down the right lane. Neighboring premiums step back while
+	// the copy passes; series labels and contract counts stay outside that lane.
 	tl.set(one("sum"), { opacity: 1 }, 12.4);
+	// The phone trace reaches the lane; step it back until every premium has landed.
+	tl.set(one("trace"), { opacity: 0.2 }, 12.4);
 	let total = 0;
 	let step = 0;
 	mondayPacket.forEach((row, i) => {
 		const premium = rowPremium(row);
 		if (premium === null) return;
-		const at = 12.4 + step * 0.6;
-		const figure = one(`row-${i}-premium`);
+		const at = 12.4 + step * 0.55;
+		const figure = one<SVGGraphicsElement>(`row-${i}-premium`);
+		const neighbors = mondayPacket
+			.map((_, j) => one(`row-${j}-premium`))
+			.filter((_, j) => j !== i);
+		tl.set(neighbors, { opacity: 0.2 }, at);
+		tl.set(one(`row-${i}-premium`), { opacity: 1 }, at);
 		tl.set(figure, { attr: { class: "wt-film-num wt-film-accent" } }, at);
-		tl.set(figure, { attr: { class: "wt-film-num" } }, at + 0.55);
+		const ticket = one<SVGGraphicsElement>(`sum-ticket-${i}`);
+		// Land above the subtotal, then fold the ticket shut before its count starts.
+		d.carry(figure, ticket, at, {
+			duration: 0.35,
+			arc: "y",
+			keep: true,
+			fit: false,
+		});
+		tl.to(
+			ticket,
+			{
+				scaleY: 0,
+				transformOrigin: "50% 50%",
+				duration: 0.12,
+				ease: "power2.in",
+			},
+			at + 0.35,
+		);
+		tl.set(ticket, { opacity: 0 }, at + 0.47);
 		d.count(
 			one<SVGTextElement>("sum"),
 			total + premium,
-			at,
+			at + 0.47,
 			(v) => dollars(Math.round(v / 100) * 100),
 			total,
-			0.45,
+			0.2,
 		);
+		tl.set(figure, { attr: { class: "wt-film-num" } }, at + 0.55);
 		total += premium;
 		step += 1;
 	});
+	tl.set(
+		mondayPacket.map((_, i) => one(`row-${i}-premium`)),
+		{ opacity: 1 },
+		14.75,
+	);
+	tl.set(one("trace"), { opacity: 1 }, 14.75);
 	// R5 has no data: the sum can only be a floor.
 	tl.fromTo(
 		rows[missing],
@@ -697,7 +893,20 @@ function build(context: FilmContext) {
 	show(one("p1-says"), 21.9);
 	show(one("why-formula"), 22.1);
 	// The answer, with the first break.
-	show(heads[3], 21.9);
+	show(heads[3], 22.15);
+	show(one("formula-base"), 22.3, "below", 0.2);
+	show(one("formula-divisor"), 22.8, "below", 0.2);
+	show(one("formula-result"), 23.3, "below", 0.2);
+	// Keep the first break's proof separate from the exclusions' after-beat.
+	hide(
+		[one("formula-base"), one("formula-divisor"), one("formula-result")],
+		23.8,
+		0.15,
+		0,
+	);
+	// Establish which field changed; clear the link before the lock expands.
+	d.trace(one<SVGPathElement>("exclusions-link"), 25.9, { duration: 0.2 });
+	hide(one("exclusions-link"), 26.1, 0.15, 0);
 	// Without the exclusions instead.
 	// The fields change while the old figure is folded shut: inputs and output never disagree.
 	restore("formula", 25.85);
@@ -707,7 +916,7 @@ function build(context: FilmContext) {
 	d.flip(one("why-formula"), one("why-exclusions"), 25.6);
 	tl.set(one("why-formula"), { opacity: 0 }, 25.9);
 	// Round the rerun with its label, P1's figure and its reason: no arm runs through a line.
-	d.lock(lockRerun, 26.2, {
+	d.lock(lockRerun, 26.3, {
 		around: [
 			one("rerun-tag"),
 			rerunMarks[2],
@@ -716,10 +925,24 @@ function build(context: FilmContext) {
 		],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 26.2);
+	tl.addLabel("hero-lock", 26.3);
+	// The broken rerun has unfolded; construct its extra dollars as the lock's after-beat.
+	show(one("extra-cancelled"), 26.4, "below", 0.2);
+	show(one("extra-repeated"), 26.85, "below", 0.2);
+	show(one("extra-total"), 27.3, "below", 0.2);
 	// After the lock, once its reason has been read: the brackets let go, the field goes
 	// back, and the figure is P1's again.
-	hide([lockRerun, one("why-exclusions")], 29.45);
+	hide(
+		[
+			one("why-exclusions"),
+			one("extra-cancelled"),
+			one("extra-repeated"),
+			one("extra-total"),
+			one("exclusions-link"),
+		],
+		29.45,
+	);
+	hide(lockRerun, 29.8);
 	restore("exclusions", 29.95);
 	d.flip(rerunMarks[2], one("rerun-back"), 29.7);
 	tl.set(rerunMarks[2], { opacity: 0 }, 30.0);
@@ -741,22 +964,28 @@ function build(context: FilmContext) {
 		},
 	);
 	show(one("rec-0-note"), 32.25);
-	show(recs[1], 32.3, "right");
-	show(recs[2], 32.65, "right");
-	show(heads[5], 32.85);
+	// P1 lands at 32.2 and stands alone for 0.7 s. Each later record follows its cause.
+	show(one("log-r5-cause"), 32.9, "below", 0.2);
+	show(recs[1], 33.15, "right", 0.3);
+	show(one("log-spread-cause"), 33.65, "below", 0.2);
+	show(recs[2], 33.9, "right", 0.2);
+	show(heads[5], 34.15);
 	// The new question stands out: the two runs of the old one step back.
-	tl.to([recs[0], recs[1]], { opacity: 0.45, duration: 0.5 }, 34.4);
+	tl.to([recs[0], recs[1]], { opacity: 0.45, duration: 0.5 }, 35.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.4);
-	hide([heads[4], heads[5], ...recs], 36.4);
-	word(one("z-big"), 36.7);
-	show(one("z-sub"), 37.1);
+	tl.addLabel("claim", 37.7);
+	hide(
+		[heads[4], heads[5], ...recs, one("log-r5-cause"), one("log-spread-cause")],
+		37.7,
+	);
+	word(one("z-big"), 38.0);
+	show(one("z-sub"), 38.4);
 
 	// ——— next ———
-	tl.addLabel("next", 40.8);
-	hide(kids("claim"), 40.8);
-	d.close(40.8);
+	tl.addLabel("next", 42.1);
+	hide(kids("claim"), 42.1);
+	d.close(42.1);
 	return tl;
 }
 
