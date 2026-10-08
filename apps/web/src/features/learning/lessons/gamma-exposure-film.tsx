@@ -49,8 +49,8 @@ import {
  *   open      0–4        "GEX"
  *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts?
  *   chain     8.9–18.65  0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
- *   profile   18.65–33.75 dealers assumed calls + / puts −; net bars settled at 20.55,
- *                        meter settled at 20.85; cut at 22.5: the sides
+ *   profile   18.65–33.75 dealers assumed calls + / puts −; net bars settled at 19.65,
+ *                        meter settled at 20; cut at 22.5: the sides
  *                        end to end, $4.10M settled 24.45–28; side by side, the −$512k sliver,
  *                        locked; then how
  *                        small: 12% of the gross
@@ -77,6 +77,7 @@ function sides(frame: ReturnType<typeof filmFrame>) {
 	const h = narrow ? 20 : 28;
 	const y1 = height * 0.42;
 	const y2 = y1 + h + 14;
+	const netSize = T.num * (narrow ? 1.6 : 2.1);
 	return {
 		x0,
 		span,
@@ -89,7 +90,8 @@ function sides(frame: ReturnType<typeof filmFrame>) {
 		/** The net, under the sliver it measures: its tag on the puts' tag line, then the figure. */
 		netX: x0 + CALLS * unit,
 		tagY: y2 + h + T.body + 4,
-		netY: y2 + h + T.body + 4 + T.num * 1.6 * 0.95,
+		netSize,
+		netY: y2 + h + T.body + 4 + netSize * 0.95,
 	};
 }
 
@@ -367,16 +369,23 @@ function Scene({
 						{t(copy[name]).toUpperCase()}
 					</Word>
 				))}
-				<Word
-					name="m-value"
-					x={narrow ? L.right - T.num * 1.2 : L.right}
-					y={L.headY + T.head * 1.25 + T.num * 1.05}
-					size={T.num}
-					anchor="end"
-					className="wt-film-num wt-film-accent"
-				>
-					{money(NET)}
-				</Word>
+				{[
+					{ name: "m-value", value: NET },
+					{ name: "m-value-traded", value: tradedOnly },
+					{ name: "m-value-known", value: withGap },
+				].map(({ name, value }) => (
+					<Word
+						key={name}
+						name={name}
+						x={narrow ? L.right - T.num * 1.2 : L.right}
+						y={L.headY + T.head * 1.25 + T.num * 1.05}
+						size={T.num}
+						anchor="end"
+						className="wt-film-num wt-film-accent"
+					>
+						{money(value)}
+					</Word>
+				))}
 			</g>
 
 			{/* The claims. */}
@@ -579,14 +588,14 @@ function Scene({
 				/>
 				<path
 					data-f="two-net-link"
-					d={`M${L.two.netX + (L.two.puts - L.two.calls) / 2} ${L.two.y2 + L.two.h + 2}H${L.two.netX - 12}V${L.two.netY - T.num * 0.8}H${L.two.netX - 8}`}
+					d={`M${L.two.netX + (L.two.puts - L.two.calls) / 2} ${L.two.y2 + L.two.h + 2}H${L.two.netX - 12}V${L.two.netY - L.two.netSize * 0.5}H${L.two.netX - 8}`}
 					className="wt-axis"
 				/>
 				<Word
 					name="two-net-num"
 					x={L.two.netX}
 					y={L.two.netY}
-					size={T.num * 1.6}
+					size={L.two.netSize}
 					anchor="start"
 					className="wt-film-num wt-film-accent"
 				>
@@ -722,12 +731,6 @@ function build(context: FilmContext) {
 			},
 			at,
 		);
-	const dollars = (value: number) => money(Math.round(value));
-	/** The meter's tag changes from above: from below it would cross the figure. */
-	const retag = (from: string, to: string, at: number) => {
-		hide(one(from), at);
-		show(one(to), at + 0.35, "above");
-	};
 	const lockTwo = one<SVGGraphicsElement>("lock-two");
 
 	d.hidden([
@@ -802,26 +805,33 @@ function build(context: FilmContext) {
 	show(kids("chart-notes"), 18.95, "above", 0.25);
 	show(one("p-head"), 19, "above");
 	rise(19.05);
-	// Reveal both background sides together. Their aggregates are taught in the next
-	// construction; no meter reading pretends to sum partially drawn bars here.
+	// The settled sides are a faint reference; only the net profile draws in.
+	// Removing the separate sides entrance and strike stagger buys reading time.
 	STRIKES.forEach((strike) => {
-		grow(bar(strike, "call"), contribution(strike, "call"), 19.3, 0.4);
-		grow(bar(strike, "put"), contribution(strike, "put"), 19.3, 0.4);
+		(["call", "put"] as const).forEach((side) => {
+			const value = contribution(strike, side);
+			tl.set(
+				bar(strike, side),
+				{
+					opacity: 0.22,
+					attr: {
+						y: Math.min(L.y(0), L.y(value)),
+						height: Math.abs(L.y(value) - L.y(0)),
+					},
+				},
+				19.05,
+			);
+		});
 	});
 	// Net by strike: negative up to $100, positive from $105.
-	show(one("m-tag-net"), 19.4, "above", 0.25);
-	tl.to(
-		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
-		{ opacity: 0.22, duration: 0.35 },
-		19.9,
-	);
+	show(one("m-tag-net"), 19.05, "above", 0.2);
 	NET_BY_STRIKE.forEach((value, i) => {
-		tl.set(one(`net-${i}`), { opacity: 1 }, 19.9 + i * 0.05);
-		grow(one(`net-${i}`), value, 19.9 + i * 0.05, 0.35);
+		tl.set(one(`net-${i}`), { opacity: 1 }, 19.25);
+		grow(one(`net-${i}`), value, 19.25, 0.4);
 	});
-	// All seven bars settle at 20.55. Reveal only their settled aggregate, then
-	// retain the complete profile and meter from 20.85 to 22.5 (1.65 s).
-	show(meter, 20.6, "above", 0.25);
+	// Bars settle at 19.65 and the chart finishes rising at 19.85. Reveal only
+	// their settled aggregate; chart plus meter hold from 20 to 22.5 (2.5 s).
+	show(meter, 19.85, "above", 0.15);
 	// Cut: the two sides' totals as bars, and a question for them. End to end, the gross;
 	// side by side, the net.
 	// Keep the profile headline for 3.5 s and preserve the gross's 3.55 s hold.
@@ -909,8 +919,6 @@ function build(context: FilmContext) {
 	);
 	show(kids("chart-notes"), 33.95, "above", 0.25);
 	rise(33.95);
-	show([one("m-tag-net"), meter], 34.05, "above");
-	d.count(meter, NET, 34.05, dollars, NET, 0.01);
 	tl.to(
 		STRIKES.flatMap((strike) =>
 			(["call", "put"] as const)
@@ -921,18 +929,28 @@ function build(context: FilmContext) {
 		34.15,
 	);
 	show(one("t-head"), 34.2, "above");
-	d.count(meter, tradedOnly, 34.3, dollars, NET, 0.8);
+	// Membership settles at 34.65 and the chart rise at 34.75. Keep the
+	// full-chain reading absent; reveal a dedicated, settled traded-only value.
+	const tradedMeter = one("m-value-traded");
+	show([one("m-tag-net"), tradedMeter], 34.75, "above", 0.25);
 	// Back to the whole chain, but the 95 put never arrived.
+	hide([one("m-tag-net"), tradedMeter], 37.45, 0.25, 0);
 	d.swap(one("t-head"), one("x-head"), 37.7);
 	tl.to(
-		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
+		STRIKES.flatMap((strike) =>
+			(["call", "put"] as const)
+				.filter((side) => !MISSING.includes(key(strike, side)))
+				.map((side) => bar(strike, side)),
+		),
 		{ opacity: 1, duration: 0.4 },
 		37.7,
 	);
-	retag("m-tag-net", "m-tag-known", 37.9);
-	tl.to(bar(95, "put"), { opacity: 0, duration: 0.4 }, 38.05);
-	tl.to(one("missing"), { opacity: 1, duration: 0.5 }, 38.25);
-	d.count(meter, withGap, 38.25, dollars, tradedOnly, 0.8);
+	MISSING.forEach((missing) => {
+		tl.to(one(`bar-${missing}`), { opacity: 0, duration: 0.3 }, 37.7);
+	});
+	tl.to(one("missing"), { opacity: 1, duration: 0.4 }, 38);
+	// The gap and all included contracts are settled before this subtotal appears.
+	show([one("m-tag-known"), one("m-value-known")], 38.45, "above", 0.25);
 	// Cut: the claim.
 	hide([one("x-head"), ...kids("meter")], 41.55);
 	hide(kids("chart-notes"), 41.55);
