@@ -41,12 +41,12 @@ import {
  *
  *   open      0–4        "Delta" wipes on; the title shrinks into the corner as a tag
  *   question  4–9.5      ALFA $100 → $101: the call moves by about… ?
- *   slope     9.5–18.5   the chart rises from the depth; push in; the $1 step, the $0.52
- *                        rise; cut to 0.52, full frame
- *   put       18.5–24.5  the number flips to −0.48 while the curve folds into the put
- *   position  24.5–35.3  hero: 0.52 × 100 × 16 = +832, locked; Ben's chain beside it, the
+ *   slope     9.5–17.7   the chart rises from the depth; push in; the $1 step, the $0.52
+ *                        rise; carry 0.52 into its definition, full frame
+ *   put       17.7–23.7  the number flips to −0.48 while the curve folds into the put
+ *   position  23.7–34.5  hero: 0.52 × 100 × 16 = +832, locked; Ben's chain beside it, the
  *                        sign flipped; +$0.40 in ALFA, in dollars, for each
- *   limits    35.3–40.9  the marker rides the curve, a ghost rides the line; cut: "Delta is
+ *   limits    34.5–40.9  the marker rides the curve, a ghost rides the line; cut: "Delta is
  *                        local."
  *   next      45.4–47.4  Next: gamma
  */
@@ -400,17 +400,23 @@ function Scene({
 							}
 							className="wt-halo wt-accent wt-marker-label"
 						>
-							{signedPrice(CALL_DELTA)}
+							<tspan>+$</tspan>
+							<tspan data-f="riser-number">{fixed2(CALL_DELTA)}</tspan>
 						</text>
 					</g>
 					<g data-f="ghost">
 						<circle r={L.narrow ? 3 : 6} className="wt-film-ghost" />
 					</g>
-					<text data-f="ghost-label" className="wt-small wt-halo" />
+					<text
+						data-f="ghost-label"
+						className="wt-halo"
+						style={{ fontSize: T.body }}
+					/>
 					<line data-f="gap" className="wt-film-gap" />
 					<text
 						data-f="gap-label"
-						className="wt-small wt-halo wt-loss wt-marker-label"
+						className="wt-halo wt-loss wt-marker-label"
+						style={{ fontSize: T.body * 1.15 }}
 					/>
 					<g data-f="marker">
 						<circle
@@ -444,7 +450,11 @@ function Scene({
 					>
 						{price(P0)}
 					</text>
-					<text data-f="move-label" className="wt-halo wt-marker-label" />
+					<text
+						data-f="move-label"
+						className="wt-halo wt-marker-label"
+						style={{ fontSize: T.body }}
+					/>
 					{(["lim-move-up", "lim-move-down"] as const).map((name, i) => (
 						<text
 							key={name}
@@ -460,6 +470,17 @@ function Scene({
 			</g>
 
 			{/* The type: the claims. */}
+			{/* Replaced at build with the pushed-in riser's exact numeric position. */}
+			<Word
+				name="slope-number-proxy"
+				x={0}
+				y={0}
+				size={13 * (L.narrow ? 2 : 2.1)}
+				anchor="start"
+				className="wt-film-num wt-film-accent"
+			>
+				{fixed2(CALL_DELTA)}
+			</Word>
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
 			<g data-f="q">
 				<Word
@@ -516,27 +537,27 @@ function Scene({
 			<g data-f="num">
 				<Word
 					name="num-call"
-					x={0}
-					y={T.big * 0.36}
+					x={W / 2}
+					y={H * 0.5 + T.big * 0.36}
 					size={T.big}
-					className="wt-film-num"
+					className="wt-film-num wt-film-accent"
 				>
 					{fixed2(CALL_DELTA)}
 				</Word>
 				<Word
 					name="num-put"
-					x={0}
-					y={T.big * 0.36}
+					x={W / 2}
+					y={H * 0.5 + T.big * 0.36}
 					size={T.big}
-					className="wt-film-num"
+					className="wt-film-num wt-film-accent"
 				>
 					{fixed2(PUT_DELTA)}
 				</Word>
 				<Lines
 					name="num-word"
 					text={t(copy.deltaWord)}
-					x={0}
-					y={T.big * 0.36 + T.head * 1.9}
+					x={W / 2}
+					y={H * 0.5 + T.big * 0.36 + T.head * 1.9}
 					size={T.head}
 					maxWidth={L.narrow ? W * 0.44 : room}
 					className="wt-film-type wt-film-accent"
@@ -544,8 +565,8 @@ function Scene({
 				<Lines
 					name="num-sub"
 					text={t(copy.perDollar)}
-					x={0}
-					y={T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
+					x={W / 2}
+					y={H * 0.5 + T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -785,8 +806,10 @@ function build(context: FilmContext) {
 	const marker = one("marker");
 	const ghost = one("ghost");
 	const num = one("num");
-	const numCall = one("num-call");
+	const numCall = one<SVGTextElement>("num-call");
 	const numPut = one("num-put");
+	const slopeNumber = one<SVGTextElement>("slope-number-proxy");
+	const riserNumber = one<SVGTSpanElement>("riser-number");
 	const moveLabel = one<SVGTextElement>("move-label");
 	const ghostLabel = one<SVGTextElement>("ghost-label");
 	const gap = one<SVGLineElement>("gap");
@@ -797,7 +820,7 @@ function build(context: FilmContext) {
 	const riserX = L.x(SPOT + 1);
 	const riserTop = L.y(V0 + CALL_DELTA);
 	const pushIn = cam(
-		narrow ? 1.45 : 2.1,
+		narrow ? 2 : 2.1,
 		{ x: narrow ? (mx + riserX) / 2 : mx, y: my },
 		{ x: W * (narrow ? 0.34 : 0.36), y: H * (narrow ? 0.64 : 0.5) },
 	);
@@ -806,6 +829,17 @@ function build(context: FilmContext) {
 		{ x: L.cx, y: L.cy },
 		{ x: W * (narrow ? 0.71 : 0.73), y: H * 0.58 },
 	);
+	// The source lives in the camera; its mono proxy lives in root coordinates.
+	// Measure the first digit, not the +$ prefix, so the handoff has no sideways jump.
+	const digitStart = riserNumber.getStartPositionOfChar(0);
+	gsap.set(slopeNumber, {
+		attr: {
+			x: pushIn.x + pushIn.scale * digitStart.x,
+			y: pushIn.y + pushIn.scale * digitStart.y,
+		},
+		fontSize:
+			Number.parseFloat(getComputedStyle(riserNumber).fontSize) * pushIn.scale,
+	});
 
 	// Everything at rest: hidden until its shot needs it.
 	gsap.set(marker, { x: mx, y: my - 90, opacity: 0 });
@@ -830,6 +864,7 @@ function build(context: FilmContext) {
 		one("lim-move-up"),
 		one("lim-move-down"),
 		...kids("q"),
+		slopeNumber,
 		numCall,
 		numPut,
 		one("num-word"),
@@ -844,7 +879,7 @@ function build(context: FilmContext) {
 	if (narrow) d.hidden([one("step-corner"), one("riser-tip")]);
 	gsap.set(one("step-line"), { attr: { x2: mx } });
 	gsap.set(ghost, { x: mx, y: my });
-	gsap.set(num, { x: W / 2, y: H * 0.5 });
+	gsap.set(num, { x: 0, y: 0 });
 	gsap.set([numCall, numPut], { transformOrigin: "50% 50%" });
 
 	// ——— open: the title ———
@@ -855,63 +890,63 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-price"), 4.7);
-	show(one("q-next"), 5.4, "right");
-	land(one("q-step"), 5.9);
-	show(one("q-line"), 6.0);
-	land(one("q-mark"), 7.6);
+	show(one("q-next"), 5.0, "right");
+	tl.fromTo(one("q-step"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 5.45);
+	show(one("q-line"), 5.5);
+	land(one("q-mark"), 5.45);
 
 	// ——— slope: the chart proves it; cut to the number ———
 	tl.addLabel("slope", 9.5);
 	hide(kids("q"), 9.5);
 	rise(9.7);
-	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.5);
-	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.5);
+	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.2);
+	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.2);
 	tl.fromTo(
 		one("dot"),
 		{ scale: 1.3 },
 		{ scale: 1, duration: 0.45, ease: "power3.out" },
-		11.05,
+		10.75,
 	);
 	tl.fromTo(
 		one("ripple"),
 		{ opacity: 0.6, attr: { r: narrow ? 3 : 6 } },
 		{ opacity: 0, attr: { r: 26 }, duration: 0.7, ease: "power2.out" },
-		11.1,
+		10.8,
 	);
 	tl.to(
 		one("clip-left"),
 		{
 			attr: { x: L.left - 4, width: mx - L.left + 4 },
-			duration: 1.3,
+			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		11.3,
+		10.7,
 	);
 	tl.to(
 		one("clip-right"),
-		{ attr: { width: L.right - mx + 4 }, duration: 1.3, ease: "power2.inOut" },
-		11.3,
+		{ attr: { width: L.right - mx + 4 }, duration: 1.1, ease: "power2.inOut" },
+		10.7,
 	);
 	tl.fromTo(
 		one("marker-label-call"),
 		{ opacity: 0, attr: { y: my - 4 } },
 		{ opacity: 1, attr: { y: my - (narrow ? 22 : 14) }, duration: 0.5 },
-		11.8,
+		10.9,
 	);
-	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 12.5);
-	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.9);
-	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.9);
-	show(one("s-head"), 13.3, "above");
+	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.2 }, 11.2);
+	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.1);
+	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.1);
+	show(one("s-head"), 12.5, "above");
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
 	const axisText = [...one("axes").querySelectorAll("text")];
-	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.9);
-	tl.set(axisText, { opacity: 1 }, 18.8);
+	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.1);
+	tl.set(axisText, { opacity: 1 }, 18);
 	if (narrow) {
 		// Keep the aside's type at an actual 11 px instead of shrinking it to 6.8 px.
 		tl.set(
 			[...axisText, one("curve-label-put")],
 			{ fontSize: T.small / PHONE_ASIDE_SCALE },
-			18.8,
+			18,
 		);
 		tl.set(
 			one("marker-label-put"),
@@ -923,7 +958,7 @@ function build(context: FilmContext) {
 					"text-anchor": "start",
 				},
 			},
-			18.8,
+			18,
 		);
 		const valueTicks = [0, 8, 16].map((tick) => one(`axis-value-${tick}`));
 		// Keep ticks outside the plot. Offset $8 above the big delta and $0 below
@@ -938,18 +973,18 @@ function build(context: FilmContext) {
 						"text-anchor": "end",
 					},
 				},
-				18.8,
+				18,
 			);
 		}
-		tl.set(one("dot"), { attr: { r: 3 / PHONE_ASIDE_SCALE } }, 18.8);
-		tl.set(axisText, { fontSize: T.small }, 35.5);
-		tl.set(valueTicks, { attr: { x: L.left - 8, "text-anchor": "end" } }, 35.5);
+		tl.set(one("dot"), { attr: { r: 3 / PHONE_ASIDE_SCALE } }, 18);
+		tl.set(axisText, { fontSize: T.small }, 34.7);
+		tl.set(valueTicks, { attr: { x: L.left - 8, "text-anchor": "end" } }, 34.7);
 		for (const tick of [0, 8, 16]) {
-			tl.set(one(`axis-value-${tick}`), { attr: { y: L.y(tick) + 4 } }, 35.5);
+			tl.set(one(`axis-value-${tick}`), { attr: { y: L.y(tick) + 4 } }, 34.7);
 		}
-		tl.set(one("dot"), { attr: { r: 3 } }, 35.5);
+		tl.set(one("dot"), { attr: { r: 3 } }, 34.7);
 	}
-	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 13.8);
+	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 13);
 	tl.to(
 		tangentLine,
 		{
@@ -962,51 +997,61 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power2.inOut",
 		},
-		13.8,
+		13,
 	);
 	// The $1 leg is already present when the headline names it.
-	tl.to(one("step"), { opacity: 1, duration: 0.1 }, 13.2);
+	tl.to(one("step"), { opacity: 1, duration: 0.1 }, 12.4);
 	tl.to(
 		one("step-line"),
 		{ attr: { x2: riserX }, duration: 0.45, ease: "power2.out" },
-		13.2,
+		12.4,
 	);
-	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 13.65);
-	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 15.5);
+	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 12.85);
+	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 14.7);
 	tl.to(
 		one("riser-line"),
 		{ attr: { y2: riserTop }, duration: 0.6, ease: "power3.out" },
-		15.5,
+		14.7,
 	);
-	if (narrow) tl.set(one("riser-tip"), { opacity: 1 }, 16.1);
-	// Cut: the chart sinks, the number lands.
-	hide(one("s-head"), 16.8);
-	sink(16.8);
-	land(numCall, 17.2);
-	show(one("num-word"), 17.6);
+	if (narrow) tl.set(one("riser-tip"), { opacity: 1 }, 15.3);
+	// Hand the digits to a root proxy before the chart steps back. The original
+	// digits disappear in the same frame, so there is no blank or doubled number.
+	tl.set(riserNumber, { opacity: 0 }, 15.85);
+	tl.set(slopeNumber, { opacity: 1 }, 15.85);
+	tl.to(world, { opacity: 0.22, duration: 0.15 }, 15.85);
+	// The dim chart clears the upward flight across its tangent and price label.
+	hide(one("s-head"), 16);
+	sink(16);
+	d.carry(slopeNumber, numCall, 16, {
+		duration: 0.7,
+		arc: "y",
+		match: fixed2(CALL_DELTA),
+	});
+	tl.set(numCall, { scale: 1 }, 16.7);
+	show(one("num-word"), 16.8);
 
 	// ——— put: the number flips while the curve folds ———
-	tl.addLabel("put", 18.5);
-	show(one("put-head"), 18.7, "above");
+	tl.addLabel("put", 17.7);
+	show(one("put-head"), 17.9, "above");
 	tl.to(
 		num,
-		{ x: W * 0.24, y: H * 0.58, duration: 0.9, ease: "power3.inOut" },
-		18.7,
+		{ x: -W * 0.26, y: H * 0.08, duration: 0.9, ease: "power3.inOut" },
+		17.9,
 	);
-	tl.set(world, aside, 18.8);
+	tl.set(world, { ...aside, opacity: 1 }, 18);
 	tl.set(
 		[one("step"), one("riser"), one("marker-label-call")],
 		{ opacity: 0 },
-		18.8,
+		18,
 	);
 	// The chart comes up once the number has moved aside, clear of its labels.
-	rise(19.6);
+	rise(18.8);
 	tl.to(
 		[one("curve-a"), one("curve-b")],
 		{ attr: { d: L.path(put) }, duration: 1.3, ease: "power2.inOut" },
-		20.2,
+		19.4,
 	);
-	tl.to(marker, { y: L.y(P0), duration: 1.3, ease: "power2.inOut" }, 20.2);
+	tl.to(marker, { y: L.y(P0), duration: 1.3, ease: "power2.inOut" }, 19.4);
 	tl.to(
 		tangentLine,
 		{
@@ -1017,79 +1062,79 @@ function build(context: FilmContext) {
 			duration: 1.3,
 			ease: "power2.inOut",
 		},
-		20.35,
+		19.55,
 	);
-	d.flip(numCall, numPut, 20.3);
-	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 21.3);
-	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 21.5);
-	// The unfolded −0.48 settles at 20.95; its sentence then holds a full 3.5 s.
-	show(one("put-sub"), 21.0);
+	d.flip(numCall, numPut, 19.5);
+	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 20.5);
+	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 20.7);
+	// The unfolded −0.48 settles at 20.15; its sentence then holds a full 3.5 s.
+	show(one("put-sub"), 20.2);
 
 	// ——— position: the chain ———
-	tl.addLabel("position", 24.5);
-	hide([one("put-head"), one("put-sub"), one("num-word")], 24.5);
-	sink(24.5);
-	d.flip(numPut, numCall, 24.5);
+	tl.addLabel("position", 23.7);
+	hide([one("put-head"), one("put-sub"), one("num-word")], 23.7);
+	sink(23.7);
+	d.flip(numPut, numCall, 23.7);
 	// The number shrinks about its own centre to head the chain; a group would scale about
 	// its box corner.
 	tl.to(
 		num,
 		{
-			x: W / 2,
-			y: L.rows[0] - T.num * 0.36,
+			x: 0,
+			y: L.rows[0] - T.num * 0.36 - H * 0.5,
 			duration: 0.8,
 			ease: "power3.inOut",
 		},
-		25.1,
+		24.3,
 	);
 	tl.to(
 		numCall,
 		{ scale: T.num / T.big, duration: 0.8, ease: "power3.inOut" },
-		25.1,
+		24.3,
 	);
-	show(one("ch-head"), 25.1, "above");
+	show(one("ch-head"), 24.3, "above");
 	const shares = (value: number) => signedCount(Math.round(value));
-	show(one("ch-op100"), 25.9);
-	land(one("ch-per"), 26.4);
-	show(one("ch-op-you"), 27.2);
-	land(one("ch-pos-you"), 27.7);
+	show(one("ch-op100"), 25.1);
+	land(one("ch-per"), 25.6);
+	show(one("ch-op-you"), 26.4);
+	land(one("ch-pos-you"), 26.9);
 	d.count(
 		one<SVGTextElement>("ch-pos-you"),
 		positionDelta(you.contracts),
-		27.7,
+		26.9,
 		shares,
 	);
-	show(one("ch-equiv"), 28.3);
+	show(one("ch-equiv"), 27.5);
 	// The hero: your position's delta, counted, held, then locked; its inputs step back.
-	d.lock(lockPos, 28.7, { around: one("ch-pos-you"), pad: 4 });
-	tl.addLabel("hero-lock", 28.7);
-	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 28.7);
+	d.lock(lockPos, 27.9, { around: one("ch-pos-you"), pad: 4 });
+	tl.addLabel("hero-lock", 27.9);
+	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 27.9);
 	// Ben: the same chain beside yours, the sign flipped.
 	// The lock holds 2.4 s before the column makes room for Ben; Ben's chain comes in close
 	// behind, so the dollars both positions make get two seconds together before the cut.
-	hide(lockPos, 31.1, 0.3);
+	hide(lockPos, 30.3, 0.3);
 	tl.to(
 		[one("ch-op-you"), one("ch-pos-you"), one("ch-equiv")],
 		{ x: -L.side, duration: 0.55, ease: "power2.inOut" },
-		31.15,
+		30.35,
 	);
-	show(one("ch-op-ben"), 31.5);
-	land(one("ch-pos-ben"), 31.75);
-	show(one("ch-equiv-ben"), 32.0, "below", 0.3);
+	show(one("ch-op-ben"), 30.7);
+	land(one("ch-pos-ben"), 30.95);
+	show(one("ch-equiv-ben"), 31.2, "below", 0.3);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
-		31.75,
+		30.95,
 		shares,
 	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
-	show(one("ch-chip"), 32.25, "below", 0.18);
+	show(one("ch-chip"), 31.45, "below", 0.18);
 	// The y-first route clears the positions and captions. Only the chip at takeoff
 	// steps back: +832/−520 and their units stay readable as the dollars are made.
-	tl.to(one("ch-chip"), { opacity: 0.22, duration: 0.02 }, 32.43);
+	tl.to(one("ch-chip"), { opacity: 0.22, duration: 0.02 }, 31.63);
 	for (const [holder, at] of [
-		["you", 32.45],
-		["ben", 32.95],
+		["you", 31.65],
+		["ben", 32.15],
 	] as const) {
 		d.carry(
 			one<SVGGraphicsElement>(`ch-move-proxy-${holder}`),
@@ -1100,14 +1145,14 @@ function build(context: FilmContext) {
 		// Approximate dollar results land settled, never as a counting equation.
 		tl.set(one(`ch-usd-${holder}`), { opacity: 1 }, at + 0.45);
 	}
-	tl.to(one("ch-chip"), { opacity: 1, duration: 0.15 }, 33.4);
+	tl.to(one("ch-chip"), { opacity: 1, duration: 0.15 }, 32.6);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
-	tl.addLabel("limits", 35.3);
-	hide([...kids("chain"), numCall], 35.3);
-	tl.set(world, home, 35.5);
-	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 35.5);
-	tl.set(marker, { y: my }, 35.5);
+	tl.addLabel("limits", 34.5);
+	hide([...kids("chain"), numCall], 34.5);
+	tl.set(world, home, 34.7);
+	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 34.7);
+	tl.set(marker, { y: my }, 34.7);
 	tl.set(
 		tangentLine,
 		{
@@ -1116,23 +1161,23 @@ function build(context: FilmContext) {
 				y2: L.y(callTangent(X_RANGE[1])),
 			},
 		},
-		35.5,
+		34.7,
 	);
 	tl.set(
 		[one("marker-label-put"), one("curve-label-put")],
 		{ opacity: 0 },
-		35.5,
+		34.7,
 	);
-	show(one("lim-head"), 35.65, "above");
-	rise(35.65);
-	tl.to(ghost, { opacity: 1, duration: 0.3 }, 36.1);
+	show(one("lim-head"), 34.85, "above");
+	rise(34.85);
+	tl.to(ghost, { opacity: 1, duration: 0.3 }, 35.3);
 	const slide = { spot: SPOT };
 	/**
 	 * The three readings stand still in the plot's empty top left, between its top two
 	 * gridlines: riding beside the marker, they ran across the curve and the line.
 	 */
 	const readX = L.left + 12;
-	const readY = (i: number) => L.y(Y_RANGE[1]) + 36 + i * 18;
+	const readY = (i: number) => L.y(Y_RANGE[1]) + 36 + i * T.body * 1.55;
 	const place = () => {
 		const spot = slide.spot;
 		const repriced = valueAt("call", spot);
@@ -1168,25 +1213,26 @@ function build(context: FilmContext) {
 	tl.to(
 		slide,
 		{ spot: SPOT + UP, duration: 0.8, ease: "power2.inOut", onUpdate: place },
-		36.3,
+		35.5,
 	);
 	// These labels name completed moves, so reveal them only at the endpoints.
-	tl.set(one("lim-move-up"), { opacity: 1 }, 37.1);
-	tl.to(
-		[moveLabel, ghostLabel, gap, gapLabel],
-		{ opacity: 1, duration: 0.4 },
-		36.3,
-	);
-	// Each completed comparison stands still for 1.5 s: 37.1–38.6 and 39.4–40.9.
-	tl.set(one("lim-move-up"), { opacity: 0 }, 38.6);
-	tl.set(one("lim-move-down"), { opacity: 1 }, 39.4);
+	tl.set(one("lim-move-up"), { opacity: 1 }, 36.3);
+	tl.to([moveLabel, ghostLabel], { opacity: 1, duration: 0.4 }, 35.5);
+	tl.to([gap, gapLabel], { opacity: 0.45, duration: 0.4 }, 35.5);
+	// Emphasize the error only once the complete comparison has landed.
+	tl.set([gap, gapLabel], { opacity: 1 }, 36.3);
+	// Each completed comparison stands still for 1.9 s: 36.3–38.2 and 39–40.9.
+	tl.set(one("lim-move-up"), { opacity: 0 }, 38.2);
+	tl.set([gap, gapLabel], { opacity: 0.45 }, 38.2);
+	tl.set(one("lim-move-down"), { opacity: 1 }, 39);
+	tl.set([gap, gapLabel], { opacity: 1 }, 39);
 	tl.to(
 		slide,
 		{ spot: SPOT + DOWN, duration: 0.8, ease: "power2.inOut", onUpdate: place },
-		38.6,
+		38.2,
 	);
-	tl.to(one("below"), { opacity: 1, duration: 0.4 }, 38.6);
-	tl.to(one("below-label"), { opacity: 1, duration: 0.3 }, 38.8);
+	tl.to(one("below"), { opacity: 1, duration: 0.4 }, 38.2);
+	tl.to(one("below-label"), { opacity: 1, duration: 0.3 }, 38.4);
 	// Cut: the claim, held to be read.
 	hide(one("lim-head"), 40.9);
 	sink(40.9);
