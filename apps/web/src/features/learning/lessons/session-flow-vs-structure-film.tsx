@@ -1,3 +1,4 @@
+import { gsap } from "gsap";
 import {
 	type Copy,
 	count,
@@ -29,6 +30,7 @@ import {
 	bucketFacts,
 	day,
 	earlier,
+	inBucket,
 	later,
 	ledgerBeats,
 	minuteOf,
@@ -47,9 +49,9 @@ import {
  *   open      0–4        "Volume and open interest"
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
  *   ledger    8.6–22.45  both open +10; changed hands ±0; both closed −4
- *   clock     22.45–32.35 hero: volume all day; open interest shown waits for Tuesday's count
+ *   clock     22.45–32.35 hero: volume all day; the OI terms assemble before Tuesday's count
  *   bucket    32.35–41.0 420 → 620 as the members change (+500 in, −300 out) at Sep 9's
- *                        figures, named and held; → 650 as each series adds 10s
+ *                        figures, held 35.3–37.3; → 650 as each series adds 10s
  *   claim     41.0–45.35 volume counts trading; open interest, positions
  *   next      45.35–47.35 Next: tape rows
  */
@@ -398,8 +400,14 @@ function Scene({
 				<text
 					key={name}
 					data-f={name}
-					x={L.ghostX}
-					y={L.statY + L.ghostDY + T.small + T.num * 1.3 + T.small * 2}
+					x={L.ghostX + (narrow ? T.num * 2.6 : 0)}
+					y={
+						L.statY +
+						L.ghostDY +
+						T.small +
+						T.num * 1.3 +
+						(narrow ? 0 : T.small * 2)
+					}
 					className="wt-film-type wt-film-dim"
 					style={{ fontSize: T.small }}
 				>
@@ -644,6 +652,19 @@ function Scene({
 						{trade.time}
 					</text>
 				</g>
+			))}
+			{/* Carries move below the expression first, then up into their own empty slot. */}
+			{TRADES.map((trade, i) => (
+				<text
+					key={trade.id}
+					data-f={`sum-waypoint-${i}`}
+					x={L.sumX(i + 1)}
+					y={L.clockY - 14}
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: T.body }}
+				>
+					{SUM_TERMS[i + 1]}
+				</text>
 			))}
 
 			{/* A bucket defined by days, as the days move. */}
@@ -906,6 +927,7 @@ function build(context: FilmContext) {
 	const trades = TRADES.map((_, i) => one(`trade-${i}`));
 	const ticks = TRADES.map((_, i) => one(`tick-${i}`));
 	const sumSources = TRADES.map((_, i) => one(`sum-source-${i}`));
+	const sumWaypoints = TRADES.map((_, i) => num(`sum-waypoint-${i}`));
 	const cols = stripExpiries.map((id) => one(`col-${id}`));
 	const changes = stripExpiries.map((id) => one(`colc-${id}`));
 	const clockTime = num("clock-time");
@@ -930,6 +952,7 @@ function build(context: FilmContext) {
 		one("shown"),
 		...kids("sum-line"),
 		...sumSources,
+		...sumWaypoints,
 		lockOi,
 		...kids("strip"),
 		...cols,
@@ -990,11 +1013,23 @@ function build(context: FilmContext) {
 	d.swap([heads[0], heads[1]], heads[2], 14.8);
 	trade(2, 18.3);
 	show(heads[3], 18.95);
+	// Turn the completed balance into a compact trade log during the ledger's hold.
+	// These same time-stamped OI changes will feed the calculation in the clock replay.
+	hide([one("bal-long"), one("bal-short")], 19.6);
+	sumSources.forEach((source, i) => {
+		tl.fromTo(
+			source,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.25 },
+			20.05 + i * 0.25,
+		);
+	});
 
 	// ——— clock: the hero. Volume live, open interest daily. ———
 	tl.addLabel("clock", 22.45);
 	d.swap([heads[2], heads[3]], heads[4], 22.45);
-	hide([trades[2], one("bal-long"), one("bal-short")], 22.45);
+	hide(trades[2], 22.45);
+	hide(sumSources, 22.45, 0.35, 0);
 	// Back to Monday's open: volume starts again; the true count steps aside, unpublished,
 	// and the figure a screen shows is Friday's.
 	counter("vol-n", 0, FINAL.volume, 22.65);
@@ -1047,6 +1082,27 @@ function build(context: FilmContext) {
 	clockTo(MON_CLOSE, minuteNow, 25.85, 0.7);
 	still(26.55, "shown");
 	clockTo(TUE_REPORT, MON_CLOSE, 26.95, 0.8);
+	// Once Monday's prints have landed, their OI changes assemble the calculation.
+	// Step the volume track back first so none of the carries crosses settled tick text.
+	tl.to(
+		[...kids("clock"), ...ticks, one("head")],
+		{ opacity: 0.2, duration: 0.2 },
+		26.25,
+	);
+	show([one("sum-tag"), num("sum-term-0")], 26.3, "below", 0.2);
+	TRADES.forEach((_, i) => {
+		const at = 26.4 + i * 0.55;
+		// Fade in without moving the source: a carry measures untransformed coordinates.
+		tl.fromTo(sumSources[i], { opacity: 0 }, { opacity: 1, duration: 0.2 }, at);
+		// Separate horizontal and vertical legs: the mark never cuts the occupied slots.
+		d.carry(num(`sum-change-${i}`), sumWaypoints[i], at + 0.3, {
+			duration: 0.25,
+		});
+		d.carry(sumWaypoints[i], num(`sum-term-${i + 1}`), at + 0.55, {
+			duration: 0.2,
+		});
+		hide(sumSources[i], at + 0.35, 0.2, 0);
+	});
 	// Tuesday's report: the shown figure turns to the true count, which is now published.
 	d.flip(one("oi-fri"), one("oi-mon"), 27.75);
 	tl.set(one("oi-fri"), { opacity: 0 }, 28.05);
@@ -1071,134 +1127,135 @@ function build(context: FilmContext) {
 	d.lock(lockOi, 28.75, { around: [one("shown"), one("oi-mon")], pad: 6 });
 	tl.addLabel("hero-lock", 28.75);
 	show(heads[5], 28.75);
-	// After the lock, the volume replay steps back. Each print contributes its OI change,
-	// rather than its volume, to the settled 106 above. The earlier terms stay in place.
-	tl.to(
-		[...kids("clock"), ...ticks, one("head"), clockTime],
-		{ opacity: 0.2, duration: 0.25 },
-		29.1,
-	);
-	show([one("sum-tag"), num("sum-term-0")], 29.5, "below", 0.25);
-	TRADES.forEach((_, i) => {
-		const at = 29.55 + i * 0.5;
-		// Fade in without moving the source: a carry measures untransformed coordinates.
-		tl.fromTo(sumSources[i], { opacity: 0 }, { opacity: 1, duration: 0.2 }, at);
-		d.carry(num(`sum-change-${i}`), num(`sum-term-${i + 1}`), at + 0.3, {
-			duration: 0.45,
-			arc: "x",
-		});
-		hide(sumSources[i], at + 0.35, 0.2, 0);
-	});
+	// The completed expression stays through the lock and its after-beat.
+	tl.to(clockTime, { opacity: 0.2, duration: 0.25 }, 29.1);
 
 	// ——— bucket: a week moves the members ———
 	tl.addLabel("bucket", 32.35);
-	hide(
-		[
-			heads[4],
-			heads[5],
-			one("vol"),
-			one("shown"),
-			one("ghost"),
-			...kids("sum-line"),
-			...sumSources,
-			...kids("clock"),
-			...ticks,
-			one("head"),
-			clockTime,
-			one("oi-mon"),
-			lockOi,
-		],
-		32.35,
-	);
+	const clockShot = [
+		heads[4],
+		heads[5],
+		one("vol"),
+		one("shown"),
+		one("ghost"),
+		one("ghost-note"),
+		...kids("sum-line"),
+		...sumSources,
+		...sumWaypoints,
+		...kids("clock"),
+		...ticks,
+		one("head"),
+		clockTime,
+		one("oi-fri"),
+		one("oi-mon"),
+		lockOi,
+	];
+	// Keep the full reading holds, then clear the clock in place before any bucket entry.
+	hide(clockShot, 32.35, 0.25, 0);
+	tl.set([...clockShot, one("sum-line"), one("clock")], { opacity: 0 }, 32.65);
 	show(heads[6], 32.7);
-	show(kids("strip"), 32.85);
+	show(kids("strip"), 32.8, "below", 0.25);
 	cols.forEach((col, i) => {
-		show(col, 32.9 + i * 0.1);
+		show(col, 32.75 + i * 0.05, "below", 0.2);
 	});
-	show(one("bt-0"), 33.25);
-	show(one("bucket-n"), 32.95, "below", 0.3);
-	show(one("note-was"), 33.4, "below", 0.25);
+	show(one("bt-0"), 32.9, "below", 0.25);
+	show(one("bucket-n"), 32.75, "below", 0.25);
+	show(one("note-was"), 33, "below", 0.2);
 	// A week passes: each expiry slides 7 days closer; the band stays. Counted with last
 	// week's figures first: what the members' change alone does.
 	const shift = L.dayX(0) - L.dayX(7);
-	const slideAt = 34.25;
-	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, slideAt);
-	d.flip(one("bt-0"), one("bt-1"), slideAt + 1.0);
-	tl.set(one("bt-0"), { opacity: 0 }, slideAt + 1.3);
+	const slideAt = 34.6;
+	const slideDuration = 0.7;
 	const after = AFTER_WEEK.columns;
-	// Each bar that changes membership takes its new colour as its centre crosses the band's
-	// edge: the moment the slide's own easing (power2.inOut, inverted here) brings it there.
-	const eased = (y: number) =>
-		y <= 0.5 ? Math.cbrt(y / 4) : 1 - Math.cbrt((1 - y) / 4);
-	stripExpiries.forEach((id) => {
-		const was = BEFORE.columns.find((c) => c.id === id);
-		const is = after.find((c) => c.id === id);
-		if (!was || !is || was.member === is.member) return;
-		const edge = is.member ? 30 : 14;
-		tl.set(
-			one(`colbar-${id}`),
-			{ attr: { "data-tone": is.member ? "total" : "neutral" } },
-			slideAt + eased((was.days - edge) / 7),
-		);
+	// One state drives geometry, membership, colour and every displayed figure. During the
+	// slide the total is pending; otherwise it sums the same rounded member labels shown.
+	const bucketState = { week: 0, growth: 0 };
+	const bucketColumns = BEFORE.columns.flatMap((before) => {
+		const column = after.find((column) => column.id === before.id);
+		return column
+			? [
+					{
+						before,
+						after: column,
+						group: one(`col-${before.id}`),
+						bar: one(`colbar-${before.id}`),
+						label: num(`colv-${before.id}`),
+					},
+				]
+			: [];
 	});
-	// The total recounts once the members have arrived.
-	d.count(
-		num("bucket-n"),
-		MOVED,
-		slideAt + 1.0,
-		(v) => count(Math.round(v)),
-		BEFORE.total,
-		0.35,
+	const renderBucket = () => {
+		let total = 0;
+		for (const column of bucketColumns) {
+			const days =
+				column.before.days +
+				(column.after.days - column.before.days) * bucketState.week;
+			const value = Math.round(
+				column.before.value +
+					(column.after.value - column.before.value) * bucketState.growth,
+			);
+			const member = inBucket(days);
+			const height = ((L.floor - L.top) * value) / VALUE_MAX;
+			gsap.set(column.group, { x: shift * bucketState.week });
+			column.bar.setAttribute("data-tone", member ? "total" : "neutral");
+			column.bar.setAttribute("y", String(L.floor - height));
+			column.bar.setAttribute("height", String(height));
+			column.label.setAttribute("y", String(L.floor - height - 6));
+			column.label.textContent = count(value);
+			if (member) total += value;
+		}
+		num("bucket-n").textContent =
+			bucketState.week > 0 && bucketState.week < 1 ? "—" : count(total);
+	};
+	tl.fromTo(
+		bucketState,
+		{ week: 0, growth: 0 },
+		{
+			week: 1,
+			duration: slideDuration,
+			ease: "power2.inOut",
+			immediateRender: false,
+			onUpdate: renderBucket,
+		},
+		slideAt,
 	);
+	// The new date finishes unfolding with the settled members and their 620 total.
+	d.flip(one("bt-0"), one("bt-1"), slideAt + 0.05);
+	tl.set(one("bt-0"), { opacity: 0 }, slideAt + 0.35);
 	const marks = stripExpiries
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
-	show(marks, 35.3, "above", 0.25);
+	show(marks, 35.35, "above", 0.25);
 	// The headline names the membership step while its marks are up.
 	show(heads[7], 35.6);
 	hide(marks, 36.85, 0.2);
 	// Then the week's new contracts: each series grows by tens.
-	const growthAt = 37.2;
-	stripExpiries.forEach((id) => {
-		const column = after.find((c) => c.id === id);
-		const before = BEFORE.columns.find((c) => c.id === id);
-		if (!column || !before) return;
-		const h = ((L.floor - L.top) * column.value) / VALUE_MAX;
-		tl.to(
-			one(`colbar-${id}`),
-			{
-				attr: { y: L.floor - h, height: h },
-				duration: 0.6,
-				ease: "power2.out",
-			},
-			growthAt,
-		);
-		tl.to(
-			one(`colv-${id}`),
-			{ attr: { y: L.floor - h - 6 }, duration: 0.6, ease: "power2.out" },
-			growthAt,
-		);
-		d.count(
-			num(`colv-${id}`),
-			column.value,
-			growthAt,
-			(v) => count(Math.round(v)),
-			before.value,
-			0.6,
-		);
-	});
-	d.count(
-		num("bucket-n"),
-		AFTER_WEEK.total,
-		growthAt,
-		(v) => count(Math.round(v)),
-		MOVED,
-		0.6,
+	const growthAt = 37.3;
+	// Fold the historical qualification away completely before any live figure grows.
+	tl.to(
+		one("note-was"),
+		{
+			scaleY: 0,
+			duration: 0.25,
+			ease: "power2.in",
+			transformOrigin: "50% 50%",
+		},
+		37,
 	);
-	// Keep the baseline qualification on its own line while growth begins. Only retire it
-	// after the later figures settle; the new-contract note has its own full reading hold.
-	show(one("note-new"), growthAt, "below", 0.2);
-	hide(one("note-was"), 38, 0.2, 0);
+	tl.set(one("note-was"), { opacity: 0 }, 37.25);
+	tl.fromTo(
+		bucketState,
+		{ week: 1, growth: 0 },
+		{
+			growth: 1,
+			duration: 0.6,
+			ease: "power2.out",
+			immediateRender: false,
+			onUpdate: renderBucket,
+		},
+		growthAt,
+	);
+	show(one("note-new"), growthAt, "below", 0.15);
 	// In place, without travel: each change comes up over its own column's figure.
 	changes.forEach((change, i) => {
 		word(change, growthAt + 0.1 + i * 0.12);
