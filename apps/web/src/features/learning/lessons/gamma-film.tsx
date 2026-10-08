@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { useId } from "react";
 import {
+	ALFA,
 	type Copy,
 	count,
 	OCT_100_CALL,
@@ -88,7 +89,28 @@ const shares = (value: number) =>
 
 function layout(width: number) {
 	const frame = filmFrame(width);
-	const { height, narrow, room } = frame;
+	const { height, narrow, room, type: T } = frame;
+	// Desktop films can be much narrower than the viewport. Reserve both worked rows
+	// from the bottom up, then move the gamma card only as far as their labels require.
+	const exposureLabelOffset = narrow
+		? T.num * 1.3
+		: Math.max(T.num * 1.3, T.num * 0.85 + T.small * 0.3 + 12);
+	const exposureBenY = narrow ? height * 0.9 : height - 12 - T.num * 0.3;
+	const exposureYouY = narrow
+		? height * 0.75
+		: exposureBenY - exposureLabelOffset - T.num * 0.25 - T.small - 12;
+	const gammaCaptionOffset = T.big * 0.36 + T.head * 1.9 + T.body * 1.9;
+	const gammaCardY = narrow
+		? height * 0.5
+		: Math.min(
+				height * 0.5,
+				exposureYouY -
+					exposureLabelOffset -
+					T.small -
+					12 -
+					T.body * 0.35 -
+					gammaCaptionOffset,
+			);
 	// A phone's axis labels sit left of the plot: room for them inside the frame's edge.
 	const left = frame.margin + (narrow ? 18 : 0);
 	const right = width * 0.965;
@@ -138,6 +160,10 @@ function layout(width: number) {
 		equations,
 		eqSize,
 		columns,
+		gammaCardY,
+		gammaCaptionY: gammaCardY + gammaCaptionOffset,
+		exposureLabelOffset,
+		exposureRows: { you: exposureYouY, ben: exposureBenY },
 	};
 }
 
@@ -168,6 +194,12 @@ const copy = {
 		`Ben · short ${Math.abs(ben)} calls`,
 		`Ben · 空头 ${Math.abs(ben)} 张看涨`,
 	],
+	youGamma: ["You · long gamma", "你 · 正 Gamma"],
+	benGamma: ["Ben · short gamma", "Ben · 负 Gamma"],
+	youCalls: [`${you} calls`, `${you} 张看涨`],
+	benCalls: [`−${Math.abs(ben)} calls`, `−${Math.abs(ben)} 张看涨`],
+	youExposure: ["You · share-equivalents", "你 · 等效股数"],
+	benExposure: ["Ben · share-equivalents", "Ben · 等效股数"],
 	colCalls: ["calls' delta", "看涨 Delta"],
 	colShares: ["shares held", "持有股票"],
 	colNet: ["net", "净额"],
@@ -463,18 +495,23 @@ function Scene({
 								</text>
 							</g>
 						))}
-						<line
-							data-f="g-riser"
-							x1={L.x(100)}
-							x2={L.x(100)}
-							y1={L.yG(octAtStrike)}
-							y2={L.yG(sepAtStrike)}
-							className="wt-line-long"
-							strokeWidth={2}
-						/>
+						{(
+							[
+								["g-oct-height", -12, octAtStrike, "wt-line-position"],
+								["g-sep-height", 12, sepAtStrike, "wt-line-long"],
+							] as const
+						).map(([name, offset, gamma, color]) => (
+							<path
+								key={name}
+								data-f={name}
+								d={`M${L.x(SPOT) + offset - 4} ${L.bottom}h8M${L.x(SPOT) + offset} ${L.bottom}V${L.yG(gamma)}M${L.x(SPOT) + offset + Math.sign(offset) * 4} ${L.yG(gamma)}H${L.x(SPOT)}`}
+								className={color}
+								strokeWidth={2}
+							/>
+						))}
 						<Word
 							name="g-times"
-							x={L.x(101.6)}
+							x={L.x(SPOT + 1.6)}
 							y={L.yG(sepAtStrike) + T.num * 0.3}
 							size={T.num}
 							anchor="start"
@@ -541,7 +578,7 @@ function Scene({
 				<Word
 					name="g-num"
 					x={W / 2}
-					y={H * 0.5 + T.big * 0.36}
+					y={L.gammaCardY + T.big * 0.36}
 					size={T.big}
 					className="wt-film-num"
 				>
@@ -550,7 +587,7 @@ function Scene({
 				<Word
 					name="g-word"
 					x={W / 2}
-					y={H * 0.5 + T.big * 0.36 + T.head * 1.9}
+					y={L.gammaCardY + T.big * 0.36 + T.head * 1.9}
 					size={T.head}
 					className="wt-film-type wt-film-accent"
 				>
@@ -560,12 +597,69 @@ function Scene({
 					name="g-sub"
 					text={t(copy.gammaSub)}
 					x={W / 2}
-					y={H * 0.5 + T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
+					y={L.gammaCaptionY}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
+			{/* Worked position deltas; the settled results become the table's first column. */}
+			{(
+				[
+					[
+						"you",
+						you,
+						hedgeBefore.options,
+						copy.youExposure,
+						L.exposureRows.you,
+					],
+					[
+						"ben",
+						ben,
+						benColumns[0].options,
+						copy.benExposure,
+						L.exposureRows.ben,
+					],
+				] as const
+			).map(([who, quantity, result, label, y]) => {
+				const expression = `${quantity < 0 ? `−${Math.abs(quantity)}` : quantity} × ${ALFA.multiplier} × ${fixed2(DELTA)} =`;
+				const prefixW = textWidth(expression, T.body);
+				const resultW = textWidth(shares(result), T.num);
+				const start = (W - prefixW - T.small - resultW) / 2;
+				return (
+					<g key={who} data-f={`h-derive-${who}`}>
+						<Word
+							name={`h-derive-${who}-label`}
+							x={start}
+							y={y - L.exposureLabelOffset}
+							size={T.small}
+							anchor="start"
+							className="wt-film-tag"
+						>
+							{t(label).toUpperCase()}
+						</Word>
+						<Word
+							name={`h-derive-${who}-calc`}
+							x={start}
+							y={y}
+							size={T.body}
+							anchor="start"
+							className="wt-film-num"
+						>
+							{expression}
+						</Word>
+						<Word
+							name={`h-derive-${who}-result`}
+							x={start + prefixW + T.small + resultW / 2}
+							y={y}
+							size={T.num}
+							className="wt-film-num"
+						>
+							{shares(result)}
+						</Word>
+					</g>
+				);
+			})}
 			<Brackets name="lock-hedge" glow />
 			<g data-f="hedge">
 				<Lines
@@ -605,6 +699,35 @@ function Scene({
 					>
 						{t(label).toUpperCase()}
 					</Word>
+				))}
+				{(
+					[
+						["you", copy.youGamma, copy.youCalls, hedgeRows.you],
+						["ben", copy.benGamma, copy.benCalls, hedgeRows.ben],
+					] as const
+				).map(([who, gamma, calls, y]) => (
+					<g key={who} data-f={`h-holder-${who}`}>
+						<Word
+							name={`h-gamma-${who}`}
+							x={L.margin}
+							y={y - T.num * 1.15}
+							size={T.small}
+							anchor="start"
+							className="wt-film-tag"
+						>
+							{t(gamma).toUpperCase()}
+						</Word>
+						<Word
+							name={`h-calls-${who}`}
+							x={W - L.margin}
+							y={y - T.num * 1.15}
+							size={T.small}
+							anchor="end"
+							className="wt-film-tag"
+						>
+							{t(calls).toUpperCase()}
+						</Word>
+					</g>
 				))}
 				{(narrow
 					? [copy.colCallsShort, copy.colSharesShort, copy.colNet]
@@ -673,7 +796,7 @@ function Scene({
 			<Word
 				name="g-calc"
 				x={W / 2}
-				y={H * 0.5 - T.big * (narrow ? 0.75 : 0.55)}
+				y={L.gammaCardY - T.big * (narrow ? 0.75 : 0.55)}
 				size={T.head}
 				className="wt-film-num wt-film-dim"
 			>
@@ -765,11 +888,16 @@ function build(context: FilmContext) {
 		one("g-oct-label"),
 		one("g-sep-label"),
 		one("g-times"),
-		one("g-riser"),
+		one("g-oct-height"),
+		one("g-sep-height"),
 		...kids("q"),
 		...kids("g"),
 		one<SVGGraphicsElement>("lock-hedge"),
 		...kids("hedge"),
+		...kids("h-derive-you"),
+		...kids("h-derive-ben"),
+		...kids("h-holder-you"),
+		...kids("h-holder-ben"),
 		one("k-head"),
 		one("g-calc"),
 		one("e-head"),
@@ -883,18 +1011,60 @@ function build(context: FilmContext) {
 	land(one("g-num"), 19.0);
 	show(one("g-word"), 19.15);
 	show(one("g-sub"), 19.25);
+	for (const [who, at] of [
+		["you", 19.8],
+		["ben", 20.2],
+	] as const) {
+		// Fade the worked rows in place, so neither label nor equation travels across text.
+		tl.fromTo(
+			[one(`h-derive-${who}-label`), one(`h-derive-${who}-calc`)],
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.5 },
+			at,
+		);
+		// A fade alone leaves the result untransformed for its later carry.
+		tl.fromTo(
+			one(`h-derive-${who}-result`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.18 },
+			at + 0.15,
+		);
+	}
 
 	// ——— hedge: the same delta, carried onto a position ———
 	tl.addLabel("hedge", 22.8);
-	hide([...kids("g"), one("g-calc")], 22.8);
+	// Preserve the card's hold, then finish its fade before the first carry at 22.95.
+	hide([...kids("g"), one("g-calc")], 22.8, 0.1, 0);
+	// Clear the calculation lanes before either result flies across, then upward.
+	hide(
+		[
+			one("h-derive-you-label"),
+			one("h-derive-you-calc"),
+			one("h-derive-ben-label"),
+			one("h-derive-ben-calc"),
+		],
+		22.8,
+		0.1,
+		0,
+	);
+	d.carry(
+		one<SVGGraphicsElement>("h-derive-you-result"),
+		one<SVGGraphicsElement>("h-you-0"),
+		22.95,
+		{ duration: 0.75, arc: "x" },
+	);
+	d.carry(
+		one<SVGGraphicsElement>("h-derive-ben-result"),
+		one<SVGGraphicsElement>("h-ben-0"),
+		23.35,
+		{ duration: 0.75, arc: "x" },
+	);
 	show(one("h-head"), 23.0, "above");
 	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.4);
-	show(one("h-who-you"), 23.6);
-	land(one("h-you-0"), 23.7);
+	show(one("h-who-you"), 23.75, "above");
 	land(one("h-you-1"), 23.85);
 	land(one("h-you-2"), 24.0);
-	show(one("h-who-ben"), 24.2);
-	land(one("h-ben-0"), 24.3);
+	show(one("h-who-ben"), 24.15, "above");
 	land(one("h-ben-1"), 24.45);
 	land(one("h-ben-2"), 24.6);
 	// ALFA rises $2, once, for both.
@@ -940,9 +1110,9 @@ function build(context: FilmContext) {
 	hide(lockHedge, 29.8, 0.3);
 	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.8);
 	tl.to(one("h-ben-2"), warn, 30.0);
-	show(one("h-claim"), 30.3);
+	show(one("h-claim"), 30.2);
 	// On a phone the rule's second line sits on the move's chip: the chip has done its work.
-	if (L.narrow) tl.to(one("h-chip"), { opacity: 0, duration: 0.3 }, 30.3);
+	if (L.narrow) tl.to(one("h-chip"), { opacity: 0, duration: 0.3 }, 30.2);
 	d.count(
 		one<SVGTextElement>("h-you-1"),
 		hedgeFixed.shares,
@@ -962,6 +1132,16 @@ function build(context: FilmContext) {
 	);
 	d.count(one<SVGTextElement>("h-ben-2"), 0, 32.5, shares, benDrift);
 	tl.to(one("h-ben-2"), flat, 33.2);
+	// Once the trades settle, bind the rule to each holder; retain signed call quantities.
+	for (const [who, at] of [
+		["you", 33.2],
+		["ben", 33.6],
+	] as const) {
+		tl.set(one(`h-holder-${who}`), { opacity: 1 }, at);
+		d.flip(one(`h-who-${who}`), one(`h-gamma-${who}`), at);
+		tl.set(one(`h-who-${who}`), { opacity: 0 }, at + 0.3);
+		show(one(`h-calls-${who}`), at + 0.3, "above", 0.35);
+	}
 
 	// ——— expiry: where gamma lives ———
 	tl.addLabel("expiry", 35.4);
@@ -998,13 +1178,10 @@ function build(context: FilmContext) {
 		37.1,
 	);
 	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 37.9);
-	tl.fromTo(
-		one("g-riser"),
-		{ opacity: 1, scaleY: 0, transformOrigin: "50% 100%" },
-		{ scaleY: 1, duration: 0.4, ease: "power2.out" },
-		37.7,
-	);
-	land(one("g-times"), 38.1);
+	// Both measures start at zero: the complete September height is about three Octobers.
+	d.trace(one<SVGPathElement>("g-oct-height"), 37.7, { duration: 0.35 });
+	d.trace(one<SVGPathElement>("g-sep-height"), 38.1, { duration: 0.4 });
+	land(one("g-times"), 38.5);
 	// Cut: the claim, held to be read.
 	hide(one("e-head"), 40.4);
 	sink(40.4);
