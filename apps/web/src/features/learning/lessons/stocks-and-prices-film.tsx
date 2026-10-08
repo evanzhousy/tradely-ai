@@ -512,6 +512,18 @@ function Scene({
 			>
 				{usd(0)}
 			</Word>
+			{/* The settled total becomes a per-share price through visible division. On a
+			    phone the operation sits below its numerator, clear of the adjacent average. */}
+			<Word
+				name="p-divisor"
+				x={slotX(0)}
+				y={valY(0) + T.body * (narrow ? 1.8 : 1.05)}
+				size={T.body}
+				anchor="start"
+				className="wt-film-num wt-film-accent"
+			>
+				{`÷ ${count(BUY_BIG.filled)}`}
+			</Word>
 			{/* The hero: the average price of 1,000 shares, the loudest figure on stage. */}
 			<Word
 				name="p-avg"
@@ -837,8 +849,8 @@ function build(context: FilmContext) {
 	].map((name) => one(name));
 	/**
 	 * Takes `fills` off one side of the book, one level after another: brackets lock on the
-	 * level, it lights and shrinks, and with `paid` what you pay counts on by that fill. The
-	 * book comes back at `restore`.
+	 * level, it lights and shrinks, and with `paid` one filled-quantity state drives the
+	 * remaining size, bar and paid total together. The book comes back at `restore`.
 	 */
 	const take = (
 		side: "ask" | "bid",
@@ -861,42 +873,53 @@ function build(context: FilmContext) {
 		fills.forEach((fill, i) => {
 			const at = book.find((item) => item.price === fill.price);
 			if (!at) return;
-			const left = at.size - fill.size;
 			const when = time + i * step;
+			const priorPaid = sum;
+			const state = { filled: 0 };
+			const levelBar = bar(side, fill.price);
+			const levelSize = size(side, fill.price);
+			// Quantize the shared fill to whole shares, so even the displayed size and cost
+			// agree exactly; geometry cannot run ahead of the money or vice versa.
+			const renderBook = () => {
+				const filled = Math.round(state.filled);
+				const remaining = at.size - filled;
+				levelSize.textContent = count(remaining);
+				levelBar.setAttribute("width", `${(remaining / MAX_SIZE) * L.barMax}`);
+				return filled;
+			};
+			const renderFill = () => {
+				const filled = renderBook();
+				if (paid) total.textContent = dollars(priorPaid + fill.price * filled);
+			};
 			d.lock(lockRow, when, { around: hit(side, fill.price), pad: 4 });
 			tl.to(hit(side, fill.price), { opacity: 1, duration: 0.25 }, when);
-			tl.to(
-				bar(side, fill.price),
-				{ attr: { width: (left / MAX_SIZE) * L.barMax }, duration: 0.4 },
+			tl.fromTo(
+				state,
+				{ filled: 0 },
+				{
+					filled: fill.size,
+					duration: Math.min(step, 0.4),
+					ease: "power2.out",
+					immediateRender: false,
+					onStart: renderFill,
+					onUpdate: renderFill,
+				},
 				when,
 			);
-			d.count(
-				size(side, fill.price),
-				left,
-				when,
-				(v) => count(Math.round(v)),
-				at.size,
-				0.4,
-			);
-			if (paid) {
-				const next = sum + fill.price * fill.size;
-				d.count(total, next, when, dollars, sum, Math.min(step, 0.5));
-				sum = next;
-			}
+			if (paid) sum += fill.price * fill.size;
 			if (restore === null) return;
 			tl.to(hit(side, fill.price), { opacity: 0, duration: 0.25 }, restore);
-			tl.to(
-				bar(side, fill.price),
-				{ attr: { width: (at.size / MAX_SIZE) * L.barMax }, duration: 0.3 },
+			tl.fromTo(
+				state,
+				{ filled: fill.size },
+				{
+					filled: 0,
+					duration: 0.3,
+					ease: "power2.out",
+					immediateRender: false,
+					onUpdate: renderBook,
+				},
 				restore,
-			);
-			d.count(
-				size(side, fill.price),
-				at.size,
-				restore,
-				(v) => count(Math.round(v)),
-				left,
-				0.3,
 			);
 		});
 		if (restore !== null)
@@ -918,6 +941,7 @@ function build(context: FilmContext) {
 		one("p-pay-big"),
 		one("p-get"),
 		one("p-avg-tag"),
+		one("p-divisor"),
 		total,
 		one("diff-gap"),
 		one("diff-label"),
@@ -1144,20 +1168,28 @@ function build(context: FilmContext) {
 		paid: { from: 0 },
 		from: BUY10,
 	});
-	show(one("p-avg-tag"), 29.05);
-	word(one("p-avg"), 29.25);
-	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 29.7);
+	// The last fill settles at 29.0. Divide that total before revealing its rounded
+	// per-share result; leave the completed subtraction's later four-second hold intact.
+	tl.fromTo(
+		one("p-divisor"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.15 },
+		29.0,
+	);
+	show(one("p-avg-tag"), 29.35);
+	word(one("p-avg"), 29.55);
+	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 30.15);
 	tl.to(
 		BUY_BIG.fills.map((fill) => hit("ask", fill.price)),
 		{ opacity: 0.3, duration: 0.3 },
-		29.7,
+		30.15,
 	);
-	d.lock(one<SVGGraphicsElement>("lock-avg"), 29.7, {
+	d.lock(one<SVGGraphicsElement>("lock-avg"), 30.15, {
 		around: [one("p-avg-tag"), one("p-avg")],
 		pad: 8,
 	});
-	tl.addLabel("hero-lock", 29.7);
-	tl.to(total, { opacity: 0.45, duration: 0.3 }, 29.7);
+	tl.addLabel("hero-lock", 30.15);
+	tl.to([total, one("p-divisor")], { opacity: 0.45, duration: 0.3 }, 30.15);
 	const last = one<SVGGraphicsElement>("last");
 	tl.set(last, { attr: { class: "wt-film-num wt-film-accent" } }, 30.4);
 	if (L.narrow) {
@@ -1196,6 +1228,7 @@ function build(context: FilmContext) {
 			one("p-pay"),
 			one("p-pay-big"),
 			total,
+			one("p-divisor"),
 			one("p-avg-tag"),
 			one("p-avg"),
 			one("lock-avg"),
@@ -1221,11 +1254,8 @@ function build(context: FilmContext) {
 		around: one("colbg-index"),
 		pad: 4,
 	});
-	tl.to(
-		[one("col-stock"), one("col-etf")],
-		{ opacity: 0.4, duration: 0.4 },
-		37.65,
-	);
+	// The index gains a background and fitted lock; its peers retain full contrast so
+	// the completed three-column comparison stays readable until the cut at 41.05.
 	// Down the index column: a number, can't buy it, settles in cash.
 	ROWS.forEach((row, r) => {
 		const cell = one(`cell-index-${row}`);
