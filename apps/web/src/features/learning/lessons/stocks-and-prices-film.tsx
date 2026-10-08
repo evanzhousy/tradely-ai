@@ -57,6 +57,7 @@ const MINE = 10;
 const SHARES = ALFA_SHARES_OUTSTANDING;
 const BUY10 = tradeAgainst("buy", 10);
 const SELL10 = tradeAgainst("sell", 10);
+const PER_SHARE_GAP = BUY10.notional / MINE - SELL10.notional / MINE;
 const BIG = 1_000;
 /** The 1,000 climb the book the 10-share trades left: a trade never un-happens. */
 const BUY_BIG = tradeAgainst("buy", BIG, BUY10);
@@ -291,6 +292,9 @@ function Scene({
 	const valY = (k: number, size = fig) => tagY(k) + size * 1.15;
 	// Under the locked average, clear of its brackets.
 	const vsY = valY(1, heroFig) + heroFig * 0.3 + 10 + T.body * 1.5;
+	const mathX = narrow ? L.bookX + L.bookW + 14 : L.panelX;
+	const diffY = narrow ? phoneVsY : vsY;
+	const subtractionY = narrow ? phoneVsY + T.small * 0.9 : vsY + T.body * 1.9;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -340,6 +344,15 @@ function Scene({
 					{t(["ALFA · open", "ALFA · 开盘"]).toUpperCase()}
 				</Word>
 				{/* Once the price moves it is no longer the open. */}
+				<Word
+					name="px-tag-moving"
+					x={W / 2}
+					y={H * 0.3}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(["ALFA · price", "ALFA · 股价"]).toUpperCase()}
+				</Word>
 				<Word
 					name="px-tag-up"
 					x={W / 2}
@@ -522,17 +535,50 @@ function Scene({
 			>
 				{`${Math.round(BUY10.notional - SELL10.notional)}¢`}
 			</text>
+			<text
+				data-f="diff-times"
+				x={mathX}
+				y={diffY + T.body * 5.9}
+				className="wt-film-num wt-film-loss"
+				style={{ fontSize: narrow ? T.small * 1.15 : T.body }}
+			>
+				{`${PER_SHARE_GAP}¢ × ${MINE} = ${Math.round(BUY10.notional - SELL10.notional)}¢`}
+			</text>
+			{/* The quote's per-share difference, then the ten-share difference below the
+			    tickets. All results are settled; neither side of an equation counts. */}
+			{[
+				["diff-ask", usd(BUY10.notional / MINE)],
+				["diff-bid", `− ${usd(SELL10.notional / MINE)}`],
+				["diff-unit", `= ${PER_SHARE_GAP}¢ ${t(["/ share", "/ 股"])}`],
+			].map(([name, text], i) => (
+				<Word
+					key={name}
+					name={name}
+					x={mathX}
+					y={diffY + (i === 2 ? 4 : i * 1.9) * T.body}
+					size={T.body}
+					anchor="start"
+					className={`wt-film-num ${i === 2 ? "wt-film-loss" : "wt-film-dim"}`}
+				>
+					{text}
+				</Word>
+			))}
+			<path
+				data-f="diff-rule"
+				d={`M${mathX} ${diffY + T.body * 2.65}h${T.body * 6.8}`}
+				className="wt-film-gap"
+			/>
 			{/* After the hero, the same 1,000 shares at the last price. A phone has room for it
 			    only beside the book, under the "last" tag it extends. */}
 			<g data-f="vs-last">
 				{narrow ? (
-					[`${t(copy.last)} × ${count(BIG)}`, `= ${usd(AT_LAST, 0)}`].map(
+					[`${t(copy.last)} × ${count(BIG)}`, `− ${usd(AT_LAST, 0)}`].map(
 						(line, i) => (
 							<text
 								key={line}
 								data-f={i ? "vs-eq" : "vs-x"}
 								x={L.bookX + L.bookW + 14}
-								y={phoneVsY + T.small * i * 1.5}
+								y={phoneVsY + T.small * (i ? 2.5 : -1.9)}
 								className="wt-film-num wt-film-dim"
 								style={{ fontSize: T.small }}
 							>
@@ -555,28 +601,55 @@ function Scene({
 				)}
 			</g>
 			<Word
-				name="p-over"
-				x={narrow ? L.bookX + L.bookW + 14 : L.panelX}
-				y={
-					narrow ? phoneVsY + T.small * 1.5 + T.body * 1.5 : vsY + T.body * 1.9
+				name="vs-paid"
+				x={mathX}
+				y={subtractionY}
+				size={narrow ? T.small : T.body}
+				anchor="start"
+				className="wt-film-num wt-film-dim"
+			>
+				{usd(BUY_BIG.notional)}
+			</Word>
+			{!narrow ? (
+				<Word
+					name="vs-minus"
+					x={mathX + T.body * 7.4}
+					y={subtractionY}
+					size={T.body}
+					anchor="start"
+					className="wt-film-num wt-film-dim"
+				>
+					{`− ${usd(AT_LAST, 0)}`}
+				</Word>
+			) : null}
+			<path
+				data-f="vs-rule"
+				d={
+					narrow
+						? `M${mathX} ${phoneVsY + T.small * 3.4}h${T.small * 8.1}`
+						: `M${mathX} ${subtractionY + T.body * 0.45}h${T.body * 13.7}`
 				}
-				size={narrow ? T.body : T.body * 1.25}
+				className="wt-film-gap"
+			/>
+			<Word
+				name="p-over"
+				x={narrow ? mathX : mathX + T.body * 14.5}
+				y={narrow ? phoneVsY + T.small * 4.9 : subtractionY}
+				size={T.body}
 				anchor="start"
 				className="wt-film-num wt-film-loss"
 			>
-				{signedUsd(0, 2)}
+				{`= ${signedUsd(OVER_LAST, 2)}`}
 			</Word>
-			{narrow ? (
-				<text
-					data-f="p-over-tag"
-					x={L.bookX + L.bookW + 14}
-					y={phoneVsY + T.small * 1.5 + T.body * 1.5 + T.small * 1.5}
-					className="wt-film-tag"
-					style={{ fontSize: T.small }}
-				>
-					{t(copy.overLast).toUpperCase()}
-				</text>
-			) : null}
+			<text
+				data-f="p-over-tag"
+				x={narrow ? mathX : mathX + T.body * 14.5}
+				y={narrow ? phoneVsY + T.small * 6.5 : subtractionY + T.small * 1.8}
+				className="wt-film-tag"
+				style={{ fontSize: T.small }}
+			>
+				{t(copy.overLast).toUpperCase()}
+			</text>
 			{/* An order leaves the book as a ticket at the level it takes. */}
 			{(
 				[
@@ -846,10 +919,19 @@ function build(context: FilmContext) {
 		one("p-get"),
 		one("p-avg-tag"),
 		total,
+		one("diff-gap"),
 		one("diff-label"),
+		one("diff-times"),
+		one("diff-ask"),
+		one("diff-bid"),
+		one("diff-unit"),
+		one("diff-rule"),
 		...kids("vs-last"),
+		one("vs-paid"),
+		...(L.narrow ? [] : [one("vs-minus")]),
+		one("vs-rule"),
 		one("p-over"),
-		...(L.narrow ? [one("p-over-tag")] : []),
+		one("p-over-tag"),
 		one("p-sell"),
 		one("p-avg"),
 		one("lock-avg"),
@@ -882,7 +964,7 @@ function build(context: FilmContext) {
 	show([one("co-tag"), coVal], 10.5);
 	// Each $1 move, under its own headline.
 	d.swap(heads[0], heads[1], 12.7);
-	d.swap(one("px-tag"), one("px-tag-up"), 12.4);
+	d.swap(one("px-tag"), one("px-tag-moving"), 12.4);
 	show([mineChg, coChg], 12.7);
 	tl.set(
 		[mineChg, coChg],
@@ -894,6 +976,8 @@ function build(context: FilmContext) {
 	d.count(coVal, SHARES * (OPEN + 100), 12.75, company, SHARES * OPEN, 0.6);
 	d.count(mineChg, MINE * 100, 12.75, signed, 0, 0.6);
 	d.count(coChg, SHARES * 100, 12.75, signedMillions, 0, 0.6);
+	// Only name the completed dollar rise once all five figures have settled.
+	d.swap(one("px-tag-moving"), one("px-tag-up"), 13.35);
 
 	// ——— quote: you trade against the book ———
 	tl.addLabel("quote", 16.55);
@@ -944,6 +1028,32 @@ function build(context: FilmContext) {
 			label.setAttribute("x", `${x + 10}`);
 			label.setAttribute("y", `${(y1 + y2) / 2 + L.type.body * 0.36}`);
 		}
+		const times = one("diff-times");
+		if (L.narrow) {
+			for (const attr of ["x", "y", "text-anchor"]) {
+				const value = label.getAttribute(attr);
+				if (value !== null) times.setAttribute(attr, value);
+			}
+		}
+	}
+	if (!L.narrow) {
+		// Measure the settled equation as a row, with clear gaps between its operands and
+		// a generous right inset. Move the whole row together if the panel is too narrow.
+		const paid = one<SVGTextElement>("vs-paid");
+		const minus = one<SVGTextElement>("vs-minus");
+		const over = one<SVGTextElement>("p-over");
+		const paidW = paid.getBBox().width;
+		const minusW = minus.getBBox().width;
+		const rowW = paidW + minusW + over.getBBox().width + 24;
+		const x = Math.min(L.panelX, W - Math.max(24, L.margin * 0.65) - rowW);
+		paid.setAttribute("x", `${x}`);
+		minus.setAttribute("x", `${x + paidW + 12}`);
+		const resultX = x + paidW + minusW + 24;
+		over.setAttribute("x", `${resultX}`);
+		one("p-over-tag").setAttribute("x", `${resultX}`);
+		const rule = one("vs-rule");
+		const y = Number(paid.getAttribute("y")) + L.type.body * 0.45;
+		rule.setAttribute("d", `M${x} ${y}h${paidW + minusW + 12}`);
 	}
 	d.swap(heads[2], heads[3], 20.4);
 	take("ask", BUY10.fills, 20.75, null);
@@ -986,9 +1096,39 @@ function build(context: FilmContext) {
 		{ opacity: 0, duration: 0.3 },
 		23.35,
 	);
+	// Develop the held difference: subtract the quotes per share, then multiply by ten.
+	tl.fromTo(
+		one("diff-ask"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		23.6,
+	);
+	tl.fromTo(
+		one("diff-bid"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		23.95,
+	);
+	d.trace(one<SVGPathElement>("diff-rule"), 24.25, { duration: 0.25 });
+	tl.set(one("diff-unit"), { opacity: 1 }, 24.55);
+	if (L.narrow) tl.set(one("diff-label"), { opacity: 0 }, 25.0);
+	tl.set(one("diff-times"), { opacity: 1 }, 25.0);
 	// The hero: 1,000 at once climb the offers that are left; the average is what they paid.
 	d.swap([heads[3], heads[4]], heads[5], 26.9);
-	hide([one("p-get"), sell, one("diff-gap"), one("diff-label")], 26.9);
+	hide(
+		[
+			one("p-get"),
+			sell,
+			one("diff-gap"),
+			one("diff-label"),
+			one("diff-times"),
+			one("diff-ask"),
+			one("diff-bid"),
+			one("diff-unit"),
+			one("diff-rule"),
+		],
+		26.9,
+	);
 	d.flip(one("p-pay"), one("p-pay-big"), 26.9);
 	hide(total, 26.9, 0.25);
 	tl.to(total, { opacity: 1, duration: 0.2 }, 27.4);
@@ -1011,28 +1151,20 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 29.7);
 	tl.to(total, { opacity: 0.45, duration: 0.3 }, 29.7);
-	tl.to(total, { opacity: 1, duration: 0.3 }, 30.5);
 	const last = one<SVGGraphicsElement>("last");
 	tl.set(last, { attr: { class: "wt-film-num wt-film-accent" } }, 30.4);
 	if (L.narrow) {
 		show(one("vs-x"), 30.45);
-		show(one("vs-eq"), 30.75);
 	} else {
 		show(one("vs-calc"), 30.5);
 	}
-	tl.set(one("p-over"), { opacity: 1 }, 31.25);
-	if (L.narrow) show(one("p-over-tag"), 31.5);
-	d.count(
-		one<SVGTextElement>("p-over"),
-		OVER_LAST,
-		31.25,
-		(v) =>
-			L.narrow
-				? signedUsd(Math.round(v), 2)
-				: `${signedUsd(Math.round(v), 2)} ${d.t(copy.overLast)}`,
-		0,
-		0.5,
-	);
+	// Echo the settled total and subtract the settled last-price value in one operation.
+	// The source total stays subordinate; the result after '=' is never counted.
+	tl.set(one("vs-paid"), { opacity: 1 }, 30.85);
+	tl.set(one(L.narrow ? "vs-eq" : "vs-minus"), { opacity: 1 }, 31.05);
+	d.trace(one<SVGPathElement>("vs-rule"), 31.15, { duration: 0.3 });
+	tl.set(one("p-over"), { opacity: 1 }, 31.5);
+	show(one("p-over-tag"), 31.6);
 
 	// ——— kinds: what the underlying is ———
 	tl.addLabel("kinds", 33.3);
@@ -1051,8 +1183,11 @@ function build(context: FilmContext) {
 			one("p-avg"),
 			one("lock-avg"),
 			...kids("vs-last"),
+			one("vs-paid"),
+			...(L.narrow ? [] : [one("vs-minus")]),
+			one("vs-rule"),
 			one("p-over"),
-			...(L.narrow ? [one("p-over-tag")] : []),
+			one("p-over-tag"),
 		],
 		33.3,
 	);
