@@ -60,9 +60,9 @@ import {
  *
  *   open      0–4        "Gamma" wipes on and becomes the corner tag
  *   question  4–9.4      delta 0.52 → ? if ALFA rises $2
- *   curve     9.4–23.2   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
+ *   curve     9.4–23.6   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
  *                        0.04, "gamma"
- *   hedge     23.2–35.4  you and Ben, one under the other; ALFA +$2 once; hero: your
+ *   hedge     23.6–35.4  you and Ben, one under the other; ALFA +$2 once; hero: your
  *                        hedge drifts +128, locked, and you sell to flat; Ben's drifts −80
  *                        and he buys
  *   expiry    35.4–45.4  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
@@ -314,6 +314,11 @@ function Scene({
 	const chipY = H * 0.4 - T.num * 1.15;
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
+	const deltaCue = `Δ ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`;
+	const cueGap = 14;
+	const tableChipX =
+		(W - tableChipW - cueGap - textWidth(deltaCue, T.body)) / 2 +
+		tableChipW / 2;
 	const hedgeRows = {
 		chip: H * (narrow ? 0.27 : 0.28),
 		labels: H * 0.36,
@@ -717,11 +722,11 @@ function Scene({
 							name={`h-gamma-${who}`}
 							x={L.margin}
 							y={y - T.num * 1.15}
-							size={T.small}
+							size={T.body}
 							anchor="start"
-							className="wt-film-tag"
+							className="wt-film-type"
 						>
-							{t(gamma).toUpperCase()}
+							{t(gamma)}
 						</Word>
 						<Word
 							name={`h-calls-${who}`}
@@ -754,7 +759,7 @@ function Scene({
 				{column([benColumns[0].options, benColumns[0].shares, 0], "ben")}
 				<g data-f="h-chip">
 					<rect
-						x={W / 2 - tableChipW / 2}
+						x={tableChipX - tableChipW / 2}
 						y={hedgeRows.chip - T.body - 5}
 						width={tableChipW}
 						height={T.body + 13}
@@ -762,7 +767,7 @@ function Scene({
 						className="wt-chip"
 					/>
 					<text
-						x={W / 2}
+						x={tableChipX}
 						y={hedgeRows.chip}
 						textAnchor="middle"
 						className="wt-chip-text"
@@ -771,6 +776,16 @@ function Scene({
 						{t(copy.chip)}
 					</text>
 				</g>
+				<Word
+					name="h-delta"
+					x={tableChipX + tableChipW / 2 + cueGap}
+					y={hedgeRows.chip}
+					size={T.body}
+					anchor="start"
+					className="wt-film-num wt-film-dim"
+				>
+					{deltaCue}
+				</Word>
 				{(
 					[
 						["h-trade-you", copy.youTrade, hedgeRows.you],
@@ -962,13 +977,13 @@ function build(context: FilmContext) {
 		11.7,
 	);
 	show(one("k-head"), 11.4, "above");
-	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 13);
+	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.2);
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
 	const axisText = [
 		...(chartDelta.firstElementChild as Element).querySelectorAll("text"),
 	];
-	tl.to(axisText, { opacity: 0, duration: 0.3 }, 13);
-	tl.to(tangent, { opacity: 1, duration: 0.2 }, 13.9);
+	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.2);
+	tl.to(tangent, { opacity: 1, duration: 0.2 }, 13.1);
 	tl.to(
 		tangent,
 		{
@@ -981,19 +996,19 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power2.inOut",
 		},
-		13.9,
+		13.1,
 	);
-	tl.to(one("d-step"), { opacity: 1, duration: 0.2 }, 15);
+	tl.to(one("d-step"), { opacity: 1, duration: 0.2 }, 14.2);
 	tl.to(
 		one("d-step-line"),
 		{ attr: { x2: L.x(SPOT + MOVE) }, duration: 0.5, ease: "power2.out" },
-		15,
+		14.2,
 	);
-	tl.to(one("d-riser"), { opacity: 1, duration: 0.2 }, 15.6);
+	tl.to(one("d-riser"), { opacity: 1, duration: 0.2 }, 14.8);
 	tl.to(
 		one("d-riser-line"),
 		{ attr: { y2: L.yD(NEW_DELTA) }, duration: 0.6, ease: "power3.out" },
-		15.6,
+		14.8,
 	);
 	// Then the marker climbs the curve to the top of the rise, its delta counting with it.
 	const slide = { spot: SPOT };
@@ -1008,26 +1023,27 @@ function build(context: FilmContext) {
 	tl.to(
 		slide,
 		{ spot: SPOT + MOVE, duration: 1.1, ease: "power2.inOut", onUpdate: place },
-		16.6,
+		15.8,
 	);
 	// Cut: the slope gets its name, worked out: +0.08 over $2.
-	hide(one("k-head"), 18.2);
-	sink(18.2);
-	show(one("g-calc"), 18.6);
-	land(one("g-num"), 19.0);
-	show(one("g-word"), 19.15);
+	// The definition settles at 18.95, then the first application starts at 19.4.
+	hide(one("k-head"), 17.4);
+	sink(17.4);
+	show(one("g-calc"), 17.8);
+	land(one("g-num"), 18.2);
+	show(one("g-word"), 18.35);
 	// On a phone the caption fades in place instead of rising through the worked label.
 	if (narrow) {
 		tl.fromTo(
 			one("g-sub"),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.5 },
-			19.25,
+			18.45,
 		);
-	} else show(one("g-sub"), 19.25);
+	} else show(one("g-sub"), 18.45);
 	for (const [who, at] of [
-		["you", 19.0],
-		["ben", 19.3],
+		["you", 19.4],
+		["ben", 19.7],
 	] as const) {
 		// Fade the worked rows in place, so neither label nor equation travels across text.
 		tl.fromTo(
@@ -1052,9 +1068,9 @@ function build(context: FilmContext) {
 	);
 
 	// ——— hedge: the same delta, carried onto a position ———
-	tl.addLabel("hedge", 23.2);
-	// Complete rows settle at 19.3/19.6 and hold 3.9/3.6 s before their lanes clear.
-	hide([...kids("g"), one("g-calc")], 23.2, 0.1, 0);
+	tl.addLabel("hedge", 23.6);
+	// Complete rows settle at 19.7/20.0 and hold 3.9/3.6 s before their lanes clear.
+	hide([...kids("g"), one("g-calc")], 23.6, 0.1, 0);
 	// Clear the calculation lanes before either result flies across, then upward.
 	hide(
 		[
@@ -1063,51 +1079,57 @@ function build(context: FilmContext) {
 			one("h-derive-ben-label"),
 			one("h-derive-ben-calc"),
 		],
-		23.2,
+		23.6,
 		0.1,
 		0,
 	);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-you-result"),
 		one<SVGGraphicsElement>("h-you-0"),
-		23.35,
+		23.75,
 		{ duration: 0.75, arc: "x" },
 	);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-ben-result"),
 		one<SVGGraphicsElement>("h-ben-0"),
-		23.75,
+		24.15,
 		{ duration: 0.75, arc: "x" },
 	);
-	show(one("h-head"), 23.4, "above");
-	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.8);
-	show(one("h-who-you"), 24.15, "above");
-	land(one("h-you-1"), 24.25);
-	land(one("h-you-2"), 24.4);
-	show(one("h-who-ben"), 24.55, "above");
-	land(one("h-ben-1"), 24.85);
-	land(one("h-ben-2"), 25.0);
-	// ALFA rises $2, once, for both.
-	show(one("h-chip"), 25.3);
+	show(one("h-head"), 23.8, "above");
+	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 24.2);
+	show(one("h-who-you"), 24.55, "above");
+	land(one("h-you-1"), 24.65);
+	land(one("h-you-2"), 24.8);
+	show(one("h-who-ben"), 24.95, "above");
+	land(one("h-ben-1"), 25.25);
+	land(one("h-ben-2"), 25.4);
+	// ALFA rises $2, once, for both; the new delta settles before exposures change.
+	show(one("h-chip"), 25.7);
+	tl.fromTo(
+		one("h-delta"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		26.0,
+	);
 	d.count(
 		one<SVGTextElement>("h-you-0"),
 		hedgeAfter.options,
-		25.8,
+		26.5,
 		shares,
 		hedgeBefore.options,
 	);
 	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
 	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
-	d.count(one<SVGTextElement>("h-you-2"), youDrift, 25.8, shares);
-	tl.to(one("h-you-2"), warn, 25.8);
+	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.5, shares);
+	tl.to(one("h-you-2"), warn, 26.5);
 	d.count(
 		one<SVGTextElement>("h-ben-0"),
 		benColumns[1].options,
-		26.2,
+		26.9,
 		shares,
 		benColumns[0].options,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.2, shares);
+	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.9, shares);
 	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
 	// The brackets are fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
@@ -1131,8 +1153,10 @@ function build(context: FilmContext) {
 	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.8);
 	tl.to(one("h-ben-2"), warn, 30.0);
 	show(one("h-claim"), 30.2);
-	// On a phone the rule's second line sits on the move's chip: the chip has done its work.
-	if (L.narrow) tl.to(one("h-chip"), { opacity: 0, duration: 0.3 }, 30.2);
+	// Clear the input cue before the rule enters; its settled hold is 3.55 s.
+	hide(one("h-delta"), 29.8, 0.3, 0);
+	// On a phone the rule's second line needs the move chip's lane too.
+	if (narrow) hide(one("h-chip"), 29.8, 0.3, 0);
 	d.count(
 		one<SVGTextElement>("h-you-1"),
 		hedgeFixed.shares,
