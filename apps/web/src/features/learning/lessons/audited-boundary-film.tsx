@@ -85,9 +85,10 @@ function layout(width: number) {
 		claimY: (i: number) =>
 			narrow ? H * 0.58 + i * H * 0.072 : H * 0.28 + i * H * 0.095,
 		claimH: H * (narrow ? 0.048 : 0.068),
-		recY: (i: number) => H * 0.27 + i * H * (narrow ? 0.19 : 0.23),
-		recH: H * (narrow ? 0.16 : 0.2),
-		answerSize: narrow ? frame.type.small * 1.1 : frame.type.head * 0.85,
+		recY: (i: number) => H * 0.27 + i * H * (narrow ? 0.27 : 0.23),
+		recH: (i: number) => H * (narrow ? (i === 0 ? 0.22 : 0.16) : 0.2),
+		answerSize: narrow ? frame.type.body * 1.1 : frame.type.head * 0.85,
+		lateY: H * (narrow ? 0.49 : 0.47) + frame.type.body * 1.8,
 		proofSize: narrow ? frame.type.head : frame.type.num,
 		proofY: (i: number) => H * (narrow ? 0.73 : 0.78) + i * H * 0.08,
 	};
@@ -195,6 +196,10 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 const LATE_TEXT: Copy = [`120: ${LATE}`, `120：${LATE}`];
 const revised = {
 	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
+	shortAnswer: [
+		`110 leads · ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
+		`110 领先 · 占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
+	],
 	answer: [
 		` · 110 leads, ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
 		` · 110 领先，占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
@@ -208,7 +213,7 @@ const copy = {
 	qTag: ["a research question", "一个研究问题"],
 	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
-	lateDay: ["120 call, delivered Tue 09:00", "120 看涨，周二 09:00 送达"],
+	lateDay: ["late · Tue 09:00", "迟到 · 周二 09:00"],
 	proofScope: ["record 1 · Oct 18 calls", "记录 1 · 10月18日 看涨"],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
@@ -366,6 +371,18 @@ function Scene({
 				/>
 			</g>
 
+			{/* A root-level, same-face proxy carries ALFA out of the wrapped question. */}
+			<Word
+				name="q-subject"
+				x={W / 2}
+				y={H * 0.44}
+				size={T.title * 0.9}
+				anchor="start"
+				className="wt-film-type wt-film-accent"
+			>
+				ALFA
+			</Word>
+
 			{/* The question, field by field. */}
 			{headline("f-head", copy.fHead)}
 			{fields.map((field, i) => (
@@ -392,7 +409,16 @@ function Scene({
 						className="wt-film-type"
 						style={{ fontSize: text }}
 					>
-						{t(field.value)}
+						{i === 0 ? (
+							<>
+								<tspan data-f="field-0-subject" className="wt-film-accent">
+									ALFA
+								</tspan>
+								<tspan data-f="field-0-detail">{t(field.value).slice(4)}</tspan>
+							</>
+						) : (
+							t(field.value)
+						)}
 					</text>
 				</g>
 			))}
@@ -428,6 +454,7 @@ function Scene({
 					{row.volume === null ? (
 						<>
 							<rect
+								data-f="missing-series-ghost"
 								x={L.barX}
 								y={L.barRowY(i)}
 								width={L.barMax * 0.3}
@@ -436,6 +463,7 @@ function Scene({
 								className="wt-film-ghost"
 							/>
 							<text
+								data-f="missing-series-state"
 								x={L.barX + L.barMax * 0.3 + 8}
 								y={L.barRowY(i) + L.barH / 2 + T.small * 0.38}
 								className="wt-film-tag wt-film-loss"
@@ -588,14 +616,14 @@ function Scene({
 						x={margin}
 						y={L.recY(i)}
 						width={room}
-						height={L.recH}
+						height={L.recH(i)}
 						rx={12}
 						className="wt-panel-shape"
 					/>
 					<text
 						data-f={`rec-${i}-title`}
 						x={margin + 16}
-						y={L.recY(i) + L.recH * 0.26}
+						y={L.recY(i) + L.recH(i) * 0.26}
 						className="wt-film-tag"
 						style={{ fontSize: T.small }}
 					>
@@ -604,7 +632,7 @@ function Scene({
 					<text
 						data-f={`rec-${i}-tag`}
 						x={margin + room - 16}
-						y={L.recY(i) + L.recH * 0.26}
+						y={L.recY(i) + L.recH(i) * 0.26}
 						textAnchor="end"
 						className="wt-film-tag wt-film-accent"
 						style={{ fontSize: T.small }}
@@ -614,7 +642,10 @@ function Scene({
 					<text
 						data-f={`rec-${i}-question`}
 						x={margin + 16}
-						y={L.recY(i) + L.recH * (narrow ? 0.56 : 0.48)}
+						y={
+							L.recY(i) +
+							L.recH(i) * (narrow && i === 0 ? 0.43 : narrow ? 0.56 : 0.48)
+						}
 						className="wt-film-type"
 						style={{ fontSize: T.body }}
 					>
@@ -623,9 +654,9 @@ function Scene({
 					<text
 						data-f={`rec-${i}-answer`}
 						x={margin + 16}
-						y={L.recY(i) + L.recH * 0.82}
+						y={L.recY(i) + L.recH(i) * (narrow && i === 0 ? 0.65 : 0.82)}
 						className="wt-film-type"
-						style={{ fontSize: answerSize }}
+						style={{ fontSize: narrow ? T.body : answerSize }}
 					>
 						{t(record.answer)}
 					</text>
@@ -633,11 +664,21 @@ function Scene({
 			))}
 			{/* Tuesday's data for the 120 call: it comes in over record 1 and lands in its answer. */}
 			<g data-f="late">
+				<Word
+					name="late-volume"
+					x={L.barX + 16}
+					y={L.lateY}
+					size={L.proofSize}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{count(LATE)}
+				</Word>
 				{/* Under record 1, where record 2 will be: it rises straight into the answer line. */}
 				<text
 					data-f="late-n"
 					x={margin + 16}
-					y={L.recY(0) + L.recH + T.body * 1.8}
+					y={L.lateY}
 					className="wt-film-type wt-film-accent"
 					style={{ fontSize: answerSize }}
 				>
@@ -645,8 +686,8 @@ function Scene({
 				</text>
 				<text
 					data-f="late-day"
-					x={margin + 16 + lateW + 12}
-					y={L.recY(0) + L.recH + T.body * 1.8}
+					x={L.barX + L.barMax * 0.3 + 24}
+					y={L.lateY}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -744,7 +785,7 @@ function Scene({
 				<text
 					data-f="rev-title"
 					x={margin + 16}
-					y={L.recY(0) + L.recH * 0.26}
+					y={L.recY(0) + L.recH(0) * 0.26}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -753,7 +794,7 @@ function Scene({
 				<text
 					data-f="rev-tag"
 					x={margin + room - 16}
-					y={L.recY(0) + L.recH * 0.26}
+					y={L.recY(0) + L.recH(0) * 0.26}
 					textAnchor="end"
 					className="wt-film-tag wt-film-accent"
 					style={{ fontSize: T.small }}
@@ -763,7 +804,7 @@ function Scene({
 				<text
 					data-f="rev-late"
 					x={margin + 16}
-					y={L.recY(0) + L.recH * 0.82}
+					y={L.recY(0) + L.recH(0) * (narrow ? 0.65 : 0.82)}
 					className="wt-film-type wt-film-accent"
 					style={{ fontSize: answerSize }}
 				>
@@ -771,12 +812,12 @@ function Scene({
 				</text>
 				<text
 					data-f="rev-answer"
-					x={margin + 16 + lateW}
-					y={L.recY(0) + L.recH * 0.82}
-					className="wt-film-type wt-film-accent"
-					style={{ fontSize: answerSize }}
+					x={margin + 16 + (narrow ? 0 : lateW)}
+					y={L.recY(0) + L.recH(0) * (narrow ? 0.87 : 0.82)}
+					className={`wt-film-type ${narrow ? "" : "wt-film-accent"}`}
+					style={{ fontSize: answerSize, fontWeight: narrow ? 600 : undefined }}
 				>
-					{t(revised.answer)}
+					{t(narrow ? revised.shortAnswer : revised.answer)}
 				</text>
 			</g>
 
@@ -847,6 +888,9 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		...flat("q"),
+		one("q-subject"),
+		one("field-0-subject"),
+		one("field-0-detail"),
 		...heads,
 		...fieldRows,
 		...strikes,
@@ -869,13 +913,20 @@ function build(context: FilmContext) {
 	gsap.set(one("story-strike"), {
 		attr: { x1: story.x - 2, x2: story.x + story.width + 2 },
 	});
-	// Use the rendered sans widths for the chip and the two-part answer in either language.
-	const lateBox = one<SVGTextElement>("late-n").getBBox();
-	const answerBox = one<SVGTextElement>("rev-late").getBBox();
-	gsap.set(one("late-day"), { attr: { x: lateBox.x + lateBox.width + 12 } });
-	gsap.set(one("rev-answer"), {
-		attr: { x: answerBox.x + answerBox.width + L.answerSize * 0.3 },
+	// Measure the exact ALFA glyphs in the wrapped question for a same-face proxy.
+	const question = one<SVGTextElement>("q-line");
+	const subjectAt = (question.textContent ?? "").indexOf("ALFA");
+	const subjectStart = question.getStartPositionOfChar(subjectAt);
+	gsap.set(one("q-subject"), {
+		attr: { x: subjectStart.x, y: subjectStart.y },
 	});
+	// Only the wide answer remains inline; the phone saves two separate body-sized lines.
+	if (!L.narrow) {
+		const answerBox = one<SVGTextElement>("rev-late").getBBox();
+		gsap.set(one("rev-answer"), {
+			attr: { x: answerBox.x + answerBox.width + L.answerSize * 0.3 },
+		});
+	}
 	/** An evidence tag is stamped on its card: in slightly large, settling. */
 	const stamp = (target: Element, at: number) =>
 		tl.fromTo(
@@ -898,9 +949,23 @@ function build(context: FilmContext) {
 
 	// ——— frame: field by field, in pairs ———
 	tl.addLabel("frame", 8.6);
-	hide(flat("q"), 8.6);
+	tl.set(flat("q"), { opacity: 0 }, 8.6);
+	d.carry(
+		one<SVGGraphicsElement>("q-subject"),
+		one<SVGGraphicsElement>("field-0-subject"),
+		8.6,
+		{ duration: 0.75, arc: "x" },
+	);
 	show(heads[0], 8.8);
+	tl.fromTo(fieldRows[0], { opacity: 0 }, { opacity: 1, duration: 0.35 }, 8.95);
+	tl.fromTo(
+		one("field-0-detail"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		9.35,
+	);
 	fieldRows.forEach((row, i) => {
+		if (i === 0) return;
 		show(row, 9.4 + Math.floor(i / 2) * 2.2 + (i % 2) * 0.5, "right");
 	});
 
@@ -962,7 +1027,7 @@ function build(context: FilmContext) {
 	d.swap([heads[1], heads[2]], heads[3], 31.2);
 	hide(
 		[
-			...strikes,
+			...strikes.filter((_, i) => SERIES[i].volume !== null),
 			...claimRows,
 			...tags,
 			one("spread-seg"),
@@ -973,13 +1038,50 @@ function build(context: FilmContext) {
 		31.2,
 	);
 	show(recs[0], 31.45, "right");
-	// Tuesday's data for the 120 call comes in under record 1…
-	show(kids("late"), 32.5, "right");
+	// Preserve the named, missing 120 row while the rest of the hero leaves.
+	const missingIndex = SERIES.findIndex((row) => row.volume === null);
+	const rowBaseline =
+		L.barRowY(missingIndex) +
+		L.barH / 2 +
+		(L.narrow ? L.type.small * 1.1 : L.type.body) * 0.36;
+	tl.to(
+		strikes[missingIndex],
+		{ x: 16, y: L.lateY - rowBaseline, duration: 0.65, ease: "power3.inOut" },
+		31.55,
+	);
+	// The ghost becomes Tuesday's delivered series at the same baseline and state label.
+	hide(
+		[one("missing-series-ghost"), one("missing-series-state")],
+		32.5,
+		0.1,
+		0,
+	);
+	tl.fromTo(
+		one("late-volume"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		32.5,
+	);
+	tl.fromTo(
+		one("late-day"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		32.6,
+	);
 	// The delivered series adds to coverage; only the settled sum is shown after "=".
-	show(one("rev-scope"), 32.9, "right", 0.25);
+	show(one("rev-scope"), 33.65, "right", 0.25);
 	show(one("rev-base"), 33.1, "right", 0.25);
 	show(one("rev-bound"), 33.1, "right", 0.25);
-	show([one("rev-plus"), one("rev-add")], 33.4, "right", 0.25);
+	show(one("rev-plus"), 33.4, "right", 0.25);
+	d.carry(
+		one<SVGGraphicsElement>("late-volume"),
+		one<SVGGraphicsElement>("rev-add"),
+		33.35,
+		{ duration: 0.3, arc: "x", keep: true },
+	);
+	// The evidence keeps its identity, then becomes the same-face saved-answer chip.
+	tl.set([strikes[missingIndex], one("late-volume")], { opacity: 0 }, 34.05);
+	tl.set(one("late-n"), { opacity: 1 }, 34.05);
 	show([one("rev-equals"), one("rev-total")], 33.8, "right", 0.25);
 	show(
 		[
@@ -1018,8 +1120,8 @@ function build(context: FilmContext) {
 	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 37.5);
 	show(heads[4], 37.5);
 	show([one("rec-0-universe"), one("universe-kept")], 37.9, "right", 0.3);
-	show(one("universe-arrow"), 38.45, "right", 0.3);
-	show([one("rec-1-universe"), one("universe-new")], 38.95, "right", 0.3);
+	show(one("universe-arrow"), 38.1, "right", 0.3);
+	show([one("rec-1-universe"), one("universe-new")], 38.35, "right", 0.3);
 
 	// ——— claim ———
 	tl.addLabel("claim", 41);
