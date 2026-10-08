@@ -185,6 +185,7 @@ const copy = {
 		`按中间价：${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
 	],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
+	fifo: ["first in, first out · oldest 6 sold", "先进先出 · 卖出最早的 6 张"],
 	bid: ["bid", "买价"],
 	mid: ["mid", "中间价"],
 	bpNote: [
@@ -631,6 +632,16 @@ function Scene({
 						);
 					})}
 				</g>
+				{/* The rule behind the split, named while it is applied. */}
+				<text
+					data-f="fifo-tag"
+					x={L.gridLeft}
+					y={L.gridBottom + T.body * 2 + T.small * 2.4}
+					className="wt-film-tag wt-film-accent"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.fifo).toUpperCase()}
+				</text>
 				{(
 					[
 						["r", copy.realized, zeroed(0)],
@@ -864,6 +875,7 @@ function build(context: FilmContext) {
 		...kids("answer"),
 		...squares,
 		one("legend-lots"),
+		one("fifo-tag"),
 		one("r-tag"),
 		one("u-tag"),
 		realized,
@@ -941,12 +953,38 @@ function build(context: FilmContext) {
 	show([realized, unrealized], 20.6);
 	show(one("legend-lots"), 20.7);
 	show(one("l-head"), 20.9, "above");
-	// Sell six, oldest first.
+	// Sell six, oldest first, and say so.
+	show(one("fifo-tag"), 22.8);
 	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 23.0);
-	d.count(realized, fifo.realized, 23.2, zeroed, 0, 0.8);
-	d.count(unrealized, fifo.unrealized, 23.2, signed, held.unrealized, 0.8);
+	// In whole dollars as they count: cents in motion read as noise.
+	const wholeDollars = (cents: number) => Math.round(cents / 100) * 100;
+	d.count(
+		realized,
+		fifo.realized,
+		23.2,
+		(v) => zeroed(wholeDollars(v)),
+		0,
+		0.8,
+	);
+	d.count(
+		unrealized,
+		fifo.unrealized,
+		23.2,
+		(v) => signed(wholeDollars(v)),
+		held.unrealized,
+		0.8,
+	);
 	// The hero: the two parts become one figure, less than the mark said.
-	hide([...squares, one("legend-lots"), one("r-tag"), one("u-tag")], 24.7);
+	hide(
+		[
+			...squares,
+			one("legend-lots"),
+			one("fifo-tag"),
+			one("r-tag"),
+			one("u-tag"),
+		],
+		24.7,
+	);
 	show(one("t-tag"), 25.0);
 	// One part lands, then the other lands on it, and the two count as one.
 	const total = one<SVGTextElement>("t-num");
@@ -978,15 +1016,8 @@ function build(context: FilmContext) {
 	show(one("gap-bid"), 28.0);
 	show(one("gap-mid"), 28.3);
 	show(one("gap-eq"), 28.75);
-	tl.set(one("gap-n"), { opacity: 1 }, 28.95);
-	d.count(
-		one<SVGTextElement>("gap-n"),
-		GAP,
-		28.95,
-		(v) => dollars(Math.round(v / 100) * 100),
-		0,
-		0.5,
-	);
+	// The result lands settled: a counting figure after "=" would show false equations.
+	land(one("gap-n"), 28.95);
 
 	// ——— short: the other side of the same calls ———
 	tl.addLabel("short", 31.7);
