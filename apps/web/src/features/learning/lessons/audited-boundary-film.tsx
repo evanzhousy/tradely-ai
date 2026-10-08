@@ -40,8 +40,8 @@ import {
  *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
  *   answer    17.6–30.8  hero: five strikes; observed; calculated; interpretation; the
- *                        split, struck through; locked; then the gap
- *   log       30.8–39.9  record 1; Tuesday's 120 call revises it in place, 51% → 49%, held;
+ *                        split, labelled and connected; struck through; locked; then the gap
+ *   log       30.8–39.9  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then ≤ 51% → 49%;
  *                        record 2 for puts
  *   claim     39.9–44.2  a question someone else can check
  *   next      44.2–46.2  Next: comparison groups
@@ -72,7 +72,10 @@ function layout(width: number) {
 		fieldH: H * (narrow ? 0.078 : 0.08),
 		labelW: narrow ? room * 0.36 : room * 0.24,
 		barRowY: (i: number) =>
-			H * (narrow ? 0.26 : 0.3) + i * H * (narrow ? 0.055 : 0.06),
+			H * (narrow ? 0.26 : 0.3) +
+			i * H * (narrow ? 0.055 : 0.06) +
+			// Reserve a label line beneath the 110 segment, before the two lower strikes.
+			(i > SERIES.indexOf(LEADER) ? frame.type.body * 1.4 : 0),
 		barH: H * (narrow ? 0.036 : 0.04),
 		barX: margin + labelW,
 		barMax: (narrow ? room : room * 0.46) - labelW - (narrow ? 50 : 60),
@@ -81,9 +84,11 @@ function layout(width: number) {
 		claimY: (i: number) =>
 			narrow ? H * 0.58 + i * H * 0.072 : H * 0.28 + i * H * 0.095,
 		claimH: H * (narrow ? 0.048 : 0.068),
-		recY: (i: number) =>
-			H * (narrow ? 0.27 : 0.27) + i * H * (narrow ? 0.19 : 0.19),
-		recH: H * (narrow ? 0.16 : 0.16),
+		recY: (i: number) => H * 0.27 + i * H * (narrow ? 0.19 : 0.23),
+		recH: H * (narrow ? 0.16 : 0.2),
+		answerSize: narrow ? frame.type.small * 1.1 : frame.type.head * 0.85,
+		proofSize: narrow ? frame.type.head : frame.type.num,
+		proofY: (i: number) => H * (narrow ? 0.73 : 0.78) + i * H * 0.08,
 	};
 }
 
@@ -190,8 +195,8 @@ const LATE_TEXT: Copy = [`120: ${LATE}`, `120：${LATE}`];
 const revised = {
 	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
 	answer: [
-		`120: ${LATE} · 110 leads, ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
-		`120：${LATE} · 110 领先，占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
+		` · 110 leads, ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
+		` · 110 领先，占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
 	],
 	tag: ["revised", "已修订"],
 } as const satisfies Record<string, Copy>;
@@ -203,7 +208,10 @@ const copy = {
 	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	lateDay: ["120 call, delivered Tue 09:00", "120 看涨，周二 09:00 送达"],
-	revDelta: ["51% → 49%", "51% → 49%"],
+	spreadLabel: [
+		`${count(SPREAD_LEG)} · one spread leg`,
+		`${count(SPREAD_LEG)} · 一条价差腿`,
+	],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
 	a2Head: [
@@ -259,6 +267,38 @@ function Scene({
 	const text = narrow ? T.small * 1.1 : T.body;
 	const id = useId().replace(/:/g, "");
 	const leaderRow = SERIES.indexOf(LEADER);
+	const answerSize = L.answerSize;
+	const lateW = textWidth(
+		t(LATE_TEXT),
+		answerSize * (locale === "zh" ? 0.95 : 0.86),
+	);
+	const proofX = margin + 16;
+	const proofParts = [count(COVERED), "+", count(LATE), "=", count(WITH_LATE)];
+	const proofNames = [
+		"rev-base",
+		"rev-plus",
+		"rev-add",
+		"rev-equals",
+		"rev-total",
+	];
+	const proofAt = (i: number) =>
+		proofX +
+		proofParts
+			.slice(0, i)
+			.reduce(
+				(x, part) => x + textWidth(part, L.proofSize) + L.proofSize * 0.5,
+				0,
+			);
+	const boundText = `≤ ${share(LEAD, COVERED)}`;
+	const arrowX = proofX + textWidth(boundText, L.proofSize) + L.proofSize * 0.5;
+	const shareX = arrowX + textWidth("→", L.proofSize) + L.proofSize * 0.5;
+	// On a phone the connector clears the chart, then follows the cards' left gutter.
+	// On desktop, leave the bar below its figures and follow the claim cards' gutter.
+	const segBottom = L.barRowY(leaderRow) + L.barH;
+	const swatchY = L.claimY(SPREAD_CARD) + L.claimH / 2;
+	const spreadPath = narrow
+		? `M${L.barX + 4} ${segBottom} L${L.barX - 8} ${segBottom + 6} V${L.barRowY(SERIES.length - 1) + L.barH + 8} H${margin - 10} V${swatchY} H${L.claimX + 12}`
+		: `M${L.barX + (SPREAD_LEG / MAX) * L.barMax * 0.7} ${segBottom} V${segBottom + 2} H${L.claimX - 8} V${swatchY} H${L.claimX + 12}`;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -411,6 +451,25 @@ function Scene({
 				stroke="var(--diagram-gain)"
 				strokeWidth={1.5}
 			/>
+			<Word
+				name="spread-label"
+				x={L.barX}
+				y={segBottom + T.body + 6}
+				size={T.body}
+				anchor="start"
+				className="wt-film-type wt-film-gain"
+			>
+				{t(copy.spreadLabel)}
+			</Word>
+			<path
+				data-f="spread-trace"
+				d={spreadPath}
+				fill="none"
+				stroke="var(--diagram-gain)"
+				strokeWidth={1.5}
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
 			{claims.map((claim, i) => (
 				<g key={t(claim.text)} data-f={`claim-${i}`}>
 					<rect
@@ -526,9 +585,9 @@ function Scene({
 					</text>
 					<text
 						x={margin + 16}
-						y={L.recY(i) + L.recH * 0.56}
+						y={L.recY(i) + L.recH * (narrow ? 0.56 : 0.48)}
 						className="wt-film-type"
-						style={{ fontSize: narrow ? T.body : T.head * 0.9 }}
+						style={{ fontSize: T.body }}
 					>
 						{t(record.question)}
 					</text>
@@ -536,8 +595,8 @@ function Scene({
 						data-f={`rec-${i}-answer`}
 						x={margin + 16}
 						y={L.recY(i) + L.recH * 0.82}
-						className="wt-film-type wt-film-dim"
-						style={{ fontSize: text }}
+						className="wt-film-type"
+						style={{ fontSize: answerSize }}
 					>
 						{t(record.answer)}
 					</text>
@@ -551,13 +610,13 @@ function Scene({
 					x={margin + 16}
 					y={L.recY(0) + L.recH + T.body * 1.8}
 					className="wt-film-type wt-film-accent"
-					style={{ fontSize: text }}
+					style={{ fontSize: answerSize }}
 				>
 					{t(LATE_TEXT)}
 				</text>
 				<text
 					data-f="late-day"
-					x={margin + 16 + textWidth(t(LATE_TEXT), text) + 12}
+					x={margin + 16 + lateW + 12}
 					y={L.recY(0) + L.recH + T.body * 1.8}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
@@ -565,19 +624,52 @@ function Scene({
 					{t(copy.lateDay).toUpperCase()}
 				</text>
 			</g>
-			{/* The revision's effect at the end of the answer row; a phone's row is full. */}
-			{narrow ? null : (
-				<text
-					data-f="rev-delta"
-					x={margin + room - 16}
-					y={L.recY(0) + L.recH * 0.82}
-					textAnchor="end"
-					className="wt-film-num wt-film-accent"
-					style={{ fontSize: text }}
+			{/* The late series changes the denominator first, then resolves the bound. */}
+			<g data-f="rev-proof">
+				{proofParts.map((part, i) => (
+					<Word
+						key={proofNames[i]}
+						name={proofNames[i]}
+						x={proofAt(i)}
+						y={L.proofY(0)}
+						size={L.proofSize}
+						anchor="start"
+						className={`wt-film-num ${i === 2 || i === 4 ? "wt-film-accent" : ""}`}
+					>
+						{part}
+					</Word>
+				))}
+				<Word
+					name="rev-bound"
+					x={proofX}
+					y={L.proofY(1)}
+					size={L.proofSize}
+					anchor="start"
+					className="wt-film-num"
 				>
-					{t(copy.revDelta)}
-				</text>
-			)}
+					{boundText}
+				</Word>
+				<Word
+					name="rev-share-arrow"
+					x={arrowX}
+					y={L.proofY(1)}
+					size={L.proofSize}
+					anchor="start"
+					className="wt-film-num"
+				>
+					→
+				</Word>
+				<Word
+					name="rev-share"
+					x={shareX}
+					y={L.proofY(1)}
+					size={L.proofSize}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{share(LEAD, WITH_LATE)}
+				</Word>
+			</g>
 			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
 			<g data-f="rev">
 				<text
@@ -600,11 +692,20 @@ function Scene({
 					{t(revised.tag).toUpperCase()}
 				</text>
 				<text
-					data-f="rev-answer"
+					data-f="rev-late"
 					x={margin + 16}
 					y={L.recY(0) + L.recH * 0.82}
 					className="wt-film-type wt-film-accent"
-					style={{ fontSize: text }}
+					style={{ fontSize: answerSize }}
+				>
+					{t(LATE_TEXT)}
+				</text>
+				<text
+					data-f="rev-answer"
+					x={margin + 16 + lateW}
+					y={L.recY(0) + L.recH * 0.82}
+					className="wt-film-type wt-film-accent"
+					style={{ fontSize: answerSize }}
 				>
 					{t(revised.answer)}
 				</text>
@@ -671,7 +772,9 @@ function build(context: FilmContext) {
 	const recs = records.map((_, i) => one(`rec-${i}`));
 	const lockClaim = one<SVGGraphicsElement>("lock-claim");
 	const tags = claims.map((_, i) => one(`claim-${i}-tag`));
-	const revs = ["rev-title", "rev-tag", "rev-answer"].map((name) => one(name));
+	const revs = ["rev-title", "rev-tag", "rev-late", "rev-answer"].map((name) =>
+		one(name),
+	);
 
 	d.hidden([
 		...flat("q"),
@@ -681,18 +784,27 @@ function build(context: FilmContext) {
 		...claimRows,
 		...tags,
 		one("spread-seg"),
+		one("spread-label"),
+		one("spread-trace"),
 		one("story-strike"),
 		lockClaim,
 		...recs,
 		...revs,
 		...kids("late"),
-		...(L.narrow ? [] : [one("rev-delta")]),
+		...kids("rev-proof"),
 		...kids("claim"),
 	]);
 	// The strike runs the story's own length, measured as set.
 	const story = one<SVGTextElement>("claim-2-text").getBBox();
 	gsap.set(one("story-strike"), {
 		attr: { x1: story.x - 2, x2: story.x + story.width + 2 },
+	});
+	// Use the rendered sans widths for the chip and the two-part answer in either language.
+	const lateBox = one<SVGTextElement>("late-n").getBBox();
+	const answerBox = one<SVGTextElement>("rev-late").getBBox();
+	gsap.set(one("late-day"), { attr: { x: lateBox.x + lateBox.width + 12 } });
+	gsap.set(one("rev-answer"), {
+		attr: { x: answerBox.x + answerBox.width + L.answerSize * 0.3 },
 	});
 	/** An evidence tag is stamped on its card: in slightly large, settling. */
 	const stamp = (target: Element, at: number) =>
@@ -754,8 +866,12 @@ function build(context: FilmContext) {
 		},
 		24.4,
 	);
-	show(claimRows[3], 24.8, "right");
-	stamp(tags[3], 25.2);
+	show(one("spread-label"), 24.6, "right");
+	show(claimRows[3], 25.05, "right");
+	stamp(tags[3], 25.55);
+	d.trace(one<SVGPathElement>("spread-trace"), 25.6, { duration: 0.5 });
+	// Once the evidence has struck the story, clear the connector before the lock.
+	hide(one("spread-trace"), 26.7, 0.25, 0);
 	// The story is struck through, right after the evidence against it, not erased.
 	tl.fromTo(
 		one("story-strike"),
@@ -780,6 +896,7 @@ function build(context: FilmContext) {
 			...claimRows,
 			...tags,
 			one("spread-seg"),
+			one("spread-label"),
 			one("story-strike"),
 			lockClaim,
 		],
@@ -788,12 +905,19 @@ function build(context: FilmContext) {
 	show(recs[0], 31.05, "right");
 	// Tuesday's data for the 120 call comes in under record 1…
 	show(kids("late"), 33.1, "right");
+	// The delivered series adds to coverage; only the settled sum is shown after "=".
+	show(one("rev-base"), 33.7, "right", 0.25);
+	show(one("rev-bound"), 33.7, "right", 0.25);
+	show([one("rev-plus"), one("rev-add")], 34.0, "right", 0.25);
+	show([one("rev-equals"), one("rev-total")], 34.4, "right", 0.25);
+	show(one("rev-share-arrow"), 34.65, "right", 0.2);
+	show(one("rev-share"), 34.9, "right", 0.25);
 	// …and rises into its answer: record 1 turns over in place, caused, and keeps the stage.
 	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.0);
-	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.2 }, 34.7);
+	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, 34.7);
 	d.carry(
 		one<SVGGraphicsElement>("late-n"),
-		one<SVGGraphicsElement>("rev-answer"),
+		one<SVGGraphicsElement>("rev-late"),
 		34.75,
 		{ duration: 0.6 },
 	);
@@ -802,7 +926,8 @@ function build(context: FilmContext) {
 	tl.set(one("rec-0-title"), { opacity: 0 }, 35.0);
 	d.flip(one("rec-0-tag"), revs[1], 34.7);
 	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.0);
-	if (!L.narrow) show(one("rev-delta"), 35.5, "right");
+	// The answer writes the result only after the denominator and share have settled.
+	tl.set(one("rev-answer"), { opacity: 1 }, 35.35);
 	// A new question: a new record, once the revision has been read.
 	show(recs[1], 36.4, "right");
 	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 36.4);
@@ -811,16 +936,7 @@ function build(context: FilmContext) {
 
 	// ——— claim ———
 	tl.addLabel("claim", 39.9);
-	hide(
-		[
-			heads[3],
-			heads[4],
-			...recs,
-			...revs,
-			...(L.narrow ? [] : [one("rev-delta")]),
-		],
-		39.9,
-	);
+	hide([heads[3], heads[4], ...recs, ...revs, ...kids("rev-proof")], 39.9);
 	word(one("z-big"), 40.2);
 	show(one("z-sub"), 40.6);
 
