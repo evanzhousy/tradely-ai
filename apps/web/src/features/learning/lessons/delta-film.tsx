@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { useId } from "react";
+import { Fragment, useId } from "react";
 import { type Copy, pick, signedCount, signedUsd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -84,15 +84,36 @@ function layout(width: number) {
 	/** The chain of a position: one line per beat, down the middle of the frame. */
 	// A phone's headline wraps, so its chain starts lower and packs a little tighter.
 	const rows = (
-		narrow ? [0.35, 0.45, 0.55, 0.64, 0.73] : [0.31, 0.42, 0.53, 0.64, 0.75]
+		narrow
+			? width < 360
+				? [0.33, 0.43, 0.53, 0.6, 0.69]
+				: [0.35, 0.45, 0.55, 0.64, 0.73]
+			: [0.25, 0.34, 0.43, 0.52, 0.61]
 	).map((f) => height * f);
 	const T = frame.type;
+	// Reserve a descender allowance and 10 px between each desktop payoff line.
+	const multiplierSize = T.body * 1.3;
+	const captionToMultiplier = T.small * 0.35 + multiplierSize + 10;
+	const multiplierToPayoff = multiplierSize * 0.35 + T.num + 10;
+	const payoffTail =
+		T.num * 0.45 + T.small * 2.2 + captionToMultiplier + multiplierToPayoff;
+	if (!narrow) {
+		const lift = Math.max(
+			0,
+			rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95 + payoffTail - height * 0.9,
+		);
+		for (let i = 0; i < rows.length; i++) rows[i] -= lift;
+	}
 	const posY = rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95;
 	// The caption clears the locked figure's brackets by more than the arms' own width.
 	const equivY = posY + T.num * 0.45 + T.small * 2.2;
 	// On a phone the move's chip sits under the two positions, not between them.
 	const chipY = narrow ? equivY + T.num * 1.3 : posY - T.num * 0.35;
-	const payY = narrow ? chipY + T.num * 1.45 : equivY + T.num * 1.1;
+	const phonePayY = Math.min(chipY + T.num * 1.9, height - 20);
+	const multiplyY = narrow
+		? phonePayY - T.num * 1.35
+		: equivY + captionToMultiplier;
+	const payY = narrow ? phonePayY : multiplyY + multiplierToPayoff;
 	return {
 		...frame,
 		left,
@@ -109,6 +130,7 @@ function layout(width: number) {
 		equivY,
 		chipY,
 		payY,
+		multiplyY,
 		/** How far the two positions stand from the middle once both are on stage. */
 		side: width * (narrow ? 0.25 : 0.2),
 	};
@@ -153,6 +175,8 @@ const copy = {
 		`× Ben ${signedCount(ben.contracts)} 张`,
 	],
 	chip: [`ALFA +$${MOVE.toFixed(2)}`, `ALFA +$${MOVE.toFixed(2)}`],
+	limitUp: [`ALFA +${stock(UP)}`, `ALFA 涨 ${stock(UP)}`],
+	limitDown: [`ALFA −${stock(-DOWN)}`, `ALFA 跌 ${stock(-DOWN)}`],
 	equivalents: ["share-equivalents of ALFA", "相当于这么多股 ALFA"],
 	pay: [
 		`If ALFA rises $${MOVE.toFixed(2)}: about ${signedUsd(moveDollars(you.contracts), 0)} for you, ${signedUsd(moveDollars(ben.contracts), 0)} for Ben.`,
@@ -327,9 +351,10 @@ function Scene({
 						<text
 							data-f="step-label"
 							x={(mx + L.x(SPOT + 1)) / 2}
-							y={my + 16}
+							y={my + (L.narrow ? 24 : 16)}
 							textAnchor="middle"
 							className="wt-small wt-halo wt-accent"
+							style={L.narrow ? { fontSize: T.small * 1.2 } : undefined}
 						>
 							+$1
 						</text>
@@ -345,8 +370,12 @@ function Scene({
 						/>
 						<text
 							data-f="riser-label"
-							x={L.x(SPOT + 1) + 8}
-							y={L.y(V0 + CALL_DELTA) + 14}
+							x={L.x(SPOT + 1) + (L.narrow ? 12 : 8)}
+							y={
+								L.narrow
+									? (my + L.y(V0 + CALL_DELTA)) / 2 + 4
+									: L.y(V0 + CALL_DELTA) + 14
+							}
 							className="wt-halo wt-accent wt-marker-label"
 						>
 							{signedPrice(CALL_DELTA)}
@@ -390,6 +419,17 @@ function Scene({
 						{price(P0)}
 					</text>
 					<text data-f="move-label" className="wt-halo wt-marker-label" />
+					{(["lim-move-up", "lim-move-down"] as const).map((name, i) => (
+						<text
+							key={name}
+							data-f={name}
+							x={L.left + 12}
+							y={L.top + 18}
+							className="wt-small wt-halo wt-accent"
+						>
+							{t(i === 0 ? copy.limitUp : copy.limitDown)}
+						</text>
+					))}
 				</g>
 			</g>
 
@@ -598,20 +638,40 @@ function Scene({
 				</g>
 				{(
 					[
-						["ch-usd-you", -L.side, you.contracts, "wt-film-gain"],
-						["ch-usd-ben", L.side, ben.contracts, "wt-film-loss"],
+						["you", -L.side, you.contracts, "wt-film-gain"],
+						["ben", L.side, ben.contracts, "wt-film-loss"],
 					] as const
-				).map(([name, dx, contracts, tone]) => (
-					<Word
-						key={name}
-						name={name}
-						x={W / 2 + dx}
-						y={L.payY}
-						size={T.body * 1.3}
-						className={`wt-film-num ${tone}`}
-					>
-						{`× $${MOVE.toFixed(2)} ≈ ${signedUsd(moveDollars(contracts), 0)}`}
-					</Word>
+				).map(([holder, dx, contracts, tone]) => (
+					<Fragment key={holder}>
+						<Word
+							name={`ch-multiply-${holder}`}
+							x={W / 2 + dx}
+							y={L.multiplyY}
+							size={T.body * 1.3}
+							className="wt-film-num wt-film-accent"
+						>
+							{`× $${MOVE.toFixed(2)}`}
+						</Word>
+						<Word
+							name={`ch-usd-${holder}`}
+							x={W / 2 + dx}
+							y={L.payY}
+							size={T.num * (L.narrow ? 1.2 : 1)}
+							className={`wt-film-num ${tone}`}
+						>
+							{`≈ ${signedUsd(moveDollars(contracts), 0)}`}
+						</Word>
+						{/* A mono proxy matches the multiplication's face and lands on its $0.40. */}
+						<Word
+							name={`ch-move-proxy-${holder}`}
+							x={W / 2 + T.small * 1.8}
+							y={L.chipY + 4}
+							size={T.small}
+							className="wt-film-num wt-film-accent"
+						>
+							{`$${MOVE.toFixed(2)}`}
+						</Word>
+					</Fragment>
 				))}
 				<Lines
 					name="ch-equiv"
@@ -711,14 +771,14 @@ function build(context: FilmContext) {
 	const riserX = L.x(SPOT + 1);
 	const riserTop = L.y(V0 + CALL_DELTA);
 	const pushIn = cam(
-		narrow ? 1.7 : 2.1,
-		{ x: mx, y: my },
-		{ x: W * 0.36, y: H * 0.5 },
+		narrow ? 1.45 : 2.1,
+		{ x: narrow ? (mx + riserX) / 2 : mx, y: my },
+		{ x: W * (narrow ? 0.34 : 0.36), y: H * (narrow ? 0.64 : 0.5) },
 	);
 	const aside = cam(
-		narrow ? 0.5 : 0.58,
+		narrow ? 0.62 : 0.58,
 		{ x: L.cx, y: L.cy },
-		{ x: W * (narrow ? 0.72 : 0.73), y: H * 0.58 },
+		{ x: W * (narrow ? 0.71 : 0.73), y: H * 0.58 },
 	);
 
 	// Everything at rest: hidden until its shot needs it.
@@ -741,6 +801,8 @@ function build(context: FilmContext) {
 		gap,
 		gapLabel,
 		moveLabel,
+		one("lim-move-up"),
+		one("lim-move-down"),
 		...kids("q"),
 		numCall,
 		numPut,
@@ -806,7 +868,7 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("marker-label-call"),
 		{ opacity: 0, attr: { y: my - 4 } },
-		{ opacity: 1, attr: { y: my - 14 }, duration: 0.5 },
+		{ opacity: 1, attr: { y: my - (narrow ? 22 : 14) }, duration: 0.5 },
 		11.8,
 	);
 	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.5 }, 12.5);
@@ -832,11 +894,12 @@ function build(context: FilmContext) {
 		},
 		13.8,
 	);
-	tl.to(one("step"), { opacity: 1, duration: 0.2 }, 14.9);
+	// The $1 leg is already present when the headline names it.
+	tl.to(one("step"), { opacity: 1, duration: 0.1 }, 13.2);
 	tl.to(
 		one("step-line"),
 		{ attr: { x2: riserX }, duration: 0.45, ease: "power2.out" },
-		14.9,
+		13.2,
 	);
 	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 15.5);
 	tl.to(
@@ -884,10 +947,11 @@ function build(context: FilmContext) {
 		},
 		20.35,
 	);
-	d.flip(numCall, numPut, 20.7);
+	d.flip(numCall, numPut, 20.3);
 	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 21.3);
 	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 21.5);
-	show(one("put-sub"), 20.9);
+	// The unfolded −0.48 settles at 20.95; its sentence then holds a full 3.5 s.
+	show(one("put-sub"), 21.0);
 
 	// ——— position: the chain ———
 	tl.addLabel("position", 24.5);
@@ -939,7 +1003,7 @@ function build(context: FilmContext) {
 	);
 	show(one("ch-op-ben"), 31.5);
 	land(one("ch-pos-ben"), 31.75);
-	show(one("ch-equiv-ben"), 32.0);
+	show(one("ch-equiv-ben"), 32.0, "below", 0.3);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
@@ -947,9 +1011,30 @@ function build(context: FilmContext) {
 		shares,
 	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
-	show(one("ch-chip"), 32.25);
-	show(one("ch-usd-you"), 32.6);
-	show(one("ch-usd-ben"), 32.9);
+	show(one("ch-chip"), 32.25, "below", 0.18);
+	// Leave a clear lane through the captions: each mono $0.40 becomes its multiplier.
+	const carryLane = [
+		one("ch-chip"),
+		one("ch-pos-you"),
+		one("ch-pos-ben"),
+		one("ch-equiv"),
+		one("ch-equiv-ben"),
+	];
+	tl.to(carryLane, { opacity: 0.22, duration: 0.02 }, 32.43);
+	for (const [holder, at] of [
+		["you", 32.45],
+		["ben", 32.95],
+	] as const) {
+		d.carry(
+			one<SVGGraphicsElement>(`ch-move-proxy-${holder}`),
+			one<SVGGraphicsElement>(`ch-multiply-${holder}`),
+			at,
+			{ duration: 0.45, arc: "y", match: `$${MOVE.toFixed(2)}` },
+		);
+		// Approximate dollar results land settled, never as a counting equation.
+		tl.set(one(`ch-usd-${holder}`), { opacity: 1 }, at + 0.45);
+	}
+	tl.to(carryLane, { opacity: 1, duration: 0.15 }, 33.4);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 35.3);
@@ -981,7 +1066,7 @@ function build(context: FilmContext) {
 	 * gridlines: riding beside the marker, they ran across the curve and the line.
 	 */
 	const readX = L.left + 12;
-	const readY = (i: number) => L.y(Y_RANGE[1]) + 18 + i * 18;
+	const readY = (i: number) => L.y(Y_RANGE[1]) + 36 + i * 18;
 	const place = () => {
 		const spot = slide.spot;
 		const repriced = valueAt("call", spot);
@@ -1005,8 +1090,9 @@ function build(context: FilmContext) {
 		ghostLabel.textContent = `${t(copy.deltaAlone)} ${signedPrice(estimate - V0)}`;
 		gap.setAttribute("x1", String(px));
 		gap.setAttribute("x2", String(px));
-		gap.setAttribute("y1", String(Math.min(py, gy) + 8));
-		gap.setAttribute("y2", String(Math.max(py, gy) - 8));
+		const gapPad = Math.min(8, Math.abs(py - gy) / 2);
+		gap.setAttribute("y1", String(Math.min(py, gy) + gapPad));
+		gap.setAttribute("y2", String(Math.max(py, gy) - gapPad));
 		gapLabel.setAttribute("x", String(readX));
 		gapLabel.setAttribute("y", String(readY(2)));
 		gapLabel.setAttribute("text-anchor", "start");
@@ -1015,25 +1101,25 @@ function build(context: FilmContext) {
 	place();
 	tl.to(
 		slide,
-		{ spot: SPOT + UP, duration: 1.0, ease: "power2.inOut", onUpdate: place },
+		{ spot: SPOT + UP, duration: 0.8, ease: "power2.inOut", onUpdate: place },
 		36.3,
 	);
-	tl.to(moveLabel, { opacity: 1, duration: 0.4 }, 36.6);
-	tl.to(ghostLabel, { opacity: 1, duration: 0.4 }, 36.9);
-	tl.fromTo(
-		gap,
-		{ opacity: 0, scaleY: 0, transformOrigin: "50% 0%" },
-		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		37.3,
+	tl.to(one("lim-move-up"), { opacity: 1, duration: 0.15 }, 36.3);
+	tl.to(
+		[moveLabel, ghostLabel, gap, gapLabel],
+		{ opacity: 1, duration: 0.4 },
+		36.3,
 	);
-	tl.to(gapLabel, { opacity: 1, duration: 0.4 }, 37.5);
+	// Each completed comparison stands still for 1.5 s: 37.1–38.6 and 39.4–40.9.
+	tl.to(one("lim-move-up"), { opacity: 0, duration: 0.1 }, 38.6);
+	tl.to(one("lim-move-down"), { opacity: 1, duration: 0.15 }, 38.7);
 	tl.to(
 		slide,
-		{ spot: SPOT + DOWN, duration: 1.0, ease: "power2.inOut", onUpdate: place },
-		38.9,
+		{ spot: SPOT + DOWN, duration: 0.8, ease: "power2.inOut", onUpdate: place },
+		38.6,
 	);
-	tl.to(one("below"), { opacity: 1, duration: 0.6 }, 39.5);
-	tl.to(one("below-label"), { opacity: 1, duration: 0.5 }, 39.8);
+	tl.to(one("below"), { opacity: 1, duration: 0.4 }, 38.6);
+	tl.to(one("below-label"), { opacity: 1, duration: 0.3 }, 38.8);
 	// Cut: the claim, held to be read.
 	hide(one("lim-head"), 40.9);
 	sink(40.9);
