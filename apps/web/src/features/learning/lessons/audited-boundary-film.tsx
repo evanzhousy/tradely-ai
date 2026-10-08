@@ -116,7 +116,7 @@ const fields: { id: string; label: Copy; value: Copy }[] = [
 	{
 		id: "revision",
 		label: ["revision", "修订规则"],
-		value: ["gap → bound · fix → redo", "有缺口 → 给下限 · 有更正 → 重算"],
+		value: ["gap → bound · fix → redo", "有缺口 → 给界限 · 有更正 → 重算"],
 	},
 ];
 

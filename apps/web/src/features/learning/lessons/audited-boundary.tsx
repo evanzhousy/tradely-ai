@@ -72,7 +72,7 @@ function questionFields(state: QuestionState, locale: Locale): TicketField[] {
 		{
 			id: "revision",
 			label: t(["Revision rule", "修订规则"]),
-			value: t(["gap→bound, fix→redo", "有缺口→给下限；有更正→重算"]),
+			value: t(["gap→bound, fix→redo", "有缺口→给界限；有更正→重算"]),
 		},
 	];
 	if (state.forecast)
@@ -559,7 +559,7 @@ const scenes = [
 				label: ["Evidence and revision", "证据与修订"],
 				caption: [
 					"Say what evidence it needs and when you'd revise: all five series covered; a gap gives a bound, a correction a recompute.",
-					"说明需要什么证据、何时修订：全部五个序列都要覆盖；有缺口就给下限，有更正就重算。",
+					"说明需要什么证据、何时修订：全部五个序列都要覆盖；有缺口就给界限，有更正就重算。",
 				],
 				state: { filled: 6, forecast: false },
 			},
