@@ -60,6 +60,7 @@ const put = curve("put");
 const UP = 10;
 const DOWN = -10;
 const END = 47.4;
+const PHONE_ASIDE_SCALE = 0.62;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -243,13 +244,14 @@ function Scene({
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="axes">
-						{[0, 4, 8, 12, 16].map((tick) => (
+						{(L.narrow ? [0, 8, 16] : [0, 4, 8, 12, 16]).map((tick) => (
 							<g key={tick}>
 								<path
 									d={`M${L.left} ${L.y(tick)}H${L.right}`}
 									className={tick === 0 ? "wt-axis" : "wt-grid"}
 								/>
 								<text
+									data-f={`axis-value-${tick}`}
 									x={L.left - 8}
 									y={L.y(tick) + 4}
 									textAnchor="end"
@@ -259,20 +261,22 @@ function Scene({
 								</text>
 							</g>
 						))}
-						{[90, 95, 100, 105, 110].map((tick) => (
-							<text
-								key={tick}
-								x={L.x(tick)}
-								y={L.bottom + 18}
-								textAnchor="middle"
-								className="wt-small"
-							>
-								{`$${tick}`}
-							</text>
-						))}
+						{(L.narrow ? [90, 100, 110] : [90, 95, 100, 105, 110]).map(
+							(tick) => (
+								<text
+									key={tick}
+									x={L.x(tick)}
+									y={L.bottom + 18}
+									textAnchor="middle"
+									className="wt-small"
+								>
+									{`$${tick}`}
+								</text>
+							),
+						)}
 						<text
 							x={L.right}
-							y={L.bottom + 32}
+							y={L.bottom + (L.narrow ? 42 : 32)}
 							textAnchor="end"
 							className="wt-small"
 						>
@@ -348,6 +352,15 @@ function Scene({
 							x2={L.x(SPOT + 1)}
 							y2={my}
 						/>
+						{L.narrow && (
+							<circle
+								data-f="step-corner"
+								cx={L.x(SPOT + 1)}
+								cy={my}
+								r={2}
+								className="wt-film-step"
+							/>
+						)}
 						<text
 							data-f="step-label"
 							x={(mx + L.x(SPOT + 1)) / 2}
@@ -368,6 +381,15 @@ function Scene({
 							x2={L.x(SPOT + 1)}
 							y2={my}
 						/>
+						{L.narrow && (
+							<circle
+								data-f="riser-tip"
+								cx={L.x(SPOT + 1)}
+								cy={L.y(V0 + CALL_DELTA)}
+								r={2.5}
+								className="wt-chip"
+							/>
+						)}
 						<text
 							data-f="riser-label"
 							x={L.x(SPOT + 1) + (L.narrow ? 12 : 8)}
@@ -382,7 +404,7 @@ function Scene({
 						</text>
 					</g>
 					<g data-f="ghost">
-						<circle r={6} className="wt-film-ghost" />
+						<circle r={L.narrow ? 3 : 6} className="wt-film-ghost" />
 					</g>
 					<text data-f="ghost-label" className="wt-small wt-halo" />
 					<line data-f="gap" className="wt-film-gap" />
@@ -391,13 +413,17 @@ function Scene({
 						className="wt-small wt-halo wt-loss wt-marker-label"
 					/>
 					<g data-f="marker">
-						<circle data-f="ripple" r={6} className="wt-film-ripple" />
+						<circle
+							data-f="ripple"
+							r={L.narrow ? 3 : 6}
+							className="wt-film-ripple"
+						/>
 						<circle
 							data-f="dot"
-							r={6}
+							r={L.narrow ? 3 : 6}
 							className="wt-chip"
 							stroke="var(--foreground)"
-							strokeWidth={1.5}
+							strokeWidth={L.narrow ? 1 : 1.5}
 						/>
 					</g>
 					<text
@@ -776,7 +802,7 @@ function build(context: FilmContext) {
 		{ x: W * (narrow ? 0.34 : 0.36), y: H * (narrow ? 0.64 : 0.5) },
 	);
 	const aside = cam(
-		narrow ? 0.62 : 0.58,
+		narrow ? PHONE_ASIDE_SCALE : 0.58,
 		{ x: L.cx, y: L.cy },
 		{ x: W * (narrow ? 0.71 : 0.73), y: H * 0.58 },
 	);
@@ -784,7 +810,7 @@ function build(context: FilmContext) {
 	// Everything at rest: hidden until its shot needs it.
 	gsap.set(marker, { x: mx, y: my - 90, opacity: 0 });
 	gsap.set(one("dot"), { transformOrigin: "50% 100%" });
-	gsap.set(one("ripple"), { opacity: 0, attr: { r: 6 } });
+	gsap.set(one("ripple"), { opacity: 0, attr: { r: narrow ? 3 : 6 } });
 	d.hidden([
 		lockPos,
 		one("marker-label-call"),
@@ -815,6 +841,7 @@ function build(context: FilmContext) {
 		one("lim-head"),
 		...kids("local"),
 	]);
+	if (narrow) d.hidden([one("step-corner"), one("riser-tip")]);
 	gsap.set(one("step-line"), { attr: { x2: mx } });
 	gsap.set(ghost, { x: mx, y: my });
 	gsap.set(num, { x: W / 2, y: H * 0.5 });
@@ -847,7 +874,7 @@ function build(context: FilmContext) {
 	);
 	tl.fromTo(
 		one("ripple"),
-		{ opacity: 0.6, attr: { r: 6 } },
+		{ opacity: 0.6, attr: { r: narrow ? 3 : 6 } },
 		{ opacity: 0, attr: { r: 26 }, duration: 0.7, ease: "power2.out" },
 		11.1,
 	);
@@ -879,6 +906,49 @@ function build(context: FilmContext) {
 	const axisText = [...one("axes").querySelectorAll("text")];
 	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.9);
 	tl.set(axisText, { opacity: 1 }, 18.8);
+	if (narrow) {
+		// Keep the aside's type at an actual 11 px instead of shrinking it to 6.8 px.
+		tl.set(
+			[...axisText, one("curve-label-put")],
+			{ fontSize: T.small / PHONE_ASIDE_SCALE },
+			18.8,
+		);
+		tl.set(
+			one("marker-label-put"),
+			{
+				fontSize: T.body / PHONE_ASIDE_SCALE,
+				attr: {
+					x: mx + 14 / PHONE_ASIDE_SCALE,
+					y: L.y(P0) - 14 / PHONE_ASIDE_SCALE,
+					"text-anchor": "start",
+				},
+			},
+			18.8,
+		);
+		const valueTicks = [0, 8, 16].map((tick) => one(`axis-value-${tick}`));
+		// Keep ticks outside the plot. Offset $8 above the big delta and $0 below
+		// its operating-point caption, so clearing the curves does not crowd the type.
+		for (const tick of [0, 8, 16]) {
+			tl.set(
+				one(`axis-value-${tick}`),
+				{
+					attr: {
+						x: L.left - 10,
+						y: L.y(tick) + (tick === 8 ? -14 : tick === 0 ? 22 : 4),
+						"text-anchor": "end",
+					},
+				},
+				18.8,
+			);
+		}
+		tl.set(one("dot"), { attr: { r: 3 / PHONE_ASIDE_SCALE } }, 18.8);
+		tl.set(axisText, { fontSize: T.small }, 35.5);
+		tl.set(valueTicks, { attr: { x: L.left - 8, "text-anchor": "end" } }, 35.5);
+		for (const tick of [0, 8, 16]) {
+			tl.set(one(`axis-value-${tick}`), { attr: { y: L.y(tick) + 4 } }, 35.5);
+		}
+		tl.set(one("dot"), { attr: { r: 3 } }, 35.5);
+	}
 	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 13.8);
 	tl.to(
 		tangentLine,
@@ -901,12 +971,14 @@ function build(context: FilmContext) {
 		{ attr: { x2: riserX }, duration: 0.45, ease: "power2.out" },
 		13.2,
 	);
+	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 13.65);
 	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 15.5);
 	tl.to(
 		one("riser-line"),
 		{ attr: { y2: riserTop }, duration: 0.6, ease: "power3.out" },
 		15.5,
 	);
+	if (narrow) tl.set(one("riser-tip"), { opacity: 1 }, 16.1);
 	// Cut: the chart sinks, the number lands.
 	hide(one("s-head"), 16.8);
 	sink(16.8);
@@ -1012,15 +1084,9 @@ function build(context: FilmContext) {
 	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
 	show(one("ch-chip"), 32.25, "below", 0.18);
-	// Leave a clear lane through the captions: each mono $0.40 becomes its multiplier.
-	const carryLane = [
-		one("ch-chip"),
-		one("ch-pos-you"),
-		one("ch-pos-ben"),
-		one("ch-equiv"),
-		one("ch-equiv-ben"),
-	];
-	tl.to(carryLane, { opacity: 0.22, duration: 0.02 }, 32.43);
+	// The y-first route clears the positions and captions. Only the chip at takeoff
+	// steps back: +832/−520 and their units stay readable as the dollars are made.
+	tl.to(one("ch-chip"), { opacity: 0.22, duration: 0.02 }, 32.43);
 	for (const [holder, at] of [
 		["you", 32.45],
 		["ben", 32.95],
@@ -1034,7 +1100,7 @@ function build(context: FilmContext) {
 		// Approximate dollar results land settled, never as a counting equation.
 		tl.set(one(`ch-usd-${holder}`), { opacity: 1 }, at + 0.45);
 	}
-	tl.to(carryLane, { opacity: 1, duration: 0.15 }, 33.4);
+	tl.to(one("ch-chip"), { opacity: 1, duration: 0.15 }, 33.4);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 35.3);
@@ -1104,15 +1170,16 @@ function build(context: FilmContext) {
 		{ spot: SPOT + UP, duration: 0.8, ease: "power2.inOut", onUpdate: place },
 		36.3,
 	);
-	tl.to(one("lim-move-up"), { opacity: 1, duration: 0.15 }, 36.3);
+	// These labels name completed moves, so reveal them only at the endpoints.
+	tl.set(one("lim-move-up"), { opacity: 1 }, 37.1);
 	tl.to(
 		[moveLabel, ghostLabel, gap, gapLabel],
 		{ opacity: 1, duration: 0.4 },
 		36.3,
 	);
 	// Each completed comparison stands still for 1.5 s: 37.1–38.6 and 39.4–40.9.
-	tl.to(one("lim-move-up"), { opacity: 0, duration: 0.1 }, 38.6);
-	tl.to(one("lim-move-down"), { opacity: 1, duration: 0.15 }, 38.7);
+	tl.set(one("lim-move-up"), { opacity: 0 }, 38.6);
+	tl.set(one("lim-move-down"), { opacity: 1 }, 39.4);
 	tl.to(
 		slide,
 		{ spot: SPOT + DOWN, duration: 0.8, ease: "power2.inOut", onUpdate: place },
