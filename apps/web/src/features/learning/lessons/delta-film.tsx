@@ -124,7 +124,10 @@ const copy = {
 		`per $1 of ALFA, at ${stock(SPOT)}`,
 		`ALFA 在 ${stock(SPOT)} 时，每变动 $1`,
 	],
-	deltaWord: ["delta, per $1 of ALFA", "Delta：ALFA 每变动 $1"],
+	deltaWord: [
+		`delta at ${stock(SPOT)}, per $1 of ALFA`,
+		`ALFA ${stock(SPOT)} 处的 Delta：每变动 $1`,
+	],
 	slopeHead: ["Up $1: what does the call gain?", "ALFA 涨 $1：看涨涨多少？"],
 	putHead: ["Puts slope the other way.", "看跌期权的斜率方向相反。"],
 	putSub: [
@@ -926,26 +929,27 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 28.7);
 	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 28.7);
 	// Ben: the same chain beside yours, the sign flipped.
-	// The lock holds 2.6 s before the column makes room for Ben.
-	hide(lockPos, 31.3, 0.3);
+	// The lock holds 2.4 s before the column makes room for Ben; Ben's chain comes in close
+	// behind, so the dollars both positions make get two seconds together before the cut.
+	hide(lockPos, 31.1, 0.3);
 	tl.to(
 		[one("ch-op-you"), one("ch-pos-you"), one("ch-equiv")],
-		{ x: -L.side, duration: 0.6, ease: "power2.inOut" },
-		31.4,
+		{ x: -L.side, duration: 0.55, ease: "power2.inOut" },
+		31.15,
 	);
-	show(one("ch-op-ben"), 31.9);
-	land(one("ch-pos-ben"), 32.3);
-	show(one("ch-equiv-ben"), 32.6);
+	show(one("ch-op-ben"), 31.5);
+	land(one("ch-pos-ben"), 31.75);
+	show(one("ch-equiv-ben"), 32.0);
 	d.count(
 		one<SVGTextElement>("ch-pos-ben"),
 		positionDelta(ben.contracts),
-		32.3,
+		31.75,
 		shares,
 	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
-	show(one("ch-chip"), 33.0);
-	show(one("ch-usd-you"), 33.5);
-	show(one("ch-usd-ben"), 33.9);
+	show(one("ch-chip"), 32.25);
+	show(one("ch-usd-you"), 32.6);
+	show(one("ch-usd-ben"), 32.9);
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 35.3);
