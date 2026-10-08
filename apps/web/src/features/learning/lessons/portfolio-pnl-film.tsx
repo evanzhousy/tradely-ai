@@ -181,11 +181,13 @@ const copy = {
 		`按买价，不是中间价：少 ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}。`,
 	],
 	marked: [
-		`at the mid: ${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
-		`按中间价：${signed(held.unrealized)} − ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}`,
+		`Previous mid mark ${signed(held.unrealized)} − bid shortfall ${dollars(GAP)}`,
+		`原中间价估值 ${signed(held.unrealized)} − 买价差额 ${dollars(GAP)}`,
 	],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
 	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
+	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
+	markInput: [`mark: mid ${price(MARK)}`, `估值：中间价 ${price(MARK)}`],
 	bid: ["bid", "买价"],
 	mid: ["mid", "中间价"],
 	bpNote: [
@@ -275,14 +277,15 @@ function Scene({
 					),
 			)
 		: room * 0.08;
-	const gapY = narrow ? H * 0.66 : H * 0.3 + T.big * 1.05 + T.body * 6.2;
+	// The operand row stays through the lock; leave room for the caption and gap below it.
+	const operandY = H * 0.3 + T.big * 1.05 + T.num * 1.8 + T.body * 0.6;
+	const gapY = narrow ? H * 0.66 : operandY + T.body * 4.4;
 	const eqX =
 		W / 2 -
 		(textWidth(GAP_EQ, gapText) + 8 + textWidth(dollars(GAP), gapText * 1.3)) /
 			2;
 	/** Separate operands use the second amount's sign for addition. */
 	const operandGap = T.num * 0.85;
-	const operandY = H * 0.3 + T.big * 1.05 + T.num * 1.8;
 	/** Buying power has its own slot, below the account's settled value. */
 	const bpY = H * 0.4;
 	const x1 = L.ax(CLOSE_TO);
@@ -654,6 +657,19 @@ function Scene({
 				>
 					{t(copy.fifo)}
 				</text>
+				{([copy.saleInput, copy.markInput] as const).map((input, i) => (
+					<Lines
+						key={i === 0 ? "sale-input" : "mark-input"}
+						name={i === 0 ? "sale-input" : "mark-input"}
+						text={t(input)}
+						x={L.gridLeft + i * L.gridWidth}
+						y={L.gridBottom + T.body * 4.2 + T.small * 2.4}
+						size={T.body}
+						maxWidth={L.gridWidth / 2 - 12}
+						anchor={i === 0 ? "start" : "end"}
+						className="wt-film-type wt-film-dim"
+					/>
+				))}
 				{(
 					[
 						["r", copy.realized, zeroed(0)],
@@ -741,15 +757,15 @@ function Scene({
 				>
 					{signed(fifo.unrealized)}
 				</Word>
-				<Word
+				<Lines
 					name="t-was"
+					text={t(copy.marked)}
 					x={W / 2}
-					y={H * 0.3 + T.big * 1.05 + T.body * 3.9}
+					y={operandY + T.body * 2.2}
 					size={T.body}
+					maxWidth={room}
 					className="wt-film-type wt-film-dim"
-				>
-					{t(copy.marked)}
-				</Word>
+				/>
 			</g>
 			{/* The $75, drawn: the bid and the mid as the two ends of a gap, then what six
 			    contracts of it come to. */}
@@ -898,6 +914,8 @@ function build(context: FilmContext) {
 		...squares,
 		one("legend-lots"),
 		one("fifo-tag"),
+		one("sale-input"),
+		one("mark-input"),
 		one("r-tag"),
 		one("u-tag"),
 		realized,
@@ -973,6 +991,8 @@ function build(context: FilmContext) {
 	show([one("r-tag"), one("u-tag")], 21.7);
 	show([realized, unrealized], 21.9);
 	show(one("legend-lots"), 22.0);
+	show(one("mark-input"), 22.0, "below", 0.2);
+	show(one("sale-input"), 22.2, "below", 0.2);
 	show(one("l-head"), 22.2, "above");
 	// Sell six, oldest first, and say so.
 	show(one("fifo-tag"), 22.3, "below", 0.2);
@@ -1001,6 +1021,8 @@ function build(context: FilmContext) {
 			...squares,
 			one("legend-lots"),
 			one("fifo-tag"),
+			one("sale-input"),
+			one("mark-input"),
 			one("r-tag"),
 			one("u-tag"),
 		],
@@ -1015,14 +1037,13 @@ function build(context: FilmContext) {
 		duration: 0.5,
 		arc: "y",
 	});
-	// The settled sum unfolds above its operands; clear that row before the lock and proof.
+	// The settled sum unfolds above its operands; keep the complete addition through the proof.
 	tl.fromTo(
 		total,
 		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
 		{ scaleY: 1, duration: 0.2, ease: "power2.out", immediateRender: false },
 		28.0,
 	);
-	hide([subtotal, one("t-part")], 28.3, 0.15, 0);
 	show(one("t-was"), 28.45, "below", 0.2);
 	d.lock(lockTotal, 28.5, {
 		around: [one("t-tag"), total],
