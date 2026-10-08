@@ -309,12 +309,13 @@ function Scene({
 					</g>
 				</g>
 			</g>
+			{/* On a phone the meter stands in from the edge: its figure grows as it is carried. */}
 			<g data-f="meter">
 				{(["calls", "puts", "net", "known"] as const).map((name) => (
 					<Word
 						key={name}
 						name={`m-tag-${name}`}
-						x={L.right}
+						x={narrow ? L.right - T.num * 1.2 : L.right}
 						y={L.headY + T.head * 1.25}
 						size={T.small}
 						anchor="end"
@@ -325,7 +326,7 @@ function Scene({
 				))}
 				<Word
 					name="m-value"
-					x={L.right}
+					x={narrow ? L.right - T.num * 1.2 : L.right}
 					y={L.headY + T.head * 1.25 + T.num * 1.05}
 					size={T.num}
 					anchor="end"
