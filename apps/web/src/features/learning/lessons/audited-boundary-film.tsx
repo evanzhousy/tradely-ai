@@ -39,15 +39,16 @@ import {
  *   open      0–4        "Research questions"
  *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
- *   answer    17.6–30.8  hero: five strikes; observed; calculated; interpretation; the
+ *   answer    17.6–31.2  hero: five strikes; observed; calculated; interpretation; the
  *                        split, labelled and connected; struck through; locked; then the gap
- *   log       30.8–39.9  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then ≤ 51% → 49%;
- *                        record 2 for puts
- *   claim     39.9–44.2  a question someone else can check
- *   next      44.2–46.2  Next: comparison groups
+ *   log       31.2–41.0  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
+ *                        ≤ 51% → 540 ÷ 1,095 ≈ 49%; read the revision, then calls → puts
+ *                        opens record 2 and clears the calls proof
+ *   claim     41.0–45.3  a question someone else can check
+ *   next      45.3–47.0  Next: comparison groups
  */
 
-const END = 46.2;
+const END = 47;
 const MAX = 560;
 /** The claim cards: the interpretation, and the observed spread leg that undercuts it. */
 const STORY_CARD = 2;
@@ -208,6 +209,11 @@ const copy = {
 	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	lateDay: ["120 call, delivered Tue 09:00", "120 看涨，周二 09:00 送达"],
+	proofScope: ["record 1 · Oct 18 calls", "记录 1 · 10月18日 看涨"],
+	calls: ["calls", "看涨"],
+	puts: ["puts", "看跌"],
+	keptRecord: ["record 1 · kept", "记录 1 · 保留"],
+	newRecord: ["record 2 · new", "记录 2 · 新建"],
 	spreadLabel: [
 		`${count(SPREAD_LEG)} · one spread leg`,
 		`${count(SPREAD_LEG)} · 一条价差腿`,
@@ -289,9 +295,31 @@ function Scene({
 				(x, part) => x + textWidth(part, L.proofSize) + L.proofSize * 0.5,
 				0,
 			);
-	const boundText = `≤ ${share(LEAD, COVERED)}`;
-	const arrowX = proofX + textWidth(boundText, L.proofSize) + L.proofSize * 0.5;
-	const shareX = arrowX + textWidth("→", L.proofSize) + L.proofSize * 0.5;
+	const shareParts = [
+		`≤ ${share(LEAD, COVERED)}`,
+		"→",
+		count(LEAD),
+		"÷",
+		count(WITH_LATE),
+		"≈",
+		share(LEAD, WITH_LATE),
+	];
+	const shareNames = [
+		"rev-bound",
+		"rev-share-arrow",
+		"rev-numerator",
+		"rev-divide",
+		"rev-denominator",
+		"rev-approx",
+		"rev-share",
+	];
+	// Fit the complete bound-to-division line without reducing the phone's type.
+	const shareGap = L.proofSize * (narrow ? 0.35 : 0.5);
+	const shareAt = (i: number) =>
+		proofX +
+		shareParts
+			.slice(0, i)
+			.reduce((x, part) => x + textWidth(part, L.proofSize) + shareGap, 0);
 	// On a phone the connector clears the chart, then follows the cards' left gutter.
 	// On desktop, leave the bar below its figures and follow the claim cards' gutter.
 	const segBottom = L.barRowY(leaderRow) + L.barH;
@@ -584,6 +612,7 @@ function Scene({
 						{t(record.tag).toUpperCase()}
 					</text>
 					<text
+						data-f={`rec-${i}-question`}
 						x={margin + 16}
 						y={L.recY(i) + L.recH * (narrow ? 0.56 : 0.48)}
 						className="wt-film-type"
@@ -626,6 +655,16 @@ function Scene({
 			</g>
 			{/* The late series changes the denominator first, then resolves the bound. */}
 			<g data-f="rev-proof">
+				<Word
+					name="rev-scope"
+					x={proofX}
+					y={L.proofY(0) - H * 0.065}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.proofScope).toUpperCase()}
+				</Word>
 				{proofParts.map((part, i) => (
 					<Word
 						key={proofNames[i]}
@@ -639,35 +678,65 @@ function Scene({
 						{part}
 					</Word>
 				))}
+				{shareParts.map((part, i) => (
+					<Word
+						key={shareNames[i]}
+						name={shareNames[i]}
+						x={shareAt(i)}
+						y={L.proofY(1)}
+						size={L.proofSize}
+						anchor="start"
+						className={`wt-film-num ${i === 4 || i === 6 ? "wt-film-accent" : ""}`}
+					>
+						{part}
+					</Word>
+				))}
+			</g>
+			{/* Once the calls proof leaves, the lower stage explains the new universe. */}
+			<g data-f="universe-change">
 				<Word
-					name="rev-bound"
-					x={proofX}
-					y={L.proofY(1)}
+					name="rec-0-universe"
+					x={margin + room * 0.22}
+					y={L.proofY(0)}
 					size={L.proofSize}
-					anchor="start"
-					className="wt-film-num"
 				>
-					{boundText}
+					{t(copy.calls)}
 				</Word>
 				<Word
-					name="rev-share-arrow"
-					x={arrowX}
-					y={L.proofY(1)}
+					name="universe-arrow"
+					x={margin + room * 0.48}
+					y={L.proofY(0)}
 					size={L.proofSize}
-					anchor="start"
 					className="wt-film-num"
 				>
 					→
 				</Word>
 				<Word
-					name="rev-share"
-					x={shareX}
-					y={L.proofY(1)}
+					name="rec-1-universe"
+					x={margin + room * 0.74}
+					y={L.proofY(0)}
 					size={L.proofSize}
-					anchor="start"
-					className="wt-film-num wt-film-accent"
+					className="wt-film-type wt-film-accent"
 				>
-					{share(LEAD, WITH_LATE)}
+					{t(copy.puts)}
+				</Word>
+				<Word
+					name="universe-kept"
+					x={margin + room * 0.22}
+					y={L.proofY(1)}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.keptRecord).toUpperCase()}
+				</Word>
+				<Word
+					name="universe-new"
+					x={margin + room * 0.74}
+					y={L.proofY(1)}
+					size={T.small}
+					className="wt-film-tag wt-film-accent"
+				>
+					{t(copy.newRecord).toUpperCase()}
 				</Word>
 			</g>
 			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
@@ -792,6 +861,7 @@ function build(context: FilmContext) {
 		...revs,
 		...kids("late"),
 		...kids("rev-proof"),
+		...kids("universe-change"),
 		...kids("claim"),
 	]);
 	// The strike runs the story's own length, measured as set.
@@ -880,16 +950,16 @@ function build(context: FilmContext) {
 		26.15,
 	);
 	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 26.15);
-	d.lock(lockClaim, 27.3, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
-	tl.addLabel("hero-lock", 27.3);
-	show(heads[2], 27.3);
+	d.lock(lockClaim, 27.7, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
+	tl.addLabel("hero-lock", 27.7);
+	show(heads[2], 27.7);
 	// After the lock, once it has been seen: what the data doesn't hold.
-	show(claimRows[4], 28.2, "right");
-	stamp(tags[4], 28.6);
+	show(claimRows[4], 28.6, "right");
+	stamp(tags[4], 29);
 
 	// ——— log: revise, or start anew ———
-	tl.addLabel("log", 30.8);
-	d.swap([heads[1], heads[2]], heads[3], 30.8);
+	tl.addLabel("log", 31.2);
+	d.swap([heads[1], heads[2]], heads[3], 31.2);
 	hide(
 		[
 			...strikes,
@@ -900,50 +970,67 @@ function build(context: FilmContext) {
 			one("story-strike"),
 			lockClaim,
 		],
-		30.8,
+		31.2,
 	);
-	show(recs[0], 31.05, "right");
+	show(recs[0], 31.45, "right");
 	// Tuesday's data for the 120 call comes in under record 1…
-	show(kids("late"), 33.1, "right");
+	show(kids("late"), 32.5, "right");
 	// The delivered series adds to coverage; only the settled sum is shown after "=".
-	show(one("rev-base"), 33.7, "right", 0.25);
-	show(one("rev-bound"), 33.7, "right", 0.25);
-	show([one("rev-plus"), one("rev-add")], 34.0, "right", 0.25);
-	show([one("rev-equals"), one("rev-total")], 34.4, "right", 0.25);
-	show(one("rev-share-arrow"), 34.65, "right", 0.2);
-	show(one("rev-share"), 34.9, "right", 0.25);
+	show(one("rev-scope"), 32.9, "right", 0.25);
+	show(one("rev-base"), 33.1, "right", 0.25);
+	show(one("rev-bound"), 33.1, "right", 0.25);
+	show([one("rev-plus"), one("rev-add")], 33.4, "right", 0.25);
+	show([one("rev-equals"), one("rev-total")], 33.8, "right", 0.25);
+	show(
+		[
+			one("rev-share-arrow"),
+			one("rev-numerator"),
+			one("rev-divide"),
+			one("rev-denominator"),
+		],
+		34.1,
+		"below",
+		0.25,
+	);
+	show([one("rev-approx"), one("rev-share")], 34.4, "below", 0.25);
 	// …and rises into its answer: record 1 turns over in place, caused, and keeps the stage.
-	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.0);
-	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, 34.7);
+	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.4);
+	// Preserve the original answer's 3.5 s hold before it changes.
+	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, 35);
 	d.carry(
 		one<SVGGraphicsElement>("late-n"),
 		one<SVGGraphicsElement>("rev-late"),
-		34.75,
-		{ duration: 0.6 },
+		35.05,
+		{ duration: 0.4 },
 	);
-	hide(one("late-day"), 34.75);
-	d.flip(one("rec-0-title"), revs[0], 34.7);
-	tl.set(one("rec-0-title"), { opacity: 0 }, 35.0);
-	d.flip(one("rec-0-tag"), revs[1], 34.7);
-	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.0);
+	hide(one("late-day"), 35.05);
+	d.flip(one("rec-0-title"), revs[0], 34.8);
+	tl.set(one("rec-0-title"), { opacity: 0 }, 35.1);
+	d.flip(one("rec-0-tag"), revs[1], 34.8);
+	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.1);
 	// The answer writes the result only after the denominator and share have settled.
-	tl.set(one("rev-answer"), { opacity: 1 }, 35.35);
+	tl.set(one("rev-answer"), { opacity: 1 }, 35.45);
 	// A new question: a new record, once the revision has been read.
-	show(recs[1], 36.4, "right");
-	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 36.4);
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 36.4);
-	show(heads[4], 36.4);
+	// Clear record 1's proof before record 2 can compete with its scope.
+	hide(kids("rev-proof"), 37.2, 0.25, 0);
+	show(recs[1], 37.5, "right");
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 37.5);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 37.5);
+	show(heads[4], 37.5);
+	show([one("rec-0-universe"), one("universe-kept")], 37.9, "right", 0.3);
+	show(one("universe-arrow"), 38.45, "right", 0.3);
+	show([one("rec-1-universe"), one("universe-new")], 38.95, "right", 0.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.9);
-	hide([heads[3], heads[4], ...recs, ...revs, ...kids("rev-proof")], 39.9);
-	word(one("z-big"), 40.2);
-	show(one("z-sub"), 40.6);
+	tl.addLabel("claim", 41);
+	hide([heads[3], heads[4], ...recs, ...revs, ...kids("universe-change")], 41);
+	word(one("z-big"), 41.3);
+	show(one("z-sub"), 41.7);
 
 	// ——— next ———
-	tl.addLabel("next", 44.2);
-	hide(kids("claim"), 44.2);
-	d.close(44.2);
+	tl.addLabel("next", 45.3);
+	hide(kids("claim"), 45.3);
+	d.close(45.3);
 	return tl;
 }
 
