@@ -699,8 +699,9 @@ function build(context: FilmContext) {
 	// The answer, with the first break.
 	show(heads[3], 21.9);
 	// Without the exclusions instead.
-	restore("formula", 25.4);
-	drop("exclusions", 25.4);
+	// The fields change while the old figure is folded shut: inputs and output never disagree.
+	restore("formula", 25.85);
+	drop("exclusions", 25.85);
 	d.flip(rerunMarks[1], rerunMarks[2], 25.6);
 	tl.set(rerunMarks[1], { opacity: 0 }, 25.9);
 	d.flip(one("why-formula"), one("why-exclusions"), 25.6);
@@ -719,7 +720,7 @@ function build(context: FilmContext) {
 	// After the lock, once its reason has been read: the brackets let go, the field goes
 	// back, and the figure is P1's again.
 	hide([lockRerun, one("why-exclusions")], 29.45);
-	restore("exclusions", 29.5);
+	restore("exclusions", 29.95);
 	d.flip(rerunMarks[2], one("rerun-back"), 29.7);
 	tl.set(rerunMarks[2], { opacity: 0 }, 30.0);
 

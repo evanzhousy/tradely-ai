@@ -45,7 +45,7 @@ export const fields: readonly {
 	{
 		id: "rows",
 		label: ["Rows", "行"],
-		value: ["R1–R4 traded; R5 no data", "R1–R4 有成交；R5 无数据"],
+		value: ["R1–R4 covered; R5 no data", "R1–R4 已覆盖；R5 无数据"],
 	},
 	{
 		id: "formula",
