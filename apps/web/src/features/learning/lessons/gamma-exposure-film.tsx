@@ -49,7 +49,8 @@ import {
  *   open      0–4        "GEX"
  *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts?
  *   chain     8.9–18.65  0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
- *   profile   18.65–33.75 assumed calls + / puts −, net by strike; cut at 22.5: the sides
+ *   profile   18.65–33.75 dealers assumed calls + / puts −; net bars settled at 20.55,
+ *                        meter settled at 20.85; cut at 22.5: the sides
  *                        end to end, $4.10M settled 24.45–28; side by side, the −$512k sliver,
  *                        locked; then how
  *                        small: 12% of the gross
@@ -122,7 +123,7 @@ function signComparison(frame: ReturnType<typeof filmFrame>) {
 	const { width, narrow, margin, type: T } = frame;
 	const figure = narrow ? T.body * 1.15 : T.head;
 	const figX = narrow ? width - margin * 0.5 : width * 0.7;
-	const longX = narrow ? width * 0.38 : figX - figure * 1.5 * 6 - T.small * 8;
+	const longX = narrow ? width * 0.46 : figX - figure * 1.5 * 6 - T.small * 8;
 	return {
 		figure,
 		figX,
@@ -155,8 +156,8 @@ const copy = {
 	tOi: ["× open interest, Friday's close", "× 未平仓量（周五收盘）"],
 	tShares: ["× 100 shares", "× 100 股"],
 	tSpot: [`× $${SPOT}² × 1%: per 1% move`, `× $${SPOT}² × 1%：每 1% 变动`],
-	tLong: ["assumed long", "假设做多"],
-	tShort: ["assumed short", "假设做空"],
+	tLong: ["dealers assumed long", "假设做市商做多"],
+	tShort: ["dealers assumed short", "假设做市商做空"],
 	signHead: [
 		"The sign is an assumption, not a reading.",
 		"符号是假设，不是读数。",
@@ -168,8 +169,8 @@ const copy = {
 	],
 	profileHeadShort: ["Oct 18 chain, by strike.", "10月18日整链，按行权价。"],
 	convention: [
-		`assumed: calls ${assumedSign("call") > 0 ? "+" : "−"} / puts ${assumedSign("put") > 0 ? "+" : "−"}`,
-		`假设：看涨 ${assumedSign("call") > 0 ? "+" : "−"} / 看跌 ${assumedSign("put") > 0 ? "+" : "−"}`,
+		`dealers assumed: calls ${assumedSign("call") > 0 ? "+" : "−"} / puts ${assumedSign("put") > 0 ? "+" : "−"}`,
+		`假设做市商：看涨 ${assumedSign("call") > 0 ? "+" : "−"} / 看跌 ${assumedSign("put") > 0 ? "+" : "−"}`,
 	],
 	axis: ["$ of delta per 1% move", "每 1% 变动的 Delta 金额"],
 	calls: ["calls", "看涨"],
@@ -374,7 +375,7 @@ function Scene({
 					anchor="end"
 					className="wt-film-num wt-film-accent"
 				>
-					0
+					{money(NET)}
 				</Word>
 			</g>
 
@@ -451,7 +452,7 @@ function Scene({
 					x={figX}
 					y={rowY(4) - figure * 1.5}
 					size={T.body}
-					maxWidth={room * 0.45}
+					maxWidth={room * (narrow ? 0.55 : 0.45)}
 					anchor="end"
 					className="wt-film-type wt-film-dim"
 				/>
@@ -461,7 +462,7 @@ function Scene({
 					x={figX}
 					y={rowY(4) + figure * 0.2}
 					size={T.body}
-					maxWidth={room * 0.45}
+					maxWidth={room * (narrow ? 0.55 : 0.45)}
 					anchor="end"
 					className="wt-film-type wt-film-accent"
 				/>
@@ -801,38 +802,29 @@ function build(context: FilmContext) {
 	show(kids("chart-notes"), 18.95, "above", 0.25);
 	show(one("p-head"), 19, "above");
 	rise(19.05);
-	show([one("m-tag-calls"), meter], 19.45, "above");
-	// Each strike's count lands before the next starts: every reading is a real sum.
-	let calls = 0;
-	STRIKES.forEach((strike, i) => {
-		const value = contribution(strike, "call");
-		grow(bar(strike, "call"), value, 19.65 + i * 0.1, 0.35);
-		d.count(meter, calls + value, 19.65 + i * 0.1, dollars, calls, 0.1);
-		calls += value;
-	});
-	retag("m-tag-calls", "m-tag-puts", 20.35);
-	let puts = 0;
-	STRIKES.forEach((strike, i) => {
-		const value = contribution(strike, "put");
-		grow(bar(strike, "put"), value, 20.75 + i * 0.09, 0.35);
-		d.count(meter, puts + value, 20.75 + i * 0.09, dollars, puts, 0.09);
-		puts += value;
+	// Reveal both background sides together. Their aggregates are taught in the next
+	// construction; no meter reading pretends to sum partially drawn bars here.
+	STRIKES.forEach((strike) => {
+		grow(bar(strike, "call"), contribution(strike, "call"), 19.3, 0.4);
+		grow(bar(strike, "put"), contribution(strike, "put"), 19.3, 0.4);
 	});
 	// Net by strike: negative up to $100, positive from $105.
-	retag("m-tag-puts", "m-tag-net", 21.45);
+	show(one("m-tag-net"), 19.4, "above", 0.25);
 	tl.to(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 0.22, duration: 0.35 },
-		21.65,
+		19.9,
 	);
 	NET_BY_STRIKE.forEach((value, i) => {
-		tl.set(one(`net-${i}`), { opacity: 1 }, 21.65);
-		grow(one(`net-${i}`), value, 21.65 + i * 0.06, 0.35);
+		tl.set(one(`net-${i}`), { opacity: 1 }, 19.9 + i * 0.05);
+		grow(one(`net-${i}`), value, 19.9 + i * 0.05, 0.35);
 	});
-	d.count(meter, NET, 21.65, dollars, PUTS, 0.6);
+	// All seven bars settle at 20.55. Reveal only their settled aggregate, then
+	// retain the complete profile and meter from 20.85 to 22.5 (1.65 s).
+	show(meter, 20.6, "above", 0.25);
 	// Cut: the two sides' totals as bars, and a question for them. End to end, the gross;
 	// side by side, the net.
-	// Keep the profile headline for 3.5 s; spend the recovered 2.15 s on gross.
+	// Keep the profile headline for 3.5 s and preserve the gross's 3.55 s hold.
 	d.swap(one("p-head"), one("w1-head"), 22.5);
 	hide(kids("chart-notes"), 22.5);
 	sink(22.5);
