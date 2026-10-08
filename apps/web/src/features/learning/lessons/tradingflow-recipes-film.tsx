@@ -43,18 +43,21 @@ import {
  * the session screen that answers it. Then the session a report shows: opened at 8:00 on
  * Tuesday, before the open, the screener shows Monday, the latest completed session; opened
  * at 10:00 on Monday, with most of Monday's session still to trade, "latest" slides back over
- * the weekend and it shows Friday, whose date comes down into the report's header. Last, Edit with AI copies Daily Market Recap into a private copy that slides out
+ * the weekend and it shows Friday, whose date comes down into the report's header. After the
+ * lock releases, Monday finishes and becomes the latest session. Last, Edit with AI copies
+ * Daily Market Recap into a private copy that slides out
  * and changes: you open your copy, and a colleague still opens the official one.
  *
  *   open      0–4        "Recipes"
  *   question  4–9.6      "Which contracts traded far above their open interest?"
  *   catalog   9.6–15.8   three kinds; the screen
- *   session   15.8–29.7  Tue 8:00 → Monday; Mon 10:00, still trading → Friday, locked
- *   fork      29.7–41.2  Edit with AI; your private copy; a colleague's view; cut: the claim
- *   next      41.2–43.2  Next: read a recipe like an auditor
+ *   session   15.8–29.6  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
+ *   completed 29.6–33.9  Mon 16:30 → Monday: the latest completed session
+ *   fork      33.9–45.4  Edit with AI; your private copy; a colleague's view; cut: the claim
+ *   next      45.4–47.4  Next: read a recipe like an auditor
  */
 
-const END = 43.2;
+const END = 47.4;
 const KINDS: readonly RecipeKind[] = ["lookup", "screen", "report"];
 const SCREEN = "unusual-options-activity";
 /** Titles that fit half a phone's width. */
@@ -66,14 +69,10 @@ const shortTitles: Record<string, string> = {
 	"market-recap": "Market Recap",
 	"vol-surface": "Vol Surface",
 };
-/** The chapters' names on a phone's half-width card. */
-const chaptersShort: readonly Copy[] = [
-	["Market tone", "市场基调"],
-	["Money flow", "资金流向"],
-	["Vol pricing", "波动率定价"],
-];
 const TUESDAY = moments["tue-0800"];
 const MONDAY = moments["mon-1000"];
+const AFTER_CLOSE = moments["mon-1630"];
+const MINUTES_TRADED = Math.round((MONDAY.at - OPEN) * 24 * 60);
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -87,9 +86,11 @@ function layout(width: number) {
 		gap,
 		half,
 		cardX: (i: number) => margin + i * (half + gap),
-		// The catalog: a row of two cards per kind.
+		// A clear gap keeps the question visible while the catalog settles, then lets
+		// its phrase land above UOA without crossing a card title or a kind label.
 		rowY: (k: number) =>
-			H * (narrow ? 0.3 : 0.29) + k * H * (narrow ? 0.2 : 0.19),
+			H *
+			(k === 0 ? (narrow ? 0.3 : 0.27) : k === 1 ? 0.6 : narrow ? 0.8 : 0.79),
 		cardH: H * (narrow ? 0.11 : 0.1),
 		// The calendar.
 		colW,
@@ -105,10 +106,16 @@ function layout(width: number) {
 		/** A recipe card's type: title size, line size, and the step between lines. */
 		cardType: (() => {
 			const title = narrow ? frame.type.body : frame.type.head * 0.85;
-			const size = narrow ? frame.type.small : frame.type.body;
+			const size = frame.type.body;
 			const step = size * 1.75;
 			const pad = narrow ? 12 : 18;
-			return { title, size, step, pad, height: pad * 2 + title + step * 5.6 };
+			return {
+				title,
+				size,
+				step,
+				pad,
+				height: pad * 2 + title + step * (narrow ? 4.4 : 5.6),
+			};
 		})(),
 	};
 }
@@ -117,10 +124,9 @@ const copy = {
 	title: ["Recipes", "Recipe"],
 	titleSub: ["research that re-runs on fresh data", "在新数据上重跑的研究"],
 	qTag: ["your question", "你的问题"],
-	qBig: [
-		"Which contracts traded far above their open interest on Monday?",
-		"周一哪些合约的成交远超其未平仓量？",
-	],
+	qBig: ["Which contracts traded", "周一哪些合约的成交"],
+	qSignal: ["far above their open interest", "远超其未平仓量？"],
+	qTail: ["on Monday?", ""],
 	qLine: ["One official recipe answers it.", "只有一个官方 Recipe 回答它。"],
 	kindsHead: [
 		"Six official recipes, three kinds.",
@@ -158,6 +164,10 @@ const copy = {
 		"周一 10:00：仍在交易。",
 	],
 	fridayHead: ["It shows Friday.", "它显示周五。"],
+	afterCloseHead: [
+		"After the close, it shows Monday.",
+		"收盘后，报告显示周一。",
+	],
 	editChip: ["Edit with AI", "Edit with AI"],
 	forkHead: [
 		"Edit with AI forks a private copy.",
@@ -246,7 +256,9 @@ function Scene({
 	const statusY = L.stripTop + L.stripH + T.small * 1.8;
 	const chipW = textWidth(t(copy.editChip), T.small) + 18;
 	/** The opening question is a sentence: on a phone it takes a smaller size. */
-	const qSize = narrow ? T.head * 1.2 : T.title;
+	const qSize = narrow ? T.head * 1.2 : T.title * 0.85;
+	const qRows = locale === "zh" ? 2 : 3;
+	const qTop = H * 0.48 - ((qRows - 1) * qSize * 1.35) / 2;
 	const headerLine = (i: number) =>
 		L.headerY + L.headerH * (i === 0 ? 0.2 : i === 1 ? 0.6 : 0.88);
 	const card = (side: "official" | "copy") => {
@@ -273,51 +285,57 @@ function Scene({
 				>
 					{narrow ? "Market Recap" : "Daily Market Recap"}
 				</text>
-				<text
-					x={x + C.pad}
-					y={line(1)}
-					className={`wt-film-type ${side === "copy" ? "wt-film-accent" : "wt-film-dim"}`}
-					style={{ fontSize: C.size }}
-				>
-					{t(
+				<Lines
+					name={`owner-${side}`}
+					text={t(
 						side === "copy"
 							? copy.private
 							: narrow
 								? copy.officialShort
 								: copy.official,
 					)}
-				</text>
-				{(narrow ? chaptersShort : chapters).map((chapter, i) => (
-					<text
-						key={chapter[0]}
-						x={x + C.pad}
-						y={line(i + 2.4)}
-						className="wt-film-type wt-film-dim"
-						style={{ fontSize: C.size }}
-					>
-						{`${i + 1}. ${t(chapter)}`}
-					</text>
-				))}
-				{side === "copy" ? (
-					<text
-						data-f="spot-copy-was"
-						x={x + C.pad}
-						y={line(chapters.length + 2.4)}
-						className="wt-film-type wt-film-dim"
-						style={{ fontSize: C.size }}
-					>
-						{`${chapters.length + 1}. ${t(copy.spotlightOfficialShort)}`}
-					</text>
-				) : null}
-				<text
-					data-f={`spot-${side}`}
 					x={x + C.pad}
-					y={line(chapters.length + 2.4)}
+					y={line(1)}
+					anchor="start"
+					maxWidth={L.half - 2 * C.pad}
+					size={C.size}
 					className={`wt-film-type ${side === "copy" ? "wt-film-accent" : "wt-film-dim"}`}
-					style={{ fontSize: C.size }}
-				>
-					{`${chapters.length + 1}. ${t(spotlight)}`}
-				</text>
+				/>
+				{!narrow
+					? chapters.map((chapter, i) => (
+							<text
+								key={chapter[0]}
+								x={x + C.pad}
+								y={line(i + 2.4)}
+								className="wt-film-type wt-film-dim"
+								style={{ fontSize: C.size }}
+							>
+								{`${i + 1}. ${t(chapter)}`}
+							</text>
+						))
+					: null}
+				{side === "copy" ? (
+					<Lines
+						name="spot-copy-was"
+						x={x + C.pad}
+						y={line(narrow ? 3.2 : chapters.length + 2.4)}
+						text={`${narrow ? "" : `${chapters.length + 1}. `}${t(copy.spotlightOfficialShort)}`}
+						anchor="start"
+						maxWidth={L.half - 2 * C.pad}
+						className="wt-film-type wt-film-dim"
+						size={C.size}
+					/>
+				) : null}
+				<Lines
+					name={`spot-${side}`}
+					x={x + C.pad}
+					y={line(narrow ? 3.2 : chapters.length + 2.4)}
+					text={`${narrow ? "" : `${chapters.length + 1}. `}${t(spotlight)}`}
+					anchor="start"
+					maxWidth={L.half - 2 * C.pad}
+					className={`wt-film-type ${side === "copy" ? "wt-film-accent" : "wt-film-dim"}`}
+					size={C.size}
+				/>
 			</g>
 		);
 	};
@@ -424,8 +442,10 @@ function Scene({
 							width={(dayFraction(MONDAY.at) - dayFraction(OPEN)) * L.colW}
 							height={L.stripH}
 							rx={3}
-							className="wt-film-bar"
-							data-tone="total"
+							className="wt-panel-shape"
+							style={{
+								fill: "color-mix(in oklab, var(--diagram-observed) 14%, var(--card))",
+							}}
 						/>
 						<rect
 							data-f="mon-rest"
@@ -474,6 +494,20 @@ function Scene({
 								{t(label)}
 							</text>
 						))}
+						<Word
+							name="mon-elapsed"
+							x={L.dayX(SESSION_DATE) + L.colW / 2}
+							y={statusY + T.small * 1.4}
+							size={T.small}
+							className="wt-film-type"
+						>
+							<tspan fill="var(--diagram-observed)">
+								{t([
+									`${MINUTES_TRADED} min traded`,
+									`已交易${MINUTES_TRADED}分钟`,
+								])}
+							</tspan>
+						</Word>
 						<line
 							data-f="now-line"
 							x1={L.nowX(TUESDAY)}
@@ -514,6 +548,11 @@ function Scene({
 							[
 								["sess-unknown", "?", "wt-film-dim"],
 								["sess-mon", t(dayLabel(SESSION_DATE)), "wt-film-accent"],
+								[
+									"sess-close",
+									t(dayLabel(AFTER_CLOSE.latest)),
+									"wt-film-accent",
+								],
 							] as const
 						).map(([name, date, tone]) => (
 							<text
@@ -542,6 +581,7 @@ function Scene({
 							[
 								["ran-tue", TUESDAY.label],
 								["ran-mon", MONDAY.label],
+								["ran-close", AFTER_CLOSE.label],
 							] as const
 						).map(([name, label]) => (
 							<text
@@ -639,35 +679,47 @@ function Scene({
 				<Word
 					name="q-tag"
 					x={W / 2}
-					y={H * 0.3}
+					y={qTop - qSize * 1.5}
 					size={T.small}
 					className="wt-film-tag"
 				>
 					{t(copy.qTag).toUpperCase()}
 				</Word>
-				<Lines
-					name="q-big"
-					text={t(copy.qBig)}
+				<Word name="q-big" x={W / 2} y={qTop} size={qSize}>
+					{t(copy.qBig)}
+				</Word>
+				<Word
+					name="q-signal"
 					x={W / 2}
-					y={H * 0.3 + qSize * 1.5}
+					y={qTop + qSize * 1.35}
 					size={qSize}
-					maxWidth={room}
-				/>
+					className="wt-film-type wt-film-accent"
+				>
+					{t(copy.qSignal)}
+				</Word>
+				<Word name="q-tail" x={W / 2} y={qTop + qSize * 2.7} size={qSize}>
+					{t(copy.qTail)}
+				</Word>
 				<Lines
 					name="q-line"
 					text={t(copy.qLine)}
 					x={W / 2}
-					y={
-						H * 0.3 +
-						qSize * 1.5 +
-						(lineCount(t(copy.qBig), room, qSize) - 1) * qSize * 1.35 +
-						qSize * 1.4
-					}
+					y={qTop + (qRows - 1) * qSize * 1.35 + qSize * 1.65}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
+			<Word
+				name="screen-signal"
+				x={margin}
+				y={L.rowY(1) - T.small * 2.6}
+				size={T.body}
+				anchor="start"
+				className="wt-film-type wt-film-accent"
+			>
+				{t(copy.qSignal)}
+			</Word>
 			{headline("k-head", copy.kindsHead, copy.kindsHead)}
 			<Lines
 				name="s-head"
@@ -721,6 +773,7 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
+			{headline("after-close-head", copy.afterCloseHead, copy.afterCloseHead)}
 			<Brackets name="lock-session" glow />
 			{headline("f-head", copy.forkHead, copy.forkHeadShort)}
 			<Lines
@@ -795,6 +848,7 @@ function build(context: FilmContext) {
 		...sessions,
 		one("mon-done"),
 		one("mon-rest"),
+		one("mon-elapsed"),
 		one("fri-date"),
 		one("latest-box"),
 		one("latest-mon"),
@@ -805,8 +859,10 @@ function build(context: FilmContext) {
 		one("sess-unknown"),
 		one("sess-mon"),
 		one("sess-fri"),
+		one("sess-close"),
 		one("ran-tue"),
 		one("ran-mon"),
+		one("ran-close"),
 		one("fork-official"),
 		one("fork-copy"),
 		one("copy-frame"),
@@ -817,6 +873,7 @@ function build(context: FilmContext) {
 		one("viewer-colleague"),
 		one("viewer-colleague-dot"),
 		...flat("q"),
+		one("screen-signal"),
 		...[
 			"k-head",
 			"s-head",
@@ -824,6 +881,7 @@ function build(context: FilmContext) {
 			"t-head",
 			"m-head",
 			"m2-head",
+			"after-close-head",
 			"f-head",
 			"c-head",
 		].map((name) => one(name)),
@@ -842,11 +900,24 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	word(one("q-big"), 4.8);
+	word(one("q-signal"), 4.8);
+	word(one("q-tail"), 4.8);
 	show(one("q-line"), 6.0);
 
 	// ——— catalog: the question picks the recipe ———
 	tl.addLabel("catalog", 9.6);
-	hide(flat("q"), 9.6);
+	hide(
+		flat("q").filter((el) => el !== one("q-signal")),
+		9.6,
+	);
+	// UOA and its row settle at 11.2 before the question selects it. The phrase waits
+	// in the gap above UOA, clear of the catalog, and both marks stay untransformed.
+	d.carry(
+		one<SVGGraphicsElement>("q-signal"),
+		one<SVGGraphicsElement>("screen-signal"),
+		11.35,
+		{ duration: 0.7, arc: "y" },
+	);
 	show(one("k-head"), 9.8, "above");
 	rise(9.9);
 	kids("catalog").forEach((row, k) => {
@@ -863,12 +934,12 @@ function build(context: FilmContext) {
 	});
 	// The question's answer: the session screen.
 	show(one("s-head"), 12.2);
-	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 12.4);
+	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 12.05);
 	tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 12.4);
 
 	// ——— session: the calendar, not the clock ———
 	tl.addLabel("session", 15.8);
-	hide([one("k-head"), one("s-head")], 15.8);
+	hide([one("k-head"), one("s-head"), one("screen-signal")], 15.8);
 	sink(15.8);
 	tl.set(one("catalog"), { opacity: 0 }, 16.2);
 	tl.set(one("calendar"), { opacity: 1 }, 16.2);
@@ -918,6 +989,7 @@ function build(context: FilmContext) {
 		23.35,
 	);
 	tl.to(one("mon-rest"), { opacity: 1, duration: 0.45 }, 23.5);
+	show(one("mon-elapsed"), 23.65, "above");
 	const back = L.dayX(PREVIOUS_SESSION_DATE) - L.dayX(SESSION_DATE);
 	// The weekend's labels step back while the box passes over them.
 	const closed = days
@@ -972,54 +1044,124 @@ function build(context: FilmContext) {
 	);
 	show(one("latest-mon"), 25.8);
 	// The hero: Monday morning's report shows Friday.
-	d.lock(lockSession, 26.1, { around: one("sess-fri"), pad: 10 });
-	tl.addLabel("hero-lock", 26.1);
+	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
+	tl.addLabel("hero-lock", 28.0);
 	show(one("m2-head"), 26.1);
 	tl.to(one("ran-mon"), { opacity: 0.4, duration: 0.4 }, 26.5);
 
+	// ——— completed: Monday closes ———
+	tl.addLabel("completed", 29.6);
+	// The lock releases before its Friday result changes. All the original Friday
+	// headlines have their full holds; the moving clock fills only traded minutes.
+	hide(lockSession, 29.5, 0.1, 0);
+	hide(one("m-head"), 29.6);
+	hide(one("m2-head"), 29.7);
+	hide(
+		[one("trading-mon"), one("mon-elapsed"), one("latest-mon")],
+		29.6,
+		0.2,
+		0,
+	);
+	const clock = { at: MONDAY.at };
+	tl.fromTo(
+		clock,
+		{ at: MONDAY.at },
+		{
+			at: AFTER_CLOSE.at,
+			duration: 0.4,
+			ease: "none",
+			immediateRender: false,
+			onUpdate: () => {
+				const now = L.dayX(AFTER_CLOSE.day) + dayFraction(clock.at) * L.colW;
+				const traded = dayFraction(Math.min(clock.at, CLOSE));
+				const end = L.dayX(AFTER_CLOSE.day) + traded * L.colW;
+				gsap.set(one("now-line"), { attr: { x1: now, x2: now } });
+				gsap.set(one("now-dot"), { attr: { cx: now } });
+				gsap.set(one("mon-done"), {
+					attr: { width: (traded - dayFraction(OPEN)) * L.colW },
+				});
+				gsap.set(one("mon-rest"), {
+					attr: { x: end, width: (dayFraction(CLOSE) - traded) * L.colW },
+				});
+			},
+		},
+		29.6,
+	);
+	// The run time turns over, then the completed session returns to Monday.
+	hide(one("ran-mon"), 29.6, 0.2, 0);
+	show(one("ran-close"), 30.0, "below", 0.15);
+	d.flip(one("sess-fri"), one("sess-close"), 29.7);
+	tl.set(one("sess-fri"), { opacity: 0 }, 30.0);
+	tl.to(closed, { opacity: 0.25, duration: 0.15 }, 29.8);
+	tl.to(closed, { opacity: 1, duration: 0.3 }, 30.3);
+	tl.to(
+		one("latest-box"),
+		{
+			attr: { x: L.dayX(AFTER_CLOSE.latest) + dayFraction(OPEN) * L.colW },
+			duration: 0.3,
+			ease: "power2.inOut",
+		},
+		30.0,
+	);
+	tl.set(
+		one("latest-mon"),
+		{
+			attr: { x: L.dayX(AFTER_CLOSE.latest) + L.colW / 2 },
+		},
+		30.3,
+	);
+	show(one("latest-mon"), 30.3, "below", 0.1);
+	tl.set(friday, { attr: { class: "wt-small" } }, 30.3);
+	tl.set(
+		one(`day-${AFTER_CLOSE.latest}`),
+		{ attr: { class: "wt-small wt-accent" } },
+		30.3,
+	);
+	show(one("after-close-head"), 30.4, "above");
+
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 29.7);
-	hide([one("m-head"), one("m2-head"), lockSession], 29.7);
-	sink(29.7);
-	tl.set(one("calendar"), { opacity: 0 }, 30.1);
-	tl.set(one("fork"), { opacity: 1 }, 30.1);
-	rise(30.15);
-	show(one("fork-official"), 30.2);
-	land(one("edit-chip"), 30.7);
+	tl.addLabel("fork", 33.9);
+	hide(one("after-close-head"), 33.9);
+	sink(33.9);
+	tl.set(one("calendar"), { opacity: 0 }, 34.3);
+	tl.set(one("fork"), { opacity: 1 }, 34.3);
+	rise(34.35);
+	show(one("fork-official"), 34.4);
+	land(one("edit-chip"), 34.9);
 	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
 	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 31.2);
-	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 31.2);
-	show(one("f-head"), 31.2, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 31.9);
-	tl.set(one("copy-frame"), { opacity: 0 }, 32.3);
+	tl.set(one("copy-frame"), { opacity: 1 }, 35.4);
+	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 35.4);
+	show(one("f-head"), 35.4, "above");
+	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 36.1);
+	tl.set(one("copy-frame"), { opacity: 0 }, 36.5);
 	// Your copy's spotlight turns over from the official one's to ALFA.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 32.5);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 32.8);
-	land(one("viewer"), 32.7);
-	show(one("viewer-you"), 32.9);
+	d.flip(one("spot-copy-was"), one("spot-copy"), 36.7);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 37.0);
+	land(one("viewer"), 36.9);
+	show(one("viewer-you"), 37.1);
 	// A colleague opens the same recipe: the official one.
-	show(one("c-head"), 33.3);
-	land(one("viewer-colleague-dot"), 33.3);
-	show(one("viewer-colleague"), 33.5);
+	show(one("c-head"), 37.5);
+	land(one("viewer-colleague-dot"), 37.5);
+	show(one("viewer-colleague"), 37.7);
 	// Cut: the claim.
-	hide([one("f-head"), one("c-head")], 36.8);
-	sink(36.8);
-	word(one("z-big"), 37.2);
-	show(one("z-sub"), 37.6);
+	hide([one("f-head"), one("c-head")], 41.0);
+	sink(41.0);
+	word(one("z-big"), 41.4);
+	show(one("z-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 41.2);
-	hide(kids("claim"), 41.2);
-	d.close(41.2);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
 export const tradingflowRecipesFilm: Film = {
 	id: "tradingflow-recipes",
 	label: [
-		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
-		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00、盘中打开则显示周五；以及 Edit with AI 把 Daily Market Recap 复制成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
+		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday, then Monday after its close at 16:30; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
+		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00、盘中打开则显示周五，收盘后 16:30 则显示周一；以及 Edit with AI 把 Daily Market Recap 复制成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
 	],
 	stage: "dark",
 	shots: [
@@ -1027,6 +1169,7 @@ export const tradingflowRecipesFilm: Film = {
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "catalog", label: ["Three kinds", "三种类型"] },
 		{ id: "session", label: ["The session", "交易时段"] },
+		{ id: "completed", label: ["After the close", "收盘后"] },
 		{ id: "fork", label: ["Official vs yours", "官方与你的"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
