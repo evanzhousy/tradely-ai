@@ -1041,33 +1041,40 @@ function build(context: FilmContext) {
 	cols.forEach((col, i) => {
 		show(col, 33.05 + i * 0.15);
 	});
-	show(one("bt-0"), 33.45);
-	show(one("bucket-n"), 33.65);
+	show(one("bt-0"), 33.25);
+	show(one("bucket-n"), 33.35);
 	// A week passes: each expiry slides 7 days closer; the band stays. Counted with last
 	// week's figures first: what the members' change alone does.
 	const shift = L.dayX(0) - L.dayX(7);
-	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, 34.3);
-	d.flip(one("bt-0"), one("bt-1"), 35.3);
-	tl.set(one("bt-0"), { opacity: 0 }, 35.6);
+	const slideAt = 34.45;
+	tl.to(cols, { x: shift, duration: 1.0, ease: "power2.inOut" }, slideAt);
+	d.flip(one("bt-0"), one("bt-1"), slideAt + 1.0);
+	tl.set(one("bt-0"), { opacity: 0 }, slideAt + 1.3);
 	const after = AFTER_WEEK.columns;
+	// Each bar that changes membership takes its new colour as its centre crosses the band's
+	// edge: the moment the slide's own easing (power2.inOut, inverted here) brings it there.
+	const eased = (y: number) =>
+		y <= 0.5 ? Math.sqrt(y / 2) : 1 - Math.sqrt((1 - y) / 2);
 	stripExpiries.forEach((id) => {
-		const column = after.find((c) => c.id === id);
-		if (!column) return;
-		// In the bucket or out of it, by its days now: once the slide has brought it there.
+		const was = BEFORE.columns.find((c) => c.id === id);
+		const is = after.find((c) => c.id === id);
+		if (!was || !is || was.member === is.member) return;
+		const edge = is.member ? 30 : 14;
 		tl.set(
 			one(`colbar-${id}`),
-			{ attr: { "data-tone": column.member ? "total" : "neutral" } },
-			35.3,
+			{ attr: { "data-tone": is.member ? "total" : "neutral" } },
+			slideAt + eased((was.days - edge) / 7),
 		);
 	});
-	counter("bucket-n", MOVED, BEFORE.total, 35.3);
+	// The total recounts once the members have arrived.
+	counter("bucket-n", MOVED, BEFORE.total, slideAt + 1.0);
 	const marks = stripExpiries
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
-	show(marks, 35.35, "above");
-	show(one("note-was"), 35.4);
+	show(marks, 35.5, "above");
+	show(one("note-was"), 35.55);
 	// The headline names the membership step while its marks are up.
-	show(heads[7], 35.45);
+	show(heads[7], 35.6);
 	hide(marks, 37.4, 0.2);
 	// Then the week's new contracts: each series grows by tens.
 	stripExpiries.forEach((id) => {
