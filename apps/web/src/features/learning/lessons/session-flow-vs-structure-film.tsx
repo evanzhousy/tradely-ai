@@ -48,10 +48,10 @@ import {
  *
  *   open      0–4        "Volume and open interest"
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
- *   ledger    8.6–22.45  both open +10; changed hands ±0; both closed −4
- *   clock     22.45–32.35 hero: volume all day; the OI terms assemble before Tuesday's count
- *   bucket    32.35–41.2 420 holds 32.8–34.8; → 620 as members change (+500 in, −300 out)
- *                        at Sep 9's figures, held 35.5–37.5; → 650, held 38.1–41.2
+ *   ledger    8.6–22.0   both open +10; changed hands ±0; both closed −4
+ *   clock     22.0–31.9  hero: volume all day; the OI terms assemble before Tuesday's count
+ *   bucket    31.9–41.2  420 holds 32.35–34.35; → 620 as members change (+500 in, −300 out)
+ *                        at Sep 9's figures, held 35.05–37.05; → 650, held 37.65–41.2
  *   claim     41.2–45.55 volume counts trading; open interest, positions
  *   next      45.55–47.5  Next: tape rows
  */
@@ -80,6 +80,19 @@ const moved = (id: string) => {
 	const is = AFTER_WEEK.columns.find((c) => c.id === id)?.member;
 	return was === is ? undefined : is ? "in" : "out";
 };
+/** Membership operands use the same historical values as the moving columns. */
+const ENTERING = BEFORE.columns
+	.filter((column) => moved(column.id) === "in")
+	.reduce((sum, column) => sum + column.value, 0);
+const LEAVING = BEFORE.columns
+	.filter((column) => moved(column.id) === "out")
+	.reduce((sum, column) => sum + column.value, 0);
+const MEMBERSHIP_TERMS = [
+	count(BEFORE.total),
+	` + ${count(ENTERING)}`,
+	` − ${count(LEAVING)}`,
+	` = ${count(MOVED)}`,
+];
 /** Separate terms let each trade's open-interest change assemble the final count. */
 const SUM_TERMS = [
 	count(START_OI),
@@ -160,7 +173,16 @@ function layout(width: number) {
 		/** The expiry strip: days to expiry across, open interest up. */
 		dayX: (days: number) => margin + (days / DAYS_MAX) * room,
 		floor: H * (narrow ? 0.76 : 0.8),
-		top: H * (narrow ? 0.4 : 0.36),
+		// Leave a clear reading lane for the membership expression above the chart.
+		top: Math.max(
+			H * (narrow ? 0.46 : 0.42),
+			H * (narrow ? 0.25 : 0.27) +
+				frame.type.small +
+				frame.type.body * 4.9 +
+				18,
+		),
+		membershipY:
+			H * (narrow ? 0.25 : 0.27) + frame.type.small + frame.type.body * 3.5,
 		bucketY: H * (narrow ? 0.25 : 0.27),
 	};
 }
@@ -818,23 +840,42 @@ function Scene({
 			>
 				{count(BEFORE.total)}
 			</text>
+			{/* The historical basis and live growth both belong to the total above them. */}
 			{(
 				[
 					["note-was", copy.wasNote],
 					["note-new", newContracts(0)],
 				] as const
-			).map(([name, label], i) => (
+			).map(([name, label]) => (
 				<text
 					key={name}
 					data-f={name}
-					x={margin}
-					y={L.bucketY + T.small + T.small * 1.9 * (i + 1)}
-					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small }}
+					x={margin + room}
+					y={L.bucketY + T.small + T.body * 1.5}
+					textAnchor="end"
+					className="wt-film-type"
+					style={{ fontSize: T.body }}
 				>
 					{t(label)}
 				</text>
 			))}
+			<text
+				data-f="membership-sum"
+				x={margin}
+				y={L.membershipY}
+				className="wt-film-num"
+				style={{ fontSize: T.body * 1.2 }}
+			>
+				{MEMBERSHIP_TERMS.map((term, i) => (
+					<tspan
+						key={term}
+						data-f={`membership-term-${i}`}
+						className={i === 1 || i === 3 ? "wt-film-accent" : undefined}
+					>
+						{term}
+					</tspan>
+				))}
+			</text>
 
 			<g data-f="claim">
 				<Lines
@@ -929,6 +970,10 @@ function build(context: FilmContext) {
 	const sumWaypoints = TRADES.map((_, i) => num(`sum-waypoint-${i}`));
 	const cols = stripExpiries.map((id) => one(`col-${id}`));
 	const changes = stripExpiries.map((id) => one(`colc-${id}`));
+	const membershipSum = one("membership-sum");
+	const membershipTerms = MEMBERSHIP_TERMS.map((_, i) =>
+		one(`membership-term-${i}`),
+	);
 	const clockTime = num("clock-time");
 	const lockOi = one<SVGGraphicsElement>("lock-oi");
 
@@ -962,6 +1007,8 @@ function build(context: FilmContext) {
 		...stripExpiries.filter((id) => moved(id)).map((id) => one(`colm-${id}`)),
 		one("note-was"),
 		one("note-new"),
+		membershipSum,
+		...membershipTerms,
 		...kids("claim"),
 	]);
 
@@ -986,24 +1033,29 @@ function build(context: FilmContext) {
 	/** One trade: its row comes up, volume adds it, open interest moves or doesn't. */
 	const trade = (i: number, at: number) => {
 		const beat = AFTER[i];
+		// The closing row lands promptly so the preceding sentence keeps its full hold,
+		// while its answer and both counters still begin together at 18.45.
+		const closing = i === TRADES.length - 1;
+		const oiAt = at + (closing ? 0.15 : 0.65);
 		if (i) hide(trades[i - 1], at - 0.35, 0.3);
-		show(trades[i], at, "right");
-		counter("vol-n", beat.volume, beat.volumeBefore ?? 0, at + 0.45);
+		show(trades[i], at, "right", closing ? 0.15 : 0.5);
+		counter(
+			"vol-n",
+			beat.volume,
+			beat.volumeBefore ?? 0,
+			at + (closing ? 0.15 : 0.45),
+		);
 		if (beat.openInterest === beat.openInterestBefore) {
-			still(at + 0.65);
+			still(oiAt);
 			return;
 		}
 		counter(
 			"oi-n",
 			beat.openInterest,
 			beat.openInterestBefore ?? START_OI,
-			at + 0.65,
+			oiAt,
 		);
-		balanceTo(
-			beat.openInterest,
-			beat.openInterestBefore ?? START_OI,
-			at + 0.65,
-		);
+		balanceTo(beat.openInterest, beat.openInterestBefore ?? START_OI, oiAt);
 	};
 	trade(0, 10.6);
 	// The answer comes up with open interest's count.
@@ -1011,42 +1063,42 @@ function build(context: FilmContext) {
 	trade(1, 14.45);
 	d.swap([heads[0], heads[1]], heads[2], 14.8);
 	trade(2, 18.3);
-	show(heads[3], 18.95);
+	show(heads[3], 18.45);
 	// Turn the completed balance into a compact trade log during the ledger's hold.
 	// These same time-stamped OI changes will feed the calculation in the clock replay.
-	hide([one("bal-long"), one("bal-short")], 19.6);
+	hide([one("bal-long"), one("bal-short")], 19.15);
 	sumSources.forEach((source, i) => {
 		tl.fromTo(
 			source,
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.25 },
-			20.05 + i * 0.25,
+			19.6 + i * 0.25,
 		);
 	});
 
 	// ——— clock: the hero. Volume live, open interest daily. ———
-	tl.addLabel("clock", 22.45);
-	d.swap([heads[2], heads[3]], heads[4], 22.45);
-	hide(trades[2], 22.45);
-	hide(sumSources, 22.45, 0.35, 0);
+	tl.addLabel("clock", 22);
+	d.swap([heads[2], heads[3]], heads[4], 22);
+	hide(trades[2], 22);
+	hide(sumSources, 22, 0.35, 0);
 	// Back to Monday's open: volume starts again; the true count steps aside, unpublished,
 	// and the figure a screen shows is Friday's.
-	counter("vol-n", 0, FINAL.volume, 22.65);
-	d.carry(num("oi-n"), num("ghost-n"), 22.65, {
+	counter("vol-n", 0, FINAL.volume, 22.2);
+	d.carry(num("oi-n"), num("ghost-n"), 22.2, {
 		duration: 0.6,
 		arc: L.narrow ? "y" : undefined,
 		reveal: false,
 	});
-	hide(one("oi"), 22.65, 0.3);
+	hide(one("oi"), 22.2, 0.3);
 	// Unpublished, it steps back.
-	tl.set(one("ghost"), { opacity: 1 }, 23.25);
-	tl.to(one("ghost"), { opacity: 0.7, duration: 0.4 }, 23.35);
-	show(one("ghost-note"), 23.35);
-	show(one("shown"), 23.05);
-	show(one("oi-fri"), 23.25);
-	show(kids("clock"), 22.75);
-	show(one("head"), 22.95);
-	show(clockTime, 22.95);
+	tl.set(one("ghost"), { opacity: 1 }, 22.8);
+	tl.to(one("ghost"), { opacity: 0.7, duration: 0.4 }, 22.9);
+	show(one("ghost-note"), 22.9);
+	show(one("shown"), 22.6);
+	show(one("oi-fri"), 22.8);
+	show(kids("clock"), 22.3);
+	show(one("head"), 22.5);
+	show(clockTime, 22.5);
 	/** The playhead runs from one minute to another, its time counting with it. */
 	const tue = L.narrow ? copy.reportShort : (["Tue", "周二"] as const);
 	const clockState = { minute: MON_OPEN };
@@ -1077,7 +1129,7 @@ function build(context: FilmContext) {
 	let volume = 0;
 	let minuteNow = MON_OPEN;
 	TRADES.forEach((t, i) => {
-		const at = 23.45 + i * 0.8;
+		const at = 23 + i * 0.8;
 		const minute = minuteOf(t.time);
 		clockTo(minute, minuteNow, at, 0.6);
 		minuteNow = minute;
@@ -1085,19 +1137,19 @@ function build(context: FilmContext) {
 		counter("vol-n", volume + t.quantity, volume, at + 0.6);
 		volume += t.quantity;
 	});
-	clockTo(MON_CLOSE, minuteNow, 25.85, 0.7);
-	still(26.55, "shown");
-	clockTo(TUE_REPORT, MON_CLOSE, 26.95, 0.8);
+	clockTo(MON_CLOSE, minuteNow, 25.4, 0.7);
+	still(26.1, "shown");
+	clockTo(TUE_REPORT, MON_CLOSE, 26.5, 0.8);
 	// Once Monday's prints have landed, their OI changes assemble the calculation.
 	// Step the volume track back first so none of the carries crosses settled tick text.
 	tl.to(
 		[...kids("clock"), ...ticks, one("head")],
 		{ opacity: 0.2, duration: 0.2 },
-		26.25,
+		25.8,
 	);
-	show([one("sum-tag"), num("sum-term-0")], 26.3, "below", 0.2);
+	show([one("sum-tag"), num("sum-term-0")], 25.85, "below", 0.2);
 	TRADES.forEach((_, i) => {
-		const at = 26.4 + i * 0.55;
+		const at = 25.95 + i * 0.55;
 		// Fade in without moving the source: a carry measures untransformed coordinates.
 		tl.fromTo(sumSources[i], { opacity: 0 }, { opacity: 1, duration: 0.2 }, at);
 		// Separate horizontal and vertical legs: the mark never cuts the occupied slots.
@@ -1110,34 +1162,30 @@ function build(context: FilmContext) {
 		hide(sumSources[i], at + 0.35, 0.2, 0);
 	});
 	// Tuesday's report: the shown figure turns to the true count, which is now published.
-	d.flip(one("oi-fri"), one("oi-mon"), 27.75);
-	tl.set(one("oi-fri"), { opacity: 0 }, 28.05);
+	d.flip(one("oi-fri"), one("oi-mon"), 27.3);
+	tl.set(one("oi-fri"), { opacity: 0 }, 27.6);
 	// The true count, published, travels from where it waited to the screen; the screen's
 	// Friday figure makes way for it.
-	tl.to(num("shown-n"), { opacity: 0, duration: 0.2 }, 27.85);
+	tl.to(num("shown-n"), { opacity: 0, duration: 0.2 }, 27.4);
 	d.count(
 		num("shown-n"),
 		FINAL.openInterest,
-		28.4,
+		27.95,
 		(v) => count(Math.round(v)),
 		START_OI,
 		0.01,
 	);
-	d.carry(num("ghost-n"), num("shown-n"), 27.85, { duration: 0.6 });
-	tl.to(
-		[one("ghost"), one("ghost-note")],
-		{ opacity: 0, duration: 0.3 },
-		27.95,
-	);
+	d.carry(num("ghost-n"), num("shown-n"), 27.4, { duration: 0.6 });
+	tl.to([one("ghost"), one("ghost-note")], { opacity: 0, duration: 0.3 }, 27.5);
 	// Round the whole stat, its tag too, so no arm runs through the tag.
-	d.lock(lockOi, 28.75, { around: [one("shown"), one("oi-mon")], pad: 6 });
-	tl.addLabel("hero-lock", 28.75);
-	show(heads[5], 28.75);
+	d.lock(lockOi, 28.3, { around: [one("shown"), one("oi-mon")], pad: 6 });
+	tl.addLabel("hero-lock", 28.3);
+	show(heads[5], 28.3);
 	// The completed expression stays through the lock and its after-beat.
-	tl.to(clockTime, { opacity: 0.2, duration: 0.25 }, 29.1);
+	tl.to(clockTime, { opacity: 0.2, duration: 0.25 }, 28.65);
 
 	// ——— bucket: a week moves the members ———
-	tl.addLabel("bucket", 32.35);
+	tl.addLabel("bucket", 31.9);
 	const clockShot = [
 		heads[4],
 		heads[5],
@@ -1157,8 +1205,8 @@ function build(context: FilmContext) {
 		lockOi,
 	];
 	// Keep the full reading holds, then clear the clock in place before any bucket entry.
-	hide(clockShot, 32.35, 0.25, 0);
-	tl.set([...clockShot, one("sum-line"), one("clock")], { opacity: 0 }, 32.6);
+	hide(clockShot, 31.9, 0.25, 0);
+	tl.set([...clockShot, one("sum-line"), one("clock")], { opacity: 0 }, 32.15);
 	// Establish the comparison together, then give all its settled marks two seconds.
 	show(
 		[
@@ -1169,14 +1217,14 @@ function build(context: FilmContext) {
 			one("bucket-n"),
 			one("note-was"),
 		],
-		32.65,
+		32.2,
 		"below",
 		0.15,
 	);
 	// A week passes: each expiry slides 7 days closer; the band stays. Counted with last
 	// week's figures first: what the members' change alone does.
 	const shift = L.dayX(0) - L.dayX(7);
-	const slideAt = 34.8;
+	const slideAt = 34.35;
 	const slideDuration = 0.7;
 	const after = AFTER_WEEK.columns;
 	// One state drives geometry, membership, colour and every displayed figure. During the
@@ -1247,24 +1295,30 @@ function build(context: FilmContext) {
 	const marks = stripExpiries
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
-	show(marks, 35.55, "above", 0.25);
-	// The headline names the membership step while its marks are up.
-	show(heads[7], 35.8);
-	hide(marks, 37.05, 0.2);
-	// Then the week's new contracts: each series grows by tens.
-	const growthAt = 37.5;
-	// Fold the historical qualification away completely before any live figure grows.
-	tl.to(
-		one("note-was"),
-		{
-			scaleY: 0,
-			duration: 0.25,
-			ease: "power2.in",
-			transformOrigin: "50% 50%",
-		},
-		growthAt - 0.3,
+	show(marks, 35.1, "above", 0.25);
+	// Read the spatial membership changes as one settled calculation. The equals/result
+	// pair lands only after its operands, and disappears before live growth changes them.
+	// Gate the parent text too: hiding tspans alone leaves the text mark visible to scans.
+	tl.set(membershipSum, { opacity: 1 }, slideAt + slideDuration - 0.15);
+	tl.fromTo(
+		membershipTerms.slice(0, -1),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.15 },
+		slideAt + slideDuration - 0.15,
 	);
-	tl.set(one("note-was"), { opacity: 0 }, growthAt - 0.05);
+	// Reveal the result settled with the total; the complete row gets the full 2 s baseline.
+	tl.set(membershipTerms[3], { opacity: 1 }, slideAt + slideDuration);
+	// The headline names the membership step while its marks are up.
+	show(heads[7], 35.35);
+	hide(marks, 36.6, 0.2);
+	// Then the week's new contracts: each series grows by tens.
+	const growthAt = 37.05;
+	// Retire the whole counterfactual atomically at the first live-growth frame.
+	tl.set(
+		[one("note-was"), membershipSum, ...membershipTerms],
+		{ opacity: 0 },
+		growthAt,
+	);
 	tl.fromTo(
 		bucketState,
 		{ week: 1, growth: 0 },
@@ -1277,8 +1331,8 @@ function build(context: FilmContext) {
 		},
 		growthAt,
 	);
-	// Begin at zero before growth; every annotation follows the displayed rounded values.
-	show(one("note-new"), growthAt - 0.2, "below", 0.15);
+	// Begin at zero as growth starts; every annotation follows the displayed rounded values.
+	show(one("note-new"), growthAt, "below", 0.15);
 	// In place, without travel: each live change stays over its own column's figure.
 	changes.forEach((change, i) => {
 		word(change, growthAt - 0.1 + i * 0.12);
@@ -1297,6 +1351,8 @@ function build(context: FilmContext) {
 			one("bucket-n"),
 			one("note-new"),
 			one("note-was"),
+			membershipSum,
+			...membershipTerms,
 		],
 		41.2,
 	);
