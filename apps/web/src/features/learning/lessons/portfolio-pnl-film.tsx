@@ -52,16 +52,16 @@ import {
  *
  *   open      0–4        "P&L"
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
- *   account   10.4–19.7  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
+ *   account   10.4–21.0  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
  *                        buying power $36,799.20
- *   calls     19.7–31.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
+ *   calls     21.0–32.8  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
  *                        and +$645 become +$975, locked; then the $75, drawn: bid to mid
- *   short     31.7–43.8  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
+ *   short     32.8–44.9  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
  *                        cut: "P&L is what your positions earned."
- *   next      43.8–46.3  Next: performance
+ *   next      44.9–47.4  Next: performance
  */
 
-const END = 46.3;
+const END = 47.4;
 const ACCOUNT = [29_000, 37_000] as const;
 const BEN_X = [90, 140] as const;
 const BEN_Y = [-20_000, 6_000] as const;
@@ -280,9 +280,11 @@ function Scene({
 		W / 2 -
 		(textWidth(GAP_EQ, gapText) + 8 + textWidth(dollars(GAP), gapText * 1.3)) /
 			2;
-	/** The second part lands to the right, then merges into the subtotal. */
-	const partX =
-		W / 2 + textWidth(signed(fifo.realized), T.big) / 2 + T.num * 1.4;
+	/** Separate operands use the second amount's sign for addition. */
+	const operandGap = T.num * 0.85;
+	const operandY = H * 0.3 + T.big * 1.05 + T.num * 1.8;
+	/** Buying power has its own slot, below the account's settled value. */
+	const bpY = H * 0.4;
 	const x1 = L.ax(CLOSE_TO);
 	const bracketY = L.barTop - 10;
 	const markX = L.bx(CLOSE_SPOT / 100);
@@ -500,7 +502,7 @@ function Scene({
 				<Word
 					name="m-tag-bp"
 					x={L.right}
-					y={L.headY + T.head * 1.25}
+					y={bpY}
 					size={T.small}
 					anchor="end"
 					className="wt-film-tag"
@@ -510,7 +512,7 @@ function Scene({
 				<Word
 					name="m-bp"
 					x={L.right}
-					y={L.headY + T.head * 1.25 + T.num * 1.05}
+					y={bpY + T.num * 1.05}
 					size={T.num}
 					anchor="end"
 					className="wt-film-num wt-film-accent"
@@ -521,7 +523,7 @@ function Scene({
 			<Word
 				name="m-bp-note"
 				x={L.right}
-				y={L.headY + T.head * 1.25 + T.num * 1.05 + T.small * 1.9}
+				y={bpY + T.num * 1.05 + T.body * 1.9}
 				size={T.body}
 				anchor="end"
 				className="wt-film-num wt-film-dim"
@@ -712,9 +714,10 @@ function Scene({
 				</Word>
 				<Word
 					name="t-subtotal"
-					x={W / 2}
-					y={H * 0.3 + T.big * 1.05}
-					size={T.big}
+					x={W / 2 - operandGap}
+					y={operandY}
+					size={T.num}
+					anchor="end"
 					className="wt-film-num wt-film-gain"
 				>
 					{signed(fifo.realized)}
@@ -730,8 +733,8 @@ function Scene({
 				</Word>
 				<Word
 					name="t-part"
-					x={partX}
-					y={H * 0.3 + T.big * 1.05}
+					x={W / 2 + operandGap}
+					y={operandY}
 					size={T.num}
 					anchor="start"
 					className="wt-film-num wt-film-gain"
@@ -931,7 +934,7 @@ function build(context: FilmContext) {
 	hide(flat("q"), 10.4);
 	show(one("a-head"), 10.6, "above");
 	rise(10.7);
-	show(kids("meter"), 11.2, "above");
+	show([one("m-tag"), meter], 11.2, "above");
 	d.count(meter, valueOpen, 11.2, dollars, valueOpen, 0.01);
 	grow("seg-base", 11.2);
 	grow("seg-stock", 11.9, 0.4);
@@ -951,37 +954,35 @@ function build(context: FilmContext) {
 	grow("seg-deposit", 15.4, 0.7);
 	d.count(meter, afterDeposit, 15.4, dollars, valueClose, 0.7);
 	show(one("deposited"), 15.7);
-	// And buying power, larger still: margin, not money made either.
-	d.flip(one("m-tag"), one("m-tag-bp"), 15.55);
-	tl.set(one("m-tag"), { opacity: 0 }, 15.85);
-	d.flip(meter, one("m-bp"), 15.55);
-	tl.set(meter, { opacity: 0 }, 15.85);
-	// Name the cash multiplier only after the buying-power figure has unfolded.
-	show(one("m-bp-note"), 16.2, "below", 0.2);
+	// Read the completed deposit for a second, then compare buying power in its own slot.
+	// The account value remains visible; buying power never replaces it.
+	show(one("m-tag-bp"), 17.1, "above", 0.2);
+	show(one("m-bp"), 17.1, "below", 0.2);
+	show(one("m-bp-note"), 17.3, "below", 0.2);
 
 	// ——— calls: realized and unrealized ———
-	tl.addLabel("calls", 19.7);
+	tl.addLabel("calls", 21.0);
 	hide(
 		[one("e-head"), ...kids("meter"), one("m-bp-note"), ...kids("answer")],
-		19.7,
+		21.0,
 	);
-	sink(19.7);
+	sink(21.0);
 	squares.forEach((square, i) => {
-		land(square, 20.1 + i * 0.04, 0.4);
+		land(square, 21.4 + i * 0.04, 0.4);
 	});
-	show([one("r-tag"), one("u-tag")], 20.4);
-	show([realized, unrealized], 20.6);
-	show(one("legend-lots"), 20.7);
-	show(one("l-head"), 20.9, "above");
+	show([one("r-tag"), one("u-tag")], 21.7);
+	show([realized, unrealized], 21.9);
+	show(one("legend-lots"), 22.0);
+	show(one("l-head"), 22.2, "above");
 	// Sell six, oldest first, and say so.
-	show(one("fifo-tag"), 21.0, "below", 0.2);
-	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 23.0);
+	show(one("fifo-tag"), 22.3, "below", 0.2);
+	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.3);
 	// In whole dollars as they count: cents in motion read as noise.
 	const wholeDollars = (cents: number) => Math.round(cents / 100) * 100;
 	d.count(
 		realized,
 		fifo.realized,
-		23.2,
+		24.5,
 		(v) => zeroed(wholeDollars(v)),
 		0,
 		0.8,
@@ -989,7 +990,7 @@ function build(context: FilmContext) {
 	d.count(
 		unrealized,
 		fifo.unrealized,
-		23.2,
+		24.5,
 		(v) => signed(wholeDollars(v)),
 		held.unrealized,
 		0.8,
@@ -1003,54 +1004,43 @@ function build(context: FilmContext) {
 			one("r-tag"),
 			one("u-tag"),
 		],
-		24.7,
+		26.0,
 	);
-	show(one("t-tag"), 25.0);
-	// Land both parts separately before the second one merges into the first.
+	show(one("t-tag"), 26.3, "above", 0.2);
+	// Each part lands in its own lane; neither travels across the other's glyphs.
 	const subtotal = one<SVGTextElement>("t-subtotal");
 	const total = one<SVGTextElement>("t-num");
-	d.carry(realized, subtotal, 24.9, { duration: 0.8 });
-	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 25.7, {
-		duration: 0.8,
-	});
-	// Step the subtotal back while $645 travels into its place, clear of settled text.
-	// The completed total unfolds only after the incoming part has been absorbed.
-	tl.set(subtotal, { opacity: 0.2 }, 26.6);
-	d.carry(one<SVGGraphicsElement>("t-part"), total, 26.6, {
+	d.carry(realized, subtotal, 26.35, { duration: 0.5, arc: "y" });
+	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 26.6, {
 		duration: 0.5,
-		fit: false,
-		reveal: false,
+		arc: "y",
 	});
-	tl.to(
-		subtotal,
-		{ scaleY: 0, transformOrigin: "50% 50%", duration: 0.2, ease: "power2.in" },
-		26.9,
-	);
-	tl.set(subtotal, { opacity: 0 }, 27.1);
+	// The settled sum unfolds above its operands; clear that row before the lock and proof.
 	tl.fromTo(
 		total,
 		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
-		{ scaleY: 1, duration: 0.35, ease: "power2.out", immediateRender: false },
-		27.1,
+		{ scaleY: 1, duration: 0.2, ease: "power2.out", immediateRender: false },
+		28.0,
 	);
-	show(one("t-was"), 27.2);
-	d.lock(lockTotal, 27.5, {
+	hide([subtotal, one("t-part")], 28.3, 0.15, 0);
+	show(one("t-was"), 28.45, "below", 0.2);
+	d.lock(lockTotal, 28.5, {
 		around: [one("t-tag"), total],
 		pad: 8,
 	});
-	tl.addLabel("hero-lock", 27.5);
-	show(one("t-head"), 27.5);
+	tl.addLabel("hero-lock", 28.5);
+	show(one("t-head"), 28.5);
 	// After the lock: the $75, drawn. The bid and the mid are the ends of a gap; six
 	// contracts of it come to $75.
-	d.trace(one<SVGPathElement>("gap-rule"), 28.0, { duration: 0.45 });
-	show(one("gap-bid"), 28.0);
-	show(one("gap-mid"), 28.3);
-	show(one("gap-eq"), 28.75);
+	d.trace(one<SVGPathElement>("gap-rule"), 28.6, { duration: 0.2 });
+	show(one("gap-bid"), 28.6, "below", 0.15);
+	show(one("gap-mid"), 28.75, "below", 0.15);
+	show(one("gap-eq"), 28.95, "below", 0.15);
 	// The result lands settled: a counting figure after "=" would show false equations.
-	land(one("gap-n"), 28.95);
+	land(one("gap-n"), 29.1, 0.15);
 
 	// ——— short: the other side of the same calls ———
-	tl.addLabel("short", 31.7);
+	tl.addLabel("short", 32.8);
 	hide(
 		[
 			...flat("total"),
@@ -1059,41 +1049,41 @@ function build(context: FilmContext) {
 			one("l-head"),
 			one("t-head"),
 		],
-		31.7,
+		32.8,
 	);
-	tl.set(one("acct"), { opacity: 0 }, 31.8);
-	tl.set(one("ben"), { opacity: 1 }, 31.8);
-	show(one("b-head"), 32.05, "above");
-	rise(32.1);
-	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 32.6);
-	show(one("premium-label"), 32.9);
-	land(one("mark-dot"), 33.3);
-	show(one("mark-label"), 33.5);
-	d.swap(one("b-head"), one("x-head"), 35.6);
-	draw(one<SVGPathElement>("expiry"), 35.7, 1.4);
+	tl.set(one("acct"), { opacity: 0 }, 32.9);
+	tl.set(one("ben"), { opacity: 1 }, 32.9);
+	show(one("b-head"), 33.15, "above");
+	rise(33.2);
+	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 33.7);
+	show(one("premium-label"), 34.0);
+	land(one("mark-dot"), 34.4);
+	show(one("mark-label"), 34.6);
+	d.swap(one("b-head"), one("x-head"), 36.7);
+	draw(one<SVGPathElement>("expiry"), 36.8, 1.4);
 	tl.fromTo(
 		one("expiry-arrow"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.2 },
-		37.1,
+		38.2,
 	);
-	land(one("far-dot"), 36.9);
-	show(one("far-label"), 37.1);
+	land(one("far-dot"), 38.0);
+	show(one("far-label"), 38.2);
 	// Cut: the claim.
-	hide(one("x-head"), 39.45);
-	sink(39.45);
+	hide(one("x-head"), 40.55);
+	sink(40.55);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.8,
+		40.9,
 	);
-	show(one("z-sub"), 40.2);
+	show(one("z-sub"), 41.3);
 
 	// ——— next ———
-	tl.addLabel("next", 43.8);
-	hide(kids("claim"), 43.8);
-	d.close(43.8);
+	tl.addLabel("next", 44.9);
+	hide(kids("claim"), 44.9);
+	d.close(44.9);
 	return tl;
 }
 
