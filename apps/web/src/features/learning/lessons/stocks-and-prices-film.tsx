@@ -178,10 +178,10 @@ const copy = {
 	],
 	kindsHeadShort: ["Stock, ETF, index.", "股票、ETF、指数。"],
 	indexHead: [
-		"An index: a number, settled in cash.",
+		"An index: a number. Options settle in cash.",
 		"指数是一个数：期权现金结算。",
 	],
-	indexHeadShort: ["An index: cash-settled.", "指数：现金结算。"],
+	indexHeadShort: ["Index options: cash-settled.", "指数期权：现金结算。"],
 	rowLabels: {
 		holds: ["holds", "持有"],
 		buy: ["buy it?", "能买吗"],
@@ -338,6 +338,16 @@ function Scene({
 					className="wt-film-tag"
 				>
 					{t(["ALFA · open", "ALFA · 开盘"]).toUpperCase()}
+				</Word>
+				{/* Once the price moves it is no longer the open. */}
+				<Word
+					name="px-tag-up"
+					x={W / 2}
+					y={H * 0.3}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(["ALFA · up $1", "ALFA · 涨 $1"]).toUpperCase()}
 				</Word>
 				<Word
 					name="px"
@@ -872,17 +882,18 @@ function build(context: FilmContext) {
 	show([one("co-tag"), coVal], 10.5);
 	// Each $1 move, under its own headline.
 	d.swap(heads[0], heads[1], 12.7);
-	d.count(px, OPEN + 100, 13.1, dollars, OPEN, 0.8);
-	d.count(mineVal, MINE * (OPEN + 100), 13.1, whole, MINE * OPEN, 0.8);
-	d.count(coVal, SHARES * (OPEN + 100), 13.1, company, SHARES * OPEN, 0.8);
-	show([mineChg, coChg], 13.3);
-	d.count(mineChg, MINE * 100, 13.3, signed, 0, 0.8);
-	d.count(coChg, SHARES * 100, 13.3, signedMillions, 0, 0.8);
+	d.swap(one("px-tag"), one("px-tag-up"), 12.4);
+	show([mineChg, coChg], 12.7);
 	tl.set(
 		[mineChg, coChg],
 		{ attr: { class: "wt-film-num wt-film-gain" } },
-		13.3,
+		12.7,
 	);
+	d.count(px, OPEN + 100, 12.75, dollars, OPEN, 0.6);
+	d.count(mineVal, MINE * (OPEN + 100), 12.75, whole, MINE * OPEN, 0.6);
+	d.count(coVal, SHARES * (OPEN + 100), 12.75, company, SHARES * OPEN, 0.6);
+	d.count(mineChg, MINE * 100, 12.75, signed, 0, 0.6);
+	d.count(coChg, SHARES * 100, 12.75, signedMillions, 0, 0.6);
 
 	// ——— quote: you trade against the book ———
 	tl.addLabel("quote", 16.55);
@@ -948,7 +959,7 @@ function build(context: FilmContext) {
 		fit: false,
 		arc: lane,
 	});
-	d.count(total, BUY10.notional, 22.0, dollars, 0, 0.5);
+	d.count(total, BUY10.notional, 21.99, dollars, 0, 0.01);
 	take("bid", SELL10.fills, 21.55, null);
 	tl.fromTo(
 		one("chip-sell"),
@@ -963,7 +974,7 @@ function build(context: FilmContext) {
 		fit: false,
 		arc: lane,
 	});
-	d.count(sell, SELL10.notional, 22.8, dollars, 0, 0.3);
+	d.count(sell, SELL10.notional, 22.79, dollars, 0, 0.01);
 	// Both on stage: a bracket makes the difference, the line names it, and both hold. The
 	// taken levels step back.
 	d.trace(one<SVGPathElement>("diff-gap"), 23.1, { duration: 0.3 });
