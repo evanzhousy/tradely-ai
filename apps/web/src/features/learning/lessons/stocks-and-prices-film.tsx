@@ -43,10 +43,10 @@ import {
  *   open      0–4        "Stocks and prices"
  *   question  4–9        last $100.02: what do 10 shares cost?
  *   slice     9–16.55    50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
- *   quote     16.55–33.3 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
+ *   quote     16.55–35.5 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
  *                        more to buy; hero: buy 1,000; after it, the same 1,000 at the last
  *                        price, and what the sweep added
- *   kinds     33.3–41.05 stock, ETF, index; the index is a number, cash-settled
+ *   kinds     35.5–41.05 stock, ETF, index; the index is a number, cash-settled
  *   claim     41.05–45.45 you trade against the quote, not the last price
  *   next      45.45–47.45 Next: options, a paid right
  */
@@ -174,15 +174,13 @@ const copy = {
 	avg: ["average", "均价"],
 	avgShort: ["avg", "均价"],
 	kindsHead: [
-		"Stock, ETF, index: different things.",
-		"股票、ETF、指数：不是一回事。",
+		"Stock, ETF, index: how options settle.",
+		"股票、ETF、指数：期权如何交割？",
 	],
-	kindsHeadShort: ["Stock, ETF, index.", "股票、ETF、指数。"],
-	indexHead: [
-		"An index: a number. Options settle in cash.",
-		"指数是一个数：期权现金结算。",
+	kindsHeadShort: [
+		"Stock, ETF, index: how options settle.",
+		"股票、ETF、指数：期权如何交割？",
 	],
-	indexHeadShort: ["Index options: cash-settled.", "指数期权：现金结算。"],
 	rowLabels: {
 		holds: ["holds", "持有"],
 		buy: ["buy it?", "能买吗"],
@@ -578,9 +576,9 @@ function Scene({
 								key={line}
 								data-f={i ? "vs-eq" : "vs-x"}
 								x={L.bookX + L.bookW + 14}
-								y={phoneVsY + T.small * (i ? 2.5 : -1.9)}
-								className="wt-film-num wt-film-dim"
-								style={{ fontSize: T.small }}
+								y={i ? subtractionY + T.body * 1.5 : phoneVsY - T.small * 1.9}
+								className={i ? "wt-film-num" : "wt-film-num wt-film-dim"}
+								style={{ fontSize: i ? T.body : T.small }}
 							>
 								{line}
 							</text>
@@ -604,7 +602,7 @@ function Scene({
 				name="vs-paid"
 				x={mathX}
 				y={subtractionY}
-				size={narrow ? T.small : T.body}
+				size={T.body}
 				anchor="start"
 				className="wt-film-num wt-film-dim"
 			>
@@ -626,7 +624,7 @@ function Scene({
 				data-f="vs-rule"
 				d={
 					narrow
-						? `M${mathX} ${phoneVsY + T.small * 3.4}h${T.small * 8.1}`
+						? `M${mathX} ${subtractionY + T.body * 2.3}h${T.body * 8.1}`
 						: `M${mathX} ${subtractionY + T.body * 0.45}h${T.body * 13.7}`
 				}
 				className="wt-film-gap"
@@ -634,7 +632,7 @@ function Scene({
 			<Word
 				name="p-over"
 				x={narrow ? mathX : mathX + T.body * 14.5}
-				y={narrow ? phoneVsY + T.small * 4.9 : subtractionY}
+				y={narrow ? subtractionY + T.body * 3.7 : subtractionY}
 				size={T.body}
 				anchor="start"
 				className="wt-film-num wt-film-loss"
@@ -644,7 +642,11 @@ function Scene({
 			<text
 				data-f="p-over-tag"
 				x={narrow ? mathX : mathX + T.body * 14.5}
-				y={narrow ? phoneVsY + T.small * 6.5 : subtractionY + T.small * 1.8}
+				y={
+					narrow
+						? subtractionY + T.body * 3.7 + T.small * 1.6
+						: subtractionY + T.small * 1.8
+				}
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
@@ -681,7 +683,6 @@ function Scene({
 
 			{/* Three kinds of underlying. */}
 			{headline("k-head", copy.kindsHead, copy.kindsHeadShort)}
-			{headline("i-head", copy.indexHead, copy.indexHeadShort)}
 			<g data-f="kinds">
 				{kindOrder.map((kind: Kind, i) => (
 					<g key={kind} data-f={`col-${kind}`}>
@@ -833,7 +834,6 @@ function build(context: FilmContext) {
 		"y2-head",
 		"g-head",
 		"k-head",
-		"i-head",
 	].map((name) => one(name));
 	/**
 	 * Takes `fills` off one side of the book, one level after another: brackets lock on the
@@ -1036,7 +1036,24 @@ function build(context: FilmContext) {
 			}
 		}
 	}
-	if (!L.narrow) {
+	if (L.narrow) {
+		// Keep the body-size operands in one measured column beside the book. The echo,
+		// subtraction, answer and meaning share an edge; the rule spans the widest operand.
+		const names = ["vs-x", "vs-paid", "vs-eq", "p-over", "p-over-tag"];
+		const marks = names.map((name) => one<SVGTextElement>(name));
+		const widest = Math.max(...marks.map((mark) => mark.getBBox().width));
+		const x = Math.min(L.bookX + L.bookW + 14, W - 12 - widest);
+		marks.forEach((mark) => {
+			mark.setAttribute("x", `${x}`);
+		});
+		const paid = marks[1];
+		const minus = marks[2];
+		const ruleY = Number(minus.getAttribute("y")) + L.type.body * 0.8;
+		one("vs-rule").setAttribute(
+			"d",
+			`M${x} ${ruleY}h${Math.max(paid.getBBox().width, minus.getBBox().width)}`,
+		);
+	} else {
 		// Measure the settled equation as a row, with clear gaps between its operands and
 		// a generous right inset. Move the whole row together if the panel is too narrow.
 		const paid = one<SVGTextElement>("vs-paid");
@@ -1088,7 +1105,7 @@ function build(context: FilmContext) {
 	// Both on stage: a bracket makes the difference, the line names it, and both hold. The
 	// taken levels step back.
 	d.trace(one<SVGPathElement>("diff-gap"), 23.1, { duration: 0.3 });
-	show(one("diff-label"), 23.25);
+	if (!L.narrow) show(one("diff-label"), 23.25);
 	show(heads[4], 23.35);
 	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 23.35);
 	tl.to(
@@ -1096,23 +1113,13 @@ function build(context: FilmContext) {
 		{ opacity: 0, duration: 0.3 },
 		23.35,
 	);
-	// Develop the held difference: subtract the quotes per share, then multiply by ten.
-	tl.fromTo(
-		one("diff-ask"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
-		23.6,
-	);
-	tl.fromTo(
-		one("diff-bid"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
-		23.95,
-	);
-	d.trace(one<SVGPathElement>("diff-rule"), 24.25, { duration: 0.25 });
-	tl.set(one("diff-unit"), { opacity: 1 }, 24.55);
-	if (L.narrow) tl.set(one("diff-label"), { opacity: 0 }, 25.0);
-	tl.set(one("diff-times"), { opacity: 1 }, 25.0);
+	// Reveal settled operands and results together with the ticket comparison. The complete
+	// derivation holds from 23.4 to 26.9; no equation counts through false intermediate values.
+	tl.set(one("diff-ask"), { opacity: 1 }, 23.0);
+	tl.set(one("diff-bid"), { opacity: 1 }, 23.1);
+	d.trace(one<SVGPathElement>("diff-rule"), 23.15, { duration: 0.15 });
+	tl.set(one("diff-unit"), { opacity: 1 }, 23.3);
+	tl.set(one("diff-times"), { opacity: 1 }, 23.4);
 	// The hero: 1,000 at once climb the offers that are left; the average is what they paid.
 	d.swap([heads[3], heads[4]], heads[5], 26.9);
 	hide(
@@ -1154,6 +1161,8 @@ function build(context: FilmContext) {
 	const last = one<SVGGraphicsElement>("last");
 	tl.set(last, { attr: { class: "wt-film-num wt-film-accent" } }, 30.4);
 	if (L.narrow) {
+		// The executed book stays true, but steps back while the larger subtraction reads.
+		tl.to(levels, { opacity: 0.4, duration: 0.3 }, 30.4);
 		show(one("vs-x"), 30.45);
 	} else {
 		show(one("vs-calc"), 30.5);
@@ -1161,13 +1170,21 @@ function build(context: FilmContext) {
 	// Echo the settled total and subtract the settled last-price value in one operation.
 	// The source total stays subordinate; the result after '=' is never counted.
 	tl.set(one("vs-paid"), { opacity: 1 }, 30.85);
+	if (L.narrow) {
+		tl.set(
+			one("vs-paid"),
+			{ attr: { class: "wt-film-num wt-film-accent" } },
+			30.85,
+		);
+		tl.set(one("vs-paid"), { attr: { class: "wt-film-num" } }, 31.5);
+	}
 	tl.set(one(L.narrow ? "vs-eq" : "vs-minus"), { opacity: 1 }, 31.05);
 	d.trace(one<SVGPathElement>("vs-rule"), 31.15, { duration: 0.3 });
 	tl.set(one("p-over"), { opacity: 1 }, 31.5);
-	show(one("p-over-tag"), 31.6);
+	show(one("p-over-tag"), 31.6, "below", 0.25);
 
 	// ——— kinds: what the underlying is ———
-	tl.addLabel("kinds", 33.3);
+	tl.addLabel("kinds", 35.5);
 	hide(
 		[
 			heads[5],
@@ -1189,17 +1206,16 @@ function build(context: FilmContext) {
 			one("p-over"),
 			one("p-over-tag"),
 		],
-		33.3,
+		35.5,
 	);
-	show(heads[6], 33.65);
+	show(heads[6], 35.85);
 	show(
 		flat("kinds").filter((el) => el.tagName === "text"),
-		33.9,
+		36.0,
 	);
 	kindOrder.forEach((kind, i) => {
-		show(one(`col-${kind}`), 34.1 + i * 0.3);
+		show(one(`col-${kind}`), 36.2 + i * 0.25);
 	});
-	d.swap(heads[6], heads[7], 37.15);
 	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 37.65);
 	d.lock(one<SVGGraphicsElement>("lock-index"), 37.65, {
 		around: one("colbg-index"),
@@ -1226,7 +1242,7 @@ function build(context: FilmContext) {
 	tl.addLabel("claim", 41.05);
 	hide(
 		[
-			heads[7],
+			heads[6],
 			one("lock-index"),
 			...kindOrder.map((kind) => one(`col-${kind}`)),
 			...flat("kinds").filter((el) => el.tagName === "text"),
