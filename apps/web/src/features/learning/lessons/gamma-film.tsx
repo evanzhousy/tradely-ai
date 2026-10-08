@@ -60,17 +60,17 @@ import {
  *
  *   open      0–4        "Gamma" wipes on and becomes the corner tag
  *   question  4–9.4      delta 0.52 → ? if ALFA rises $2
- *   curve     9.4–22.8   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
+ *   curve     9.4–23.2   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
  *                        0.04, "gamma"
- *   hedge     22.8–35.4  you and Ben, one under the other; ALFA +$2 once; hero: your
+ *   hedge     23.2–35.4  you and Ben, one under the other; ALFA +$2 once; hero: your
  *                        hedge drifts +128, locked, and you sell to flat; Ben's drifts −80
  *                        and he buys
- *   expiry    35.4–44.8  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
+ *   expiry    35.4–45.4  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
  *                        the strike."
- *   next      44.8–46.8  Next: theta, vega and rho
+ *   next      45.4–47.4  Next: theta, vega and rho
  */
 
-const END = 46.8;
+const END = 47.4;
 const DELTA_TOP = 1.15;
 const GAMMA_TOP = 0.13;
 const deltaAt = (spot: number) => model(OCT_100_CALL, spot).delta;
@@ -90,27 +90,25 @@ const shares = (value: number) =>
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow, room, type: T } = frame;
-	// Desktop films can be much narrower than the viewport. Reserve both worked rows
-	// from the bottom up, then move the gamma card only as far as their labels require.
+	// Reserve both worked rows from the bottom up, then leave a 12 px glyph gap
+	// below the gamma caption, including on the phone's shorter frame.
 	const exposureLabelOffset = narrow
 		? T.num * 1.3
-		: Math.max(T.num * 1.3, T.num * 0.85 + T.small * 0.3 + 12);
+		: Math.max(T.num * 1.3, T.num * 0.85 + T.body * 0.3 + 12);
 	const exposureBenY = narrow ? height * 0.9 : height - 12 - T.num * 0.3;
 	const exposureYouY = narrow
 		? height * 0.75
-		: exposureBenY - exposureLabelOffset - T.num * 0.25 - T.small - 12;
+		: exposureBenY - exposureLabelOffset - T.num * 0.25 - T.body - 12;
 	const gammaCaptionOffset = T.big * 0.36 + T.head * 1.9 + T.body * 1.9;
-	const gammaCardY = narrow
-		? height * 0.5
-		: Math.min(
-				height * 0.5,
-				exposureYouY -
-					exposureLabelOffset -
-					T.small -
-					12 -
-					T.body * 0.35 -
-					gammaCaptionOffset,
-			);
+	const gammaCardY = Math.min(
+		height * 0.5,
+		exposureYouY -
+			exposureLabelOffset -
+			T.body -
+			12 -
+			T.body * 0.35 -
+			gammaCaptionOffset,
+	);
 	// A phone's axis labels sit left of the plot: room for them inside the frame's edge.
 	const left = frame.margin + (narrow ? 18 : 0);
 	const right = width * 0.965;
@@ -145,7 +143,14 @@ function layout(width: number) {
 		(f) => width * f,
 	);
 	/** The gamma chart's legend: top right of the plot, clear of the spike at the strike. */
-	const legend = { x: x(105.4), y: yG(0.122) };
+	const legend = {
+		x: narrow
+			? Math.min(x(105.4), width - 18 - 24 - textWidth(`${DAYS} days`, T.body))
+			: x(105.4),
+		y: yG(0.122),
+		size: narrow ? T.body : undefined,
+		row: narrow ? T.body * 1.5 : 16,
+	};
 	return {
 		...frame,
 		left,
@@ -482,14 +487,15 @@ function Scene({
 						).map(([name, line, label, text], i) => (
 							<g key={name} data-f={name}>
 								<path
-									d={`M${L.legend.x} ${L.legend.y + i * 16 - 4}h18`}
+									d={`M${L.legend.x} ${L.legend.y + i * L.legend.row - 4}h18`}
 									className={line}
 									strokeDasharray="6 5"
 								/>
 								<text
 									x={L.legend.x + 24}
-									y={L.legend.y + i * 16}
+									y={L.legend.y + i * L.legend.row}
 									className={`wt-small ${label}`}
+									style={{ fontSize: L.legend.size }}
 								>
 									{t(text)}
 								</text>
@@ -632,7 +638,7 @@ function Scene({
 							name={`h-derive-${who}-label`}
 							x={start}
 							y={y - L.exposureLabelOffset}
-							size={T.small}
+							size={T.body}
 							anchor="start"
 							className="wt-film-tag"
 						>
@@ -1010,16 +1016,24 @@ function build(context: FilmContext) {
 	show(one("g-calc"), 18.6);
 	land(one("g-num"), 19.0);
 	show(one("g-word"), 19.15);
-	show(one("g-sub"), 19.25);
+	// On a phone the caption fades in place instead of rising through the worked label.
+	if (narrow) {
+		tl.fromTo(
+			one("g-sub"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.5 },
+			19.25,
+		);
+	} else show(one("g-sub"), 19.25);
 	for (const [who, at] of [
-		["you", 19.8],
-		["ben", 20.2],
+		["you", 19.0],
+		["ben", 19.3],
 	] as const) {
 		// Fade the worked rows in place, so neither label nor equation travels across text.
 		tl.fromTo(
 			[one(`h-derive-${who}-label`), one(`h-derive-${who}-calc`)],
 			{ opacity: 0 },
-			{ opacity: 1, duration: 0.5 },
+			{ opacity: 1, duration: 0.3 },
 			at,
 		);
 		// A fade alone leaves the result untransformed for its later carry.
@@ -1027,14 +1041,20 @@ function build(context: FilmContext) {
 			one(`h-derive-${who}-result`),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.18 },
-			at + 0.15,
+			at + 0.1,
 		);
 	}
+	// The definition stays readable; its big number steps back for the worked positions.
+	tl.to(
+		[one("g-num"), one("g-word"), one("g-calc")],
+		{ opacity: 0.45, duration: 0.3 },
+		21.0,
+	);
 
 	// ——— hedge: the same delta, carried onto a position ———
-	tl.addLabel("hedge", 22.8);
-	// Preserve the card's hold, then finish its fade before the first carry at 22.95.
-	hide([...kids("g"), one("g-calc")], 22.8, 0.1, 0);
+	tl.addLabel("hedge", 23.2);
+	// Complete rows settle at 19.3/19.6 and hold 3.9/3.6 s before their lanes clear.
+	hide([...kids("g"), one("g-calc")], 23.2, 0.1, 0);
 	// Clear the calculation lanes before either result flies across, then upward.
 	hide(
 		[
@@ -1043,51 +1063,51 @@ function build(context: FilmContext) {
 			one("h-derive-ben-label"),
 			one("h-derive-ben-calc"),
 		],
-		22.8,
+		23.2,
 		0.1,
 		0,
 	);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-you-result"),
 		one<SVGGraphicsElement>("h-you-0"),
-		22.95,
+		23.35,
 		{ duration: 0.75, arc: "x" },
 	);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-ben-result"),
 		one<SVGGraphicsElement>("h-ben-0"),
-		23.35,
+		23.75,
 		{ duration: 0.75, arc: "x" },
 	);
-	show(one("h-head"), 23.0, "above");
-	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.4);
-	show(one("h-who-you"), 23.75, "above");
-	land(one("h-you-1"), 23.85);
-	land(one("h-you-2"), 24.0);
-	show(one("h-who-ben"), 24.15, "above");
-	land(one("h-ben-1"), 24.45);
-	land(one("h-ben-2"), 24.6);
+	show(one("h-head"), 23.4, "above");
+	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 23.8);
+	show(one("h-who-you"), 24.15, "above");
+	land(one("h-you-1"), 24.25);
+	land(one("h-you-2"), 24.4);
+	show(one("h-who-ben"), 24.55, "above");
+	land(one("h-ben-1"), 24.85);
+	land(one("h-ben-2"), 25.0);
 	// ALFA rises $2, once, for both.
-	show(one("h-chip"), 25.0);
+	show(one("h-chip"), 25.3);
 	d.count(
 		one<SVGTextElement>("h-you-0"),
 		hedgeAfter.options,
-		25.5,
+		25.8,
 		shares,
 		hedgeBefore.options,
 	);
 	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
 	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
-	d.count(one<SVGTextElement>("h-you-2"), youDrift, 25.5, shares);
-	tl.to(one("h-you-2"), warn, 25.5);
+	d.count(one<SVGTextElement>("h-you-2"), youDrift, 25.8, shares);
+	tl.to(one("h-you-2"), warn, 25.8);
 	d.count(
 		one<SVGTextElement>("h-ben-0"),
 		benColumns[1].options,
-		25.9,
+		26.2,
 		shares,
 		benColumns[0].options,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 25.9, shares);
+	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.2, shares);
 	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
 	// The brackets are fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
@@ -1132,10 +1152,10 @@ function build(context: FilmContext) {
 	);
 	d.count(one<SVGTextElement>("h-ben-2"), 0, 32.5, shares, benDrift);
 	tl.to(one("h-ben-2"), flat, 33.2);
-	// Once the trades settle, bind the rule to each holder; retain signed call quantities.
+	// Bind signs before trading: both tags and signed quantities settle by 31.65.
 	for (const [who, at] of [
-		["you", 33.2],
-		["ben", 33.6],
+		["you", 30.6],
+		["ben", 31.0],
 	] as const) {
 		tl.set(one(`h-holder-${who}`), { opacity: 1 }, at);
 		d.flip(one(`h-who-${who}`), one(`h-gamma-${who}`), at);
@@ -1181,22 +1201,28 @@ function build(context: FilmContext) {
 	// Both measures start at zero: the complete September height is about three Octobers.
 	d.trace(one<SVGPathElement>("g-oct-height"), 37.7, { duration: 0.35 });
 	d.trace(one<SVGPathElement>("g-sep-height"), 38.1, { duration: 0.4 });
-	land(one("g-times"), 38.5);
+	// Both zero-based heights are complete; the ratio settles for 2.25 s before the cut.
+	tl.fromTo(
+		one("g-times"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		38.5,
+	);
 	// Cut: the claim, held to be read.
-	hide(one("e-head"), 40.4);
-	sink(40.4);
+	hide(one("e-head"), 41.0);
+	sink(41.0);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.8,
+		41.4,
 	);
-	show(one("c-sub"), 41.2);
+	show(one("c-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 44.8);
-	hide(kids("claim"), 44.8);
-	d.close(44.8);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
