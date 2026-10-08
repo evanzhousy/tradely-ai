@@ -53,14 +53,18 @@ import {
  *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
  *   fields    18.6–30.8  hero: every field; without the formula; without the exclusions,
  *                        held; then the field goes back and the figure is P1's again
- *   log       30.8–40.35 P1; add R5 to make P2; remove the spread to make P3
- *   claim     40.35–44.75 work someone else can rerun
- *   next      44.75–47.25 Next: recaps
+ *   log       30.8–41.5  P1; add R5 to make P2; build the two-leg operand, then P3
+ *   claim     41.5–45.9  work someone else can rerun
+ *   next      45.9–47.5  Next: recaps
  */
 
-const END = 47.25;
+const END = 47.5;
 const R2 = rowById("R2");
 const R2_TRADES = R2?.trades ?? [];
+const SPREAD_R2 = extra(R2_TRADES.find((trade) => trade.id === "T-3"));
+const SPREAD_R3 = extra(
+	rowById("R3")?.trades?.find((trade) => trade.id === "leg"),
+);
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -131,10 +135,7 @@ const copy = {
 		`+${dollars(TUESDAY - MONDAY)} · R5 arrived`,
 		`+${dollars(TUESDAY - MONDAY)} · R5 已到达`,
 	],
-	spreadCause: [
-		`−${dollars(spreadLegs)} · spread legs`,
-		`−${dollars(spreadLegs)} · 价差两条腿`,
-	],
+	spreadCause: ["spread legs · R2 + R3", "价差两条腿 · R2 + R3"],
 	fHead: ["A reader reruns it from its fields.", "读者按它的字段重跑。"],
 	f2Head: ["Drop a field, and the number breaks.", "少一个字段，数字就错了。"],
 	reader: ["a reader's rerun", "读者重跑"],
@@ -196,6 +197,9 @@ function Scene({
 	const trace = R2_TRADES.map(
 		(trade) => `${count(trade.quantity)} × ${usd(trade.price)} × 100`,
 	).join(" + ");
+	const spreadProofSize = narrow ? T.small : T.body;
+	const spreadFirst = `R2 ${dollars(SPREAD_R2)}`;
+	const spreadSecond = `+ R3 ${dollars(SPREAD_R3)} =`;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -648,38 +652,100 @@ function Scene({
 				</g>
 			))}
 
-			{/* Equations sit above the cards whose figures they construct. */}
+			{/* The note row proves the spread operand before it enters the subtraction. */}
+			<g data-f="log-spread-proof">
+				{(
+					[
+						["log-spread-r2", spreadFirst, 0],
+						[
+							"log-spread-r3",
+							spreadSecond,
+							textWidth(`${spreadFirst} `, spreadProofSize),
+						],
+						[
+							"log-spread-total",
+							dollars(spreadLegs),
+							textWidth(`${spreadFirst} ${spreadSecond} `, spreadProofSize),
+						],
+					] as const
+				).map(([name, value, offset]) => (
+					<text
+						key={name}
+						data-f={name}
+						x={margin + 16 + offset}
+						y={L.recY(2) + L.recH * 0.85}
+						className="wt-film-num wt-film-loss"
+						style={{ fontSize: spreadProofSize }}
+					>
+						{value}
+					</text>
+				))}
+			</g>
+
+			{/* Complete equations replace the cards' figures until their results are saved. */}
 			{(
 				[
 					[1, `${dollars(MONDAY)} + ${dollars(TUESDAY - MONDAY)} = `, TUESDAY],
-					[
-						2,
-						`${dollars(TUESDAY)} − ${dollars(spreadLegs)} = `,
-						WITHOUT_SPREAD,
-					],
+					[2, `${dollars(TUESDAY)} − `, WITHOUT_SPREAD],
 				] as const
-			).map(([i, expression, result]) => (
-				<g key={`log-equation-${i}`}>
-					<text
-						data-f={`log-${i}-expression`}
-						x={margin + 16}
-						y={L.recY(i) + L.recH * 0.6}
-						className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
-						style={{ fontSize: T.body }}
-					>
-						{expression}
-					</text>
-					<text
-						data-f={`log-${i}-result`}
-						x={margin + 16 + textWidth(expression, T.body)}
-						y={L.recY(i) + L.recH * 0.6}
-						className="wt-film-num"
-						style={{ fontSize: T.body }}
-					>
-						{dollars(result)}
-					</text>
-				</g>
-			))}
+			).map(([i, expression, result]) => {
+				const suffix = i === 2 ? `${dollars(spreadLegs)} = ` : "";
+				const equationSize = narrow
+					? Math.min(
+							T.head,
+							((room - 32) * 0.98) /
+								textWidth(expression + suffix + dollars(result), 1),
+						)
+					: T.body;
+				const operandX = margin + 16 + textWidth(expression, equationSize);
+				return (
+					<g key={`log-equation-${i}`}>
+						<text
+							data-f={`log-${i}-expression`}
+							x={margin + 16}
+							y={L.recY(i) + L.recH * 0.6}
+							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+							style={{ fontSize: equationSize }}
+						>
+							{expression}
+						</text>
+						{i === 2 && (
+							<>
+								<text
+									data-f="log-2-operand"
+									x={operandX}
+									y={L.recY(i) + L.recH * 0.6}
+									className="wt-film-num wt-film-loss"
+									style={{ fontSize: equationSize }}
+								>
+									{dollars(spreadLegs)}
+								</text>
+								<text
+									data-f="log-2-equals"
+									x={
+										operandX +
+										textWidth(`${dollars(spreadLegs)} `, equationSize)
+									}
+									y={L.recY(i) + L.recH * 0.6}
+									className="wt-film-num wt-film-loss"
+									style={{ fontSize: equationSize }}
+								>
+									=
+								</text>
+							</>
+						)}
+						<text
+							data-f={`log-${i}-result`}
+							x={margin + 16 + textWidth(expression + suffix, equationSize)}
+							y={L.recY(i) + L.recH * 0.6}
+							className="wt-film-num"
+							style={{ fontSize: equationSize }}
+						>
+							{dollars(result)}
+						</text>
+					</g>
+				);
+			})}
 
 			<g data-f="claim">
 				<Lines
@@ -776,6 +842,10 @@ function build(context: FilmContext) {
 		one("rerun-back"),
 		one("rec-0-n"),
 		one("rec-0-note"),
+		one("rec-2-note"),
+		one("log-spread-proof"),
+		one("log-2-operand"),
+		one("log-2-equals"),
 		...[1, 2].flatMap((i) => [
 			one(`rec-${i}-n`),
 			one(`rec-${i}-tag`),
@@ -957,7 +1027,7 @@ function build(context: FilmContext) {
 	show(one("extra-repeated"), 26.85, "below", 0.2);
 	d.trace(one<SVGPathElement>("exclusions-link"), 27.05, { duration: 0.35 });
 	// Round the rerun with its label, P1's figure and its reason: no arm runs through a line.
-	d.lock(lockRerun, 28.0, {
+	d.lock(lockRerun, 27.95, {
 		around: [
 			one("rerun-tag"),
 			rerunMarks[2],
@@ -966,9 +1036,9 @@ function build(context: FilmContext) {
 		],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 28.0);
-	// The lock settles before its after-beat; the completed sum then holds for 1.5 s.
-	show(one("extra-total"), 28.5, "below", 0.2);
+	tl.addLabel("hero-lock", 27.95);
+	// The lock settles before its after-beat; the completed sum holds for 2.05 s.
+	show(one("extra-total"), 28.45, "below", 0.2);
 	// After the lock, once its reason has been read: the brackets let go, the field goes
 	// back, and the figure is P1's again.
 	hide(
@@ -979,17 +1049,19 @@ function build(context: FilmContext) {
 			one("extra-total"),
 			one("exclusions-link"),
 		],
-		30.2,
+		30.7,
 	);
-	hide(lockRerun, 30.2);
-	restore("exclusions", 30.45);
-	d.flip(rerunMarks[2], one("rerun-back"), 30.2);
-	tl.set(rerunMarks[2], { opacity: 0 }, 30.5);
+	hide(lockRerun, 30.7);
+	// Switch the field only after the old value has folded shut, then cut the fields.
+	tl.set(one("field-exclusions"), { opacity: 1 }, 31.0);
+	d.flip(rerunMarks[2], one("rerun-back"), 30.7);
+	tl.set(rerunMarks[2], { opacity: 0 }, 31.0);
 
 	// ——— log: rerun, or a new question ———
 	tl.addLabel("log", 30.8);
 	d.swap([heads[2], heads[3]], heads[4], 30.8);
-	hide([...fieldRows, one("rerun-tag"), one("p1-says")], 30.8);
+	hide([one("rerun-tag"), one("p1-says")], 30.8);
+	hide(fieldRows, 31.05, 0.15, 0);
 	// The rerun's match stays up, then becomes P1's record: the figure a reader got back is
 	// the one the log keeps.
 	show(recs[0], 31.25, "right", 0.3);
@@ -1004,48 +1076,78 @@ function build(context: FilmContext) {
 	);
 	// The note stays out of the flight lane, then appears with the landed P1 figure.
 	tl.set(one("rec-0-note"), { opacity: 1 }, 31.9);
-	// Each complete equation holds 1.5 s. Its settled result becomes the record's figure;
-	// the operands step aside first, and the record tag waits until the flight has landed.
-	const saveResult = (i: number, causeAt: number, saveAt: number) => {
-		show(recs[i], causeAt, "right", 0.2);
-		show(
-			one(i === 1 ? "log-r5-cause" : "log-spread-cause"),
-			causeAt,
-			"below",
-			0.2,
-		);
-		show(one(`log-${i}-expression`), causeAt, "below", 0.2);
-		show(one(`log-${i}-result`), causeAt, "below", 0.2);
-		tl.set(one(`log-${i}-expression`), { opacity: 0.2 }, saveAt);
+	// Equations enter settled. Recover their former entry time for reading the new
+	// spread proof, while preserving 1.5 s for every complete equation and saved result.
+	const saveResult = (i: number, saveAt: number) => {
+		const operands = [one(`log-${i}-expression`)];
+		if (i === 2) operands.push(one("log-2-operand"), one("log-2-equals"));
+		tl.set(operands, { opacity: 0.2 }, saveAt);
 		d.carry(
 			one<SVGGraphicsElement>(`log-${i}-result`),
 			one<SVGGraphicsElement>(`rec-${i}-n`),
 			saveAt,
 			{ duration: 0.2, arc: "x" },
 		);
-		tl.set(one(`log-${i}-expression`), { opacity: 0 }, saveAt + 0.2);
+		tl.set(operands, { opacity: 0 }, saveAt + 0.2);
 		tl.set(one(`rec-${i}-tag`), { opacity: 1 }, saveAt + 0.2);
 	};
-	// P1 settles at 31.9; P2 settles at 35.3; neither is interrupted for 1.5 s.
-	saveResult(1, 33.4, 35.1);
-	show(heads[5], 36.8);
-	saveResult(2, 36.8, 38.5);
-	// Focus changes with the new question, after P2's uninterrupted result hold.
-	tl.to([recs[0], recs[1]], { opacity: 0.45, duration: 0.2 }, 36.8);
+	// P1 lands at 31.9. The full P2 equation holds 33.4–34.9, then P2 holds 35.1–36.6.
+	tl.set(
+		[
+			recs[1],
+			one("log-r5-cause"),
+			one("log-1-expression"),
+			one("log-1-result"),
+		],
+		{ opacity: 1 },
+		33.4,
+	);
+	saveResult(1, 34.9);
+	show(heads[5], 36.6);
+	// P3's note row first identifies the two spread portions, not the entire R2/R3 rows.
+	tl.set(
+		[recs[2], one("log-spread-cause"), one("log-spread-proof")],
+		{ opacity: 1 },
+		36.6,
+	);
+	// Focus changes only after P2's uninterrupted result hold, including its old cause.
+	tl.to(
+		[recs[0], recs[1], one("log-r5-cause")],
+		{ opacity: 0.45, duration: 0.2 },
+		36.6,
+	);
+	// The complete two-leg sum holds 1.5 s. Its total travels inside P3's card, clear
+	// of the header and border; neighboring text steps back before the short flight.
+	tl.set([one("log-spread-r2"), one("log-spread-r3")], { opacity: 0.2 }, 38.1);
+	d.carry(
+		one<SVGGraphicsElement>("log-spread-total"),
+		one<SVGGraphicsElement>("log-2-operand"),
+		38.1,
+		{ duration: 0.2, arc: "x" },
+	);
+	tl.set(one("log-spread-proof"), { opacity: 0 }, 38.3);
+	// Reveal the subtraction only with its settled operand: no incomplete equality.
+	tl.set(
+		[one("log-2-expression"), one("log-2-equals"), one("log-2-result")],
+		{ opacity: 1 },
+		38.3,
+	);
+	saveResult(2, 39.8);
+	tl.set(one("rec-2-note"), { opacity: 1 }, 40.0);
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.35);
+	tl.addLabel("claim", 41.5);
 	hide(
 		[heads[4], heads[5], ...recs, one("log-r5-cause"), one("log-spread-cause")],
-		40.35,
+		41.5,
 	);
-	word(one("z-big"), 40.65);
-	show(one("z-sub"), 41.05);
+	word(one("z-big"), 41.8);
+	show(one("z-sub"), 42.2);
 
 	// ——— next ———
-	tl.addLabel("next", 44.75);
-	hide(kids("claim"), 44.75);
-	d.close(44.75);
+	tl.addLabel("next", 45.9);
+	hide(kids("claim"), 45.9);
+	d.close(45.9);
 	return tl;
 }
 
