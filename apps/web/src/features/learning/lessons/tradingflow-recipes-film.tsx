@@ -3,13 +3,16 @@ import { useId } from "react";
 import {
 	type Copy,
 	dayLabel,
+	mondayScreen,
 	NEXT_SESSION_DATE,
 	officialRecipes,
 	PREVIOUS_SESSION_DATE,
 	pick,
 	type RecipeKind,
 	recipeKinds,
+	runScreen,
 	SESSION_DATE,
+	screenDefaults,
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -52,8 +55,8 @@ import {
  *   question  4–9.6      "Which contracts traded far above their open interest?"
  *   catalog   9.6–15.8   three kinds; the screen
  *   session   15.8–29.6  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
- *   completed 29.6–33.9  Mon 16:30 → Monday: the latest completed session
- *   fork      33.9–45.4  Edit with AI; your private copy; a colleague's view; cut: the claim
+ *   completed 29.6–34.85 Mon 16:30 → Monday: the latest completed session
+ *   fork      34.85–45.4 Edit with AI; your private copy; a colleague's view; cut: the claim
  *   next      45.4–47.4  Next: read a recipe like an auditor
  */
 
@@ -73,6 +76,7 @@ const TUESDAY = moments["tue-0800"];
 const MONDAY = moments["mon-1000"];
 const AFTER_CLOSE = moments["mon-1630"];
 const MINUTES_TRADED = Math.round((MONDAY.at - OPEN) * 24 * 60);
+const SCREEN_EXAMPLE = runScreen(mondayScreen, screenDefaults, SESSION_DATE)[0];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -81,6 +85,15 @@ function layout(width: number) {
 	const half = (width - 2 * margin - gap) / 2;
 	const colW = (width - 2 * margin) / days.length;
 	const dayX = (date: string) => margin + days.indexOf(date) * colW;
+	const cardH = H * (narrow ? 0.11 : 0.1);
+	const screenCardH = H * (narrow ? 0.205 : 0.22);
+	// Reserve the label's full type height above its baseline, plus 10 px of
+	// clearance from UOA. Keep the report cards 12 px inside the frame too.
+	const reportY = Math.max(
+		H * (narrow ? 0.86 : 0.85),
+		H * 0.6 + screenCardH + 10 + frame.type.small + 8,
+	);
+	const reportCardH = Math.min(cardH, H - 12 - reportY);
 	return {
 		...frame,
 		gap,
@@ -89,9 +102,10 @@ function layout(width: number) {
 		// A clear gap keeps the question visible while the catalog settles, then lets
 		// its phrase land above UOA without crossing a card title or a kind label.
 		rowY: (k: number) =>
-			H *
-			(k === 0 ? (narrow ? 0.3 : 0.27) : k === 1 ? 0.6 : narrow ? 0.8 : 0.79),
-		cardH: H * (narrow ? 0.11 : 0.1),
+			k === 0 ? H * (narrow ? 0.3 : 0.27) : k === 1 ? H * 0.6 : reportY,
+		cardH,
+		screenCardH,
+		reportCardH,
 		// The calendar.
 		colW,
 		dayX,
@@ -365,7 +379,13 @@ function Scene({
 												x={L.cardX(i)}
 												y={L.rowY(k)}
 												width={L.half}
-												height={L.cardH}
+												height={
+													recipe.id === SCREEN
+														? L.screenCardH
+														: kind === "report"
+															? L.reportCardH
+															: L.cardH
+												}
 												rx={10}
 												className="wt-panel-shape"
 											/>
@@ -374,18 +394,88 @@ function Scene({
 												x={L.cardX(i)}
 												y={L.rowY(k)}
 												width={L.half}
-												height={L.cardH}
+												height={
+													recipe.id === SCREEN
+														? L.screenCardH
+														: kind === "report"
+															? L.reportCardH
+															: L.cardH
+												}
 												rx={10}
 												className="wt-focus-shape"
 											/>
 											<text
 												x={L.cardX(i) + 14}
-												y={L.rowY(k) + L.cardH / 2 + T.body * 0.36}
+												y={
+													L.rowY(k) +
+													(recipe.id === SCREEN
+														? T.body + 10
+														: (kind === "report" ? L.reportCardH : L.cardH) /
+																2 +
+															T.body * 0.36)
+												}
 												className="wt-film-type"
 												style={{ fontSize: T.body }}
 											>
 												{narrow ? shortTitles[recipe.id] : recipe.title}
 											</text>
+											{recipe.id === SCREEN ? (
+												<g data-f="uoa-proof">
+													<Word
+														name="uoa-contract"
+														x={L.cardX(i) + 14}
+														y={L.rowY(k) + T.body * 2.4 + 10}
+														size={T.body}
+														anchor="start"
+														className="wt-film-type wt-film-dim"
+													>
+														{`${SCREEN_EXAMPLE.symbol} · ${SCREEN_EXAMPLE.strike}${SCREEN_EXAMPLE.right === "put" ? "P" : "C"}`}
+													</Word>
+													{(
+														[
+															[
+																"volume",
+																t(["Vol", "成交"]),
+																SCREEN_EXAMPLE.volume,
+															],
+															[
+																"oi",
+																t(["OI", "未平仓"]),
+																SCREEN_EXAMPLE.openInterest,
+															],
+														] as const
+													).map(([name, label, value], j) => {
+														const y = L.rowY(k) + T.body * (3.8 + j * 1.4) + 10;
+														const barW = Math.min(100, L.half * 0.26);
+														return (
+															<g key={name} data-f={`uoa-${name}`}>
+																<Word
+																	name={`uoa-${name}-value`}
+																	x={L.cardX(i) + 14}
+																	y={y}
+																	size={T.body}
+																	anchor="start"
+																	className="wt-film-type"
+																>
+																	{`${label} ${value.toLocaleString("en-US")}`}
+																</Word>
+																<rect
+																	x={L.cardX(i) + L.half - 14 - barW}
+																	y={y - T.body * 0.65}
+																	width={(value / SCREEN_EXAMPLE.volume) * barW}
+																	height={T.body * 0.55}
+																	rx={1}
+																	fill={
+																		name === "volume"
+																			? "var(--diagram-observed)"
+																			: "var(--muted-foreground)"
+																	}
+																/>
+															</g>
+														);
+													})}
+												</g>
+											) : null}
 										</g>
 									))}
 							</g>
@@ -444,7 +534,7 @@ function Scene({
 							rx={3}
 							className="wt-panel-shape"
 							style={{
-								fill: "color-mix(in oklab, var(--diagram-observed) 14%, var(--card))",
+								fill: "var(--diagram-observed)",
 							}}
 						/>
 						<rect
@@ -575,7 +665,9 @@ function Scene({
 							style={{ fontSize: T.head * 1.3 }}
 						>
 							{t(["Session · ", "交易时段 · "])}
-							<tspan>{t(dayLabel(PREVIOUS_SESSION_DATE))}</tspan>
+							<tspan data-f="sess-fri-date">
+								{t(dayLabel(PREVIOUS_SESSION_DATE))}
+							</tspan>
 						</text>
 						{(
 							[
@@ -841,6 +933,7 @@ function build(context: FilmContext) {
 		one("calendar"),
 		one("fork"),
 		...cards,
+		...kids("uoa-proof"),
 		...officialRecipes.map((recipe) => focus(recipe.id)),
 		...kids("catalog").flatMap((row) =>
 			[...row.children].filter((el) => el.tagName === "text"),
@@ -930,9 +1023,30 @@ function build(context: FilmContext) {
 			.filter((r) => r.kind === recipe.kind)
 			.findIndex((r) => r.id === recipe.id);
 		// A card is a group: it slides in rather than scaling about its corner.
-		show(one(`card-${recipe.id}`), 10.4 + k * 0.4 + i * 0.12, "below", 0.4);
+		show(
+			one(`card-${recipe.id}`),
+			10.4 + k * 0.4 + i * 0.12,
+			L.narrow && recipe.kind === "report" ? "above" : "below",
+			0.4,
+		);
 	});
 	// The question's answer: the session screen.
+	// Settled model values and bars enter together: no counted value can contradict
+	// its comparison. The shorter OI bar shares the volume bar's scale.
+	tl.fromTo(
+		one("uoa-contract"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.2 },
+		11.8,
+	);
+	["uoa-volume", "uoa-oi"].forEach((name, i) => {
+		tl.fromTo(
+			one(name),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.2 },
+			12.0 + i * 0.1,
+		);
+	});
 	show(one("s-head"), 12.2);
 	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 12.05);
 	tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 12.4);
@@ -1068,7 +1182,7 @@ function build(context: FilmContext) {
 		{ at: MONDAY.at },
 		{
 			at: AFTER_CLOSE.at,
-			duration: 0.4,
+			duration: 1.0,
 			ease: "none",
 			immediateRender: false,
 			onUpdate: () => {
@@ -1087,59 +1201,76 @@ function build(context: FilmContext) {
 		},
 		29.6,
 	);
-	// The run time turns over, then the completed session returns to Monday.
-	hide(one("ran-mon"), 29.6, 0.2, 0);
-	show(one("ran-close"), 30.0, "below", 0.15);
-	d.flip(one("sess-fri"), one("sess-close"), 29.7);
-	tl.set(one("sess-fri"), { opacity: 0 }, 30.0);
-	tl.to(closed, { opacity: 0.25, duration: 0.15 }, 29.8);
-	tl.to(closed, { opacity: 1, duration: 0.3 }, 30.3);
+	// Read the finished clock, then the run time, then the report date, then latest.
+	// The two lines have identical stationary prefixes. Only their named dates fade;
+	// an atomic line handoff keeps "Session · " visible throughout, as in Friday's carry.
+	hide(one("ran-mon"), 30.6, 0.15, 0);
+	show(one("ran-close"), 30.75, "below", 0.15);
+	gsap.set(one("sess-close-date"), { attr: { "fill-opacity": 0 } });
+	tl.to(
+		one("sess-fri-date"),
+		{ attr: { "fill-opacity": 0 }, duration: 0.2 },
+		30.95,
+	);
+	tl.set(one("sess-fri"), { opacity: 0 }, 31.15);
+	tl.set(one("sess-close"), { opacity: 1 }, 31.15);
+	tl.to(
+		one("sess-close-date"),
+		{ attr: { "fill-opacity": 1 }, duration: 0.2 },
+		31.15,
+	);
+	tl.to(closed, { opacity: 0.25, duration: 0.15 }, 31.5);
+	tl.to(closed, { opacity: 1, duration: 0.3 }, 32.15);
 	tl.to(
 		one("latest-box"),
 		{
 			attr: { x: L.dayX(AFTER_CLOSE.latest) + dayFraction(OPEN) * L.colW },
-			duration: 0.3,
+			duration: 0.5,
 			ease: "power2.inOut",
 		},
-		30.0,
+		31.55,
 	);
 	tl.set(
 		one("latest-mon"),
 		{
 			attr: { x: L.dayX(AFTER_CLOSE.latest) + L.colW / 2 },
 		},
-		30.3,
+		32.05,
 	);
-	show(one("latest-mon"), 30.3, "below", 0.1);
-	tl.set(friday, { attr: { class: "wt-small" } }, 30.3);
+	show(one("latest-mon"), 32.05, "below", 0.15);
+	tl.set(friday, { attr: { class: "wt-small" } }, 32.05);
 	tl.set(
 		one(`day-${AFTER_CLOSE.latest}`),
 		{ attr: { class: "wt-small wt-accent" } },
-		30.3,
+		32.05,
 	);
-	show(one("after-close-head"), 30.4, "above");
+	show(one("after-close-head"), 31.35, "above");
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 33.9);
-	hide(one("after-close-head"), 33.9);
-	sink(33.9);
-	tl.set(one("calendar"), { opacity: 0 }, 34.3);
-	tl.set(one("fork"), { opacity: 1 }, 34.3);
-	rise(34.35);
-	show(one("fork-official"), 34.4);
-	land(one("edit-chip"), 34.9);
+	tl.addLabel("fork", 34.85);
+	hide(one("after-close-head"), 34.85);
+	sink(34.85);
+	tl.set(one("calendar"), { opacity: 0 }, 35.25);
+	tl.set(one("fork"), { opacity: 1 }, 35.25);
+	rise(35.3);
+	show(one("fork-official"), 35.25, "below", 0.35);
+	land(one("edit-chip"), 35.55, 0.4);
 	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
 	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 35.4);
-	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 35.4);
-	show(one("f-head"), 35.4, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.4 }, 36.1);
-	tl.set(one("copy-frame"), { opacity: 0 }, 36.5);
+	tl.set(one("copy-frame"), { opacity: 1 }, 35.95);
+	tl.to(
+		one("copy-frame"),
+		{ x: 0, duration: 0.7, ease: "power2.inOut" },
+		35.95,
+	);
+	show(one("f-head"), 35.95, "above");
+	tl.to(one("fork-copy"), { opacity: 1, duration: 0.3 }, 36.65);
+	tl.set(one("copy-frame"), { opacity: 0 }, 36.95);
 	// Your copy's spotlight turns over from the official one's to ALFA.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 36.7);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 37.0);
-	land(one("viewer"), 36.9);
-	show(one("viewer-you"), 37.1);
+	d.flip(one("spot-copy-was"), one("spot-copy"), 36.95);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 37.25);
+	land(one("viewer"), 37.2);
+	show(one("viewer-you"), 37.4);
 	// A colleague opens the same recipe: the official one.
 	show(one("c-head"), 37.5);
 	land(one("viewer-colleague-dot"), 37.5);
