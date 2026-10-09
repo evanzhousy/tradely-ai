@@ -54,11 +54,11 @@ import {
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
  *   account   10.4–21.0  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
  *                        buying power $36,799.20
- *   calls     21.0–32.8  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
+ *   calls     21.0–33.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
  *                        and +$645 become +$975, locked; then the $75, drawn: bid to mid
- *   short     32.8–44.9  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
+ *   short     33.7–45.8  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
  *                        cut: "P&L is what your positions earned."
- *   next      44.9–47.4  Next: performance
+ *   next      45.8–47.4  Next: performance
  */
 
 const END = 47.4;
@@ -73,6 +73,23 @@ const GAP = SOLD * (MARK - SALE) * 100;
 const GAP_EQ = `${price(MARK - SALE)} × ${SOLD} × 100 =`;
 const FIFO_EQ = `${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 =`;
 const held = split(0, "fifo");
+/** The surviving cells and their marked P&L, using the same FIFO lots as the model. */
+const remainingLots = lots
+	.map((lot, i) => {
+		const first = lots
+			.slice(0, i)
+			.reduce((sum, prior) => sum + prior.quantity, 0);
+		const sold = Math.max(0, Math.min(lot.quantity, SOLD - first));
+		const quantity = lot.quantity - sold;
+		return {
+			first: first + sold,
+			quantity,
+			price: lot.price,
+			pnl: quantity * (MARK - lot.price) * 100,
+			tone: i === 0 ? "total" : "neutral",
+		};
+	})
+	.filter((lot) => lot.quantity > 0);
 const EARNED_FROM = valueOpen / 100;
 const STOCK_TO = EARNED_FROM + (stockClose - stockOpen) / 100;
 const CALLS_TO = STOCK_TO + (callsClose - PAID * 100) / 100;
@@ -152,10 +169,6 @@ const copy = {
 	earnedHeadShort: ["A deposit isn't earned.", "存入不是赚到的。"],
 	meter: ["account", "账户"],
 	earned: ["earned", "赚到"],
-	breakdown: [
-		`ALFA ${signed(stockClose - stockOpen)} · calls ${signed(callsClose - PAID * 100)} · fees ${signed(-buyFees)}`,
-		`ALFA ${signed(stockClose - stockOpen)} · 看涨 ${signed(callsClose - PAID * 100)} · 费用 ${signed(-buyFees)}`,
-	],
 	deposited: [
 		`+${dollars(yourAccount.deposit)} deposited`,
 		`存入 +${dollars(yourAccount.deposit)}`,
@@ -267,7 +280,24 @@ function Scene({
 	// A brace connects the calculation to the six oldest cells in the first row.
 	const fifoFirst = L.cell(0);
 	const fifoLast = L.cell(SOLD - 1);
-	// The FIFO proof stays below the addition until the bid-gap proof takes over.
+	// A tight outline per grid row links each surviving lot without crossing adjacent cells.
+	const remainingBraces = remainingLots.flatMap((lot, lotIndex) => {
+		const rows = new Map<number, { left: number; right: number }>();
+		for (let i = lot.first; i < lot.first + lot.quantity; i++) {
+			const cell = L.cell(i);
+			const row = rows.get(cell.y);
+			rows.set(cell.y, {
+				left: row?.left ?? cell.x,
+				right: cell.x + L.square,
+			});
+		}
+		return [...rows].map(([y, row], rowIndex) => ({
+			name: `held-brace-${lotIndex}-${rowIndex}`,
+			d: `M${row.left - 1} ${y - 1}H${row.right + 1}V${y + L.square + 1}H${row.left - 1}Z`,
+			tone: lot.tone,
+		}));
+	});
+	// The two calculations use the same footer sequentially, never as an overlay.
 	const fifoY = H * 0.9;
 	const fifoWidth = textWidth(FIFO_EQ, T.body);
 	const fifoX =
@@ -368,25 +398,24 @@ function Scene({
 								{signed(PNL)}
 							</text>
 						</g>
-						<text
-							data-f="breakdown"
-							x={narrow ? L.margin : x0}
-							y={L.barBottom + 18 + T.body * 1.6}
-							className="wt-film-num wt-halo wt-film-dim"
-							style={{ fontSize: T.body }}
-						>
-							{narrow
-								? breakdownRows.map((row, i) => (
-										<tspan
-											key={row}
-											x={L.margin}
-											dy={i === 0 ? 0 : T.body * 1.5}
-										>
-											{row}
-										</tspan>
-									))
-								: t(copy.breakdown)}
-						</text>
+						{breakdownRows.map((row, i) => (
+							<text
+								key={row}
+								data-f={`breakdown-${["stock", "calls", "fees"][i]}`}
+								x={
+									narrow
+										? L.margin
+										: x0 +
+											textWidth(breakdownRows.slice(0, i).join(" · "), T.body) +
+											(i === 0 ? 0 : textWidth(" · ", T.body))
+								}
+								y={L.barBottom + 18 + T.body * (1.6 + (narrow ? i * 1.5 : 0))}
+								className="wt-film-num wt-halo wt-film-dim"
+								style={{ fontSize: T.body }}
+							>
+								{row}
+							</text>
+						))}
 						<text
 							data-f="deposited"
 							x={(x1 + L.ax(TUESDAY)) / 2}
@@ -647,6 +676,66 @@ function Scene({
 				>
 					{dollars(fifo.realized)}
 				</Word>
+				{remainingBraces.map((brace) => (
+					<path
+						key={brace.name}
+						data-f={brace.name}
+						d={brace.d}
+						className="wt-film-link"
+						style={{
+							strokeDasharray: "none",
+							stroke:
+								brace.tone === "total"
+									? "var(--diagram-accent)"
+									: "color-mix(in oklab, var(--muted-foreground) 55%, transparent)",
+						}}
+					/>
+				))}
+				<g data-f="held-proof">
+					{remainingLots.map((lot, i) => {
+						const equation = `${lot.quantity} × (${price(MARK)} − ${price(lot.price)}) × 100 =`;
+						const rowWidth =
+							20 +
+							textWidth(equation, T.body) +
+							8 +
+							textWidth(dollars(lot.pnl), T.body);
+						const x = (W - rowWidth) / 2;
+						const y = fifoY + (i - 1) * T.body * 1.5;
+						return (
+							<g key={lot.first}>
+								<rect
+									x={x}
+									y={y - 10}
+									width={10}
+									height={10}
+									rx={2}
+									className="wt-film-bar"
+									data-tone={lot.tone}
+								/>
+								<Word
+									name={`held-eq-${i}`}
+									x={x + 20}
+									y={y}
+									size={T.body}
+									anchor="start"
+									className="wt-film-num"
+								>
+									{equation}{" "}
+									<tspan className="wt-film-gain">{dollars(lot.pnl)}</tspan>
+								</Word>
+							</g>
+						);
+					})}
+					<Word
+						name="held-sum"
+						x={W / 2}
+						y={fifoY + T.body * 1.5}
+						size={T.body}
+						className="wt-film-num wt-film-gain"
+					>
+						{`${remainingLots.map((lot) => dollars(lot.pnl)).join(" + ")} = ${dollars(fifo.unrealized)}`}
+					</Word>
+				</g>
 				{Array.from({ length: HELD }, (_, i) => {
 					const { x, y } = L.cell(i);
 					return (
@@ -919,6 +1008,9 @@ function build(context: FilmContext) {
 	const realized = one<SVGTextElement>("r-val");
 	const unrealized = one<SVGTextElement>("u-val");
 	const squares = Array.from({ length: HELD }, (_, i) => one(`sq-${i}`));
+	const heldBraces = kids("lots").filter((el) =>
+		el.getAttribute("data-f")?.startsWith("held-brace-"),
+	);
 	const accountProgress = { stock: 0, calls: 0, fees: 0, deposit: 0 };
 	const stockSegment = one("seg-stock");
 	const callsSegment = one("seg-calls");
@@ -996,7 +1088,7 @@ function build(context: FilmContext) {
 		one("ben"),
 		...segments.map(({ name }) => one(name)),
 		one("earned"),
-		one("breakdown"),
+		...["stock", "calls", "fees"].map((part) => one(`breakdown-${part}`)),
 		one("deposited"),
 		one("premium"),
 		one("premium-label"),
@@ -1025,6 +1117,8 @@ function build(context: FilmContext) {
 		one("fifo-brace"),
 		one("fifo-eq"),
 		one("fifo-result"),
+		one("held-proof"),
+		...heldBraces,
 		realized,
 		unrealized,
 		...flat("total"),
@@ -1063,10 +1157,12 @@ function build(context: FilmContext) {
 	d.count(meter, valueOpen, 11.2, dollars, valueOpen, 0.01);
 	grow("seg-base", 11.2);
 	growContribution("stock", 11.9, 0.4);
+	show(one("breakdown-stock"), 12.3, "below", 0.2);
 	growContribution("calls", 12.3, 0.5);
+	show(one("breakdown-calls"), 12.8, "below", 0.2);
 	growContribution("fees", 12.8, 0.3);
+	show(one("breakdown-fees"), 13.1, "below", 0.2);
 	show(one("earned"), 13.4);
-	show(one("breakdown"), 13.7);
 	// The answer: what was earned lifts out of the bar, and stays while the deposit lands.
 	d.carry(one("earned-num"), one<SVGGraphicsElement>("earned-big"), 14.2, {
 		duration: 0.8,
@@ -1104,9 +1200,24 @@ function build(context: FilmContext) {
 	d.trace(one<SVGPathElement>("fifo-brace"), 22.5, { duration: 0.3 });
 	show(one("fifo-eq"), 22.5, "above", 0.2);
 	// Clear the old readings before membership changes. Results after '=' arrive settled.
-	hide([one("r-open"), one("u-open")], 24.05, 0.25, 0);
-	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.3);
-	show([realized, unrealized, one("fifo-result")], 24.7, "below", 0.2);
+	hide([one("r-open"), one("u-open")], 23.8, 0.25, 0);
+	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.05);
+	show([realized, one("fifo-result")], 24.45, "below", 0.2);
+	// The settled sale proof reads for 1 s before the footer changes.
+	hide([one("fifo-eq"), one("fifo-result"), one("fifo-brace")], 25.65, 0.25, 0);
+	// Each surviving lot supplies a settled contribution; the sum never counts after '='.
+	heldBraces.forEach((brace) => {
+		d.trace(brace as SVGPathElement, 25.9, { duration: 0.2 });
+	});
+	tl.fromTo(
+		one("held-proof"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.2 },
+		25.9,
+	);
+	// Fade in place: a rising value would pass through the new phone footer.
+	tl.fromTo(unrealized, { opacity: 0 }, { opacity: 1, duration: 0.2 }, 25.9);
+	// All cells, inputs, contributions and results read together for 1.8 s (26.1–27.9).
 	// The hero: the two parts become one figure, less than the mark said.
 	hide(
 		[
@@ -1117,17 +1228,20 @@ function build(context: FilmContext) {
 			one("mark-input"),
 			one("r-tag"),
 			one("u-tag"),
-			one("fifo-brace"),
+			one("held-proof"),
+			...heldBraces,
 		],
-		26.0,
+		27.9,
+		0.35,
+		0,
 	);
-	show(one("t-tag"), 26.3, "above", 0.2);
+	show(one("t-tag"), 28.25, "above", 0.2);
 	// Each part lands in its own lane; neither travels across the other's glyphs.
 	const subtotal = one<SVGTextElement>("t-subtotal");
 	const total = one<SVGTextElement>("t-num");
-	d.carry(realized, subtotal, 26.35, { duration: 0.5, arc: "y" });
-	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 26.6, {
-		duration: 0.5,
+	d.carry(realized, subtotal, 28.25, { duration: 0.45, arc: "y" });
+	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 28.45, {
+		duration: 0.45,
 		arc: "y",
 	});
 	// The settled sum unfolds above its operands; keep the complete addition through the proof.
@@ -1135,28 +1249,26 @@ function build(context: FilmContext) {
 		total,
 		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
 		{ scaleY: 1, duration: 0.2, ease: "power2.out", immediateRender: false },
-		28.0,
+		28.9,
 	);
-	// The carried +$330 preserves this result; clear its calculation before the gap enters.
-	hide([one("fifo-eq"), one("fifo-result")], 28.2, 0.35, 0);
-	show(one("t-was"), 28.45, "below", 0.2);
-	d.lock(lockTotal, 28.5, {
+	show(one("t-was"), 29.35, "below", 0.2);
+	d.lock(lockTotal, 29.4, {
 		around: [one("t-tag"), total],
 		pad: 8,
 	});
-	tl.addLabel("hero-lock", 28.5);
-	show(one("t-head"), 28.5);
+	tl.addLabel("hero-lock", 29.4);
+	show(one("t-head"), 29.4);
 	// After the lock: the $75, drawn. The bid and the mid are the ends of a gap; six
 	// contracts of it come to $75.
-	d.trace(one<SVGPathElement>("gap-rule"), 28.6, { duration: 0.2 });
-	show(one("gap-bid"), 28.6, "below", 0.15);
-	show(one("gap-mid"), 28.75, "below", 0.15);
-	show(one("gap-eq"), 28.95, "below", 0.15);
+	d.trace(one<SVGPathElement>("gap-rule"), 29.5, { duration: 0.2 });
+	show(one("gap-bid"), 29.5, "below", 0.15);
+	show(one("gap-mid"), 29.65, "below", 0.15);
+	show(one("gap-eq"), 29.85, "below", 0.15);
 	// The result lands settled: a counting figure after "=" would show false equations.
-	land(one("gap-n"), 29.1, 0.15);
+	land(one("gap-n"), 30.0, 0.15);
 
 	// ——— short: the other side of the same calls ———
-	tl.addLabel("short", 32.8);
+	tl.addLabel("short", 33.7);
 	hide(
 		[
 			...flat("total"),
@@ -1165,41 +1277,41 @@ function build(context: FilmContext) {
 			one("l-head"),
 			one("t-head"),
 		],
-		32.8,
+		33.7,
 	);
-	tl.set(one("acct"), { opacity: 0 }, 32.9);
-	tl.set(one("ben"), { opacity: 1 }, 32.9);
-	show(one("b-head"), 33.15, "above");
-	rise(33.2);
-	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 33.7);
-	show(one("premium-label"), 34.0);
-	land(one("mark-dot"), 34.4);
-	show(one("mark-label"), 34.6);
-	d.swap(one("b-head"), one("x-head"), 36.7);
-	draw(one<SVGPathElement>("expiry"), 36.8, 1.4);
+	tl.set(one("acct"), { opacity: 0 }, 33.8);
+	tl.set(one("ben"), { opacity: 1 }, 33.8);
+	show(one("b-head"), 34.05, "above");
+	rise(34.1);
+	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 34.6);
+	show(one("premium-label"), 34.9);
+	land(one("mark-dot"), 35.3);
+	show(one("mark-label"), 35.5);
+	d.swap(one("b-head"), one("x-head"), 37.6);
+	draw(one<SVGPathElement>("expiry"), 37.7, 1.4);
 	tl.fromTo(
 		one("expiry-arrow"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.2 },
-		38.2,
+		39.1,
 	);
-	land(one("far-dot"), 38.0);
-	show(one("far-label"), 38.2);
+	land(one("far-dot"), 38.9);
+	show(one("far-label"), 39.1);
 	// Cut: the claim.
-	hide(one("x-head"), 40.55);
-	sink(40.55);
+	hide(one("x-head"), 41.45);
+	sink(41.45);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.9,
+		41.8,
 	);
-	show(one("z-sub"), 41.3);
+	show(one("z-sub"), 42.2);
 
 	// ——— next ———
-	tl.addLabel("next", 44.9);
-	hide(kids("claim"), 44.9);
-	d.close(44.9);
+	tl.addLabel("next", 45.8);
+	hide(kids("claim"), 45.8);
+	d.close(45.8);
 	return tl;
 }
 
