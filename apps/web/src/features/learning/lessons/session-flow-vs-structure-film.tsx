@@ -19,7 +19,6 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
-	Word,
 } from "../walkthrough/film-kit";
 import {
 	MON_CLOSE,
@@ -51,7 +50,8 @@ import {
  *   ledger    8.6–22.0   both open +10; changed hands ±0; both closed −4
  *   clock     22.0–31.9  hero: volume all day; the OI terms assemble before Tuesday's count
  *   bucket    31.9–41.2  420 holds 32.35–34.35; → 620 as members change (+500 in, −300 out)
- *                        at Sep 9's figures, held 35.05–37.05; → 650, held 37.65–41.2
+ *                        at Sep 9's figures, held 35.05–37.05; explanation settled 35.2
+ *                        → 650 with 620 + 10 + 20 = 650, held 37.65–41.2
  *   claim     41.2–45.55 volume counts trading; open interest, positions
  *   next      45.55–47.5  Next: tape rows
  */
@@ -92,6 +92,12 @@ const MEMBERSHIP_TERMS = [
 	` + ${count(ENTERING)}`,
 	` − ${count(LEAVING)}`,
 	` = ${count(MOVED)}`,
+];
+/** Only the later bucket's members contribute to its growth, in chart order. */
+const GROWTH_TERMS = [
+	count(MOVED),
+	...AFTER_WEEK.members.map((column) => ` + ${count(column.change ?? 0)}`),
+	` = ${count(AFTER_WEEK.total)}`,
 ];
 /** Separate terms let each trade's open-interest change assemble the final count. */
 const SUM_TERMS = [
@@ -207,14 +213,8 @@ const effect = (trade: (typeof TRADES)[number], locale: Locale) => {
 const copy = {
 	title: ["Volume and open interest", "成交量与未平仓量"],
 	titleSub: ["why they move differently", "为何变化不同"],
-	qTag: [
-		`Oct 18 100 call · open interest ${START_OI}`,
-		`10月18日 100 看涨 · 未平仓量 ${START_OI}`,
-	],
-	qTagShort: [
-		`10/18 100 call · open interest ${START_OI}`,
-		`10/18 100 看涨 · 未平仓量 ${START_OI}`,
-	],
+	qTag: ["Oct 18 100 call · open interest", "10月18日 100 看涨 · 未平仓量"],
+	qTagShort: ["10/18 100 call · open interest", "10/18 100 看涨 · 未平仓量"],
 	qLine: [
 		`You buy ${TRADES[0].quantity} to open; Ben sells ${TRADES[0].quantity} to open.`,
 		`你买 ${TRADES[0].quantity} 张开仓；Ben 卖 ${TRADES[0].quantity} 张开仓。`,
@@ -303,6 +303,7 @@ function Scene({
 	const stat = (name: string, tag: Copy, value: string, i: number) => (
 		<g data-f={name}>
 			<text
+				data-f={`${name}-tag`}
 				x={L.statX(i)}
 				y={L.statY + T.small}
 				className="wt-film-tag"
@@ -336,15 +337,27 @@ function Scene({
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
 			<g data-f="q">
-				<Word
-					name="q-tag"
-					x={W / 2}
-					y={H * 0.32}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(narrow ? copy.qTagShort : copy.qTag).toUpperCase()}
-				</Word>
+				{/* Measured together in build; the OI quantity is a separate mono mark. */}
+				<g data-f="q-tag">
+					<text
+						data-f="q-tag-copy"
+						x={W / 2}
+						y={H * 0.32}
+						className="wt-film-tag"
+						style={{ fontSize: T.small }}
+					>
+						{t(narrow ? copy.qTagShort : copy.qTag).toUpperCase()}
+					</text>
+					<text
+						data-f="q-start"
+						x={W / 2}
+						y={H * 0.32}
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: T.small }}
+					>
+						{count(START_OI)}
+					</text>
+				</g>
 				<Lines
 					name="q-line"
 					text={t(copy.qLine)}
@@ -810,7 +823,7 @@ function Scene({
 							x={L.dayX(column.days)}
 							y={L.floor - barHeight(column.value) - 6 - T.small * 1.4}
 							textAnchor="middle"
-							className="wt-film-num wt-film-gain"
+							className={`wt-film-num ${AFTER_WEEK.columns.find((c) => c.id === column.id)?.member ? "wt-film-gain" : "wt-film-dim"}`}
 							style={{ fontSize: T.small * 1.05 }}
 						>
 							{signedCount(0)}
@@ -871,6 +884,29 @@ function Scene({
 						key={term}
 						data-f={`membership-term-${i}`}
 						className={i === 1 || i === 3 ? "wt-film-accent" : undefined}
+					>
+						{term}
+					</tspan>
+				))}
+			</text>
+			{/* Reuse the historical calculation's lane only after live growth has settled. */}
+			<text
+				data-f="growth-sum"
+				x={margin}
+				y={L.membershipY}
+				className="wt-film-num"
+				style={{ fontSize: T.body * 1.2 }}
+			>
+				{GROWTH_TERMS.map((term, i) => (
+					<tspan
+						key={`${i}-${term}`}
+						className={
+							i === GROWTH_TERMS.length - 1
+								? "wt-film-accent"
+								: i > 0
+									? "wt-film-gain"
+									: undefined
+						}
 					>
 						{term}
 					</tspan>
@@ -974,6 +1010,15 @@ function build(context: FilmContext) {
 	const membershipTerms = MEMBERSHIP_TERMS.map((_, i) =>
 		one(`membership-term-${i}`),
 	);
+	const growthSum = one("growth-sum");
+	const questionTag = num("q-tag-copy");
+	const questionStart = num("q-start");
+	const tagWidth = questionTag.getComputedTextLength();
+	const startWidth = questionStart.getComputedTextLength();
+	const tagGap = L.type.small * 0.6;
+	const tagX = (W - tagWidth - tagGap - startWidth) / 2;
+	gsap.set(questionTag, { attr: { x: tagX } });
+	gsap.set(questionStart, { attr: { x: tagX + tagWidth + tagGap } });
 	const clockTime = num("clock-time");
 	const lockOi = one<SVGGraphicsElement>("lock-oi");
 
@@ -982,6 +1027,8 @@ function build(context: FilmContext) {
 		...heads,
 		one("vol"),
 		one("oi"),
+		one("oi-tag"),
+		num("oi-n"),
 		one("bal-long"),
 		one("bal-short"),
 		...trades,
@@ -1009,6 +1056,7 @@ function build(context: FilmContext) {
 		one("note-new"),
 		membershipSum,
 		...membershipTerms,
+		growthSum,
 		...kids("claim"),
 	]);
 
@@ -1025,11 +1073,17 @@ function build(context: FilmContext) {
 
 	// ——— ledger: three trades, two counters ———
 	tl.addLabel("ledger", 8.6);
-	hide(flat("q"), 8.6);
+	// Keep the starting 100 while its surrounding question clears, then inherit it.
+	hide([questionTag, one("q-line"), one("q-big")], 8.6);
 	show(heads[0], 8.8);
-	show([one("vol"), one("oi")], 9.2);
-	show(one("bal-long"), 9.6, "right");
-	show(one("bal-short"), 9.8, "right");
+	show(one("vol"), 8.9);
+	show(one("bal-long"), 8.9, "right");
+	show(one("bal-short"), 9.05, "right");
+	// Its label waits until the flight lands, clear of the expanding numeral.
+	tl.set(one("oi"), { opacity: 1 }, 9.45);
+	d.carry(questionStart, num("oi-n"), 8.95, { duration: 0.5, arc: "y" });
+	show(one("oi-tag"), 9.45, "above", 0.15);
+	// The full initial ledger settles at 9.6 and reads quietly until the first trade.
 	/** One trade: its row comes up, volume adds it, open interest moves or doesn't. */
 	const trade = (i: number, at: number) => {
 		const beat = AFTER[i];
@@ -1295,7 +1349,7 @@ function build(context: FilmContext) {
 	const marks = stripExpiries
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
-	show(marks, 35.1, "above", 0.25);
+	show(marks, 35.05, "above", 0.15);
 	// Read the spatial membership changes as one settled calculation. The equals/result
 	// pair lands only after its operands, and disappears before live growth changes them.
 	// Gate the parent text too: hiding tspans alone leaves the text mark visible to scans.
@@ -1309,13 +1363,13 @@ function build(context: FilmContext) {
 	// Reveal the result settled with the total; the complete row gets the full 2 s baseline.
 	tl.set(membershipTerms[3], { opacity: 1 }, slideAt + slideDuration);
 	// The headline names the membership step while its marks are up.
-	show(heads[7], 35.35);
-	hide(marks, 36.6, 0.2);
+	show(heads[7], 35.05, "below", 0.15);
+	// All membership evidence settles by 35.2; nothing competes until growth at 37.05.
 	// Then the week's new contracts: each series grows by tens.
 	const growthAt = 37.05;
 	// Retire the whole counterfactual atomically at the first live-growth frame.
 	tl.set(
-		[one("note-was"), membershipSum, ...membershipTerms],
+		[one("note-was"), membershipSum, ...membershipTerms, ...marks],
 		{ opacity: 0 },
 		growthAt,
 	);
@@ -1334,9 +1388,9 @@ function build(context: FilmContext) {
 	// Begin at zero as growth starts; every annotation follows the displayed rounded values.
 	show(one("note-new"), growthAt, "below", 0.15);
 	// In place, without travel: each live change stays over its own column's figure.
-	changes.forEach((change, i) => {
-		word(change, growthAt - 0.1 + i * 0.12);
-	});
+	tl.fromTo(changes, { opacity: 0 }, { opacity: 1, duration: 0.15 }, growthAt);
+	// No changing operands beside a settled equality: reveal the whole bridge at rest.
+	tl.set(growthSum, { opacity: 1 }, growthAt + 0.6);
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.2);
@@ -1353,6 +1407,7 @@ function build(context: FilmContext) {
 			one("note-was"),
 			membershipSum,
 			...membershipTerms,
+			growthSum,
 		],
 		41.2,
 	);
