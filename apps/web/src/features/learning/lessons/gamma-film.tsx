@@ -59,17 +59,19 @@ import {
  *
  *   open      0–4        "Gamma" wipes on and becomes the corner tag
  *   question  4–9.4      delta 0.52 → ? if ALFA rises $2
- *   curve     9.4–23.6   the delta curve; push in; +$2 along, +0.08 up; cut: +0.08 ÷ $2 =
+ *   curve     9.4–22.15  carry 0.52 onto the delta curve; push in; +$2 along, +0.08 up;
+ *                        cut: +0.08 ÷ $2 =
  *                        0.04, "gamma"
- *   hedge     23.6–35.4  you and Ben, one under the other; ALFA +$2 once; hero: your
+ *   hedge     22.15–35.4 you and Ben, one under the other; baseline settles for 1 s;
+ *                        ALFA +$2 once, delta 0.52 → 0.60; hero: your
  *                        hedge drifts +128, locked, and you sell to flat; Ben's drifts −80
  *                        and he buys
- *   expiry    35.4–45.4  gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
+ *   expiry    35.4–45.45 gamma's hill; the 4-day call's spike, 3×; cut: "Gamma lives near
  *                        the strike."
- *   next      45.4–47.4  Next: theta, vega and rho
+ *   next      45.45–47.45 Next: theta, vega and rho
  */
 
-const END = 47.4;
+const END = 47.45;
 const DELTA_TOP = 1.15;
 const GAMMA_TOP = 0.13;
 const deltaAt = (spot: number) => model(OCT_100_CALL, spot).delta;
@@ -176,7 +178,7 @@ function layout(width: number) {
 const copy = {
 	title: ["Gamma", "Gamma"],
 	titleSub: ["how fast delta moves", "Delta 变化的速度"],
-	qFrom: [`delta ${fixed2(DELTA)}`, `Delta ${fixed2(DELTA)}`],
+	qLabel: ["delta", "Delta"],
 	qTo: ["→ ?", "→ ?"],
 	qLine: [
 		`If ALFA rises $${MOVE}, does the call's delta stay put?`,
@@ -315,6 +317,7 @@ function Scene({
 	const chipY = H * 0.4 - T.num * 1.15;
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
+	const deltaChange = `Δ ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`;
 	const revisedRows = [
 		["you", you, hedgeAfter.options],
 		["ben", ben, benColumns[1].options],
@@ -548,14 +551,24 @@ function Scene({
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
 			<g data-f="q">
 				<Word
-					name="q-from"
-					x={W / 2 - 8}
+					name="q-label"
+					x={W / 2 - 8 - textWidth(`${fixed2(DELTA)} `, T.num)}
 					y={H * 0.4}
 					size={T.num}
 					anchor="end"
 					className="wt-film-num"
 				>
-					{t(copy.qFrom)}
+					{t(copy.qLabel)}
+				</Word>
+				<Word
+					name="q-value"
+					x={W / 2 - 8}
+					y={H * 0.4}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{fixed2(DELTA)}
 				</Word>
 				<Word
 					name="q-to"
@@ -768,9 +781,10 @@ function Scene({
 				{column([youCols[0].options, youCols[0].shares, 0], "you")}
 				{column([benColumns[0].options, benColumns[0].shares, 0], "ben")}
 				<g data-f="h-chip">
+					{/* Lift the chip 4 px to leave the full-size delta cue its own line. */}
 					<rect
 						x={tableChipX - tableChipW / 2}
-						y={hedgeRows.chip - T.body - 5}
+						y={hedgeRows.chip - T.body - 9}
 						width={tableChipW}
 						height={T.body + 13}
 						rx={7}
@@ -778,7 +792,7 @@ function Scene({
 					/>
 					<text
 						x={tableChipX}
-						y={hedgeRows.chip}
+						y={hedgeRows.chip - 4}
 						textAnchor="middle"
 						className="wt-chip-text"
 						style={{ fontSize: T.body }}
@@ -787,6 +801,15 @@ function Scene({
 					</text>
 				</g>
 				<g data-f="h-delta">
+					<Word
+						name="h-delta-change"
+						x={tableChipX}
+						y={hedgeRows.chip + T.body + 8}
+						size={T.small}
+						className="wt-film-num wt-film-accent"
+					>
+						{deltaChange}
+					</Word>
 					{revisedRows.map(([who, quantity, result], i) => {
 						const expression = exposureExpression(quantity, NEW_DELTA);
 						const x = tableChipX + tableChipW / 2 + cueGap;
@@ -995,16 +1018,22 @@ function build(context: FilmContext) {
 	// ——— question: delta 0.52 → ? ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
-	show(one("q-from"), 4.6);
+	show([one("q-label"), one("q-value")], 4.6);
 	show(one("q-to"), 5.0, "right");
 	land(one("q-chip"), 5.4);
 	show(one("q-line"), 5.8);
 
 	// ——— curve: delta has a slope of its own ———
 	tl.addLabel("curve", 9.4);
-	hide(kids("q"), 9.4);
+	hide([one("q-label"), one("q-to"), one("q-chip"), one("q-line")], 9.4);
+	// The question's numeral becomes the chart readout as the marker lands. The
+	// chart finishes rising before handoff, and the camera does not push in until 12.2.
+	d.carry(one<SVGGraphicsElement>("q-value"), value, 9.4, {
+		duration: 1.55,
+		arc: "y",
+	});
 	rise(9.6);
-	tl.to(marker, { opacity: 1, duration: 0.2 }, 10.4);
+	tl.to(marker, { opacity: 1, duration: 0.3 }, 10.4);
 	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.4);
 	tl.fromTo(
 		one("d-dot"),
@@ -1033,12 +1062,6 @@ function build(context: FilmContext) {
 		{ attr: { width: L.right - mx + 4 }, duration: 1.3, ease: "power2.inOut" },
 		11.2,
 	);
-	tl.fromTo(
-		value,
-		{ opacity: 0, attr: { y: my - 2 } },
-		{ opacity: 1, attr: { y: my - 12 }, duration: 0.5 },
-		11.7,
-	);
 	show(one("k-head"), 11.4, "above");
 	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.2);
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
@@ -1046,7 +1069,7 @@ function build(context: FilmContext) {
 		...(chartDelta.firstElementChild as Element).querySelectorAll("text"),
 	];
 	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.2);
-	tl.to(tangent, { opacity: 1, duration: 0.2 }, 13.1);
+	tl.to(tangent, { opacity: 1, duration: 0.3 }, 13.1);
 	tl.to(
 		tangent,
 		{
@@ -1061,13 +1084,13 @@ function build(context: FilmContext) {
 		},
 		13.1,
 	);
-	tl.to(one("d-step"), { opacity: 1, duration: 0.2 }, 14.2);
+	tl.to(one("d-step"), { opacity: 1, duration: 0.3 }, 14.2);
 	tl.to(
 		one("d-step-line"),
 		{ attr: { x2: L.x(SPOT + MOVE) }, duration: 0.5, ease: "power2.out" },
 		14.2,
 	);
-	tl.to(one("d-riser"), { opacity: 1, duration: 0.2 }, 14.8);
+	tl.to(one("d-riser"), { opacity: 1, duration: 0.3 }, 14.8);
 	tl.to(
 		one("d-riser-line"),
 		{ attr: { y2: L.yD(NEW_DELTA) }, duration: 0.5, ease: "power3.out" },
@@ -1089,20 +1112,15 @@ function build(context: FilmContext) {
 		15.3,
 	);
 	// Cut: the slope gets its name, worked out: +0.08 over $2.
-	// The curve settles at 16.4, a second before the cut. Compress entrances, not holds:
+	// The curve settles at 16.4, a second before the cut. Stagger the definition:
 	// the definition settles at 18.4, a second before the first application at 19.4.
 	hide(one("k-head"), 17.4);
 	sink(17.4);
-	show(one("g-calc"), 17.8, "below", 0.25);
+	show(one("g-calc"), 17.8, "below", 0.3);
 	land(one("g-num"), 17.95, 0.4);
 	show(one("g-word"), 18.1, "below", 0.3);
 	// Fade the caption in place, clear of the worked label on both frames.
-	tl.fromTo(
-		one("g-sub"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
-		18.15,
-	);
+	tl.fromTo(one("g-sub"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.1);
 	for (const [who, at] of [
 		["you", 19.4],
 		["ben", 19.7],
@@ -1118,7 +1136,7 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			one(`h-derive-${who}-result`),
 			{ opacity: 0 },
-			{ opacity: 1, duration: 0.18 },
+			{ opacity: 1, duration: 0.3 },
 			at + 0.1,
 		);
 	}
@@ -1130,9 +1148,10 @@ function build(context: FilmContext) {
 	);
 
 	// ——— hedge: the same delta, carried onto a position ———
-	tl.addLabel("hedge", 23.6);
-	// Complete rows settle at 19.7/20.0 and hold 3.9/3.6 s before their lanes clear.
-	hide([...kids("g"), one("g-calc")], 23.6, 0.1, 0);
+	tl.addLabel("hedge", 22.15);
+	// Complete rows settle at 19.8/20.1 and hold 2.35/2.05 s before their lanes clear.
+	// Spend the spare worked-position hold on the baseline table's quiet second.
+	hide([...kids("g"), one("g-calc")], 22.15, 0.3, 0);
 	// Clear the calculation lanes before either result flies across, then upward.
 	hide(
 		[
@@ -1141,48 +1160,52 @@ function build(context: FilmContext) {
 			one("h-derive-ben-label"),
 			one("h-derive-ben-calc"),
 		],
-		23.6,
-		0.1,
+		22.15,
+		0.3,
 		0,
 	);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-you-result"),
 		one<SVGGraphicsElement>("h-you-0"),
-		23.75,
+		22.45,
 		{ duration: 0.75, arc: "x" },
 	);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-ben-result"),
 		one<SVGGraphicsElement>("h-ben-0"),
-		24.15,
+		22.85,
 		{ duration: 0.75, arc: "x" },
 	);
-	show(one("h-head"), 23.8, "above");
-	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 24.2);
-	show(one("h-who-you"), 24.55, "above");
-	land(one("h-you-1"), 24.65);
-	land(one("h-you-2"), 24.8);
-	show(one("h-who-ben"), 24.95, "above");
-	land(one("h-ben-1"), 25.25);
-	land(one("h-ben-2"), 25.4);
+	show(one("h-head"), 22.35, "above");
+	show([one("h-col-0"), one("h-col-1"), one("h-col-2")], 22.75);
+	show(one("h-who-you"), 23.1, "above");
+	land(one("h-you-1"), 23.2);
+	land(one("h-you-2"), 23.35);
+	show(one("h-who-ben"), 23.5, "above");
+	land(one("h-ben-1"), 23.8);
+	land(one("h-ben-2"), 23.95);
+	// Ben's final baseline cell settles at 24.5; nothing new arrives until 25.5.
 	// ALFA rises $2, once, for both. The revised operands land first; equality and
 	// settled results appear together only after both table rows agree with them.
 	show(one("h-chip"), 25.5);
 	tl.fromTo(
 		one("h-delta"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
+		{ opacity: 1, duration: 0.3 },
 		25.8,
 	);
 	countHedge("you", hedgeBefore, hedgeAfter, 26.1, 0.5);
 	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
 	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
 	tl.to(one("h-you-2"), warn, 26.1);
-	countHedge("ben", benColumns[0], benColumns[1], 26.5, 0.5);
-	tl.set(
+	countHedge("ben", benColumns[0], benColumns[1], 26.2, 0.5);
+	// Both rows settle by 26.7. Only then may their settled equalities fade in,
+	// completing at the unchanged 27.0, a full second before the hero lock.
+	tl.fromTo(
 		[one("h-revised-you-result"), one("h-revised-ben-result")],
-		{ opacity: 1 },
-		27.0,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		26.7,
 	);
 	// Complete revised equations and exposures stand quietly for a second before the lock.
 	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
@@ -1208,11 +1231,17 @@ function build(context: FilmContext) {
 	hide(lockHedge, 29.95, 0.3);
 	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.95);
 	tl.to(one("h-ben-2"), warn, 30.0);
-	show(one("h-claim"), 30.2);
-	// Clear both worked rows before the rule enters; operands hold 3.9 s, results 2.95 s.
-	hide(one("h-delta"), 29.95, 0.2, 0);
+	// Fade in place: its phone lines never travel through the departing cue/chip lane.
+	tl.fromTo(
+		one("h-claim"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		30.2,
+	);
+	// Clear both worked rows and the delta-change cue; their holds stay unchanged.
+	hide(one("h-delta"), 29.95, 0.3, 0);
 	// On a phone the rule's second line needs the move chip's lane too.
-	if (narrow) hide(one("h-chip"), 29.95, 0.2, 0);
+	if (narrow) hide(one("h-chip"), 29.95, 0.3, 0);
 	countHedge("you", hedgeAfter, hedgeFixed, 31.7);
 	tl.to(one("h-you-2"), flat, 32.4);
 	show(one("h-trade-ben"), 31.85);
@@ -1254,7 +1283,7 @@ function build(context: FilmContext) {
 	);
 	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 36.9);
 	// The 4-day call starts as the same hill, then rises into a spike at the strike.
-	tl.to(one("g-sep"), { opacity: 1, duration: 0.2 }, 37.1);
+	tl.to(one("g-sep"), { opacity: 1, duration: 0.3 }, 37.1);
 	tl.to(
 		one("g-sep"),
 		{
@@ -1272,24 +1301,24 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("g-times"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
+		{ opacity: 1, duration: 0.3 },
 		38.5,
 	);
 	// Cut: the claim, held to be read.
-	hide(one("e-head"), 41.0);
-	sink(41.0);
+	hide(one("e-head"), 41.05);
+	sink(41.05);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.4,
+		41.45,
 	);
-	show(one("c-sub"), 41.8);
+	show(one("c-sub"), 41.85);
 
 	// ——— next ———
-	tl.addLabel("next", 45.4);
-	hide(kids("claim"), 45.4);
-	d.close(45.4);
+	tl.addLabel("next", 45.45);
+	hide(kids("claim"), 45.45);
+	d.close(45.45);
 	return tl;
 }
 
