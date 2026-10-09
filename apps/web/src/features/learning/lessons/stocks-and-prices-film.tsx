@@ -43,10 +43,10 @@ import {
  *   open      0–4        "Stocks and prices"
  *   question  4–9        last $100.02: what do 10 shares cost?
  *   slice     9–16.55    50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
- *   quote     16.55–37   the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
+ *   quote     16.55–37.6 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
  *                        more to buy; hero: buy 1,000; after it, the same 1,000 at the last
  *                        price, and what the sweep added
- *   kinds     37–41.45   stock, ETF, index; the index is a number, cash-settled
+ *   kinds     37.6–41.45 stock, ETF, index; the index is a number, cash-settled
  *   claim     41.45–45.85 you trade against the quote, not the last price
  *   next      45.85–47.45 Next: options, a paid right
  */
@@ -57,7 +57,6 @@ const MINE = 10;
 const SHARES = ALFA_SHARES_OUTSTANDING;
 const BUY10 = tradeAgainst("buy", 10);
 const SELL10 = tradeAgainst("sell", 10);
-const PER_SHARE_GAP = BUY10.notional / MINE - SELL10.notional / MINE;
 const BIG = 1_000;
 /** The 1,000 climb the book the 10-share trades left: a trade never un-happens. */
 const BUY_BIG = tradeAgainst("buy", BIG, BUY10);
@@ -294,7 +293,6 @@ function Scene({
 	const diffBaseY = valY(1, heroFig) + heroFig * 0.3 + 10 + T.body * 1.5;
 	const vsY = diffBaseY + averageGap;
 	const mathX = narrow ? L.bookX + L.bookW + 14 : L.panelX;
-	const diffY = narrow ? phoneVsY : diffBaseY;
 	const subtractionY = narrow ? phoneVsY + T.small * 0.9 : vsY + T.body * 1.9;
 	return (
 		<>
@@ -558,57 +556,25 @@ function Scene({
 			>
 				{`${Math.round(BUY10.notional - SELL10.notional)}¢`}
 			</text>
-			<text
-				data-f="diff-times"
-				x={mathX}
-				y={diffY + T.body * 5.9}
-				className="wt-film-num wt-film-loss"
-				style={{ fontSize: narrow ? T.small * 1.15 : T.body }}
-			>
-				{`${PER_SHARE_GAP}¢ × ${MINE} = ${Math.round(BUY10.notional - SELL10.notional)}¢`}
-			</text>
-			{/* The quote's per-share difference, then the ten-share difference below the
-			    tickets. All results are settled; neither side of an equation counts. */}
-			{[
-				["diff-ask", usd(BUY10.notional / MINE)],
-				["diff-bid", `− ${usd(SELL10.notional / MINE)}`],
-				["diff-unit", `= ${PER_SHARE_GAP}¢ ${t(["/ share", "/ 股"])}`],
-			].map(([name, text], i) => (
-				<Word
-					key={name}
-					name={name}
-					x={mathX}
-					y={diffY + (i === 2 ? 4 : i * 1.9) * T.body}
-					size={T.body}
-					anchor="start"
-					className={`wt-film-num ${i === 2 ? "wt-film-loss" : "wt-film-dim"}`}
-				>
-					{text}
-				</Word>
-			))}
-			<path
-				data-f="diff-rule"
-				d={`M${mathX} ${diffY + T.body * 2.65}h${T.body * 6.8}`}
-				className="wt-film-gap"
-			/>
 			{/* After the hero, the same 1,000 shares at the last price. A phone has room for it
 			    only beside the book, under the "last" tag it extends. */}
 			<g data-f="vs-last">
 				{narrow ? (
-					[`${t(copy.last)} × ${count(BIG)}`, `− ${usd(AT_LAST, 0)}`].map(
-						(line, i) => (
-							<text
-								key={line}
-								data-f={i ? "vs-eq" : "vs-x"}
-								x={L.bookX + L.bookW + 14}
-								y={i ? subtractionY + T.body * 1.5 : phoneVsY - T.small * 1.9}
-								className={i ? "wt-film-num" : "wt-film-num wt-film-dim"}
-								style={{ fontSize: i ? T.body : T.small }}
-							>
-								{line}
-							</text>
-						),
-					)
+					[
+						`${usd(alfaStockBook.last)} × ${count(BIG)}`,
+						`− ${usd(AT_LAST, 0)}`,
+					].map((line, i) => (
+						<text
+							key={line}
+							data-f={i ? "vs-eq" : "vs-x"}
+							x={L.bookX + L.bookW + 14}
+							y={i ? subtractionY + T.body * 1.5 : phoneVsY - T.small * 1.9}
+							className={i ? "wt-film-num" : "wt-film-num wt-film-dim"}
+							style={{ fontSize: i ? T.body : T.small }}
+						>
+							{line}
+						</text>
+					))
 				) : (
 					<text
 						data-f="vs-calc"
@@ -900,7 +866,7 @@ function build(context: FilmContext) {
 			const renderBook = () => {
 				const filled = Math.round(state.filled);
 				const remaining = at.size - filled;
-				levelSize.textContent = count(remaining);
+				levelSize.textContent = remaining === 0 ? "—" : count(remaining);
 				levelBar.setAttribute("width", `${(remaining / MAX_SIZE) * L.barMax}`);
 				return filled;
 			};
@@ -968,11 +934,6 @@ function build(context: FilmContext) {
 		one("p-transfer"),
 		one("diff-gap"),
 		one("diff-label"),
-		one("diff-times"),
-		one("diff-ask"),
-		one("diff-bid"),
-		one("diff-unit"),
-		one("diff-rule"),
 		...kids("vs-last"),
 		one("vs-paid"),
 		...(L.narrow ? [] : [one("vs-minus")]),
@@ -1084,13 +1045,6 @@ function build(context: FilmContext) {
 			label.setAttribute("x", `${x + 10}`);
 			label.setAttribute("y", `${(y1 + y2) / 2 + L.type.body * 0.36}`);
 		}
-		const times = one("diff-times");
-		if (L.narrow) {
-			for (const attr of ["x", "y", "text-anchor"]) {
-				const value = label.getAttribute(attr);
-				if (value !== null) times.setAttribute(attr, value);
-			}
-		}
 	}
 	if (L.narrow) {
 		// Keep the body-size operands in one measured column beside the book. The echo,
@@ -1129,74 +1083,57 @@ function build(context: FilmContext) {
 		rule.setAttribute("d", `M${x} ${y}h${paidW + minusW + 12}`);
 	}
 	d.swap(heads[2], heads[3], 20.4);
-	take("ask", BUY10.fills, 20.75, null);
+	// The buy starts under the book headline; its landing completes before the sale begins.
+	take("ask", BUY10.fills, 20.1, null);
 	tl.fromTo(
 		one("chip-buy"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.15 },
-		20.85,
+		{ opacity: 1, duration: 0.3 },
+		20.2,
 	);
-	show(one("p-pay"), L.narrow ? 21.95 : 21.15, "above", 0.15);
-	d.carry(one<SVGGraphicsElement>("chip-buy"), total, 21.0, {
+	show(one("p-pay"), L.narrow ? 21.5 : 20.5, "above", 0.3);
+	d.carry(one<SVGGraphicsElement>("chip-buy"), total, 20.5, {
 		duration: 1,
 		fit: false,
 		arc: lane,
 	});
-	d.count(total, BUY10.notional, 21.99, dollars, BUY10.notional, 0.01);
-	take("bid", SELL10.fills, 21.55, null);
+	d.count(total, BUY10.notional, 21.49, dollars, BUY10.notional, 0.01);
+	take("bid", SELL10.fills, 21.5, null);
 	tl.fromTo(
 		one("chip-sell"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.15 },
-		21.65,
+		{ opacity: 1, duration: 0.3 },
+		21.6,
 	);
-	// These short transfers construct one comparison; both tickets stay settled afterwards.
-	show(one("p-get"), L.narrow ? 22.15 : 21.75, "above", 0.15);
-	d.carry(one<SVGGraphicsElement>("chip-sell"), sell, 21.8, {
-		duration: 0.4,
+	// Both transfers construct one comparison. The sale gets a complete, separate journey.
+	show(one("p-get"), L.narrow ? 22.5 : 21.9, "above", 0.3);
+	d.carry(one<SVGGraphicsElement>("chip-sell"), sell, 21.9, {
+		duration: 0.6,
 		fit: false,
 		arc: lane,
 	});
-	d.count(sell, SELL10.notional, 22.19, dollars, SELL10.notional, 0.01);
-	// Complete the same 50¢ proof earlier, retaining its 3.5 s reading window.
-	d.trace(one<SVGPathElement>("diff-gap"), 22.0, { duration: 0.3 });
-	if (!L.narrow) show(one("diff-label"), 22.15, "below", 0.15);
-	show(heads[4], 22.25);
-	tl.to(lockRow, { opacity: 0, duration: 0.25 }, 22.25);
+	d.count(sell, SELL10.notional, 22.49, dollars, SELL10.notional, 0.01);
+	// The two settled totals prove the 50¢ difference directly, without a second calculation.
+	d.trace(one<SVGPathElement>("diff-gap"), 22.5, { duration: 0.3 });
+	show(one("diff-label"), 22.5, "below", 0.3);
+	show(heads[4], 22.5);
+	tl.to(lockRow, { opacity: 0, duration: 0.3 }, 22.5);
 	tl.to(
 		[hit("ask", BUY10.fills[0].price), hit("bid", SELL10.fills[0].price)],
 		{ opacity: 0, duration: 0.3 },
-		22.25,
+		22.5,
 	);
-	tl.set(one("diff-ask"), { opacity: 1 }, 22.0);
-	tl.set(one("diff-bid"), { opacity: 1 }, 22.05);
-	d.trace(one<SVGPathElement>("diff-rule"), 22.1, { duration: 0.15 });
-	tl.set(one("diff-unit"), { opacity: 1 }, 22.25);
-	tl.set(one("diff-times"), { opacity: 1 }, 22.3);
 	// The hero: each 0.2 s fill has a full 1 s settled dwell before the next operation.
 	// Steady row highlights locate the fills without spending that dwell on moving brackets.
-	hide([heads[3], heads[4]], 25.8);
-	show(heads[5], 26.15, "below", 0.2);
-	hide(
-		[
-			one("p-get"),
-			sell,
-			one("diff-gap"),
-			one("diff-label"),
-			one("diff-times"),
-			one("diff-ask"),
-			one("diff-bid"),
-			one("diff-unit"),
-			one("diff-rule"),
-		],
-		25.8,
-	);
-	d.flip(one("p-pay"), one("p-pay-big"), 25.8);
-	hide(total, 25.8, 0.25);
+	hide([heads[3], heads[4]], 26.15);
+	show(heads[5], 26.5, "below", 0.3);
+	hide([one("p-get"), sell, one("diff-gap"), one("diff-label")], 26.15);
+	d.flip(one("p-pay"), one("p-pay-big"), 26.15);
+	hide(total, 26.15, 0.3);
 	// Reset the desktop exit translation before this mark becomes a later carry source.
-	tl.set(total, { x: 0, y: 0 }, 26.3);
-	tl.to(total, { opacity: 1, duration: 0.2 }, 26.3);
-	take("ask", BUY_BIG.fills, 26.3, null, {
+	tl.set(total, { x: 0, y: 0, textContent: dollars(0) }, 26.45);
+	tl.to(total, { opacity: 1, duration: 0.3 }, 26.45);
+	take("ask", BUY_BIG.fills, 26.75, null, {
 		step: 1.2,
 		duration: 0.2,
 		bracket: false,
@@ -1205,39 +1142,39 @@ function build(context: FilmContext) {
 	});
 	// Register the already-settled shared-state total for the director's carry measurement.
 	// This is a constant, zero-duration handoff, never a second animated counter.
-	d.count(total, BUY_BIG.notional, 28.9, dollars, BUY_BIG.notional, 0);
-	// The last fill settles at 28.9 and reads for 1 s. Then construct the whole division.
+	d.count(total, BUY_BIG.notional, 29.35, dollars, BUY_BIG.notional, 0);
+	// The last fill settles at 29.35 and reads for 1 s. Then construct the whole division.
 	tl.fromTo(
 		one("p-divisor"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.15 },
-		29.9,
+		{ opacity: 1, duration: 0.3 },
+		30.35,
 	);
-	show(one("p-avg-tag"), 29.9, "below", 0.15);
-	word(one("p-avg"), 29.9);
+	show(one("p-avg-tag"), 30.35, "below", 0.3);
+	word(one("p-avg"), 30.35);
 	tl.to(
 		BUY_BIG.fills.map((fill) => hit("ask", fill.price)),
 		{ opacity: 0.3, duration: 0.3 },
-		30.05,
+		30.5,
 	);
-	d.lock(one<SVGGraphicsElement>("lock-avg"), 30.05, {
+	d.lock(one<SVGGraphicsElement>("lock-avg"), 30.5, {
 		around: [one("p-avg-tag"), one("p-avg")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 30.05);
-	// Numerator, divisor, result and brackets remain bright and still from 30.5 to 32.0.
+	tl.addLabel("hero-lock", 30.5);
+	// Numerator, divisor, result and brackets remain bright and still from 30.95 to 32.45.
 	// Clear the phone's book lane before the numerator leaves; the average stays bright.
 	tl.to(
 		[...levels, one("asks-tag"), one("bids-tag"), one("spread"), one("last")],
-		{ opacity: 0.25, duration: 0.1 },
-		32.0,
+		{ opacity: 0.25, duration: 0.3 },
+		32.45,
 	);
-	hide([one("p-divisor"), one("p-pay-big")], 32.0, 0.1, 0);
+	hide([one("p-divisor"), one("p-pay-big")], 32.45, 0.3, 0);
 	const paid = one<SVGGraphicsElement>("vs-paid");
-	tl.set(paid, { attr: { class: "wt-film-num wt-film-accent" } }, 32.1);
+	tl.set(paid, { attr: { class: "wt-film-num wt-film-accent" } }, 32.75);
 	if (L.narrow) {
 		// Up first through the quiet book, then right into the subtraction: clear of the hero.
-		d.carry(total, paid, 32.1, { duration: 0.55, arc: "y" });
+		d.carry(total, paid, 32.75, { duration: 0.55, arc: "y" });
 	} else {
 		// A waypoint to the hero's left prevents a vertical flight through its bright type.
 		const transfer = one<SVGGraphicsElement>("p-transfer");
@@ -1245,22 +1182,26 @@ function build(context: FilmContext) {
 			"x",
 			`${one<SVGGraphicsElement>("p-avg").getBBox().x - transfer.getBBox().width - 64}`,
 		);
-		d.carry(total, transfer, 32.1, { duration: 0.25, arc: "x" });
-		d.carry(transfer, paid, 32.35, { duration: 0.3, arc: "y" });
+		d.carry(total, transfer, 32.75, { duration: 0.25, arc: "x" });
+		d.carry(transfer, paid, 33.0, { duration: 0.3, arc: "y" });
 	}
 	// Only reveal the comparison's other operands after the payment has landed.
-	tl.set(one("last"), { attr: { class: "wt-film-num wt-film-accent" } }, 32.65);
-	tl.to(one("last"), { opacity: 1, duration: 0.15 }, 32.65);
-	show(one(L.narrow ? "vs-x" : "vs-calc"), 32.65, "below", 0.15);
-	tl.set(one(L.narrow ? "vs-eq" : "vs-minus"), { opacity: 1 }, 32.65);
-	d.trace(one<SVGPathElement>("vs-rule"), 32.7, { duration: 0.2 });
-	tl.set(paid, { attr: { class: "wt-film-num" } }, 33.0);
-	tl.set(one("p-over"), { opacity: 1 }, 33.0);
-	show(one("p-over-tag"), 32.85, "below", 0.15);
-	// The complete subtraction retains its four seconds, 33.0–37.0.
+	tl.set(one("last"), { attr: { class: "wt-film-num wt-film-accent" } }, 33.3);
+	tl.to(one("last"), { opacity: 1, duration: 0.3 }, 33.3);
+	show(one(L.narrow ? "vs-x" : "vs-calc"), 33.3, "below", 0.3);
+	tl.to(
+		one(L.narrow ? "vs-eq" : "vs-minus"),
+		{ opacity: 1, duration: 0.3 },
+		33.3,
+	);
+	d.trace(one<SVGPathElement>("vs-rule"), 33.3, { duration: 0.3 });
+	tl.set(paid, { attr: { class: "wt-film-num" } }, 33.6);
+	tl.to(one("p-over"), { opacity: 1, duration: 0.3 }, 33.3);
+	show(one("p-over-tag"), 33.3, "below", 0.3);
+	// The complete subtraction retains its four seconds, 33.6–37.6.
 
 	// ——— kinds: what the underlying is ———
-	tl.addLabel("kinds", 37.0);
+	tl.addLabel("kinds", 37.6);
 	hide(
 		[
 			heads[5],
@@ -1284,26 +1225,26 @@ function build(context: FilmContext) {
 			one("p-over"),
 			one("p-over-tag"),
 		],
-		37.0,
+		37.6,
 	);
-	show(heads[6], 37.35);
+	show(heads[6], 37.95);
 	show(
 		flat("kinds").filter((el) => el.tagName === "text"),
-		37.35,
+		37.95,
 		"below",
-		0.25,
+		0.3,
 	);
 	kindOrder.forEach((kind) => {
-		show(one(`col-${kind}`), 37.35, "below", 0.25);
+		show(one(`col-${kind}`), 37.95, "below", 0.3);
 	});
-	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 38.85);
-	d.lock(one<SVGGraphicsElement>("lock-index"), 38.85, {
+	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 39.45);
+	d.lock(one<SVGGraphicsElement>("lock-index"), 39.45, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
-	// All three columns retain full contrast from 37.6 to 41.45 (the same 3.85 s).
-	// The headline settles at 37.85, then reads for 1 s before the index focus.
-	// That focus settles at 39.3, leaving another 2.15 s of quiet comparison.
+	// All three columns retain full contrast from 38.25 to 41.45 (3.2 s).
+	// The headline retains 3.5 s and settles at 38.45, 1 s before the index focus.
+	// That focus settles at 39.9, leaving another 1.55 s of quiet comparison.
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.45);
