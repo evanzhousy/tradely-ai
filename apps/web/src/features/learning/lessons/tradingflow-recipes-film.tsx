@@ -701,8 +701,8 @@ function Scene({
 								data-f={name}
 								x={margin + 16}
 								y={headerLine(2)}
-								className={narrow ? "wt-film-type" : "wt-small"}
-								style={narrow ? { fontSize: T.body } : undefined}
+								className="wt-film-type"
+								style={{ fontSize: T.body }}
 							>
 								{t([`Ran · ${label[0]}`, `运行于 · ${label[1]}`])}
 							</text>
@@ -1253,11 +1253,7 @@ function build(context: FilmContext) {
 	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
 	tl.addLabel("hero-lock", 28.0);
 	show(one("m2-head"), 26.1);
-	tl.to(
-		one("ran-mon"),
-		{ opacity: L.narrow ? 0.85 : 0.4, duration: 0.4 },
-		26.5,
-	);
+	tl.to(one("ran-mon"), { opacity: 0.85, duration: 0.4 }, 26.5);
 
 	// ——— completed: Monday closes ———
 	tl.addLabel("completed", 29.6);
@@ -1372,25 +1368,26 @@ function build(context: FilmContext) {
 	tl.set(one("fork"), { opacity: 1 }, 36.05);
 	rise(36.1);
 	show(one("fork-official"), 36.05, "below", 0.35);
-	land(one("edit-chip"), 36.1, 0.4);
+	land(one("edit-chip"), 36.05, 0.35);
 	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
 	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 36.5);
-	tl.to(one("copy-frame"), { x: 0, duration: 0.7, ease: "power2.inOut" }, 36.5);
-	show(one("f-head"), 36.5, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.3 }, 37.2);
-	tl.set(one("copy-frame"), { opacity: 0 }, 37.5);
+	tl.set(one("copy-frame"), { opacity: 1 }, 36.4);
+	tl.to(one("copy-frame"), { x: 0, duration: 0.4, ease: "power2.inOut" }, 36.4);
+	show(one("f-head"), 36.4, "above");
+	tl.to(one("fork-copy"), { opacity: 1, duration: 0.15 }, 36.8);
+	tl.set(one("copy-frame"), { opacity: 0 }, 36.95);
 	// Establish both viewers before the inherited-content pause begins.
-	land(one("viewer"), 36.8);
-	show(one("viewer-you"), 36.95);
+	land(one("viewer"), 36.4);
+	show(one("viewer-you"), 36.45);
 	// A colleague opens the same recipe: the official one.
-	show(one("c-head"), 37.0);
+	show(one("c-head"), 36.45);
 	land(one("viewer-colleague-dot"), 36.4);
-	show(one("viewer-colleague"), 36.6);
-	// The inherited content holds fully settled from 37.5 to 38.5 before
-	// your copy's spotlight turns over from the official one's to ALFA.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 38.5);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.8);
+	show(one("viewer-colleague"), 36.45);
+	// The cards, viewers, headlines and depth have all settled by 36.95.
+	// Keep the inherited content quiet for one second, then settle ALFA at
+	// 38.6 so the completed edit reads for 2.4 seconds before the claim cut.
+	d.flip(one("spot-copy-was"), one("spot-copy"), 37.95);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.25);
 	// Cut: the claim.
 	hide([one("f-head"), one("c-head")], 41.0);
 	sink(41.0);
