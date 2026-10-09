@@ -71,6 +71,7 @@ const fifo = split(SOLD, "fifo");
 /** What selling at the bid, not the mid, takes off: six contracts × $0.125 × 100. */
 const GAP = SOLD * (MARK - SALE) * 100;
 const GAP_EQ = `${price(MARK - SALE)} × ${SOLD} × 100 =`;
+const FIFO_EQ = `${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 =`;
 const held = split(0, "fifo");
 const EARNED_FROM = valueOpen / 100;
 const STOCK_TO = EARNED_FROM + (stockClose - stockOpen) / 100;
@@ -155,11 +156,6 @@ const copy = {
 		`ALFA ${signed(stockClose - stockOpen)} · calls ${signed(callsClose - PAID * 100)} · fees ${signed(-buyFees)}`,
 		`ALFA ${signed(stockClose - stockOpen)} · 看涨 ${signed(callsClose - PAID * 100)} · 费用 ${signed(-buyFees)}`,
 	],
-	/** On a phone the headline has named the three, in this order. */
-	breakdownShort: [
-		`${signed(stockClose - stockOpen)} · ${signed(callsClose - PAID * 100)} · ${signed(-buyFees)}`,
-		`${signed(stockClose - stockOpen)} · ${signed(callsClose - PAID * 100)} · ${signed(-buyFees)}`,
-	],
 	deposited: [
 		`+${dollars(yourAccount.deposit)} deposited`,
 		`存入 +${dollars(yourAccount.deposit)}`,
@@ -214,7 +210,6 @@ const copy = {
 		`15:59 mark ${signed(benMarked)}`,
 		`15:59 估值 ${signed(benMarked)}`,
 	],
-	benMarkShort: [`mark ${signed(benMarked)}`, `估值 ${signed(benMarked)}`],
 	far: [
 		`$120: ${signed(benAtExpiry(120))}`,
 		`$120：${signed(benAtExpiry(120))}`,
@@ -264,6 +259,19 @@ function Scene({
 	const fit = (text: string, share = 0.84) =>
 		Math.min(T.big, (W * share) / (text.length * 0.62));
 	const x0 = L.ax(EARNED_FROM);
+	const breakdownRows = [
+		`ALFA ${signed(stockClose - stockOpen)}`,
+		`${t(["calls", "看涨"])} ${signed(callsClose - PAID * 100)}`,
+		`${t(["fees", "费用"])} ${signed(-buyFees)}`,
+	];
+	// A brace connects the calculation to the six oldest cells in the first row.
+	const fifoFirst = L.cell(0);
+	const fifoLast = L.cell(SOLD - 1);
+	// The FIFO proof stays below the addition until the bid-gap proof takes over.
+	const fifoY = H * 0.9;
+	const fifoWidth = textWidth(FIFO_EQ, T.body);
+	const fifoX =
+		W / 2 - (fifoWidth + 8 + textWidth(dollars(fifo.realized), T.body)) / 2;
 	// The drawn gap, under the mid line.
 	const gapText = T.body;
 	const gapHalf = narrow
@@ -318,14 +326,7 @@ function Scene({
 								data-tone={tone}
 								x={L.ax(from)}
 								y={name === "seg-fees" ? L.barTop - 6 : L.barTop}
-								width={
-									name === "seg-fees"
-										? 3
-										: Math.max(
-												L.ax(to) - L.ax(from) - (name === "seg-stock" ? 2 : 0),
-												1.5,
-											)
-								}
+								width={name === "seg-fees" ? 3 : L.ax(to) - L.ax(from)}
 								height={L.barBottom - L.barTop + (name === "seg-fees" ? 6 : 0)}
 							/>
 						))}
@@ -369,11 +370,22 @@ function Scene({
 						</g>
 						<text
 							data-f="breakdown"
-							x={narrow ? L.left : x0}
+							x={narrow ? L.margin : x0}
 							y={L.barBottom + 18 + T.body * 1.6}
-							className="wt-small wt-halo"
+							className="wt-film-num wt-halo wt-film-dim"
+							style={{ fontSize: T.body }}
 						>
-							{t(narrow ? copy.breakdownShort : copy.breakdown)}
+							{narrow
+								? breakdownRows.map((row, i) => (
+										<tspan
+											key={row}
+											x={L.margin}
+											dy={i === 0 ? 0 : T.body * 1.5}
+										>
+											{row}
+										</tspan>
+									))
+								: t(copy.breakdown)}
 						</text>
 						<text
 							data-f="deposited"
@@ -453,12 +465,12 @@ function Scene({
 						/>
 						<text
 							data-f="mark-label"
-							x={narrow ? L.left + 4 : markX - 10}
+							x={narrow ? Math.max(markX + 24, L.bx(110) + 12) : markX - 10}
 							y={markY + 20}
 							textAnchor={narrow ? "start" : "end"}
 							className="wt-halo wt-loss wt-marker-label"
 						>
-							{t(narrow ? copy.benMarkShort : copy.benMark)}
+							{t(copy.benMark)}
 						</text>
 						<circle
 							data-f="far-dot"
@@ -609,6 +621,32 @@ function Scene({
 			{headline("e-head", copy.earnedHead, copy.earnedHeadShort)}
 			{/* Sixteen contracts in two lots. */}
 			<g data-f="lots">
+				<path
+					data-f="fifo-brace"
+					d={`M${fifoFirst.x} ${fifoFirst.y - 6}V${fifoFirst.y - 12}H${fifoLast.x + L.square}V${fifoFirst.y - 6}`}
+					className="wt-film-link"
+					style={{ strokeDasharray: "none", stroke: "var(--diagram-accent)" }}
+				/>
+				<Word
+					name="fifo-eq"
+					x={fifoX}
+					y={fifoY}
+					size={T.body}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{FIFO_EQ}
+				</Word>
+				<Word
+					name="fifo-result"
+					x={fifoX + fifoWidth + 8}
+					y={fifoY}
+					size={T.body}
+					anchor="start"
+					className="wt-film-num wt-film-gain"
+				>
+					{dollars(fifo.realized)}
+				</Word>
 				{Array.from({ length: HELD }, (_, i) => {
 					const { x, y } = L.cell(i);
 					return (
@@ -672,10 +710,15 @@ function Scene({
 				))}
 				{(
 					[
-						["r", copy.realized, zeroed(0)],
-						["u", copy.unrealized, signed(held.unrealized)],
+						["r", copy.realized, zeroed(0), signed(fifo.realized)],
+						[
+							"u",
+							copy.unrealized,
+							signed(held.unrealized),
+							signed(fifo.unrealized),
+						],
 					] as const
-				).map(([key, tag, value], i) => (
+				).map(([key, tag, value, settled], i) => (
 					<g key={key}>
 						<Word
 							name={`${key}-tag`}
@@ -687,13 +730,22 @@ function Scene({
 							{t(tag).toUpperCase()}
 						</Word>
 						<Word
-							name={`${key}-val`}
+							name={`${key}-open`}
 							x={W * L.pair[i]}
 							y={H * (narrow ? 0.76 : 0.68) + T.num * 1.15}
 							size={T.num}
 							className="wt-film-num wt-film-gain"
 						>
 							{value}
+						</Word>
+						<Word
+							name={`${key}-val`}
+							x={W * L.pair[i]}
+							y={H * (narrow ? 0.76 : 0.68) + T.num * 1.15}
+							size={T.num}
+							className="wt-film-num wt-film-gain"
+						>
+							{settled}
 						</Word>
 					</g>
 				))}
@@ -867,6 +919,56 @@ function build(context: FilmContext) {
 	const realized = one<SVGTextElement>("r-val");
 	const unrealized = one<SVGTextElement>("u-val");
 	const squares = Array.from({ length: HELD }, (_, i) => one(`sq-${i}`));
+	const accountProgress = { stock: 0, calls: 0, fees: 0, deposit: 0 };
+	const stockSegment = one("seg-stock");
+	const callsSegment = one("seg-calls");
+	const feesSegment = one("seg-fees");
+	const depositSegment = one("seg-deposit");
+	// The exact same contributions set both the bar's boundary and its readout.
+	const renderAccount = () => {
+		const stock = (stockClose - stockOpen) * accountProgress.stock;
+		const calls = (callsClose - PAID * 100) * accountProgress.calls;
+		const fees = buyFees * accountProgress.fees;
+		const deposit = yourAccount.deposit * accountProgress.deposit;
+		stockSegment.setAttribute(
+			"width",
+			String(L.ax(EARNED_FROM + stock / 100) - L.ax(EARNED_FROM)),
+		);
+		callsSegment.setAttribute(
+			"width",
+			String(L.ax(STOCK_TO + (calls - fees) / 100) - L.ax(STOCK_TO)),
+		);
+		// Fees retract the green boundary; the red hairline makes the small deduction visible.
+		feesSegment.setAttribute(
+			"x",
+			String(L.ax(STOCK_TO + (calls - fees) / 100) - 3),
+		);
+		feesSegment.style.opacity = String(accountProgress.fees);
+		depositSegment.setAttribute(
+			"width",
+			String(L.ax(CLOSE_TO + deposit / 100) - L.ax(CLOSE_TO)),
+		);
+		meter.textContent = dollars(valueOpen + stock + calls - fees + deposit);
+	};
+	const growContribution = (
+		part: keyof typeof accountProgress,
+		at: number,
+		duration: number,
+	) => {
+		if (part !== "fees") tl.set(one(`seg-${part}`), { opacity: 1 }, at);
+		tl.fromTo(
+			accountProgress,
+			{ [part]: 0 },
+			{
+				[part]: 1,
+				duration,
+				ease: "power2.out",
+				immediateRender: false,
+				onUpdate: renderAccount,
+			},
+			at,
+		);
+	};
 	/** A segment of the account bar grows rightward from where it starts. */
 	const grow = (name: string, at: number, duration = 0.5) => {
 		const el = one(name);
@@ -918,6 +1020,11 @@ function build(context: FilmContext) {
 		one("mark-input"),
 		one("r-tag"),
 		one("u-tag"),
+		one("r-open"),
+		one("u-open"),
+		one("fifo-brace"),
+		one("fifo-eq"),
+		one("fifo-result"),
 		realized,
 		unrealized,
 		...flat("total"),
@@ -955,10 +1062,9 @@ function build(context: FilmContext) {
 	show([one("m-tag"), meter], 11.2, "above");
 	d.count(meter, valueOpen, 11.2, dollars, valueOpen, 0.01);
 	grow("seg-base", 11.2);
-	grow("seg-stock", 11.9, 0.4);
-	grow("seg-calls", 12.3, 0.5);
-	tl.to(one("seg-fees"), { opacity: 1, duration: 0.3 }, 12.8);
-	d.count(meter, valueClose, 11.9, dollars, valueOpen, 1.2);
+	growContribution("stock", 11.9, 0.4);
+	growContribution("calls", 12.3, 0.5);
+	growContribution("fees", 12.8, 0.3);
 	show(one("earned"), 13.4);
 	show(one("breakdown"), 13.7);
 	// The answer: what was earned lifts out of the bar, and stays while the deposit lands.
@@ -969,8 +1075,7 @@ function build(context: FilmContext) {
 	show(one("earned-tag"), 14.7);
 	// Tuesday: money in, not money made.
 	d.swap(one("a-head"), one("e-head"), 15.4);
-	grow("seg-deposit", 15.4, 0.7);
-	d.count(meter, afterDeposit, 15.4, dollars, valueClose, 0.7);
+	growContribution("deposit", 15.4, 0.7);
 	show(one("deposited"), 15.7);
 	// Read the completed deposit for a second, then compare buying power in its own slot.
 	// The account value remains visible; buying power never replaces it.
@@ -989,32 +1094,19 @@ function build(context: FilmContext) {
 		land(square, 21.4 + i * 0.04, 0.4);
 	});
 	show([one("r-tag"), one("u-tag")], 21.7);
-	show([realized, unrealized], 21.9);
+	show([one("r-open"), one("u-open")], 21.9);
 	show(one("legend-lots"), 22.0);
 	show(one("mark-input"), 22.0, "below", 0.2);
 	show(one("sale-input"), 22.2, "below", 0.2);
 	show(one("l-head"), 22.2, "above");
 	// Sell six, oldest first, and say so.
 	show(one("fifo-tag"), 22.3, "below", 0.2);
+	d.trace(one<SVGPathElement>("fifo-brace"), 22.5, { duration: 0.3 });
+	show(one("fifo-eq"), 22.5, "above", 0.2);
+	// Clear the old readings before membership changes. Results after '=' arrive settled.
+	hide([one("r-open"), one("u-open")], 24.05, 0.25, 0);
 	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.3);
-	// In whole dollars as they count: cents in motion read as noise.
-	const wholeDollars = (cents: number) => Math.round(cents / 100) * 100;
-	d.count(
-		realized,
-		fifo.realized,
-		24.5,
-		(v) => zeroed(wholeDollars(v)),
-		0,
-		0.8,
-	);
-	d.count(
-		unrealized,
-		fifo.unrealized,
-		24.5,
-		(v) => signed(wholeDollars(v)),
-		held.unrealized,
-		0.8,
-	);
+	show([realized, unrealized, one("fifo-result")], 24.7, "below", 0.2);
 	// The hero: the two parts become one figure, less than the mark said.
 	hide(
 		[
@@ -1025,6 +1117,7 @@ function build(context: FilmContext) {
 			one("mark-input"),
 			one("r-tag"),
 			one("u-tag"),
+			one("fifo-brace"),
 		],
 		26.0,
 	);
@@ -1044,6 +1137,8 @@ function build(context: FilmContext) {
 		{ scaleY: 1, duration: 0.2, ease: "power2.out", immediateRender: false },
 		28.0,
 	);
+	// The carried +$330 preserves this result; clear its calculation before the gap enters.
+	hide([one("fifo-eq"), one("fifo-result")], 28.2, 0.35, 0);
 	show(one("t-was"), 28.45, "below", 0.2);
 	d.lock(lockTotal, 28.5, {
 		around: [one("t-tag"), total],
