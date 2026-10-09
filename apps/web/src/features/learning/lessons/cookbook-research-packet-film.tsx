@@ -1068,8 +1068,9 @@ function build(context: FilmContext) {
 	show(one("extra-cancelled"), 25.55, "below", 0.2);
 	show(one("extra-repeated"), 26, "below", 0.2);
 	d.trace(one<SVGPathElement>("exclusions-link"), 26.2, { duration: 0.35 });
-	// Establish the completed delta before its confirmation; it still holds for 2.05 s.
-	show(one("extra-total"), 27.6, "below", 0.2);
+	// Use the old connector-to-total gap for quiet reading of the complete equation:
+	// the total settles at 26.9, 1.05 s before the brackets enter, and holds to 29.85.
+	show(one("extra-total"), 26.7, "below", 0.2);
 	// Round the rerun with its label, P1's figure and its reason: no arm runs through a line.
 	d.lock(lockRerun, 27.95, {
 		around: [
@@ -1133,14 +1134,15 @@ function build(context: FilmContext) {
 	const saveResult = (i: number, saveAt: number) => {
 		const operands = [one(`log-${i}-expression`)];
 		if (i === 2) operands.push(one("log-2-operand"), one("log-2-equals"));
-		tl.set(operands, { opacity: 0.2 }, saveAt);
+		// Clear the baseline before the saved figure flies through it; dimmed glyphs
+		// still overprint the carry in both the P2 addition and P3 subtraction.
+		tl.set(operands, { opacity: 0 }, saveAt);
 		d.carry(
 			one<SVGGraphicsElement>(`log-${i}-result`),
 			one<SVGGraphicsElement>(`rec-${i}-n`),
 			saveAt,
 			{ duration: 0.2, arc: "x" },
 		);
-		tl.set(operands, { opacity: 0 }, saveAt + 0.2);
 		tl.set(one(`rec-${i}-tag`), { opacity: 1 }, saveAt + 0.2);
 	};
 	// P1 holds 30.95–32.45; P2 equation 32.45–33.95; saved P2 34.15–35.65.
