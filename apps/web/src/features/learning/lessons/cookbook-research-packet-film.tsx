@@ -50,11 +50,11 @@ import {
  *   open      0–4        "Research packets"
  *   question  4–8.6      will a reader get $165,520?
  *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
- *   fields    18.6–30.8  hero: every field; without the formula; without the exclusions,
+ *   fields    18.6–29.95 hero: every field; without the formula; without the exclusions,
  *                        held; then the field goes back and the figure is P1's again
- *   log       30.8–42.0  P1; add R5 to make P2; build the two-leg operand, then P3
- *   claim     42.0–46.4  work someone else can rerun
- *   next      46.4–47.5  Next: recaps
+ *   log       29.95–41.55 P1; add R5 to make P2; build the two-leg operand, then P3
+ *   claim     41.55–45.95 work someone else can rerun
+ *   next      45.95–47.5 Next: recaps
  */
 
 const END = 47.5;
@@ -197,9 +197,6 @@ function Scene({
 		textWidth(`+ ${dollars(extra(repeated))}`, extraSize) +
 		textWidth(t(copy.repeated), T.small) +
 		24;
-	const trace = R2_TRADES.map(
-		(trade) => `${count(trade.quantity)} × ${usd(trade.price)} × 100`,
-	).join(" + ");
 	const spreadProofSize = T.body;
 	const spreadProofY = L.recY(2) + L.recH * 0.6;
 	const spreadProofStep = spreadProofSize * 1.65;
@@ -311,31 +308,25 @@ function Scene({
 					</g>
 				);
 			})}
-			<Lines
-				name="trace"
-				text={`R2 = ${trace}`}
-				x={margin}
-				y={L.traceY}
-				size={narrow ? T.small * 1.05 : T.body}
-				maxWidth={room}
-				anchor="start"
-				className="wt-film-num wt-film-accent"
-			/>
+			<g data-f="trace">
+				{R2_TRADES.map((trade, i) => (
+					<text
+						key={trade.id}
+						x={margin}
+						y={L.traceY + i * T.body * 1.4}
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: T.body }}
+					>
+						{`${i === 0 ? "R2 =" : "+"} ${count(trade.quantity)} × ${usd(trade.price)} × 100`}
+					</text>
+				))}
+			</g>
 			<text
 				data-f="trace-result"
 				x={margin}
-				y={
-					L.traceY +
-					lineCount(
-						`R2 = ${trace}`,
-						room,
-						(narrow ? T.small * 1.05 : T.body) / 0.86,
-					) *
-						(narrow ? T.small * 1.05 : T.body) *
-						1.4
-				}
+				y={L.traceY + R2_TRADES.length * T.body * 1.4}
 				className="wt-film-num wt-film-accent"
-				style={{ fontSize: narrow ? T.small * 1.05 : T.body }}
+				style={{ fontSize: T.body }}
 			>
 				{`= ${dollars(rowPremium(R2 ?? mondayPacket[0]) ?? 0)}`}
 			</text>
@@ -934,16 +925,17 @@ function build(context: FilmContext) {
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
 	rows.forEach((row, i) => {
-		show(row, 9.2 + i * 0.15, "right");
+		show(row, 9.2 + i * 0.1, "right", 0.35);
 	});
-	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-focus-shape" } }, 10.8);
-	show(one("trace"), 11.0);
+	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-focus-shape" } }, 9.95);
+	show(one("trace"), 9.95, "below", 0.25);
 	// The trace comes to R2's figure, which lights with it.
-	show(one("trace-result"), 11.7);
+	// Both body-sized terms and their settled result read together for 10.4–12.4.
+	show(one("trace-result"), 10.2, "below", 0.2);
 	tl.to(
 		one(`row-${r2}-premium`),
 		{ attr: { class: "wt-film-num wt-film-accent" }, duration: 0.2 },
-		11.7,
+		10.2,
 	);
 	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-panel-shape" } }, 12.4);
 	tl.to(
@@ -1039,41 +1031,45 @@ function build(context: FilmContext) {
 		],
 		18.6,
 	);
+	// A compact table entrance leaves more time to establish the exclusions proof
+	// before the lock; the complete fields and initial match retain their reading time.
 	fieldRows.forEach((row, i) => {
-		show(row, 19.4 + i * 0.15, "right");
+		show(row, 18.95 + i * 0.05, "right", 0.35);
 	});
-	show(one("rerun-tag"), 20.4);
-	word(rerunMarks[0], 20.6);
+	show(one("rerun-tag"), 19.55);
+	word(rerunMarks[0], 19.75);
 	// Without the formula: against P1's figure, and why.
-	drop("formula", 21.6);
-	d.flip(rerunMarks[0], rerunMarks[1], 21.8);
-	tl.set(rerunMarks[0], { opacity: 0 }, 22.1);
-	show(one("p1-says"), 21.9);
-	show(one("why-formula"), 22.1);
+	drop("formula", 20.75);
+	d.flip(rerunMarks[0], rerunMarks[1], 20.95);
+	tl.set(rerunMarks[0], { opacity: 0 }, 21.25);
+	show(one("p1-says"), 21.05);
+	show(one("why-formula"), 21.25);
 	// The answer, with the first break.
-	show(heads[3], 22.15);
-	show(one("formula-base"), 22.3, "below", 0.2);
-	show(one("formula-divisor"), 22.8, "below", 0.2);
-	show(one("formula-result"), 23.3, "below", 0.2);
+	show(heads[3], 21.3);
+	show(one("formula-base"), 21.45, "below", 0.2);
+	show(one("formula-divisor"), 21.95, "below", 0.2);
+	show(one("formula-result"), 22.45, "below", 0.2);
 	// Keep the first break's proof separate from the exclusions' after-beat.
 	hide(
 		[one("formula-base"), one("formula-divisor"), one("formula-result")],
-		25.45,
+		24.6,
 		0.15,
 		0,
 	);
 	// Without the exclusions instead.
 	// The fields change while the old figure is folded shut: inputs and output never disagree.
-	restore("formula", 25.85);
-	drop("exclusions", 25.85);
-	d.flip(rerunMarks[1], rerunMarks[2], 25.6);
-	tl.set(rerunMarks[1], { opacity: 0 }, 25.9);
-	d.flip(one("why-formula"), one("why-exclusions"), 25.6);
-	tl.set(one("why-formula"), { opacity: 0 }, 25.9);
+	restore("formula", 25);
+	drop("exclusions", 25);
+	d.flip(rerunMarks[1], rerunMarks[2], 24.75);
+	tl.set(rerunMarks[1], { opacity: 0 }, 25.05);
+	d.flip(one("why-formula"), one("why-exclusions"), 24.75);
+	tl.set(one("why-formula"), { opacity: 0 }, 25.05);
 	// Both contributions land before their field is connected to the breakdown.
-	show(one("extra-cancelled"), 26.4, "below", 0.2);
-	show(one("extra-repeated"), 26.85, "below", 0.2);
-	d.trace(one<SVGPathElement>("exclusions-link"), 27.05, { duration: 0.35 });
+	show(one("extra-cancelled"), 25.55, "below", 0.2);
+	show(one("extra-repeated"), 26, "below", 0.2);
+	d.trace(one<SVGPathElement>("exclusions-link"), 26.2, { duration: 0.35 });
+	// Establish the completed delta before its confirmation; it still holds for 2.05 s.
+	show(one("extra-total"), 27.6, "below", 0.2);
 	// Round the rerun with its label, P1's figure and its reason: no arm runs through a line.
 	d.lock(lockRerun, 27.95, {
 		around: [
@@ -1085,8 +1081,6 @@ function build(context: FilmContext) {
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 27.95);
-	// The lock settles before its after-beat; the completed sum holds for 2.05 s.
-	show(one("extra-total"), 28.45, "below", 0.2);
 	// After the lock, once its reason has been read: the brackets let go, the field goes
 	// back, and the figure is P1's again.
 	hide(
@@ -1097,39 +1091,43 @@ function build(context: FilmContext) {
 			one("extra-total"),
 			one("exclusions-link"),
 		],
-		30.7,
+		29.85,
 	);
-	hide(lockRerun, 30.7);
+	// Recover 0.75 s from the lock window and 0.10 s from its release: 2.00 s from
+	// entry to exit, 1.55 s fully settled, and the same 30.20 s release completion.
+	hide(lockRerun, 29.95, 0.25);
 	// Switch the field only after the old value has folded shut, then cut the fields.
-	tl.set(one("field-exclusions"), { opacity: 1 }, 31.0);
+	tl.set(one("field-exclusions"), { opacity: 1 }, 30.15);
 	// Fold the wrong value away, then reveal the restored value settled for its carry.
 	tl.to(
 		rerunMarks[2],
 		{ scaleY: 0, transformOrigin: "50% 50%", duration: 0.3, ease: "power2.in" },
-		30.7,
+		29.85,
 	);
-	tl.set(one("rerun-back"), { opacity: 1 }, 31.0);
-	tl.set(rerunMarks[2], { opacity: 0 }, 31.0);
+	tl.set(one("rerun-back"), { opacity: 1 }, 30.15);
+	tl.set(rerunMarks[2], { opacity: 0 }, 30.15);
 
 	// ——— log: rerun, or a new question ———
-	tl.addLabel("log", 30.8);
-	d.swap([heads[2], heads[3]], heads[4], 30.8);
-	hide([one("rerun-tag"), one("p1-says")], 30.8);
-	hide(fieldRows, 31.0, 0.15, 0);
+	tl.addLabel("log", 29.95);
+	d.swap([heads[2], heads[3]], heads[4], 29.95);
+	hide([one("rerun-tag"), one("p1-says")], 29.95);
+	hide(fieldRows, 30.15, 0.15, 0);
 	// The rerun's match stays up, then becomes P1's record: the figure a reader got back is
 	// the one the log keeps.
-	show(recs[0], 31.15, "right", 0.05);
-	tl.set(one("rerun-back"), { attr: { class: "wt-film-num" } }, 31.1);
+	// The lock window and release fund 0.4 s for this handoff and 0.45 s for the ending.
+	// The restored match stays green for 30.15–30.55; the panel settles before flight.
+	show(recs[0], 30.3, "right", 0.25);
+	tl.set(one("rerun-back"), { attr: { class: "wt-film-num" } }, 30.55);
 	d.carry(
 		one<SVGGraphicsElement>("rerun-back"),
 		one<SVGGraphicsElement>("rec-0-n"),
-		31.2,
+		30.55,
 		{
-			duration: 0.2,
+			duration: 0.4,
 		},
 	);
 	// The note stays out of the flight lane, then appears with the landed P1 figure.
-	tl.set(one("rec-0-note"), { opacity: 1 }, 31.4);
+	tl.set(one("rec-0-note"), { opacity: 1 }, 30.95);
 	// Equations enter settled; earlier P1/P2 staging funds the longer spread proof.
 	// Every saved result retains its own uninterrupted 1.5 s reading interval.
 	const saveResult = (i: number, saveAt: number) => {
@@ -1145,7 +1143,7 @@ function build(context: FilmContext) {
 		tl.set(operands, { opacity: 0 }, saveAt + 0.2);
 		tl.set(one(`rec-${i}-tag`), { opacity: 1 }, saveAt + 0.2);
 	};
-	// P1 holds 31.4–32.9; P2 equation 32.9–34.4; saved P2 34.6–36.1.
+	// P1 holds 30.95–32.45; P2 equation 32.45–33.95; saved P2 34.15–35.65.
 	tl.set(
 		[
 			recs[1],
@@ -1154,57 +1152,57 @@ function build(context: FilmContext) {
 			one("log-1-result"),
 		],
 		{ opacity: 1 },
-		32.9,
+		32.45,
 	);
-	saveResult(1, 34.4);
-	show(heads[5], 36.1);
+	saveResult(1, 33.95);
+	show(heads[5], 35.65);
 	// P3's note row first identifies the two spread portions, not the entire R2/R3 rows.
 	tl.set(
 		[recs[2], one("log-spread-cause"), one("log-spread-proof")],
 		{ opacity: 1 },
-		36.1,
+		35.65,
 	);
 	// Focus changes only after P2's uninterrupted result hold, including its old cause.
 	tl.to(
 		[recs[0], recs[1], one("log-r5-cause")],
 		{ opacity: 0.45, duration: 0.2 },
-		36.1,
+		35.65,
 	);
-	// The complete two-leg sum holds 36.1–38.1 (2 s). Its total stays inside P3, clear
+	// The complete two-leg sum holds 35.65–37.65 (2 s). Its total stays inside P3, clear
 	// of the header and border; neighboring text steps back before the short flight.
-	tl.set([one("log-spread-r2"), one("log-spread-r3")], { opacity: 0.2 }, 38.1);
+	tl.set([one("log-spread-r2"), one("log-spread-r3")], { opacity: 0.2 }, 37.65);
 	d.carry(
 		one<SVGGraphicsElement>("log-spread-total"),
 		one<SVGGraphicsElement>("log-2-operand"),
-		38.1,
+		37.65,
 		{ duration: 0.2, arc: "x" },
 	);
-	tl.set(one("log-spread-proof"), { opacity: 0 }, 38.3);
+	tl.set(one("log-spread-proof"), { opacity: 0 }, 37.85);
 	// Reveal the subtraction only with its settled operand: no incomplete equality.
 	tl.set(
 		[one("log-2-expression"), one("log-2-equals"), one("log-2-result")],
 		{ opacity: 1 },
-		38.3,
+		37.85,
 	);
-	saveResult(2, 40.3);
-	tl.set(one("rec-2-note"), { opacity: 1 }, 40.5);
+	saveResult(2, 39.85);
+	tl.set(one("rec-2-note"), { opacity: 1 }, 40.05);
 
 	// ——— claim ———
-	tl.addLabel("claim", 42.0);
+	tl.addLabel("claim", 41.55);
 	hide(
 		[heads[4], heads[5], ...recs, one("log-r5-cause"), one("log-spread-cause")],
-		42.0,
+		41.55,
 	);
-	word(one("z-big"), 42.3);
-	show(one("z-sub"), 42.7);
+	word(one("z-big"), 41.85);
+	show(one("z-sub"), 42.25);
 
 	// ——— next ———
-	tl.addLabel("next", 46.4);
-	hide(kids("claim"), 46.4);
-	// One compact entrance after the claim clears; the complete card holds 0.55 s.
+	tl.addLabel("next", 45.95);
+	hide(kids("claim"), 45.95);
+	// One compact entrance after the claim clears; the complete card holds 1 s.
 	d.hidden(kids("end"));
-	show(kids("end"), 46.75, "below", 0.2);
-	tl.to({}, { duration: END - 46.95 }, 46.95);
+	show(kids("end"), 46.3, "below", 0.2);
+	tl.to({}, { duration: END - 46.5 }, 46.5);
 	// Retain the kit's 4 s source / 2 s player title-card convention.
 	tl.shiftChildren(-2, true, 3.99);
 	return tl;
