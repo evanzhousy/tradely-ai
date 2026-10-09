@@ -39,13 +39,13 @@ import {
  *   open      0–4        "Research questions"
  *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
- *   answer    17.6–31.2  hero: five strikes; observed; calculated; interpretation; the
+ *   answer    17.6–31.8  hero: five strikes; observed; calculated; interpretation; the
  *                        split, labelled and connected; struck through; locked; then the gap
- *   log       31.2–41.0  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
+ *   log       31.8–41.75 record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
  *                        ≤ 51% → 540 ÷ 1,095 ≈ 49%; read the revision, then calls → puts
  *                        opens record 2 and clears the calls proof
- *   claim     41.0–45.3  a question someone else can check
- *   next      45.3–47.0  Next: comparison groups
+ *   claim     41.75–46.05 a question someone else can check
+ *   next      46.05–47.0 Next: comparison groups
  */
 
 const END = 47;
@@ -1036,12 +1036,13 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 27.7);
 	show(heads[2], 27.7);
 	// After the lock, once it has been seen: what the data doesn't hold.
-	show(claimRows[4], 29.1, "right");
-	stamp(tags[4], 29.5);
+	// Both the lock and its answer settle by 28.2: leave 1.5 s exclusively for them.
+	show(claimRows[4], 29.7, "right");
+	stamp(tags[4], 30.1);
 
 	// ——— log: revise, or start anew ———
-	tl.addLabel("log", 31.2);
-	d.swap([heads[1], heads[2]], heads[3], 31.2);
+	tl.addLabel("log", 31.8);
+	d.swap([heads[1], heads[2]], heads[3], 31.8);
 	hide(
 		[
 			...strikes.filter((_, i) => SERIES[i].volume !== null),
@@ -1052,9 +1053,11 @@ function build(context: FilmContext) {
 			one("story-strike"),
 			lockClaim,
 		],
-		31.2,
+		31.8,
+		0.25,
 	);
-	show(recs[0], 31.45, "right");
+	// The outgoing chart is fully gone before any record glyph can enter its region.
+	show(recs[0], 32.05, "right");
 	// Preserve the named, missing 120 row while the rest of the hero leaves.
 	const missingIndex = SERIES.findIndex((row) => row.volume === null);
 	const rowBaseline =
@@ -1064,12 +1067,12 @@ function build(context: FilmContext) {
 	tl.to(
 		strikes[missingIndex],
 		{ x: 16, y: L.lateY - rowBaseline, duration: 0.65, ease: "power3.inOut" },
-		31.55,
+		31.8,
 	);
 	// The ghost becomes Tuesday's delivered series at the same baseline and state label.
 	hide(
 		[one("missing-series-ghost"), one("missing-series-state")],
-		32.5,
+		32.45,
 		0.1,
 		0,
 	);
@@ -1077,79 +1080,98 @@ function build(context: FilmContext) {
 		one("late-volume"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.25 },
-		32.5,
+		32.45,
 	);
 	tl.fromTo(
 		one("late-day"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.25 },
-		32.6,
+		32.45,
 	);
 	// The delivered series adds to coverage; only the settled sum is shown after "=".
-	show(one("rev-scope"), 33.65, "right", 0.25);
-	show(one("rev-base"), 33.1, "right", 0.25);
-	show(one("rev-bound"), 33.1, "right", 0.25);
-	show(one("rev-plus"), 33.4, "right", 0.25);
+	// Volume and its date settle together at 32.7, a second before construction starts.
+	// Group the operands, then the settled relationships; keep the original entrance
+	// durations instead of flashing each token to buy the proof's reading interval.
+	show(
+		[one("rev-base"), one("rev-bound"), one("rev-plus")],
+		33.7,
+		"right",
+		0.25,
+	);
 	d.carry(
 		one<SVGGraphicsElement>("late-volume"),
 		one<SVGGraphicsElement>("rev-add"),
-		33.35,
+		33.95,
 		{ duration: 0.3, arc: "x", keep: true },
 	);
-	show([one("rev-equals"), one("rev-total")], 33.8, "right", 0.25);
+	show(one("rev-scope"), 34.25, "right", 0.25);
+	show([one("rev-equals"), one("rev-total")], 34.25, "right", 0.25);
 	show(
 		[
 			one("rev-share-arrow"),
 			one("rev-numerator"),
 			one("rev-divide"),
 			one("rev-denominator"),
+			one("rev-approx"),
+			one("rev-share"),
 		],
-		34.1,
+		34.25,
 		"below",
 		0.25,
 	);
-	show([one("rev-approx"), one("rev-share")], 34.4, "below", 0.25);
 	// …and rises into its answer: record 1 turns over in place, caused, and keeps the stage.
-	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, 34.4);
+	// The proof settles by 34.5, and the kept source returns to full opacity by 34.55.
+	// Allow a full quiet second after both before any card change competes.
+	const reviseAt = 35.55;
+	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, reviseAt);
 	// Preserve the original answer's 3.5 s hold before it changes.
-	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, 35);
+	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, reviseAt + 0.1);
 	d.carry(
 		one<SVGGraphicsElement>("late-volume"),
 		one<SVGGraphicsElement>("rev-late-volume"),
-		35.05,
+		35.8,
 		{ duration: 0.4 },
 	);
 	// Reveal the prefix on landing, so the flying digits never pass its settled glyphs.
-	hide(strikes[missingIndex], 35.05, 0.25, 0);
-	tl.set(one("rev-late"), { opacity: 1 }, 35.45);
-	hide(one("late-day"), 35.05);
-	d.flip(one("rec-0-title"), revs[0], 34.8);
-	tl.set(one("rec-0-title"), { opacity: 0 }, 35.1);
-	d.flip(one("rec-0-tag"), revs[1], 34.8);
-	tl.set(one("rec-0-tag"), { opacity: 0 }, 35.1);
+	hide(strikes[missingIndex], 35.8, 0.25, 0);
+	tl.set(one("rev-late"), { opacity: 1 }, 36.2);
+	hide(one("late-day"), 35.8);
+	d.flip(one("rec-0-title"), revs[0], reviseAt);
+	tl.set(one("rec-0-title"), { opacity: 0 }, reviseAt + 0.3);
+	d.flip(one("rec-0-tag"), revs[1], reviseAt);
+	tl.set(one("rec-0-tag"), { opacity: 0 }, reviseAt + 0.3);
 	// The answer writes the result only after the denominator and share have settled.
-	tl.set(one("rev-answer"), { opacity: 1 }, 35.45);
+	tl.set(one("rev-answer"), { opacity: 1 }, 36.2);
 	// A new question: a new record, once the revision has been read.
 	// Clear record 1's proof before record 2 can compete with its scope.
-	hide(kids("rev-proof"), 37.2, 0.25, 0);
-	show(recs[1], 37.5, "right");
-	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 37.5);
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 37.5);
-	show(heads[4], 37.5);
-	show([one("rec-0-universe"), one("universe-kept")], 37.9, "right", 0.3);
-	show(one("universe-arrow"), 38.1, "right", 0.3);
-	show([one("rec-1-universe"), one("universe-new")], 38.35, "right", 0.3);
+	hide(kids("rev-proof"), 37.95, 0.25, 0);
+	show(recs[1], 38.25, "right");
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 38.25);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 38.25);
+	show(heads[4], 38.25);
+	show([one("rec-0-universe"), one("universe-kept")], 38.65, "right", 0.3);
+	show(one("universe-arrow"), 38.85, "right", 0.3);
+	show([one("rec-1-universe"), one("universe-new")], 39.1, "right", 0.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 41);
-	hide([heads[3], heads[4], ...recs, ...revs, ...kids("universe-change")], 41);
-	word(one("z-big"), 41.3);
-	show(one("z-sub"), 41.7);
+	tl.addLabel("claim", 41.75);
+	hide(
+		[heads[3], heads[4], ...recs, ...revs, ...kids("universe-change")],
+		41.75,
+	);
+	word(one("z-big"), 42.05);
+	show(one("z-sub"), 42.45);
 
 	// ——— next ———
-	tl.addLabel("next", 45.3);
-	hide(kids("claim"), 45.3);
-	d.close(45.3);
+	tl.addLabel("next", 46.05);
+	hide(kids("claim"), 46.05);
+	// Keep the kit's trailing duration anchor at END; its stagger is retimed below.
+	d.close(END - 1.1);
+	// Spend the ending's stagger on the two reading pauses, keeping its old 46.9
+	// settlement. close() has already shifted the labels into player time.
+	for (const tween of tl.getTweensOf(kids("end"))) {
+		tween.duration(0.45).startTime(tl.labels.next + 0.4);
+	}
 	return tl;
 }
 
