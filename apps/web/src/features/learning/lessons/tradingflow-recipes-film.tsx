@@ -56,7 +56,8 @@ import {
  *   catalog   9.6–15.8   three kinds; the screen
  *   session   15.8–29.6  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
  *   completed 29.6–35.65 Mon 16:00 holds, then 16:30 → Monday: the latest completed session
- *   fork      35.65–45.4 Edit with AI; your private copy; a colleague's view; cut: the claim
+ *   fork      35.65–41.0 official + colleague; inherited copy travels; your edit
+ *   claim     41.0–45.4 Pick by the question; read the session
  *   next      45.4–47.4  Next: read a recipe like an auditor
  */
 
@@ -282,21 +283,48 @@ function Scene({
 	const qTop = H * 0.48 - ((qRows - 1) * qSize * 1.35) / 2;
 	const headerLine = (i: number) =>
 		L.headerY + L.headerH * (i === 0 ? 0.2 : i === 1 ? 0.6 : 0.88);
-	const card = (side: "official" | "copy") => {
+	const card = (side: "official" | "copy" | "transfer") => {
+		const privateCard = side !== "official";
 		const x = L.cardX(side === "official" ? 0 : 1);
 		const C = L.cardType;
 		const line = (i: number) => L.forkTop + C.pad + C.title + i * C.step;
 		const spotlight =
 			side === "copy" ? copy.spotlightCopy : copy.spotlightOfficialShort;
 		return (
-			<g data-f={`fork-${side}`}>
+			<g data-f={side === "transfer" ? "copy-frame" : `fork-${side}`}>
+				{side === "transfer" ? (
+					<defs>
+						{/* Leave the stationary official ownership row clear during departure. */}
+						<clipPath
+							id={`${id}-copy-owner-lane`}
+							clipPathUnits="userSpaceOnUse"
+						>
+							<rect
+								x={x - 2}
+								y={L.forkTop - 2}
+								width={L.half + 4}
+								height={line(1) - C.size * 1.2 - 6 - L.forkTop + 2}
+							/>
+							<rect
+								x={x - 2}
+								y={line(1) + C.size * 0.3 + 6}
+								width={L.half + 4}
+								height={L.forkTop + C.height - line(1) - C.size * 0.3 - 4}
+							/>
+						</clipPath>
+					</defs>
+				) : null}
 				<rect
 					x={x}
 					y={L.forkTop}
 					width={L.half}
 					height={C.height}
 					rx={12}
-					className={side === "copy" ? "wt-focus-shape" : "wt-panel-shape"}
+					className={privateCard ? "wt-focus-shape" : "wt-panel-shape"}
+					style={side === "transfer" ? { fill: "none" } : undefined}
+					clipPath={
+						side === "transfer" ? `url(#${id}-copy-owner-lane)` : undefined
+					}
 				/>
 				<text
 					x={x + C.pad}
@@ -309,7 +337,7 @@ function Scene({
 				<Lines
 					name={`owner-${side}`}
 					text={t(
-						side === "copy"
+						privateCard
 							? copy.private
 							: narrow
 								? copy.officialShort
@@ -320,7 +348,7 @@ function Scene({
 					anchor="start"
 					maxWidth={L.half - 2 * C.pad}
 					size={C.size}
-					className={`wt-film-type ${side === "copy" ? "wt-film-accent" : "wt-film-dim"}`}
+					className={`wt-film-type ${privateCard ? "wt-film-accent" : "wt-film-dim"}`}
 				/>
 				{!narrow
 					? chapters.map((chapter, i) => (
@@ -713,18 +741,8 @@ function Scene({
 					<g data-f="fork">
 						{card("official")}
 						{card("copy")}
-						{/* What Edit with AI copies: the card's frame, sliding out of the official one. */}
-						<rect
-							data-f="copy-frame"
-							x={L.cardX(1)}
-							y={L.forkTop}
-							width={L.half}
-							height={L.cardType.height}
-							rx={12}
-							className="wt-focus-shape"
-							// An outline only: the official card's text shows through as it leaves.
-							style={{ fill: "none" }}
-						/>
+						{/* A complete inherited card travels; its geometry and type match the fork. */}
+						{card("transfer")}
 						<g data-f="edit-chip">
 							<rect
 								x={L.cardX(0)}
@@ -982,6 +1000,7 @@ function build(context: FilmContext) {
 		one("fork-official"),
 		one("fork-copy"),
 		one("copy-frame"),
+		one("owner-transfer"),
 		one("spot-copy"),
 		one("edit-chip"),
 		one("viewer"),
@@ -1004,7 +1023,7 @@ function build(context: FilmContext) {
 		lockSession,
 		...kids("claim"),
 	]);
-	// The copy's frame starts on the official card.
+	// The inherited-content proxy starts on the official card.
 	gsap.set(one("copy-frame"), { x: -(L.half + L.gap) });
 
 	// ——— open ———
@@ -1251,6 +1270,11 @@ function build(context: FilmContext) {
 	show(one("latest-mon"), 25.8);
 	// The hero: Monday morning's report shows Friday.
 	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
+	// A film-local snap settles at 28.1, leaving 1.5 quiet seconds before
+	// the completion beat. Keep the kit and the coordinated clock timing unchanged.
+	for (const tween of tl.getTweensOf(lockSession)) {
+		if (tween.startTime() === 28.0 && tween.duration() > 0) tween.duration(0.1);
+	}
 	tl.addLabel("hero-lock", 28.0);
 	show(one("m2-head"), 26.1);
 	tl.to(one("ran-mon"), { opacity: 0.85, duration: 0.4 }, 26.5);
@@ -1259,10 +1283,12 @@ function build(context: FilmContext) {
 	tl.addLabel("completed", 29.6);
 	// The lock releases before its Friday result changes. All the original Friday
 	// headlines have their full holds; the moving clock fills only traded minutes.
-	hide(lockSession, 29.5, 0.1, 0);
+	// The bracket settles at 28.1; no mark exits or arrives before 29.6.
+	hide(lockSession, 29.6, 0.1, 0);
 	hide(one("m-head"), 29.6);
 	hide(one("m2-head"), 29.7);
-	hide(one("mon-elapsed"), 29.4, 0.2, 0);
+	// Replace the elapsed label atomically when the advancing clock starts.
+	hide(one("mon-elapsed"), 29.6, 0, 0);
 	hide([one("trading-mon"), one("latest-mon")], 29.6, 0.2, 0);
 	const clock = { at: MONDAY.at };
 	const readout = one<SVGTextElement>("completion-clock");
@@ -1363,29 +1389,41 @@ function build(context: FilmContext) {
 	// ——— fork: official and yours ———
 	tl.addLabel("fork", 35.65);
 	hide(one("after-close-head"), 35.65);
-	sink(35.65);
-	tl.set(one("calendar"), { opacity: 0 }, 36.05);
-	tl.set(one("fork"), { opacity: 1 }, 36.05);
-	rise(36.1);
-	show(one("fork-official"), 36.05, "below", 0.35);
-	land(one("edit-chip"), 36.05, 0.35);
-	// Edit with AI: the card's frame slides out of the official one and becomes your copy,
-	// its own label and its changed spotlight in the accent.
-	tl.set(one("copy-frame"), { opacity: 1 }, 36.4);
-	tl.to(one("copy-frame"), { x: 0, duration: 0.4, ease: "power2.inOut" }, 36.4);
-	show(one("f-head"), 36.4, "above");
-	tl.to(one("fork-copy"), { opacity: 1, duration: 0.15 }, 36.8);
-	tl.set(one("copy-frame"), { opacity: 0 }, 36.95);
-	// Establish both viewers before the inherited-content pause begins.
-	land(one("viewer"), 36.4);
-	show(one("viewer-you"), 36.45);
-	// A colleague opens the same recipe: the official one.
-	show(one("c-head"), 36.45);
-	land(one("viewer-colleague-dot"), 36.4);
-	show(one("viewer-colleague"), 36.45);
-	// The cards, viewers, headlines and depth have all settled by 36.95.
-	// Keep the inherited content quiet for one second, then settle ALFA at
-	// 38.6 so the completed edit reads for 2.4 seconds before the claim cut.
+	// Cut the chart layer in place instead of sinking and rising it again. This
+	// recovers the construction time without shortening the preceding sentence.
+	tl.set(one("calendar"), { opacity: 0 }, 35.65);
+	tl.set(one("fork"), { opacity: 1 }, 35.65);
+	show(one("fork-official"), 35.65, "below", 0.35);
+	// The chip is a group: fade it in place rather than scaling its SVG children.
+	tl.to(one("edit-chip"), { opacity: 1, duration: 0.35 }, 35.65);
+	// Establish the colleague on the official recipe before making the private copy.
+	land(one("viewer-colleague-dot"), 36.0, 0.15);
+	show(one("viewer-colleague"), 36.0, "above", 0.15);
+	show(one("c-head"), 36.15, "above", 0.35);
+	// Keep ownership continuously readable. Only the other source marks step back;
+	// the transparent proxy has no ownership text or outline across that row.
+	const departureMarks = [
+		...kids("fork-official").filter((mark) => mark !== one("owner-official")),
+		one("viewer-colleague-dot"),
+	];
+	tl.to(departureMarks, { opacity: 0.25, duration: 0.1 }, 36.05);
+	tl.set(one("copy-frame"), { opacity: 1 }, 36.15);
+	tl.to(
+		one("copy-frame"),
+		{ x: 0, duration: 0.6, ease: "power2.inOut" },
+		36.15,
+	);
+	// An atomic handoff of the title, chapters and inherited spotlight in matching type
+	// and geometry. Private ownership appears only now, on the landed fork.
+	tl.set(one("fork-copy"), { opacity: 1 }, 36.75);
+	tl.set(one("copy-frame"), { opacity: 0 }, 36.75);
+	tl.to(departureMarks, { opacity: 1, duration: 0.2 }, 36.75);
+	// Only the landed, populated copy receives its viewer and explanation.
+	land(one("viewer"), 36.75, 0.2);
+	show(one("viewer-you"), 36.75, "above", 0.2);
+	show(one("f-head"), 36.75, "above", 0.2);
+	// Every construction mark settles by 36.95. Preserve the one-second
+	// identical-content pause and the 2.4-second settled ALFA payoff.
 	d.flip(one("spot-copy-was"), one("spot-copy"), 37.95);
 	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.25);
 	// Cut: the claim.
