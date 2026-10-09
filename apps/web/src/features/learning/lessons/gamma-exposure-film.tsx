@@ -49,7 +49,8 @@ import {
  *   open      0–4        "GEX"
  *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts?
  *   chain     8.9–18.65  0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
- *   profile   18.65–33.75 dealers assumed calls + / puts −; net bars settled at 19.65,
+ *   profile   18.65–33.75 +$665k carries to the 110 call; dealers assumed calls + / puts −;
+ *                        net bars settled at 19.65,
  *                        meter settled at 20; cut at 22.5: the sides
  *                        end to end, $4.10M settled 24.45–28; side by side, the −$512k sliver,
  *                        locked; then how
@@ -153,6 +154,7 @@ const copy = {
 	],
 	contract: [`Oct 18 ${FOCUS_STRIKE} call`, `10月18日 ${FOCUS_STRIKE} 看涨`],
 	sameInputs: ["same inputs", "相同输入"],
+	included: ["Outlined: included", "描边：计入"],
 	trackGross: [`${money(GROSS, false)} gross`, `总幅度 ${money(GROSS, false)}`],
 	tGamma: ["gamma, model, per $1", "Gamma（模型），每 $1"],
 	tOi: ["× open interest, Friday's close", "× 未平仓量（周五收盘）"],
@@ -235,12 +237,27 @@ function Scene({
 	/** The chain rows: a tag on the left, the figure on the right. */
 	const rowY = (i: number) =>
 		H * (narrow ? 0.34 : 0.3) + i * H * (narrow ? 0.12 : 0.115);
-	const { figure, figX, inputsX } = signComparison(L);
+	const { figure, figX, longX, inputsX } = signComparison(L);
 	// The figures close to their tags, so each row reads as one line.
 	const tagX = L.margin;
 	const shareLabel = (text: string) =>
 		locale === "zh" ? text.replace("shares/$1", "股/$1") : text;
 	const missingIndex = STRIKES.indexOf(Number(MISSING[0].replace("P", "")));
+	const focusIndex = STRIKES.indexOf(FOCUS_STRIKE);
+	const callOutline = (strike: number, name: string) => (
+		<rect
+			key={name}
+			data-f={name}
+			x={L.barX(STRIKES.indexOf(strike)) - L.barWidth / 2 - 2}
+			y={L.y(contribution(strike, "call")) - 2}
+			width={L.barWidth + 4}
+			height={L.y(0) - L.y(contribution(strike, "call")) + 4}
+			rx={3}
+			fill="none"
+			stroke="var(--diagram-accent)"
+			strokeWidth={1.5}
+		/>
+	);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -310,6 +327,13 @@ function Scene({
 								rx={2}
 							/>
 						))}
+						{callOutline(FOCUS_STRIKE, "p-focus-outline")}
+						{TRADED.map((contract) =>
+							callOutline(
+								Number(contract.slice(0, -1)),
+								`t-outline-${contract}`,
+							),
+						)}
 						<g data-f="missing">
 							<rect
 								x={L.barX(missingIndex) - L.barWidth / 2 - 2}
@@ -330,6 +354,48 @@ function Scene({
 						</g>
 					</g>
 				</g>
+			</g>
+			{/* Untransformed proxy at the long result's settled comparison position. */}
+			<Word
+				name="c-profile-source"
+				x={longX}
+				y={rowY(4) + figure * 2}
+				size={figure * 1.5}
+				anchor="end"
+				className="wt-film-num wt-film-dim"
+			>
+				{money(LONG)}
+			</Word>
+			<Word
+				name="p-focus-value"
+				x={L.barX(focusIndex)}
+				y={L.y(LONG) - 14}
+				size={T.small}
+				className="wt-film-num wt-film-dim"
+			>
+				{`${FOCUS_STRIKE}${locale === "zh" ? "看涨" : "C"} ${money(LONG)}`}
+			</Word>
+			<g data-f="t-key">
+				<rect
+					x={L.left}
+					y={L.bottom + T.small + 18}
+					width={12}
+					height={10}
+					rx={2}
+					fill="none"
+					stroke="var(--diagram-accent)"
+					strokeWidth={1.5}
+				/>
+				<Word
+					name="t-key-label"
+					x={L.left + 20}
+					y={L.bottom + T.small + 28}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.included)}
+				</Word>
 			</g>
 			{/* These notes stay at full size while the chart rises and sinks. */}
 			<g data-f="chart-notes">
@@ -735,6 +801,11 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		...STRIKES.map((_, i) => one(`net-${i}`)),
+		one("c-profile-source"),
+		one("p-focus-value"),
+		one("p-focus-outline"),
+		...TRADED.map((contract) => one(`t-outline-${contract}`)),
+		one("t-key"),
 		one("missing"),
 		...kids("meter"),
 		...kids("chart-notes"),
@@ -801,10 +872,24 @@ function build(context: FilmContext) {
 
 	// ——— profile: the whole chain, calls up, puts down ———
 	tl.addLabel("profile", 18.65);
-	hide([...flat("chain"), one("s-head")], 18.65);
+	// Clear the flight lane while the same +$665k becomes the 110-call label.
+	// A rest-position proxy avoids carrying the transformed comparison result.
+	const chainExit = [...flat("chain"), one("s-head")].filter(
+		(mark) => mark !== one("c-long"),
+	);
+	tl.set(chainExit, { opacity: 0.22 }, 18.65);
+	hide(chainExit, 18.65);
+	tl.set(one("c-long"), { opacity: 0 }, 18.65);
+	d.carry(
+		one<SVGGraphicsElement>("c-profile-source"),
+		one<SVGGraphicsElement>("p-focus-value"),
+		18.65,
+		{ duration: 0.4, arc: "y", match: money(LONG) },
+	);
 	show(kids("chart-notes"), 18.95, "above", 0.25);
 	show(one("p-head"), 19, "above");
 	rise(19.05);
+	tl.set(one("p-focus-outline"), { opacity: 1 }, 19.05);
 	// The settled sides are a faint reference; only the net profile draws in.
 	// Removing the separate sides entrance and strike stagger buys reading time.
 	STRIKES.forEach((strike) => {
@@ -836,6 +921,7 @@ function build(context: FilmContext) {
 	// side by side, the net.
 	// Keep the profile headline for 3.5 s and preserve the gross's 3.55 s hold.
 	d.swap(one("p-head"), one("w1-head"), 22.5);
+	hide([one("p-focus-value"), one("p-focus-outline")], 22.5, 0.35, 0);
 	hide(kids("chart-notes"), 22.5);
 	sink(22.5);
 	const callsSide = one("two-calls");
@@ -933,9 +1019,24 @@ function build(context: FilmContext) {
 	// full-chain reading absent; reveal a dedicated, settled traded-only value.
 	const tradedMeter = one("m-value-traded");
 	show([one("m-tag-net"), tradedMeter], 34.75, "above", 0.25);
+	// Selection has its own encoding, alongside the unchanged dealer convention.
+	tl.to(
+		[one("t-key"), ...TRADED.map((contract) => one(`t-outline-${contract}`))],
+		{ opacity: 1, duration: 0.25 },
+		34.75,
+	);
 	// Back to the whole chain, but the 95 put never arrived.
 	hide([one("m-tag-net"), tradedMeter], 37.45, 0.25, 0);
 	d.swap(one("t-head"), one("x-head"), 37.7);
+	hide(
+		[one("t-key"), ...TRADED.map((contract) => one(`t-outline-${contract}`))],
+		37.7,
+		0.35,
+		0,
+	);
+	// Membership changes only once the traded-only headline and key have cleared.
+	// Overlap hatch and restoration, reclaiming the old 0.3 s stagger and 0.05 s
+	// post-settlement gap; the subtotal still arrives at 38.45 after both settle.
 	tl.to(
 		STRIKES.flatMap((strike) =>
 			(["call", "put"] as const)
@@ -943,12 +1044,12 @@ function build(context: FilmContext) {
 				.map((side) => bar(strike, side)),
 		),
 		{ opacity: 1, duration: 0.4 },
-		37.7,
+		38.05,
 	);
 	MISSING.forEach((missing) => {
-		tl.to(one(`bar-${missing}`), { opacity: 0, duration: 0.3 }, 37.7);
+		tl.set(one(`bar-${missing}`), { opacity: 0 }, 38.05);
 	});
-	tl.to(one("missing"), { opacity: 1, duration: 0.4 }, 38);
+	tl.to(one("missing"), { opacity: 1, duration: 0.4 }, 38.05);
 	// The gap and all included contracts are settled before this subtotal appears.
 	show([one("m-tag-known"), one("m-value-known")], 38.45, "above", 0.25);
 	// Cut: the claim.
