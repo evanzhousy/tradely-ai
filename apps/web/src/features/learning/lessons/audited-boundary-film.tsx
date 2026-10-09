@@ -91,6 +91,7 @@ function layout(width: number) {
 		lateY: H * (narrow ? 0.49 : 0.47) + frame.type.body * 1.8,
 		proofSize: narrow ? frame.type.head : frame.type.num,
 		proofY: (i: number) => H * (narrow ? 0.73 : 0.78) + i * H * 0.08,
+		universeY: (i: number) => H * (narrow ? 0.77 : 0.78) + i * H * 0.08,
 	};
 }
 
@@ -192,8 +193,8 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 ];
 
 /** Record 1, once Tuesday's data is in: its title, answer and tag turn over in place. */
-/** Tuesday's figure for the 120 call, as record 1's revised answer writes it. */
-const LATE_TEXT: Copy = [`120: ${LATE}`, `120：${LATE}`];
+/** The saved series label stays separate from its continuously carried mono digits. */
+const LATE_PREFIX: Copy = ["120:", "120："];
 const revised = {
 	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
 	shortAnswer: [
@@ -279,10 +280,11 @@ function Scene({
 	const id = useId().replace(/:/g, "");
 	const leaderRow = SERIES.indexOf(LEADER);
 	const answerSize = L.answerSize;
-	const lateW = textWidth(
-		t(LATE_TEXT),
-		answerSize * (locale === "zh" ? 0.95 : 0.86),
-	);
+	const lateNumberX =
+		margin +
+		16 +
+		textWidth(t(LATE_PREFIX), answerSize * (locale === "zh" ? 0.95 : 0.86)) +
+		answerSize * 0.22;
 	const proofX = margin + 16;
 	const proofParts = [count(COVERED), "+", count(LATE), "=", count(WITH_LATE)];
 	const proofNames = [
@@ -674,16 +676,6 @@ function Scene({
 				>
 					{count(LATE)}
 				</Word>
-				{/* Under record 1, where record 2 will be: it rises straight into the answer line. */}
-				<text
-					data-f="late-n"
-					x={margin + 16}
-					y={L.lateY}
-					className="wt-film-type wt-film-accent"
-					style={{ fontSize: answerSize }}
-				>
-					{t(LATE_TEXT)}
-				</text>
 				<text
 					data-f="late-day"
 					x={L.barX + L.barMax * 0.3 + 24}
@@ -738,7 +730,7 @@ function Scene({
 				<Word
 					name="rec-0-universe"
 					x={margin + room * 0.22}
-					y={L.proofY(0)}
+					y={L.universeY(0)}
 					size={L.proofSize}
 				>
 					{t(copy.calls)}
@@ -746,7 +738,7 @@ function Scene({
 				<Word
 					name="universe-arrow"
 					x={margin + room * 0.48}
-					y={L.proofY(0)}
+					y={L.universeY(0)}
 					size={L.proofSize}
 					className="wt-film-num"
 				>
@@ -755,7 +747,7 @@ function Scene({
 				<Word
 					name="rec-1-universe"
 					x={margin + room * 0.74}
-					y={L.proofY(0)}
+					y={L.universeY(0)}
 					size={L.proofSize}
 					className="wt-film-type wt-film-accent"
 				>
@@ -764,7 +756,7 @@ function Scene({
 				<Word
 					name="universe-kept"
 					x={margin + room * 0.22}
-					y={L.proofY(1)}
+					y={L.universeY(1)}
 					size={T.small}
 					className="wt-film-tag"
 				>
@@ -773,7 +765,7 @@ function Scene({
 				<Word
 					name="universe-new"
 					x={margin + room * 0.74}
-					y={L.proofY(1)}
+					y={L.universeY(1)}
 					size={T.small}
 					className="wt-film-tag wt-film-accent"
 				>
@@ -808,11 +800,27 @@ function Scene({
 					className="wt-film-type wt-film-accent"
 					style={{ fontSize: answerSize }}
 				>
-					{t(LATE_TEXT)}
+					{t(LATE_PREFIX)}
 				</text>
+				<Word
+					name="rev-late-volume"
+					x={lateNumberX}
+					y={L.recY(0) + L.recH(0) * (narrow ? 0.65 : 0.82)}
+					size={answerSize}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{count(LATE)}
+				</Word>
 				<text
 					data-f="rev-answer"
-					x={margin + 16 + (narrow ? 0 : lateW)}
+					x={
+						narrow
+							? margin + 16
+							: lateNumberX +
+								textWidth(count(LATE), answerSize) +
+								answerSize * 0.3
+					}
 					y={L.recY(0) + L.recH(0) * (narrow ? 0.87 : 0.82)}
 					className={`wt-film-type ${narrow ? "" : "wt-film-accent"}`}
 					style={{ fontSize: answerSize, fontWeight: narrow ? 600 : undefined }}
@@ -882,9 +890,13 @@ function build(context: FilmContext) {
 	const recs = records.map((_, i) => one(`rec-${i}`));
 	const lockClaim = one<SVGGraphicsElement>("lock-claim");
 	const tags = claims.map((_, i) => one(`claim-${i}-tag`));
-	const revs = ["rev-title", "rev-tag", "rev-late", "rev-answer"].map((name) =>
-		one(name),
-	);
+	const revs = [
+		"rev-title",
+		"rev-tag",
+		"rev-late",
+		"rev-late-volume",
+		"rev-answer",
+	].map((name) => one(name));
 
 	d.hidden([
 		...flat("q"),
@@ -920,9 +932,14 @@ function build(context: FilmContext) {
 	gsap.set(one("q-subject"), {
 		attr: { x: subjectStart.x, y: subjectStart.y },
 	});
+	// Measure the prefix and mono digits independently; carries land in the source's face.
+	const prefixBox = one<SVGTextElement>("rev-late").getBBox();
+	gsap.set(one("rev-late-volume"), {
+		attr: { x: prefixBox.x + prefixBox.width + L.answerSize * 0.22 },
+	});
 	// Only the wide answer remains inline; the phone saves two separate body-sized lines.
 	if (!L.narrow) {
-		const answerBox = one<SVGTextElement>("rev-late").getBBox();
+		const answerBox = one<SVGTextElement>("rev-late-volume").getBBox();
 		gsap.set(one("rev-answer"), {
 			attr: { x: answerBox.x + answerBox.width + L.answerSize * 0.3 },
 		});
@@ -1019,8 +1036,8 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 27.7);
 	show(heads[2], 27.7);
 	// After the lock, once it has been seen: what the data doesn't hold.
-	show(claimRows[4], 28.6, "right");
-	stamp(tags[4], 29);
+	show(claimRows[4], 29.1, "right");
+	stamp(tags[4], 29.5);
 
 	// ——— log: revise, or start anew ———
 	tl.addLabel("log", 31.2);
@@ -1079,9 +1096,6 @@ function build(context: FilmContext) {
 		33.35,
 		{ duration: 0.3, arc: "x", keep: true },
 	);
-	// The evidence keeps its identity, then becomes the same-face saved-answer chip.
-	tl.set([strikes[missingIndex], one("late-volume")], { opacity: 0 }, 34.05);
-	tl.set(one("late-n"), { opacity: 1 }, 34.05);
 	show([one("rev-equals"), one("rev-total")], 33.8, "right", 0.25);
 	show(
 		[
@@ -1100,11 +1114,14 @@ function build(context: FilmContext) {
 	// Preserve the original answer's 3.5 s hold before it changes.
 	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, 35);
 	d.carry(
-		one<SVGGraphicsElement>("late-n"),
-		one<SVGGraphicsElement>("rev-late"),
+		one<SVGGraphicsElement>("late-volume"),
+		one<SVGGraphicsElement>("rev-late-volume"),
 		35.05,
 		{ duration: 0.4 },
 	);
+	// Reveal the prefix on landing, so the flying digits never pass its settled glyphs.
+	hide(strikes[missingIndex], 35.05, 0.25, 0);
+	tl.set(one("rev-late"), { opacity: 1 }, 35.45);
 	hide(one("late-day"), 35.05);
 	d.flip(one("rec-0-title"), revs[0], 34.8);
 	tl.set(one("rec-0-title"), { opacity: 0 }, 35.1);
