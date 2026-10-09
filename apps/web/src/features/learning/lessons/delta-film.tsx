@@ -61,6 +61,7 @@ const UP = 10;
 const DOWN = -10;
 const END = 47.4;
 const PHONE_ASIDE_SCALE = 0.62;
+const PHONE_PROOF_SCALE = 2.7;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -228,6 +229,10 @@ function Scene({
 	const stepY = H * 0.4 - T.num * 1.15;
 	const stepW = textWidth("+$1", T.small) + 14;
 	const chipW = textWidth(t(copy.chip), T.small) + 16;
+	const keyX = L.left + 12;
+	const keyY = L.headY + T.head * 1.4;
+	const deltaKeyX = keyX + 34 + textWidth(t(copy.model), T.small) + 18;
+	const proofTypeScale = L.narrow ? 2 / PHONE_PROOF_SCALE : 1;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -367,7 +372,11 @@ function Scene({
 							y={my + (L.narrow ? 24 : 16)}
 							textAnchor="middle"
 							className="wt-small wt-halo wt-accent"
-							style={L.narrow ? { fontSize: T.small * 1.2 } : undefined}
+							style={
+								L.narrow
+									? { fontSize: T.small * 1.2 * proofTypeScale }
+									: undefined
+							}
 						>
 							+$1
 						</text>
@@ -399,6 +408,7 @@ function Scene({
 									: L.y(V0 + CALL_DELTA) + 14
 							}
 							className="wt-halo wt-accent wt-marker-label"
+							style={L.narrow ? { fontSize: 13 * proofTypeScale } : undefined}
 						>
 							<tspan>+$</tspan>
 							<tspan data-f="riser-number">{fixed2(CALL_DELTA)}</tspan>
@@ -470,6 +480,40 @@ function Scene({
 			</g>
 
 			{/* The type: the claims. */}
+			{/* Root coordinates keep the line key legible through the chart's push-in. */}
+			<g data-f="line-key">
+				<line
+					x1={keyX}
+					x2={keyX + 26}
+					y1={keyY - T.small * 0.35}
+					y2={keyY - T.small * 0.35}
+					className="wt-line-position"
+					strokeDasharray="6 5"
+				/>
+				<text
+					x={keyX + 34}
+					y={keyY}
+					className="wt-small wt-label-position"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.model)}
+				</text>
+				<line
+					x1={deltaKeyX}
+					x2={deltaKeyX + 26}
+					y1={keyY - T.small * 0.35}
+					y2={keyY - T.small * 0.35}
+					className="wt-film-tangent"
+				/>
+				<text
+					x={deltaKeyX + 34}
+					y={keyY}
+					className="wt-small"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.deltaAlone)}
+				</text>
+			</g>
 			{/* Replaced at build with the pushed-in riser's exact numeric position. */}
 			<Word
 				name="slope-number-proxy"
@@ -820,7 +864,7 @@ function build(context: FilmContext) {
 	const riserX = L.x(SPOT + 1);
 	const riserTop = L.y(V0 + CALL_DELTA);
 	const pushIn = cam(
-		narrow ? 2 : 2.1,
+		narrow ? PHONE_PROOF_SCALE : 2.1,
 		{ x: narrow ? (mx + riserX) / 2 : mx, y: my },
 		{ x: W * (narrow ? 0.34 : 0.36), y: H * (narrow ? 0.64 : 0.5) },
 	);
@@ -854,6 +898,8 @@ function build(context: FilmContext) {
 		tangentLine,
 		one("step"),
 		one("riser"),
+		one("riser-label"),
+		one("line-key"),
 		one("below"),
 		one("below-label"),
 		ghost,
@@ -934,8 +980,17 @@ function build(context: FilmContext) {
 		10.9,
 	);
 	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.2 }, 11.2);
+	tl.to(one("line-key"), { opacity: 1, duration: 0.2 }, 11.2);
 	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.1);
 	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.1);
+	if (narrow) {
+		// Enlarge the geometry without enlarging its labels; retain the establishment size.
+		tl.to(
+			one("marker-label-call"),
+			{ fontSize: (13 * 2) / PHONE_PROOF_SCALE, duration: 1.3 },
+			12.1,
+		);
+	}
 	show(one("s-head"), 12.5, "above");
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
 	const axisText = [...one("axes").querySelectorAll("text")];
@@ -977,12 +1032,12 @@ function build(context: FilmContext) {
 			);
 		}
 		tl.set(one("dot"), { attr: { r: 3 / PHONE_ASIDE_SCALE } }, 18);
-		tl.set(axisText, { fontSize: T.small }, 34.7);
-		tl.set(valueTicks, { attr: { x: L.left - 8, "text-anchor": "end" } }, 34.7);
+		tl.set(axisText, { fontSize: T.small }, 34.5);
+		tl.set(valueTicks, { attr: { x: L.left - 8, "text-anchor": "end" } }, 34.5);
 		for (const tick of [0, 8, 16]) {
-			tl.set(one(`axis-value-${tick}`), { attr: { y: L.y(tick) + 4 } }, 34.7);
+			tl.set(one(`axis-value-${tick}`), { attr: { y: L.y(tick) + 4 } }, 34.5);
 		}
-		tl.set(one("dot"), { attr: { r: 3 } }, 34.7);
+		tl.set(one("dot"), { attr: { r: 3 } }, 34.5);
 	}
 	tl.to(tangentLine, { opacity: 1, duration: 0.2 }, 13);
 	tl.to(
@@ -1001,24 +1056,24 @@ function build(context: FilmContext) {
 	);
 	// The $1 leg is already present when the headline names it.
 	tl.to(one("step"), { opacity: 1, duration: 0.1 }, 12.4);
-	tl.to(
-		one("step-line"),
-		{ attr: { x2: riserX }, duration: 0.45, ease: "power2.out" },
-		12.4,
-	);
-	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 12.85);
-	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 14.7);
+	// The labelled $1 leg is revealed complete, so its length always agrees with its label.
+	tl.set(one("step-line"), { attr: { x2: riserX } }, 12.4);
+	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 12.4);
+	tl.to(one("riser"), { opacity: 1, duration: 0.2 }, 14.2);
 	tl.to(
 		one("riser-line"),
 		{ attr: { y2: riserTop }, duration: 0.6, ease: "power3.out" },
-		14.7,
+		14.2,
 	);
-	if (narrow) tl.set(one("riser-tip"), { opacity: 1 }, 15.3);
+	// Name the gain only once the line reaches it; hold the complete proof for 1.05 s.
+	tl.set(one("riser-label"), { opacity: 1 }, 14.8);
+	if (narrow) tl.set(one("riser-tip"), { opacity: 1 }, 14.8);
 	// Hand the digits to a root proxy before the chart steps back. The original
 	// digits disappear in the same frame, so there is no blank or doubled number.
 	tl.set(riserNumber, { opacity: 0 }, 15.85);
 	tl.set(slopeNumber, { opacity: 1 }, 15.85);
 	tl.to(world, { opacity: 0.22, duration: 0.15 }, 15.85);
+	tl.to(one("line-key"), { opacity: 0, duration: 0.15 }, 15.85);
 	// The dim chart clears the upward flight across its tangent and price label.
 	hide(one("s-head"), 16);
 	sink(16);
@@ -1093,19 +1148,13 @@ function build(context: FilmContext) {
 		24.3,
 	);
 	show(one("ch-head"), 24.3, "above");
-	const shares = (value: number) => signedCount(Math.round(value));
 	show(one("ch-op100"), 25.1);
 	land(one("ch-per"), 25.6);
 	show(one("ch-op-you"), 26.4);
 	land(one("ch-pos-you"), 26.9);
-	d.count(
-		one<SVGTextElement>("ch-pos-you"),
-		positionDelta(you.contracts),
-		26.9,
-		shares,
-	);
 	show(one("ch-equiv"), 27.5);
-	// The hero: your position's delta, counted, held, then locked; its inputs step back.
+	// Fixed multipliers require a settled result, rather than intermediate counted totals.
+	// The hero: your position's delta, held, then locked; its inputs step back.
 	d.lock(lockPos, 27.9, { around: one("ch-pos-you"), pad: 4 });
 	tl.addLabel("hero-lock", 27.9);
 	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 27.9);
@@ -1121,12 +1170,6 @@ function build(context: FilmContext) {
 	show(one("ch-op-ben"), 30.7);
 	land(one("ch-pos-ben"), 30.95);
 	show(one("ch-equiv-ben"), 31.2, "below", 0.3);
-	d.count(
-		one<SVGTextElement>("ch-pos-ben"),
-		positionDelta(ben.contracts),
-		30.95,
-		shares,
-	);
 	// One move, both positions: ALFA +$0.40, in dollars, for each.
 	show(one("ch-chip"), 31.45, "below", 0.18);
 	// The y-first route clears the positions and captions. Only the chip at takeoff
@@ -1149,10 +1192,10 @@ function build(context: FilmContext) {
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 34.5);
-	hide([...kids("chain"), numCall], 34.5);
-	tl.set(world, home, 34.7);
-	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 34.7);
-	tl.set(marker, { y: my }, 34.7);
+	hide([...kids("chain"), numCall], 34.5, 0.2);
+	tl.set(world, home, 34.5);
+	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 34.5);
+	tl.set(marker, { y: my }, 34.5);
 	tl.set(
 		tangentLine,
 		{
@@ -1161,16 +1204,18 @@ function build(context: FilmContext) {
 				y2: L.y(callTangent(X_RANGE[1])),
 			},
 		},
-		34.7,
+		34.5,
 	);
 	tl.set(
 		[one("marker-label-put"), one("curve-label-put")],
 		{ opacity: 0 },
-		34.7,
+		34.5,
 	);
-	show(one("lim-head"), 34.85, "above");
-	rise(34.85);
-	tl.to(ghost, { opacity: 1, duration: 0.3 }, 35.3);
+	// Cross-fade with the dollars: power2.out reaches 57.8% opacity by their 34.7 exit.
+	rise(34.5);
+	show(one("lim-head"), 34.7, "above");
+	tl.to(one("line-key"), { opacity: 1, duration: 0.2 }, 34.7);
+	tl.to(ghost, { opacity: 1, duration: 0.2 }, 34.7);
 	const slide = { spot: SPOT };
 	/**
 	 * The three readings stand still in the plot's empty top left, between its top two
@@ -1212,29 +1257,30 @@ function build(context: FilmContext) {
 	place();
 	tl.to(
 		slide,
-		{ spot: SPOT + UP, duration: 0.8, ease: "power2.inOut", onUpdate: place },
-		35.5,
+		{ spot: SPOT + UP, duration: 0.6, ease: "power2.inOut", onUpdate: place },
+		34.9,
 	);
 	// These labels name completed moves, so reveal them only at the endpoints.
-	tl.set(one("lim-move-up"), { opacity: 1 }, 36.3);
-	tl.to([moveLabel, ghostLabel], { opacity: 1, duration: 0.4 }, 35.5);
-	tl.to([gap, gapLabel], { opacity: 0.45, duration: 0.4 }, 35.5);
-	// Emphasize the error only once the complete comparison has landed.
-	tl.set([gap, gapLabel], { opacity: 1 }, 36.3);
-	// Each completed comparison stands still for 1.9 s: 36.3–38.2 and 39–40.9.
-	tl.set(one("lim-move-up"), { opacity: 0 }, 38.2);
-	tl.set([gap, gapLabel], { opacity: 0.45 }, 38.2);
-	tl.set(one("lim-move-down"), { opacity: 1 }, 39);
-	tl.set([gap, gapLabel], { opacity: 1 }, 39);
+	tl.set(one("lim-move-up"), { opacity: 1 }, 35.5);
+	// Read the model and estimate first; bring up the discrepancy as the move settles.
+	// All three figures remain computed by place(), including during their entrances.
+	tl.to([moveLabel, ghostLabel], { opacity: 1, duration: 0.2 }, 34.9);
+	tl.to([gap, gapLabel], { opacity: 1, duration: 0.4 }, 35.1);
+	// Each complete endpoint gets 2.3 s without another arrival, dim or camera move.
+	tl.set(one("lim-move-up"), { opacity: 0 }, 37.8);
+	tl.set([gap, gapLabel], { opacity: 0.45 }, 37.8);
+	tl.set(one("lim-move-down"), { opacity: 1 }, 38.6);
+	tl.set([gap, gapLabel], { opacity: 1 }, 38.6);
 	tl.to(
 		slide,
 		{ spot: SPOT + DOWN, duration: 0.8, ease: "power2.inOut", onUpdate: place },
-		38.2,
+		37.8,
 	);
-	tl.to(one("below"), { opacity: 1, duration: 0.4 }, 38.2);
-	tl.to(one("below-label"), { opacity: 1, duration: 0.3 }, 38.4);
+	tl.to(one("below"), { opacity: 1, duration: 0.4 }, 37.8);
+	tl.to(one("below-label"), { opacity: 1, duration: 0.3 }, 38);
 	// Cut: the claim, held to be read.
 	hide(one("lim-head"), 40.9);
+	hide(one("line-key"), 40.9);
 	sink(40.9);
 	tl.fromTo(
 		one("z-big"),
