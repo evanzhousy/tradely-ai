@@ -24,7 +24,6 @@ import {
 import { textWidth } from "../walkthrough/text-measure";
 import {
 	benColumns,
-	benDrift,
 	benTrade,
 	contracts,
 	DAYS,
@@ -86,6 +85,8 @@ const youCols = [hedgeBefore, hedgeAfter] as const;
 const times = Math.round(sepAtStrike / octAtStrike);
 const shares = (value: number) =>
 	Math.round(value) === 0 ? "0" : signedCount(Math.round(value));
+const exposureExpression = (quantity: number, delta: number) =>
+	`${quantity < 0 ? `−${Math.abs(quantity)}` : quantity} × ${ALFA.multiplier} × ${fixed2(delta)}`;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -314,11 +315,20 @@ function Scene({
 	const chipY = H * 0.4 - T.num * 1.15;
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
-	const deltaCue = `Δ ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`;
+	const revisedRows = [
+		["you", you, hedgeAfter.options],
+		["ben", ben, benColumns[1].options],
+	] as const;
+	const cueWidth = Math.max(
+		...revisedRows.map(([, quantity, result]) =>
+			textWidth(
+				`${exposureExpression(quantity, NEW_DELTA)} = ${shares(result)}`,
+				T.body,
+			),
+		),
+	);
 	const cueGap = 14;
-	const tableChipX =
-		(W - tableChipW - cueGap - textWidth(deltaCue, T.body)) / 2 +
-		tableChipW / 2;
+	const tableChipX = (W - tableChipW - cueGap - cueWidth) / 2 + tableChipW / 2;
 	const hedgeRows = {
 		chip: H * (narrow ? 0.27 : 0.28),
 		labels: H * 0.36,
@@ -633,7 +643,7 @@ function Scene({
 					],
 				] as const
 			).map(([who, quantity, result, label, y]) => {
-				const expression = `${quantity < 0 ? `−${Math.abs(quantity)}` : quantity} × ${ALFA.multiplier} × ${fixed2(DELTA)} =`;
+				const expression = `${exposureExpression(quantity, DELTA)} =`;
 				const prefixW = textWidth(expression, T.body);
 				const resultW = textWidth(shares(result), T.num);
 				const start = (W - prefixW - T.small - resultW) / 2;
@@ -776,16 +786,37 @@ function Scene({
 						{t(copy.chip)}
 					</text>
 				</g>
-				<Word
-					name="h-delta"
-					x={tableChipX + tableChipW / 2 + cueGap}
-					y={hedgeRows.chip}
-					size={T.body}
-					anchor="start"
-					className="wt-film-num wt-film-dim"
-				>
-					{deltaCue}
-				</Word>
+				<g data-f="h-delta">
+					{revisedRows.map(([who, quantity, result], i) => {
+						const expression = exposureExpression(quantity, NEW_DELTA);
+						const x = tableChipX + tableChipW / 2 + cueGap;
+						const y = hedgeRows.chip + (i ? 0.95 : -0.55) * T.body;
+						return (
+							<g key={who}>
+								<Word
+									name={`h-revised-${who}-calc`}
+									x={x}
+									y={y}
+									size={T.body}
+									anchor="start"
+									className="wt-film-num wt-film-dim"
+								>
+									{expression}
+								</Word>
+								<Word
+									name={`h-revised-${who}-result`}
+									x={x + textWidth(`${expression} `, T.body)}
+									y={y}
+									size={T.body}
+									anchor="start"
+									className="wt-film-num wt-film-accent"
+								>
+									{`= ${shares(result)}`}
+								</Word>
+							</g>
+						);
+					})}
+				</g>
 				{(
 					[
 						["h-trade-you", copy.youTrade, hedgeRows.you],
@@ -872,13 +903,43 @@ function build(context: FilmContext) {
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide, rise, sink, cam, home, world } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
-	const land = (target: Element, time: number) =>
+	const land = (target: Element, time: number, duration = 0.55) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
 			time,
 		);
+	// One rounded state writes each row: its net is always the displayed parts' sum.
+	const countHedge = (
+		who: "you" | "ben",
+		from: { options: number; shares: number },
+		to: { options: number; shares: number },
+		at: number,
+		duration = 0.7,
+	) => {
+		const state = { options: from.options, shares: from.shares };
+		const marks = [0, 1, 2].map((i) => one<SVGTextElement>(`h-${who}-${i}`));
+		tl.fromTo(
+			state,
+			{ options: from.options, shares: from.shares },
+			{
+				options: to.options,
+				shares: to.shares,
+				duration,
+				ease: "power2.out",
+				immediateRender: false,
+				onUpdate: () => {
+					const options = Math.round(state.options);
+					const held = Math.round(state.shares);
+					marks[0].textContent = shares(options);
+					marks[1].textContent = shares(held);
+					marks[2].textContent = shares(options + held);
+				},
+			},
+			at,
+		);
+	};
 	const lockHedge = one<SVGGraphicsElement>("lock-hedge");
 	const mx = L.x(SPOT);
 	const my = L.yD(DELTA);
@@ -915,6 +976,8 @@ function build(context: FilmContext) {
 		...kids("g"),
 		one<SVGGraphicsElement>("lock-hedge"),
 		...kids("hedge"),
+		one("h-revised-you-result"),
+		one("h-revised-ben-result"),
 		...kids("h-derive-you"),
 		...kids("h-derive-ben"),
 		...kids("h-holder-you"),
@@ -1007,7 +1070,7 @@ function build(context: FilmContext) {
 	tl.to(one("d-riser"), { opacity: 1, duration: 0.2 }, 14.8);
 	tl.to(
 		one("d-riser-line"),
-		{ attr: { y2: L.yD(NEW_DELTA) }, duration: 0.6, ease: "power3.out" },
+		{ attr: { y2: L.yD(NEW_DELTA) }, duration: 0.5, ease: "power3.out" },
 		14.8,
 	);
 	// Then the marker climbs the curve to the top of the rise, its delta counting with it.
@@ -1023,24 +1086,23 @@ function build(context: FilmContext) {
 	tl.to(
 		slide,
 		{ spot: SPOT + MOVE, duration: 1.1, ease: "power2.inOut", onUpdate: place },
-		15.8,
+		15.3,
 	);
 	// Cut: the slope gets its name, worked out: +0.08 over $2.
-	// The definition settles at 18.95, then the first application starts at 19.4.
+	// The curve settles at 16.4, a second before the cut. Compress entrances, not holds:
+	// the definition settles at 18.4, a second before the first application at 19.4.
 	hide(one("k-head"), 17.4);
 	sink(17.4);
-	show(one("g-calc"), 17.8);
-	land(one("g-num"), 18.2);
-	show(one("g-word"), 18.35);
-	// On a phone the caption fades in place instead of rising through the worked label.
-	if (narrow) {
-		tl.fromTo(
-			one("g-sub"),
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.5 },
-			18.45,
-		);
-	} else show(one("g-sub"), 18.45);
+	show(one("g-calc"), 17.8, "below", 0.25);
+	land(one("g-num"), 17.95, 0.4);
+	show(one("g-word"), 18.1, "below", 0.3);
+	// Fade the caption in place, clear of the worked label on both frames.
+	tl.fromTo(
+		one("g-sub"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.25 },
+		18.15,
+	);
 	for (const [who, at] of [
 		["you", 19.4],
 		["ben", 19.7],
@@ -1103,33 +1165,26 @@ function build(context: FilmContext) {
 	show(one("h-who-ben"), 24.95, "above");
 	land(one("h-ben-1"), 25.25);
 	land(one("h-ben-2"), 25.4);
-	// ALFA rises $2, once, for both; the new delta settles before exposures change.
-	show(one("h-chip"), 25.7);
+	// ALFA rises $2, once, for both. The revised operands land first; equality and
+	// settled results appear together only after both table rows agree with them.
+	show(one("h-chip"), 25.5);
 	tl.fromTo(
 		one("h-delta"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.25 },
-		26.0,
+		25.8,
 	);
-	d.count(
-		one<SVGTextElement>("h-you-0"),
-		hedgeAfter.options,
-		26.5,
-		shares,
-		hedgeBefore.options,
-	);
+	countHedge("you", hedgeBefore, hedgeAfter, 26.1, 0.5);
 	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
 	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
-	d.count(one<SVGTextElement>("h-you-2"), youDrift, 26.5, shares);
-	tl.to(one("h-you-2"), warn, 26.5);
-	d.count(
-		one<SVGTextElement>("h-ben-0"),
-		benColumns[1].options,
-		26.9,
-		shares,
-		benColumns[0].options,
+	tl.to(one("h-you-2"), warn, 26.1);
+	countHedge("ben", benColumns[0], benColumns[1], 26.5, 0.5);
+	tl.set(
+		[one("h-revised-you-result"), one("h-revised-ben-result")],
+		{ opacity: 1 },
+		27.0,
 	);
-	d.count(one<SVGTextElement>("h-ben-2"), benDrift, 26.9, shares);
+	// Complete revised equations and exposures stand quietly for a second before the lock.
 	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
 	// The brackets are fitted now, so measure the figure with the text its count ends on.
 	const youNet = one<SVGTextElement>("h-you-2");
@@ -1149,37 +1204,25 @@ function build(context: FilmContext) {
 	// After the lock, both drifts lit side by side: Ben's goes the other way, and the rule
 	// is named while the two stand together. Then the trades, one step at a time.
 	show(one("h-trade-you"), 28.4);
-	hide(lockHedge, 29.8, 0.3);
-	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.8);
+	// Brackets settle at 28.45; the first fold/exit waits until 29.95 (1.5 s).
+	hide(lockHedge, 29.95, 0.3);
+	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.95);
 	tl.to(one("h-ben-2"), warn, 30.0);
 	show(one("h-claim"), 30.2);
-	// Clear the input cue before the rule enters; its settled hold is 3.55 s.
-	hide(one("h-delta"), 29.8, 0.3, 0);
+	// Clear both worked rows before the rule enters; operands hold 3.9 s, results 2.95 s.
+	hide(one("h-delta"), 29.95, 0.2, 0);
 	// On a phone the rule's second line needs the move chip's lane too.
-	if (narrow) hide(one("h-chip"), 29.8, 0.3, 0);
-	d.count(
-		one<SVGTextElement>("h-you-1"),
-		hedgeFixed.shares,
-		31.7,
-		shares,
-		hedgeAfter.shares,
-	);
-	d.count(one<SVGTextElement>("h-you-2"), 0, 31.7, shares, youDrift);
+	if (narrow) hide(one("h-chip"), 29.95, 0.2, 0);
+	countHedge("you", hedgeAfter, hedgeFixed, 31.7);
 	tl.to(one("h-you-2"), flat, 32.4);
 	show(one("h-trade-ben"), 31.85);
-	d.count(
-		one<SVGTextElement>("h-ben-1"),
-		benColumns[2].shares,
-		32.5,
-		shares,
-		benColumns[1].shares,
-	);
-	d.count(one<SVGTextElement>("h-ben-2"), 0, 32.5, shares, benDrift);
+	countHedge("ben", benColumns[1], benColumns[2], 32.5);
 	tl.to(one("h-ben-2"), flat, 33.2);
-	// Bind signs before trading: both tags and signed quantities settle by 31.65.
+	// Bind signs before trading: both tags, signed quantities and rule settle by 30.7,
+	// then stand quietly for a full second before the unchanged first trade at 31.7.
 	for (const [who, at] of [
-		["you", 30.6],
-		["ben", 31.0],
+		["you", 29.95],
+		["ben", 30.05],
 	] as const) {
 		tl.set(one(`h-holder-${who}`), { opacity: 1 }, at);
 		d.flip(one(`h-who-${who}`), one(`h-gamma-${who}`), at);
