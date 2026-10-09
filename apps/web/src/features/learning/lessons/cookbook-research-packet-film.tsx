@@ -50,11 +50,11 @@ import {
  *   open      0–4        "Research packets"
  *   question  4–8.6      will a reader get $165,520?
  *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
- *   fields    18.6–29.95 hero: every field; without the formula; without the exclusions,
+ *   fields    18.6–31.55 hero: without the formula; without the exclusions,
  *                        held; then the field goes back and the figure is P1's again
- *   log       29.95–41.55 P1; add R5 to make P2; build the two-leg operand, then P3
- *   claim     41.55–45.95 work someone else can rerun
- *   next      45.95–47.5 Next: recaps
+ *   log       31.55–41.9 P1; add R5 to make P2; remove the two spread portions for P3
+ *   claim     41.9–46.3  work someone else can rerun
+ *   next      46.3–47.5  Next: recaps
  */
 
 const END = 47.5;
@@ -113,7 +113,6 @@ const copy = {
 		"A subtotal: one series has no data.",
 		"是小计：有一个序列没有数据。",
 	],
-	subtotalGe: [`≥ ${dollars(MONDAY)}`, `≥ ${dollars(MONDAY)}`],
 	coverage: [
 		`${COVERED} of ${SERIES} series`,
 		`${SERIES} 个序列中的 ${COVERED} 个`,
@@ -135,7 +134,7 @@ const copy = {
 		`+${dollars(TUESDAY - MONDAY)} · R5 arrived`,
 		`+${dollars(TUESDAY - MONDAY)} · R5 已到达`,
 	],
-	spreadCause: ["spread legs · R2 + R3", "价差两条腿 · R2 + R3"],
+	spreadCause: ["remove spread legs · R2 + R3", "去掉价差腿 · R2 + R3"],
 	fHead: ["A reader reruns it from its fields.", "读者按它的字段重跑。"],
 	f2Head: ["Drop a field, and the number breaks.", "少一个字段，数字就错了。"],
 	reader: ["a reader's rerun", "读者重跑"],
@@ -330,24 +329,16 @@ function Scene({
 			>
 				{`= ${dollars(rowPremium(R2 ?? mondayPacket[0]) ?? 0)}`}
 			</text>
-			{(
-				[
-					["sum", dollars(0), "wt-film-accent"],
-					["sum-ge", t(copy.subtotalGe), "wt-film-warn"],
-				] as const
-			).map(([name, value, tone]) => (
-				<text
-					key={name}
-					data-f={name}
-					x={margin + room - 12}
-					y={L.traceY + (narrow ? T.small * 2 + T.head * 1.2 : T.small)}
-					textAnchor="end"
-					className={`wt-film-num ${tone}`}
-					style={{ fontSize: narrow ? T.head : T.num }}
-				>
-					{value}
-				</text>
-			))}
+			<text
+				data-f="sum-ge"
+				x={margin + room - 12}
+				y={L.traceY + (narrow ? T.small * 2 + T.head * 1.2 : T.small)}
+				textAnchor="end"
+				className="wt-film-num wt-film-warn"
+				style={{ fontSize: narrow ? T.head : T.num }}
+			>
+				{`≥ ${dollars(0)}`}
+			</text>
 			{mondayPacket.map((row, i) => {
 				const premium = rowPremium(row);
 				if (premium === null) return null;
@@ -442,7 +433,6 @@ function Scene({
 			</text>
 			{(
 				[
-					["rerun-none", null],
 					["rerun-formula", "formula"],
 					["rerun-exclusions", "exclusions"],
 					["rerun-back", null],
@@ -486,30 +476,6 @@ function Scene({
 				</text>
 			))}
 
-			{[
-				["formula-base", dollars(MONDAY), margin],
-				[
-					"formula-divisor",
-					"÷ 100",
-					margin + textWidth(dollars(MONDAY), text) + 12,
-				],
-				[
-					"formula-result",
-					`= ${rerunText("formula")}`,
-					margin + textWidth(`${dollars(MONDAY)} ÷ 100`, text) + 24,
-				],
-			].map(([name, value, x]) => (
-				<text
-					key={name}
-					data-f={name}
-					x={x}
-					y={L.rerunY + rerunSize * 1.3 + text * 3.5}
-					className="wt-film-num wt-film-loss"
-					style={{ fontSize: text }}
-				>
-					{value}
-				</text>
-			))}
 			{(
 				[
 					[
@@ -624,25 +590,29 @@ function Scene({
 					>
 						{dollars(record.cents)}
 					</text>
-					<text
-						data-f={`rec-${i}-note`}
-						x={margin + 16}
-						y={L.recY(i) + L.recH * 0.85}
-						className="wt-film-type wt-film-dim"
-						style={{ fontSize: T.small * 1.05 }}
-					>
-						{t(record.note)}
-					</text>
-					<text
-						data-f={`rec-${i}-tag`}
-						x={margin + room - 16}
-						y={L.recY(i) + L.recH * 0.6}
-						textAnchor="end"
-						className={`wt-film-tag ${record.method === 2 ? "wt-film-warn" : "wt-film-accent"}`}
-						style={{ fontSize: T.small }}
-					>
-						{t(record.tag).toUpperCase()}
-					</text>
+					{i === 1 && (
+						<text
+							data-f={`rec-${i}-note`}
+							x={margin + 16}
+							y={L.recY(i) + L.recH * 0.85}
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: T.small * 1.05 }}
+						>
+							{t(record.note)}
+						</text>
+					)}
+					{i === 0 && (
+						<text
+							data-f={`rec-${i}-tag`}
+							x={margin + room - 16}
+							y={L.recY(i) + L.recH * 0.6}
+							textAnchor="end"
+							className="wt-film-tag wt-film-accent"
+							style={{ fontSize: T.small }}
+						>
+							{t(record.tag).toUpperCase()}
+						</text>
+					)}
 				</g>
 			))}
 
@@ -674,34 +644,18 @@ function Scene({
 						</text>
 					</g>
 				))}
-				<text
-					x={margin + 16}
-					y={spreadProofY + spreadProofStep * 2}
-					className="wt-film-num wt-film-loss"
-					style={{ fontSize: spreadProofSize }}
-				>
-					=
-				</text>
-				<text
-					data-f="log-spread-total"
-					x={margin + room - 16}
-					y={spreadProofY + spreadProofStep * 2}
-					textAnchor="end"
-					className="wt-film-num wt-film-loss"
-					style={{ fontSize: spreadProofSize }}
-				>
-					{dollars(spreadLegs)}
-				</text>
 			</g>
 
-			{/* Complete equations replace the cards' figures until their results are saved. */}
+			{/* Separate operands let each cause arrive before its settled result. P3's
+			    deduction sits below both identified portions in one continuous proof. */}
 			{(
 				[
-					[1, `${dollars(MONDAY)} + ${dollars(TUESDAY - MONDAY)} = `, TUESDAY],
+					[1, `${dollars(MONDAY)} + `, TUESDAY],
 					[2, `${dollars(TUESDAY)} − `, WITHOUT_SPREAD],
 				] as const
 			).map(([i, expression, result]) => {
-				const suffix = i === 2 ? `${dollars(spreadLegs)} = ` : "";
+				const contribution = i === 1 ? TUESDAY - MONDAY : spreadLegs;
+				const suffix = `${dollars(contribution)} = `;
 				const equationSize = narrow
 					? Math.min(
 							T.head,
@@ -710,46 +664,45 @@ function Scene({
 						)
 					: T.body;
 				const operandX = margin + 16 + textWidth(expression, equationSize);
+				const equationY =
+					i === 2
+						? spreadProofY + spreadProofStep * 2
+						: L.recY(i) + L.recH * 0.6;
 				return (
 					<g key={`log-equation-${i}`}>
 						<text
 							data-f={`log-${i}-expression`}
 							x={margin + 16}
-							y={L.recY(i) + L.recH * 0.6}
+							y={equationY}
 							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
 							style={{ fontSize: equationSize }}
 						>
 							{expression}
 						</text>
-						{i === 2 && (
-							<>
-								<text
-									data-f="log-2-operand"
-									x={operandX}
-									y={L.recY(i) + L.recH * 0.6}
-									className="wt-film-num wt-film-loss"
-									style={{ fontSize: equationSize }}
-								>
-									{dollars(spreadLegs)}
-								</text>
-								<text
-									data-f="log-2-equals"
-									x={
-										operandX +
-										textWidth(`${dollars(spreadLegs)} `, equationSize)
-									}
-									y={L.recY(i) + L.recH * 0.6}
-									className="wt-film-num wt-film-loss"
-									style={{ fontSize: equationSize }}
-								>
-									=
-								</text>
-							</>
-						)}
+						<text
+							data-f={`log-${i}-operand`}
+							x={operandX}
+							y={equationY}
+							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+							style={{ fontSize: equationSize }}
+						>
+							{dollars(contribution)}
+						</text>
+						<text
+							data-f={`log-${i}-equals`}
+							x={
+								operandX + textWidth(`${dollars(contribution)} `, equationSize)
+							}
+							y={equationY}
+							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+							style={{ fontSize: equationSize }}
+						>
+							=
+						</text>
 						<text
 							data-f={`log-${i}-result`}
 							x={margin + 16 + textWidth(expression + suffix, equationSize)}
-							y={L.recY(i) + L.recH * 0.6}
+							y={equationY}
 							className="wt-film-num"
 							style={{ fontSize: equationSize }}
 						>
@@ -848,10 +801,9 @@ function build(context: FilmContext) {
 	const lockRerun = one<SVGGraphicsElement>("lock-rerun");
 	const rows = mondayPacket.map((_, i) => one(`row-${i}`));
 	const r2 = mondayPacket.findIndex((row) => row.id === "R2");
-	const missing = mondayPacket.findIndex((row) => row.trades === null);
 	const fieldRows = fields.map((field) => one(`field-${field.id}`));
-	const rerunMarks = ["rerun-none", "rerun-formula", "rerun-exclusions"].map(
-		(name) => one(name),
+	const rerunMarks = ["rerun-formula", "rerun-exclusions"].map((name) =>
+		one(name),
 	);
 	const recs = records.map((_, i) => one(`rec-${i}`));
 	/** A field goes missing: its card fades. */
@@ -868,7 +820,6 @@ function build(context: FilmContext) {
 		...rows,
 		one("trace"),
 		one("trace-result"),
-		one("sum"),
 		...mondayPacket.flatMap((row, i) =>
 			rowPremium(row) === null ? [] : [one(`sum-ticket-${i}`)],
 		),
@@ -879,15 +830,14 @@ function build(context: FilmContext) {
 		...rerunMarks,
 		one("rerun-back"),
 		one("rec-0-n"),
-		one("rec-0-note"),
-		one("rec-2-note"),
 		one("log-spread-proof"),
-		one("log-2-operand"),
-		one("log-2-equals"),
+		one("log-spread-r2"),
+		one("log-spread-r3"),
 		...[1, 2].flatMap((i) => [
 			one(`rec-${i}-n`),
-			one(`rec-${i}-tag`),
 			one(`log-${i}-expression`),
+			one(`log-${i}-operand`),
+			one(`log-${i}-equals`),
 			one(`log-${i}-result`),
 		]),
 		one("p1-says"),
@@ -895,9 +845,6 @@ function build(context: FilmContext) {
 		one("why-exclusions"),
 		lockRerun,
 		...[
-			"formula-base",
-			"formula-divisor",
-			"formula-result",
 			"extra-cancelled",
 			"extra-repeated",
 			"extra-total",
@@ -927,11 +874,11 @@ function build(context: FilmContext) {
 	rows.forEach((row, i) => {
 		show(row, 9.2 + i * 0.1, "right", 0.35);
 	});
-	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-focus-shape" } }, 9.95);
-	show(one("trace"), 9.95, "below", 0.25);
+	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-focus-shape" } }, 9.8);
+	show(one("trace"), 9.8, "below", 0.3);
 	// The trace comes to R2's figure, which lights with it.
 	// Both body-sized terms and their settled result read together for 10.4–12.4.
-	show(one("trace-result"), 10.2, "below", 0.2);
+	show(one("trace-result"), 10.1, "below", 0.3);
 	tl.to(
 		one(`row-${r2}-premium`),
 		{ attr: { class: "wt-film-num wt-film-accent" }, duration: 0.2 },
@@ -945,16 +892,17 @@ function build(context: FilmContext) {
 	);
 	// Kept premiums travel down the right lane. Neighboring premiums step back while
 	// the copy passes; series labels and contract counts stay outside that lane.
-	tl.set(one("sum"), { opacity: 1 }, 12.4);
+	// The missing series is already visible: this is a floor throughout its construction.
+	show(one("sum-ge"), 12.4, "below", 0.3);
 	// The phone trace reaches the lane; step it back until every premium has landed.
-	tl.set(one("trace"), { opacity: 0.2 }, 12.4);
+	tl.to(one("trace"), { opacity: 0.2, duration: 0.3 }, 12.4);
 	let total = 0;
 	let step = 0;
 	mondayPacket.forEach((row, i) => {
 		const premium = rowPremium(row);
 		// Covered zero stays in the table; only positive contributions need a flight.
 		if (premium === null || premium === 0) return;
-		const at = 12.4 + step * 0.8;
+		const at = 12.7 + step * 0.8;
 		const figure = one<SVGGraphicsElement>(`row-${i}-premium`);
 		const neighbors = mondayPacket
 			.map((_, j) => one(`row-${j}-premium`))
@@ -963,7 +911,7 @@ function build(context: FilmContext) {
 		tl.set(one(`row-${i}-premium`), { opacity: 1 }, at);
 		tl.set(figure, { attr: { class: "wt-film-num wt-film-accent" } }, at);
 		const ticket = one<SVGGraphicsElement>(`sum-ticket-${i}`);
-		// Land above the subtotal, then fold the ticket shut before its count starts.
+		// Land above the subtotal, then fold the ticket shut as its contribution counts.
 		d.carry(figure, ticket, at, {
 			duration: 0.45,
 			arc: "y",
@@ -975,17 +923,17 @@ function build(context: FilmContext) {
 			{
 				scaleY: 0,
 				transformOrigin: "50% 50%",
-				duration: 0.12,
+				duration: 0.3,
 				ease: "power2.in",
 			},
 			at + 0.45,
 		);
-		tl.set(ticket, { opacity: 0 }, at + 0.57);
+		tl.set(ticket, { opacity: 0 }, at + 0.75);
 		d.count(
-			one<SVGTextElement>("sum"),
+			one<SVGTextElement>("sum-ge"),
 			total + premium,
 			at + 0.57,
-			(v) => dollars(Math.round(v / 100) * 100),
+			(v) => `≥ ${dollars(Math.round(v / 100) * 100)}`,
 			total,
 			0.2,
 		);
@@ -993,23 +941,16 @@ function build(context: FilmContext) {
 		total += premium;
 		step += 1;
 	});
-	tl.set(
+	tl.to(
 		mondayPacket.map((_, i) => one(`row-${i}-premium`)),
-		{ opacity: 1 },
-		14.8,
+		{ opacity: 1, duration: 0.3 },
+		15.1,
 	);
-	tl.set(one("trace"), { opacity: 1 }, 14.8);
-	// R5 has no data: the sum can only be a floor.
-	tl.fromTo(
-		rows[missing],
-		{ x: 0 },
-		{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
-		14.8,
-	);
-	d.flip(one("sum"), one("sum-ge"), 15.0);
-	tl.set(one("sum"), { opacity: 0 }, 15.3);
-	show(one("subtotal"), 15.05);
-	show(heads[1], 15.05);
+	tl.to(one("trace"), { opacity: 1, duration: 0.3 }, 15.1);
+	// Coverage is established during the final contribution, then the whole proof
+	// reads quietly from 15.4 until the coverage highlight at 16.5.
+	show(one("subtotal"), 14.5);
+	show(heads[1], 14.5);
 	// "4 of 5": the four rows the floor counts light together; R5 stays out.
 	mondayPacket.forEach((row, i) => {
 		if (rowPremium(row) === null) return;
@@ -1036,54 +977,58 @@ function build(context: FilmContext) {
 	fieldRows.forEach((row, i) => {
 		show(row, 18.95 + i * 0.05, "right", 0.35);
 	});
-	show(one("rerun-tag"), 19.55);
-	word(rerunMarks[0], 19.75);
-	// Without the formula: against P1's figure, and why.
-	drop("formula", 20.75);
-	d.flip(rerunMarks[0], rerunMarks[1], 20.95);
-	tl.set(rerunMarks[0], { opacity: 0 }, 21.25);
-	show(one("p1-says"), 21.05);
-	show(one("why-formula"), 21.25);
-	// The answer, with the first break.
-	show(heads[3], 21.3);
-	show(one("formula-base"), 21.45, "below", 0.2);
-	show(one("formula-divisor"), 21.95, "below", 0.2);
-	show(one("formula-result"), 22.45, "below", 0.2);
-	// Keep the first break's proof separate from the exclusions' after-beat.
-	hide(
-		[one("formula-base"), one("formula-divisor"), one("formula-result")],
-		24.6,
-		0.15,
-		0,
-	);
-	// Without the exclusions instead.
-	// The fields change while the old figure is folded shut: inputs and output never disagree.
-	restore("formula", 25);
-	drop("exclusions", 25);
-	d.flip(rerunMarks[1], rerunMarks[2], 24.75);
-	tl.set(rerunMarks[1], { opacity: 0 }, 25.05);
-	d.flip(one("why-formula"), one("why-exclusions"), 24.75);
-	tl.set(one("why-formula"), { opacity: 0 }, 25.05);
-	// Both contributions land before their field is connected to the breakdown.
-	show(one("extra-cancelled"), 25.55, "below", 0.2);
-	show(one("extra-repeated"), 26, "below", 0.2);
-	d.trace(one<SVGPathElement>("exclusions-link"), 26.2, { duration: 0.35 });
-	// Use the old connector-to-total gap for quiet reading of the complete equation:
-	// the total settles at 26.9, 1.05 s before the brackets enter, and holds to 29.85.
-	show(one("extra-total"), 26.7, "below", 0.2);
-	// Round the rerun with its label, P1's figure and its reason: no arm runs through a line.
+	show(one("rerun-tag"), 19.55, "below", 0.3);
+	// Establish P1's comparison once. The restored match supplies the correct rerun;
+	// an earlier duplicate match and duplicate division line are unnecessary.
+	drop("formula", 19.65);
+	word(rerunMarks[0], 19.95);
+	show(one("p1-says"), 19.95, "below", 0.3);
+	show(one("why-formula"), 19.95, "below", 0.3);
+	show(heads[3], 19.95);
+	// The formula reason is fully settled for 3.5 s before it folds away.
+	// Change fields only in the gap between the outgoing and incoming figures.
+	const fold = (target: Element, at: number) => {
+		tl.to(
+			target,
+			{
+				scaleY: 0,
+				transformOrigin: "50% 50%",
+				duration: 0.3,
+				ease: "power2.in",
+			},
+			at,
+		);
+		tl.set(target, { opacity: 0 }, at + 0.3);
+	};
+	const unfold = (target: Element, at: number) =>
+		tl.fromTo(
+			target,
+			{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
+			{ scaleY: 1, duration: 0.35, ease: "power2.out" },
+			at,
+		);
+	fold(rerunMarks[0], 23.75);
+	fold(one("why-formula"), 23.75);
+	restore("formula", 24.05);
+	drop("exclusions", 24.05);
+	unfold(rerunMarks[1], 24.35);
+	unfold(one("why-exclusions"), 24.35);
+	show(one("extra-cancelled"), 24.75, "below", 0.3);
+	show(one("extra-repeated"), 25.2, "below", 0.3);
+	d.trace(one<SVGPathElement>("exclusions-link"), 25.5, { duration: 0.35 });
+	show(one("extra-total"), 25.85, "below", 0.3);
+	// The complete exclusions sum settles at 26.15: 1.8 quiet seconds before lock.
 	d.lock(lockRerun, 27.95, {
 		around: [
 			one("rerun-tag"),
-			rerunMarks[2],
+			rerunMarks[1],
 			one("p1-says"),
 			one("why-exclusions"),
 		],
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 27.95);
-	// After the lock, once its reason has been read: the brackets let go, the field goes
-	// back, and the figure is P1's again.
+	// Brackets settle at 28.4; nothing exits until 29.9 (a full 1.5 s).
 	hide(
 		[
 			one("why-exclusions"),
@@ -1092,119 +1037,107 @@ function build(context: FilmContext) {
 			one("extra-total"),
 			one("exclusions-link"),
 		],
-		29.85,
+		29.9,
 	);
-	// Recover 0.75 s from the lock window and 0.10 s from its release: 2.00 s from
-	// entry to exit, 1.55 s fully settled, and the same 30.20 s release completion.
-	hide(lockRerun, 29.95, 0.25);
-	// Switch the field only after the old value has folded shut, then cut the fields.
-	tl.set(one("field-exclusions"), { opacity: 1 }, 30.15);
-	// Fold the wrong value away, then reveal the restored value settled for its carry.
-	tl.to(
-		rerunMarks[2],
-		{ scaleY: 0, transformOrigin: "50% 50%", duration: 0.3, ease: "power2.in" },
-		29.85,
-	);
-	tl.set(one("rerun-back"), { opacity: 1 }, 30.15);
-	tl.set(rerunMarks[2], { opacity: 0 }, 30.15);
+	hide(lockRerun, 29.95, 0.3);
+	fold(rerunMarks[1], 29.9);
+	restore("exclusions", 30.2);
+	unfold(one("rerun-back"), 30.2);
+	// The field, comparison and green match are intact and quiet for 30.55–31.55.
 
 	// ——— log: rerun, or a new question ———
-	tl.addLabel("log", 29.95);
-	d.swap([heads[2], heads[3]], heads[4], 29.95);
-	hide([one("rerun-tag"), one("p1-says")], 29.95);
-	hide(fieldRows, 30.15, 0.15, 0);
-	// The rerun's match stays up, then becomes P1's record: the figure a reader got back is
-	// the one the log keeps.
-	// The lock window and release fund 0.4 s for this handoff and 0.45 s for the ending.
-	// The restored match stays green for 30.15–30.55; the panel settles before flight.
-	show(recs[0], 30.3, "right", 0.25);
-	tl.set(one("rerun-back"), { attr: { class: "wt-film-num" } }, 30.55);
+	tl.addLabel("log", 31.55);
+	d.swap([heads[2], heads[3]], heads[4], 31.55);
+	hide([one("rerun-tag"), one("p1-says"), ...fieldRows], 31.55, 0.3, 0);
+	show(recs[0], 31.85, "right", 0.3);
+	tl.set(one("rerun-back"), { attr: { class: "wt-film-num" } }, 32.15);
 	d.carry(
 		one<SVGGraphicsElement>("rerun-back"),
 		one<SVGGraphicsElement>("rec-0-n"),
-		30.55,
-		{
-			duration: 0.4,
-		},
+		32.15,
+		{ duration: 0.4 },
 	);
-	// The note stays out of the flight lane, then appears with the landed P1 figure.
-	tl.set(one("rec-0-note"), { opacity: 1 }, 30.95);
-	// Equations enter settled; earlier P1/P2 staging funds the longer spread proof.
-	// Every saved result retains its own uninterrupted 1.5 s reading interval.
-	const saveResult = (i: number, saveAt: number) => {
-		const operands = [one(`log-${i}-expression`)];
-		if (i === 2) operands.push(one("log-2-operand"), one("log-2-equals"));
-		// Clear the baseline before the saved figure flies through it; dimmed glyphs
-		// still overprint the carry in both the P2 addition and P3 subtraction.
-		tl.set(operands, { opacity: 0 }, saveAt);
+	// Clear every operand over 0.3 s, then fly through a completely empty baseline.
+	// Method/as-of headers and the headlines identify reruns and new questions;
+	// duplicate result tags would occupy the equation/flight lane and steal quiet time.
+	const saveResult = (i: number, clearAt: number) => {
+		const operands = [
+			one(`log-${i}-expression`),
+			one(`log-${i}-operand`),
+			one(`log-${i}-equals`),
+		];
+		if (i === 2) operands.push(one("log-spread-proof"));
+		hide(operands, clearAt, 0.3, 0);
 		d.carry(
 			one<SVGGraphicsElement>(`log-${i}-result`),
 			one<SVGGraphicsElement>(`rec-${i}-n`),
-			saveAt,
-			{ duration: 0.2, arc: "x" },
+			clearAt + 0.3,
+			{ duration: 0.3, arc: "x" },
 		);
-		tl.set(one(`rec-${i}-tag`), { opacity: 1 }, saveAt + 0.2);
 	};
-	// P1 holds 30.95–32.45; P2 equation 32.45–33.95; saved P2 34.15–35.65.
-	tl.set(
+	// Saved P1 reads alone for 32.55–34.05. P1 already establishes the base amount;
+	// R5 and the addition arrive next, followed by the settled equality/result.
+	show(
 		[
 			recs[1],
 			one("log-r5-cause"),
 			one("log-1-expression"),
-			one("log-1-result"),
+			one("log-1-operand"),
 		],
-		{ opacity: 1 },
-		32.45,
+		34.05,
+		"below",
+		0.3,
 	);
-	saveResult(1, 33.95);
-	show(heads[5], 35.65);
-	// P3's note row first identifies the two spread portions, not the entire R2/R3 rows.
-	tl.set(
-		[recs[2], one("log-spread-cause"), one("log-spread-proof")],
-		{ opacity: 1 },
-		35.65,
-	);
-	// Focus changes only after P2's uninterrupted result hold, including its old cause.
+	show([one("log-1-equals"), one("log-1-result")], 34.35, "below", 0.3);
+	// Complete P2: 34.65–35.65 quiet; saved P2: 36.25–37.75 quiet.
+	saveResult(1, 35.65);
+	show(heads[5], 37.75, "below", 0.3);
+	show([recs[2], one("log-spread-cause")], 37.75, "right", 0.3);
+	// Identify the actual portions, then use their sum directly in the subtraction.
+	// This merges the old total-transfer step into one proof without losing either leg.
+	// Both children are hidden: opening this mask reveals no visible mark by itself.
+	tl.set(one("log-spread-proof"), { opacity: 1 }, 37.75);
+	show(one("log-spread-r2"), 37.75, "below", 0.3);
+	show(one("log-spread-r3"), 37.9, "below", 0.3);
 	tl.to(
 		[recs[0], recs[1], one("log-r5-cause")],
-		{ opacity: 0.45, duration: 0.2 },
-		35.65,
+		{ opacity: 0.45, duration: 0.3 },
+		37.75,
 	);
-	// The complete two-leg sum holds 35.65–37.65 (2 s). Its total stays inside P3, clear
-	// of the header and border; neighboring text steps back before the short flight.
-	tl.set([one("log-spread-r2"), one("log-spread-r3")], { opacity: 0.2 }, 37.65);
-	d.carry(
-		one<SVGGraphicsElement>("log-spread-total"),
-		one<SVGGraphicsElement>("log-2-operand"),
-		37.65,
-		{ duration: 0.2, arc: "x" },
+	// The deduction is below both selected portions; all figures are settled/modelled.
+	show(
+		[
+			one("log-2-expression"),
+			one("log-2-operand"),
+			one("log-2-equals"),
+			one("log-2-result"),
+		],
+		38.2,
+		"below",
+		0.3,
 	);
-	tl.set(one("log-spread-proof"), { opacity: 0 }, 37.85);
-	// Reveal the subtraction only with its settled operand: no incomplete equality.
-	tl.set(
-		[one("log-2-expression"), one("log-2-equals"), one("log-2-result")],
-		{ opacity: 1 },
-		37.85,
-	);
-	saveResult(2, 39.85);
-	tl.set(one("rec-2-note"), { opacity: 1 }, 40.05);
+	// One combined spread/subtraction proof: 38.5–39.5 quiet, then a cleared save lane.
+	saveResult(2, 39.5);
+	// After the figure lands, collapse only the rect, keeping the saved figure at rest.
+	tl.to(one("rec-2-box"), { attr: { height: L.recH }, duration: 0.3 }, 40.1);
+	// Complete saved P3 holds quietly for 40.4–41.9 (1.5 s).
 
 	// ——— claim ———
-	tl.addLabel("claim", 41.55);
+	tl.addLabel("claim", 41.9);
 	hide(
 		[heads[4], heads[5], ...recs, one("log-r5-cause"), one("log-spread-cause")],
-		41.55,
+		41.9,
 	);
-	word(one("z-big"), 41.85);
-	show(one("z-sub"), 42.25);
+	word(one("z-big"), 42.2);
+	show(one("z-sub"), 42.6);
 
 	// ——— next ———
-	tl.addLabel("next", 45.95);
-	hide(kids("claim"), 45.95);
-	// One compact entrance after the claim clears; the complete card holds 1 s.
+	tl.addLabel("next", 46.3);
+	hide(kids("claim"), 46.3);
+	// The player retains this final card after END; its entrance obeys the motion floor.
 	d.hidden(kids("end"));
-	show(kids("end"), 46.3, "below", 0.2);
-	tl.to({}, { duration: END - 46.5 }, 46.5);
+	show(kids("end"), 46.65, "below", 0.3);
+	tl.to({}, { duration: END - 46.95 }, 46.95);
 	// Retain the kit's 4 s source / 2 s player title-card convention.
 	tl.shiftChildren(-2, true, 3.99);
 	return tl;
