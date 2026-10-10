@@ -32,23 +32,23 @@ import {
  * it needs and a rule for revising it. The hero is its answer, claim by claim, each
  * stamped with its evidence: 540 observed, 51% calculated, and "traders favor 110", an
  * interpretation; then the 110 bar splits, 500 of it one spread leg, the interpretation is
- * struck through and glowing brackets lock on it; after the lock, the 120 call's volume
+ * underlined as uncertain and glowing brackets lock on it; after the lock, the 120 call's volume
  * stays unknown. Last, the log: Tuesday's 30 contracts for the 120 call come in and revise
- * record 1 in place; a switch to puts opens record 2.
+ * record 1 in place while keeping Monday's version; a switch to puts opens record 2.
  *
  *   open      0–4        "Research questions"
  *   question  4–8.6      "Where’s the action in ALFA?" Checkable?
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
- *   answer    17.6–31.8  hero: five strikes; observed; calculated; interpretation; the
- *                        split, labelled and connected; struck through; locked; then the gap
- *   log       31.8–41.8  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
+ *   answer    17.6–32.05  hero: five strikes; observed; calculated; interpretation; the
+ *                        split, labelled and connected; qualified; locked; then the gap
+ *   log       32.05–41.6  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
  *                        ≤ 51% → 540 ÷ 1,095 ≈ 49%; read the revision, then calls → puts
  *                        opens record 2 and clears the calls proof
- *   claim     41.8–46.1 a question someone else can check
- *   next      46.1–47.0 Next: comparison groups
+ *   claim     41.6–45.9 a question someone else can check
+ *   next      45.9–47.5 Next: comparison groups
  */
 
-const END = 47;
+const END = 47.5;
 const MAX = 560;
 /** The claim cards: the interpretation, and the observed spread leg that undercuts it. */
 const STORY_CARD = 2;
@@ -220,11 +220,15 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 	},
 ];
 
-/** Record 1, once Tuesday's data is in: its title, answer and tag turn over in place. */
-/** The saved series label stays separate from its continuously carried mono digits. */
+/** Tuesday's revision fades in while a compact history keeps Monday's timestamp and bound. */
+/** The saved series label stays separate from its mono digits. */
 const LATE_PREFIX: Copy = ["120:", "120："];
 const revised = {
 	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
+	history: [
+		`Mon 16:05 · ≤${share(LEAD, COVERED)} · kept`,
+		`周一 16:05 · ≤${share(LEAD, COVERED)} · 保留`,
+	],
 	shortAnswer: [
 		`110 leads · ${share(LEAD, WITH_LATE)}`,
 		`110 领先 · 占 ${share(LEAD, WITH_LATE)}`,
@@ -595,10 +599,11 @@ function Scene({
 									text * (locale === "zh" ? 0.95 : 0.86),
 								)
 							}
-							y1={L.claimY(i) + L.claimH / 2}
-							y2={L.claimY(i) + L.claimH / 2}
+							y1={L.claimY(i) + L.claimH - 3}
+							y2={L.claimY(i) + L.claimH - 3}
 							stroke="var(--diagram-unknown)"
 							strokeWidth={2}
+							strokeDasharray="4 4"
 							strokeLinecap="round"
 						/>
 					) : null}
@@ -689,6 +694,16 @@ function Scene({
 			{/* Tuesday's data for the 120 call: it comes in over record 1 and lands in its answer. */}
 			<g data-f="late">
 				<Word
+					name="late-strike"
+					x={margin + 16}
+					y={L.lateY}
+					size={text}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{SERIES.find((row) => row.volume === null)?.strike}
+				</Word>
+				<Word
 					name="late-volume"
 					x={L.barX + 16}
 					y={L.lateY}
@@ -766,7 +781,7 @@ function Scene({
 					{t(copy.puts)}
 				</Word>
 			</g>
-			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
+			{/* The current revision and its preserved earlier version share the same card. */}
 			<g data-f="rev">
 				<text
 					data-f="rev-title"
@@ -806,6 +821,16 @@ function Scene({
 				>
 					{count(LATE)}
 				</Word>
+				<text
+					data-f="rev-history"
+					x={margin + L.recW - 16}
+					y={L.recLateY}
+					textAnchor="end"
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(revised.history)}
+				</text>
 				<text
 					data-f="rev-answer"
 					x={margin + 16}
@@ -884,6 +909,7 @@ function build(context: FilmContext) {
 		"rev-late",
 		"rev-late-volume",
 		"rev-answer",
+		"rev-history",
 	].map((name) => one(name));
 
 	d.hidden([
@@ -908,10 +934,15 @@ function build(context: FilmContext) {
 		...kids("universe-change"),
 		...kids("claim"),
 	]);
-	// The strike runs the story's own length, measured as set.
+	// A dashed underline qualifies the interpretation without crossing out its words.
 	const story = one<SVGTextElement>("claim-2-text").getBBox();
 	gsap.set(one("story-strike"), {
-		attr: { x1: story.x - 2, x2: story.x + story.width + 2 },
+		attr: {
+			x1: story.x - 2,
+			x2: story.x + story.width + 2,
+			y1: story.y + story.height + 3,
+			y2: story.y + story.height + 3,
+		},
 	});
 	// Measure the exact ALFA glyphs in the wrapped question for a same-face proxy.
 	const question = one<SVGTextElement>("q-line");
@@ -955,7 +986,7 @@ function build(context: FilmContext) {
 		(part) => part !== subjectGlyphs && !part.querySelector("tspan"),
 	);
 	gsap.set(questionRemainder, { opacity: 1 });
-	// Measure the prefix and mono digits independently; carries land in the source's face.
+	// Measure the prefix and mono digits independently to reserve their 10 px gap.
 	const prefixBox = one<SVGTextElement>("rev-late").getBBox();
 	gsap.set(one("rev-late-volume"), {
 		attr: { x: prefixBox.x + prefixBox.width + 10 },
@@ -1041,9 +1072,9 @@ function build(context: FilmContext) {
 	show(claimRows[3], 25.05, "right");
 	stamp(tags[3], 25.55);
 	d.trace(one<SVGPathElement>("spread-trace"), 25.6, { duration: 0.5 });
-	// Once the evidence has struck the story, clear the connector before the lock.
+	// Once the evidence has qualified the story, clear the connector before the lock.
 	hide(one("spread-trace"), 26.7, 0.3, 0);
-	// The story is struck through, right after the evidence against it, not erased.
+	// The uncertainty treatment follows the evidence and leaves the interpretation readable.
 	tl.fromTo(
 		one("story-strike"),
 		{ opacity: 1, scaleX: 0, transformOrigin: "0% 50%" },
@@ -1051,20 +1082,20 @@ function build(context: FilmContext) {
 		26.15,
 	);
 	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 26.15);
-	d.lock(lockClaim, 27.7, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
-	tl.addLabel("hero-lock", 27.7);
-	show(heads[2], 27.7);
+	d.lock(lockClaim, 27.95, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
+	tl.addLabel("hero-lock", 27.95);
+	show(heads[2], 27.95);
 	// After the lock, once it has been seen: what the data doesn't hold.
-	// Both the lock and its answer settle by 28.2: leave 1.5 s exclusively for them.
-	show(claimRows[4], 29.7, "right");
-	stamp(tags[4], 30.1);
+	// Both the lock and its answer settle by 28.45: leave 1.5 s exclusively for them.
+	show(claimRows[4], 29.95, "right");
+	stamp(tags[4], 30.35);
 
 	// ——— log: revise, or start anew ———
-	tl.addLabel("log", 31.8);
-	d.swap([heads[1], heads[2]], heads[3], 31.8);
+	tl.addLabel("log", 32.05);
+	d.swap([heads[1], heads[2]], heads[3], 32.05);
 	hide(
 		[
-			...strikes.filter((_, i) => SERIES[i].volume !== null),
+			...strikes,
 			...claimRows,
 			...tags,
 			one("spread-seg"),
@@ -1072,51 +1103,24 @@ function build(context: FilmContext) {
 			one("story-strike"),
 			lockClaim,
 		],
-		31.8,
+		32.05,
 		0.3,
 	);
 	// The outgoing chart is fully gone before any record glyph can enter its region.
-	show(recs[0], 32.1, "right");
-	// Preserve the named, missing 120 row while the rest of the hero leaves.
-	const missingIndex = SERIES.findIndex((row) => row.volume === null);
-	const rowBaseline =
-		L.barRowY(missingIndex) +
-		L.barH / 2 +
-		(L.narrow ? L.type.small * 1.1 : L.type.body) * 0.36;
-	tl.to(
-		strikes[missingIndex],
-		{ x: 16, y: L.lateY - rowBaseline, duration: 0.65, ease: "power3.inOut" },
-		31.8,
-	);
-	// Clear both missing-state marks before the delivered number and date enter.
-	hide(
-		[one("missing-series-ghost"), one("missing-series-state")],
-		32.15,
-		0.3,
-		0,
-	);
-	show([one("late-volume"), one("late-day")], 32.45, "right", 0.3);
-	// Delivery settles at 32.75; leave one quiet second before constructing the sum.
-	// The short addition flight is redundant: reveal the true, complete equation in place.
-	show(
-		[
-			one("rev-base"),
-			one("rev-plus"),
-			one("rev-add"),
-			one("rev-equals"),
-			one("rev-total"),
-		],
-		33.75,
-		"below",
-		0.3,
-	);
+	tl.fromTo(recs[0], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 32.35);
+	// Keep the 120 identity in the delivery row without a rushed flight from the chart.
+	tl.fromTo(kids("late"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 32.35);
+	// Delivery settles at 32.65; leave one quiet second before constructing the sum.
+	// Establish the operands before revealing the settled equality and result.
+	show([one("rev-base"), one("rev-plus"), one("rev-add")], 33.65, "below", 0.3);
+	show([one("rev-equals"), one("rev-total")], 33.95, "below", 0.3);
 	// Its source stays delivered; the saved card will still receive these same digits.
 	tl.to(
 		one("late-day"),
 		{ opacity: 0.2, duration: 0.3, ease: "power3.out" },
-		33.75,
+		33.95,
 	);
-	// The completed 1,095 settles at 34.05 and stands alone until 35.05.
+	// The completed 1,095 settles at 34.25 and stands alone until 35.25.
 	// Matching colour then connects it to a settled, truthful division; no crowded flight.
 	tl.fromTo(
 		[
@@ -1130,84 +1134,68 @@ function build(context: FilmContext) {
 		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		35.05,
+		35.25,
 	);
-	// The complete derivation settles at 35.35, then gets its full quiet second.
-	const reviseAt = 36.35;
+	// The complete derivation settles at 35.55, then gets its full quiet second.
+	const reviseAt = 36.55;
 	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, reviseAt);
-	// Clear the old answer quickly within its full 0.3 s fade, before the digits pass it.
+	// Save in place: the crowded lane needs no flight or folded timestamp.
+	// The history retains Monday's version while the current fields fade to Tuesday's.
 	tl.to(
-		one("rec-0-answer"),
+		[
+			one("rec-0-answer"),
+			one("rec-0-title"),
+			one("rec-0-tag"),
+			one("late-volume"),
+			one("late-day"),
+			one("late-strike"),
+		],
 		{ opacity: 0, duration: 0.3, ease: "power3.out" },
 		reviseAt,
 	);
-	d.carry(
-		one<SVGGraphicsElement>("late-volume"),
-		one<SVGGraphicsElement>("rev-late-volume"),
-		36.45,
-		{ duration: 0.4, arc: "y" },
-	);
-	hide(strikes[missingIndex], 36.45, 0.3, 0);
-	hide(one("late-day"), 36.45, 0.3, 0);
-	d.flip(one("rec-0-title"), revs[0], reviseAt);
-	tl.set(one("rec-0-title"), { opacity: 0 }, reviseAt + 0.3);
-	d.flip(one("rec-0-tag"), revs[1], reviseAt);
-	tl.set(one("rec-0-tag"), { opacity: 0 }, reviseAt + 0.3);
-	// The prefix leaves a 10 px lane. Leading vertically clears the answer before it fades in.
-	tl.fromTo(
-		one("rev-late"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		reviseAt,
-	);
-	tl.fromTo(
-		one("rev-answer"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		36.65,
-	);
+	tl.fromTo(revs, { opacity: 0 }, { opacity: 1, duration: 0.3 }, reviseAt);
 	// A new question: a new record, once the revision has been read.
 	// Clear the proof before record 2 becomes readable in the same region.
-	// The last folded tag settles at 37.0; restore 1.3 s of exclusive saved-record reading.
+	// All revised fields settle at 36.85; allow 1.1 s before clearing the proof.
 	tl.to(
 		kids("rev-proof"),
 		{ opacity: 0, duration: 0.3, ease: "power3.out" },
-		38.3,
+		37.95,
 	);
-	// Proof opacity is already below 0.25 at 38.4; reveal the card without travel.
-	// It reaches 0.6 by 38.462 and stays above it until 42.058: a 3.59 s reading hold.
+	// The proof is fully gone at 38.25, before record 2 starts its entrance.
+	// Opacity reaches 0.6 at 38.311 and stays above it until 41.821: a 3.51 s hold.
 	tl.fromTo(
 		recs[1],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power3.out" },
-		38.4,
+		38.25,
 	);
-	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 38.3);
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 38.3);
-	show(heads[4], 38.3);
-	show(one("rec-0-universe"), 38.7, "right", 0.3);
-	show(one("universe-arrow"), 38.9, "right", 0.3);
-	show(one("rec-1-universe"), 39.15, "right", 0.3);
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 38.15);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 38.15);
+	show(heads[4], 38.1);
+	show(one("rec-0-universe"), 38.55, "right", 0.3);
+	show(one("universe-arrow"), 38.75, "right", 0.3);
+	show(one("rec-1-universe"), 39.0, "right", 0.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 41.8);
-	hide(
-		[heads[3], heads[4], ...recs, ...revs, ...kids("universe-change")],
-		41.8,
+	tl.addLabel("claim", 41.6);
+	hide([heads[3], heads[4]], 41.6, 0.3);
+	// Every outgoing mark finishes its exit before the claim enters at 41.9.
+	tl.to(
+		[recs[0], ...revs],
+		{ opacity: 0, duration: 0.3, ease: "power3.out" },
+		41.6,
 	);
-	word(one("z-big"), 42.1);
-	show(one("z-sub"), 42.5);
+	// The original exit ease keeps record 2 readable for at least 3.5 s.
+	hide([recs[1], ...kids("universe-change")], 41.6, 0.3);
+	word(one("z-big"), 41.9);
+	show(one("z-sub"), 42.3);
 
 	// ——— next ———
-	tl.addLabel("next", 46.1);
-	hide(kids("claim"), 46.1);
-	// Keep the kit's trailing duration anchor at END; its stagger is retimed below.
-	d.close(END - 1.1);
-	// Spend the ending's stagger on the two reading pauses, keeping its 46.95
-	// settlement. close() has already shifted the labels into player time.
-	for (const tween of tl.getTweensOf(kids("end"))) {
-		tween.duration(0.45).startTime(tl.labels.next + 0.4);
-	}
+	tl.addLabel("next", 45.9);
+	hide(kids("claim"), 45.9);
+	// The standard stagger settles at END; the player retains this complete final card.
+	d.close(45.9);
 	return tl;
 }
 
