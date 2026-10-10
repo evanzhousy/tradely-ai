@@ -34,8 +34,8 @@ import {
  * Stocks and prices, as a film. It opens on ALFA's last trade, $100.02, and asks what 10
  * shares cost right now. First what a share is: one of 50 million slices of a $5 billion
  * company, so each $1 move is $10 on your 10 shares and $50 million on ALFA. Then the
- * quote: buy 10 and the ticket lands on what you pay, $1,000.50 at the $100.05 ask; sell 10
- * and it lands beside it on what you get, $1,000.00 at the $100.00 bid: 50¢ apart, and
+ * quote: buy 10 and its ticket fades into what you pay, $1,000.50 at the $100.05 ask;
+ * sell 10 and its ticket fades into what you get, $1,000.00 at the $100.00 bid: 50¢ apart,
  * neither is the last trade. Those trades stay done. The hero: 1,000 shares at once climb
  * the offers that are left, one level after another, to an average of $100.061. Last, a
  * stock, an ETF and an index.
@@ -43,10 +43,10 @@ import {
  *   open      0–4        "Stocks and prices"
  *   question  4–9        last $100.02: what do 10 shares cost?
  *   slice     9–16.55    50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
- *   quote     16.55–37.6 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
+ *   quote     16.55–37.0 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
  *                        more to buy; hero: buy 1,000; after it, the same 1,000 at the last
  *                        price, and what the sweep added
- *   kinds     37.6–41.45 stock, ETF, index; the index is a number, cash-settled
+ *   kinds     37.0–41.45 stock, ETF, index; the index is a number, cash-settled
  *   claim     41.45–45.85 you trade against the quote, not the last price
  *   next      45.85–47.45 Next: options, a paid right
  */
@@ -501,7 +501,7 @@ function Scene({
 				anchor="start"
 				className="wt-film-num wt-film-accent"
 			>
-				{usd(0)}
+				{usd(BUY10.notional)}
 			</Word>
 			{/* A desktop handoff uses the subtraction's type in a lane left of the hero. */}
 			<Word
@@ -522,7 +522,7 @@ function Scene({
 				anchor="start"
 				className="wt-film-num wt-film-accent"
 			>
-				{usd(0)}
+				{usd(SELL10.notional)}
 			</Word>
 			{/* Build gives the division its own row, 12 px below the settled numerator. */}
 			<Word
@@ -643,22 +643,19 @@ function Scene({
 			>
 				{t(copy.overLast).toUpperCase()}
 			</text>
-			{/* An order leaves the book as a ticket at the level it takes. */}
+			{/* The highlighted fill's ticket reads in its payment slot, then turns into the total. */}
 			{(
 				[
-					["chip-buy", "ask", ASKS.length - 1, BUY10.fills[0]?.price ?? 0],
-					["chip-sell", "bid", 0, SELL10.fills[0]?.price ?? 0],
+					["chip-buy", 0, BUY10.fills[0]?.price ?? 0],
+					["chip-sell", 1, SELL10.fills[0]?.price ?? 0],
 				] as const
-			).map(([name, side, i, cents]) => {
-				const y = side === "ask" ? L.askY(i) : L.bidY(i);
-				// Born just right of the book, clear of the size that is counting down and of
-				// the brackets on its row.
+			).map(([name, slot, cents]) => {
 				return (
 					<text
 						key={name}
 						data-f={name}
-						x={L.bookX + L.bookW + 14}
-						y={y + L.rowH / 2 + rowText * 0.36}
+						x={slotX(slot)}
+						y={valY(slot)}
 						textAnchor="start"
 						className="wt-film-num wt-film-accent wt-halo"
 						style={{ fontSize: rowText }}
@@ -876,11 +873,7 @@ function build(context: FilmContext) {
 			};
 			if (bracket)
 				d.lock(lockRow, when, { around: hit(side, fill.price), pad: 4 });
-			tl.to(
-				hit(side, fill.price),
-				{ opacity: 1, duration: Math.min(duration, 0.25) },
-				when,
-			);
+			tl.to(hit(side, fill.price), { opacity: 1, duration: 0.3 }, when);
 			tl.fromTo(
 				state,
 				{ filled: 0 },
@@ -995,17 +988,25 @@ function build(context: FilmContext) {
 	ASKS.forEach((at, i) => {
 		show(one(`lv-${key("ask", at.price)}`), 17.05 + i * 0.1, "right");
 	});
-	show([one("spread"), one("last")], 17.45);
+	show([one("spread"), one("last")], 17.35);
 	BIDS.forEach((at, i) => {
-		show(one(`lv-${key("bid", at.price)}`), 17.55 + i * 0.1, "right");
+		show(one(`lv-${key("bid", at.price)}`), 17.45 + i * 0.1, "right");
 	});
-	show(one("bids-tag"), 17.95);
-	// Buy 10, then sell 10, under one headline: each ticket leaves the level it takes and
-	// lands in its own slot, so what you pay and what you get stand side by side. The
-	// trades stay done: the levels keep what they lost.
+	show(one("bids-tag"), 17.65);
+	// Buy 10, then sell 10: each highlighted level supplies a ticket in its payment slot.
+	// The trades stay done: the levels keep what they lost.
 	const sell = one<SVGTextElement>("p-sell");
-	// On a phone the slots are under the book: a ticket goes down first, clear of the sizes.
-	const lane = L.narrow ? ("y" as const) : undefined;
+	// The desktop journey was short and the phone lane crowded. Fade in place instead of
+	// compressing either flight to fit the cap; content and size change only after clearing.
+	const ticket = (
+		name: "chip-buy" | "chip-sell",
+		to: SVGTextElement,
+		at: number,
+	) => {
+		const from = one<SVGTextElement>(name);
+		hide(from, at, 0.3, 0);
+		tl.fromTo(to, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.3);
+	};
 	const measured = (el: SVGTextElement, text: string) => {
 		const was = el.textContent;
 		el.textContent = text;
@@ -1082,48 +1083,40 @@ function build(context: FilmContext) {
 		const y = Number(paid.getAttribute("y")) + L.type.body * 0.45;
 		rule.setAttribute("d", `M${x} ${y}h${paidW + minusW + 12}`);
 	}
-	d.swap(heads[2], heads[3], 20.4);
-	// The buy starts under the book headline; its landing completes before the sale begins.
-	take("ask", BUY10.fills, 20.1, null);
+	// The next headline joins the sale only after the complete purchase's quiet window.
+	d.swap(heads[2], heads[3], 21.55);
+	// The book settles at 18.15, then reads for a full second before the first trade.
+	take("ask", BUY10.fills, 19.15, null);
 	tl.fromTo(
 		one("chip-buy"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		20.2,
+		19.15,
 	);
-	show(one("p-pay"), L.narrow ? 21.5 : 20.5, "above", 0.3);
-	d.carry(one<SVGGraphicsElement>("chip-buy"), total, 20.5, {
-		duration: 1,
-		fit: false,
-		arc: lane,
-	});
-	d.count(total, BUY10.notional, 21.49, dollars, BUY10.notional, 0.01);
-	take("bid", SELL10.fills, 21.5, null);
+	ticket("chip-buy", total, 19.55);
+	show(one("p-pay"), 19.15, "above", 0.3);
+	// The correct payment settles at 20.15; the bid and headline wait until 21.55 (1.4 s).
+	take("bid", SELL10.fills, 21.55, null);
 	tl.fromTo(
 		one("chip-sell"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		21.6,
+		21.55,
 	);
-	// Both transfers construct one comparison. The sale gets a complete, separate journey.
-	show(one("p-get"), L.narrow ? 22.5 : 21.9, "above", 0.3);
-	d.carry(one<SVGGraphicsElement>("chip-sell"), sell, 21.9, {
-		duration: 0.6,
-		fit: false,
-		arc: lane,
-	});
-	d.count(sell, SELL10.notional, 22.49, dollars, SELL10.notional, 0.01);
-	// The two settled totals prove the 50¢ difference directly, without a second calculation.
-	d.trace(one<SVGPathElement>("diff-gap"), 22.5, { duration: 0.3 });
-	show(one("diff-label"), 22.5, "below", 0.3);
-	show(heads[4], 22.5);
-	tl.to(lockRow, { opacity: 0, duration: 0.3 }, 22.5);
+	ticket("chip-sell", sell, 21.95);
+	show(one("p-get"), 21.55, "above", 0.3);
+	// Reveal the sale and its 50¢ comparison as one result, then leave the completed proof
+	// quiet until the hero. No second calculation competes with the landed sale.
+	d.trace(one<SVGPathElement>("diff-gap"), 22.25, { duration: 0.3 });
+	show(one("diff-label"), 22.25, "below", 0.3);
+	show(heads[4], 22.25);
+	tl.to(lockRow, { opacity: 0, duration: 0.3 }, 22.25);
 	tl.to(
 		[hit("ask", BUY10.fills[0].price), hit("bid", SELL10.fills[0].price)],
 		{ opacity: 0, duration: 0.3 },
-		22.5,
+		22.25,
 	);
-	// The hero: each 0.2 s fill has a full 1 s settled dwell before the next operation.
+	// The hero: each 0.3 s fill has a full 1 s settled dwell before the next operation.
 	// Steady row highlights locate the fills without spending that dwell on moving brackets.
 	hide([heads[3], heads[4]], 26.15);
 	show(heads[5], 26.5, "below", 0.3);
@@ -1133,25 +1126,25 @@ function build(context: FilmContext) {
 	// Reset the desktop exit translation before this mark becomes a later carry source.
 	tl.set(total, { x: 0, y: 0, textContent: dollars(0) }, 26.45);
 	tl.to(total, { opacity: 1, duration: 0.3 }, 26.45);
-	take("ask", BUY_BIG.fills, 26.75, null, {
-		step: 1.2,
-		duration: 0.2,
+	take("ask", BUY_BIG.fills, 26.5, null, {
+		step: 1.3,
+		duration: 0.3,
 		bracket: false,
 		paid: { from: 0 },
 		from: BUY10,
 	});
 	// Register the already-settled shared-state total for the director's carry measurement.
 	// This is a constant, zero-duration handoff, never a second animated counter.
-	d.count(total, BUY_BIG.notional, 29.35, dollars, BUY_BIG.notional, 0);
-	// The last fill settles at 29.35 and reads for 1 s. Then construct the whole division.
+	d.count(total, BUY_BIG.notional, 29.4, dollars, BUY_BIG.notional, 0);
+	// The last fill settles at 29.4 and reads for 1 s. Then construct the whole division.
 	tl.fromTo(
 		one("p-divisor"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		30.35,
+		30.4,
 	);
-	show(one("p-avg-tag"), 30.35, "below", 0.3);
-	word(one("p-avg"), 30.35);
+	show(one("p-avg-tag"), 30.4, "below", 0.3);
+	word(one("p-avg"), 30.4);
 	tl.to(
 		BUY_BIG.fills.map((fill) => hit("ask", fill.price)),
 		{ opacity: 0.3, duration: 0.3 },
@@ -1182,26 +1175,26 @@ function build(context: FilmContext) {
 			"x",
 			`${one<SVGGraphicsElement>("p-avg").getBBox().x - transfer.getBBox().width - 64}`,
 		);
-		d.carry(total, transfer, 32.75, { duration: 0.25, arc: "x" });
-		d.carry(transfer, paid, 33.0, { duration: 0.3, arc: "y" });
+		d.carry(total, transfer, 32.75, { duration: 0.3, arc: "x" });
+		d.carry(transfer, paid, 33.05, { duration: 0.3, arc: "y" });
 	}
 	// Only reveal the comparison's other operands after the payment has landed.
-	tl.set(one("last"), { attr: { class: "wt-film-num wt-film-accent" } }, 33.3);
-	tl.to(one("last"), { opacity: 1, duration: 0.3 }, 33.3);
-	show(one(L.narrow ? "vs-x" : "vs-calc"), 33.3, "below", 0.3);
+	tl.set(one("last"), { attr: { class: "wt-film-num wt-film-accent" } }, 33.35);
+	tl.to(one("last"), { opacity: 1, duration: 0.3 }, 33.35);
+	show(one(L.narrow ? "vs-x" : "vs-calc"), 33.35, "below", 0.3);
 	tl.to(
 		one(L.narrow ? "vs-eq" : "vs-minus"),
 		{ opacity: 1, duration: 0.3 },
-		33.3,
+		33.35,
 	);
-	d.trace(one<SVGPathElement>("vs-rule"), 33.3, { duration: 0.3 });
-	tl.set(paid, { attr: { class: "wt-film-num" } }, 33.6);
-	tl.to(one("p-over"), { opacity: 1, duration: 0.3 }, 33.3);
-	show(one("p-over-tag"), 33.3, "below", 0.3);
-	// The complete subtraction retains its four seconds, 33.6–37.6.
+	d.trace(one<SVGPathElement>("vs-rule"), 33.35, { duration: 0.3 });
+	tl.set(paid, { attr: { class: "wt-film-num" } }, 33.65);
+	tl.to(one("p-over"), { opacity: 1, duration: 0.3 }, 33.35);
+	show(one("p-over-tag"), 33.35, "below", 0.3);
+	// The complete subtraction reads for 3.35 s, funding 0.6 s more for the denser table.
 
 	// ——— kinds: what the underlying is ———
-	tl.addLabel("kinds", 37.6);
+	tl.addLabel("kinds", 37.0);
 	hide(
 		[
 			heads[5],
@@ -1225,25 +1218,25 @@ function build(context: FilmContext) {
 			one("p-over"),
 			one("p-over-tag"),
 		],
-		37.6,
+		37.0,
 	);
-	show(heads[6], 37.95);
+	show(heads[6], 37.35);
 	show(
 		flat("kinds").filter((el) => el.tagName === "text"),
-		37.95,
+		37.35,
 		"below",
 		0.3,
 	);
 	kindOrder.forEach((kind) => {
-		show(one(`col-${kind}`), 37.95, "below", 0.3);
+		show(one(`col-${kind}`), 37.35, "below", 0.3);
 	});
 	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 39.45);
 	d.lock(one<SVGGraphicsElement>("lock-index"), 39.45, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
-	// All three columns retain full contrast from 38.25 to 41.45 (3.2 s).
-	// The headline retains 3.5 s and settles at 38.45, 1 s before the index focus.
+	// All three columns retain full contrast from 37.65 to 41.45 (3.8 s).
+	// The headline retains 4.1 s and settles at 37.85, 1.6 s before the index focus.
 	// That focus settles at 39.9, leaving another 1.55 s of quiet comparison.
 
 	// ——— claim ———
