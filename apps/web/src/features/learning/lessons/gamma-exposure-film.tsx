@@ -62,6 +62,7 @@ import {
 
 const END = 47.5;
 const RANGE = 900_000;
+const COMPONENT_OPACITY = 0.35;
 const NET_BY_STRIKE = STRIKES.map(
 	(strike) => contribution(strike, "call") + contribution(strike, "put"),
 );
@@ -245,6 +246,9 @@ function Scene({
 		locale === "zh" ? text.replace("shares/$1", "股/$1") : text;
 	const missingIndex = STRIKES.indexOf(Number(MISSING[0].replace("P", "")));
 	const focusIndex = STRIKES.indexOf(FOCUS_STRIKE);
+	// Split the mono caption at its space, keeping the combined line centred.
+	const focusValueX =
+		L.barX(focusIndex) + T.small * (locale === "zh" ? 0.4 : -0.3);
 	const callOutline = (strike: number, name: string) => (
 		<rect
 			key={name}
@@ -368,13 +372,24 @@ function Scene({
 				{money(LONG)}
 			</Word>
 			<Word
-				name="p-focus-value"
-				x={L.barX(focusIndex)}
+				name="p-focus-contract"
+				x={focusValueX - T.small * 0.6}
 				y={L.y(LONG) - 14}
 				size={T.small}
+				anchor="end"
 				className="wt-film-num wt-film-dim"
 			>
-				{`${FOCUS_STRIKE}${locale === "zh" ? "看涨" : "C"} ${money(LONG)}`}
+				{`${FOCUS_STRIKE}${locale === "zh" ? "看涨" : "C"}`}
+			</Word>
+			<Word
+				name="p-focus-value"
+				x={focusValueX}
+				y={L.y(LONG) - 14}
+				size={T.small}
+				anchor="start"
+				className="wt-film-num wt-film-dim"
+			>
+				{money(LONG)}
 			</Word>
 			<g data-f="p-key">
 				<rect
@@ -384,7 +399,7 @@ function Scene({
 					height={10}
 					className="wt-film-bar"
 					data-tone="neutral"
-					opacity={0.22}
+					opacity={COMPONENT_OPACITY}
 				/>
 				<Word
 					name="p-key-components"
@@ -843,6 +858,7 @@ function build(context: FilmContext) {
 		...STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		...STRIKES.map((_, i) => one(`net-${i}`)),
 		one("c-profile-source"),
+		one("p-focus-contract"),
 		one("p-focus-value"),
 		one("p-focus-outline"),
 		one("p-key"),
@@ -933,10 +949,16 @@ function build(context: FilmContext) {
 		19,
 		{ duration: 0.4, arc: "y", match: money(LONG) },
 	);
+	// New contract content fades in after the numeral lands, clear of its flight.
+	tl.to(one("p-focus-contract"), { opacity: 1, duration: 0.3 }, 19.4);
 	show(kids("chart-notes"), 19.05, "above", 0.3);
 	show(one("p-head"), 19, "above");
 	rise(19.05);
-	tl.to(bar(FOCUS_STRIKE, "call"), { opacity: 0.22, duration: 0.5 }, 19.05);
+	tl.to(
+		bar(FOCUS_STRIKE, "call"),
+		{ opacity: COMPONENT_OPACITY, duration: 0.5 },
+		19.05,
+	);
 	grow(bar(FOCUS_STRIKE, "call"), LONG, 19.05);
 	tl.to(one("p-focus-outline"), { opacity: 1, duration: 0.3 }, 19.55);
 	// Fade the bottom key in place so its phone entrance keeps the edge clearance.
@@ -946,7 +968,11 @@ function build(context: FilmContext) {
 	STRIKES.forEach((strike) => {
 		(["call", "put"] as const).forEach((side) => {
 			if (strike === FOCUS_STRIKE && side === "call") return;
-			tl.to(bar(strike, side), { opacity: 0.22, duration: 0.3 }, 20.85);
+			tl.to(
+				bar(strike, side),
+				{ opacity: COMPONENT_OPACITY, duration: 0.3 },
+				20.85,
+			);
 			grow(bar(strike, side), contribution(strike, side), 20.85, 0.3);
 		});
 	});
@@ -962,7 +988,12 @@ function build(context: FilmContext) {
 	// Fund the isolated focus proof from the gross hold, retaining the hero timing.
 	d.swap(one("p-head"), one("w1-head"), 24.05);
 	hide(
-		[one("p-focus-value"), one("p-focus-outline"), one("p-key")],
+		[
+			one("p-focus-contract"),
+			one("p-focus-value"),
+			one("p-focus-outline"),
+			one("p-key"),
+		],
 		24.05,
 		0.35,
 		0,
@@ -1040,25 +1071,30 @@ function build(context: FilmContext) {
 	// ——— coverage: which contracts, and what's missing ———
 	tl.addLabel("coverage", 33.75);
 	hide([...flat("two"), lockTwo, one("w1-head"), one("w-head")], 33.75);
+	const chartLabels = [...one("chart").querySelectorAll("text")];
+	// Start with shapes alone while the hero leaves; its text keeps a clear lane.
+	tl.set(chartLabels, { opacity: 0 }, 33.8);
 	tl.set(
 		STRIKES.map((_, i) => one(`net-${i}`)),
 		{ opacity: 0 },
-		33.95,
+		33.8,
 	);
 	tl.set(
 		STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		{ opacity: 1 },
-		33.95,
+		33.8,
 	);
-	// Reset while hidden, then fade in place: the departing hero headline must
-	// not share a flight lane with the dealer-convention label.
+	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 33.8);
+	// The hero's text clears at 34.10. Its labels and notes follow in place;
+	// the chart's scale rise and the coverage construction retain their timings.
+	tl.to(chartLabels, { opacity: 1, duration: 0.3 }, 34.1);
 	tl.fromTo(
 		kids("chart-notes"),
 		{ opacity: 0, x: 0, y: 0 },
 		{ opacity: 1, duration: 0.3 },
-		33.95,
+		34.1,
 	);
-	rise(33.95);
+	rise(34.1);
 	tl.to(
 		STRIKES.flatMap((strike) =>
 			(["call", "put"] as const)
@@ -1066,18 +1102,18 @@ function build(context: FilmContext) {
 				.map((side) => bar(strike, side)),
 		),
 		{ opacity: 0.12, duration: 0.5 },
-		34.15,
+		34.3,
 	);
 	show(one("t-head"), 34.2, "above");
-	// Membership settles at 34.65 and the chart rise at 34.75. Keep the
+	// Membership settles at 34.80 and the chart rise at 34.90. Keep the
 	// full-chain reading absent; reveal a dedicated, settled traded-only value.
 	const tradedMeter = one("m-value-traded");
-	show([one("m-tag-net"), tradedMeter], 34.7, "above", 0.3);
+	show([one("m-tag-net"), tradedMeter], 34.9, "above", 0.3);
 	// Selection has its own encoding, alongside the unchanged dealer convention.
 	tl.to(
 		[one("t-key"), ...TRADED.map((contract) => one(`t-outline-${contract}`))],
 		{ opacity: 1, duration: 0.3 },
-		34.7,
+		34.9,
 	);
 	// Back to the whole chain, but the 95 put never arrived.
 	hide([one("m-tag-net"), tradedMeter], 37.45, 0.3, 0);
