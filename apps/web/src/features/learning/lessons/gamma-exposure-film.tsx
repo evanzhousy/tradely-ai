@@ -54,7 +54,7 @@ import {
  *                        meter settled 21.55–24.05; cut: the sides end to end,
  *                        $4.10M settled 26.05–27.95; side by side, the −$512k sliver,
  *                        locked at 29.75; quiet until 31.25, then 12% of gross;
- *                        the complete proportion holds 32.75–33.75
+ *                        the complete proportion holds 32.45–33.75
  *   coverage  33.75–45.9  traded only +$1.14M; the 95 put missing, +$330k known;
  *                        cut: "GEX is a model, not a reading."
  *   next      45.9–47.5   Next: gamma regimes
@@ -270,55 +270,55 @@ function Scene({
 				<Hatch id={`hatch-${id}`} />
 			</defs>
 
-			{/* The zero axis bridges the hero exit; strike labels wait for its text. */}
-			<g data-f="chart-grid">
-				<g data-f="chart-guides">
-					{[-RANGE / 1.8, RANGE / 1.8].map((tick) => (
-						<path
-							key={tick}
-							d={`M${L.left} ${L.y(tick)}H${L.right}`}
-							className="wt-grid"
-						/>
-					))}
-					{[-RANGE / 1.8, RANGE / 1.8].map((tick) => (
+			<g data-f="depth">
+				{/* Axes and bars share the depth transform, with independent fades. */}
+				<g data-f="chart-grid">
+					<g data-f="chart-guides">
+						{[-RANGE / 1.8, RANGE / 1.8].map((tick) => (
+							<path
+								key={tick}
+								d={`M${L.left} ${L.y(tick)}H${L.right}`}
+								className="wt-grid"
+							/>
+						))}
+						{[-RANGE / 1.8, RANGE / 1.8].map((tick) => (
+							<text
+								key={tick}
+								x={L.left - 8}
+								y={L.y(tick) + 4}
+								textAnchor="end"
+								className="wt-small"
+							>
+								{narrow ? money(tick).replace("$", "") : money(tick)}
+							</text>
+						))}
+					</g>
+					<g data-f="chart-ticks">
+						<path d={`M${L.left} ${L.y(0)}H${L.right}`} className="wt-axis" />
 						<text
-							key={tick}
 							x={L.left - 8}
-							y={L.y(tick) + 4}
+							y={L.y(0) + 4}
 							textAnchor="end"
 							className="wt-small"
 						>
-							{narrow ? money(tick).replace("$", "") : money(tick)}
+							0
 						</text>
-					))}
+					</g>
+					<g data-f="chart-strikes">
+						{STRIKES.map((strike, i) => (
+							<text
+								key={strike}
+								x={L.barX(i)}
+								y={L.bottom + 16}
+								textAnchor="middle"
+								className="wt-small"
+							>
+								{`$${strike}`}
+							</text>
+						))}
+					</g>
 				</g>
-				<g data-f="chart-ticks">
-					<path d={`M${L.left} ${L.y(0)}H${L.right}`} className="wt-axis" />
-					<text
-						x={L.left - 8}
-						y={L.y(0) + 4}
-						textAnchor="end"
-						className="wt-small"
-					>
-						0
-					</text>
-				</g>
-				<g data-f="chart-strikes">
-					{STRIKES.map((strike, i) => (
-						<text
-							key={strike}
-							x={L.barX(i)}
-							y={L.bottom + 16}
-							textAnchor="middle"
-							className="wt-small"
-						>
-							{`$${strike}`}
-						</text>
-					))}
-				</g>
-			</g>
 
-			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
 						{STRIKES.map((strike, i) =>
@@ -973,11 +973,8 @@ function build(context: FilmContext) {
 	tl.to(one("p-focus-contract"), { opacity: 1, duration: 0.3 }, 19.4);
 	show(kids("chart-notes"), 19.05, "above", 0.3);
 	show(one("p-head"), 19, "above");
-	tl.to(
-		kids("chart-grid"),
-		{ opacity: 1, duration: 0.8, ease: "power2.out" },
-		19.05,
-	);
+	// Depth supplies the initial 0.8 s axis fade, in step with the bars.
+	tl.set(kids("chart-grid"), { opacity: 1 }, 19.05);
 	rise(19.05);
 	tl.to(
 		bar(FOCUS_STRIKE, "call"),
@@ -1024,7 +1021,6 @@ function build(context: FilmContext) {
 		0,
 	);
 	hide(kids("chart-notes"), 24.05);
-	hide(kids("chart-grid"), 24.05, 0.4, 0);
 	sink(24.05);
 	const callsSide = one("two-calls");
 	const putsSide = one("two-puts");
@@ -1091,21 +1087,25 @@ function build(context: FilmContext) {
 		31.75,
 	);
 	show(one("two-track-label"), 31.75, "below");
-	// Complete at 32.75, leaving one second before coverage begins.
-	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 32.35);
+	// The track already spans the accent's footprint at 32.05. Complete at
+	// 32.45, giving the proportion 1.3 s before coverage begins.
+	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 32.05);
 
 	// ——— coverage: which contracts, and what's missing ———
 	tl.addLabel("coverage", 33.75);
-	hide([...flat("two"), lockTwo, one("w1-head"), one("w-head")], 33.75);
-	// Only the zero axis bridges the hero exit. Strike labels, gridlines and
-	// ±500k labels wait until its text and gross track have cleared.
-	tl.to(one("chart-ticks"), { opacity: 1, duration: 0.35 }, 33.75);
 	tl.to(
-		[one("chart-guides"), one("chart-strikes")],
-		{ opacity: 1, duration: 0.3 },
-		34.1,
+		[...flat("two"), lockTwo, one("w1-head"), one("w-head")],
+		{ opacity: 0, duration: 0.3, ease: "none" },
+		33.75,
 	);
-	// Reset components while depth is hidden; rise alone reveals the new chart.
+	// A linear dip: the hero is below 0.25 at 34.00 and gone at 34.05.
+	// All axes then fade together; no incoming chart exceeds 0.25 while the
+	// hero does. World stays hidden until the bars' unchanged 34.10 rise.
+	tl.set(kids("chart-grid"), { opacity: 0 }, 33.8);
+	tl.set(one("world"), { opacity: 0 }, 33.8);
+	tl.set(one("depth"), { opacity: 1 }, 34);
+	tl.to(kids("chart-grid"), { opacity: 1, duration: 0.3, ease: "none" }, 34);
+	// Reset components while their world is hidden.
 	tl.set(
 		STRIKES.map((_, i) => one(`net-${i}`)),
 		{ opacity: 0 },
@@ -1116,14 +1116,15 @@ function build(context: FilmContext) {
 		{ opacity: 1 },
 		33.8,
 	);
-	// The entire hero clears at 34.10. Chart notes follow in place;
-	// the chart's scale rise and the coverage construction retain their timings.
+	// The entire hero clears at 34.05. Chart notes follow in place;
+	// the shared scale rise and the coverage construction retain their timings.
 	tl.fromTo(
 		kids("chart-notes"),
 		{ opacity: 0, x: 0, y: 0 },
 		{ opacity: 1, duration: 0.3 },
 		34.1,
 	);
+	tl.to(one("world"), { opacity: 1, duration: 0.8, ease: "power2.out" }, 34.1);
 	rise(34.1);
 	tl.to(
 		STRIKES.flatMap((strike) =>
@@ -1175,7 +1176,6 @@ function build(context: FilmContext) {
 	// Cut: the claim.
 	hide([one("x-head"), ...kids("meter")], 41.6);
 	hide(kids("chart-notes"), 41.6);
-	hide(kids("chart-grid"), 41.6, 0.4, 0);
 	sink(41.6);
 	tl.fromTo(
 		one("z-big"),
