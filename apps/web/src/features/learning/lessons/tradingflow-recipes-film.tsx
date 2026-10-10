@@ -711,6 +711,15 @@ function Scene({
 							</text>
 						))}
 						<text
+							data-f="sess-pending"
+							x={margin + 16}
+							y={headerLine(1)}
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: T.head * 1.3 }}
+						>
+							…
+						</text>
+						<text
 							data-f="sess-fri"
 							x={margin + 16}
 							y={headerLine(1)}
@@ -976,6 +985,7 @@ function build(context: FilmContext) {
 		one("header"),
 		one("sess-unknown"),
 		one("sess-mon"),
+		one("sess-pending"),
 		one("sess-fri"),
 		one("sess-close"),
 		one("ran-tue"),
@@ -1003,6 +1013,13 @@ function build(context: FilmContext) {
 		lockSession,
 		...kids("claim"),
 	]);
+	// Measure the actual date slot in either language, using its own type.
+	gsap.set(one("sess-pending"), {
+		attr: {
+			x: one<SVGTextContentElement>("sess-mon-date").getStartPositionOfChar(0)
+				.x,
+		},
+	});
 
 	// ——— open ———
 	tl.addLabel("open", 0);
@@ -1144,13 +1161,13 @@ function build(context: FilmContext) {
 	tl.addLabel("session", 15.8);
 	hide([one("k-head"), one("s-head")], 15.8);
 	// Preserve the phrase's 3.75 s landed hold after delaying its carry.
-	// It fades in place, clear of the incoming calendar and its later status labels.
+	// Its proof sinks with it; Tuesday arrives only after both have left.
 	hide(one("screen-signal"), 16.2, 0.35, 0);
-	sink(15.8);
-	tl.set(one("catalog"), { opacity: 0 }, 16.2);
-	tl.set(one("calendar"), { opacity: 1 }, 16.2);
-	show(one("o-head"), 16.15, "above");
-	rise(16.3);
+	sink(16.2);
+	tl.set(one("catalog"), { opacity: 0 }, 16.6);
+	tl.set(one("calendar"), { opacity: 1 }, 16.6);
+	show(one("o-head"), 16.6, "above");
+	rise(16.6);
 	// At Tuesday 8:00 Friday and Monday are done; Tuesday hasn't opened.
 	tl.to(sessions.slice(0, 2), { opacity: 1, duration: 0.4 }, 16.8);
 	tl.to(sessions[2], { opacity: 0.35, duration: 0.4 }, 16.8);
@@ -1178,7 +1195,23 @@ function build(context: FilmContext) {
 		},
 		22.75,
 	);
-	d.swap(one("ran-tue"), one("ran-mon"), 22.85);
+	// Monday's date has had 3.7 settled seconds. Clear it before the new run
+	// enters at 23.7: a report run Monday morning cannot name Monday's session.
+	tl.to(
+		one("sess-mon-date"),
+		{ attr: { "fill-opacity": 0 }, duration: 0.3 },
+		23.35,
+	);
+	// Remove the faded date from the line's box; seeking back restores its layout.
+	tl.set(one("sess-mon-date"), { display: "none" }, 23.65);
+	// The old date is below 0.25 opacity before pending fades into its slot.
+	tl.fromTo(
+		one("sess-pending"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		23.5,
+	);
+	d.swap(one("ran-tue"), one("ran-mon"), 23.35);
 	// "latest" steps out from under Monday, and Monday shows it is trading.
 	hide(one("latest-mon"), 22.75, 0.3, 0);
 	show(one("trading-mon"), 23.05);
@@ -1231,11 +1264,6 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		24.75,
 	);
-	tl.to(
-		one("sess-mon-date"),
-		{ attr: { "fill-opacity": 0 }, duration: 0.3 },
-		25.0,
-	);
 	tl.set(one("sess-mon"), { opacity: 0 }, 25.3);
 	tl.set(one("sess-fri"), { opacity: 1 }, 25.3);
 	if (title) {
@@ -1248,6 +1276,8 @@ function build(context: FilmContext) {
 		25.1,
 		{ duration: 0.7, match: d.t(dayLabel(PREVIOUS_SESSION_DATE)) },
 	);
+	// Clear pending in place during the first leg, before Friday reaches the slot.
+	hide(one("sess-pending"), 25.1, 0.3, 0);
 	show(one("latest-mon"), 25.8);
 	// The hero: Monday morning's report shows Friday.
 	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
@@ -1416,7 +1446,8 @@ function build(context: FilmContext) {
 	// without borrowing from ALFA's payoff or the supporting sentence's hold.
 	tl.set([one("fork"), one("f-head"), one("c-head")], { opacity: 0 }, 41.4);
 	tl.set(one("z-big"), { opacity: 1 }, 41.4);
-	show(one("z-sub"), 41.8);
+	// The supporting sentence settles at 41.9, leaving 3.5 reading seconds.
+	show(one("z-sub"), 41.6, "below", 0.3);
 
 	// ——— next ———
 	tl.addLabel("next", 45.4);
