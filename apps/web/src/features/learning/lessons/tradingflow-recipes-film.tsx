@@ -48,7 +48,7 @@ import {
  * at 10:00 on Monday, with most of Monday's session still to trade, "latest" slides back over
  * the weekend and it shows Friday, whose date comes down into the report's header. After the
  * lock releases, Monday finishes and becomes the latest session. Last, Edit with AI copies
- * Daily Market Recap into a private copy that slides out
+ * Daily Market Recap into a private copy linked to its action chip
  * and changes: you open your copy, and a colleague still opens the official one.
  *
  *   open      0–4        "Recipes"
@@ -56,8 +56,8 @@ import {
  *   catalog   9.6–15.8   three kinds; the screen
  *   session   15.8–29.8  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
  *   completed 29.8–35.7  Mon 16:00 holds, then 16:30 → Monday: the latest completed session
- *   fork      35.7–41.0  official + colleague; inherited copy travels; your edit
- *   claim     41.0–45.4 Pick by the question; read the session
+ *   fork      35.7–41.4  official + colleague; linked inherited copy; your edit
+ *   claim     41.4–45.4 Pick by the question; read the session
  *   next      45.4–47.4  Next: read a recipe like an auditor
  */
 
@@ -127,7 +127,7 @@ function layout(width: number) {
 		/** A recipe card's type: title size, line size, and the step between lines. */
 		cardType: (() => {
 			const title = narrow ? frame.type.body : frame.type.head * 0.85;
-			const size = frame.type.body;
+			const size = frame.type.body * (narrow ? 1.2 : 1);
 			const step = size * 1.75;
 			const pad = narrow ? 12 : 18;
 			return {
@@ -135,7 +135,7 @@ function layout(width: number) {
 				size,
 				step,
 				pad,
-				height: pad * 2 + title + step * (narrow ? 4.4 : 5.6),
+				height: pad * 2 + title + step * (narrow ? 5.4 : 5.6),
 			};
 		})(),
 	};
@@ -206,6 +206,7 @@ const copy = {
 	],
 	officialShort: ["Official", "官方"],
 	private: ["Private · only you", "私有 · 仅你可见"],
+	privateShort: ["Private, only you", "私有，仅你可见"],
 	spotlightOfficialShort: ["Spotlight: headline", "焦点：头条"],
 	spotlightCopy: ["Spotlight: ALFA", "焦点：ALFA"],
 	claimBig: [
@@ -275,6 +276,10 @@ function Scene({
 	const statusY = L.stripTop + L.stripH + T.small * 1.8;
 	const chipW = textWidth(t(copy.editChip), T.small) + 18;
 	const chipX = L.cardX(0) + L.half - chipW;
+	const chipY = L.forkTop + L.cardType.height + 12;
+	const chipH = T.small + 12;
+	const linkX = L.cardX(0) + L.half + L.gap / 2;
+	const linkY = L.forkTop + L.cardType.height * 0.6;
 	/** The opening question is a sentence: on a phone it takes a smaller size. */
 	const qSize = narrow ? T.head * 1.2 : T.title * 0.85;
 	const qRows = locale === "zh" ? 2 : 3;
@@ -310,7 +315,9 @@ function Scene({
 					name={`owner-${side}`}
 					text={t(
 						privateCard
-							? copy.private
+							? narrow
+								? copy.privateShort
+								: copy.private
 							: narrow
 								? copy.officialShort
 								: copy.official,
@@ -319,7 +326,7 @@ function Scene({
 					y={line(1)}
 					anchor="start"
 					maxWidth={L.half - 2 * C.pad}
-					size={C.size}
+					size={narrow ? T.body : C.size}
 					className={`wt-film-type ${privateCard ? "wt-film-accent" : "wt-film-dim"}`}
 				/>
 				{!narrow
@@ -339,7 +346,7 @@ function Scene({
 					<Lines
 						name="spot-copy-was"
 						x={x + C.pad}
-						y={line(narrow ? 3.2 : chapters.length + 2.4)}
+						y={line(narrow ? 3.8 : chapters.length + 2.4)}
 						text={`${narrow ? "" : `${chapters.length + 1}. `}${t(copy.spotlightOfficialShort)}`}
 						anchor="start"
 						maxWidth={L.half - 2 * C.pad}
@@ -350,7 +357,7 @@ function Scene({
 				<Lines
 					name={`spot-${side}`}
 					x={x + C.pad}
-					y={line(narrow ? 3.2 : chapters.length + 2.4)}
+					y={line(narrow ? 3.8 : chapters.length + 2.4)}
 					text={`${narrow ? "" : `${chapters.length + 1}. `}${t(spotlight)}`}
 					anchor="start"
 					maxWidth={L.half - 2 * C.pad}
@@ -712,18 +719,38 @@ function Scene({
 					<g data-f="fork">
 						{card("official")}
 						{card("copy")}
+						{/* The action-to-copy link stays outside both cards' text lanes. */}
+						<path
+							data-f="fork-link"
+							d={`M ${chipX + chipW} ${chipY + chipH / 2} H ${linkX} V ${linkY} H ${L.cardX(1)}`}
+							fill="none"
+							stroke="var(--diagram-accent)"
+							strokeWidth={2}
+							strokeLinejoin="round"
+						/>
 						<g data-f="edit-chip">
 							<rect
 								x={chipX}
-								y={L.forkTop + L.cardType.height + 12}
+								y={chipY}
 								width={chipW}
-								height={T.small + 12}
+								height={chipH}
 								rx={7}
 								className="wt-chip"
 							/>
+							<rect
+								data-f="edit-active"
+								x={chipX}
+								y={chipY}
+								width={chipW}
+								height={chipH}
+								rx={7}
+								fill="none"
+								stroke="var(--foreground)"
+								strokeWidth={2}
+							/>
 							<text
 								x={chipX + chipW / 2}
-								y={L.forkTop + L.cardType.height + 12 + T.small + 3}
+								y={chipY + T.small + 3}
 								textAnchor="middle"
 								className="wt-chip-text"
 								style={{ fontSize: T.small }}
@@ -929,9 +956,10 @@ function build(context: FilmContext) {
 		one("ran-close"),
 		one("fork-official"),
 		one("fork-copy"),
-		one("owner-copy"),
 		one("spot-copy"),
 		one("edit-chip"),
+		one("edit-active"),
+		one("fork-link"),
 		...flat("q"),
 		one("screen-signal"),
 		...[
@@ -1315,37 +1343,46 @@ function build(context: FilmContext) {
 
 	// ——— fork: official and yours ———
 	tl.addLabel("fork", 35.7);
-	hide(one("after-close-head"), 35.7);
-	// A deliberate subject cut establishes the official card at its resting geometry.
-	// It stays fully populated while Edit with AI creates the private copy beside it.
+	// One deliberate beat cut replaces the completed calendar with the whole
+	// official baseline. No outgoing headline or baseline entrance competes
+	// with its quiet second; every previous sentence keeps its original hold.
+	tl.set(one("after-close-head"), { opacity: 0 }, 35.7);
 	tl.set(one("calendar"), { opacity: 0 }, 35.7);
 	tl.set(one("fork"), { opacity: 1 }, 35.7);
 	tl.set(one("fork-official"), { opacity: 1 }, 35.7);
-	tl.to(one("edit-chip"), { opacity: 1, duration: 0.35 }, 35.7);
-	show(one("c-head"), 35.7, "above", 0.35);
-	// The filled copy emerges beside the action chip, then slides up/right into
-	// its slot. Its left edge stays in the gutter, clear of every official glyph.
-	// Starting its bottom at the chip's centre ties the fork to the action without
-	// scaling the card, masking its material, or emptying the official recipe.
+	tl.set([one("edit-chip"), one("c-head")], { opacity: 1 }, 35.7);
+	// The official card, colleague caption and chip settle at 35.7, then read
+	// quietly for a full second. Activate the action and draw its provenance
+	// through the empty gutter; the populated copy fades at rest, without a
+	// tiny flight that could cross the link or the original's visible text.
+	tl.to(one("edit-active"), { opacity: 1, duration: 0.3 }, 36.7);
+	const forkLink = one<SVGPathElement>("fork-link");
+	const linkLength = forkLink.getTotalLength();
 	tl.fromTo(
-		one("fork-copy"),
+		forkLink,
 		{
 			opacity: 0,
-			x: -L.gap / 2,
-			y: 12 + (L.type.small + 12) / 2,
+			strokeDasharray: `${linkLength} ${linkLength}`,
+			strokeDashoffset: linkLength,
 		},
-		{ opacity: 1, x: 0, y: 0, duration: 0.6, ease: "power2.inOut" },
-		36.05,
+		{ opacity: 1, strokeDashoffset: 0, duration: 0.45, ease: "none" },
+		36.7,
 	);
-	tl.to(one("owner-copy"), { opacity: 1, duration: 0.3 }, 36.65);
-	show(one("f-head"), 36.65, "above", 0.3);
-	// Every construction mark settles by 36.95. Preserve the one-second
-	// identical-content pause and the 2.4-second settled ALFA payoff.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 37.95);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.25);
-	// Cut: the claim.
-	hide([one("f-head"), one("c-head")], 41.0);
-	sink(41.0);
+	tl.fromTo(
+		one("fork-copy"),
+		{ opacity: 0, x: 0, y: 0 },
+		{ opacity: 1, duration: 0.45, ease: "power2.inOut" },
+		36.7,
+	);
+	// Ownership is part of the populated copy's existing fade, rather than
+	// another construction step after it. The caption lands with the copy.
+	show(one("f-head"), 36.85, "above", 0.3);
+	// All inherited-copy marks settle at 37.15, then hold unchanged for 1 s.
+	// ALFA settles at 38.8; a direct claim cut preserves 2.6 settled seconds.
+	d.flip(one("spot-copy-was"), one("spot-copy"), 38.15);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.45);
+	// Cut directly to the claim instead of spending 0.4 s sinking the proof.
+	tl.set([one("fork"), one("f-head"), one("c-head")], { opacity: 0 }, 41.4);
 	word(one("z-big"), 41.4);
 	show(one("z-sub"), 41.8);
 
