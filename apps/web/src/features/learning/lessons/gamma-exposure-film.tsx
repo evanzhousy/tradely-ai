@@ -91,9 +91,9 @@ function sides(frame: ReturnType<typeof filmFrame>) {
 		grossY: y1 + h + T.body + 18,
 		/** The net, under the sliver it measures: its tag on the puts' tag line, then the figure. */
 		netX: x0 + CALLS * unit,
-		tagY: y2 + h + T.body + 4,
+		tagY: y2 + h + T.body + 10,
 		netSize,
-		netY: y2 + h + T.body + 4 + netSize * 0.95,
+		netY: y2 + h + T.body + 10 + netSize * 0.95,
 	};
 }
 
@@ -270,40 +270,57 @@ function Scene({
 				<Hatch id={`hatch-${id}`} />
 			</defs>
 
+			{/* The zero axis bridges the hero exit; strike labels wait for its text. */}
+			<g data-f="chart-grid">
+				<g data-f="chart-guides">
+					{[-RANGE / 1.8, RANGE / 1.8].map((tick) => (
+						<path
+							key={tick}
+							d={`M${L.left} ${L.y(tick)}H${L.right}`}
+							className="wt-grid"
+						/>
+					))}
+					{[-RANGE / 1.8, RANGE / 1.8].map((tick) => (
+						<text
+							key={tick}
+							x={L.left - 8}
+							y={L.y(tick) + 4}
+							textAnchor="end"
+							className="wt-small"
+						>
+							{narrow ? money(tick).replace("$", "") : money(tick)}
+						</text>
+					))}
+				</g>
+				<g data-f="chart-ticks">
+					<path d={`M${L.left} ${L.y(0)}H${L.right}`} className="wt-axis" />
+					<text
+						x={L.left - 8}
+						y={L.y(0) + 4}
+						textAnchor="end"
+						className="wt-small"
+					>
+						0
+					</text>
+				</g>
+				<g data-f="chart-strikes">
+					{STRIKES.map((strike, i) => (
+						<text
+							key={strike}
+							x={L.barX(i)}
+							y={L.bottom + 16}
+							textAnchor="middle"
+							className="wt-small"
+						>
+							{`$${strike}`}
+						</text>
+					))}
+				</g>
+			</g>
+
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
-						{[-RANGE / 1.8, 0, RANGE / 1.8].map((tick) => (
-							<g key={tick}>
-								<path
-									d={`M${L.left} ${L.y(tick)}H${L.right}`}
-									className={tick === 0 ? "wt-axis" : "wt-grid"}
-								/>
-								<text
-									x={L.left - 8}
-									y={L.y(tick) + 4}
-									textAnchor="end"
-									className="wt-small"
-								>
-									{tick === 0
-										? "0"
-										: narrow
-											? money(tick).replace("$", "")
-											: money(tick)}
-								</text>
-							</g>
-						))}
-						{STRIKES.map((strike, i) => (
-							<text
-								key={strike}
-								x={L.barX(i)}
-								y={L.bottom + 16}
-								textAnchor="middle"
-								className="wt-small"
-							>
-								{`$${strike}`}
-							</text>
-						))}
 						{STRIKES.map((strike, i) =>
 							(["call", "put"] as const).map((side) => (
 								<rect
@@ -559,8 +576,8 @@ function Scene({
 							text={t(step.tag)}
 							x={tagX}
 							y={rowY(i)}
-							size={narrow ? T.small : T.body}
-							maxWidth={narrow ? W * 0.5 : W * 0.5}
+							size={T.body}
+							maxWidth={W * 0.5}
 							anchor="start"
 							className="wt-film-type wt-film-dim"
 						/>
@@ -867,6 +884,7 @@ function build(context: FilmContext) {
 		one("missing"),
 		...kids("meter"),
 		...kids("chart-notes"),
+		...kids("chart-grid"),
 		...flat("q"),
 		...flat("chain"),
 		...["s-head", "p-head", "w1-head", "w-head", "t-head", "x-head"].map(
@@ -955,6 +973,11 @@ function build(context: FilmContext) {
 	tl.to(one("p-focus-contract"), { opacity: 1, duration: 0.3 }, 19.4);
 	show(kids("chart-notes"), 19.05, "above", 0.3);
 	show(one("p-head"), 19, "above");
+	tl.to(
+		kids("chart-grid"),
+		{ opacity: 1, duration: 0.8, ease: "power2.out" },
+		19.05,
+	);
 	rise(19.05);
 	tl.to(
 		bar(FOCUS_STRIKE, "call"),
@@ -1001,6 +1024,7 @@ function build(context: FilmContext) {
 		0,
 	);
 	hide(kids("chart-notes"), 24.05);
+	hide(kids("chart-grid"), 24.05, 0.4, 0);
 	sink(24.05);
 	const callsSide = one("two-calls");
 	const putsSide = one("two-puts");
@@ -1072,22 +1096,16 @@ function build(context: FilmContext) {
 
 	// ——— coverage: which contracts, and what's missing ———
 	tl.addLabel("coverage", 33.75);
-	const grossTrack = one("two-track");
-	hide(
-		[
-			...flat("two").filter((mark) => mark !== grossTrack),
-			lockTwo,
-			one("w1-head"),
-			one("w-head"),
-		],
-		33.75,
+	hide([...flat("two"), lockTwo, one("w1-head"), one("w-head")], 33.75);
+	// Only the zero axis bridges the hero exit. Strike labels, gridlines and
+	// ±500k labels wait until its text and gross track have cleared.
+	tl.to(one("chart-ticks"), { opacity: 1, duration: 0.35 }, 33.75);
+	tl.to(
+		[one("chart-guides"), one("chart-strikes")],
+		{ opacity: 1, duration: 0.3 },
+		34.1,
 	);
-	// Only the neutral background track bridges the cut. Hero text and the net
-	// shapes clear at 34.10 before any incoming chart bar becomes visible.
-	hide(grossTrack, 34.1, 0.35, 0);
-	const chartLabels = [...one("chart").querySelectorAll("text")];
 	// Reset components while depth is hidden; rise alone reveals the new chart.
-	tl.set(chartLabels, { opacity: 0 }, 33.8);
 	tl.set(
 		STRIKES.map((_, i) => one(`net-${i}`)),
 		{ opacity: 0 },
@@ -1098,9 +1116,8 @@ function build(context: FilmContext) {
 		{ opacity: 1 },
 		33.8,
 	);
-	// The hero's text clears at 34.10. Its labels and notes follow in place;
+	// The entire hero clears at 34.10. Chart notes follow in place;
 	// the chart's scale rise and the coverage construction retain their timings.
-	tl.to(chartLabels, { opacity: 1, duration: 0.3 }, 34.1);
 	tl.fromTo(
 		kids("chart-notes"),
 		{ opacity: 0, x: 0, y: 0 },
@@ -1158,6 +1175,7 @@ function build(context: FilmContext) {
 	// Cut: the claim.
 	hide([one("x-head"), ...kids("meter")], 41.6);
 	hide(kids("chart-notes"), 41.6);
+	hide(kids("chart-grid"), 41.6, 0.4, 0);
 	sink(41.6);
 	tl.fromTo(
 		one("z-big"),
