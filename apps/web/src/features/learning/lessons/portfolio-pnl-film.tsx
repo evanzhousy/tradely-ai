@@ -163,11 +163,7 @@ const copy = {
 		"周一：ALFA 上涨，看涨上涨，付了费用。",
 	],
 	mondayHeadShort: ["Monday: ALFA, calls, fees.", "周一：ALFA、看涨、费用。"],
-	earnedHead: [
-		`Tuesday's ${dollars(yourAccount.deposit)} deposit is not earned.`,
-		`周二存入的 ${dollars(yourAccount.deposit)} 不是赚到的。`,
-	],
-	earnedHeadShort: ["A deposit isn't earned.", "存入不是赚到的。"],
+	earnedHead: ["A deposit isn't earned.", "存入不是赚到的。"],
 	meter: ["account", "账户"],
 	earned: ["earned", "赚到"],
 	deposited: [
@@ -196,6 +192,7 @@ const copy = {
 	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
 	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
 	markInput: [`mark: mid ${price(MARK)}`, `估值：中间价 ${price(MARK)}`],
+	heldFormula: ["(mid − cost) × 100", "(中间价 − 成本) × 100"],
 	bid: ["bid", "买价"],
 	mid: ["mid", "中间价"],
 	bpNote: [
@@ -646,7 +643,7 @@ function Scene({
 				/>
 			</g>
 			{headline("a-head", copy.mondayHead, copy.mondayHeadShort)}
-			{headline("e-head", copy.earnedHead, copy.earnedHeadShort)}
+			{headline("e-head", copy.earnedHead, copy.earnedHead)}
 			{/* Sixteen contracts in two lots. */}
 			<g data-f="lots">
 				<path
@@ -691,9 +688,20 @@ function Scene({
 					/>
 				))}
 				<g data-f="held-proof">
+					{narrow && (
+						<Word
+							name="held-formula"
+							x={W / 2}
+							y={fifoY - T.body * 7.5}
+							size={T.body}
+							className="wt-film-num wt-film-dim"
+						>
+							{t(copy.heldFormula)}
+						</Word>
+					)}
 					{remainingLots.map((lot, i) => {
-						// The phone already shows the mid and the contract multiplier in the FIFO proof.
-						// Keep each lot's quantity, cost and contribution without repeating that arithmetic.
+						// The shared phone caption supplies the per-contract arithmetic once.
+						// Keep each lot's quantity, cost and contribution in its short row.
 						const equation = narrow
 							? `${lot.quantity} @ ${price(lot.price)} →`
 							: `${lot.quantity} × (${price(MARK)} − ${price(lot.price)}) × 100 =`;
@@ -1174,28 +1182,26 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5, ease: "power2.out" },
 		13.8,
 	);
-	// A deliberate headline cut marks Tuesday's new beat; the incoming line fades in place.
-	// This preserves its reading hold without overlapping Monday's headline or the EARNED tag.
-	tl.set(one("a-head"), { opacity: 0 }, 15.3);
+	// After the earned answer's quiet second, fade Monday out before the deposit headline.
+	// Both lines fade in place, clear of the EARNED tag; the new line holds 15.6–19.1.
+	hide(one("a-head"), 15.3, 0.3, 0);
 	tl.fromTo(
 		one("e-head"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5, ease: "power2.out" },
-		15.3,
+		15.6,
 	);
 	growContribution("deposit", 15.3, 0.7);
 	show(one("deposited"), 15.5);
-	// Read the completed deposit for a second, then compare buying power in its own slot.
-	show(one("m-tag-bp"), 17.0, "above", 0.3);
-	show(one("m-bp"), 17.0, "below", 0.3);
-	show(one("m-bp-note"), 17.3, "below", 0.3);
+	// The deposit headline settles at 16.1; read the whole beat for a quiet second.
+	show(one("m-tag-bp"), 17.1, "above", 0.3);
+	show(one("m-bp"), 17.1, "below", 0.3);
+	show(one("m-bp-note"), 17.4, "below", 0.3);
 
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.0);
-	hide(
-		[one("e-head"), ...kids("meter"), one("m-bp-note"), ...kids("answer")],
-		19.0,
-	);
+	hide(one("e-head"), 19.1);
+	hide([...kids("meter"), one("m-bp-note"), ...kids("answer")], 19.0);
 	sink(19.0);
 	// The repeated cells arrive as one lot diagram; omit the decorative sixteen-cell ripple.
 	for (const square of squares) land(square, 19.4, 0.4);
@@ -1225,7 +1231,9 @@ function build(context: FilmContext) {
 		}
 		// Fade in place: moving the footer would cross the phone's result row.
 		tl.fromTo(
-			one(`held-row-${i}`),
+			L.narrow && i === 0
+				? [one("held-formula"), one(`held-row-${i}`)]
+				: one(`held-row-${i}`),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.3 },
 			at,
