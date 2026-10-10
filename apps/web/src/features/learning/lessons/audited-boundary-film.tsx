@@ -41,11 +41,11 @@ import {
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
  *   answer    17.6–31.8  hero: five strikes; observed; calculated; interpretation; the
  *                        split, labelled and connected; struck through; locked; then the gap
- *   log       31.8–41.75 record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
+ *   log       31.8–41.8  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
  *                        ≤ 51% → 540 ÷ 1,095 ≈ 49%; read the revision, then calls → puts
  *                        opens record 2 and clears the calls proof
- *   claim     41.75–46.05 a question someone else can check
- *   next      46.05–47.0 Next: comparison groups
+ *   claim     41.8–46.1 a question someone else can check
+ *   next      46.1–47.0 Next: comparison groups
  */
 
 const END = 47;
@@ -305,7 +305,7 @@ function Scene({
 		margin +
 		16 +
 		textWidth(t(LATE_PREFIX), T.body * (locale === "zh" ? 0.95 : 0.86)) +
-		T.body * 0.22;
+		10;
 	const proofX = margin + 16;
 	const proofParts = [count(COVERED), "+", count(LATE), "=", count(WITH_LATE)];
 	const proofNames = [
@@ -698,16 +698,6 @@ function Scene({
 				>
 					{count(LATE)}
 				</Word>
-				<Word
-					name="late-add-proxy"
-					x={L.barX + 16}
-					y={L.lateY}
-					size={L.proofSize}
-					anchor="start"
-					className="wt-film-num wt-film-accent"
-				>
-					{count(LATE)}
-				</Word>
 				<text
 					data-f="late-day"
 					x={L.barX + L.barMax * 0.3 + 24}
@@ -930,10 +920,45 @@ function build(context: FilmContext) {
 	gsap.set(one("q-subject"), {
 		attr: { x: subjectStart.x, y: subjectStart.y },
 	});
+	// Keep the measured line and its wrapping; isolate only the glyphs being handed off.
+	let subjectGlyphs = question.querySelector('[data-f="q-original-subject"]');
+	if (!subjectGlyphs) {
+		const line = [...question.querySelectorAll("tspan")].find((part) =>
+			part.textContent?.includes("ALFA"),
+		);
+		if (line) {
+			const content = line.textContent ?? "";
+			const at = content.indexOf("ALFA");
+			subjectGlyphs = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"tspan",
+			);
+			subjectGlyphs.setAttribute("data-f", "q-original-subject");
+			subjectGlyphs.textContent = "ALFA";
+			const prefix = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"tspan",
+			);
+			prefix.setAttribute("data-f", "q-prefix");
+			prefix.textContent = content.slice(0, at);
+			const suffix = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"tspan",
+			);
+			suffix.setAttribute("data-f", "q-suffix");
+			suffix.textContent = content.slice(at + 4);
+			line.replaceChildren(prefix, subjectGlyphs, suffix);
+		}
+	}
+	if (subjectGlyphs) gsap.set(subjectGlyphs, { opacity: 1 });
+	const questionRemainder = [...question.querySelectorAll("tspan")].filter(
+		(part) => part !== subjectGlyphs && !part.querySelector("tspan"),
+	);
+	gsap.set(questionRemainder, { opacity: 1 });
 	// Measure the prefix and mono digits independently; carries land in the source's face.
 	const prefixBox = one<SVGTextElement>("rev-late").getBBox();
 	gsap.set(one("rev-late-volume"), {
-		attr: { x: prefixBox.x + prefixBox.width + L.type.body * 0.22 },
+		attr: { x: prefixBox.x + prefixBox.width + 10 },
 	});
 	/** An evidence tag is stamped on its card: in slightly large, settling. */
 	const stamp = (target: Element, at: number) =>
@@ -957,11 +982,14 @@ function build(context: FilmContext) {
 
 	// ——— frame: field by field, in pairs ———
 	tl.addLabel("frame", 8.6);
-	tl.set(flat("q"), { opacity: 0 }, 8.6);
+	hide([one("q-tag"), one("q-big")], 8.6, 0.3, 0);
+	tl.to(questionRemainder, { opacity: 0, duration: 0.3 }, 8.6);
+	// ALFA's original glyphs remain until their same-frame handoff, after the lane clears.
+	tl.set(question, { opacity: 0 }, 8.9);
 	d.carry(
 		one<SVGGraphicsElement>("q-subject"),
 		one<SVGGraphicsElement>("field-0-subject"),
-		8.6,
+		8.9,
 		{ duration: 0.75, arc: "x" },
 	);
 	show(heads[0], 8.8);
@@ -970,7 +998,7 @@ function build(context: FilmContext) {
 		one("field-0-detail"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		9.35,
+		9.65,
 	);
 	fieldRows.forEach((row, i) => {
 		if (i === 0) return;
@@ -1069,89 +1097,113 @@ function build(context: FilmContext) {
 	);
 	show([one("late-volume"), one("late-day")], 32.45, "right", 0.3);
 	// Delivery settles at 32.75; leave one quiet second before constructing the sum.
+	// The short addition flight is redundant: reveal the true, complete equation in place.
 	show(
-		[one("rev-base"), one("rev-bound"), one("rev-plus")],
+		[
+			one("rev-base"),
+			one("rev-plus"),
+			one("rev-add"),
+			one("rev-equals"),
+			one("rev-total"),
+		],
 		33.75,
-		"right",
+		"below",
 		0.3,
 	);
-	// The date steps aside before the proxy crosses its lane; its source stays delivered.
+	// Its source stays delivered; the saved card will still receive these same digits.
 	tl.to(
 		one("late-day"),
 		{ opacity: 0.2, duration: 0.3, ease: "power3.out" },
 		33.75,
 	);
-	d.carry(
-		one<SVGGraphicsElement>("late-add-proxy"),
-		one<SVGGraphicsElement>("rev-add"),
-		33.95,
-		{ duration: 0.3, arc: "x" },
-	);
-	show([one("rev-equals"), one("rev-total")], 34.25, "right", 0.3);
-	show(
-		[one("rev-share-arrow"), one("rev-numerator"), one("rev-divide")],
-		34.25,
-		"right",
-		0.3,
-	);
-	// Matching colour ties the denominator to the sum, without crossing neighbouring type.
+	// The completed 1,095 settles at 34.05 and stands alone until 35.05.
+	// Matching colour then connects it to a settled, truthful division; no crowded flight.
 	tl.fromTo(
-		one("rev-denominator"),
+		[
+			one("rev-bound"),
+			one("rev-share-arrow"),
+			one("rev-numerator"),
+			one("rev-divide"),
+			one("rev-denominator"),
+			one("rev-approx"),
+			one("rev-share"),
+		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		34.55,
+		35.05,
 	);
-	show([one("rev-approx"), one("rev-share")], 34.85, "right", 0.3);
-	// The complete derivation settles at 35.15, then gets its full quiet second.
-	const reviseAt = 36.15;
+	// The complete derivation settles at 35.35, then gets its full quiet second.
+	const reviseAt = 36.35;
 	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, reviseAt);
-	hide(one("rec-0-answer"), reviseAt, 0.3, 0);
+	// Clear the old answer quickly within its full 0.3 s fade, before the digits pass it.
+	tl.to(
+		one("rec-0-answer"),
+		{ opacity: 0, duration: 0.3, ease: "power3.out" },
+		reviseAt,
+	);
 	d.carry(
 		one<SVGGraphicsElement>("late-volume"),
 		one<SVGGraphicsElement>("rev-late-volume"),
-		36.25,
-		{ duration: 0.4 },
+		36.45,
+		{ duration: 0.4, arc: "y" },
 	);
-	hide(strikes[missingIndex], 36.25, 0.3, 0);
-	hide(one("late-day"), 36.25, 0.3, 0);
+	hide(strikes[missingIndex], 36.45, 0.3, 0);
+	hide(one("late-day"), 36.45, 0.3, 0);
 	d.flip(one("rec-0-title"), revs[0], reviseAt);
 	tl.set(one("rec-0-title"), { opacity: 0 }, reviseAt + 0.3);
 	d.flip(one("rec-0-tag"), revs[1], reviseAt);
 	tl.set(one("rec-0-tag"), { opacity: 0 }, reviseAt + 0.3);
-	// The flying digits land before either neighbouring line fades in.
+	// The prefix leaves a 10 px lane. Leading vertically clears the answer before it fades in.
 	tl.fromTo(
-		[one("rev-late"), one("rev-answer")],
+		one("rev-late"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		reviseAt,
+	);
+	tl.fromTo(
+		one("rev-answer"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		36.65,
 	);
 	// A new question: a new record, once the revision has been read.
-	// Clear record 1's proof before record 2 enters.
-	// The saved revision settles at 36.95 and holds alone for a full second.
-	hide(kids("rev-proof"), 37.95, 0.3, 0);
-	show(recs[1], 38.25, "right");
-	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 38.25);
-	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 38.25);
-	show(heads[4], 38.25);
-	show(one("rec-0-universe"), 38.65, "right", 0.3);
-	show(one("universe-arrow"), 38.85, "right", 0.3);
-	show(one("rec-1-universe"), 39.1, "right", 0.3);
+	// Clear the proof before record 2 becomes readable in the same region.
+	// The last folded tag settles at 37.0; restore 1.3 s of exclusive saved-record reading.
+	tl.to(
+		kids("rev-proof"),
+		{ opacity: 0, duration: 0.3, ease: "power3.out" },
+		38.3,
+	);
+	// Proof opacity is already below 0.25 at 38.4; reveal the card without travel.
+	// It reaches 0.6 by 38.462 and stays above it until 42.058: a 3.59 s reading hold.
+	tl.fromTo(
+		recs[1],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		38.4,
+	);
+	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 38.3);
+	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 38.3);
+	show(heads[4], 38.3);
+	show(one("rec-0-universe"), 38.7, "right", 0.3);
+	show(one("universe-arrow"), 38.9, "right", 0.3);
+	show(one("rec-1-universe"), 39.15, "right", 0.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 41.75);
+	tl.addLabel("claim", 41.8);
 	hide(
 		[heads[3], heads[4], ...recs, ...revs, ...kids("universe-change")],
-		41.75,
+		41.8,
 	);
-	word(one("z-big"), 42.05);
-	show(one("z-sub"), 42.45);
+	word(one("z-big"), 42.1);
+	show(one("z-sub"), 42.5);
 
 	// ——— next ———
-	tl.addLabel("next", 46.05);
-	hide(kids("claim"), 46.05);
+	tl.addLabel("next", 46.1);
+	hide(kids("claim"), 46.1);
 	// Keep the kit's trailing duration anchor at END; its stagger is retimed below.
 	d.close(END - 1.1);
-	// Spend the ending's stagger on the two reading pauses, keeping its old 46.9
+	// Spend the ending's stagger on the two reading pauses, keeping its 46.95
 	// settlement. close() has already shifted the labels into player time.
 	for (const tween of tl.getTweensOf(kids("end"))) {
 		tween.duration(0.45).startTime(tl.labels.next + 0.4);
