@@ -49,18 +49,18 @@ import {
  *   open      0–4        "GEX"
  *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts?
  *   chain     8.9–18.65  0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
- *   profile   18.65–33.75 +$665k carries to the 110 call; dealers assumed calls + / puts −;
- *                        net bars settled at 19.65,
- *                        meter settled at 20; cut at 22.5: the sides
- *                        end to end, $4.10M settled 24.45–28; side by side, the −$512k sliver,
- *                        locked; then how
- *                        small: 12% of the gross
- *   coverage  33.75–45.85 traded only +$1.14M; the 95 put missing, +$330k known;
+ *   profile   18.65–33.75 +$665k carries to the outlined 110 call; focus settled
+ *                        19.85–20.85, then the whole profile; grey components / purple net;
+ *                        meter settled 21.55–24.05; cut: the sides end to end,
+ *                        $4.10M settled 26.05–27.95; side by side, the −$512k sliver,
+ *                        locked at 29.75; quiet until 31.25, then 12% of gross;
+ *                        the complete proportion holds 32.75–33.75
+ *   coverage  33.75–45.9  traded only +$1.14M; the 95 put missing, +$330k known;
  *                        cut: "GEX is a model, not a reading."
- *   next      45.85–47.45 Next: gamma regimes
+ *   next      45.9–47.5   Next: gamma regimes
  */
 
-const END = 47.45;
+const END = 47.5;
 const RANGE = 900_000;
 const NET_BY_STRIKE = STRIKES.map(
 	(strike) => contribution(strike, "call") + contribution(strike, "put"),
@@ -145,9 +145,10 @@ const copy = {
 	qLine: ["Which sign? Which contracts?", "哪个符号？哪些合约？"],
 	sidesHead: ["How big are the two sides?", "两边各有多大？"],
 	share: [
-		`${Math.round((-NET / GROSS) * 100)}% of ${money(GROSS, false)} gross`,
-		`总幅度 ${money(GROSS, false)} 的 ${Math.round((-NET / GROSS) * 100)}%`,
+		`${Math.round((-NET / GROSS) * 100)}% of gross`,
+		`总幅度的 ${Math.round((-NET / GROSS) * 100)}%`,
 	],
+	components: ["calls / puts", "看涨 / 看跌"],
 	chainHead: [
 		`One contract: the Oct 18 ${FOCUS_STRIKE} call.`,
 		`一个合约：10月18日 ${FOCUS_STRIKE} 看涨。`,
@@ -375,6 +376,45 @@ function Scene({
 			>
 				{`${FOCUS_STRIKE}${locale === "zh" ? "看涨" : "C"} ${money(LONG)}`}
 			</Word>
+			<g data-f="p-key">
+				<rect
+					x={L.left}
+					y={L.bottom + T.small + 18}
+					width={12}
+					height={10}
+					className="wt-film-bar"
+					data-tone="neutral"
+					opacity={0.22}
+				/>
+				<Word
+					name="p-key-components"
+					x={L.left + 20}
+					y={L.bottom + T.small + 28}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.components)}
+				</Word>
+				<rect
+					x={L.left + (L.right - L.left) * 0.6}
+					y={L.bottom + T.small + 18}
+					width={12}
+					height={10}
+					className="wt-film-bar"
+					data-tone="total"
+				/>
+				<Word
+					name="p-key-net"
+					x={L.left + (L.right - L.left) * 0.6 + 20}
+					y={L.bottom + T.small + 28}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.net)}
+				</Word>
+			</g>
 			<g data-f="t-key">
 				<rect
 					x={L.left}
@@ -800,10 +840,12 @@ function build(context: FilmContext) {
 	const lockTwo = one<SVGGraphicsElement>("lock-two");
 
 	d.hidden([
+		...STRIKES.flatMap((strike) => [bar(strike, "call"), bar(strike, "put")]),
 		...STRIKES.map((_, i) => one(`net-${i}`)),
 		one("c-profile-source"),
 		one("p-focus-value"),
 		one("p-focus-outline"),
+		one("p-key"),
 		...TRADED.map((contract) => one(`t-outline-${contract}`)),
 		one("t-key"),
 		one("missing"),
@@ -836,7 +878,7 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("c-contract"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.1 },
+		{ opacity: 1, duration: 0.3 },
 		8.95,
 	);
 	show(one("c-head"), 9.1, "above");
@@ -866,7 +908,7 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("c-same-inputs"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
+		{ opacity: 1, duration: 0.3 },
 		15.8,
 	);
 
@@ -877,53 +919,56 @@ function build(context: FilmContext) {
 	const chainExit = [...flat("chain"), one("s-head")].filter(
 		(mark) => mark !== one("c-long"),
 	);
-	tl.set(chainExit, { opacity: 0.22 }, 18.65);
 	hide(chainExit, 18.65);
-	tl.set(one("c-long"), { opacity: 0 }, 18.65);
+	// Crossfade to the rest-position proxy in place, then carry after the lane clears.
+	tl.to(one("c-long"), { opacity: 0, duration: 0.35, ease: "none" }, 18.65);
+	tl.to(
+		one("c-profile-source"),
+		{ opacity: 1, duration: 0.35, ease: "none" },
+		18.65,
+	);
 	d.carry(
 		one<SVGGraphicsElement>("c-profile-source"),
 		one<SVGGraphicsElement>("p-focus-value"),
-		18.65,
+		19,
 		{ duration: 0.4, arc: "y", match: money(LONG) },
 	);
-	show(kids("chart-notes"), 18.95, "above", 0.25);
+	show(kids("chart-notes"), 19.05, "above", 0.3);
 	show(one("p-head"), 19, "above");
 	rise(19.05);
-	tl.set(one("p-focus-outline"), { opacity: 1 }, 19.05);
-	// The settled sides are a faint reference; only the net profile draws in.
-	// Removing the separate sides entrance and strike stagger buys reading time.
+	tl.to(bar(FOCUS_STRIKE, "call"), { opacity: 0.22, duration: 0.5 }, 19.05);
+	grow(bar(FOCUS_STRIKE, "call"), LONG, 19.05);
+	tl.to(one("p-focus-outline"), { opacity: 1, duration: 0.3 }, 19.55);
+	// Fade the bottom key in place so its phone entrance keeps the edge clearance.
+	tl.to(one("p-key"), { opacity: 1, duration: 0.3 }, 19.05);
+	// The isolated call and rising chart finish at 19.85. Give that proof a quiet
+	// second before the other components and their distinctly keyed net arrive.
 	STRIKES.forEach((strike) => {
 		(["call", "put"] as const).forEach((side) => {
-			const value = contribution(strike, side);
-			tl.set(
-				bar(strike, side),
-				{
-					opacity: 0.22,
-					attr: {
-						y: Math.min(L.y(0), L.y(value)),
-						height: Math.abs(L.y(value) - L.y(0)),
-					},
-				},
-				19.05,
-			);
+			if (strike === FOCUS_STRIKE && side === "call") return;
+			tl.to(bar(strike, side), { opacity: 0.22, duration: 0.3 }, 20.85);
+			grow(bar(strike, side), contribution(strike, side), 20.85, 0.3);
 		});
 	});
 	// Net by strike: negative up to $100, positive from $105.
-	show(one("m-tag-net"), 19.05, "above", 0.2);
 	NET_BY_STRIKE.forEach((value, i) => {
-		tl.set(one(`net-${i}`), { opacity: 1 }, 19.25);
-		grow(one(`net-${i}`), value, 19.25, 0.4);
+		tl.to(one(`net-${i}`), { opacity: 1, duration: 0.3 }, 20.85);
+		grow(one(`net-${i}`), value, 20.85, 0.4);
 	});
-	// Bars settle at 19.65 and the chart finishes rising at 19.85. Reveal only
-	// their settled aggregate; chart plus meter hold from 20 to 22.5 (2.5 s).
-	show(meter, 19.85, "above", 0.15);
+	// All bars settle before their aggregate enters; preserve 2.5 s fully settled.
+	show([one("m-tag-net"), meter], 21.25, "above", 0.3);
 	// Cut: the two sides' totals as bars, and a question for them. End to end, the gross;
 	// side by side, the net.
-	// Keep the profile headline for 3.5 s and preserve the gross's 3.55 s hold.
-	d.swap(one("p-head"), one("w1-head"), 22.5);
-	hide([one("p-focus-value"), one("p-focus-outline")], 22.5, 0.35, 0);
-	hide(kids("chart-notes"), 22.5);
-	sink(22.5);
+	// Fund the isolated focus proof from the gross hold, retaining the hero timing.
+	d.swap(one("p-head"), one("w1-head"), 24.05);
+	hide(
+		[one("p-focus-value"), one("p-focus-outline"), one("p-key")],
+		24.05,
+		0.35,
+		0,
+	);
+	hide(kids("chart-notes"), 24.05);
+	sink(24.05);
 	const callsSide = one("two-calls");
 	const putsSide = one("two-puts");
 	const widen = (target: Element, width: number, at: number, duration = 0.5) =>
@@ -933,26 +978,26 @@ function build(context: FilmContext) {
 			{ attr: { width }, duration, ease: "power3.out" },
 			at,
 		);
-	tl.set([...callsSide.children], { opacity: 1 }, 22.9);
-	widen(one("two-calls-bar"), L.two.calls, 22.9, 0.4);
-	tl.set([...putsSide.children], { opacity: 1 }, 23.1);
-	widen(one("two-puts-bar"), L.two.puts, 23.1, 0.4);
+	tl.to([...callsSide.children], { opacity: 1, duration: 0.3 }, 24.45);
+	widen(one("two-calls-bar"), L.two.calls, 24.45, 0.4);
+	tl.to([...putsSide.children], { opacity: 1, duration: 0.3 }, 24.65);
+	widen(one("two-puts-bar"), L.two.puts, 24.65, 0.4);
 	// End to end: along its own row first, then up, so the bars never cross.
 	tl.to(
 		putsSide,
 		{ x: L.two.calls, duration: 0.3, ease: "power2.inOut" },
-		23.6,
+		25.15,
 	);
 	tl.to(
 		putsSide,
 		{ y: L.two.y1 - L.two.y2, duration: 0.3, ease: "power2.inOut" },
-		23.9,
+		25.45,
 	);
 	const gross = [...one("two-gross").children];
-	// Fully settled at 24.45; retain the completed addition for 3.55 s.
-	show(gross, 24.2, "below", 0.25);
+	// Fully settled at 26.05; the completed addition still has 1.9 s to read.
+	show(gross, 25.75, "below", 0.3);
 	// Back: the gross has gone; down first, then along.
-	hide(gross, 28, 0.25);
+	hide(gross, 27.95, 0.3);
 	tl.to(putsSide, { y: 0, duration: 0.3, ease: "power2.inOut" }, 28.25);
 	tl.to(putsSide, { x: 0, duration: 0.35, ease: "power2.inOut" }, 28.55);
 	// The overhang is the net: the meter's figure comes down beside it.
@@ -966,7 +1011,7 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("two-net-tag"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.2 },
+		{ opacity: 1, duration: 0.3 },
 		29.7,
 	);
 	// The hero: a small net between two large sides, and how small.
@@ -976,19 +1021,21 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 29.75);
 	show(one("w-head"), 29.75);
-	d.trace(one<SVGPathElement>("two-net-link"), 30.2, { duration: 0.35 });
+	d.trace(one<SVGPathElement>("two-net-link"), 31.25, { duration: 0.35 });
 	// After the lock: how small, against the gross the bars just spanned.
-	show(one("two-share"), 30.2, "below");
+	// Headline and brackets settle by 30.25: one quiet second before this key.
+	show(one("two-share"), 31.25, "below");
 	// Then how small, drawn: the gross as a track; the net's share of it lights under the sliver.
-	tl.set(one("two-track"), { opacity: 1 }, 30.9);
+	tl.to(one("two-track"), { opacity: 1, duration: 0.3 }, 31.75);
 	tl.fromTo(
 		one("two-track"),
 		{ attr: { width: 0 } },
 		{ attr: { width: L.two.span }, duration: 0.6, ease: "power2.out" },
-		30.9,
+		31.75,
 	);
-	show(one("two-track-label"), 30.9, "below");
-	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 31.6);
+	show(one("two-track-label"), 31.75, "below");
+	// Complete at 32.75, leaving one second before coverage begins.
+	tl.to(one("two-track-net"), { opacity: 1, duration: 0.4 }, 32.35);
 
 	// ——— coverage: which contracts, and what's missing ———
 	tl.addLabel("coverage", 33.75);
@@ -1003,7 +1050,14 @@ function build(context: FilmContext) {
 		{ opacity: 1 },
 		33.95,
 	);
-	show(kids("chart-notes"), 33.95, "above", 0.25);
+	// Reset while hidden, then fade in place: the departing hero headline must
+	// not share a flight lane with the dealer-convention label.
+	tl.fromTo(
+		kids("chart-notes"),
+		{ opacity: 0, x: 0, y: 0 },
+		{ opacity: 1, duration: 0.3 },
+		33.95,
+	);
 	rise(33.95);
 	tl.to(
 		STRIKES.flatMap((strike) =>
@@ -1018,15 +1072,15 @@ function build(context: FilmContext) {
 	// Membership settles at 34.65 and the chart rise at 34.75. Keep the
 	// full-chain reading absent; reveal a dedicated, settled traded-only value.
 	const tradedMeter = one("m-value-traded");
-	show([one("m-tag-net"), tradedMeter], 34.75, "above", 0.25);
+	show([one("m-tag-net"), tradedMeter], 34.7, "above", 0.3);
 	// Selection has its own encoding, alongside the unchanged dealer convention.
 	tl.to(
 		[one("t-key"), ...TRADED.map((contract) => one(`t-outline-${contract}`))],
-		{ opacity: 1, duration: 0.25 },
-		34.75,
+		{ opacity: 1, duration: 0.3 },
+		34.7,
 	);
 	// Back to the whole chain, but the 95 put never arrived.
-	hide([one("m-tag-net"), tradedMeter], 37.45, 0.25, 0);
+	hide([one("m-tag-net"), tradedMeter], 37.45, 0.3, 0);
 	d.swap(one("t-head"), one("x-head"), 37.7);
 	hide(
 		[one("t-key"), ...TRADED.map((contract) => one(`t-outline-${contract}`))],
@@ -1035,8 +1089,8 @@ function build(context: FilmContext) {
 		0,
 	);
 	// Membership changes only once the traded-only headline and key have cleared.
-	// Overlap hatch and restoration, reclaiming the old 0.3 s stagger and 0.05 s
-	// post-settlement gap; the subtotal still arrives at 38.45 after both settle.
+	// Hatch, missing bar and restoration settle together at 38.45. The final
+	// 0.05 s of runtime headroom preserves the subtotal's settled reading hold.
 	tl.to(
 		STRIKES.flatMap((strike) =>
 			(["call", "put"] as const)
@@ -1047,28 +1101,27 @@ function build(context: FilmContext) {
 		38.05,
 	);
 	MISSING.forEach((missing) => {
-		tl.set(one(`bar-${missing}`), { opacity: 0 }, 38.05);
+		tl.to(one(`bar-${missing}`), { opacity: 0, duration: 0.4 }, 38.05);
 	});
 	tl.to(one("missing"), { opacity: 1, duration: 0.4 }, 38.05);
 	// The gap and all included contracts are settled before this subtotal appears.
-	show([one("m-tag-known"), one("m-value-known")], 38.45, "above", 0.25);
+	show([one("m-tag-known"), one("m-value-known")], 38.45, "above", 0.3);
 	// Cut: the claim.
-	hide([one("x-head"), ...kids("meter")], 41.55);
-	hide(kids("chart-notes"), 41.55);
-	sink(41.55);
+	hide([one("x-head"), ...kids("meter")], 41.6);
+	hide(kids("chart-notes"), 41.6);
+	sink(41.6);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.85,
+		41.9,
 	);
-	show(one("z-sub"), 42.25);
+	show(one("z-sub"), 42.3);
 
 	// ——— next ———
-	// Coverage is at minimum holds: recover 0.4 s from the end card and use 0.1 s of headroom.
-	tl.addLabel("next", 45.85);
-	hide(kids("claim"), 45.85);
-	d.close(45.85);
+	tl.addLabel("next", 45.9);
+	hide(kids("claim"), 45.9);
+	d.close(45.9);
 	return tl;
 }
 
