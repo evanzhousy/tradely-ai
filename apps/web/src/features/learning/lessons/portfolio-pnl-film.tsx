@@ -43,7 +43,7 @@ import {
 /*
  * P&L, as a film. It opens on an account that rose $6,199.60 from Monday's open to
  * Tuesday and asks how much of that was earned. The account as one bar: ALFA +$160, the
- * calls +$1,050, fees −$10.40, so +$1,199.60 earned, lifted out as the answer; then a
+ * calls +$1,050, fees −$10.40, so +$1,199.60 earned, bracketed as the answer; then a
  * $5,000 deposit that lifts the value without being profit, and buying power, larger
  * still. Then the calls' +$1,050 as sixteen contracts in two lots, and a question: sold
  * at the bid, is it still +$1,050? Six sold oldest first leave +$330 realized and +$645
@@ -187,8 +187,8 @@ const copy = {
 	unrealized: ["unrealized", "未实现"],
 	totalTag: ["realized + unrealized", "已实现 + 未实现"],
 	totalHead: [
-		`No: ${signed(fifo.realized + fifo.unrealized)} in total.`,
-		`不：总盈亏 ${signed(fifo.realized + fifo.unrealized)}。`,
+		`No: calls’ price P&L ${signed(fifo.realized + fifo.unrealized)} before fees.`,
+		`不：看涨价格盈亏 ${signed(fifo.realized + fifo.unrealized)}，未扣费。`,
 	],
 	// Arithmetic notation is shared by both languages.
 	bridge: [BRIDGE_EQ, BRIDGE_EQ],
@@ -692,7 +692,11 @@ function Scene({
 				))}
 				<g data-f="held-proof">
 					{remainingLots.map((lot, i) => {
-						const equation = `${lot.quantity} × (${price(MARK)} − ${price(lot.price)}) × 100 =`;
+						// The phone already shows the mid and the contract multiplier in the FIFO proof.
+						// Keep each lot's quantity, cost and contribution without repeating that arithmetic.
+						const equation = narrow
+							? `${lot.quantity} @ ${price(lot.price)} →`
+							: `${lot.quantity} × (${price(MARK)} − ${price(lot.price)}) × 100 =`;
 						const rowWidth =
 							20 +
 							textWidth(equation, T.body) +
@@ -1162,31 +1166,29 @@ function build(context: FilmContext) {
 	show(one("breakdown-fees"), 12.2, "below", 0.3);
 	growContribution("fees", 12.5, 0.3);
 	// The completed rows and net account read alone for a second (12.8–13.8).
-	show(one("earned"), 13.8);
-	d.carry(one("earned-num"), one<SVGGraphicsElement>("earned-big"), 14.3, {
-		duration: 0.8,
-		keep: true,
-	});
-	show(one("earned-tag"), 14.6);
-	// Tuesday: money in, not money made.
-	if (L.narrow) {
-		// Fade in place on the phone: rising from below would cross the EARNED tag.
-		hide(one("a-head"), 15.1);
-		tl.fromTo(
-			one("e-head"),
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.5 },
-			15.45,
-		);
-	} else {
-		d.swap(one("a-head"), one("e-head"), 15.1);
-	}
-	growContribution("deposit", 15.1, 0.7);
-	show(one("deposited"), 15.3);
+	// Merge the bracket and enlarged answer into one reveal, rather than another transport step.
+	// All three settle at 14.3 and read untouched for a full second before the deposit beat.
+	tl.fromTo(
+		[one("earned"), ...kids("answer")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5, ease: "power2.out" },
+		13.8,
+	);
+	// A deliberate headline cut marks Tuesday's new beat; the incoming line fades in place.
+	// This preserves its reading hold without overlapping Monday's headline or the EARNED tag.
+	tl.set(one("a-head"), { opacity: 0 }, 15.3);
+	tl.fromTo(
+		one("e-head"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5, ease: "power2.out" },
+		15.3,
+	);
+	growContribution("deposit", 15.3, 0.7);
+	show(one("deposited"), 15.5);
 	// Read the completed deposit for a second, then compare buying power in its own slot.
-	show(one("m-tag-bp"), 16.8, "above", 0.3);
-	show(one("m-bp"), 16.8, "below", 0.3);
-	show(one("m-bp-note"), 17.1, "below", 0.3);
+	show(one("m-tag-bp"), 17.0, "above", 0.3);
+	show(one("m-bp"), 17.0, "below", 0.3);
+	show(one("m-bp-note"), 17.3, "below", 0.3);
 
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.0);
