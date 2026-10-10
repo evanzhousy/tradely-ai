@@ -293,6 +293,16 @@ function Scene({
 		const line = (i: number) => L.forkTop + C.pad + C.title + i * C.step;
 		const spotlight =
 			side === "copy" ? copy.spotlightCopy : copy.spotlightOfficialShort;
+		const owner = t(
+			privateCard
+				? narrow
+					? copy.privateShort
+					: copy.private
+				: narrow
+					? copy.officialShort
+					: copy.official,
+		);
+		const ownerClass = `wt-film-type ${privateCard ? "wt-film-accent" : "wt-film-dim"}`;
 		return (
 			<g data-f={`fork-${side}`}>
 				<rect
@@ -311,24 +321,41 @@ function Scene({
 				>
 					{narrow ? "Market Recap" : "Daily Market Recap"}
 				</text>
-				<Lines
-					name={`owner-${side}`}
-					text={t(
-						privateCard
-							? narrow
-								? copy.privateShort
-								: copy.private
-							: narrow
-								? copy.officialShort
-								: copy.official,
-					)}
-					x={x + C.pad}
-					y={line(1)}
-					anchor="start"
-					maxWidth={L.half - 2 * C.pad}
-					size={narrow ? T.body : C.size}
-					className={`wt-film-type ${privateCard ? "wt-film-accent" : "wt-film-dim"}`}
-				/>
+				{narrow ? (
+					<text
+						data-f={`owner-${side}`}
+						x={x + C.pad}
+						y={line(1)}
+						className={ownerClass}
+						style={{ fontSize: T.body * 1.1 }}
+					>
+						{/* Keep the longer English ownership label on one line inside
+						    the existing card gutters, without shrinking its type height. */}
+						<tspan
+							textLength={
+								privateCard &&
+								locale === "en" &&
+								textWidth(owner, T.body * 1.1) * 0.86 > L.half - 2 * C.pad
+									? L.half - 2 * C.pad
+									: undefined
+							}
+							lengthAdjust="spacingAndGlyphs"
+						>
+							{owner}
+						</tspan>
+					</text>
+				) : (
+					<Lines
+						name={`owner-${side}`}
+						text={owner}
+						x={x + C.pad}
+						y={line(1)}
+						anchor="start"
+						maxWidth={L.half - 2 * C.pad}
+						size={C.size}
+						className={ownerClass}
+					/>
+				)}
 				{!narrow
 					? chapters.map((chapter, i) => (
 							<text
@@ -996,13 +1023,13 @@ function build(context: FilmContext) {
 		flat("q").filter((el) => el !== one("q-signal")),
 		9.6,
 	);
-	// All six cards settle at 10.75 and hold for a second before UOA widens.
-	// The phrase waits
-	// in the gap above UOA, clear of the catalog, and both marks stay untransformed.
+	// All six cards settle at 10.75; nothing new begins before 11.75.
+	// The phrase waits in the gap above UOA, clear of the catalog, and both
+	// marks stay untransformed. Its 0.7 s flight settles at 12.45.
 	d.carry(
 		one<SVGGraphicsElement>("q-signal"),
 		one<SVGGraphicsElement>("screen-signal"),
-		11.35,
+		11.75,
 		{ duration: 0.7, arc: "y" },
 	);
 	show(one("k-head"), 9.8, "above");
@@ -1031,7 +1058,7 @@ function build(context: FilmContext) {
 		one("uoa-contract"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		11.7,
+		11.75,
 	);
 	["uoa-volume", "uoa-oi"].forEach((name, i) => {
 		tl.fromTo(
@@ -1115,7 +1142,10 @@ function build(context: FilmContext) {
 
 	// ——— session: the calendar, not the clock ———
 	tl.addLabel("session", 15.8);
-	hide([one("k-head"), one("s-head"), one("screen-signal")], 15.8);
+	hide([one("k-head"), one("s-head")], 15.8);
+	// Preserve the phrase's 3.75 s landed hold after delaying its carry.
+	// It fades in place, clear of the incoming calendar and its later status labels.
+	hide(one("screen-signal"), 16.2, 0.35, 0);
 	sink(15.8);
 	tl.set(one("catalog"), { opacity: 0 }, 16.2);
 	tl.set(one("calendar"), { opacity: 1 }, 16.2);
@@ -1381,9 +1411,11 @@ function build(context: FilmContext) {
 	// ALFA settles at 38.8; a direct claim cut preserves 2.6 settled seconds.
 	d.flip(one("spot-copy-was"), one("spot-copy"), 38.15);
 	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.45);
-	// Cut directly to the claim instead of spending 0.4 s sinking the proof.
+	// Replace the whole proof with the settled claim in one deliberate beat cut.
+	// Removing its scale entrance preserves four fully settled reading seconds
+	// without borrowing from ALFA's payoff or the supporting sentence's hold.
 	tl.set([one("fork"), one("f-head"), one("c-head")], { opacity: 0 }, 41.4);
-	word(one("z-big"), 41.4);
+	tl.set(one("z-big"), { opacity: 1 }, 41.4);
 	show(one("z-sub"), 41.8);
 
 	// ——— next ———
