@@ -66,6 +66,25 @@ function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
 	const labelW = narrow ? 44 : 60;
+	const answerSize = narrow ? frame.type.body * 1.1 : frame.type.head;
+	// Reserve full font extents plus 8 px between the four saved-record rows.
+	const recTop = H * 0.27;
+	const recTitleY = recTop + 12 + frame.type.small;
+	const recQuestionY =
+		recTitleY + frame.type.small * 0.3 + frame.type.body * 1.1 + 8;
+	const recLateY = recQuestionY + frame.type.body * 1.4 + 8;
+	const recAnswerY = recLateY + frame.type.body * 0.3 + answerSize * 1.1 + 8;
+	const firstRecH = Math.max(
+		H * (narrow ? 0.22 : 0.2),
+		recAnswerY - recTop + answerSize * 0.3 + 12,
+	);
+	const secondRecH = H * (narrow ? 0.16 : 0.17);
+	const secondRecY = Math.max(H * 0.54, recTop + firstRecH + 16);
+	const proofSize = narrow ? frame.type.head : frame.type.num;
+	const universeY = Math.max(
+		H * (narrow ? 0.77 : 0.78),
+		secondRecY + secondRecH + proofSize + 8,
+	);
 	return {
 		...frame,
 		fieldY: (i: number) =>
@@ -85,13 +104,22 @@ function layout(width: number) {
 		claimY: (i: number) =>
 			narrow ? H * 0.58 + i * H * 0.072 : H * 0.28 + i * H * 0.095,
 		claimH: H * (narrow ? 0.048 : 0.068),
-		recY: (i: number) => H * 0.27 + i * H * (narrow ? 0.27 : 0.23),
-		recH: (i: number) => H * (narrow ? (i === 0 ? 0.22 : 0.16) : 0.2),
-		answerSize: narrow ? frame.type.body * 1.1 : frame.type.head * 0.85,
-		lateY: H * (narrow ? 0.49 : 0.47) + frame.type.body * 1.8,
-		proofSize: narrow ? frame.type.head : frame.type.num,
+		recX: (i: number) => margin + (width >= 900 ? i * room * 0.1 : 0),
+		recW: width >= 900 ? room * 0.82 : room,
+		recY: (i: number) => (i === 0 ? recTop : secondRecY),
+		recH: (i: number) => (i === 0 ? firstRecH : secondRecH),
+		recTitleY,
+		recQuestionY,
+		recLateY,
+		recAnswerY,
+		answerSize,
+		lateY: Math.max(
+			H * 0.49 + frame.type.body * 1.8,
+			recTop + firstRecH + proofSize + 8,
+		),
+		proofSize,
 		proofY: (i: number) => H * (narrow ? 0.73 : 0.78) + i * H * 0.08,
-		universeY: (i: number) => H * (narrow ? 0.77 : 0.78) + i * H * 0.08,
+		universeY: (i: number) => universeY + i * H * 0.08,
 	};
 }
 
@@ -198,12 +226,8 @@ const LATE_PREFIX: Copy = ["120:", "120："];
 const revised = {
 	title: ["record 1 · Tue 09:00", "记录 1 · 周二 09:00"],
 	shortAnswer: [
-		`110 leads · ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
-		`110 领先 · 占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
-	],
-	answer: [
-		` · 110 leads, ${share(LEAD, WITH_LATE)} of ${count(WITH_LATE)}`,
-		` · 110 领先，占 ${count(WITH_LATE)} 的 ${share(LEAD, WITH_LATE)}`,
+		`110 leads · ${share(LEAD, WITH_LATE)}`,
+		`110 领先 · 占 ${share(LEAD, WITH_LATE)}`,
 	],
 	tag: ["revised", "已修订"],
 } as const satisfies Record<string, Copy>;
@@ -215,11 +239,8 @@ const copy = {
 	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	lateDay: ["late · Tue 09:00", "迟到 · 周二 09:00"],
-	proofScope: ["record 1 · Oct 18 calls", "记录 1 · 10月18日 看涨"],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
-	keptRecord: ["record 1 · kept", "记录 1 · 保留"],
-	newRecord: ["record 2 · new", "记录 2 · 新建"],
 	spreadLabel: [
 		`${count(SPREAD_LEG)} · one spread leg`,
 		`${count(SPREAD_LEG)} · 一条价差腿`,
@@ -283,8 +304,8 @@ function Scene({
 	const lateNumberX =
 		margin +
 		16 +
-		textWidth(t(LATE_PREFIX), answerSize * (locale === "zh" ? 0.95 : 0.86)) +
-		answerSize * 0.22;
+		textWidth(t(LATE_PREFIX), T.body * (locale === "zh" ? 0.95 : 0.86)) +
+		T.body * 0.22;
 	const proofX = margin + 16;
 	const proofParts = [count(COVERED), "+", count(LATE), "=", count(WITH_LATE)];
 	const proofNames = [
@@ -615,17 +636,17 @@ function Scene({
 				<g key={t(record.title)} data-f={`rec-${i}`}>
 					<rect
 						data-f={`rec-${i}-box`}
-						x={margin}
+						x={L.recX(i)}
 						y={L.recY(i)}
-						width={room}
+						width={L.recW}
 						height={L.recH(i)}
 						rx={12}
 						className="wt-panel-shape"
 					/>
 					<text
 						data-f={`rec-${i}-title`}
-						x={margin + 16}
-						y={L.recY(i) + L.recH(i) * 0.26}
+						x={L.recX(i) + 16}
+						y={i === 0 ? L.recTitleY : L.recY(i) + L.recH(i) * 0.26}
 						className="wt-film-tag"
 						style={{ fontSize: T.small }}
 					>
@@ -633,8 +654,8 @@ function Scene({
 					</text>
 					<text
 						data-f={`rec-${i}-tag`}
-						x={margin + room - 16}
-						y={L.recY(i) + L.recH(i) * 0.26}
+						x={L.recX(i) + L.recW - 16}
+						y={i === 0 ? L.recTitleY : L.recY(i) + L.recH(i) * 0.26}
 						textAnchor="end"
 						className="wt-film-tag wt-film-accent"
 						style={{ fontSize: T.small }}
@@ -643,10 +664,11 @@ function Scene({
 					</text>
 					<text
 						data-f={`rec-${i}-question`}
-						x={margin + 16}
+						x={L.recX(i) + 16}
 						y={
-							L.recY(i) +
-							L.recH(i) * (narrow && i === 0 ? 0.43 : narrow ? 0.56 : 0.48)
+							i === 0
+								? L.recQuestionY
+								: L.recY(i) + L.recH(i) * (narrow ? 0.56 : 0.44)
 						}
 						className="wt-film-type"
 						style={{ fontSize: T.body }}
@@ -655,10 +677,10 @@ function Scene({
 					</text>
 					<text
 						data-f={`rec-${i}-answer`}
-						x={margin + 16}
-						y={L.recY(i) + L.recH(i) * (narrow && i === 0 ? 0.65 : 0.82)}
+						x={L.recX(i) + 16}
+						y={i === 0 ? L.recAnswerY : L.recY(i) + L.recH(i) * 0.82}
 						className="wt-film-type"
-						style={{ fontSize: narrow ? T.body : answerSize }}
+						style={{ fontSize: narrow ? T.body : answerSize, fontWeight: 600 }}
 					>
 						{t(record.answer)}
 					</text>
@@ -668,6 +690,16 @@ function Scene({
 			<g data-f="late">
 				<Word
 					name="late-volume"
+					x={L.barX + 16}
+					y={L.lateY}
+					size={L.proofSize}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{count(LATE)}
+				</Word>
+				<Word
+					name="late-add-proxy"
 					x={L.barX + 16}
 					y={L.lateY}
 					size={L.proofSize}
@@ -688,16 +720,6 @@ function Scene({
 			</g>
 			{/* The late series changes the denominator first, then resolves the bound. */}
 			<g data-f="rev-proof">
-				<Word
-					name="rev-scope"
-					x={proofX}
-					y={L.proofY(0) - H * 0.065}
-					size={T.small}
-					anchor="start"
-					className="wt-film-tag"
-				>
-					{t(copy.proofScope).toUpperCase()}
-				</Word>
 				{proofParts.map((part, i) => (
 					<Word
 						key={proofNames[i]}
@@ -753,31 +775,13 @@ function Scene({
 				>
 					{t(copy.puts)}
 				</Word>
-				<Word
-					name="universe-kept"
-					x={margin + room * 0.22}
-					y={L.universeY(1)}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(copy.keptRecord).toUpperCase()}
-				</Word>
-				<Word
-					name="universe-new"
-					x={margin + room * 0.74}
-					y={L.universeY(1)}
-					size={T.small}
-					className="wt-film-tag wt-film-accent"
-				>
-					{t(copy.newRecord).toUpperCase()}
-				</Word>
 			</g>
 			{/* Record 1 revised: the same card, its title, answer and tag turned over. */}
 			<g data-f="rev">
 				<text
 					data-f="rev-title"
 					x={margin + 16}
-					y={L.recY(0) + L.recH(0) * 0.26}
+					y={L.recTitleY}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -785,8 +789,8 @@ function Scene({
 				</text>
 				<text
 					data-f="rev-tag"
-					x={margin + room - 16}
-					y={L.recY(0) + L.recH(0) * 0.26}
+					x={margin + L.recW - 16}
+					y={L.recTitleY}
 					textAnchor="end"
 					className="wt-film-tag wt-film-accent"
 					style={{ fontSize: T.small }}
@@ -796,17 +800,17 @@ function Scene({
 				<text
 					data-f="rev-late"
 					x={margin + 16}
-					y={L.recY(0) + L.recH(0) * (narrow ? 0.65 : 0.82)}
+					y={L.recLateY}
 					className="wt-film-type wt-film-accent"
-					style={{ fontSize: answerSize }}
+					style={{ fontSize: T.body }}
 				>
 					{t(LATE_PREFIX)}
 				</text>
 				<Word
 					name="rev-late-volume"
 					x={lateNumberX}
-					y={L.recY(0) + L.recH(0) * (narrow ? 0.65 : 0.82)}
-					size={answerSize}
+					y={L.recLateY}
+					size={T.body}
 					anchor="start"
 					className="wt-film-num wt-film-accent"
 				>
@@ -814,18 +818,12 @@ function Scene({
 				</Word>
 				<text
 					data-f="rev-answer"
-					x={
-						narrow
-							? margin + 16
-							: lateNumberX +
-								textWidth(count(LATE), answerSize) +
-								answerSize * 0.3
-					}
-					y={L.recY(0) + L.recH(0) * (narrow ? 0.87 : 0.82)}
-					className={`wt-film-type ${narrow ? "" : "wt-film-accent"}`}
-					style={{ fontSize: answerSize, fontWeight: narrow ? 600 : undefined }}
+					x={margin + 16}
+					y={L.recAnswerY}
+					className="wt-film-type wt-film-accent"
+					style={{ fontSize: answerSize, fontWeight: 600 }}
 				>
-					{t(narrow ? revised.shortAnswer : revised.answer)}
+					{t(revised.shortAnswer)}
 				</text>
 			</g>
 
@@ -935,15 +933,8 @@ function build(context: FilmContext) {
 	// Measure the prefix and mono digits independently; carries land in the source's face.
 	const prefixBox = one<SVGTextElement>("rev-late").getBBox();
 	gsap.set(one("rev-late-volume"), {
-		attr: { x: prefixBox.x + prefixBox.width + L.answerSize * 0.22 },
+		attr: { x: prefixBox.x + prefixBox.width + L.type.body * 0.22 },
 	});
-	// Only the wide answer remains inline; the phone saves two separate body-sized lines.
-	if (!L.narrow) {
-		const answerBox = one<SVGTextElement>("rev-late-volume").getBBox();
-		gsap.set(one("rev-answer"), {
-			attr: { x: answerBox.x + answerBox.width + L.answerSize * 0.3 },
-		});
-	}
 	/** An evidence tag is stamped on its card: in slightly large, settling. */
 	const stamp = (target: Element, at: number) =>
 		tl.fromTo(
@@ -978,7 +969,7 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("field-0-detail"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
+		{ opacity: 1, duration: 0.3 },
 		9.35,
 	);
 	fieldRows.forEach((row, i) => {
@@ -1023,7 +1014,7 @@ function build(context: FilmContext) {
 	stamp(tags[3], 25.55);
 	d.trace(one<SVGPathElement>("spread-trace"), 25.6, { duration: 0.5 });
 	// Once the evidence has struck the story, clear the connector before the lock.
-	hide(one("spread-trace"), 26.7, 0.25, 0);
+	hide(one("spread-trace"), 26.7, 0.3, 0);
 	// The story is struck through, right after the evidence against it, not erased.
 	tl.fromTo(
 		one("story-strike"),
@@ -1054,10 +1045,10 @@ function build(context: FilmContext) {
 			lockClaim,
 		],
 		31.8,
-		0.25,
+		0.3,
 	);
 	// The outgoing chart is fully gone before any record glyph can enter its region.
-	show(recs[0], 32.05, "right");
+	show(recs[0], 32.1, "right");
 	// Preserve the named, missing 120 row while the rest of the hero leaves.
 	const missingIndex = SERIES.findIndex((row) => row.volume === null);
 	const rowBaseline =
@@ -1069,89 +1060,82 @@ function build(context: FilmContext) {
 		{ x: 16, y: L.lateY - rowBaseline, duration: 0.65, ease: "power3.inOut" },
 		31.8,
 	);
-	// The ghost becomes Tuesday's delivered series at the same baseline and state label.
+	// Clear both missing-state marks before the delivered number and date enter.
 	hide(
 		[one("missing-series-ghost"), one("missing-series-state")],
-		32.45,
-		0.1,
+		32.15,
+		0.3,
 		0,
 	);
-	tl.fromTo(
-		one("late-volume"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
-		32.45,
-	);
-	tl.fromTo(
-		one("late-day"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.25 },
-		32.45,
-	);
-	// The delivered series adds to coverage; only the settled sum is shown after "=".
-	// Volume and its date settle together at 32.7, a second before construction starts.
-	// Group the operands, then the settled relationships; keep the original entrance
-	// durations instead of flashing each token to buy the proof's reading interval.
+	show([one("late-volume"), one("late-day")], 32.45, "right", 0.3);
+	// Delivery settles at 32.75; leave one quiet second before constructing the sum.
 	show(
 		[one("rev-base"), one("rev-bound"), one("rev-plus")],
-		33.7,
+		33.75,
 		"right",
-		0.25,
+		0.3,
+	);
+	// The date steps aside before the proxy crosses its lane; its source stays delivered.
+	tl.to(
+		one("late-day"),
+		{ opacity: 0.2, duration: 0.3, ease: "power3.out" },
+		33.75,
 	);
 	d.carry(
-		one<SVGGraphicsElement>("late-volume"),
+		one<SVGGraphicsElement>("late-add-proxy"),
 		one<SVGGraphicsElement>("rev-add"),
 		33.95,
-		{ duration: 0.3, arc: "x", keep: true },
+		{ duration: 0.3, arc: "x" },
 	);
-	show(one("rev-scope"), 34.25, "right", 0.25);
-	show([one("rev-equals"), one("rev-total")], 34.25, "right", 0.25);
+	show([one("rev-equals"), one("rev-total")], 34.25, "right", 0.3);
 	show(
-		[
-			one("rev-share-arrow"),
-			one("rev-numerator"),
-			one("rev-divide"),
-			one("rev-denominator"),
-			one("rev-approx"),
-			one("rev-share"),
-		],
+		[one("rev-share-arrow"), one("rev-numerator"), one("rev-divide")],
 		34.25,
-		"below",
-		0.25,
+		"right",
+		0.3,
 	);
-	// …and rises into its answer: record 1 turns over in place, caused, and keeps the stage.
-	// The proof settles by 34.5, and the kept source returns to full opacity by 34.55.
-	// Allow a full quiet second after both before any card change competes.
-	const reviseAt = 35.55;
+	// Matching colour ties the denominator to the sum, without crossing neighbouring type.
+	tl.fromTo(
+		one("rev-denominator"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		34.55,
+	);
+	show([one("rev-approx"), one("rev-share")], 34.85, "right", 0.3);
+	// The complete derivation settles at 35.15, then gets its full quiet second.
+	const reviseAt = 36.15;
 	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, reviseAt);
-	// Preserve the original answer's 3.5 s hold before it changes.
-	tl.to(one("rec-0-answer"), { opacity: 0, duration: 0.05 }, reviseAt + 0.1);
+	hide(one("rec-0-answer"), reviseAt, 0.3, 0);
 	d.carry(
 		one<SVGGraphicsElement>("late-volume"),
 		one<SVGGraphicsElement>("rev-late-volume"),
-		35.8,
+		36.25,
 		{ duration: 0.4 },
 	);
-	// Reveal the prefix on landing, so the flying digits never pass its settled glyphs.
-	hide(strikes[missingIndex], 35.8, 0.25, 0);
-	tl.set(one("rev-late"), { opacity: 1 }, 36.2);
-	hide(one("late-day"), 35.8);
+	hide(strikes[missingIndex], 36.25, 0.3, 0);
+	hide(one("late-day"), 36.25, 0.3, 0);
 	d.flip(one("rec-0-title"), revs[0], reviseAt);
 	tl.set(one("rec-0-title"), { opacity: 0 }, reviseAt + 0.3);
 	d.flip(one("rec-0-tag"), revs[1], reviseAt);
 	tl.set(one("rec-0-tag"), { opacity: 0 }, reviseAt + 0.3);
-	// The answer writes the result only after the denominator and share have settled.
-	tl.set(one("rev-answer"), { opacity: 1 }, 36.2);
+	// The flying digits land before either neighbouring line fades in.
+	tl.fromTo(
+		[one("rev-late"), one("rev-answer")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		36.65,
+	);
 	// A new question: a new record, once the revision has been read.
-	// Clear record 1's proof before record 2 can compete with its scope.
-	hide(kids("rev-proof"), 37.95, 0.25, 0);
+	// Clear record 1's proof before record 2 enters.
+	// The saved revision settles at 36.95 and holds alone for a full second.
+	hide(kids("rev-proof"), 37.95, 0.3, 0);
 	show(recs[1], 38.25, "right");
 	tl.set(one("rec-0-box"), { attr: { class: "wt-panel-shape" } }, 38.25);
 	tl.set(one("rec-1-box"), { attr: { class: "wt-focus-shape" } }, 38.25);
 	show(heads[4], 38.25);
-	show([one("rec-0-universe"), one("universe-kept")], 38.65, "right", 0.3);
+	show(one("rec-0-universe"), 38.65, "right", 0.3);
 	show(one("universe-arrow"), 38.85, "right", 0.3);
-	show([one("rec-1-universe"), one("universe-new")], 39.1, "right", 0.3);
+	show(one("rec-1-universe"), 39.1, "right", 0.3);
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.75);
