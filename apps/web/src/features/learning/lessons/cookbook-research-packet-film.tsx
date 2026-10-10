@@ -52,9 +52,9 @@ import {
  *   rows      8.6–18.6   five rows; R2 traced; summed; a subtotal of 4 of 5
  *   fields    18.6–31.55 hero: without the formula; without the exclusions,
  *                        held; then the field goes back and the figure is P1's again
- *   log       31.55–41.9 P1; add R5 to make P2; remove the two spread portions for P3
- *   claim     41.9–46.3  work someone else can rerun
- *   next      46.3–47.5  Next: recaps
+ *   log       31.55–41.4 P1; add R5 to make P2; remove the two spread portions for P3
+ *   claim     41.4–45.8  work someone else can rerun
+ *   next      45.8–47.5  Next: recaps, with the standard close
  */
 
 const END = 47.5;
@@ -117,6 +117,10 @@ const copy = {
 		`${COVERED} of ${SERIES} series`,
 		`${SERIES} 个序列中的 ${COVERED} 个`,
 	],
+	savedCoverage: [
+		`Subtotal · ${COVERED} of ${SERIES} series`,
+		`观测小计 · ${COVERED}/${SERIES} 个序列`,
+	],
 	p1Says: [`P1: ${dollars(MONDAY)}`, `P1：${dollars(MONDAY)}`],
 	whyFormula: [
 		`÷ 100 · ${reruns.formula.why[0]}`,
@@ -153,6 +157,7 @@ const copy = {
 	nextCta: ["Try it ↓", "亲自试试 ↓"],
 	spreadR2: ["R2 · T-3", "R2 · T-3"],
 	spreadR3: ["+ R3 · spread leg", "+ R3 · 价差腿"],
+	spreadTotal: ["Spread total", "价差合计"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({
@@ -197,8 +202,8 @@ function Scene({
 		textWidth(t(copy.repeated), T.small) +
 		24;
 	const spreadProofSize = T.body;
-	const spreadProofY = L.recY(2) + L.recH * 0.6;
 	const spreadProofStep = spreadProofSize * 1.65;
+	const spreadProofY = L.recY(2) + L.recH * 0.6 + spreadProofStep;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -573,6 +578,18 @@ function Scene({
 						className="wt-panel-shape"
 						style={record.method === 2 ? { strokeDasharray: "5 4" } : undefined}
 					/>
+					{i === 2 && (
+						<rect
+							data-f="rec-2-saved-box"
+							x={margin}
+							y={L.recY(i)}
+							width={room}
+							height={L.recH}
+							rx={12}
+							className="wt-panel-shape"
+							style={{ strokeDasharray: "5 4" }}
+						/>
+					)}
 					<text
 						x={margin + 16}
 						y={L.recY(i) + L.recH * 0.28}
@@ -581,16 +598,18 @@ function Scene({
 					>
 						{t(record.head).toUpperCase()}
 					</text>
-					<text
-						data-f={`rec-${i}-n`}
-						x={margin + 16}
-						y={L.recY(i) + L.recH * 0.6}
-						className="wt-film-num"
-						style={{ fontSize: narrow ? T.head : T.head * 1.1 }}
-					>
-						{dollars(record.cents)}
-					</text>
-					{i === 1 && (
+					{i === 0 && (
+						<text
+							data-f={`rec-${i}-n`}
+							x={margin + 16}
+							y={L.recY(i) + L.recH * 0.6}
+							className="wt-film-num"
+							style={{ fontSize: narrow ? T.head : T.head * 1.1 }}
+						>
+							{dollars(record.cents)}
+						</text>
+					)}
+					{i < 2 && (
 						<text
 							data-f={`rec-${i}-note`}
 							x={margin + 16}
@@ -598,7 +617,7 @@ function Scene({
 							className="wt-film-type wt-film-dim"
 							style={{ fontSize: T.small * 1.05 }}
 						>
-							{t(record.note)}
+							{t(i === 0 ? copy.savedCoverage : record.note)}
 						</text>
 					)}
 					{i === 0 && (
@@ -646,8 +665,8 @@ function Scene({
 				))}
 			</g>
 
-			{/* Separate operands let each cause arrive before its settled result. P3's
-			    deduction sits below both identified portions in one continuous proof. */}
+			{/* P3's selected total occupies its eventual subtraction-operand position.
+			    Its result stays on this baseline when the portions below fold away. */}
 			{(
 				[
 					[1, `${dollars(MONDAY)} + `, TUESDAY],
@@ -656,20 +675,29 @@ function Scene({
 			).map(([i, expression, result]) => {
 				const contribution = i === 1 ? TUESDAY - MONDAY : spreadLegs;
 				const suffix = `${dollars(contribution)} = `;
+				const resultSize = narrow ? T.head : T.head * 1.1;
 				const equationSize = narrow
 					? Math.min(
 							T.head,
-							((room - 32) * 0.98) /
-								textWidth(expression + suffix + dollars(result), 1),
+							((room - 32) * 0.98 - textWidth(dollars(result), resultSize)) /
+								textWidth(expression + suffix, 1),
 						)
 					: T.body;
 				const operandX = margin + 16 + textWidth(expression, equationSize);
-				const equationY =
-					i === 2
-						? spreadProofY + spreadProofStep * 2
-						: L.recY(i) + L.recH * 0.6;
+				const equationY = L.recY(i) + L.recH * 0.6;
 				return (
 					<g key={`log-equation-${i}`}>
+						{i === 2 && (
+							<text
+								data-f="log-spread-total-label"
+								x={margin + 16}
+								y={equationY}
+								className="wt-film-type wt-film-loss"
+								style={{ fontSize: equationSize }}
+							>
+								{t(copy.spreadTotal)}
+							</text>
+						)}
 						<text
 							data-f={`log-${i}-expression`}
 							x={margin + 16}
@@ -701,10 +729,18 @@ function Scene({
 						</text>
 						<text
 							data-f={`log-${i}-result`}
-							x={margin + 16 + textWidth(expression + suffix, equationSize)}
+							x={
+								narrow
+									? margin + room - 16
+									: margin +
+										16 +
+										textWidth(expression + suffix, equationSize) +
+										textWidth(dollars(result), resultSize)
+							}
+							textAnchor="end"
 							y={equationY}
 							className="wt-film-num"
-							style={{ fontSize: equationSize }}
+							style={{ fontSize: resultSize }}
 						>
 							{dollars(result)}
 						</text>
@@ -830,11 +866,13 @@ function build(context: FilmContext) {
 		...rerunMarks,
 		one("rerun-back"),
 		one("rec-0-n"),
+		one("rec-0-note"),
+		one("rec-2-saved-box"),
 		one("log-spread-proof"),
 		one("log-spread-r2"),
 		one("log-spread-r3"),
+		one("log-spread-total-label"),
 		...[1, 2].flatMap((i) => [
-			one(`rec-${i}-n`),
 			one(`log-${i}-expression`),
 			one(`log-${i}-operand`),
 			one(`log-${i}-equals`),
@@ -1057,10 +1095,16 @@ function build(context: FilmContext) {
 		32.15,
 		{ duration: 0.4 },
 	);
-	// Clear every operand over 0.3 s, then fly through a completely empty baseline.
-	// Method/as-of headers and the headlines identify reruns and new questions;
-	// duplicate result tags would occupy the equation/flight lane and steal quiet time.
-	const saveResult = (i: number, clearAt: number) => {
+	// Qualify the saved number only after its carry lands; this note never flies.
+	tl.fromTo(
+		one("rec-0-note"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		32.55,
+	);
+	// Save each arithmetic result on its existing baseline at its final type size.
+	// Only the operands leave; the same figure remains as the record's readout.
+	const saveResult = (i: 1 | 2, clearAt: number) => {
 		const operands = [
 			one(`log-${i}-expression`),
 			one(`log-${i}-operand`),
@@ -1068,14 +1112,8 @@ function build(context: FilmContext) {
 		];
 		if (i === 2) operands.push(one("log-spread-proof"));
 		hide(operands, clearAt, 0.3, 0);
-		d.carry(
-			one<SVGGraphicsElement>(`log-${i}-result`),
-			one<SVGGraphicsElement>(`rec-${i}-n`),
-			clearAt + 0.3,
-			{ duration: 0.3, arc: "x" },
-		);
 	};
-	// Saved P1 reads alone for 32.55–34.05. P1 already establishes the base amount;
+	// Qualified P1 reads alone for 32.85–33.85. P1 establishes the base amount;
 	// R5 and the addition arrive next, followed by the settled equality/result.
 	show(
 		[
@@ -1084,62 +1122,78 @@ function build(context: FilmContext) {
 			one("log-1-expression"),
 			one("log-1-operand"),
 		],
-		34.05,
+		33.85,
 		"below",
 		0.3,
 	);
-	show([one("log-1-equals"), one("log-1-result")], 34.35, "below", 0.3);
-	// Complete P2: 34.65–35.65 quiet; saved P2: 36.25–37.75 quiet.
-	saveResult(1, 35.65);
-	show(heads[5], 37.75, "below", 0.3);
-	show([recs[2], one("log-spread-cause")], 37.75, "right", 0.3);
-	// Identify the actual portions, then use their sum directly in the subtraction.
-	// This merges the old total-transfer step into one proof without losing either leg.
+	show([one("log-1-equals"), one("log-1-result")], 34.15, "below", 0.3);
+	// Complete P2: 34.45–35.95 quiet; saved P2: 36.25–37.25 quiet.
+	saveResult(1, 35.95);
+	show(heads[5], 37.25, "below", 0.3);
+	show([recs[2], one("log-spread-cause")], 37.25, "right", 0.3);
+	// Identify both selected portions, then establish their total for a full second.
 	// Both children are hidden: opening this mask reveals no visible mark by itself.
-	tl.set(one("log-spread-proof"), { opacity: 1 }, 37.75);
-	show(one("log-spread-r2"), 37.75, "below", 0.3);
-	show(one("log-spread-r3"), 37.9, "below", 0.3);
+	tl.set(one("log-spread-proof"), { opacity: 1 }, 37.25);
+	show([one("log-spread-r2"), one("log-spread-r3")], 37.25, "below", 0.3);
+	tl.fromTo(
+		[one("log-spread-total-label"), one("log-2-operand")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		37.5,
+	);
 	tl.to(
-		[recs[0], recs[1], one("log-r5-cause")],
+		[recs[0], recs[1], one("log-1-result"), one("log-r5-cause")],
 		{ opacity: 0.45, duration: 0.3 },
-		37.75,
+		37.25,
 	);
-	// The deduction is below both selected portions; all figures are settled/modelled.
-	show(
-		[
-			one("log-2-expression"),
-			one("log-2-operand"),
-			one("log-2-equals"),
-			one("log-2-result"),
-		],
-		38.2,
-		"below",
-		0.3,
+	// The selected portions and their total are intact and quiet for 37.8–38.8.
+	// Complementary opacity fades replace the short label with the subtraction;
+	// both stay on their baseline, and neither overlaps the other above 0.5 opacity.
+	tl.to(
+		one("log-spread-total-label"),
+		{ opacity: 0, duration: 0.3, ease: "power3.out" },
+		38.8,
 	);
-	// One combined spread/subtraction proof: 38.5–39.5 quiet, then a cleared save lane.
-	saveResult(2, 39.5);
-	// After the figure lands, collapse only the rect, keeping the saved figure at rest.
-	tl.to(one("rec-2-box"), { attr: { height: L.recH }, duration: 0.3 }, 40.1);
-	// Complete saved P3 holds quietly for 40.4–41.9 (1.5 s).
+	tl.fromTo(
+		[one("log-2-expression"), one("log-2-equals"), one("log-2-result")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		38.8,
+	);
+	// Complete subtraction: 39.1–40.1 quiet. Save the very same result in place;
+	// crossfade the panel outlines so no moving border passes through outgoing type.
+	saveResult(2, 40.1);
+	hide(one("rec-2-box"), 40.1, 0.3, 0);
+	tl.fromTo(
+		one("rec-2-saved-box"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.in" },
+		40.1,
+	);
+	// The compact saved P3 holds quietly for 40.4–41.4 (1 s).
 
 	// ——— claim ———
-	tl.addLabel("claim", 41.9);
+	tl.addLabel("claim", 41.4);
 	hide(
-		[heads[4], heads[5], ...recs, one("log-r5-cause"), one("log-spread-cause")],
-		41.9,
+		[
+			heads[4],
+			heads[5],
+			...recs,
+			one("log-1-result"),
+			one("log-2-result"),
+			one("log-r5-cause"),
+			one("log-spread-cause"),
+		],
+		41.4,
 	);
-	word(one("z-big"), 42.2);
-	show(one("z-sub"), 42.6);
+	word(one("z-big"), 41.7);
+	show(one("z-sub"), 42.1);
 
 	// ——— next ———
-	tl.addLabel("next", 46.3);
-	hide(kids("claim"), 46.3);
-	// The player retains this final card after END; its entrance obeys the motion floor.
-	d.hidden(kids("end"));
-	show(kids("end"), 46.65, "below", 0.3);
-	tl.to({}, { duration: END - 46.95 }, 46.95);
-	// Retain the kit's 4 s source / 2 s player title-card convention.
-	tl.shiftChildren(-2, true, 3.99);
+	tl.addLabel("next", 45.8);
+	hide(kids("claim"), 45.8);
+	// The standard close owns the staggered card and the title-card time shift.
+	d.close(45.8);
 	return tl;
 }
 
