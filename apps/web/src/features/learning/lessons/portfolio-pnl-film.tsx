@@ -52,9 +52,9 @@ import {
  *
  *   open      0–4        "P&L"
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
- *   account   10.4–21.0  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
+ *   account   10.4–19.0  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
  *                        buying power $36,799.20
- *   calls     21.0–33.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
+ *   calls     19.0–33.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
  *                        and +$645 become +$975, locked; then the $75, drawn: bid to mid
  *   short     33.7–45.8  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
  *                        cut: "P&L is what your positions earned."
@@ -73,6 +73,7 @@ const GAP = SOLD * (MARK - SALE) * 100;
 const GAP_EQ = `${price(MARK - SALE)} × ${SOLD} × 100 =`;
 const FIFO_EQ = `${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 =`;
 const held = split(0, "fifo");
+const BRIDGE_EQ = `${signed(held.unrealized)} − ${dollars(GAP)} = ${signed(fifo.realized + fifo.unrealized)}`;
 /** The surviving cells and their marked P&L, using the same FIFO lots as the model. */
 const remainingLots = lots
 	.map((lot, i) => {
@@ -186,13 +187,11 @@ const copy = {
 	unrealized: ["unrealized", "未实现"],
 	totalTag: ["realized + unrealized", "已实现 + 未实现"],
 	totalHead: [
-		`The bid, not the mid: ${dollars(held.unrealized - fifo.realized - fifo.unrealized)} less.`,
-		`按买价，不是中间价：少 ${dollars(held.unrealized - fifo.realized - fifo.unrealized)}。`,
+		`No: ${signed(fifo.realized + fifo.unrealized)} in total.`,
+		`不：总盈亏 ${signed(fifo.realized + fifo.unrealized)}。`,
 	],
-	marked: [
-		`Previous mid mark ${signed(held.unrealized)} − bid shortfall ${dollars(GAP)}`,
-		`原中间价估值 ${signed(held.unrealized)} − 买价差额 ${dollars(GAP)}`,
-	],
+	// Arithmetic notation is shared by both languages.
+	bridge: [BRIDGE_EQ, BRIDGE_EQ],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
 	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
 	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
@@ -315,7 +314,7 @@ function Scene({
 					),
 			)
 		: room * 0.08;
-	// The operand row stays through the lock; leave room for the caption and gap below it.
+	// The operand row stays through the lock; leave room for the gap and its bridge below it.
 	const operandY = H * 0.3 + T.big * 1.05 + T.num * 1.8 + T.body * 0.6;
 	const gapY = narrow ? H * 0.66 : operandY + T.body * 4.4;
 	const eqX =
@@ -702,7 +701,7 @@ function Scene({
 						const x = (W - rowWidth) / 2;
 						const y = fifoY + (i - 1) * T.body * 1.5;
 						return (
-							<g key={lot.first}>
+							<g key={lot.first} data-f={`held-row-${i}`}>
 								<rect
 									x={x}
 									y={y - 10}
@@ -898,15 +897,6 @@ function Scene({
 				>
 					{signed(fifo.unrealized)}
 				</Word>
-				<Lines
-					name="t-was"
-					text={t(copy.marked)}
-					x={W / 2}
-					y={operandY + T.body * 2.2}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
 			</g>
 			{/* The $75, drawn: the bid and the mid as the two ends of a gap, then what six
 			    contracts of it come to. */}
@@ -953,6 +943,15 @@ function Scene({
 				>
 					{dollars(GAP)}
 				</text>
+				<Word
+					name="gap-bridge"
+					x={W / 2}
+					y={gapY + gapText * 4.6}
+					size={gapText}
+					className="wt-film-num"
+				>
+					{t(copy.bridge)}
+				</Word>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
 			{headline("x-head", copy.expiryHead, copy.expiryHeadShort)}
@@ -1117,7 +1116,7 @@ function build(context: FilmContext) {
 		one("fifo-brace"),
 		one("fifo-eq"),
 		one("fifo-result"),
-		one("held-proof"),
+		...kids("held-proof"),
 		...heldBraces,
 		realized,
 		unrealized,
@@ -1154,71 +1153,90 @@ function build(context: FilmContext) {
 	show(one("a-head"), 10.6, "above");
 	rise(10.7);
 	show([one("m-tag"), meter], 11.2, "above");
-	d.count(meter, valueOpen, 11.2, dollars, valueOpen, 0.01);
-	grow("seg-base", 11.2);
-	growContribution("stock", 11.9, 0.4);
-	show(one("breakdown-stock"), 12.3, "below", 0.2);
-	growContribution("calls", 12.3, 0.5);
-	show(one("breakdown-calls"), 12.8, "below", 0.2);
-	growContribution("fees", 12.8, 0.3);
-	show(one("breakdown-fees"), 13.1, "below", 0.2);
-	show(one("earned"), 13.4);
-	// The answer: what was earned lifts out of the bar, and stays while the deposit lands.
-	d.carry(one("earned-num"), one<SVGGraphicsElement>("earned-big"), 14.2, {
+	grow("seg-base", 10.5);
+	// Name each contribution before it changes the shared bar and account reading.
+	show(one("breakdown-stock"), 10.7, "below", 0.3);
+	growContribution("stock", 11.0, 0.4);
+	show(one("breakdown-calls"), 11.4, "below", 0.3);
+	growContribution("calls", 11.7, 0.5);
+	show(one("breakdown-fees"), 12.2, "below", 0.3);
+	growContribution("fees", 12.5, 0.3);
+	// The completed rows and net account read alone for a second (12.8–13.8).
+	show(one("earned"), 13.8);
+	d.carry(one("earned-num"), one<SVGGraphicsElement>("earned-big"), 14.3, {
 		duration: 0.8,
 		keep: true,
 	});
-	show(one("earned-tag"), 14.7);
+	show(one("earned-tag"), 14.6);
 	// Tuesday: money in, not money made.
-	d.swap(one("a-head"), one("e-head"), 15.4);
-	growContribution("deposit", 15.4, 0.7);
-	show(one("deposited"), 15.7);
+	if (L.narrow) {
+		// Fade in place on the phone: rising from below would cross the EARNED tag.
+		hide(one("a-head"), 15.1);
+		tl.fromTo(
+			one("e-head"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.5 },
+			15.45,
+		);
+	} else {
+		d.swap(one("a-head"), one("e-head"), 15.1);
+	}
+	growContribution("deposit", 15.1, 0.7);
+	show(one("deposited"), 15.3);
 	// Read the completed deposit for a second, then compare buying power in its own slot.
-	// The account value remains visible; buying power never replaces it.
-	show(one("m-tag-bp"), 17.1, "above", 0.2);
-	show(one("m-bp"), 17.1, "below", 0.2);
-	show(one("m-bp-note"), 17.3, "below", 0.2);
+	show(one("m-tag-bp"), 16.8, "above", 0.3);
+	show(one("m-bp"), 16.8, "below", 0.3);
+	show(one("m-bp-note"), 17.1, "below", 0.3);
 
 	// ——— calls: realized and unrealized ———
-	tl.addLabel("calls", 21.0);
+	tl.addLabel("calls", 19.0);
 	hide(
 		[one("e-head"), ...kids("meter"), one("m-bp-note"), ...kids("answer")],
-		21.0,
+		19.0,
 	);
-	sink(21.0);
-	squares.forEach((square, i) => {
-		land(square, 21.4 + i * 0.04, 0.4);
+	sink(19.0);
+	// The repeated cells arrive as one lot diagram; omit the decorative sixteen-cell ripple.
+	for (const square of squares) land(square, 19.4, 0.4);
+	show([one("r-tag"), one("u-tag")], 19.4);
+	show([one("r-open"), one("u-open")], 19.5);
+	show(one("legend-lots"), 19.4);
+	show(one("mark-input"), 19.4, "below", 0.3);
+	show(one("sale-input"), 19.4, "below", 0.3);
+	show(one("l-head"), 19.6, "above");
+	// Establish FIFO and its inputs, then read the complete setup for a second (20.1–21.1).
+	show(one("fifo-tag"), 19.8, "below", 0.3);
+	d.trace(one<SVGPathElement>("fifo-brace"), 19.8, { duration: 0.3 });
+	show(one("fifo-eq"), 19.8, "above", 0.3);
+	// Clear stale readings before membership changes; results after '=' arrive settled.
+	hide([one("r-open"), one("u-open")], 21.1, 0.3, 0);
+	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 21.4);
+	show([realized, one("fifo-result")], 21.8, "below", 0.3);
+	// Preserve the realized proof's full second of quiet before its footer leaves.
+	hide([one("fifo-eq"), one("fifo-result"), one("fifo-brace")], 23.1, 0.3, 0);
+	// Each outlined lot gets its own row and a second to read before the next contribution.
+	remainingLots.forEach((_, i) => {
+		const at = 23.4 + i * 1.3;
+		for (const brace of heldBraces.filter((el) =>
+			el.getAttribute("data-f")?.startsWith(`held-brace-${i}-`),
+		)) {
+			d.trace(brace as SVGPathElement, at, { duration: 0.3 });
+		}
+		// Fade in place: moving the footer would cross the phone's result row.
+		tl.fromTo(
+			one(`held-row-${i}`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3 },
+			at,
+		);
 	});
-	show([one("r-tag"), one("u-tag")], 21.7);
-	show([one("r-open"), one("u-open")], 21.9);
-	show(one("legend-lots"), 22.0);
-	show(one("mark-input"), 22.0, "below", 0.2);
-	show(one("sale-input"), 22.2, "below", 0.2);
-	show(one("l-head"), 22.2, "above");
-	// Sell six, oldest first, and say so.
-	show(one("fifo-tag"), 22.3, "below", 0.2);
-	d.trace(one<SVGPathElement>("fifo-brace"), 22.5, { duration: 0.3 });
-	show(one("fifo-eq"), 22.5, "above", 0.2);
-	// Clear the old readings before membership changes. Results after '=' arrive settled.
-	hide([one("r-open"), one("u-open")], 23.8, 0.25, 0);
-	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 24.05);
-	show([realized, one("fifo-result")], 24.45, "below", 0.2);
-	// The settled sale proof reads for 1 s before the footer changes.
-	hide([one("fifo-eq"), one("fifo-result"), one("fifo-brace")], 25.65, 0.25, 0);
-	// Each surviving lot supplies a settled contribution; the sum never counts after '='.
-	heldBraces.forEach((brace) => {
-		d.trace(brace as SVGPathElement, 25.9, { duration: 0.2 });
-	});
+	// Reveal the settled sum and its reading together; never count after '='.
 	tl.fromTo(
-		one("held-proof"),
+		[one("held-sum"), unrealized],
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.2 },
-		25.9,
+		{ opacity: 1, duration: 0.3 },
+		26.0,
 	);
-	// Fade in place: a rising value would pass through the new phone footer.
-	tl.fromTo(unrealized, { opacity: 0 }, { opacity: 1, duration: 0.2 }, 25.9);
-	// All cells, inputs, contributions and results read together for 1.8 s (26.1–27.9).
-	// The hero: the two parts become one figure, less than the mark said.
+	// Preserve the FIXED complete diagram hold: all cells, inputs and results, 26.3–28.1.
 	hide(
 		[
 			...squares,
@@ -1228,44 +1246,47 @@ function build(context: FilmContext) {
 			one("mark-input"),
 			one("r-tag"),
 			one("u-tag"),
-			one("held-proof"),
+			...kids("held-proof"),
 			...heldBraces,
 		],
-		27.9,
+		28.1,
 		0.35,
 		0,
 	);
-	show(one("t-tag"), 28.25, "above", 0.2);
+	show(one("t-tag"), 28.45, "above", 0.3);
 	// Each part lands in its own lane; neither travels across the other's glyphs.
 	const subtotal = one<SVGTextElement>("t-subtotal");
 	const total = one<SVGTextElement>("t-num");
-	d.carry(realized, subtotal, 28.25, { duration: 0.45, arc: "y" });
-	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 28.45, {
+	d.carry(realized, subtotal, 28.45, { duration: 0.45, arc: "y" });
+	d.carry(unrealized, one<SVGGraphicsElement>("t-part"), 28.65, {
 		duration: 0.45,
 		arc: "y",
 	});
-	// The settled sum unfolds above its operands; keep the complete addition through the proof.
 	tl.fromTo(
 		total,
 		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
-		{ scaleY: 1, duration: 0.2, ease: "power2.out", immediateRender: false },
-		28.9,
+		{ scaleY: 1, duration: 0.3, ease: "power2.out", immediateRender: false },
+		29.1,
 	);
-	show(one("t-was"), 29.35, "below", 0.2);
 	d.lock(lockTotal, 29.4, {
 		around: [one("t-tag"), total],
 		pad: 8,
 	});
 	tl.addLabel("hero-lock", 29.4);
 	show(one("t-head"), 29.4);
-	// After the lock: the $75, drawn. The bid and the mid are the ends of a gap; six
-	// contracts of it come to $75.
-	d.trace(one<SVGPathElement>("gap-rule"), 29.5, { duration: 0.2 });
-	show(one("gap-bid"), 29.5, "below", 0.15);
-	show(one("gap-mid"), 29.65, "below", 0.15);
-	show(one("gap-eq"), 29.85, "below", 0.15);
-	// The result lands settled: a counting figure after "=" would show false equations.
-	land(one("gap-n"), 30.0, 0.15);
+	// The headline and brackets settle by 29.9. Let the addition read alone until 30.9.
+	// Merge the gap into one construction, including its settled result after '='.
+	d.trace(one<SVGPathElement>("gap-rule"), 30.9, { duration: 0.4 });
+	show([one("gap-bid"), one("gap-mid"), one("gap-eq")], 30.9, "below", 0.4);
+	land(one("gap-n"), 30.9, 0.4);
+	// Read the completed gap for a second, then connect the original mark to the actual total.
+	tl.fromTo(
+		one("gap-bridge"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		32.3,
+	);
+	// The settled bridge reads alone 32.6–33.7 (1.1 s); the hero's 3.85 s hold is unchanged.
 
 	// ——— short: the other side of the same calls ———
 	tl.addLabel("short", 33.7);
@@ -1292,7 +1313,7 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("expiry-arrow"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.2 },
+		{ opacity: 1, duration: 0.3 },
 		39.1,
 	);
 	land(one("far-dot"), 38.9);
