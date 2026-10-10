@@ -146,8 +146,8 @@ const copy = {
 	qLine: ["Which sign? Which contracts?", "哪个符号？哪些合约？"],
 	sidesHead: ["How big are the two sides?", "两边各有多大？"],
 	share: [
-		`${Math.round((-NET / GROSS) * 100)}% of gross`,
-		`总幅度的 ${Math.round((-NET / GROSS) * 100)}%`,
+		`≈${Math.round((-NET / GROSS) * 100)}% of gross`,
+		`总幅度的 ≈${Math.round((-NET / GROSS) * 100)}%`,
 	],
 	components: ["calls / puts", "看涨 / 看跌"],
 	chainHead: [
@@ -909,7 +909,7 @@ function build(context: FilmContext) {
 	// Move the first result with its own label; mute its colour, not its opacity.
 	tl.set(one("c-long"), { attr: { class: "wt-film-num wt-film-dim" } }, 14.9);
 	const longResult = [one("c-long"), one("c-tag-long")];
-	tl.to(longResult, { y: figure * 1.7, duration: 0.2 }, 14.9);
+	tl.to(longResult, { y: figure * 1.7, duration: 0.3 }, 14.9);
 	tl.to(
 		longResult,
 		{
@@ -917,10 +917,12 @@ function build(context: FilmContext) {
 			duration: 0.35,
 			ease: "power2.inOut",
 		},
-		15.1,
+		15.2,
 	);
-	show(one("c-tag-short"), 15.45, "above", 0.35);
-	show(one("c-short"), 15.45, "below", 0.35);
+	show(one("c-tag-short"), 15.55, "above", 0.35);
+	show(one("c-short"), 15.55, "below", 0.35);
+	// This in-place annotation has its own lane: keep its 16.10 settlement and
+	// the completed comparison's 2.55 s quiet hold while the sign arrives at 15.90.
 	tl.fromTo(
 		one("c-same-inputs"),
 		{ opacity: 0 },
@@ -1070,9 +1072,21 @@ function build(context: FilmContext) {
 
 	// ——— coverage: which contracts, and what's missing ———
 	tl.addLabel("coverage", 33.75);
-	hide([...flat("two"), lockTwo, one("w1-head"), one("w-head")], 33.75);
+	const grossTrack = one("two-track");
+	hide(
+		[
+			...flat("two").filter((mark) => mark !== grossTrack),
+			lockTwo,
+			one("w1-head"),
+			one("w-head"),
+		],
+		33.75,
+	);
+	// Only the neutral background track bridges the cut. Hero text and the net
+	// shapes clear at 34.10 before any incoming chart bar becomes visible.
+	hide(grossTrack, 34.1, 0.35, 0);
 	const chartLabels = [...one("chart").querySelectorAll("text")];
-	// Start with shapes alone while the hero leaves; its text keeps a clear lane.
+	// Reset components while depth is hidden; rise alone reveals the new chart.
 	tl.set(chartLabels, { opacity: 0 }, 33.8);
 	tl.set(
 		STRIKES.map((_, i) => one(`net-${i}`)),
@@ -1084,7 +1098,6 @@ function build(context: FilmContext) {
 		{ opacity: 1 },
 		33.8,
 	);
-	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 33.8);
 	// The hero's text clears at 34.10. Its labels and notes follow in place;
 	// the chart's scale rise and the coverage construction retain their timings.
 	tl.to(chartLabels, { opacity: 1, duration: 0.3 }, 34.1);
