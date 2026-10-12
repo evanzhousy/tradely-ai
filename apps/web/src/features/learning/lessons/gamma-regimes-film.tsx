@@ -42,16 +42,16 @@ import {
  *
  *   open      0–4        "Gamma regimes"
  *   question  4–9.6      ALFA +$1: buy or sell?
- *   regime    9.6–21.2   net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip
+ *   regime    9.6–22.7   net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip
  *                        $102.3
- *   shortcut  21.2–30.2  the strike-sum line crosses at $94.1; cut: $102.3 against $94.1,
- *                        the flip locked
- *   target    30.8–42.3  buy 5,121 if…; the tape; the book: 1,600 offered;
+ *   shortcut  22.7–33.35 a separate fixed-spot strike sum draws high to low; carry
+ *                        $102.3 against $94.1, the flip locked
+ *   target    33.35–44.85  buy 5,121 if…; the tape; the book: 1,600 offered;
  *                        cut: "A regime describes a response, not a forecast."
- *   next      42.3–44.8  Next: walls and max pain
+ *   next      44.85–47.35  Next: walls and max pain
  */
 
-const END = 44.8;
+const END = 47.35;
 const X = [88, 112] as const;
 const Y = 2_000_000;
 const curve = Array.from({ length: (X[1] - X[0]) * 2 + 1 }, (_, i) => {
@@ -62,6 +62,26 @@ const strikeSum = cumulativeByStrike.map(
 	([strike, millions]) => [strike, millions * 1_000_000] as const,
 );
 const SELL = Math.round(shareGamma(ABOVE));
+/** Interpolate the drawn polyline, so the seeker and its crossing lie on the visible proof. */
+const valueAt = (points: readonly (readonly [number, number])[], x: number) => {
+	const i = points.findIndex(([px]) => px >= x);
+	if (i <= 0) return points[Math.max(0, i)][1];
+	const [x0, y0] = points[i - 1];
+	const [x1, y1] = points[i];
+	return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
+};
+const zeroAt = (points: readonly (readonly [number, number])[]) => {
+	const i = points.findIndex(
+		([, y], i) => i > 0 && y < 0 !== points[i - 1][1] < 0,
+	);
+	const [x0, y0] = points[i - 1];
+	const [x1, y1] = points[i];
+	return x0 + ((0 - y0) / (y1 - y0)) * (x1 - x0);
+};
+const flipSpot = zeroAt(curve);
+const sumStrike = zeroAt(strikeSum);
+// The shared model accumulates from the highest strike down, including $115 and $120.
+const sumSteps = [...strikeSum].reverse();
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -69,7 +89,13 @@ function layout(width: number) {
 	const left = Math.max(frame.margin, narrow ? 46 : 0);
 	const right = width * 0.965;
 	const top = height * (narrow ? 0.34 : 0.27);
-	const bottom = height * 0.84;
+	const bottom = height * (narrow ? 0.64 : 0.62);
+	const sumTop = height * 0.76;
+	const sumBottom = height * 0.9;
+	const sumX = (strike: number) =>
+		left + ((strike - 88) / (122 - 88)) * (right - left);
+	const sumY = (dollars: number) =>
+		(sumTop + sumBottom) / 2 - (dollars / Y) * ((sumBottom - sumTop) / 2);
 	const x = (spot: number) =>
 		left + ((spot - X[0]) / (X[1] - X[0])) * (right - left);
 	const y = (dollars: number) =>
@@ -87,6 +113,10 @@ function layout(width: number) {
 		right,
 		top,
 		bottom,
+		sumTop,
+		sumBottom,
+		sumX,
+		sumY,
 		x,
 		y,
 		path,
@@ -135,19 +165,17 @@ const copy = {
 	sellShort: [`sell ${count(SELL)}`, `卖出 ${count(SELL)}`],
 	withMove: ["with the move", "顺着变动"],
 	againstMove: ["against the move", "逆着变动"],
-	flip: [`flip ${level(FLIP)}`, `转折 ${level(FLIP)}`],
+	flip: ["flip", "转折"],
+	sumAxis: ["Strike sum · ALFA fixed at $100", "行权价累加 · ALFA 固定 $100"],
+	strikeAxis: ["strike", "行权价"],
+	sum: ["sum", "累加"],
 	shortcutHead: [
-		"A running sum of strike bars crosses elsewhere.",
-		"把各行权价的柱子累加，穿零点在别处。",
+		"Sum strike bars at a fixed spot.",
+		"固定现价，按行权价累加。",
 	],
 	shortcutHeadShort: [
-		"The strike sum crosses elsewhere.",
-		"行权价累加在别处穿零。",
-	],
-	sumShort: [`sum ${level(SHORTCUT ?? 0)}`, `累加 ${level(SHORTCUT ?? 0)}`],
-	sumLabel: [
-		`strike sum ${level(SHORTCUT ?? 0)}`,
-		`行权价累加 ${level(SHORTCUT ?? 0)}`,
+		"Sum strikes at ALFA $100.",
+		"ALFA 固定 $100，按行权价累加。",
 	],
 	repriced: ["repriced across spot", "沿现价重定价"],
 	repricedShort: ["repriced", "重定价"],
@@ -163,14 +191,14 @@ const copy = {
 	],
 	targetHeadShort: ["A target is not an outcome.", "目标不是结果。"],
 	cardModel: ["model target", "模型目标"],
-	cardModelValue: [`buy ${count(TARGET)}`, `买入 ${count(TARGET)}`],
+	cardModelValue: [`buy ${count(TARGET)} shares`, `买入 ${count(TARGET)} 股`],
 	cardModelNote: [
-		"only if dealers hold this book and hedge continuously",
-		"只有在做市商持有这个账户并连续对冲时",
+		"at $100, for a +$1 rise; only if dealers hold this book and hedge continuously",
+		"在 $100，上涨 $1；须做市商持有此账户且连续对冲",
 	],
 	cardModelShort: [
-		"if dealers hold this book, hedging nonstop",
-		"须做市商持有此账户且连续对冲",
+		"at $100, +$1 rise; dealers hold this book, hedging nonstop",
+		"在 $100，上涨 $1；须做市商持有此账户且连续对冲",
 	],
 	cardTape: ["the tape", "成交记录"],
 	cardTapeValue: ["no names", "无身份"],
@@ -189,8 +217,8 @@ const copy = {
 		`三个价位，最高 ${stock(lastAsk.price / 100)}；更深的挂单看不到`,
 	],
 	cardBookShort: [
-		`three levels, up to ${stock(lastAsk.price / 100)}`,
-		`三个价位，最高 ${stock(lastAsk.price / 100)}`,
+		"three levels; depth beyond isn't shown",
+		"三个价位；更深的挂单未显示",
 	],
 	claimBig: [
 		"A regime describes a response, not a forecast.",
@@ -232,8 +260,8 @@ function Scene({
 	const my = L.y(netGex(SPOT));
 	const ax = L.x(ABOVE);
 	const ay = L.y(netGex(ABOVE));
-	const fx = L.x(FLIP);
-	const sx = L.x(SHORTCUT ?? 0);
+	const fx = L.x(flipSpot);
+	const sx = L.sumX(sumStrike);
 	const cards = [
 		[
 			copy.cardModel,
@@ -260,12 +288,13 @@ function Scene({
 		<>
 			<Backdrop frame={L} />
 			<defs>
-				<clipPath id={`plot-${id}`}>
+				<clipPath id={`sum-draw-${id}`}>
 					<rect
-						x={L.left}
-						y={L.top - 4}
-						width={L.right - L.left}
-						height={L.bottom - L.top + 8}
+						data-f="sum-draw"
+						x={L.right}
+						y={L.sumTop - 4}
+						width={0}
+						height={L.sumBottom - L.sumTop + 8}
 					/>
 				</clipPath>
 				<clipPath id={`draw-${id}`}>
@@ -351,16 +380,16 @@ function Scene({
 						<text x={L.left} y={L.top - 10} className="wt-small">
 							{t(copy.axis)}
 						</text>
-						<g clipPath={`url(#plot-${id})`}>
-							<path
-								data-f="sum-line"
-								className="wt-line-reference"
-								d={L.path(strikeSum)}
-							/>
-						</g>
 						<g clipPath={`url(#draw-${id})`}>
 							<path className="wt-line-position" d={L.path(curve)} />
 						</g>
+						<circle
+							data-f="flip-seeker"
+							cx={ax}
+							cy={ay}
+							r={6}
+							className="wt-chip"
+						/>
 						<g data-f="flip">
 							<path
 								d={`M${fx} ${L.top}V${L.bottom}`}
@@ -368,25 +397,6 @@ function Scene({
 								strokeDasharray="4 3"
 							/>
 							<circle cx={fx} cy={L.y(0)} r={6} className="wt-chip" />
-							<text
-								x={fx - 8}
-								y={L.top + 16}
-								textAnchor="end"
-								className="wt-halo wt-accent wt-marker-label"
-							>
-								{t(copy.flip)}
-							</text>
-						</g>
-						<g data-f="sum-dot">
-							<circle cx={sx} cy={L.y(0)} r={6} className="wt-film-ghost" />
-							<text
-								x={sx - 8}
-								y={L.y(0) - 10}
-								textAnchor="end"
-								className="wt-halo wt-small"
-							>
-								{t(narrow ? copy.sumShort : copy.sumLabel)}
-							</text>
 						</g>
 						<circle
 							data-f="marker"
@@ -427,8 +437,108 @@ function Scene({
 							</text>
 						</g>
 					</g>
+					<g data-f="sum-chart">
+						<text x={L.left} y={L.sumTop - 10} className="wt-small">
+							{t(copy.sumAxis)}
+						</text>
+						<path
+							d={`M${L.left} ${L.sumY(0)}H${L.right}`}
+							className="wt-axis"
+						/>
+						<text
+							x={L.left - 8}
+							y={L.sumY(0) + 4}
+							textAnchor="end"
+							className="wt-small"
+						>
+							0
+						</text>
+						{[90, 100, 110, 120].map((tick) => (
+							<text
+								key={tick}
+								x={L.sumX(tick)}
+								y={L.sumBottom + 16}
+								textAnchor="middle"
+								className="wt-small"
+							>{`$${tick}`}</text>
+						))}
+						<text
+							x={L.right}
+							y={L.sumBottom + 30}
+							textAnchor="end"
+							className="wt-small"
+						>
+							{t(copy.strikeAxis)}
+						</text>
+						<g clipPath={`url(#sum-draw-${id})`}>
+							<path
+								data-f="sum-line"
+								className="wt-line-reference"
+								d={sumSteps
+									.map(
+										([strike, value], i) =>
+											`${i ? "L" : "M"}${L.sumX(strike)} ${L.sumY(value)}`,
+									)
+									.join("")}
+							/>
+						</g>
+						<circle
+							data-f="sum-pen"
+							cx={L.sumX(sumSteps[0][0])}
+							cy={L.sumY(sumSteps[0][1])}
+							r={4}
+							className="wt-film-ghost"
+						/>
+						<circle
+							data-f="sum-dot"
+							cx={sx}
+							cy={L.sumY(0)}
+							r={6}
+							className="wt-film-ghost"
+						/>
+					</g>
 				</g>
 			</g>
+			<Word
+				name="flip-tag"
+				x={fx - 8}
+				y={L.top + 16}
+				size={T.small}
+				anchor="end"
+				className="wt-film-tag wt-film-accent"
+			>
+				{t(copy.flip)}
+			</Word>
+			<Word
+				name="flip-num"
+				x={fx - 8}
+				y={L.top + 34}
+				size={T.body}
+				anchor="end"
+				className="wt-film-num wt-film-accent"
+			>
+				{level(FLIP)}
+			</Word>
+			<Word
+				name="sum-tag"
+				x={sx + 12}
+				y={L.sumY(0) - T.body - 14}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(copy.sum)}
+			</Word>
+			<Word
+				name="sum-num"
+				x={sx + 12}
+				y={L.sumY(0) - 12}
+				size={T.body}
+				anchor="start"
+				className="wt-film-num"
+			>
+				{level(SHORTCUT ?? 0)}
+			</Word>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -557,7 +667,15 @@ function Scene({
 							name={`t-value-${i}`}
 							x={L.margin}
 							y={cardY(i) + T.num * 1.1}
-							size={T.num}
+							size={
+								i === 0
+									? Math.min(
+											T.num,
+											(narrow ? room : W * 0.5 - L.margin - 24) /
+												(t(value).length * 0.62),
+										)
+									: T.num
+							}
 							anchor="start"
 							className={`wt-film-num ${tone}`}
 						>
@@ -617,7 +735,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, rise, sink } = d;
+	const { tl, one, kids, show, hide, rise } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const land = (target: Element, time: number) =>
 		tl.fromTo(
@@ -636,8 +754,15 @@ function build(context: FilmContext) {
 		one("zone-long"),
 		one("zone-short-label"),
 		one("zone-long-label"),
+		one("sum-chart"),
 		one("sum-line"),
+		one("sum-pen"),
+		one("flip-seeker"),
 		one("flip"),
+		one("flip-tag"),
+		one("flip-num"),
+		one("sum-tag"),
+		one("sum-num"),
 		one("sum-dot"),
 		marker,
 		one("buy"),
@@ -684,73 +809,167 @@ function build(context: FilmContext) {
 	show([one("zone-short-label"), one("zone-long-label")], 12.1, "below", 0.4);
 	// At $100: short gamma, the hedge buys a rise.
 	d.swap(one("c-head"), one("s-head"), 13.4);
-	land(marker, 13.9);
+	tl.fromTo(marker, { opacity: 0 }, { opacity: 1, duration: 0.55 }, 13.9);
 	show(one("buy"), 14.3, "right");
 	// At $105: long gamma, it sells.
 	tl.to(one("buy"), { opacity: 0.3, duration: 0.3 }, 17.2);
 	const walk = { spot: SPOT };
-	tl.to(
+	tl.fromTo(
 		walk,
+		{ spot: SPOT },
 		{
 			spot: ABOVE,
+			immediateRender: false,
 			duration: 1.2,
 			ease: "power2.inOut",
 			onUpdate: () =>
 				gsap.set(marker, {
-					attr: { cx: L.x(walk.spot), cy: L.y(netGex(walk.spot)) },
+					attr: { cx: L.x(walk.spot), cy: L.y(valueAt(curve, walk.spot)) },
 				}),
 		},
 		17.2,
 	);
 	show(one("l-head"), 17.6);
 	show(one("sell"), 18.5, "right");
-	land(one("flip"), 19.4);
+	// The sell response settles at 19.0; leave a full second before seeking the zero.
+	const seeker = one("flip-seeker");
+	tl.to(marker, { opacity: 0, duration: 0.3 }, 20.0);
+	tl.fromTo(seeker, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 20.0);
+	const search = { spot: ABOVE };
+	tl.fromTo(
+		search,
+		{ spot: ABOVE },
+		{
+			spot: flipSpot,
+			duration: 0.6,
+			ease: "power2.inOut",
+			immediateRender: false,
+			onUpdate: () =>
+				gsap.set(seeker, {
+					attr: { cx: L.x(search.spot), cy: L.y(valueAt(curve, search.spot)) },
+				}),
+		},
+		20.3,
+	);
+	tl.to(seeker, { opacity: 0, duration: 0.3 }, 20.9);
+	tl.fromTo(
+		[one("flip"), one("flip-tag"), one("flip-num")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55 },
+		20.9,
+	);
 
-	// ——— shortcut: a sum across strikes is a different number ———
-	tl.addLabel("shortcut", 21.2);
-	hide([one("s-head"), one("l-head")], 21.2);
-	show(one("k-head"), 21.55, "above");
-	tl.to([one("buy"), one("sell"), marker], { opacity: 0, duration: 0.3 }, 21.2);
-	tl.to(one("sum-line"), { opacity: 1, duration: 0.6 }, 21.7);
-	land(one("sum-dot"), 22.4);
-	// Cut: the two numbers. The hero: only the repriced one is the flip.
-	hide(one("k-head"), 25.1);
-	sink(25.1);
-	show(one("w-tag-0"), 25.4);
-	land(one("w-num-0"), 25.6);
-	show(one("w-tag-1"), 26.0);
-	land(one("w-num-1"), 26.2);
-	d.lock(lockFlip, 26.8, {
+	// The flip settles at 21.45; preserve its original 1.25 s quiet before the shortcut.
+	// ——— shortcut: a separate strike axis, with gamma priced at the fixed $100 spot ———
+	tl.addLabel("shortcut", 22.7);
+	hide([one("s-head"), one("l-head")], 22.7);
+	show(one("k-head"), 23.05, "above");
+	tl.to([one("buy"), one("sell")], { opacity: 0, duration: 0.3 }, 22.7);
+	tl.fromTo(
+		one("sum-chart"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		22.7,
+	);
+	// Reveal in the model's high-to-low accumulation order. One state drives pen and clip.
+	const accumulation = { step: 0 };
+	tl.fromTo(
+		one("sum-line"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.6 },
+		23.05,
+	);
+	tl.fromTo(
+		one("sum-pen"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		23.05,
+	);
+	tl.fromTo(
+		accumulation,
+		{ step: 0 },
+		{
+			step: sumSteps.length - 1,
+			duration: 1.5,
+			ease: "none",
+			immediateRender: false,
+			onUpdate: () => {
+				const i = Math.min(Math.floor(accumulation.step), sumSteps.length - 2);
+				const mix = accumulation.step - i;
+				const [k0, v0] = sumSteps[i];
+				const [k1, v1] = sumSteps[i + 1];
+				const x = L.sumX(k0 + (k1 - k0) * mix);
+				const y = L.sumY(v0 + (v1 - v0) * mix);
+				gsap.set(one("sum-pen"), { attr: { cx: x, cy: y } });
+				gsap.set(one("sum-draw"), {
+					attr: { x: x - 4, width: L.right - x + 8 },
+				});
+			},
+		},
+		23.05,
+	);
+	tl.to(one("sum-pen"), { opacity: 0, duration: 0.3 }, 24.55);
+	tl.fromTo(
+		[one("sum-dot"), one("sum-tag"), one("sum-num")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55 },
+		24.55,
+	);
+	// The completed sum rests 2.25 s. Clear the chart before either number's flight.
+	hide(one("k-head"), 27.35);
+	tl.to(
+		[one("flip-tag"), one("sum-tag")],
+		{ opacity: 0, duration: 0.35 },
+		27.35,
+	);
+	// Fade in place: the untransformed numeric sources preserve their chart coordinates.
+	tl.to(d.depth, { opacity: 0, duration: 0.4 }, 27.35);
+	// Tags settle above the numeric flight lanes, preserving their original reading time.
+	show([one("w-tag-0"), one("w-tag-1")], 27.4, "above");
+	d.carry(
+		one<SVGGraphicsElement>("flip-num"),
+		one<SVGGraphicsElement>("w-num-0"),
+		27.75,
+		{ duration: 0.7, arc: "x" },
+	);
+	d.carry(
+		one<SVGGraphicsElement>("sum-num"),
+		one<SVGGraphicsElement>("w-num-1"),
+		28.55,
+		{ duration: 0.7, arc: "x" },
+	);
+	d.lock(lockFlip, 29.35, {
 		around: [one("w-tag-0"), one("w-num-0")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 26.8);
-	show(one("w-line"), 27.2);
+	tl.addLabel("hero-lock", 29.35);
+	show(one("w-line"), 29.75);
 
 	// ——— target: what the model's number isn't ———
-	tl.addLabel("target", 30.8);
-	hide([...flat("two"), lockFlip], 30.8);
-	show(one("t-head"), 31.15, "above");
+	tl.addLabel("target", 33.35);
+	hide([...flat("two"), lockFlip], 33.35);
+	show(one("t-head"), 33.7, "above");
 	[0, 1, 2].forEach((i) => {
-		const at = 31.6 + i * 1.0;
+		const at = 34.15 + i * 1.0;
 		show(one(`t-tag-${i}`), at);
 		land(one(`t-value-${i}`), at + 0.2);
-		show(one(`t-note-${i}`), at + 0.6);
+		// The returning target and its $100 / +$1 conditions arrive together.
+		show(one(`t-note-${i}`), at + (i === 0 ? 0.2 : 0.6));
 	});
 	// Cut: the claim.
-	hide(flat("target"), 37.7);
+	hide(flat("target"), 40.25);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		38.1,
+		40.65,
 	);
-	show(one("z-sub"), 38.5);
+	show(one("z-sub"), 41.05);
 
 	// ——— next ———
-	tl.addLabel("next", 42.3);
-	hide(kids("claim"), 42.3);
-	d.close(42.3);
+	tl.addLabel("next", 44.85);
+	hide(kids("claim"), 44.85);
+	d.close(44.85);
 	return tl;
 }
 
