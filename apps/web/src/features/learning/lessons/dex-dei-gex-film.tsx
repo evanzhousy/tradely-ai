@@ -49,6 +49,9 @@ import {
 
 const END = 47.4;
 const SPREAD = netted.bullish - (printwise.bullish - magnitude(prints[4]));
+const spreadSoldLeg = prints.find(
+	(print) => print.spread && print.id === "leg",
+);
 // Compare full-session flow only with full-day stock-volume benchmarks.
 const filmDenominators = denominators.filter(({ id }) => id !== "noon");
 
@@ -140,10 +143,7 @@ const copy = {
 	spreadRow: ["10:50 spread ×500", "10:50 价差 ×500"],
 	twoPrints: ["as two prints", "按两笔成交"],
 	oneTrade: ["as one trade", "按一笔交易"],
-	twoLine: [
-		"Same trades, two conventions, two answers. Say which you used.",
-		"同样的成交，两种约定，两个答案。要说明你用的是哪一种。",
-	],
+	soldLeg: ["sold leg", "卖出腿"],
 	deiHead: [
 		"DEI: net flow ÷ ALFA's share volume.",
 		"DEI：净成交流 ÷ ALFA 的股票成交量。",
@@ -419,6 +419,28 @@ function Scene({
 			>
 				{`${deltaOf(prints[0].strike).toFixed(2)} × ${prints[0].contracts} × 100 = ${count(magnitude(prints[0]))}`}
 			</Word>
+			{narrow && spreadSoldLeg && (
+				<>
+					<Word
+						name="spread-sold-leg"
+						x={W / 2}
+						y={H * 0.29}
+						size={T.small}
+						className="wt-film-tag"
+					>
+						{`${spreadSoldLeg.time} ${spreadSoldLeg.strike}C · ${t(copy.soldLeg)} · ${t(leanTag[spreadSoldLeg.lean])}`}
+					</Word>
+					<Word
+						name="spread-equation"
+						x={W / 2}
+						y={H * 0.34}
+						size={T.body}
+						className="wt-film-num wt-film-gain"
+					>
+						{`${count(magnitude(prints[4]))} − ${count(magnitude(spreadSoldLeg))} = ${signedCount(SPREAD)}`}
+					</Word>
+				</>
+			)}
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -500,15 +522,6 @@ function Scene({
 						</Word>
 					</g>
 				))}
-				<Lines
-					name="w-line"
-					text={t(copy.twoLine)}
-					x={W / 2}
-					y={H * 0.74}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
 			</g>
 			<g data-f="dei">
 				{headline("d-head", copy.deiHead, copy.deiHeadShort)}
@@ -638,6 +651,9 @@ function build(context: FilmContext) {
 		one("spread"),
 		one("spread-row"),
 		one("weight-example"),
+		...(L.narrow && spreadSoldLeg
+			? [one("spread-sold-leg"), one("spread-equation")]
+			: []),
 		...kids("meter"),
 		...flat("q"),
 		one("t-head"),
@@ -719,10 +735,12 @@ function build(context: FilmContext) {
 	sink(17.8);
 	show(one("d-head"), 18.15, "above");
 	land(one("d-net"), 18.5);
-	filmDenominators.forEach((_, i) => {
-		show(one(`d-row-${i}`), 19.1 + i * 0.7);
-		show(one(`d-tag-${i}`), 19.3 + i * 0.7);
-	});
+	// Both benchmarks form one comparison, settled by 19.8; its explanation
+	// follows only after 1.1 seconds of quiet.
+	show(
+		filmDenominators.flatMap((_, i) => [one(`d-row-${i}`), one(`d-tag-${i}`)]),
+		19.3,
+	);
 	show(one("d-line"), 20.9);
 
 	// ——— spread: one trade, not two prints ———
@@ -734,6 +752,11 @@ function build(context: FilmContext) {
 	// The old printwise total is unnecessary here. Hold the highlighted legs
 	// for a full second, replace them, then reveal only the new net.
 	tl.fromTo(one("spread"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
+	if (L.narrow && spreadSoldLeg) {
+		const phoneProof = [one("spread-sold-leg"), one("spread-equation")];
+		tl.fromTo(phoneProof, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
+		hide(phoneProof, 28.3);
+	}
 	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 26.3);
 	tl.fromTo(
 		one("spread-row"),
@@ -762,7 +785,6 @@ function build(context: FilmContext) {
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 29.9);
-	show(one("w-line"), 30.3);
 
 	// ——— source: a number with the same name ———
 	tl.addLabel("source", 34.3);
