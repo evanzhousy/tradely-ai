@@ -1,5 +1,6 @@
 import {
 	type Copy,
+	count,
 	mondayPacket,
 	pick,
 	rowPremium,
@@ -20,6 +21,7 @@ import {
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
 import {
+	CONTRACTS,
 	claims,
 	dollars,
 	PREMIUM,
@@ -111,7 +113,10 @@ const copy = {
 	scopeShort: ["Oct 18 calls, 100–120, Mon", "10月18日 看涨 100–120，周一"],
 	repaired: ["repaired", "已修复"],
 	removed: ["Forecast removed", "预测已删除"],
-	forecastShort: ["ALFA above $110", "预期高于 $110"],
+	forecastShort: ["Traders expect", "交易者预期"],
+	forecastScope: ["ALFA >$110 by Oct18", "ALFA 10/18前>$110"],
+	forecastPhoneLead: ["Traders expect ALFA", "交易者预期 ALFA"],
+	forecastPhoneScope: ["above $110 by Oct 18", "10/18前>$110"],
 	sHead: [
 		"Sign off with gaps and reopening conditions.",
 		"签核，写明缺口与重审条件。",
@@ -130,6 +135,26 @@ const copy = {
 		"在新的一天里运用研究的产出与审核",
 	],
 } as const satisfies Record<string, Copy>;
+
+/** Film-only phone summaries; the shared playground copy stays unchanged. */
+const phoneSections: Readonly<Record<string, Copy>> = {
+	supported: [
+		`P1 · ${dollars(PREMIUM)} premium · ${count(CONTRACTS)} contracts · 4/5 strikes`,
+		`P1 · 权利金 ${dollars(PREMIUM)}；成交 ${count(CONTRACTS)} 张；覆盖 4/5 行权价`,
+	],
+	repaired: [
+		"×100 restored · volume only · 120 missing",
+		"补回 ×100 · 仅成交量 · 120 无数据",
+	],
+	open: [
+		"120 tape due Tue 09:00; 110 OI change: Tue report",
+		"120 成交：周二 09:00；110 未平仓量变化：周二报告",
+	],
+	reopen: [
+		"Monday tape corrected, or 120 data changes a claim",
+		"周一成交更正，或 120 数据改变结论",
+	],
+};
 
 function Scene({
 	width,
@@ -409,16 +434,27 @@ function Scene({
 							textAnchor={
 								narrow && claim.status === "removed" ? "middle" : "start"
 							}
-							y={L.claimY(i) + L.claimH * 0.42}
+							y={
+								L.claimY(i) +
+								(narrow && claim.status === "removed" ? text : L.claimH * 0.42)
+							}
 							className="wt-film-type"
 							style={{ fontSize: text }}
 						>
-							{t(
-								claim.status === "removed"
-									? copy.forecastShort
-									: narrow && claim.id === "scope"
-										? copy.scopeShort
-										: claim.text,
+							{claim.status === "removed" ? (
+								<>
+									<tspan x={narrow ? margin + room / 2 : margin + 14}>
+										{t(narrow ? copy.forecastPhoneLead : copy.forecastShort)}
+									</tspan>
+									<tspan
+										x={narrow ? margin + room / 2 : margin + 14}
+										dy={text * 1.15}
+									>
+										{` ${t(narrow ? copy.forecastPhoneScope : copy.forecastScope)}`}
+									</tspan>
+								</>
+							) : (
+								t(narrow && claim.id === "scope" ? copy.scopeShort : claim.text)
 							)}
 						</text>
 					</g>
@@ -480,7 +516,11 @@ function Scene({
 					</text>
 					<Lines
 						name={`sec-${i}-text`}
-						text={t(section.text)}
+						text={t(
+							narrow
+								? (phoneSections[section.id] ?? section.text)
+								: section.text,
+						)}
 						x={margin + 14}
 						y={L.secY(i) + T.small * 1.7 + T.small * (narrow ? 1.35 : 1.6)}
 						size={T.body}
