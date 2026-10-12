@@ -144,7 +144,7 @@ Every film follows the same arc, so a learner always knows where they are.
 
 At most seven beats (one headline each) and about 45 s played (`END` about 47). Hold every headline at least 3.5 s at 1×. To shorten a film, merge or cut beats; never shorten the holds.
 
-**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. Mark the moment the hero's brackets lock with `tl.addLabel("hero-lock", t)`; the timing audit measures it. A hero the learner passes through in half a second isn't one.
+**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. Mark the moment the hero's brackets lock with `tl.addLabel("hero-lock", t)`; the timing audit measures it. A hero the learner passes through in half a second isn't one: from the glow at full strength, nothing the brackets hold moves, fades or is carried away for at least 1.5 s at 1×. While the hero shows (above 0.25), nothing that was not already inside its brackets comes into them: not a label, not a bar, not an axis drawn across it. A hairline zero line drawn through a fading hero cost a review score; let the hero go first, then draw what follows.
 
 **Made, not stated.** A headline's figure appears no earlier than the event that makes it. When the answer is the hero's, split the headline: the question half goes up with the beat ("Profit doesn't start at $100."), the answer half appears as a second line under it, at the lock ("It starts at $104.20."). A second half is a headline too: hold it 3.5 s.
 
@@ -224,6 +224,11 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 
 **Motion**
 - One thing moves at a time; stagger a group by 0.1–0.3 s.
+- **The motion floor.** A text, a figure or a panel comes on and goes off over at least 0.3 s at 1× (0.15 s at the default 2×). Nothing appears or vanishes in one frame mid-beat: a `tl.set` that shows or hides a mark is only for a hand-over (a carry, a proxy taking over in place, a value set anew where the old one stood) or a cut, where the whole stage changes at once. Entrances of 0.15 s bought to fit a beat read as pops.
+- **Quiet time.** When a proof completes (a count settles, a carry lands, a lock snaps on), leave it alone at least 1 s at 1× before anything else competes for the eye, and the hero 1.5 s. Check this at every step a change moves time from, not only where it lands: a fix that shortens the gap after an earlier proof breaks that proof's rest.
+- **Simplify instead of squeezing.** When a change needs time, remove a mark the lesson can do without rather than compressing other steps. Never shorten an interval a review has accepted: list every interval you shorten, before → after, and check it. Never cut shared structure (the end card's `d.close`, untouched after it) or a qualification the learner needs ("4 of 5 series").
+- **Transitions dip.** Between beats, what leaves is down to a quarter before what replaces it in the same place reaches a quarter; no two lines print over each other mid-fade. The stage is never empty for 0.1 s or more, and never faint (nothing above 0.3) for 0.2 s or more: overlap the outgoing tail with the incoming head rather than leaving a gap.
+- **Fade in place where a lane is crowded.** A short flight beside a crowded expression keeps touching it; a value that only changes where it stands fades or flips there instead of flying.
 - Numbers, bars and lines never overshoot: data lands exactly, a big figure included (`power3.out`). Overshoot (`pop`, `slam`) is for chips and tags only.
 - Carry, don't cut, where an element has somewhere to go: the question's numbers fly to their places in the first teaching shot; a trade flies from the book to the tape.
 - A carry starts clear of other marks, keeps 6 px clear of every settled label and never crosses a bar, line or bracket on its way, nor another flight. Its target appears only as it lands, and it keeps its colour: colour the target the way the source is coloured (asks red, bids green, in the book and on the cards). Where no straight path is clear, give it two legs through an invisible waypoint (a phone's trade drops down a clear lane, stops level with the tape's top row, then slides in), or let what it must pass step back to 0.3 first.
@@ -240,6 +245,7 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 **Honesty**
 - Every number on screen comes from the lesson's model. If the film needs a new figure, add it to the model so the playground shows the same one.
 - Say what is calculated, what is inferred and what is unknown. A missing value is shown as missing, never as zero: an emptied offer reads "—".
+- Every frame is true, not only the last. Figures that must agree (a row's parts and its total) count from one start, for one length, with one ease, so every frame adds up. Never count a result that sits after "=": the frames in between show a false equation; reveal it settled. Never pair a state with an event that happened before it (a session with a run made before that session closed).
 - Numbers carry across shots. A trade never un-happens: its print stays on the tape, and a size that changed in one shot starts the next shot at its new value. A readout tied to a moving marker is computed from the marker's own position every frame, never counted on a separate tween.
 - The film's claims must match the lesson's captions and explanations in both languages.
 
@@ -311,9 +317,17 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
    - a class token with two `wt-` names run together;
    - two headlines on stage at once where their boxes overlap, counting the 0.35 s an outgoing one takes to fade: after a cut's `hide`, show the next headline 0.35 s later (as `swap` does), not 0.2 s.
 
+   It also fails the motion rules, measured by what the stage shows rather than by tween lengths alone:
+   - **a pop**: a text, a figure or a panel (`wt-panel-shape`, `wt-focus-shape`, `wt-chip`) that appears from below 0.1 to 0.5 or more, or vanishes the other way, in a tween or set shorter than 0.3 s. Not a pop: a carry's hand-over, a swap in place (one mark goes as another comes over at least half its area), a mark that vanishes as its flight lands, and a cut (at least 60 % of what shows changes at once);
+   - **a hero that doesn't stand**: under 1.5 s from the glow at full strength until anything its brackets hold, or a group it sits in, moves or fades, or a copy of it is carried away;
+   - **an empty stage** (nothing above 0.1) for 0.1 s or more, or **a faint stage** (nothing above 0.3) for 0.2 s or more, from the question until the end card; the title card's and the end card's own transitions are the kit's and aren't measured;
+   - **a crossfade that prints over**: a text coming in over a text still leaving, both above 0.25, for 0.15 s or more.
+
    It warns (without failing) when a headline names a dollar figure or a percentage that no stage text shows 0.3 s after the headline appears: made, not stated.
 
-   The flight check also fails a carry whose target shows before the copy that becomes it lands (the kit tags each copy with `data-to`, `data-mode` and `data-match` for this), and a line whose entrance rises through settled text, sampled every 0.05 s.
+   The flight check also fails a carry whose target shows before the copy that becomes it lands (the kit tags each copy with `data-to`, `data-mode` and `data-match` for this), a line whose entrance rises through settled text, sampled every 0.05 s, and anything (a mark or a text, arriving or in flight) that comes into the hero's glowing brackets while the hero shows above 0.25 and was not inside them when the glow reached full strength.
+
+   Quiet time after a proof is judged by eye and by the jury: what counts as a completed proof is the lesson's, not the timeline's.
 4. **Read the frames yourself.** The scan ignores text inside the camera's world group, so look at contact sheets of the 1440 English and 390 Chinese frames for labels crossing a curve, labels clipped at a plot edge, wrong numbers and awkward copy.
 5. **Play it for real.** Load the lesson with no saved speed, let the film autoplay, and confirm the speed button reads 2×, the player reaches `data-ended` in about half the film's length, the ended panel's button ("Try it yourself") opens the playground (`data-player-mode="play"`), and every playground scene opens without console errors. Radix tabs need real pointer events in automation.
 6. **Build.** `pnpm build` in `apps/web`.
@@ -346,6 +360,9 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
 - **Two sets at one time on one mark fight.** A carry that reveals a waypoint at the moment the next carry hides it left the waypoint showing; pass `reveal: false` to the first leg.
 - **A class built by template needs its space, outside the expression.** `` `wt-film-num${tone}` `` gave `wt-film-numwt-film-loss`, and the best ask and bid lost their colour at landing. Writing the space inside the expression's string (`` `wt-a${on ? " wt-b" : ""}` ``) doesn't survive either: Biome's class sorter trims it on every save. Write `` `wt-a ${on ? "wt-b" : ""}` ``. The timing audit fails any class token with two `wt-` names in it.
 - **`hide()` once lifted every mark to −12 px.** Prints stepped down the tape all slid into the top row as they faded at the cut. It now fades a mark that already sits on an offset where it is.
+- **Time bought with pops.** Fixes that needed time took it from entrances (0.15 s) and swaps (a set): reviews read them as pops and scored the film down. Simplify instead (section 6).
+- **Time taken from an accepted step.** An implementer shortened a payoff a review had marked fixed, three times, to pay for new work. Every package lists the intervals it shortens, and each is checked against the last review.
+- **A crossing the review saw and the scan didn't.** Bars, a gross track and finally a hairline zero axis were drawn across a fading hero; each cost a review score. The flight check now fails anything coming into the hero's brackets.
 - **A `fromTo` renders its start at build time.** A tween whose `onUpdate` writes a meter or moves a marker will write its start state the moment it is created, so a later walk overwrote an earlier one's readout before either began. Give such tweens `immediateRender: false`.
 
 ## 9. Style direction: what we take from motion-design references
@@ -400,7 +417,9 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - [ ] Every moving mark has a unique `data-f`; counts name their `from`
 - [ ] Colours follow their meanings; data never overshoots
 - [ ] At most seven beats and about 45 s played; headlines of at most 8 words (18 Chinese characters) and two figures, held at least 3.5 s; the question line 3.5 s; the claim 4 s
-- [ ] One hero moment at 55–65 %, named in the treatment, its figure the loudest mark, held 2 s with an after-beat; its payoff staggered
+- [ ] One hero moment at 55–65 %, named in the treatment, its figure the loudest mark, held 2 s with an after-beat (never under 1.5 s); its payoff staggered; nothing comes into its brackets while it shows
+- [ ] Every entrance and exit of a text, figure or panel 0.3 s or longer; no set that shows or hides a mark except a hand-over or a whole-stage cut
+- [ ] At least 1 s of quiet after each proof; beats dip into each other with no empty or faint stage and no line printed over another
 - [ ] Every carry: top layer, starts clear, path clear of marks and flights, slows on both axes, target shown on arrival, colour kept
 - [ ] Numbers carry across shots; nothing that happened un-happens
 - [ ] Next card matches the syllabus (or "the module checkpoint")
