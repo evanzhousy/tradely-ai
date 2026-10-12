@@ -15,7 +15,6 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
-	afterWeek,
 	contracts,
 	DAYS,
 	DELTA,
@@ -38,7 +37,6 @@ import {
 	TODAY,
 	VEGA,
 	value,
-	WEEK,
 } from "./theta-vega-rho-model";
 
 /*
@@ -50,11 +48,11 @@ import {
  * turns as the proof.
  *
  *   open       0–4        "Theta, vega and rho"
- *   question   4–9.5      ALFA +$1, six days later; the call −$0.19. Where did it go?
+ *   question   4–9.5      ALFA +$1, six days later, IV −3 points; call −$0.19. Why?
  *   theta      9.5–19.55  the value drains to expiry, slowly then fast; cut to −$0.065 a day
  *   vega       19.55–25.45 "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
  *   sum        25.45–31.9 hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
- *                         the model's −$0.19, locked
+ *                         a subordinate repriced −$0.19, locked
  *   rho        31.9–36    $0.042 a rate point
  *   positions  36–45.4    you −$320, Ben +$200; cut: "A good move can still lose."
  *   next       45.4–47.4  Next: 0DTE
@@ -78,7 +76,6 @@ const steps = [
 	{ id: "theta", value: round(scenario.theta, 2) },
 	{ id: "vega", value: round(scenario.vega, 2) },
 	{ id: "sum", from: 0, value: scenario.total, kind: "total" },
-	{ id: "model", from: 0, value: round(scenario.repriced, 2), kind: "model" },
 ] as const;
 const bars = (() => {
 	let running = 0;
@@ -103,11 +100,13 @@ function layout(width: number) {
 	// Headroom for a two-line headline above the charts' captions.
 	const top = height * (narrow ? 0.3 : 0.25);
 	const bottom = height * 0.8;
+	const waterfallBottom = height * 0.72;
 	const xT = (elapsed: number) => left + (elapsed / DAYS) * (right - left);
 	const yT = (dollars: number) => bottom - (dollars / T_TOP) * (bottom - top);
 	const yW = (dollars: number) =>
-		bottom -
-		((dollars - W_RANGE[0]) / (W_RANGE[1] - W_RANGE[0])) * (bottom - top);
+		waterfallBottom -
+		((dollars - W_RANGE[0]) / (W_RANGE[1] - W_RANGE[0])) *
+			(waterfallBottom - top);
 	const slot = (right - left) / bars.length;
 	const barX = (i: number) => left + slot * (i + 0.5);
 	const barWidth = Math.min(slot * 0.52, 64);
@@ -127,6 +126,7 @@ function layout(width: number) {
 		right,
 		top,
 		bottom,
+		waterfallBottom,
 		xT,
 		yT,
 		yW,
@@ -149,6 +149,7 @@ const copy = {
 	qTagLeft: ["ALFA, 6 days later", "ALFA，六天后"],
 	qLeft: [`ALFA +$${SCENARIO.move}`, `ALFA +$${SCENARIO.move}`],
 	qTagRight: ["the call, per share", "看涨，每股"],
+	qIV: [`IV −${-SCENARIO.volPoints} points`, `IV −${-SCENARIO.volPoints} 点`],
 	qRight: [
 		`call ${signedPrice(scenario.repriced)}`,
 		`看涨 ${signedPrice(scenario.repriced)}`,
@@ -157,21 +158,16 @@ const copy = {
 		`Delta alone said ${signedPrice(DELTA * SCENARIO.move)}. Where did the rest go?`,
 		`仅用 Delta 是 ${signedPrice(DELTA * SCENARIO.move)}。剩下的去哪了？`,
 	],
-	thetaHead: ["Theta: what a day costs.", "Theta：一天的代价。"],
+	thetaHead: ["Theta: the daily decay rate.", "Theta：每日损耗速率。"],
 	valueAxis: ["value, per share", "每股价值"],
 	heldAxis: [
 		`ALFA held at $${SPOT}, IV ${points(IV)}`,
 		`ALFA 保持 $${SPOT}，IV ${points(IV)}`,
 	],
 	today: [`today ${price(TODAY.price)}`, `今天 ${price(TODAY.price)}`],
-	even: ["an even share per day", "每天平均分摊"],
-	week: [
-		`a week: ${signedPrice(afterWeek.price - TODAY.price)}`,
-		`一周：${signedPrice(afterWeek.price - TODAY.price)}`,
-	],
 	lastDay: [
-		`last day: ${signedPrice(lastDay.theta)}`,
-		`最后一天：${signedPrice(lastDay.theta)}`,
+		`Theta, 1 day left: ${signedPrice(lastDay.theta)}/day`,
+		`剩 1 天的 Theta：${signedPrice(lastDay.theta)}/天`,
 	],
 	thetaWord: ["theta", "theta"],
 	thetaSub: [
@@ -215,8 +211,12 @@ const copy = {
 		`Ben · 空头 ${Math.abs(ben)} 张看涨`,
 	],
 	posNote: [
-		"× 100 shares × signed contracts. Ben collects the time decay you pay.",
-		"× 100 股 × 带符号张数。Ben 收取你支付的时间损耗。",
+		"Per share × 100 × signed contracts.",
+		"每股变化 × 100 × 带符号张数。",
+	],
+	repriced: [
+		`repriced ${signedPrice(scenario.repriced)}`,
+		`重定价 ${signedPrice(scenario.repriced)}`,
 	],
 	claimBig: ["A good move can still lose.", "上涨也可能亏钱。"],
 	claimSub: [
@@ -238,19 +238,15 @@ const barLabels: Record<(typeof bars)[number]["id"], readonly [Copy, Copy]> = {
 	],
 	theta: [
 		[`theta · ${SCENARIO.days} days`, `Theta · ${SCENARIO.days} 天`],
-		["Θ", "Θ"],
+		[`Θ ${SCENARIO.days}d`, `Θ ${SCENARIO.days}天`],
 	],
 	vega: [
 		[`vega · −${-SCENARIO.volPoints} pts`, `Vega · −${-SCENARIO.volPoints} 点`],
-		["vega", "Vega"],
+		[`V −${-SCENARIO.volPoints} pts`, `V −${-SCENARIO.volPoints}点`],
 	],
 	sum: [
-		["sum", "合计"],
-		["sum", "合计"],
-	],
-	model: [
-		["model", "模型"],
-		["model", "模型"],
+		["estimate", "估算"],
+		["estimate", "估算"],
 	],
 };
 
@@ -366,26 +362,6 @@ function Scene({
 						<text x={L.left} y={L.top - 12} className="wt-small">
 							{t(copy.valueAxis)}
 						</text>
-						<line
-							data-f="even"
-							className="wt-film-tangent"
-							strokeDasharray="5 4"
-							x1={L.xT(0)}
-							y1={L.yT(TODAY.price)}
-							x2={L.xT(0)}
-							y2={L.yT(TODAY.price)}
-						/>
-						<text
-							data-f="even-label"
-							// Under the even line, where the decay curve never goes: between the $1
-							// and $2 gridlines, left of where the line crosses $1.50.
-							x={L.xT(DAYS * (1 - 1.5 / TODAY.price)) - 10}
-							y={L.yT(1.5) + 12}
-							textAnchor="end"
-							className="wt-small wt-halo"
-						>
-							{t(copy.even)}
-						</text>
 						<g clipPath={`url(#decay-${id})`}>
 							<path
 								className="wt-line-position"
@@ -409,14 +385,6 @@ function Scene({
 							className="wt-halo wt-accent wt-marker-label"
 						>
 							{t(copy.today)}
-						</text>
-						<text
-							data-f="t-week"
-							x={L.xT(WEEK) + 12}
-							y={L.yT(afterWeek.price) - 10}
-							className="wt-halo wt-loss wt-marker-label"
-						>
-							{t(copy.week)}
 						</text>
 						<text
 							data-f="t-last"
@@ -471,7 +439,9 @@ function Scene({
 									<rect
 										data-f={`w-bar-${bar.id}`}
 										className="wt-film-bar"
-										data-tone={bar.tone}
+										data-tone={
+											bar.id === "sum" && bar.value < 0 ? "loss" : bar.tone
+										}
 										x={L.barX(i) - L.barWidth / 2}
 										y={L.yW(bar.from)}
 										width={L.barWidth}
@@ -480,13 +450,22 @@ function Scene({
 									/>
 									<text
 										data-f={`w-value-${bar.id}`}
-										x={L.barX(i)}
-										y={up ? L.yW(bar.to) - 8 : L.yW(bar.to) + 16}
+										x={bar.id === "sum" ? W / 2 : L.barX(i)}
+										style={{
+											fontSize: bar.id === "sum" ? T.num * 1.4 : undefined,
+										}}
+										y={
+											bar.id === "sum"
+												? H * 0.9
+												: up
+													? L.yW(bar.to) - 8
+													: L.yW(bar.to) + 16
+										}
 										textAnchor="middle"
 										className={`wt-halo wt-marker-label ${
 											bar.tone === "gain"
 												? "wt-gain"
-												: bar.tone === "loss"
+												: bar.tone === "loss" || bar.value < 0
 													? "wt-loss"
 													: "wt-accent"
 										}`}
@@ -497,8 +476,8 @@ function Scene({
 									</text>
 									<text
 										data-f={`w-label-${bar.id}`}
-										x={L.barX(i)}
-										y={L.bottom + 18}
+										x={bar.id === "sum" ? W / 2 : L.barX(i)}
+										y={bar.id === "sum" ? H * 0.8 : L.waterfallBottom + 18}
 										textAnchor="middle"
 										className="wt-small"
 									>
@@ -507,6 +486,16 @@ function Scene({
 								</g>
 							);
 						})}
+						<Word
+							name="w-repriced"
+							x={L.right}
+							y={H * 0.8}
+							anchor="end"
+							size={T.small}
+							className="wt-film-type wt-film-loss"
+						>
+							{t(copy.repriced)}
+						</Word>
 					</g>
 				</g>
 			</g>
@@ -541,6 +530,15 @@ function Scene({
 						</Word>
 					</g>
 				))}
+				<Word
+					name="q-iv"
+					x={W / 2}
+					y={H * 0.57}
+					size={T.body}
+					className="wt-film-type wt-film-loss"
+				>
+					{t(copy.qIV)}
+				</Word>
 				<Lines
 					name="q-line"
 					text={t(copy.qLine)}
@@ -654,10 +652,10 @@ function Scene({
 				/>
 				{(
 					[
-						[copy.posYou, pnl(you), "wt-film-loss", 0.34],
-						[copy.posBen, pnl(ben), "wt-film-gain", 0.58],
+						[copy.posYou, pnl(you), "wt-film-loss", 0.31, you],
+						[copy.posBen, pnl(ben), "wt-film-gain", 0.56, ben],
 					] as const
-				).map(([who, num, tone, f], i) => (
+				).map(([who, num, tone, f, quantity], i) => (
 					<g key={who[0]}>
 						<Word
 							name={`p-who-${i}`}
@@ -669,9 +667,18 @@ function Scene({
 							{t(who)}
 						</Word>
 						<Word
+							name={`p-factor-${i}`}
+							x={W / 2}
+							y={H * f + T.body * 1.6}
+							size={T.small}
+							className="wt-film-num wt-film-dim"
+						>
+							{`${signedPrice(scenario.total)} × 100 × (${quantity > 0 ? "+" : "−"}${Math.abs(quantity)})`}
+						</Word>
+						<Word
 							name={`p-num-${i}`}
 							x={W / 2}
-							y={H * f + T.num * 1.3}
+							y={H * f + T.body * 1.6 + T.num * 1.3}
 							size={T.num}
 							className={`wt-film-num ${tone}`}
 						>
@@ -747,11 +754,11 @@ function build(context: FilmContext) {
 	d.hidden([
 		lockSum,
 		marker,
-		one("even"),
-		one("even-label"),
 		one("t-today"),
-		one("t-week"),
 		one("t-last"),
+		one("w-bar-sum"),
+		one("w-label-sum"),
+		one("w-repriced"),
 		...bars.flatMap((bar) => [
 			one(`w-value-${bar.id}`),
 			...(one(`w-link-${bar.id}`) ? [one(`w-link-${bar.id}`)] : []),
@@ -782,6 +789,7 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag-0"), 4.6);
+	show(one("q-iv"), 4.6);
 	land(one("q-num-0"), 4.8);
 	show(one("q-tag-1"), 5.3);
 	land(one("q-num-1"), 5.5);
@@ -797,18 +805,6 @@ function build(context: FilmContext) {
 	rise(9.8);
 	land(marker, 10.2);
 	show(one("t-today"), 10.4, "right");
-	// The even line: what an equal share per day would look like.
-	tl.to(one("even"), { opacity: 1, duration: 0.2 }, 10.7);
-	tl.to(
-		one("even"),
-		{
-			attr: { x2: L.xT(DAYS), y2: L.yT(0) },
-			duration: 0.8,
-			ease: "power2.inOut",
-		},
-		10.7,
-	);
-	show(one("even-label"), 11.2);
 	// The marker walks the curve, drawing it behind it.
 	const walk = { elapsed: 0 };
 	const place = () => {
@@ -816,30 +812,16 @@ function build(context: FilmContext) {
 		gsap.set(marker, { attr: { cx: x, cy: L.yT(decay(walk.elapsed)) } });
 		gsap.set(clip, { attr: { width: x - L.left + 6 } });
 	};
+	// One continuous sweep replaces the even line and week checkpoint. The final
+	// local sensitivity settles at 13.8, leaving 1.5 s of quiet before the cut.
 	tl.to(
 		walk,
-		{ elapsed: WEEK, duration: 1.0, ease: "power1.inOut", onUpdate: place },
+		{ elapsed: LAST, duration: 1.9, ease: "power2.in", onUpdate: place },
 		11.4,
 	);
 	hide(one("t-today"), 12.3, 0.3);
-	show(one("t-week"), 12.4, "right");
-	tl.to(
-		walk,
-		{ elapsed: 25, duration: 1.2, ease: "power1.in", onUpdate: place },
-		12.9,
-	);
-	tl.to(
-		[one("even"), one("even-label")],
-		{ opacity: 0.25, duration: 0.5 },
-		13.8,
-	);
-	tl.to(
-		walk,
-		{ elapsed: LAST, duration: 0.7, ease: "power2.in", onUpdate: place },
-		14.1,
-	);
-	show(one("t-last"), 14.8);
-	tl.to(clip, { attr: { width: L.right - L.left + 6 }, duration: 0.4 }, 14.8);
+	show(one("t-last"), 13.3);
+	tl.to(clip, { attr: { width: L.right - L.left + 6 }, duration: 0.4 }, 13.3);
 	// Cut: the unit, its sub-line held to be read.
 	hide([one("t-head")], 15.3);
 	sink(15.3);
@@ -850,14 +832,14 @@ function build(context: FilmContext) {
 	// ——— vega: points, not percent ———
 	tl.addLabel("vega", 19.55);
 	hide(kids("th"), 19.55);
-	// The two readings' tags come up with the headline that names "3%", once theta's
-	// figure has gone from where they stand.
+	// Compare both readings as one construction, preserving every result's hold.
+	// Both inputs settle at 20.65 and both results at 20.95; the unit explanation
+	// follows after 1 s of quiet, without a competing second-input arrival.
 	show([one("v-tag-0"), one("v-tag-1")], 19.95);
 	show(one("v-head"), 19.95);
-	show(one("v-from-0"), 20.15);
-	land(one("v-result-0"), 20.55);
-	show(one("v-from-1"), 21.05);
-	land(one("v-result-1"), 21.45);
+	show([one("v-from-0"), one("v-from-1")], 20.15);
+	land(one("v-result-0"), 20.4);
+	land(one("v-result-1"), 20.4);
 	show(one("v-line"), 21.95);
 
 	// ——— sum: the hero. The waterfall answers the puzzle. ———
@@ -884,17 +866,48 @@ function build(context: FilmContext) {
 			},
 			at,
 		);
-		show(one(`w-value-${bar.id}`), at + 0.35);
+		// Reveal the settled reading only after its bar reaches the labelled value.
+		tl.fromTo(
+			one(`w-value-${bar.id}`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.5 },
+			at + 0.55,
+		);
 		const link = one(`w-link-${bar.id}`);
 		if (link)
-			tl.fromTo(link, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.5);
+			tl.fromTo(link, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.55);
 	};
-	bars.forEach((_, i) => {
-		grow(i, 26.15 + i * 0.3);
+	// Delta and gamma share one stock-move construction. The other two inputs
+	// follow at the original 0.3 s stagger; every bar keeps its 0.55 s growth and
+	// every value keeps its 0.5 s entrance. Repricing is an annotation, not a bar.
+	grow(0, 25.7);
+	grow(1, 25.7);
+	grow(2, 26.0);
+	grow(3, 26.3);
+	const sum = bars[4];
+	gsap.set(one("w-bar-sum"), {
+		attr: {
+			y: Math.min(L.yW(sum.from), L.yW(sum.to)),
+			height: Math.abs(L.yW(sum.to) - L.yW(sum.from)),
+		},
 	});
+	tl.fromTo(
+		[one("w-value-sum"), one("w-label-sum"), one("w-repriced")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		26.9,
+	);
+	// The result bar keeps the old bar's 0.55 s entrance, revealing its final
+	// geometry only after all four contributions have settled.
+	tl.fromTo(
+		one("w-bar-sum"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55 },
+		26.85,
+	);
 	// The parts' sum, beside the model's figure: they account for the move.
 	d.lock(lockSum, 28.4, {
-		around: [one("w-bar-sum"), one("w-value-sum")],
+		around: [one("w-value-sum")],
 		pad: 6,
 	});
 	tl.addLabel("hero-lock", 28.4);
@@ -913,8 +926,10 @@ function build(context: FilmContext) {
 	tl.addLabel("positions", 36.0);
 	hide([...kids("rh"), one("rh-compare")], 36.0);
 	show(one("p-head"), 36.35);
+	show(one("p-factor-0"), 36.3);
 	show(one("p-who-0"), 36.6);
 	land(one("p-num-0"), 36.8);
+	show(one("p-factor-1"), 36.8);
 	show(one("p-who-1"), 37.1);
 	land(one("p-num-1"), 37.3);
 	show(one("p-note"), 37.6);
@@ -941,8 +956,8 @@ function build(context: FilmContext) {
 export const thetaVegaRhoFilm: Film = {
 	id: "theta-vega-rho",
 	label: [
-		"Theta, vega and rho, as a short film: ALFA rises $1 and the call still loses; the call's value draining to expiry, slowly then fast; volatility points against percent; rho; and a waterfall that adds delta, gamma, theta and vega to the loss, scaled to two positions",
-		"Theta、Vega 与 Rho 短片：ALFA 上涨 $1，看涨却仍然亏损；看涨价值随到期流失，先慢后快；波动率点与百分比；Rho；以及一张把 Delta、Gamma、Theta、Vega 相加得到亏损的瀑布图，并放大到两个持仓",
+		"Theta, vega and rho, as a short film: ALFA rises $1 and the call still loses; the call's value draining to expiry, slowly then fast; volatility points against percent; a waterfall that estimates the loss from delta, gamma, theta and vega; rho; and scaling to two positions",
+		"Theta、Vega 与 Rho 短片：ALFA 上涨 $1，看涨却仍然亏损；看涨价值随到期流失，先慢后快；波动率点与百分比；把 Delta、Gamma、Theta、Vega 相加估算亏损的瀑布图；Rho；再放大到两个持仓",
 	],
 	stage: "dark",
 	shots: [
@@ -950,8 +965,8 @@ export const thetaVegaRhoFilm: Film = {
 		{ id: "question", label: ["The puzzle", "疑问"] },
 		{ id: "theta", label: ["Theta", "Theta"] },
 		{ id: "vega", label: ["Vega", "Vega"] },
-		{ id: "rho", label: ["Rho", "Rho"] },
 		{ id: "sum", label: ["Add them up", "逐项相加"] },
+		{ id: "rho", label: ["Rho", "Rho"] },
 		{ id: "positions", label: ["Positions", "持仓"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
