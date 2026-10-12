@@ -53,7 +53,7 @@ import {
  *   open      0–4        "IV and RV"
  *   question  4–9.6      IV 35%, RV 24%: which is ALFA's volatility?
  *   fit       9.6–22.1   the model's price against its volatility input; slide to the
- *                        mid; push in on the bid, mid and ask: same option, three IVs
+ *                        mid; cut to the bid, mid and ask: same option, three IVs
  *   rv        22.1–31.4  hero: twenty daily returns, ±1.52% a day, 24% a year; the last
  *                        ten only, 15%, locked
  *   horizons  31.4–40.5  RV behind today, IV ahead with earnings; cut: +11 vol points
@@ -84,6 +84,8 @@ function layout(width: number) {
 	const right = width * 0.965;
 	// Headroom for a two-line headline above the charts' captions.
 	const top = height * (narrow ? 0.3 : 0.25);
+	// The RV result has its own lane, above the returns and clear of their axes.
+	const rvTop = height * (narrow ? 0.45 : 0.4);
 	const bottom = height * 0.8;
 	const xF = (iv: number) =>
 		left + ((iv - F_X[0]) / (F_X[1] - F_X[0])) * (right - left);
@@ -91,9 +93,9 @@ function layout(width: number) {
 		bottom - ((dollars - F_Y[0]) / (F_Y[1] - F_Y[0])) * (bottom - top);
 	const slot = (right - left) / returns.length;
 	const barX = (i: number) => left + slot * (i + 0.5);
-	const middle = (top + bottom) / 2;
+	const middle = (rvTop + bottom) / 2;
 	const yR = (value: number) =>
-		middle - (value / R_RANGE) * ((bottom - top) / 2);
+		middle - (value / R_RANGE) * ((bottom - rvTop) / 2);
 	const xZ = (day: number) => left + (day / TIMELINE_END) * (right - left);
 	const xQ = (iv: number) =>
 		left + ((iv - Z_X[0]) / (Z_X[1] - Z_X[0])) * (right - left);
@@ -104,6 +106,8 @@ function layout(width: number) {
 		left,
 		right,
 		top,
+		rvTop,
+		heroY: height * (narrow ? 0.35 : 0.33),
 		bottom,
 		xF,
 		yF,
@@ -151,21 +155,17 @@ const copy = {
 	threeHead: ["Same option, three IVs.", "同一张期权，三个 IV。"],
 	rvHead: ["RV: measured from past closes.", "RV：由过去的收盘价测得。"],
 	rvTenHead: [
-		`Ten closes instead of twenty: ${points(RV10)}.`,
-		`只看最近十天：${points(RV10)}。`,
+		`Ten returns instead of twenty: ${points(RV10)}.`,
+		`二十个日收益率改为十个：${points(RV10)}。`,
 	],
 	returnsAxis: ["ALFA daily returns", "ALFA 每日收益"],
 	perDay20: [
 		`±${percent(DAILY_SD, 2)} a day · ${points(RV20)} a year`,
 		`每天 ±${percent(DAILY_SD, 2)} · 年化 ${points(RV20)}`,
 	],
-	perDay10: [
-		`±${percent(SD10, 2)} a day · ${points(RV10)} a year`,
-		`每天 ±${percent(SD10, 2)} · 年化 ${points(RV10)}`,
-	],
+	heroPeriod: ["annualized RV10", "年化 RV10"],
 	/** A phone's band readings: the yearly figure only, clear of the chart's caption. */
 	perYear20: [`${points(RV20)} a year`, `年化 ${points(RV20)}`],
-	perYear10: [`${points(RV10)} a year`, `年化 ${points(RV10)}`],
 	horizonHead: ["They look in opposite directions.", "它们朝相反的方向看。"],
 	horizonHeadShort: ["Opposite directions.", "方向相反。"],
 	rvBlock: [`RV20 ${RV_POINTS}%`, `RV20 ${RV_POINTS}%`],
@@ -297,13 +297,6 @@ function Scene({
 							/>
 						</g>
 						<circle
-							data-f="f-dot-mid"
-							cx={L.xF(fitted.mid)}
-							cy={L.yF(prices.mid)}
-							r={3}
-							className="wt-chip"
-						/>
-						<circle
 							data-f="f-marker"
 							r={6}
 							cx={L.xF(GUESS)}
@@ -340,7 +333,7 @@ function Scene({
 								</text>
 							</g>
 						))}
-						<text x={L.left} y={L.top - 12} className="wt-small">
+						<text x={L.left} y={L.rvTop - 12} className="wt-small">
 							{t(copy.returnsAxis)}
 						</text>
 						<rect
@@ -368,20 +361,11 @@ function Scene({
 						<text
 							data-f="r-sd-20"
 							x={L.right - 12}
-							y={L.top + 4}
+							y={L.rvTop + 4}
 							textAnchor="end"
 							className="wt-small wt-halo wt-accent"
 						>
 							{t(narrow ? copy.perYear20 : copy.perDay20)}
-						</text>
-						<text
-							data-f="r-sd-10"
-							x={L.right - 12}
-							y={L.top + 4}
-							textAnchor="end"
-							className="wt-small wt-halo wt-accent"
-						>
-							{t(narrow ? copy.perYear10 : copy.perDay10)}
 						</text>
 						<text x={L.left} y={L.bottom + 18} className="wt-small">
 							{shortDate(alfaCloses[1].date, locale)}
@@ -615,6 +599,35 @@ function Scene({
 				anchor="start"
 			/>
 			{headline("r-head", copy.rvHead)}
+			<text
+				data-f="r-sd-10"
+				x={L.right - 18}
+				y={L.heroY}
+				textAnchor="end"
+				className="wt-film-num wt-film-accent"
+				style={{ fontSize: T.big * (narrow ? 0.95 : 0.75) }}
+			>
+				{points(RV10)}
+			</text>
+			<text
+				data-f="r-period-10"
+				x={L.right - 18}
+				y={L.heroY + T.small * 3}
+				textAnchor="end"
+				className="wt-small wt-accent"
+			>
+				{t(copy.heroPeriod)}
+			</text>
+			<text
+				data-f="r-annualize"
+				x={W / 2}
+				y={H * 0.9}
+				textAnchor="middle"
+				className="wt-small wt-accent"
+				style={{ fontSize: T.body }}
+			>
+				{`${percent(SD10, 2)} × √252 ≈ ${points(RV10)}`}
+			</text>
 			{/* The hero's answer, as the band closes in on the last ten sessions. */}
 			<Lines
 				name="r2-head"
@@ -629,18 +642,27 @@ function Scene({
 			{headline("z-head", copy.horizonHead, copy.horizonHeadShort)}
 			<g data-f="gap">
 				<Word
+					name="g-formula"
+					x={W / 2}
+					y={H * 0.3}
+					size={T.body}
+					className="wt-film-num wt-film-dim"
+				>
+					{`IV ${IV_POINTS}% − RV20 ${RV_POINTS}%`}
+				</Word>
+				<Word
 					name="g-num"
 					x={W / 2}
-					y={H * 0.4 + T.big * 0.36}
-					size={T.big}
+					y={H * 0.4 + T.num * 0.36}
+					size={T.num}
 					className="wt-film-num wt-film-accent"
 				>
-					{`+${GAP}`}
+					{`= +${GAP}`}
 				</Word>
 				<Word
 					name="g-word"
 					x={W / 2}
-					y={H * 0.4 + T.big * 0.36 + T.head * 1.9}
+					y={H * 0.4 + T.num * 0.36 + T.head * 1.9}
 					size={T.head}
 					className="wt-film-type wt-film-accent"
 				>
@@ -650,7 +672,7 @@ function Scene({
 					name="g-sub"
 					text={t(copy.gapSub)}
 					x={W / 2}
-					y={H * 0.4 + T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
+					y={H * 0.4 + T.num * 0.36 + T.head * 1.9 + T.body * 1.9}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -690,11 +712,10 @@ function Scene({
 }
 
 function build(context: FilmContext) {
-	const { width: W, height: H } = context;
+	const { width: W } = context;
 	const L = layout(W);
-	const { narrow } = L;
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, rise, sink, cam, home, world } = d;
+	const { tl, one, kids, show, hide, rise, sink } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const land = (target: Element, time: number) =>
 		tl.fromTo(
@@ -714,18 +735,11 @@ function build(context: FilmContext) {
 		horizon: one("chart-horizon"),
 	};
 	const zoom = one("chart-zoom");
-	const pushIn = cam(
-		narrow ? 1.8 : 2,
-		{ x: L.xF(fitted.mid), y: L.yF(prices.mid) },
-		{ x: W / 2, y: H * 0.52 },
-	);
 	const today = dayIndex(SESSION_DATE);
 
 	gsap.set([charts.rv, charts.horizon, zoom], { opacity: 0 });
-	gsap.set(zoom, { svgOrigin: `${W / 2} ${H * 0.52}` });
 	d.hidden([
 		one("f-line-mid"),
-		one("f-dot-mid"),
 		...SOURCES.flatMap((source) => [
 			one(`z-price-${source}`),
 			one(`z-drop-${source}`),
@@ -738,6 +752,8 @@ function build(context: FilmContext) {
 		one("r-band"),
 		one("r-sd-20"),
 		one("r-sd-10"),
+		one("r-period-10"),
+		one("r-annualize"),
 		one("z-rv-label"),
 		one("z-rv-caption"),
 		one("z-today"),
@@ -790,30 +806,31 @@ function build(context: FilmContext) {
 	show(one("f-mid-label"), 12.1, "below", 0.4);
 	land(marker, 12.6);
 	show(markerLabel, 12.8, "right", 0.4);
-	const guess = { iv: GUESS };
+	// GSAP rounds plain numeric properties. A 0→1 progress endpoint stays exact,
+	// so the IV, marker and price all derive from the same seekable state.
+	const fit = { progress: 0 };
 	const slide = () => {
-		const x = L.xF(guess.iv);
-		const y = L.yF(callAt(guess.iv));
+		const iv = GUESS + fit.progress * (fitted.mid - GUESS);
+		const dollars = fit.progress === 1 ? prices.mid : callAt(iv);
+		const x = L.xF(iv);
+		const y = L.yF(dollars);
 		gsap.set(marker, { attr: { cx: x, cy: y } });
 		markerLabel.setAttribute("x", String(x + 10));
 		markerLabel.setAttribute("y", String(y + 20));
-		markerLabel.textContent = `${percent(guess.iv)} → ${price(callAt(guess.iv))}`;
+		markerLabel.textContent = `${percent(iv)} → ${price(dollars)}`;
 	};
 	tl.to(
-		guess,
-		{ iv: fitted.mid, duration: 1.4, ease: "power2.inOut", onUpdate: slide },
+		fit,
+		{ progress: 1, duration: 1.4, ease: "power2.inOut", onUpdate: slide },
 		13.5,
 	);
-	land(one("f-dot-mid"), 14.9);
-	// Push in, and cut to the same curve zoomed: the bid and the ask sit cents either side.
-	tl.to([markerLabel, one("f-mid-label")], { opacity: 0, duration: 0.3 }, 15.4);
-	tl.to(world, { ...pushIn, duration: 0.8, ease: "power2.in" }, 15.5);
+	// A full second on the fitted price, then the separately laid-out detail chart.
 	tl.to(charts.fit, { opacity: 0, duration: 0.4 }, 15.9);
 	tl.fromTo(
 		zoom,
-		{ opacity: 0, scale: 0.8 },
-		{ opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" },
-		16.1,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.6, ease: "power2.out" },
+		16.3,
 	);
 	for (const [i, source] of SOURCES.entries()) {
 		tl.to(
@@ -838,7 +855,6 @@ function build(context: FilmContext) {
 	tl.addLabel("rv", 22.1);
 	d.swap([one("f-head"), one("f2-head")], one("r-head"), 22.1);
 	sink(22.1);
-	tl.set(world, home, 22.5);
 	tl.set(zoom, { opacity: 0 }, 22.5);
 	tl.set(charts.rv, { opacity: 1 }, 22.5);
 	rise(22.6);
@@ -852,11 +868,14 @@ function build(context: FilmContext) {
 				duration: 0.35,
 				ease: "power3.out",
 			},
-			23.2 + i * 0.07,
+			// Pairs replace twenty separate arrivals; each bar still takes 0.35 s.
+			23.2 + Math.floor(i / 2) * 0.1,
 		);
 	});
-	tl.to(one("r-band"), { opacity: 1, duration: 0.6 }, 24.9);
-	show(one("r-sd-20"), 25.2, "below", 0.4);
+	tl.to(one("r-band"), { opacity: 1, duration: 0.6 }, 24.3);
+	show(one("r-sd-20"), 24.5, "below", 0.4);
+	// Clear the old statistic completely before the band's geometry changes.
+	hide(one("r-sd-20"), 26.3, 0.35, 0);
 	// The last ten sessions only: the calmer half.
 	tl.to(
 		Array.from({ length: 10 }, (_, i) => one(`r-bar-${i}`)),
@@ -877,15 +896,31 @@ function build(context: FilmContext) {
 		},
 		26.7,
 	);
-	d.swap(one("r-sd-20"), one("r-sd-10"), 27.0);
-	d.lock(lockRv, 27.8, { around: one("r-sd-10"), pad: 6 });
+	tl.fromTo(
+		[one("r-sd-10"), one("r-period-10")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		27.5,
+	);
+	d.lock(lockRv, 27.8, {
+		around: [one("r-sd-10"), one("r-period-10")],
+		pad: 12,
+	});
 	tl.addLabel("hero-lock", 27.8);
 	show(one("r2-head"), 27.8);
+	// The annualizing convention is an after-beat outside the settled brackets.
+	tl.fromTo(
+		one("r-annualize"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		29.85,
+	);
 
 	// ——— horizons: two windows on one timeline ———
 	tl.addLabel("horizons", 31.4);
 	d.swap([one("r-head"), one("r2-head")], one("z-head"), 31.4);
 	hide(lockRv, 31.4);
+	hide([one("r-sd-10"), one("r-period-10"), one("r-annualize")], 31.4, 0.35, 0);
 	sink(31.4);
 	tl.set(charts.rv, { opacity: 0 }, 31.8);
 	tl.set(charts.horizon, { opacity: 1 }, 31.8);
@@ -922,12 +957,19 @@ function build(context: FilmContext) {
 	show(one("z-iv-caption"), 34.6);
 	show(one("z-earnings"), 34.9);
 	// Cut: the gap, and what it isn't, held to be read.
-	hide(one("z-head"), 36.1);
-	sink(36.1);
+	hide(one("z-head"), 36.4);
+	sink(36.4);
+	tl.fromTo(
+		one("g-formula"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55 },
+		36.5,
+	);
 	land(one("g-num"), 36.5);
 	show(one("g-word"), 36.8);
 	show(one("g-sub"), 37.0);
 	hide(kids("gap"), 40.5);
+	tl.addLabel("claim", 40.5);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
@@ -954,9 +996,9 @@ export const impliedRealizedVolatilityFilm: Film = {
 		{ id: "open", label: ["IV and RV", "IV 与 RV"] },
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "fit", label: ["IV is fitted", "IV 是拟合的"] },
-		{ id: "three", label: ["Three IVs", "三个 IV"] },
 		{ id: "rv", label: ["RV is measured", "RV 是测得的"] },
 		{ id: "horizons", label: ["Two windows", "两个窗口"] },
+		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
