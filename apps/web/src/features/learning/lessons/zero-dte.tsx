@@ -24,6 +24,7 @@ import {
 	HIGH,
 	LATEST_CALM,
 	LOW,
+	OCT18_DAYS,
 	OPEN,
 	oct18Delta,
 	sep20,
@@ -207,7 +208,7 @@ function SwingView({
 	const lines: PayoffLine[] = [
 		{
 			id: "oct18",
-			label: t(["Oct 18, 32 days", "10月18日，32 天"]),
+			label: t([`Oct 18, ${OCT18_DAYS} days`, `10月18日，${OCT18_DAYS} 天`]),
 			shortLabel: t(["Oct 18", "10月18日"]),
 			points: xs.map((spot) => [spot, oct18Delta(spot)] as const),
 			tone: "reference",
@@ -568,8 +569,8 @@ const scenes = [
 				id: "month",
 				label: ["A month out", "一个月后到期"],
 				caption: [
-					"The Oct 18 100 call, 32 days out: from ALFA $99.80 to $100.20 its delta barely moves, 0.51 to 0.53.",
-					"32 天后到期的 10月18日 100 看涨：ALFA 从 $99.80 到 $100.20，它的 Delta 几乎不动，0.51 到 0.53。",
+					`The Oct 18 100 call, ${OCT18_DAYS} days out: from ALFA $99.80 to $100.20 its delta barely moves, 0.51 to 0.53.`,
+					`${OCT18_DAYS} 天后到期的 10月18日 100 看涨：ALFA 从 $99.80 到 $100.20，它的 Delta 几乎不动，0.51 到 0.53。`,
 				],
 				state: { stage: 0, time: 15 },
 			},

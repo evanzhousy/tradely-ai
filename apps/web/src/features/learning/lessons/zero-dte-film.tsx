@@ -41,15 +41,15 @@ import {
  *   open      0–4        "0DTE"
  *   question  4–9.6      9:30, $0.36 → the 4:00 pm close, ?
  *   hours     9.6–21.0   one continuous clock/value walk; $0 at the close, time value gone
- *   swing     21.0–32.55 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
+ *   swing     21.0–33.05 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
  *                        carried into the hero; conditional hedge arithmetic after the lock
- *   oi        32.55–40.6 headline above the standing hero; chart hand-over at 33.6,
+ *   oi        33.05–41.0 headline above the standing hero; chart hand-over at 34.1,
  *                        3,400 open Thursday, 12,000 traded Friday; Monday absent, expired
- *   claim     40.6–45    "Little time. Large hedge changes."
- *   next      45–47      Next: implied and realized volatility
+ *   claim     41.0–45.4  "Little time. Large hedge changes."
+ *   next      45.4–47.4  Next: implied and realized volatility
  */
 
-const END = 47;
+const END = 47.4;
 const LATE = 15;
 const H_TOP = 0.4;
 const SWING = [98.5, 101.5] as const;
@@ -151,8 +151,8 @@ const copy = {
 		`Delta，ALFA $${LOW.toFixed(2)} → $${HIGH.toFixed(2)}，${LATE}:00`,
 	],
 	hedge: [
-		`If short ${count(HEDGE_CONTRACTS)} calls: buy about ${count(hedgeShares(LATE))} shares to hedge. Actual holdings unknown.`,
-		`若做空 ${count(HEDGE_CONTRACTS)} 张看涨：对冲需买约 ${count(hedgeShares(LATE))} 股。实际持仓未知。`,
+		`Already hedged, short ${count(HEDGE_CONTRACTS)} calls? Buy about ${count(hedgeShares(LATE))} more shares on this rise. Actual holdings unknown.`,
+		`若已做空 ${count(HEDGE_CONTRACTS)} 张看涨并对冲：这次上涨需再买约 ${count(hedgeShares(LATE))} 股。实际持仓未知。`,
 	],
 	oiHead: [
 		"Same-day flow never reaches open interest.",
@@ -846,23 +846,23 @@ function build(context: FilmContext) {
 		pad: 8,
 	});
 	tl.addLabel("hero-lock", 28.5);
-	// Brackets settle at 28.95; arithmetic and its qualification follow at 29.95.
-	tl.to(one("w-math"), { opacity: 1, duration: 0.5 }, 29.95);
-	show(one("w-hedge"), 29.95);
+	// Brackets settle at 28.95; arithmetic follows 1.5 seconds of hero quiet.
+	tl.to(one("w-math"), { opacity: 1, duration: 0.5 }, 30.45);
+	show(one("w-hedge"), 30.45);
 
 	// ——— oi: the day's flow and open interest ———
-	tl.addLabel("oi", 32.55);
+	tl.addLabel("oi", 33.05);
 	// A new headline arrives above the hero without moving through its brackets.
-	show(one("o-head"), 32.55);
-	hide([...kids("w"), lockSwing], 33.6);
-	tl.set(charts.swing, { opacity: 0 }, 33.95);
-	tl.set(charts.oi, { opacity: 1 }, 33.95);
-	rise(34.0);
+	show(one("o-head"), 33.05);
+	hide([...kids("w"), lockSwing], 34.1);
+	tl.set(charts.swing, { opacity: 0 }, 34.45);
+	tl.set(charts.oi, { opacity: 1 }, 34.45);
+	rise(34.5);
 	// Missing Monday OI is part of the panel, not a third numerical observation.
 	tl.to(
 		[one("o-absent-mon"), one("o-expired")],
 		{ opacity: 1, duration: 0.55 },
-		34.0,
+		34.5,
 	);
 	const grow = (index: number, at: number) => {
 		const bar = bars[index];
@@ -893,25 +893,26 @@ function build(context: FilmContext) {
 		);
 		tl.to(value, { opacity: 1, duration: 0.3 }, at);
 	};
-	grow(0, 34.6);
-	// Thursday settles at 35.3; Friday starts after one second of quiet.
-	grow(1, 36.3);
+	grow(0, 35.1);
+	// Thursday settles at 35.8; Friday starts after one second of quiet.
+	grow(1, 36.8);
+	// Friday settles at 37.5; keep the completed tableau for 3.5 seconds.
 	// Cut: the claim.
-	tl.addLabel("claim", 40.6);
-	hide(one("o-head"), 40.6);
-	sink(40.6);
+	tl.addLabel("claim", 41.0);
+	hide(one("o-head"), 41.0);
+	sink(41.0);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.9,
+		41.3,
 	);
-	show(one("c-sub"), 41.3);
+	show(one("c-sub"), 41.7);
 
 	// ——— next ———
-	tl.addLabel("next", 45);
-	hide(kids("claim"), 45);
-	d.close(45);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
