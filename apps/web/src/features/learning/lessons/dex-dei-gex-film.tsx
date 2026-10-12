@@ -15,6 +15,7 @@ import {
 import { textWidth } from "../walkthrough/text-measure";
 import {
 	dei,
+	deltaOf,
 	denominators,
 	type Lean,
 	magnitude,
@@ -31,16 +32,16 @@ import {
  * share-equivalents, and asks how much of it pointed one way. The tape answers: each print
  * a bar as long as its delta-weighted size, then signed by the side it traded on, mid and
  * unquoted prints dropping out, for a net of +17,532. DEI divides that net by share volume,
- * and three denominators give three percentages. Then the numerator itself: counting the
+ * and two full-day volume benchmarks give two percentages. Then the numerator itself: counting the
  * 10:50 spread as one trade halves it. Last, another site's "DEX" of −89,800 that isn't the
  * same quantity at all.
  *
  *   open      0–4        "DEX and DEI"
  *   question  4–9.6      gross 27,425; net ?
  *   tape      9.6–17.8   seven prints, delta-weighted; signed by side: net +17,532
- *   dei       17.8–24.4  +17,532 ÷ 1.2M, 1.5M, 600k: 1.46%, 1.17%, 2.92%
+ *   dei       17.8–24.4  +17,532 ÷ 1.2M, 1.5M: 1.46%, 1.17%
  *   spread    24.4–34.3  the 10:50 block as one spread: +7,500, net +8,532; cut: two
- *                        answers, locked
+ *                        answers, carrying the net into the lock
  *   source    34.3–44.9  another site's "DEX" −89,800: OI × delta, dealers assumed short;
  *                        cut: "Same label, different numerator."
  *   next      44.9–47.4  Next: the module checkpoint
@@ -48,6 +49,8 @@ import {
 
 const END = 47.4;
 const SPREAD = netted.bullish - (printwise.bullish - magnitude(prints[4]));
+// Compare full-session flow only with full-day stock-volume benchmarks.
+const filmDenominators = denominators.filter(({ id }) => id !== "noon");
 
 const leanTag: Record<Lean, Copy> = {
 	bullish: ["ask", "卖价"],
@@ -66,12 +69,12 @@ const rowLabel = (index: number, locale: Locale) => {
 function layout(width: number, locale: Locale = "en") {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
-	const left = frame.margin * (narrow ? 0.4 : 0.6);
-	const right = width * 0.965;
+	const left = Math.max(18, frame.margin * (narrow ? 0.4 : 0.6));
+	const right = Math.min(width - 12, width * 0.965);
 	// On a phone the running total sits above the rows, not beside them.
 	const top = height * (narrow ? 0.42 : 0.24);
 	const bottom = height * (narrow ? 0.95 : 0.9);
-	const labelSize = narrow ? 10 : 12;
+	const labelSize = narrow ? frame.type.small : 12;
 	const labelWidth =
 		Math.max(
 			...prints.map((_, i) => textWidth(rowLabel(i, locale), labelSize)),
@@ -121,10 +124,10 @@ const copy = {
 		"周一 10月18日 看涨的成交，用 Delta 加权。有多少偏向一边？",
 	],
 	tapeHead: [
-		"Each print, weighted by delta: |Δ| × contracts × 100.",
-		"每笔成交用 Delta 加权：|Δ| × 张数 × 100。",
+		"Weight each print by delta and contracts.",
+		"每笔按 Delta 和张数加权。",
 	],
-	tapeHeadShort: ["Each print × delta × 100.", "每笔 × Delta × 100。"],
+	tapeHeadShort: ["Delta × contracts × 100.", "Delta × 张数 × 100。"],
 	signHead: [
 		"Sign by side: ask right, bid left.",
 		"按方向赋号：卖价向右，买价向左。",
@@ -147,8 +150,8 @@ const copy = {
 	],
 	deiHeadShort: ["DEI: net ÷ share volume.", "DEI：净额 ÷ 成交量。"],
 	deiLine: [
-		"One set of trades, three percentages: state the denominator.",
-		"同一组成交，三个百分比：要说明分母。",
+		"Same flow, two full-day benchmarks: state the denominator.",
+		"同一成交流，两个全日基准：要说明分母。",
 	],
 	deiLineShort: ["State the denominator.", "要说明分母。"],
 	sourceHead: [
@@ -274,7 +277,7 @@ function Scene({
 										data-tone="neutral"
 										x={L.zero}
 										y={y - L.barHeight / 2}
-										width={0}
+										width={width}
 										height={L.barHeight}
 										rx={3}
 									/>
@@ -376,6 +379,26 @@ function Scene({
 					{t(copy.net).toUpperCase()}
 				</Word>
 				<Word
+					name="meter-gross"
+					x={L.right}
+					y={L.headY + T.head * 1.25 + T.num * 1.05}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{count(printwise.gross)}
+				</Word>
+				<Word
+					name="meter-printwise"
+					x={L.right}
+					y={L.headY + T.head * 1.25 + T.num * 1.05}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{signedCount(printwise.net)}
+				</Word>
+				<Word
 					name="meter-value"
 					x={L.right}
 					y={L.headY + T.head * 1.25 + T.num * 1.05}
@@ -383,9 +406,19 @@ function Scene({
 					anchor="end"
 					className="wt-film-num wt-film-accent"
 				>
-					0
+					{signedCount(netted.net)}
 				</Word>
 			</g>
+			<Word
+				name="weight-example"
+				x={narrow ? W / 2 : L.left}
+				y={narrow ? H * 0.34 : L.top - T.body * 1.8}
+				size={T.body}
+				anchor={narrow ? "middle" : "start"}
+				className="wt-film-num"
+			>
+				{`${deltaOf(prints[0].strike).toFixed(2)} × ${prints[0].contracts} × 100 = ${count(magnitude(prints[0]))}`}
+			</Word>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -488,7 +521,7 @@ function Scene({
 				>
 					{signedCount(NET)}
 				</Word>
-				{denominators.map((denominator, i) => (
+				{filmDenominators.map((denominator, i) => (
 					<Word
 						key={denominator.id}
 						name={`d-row-${i}`}
@@ -501,7 +534,7 @@ function Scene({
 						<tspan className="wt-film-accent">{`${dei(denominator.shares).toFixed(2)}%`}</tspan>
 					</Word>
 				))}
-				{denominators.map((denominator, i) => (
+				{filmDenominators.map((denominator, i) => (
 					<Word
 						key={`${denominator.id}-tag`}
 						name={`d-tag-${i}`}
@@ -591,8 +624,8 @@ function build(context: FilmContext) {
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const meter = one<SVGTextElement>("meter-value");
-	const shares = (value: number) => signedCount(Math.round(value));
-	const plain = (value: number) => count(Math.round(value));
+	const grossMeter = one("meter-gross");
+	const printwiseMeter = one("meter-printwise");
 	const lockTwo = one<SVGGraphicsElement>("lock-two");
 
 	d.hidden([
@@ -604,6 +637,7 @@ function build(context: FilmContext) {
 		]),
 		one("spread"),
 		one("spread-row"),
+		one("weight-example"),
 		...kids("meter"),
 		...flat("q"),
 		one("t-head"),
@@ -635,29 +669,30 @@ function build(context: FilmContext) {
 	show(one("t-head"), 9.8, "above");
 	rise(9.9);
 	tl.to(one("zero"), { opacity: 1, duration: 0.4 }, 10.2);
-	show([one("meter-tag"), meter], 10.3, "above");
-	let running = 0;
-	prints.forEach((print, i) => {
-		const at = 10.5 + i * 0.38;
-		show(one(`row-${i}`), at, "right", 0.35);
-		tl.to(
-			one(`bar-${i}`),
-			{
-				attr: { width: magnitude(print) * L.unit },
-				duration: 0.5,
-				ease: "power3.out",
-			},
-			at + 0.1,
+	show(one("weight-example"), 10.3, "above", 0.3);
+	// Work one print, then reveal the other weighted rows together. Values never
+	// describe a partly grown bar; totals appear only after construction settles.
+	prints.forEach((_, i) => {
+		const at = i === 0 ? 10.5 : 11.85;
+		tl.fromTo(
+			one(`row-${i}`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.35 },
+			at,
 		);
-		show(one(`value-${i}`), at + 0.4, "right", 0.3);
-		d.count(meter, running + magnitude(print), at + 0.1, plain, running, 0.5);
-		running += magnitude(print);
+		tl.fromTo(
+			one(`value-${i}`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.35 },
+			at,
+		);
 	});
+	show([one("meter-tag"), grossMeter], 12.2, "above", 0.3);
 	// Sign by side: mid and unquoted prints drop out.
 	d.swap(one("t-head"), one("g-head"), 13.6);
 	// The net's tag comes down from above: from below it would cross the figure.
-	hide(one("meter-tag"), 13.7);
-	show(one("meter-tag-net"), 14.05, "above");
+	hide(one("weight-example"), 13.8);
+	hide([one("meter-tag"), grossMeter], 14.8);
 	prints.forEach((_, i) => {
 		show(one(`tag-${i}`), 14.2 + i * 0.12, "right", 0.3);
 	});
@@ -668,23 +703,23 @@ function build(context: FilmContext) {
 		const width = magnitude(print) * L.unit;
 		if (sign > 0) tl.set(bar, { attr: { "data-tone": "gain" } }, signAt);
 		else if (sign < 0) {
-			tl.set(bar, { attr: { "data-tone": "loss" } }, signAt);
+			tl.set(bar, { attr: { "data-tone": "loss" } }, signAt + 0.3);
 			tl.to(
 				bar,
 				{ attr: { x: L.zero - width }, duration: 0.6, ease: "power2.inOut" },
 				signAt,
 			);
-		} else tl.to(one(`row-${i}`), { opacity: 0.25, duration: 0.5 }, signAt);
+		} else tl.to(one(`row-${i}`), { opacity: 0.45, duration: 0.5 }, signAt);
 	});
-	d.count(meter, printwise.net, signAt, shares, printwise.gross, 0.9);
+	show([one("meter-tag-net"), printwiseMeter], 15.8, "above", 0.3);
 
-	// ——— dei: one numerator, three denominators ———
+	// ——— dei: one numerator, two full-day denominators ———
 	tl.addLabel("dei", 17.8);
 	hide([one("g-head"), ...kids("meter")], 17.8);
 	sink(17.8);
 	show(one("d-head"), 18.15, "above");
 	land(one("d-net"), 18.5);
-	denominators.forEach((_, i) => {
+	filmDenominators.forEach((_, i) => {
 		show(one(`d-row-${i}`), 19.1 + i * 0.7);
 		show(one(`d-tag-${i}`), 19.3 + i * 0.7);
 	});
@@ -695,19 +730,33 @@ function build(context: FilmContext) {
 	hide(kids("dei"), 24.4);
 	rise(24.6);
 	show(one("p-head"), 24.75, "above");
-	show([one("meter-tag-net"), meter], 24.9, "above");
 	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 24.9);
-	show(one("spread"), 25.1, "right", 0.4);
-	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 26.1);
-	show(one("spread-row"), 26.3, "right");
-	d.count(meter, netted.net, 26.7, shares, printwise.net, 0.8);
-	// Cut: two answers. The hero: one convention halves the net.
-	hide([one("p-head"), ...kids("meter")], 28.3);
+	// The old printwise total is unnecessary here. Hold the highlighted legs
+	// for a full second, replace them, then reveal only the new net.
+	tl.fromTo(one("spread"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
+	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 26.3);
+	tl.fromTo(
+		one("spread-row"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		26.7,
+	);
+	show(one("meter-tag-net"), 27.0, "above", 0.3);
+	// Fade in place, fully settled and untransformed before the carry.
+	tl.fromTo(
+		meter,
+		{ opacity: 0, x: 0, y: 0 },
+		{ opacity: 1, x: 0, y: 0, duration: 0.3 },
+		27.0,
+	);
+	// Carry the constructed answer into the hero instead of reintroducing it.
+	hide([one("p-head"), one("meter-tag-net")], 28.3);
 	sink(28.3);
+	d.carry(meter, one("w-num-1"), 28.3, { duration: 0.9, arc: "x" });
 	show(one("w-tag-0"), 28.6);
 	land(one("w-num-0"), 28.8);
-	show(one("w-tag-1"), 29.1);
-	land(one("w-num-1"), 29.3);
+	// This label enters after the flight passes its lane.
+	show(one("w-tag-1"), 29.25, "above", 0.5);
 	d.lock(lockTwo, 29.9, {
 		around: [one("w-tag-0"), one("w-num-0"), one("w-tag-1"), one("w-num-1")],
 		pad: 10,
@@ -745,8 +794,8 @@ function build(context: FilmContext) {
 export const dexDeiGexFilm: Film = {
 	id: "dex-dei-gex",
 	label: [
-		"DEX and DEI, as a short film: Monday's seven Oct 18 call prints weighted by delta, 27,425 share-equivalents gross; signed by the side each traded on, a net of +17,532; that net divided by three share-volume denominators, 1.46%, 1.17% and 2.92%; the 10:50 block counted as one spread, +8,532; and another site's −89,800 'DEX', built from open interest with dealers assumed short",
-		"DEX 与 DEI 短片：周一 10月18日 看涨的七笔成交用 Delta 加权，总量 27,425 股等价；按各自成交方向赋号，净额 +17,532；这个净额除以三种股票成交量分母，1.46%、1.17% 和 2.92%；把 10:50 的大单算作一个价差，+8,532；以及另一个网站用未平仓量并假设做市商做空得出的 −89,800 “DEX”",
+		"DEX and DEI, as a short film: Monday's seven Oct 18 call prints weighted by delta, 27,425 share-equivalents gross; signed by the side each traded on, a net of +17,532; that net divided by two full-day share-volume benchmarks, 1.46% and 1.17%; the 10:50 block counted as one spread, +8,532; and another site's −89,800 'DEX', built from open interest with dealers assumed short",
+		"DEX 与 DEI 短片：周一 10月18日 看涨的七笔成交用 Delta 加权，总量 27,425 股等价；按各自成交方向赋号，净额 +17,532；这个净额除以两种全日股票成交量基准，1.46% 和 1.17%；把 10:50 的大单算作一个价差，+8,532；以及另一个网站用未平仓量并假设做市商做空得出的 −89,800 “DEX”",
 	],
 	stage: "dark",
 	shots: [
