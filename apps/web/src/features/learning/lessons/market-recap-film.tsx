@@ -16,7 +16,6 @@ import {
 	C105,
 	C110,
 	CONTRACTS_MAX,
-	caption,
 	chartMax,
 	dollars,
 	drafts,
@@ -34,16 +33,16 @@ import {
  * 540 and 505 look 2.4 to 1, and glowing brackets lock on the pair. Last, a headline that
  * claims buyers and a busiest call, rewritten to what the packet shows, with its caption.
  *
- *   open      0–4        "Recaps"
- *   question  4–8.6      a premium claim over a contracts chart?
- *   match     8.6–19     contracts: 110 leads; premium: 105 leads
- *   axis      19–29      hero: from zero, nearly equal; from 480, 2.4 to 1
- *   compose   29–36.9    the draft, read; the bounded headline; the caption
- *   claim     36.9–41.2  claims your evidence supports
- *   next      41.2–43.2  Next: audits
+ *   open      0–4         "Recaps"
+ *   question  4–8.6       a premium claim over a contracts chart?
+ *   match     8.6–20.55   build contracts, then compare premium
+ *   axis      20.55–30.7  hero: from zero, nearly equal; from 480, 2.4 to 1
+ *   compose   30.7–41.1   expose intent and scope; rewrite; caption fields
+ *   claim     41.1–45.4   claims your evidence supports
+ *   next      45.4–47.4   Next: audits
  */
 
-const END = 43.2;
+const END = 47.4;
 const ROWS = mondayPacket;
 const CUT = 480;
 
@@ -75,21 +74,44 @@ const copy = {
 		`“${premiumLeader.strike} 看涨吸引了最多权利金。”`,
 	],
 	qBig: ["Does its chart back that?", "它的图表支持这句话吗？"],
-	mHead: [
-		`The chart plots contracts: ${leader.strike} leads.`,
-		`图表画的是张数：${leader.strike} 领先。`,
+	mHead: ["Compare contracts and premium.", "比较张数与权利金。"],
+	mAnswer: [
+		`By contracts, the ${leader.strike} led.`,
+		`先前按张数，${leader.strike} 领先。`,
 	],
 	m2Head: [
-		`Plot premium, and the ${premiumLeader.strike} leads.`,
-		`改画权利金，${premiumLeader.strike} 领先。`,
+		`By premium, the ${premiumLeader.strike} led.`,
+		`改按权利金，${premiumLeader.strike} 领先。`,
 	],
-	aHead: ["The same contracts, from zero.", "同样的张数，从零开始。"],
+	aHead: ["Earlier, the axis started at zero.", "之前的轴从零开始。"],
 	a2Head: [
 		`From ${count(CUT)}, one bar looks ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}× the other.`,
 		`从 ${count(CUT)} 起，看着差 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} 倍。`,
 	],
 	cHead: ["The draft claims more than it shows.", "初稿说的比它显示的多。"],
-	c2Head: ["Rewrite it, and add a caption.", "改写它，再加上说明。"],
+	draftIntent: [
+		`“Call buyers piled into ALFA's ${leader.strike} strike,`,
+		`“看涨买家涌入 ALFA ${leader.strike} 行权价，`,
+	],
+	draftScope: ["Monday's busiest call”", "周一最活跃的看涨”"],
+	intentEvidence: ["Buyer intent unknown", "买方意图未知"],
+	scopeEvidence: [
+		`${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} observed strikes · 120 missing`,
+		`仅 ${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} 个行权价有数据 · 120 缺失`,
+	],
+	captionChart: [
+		"Chart · contracts by strike · axis 0",
+		"图表 · 按行权价的张数 · 轴从 0 起",
+	],
+	captionScope: [
+		"Scope · ALFA Oct 18 calls · Mon Sep 16",
+		"范围 · ALFA 10月18日看涨 · 9月16日周一",
+	],
+	captionSource: [
+		"Source · corrected tape · as of 16:05 · P1",
+		"来源 · 更正后成交记录 · 截至 16:05 · P1",
+	],
+	captionGap: ["Missing · 120 call: no data yet", "缺失 · 120 看涨：尚无数据"],
 	contracts: ["contracts", "张数"],
 	premium: ["premium", "权利金"],
 	noData: ["no data", "无数据"],
@@ -127,6 +149,29 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const draftSize = narrow ? T.body : T.body * 1.2;
+	const intentY = L.cardY + T.head;
+	const intentNoteY =
+		intentY +
+		lineCount(t(copy.draftIntent), room, draftSize) * draftSize * 1.35 +
+		T.small * 0.8;
+	const scopeY = intentNoteY + T.body * 1.8;
+	const scopeNoteY =
+		scopeY +
+		lineCount(t(copy.draftScope), room, draftSize) * draftSize * 1.35 +
+		T.small * 0.8;
+	const boundedY = scopeNoteY + T.body * 2.1;
+	const captionSize = narrow ? T.small : T.small * 1.15;
+	const captionFields = [
+		copy.captionChart,
+		copy.captionScope,
+		copy.captionSource,
+		copy.captionGap,
+	];
+	const captionY =
+		boundedY +
+		lineCount(`“${t(drafts.bounded)}”`, room, draftSize) * draftSize * 1.35 +
+		T.small * 1.5;
 	const h = (value: number, metric: Metric) =>
 		(value / chartMax(metric)) * (L.base - L.top);
 	const label = (value: number | null, metric: Metric) =>
@@ -176,14 +221,29 @@ function Scene({
 
 			{/* The chart: one quantity, then another, then a cut axis. */}
 			{headline("m-head", copy.mHead)}
-			{/* Each answer, a line under its headline, as the bars make it. */}
+			{/* Historical answers arrive only after their quantity has settled. */}
+			<Lines
+				name="m-answer"
+				text={t(copy.mAnswer)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(t(copy.mHead), narrow ? room : room * 0.74, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			<Lines
 				name="m2-head"
 				text={t(copy.m2Head)}
 				x={margin}
 				y={
 					L.headY +
-					lineCount(t(copy.mHead), narrow ? room : room * 0.74, T.head) *
+					(lineCount(t(copy.mHead), narrow ? room : room * 0.74, T.head) +
+						lineCount(t(copy.mAnswer), narrow ? room : room * 0.74, T.head)) *
 						T.head *
 						1.35
 				}
@@ -222,6 +282,15 @@ function Scene({
 					</text>
 				))}
 			</g>
+			<path
+				data-f="premium-leader-rule"
+				d={`M${L.barX(ROWS.indexOf(premiumLeader))} ${L.base + T.small * 2.6}h${L.barW}`}
+				style={{
+					fill: "none",
+					stroke: "var(--diagram-accent)",
+					strokeWidth: 1.5,
+				}}
+			/>
 			{(["contracts", "premium"] as const).map((metric) => (
 				<text
 					key={metric}
@@ -266,7 +335,7 @@ function Scene({
 								height={h(value, "contracts")}
 								rx={4}
 								className="wt-film-bar"
-								data-tone={row === leader ? "total" : "neutral"}
+								data-tone="neutral"
 							/>
 						)}
 						{(["contracts", "premium"] as const).map((metric) => {
@@ -295,50 +364,84 @@ function Scene({
 
 			{/* The headline and its caption. */}
 			{headline("c-head", copy.cHead)}
-			<Lines
-				name="c2-head"
-				text={t(copy.c2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.cHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
-			<Lines
-				name="draft"
-				text={`“${t(drafts.over)}”`}
-				x={margin}
-				y={L.cardY + T.head}
-				size={narrow ? T.body : T.body * 1.2}
-				maxWidth={room}
-				anchor="start"
-				className="wt-film-type wt-film-loss"
-			/>
+			{(
+				[
+					[
+						"intent",
+						copy.draftIntent,
+						intentY,
+						copy.intentEvidence,
+						intentNoteY,
+					],
+					["scope", copy.draftScope, scopeY, copy.scopeEvidence, scopeNoteY],
+				] as const
+			).map(([id, draft, y, evidence, noteY]) => (
+				<g key={id}>
+					<Lines
+						name={`draft-${id}`}
+						text={t(draft)}
+						x={margin}
+						y={y}
+						size={draftSize}
+						maxWidth={room}
+						anchor="start"
+						className="wt-film-type wt-film-loss"
+					/>
+					<path
+						data-f={`repair-${id}`}
+						d={`M${margin} ${y + 5}h${room}`}
+						style={{
+							fill: "none",
+							stroke: "var(--diagram-loss)",
+							strokeWidth: 1.5,
+						}}
+					/>
+					<Lines
+						name={`evidence-${id}`}
+						text={t(evidence)}
+						x={margin}
+						y={noteY}
+						size={T.small * 1.1}
+						maxWidth={room}
+						anchor="start"
+						className="wt-film-type wt-film-warn"
+					/>
+				</g>
+			))}
 			<Lines
 				name="bounded"
 				text={`“${t(drafts.bounded)}”`}
 				x={margin}
-				y={L.cardY + T.head + (narrow ? T.body : T.head) * 3.6}
-				size={narrow ? T.body : T.body * 1.2}
+				y={boundedY}
+				size={draftSize}
 				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-gain"
 			/>
-			<Lines
-				name="caption"
-				text={t(caption)}
-				x={margin}
-				y={L.cardY + T.head + (narrow ? T.body : T.head) * 8}
-				size={narrow ? T.small : T.small * 1.15}
-				maxWidth={room}
-				anchor="start"
-				className="wt-film-type wt-film-dim"
-			/>
+			{captionFields.map((field, i) => (
+				<Lines
+					key={field[0]}
+					name={`caption-${i}`}
+					text={t(field)}
+					x={margin}
+					y={
+						captionY +
+						captionFields
+							.slice(0, i)
+							.reduce(
+								(lines, previous) =>
+									lines + lineCount(t(previous), room, captionSize),
+								0,
+							) *
+							captionSize *
+							1.5
+					}
+					size={captionSize}
+					maxWidth={room}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				/>
+			))}
 
 			<g data-f="claim">
 				<Lines
@@ -393,14 +496,24 @@ function build(context: FilmContext) {
 			time,
 		);
 	const span = L.base - L.top;
-	const heads = [
-		"m-head",
-		"m2-head",
-		"a-head",
-		"a2-head",
-		"c-head",
-		"c2-head",
-	].map((name) => one(name));
+	const heads = ["m-head", "m2-head", "a-head", "a2-head", "c-head"].map(
+		(name) => one(name),
+	);
+	const matchAnswer = one("m-answer");
+	const draftParts = ["intent", "scope"].map((id) => one(`draft-${id}`));
+	const repairLines = ["intent", "scope"].map((id) =>
+		one<SVGPathElement>(`repair-${id}`),
+	);
+	const evidence = ["intent", "scope"].map((id) => one(`evidence-${id}`));
+	const captions = [0, 1, 2, 3].map((i) => one(`caption-${i}`));
+	// Fit each drawn underline beneath its wrapped phrase, never through the glyphs.
+	draftParts.forEach((part, i) => {
+		const box = (part as SVGGraphicsElement).getBBox();
+		repairLines[i].setAttribute(
+			"d",
+			`M${box.x} ${box.y + box.height + 4}h${box.width}`,
+		);
+	});
 	const lockBars = one<SVGGraphicsElement>("lock-bars");
 	const bars = ROWS.map((_, i) => one(`bar-${i}`));
 	const vals = (metric: Metric) =>
@@ -445,13 +558,17 @@ function build(context: FilmContext) {
 		...kids("frame"),
 		one("unit-contracts"),
 		one("unit-premium"),
+		one("premium-leader-rule"),
 		one("unit-cut"),
 		...bars,
 		...vals("contracts"),
 		...vals("premium"),
-		one("draft"),
+		matchAnswer,
+		...draftParts,
+		...repairLines,
+		...evidence,
 		one("bounded"),
-		one("caption"),
+		...captions,
 		lockBars,
 		...kids("claim"),
 	]);
@@ -483,16 +600,18 @@ function build(context: FilmContext) {
 			9.6 + i * 0.12,
 		);
 	});
-	show(vals("contracts"), 10.4);
-	d.flip(one("unit-contracts"), one("unit-premium"), 13.2);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 13.5);
-	hide(vals("contracts"), 13.2, 0.25);
-	barsTo("premium", 0, chartMax("premium"), 13.4, vals("premium"));
+	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 10.7);
+	show(vals("contracts"), 10.7);
+	show(matchAnswer, 12.2);
+	d.flip(one("unit-contracts"), one("unit-premium"), 13.5);
+	tl.set(one("unit-contracts"), { opacity: 0 }, 13.8);
+	hide(vals("contracts"), 13.5, 0.3);
+	barsTo("premium", 0, chartMax("premium"), 13.8, vals("premium"));
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "neutral" } }, 13.8);
 	tl.set(
 		bars[leadIndex(premiumLeader)],
 		{ attr: { "data-tone": "total" } },
-		13.8,
+		14.6,
 	);
 	ROWS.forEach((_, i) => {
 		tl.set(
@@ -500,48 +619,51 @@ function build(context: FilmContext) {
 			{
 				attr: { y: Number(one(`val-contracts-${i}`).getAttribute("y")) },
 			},
-			13.4,
+			13.8,
 		);
 	});
-	show(vals("premium"), 14.2);
-	show(heads[1], 14.6);
+	show(vals("premium"), 14.65);
+	show(heads[1], 16.15);
+	// An after-beat draws attention to the premium leader during the reading hold.
+	d.trace(one<SVGPathElement>("premium-leader-rule"), 17.65, { duration: 0.5 });
 
 	// ——— axis: the hero. The same contracts from 0, then from 480. ———
-	tl.addLabel("axis", 19);
-	d.swap([heads[0], heads[1]], heads[2], 19.0);
-	hide(vals("premium"), 19.0, 0.25);
-	d.flip(one("unit-premium"), one("unit-contracts"), 19.2);
-	tl.set(one("unit-premium"), { opacity: 0 }, 19.5);
-	barsTo("contracts", 0, CONTRACTS_MAX, 19.3, vals("contracts"));
+	tl.addLabel("axis", 20.55);
+	d.swap([heads[0], matchAnswer, heads[1]], heads[2], 20.55);
+	hide(vals("premium"), 20.55, 0.3);
+	hide(one("premium-leader-rule"), 20.55);
+	d.flip(one("unit-premium"), one("unit-contracts"), 20.55);
+	tl.set(one("unit-premium"), { opacity: 0 }, 20.85);
+	barsTo("contracts", 0, CONTRACTS_MAX, 20.85, vals("contracts"));
 	tl.set(
 		bars[leadIndex(premiumLeader)],
 		{ attr: { "data-tone": "neutral" } },
-		19.6,
+		20.85,
 	);
-	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 19.6);
-	show(vals("contracts"), 20.2);
-	d.flip(one("unit-contracts"), one("unit-cut"), 23.3);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 23.6);
+	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 21.65);
+	show(vals("contracts"), 21.75);
+	d.flip(one("unit-contracts"), one("unit-cut"), 24.85);
+	tl.set(one("unit-contracts"), { opacity: 0 }, 25.15);
 	barsTo(
 		"contracts",
 		CUT,
 		CUT + (CONTRACTS_MAX - CUT) * 0.55,
-		23.5,
+		25.15,
 		vals("contracts"),
 	);
 	// Round the two bars the cut axis pulls apart, with their figures.
 	const pair = [leadIndex(leader), leadIndex(premiumLeader)];
-	d.lock(lockBars, 25.5, {
+	d.lock(lockBars, 27.2, {
 		around: pair.flatMap((i) => [bars[i], vals("contracts")[i]]),
 		// Close in at the foot, where the strikes are labelled.
 		pad: 3,
 	});
-	tl.addLabel("hero-lock", 25.5);
-	show(heads[3], 25.5);
+	tl.addLabel("hero-lock", 27.2);
+	show(heads[3], 27.2);
 
 	// ——— compose: the headline and caption ———
-	tl.addLabel("compose", 29.0);
-	d.swap([heads[2], heads[3]], heads[4], 29.0);
+	tl.addLabel("compose", 30.7);
+	d.swap([heads[2], heads[3]], heads[4], 30.7);
 	hide(
 		[
 			...kids("frame"),
@@ -550,28 +672,46 @@ function build(context: FilmContext) {
 			...vals("contracts"),
 			lockBars,
 		],
-		29.0,
+		30.7,
 	);
-	// The draft is read before the bounded headline replaces its claims.
-	show(one("draft"), 29.4);
-	tl.to(one("draft"), { opacity: 0.35, duration: 0.4 }, 33.1);
-	show(one("bounded"), 33.25);
-	show(one("caption"), 33.4);
-	show(heads[5], 33.4);
+	// Separate the unsupported intent and unbounded comparison before rewriting.
+	show(draftParts, 31.0);
+	d.trace(repairLines[0], 32.5, { duration: 0.3 });
+	show(evidence[0], 32.8);
+	// Intent evidence settles at 33.3; scope repair waits one quiet second.
+	d.trace(repairLines[1], 34.3, { duration: 0.3 });
+	show(evidence[1], 34.6);
+	// Scope evidence settles at 35.1; the replacement waits one quiet second.
+	// On a phone, scope is a sentence: omit its early dim and hold it until the claim.
+	tl.to(
+		[...draftParts, ...repairLines, ...(L.narrow ? [evidence[0]] : evidence)],
+		{ opacity: 0.35, duration: 0.4 },
+		36.1,
+	);
+	show(one("bounded"), 36.1);
+	// The bounded result settles at 36.6; caption fields wait one quiet second.
+	show(captions, 37.6);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.9);
+	tl.addLabel("claim", 41.1);
 	hide(
-		[heads[4], heads[5], one("draft"), one("bounded"), one("caption")],
-		36.9,
+		[
+			heads[4],
+			...draftParts,
+			...repairLines,
+			...evidence,
+			one("bounded"),
+			...captions,
+		],
+		41.1,
 	);
-	word(one("z-big"), 37.2);
-	show(one("z-sub"), 37.6);
+	word(one("z-big"), 41.4);
+	show(one("z-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 41.2);
-	hide(kids("claim"), 41.2);
-	d.close(41.2);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
