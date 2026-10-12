@@ -480,17 +480,55 @@ const hits = await page.evaluate((end) => {
 				if (e.tagName === "text") return Boolean(e.textContent.trim());
 				const cls = e.getAttribute("class") || "";
 				return !(
-					/wt-film-bg|wt-film-grid/.test(cls) ||
+					/wt-film-bg|wt-film-grid|\bwt-grid\b/.test(cls) ||
 					e.getAttribute("data-f") === "drift" ||
 					(e.getAttribute("fill") || "").startsWith("url(#vig")
 				);
 			});
+			// Only the drawn part of a line counts: a line being drawn by its dash offset is all
+			// there as geometry, but the stage shows only its first (length − offset).
+			const drawn = (area, m) => {
+				const cs = getComputedStyle(m);
+				const dash = cs.strokeDasharray.split(/[\s,]+/).map(Number.parseFloat);
+				const offset = Number.parseFloat(cs.strokeDashoffset) || 0;
+				if (
+					!m.getTotalLength ||
+					dash.length !== 2 ||
+					dash[0] !== dash[1] ||
+					offset <= 0
+				)
+					return strikes(area, m);
+				const ctm = m.getScreenCTM();
+				const len = Math.max(0, m.getTotalLength() - offset);
+				let n = 0;
+				for (let at = 0; at <= len; at += Math.max(2, len / 300)) {
+					const q = m.getPointAtLength(at);
+					const x = ctm.a * q.x + ctm.c * q.y + ctm.e;
+					const y = ctm.b * q.x + ctm.d * q.y + ctm.f;
+					for (const b of area)
+						if (x > b.l && x < b.r && y > b.t && y < b.b) n++;
+					if (n >= 2) return true;
+				}
+				return false;
+			};
 			const onFigure = (e) => {
 				if (Math.max(0, ...figure.map(alpha)) <= 0.25) return false;
 				const glyphs = figure.flatMap(boxes);
-				return e.tagName === "text"
-					? meet(boxes(e), glyphs)
-					: strikes(glyphs, e);
+				if (e.tagName === "text") return meet(boxes(e), glyphs);
+				// A card the figure sits on (its whole figure inside it) is under it, not over it.
+				const m = rect(e);
+				if (
+					e.tagName === "rect" &&
+					glyphs.every(
+						(g) =>
+							g.l >= m.l - 1 &&
+							g.r <= m.r + 1 &&
+							g.t >= m.t - 1 &&
+							g.b <= m.b + 1,
+					)
+				)
+					return false;
+				return drawn(glyphs, e);
 			};
 			const across = (e) => {
 				if (alpha(glow) <= 0.25 || e.tagName === "text") return false;
@@ -499,7 +537,7 @@ const hits = await page.evaluate((end) => {
 				const m = rect(e);
 				const through =
 					(m.l < box.l && m.r > box.r) || (m.t < box.t && m.b > box.b);
-				return through && strikes([box], e);
+				return through && drawn([box], e);
 			};
 			const over = (e) => onFigure(e) || across(e);
 			const there = new Set(others.filter((e) => alpha(e) > 0.15 && over(e)));
