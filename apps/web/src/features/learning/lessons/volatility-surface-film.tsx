@@ -49,7 +49,7 @@ import {
  *   question   4–9.6      "ALFA's IV: 35%", struck out: which strike, which expiry?
  *   grid       9.6–19.8   the grid; a row, the skew; a column, the term structure
  *   wings      19.8–33    the Oct 18 smile, ATM 35%, the 25Δ put and call, not the same
- *                         distance; hero: cut to +2.8 or −2.8, locked
+ *                         distance; hero: carry the IVs into opposite subtractions, locked
  *   estimates  33–40.4    no quote in three cells; interpolate between quotes, never past
  *   claim      40.4–44.8  "A surface, not a number."
  *   next       44.8–46.8  Next: IV rank and IV percentile
@@ -63,6 +63,8 @@ const SMILE_Y = [31, 39] as const;
 const smileIv = (strike: number) => modelVolatility("oct18", strike) * 100;
 const OCT18 = EXPIRIES.indexOf("oct18");
 const ATM = STRIKES.indexOf(100);
+const DEC20 = EXPIRIES.indexOf("dec20");
+const INTERPOLATION_COLS = [STRIKES.indexOf(100), STRIKES.indexOf(110)];
 /** The first expiry after earnings: the line between rows sits just above it. */
 const AFTER_EARNINGS = EXPIRIES.findIndex(
 	(expiry) => expiries[expiry].date > ALFA_EARNINGS_DATE,
@@ -124,10 +126,10 @@ const copy = {
 	qBig: ["ALFA's IV: 35%", "ALFA 的 IV：35%"],
 	qLine: ["Which strike? Which expiry?", "哪个行权价？哪个到期日？"],
 	gridHead: [
-		"One IV for each strike and expiry.",
-		"每个行权价、每个到期日各一个 IV。",
+		"Modeled IV for each strike and expiry.",
+		"模型 IV：每个行权价与到期日。",
 	],
-	gridHeadShort: ["One IV per strike and expiry.", "每格一个 IV。"],
+	gridHeadShort: ["Modeled IV per strike and expiry.", "每格一个模型 IV。"],
 	rowHead: ["A row across strikes is the skew.", "横向（各行权价）是偏斜。"],
 	colHead: [
 		"Down a column: the term structure.",
@@ -165,7 +167,8 @@ const copy = {
 		"同样的两翼，符号相反。要说明你指的是哪一个。",
 	],
 	missingHead: ["Three cells have no usable quote.", "有三格没有可用报价。"],
-	missingHeadShort: ["Three cells have no quote.", "三格没有报价。"],
+	missingHeadShort: ["Three cells lack usable quotes.", "三格没有可用报价。"],
+	volPoints: ["volatility points", "波动率点"],
 	interpolateHead: [
 		"Interpolate between quotes; never past them.",
 		"报价之间可插值；超出范围不行。",
@@ -212,6 +215,9 @@ function Scene({
 	const heat = (iv: number) =>
 		0.06 + ((iv - IV_LOW) / (IV_HIGH - IV_LOW)) * 0.42;
 	const qWidth = Math.min(T.big * 0.85, room / (t(copy.qBig).length * 0.62));
+	const operandSize = T.body * 1.05;
+	const signX = (i: number) => W * (narrow ? 0.5 : L.pair[i]);
+	const signY = (i: number) => H * (narrow ? 0.25 + i * 0.27 : 0.32);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -329,6 +335,22 @@ function Scene({
 								{`≈${INTERPOLATED}%`}
 							</text>
 						</g>
+						<path
+							data-f="g-between"
+							d={`M${L.cellX(ATM) + L.cellWidth / 2} ${L.bottom + 3}v5H${L.cellX(STRIKES.indexOf(110)) + L.cellWidth / 2}v-5`}
+							className="wt-bracket"
+						/>
+						<Word
+							name="g-calculation"
+							x={
+								narrow ? W / 2 : L.cellX(STRIKES.indexOf(105)) + L.cellWidth / 2
+							}
+							y={L.bottom + 8 + T.body * 1.5}
+							size={T.body}
+							className="wt-film-num wt-film-accent"
+						>
+							{`(${ivPoints("dec20", 100)}% + ${ivPoints("dec20", 110)}%) / 2 ≈ ${INTERPOLATED}%`}
+						</Word>
 						<rect
 							data-f="g-row-frame"
 							x={L.cellsLeft}
@@ -382,16 +404,29 @@ function Scene({
 								</text>
 							</g>
 						))}
-						{[90, 100, 110].map((tick) => (
-							<text
-								key={tick}
-								x={L.xS(tick)}
-								y={L.smileBottom + 18}
-								textAnchor="middle"
-								className="wt-small"
-							>
-								{`$${tick}`}
-							</text>
+						{(narrow ? [PUT_WING, 100, CALL_WING] : [90, 100, 110]).map(
+							(tick) => (
+								<text
+									key={tick}
+									x={L.xS(tick)}
+									y={L.smileBottom + 18}
+									textAnchor="middle"
+									className="wt-small"
+								>
+									{`$${Number.isInteger(tick) ? tick : tick.toFixed(2)}`}
+								</text>
+							),
+						)}
+						{[
+							["put", PUT_WING, 100, 28],
+							["call", 100, CALL_WING, 43],
+						].map(([name, from, to, offset]) => (
+							<path
+								key={name}
+								data-f={`w-distance-${name}`}
+								d={`M${L.xS(Number(from))} ${L.smileBottom + Number(offset)}v5H${L.xS(Number(to))}v-5`}
+								className="wt-bracket"
+							/>
 						))}
 						<text x={L.smileLeft} y={L.smileTop - 12} className="wt-small">
 							{t(copy.smileAxis)}
@@ -445,9 +480,13 @@ function Scene({
 									x={L.xS(strike) + (side === "below-left" ? -10 : 10)}
 									y={L.yS(iv) + (side.startsWith("below") ? 20 : -12)}
 									textAnchor={side === "below-left" ? "end" : "start"}
-									className={`wt-halo wt-marker-label ${name === "atm" ? "wt-small" : "wt-accent"}`}
+									className={`wt-halo wt-marker-label wt-film-num ${name === "atm" ? "wt-small" : "wt-accent"}`}
 								>
-									{t(narrow ? short : label)}
+									{name === "atm"
+										? t(label)
+										: t(narrow ? short : label)
+												.slice(0, -`${iv}%`.length)
+												.trimEnd()}
 								</text>
 							</g>
 						))}
@@ -517,6 +556,19 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
+			{(["put", "call"] as const).map((name) => (
+				<Word
+					key={name}
+					name={`w-carry-${name}`}
+					x={0}
+					y={0}
+					size={11}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{`${name === "put" ? PUT_IV : CALL_IV}%`}
+				</Word>
+			))}
 			<Brackets name="lock-signs" glow />
 			<g data-f="s">
 				{(
@@ -528,21 +580,53 @@ function Scene({
 					<g key={tag[0]}>
 						<Word
 							name={`s-tag-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.32}
+							x={signX(i)}
+							y={signY(i)}
 							size={T.small}
 							className="wt-film-tag"
 						>
 							{t(tag).toUpperCase()}
 						</Word>
+						{[i === 0 ? PUT_IV : CALL_IV, i === 0 ? CALL_IV : PUT_IV].map(
+							(iv, side) => (
+								<Word
+									key={side}
+									name={`s-iv-${i}-${side}`}
+									x={signX(i) + (side === 0 ? -1 : 1) * operandSize * 2.4}
+									y={signY(i) + T.body * 2.2}
+									size={operandSize}
+									className="wt-film-num wt-film-accent"
+								>
+									{`${iv}%`}
+								</Word>
+							),
+						)}
+						<Word
+							name={`s-minus-${i}`}
+							x={signX(i)}
+							y={signY(i) + T.body * 2.2}
+							size={operandSize}
+							className="wt-film-num"
+						>
+							−
+						</Word>
 						<Word
 							name={`s-num-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.32 + T.big * 0.95}
+							x={signX(i)}
+							y={signY(i) + T.body * 2.2 + T.big * 0.95}
 							size={T.big * 0.85}
-							className={`wt-film-num ${i === 0 ? "wt-film-accent" : ""}`}
+							className="wt-film-num wt-film-accent"
 						>
-							{num}
+							{`= ${num}`}
+						</Word>
+						<Word
+							name={`s-unit-${i}`}
+							x={signX(i)}
+							y={signY(i) + T.body * 3.7 + T.big * 0.95}
+							size={T.small}
+							className="wt-film-type wt-film-dim"
+						>
+							{t(copy.volPoints)}
 						</Word>
 					</g>
 				))}
@@ -550,7 +634,7 @@ function Scene({
 					name="s-line"
 					text={t(copy.signsLine)}
 					x={W / 2}
-					y={H * 0.76}
+					y={H * (narrow ? 0.86 : 0.76)}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -627,7 +711,27 @@ function build(context: FilmContext) {
 	);
 	const charts = { grid: one("chart-grid"), smile: one("chart-smile") };
 	const missing = cells.filter((cell) => isMissing(cell.row, cell.col));
-	const edges = missing.filter((cell) => EXPIRIES[cell.row] === "sep20");
+	// The IVs are separate, visible wing-label marks from their first entrance.
+	// Keep their numeric glyphs outside depth so sinking the chart needs no proxy swap.
+	const carries = (["put", "call"] as const).map((name) => {
+		const label = one<SVGTextElement>(`w-label-${name}`);
+		const source = one<SVGTextElement>(`w-carry-${name}`);
+		source.style.fontSize = getComputedStyle(label).fontSize;
+		const x = Number(label.getAttribute("x"));
+		const gap = source.getSubStringLength(0, 1);
+		if (label.getAttribute("text-anchor") === "end") {
+			const numericX = x - source.getComputedTextLength();
+			source.setAttribute("x", String(numericX));
+			label.setAttribute("x", String(numericX - gap));
+		} else {
+			source.setAttribute("x", String(x + label.getComputedTextLength() + gap));
+		}
+		source.setAttribute("y", label.getAttribute("y") ?? "0");
+		return { source };
+	});
+	const signMarks = kids("s").flatMap((el) =>
+		el.tagName === "g" && !el.hasAttribute("data-f") ? [...el.children] : [el],
+	);
 	const heads = [
 		"g-head",
 		"r-head",
@@ -649,9 +753,14 @@ function build(context: FilmContext) {
 		...EXPIRIES.map((_, row) => one(`g-row-${row}`)),
 		...missing.map((cell) => one(`g-missing-${cell.row}-${cell.col}`)),
 		one("g-estimate"),
+		one("g-between"),
+		one("g-calculation"),
+		...carries.map(({ source }) => source),
 		one("g-row-frame"),
 		one("g-col-frame"),
 		one("g-earnings"),
+		one("w-distance-put"),
+		one("w-distance-call"),
 		...["atm", "put", "call"].flatMap((name) => [
 			one(`w-drop-${name}`),
 			one(`w-dot-${name}`),
@@ -660,9 +769,7 @@ function build(context: FilmContext) {
 		...kids("q"),
 		...heads,
 		lockSigns,
-		...kids("s").flatMap((el) =>
-			el.tagName === "g" ? [...el.children] : [el],
-		),
+		...signMarks,
 		...kids("claim"),
 	]);
 
@@ -703,8 +810,8 @@ function build(context: FilmContext) {
 	for (const cell of cells)
 		tl.fromTo(
 			cell.el,
-			{ opacity: 0, scale: 0.6 },
-			{ opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" },
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.35, ease: "power3.out" },
 			10.8 + (cell.row + cell.col) * 0.07,
 		);
 	// A row: the skew.
@@ -758,17 +865,55 @@ function build(context: FilmContext) {
 			name === "put" ? "below" : "above",
 			0.4,
 		);
+		if (name !== "atm")
+			show(
+				one(`w-carry-${name}`),
+				at + 0.2,
+				name === "put" ? "below" : "above",
+				0.4,
+			);
 	}
-	show(one("d-head"), 23.8);
-	// Cut: the signs the same wings can carry, locked.
-	hide([one("w-head"), one("d-head")], 27.4);
+	show(one("d-head"), 23.9);
+	// Spend the wing hold drawing the two unequal, strike-aligned distances.
+	d.trace(one<SVGPathElement>("w-distance-put"), 25.0, { duration: 0.45 });
+	d.trace(one<SVGPathElement>("w-distance-call"), 25.55, { duration: 0.45 });
+	// The numeric glyphs stay on stage as the smile sinks, then become the operands.
+	hide(one("w-head"), 27.4);
+	// The later distance entry keeps its original 3.6-second hold.
+	hide(one("d-head"), 27.5);
+	// Fade the nonnumeric label text in place, clear of the retained IV glyphs.
+	hide([one("w-label-put"), one("w-label-call")], 27.4, 0.3, 0);
 	sink(27.4);
 	show(one("s-tag-0"), 27.8);
-	land(one("s-num-0"), 28.0);
+	// Wait until both IVs land, then fade the operator in its settled position.
+	tl.fromTo(
+		one("s-minus-0"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		28.1,
+	);
+	for (const [side, { source }] of carries.entries())
+		d.carry(source, one<SVGTextElement>(`s-iv-0-${side}`), 27.8, {
+			duration: 0.3,
+			arc: "y",
+		});
+	// RR uses the same settled values in reverse order; neither answer is counted.
 	show(one("s-tag-1"), 28.6);
-	land(one("s-num-1"), 28.8);
+	tl.fromTo(
+		[one("s-iv-1-0"), one("s-minus-1"), one("s-iv-1-1")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		28.5,
+	);
+	for (const [i, at] of [28.1, 28.8].entries())
+		tl.fromTo(
+			[one(`s-num-${i}`), one(`s-unit-${i}`)],
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.55 },
+			at,
+		);
 	d.lock(lockSigns, 29.5, {
-		around: [one("s-tag-0"), one("s-num-0"), one("s-tag-1"), one("s-num-1")],
+		around: signMarks.filter((el) => el !== one("s-line")),
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 29.5);
@@ -776,15 +921,8 @@ function build(context: FilmContext) {
 
 	// ——— estimates: what the quotes don't cover ———
 	tl.addLabel("estimates", 33);
-	hide(
-		[
-			...kids("s").flatMap((el) =>
-				el.tagName === "g" ? [...el.children] : [el],
-			),
-			lockSigns,
-		],
-		33,
-	);
+	// Preserve the first result's five-second display after its 0.1-second later entry.
+	hide([...signMarks, lockSigns], 33.1);
 	tl.set(charts.smile, { opacity: 0 }, 33.3);
 	tl.set(charts.grid, { opacity: 1 }, 33.3);
 	tl.set([one("g-col-frame"), one("g-earnings")], { opacity: 0 }, 33.3);
@@ -795,31 +933,28 @@ function build(context: FilmContext) {
 	);
 	show(one("m-head"), 33.35);
 	rise(33.5);
-	for (const [i, cell] of missing.entries()) {
-		tl.to(
-			one(`g-value-${cell.row}-${cell.col}`),
-			{ opacity: 0, duration: 0.3 },
-			34.4 + i * 0.2,
-		);
-		tl.to(
-			one(`g-missing-${cell.row}-${cell.col}`),
-			{ opacity: 1, duration: 0.4 },
-			34.4 + i * 0.2,
-		);
+	// Establish the unsupported cells while depth is hidden, before its reveal.
+	for (const cell of missing) {
+		tl.set(one(`g-value-${cell.row}-${cell.col}`), { opacity: 0 }, 33.3);
+		tl.set(one(`g-missing-${cell.row}-${cell.col}`), { opacity: 1 }, 33.3);
 	}
 	tl.to(
 		cells
-			.filter((cell) => !isMissing(cell.row, cell.col))
+			.filter(
+				(cell) =>
+					!isMissing(cell.row, cell.col) &&
+					!(cell.row === DEC20 && INTERPOLATION_COLS.includes(cell.col)),
+			)
 			.map((cell) => cell.el),
 		{ opacity: 0.35, duration: 0.4 },
 		36,
 	);
-	land(one("g-estimate"), 36.4);
+	d.trace(one<SVGPathElement>("g-between"), 36.4, { duration: 0.4 });
 	tl.fromTo(
-		edges.map((cell) => one(`g-missing-${cell.row}-${cell.col}`)),
-		{ scale: 1, transformOrigin: "50% 50%" },
-		{ scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: "power2.inOut" },
-		36.8,
+		[one("g-estimate"), one("g-calculation")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55, ease: "power3.out" },
+		37.3,
 	);
 	show(one("i-head"), 36.8);
 	// Cut: the claim.
@@ -843,8 +978,8 @@ function build(context: FilmContext) {
 export const volatilitySurfaceFilm: Film = {
 	id: "volatility-surface",
 	label: [
-		"The volatility surface, as a short film: ALFA's implied volatility as a grid of strikes and expiries, a row read as the skew and a column as the term structure peaking around earnings; the Oct 18 smile with its 25Δ wings picked by delta and the two signs they can carry; and the cells with no quote, one interpolated and two left blank",
-		"波动率曲面短片：ALFA 的隐含波动率是一张按行权价与到期日排列的网格，横向一行是偏斜，纵向一列是在财报附近达到峰值的期限结构；10月18日 的微笑曲线与按 Delta 选取的 25Δ 两翼，以及它们可能带的两种符号；还有没有报价的格子，一个插值，两个留空",
+		"The volatility surface, as a short film: ALFA's implied volatility as a grid of strikes and expiries, a row read as the skew and a column as the term structure peaking around earnings; the Oct 18 smile with its 25Δ wings picked by delta and the two signs they can carry; and the cells with no usable quote, one interpolated and two left blank",
+		"波动率曲面短片：ALFA 的隐含波动率是一张按行权价与到期日排列的网格，横向一行是偏斜，纵向一列是在财报附近达到峰值的期限结构；10月18日 的微笑曲线与按 Delta 选取的 25Δ 两翼，以及它们可能带的两种符号；还有没有可用报价的格子，一个插值，两个留空",
 	],
 	stage: "dark",
 	shots: [
