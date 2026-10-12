@@ -36,24 +36,41 @@ import {
  * print at $4.15: at the bid, the ask, or between? A ruler of five places answers, print by
  * print, each against its own quote: ASK at 10:05, MID at 11:42, BID at 14:18, and AASK for
  * a test price outside. The hero keeps the 11:42 print and changes the quote under it: one
- * 90 seconds old says AASK, one 2 seconds late says BID, none says nothing; the quote in
- * force says MID, and glowing brackets lock on it. Last, how far the 14:18 print at the bid
- * goes: a location and a likely seller, but both sides were closing.
+ * 90 seconds old would say AASK, one after the print would say BID, none says nothing;
+ * the quote in force says MID, and glowing brackets lock on it. Last, how far the 14:18
+ * print at the bid goes: a location and a likely seller, but both sides were closing.
  *
  *   open      0–4        "Execution side"
  *   question  4–8.8      $4.10 × $4.20, 6 at $4.15: bid, ask or between?
- *   place     8.8–19.2   five places; 10:05 ASK; 11:42 MID; 14:18 BID; $4.25 AASK
- *   quote     19.2–31.3  hero: 90 s old AASK; 2 s late BID; none; in force MID
- *   claims    31.3–38.9  calculated, inferred, unknown, unknown; both were closing
- *   claim     38.9–43.3  a side is a place, not a reason
- *   next      43.3–45.8  Next: sentiment labels
+ *   place     8.8–20.35  five places; 10:05 ASK; 11:42 MID; 14:18 BID; $4.25 AASK
+ *   quote     20.35–32.75 hero: old AASK; later BID; none; in force MID
+ *   claims    32.75–40.35 calculated, inferred, unknown, unknown; both were closing
+ *   claim     40.35–44.75 a side is a place, not a reason
+ *   next      44.75–47.25 Next: sentiment labels
  */
 
-const END = 45.8;
+const END = 47.25;
 /** The film's ruler runs a little wider than the lesson's, so the outer places have room. */
 const LO = 390;
 const HI = 435;
 const ZONES = ["BBID", "BID", "MID", "ASK", "AASK"] as const;
+/** The legend describes regions, independent of where a particular quote sits. */
+const REGION_MEANINGS = {
+	BBID: [
+		["below", "bid"],
+		["低于", "买价"],
+	],
+	BID: [["at bid"], ["等于买价"]],
+	MID: [
+		["anywhere", "between"],
+		["价差之内", "任意位置"],
+	],
+	ASK: [["at ask"], ["等于卖价"]],
+	AASK: [
+		["above", "ask"],
+		["高于", "卖价"],
+	],
+} as const;
 const PRINT = tradeById("t2");
 const LAST = tradeById("t3");
 const STALE = references.stale;
@@ -94,7 +111,7 @@ function layout(width: number) {
 		sideY: rulerY - H * (narrow ? 0.13 : 0.15),
 		tapeX: margin + (room - tapeW) / 2,
 		tapeW,
-		tapeY: rulerY + H * (narrow ? 0.2 : 0.19),
+		tapeY: rulerY + H * (narrow ? 0.26 : 0.24),
 		rowStep: H * 0.055,
 		cardH: H * (narrow ? 0.2 : 0.21),
 		claimY: (i: number) => H * 0.27 + i * H * (narrow ? 0.1 : 0.115),
@@ -126,20 +143,20 @@ const copy = {
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
 	pHead: ["Five places against the quote.", "对照报价，共有五个位置。"],
-	eHead: ["Each print, against its own quote.", "每笔成交，对照自己的报价。"],
 	rHead: [
 		`Same ${PRINT.time} print, other quotes.`,
 		`同一笔 ${PRINT.time} 成交，换个报价。`,
 	],
 	r2Head: ["Only the quote in force counts.", "只有成交时有效的报价才算数。"],
 	side: ["side", "位置"],
+	conditional: ["would say", "仅作对照"],
 	test: [`test ${usd(OUTSIDE)}`, `测试 ${usd(OUTSIDE)}`],
 	tape: ["time and sales", "逐笔成交"],
 	reference: ["reference quote", "参考报价"],
 	usable: ["in force at the print: usable", "成交时有效：可用"],
-	stale: ["90 seconds before: withheld", "早了 90 秒：不作判断"],
-	later: ["2 seconds after: withheld", "晚了 2 秒：不作判断"],
-	missing: ["no quote on record: unknown", "没有报价记录：未知"],
+	stale: ["90s before: withheld", "早了 90 秒：不作判断"],
+	later: ["after print: withheld", "成交后：不作判断"],
+	missing: ["no quote: unknown", "无报价：未知"],
 	none: ["none", "无"],
 	cHead: [
 		`${LAST.time} at the bid: what follows?`,
@@ -298,9 +315,8 @@ function Scene({
 				/>
 			</g>
 
-			{/* The ruler: five places, moving with the quote. */}
+			{/* The ruler follows the quote; the legend defines its five regions. */}
 			{headline("p-head", copy.pHead)}
-			{headline("e-head", copy.eHead)}
 			{headline("r-head", copy.rHead)}
 			{/* The hero's answer, a line under the question, as the quote in force returns. */}
 			<Lines
@@ -348,19 +364,42 @@ function Scene({
 			/>
 			{tick("bid-m", "gain")}
 			{tick("ask-m", "loss")}
+			{/* An open-ended span ties MID to the whole interior, not a midpoint tick. */}
+			<path
+				data-f="mid-range"
+				d="M0 0H0"
+				fill="none"
+				stroke="var(--diagram-model)"
+				strokeWidth={2}
+			/>
 			<g data-f="zones">
-				{ZONES.map((zone) => (
-					<text
+				{ZONES.map((zone, i) => (
+					<g
 						key={zone}
 						data-f={`z-${zone}`}
-						x={0}
-						y={L.rulerY + T.small * 5}
-						textAnchor="middle"
 						className="wt-film-num wt-film-dim"
-						style={{ fontSize: T.small * 1.1 }}
 					>
-						{zone}
-					</text>
+						<text
+							x={margin + ((i + 0.5) * room) / ZONES.length}
+							y={L.rulerY + T.small * 5.2}
+							textAnchor="middle"
+							style={{ fontSize: T.small * 1.1, fill: "inherit" }}
+						>
+							{zone}
+						</text>
+						{REGION_MEANINGS[zone][locale === "zh" ? 1 : 0].map((line, j) => (
+							<text
+								key={line}
+								x={margin + ((i + 0.5) * room) / ZONES.length}
+								y={L.rulerY + T.small * (6.6 + j * 1.25)}
+								textAnchor="middle"
+								className="wt-film-type"
+								style={{ fontSize: T.small, fill: "inherit" }}
+							>
+								{line}
+							</text>
+						))}
+					</g>
 				))}
 			</g>
 			<circle
@@ -395,6 +434,15 @@ function Scene({
 			>
 				{t(copy.side).toUpperCase()}
 			</text>
+			<Word
+				name="side-conditional"
+				x={W / 2}
+				y={L.sideY - T.num * 1.25}
+				size={T.small}
+				className="wt-film-tag"
+			>
+				{t(copy.conditional).toUpperCase()}
+			</Word>
 			{SIDES.map((code, i) => (
 				<text
 					key={i}
@@ -405,7 +453,6 @@ function Scene({
 					className={`wt-film-num ${WITHHELD[i] || code === null ? "wt-film-dim" : "wt-film-accent"}`}
 					style={{
 						fontSize: T.num * 1.15,
-						textDecoration: WITHHELD[i] ? "line-through" : undefined,
 					}}
 				>
 					{code ?? "?"}
@@ -464,7 +511,7 @@ function Scene({
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
-					{`${t(copy.reference).toUpperCase()} · ${PRINT_TIME}`}
+					{`${narrow ? t(["QUOTE", "报价"]) : t(copy.reference).toUpperCase()} · ${locale === "zh" ? "成交" : "PRINT"} ${PRINT_TIME}`}
 				</text>
 			</g>
 			{cards.map(([name, line, verdict, tone]) => (
@@ -599,42 +646,40 @@ function build(context: FilmContext) {
 		);
 	const fade = (targets: gsap.TweenTarget, to: number, time: number) =>
 		tl.to(targets, { opacity: to, duration: 0.35 }, time);
+	const reveal = (targets: gsap.TweenTarget, time: number, duration = 0.35) =>
+		tl.fromTo(
+			targets,
+			{ opacity: 0 },
+			{ opacity: 1, duration, immediateRender: false },
+			time,
+		);
 	const bidM = one("bid-m");
 	const askM = one("ask-m");
 	const band = one("band");
+	const midRange = one("mid-range");
 	const dot = one("dot");
 	const zones = ZONES.map((zone) => one(`z-${zone}`));
-	/** Where each place's label sits for a quote: the bid and ask at their ticks, the rest centred. */
-	const zoneX = (bid: number, ask: number) => [
-		(L.x(LO) + L.x(bid)) / 2,
-		L.x(bid),
-		(L.x(bid) + L.x(ask)) / 2,
-		L.x(ask),
-		(L.x(ask) + L.x(HI)) / 2,
-	];
+	const geometry = [band, bidM, askM, midRange];
 	const quoteProps = (bid: number, ask: number) => ({
 		bid: { x: L.x(bid) },
 		ask: { x: L.x(ask) },
 		band: { attr: { x: L.x(bid), width: L.x(ask) - L.x(bid) } },
-		zones: zoneX(bid, ask).map((x) => ({ attr: { x } })),
+		interior: {
+			attr: {
+				d: `M${L.x(bid) + 4} ${L.rulerY + L.type.small * 3.6}H${L.x(ask) - 4}`,
+			},
+		},
 	});
-	/** The quote moves: its ticks, the spread between them and the five places with them. */
+	/** Reposition only once the outgoing geometry is fully hidden. */
 	const quoteTo = (bid: number, ask: number, time: number) => {
 		const p = quoteProps(bid, ask);
-		const move = { duration: 0.6, ease: "power2.inOut" };
-		tl.to(bidM, { ...p.bid, ...move }, time);
-		tl.to(askM, { ...p.ask, ...move }, time);
-		tl.to(band, { ...p.band, ...move }, time);
-		zones.forEach((zone, i) => {
-			tl.to(zone, { ...p.zones[i], ...move }, time);
-		});
+		tl.set(bidM, { ...p.bid, immediateRender: false }, time);
+		tl.set(askM, { ...p.ask, immediateRender: false }, time);
+		tl.set(band, { ...p.band, immediateRender: false }, time);
+		tl.set(midRange, { ...p.interior, immediateRender: false }, time);
 	};
 	const dotTo = (cents: number, time: number) =>
-		tl.to(
-			dot,
-			{ attr: { cx: L.x(cents) }, duration: 0.6, ease: "power2.inOut" },
-			time,
-		);
+		tl.set(dot, { attr: { cx: L.x(cents) }, immediateRender: false }, time);
 	/** One place lights up; the others step back. */
 	const light = (code: SideCode | null, time: number) => {
 		ZONES.forEach((zone, i) => {
@@ -644,6 +689,7 @@ function build(context: FilmContext) {
 					attr: {
 						class: `wt-film-num ${zone === code ? "wt-film-accent" : "wt-film-dim"}`,
 					},
+					immediateRender: false,
 				},
 				time,
 			);
@@ -651,17 +697,12 @@ function build(context: FilmContext) {
 	};
 	const sides = SIDES.map((_, i) => one(`side-${i}`));
 	const sideTo = (i: number, time: number) => {
-		d.flip(sides[i - 1], sides[i], time);
-		tl.set(sides[i - 1], { opacity: 0 }, time + 0.3);
+		fade(sides[i - 1], 0, time);
+		word(sides[i], time + 0.35);
 	};
-	const heads = [
-		"p-head",
-		"e-head",
-		"r-head",
-		"r2-head",
-		"c-head",
-		"c2-head",
-	].map((name) => one(name));
+	const heads = ["p-head", "r-head", "r2-head", "c-head", "c2-head"].map(
+		(name) => one(name),
+	);
 	const rows = TRADES.map((trade) => one(`row-${trade.id}`));
 	const refs = [0, 1, 2, 3].map((i) => one(`ref-${i}`));
 	const claimRows = [0, 1, 2, 3].map((i) => one(`claim-${i}`));
@@ -671,17 +712,13 @@ function build(context: FilmContext) {
 	gsap.set(bidM, start.bid);
 	gsap.set(askM, start.ask);
 	gsap.set(band, start.band);
-	zones.forEach((zone, i) => {
-		gsap.set(zone, start.zones[i]);
-	});
+	gsap.set(midRange, start.interior);
 
 	d.hidden([
 		...flat("q"),
 		...heads,
 		...kids("axis"),
-		band,
-		bidM,
-		askM,
+		...geometry,
 		...zones,
 		dot,
 		one("pl-t1"),
@@ -689,6 +726,7 @@ function build(context: FilmContext) {
 		one("pl-t3"),
 		one("pl-test"),
 		one("side-tag"),
+		one("side-conditional"),
 		...sides,
 		lockSide,
 		...kids("tape"),
@@ -720,10 +758,9 @@ function build(context: FilmContext) {
 	hide(flat("q"), 8.8);
 	show(heads[0], 9.0);
 	show(kids("axis"), 9.2);
-	fade([band, bidM, askM], 1, 9.6);
-	zones.forEach((zone, i) => {
-		fade(zone, 1, 9.9 + i * 0.12);
-	});
+	fade(geometry, 1, 9.6);
+	// Read the complete legend for 1.05 s before introducing a print.
+	fade(zones, 1, 9.6);
 	d.pop(dot, 11.0);
 	show(one("pl-t1"), 11.1);
 	show(one("side-tag"), 11.2);
@@ -731,70 +768,76 @@ function build(context: FilmContext) {
 	word(sides[0], 11.3);
 	show(kids("tape"), 11.5);
 	show(rows[0], 11.7, "right");
-	d.swap(heads[0], heads[1], 12.6);
 
 	const steps: [TradeId | "test", number, number][] = [
-		["t2", 13.0, 1],
-		["t3", 15.0, 2],
-		["test", 17.0, 3],
+		["t2", 13.8, 1],
+		["t3", 15.85, 2],
+		["test", 17.9, 3],
 	];
 	steps.forEach(([id, time, i]) => {
 		const quote = quoteAt(id === "test" ? "t2" : id);
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
 		const before = ["pl-t1", "pl-t2", "pl-t3"][i - 1];
-		quoteTo(quote.bid, quote.ask, time + 0.3);
-		hide(one(before), time + 0.3, 0.25);
-		dotTo(cents, time + 0.4);
-		show(one(id === "test" ? "pl-test" : `pl-${id}`), time + 0.9);
-		light(SIDES[i], time + 0.8);
-		sideTo(i, time + 0.8);
-		if (id !== "test") show(rows[i], time + 1.0, "right");
+		// The tape persists while every changing mark fades in place together.
+		fade([...geometry, ...zones, dot, one(before)], 0, time);
+		sideTo(i, time);
+		const ready = time + 0.35;
+		quoteTo(quote.bid, quote.ask, ready);
+		dotTo(cents, ready);
+		light(SIDES[i], ready);
+		reveal([...geometry, ...zones, dot], ready);
+		reveal(one(id === "test" ? "pl-test" : `pl-${id}`), ready, 0.5);
+		if (id !== "test") show(rows[i], ready, "right");
+		// Last settlement is time + 0.9; the next example waits at least 1.15 s.
 	});
 
 	// ——— quote: the hero. The 11:42 print stays; the quote under it changes. ———
-	tl.addLabel("quote", 19.2);
-	d.swap(heads[1], heads[2], 19.2);
-	hide([...kids("tape"), ...rows], 19.2);
-	hide(one("pl-test"), 19.2, 0.25);
-	show(kids("card"), 19.5);
-	show(refs[1], 19.6);
+	tl.addLabel("quote", 20.35);
+	d.swap(heads[0], heads[1], 20.35);
+	hide([...kids("tape"), ...rows], 20.35);
+	fade([...geometry, ...zones, dot, one("pl-test"), one("side-tag")], 0, 20.35);
+	sideTo(4, 20.35);
+	show(kids("card"), 20.7);
+	show(refs[1], 20.7);
 	// A quote 90 seconds old: the print reads as above the ask, and is withheld.
-	quoteTo(STALE.bid ?? 0, STALE.ask ?? 0, 19.6);
-	dotTo(PRINT.price, 19.6);
-	show(one("pl-t2"), 20.1);
-	light(SIDES[4], 20.2);
-	sideTo(4, 20.2);
-	// One from 2 seconds after the print: at the bid, and withheld too.
-	d.swap(refs[1], refs[2], 22.0);
-	quoteTo(LATER.bid ?? 0, LATER.ask ?? 0, 22.1);
-	light(SIDES[5], 22.6);
-	sideTo(5, 22.6);
+	quoteTo(STALE.bid ?? 0, STALE.ask ?? 0, 20.7);
+	dotTo(PRINT.price, 20.7);
+	light(SIDES[4], 20.7);
+	reveal([...geometry, ...zones, dot, one("side-conditional")], 20.7);
+	reveal(one("pl-t2"), 20.7, 0.5);
+	// A later reference: fixed print, hidden quote update, then coherent reveal.
+	fade([refs[1], ...geometry, ...zones], 0, 23.1);
+	sideTo(5, 23.1);
+	quoteTo(LATER.bid ?? 0, LATER.ask ?? 0, 23.45);
+	light(SIDES[5], 23.45);
+	reveal([...geometry, ...zones], 23.45);
+	show(refs[2], 23.45);
 	// No quote at all: nothing to measure against.
-	d.swap(refs[2], refs[3], 24.2);
-	fade([band, bidM, askM, ...zones], 0.15, 24.3);
-	light(SIDES[6], 24.8);
-	sideTo(6, 24.8);
+	fade([refs[2], ...geometry, ...zones, one("side-conditional")], 0, 25.35);
+	sideTo(6, 25.35);
+	light(SIDES[6], 25.7);
+	show(refs[3], 25.7);
+	reveal(one("side-tag"), 25.7);
 	// The quote in force at the print: inside the spread, and the brackets lock on it.
-	d.swap(refs[3], refs[0], 26.4);
-	fade([band, bidM, askM, ...zones], 1, 26.5);
-	quoteTo(quoteAt("t2").bid, quoteAt("t2").ask, 26.5);
-	light(SIDES[7], 27.0);
-	sideTo(7, 27.0);
+	fade([refs[3], sides[6]], 0, 27.6);
+	quoteTo(quoteAt("t2").bid, quoteAt("t2").ask, 27.95);
+	light(SIDES[7], 27.95);
+	reveal([...geometry, ...zones], 27.95);
+	show(refs[0], 27.95);
+	word(sides[7], 28.3);
 	// Around the figure and its tag together, so no arm runs through the tag.
-	d.lock(lockSide, 27.7, { around: [one("side-tag"), sides[7]], pad: 6 });
-	tl.addLabel("hero-lock", 27.7);
-	show(heads[3], 27.7);
+	d.lock(lockSide, 28.9, { around: [one("side-tag"), sides[7]], pad: 6 });
+	tl.addLabel("hero-lock", 28.9);
+	show(heads[2], 28.9);
 
 	// ——— claims: how far a side goes ———
-	tl.addLabel("claims", 31.3);
+	tl.addLabel("claims", 32.75);
 	hide(
 		[
+			heads[1],
 			heads[2],
-			heads[3],
 			...kids("axis"),
-			band,
-			bidM,
-			askM,
+			...geometry,
 			...zones,
 			dot,
 			one("pl-t2"),
@@ -804,34 +847,34 @@ function build(context: FilmContext) {
 			...kids("card"),
 			refs[0],
 		],
-		31.3,
+		32.75,
 	);
-	show(heads[4], 31.65);
+	show(heads[3], 33.1);
 	claimRows.forEach((row, i) => {
-		show(row, [32.0, 32.8, 33.6, 34.2][i], "right");
+		show(row, [33.45, 34.25, 35.05, 35.65][i], "right");
 	});
 	// The ledger: both sides were closing, so the print neither opened nor bet.
-	show(one("ledger"), 35.3);
-	show(heads[5], 35.3);
+	show(one("ledger"), 36.75);
+	show(heads[4], 36.75);
 
 	// ——— claim ———
-	tl.addLabel("claim", 38.9);
-	hide([heads[4], heads[5], ...claimRows, one("ledger")], 38.9);
-	word(one("z-big"), 39.2);
-	show(one("z-sub"), 39.6);
+	tl.addLabel("claim", 40.35);
+	hide([heads[3], heads[4], ...claimRows, one("ledger")], 40.35);
+	word(one("z-big"), 40.65);
+	show(one("z-sub"), 41.05);
 
 	// ——— next ———
-	tl.addLabel("next", 43.3);
-	hide(kids("claim"), 43.3);
-	d.close(43.3);
+	tl.addLabel("next", 44.75);
+	hide(kids("claim"), 44.75);
+	d.close(44.75);
 	return tl;
 }
 
 export const executionSideFilm: Film = {
 	id: "execution-side",
 	label: [
-		`Execution side, as a short film: a ruler of five places, below the bid, at the bid, inside the spread, at the ask and above it, with Monday's three prints each placed against its own quote, ${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join(", ")}, and a test price of ${usd(OUTSIDE)} outside it; the ${PRINT.time} print against a quote 90 seconds old, which would say ${STALE_SAYS}, one 2 seconds late, which would say ${LATER_SAYS}, and none, before the quote in force names it ${codeOf("t2")}; and how far the ${LAST.time} print at the bid goes, a location and a likely seller, while both sides were closing`,
-		`成交位置短片：五个位置的标尺，低于买价、等于买价、价差之内、等于卖价和高于卖价，周一三笔成交各自对照当时的报价：${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join("，")}，以及报价之外的测试价 ${usd(OUTSIDE)}；${PRINT.time} 的成交对照 90 秒前的报价会得出 ${STALE_SAYS}，对照 2 秒后的报价会得出 ${LATER_SAYS}，没有报价则无从判断，只有成交时有效的报价给出 ${codeOf("t2")}；以及 ${LAST.time} 在买价的成交能推出多少：位置和可能的卖方发起，而双方其实都在平仓`,
+		`Execution side, as a short film: a ruler of five places, below the bid, at the bid, anywhere inside the spread, at the ask and above it, with Monday's three prints each placed against its own quote, ${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join(", ")}, and a test price of ${usd(OUTSIDE)} outside it; the ${PRINT.time} print against a quote 90 seconds old, which would say ${STALE_SAYS}, one after the print, which would say ${LATER_SAYS}, and none, before the quote in force names it ${codeOf("t2")}; and how far the ${LAST.time} print at the bid goes, a location and a likely seller, while both sides were closing`,
+		`成交位置短片：五个位置的标尺，低于买价、等于买价、价差之内任意位置、等于卖价和高于卖价，周一三笔成交各自对照当时的报价：${TRADES.map((trade) => `${trade.time} ${codeOf(trade.id as TradeId)}`).join("，")}，以及报价之外的测试价 ${usd(OUTSIDE)}；${PRINT.time} 的成交对照 90 秒前的报价会得出 ${STALE_SAYS}，对照成交后的报价会得出 ${LATER_SAYS}，没有报价则无从判断，只有成交时有效的报价给出 ${codeOf("t2")}；以及 ${LAST.time} 在买价的成交能推出多少：位置和可能的卖方发起，而双方其实都在平仓`,
 	],
 	stage: "dark",
 	shots: [
