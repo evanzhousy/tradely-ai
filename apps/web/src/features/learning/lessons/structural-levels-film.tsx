@@ -21,7 +21,6 @@ import {
 	metricAt,
 	metricText,
 	millions,
-	ONE_SD,
 	PUT_WALL,
 	payout,
 	SPOT,
@@ -35,21 +34,20 @@ import {
  * Walls and max pain, as a film. It opens on two put walls for one chain, $90 and $95,
  * and shows where both come from: Oct 18 open interest by strike, calls up and puts down,
  * picks $110 and $90; weighting by gamma, which is largest near the money, moves the put
- * wall to $95. Then max pain: what holders would be paid at each settlement price, smallest
- * at $100, against the model's one-standard-deviation range of $90 to $110. Last, one
+ * wall to $95. Then max pain: put and call payouts build the total, whose minimum is
+ * linked to a large $100 readout. Last, one
  * distance in three units: $5, 5% and 3.1 ATRs to the put wall.
  *
  *   open      0–4        "Walls and max pain"
  *   question  4–9.6      $90 or $95?
- *   walls     9.6–24.45  open interest: $110 and $90; by gamma: the put wall moves to $95;
- *                        cut: $90 by open interest against $95 by gamma
- *   pain      24.45–32.4 paid to puts, to calls, in total; minimum $100, locked; model
- *                        range $90–$110
- *   distance  32.4–45.25 −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
- *   next      45.25–47.25 Next: charm and vanna
+ *   walls     9.6–21.7   OI picks $110/$90; neutral gamma prompt, then the $95 answer
+ *   pain      21.7–32.55 put, call and total curves, each with 1 s quiet; $100 hero
+ *                        locks at 28.4 and stands 3.7 s after bracket settlement
+ *   distance  32.55–45.4 −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
+ *   next      45.4–47.4  Next: charm and vanna
  */
 
-const END = 47.25;
+const END = 47.4;
 const SIDES = ["call", "put"] as const;
 const PUT_OI = wallOf("oi", "put");
 const PUT_GEX = wallOf("gex", "put");
@@ -68,8 +66,6 @@ const settles = Array.from(
 	{ length: PAY_X[1] - PAY_X[0] + 1 },
 	(_, i) => PAY_X[0] + i,
 );
-const LOW = Math.round(SPOT - ONE_SD);
-const HIGH = Math.round(SPOT + ONE_SD);
 const RULER = [92, 113] as const;
 const UNITS = ["dollars", "percent", "atr"] as const satisfies readonly Unit[];
 const ATR_TICKS = Array.from(
@@ -86,12 +82,15 @@ function layout(width: number) {
 	const right = narrow ? width - 26 : width * 0.965;
 	const top = height * (narrow ? 0.36 : 0.28);
 	const bottom = height * 0.84;
+	// Keep the large minimum readout above, rather than inside, the payout plot.
+	const payTop = height * (narrow ? 0.46 : 0.48);
 	const middle = (top + bottom) / 2;
 	const slot = (right - left) / STRIKES.length;
 	const reach = (bottom - top) / 2 - 16;
 	const px = (settle: number) =>
 		left + ((settle - PAY_X[0]) / (PAY_X[1] - PAY_X[0])) * (right - left);
-	const py = (dollars: number) => bottom - (dollars / PAY_Y) * (bottom - top);
+	const py = (dollars: number) =>
+		bottom - (dollars / PAY_Y) * (bottom - payTop);
 	const rx = (price: number) =>
 		left + ((price - RULER[0]) / (RULER[1] - RULER[0])) * (right - left);
 	return {
@@ -100,6 +99,7 @@ function layout(width: number) {
 		right,
 		top,
 		bottom,
+		payTop,
 		middle,
 		slot,
 		reach,
@@ -132,11 +132,8 @@ const copy = {
 		"One chain, one close, two put walls. Which is it?",
 		"同一条链，同一个收盘，两个看跌墙。到底是哪个？",
 	],
-	oiHead: [
-		"Open interest by strike: calls up, puts down.",
-		"各行权价的未平仓量：看涨向上，看跌向下。",
-	],
-	oiHeadShort: ["Open interest, by strike.", "各行权价的未平仓量。"],
+	oiHead: ["The rule picks the wall.", "规则选出墙位。"],
+	oiHeadShort: ["The rule picks the wall.", "规则选出墙位。"],
 	oiWallHead: [
 		`Most contracts: call wall ${stock(CALL_ANY)}, put wall ${stock(PUT_OI)}.`,
 		`合约最多：看涨墙 ${stock(CALL_ANY)}，看跌墙 ${stock(PUT_OI)}。`,
@@ -145,13 +142,11 @@ const copy = {
 		`Most contracts: ${stock(CALL_ANY)} and ${stock(PUT_OI)}.`,
 		`合约最多：${stock(CALL_ANY)} 与 ${stock(PUT_OI)}。`,
 	],
-	gexWallHead: [
-		`By gamma, the put wall moves to ${stock(PUT_GEX)}.`,
-		`按 Gamma 加权，看跌墙移到 ${stock(PUT_GEX)}。`,
-	],
-	gexWallHeadShort: [
-		`By gamma, the put wall is ${stock(PUT_GEX)}.`,
-		`按 Gamma，看跌墙在 ${stock(PUT_GEX)}。`,
+	gexWallHead: ["Weight contracts by gamma.", "按 Gamma 加权合约。"],
+	gexWallHeadShort: ["Weight contracts by gamma.", "按 Gamma 加权合约。"],
+	gexAnswer: [
+		`Put wall: ${stock(PUT_GEX)} by gamma.`,
+		`Gamma 看跌墙：${stock(PUT_GEX)}。`,
 	],
 	axisOi: [
 		"Oct 18 open interest, Friday's close",
@@ -163,15 +158,11 @@ const copy = {
 	],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
-	byOi: ["by open interest", "按未平仓量"],
-	byOiShort: ["open interest", "未平仓量"],
-	byGex: ["by gamma", "按 Gamma"],
-	twoLine: ["A wall is whatever a rule picks.", "墙是规则选出来的。"],
-	painHead: [
-		"Max pain: the settlement that pays holders least.",
-		"最大痛点：让持有人获赔最少的结算价。",
+	painHead: ["Which settlement pays holders least?", "哪个结算价赔付最少？"],
+	painHeadShort: [
+		"Which settlement pays holders least?",
+		"哪个结算价赔付最少？",
 	],
-	painHeadShort: ["Max pain: the least paid out.", "最大痛点：赔付最少处。"],
 	payAxis: [
 		"paid to Oct 18 holders at expiry, by settlement price",
 		"到期时付给 10月18日 持有人，按结算价",
@@ -179,20 +170,12 @@ const copy = {
 	payAxisShort: ["paid to holders at expiry", "到期时付给持有人"],
 	paidPuts: ["to puts", "付给看跌"],
 	paidCalls: ["to calls", "付给看涨"],
-	minLabel: [`max pain ${stock(MAX_PAIN)}`, `最大痛点 ${stock(MAX_PAIN)}`],
+	paidTotal: ["puts + calls", "看跌 + 看涨"],
+	minLabel: ["max pain", "最大痛点"],
 	minPaid: [
 		`${millions(payout(MAX_PAIN))} paid`,
 		`支付 ${millions(payout(MAX_PAIN))}`,
 	],
-	rangeHead: [
-		`The model's range: ${stock(LOW)} to ${stock(HIGH)}.`,
-		`模型的范围：${stock(LOW)} 到 ${stock(HIGH)}。`,
-	],
-	rangeHeadShort: [
-		`Model range: ${stock(LOW)}–${stock(HIGH)}.`,
-		`模型范围：${stock(LOW)}–${stock(HIGH)}。`,
-	],
-	rangeLabel: ["model ±1 SD", "模型 ±1 标准差"],
 	rulerHead: ["One distance, three units.", "同一段距离，三种单位。"],
 	alfa: [`ALFA ${stock(SPOT)}`, `ALFA ${stock(SPOT)}`],
 	putWall: [`put wall ${stock(PUT_WALL)}`, `看跌墙 ${stock(PUT_WALL)}`],
@@ -274,6 +257,10 @@ function Scene({
 	const R = L.rulerY;
 	const minX = L.px(MAX_PAIN);
 	const minY = L.py(payout(MAX_PAIN));
+	// Leave room for the lock's expanded entrance below the phone headline.
+	const heroTagY = L.headY + T.head * 1.6 + (narrow ? 16 : 0);
+	const heroY = heroTagY + T.big * 1.05;
+	const heroPaidY = heroY + T.body * 1.45;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -281,9 +268,9 @@ function Scene({
 				<clipPath id={`pay-${id}`}>
 					<rect
 						x={L.left}
-						y={L.top - 6}
+						y={L.payTop - 6}
 						width={L.right - L.left}
-						height={L.bottom - L.top + 8}
+						height={L.bottom - L.payTop + 8}
 					/>
 				</clipPath>
 			</defs>
@@ -373,25 +360,9 @@ function Scene({
 
 					{/* What holders would be paid at each settlement price. */}
 					<g data-f="pain">
-						<text x={L.left} y={L.top - 12} className="wt-small">
+						{/* The caption belongs below the price ticks, clear of the hero lock. */}
+						<text x={L.left} y={L.bottom + 40} className="wt-small">
 							{t(narrow ? copy.payAxisShort : copy.payAxis)}
-						</text>
-						<rect
-							data-f="band"
-							x={L.px(SPOT - ONE_SD)}
-							y={L.top}
-							width={L.px(SPOT + ONE_SD) - L.px(SPOT - ONE_SD)}
-							height={L.bottom - L.top}
-							className="wt-band-neutral"
-						/>
-						<text
-							data-f="band-label"
-							x={L.px(SPOT)}
-							y={L.top + 16}
-							textAnchor="middle"
-							className="wt-small wt-halo"
-						>
-							{t(copy.rangeLabel)}
 						</text>
 						{[0, 3_000_000, 6_000_000, 9_000_000].map((tick) => (
 							<g key={tick}>
@@ -465,23 +436,60 @@ function Scene({
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
-						<g data-f="min-label" textAnchor="middle">
-							<text
+						<text
+							data-f="pay-total-label"
+							x={narrow ? L.right : L.px(108)}
+							y={narrow ? L.payTop - 12 : L.py(payout(108)) - 12}
+							textAnchor={narrow ? "end" : "middle"}
+							className="wt-small wt-halo wt-accent"
+						>
+							{t(copy.paidTotal)}
+						</text>
+						<path
+							data-f="min-link"
+							d={`M${minX} ${minY - 9}V${Math.max(heroPaidY + T.body, L.payTop + 12)}`}
+							className="wt-bracket"
+						/>
+						<g data-f="min-label">
+							<Word
+								name="min-tag"
 								x={minX}
-								y={minY - 30}
-								className="wt-halo wt-accent wt-marker-label"
+								y={heroTagY}
+								size={T.small}
+								className="wt-film-tag wt-film-accent"
 							>
 								{t(copy.minLabel)}
-							</text>
-							<text x={minX} y={minY - 15} className="wt-halo wt-small">
+							</Word>
+							<Word
+								name="min-value"
+								x={minX}
+								y={heroY}
+								size={T.big}
+								className="wt-film-num wt-film-accent"
+							>
+								{stock(MAX_PAIN)}
+							</Word>
+							<Word
+								name="min-paid"
+								x={minX}
+								y={heroPaidY}
+								size={T.body}
+								className="wt-film-num wt-film-dim"
+							>
 								{t(copy.minPaid)}
-							</text>
+							</Word>
 						</g>
 					</g>
 
 					{/* One distance, three units. */}
 					<g data-f="ruler">
 						<path d={`M${L.left} ${R}H${L.right}`} className="wt-axis" />
+						{/* Retrace the same distance against the settled ATR ticks. */}
+						<path
+							data-f="atr-span"
+							d={`M${L.rx(SPOT)} ${R + 10}H${L.rx(PUT_WALL)}`}
+							className="wt-bracket"
+						/>
 						<g data-f="ticks-unit">
 							{Array.from({ length: RULER[1] - RULER[0] + 1 }, (_, i) => {
 								const x = L.rx(RULER[0] + i);
@@ -629,47 +637,42 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
-			{headline("g-head", copy.gexWallHead, copy.gexWallHeadShort)}
-			<g data-f="two">
-				{(
-					[
-						[narrow ? copy.byOiShort : copy.byOi, stock(PUT_OI), ""],
-						[copy.byGex, stock(PUT_GEX), "wt-film-accent"],
-					] as const
-				).map(([tag, num, tone], i) => (
-					<g key={tag[0]}>
-						<Word
-							name={`w-tag-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`w-num-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3 + T.big * 0.95}
-							size={T.big * 0.85}
-							className={`wt-film-num ${tone}`}
-						>
-							{num}
-						</Word>
-					</g>
-				))}
-				<Lines
-					name="w-line"
-					text={t(copy.twoLine)}
-					x={W / 2}
-					y={H * 0.72}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
-			</g>
+			<Lines
+				name="g-head"
+				text={t(narrow ? copy.gexWallHeadShort : copy.gexWallHead)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(t(narrow ? copy.oiHeadShort : copy.oiHead), room, T.head) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
+			<Lines
+				name="g-answer"
+				text={t(copy.gexAnswer)}
+				x={L.margin}
+				y={
+					L.headY +
+					lineCount(t(narrow ? copy.oiHeadShort : copy.oiHead), room, T.head) *
+						T.head *
+						1.35 +
+					lineCount(
+						t(narrow ? copy.gexWallHeadShort : copy.gexWallHead),
+						room,
+						T.head,
+					) *
+						T.body *
+						1.35
+				}
+				size={T.body}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{headline("p-head", copy.painHead, copy.painHeadShort)}
-			{headline("r-head", copy.rangeHead, copy.rangeHeadShort)}
 			<Brackets name="lock-pain" glow />
 			{headline("u-head", copy.rulerHead, copy.rulerHead)}
 			{(
@@ -752,7 +755,7 @@ function build(context: FilmContext) {
 		const length = path.getTotalLength();
 		tl.fromTo(
 			path,
-			{ strokeDasharray: length, strokeDashoffset: length },
+			{ strokeDasharray: `${length} ${length}`, strokeDashoffset: length },
 			{ strokeDashoffset: 0, duration, ease: "power2.inOut" },
 			at,
 		);
@@ -772,21 +775,21 @@ function build(context: FilmContext) {
 		one("hi-put-oi"),
 		one("hi-put-gex"),
 		...wallLabels.map(({ name }) => one(name)),
-		one("band"),
-		one("band-label"),
 		one("pay-put-label"),
 		one("pay-call-label"),
+		one("pay-total-label"),
 		one("min-dot"),
+		one("min-link"),
 		one("min-label"),
 		lockPain,
 		one("ticks-atr"),
+		one("atr-span"),
 		...SIDES.flatMap((side) => UNITS.map((unit) => one(`d-${side}-${unit}`))),
 		...flat("q"),
-		...["o-head", "w-head", "g-head", "p-head", "r-head", "u-head"].map(
+		...["o-head", "w-head", "g-head", "g-answer", "p-head", "u-head"].map(
 			(name) => one(name),
 		),
 		...UNITS.map((unit) => one(`note-${unit}`)),
-		...flat("two"),
 		...kids("claim"),
 	]);
 
@@ -830,7 +833,8 @@ function build(context: FilmContext) {
 	);
 	show([one("wl-call-oi"), one("wl-put-oi")], 12.5);
 	// Weighted by gamma: the bars near the money grow, and the put wall moves.
-	d.swap([one("o-head"), one("w-head")], one("g-head"), 15.8);
+	// Keep one walls headline; only the evidence/answer beneath it changes rule.
+	d.swap(one("w-head"), one("g-head"), 15.8);
 	d.swap(one("axis-oi"), one("axis-gex"), 15.8);
 	hide([one("wl-call-oi"), one("wl-put-oi")], 15.8);
 	SIDES.forEach((side) => {
@@ -866,83 +870,77 @@ function build(context: FilmContext) {
 		16.1,
 	);
 	tl.to(one("hi-put-gex"), { opacity: 1, duration: 0.5 }, 16.7);
-	show([one("wl-call-gex"), one("wl-put-gex")], 17.1);
-	// Cut: the two put walls.
-	hide([one("g-head"), one("axis-gex")], 19.65);
-	sink(19.65);
-	show(one("w-tag-0"), 19.95);
-	land(one("w-num-0"), 20.15);
-	show(one("w-tag-1"), 20.45);
-	land(one("w-num-1"), 20.65);
-	show(one("w-line"), 20.95);
+	// The winning bar settles at 17.20; give the proof a full second before its answer.
+	show([one("wl-call-gex"), one("wl-put-gex"), one("g-answer")], 18.2);
 
-	// ——— pain: the payout minimum ———
-	tl.addLabel("pain", 24.45);
-	hide(flat("two"), 24.45);
-	tl.set(one("bars"), { opacity: 0 }, 24.55);
-	tl.set(one("pain"), { opacity: 1 }, 24.55);
-	show(one("p-head"), 24.8, "above");
-	rise(24.85);
-	draw(one<SVGPathElement>("pay-put"), 25.25, 0.8);
-	show(one("pay-put-label"), 25.75);
-	draw(one<SVGPathElement>("pay-call"), 25.85, 0.8);
-	show(one("pay-call-label"), 26.35);
-	draw(one<SVGPathElement>("pay-total"), 26.55, 1.0);
-	land(one("min-dot"), 27.45);
-	show(one("min-label"), 27.65);
-	// The hero: the least paid out, at $100.
-	d.lock(lockPain, 28.25, {
-		around: [one("min-dot"), one("min-label")],
-		pad: 8,
-	});
-	tl.addLabel("hero-lock", 28.25);
-	// The model's range for the same date.
-	d.swap(one("p-head"), one("r-head"), 28.55);
-	tl.to(one("band"), { opacity: 1, duration: 0.6 }, 29.15);
-	show(one("band-label"), 29.45);
+	// ——— pain: build each component before adding the total ———
+	tl.addLabel("pain", 21.7);
+	hide([one("o-head"), one("g-head"), one("g-answer"), one("bars")], 21.7);
+	// The existing chart depth stays on stage through this handover.
+	show(one("pain"), 22.0);
+	show(one("p-head"), 22.05, "above");
+	draw(one<SVGPathElement>("pay-put"), 22.0, 0.8);
+	show(one("pay-put-label"), 22.0);
+	// Each curve and its label settle at least one second before the next step.
+	draw(one<SVGPathElement>("pay-call"), 23.8, 0.8);
+	show(one("pay-call-label"), 23.8);
+	draw(one<SVGPathElement>("pay-total"), 25.6, 1.0);
+	// Fade in place above the phone plot so the label never travels through its axis.
+	tl.to(one("pay-total-label"), { opacity: 1, duration: 0.5 }, 25.6);
+	land(one("min-dot"), 27.6);
+	draw(one<SVGPathElement>("min-link"), 27.6, 0.55);
+	tl.to(one("min-link"), { opacity: 1, duration: 0.55 }, 27.6);
+	// Fade the readout in place, clear of the chart and its settled curves.
+	tl.to(one("min-label"), { opacity: 1, duration: 0.5 }, 27.8);
+	d.lock(lockPain, 28.4, { around: one("min-label"), pad: 8 });
+	tl.addLabel("hero-lock", 28.4);
+	// No new mark enters the readout: 3.70 s of quiet after the brackets settle.
 
 	// ——— distance: one level, three units ———
-	tl.addLabel("distance", 32.4);
-	hide([one("r-head"), lockPain], 32.4);
-	sink(32.4);
-	tl.set(one("pain"), { opacity: 0 }, 32.8);
-	tl.set(one("ruler"), { opacity: 1 }, 32.8);
-	show(one("u-head"), 32.75, "above");
-	rise(32.85);
-	show([one("d-put-dollars"), one("d-call-dollars")], 33.3);
-	show(one("note-dollars"), 33.5);
+	tl.addLabel("distance", 32.55);
+	hide([one("p-head"), lockPain], 32.55);
+	sink(32.55);
+	tl.set(one("pain"), { opacity: 0 }, 32.95);
+	tl.set(one("ruler"), { opacity: 1 }, 32.95);
+	show(one("u-head"), 32.9, "above");
+	rise(33);
+	show([one("d-put-dollars"), one("d-call-dollars")], 33.45);
+	show(one("note-dollars"), 33.65);
 	// Percent of $100 is a dollar a tick: the same marks, new numbers, the same note.
 	for (const side of SIDES)
-		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 34.6);
+		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 34.75);
 	// ATR: wider ticks, smaller numbers.
 	for (const side of SIDES)
-		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.0);
-	d.swap(one("note-dollars"), one("note-atr"), 37.0);
-	tl.to(one("ticks-unit"), { opacity: 0.25, duration: 0.4 }, 37.0);
-	tl.to(one("ticks-atr"), { opacity: 1, duration: 0.5 }, 37.2);
+		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.15);
+	d.swap(one("note-dollars"), one("note-atr"), 37.15);
+	tl.to(one("ticks-unit"), { opacity: 0.25, duration: 0.4 }, 37.15);
+	tl.to(one("ticks-atr"), { opacity: 1, duration: 0.5 }, 37.35);
+	// After 1 s of quiet, retrace the measured span without changing its value.
+	draw(one<SVGPathElement>("atr-span"), 38.85, 0.6);
+	tl.to(one("atr-span"), { opacity: 1, duration: 0.5 }, 38.85);
 	// Cut: the claim.
-	hide([one("u-head"), one("note-atr")], 40.85);
-	sink(40.85);
+	hide([one("u-head"), one("note-atr")], 41);
+	sink(41);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.25,
+		41.4,
 	);
-	show(one("z-sub"), 41.65);
+	show(one("z-sub"), 41.8);
 
 	// ——— next ———
-	tl.addLabel("next", 45.25);
-	hide(kids("claim"), 45.25);
-	d.close(45.25);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
 export const structuralLevelsFilm: Film = {
 	id: "structural-levels",
 	label: [
-		`Walls and max pain, as a short film: two put walls for one chain, ${stock(PUT_OI)} and ${stock(PUT_GEX)}; Oct 18 open interest by strike picking a call wall of ${stock(CALL_ANY)} and a put wall of ${stock(PUT_OI)}, and gamma weighting moving the put wall to ${stock(PUT_GEX)}; what holders would be paid at each settlement price, smallest at ${stock(MAX_PAIN)}, against the model's range of ${stock(LOW)} to ${stock(HIGH)}; and one distance to the put wall as ${distanceText(PUT_WALL, "dollars")}, ${distanceText(PUT_WALL, "percent")} and ${distanceText(PUT_WALL, "atr")}`,
-		`墙位与最大痛点短片：同一条链的两个看跌墙，${stock(PUT_OI)} 与 ${stock(PUT_GEX)}；按行权价的 10月18日 未平仓量选出看涨墙 ${stock(CALL_ANY)} 和看跌墙 ${stock(PUT_OI)}，按 Gamma 加权后看跌墙移到 ${stock(PUT_GEX)}；各结算价下付给持有人的金额，在 ${stock(MAX_PAIN)} 最少，对照模型的 ${stock(LOW)} 到 ${stock(HIGH)} 范围；以及到看跌墙的同一段距离：${distanceText(PUT_WALL, "dollars")}、${distanceText(PUT_WALL, "percent")} 和 ${distanceText(PUT_WALL, "atr")}`,
+		`Walls and max pain, as a short film: two put walls for one chain, ${stock(PUT_OI)} and ${stock(PUT_GEX)}; Oct 18 open interest by strike picking a call wall of ${stock(CALL_ANY)} and a put wall of ${stock(PUT_OI)}, and gamma weighting moving the put wall to ${stock(PUT_GEX)}; what holders would be paid at each settlement price, smallest at ${stock(MAX_PAIN)}; and one distance to the put wall as ${distanceText(PUT_WALL, "dollars")}, ${distanceText(PUT_WALL, "percent")} and ${distanceText(PUT_WALL, "atr")}`,
+		`墙位与最大痛点短片：同一条链的两个看跌墙，${stock(PUT_OI)} 与 ${stock(PUT_GEX)}；按行权价的 10月18日 未平仓量选出看涨墙 ${stock(CALL_ANY)} 和看跌墙 ${stock(PUT_OI)}，按 Gamma 加权后看跌墙移到 ${stock(PUT_GEX)}；各结算价下付给持有人的金额，在 ${stock(MAX_PAIN)} 最少；以及到看跌墙的同一段距离：${distanceText(PUT_WALL, "dollars")}、${distanceText(PUT_WALL, "percent")} 和 ${distanceText(PUT_WALL, "atr")}`,
 	],
 	stage: "dark",
 	shots: [
