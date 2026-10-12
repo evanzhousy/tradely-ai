@@ -28,24 +28,27 @@ import {
  * Data clocks, as a film. At 10:30 on Monday the ALFA drawer shows open interest of 100:
  * when was that true? A timeline answers, field by field: the model IV was Friday's close,
  * the last trade happened at 10:05 and arrived at 10:20, and the open interest was counted
- * at Friday's close and published at 06:30. The hero judges three sources against three
- * questions: today's volume, full days, and contracts outstanding, where Friday's count is
- * the newest there is and glowing brackets lock. Last, a total with one blank series,
- * which is at least 1,065, not 1,065.
+ * at Friday's close and published at 06:30. The hero judges three sources against two
+ * questions: today's volume and contracts outstanding, where Friday's count is the latest
+ * published count and glowing brackets lock its figure to its clock. Last, Monday close
+ * volume: the covered subtotal is 1,065; one missing series leaves the whole total unknown.
  *
  *   open      0–4        "Data clocks"
  *   question  4–8.6      10:30 Monday, open interest 100: true when?
  *   clocks    8.6–19.2   the drawer; IV at Fri 16:00; a trade at 10:05, received 10:20;
  *                        OI counted Fri 16:00, published 06:30
- *   sources   19.2–29.8  hero: today's volume; full days; contracts outstanding
- *   cover     29.8–37.2  observed, zero, missing; at least 1,065
+ *   sources   19.2–29.8  hero: today's volume; contracts outstanding
+ *   cover     29.8–37.2  Monday close volume; covered subtotal; unknown whole total
  *   claim     37.2–41.9  every value has its own clock
  *   next      41.9–44.4  Next: the module checkpoint
  */
 
 const END = 44.4;
 const IV_PCT = Math.round(IV * 100);
-const REQUIREMENTS: Requirement[] = ["today", "positions", "compare"];
+const REQUIREMENTS = [
+	"today",
+	"positions",
+] as const satisfies readonly Requirement[];
 const COVERED = coverRows.filter((row) => row.value !== null);
 const TOTAL = COVERED.reduce((sum, row) => sum + (row.value ?? 0), 0);
 /** The timeline is not to scale: a weekend and a night fold into short gaps. */
@@ -73,6 +76,7 @@ function layout(width: number) {
 	const fieldW = (room - (narrow ? 12 : 24)) / 3;
 	return {
 		...frame,
+		heroNum: Math.max(frame.type.num, frame.type.head * 1.3),
 		cardY: H * (narrow ? 0.27 : 0.27),
 		cardH: H * (narrow ? 0.17 : 0.2),
 		fieldX: (i: number) => margin + i * (fieldW + (narrow ? 6 : 12)),
@@ -83,8 +87,8 @@ function layout(width: number) {
 		/** Low enough on a phone that a two-line headline's answer rises in clear of it. */
 		reqY: H * 0.28,
 		srcY: (i: number) =>
-			H * (narrow ? 0.36 : 0.4) + i * H * (narrow ? 0.17 : 0.17),
-		srcH: H * (narrow ? 0.14 : 0.14),
+			H * (narrow ? 0.36 : 0.4) + i * H * (narrow ? 0.19 : 0.18),
+		srcH: H * (narrow ? 0.17 : 0.15),
 		rowY: (i: number) =>
 			H * (narrow ? 0.26 : 0.27) + i * H * (narrow ? 0.085 : 0.085),
 		rowH: H * (narrow ? 0.065 : 0.068),
@@ -130,24 +134,38 @@ const copy = {
 		"Contracts outstanding: Friday's count.",
 		"存续合约：就用周五的统计。",
 	],
+	oiClock: ["Fri close", "周五收盘"],
+	oiLatest: ["Latest published count", "最新已发布统计"],
+	oiPublished: ["Mon 06:30", "周一 06:30"],
+	phoneWhy: {
+		today: {
+			friday: ["wrong session", "时段不对"],
+			delayed: ["only to 10:15", "仅到 10:15"],
+			oi: ["positions, not volume", "持仓数，非成交量"],
+		},
+		positions: {
+			friday: ["trades, not positions", "成交，非持仓"],
+			delayed: ["trades, not positions", "成交，非持仓"],
+		},
+	} as Record<"today" | "positions", Record<string, Copy>>,
 	req: {
 		today: ["Today's volume so far?", "今天到目前的成交量？"],
 		positions: ["Contracts outstanding?", "存续合约有多少？"],
 		compare: ["Compare full days?", "比较完整的交易日？"],
 	} as Record<Requirement, Copy>,
-	kHead: ["Four numbers and a blank.", "四个数字，一个空白。"],
+	kHead: ["Monday close volume in contracts.", "周一收盘成交量，单位：张。"],
 	k2Head: [
-		`So the total is at least ${count(TOTAL)}.`,
-		`所以合计至少 ${count(TOTAL)}。`,
+		"Missing series: whole total unknown.",
+		"缺失一个序列，全部合计未知。",
 	],
 	observed: ["observed", "观测"],
 	zero: ["zero", "零"],
 	missing: ["missing", "缺失"],
-	total: [
-		`≥ ${count(TOTAL)} · ${COVERED.length} of ${coverRows.length} series`,
-		`≥ ${count(TOTAL)} · ${coverRows.length} 个中 ${COVERED.length} 个`,
+	subtotal: [
+		`Covered subtotal · ${COVERED.length}/${coverRows.length} series`,
+		`覆盖小计 · ${COVERED.length}/${coverRows.length} 序列`,
 	],
-	plain: [count(TOTAL), count(TOTAL)],
+	whole: ["Whole total: at least", "全部合计：至少"],
 	claimBig: ["Every value has its own clock.", "每个值都有自己的时钟。"],
 	claimSub: ["Match its clock to your question.", "让它的时钟对上你的问题。"],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
@@ -353,11 +371,12 @@ function Scene({
 				const x = L.stopX(STOPS[stop].at);
 				/** Marks that share a moment, or sit close, take two tiers. */
 				const lift = tier;
+				const markY = L.lineY - (lift - 1) * T.small * 1.5;
 				return (
 					<g key={name} data-f={name}>
-						<circle cx={x} cy={L.lineY} r={6} className="wt-chip" />
+						<circle cx={x} cy={markY} r={6} className={tone} />
 						<text
-							x={x}
+							x={x + (name === "m-oi" ? 12 : 0)}
 							y={L.lineY - 14 - (lift - 1) * T.small * 1.5}
 							textAnchor={stop === 0 ? "start" : "middle"}
 							className={`wt-film-type wt-halo ${tone}`}
@@ -369,7 +388,7 @@ function Scene({
 				);
 			})}
 
-			{/* Three sources, three questions. */}
+			{/* Three sources, two questions. */}
 			{headline("s-head", copy.sHead)}
 			{/* The hero's answer, as the brackets lock on the open interest's verdict. */}
 			<Lines
@@ -389,6 +408,7 @@ function Scene({
 			{REQUIREMENTS.map((req) => (
 				<g key={req} data-f={`req-${req}`}>
 					<text
+						data-f={`req-${req}-text`}
 						x={margin}
 						y={L.reqY + T.small}
 						className="wt-film-type wt-film-accent"
@@ -410,47 +430,94 @@ function Scene({
 					/>
 					<text
 						x={margin + 16}
-						y={L.srcY(i) + L.srcH * 0.4}
+						y={L.srcY(i) + L.srcH * (narrow || source.id === "oi" ? 0.3 : 0.4)}
 						className="wt-film-type"
 						style={{ fontSize: narrow ? T.body : T.head * 0.9 }}
 					>
 						{t(source.name)}
 					</text>
-					<text
-						x={margin + 16}
-						y={L.srcY(i) + L.srcH * 0.74}
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: T.small * 1.05 }}
-					>
-						{t(source.detail)}
-					</text>
+					{source.id === "oi" ? (
+						<>
+							<text
+								data-f="src-oi-count"
+								x={margin + 16}
+								y={L.srcY(i) + L.srcH * 0.84}
+								className="wt-film-num wt-film-accent"
+								style={{ fontSize: L.heroNum }}
+							>
+								{count(OI)}
+							</text>
+							<Word
+								name="src-oi-clock"
+								x={margin + 16 + L.heroNum * 2.1}
+								y={L.srcY(i) + L.srcH * 0.84}
+								size={T.small * 1.05}
+								anchor="start"
+								className="wt-film-type wt-film-accent"
+							>
+								{t(copy.oiClock)}
+							</Word>
+						</>
+					) : (
+						<text
+							x={margin + 16}
+							y={L.srcY(i) + L.srcH * (narrow ? 0.55 : 0.74)}
+							className="wt-film-num wt-film-dim"
+							style={{ fontSize: T.small * 1.05 }}
+						>
+							{t(source.detail)}
+						</text>
+					)}
 				</g>
 			))}
 			{REQUIREMENTS.flatMap((req) =>
 				sources.map((source, i) => {
 					const v = verdicts[req][source.id];
+					const why =
+						req === "positions" && source.id === "oi"
+							? copy.oiLatest
+							: narrow
+								? copy.phoneWhy[req][source.id]
+								: v.why;
 					return (
 						<g key={`${req}-${source.id}`} data-f={`v-${req}-${i}`}>
 							<text
 								x={margin + room - 16}
-								y={L.srcY(i) + L.srcH * 0.4}
+								y={
+									L.srcY(i) +
+									L.srcH * (narrow || source.id === "oi" ? 0.3 : 0.4)
+								}
 								textAnchor="end"
 								className={`wt-film-tag ${verdictTone[v.verdict]}`}
 								style={{ fontSize: T.small * 1.05 }}
 							>
 								{t(verdictCopy[v.verdict]).toUpperCase()}
 							</text>
-							{narrow ? null : (
-								<text
+							<Lines
+								name={`v-${req}-${i}-why`}
+								x={margin + room - 16}
+								y={
+									L.srcY(i) +
+									L.srcH * (source.id === "oi" ? 0.55 : narrow ? 0.84 : 0.74)
+								}
+								size={T.small * 1.05}
+								maxWidth={narrow ? room - 32 : room * 0.46}
+								anchor="end"
+								className="wt-film-type wt-film-dim"
+								text={t(why)}
+							/>
+							{req === "positions" && source.id === "oi" ? (
+								<Word
+									name="oi-publication"
 									x={margin + room - 16}
-									y={L.srcY(i) + L.srcH * 0.74}
-									textAnchor="end"
-									className="wt-film-type wt-film-dim"
-									style={{ fontSize: T.small * 1.05 }}
+									y={L.srcY(i) + L.srcH * 0.84}
+									size={T.small * 1.05}
+									anchor="end"
+									className="wt-film-num wt-film-accent"
 								>
-									{t(v.why)}
-								</text>
-							)}
+									{t(copy.oiPublished)}
+								</Word>
+							) : null}
 						</g>
 					);
 				}),
@@ -460,7 +527,7 @@ function Scene({
 
 			{/* Missing, zero and observed. */}
 			{headline("k-head", copy.kHead)}
-			{/* The answer, as the plain total turns into a floor. */}
+			{/* The covered subtotal stays true; the whole total is bounded, not known. */}
 			<Lines
 				name="k2-head"
 				text={t(copy.k2Head)}
@@ -519,24 +586,50 @@ function Scene({
 					</text>
 				</g>
 			))}
-			<text
-				data-f="plain"
-				x={margin}
-				y={L.totalY}
-				className="wt-film-num wt-film-loss"
-				style={{ fontSize: T.num, textDecoration: "line-through" }}
-			>
-				{count(TOTAL)}
-			</text>
-			<text
-				data-f="total"
-				x={margin}
-				y={L.totalY}
-				className="wt-film-num wt-film-accent"
-				style={{ fontSize: narrow ? T.head : T.num }}
-			>
-				{t(copy.total)}
-			</text>
+			<g data-f="subtotal">
+				<Word
+					name="subtotal-label"
+					x={margin}
+					y={L.totalY}
+					size={T.small * 1.05}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.subtotal)}
+				</Word>
+				<Word
+					name="subtotal-value"
+					x={margin + room}
+					y={L.totalY}
+					size={T.head}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{count(TOTAL)}
+				</Word>
+			</g>
+			<g data-f="total">
+				<Word
+					name="total-label"
+					x={margin}
+					y={L.totalY + T.head * 1.8}
+					size={T.small * 1.05}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.whole)}
+				</Word>
+				<Word
+					name="total-value"
+					x={margin + room}
+					y={L.totalY + T.head * 1.8}
+					size={T.head}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{count(TOTAL)}
+				</Word>
+			</g>
 
 			<g data-f="claim">
 				<Lines
@@ -582,12 +675,19 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
-	/** A figure or stamp lands slightly large and settles in place, without overshoot. */
+	/** Scale single text only; a panel or a grouped clock proof fades in place. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
-			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			target.tagName === "text"
+				? { opacity: 0, scale: 1.08, transformOrigin: "50% 50%" }
+				: { opacity: 0 },
+			{
+				opacity: 1,
+				...(target.tagName === "text" ? { scale: 1 } : {}),
+				duration: 0.55,
+				ease: "power3.out",
+			},
 			time,
 		);
 	/** One field lights up while its clock is told. */
@@ -633,7 +733,7 @@ function build(context: FilmContext) {
 		...REQUIREMENTS.flatMap(verdictsFor),
 		lockVerdict,
 		...covs,
-		one("plain"),
+		one("subtotal"),
 		one("total"),
 		...kids("claim"),
 	]);
@@ -657,15 +757,17 @@ function build(context: FilmContext) {
 		show(field, 9.2 + i * 0.2);
 	});
 	show(kids("timeline"), 9.8);
-	word(one("now"), 10.2);
-	focus("f-iv", 11.0);
-	word(marks[0], 11.2);
-	focus("f-last", 12.4);
-	word(marks[3], 12.6);
-	word(marks[4], 13.3);
-	focus("f-oi", 14.6);
-	word(marks[1], 14.8);
-	word(marks[2], 15.4);
+	word(one("now"), 9.8);
+	focus("f-iv", 10.95);
+	word(marks[0], 10.95);
+	// Event and receipt form one proof; it settles at 13.05, then rests for a second.
+	focus("f-last", 12.5);
+	word(marks[3], 12.5);
+	word(marks[4], 12.5);
+	// Count and publication form one proof, complete a second before its answer arrives.
+	focus("f-oi", 14.05);
+	word(marks[1], 14.05);
+	word(marks[2], 14.05);
 	show(heads[1], 15.6);
 
 	// ——— sources: the hero. Fresh enough for which question? ———
@@ -677,9 +779,9 @@ function build(context: FilmContext) {
 		show(src, 19.8 + i * 0.2, "right");
 	});
 	// One question at a time; contracts outstanding, the drawer's own question, comes last.
-	const order: Requirement[] = ["today", "compare", "positions"];
+	const order = REQUIREMENTS;
 	order.forEach((req, k) => {
-		const at = 21.2 + k * 2.0;
+		const at = 21.2 + k * 4.0;
 		const r = reqs[REQUIREMENTS.indexOf(req)];
 		if (k) {
 			const last = order[k - 1];
@@ -695,7 +797,14 @@ function build(context: FilmContext) {
 		});
 	});
 	const oi = sources.findIndex((source) => source.id === "oi");
-	// Round the open interest's whole card with its verdict: the tag alone is small on a phone.
+	// Promote the count itself as the question changes; its value and clock never change.
+	tl.fromTo(
+		one("src-oi-count"),
+		{ fontSize: L.type.small * 1.05 },
+		{ fontSize: L.heroNum, duration: 0.55, ease: "power3.out" },
+		25.2,
+	);
+	// Enclose the constructed count, Friday clock and latest publication evidence together.
 	d.lock(lockVerdict, 26.2, {
 		around: [srcs[oi], verdictsFor("positions")[oi]],
 		pad: 6,
@@ -715,28 +824,15 @@ function build(context: FilmContext) {
 		],
 		29.8,
 	);
-	covs.forEach((cov, i) => {
-		show(cov, 30.5 + i * 0.15, "right");
-	});
-	tl.to(
-		[covs[3], covs[4]],
-		{
-			scale: 1.02,
-			transformOrigin: "50% 50%",
-			duration: 0.25,
-			yoyo: true,
-			repeat: 1,
-		},
-		31.6,
-	);
-	show(one("plain"), 32.4);
-	d.flip(one("plain"), one("total"), 33.2);
-	tl.set(one("plain"), { opacity: 0 }, 33.5);
+	// One table construction pays for two quiet proof holds without extending the film.
+	show(covs, 30.5, "right");
+	show(one("subtotal"), 32.0);
+	show(one("total"), 33.6);
 	show(heads[5], 33.6);
 
 	// ——— claim ———
 	tl.addLabel("claim", 37.2);
-	hide([heads[4], heads[5], ...covs, one("total")], 37.2);
+	hide([heads[4], heads[5], ...covs, one("subtotal"), one("total")], 37.2);
 	word(one("z-big"), 37.5);
 	show(one("z-sub"), 37.9);
 
@@ -750,8 +846,8 @@ function build(context: FilmContext) {
 export const symbolDrawerFilm: Film = {
 	id: "symbol-drawer",
 	label: [
-		`Data clocks, as a short film: ALFA's drawer at 10:30 on Monday, where the ${IV_PCT}% model IV and the open interest of ${OI} are as of Friday's close, the count published at 06:30, and the last trade happened at ${T1.time} but arrived at 10:20; three sources judged against three questions, today's volume, contracts outstanding and full-day comparisons; and Monday's volume across five Oct 18 call series, where a 0 is measured, a blank is missing, and the total is at least ${count(TOTAL)}`,
-		`数据时钟短片：周一 10:30 的 ALFA 抽屉：${IV_PCT}% 的模型隐含波动率和 ${OI} 的未平仓量都截至周五收盘，统计在 06:30 发布，最新成交发生在 ${T1.time} 却在 10:20 才到达；三个来源对照三个问题：今天的成交量、存续合约、完整交易日比较；以及周一五个 10月18日 看涨序列的成交量：0 是测得的，空白是缺失，合计至少 ${count(TOTAL)}`,
+		`Data clocks, as a short film: ALFA's drawer at 10:30 on Monday, where the ${IV_PCT}% model IV and the open interest of ${OI} are as of Friday's close, the count published at 06:30, and the last trade happened at ${T1.time} but arrived at 10:20; three sources judged against today's volume and contracts outstanding; and Monday close volume across five Oct 18 call series, where a 0 is measured, a blank is missing, the covered subtotal is ${count(TOTAL)}, and the unknown whole total is at least ${count(TOTAL)}`,
+		`数据时钟短片：周一 10:30 的 ALFA 抽屉：${IV_PCT}% 的模型隐含波动率和 ${OI} 的未平仓量都截至周五收盘，统计在 06:30 发布，最新成交发生在 ${T1.time} 却在 10:20 才到达；三个来源对照今天的成交量和存续合约；以及周一收盘时五个 10月18日 看涨序列的成交量：0 是测得的，空白是缺失，覆盖小计为 ${count(TOTAL)}，未知的全部合计至少 ${count(TOTAL)}`,
 	],
 	stage: "dark",
 	shots: [
