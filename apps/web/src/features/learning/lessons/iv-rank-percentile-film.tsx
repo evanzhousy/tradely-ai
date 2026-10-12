@@ -120,8 +120,7 @@ const copy = {
 	],
 	gapHead: ["A year with missing history.", "一年中有历史缺失。"],
 	gapHeadShort: ["A year with missing history.", "一年中有历史缺失。"],
-	aboveHigh: ["rank above high", "Rank 高于最高值"],
-	coverage: ["observed below", "观测值均较低"],
+	aboveHigh: ["Today > sample high", "今天 > 样本最高值"],
 	rankWas: ["rank", "Rank"],
 	pctWas: ["percentile", "百分位"],
 	high: ["high", "最高"],
@@ -432,7 +431,7 @@ function Scene({
 			{headline("s-head", copy.sampleHead, copy.sampleHeadShort)}
 			{formula(
 				"s-proof",
-				`${recent.below}/${recent.n} = ${pct(recent.percentile)}`,
+				`${t(copy.pctWas)}: ${recent.below}/${recent.n} = ${pct(recent.percentile)}`,
 				"wt-film-accent",
 			)}
 			<Word
@@ -442,21 +441,15 @@ function Scene({
 				size={T.small}
 				anchor="start"
 				className="wt-film-tag"
-			>{`${t(copy.coverage)} · ${t(copy.aboveHigh)}`}</Word>
+			>
+				{t(copy.aboveHigh)}
+			</Word>
 			{headline("g-head", copy.gapHead, copy.gapHeadShort)}
 			{formula(
 				"g-proof",
-				`${gapped.below}/${gapped.n} = ${pct(gapped.percentile)}`,
+				`${t(copy.pctWas)}: ${gapped.below}/${gapped.n} = ${pct(gapped.percentile)}`,
 				"wt-film-accent",
 			)}
-			<Word
-				name="g-note"
-				x={L.margin}
-				y={proofY + T.head * 1.1}
-				size={T.small}
-				anchor="start"
-				className="wt-film-tag"
-			>{`${t(copy.coverage)} · ${t(copy.aboveHigh)}`}</Word>
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -513,7 +506,7 @@ function build(context: FilmContext) {
 	const lowLabel = one<SVGTextElement>("bracket-low-label");
 	/** One state renders both endpoints, their labels and today's uncapped rank. */
 	const range = { low: year.low, high: year.high };
-	const renderRange = () => {
+	const renderRange = (nameRank: boolean) => {
 		one("bracket-line").setAttribute(
 			"d",
 			`M${L.bracketX} ${L.y(range.low)}V${L.y(range.high)}`,
@@ -527,13 +520,14 @@ function build(context: FilmContext) {
 			label.textContent = `${Number(value.toFixed(1))}%`;
 		}
 		one("bracket-dot").setAttribute("cy", String(L.y(TODAY)));
-		rank.textContent = pct((TODAY - range.low) / (range.high - range.low));
+		rank.textContent = `${nameRank ? `${d.t(copy.rankWas)} ` : ""}${pct((TODAY - range.low) / (range.high - range.low))}`;
 	};
 	const bracketTo = (
 		from: { low: number; high: number },
 		to: { low: number; high: number },
 		at: number,
 		duration = 0.7,
+		nameRank = false,
 	) => {
 		tl.fromTo(
 			range,
@@ -544,7 +538,7 @@ function build(context: FilmContext) {
 				duration,
 				ease: "power2.inOut",
 				immediateRender: false,
-				onUpdate: renderRange,
+				onUpdate: () => renderRange(nameRank),
 			},
 			at,
 		);
@@ -573,7 +567,6 @@ function build(context: FilmContext) {
 			"s-note",
 			"g-head",
 			"g-proof",
-			"g-note",
 		].map((name) => one(name)),
 		...flat("o"),
 		lockRank,
@@ -716,34 +709,38 @@ function build(context: FilmContext) {
 	hide([...flat("o"), one("o-coverage"), lockRank], 31.85);
 	// The old sample never resurfaces: prepare exclusions and the entire range under the cut.
 	tl.set(bars.slice(0, WEEKS - RECENT), { opacity: 0 }, 31.0);
-	bracketTo(noShock, recent, 31.0);
-	rise(32.05);
+	bracketTo(noShock, recent, 31.0, 0.7, true);
+	// Final samples fade in place; data and camera are settled before their quiet second.
+	tl.set(one("depth"), { scale: 1 }, 31.7);
+	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 32.05);
 	show(one("s-head"), 32.2, "above");
 	tl.fromTo(
 		[one("s-proof"), one("s-note")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		33.85,
+		33.35,
 	);
 	// Cut away before restoring only the observed weeks; the shock remains excluded.
-	hide([one("s-head"), one("s-proof"), one("s-note")], 35.85);
+	// This statement remains true for both samples, so retain its full reading hold.
+	hide([one("s-head"), one("s-proof")], 35.85);
 	sink(35.85);
 	show(one("g-head"), 36.25, "above");
 	const observed = bars.filter((_, i) => i < GAP.from || i > GAP.to);
 	tl.set(observed, { opacity: 1 }, 36.25);
 	tl.set(bars.slice(GAP.from, GAP.to + 1), { opacity: 0 }, 36.25);
 	tl.set([one("gap"), one("gap-label")], { opacity: 1 }, 36.25);
-	bracketTo(recent, gapped, 36.25, 0.3);
-	rise(36.55);
+	bracketTo(recent, gapped, 36.25, 0.3, true);
+	tl.set(one("depth"), { scale: 1 }, 36.25);
+	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 36.55);
 	tl.fromTo(
-		[one("g-proof"), one("g-note")],
+		one("g-proof"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		38.35,
+		37.85,
 	);
 
 	// Cut: the claim.
-	hide([one("g-head"), one("g-proof"), one("g-note")], 39.8);
+	hide([one("g-head"), one("g-proof"), one("s-note")], 39.8);
 	sink(39.8);
 	tl.fromTo(
 		one("c-big"),
