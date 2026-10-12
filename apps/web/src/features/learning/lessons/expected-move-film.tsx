@@ -33,8 +33,9 @@ import {
  * The expected move, as a film. It starts from a question, how far do ALFA's options
  * price it to move by Oct 18, and builds the answer as type: 35% a year, scaled by the
  * square root of 32 days, ±$10.36. A bell curve then shows what that range is (68% of
- * outcomes, under the model), the straddle's narrower bracket (the average move, 0.80
- * of it), the tails, and twelve past months that jumped past them.
+ * outcomes, under the model), the straddle's narrower bracket (distance from $100),
+ * its $8.27 ÷ $10.36 ratio built before 0.80 lands, the tails, and twelve past months
+ * that jumped past them.
  *
  *   open      0–4        "Expected move"
  *   question  4–9.6      IV 35% → ±$? by Oct 18
@@ -134,15 +135,18 @@ const copy = {
 	bellHeadShort: ["68% land inside, in the model.", "按模型，68% 在区间内。"],
 	bellAxis: ["ALFA on Oct 18, model", "10月18日 的 ALFA，模型"],
 	straddleHead: [
-		"The straddle prices the average move.",
-		"跨式定价的是平均变动。",
+		`The straddle prices distance from $${SPOT}.`,
+		`跨式定价距 $${SPOT} 的变动。`,
 	],
-	straddleHeadShort: ["The straddle: the average move.", "跨式：平均变动。"],
+	straddleHeadShort: [
+		`Straddle: distance from $${SPOT}.`,
+		`跨式：距 $${SPOT} 的变动。`,
+	],
 	straddle: [`straddle ${share(STRADDLE)}`, `跨式 ${share(STRADDLE)}`],
 	ratioWord: ["of one SD", "个标准差"],
 	ratioSub: [
-		`${share(STRADDLE)} ÷ ${share(MOVE)}: the average move, not the range.`,
-		`${share(STRADDLE)} ÷ ${share(MOVE)}：平均变动，不是区间。`,
+		"Average distance, not 68% coverage.",
+		"平均距离，不是 68% 覆盖区间。",
 	],
 	outsideHead: ["About a third end outside.", "约三分之一收在区间外。"],
 	tail: [
@@ -212,6 +216,10 @@ function Scene({
 		},
 	];
 	const tailAt = 1.9 * MOVE;
+	const operands = `${share(STRADDLE)} ÷ ${share(MOVE)}`;
+	const ratioY = H * 0.4 + T.big * 0.36;
+	const ratioWordY = ratioY + T.head * 1.9;
+	const operandsY = ratioWordY + T.head * 1.9;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -466,9 +474,27 @@ function Scene({
 			<Brackets name="lock-ratio" glow />
 			<g data-f="r">
 				<Word
+					name="r-input"
+					x={W / 2}
+					y={H * 0.93}
+					size={T.head}
+					className="wt-film-num wt-film-dim"
+				>
+					{operands}
+				</Word>
+				<Word
+					name="r-operands"
+					x={W / 2}
+					y={operandsY}
+					size={T.head}
+					className="wt-film-num wt-film-dim"
+				>
+					{operands}
+				</Word>
+				<Word
 					name="r-num"
 					x={W / 2}
-					y={H * 0.4 + T.big * 0.36}
+					y={ratioY}
 					size={T.big}
 					className="wt-film-num wt-film-accent"
 				>
@@ -477,7 +503,7 @@ function Scene({
 				<Word
 					name="r-word"
 					x={W / 2}
-					y={H * 0.4 + T.big * 0.36 + T.head * 1.9}
+					y={ratioWordY}
 					size={T.head}
 					className="wt-film-type wt-film-accent"
 				>
@@ -487,7 +513,7 @@ function Scene({
 					name="r-sub"
 					text={t(copy.ratioSub)}
 					x={W / 2}
-					y={H * 0.4 + T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
+					y={operandsY + T.body * 1.9}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -639,6 +665,7 @@ function build(context: FilmContext) {
 	// ——— straddle: the hero. A narrower bracket, and its ratio. ———
 	tl.addLabel("straddle", 23.3);
 	d.swap([one("b-head"), one("b2-head")], one("s-head"), 23.3);
+	hide(one("b-inside"), 23.3, 0.35, 0);
 	for (const [i, side] of (["low", "high"] as const).entries())
 		tl.fromTo(
 			one(`s-line-${side}`),
@@ -653,11 +680,20 @@ function build(context: FilmContext) {
 		24.5,
 	);
 	show(one("s-label"), 24.8, "below", 0.4);
-	// Cut: the ratio, locked.
+	// Complete the comparison with its operands, then preserve its two-second quiet hold.
+	tl.to(one("r-input"), { opacity: 1, duration: 0.4 }, 24.8);
+	// Carry the same operands into the ratio layout only after the chart has gone.
 	hide(one("s-head"), 27.2);
 	sink(27.2);
-	land(one("r-num"), 27.55);
-	show(one("r-word"), 27.85);
+	d.carry(
+		one<SVGGraphicsElement>("r-input"),
+		one<SVGGraphicsElement>("r-operands"),
+		27.6,
+		{ duration: 0.45, arc: "y" },
+	);
+	// The quotient is already true throughout its reveal; never count or scale a result.
+	tl.to(one("r-num"), { opacity: 1, duration: 0.55 }, 27.55);
+	show(one("r-word"), 27.6);
 	d.lock(lockRatio, 28.1, { around: [one("r-num"), one("r-word")], pad: 5 });
 	tl.addLabel("hero-lock", 28.1);
 	show(one("r-sub"), 28.3);
@@ -684,10 +720,13 @@ function build(context: FilmContext) {
 		32.8,
 	);
 	show([one("b-tail-label-low"), one("b-tail-label-high")], 33.2, "below", 0.4);
-	sink(34.2);
-	tl.set(charts.bell, { opacity: 0 }, 34.6);
-	tl.set(charts.months, { opacity: 1 }, 34.6);
-	rise(34.7);
+	// The two tails settle at 33.6 and rest for one full second.
+	sink(34.6);
+	tl.set(charts.bell, { opacity: 0 }, 35.0);
+	tl.set(charts.months, { opacity: 1 }, 35.0);
+	rise(35.1);
+	// Establish both reference levels together while the chart rises, before bars settle.
+	show([one("m-line-1"), one("m-line-2")], 35.1, "right", 0.4);
 	PAST.forEach((multiple, i) => {
 		tl.fromTo(
 			one(`m-bar-${i}`),
@@ -697,13 +736,11 @@ function build(context: FilmContext) {
 				duration: 0.45,
 				ease: "power3.out",
 			},
-			35.1 + i * 0.07,
+			35.5 + i * 0.07,
 		);
 	});
-	show(one("m-line-1"), 36.2, "right", 0.4);
-	show(one("m-line-2"), 36.6, "right", 0.4);
-	show(one("m-may"), 37.0, "below", 0.4);
 	show(one("m-head"), 37.0);
+	show(one("m-may"), 37.0, "below", 0.4);
 	// Cut: the claim.
 	hide([one("o-head"), one("m-head")], 40.5);
 	sink(40.5);
