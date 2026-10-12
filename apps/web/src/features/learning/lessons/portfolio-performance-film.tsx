@@ -824,8 +824,7 @@ function build(context: FilmContext) {
 	dots.slice(1).forEach((dot) => {
 		land(dot, 11.5, 0.35);
 	});
-	// A full second after the final dot, reveal growth already settled.
-	show([one("m-growth"), one("m-growth-value")], 12.85, "above");
+	// A full second after the final dot, focus on the deposit without repeating growth.
 	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 12.85);
 	show(one("jump-label"), 13.05);
 	// Cut at the flow: two periods, each from its own start.
@@ -885,6 +884,8 @@ function build(context: FilmContext) {
 		0.35,
 		0,
 	);
+	// The loss fades in place while wins travel across its column.
+	hide(one("bar-2"), 25.8, 0.35, 0);
 	let accumulated = 0;
 	let winIndex = 0;
 	trades.forEach((trade, i) => {
@@ -893,26 +894,39 @@ function build(context: FilmContext) {
 		const y = win
 			? L.stackBottom - (accumulated + trade.pnl) * L.stackUnit
 			: L.stackBottom - height;
-		const at = win ? 26.15 + winIndex * 0.15 : 26.15;
+		const x = L.stackX[win ? 0 : 1] - L.stackWidth / 2;
 		if (win) {
 			accumulated += trade.pnl;
-			winIndex++;
-		}
-		tl.to(
-			one(`bar-${i}`),
-			{
-				attr: {
-					x: L.stackX[win ? 0 : 1] - L.stackWidth / 2,
-					y,
-					width: L.stackWidth,
-					height,
-					rx: 0,
+			// Settle every win into its own vertical interval before any slides sideways.
+			tl.to(
+				one(`bar-${i}`),
+				{
+					attr: { y, width: L.stackWidth, height, rx: 0 },
+					duration: 0.35,
+					ease: "power2.inOut",
 				},
-				duration: 0.65,
-				ease: "power2.inOut",
-			},
-			at,
-		);
+				26.15,
+			);
+			tl.to(
+				one(`bar-${i}`),
+				{ attr: { x }, duration: 0.3, ease: "power2.inOut" },
+				26.5 + winIndex * 0.15,
+			);
+			winIndex++;
+		} else {
+			// Relocate only while invisible; return after all horizontal paths are clear.
+			tl.set(
+				one(`bar-${i}`),
+				{ attr: { x, y, width: L.stackWidth, height, rx: 0 } },
+				26.15,
+			);
+			tl.fromTo(
+				one(`bar-${i}`),
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.4 },
+				27.25,
+			);
+		}
 	});
 	// Stack finishes at 27.25; no running total can contradict its four parts.
 	show([one("gross-tag-0"), one("gross-tag-1")], 27.25, "above", 0.4);
