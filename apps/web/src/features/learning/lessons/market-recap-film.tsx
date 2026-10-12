@@ -99,19 +99,16 @@ const copy = {
 		`${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} observed strikes · 120 missing`,
 		`仅 ${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} 个行权价有数据 · 120 缺失`,
 	],
-	captionChart: [
-		"Chart · contracts by strike · axis 0",
-		"图表 · 按行权价的张数 · 轴从 0 起",
-	],
+	captionChart: ["Contracts by strike · axis 0", "按行权价的张数 · 轴从 0 起"],
 	captionScope: [
-		"Scope · ALFA Oct 18 calls · Mon Sep 16",
-		"范围 · ALFA 10月18日看涨 · 9月16日周一",
+		"ALFA Oct 18 calls · Mon Sep 16",
+		"ALFA 10月18日看涨 · 9月16日周一",
 	],
 	captionSource: [
-		"Source · corrected tape · as of 16:05 · P1",
-		"来源 · 更正后成交记录 · 截至 16:05 · P1",
+		"Corrected tape as of 16:05 · P1 · 120: no data yet",
+		"更正后成交记录截至 16:05 · P1 · 120 尚无数据",
 	],
-	captionGap: ["Missing · 120 call: no data yet", "缺失 · 120 看涨：尚无数据"],
+	changingScale: ["CHANGING SCALE", "图表刻度调整中"],
 	contracts: ["contracts", "张数"],
 	premium: ["premium", "权利金"],
 	noData: ["no data", "无数据"],
@@ -166,7 +163,6 @@ function Scene({
 		copy.captionChart,
 		copy.captionScope,
 		copy.captionSource,
-		copy.captionGap,
 	];
 	const captionY =
 		boundedY +
@@ -303,6 +299,15 @@ function Scene({
 					{t(copy[metric]).toUpperCase()}
 				</text>
 			))}
+			<text
+				data-f="unit-changing"
+				x={margin}
+				y={L.top - T.small * 2.4}
+				className="wt-film-tag wt-film-dim"
+				style={{ fontSize: T.small * 1.1 }}
+			>
+				{t(copy.changingScale)}
+			</text>
 			<text
 				data-f="unit-cut"
 				x={margin}
@@ -505,7 +510,26 @@ function build(context: FilmContext) {
 		one<SVGPathElement>(`repair-${id}`),
 	);
 	const evidence = ["intent", "scope"].map((id) => one(`evidence-${id}`));
-	const captions = [0, 1, 2, 3].map((i) => one(`caption-${i}`));
+	const captions = [0, 1, 2].map((i) => one(`caption-${i}`));
+	const changingUnit = one("unit-changing");
+	/** Keep a morph neutral, then hand over in place once its geometry is true. */
+	const changeUnit = (
+		from: Element,
+		to: Element,
+		at: number,
+		settled: number,
+	) => {
+		hide(from, at, 0.3, 0);
+		tl.fromTo(
+			changingUnit,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3 },
+			at + 0.3,
+		);
+		// This is an in-place text handover, with both marks on the same baseline.
+		tl.set(changingUnit, { opacity: 0 }, settled);
+		tl.set(to, { opacity: 1 }, settled);
+	};
 	// Fit each drawn underline beneath its wrapped phrase, never through the glyphs.
 	draftParts.forEach((part, i) => {
 		const box = (part as SVGGraphicsElement).getBBox();
@@ -560,6 +584,7 @@ function build(context: FilmContext) {
 		one("unit-premium"),
 		one("premium-leader-rule"),
 		one("unit-cut"),
+		changingUnit,
 		...bars,
 		...vals("contracts"),
 		...vals("premium"),
@@ -603,8 +628,7 @@ function build(context: FilmContext) {
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 10.7);
 	show(vals("contracts"), 10.7);
 	show(matchAnswer, 12.2);
-	d.flip(one("unit-contracts"), one("unit-premium"), 13.5);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 13.8);
+	changeUnit(one("unit-contracts"), one("unit-premium"), 13.5, 14.6);
 	hide(vals("contracts"), 13.5, 0.3);
 	barsTo("premium", 0, chartMax("premium"), 13.8, vals("premium"));
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "neutral" } }, 13.8);
@@ -632,8 +656,7 @@ function build(context: FilmContext) {
 	d.swap([heads[0], matchAnswer, heads[1]], heads[2], 20.55);
 	hide(vals("premium"), 20.55, 0.3);
 	hide(one("premium-leader-rule"), 20.55);
-	d.flip(one("unit-premium"), one("unit-contracts"), 20.55);
-	tl.set(one("unit-premium"), { opacity: 0 }, 20.85);
+	changeUnit(one("unit-premium"), one("unit-contracts"), 20.55, 21.65);
 	barsTo("contracts", 0, CONTRACTS_MAX, 20.85, vals("contracts"));
 	tl.set(
 		bars[leadIndex(premiumLeader)],
@@ -642,8 +665,7 @@ function build(context: FilmContext) {
 	);
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 21.65);
 	show(vals("contracts"), 21.75);
-	d.flip(one("unit-contracts"), one("unit-cut"), 24.85);
-	tl.set(one("unit-contracts"), { opacity: 0 }, 25.15);
+	changeUnit(one("unit-contracts"), one("unit-cut"), 24.85, 25.95);
 	barsTo(
 		"contracts",
 		CUT,
@@ -682,27 +704,29 @@ function build(context: FilmContext) {
 	d.trace(repairLines[1], 34.3, { duration: 0.3 });
 	show(evidence[1], 34.6);
 	// Scope evidence settles at 35.1; the replacement waits one quiet second.
-	// On a phone, scope is a sentence: omit its early dim and hold it until the claim.
+	// Clear the completed draft; a slow initial fade preserves its readable hold.
 	tl.to(
 		[...draftParts, ...repairLines, ...(L.narrow ? [evidence[0]] : evidence)],
-		{ opacity: 0.35, duration: 0.4 },
+		{ opacity: 0, duration: 0.4, ease: "power2.in" },
 		36.1,
 	);
+	if (L.narrow) {
+		// Scope keeps its full reading interval, with less emphasis beside the result.
+		tl.to(evidence[1], { opacity: 0.8, duration: 0.4 }, 36.1);
+	}
 	show(one("bounded"), 36.1);
 	// The bounded result settles at 36.6; caption fields wait one quiet second.
-	show(captions, 37.6);
+	captions.forEach((field, i) => {
+		const at = 37.6 + i * 0.15;
+		show(field, at);
+		// Stagger the exits too: each field keeps its original 3.5-second hold.
+		hide(field, at + 3.5);
+	});
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.1);
 	hide(
-		[
-			heads[4],
-			...draftParts,
-			...repairLines,
-			...evidence,
-			one("bounded"),
-			...captions,
-		],
+		[heads[4], ...draftParts, ...repairLines, ...evidence, one("bounded")],
 		41.1,
 	);
 	word(one("z-big"), 41.4);
