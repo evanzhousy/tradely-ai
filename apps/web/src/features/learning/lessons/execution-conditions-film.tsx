@@ -19,6 +19,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	BLOCK_ASKS,
 	LEGS,
@@ -31,22 +32,22 @@ import {
 /*
  * Execution conditions, as a film. Three prints of the Oct 18 110 call in the same tenth of
  * a second at three venues: three buyers? The book answers: one 40-lot sent to all three
- * as ISO orders, 10, 20 and 10, at $0.9525 on average against a $0.93 best ask. The hero is
+ * as ISO orders, 10, 20 and 10, at $0.9525 against the pre-order $0.93 best ask. The hero is
  * a block: 8 contracts displayed at $2.15, 500 printed there, marked as an auction; the
- * condition shows how it was matched, and glowing brackets lock on what it doesn't show.
+ * auction condition fills How; Who, Why and Opened? remain unknown and receive the lock.
  * Last, the block's two legs, a call bought at the ask and one sold inside its quote, that
  * are one $1.25 call spread.
  *
  *   open      0–4        "Execution conditions"
  *   question  4–8.6      three prints, three venues, one instant: three buyers?
- *   sweep     8.6–19.2   three venues; one ISO order; three prints; $0.9525
- *   block     19.2–29    hero: 8 displayed, 500 printed; an auction; how, not who
- *   package   29–35.8    bought at the ask; sold inside; one spread
- *   claim     35.8–40.2  a condition says how a trade executed
- *   next      40.2–42.7  Next: unusual activity
+ *   sweep     8.6–19.2   initial offers; one ISO order; three prints; $0.9525
+ *   block     19.2–31    hero: 8 displayed, 500 printed; How known, three fields unknown
+ *   package   31–40.2    connect bought/sold prices, subtract; one $1.25 debit
+ *   claim     40.2–44.6  a condition says how a trade executed
+ *   next      44.6–47.1  Next: unusual activity
  */
 
-const END = 42.7;
+const END = 47.1;
 /** The sweep's fills, best price first, each with the venue that filled it. */
 const FILLS = sweep(SWEEP_ASKS, SWEEP.quantity).fills.map((fill) => ({
 	...fill,
@@ -59,7 +60,6 @@ const TIME = SWEEP.time;
 const BLOCK = oct105CallBlock;
 const SHOWN = BLOCK_ASKS.find((level) => level.price === BLOCK.price);
 const SHOWN_SIZE = SHOWN?.size ?? 0;
-const WIDTH = LEGS.sell.strike - LEGS.buy.strike;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -77,12 +77,12 @@ function layout(width: number) {
 		cardH: H * (narrow ? 0.17 : 0.19),
 		printY: (i: number) =>
 			H * (narrow ? 0.64 : 0.64) + i * H * (narrow ? 0.065 : 0.065),
-		avgY: H * (narrow ? 0.86 : 0.88),
 		barY: (i: number) =>
 			H * (narrow ? 0.32 : 0.32) + i * H * (narrow ? 0.15 : 0.15),
 		barH: H * (narrow ? 0.05 : 0.055),
-		knowY: (i: number) =>
-			H * (narrow ? 0.66 : 0.66) + i * H * (narrow ? 0.07 : 0.075),
+		knownY: H * 0.59,
+		unknownLabelY: H * 0.73,
+		unknownValueY: H * 0.87,
 		legY: (i: number) =>
 			H * (narrow ? 0.27 : 0.27) + i * H * (narrow ? 0.17 : 0.17),
 		legH: H * (narrow ? 0.14 : 0.14),
@@ -104,66 +104,45 @@ const copy = {
 			.concat("。"),
 	],
 	qBig: ["Three buyers?", "三个买方？"],
-	sHead: ["Three venues offer the 110 call.", "三个场所挂出 110 看涨。"],
-	s2Head: [
-		`One ISO order: ${SWEEP.quantity} at ${price4(AVERAGE)}.`,
-		`一张 ISO 订单：${SWEEP.quantity} 张，均价 ${price4(AVERAGE)}。`,
-	],
+	sHead: ["Initial quotes for the 110 call.", "下单前的 110 看涨报价。"],
 	venue: ["venue", "场所"],
-	offered: ["offered", "挂出"],
+	offered: ["initial", "初始"],
 	order: [
 		`buy ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
 		`买 ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
 	],
 	average: [
-		`average ${price4(AVERAGE)} · best ask ${usd(BEST.price)}`,
-		`平均 ${price4(AVERAGE)} · 最优卖价 ${usd(BEST.price)}`,
+		`average ${price4(AVERAGE)} · pre-order best ask ${usd(BEST.price)}`,
+		`均价 ${price4(AVERAGE)} · 成交前最优卖价 ${usd(BEST.price)}`,
 	],
-	bHead: [
-		`A block: only ${SHOWN_SIZE} on the screen.`,
-		`大宗：屏幕上只有 ${SHOWN_SIZE} 张。`,
-	],
-	b2Head: [
-		"It says how, never who or why.",
-		"它只说明怎么撮合，不说明谁或为什么。",
-	],
+	bHead: ["What does this block reveal?", "这笔大宗能说明什么？"],
 	displayed: [`displayed at ${usd(BLOCK.price)}`, `${usd(BLOCK.price)} 挂出`],
 	printed: [`printed at ${usd(BLOCK.price)}`, `${usd(BLOCK.price)} 成交`],
 	auction: ["auction", "竞价"],
-	shows: ["shows: matched through an auction", "能说明：通过竞价撮合"],
-	hides: [
-		"doesn't show: who, why, or whether it opened",
-		"不能说明：是谁、为什么、是否开仓",
-	],
-	hidesShort: ["not: who, why, opening", "不能：谁、为什么、开仓"],
-	pHead: ["Two legs printed as one trade.", "两条腿作为一笔交易成交。"],
-	p2Head: [
-		`One call spread for ${usd(PACKAGE.price)}.`,
-		`一个价差，净价 ${usd(PACKAGE.price)}。`,
-	],
-	multiLeg: ["multi-leg", "多腿"],
+	how: ["How", "撮合方式"],
+	unknown: ["Unknown", "未知"],
+	who: ["Who", "谁"],
+	why: ["Why", "为何"],
+	opened: ["Opened?", "是否开仓"],
+	pHead: ["Two legs, one net debit.", "两条腿，一个净支出。"],
 	buyLeg: [
-		`buy ${count(LEGS.buy.quantity)} · 105 call @ ${usd(LEGS.buy.price)}`,
-		`买 ${count(LEGS.buy.quantity)} · 105 看涨 @ ${usd(LEGS.buy.price)}`,
+		`buy ${count(LEGS.buy.quantity)} · 105 call`,
+		`买 ${count(LEGS.buy.quantity)} · 105 看涨`,
 	],
 	sellLeg: [
-		`sell ${count(LEGS.sell.quantity)} · 110 call @ ${usd(LEGS.sell.price)}`,
-		`卖 ${count(LEGS.sell.quantity)} · 110 看涨 @ ${usd(LEGS.sell.price)}`,
+		`sell ${count(LEGS.sell.quantity)} · 110 call`,
+		`卖 ${count(LEGS.sell.quantity)} · 110 看涨`,
 	],
 	buyQuote: [
-		`quote ${usd(LEGS.buy.bid)} / ${usd(LEGS.buy.ask)} · at the ask`,
+		`${usd(LEGS.buy.bid)} / ${usd(LEGS.buy.ask)} · at ask`,
 		`报价 ${usd(LEGS.buy.bid)} / ${usd(LEGS.buy.ask)} · 在卖价`,
 	],
 	sellQuote: [
-		`quote ${usd(LEGS.sell.bid)} / ${usd(LEGS.sell.ask)} · inside`,
+		`${usd(LEGS.sell.bid)} / ${usd(LEGS.sell.ask)} · inside`,
 		`报价 ${usd(LEGS.sell.bid)} / ${usd(LEGS.sell.ask)} · 价差之内`,
 	],
 	pkgTag: ["one package · 105/110 call spread", "一个整体 · 105/110 看涨价差"],
-	pkgPrice: [`${usd(PACKAGE.price)} net`, `净价 ${usd(PACKAGE.price)}`],
-	pkgCap: [
-		`worth at most ${usd(WIDTH * 100)} a share at expiry`,
-		`到期每股最多值 ${usd(WIDTH * 100)}`,
-	],
+	pkgDebit: ["net debit", "净支出"],
 	claimBig: [
 		"A condition says how a trade executed.",
 		"成交条件说明成交是怎么发生的。",
@@ -246,21 +225,6 @@ function Scene({
 
 			{/* A sweep: one order across three venues. */}
 			{headline("s-head", copy.sHead)}
-			{/* The question's answer, as the average comes up. */}
-			<Lines
-				name="s2-head"
-				text={t(copy.s2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.sHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			{SWEEP.asks.map((ask, i) => {
 				const cx = L.cardX(i) + L.cardW / 2;
 				const fill = FILLS.find((f) => f.venue === ask.venue);
@@ -361,33 +325,31 @@ function Scene({
 					</text>
 				</g>
 			))}
-			<text
-				data-f="avg"
-				x={margin}
-				y={L.avgY}
-				className="wt-film-num wt-film-warn"
-				style={{ fontSize: narrow ? T.body : T.head }}
-			>
-				{t(copy.average)}
-			</text>
+			<g data-f="avg">
+				<Word
+					name="avg-price"
+					x={margin}
+					y={H * 0.85}
+					size={narrow ? T.head : T.head * 1.1}
+					anchor="start"
+					className="wt-film-num wt-film-warn"
+				>
+					{t(copy.average).split(" · ")[0]}
+				</Word>
+				<Word
+					name="avg-benchmark"
+					x={margin}
+					y={H * 0.92}
+					size={T.body}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.average).split(" · ")[1]}
+				</Word>
+			</g>
 
 			{/* A block: arranged off-screen. */}
 			{headline("b-head", copy.bHead)}
-			{/* The hero's answer, as the brackets lock on what the condition doesn't show. */}
-			<Lines
-				name="b2-head"
-				text={t(copy.b2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.bHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			<Brackets name="lock-know" glow />
 			{bars.map(([name, label, size, tone], i) => (
 				<g key={name} data-f={name}>
@@ -403,7 +365,7 @@ function Scene({
 						data-f={`${name}-rect`}
 						x={margin}
 						y={L.barY(i)}
-						width={Math.max(4, (size / BLOCK.quantity) * barMax)}
+						width={(size / BLOCK.quantity) * barMax}
 						height={L.barH}
 						rx={4}
 						className="wt-film-bar"
@@ -411,10 +373,10 @@ function Scene({
 					/>
 					<text
 						data-f={`${name}-n`}
-						x={margin + Math.max(4, (size / BLOCK.quantity) * barMax) + 10}
-						y={L.barY(i) + L.barH / 2 + T.num * 0.32}
+						x={margin + (size / BLOCK.quantity) * barMax + 10}
+						y={L.barY(i) + L.barH / 2 + T.num * 0.75 * 0.32}
 						className="wt-film-num"
-						style={{ fontSize: T.num }}
+						style={{ fontSize: T.num * 0.75 }}
 					>
 						{count(size)}
 					</text>
@@ -430,6 +392,7 @@ function Scene({
 					className="wt-focus-shape"
 				/>
 				<text
+					data-f="auction-value"
 					x={margin + room - (narrow ? 40 : 55)}
 					y={L.barY(1) - T.small * 1.05}
 					textAnchor="middle"
@@ -439,45 +402,67 @@ function Scene({
 					{t(copy.auction).toUpperCase()}
 				</text>
 			</g>
-			<text
-				data-f="know-0"
+			<Word
+				name="known-label"
 				x={margin}
-				y={L.knowY(0)}
-				className="wt-film-type wt-film-gain"
-				style={{ fontSize: narrow ? T.body * 1.1 : T.head * 0.85 }}
-			>
-				{t(copy.shows)}
-			</text>
-			<text
-				data-f="know-1"
-				x={margin}
-				y={L.knowY(1)}
+				y={L.knownY}
+				size={T.body}
+				anchor="start"
 				className="wt-film-type wt-film-dim"
-				style={{ fontSize: narrow ? T.body * 1.1 : T.head * 0.85 }}
 			>
-				{t(narrow ? copy.hidesShort : copy.hides)}
-			</text>
+				{`${t(copy.how)}:`}
+			</Word>
+			<Word
+				name="known-value"
+				x={margin + textWidth(`${t(copy.how)}:`, T.body) + 12}
+				y={L.knownY}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag wt-film-accent"
+			>
+				{t(copy.auction).toUpperCase()}
+			</Word>
+			<Word
+				name="unknown-label"
+				x={margin}
+				y={H * 0.66 - 12}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag wt-film-warn"
+			>
+				{t(copy.unknown).toUpperCase()}
+			</Word>
+			<g data-f="unknown-fields">
+				{[copy.who, copy.why, copy.opened].map((label, i) => (
+					<g key={i} data-f={`unknown-${i}`}>
+						<Word
+							name={`unknown-${i}-label`}
+							x={margin + room * ((i + 0.5) / 3)}
+							y={L.unknownLabelY}
+							size={T.body}
+							className="wt-film-type wt-film-dim"
+						>
+							{t(label)}
+						</Word>
+						<Word
+							name={`unknown-${i}-value`}
+							x={margin + room * ((i + 0.5) / 3)}
+							y={L.unknownValueY}
+							size={T.num * 1.5}
+							className="wt-film-num wt-film-warn"
+						>
+							?
+						</Word>
+					</g>
+				))}
+			</g>
 
 			{/* Two legs, one package. */}
 			{headline("p-head", copy.pHead)}
-			{/* The answer, as the package's price comes up. */}
-			<Lines
-				name="p2-head"
-				text={t(copy.p2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.pHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			{legs.map(([line, quote, tone], i) => (
 				<g key={t(line)} data-f={`leg-${i}`}>
 					<rect
+						data-f={`leg-${i}-box`}
 						x={margin}
 						y={L.legY(i)}
 						width={room}
@@ -502,16 +487,24 @@ function Scene({
 						{t(quote)}
 					</text>
 					<text
-						data-f={`leg-${i}-tag`}
+						data-f={`leg-${i}-price`}
 						x={margin + room - 16}
-						y={L.legY(i) + L.legH * (narrow ? 0.74 : 0.4)}
+						y={L.legY(i) + L.legH * 0.4}
 						textAnchor="end"
-						className="wt-film-tag wt-film-accent"
-						style={{ fontSize: T.small }}
+						className={`wt-film-num ${tone}`}
+						style={{ fontSize: narrow ? T.small * 1.15 : T.body * 1.1 }}
 					>
-						{t(copy.multiLeg).toUpperCase()}
+						{usd(i === 0 ? LEGS.buy.price : LEGS.sell.price)}
 					</text>
 				</g>
+			))}
+			{legs.map((_, i) => (
+				<path
+					key={i}
+					data-f={`price-link-${i}`}
+					d={`M${margin + room - 12} ${L.legY(i) + L.legH * 0.4}H${margin + room - 6 + i * 4}V${L.pkgY - 18 + i * 8}H${margin + 16 + (i === 0 ? 0 : narrow ? 78 : room * 0.23) + (narrow ? T.head : T.num * 0.65) * 1.5}V${L.pkgY - 6}`}
+					className="wt-film-link"
+				/>
 			))}
 			<g data-f="pkg">
 				<rect
@@ -522,31 +515,65 @@ function Scene({
 					rx={14}
 					className="wt-focus-shape"
 				/>
-				<text
+				<Word
+					name="pkg-tag"
 					x={margin + 16}
-					y={L.pkgY + L.pkgH * 0.26}
+					y={L.pkgY + L.pkgH * 0.23}
+					size={T.small}
+					anchor="start"
 					className="wt-film-tag"
-					style={{ fontSize: T.small }}
 				>
 					{t(copy.pkgTag).toUpperCase()}
-				</text>
-				<text
+				</Word>
+				<Word
+					name="pkg-debit"
 					x={margin + 16}
-					y={L.pkgY + L.pkgH * 0.58}
-					className="wt-film-num wt-film-accent"
-					style={{ fontSize: narrow ? T.head : T.num * 0.85 }}
-				>
-					{t(copy.pkgPrice)}
-				</text>
-				<text
-					x={margin + 16}
-					y={L.pkgY + L.pkgH * 0.84}
+					y={L.pkgY + L.pkgH * 0.85}
+					size={T.body}
+					anchor="start"
 					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small * 1.1 }}
 				>
-					{t(copy.pkgCap)}
-				</text>
+					{t(copy.pkgDebit)}
+				</Word>
 			</g>
+			<Word
+				name="pkg-buy"
+				x={margin + 16}
+				y={L.pkgY + L.pkgH * 0.58}
+				size={narrow ? T.head : T.num * 0.65}
+				anchor="start"
+				className="wt-film-num wt-film-gain"
+			>
+				{usd(LEGS.buy.price)}
+			</Word>
+			<Word
+				name="pkg-minus"
+				x={margin + 16 + (narrow ? 61 : room * 0.18)}
+				y={L.pkgY + L.pkgH * 0.58}
+				size={narrow ? T.head : T.num * 0.65}
+				anchor="start"
+				className="wt-film-num"
+			>
+				−
+			</Word>
+			<Word
+				name="pkg-sell"
+				x={margin + 16 + (narrow ? 78 : room * 0.23)}
+				y={L.pkgY + L.pkgH * 0.58}
+				size={narrow ? T.head : T.num * 0.65}
+				anchor="start"
+				className="wt-film-num wt-film-loss"
+			>
+				{usd(LEGS.sell.price)}
+			</Word>
+			<Word
+				name="pkg-result"
+				x={margin + 16 + (narrow ? 146 : room * 0.46)}
+				y={L.pkgY + L.pkgH * 0.58}
+				size={narrow ? T.head : T.num * 0.65}
+				anchor="start"
+				className="wt-film-num wt-film-accent"
+			>{`= ${usd(PACKAGE.price)}`}</Word>
 
 			<g data-f="claim">
 				<Lines
@@ -610,14 +637,7 @@ function build(context: FilmContext) {
 			time,
 		);
 	};
-	const heads = [
-		"s-head",
-		"s2-head",
-		"b-head",
-		"b2-head",
-		"p-head",
-		"p2-head",
-	].map((name) => one(name));
+	const heads = ["s-head", "b-head", "p-head"].map((name) => one(name));
 	const venues = SWEEP.asks.map((_, i) => one(`venue-${i}`));
 	const routes = FILLS.map((fill) =>
 		one<SVGPathElement>(
@@ -627,6 +647,10 @@ function build(context: FilmContext) {
 	const fills = FILLS.map((_, i) => one(`fill-${i}`));
 	const legs = [one("leg-0"), one("leg-1")];
 	const lockKnow = one<SVGGraphicsElement>("lock-know");
+	const unknowns = [0, 1, 2].map((i) => one(`unknown-${i}`));
+	const packageValues = ["pkg-buy", "pkg-minus", "pkg-sell", "pkg-result"].map(
+		(name) => one(name),
+	);
 
 	d.hidden([
 		...flat("q"),
@@ -639,12 +663,15 @@ function build(context: FilmContext) {
 		one("bar-shown"),
 		one("bar-printed"),
 		one("auction"),
-		one("know-0"),
-		one("know-1"),
+		one("known-label"),
+		one("known-value"),
+		one("unknown-label"),
+		...unknowns,
 		lockKnow,
 		...legs,
-		one("leg-0-tag"),
-		one("leg-1-tag"),
+		one("price-link-0"),
+		one("price-link-1"),
+		...packageValues,
 		one("pkg"),
 		...kids("claim"),
 	]);
@@ -667,112 +694,109 @@ function build(context: FilmContext) {
 	venues.forEach((venue, i) => {
 		show(venue, 9.3 + i * 0.2);
 	});
-	d.pop(one("chip"), 11.0);
+	show(one("chip"), 11.0);
 	routes.forEach((route, i) => {
 		draw(route, 12.0);
 		show(fills[i], 12.5 + i * 0.25, "right");
 	});
-	FILLS.forEach((fill) => {
-		const i = SWEEP.asks.findIndex((ask) => ask.venue === fill.venue);
-		const ask = SWEEP.asks[i];
-		const left = ask.size - fill.size;
-		// The venue's offer runs down by what it filled; an emptied venue steps back.
-		d.count(
-			one<SVGTextElement>(`venue-${i}-size`),
-			left,
-			12.5,
-			(v) => `${count(Math.round(v))} ${d.t(copy.offered)}`,
-			ask.size,
-			0.5,
-		);
-		if (!left) tl.to(one(`venue-${i}`), { opacity: 0.45, duration: 0.3 }, 13.0);
-	});
-	show(one("avg"), 14.3);
-	show(heads[1], 14.6);
+	// Keep the cards explicitly historical: fills are not paired with independent counters.
+	// Last row settles at 13.5; the average follows one quiet second later.
+	show(one("avg"), 14.5);
 
 	// ——— block: the hero. Arranged off-screen; the condition says how. ———
 	tl.addLabel("block", 19.2);
 	hide(
-		[
-			heads[0],
-			heads[1],
-			...venues,
-			...routes,
-			one("chip"),
-			...fills,
-			one("avg"),
-		],
+		[heads[0], ...venues, ...routes, one("chip"), ...fills, one("avg")],
 		19.2,
 	);
-	show(heads[2], 19.55);
+	show(heads[1], 19.55);
 	show(one("bar-shown"), 20.0, "right");
-	show(one("bar-printed"), 21.4);
-	tl.fromTo(
-		one("bar-printed-rect"),
-		{ attr: { width: 4 } },
-		{
-			attr: { width: Number(one("bar-printed-rect").getAttribute("width")) },
-			duration: 0.9,
-			ease: "power2.out",
-		},
-		21.4,
+	// Geometry and quantity arrive settled together, with a full second after each proof.
+	show(one("bar-printed"), 21.5);
+	show(one("auction"), 23.0);
+	show(one("known-label"), 23.0);
+	// Reduce the comparison before the condition travels into its known field.
+	tl.to(
+		[one("bar-shown"), one("bar-printed")],
+		{ opacity: 0.2, duration: 0.5 },
+		23.0,
 	);
-	tl.fromTo(
-		one("bar-printed-n"),
-		{ x: -(Number(one("bar-printed-rect").getAttribute("width")) - 4) },
-		{ x: 0, duration: 0.9, ease: "power2.out" },
-		21.4,
+	d.carry(
+		one<SVGGraphicsElement>("auction-value"),
+		one<SVGGraphicsElement>("known-value"),
+		23.6,
+		{ duration: 0.6, arc: "y" },
 	);
-	d.pop(one("auction"), 22.8);
-	show(one("know-0"), 23.8);
-	show(one("know-1"), 24.8);
-	// What it doesn't show steps up from dim as the brackets lock on it.
-	tl.set(one("know-1"), { attr: { class: "wt-film-type" } }, 25.4);
-	d.lock(lockKnow, 25.4, { around: one("know-1"), pad: 6 });
-	tl.addLabel("hero-lock", 25.4);
-	show(heads[3], 25.4);
+	hide(one("auction"), 23.6);
+	// The condition fills How but supplies no values for these three questions.
+	show(one("unknown-label"), 25.2);
+	unknowns.forEach((field, i) => {
+		show(field, 25.2 + i * 0.3);
+	});
+	// The last unknown settles at 26.3; the completed proof rests before the lock.
+	d.lock(lockKnow, 27.4, { around: one("unknown-fields"), pad: 8 });
+	tl.addLabel("hero-lock", 27.4);
 
-	// ——— package: two legs, one trade ———
-	tl.addLabel("package", 29);
+	// ——— package: connect both execution prices before revealing their debit ———
+	tl.addLabel("package", 31.0);
+	hide(
+		[
+			heads[1],
+			one("bar-shown"),
+			one("bar-printed"),
+			one("known-label"),
+			one("known-value"),
+			one("unknown-label"),
+			one("unknown-fields"),
+			lockKnow,
+		],
+		31.0,
+	);
+	show(heads[2], 31.35);
+	show(legs[0], 31.8, "right");
+	show(legs[1], 32.8, "right");
+	// The second leg settles at 33.3; no new arrival until 34.3.
+	show(one("pkg"), 34.3);
+	tl.to(
+		[one("leg-0-box"), one("leg-1-box")],
+		{ opacity: 0.2, duration: 0.5 },
+		34.3,
+	);
+	// Routes run in the clear right-hand lane and stop above the package, away from its type.
+	d.trace(one<SVGPathElement>("price-link-0"), 34.8, { duration: 0.6 });
+	d.trace(one<SVGPathElement>("price-link-1"), 34.8, { duration: 0.6 });
+	show(packageValues.slice(0, 3), 35.4);
+	// Never count after an equals sign; the equation becomes true as a settled result.
+	show(one("pkg-result"), 36.9);
+
+	// ——— claim ———
+	tl.addLabel("claim", 40.2);
 	hide(
 		[
 			heads[2],
-			heads[3],
-			one("bar-shown"),
-			one("bar-printed"),
-			one("auction"),
-			one("know-0"),
-			one("know-1"),
-			lockKnow,
+			...legs,
+			one("pkg"),
+			...packageValues,
+			one("price-link-0"),
+			one("price-link-1"),
 		],
-		29.0,
+		40.2,
 	);
-	show(heads[4], 29.35);
-	show(legs[0], 29.8, "right");
-	show(legs[1], 30.8, "right");
-	show(one("leg-0-tag"), 31.4);
-	show(one("leg-1-tag"), 31.6);
-	show(one("pkg"), 32.2);
-	show(heads[5], 32.2);
-
-	// ——— claim ———
-	tl.addLabel("claim", 35.8);
-	hide([heads[4], heads[5], ...legs, one("pkg")], 35.8);
-	word(one("z-big"), 36.1);
-	show(one("z-sub"), 36.5);
+	word(one("z-big"), 40.5);
+	show(one("z-sub"), 40.9);
 
 	// ——— next ———
-	tl.addLabel("next", 40.2);
-	hide(kids("claim"), 40.2);
-	d.close(40.2);
+	tl.addLabel("next", 44.6);
+	hide(kids("claim"), 44.6);
+	d.close(44.6);
 	return tl;
 }
 
 export const executionConditionsFilm: Film = {
 	id: "execution-conditions",
 	label: [
-		`Execution conditions, as a short film: one ${SWEEP.quantity}-contract order for the Oct 18 110 call sent to three venues as ISO orders and printed three times, ${FILLS.map((fill) => `${count(fill.size)} at ${usd(fill.price)}`).join(", ")}, for ${price4(AVERAGE)} on average against a ${usd(BEST.price)} best ask; a block of ${count(BLOCK.quantity)} 105 calls printed at ${usd(BLOCK.price)} as an auction while only ${SHOWN_SIZE} were displayed; and the block's two legs, a 105 call bought at the ask and a 110 call sold inside its quote, read as one 105/110 call spread for ${usd(PACKAGE.price)}`,
-		`成交条件短片：一张 ${SWEEP.quantity} 张的 10月18日 110 看涨订单以 ISO 方式同时发往三个场所，成交三次：${FILLS.map((fill) => `${usd(fill.price)} 成交 ${count(fill.size)} 张`).join("，")}，平均 ${price4(AVERAGE)}，而最优卖价是 ${usd(BEST.price)}；一笔 ${count(BLOCK.quantity)} 张的 105 看涨大宗以竞价方式在 ${usd(BLOCK.price)} 成交，而屏幕上只挂出 ${SHOWN_SIZE} 张；以及这笔大单的两条腿：在卖价买入的 105 看涨与在报价之内卖出的 110 看涨，合起来是一个净价 ${usd(PACKAGE.price)} 的 105/110 看涨价差`,
+		`Execution conditions, as a short film: one ${SWEEP.quantity}-contract order for the Oct 18 110 call sent to three venues as ISO orders and printed three times, ${FILLS.map((fill) => `${count(fill.size)} at ${usd(fill.price)}`).join(", ")}, for ${price4(AVERAGE)} on average against the pre-order best ask of ${usd(BEST.price)}; a block of ${count(BLOCK.quantity)} 105 calls printed at ${usd(BLOCK.price)} as an auction while only ${SHOWN_SIZE} were displayed; the auction condition supplies how it matched, but who, why and whether it opened remain unknown; and the block's two legs, a 105 call bought at the ask and a 110 call sold inside its quote, read together: ${usd(LEGS.buy.price)} minus ${usd(LEGS.sell.price)} is a ${usd(PACKAGE.price)} net debit for one 105/110 call spread`,
+		`成交条件短片：一张 ${SWEEP.quantity} 张的 10月18日 110 看涨订单以 ISO 方式同时发往三个场所，成交三次：${FILLS.map((fill) => `${usd(fill.price)} 成交 ${count(fill.size)} 张`).join("，")}，平均 ${price4(AVERAGE)}，而成交前最优卖价是 ${usd(BEST.price)}；一笔 ${count(BLOCK.quantity)} 张的 105 看涨大宗以竞价方式在 ${usd(BLOCK.price)} 成交，而屏幕上只挂出 ${SHOWN_SIZE} 张；竞价条件给出撮合方式，但谁、为何、是否开仓仍未知；以及这笔大单的两条腿：在卖价买入的 105 看涨与在报价之内卖出的 110 看涨，买价 ${usd(LEGS.buy.price)} 减去卖价 ${usd(LEGS.sell.price)}，合起来是一个净支出 ${usd(PACKAGE.price)} 的 105/110 看涨价差`,
 	],
 	stage: "dark",
 	shots: [
