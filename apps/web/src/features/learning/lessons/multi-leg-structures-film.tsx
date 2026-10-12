@@ -37,7 +37,7 @@ import {
 } from "./multi-leg-structures-model";
 
 /*
- * Straddles, condors and multi-leg prints, as a film. Four ALFA prints in one second, 200
+ * Straddles, condors and multi-leg prints, as a film. Four linked ALFA prints in one second, 200
  * each: sold 95 puts, bought 90 puts, sold 105 calls, bought 110 calls. Bullish or
  * bearish? First a straddle, a V that needs a move of $8.40 either way. The hero is an
  * iron condor: two credit spreads that together keep $2.17 inside $95–$105 and risk $2.83
@@ -50,7 +50,7 @@ import {
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
  *   condor    18.2–30    hero: put spread and call spread; together; it sells a range
  *   package   30–39      four labels; a −$1,400 tally; one package
- *   claim     39–43.4    four prints, one trade
+ *   claim     39–43.4    linked prints, one trade
  *   next      43.4–45.9  Next: checking one trade
  */
 
@@ -60,8 +60,14 @@ const CENTS = (perShare: number) => Math.round(perShare * 100);
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
 const share = (dollars: number) => usd(CENTS(dollars));
 const NET_LABELS = BULLISH - BEARISH;
-const CONDOR_LOW = 95 - CREDIT;
-const CONDOR_HIGH = 105 + CREDIT;
+const SOLD_PREMIUM = LEGS.filter((leg) => leg.side === "sell").reduce(
+	(sum, leg) => sum + legPremium(leg),
+	0,
+);
+const BOUGHT_PREMIUM = LEGS.filter((leg) => leg.side === "buy").reduce(
+	(sum, leg) => sum + legPremium(leg),
+	0,
+);
 /** Each chart's own vertical range, in dollars a contract, and its ticks. */
 const S_Y = [-1500, 2100] as const;
 const C_Y = [-450, 400] as const;
@@ -101,15 +107,19 @@ const legCopy: Record<string, Copy> = {
 	d: ["bought 200 · 110 call", "买入 200 · 110 看涨"],
 };
 
+const legShortCopy: Record<string, Copy> = {
+	a: ["sold 95P", "卖95看跌"],
+	b: ["bought 90P", "买90看跌"],
+	c: ["sold 105C", "卖105看涨"],
+	d: ["bought 110C", "买110看涨"],
+};
+
 const copy = {
 	title: ["Straddles and condors", "跨式与铁鹰"],
-	titleSub: [
-		"four prints in one second, one package",
-		"同一秒的四笔成交，一个整体",
-	],
+	titleSub: ["linked legs, printed in one second", "关联腿在同一秒分别成交"],
 	qTag: [
-		`ALFA Oct 18 · one second · ${SIZE} each`,
-		`ALFA 10月18日 · 同一秒 · 每笔 ${SIZE} 张`,
+		`ALFA · linked legs · ${SIZE} each`,
+		`ALFA · 关联腿 · 每腿 ${SIZE} 张`,
 	],
 	qLegs: [
 		"sold 95 puts · bought 90 puts · sold 105 calls · bought 110 calls",
@@ -122,10 +132,15 @@ const copy = {
 	c2Head: ["It sells a range.", "它卖出的是一个区间。"],
 	callLeg: ["100 call", "100 看涨"],
 	putLeg: ["100 put", "100 看跌"],
-	both: ["both", "合计"],
 	putSpread: ["put spread", "看跌价差"],
 	callSpread: ["call spread", "看涨价差"],
-	axis: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
+	valueAxis: ["Oct 18 value · 100 shares/leg", "10月18日价值 · 每腿100股"],
+	straddleAxis: ["Oct 18 profit · per straddle", "10月18日盈亏 · 每组跨式"],
+	condorAxis: ["Oct 18 profit · per condor", "10月18日盈亏 · 每组铁鹰"],
+	paid: [
+		`${perContract(-STRADDLE_COST)} paid`,
+		`支付 ${perContract(-STRADDLE_COST)}`,
+	],
 	pHead: ["Label the four prints one by one.", "四笔成交逐笔贴标签。"],
 	p2Head: [
 		`As one package: ${SIZE} short condors.`,
@@ -141,19 +156,19 @@ const copy = {
 		`net ${signedUsd(NET_LABELS, 0)}: "slightly bearish"`,
 		`净额 ${signedUsd(NET_LABELS, 0)}：“略偏看跌”`,
 	],
-	pkgTag: [`one package · ${SIZE} iron condors`, `一个整体 · ${SIZE} 组铁鹰`],
+	pkgTag: [`linked package · ${SIZE} condors`, `关联整体 · ${SIZE} 组铁鹰`],
 	pkgCredit: [
 		`${signedUsd(PACKAGE_CREDIT, 0)} collected`,
 		`收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
 	],
 	pkgRange: [
-		`kept if ALFA stays $95–$105 · ${usd(PACKAGE_RISK, 0)} at risk`,
-		`ALFA 留在 $95–$105 即保留 · 风险 ${usd(PACKAGE_RISK, 0)}`,
+		`Oct 18: $95–$105 · ${usd(PACKAGE_RISK, 0)} at risk`,
+		`10月18日 $95–$105 · 风险 ${usd(PACKAGE_RISK, 0)}`,
 	],
-	claimBig: ["Four prints, one trade.", "四笔成交，一笔交易。"],
+	claimBig: ["Linked prints, one trade.", "关联成交，一笔交易。"],
 	claimSub: [
-		"The package is the view, not the labels.",
-		"整体才是观点，不是标签。",
+		"Same-second timing alone cannot prove linkage.",
+		"仅凭同秒成交不能证明关联。",
 	],
 	nextBig: ["Next: checking one trade", "下一课：核查一笔成交"],
 	nextSub: ["facts, inferences and unknowns", "事实、推断与未知"],
@@ -195,9 +210,6 @@ function Scene({
 		ticks: number[],
 	) => (
 		<g data-f={name}>
-			<text x={L.left} y={L.top - 12} className="wt-small">
-				{t(copy.axis)}
-			</text>
 			{ticks.map((v) => (
 				<g key={v}>
 					<path
@@ -345,6 +357,22 @@ function Scene({
 				<g data-f="world">
 					{/* The straddle, on its own scale. */}
 					{axes("axes-s", S_Y, S_TICKS)}
+					<text
+						data-f="s-value-caption"
+						x={L.left}
+						y={L.top - 25}
+						className="wt-small"
+					>
+						{t(copy.valueAxis)}
+					</text>
+					<text
+						data-f="s-profit-caption"
+						x={L.left}
+						y={L.top - 25}
+						className="wt-small"
+					>
+						{t(copy.straddleAxis)}
+					</text>
 					<path
 						data-f="s-call"
 						d={path(S_Y, callPay)}
@@ -355,12 +383,13 @@ function Scene({
 						d={path(S_Y, putPay)}
 						className="wt-line-short"
 					/>
-					<path
-						data-f="s-sum"
-						d={path(S_Y, straddle)}
-						className="wt-line-position"
-						strokeDasharray="6 5"
-					/>
+					<g data-f="s-loss-area">
+						<path
+							d={`M${L.x(STRADDLE_LOW)} ${L.y(S_Y, 0)}L${L.x(100)} ${L.y(S_Y, -STRADDLE_COST * 100)}L${L.x(STRADDLE_HIGH)} ${L.y(S_Y, 0)}Z`}
+							className="wt-film-loss"
+							opacity={0.12}
+						/>
+					</g>
 					<path
 						data-f="s-profit"
 						d={path(S_Y, profit)}
@@ -386,14 +415,28 @@ function Scene({
 						"s-cost",
 						L.x(100),
 						L.y(S_Y, profit(100) * 100) + 22,
-						perContract(-STRADDLE_COST),
+						t(copy.paid),
 						"wt-film-loss",
 					)}
+					<path
+						data-f="s-deduct"
+						d={`M${L.x(100)} ${L.y(S_Y, 0)}V${L.y(S_Y, -STRADDLE_COST * 100)}m-4 -6 4 6 4 -6`}
+						className="wt-line-position"
+						style={{ stroke: "var(--diagram-loss)" }}
+					/>
 					{even("s-low", STRADDLE_LOW)}
 					{even("s-high", STRADDLE_HIGH)}
 
 					{/* The condor, on a closer scale. */}
 					{axes("axes-c", C_Y, C_TICKS)}
+					<text
+						data-f="c-caption"
+						x={L.left}
+						y={L.top - 25}
+						className="wt-small"
+					>
+						{t(copy.condorAxis)}
+					</text>
 					<path
 						data-f="c-put"
 						d={path(C_Y, putSpread)}
@@ -426,15 +469,42 @@ function Scene({
 						"wt-film-type",
 						"end",
 					)}
-					{label(
-						"c-keep",
-						L.x(100),
-						// High enough that the brackets locking on it clear the plateau, low
-						// enough that they clear the break-evens' prices as they close in.
-						L.y(C_Y, condor(100) * 100) - 14,
-						perContract(CREDIT),
-						"wt-film-gain",
-					)}
+					<g data-f="c-range">
+						<rect
+							x={L.x(95)}
+							y={L.y(C_Y, CREDIT * 100)}
+							width={L.x(105) - L.x(95)}
+							height={L.y(C_Y, 0) - L.y(C_Y, CREDIT * 100)}
+							className="wt-film-gain"
+							fill="currentColor"
+							opacity={0.12}
+						/>
+						<text
+							x={L.x(100)}
+							y={(L.y(C_Y, CREDIT * 100) + L.y(C_Y, 0)) / 2 + T.small * 0.35}
+							textAnchor="middle"
+							className="wt-film-num wt-film-gain"
+							style={{ fontSize: T.small }}
+						>
+							$95–$105
+						</text>
+					</g>
+					<path
+						data-f="c-plateau"
+						d={`M${L.x(95)} ${L.y(C_Y, CREDIT * 100)}H${L.x(105)}`}
+						className="wt-line-position"
+						style={{ strokeWidth: 5, stroke: "var(--diagram-gain)" }}
+					/>
+					<text
+						data-f="c-keep"
+						x={L.x(100)}
+						y={L.y(C_Y, CREDIT * 100) - 32}
+						textAnchor="middle"
+						className="wt-film-num wt-halo wt-film-gain"
+						style={{ fontSize: T.num * 1.4 }}
+					>
+						{perContract(CREDIT)}
+					</text>
 					{label(
 						"c-risk",
 						L.x(84) + 6,
@@ -443,8 +513,6 @@ function Scene({
 						"wt-film-loss",
 						"start",
 					)}
-					{even("c-low", CONDOR_LOW)}
-					{even("c-high", CONDOR_HIGH)}
 					<Brackets name="lock-keep" glow />
 				</g>
 			</g>
@@ -482,9 +550,7 @@ function Scene({
 						className="wt-film-num"
 						style={{ fontSize: text }}
 					>
-						{narrow
-							? t(legCopy[leg.key])
-							: `${t(legCopy[leg.key])} @ ${usd(legPrice(leg))}`}
+						{`${t((narrow ? legShortCopy : legCopy)[leg.key])} @ ${usd(legPrice(leg))}`}
 					</text>
 					<text
 						x={margin + room - (narrow ? 14 : room * 0.2)}
@@ -531,29 +597,42 @@ function Scene({
 				/>
 				<text
 					x={margin + 16}
-					y={L.cardY + L.cardH * 0.26}
+					y={L.cardY + L.cardH * 0.18}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
 					{t(copy.pkgTag).toUpperCase()}
 				</text>
 				<text
+					data-f="pkg-result"
 					x={margin + 16}
-					y={L.cardY + L.cardH * 0.58}
+					y={L.cardY + L.cardH * 0.66}
 					className="wt-film-num wt-film-gain"
-					style={{ fontSize: narrow ? T.head : T.num * 0.8 }}
+					style={{ fontSize: narrow ? T.head : T.body * 1.25 }}
 				>
 					{t(copy.pkgCredit)}
 				</text>
 				<text
 					x={margin + 16}
-					y={L.cardY + L.cardH * 0.84}
+					y={L.cardY + L.cardH * 0.9}
 					className="wt-film-type wt-film-dim"
 					style={{ fontSize: T.small * 1.1 }}
 				>
 					{t(copy.pkgRange)}
 				</text>
 			</g>
+
+			<text
+				data-f="pkg-equation"
+				x={margin + 16}
+				y={L.cardY + L.cardH * 0.41}
+				className="wt-film-num"
+				style={{ fontSize: T.body }}
+			>
+				<tspan className="wt-film-gain">{`${pick(["sold", "卖出"], locale)} ${usd(SOLD_PREMIUM, 0)}`}</tspan>
+				<tspan>{" − "}</tspan>
+				<tspan className="wt-film-loss">{`${pick(["bought", "买入"], locale)} ${usd(BOUGHT_PREMIUM, 0)}`}</tspan>
+			</text>
 
 			<g data-f="claim">
 				<Lines
@@ -607,18 +686,10 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	/** A line draws itself from its start, then takes back its own dashes, if any. */
-	const draw = (path: SVGPathElement, time: number) => {
-		const dash = path.getAttribute("stroke-dasharray");
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration: 0.7, ease: "power2.out" },
-			time,
-		);
-		if (dash) tl.set(path, { strokeDasharray: dash }, time + 0.7);
-	};
+	const draw = (path: SVGPathElement, time: number) =>
+		d.trace(path, time, { duration: 0.7, ease: "power2.out" });
+	const fadeIn = (target: Element | Element[], at: number, duration = 0.5) =>
+		tl.fromTo(target, { opacity: 0 }, { opacity: 1, duration }, at);
 	const p = (name: string) => one<SVGPathElement>(name);
 	const heads = [
 		"s-head",
@@ -638,6 +709,8 @@ function build(context: FilmContext) {
 		...legs,
 		one("tally"),
 		one("pkg"),
+		one("pkg-equation"),
+		one("pkg-result"),
 		...kids("claim"),
 	]);
 
@@ -659,17 +732,23 @@ function build(context: FilmContext) {
 	d.rise(8.9);
 	show(one("axes-s"), 9.1);
 	draw(p("s-call"), 9.6);
-	show(one("s-call-tag"), 10.1);
+	show(one("s-call-tag"), 9.6);
 	draw(p("s-put"), 10.4);
-	show(one("s-put-tag"), 10.9);
-	tl.to([p("s-call"), p("s-put")], { opacity: 0.3, duration: 0.4 }, 12.0);
-	hide([one("s-call-tag"), one("s-put-tag")], 12.0, 0.3);
-	draw(p("s-sum"), 12.2);
-	tl.to(p("s-sum"), { opacity: 0.35, duration: 0.4 }, 13.4);
+	show(one("s-put-tag"), 10.4);
+	fadeIn(one("s-value-caption"), 9.1);
+	// The component value V settles at 11.1; deduction begins after 1 s of quiet.
+	fadeIn(one("s-cost"), 12.1);
+	d.trace(p("s-deduct"), 12.1, { duration: 0.5, ease: "power2.out" });
+	// The premium deduction settles at 12.6, then stands for a full second.
+	hide(one("s-value-caption"), 12.1, 0.3, 0);
+	fadeIn(one("s-profit-caption"), 13.6, 0.3);
+	tl.to([p("s-call"), p("s-put")], { opacity: 0.2, duration: 0.4 }, 13.6);
+	hide([one("s-call-tag"), one("s-put-tag")], 13.6, 0.3);
 	draw(p("s-profit"), 13.6);
-	show(one("s-cost"), 14.2);
-	show([one("s-low"), one("s-high")], 14.6);
-	show(heads[1], 14.6);
+	// Break-evens complete the same profit construction, rather than interrupt its rest.
+	fadeIn([one("s-low"), one("s-high")], 13.8);
+	show(heads[1], 13.6);
+	fadeIn(one("s-loss-area"), 16.7);
 
 	// ——— condor: the hero. Two credit spreads that sell a range. ———
 	tl.addLabel("condor", 18.2);
@@ -677,10 +756,12 @@ function build(context: FilmContext) {
 	hide(
 		[
 			one("axes-s"),
+			one("s-loss-area"),
+			one("s-profit-caption"),
 			p("s-call"),
 			p("s-put"),
-			p("s-sum"),
 			p("s-profit"),
+			p("s-deduct"),
 			one("s-cost"),
 			one("s-low"),
 			one("s-high"),
@@ -689,18 +770,20 @@ function build(context: FilmContext) {
 		0.3,
 	);
 	show(one("axes-c"), 18.6);
+	fadeIn(one("c-caption"), 18.6);
 	draw(p("c-put"), 19.2);
-	// Sideways: on a phone the tags sit under their lines, just above the price axis.
-	show(one("c-put-tag"), 19.7, "right");
-	draw(p("c-call"), 20.4);
-	show(one("c-call-tag"), 20.9, "right");
-	tl.to([p("c-put"), p("c-call")], { opacity: 0.3, duration: 0.4 }, 22.2);
-	hide([one("c-put-tag"), one("c-call-tag")], 22.2, 0.3);
-	draw(p("c-sum"), 22.4);
-	show(one("c-keep"), 23.6);
-	show(one("c-risk"), 24.4);
-	show([one("c-low"), one("c-high")], 25.4);
-	d.lock(lockKeep, 26.4, { around: one("c-keep"), pad: 4 });
+	show(one("c-put-tag"), 19.4, "right");
+	draw(p("c-call"), 19.8);
+	show(one("c-call-tag"), 19.9, "right");
+	// The paired component construction settles at 20.5, followed by 1.4 s of quiet.
+	tl.to([p("c-put"), p("c-call")], { opacity: 0.2, duration: 0.4 }, 21.9);
+	hide([one("c-put-tag"), one("c-call-tag")], 21.9, 0.3);
+	draw(p("c-sum"), 21.9);
+	// One result construction: emphasize the plateau, credit and bounded loss.
+	fadeIn([one("c-range"), one("c-keep"), one("c-risk")], 23.6);
+	draw(p("c-plateau"), 23.6);
+	// Settled at 24.3, well before the unchanged hero lock and its 3.15 s stand.
+	d.lock(lockKeep, 26.4, { around: one("c-keep"), pad: 6 });
 	tl.addLabel("hero-lock", 26.4);
 	show(heads[3], 26.4);
 
@@ -714,12 +797,16 @@ function build(context: FilmContext) {
 	show(one("tally"), 31.5);
 	hide(one("tally"), 35.0, 0.3);
 	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 35.2);
-	show(one("pkg"), 35.4);
+	// Cash operands land below the directional tally without displacing its 3.5 s hold.
+	fadeIn(one("pkg-equation"), 33.6);
+	// Arithmetic settles at 34.1; net credit follows after 1.3 s of quiet.
+	fadeIn(one("pkg"), 35.4);
+	fadeIn(one("pkg-result"), 35.4);
 	show(heads[5], 35.4);
 
 	// ——— claim ———
 	tl.addLabel("claim", 39);
-	hide([heads[4], heads[5], ...legs, one("pkg")], 39);
+	hide([heads[4], heads[5], ...legs, one("pkg"), one("pkg-equation")], 39);
 	word(one("z-big"), 39.3);
 	show(one("z-sub"), 39.7);
 
@@ -733,8 +820,8 @@ function build(context: FilmContext) {
 export const multiLegStructuresFilm: Film = {
 	id: "multi-leg-structures",
 	label: [
-		`Straddles, condors and multi-leg prints, as a short film: a long Oct 18 100 straddle bought for ${share(STRADDLE_COST)}, a V with break-evens at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}; an iron condor sold for ${share(CREDIT)} as a 95/90 put spread and a 105/110 call spread, keeping ${perContract(CREDIT)} between $95 and $105 and risking ${perContract(-MAX_LOSS)}; and four prints in one second, ${SIZE} contracts each, that net ${signedUsd(NET_LABELS, 0)} when labelled leg by leg but are ${SIZE} short iron condors read as one package, ${signedUsd(PACKAGE_CREDIT, 0)} collected`,
-		`跨式、铁鹰与多腿成交短片：以 ${share(STRADDLE_COST)} 买入 10月18日 100 跨式，一个 V 字，盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}；以 ${share(CREDIT)} 卖出的铁鹰，由 95/90 看跌价差和 105/110 看涨价差组成，$95 到 $105 之间保留 ${perContract(CREDIT)}，风险 ${perContract(-MAX_LOSS)}；以及同一秒的四笔成交，每笔 ${SIZE} 张：逐腿贴标签净额 ${signedUsd(NET_LABELS, 0)}，作为整体来读则是 ${SIZE} 组铁鹰空头，收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
+		`Straddles, condors and multi-leg prints, as a short film: a long Oct 18 100 straddle bought for ${share(STRADDLE_COST)}, a V with break-evens at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}; an iron condor sold for ${share(CREDIT)} as a 95/90 put spread and a 105/110 call spread, keeping ${perContract(CREDIT)} between $95 and $105 and risking ${perContract(-MAX_LOSS)}; and four linked prints in one second, ${SIZE} contracts each, that net ${signedUsd(NET_LABELS, 0)} when labelled leg by leg but are ${SIZE} short iron condors read as one package, ${signedUsd(PACKAGE_CREDIT, 0)} collected`,
+		`跨式、铁鹰与多腿成交短片：以 ${share(STRADDLE_COST)} 买入 10月18日 100 跨式，一个 V 字，盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}；以 ${share(CREDIT)} 卖出的铁鹰，由 95/90 看跌价差和 105/110 看涨价差组成，$95 到 $105 之间保留 ${perContract(CREDIT)}，风险 ${perContract(-MAX_LOSS)}；以及同一秒的四笔关联成交，每笔 ${SIZE} 张：逐腿贴标签净额 ${signedUsd(NET_LABELS, 0)}，作为整体来读则是 ${SIZE} 组铁鹰空头，收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
 	],
 	stage: "dark",
 	shots: [
