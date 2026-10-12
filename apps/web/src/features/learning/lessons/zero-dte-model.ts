@@ -1,4 +1,10 @@
-import { modelVolatility, priceOption, usd } from "@/content/world";
+import {
+	daysToExpiry,
+	expiries,
+	modelVolatility,
+	priceOption,
+	usd,
+} from "@/content/world";
 
 /** The numbers the 0DTE lesson teaches with, shared by its film and its playground. */
 
@@ -16,9 +22,15 @@ export const sep20 = (time: number, spot = STRIKE) =>
 		right: "call",
 	});
 /** The Oct 18 100 call a month out, for contrast. */
+export const OCT18_DAYS = daysToExpiry("oct18", expiries.sep20.date);
 export const oct18Delta = (spot: number) =>
-	priceOption({ spot, strike: STRIKE, days: 32, iv: 0.35, right: "call" })
-		.delta;
+	priceOption({
+		spot,
+		strike: STRIKE,
+		days: OCT18_DAYS,
+		iv: 0.35,
+		right: "call",
+	}).delta;
 export const clock = (time: number) =>
 	`${Math.floor(time)}:${time % 1 ? "30" : "00"}`;
 export const share = (dollars: number) => usd(Math.round(dollars * 100));

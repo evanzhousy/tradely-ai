@@ -23,10 +23,12 @@ import {
 	HIGH,
 	hedgeShares,
 	LOW,
+	OCT18_DAYS,
 	OPEN,
 	oct18Delta,
 	sep20,
 	share,
+	swingAt,
 	THURSDAY_OI,
 } from "./zero-dte-model";
 
@@ -38,17 +40,16 @@ import {
  *
  *   open      0–4        "0DTE"
  *   question  4–9.6      9:30, $0.36 → the 4:00 pm close, ?
- *   hours     9.6–20.4   the value drains with the clock: $0.26 at 12:30, $0.14 at 15:00,
- *                        $0 at the close, all of it time value
- *   swing     20.4–32.2  hero: 40 cents moves a month-out delta 0.51 → 0.53; the last
- *                        day's, as the clock runs to 15:00, 0.29 → 0.72, locked; the hedge
- *   oi        32.2–40.6  3,400 open Thursday, 12,000 traded Friday, 0 on Monday
- *   claim     40.6–45    "0DTE: cheap, fast, gone by 4 pm."
+ *   hours     9.6–21.0   one continuous clock/value walk; $0 at the close, time value gone
+ *   swing     21.0–32.55 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
+ *                        carried into the hero; conditional hedge arithmetic after the lock
+ *   oi        32.55–40.6 headline above the standing hero; chart hand-over at 33.6,
+ *                        3,400 open Thursday, 12,000 traded Friday; Monday absent, expired
+ *   claim     40.6–45    "Little time. Large hedge changes."
  *   next      45–47      Next: implied and realized volatility
  */
 
 const END = 47;
-const MIDDAY = 12.5;
 const LATE = 15;
 const H_TOP = 0.4;
 const SWING = [98.5, 101.5] as const;
@@ -58,8 +59,6 @@ const hoursCurve = Array.from(
 	(_, i) => [OPEN + i / 8, sep20(OPEN + i / 8).price] as const,
 );
 const swingXs = Array.from({ length: 61 }, (_, i) => SWING[0] + i * 0.05);
-const midday = sep20(MIDDAY).price;
-const late = sep20(LATE).price;
 /** A time of day, "9:30", "15:05", to the nearest five minutes. */
 const clockFace = (time: number) => {
 	const total = Math.round((time * 60) / 5) * 5;
@@ -68,7 +67,7 @@ const clockFace = (time: number) => {
 const bars = [
 	{ id: "thu", value: THURSDAY_OI, tone: "neutral" },
 	{ id: "fri", value: FRIDAY_VOLUME, tone: "total" },
-	{ id: "mon", value: 0, tone: "neutral" },
+	{ id: "mon", value: null, tone: "neutral" },
 ] as const;
 
 function layout(width: number) {
@@ -127,8 +126,8 @@ const copy = {
 	qTagOpen: ["Fri Sep 20, 9:30", "9月20日 周五 9:30"],
 	qTagClose: ["4:00 pm close", "下午 4:00 收盘"],
 	qLine: [
-		"ALFA stays at $100 all day. What is the call worth at the close?",
-		"ALFA 一整天都在 $100。收盘时这张看涨值多少？",
+		"ALFA stays at $100. What is the Sep 20 $100-strike call worth at expiry?",
+		"ALFA 全天保持 $100。9月20日 $100 行权价看涨到期值多少？",
 	],
 	hoursHead: [
 		"Every hour costs more than the last.",
@@ -137,10 +136,7 @@ const copy = {
 	hoursHeadShort: ["Each hour costs more.", "每一小时都更贵。"],
 	hoursAxis: ["Sep 20 100 call, per share", "9月20日 100 看涨，每股"],
 	heldAxis: ["Fri Sep 20 · ALFA held at $100", "9月20日 周五 · ALFA 保持 $100"],
-	closeHead: [
-		"At the close: $0, all time value.",
-		"收盘时：$0，全是时间价值。",
-	],
+	closeHead: ["At the close: time value is gone.", "收盘时：时间价值归零。"],
 	swingHead: [
 		"Near the strike, delta swings on cents.",
 		"在行权价附近，Delta 随几美分摆动。",
@@ -148,19 +144,15 @@ const copy = {
 	swingHeadShort: ["Delta swings on cents.", "Delta 随几美分摆动。"],
 	swingAxis: ["delta, model", "Delta，模型"],
 	priceAxis: ["ALFA price", "ALFA 价格"],
-	octLegend: ["Oct 18, 32 days", "10月18日，32 天"],
+	octLegend: [`Oct 18, ${OCT18_DAYS} days`, `10月18日，${OCT18_DAYS} 天`],
 	sepLegend: ["Sep 20, its last day", "9月20日，最后一天"],
 	swingWord: [
 		`delta, ALFA $${LOW.toFixed(2)} → $${HIGH.toFixed(2)}, at ${LATE}:00`,
 		`Delta，ALFA $${LOW.toFixed(2)} → $${HIGH.toFixed(2)}，${LATE}:00`,
 	],
 	hedge: [
-		`Short ${count(HEDGE_CONTRACTS)} calls and hedged? Buy about ${count(hedgeShares(LATE))} shares on those 40 cents.`,
-		`做空 ${count(HEDGE_CONTRACTS)} 张看涨并对冲？这 40 美分就要买入约 ${count(hedgeShares(LATE))} 股。`,
-	],
-	caveat: [
-		"That's the hedge such a position needs, not proof anyone holds it.",
-		"这是这类持仓需要的对冲，并不能证明有人持有它。",
+		`If short ${count(HEDGE_CONTRACTS)} calls: buy about ${count(hedgeShares(LATE))} shares to hedge. Actual holdings unknown.`,
+		`若做空 ${count(HEDGE_CONTRACTS)} 张看涨：对冲需买约 ${count(hedgeShares(LATE))} 股。实际持仓未知。`,
 	],
 	oiHead: [
 		"Same-day flow never reaches open interest.",
@@ -170,26 +162,15 @@ const copy = {
 		"Same-day flow skips open interest.",
 		"当天成交进不了未平仓量。",
 	],
-	oiAnswer: [
-		"Volume counts it. Open interest never does.",
-		"成交量算它，未平仓量从不算。",
-	],
-	oiAnswerShort: [
-		"Volume counts it. OI never does.",
-		"成交量算它，OI 从不算。",
-	],
 	oiAxis: ["Sep 20 100 call, contracts", "9月20日 100 看涨，张"],
 	thu: ["Thu close, OI", "周四收盘 OI"],
 	fri: ["Fri, volume", "周五成交量"],
 	mon: ["Mon, OI", "周一 OI"],
-	expired: ["expired", "已到期"],
-	claimBig: [
-		"0DTE: cheap, fast, gone by 4 pm.",
-		"0DTE：便宜、快，4 点就没了。",
-	],
+	expired: ["series expired", "合约已到期"],
+	claimBig: ["Little time. Large hedge changes.", "时间少，对冲变化大。"],
 	claimSub: [
-		"Hours drain it, cents swing it, OI misses it.",
-		"按小时流失，随几美分摆动，未平仓量看不到它。",
+		"Time value drains. No OI count after expiry.",
+		"时间价值流失，到期后没有未平仓量读数。",
 	],
 	nextBig: [
 		"Next: implied and realized volatility",
@@ -214,12 +195,7 @@ function Scene({
 	const { height: H, type: T, room, narrow } = L;
 	const W = width;
 	const id = useId().replace(/:/g, "");
-	const tucked = (pin: string) => narrow && pin === "late";
 	const hourTicks = narrow ? [10, 12, 14, 16] : [10, 11, 12, 13, 14, 15, 16];
-	const pins = [
-		{ id: "mid", time: MIDDAY, value: midday },
-		{ id: "late", time: LATE, value: late },
-	];
 	const axisX = (
 		ticks: number[],
 		x: (v: number) => number,
@@ -325,35 +301,6 @@ function Scene({
 								d={L.path(hoursCurve, L.xH, L.yH)}
 							/>
 						</g>
-						{pins.map((pin) => (
-							<g key={pin.id} data-f={`h-pin-${pin.id}`}>
-								<circle
-									cx={L.xH(pin.time)}
-									cy={L.yH(pin.value)}
-									r={4}
-									className="wt-chip"
-								/>
-								{/* Above right, except the late pin on a phone: there the frame's edge
-								is near, so it goes below left, where the falling curve doesn't. */}
-								<text
-									x={L.xH(pin.time) + (tucked(pin.id) ? -8 : 8)}
-									y={L.yH(pin.value) + (tucked(pin.id) ? 18 : -9)}
-									textAnchor={tucked(pin.id) ? "end" : "start"}
-									className="wt-halo wt-accent wt-marker-label"
-								>
-									{share(pin.value)}
-								</text>
-							</g>
-						))}
-						<text
-							data-f="h-pin-close"
-							x={L.xH(CLOSE) - 10}
-							y={L.yH(0) - 8}
-							textAnchor="end"
-							className="wt-halo wt-loss wt-marker-label"
-						>
-							$0
-						</text>
 						<circle
 							data-f="h-marker"
 							r={6}
@@ -465,25 +412,29 @@ function Scene({
 						</text>
 						{bars.map((bar, i) => (
 							<g key={bar.id}>
-								<rect
-									data-f={`o-bar-${bar.id}`}
-									className="wt-film-bar"
-									data-tone={bar.tone}
-									x={L.barX(i) - L.barWidth / 2}
-									y={L.yO(0)}
-									width={L.barWidth}
-									height={0}
-									rx={4}
-								/>
+								{bar.value !== null && (
+									<rect
+										data-f={`o-bar-${bar.id}`}
+										className="wt-film-bar"
+										data-tone={bar.tone}
+										x={L.barX(i) - L.barWidth / 2}
+										y={L.yO(0)}
+										width={L.barWidth}
+										height={0}
+										rx={4}
+									/>
+								)}
 								<text
-									data-f={`o-value-${bar.id}`}
+									data-f={
+										bar.value === null ? "o-absent-mon" : `o-value-${bar.id}`
+									}
 									x={L.barX(i)}
-									y={L.yO(bar.value) - 10}
+									y={L.yO(bar.value ?? 0) - 10}
 									textAnchor="middle"
 									className={`wt-film-num ${bar.id === "fri" ? "wt-film-accent" : ""}`}
 									style={{ fontSize: T.head }}
 								>
-									0
+									{bar.value === null ? "—" : "0"}
 								</text>
 								<text
 									x={L.barX(i)}
@@ -548,6 +499,16 @@ function Scene({
 				9:30
 			</Word>
 			<Word
+				name="h-value"
+				x={L.right - 4}
+				y={L.top + T.num * 0.9 + T.head * 1.6}
+				size={T.head}
+				anchor="end"
+				className="wt-film-num wt-film-accent"
+			>
+				{share(AT_OPEN)}
+			</Word>
+			<Word
 				name="s-clock"
 				x={L.right - 4}
 				y={L.bottom - 12}
@@ -587,14 +548,26 @@ function Scene({
 			/>
 			<Brackets name="lock-swing" glow />
 			<g data-f="w">
+				{(["low", "high"] as const).map((end) => (
+					<Word
+						key={end}
+						name={`w-${end}`}
+						x={W / 2 + (end === "low" ? -1 : 1) * T.big * 1.8}
+						y={H * 0.36 + T.big * 0.36}
+						size={T.big}
+						className="wt-film-num wt-film-accent"
+					>
+						{fixed2(sep20(LATE, end === "low" ? LOW : HIGH).delta)}
+					</Word>
+				))}
 				<Word
-					name="w-big"
+					name="w-arrow"
 					x={W / 2}
 					y={H * 0.36 + T.big * 0.36}
 					size={T.big}
 					className="wt-film-num"
 				>
-					{`${fixed2(sep20(LATE, LOW).delta)} → ${fixed2(sep20(LATE, HIGH).delta)}`}
+					→
 				</Word>
 				<Lines
 					name="w-word"
@@ -605,6 +578,15 @@ function Scene({
 					maxWidth={room}
 					className="wt-film-type wt-film-accent"
 				/>
+				<Word
+					name="w-math"
+					x={W / 2}
+					y={H * 0.64}
+					size={T.head}
+					className="wt-film-num"
+				>
+					{`${fixed2(swingAt(LATE))} × 100 × ${count(HEDGE_CONTRACTS)} ≈ ${count(hedgeShares(LATE))}`}
+				</Word>
 				<Lines
 					name="w-hedge"
 					text={t(copy.hedge)}
@@ -613,39 +595,12 @@ function Scene({
 					size={T.body}
 					maxWidth={room}
 				/>
-				<Lines
-					name="w-caveat"
-					text={t(copy.caveat)}
-					x={W / 2}
-					y={
-						H * 0.7 +
-						T.body * 1.35 * lineCount(t(copy.hedge), room, T.body) +
-						T.small * 0.6
-					}
-					size={T.small}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
 			</g>
 			<Lines
 				name="o-head"
 				text={t(narrow ? copy.oiHeadShort : copy.oiHead)}
 				x={L.margin}
 				y={L.headY}
-				size={T.head}
-				maxWidth={room}
-				anchor="start"
-			/>
-			<Lines
-				name="o-answer"
-				text={t(narrow ? copy.oiAnswerShort : copy.oiAnswer)}
-				x={L.margin}
-				y={
-					L.headY +
-					lineCount(t(narrow ? copy.oiHeadShort : copy.oiHead), room, T.head) *
-						T.head *
-						1.35
-				}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"
@@ -702,6 +657,7 @@ function build(context: FilmContext) {
 	const marker = one("h-marker");
 	const clip = one("hours-clip");
 	const clockText = one<SVGTextElement>("clock");
+	const priceText = one<SVGTextElement>("h-value");
 	const swingClock = one<SVGTextElement>("s-clock");
 	const charts = {
 		hours: one("chart-hours"),
@@ -712,9 +668,6 @@ function build(context: FilmContext) {
 	gsap.set([charts.swing, charts.oi], { opacity: 0 });
 	d.hidden([
 		marker,
-		one("h-pin-mid"),
-		one("h-pin-late"),
-		one("h-pin-close"),
 		one("s-oct"),
 		one("s-sep"),
 		one("s-legend-oct"),
@@ -725,18 +678,20 @@ function build(context: FilmContext) {
 				one(`s-${curve}-${end}-label`),
 			]),
 		),
-		...bars.map((bar) => one(`o-value-${bar.id}`)),
+		...bars.map((bar) =>
+			one(bar.value === null ? "o-absent-mon" : `o-value-${bar.id}`),
+		),
 		one("o-expired"),
 		...flat("q"),
 		one("h-head"),
 		one("h2-head"),
 		clockText,
+		one("h-value"),
 		swingClock,
 		lockSwing,
 		one("s-head"),
 		...kids("w"),
 		one("o-head"),
-		one("o-answer"),
 		...kids("claim"),
 	]);
 
@@ -759,51 +714,45 @@ function build(context: FilmContext) {
 	show(one("h-head"), 9.8);
 	rise(9.9);
 	land(marker, 10.6);
-	show(clockText, 10.6, "right");
+	show([clockText, priceText], 10.6, "right");
 	const day = { time: OPEN };
 	const tick = () => {
 		const x = L.xH(day.time);
 		gsap.set(marker, { attr: { cx: x, cy: L.yH(sep20(day.time).price) } });
 		gsap.set(clip, { attr: { width: x - L.left + 6 } });
 		clockText.textContent = clockFace(day.time);
+		priceText.textContent = share(sep20(day.time).price);
+		priceText.classList.toggle("wt-film-loss", day.time >= CLOSE);
 	};
 	tl.to(
 		day,
-		{ time: MIDDAY, duration: 1.6, ease: "power1.inOut", onUpdate: tick },
+		{ time: CLOSE, duration: 5.2, ease: "none", onUpdate: tick },
 		11.2,
 	);
-	land(one("h-pin-mid"), 12.9);
-	tl.to(
-		day,
-		{ time: LATE, duration: 1.3, ease: "power1.in", onUpdate: tick },
-		13.6,
-	);
-	land(one("h-pin-late"), 15.0);
-	tl.to(
-		day,
-		{ time: CLOSE, duration: 0.9, ease: "power2.in", onUpdate: tick },
-		15.5,
-	);
-	show(one("h-pin-close"), 16.5, "below", 0.4);
-	// The question's answer, as the close's pin comes up.
-	show(one("h2-head"), 16.8);
+	// The endpoint settles at 16.4; the answer follows a full second of quiet.
+	show(one("h2-head"), 17.4);
 
 	// ——— swing: the hero. Delta near the strike as the close nears. ———
-	tl.addLabel("swing", 20.4);
-	d.swap([one("h-head"), one("h2-head")], one("s-head"), 20.4);
-	hide(clockText, 20.4);
-	sink(20.4);
-	tl.set(charts.hours, { opacity: 0 }, 20.8);
-	tl.set(charts.swing, { opacity: 1 }, 20.8);
-	rise(20.9);
+	tl.addLabel("swing", 21.0);
+	d.swap([one("h-head"), one("h2-head")], one("s-head"), 21.0);
+	hide([clockText, priceText], 21.0);
+	sink(21.0);
+	tl.set(charts.hours, { opacity: 0 }, 21.4);
+	tl.set(charts.swing, { opacity: 1 }, 21.4);
+	rise(21.4);
+	// The month-out comparison settles with the panel at 22.2, before Sep enters at 23.2.
 	tl.to(
-		[one("s-oct"), one("s-legend-oct")],
-		{ opacity: 1, duration: 0.5 },
+		[
+			one("s-oct"),
+			one("s-legend-oct"),
+			one("s-oct-low"),
+			one("s-oct-high"),
+			one("s-oct-low-label"),
+			one("s-oct-high-label"),
+		],
+		{ opacity: 1, duration: 0.55 },
 		21.4,
 	);
-	land(one("s-oct-low"), 21.8);
-	land(one("s-oct-high"), 21.9);
-	show([one("s-oct-low-label"), one("s-oct-high-label")], 22.1, "below", 0.4);
 	// The last day's call, from the open; then the clock runs and its curve steepens.
 	const swing = { time: OPEN };
 	const ends = [
@@ -834,73 +783,122 @@ function build(context: FilmContext) {
 	tl.to(
 		[one("s-oct-low-label"), one("s-oct-high-label")],
 		{ opacity: 0, duration: 0.3 },
-		23.0,
+		23.2,
 	);
 	tl.to(
 		[one("s-sep"), one("s-legend-sep")],
 		{ opacity: 1, duration: 0.5 },
-		23.1,
+		23.2,
 	);
-	land(one("s-sep-low"), 23.4);
-	land(one("s-sep-high"), 23.5);
-	show([one("s-sep-low-label"), one("s-sep-high-label")], 23.7, "below", 0.4);
-	show(swingClock, 23.7, "right");
+	tl.to(
+		[one("s-sep-low"), one("s-sep-high")],
+		{ opacity: 1, duration: 0.55 },
+		23.2,
+	);
+	// Month-out labels have faded before the last-day labels enter their lanes.
+	tl.to(
+		[one("s-sep-low-label"), one("s-sep-high-label")],
+		{ opacity: 1, duration: 0.4 },
+		23.5,
+	);
+	show(swingClock, 23.2, "right");
 	tl.to(
 		swing,
-		{ time: LATE, duration: 2.4, ease: "power1.in", onUpdate: steepen },
-		24.3,
+		{ time: LATE, duration: 3.5, ease: "power1.in", onUpdate: steepen },
+		23.2,
 	);
-	// Cut: the swing, locked, and the hedge it asks for.
-	hide([one("s-head"), swingClock], 27.5);
-	sink(27.5);
-	land(one("w-big"), 27.9);
-	show(one("w-word"), 28.2);
-	d.lock(lockSwing, 28.5, { around: [one("w-big"), one("w-word")], pad: 8 });
+	// The curve settles at 26.7. Rest one second, then carry its actual endpoints.
+	hide(swingClock, 27.7);
+	// Keep the existing headline hold while the endpoints carry below its lane.
+	hide(one("s-head"), 28.1);
+	// Fade the chart around the endpoints, leaving their parent untransformed for carry.
+	const swingMarks = [
+		...charts.swing.querySelectorAll("path, text, circle"),
+	].filter(
+		(mark) =>
+			!["s-sep-low-label", "s-sep-high-label"].includes(
+				mark.getAttribute("data-f") ?? "",
+			),
+	);
+	tl.to(swingMarks, { opacity: 0, duration: 0.4, ease: "power2.in" }, 27.7);
+	for (const [end, spot] of ends) {
+		const label = one<SVGTextElement>(`s-sep-${end}-label`);
+		// Measure the carry at the final model state, not the markup's opening state.
+		const y = label.getAttribute("y");
+		const text = label.textContent;
+		label.setAttribute("y", String(L.yS(sep20(LATE, spot).delta) + 4));
+		label.textContent = fixed2(sep20(LATE, spot).delta);
+		d.carry(label, one<SVGTextElement>(`w-${end}`), 28.1, {
+			duration: 0.4,
+			arc: "x",
+		});
+		label.setAttribute("y", y ?? "");
+		label.textContent = text;
+	}
+	// The endpoints have handed over; the now-empty depth can reset for the next chart.
+	tl.set(charts.swing, { opacity: 0 }, 28.5);
+	sink(28.5);
+	show(one("w-arrow"), 28.0, "below", 0.5);
+	// The carries clear this caption's lane before it becomes legible; both settle by 28.95.
+	tl.to(one("w-word"), { opacity: 1, duration: 0.5 }, 28.45);
+	d.lock(lockSwing, 28.5, {
+		around: [one("w-low"), one("w-arrow"), one("w-high"), one("w-word")],
+		pad: 8,
+	});
 	tl.addLabel("hero-lock", 28.5);
-	show(one("w-hedge"), 28.7);
-	show(one("w-caveat"), 29.2);
+	// Brackets settle at 28.95; arithmetic and its qualification follow at 29.95.
+	tl.to(one("w-math"), { opacity: 1, duration: 0.5 }, 29.95);
+	show(one("w-hedge"), 29.95);
 
 	// ——— oi: the day's flow and open interest ———
-	tl.addLabel("oi", 32.2);
-	hide([...kids("w"), lockSwing], 32.2);
-	tl.set(charts.swing, { opacity: 0 }, 32.4);
-	tl.set(charts.oi, { opacity: 1 }, 32.4);
+	tl.addLabel("oi", 32.55);
+	// A new headline arrives above the hero without moving through its brackets.
 	show(one("o-head"), 32.55);
-	rise(32.6);
+	hide([...kids("w"), lockSwing], 33.6);
+	tl.set(charts.swing, { opacity: 0 }, 33.95);
+	tl.set(charts.oi, { opacity: 1 }, 33.95);
+	rise(34.0);
+	// Missing Monday OI is part of the panel, not a third numerical observation.
+	tl.to(
+		[one("o-absent-mon"), one("o-expired")],
+		{ opacity: 1, duration: 0.55 },
+		34.0,
+	);
 	const grow = (index: number, at: number) => {
 		const bar = bars[index];
-		tl.fromTo(
-			one(`o-bar-${bar.id}`),
-			{ attr: { y: L.yO(0), height: 0 } },
-			{
-				attr: { y: L.yO(bar.value), height: L.yO(0) - L.yO(bar.value) },
-				duration: 0.7,
-				ease: "power3.out",
-			},
-			at,
-		);
+		if (bar.value === null) return;
+		const rect = one(`o-bar-${bar.id}`);
 		const value = one<SVGTextElement>(`o-value-${bar.id}`);
-		tl.to(value, { opacity: 1, duration: 0.3 }, at);
-		d.count(value, bar.value, at, (v) => count(Math.round(v)));
+		const state = { value: 0 };
+		const draw = () => {
+			// One modeled count drives the bar and its readout, including while scrubbing.
+			const contracts = Math.round(state.value);
+			const y = L.yO(contracts);
+			rect.setAttribute("y", String(y));
+			rect.setAttribute("height", String(L.yO(0) - y));
+			value.setAttribute("y", String(y - 10));
+			value.textContent = count(contracts);
+		};
 		tl.fromTo(
-			value,
-			{ attr: { y: L.yO(0) - 10 } },
+			state,
+			{ value: 0 },
 			{
-				attr: { y: L.yO(bar.value) - 10 },
+				value: bar.value,
 				duration: 0.7,
-				ease: "power3.out",
+				ease: "power2.out",
+				immediateRender: false,
+				onUpdate: draw,
 			},
 			at,
 		);
+		tl.to(value, { opacity: 1, duration: 0.3 }, at);
 	};
-	grow(0, 33.3);
-	grow(1, 34.3);
-	tl.to(one("o-value-mon"), { opacity: 1, duration: 0.3 }, 35.7);
-	// In place: rising, it would pass through Monday's 0.
-	land(one("o-expired"), 36);
-	show(one("o-answer"), 37);
+	grow(0, 34.6);
+	// Thursday settles at 35.3; Friday starts after one second of quiet.
+	grow(1, 36.3);
 	// Cut: the claim.
-	hide([one("o-head"), one("o-answer")], 40.6);
+	tl.addLabel("claim", 40.6);
+	hide(one("o-head"), 40.6);
 	sink(40.6);
 	tl.fromTo(
 		one("c-big"),
@@ -928,9 +926,9 @@ export const zeroDteFilm: Film = {
 		{ id: "open", label: ["0DTE", "0DTE"] },
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "hours", label: ["By the hour", "按小时"] },
-		{ id: "last", label: ["The last hour", "最后一小时"] },
 		{ id: "swing", label: ["Delta swings", "Delta 摆动"] },
 		{ id: "oi", label: ["Open interest", "未平仓量"] },
+		{ id: "claim", label: ["Little time", "时间少"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
