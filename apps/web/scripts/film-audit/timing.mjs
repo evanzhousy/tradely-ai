@@ -1,8 +1,10 @@
 // One page of the film audit (run by film-audit.sh in ego-browser). Audits a film's timing and
 // copy from its timeline: every headline's hold, the question line, the claim and its second
 // line, headline length and figures, the hero lock's share of the runtime (label "hero-lock"),
-// the runtime, class names, and headlines stacked on one another. Warns when a headline
-// states a figure the stage doesn't show yet ("made, not stated").
+// the runtime, class names, and headlines stacked on one another. Then its motion: entrances
+// and exits of at least 0.3 s, a hero that stands 1.5 s, no empty or faint stage between beats,
+// and no crossfade printing one line over another. Warns when a headline states a figure the
+// stage doesn't show yet ("made, not stated").
 // env: SPACE, LESSON, SIZE, LOCALE, PORT
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
@@ -268,6 +270,401 @@ const out = await page.evaluate(() => {
 				glow.held = t - glow.on;
 			}
 	}
+	// What the stage shows of a mark: its opacity, and nothing at all when it or a group it
+	// sits in is set to display none or hidden, when it has no area yet (a bar about to grow),
+	// or when it is a line whose every part is hidden (its tspans gated one by one).
+	const own = (el, top) => {
+		let a = Number(el.getAttribute("fill-opacity") ?? 1);
+		for (let e = el; e && e !== top; e = e.parentElement)
+			a *= Number(getComputedStyle(e).opacity);
+		return a;
+	};
+	const shows = (el) => {
+		for (let e = el; e && e !== svg; e = e.parentElement) {
+			const cs = getComputedStyle(e);
+			if (cs.display === "none" || cs.visibility === "hidden") return 0;
+		}
+		const r = el.getBoundingClientRect();
+		if (r.width < 1 || r.height < 1) return 0;
+		const parts =
+			el.tagName === "text" ? [...el.querySelectorAll("tspan")] : [];
+		const inner = parts.length ? Math.max(...parts.map((t) => own(t, el))) : 1;
+		return alpha(el) * inner * Number(el.getAttribute("fill-opacity") ?? 1);
+	};
+	const layer = svg.querySelector('[data-f="carry-layer"]');
+	const MOVES = ["x", "y", "scale", "scaleX", "scaleY", "rotation"];
+	const SHOWS = [
+		"opacity",
+		"autoAlpha",
+		"display",
+		"visibility",
+		"scale",
+		"scaleY",
+	];
+	// A text, a figure or a panel: what the motion floor and the hero rules are about.
+	const isUnit = (e) =>
+		(e.tagName === "text" && e.textContent.trim()) ||
+		(e.tagName === "rect" &&
+			/\bwt-(panel-shape|focus-shape|chip)\b/.test(
+				e.getAttribute("class") || "",
+			));
+	const unitsOf = (target) => {
+		if (
+			!(target instanceof Element) ||
+			!svg.contains(target) ||
+			layer?.contains(target)
+		)
+			return [];
+		// A tspan is shown and hidden as part of its line.
+		if (target.tagName === "tspan") return [target];
+		return [target, ...target.querySelectorAll("text, rect")].filter(isUnit);
+	};
+	const short = (n) =>
+		`${n.closest("[data-f]")?.getAttribute("data-f") ?? n.tagName} "${n.textContent.trim().slice(0, 24)}"`;
+	// A carry's hand-overs: its copy takes the original's place as it lifts off (the copy is a
+	// clone, so its untransformed box is the original's), and gives way to its target as it
+	// lands. One image moving, not a pop.
+	const sameBox = (a, b) => {
+		const p = a.getBBox();
+		const q = b.getBBox();
+		return (
+			Math.abs(p.x - q.x) < 1 &&
+			Math.abs(p.y - q.y) < 1 &&
+			Math.abs(p.width - q.width) < 2
+		);
+	};
+	const carries = [...(layer?.children ?? [])]
+		.map((f) => {
+			const tws = tl.getTweensOf(f);
+			if (!tws.length || !(f instanceof SVGGraphicsElement)) return null;
+			return {
+				copy: f,
+				to: svg.querySelector(`[data-f="${f.getAttribute("data-to")}"]`),
+				start: Math.min(...tws.map((tw) => tw.startTime())),
+				land: Math.max(...tws.map((tw) => tw.startTime() + tw.duration())),
+			};
+		})
+		.filter(Boolean);
+	const handover = (unit, t) =>
+		carries.some(
+			(c) =>
+				(Math.abs(t - c.start) < 0.02 &&
+					[unit, ...unit.querySelectorAll("*")].some(
+						(e) => e.tagName === c.copy.tagName && sameBox(e, c.copy),
+					)) ||
+				(Math.abs(t - c.land) < 0.02 &&
+					((c.to &&
+						(c.to === unit || c.to.contains(unit) || unit.contains(c.to))) ||
+						(unit.tagName === c.copy.tagName && sameBox(unit, c.copy)))),
+		);
+	const area = (r) =>
+		Math.max(0, r.right - r.left) * Math.max(0, r.bottom - r.top);
+	const shared = (p, q) =>
+		area({
+			left: Math.max(p.left, q.left),
+			right: Math.min(p.right, q.right),
+			top: Math.max(p.top, q.top),
+			bottom: Math.min(p.bottom, q.bottom),
+		}) / Math.max(1, Math.min(area(p), area(q)));
+	const stage = () =>
+		[...svg.querySelectorAll("text, rect, tspan[data-f]")].filter(
+			(e) =>
+				(isUnit(e) || (e.tagName === "tspan" && e.textContent.trim())) &&
+				!layer?.contains(e) &&
+				!e.closest("[data-f='title-group'], [data-f='title-sub']"),
+		);
+	// Motion floor: a text, a figure or a panel comes on and goes off over at least 0.3 s. Each
+	// tween or set shorter than that is measured by what the stage shows just before and just
+	// after it: a change of half its strength or more is a pop. Not a pop: a carry's hand-over;
+	// a swap in place (one mark goes as another comes in its place, a value set anew); a mark
+	// that vanishes as its flight ends, onto what it lands on; and a cut, where the whole stage
+	// changes at once.
+	const changes = new Map();
+	for (const tw of tweens) {
+		const d = tw.duration();
+		const s = tw.startTime();
+		if (d >= 0.295 || s <= 0.05) continue;
+		const keys = [
+			...Object.keys(tw.vars),
+			...Object.keys(tw.vars.startAt ?? {}),
+		];
+		if (!keys.some((k) => SHOWS.includes(k))) continue;
+		const units = tw.targets().flatMap(unitsOf);
+		if (units.length) changes.set(tw, units);
+	}
+	const pops = [];
+	const all = stage();
+	for (const [tw, units] of changes) {
+		const s = tw.startTime();
+		const d = tw.duration();
+		tl.seek(s - 0.005, false);
+		const before = new Map(all.map((e) => [e, shows(e)]));
+		const boxBefore = new Map(units.map((u) => [u, u.getBoundingClientRect()]));
+		tl.seek(s + d + 0.005, false);
+		const after = new Map(all.map((e) => [e, shows(e)]));
+		const flips = all.filter(
+			(e) => Math.abs(after.get(e) - before.get(e)) >= 0.5,
+		);
+		const lit = all.filter((e) => before.get(e) >= 0.5 || after.get(e) >= 0.5);
+		const cut = lit.length > 0 && flips.length / lit.length >= 0.6;
+		for (const u of units) {
+			const was = before.get(u) ?? shows(u);
+			const now = after.get(u) ?? shows(u);
+			const change = now - was;
+			const pop = (was < 0.1 && now >= 0.5) || (was >= 0.5 && now < 0.1);
+			if (!pop || cut || handover(u, s)) continue;
+			const box = change < 0 ? boxBefore.get(u) : u.getBoundingClientRect();
+			const swap = flips.some(
+				(e) =>
+					e !== u &&
+					!e.contains(u) &&
+					!u.contains(e) &&
+					Math.sign(after.get(e) - before.get(e)) === -Math.sign(change) &&
+					shared(box, e.getBoundingClientRect()) >= 0.5,
+			);
+			if (swap) continue;
+			// A flight that ends by vanishing onto what it lands on.
+			let landing = false;
+			if (change < 0)
+				for (let e = u; e && e !== svg && !landing; e = e.parentElement)
+					landing = tl
+						.getTweensOf(e)
+						.some(
+							(o) =>
+								MOVES.some((k) => k in o.vars) &&
+								o.startTime() + o.duration() <= s + 0.06 &&
+								o.startTime() + o.duration() >= s - 0.06,
+						);
+			if (landing) continue;
+			pops.push({
+				at: s,
+				text: `pop ${change > 0 ? "in" : "out"} ${short(u)} at ${s.toFixed(2)} over ${d.toFixed(2)} s (≥ 0.3)`,
+			});
+			break;
+		}
+	}
+	// The hero stands: from its glow at full strength, nothing the brackets hold (nor a group it
+	// sits in) moves or fades for 1.5 s, and no copy of it is carried away.
+	let stand = null;
+	if (glow.on !== null) {
+		tl.seek(glow.on, false);
+		const lock = glows.find((g) => alpha(g) >= 0.8);
+		const box = lock.getBoundingClientRect();
+		const held = [...svg.querySelectorAll("text")].filter((t) => {
+			if (!t.textContent.trim() || layer?.contains(t) || shows(t) < 0.6)
+				return false;
+			const r = t.getBoundingClientRect();
+			const cx = (r.left + r.right) / 2;
+			const cy = (r.top + r.bottom) / 2;
+			return (
+				cx > box.left &&
+				cx < box.right &&
+				cy > box.top &&
+				cy < box.bottom &&
+				r.width <= box.width + 4
+			);
+		});
+		let leaves = { at: duration, what: "the end" };
+		for (const t of held)
+			for (let e = t; e && e !== svg; e = e.parentElement)
+				for (const tw of tl.getTweensOf(e)) {
+					const s = tw.startTime();
+					const v = tw.vars;
+					const fades = typeof v.opacity === "number" && v.opacity < 0.9;
+					if (
+						s > glow.on + 0.01 &&
+						s < leaves.at &&
+						(fades || MOVES.some((k) => k in v))
+					)
+						leaves = { at: s, what: short(t) };
+				}
+		for (const c of carries)
+			if (
+				c.start > glow.on + 0.01 &&
+				c.start < leaves.at &&
+				held.some((t) => t.tagName === c.copy.tagName && sameBox(t, c.copy))
+			)
+				leaves = {
+					at: c.start,
+					what: `a copy of "${c.copy.textContent.trim().slice(0, 24)}"`,
+				};
+		stand = {
+			texts: held.map((t) => t.textContent.trim().slice(0, 24)),
+			stands: leaves.at - glow.on,
+			leaves: leaves.what,
+		};
+	}
+	// Between beats the stage dips rather than cuts to nothing: it is never empty, and never
+	// faint (nothing at half strength or more) for more than 0.1 s. Checked from the question
+	// until the end card takes over, wherever something is fading out.
+	const endNext = svg.querySelector('[data-f="end-next"]');
+	const endAt = Math.min(
+		duration,
+		...tweens
+			.filter(
+				(tw) =>
+					endNext && tw.targets().includes(endNext) && tw.startTime() > 0.05,
+			)
+			.map((tw) => tw.startTime() - 0.45),
+	);
+	const content = [
+		...svg.querySelectorAll(
+			"text, rect, path, circle, line, polyline, polygon, ellipse",
+		),
+	].filter((e) => {
+		if (
+			e.closest(
+				"defs, clipPath, pattern, mask, [data-f='title-group'], [data-f='title-sub']",
+			)
+		)
+			return false;
+		if (e.tagName === "text") return Boolean(e.textContent.trim());
+		const cls = e.getAttribute("class") || "";
+		return !(
+			/wt-film-bg|wt-film-grid/.test(cls) ||
+			e.getAttribute("data-f") === "drift" ||
+			(e.getAttribute("fill") || "").startsWith("url(#vig")
+		);
+	});
+	const windows = tweens
+		.filter((tw) => tw.vars.opacity === 0 || tw.vars.autoAlpha === 0)
+		.map((tw) => [tw.startTime(), tw.startTime() + tw.duration() + 0.6]);
+	// From when the question is up: the first moment after its label that something shows at
+	// full strength.
+	let dipFrom = tl.labels.question ?? 2;
+	for (
+		;
+		dipFrom < duration;
+		dipFrom = Math.round((dipFrom + 0.05) * 100) / 100
+	) {
+		tl.seek(dipFrom, false);
+		if (
+			content.some(
+				(e) =>
+					!e.closest("[data-f='title-group']") &&
+					e.tagName === "text" &&
+					shows(e) >= 0.9,
+			)
+		)
+			break;
+	}
+	// Spans, sampled every 0.01 s: empty (nothing above 0.1) and faint (nothing above 0.3).
+	const dips = [];
+	const open = { empty: null, faint: null };
+	const close = (kind, t) => {
+		const run = open[kind];
+		if (run)
+			dips.push({ kind, at: run, span: Math.round((t - run) * 100) / 100 });
+		open[kind] = null;
+	};
+	for (let t = dipFrom; t < endAt; t = Math.round((t + 0.01) * 100) / 100) {
+		if (!windows.some(([a, b]) => t >= a && t <= b)) {
+			close("empty", t);
+			close("faint", t);
+			continue;
+		}
+		tl.seek(t, false);
+		let most = 0;
+		for (const e of content) {
+			most = Math.max(most, shows(e));
+			if (most >= 0.3) break;
+		}
+		for (const [kind, line] of [
+			["empty", 0.1],
+			["faint", 0.3],
+		])
+			if (most < line) open[kind] ??= t;
+			else close(kind, t);
+	}
+	close("empty", endAt);
+	close("faint", endAt);
+	// Crossfades dip: where a text comes in, what is leaving from that place is down to a
+	// quarter before the new one reaches a quarter itself. Two lines never print over each
+	// other mid-fade.
+	const boxOf = (u) => {
+		const r = u.getBoundingClientRect();
+		return {
+			l: r.left + 1,
+			r: r.right - 1,
+			t: r.top + r.height * 0.2,
+			b: r.bottom - r.height * 0.2,
+		};
+	};
+	const meets = (a, b) =>
+		Math.min(a.r, b.r) - Math.max(a.l, b.l) > 2 &&
+		Math.min(a.b, b.b) - Math.max(a.t, b.t) > 2;
+	const crossfades = [];
+	const told = new Set();
+	for (const tw of tweens) {
+		const s = tw.startTime();
+		const d = tw.duration();
+		const from = tw.vars.startAt;
+		if (
+			!(
+				s > dipFrom &&
+				s < endAt &&
+				from &&
+				Number(from.opacity) === 0 &&
+				Number(tw.vars.opacity) >= 0.9
+			)
+		)
+			continue;
+		const units = tw
+			.targets()
+			.flatMap(unitsOf)
+			.filter((u) => u.tagName !== "rect");
+		if (!units.length) continue;
+		const leaving = tweens
+			.filter(
+				(o) =>
+					o.vars.opacity === 0 &&
+					o.startTime() < s + d &&
+					o.startTime() + o.duration() > s,
+			)
+			.flatMap((o) => o.targets().flatMap(unitsOf))
+			.filter((u) => u.tagName !== "rect" && !units.includes(u));
+		if (!leaving.length) continue;
+		// How long the two print over each other, both above a quarter, from the first frame.
+		let first = null;
+		let pair = null;
+		let span = 0;
+		for (
+			let t = s + 0.02;
+			t <= s + d + 0.6;
+			t = Math.round((t + 0.02) * 100) / 100
+		) {
+			tl.seek(t, false);
+			const hit = pair
+				? shows(pair[0]) > 0.25 &&
+					shows(pair[1]) > 0.25 &&
+					meets(boxOf(pair[0]), boxOf(pair[1]))
+					? pair
+					: null
+				: units
+						.filter((u) => shows(u) > 0.25)
+						.flatMap((u) =>
+							leaving
+								.filter((g) => shows(g) > 0.25 && meets(boxOf(u), boxOf(g)))
+								.map((g) => [u, g]),
+						)[0];
+			if (hit && !pair) {
+				pair = hit;
+				first = t;
+			}
+			if (pair && !hit) break;
+			if (hit) span = t - first + 0.02;
+		}
+		if (!pair) continue;
+		const key = `${short(pair[0])}|${short(pair[1])}`;
+		if (told.has(key)) continue;
+		told.add(key);
+		crossfades.push({
+			at: first,
+			span,
+			text: `crossfade ${short(pair[0])} prints over ${short(pair[1])} for ${span.toFixed(2)} s from ${first.toFixed(2)}`,
+		});
+	}
+
 	// Still spans: from the question to the last label, any stretch over 2 s in which no tween
 	// runs (the backdrop's slow drift aside, and sets, which are cuts rather than motion).
 	const runs = tweens
@@ -320,6 +717,10 @@ const out = await page.evaluate(() => {
 		badClasses: [...bad],
 		stacked,
 		stated,
+		pops,
+		stand,
+		dips,
+		crossfades,
 	};
 });
 const zh = env.LOCALE === "zh";
@@ -434,6 +835,23 @@ else if (out.heroLock !== undefined && out.glow.held < 1)
 	);
 for (const c of out.badClasses) fails.push(`class "${c}"`);
 for (const s of out.stacked) fails.push(`stacked: ${s}`);
+// The motion rules: entrances and exits of at least 0.3 s, a hero that stands 1.5 s, dips
+// rather than cuts to nothing between beats, and crossfades that never print one line over
+// another for long.
+for (const p of out.pops) fails.push(p.text);
+if (out.stand && out.stand.stands < 1.5)
+	fails.push(
+		`hero stands ${out.stand.stands.toFixed(2)} s before ${out.stand.leaves} moves or fades (≥ 1.5)`,
+	);
+for (const x of out.dips)
+	if (
+		(x.kind === "empty" && x.span >= 0.1) ||
+		(x.kind === "faint" && x.span >= 0.2)
+	)
+		fails.push(
+			`${x.kind === "empty" ? "empty stage" : "faint stage (nothing above 0.3)"} for ${x.span.toFixed(2)} s from ${x.at.toFixed(2)}`,
+		);
+for (const c of out.crossfades) if (c.span >= 0.15) fails.push(c.text);
 console.log(
 	JSON.stringify({
 		lesson: env.LESSON,
