@@ -10,6 +10,7 @@
 //   colour a carried copy whose colour differs from the text it hands over to
 //   early  a carry's target already showing before the copy that becomes it lands
 //   enter  a line rising into place (show's entrance) through settled text, every 0.05 s
+//   hero   a mark or text over the hero's figure, or a mark through its brackets, for 0.1 s
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
 const [w, h, dpr] = env.SIZE.replace("m", "").split("x").map(Number);
@@ -414,6 +415,125 @@ const hits = await page.evaluate((end) => {
 								`enter ${e.textContent.trim().slice(0, 18)} × ${o.textContent.trim().slice(0, 18)}`,
 								t,
 							);
+				}
+			}
+		}
+	}
+	// The hero stands alone. From its glow at full strength, nothing that was not already there
+	// comes over its figure (the largest text its brackets hold) while that shows, nor passes
+	// through its brackets (an axis, a track, a line across them, 6 px round them) while they
+	// show, above a quarter, for 0.1 s or more, arriving or in flight. A label or a leader that
+	// settles inside the brackets clear of the figure is the hero's own after-beat; a copy of
+	// what the brackets hold, carried away, is the hero leaving.
+	const heroAt = tl.labels["hero-lock"];
+	const glows = [...svg.querySelectorAll(".wt-film-lock[data-glow]")];
+	if (heroAt !== undefined && glows.length === 1) {
+		const glow = glows[0];
+		let on = null;
+		for (
+			let t = heroAt;
+			t <= heroAt + 0.5;
+			t = Math.round((t + 0.05) * 100) / 100
+		) {
+			tl.seek(t, false);
+			if (alpha(glow) >= 0.8) {
+				on = t;
+				break;
+			}
+		}
+		if (on !== null) {
+			tl.seek(on, false);
+			const rect = (el) => {
+				const r = el.getBoundingClientRect();
+				return { l: r.left, r: r.right, t: r.top, b: r.bottom };
+			};
+			const lockBox = rect(glow);
+			const held = [...svg.querySelectorAll("text")].filter((t) => {
+				if (!t.textContent.trim() || layer?.contains(t) || alpha(t) < 0.6)
+					return false;
+				const c = centre(boxes(t));
+				return (
+					c.x > lockBox.l &&
+					c.x < lockBox.r &&
+					c.y > lockBox.t &&
+					c.y < lockBox.b
+				);
+			});
+			const tall = Math.max(
+				0,
+				...held.map((t) => t.getBoundingClientRect().height),
+			);
+			const figure = held.filter(
+				(t) => t.getBoundingClientRect().height >= tall * 0.85,
+			);
+			const others = [
+				...svg.querySelectorAll(
+					"text, rect, path, circle, line, polyline, polygon, ellipse",
+				),
+			].filter((e) => {
+				if (
+					e === glow ||
+					e.closest("defs, clipPath, pattern, mask, [data-f='title-group']") ||
+					held.some((h) => h === e || h.contains(e))
+				)
+					return false;
+				if (e.tagName === "text") return Boolean(e.textContent.trim());
+				const cls = e.getAttribute("class") || "";
+				return !(
+					/wt-film-bg|wt-film-grid/.test(cls) ||
+					e.getAttribute("data-f") === "drift" ||
+					(e.getAttribute("fill") || "").startsWith("url(#vig")
+				);
+			});
+			const onFigure = (e) => {
+				if (Math.max(0, ...figure.map(alpha)) <= 0.25) return false;
+				const glyphs = figure.flatMap(boxes);
+				return e.tagName === "text"
+					? meet(boxes(e), glyphs)
+					: strikes(glyphs, e);
+			};
+			const across = (e) => {
+				if (alpha(glow) <= 0.25 || e.tagName === "text") return false;
+				const r = rect(glow);
+				const box = { l: r.l - 6, r: r.r + 6, t: r.t - 6, b: r.b + 6 };
+				const m = rect(e);
+				const through =
+					(m.l < box.l && m.r > box.r) || (m.t < box.t && m.b > box.b);
+				return through && strikes([box], e);
+			};
+			const over = (e) => onFigure(e) || across(e);
+			const there = new Set(others.filter((e) => alpha(e) > 0.15 && over(e)));
+			const hero = figure[0]?.textContent.trim().slice(0, 18) ?? "hero";
+			const label = (e) =>
+				`hero ${e.tagName === "text" ? e.textContent.trim().slice(0, 18) : name(e)} × ${hero}`;
+			const runs = new Map();
+			for (
+				let t = on + 0.05;
+				t <= end;
+				t = Math.round((t + 0.05) * 100) / 100
+			) {
+				tl.seek(t, false);
+				if (alpha(glow) <= 0.25 && Math.max(0, ...figure.map(alpha)) <= 0.25)
+					break;
+				for (const e of others) {
+					const hit =
+						!there.has(e) &&
+						alpha(e) > 0.15 &&
+						!(
+							layer?.contains(e) &&
+							held.some((h) => h.textContent.includes(e.textContent.trim()))
+						) &&
+						over(e);
+					if (!hit) {
+						runs.delete(e);
+						continue;
+					}
+					const run = runs.get(e) ?? [];
+					run.push(t);
+					runs.set(e, run);
+					// Three samples in a row: 0.1 s over the hero, more than a dip's overlap.
+					if (run.length === 3) for (const x of run) add(label(e), x);
+					else if (run.length > 3) add(label(e), t);
 				}
 			}
 		}

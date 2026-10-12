@@ -51,7 +51,7 @@ if kind == "scan":
 elif kind == "flight":
     print(f"{label} flight hits={len(d)}{'' if d else ' clean'}")
     for name, ts in sorted(d.items(), key=lambda kv: kv[1][0]):
-        print(f"    fly {name} @ {ts[0]} .. {ts[-1]} ({len(ts)})")
+        print(f"    {name} @ {ts[0]} .. {ts[-1]} ({len(ts)})")
 elif kind == "timing":
     hero = d.get("heroLock")
     pct = f"{hero / d['runtime'] * 100:.1f}%" if hero is not None else "-"
