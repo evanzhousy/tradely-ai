@@ -29,7 +29,6 @@ import {
 	CALLS,
 	FRIDAY_SPOT,
 	fixed3,
-	GAMMA,
 	HEDGE,
 	hedgedPnl,
 	PUT,
@@ -43,11 +42,9 @@ import {
 	SPOT,
 	STOCK_DELTA,
 	SUBTOTAL,
-	THETA,
 	TOTAL,
 	UP,
 	UP_PNL,
-	VEGA,
 	WEEK,
 	WEEK_PNL,
 	wholeUsd,
@@ -58,16 +55,16 @@ import {
  * done. The book in rows: 100 shares, 16 calls, and 5 puts in a second account whose Greeks
  * haven't arrived, so +1,006 is a covered subtotal; the puts report −130 and the total is
  * +876. Short 876 shares and delta is zero, yet a $5 jump makes +$875 and a quiet week costs
- * −$964: the book's gamma, theta and vega. Last, two brokers' feeds: a vega per 1.00 of
+ * −$964: time decay survives the delta hedge. Last, two brokers' feeds: a vega per 1.00 of
  * volatility, 100 times the per-point figure, and a put delta stamped Friday.
  *
  *   open      0–4        "Portfolio Greeks"
  *   question  4–9.6      +1,006 shares: hedged?
  *   holdings  9.6–17.3   stock, calls, puts missing: +1,006 subtotal; puts −130: +876
- *   hedge     17.3–29.3  delta 0 at $101.20; +$5: +$875; a quiet week: −$964;
- *                        cut: zero delta is not zero risk, its Greeks locked
- *   feeds     29.3–44.25 0.118 against 9.70; ÷ 100: 0.097; Friday's put delta;
- *                        cut: "One unit, one time, nothing missing."
+ *   hedge     17.3–29.6  delta 0 at $101.20; +$5: +$875; a quiet week: −$964;
+ *                        carry: the week’s −$964 locks as time decay / theta
+ *   feeds     29.6–44.25 0.118 against 9.70; ÷ 100: 0.097; Friday's put delta;
+ *                        cut: align units and time; count every holding.
  *   next      44.25–46.75 Next: the module checkpoint
  */
 
@@ -113,7 +110,6 @@ function layout(width: number) {
 		/** The feeds' rows: a label with its unit and time below, the value on the right. */
 		feedY: (i: number) =>
 			height * (narrow ? 0.3 : 0.32) + i * height * (narrow ? 0.2 : 0.17),
-		columns: [0.2, 0.5, 0.8],
 		pair: narrow ? [0.27, 0.73] : [0.32, 0.68],
 	};
 }
@@ -157,38 +153,31 @@ const copy = {
 		`做空 ${count(HEDGE)} 股：在 $${SPOT.toFixed(2)} 处 Delta 为零。`,
 	],
 	hedgeHeadShort: [
-		`Short ${count(HEDGE)}: delta zero.`,
-		`做空 ${count(HEDGE)} 股：Delta 为零。`,
+		`Short ${count(HEDGE)}: delta zero at $${SPOT.toFixed(2)}.`,
+		`做空 ${count(HEDGE)} 股：$${SPOT.toFixed(2)} 处 Delta 为零。`,
 	],
-	weekHead: [
-		"A quiet week instead: the hedge loses.",
-		"换成平静的一周：对冲后照样亏钱。",
+	walkScenario: [
+		`ALFA $${SPOT.toFixed(2)} → $${(SPOT + UP).toFixed(2)}`,
+		`ALFA $${SPOT.toFixed(2)} → $${(SPOT + UP).toFixed(2)}`,
 	],
-	weekHeadShort: ["A quiet week: it loses.", "平静的一周：照样亏钱。"],
+	weekScenario: [
+		`ALFA unchanged $${SPOT.toFixed(2)} · 7 days later`,
+		`ALFA $${SPOT.toFixed(2)} 不变 · 7 天后`,
+	],
+	fixedIv: ["IV fixed", "隐含波动率不变"],
 	pnlAxis: [
 		`hedged book · P&L from Monday's close`,
 		"对冲后的账户 · 自周一收盘的盈亏",
 	],
 	pnlAxisShort: ["hedged book", "对冲后的账户"],
-	todayLabel: ["today", "今天"],
+	todayLabel: ["today · gamma", "今天 · Gamma"],
 	weekLabel: ["a week on", "一周后"],
 	meter: ["hedged P&L", "对冲后盈亏"],
 	riskBig: ["Zero delta is not zero risk.", "Delta 为零，不等于没有风险。"],
-	gamma: ["gamma", "Gamma"],
-	gammaValue: [signedCount(Math.round(GAMMA)), signedCount(Math.round(GAMMA))],
-	gammaUnit: ["shares per $1", "股 / 每 $1"],
-	theta: ["theta", "Theta"],
-	thetaValue: [wholeUsd(THETA), wholeUsd(THETA)],
-	thetaUnit: ["a day", "每天"],
-	vega: ["vega", "Vega"],
-	vegaValue: [wholeUsd(VEGA), wholeUsd(VEGA)],
-	vegaUnit: ["per vol point", "每个波动率点"],
-	feedHead: ["Two brokers' Greeks, as sent.", "两家券商发来的希腊值，原样。"],
-	rawHead: [
-		"The put vega is per 1.00: ÷ 100.",
-		"看跌 Vega 按每 1.00 报价：÷ 100。",
-	],
-	rawHeadShort: ["Put vega: ÷ 100.", "看跌 Vega：÷ 100。"],
+	decayTag: ["time decay · theta", "时间衰减 · Theta"],
+	decayUnit: ["over 7 days", "7 天累计"],
+	feedHead: ["Broker units: put vega ÷ 100.", "券商单位：看跌 Vega ÷ 100。"],
+	feedHeadShort: ["Put vega: ÷ 100.", "看跌 Vega：÷ 100。"],
 	staleHead: [
 		"The put delta is Friday's, not Monday's.",
 		"看跌 Delta 是周五的，不是周一的。",
@@ -196,7 +185,8 @@ const copy = {
 	staleHeadShort: [`The put delta is Friday's.`, "看跌 Delta 是周五的。"],
 	callVega: ["Call vega · main broker", "看涨 Vega · 主券商"],
 	putVega: ["Put vega · 2nd broker", "看跌 Vega · 第二券商"],
-	putDelta: ["Put delta · 2nd broker", "看跌 Delta · 第二券商"],
+	putDelta: ["Put delta · Friday", "看跌 Delta · 周五历史值"],
+	currentDelta: ["Current delta: unknown", "当前 Delta：未知"],
 	perPoint: ["per vol point · Mon 16:00", "每个波动率点 · 周一 16:00"],
 	perUnit: ["per 1.00 of vol · Mon 16:00", "每 1.00 波动率 · 周一 16:00"],
 	perShareFriday: [
@@ -204,12 +194,12 @@ const copy = {
 		`每股 · 周五 16:00，ALFA $${FRIDAY_SPOT.toFixed(2)}`,
 	],
 	claimBig: [
-		"One unit, one time, nothing missing.",
-		"同一单位，同一时点，没有缺失。",
+		"Align units and time; count every holding.",
+		"统一单位与时点，覆盖每项持仓。",
 	],
 	claimSub: [
-		"Missing or stale is unknown, not zero, not current.",
-		"缺失或过时的希腊值是未知，不是零，也不是当前值。",
+		"Missing or stale inputs cannot establish current exposure.",
+		"缺失或过时数据无法确定当前敞口。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
@@ -270,11 +260,6 @@ function Scene({
 	const labelSize = narrow ? T.body : T.head * 0.8;
 	const putsY = L.rowY(2);
 	const sumY = L.rowY(3) + T.head * 0.4;
-	const greeks = [
-		[copy.gamma, copy.gammaValue, copy.gammaUnit, "wt-film-gain"],
-		[copy.theta, copy.thetaValue, copy.thetaUnit, "wt-film-loss"],
-		[copy.vega, copy.vegaValue, copy.vegaUnit, "wt-film-accent"],
-	] as const;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -349,6 +334,15 @@ function Scene({
 							{t(copy.weekLabel)}
 						</text>
 						<circle
+							data-f="week-marker"
+							cx={L.px(SPOT)}
+							cy={L.py(WEEK_PNL)}
+							r={6}
+							className="wt-film-loss"
+							stroke="var(--foreground)"
+							strokeWidth={1.5}
+						/>
+						<circle
 							data-f="marker"
 							cx={L.px(SPOT)}
 							cy={L.py(0)}
@@ -360,6 +354,29 @@ function Scene({
 					</g>
 				</g>
 			</g>
+			{(["walk-scenario", "week-scenario"] as const).map((name, i) => (
+				<Word
+					key={name}
+					name={name}
+					x={L.left}
+					y={L.top - T.small * 4}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(i === 0 ? copy.walkScenario : copy.weekScenario)}
+				</Word>
+			))}
+			<Word
+				name="scenario-iv"
+				x={L.left}
+				y={L.top - T.small * 2.5}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(copy.fixedIv)}
+			</Word>
 			<g data-f="meter">
 				<Word
 					name="m-tag"
@@ -380,6 +397,16 @@ function Scene({
 					className="wt-film-num wt-film-accent"
 				>
 					$0
+				</Word>
+				<Word
+					name="m-week-value"
+					x={L.right}
+					y={L.headY + T.head * 1.25 + T.num * 1.05}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num wt-film-loss"
+				>
+					{wholeUsd(WEEK_PNL)}
 				</Word>
 			</g>
 
@@ -525,61 +552,57 @@ function Scene({
 				>
 					{signedCount(SUBTOTAL)}
 				</Word>
+				<Word
+					name="h-total"
+					x={L.sharesX}
+					y={sumY}
+					size={figure * 1.2}
+					anchor="end"
+					className="wt-film-num wt-film-accent"
+				>
+					{signedCount(TOTAL)}
+				</Word>
 			</g>
 			{headline("g-head", copy.hedgeHead, copy.hedgeHeadShort)}
-			{headline("k-head", copy.weekHead, copy.weekHeadShort)}
 			<Brackets name="lock-risk" glow />
 			<g data-f="risk">
+				<Word
+					name="risk-tag"
+					x={W / 2}
+					y={H * 0.37}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.decayTag).toUpperCase()}
+				</Word>
+				<Word
+					name="risk-value"
+					x={W / 2}
+					y={H * 0.52 + T.num * 0.5}
+					size={T.num * 1.5}
+					className="wt-film-num wt-film-loss"
+				>
+					{wholeUsd(WEEK_PNL)}
+				</Word>
+				<Word
+					name="risk-unit"
+					x={W / 2}
+					y={H * 0.52 + T.num * 0.5 + T.body * 1.8}
+					size={T.body}
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.decayUnit)}
+				</Word>
 				<Lines
 					name="risk-big"
 					text={t(copy.riskBig)}
 					x={W / 2}
-					y={H * 0.3}
-					size={T.title}
+					y={H * 0.82}
+					size={T.head}
 					maxWidth={room}
 				/>
-				{greeks.map(([tag, value, unit, tone], i) => (
-					<g key={tag[0]}>
-						<Word
-							name={`k-tag-${i}`}
-							x={W * L.columns[i]}
-							y={H * 0.56}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`k-num-${i}`}
-							x={W * L.columns[i]}
-							y={H * 0.56 + T.num * 1.2}
-							size={T.num}
-							className={`wt-film-num ${tone}`}
-						>
-							{t(value)}
-						</Word>
-						<Word
-							name={`k-unit-${i}`}
-							x={W * L.columns[i]}
-							y={H * 0.56 + T.num * 1.2 + T.body * 1.6}
-							size={T.body}
-							className="wt-film-type wt-film-dim"
-						>
-							{t(unit)}
-						</Word>
-					</g>
-				))}
 			</g>
-			{headline("f-head", copy.feedHead, copy.feedHead)}
-			<Lines
-				name="x-head"
-				text={t(narrow ? copy.rawHeadShort : copy.rawHead)}
-				x={L.margin}
-				y={L.headY + lineCount(t(copy.feedHead), room, T.head) * T.head * 1.35}
-				size={T.head}
-				maxWidth={room}
-				anchor="start"
-			/>
+			{headline("f-head", copy.feedHead, copy.feedHeadShort)}
 			{headline("s-head", copy.staleHead, copy.staleHeadShort)}
 			<g data-f="feeds">
 				{(
@@ -651,6 +674,21 @@ function Scene({
 					className="wt-film-type wt-film-accent"
 				>
 					{t(copy.perPoint)}
+				</Word>
+				<path
+					data-f="f-current-rule"
+					d={`M${L.margin} ${L.feedY(2) + T.body * 2.6}H${L.sharesX}`}
+					className="wt-axis"
+				/>
+				<Word
+					name="f-current-delta"
+					x={L.margin}
+					y={L.feedY(2) + T.body * 4.2}
+					size={T.body}
+					anchor="start"
+					className="wt-film-type wt-film-warn"
+				>
+					{t(copy.currentDelta)}
 				</Word>
 			</g>
 			<g data-f="claim">
@@ -727,7 +765,6 @@ function build(context: FilmContext) {
 		);
 	const usd = (value: number) =>
 		Math.round(value) === 0 ? "$0" : wholeUsd(value);
-	const shares = (value: number) => signedCount(Math.round(value));
 
 	const lockRisk = one<SVGGraphicsElement>("lock-risk");
 
@@ -737,17 +774,15 @@ function build(context: FilmContext) {
 		one("today-label"),
 		one("week-label"),
 		marker,
+		one("week-marker"),
+		one("walk-scenario"),
+		one("week-scenario"),
+		one("scenario-iv"),
 		...kids("meter"),
 		...flat("q"),
-		...[
-			"b-head",
-			"r-head",
-			"g-head",
-			"k-head",
-			"f-head",
-			"x-head",
-			"s-head",
-		].map((name) => one(name)),
+		...["b-head", "r-head", "g-head", "f-head", "s-head"].map((name) =>
+			one(name),
+		),
 		...flat("book"),
 		one("h-missing"),
 		...flat("risk"),
@@ -786,75 +821,101 @@ function build(context: FilmContext) {
 	land(sum, 12.0);
 	// The second account reports.
 	d.swap(one("b-head"), one("r-head"), 13.4);
-	hide(one("h-missing"), 13.75);
-	show(one("h-per-puts"), 13.95, "right");
-	show(one("h-shares-puts"), 14.05, "right");
-	d.swap(one("h-sub-label"), one("h-total-label"), 15.3);
-	d.count(sum, TOTAL, 15.4, shares, SUBTOTAL, 0.7);
+	// Fold the subtotal and its label together; all three settled contributions
+	// unfold with the total. There is never a counted sum over fixed operands.
+	hide(one("h-missing"), 15.3, 0.3, 0);
+	d.flip(one("h-sub-label"), one("h-total-label"), 15.3);
+	d.flip(sum, one("h-total"), 15.3);
+	tl.set([sum, one("h-sub-label")], { opacity: 0 }, 15.6);
+	tl.fromTo(
+		[one("h-per-puts"), one("h-shares-puts")],
+		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
+		{ scaleY: 1, duration: 0.35, ease: "power2.out" },
+		15.6,
+	);
 
 	// ——— hedge: zero delta, other sensitivities ———
 	tl.addLabel("hedge", 17.3);
 	hide([one("r-head"), ...flat("book")], 17.3);
 	show(one("g-head"), 17.65, "above");
 	rise(17.7);
-	draw(one<SVGPathElement>("curve-today"), 18.2, 1.2);
-	land(marker, 19.2);
-	show(kids("meter"), 19.4, "above");
-	d.count(meter, 0, 19.4, usd, 0, 0.01);
-	// ALFA jumps $5 at once.
+	draw(one<SVGPathElement>("curve-today"), 18.0, 1.2);
+	land(marker, 18.6);
+	show([one("m-tag"), meter], 18.8, "above");
+	tl.fromTo(
+		[one("walk-scenario"), one("scenario-iv"), one("today-label")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		18.8,
+	);
+	// One state drives both the dot and its dollar readout, including loss colour.
 	const walk = { spot: SPOT };
-	tl.to(
+	const readWalk = () => {
+		const pnl = hedgedPnl(walk.spot, 0);
+		gsap.set(marker, { attr: { cx: L.px(walk.spot), cy: L.py(pnl) } });
+		meter.textContent = usd(pnl);
+		meter.setAttribute(
+			"class",
+			`wt-film-num ${pnl < 0 ? "wt-film-loss" : "wt-film-accent"}`,
+		);
+	};
+	tl.fromTo(
 		walk,
+		{ spot: SPOT },
 		{
 			spot: SPOT + UP,
 			duration: 1.2,
 			ease: "power2.inOut",
-			onUpdate: () =>
-				gsap.set(marker, {
-					attr: { cx: L.px(walk.spot), cy: L.py(hedgedPnl(walk.spot, 0)) },
-				}),
+			immediateRender: false,
+			onUpdate: readWalk,
 		},
-		20.0,
+		20.3,
 	);
-	d.count(meter, UP_PNL, 20.0, usd, 0, 1.2);
-	show(one("today-label"), 20.8);
-	// A quiet week instead.
-	d.swap(one("g-head"), one("k-head"), 21.2);
-	draw(one<SVGPathElement>("curve-week"), 21.6, 1.0);
-	show(one("week-label"), 22.4);
-	tl.to(
-		marker,
-		{
-			attr: { cx: L.px(SPOT), cy: L.py(WEEK_PNL) },
-			duration: 0.8,
-			ease: "power2.inOut",
-		},
-		22.6,
+	// $0 rests 19.3–20.3; +$875 rests 21.5–22.5. Swap to a settled
+	// week scenario at the original price, rather than tracing a fictitious diagonal.
+	hide([marker, meter, one("walk-scenario")], 22.5, 0.35, 0);
+	tl.to(one("curve-today"), { opacity: 0.25, duration: 0.35 }, 22.5);
+	tl.fromTo(
+		one("week-scenario"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		22.85,
 	);
-	d.count(meter, WEEK_PNL, 22.6, usd, UP_PNL, 0.8);
-	// Cut: what zero delta leaves. The hero: the book's other Greeks.
-	hide([one("k-head"), ...kids("meter")], 25.1);
+	tl.fromTo(
+		[
+			one("curve-week"),
+			one("week-marker"),
+			one("m-week-value"),
+			one("week-label"),
+		],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		22.85,
+	);
+	// The week loss settles at 23.35 and rests until 25.1. Its exact figure
+	// carries into the hero; the headline sits below the flight's clear lane.
+	hide(
+		[one("g-head"), one("m-tag"), one("week-scenario"), one("scenario-iv")],
+		25.1,
+	);
 	sink(25.1);
 	word(one("risk-big"), 25.5);
-	[0, 1, 2].forEach((i) => {
-		show(one(`k-tag-${i}`), 26.0 + i * 0.3);
-		land(one(`k-num-${i}`), 26.1 + i * 0.3);
-		show(one(`k-unit-${i}`), 26.3 + i * 0.3);
+	d.carry(one<SVGGraphicsElement>("m-week-value"), one("risk-value"), 25.5, {
+		duration: 0.8,
+		arc: "y",
 	});
+	show(one("risk-tag"), 26.35);
+	show(one("risk-unit"), 26.7);
 	d.lock(lockRisk, 27.6, {
-		around: [0, 1, 2].flatMap((i) => [
-			one(`k-tag-${i}`),
-			one(`k-num-${i}`),
-			one(`k-unit-${i}`),
-		]),
+		around: [one("risk-tag"), one("risk-value"), one("risk-unit")],
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 27.6);
 
 	// ——— feeds: units and timestamps ———
-	tl.addLabel("feeds", 29.3);
-	hide([...flat("risk"), lockRisk], 29.3);
-	show(one("f-head"), 29.65, "above");
+	tl.addLabel("feeds", 29.6);
+	hide([...flat("risk"), lockRisk], 29.6);
+	show(one("f-head"), 29.95, "above");
 	(["call-vega", "put-vega", "put-delta"] as const).forEach((key, i) => {
 		const at = 30.0 + i * 0.4;
 		show(one(`f-label-${key}`), at);
@@ -862,12 +923,11 @@ function build(context: FilmContext) {
 		show(one(`f-unit-${key}`), at + 0.2);
 	});
 	// The puts' vega comes per 1.00 of volatility: once read, convert it to points.
-	show(one("x-head"), 32.5);
 	d.flip(one("f-value-put-vega"), one("f-value-put-vega-point"), 34.1);
 	tl.set(one("f-value-put-vega"), { opacity: 0 }, 34.4);
 	d.swap(one("f-unit-put-vega"), one("f-unit-put-vega-point"), 34.1);
 	// The put delta is Friday's: its timestamp turns warn where it is.
-	d.swap([one("f-head"), one("x-head")], one("s-head"), 36.0);
+	d.swap(one("f-head"), one("s-head"), 36);
 	tl.to(
 		one("f-unit-put-delta"),
 		{ attr: { class: "wt-film-type wt-film-warn" }, duration: 0.2 },
@@ -878,6 +938,10 @@ function build(context: FilmContext) {
 		{ opacity: 0.4, duration: 0.4 },
 		36.4,
 	);
+	// Friday's observation stays known. A separate lane names the current unknown,
+	// and a drawn separator uses the former idle stretch without inventing a delta.
+	show(one("f-current-delta"), 36.35);
+	draw(one<SVGPathElement>("f-current-rule"), 37, 0.6);
 	// Cut: the claim.
 	hide([one("s-head"), ...flat("feeds")], 39.85);
 	word(one("z-big"), 40.25);
