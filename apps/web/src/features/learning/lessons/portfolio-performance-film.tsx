@@ -23,7 +23,6 @@ import {
 	MONTHS,
 	maxDrawdown,
 	OPEN,
-	PROFIT_FACTOR,
 	pct,
 	R1,
 	R2,
@@ -41,19 +40,19 @@ import {
  * Performance, as a film. It opens on three good numbers: balance growth +21.9%, an 80% win
  * rate and a 10% return. Each hides something. The balance grew +21.9% because of your own
  * $5,000; cut at the deposit, the pieces chain to a time-weighted +5.04%. Four of five
- * trades won, but one loss outweighs them: −$155, a profit factor of 0.80. Two accounts
+ * trades won: their +$625 stacks against −$780, making −$155. Two accounts
  * both made 10%, and one of them fell 25% on the way.
  *
  *   open      0–4        "Performance"
  *   question  4–9.4      +21.9% · 80% · +10%
  *   returns   9.4–21     the account's week and its deposit; +4.00% and +1.00%; cut: +5.04%
- *   trades    21–33.95   five trades, 80% won, −$155; cut: 80% against −$155, locked
- *   drawdown  33.95–45.2 A and B, both +10%; B's −25%; cut: "Each measure answers one
+ *   trades    21–33.95   five trades; wins stack to +$625 against −$780, making −$155
+ *   drawdown  33.95–45.45 exact endpoints then +10% and B's −25%; cut: "Each measure answers one
  *                        question."
- *   next      45.2–47.2  Next: portfolio Greeks
+ *   next      45.45–47.45  Next: portfolio Greeks
  */
 
-const END = 47.2;
+const END = 47.45;
 const VALUE_Y = [28_000, 38_000] as const;
 const DD_Y = [22_000, 35_000] as const;
 const POINTS = [
@@ -116,7 +115,10 @@ function layout(width: number) {
 				)
 				.join(""),
 		columns: [0.2, 0.5, 0.8],
-		pair: narrow ? [0.27, 0.73] : [0.32, 0.68],
+		stackX: [width * 0.32, width * 0.68],
+		stackBottom: height * 0.62,
+		stackUnit: (height * 0.23) / GROSS_LOSS,
+		stackWidth: Math.min(width * 0.12, 72),
 	};
 }
 
@@ -161,38 +163,26 @@ const copy = {
 	],
 	twrTag: ["time-weighted return", "时间加权收益"],
 	twrLine: [
-		`Growth counts your own money; ${pct(TWR)} is what it earned.`,
-		`增长算进了你自己的钱；${pct(TWR)} 才是资金赚到的。`,
+		"Deposits removed. Only the return remains.",
+		"剔除存入，只衡量资金的收益。",
 	],
 	tradesHead: [
-		`Your last ${trades.length} trades: ${WINS.length} won.`,
-		`最近 ${trades.length} 笔交易：${WINS.length} 笔赚钱。`,
+		`Your last ${trades.length} trades.`,
+		`最近 ${trades.length} 笔交易。`,
 	],
-	totalHead: [
-		`One loss outweighs them: ${signed(TOTAL)} in total.`,
-		`一笔亏损超过了它们：合计 ${signed(TOTAL)}。`,
+	tradesAnswer: [
+		`${WINS.length} of ${trades.length} won.`,
+		`${trades.length} 笔中有 ${WINS.length} 笔赚钱。`,
 	],
+	grossWin: [`${WINS.length} wins`, `${WINS.length} 笔盈利`],
+	grossLoss: ["one loss", "一笔亏损"],
 	winRate: ["win rate", "胜率"],
 	total: ["total", "合计"],
-	tradesLine: [
-		`Win rate counts trades, not dollars. Profit factor: ${dollars(GROSS_WIN)} ÷ ${dollars(GROSS_LOSS)} = ${PROFIT_FACTOR.toFixed(2)}.`,
-		`胜率数的是笔数，不是金额。盈利因子：${dollars(GROSS_WIN)} ÷ ${dollars(GROSS_LOSS)} = ${PROFIT_FACTOR.toFixed(2)}。`,
-	],
-	ddHead: [
-		`Two accounts, both ${pct(totalReturn(steady), 0)} from January to August.`,
-		`两个账户，一月到八月都是 ${pct(totalReturn(steady), 0)}。`,
-	],
-	ddHeadShort: [
-		`Two accounts, both ${pct(totalReturn(steady), 0)}.`,
-		`两个账户，都是 ${pct(totalReturn(steady), 0)}。`,
-	],
+	ddHead: ["Two accounts, January to August.", "两个账户，一月到八月。"],
+	ddHeadShort: ["Two accounts, eight months.", "两个账户，八个月。"],
 	fallHead: [
-		`B fell ${pct(-worstB.fall, 0).replace("+", "")} on the way; A held.`,
-		`B 途中跌了 ${pct(-worstB.fall, 0).replace("+", "")}；A 几乎没跌。`,
-	],
-	fallHeadShort: [
-		`B fell ${pct(-worstB.fall, 0).replace("+", "")} on the way.`,
-		`B 途中跌了 ${pct(-worstB.fall, 0).replace("+", "")}。`,
+		`Both ${pct(totalReturn(steady), 0)}; B fell ${pct(-worstB.fall, 0).replace("+", "")}, A barely dipped.`,
+		`均涨 ${pct(totalReturn(steady), 0)}；B 跌 ${pct(-worstB.fall, 0).replace("+", "")}，A 小幅回撤。`,
 	],
 	ddAxis: ["month-end values", "月末价值"],
 	accountA: ["account A", "账户 A"],
@@ -337,7 +327,11 @@ function Scene({
 
 					{/* Five trades. */}
 					<g data-f="bars">
-						<path d={`M${L.left} ${L.zero}H${L.right}`} className="wt-axis" />
+						<path
+							data-f="bar-axis"
+							d={`M${L.left} ${L.zero}H${L.right}`}
+							className="wt-axis"
+						/>
 						{trades.map((trade, i) => {
 							const x = L.barX(i);
 							const y = L.barY(trade.pnl);
@@ -347,6 +341,8 @@ function Scene({
 									<rect
 										data-f={`bar-${i}`}
 										className="wt-film-bar"
+										stroke="var(--background)"
+										strokeWidth={1.5}
 										data-tone={win ? "gain" : "loss"}
 										x={x - L.barWidth / 2}
 										y={Math.min(y, L.zero)}
@@ -411,6 +407,24 @@ function Scene({
 								{t(month)}
 							</text>
 						))}
+						<text
+							data-f="dd-start"
+							x={L.mx(0)}
+							y={L.my(steady[0]) + 24}
+							textAnchor="start"
+							className="wt-small wt-halo"
+						>
+							{dollars(steady[0] * 100)}
+						</text>
+						<text
+							data-f="dd-end"
+							x={L.mx(MONTHS.length - 1)}
+							y={L.my(steady[steady.length - 1]) - 14}
+							textAnchor="end"
+							className="wt-small wt-halo"
+						>
+							{dollars(steady[steady.length - 1] * 100)}
+						</text>
 						<rect
 							data-f="fall-band"
 							x={L.mx(worstB.peakAt)}
@@ -453,6 +467,7 @@ function Scene({
 							cy={L.my(deep[worstB.peakAt])}
 							r={5}
 							className="wt-chip"
+							style={{ fill: "var(--wt-short)" }}
 						/>
 						<circle
 							data-f="trough"
@@ -460,6 +475,7 @@ function Scene({
 							cy={L.my(deep[worstB.troughAt])}
 							r={6}
 							className="wt-chip"
+							style={{ fill: "var(--wt-short)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -478,33 +494,38 @@ function Scene({
 			<g data-f="meter">
 				{(
 					[
-						["m-growth", copy.growthTag],
-						["m-rate", copy.winRate],
-						["m-total", copy.total],
+						["growth", copy.growthTag, pct(GROWTH, 1), "wt-film-accent"],
+						[
+							"rate",
+							copy.winRate,
+							`${Math.round(WIN_RATE * 100)}%`,
+							"wt-film-gain",
+						],
 					] as const
-				).map(([name, tag]) => (
-					<Word
-						key={name}
-						name={name}
-						x={L.right}
-						y={L.headY + T.head * 1.25}
-						size={T.small}
-						anchor="end"
-						className="wt-film-tag"
-					>
-						{t(tag).toUpperCase()}
-					</Word>
+				).map(([name, tag, value, tone]) => (
+					<g key={name}>
+						<Word
+							name={`m-${name}`}
+							x={L.right}
+							y={L.headY + T.head * 1.25}
+							size={T.small}
+							anchor="end"
+							className="wt-film-tag"
+						>
+							{t(tag).toUpperCase()}
+						</Word>
+						<Word
+							name={`m-${name}-value`}
+							x={L.right}
+							y={L.headY + T.head * 1.25 + T.num * 1.05}
+							size={T.num}
+							anchor="end"
+							className={`wt-film-num ${tone}`}
+						>
+							{value}
+						</Word>
+					</g>
 				))}
-				<Word
-					name="m-value"
-					x={L.right}
-					y={L.headY + T.head * 1.25 + T.num * 1.05}
-					size={T.num}
-					anchor="end"
-					className="wt-film-num wt-film-accent"
-				>
-					{pct(0, 1)}
-				</Word>
 			</g>
 
 			{/* The claims. */}
@@ -603,50 +624,70 @@ function Scene({
 				/>
 			</g>
 			{headline("t-head", copy.tradesHead, copy.tradesHead)}
-			{headline("o-head", copy.totalHead, copy.totalHead)}
+			<Lines
+				name="t-answer"
+				text={t(copy.tradesAnswer)}
+				x={L.margin}
+				y={
+					L.headY + lineCount(t(copy.tradesHead), room, T.head) * T.head * 1.35
+				}
+				size={T.head}
+				maxWidth={room}
+				anchor="start"
+			/>
 			<Brackets name="lock-total" glow />
 			<g data-f="two">
 				{(
 					[
-						[copy.winRate, `${Math.round(WIN_RATE * 100)}%`, "wt-film-gain"],
-						[copy.total, signed(TOTAL), "wt-film-loss"],
+						[copy.grossWin, signed(GROSS_WIN), "wt-film-gain"],
+						[copy.grossLoss, signed(-GROSS_LOSS), "wt-film-loss"],
 					] as const
-				).map(([tag, num, tone], i) => (
-					<g key={tag[0]}>
+				).map(([tag, value, tone], i) => (
+					<g key={i}>
 						<Word
-							name={`w-tag-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3}
+							name={`gross-tag-${i}`}
+							x={L.stackX[i]}
+							y={H * 0.28 - (narrow ? 0 : 12)}
 							size={T.small}
 							className="wt-film-tag"
 						>
 							{t(tag).toUpperCase()}
 						</Word>
 						<Word
-							name={`w-num-${i}`}
-							x={W * L.pair[i]}
-							y={H * 0.3 + T.big * 0.95}
-							size={T.big * 0.85}
+							name={`gross-num-${i}`}
+							x={L.stackX[i]}
+							y={H * 0.35}
+							size={T.num}
 							className={`wt-film-num ${tone}`}
 						>
-							{num}
+							{value}
 						</Word>
 					</g>
 				))}
-				<Lines
-					name="w-line"
-					text={t(copy.tradesLine)}
-					x={W / 2}
+				<Word
+					name="w-tag-1"
+					x={W * 0.55}
 					y={H * 0.72}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.total).toUpperCase()}
+				</Word>
+				<Word
+					name="w-num-1"
+					x={W * 0.55}
+					y={H * 0.88}
+					size={T.big}
+					className="wt-film-num wt-film-loss"
+				>
+					{signed(TOTAL)}
+				</Word>
 			</g>
+
 			{headline("d-head", copy.ddHead, copy.ddHeadShort)}
 			<Lines
 				name="f-head"
-				text={t(narrow ? copy.fallHeadShort : copy.fallHead)}
+				text={t(copy.fallHead)}
 				x={L.margin}
 				y={
 					L.headY +
@@ -706,7 +747,6 @@ function build(context: FilmContext) {
 		);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
-	const meter = one<SVGTextElement>("m-value");
 	const dots = [
 		one("dot-0-low"),
 		one("dot-1-low"),
@@ -722,8 +762,6 @@ function build(context: FilmContext) {
 			at,
 		);
 	};
-	const percent = (fraction: number) => pct(fraction, 1);
-	const whole = (value: number) => `${Math.round(value)}%`;
 
 	const lockTotal = one<SVGGraphicsElement>("lock-total");
 
@@ -749,12 +787,14 @@ function build(context: FilmContext) {
 		one("peak"),
 		one("trough"),
 		one("fall-label"),
-		...kids("meter"),
+		...flat("meter"),
 		...flat("q"),
-		...["w-head", "c-head", "t-head", "o-head", "d-head", "f-head"].map(
+		...["w-head", "c-head", "t-head", "t-answer", "d-head", "f-head"].map(
 			(name) => one(name),
 		),
 		...kids("twr"),
+		one("dd-start"),
+		one("dd-end"),
 		...flat("two"),
 		lockTotal,
 		...kids("claim"),
@@ -779,24 +819,26 @@ function build(context: FilmContext) {
 	show(one("w-head"), 9.6, "above");
 	rise(9.7);
 	draw(one<SVGPathElement>("value-line"), 10.1, 1.4);
-	dots.forEach((dot, i) => {
-		land(dot, 10.1 + [0, 0.35, 1.0, 1.4][i], 0.35);
+	// Endpoints arrive only once the complete trace supports them.
+	land(dots[0], 10.1, 0.35);
+	dots.slice(1).forEach((dot) => {
+		land(dot, 11.5, 0.35);
 	});
-	show([one("m-growth"), meter], 10.3, "above");
-	d.count(meter, GROWTH, 10.3, percent, 0, 1.4);
-	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 11.8);
-	show(one("jump-label"), 12);
+	// A full second after the final dot, reveal growth already settled.
+	show([one("m-growth"), one("m-growth-value")], 12.85, "above");
+	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 12.85);
+	show(one("jump-label"), 13.05);
 	// Cut at the flow: two periods, each from its own start.
 	show(one("c-head"), 12.9);
 	tl.to(one("band-1"), { opacity: 1, duration: 0.5 }, 13.0);
 	tl.to(one("band-2"), { opacity: 1, duration: 0.5 }, 13.5);
 	// Cut: the chained return.
-	hide([one("w-head"), one("c-head"), ...kids("meter")], 16.4);
+	hide([one("w-head"), one("c-head"), ...flat("meter")], 16.4);
 	sink(16.4);
 	show(one("twr-tag"), 16.7);
 	show(one("twr-sum"), 16.9);
 	land(one("twr-num"), 17.2);
-	show(one("twr-line"), 17.5);
+	show(one("twr-line"), 16.7);
 
 	// ——— trades: a rate is not a total ———
 	tl.addLabel("trades", 21);
@@ -818,70 +860,116 @@ function build(context: FilmContext) {
 			},
 			at,
 		);
-		show([one(`bar-value-${i}`), one(`bar-date-${i}`)], at + 0.2);
+		// Fade in place: a date must not travel through the zero axis.
+		tl.fromTo(
+			[one(`bar-value-${i}`), one(`bar-date-${i}`)],
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3 },
+			at + 0.45,
+		);
 	});
-	show([one("m-rate"), meter], 22.8, "above");
-	d.count(meter, WIN_RATE * 100, 22.8, whole, 0, 0.8);
-	d.swap(one("t-head"), one("o-head"), 24.9);
-	tl.to(
-		trades.flatMap((trade, i) => (trade.pnl > 0 ? [one(`bar-${i}`)] : [])),
-		{ opacity: 0.35, duration: 0.4 },
-		25,
+	// Fifth bar and its labels are settled before the answer appears.
+	show([one("m-rate"), one("m-rate-value")], 24.45, "above", 0.35);
+	show(one("t-answer"), 24.45, "above", 0.35);
+	// Preserve the actual bars: the wins stack on one common scale beside the loss.
+	// Labels step aside first so no carried shape crosses settled type.
+	hide(
+		[
+			one("bar-axis"),
+			...trades.flatMap((_, i) => [
+				one(`bar-value-${i}`),
+				one(`bar-date-${i}`),
+			]),
+		],
+		25.8,
+		0.35,
+		0,
 	);
-	// The meter's tag changes from above: from below it would cross the figure.
-	hide(one("m-rate"), 24.9);
-	show(one("m-total"), 25.25, "above");
-	d.count(meter, TOTAL, 25.25, signed, WIN_RATE * 100, 0.01);
-	// Cut: the rate against the total. The hero: one loss outweighs four wins.
-	hide([one("o-head"), ...kids("meter")], 28.75);
-	sink(28.75);
-	show(one("w-tag-0"), 29.05);
-	land(one("w-num-0"), 29.25);
-	show(one("w-tag-1"), 29.55);
-	land(one("w-num-1"), 29.75);
+	let accumulated = 0;
+	let winIndex = 0;
+	trades.forEach((trade, i) => {
+		const win = trade.pnl > 0;
+		const height = Math.abs(trade.pnl) * L.stackUnit;
+		const y = win
+			? L.stackBottom - (accumulated + trade.pnl) * L.stackUnit
+			: L.stackBottom - height;
+		const at = win ? 26.15 + winIndex * 0.15 : 26.15;
+		if (win) {
+			accumulated += trade.pnl;
+			winIndex++;
+		}
+		tl.to(
+			one(`bar-${i}`),
+			{
+				attr: {
+					x: L.stackX[win ? 0 : 1] - L.stackWidth / 2,
+					y,
+					width: L.stackWidth,
+					height,
+					rx: 0,
+				},
+				duration: 0.65,
+				ease: "power2.inOut",
+			},
+			at,
+		);
+	});
+	// Stack finishes at 27.25; no running total can contradict its four parts.
+	show([one("gross-tag-0"), one("gross-tag-1")], 27.25, "above", 0.4);
+	show([one("gross-num-0"), one("gross-num-1")], 27.25, "above", 0.4);
+	hide(
+		[one("t-head"), one("t-answer"), one("m-rate"), one("m-rate-value")],
+		28.65,
+	);
+	// One second after the operands settle, their fixed difference lands.
+	show(one("w-tag-1"), 28.65, "above");
+	land(one("w-num-1"), 28.65);
 	d.lock(lockTotal, 30.35, { around: one("w-num-1"), pad: 8 });
 	tl.addLabel("hero-lock", 30.35);
-	show(one("w-line"), 30.35);
 
 	// ——— drawdown: the same return, two paths ———
 	tl.addLabel("drawdown", 33.95);
 	hide([...flat("two"), lockTotal], 33.95);
-	tl.set(one("bars"), { opacity: 0 }, 34.05);
-	tl.set(one("dd"), { opacity: 1 }, 34.05);
+	sink(33.95);
+	tl.set(one("bars"), { opacity: 0 }, 34.35);
+	tl.set(one("dd"), { opacity: 1 }, 34.35);
 	show(one("d-head"), 34.3, "above");
 	rise(34.35);
-	draw(one<SVGPathElement>("line-a"), 34.75, 1.0);
-	show(one("label-a"), 35.55);
-	draw(one<SVGPathElement>("line-b"), 35.75, 1.0);
-	show(one("label-b"), 36.55);
-	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 36.65);
-	land(one("peak"), 36.75, 0.35);
-	land(one("trough"), 36.95);
-	show(one("fall-label"), 37.05);
-	show(one("f-head"), 37.25);
+	// Both histories draw together; exact endpoints and B's fall finish the proof.
+	draw(one<SVGPathElement>("line-a"), 34.4, 1.0);
+	draw(one<SVGPathElement>("line-b"), 34.5, 1.0);
+	show(one("dd-start"), 34.4);
+	show(one("label-a"), 35.2);
+	show([one("label-b"), one("dd-end")], 35.5, "above");
+	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 35.5);
+	land(one("peak"), 35.5, 0.35);
+	land(one("trough"), 35.5);
+	show(one("fall-label"), 35.5);
+	// All proof marks settle at 36.05, followed by one second of quiet.
+	show(one("f-head"), 37.05, "above");
 	// Cut: the claim.
-	hide([one("d-head"), one("f-head")], 40.8);
-	sink(40.8);
+	hide([one("d-head"), one("f-head")], 41.05);
+	sink(41.05);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.2,
+		41.45,
 	);
-	show(one("z-sub"), 41.6);
+	show(one("z-sub"), 41.85);
 
 	// ——— next ———
-	tl.addLabel("next", 45.2);
-	hide(kids("claim"), 45.2);
-	d.close(45.2);
+	tl.addLabel("next", 45.45);
+	hide(kids("claim"), 45.45);
+	d.close(45.45);
 	return tl;
 }
 
 export const portfolioPerformanceFilm: Film = {
 	id: "portfolio-performance",
 	label: [
-		`Performance, as a short film: three good numbers, balance growth ${pct(GROWTH, 1)}, an ${Math.round(WIN_RATE * 100)}% win rate and a ${pct(totalReturn(deep), 0)} return; your account from ${dollars(OPEN)} to ${dollars(WEEK_END)} with a ${dollars(yourAccount.deposit)} deposit, cut at the deposit into ${pct(R1)} and ${pct(R2)} for a time-weighted ${pct(TWR)}; five trades, four wins and one loss, ${signed(TOTAL)} in total and a profit factor of ${PROFIT_FACTOR.toFixed(2)}; and two accounts both up ${pct(totalReturn(steady), 0)}, one of which fell ${pct(-worstB.fall, 0).replace("+", "")} on the way`,
-		`绩效短片：三个好看的数字，余额增长 ${pct(GROWTH, 1)}、胜率 ${Math.round(WIN_RATE * 100)}%、收益 ${pct(totalReturn(deep), 0)}；你的账户从 ${dollars(OPEN)} 到 ${dollars(WEEK_END)}，中间存入 ${dollars(yourAccount.deposit)}，在存入处切开得到 ${pct(R1)} 和 ${pct(R2)}，时间加权 ${pct(TWR)}；五笔交易，四赚一亏，合计 ${signed(TOTAL)}，盈利因子 ${PROFIT_FACTOR.toFixed(2)}；以及两个都上涨 ${pct(totalReturn(steady), 0)} 的账户，其中一个途中跌了 ${pct(-worstB.fall, 0).replace("+", "")}`,
+		`Performance, as a short film: three good numbers, balance growth ${pct(GROWTH, 1)}, an ${Math.round(WIN_RATE * 100)}% win rate and a ${pct(totalReturn(deep), 0)} return; your account from ${dollars(OPEN)} to ${dollars(WEEK_END)} with a ${dollars(yourAccount.deposit)} deposit, cut at the deposit into ${pct(R1)} and ${pct(R2)} for a time-weighted ${pct(TWR)}; five trades, four wins and one loss, ${signed(TOTAL)} in total from ${signed(GROSS_WIN)} against ${signed(-GROSS_LOSS)}; and two accounts both up ${pct(totalReturn(steady), 0)}, one of which fell ${pct(-worstB.fall, 0).replace("+", "")} on the way`,
+		`绩效短片：三个好看的数字，余额增长 ${pct(GROWTH, 1)}、胜率 ${Math.round(WIN_RATE * 100)}%、收益 ${pct(totalReturn(deep), 0)}；你的账户从 ${dollars(OPEN)} 到 ${dollars(WEEK_END)}，中间存入 ${dollars(yourAccount.deposit)}，在存入处切开得到 ${pct(R1)} 和 ${pct(R2)}，时间加权 ${pct(TWR)}；五笔交易，四赚一亏，合计 ${signed(TOTAL)}，由 ${signed(GROSS_WIN)} 与 ${signed(-GROSS_LOSS)} 相加得到；以及两个都上涨 ${pct(totalReturn(steady), 0)} 的账户，其中一个途中跌了 ${pct(-worstB.fall, 0).replace("+", "")}`,
 	],
 	stage: "dark",
 	shots: [
