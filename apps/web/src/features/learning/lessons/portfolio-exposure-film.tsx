@@ -148,14 +148,8 @@ const copy = {
 	subtotalShort: ["subtotal", "小计"],
 	total: ["portfolio delta", "组合 Delta"],
 	totalShort: ["total", "合计"],
-	hedgeHead: [
-		`Short ${count(HEDGE)} shares: delta is zero at $${SPOT.toFixed(2)}.`,
-		`做空 ${count(HEDGE)} 股：在 $${SPOT.toFixed(2)} 处 Delta 为零。`,
-	],
-	hedgeHeadShort: [
-		`Short ${count(HEDGE)}: delta zero at $${SPOT.toFixed(2)}.`,
-		`做空 ${count(HEDGE)} 股：$${SPOT.toFixed(2)} 处 Delta 为零。`,
-	],
+	hedgeHead: ["A share hedge is local.", "股票对冲只在当前价附近有效。"],
+	hedgeHeadShort: ["A share hedge is local.", "股票对冲只在当前价附近有效。"],
 	walkScenario: [
 		`ALFA $${SPOT.toFixed(2)} → $${(SPOT + UP).toFixed(2)}`,
 		`ALFA $${SPOT.toFixed(2)} → $${(SPOT + UP).toFixed(2)}`,
@@ -164,7 +158,10 @@ const copy = {
 		`ALFA unchanged $${SPOT.toFixed(2)} · 7 days later`,
 		`ALFA $${SPOT.toFixed(2)} 不变 · 7 天后`,
 	],
-	fixedIv: ["IV fixed", "隐含波动率不变"],
+	fixedIv: [
+		`Short ${count(HEDGE)} shares · IV fixed`,
+		`做空 ${count(HEDGE)} 股 · 隐含波动率不变`,
+	],
 	pnlAxis: [
 		`hedged book · P&L from Monday's close`,
 		"对冲后的账户 · 自周一收盘的盈亏",
@@ -176,8 +173,8 @@ const copy = {
 	riskBig: ["Zero delta is not zero risk.", "Delta 为零，不等于没有风险。"],
 	decayTag: ["time decay · theta", "时间衰减 · Theta"],
 	decayUnit: ["over 7 days", "7 天累计"],
-	feedHead: ["Broker units: put vega ÷ 100.", "券商单位：看跌 Vega ÷ 100。"],
-	feedHeadShort: ["Put vega: ÷ 100.", "看跌 Vega：÷ 100。"],
+	feedHead: ["Check the broker units.", "先核对券商的报价单位。"],
+	feedHeadShort: ["Check the broker units.", "先核对券商的报价单位。"],
 	staleHead: [
 		"The put delta is Friday's, not Monday's.",
 		"看跌 Delta 是周五的，不是周一的。",
@@ -188,7 +185,10 @@ const copy = {
 	putDelta: ["Put delta · Friday", "看跌 Delta · 周五历史值"],
 	currentDelta: ["Current delta: unknown", "当前 Delta：未知"],
 	perPoint: ["per vol point · Mon 16:00", "每个波动率点 · 周一 16:00"],
-	perUnit: ["per 1.00 of vol · Mon 16:00", "每 1.00 波动率 · 周一 16:00"],
+	perUnit: [
+		"per 1.00 of vol · ÷ 100 · Mon 16:00",
+		"每 1.00 波动率 · ÷ 100 · 周一 16:00",
+	],
 	perShareFriday: [
 		`per share · Fri 16:00, ALFA $${FRIDAY_SPOT.toFixed(2)}`,
 		`每股 · 周五 16:00，ALFA $${FRIDAY_SPOT.toFixed(2)}`,
@@ -675,11 +675,6 @@ function Scene({
 				>
 					{t(copy.perPoint)}
 				</Word>
-				<path
-					data-f="f-current-rule"
-					d={`M${L.margin} ${L.feedY(2) + T.body * 2.6}H${L.sharesX}`}
-					className="wt-axis"
-				/>
 				<Word
 					name="f-current-delta"
 					x={L.margin}
@@ -938,10 +933,9 @@ function build(context: FilmContext) {
 		{ opacity: 0.4, duration: 0.4 },
 		36.4,
 	);
-	// Friday's observation stays known. A separate lane names the current unknown,
-	// and a drawn separator uses the former idle stretch without inventing a delta.
+	// Friday's observation stays known. The current unknown settles at 36.85
+	// and stands quietly until the claim cut at 39.85.
 	show(one("f-current-delta"), 36.35);
-	draw(one<SVGPathElement>("f-current-rule"), 37, 0.6);
 	// Cut: the claim.
 	hide([one("s-head"), ...flat("feeds")], 39.85);
 	word(one("z-big"), 40.25);
