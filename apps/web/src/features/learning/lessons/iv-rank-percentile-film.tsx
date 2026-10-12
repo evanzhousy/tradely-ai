@@ -44,14 +44,14 @@ import {
  *   year        9.6–13.4  a year of weekly IV30 and today's line
  *   rank        13.4–18.2 the range 22% to 68%, today 28% of the way up
  *   percentile  18.2–22.6 48 of 52 weeks below today: 92%
- *   outlier     22.6–31.6 drop the 68% week; cut: rank 28% → 59%, locked, percentile
+ *   outlier     22.6–31.85 drop the 68% week; cut: rank 28% → 59%, locked, percentile
  *                         92% → 94%
- *   sample      31.6–44   the last 13 weeks: 100%; the year with a gap: 100% of 44;
+ *   sample      31.85–44.3 the last 13 weeks: 100%; the year with a gap: 100% of 44;
  *                         cut: "Say the measure, the window and the coverage."
- *   next        44–46.5   Next: from delta to DEX and DEI
+ *   next        44.3–46.8 Next: from delta to DEX and DEI
  */
 
-const END = 46.5;
+const END = 46.8;
 const Y_MAX = 72;
 const TODAY = ALFA_IV30_TODAY;
 
@@ -94,7 +94,6 @@ const copy = {
 		"ALFA 一年来每周的 IV30。",
 	],
 	yearHeadShort: ["A year of weekly IV30.", "一年的每周 IV30。"],
-	axis: ["ALFA IV30, weekly", "ALFA IV30，每周"],
 	today: [`today ${TODAY}%`, `今天 ${TODAY}%`],
 	rankHead: [
 		"Rank: today's place between low and high.",
@@ -113,32 +112,24 @@ const copy = {
 		"百分位：有多少周比今天低。",
 	],
 	pctHeadShort: ["Percentile: how many were lower.", "百分位：多少周更低。"],
-	pctFormula: [
-		`${year.below} of ${year.n} weeks = ${pct(year.percentile)}`,
-		`${year.n} 周中 ${year.below} 周 = ${pct(year.percentile)}`,
-	],
 	outlierHead: ["One week set the high: drop it.", "最高值来自一周：去掉它。"],
-	sampleHead: [
-		`The last ${RECENT} weeks: today tops them all.`,
-		`只看最近 ${RECENT} 周：今天高于所有周。`,
-	],
+	sampleHead: [`The last ${RECENT} weeks only.`, `只看最近 ${RECENT} 周。`],
 	sampleHeadShort: [
 		`The last ${RECENT} weeks only.`,
 		`只看最近 ${RECENT} 周。`,
 	],
-	gapHead: [
-		`A year missing ${GAP.to - GAP.from + 1} weeks, the shock too.`,
-		`一年中丢了 ${GAP.to - GAP.from + 1} 周，冲击那周也在其中。`,
-	],
-	gapHeadShort: [
-		`A year with ${GAP.to - GAP.from + 1} weeks lost.`,
-		`丢了 ${GAP.to - GAP.from + 1} 周的一年。`,
-	],
+	gapHead: ["A year with missing history.", "一年中有历史缺失。"],
+	gapHeadShort: ["A year with missing history.", "一年中有历史缺失。"],
+	aboveHigh: ["rank above high", "Rank 高于最高值"],
+	coverage: ["observed below", "观测值均较低"],
 	rankWas: ["rank", "Rank"],
 	pctWas: ["percentile", "百分位"],
 	high: ["high", "最高"],
 	low: ["low", "最低"],
-	missing: ["missing", "缺失"],
+	missing: [
+		`${GAP.to - GAP.from + 1} missing`,
+		`缺失 ${GAP.to - GAP.from + 1} 周`,
+	],
 	claimBig: [
 		"Say the measure, the window and the coverage.",
 		"说明指标、窗口和覆盖范围。",
@@ -195,6 +186,8 @@ function Scene({
 	};
 	/** The outlier's readings, as large as two stacked lines allow. */
 	const oSize = Math.min(T.big * 0.7, room / (9 * 0.62));
+	const tallySize = Math.min(T.head * 1.2, room / (14 * 0.6));
+	const proofY = L.headY + T.head * 1.1 + tallySize;
 	const gapX = L.left + L.slot * GAP.from;
 	const gapW = L.slot * (GAP.to - GAP.from + 1);
 	return (
@@ -224,12 +217,6 @@ function Scene({
 							</g>
 						))}
 						<path d={`M${L.left} ${L.y(0)}H${L.right}`} className="wt-axis" />
-						{/* On a phone the headline names the chart, and a formula needs the room. */}
-						{narrow ? null : (
-							<text x={L.left} y={L.top - 12} className="wt-small">
-								{t(copy.axis)}
-							</text>
-						)}
 						<text x={L.left} y={L.bottom + 18} className="wt-small">
 							{t(["Sep 2029", "2029年9月"])}
 						</text>
@@ -258,12 +245,12 @@ function Scene({
 						>
 							{t(copy.missing)}
 						</text>
-						{alfaIv30Weekly.map((iv, i) => (
+						{alfaIv30Weekly.map((_, i) => (
 							<rect
 								key={`week-${i}`}
 								data-f={`bar-${i}`}
 								className="wt-film-bar"
-								data-tone={iv < TODAY ? "neutral" : "loss"}
+								data-tone="neutral"
 								x={L.barX(i) - L.barWidth / 2}
 								y={L.y(0)}
 								width={L.barWidth}
@@ -296,6 +283,7 @@ function Scene({
 								className="wt-film-tangent"
 							/>
 							<path
+								data-f="bracket-low"
 								d={`M${L.bracketX - 6} ${L.y(year.low)}h12`}
 								className="wt-film-tangent"
 							/>
@@ -308,6 +296,7 @@ function Scene({
 								{`${year.high}%`}
 							</text>
 							<text
+								data-f="bracket-low-label"
 								x={L.bracketX + 10}
 								y={L.y(year.low) + 4}
 								className="wt-small"
@@ -379,7 +368,29 @@ function Scene({
 			{headline("r-head", copy.rankHead, copy.rankHeadShort)}
 			{formula("r-formula", t(copy.rankFormula), "wt-film-accent")}
 			{headline("p-head", copy.pctHead, copy.pctHeadShort)}
-			{formula("p-formula", t(copy.pctFormula), "wt-film-accent")}
+			<Word
+				name="p-tally"
+				x={L.margin}
+				y={proofY}
+				size={tallySize}
+				anchor="start"
+				className="wt-film-num wt-film-accent"
+			>{`0 / ${year.n}`}</Word>
+			<Word
+				name="p-result"
+				x={L.margin + tallySize * 0.6 * 8}
+				y={proofY}
+				size={tallySize}
+				anchor="start"
+				className="wt-film-num wt-film-accent"
+			>
+				{`= ${pct(year.percentile)}`}
+			</Word>
+			{formula(
+				"o-proof",
+				`${noShock.below}/${noShock.n} = ${pct(noShock.percentile)}`,
+				"wt-film-accent",
+			)}
 			{headline("o-head", copy.outlierHead)}
 			<Brackets name="lock-rank" glow />
 			<g data-f="o">
@@ -403,7 +414,7 @@ function Scene({
 							name={`o-num-${i}`}
 							x={W / 2}
 							y={H * (0.24 + i * 0.32) + oSize * 1.15}
-							size={oSize}
+							size={i === 0 ? oSize : oSize / 1.4}
 							className={`wt-film-num ${i === 0 ? "wt-film-accent" : ""}`}
 						>
 							{`${pct(from)} → ${pct(to)}`}
@@ -411,8 +422,41 @@ function Scene({
 					</g>
 				))}
 			</g>
+			<Word
+				name="o-coverage"
+				x={W / 2}
+				y={H * 0.79}
+				size={T.body}
+				className="wt-film-num wt-film-dim"
+			>{`${year.below}/${year.n} → ${noShock.below}/${noShock.n}`}</Word>
 			{headline("s-head", copy.sampleHead, copy.sampleHeadShort)}
+			{formula(
+				"s-proof",
+				`${recent.below}/${recent.n} = ${pct(recent.percentile)}`,
+				"wt-film-accent",
+			)}
+			<Word
+				name="s-note"
+				x={L.margin}
+				y={proofY + T.head * 1.1}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>{`${t(copy.coverage)} · ${t(copy.aboveHigh)}`}</Word>
 			{headline("g-head", copy.gapHead, copy.gapHeadShort)}
+			{formula(
+				"g-proof",
+				`${gapped.below}/${gapped.n} = ${pct(gapped.percentile)}`,
+				"wt-film-accent",
+			)}
+			<Word
+				name="g-note"
+				x={L.margin}
+				y={proofY + T.head * 1.1}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>{`${t(copy.coverage)} · ${t(copy.aboveHigh)}`}</Word>
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -466,45 +510,43 @@ function build(context: FilmContext) {
 	const above = bars.filter((_, i) => alfaIv30Weekly[i] >= TODAY);
 	const rank = one<SVGTextElement>("bracket-rank");
 	const highLabel = one<SVGTextElement>("bracket-high-label");
-	/** The bracket's top edge, its labels and its dot, moved from one history to another. */
+	const lowLabel = one<SVGTextElement>("bracket-low-label");
+	/** One state renders both endpoints, their labels and today's uncapped rank. */
+	const range = { low: year.low, high: year.high };
+	const renderRange = () => {
+		one("bracket-line").setAttribute(
+			"d",
+			`M${L.bracketX} ${L.y(range.low)}V${L.y(range.high)}`,
+		);
+		for (const [name, label, value] of [
+			["bracket-low", lowLabel, range.low],
+			["bracket-high", highLabel, range.high],
+		] as const) {
+			one(name).setAttribute("d", `M${L.bracketX - 6} ${L.y(value)}h12`);
+			label.setAttribute("y", String(L.y(value) + 4));
+			label.textContent = `${Number(value.toFixed(1))}%`;
+		}
+		one("bracket-dot").setAttribute("cy", String(L.y(TODAY)));
+		rank.textContent = pct((TODAY - range.low) / (range.high - range.low));
+	};
 	const bracketTo = (
-		from: { high: number; rank: number },
-		to: { high: number; rank: number },
+		from: { low: number; high: number },
+		to: { low: number; high: number },
 		at: number,
+		duration = 0.7,
 	) => {
-		const move = { duration: 0.7, ease: "power2.inOut" };
-		tl.to(
-			one("bracket-line"),
+		tl.fromTo(
+			range,
+			{ low: from.low, high: from.high },
 			{
-				attr: { d: `M${L.bracketX} ${L.y(year.low)}V${L.y(to.high)}` },
-				...move,
+				low: to.low,
+				high: to.high,
+				duration,
+				ease: "power2.inOut",
+				immediateRender: false,
+				onUpdate: renderRange,
 			},
 			at,
-		);
-		tl.to(
-			one("bracket-high"),
-			{ attr: { d: `M${L.bracketX - 6} ${L.y(to.high)}h12` }, ...move },
-			at,
-		);
-		tl.to(highLabel, { attr: { y: L.y(to.high) + 4 }, ...move }, at);
-		tl.to(
-			one("bracket-dot"),
-			{ attr: { cy: L.y(Math.min(TODAY, to.high)) }, ...move },
-			at,
-		);
-		d.count(
-			highLabel,
-			to.high,
-			at,
-			(value) => `${Math.round(value)}%`,
-			from.high,
-		);
-		d.count(
-			rank,
-			to.rank * 100,
-			at,
-			(value) => `${Math.round(value)}%`,
-			from.rank * 100,
 		);
 	};
 
@@ -521,10 +563,17 @@ function build(context: FilmContext) {
 			"r-head",
 			"r-formula",
 			"p-head",
-			"p-formula",
+			"p-tally",
+			"p-result",
+			"o-proof",
+			"o-coverage",
 			"o-head",
 			"s-head",
+			"s-proof",
+			"s-note",
 			"g-head",
+			"g-proof",
+			"g-note",
 		].map((name) => one(name)),
 		...flat("o"),
 		lockRank,
@@ -565,7 +614,7 @@ function build(context: FilmContext) {
 		one("today"),
 		{ opacity: 0, x: -20 },
 		{ opacity: 1, x: 0, duration: 0.6 },
-		12.4,
+		12.0,
 	);
 
 	// ——— rank: between the extremes ———
@@ -577,15 +626,9 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5 },
 		13.9,
 	);
-	tl.fromTo(
-		one("bracket-dot"),
-		{ attr: { cy: L.y(year.low) } },
-		{ attr: { cy: L.y(TODAY) }, duration: 0.8, ease: "power2.out" },
-		14.1,
-	);
-	d.count(rank, year.rank * 100, 14.1, (value) => `${Math.round(value)}%`);
-	// The week that sets the high, picked out.
-	tl.set(bars[SHOCK], { attr: { "data-tone": "total" } }, 14.9);
+	// Reveal the exact marker and reading together, without a second counter or walk.
+	// The range settles at 14.4; its equation arrives after a full second of quiet.
+	tl.set(bars[SHOCK], { attr: { "data-tone": "total" } }, 13.9);
 	show(one("r-formula"), 15.4);
 
 	// ——— percentile: the weeks below ———
@@ -594,14 +637,43 @@ function build(context: FilmContext) {
 	show(one("p-head"), 18.55, "above");
 	tl.to(one("bracket"), { opacity: 0.25, duration: 0.4 }, 18.4);
 	tl.to(above, { opacity: 0.25, duration: 0.4 }, 18.8);
-	tl.to(below, { opacity: 1, duration: 0.2 }, 18.8);
-	show(one("p-formula"), 19.1);
+	tl.set(bars[SHOCK], { attr: { "data-tone": "neutral" } }, 18.8);
+	show(one("p-tally"), 19.1);
+	const tally = { n: 0 };
+	tl.fromTo(
+		tally,
+		{ n: 0 },
+		{
+			n: below.length,
+			duration: 1.2,
+			ease: "none",
+			immediateRender: false,
+			onUpdate: () => {
+				const n = Math.floor(tally.n);
+				below.forEach((bar, i) => {
+					bar.setAttribute("data-tone", i < n ? "total" : "neutral");
+				});
+				one("p-tally").textContent = `${n} / ${year.n}`;
+			},
+		},
+		19.1,
+	);
+	// The exact quotient arrives only after the tally has rested for a full second.
+	tl.fromTo(
+		one("p-result"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		21.3,
+	);
 
 	// ——— outlier: one week sets the high ———
 	tl.addLabel("outlier", 22.6);
-	hide([one("p-head"), one("p-formula")], 22.6);
+	hide([one("p-head"), one("p-tally"), one("p-result")], 22.6);
 	show(one("o-head"), 22.95, "above");
-	tl.to([...above, one("bracket")], { opacity: 1, duration: 0.4 }, 22.8);
+	tl.to(above, { opacity: 1, duration: 0.4 }, 22.8);
+	tl.set(below, { attr: { "data-tone": "neutral" } }, 22.6);
+	// A discrete deletion has no intermediate sample: keep readouts offstage until it settles.
+	tl.to(one("bracket"), { opacity: 0, duration: 0.4 }, 23.2);
 	tl.to(
 		bars[SHOCK],
 		{
@@ -612,8 +684,15 @@ function build(context: FilmContext) {
 		23.6,
 	);
 	bracketTo(year, noShock, 24.2);
+	tl.to(one("bracket"), { opacity: 1, duration: 0.3 }, 24.9);
+	tl.fromTo(
+		one("o-proof"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		24.9,
+	);
 	// Cut: the two readings, before and after. The hero: rank doubles.
-	hide(one("o-head"), 26.6);
+	hide([one("o-head"), one("o-proof")], 26.6);
 	sink(26.6);
 	show(one("o-tag-0"), 26.9);
 	land(one("o-num-0"), 27.1);
@@ -624,50 +703,60 @@ function build(context: FilmContext) {
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 28.5);
+	// After the hero's quiet stand, draw the unchanged numerator and smaller denominator.
+	tl.fromTo(
+		one("o-coverage"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		30.45,
+	);
 
 	// ——— sample: the history itself ———
-	tl.addLabel("sample", 31.6);
-	hide([...flat("o"), lockRank], 31.6);
-	rise(31.8);
-	show(one("s-head"), 31.95, "above");
-	// Put the shock back, then keep only the last 13 weeks.
-	tl.to(
-		bars[SHOCK],
-		{
-			attr: {
-				y: L.y(alfaIv30Weekly[SHOCK]),
-				height: L.y(0) - L.y(alfaIv30Weekly[SHOCK]),
-			},
-			duration: 0.4,
-		},
-		31.8,
+	tl.addLabel("sample", 31.85);
+	hide([...flat("o"), one("o-coverage"), lockRank], 31.85);
+	// The old sample never resurfaces: prepare exclusions and the entire range under the cut.
+	tl.set(bars.slice(0, WEEKS - RECENT), { opacity: 0 }, 31.0);
+	bracketTo(noShock, recent, 31.0);
+	rise(32.05);
+	show(one("s-head"), 32.2, "above");
+	tl.fromTo(
+		[one("s-proof"), one("s-note")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		33.85,
 	);
-	tl.to(bars.slice(0, WEEKS - RECENT), { opacity: 0.12, duration: 0.6 }, 32.4);
-	bracketTo(noShock, recent, 32.9);
-	// Above the high, the formula passes 100%: shown as it is, not capped.
-	tl.set(rank, { attr: { class: "wt-halo wt-loss wt-marker-label" } }, 33.2);
-	// The full year again, with the outage's gap.
-	d.swap(one("s-head"), one("g-head"), 35.6);
-	tl.to(bars.slice(0, WEEKS - RECENT), { opacity: 1, duration: 0.5 }, 35.8);
-	tl.to(bars.slice(GAP.from, GAP.to + 1), { opacity: 0, duration: 0.4 }, 36.2);
-	tl.to([one("gap"), one("gap-label")], { opacity: 1, duration: 0.5 }, 36.4);
-	bracketTo(recent, gapped, 36.5);
+	// Cut away before restoring only the observed weeks; the shock remains excluded.
+	hide([one("s-head"), one("s-proof"), one("s-note")], 35.85);
+	sink(35.85);
+	show(one("g-head"), 36.25, "above");
+	const observed = bars.filter((_, i) => i < GAP.from || i > GAP.to);
+	tl.set(observed, { opacity: 1 }, 36.25);
+	tl.set(bars.slice(GAP.from, GAP.to + 1), { opacity: 0 }, 36.25);
+	tl.set([one("gap"), one("gap-label")], { opacity: 1 }, 36.25);
+	bracketTo(recent, gapped, 36.25, 0.3);
+	rise(36.55);
+	tl.fromTo(
+		[one("g-proof"), one("g-note")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		38.35,
+	);
 
 	// Cut: the claim.
-	hide(one("g-head"), 39.5);
-	sink(39.5);
+	hide([one("g-head"), one("g-proof"), one("g-note")], 39.8);
+	sink(39.8);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		39.9,
+		40.2,
 	);
-	show(one("c-sub"), 40.3);
+	show(one("c-sub"), 40.6);
 
 	// ——— next ———
-	tl.addLabel("next", 44);
-	hide(kids("claim"), 44);
-	d.close(44);
+	tl.addLabel("next", 44.3);
+	hide(kids("claim"), 44.3);
+	d.close(44.3);
 	return tl;
 }
 
