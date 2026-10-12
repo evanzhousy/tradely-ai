@@ -20,31 +20,35 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
-import { aggregate, price4, sources } from "./trade-records-model";
+import {
+	aggregate,
+	CONTRACT_MULTIPLIER,
+	premiumContribution,
+	price4,
+	sources,
+} from "./trade-records-model";
 
 /*
- * Tape rows, as a film. The Oct 18 105 call printed 5 at $2.00 and 500 at $2.15: is the
- * average $2.075? First what one row holds: two prints, 505 contracts, 2 trades. Then what
- * feeds it: six messages, a duplicate, a bust and a correction, that come to two trades.
- * The hero weighs the clean trades by size: $108,500 of premium, and the average counts
- * from $2.075 to $2.1485 as glowing brackets lock. Last, the block's 110 leg, another
- * contract that doesn't belong in the row.
+ * Two clean 105-call prints become a row. Feed rows persist while only changed counters
+ * swap in place, without invented partial trades. The hero is built from both premium contributions,
+ * their sum and the 505 × 100 share denominator; its settled quotient is the loudest mark.
+ * The 110-call print stays outside the traced 105-call boundary, with all inputs retained.
  *
- *   open      0–4        "Tape rows"
+ *   open      0–4        Tape rows
  *   question  4–8.6      5 at $2.00, 500 at $2.15: average $2.075?
- *   row       8.6–13.6   two prints; 505 contracts and 2 trades
- *   feed      13.6–24    new, duplicate, new, cancel, new, correct: 6 messages, 2 trades
- *   average   24–31      hero: $108,500 over 50,500 shares, $2.1485, not $2.075
- *   leg       31–35.6    not the 110 leg
- *   claim     35.6–40    one row, many prints; one trade, many messages
- *   next      40–42.5    Next: execution conditions
+ *   row       8.6–13.6   two prints; settled 505 contracts and 2 trades
+ *   feed      13.6–26    six incremental states; preserve the 3.1 s final inspection hold
+ *   average   26–34.4    contributions → numerator / denominator → quotient; lock at 30.8
+ *   leg       34.4–40.6 excluded 110 call: 500 at $0.90; trace the 105-call boundary
+ *   claim     40.6–45    one row, many prints; one trade, many messages
+ *   next      45–47.5    Next: execution conditions
  */
 
-const END = 42.5;
+const END = 47.5;
 const PRINTS = [sources.t1, sources.t3];
 const ROW = aggregate(["t1", "t3"]);
-const MIXED = aggregate(["t1", "t3", "leg"]);
 const LEG = sources.leg;
+const CONTRIBUTIONS = [premiumContribution("t1"), premiumContribution("t3")];
 const MESSAGES = oct105CallMessages;
 /** The feed's view after each message: how many trades and contracts it represents. */
 const VIEWS = MESSAGES.map((_, i) => {
@@ -55,6 +59,8 @@ const VIEWS = MESSAGES.map((_, i) => {
 	};
 });
 const LAST = VIEWS[VIEWS.length - 1];
+const COUNTER_NAMES = ["c-messages", "c-trades", "c-contracts"] as const;
+const READOUTS = VIEWS.map((view, i) => [i + 1, view.trades, view.contracts]);
 const kindCopy: Record<FeedMessage["kind"], Copy> = {
 	new: ["new", "新增"],
 	duplicate: ["duplicate", "重复"],
@@ -81,7 +87,9 @@ function layout(width: number) {
 			margin + (narrow ? i * (room / 2) : [0, 0.19, 0.38, 0.7][i] * room),
 		statY: (row: number) =>
 			H * (narrow ? 0.46 : 0.5) + row * H * (narrow ? 0.17 : 0),
-		legY: H * (narrow ? 0.84 : 0.8),
+		legY: H * 0.88,
+		heroX: margin + room * (narrow ? 0.49 : 0.53),
+		fractionX: margin + room * 0.23,
 		msgW: narrow ? room : room * 0.62,
 		msgY: (i: number) =>
 			H * (narrow ? 0.25 : 0.26) + i * H * (narrow ? 0.068 : 0.085),
@@ -110,25 +118,19 @@ const copy = {
 	xHead: ["Never mix in another contract.", "不要混入另一张合约。"],
 	contracts: ["contracts", "张数"],
 	trades: ["trades", "笔数"],
-	premium: ["premium", "权利金"],
 	average: ["average paid", "平均成交价"],
-	simple: ["simple average, ignoring size", "简单平均，忽略数量"],
-	simpleShort: ["ignores size", "忽略数量"],
-	mixed: [
-		`+ ${count(LEG.quantity)} · 110 call @ ${usd(LEG.price)} → ${price4(MIXED.weighted)} of what?`,
-		`+ ${count(LEG.quantity)} 张 110 看涨 @ ${usd(LEG.price)} → ${price4(MIXED.weighted)}，是什么的价格？`,
+	simple: [
+		`Simple ${price4(ROW.simple)} · no weighting`,
+		`简单平均 ${price4(ROW.simple)} · 未加权`,
 	],
-	mixedShort: [
-		`+ 110 leg → ${price4(MIXED.weighted)} of what?`,
-		`+ 110 腿 → ${price4(MIXED.weighted)}？`,
+	excluded: ["excluded", "不计入"],
+	leg: [
+		`${pick(LEG.contract, "en")} · ${count(LEG.quantity)} at ${usd(LEG.price)}`,
+		`${pick(LEG.contract, "zh")} · ${count(LEG.quantity)} 张 ${usd(LEG.price)}`,
 	],
 	fHead: [
 		"A feed sends messages, not trades.",
 		"数据源发送的是消息，不是成交。",
-	],
-	f2Head: [
-		`${MESSAGES.length} messages, ${LAST.trades} trades.`,
-		`${MESSAGES.length} 条消息，${LAST.trades} 笔成交。`,
 	],
 	messages: ["messages", "消息"],
 	claimBig: [
@@ -167,23 +169,13 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const proofText = narrow ? T.body : text;
+	// Leave a full em above the baseline, plus 14 px beyond the card's bottom edge.
+	const sumY = L.printY(1) + L.printH + 14 + proofText;
+	const sumOffset = sumY - H * 0.445;
 	const stats: [string, Copy, string, number, number][] = [
 		["s-contracts", copy.contracts, count(ROW.contracts), 0, 0],
 		["s-trades", copy.trades, String(ROW.trades), 1, 0],
-		[
-			"s-premium",
-			copy.premium,
-			usd(ROW.premium, 0),
-			narrow ? 0 : 2,
-			narrow ? 1 : 0,
-		],
-		[
-			"s-average",
-			copy.average,
-			price4(ROW.weighted),
-			narrow ? 1 : 3,
-			narrow ? 1 : 0,
-		],
 	];
 	return (
 		<>
@@ -287,122 +279,264 @@ function Scene({
 						data-f={`${name}-n`}
 						x={L.statX(col)}
 						y={L.statY(row) + T.small + T.num * 1.3}
-						className={`wt-film-num ${name === "s-average" ? "wt-film-accent" : ""}`}
+						className="wt-film-num"
 						style={{ fontSize: narrow ? T.num : T.num * 1.1 }}
 					>
 						{value}
 					</text>
 				</g>
 			))}
-			<text
-				data-f="simple"
-				x={L.statX(narrow ? 1 : 3)}
-				y={L.statY(narrow ? 1 : 0) + T.small * 2.6 + T.num * 1.3}
-				className="wt-film-type wt-film-loss"
-				style={{ fontSize: T.small * 1.1 }}
-			>
-				<tspan style={{ textDecoration: "line-through" }}>
-					{price4(ROW.simple)}
-				</tspan>
-				{` ${t(narrow ? copy.simpleShort : copy.simple)}`}
-			</text>
-			<Lines
-				name="mixed"
-				text={t(narrow ? copy.mixedShort : copy.mixed)}
+			{/* Each print makes its premium contribution, with the multiplier visible. */}
+			{PRINTS.map((print, i) => (
+				<g key={print.trade} data-f={`contribution-${i}`}>
+					<rect
+						x={margin}
+						y={L.printY(i)}
+						width={room}
+						height={L.printH}
+						rx={10}
+						className="wt-panel-shape"
+					/>
+					<text
+						x={margin + 12}
+						y={L.printY(i) + L.printH / 2 + proofText * 0.36}
+						className="wt-film-num"
+						style={{ fontSize: proofText }}
+					>
+						{`${count(print.quantity)} × ${usd(print.price)} × ${CONTRACT_MULTIPLIER}`}
+					</text>
+					<text
+						x={margin + room - 12}
+						y={L.printY(i) + L.printH / 2 + proofText * 0.36}
+						textAnchor="end"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: proofText }}
+					>
+						{`= ${usd(CONTRIBUTIONS[i], 0)}`}
+					</text>
+				</g>
+			))}
+			<Word
+				name="premium-sum"
 				x={margin}
-				y={L.legY}
-				size={text}
-				maxWidth={room}
+				y={sumY}
+				size={proofText}
 				anchor="start"
-				className="wt-film-type wt-film-loss"
+				className="wt-film-num"
+			>
+				{`${usd(CONTRIBUTIONS[0], 0)} + ${usd(CONTRIBUTIONS[1], 0)} = ${usd(ROW.premium, 0)}`}
+			</Word>
+			<Word
+				name="share-product"
+				x={margin}
+				y={H * 0.51 + sumOffset}
+				size={proofText}
+				anchor="start"
+				className="wt-film-num"
+			>
+				{`${count(ROW.contracts)} × ${CONTRACT_MULTIPLIER} = ${count(ROW.shares)}`}
+			</Word>
+			<g data-f="fraction">
+				<Word
+					name="fraction-premium"
+					x={L.fractionX}
+					y={H * 0.66}
+					size={T.num * 0.8}
+					className="wt-film-num"
+				>
+					{usd(ROW.premium, 0)}
+				</Word>
+				<path
+					data-f="fraction-rule"
+					d={`M${L.fractionX - room * 0.16} ${H * 0.68}h${room * 0.32}`}
+					className="wt-film-link"
+				/>
+				<Word
+					name="fraction-shares"
+					x={L.fractionX}
+					y={H * 0.735}
+					size={T.num * 0.8}
+					className="wt-film-num"
+				>
+					{count(ROW.shares)}
+				</Word>
+				<Word
+					name="fraction-equals"
+					x={margin + room * 0.44}
+					y={H * 0.715}
+					size={T.num}
+					className="wt-film-num"
+				>
+					=
+				</Word>
+			</g>
+			<g data-f="s-average">
+				<Word
+					name="average-tag"
+					x={L.heroX}
+					y={H * 0.715 - T.num * 1.6 * 1.05}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.average).toUpperCase()}
+				</Word>
+				<Word
+					name="s-average-n"
+					x={L.heroX}
+					y={H * 0.715}
+					size={T.num * 1.6}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{price4(ROW.weighted)}
+				</Word>
+			</g>
+			<Word
+				name="simple"
+				x={margin}
+				y={H * 0.8}
+				size={T.small * 1.1}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.simple)}
+			</Word>
+			<path
+				data-f="proof-boundary"
+				d={`M${margin - 8} ${H * 0.235}H${margin + room + 8}V${H * 0.835}H${margin - 8}Z`}
+				className="wt-film-link"
 			/>
+			<Word
+				name="proof-contract"
+				x={margin + room - 6}
+				y={H * 0.235 - 8}
+				size={T.small}
+				anchor="end"
+				className="wt-film-tag"
+			>
+				{t(PRINTS[0].contract).toUpperCase()}
+			</Word>
+			<g data-f="excluded-row">
+				<rect
+					x={margin}
+					y={L.legY - L.printH / 2}
+					width={room}
+					height={L.printH * 1.15}
+					rx={8}
+					className="wt-panel-shape"
+				/>
+				<Word
+					name="excluded-tag"
+					x={margin + 12}
+					y={L.legY - proofText * 0.4}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag wt-film-loss"
+				>
+					{t(copy.excluded).toUpperCase()}
+				</Word>
+				<Word
+					name="excluded-inputs"
+					x={margin + 12}
+					y={L.legY + proofText * 0.85}
+					size={proofText}
+					anchor="start"
+					className="wt-film-num wt-film-dim"
+				>
+					{t(copy.leg)}
+				</Word>
+			</g>
 
 			<Brackets name="lock-average" glow />
 
 			{/* The feed: messages in, trades out. */}
 			{headline("f-head", copy.fHead)}
-			{/* The answer, as the counts settle. */}
-			<Lines
-				name="f2-head"
-				text={t(copy.f2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.fHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
-			{MESSAGES.map((message, i) => (
-				<g key={message.id} data-f={`msg-${i}`}>
-					<rect
-						data-f={`msg-${i}-box`}
-						x={margin}
-						y={L.msgY(i)}
-						width={L.msgW}
-						height={L.msgH}
-						rx={8}
-						className="wt-panel-shape"
-					/>
-					<text
-						x={margin + 12}
-						y={L.msgY(i) + L.msgH / 2 + text * 0.36}
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: text }}
-					>
-						{narrow ? message.received.slice(0, 5) : message.received}
-					</text>
-					<text
-						x={margin + (narrow ? 62 : L.msgW * 0.28)}
-						y={L.msgY(i) + L.msgH / 2 + text * 0.36}
-						className={`wt-film-type ${kindTone[message.kind]}`}
-						style={{ fontSize: text }}
-					>
-						{t(kindCopy[message.kind])}
-					</text>
-					<text
-						x={margin + L.msgW - 12}
-						y={L.msgY(i) + L.msgH / 2 + text * 0.36}
-						textAnchor="end"
-						className="wt-film-num"
-						style={{ fontSize: text }}
-					>
-						{message.quantity !== undefined && message.price !== undefined
-							? `${message.trade} · ${count(message.quantity)} @ ${usd(message.price)}`
-							: message.trade}
-					</text>
-				</g>
-			))}
-			{(
-				[
-					["c-messages", copy.messages, "0"],
-					["c-trades", copy.trades, "0"],
-					["c-contracts", copy.contracts, "0"],
-				] as const
-			).map(([name, tag, value], i) => (
-				<g key={name} data-f={name}>
-					<text
-						x={narrow ? margin + i * (room / 3) : L.countX(i)}
-						y={(narrow ? H * 0.71 : L.countY(i)) + T.small}
-						className="wt-film-tag"
-						style={{ fontSize: T.small }}
-					>
-						{t(tag).toUpperCase()}
-					</text>
-					<text
-						data-f={`${name}-n`}
-						x={narrow ? margin + i * (room / 3) : L.countX(i)}
-						y={(narrow ? H * 0.71 : L.countY(i)) + T.small + T.num * 1.3}
-						className={`wt-film-num ${i ? "wt-film-accent" : "wt-film-dim"}`}
-						style={{ fontSize: narrow ? T.num : T.num * 1.2 }}
-					>
-						{value}
-					</text>
-				</g>
-			))}
+			{/* History persists. A new row arrives with only its changed readouts. */}
+			<g data-f="feed">
+				{MESSAGES.map((message, i) => (
+					<g key={message.id} data-f={`msg-${i}`}>
+						<g
+							data-f={`msg-${i}-content`}
+							opacity={
+								message.kind === "duplicate"
+									? 0.5
+									: message.kind === "cancel"
+										? 0.45
+										: 1
+							}
+						>
+							<rect
+								data-f={`msg-${i}-box`}
+								x={margin}
+								y={L.msgY(i)}
+								width={L.msgW}
+								height={L.msgH}
+								rx={8}
+								className="wt-panel-shape"
+							/>
+							<text
+								x={margin + 12}
+								y={L.msgY(i) + L.msgH / 2 + text * 0.36}
+								className="wt-film-num wt-film-dim"
+								style={{ fontSize: text }}
+							>
+								{narrow ? message.received.slice(0, 5) : message.received}
+							</text>
+							<text
+								x={margin + (narrow ? 62 : L.msgW * 0.28)}
+								y={L.msgY(i) + L.msgH / 2 + text * 0.36}
+								className={`wt-film-type ${kindTone[message.kind]}`}
+								style={{ fontSize: text }}
+							>
+								{t(kindCopy[message.kind])}
+							</text>
+							<text
+								x={margin + L.msgW - 12}
+								y={L.msgY(i) + L.msgH / 2 + text * 0.36}
+								textAnchor="end"
+								className="wt-film-num"
+								style={{ fontSize: text }}
+							>
+								{message.quantity !== undefined && message.price !== undefined
+									? `${message.trade} · ${count(message.quantity)} @ ${usd(message.price)}`
+									: message.trade}
+							</text>
+						</g>
+					</g>
+				))}
+				{COUNTER_NAMES.map((name, col) => (
+					<g key={name}>
+						<text
+							data-f={`${name}-tag`}
+							x={narrow ? margin + col * (room / 3) : L.countX(col)}
+							y={(narrow ? H * 0.71 : L.countY(col)) + T.small}
+							className="wt-film-tag"
+							style={{ fontSize: T.small }}
+						>
+							{t(
+								[copy.messages, copy.trades, copy.contracts][col],
+							).toUpperCase()}
+						</text>
+						{READOUTS.map((values, i) =>
+							i > 0 && values[col] === READOUTS[i - 1][col] ? null : (
+								<text
+									key={MESSAGES[i].id}
+									data-f={`view-${i}-${name}-n`}
+									x={narrow ? margin + col * (room / 3) : L.countX(col)}
+									y={
+										(narrow ? H * 0.71 : L.countY(col)) + T.small + T.num * 1.3
+									}
+									className={`wt-film-num ${col ? "wt-film-accent" : "wt-film-dim"}`}
+									style={{ fontSize: narrow ? T.num : T.num * 1.2 }}
+								>
+									{count(values[col])}
+								</text>
+							),
+						)}
+					</g>
+				))}
+			</g>
 
 			<g data-f="claim">
 				<Lines
@@ -438,8 +572,7 @@ function Scene({
 }
 
 function build(context: FilmContext) {
-	const { width: W } = context;
-	const L = layout(W);
+	const L = layout(context.width);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
 	const flat = (name: string) =>
@@ -448,7 +581,7 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
-	/** A line lands slightly large and settles, without overshoot. */
+	/** Scale only the single text mark, never a group. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
@@ -456,22 +589,36 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const num = (name: string) => one<SVGTextElement>(name);
-	const heads = [
-		"r-head",
-		"f-head",
-		"f2-head",
-		"a-head",
-		"a2-head",
-		"x-head",
-	].map((name) => one(name));
+	/** A whole proof fades in place: its inputs and outputs always agree. */
+	const fade = (target: Element | Element[], time: number, duration = 0.5) =>
+		tl.fromTo(
+			target,
+			{ opacity: 0 },
+			{ opacity: 1, duration, immediateRender: false },
+			time,
+		);
 	const prints = PRINTS.map((_, i) => one(`print-${i}`));
-	const stats = ["s-contracts", "s-trades", "s-premium", "s-average"].map(
-		(name) => one(name),
+	const stats = [one("s-contracts"), one("s-trades")];
+	const messages = MESSAGES.map((_, i) => one(`msg-${i}`));
+	const counterTags = COUNTER_NAMES.map((name) => one(`${name}-tag`));
+	const readout = (i: number, col: number) =>
+		one(`view-${i}-${COUNTER_NAMES[col]}-n`);
+	const changedReadouts = READOUTS.flatMap((values, i) =>
+		values.flatMap((value, col) =>
+			i === 0 || value !== READOUTS[i - 1][col] ? [readout(i, col)] : [],
+		),
 	);
-	const msgs = MESSAGES.map((_, i) => one(`msg-${i}`));
-	const counters = ["c-messages", "c-trades", "c-contracts"].map((name) =>
-		one(name),
+	const contributions = PRINTS.map((_, i) => one(`contribution-${i}`));
+	const calculation = [
+		...contributions,
+		one("premium-sum"),
+		one("share-product"),
+		one("fraction"),
+		one("s-average"),
+		one("simple"),
+	];
+	const heads = ["r-head", "f-head", "a-head", "a2-head", "x-head"].map(
+		(name) => one(name),
 	);
 	const lockAverage = one<SVGGraphicsElement>("lock-average");
 
@@ -481,167 +628,104 @@ function build(context: FilmContext) {
 		...prints,
 		one("sum-rule"),
 		...stats,
-		one("simple"),
-		one("mixed"),
+		...messages,
+		...counterTags,
+		...changedReadouts,
+		...calculation,
 		lockAverage,
-		...msgs,
-		...counters,
+		one("excluded-row"),
+		one("proof-boundary"),
+		one("proof-contract"),
 		...kids("claim"),
 	]);
 
-	// ——— open ———
 	tl.addLabel("open", 0);
 	d.open(0);
 
-	// ——— question: a simple average ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 4.8);
 	word(one("q-big"), 5.1);
 
-	// ——— row: two prints, one row ———
+	// The two fixed prints cannot imply an interpolated total.
 	tl.addLabel("row", 8.6);
 	hide(flat("q"), 8.6);
-	show(heads[0], 8.8);
+	show(one("r-head"), 8.8);
 	show(prints[0], 9.3, "right");
 	show(prints[1], 9.6, "right");
 	show(one("sum-rule"), 10.2);
-	show([stats[0], stats[1]], 10.4);
-	d.count(
-		num("s-contracts-n"),
-		ROW.contracts,
-		10.5,
-		(v) => count(Math.round(v)),
-		0,
-		0.6,
-	);
-	d.count(
-		num("s-trades-n"),
-		ROW.trades,
-		10.5,
-		(v) => String(Math.round(v)),
-		0,
-		0.6,
-	);
+	fade(stats, 10.4);
 
-	// ——— feed: six messages, two trades ———
 	tl.addLabel("feed", 13.6);
-	hide([heads[0], ...prints, one("sum-rule"), stats[0], stats[1]], 13.6);
-	show(heads[1], 13.95);
-	show(counters, 14.2);
-	let before = { trades: 0, contracts: 0 };
+	hide([one("r-head"), ...prints, one("sum-rule"), ...stats], 13.6);
+	show(one("f-head"), 13.95);
+	// Keep history, counter labels and unchanged values in place. Changed old values
+	// leave before the new event; its row and settled readouts then arrive together.
+	const activeReadouts: Element[] = [];
 	MESSAGES.forEach((message, i) => {
-		const time = 14.6 + i;
-		show(msgs[i], time, "right");
-		d.count(
-			num("c-messages-n"),
-			i + 1,
-			time + 0.2,
-			(v) => String(Math.round(v)),
-			i,
-			0.3,
-		);
-		const view = VIEWS[i];
-		if (view.trades !== before.trades)
-			d.count(
-				num("c-trades-n"),
-				view.trades,
-				time + 0.3,
-				(v) => String(Math.round(v)),
-				before.trades,
-				0.4,
-			);
-		if (view.contracts !== before.contracts)
-			d.count(
-				num("c-contracts-n"),
-				view.contracts,
-				time + 0.3,
-				(v) => count(Math.round(v)),
-				before.contracts,
-				0.5,
-			);
-		// What a message did to the view: nothing, a removal, or a fix.
-		if (message.kind === "duplicate")
-			tl.to(msgs[i], { opacity: 0.5, duration: 0.3 }, time + 0.6);
-		if (message.kind === "cancel") {
+		const time = 14.6 + i * 1.6;
+		const incoming = [messages[i], ...(i === 0 ? counterTags : [])];
+		READOUTS[i].forEach((value, col) => {
+			if (i > 0 && value === READOUTS[i - 1][col]) return;
+			if (i > 0) hide(activeReadouts[col], time - 0.3, 0.3, 0);
+			const next = readout(i, col);
+			incoming.push(next);
+			activeReadouts[col] = next;
+		});
+		fade(incoming, time, 0.3);
+		if (message.kind === "cancel" || message.kind === "correct") {
 			const target = MESSAGES.findIndex(
-				(m) => m.kind === "new" && m.trade === message.trade,
+				(prior) => prior.kind === "new" && prior.trade === message.trade,
 			);
-			tl.to(
-				[msgs[i], msgs[target]],
-				{ opacity: 0.45, duration: 0.3 },
-				time + 0.6,
+			tl.fromTo(
+				one(`msg-${target}-content`),
+				{ opacity: 1 },
+				{ opacity: 0.45, duration: 0.3, immediateRender: false },
+				time,
 			);
 		}
-		if (message.kind === "correct") {
-			const target = MESSAGES.findIndex(
-				(m) => m.kind === "new" && m.trade === message.trade,
-			);
-			tl.to(msgs[target], { opacity: 0.45, duration: 0.3 }, time + 0.6);
-		}
-		before = view;
 	});
-	show(heads[2], 20.4);
 
-	// ——— average: the hero. The two clean trades, weighted by size. ———
-	tl.addLabel("average", 24);
-	hide([heads[1], heads[2], ...msgs, ...counters], 24.0);
-	show(heads[3], 24.35);
-	show(prints[0], 24.4, "right");
-	show(prints[1], 24.6, "right");
-	show(one("sum-rule"), 24.8);
-	show([stats[0], stats[1]], 24.9);
-	show(stats[2], 25.3);
-	d.count(
-		num("s-premium-n"),
-		ROW.premium,
-		25.4,
-		(v) => usd(Math.round(v / 100) * 100, 0),
-		0,
-		0.7,
-	);
-	show(stats[3], 26.1);
-	d.count(
-		num("s-average-n"),
-		ROW.weighted,
-		26.2,
-		(v) => price4(Math.round(v * 100) / 100),
-		ROW.simple,
-		0.8,
-	);
-	show(one("simple"), 27.1);
-	// Round the average and the simple one struck under it: the pair is the answer.
-	d.lock(lockAverage, 27.4, { around: [stats[3], one("simple")], pad: 6 });
-	tl.addLabel("hero-lock", 27.4);
-	show(heads[4], 27.4);
+	tl.addLabel("average", 26);
+	hide([one("f-head"), one("feed")], 26);
+	show(one("a-head"), 26.35);
+	// Contributions settle at 26.9. Build the numerator and denominator as one step,
+	// then give the complete operands and the settled division 1 s quiet apiece.
+	fade(contributions, 26.4);
+	fade([one("premium-sum"), one("share-product")], 27.9, 0.4);
+	fade([one("fraction"), one("s-average"), one("simple")], 29.3);
+	d.trace(one<SVGPathElement>("fraction-rule"), 29.3, { duration: 0.5 });
+	d.lock(lockAverage, 30.8, { around: one("s-average"), pad: 6 });
+	tl.addLabel("hero-lock", 30.8);
+	show(one("a2-head"), 30.8);
 
-	// ——— leg: another contract stays out ———
-	tl.addLabel("leg", 31);
-	d.swap([heads[3], heads[4]], heads[5], 31.0);
-	hide(lockAverage, 31.0);
-	show(one("mixed"), 31.6);
+	// The 105-call calculation stays intact; the other call sits outside its boundary.
+	// Brackets settle at 31.25 and stand for the original 3.15 s before leaving.
+	tl.addLabel("leg", 34.4);
+	d.swap([one("a-head"), one("a2-head")], one("x-head"), 34.4);
+	hide(lockAverage, 34.4);
+	fade(one("excluded-row"), 35.5);
+	d.trace(one<SVGPathElement>("proof-boundary"), 37.0, { duration: 0.8 });
+	fade(one("proof-contract"), 37.0);
 
-	// ——— claim ———
-	tl.addLabel("claim", 35.6);
+	tl.addLabel("claim", 40.6);
 	hide(
 		[
-			heads[5],
-			...prints,
-			one("sum-rule"),
-			...stats,
-			one("simple"),
-			one("mixed"),
+			one("x-head"),
+			...calculation,
+			one("excluded-row"),
+			one("proof-boundary"),
+			one("proof-contract"),
 		],
-		35.6,
+		40.6,
 	);
-	word(one("z-big"), 35.9);
-	show(one("z-sub"), 36.3);
+	word(one("z-big"), 40.9);
+	show(one("z-sub"), 41.3);
 
-	// ——— next ———
-	tl.addLabel("next", 40);
-	hide(kids("claim"), 40.0);
-	d.close(40.0);
+	tl.addLabel("next", 45);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
