@@ -11,6 +11,7 @@
 //   early  a carry's target already showing before the copy that becomes it lands
 //   enter  a line rising into place (show's entrance) through settled text, every 0.05 s
 //   hero   a mark or text over the hero's figure, or a mark through its brackets, for 0.1 s
+//   hidden a filled shape painted over a fifth or more of the hero's brackets, for 0.1 s
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
 const [w, h, dpr] = env.SIZE.replace("m", "").split("x").map(Number);
@@ -572,6 +573,80 @@ const hits = await page.evaluate((end) => {
 					// Three samples in a row: 0.1 s over the hero, more than a dip's overlap.
 					if (run.length === 3) for (const x of run) add(label(e), x);
 					else if (run.length > 3) add(label(e), t);
+				}
+			}
+			// The brackets are seen, not just there: a filled shape painted after them (later in
+			// the document, so on top) that covers a fifth of their stroke hides the lock, even
+			// one that was there all along (a card or a row's background drawn over its own lock).
+			const paint = (e) => {
+				const cs = getComputedStyle(e);
+				if (cs.fill === "none" || cs.fill.includes("#vig")) return 0;
+				const rgba = /rgba?\(([^)]+)\)/.exec(cs.fill);
+				const a = rgba ? (rgba[1].split(/[\s,/]+/).map(Number)[3] ?? 1) : 1;
+				return a * Number(cs.fillOpacity) * alpha(e);
+			};
+			// A clip (a chart's plot area, a reveal) hides the part of a shape outside it.
+			const clippedOut = (e, x, y) => {
+				for (let a = e; a && a !== svg; a = a.parentElement) {
+					const ref =
+						a.getAttribute("clip-path") || getComputedStyle(a).clipPath;
+					const id = /url\(["']?#([^"')]+)/.exec(ref || "")?.[1];
+					const cp = id && svg.querySelector(`#${CSS.escape(id)}`);
+					const ctm = cp && a.getScreenCTM();
+					if (!ctm) continue;
+					const p = new DOMPoint(x, y).matrixTransform(ctm.inverse());
+					const inside = [...cp.children].some((c) => {
+						const m = c.transform?.baseVal?.consolidate()?.matrix;
+						return c.isPointInFill?.(m ? p.matrixTransform(m.inverse()) : p);
+					});
+					if (!inside) return true;
+				}
+				return false;
+			};
+			const above = [
+				...svg.querySelectorAll("rect, path, circle, polygon, ellipse"),
+			].filter(
+				(e) =>
+					e !== glow &&
+					glow.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING &&
+					!e.closest("defs, clipPath, pattern, mask, [data-f='title-group']"),
+			);
+			const covered = new Map();
+			for (let t = on; t <= end; t = Math.round((t + 0.05) * 100) / 100) {
+				tl.seek(t, false);
+				if (alpha(glow) <= 0.25) break;
+				const ctm = glow.getScreenCTM();
+				const len = glow.getTotalLength();
+				const points = [];
+				for (let s = 0; s <= len; s += Math.max(1, len / 120)) {
+					const q = glow.getPointAtLength(s);
+					points.push({
+						x: ctm.a * q.x + ctm.c * q.y + ctm.e,
+						y: ctm.b * q.x + ctm.d * q.y + ctm.f,
+					});
+				}
+				for (const e of above) {
+					const m = e.getScreenCTM();
+					if (!m || paint(e) < 0.5) {
+						covered.delete(e);
+						continue;
+					}
+					const inv = m.inverse();
+					const n = points.filter(
+						(p) =>
+							e.isPointInFill(new DOMPoint(p.x, p.y).matrixTransform(inv)) &&
+							!clippedOut(e, p.x, p.y),
+					).length;
+					if (n < points.length * 0.2) {
+						covered.delete(e);
+						continue;
+					}
+					const run = covered.get(e) ?? [];
+					run.push(t);
+					covered.set(e, run);
+					if (run.length === 3)
+						for (const x of run) add(`hidden brackets under ${name(e)}`, x);
+					else if (run.length > 3) add(`hidden brackets under ${name(e)}`, t);
 				}
 			}
 		}
