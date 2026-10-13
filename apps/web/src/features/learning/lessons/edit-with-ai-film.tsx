@@ -80,6 +80,9 @@ function layout(width: number) {
 	const { height: H, narrow, margin, room, type: T } = frame;
 	const rowTop = H * (narrow ? 0.41 : 0.42);
 	const rowStep = H * (narrow ? 0.085 : 0.082);
+	const fieldHeight = Math.max(H * 0.075, T.num + 8);
+	const fieldCenterY =
+		rowTop + 4 * rowStep + rowStep * 0.84 + 6 + fieldHeight / 2;
 	return {
 		...frame,
 		barY: H * (narrow ? 0.26 : 0.25),
@@ -87,6 +90,14 @@ function layout(width: number) {
 		barText: narrow ? T.small * 1.1 : T.body,
 		rowY: (i: number) => rowTop + i * rowStep,
 		rowH: rowStep * 0.84,
+		spotlightExtra: Math.max(H * 0.1, fieldHeight + 12),
+		symbolField: {
+			centerX: margin + room * 0.81 - 7,
+			centerY: fieldCenterY,
+			width: room * 0.38 - 14,
+			height: fieldHeight,
+			baseline: fieldCenterY + T.num * 0.36,
+		},
 		rowText: narrow ? T.small * 1.15 : T.body,
 		pillW: (room - 3 * 8) / 4,
 		cardY: narrow
@@ -94,6 +105,7 @@ function layout(width: number) {
 			: [H * 0.27, H * 0.49, H * 0.71],
 		cardH: [0, 1, 2].map(() => H * (narrow ? 0.2 : 0.17)),
 		cardPad: narrow ? 10 : 18,
+		cardTextPadY: 10,
 		margin,
 	};
 }
@@ -116,9 +128,13 @@ const copy = {
 		"划定范围：审阅一个，确认四个。",
 	],
 	boundedHeadShort: ["Bounded: review one.", "划定范围：审阅一个。"],
+	boundedRequest: [
+		"Keep all blocks. Only Spotlight: choose a symbol, default ALFA.",
+		"保留所有区块。仅改 Spotlight：可选标的，默认 ALFA。",
+	],
 	boundedShort: [
-		"Spotlight: choose a symbol, default ALFA. Keep others.",
-		"Spotlight：可选标的，默认 ALFA。其余不变。",
+		"Only Spotlight: symbol input, default ALFA.",
+		"仅改 Spotlight：标的输入，默认 ALFA。",
 	],
 	editHead: [
 		"Edit 1 changed Spotlight and removed Index GEX.",
@@ -134,6 +150,10 @@ const copy = {
 		"Keep others. Spotlight: symbol input, default ALFA.",
 		"其余不变。Spotlight：标的输入，默认 ALFA。",
 	],
+	secondRequestShort: [
+		"Only Spotlight: symbol input, default ALFA.",
+		"仅改 Spotlight：标的输入，默认 ALFA。",
+	],
 	againHead: [
 		"Ask again, bounded: only Spotlight differs.",
 		"带上范围再问：只有 Spotlight 不同。",
@@ -144,14 +164,17 @@ const copy = {
 	unsaved: ["Unsaved changes", "有未保存的修改"],
 	closed: ["Draft gone · not listed", "草稿丢失 · 未列入列表"],
 	closeChoice: ["Close without saving", "不保存，直接关闭"],
-	saveChoice: ["Same preview · save instead", "同一预览 · 改选保存"],
-	branchUnsaved: ["Unsaved preview", "未保存的预览"],
+	saveChoice: [
+		"Save instead · My recipes · only you",
+		"改选保存 · 我的 Recipe · 仅你可见",
+	],
+	branchUnsaved: ["Same preview · unsaved", "同一预览 · 未保存"],
 	fixedSymbol: ["Fixed symbol", "固定标的"],
 	readerSymbol: ["Reader chooses · default", "读者可选 · 默认值"],
 	saved: ["Saved · validated", "已保存 · 校验通过"],
 	mine: ["My recipes", "我的 Recipe"],
 	none: ["No recipes yet", "还没有 Recipe"],
-	mineEntry: ["My recipes · private", "我的 Recipe · 私有"],
+	mineEntry: ["Daily Market Recap · ALFA", "Daily Market Recap · ALFA"],
 	official: [
 		"Daily Market Recap · official, unchanged",
 		"Daily Market Recap · 官方，未改动",
@@ -197,7 +220,7 @@ function Scene({
 	);
 	const prompts = [
 		["pr-vague", PROMPTS.vague],
-		["pr-bounded", narrow ? copy.boundedShort : PROMPTS.bounded],
+		["pr-bounded", narrow ? copy.boundedShort : copy.boundedRequest],
 	] as const;
 	const barLines = Math.max(
 		...prompts.map(([, text]) =>
@@ -207,6 +230,11 @@ function Scene({
 	const barH = L.barPad * 2 + barLines * L.barText * 1.35;
 	const rowText = (i: number) => L.rowY(i) + L.rowH / 2 + L.rowText * 0.36;
 	const pillH = L.barText * 2.4;
+	// This lane persists while the scope bar gives way to the edit controls.
+	const requestY = Math.max(
+		L.barY + pillH + T.small * 1.8,
+		L.barY + barH + T.small * 0.9 + 6,
+	);
 	const card = (
 		i: number,
 		name: string,
@@ -225,7 +253,7 @@ function Scene({
 			<text
 				data-f={`${name}-title`}
 				x={margin + L.cardPad}
-				y={L.cardY[i] + L.cardPad + T.small}
+				y={L.cardY[i] + L.cardTextPadY + T.small}
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
@@ -235,7 +263,7 @@ function Scene({
 				<text
 					data-f={`${name}-choice`}
 					x={margin + L.cardPad}
-					y={L.cardY[i] + L.cardPad + T.small}
+					y={L.cardY[i] + L.cardTextPadY + T.small}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -258,7 +286,11 @@ function Scene({
 					key={key}
 					data-f={key}
 					x={margin + L.cardPad}
-					y={L.cardY[i] + L.cardH[i] - L.cardPad}
+					y={
+						key === "m-unsaved"
+							? L.cardY[i] + L.cardH[i] * 0.57
+							: L.cardY[i] + L.cardH[i] - L.cardTextPadY
+					}
 					className={`wt-film-type ${tone}`}
 					style={{ fontSize: L.rowText * 1.1 }}
 				>
@@ -386,7 +418,7 @@ function Scene({
 			{(
 				[
 					["pr-first", copy.firstRequest],
-					["pr-again", copy.secondRequest],
+					["pr-again", narrow ? copy.secondRequestShort : copy.secondRequest],
 				] as const
 			).map(([name, text]) => (
 				<Lines
@@ -394,7 +426,7 @@ function Scene({
 					name={name}
 					text={`“${t(text)}”`}
 					x={margin}
-					y={L.barY + pillH + T.small * 1.8}
+					y={requestY}
 					size={T.small}
 					maxWidth={room}
 					anchor="start"
@@ -410,7 +442,9 @@ function Scene({
 							x={margin}
 							y={L.rowY(i)}
 							width={room}
-							height={L.rowH + (block.id === "spotlight" ? H * 0.1 : 0)}
+							height={
+								L.rowH + (block.id === "spotlight" ? L.spotlightExtra : 0)
+							}
 							rx={9}
 							className="wt-panel-shape"
 						/>
@@ -419,7 +453,9 @@ function Scene({
 							x={margin}
 							y={L.rowY(i)}
 							width={room}
-							height={L.rowH + (block.id === "spotlight" ? H * 0.1 : 0)}
+							height={
+								L.rowH + (block.id === "spotlight" ? L.spotlightExtra : 0)
+							}
 							rx={9}
 							className="wt-focus-shape"
 						/>
@@ -428,7 +464,9 @@ function Scene({
 							x={margin}
 							y={L.rowY(i)}
 							width={room}
-							height={L.rowH + (block.id === "spotlight" ? H * 0.1 : 0)}
+							height={
+								L.rowH + (block.id === "spotlight" ? L.spotlightExtra : 0)
+							}
 							rx={9}
 							className="wt-band-loss"
 							style={{
@@ -480,17 +518,17 @@ function Scene({
 										{t(copy.readerSymbol)}
 									</Word>
 									<rect
-										x={margin + room * 0.62}
-										y={L.rowY(i) + L.rowH + H * 0.012}
-										width={room * 0.38 - 14}
-										height={H * 0.075}
+										x={L.symbolField.centerX - L.symbolField.width / 2}
+										y={L.symbolField.centerY - L.symbolField.height / 2}
+										width={L.symbolField.width}
+										height={L.symbolField.height}
 										rx={5}
 										className="wt-focus-shape"
 									/>
 									<Word
 										name="input-alfa"
-										x={margin + room * 0.81 - 7}
-										y={L.rowY(i) + L.rowH + H * 0.065}
+										x={L.symbolField.centerX}
+										y={L.symbolField.baseline}
 										size={T.num}
 										className="wt-film-type wt-film-accent"
 									>
@@ -695,7 +733,7 @@ function build(context: FilmContext) {
 		one("pr-first"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.35 },
-		19.5,
+		18.15,
 	);
 	const edited = {
 		...every("same"),
@@ -722,13 +760,13 @@ function build(context: FilmContext) {
 	// Announce Undo only after all five blocks and the fixed symbol settle.
 	show(one("u-head"), 24.5);
 	hide(one("u-head"), 28.05);
-	// The Undo headline holds for 3.55 s and leaves before the second edit starts.
-	hide(one("pr-first"), 28.4, 0.35, 0);
+	// Prepare the next request as Undo restores the draft; it stands 3.9 s before execution.
+	hide(one("pr-first"), 23.8, 0.35, 0);
 	tl.fromTo(
 		one("pr-again"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.35 },
-		28.75,
+		24.15,
 	);
 	pill(2, false, 28.4);
 	pill(3, true, 28.4);
@@ -773,12 +811,17 @@ function build(context: FilmContext) {
 	tl.set(one("card-mine-title"), { opacity: 0 }, 36.05);
 	d.flip(one("d-unsaved"), one("d-closed"), 35.75);
 	tl.set(one("d-unsaved"), { opacity: 0 }, 36.05);
-	d.flip(one("m-none"), one("m-unsaved"), 35.75);
+	d.flip(one("m-none"), one("m-entry"), 35.75);
 	tl.set(one("m-none"), { opacity: 0 }, 36.05);
 	// The alternative begins from its own unsaved preview, after the close proof rests.
-	d.flip(one("m-unsaved"), one("m-entry"), 37.4);
+	tl.fromTo(
+		one("m-unsaved"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.35 },
+		36.05,
+	);
+	d.flip(one("m-unsaved"), one("m-saved"), 37.4);
 	tl.set(one("m-unsaved"), { opacity: 0 }, 37.7);
-	show(one("m-saved"), 37.7, "right", 0.35);
 	// Cut: the claim, after 2.4 s of quiet on the complete saved result.
 	hide(
 		[one("p-head"), one("card-draft"), one("card-mine"), one("card-official")],
