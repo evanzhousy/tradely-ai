@@ -1,4 +1,12 @@
-import { type Copy, pick } from "@/content/world";
+import {
+	type Copy,
+	contractDte,
+	expiries,
+	pick,
+	SESSION_DATE,
+	screenDefaults,
+	volumeToOi,
+} from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -12,10 +20,9 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
-import type { EvidenceKind } from "../walkthrough/types";
 import {
 	COST,
-	EDIT_BODY,
+	CRUX,
 	INSIGHT_BODY,
 	NAMES,
 	NEAR,
@@ -24,23 +31,18 @@ import {
 } from "./ai-verify-model";
 
 /*
- * Verifying TradingFlow AI, as a film. It opens on one sentence the AI wrote, "Someone
- * opened a large bearish bet on CRUX ahead of news", and sorts the whole answer by what
- * backs each sentence: one is in the report's key figures, two can be calculated from the
- * rows, and two, the bet and a forecast that CRUX will fall, no data supports. Then the
- * bill: two text replies and one with a chart cost 4 credits. Last, the two AI actions on
- * a recipe: AI Insight explains a run and changes nothing; Edit with AI opens a private
- * draft.
+ * Verify an answer against focused source/result proofs, then add the actual reply
+ * costs. The settled total is the hero; the final shot makes a separate private recipe.
  *
- *   open      0–4        "Ask TradingFlow AI, then verify"
- *   question  4–9.6      "Someone opened a large bearish bet on CRUX…"
- *   sort      9.6–23.5   five sentences, sorted; cut: a draft until sorted
- *   credits   23.5–29.4  1 + 1 + 2 = 4 credits, locked
- *   insight   29.4–42.95 AI Insight; Edit with AI; cut: the claim
- *   next      42.95–45.35 Next: build your own Rank column
+ *   open      0–4          Ask TradingFlow AI, then verify
+ *   question  4–9.6        The unsupported bearish-bet sentence
+ *   sort      9.6–23.5     Report/calculation; missing evidence; expiry/forecast
+ *   credits   23.5–30.3    1 + 1 + 2 → 4 credits; lock at 28.1, settle at 28.55
+ *   insight   30.3–43.85   Explain the run; branch a private draft; closing claim
+ *   next      43.85–46.25  Build your own Rank column
  */
 
-const END = 45.35;
+const END = 46.25;
 const BET = STATEMENTS.find((item) => item.id === "bet") ?? STATEMENTS[0];
 const REPLIES = [
 	{ kind: "text", cost: COST.text },
@@ -48,55 +50,96 @@ const REPLIES = [
 	{ kind: "chart", cost: COST.chart },
 ] as const;
 const TOTAL = REPLIES.reduce((sum, reply) => sum + reply.cost, 0);
-/** Each statement as a phone's row can hold it beside its verdict. */
-const shortText: Record<string, Copy> = {
-	count: [
-		`${PASSED.length} contracts across ${NAMES} names`,
-		`${NAMES} 个标的共 ${PASSED.length} 份合约`,
-	],
-	ratio: ["CRUX put: 2.67× its OI", "CRUX 看跌：2.67 倍未平仓"],
-	bet: ["A large bearish bet on CRUX", "CRUX 上的大额看空押注"],
-	near: [
-		`${NEAR} of ${PASSED.length} expire within 30 days`,
-		`${PASSED.length} 份中 ${NEAR} 份 30 天内到期`,
-	],
-	fall: ["CRUX will fall before Oct 4", "CRUX 会在10月4日前下跌"],
-};
-const verdicts: Partial<Record<EvidenceKind, { text: Copy; color: string }>> = {
-	observed: {
-		text: ["in the report", "报告中有"],
+const expiryDays = PASSED.map((row) => contractDte(row, SESSION_DATE));
+const proofs: {
+	id: string;
+	tag: Copy;
+	source: Copy;
+	basis: Copy;
+	result: Copy;
+	color: string;
+}[] = [
+	{
+		id: "count",
+		tag: ["Report · Monday", "报告 · 周一"],
+		source: ["Screen summary", "筛选摘要"],
+		basis: ["Key figures", "关键数字"],
+		result: [
+			`${PASSED.length} contracts · ${NAMES} names`,
+			`${PASSED.length} 份合约 · ${NAMES} 个标的`,
+		],
 		color: "var(--diagram-observed)",
 	},
-	calculated: {
-		text: ["calculated", "可计算"],
+	{
+		id: "ratio",
+		tag: ["Calculate · volume/OI", "计算 · 成交量/未平仓量"],
+		source: [
+			`${CRUX.symbol} · ${expiries[CRUX.expiry].label[0]} · ${CRUX.strike} put`,
+			`${CRUX.symbol} · ${expiries[CRUX.expiry].label[1]} · ${CRUX.strike} 看跌`,
+		],
+		basis: ["Volume ÷ open interest", "成交量 ÷ 未平仓量"],
+		result: [
+			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}×`,
+			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}倍`,
+		],
 		color: "var(--diagram-accent)",
 	},
-	unknown: { text: ["not supported", "无依据"], color: "var(--diagram-loss)" },
-};
+	{
+		id: "bet",
+		tag: ["Check · the bet", "核查 · 押注"],
+		source: ["A large bearish bet on CRUX", "CRUX 上的大额看空押注"],
+		basis: [
+			"No trader, motive, or open/close data.",
+			"缺少交易者、动机与开平仓数据。",
+		],
+		result: ["Not supported", "无依据"],
+		color: "var(--diagram-loss)",
+	},
+	{
+		id: "near",
+		tag: ["Calculate · expiry", "计算 · 到期日"],
+		source: ["Expiry column", "到期日一列"],
+		basis: [`${expiryDays.join(" · ")} days`, `${expiryDays.join(" · ")} 天`],
+		result: [
+			`${NEAR} of ${PASSED.length} ≤ 30 days`,
+			`${PASSED.length} 份中 ${NEAR} 份 ≤ 30 天`,
+		],
+		color: "var(--diagram-accent)",
+	},
+	{
+		id: "fall",
+		tag: ["Check · the forecast", "核查 · 预测"],
+		source: STATEMENTS.find((item) => item.id === "fall")?.text ?? BET.text,
+		basis: ["No price-path evidence", "数据不含价格预测"],
+		result: ["Not supported", "无依据"],
+		color: "var(--diagram-loss)",
+	},
+];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
-	const { height: H, narrow, margin, room, type: T } = frame;
-	const rowTop = H * (narrow ? 0.27 : 0.26);
-	const rowH = H * (narrow ? 0.118 : 0.105);
-	const rowStep = rowH + H * (narrow ? 0.012 : 0.018);
-	const chipW = narrow ? 82 : 150;
+	const { height: H, narrow, room, type: T } = frame;
 	return {
 		...frame,
-		rowY: (i: number) => rowTop + i * rowStep,
-		rowH,
-		chipW,
-		chipX: margin + room - chipW - (narrow ? 6 : 12),
+		proofY: (id: string) => H * (id === "ratio" || id === "fall" ? 0.57 : 0.27),
+		proofH: (id: string) => H * (id === "bet" ? 0.4 : 0.28),
 		rowText: narrow ? T.small * 1.1 : T.body,
-		basisText: T.small * 1.1,
+		ledgerW: narrow ? room : room * 0.46,
 		ledgerY: (i: number) => H * 0.3 + i * H * (narrow ? 0.13 : 0.12),
 		ledgerH: H * (narrow ? 0.105 : 0.095),
+		totalX: narrow ? width / 2 : frame.margin + room * 0.76,
+		totalY: H * (narrow ? 0.9 : 0.6),
+		totalSize: narrow
+			? Math.max(32, Math.min(width * 0.09, 42))
+			: Math.max(40, Math.min(width * 0.065, 64)),
+		formulaY: H * (narrow ? 0.77 : 0.43),
+		totalTagY: H * (narrow ? 0.71 : 0.34),
 		barY: H * 0.26,
-		barH: H * (narrow ? 0.14 : 0.13),
-		panelY: H * (narrow ? 0.45 : 0.44),
+		barH: H * 0.18,
+		panelY: H * 0.53,
 		panelW: narrow ? room : (room - 20) / 2,
-		panelText: narrow ? T.small * 1.15 : T.body,
-		panelPad: narrow ? 10 : 16,
+		panelText: T.body,
+		panelPad: narrow ? 12 : 16,
 	};
 }
 
@@ -113,29 +156,11 @@ const copy = {
 	],
 	sortHead: ["Sort every sentence by what backs it.", "按依据给每句话分类。"],
 	sortHeadShort: ["Sort each sentence.", "给每句话分类。"],
-	betHead: [
-		"“A large bearish bet”: no screen shows who.",
-		"“大额看空押注”：没有筛选能显示是谁。",
-	],
-	betHeadShort: ["The bet: not in any screen.", "押注：任何筛选都看不到。"],
-	restHead: [
-		"One count checks out; one forecast doesn't.",
-		"一个计数可核对；一个预测无依据。",
-	],
-	restHeadShort: ["A count; and a forecast.", "一个计数；一个预测。"],
-	draftBig: [
-		"An AI answer is a draft until sorted.",
-		"分类之前，AI 的回答只是草稿。",
-	],
-	draftSub: [
-		"Flow data can't name who traded, why, or where a price will go.",
-		"成交流数据无法说明谁交易、为什么，也无法说明价格走向。",
-	],
-	creditHead: [
-		"Three replies, one with a chart.",
-		"三条回复，其中一条含图表。",
-	],
-	totalHead: ["The chart reply costs double.", "含图表的回复收费翻倍。"],
+	betHead: ["Check what the bet would require.", "核查押注需要什么依据。"],
+	betHeadShort: ["What backs the bet?", "押注的依据呢？"],
+	restHead: ["Check expiry and forecast.", "核查到期日与预测。"],
+	restHeadShort: ["Check expiry and forecast.", "核查到期日与预测。"],
+	creditHead: ["Check the cost of each reply.", "核查每条回复的费用。"],
 	billing: ["Billing · AI usage history", "账单 · AI 使用记录"],
 	total: ["total", "合计"],
 	screener: [
@@ -144,24 +169,15 @@ const copy = {
 	],
 	screenerShort: ["UOA Screener", "UOA Screener"],
 	official: ["Official recipe · unchanged", "官方 Recipe · 未改动"],
-	drafted: [
-		"Official recipe · unchanged · your private draft opened",
-		"官方 Recipe · 未改动 · 已打开你的私有草稿",
-	],
-	draftedShort: [
-		"Official unchanged · draft opened",
-		"官方未改动 · 草稿已打开",
-	],
+	private: ["Your private draft", "你的私有草稿"],
+	draftTools: ["Review · Undo · Save", "审阅 · 撤销 · 保存"],
 	insightHead: [
 		"AI Insight explains a run; nothing changes.",
 		"AI Insight 解释一次运行；什么都不变。",
 	],
 	insightHeadShort: ["AI Insight explains.", "AI Insight 只解释。"],
-	editHead: [
-		"Edit with AI opens a private draft.",
-		"Edit with AI 打开一份私有草稿。",
-	],
-	editHeadShort: ["Edit with AI: a draft.", "Edit with AI：草稿。"],
+	editHead: ["Where does Edit with AI work?", "Edit with AI 会改哪里？"],
+	editHeadShort: ["Edit with AI: where?", "Edit with AI：改哪里？"],
 	claimBig: ["The AI drafts; you verify.", "AI 起草，你来核查。"],
 	claimSub: [
 		"Sort sentences, count credits, edit only in drafts.",
@@ -231,22 +247,20 @@ function Scene({
 			/>
 		</g>
 	);
-	const textW = room - L.chipW - 40;
 	const panelH =
 		L.panelPad * 2 +
-		T.body * 1.6 +
-		Math.max(
-			...[INSIGHT_BODY, EDIT_BODY].map((body) =>
-				lineCount(t(body), L.panelW - 2 * L.panelPad, L.panelText),
-			),
-		) *
+		T.body * 2.7 +
+		lineCount(t(INSIGHT_BODY), L.panelW - 2 * L.panelPad, L.panelText) *
 			L.panelText *
 			1.35;
+	const recipeField: Copy = [
+		`Volume/OI ≥ ${screenDefaults.minVolumeToOi}`,
+		`成交量/OI ≥ ${screenDefaults.minVolumeToOi}`,
+	];
 	const quote = `“${t(BET.text)}”`;
 	const quoteSize = narrow ? T.head * 1.2 : T.title;
 	const quoteY = H * 0.28 + quoteSize * 1.5;
-	const panelX = (i: number) =>
-		narrow ? margin : margin + i * (L.panelW + 20);
+	const draftX = narrow ? margin : margin + L.panelW + 20;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -287,131 +301,80 @@ function Scene({
 			</g>
 			{headline("s-head", copy.sortHead, copy.sortHeadShort)}
 			{headline("b-head", copy.betHead, copy.betHeadShort)}
-			<Lines
-				name="r-head"
-				text={t(narrow ? copy.restHeadShort : copy.restHead)}
-				x={L.margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.betHeadShort : copy.betHead),
-						narrow ? room : room * 0.74,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
+			{headline("r-head", copy.restHead, copy.restHeadShort)}
 
-			{/* Five sentences and their verdicts. */}
+			{/* A focused source and its settled result, in both frame shapes. */}
 			<g data-f="rows">
-				{STATEMENTS.map((item, i) => {
-					const y = L.rowY(i);
-					const verdict = verdicts[item.evidence];
-					const unsupported = item.evidence === "unknown";
+				{proofs.map((proof) => {
+					const y = L.proofY(proof.id);
+					const sourceY = y + T.small * 1.6 + T.body * 1.6;
+					const basisY =
+						sourceY +
+						lineCount(t(proof.source), room - 28, T.body) * T.body * 1.35 +
+						T.body * (proof.id === "bet" ? 1.1 : 0.4);
+					const resultY =
+						basisY +
+						lineCount(t(proof.basis), room - 28, T.body) * T.body * 1.35 +
+						T.head * 1.1;
+					const resultSize =
+						proof.id === "count" || proof.id === "near"
+							? Math.min(T.body * 1.1, T.head * 0.85)
+							: T.head;
 					return (
-						<g key={item.id} data-f={`row-${item.id}`}>
+						<g key={proof.id} data-f={`row-${proof.id}`}>
 							<rect
 								x={margin}
 								y={y}
 								width={room}
-								height={L.rowH}
-								rx={9}
+								height={L.proofH(proof.id)}
+								rx={12}
 								className="wt-panel-shape"
 							/>
-							<rect
-								data-f={`flag-${item.id}`}
-								x={margin}
-								y={y}
-								width={room}
-								height={L.rowH}
-								rx={9}
-								className={unsupported ? "wt-band-loss" : "wt-focus-shape"}
-								style={
-									unsupported
-										? {
-												stroke: "var(--diagram-loss)",
-												strokeWidth: 1.5,
-												strokeDasharray: "5 4",
-											}
-										: undefined
-								}
+							<Word
+								name={`source-tag-${proof.id}`}
+								x={margin + 14}
+								y={y + T.small * 1.6}
+								size={T.small}
+								anchor="start"
+								className="wt-film-tag"
+							>
+								{t(proof.tag).toUpperCase()}
+							</Word>
+							<Lines
+								name={`source-${proof.id}`}
+								text={t(proof.source)}
+								x={margin + 14}
+								y={sourceY}
+								size={T.body}
+								maxWidth={room - 28}
+								anchor="start"
+							/>
+							<Lines
+								name={`basis-${proof.id}`}
+								text={t(proof.basis)}
+								x={margin + 14}
+								y={basisY}
+								size={T.body}
+								maxWidth={room - 28}
+								anchor="start"
+								className="wt-film-type wt-film-dim"
 							/>
 							<text
+								data-f={`result-${proof.id}`}
 								x={margin + 14}
-								y={
-									narrow ? y + L.rowH / 2 + L.rowText * 0.36 : y + L.rowH * 0.42
-								}
-								className="wt-film-type"
-								style={{ fontSize: L.rowText }}
+								y={resultY}
+								className="wt-film-num"
+								style={{ fontSize: resultSize, fill: proof.color }}
 							>
-								{t(narrow ? shortText[item.id] : item.text)}
+								{t(proof.result)}
 							</text>
-							{narrow ? null : (
-								<text
-									data-f={`basis-${item.id}`}
-									x={margin + 14}
-									y={y + L.rowH * 0.78}
-									className="wt-film-type wt-film-dim"
-									style={{ fontSize: L.basisText }}
-								>
-									{t(item.basis).length * L.basisText * 0.5 > textW
-										? `${t(item.basis).slice(0, Math.floor(textW / (L.basisText * 0.5)) - 1)}…`
-										: t(item.basis)}
-								</text>
-							)}
-							{verdict ? (
-								<g data-f={`chip-${item.id}`}>
-									<rect
-										x={L.chipX}
-										y={y + L.rowH / 2 - L.rowText * 0.9}
-										width={L.chipW}
-										height={L.rowText * 1.8}
-										rx={L.rowText * 0.9}
-										className="wt-panel-shape"
-										style={{ stroke: verdict.color }}
-									/>
-									<text
-										x={L.chipX + L.chipW / 2}
-										y={y + L.rowH / 2 + L.rowText * 0.34}
-										textAnchor="middle"
-										className="wt-film-type"
-										style={{ fontSize: L.rowText * 0.92, fill: verdict.color }}
-									>
-										{t(verdict.text)}
-									</text>
-								</g>
-							) : null}
 						</g>
 					);
 				})}
 			</g>
-			{claim("draft", copy.draftBig, copy.draftSub)}
 
 			{/* The bill. */}
 			{headline("c-head", copy.creditHead, copy.creditHead)}
-			<Lines
-				name="t-head"
-				text={t(narrow ? copy.totalHead : copy.totalHead)}
-				x={L.margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.creditHead : copy.creditHead),
-						narrow ? room : room * 0.74,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
-			<Brackets name="lock-total" glow />
 			<g data-f="ledger">
 				<text
 					data-f="billing"
@@ -427,7 +390,7 @@ function Scene({
 						<rect
 							x={margin}
 							y={L.ledgerY(i)}
-							width={room}
+							width={L.ledgerW}
 							height={L.ledgerH}
 							rx={9}
 							className="wt-panel-shape"
@@ -438,11 +401,15 @@ function Scene({
 							className="wt-film-type"
 							style={{ fontSize: L.rowText }}
 						>
-							{t(replyLabel(i, reply.kind))}
+							{t(
+								!narrow && reply.kind === "chart"
+									? [`Reply ${i + 1} · chart`, `回复 ${i + 1} · 含图表`]
+									: replyLabel(i, reply.kind),
+							)}
 						</text>
 						<text
 							data-f={`cost-${i}`}
-							x={margin + room - 14}
+							x={margin + L.ledgerW - 14}
 							y={L.ledgerY(i) + L.ledgerH / 2 + L.rowText * 0.36}
 							textAnchor="end"
 							className={`wt-film-num ${reply.kind === "chart" ? "wt-film-accent" : ""}`}
@@ -453,36 +420,41 @@ function Scene({
 					</g>
 				))}
 				<g data-f="total-row">
-					<rect
-						x={margin}
-						y={L.ledgerY(3)}
-						width={room}
-						height={L.ledgerH}
-						rx={9}
-						className="wt-focus-shape"
-					/>
 					<text
-						x={margin + 14}
-						y={L.ledgerY(3) + L.ledgerH / 2 + L.rowText * 0.36}
-						className="wt-film-type wt-film-accent"
-						style={{ fontSize: L.rowText }}
+						x={L.totalX}
+						y={L.totalTagY}
+						textAnchor="middle"
+						className="wt-film-tag"
+						style={{ fontSize: T.small }}
 					>
 						{t(copy.total).toUpperCase()}
+					</text>
+					<text
+						data-f="total-formula"
+						x={L.totalX}
+						y={L.formulaY}
+						textAnchor="middle"
+						className="wt-film-num"
+						style={{ fontSize: T.head }}
+					>
+						{`${REPLIES.map((reply) => reply.cost).join(" + ")} = ${TOTAL}`}
 					</text>
 				</g>
 				<text
 					data-f="total"
-					x={margin + room - 14}
-					y={L.ledgerY(3) + L.ledgerH / 2 + T.head * 0.36}
-					textAnchor="end"
+					x={L.totalX}
+					y={L.totalY}
+					textAnchor="middle"
 					className="wt-film-num wt-film-accent"
-					style={{ fontSize: T.head }}
+					style={{ fontSize: L.totalSize }}
 				>
-					{t(creditText(0))}
+					{t(creditText(TOTAL))}
 				</text>
 			</g>
 
-			{/* Two AI actions on a recipe. */}
+			<Brackets name="lock-total" glow />
+
+			{/* Insight leaves the official object intact; Edit branches a new object. */}
 			{headline("i-head", copy.insightHead, copy.insightHeadShort)}
 			{headline("e-head", copy.editHead, copy.editHeadShort)}
 			<g data-f="recipe">
@@ -495,72 +467,120 @@ function Scene({
 					rx={12}
 					className="wt-panel-shape"
 				/>
-				<text
-					data-f="bar-title"
+				<Word
+					name="bar-title"
 					x={margin + 16}
-					y={L.barY + L.barH * 0.42}
-					className="wt-film-type"
-					style={{ fontSize: L.rowText * 1.05 }}
+					y={L.barY + T.body * 1.6}
+					size={L.rowText * 1.05}
+					anchor="start"
 				>
 					{t(narrow ? copy.screenerShort : copy.screener)}
-				</text>
-				{(
-					[
-						["st-official", copy.official, "wt-film-dim"],
-						[
-							"st-draft",
-							narrow ? copy.draftedShort : copy.drafted,
-							"wt-film-accent",
-						],
-					] as const
-				).map(([name, text, tone]) => (
-					<text
-						key={name}
-						data-f={name}
-						x={margin + 16}
-						y={L.barY + L.barH * 0.76}
-						className={`wt-film-type ${tone}`}
-						style={{ fontSize: T.small * 1.1 }}
+				</Word>
+				<Word
+					name="st-official"
+					x={margin + 16}
+					y={L.barY + T.body * 3}
+					size={T.small * 1.1}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.official)}
+				</Word>
+				<Word
+					name="official-field"
+					x={margin + 16}
+					y={L.barY + L.barH - T.small}
+					size={T.body}
+					anchor="start"
+				>
+					{t(recipeField)}
+				</Word>
+				<g data-f="p-insight">
+					<rect
+						x={margin}
+						y={L.panelY}
+						width={L.panelW}
+						height={panelH}
+						rx={12}
+						className="wt-panel-shape"
+					/>
+					<Word
+						name="insight-title"
+						x={margin + L.panelPad}
+						y={L.panelY + L.panelPad + T.body}
+						size={T.body * 1.05}
+						anchor="start"
 					>
-						{t(text)}
-					</text>
-				))}
-				{(
-					[
-						["p-insight", "AI Insight", INSIGHT_BODY, 0],
-						["p-edit", "Edit with AI", EDIT_BODY, 1],
-					] as const
-				).map(([name, title, body, i]) => (
-					<g key={name} data-f={name}>
-						<rect
-							x={panelX(i)}
-							y={L.panelY}
-							width={L.panelW}
-							height={panelH}
-							rx={12}
-							className={i === 1 ? "wt-focus-shape" : "wt-panel-shape"}
-						/>
-						<text
-							x={panelX(i) + L.panelPad}
-							y={L.panelY + L.panelPad + T.body}
-							className={`wt-film-type ${i === 1 ? "wt-film-accent" : ""}`}
-							style={{ fontSize: T.body * 1.05 }}
-						>
-							{title}
-						</text>
-						<Lines
-							name={`${name}-body`}
-							text={t(body)}
-							x={panelX(i) + L.panelPad}
-							y={L.panelY + L.panelPad + T.body * 1.6 + L.panelText * 1.1}
-							size={L.panelText}
-							maxWidth={L.panelW - 2 * L.panelPad}
-							anchor="start"
-							className="wt-film-type wt-film-dim"
-						/>
-					</g>
-				))}
+						AI Insight
+					</Word>
+					<Lines
+						name="p-insight-body"
+						text={t(INSIGHT_BODY)}
+						x={margin + L.panelPad}
+						y={L.panelY + L.panelPad + T.body * 2.7}
+						size={L.panelText}
+						maxWidth={L.panelW - 2 * L.panelPad}
+						anchor="start"
+						className="wt-film-type wt-film-dim"
+					/>
+				</g>
+				<path
+					data-f="draft-branch"
+					d={`M ${margin + room * 0.75} ${L.barY + L.barH} V ${L.panelY - 7} m -4 -4 l 4 4 l 4 -4`}
+					fill="none"
+					stroke="var(--diagram-accent)"
+					strokeWidth={2}
+				/>
+				<g data-f="p-edit">
+					<rect
+						x={draftX}
+						y={L.panelY}
+						width={L.panelW}
+						height={H * 0.28}
+						rx={12}
+						className="wt-focus-shape"
+					/>
+					<Word
+						name="draft-owner"
+						x={draftX + L.panelPad}
+						y={L.panelY + L.panelPad + T.body}
+						size={T.body * 1.05}
+						anchor="start"
+						className="wt-film-type wt-film-accent"
+					>
+						{t(copy.private)}
+					</Word>
+					<Word
+						name="draft-tools"
+						x={draftX + L.panelPad}
+						y={L.panelY + L.panelPad + T.body * 2.7}
+						size={T.body}
+						anchor="start"
+						className="wt-film-type wt-film-dim"
+					>
+						{t(copy.draftTools)}
+					</Word>
+					<Word
+						name="draft-title"
+						x={draftX + L.panelPad}
+						y={L.panelY + L.panelPad + T.body * 4.1}
+						size={T.body}
+						anchor="start"
+					>
+						{t(copy.screenerShort)}
+					</Word>
+					<Word
+						name="draft-field"
+						x={draftX + L.panelPad}
+						y={L.panelY + L.panelPad + T.body * 5.5}
+						size={T.body}
+						anchor="start"
+					>
+						{t(recipeField)}
+					</Word>
+				</g>
 			</g>
+
 			{claim("claim", copy.claimBig, copy.claimSub)}
 			<EndCard
 				frame={L}
@@ -573,7 +593,7 @@ function Scene({
 }
 
 function build(context: FilmContext) {
-	const { width: W, locale } = context;
+	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
@@ -591,39 +611,19 @@ function build(context: FilmContext) {
 			time,
 		);
 	const row = (id: string) => one(`row-${id}`);
-	const chip = (id: string) => one(`chip-${id}`);
-	const basis = (id: string) => one(`basis-${id}`);
-	const flag = (id: string) => one(`flag-${id}`);
-	const verdict = (id: string, time: number) => {
-		show(chip(id), time, "right");
-		const b = basis(id);
-		if (b) show(b, time + 0.15);
-	};
+	const result = (id: string) => one(`result-${id}`);
+	const fade = (targets: Element | Element[], at: number, duration = 0.5) =>
+		tl.fromTo(targets, { opacity: 0 }, { opacity: 1, duration }, at);
 	const replies = REPLIES.map((_, i) => one(`reply-${i}`));
 	const costs = REPLIES.map((_, i) => one(`cost-${i}`));
 	const total = one<SVGTextElement>("total");
-	const credits = (n: number) => pick(creditText(Math.round(n)), locale);
-	const narrow = L.narrow;
-
 	const lockTotal = one<SVGGraphicsElement>("lock-total");
-
 	d.hidden([
 		...flat("q"),
-		...[
-			"s-head",
-			"b-head",
-			"r-head",
-			"c-head",
-			"t-head",
-			"i-head",
-			"e-head",
-		].map((name) => one(name)),
-		...STATEMENTS.flatMap((item) =>
-			[row(item.id), chip(item.id), basis(item.id), flag(item.id)].filter(
-				Boolean,
-			),
+		...["s-head", "b-head", "r-head", "c-head", "i-head", "e-head"].map(
+			(name) => one(name),
 		),
-		...kids("draft"),
+		...proofs.flatMap((proof) => [row(proof.id), result(proof.id)]),
 		one("billing"),
 		...replies,
 		...costs,
@@ -633,9 +633,12 @@ function build(context: FilmContext) {
 		one("bar"),
 		one("bar-title"),
 		one("st-official"),
-		one("st-draft"),
+		one("official-field"),
 		one("p-insight"),
 		one("p-edit"),
+		one("draft-branch"),
+		one("draft-title"),
+		one("draft-field"),
 		...kids("claim"),
 	]);
 
@@ -654,96 +657,83 @@ function build(context: FilmContext) {
 	tl.addLabel("sort", 9.6);
 	hide(flat("q"), 9.6);
 	show(one("s-head"), 9.8, "above");
-	STATEMENTS.forEach((item, i) => {
-		show(row(item.id), 10.1 + i * 0.15);
-	});
-	verdict("count", 11.0);
-	verdict("ratio", 11.6);
+	fade([row("count"), row("ratio")], 10.1);
+	fade(result("count"), 10.1);
+	fade(result("ratio"), 10.6);
+	// Related proofs settle at 11.1; preserve the original headline holds.
 	d.swap(one("s-head"), one("b-head"), 13.4);
-	tl.to(flag("bet"), { opacity: 1, duration: 0.4 }, 13.8);
-	verdict("bet", 14.0);
-	show(one("r-head"), 15.8);
-	verdict("near", 16.1);
-	tl.to(flag("fall"), { opacity: 1, duration: 0.4 }, 16.7);
-	verdict("fall", 16.9);
-	// Cut: a draft until sorted.
-	hide(
-		[
-			one("b-head"),
-			one("r-head"),
-			...STATEMENTS.flatMap((item) =>
-				[row(item.id), chip(item.id), basis(item.id), flag(item.id)].filter(
-					Boolean,
-				),
-			),
-		],
-		19.4,
-	);
-	word(one("draft-big"), 19.8);
-	show(one("draft-sub"), 20.0);
+	hide([row("count"), row("ratio")], 13.65, 0.35, 0);
+	fade(row("bet"), 14.0);
+	fade(result("bet"), 14.6);
+	// The completed missing-evidence proof rests from 15.1 to 19.4.
+	d.swap(one("b-head"), one("r-head"), 19.4);
+	hide(row("bet"), 19.4, 0.35, 0);
+	fade([row("near"), row("fall")], 19.75);
+	fade([result("near"), result("fall")], 19.75);
 
 	// ——— credits: every reply has a price ———
 	tl.addLabel("credits", 23.5);
-	hide(kids("draft"), 23.5);
+	hide([one("r-head"), row("near"), row("fall")], 23.5);
 	show(one("c-head"), 23.85, "above");
 	show(one("billing"), 24);
 	replies.forEach((reply, i) => {
 		show(reply, 24.2 + i * 0.3);
 	});
-	show(one("t-head"), 25.5);
-	costs.forEach((cost, i) => {
-		show(cost, 25.7 + i * 0.3, "right");
-	});
-	show([one("total-row"), total], 26.7);
-	d.count(total, TOTAL, 26.9, credits, 0, 0.8);
+	// Compare all three prices together, then leave their proof quiet for a second.
+	fade(costs, 25.1);
+	// Prices settle at 25.6; the settled sum gets a full second before its lock.
+	fade(one("total-row"), 26.6);
+	tl.fromTo(
+		total,
+		{ opacity: 0, scale: 1.06, transformOrigin: "50% 50%" },
+		{ opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" },
+		26.6,
+	);
+
 	// The hero: what three replies cost.
 	d.lock(lockTotal, 28.1, { around: total, pad: 6 });
 	tl.addLabel("hero-lock", 28.1);
 
 	// ——— insight: explain, or edit a draft ———
-	tl.addLabel("insight", 29.4);
+	tl.addLabel("insight", 30.3);
+	hide(one("c-head"), 30.3);
 	hide(
-		[
-			one("c-head"),
-			one("t-head"),
-			one("billing"),
-			...replies,
-			...costs,
-			one("total-row"),
-			total,
-			lockTotal,
-		],
-		29.4,
+		[one("billing"), ...replies, ...costs, one("total-row"), total, lockTotal],
+		30.3,
+		0.5,
+		0,
 	);
-	show(one("i-head"), 29.75, "above");
-	show([one("bar"), one("bar-title")], 30);
-	show(one("st-official"), 30.2);
-	show(one("p-insight"), 30.6);
-	d.swap(one("i-head"), one("e-head"), 33.6);
-	// On a phone the panels share one place: Edit with AI replaces AI Insight.
-	if (narrow) hide(one("p-insight"), 34.1);
-	show(one("p-edit"), narrow ? 34.4 : 34.0, narrow ? "below" : "right");
-	d.flip(one("st-official"), one("st-draft"), 34.6);
-	tl.set(one("st-official"), { opacity: 0 }, 34.9);
+	show(one("i-head"), 30.65, "above");
+	show([one("bar"), one("bar-title")], 30.9);
+	show([one("st-official"), one("official-field")], 31.1);
+	show(one("p-insight"), 31.5);
+	d.swap(one("i-head"), one("e-head"), 34.5);
+	// Keep the official recipe visible while a separate private card is built.
+	if (L.narrow) hide(one("p-insight"), 35.1, 0.35, 0);
+	fade(one("p-edit"), 35.45);
+	d.trace(one<SVGPathElement>("draft-branch"), 35.05, { duration: 0.6 });
+	fade([one("draft-title"), one("draft-field")], 35.65);
 	// Cut: the claim.
 	hide(
 		[
 			one("e-head"),
 			one("bar"),
 			one("bar-title"),
-			one("st-draft"),
+			one("st-official"),
+			one("official-field"),
+			one("draft-branch"),
 			one("p-insight"),
 			one("p-edit"),
 		],
-		38.45,
+		39.35,
 	);
-	word(one("claim-big"), 38.85);
-	show(one("claim-sub"), 39.25);
+	word(one("claim-big"), 39.75);
+	show(one("claim-sub"), 40.15);
 
 	// ——— next ———
-	tl.addLabel("next", 42.95);
-	hide(kids("claim"), 42.95);
-	d.close(42.95);
+	tl.addLabel("next", 43.85);
+	hide(kids("claim"), 43.85);
+	d.close(43.85);
 	return tl;
 }
 
