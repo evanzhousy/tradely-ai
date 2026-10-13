@@ -12,6 +12,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	BLOCKS,
 	type BlockId,
@@ -32,11 +33,11 @@ import {
  *   question  4–9.6      "Make this an ALFA report."
  *   scope     9.6–19.15   every block to re-check; bounded: one to review
  *   review    19.15–33.65  edit: Index GEX gone; undo; edit again, only Spotlight, locked
- *   save      33.65–44.95  unsaved; alternative close/save outcomes; claim
- *   next      44.95–47.45  Next: connect your own AI agent
+ *   save      33.65–45.3  unsaved; alternative close/save outcomes; claim
+ *   next      45.3–47.5  Next: connect your own AI agent
  */
 
-const END = 47.45;
+const END = 47.5;
 /** The states a block's status moves through, in the order the film uses them. */
 const SHOWN: readonly Status[] = [
 	"recheck",
@@ -78,7 +79,7 @@ const STEP_PILLS: readonly Copy[] = [
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room, type: T } = frame;
-	const rowTop = H * (narrow ? 0.41 : 0.42);
+	const rowTop = H * (narrow ? 0.435 : 0.42);
 	const rowStep = H * (narrow ? 0.085 : 0.082);
 	const fieldHeight = Math.max(H * 0.075, T.num + 8);
 	const fieldCenterY =
@@ -142,6 +143,7 @@ const copy = {
 	],
 	editHeadShort: ["Edit 1 removed Index GEX.", "修改 1 删了 Index GEX。"],
 	undoHead: ["Undo: all five blocks are back.", "撤销：五个区块全部恢复。"],
+	firstRequestTag: ["First edit request", "第一次修改请求"],
 	firstRequest: [
 		"Spotlight: symbol input, default ALFA.",
 		"Spotlight：标的输入，默认 ALFA。",
@@ -174,7 +176,7 @@ const copy = {
 	saved: ["Saved · validated", "已保存 · 校验通过"],
 	mine: ["My recipes", "我的 Recipe"],
 	none: ["No recipes yet", "还没有 Recipe"],
-	mineEntry: ["Daily Market Recap · ALFA", "Daily Market Recap · ALFA"],
+	mineEntry: ["Daily Market Recap", "Daily Market Recap"],
 	official: [
 		"Daily Market Recap · official, unchanged",
 		"Daily Market Recap · 官方，未改动",
@@ -235,6 +237,10 @@ function Scene({
 		L.barY + pillH + T.small * 1.8,
 		L.barY + barH + T.small * 0.9 + 6,
 	);
+	const firstRequestLabel = t(copy.firstRequestTag).toUpperCase();
+	const firstRequestLabelWidth =
+		textWidth(firstRequestLabel, T.small) +
+		firstRequestLabel.length * T.small * 0.12;
 	const card = (
 		i: number,
 		name: string,
@@ -281,22 +287,57 @@ function Scene({
 					{t(copy.saved)}
 				</text>
 			)}
-			{lines.map(([key, text, tone]) => (
-				<text
-					key={key}
-					data-f={key}
-					x={margin + L.cardPad}
-					y={
-						key === "m-unsaved"
-							? L.cardY[i] + L.cardH[i] * 0.57
-							: L.cardY[i] + L.cardH[i] - L.cardTextPadY
-					}
-					className={`wt-film-type ${tone}`}
-					style={{ fontSize: L.rowText * 1.1 }}
-				>
-					{t(text)}
-				</text>
-			))}
+			{lines.map(([key, text, tone]) => {
+				const baseline = L.cardY[i] + L.cardH[i] - L.cardTextPadY;
+				const size = L.rowText * 1.1;
+				if (key === "m-entry") {
+					const badgeW = size * 3 + 16;
+					const badgeX = margin + room - L.cardPad - badgeW;
+					return (
+						<g key={key} data-f={key}>
+							<Word
+								name="m-entry-name"
+								x={margin + L.cardPad}
+								y={baseline}
+								size={size}
+								anchor="start"
+								className="wt-film-type wt-film-accent"
+							>
+								{t(text)}
+							</Word>
+							<rect
+								x={badgeX}
+								y={baseline - size * 1.035}
+								width={badgeW}
+								height={size * 1.35}
+								rx={4}
+								className="wt-focus-shape"
+							/>
+							<Word
+								name="m-entry-symbol"
+								x={badgeX + badgeW / 2}
+								y={baseline}
+								size={size}
+								className="wt-film-type wt-film-accent"
+							>
+								ALFA
+							</Word>
+						</g>
+					);
+				}
+				return (
+					<text
+						key={key}
+						data-f={key}
+						x={margin + L.cardPad}
+						y={key === "m-unsaved" ? L.cardY[i] + L.cardH[i] * 0.57 : baseline}
+						className={`wt-film-type ${tone}`}
+						style={{ fontSize: size }}
+					>
+						{t(text)}
+					</text>
+				);
+			})}
 		</g>
 	);
 	return (
@@ -334,24 +375,7 @@ function Scene({
 				/>
 			</g>
 			{headline("v-head", copy.vagueHead, copy.vagueHeadShort)}
-			<Lines
-				name="b-head"
-				text={t(narrow ? copy.boundedHeadShort : copy.boundedHead)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.vagueHeadShort : copy.vagueHead),
-						narrow ? room : room * 0.74,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
+			{headline("b-head", copy.boundedHead, copy.boundedHeadShort)}
 			{headline("e-head", copy.editHead, copy.editHeadShort)}
 			{headline("u-head", copy.undoHead, copy.undoHead)}
 			{headline("a-head", copy.againHead, copy.againHeadShort)}
@@ -415,24 +439,38 @@ function Scene({
 				))}
 			</g>
 
-			{(
-				[
-					["pr-first", copy.firstRequest],
-					["pr-again", narrow ? copy.secondRequestShort : copy.secondRequest],
-				] as const
-			).map(([name, text]) => (
-				<Lines
-					key={name}
-					name={name}
-					text={`“${t(text)}”`}
+			<g data-f="pr-first">
+				<Word
+					name="pr-first-label"
 					x={margin}
 					y={requestY}
 					size={T.small}
-					maxWidth={room}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{firstRequestLabel}
+				</Word>
+				<Lines
+					name="pr-first-copy"
+					text={`“${t(copy.firstRequest)}”`}
+					x={narrow ? margin : margin + firstRequestLabelWidth + 16}
+					y={requestY + (narrow ? T.small * 1.35 : 0)}
+					size={T.small}
+					maxWidth={narrow ? room : room - firstRequestLabelWidth - 16}
 					anchor="start"
 					className="wt-film-type wt-film-accent"
 				/>
-			))}
+			</g>
+			<Lines
+				name="pr-again"
+				text={`“${t(narrow ? copy.secondRequestShort : copy.secondRequest)}”`}
+				x={margin}
+				y={requestY + (narrow ? T.small * 1.35 : 0)}
+				size={T.small}
+				maxWidth={room}
+				anchor="start"
+				className="wt-film-type wt-film-accent"
+			/>
 
 			{/* The recap's blocks, each with what you must do about it. */}
 			<g data-f="outline">
@@ -651,6 +689,19 @@ function build(context: FilmContext) {
 		tl.to(one(`pill-on-${i}`), { opacity: on ? 1 : 0, duration: 0.3 }, time);
 
 	const lockSpotlight = one<SVGGraphicsElement>("lock-spotlight");
+	if (!L.narrow) {
+		// Resolve the actual font and tag tracking before either mark enters.
+		const label = one<SVGTextElement>("pr-first-label");
+		const quote = one<SVGTextElement>("pr-first-copy");
+		const measured = label.getComputedTextLength();
+		if (measured > 0) {
+			const x = String(L.margin + measured + 16);
+			quote.setAttribute("x", x);
+			for (const line of quote.querySelectorAll("tspan")) {
+				line.setAttribute("x", x);
+			}
+		}
+	}
 
 	d.hidden([
 		...flat("q"),
@@ -714,12 +765,13 @@ function build(context: FilmContext) {
 	set(every("recheck"), bounded, 14.45);
 	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 14.85);
 	// Name the bounded workload only once its five statuses have settled.
+	hide(one("v-head"), 14.8);
 	show(one("b-head"), 15.15);
 	show(one("symbol-fixed"), 10.8);
 
 	// ——— review: undo before the next edit ———
 	tl.addLabel("review", 19.15);
-	hide([one("v-head"), one("b-head")], 19.15);
+	hide(one("b-head"), 19.15);
 	hide([one("bar"), one("pr-bounded")], 19.15);
 	show(
 		flat("pills").filter(
@@ -760,13 +812,13 @@ function build(context: FilmContext) {
 	// Announce Undo only after all five blocks and the fixed symbol settle.
 	show(one("u-head"), 24.5);
 	hide(one("u-head"), 28.05);
-	// Prepare the next request as Undo restores the draft; it stands 3.9 s before execution.
+	// Undo finishes at 24.5 and its headline settles at 25.0; leave one quiet second before retrying.
 	hide(one("pr-first"), 23.8, 0.35, 0);
 	tl.fromTo(
 		one("pr-again"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.35 },
-		24.15,
+		26.0,
 	);
 	pill(2, false, 28.4);
 	pill(3, true, 28.4);
@@ -811,8 +863,6 @@ function build(context: FilmContext) {
 	tl.set(one("card-mine-title"), { opacity: 0 }, 36.05);
 	d.flip(one("d-unsaved"), one("d-closed"), 35.75);
 	tl.set(one("d-unsaved"), { opacity: 0 }, 36.05);
-	d.flip(one("m-none"), one("m-entry"), 35.75);
-	tl.set(one("m-none"), { opacity: 0 }, 36.05);
 	// The alternative begins from its own unsaved preview, after the close proof rests.
 	tl.fromTo(
 		one("m-unsaved"),
@@ -822,18 +872,26 @@ function build(context: FilmContext) {
 	);
 	d.flip(one("m-unsaved"), one("m-saved"), 37.4);
 	tl.set(one("m-unsaved"), { opacity: 0 }, 37.7);
-	// Cut: the claim, after 2.4 s of quiet on the complete saved result.
+	hide(one("m-none"), 37.7, 0.35, 0);
+	// Saved settles first; only then can the named recipe enter My recipes.
+	tl.fromTo(
+		one("m-entry"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.35 },
+		38.05,
+	);
+	// The list settles at 38.4; retain the full 2.4 s of quiet before the claim.
 	hide(
 		[one("p-head"), one("card-draft"), one("card-mine"), one("card-official")],
-		40.45,
+		40.8,
 	);
-	word(one("z-big"), 40.85);
-	show(one("z-sub"), 41.25);
+	word(one("z-big"), 41.2);
+	show(one("z-sub"), 41.6);
 
 	// ——— next ———
-	tl.addLabel("next", 44.95);
-	hide(kids("claim"), 44.95);
-	d.close(44.95);
+	tl.addLabel("next", 45.3);
+	hide(kids("claim"), 45.3);
+	d.close(45.3);
 	return tl;
 }
 
