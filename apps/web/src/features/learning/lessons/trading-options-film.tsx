@@ -1,4 +1,11 @@
-import { type Copy, expiries, pick, signedUsd, usd } from "@/content/world";
+import {
+	ALFA,
+	type Copy,
+	contractLabel,
+	expiries,
+	pick,
+	usd,
+} from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -14,7 +21,7 @@ import {
 } from "../walkthrough/film-kit";
 import {
 	chainRows,
-	FEE,
+	nov105,
 	routeFacts,
 	strikes,
 	thinBook,
@@ -23,12 +30,12 @@ import {
 /*
  * Trading an option, as a film. It opens on one strike, the ALFA 100 call, in two
  * expiries and asks which costs more. The two dates fly onto the chain's tabs, and the
- * chain answers row by row: $4.20 for Oct 18, $5.45 for Nov 15, because more time costs
- * more, and one contract is 100 shares, $545. Then a thin contract with a 45-cent spread:
+ * chain answers row by row: $4.20 for Oct 18, $5.45 for Nov 15; one contract is
+ * 100 shares, $545. Then a thin contract with a 45-cent spread:
  * a market buy's ticket takes the $2.65 ask at once. The hero: a limit buy at $2.40 leaves
  * the panel as a ticket and drops into the book as the new best bid, then waits, until a
- * seller's ticket lands on it and it fills, $25 cheaper. Last, three ways the Nov 15 105
- * call, bought for $325.65, can end: sold, expired or exercised.
+ * seller accepts it: the resting bid disappears into an execution record. Last, a new
+ * example, the Nov 15 105 call: sell for cash, expire worthless or buy 100 shares.
  *
  *   open      0–4        "Trading an option"
  *   question  4–8.8      Oct 18 or Nov 15: which 100 call costs more?
@@ -52,11 +59,10 @@ const BIDS = thinBook.bids;
 const MAX_SIZE = Math.max(
 	...[...thinBook.asks, ...thinBook.bids].map((level) => level.size),
 );
-const PAID = 325 * 100 + FEE;
+const END_CONTRACT = contractLabel(nov105, false);
 /** The Nov 15 100 call's ask, a share and a contract. */
 const NOV_ASK = ROWS.nov15.find((row) => row.strike === FOCUS)?.call.ask ?? 0;
 const ROUTES = ["sell", "expire", "exercise"] as const;
-const cents = (value: number) => usd(value, 2);
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -67,7 +73,7 @@ function layout(width: number) {
 	const bookTop = H * (narrow ? 0.29 : 0.27);
 	const bookStep = H * (narrow ? 0.075 : 0.07);
 	const bookW = room * (narrow ? 0.6 : 0.56);
-	const priceW = narrow ? 50 : width * 0.1;
+	const priceW = narrow ? 64 : width * 0.1;
 	return {
 		...frame,
 		tabY: H * (narrow ? 0.27 : 0.26),
@@ -87,8 +93,8 @@ function layout(width: number) {
 		panelX: margin + room * (narrow ? 0.65 : 0.62),
 		panelY: bookTop,
 		cardY: H * (narrow ? 0.3 : 0.32),
-		cardH: H * (narrow ? 0.5 : 0.44),
-		cardW: (room - 2 * (narrow ? 8 : 18)) / 3,
+		cardH: H * (narrow ? 0.16 : 0.44),
+		cardW: narrow ? room : (room - 2 * 18) / 3,
 		gap: narrow ? 8 : 18,
 	};
 }
@@ -98,12 +104,12 @@ const copy = {
 	titleSub: ["from chain to order", "从期权链到下单"],
 	qTag: ["ALFA 100 call", "ALFA 100 看涨"],
 	qLine: ["Which costs more?", "哪个更贵？"],
-	chainHead: ["The chain: one row per contract.", "期权链：每份合约一行。"],
-	chainHeadShort: ["Every contract has its own row.", "每份合约各占一行。"],
-	novHead: ["A later date costs more.", "到期越晚越贵。"],
-	novHeadShort: ["Later costs more.", "越晚越贵。"],
+	chainHead: ["One row per strike.", "每个行权价一行。"],
+	chainHeadShort: ["One row per strike.", "每个行权价一行。"],
+	novHead: ["Later expiry, same strike.", "同一行权价，换个到期日。"],
+	novHeadShort: ["Later expiry, same strike.", "同一行权价，换个到期日。"],
 	contract: [
-		`100 × ${usd(NOV_ASK)} = ${usd(NOV_ASK * 100, 0)} a contract`,
+		`100 shares × ${usd(NOV_ASK)} = ${usd(NOV_ASK * 100, 0)}`,
 		`100 × ${usd(NOV_ASK)} = 每张 ${usd(NOV_ASK * 100, 0)}`,
 	],
 	calls: ["calls", "看涨"],
@@ -114,43 +120,46 @@ const copy = {
 	thinHeadShort: ["A thin call: a wide spread.", "冷门看涨：价差很宽。"],
 	marketHead: ["A market buy pays the ask, now.", "市价买入：立即按卖价成交。"],
 	marketHeadShort: ["Market: the ask, now.", "市价：立即按卖价。"],
-	limitHead: ["A limit waits as the best bid.", "限价单作为最优买价等待。"],
-	limitHeadShort: ["A limit waits.", "限价单等待。"],
+	limitHead: ["Set a limit, then wait.", "设好限价，等待成交。"],
+	limitHeadShort: ["Set a limit, then wait.", "设好限价，等待成交。"],
 	fillHead: ["It fills only when a seller comes.", "有卖方来才成交。"],
 	fillHeadShort: ["Fills only if a seller comes.", "有卖方才成交。"],
-	saved: [
-		`saved ${usd((ASK - LIMIT) * 100, 0)}`,
-		`省 ${usd((ASK - LIMIT) * 100, 0)}`,
-	],
 	chipMarket: [`1 @ ${usd(ASK)}`, `1 @ ${usd(ASK)}`],
-	chipLimit: [`limit ${usd(LIMIT)}`, `限价 ${usd(LIMIT)}`],
-	chipSell: [`sell 1 @ ${usd(LIMIT)}`, `卖 1 @ ${usd(LIMIT)}`],
+	chipLimit: [usd(LIMIT), usd(LIMIT)],
+	chipSell: [`seller: 1 @ ${usd(LIMIT)}`, `卖方：1 @ ${usd(LIMIT)}`],
 	asks: ["asks", "卖价"],
 	bids: ["bids", "买价"],
-	yours: ["you", "你"],
-	pay: ["you pay", "你付出"],
-	waiting: ["waiting", "等待中"],
+	yours: ["1 · you", "1 · 你"],
+	pay: ["premium", "权利金"],
+	capPremium: [`cap ${usd(LIMIT * 100, 0)}`, `上限 ${usd(LIMIT * 100, 0)}`],
 	filled: ["filled at $2.40", "以 $2.40 成交"],
 	endHead: ["Bought: three ways out.", "买入之后：三种结局。"],
 	endHeadShort: ["Three ways out.", "三种结局。"],
+	endContract: [`New example: ${END_CONTRACT[0]}`, `新例：${END_CONTRACT[1]}`],
 	routes: {
 		sell: {
 			name: ["sell to close", "卖出平仓"],
 			short: ["sell", "卖出"],
 			when: ["Oct 11, at the $3.70 bid", "10月11日，买价 $3.70"],
-			whenShort: ["Oct 11, at $3.70", "买价 $3.70"],
+			whenShort: ["Oct 11 · bid $3.70", "10月11日 · 买价 $3.70"],
+			outcome: ["cash", "现金"],
 		},
 		expire: {
 			name: ["let it expire", "任其到期"],
 			short: ["expire", "到期"],
 			when: ["Nov 15, ALFA at $103", "11月15日，ALFA 在 $103"],
-			whenShort: ["ALFA $103", "ALFA $103"],
+			whenShort: ["Nov 15 · ALFA $103", "11月15日 · ALFA $103"],
+			outcome: [
+				`${usd(routeFacts("expire").cash, 0)} value`,
+				`价值 ${usd(routeFacts("expire").cash, 0)}`,
+			],
 		},
 		exercise: {
 			name: ["exercise", "行权"],
 			short: ["exercise", "行权"],
 			when: ["ALFA at $112: pay $10,500", "ALFA 在 $112：付 $10,500"],
 			whenShort: ["ALFA $112, pay $10,500", "ALFA $112，付 $10,500"],
+			outcome: [`${ALFA.multiplier} shares`, `${ALFA.multiplier} 股`],
 		},
 	},
 	claimBig: [
@@ -189,6 +198,7 @@ function Scene({
 		/>
 	);
 	const rowText = narrow ? T.small * 1.1 : T.body;
+	const heroText = rowText * 1.4;
 	const center = (i: number) => L.rowY(i) + L.rowStep * 0.36 + rowText * 0.36;
 	const bookText = (y: number) => y + L.rowH / 2 + rowText * 0.36;
 	const quote = (q: { bid: number; ask: number }) =>
@@ -207,15 +217,16 @@ function Scene({
 			<text
 				data-f={`${name}-px`}
 				x={margin + L.priceW}
-				y={bookText(y)}
+				y={name === "bid-you" ? y + L.rowH / 2 + heroText * 0.36 : bookText(y)}
 				textAnchor="end"
 				// Your bid in the accent of the tickets that land on it.
 				className={`wt-film-num ${name === "bid-you" ? "wt-film-accent" : ""}`}
-				style={{ fontSize: rowText }}
+				style={{ fontSize: name === "bid-you" ? heroText : rowText }}
 			>
 				{usd(price)}
 			</text>
 			<rect
+				data-f={`${name}-bar`}
 				x={L.barX}
 				y={y + L.rowH * 0.2}
 				width={(size / MAX_SIZE) * L.barMax}
@@ -225,6 +236,7 @@ function Scene({
 				data-tone={tone}
 			/>
 			<text
+				data-f={`${name}-size`}
 				x={margin + L.bookW - 6}
 				y={bookText(y)}
 				textAnchor="end"
@@ -235,7 +247,8 @@ function Scene({
 			</text>
 		</g>
 	);
-	const cardX = (i: number) => margin + i * (L.cardW + L.gap);
+	const cardX = (i: number) => margin + (narrow ? 0 : i * (L.cardW + L.gap));
+	const cardY = (i: number) => L.cardY + (narrow ? i * H * 0.18 : 0);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -317,7 +330,7 @@ function Scene({
 						<text
 							key={label[0]}
 							x={margin + (room / 5) * (col + 0.5)}
-							y={L.rowY(0) - L.rowStep * 0.25}
+							y={L.rowY(0) - L.rowStep * 0.25 - (narrow ? T.small * 1.2 : 0)}
 							textAnchor="middle"
 							className="wt-film-tag"
 							style={{ fontSize: T.small }}
@@ -325,6 +338,19 @@ function Scene({
 							{`${t(label).toUpperCase()}${label === copy.strike || narrow ? "" : ` · ${t(copy.bidAsk)}`}`}
 						</text>
 					))}
+					{narrow &&
+						[1, 4].map((col) => (
+							<text
+								key={col}
+								x={margin + (room / 5) * col}
+								y={L.rowY(0) - L.rowStep * 0.25}
+								textAnchor="middle"
+								className="wt-film-tag"
+								style={{ fontSize: T.small }}
+							>
+								{t(copy.bidAsk)}
+							</text>
+						))}
 				</g>
 				{strikes.map((strike, i) => (
 					<g key={strike}>
@@ -475,7 +501,7 @@ function Scene({
 				{(
 					[
 						["p-market", usd(ASK * 100, 0), "wt-film-accent"],
-						["p-limit", usd(LIMIT * 100, 0), "wt-film-dim"],
+						["p-limit", t(copy.capPremium), "wt-film-dim"],
 						["p-filled", usd(LIMIT * 100, 0), "wt-film-gain"],
 					] as const
 				).map(([name, text, tone]) => (
@@ -485,31 +511,23 @@ function Scene({
 						x={L.panelX}
 						y={L.panelY + T.small * 1.4 + T.num * 1.25}
 						className={`wt-film-num ${tone}`}
-						style={{ fontSize: narrow ? T.num * 0.8 : T.num }}
+						style={{ fontSize: rowText * 0.95 }}
 					>
 						{text}
 					</text>
 				))}
-				{(
-					[
-						["s-waiting", copy.waiting, "wt-film-warn"],
-						["s-filled", copy.filled, "wt-film-gain"],
-					] as const
-				).map(([name, text, tone]) => (
-					<text
-						key={name}
-						data-f={name}
-						x={L.panelX}
-						y={L.panelY + T.small * 1.4 + T.num * 1.25 + T.body * 1.8}
-						className={`wt-film-type ${tone}`}
-						style={{ fontSize: T.body }}
-					>
-						{t(text)}
-					</text>
-				))}
+				<text
+					data-f="s-filled"
+					x={L.panelX}
+					y={L.panelY + T.small * 1.4 + T.num * 1.25 + T.body * 1.8}
+					className="wt-film-type wt-film-gain"
+					style={{ fontSize: T.body }}
+				>
+					{t(copy.filled)}
+				</text>
 			</g>
 
-			{/* Tickets: a market buy leaves the ask, a limit leaves the panel, a seller arrives. */}
+			{/* Two carried buys; the seller cue stays outside the book's hero row. */}
 			{(
 				[
 					[
@@ -527,12 +545,11 @@ function Scene({
 						"start",
 					],
 					[
-						// A seller arrives in the empty spread and drops onto your bid.
 						"chip-sell",
 						copy.chipSell,
-						margin + L.bookW / 2,
-						L.askY(ASKS.length) + L.bookStep * 0.1 - 4,
-						"middle",
+						margin,
+						L.bidY(BIDS.length) + L.rowH + T.small * 3.5,
+						"start",
 					],
 				] as const
 			).map(([name, label, x, y, anchor]) => (
@@ -548,38 +565,37 @@ function Scene({
 					{t(label)}
 				</text>
 			))}
-			<text
-				data-f="saved"
-				x={L.panelX}
-				y={L.panelY + T.small * 1.4 + T.num * 1.25 + T.body * 3.6}
-				className="wt-film-type wt-film-gain"
-				style={{ fontSize: T.body }}
-			>
-				{t(copy.saved)}
-			</text>
 			<Brackets name="lock-ask" />
 			<Brackets name="lock-bid" glow />
-			<Brackets name="lock-cell" />
 
 			{/* Three endings. */}
 			{headline("e-head", copy.endHead, copy.endHeadShort)}
+			<Word
+				name="end-contract"
+				x={margin}
+				y={H * 0.24}
+				size={T.body}
+				anchor="start"
+				className="wt-film-type wt-film-accent"
+			>
+				{t(copy.endContract)}
+			</Word>
 			{ROUTES.map((route, i) => {
 				const r = copy.routes[route];
-				const result = routeFacts(route).result;
 				return (
 					<g key={route} data-f={`card-${route}`}>
 						<rect
 							x={cardX(i)}
-							y={L.cardY}
+							y={cardY(i)}
 							width={L.cardW}
 							height={L.cardH}
 							rx={12}
 							className="wt-panel-shape"
 						/>
 						<text
-							x={cardX(i) + L.cardW / 2}
-							y={L.cardY + L.cardH * 0.2}
-							textAnchor="middle"
+							x={cardX(i) + (narrow ? 12 : L.cardW / 2)}
+							y={cardY(i) + L.cardH * (narrow ? 0.3 : 0.2)}
+							textAnchor={narrow ? "start" : "middle"}
 							className="wt-film-tag"
 							style={{ fontSize: T.small }}
 						>
@@ -588,20 +604,21 @@ function Scene({
 						<Lines
 							name={`when-${route}`}
 							text={t(narrow ? r.whenShort : r.when)}
-							x={cardX(i) + L.cardW / 2}
-							y={L.cardY + L.cardH * 0.42}
+							x={cardX(i) + (narrow ? 12 : L.cardW / 2)}
+							y={cardY(i) + L.cardH * (narrow ? 0.64 : 0.42)}
 							size={narrow ? T.small : T.body}
-							maxWidth={L.cardW - 12}
+							maxWidth={narrow ? L.cardW * 0.61 : L.cardW - 12}
+							anchor={narrow ? "start" : "middle"}
 							className="wt-film-type wt-film-dim"
 						/>
 						<text
-							x={cardX(i) + L.cardW / 2}
-							y={L.cardY + L.cardH * 0.8}
-							textAnchor="middle"
-							className={`wt-film-num ${result >= 0 ? "wt-film-gain" : "wt-film-loss"}`}
-							style={{ fontSize: narrow ? T.body * 1.15 : T.num * 0.85 }}
+							x={cardX(i) + (narrow ? L.cardW - 12 : L.cardW / 2)}
+							y={cardY(i) + L.cardH * (narrow ? 0.44 : 0.8)}
+							textAnchor={narrow ? "end" : "middle"}
+							className={`wt-film-num ${route === "expire" ? "wt-film-loss" : "wt-film-accent"}`}
+							style={{ fontSize: narrow ? T.body : T.body * 1.5 }}
 						>
-							{signedUsd(result, 2)}
+							{t(r.outcome)}
 						</text>
 					</g>
 				);
@@ -690,10 +707,9 @@ function build(context: FilmContext) {
 		g("chip-market"),
 		g("chip-limit"),
 		g("chip-sell"),
-		one("saved"),
+		one("end-contract"),
 		g("lock-ask"),
 		g("lock-bid"),
-		g("lock-cell"),
 		...cards,
 		...kids("claim"),
 	]);
@@ -732,18 +748,24 @@ function build(context: FilmContext) {
 	show(one("cells-oct18"), 10.2);
 	show(heads[0], 10.3);
 	tl.to(one("focus-cell"), { opacity: 1, duration: 0.3 }, 11.4);
-	// Nov 15: more time costs more; one contract is 100 shares.
+	// The selection and its quotes leave together, then arrive together. The table's
+	// scaffold stays up, but no Nov selection ever describes the outgoing Oct quotes.
 	d.swap(heads[0], heads[1], 14.0);
-	tl.to(one("tab-oct18"), { opacity: 0, duration: 0.3 }, 14.4);
-	tl.to(one("tab-nov15"), { opacity: 1, duration: 0.3 }, 14.4);
-	hide(one("cells-oct18"), 14.4, 0.25);
-	show(one("cells-nov15"), 14.7);
-	d.lock(g("lock-cell"), 15.2, { around: g("focus-cell"), pad: 3 });
-	show(one("contract-tag"), 15.6);
+	tl.to(
+		[one("tab-oct18"), one("cells-oct18")],
+		{ opacity: 0, duration: 0.3, ease: "power2.in" },
+		14.4,
+	);
+	tl.fromTo(
+		[one("tab-nov15"), one("cells-nov15"), one("contract-tag")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		14.7,
+	);
 
 	// ——— order: market or limit ———
 	tl.addLabel("order", 18);
-	hide([heads[1], ...chainParts, g("lock-cell")], 18.0);
+	hide([heads[1], ...chainParts], 18.0);
 	show(heads[2], 18.35);
 	show(one("asks-tag"), 18.5);
 	ASKS.forEach((at, i) => {
@@ -766,11 +788,33 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		g("chip-market"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.15 },
-		22.6,
+		{ opacity: 1, duration: 0.3 },
+		22.45,
 	);
 	show(one("p-tag"), 22.8);
 	d.carry(g("chip-market"), g("p-market"), 22.75, { duration: 1, fit: false });
+	// The one-contract execution and its settled premium land at the same instant.
+	// These in-place value replacements are reversible when the film is scrubbed.
+	tl.fromTo(
+		one(`ask-${ASK}-size`),
+		{ textContent: thinBook.asks[0].size },
+		{
+			textContent: thinBook.asks[0].size - 1,
+			duration: 0,
+			immediateRender: false,
+		},
+		23.75,
+	);
+	tl.fromTo(
+		one(`ask-${ASK}-bar`),
+		{ attr: { width: (thinBook.asks[0].size / MAX_SIZE) * L.barMax } },
+		{
+			attr: { width: ((thinBook.asks[0].size - 1) / MAX_SIZE) * L.barMax },
+			duration: 0,
+			immediateRender: false,
+		},
+		23.75,
+	);
 	// The hero: a limit at $2.40 leaves the panel as a ticket and drops into the book as
 	// the best bid; the other bids step down for it, and it waits.
 	d.swap(heads[3], heads[4], 26.0);
@@ -780,8 +824,8 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		g("chip-limit"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.15 },
-		26.5,
+		{ opacity: 1, duration: 0.3 },
+		26.35,
 	);
 	// Room first: the bids step down before the ticket sets off.
 	tl.to(otherBids, { y: 0, duration: 0.5, ease: "power2.inOut" }, 26.0);
@@ -789,42 +833,32 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		one("bid-you"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.2 },
+		{ opacity: 1, duration: 0.3 },
 		27.55,
 	);
 	// Down beside the book first, then along the empty row to its price.
 	d.carry(g("chip-limit"), g("bid-you-px"), 26.65, {
 		duration: 1,
-		fit: false,
 		arc: "y",
 	});
 	d.lock(g("lock-bid"), 27.7, { around: one("bid-hit"), pad: 4 });
 	tl.addLabel("hero-lock", 27.7);
-	show(one("s-waiting"), 27.9);
-	// A seller comes: their ticket lands on your bid, and it fills $25 cheaper.
+	// The lock and row settle at 28.15, then stand undisturbed until 30.3.
+	// A seller accepts the bid. Their cue stays below the book, clear of the hero.
 	d.swap(heads[4], heads[5], 30.0);
 	tl.fromTo(
 		g("chip-sell"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.15 },
-		30.4,
+		{ opacity: 1, duration: 0.3 },
+		30.15,
 	);
-	// The seller's ticket comes down through the spread line and into your row's brackets:
-	// both step back while it travels, and the brackets lock again on the fill.
-	fade(one("spread"), 30.3, 0.25);
 	fade(g("lock-bid"), 30.3);
-	fade(one("spread"), 31.5, 1);
-	d.lock(g("lock-bid"), 31.5, { around: one("bid-hit"), pad: 4 });
-	d.carry(g("chip-sell"), g("bid-you-px"), 30.55, {
-		duration: 0.9,
-		fit: false,
-		reveal: false,
-	});
-	fade(one("bid-hit"), 31.45, 1);
+	// Consume the entire one-contract bid before the separate filled record unfolds.
+	fade(one("bid-you"), 31.45);
 	d.flip(one("p-limit"), one("p-filled"), 31.5);
 	tl.set(one("p-limit"), { opacity: 0 }, 31.8);
-	d.swap(one("s-waiting"), one("s-filled"), 31.5);
-	show(one("saved"), 32.0);
+	show(one("s-filled"), 31.85);
+	fade(g("chip-sell"), 31.8);
 
 	// ——— end: three ways out ———
 	tl.addLabel("end", 34);
@@ -837,18 +871,18 @@ function build(context: FilmContext) {
 			one("p-tag"),
 			one("p-filled"),
 			one("s-filled"),
-			one("saved"),
 		],
 		34.0,
 	);
 	show(heads[6], 34.35);
+	fade(one("end-contract"), 34.4, 1);
 	cards.forEach((card, i) => {
 		show(card, 34.6 + i * 0.25);
 	});
 
 	// ——— claim ———
 	tl.addLabel("claim", 38.6);
-	hide([heads[6], ...cards], 38.6);
+	hide([heads[6], one("end-contract"), ...cards], 38.6);
 	word(one("z-big"), 38.9);
 	show(one("z-sub"), 39.4);
 
@@ -862,8 +896,8 @@ function build(context: FilmContext) {
 export const tradingOptionsFilm: Film = {
 	id: "trading-options",
 	label: [
-		`Trading an option, as a short film: the ALFA 100 call in two expiries, $4.20 for Oct 18 and $5.45 for Nov 15, read from the chain, where one contract is 100 shares; a thin call quoted $2.20 bid and $2.65 ask, where a market buy pays ${usd(ASK * 100, 0)} at once and a limit buy at $2.40 waits as the best bid and fills only if a seller comes; and three ways the Nov 15 105 call bought for ${cents(PAID)} can end: sold for ${signedUsd(routeFacts("sell").result, 2)}, expired for ${signedUsd(routeFacts("expire").result, 2)}, or exercised for ${signedUsd(routeFacts("exercise").result, 2)}`,
-		`交易期权短片：两个到期日的 ALFA 100 看涨，从期权链读出 10月18日 $4.20、11月15日 $5.45，一张合约是 100 股；一张报买价 $2.20、卖价 $2.65 的冷门看涨，市价买单立即付 ${usd(ASK * 100, 0)}，$2.40 的限价买单作为最优买价等待，只有卖方出现才成交；以及 ${cents(PAID)} 买入的 11月15日 105 看涨的三种结局：卖出 ${signedUsd(routeFacts("sell").result, 2)}，到期 ${signedUsd(routeFacts("expire").result, 2)}，行权 ${signedUsd(routeFacts("exercise").result, 2)}`,
+		`Trading an option, as a short film: the ALFA 100 call in two expiries, $4.20 for Oct 18 and $5.45 for Nov 15, read from a chain with one row per strike, where one contract is 100 shares; a thin call quoted $2.20 bid and $2.65 ask, where a market buy pays ${usd(ASK * 100, 0)} in premium and consumes one ask, then a limit buy at $2.40 becomes the best bid until a seller accepts it and consumes the resting order; and a new example, the Nov 15 105 call: sell for cash, expire worthless with ALFA at $103, or exercise to buy 100 shares for $10,500 with ALFA at $112`,
+		`交易期权短片：两个到期日的 ALFA 100 看涨，从每个行权价一行的期权链读出 10月18日 $4.20、11月15日 $5.45，一张合约是 100 股；一张报买价 $2.20、卖价 $2.65 的冷门看涨，市价买单付 ${usd(ASK * 100, 0)} 权利金并消耗一张卖单，随后 $2.40 的限价买单成为最优买价，卖方接受时待成交买单消失；新例是 11月15日 105 看涨：卖出换回现金，ALFA 在 $103 时到期归零，或在 $112 时行权，付 $10,500 买入 100 股`,
 	],
 	stage: "dark",
 	shots: [
