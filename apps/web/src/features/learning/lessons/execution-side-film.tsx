@@ -101,7 +101,7 @@ const WITHHELD = [false, false, false, false, true, true, false, false];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
-	const { height: H, narrow, margin, room } = frame;
+	const { height: H, narrow, margin, room, type: T } = frame;
 	const rulerY = H * (narrow ? 0.42 : 0.5);
 	const tapeW = narrow ? room : room * 0.62;
 	return {
@@ -111,7 +111,11 @@ function layout(width: number) {
 		sideY: rulerY - H * (narrow ? 0.13 : 0.15),
 		tapeX: margin + (room - tapeW) / 2,
 		tapeW,
-		tapeY: rulerY + H * (narrow ? 0.26 : 0.24),
+		legendY: rulerY + T.small * 4.8,
+		legendH: T.small * 4.85,
+		interiorY: rulerY + T.small * 3.85,
+		interiorLabelY: rulerY + T.small * 4.2,
+		tapeY: rulerY + H * (narrow ? 0.26 : 0.24) + T.small * 1.5,
 		rowStep: H * 0.055,
 		cardH: H * (narrow ? 0.2 : 0.21),
 		claimY: (i: number) => H * 0.27 + i * H * (narrow ? 0.1 : 0.115),
@@ -204,7 +208,7 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const ticks = narrow
-		? [390, 400, 410, 420, 430]
+		? []
 		: [390, 395, 400, 405, 410, 415, 420, 425, 430, 435];
 	const tick = (name: string, tone: "gain" | "loss") => (
 		<g data-f={name}>
@@ -216,6 +220,18 @@ function Scene({
 					strokeLinecap: "round",
 				}}
 			/>
+			{narrow && (
+				<text
+					data-f={`${name}-price`}
+					x={name === "bid-m" ? -4 : 4}
+					y={L.rulerY + T.small * 2.6}
+					textAnchor={name === "bid-m" ? "end" : "start"}
+					className={`wt-film-num wt-film-${tone}`}
+					style={{ fontSize: T.small }}
+				>
+					{usd(name === "bid-m" ? quoteAt("t1").bid : quoteAt("t1").ask)}
+				</text>
+			)}
 		</g>
 	);
 	const prints: [string, number, string][] = [
@@ -364,13 +380,34 @@ function Scene({
 			/>
 			{tick("bid-m", "gain")}
 			{tick("ask-m", "loss")}
-			{/* An open-ended span ties MID to the whole interior, not a midpoint tick. */}
-			<path
-				data-f="mid-range"
-				d="M0 0H0"
-				fill="none"
-				stroke="var(--diagram-model)"
-				strokeWidth={2}
+			{/* MID is attached to the quote interior, above the separate fixed legend. */}
+			<g data-f="mid-range">
+				<path
+					data-f="mid-span"
+					d="M0 0H0"
+					fill="none"
+					stroke="var(--diagram-model)"
+					strokeWidth={2}
+				/>
+				<text
+					data-f="mid-label"
+					x={0}
+					y={L.interiorLabelY}
+					textAnchor="middle"
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: T.small }}
+				>
+					MID
+				</text>
+			</g>
+			<rect
+				data-f="legend-panel"
+				x={margin}
+				y={L.legendY}
+				width={room}
+				height={L.legendH}
+				rx={8}
+				className="wt-panel-shape"
 			/>
 			<g data-f="zones">
 				{ZONES.map((zone, i) => (
@@ -381,7 +418,7 @@ function Scene({
 					>
 						<text
 							x={margin + ((i + 0.5) * room) / ZONES.length}
-							y={L.rulerY + T.small * 5.2}
+							y={L.rulerY + T.small * 6.2}
 							textAnchor="middle"
 							style={{ fontSize: T.small * 1.1, fill: "inherit" }}
 						>
@@ -391,7 +428,7 @@ function Scene({
 							<text
 								key={line}
 								x={margin + ((i + 0.5) * room) / ZONES.length}
-								y={L.rulerY + T.small * (6.6 + j * 1.25)}
+								y={L.rulerY + T.small * (7.6 + j * 1.25)}
 								textAnchor="middle"
 								className="wt-film-type"
 								style={{ fontSize: T.small, fill: "inherit" }}
@@ -657,8 +694,13 @@ function build(context: FilmContext) {
 	const askM = one("ask-m");
 	const band = one("band");
 	const midRange = one("mid-range");
+	const midSpan = one("mid-span");
+	const midLabel = one("mid-label");
+	const bidPrice = L.narrow ? one("bid-m-price") : null;
+	const askPrice = L.narrow ? one("ask-m-price") : null;
 	const dot = one("dot");
 	const zones = ZONES.map((zone) => one(`z-${zone}`));
+	const legend = [one("legend-panel"), ...zones];
 	const geometry = [band, bidM, askM, midRange];
 	const quoteProps = (bid: number, ask: number) => ({
 		bid: { x: L.x(bid) },
@@ -666,9 +708,10 @@ function build(context: FilmContext) {
 		band: { attr: { x: L.x(bid), width: L.x(ask) - L.x(bid) } },
 		interior: {
 			attr: {
-				d: `M${L.x(bid) + 4} ${L.rulerY + L.type.small * 3.6}H${L.x(ask) - 4}`,
+				d: `M${L.x(bid) + 4} ${L.interiorY}H${(L.x(bid) + L.x(ask)) / 2 - L.type.small * 1.5}M${(L.x(bid) + L.x(ask)) / 2 + L.type.small * 1.5} ${L.interiorY}H${L.x(ask) - 4}`,
 			},
 		},
+		interiorLabel: { attr: { x: (L.x(bid) + L.x(ask)) / 2 } },
 	});
 	/** Reposition only once the outgoing geometry is fully hidden. */
 	const quoteTo = (bid: number, ask: number, time: number) => {
@@ -676,7 +719,13 @@ function build(context: FilmContext) {
 		tl.set(bidM, { ...p.bid, immediateRender: false }, time);
 		tl.set(askM, { ...p.ask, immediateRender: false }, time);
 		tl.set(band, { ...p.band, immediateRender: false }, time);
-		tl.set(midRange, { ...p.interior, immediateRender: false }, time);
+		tl.set(midSpan, { ...p.interior, immediateRender: false }, time);
+		tl.set(midLabel, { ...p.interiorLabel, immediateRender: false }, time);
+		// These readouts share their ticks' hidden update and parent fade/reveal.
+		if (bidPrice && askPrice) {
+			tl.set(bidPrice, { textContent: usd(bid), immediateRender: false }, time);
+			tl.set(askPrice, { textContent: usd(ask), immediateRender: false }, time);
+		}
 	};
 	const dotTo = (cents: number, time: number) =>
 		tl.set(dot, { attr: { cx: L.x(cents) }, immediateRender: false }, time);
@@ -712,14 +761,15 @@ function build(context: FilmContext) {
 	gsap.set(bidM, start.bid);
 	gsap.set(askM, start.ask);
 	gsap.set(band, start.band);
-	gsap.set(midRange, start.interior);
+	gsap.set(midSpan, start.interior);
+	gsap.set(midLabel, start.interiorLabel);
 
 	d.hidden([
 		...flat("q"),
 		...heads,
 		...kids("axis"),
 		...geometry,
-		...zones,
+		...legend,
 		dot,
 		one("pl-t1"),
 		one("pl-t2"),
@@ -760,7 +810,7 @@ function build(context: FilmContext) {
 	show(kids("axis"), 9.2);
 	fade(geometry, 1, 9.6);
 	// Read the complete legend for 1.05 s before introducing a print.
-	fade(zones, 1, 9.6);
+	fade(legend, 1, 9.6);
 	d.pop(dot, 11.0);
 	show(one("pl-t1"), 11.1);
 	show(one("side-tag"), 11.2);
@@ -779,13 +829,13 @@ function build(context: FilmContext) {
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
 		const before = ["pl-t1", "pl-t2", "pl-t3"][i - 1];
 		// The tape persists while every changing mark fades in place together.
-		fade([...geometry, ...zones, dot, one(before)], 0, time);
+		fade([...geometry, ...legend, dot, one(before)], 0, time);
 		sideTo(i, time);
 		const ready = time + 0.35;
 		quoteTo(quote.bid, quote.ask, ready);
 		dotTo(cents, ready);
 		light(SIDES[i], ready);
-		reveal([...geometry, ...zones, dot], ready);
+		reveal([...geometry, ...legend, dot], ready);
 		reveal(one(id === "test" ? "pl-test" : `pl-${id}`), ready, 0.5);
 		if (id !== "test") show(rows[i], ready, "right");
 		// Last settlement is time + 0.9; the next example waits at least 1.15 s.
@@ -795,7 +845,11 @@ function build(context: FilmContext) {
 	tl.addLabel("quote", 20.35);
 	d.swap(heads[0], heads[1], 20.35);
 	hide([...kids("tape"), ...rows], 20.35);
-	fade([...geometry, ...zones, dot, one("pl-test"), one("side-tag")], 0, 20.35);
+	fade(
+		[...geometry, ...legend, dot, one("pl-test"), one("side-tag")],
+		0,
+		20.35,
+	);
 	sideTo(4, 20.35);
 	show(kids("card"), 20.7);
 	show(refs[1], 20.7);
@@ -803,17 +857,17 @@ function build(context: FilmContext) {
 	quoteTo(STALE.bid ?? 0, STALE.ask ?? 0, 20.7);
 	dotTo(PRINT.price, 20.7);
 	light(SIDES[4], 20.7);
-	reveal([...geometry, ...zones, dot, one("side-conditional")], 20.7);
+	reveal([...geometry, ...legend, dot, one("side-conditional")], 20.7);
 	reveal(one("pl-t2"), 20.7, 0.5);
 	// A later reference: fixed print, hidden quote update, then coherent reveal.
-	fade([refs[1], ...geometry, ...zones], 0, 23.1);
+	fade([refs[1], ...geometry, ...legend], 0, 23.1);
 	sideTo(5, 23.1);
 	quoteTo(LATER.bid ?? 0, LATER.ask ?? 0, 23.45);
 	light(SIDES[5], 23.45);
-	reveal([...geometry, ...zones], 23.45);
+	reveal([...geometry, ...legend], 23.45);
 	show(refs[2], 23.45);
 	// No quote at all: nothing to measure against.
-	fade([refs[2], ...geometry, ...zones, one("side-conditional")], 0, 25.35);
+	fade([refs[2], ...geometry, ...legend, one("side-conditional")], 0, 25.35);
 	sideTo(6, 25.35);
 	light(SIDES[6], 25.7);
 	show(refs[3], 25.7);
@@ -822,7 +876,7 @@ function build(context: FilmContext) {
 	fade([refs[3], sides[6]], 0, 27.6);
 	quoteTo(quoteAt("t2").bid, quoteAt("t2").ask, 27.95);
 	light(SIDES[7], 27.95);
-	reveal([...geometry, ...zones], 27.95);
+	reveal([...geometry, ...legend], 27.95);
 	show(refs[0], 27.95);
 	word(sides[7], 28.3);
 	// Around the figure and its tag together, so no arm runs through the tag.
@@ -838,7 +892,7 @@ function build(context: FilmContext) {
 			heads[2],
 			...kids("axis"),
 			...geometry,
-			...zones,
+			...legend,
 			dot,
 			one("pl-t2"),
 			one("side-tag"),
@@ -851,7 +905,7 @@ function build(context: FilmContext) {
 	);
 	show(heads[3], 33.1);
 	claimRows.forEach((row, i) => {
-		show(row, [33.45, 34.25, 35.05, 35.65][i], "right");
+		show(row, [33.45, 34.25, 35.05, 35.25][i], "right");
 	});
 	// The ledger: both sides were closing, so the print neither opened nor bet.
 	show(one("ledger"), 36.75);
