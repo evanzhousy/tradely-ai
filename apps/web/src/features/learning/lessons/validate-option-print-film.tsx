@@ -27,8 +27,8 @@ import {
  *   open      0–4
  *   question  4–8.6
  *   amount    8.6–14
- *   claims    14–23.6    matched quote, then its 90-second-old replacement
- *   gaps      23.6–40.2  OI, linked records, subtraction, hero, belief limitation
+ *   claims    14–22.1    matched quote, then its 90-second-old replacement
+ *   gaps      22.1–40.2  OI, linked records, subtraction, hero, belief limitation
  *   claim     40.2–45
  *   next      45–47.5
  */
@@ -59,7 +59,7 @@ function layout(width: number) {
 			H * (narrow ? 0.25 : 0.25) + i * H * (narrow ? 0.085 : 0.088),
 		rowH: H * (narrow ? 0.068 : 0.07),
 		gapY: (i: number) => H * [0.2, 0.355, 0.865][i],
-		gapH: (i: number) => H * [0.13, 0.19, 0.11][i],
+		gapH: (i: number) => H * [0.145, 0.19, 0.11][i],
 	};
 }
 
@@ -113,7 +113,7 @@ const gaps: { id: string; question: Copy; needs: Copy }[] = [
 	{
 		id: "leg",
 		question: ["One leg of a strategy?", "某个策略的一条腿？"],
-		needs: ["Condition + linked prints", "条件＋关联成交"],
+		needs: ["Multi-leg code + linked prints", "多腿代码＋关联成交"],
 	},
 	{
 		id: "belief",
@@ -182,7 +182,9 @@ function Scene({
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
 	const gapHeadingY = (i: number) =>
-		L.gapY(i) + L.gapH(i) * (i === 1 ? 0.22 : 0.38);
+		i === 0 ? H * 0.2494 : L.gapY(i) + L.gapH(i) * (i === 1 ? 0.22 : 0.38);
+	const gapPromptY = (i: number) =>
+		i === 0 ? H * 0.284 : i === 1 ? H * 0.53 : L.gapY(i) + L.gapH(i) * 0.78;
 	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
@@ -449,17 +451,15 @@ function Scene({
 					>
 						{t(gap.question)}
 					</text>
-					{i !== 0 && (
-						<text
-							data-f={`needs-${i}`}
-							x={margin + 16}
-							y={L.gapY(i) + L.gapH(i) * 0.78}
-							className="wt-film-type wt-film-dim"
-							style={{ fontSize: T.body }}
-						>
-							{t(gap.needs)}
-						</text>
-					)}
+					<text
+						data-f={`needs-${i}`}
+						x={margin + 16}
+						y={gapPromptY(i)}
+						className={i === 2 ? "wt-film-type wt-film-dim" : "wt-film-tag"}
+						style={{ fontSize: i === 2 ? T.body : T.small }}
+					>
+						{t(gap.needs)}
+					</text>
 					{evidenceTag(
 						`gq-${i}`,
 						margin + room - 16,
@@ -471,7 +471,7 @@ function Scene({
 			<Word
 				name="found-0"
 				x={margin + 16}
-				y={L.gapY(0) + L.gapH(0) * 0.78}
+				y={H * 0.326}
 				size={T.body}
 				anchor="start"
 				className="wt-film-type wt-film-accent"
@@ -481,12 +481,7 @@ function Scene({
 					`周二未平仓量 +${BLOCK.openInterestChange}：多为开仓`,
 				])}
 			</Word>
-			{evidenceTag(
-				"gf-0",
-				margin + room - 16,
-				L.gapY(0) + L.gapH(0) * 0.38,
-				"inferred",
-			)}
+			{evidenceTag("gf-0", margin + room - 16, gapHeadingY(0), "inferred")}
 			<g data-f="found-1">
 				{(
 					[
@@ -494,8 +489,8 @@ function Scene({
 							"buy",
 							BLOCK.price,
 							[
-								`${count(BLOCK.quantity)} Oct 18 105 calls`,
-								`${count(BLOCK.quantity)} 张 10月18日 105 看涨`,
+								`${count(BLOCK.quantity)} Oct 18 105 calls bought`,
+								`${count(BLOCK.quantity)} 张 10月18日 105 看涨买入`,
 							],
 						],
 						[
@@ -532,16 +527,6 @@ function Scene({
 					</g>
 				))}
 			</g>
-			<Word
-				name="leg-link"
-				x={margin + 16}
-				y={H * 0.53}
-				size={T.small}
-				anchor="start"
-				className="wt-film-tag"
-			>
-				{t(["linked · multi-leg", "关联 · 多腿"]).toUpperCase()}
-			</Word>
 
 			{evidenceTag("gf-1", margin + room - 16, gapHeadingY(1), "observed")}
 			{([BLOCK.price, LEG.price] as const).map((price, i) => (
@@ -594,14 +579,6 @@ function Scene({
 					strokeWidth={1.5}
 				/>
 			))}
-			<path
-				data-f="belief-rule"
-				d={`M ${margin + 16} ${H * 0.967} H ${margin + room - 16}`}
-				className="wt-film-link"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth={1.5}
-			/>
 
 			<Brackets name="lock-leg" glow />
 
@@ -683,7 +660,6 @@ function build(context: FilmContext) {
 		one("found-0"),
 		...records,
 		...prices,
-		one("leg-link"),
 		one("gf-0"),
 		one("gf-1"),
 	];
@@ -694,8 +670,7 @@ function build(context: FilmContext) {
 		if (i === 0) {
 			fade([one("found-0")], at);
 		} else {
-			hide(one("needs-1"), at, 0.3, 0);
-			fade([...records, ...prices, one("leg-link")], at + 0.3);
+			fade([...records, ...prices], at + 0.3);
 			hide(one("gq-1"), at, 0.3, 0);
 			tl.fromTo(
 				one("gf-1"),
@@ -723,7 +698,6 @@ function build(context: FilmContext) {
 		one("cost-link-0"),
 		one("cost-link-1"),
 		...quote,
-		one("belief-rule"),
 		lockLeg,
 		...kids("claim"),
 	]);
@@ -766,23 +740,17 @@ function build(context: FilmContext) {
 	rows.forEach((row, i) => {
 		show(row, 14.7 + i * 0.5, "right");
 	});
-	// One second of quiet after the old quote lands, before downgrading the tags.
-	hide(quote[1], 17.75, 0.35, 0);
-	fade([quote[2]], 18.1);
-	staleRows.forEach((i, k) => {
-		const at = 19.6 + k * 0.3;
-		d.flip(one(`ev-${i}`), one(`ev-${i}-stale`), at);
-		tl.set(one(`ev-${i}`), { opacity: 0 }, at + 0.3);
-		tl.set(
-			one(`row-${i}-box`),
-			{ attr: { class: "wt-panel-shape" } },
-			at + 0.3,
-		);
-		tl.to(rows[i], { opacity: 0.6, duration: 0.3 }, at + 0.3);
+	// The six-row ladder settles at 17.7; inspect it intact for 1.6 seconds.
+	// Quote and dependent classifications are one scenario: no stale quote with fresh tags.
+	hide([quote[1], ...staleRows.map((i) => one(`ev-${i}`))], 19.3, 0.35, 0);
+	fade([quote[2], ...staleRows.map((i) => one(`ev-${i}-stale`))], 19.65);
+	staleRows.forEach((i) => {
+		tl.set(one(`row-${i}-box`), { attr: { class: "wt-panel-shape" } }, 19.65);
+		tl.to(rows[i], { opacity: 0.6, duration: 0.3 }, 19.65);
 	});
 
 	// ——— gaps: records, calculated cost and the market-record limitation ———
-	tl.addLabel("gaps", 23.6);
+	tl.addLabel("gaps", 22.1);
 	hide(
 		[
 			heads[1],
@@ -790,11 +758,11 @@ function build(context: FilmContext) {
 			...quote,
 			...staleRows.map((i) => one(`ev-${i}-stale`)),
 		],
-		23.6,
+		22.1,
 	);
-	show(heads[2], 23.95);
+	show(heads[2], 22.45);
 	gapCards.forEach((card, i) => {
-		show(card, 23.95 + i * 0.2, "right");
+		show(card, 22.45 + i * 0.2, "right");
 	});
 	close(0, 24.5); // settles 25.15
 	close(1, 26.15); // linked records settle 26.95, one second after OI
@@ -820,7 +788,19 @@ function build(context: FilmContext) {
 	show(heads[3], 31.35);
 	// Brackets settle 31.8; the result remains stationary throughout this after-beat.
 	hide([lockLeg, heads[3]], 35.8);
-	d.trace(one<SVGPathElement>("belief-rule"), 37.15, { duration: 0.5 });
+	// Once the brackets are gone, the resolved proofs recede; belief remains at full strength.
+	tl.to(
+		[
+			gapCards[0],
+			gapCards[1],
+			...found,
+			...cost,
+			one("cost-link-0"),
+			one("cost-link-1"),
+		],
+		{ opacity: 0.2, duration: 0.5 },
+		36.15,
+	);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.2);
@@ -832,7 +812,6 @@ function build(context: FilmContext) {
 			...cost,
 			one("cost-link-0"),
 			one("cost-link-1"),
-			one("belief-rule"),
 		],
 		40.2,
 	);
