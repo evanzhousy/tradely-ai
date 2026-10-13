@@ -40,8 +40,8 @@ import {
  *   open        0–4        "Read a recipe like an auditor"
  *   question    4–9.6      "Mon Sep 16: 5 contracts flagged…" — where does it come from?
  *   map         9.6–19.6   inputs, live data, cells; trace the Bottom line; the Takeaways
- *   content     19.6–31.9  Monday's two text cells; Tuesday's, labelled; cut: evidence vs
- *                          method, locked
+ *   content     19.6–31.9  Monday's two cells; Tuesday flips only the result; assemble both
+ *                          session counts above the unchanged Takeaways, locked
  *   population  31.9–44.2  top three; five counted, two not loaded; cut: the claim
  *   next        44.2–46.7  Next: change the inputs, keep the question
  */
@@ -71,8 +71,8 @@ function layout(width: number) {
 	const curve = (x1: number, y1: number, x2: number, y2: number) =>
 		`M${x1} ${y1}C${(x1 + x2) / 2} ${y1},${(x1 + x2) / 2} ${y2},${x2} ${y2}`;
 	// The two text cells.
-	const boxText = narrow ? T.small * 1.1 : T.head * 0.75;
-	const pad = narrow ? 10 : 20;
+	const boxText = narrow ? T.body : T.head * 0.75;
+	const pad = narrow ? 10 : Math.min(20, H * 0.025);
 	const textWidth = frame.room - 2 * pad;
 	const boxHeight = (texts: readonly Copy[], locale: Locale) =>
 		pad * 2 +
@@ -131,32 +131,25 @@ const copy = {
 	live: ["Live data", "实时数据"],
 	cells: ["Cells", "单元格"],
 	runHead: [
-		"Two text cells from Monday's run.",
-		"周一运行中的两个文字单元格。",
+		"Two text cells, different dependencies.",
+		"两个文字单元格，依赖不同。",
 	],
-	runHeadShort: ["Monday's run.", "周一的运行。"],
+	runHeadShort: [
+		"Two cells, different dependencies.",
+		"两个单元格，依赖不同。",
+	],
 	tuesdayHead: [
-		"Tuesday's run: one cell changes, one doesn't.",
-		"周二的运行：一个单元格变了，一个没变。",
+		"Change the session. Compare the cells.",
+		"切换时段，对比单元格。",
 	],
-	tuesdayHeadShort: ["Tuesday: one cell changes.", "周二：一个单元格变了。"],
+	tuesdayHeadShort: ["Change the session. Compare.", "切换时段，对比结果。"],
 	bottomTitle: ["Bottom line", "核心结论"],
 	takeTitle: ["Takeaways", "要点"],
 	liveTag: ["live data", "实时数据"],
 	contentTag: ["recipe content", "Recipe 内容"],
-	evidenceBig: [
-		"Live data is evidence; recipe text is method.",
-		"实时数据可作证据；Recipe 内容要当方法来读。",
-	],
-	evidenceSub: [
-		"Only the first describes the session.",
-		"只有前者描述了这个交易时段。",
-	],
-	tableHead: [
-		`The table: the top ${TOP_N} by volume/OI.`,
-		`表格：成交量/OI 前 ${TOP_N} 名。`,
-	],
-	tableHeadShort: [`The table: top ${TOP_N}.`, `表格：前 ${TOP_N} 名。`],
+	tableHead: ["Monday's ranked table.", "周一的排名表格。"],
+	tableHeadShort: ["Monday's ranked table.", "周一的排名表格。"],
+	topThree: [`Top ${TOP_N} · volume/OI`, `前 ${TOP_N} 名 · 成交量/OI`],
 	restHead: [
 		`${MONDAY.passed.length - TOP_N} more passed but aren't loaded.`,
 		`另外 ${MONDAY.passed.length - TOP_N} 份也通过了，只是没有载入。`,
@@ -175,6 +168,7 @@ const copy = {
 	symbols: ["symbols", "标的"],
 	median: ["median vol/OI", "成交量/OI 中位数"],
 	highest: ["highest vol/OI", "成交量/OI 最高"],
+	leader: ["leader", "最高"],
 	claimBig: ["Trace it, label it, count it.", "追溯、标注、计数。"],
 	claimSub: [
 		"Trace inputs, label what's written, count key figures.",
@@ -190,9 +184,10 @@ const copy = {
 	],
 } as const satisfies Record<string, Copy>;
 
-const runTag = (on: string): Copy => [
-	`Run · ${dayLabel(on)[0]}`,
-	`运行 · ${dayLabel(on)[1]}`,
+// An unchanged excerpt of the recipe's warning, rather than a second phone paragraph.
+const TAKE_EXCERPT: Copy = [
+	TAKEAWAYS[0].slice(0, TAKEAWAYS[0].indexOf(",")),
+	TAKEAWAYS[1].slice(0, TAKEAWAYS[1].indexOf("、")),
 ];
 
 function Scene({
@@ -281,11 +276,9 @@ function Scene({
 	const cellIn = L.colX(2);
 	const mid = (y: number) => y + L.nodeH / 2;
 	// The two text cells.
-	const bottomH = L.boxHeight(
-		[bottomLine(MONDAY), bottomLine(TUESDAY)],
-		locale,
-	);
-	const takeH = L.boxHeight([TAKEAWAYS], locale);
+	const bottomH = 2 * L.pad + T.small * 3.3 + T.big + T.body * 1.5;
+	const takeText = narrow ? TAKE_EXCERPT : TAKEAWAYS;
+	const takeH = L.boxHeight([takeText], locale);
 	const boxGap = H * (narrow ? 0.025 : 0.035);
 	const takeTop = L.boxTop + bottomH + boxGap;
 	const box = (
@@ -338,6 +331,10 @@ function Scene({
 		</g>
 	);
 	const textY = (y: number) => y + L.pad + T.small * 1.6 + L.boxText;
+	const countY = L.boxTop + L.pad + T.small * 3 + T.big;
+	const countX = margin + L.pad + T.title * 0.45;
+	const detailX = margin + L.pad + T.title * 1.8;
+	const heroX = (i: number) => margin + room * (i === 0 ? 0.25 : 0.75);
 	// The table.
 	const kpis = (
 		narrow
@@ -602,31 +599,8 @@ function Scene({
 				anchor="start"
 			/>
 
-			{/* Two text cells, run for two sessions. */}
+			{/* A computed result turns over; the recipe's warning stays on stage. */}
 			<g data-f="cells">
-				{/* On a phone the headlines name the day; the run label would sit on them. */}
-				<g visibility={narrow ? "hidden" : undefined}>
-					<Word
-						name="run-mon"
-						x={margin}
-						y={L.boxTop - T.small * 1.4}
-						size={T.small}
-						anchor="start"
-						className="wt-film-tag"
-					>
-						{t(runTag(MONDAY.on)).toUpperCase()}
-					</Word>
-					<Word
-						name="run-tue"
-						x={margin}
-						y={L.boxTop - T.small * 1.4}
-						size={T.small}
-						anchor="start"
-						className="wt-film-tag wt-film-accent"
-					>
-						{t(runTag(TUESDAY.on)).toUpperCase()}
-					</Word>
-				</g>
 				{box(
 					"bl",
 					L.boxTop,
@@ -643,24 +617,107 @@ function Scene({
 					copy.contentTag,
 					"wt-film-dim",
 				)}
-				{(
-					[
-						["bl-mon", bottomLine(MONDAY), L.boxTop],
-						["bl-tue", bottomLine(TUESDAY), L.boxTop],
-						["tk-text", TAKEAWAYS, takeTop],
-					] as const
-				).map(([name, text, y]) => (
-					<Lines
-						key={name}
-						name={name}
-						text={t(text)}
-						x={margin + L.pad}
-						y={textY(y)}
-						size={L.boxText}
-						maxWidth={L.textWidth}
-						anchor="start"
-					/>
-				))}
+				{([MONDAY, TUESDAY] as const).map((run, i) => {
+					const id = i === 0 ? "mon" : "tue";
+					const ratio = volumeToOi(run.top).toFixed(2);
+					return (
+						<g key={id}>
+							<Word
+								name={`run-${id}`}
+								x={margin + L.pad}
+								y={L.boxTop + L.pad + T.small * 2.8}
+								size={T.small}
+								anchor="start"
+								className="wt-film-tag"
+							>
+								{t(dayLabel(run.on)).toUpperCase()}
+							</Word>
+							<Word
+								name={`bl-${id}`}
+								x={countX}
+								y={countY}
+								size={T.title}
+								className="wt-film-num wt-film-accent"
+							>
+								{run.passed.length}
+							</Word>
+							<Word
+								name={`names-${id}`}
+								x={detailX}
+								y={countY - T.body * 1.8}
+								size={T.body}
+								anchor="start"
+							>
+								{run.names} {t(copy.symbols)}
+							</Word>
+							<Word
+								name={`ratio-${id}`}
+								x={detailX}
+								y={countY - T.body * 0.45}
+								size={T.body}
+								anchor="start"
+								className="wt-film-num"
+							>
+								{ratio}
+							</Word>
+							<Word
+								name={`leader-${id}`}
+								x={detailX}
+								y={countY + T.body * 0.9}
+								size={T.body}
+								anchor="start"
+							>
+								{run.top.symbol} · {t(copy.leader)}
+							</Word>
+							<Word
+								name={`hero-${id}-day`}
+								x={heroX(i)}
+								y={countY - T.big * 0.95}
+								size={T.small}
+								className="wt-film-tag"
+							>
+								{t(dayLabel(run.on)).toUpperCase()}
+							</Word>
+						</g>
+					);
+				})}
+				<Word
+					name="ratio-label"
+					x={detailX + T.body * 3.3}
+					y={countY - T.body * 0.45}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.highest)}
+				</Word>
+				<Word
+					name="bl-unit"
+					x={countX}
+					y={countY + T.small * 1.4}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.flaggedShort)}
+				</Word>
+				<Word
+					name="hero-unit"
+					x={margin + room / 2}
+					y={countY + T.body * 1.5}
+					size={T.body}
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.flagged)}
+				</Word>
+				<Lines
+					name="tk-text"
+					text={t(takeText)}
+					x={margin + L.pad}
+					y={textY(takeTop)}
+					size={L.boxText}
+					maxWidth={L.textWidth}
+					anchor="start"
+				/>
 			</g>
 			{headline("r-head", copy.runHead, copy.runHeadShort)}
 			<Lines
@@ -682,8 +739,17 @@ function Scene({
 				anchor="start"
 			/>
 			<Brackets name="lock-evidence" glow />
-			{claim("evidence", copy.evidenceBig, copy.evidenceSub)}
 			{headline("p-head", copy.tableHead, copy.tableHeadShort)}
+			<Word
+				name="top-three"
+				x={margin}
+				y={L.kpiY - T.small * 1.2}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(copy.topThree)}
+			</Word>
 			{headline("x-head", copy.restHead, copy.restHeadShort)}
 			{claim("claim", copy.claimBig, copy.claimSub)}
 			<EndCard
@@ -760,8 +826,8 @@ function build(context: FilmContext) {
 			"u-head",
 			"p-head",
 			"x-head",
+			"top-three",
 		].map((name) => one(name)),
-		...kids("evidence"),
 		lockEvidence,
 		...kids("claim"),
 	]);
@@ -783,36 +849,37 @@ function build(context: FilmContext) {
 	show(one("m-head"), 9.8, "above");
 	rise(9.9);
 	[0, 1, 2].forEach((i) => {
-		show(one(`col-${i}`), 10.3 + i * 0.25);
+		show(one(`col-${i}`), 9.8 + i * 0.25);
 	});
 	INPUTS.forEach((input, i) => {
-		show(nodes(input.id), 10.5 + i * 0.08, "right");
+		show(nodes(input.id), 10.0 + i * 0.08, "right");
 	});
 	SOURCES.forEach((source, j) => {
-		show(nodes(source.id), 11.0 + j * 0.12, "right");
+		show(nodes(source.id), 10.3 + j * 0.12, "right");
 	});
 	CELLS.forEach((cell, i) => {
-		show(nodes(cell.id), 11.3 + i * 0.1, "right");
+		show(nodes(cell.id), 10.6 + i * 0.1, "right");
 	});
-	tl.to(one("edges"), { opacity: 1, duration: 0.6 }, 11.7);
+	tl.to(one("edges"), { opacity: 1, duration: 0.6 }, 11.0);
+	// The overview settles at 11.6, retaining its original 1.5 s rest before focus.
 	// The Bottom line, back to its inputs.
 	d.swap(one("m-head"), one("b-head"), 13.4);
 	const dim = [
 		...SOURCES.filter((_, j) => j !== LIVE).flatMap((s) => nodes(s.id)),
 		...CELLS.filter((_, i) => i !== BOTTOM).flatMap((c) => nodes(c.id)),
 	];
-	tl.to(dim, { opacity: 0.3, duration: 0.4 }, 13.8);
-	tl.to(one("edges"), { opacity: 0.35, duration: 0.4 }, 13.8);
-	tl.to(one(`f-${CELLS[BOTTOM].id}`), { opacity: 1, duration: 0.3 }, 13.8);
-	draw(one<SVGPathElement>("trace-cell"), 14.1);
-	tl.to(one(`f-${SOURCES[LIVE].id}`), { opacity: 1, duration: 0.3 }, 14.6);
+	tl.to(dim, { opacity: 0.3, duration: 0.4 }, 13.1);
+	tl.to(one("edges"), { opacity: 0.35, duration: 0.4 }, 13.1);
+	tl.to(one(`f-${CELLS[BOTTOM].id}`), { opacity: 1, duration: 0.3 }, 13.1);
+	draw(one<SVGPathElement>("trace-cell"), 13.4);
+	tl.to(one(`f-${SOURCES[LIVE].id}`), { opacity: 1, duration: 0.3 }, 13.9);
 	traceIns.forEach((path) => {
-		draw(path, 14.8, 0.6);
+		draw(path, 14.1, 0.6);
 	});
 	tl.to(
 		INPUTS.map((input) => one(`f-${input.id}`)),
 		{ opacity: 1, duration: 0.3 },
-		15.4,
+		14.7,
 	);
 	// The Takeaways: nothing in.
 	show(one("t-head"), 16.0);
@@ -836,42 +903,84 @@ function build(context: FilmContext) {
 	show(one("r-head"), 19.95, "above");
 	show(one("run-mon"), 20.2);
 	show([one("bl-box"), one("bl-title")], 20.4);
-	show(one("bl-mon"), 20.6);
+	show(
+		[
+			one("bl-mon"),
+			one("bl-unit"),
+			one("ratio-label"),
+			...["names", "ratio", "leader"].map((name) => one(`${name}-mon`)),
+		],
+		20.6,
+	);
 	show([one("tk-box"), one("tk-title")], 20.9);
 	show(one("tk-text"), 21.1);
 	// Tuesday's run: the Bottom line flips, the Takeaways hold still. The map's labels.
 	show(one("u-head"), 23.7);
-	d.flip(one("run-mon"), one("run-tue"), 23.9);
-	tl.set(one("run-mon"), { opacity: 0 }, 24.2);
-	d.flip(one("bl-mon"), one("bl-tue"), 24.1);
-	tl.set(one("bl-mon"), { opacity: 0 }, 24.4);
+	["run", "bl", "names", "ratio", "leader"].forEach((name) => {
+		d.flip(one(`${name}-mon`), one(`${name}-tue`), 24.1);
+		tl.set(one(`${name}-mon`), { opacity: 0 }, 24.4);
+	});
 	tl.to(one("bl-focus"), { opacity: 1, duration: 0.4 }, 24.3);
 	show(one("bl-tag"), 24.7, "right");
 	show(one("tk-tag"), 25.1, "right");
-	// Cut: evidence against method. The hero.
+	// Assemble the two observed populations, keeping the Takeaways in place throughout.
+	// Retain the tagged result's entire 25.6–27.8 quiet interval before assembly.
 	hide(
 		[
-			one("r-head"),
-			one("u-head"),
-			...flat("cells"),
-			one("bl-box"),
-			one("tk-box"),
-			one("bl-focus"),
-			one("bl-title"),
-			one("tk-title"),
-			one("bl-tag"),
-			one("tk-tag"),
+			one("bl-unit"),
+			one("ratio-label"),
+			...["names", "ratio", "leader"].map((name) => one(`${name}-tue`)),
 		],
 		27.8,
 	);
-	word(one("evidence-big"), 28.2);
-	show(one("evidence-sub"), 28.4);
-	d.lock(lockEvidence, 28.8, { around: one("evidence-big"), pad: 10 });
+	// Its synchronized unfold starts 0.2 s later, so retain the day label 0.2 s longer.
+	hide(one("run-tue"), 28.0);
+	const heroX = (i: number) => L.margin + L.room * (i === 0 ? 0.25 : 0.75);
+	tl.to(
+		one("bl-tue"),
+		{
+			attr: { x: heroX(1) },
+			fontSize: L.type.big,
+			duration: 0.5,
+			ease: "power2.inOut",
+		},
+		28.15,
+	);
+	// Restore Monday's already-demonstrated value beside Tuesday, rather than counting a result.
+	tl.set(
+		one("bl-mon"),
+		{ attr: { x: heroX(0) }, fontSize: L.type.big, scaleY: 1 },
+		28.15,
+	);
+	// Tuesday has cleared Monday's lane before the historical value fades back in.
+	tl.fromTo(
+		one("bl-mon"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.35, immediateRender: false },
+		28.45,
+	);
+	tl.fromTo(
+		[one("hero-mon-day"), one("hero-tue-day")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.45 },
+		28.35,
+	);
+	tl.fromTo(
+		one("hero-unit"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		28.3,
+	);
+	// The figures settle at 28.8; the lock completes this construction at 29.25.
+	d.lock(lockEvidence, 28.8, {
+		around: [one("bl-box"), one("tk-box")],
+		pad: 10,
+	});
 	tl.addLabel("hero-lock", 28.8);
 
 	// ——— population: the table and the count ———
 	tl.addLabel("population", 31.9);
-	hide([...kids("evidence"), lockEvidence], 31.9);
+	hide([one("r-head"), one("u-head"), ...flat("cells"), lockEvidence], 31.9);
 	tl.set(one("map"), { opacity: 0 }, 32);
 	tl.set(one("screen"), { opacity: 1 }, 32);
 	show(one("p-head"), 32.25, "above");
@@ -880,6 +989,8 @@ function build(context: FilmContext) {
 	rows.slice(0, TOP_N).forEach((row, i) => {
 		show(row, 33 + i * 0.25);
 	});
+	// The third row settles at 34.0; retain its full 1.8 s rest before naming the ranking.
+	show(one("top-three"), 35.8);
 	// The key figures count every contract that passed; two never reached the table.
 	d.swap(one("p-head"), one("x-head"), 35.8);
 	rows.slice(TOP_N).forEach((row, i) => {
@@ -891,7 +1002,7 @@ function build(context: FilmContext) {
 			show(kpi, 36.2 + i * 0.2, "above");
 		});
 	// Cut: the claim.
-	hide(one("x-head"), 39.7);
+	hide([one("x-head"), one("top-three")], 39.7);
 	sink(39.7);
 	word(one("claim-big"), 40.1);
 	show(one("claim-sub"), 40.5);
