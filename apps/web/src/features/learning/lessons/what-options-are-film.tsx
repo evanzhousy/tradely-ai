@@ -36,17 +36,17 @@ import {
  * Options, as a film. It opens on an Oct 18 100 call bought for $420 and asks what it is
  * worth if ALFA ends at $95. The $420 lands on the chart as the premium line. The right to
  * buy at $100 is worthless at $95 and worth $1,000 at $110, the meter reading from the
- * marker itself; a put is the opposite right, $1,000 at $90. Then three uses next to owning
+ * marker itself; a put is the opposite right, $1,000 at $90. Then two uses next to owning
  * the shares. The hero is the first: as ALFA falls to $80 the shares lose $2,000 while the
  * shares with a 95 put stop at the −$715 floor, the difference filling in green. Then a
- * call sold for $85 caps the gain at +$1,085, and a 105 call alone can lose only $215.
+ * purchased 105 call bought for $215 is the only extra example: its maximum loss is $215.
  * Last, the other side: at $110 you are up $580 and Ben, who wrote the call, is down $580.
  *
  *   open      0–4        "Options"
  *   question  4–8.6      $420 for the Oct 18 100 call; ALFA ends at $95?
  *   right     8.6–21.4   the call: $0 at $95, $1,000 at $110; the put at $90
  *   uses      21.4–35.2  hero: shares, then with a 95 put as ALFA falls, the floor at −$715;
- *                        earn; a view
+ *                        a purchased 105 call, costing $215
  *   sides     35.2–40.3  you +$580, Ben −$580
  *   claim     40.3–44.7  a right for you, an obligation for someone else
  *   next      44.7–46.7  Next: trading an option
@@ -109,6 +109,9 @@ function layout(width: number) {
 		meterY,
 		meterNum,
 		meterCol: narrow ? 120 : 220,
+		sideNum: H * 0.4 + T.big * 0.95,
+		sideBasisTag: H * 0.4 + T.big * 1.27 + T.small * 1.5,
+		sideBasis: H * 0.4 + T.big * 1.27 + T.small * 1.5 + T.body * 1.6,
 		pair: narrow ? [0.27, 0.73] : [0.3, 0.7],
 	};
 }
@@ -149,52 +152,30 @@ const copy = {
 	net: ["after premium", "扣除权利金"],
 	sharesAlone: ["100 shares", "100 股"],
 	withPut: ["with the 95 put", "加 95 看跌"],
-	protectHead: ["Add a 95 put to the shares.", "股票加一张 95 看跌。"],
-	protectHeadShort: ["Shares plus a 95 put.", "股票加一张 95 看跌。"],
-	floorHead: [
-		`The floor: ${signedUsd(positionPayoff.protect(80) * 100, 0)}.`,
-		`下限：${signedUsd(positionPayoff.protect(80) * 100, 0)}。`,
-	],
-	moreHead: [
-		"Two more uses: earn, or bet small.",
-		"另外两种用法：收租，或小注押方向。",
-	],
-	moreHeadShort: [
-		"Two more: earn, or bet small.",
-		"另两种：收租，或小注押方向。",
-	],
-	earnHead: [
-		`Sell a 110 call: capped at ${signedUsd(positionPayoff.earn(120) * 100, 0)}.`,
-		`卖出 110 看涨：上限 ${signedUsd(positionPayoff.earn(120) * 100, 0)}。`,
-	],
-	earnHeadShort: [
-		`Earn: cap ${signedUsd(positionPayoff.earn(120) * 100, 0)}.`,
-		`赚取：上限 ${signedUsd(positionPayoff.earn(120) * 100, 0)}。`,
-	],
-	viewHead: [
-		`A 105 call alone: lose at most ${usd(viewCost * 100, 0)}.`,
-		`只买 105 看涨：最多亏 ${usd(viewCost * 100, 0)}。`,
-	],
-	viewHeadShort: [
-		`A view: lose at most ${usd(viewCost * 100, 0)}.`,
-		`观点：最多亏 ${usd(viewCost * 100, 0)}。`,
+	protectHead: ["Protect the shares.", "保护持股。"],
+	protectHeadShort: ["Protect the shares.", "保护持股。"],
+	moreHead: ["Buy a call alone.", "单独买入看涨。"],
+	moreHeadShort: ["Buy a call alone.", "单独买入看涨。"],
+	viewContract: ["Buy ALFA Oct 18 105 call", "买入 ALFA 10月18日 105 看涨"],
+	viewPremium: [
+		`Premium ${usd(viewCost * 100, 0)}`,
+		`权利金 ${usd(viewCost * 100, 0)}`,
 	],
 	sharesLabel: ["100 shares", "100 股"],
-	floor: [
-		`floor ${signedUsd(positionPayoff.protect(80) * 100, 0)}`,
-		`下限 ${signedUsd(positionPayoff.protect(80) * 100, 0)}`,
-	],
-	cap: [
-		`cap ${signedUsd(positionPayoff.earn(120) * 100, 0)}`,
-		`上限 ${signedUsd(positionPayoff.earn(120) * 100, 0)}`,
-	],
+	floor: ["loss floor", "亏损下限"],
 	most: [
-		`at most ${signedUsd(-viewCost * 100, 0)}`,
-		`最多 ${signedUsd(-viewCost * 100, 0)}`,
+		`Max loss ${usd(viewCost * 100, 0)}`,
+		`最多亏 ${usd(viewCost * 100, 0)}`,
 	],
-	result: ["result at Oct 18", "10月18日 的结果"],
-	sidesHead: ["Your gain is Ben's loss.", "你的盈利就是 Ben 的亏损。"],
-	sidesHeadShort: ["Your gain is Ben's loss.", "你赚的就是 Ben 亏的。"],
+	profitAxis: ["profit at Oct 18", "10月18日的盈亏"],
+	result: [
+		"Original 100 call · ALFA $110 · Oct 18",
+		"原 100 看涨 · ALFA $110 · 10月18日",
+	],
+	holderBasis: ["value − premium", "价值 − 权利金"],
+	writerBasis: ["premium − value", "权利金 − 价值"],
+	sidesHead: ["The call has two sides.", "看涨合约的双方。"],
+	sidesHeadShort: ["The call has two sides.", "看涨合约的双方。"],
 	you: ["you · holder", "你 · 持有人"],
 	ben: ["Ben · writer", "Ben · 义务方"],
 	claimBig: [
@@ -282,14 +263,12 @@ function Scene({
 		tone: string,
 		below = false,
 		right = below,
-		/** Pinned to the plot's right edge instead, ending there. */
-		edge = false,
 	) => (
 		<text
 			data-f={name}
-			x={edge ? L.right - 4 : L.x(spot) + (right ? 6 : -6)}
+			x={L.x(spot) + (right ? 6 : -6)}
 			y={L.u(value) + (below ? 20 : -10)}
-			textAnchor={edge ? "end" : right ? "start" : "end"}
+			textAnchor={right ? "start" : "end"}
 			className={`wt-halo wt-marker-label ${tone}`}
 			style={tone.startsWith("wt-") ? undefined : { fill: tone }}
 		>
@@ -377,8 +356,11 @@ function Scene({
 						/>
 					</g>
 
-					{/* Three uses, beside the shares alone. */}
+					{/* Protection beside the shares alone, then a purchased call. */}
 					<g data-f="use-chart">
+						<text x={L.left} y={L.top - 12} className="wt-small">
+							{t(copy.profitAxis)}
+						</text>
 						{ticks("u-ticks", [-1000, 0, 1000], L.u)}
 						<path
 							data-f="shares-line"
@@ -389,11 +371,6 @@ function Scene({
 							data-f="protect-line"
 							d={L.path(positionPayoff.protect, L.u)}
 							className="wt-line-position"
-						/>
-						<path
-							data-f="earn-line"
-							d={L.path(positionPayoff.earn, L.u)}
-							className="wt-line-short"
 						/>
 						<path
 							data-f="view-line"
@@ -418,23 +395,12 @@ function Scene({
 							false,
 							true,
 						)}
-						{/* On a phone, pinned to the plot's right edge so it ends inside the frame. */}
-						{useLabel(
-							"cap-tag",
-							copy.cap,
-							114,
-							positionPayoff.earn(114),
-							"var(--wt-short)",
-							true,
-							true,
-							narrow,
-						)}
 						{useLabel(
 							"most-tag",
 							copy.most,
-							101,
-							positionPayoff.view(101),
-							"var(--wt-long)",
+							104,
+							positionPayoff.view(104),
+							"wt-film-loss",
 							true,
 						)}
 						{/* What the put saves: between the two lines, filled as ALFA falls. */}
@@ -479,9 +445,11 @@ function Scene({
 						/>
 					</g>
 					<PenTip name="tip" />
-					<Brackets name="lock-floor" glow />
+					<PenTip name="put-tip" color="var(--wt-short)" />
+					<PenTip name="view-tip" color="var(--wt-long)" />
 				</g>
 			</g>
+			<Brackets name="lock-floor" tone="loss" glow />
 			{/* Readouts under the headline: the right's value, then each use's two positions. */}
 			{(
 				[
@@ -505,7 +473,7 @@ function Scene({
 								"u-put",
 								copy.withPut,
 								signedUsd(positionPayoff.protect(100) * 100, 0),
-								"wt-film-num wt-film-accent",
+								"wt-film-num wt-film-loss",
 							],
 						],
 					],
@@ -527,8 +495,8 @@ function Scene({
 							<Word
 								name={name}
 								x={margin + i * L.meterCol}
-								y={L.meterNum}
-								size={T.head * 1.15}
+								y={L.meterNum + (name === "u-put" ? T.head * 1.55 : 0)}
+								size={T.head * (name === "u-put" ? 1.6 : 1.15)}
 								anchor="start"
 								className={className}
 							>
@@ -575,69 +543,83 @@ function Scene({
 			{headline("p-head", copy.putHead, copy.putHeadShort)}
 
 			{headline("v-head", copy.protectHead, copy.protectHeadShort)}
-			{/* The floor, a line under the headline, revealed as the fall reaches it. */}
-			<Lines
-				name="v2-head"
-				text={t(copy.floorHead)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.protectHeadShort : copy.protectHead),
-						narrow ? room : room * 0.74,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			{headline("e-head", copy.moreHead, copy.moreHeadShort)}
 			{headline("d-head", copy.sidesHead, copy.sidesHeadShort)}
+			<g data-f="view-ticket">
+				<Lines
+					name="view-contract"
+					text={t(copy.viewContract)}
+					x={margin}
+					y={L.meterY}
+					size={T.body}
+					maxWidth={room}
+					anchor="start"
+					className="wt-film-type"
+				/>
+				<Word
+					name="view-premium"
+					x={margin}
+					y={L.meterY + T.body * 1.7}
+					size={T.body}
+					anchor="start"
+					className="wt-film-num wt-film-dim"
+				>
+					{t(copy.viewPremium)}
+				</Word>
+			</g>
 			<g data-f="sides">
 				{(
 					[
 						[
 							"you",
 							copy.you,
-							signedUsd(-PREMIUM * 100, 0),
+							copy.holderBasis,
+							`${usd(callValue(HIGH) * 100, 0)} − ${usd(PREMIUM * 100, 0)}`,
 							signedUsd(NET_HIGH * 100, 0),
 							"wt-film-gain",
 						],
 						[
 							"ben",
 							copy.ben,
-							signedUsd(PREMIUM * 100, 0),
+							copy.writerBasis,
+							`${usd(PREMIUM * 100, 0)} − ${usd(callValue(HIGH) * 100, 0)}`,
 							signedUsd(-NET_HIGH * 100, 0),
 							"wt-film-loss",
 						],
 					] as const
-				).map(([name, tag, before, after, tone], i) => (
+				).map(([name, tag, basisLabel, basis, after, tone], i) => (
 					<g key={name}>
 						<Word
 							name={`${name}-tag`}
 							x={W * L.pair[i]}
-							y={H * 0.36}
+							y={H * 0.4}
 							size={T.small}
 							className="wt-film-tag"
 						>
 							{t(tag).toUpperCase()}
 						</Word>
 						<Word
-							name={`${name}-before`}
+							name={`${name}-basis-tag`}
 							x={W * L.pair[i]}
-							y={H * 0.36 + T.big * 0.95}
-							size={T.big * 0.8}
-							className="wt-film-num"
+							y={L.sideBasisTag}
+							size={T.small}
+							className="wt-film-tag"
 						>
-							{before}
+							{t(basisLabel)}
+						</Word>
+						<Word
+							name={`${name}-basis`}
+							x={W * L.pair[i]}
+							y={L.sideBasis}
+							size={T.body}
+							className="wt-film-num wt-film-dim"
+						>
+							{basis}
 						</Word>
 						<Word
 							name={`${name}-after`}
 							x={W * L.pair[i]}
-							y={H * 0.36 + T.big * 0.95}
+							y={L.sideNum}
 							size={T.big * 0.8}
 							className={`wt-film-num ${tone}`}
 						>
@@ -649,7 +631,7 @@ function Scene({
 					name="sides-line"
 					text={t(copy.result)}
 					x={W / 2}
-					y={H * 0.74}
+					y={H * 0.26}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -707,6 +689,10 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
+	gsap.set(one("lock-floor"), {
+		filter:
+			"drop-shadow(0 0 2px var(--diagram-loss)) drop-shadow(0 0 9px color-mix(in oklab, var(--diagram-loss) 60%, transparent))",
+	});
 	const tip = one("tip");
 	const line = (name: string) => one<SVGPathElement>(name);
 	const marker = one("marker");
@@ -764,6 +750,7 @@ function build(context: FilmContext) {
 		uShares.textContent = signed(shares(spot));
 		uShares.setAttribute("class", tone(shares(spot)));
 		uPut.textContent = signed(positionPayoff.protect(spot));
+		uPut.setAttribute("class", tone(positionPayoff.protect(spot)));
 		const left = Math.min(L.x(spot), L.x(SAVES_BELOW));
 		gsap.set(saveClip, {
 			attr: { x: left, width: L.x(SAVES_BELOW) - left },
@@ -776,7 +763,6 @@ function build(context: FilmContext) {
 		"v-head",
 		"e-head",
 		"d-head",
-		"v2-head",
 	].map((name) => one(name));
 
 	d.hidden([
@@ -792,17 +778,18 @@ function build(context: FilmContext) {
 		marker,
 		one("shares-line"),
 		one("protect-line"),
-		one("earn-line"),
 		one("view-line"),
 		one("shares-tag"),
 		one("floor-tag"),
-		one("cap-tag"),
 		one("most-tag"),
 		one("save-area"),
 		sMarker,
 		pMarker,
 		tip,
+		one("put-tip"),
+		one("view-tip"),
 		one("lock-floor"),
+		...kids("view-ticket"),
 		...kids("meter"),
 		...kids("umeter"),
 		...flat("q"),
@@ -853,7 +840,7 @@ function build(context: FilmContext) {
 	);
 	// The meter turns to the put where the marker stands, $110: worth $0, −$420.
 	walk(HIGH, HIGH, 17.89, 0.01, onRight(putValue, PUT_COST));
-	d.trace(line("put-line"), 17.9, { tip, duration: 1.0 });
+	d.trace(line("put-line"), 17.9, { tip: one("put-tip"), duration: 1.0 });
 	show(one("put-tag"), 18.7);
 	walk(HIGH, PUT_AT, 18.9, 1.2, onRight(putValue, PUT_COST));
 
@@ -865,59 +852,71 @@ function build(context: FilmContext) {
 	tl.set(one("use-chart"), { opacity: 1 }, 21.8);
 	show(heads[3], 21.8);
 	rise(21.9);
-	d.trace(line("shares-line"), 22.2, { tip, duration: 1.0 });
-	show(one("shares-tag"), 23.0);
-	d.trace(line("protect-line"), 24.0, { tip, duration: 1.0 });
-	show(kids("umeter"), 24.4);
-	// ALFA falls to $80: the shares lose $2,000; with the put they stop at the floor, and
-	// what the put saved fills in between. The floor's figure arrives with the lock.
-	tl.set([sMarker, pMarker, one("save-area")], { opacity: 1 }, 25.4);
+	// Build one comparison, rather than two successive proofs. The reference and
+	// protected position settle together; labels land with that construction.
+	d.trace(line("shares-line"), 22.2, { duration: 1.2 });
+	d.trace(line("protect-line"), 22.2, { tip, duration: 1.2 });
+	show([one("shares-tag"), ...kids("umeter")], 23.4);
+	// Everything settles by 23.9. The paired markers fade in only after 1.15 s
+	// of quiet, then the same 1.6 s walk constructs the −$715 loss floor.
+	tl.to(
+		[sMarker, pMarker, one("save-area")],
+		{ opacity: 1, duration: 0.35 },
+		25.05,
+	);
 	walk(100, FALL_TO, 25.5, 1.6, onFall);
 	show(one("floor-tag"), 26.9);
 	d.lock(one<SVGGraphicsElement>("lock-floor"), 27.1, {
-		around: one("floor-tag"),
+		around: uPut,
 		pad: 5,
 	});
 	tl.addLabel("hero-lock", 27.1);
-	show(heads[6], 27.1);
-	// Held: −$2,000 against −$715. Then the other two uses, under one headline.
-	d.swap([heads[3], heads[6]], heads[4], 30.7);
-	hide([...kids("umeter"), sMarker, pMarker], 30.7);
+	// The enlarged loss meter and brackets keep their full 3.55 s settled stand.
+	d.swap(heads[3], heads[4], 30.7);
+	hide(
+		[one("u-shares-tag"), uShares, one("u-put-tag"), sMarker, pMarker],
+		30.7,
+	);
 	tl.to(
 		[
+			uPut,
 			one("protect-line"),
 			one("floor-tag"),
+			one("shares-line"),
+			one("shares-tag"),
 			one("save-area"),
 			one("lock-floor"),
 		],
-		{ opacity: 0.2, duration: 0.4 },
+		{ opacity: 0, duration: 0.4 },
 		31.1,
 	);
-	// The shares stay as a faint reference behind the next two uses.
-	tl.to(one("shares-line"), { opacity: 0.35, duration: 0.4 }, 31.1);
-	d.trace(line("earn-line"), 31.1, { tip, duration: 1.0 });
-	show(one("cap-tag"), 31.9);
-	tl.to(
-		[one("earn-line"), one("cap-tag")],
-		{ opacity: 0.2, duration: 0.4 },
-		32.9,
-	);
-	d.trace(line("view-line"), 32.9, { tip, duration: 1.0 });
-	show(one("most-tag"), 33.7);
+	// One identified transaction owns the whole extra-use beat. No old curves
+	// remain under the purchased call, and the bound explicitly names loss.
+	show(kids("view-ticket"), 31.5);
+	d.trace(line("view-line"), 31.9, { tip: one("view-tip"), duration: 1.2 });
+	show(one("most-tag"), 33.1);
+	// Label and pen settle by 33.6; the result rests 1.6 s before the cut.
 
 	// ——— sides: holder and writer ———
 	tl.addLabel("sides", 35.2);
-	hide(heads[4], 35.2);
+	hide([heads[4], ...kids("view-ticket")], 35.2);
 	sink(35.2);
 	show(heads[5], 35.55);
-	show([one("you-tag"), one("ben-tag")], 35.8);
-	word(one("you-before"), 35.95);
-	word(one("ben-before"), 36.15);
-	d.flip(one("you-before"), one("you-after"), 36.8);
-	tl.set(one("you-before"), { opacity: 0 }, 37.1);
-	d.flip(one("ben-before"), one("ben-after"), 36.95);
-	tl.set(one("ben-before"), { opacity: 0 }, 37.25);
-	show(one("sides-line"), 36.8);
+	show(one("sides-line"), 35.55);
+	show([one("you-tag"), one("ben-tag")], 35.55);
+	// Build the two mirrored bases as one proof. After a full second of quiet,
+	// reveal both settled results together; the original 2.7 s result rest remains.
+	show(
+		[
+			one("you-basis-tag"),
+			one("ben-basis-tag"),
+			one("you-basis"),
+			one("ben-basis"),
+		],
+		35.55,
+	);
+	word(one("you-after"), 37.05);
+	word(one("ben-after"), 37.05);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.3);
@@ -935,15 +934,15 @@ function build(context: FilmContext) {
 export const whatOptionsAreFilm: Film = {
 	id: "what-options-are",
 	label: [
-		`Options, as a short film: an Oct 18 100 call bought for ${usd(PREMIUM * 100, 0)} and the question of its worth if ALFA ends at $${LOW}; the right to buy at $100, worthless at $${LOW} and $1,000 at $${HIGH}, and the put, the opposite right, worth $1,000 at $${PUT_AT}; three uses beside 100 shares, a put that floors the loss at ${signedUsd(positionPayoff.protect(80) * 100, 0)}, a sold call that caps the gain at ${signedUsd(positionPayoff.earn(120) * 100, 0)}, and a call bought for a view that can lose ${usd(viewCost * 100, 0)}; and the two sides at $${HIGH}, you up ${usd(NET_HIGH * 100, 0)} and Ben, the writer, down the same`,
-		`期权短片：花 ${usd(PREMIUM * 100, 0)} 买入的 10月18日 100 看涨，以及 ALFA 收于 $${LOW} 时它值多少；以 $100 买入的权利，在 $${LOW} 作废，在 $${HIGH} 值 $1,000，看跌是相反的权利，在 $${PUT_AT} 值 $1,000；与 100 股相比的三种用途：看跌把亏损下限定在 ${signedUsd(positionPayoff.protect(80) * 100, 0)}，卖出看涨把收益封顶在 ${signedUsd(positionPayoff.earn(120) * 100, 0)}，买入看涨表达观点最多亏 ${usd(viewCost * 100, 0)}；以及 $${HIGH} 时的双方：你赚 ${usd(NET_HIGH * 100, 0)}，义务方 Ben 亏同样多`,
+		`Options, as a short film: an Oct 18 100 call bought for ${usd(PREMIUM * 100, 0)} and its worth if ALFA ends at $${LOW}; the right to buy at $100, worthless at $${LOW} and worth $1,000 at $${HIGH}; a put worth $1,000 at $${PUT_AT}; 100 shares protected by a 95 put as ALFA falls to $80, with a loss floor of ${signedUsd(positionPayoff.protect(80) * 100, 0)}; an Oct 18 105 call bought for ${usd(viewCost * 100, 0)}, whose maximum loss is its premium; and the original 100 call at ALFA $${HIGH} on Oct 18, its $1,000 value minus $420 premium leaving you up $580 and Ben down $580`,
+		`期权短片：花 ${usd(PREMIUM * 100, 0)} 买入的 10月18日 100 看涨，以及 ALFA 收于 $${LOW} 时它值多少；以 $100 买入的权利，在 $${LOW} 作废，在 $${HIGH} 值 $1,000；看跌在 $${PUT_AT} 值 $1,000；ALFA 跌到 $80 时，100 股加 95 看跌的亏损下限为 ${signedUsd(positionPayoff.protect(80) * 100, 0)}；花 ${usd(viewCost * 100, 0)} 买入 10月18日 105 看涨，最多只亏权利金；以及原来的 100 看涨在 10月18日 ALFA 收于 $${HIGH} 时，$1,000 价值减 $420 权利金，你赚 $580，Ben 亏 $580`,
 	],
 	stage: "dark",
 	shots: [
 		{ id: "open", label: ["Options", "期权"] },
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "right", label: ["The right", "权利"] },
-		{ id: "uses", label: ["Three uses", "三种用途"] },
+		{ id: "uses", label: ["Two uses", "两种用途"] },
 		{ id: "sides", label: ["Two sides", "两方"] },
 		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
