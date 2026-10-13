@@ -45,10 +45,10 @@ import {
  *   open      0–4        "Premium, payoff and profit"
  *   question  4–8.8      the 95 call at $7.30: worth what on Oct 18?
  *   parts     8.8–18.4   $7.30 lands on the 95 bar: $5.00 + $2.30; at expiry, $5.00
- *   profit    18.4–31.85 value drops into profit; $102; hero: break-even $104.20; $110
- *   writer    31.85–40.2 the 95 put written: +$205, a loss below $92.95; as a call, no limit
- *   claim     40.2–44.65 in the money isn't the same as profitable
- *   next      44.65–47.15 Next: put-call parity
+ *   profit    18.4–32.65 value drops into profit; $102; hero: break-even $104.20; $110
+ *   writer    32.65–40.6 the 95 put written: +$205, a loss below $92.95; as a call, no limit
+ *   claim     40.6–44.95 in the money isn't the same as profitable
+ *   next      44.95–47.45 Next: put-call parity
  */
 
 const END = 47.45;
@@ -171,10 +171,6 @@ const copy = {
 	putWriter: [
 		`95 put, written: ${signedUsd(GOT * 100, 0)}`,
 		`95 看跌，卖出：${signedUsd(GOT * 100, 0)}`,
-	],
-	putFloor: [
-		`↙ to ${signedUsd((GOT - PUT.strike * 100) * 100, 0)} at $0`,
-		`↙ 跌到 $0 时 ${signedUsd((GOT - PUT.strike * 100) * 100, 0)}`,
 	],
 	noLimit: ["no limit ↘", "亏损无上限 ↘"],
 	profitFrom: ["profit from here →", "从这里开始盈利 →"],
@@ -585,15 +581,6 @@ function Scene({
 						>
 							{t(narrow ? copy.profitFromShort : copy.profitFrom)}
 						</text>
-						{/* The written put's worst case, off the chart's left edge. */}
-						<text
-							data-f="put-floor"
-							x={L.left + 4}
-							y={L.y(writerProfit(X[0])) + 18}
-							className="wt-small wt-halo wt-loss"
-						>
-							{t(copy.putFloor)}
-						</text>
 						{/* Turned into a call, it has no worst case. */}
 						<text
 							data-f="no-limit"
@@ -604,7 +591,6 @@ function Scene({
 						>
 							{t(copy.noLimit)}
 						</text>
-						<Brackets name="lock-205" arm={8} tone="short" />
 						{/* Down to just under the axis, where the writer's line crosses it. */}
 						<path
 							data-f="put-be"
@@ -868,9 +854,7 @@ function build(context: FilmContext) {
 			"profit-from",
 			"put-be",
 			"put-be-label",
-			"put-floor",
 			"no-limit",
-			"lock-205",
 			"callw-be-label",
 			"marker",
 			"lock-be",
@@ -949,14 +933,14 @@ function build(context: FilmContext) {
 	});
 	show(heads[0], 10.5);
 	show(one("legend"), 10.8);
-	// The others step back first.
+	// Read the settled parts first, then let the other contracts step back.
 	tl.to(
 		STRIKES.filter((k) => k !== ASKED).flatMap((k) => [
 			...bars(k),
 			one(`p-${k}`),
 		]),
 		{ opacity: 0.3, duration: 0.4 },
-		11.0,
+		12.3,
 	);
 	// With the headline that names them.
 	show(parts, 10.5);
@@ -968,35 +952,37 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		14.8,
 	);
-	STRIKES.forEach((k) => {
-		const now = priceParts(k, "call", "now");
-		tl.to(
-			one(`tv-${k}`),
-			{
-				attr: { y: L.barBottom - L.barH(now.intrinsic), height: 0 },
-				duration: 0.8,
-				ease: "power2.inOut",
+	// One eased state drives every shrinking bar and its readout, including the other
+	// contracts' prices while they fade away. Scrubbing back restores the same state.
+	const expiry = { progress: 0 };
+	const expiryBars = STRIKES.map((k) => ({
+		now: priceParts(k, "call", "now"),
+		time: one(`tv-${k}`),
+		price: one<SVGTextElement>(`p-${k}`),
+	}));
+	tl.fromTo(
+		expiry,
+		{ progress: 0 },
+		{
+			progress: 1,
+			duration: 0.8,
+			ease: "power2.inOut",
+			immediateRender: false,
+			onUpdate: () => {
+				for (const { now, time, price } of expiryBars) {
+					const remaining = now.time * (1 - expiry.progress);
+					const total = now.intrinsic + remaining;
+					const top = L.barBottom - L.barH(total);
+					gsap.set(time, { attr: { y: top, height: L.barH(remaining) } });
+					gsap.set(price, { attr: { y: top - 8 } });
+					price.textContent = usd(Math.round(total));
+				}
 			},
-			15.1,
-		);
+		},
+		15.1,
+	);
+	STRIKES.forEach((k) => {
 		if (k === ASKED) {
-			tl.to(
-				asked,
-				{
-					y: L.barH(now.price) - L.barH(now.intrinsic),
-					duration: 0.8,
-					ease: "power2.inOut",
-				},
-				15.1,
-			);
-			d.count(
-				asked,
-				now.intrinsic,
-				15.1,
-				(v) => usd(Math.round(v)),
-				now.price,
-				0.8,
-			);
 			tl.set(asked, { attr: { class: "wt-film-num wt-film-accent" } }, 15.9);
 		} else {
 			hide(one(`p-${k}`), 15.1, 0.3);
@@ -1099,15 +1085,15 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 27.75);
 	show(heads[6], 27.75);
 	word(one("be-label"), 27.85);
+	// The brackets settle at 28.20 and stand for 1.85 s before this release. Clear them
+	// completely before the marker-driven green reveal begins at 30.45.
+	tl.to(one("lock-be"), { opacity: 0, duration: 0.35 }, 30.05);
 	walk(BE, 110, 30.45, 1.2);
 	tl.to(one("itm-label"), { opacity: 0.55, duration: 0.3 }, 30.65);
 	// On a phone the green fill says it: no room for the note by the brackets.
 	if (!L.narrow) show(one("profit-from"), 30.85);
-	tl.to(
-		winClip,
-		{ attr: { width: L.right - beX }, duration: 0.7, ease: "power2.out" },
-		31.45,
-	);
+	// The marker and green construction settle together at 31.65: one full second of
+	// quiet before the writer arrives, with no second expansion beyond the marker.
 
 	// ——— writer: the premium is the best case, and the loss below break-even ———
 	tl.addLabel("writer", 32.65);
@@ -1123,7 +1109,6 @@ function build(context: FilmContext) {
 		[
 			...kids("meter"),
 			marker,
-			one("lock-be"),
 			one("be"),
 			one("be-label"),
 			one("itm-band"),
@@ -1138,28 +1123,24 @@ function build(context: FilmContext) {
 		],
 		32.65,
 	);
+	// Identify the new contract before its headline lands; fade in place in this lane.
+	tl.fromTo(
+		one("put-tag"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		32.65,
+	);
 	const pen = one("tip-short");
 	d.trace(one<SVGPathElement>("put-line"), 33.05, { tip: pen });
-	show(one("put-tag"), 33.85);
-	d.lock(one<SVGGraphicsElement>("lock-205"), 34.05, {
-		around: one("put-tag"),
-		pad: 4,
-	});
-	tl.to(one("lock-205"), { opacity: 0, duration: 0.3 }, 35.25);
-	show([putBe, one("put-be-label")], 35.15);
-	pop(one("put-marker"), 35.45);
-	show(one("put-loss"), 35.65, "right");
-	show(one("put-floor"), 35.85);
+	// One compact risk proof, without a second lock or off-chart worst-case footnote.
+	// Its last label settles at 35.10, leaving 1.50 s before the call conversion.
+	show([putBe, one("put-be-label")], 34.4);
+	pop(one("put-marker"), 34.5);
+	show(one("put-loss"), 34.6, "right");
 	// The same writer's line, on a call: turned over about $100, its loss side has no end.
 	d.swap(heads[4], heads[5], 36.6);
 	hide(
-		[
-			one("put-marker"),
-			one("put-loss"),
-			one("put-tag"),
-			one("put-be-label"),
-			one("put-floor"),
-		],
+		[one("put-marker"), one("put-loss"), one("put-tag"), one("put-be-label")],
 		36.6,
 	);
 	d.mirror(putLine, L.x(100), 37, 1.2);
