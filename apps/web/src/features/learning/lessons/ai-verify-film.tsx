@@ -36,13 +36,13 @@ import {
  *
  *   open      0–4          Ask TradingFlow AI, then verify
  *   question  4–9.6        The unsupported bearish-bet sentence
- *   sort      9.6–23.5     Report/calculation; missing evidence; expiry/forecast
- *   credits   23.5–30.3    1 + 1 + 2 → 4 credits; lock at 28.1, settle at 28.55
- *   insight   30.3–43.85   Explain the run; branch a private draft; closing claim
- *   next      43.85–46.25  Build your own Rank column
+ *   sort      9.6–24.3     Paired results; missing evidence; identify three near expiries
+ *   credits   24.3–31.1    1 + 1 + 2 → 4 credits; lock at 28.9, settle at 29.35
+ *   insight   31.1–44.65   Explain the run; branch a private draft; closing claim
+ *   next      44.65–47.05  Build your own Rank column
  */
 
-const END = 46.25;
+const END = 47.05;
 const BET = STATEMENTS.find((item) => item.id === "bet") ?? STATEMENTS[0];
 const REPLIES = [
 	{ kind: "text", cost: COST.text },
@@ -62,7 +62,7 @@ const proofs: {
 	{
 		id: "count",
 		tag: ["Report · Monday", "报告 · 周一"],
-		source: ["Screen summary", "筛选摘要"],
+		source: ["Report key figures", "报告关键数字"],
 		basis: ["Key figures", "关键数字"],
 		result: [
 			`${PASSED.length} contracts · ${NAMES} names`,
@@ -98,7 +98,7 @@ const proofs: {
 	{
 		id: "near",
 		tag: ["Calculate · expiry", "计算 · 到期日"],
-		source: ["Expiry column", "到期日一列"],
+		source: ["Within 30 days?", "30 天内到期？"],
 		basis: [`${expiryDays.join(" · ")} days`, `${expiryDays.join(" · ")} 天`],
 		result: [
 			`${NEAR} of ${PASSED.length} ≤ 30 days`,
@@ -312,10 +312,12 @@ function Scene({
 						sourceY +
 						lineCount(t(proof.source), room - 28, T.body) * T.body * 1.35 +
 						T.body * (proof.id === "bet" ? 1.1 : 0.4);
-					const resultY =
+					const resultY = Math.min(
 						basisY +
-						lineCount(t(proof.basis), room - 28, T.body) * T.body * 1.35 +
-						T.head * 1.1;
+							lineCount(t(proof.basis), room - 28, T.body) * T.body * 1.35 +
+							T.head * 1.1,
+						y + L.proofH(proof.id) - Math.max(8, T.head * 0.35),
+					);
 					const resultSize =
 						proof.id === "count" || proof.id === "near"
 							? Math.min(T.body * 1.1, T.head * 0.85)
@@ -349,25 +351,84 @@ function Scene({
 								maxWidth={room - 28}
 								anchor="start"
 							/>
-							<Lines
-								name={`basis-${proof.id}`}
-								text={t(proof.basis)}
-								x={margin + 14}
-								y={basisY}
-								size={T.body}
-								maxWidth={room - 28}
-								anchor="start"
-								className="wt-film-type wt-film-dim"
-							/>
-							<text
-								data-f={`result-${proof.id}`}
-								x={margin + 14}
-								y={resultY}
-								className="wt-film-num"
-								style={{ fontSize: resultSize, fill: proof.color }}
-							>
-								{t(proof.result)}
-							</text>
+							{proof.id === "count" ? (
+								<g data-f="basis-count">
+									{(["contracts", "names"] as const).map((kind, i) => (
+										<Word
+											key={kind}
+											name={`count-label-${kind}`}
+											x={margin + 14 + (i * (room - 28)) / 2}
+											y={basisY}
+											size={T.body}
+											anchor="start"
+											className="wt-film-type wt-film-dim"
+										>
+											{t(
+												kind === "contracts"
+													? ["Contracts", "合约"]
+													: ["Names", "标的"],
+											)}
+										</Word>
+									))}
+								</g>
+							) : proof.id === "near" ? (
+								<text
+									data-f="basis-near"
+									x={margin + 14}
+									y={basisY}
+									className="wt-film-num wt-film-dim"
+									style={{ fontSize: T.body }}
+								>
+									{expiryDays.map((days, i) => (
+										<tspan
+											key={PASSED[i].id}
+											data-f={`expiry-day-${i}`}
+											x={margin + 14 + (i * (room - 28)) / expiryDays.length}
+											y={basisY}
+										>
+											{days}
+											{i < expiryDays.length - 1 ? " " : ""}
+										</tspan>
+									))}
+								</text>
+							) : (
+								<Lines
+									name={`basis-${proof.id}`}
+									text={t(proof.basis)}
+									x={margin + 14}
+									y={basisY}
+									size={T.body}
+									maxWidth={room - 28}
+									anchor="start"
+									className="wt-film-type wt-film-dim"
+								/>
+							)}
+							{proof.id === "count" ? (
+								<g data-f="result-count">
+									{[PASSED.length, NAMES].map((value, i) => (
+										<text
+											key={i === 0 ? "contracts" : "names"}
+											data-f={i === 0 ? "count-contracts" : "count-names"}
+											x={margin + 14 + (i * (room - 28)) / 2}
+											y={resultY}
+											className="wt-film-num"
+											style={{ fontSize: T.head, fill: proof.color }}
+										>
+											{value}
+										</text>
+									))}
+								</g>
+							) : (
+								<text
+									data-f={`result-${proof.id}`}
+									x={margin + 14}
+									y={resultY}
+									className="wt-film-num"
+									style={{ fontSize: resultSize, fill: proof.color }}
+								>
+									{t(proof.result)}
+								</text>
+							)}
 						</g>
 					);
 				})}
@@ -658,8 +719,7 @@ function build(context: FilmContext) {
 	hide(flat("q"), 9.6);
 	show(one("s-head"), 9.8, "above");
 	fade([row("count"), row("ratio")], 10.1);
-	fade(result("count"), 10.1);
-	fade(result("ratio"), 10.6);
+	fade([result("count"), result("ratio")], 10.6);
 	// Related proofs settle at 11.1; preserve the original headline holds.
 	d.swap(one("s-head"), one("b-head"), 13.4);
 	hide([row("count"), row("ratio")], 13.65, 0.35, 0);
@@ -669,50 +729,68 @@ function build(context: FilmContext) {
 	d.swap(one("b-head"), one("r-head"), 19.4);
 	hide(row("bet"), 19.4, 0.35, 0);
 	fade([row("near"), row("fall")], 19.75);
-	fade([result("near"), result("fall")], 19.75);
+	// The five distances remain visible; select the qualifying entries before the count.
+	const qualifyingExpiries = expiryDays.flatMap((days, i) =>
+		days <= 30 ? [one(`expiry-day-${i}`)] : [],
+	);
+	tl.fromTo(
+		qualifyingExpiries,
+		{ fill: getComputedStyle(one("basis-near")).fill, fontWeight: 500 },
+		{
+			fill: getComputedStyle(result("near")).fill,
+			fontWeight: 600,
+			duration: 0.3,
+			ease: "none",
+		},
+		20.25,
+	);
+	fade([result("near"), result("fall")], 20.55);
+	// Both conclusions settle at 21.05; preserve their 3.25 s rest until 24.3.
 
 	// ——— credits: every reply has a price ———
-	tl.addLabel("credits", 23.5);
-	hide([one("r-head"), row("near"), row("fall")], 23.5);
-	show(one("c-head"), 23.85, "above");
-	show(one("billing"), 24);
+	tl.addLabel("credits", 24.3);
+	hide([one("r-head"), row("near"), row("fall")], 24.3);
+	show(one("c-head"), 24.65, "above");
+	show(one("billing"), 24.8);
 	replies.forEach((reply, i) => {
-		show(reply, 24.2 + i * 0.3);
+		show(reply, 25.0 + i * 0.3);
 	});
 	// Compare all three prices together, then leave their proof quiet for a second.
-	fade(costs, 25.1);
-	// Prices settle at 25.6; the settled sum gets a full second before its lock.
-	fade(one("total-row"), 26.6);
+	fade(costs, 25.9);
+	// Prices settle at 26.4; the settled sum gets a full second before its lock.
+	fade(one("total-row"), 27.4);
 	tl.fromTo(
 		total,
 		{ opacity: 0, scale: 1.06, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" },
-		26.6,
+		27.4,
 	);
 
 	// The hero: what three replies cost.
-	d.lock(lockTotal, 28.1, { around: total, pad: 6 });
-	tl.addLabel("hero-lock", 28.1);
+	d.lock(lockTotal, 28.9, { around: total, pad: 6 });
+	tl.addLabel("hero-lock", 28.9);
 
 	// ——— insight: explain, or edit a draft ———
-	tl.addLabel("insight", 30.3);
-	hide(one("c-head"), 30.3);
+	tl.addLabel("insight", 31.1);
+	hide(one("c-head"), 31.1);
 	hide(
 		[one("billing"), ...replies, ...costs, one("total-row"), total, lockTotal],
-		30.3,
+		31.1,
 		0.5,
 		0,
 	);
-	show(one("i-head"), 30.65, "above");
-	show([one("bar"), one("bar-title")], 30.9);
-	show([one("st-official"), one("official-field")], 31.1);
-	show(one("p-insight"), 31.5);
-	d.swap(one("i-head"), one("e-head"), 34.5);
+	show(one("i-head"), 31.45, "above");
+	show([one("bar"), one("bar-title")], 31.7);
+	show([one("st-official"), one("official-field")], 31.9);
+	show(one("p-insight"), 32.3);
+	d.swap(one("i-head"), one("e-head"), 35.3);
 	// Keep the official recipe visible while a separate private card is built.
-	if (L.narrow) hide(one("p-insight"), 35.1, 0.35, 0);
-	fade(one("p-edit"), 35.45);
-	d.trace(one<SVGPathElement>("draft-branch"), 35.05, { duration: 0.6 });
-	fade([one("draft-title"), one("draft-field")], 35.65);
+	if (L.narrow) hide(one("p-insight"), 35.9, 0.35, 0);
+	fade(one("p-edit"), 36.25);
+	d.trace(one<SVGPathElement>("draft-branch"), L.narrow ? 36.25 : 35.85, {
+		duration: 0.6,
+	});
+	fade([one("draft-title"), one("draft-field")], 36.45);
 	// Cut: the claim.
 	hide(
 		[
@@ -725,15 +803,15 @@ function build(context: FilmContext) {
 			one("p-insight"),
 			one("p-edit"),
 		],
-		39.35,
+		40.15,
 	);
-	word(one("claim-big"), 39.75);
-	show(one("claim-sub"), 40.15);
+	word(one("claim-big"), 40.55);
+	show(one("claim-sub"), 40.95);
 
 	// ——— next ———
-	tl.addLabel("next", 43.85);
-	hide(kids("claim"), 43.85);
-	d.close(43.85);
+	tl.addLabel("next", 44.65);
+	hide(kids("claim"), 44.65);
+	d.close(44.65);
 	return tl;
 }
 
