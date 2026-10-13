@@ -37,6 +37,9 @@ export const share = (dollars: number) => usd(Math.round(dollars * 100));
 export const fixed2 = (value: number) => value.toFixed(2);
 
 export const AT_OPEN = sep20(OPEN).price;
+/** Premium lost with ALFA held at the strike, over the two comparison windows. */
+export const FIRST_THREE_HOURS_LOSS = AT_OPEN - sep20(OPEN + 3).price;
+export const LAST_HOUR_LOSS = sep20(CLOSE - 1).price - sep20(CLOSE).price;
 export const steps = Array.from(
 	{ length: (CLOSE - OPEN) * 2 + 1 },
 	(_, i) => OPEN + i / 2,
@@ -56,9 +59,10 @@ export const LATEST_CALM =
 		.reverse()
 		.find((time) => swingAt(time) < 0.3) ?? OPEN;
 export const HEDGE_CONTRACTS = 1_000;
+export const SHARES_PER_CALL = 100;
 /** Shares bought to stay hedged, short `contracts` calls, over the 40-cent rise at `time`. */
 export const hedgeShares = (time: number, contracts = HEDGE_CONTRACTS) =>
-	Math.round((swingAt(time) * 100 * contracts) / 1_000) * 1_000;
+	Math.round((swingAt(time) * SHARES_PER_CALL * contracts) / 1_000) * 1_000;
 
 export const THURSDAY_OI = 3_400;
 export const FRIDAY_VOLUME = 12_000;

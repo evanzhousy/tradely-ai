@@ -17,15 +17,18 @@ import {
 import {
 	AT_OPEN,
 	CLOSE,
+	FIRST_THREE_HOURS_LOSS,
 	FRIDAY_VOLUME,
 	fixed2,
 	HEDGE_CONTRACTS,
 	HIGH,
 	hedgeShares,
+	LAST_HOUR_LOSS,
 	LOW,
 	OCT18_DAYS,
 	OPEN,
 	oct18Delta,
+	SHARES_PER_CALL,
 	sep20,
 	share,
 	swingAt,
@@ -137,6 +140,8 @@ const copy = {
 	hoursAxis: ["Sep 20 100 call, per share", "9月20日 100 看涨，每股"],
 	heldAxis: ["Fri Sep 20 · ALFA held at $100", "9月20日 周五 · ALFA 保持 $100"],
 	closeHead: ["At the close: time value is gone.", "收盘时：时间价值归零。"],
+	firstHours: ["First 3 hours", "前3小时"],
+	lastHour: ["Last hour", "最后1小时"],
 	swingHead: [
 		"Near the strike, delta swings on cents.",
 		"在行权价附近，Delta 随几美分摆动。",
@@ -151,9 +156,12 @@ const copy = {
 		`Delta，ALFA $${LOW.toFixed(2)} → $${HIGH.toFixed(2)}，${LATE}:00`,
 	],
 	hedge: [
-		`Already hedged, short ${count(HEDGE_CONTRACTS)} calls? Buy about ${count(hedgeShares(LATE))} more shares on this rise. Actual holdings unknown.`,
-		`若已做空 ${count(HEDGE_CONTRACTS)} 张看涨并对冲：这次上涨需再买约 ${count(hedgeShares(LATE))} 股。实际持仓未知。`,
+		"Short calls, already hedged? Buy more shares on this rise. Actual holdings unknown.",
+		"看涨空头已对冲？此次上涨需再买股。实际持仓未知。",
 	],
+	sharesPerCall: ["shares/call", "股/张"],
+	calls: ["calls", "张"],
+	moreShares: ["more shares", "股（新增）"],
 	oiHead: [
 		"Same-day flow never reaches open interest.",
 		"当天的成交流进不了未平仓量。",
@@ -194,6 +202,17 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow } = L;
 	const W = width;
+	const heroCaptionY = H * 0.36 + T.big * 0.36 + T.head * 1.6;
+	// Keep the calculation below the fitted hero brackets, including narrower wide frames.
+	const mathY = Math.max(
+		H * 0.58,
+		heroCaptionY +
+			(lineCount(t(copy.swingWord), room, T.body) - 1) * T.body * 1.35 +
+			T.body * 0.3 +
+			8 +
+			T.head * 1.25,
+	);
+	const mathGap = T.head * 1.5;
 	const id = useId().replace(/:/g, "");
 	const hourTicks = narrow ? [10, 12, 14, 16] : [10, 11, 12, 13, 14, 15, 16];
 	const axisX = (
@@ -546,6 +565,37 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
+			<g data-f="h-loss-comparison">
+				{[
+					{ id: "first", label: copy.firstHours, loss: FIRST_THREE_HOURS_LOSS },
+					{ id: "last", label: copy.lastHour, loss: LAST_HOUR_LOSS },
+				].map((window, i) => {
+					const y = L.bottom - T.head * 3.4 + i * T.head * 1.7;
+					return (
+						<g key={window.id}>
+							<Word
+								name={`h-loss-${window.id}-label`}
+								x={L.left + 8}
+								y={y}
+								size={T.body}
+								anchor="start"
+							>
+								{t(window.label)}
+							</Word>
+							<Word
+								name={`h-loss-${window.id}-value`}
+								x={L.left + T.body * 9}
+								y={y}
+								size={T.head}
+								anchor="start"
+								className="wt-film-num wt-film-loss"
+							>
+								{`−${share(window.loss)}`}
+							</Word>
+						</g>
+					);
+				})}
+			</g>
 			<Brackets name="lock-swing" glow />
 			<g data-f="w">
 				{(["low", "high"] as const).map((end) => (
@@ -573,25 +623,45 @@ function Scene({
 					name="w-word"
 					text={t(copy.swingWord)}
 					x={W / 2}
-					y={H * 0.36 + T.big * 0.36 + T.head * 1.6}
+					y={heroCaptionY}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-accent"
 				/>
-				<Word
-					name="w-math"
-					x={W / 2}
-					y={H * 0.64}
-					size={T.head}
-					className="wt-film-num"
-				>
-					{`${fixed2(swingAt(LATE))} × 100 × ${count(HEDGE_CONTRACTS)} ≈ ${count(hedgeShares(LATE))}`}
-				</Word>
+				<g data-f="w-math">
+					<Word
+						name="w-difference"
+						x={W / 2}
+						y={mathY}
+						size={T.head}
+						className="wt-film-num"
+					>
+						{`${fixed2(sep20(LATE, HIGH).delta)} − ${fixed2(sep20(LATE, LOW).delta)} ≈ ${fixed2(swingAt(LATE))}`}
+					</Word>
+					<Word
+						name="w-multiplier"
+						x={W / 2}
+						y={mathY + mathGap}
+						size={T.head}
+						className="wt-film-num"
+					>
+						{`×${SHARES_PER_CALL} ${t(copy.sharesPerCall)} ×${count(HEDGE_CONTRACTS)} ${t(copy.calls)}`}
+					</Word>
+					<Word
+						name="w-additional"
+						x={W / 2}
+						y={mathY + mathGap * 2}
+						size={T.head}
+						className="wt-film-num"
+					>
+						{`≈ ${count(hedgeShares(LATE))} ${t(copy.moreShares)}`}
+					</Word>
+				</g>
 				<Lines
 					name="w-hedge"
 					text={t(copy.hedge)}
 					x={W / 2}
-					y={H * 0.7}
+					y={mathY + mathGap * 2 + T.head * 1.6}
 					size={T.body}
 					maxWidth={room}
 				/>
@@ -685,6 +755,7 @@ function build(context: FilmContext) {
 		...flat("q"),
 		one("h-head"),
 		one("h2-head"),
+		one("h-loss-comparison"),
 		clockText,
 		one("h-value"),
 		swingClock,
@@ -731,11 +802,14 @@ function build(context: FilmContext) {
 	);
 	// The endpoint settles at 16.4; the answer follows a full second of quiet.
 	show(one("h2-head"), 17.4);
+	// Settled loss windows substantiate the curve's accelerating decay, without new stops.
+	tl.to(one("h-loss-comparison"), { opacity: 1, duration: 0.5 }, 17.4);
 
 	// ——— swing: the hero. Delta near the strike as the close nears. ———
 	tl.addLabel("swing", 21.0);
 	d.swap([one("h-head"), one("h2-head")], one("s-head"), 21.0);
 	hide([clockText, priceText], 21.0);
+	hide(one("h-loss-comparison"), 21.0);
 	sink(21.0);
 	tl.set(charts.hours, { opacity: 0 }, 21.4);
 	tl.set(charts.swing, { opacity: 1 }, 21.4);
@@ -893,10 +967,11 @@ function build(context: FilmContext) {
 		);
 		tl.to(value, { opacity: 1, duration: 0.3 }, at);
 	};
-	grow(0, 35.1);
-	// Thursday settles at 35.8; Friday starts after one second of quiet.
-	grow(1, 36.8);
-	// Friday settles at 37.5; keep the completed tableau for 3.5 seconds.
+	// The panel settles at 35.3, then has a full second of quiet before Thursday grows.
+	grow(0, 36.3);
+	// Thursday settles at 37.0; Friday starts after one second of quiet.
+	grow(1, 38.0);
+	// Friday settles at 38.7; keep the completed tableau for 2.3 seconds.
 	// Cut: the claim.
 	tl.addLabel("claim", 41.0);
 	hide(one("o-head"), 41.0);
