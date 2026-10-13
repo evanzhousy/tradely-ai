@@ -1,10 +1,7 @@
 import {
 	type Copy,
-	contractDte,
-	mondayScreen,
 	pick,
 	type ScreenContract,
-	SESSION_DATE,
 	screenContractLabel,
 	screenDefaults,
 	volumeToOi,
@@ -42,26 +39,26 @@ import {
  *
  *   open      0–4        "Change the inputs, keep the question"
  *   question  4–9.6      Min OI 200 → 1,000: what does the report show?
- *   draft     9.6–20.9   5 flagged; a draft still shows 5; Run: 1
- *   floors    20.9–31    defaults; floors at 0; 6.00, locked
- *   tune      31–40.5    four changes: same question, new question; cut: the claim
- *   next      40.5–43    Next: start from a research checklist
+ *   draft     9.6–20.9   coherent last-run report; draft edit; Run: 1
+ *   floors    20.9–32    defaults; floors at 0; 30 / 5 = 6.00, locked
+ *   tune      32–44      two paired examples; cut: the claim
+ *   next      44–46.5    Next: start from a research checklist
  */
 
-const END = 43;
+const END = 46.5;
 const FROM = screenDefaults.minOpenInterest;
 const TO = 1_000;
 const BASE = run({});
 const AFTER = run({ minOpenInterest: TO });
 const OPEN = run({ minVolume: 0, minOpenInterest: 0 });
 const THIN = OPEN[0];
-const FAR = mondayScreen.find((row) => row.id === "alfa-dec20-110");
-const MAX_RATIO = 6;
+const MAX_RATIO = volumeToOi(THIN);
+const STRICT = run({ minVolumeToOi: 2 });
 /** The four changes as a phone's card can hold them beside their tag. */
 const changeShort: Record<string, Copy> = {
 	volOi: ["Min vol/OI to 2", "最低成交量/OI 设为 2"],
 	date: ["Pick Tuesday", "选择周二"],
-	premium: ["Rank by premium", "按权利金排名"],
+	premium: ["volume/OI → premium", "成交量/OI → 权利金"],
 	zeroDte: ["Include same-day expiries", "纳入当天到期合约"],
 };
 
@@ -76,11 +73,14 @@ function layout(width: number) {
 	const fieldH = inputStep * 0.74;
 	const dockY = inputTop + INPUT_ROWS.length * inputStep + H * 0.005;
 	const resultX = narrow ? margin : margin + room * 0.56;
-	const resultY = narrow ? H * 0.76 : inputTop;
-	// The four changes.
-	const cardH = H * (narrow ? 0.13 : 0.11);
+	const resultY = narrow ? H * 0.735 : inputTop;
+	// Two paired examples, with room for the consequence under each action.
+	const cardH = H * (narrow ? 0.29 : 0.27);
+	const proofSize = T.num * 1.35;
+	const cell = proofSize * 0.62;
+	const proofLeft = width / 2 - cell * 6.5;
 	// The ranking.
-	const rankStep = H * (narrow ? 0.088 : 0.08);
+	const rankStep = H * (narrow ? 0.082 : 0.07);
 	const rankTop = H * (narrow ? 0.34 : 0.32);
 	const labelW = narrow ? width * 0.42 : width * 0.28;
 	const barX = margin + labelW;
@@ -98,9 +98,12 @@ function layout(width: number) {
 		resultX,
 		resultY,
 		resultW: narrow ? room : room * 0.44,
-		resultH: narrow ? H * 0.2 : H * 0.36,
-		cardY: (i: number) => H * 0.28 + i * (cardH + H * (narrow ? 0.02 : 0.025)),
+		resultH: narrow ? H * 0.225 : H * 0.36,
+		cardY: (i: number) => H * 0.28 + i * (cardH + H * 0.055),
 		cardH,
+		proofSize,
+		proofX: (slot: number) => proofLeft + slot * cell,
+		proofY: H * 0.92,
 		rankTop,
 		rankStep,
 		rankY: (i: number) => rankTop + i * rankStep,
@@ -121,27 +124,15 @@ const copy = {
 		"You haven't pressed Run. How many contracts does the report show?",
 		"你还没点“运行”。报告显示多少份合约？",
 	],
-	runHead: [
-		`Monday's run at the default floors: ${BASE.length}.`,
-		`周一按默认门槛运行：${BASE.length} 份。`,
-	],
-	runHeadShort: [
-		`The last run: ${BASE.length}.`,
-		`上次运行：${BASE.length} 份。`,
-	],
+	runHead: ["The report remembers the last run.", "报告保留上次运行结果。"],
+	runHeadShort: ["The last completed run.", "上次完成的运行。"],
 	draftHead: [
-		`A draft isn't a run: still ${BASE.length}.`,
-		`草稿不是运行：仍是 ${BASE.length} 份。`,
+		"Edit first; Run applies the changes.",
+		"编辑后，运行才会应用更改。",
 	],
-	draftHeadShort: [
-		`A draft: still ${BASE.length}.`,
-		`草稿：仍是 ${BASE.length} 份。`,
-	],
-	ranHead: [
-		`Run: every cell refreshes, and ${raised} clears.`,
-		`运行：所有单元格一起刷新，${raised} 份过线。`,
-	],
-	ranHeadShort: [`Run: ${raised} contract.`, `运行：${raised} 份。`],
+	draftHeadShort: ["Edit first; then Run.", "先编辑，再运行。"],
+	ranHead: ["Run refreshes the whole report.", "运行后，报告整体刷新。"],
+	ranHeadShort: ["Run refreshes the report.", "运行后，报告刷新。"],
 	dock: ["Draft · Run · Discard changes", "草稿 · 运行 · 放弃更改"],
 	dockShort: ["Draft · Run · Discard", "草稿 · 运行 · 放弃"],
 	tuneHead: [
@@ -151,14 +142,8 @@ const copy = {
 	tuneHeadShort: ["Re-run, or a new question?", "重跑，还是新问题？"],
 	same: ["same question", "同一个问题"],
 	fresh: ["new question", "新问题"],
-	defaultsHead: [
-		`At the default floors, ${volumeToOi(BASE[0]).toFixed(2)} leads.`,
-		`默认门槛下，${volumeToOi(BASE[0]).toFixed(2)} 领先。`,
-	],
-	defaultsHeadShort: [
-		`Defaults: ${volumeToOi(BASE[0]).toFixed(2)} leads.`,
-		`默认：${volumeToOi(BASE[0]).toFixed(2)} 领先。`,
-	],
+	defaultsHead: ["Rank with the default floors.", "按默认门槛排名。"],
+	defaultsHeadShort: ["Rank with default floors.", "按默认门槛排名。"],
 	zeroHead: ["Drop both floors to 0.", "把两个门槛都降为 0。"],
 	thinHead: [
 		`A thin contract leads at ${volumeToOi(THIN).toFixed(2)}.`,
@@ -175,14 +160,14 @@ const copy = {
 		`成交量 ≥ ${screenDefaults.minVolume} · 未平仓 ≥ ${screenDefaults.minOpenInterest}`,
 	],
 	floorsOff: ["volume ≥ 0 · OI ≥ 0", "成交量 ≥ 0 · 未平仓 ≥ 0"],
-	far: [
-		`${FAR ? contractDte(FAR, SESSION_DATE) : 0} days: past the 60-day limit`,
-		`${FAR ? contractDte(FAR, SESSION_DATE) : 0} 天：超出 60 天上限`,
+	volume: ["VOLUME", "成交量"],
+	oi: ["OI", "未平仓量"],
+	strict: [
+		`${STRICT.length} of ${BASE.length} stay`,
+		`${BASE.length} 份留下 ${STRICT.length} 份`,
 	],
-	farShort: [
-		`${FAR ? contractDte(FAR, SESSION_DATE) : 0} days`,
-		`${FAR ? contractDte(FAR, SESSION_DATE) : 0} 天`,
-	],
+	premiumEffect: ["relative activity → biggest money", "相对活跃度 → 最大金额"],
+	expiryEffect: ["exclude 0DTE → include 0DTE", "排除当天到期 → 纳入当天到期"],
 	claimBig: ["Change the inputs, keep the question.", "改输入，不改问题。"],
 	claimSub: [
 		"Run first; keep the floors; fork new methods.",
@@ -206,6 +191,7 @@ function Scene({
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
+	const headWidth = narrow ? room : room * 0.74;
 	const W = width;
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
@@ -215,7 +201,7 @@ function Scene({
 			y={L.headY}
 			size={T.head}
 			// The long title, as the corner tag, takes the top right on a wide frame.
-			maxWidth={narrow ? room : room * 0.74}
+			maxWidth={headWidth}
 			anchor="start"
 		/>
 	);
@@ -248,7 +234,7 @@ function Scene({
 	const fieldText = (i: number) =>
 		L.inputY(i) + L.fieldH / 2 + L.rowText * 0.36;
 	const resultLine = (k: number) =>
-		L.resultY + L.resultH * (narrow ? [0.36, 0.78][k] : [0.18, 0.5, 0.78][k]);
+		L.resultY + L.resultH * [0.18, 0.5, 0.78][k];
 	const lastRun = (oi: number): Copy => [
 		`Last run · Min OI ${count(oi)}`,
 		`上次运行 · 最低未平仓量 ${count(oi)}`,
@@ -257,7 +243,7 @@ function Scene({
 		`top: ${label(row, "en")}`,
 		`第一：${label(row, "zh")}`,
 	];
-	const rankRows = [...OPEN, ...(FAR ? [FAR] : [])];
+	const rankRows = OPEN;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -293,7 +279,6 @@ function Scene({
 							</text>
 						))}
 						{rankRows.map((row, i) => {
-							const far = row === FAR;
 							const y = L.rankY(i);
 							const ratio = volumeToOi(row);
 							const thin = row === THIN;
@@ -302,46 +287,93 @@ function Scene({
 									<text
 										x={margin}
 										y={y + L.rankStep * 0.36}
-										className={`wt-film-type ${far ? "wt-film-dim" : thin ? "wt-film-accent" : ""}`}
+										className={`wt-film-type ${thin ? "wt-film-accent" : ""}`}
 										style={{ fontSize: L.rowText }}
 									>
 										{label(row, locale)}
 									</text>
-									{far ? (
-										<text
+									<g data-f={`ratio-${row.id}`}>
+										<rect
 											x={L.barX}
+											y={y + L.rankStep * 0.1}
+											width={L.barW(ratio)}
+											height={L.rankStep * 0.4}
+											rx={3}
+											className="wt-film-bar"
+											data-tone="total"
+										/>
+										<text
+											x={L.barX + L.barW(ratio) + 8}
 											y={y + L.rankStep * 0.36}
-											className="wt-film-type wt-film-dim"
-											style={{ fontSize: L.rowText }}
+											className={`wt-film-num ${thin ? "wt-film-accent" : ""}`}
+											style={{ fontSize: L.rowText * (thin ? 1.4 : 1) }}
 										>
-											{t(narrow ? copy.farShort : copy.far)}
+											{ratio.toFixed(2)}
 										</text>
-									) : (
-										<>
-											<rect
-												data-f={`bar-${row.id}`}
-												x={L.barX}
-												y={y + L.rankStep * 0.1}
-												width={L.barW(ratio)}
-												height={L.rankStep * 0.4}
-												rx={3}
-												className="wt-film-bar"
-												data-tone={thin ? "loss" : "total"}
-											/>
-											<text
-												x={L.barX + L.barW(ratio) + 8}
-												y={y + L.rankStep * 0.36}
-												className={`wt-film-num ${thin ? "wt-film-loss" : ""}`}
-												style={{ fontSize: L.rowText }}
-											>
-												{ratio.toFixed(2)}
-											</text>
-										</>
-									)}
+									</g>
 								</g>
 							);
 						})}
 					</g>
+				</g>
+			</g>
+
+			<g data-f="thin-proof">
+				{(
+					[
+						["proof-volume", THIN.volume, copy.volume, 1],
+						["proof-oi", THIN.openInterest, copy.oi, 5.5],
+					] as const
+				).map(([name, value, caption, slot]) => (
+					<g key={name} data-f={name}>
+						<Word
+							name={`${name}-caption`}
+							x={L.proofX(slot)}
+							y={L.proofY - L.proofSize * 1.15}
+							size={T.small}
+							className="wt-film-tag"
+						>
+							{t(caption)}
+						</Word>
+						<Word
+							name={`${name}-value`}
+							x={L.proofX(slot)}
+							y={L.proofY}
+							size={L.proofSize}
+							className="wt-film-num"
+						>
+							{count(value)}
+						</Word>
+					</g>
+				))}
+				<g data-f="proof-result">
+					<Word
+						name="proof-divide"
+						x={L.proofX(3.5)}
+						y={L.proofY}
+						size={L.proofSize}
+						className="wt-film-num wt-film-dim"
+					>
+						/
+					</Word>
+					<Word
+						name="proof-equals"
+						x={L.proofX(7.5)}
+						y={L.proofY}
+						size={L.proofSize}
+						className="wt-film-num wt-film-dim"
+					>
+						=
+					</Word>
+					<Word
+						name="proof-ratio"
+						x={L.proofX(11)}
+						y={L.proofY}
+						size={L.proofSize}
+						className="wt-film-num wt-film-accent"
+					>
+						{volumeToOi(THIN).toFixed(2)}
+					</Word>
 				</g>
 			</g>
 
@@ -386,14 +418,14 @@ function Scene({
 					L.headY +
 					lineCount(
 						t(narrow ? copy.draftHeadShort : copy.draftHead),
-						room,
+						headWidth,
 						T.head,
 					) *
 						T.head *
 						1.35
 				}
 				size={T.head}
-				maxWidth={room}
+				maxWidth={headWidth}
 				anchor="start"
 			/>
 
@@ -486,91 +518,107 @@ function Scene({
 				/>
 				{(
 					[
-						["last-from", lastRun(FROM)],
-						["last-to", lastRun(TO)],
+						["report-from", FROM, BASE],
+						["report-to", TO, AFTER],
 					] as const
-				).map(([name, text]) => (
-					<text
-						key={name}
-						data-f={name}
-						x={L.resultX + 14}
-						y={resultLine(0)}
-						className="wt-film-tag"
-						style={{ fontSize: T.small }}
-					>
-						{t(text).toUpperCase()}
-					</text>
+				).map(([name, oi, rows]) => (
+					<g key={name} data-f={name}>
+						<text
+							x={L.resultX + 14}
+							y={resultLine(0)}
+							className="wt-film-tag"
+							style={{ fontSize: T.small }}
+						>
+							{t(lastRun(oi)).toUpperCase()}
+						</text>
+						<text
+							x={L.resultX + 14}
+							y={resultLine(1)}
+							className="wt-film-num"
+							style={{ fontSize: T.num }}
+						>
+							{t([contracts(rows.length), `${rows.length} 份合约`])}
+						</text>
+						<text
+							x={L.resultX + 14}
+							y={resultLine(2)}
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: T.body }}
+						>
+							{t(top(rows[0]))}
+						</text>
+					</g>
 				))}
-				<text
-					data-f="flagged"
-					x={L.resultX + 14}
-					y={resultLine(1)}
-					className="wt-film-num"
-					style={{ fontSize: narrow ? T.head : T.num }}
-				>
-					{t([`${contracts(BASE.length)}`, `${BASE.length} 份合约`])}
-				</text>
-				{narrow
-					? null
-					: (
-							[
-								["top-from", top(BASE[0])],
-								["top-to", top(AFTER[0])],
-							] as const
-						).map(([name, text]) => (
-							<text
-								key={name}
-								data-f={name}
-								x={L.resultX + 14}
-								y={resultLine(2)}
-								className="wt-film-type wt-film-dim"
-								style={{ fontSize: T.body }}
-							>
-								{t(text)}
-							</text>
-						))}
 			</g>
 
-			{/* Four changes. */}
+			{/* Input changes retain the measure; method changes replace it. */}
 			{headline("t-head", copy.tuneHead, copy.tuneHeadShort)}
 			<g data-f="changes">
-				{changes.map((change, i) => (
-					<g key={change.id} data-f={`ch-${change.id}`}>
+				{(["input", "method"] as const).map((kind, i) => (
+					<g key={kind} data-f={`pair-${kind}`}>
 						<rect
 							x={margin}
 							y={L.cardY(i)}
 							width={room}
 							height={L.cardH}
 							rx={10}
-							className="wt-panel-shape"
-						/>
-						<rect
-							data-f={`chf-${change.id}`}
-							x={margin}
-							y={L.cardY(i)}
-							width={room}
-							height={L.cardH}
-							rx={10}
-							className="wt-focus-shape"
+							className={kind === "input" ? "wt-panel-shape" : "wt-focus-shape"}
 						/>
 						<text
 							x={margin + 14}
-							y={L.cardY(i) + L.cardH / 2 + L.rowText * 0.36}
-							className="wt-film-type"
-							style={{ fontSize: L.rowText }}
+							y={L.cardY(i) + L.cardH * 0.16}
+							className={`wt-film-type ${kind === "method" ? "wt-film-accent" : "wt-film-dim"}`}
+							style={{ fontSize: T.body }}
 						>
-							{t(narrow ? changeShort[change.id] : change.text)}
+							{t(kind === "input" ? copy.same : copy.fresh)}
 						</text>
-						<text
-							data-f={`cht-${change.id}`}
-							x={margin + room - 14}
-							y={L.cardY(i) + L.cardH / 2 + L.rowText * 0.36}
-							textAnchor="end"
-							className={`wt-film-type ${change.kind === "method" ? "wt-film-accent" : "wt-film-dim"}`}
-							style={{ fontSize: L.rowText }}
-						>
-							{t(change.kind === "input" ? copy.same : copy.fresh)}
-						</text>
+						{changes
+							.filter((change) => change.kind === kind)
+							.map((change, j) => {
+								const y = L.cardY(i) + L.cardH * (j === 0 ? 0.37 : 0.72);
+								const effect =
+									change.id === "volOi"
+										? copy.strict
+										: change.id === "date"
+											? change.effect
+											: change.id === "premium"
+												? copy.premiumEffect
+												: copy.expiryEffect;
+								return (
+									<g key={change.id} data-f={`example-${change.id}`}>
+										<text
+											x={margin + 14}
+											y={y}
+											className="wt-film-tag"
+											style={{ fontSize: T.small }}
+										>
+											{t(changeShort[change.id])}
+										</text>
+										<Lines
+											name={`effect-${change.id}`}
+											text={t(effect)}
+											x={margin + 14}
+											y={y + T.body * 1.45}
+											size={T.body}
+											maxWidth={room - 28}
+											anchor="start"
+										/>
+										{change.id === "volOi" ? (
+											<text
+												x={margin + room - 14}
+												y={y + T.body * 1.45}
+												textAnchor="end"
+												className="wt-film-num wt-film-accent"
+												style={{ fontSize: L.rowText }}
+											>
+												{STRICT.map((row) => volumeToOi(row).toFixed(2)).join(
+													" · ",
+												)}
+											</text>
+										) : null}
+									</g>
+								);
+							})}
 					</g>
 				))}
 			</g>
@@ -584,12 +632,10 @@ function Scene({
 				x={L.margin}
 				y={
 					L.headY +
-					lineCount(t(narrow ? copy.zeroHead : copy.zeroHead), room, T.head) *
-						T.head *
-						1.35
+					lineCount(t(copy.zeroHead), headWidth, T.head) * T.head * 1.35
 				}
 				size={T.head}
-				maxWidth={room}
+				maxWidth={headWidth}
 				anchor="start"
 			/>
 			<Brackets name="lock-thin" glow />
@@ -622,20 +668,14 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			at,
 		);
-	const flagged = one<SVGTextElement>("flagged");
 	const inputs = INPUT_ROWS.map((row) => one(`in-${row.id}`));
-	const cards = changes.map((change) => one(`ch-${change.id}`));
-	const focusOf = (id: string) => one(`chf-${id}`);
-	const tagOf = (id: string) => one(`cht-${id}`);
+	const cards = [one("pair-input"), one("pair-method")];
 	const thinRow = one(`r-${THIN.id}`);
+	const thinResult = one(`ratio-${THIN.id}`);
 	const baseRows = BASE.map((row) => one(`r-${row.id}`));
-	const farRow = FAR ? one(`r-${FAR.id}`) : null;
-	const shown = (value: number) =>
-		Math.round(value) === 1 ? "contract" : "contracts";
-	const flaggedText = (value: number) =>
-		context.locale === "zh"
-			? `${Math.round(value)} 份合约`
-			: `${Math.round(value)} ${shown(value)}`;
+	const reportFrom = one("report-from");
+	const reportTo = one("report-to");
+	const proofOperands = [one("proof-volume"), one("proof-oi")];
 
 	const lockThin = one<SVGGraphicsElement>("lock-thin");
 
@@ -656,19 +696,16 @@ function build(context: FilmContext) {
 		one("oi-to"),
 		one("dock"),
 		one("result"),
-		one("last-from"),
-		one("last-to"),
-		flagged,
-		...(["top-from", "top-to"]
-			.map((name) => one(name))
-			.filter(Boolean) as Element[]),
+		reportFrom,
+		reportTo,
 		...cards,
-		...changes.flatMap((change) => [focusOf(change.id), tagOf(change.id)]),
+		...proofOperands,
+		one("proof-result"),
+		thinResult,
 		one("floors-on"),
 		one("floors-off"),
 		thinRow,
 		...baseRows,
-		...(farRow ? [farRow] : []),
 		lockThin,
 		...kids("claim"),
 	]);
@@ -692,10 +729,7 @@ function build(context: FilmContext) {
 		show(input, 10.1 + i * 0.1);
 	});
 	show(one("oi-from"), 10.5);
-	show([one("result"), one("last-from")], 10.8);
-	show(flagged, 11.0);
-	const topFrom = one("top-from");
-	if (topFrom) show(topFrom, 11.2);
+	show([one("result"), reportFrom], 10.8);
 	// Type 1,000: a draft.
 	d.swap(one("a-head"), one("d-head"), 13.4);
 	tl.to(one("field-focus"), { opacity: 1, duration: 0.3 }, 13.8);
@@ -706,30 +740,15 @@ function build(context: FilmContext) {
 	show(one("n-head"), 16.9);
 	tl.to(one("dock"), { opacity: 0, duration: 0.3 }, 16.9);
 	tl.to(one("field-focus"), { opacity: 0, duration: 0.3 }, 16.9);
-	d.flip(one("last-from"), one("last-to"), 17.1);
-	tl.set(one("last-from"), { opacity: 0 }, 17.4);
-	d.count(flagged, AFTER.length, 17.2, flaggedText, BASE.length, 0.5);
-	if (topFrom) {
-		d.flip(topFrom, one("top-to"), 17.2);
-		tl.set(topFrom, { opacity: 0 }, 17.5);
-	}
+	tl.to(reportFrom, { opacity: 0, duration: 0.35, ease: "power2.in" }, 17.1);
+	tl.fromTo(reportTo, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 17.45);
 
 	// ——— floors: a ratio's denominator ———
 	tl.addLabel("floors", 20.9);
-	hide(
-		[
-			one("d-head"),
-			one("n-head"),
-			...inputs,
-			one("oi-to"),
-			one("result"),
-			one("last-to"),
-			flagged,
-			...(["top-to"].map((name) => one(name)).filter(Boolean) as Element[]),
-		],
-		20.9,
-	);
+	hide([one("d-head"), one("n-head"), ...inputs, one("oi-to")], 20.9);
+	hide([one("result"), reportTo], 21.05);
 	show(one("f-head"), 21.25, "above");
+	// The report bridges the cut without taking time from its completed proof.
 	rise(21.3);
 	show(one("floors-on"), 21.7);
 	// At the defaults the rows sit one place higher: the thin contract isn't there yet.
@@ -747,58 +766,38 @@ function build(context: FilmContext) {
 	d.flip(one("floors-on"), one("floors-off"), 25.2);
 	tl.set(one("floors-on"), { opacity: 0 }, 25.5);
 	tl.to(baseRows, { y: 0, duration: 0.6, ease: "power2.inOut" }, 25.6);
+	// Operands land first. The settled division and full-width bar then reveal together.
+	tl.fromTo(proofOperands, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 25.2);
 	tl.to(thinRow, { opacity: 1, duration: 0.4 }, 26.0);
-	const thinBar = one(`bar-${THIN.id}`);
 	tl.fromTo(
-		thinBar,
-		{ attr: { width: 0 } },
-		{
-			attr: { width: L.barW(volumeToOi(THIN)) },
-			duration: 0.8,
-			ease: "power2.out",
-		},
-		26.0,
+		[one("proof-result"), thinResult],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.4 },
+		26.2,
 	);
-	show(one("h-head"), 27.0);
-	if (farRow) show(farRow, 27.2);
-	// The hero: the thinnest contract, first.
-	d.lock(lockThin, 27.6, { around: thinRow, pad: 6 });
+	// One full second of quiet after the proof settles at 26.6.
+	show(one("h-head"), 27.6);
+	d.lock(lockThin, 27.6, { around: kids("thin-proof"), pad: 6 });
 	tl.addLabel("hero-lock", 27.6);
 
 	// ——— tune: same question or a new one ———
-	tl.addLabel("tune", 31);
-	hide([one("z-head"), one("h-head"), lockThin], 31.0);
-	sink(31.0);
-	show(one("t-head"), 31.35, "above");
-	cards.forEach((card, i) => {
-		show(card, 31.6 + i * 0.15);
-	});
-	changes.forEach((change, i) => {
-		if (change.kind !== "input") return;
-		tl.to(focusOf(change.id), { opacity: 1, duration: 0.3 }, 32.6 + i * 0.2);
-		show(tagOf(change.id), 32.7 + i * 0.2, "right");
-	});
-	changes.forEach((change, i) => {
-		if (change.kind === "input")
-			tl.to(focusOf(change.id), { opacity: 0, duration: 0.3 }, 34.0);
-		else {
-			tl.to(
-				focusOf(change.id),
-				{ opacity: 1, duration: 0.3 },
-				34.0 + (i - 2) * 0.2,
-			);
-			show(tagOf(change.id), 34.1 + (i - 2) * 0.2, "right");
-		}
-	});
+	tl.addLabel("tune", 32);
+	hide([one("z-head"), one("h-head"), lockThin, one("thin-proof")], 32.0);
+	sink(32.0);
+	show(one("t-head"), 32.35, "above");
+	// Each example is already coherent when revealed; the paired panels retain the measure
+	// on inputs and show the changed measure/universe on methods.
+	show(cards[0], 32.6);
+	show(cards[1], 34.6);
 	// Cut: the claim.
-	hide([one("t-head"), ...cards], 36.1);
-	word(one("claim-big"), 36.5);
-	show(one("claim-sub"), 36.9);
+	hide([one("t-head"), ...cards], 39.6);
+	word(one("claim-big"), 40.0);
+	show(one("claim-sub"), 40.4);
 
 	// ——— next ———
-	tl.addLabel("next", 40.5);
-	hide(kids("claim"), 40.5);
-	d.close(40.5);
+	tl.addLabel("next", 44.0);
+	hide(kids("claim"), 44.0);
+	d.close(44.0);
 	return tl;
 }
 
