@@ -34,14 +34,14 @@ import {
  *
  *   open      0–4        "Rankings"
  *   question  4–8.6      most unusual today?
- *   metric    8.6–18.4   by contracts; against its own normal; under the floor
- *   sign      18.4–28    hero: by size; by signed change
- *   move      28–33.6    Monday; Tuesday: ALFA #1, standing still
- *   claim     33.6–38    order without prediction
- *   next      38–40.5    Next: contract neighborhoods
+ *   metric    8.6–22.7    contracts divided by the 20-day average; under the floor
+ *   sign      22.7–32.55  hero: by size; by signed change
+ *   move      32.55–40.5  Monday; Tuesday: ALFA #1, standing still
+ *   claim     40.5–44.9   order without prediction
+ *   next      44.9–47.4   Next: contract neighborhoods
  */
 
-const END = 40.5;
+const END = 47.4;
 type Entry = { name: string; value: string; dim?: boolean; tone?: string };
 type Board = { title: Copy; entries: Entry[] };
 
@@ -55,7 +55,7 @@ const RAW: Board = {
 	})),
 };
 const RELATIVE: Board = {
-	title: ["vs its own normal", "对比自身常态"],
+	title: ["vs 20-day avg", "对比20日均量"],
 	entries: byDesc([...PEERS], rel).map((name) => ({
 		name,
 		value: ratio(rel(name)),
@@ -64,14 +64,14 @@ const RELATIVE: Board = {
 };
 const NAMES = Object.keys(oiChange);
 const SIZE: Board = {
-	title: ["OI change, by size", "未平仓变化，按大小"],
+	title: ["OI change size", "未平仓变化大小"],
 	entries: byDesc(NAMES, (n) => Math.abs(oiChange[n])).map((name) => ({
 		name,
 		value: count(Math.abs(oiChange[name])),
 	})),
 };
 const SIGNED: Board = {
-	title: ["OI change, signed", "未平仓变化，带符号"],
+	title: ["signed OI change", "带符号的未平仓变化"],
 	entries: byDesc(NAMES, (n) => oiChange[n]).map((name) => ({
 		name,
 		value: signedCount(oiChange[name]),
@@ -120,22 +120,20 @@ const copy = {
 	qTag: ["ALFA and its peers · Monday", "ALFA 与同类 · 周一"],
 	qLine: ["Which one is most unusual today?", "今天哪一个最异常？"],
 	qBig: ["Rank them.", "排个名。"],
-	mHead: [
-		`By contracts, ${RAW.entries[0].name} leads.`,
-		`按成交张数，${RAW.entries[0].name} 领先。`,
-	],
+	mHead: ["Contracts, or multiples of normal?", "按张数，还是常态的倍数？"],
 	m2Head: [
 		`Against normal: ${RELATIVE.entries[0].name} first, ${RAW.entries[0].name} last.`,
 		`对比常态：${RELATIVE.entries[0].name} 第一，${RAW.entries[0].name} 最后。`,
 	],
-	sHead: [
-		"Ranked by size of change, CRUX is first.",
-		"按变化大小排名，CRUX 第一。",
+	sHead: ["Magnitude, or signed OI change?", "按变化大小，还是带符号？"],
+	s2Head: ["Signed: CRUX’s fall puts it last.", "带符号：CRUX 的减少排最后。"],
+	dHead: [
+		"Can ALFA rise without trading more?",
+		"成交量不变，ALFA 能升名次吗？",
 	],
-	s2Head: ["Signed, its fall puts it last.", "带上符号，它的减少排到最后。"],
-	dHead: ["Monday by contracts: ALFA is #2.", "周一按张数：ALFA 排第二。"],
 	d2Head: ["Tuesday: #1, without trading more.", "周二：第一，成交量没变。"],
 	under: [`under ${count(FLOOR)}`, `低于 ${count(FLOOR)}`],
+	normal: ["Today ÷ 20-day average", "今日张数 ÷ 20日均量"],
 	note: [
 		"#1 of three by contracts · up because a peer fell",
 		"三个中按张数第一 · 因同类下跌而上升",
@@ -173,10 +171,11 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.15 : T.body * 1.05;
-	/** One column of a bump chart: a title, then each name at its rank. */
+	/** Entrance wrappers leave each inner row's qualification intact. */
 	const column = (key: string, board: Board, side: 0 | 1) => (
 		<g data-f={`${key}-col${side}`}>
 			<text
+				data-f={`${key}-title${side}`}
 				x={L.colX[side]}
 				y={L.titleY}
 				className="wt-film-tag"
@@ -184,45 +183,56 @@ function Scene({
 			>
 				{t(board.title).toUpperCase()}
 			</text>
-			{board.entries.map((entry, i) => (
-				<g key={entry.name} opacity={entry.dim ? 0.45 : 1}>
-					<rect
-						x={L.colX[side]}
-						y={L.rowY(i)}
-						width={L.colW}
-						height={L.rowH}
-						rx={9}
-						className={
-							i === 0 && !entry.dim ? "wt-focus-shape" : "wt-panel-shape"
-						}
-					/>
-					<text
-						x={L.colX[side] + 12}
-						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: text * 0.9 }}
-					>
-						{`#${i + 1}`}
-					</text>
-					<text
-						x={L.colX[side] + (narrow ? 38 : 52)}
-						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
-						className="wt-film-num"
-						style={{ fontSize: text }}
-					>
-						{entry.name}
-					</text>
-					<text
-						x={L.colX[side] + L.colW - 12}
-						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
-						textAnchor="end"
-						className={`wt-film-num ${entry.tone ?? "wt-film-accent"}`}
-						style={{ fontSize: text }}
-					>
-						{entry.value}
-					</text>
-				</g>
-			))}
+			{board.entries.map((entry, i) => {
+				const hero = key === "s" && side === 1 && entry.name === "CRUX";
+				const rowH = L.rowH * (hero ? 1.9 : 1);
+				const baseline =
+					L.rowY(i) + (hero ? text * 1.4 : rowH / 2 + text * 0.36);
+				const focus =
+					key === "d" ? entry.name === "ALFA" : key !== "s" && i === 0;
+				return (
+					<g key={entry.name} data-f={`${key}-row${side}-${entry.name}`}>
+						<g opacity={entry.dim ? 0.45 : 1}>
+							<rect
+								x={L.colX[side]}
+								y={L.rowY(i)}
+								width={L.colW}
+								height={rowH}
+								rx={9}
+								className={
+									focus && !entry.dim ? "wt-focus-shape" : "wt-panel-shape"
+								}
+								style={hero ? { stroke: "var(--diagram-loss)" } : undefined}
+							/>
+							<text
+								x={L.colX[side] + 12}
+								y={baseline}
+								className="wt-film-num wt-film-dim"
+								style={{ fontSize: text * 0.9 }}
+							>
+								{`#${i + 1}`}
+							</text>
+							<text
+								x={L.colX[side] + (narrow ? 38 : 52)}
+								y={baseline}
+								className="wt-film-num"
+								style={{ fontSize: text }}
+							>
+								{entry.name}
+							</text>
+							<text
+								x={L.colX[side] + L.colW - 12}
+								y={hero ? L.rowY(i) + rowH - text * 0.55 : baseline}
+								textAnchor="end"
+								className={`wt-film-num ${entry.tone ?? "wt-film-accent"}`}
+								style={{ fontSize: text * (hero ? 1.7 : 1) }}
+							>
+								{entry.value}
+							</text>
+						</g>
+					</g>
+				);
+			})}
 		</g>
 	);
 	/** The lines that follow each name from one column to the other. */
@@ -240,6 +250,7 @@ function Scene({
 					data-f={`${key}-link-${entry.name}`}
 					d={`M${x0} ${y0}C${mid} ${y0} ${mid} ${y1} ${x1} ${y1}`}
 					className={j < i ? "wt-film-riser" : "wt-film-link"}
+					strokeOpacity={entry.dim ? 0.45 : 1}
 					style={j < i ? undefined : { strokeWidth: 1.5 }}
 				/>
 			);
@@ -332,6 +343,40 @@ function Scene({
 					{column(key, to, 1)}
 				</g>
 			))}
+			<Word
+				name="normal-label"
+				x={margin}
+				y={H * 0.81}
+				size={T.body}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.normal)}
+			</Word>
+			{["DUNE", "CRUX"].map((name, i) => (
+				<g key={name}>
+					<Word
+						name={`normal-operands-${name}`}
+						x={margin}
+						y={H * (0.865 + i * 0.055)}
+						size={T.body}
+						anchor="start"
+						className="wt-film-num"
+					>
+						{`${name} ${count(volumeOf(name))} ÷ ${count(typical[name])}`}
+					</Word>
+					<Word
+						name={`normal-result-${name}`}
+						x={margin + room}
+						y={H * (0.865 + i * 0.055)}
+						size={T.body}
+						anchor="end"
+						className="wt-film-num wt-film-accent"
+					>
+						{`${name === "DUNE" ? "=" : "≈"} ${ratio(rel(name))}`}
+					</Word>
+				</g>
+			))}
 			<Brackets name="lock-rank" glow />
 			<text
 				data-f="under"
@@ -406,22 +451,13 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	/** A line draws itself from its start, then takes back its own dashes, if any. */
-	const draw = (path: SVGPathElement, time: number) => {
-		const dash = getComputedStyle(path).strokeDasharray;
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration: 0.6, ease: "power2.out" },
-			time,
-		);
-		tl.set(
-			path,
-			{ strokeDasharray: dash === "none" ? "none" : dash },
-			time + 0.6,
-		);
-	};
+	/** Preserve dashed connectors throughout the draw, using the kit's reveal mask. */
+	const draw = (path: SVGPathElement, time: number) =>
+		d.trace(path, time, { duration: 0.6, ease: "power2.out" });
+	/** Crowded rows and equations arrive in place, with no flight across a neighbour. */
+	const enter = (target: Element, time: number) =>
+		tl.fromTo(target, { opacity: 0 }, { opacity: 1, duration: 0.5 }, time);
+
 	const heads = [
 		"m-head",
 		"m2-head",
@@ -436,26 +472,58 @@ function build(context: FilmContext) {
 		board.entries.map((entry) =>
 			one<SVGPathElement>(`${key}-link-${entry.name}`),
 		);
-	/** Each name's rows in a column, to bring in one by one. */
-	const rows = (key: string, side: 0 | 1) => kids(`${key}-col${side}`);
-	const pair = (key: string, from: Board, at: number, second: number) => {
-		show(rows(key, 0), at, "right");
+	const row = (key: string, side: 0 | 1, name: string) =>
+		one<SVGGraphicsElement>(`${key}-row${side}-${name}`);
+	const columnMarks = (key: string, side: 0 | 1, board: Board) => [
+		one(`${key}-title${side}`),
+		...board.entries.map((entry) => row(key, side, entry.name)),
+	];
+	/** Build in rank order; expose the last row/link settlement to its answer. */
+	const pair = (
+		key: string,
+		from: Board,
+		to: Board,
+		at: number,
+		secondAt: number | ((firstSettled: number) => number),
+	) => {
+		const firstSettled = at + 0.1 + (from.entries.length - 1) * 0.1 + 0.5;
+		const second =
+			typeof secondAt === "number" ? secondAt : secondAt(firstSettled);
 		tl.set(col(key, 0), { opacity: 1 }, at);
-		linksOf(key, from).forEach((link, i) => {
-			draw(link, second + i * 0.1);
+		enter(one(`${key}-title0`), at);
+		from.entries.forEach((entry, i) => {
+			enter(row(key, 0, entry.name), at + 0.1 + i * 0.1);
 		});
-		tl.set(col(key, 1), { opacity: 1 }, second + 0.3);
-		show(rows(key, 1), second + 0.3, "right");
+		tl.set(col(key, 1), { opacity: 1 }, second);
+		enter(one(`${key}-title1`), second);
+		to.entries.forEach((entry, i) => {
+			draw(one<SVGPathElement>(`${key}-link-${entry.name}`), second + i * 0.2);
+			enter(row(key, 1, entry.name), second + 0.3 + i * 0.2);
+		});
+		return {
+			firstSettled,
+			secondSettled: second + (to.entries.length - 1) * 0.2 + 0.8,
+		};
 	};
+	const normal = [
+		one("normal-label"),
+		...["DUNE", "CRUX"].flatMap((name) => [
+			one(`normal-operands-${name}`),
+			one(`normal-result-${name}`),
+		]),
+	];
 
 	d.hidden([
 		...flat("q"),
 		...heads,
-		...PAIRS.flatMap(([key, from]) => [
+		...PAIRS.flatMap(([key, from, to]) => [
 			col(key, 0),
 			col(key, 1),
+			...columnMarks(key, 0, from),
+			...columnMarks(key, 1, to),
 			...linksOf(key, from),
 		]),
+		...normal,
 		one("under"),
 		one("note"),
 		lockRank,
@@ -477,31 +545,53 @@ function build(context: FilmContext) {
 	tl.addLabel("metric", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
-	pair("m", RAW, 9.2, 12.4);
-	show(heads[1], 13.4);
-	show(one("under"), 14.6);
+	const metric = pair("m", RAW, RELATIVE, 9.2, 15.3);
+	const normalizationAt = metric.firstSettled + 2.7; // 12.80; preserve the raw proof’s rest
+	enter(one("normal-label"), normalizationAt);
+	enter(one("under"), normalizationAt);
+	for (const name of ["DUNE", "CRUX"]) {
+		enter(one(`normal-operands-${name}`), normalizationAt + 0.4);
+		// No counting after an equals sign: each result is revealed settled.
+		enter(one(`normal-result-${name}`), normalizationAt + 1);
+	}
+	// The equations settle at 14.30; the relative chart begins after a quiet second.
+	show(heads[1], metric.secondSettled + 1); // 17.70, held for 5.00 s
 
 	// ——— sign: the hero. Size, or direction? ———
-	tl.addLabel("sign", 18.4);
-	d.swap([heads[0], heads[1]], heads[2], 18.4);
-	hide([col("m", 0), col("m", 1), ...linksOf("m", RAW), one("under")], 18.4);
-	pair("s", SIZE, 19.4, 22.8);
-	// CRUX's row in the signed column: first by size, last once the sign is back.
-	const crux = SIGNED.entries.findIndex((entry) => entry.name === "CRUX");
-	d.lock(lockRank, 24.4, { around: rows("s", 1)[1 + crux], pad: 4 });
-	tl.addLabel("hero-lock", 24.4);
-	show(heads[3], 24.4);
+	tl.addLabel("sign", 22.7);
+	d.swap([heads[0], heads[1]], heads[2], 22.7);
+	hide(
+		[col("m", 0), col("m", 1), ...linksOf("m", RAW), one("under"), ...normal],
+		22.7,
+	);
+	const sign = pair("s", SIZE, SIGNED, 23.05, (settled) => settled + 2.9);
+	// The enlarged, two-line loss row and every connector settle before the lock fits.
+	const heroAt = sign.secondSettled + 1; // 28.95
+	d.lock(lockRank, heroAt, { around: row("s", 1, "CRUX"), pad: 4 });
+	tl.addLabel("hero-lock", heroAt);
+	show(heads[3], heroAt);
 
 	// ——— move: a rank that moves while the name doesn't ———
-	tl.addLabel("move", 28);
-	d.swap([heads[2], heads[3]], heads[4], 28.0);
-	hide([col("s", 0), col("s", 1), ...linksOf("s", SIZE), lockRank], 28.0);
-	pair("d", MONDAY, 28.6, 29.4);
-	show(one("note"), 30.0);
-	show(heads[5], 30.0);
+	// Preserve the 3.15 s stand from bracket settlement and the 3.60 s answer hold.
+	const moveAt = heroAt + 3.6; // 32.55
+	tl.addLabel("move", moveAt);
+	d.swap([heads[2], heads[3]], heads[4], moveAt);
+	hide([col("s", 0), col("s", 1), ...linksOf("s", SIZE), lockRank], moveAt);
+	const move = pair(
+		"d",
+		MONDAY,
+		TUESDAY,
+		moveAt + 0.35,
+		(settled) => settled + 1,
+	);
+	// ALFA's 2,400 stays anchored on Monday as its matching Tuesday row arrives first.
+	const answerAt = move.secondSettled + 1; // 36.90
+	show(one("note"), answerAt);
+	show(heads[5], answerAt);
 
 	// ——— claim ———
-	tl.addLabel("claim", 33.6);
+	const claimAt = answerAt + 3.6; // 40.50
+	tl.addLabel("claim", claimAt);
 	hide(
 		[
 			heads[4],
@@ -511,15 +601,16 @@ function build(context: FilmContext) {
 			...linksOf("d", MONDAY),
 			one("note"),
 		],
-		33.6,
+		claimAt,
 	);
-	word(one("z-big"), 33.9);
-	show(one("z-sub"), 34.3);
+	word(one("z-big"), claimAt + 0.3);
+	show(one("z-sub"), claimAt + 0.7);
 
 	// ——— next ———
-	tl.addLabel("next", 38);
-	hide(kids("claim"), 38.0);
-	d.close(38.0);
+	const nextAt = claimAt + 4.4; // 44.90
+	tl.addLabel("next", nextAt);
+	hide(kids("claim"), nextAt);
+	d.close(nextAt);
 	return tl;
 }
 
