@@ -37,9 +37,9 @@ import {
  *
  *   open      0–4        "Backtests"
  *   question  4–8.6      a decision at 10:50:01: which price?
- *   cutoff    8.6–20.8   arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
- *   rank      20.8–29.4  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
- *   holdout   29.4–37.9  ten thresholds; the winner 70%; the holdout 52%
+ *   cutoff    8.6–20.2   arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
+ *   rank      20.2–29.3  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
+ *   holdout   29.3–37.9  ten thresholds; the winner 70%; the holdout 52%
  *   claim     37.9–42.3  only what was known, and test once
  *   next      42.3–44.8  Next: the module checkpoint
  */
@@ -699,11 +699,12 @@ function build(context: FilmContext) {
 	tl.to(arrs[3], { opacity: 0.25, duration: 0.3 }, 17.4);
 
 	// ——— rank: the hero. A percentile is a rank. ———
-	tl.addLabel("rank", 20.8);
-	tl.set(one("arr-2-box"), { attr: { class: "wt-panel-shape" } }, 20.8);
-	d.swap(heads[2], heads[3], 20.8);
-	hide([...arrs, ...marks, one("cut-3")], 20.8);
-	show(kids("hist"), 21.4);
+	// Remove redundant cutoff still time; let the distribution settle before selection.
+	tl.addLabel("rank", 20.2);
+	tl.set(one("arr-2-box"), { attr: { class: "wt-panel-shape" } }, 20.2);
+	d.swap(heads[2], heads[3], 20.2);
+	hide([...arrs, ...marks, one("cut-3")], 20.2);
+	show(kids("hist"), 20.6);
 	bins.forEach((bin, i) => {
 		const h = Number(bin.getAttribute("height"));
 		tl.fromTo(
@@ -714,34 +715,35 @@ function build(context: FilmContext) {
 				duration: 0.5,
 				ease: "power2.out",
 			},
-			21.6 + i * 0.06,
+			20.8 + i * 0.06,
 		);
 	});
 	// Compare first, then select the historical sessions strictly below today.
 	// Fade in place: the marker already names its final 4.2× coordinate.
-	tl.fromTo(one("today"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 21.6);
+	tl.fromTo(one("today"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.8);
+	// The final bin settles at 21.84: 1.06 s to inspect the distribution.
 	tl.set(
 		bins.filter((_, i) => history[i].from + BUCKET <= TODAY),
 		{ attr: { "data-tone": "total" } },
-		23.0,
+		22.9,
 	);
 	tl.fromTo(
 		[one("lower-counts"), one("lower")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		23.0,
+		22.9,
 	);
 	// The settled 58 / 60 proof rests 1.3 s before its rounded answer arrives.
-	word(one("pct"), 24.8);
-	tl.fromTo(misreading, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 25.3);
+	word(one("pct"), 24.7);
+	tl.fromTo(misreading, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 25.2);
 	// Lock only the rank; its rejected interpretation stays in a separate lane below.
-	d.lock(lockPct, 25.8, { around: [one("pct")], pad: HERO_PAD });
-	tl.addLabel("hero-lock", 25.8);
-	show(heads[4], 25.8);
+	d.lock(lockPct, 25.7, { around: [one("pct")], pad: HERO_PAD });
+	tl.addLabel("hero-lock", 25.7);
+	show(heads[4], 25.7);
 
 	// ——— holdout: many tried, one kept ———
-	tl.addLabel("holdout", 29.4);
-	d.swap([heads[3], heads[4]], heads[5], 29.4);
+	tl.addLabel("holdout", 29.3);
+	d.swap([heads[3], heads[4]], heads[5], 29.3);
 	hide(
 		[
 			...kids("hist"),
@@ -753,12 +755,12 @@ function build(context: FilmContext) {
 			lockPct,
 			one("not-chance"),
 		],
-		29.4,
+		29.3,
 	);
-	show(kids("search-axis"), 29.8);
-	tries.forEach((tr, i) => {
-		show(tr, 29.8 + i * 0.1);
-	});
+	// Simplify to one chart entrance after the hero is gone at 29.65.
+	// Every entrance still lasts 0.5 s; the settled chart rests 30.2–31.2.
+	show(kids("search-axis"), 29.7);
+	show(tries, 29.7);
 	tl.set(
 		one(`try-${BEST_INDEX}-bar`),
 		{ attr: { "data-tone": "total" } },
@@ -772,8 +774,8 @@ function build(context: FilmContext) {
 		31.2,
 	);
 	tl.to(
-		tries.filter((_, i) => i !== BEST_INDEX),
-		{ opacity: 0.35, duration: 0.4 },
+		tried.flatMap((_, i) => (i === BEST_INDEX ? [] : [one(`try-${i}-bar`)])),
+		{ opacity: 0.55, duration: 0.4 },
 		31.4,
 	);
 	tl.fromTo(one("hold"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 32.8);
