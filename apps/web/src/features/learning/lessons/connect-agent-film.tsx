@@ -30,8 +30,8 @@ import {
  *
  *   open      0–4        "Connect your own AI agent"
  *   question  4–9.6      sign in, or an API key?
- *   way       9.6–20.6   Claude signs in; agents use a key; chat sites can't yet
- *   prove     20.6–26.2  "Connected!"; Claude Code /mcp; keyed tools/list
+ *   way       9.6–16.7   Claude signs in; agents use a key; chat sites can't yet
+ *   prove     16.7–26.2  "Connected!"; Claude Code /mcp; keyed tools/list
  *   key       26.2–44    60 a minute; 75: 15 refused, locked; revoke; cut: the claim
  *   next      44–46.5    Next: the module checkpoint
  */
@@ -93,14 +93,6 @@ const copy = {
 		"Copy prompt → a key → paste to your agent",
 		"Copy prompt → 密钥 → 粘贴给智能体",
 	],
-	noneNote: [
-		"For quick questions, link Slack from Settings: 1 AI credit per question.",
-		"简单问题可以在设置中关联 Slack：每个问题 1 个 AI 积分。",
-	],
-	noneNoteShort: [
-		"Link Slack instead: 1 credit a question",
-		"改用 Slack：每问 1 积分",
-	],
 	agentHead: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
 	agentHeadShort: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
 	clientHead: ["Check the client and server.", "检查客户端和服务器。"],
@@ -112,14 +104,6 @@ const copy = {
 	rateHeadShort: [
 		"Read-only. Every call is checked.",
 		"只读，每次调用都检查。",
-	],
-	burstHead: [
-		`A burst of ${BURST}: ${BURST - LIMIT} are refused.`,
-		`一口气 ${BURST} 次：${BURST - LIMIT} 次被拒。`,
-	],
-	burstHeadShort: [
-		`${BURST} calls: ${BURST - LIMIT} refused.`,
-		`${BURST} 次：${BURST - LIMIT} 次被拒。`,
 	],
 	meter: ["tool calls · this 60-second window", "工具调用 · 当前 60 秒窗口"],
 	refused: ["refused", "被拒"],
@@ -164,8 +148,8 @@ const CHECKS = [
 	{
 		id: "tools",
 		label: ["Keyed tools/list", "带密钥的 tools/list"],
-		line: '{"jsonrpc":"2.0","id":1,"result":{"tools":[…]}}',
-		phoneLine: "result.tools: […]",
+		line: '{"result":{"tools":[{"name":"symbol_search"},…]}}',
+		phoneLine: 'result.tools: [{name:"symbol_search"},…]',
 		verdict: ["your key works", "密钥有效"],
 		tone: "wt-film-gain",
 	},
@@ -329,24 +313,16 @@ function Scene({
 					</text>
 				))}
 			</g>
-			{(
-				[
-					["note-key", narrow ? copy.keyNoteShort : copy.keyNote],
-					["note-none", narrow ? copy.noneNoteShort : copy.noneNote],
-				] as const
-			).map(([name, text]) => (
-				<Lines
-					key={name}
-					name={name}
-					text={t(text)}
-					x={margin + L.pad}
-					y={panelLine(0)}
-					size={L.rowText}
-					maxWidth={room - 2 * L.pad}
-					anchor="start"
-					className="wt-film-type wt-film-dim"
-				/>
-			))}
+			<Lines
+				name="note-key"
+				text={t(narrow ? copy.keyNoteShort : copy.keyNote)}
+				x={margin + L.pad}
+				y={panelLine(0)}
+				size={L.rowText}
+				maxWidth={room - 2 * L.pad}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			/>
 
 			{/* An assertion, then client and server evidence. */}
 			{headline("a-head", copy.agentHead, copy.agentHead)}
@@ -411,24 +387,6 @@ function Scene({
 
 			{/* What a key allows. */}
 			{headline("r-head", copy.rateHead, copy.rateHeadShort)}
-			<Lines
-				name="b-head"
-				text={t(narrow ? copy.burstHeadShort : copy.burstHead)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.rateHeadShort : copy.rateHead),
-						narrow ? room : room * 0.74,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			<Brackets name="lock-burst" glow />
 			<g data-f="meter">
 				<text
@@ -685,15 +643,14 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		...flat("q"),
-		...["s-head", "k-head", "a-head", "c-head", "r-head", "b-head"].map(
-			(name) => one(name),
+		...["s-head", "k-head", "a-head", "c-head", "r-head"].map((name) =>
+			one(name),
 		),
 		lockBurst,
 		...METHODS.flatMap((method) => [way(method), on(method)]),
 		one("panel"),
 		one("cmd"),
 		one("note-key"),
-		one("note-none"),
 		...CHECKS.flatMap((item) => [check(item.id), verdict(item.id)]),
 		one("meter"),
 		one("m-over"),
@@ -736,33 +693,34 @@ function build(context: FilmContext) {
 	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 12.8);
 	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 12.8);
 	d.swap(one("cmd"), one("note-key"), 12.8);
-	// Hosted chat sites: not yet.
-	tl.to(on("key"), { opacity: 0, duration: 0.3 }, 16.7);
-	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 16.7);
-	tl.to(way("none"), { opacity: 1, duration: 0.3 }, 16.7);
-	d.swap(one("note-key"), one("note-none"), 16.7);
+	// Cut the Slack-credit aside. The unsupported-client card stays visible
+	// throughout the choice; no client capability qualification is removed.
 
 	// ——— prove: check it yourself ———
-	tl.addLabel("prove", 20.6);
+	tl.addLabel("prove", 16.7);
 	hide(
 		[
 			one("s-head"),
 			one("k-head"),
 			...METHODS.map(way),
 			one("panel"),
-			one("note-none"),
+			one("note-key"),
 		],
-		20.6,
+		16.7,
 	);
-	show(one("a-head"), 20.95, "above");
-	show(check("agent"), 21.1);
-	show(verdict("agent"), 21.1, "right");
-	// Remove the no-key GET detour; both positive payloads land together.
-	// The assertion settles at 21.6, then gets one second before this proof.
-	show(one("c-head"), 22.6);
-	show([check("client"), check("tools")], 22.6);
-	show([verdict("client"), verdict("tools")], 23.1, "right");
-	// Settled at 23.6; 2.6 seconds of quiet before the next beat.
+	show(one("a-head"), 17.05, "above");
+	show(check("agent"), 17.1);
+	show(verdict("agent"), 17.1, "right");
+	// The assertion settles at 17.6; one second before the client proof.
+	show(one("c-head"), 18.6);
+	show(check("client"), 18.6);
+	// Client payload settles at 19.1; let it read before its verdict.
+	show(verdict("client"), 20.1, "right");
+	// Client verdict settles at 20.6; one second before the server proof.
+	show(check("tools"), 21.6);
+	// Server payload settles at 22.1; one second before its verdict.
+	show(verdict("tools"), 23.1, "right");
+	// Settled at 23.6; preserve the accepted 2.6-second final proof rest.
 
 	// ——— key: read-only, rate-limited, revocable ———
 	tl.addLabel("key", 26.2);
@@ -782,30 +740,31 @@ function build(context: FilmContext) {
 	// The limit settles at 28; the burst starts after a full second.
 	show([over, refused], 29);
 	countCalls(LIMIT, BURST, 29, 0.6);
-	show(one("b-head"), 29.6);
 	// The hero: the window's limit, enforced. Preserve the accepted stand.
 	d.lock(lockBurst, 30.6, { around: [counter, refused], pad: 6 });
 	tl.addLabel("hero-lock", 30.6);
-	hide([one("b-head"), lockBurst], 34.2);
+	hide(lockBurst, 34.2);
 	// Brackets are gone at 34.55; only then retire the old burst.
 	hide([one("meter"), counter], 34.55);
 	tl.fromTo(
 		one("k-revoke-action"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		34.55,
+		34.2,
 	);
-	d.flip(one("k-active"), one("k-revoked"), 34.9);
-	tl.set(one("k-active"), { opacity: 0 }, 35.2);
-	// Revocation settles at 35.55. A fresh window rules out rate limiting.
-	show(one("next-call"), 36.55, "below", 0.3);
+	// Start the action as the protected stand ends. Its entrance and the
+	// status fold are one event; their existing durations are unchanged.
+	d.flip(one("k-active"), one("k-revoked"), 34.2);
+	tl.set(one("k-active"), { opacity: 0 }, 34.5);
+	// Revocation settles at 34.85. A fresh window rules out rate limiting.
+	show(one("next-call"), 35.85, "below", 0.3);
 	tl.fromTo(
 		one("call-rejected"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		37,
+		36.3,
 	);
-	// Rejection settles at 37.3; 1.3 seconds of quiet before the claim.
+	// Rejection settles at 36.6; two seconds of quiet before the claim.
 	hide(
 		[
 			one("r-head"),
