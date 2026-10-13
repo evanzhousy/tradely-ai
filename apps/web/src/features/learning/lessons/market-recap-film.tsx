@@ -85,8 +85,8 @@ const copy = {
 	],
 	aHead: ["Earlier, the axis started at zero.", "之前的轴从零开始。"],
 	a2Head: [
-		`From ${count(CUT)}, one bar looks ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}× the other.`,
-		`从 ${count(CUT)} 起，看着差 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} 倍。`,
+		`From ${count(CUT)}, the bars' height ratio is ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}.`,
+		`从 ${count(CUT)} 起，柱高之比为 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}。`,
 	],
 	cHead: ["The draft claims more than it shows.", "初稿说的比它显示的多。"],
 	draftIntent: [
@@ -99,7 +99,7 @@ const copy = {
 		`${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} observed strikes · 120 missing`,
 		`仅 ${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} 个行权价有数据 · 120 缺失`,
 	],
-	captionChart: ["Contracts by strike · axis 0", "按行权价的张数 · 轴从 0 起"],
+	captionMeasure: ["Measure · traded contracts", "统计量 · 成交张数"],
 	captionScope: [
 		"ALFA Oct 18 calls · Mon Sep 16",
 		"ALFA 10月18日看涨 · 9月16日周一",
@@ -160,7 +160,7 @@ function Scene({
 	const boundedY = scopeNoteY + T.body * 2.1;
 	const captionSize = narrow ? T.small : T.small * 1.15;
 	const captionFields = [
-		copy.captionChart,
+		copy.captionMeasure,
 		copy.captionScope,
 		copy.captionSource,
 	];
@@ -706,14 +706,12 @@ function build(context: FilmContext) {
 	// Scope evidence settles at 35.1; the replacement waits one quiet second.
 	// Clear the completed draft; a slow initial fade preserves its readable hold.
 	tl.to(
-		[...draftParts, ...repairLines, ...(L.narrow ? [evidence[0]] : evidence)],
+		[...draftParts, ...repairLines, evidence[0]],
 		{ opacity: 0, duration: 0.4, ease: "power2.in" },
 		36.1,
 	);
-	if (L.narrow) {
-		// Scope keeps its full reading interval, with less emphasis beside the result.
-		tl.to(evidence[1], { opacity: 0.8, duration: 0.4 }, 36.1);
-	}
+	// Both layouts keep the scope qualification readable beside the result until 41.1.
+	tl.to(evidence[1], { opacity: 0.8, duration: 0.4 }, 36.1);
 	show(one("bounded"), 36.1);
 	// The bounded result settles at 36.6; caption fields wait one quiet second.
 	captions.forEach((field, i) => {
