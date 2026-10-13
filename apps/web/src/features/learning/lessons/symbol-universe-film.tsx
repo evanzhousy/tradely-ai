@@ -1,4 +1,10 @@
-import { type Copy, count, pick } from "@/content/world";
+import {
+	type Copy,
+	count,
+	pick,
+	SESSION_DATE,
+	type UniverseRow,
+} from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -32,14 +38,14 @@ import {
  *
  *   open      0–4        "Comparison groups"
  *   question  4–8.6      FJOR's volume never arrived: in or out?
- *   rules     8.6–19.4   stocks; Monday; data present (FJOR unknown); ≥ 500
- *   leader    19.4–28.4  hero: CRUX leads the observed; FJOR arrives with 7,300
- *   past      28.4–33.8  Sep 2 on today's list: CRUX; on Sep 2's list: HALO
- *   claim     33.8–38.2  who belongs comes from the facts
- *   next      38.2–40.7  Next: rankings
+ *   rules     8.6–22.4   facts first, then stocks; Monday; data; ≥ 500
+ *   leader    22.4–31.4  compare the board; FJOR arrives with 7,300
+ *   past      31.4–36.8  Sep 2 on today's list: CRUX; on Sep 2's list: HALO
+ *   claim     36.8–41.2  who belongs comes from the facts
+ *   next      41.2–43.7  Next: rankings
  */
 
-const END = 40.7;
+const END = 43.7;
 const ROWS = CANDIDATES;
 const ELIGIBLE = ROWS.filter((row) => firstFail(row, CHECKS.length) === null);
 const OBSERVED = ELIGIBLE.filter((row) => row.optionVolume !== null).sort(
@@ -54,10 +60,13 @@ const TODAY_SEP2 = SEP2.filter(([symbol]) => symbol !== "HALO");
 
 function layout(width: number) {
 	const frame = filmFrame(width);
-	const { height: H, narrow, margin, room } = frame;
+	const { height: H, narrow, margin, room, type: T } = frame;
 	const symW = narrow ? 64 : 110;
 	const colW = (room - symW) / CHECKS.length;
-	const labelW = narrow ? 56 : 90;
+	const labelW = narrow ? 60 : 102;
+	const text = narrow ? T.small * 1.1 : T.body;
+	const figureW = Math.ceil(text * 1.5 * 3.4 + 22);
+	const cellW = T.small * 3 + text * 1.1 + 8;
 	return {
 		...frame,
 		rowY: (i: number) =>
@@ -65,21 +74,43 @@ function layout(width: number) {
 		rowH: H * (narrow ? 0.05 : 0.052),
 		symW,
 		colX: (c: number) => margin + symW + colW * (c + 0.5),
+		factX: (c: number) => margin + symW + colW * (c + 0.5) - cellW / 2,
+		markX: (c: number) => margin + symW + colW * (c + 0.5) + cellW / 2,
 		headerY: H * (narrow ? 0.26 : 0.26),
 		barRowY: (i: number) =>
 			H * (narrow ? 0.3 : 0.3) + i * H * (narrow ? 0.1 : 0.11),
 		barH: H * (narrow ? 0.06 : 0.065),
 		barX: margin + labelW,
-		barMax: room - labelW - (narrow ? 60 : 90),
-		sepX: (i: number) => margin + i * (room / 2),
-		sepY: (i: number) =>
-			H * (narrow ? 0.38 : 0.38) + i * H * (narrow ? 0.075 : 0.08),
+		barMax: room - labelW - figureW,
+		sepX: (list: number) => margin + (narrow ? 0 : list * (room / 2)),
+		sepY: (i: number, list = 0) =>
+			narrow ? H * (0.32 + list * 0.29 + i * 0.056) : H * (0.38 + i * 0.08),
 	};
 }
 
+const sessionLabel = (date: string) =>
+	`${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`;
+const typeCopy: Record<UniverseRow["type"], Copy> = {
+	stock: ["stock", "股票"],
+	etf: ["ETF", "ETF"],
+	index: ["index", "指数"],
+};
+/** The raw fact remains beside its verdict, including after the name is excluded. */
+const evidence = (row: UniverseRow, check: (typeof CHECKS)[number]): Copy => {
+	if (check === "type") return typeCopy[row.type];
+	if (check === "session")
+		return [sessionLabel(row.session), sessionLabel(row.session)];
+	return row.optionVolume === null
+		? ["—", "—"]
+		: [count(row.optionVolume), count(row.optionVolume)];
+};
+
 const checkCopy: Record<(typeof CHECKS)[number], Copy> = {
 	type: ["stock", "股票"],
-	session: ["Monday", "周一"],
+	session: [
+		`Mon${sessionLabel(SESSION_DATE)}`,
+		`周一${sessionLabel(SESSION_DATE)}`,
+	],
 	data: ["data", "数据"],
 	threshold: [`≥ ${count(THRESHOLD)}`, `≥ ${count(THRESHOLD)}`],
 };
@@ -92,16 +123,12 @@ const copy = {
 	qBig: ["In the comparison, or out?", "纳入比较，还是排除？"],
 	rHead: ["Four rules, applied in order.", "四条规则，依次套用。"],
 	r2Head: ["FJOR stays in, as an unknown.", "FJOR 留下，作为未知。"],
-	lHead: [
-		`${OBSERVED[0].symbol} leads the three observed.`,
-		`${OBSERVED[0].symbol} 在已观测的三个中领先。`,
-	],
+	lHead: ["Compare the observed names.", "比较已观测的代码。"],
 	l2Head: [
 		`Then FJOR's ${count(FJOR_LATE)} arrive: a new leader.`,
 		`FJOR 的 ${count(FJOR_LATE)} 张到了：领先者换了。`,
 	],
-	pHead: ["Sep 2, on today's list of names.", "9月2日，用今天的名单。"],
-	p2Head: ["Sep 2's own list: HALO led.", "9月2日自己的名单：HALO 领先。"],
+	pHead: ["Compare Sep 2's two lists.", "比较9月2日的两份名单。"],
 	todayList: ["today's list", "今天的名单"],
 	sep2List: ["Sep 2's list", "9月2日的名单"],
 	delisted: ["delisted Sep 6", "9月6日退市"],
@@ -136,6 +163,8 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const sepText = narrow ? text * 1.1 : T.small;
+	const sepLabelW = narrow ? 60 : 64;
 	const mark = (result: "pass" | "fail" | "unknown") =>
 		result === "pass" ? "✓" : result === "fail" ? "✕" : "?";
 	const markTone = (result: "pass" | "fail" | "unknown") =>
@@ -161,7 +190,7 @@ function Scene({
 				{symbol}
 			</text>
 			<rect
-				x={x + (narrow ? 44 : 64)}
+				x={x + sepLabelW}
 				y={y - L.barH * 0.3}
 				width={(value / VOL_MAX) * max}
 				height={L.barH * 0.6}
@@ -170,16 +199,16 @@ function Scene({
 				data-tone={symbol === "HALO" ? "total" : "neutral"}
 			/>
 			<text
-				x={x + (narrow ? 44 : 64) + (value / VOL_MAX) * max + 6}
-				y={y + T.small * 0.36}
+				x={x + sepLabelW + (value / VOL_MAX) * max + 6}
+				y={y + sepText * 0.36}
 				className="wt-film-num wt-film-dim"
-				style={{ fontSize: T.small }}
+				style={{ fontSize: sepText }}
 			>
 				{count(value)}
 			</text>
 		</>
 	);
-	const sepMax = room / 2 - (narrow ? 44 : 64) - (narrow ? 40 : 60);
+	const sepMax = (narrow ? room : room / 2) - sepLabelW - (narrow ? 64 : 60);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -270,17 +299,27 @@ function Scene({
 				CHECKS.map((check, c) => {
 					const result = checkResult(row, check);
 					return (
-						<text
-							key={`${row.symbol}-${check}`}
-							data-f={`mark-${i}-${c}`}
-							x={L.colX(c)}
-							y={L.rowY(i) + L.rowH / 2 + text * 0.38}
-							textAnchor="middle"
-							className={`wt-film-num ${markTone(result)}`}
-							style={{ fontSize: text * 1.1 }}
-						>
-							{mark(result)}
-						</text>
+						<g key={`${row.symbol}-${check}`}>
+							<text
+								data-f={`fact-${i}-${c}`}
+								x={L.factX(c)}
+								y={L.rowY(i) + L.rowH / 2 + T.small * 0.36}
+								className="wt-film-num"
+								style={{ fontSize: T.small }}
+							>
+								{t(evidence(row, check))}
+							</text>
+							<text
+								data-f={`mark-${i}-${c}`}
+								x={L.markX(c)}
+								y={L.rowY(i) + L.rowH / 2 + text * 0.38}
+								textAnchor="end"
+								className={`wt-film-num ${markTone(result)}`}
+								style={{ fontSize: text * 1.1 }}
+							>
+								{mark(result)}
+							</text>
+						</g>
 					);
 				}),
 			)}
@@ -349,9 +388,9 @@ function Scene({
 								<text
 									data-f="fjor-n"
 									x={L.barX + (FJOR_LATE / VOL_MAX) * L.barMax + 10}
-									y={L.barRowY(i) + L.barH / 2 + text * 0.36}
+									y={L.barRowY(i) + L.barH / 2 + text * 1.5 * 0.36}
 									className="wt-film-num wt-film-accent"
-									style={{ fontSize: text * 1.1 }}
+									style={{ fontSize: text * 1.5 }}
 								>
 									{count(FJOR_LATE)}
 								</text>
@@ -384,25 +423,10 @@ function Scene({
 
 			{/* A past date, two lists of names. */}
 			{headline("p-head", copy.pHead)}
-			{/* The answer, as Sep 2's own list comes up. */}
-			<Lines
-				name="p2-head"
-				text={t(copy.p2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.pHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			<g data-f="sep-today">
 				<text
 					x={L.sepX(0)}
-					y={L.sepY(0) - H * 0.07}
+					y={L.sepY(0) - H * (narrow ? 0.045 : 0.07)}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -417,7 +441,7 @@ function Scene({
 			<g data-f="sep-then">
 				<text
 					x={L.sepX(1)}
-					y={L.sepY(0) - H * 0.07}
+					y={L.sepY(0, 1) - H * (narrow ? 0.045 : 0.07)}
 					className="wt-film-tag wt-film-accent"
 					style={{ fontSize: T.small }}
 				>
@@ -425,12 +449,12 @@ function Scene({
 				</text>
 				{SEP2.map(([symbol, value], i) => (
 					<g key={symbol}>
-						{sepBar(symbol, value, L.sepX(1), L.sepY(i), sepMax)}
+						{sepBar(symbol, value, L.sepX(1), L.sepY(i, 1), sepMax)}
 					</g>
 				))}
 				<text
 					x={L.sepX(1)}
-					y={L.sepY(SEP2.length) + T.small}
+					y={L.sepY(SEP2.length, 1) + T.small}
 					className="wt-film-type wt-film-warn"
 					style={{ fontSize: T.small * 1.05 }}
 				>
@@ -490,18 +514,14 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = [
-		"r-head",
-		"r2-head",
-		"l-head",
-		"l2-head",
-		"p-head",
-		"p2-head",
-	].map((name) => one(name));
+	const heads = ["r-head", "r2-head", "l-head", "l2-head", "p-head"].map(
+		(name) => one(name),
+	);
 	const lockFjor = one<SVGGraphicsElement>("lock-fjor");
 	const cols = CHECKS.map((_, c) => one(`col-${c}`));
 	const syms = ROWS.map((_, i) => one(`sym-${i}`));
 	const marks = (c: number) => ROWS.map((_, i) => one(`mark-${i}-${c}`));
+	const facts = (c: number) => ROWS.map((_, i) => one(`fact-${i}-${c}`));
 	const board = BOARD.map((_, i) => one(`board-${i}`));
 
 	d.hidden([
@@ -510,6 +530,7 @@ function build(context: FilmContext) {
 		...cols,
 		...syms,
 		...CHECKS.flatMap((_, c) => marks(c)),
+		...CHECKS.flatMap((_, c) => facts(c)),
 		...board,
 		one("fjor-bar"),
 		one("fjor-n"),
@@ -519,22 +540,26 @@ function build(context: FilmContext) {
 		...kids("claim"),
 	]);
 
-	/** A rule runs down its column; names that fail it drop back. */
+	/** Inspect the facts first; the column settles as one proof before the next rule. */
 	const apply = (c: number, time: number) => {
-		show(cols[c], time);
+		show(cols[c], time, "above", 0.3);
 		ROWS.forEach((row, i) => {
 			if (firstFail(row, c) !== null) return;
-			d.pop(one(`mark-${i}-${c}`), time + 0.2 + i * 0.06);
+			// Fade in place: the fact and verdict share a compact phone cell.
+			tl.fromTo(
+				one(`fact-${i}-${c}`),
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.3 },
+				time,
+			);
+			tl.fromTo(
+				one(`mark-${i}-${c}`),
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.4 },
+				time + 0.4,
+			);
 			if (firstFail(row, c + 1) === c)
-				tl.to(syms[i], { opacity: 0.35, duration: 0.3 }, time + 0.8);
-		});
-		ROWS.forEach((row, i) => {
-			if (firstFail(row, c + 1) === c)
-				tl.to(
-					one(`mark-${i}-${c}`),
-					{ opacity: 0.6, duration: 0.3 },
-					time + 0.8,
-				);
+				tl.to(syms[i], { opacity: 0.35, duration: 0.4 }, time + 0.4);
 		});
 	};
 
@@ -557,61 +582,86 @@ function build(context: FilmContext) {
 		show(sym, 9.2 + i * 0.08, "right");
 	});
 	apply(0, 10.4);
-	apply(1, 11.9);
-	apply(2, 13.4);
+	apply(1, 12.6);
+	apply(2, 14.6);
 	ROWS.forEach((row, i) => {
 		if (row.optionVolume === null)
-			tl.set(one(`sym-${i}-box`), { attr: { class: "wt-focus-shape" } }, 13.8);
+			tl.set(one(`sym-${i}-box`), { attr: { class: "wt-focus-shape" } }, 15.0);
 	});
-	apply(3, 14.9);
-	show(heads[1], 15.6);
+	apply(3, 16.6);
+	show(heads[1], 18.6);
 
 	// ——— leader: the hero. The observed, then the complete set. ———
-	tl.addLabel("leader", 19.4);
-	d.swap([heads[0], heads[1]], heads[2], 19.4);
-	hide([...cols, ...syms, ...CHECKS.flatMap((_, c) => marks(c))], 19.4);
-	OBSERVED.forEach((_, i) => {
-		show(board[i], 20.2 + i * 0.2, "right");
-	});
-	show(board[OBSERVED.length], 21.6, "right");
-	hide([one("fjor-ghost"), one("fjor-q")], 23.0, 0.3);
+	tl.addLabel("leader", 22.4);
+	d.swap([heads[0], heads[1]], heads[2], 22.4);
+	hide(
+		[...cols, ...syms, ...CHECKS.flatMap((_, c) => [...facts(c), ...marks(c)])],
+		22.4,
+	);
+	// One comparison, rather than four competing row arrivals; retain a full quiet hold.
+	show(board, 23.2, "right");
+	hide([one("fjor-ghost"), one("fjor-q")], 25.7, 0.3);
+	const fjorBar = one("fjor-bar");
+	const fjorNumber = one<SVGTextElement>("fjor-n");
+	const cruxBar = one("board-0-bar");
+	const arrival = { volume: 0 };
+	const renderArrival = () => {
+		const volume = Math.round(arrival.volume);
+		const w = (volume / VOL_MAX) * L.barMax;
+		fjorBar.setAttribute("width", String(w));
+		fjorNumber.setAttribute("x", String(L.barX + w + 10));
+		fjorNumber.textContent = count(volume);
+		const leads = volume > (OBSERVED[0].optionVolume ?? 0);
+		fjorBar.setAttribute("data-tone", leads ? "total" : "neutral");
+		cruxBar.setAttribute("data-tone", leads ? "neutral" : "total");
+		fjorNumber.setAttribute(
+			"class",
+			leads ? "wt-film-num wt-film-accent" : "wt-film-num",
+		);
+	};
 	tl.fromTo(
-		one("fjor-bar"),
-		{ opacity: 1, attr: { width: 0 } },
+		[fjorBar, fjorNumber],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		26.0,
+	);
+	tl.fromTo(
+		arrival,
+		{ volume: 0 },
 		{
-			attr: { width: Number(one("fjor-bar").getAttribute("width")) },
+			volume: FJOR_LATE,
 			duration: 0.8,
 			ease: "power2.out",
+			// Keep the rest geometry intact while lock() measures the settled hero.
+			immediateRender: false,
+			onUpdate: renderArrival,
 		},
-		23.2,
+		26.0,
 	);
-	word(one("fjor-n"), 24.0);
-	tl.set(one("board-0-bar"), { attr: { "data-tone": "neutral" } }, 24.0);
-	d.lock(lockFjor, 24.8, {
-		around: [board[OBSERVED.length], one("fjor-bar"), one("fjor-n")],
-		pad: 3,
+	d.lock(lockFjor, 27.8, {
+		around: [board[OBSERVED.length], fjorBar, fjorNumber],
+		pad: 6,
 	});
-	tl.addLabel("hero-lock", 24.8);
-	show(heads[3], 24.8);
+	tl.addLabel("hero-lock", 27.8);
+	show(heads[3], 27.8);
 
 	// ——— past: the day's own list ———
-	tl.addLabel("past", 28.4);
-	d.swap([heads[2], heads[3]], heads[4], 28.4);
-	hide([...board, one("fjor-bar"), one("fjor-n"), lockFjor], 28.4);
-	show(one("sep-today"), 29.0, "right");
-	show(one("sep-then"), 30.0, "right");
-	show(heads[5], 30.2);
+	tl.addLabel("past", 31.4);
+	d.swap([heads[2], heads[3]], heads[4], 31.4);
+	hide([...board, fjorBar, fjorNumber, lockFjor], 31.4);
+	// The two lists are the proof; omit the redundant answer headline.
+	show([one("sep-today"), one("sep-then")], 32.0, "right");
 
 	// ——— claim ———
-	tl.addLabel("claim", 33.8);
-	hide([heads[4], heads[5], one("sep-today"), one("sep-then")], 33.8);
-	word(one("z-big"), 34.1);
-	show(one("z-sub"), 34.5);
+	tl.addLabel("claim", 36.8);
+	hide([heads[4], one("sep-today"), one("sep-then")], 36.8);
+	word(one("z-big"), 37.1);
+	show(one("z-sub"), 37.5);
 
 	// ——— next ———
-	tl.addLabel("next", 38.2);
-	hide(kids("claim"), 38.2);
-	d.close(38.2);
+	tl.addLabel("next", 41.2);
+	hide(kids("claim"), 41.2);
+	d.close(41.2);
 	return tl;
 }
 
