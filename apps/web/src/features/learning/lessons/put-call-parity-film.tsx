@@ -44,9 +44,9 @@ import {
  *   open      0–4        "Put-call parity"
  *   question  4–8.8      long call + short put; ALFA at $90?
  *   legs      8.8–13.6   $0 and −$1,000 at $90, then one second of rest
- *   sum       13.6–23.3    combine the legs, then subtract the premium debit
- *   debit     17.6–23.3    $4.20 − $4.05 = $0.15/share; zero moves to $100.15
- *   identity  23.3–30.3      hero: ALFA $97 → $102, C − P = S − K all the way
+ *   sum       13.6–22.55  combine the legs, then subtract the premium debit
+ *   debit     17.6–22.55  $4.20 − $4.05 = $0.15/share; zero moves to $100.15
+ *   identity  22.55–30.3 hero: read $97 for one second, then walk to $102
  *   prints    30.3–34.3      a 14:12 print looks $0.65 off
  *   late      34.3–39.5    it executed at 13:58: in line
  *   claim     39.5–43.9  parity links prices from the same moment
@@ -82,6 +82,9 @@ function layout(width: number) {
 		bottom,
 		x,
 		y,
+		sumX: narrow ? right - 4 : x(104),
+		// Keep both phone caption lines below the zero axis and clear of the rising curve.
+		sumY: (debit: number) => y(-per(debit)) + (narrow ? 21 : 30),
 		path: (f: (spot: number) => number) =>
 			spots
 				.map(
@@ -115,7 +118,7 @@ const copy = {
 	axis: ["Oct 18 · 100 shares/pair", "10月18日 · 每组 100 股"],
 	premiumCost: [
 		`ask ${usd(CALL_PAID)} − bid ${usd(PUT_RECEIVED)}`,
-		`买价 ${usd(CALL_PAID)} − 卖价 ${usd(PUT_RECEIVED)}`,
+		`买看涨 ${usd(CALL_PAID)} − 卖看跌 ${usd(PUT_RECEIVED)}`,
 	],
 	premiumDebit: [
 		`= ${share(NET_DEBIT)}/share · ${share(per(NET_DEBIT))}/pair`,
@@ -123,8 +126,11 @@ const copy = {
 	],
 	callTag: ["long call", "看涨多头"],
 	putTag: ["short put", "看跌空头"],
-	sumTag: ["call + short put = 100 shares", "看涨 + 看跌空头 = 100 股"],
-	sumTagShort: ["= 100 shares", "= 100 股"],
+	sumTag: ["like 100 shares bought at {basis}", "就像以 {basis} 买入 100 股"],
+	sumTagShort: [
+		"like 100 shares\nbought at {basis}",
+		"就像 100 股\n买入价 {basis}",
+	],
 	balHead: ["C − P = S − K at every price.", "每个价格下，C − P = S − K。"],
 	modelScope: [
 		"Model mids · no interest/dividends",
@@ -133,7 +139,11 @@ const copy = {
 	call: ["call", "看涨"],
 	put: ["put", "看跌"],
 	offHead: ["One 14:12 print looks off.", "14:12 有一笔成交看似偏离。"],
-	lateHead: ["Use the print’s execution time.", "按实际成交时刻核对。"],
+	lateHead: [
+		"Late report: check its execution time.",
+		"延迟报告：按实际成交时刻核对。",
+	],
+	executed: ["executed", "成交于"],
 	inLine: ["in line", "符合"],
 	withinSpread: ["within spread", "价差内"],
 	modelPut: ["model P", "模型 P"],
@@ -150,6 +160,12 @@ const copy = {
 	nextBig: ["Next: expiration", "下一课：到期"],
 	nextSub: ["exercise, assignment and settlement", "行权、指派与结算"],
 } as const satisfies Record<string, Copy>;
+
+/** The label's basis comes from the same debit as the plotted expiry result. */
+const sumLabel = (basis: number, narrow: boolean, locale: Locale) =>
+	pick(narrow ? copy.sumTagShort : copy.sumTag, locale)
+		.replace("{basis}", share(basis))
+		.split("\n");
 
 /** Two prints, each with its parity check; the afternoon one also has its late version. */
 const PRINTS = [
@@ -284,11 +300,21 @@ function Scene({
 						</text>
 						<text
 							data-f="sum-tag"
-							x={L.x(108)}
-							y={L.y(per(synthetic(108))) + 18}
+							x={L.sumX}
+							y={L.sumY(0)}
+							textAnchor={narrow ? "end" : "start"}
 							className="wt-small wt-halo wt-accent"
 						>
-							{t(narrow ? copy.sumTagShort : copy.sumTag)}
+							{sumLabel(STRIKE, narrow, locale).map((line, i) => (
+								<tspan
+									key={i === 0 ? "shares" : "basis"}
+									data-f={`sum-label-${i}`}
+									x={L.sumX}
+									dy={i === 0 ? 0 : T.small * 1.4}
+								>
+									{line}
+								</tspan>
+							))}
 						</text>
 						<PenTip name="tip-long" color="var(--wt-long)" />
 						<PenTip name="tip-short" color="var(--wt-short)" />
@@ -500,7 +526,7 @@ function Scene({
 							className="wt-film-num"
 							style={{ fontSize: text }}
 						>
-							{`${time} · ALFA $${spot.toFixed(2)}`}
+							{`${suffix === "late" ? `${t(copy.executed)} ` : ""}${time} · ALFA $${spot.toFixed(2)}`}
 						</text>
 						<text
 							data-f={`r2-${suffix}`}
@@ -707,7 +733,13 @@ function build(context: FilmContext) {
 			one(name).setAttribute("cy", String(lossY));
 		one("lab-put").setAttribute("y", String(lossY + (L.narrow ? 5 : 18)));
 		one("lab-put").textContent = signedUsd(per(adjusted(90)) * 100, 0);
-		one("sum-tag").setAttribute("y", String(L.y(per(adjusted(108))) + 18));
+		one("sum-tag").setAttribute("y", String(L.sumY(debit)));
+		for (const [i, line] of sumLabel(
+			STRIKE + debit,
+			L.narrow,
+			context.locale,
+		).entries())
+			one(`sum-label-${i}`).textContent = line;
 		const entryX = L.x(STRIKE + debit);
 		one("debit-guide").setAttribute(
 			"d",
@@ -825,16 +857,17 @@ function build(context: FilmContext) {
 	);
 
 	// ——— identity: the hero. ALFA walks from $97 to $102 and both sides move together. ———
-	tl.addLabel("identity", 23.3);
-	hide(heads[1], 23.3);
-	sink(23.3);
-	show(heads[2], 23.65);
-	walk(97, 97, 23.9, 0.01);
-	show([one("b-alfa"), spot], 24.0);
-	show(one("b-c"), 24.2);
-	word(one("eq-cp"), 24.3);
-	show(one("b-s"), 24.6);
-	word(one("eq-sk"), 24.7);
+	tl.addLabel("identity", 22.55);
+	hide(heads[1], 22.55);
+	sink(22.55);
+	show(heads[2], 22.9);
+	walk(97, 97, 23.15, 0.01);
+	show([one("b-alfa"), spot], 23.25);
+	show(one("b-c"), 23.45);
+	word(one("eq-cp"), 23.55);
+	show(one("b-s"), 23.85);
+	word(one("eq-sk"), 23.95);
+	// The initial equations settle at 24.5; give them one quiet second before walking.
 	walk(97, 102, 25.5, 1.8);
 	d.lock(g("lock-eq"), 27.4, { around: [g("eq-cp"), g("eq-sk")], pad: 12 });
 	tl.addLabel("hero-lock", 27.4);
