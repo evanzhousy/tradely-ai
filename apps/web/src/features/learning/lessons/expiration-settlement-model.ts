@@ -1,4 +1,5 @@
 import {
+	ALFA,
 	type Contract,
 	type Copy,
 	instruments,
@@ -13,6 +14,11 @@ export const CALL_100: Contract = {
 	expiry: "oct18",
 	strike: 100,
 	right: "call",
+};
+/** Shares delivered and strike cash due, in cents, when one ALFA 100 call is exercised. */
+export const CALL_100_DELIVERY = {
+	shares: ALFA.multiplier,
+	cashCents: Math.round(CALL_100.strike * 100) * ALFA.multiplier,
 };
 /** ALFA's price in the close-or-exercise and settlement scenes, in cents. */
 export const ALFA_AT = 10_200;

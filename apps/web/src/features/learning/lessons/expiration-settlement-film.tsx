@@ -15,6 +15,7 @@ import {
 } from "../walkthrough/film-kit";
 import {
 	CALL_100,
+	CALL_100_DELIVERY,
 	exitValues,
 	INDEX_LAST,
 	INDEX_SETTLES,
@@ -32,7 +33,8 @@ import {
  * $9,500; an index pays cash, $2,500 at the official 5,025, not Thursday's 5,030. Then the
  * window: American any trading day, European only at expiry. The hero: ALFA closes at
  * $100.02, two cents above the strike, and glowing brackets lock as the call is exercised
- * automatically. Last, a writer: $99.98 at the close, $100.60 after hours, assigned.
+ * automatically, then the Monday account shows shares and strike cash due. Last, a writer:
+ * $99.98 at the close, $100.60 after hours; holder exercise precedes Monday assignment.
  *
  *   open      0–4        "Expiration"
  *   question  4–8.8      Oct 4: sell at $7.40, or exercise?
@@ -41,7 +43,7 @@ import {
  *   cash      21.4–25.3  IDX 500: $2,500 at the official 5,025
  *   window    25.3–29.7  American trading days; European at expiry
  *   pin       29.7–35.05  $100.02 − $100.00 makes the bracketed $0.02
- *   writer    35.05–40.6 separate close $99.98, after hours $100.60, holder exercises
+ *   writer    35.05–40.6 settled close/after-hours pair, exercise, then Monday short shares
  *   claim     40.6–45.0 check exercise instructions and the broker's cutoff
  *   next      45.0–47.5 Next: the module checkpoint
  */
@@ -127,9 +129,8 @@ const copy = {
 		"实值 2 美分：默认自动行权。",
 	],
 	holderClose: ["holder · Oct 18 close", "持有人 · 10月18日收盘"],
-	writerClose: ["writer · ALFA", "义务方 · ALFA"],
-	afterHours: ["after hours", "盘后"],
-	close: ["close", "收盘"],
+	writerClose: ["ALFA · close", "ALFA · 收盘"],
+	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
 	inTheMoney: ["in the money · per share", "实值 · 每股"],
 	defaultAction: [
 		"No action · no decline instruction.",
@@ -141,8 +142,11 @@ const copy = {
 		"义务方在盘后也可能被指派。",
 	],
 	strike: ["strike $100", "行权价 $100"],
-	exercised: ["automatic exercise", "自动行权"],
-	assigned: ["assigned: short 100", "被指派：空头 100 股"],
+	sharesUnit: ["shares", "股"],
+	due: ["due", "应付"],
+	monday: ["Monday", "周一"],
+	mondayAssigned: ["Monday · assigned", "周一 · 被指派"],
+	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: [
 		"A tiny expiry value can create shares.",
 		"到期的几美分，也能变成股票。",
@@ -632,58 +636,71 @@ function Scene({
 					{t(copy.strike)}
 				</text>
 			</g>
-			{(
-				[
-					["pin-dot", CALL_100.strike],
-					["writer-dot", WRITER_CLOSE],
-				] as const
-			).map(([name, price]) => (
-				<circle
-					key={name}
-					data-f={name}
-					cx={L.pinX(price)}
-					cy={L.pinY}
-					r={7}
-					className="wt-chip"
-					stroke="var(--foreground)"
-					strokeWidth={1.5}
-				/>
-			))}
-			{(
-				[
-					["pin-price", CALL_100.strike],
-					["writer-price", WRITER_CLOSE],
-				] as const
-			).map(([name, price]) => (
+			<circle
+				data-f="pin-dot"
+				cx={L.pinX(CALL_100.strike)}
+				cy={L.pinY}
+				r={7}
+				className="wt-chip"
+				stroke="var(--foreground)"
+				strokeWidth={1.5}
+			/>
+			<Word
+				name="pin-price"
+				x={L.priceX}
+				y={L.priceY}
+				size={T.num}
+				className="wt-film-num"
+			>
+				{usd(CALL_100.strike * 100)}
+			</Word>
+			<Word
+				name="holder-close"
+				x={L.priceX}
+				y={L.priceY - T.num * 1.3}
+				size={T.small}
+				className="wt-film-tag"
+			>
+				{t(copy.holderClose)}
+			</Word>
+			<g data-f="writer-prices">
+				{(
+					[
+						["writer-close", copy.writerClose, WRITER_CLOSE, 0.25],
+						["writer-after", copy.afterHours, WRITER_AFTER, 0.75],
+					] as const
+				).map(([name, label, price, column]) => (
+					<g key={name}>
+						<Word
+							name={name}
+							x={margin + room * column}
+							y={H * 0.39 - T.num * 1.3}
+							size={T.small}
+							className="wt-film-tag"
+						>
+							{t(label)}
+						</Word>
+						<Word
+							name={`${name}-price`}
+							x={margin + room * column}
+							y={H * 0.39}
+							size={T.num}
+							className="wt-film-num"
+						>
+							{usd(price * 100)}
+						</Word>
+					</g>
+				))}
 				<Word
-					key={name}
-					name={name}
-					x={L.priceX}
-					y={L.priceY}
-					size={T.num}
-					className="wt-film-num"
+					name="writer-strike"
+					x={W / 2}
+					y={H * 0.57}
+					size={T.body}
+					className="wt-film-type wt-film-dim"
 				>
-					{usd(price * 100)}
+					{t(copy.strike)}
 				</Word>
-			))}
-			{(
-				[
-					["holder-close", copy.holderClose],
-					["writer-close", copy.writerClose],
-					["writer-after", copy.afterHours],
-				] as const
-			).map(([name, label]) => (
-				<Word
-					key={name}
-					name={name}
-					x={L.priceX}
-					y={name === "writer-after" ? H * 0.51 : L.priceY - T.num * 1.3}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(label)}
-				</Word>
-			))}
+			</g>
 			<Word
 				name="pin-equation"
 				x={W / 2}
@@ -721,40 +738,73 @@ function Scene({
 				className="wt-film-type wt-film-dim"
 			/>
 			<Word
-				name="writer-snapshot"
-				x={W / 2}
-				y={H * 0.59}
-				size={T.body}
-				className="wt-film-type wt-film-dim"
-			>
-				{`${t(copy.close)} ${usd(WRITER_CLOSE * 100)}`}
-			</Word>
-			<Word
 				name="writer-exercise"
 				x={W / 2}
-				y={H * 0.72}
+				y={H * 0.66}
 				size={T.body}
 				className="wt-film-type"
 			>
 				{t(copy.holderExercises)}
 			</Word>
-			{(
-				[
-					["pin-ex", copy.exercised, "wt-film-accent"],
-					["pin-as", copy.assigned, "wt-film-loss"],
-				] as const
-			).map(([name, label, tone]) => (
+			{/* The existing answer supplies exercise; this after-beat supplies the account. */}
+			<g data-f="pin-ex">
 				<Word
-					key={name}
-					name={name}
+					name="holder-shares"
+					x={margin + room * 0.2}
+					y={H * 0.93}
+					size={narrow ? T.body : T.head}
+					className="wt-film-num wt-film-gain"
+				>
+					{`${count(CALL_100_DELIVERY.shares)} ${t(copy.sharesUnit)}`}
+				</Word>
+				<Word
+					name="holder-monday"
 					x={W / 2}
 					y={H * 0.93}
-					size={T.head}
-					className={`wt-film-type ${tone}`}
+					size={T.small}
+					className="wt-film-tag"
 				>
-					{t(label)}
+					{t(copy.monday)}
 				</Word>
-			))}
+				<Word
+					name="holder-due"
+					x={margin + room * 0.8}
+					y={H * 0.93}
+					size={narrow ? T.body : T.head}
+					className="wt-film-num wt-film-loss"
+				>
+					{`${usd(CALL_100_DELIVERY.cashCents, 0)} ${t(copy.due)}`}
+				</Word>
+			</g>
+			<g data-f="pin-as">
+				<Word
+					name="writer-monday"
+					x={W / 2}
+					y={H * 0.88 - T.title * 1.6}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.mondayAssigned)}
+				</Word>
+				<Word
+					name="writer-short"
+					x={W / 2}
+					y={H * 0.88}
+					size={T.title}
+					className="wt-film-num wt-film-loss"
+				>
+					{`−${count(CALL_100_DELIVERY.shares)}`}
+				</Word>
+				<Word
+					name="writer-unit"
+					x={W / 2}
+					y={H * 0.88 + T.small * 2.2 + T.title * 0.15}
+					size={T.small}
+					className="wt-film-tag wt-film-loss"
+				>
+					{t(copy.shortShares)}
+				</Word>
+			</g>
 			<Brackets name="lock-pin" glow />
 			<g data-f="claim">
 				<Lines
@@ -831,15 +881,9 @@ function build(context: FilmContext) {
 		"pin-default",
 		"pin-ex",
 	].map((name) => one(name));
-	const writerMarks = [
-		"writer-dot",
-		"writer-price",
-		"writer-close",
-		"writer-after",
-		"writer-snapshot",
-		"writer-exercise",
-		"pin-as",
-	].map((name) => one(name));
+	const writerMarks = ["writer-prices", "writer-exercise", "pin-as"].map(
+		(name) => one(name),
+	);
 	const moveDot = (
 		name: string,
 		from: number,
@@ -1033,27 +1077,20 @@ function build(context: FilmContext) {
 	d.lock(g("lock-pin"), 31.45, { around: one("pin-value"), pad: 8 });
 	tl.addLabel("hero-lock", 31.45);
 	show(heads[6], 31.45);
-	word(one("pin-ex"), 31.65);
+	// Answer settles at 31.95 (the lock at 31.9), then a full second of quiet.
+	fade(one("pin-ex"), 32.95);
 
 	tl.addLabel("writer", 35.05);
 	d.swap([heads[5], heads[6]], heads[7], 35.05);
-	hide([...holderMarks, g("lock-pin")], 35.05, 0.35, 0);
-	// A separate writer case fades in at its own close, rather than walking the holder back.
-	fade(
-		[
-			one("writer-dot"),
-			one("writer-price"),
-			one("writer-close"),
-			one("writer-snapshot"),
-		],
-		35.4,
-	);
-	// Give the close a full second of quiet before the after-hours phase change.
-	fade(one("writer-after"), 36.9);
-	moveDot("writer", WRITER_CLOSE, WRITER_AFTER, 36.9, 0.9);
-	// After hours settles at 37.8; its completed proof rests until 38.8.
-	fade(one("writer-exercise"), 38.8, 0.55);
-	word(one("pin-as"), 38.8);
+	hide([...holderMarks, ...flat("pin"), g("lock-pin")], 35.05, 0.35, 0);
+	// The writer comparison arrives as two explicitly labelled, settled states.
+	// Remove the walk, its axis and the repeated close snapshot to fund cause → account.
+	fade(one("writer-prices"), 35.4);
+	// Both prices settle at 35.9, then a full second of quiet.
+	fade(one("writer-exercise"), 36.9, 0.55);
+	// Holder exercise settles at 37.45, then a full second of quiet.
+	fade(one("pin-as"), 38.45, 0.55);
+	// Monday's account settles at 39.0, then rests for 1.6 s before the claim.
 
 	tl.addLabel("claim", 40.6);
 	hide([heads[7], ...flat("pin"), ...writerMarks], 40.6);
@@ -1069,8 +1106,8 @@ function build(context: FilmContext) {
 export const expirationSettlementFilm: Film = {
 	id: "expiration-settlement",
 	label: [
-		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at $102, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement in 100 ALFA shares for $9,500, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; and a call exercised automatically at $100.02 when the holder takes no action and has not declined exercise, beside a separate writer whose call is exercised after ALFA closed at $99.98 and traded to $100.60`,
-		`到期短片：10月4日 ALFA 为 $102，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：ALFA 以 $9,500 交收 100 股，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；以及 $100.02 时，持有人未操作且未指示放弃行权，于是默认自动行权；另一位义务方面对收盘 $99.98、盘后涨到 $100.60，持有人选择行权而被指派`,
+		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at $102, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement in 100 ALFA shares for $9,500, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; and a call exercised automatically at $100.02 when the holder takes no action and has not declined exercise, creating ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due on Monday, beside a separate writer whose call is exercised after ALFA closed at $99.98 and traded to $100.60`,
+		`到期短片：10月4日 ALFA 为 $102，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：ALFA 以 $9,500 交收 100 股，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；以及 $100.02 时，持有人未操作且未指示放弃行权，于是默认自动行权，周一得到 ${count(CALL_100_DELIVERY.shares)} 股且应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}；另一位义务方面对收盘 $99.98、盘后涨到 $100.60，持有人选择行权而被指派`,
 	],
 	stage: "dark",
 	shots: [
