@@ -19,6 +19,7 @@ import {
 	CORRECTED,
 	HOLDOUT,
 	history,
+	LOWER,
 	PERCENTILE,
 	REPORTED,
 	SESSIONS,
@@ -38,17 +39,15 @@ import {
  *   question  4–8.6      a decision at 10:50:01: which price?
  *   cutoff    8.6–20.8   arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
  *   rank      20.8–29.4  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
- *   holdout   29.4–36.4  ten thresholds; the winner 70%; the holdout 52%
- *   claim     36.4–40.8  only what was known, and test once
- *   next      40.8–43.3  Next: the module checkpoint
+ *   holdout   29.4–37.9  ten thresholds; the winner 70%; the holdout 52%
+ *   claim     37.9–42.3  only what was known, and test once
+ *   next      42.3–44.8  Next: the module checkpoint
  */
 
-const END = 43.3;
+const END = 44.8;
 const MAX_DAYS = Math.max(...history.map((b) => b.days));
-const TODAY_BUCKET = history.findIndex(
-	(b) => TODAY >= b.from && TODAY < b.from + BUCKET,
-);
 const BEST_INDEX = tried.indexOf(best);
+const HERO_PAD = 10;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -58,6 +57,7 @@ function layout(width: number) {
 	const histBottom = H * (narrow ? 0.72 : 0.74);
 	const slot = room / history.length;
 	const barSlot = room / tried.length;
+	const todayX = margin + (TODAY / BUCKET) * slot;
 	return {
 		...frame,
 		/** Rows leave a gap above each one for the decision rule and its label. */
@@ -67,6 +67,11 @@ function layout(width: number) {
 		histTop,
 		histBottom,
 		slot,
+		todayX,
+		// Allow the lock's maximum 24 px expansion, its pad and a clear lane to today.
+		heroRight: todayX - (narrow ? 46 : 50),
+		heroY: histTop + frame.type.num * 1.7,
+		misreadingRight: todayX - (narrow ? 14 : 36),
 		histX: (i: number) => margin + i * slot,
 		histH: (days: number) => (days / MAX_DAYS) * (histBottom - histTop),
 		barSlot,
@@ -94,25 +99,32 @@ const copy = {
 	known: ["known", "已知"],
 	notYet: ["not yet", "还没到"],
 	decision: ["decision", "决策时刻"],
-	rHead: [
-		`Today's ${TODAY}× against ${SESSIONS} sessions.`,
-		`今天的 ${TODAY}× 对照 ${SESSIONS} 个交易日。`,
+	rHead: ["Compare today with past sessions.", "把今天与过去的交易日比较。"],
+	lower: [
+		`${LOWER} / ${SESSIONS} sessions lower`,
+		`${SESSIONS} 个交易日中，${LOWER} 个更低`,
 	],
+	pct: [`${PERCENTILE}th`, `第 ${PERCENTILE}`],
 	r2Head: [
 		`The ${PERCENTILE}th percentile: a rank, not a chance.`,
 		`第 ${PERCENTILE} 百分位：是排名，不是概率。`,
 	],
 	today: [`today ${TODAY}×`, `今天 ${TODAY}×`],
 	axis: ["volume ÷ typical", "成交量 ÷ 常态"],
-	hHead: [
-		`${tried.length} thresholds, tried on Jan–Jun.`,
-		`${tried.length} 个门槛，在上半年数据上试验。`,
-	],
+	hHead: ["Thresholds tried on Jan–Jun.", "在上半年数据上试验门槛。"],
 	h2Head: [
 		`Frozen, then run once: ${HOLDOUT}%.`,
 		`冻结后只跑一次：${HOLDOUT}%。`,
 	],
 	rose: ["rose next day", "次日上涨"],
+	best: [
+		`above ${best.threshold}× typical · ${best.rose}%`,
+		`超过常态 ${best.threshold}× · ${best.rose}%`,
+	],
+	frozen: [
+		`Frozen rule: volume above ${best.threshold}× typical.`,
+		`冻结规则：成交量超过常态的 ${best.threshold}×。`,
+	],
 	holdout: [`Jul–Aug holdout ${HOLDOUT}%`, `7–8 月样本外 ${HOLDOUT}%`],
 	claimBig: [
 		"Use only what was known, and test once.",
@@ -312,7 +324,7 @@ function Scene({
 								x={L.histX(i)}
 								y={L.histBottom + T.small * 1.6}
 								className="wt-film-num wt-film-dim"
-								style={{ fontSize: T.small * 0.95 }}
+								style={{ fontSize: T.small }}
 							>
 								{`${b.from}×`}
 							</text>
@@ -324,7 +336,7 @@ function Scene({
 					y={L.histBottom + T.small * 3.2}
 					textAnchor="end"
 					className="wt-film-tag"
-					style={{ fontSize: T.small * 0.95 }}
+					style={{ fontSize: T.small }}
 				>
 					{t(copy.axis).toUpperCase()}
 				</text>
@@ -339,38 +351,72 @@ function Scene({
 					height={L.histH(b.days)}
 					rx={3}
 					className="wt-film-bar"
-					data-tone={i === TODAY_BUCKET ? "total" : "neutral"}
+					data-tone="neutral"
 				/>
 			))}
+			<g data-f="lower-counts">
+				{history.map((b, i) =>
+					b.days > 0 ? (
+						<text
+							key={b.from}
+							x={L.histX(i) + L.slot / 2}
+							y={L.histBottom - L.histH(b.days) - 8}
+							textAnchor="middle"
+							className={`wt-film-num ${b.from + BUCKET <= TODAY ? "wt-film-accent" : "wt-film-dim"}`}
+							style={{ fontSize: T.small }}
+						>
+							{b.days}
+						</text>
+					) : null,
+				)}
+			</g>
+			<Lines
+				name="lower"
+				text={t(copy.lower)}
+				x={W / 2}
+				y={H * 0.89}
+				size={T.body}
+				maxWidth={room}
+				className="wt-film-type wt-film-accent"
+			/>
 			<g data-f="today">
 				<path
-					d={`M${L.histX(0) + (TODAY / BUCKET) * L.slot} ${L.histTop - 8}V${L.histBottom}`}
+					d={`M${L.todayX} ${L.histTop - 8}V${L.histBottom}`}
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 				/>
 				<text
-					x={L.histX(0) + (TODAY / BUCKET) * L.slot - 6}
+					x={L.todayX + 12}
 					y={L.histTop - 14}
-					textAnchor="end"
+					textAnchor="start"
 					className="wt-film-num wt-film-accent"
 					style={{ fontSize: T.small * 1.1 }}
 				>
-					{t(copy.today)}
+					{narrow ? (
+						<>
+							<tspan>{t(["today", "今天"])}</tspan>
+							<tspan x={L.todayX + 12} dy={T.small * 1.4}>
+								{`${TODAY}×`}
+							</tspan>
+						</>
+					) : (
+						t(copy.today)
+					)}
 				</text>
 			</g>
 			<text
 				data-f="pct"
-				x={L.histX(0) + (TODAY / BUCKET) * L.slot - 12}
-				y={L.histTop + T.num * 1.2}
+				x={L.heroRight}
+				y={L.heroY}
 				textAnchor="end"
 				className="wt-film-num wt-film-accent"
 				style={{ fontSize: T.num * 1.3 }}
 			>
-				{`${PERCENTILE}th`}
+				{t(copy.pct)}
 			</text>
 			<text
 				data-f="not-chance"
-				x={L.histX(0) + (TODAY / BUCKET) * L.slot - 12}
-				y={L.histTop + T.num * 1.2 + T.body * 1.8}
+				x={L.misreadingRight}
+				y={L.heroY + T.num * 1.3 + 32}
 				textAnchor="end"
 				className="wt-film-type wt-film-loss"
 				style={{ fontSize: text, textDecoration: "line-through" }}
@@ -421,6 +467,15 @@ function Scene({
 				>
 					{t(copy.rose).toUpperCase()}
 				</text>
+				<text
+					x={margin + room}
+					y={L.histBottom + T.small * 3.2}
+					textAnchor="end"
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.axis).toUpperCase()}
+				</text>
 			</g>
 			{tried.map((r, i) => (
 				<g key={r.threshold} data-f={`try-${i}`}>
@@ -434,15 +489,17 @@ function Scene({
 						className="wt-film-bar"
 						data-tone="neutral"
 					/>
-					<text
-						x={L.barX(i) + L.barSlot / 2}
-						y={L.histBottom + T.small * 1.6}
-						textAnchor="middle"
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: T.small * (narrow ? 0.85 : 0.95) }}
-					>
-						{`${r.threshold}`}
-					</text>
+					{!narrow || i % 2 === 1 ? (
+						<text
+							x={L.barX(i) + L.barSlot / 2}
+							y={L.histBottom + T.small * 1.6}
+							textAnchor="middle"
+							className="wt-film-num wt-film-dim"
+							style={{ fontSize: T.small }}
+						>
+							{`${r.threshold}×`}
+						</text>
+					) : null}
 				</g>
 			))}
 			<text
@@ -453,8 +510,16 @@ function Scene({
 				className="wt-film-num wt-film-accent"
 				style={{ fontSize: text * 1.1 }}
 			>
-				{`${best.rose}%`}
+				{t(copy.best)}
 			</text>
+			<Lines
+				name="frozen-rule"
+				text={t(copy.frozen)}
+				x={W / 2}
+				y={H * 0.89}
+				size={T.body}
+				maxWidth={room}
+			/>
 			<g data-f="hold">
 				<path
 					d={`M${L.barX(BEST_INDEX) - L.barSlot * 0.6} ${L.pctY(HOLDOUT)}H${L.barX(BEST_INDEX) + L.barSlot * 1.6}`}
@@ -537,6 +602,16 @@ function build(context: FilmContext) {
 		"h2-head",
 	].map((name) => one(name));
 	const lockPct = one<SVGGraphicsElement>("lock-pct");
+	// Keep the misreading below even the lock's largest expansion, in either font.
+	const pctBox = one<SVGTextElement>("pct").getBBox();
+	const misreading = one<SVGTextElement>("not-chance");
+	const misreadingBox = misreading.getBBox();
+	const misreadingAscent =
+		Number(misreading.getAttribute("y")) - misreadingBox.y;
+	misreading.setAttribute(
+		"y",
+		String(pctBox.y + pctBox.height + HERO_PAD + 24 + 12 + misreadingAscent),
+	);
 	const arrs = arrivals.map((_, i) => one(`arr-${i}`));
 	const marks = arrivals.flatMap((_, i) => [
 		one(`arr-${i}-known`),
@@ -544,13 +619,17 @@ function build(context: FilmContext) {
 	]);
 	const bins = history.map((_, i) => one(`bin-${i}`));
 	const tries = tried.map((_, i) => one(`try-${i}`));
-	/** The decision moves: everything above the rule is known, the rest isn't yet. */
+	/** Reveal a complete cutoff state only after the previous boundary is gone. */
 	const knownTo = (cut: number, time: number) => {
 		arrivals.forEach((_, i) => {
 			const known = i < cut;
-			tl.set(one(`arr-${i}-known`), { opacity: known ? 1 : 0 }, time);
-			tl.set(one(`arr-${i}-notYet`), { opacity: known ? 0 : 1 }, time);
-			tl.to(arrs[i], { opacity: known ? 1 : 0.45, duration: 0.3 }, time);
+			tl.fromTo(
+				one(`arr-${i}-${known ? "known" : "notYet"}`),
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.4 },
+				time,
+			);
+			tl.to(arrs[i], { opacity: known ? 1 : 0.45, duration: 0.4 }, time);
 		});
 	};
 
@@ -563,6 +642,8 @@ function build(context: FilmContext) {
 		one("cut-3"),
 		...kids("hist"),
 		...bins,
+		one("lower-counts"),
+		one("lower"),
 		one("today"),
 		one("pct"),
 		lockPct,
@@ -570,6 +651,7 @@ function build(context: FilmContext) {
 		...kids("search-axis"),
 		...tries,
 		one("best"),
+		one("frozen-rule"),
 		one("hold"),
 		...kids("claim"),
 	]);
@@ -603,19 +685,18 @@ function build(context: FilmContext) {
 	show(heads[1], 11.6);
 	// A minute later the correction is in; Tuesday's data never is.
 	d.swap([heads[0], heads[1]], heads[2], 15.4);
-	hide(one("cut-2"), 15.6, 0.25);
-	// In place, not slid down: a slide would carry its label through the correction's row.
-	tl.fromTo(
-		one("cut-3"),
-		{ opacity: 0, x: -20 },
-		{ opacity: 1, x: 0, duration: 0.4 },
-		15.7,
+	// The old boundary and all of its statuses leave together, in place.
+	tl.to(
+		[one("cut-2"), ...marks],
+		{ opacity: 0, duration: 0.35, ease: "power2.in" },
+		15.6,
 	);
-	// The marks turn as the rule sets off, so it never passes a stale "not yet".
-	knownTo(3, 15.7);
-	tl.set(one("arr-1-box"), { attr: { class: "wt-panel-shape" } }, 15.7);
-	tl.set(one("arr-2-box"), { attr: { class: "wt-focus-shape" } }, 15.7);
-	tl.to(arrs[3], { opacity: 0.25, duration: 0.3 }, 16.8);
+	// In place, not slid down: a slide would carry its label through the correction's row.
+	tl.fromTo(one("cut-3"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 15.95);
+	knownTo(3, 15.95);
+	tl.set(one("arr-1-box"), { attr: { class: "wt-panel-shape" } }, 15.95);
+	tl.set(one("arr-2-box"), { attr: { class: "wt-focus-shape" } }, 15.95);
+	tl.to(arrs[3], { opacity: 0.25, duration: 0.3 }, 17.4);
 
 	// ——— rank: the hero. A percentile is a rank. ———
 	tl.addLabel("rank", 20.8);
@@ -636,11 +717,25 @@ function build(context: FilmContext) {
 			21.6 + i * 0.06,
 		);
 	});
-	show(one("today"), 23.4);
+	// Compare first, then select the historical sessions strictly below today.
+	// Fade in place: the marker already names its final 4.2× coordinate.
+	tl.fromTo(one("today"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 21.6);
+	tl.set(
+		bins.filter((_, i) => history[i].from + BUCKET <= TODAY),
+		{ attr: { "data-tone": "total" } },
+		23.0,
+	);
+	tl.fromTo(
+		[one("lower-counts"), one("lower")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		23.0,
+	);
+	// The settled 58 / 60 proof rests 1.3 s before its rounded answer arrives.
 	word(one("pct"), 24.8);
-	show(one("not-chance"), 25.3);
-	// Round the percentile and what it isn't: the pair is the answer.
-	d.lock(lockPct, 25.8, { around: [one("pct"), one("not-chance")], pad: 6 });
+	tl.fromTo(misreading, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 25.3);
+	// Lock only the rank; its rejected interpretation stays in a separate lane below.
+	d.lock(lockPct, 25.8, { around: [one("pct")], pad: HERO_PAD });
 	tl.addLabel("hero-lock", 25.8);
 	show(heads[4], 25.8);
 
@@ -651,6 +746,8 @@ function build(context: FilmContext) {
 		[
 			...kids("hist"),
 			...bins,
+			one("lower-counts"),
+			one("lower"),
 			one("today"),
 			one("pct"),
 			lockPct,
@@ -660,7 +757,7 @@ function build(context: FilmContext) {
 	);
 	show(kids("search-axis"), 29.8);
 	tries.forEach((tr, i) => {
-		show(tr, 30.0 + i * 0.1);
+		show(tr, 29.8 + i * 0.1);
 	});
 	tl.set(
 		one(`try-${BEST_INDEX}-bar`),
@@ -668,21 +765,22 @@ function build(context: FilmContext) {
 		31.2,
 	);
 	word(one("best"), 31.2);
+	tl.fromTo(
+		one("frozen-rule"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		31.2,
+	);
 	tl.to(
 		tries.filter((_, i) => i !== BEST_INDEX),
 		{ opacity: 0.35, duration: 0.4 },
 		31.4,
 	);
-	tl.fromTo(
-		one("hold"),
-		{ opacity: 0, y: -(L.pctY(HOLDOUT) - L.pctY(best.rose)) },
-		{ opacity: 1, y: 0, duration: 0.8, ease: "power2.inOut" },
-		32.0,
-	);
-	show(heads[6], 32.8);
+	tl.fromTo(one("hold"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 32.8);
+	show(heads[6], 34.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.4);
+	tl.addLabel("claim", 37.9);
 	hide(
 		[
 			heads[5],
@@ -690,17 +788,18 @@ function build(context: FilmContext) {
 			...kids("search-axis"),
 			...tries,
 			one("best"),
+			one("frozen-rule"),
 			one("hold"),
 		],
-		36.4,
+		37.9,
 	);
-	word(one("z-big"), 36.7);
-	show(one("z-sub"), 37.1);
+	word(one("z-big"), 38.2);
+	show(one("z-sub"), 38.6);
 
 	// ——— next ———
-	tl.addLabel("next", 40.8);
-	hide(kids("claim"), 40.8);
-	d.close(40.8);
+	tl.addLabel("next", 42.3);
+	hide(kids("claim"), 42.3);
+	d.close(42.3);
 	return tl;
 }
 
