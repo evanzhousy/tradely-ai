@@ -20,27 +20,25 @@ import {
 } from "./validate-option-print-model";
 
 /*
- * Checking one trade, as a film. 500 Oct 18 105 calls print at $2.15: a $107,500 bet that
- * ALFA rises? The amount comes first, built from the record: $2.15 × 500 × 100. Then a
- * ladder of claims, each tagged with its evidence, from observed down to unknown; with only
- * a 90-second-old quote, the location and the buyer drop to unknown and the amount stays.
- * Then the record that could close each gap: an open-interest report, and the hero, the
- * linked leg that makes the "bet" half of a $1.25 call spread, where glowing brackets lock.
- * Last, belief, which no record shows.
+ * One print: calculate its premium, check the matched and then stale quote, and separate
+ * linked records from the spread cost. Traces connect the prices to a subtraction; the settled
+ * $1.25/share result takes the hero lock. Market records cannot show belief.
  *
- *   open      0–4        "Checking one trade"
- *   question  4–8.6      500 at $2.15: a $107,500 bet ALFA rises?
- *   amount    8.6–14     $2.15 a share × 500 contracts × 100 shares = $107,500
- *   claims    14–23.6    observed, calculated, inferred, unknown; an old quote
- *   gaps      23.6–32.6  OI +480; hero: a linked 110 leg, a $1.25 call spread
- *   belief    32.6–37.8  no record of belief
- *   claim     37.8–42.6  facts, inferences, unknowns
- *   next      42.6–45.1  Next: the module checkpoint
+ *   open      0–4
+ *   question  4–8.6
+ *   amount    8.6–14
+ *   claims    14–23.6    matched quote, then its 90-second-old replacement
+ *   gaps      23.6–40.2  OI, linked records, subtraction, hero, belief limitation
+ *   claim     40.2–45
+ *   next      45–47.5
  */
 
-const END = 45.1;
+const END = 47.5;
 type Evidence = "observed" | "calculated" | "inferred" | "unknown";
 const LEG = BLOCK.pairedLeg;
+const seconds = (time: string) =>
+	time.split(":").reduce((total, part) => total * 60 + Number(part), 0);
+const QUOTE_AGE = seconds(BLOCK.time) - seconds(BLOCK.staleQuote.time);
 const tone = (evidence: Evidence) =>
 	evidence === "unknown"
 		? "wt-film-dim"
@@ -60,9 +58,8 @@ function layout(width: number) {
 		rowY: (i: number) =>
 			H * (narrow ? 0.25 : 0.25) + i * H * (narrow ? 0.085 : 0.088),
 		rowH: H * (narrow ? 0.068 : 0.07),
-		gapY: (i: number) =>
-			H * (narrow ? 0.25 : 0.25) + i * H * (narrow ? 0.2 : 0.2),
-		gapH: H * (narrow ? 0.17 : 0.17),
+		gapY: (i: number) => H * [0.2, 0.355, 0.865][i],
+		gapH: (i: number) => H * [0.13, 0.19, 0.11][i],
 	};
 }
 
@@ -107,52 +104,21 @@ const claims: { id: string; text: Copy; evidence: Evidence; stale?: true }[] = [
 	},
 ];
 
-const gaps: {
-	id: string;
-	question: Copy;
-	needs: Copy;
-	found: Copy;
-	foundShort: Copy;
-	evidence: Evidence;
-}[] = [
+const gaps: { id: string; question: Copy; needs: Copy }[] = [
 	{
 		id: "open",
 		question: ["Opened new contracts?", "开立了新合约？"],
-		needs: ["needs the next open-interest report", "需要下一份未平仓量报告"],
-		found: [
-			`Tuesday's open interest: +${BLOCK.openInterestChange}, so mostly opening`,
-			`周二未平仓量：+${BLOCK.openInterestChange}，大部分是开仓`,
-		],
-		foundShort: [
-			`OI +${BLOCK.openInterestChange}: mostly opening`,
-			`未平仓量 +${BLOCK.openInterestChange}：多为开仓`,
-		],
-		evidence: "inferred",
+		needs: ["Next OI report", "次日未平仓量"],
 	},
 	{
 		id: "leg",
 		question: ["One leg of a strategy?", "某个策略的一条腿？"],
-		needs: [
-			"needs the condition code and linked prints",
-			"需要成交条件代码和关联成交",
-		],
-		found: [
-			`multi-leg: ${count(LEG.quantity)} Oct 18 ${LEG.strike} calls sold at ${usd(LEG.price)}, a ${usd(SPREAD_COST)} call spread`,
-			`多腿：同时以 ${usd(LEG.price)} 卖出 ${count(LEG.quantity)} 张 ${LEG.strike} 看涨，一笔 ${usd(SPREAD_COST)} 的看涨价差`,
-		],
-		foundShort: [
-			`with ${LEG.strike} calls sold: a ${usd(SPREAD_COST)} spread`,
-			`同时卖出 ${LEG.strike} 看涨：${usd(SPREAD_COST)} 价差`,
-		],
-		evidence: "observed",
+		needs: ["Condition + linked prints", "条件＋关联成交"],
 	},
 	{
 		id: "belief",
-		question: ["A bet that ALFA rises?", "押注 ALFA 上涨？"],
-		needs: ["what record could show this?", "什么记录能说明这一点？"],
-		found: ["no market record shows belief", "没有任何市场记录能显示观点"],
-		foundShort: ["no record shows belief", "没有记录能显示观点"],
-		evidence: "unknown",
+		question: ["Belief", "观点"],
+		needs: ["No market record shows belief.", "市场记录无法显示观点。"],
 	},
 ];
 
@@ -177,10 +143,13 @@ const copy = {
 	shares: ["shares each", "股/张"],
 	premium: ["premium", "权利金"],
 	lHead: ["Each claim, tagged with its evidence.", "每个结论，标上它的证据。"],
-	l2Head: ["An old quote: two drop to unknown.", "换成旧报价：两条降为未知。"],
 	gHead: ["Which record could close each gap?", "哪份记录能填补每个缺口？"],
-	g2Head: ["The bet was half a spread.", "这笔“押注”其实是价差的一半。"],
-	g3Head: ["Belief leaves no record at all.", "观点不会留下任何记录。"],
+	g2Head: ["This print was one spread leg.", "这笔成交是价差的一条腿。"],
+	quote: ["Matched quote", "匹配报价"],
+	staleQuote: [`${QUOTE_AGE} s old`, `${QUOTE_AGE} 秒前`],
+	bid: ["bid", "买价"],
+	ask: ["ask", "卖价"],
+	spreadCost: ["calculated · per share", "计算 · 每股成本"],
 	observed: ["observed", "观测"],
 	calculated: ["calculated", "计算"],
 	inferred: ["inferred", "推断"],
@@ -212,6 +181,8 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
+	const gapHeadingY = (i: number) =>
+		L.gapY(i) + L.gapH(i) * (i === 1 ? 0.22 : 0.38);
 	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
@@ -346,21 +317,6 @@ function Scene({
 
 			{/* The ladder of claims. */}
 			{headline("l-head", copy.lHead)}
-			{/* The answer, as two evidence tags fall to unknown. */}
-			<Lines
-				name="l2-head"
-				text={t(copy.l2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.lHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			{claims.map((claim, i) => (
 				<g key={claim.id} data-f={`row-${i}`}>
 					<rect
@@ -403,6 +359,61 @@ function Scene({
 				) : null,
 			)}
 
+			{/* Replace the quote record before changing any classification. */}
+			<rect
+				data-f="quote-panel"
+				x={margin}
+				y={H * 0.79}
+				width={room}
+				height={H * 0.16}
+				rx={12}
+				className="wt-panel-shape"
+			/>
+			{([BLOCK.quote, BLOCK.staleQuote] as const).map((quote, i) => (
+				<g key={quote.time} data-f={i ? "quote-stale" : "quote-fresh"}>
+					<Word
+						name={`quote-${i}-tag`}
+						x={margin + 14}
+						y={H * 0.83}
+						size={T.small}
+						anchor="start"
+						className="wt-film-tag"
+					>
+						{t(i ? copy.staleQuote : copy.quote).toUpperCase()}
+					</Word>
+					<Word
+						name={`quote-${i}-time`}
+						x={margin + room - 14}
+						y={H * 0.83}
+						size={T.small}
+						anchor="end"
+						className="wt-film-tag"
+					>
+						{quote.time}
+					</Word>
+					<Word
+						name={`quote-${i}-bid`}
+						x={margin + 14}
+						y={H * 0.905}
+						size={T.body}
+						anchor="start"
+						className="wt-film-num"
+					>
+						{t(copy.bid)} {usd(quote.bid)}
+					</Word>
+					<Word
+						name={`quote-${i}-ask`}
+						x={margin + room - 14}
+						y={H * 0.905}
+						size={T.body}
+						anchor="end"
+						className="wt-film-num"
+					>
+						{t(copy.ask)} {usd(quote.ask)}
+					</Word>
+				</g>
+			))}
+
 			{/* The records that close the gaps. */}
 			{headline("g-head", copy.gHead)}
 			{/* The hero's answer, as the linked leg's record comes up. */}
@@ -420,62 +431,177 @@ function Scene({
 				maxWidth={narrow ? room : room * 0.74}
 				anchor="start"
 			/>
-			{headline("g3-head", copy.g3Head)}
 			{gaps.map((gap, i) => (
 				<g key={gap.id} data-f={`gap-${i}`}>
 					<rect
 						x={margin}
 						y={L.gapY(i)}
 						width={room}
-						height={L.gapH}
+						height={L.gapH(i)}
 						rx={12}
 						className="wt-panel-shape"
 					/>
 					<text
 						x={margin + 16}
-						y={L.gapY(i) + L.gapH * 0.38}
+						y={gapHeadingY(i)}
 						className="wt-film-type"
 						style={{ fontSize: narrow ? T.body : T.head * 0.9 }}
 					>
 						{t(gap.question)}
 					</text>
-					<text
-						data-f={`needs-${i}`}
-						x={margin + 16}
-						y={L.gapY(i) + L.gapH * 0.74}
-						className="wt-film-type wt-film-dim"
-						style={{ fontSize: text }}
-					>
-						{t(gap.needs)}
-					</text>
+					{i !== 0 && (
+						<text
+							data-f={`needs-${i}`}
+							x={margin + 16}
+							y={L.gapY(i) + L.gapH(i) * 0.78}
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: T.body }}
+						>
+							{t(gap.needs)}
+						</text>
+					)}
 					{evidenceTag(
 						`gq-${i}`,
 						margin + room - 16,
-						L.gapY(i) + L.gapH * 0.38,
+						gapHeadingY(i),
 						"unknown",
 					)}
 				</g>
 			))}
-			{gaps.map((gap, i) => (
-				<g key={gap.id} data-f={`found-${i}`}>
-					<text
-						x={margin + 16}
-						y={L.gapY(i) + L.gapH * 0.74}
-						className={`wt-film-type ${gap.evidence === "unknown" ? "wt-film-dim" : "wt-film-accent"}`}
-						style={{ fontSize: text }}
-					>
-						{t(narrow ? gap.foundShort : gap.found)}
-					</text>
-					{gap.evidence === "unknown"
-						? null
-						: evidenceTag(
-								`gf-${i}`,
-								margin + room - 16,
-								L.gapY(i) + L.gapH * 0.38,
-								gap.evidence,
-							)}
-				</g>
+			<Word
+				name="found-0"
+				x={margin + 16}
+				y={L.gapY(0) + L.gapH(0) * 0.78}
+				size={T.body}
+				anchor="start"
+				className="wt-film-type wt-film-accent"
+			>
+				{t([
+					`Tuesday OI +${BLOCK.openInterestChange}: mostly opening`,
+					`周二未平仓量 +${BLOCK.openInterestChange}：多为开仓`,
+				])}
+			</Word>
+			{evidenceTag(
+				"gf-0",
+				margin + room - 16,
+				L.gapY(0) + L.gapH(0) * 0.38,
+				"inferred",
+			)}
+			<g data-f="found-1">
+				{(
+					[
+						[
+							"buy",
+							BLOCK.price,
+							[
+								`${count(BLOCK.quantity)} Oct 18 105 calls`,
+								`${count(BLOCK.quantity)} 张 10月18日 105 看涨`,
+							],
+						],
+						[
+							"sell",
+							LEG.price,
+							[
+								`${count(LEG.quantity)} Oct 18 ${LEG.strike} calls sold`,
+								`${count(LEG.quantity)} 张 10月18日 ${LEG.strike} 看涨卖出`,
+							],
+						],
+					] as const
+				).map(([id, price, label], i) => (
+					<g key={id}>
+						<Word
+							name={`leg-${id}-record`}
+							x={margin + 16}
+							y={H * (0.445 + i * 0.045)}
+							size={T.body}
+							anchor="start"
+							className="wt-film-type"
+						>
+							{t(label)}
+						</Word>
+						<Word
+							name={`leg-${id}-price`}
+							x={margin + room - 16}
+							y={H * (0.445 + i * 0.045)}
+							size={T.body}
+							anchor="end"
+							className="wt-film-num"
+						>
+							{usd(price)}
+						</Word>
+					</g>
+				))}
+			</g>
+			<Word
+				name="leg-link"
+				x={margin + 16}
+				y={H * 0.53}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(["linked · multi-leg", "关联 · 多腿"]).toUpperCase()}
+			</Word>
+
+			{evidenceTag("gf-1", margin + room - 16, gapHeadingY(1), "observed")}
+			{([BLOCK.price, LEG.price] as const).map((price, i) => (
+				<Word
+					key={price}
+					name={`cost-${i}`}
+					x={W * (i ? 0.65 : 0.35)}
+					y={H * 0.62}
+					size={T.num * 0.85}
+					className="wt-film-num"
+				>
+					{usd(price)}
+				</Word>
 			))}
+			<Word
+				name="cost-minus"
+				x={W / 2}
+				y={H * 0.62}
+				size={T.num * 0.85}
+				className="wt-film-num"
+			>
+				−
+			</Word>
+			<Word
+				name="cost-result"
+				x={W / 2}
+				y={H * 0.795}
+				size={T.num * 1.9}
+				className="wt-film-num wt-film-accent"
+			>
+				{usd(SPREAD_COST)}
+			</Word>
+			<Word
+				name="cost-label"
+				x={W / 2}
+				y={H * 0.845}
+				size={T.small}
+				className="wt-film-tag"
+			>
+				{t(copy.spreadCost).toUpperCase()}
+			</Word>
+			{[0, 1].map((i) => (
+				<path
+					key={i}
+					data-f={`cost-link-${i}`}
+					d={`M ${margin + room - 10} ${H * (0.437 + i * 0.045)} H ${W * (i ? 0.937 : 0.953)} V ${H * (0.549 + i * 0.004)} H ${W * (i ? 0.65 : 0.35)}`}
+					className="wt-film-link"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth={1.5}
+				/>
+			))}
+			<path
+				data-f="belief-rule"
+				d={`M ${margin + 16} ${H * 0.967} H ${margin + room - 16}`}
+				className="wt-film-link"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth={1.5}
+			/>
 
 			<Brackets name="lock-leg" glow />
 
@@ -531,26 +657,54 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = [
-		"m-head",
-		"l-head",
-		"l2-head",
-		"g-head",
-		"g2-head",
-		"g3-head",
-	].map((name) => one(name));
+	const heads = ["m-head", "l-head", "g-head", "g2-head"].map((name) =>
+		one(name),
+	);
 	const terms = ["f-price", "f-qty", "f-mult"].map((name) => one(name));
 	const times = [one("times-0"), one("times-1")];
 	const rows = claims.map((_, i) => one(`row-${i}`));
 	const staleRows = claims.flatMap((claim, i) => (claim.stale ? [i] : []));
 	const gapCards = gaps.map((_, i) => one(`gap-${i}`));
-	const found = gaps.map((_, i) => one(`found-${i}`));
+	const records = ["buy", "sell"].map((id) => one(`leg-${id}-record`));
+	const prices = ["buy", "sell"].map((id) =>
+		one<SVGGraphicsElement>(`leg-${id}-price`),
+	);
+	const cost = [
+		"cost-0",
+		"cost-1",
+		"cost-minus",
+		"cost-result",
+		"cost-label",
+	].map((name) => one(name));
+	const quote = ["quote-panel", "quote-fresh", "quote-stale"].map((name) =>
+		one(name),
+	);
+	const found = [
+		one("found-0"),
+		...records,
+		...prices,
+		one("leg-link"),
+		one("gf-0"),
+		one("gf-1"),
+	];
 	const lockLeg = one<SVGGraphicsElement>("lock-leg");
-	/** A gap's record comes up where its question's need was. */
+	const fade = (targets: Element[], at: number, opacity = 1) =>
+		tl.fromTo(targets, { opacity: 0 }, { opacity, duration: 0.5 }, at);
 	const close = (i: number, at: number) => {
-		d.flip(one(`needs-${i}`), found[i], at);
-		tl.set(one(`needs-${i}`), { opacity: 0 }, at + 0.3);
-		if (gaps[i].evidence === "unknown") return;
+		if (i === 0) {
+			fade([one("found-0")], at);
+		} else {
+			hide(one("needs-1"), at, 0.3, 0);
+			fade([...records, ...prices, one("leg-link")], at + 0.3);
+			hide(one("gq-1"), at, 0.3, 0);
+			tl.fromTo(
+				one("gf-1"),
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.35 },
+				at + 0.3,
+			);
+			return;
+		}
 		d.flip(one(`gq-${i}`), one(`gf-${i}`), at);
 		tl.set(one(`gq-${i}`), { opacity: 0 }, at + 0.3);
 	};
@@ -558,13 +712,18 @@ function build(context: FilmContext) {
 	d.hidden([
 		...flat("q"),
 		...heads,
-		...terms,
+		...terms.flatMap((term) => [...term.children]),
 		...times,
 		one("sum"),
 		...rows,
 		...staleRows.map((i) => one(`ev-${i}-stale`)),
 		...gapCards,
 		...found,
+		...cost,
+		one("cost-link-0"),
+		one("cost-link-1"),
+		...quote,
+		one("belief-rule"),
 		lockLeg,
 		...kids("claim"),
 	]);
@@ -585,7 +744,8 @@ function build(context: FilmContext) {
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
 	terms.forEach((term, i) => {
-		word(term, 9.4 + i * 0.7);
+		word(term.firstElementChild as Element, 9.4 + i * 0.7);
+		show(term.lastElementChild as Element, 9.4 + i * 0.7, "below", 0.55);
 		if (i) show(times[i - 1], 9.2 + i * 0.7);
 	});
 	show(one("sum"), 11.6);
@@ -602,78 +762,97 @@ function build(context: FilmContext) {
 	tl.addLabel("claims", 14);
 	hide([heads[0], ...terms, ...times, one("sum")], 14.0);
 	show(heads[1], 14.35);
+	fade([quote[0], quote[1]], 14.2);
 	rows.forEach((row, i) => {
 		show(row, 14.7 + i * 0.5, "right");
 	});
-	// An old quote: two claims fall to unknown; the amount doesn't move.
+	// One second of quiet after the old quote lands, before downgrading the tags.
+	hide(quote[1], 17.75, 0.35, 0);
+	fade([quote[2]], 18.1);
 	staleRows.forEach((i, k) => {
 		const at = 19.6 + k * 0.3;
 		d.flip(one(`ev-${i}`), one(`ev-${i}-stale`), at);
 		tl.set(one(`ev-${i}`), { opacity: 0 }, at + 0.3);
-		tl.to(
+		tl.set(
 			one(`row-${i}-box`),
-			{ attr: { class: "wt-panel-shape" }, duration: 0.01 },
+			{ attr: { class: "wt-panel-shape" } },
 			at + 0.3,
 		);
 		tl.to(rows[i], { opacity: 0.6, duration: 0.3 }, at + 0.3);
 	});
-	show(heads[2], 20.0);
-	tl.fromTo(
-		[rows[0], rows[1]],
-		{ scale: 1, transformOrigin: "0% 50%" },
-		{ scale: 1.02, duration: 0.25, yoyo: true, repeat: 1 },
-		20.6,
-	);
 
-	// ——— gaps: the record for each question; the hero is the linked leg ———
+	// ——— gaps: records, calculated cost and the market-record limitation ———
 	tl.addLabel("gaps", 23.6);
 	hide(
 		[
 			heads[1],
-			heads[2],
 			...rows,
+			...quote,
 			...staleRows.map((i) => one(`ev-${i}-stale`)),
 		],
 		23.6,
 	);
-	show(heads[3], 23.95);
+	show(heads[2], 23.95);
 	gapCards.forEach((card, i) => {
-		show(card, 24.3 + i * 0.2, "right");
+		show(card, 23.95 + i * 0.2, "right");
 	});
-	close(0, 27.8);
-	close(1, 28.4);
-	// On the record's line itself: the card's question and tag stay outside.
-	d.lock(lockLeg, 29.0, {
-		around: found[1].firstElementChild as SVGGraphicsElement,
-		pad: 5,
+	close(0, 24.5); // settles 25.15
+	close(1, 26.15); // linked records settle 26.95, one second after OI
+	// Trace from the price records through the clear right gutter into the subtraction.
+	// Records stay readable: no sentence loses its hold to make room for a flight.
+	fade([one("cost-minus")], 27.95);
+	[0, 1].forEach((i) => {
+		d.trace(one<SVGPathElement>(`cost-link-${i}`), 27.95, { duration: 0.6 });
 	});
-	tl.addLabel("hero-lock", 29.0);
-	show(heads[4], 29.0);
-
-	// ——— belief: no record shows it ———
-	tl.addLabel("belief", 32.6);
-	d.swap([heads[3], heads[4]], heads[5], 32.6);
-	hide(lockLeg, 32.6);
-	close(2, 33.2);
+	tl.fromTo(
+		[one("cost-0"), one("cost-1")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		28.55,
+	);
+	// Fixed operands, fixed result; never animate a total after an equals sign.
+	fade([one("cost-result"), one("cost-label")], 29.85);
+	d.lock(lockLeg, 31.35, {
+		around: [one("cost-result"), one("cost-label")],
+		pad: 6,
+	});
+	tl.addLabel("hero-lock", 31.35);
+	show(heads[3], 31.35);
+	// Brackets settle 31.8; the result remains stationary throughout this after-beat.
+	hide([lockLeg, heads[3]], 35.8);
+	d.trace(one<SVGPathElement>("belief-rule"), 37.15, { duration: 0.5 });
 
 	// ——— claim ———
-	tl.addLabel("claim", 37.8);
-	hide([heads[5], ...gapCards, ...found], 37.8);
-	word(one("z-big"), 38.1);
-	show(one("z-sub"), 38.5);
+	tl.addLabel("claim", 40.2);
+	hide(
+		[
+			heads[2],
+			...gapCards,
+			...found,
+			...cost,
+			one("cost-link-0"),
+			one("cost-link-1"),
+			one("belief-rule"),
+		],
+		40.2,
+	);
+	word(one("z-big"), 40.5);
+	show(one("z-sub"), 40.9);
 
 	// ——— next ———
-	tl.addLabel("next", 42.6);
-	hide(kids("claim"), 42.6);
-	d.close(42.6);
+	tl.addLabel("next", 45.0);
+	hide(kids("claim"), 45.0);
+	// Start the end-card line exactly when the claim's exit settles.
+	d.close(44.95);
+
 	return tl;
 }
 
 export const validateOptionPrintFilm: Film = {
 	id: "validate-option-print",
 	label: [
-		`Checking one trade, as a short film: ${count(BLOCK.quantity)} Oct 18 105 calls at ${usd(BLOCK.price)}, and the premium built from the record, ${usd(BLOCK.price)} a share × ${count(BLOCK.quantity)} contracts × ${MULTIPLIER} shares = ${usd(PREMIUM, 0)}; a ladder of claims from observed and calculated through inferred to unknown, where a 90-second-old quote turns the location and the buyer to unknown and leaves the amount; and the records that close the gaps: open interest up ${BLOCK.openInterestChange}, a linked leg that makes it a ${usd(SPREAD_COST)} call spread, and no record at all of belief`,
-		`核查一笔成交短片：${count(BLOCK.quantity)} 张 10月18日 105 看涨以 ${usd(BLOCK.price)} 成交，权利金由记录算出：每股 ${usd(BLOCK.price)} × ${count(BLOCK.quantity)} 张 × ${MULTIPLIER} 股 = ${usd(PREMIUM, 0)}；一张从观测、计算到推断、未知的结论阶梯，90 秒前的报价会让位置和买方变为未知，而金额不变；以及填补缺口的记录：未平仓量增加 ${BLOCK.openInterestChange}，关联的一条腿使它成为 ${usd(SPREAD_COST)} 的看涨价差，而观点没有任何记录`,
+		`Checking one trade, as a short film: ${count(BLOCK.quantity)} Oct 18 105 calls at ${usd(BLOCK.price)}, and the premium built from the record, ${usd(BLOCK.price)} a share × ${count(BLOCK.quantity)} contracts × ${MULTIPLIER} shares = ${usd(PREMIUM, 0)}; a ladder of claims from observed and calculated through inferred to unknown, where a 90-second-old quote turns the location and the buyer to unknown and leaves the amount; and the records that close the gaps: open interest up ${BLOCK.openInterestChange}, a linked leg that makes it a ${usd(SPREAD_COST)} call spread, and no market record of belief`,
+		`核查一笔成交短片：${count(BLOCK.quantity)} 张 10月18日 105 看涨以 ${usd(BLOCK.price)} 成交，权利金由记录算出：每股 ${usd(BLOCK.price)} × ${count(BLOCK.quantity)} 张 × ${MULTIPLIER} 股 = ${usd(PREMIUM, 0)}；一张从观测、计算到推断、未知的结论阶梯，90 秒前的报价会让位置和买方变为未知，而金额不变；以及填补缺口的记录：未平仓量增加 ${BLOCK.openInterestChange}，关联的一条腿使它成为 ${usd(SPREAD_COST)} 的看涨价差，而市场记录无法显示观点`,
 	],
 	stage: "dark",
 	shots: [
@@ -682,7 +861,6 @@ export const validateOptionPrintFilm: Film = {
 		{ id: "amount", label: ["The amount", "金额"] },
 		{ id: "claims", label: ["Claims", "结论"] },
 		{ id: "gaps", label: ["The gaps", "缺口"] },
-		{ id: "belief", label: ["Belief", "观点"] },
 		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一步"] },
 	],
