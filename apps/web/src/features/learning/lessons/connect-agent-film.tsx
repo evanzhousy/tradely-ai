@@ -51,6 +51,7 @@ const TONE: Record<Method, string> = {
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, room, type: T } = frame;
+	const meterY = H * (narrow ? 0.36 : 0.34);
 	return {
 		...frame,
 		cardY: (i: number) => H * 0.25 + i * H * 0.165,
@@ -62,9 +63,13 @@ function layout(width: number) {
 		rowH: H * 0.18,
 		code: narrow ? T.small : Math.min(T.body * 0.95, (room - 36) / (80 * 0.6)),
 		rowText: narrow ? T.small * 1.15 : T.body,
-		meterY: H * (narrow ? 0.36 : 0.34),
+		// Keep the figures and later request at their existing baselines. Move
+		// only the bar and its labels clear of the lock's expanded top arms.
+		meterY,
+		barY: meterY - 40,
 		meterH: H * 0.07,
-		keyY: H * (narrow ? 0.6 : 0.58),
+		// The wider lock expands toward the desktop key during its entrance.
+		keyY: H * (narrow ? 0.6 : 0.58) + (narrow ? 0 : 8),
 		keyH: H * (narrow ? 0.2 : 0.18),
 	};
 }
@@ -391,7 +396,7 @@ function Scene({
 			<g data-f="meter">
 				<text
 					x={margin}
-					y={L.meterY - T.small * 1.2}
+					y={L.barY - T.small * 1.2}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
@@ -399,7 +404,7 @@ function Scene({
 				</text>
 				<rect
 					x={margin}
-					y={L.meterY}
+					y={L.barY}
 					width={meterW}
 					height={L.meterH}
 					rx={6}
@@ -408,7 +413,7 @@ function Scene({
 				<rect
 					data-f="m-fill"
 					x={margin}
-					y={L.meterY}
+					y={L.barY}
 					width={fill(0)}
 					height={L.meterH}
 					rx={6}
@@ -418,7 +423,7 @@ function Scene({
 				<rect
 					data-f="m-over"
 					x={limitX}
-					y={L.meterY}
+					y={L.barY}
 					width={0}
 					height={L.meterH}
 					rx={6}
@@ -426,13 +431,13 @@ function Scene({
 					style={{ stroke: "var(--diagram-loss)", strokeDasharray: "4 3" }}
 				/>
 				<path
-					d={`M${limitX} ${L.meterY - 6}V${L.meterY + L.meterH + 6}`}
+					d={`M${limitX} ${L.barY - 6}V${L.barY + L.meterH + 6}`}
 					className="wt-axis"
 					strokeWidth={2}
 				/>
 				<text
 					x={limitX}
-					y={L.meterY + L.meterH + T.small * 1.8}
+					y={L.barY + L.meterH + T.small * 1.8}
 					textAnchor="middle"
 					className="wt-film-num"
 					style={{ fontSize: T.small * 1.1 }}
