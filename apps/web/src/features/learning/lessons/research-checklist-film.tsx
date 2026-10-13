@@ -31,18 +31,22 @@ import {
  *
  *   open       0–4        "Start from a research checklist"
  *   question   4–9.6      "Before I sell a call, what should I check?"
- *   inspect    9.6–19.5   a friend's three steps; one is a forecast; Home's four
- *   edits      19.5–30.3  add earnings, move flow; refresh; cut: a working plan, locked
- *   customize  30.3–44    a request, its question, an answer, a proposal; cut: the claim
- *   next       44–46.5    Next: ask TradingFlow AI, then verify
+ *   inspect    9.6–19.75   a friend's three steps; one is a forecast; Home's four
+ *   edits      19.75–30.5  add earnings, move flow; copy to notes; restore Home; lock the notes
+ *   customize  30.5–44.2    a request, its question, an answer, a proposal; cut: the claim
+ *   next       44.2–46.7    Next: ask TradingFlow AI, then verify
  */
 
-const END = 46.5;
+const END = 46.7;
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
 const at = (steps: readonly Step[], id: string) =>
 	steps.findIndex((step) => step.id === id);
+// The two carried rows have baked coordinates for their edited slots. Their parents
+// therefore return to zero translation before the notes hand-over.
+const baseSlot = (id: string) =>
+	id === EARNINGS.id || id === "flow" ? at(EDITED, id) : 0;
 /** Each step as a phone's row can hold it. */
 const shortText: Record<string, Copy> = {
 	vol: ["IV vs realized volatility", "隐含波动率与已实现波动率"],
@@ -75,6 +79,11 @@ function layout(width: number) {
 		bubblePad: narrow ? 8 : 14,
 		// On a phone the credits counter sits under the headline, so the chat starts lower.
 		bubbleTop: H * (narrow ? 0.34 : 0.28),
+		noteX: margin + 20,
+		noteW: room - 40,
+		noteSize: T.head * (narrow ? 1.5 : 1.8),
+		noteY: (k: number) => H * (k === 0 ? 0.68 : 0.86),
+		resetY: (k: number) => H * (0.27 + k * 0.071),
 	};
 }
 
@@ -97,30 +106,26 @@ const copy = {
 	friendHeadShort: ["A friend's checklist.", "朋友的清单。"],
 	flagHead: ["“Stays below $105” is a forecast.", "“一直低于 $105”是预测。"],
 	flagHeadShort: ["The last step is a forecast.", "最后一步是预测。"],
-	templateHead: [
-		"Home's template: four steps, each opening a tool.",
-		"Home 的模板：四步，每步打开一个工具。",
+	templateHead: ["Replace the forecast with checks.", "用核查步骤替换预测。"],
+	templateHeadShort: [
+		"Replace the forecast with checks.",
+		"用核查步骤替换预测。",
 	],
-	templateHeadShort: ["Home's template: four steps.", "Home 模板：四步。"],
 	editHead: [
 		"Add Oct 3 earnings; move call flow up.",
 		"新增 10月3日 财报，上移看涨成交流。",
 	],
 	editHeadShort: ["Add earnings, move flow up.", "加财报，上移成交流。"],
-	refreshHead: [
-		"Refresh the page: the template is back.",
-		"刷新页面：模板又回来了。",
+	refreshHead: ["Copy steps, then refresh Home.", "先抄下步骤，再刷新 Home。"],
+	refreshHeadShort: [
+		"Copy steps, then refresh Home.",
+		"先抄步骤，再刷新 Home。",
 	],
-	refreshHeadShort: ["Refresh: the template again.", "刷新：又是模板。"],
 	forecastNote: ["a forecast, not a check", "这是预测，不是核查"],
-	planBig: [
-		"Home's checklist is a working plan.",
-		"Home 的清单是临时工作计划。",
-	],
-	planSub: [
-		"Copy the steps you keep into your notes.",
-		"把要保留的步骤抄进自己的笔记。",
-	],
+	notes: ["Your notes", "你的笔记"],
+	noteEarnings: ["Earnings Oct 3", "10月3日财报"],
+	noteExpiry: ["before Oct 18 expiry", "在10月18日到期前"],
+	homeReset: ["Home reset", "Home 已重置"],
 	askHead: [
 		"Customize with AI asks one question first.",
 		"Customize with AI 先问一个问题。",
@@ -201,7 +206,7 @@ function Scene({
 			/>
 		</g>
 	);
-	// Every row is drawn in the first slot; the film moves it to its place.
+	// Carried rows rest in their edited slots; other rows rest in the first slot.
 	const y0 = L.slotY(0);
 	const textY = narrow ? y0 + L.rowH * 0.4 : y0 + L.rowH / 2 + L.rowText * 0.36;
 	const toolY = narrow ? y0 + L.rowH * 0.78 : textY;
@@ -315,11 +320,13 @@ function Scene({
 			<g data-f="rows">
 				{ROWS.map((row) => {
 					const forecast = row.id === FORECAST.id;
+					const offset = baseSlot(row.id) * L.step;
 					return (
 						<g key={row.id} data-f={`row-${row.id}`}>
 							<rect
+								data-f={`panel-${row.id}`}
 								x={L.rowX}
-								y={y0}
+								y={y0 + offset}
 								width={L.rowW}
 								height={L.rowH}
 								rx={9}
@@ -328,7 +335,7 @@ function Scene({
 							<rect
 								data-f={`focus-${row.id}`}
 								x={L.rowX}
-								y={y0}
+								y={y0 + offset}
 								width={L.rowW}
 								height={L.rowH}
 								rx={9}
@@ -344,18 +351,25 @@ function Scene({
 								}
 							/>
 							<text
+								data-f={`step-${row.id}`}
 								x={L.rowX + 14}
-								y={textY}
+								y={textY + offset}
 								className={`wt-film-type ${forecast ? "wt-film-loss" : ""}`}
 								style={{ fontSize: L.rowText }}
 							>
-								{t(narrow ? shortText[row.id] : row.text)}
+								{t(
+									row.id === EARNINGS.id
+										? copy.noteEarnings
+										: narrow
+											? shortText[row.id]
+											: row.text,
+								)}
 							</text>
 							{forecast ? (
 								<text
 									data-f="forecast-note"
 									x={narrow ? L.rowX + 14 : L.rowX + L.rowW - 14}
-									y={toolY}
+									y={toolY + offset}
 									textAnchor={narrow ? "start" : "end"}
 									className="wt-film-type wt-film-loss"
 									style={{ fontSize: L.toolText }}
@@ -364,8 +378,9 @@ function Scene({
 								</text>
 							) : (
 								<text
+									data-f={`tool-${row.id}`}
 									x={narrow ? L.rowX + 14 : L.rowX + L.rowW - 14}
-									y={toolY}
+									y={toolY + offset}
 									textAnchor={narrow ? "start" : "end"}
 									className="wt-film-type wt-film-dim"
 									style={{ fontSize: L.toolText }}
@@ -377,8 +392,72 @@ function Scene({
 					);
 				})}
 			</g>
+			<g data-f="notes">
+				<Word
+					name="notes-tag"
+					x={L.noteX + L.noteW}
+					y={H * 0.59}
+					size={T.small}
+					anchor="end"
+					className="wt-film-tag"
+				>
+					{t(copy.notes)}
+				</Word>
+				{[EARNINGS, TEMPLATE[3]].map((step, k) => (
+					<Lines
+						key={`note-${step.id}`}
+						name={`note-${step.id}`}
+						text={t(
+							k === 0
+								? copy.noteEarnings
+								: narrow
+									? shortText[step.id]
+									: step.text,
+						)}
+						x={L.noteX}
+						y={L.noteY(k)}
+						size={L.noteSize}
+						maxWidth={L.noteW}
+						anchor="start"
+					/>
+				))}
+				<Word
+					name="notes-expiry"
+					x={L.noteX}
+					y={H * 0.75}
+					size={T.small}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.noteExpiry)}
+				</Word>
+			</g>
+			<g data-f="reset">
+				{TEMPLATE.map((step, k) => (
+					<Word
+						key={`reset-${step.id}`}
+						name={`reset-${step.id}`}
+						x={margin}
+						y={L.resetY(k)}
+						size={L.rowText}
+						anchor="start"
+						className="wt-film-type wt-film-dim"
+					>
+						{t(shortText[step.id])}
+					</Word>
+				))}
+				<Word
+					name="reset-tag"
+					x={margin}
+					y={L.resetY(0) - T.small * 1.5}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.homeReset)}
+				</Word>
+			</g>
 			<Brackets name="lock-plan" glow />
-			{claim("plan", copy.planBig, copy.planSub)}
 
 			{/* Customize with AI. */}
 			{headline("a-head", copy.askHead, copy.askHeadShort)}
@@ -496,7 +575,7 @@ function build(context: FilmContext) {
 	const lift = (k: number) => L.slotY(k) - L.slotY(0);
 	/** A row arrives in its slot from the right: show() would reset its slot. */
 	const enter = (id: string, slot: number, time: number) => {
-		tl.set(row(id), { y: lift(slot) }, time);
+		tl.set(row(id), { y: lift(slot) - lift(baseSlot(id)) }, time);
 		tl.fromTo(
 			row(id),
 			{ opacity: 0, x: 24 },
@@ -513,9 +592,50 @@ function build(context: FilmContext) {
 	const move = (id: string, slot: number, time: number) =>
 		tl.to(
 			row(id),
-			{ y: lift(slot), duration: 0.6, ease: "power2.inOut" },
+			{
+				y: lift(slot) - lift(baseSlot(id)),
+				duration: 0.6,
+				ease: "power2.inOut",
+			},
 			time,
 		);
+	/** Carry the existing row, with its text continuously visible. Only the single
+	 * text changes size; panels and tool labels have already faded before the flight. */
+	const carryRow = (id: string, noteSlot: number, time: number) => {
+		const text = one<SVGTextElement>(`step-${id}`);
+		const duration = 0.7;
+		tl.to(
+			row(id),
+			{
+				x: L.noteX - Number(text.getAttribute("x")),
+				duration,
+				ease: "power2.inOut",
+			},
+			time,
+		);
+		tl.to(
+			row(id),
+			{
+				y: L.noteY(noteSlot) - Number(text.getAttribute("y")),
+				duration,
+				ease: "power3.out",
+			},
+			time,
+		);
+		tl.fromTo(
+			text,
+			{ fontSize: L.rowText },
+			{
+				fontSize: L.noteSize,
+				duration,
+				ease: "power2.inOut",
+				immediateRender: false,
+			},
+			time,
+		);
+		tl.set(row(id), { opacity: 0 }, time + duration);
+		tl.set(one(`note-${id}`), { opacity: 1 }, time + duration);
+	};
 	const bubbles = MESSAGES.map((message) => one(`b-${message.id}`));
 
 	const lockPlan = one<SVGGraphicsElement>("lock-plan");
@@ -534,7 +654,8 @@ function build(context: FilmContext) {
 		...Array.from({ length: SLOTS }, (_, k) => num(k)),
 		...ROWS.flatMap((step) => [row(step.id), focus(step.id)]),
 		one("forecast-note"),
-		...kids("plan"),
+		...kids("notes"),
+		...kids("reset"),
 		lockPlan,
 		...kids("meter"),
 		...bubbles,
@@ -560,90 +681,96 @@ function build(context: FilmContext) {
 	FRIEND.forEach((step, k) => {
 		enter(step.id, k, 10.3 + k * 0.25);
 	});
-	show(one("x-head"), 12.0);
+	show(one("x-head"), 12.25);
 	tl.to(focus(FORECAST.id), { opacity: 1, duration: 0.4 }, 12.3);
 	show(one("forecast-note"), 12.5, "right");
 	// Home's template.
-	d.swap([one("f-head"), one("x-head")], one("p-head"), 15.6);
+	d.swap([one("f-head"), one("x-head")], one("p-head"), 15.85);
 	tl.to(focus(FORECAST.id), { opacity: 0, duration: 0.3 }, 15.6);
 	hide(one("forecast-note"), 15.6);
 	leave(FORECAST.id, 16.0);
-	move("trade", at(TEMPLATE, "trade"), 16.2);
-	enter("gex", at(TEMPLATE, "gex"), 16.6);
+	move("trade", at(TEMPLATE, "trade"), 16.0);
+	enter("gex", at(TEMPLATE, "gex"), 16.35);
 	show(num(3), 16.7);
 	enter("flow", at(TEMPLATE, "flow"), 16.9);
 
 	// ——— edits: Home doesn't keep them ———
-	tl.addLabel("edits", 19.5);
-	d.swap(one("p-head"), one("e-head"), 19.5);
-	// Make room: the rows that only shift fade and return in place; call flow moves up.
-	const shifted = ["gex", "trade"].map((id) => row(id));
-	tl.to(shifted, { opacity: 0, duration: 0.2 }, 19.9);
-	for (const id of ["gex", "trade"])
-		tl.set(row(id), { y: lift(at(EDITED, id)) }, 20.15);
-	move("flow", at(EDITED, "flow"), 20.15);
-	tl.to(shifted, { opacity: 1, duration: 0.3 }, 20.8);
-	show(num(4), 20.0);
-	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 20.4);
+	tl.addLabel("edits", 19.75);
+	d.swap(one("p-head"), one("e-head"), 19.75);
+	// Omit the shifted rows' second appearance. GEX gets 3.55 s fully settled;
+	// trade has already been readable since the friend's checklist.
+	tl.to(row("trade"), { opacity: 0, duration: 0.3 }, 19.9);
+	tl.to(row("gex"), { opacity: 0, duration: 0.3 }, 20.35);
+	hide(num(3), 20.35);
+	move("flow", at(EDITED, "flow"), 20.25);
+	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 20.5);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
 		{ opacity: 1, duration: 0.4 },
 		20.7,
 	);
-	// Refresh.
+	// Keep the original carried text visible while the surrounding Home UI fades.
 	show(one("r-head"), 22.6);
 	tl.to(
-		TEMPLATE.map((step) => row(step.id)),
-		{ opacity: 0.25, duration: 0.2 },
+		ROWS.filter((step) => step.id !== EARNINGS.id && step.id !== "flow").map(
+			(step) => row(step.id),
+		),
+		{ opacity: 0, duration: 0.35 },
 		22.8,
 	);
-	leave(EARNINGS.id, 22.8);
+	tl.to(
+		[EARNINGS.id, "flow"].flatMap((id) => [
+			one(`panel-${id}`),
+			one(`tool-${id}`),
+		]),
+		{ opacity: 0, duration: 0.35 },
+		22.8,
+	);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
-		{ opacity: 0, duration: 0.2 },
+		{ opacity: 0, duration: 0.35 },
 		22.8,
 	);
-	hide(num(4), 22.8);
-	for (const step of TEMPLATE)
-		tl.set(row(step.id), { y: lift(at(TEMPLATE, step.id)) }, 23.05);
-	tl.to(
-		TEMPLATE.map((step) => row(step.id)),
-		{ opacity: 1, duration: 0.35 },
-		23.1,
-	);
-	// Cut: a working plan. The hero.
 	hide(
-		[
-			one("e-head"),
-			one("r-head"),
-			...TEMPLATE.map((step) => row(step.id)),
-			...Array.from({ length: 4 }, (_, k) => num(k)),
-		],
-		26.2,
+		Array.from({ length: SLOTS }, (_, k) => num(k)),
+		22.8,
 	);
-	word(one("plan-big"), 26.6);
-	show(one("plan-sub"), 26.8);
+	// The destination labels the copy; the lower row leaves a clear route for earnings.
+	show(one("notes-tag"), 23.2, "above");
+	carryRow("flow", 1, 23.2);
+	carryRow(EARNINGS.id, 0, 23.95);
+	show(one("notes-expiry"), 24.7, "above", 0.35);
+	// One quiet second after the copied fragment, then Home restores independently.
+	tl.fromTo(
+		TEMPLATE.map((step) => one(`reset-${step.id}`)),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.35 },
+		26.05,
+	);
+	hide(one("e-head"), 26.45);
+	// Label the reset only after its rows have settled and rested for one second.
+	show(one("reset-tag"), 27.4, "above", 0.35);
 	d.lock(lockPlan, 27.6, {
-		around: [one("plan-big"), one("plan-sub")],
+		around: kids("notes"),
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 27.6);
 
 	// ——— customize: the AI asks before it proposes ———
-	tl.addLabel("customize", 30.3);
-	hide([...kids("plan"), lockPlan], 30.3);
-	show(one("a-head"), 30.65, "above");
-	show([one("m-tag"), one("m-0")], 30.8, "above");
-	show(bubbles[0], 31.1);
-	show(bubbles[1], 31.8);
-	d.flip(one("m-0"), one("m-1"), 32.0);
-	tl.set(one("m-0"), { opacity: 0 }, 32.3);
-	show(one("o-head"), 35.3);
-	hide([bubbles[0], bubbles[1]], 35.3);
-	show(bubbles[2], 35.6);
-	show(bubbles[3], 36.1);
-	d.flip(one("m-1"), one("m-2"), 36.3);
-	tl.set(one("m-1"), { opacity: 0 }, 36.6);
+	tl.addLabel("customize", 30.5);
+	hide([one("r-head"), ...kids("notes"), ...kids("reset"), lockPlan], 30.5);
+	show(one("a-head"), 30.85, "above");
+	show([one("m-tag"), one("m-0")], 31, "above");
+	show(bubbles[0], 31.3);
+	show(bubbles[1], 32);
+	d.flip(one("m-0"), one("m-1"), 32.2);
+	tl.set(one("m-0"), { opacity: 0 }, 32.5);
+	show(one("o-head"), 35.5);
+	hide([bubbles[0], bubbles[1]], 35.5);
+	show(bubbles[2], 35.8);
+	show(bubbles[3], 36.3);
+	d.flip(one("m-1"), one("m-2"), 36.5);
+	tl.set(one("m-1"), { opacity: 0 }, 36.8);
 	// Cut: the claim.
 	hide(
 		[
@@ -654,15 +781,15 @@ function build(context: FilmContext) {
 			one("m-tag"),
 			one("m-2"),
 		],
-		39.6,
+		39.8,
 	);
-	word(one("claim-big"), 40.0);
-	show(one("claim-sub"), 40.4);
+	word(one("claim-big"), 40.2);
+	show(one("claim-sub"), 40.6);
 
 	// ——— next ———
-	tl.addLabel("next", 44.0);
-	hide(kids("claim"), 44.0);
-	d.close(44.0);
+	tl.addLabel("next", 44.2);
+	hide(kids("claim"), 44.2);
+	d.close(44.2);
 	return tl;
 }
 

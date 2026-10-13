@@ -89,8 +89,8 @@ export const MESSAGES: readonly {
 		id: "clarify",
 		from: "ai",
 		text: [
-			"One question first: should it focus on how much the move is priced before earnings, or on positioning in the calls you'd sell?",
-			"先问一个问题：清单应该聚焦财报前市场为波动定了多少价，还是聚焦你要卖出的看涨期权的持仓？",
+			"Focus on the priced move before earnings, or call positioning?",
+			"聚焦财报前的波动定价，还是看涨期权持仓？",
 		],
 		at: 1,
 	},
@@ -104,8 +104,8 @@ export const MESSAGES: readonly {
 		id: "proposal",
 		from: "ai",
 		text: [
-			"Proposed: add an expected-move step before the volatility step. Nothing is saved; a recipe is built only if your account has that feature and you confirm.",
-			"建议：在波动率步骤之前加一步预期波动。不会保存任何内容；只有你的账户有该功能并且你确认后，才会构建 Recipe。",
+			"I'd add an expected-move step before volatility. Nothing is saved; a recipe needs your account's feature and your confirmation.",
+			"建议在波动率前加一步预期波动。不会保存；构建 Recipe 需要账户功能并经你确认。",
 		],
 		at: 2,
 	},
