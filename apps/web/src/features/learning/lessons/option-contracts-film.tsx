@@ -26,26 +26,28 @@ import {
  * strike; change the date and it is a different contract. Then units: a $4.20 quote is
  * per share, one contract is 100 shares, three are $1,260 of premium. The hero: the 300
  * shares light up block by block as their notional counts to $30,000, and the $1,260
- * paid comes back beside it: 4.2% of it. Last, a price belongs to a time: the same call,
- * its clock run from 10:30 to 15:59, goes from $4.20 to $4.90.
+ * paid comes back beside it: 4.2% of it. Last, a price belongs to a time: two settled
+ * observations of the October call, $4.20 at 10:30 and $4.90 at 15:59.
  *
  *   open      0–4        "Option contracts"
  *   question  4–8.8      Oct 18 100 call, Nov 15 100 call: the same contract?
  *   symbol    8.8–17.2   ALFA · 301018 · C · 00100000; Nov 15 changes it
- *   units     17.2–32.4  $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000; you
+ *   units     17.2–34.65 $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000; you
  *                        pay 4.2% of it
- *   time      32.4–38    10:30 $4.20 → 15:59 $4.90
- *   claim     38–42.4    name the contract, count the shares, stamp the time
- *   next      42.4–44.9  Next: holders and writers
+ *   time      34.65–40.25 10:30 $4.20 → 15:59 $4.90
+ *   claim     40.25–44.65 name the contract, count the shares, stamp the time
+ *   next      44.65–47.15 Next: holders and writers
  */
 
-const END = 44.9;
+const END = 47.15;
 const PARTS = ["root", "date", "right", "strike"] as const;
 const OCT = symbolParts(call100);
 const NOV = symbolParts({ ...call100, expiry: "nov15" });
 const THREE = 3;
 const SPOT = 100;
 const DOTS = 100;
+const NOTIONAL = THREE * DOTS * SPOT;
+const NOTIONAL_EQUATION = `${count(THREE * DOTS)} × $${SPOT} = ${usd(NOTIONAL * 100, 0)}`;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -101,11 +103,13 @@ const copy = {
 		"Plus the product terms: 100 shares per contract, settled by delivering shares.",
 		"再加上产品条款：每张 100 股，以交付股票结算。",
 	],
-	unitHead: [
-		"Quotes are per share; contracts, 100.",
-		"报价按每股计；一张合约 100 股。",
+	unitHead: ["Quotes are per share.", "报价按每股计。"],
+	unitHeadShort: ["Quotes are per share.", "报价按每股计。"],
+	contract: [
+		`ALFA Oct 18 $${call100.strike} call`,
+		`ALFA 10月18日 $${call100.strike} 看涨`,
 	],
-	unitHeadShort: ["Per share; 100 a contract.", "按每股；一张 100 股。"],
+	contractShares: ["100 shares per contract", "每张合约 100 股"],
 	threeHead: [
 		"Three contracts, three times the premium.",
 		"三张合约，三倍权利金。",
@@ -118,7 +122,10 @@ const copy = {
 		`价值 ${usd(THREE * 100 * SPOT * 100, 0)}。`,
 	],
 	premium: ["premium", "权利金"],
-	notional: ["notional · not what you pay", "名义价值 · 不是你付的钱"],
+	notional: [
+		"notional subtotal · not what you pay",
+		"名义价值小计 · 不是你付的钱",
+	],
 	share: [
 		`you pay ${(((ASK * THREE * 100) / (THREE * 100 * SPOT * 100)) * 100).toFixed(1)}% of it`,
 		`你只付其中的 ${(((ASK * THREE * 100) / (THREE * 100 * SPOT * 100)) * 100).toFixed(1)}%`,
@@ -323,6 +330,15 @@ function Scene({
 				anchor="start"
 			/>
 			<g data-f="units">
+				<Word
+					name="u-contract"
+					x={W / 2}
+					y={L.gridY - T.body * 2.8}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.contract)}
+				</Word>
 				{[0, 1, 2].map((i) => (
 					<g key={`b-${i + 1}`} data-f={`block-${i}`}>
 						{blockDots(i)}
@@ -335,7 +351,7 @@ function Scene({
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{`100 ${t(copy.shares).toUpperCase()}`}
+					{t(copy.contractShares).toUpperCase()}
 				</Word>
 				<Word
 					name="u-shares-3"
@@ -363,13 +379,7 @@ function Scene({
 						"wt-film-accent",
 						0,
 					],
-					[
-						"f-notional",
-						copy.notional,
-						`${count(THREE * 100)} × $${SPOT} = ${usd(THREE * 100 * SPOT * 100, 0)}`,
-						"wt-film-accent",
-						1,
-					],
+					["f-notional", copy.notional, NOTIONAL_EQUATION, "wt-film-accent", 1],
 				] as const
 			).map(([name, tag, text, tone, row]) => (
 				<g key={name} data-f={name}>
@@ -409,6 +419,21 @@ function Scene({
 			{/* One contract, two observations. */}
 			{headline("o-head", copy.timeHead, copy.timeHeadShort)}
 			<g data-f="times">
+				<Word
+					name="o-contract"
+					x={W / 2}
+					y={L.timeY - T.body * 2}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.contract)}
+				</Word>
+				<path
+					data-f="obs-link"
+					d={`M${W * 0.44} ${L.timeY + T.big * 0.77}H${W * 0.56}m-6 -5l6 5-6 5`}
+					className="wt-film-link"
+					style={{ strokeDasharray: "none" }}
+				/>
 				{(["morning", "close"] as const).map((key, i) => {
 					const o = observations[key];
 					const x = W * (narrow ? [0.27, 0.73][i] : [0.3, 0.7][i]);
@@ -519,6 +544,7 @@ function build(context: FilmContext) {
 		...flat("symbol"),
 		one("terms"),
 		...blocks,
+		one("u-contract"),
 		one("u-shares"),
 		one("u-shares-3"),
 		one("f-one"),
@@ -526,6 +552,8 @@ function build(context: FilmContext) {
 		one("f-notional"),
 		one("f-share"),
 		g("lock-notional"),
+		one("o-contract"),
+		one("obs-link"),
 		one("obs-morning"),
 		one("obs-close"),
 		...kids("claim"),
@@ -567,6 +595,7 @@ function build(context: FilmContext) {
 	tl.addLabel("units", 17.2);
 	hide([heads[1], ...flat("symbol"), one("terms")], 17.2);
 	show(heads[2], 17.55);
+	show(one("u-contract"), 17.55);
 	tl.fromTo(
 		blocks[0],
 		{ opacity: 0, y: 10 },
@@ -587,7 +616,8 @@ function build(context: FilmContext) {
 	d.swap(one("u-shares"), one("u-shares-3"), 21.6);
 	d.swap(one("f-one"), one("f-three"), 22.2);
 	// The hero: the 300 shares light up a block at a time as their notional counts up, to
-	// $30,000 against the $1,260 paid, which steps back.
+	// $30,000 against the $1,260 paid, which steps back. Only a standalone subtotal
+	// counts; the complete equation replaces it in place once it is exactly true.
 	d.swap(heads[3], heads[4], 25.2);
 	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 25.4);
 	show(one("f-notional"), 25.8);
@@ -595,85 +625,79 @@ function build(context: FilmContext) {
 		const at = 25.8 + i * 0.8;
 		tl.set(block.children, { attr: { "data-tone": "total" } }, at);
 		tl.fromTo(
-			block,
+			block.children,
+			{ attr: { r: L.dot * 1.06 } },
 			{
-				scale: 1.06,
-				svgOrigin: `${L.blockX(i) + L.block / 2} ${L.gridY + L.block / 2}`,
-				smoothOrigin: false,
+				attr: { r: L.dot },
+				duration: 0.45,
+				ease: "power3.out",
+				immediateRender: false,
 			},
-			{ scale: 1, duration: 0.45, ease: "power3.out" },
 			at,
 		);
 		d.count(
 			notional,
 			(i + 1) * 100 * SPOT,
 			at,
-			(v) =>
-				`${count(THREE * 100)} × $${SPOT} = ${usd(Math.round(v) * 100, 0)}`,
+			(v) => (v >= NOTIONAL ? NOTIONAL_EQUATION : usd(Math.round(v) * 100, 0)),
 			i * 100 * SPOT,
 			0.7,
 		);
 	});
-	d.lock(g("lock-notional"), 28.3, { around: g("f-notional"), pad: 8 });
-	tl.addLabel("hero-lock", 28.3);
-	show(heads[6], 28.3);
+	// Count / equation settled at 28.1; a full second of rest before the lock.
+	d.lock(g("lock-notional"), 29.1, { around: g("f-notional"), pad: 8 });
+	tl.addLabel("hero-lock", 29.1);
+	show(heads[6], 29.1);
 	// After the lock: what you pay comes back beside what it controls.
-	tl.to(one("f-three"), { opacity: 1, duration: 0.4 }, 28.8);
-	show(one("f-share"), 28.9);
+	// Brackets settle at 29.55 and stand quietly for 1.5 seconds first.
+	tl.to(one("f-three"), { opacity: 1, duration: 0.4 }, 31.05);
+	show(one("f-share"), 31.15);
 
 	// ——— time: a price is an observation ———
-	tl.addLabel("time", 32.4);
+	tl.addLabel("time", 34.65);
 	hide(
 		[
 			heads[4],
 			heads[6],
 			...blocks,
+			one("u-contract"),
 			one("u-shares-3"),
 			one("f-three"),
 			one("f-notional"),
 			one("f-share"),
 			g("lock-notional"),
 		],
-		32.4,
+		34.65,
 	);
-	show(heads[5], 32.75);
-	show(one("obs-morning"), 33.0);
-	// The same call later: its clock, its ask and ALFA run on together; the morning stays.
-	const [am, pm] = [observations.morning, observations.close];
-	const minutes = (v: number) =>
-		`${String(Math.floor(v / 60)).padStart(2, "0")}:${String(Math.round(v) % 60).padStart(2, "0")}`;
-	// The later slot starts on the morning's values, then runs on.
-	const at = (
-		el: string,
-		to: number,
-		from: number,
-		format: (v: number) => string,
-	) => {
-		d.count(one<SVGTextElement>(el), from, 33.95, format, from, 0.01);
-		d.count(one<SVGTextElement>(el), to, 34.3, format, from, 1.5);
-	};
-	show(one("obs-close"), 34.0);
-	tl.to(one("obs-morning"), { opacity: 0.45, duration: 0.4 }, 34.0);
-	at("obs-close-time", pm.at, am.at, minutes);
-	at("obs-close-ask", pm.ask, am.ask, (v) => usd(Math.round(v)));
-	at(
-		"obs-close-sub",
-		pm.spot,
-		am.spot,
-		(v) =>
-			`${pick(copy.ask, context.locale)} · ${pick(copy.alfaAt, context.locale)} ${usd(Math.round(v))}`,
-	);
+	show(heads[5], 35.0);
+	show(one("o-contract"), 35.0);
+	show(one("obs-morning"), 35.25);
+	// Only the two model observations exist: reveal each with all its values settled.
+	// Morning settles at 35.75, then rests for a second before the closing quote.
+	show(one("obs-close"), 36.75);
+	tl.to(one("obs-morning"), { opacity: 0.45, duration: 0.4 }, 36.75);
+	// The comparison finishes at 37.5, preserving 2.75 seconds of quiet before the claim.
+	d.trace(one<SVGPathElement>("obs-link"), 36.75, { duration: 0.75 });
 
 	// ——— claim ———
-	tl.addLabel("claim", 38.0);
-	hide([heads[5], one("obs-morning"), one("obs-close")], 38.0);
-	word(one("z-big"), 38.3);
-	show(one("z-sub"), 38.7);
+	tl.addLabel("claim", 40.25);
+	hide(
+		[
+			heads[5],
+			one("o-contract"),
+			one("obs-link"),
+			one("obs-morning"),
+			one("obs-close"),
+		],
+		40.25,
+	);
+	word(one("z-big"), 40.55);
+	show(one("z-sub"), 40.95);
 
 	// ——— next ———
-	tl.addLabel("next", 42.4);
-	hide(kids("claim"), 42.4);
-	d.close(42.4);
+	tl.addLabel("next", 44.65);
+	hide(kids("claim"), 44.65);
+	d.close(44.65);
 	return tl;
 }
 
