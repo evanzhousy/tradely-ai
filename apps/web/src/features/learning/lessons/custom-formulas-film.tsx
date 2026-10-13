@@ -42,12 +42,12 @@ import {
  *   open      0–4        "Build your own Rank column"
  *   question  4–9.6      [Total Premium] + [Trades]
  *   units     9.6–19.25  usd + count: refused; ÷: usd, $6,458
- *   rank      19.25–28.95 total premium; per trade; a floor of 20, ALFA locked
- *   view      28.95–39.55 Tuesday recomputes; the definition, not the numbers; cut: the claim
- *   next      39.55–42.05 Next: fork or write a recipe with AI
+ *   rank      19.25–32.0  total premium; per trade; a floor of 20, ALFA locked
+ *   view      32.0–43.4   Tuesday recomputes; keep the definition; cut: the claim
+ *   next      43.4–45.9   Next: fork or write a recipe with AI
  */
 
-const END = 42.05;
+const END = 45.9;
 const TUESDAY = symbolFlowSessions.tuesday.rows;
 const SYMBOLS = MONDAY.map((row) => row.symbol);
 type State = 0 | 1 | 2 | 3;
@@ -93,7 +93,9 @@ function layout(width: number) {
 	const rowStep = H * (narrow ? 0.09 : 0.088);
 	const symW = narrow ? 46 : width * 0.08;
 	const tradesW = narrow ? 34 : width * 0.08;
-	const valueW = narrow ? 64 : width * 0.12;
+	const rowText = narrow ? T.small * 1.15 : T.body;
+	const heroText = rowText * 1.35;
+	const valueW = Math.max(narrow ? 64 : width * 0.12, heroText * 6 * 0.62);
 	return {
 		...frame,
 		pad,
@@ -109,7 +111,8 @@ function layout(width: number) {
 		barX: margin + symW + tradesW + 14,
 		barMax: room - symW - tradesW - 14 - valueW - 8,
 		valueX: margin + room,
-		rowText: narrow ? T.small * 1.15 : T.body,
+		rowText,
+		heroText,
 		barY: H * (narrow ? 0.3 : 0.28),
 	};
 }
@@ -126,39 +129,34 @@ const copy = {
 	],
 	divideHeadShort: ["Divide: usd per trade.", "相除：每笔 usd。"],
 	output: ["output unit · usd", "输出单位 · usd"],
+	refused: [REFUSED, "usd 不能与 count 相加。"],
 	totalHead: [
 		"Monday's five names, by total premium.",
 		"周一的五个标的，按总权利金。",
 	],
 	totalHeadShort: ["By total premium.", "按总权利金。"],
-	perHead: [
-		`Per trade, GLYN leads on ${GLYN.trades} trades.`,
-		`按每笔，GLYN 领先，只有 ${GLYN.trades} 笔。`,
-	],
-	perHeadShort: [
-		`Per trade: GLYN, on ${GLYN.trades} trades.`,
-		`每笔：GLYN，只有 ${GLYN.trades} 笔。`,
-	],
+	perHead: ["Premium per trade.", "每笔权利金。"],
+	perHeadShort: ["Premium per trade.", "每笔权利金。"],
 	floorHead: [
-		`A floor of ${SAVED_FLOOR}: GLYN N/A, ALFA leads.`,
-		`门槛 ${SAVED_FLOOR} 笔：GLYN 为 N/A，ALFA 领先。`,
+		`Floor ${SAVED_FLOOR}: ALFA leads; GLYN N/A.`,
+		`门槛 ${SAVED_FLOOR}：ALFA 领先，GLYN 为 N/A。`,
 	],
 	floorHeadShort: [
-		`Floor ${SAVED_FLOOR}: ALFA leads.`,
-		`门槛 ${SAVED_FLOOR}：ALFA 领先。`,
+		`Floor ${SAVED_FLOOR}: ALFA leads; GLYN N/A.`,
+		`门槛 ${SAVED_FLOOR}：ALFA 领先，GLYN 为 N/A。`,
 	],
-	viewHead: [
-		`Tuesday, it recomputes: ${TUE_LEADER} leads.`,
-		`周二重新计算：${TUE_LEADER} 领先。`,
-	],
-	viewHeadShort: [
-		`Tuesday recomputes: ${TUE_LEADER}.`,
-		`周二重算：${TUE_LEADER}。`,
-	],
+	viewHead: ["Recompute on Tuesday.", "在周二重新计算。"],
+	viewHeadShort: ["Recompute on Tuesday.", "在周二重新计算。"],
 	trades: ["trades", "笔数"],
 	columnTotal: ["column · Total Premium", "列 · Total Premium"],
-	keepHead: ["The view keeps the definition.", "视图保存的是定义。"],
-	keepHeadShort: ["It keeps the definition.", "保存的是定义。"],
+	keepHead: [
+		`${TUE_LEADER} leads; the view keeps the definition.`,
+		`${TUE_LEADER} 领先；视图保存定义。`,
+	],
+	keepHeadShort: [
+		`${TUE_LEADER} leads; definition kept.`,
+		`${TUE_LEADER} 领先；保存定义。`,
+	],
 	claimBig: ["A Rank column is yours to define.", "Rank 列由你来定义。"],
 	claimSub: [
 		"Descriptive and yours, not a TradingFlow metric.",
@@ -327,7 +325,7 @@ function Scene({
 					className="wt-film-num wt-film-loss"
 					style={{ fontSize: T.body }}
 				>
-					{REFUSED}
+					{t(copy.refused)}
 				</text>
 				<text
 					data-f="output"
@@ -412,6 +410,14 @@ function Scene({
 						{`= ${formula}`}
 					</text>
 				))}
+				<rect
+					data-f="definition-rule"
+					x={margin}
+					y={L.barY + L.rowText * 0.5}
+					width={0}
+					height={2}
+					fill="var(--diagram-accent)"
+				/>
 				{(
 					[
 						["day-mon", MONDAY],
@@ -488,10 +494,22 @@ function Scene({
 									key={k}
 									data-f={`v-${symbol}-${k}`}
 									x={L.valueX}
-									y={rowText(y0)}
+									y={
+										y0 +
+										L.rowH / 2 +
+										(symbol === ALFA.symbol && k === 2
+											? L.heroText
+											: L.rowText) *
+											0.36
+									}
 									textAnchor="end"
 									className={`wt-film-num ${na ? "wt-film-dim" : symbol === "GLYN" && k === 1 ? "wt-film-loss" : ""}`}
-									style={{ fontSize: L.rowText }}
+									style={{
+										fontSize:
+											symbol === ALFA.symbol && k === 2
+												? L.heroText
+												: L.rowText,
+									}}
 								>
 									{valueText(k, row)}
 								</text>
@@ -566,10 +584,19 @@ function build(context: FilmContext) {
 	const width = (k: State, symbol: string) =>
 		((score(k, rowOf(k, symbol)) ?? 0) / top(k)) * L.barMax;
 	/**
-	 * Every row to its place and size under state k, with its value swapped in. A row that
-	 * changes place dims while it passes the others, so no two read over each other.
+	 * One fold hands the formula, session, counts, values and settled bar widths over
+	 * together. Bars fade rather than interpolate through widths their readouts never name.
+	 * A row that changes place dims while it passes the others.
 	 */
-	const rank = (from: State, k: State, time: number) => {
+	const rank = (from: State, k: State, time: number, foldAt: number) => {
+		const handoff = foldAt + 0.3;
+		if (k === 3) {
+			d.flip(one("day-mon"), one("day-tue"), foldAt);
+			tl.set(one("day-mon"), { opacity: 0 }, handoff);
+		} else {
+			d.flip(one(`f-${from}`), one(`f-${k}`), foldAt);
+			tl.set(one(`f-${from}`), { opacity: 0 }, handoff);
+		}
 		for (const symbol of SYMBOLS) {
 			if (lift(from, symbol) !== lift(k, symbol)) {
 				tl.to(row(symbol), { opacity: 0.25, duration: 0.15 }, time - 0.1);
@@ -580,17 +607,16 @@ function build(context: FilmContext) {
 				{ y: lift(k, symbol), duration: 0.7, ease: "power2.inOut" },
 				time,
 			);
-			tl.to(
-				one(`bar-${symbol}`),
-				{
-					attr: { width: width(k, symbol) },
-					duration: 0.7,
-					ease: "power2.inOut",
-				},
-				time,
-			);
-			d.flip(value(symbol, from), value(symbol, k), time + 0.2);
-			tl.set(value(symbol, from), { opacity: 0 }, time + 0.5);
+			const bar = one(`bar-${symbol}`);
+			tl.to(bar, { opacity: 0, duration: 0.3, ease: "power2.in" }, foldAt);
+			tl.set(bar, { attr: { width: width(k, symbol) } }, handoff);
+			tl.to(bar, { opacity: 1, duration: 0.35, ease: "power2.out" }, handoff);
+			d.flip(value(symbol, from), value(symbol, k), foldAt);
+			tl.set(value(symbol, from), { opacity: 0 }, handoff);
+			if (k === 3) {
+				d.flip(one(`n-${symbol}-mon`), one(`n-${symbol}-tue`), foldAt);
+				tl.set(one(`n-${symbol}-mon`), { opacity: 0 }, handoff);
+			}
 		}
 	};
 
@@ -611,6 +637,7 @@ function build(context: FilmContext) {
 		...kids("editor"),
 		...kids("rank"),
 		...SYMBOLS.flatMap((symbol) => [
+			one(`bar-${symbol}`),
 			one(`n-${symbol}-tue`),
 			...STATES.map((k) => value(symbol, k)),
 		]),
@@ -669,47 +696,54 @@ function build(context: FilmContext) {
 			{ opacity: 1, x: 0, duration: 0.45 },
 			20.05 + i * 0.12,
 		);
-		tl.to(
-			one(`bar-${symbol}`),
-			{ attr: { width: width(0, symbol) }, duration: 0.6, ease: "power2.out" },
-			20.25 + i * 0.12,
-		);
+		const barAt = 20.25 + i * 0.12;
+		tl.set(one(`bar-${symbol}`), { attr: { width: width(0, symbol) } }, barAt);
+		tl.to(one(`bar-${symbol}`), { opacity: 1, duration: 0.6 }, barAt);
 		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, 20.45 + i * 0.12);
 	});
 	// Per trade.
 	d.swap(one("t-head"), one("p-head"), 23.15);
-	d.flip(one("f-0"), one("f-1"), 23.55);
-	tl.set(one("f-0"), { opacity: 0 }, 23.85);
-	rank(0, 1, 23.65);
+	rank(0, 1, 23.65, 23.55);
 	// A floor. The hero: ALFA back in front.
-	show(one("f-head"), 25.35);
-	d.flip(one("f-1"), one("f-2"), 25.55);
-	tl.set(one("f-1"), { opacity: 0 }, 25.85);
-	rank(1, 2, 25.65);
-	d.lock(lockFloor, 26.55, { around: row(ALFA.symbol), pad: 6 });
+	// Per-trade restoration ends at 24.55; the next fold waits a full second.
+	rank(1, 2, 25.65, 25.55);
+	d.lock(lockFloor, 26.55, {
+		around: value(ALFA.symbol, 2),
+		pad: 6,
+	});
 	tl.addLabel("hero-lock", 26.55);
+	// Brackets settle at 27.0. Let the proof rest before naming its answer.
+	show(one("f-head"), 28.0);
 
 	// ——— view: the formula recomputes, the numbers don't stay ———
-	tl.addLabel("view", 28.95);
-	hide([one("p-head"), one("f-head"), lockFloor], 28.95);
-	show(one("v-head"), 29.3, "above");
-	d.flip(one("day-mon"), one("day-tue"), 29.65);
-	tl.set(one("day-mon"), { opacity: 0 }, 29.95);
-	for (const symbol of SYMBOLS) {
-		d.flip(one(`n-${symbol}-mon`), one(`n-${symbol}-tue`), 29.75);
-		tl.set(one(`n-${symbol}-mon`), { opacity: 0 }, 30.05);
-	}
-	rank(2, 3, 29.95);
-	show(one("w-head"), 31.45);
+	tl.addLabel("view", 32.0);
+	hide([one("p-head"), one("f-head"), lockFloor], 32.0);
+	show(one("v-head"), 32.35, "above");
+	rank(2, 3, 33.0, 32.9);
+	// Tuesday settles at 33.9; its leader appears only after a full second of quiet.
+	show(one("w-head"), 34.9);
+	// An after-beat points back to the definition that survived the session change.
+	tl.to(
+		one("definition-rule"),
+		{
+			opacity: 1,
+			attr: {
+				width: Math.min(L.room, `= ${formulas[2]}`.length * L.rowText * 0.62),
+			},
+			duration: 0.8,
+			ease: "power2.inOut",
+		},
+		36.9,
+	);
 	// Cut: the claim.
-	hide([one("v-head"), one("w-head"), ...kids("rank")], 35.05);
-	word(one("z-big"), 35.45);
-	show(one("z-sub"), 35.85);
+	hide([one("v-head"), one("w-head"), ...kids("rank")], 38.9);
+	word(one("z-big"), 39.3);
+	show(one("z-sub"), 39.7);
 
 	// ——— next ———
-	tl.addLabel("next", 39.55);
-	hide(kids("claim"), 39.55);
-	d.close(39.55);
+	tl.addLabel("next", 43.4);
+	hide(kids("claim"), 43.4);
+	d.close(43.4);
 	return tl;
 }
 
