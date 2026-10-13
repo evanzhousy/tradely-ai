@@ -509,8 +509,7 @@ function Scene({
 					{`${oct105CallLast.time} · ${oct105CallLast.size} @ ${usd(oct105CallLast.price)}`}
 				</text>
 			</g>
-			{/* Fitted when they lock: the level a trade takes and the volume. */}
-			<Brackets name="lock-ask" />
+			{/* Fitted when a print lands: its settled volume. */}
 			<Brackets name="lock-vol" arm={8} />
 			{/* Each trade leaves as a chip and lands on its print at the top of the tape. */}
 			{prints.map(([name, label]) => {
@@ -788,7 +787,13 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			{
+				opacity: 1,
+				scale: 1,
+				duration: 0.55,
+				ease: "power3.out",
+				immediateRender: false,
+			},
 			time,
 		);
 	const fade = (target: Element | Element[], time: number, to = 0) =>
@@ -798,8 +803,10 @@ function build(context: FilmContext) {
 	const hit = g(`hit-${askKey}`);
 	const bar = one(`bar-${askKey}`);
 	const size = one<SVGTextElement>(`size-${askKey}`);
+	// Rebuilds also begin from the model, before any future execution or order tween.
+	size.textContent = count(ASK.size);
 	const width = (n: number) => (n / MAX) * L.barMax;
-	const sizeTo = (to: number, from: number, time: number) => {
+	const sizeTo = (to: number, from: number, time: number, duration = 0.5) => {
 		const state = { value: from };
 		tl.fromTo(
 			state,
@@ -807,7 +814,7 @@ function build(context: FilmContext) {
 			{
 				value: to,
 				immediateRender: false,
-				duration: 0.5,
+				duration,
 				ease: "power2.out",
 				onUpdate: () => {
 					const contracts = Math.round(state.value);
@@ -862,11 +869,20 @@ function build(context: FilmContext) {
 		});
 		const chip = g(`carry-${name}`);
 		const born = time + 0.4;
+		// Execution is one event: size and bar hand over in place as its ticket is born.
+		// The zero-duration fromTo supplies both states so reverse seeking restores them.
+		if (name === "pr-buy") {
+			sizeTo(ASK.size - 1, ASK.size, born, 0);
+			fade(hit, born, 1);
+		} else if (name === "pr-take") {
+			sizeTo(LEFT, ASK.size - 1, born, 0);
+			fade(hit, born, 1);
+		}
 		const leave = born + (instant ? 0.05 : 0.3);
 		tl.fromTo(
 			chip,
 			{ opacity: 0 },
-			{ opacity: 1, duration: instant ? 0.01 : 0.3 },
+			{ opacity: 1, duration: instant ? 0.01 : 0.3, immediateRender: false },
 			born,
 		);
 		stack.unshift(one(name));
@@ -900,7 +916,6 @@ function build(context: FilmContext) {
 		d.carry(chip, g(name), leave, { duration: 1, arc });
 		return leave + 1;
 	};
-	const lockAsk = g("lock-ask");
 	const heads = [
 		"k-head",
 		"m-head",
@@ -955,7 +970,6 @@ function build(context: FilmContext) {
 			one(`carry-${n}`),
 		]),
 		...kids("vias"),
-		lockAsk,
 		lockVol,
 		...cardFrames.flat(),
 		...cardLines,
@@ -1010,17 +1024,30 @@ function build(context: FilmContext) {
 		tl.fromTo(
 			lv,
 			{ opacity: 0 },
-			{ opacity: 1, duration: 0.4 },
+			{ opacity: 1, duration: 0.4, immediateRender: false },
 			10.8 + i * 0.05,
 		);
 	});
-	tl.fromTo(bestSizes, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 10.8);
+	tl.fromTo(
+		bestSizes,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.4, immediateRender: false },
+		10.8,
+	);
 	bars.forEach((key, i) => {
 		const at = [...ASKS, ...BIDS][i];
+		const rowBar = one(`bar-${key}`);
+		// Explicit entrance state; future fromTo tweens never initialize an earlier frame.
+		rowBar.setAttribute("width", "0");
 		tl.fromTo(
-			one(`bar-${key}`),
+			rowBar,
 			{ attr: { width: 0 } },
-			{ attr: { width: width(at.size) }, duration: 0.5, ease: "power2.out" },
+			{
+				attr: { width: width(at.size) },
+				duration: 0.5,
+				ease: "power2.out",
+				immediateRender: false,
+			},
 			11.0 + i * 0.05,
 		);
 	});
@@ -1044,26 +1071,20 @@ function build(context: FilmContext) {
 	d.carry(pxAsk, g("mid-hi"), 14.85, { duration: 1, keep: true, fit: false });
 	show(one("mid-line"), 15.85);
 	word(one("mid-label"), 15.95);
-	// A market buy takes the ask; the count drops, the tape makes room, the ticket lands.
+	// The tape makes room, then execution updates the ask as its ticket appears and lands.
 	d.swap(heads[1], heads[2], 18.3);
 	hide(kids("mid"), 18.3);
-	fade(hit, 18.7, 1);
-	d.lock(lockAsk, 18.7, { around: hit, pad: 4 });
-	sizeTo(ASK.size - 1, ASK.size, 18.7);
 	volumeTo("vol-buy", "vol", print("pr-buy", 19.05));
 
 	// ——— orders: adds and cancels move size, not the tape; a take prints ———
 	tl.addLabel("orders", 22.2);
 	d.swap(heads[2], heads[3], 22.2);
-	fade([hit, lockAsk], 22.2);
+	fade(hit, 22.2, 0.45);
 	sizeTo(ASK.size - 1 + ADDED, ASK.size - 1, 22.2);
 	// Each changed size stands for a full second while the tape stays unchanged.
 	sizeTo(ASK.size - 1, ASK.size - 1 + ADDED, 23.7);
 	// Only now the take, and its half of the headline.
 	show(heads[4], 25.2);
-	fade(hit, 25.2, 1);
-	d.lock(lockAsk, 25.2, { around: hit, pad: 4 });
-	sizeTo(LEFT, ASK.size - 1, 25.2);
 	volumeTo("vol-take", "vol-buy", print("pr-take", 25.6));
 
 	// ——— venues: one construction, from the venue cards to the completed NBBO. ———
@@ -1075,7 +1096,6 @@ function build(context: FilmContext) {
 	fade(
 		[
 			hit,
-			lockAsk,
 			...levels,
 			...flat("book").filter(
 				(el) => !el.getAttribute("data-f")?.startsWith("lv-"),
@@ -1090,6 +1110,7 @@ function build(context: FilmContext) {
 				opacity: (_: number, el: Element) =>
 					el === one(`vb-${BEST.ask.venue}`) ? 0.25 : 1,
 				duration: 0.3,
+				immediateRender: false,
 			},
 			29.05,
 		);
@@ -1117,6 +1138,15 @@ function build(context: FilmContext) {
 	const born = L.narrow ? 35.05 : 35.45;
 	// The glow has stood 2.35 s after settlement and clears before the ticket's path.
 	fade(g("hero-nbbo"), 34.3);
+	// A's unchanged $2.20 offer becomes the clear source of the replacement NBBO ask.
+	fade(
+		cardLines.filter(
+			(el) =>
+				el !== g(`va-${NEXT_ASK.venue}`) && el !== g(`va-${BEST.ask.venue}`),
+		),
+		born - 0.3,
+		0.3,
+	);
 	d.flip(g(`va-${BEST.ask.venue}`), g("va-gone"), born - 0.3);
 	d.flip(nbbo[2], one("nbbo-ask-2"), born - 0.3);
 	tl.set([g(`va-${BEST.ask.venue}`), nbbo[2]], { opacity: 0 }, born);
