@@ -14,6 +14,7 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
+	CALL_100,
 	exitValues,
 	INDEX_LAST,
 	INDEX_SETTLES,
@@ -35,21 +36,24 @@ import {
  *
  *   open      0–4        "Expiration"
  *   question  4–8.8      Oct 4: sell at $7.40, or exercise?
- *   exit      8.8–15.6   sell $7.40 = $7.00 + $0.40; exercise $7.00; Oct 18 equal
- *   settle    15.6–19.3  ALFA: 100 shares for $9,500
- *   cash      19.3–23.2  IDX 500: $2,500 at the official 5,025
- *   window    23.2–27.6  American any day; European at expiry
- *   pin       27.6–32.5  hero: $100.02 at the close, exercised automatically
- *   writer    32.5–36.7  $99.98, then $100.60 after hours: assigned
- *   claim     36.7–41.1  know how it ends before it does
- *   next      41.1–43.6  Next: the module checkpoint
+ *   exit      8.8–17.5   labelled parts; Oct 18 equality before the answer
+ *   settle    17.5–21.4  ALFA: 100 shares for $9,500
+ *   cash      21.4–25.3  IDX 500: $2,500 at the official 5,025
+ *   window    25.3–29.7  American trading days; European at expiry
+ *   pin       29.7–35.05  $100.02 − $100.00 makes the bracketed $0.02
+ *   writer    35.05–40.6 separate close $99.98, after hours $100.60, holder exercises
+ *   claim     40.6–45.0 check exercise instructions and the broker's cutoff
+ *   next      45.0–47.5 Next: the module checkpoint
  */
 
-const END = 43.6;
+const END = 47.5;
 const OCT4 = exitValues("oct4");
 const OCT18 = exitValues("oct18");
 const PAYS = indexPayout(INDEX_SETTLES);
 const PIN = [99.9, 100.7] as const;
+const HOLDER_CLOSE = 100.02;
+const WRITER_CLOSE = 99.98;
+const WRITER_AFTER = 100.6;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -68,7 +72,14 @@ function layout(width: number) {
 		dayX: (day: number) => margin + (day / WINDOW_DAYS) * room,
 		pinX: (price: number) =>
 			margin + ((price - PIN[0]) / (PIN[1] - PIN[0])) * room,
-		pinY: H * (narrow ? 0.44 : 0.42),
+		pinY: H * 0.37,
+		priceX: width * 0.64,
+		priceY: H * 0.3,
+		heroSize: frame.type.big * (narrow ? 0.9 : 0.78),
+		heroY:
+			H * 0.51 +
+			frame.type.big * (narrow ? 0.9 : 0.78) * 1.15 +
+			(narrow ? 28 : 0),
 		partyY: H * (narrow ? 0.36 : 0.34),
 		partyH: H * (narrow ? 0.14 : 0.13),
 		partyW: room * (narrow ? 0.34 : 0.28),
@@ -91,6 +102,7 @@ const copy = {
 	sameHead: ["On Oct 18, both are $7.00.", "10月18日，两者都是 $7.00。"],
 	intrinsic: ["intrinsic", "内在价值"],
 	time: ["time value", "时间价值"],
+	exitBasis: ["ALFA $102 · per share", "ALFA $102 · 每股"],
 	oct4: ["Oct 4", "10月4日"],
 	oct18: ["Oct 18", "10月18日"],
 	sharesHead: ["ALFA settles in shares.", "ALFA 以股票交收。"],
@@ -104,30 +116,40 @@ const copy = {
 	thursdayShort: ["Thu close · ignored", "周四收盘 · 不算"],
 	payout: ["writer pays", "义务方支付"],
 	windowHead: [
-		"American: any day. European: at expiry.",
-		"美式：任一天；欧式：仅到期日。",
+		"American: any trading day. European: at expiry.",
+		"美式：任一交易日；欧式：到期日。",
 	],
 	american: ["American", "美式"],
 	european: ["European", "欧式"],
-	pinHead: [
-		"Oct 18: ALFA closes just over $100.",
-		"10月18日：ALFA 收在 $100 上方一点。",
+	pinHead: ["At expiry: a $100-strike call.", "到期：$100 行权价看涨。"],
+	autoHead: [
+		"Two cents in: automatic exercise.",
+		"实值 2 美分：默认自动行权。",
 	],
-	autoHead: ["Two cents in: exercised.", "实值 2 美分：自动行权。"],
+	holderClose: ["holder · Oct 18 close", "持有人 · 10月18日收盘"],
+	writerClose: ["writer · ALFA", "义务方 · ALFA"],
+	afterHours: ["after hours", "盘后"],
+	close: ["close", "收盘"],
+	inTheMoney: ["in the money · per share", "实值 · 每股"],
+	defaultAction: [
+		"No action · no decline instruction.",
+		"未操作，也未通知券商放弃行权。",
+	],
+	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
 		"A writer can be assigned after hours.",
 		"义务方在盘后也可能被指派。",
 	],
 	strike: ["strike $100", "行权价 $100"],
-	exercised: ["exercised", "已行权"],
+	exercised: ["automatic exercise", "自动行权"],
 	assigned: ["assigned: short 100", "被指派：空头 100 股"],
 	claimBig: [
-		"Know how it ends before it does.",
-		"结束之前，先弄清它怎么结束。",
+		"A tiny expiry value can create shares.",
+		"到期的几美分，也能变成股票。",
 	],
 	claimSub: [
-		"Exit, settlement, window, and the last cents.",
-		"出场、交割、行权窗口，以及最后几美分。",
+		"Check exercise instructions and your broker’s cutoff.",
+		"检查行权指示与券商截止时间。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["contracts and money, on a new day", "在新的一天里运用合约与金额"],
@@ -178,9 +200,9 @@ function Scene({
 				<rect
 					data-f={`${name}-tv`}
 					x={x}
-					y={L.barBottom - L.barH(parts.intrinsic + parts.time)}
+					y={L.barBottom - L.barH(parts.intrinsic)}
 					width={L.barW}
-					height={L.barH(parts.time)}
+					height={0}
 					rx={3}
 					className="wt-film-bar"
 					data-tone="model"
@@ -294,7 +316,6 @@ function Scene({
 					[
 						["v-sell", 0, usd(OCT4.bid), OCT4.bid],
 						["v-ex", 1, usd(OCT4.intrinsic), OCT4.intrinsic],
-						["v-sell18", 0, usd(OCT18.bid), OCT18.bid],
 					] as const
 				).map(([name, i, label, cents]) => (
 					<text
@@ -308,6 +329,33 @@ function Scene({
 					>
 						{label}
 					</text>
+				))}
+				<Word
+					name="exit-basis"
+					x={W / 2}
+					y={H * 0.88}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(copy.exitBasis)}
+				</Word>
+				{(
+					[
+						["component-in", copy.intrinsic, OCT4.intrinsic, margin],
+						["component-tv", copy.time, OCT4.time, margin + room * 0.54],
+					] as const
+				).map(([name, label, cents, x]) => (
+					<Word
+						key={name}
+						name={name}
+						x={x}
+						y={H * 0.95}
+						size={T.body}
+						anchor="start"
+						className="wt-film-type wt-film-accent"
+					>
+						{`${usd(cents)} ${t(label)}`}
+					</Word>
 				))}
 				{(
 					[
@@ -583,16 +631,113 @@ function Scene({
 				>
 					{t(copy.strike)}
 				</text>
+			</g>
+			{(
+				[
+					["pin-dot", CALL_100.strike],
+					["writer-dot", WRITER_CLOSE],
+				] as const
+			).map(([name, price]) => (
 				<circle
-					data-f="pin-dot"
-					cx={L.pinX(100.02)}
+					key={name}
+					data-f={name}
+					cx={L.pinX(price)}
 					cy={L.pinY}
 					r={7}
 					className="wt-chip"
 					stroke="var(--foreground)"
 					strokeWidth={1.5}
 				/>
-			</g>
+			))}
+			{(
+				[
+					["pin-price", CALL_100.strike],
+					["writer-price", WRITER_CLOSE],
+				] as const
+			).map(([name, price]) => (
+				<Word
+					key={name}
+					name={name}
+					x={L.priceX}
+					y={L.priceY}
+					size={T.num}
+					className="wt-film-num"
+				>
+					{usd(price * 100)}
+				</Word>
+			))}
+			{(
+				[
+					["holder-close", copy.holderClose],
+					["writer-close", copy.writerClose],
+					["writer-after", copy.afterHours],
+				] as const
+			).map(([name, label]) => (
+				<Word
+					key={name}
+					name={name}
+					x={L.priceX}
+					y={name === "writer-after" ? H * 0.51 : L.priceY - T.num * 1.3}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{t(label)}
+				</Word>
+			))}
+			<Word
+				name="pin-equation"
+				x={W / 2}
+				y={H * 0.51 - (narrow ? 6 : 0)}
+				size={T.body}
+				className="wt-film-num wt-film-dim"
+			>
+				{`${usd(HOLDER_CLOSE * 100)} − ${usd(CALL_100.strike * 100)} =`}
+			</Word>
+			<Word
+				name="pin-value"
+				x={W / 2}
+				y={L.heroY}
+				size={L.heroSize}
+				className="wt-film-num wt-film-accent"
+			>
+				{usd(Math.round((HOLDER_CLOSE - CALL_100.strike) * 100))}
+			</Word>
+			<Word
+				name="pin-unit"
+				x={W / 2}
+				y={L.heroY + text * 1.7 + (narrow ? 34 : 0)}
+				size={T.small}
+				className="wt-film-tag"
+			>
+				{t(copy.inTheMoney)}
+			</Word>
+			<Lines
+				name="pin-default"
+				text={t(copy.defaultAction)}
+				x={W / 2}
+				y={H * 0.82 + (narrow ? 12 : 0)}
+				size={T.body}
+				maxWidth={room}
+				className="wt-film-type wt-film-dim"
+			/>
+			<Word
+				name="writer-snapshot"
+				x={W / 2}
+				y={H * 0.59}
+				size={T.body}
+				className="wt-film-type wt-film-dim"
+			>
+				{`${t(copy.close)} ${usd(WRITER_CLOSE * 100)}`}
+			</Word>
+			<Word
+				name="writer-exercise"
+				x={W / 2}
+				y={H * 0.72}
+				size={T.body}
+				className="wt-film-type"
+			>
+				{t(copy.holderExercises)}
+			</Word>
 			{(
 				[
 					["pin-ex", copy.exercised, "wt-film-accent"],
@@ -603,8 +748,8 @@ function Scene({
 					key={name}
 					name={name}
 					x={W / 2}
-					y={H * 0.68}
-					size={T.title}
+					y={H * 0.93}
+					size={T.head}
 					className={`wt-film-type ${tone}`}
 				>
 					{t(label)}
@@ -656,7 +801,9 @@ function build(context: FilmContext) {
 				: [el],
 		);
 	const g = (name: string) => one<SVGGraphicsElement>(name);
-	/** A figure lands slightly large and settles, without overshoot: it is data. */
+	const fade = (targets: Element | Element[], at: number, duration = 0.5) =>
+		tl.fromTo(targets, { opacity: 0 }, { opacity: 1, duration }, at);
+	/** Only single text elements scale; figures settle without overshoot. */
 	const word = (target: Element, time: number) =>
 		tl.fromTo(
 			target,
@@ -674,9 +821,35 @@ function build(context: FilmContext) {
 		"p2-head",
 		"p3-head",
 	].map((name) => one(name));
-	const dot = one("pin-dot");
-	const moveDot = (from: number, to: number, at: number, duration: number) => {
+	const holderMarks = [
+		"pin-dot",
+		"pin-price",
+		"holder-close",
+		"pin-equation",
+		"pin-value",
+		"pin-unit",
+		"pin-default",
+		"pin-ex",
+	].map((name) => one(name));
+	const writerMarks = [
+		"writer-dot",
+		"writer-price",
+		"writer-close",
+		"writer-after",
+		"writer-snapshot",
+		"writer-exercise",
+		"pin-as",
+	].map((name) => one(name));
+	const moveDot = (
+		name: string,
+		from: number,
+		to: number,
+		at: number,
+		duration: number,
+	) => {
 		const state = { price: from };
+		const dot = one(`${name}-dot`);
+		const price = one(`${name}-price`);
 		tl.fromTo(
 			state,
 			{ price: from },
@@ -685,7 +858,10 @@ function build(context: FilmContext) {
 				duration,
 				ease: "power2.inOut",
 				immediateRender: false,
-				onUpdate: () => gsap.set(dot, { attr: { cx: L.pinX(state.price) } }),
+				onUpdate: () => {
+					gsap.set(dot, { attr: { cx: L.pinX(state.price) } });
+					price.textContent = usd(Math.round(state.price * 100));
+				},
 			},
 			at,
 		);
@@ -699,17 +875,15 @@ function build(context: FilmContext) {
 		...kids("cash"),
 		...flat("window"),
 		...flat("pin"),
-		one("pin-ex"),
-		one("pin-as"),
+		...holderMarks,
+		...writerMarks,
 		g("lock-pin"),
 		...kids("claim"),
 	]);
 
-	// ——— open ———
 	tl.addLabel("open", 0);
 	d.open(0);
 
-	// ——— question: sell or exercise ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.4);
@@ -718,7 +892,7 @@ function build(context: FilmContext) {
 	word(one("q-ex-num"), 5.0);
 	show(one("q-line"), 5.3);
 
-	// ——— exit: the bid holds intrinsic and time value; exercise only the intrinsic ———
+	// The two carried figures keep their original paths and landing times.
 	tl.addLabel("exit", 8.8);
 	hide([one("q-tag"), one("q-line"), one("q-sell-tag"), one("q-ex-tag")], 8.8);
 	show(heads[0], 9.0);
@@ -726,10 +900,8 @@ function build(context: FilmContext) {
 		flat("exit").filter((el) => el.tagName === "path"),
 		9.0,
 	);
-	show(one("d-oct4"), 9.1);
+	show([one("d-oct4"), one("exit-basis")], 9.1);
 	show([one("l-sell"), one("l-ex")], 9.2);
-	// The question's figures fly to their places, $7.40 for the sale and "?" becoming
-	// exercise's $7.00, and each bar grows up under its figure once it has landed.
 	d.carry(g("q-sell-num"), g("v-sell"), 9.3, { duration: 1, arc: "y" });
 	d.carry(g("q-ex-num"), g("v-ex"), 9.7, { duration: 1, arc: "y" });
 	const grow = (name: string, from: number, cents: number, at: number) =>
@@ -744,58 +916,90 @@ function build(context: FilmContext) {
 			},
 			at,
 		);
-	tl.set(
-		[one("b-sell"), one("b-sell-in"), one("b-sell-tv")],
-		{ opacity: 1 },
-		10.3,
-	);
+	tl.set([one("b-sell"), one("b-sell-in")], { opacity: 1 }, 10.3);
 	grow("b-sell-in", 0, OCT4.intrinsic, 10.3);
-	grow("b-sell-tv", OCT4.intrinsic, OCT4.time, 10.6);
+	// The cap starts at zero height and only enters after its supporting bar settles.
+	fade(one("b-sell-tv"), 10.8);
+	const cap = one("b-sell-tv");
+	const sale = one("v-sell");
+	const timeLabel = one("component-tv");
+	const comparison = { elapsed: 0 };
+	const growthEase = gsap.parseEase("power2.out");
+	const expiryEase = gsap.parseEase("power2.inOut");
+	// One clock owns the cap for growth, rest and expiry, including reverse seeks.
+	tl.fromTo(
+		comparison,
+		{ elapsed: 0 },
+		{
+			elapsed: 2.8,
+			duration: 2.8,
+			ease: "none",
+			immediateRender: false,
+			onUpdate: () => {
+				const expiring = comparison.elapsed >= 2;
+				const time = expiring
+					? OCT4.time +
+						(OCT18.time - OCT4.time) *
+							expiryEase(Math.min(1, (comparison.elapsed - 2) / 0.8))
+					: OCT4.time * growthEase(Math.min(1, comparison.elapsed / 0.5));
+				gsap.set(cap, {
+					attr: {
+						y: L.barBottom - L.barH(OCT4.intrinsic + time),
+						height: L.barH(time),
+					},
+				});
+				// During construction this is the known bid carried from the question;
+				// at expiry the cap, its component amount and the total change together.
+				const cents = expiring ? Math.round(time) : OCT4.time;
+				gsap.set(sale, {
+					attr: {
+						y:
+							L.barBottom -
+							L.barH(OCT4.intrinsic + (expiring ? time : OCT4.time)) -
+							10,
+					},
+				});
+				sale.textContent = usd(OCT4.intrinsic + cents);
+				timeLabel.textContent = `${usd(cents)} ${d.t(copy.time)}`;
+			},
+		},
+		10.8,
+	);
 	tl.set([one("b-ex"), one("b-ex-in")], { opacity: 1 }, 10.7);
 	grow("b-ex-in", 0, OCT4.intrinsic, 10.7);
-	// Oct 18: the time value melts; selling and exercising are the same $7.00.
-	show(heads[1], 12.0);
-	d.swap(one("d-oct4"), one("d-oct18"), 12.0);
-	tl.to(
-		one("b-sell-tv"),
-		{
-			attr: { y: L.barBottom - L.barH(OCT4.intrinsic), height: 0 },
-			duration: 0.8,
-			ease: "power2.inOut",
-		},
-		12.2,
-	);
-	d.flip(one("v-sell"), one("v-sell18"), 12.3);
-	tl.set(one("v-sell"), { opacity: 0 }, 12.6);
+	fade([one("component-in"), one("component-tv")], 11.3);
+	// Construction and component labels settle at 11.8; quiet until 12.8.
+	hide(one("d-oct4"), 12.8);
+	// A final-date label must not describe a cap that still contains time value.
+	fade(one("d-oct18"), 13.6, 0.3);
+	// Cap/total settle at 13.6, then the final date at 13.9. Equality is true first.
+	show(heads[1], 13.9);
 
-	// ——— settle: shares for ALFA ———
-	tl.addLabel("settle", 15.6);
-	// Quickly: the next headline comes up 0.15 s later in the same place.
-	hide([heads[0], heads[1], ...flat("exit")], 15.6, 0.15);
-	show(heads[2], 15.75);
+	tl.addLabel("settle", 17.5);
+	hide([heads[0], heads[1], ...flat("exit")], 17.5);
+	show(heads[2], 17.85);
 	show(
 		kids("shares").filter((el) => !el.getAttribute("data-f")),
-		16.2,
+		18.3,
 	);
 	kids("shares")
 		.filter((el) => el.getAttribute("data-f")?.startsWith("flow-"))
 		.forEach((flow, i) => {
-			show(flow, 16.7 + i * 0.5, i ? "below" : "right");
+			show(flow, 18.8 + i * 0.5, i ? "below" : "right");
 		});
 
-	// ——— cash: an index pays the difference at the official level ———
-	tl.addLabel("cash", 19.3);
-	d.swap(heads[2], heads[3], 19.3);
-	hide(kids("shares"), 19.3);
-	show(one("c-official"), 19.8);
-	show(one("c-thursday"), 20.2);
-	tl.to(one("c-thursday"), { opacity: 0.4, duration: 0.4 }, 21.0);
-	word(one("c-pays"), 21.1);
+	tl.addLabel("cash", 21.4);
+	d.swap(heads[2], heads[3], 21.4);
+	hide(kids("shares"), 21.4);
+	show(one("c-official"), 21.9);
+	show(one("c-thursday"), 22.3);
+	tl.to(one("c-thursday"), { opacity: 0.4, duration: 0.4 }, 23.1);
+	// Fade the settled formula and payout as a group; never scale an SVG group.
+	fade(one("c-pays"), 23.2, 0.55);
 
-	// ——— window: which days ———
-	tl.addLabel("window", 23.2);
-	hide([heads[3], ...kids("cash")], 23.2);
-	show(heads[4], 23.55);
+	tl.addLabel("window", 25.3);
+	hide([heads[3], ...kids("cash")], 25.3);
+	show(heads[4], 25.65);
 	show(
 		flat("window").filter(
 			(el) =>
@@ -803,61 +1007,70 @@ function build(context: FilmContext) {
 					el.getAttribute("data-f") ?? "",
 				),
 		),
-		23.7,
+		25.8,
 	);
-	show(one("am-tag"), 23.9);
-	tl.fromTo(
-		[...one("am-days").children],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.2, stagger: 0.03 },
-		24.1,
+	show(one("am-tag"), 25.8);
+	// All eligible days light together, replacing the nonessential 0.03 s ripple.
+	fade(one("am-days"), 26.2, 0.3);
+	// American proof rests from 26.5 to 27.5.
+	d.swap(one("am-tag"), one("eu-tag"), 27.5);
+	tl.to(one("am-days"), { opacity: 0.12, duration: 0.4 }, 27.5);
+	pop(one("eu-day"), 27.9);
+
+	tl.addLabel("pin", 29.7);
+	hide([heads[4], ...flat("window")], 29.7);
+	show(heads[5], 30.05);
+	// The calendar is entirely gone before a dollar scale occupies its lane.
+	fade(flat("pin"), 30.05);
+	fade(
+		[one("pin-dot"), one("pin-price"), one("holder-close"), one("pin-default")],
+		30.45,
 	);
-	tl.set(one("am-days"), { opacity: 1 }, 24.1);
-	d.swap(one("am-tag"), one("eu-tag"), 25.6);
-	tl.to(one("am-days"), { opacity: 0.12, duration: 0.4 }, 25.6);
-	pop(one("eu-day"), 26.0);
+	moveDot("pin", CALL_100.strike, HOLDER_CLOSE, 30.45, 0.5);
+	// The settled operands and result are revealed, never counted after an equals sign.
+	fade([one("pin-equation"), one("pin-unit")], 30.95);
+	fade(one("pin-value"), 30.95);
+	d.lock(g("lock-pin"), 31.45, { around: one("pin-value"), pad: 8 });
+	tl.addLabel("hero-lock", 31.45);
+	show(heads[6], 31.45);
+	word(one("pin-ex"), 31.65);
 
-	// ——— pin: the hero. ALFA closes two cents above the strike, and that is enough. ———
-	tl.addLabel("pin", 27.6);
-	hide([heads[4], ...flat("window")], 27.6);
-	show(heads[5], 27.95);
-	// The scale and its strike first: the headline that follows names $100.
-	show(
-		flat("pin").filter((el) => el !== dot),
-		27.7,
+	tl.addLabel("writer", 35.05);
+	d.swap([heads[5], heads[6]], heads[7], 35.05);
+	hide([...holderMarks, g("lock-pin")], 35.05, 0.35, 0);
+	// A separate writer case fades in at its own close, rather than walking the holder back.
+	fade(
+		[
+			one("writer-dot"),
+			one("writer-price"),
+			one("writer-close"),
+			one("writer-snapshot"),
+		],
+		35.4,
 	);
-	pop(dot, 28.4);
-	d.lock(g("lock-pin"), 28.9, { around: dot, pad: 5 });
-	tl.addLabel("hero-lock", 28.9);
-	show(heads[6], 28.9);
-	word(one("pin-ex"), 29.1);
+	// Give the close a full second of quiet before the after-hours phase change.
+	fade(one("writer-after"), 36.9);
+	moveDot("writer", WRITER_CLOSE, WRITER_AFTER, 36.9, 0.9);
+	// After hours settles at 37.8; its completed proof rests until 38.8.
+	fade(one("writer-exercise"), 38.8, 0.55);
+	word(one("pin-as"), 38.8);
 
-	// ——— writer: under the strike at the close, above it after hours, and assigned ———
-	tl.addLabel("writer", 32.5);
-	d.swap([heads[5], heads[6]], heads[7], 32.5);
-	hide([one("pin-ex"), g("lock-pin")], 32.5);
-	moveDot(100.02, 99.98, 33.0, 0.5);
-	moveDot(99.98, 100.6, 33.8, 0.9);
-	word(one("pin-as"), 34.9);
+	tl.addLabel("claim", 40.6);
+	hide([heads[7], ...flat("pin"), ...writerMarks], 40.6);
+	word(one("z-big"), 40.9);
+	show(one("z-sub"), 41.2);
 
-	// ——— claim ———
-	tl.addLabel("claim", 36.7);
-	hide([heads[7], ...flat("pin"), one("pin-as")], 36.7);
-	word(one("z-big"), 37.0);
-	show(one("z-sub"), 37.3);
-
-	// ——— next ———
-	tl.addLabel("next", 41.1);
-	hide(kids("claim"), 41.1);
-	d.close(41.1);
+	tl.addLabel("next", 45);
+	hide(kids("claim"), 45);
+	d.close(45);
 	return tl;
 }
 
 export const expirationSettlementFilm: Film = {
 	id: "expiration-settlement",
 	label: [
-		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at $102, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement in 100 ALFA shares for $9,500, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; and a call exercised automatically at $100.02, beside a writer assigned after ALFA closed at $99.98 and traded to $100.60`,
-		`到期短片：10月4日 ALFA 为 $102，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：ALFA 以 $9,500 交收 100 股，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；以及 $100.02 时自动行权的看涨，旁边是收盘 $99.98、盘后涨到 $100.60 而被指派的义务方`,
+		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at $102, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement in 100 ALFA shares for $9,500, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; and a call exercised automatically at $100.02 when the holder takes no action and has not declined exercise, beside a separate writer whose call is exercised after ALFA closed at $99.98 and traded to $100.60`,
+		`到期短片：10月4日 ALFA 为 $102，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：ALFA 以 $9,500 交收 100 股，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；以及 $100.02 时，持有人未操作且未指示放弃行权，于是默认自动行权；另一位义务方面对收盘 $99.98、盘后涨到 $100.60，持有人选择行权而被指派`,
 	],
 	stage: "dark",
 	shots: [
