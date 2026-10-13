@@ -913,7 +913,7 @@ function build(context: FilmContext) {
 		one("c-contract"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		8.95,
+		9.25,
 	);
 	show(one("c-head"), 9.1, "above");
 	chainSteps.forEach((_, i) => {
