@@ -26,19 +26,19 @@ import {
  * does the day's volume rise by 10 or by 20? The book answers: Ben's offer rests, your
  * market buy arrives and takes it, and the one trade prints once, volume +10. The hero is a
  * limit: buy 30 at most $4.15. It takes 10 at $4.10, then 12 at $4.15, and the last 8 drop
- * into the bids as your bid, where glowing brackets lock. Last, the tape: a market buy and a
- * $4.10 limit print the same line.
+ * into the bids as your bid, earning the large resting eight and its glowing brackets.
+ * Last, two mutually exclusive buys could have produced the same public print.
  *
  *   open      0–4        "Counterparties"
  *   question  4–8.8      Ben offers 10 at $4.10, you buy them: volume +10 or +20?
- *   match     8.8–18.2   resting; incoming; one trade, one print, volume +10
- *   limit     18.2–27.6  hero: buy 30, limit $4.15; 10 and 12 fill; 8 rest as your bid
- *   print     27.6–31.6  record A, market; record B, limit; one line on the tape
- *   claim     31.6–36    one trade, two sides, one print
- *   next      36–38.5    Next: execution side
+ *   match     8.8–19.6   resting; incoming; one trade, one print, volume +10
+ *   limit     19.6–32.6  alternative: buy 30, limit $4.15; 10 and 12 fill; 8 rest
+ *   print     32.6–39.8  possible market buy OR limit buy; one line on the tape
+ *   claim     39.8–44.2  one trade, two sides, one print
+ *   next      44.2–46.7  Next: execution side
  */
 
-const END = 38.5;
+const END = 46.7;
 /** Asks from the top of the book down to the best, as a ladder reads. */
 const LADDER = [...ASKS].reverse();
 const BEST = ASKS[0];
@@ -116,21 +116,23 @@ const copy = {
 		`Volume +${BEST.size} or +${BEST.size * 2}?`,
 		`成交量 +${BEST.size} 还是 +${BEST.size * 2}？`,
 	],
-	restHead: ["Ben's offer rests in the book.", "Ben 的卖单挂在订单簿里。"],
-	inHead: ["Your market buy takes it.", "你的市价买单吃掉了它。"],
+	inHead: ["Your market buy needs a seller.", "你的市价买单需要卖方。"],
 	oneHead: [
 		`One trade: volume +${BEST.size}.`,
 		`一笔成交：成交量 +${BEST.size}。`,
 	],
 	limHead: [
-		`Now buy ${SIZE}, at most ${usd(LIMIT)}.`,
-		`换成买 ${SIZE} 张，最多付 ${usd(LIMIT)}。`,
+		`Instead: buy ${SIZE}, capped at ${usd(LIMIT)}.`,
+		`另一种情况：买 ${SIZE} 张，限价 ${usd(LIMIT)}。`,
 	],
 	restsHead: [
 		`The last ${RESTS} wait as your bid.`,
 		`最后 ${RESTS} 张作为你的买单等待。`,
 	],
-	tapeHead: ["Either order prints the same line.", "两种订单打出同一条记录。"],
+	tapeHead: [
+		"Two possible buys, the same print.",
+		"两种可能的买单，同一条记录。",
+	],
 	ask: ["ask", "卖单"],
 	bid: ["bid", "买单"],
 	ben: ["Ben", "Ben"],
@@ -139,13 +141,14 @@ const copy = {
 	buy: ["buy", "买"],
 	tape: ["time and sales", "逐笔成交"],
 	empty: ["no trades yet", "尚无成交"],
+	matching: ["matching…", "撮合中…"],
 	volume: ["volume", "成交量"],
 	filled: ["filled", "已成交"],
 	resting: ["resting", "挂单等待"],
 	buyer: ["buyer: you, incoming", "买方：你，主动到来"],
 	seller: ["seller: Ben, resting", "卖方：Ben，挂单"],
-	recordA: ["record A", "记录 A"],
-	recordB: ["record B", "记录 B"],
+	recordA: ["possible A", "可能 A"],
+	recordB: ["or: B", "或 B"],
 	market: [`buy ${T1.quantity} · market`, `买 ${T1.quantity} · 市价`],
 	limit: [
 		`buy ${T1.quantity} · limit ${usd(T1.price)}`,
@@ -260,7 +263,7 @@ function Scene({
 	const stat = (name: string, tag: Copy, value: string, y: number) => (
 		<g data-f={name}>
 			<text
-				x={L.statX}
+				x={L.statX + (narrow && name === "rest" ? T.num * 1.4 + 24 : 0)}
 				y={y + T.small}
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
@@ -270,9 +273,9 @@ function Scene({
 			<text
 				data-f={`${name}-n`}
 				x={L.statX}
-				y={y + T.small + T.num * 1.15}
+				y={y + T.small + T.num * (name === "rest" ? 1.4 : 1) * 1.15}
 				className="wt-film-num wt-film-accent"
-				style={{ fontSize: T.num }}
+				style={{ fontSize: T.num * (name === "rest" ? 1.4 : 1) }}
 			>
 				{value}
 			</text>
@@ -299,12 +302,6 @@ function Scene({
 		</>
 	);
 	const printX = margin + (room - L.printW) / 2;
-	/** A record's line lands toward the print's ends, leaving its middle for the type. */
-	const wire = (i: number) => {
-		const from = L.cardX[i] + L.cardW / 2;
-		const to = printX + (i === 0 ? L.printW * 0.18 : L.printW * 0.82);
-		return `M${from} ${L.cardY + L.cardH + 6}L${to} ${L.printY - 8}`;
-	};
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -341,7 +338,6 @@ function Scene({
 			</g>
 
 			{/* The book. */}
-			{headline("r-head", copy.restHead)}
 			{headline("i-head", copy.inHead)}
 			{/* The answer, a line under the buy, as the volume counts once. */}
 			<Lines
@@ -438,6 +434,15 @@ function Scene({
 				</text>
 			</g>
 			<text
+				data-f="tape-matching"
+				x={L.sideX}
+				y={L.sideY + T.small + text * 1.9}
+				className="wt-film-type wt-film-dim"
+				style={{ fontSize: text }}
+			>
+				{t(copy.matching)}
+			</text>
+			<text
 				data-f="tape-print"
 				x={L.sideX}
 				y={L.sideY + T.small + text * 1.9}
@@ -472,7 +477,7 @@ function Scene({
 				</text>
 			))}
 
-			{/* Two records, one print. */}
+			{/* Mutually exclusive possibilities, not the two sides of a trade. */}
 			{headline("t-head", copy.tapeHead)}
 			{(
 				[
@@ -492,8 +497,6 @@ function Scene({
 					{cardText(L.cardX[i], label, line)}
 				</g>
 			))}
-			<path data-f="wire-0" d={wire(0)} className="wt-film-riser" />
-			<path data-f="wire-1" d={wire(1)} className="wt-film-riser" />
 			<g data-f="print">
 				<text
 					x={W / 2}
@@ -586,20 +589,33 @@ function build(context: FilmContext) {
 			time,
 		);
 	const width = (n: number) => (n / MAX) * L.barMax;
-	/** A level's size runs to `to`: its bar and its number together. */
-	const sizeTo = (name: string, to: number, from: number, time: number) => {
-		tl.to(
-			one(`bar-${name}`),
-			{ attr: { width: width(to) }, duration: 0.5, ease: "power2.out" },
+	/** One state drives the quote, its bar, and every quantity linked to its depletion. */
+	const sizeTo = (
+		name: string,
+		to: number,
+		from: number,
+		time: number,
+		linked?: (remaining: number) => void,
+	) => {
+		const state = { remaining: from };
+		const bar = one(`bar-${name}`);
+		const size = one<SVGTextElement>(`size-${name}`);
+		tl.fromTo(
+			state,
+			{ remaining: from },
+			{
+				remaining: to,
+				duration: 0.5,
+				ease: "power2.out",
+				immediateRender: false,
+				onUpdate: () => {
+					const remaining = Math.round(state.remaining);
+					bar.setAttribute("width", String(width(remaining)));
+					size.textContent = remaining === 0 ? "—" : count(remaining);
+					linked?.(remaining);
+				},
+			},
 			time,
-		);
-		d.count(
-			one<SVGTextElement>(`size-${name}`),
-			to,
-			time,
-			(v) => count(Math.round(v)),
-			from,
-			0.5,
 		);
 	};
 	/** The incoming order rides up to the level it takes. */
@@ -609,14 +625,9 @@ function build(context: FilmContext) {
 			{ y: L.askY(row) - L.chipY, duration: 0.5, ease: "power2.inOut" },
 			time,
 		);
-	const heads = [
-		"r-head",
-		"i-head",
-		"o-head",
-		"l-head",
-		"l2-head",
-		"t-head",
-	].map((name) => one(name));
+	const heads = ["i-head", "o-head", "l-head", "l2-head", "t-head"].map(
+		(name) => one(name),
+	);
 	const bestRow = LADDER.length - 1;
 	const best = `a${BEST.price}`;
 	const second = `a${TAKEN[1].price}`;
@@ -635,6 +646,7 @@ function build(context: FilmContext) {
 		one("chip-l"),
 		one("limit"),
 		...kids("tape"),
+		one("tape-matching"),
 		one("tape-print"),
 		one("vol"),
 		one("fill"),
@@ -644,8 +656,6 @@ function build(context: FilmContext) {
 		g("lock-mine"),
 		one("card-0"),
 		one("card-1"),
-		one("wire-0"),
-		one("wire-1"),
 		one("print"),
 		...kids("claim"),
 	]);
@@ -672,97 +682,102 @@ function build(context: FilmContext) {
 	show(one("ben"), 10.0, "right");
 	show(kids("tape"), 10.2);
 	show(one("vol"), 10.4);
-	d.swap(heads[0], heads[1], 12.6);
 	d.pop(one("chip-m"), 13.2);
 	ride("chip-m", bestRow, 13.6);
-	// It takes the offer: the size drains, the print lands, the volume counts once.
-	hide([one("chip-m"), one("ben")], 14.15, 0.3);
-	sizeTo(best, 0, BEST.size, 14.2);
-	d.flip(one("tape-empty"), one("tape-print"), 14.3);
-	tl.set(one("tape-empty"), { opacity: 0 }, 14.6);
-	d.count(
-		one<SVGTextElement>("vol-n"),
-		BEST.size,
-		14.5,
-		(v) => count(Math.round(v)),
-		0,
-		0.6,
+	// A matching state replaces the empty tape before any contracts execute.
+	hide(one("tape-empty"), 13.85, 0.3, 0);
+	tl.fromTo(
+		one("tape-matching"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		14.15,
 	);
-	show(heads[2], 14.6);
-	show(one("role-b"), 15.2);
-	show(one("role-s"), 15.5);
+	// Depletion and volume are complementary at every frame, not separate counts.
+	hide([one("chip-m"), one("ben")], 14.15, 0.3);
+	sizeTo(best, 0, BEST.size, 14.2, (remaining) => {
+		one<SVGTextElement>("vol-n").textContent = count(BEST.size - remaining);
+	});
+	// Only the settled execution earns a fixed public print and the answer.
+	hide(one("tape-matching"), 14.7, 0.3, 0);
+	tl.fromTo(
+		one("tape-print"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		15.0,
+	);
+	show(heads[1], 14.7);
+	show(one("role-b"), 16.5);
+	show(one("role-s"), 16.9);
 
 	// ——— limit: the hero. Buy 30, at most $4.15: best price first, and the rest waits. ———
-	tl.addLabel("limit", 18.2);
-	d.swap([heads[1], heads[2]], heads[3], 18.2);
+	tl.addLabel("limit", 19.6);
+	d.swap([heads[0], heads[1]], heads[2], 19.6);
 	hide(
 		[
 			...kids("tape"),
+			one("tape-matching"),
 			one("tape-print"),
 			one("vol"),
 			one("role-b"),
 			one("role-s"),
 		],
-		18.2,
+		19.6,
 	);
-	// The same book as before the trade.
-	sizeTo(best, BEST.size, 0, 18.4);
-	tl.set(one("chip-m"), { y: 0 }, 18.2);
-	d.pop(one("chip-l"), 18.6);
-	d.trace(one<SVGPathElement>("limit"), 18.9, { duration: 0.6 });
+	// Explicit alternative: dip the book, reset it while hidden, then reveal it afresh.
+	hide(book, 19.6, 0.35, 0);
+	sizeTo(best, BEST.size, 0, 19.95);
+	tl.fromTo(book, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.45);
+	// Its figures land with the alternative headline, before the fresh book arrives.
+	d.pop(one("chip-l"), 19.95);
+	d.trace(one<SVGPathElement>("limit"), 21.15, { duration: 0.6 });
 	// Above the limit: out of reach.
-	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 19.3);
-	show(one("fill"), 19.4);
-	ride("chip-l", bestRow, 20.2);
-	sizeTo(best, 0, BEST.size, 20.7);
+	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 21.55);
+	show(one("fill"), 21.55);
+	ride("chip-l", bestRow, 22.1);
 	const chipText = one<SVGTextElement>("chip-l-text");
-	const chipLabel = (n: number) =>
-		limitChip(pick(copy.buy, context.locale), Math.round(n));
-	d.count(chipText, SIZE - FIRST, 20.7, chipLabel, SIZE, 0.5);
-	d.count(
-		one<SVGTextElement>("fill-n"),
-		FIRST,
-		20.7,
-		(v) => `${Math.round(v)} / ${SIZE}`,
-		0,
-		0.5,
-	);
-	ride("chip-l", bestRow - 1, 21.5);
-	sizeTo(second, 0, TAKEN[1].size, 22.0);
-	d.count(chipText, RESTS, 22.0, chipLabel, SIZE - FIRST, 0.5);
-	d.count(
-		one<SVGTextElement>("fill-n"),
-		DONE.filled,
-		22.0,
-		(v) => `${Math.round(v)} / ${SIZE}`,
-		FIRST,
-		0.5,
+	const filled = one<SVGTextElement>("fill-n");
+	const fillTo = (total: number) => {
+		chipText.textContent = limitChip(
+			pick(copy.buy, context.locale),
+			SIZE - total,
+		);
+		filled.textContent = `${count(total)} / ${SIZE}`;
+	};
+	sizeTo(best, 0, BEST.size, 22.6, (remaining) => fillTo(FIRST - remaining));
+	// Each completed fill stands for a full second before the next construction.
+	ride("chip-l", bestRow - 1, 24.1);
+	sizeTo(second, 0, TAKEN[1].size, 24.6, (remaining) =>
+		fillTo(DONE.filled - remaining),
 	);
 	tl.to(
 		[one(`lv-${best}`), one(`lv-${second}`)],
 		{ opacity: 0.3, duration: 0.4 },
-		22.8,
+		26.1,
 	);
 	// The rest drops into the bids as the new best bid, and the old ones step down.
-	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 22.9);
+	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 26.1);
 	tl.to(
 		one("chip-l"),
 		{ y: L.bidY(0) - L.chipY, opacity: 0, duration: 0.5, ease: "power2.inOut" },
-		22.9,
+		26.1,
 	);
-	show(one("lv-mine"), 23.3, "right");
-	show(one("yours"), 23.6, "right");
-	show(one("rest"), 23.7);
-	d.lock(g("lock-mine"), 24.0, { around: one("lv-mine"), pad: 5 });
-	tl.addLabel("hero-lock", 24.0);
-	show(heads[4], 24.0);
+	show(one("lv-mine"), 26.6, "right");
+	show(one("yours"), 27.0, "right");
+	show(one("rest"), 27.5);
+	tl.to(one("fill"), { opacity: 0.35, duration: 0.4 }, 27.5);
+	d.lock(g("lock-mine"), 29.0, { around: one("rest-n"), pad: 6 });
+	tl.addLabel("hero-lock", 29.0);
+	show(heads[3], 29.0);
+	// After the hero stands, the older book recedes around the earned resting bid.
+	tl.to(book, { opacity: 0.25, duration: 0.4 }, 31.0);
+	tl.to(one("limit"), { opacity: 0.25, duration: 0.4 }, 31.0);
 
 	// ——— print: two orders, one line on the tape ———
-	tl.addLabel("print", 27.6);
+	tl.addLabel("print", 32.6);
 	hide(
 		[
+			heads[2],
 			heads[3],
-			heads[4],
 			...book,
 			one("lv-mine"),
 			one("yours"),
@@ -771,35 +786,23 @@ function build(context: FilmContext) {
 			one("rest"),
 			g("lock-mine"),
 		],
-		27.6,
+		32.6,
 	);
-	show(heads[5], 27.95);
-	show(one("print"), 28.2);
-	show(one("card-0"), 28.8);
-	d.trace(one<SVGPathElement>("wire-0"), 29.2, { duration: 0.5 });
-	show(one("card-1"), 29.6);
-	d.trace(one<SVGPathElement>("wire-1"), 30.0, { duration: 0.5 });
+	show(heads[4], 32.95);
+	show(one("print"), 33.2);
+	show(one("card-0"), 34.7);
+	show(one("card-1"), 36.2);
 
 	// ——— claim ———
-	tl.addLabel("claim", 31.6);
-	hide(
-		[
-			heads[5],
-			one("card-0"),
-			one("card-1"),
-			one("wire-0"),
-			one("wire-1"),
-			one("print"),
-		],
-		31.6,
-	);
-	word(one("z-big"), 31.9);
-	show(one("z-sub"), 32.2);
+	tl.addLabel("claim", 39.8);
+	hide([heads[4], one("card-0"), one("card-1"), one("print")], 39.8);
+	word(one("z-big"), 40.1);
+	show(one("z-sub"), 40.4);
 
 	// ——— next ———
-	tl.addLabel("next", 36.0);
-	hide(kids("claim"), 36.0);
-	d.close(36.0);
+	tl.addLabel("next", 44.2);
+	hide(kids("claim"), 44.2);
+	d.close(44.2);
 	return tl;
 }
 
