@@ -24,6 +24,7 @@ import {
 	FLOOR,
 	type Flow,
 	flowLabel,
+	LABEL,
 	PUT_95,
 	PUT_ASK,
 	PUT_BID,
@@ -31,6 +32,7 @@ import {
 	putValue,
 	RANGE,
 	type Right,
+	STOCK_COST,
 	stock,
 	TRADES,
 } from "./flow-sentiment-model";
@@ -41,19 +43,20 @@ import {
  * put bought reads bearish. Then Monday's three prints get one label each, bullish 10,
  * neutral 6, bearish 4, and the ledger shows the bearish 4 were two people closing. The
  * hero: the same "bearish" put, alone a bet on a fall, beside 100 shares a floor, where
- * glowing brackets lock. Last, buying back a short put: no view at all.
+ * glowing brackets lock around the model-derived loss floor. Last, buying back closes
+ * this short-put position; the flat line proves no remaining price exposure in this leg.
  *
  *   open      0–4        "Sentiment labels"
  *   question  4–8.6      puts bought at the ask: bullish?
  *   matrix    8.6–15.7   call bought, call sold, put bought, put sold
- *   tally     15.7–23.1  10 bullish, 6 neutral, 4 bearish; the bearish 4 were closing
- *   hedge     23.1–30.5  hero: the put alone, then beside shares: a floor
- *   close     30.5–34.5  closing a short put: no view
- *   claim     34.5–39.6  a label describes a print, not a person
- *   next      39.6–42.1  Next: strategies
+ *   tally     15.7–24.7  call contract, 10/6/4 tally, unknown direction, account ledger
+ *   hedge     24.7–33.6  put alone; stock/hedge comparison; inputs and loss floor
+ *   close     33.6–38.7  short-put reference, then a flat closed position
+ *   claim     38.7–44.4  a label describes a print, not a person
+ *   next      44.4–46.9  Next: strategies
  */
 
-const END = 42.1;
+const END = 46.9;
 const RIGHTS: Right[] = ["call", "put"];
 const ACTIONS: Action[] = ["buy", "sell"];
 const FLOWS: Flow[] = ["bullish", "neutral", "bearish"];
@@ -64,7 +67,6 @@ const TOTALS = FLOWS.map((flow) =>
 	),
 );
 const ALL = TOTALS.reduce((sum, n) => sum + n, 0);
-const BULL = TRADES.find((trade) => printFlow(trade).flow === "bullish");
 const BEAR = TRADES.find((trade) => printFlow(trade).flow === "bearish");
 const BREAK_EVEN = PUT_95.strike * 100 - PUT_ASK;
 /** Dollars per contract at expiry, for each position around the one put. */
@@ -93,19 +95,25 @@ function layout(width: number) {
 	const cellH = H * (narrow ? 0.2 : 0.23);
 	const left = margin + (narrow ? 36 : 56);
 	const right = margin + room;
-	const top = H * (narrow ? 0.3 : 0.28);
-	const bottom = H * 0.84;
+	const top = H * (narrow ? 0.38 : 0.34);
+	const bottom = H * 0.72;
 	return {
 		...frame,
 		cellX: (col: number) => margin + labelW + col * (cellW + gap),
 		cellY: (row: number) => cellTop + row * (cellH + gap),
 		cellW,
 		cellH,
+		contractY: H * (narrow ? 0.23 : 0.24),
+		inputsY: H * 0.24,
+		floorCaptionY: H * 0.825,
+		floorY: H * 0.925,
 		rowY: (i: number) =>
-			H * (narrow ? 0.27 : 0.28) + i * H * (narrow ? 0.07 : 0.08),
+			H * (narrow ? 0.31 : 0.32) + i * H * (narrow ? 0.07 : 0.08),
 		barY: H * (narrow ? 0.55 : 0.56),
 		barH: H * (narrow ? 0.06 : 0.07),
-		ledgerY: (i: number) => H * (narrow ? 0.76 : 0.77) + i * H * 0.065,
+		neutralY: H * 0.73,
+		ledgerTagY: H * 0.8,
+		ledgerY: H * 0.855,
 		left,
 		right,
 		top,
@@ -150,7 +158,13 @@ const copy = {
 	],
 	hHead: ["Alone, this put bets on a fall.", "单独买入，这张看跌押注下跌。"],
 	h2Head: ["Beside 100 shares, it's a floor.", "配上 100 股，它是一个下限。"],
-	h3Head: ["Buying one back: no view at all.", "买回平仓：毫无观点。"],
+	h3Head: ["Buying back closes this position.", "买回平仓，消除这份敞口。"],
+	neutralNote: ["Neutral: direction unknown", "中性：方向证据不足"],
+	ledgerTag: ["teaching account ledger", "教学账户台账"],
+	inputs: [
+		`100 shares at ${usd(STOCK_COST * 100, 0)} · 95 put ${usd(PUT_ASK)}`,
+		`100 股成本 ${usd(STOCK_COST * 100, 0)} · 95 看跌 ${usd(PUT_ASK)}`,
+	],
 	feed: ["feed label: bearish", "数据标签：看跌"],
 	axis: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
 	longPut: ["long put", "看跌多头"],
@@ -158,10 +172,7 @@ const copy = {
 	hedged: ["stock + put", "股票 + 看跌"],
 	shortBefore: ["short put, before", "此前的看跌空头"],
 	after: ["after buying back", "买回之后"],
-	floor: [
-		`floor ${signedUsd(FLOOR * 100, 0)}`,
-		`下限 ${signedUsd(FLOOR * 100, 0)}`,
-	],
+	floor: ["floor at expiry", "到期盈亏下限"],
 	claimBig: [
 		"A label describes a print, not a person.",
 		"标签描述成交，不描述人。",
@@ -386,6 +397,16 @@ function Scene({
 				maxWidth={narrow ? room : room * 0.74}
 				anchor="start"
 			/>
+			<Word
+				name="t-contract"
+				x={margin}
+				y={L.contractY}
+				size={T.small * 1.1}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(LABEL)}
+			</Word>
 			{TRADES.map((trade, i) => {
 				const { side, flow } = printFlow(trade);
 				return (
@@ -453,21 +474,38 @@ function Scene({
 					</g>
 				);
 			})}
-			{[BULL, BEAR].map((trade, i) =>
-				trade ? (
-					<Lines
-						key={trade.id}
-						name={`ledger-${i}`}
-						text={`${t(copy[i ? "bearish" : "bullish"])} ${trade.quantity}: ${t(holders[trade.buyer].name)} ${t(verb(trade.buyerEffect, true))} · ${t(holders[trade.seller].name)} ${t(verb(trade.sellerEffect, false))}`}
-						x={margin}
-						y={L.ledgerY(i)}
-						size={text}
-						maxWidth={room}
-						anchor="start"
-						className={`wt-film-type ${i ? "wt-film-loss" : "wt-film-gain"}`}
-					/>
-				) : null,
-			)}
+			<Lines
+				name="neutral-note"
+				text={t(copy.neutralNote)}
+				x={margin}
+				y={L.neutralY}
+				size={text}
+				maxWidth={room}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			/>
+			<Word
+				name="ledger-tag"
+				x={margin}
+				y={L.ledgerTagY}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(copy.ledgerTag)}
+			</Word>
+			{BEAR ? (
+				<Lines
+					name="ledger-bear"
+					text={`${t(copy.bearish)} ${BEAR.quantity}: ${t(holders[BEAR.buyer].name)} ${t(verb(BEAR.buyerEffect, true))} · ${t(holders[BEAR.seller].name)} ${t(verb(BEAR.sellerEffect, false))}`}
+					x={margin}
+					y={L.ledgerY}
+					size={text}
+					maxWidth={room}
+					anchor="start"
+					className="wt-film-type wt-film-loss"
+				/>
+			) : null}
 
 			{/* One put, three positions. */}
 			{headline("h-head", copy.hHead)}
@@ -487,6 +525,16 @@ function Scene({
 				anchor="start"
 			/>
 			{headline("h3-head", copy.h3Head)}
+			<Lines
+				name="hedge-inputs"
+				text={t(copy.inputs)}
+				x={margin}
+				y={L.inputsY}
+				size={T.body}
+				maxWidth={room}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			/>
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
@@ -555,16 +603,38 @@ function Scene({
 								className="wt-bracket"
 								strokeDasharray="4 3"
 							/>
-							<text
-								data-f="floor-label"
-								x={L.x(PUT_95.strike) + 6}
-								y={L.y(FLOOR) + 18}
-								className="wt-small wt-halo"
+							<Word
+								name="floor-caption"
+								x={margin}
+								y={L.floorCaptionY}
+								size={T.small * 1.1}
+								anchor="start"
+								className="wt-film-tag"
 							>
 								{t(copy.floor)}
-							</text>
+							</Word>
+							<Word
+								name="floor-math"
+								x={W / 2 + T.num * 0.4 - 24}
+								y={L.floorY}
+								size={T.body}
+								anchor="end"
+								className="wt-film-num wt-film-loss"
+							>
+								{`${signedUsd((PUT_95.strike - STOCK_COST) * 10000, 0)} − ${usd(PUT_ASK * 100, 0)} =`}
+							</Word>
+							<Word
+								name="floor-label"
+								x={W / 2 + T.num * 0.4}
+								y={L.floorY}
+								size={T.num * 1.15}
+								anchor="start"
+								className="wt-film-num wt-film-loss"
+							>
+								{signedUsd(FLOOR * 100, 0)}
+							</Word>
 						</g>
-						<Brackets name="lock-floor" glow />
+						<Brackets name="lock-floor" tone="loss" glow />
 						{tag(
 							"g-alone",
 							82,
@@ -584,11 +654,11 @@ function Scene({
 						)}
 						{tag(
 							"g-hedged",
-							112,
+							100,
 							lines.hedged,
 							copy.hedged,
 							"wt-film-accent",
-							22,
+							24,
 						)}
 						{tag(
 							"g-short",
@@ -668,6 +738,8 @@ function build(context: FilmContext) {
 	const L = layout(W);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
+	// Keep the chart at its resting geometry; only single text marks scale.
+	tl.set(one("depth"), { scale: 1 }, 0);
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -706,8 +778,7 @@ function build(context: FilmContext) {
 	);
 	const rows = TRADES.map((_, i) => one(`row-${i}`));
 	const segs = FLOWS.map((flow) => one(`seg-${flow}`));
-	const bars = FLOWS.map((flow) => one(`bar-${flow}`));
-	const ledger = [one("ledger-0"), one("ledger-1")];
+	const ledger = [one("neutral-note"), one("ledger-tag"), one("ledger-bear")];
 	const chartLines = ["alone", "stock", "hedged", "short", "flat"].map((name) =>
 		one<SVGPathElement>(`l-${name}`),
 	);
@@ -725,6 +796,8 @@ function build(context: FilmContext) {
 		...rows,
 		...segs,
 		...ledger,
+		one("t-contract"),
+		one("hedge-inputs"),
 		...kids("chart"),
 		one("feed"),
 		...kids("claim"),
@@ -756,89 +829,117 @@ function build(context: FilmContext) {
 	tl.addLabel("tally", 15.7);
 	hide([heads[0], heads[1], ...kids("grid"), ...cells], 15.7);
 	show(heads[2], 16.05);
+	// The call contract is settled before the first print receives its label.
+	tl.fromTo(
+		one("t-contract"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		16.05,
+	);
 	rows.forEach((row, i) => {
-		show(row, 16.2 + i * 0.6, "right");
+		show(row, 16.5 + i * 0.6, "right");
 	});
+	// Reveal settled proportions and their totals together: no fixed number beside
+	// a bar whose encoded quantity is still changing.
 	segs.forEach((seg, i) => {
-		tl.set(seg, { opacity: 1 }, 18.0);
 		tl.fromTo(
-			bars[i],
-			{ attr: { width: 0 } },
-			{
-				attr: { width: Number(bars[i].getAttribute("width")) },
-				duration: 0.5,
-				ease: "power2.out",
-			},
+			seg,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.6 },
 			18.0 + i * 0.35,
 		);
-		tl.fromTo(
-			seg.lastElementChild,
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.3 },
-			18.3 + i * 0.35,
-		);
 	});
-	show(ledger[0], 19.1);
-	show(ledger[1], 19.5);
-	show(heads[3], 19.5);
+	// The tally settles at 19.3; qualifications follow after a full second.
+	show([ledger[0], ledger[1]], 20.3);
+	show(ledger[2], 20.7);
+	show(heads[3], 20.7);
 
 	// ——— hedge: the hero. The same "bearish" put, alone and then beside shares. ———
-	tl.addLabel("hedge", 23.1);
-	hide([heads[2], heads[3], ...rows, ...segs, ...ledger], 23.1);
-	show(heads[4], 23.45);
-	d.rise(23.4);
+	tl.addLabel("hedge", 24.7);
+	hide(
+		[heads[2], heads[3], one("t-contract"), ...rows, ...segs, ...ledger],
+		24.7,
+	);
+	show(heads[4], 25.05);
+	tl.fromTo(one("depth"), { opacity: 0 }, { opacity: 1, duration: 0.8 }, 25.0);
 	show(
 		kids("chart").filter(
 			(el) => !el.getAttribute("data-f")?.match(/^(l|g|lock)-|^floor$/),
 		),
-		23.6,
+		25.2,
 	);
-	d.pop(one("feed"), 23.9);
-	draw(chartLines[0], 24.1);
-	show(tags[0], 24.6);
-	hide([chartLines[0], tags[0]], 25.1, 0.3);
-	draw(chartLines[1], 25.3);
-	show(tags[1], 25.7);
-	draw(chartLines[2], 25.9);
-	show(tags[2], 26.4);
-	show(floor, 26.6);
-	// On the floor's figure: brackets round the whole line would reach the axis labels.
-	d.lock(lockFloor, 26.9, { around: one("floor-label"), pad: 5 });
-	tl.addLabel("hero-lock", 26.9);
-	show(heads[5], 26.9);
+	tl.fromTo(one("feed"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 25.5);
+	draw(chartLines[0], 25.7);
+	tl.fromTo(tags[0], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 25.7);
+	// Put and label are complete by 26.4, then stand for one second.
+	hide([chartLines[0], tags[0]], 27.4, 0.3);
+	tl.fromTo(
+		one("hedge-inputs"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		27.4,
+	);
+	// One comparison, drawn together, rather than successive interrupted proofs.
+	draw(chartLines[1], 27.8);
+	draw(chartLines[2], 27.8);
+	tl.fromTo(
+		[tags[1], tags[2]],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		27.8,
+	);
+	// Comparison settles at 28.5; the model-derived arithmetic follows at 29.5.
+	tl.fromTo(floor, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 29.5);
+	d.lock(lockFloor, 30.0, { around: one("floor-label"), pad: 10 });
+	tl.addLabel("hero-lock", 30.0);
+	show(heads[5], 30.0);
 
 	// ——— close: buying back a short put ———
-	tl.addLabel("close", 30.5);
-	d.swap([heads[4], heads[5]], heads[6], 30.5);
+	tl.addLabel("close", 33.6);
+	d.swap([heads[4], heads[5]], heads[6], 33.6);
 	hide(
-		[chartLines[1], chartLines[2], tags[1], tags[2], floor, lockFloor],
-		30.5,
+		[
+			chartLines[1],
+			chartLines[2],
+			tags[1],
+			tags[2],
+			one("hedge-inputs"),
+			floor,
+			lockFloor,
+		],
+		33.6,
 		0.3,
 	);
-	draw(chartLines[3], 31.0);
-	show(tags[3], 31.4);
-	draw(chartLines[4], 31.6);
-	show(tags[4], 32.0);
+	// The settled reference fades in as context; only the closed result draws on.
+	tl.fromTo(
+		[chartLines[3], tags[3]],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.7 },
+		34.1,
+	);
+	// One second of quiet after the reference, before the flat closed position.
+	draw(chartLines[4], 35.8);
+	tl.fromTo(tags[4], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 35.8);
 
 	// ——— claim ———
-	tl.addLabel("claim", 34.5);
-	hide([heads[6], one("feed")], 34.5);
-	d.sink(34.5);
-	word(one("z-big"), 34.8);
-	show(one("z-sub"), 35.2);
+	tl.addLabel("claim", 38.7);
+	hide([heads[6], one("feed")], 38.7);
+	tl.to(one("depth"), { opacity: 0, duration: 0.4, ease: "power2.in" }, 38.7);
+	word(one("z-big"), 39.0);
+	show(one("z-sub"), 39.4);
 
 	// ——— next ———
-	tl.addLabel("next", 39.6);
-	hide(kids("claim"), 39.6);
-	d.close(39.6);
+	tl.addLabel("next", 44.4);
+	hide(kids("claim"), 44.4);
+	d.close(44.4);
 	return tl;
 }
 
 export const flowSentimentFilm: Film = {
 	id: "flow-sentiment",
 	label: [
-		`Sentiment labels, as a short film: a two-by-two of call or put against the aggressor buying or selling, where calls bought and puts sold read bullish and calls sold and puts bought read bearish; Monday's three Oct 18 100 call prints labelled ${TOTALS[0]} bullish, ${TOTALS[1]} neutral and ${TOTALS[2]} bearish, while the ledger shows the bearish ${TOTALS[2]} were two people closing; and the same Oct 18 95 put bought at ${usd(PUT_ASK)}: alone a bet below ${usd(BREAK_EVEN)}, beside 100 shares a floor of ${signedUsd(FLOOR * 100, 0)}, and bought back to close a short put, no view at all`,
-		`情绪标签短片：看涨或看跌与主动方买入或卖出的二乘二表格，买入看涨和卖出看跌读作看涨，卖出看涨和买入看跌读作看跌；周一三笔 10月18日 100 看涨的成交被标为看涨 ${TOTALS[0]}、中性 ${TOTALS[1]}、看跌 ${TOTALS[2]}，而台账显示看跌的 ${TOTALS[2]} 张其实是两个人在平仓；以及同一张以 ${usd(PUT_ASK)} 买入的 10月18日 95 看跌：单独买入是押注跌破 ${usd(BREAK_EVEN)}，配上 100 股是 ${signedUsd(FLOOR * 100, 0)} 的下限，买回看跌空头则毫无观点`,
+		`Sentiment labels, as a short film: a two-by-two of call or put against the aggressor buying or selling, where calls bought and puts sold read bullish and calls sold and puts bought read bearish; Monday's three Oct 18 100 call prints labelled ${TOTALS[0]} bullish, ${TOTALS[1]} neutral and ${TOTALS[2]} bearish, with neutral meaning direction unknown and the teaching account ledger showing the bearish ${TOTALS[2]} were two people closing; and the same Oct 18 95 put bought at ${usd(PUT_ASK)}: alone a bet below ${usd(BREAK_EVEN)}, beside 100 shares a floor of ${signedUsd(FLOOR * 100, 0)}, and bought back to close this short-put position, removing its remaining price exposure`,
+		`情绪标签短片：看涨或看跌与主动方买入或卖出的二乘二表格，买入看涨和卖出看跌读作看涨，卖出看涨和买入看跌读作看跌；周一三笔 10月18日 100 看涨的成交被标为看涨 ${TOTALS[0]}、中性 ${TOTALS[1]}、看跌 ${TOTALS[2]}，中性表示方向证据不足，教学账户台账显示看跌的 ${TOTALS[2]} 张其实是两个人在平仓；以及同一张以 ${usd(PUT_ASK)} 买入的 10月18日 95 看跌：单独买入是押注跌破 ${usd(BREAK_EVEN)}，配上 100 股是 ${signedUsd(FLOOR * 100, 0)} 的下限，买回则平掉这份看跌空头，消除这份持仓剩余的价格敞口`,
 	],
 	stage: "dark",
 	shots: [
