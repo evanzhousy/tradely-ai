@@ -12,7 +12,13 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
-import { ENDPOINT, GROUPS, LIMIT, type Method } from "./connect-agent-model";
+import {
+	BURST,
+	ENDPOINT,
+	GROUPS,
+	LIMIT,
+	type Method,
+} from "./connect-agent-model";
 
 /*
  * Connecting an agent, as a film. It opens on the choice an agent makes, sign in or a key.
@@ -25,13 +31,12 @@ import { ENDPOINT, GROUPS, LIMIT, type Method } from "./connect-agent-model";
  *   open      0–4        "Connect your own AI agent"
  *   question  4–9.6      sign in, or an API key?
  *   way       9.6–20.6   Claude signs in; agents use a key; chat sites can't yet
- *   prove     20.6–26.2  "Connected!"; /mcp; curl and tools/list
+ *   prove     20.6–26.2  "Connected!"; Claude Code /mcp; keyed tools/list
  *   key       26.2–44    60 a minute; 75: 15 refused, locked; revoke; cut: the claim
  *   next      44–46.5    Next: the module checkpoint
  */
 
 const END = 46.5;
-const BURST = 75;
 const METHODS: readonly Method[] = ["signin", "key", "none"];
 /** The sign-in group's clients as a phone's card can hold them. */
 const MEMBERS_SHORT: Partial<Record<Method, string>> = {
@@ -53,8 +58,8 @@ function layout(width: number) {
 		panelY: H * 0.76,
 		panelH: H * (narrow ? 0.17 : 0.15),
 		pad: narrow ? 10 : 18,
-		rowY: (i: number) => H * 0.26 + i * H * 0.165,
-		rowH: H * 0.14,
+		rowY: (i: number) => H * 0.26 + i * H * 0.205,
+		rowH: H * 0.18,
 		code: narrow ? T.small : Math.min(T.body * 0.95, (room - 36) / (80 * 0.6)),
 		rowText: narrow ? T.small * 1.15 : T.body,
 		meterY: H * (narrow ? 0.36 : 0.34),
@@ -98,18 +103,15 @@ const copy = {
 	],
 	agentHead: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
 	agentHeadShort: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
-	clientHead: [
-		"Check it yourself: client, then server.",
-		"自己检查：先客户端，再服务器。",
-	],
+	clientHead: ["Check the client and server.", "检查客户端和服务器。"],
 	clientHeadShort: ["Check it yourself.", "自己检查。"],
 	rateHead: [
-		`Read-only tools, ${LIMIT} calls a minute.`,
-		`只读工具，每分钟 ${LIMIT} 次。`,
+		"Read-only tools. Every call is checked.",
+		"只读工具，每次调用都检查。",
 	],
 	rateHeadShort: [
-		`Read-only, ${LIMIT} calls a minute.`,
-		`只读，每分钟 ${LIMIT} 次。`,
+		"Read-only. Every call is checked.",
+		"只读，每次调用都检查。",
 	],
 	burstHead: [
 		`A burst of ${BURST}: ${BURST - LIMIT} are refused.`,
@@ -119,17 +121,14 @@ const copy = {
 		`${BURST} calls: ${BURST - LIMIT} refused.`,
 		`${BURST} 次：${BURST - LIMIT} 次被拒。`,
 	],
-	revokeHead: [
-		"Revoke the key: the next call fails.",
-		"撤销密钥：它的下一次调用就被拒绝。",
-	],
-	revokeHeadShort: ["Revoke: the next call fails.", "撤销：下一次调用失败。"],
 	meter: ["tool calls · this 60-second window", "工具调用 · 当前 60 秒窗口"],
 	refused: ["refused", "被拒"],
 	keyCard: ["Cursor key", "Cursor 密钥"],
 	active: ["active · read-only data tools", "有效 · 只读数据工具"],
-	revoked: ["revoked · next call refused", "已撤销 · 下一次调用被拒"],
-	otherKeys: ["your other keys keep working", "你的其他密钥照常可用"],
+	revoked: ["revoked", "已撤销"],
+	revokeAction: ["Revoke key", "撤销密钥"],
+	nextWindow: ["Next window", "下一窗口"],
+	rejected: ["refused: key revoked", "被拒：密钥已撤销"],
 	claimBig: [
 		"Connect it, prove it, know the key's reach.",
 		"连接它，亲自证明，弄清密钥能做什么。",
@@ -141,7 +140,7 @@ const copy = {
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
 		"workflows in TradingFlow, on a new day",
-		"在新的一天里运用在 TradingFlow 中构建工作流",
+		"在新的一天里，用 TradingFlow 构建工作流",
 	],
 } as const satisfies Record<string, Copy>;
 
@@ -149,28 +148,24 @@ const CHECKS = [
 	{
 		id: "agent",
 		label: ["Your agent replies", "你的智能体回复"],
-		line: '"Connected to TradingFlow, ready!"',
+		line: '"Connected!"',
+		phoneLine: '"Connected!"',
 		verdict: ["proves nothing", "证明不了"],
 		tone: "wt-film-loss",
 	},
 	{
 		id: "client",
-		label: ["Your client's own check: /mcp", "客户端自己的检查：/mcp"],
+		label: ["Claude Code: /mcp", "Claude Code：/mcp"],
 		line: "tradingflow · connected · tools listed",
+		phoneLine: "connected · tools listed",
 		verdict: ["proof", "证据"],
 		tone: "wt-film-gain",
 	},
 	{
-		id: "reach",
-		label: ["curl -s, no key", "curl -s，不带密钥"],
-		line: '{"name":"tradingflow-mcp","status":"ok",…}',
-		verdict: ["endpoint up only", "仅说明端点在线"],
-		tone: "wt-film-warn",
-	},
-	{
 		id: "tools",
-		label: ["tools/list, with your key", "tools/list，带上你的密钥"],
+		label: ["Keyed tools/list", "带密钥的 tools/list"],
 		line: '{"jsonrpc":"2.0","id":1,"result":{"tools":[…]}}',
+		phoneLine: "result.tools: […]",
 		verdict: ["your key works", "密钥有效"],
 		tone: "wt-film-gain",
 	},
@@ -178,6 +173,7 @@ const CHECKS = [
 	id: string;
 	label: Copy;
 	line: string;
+	phoneLine: string;
 	verdict: Copy;
 	tone: string;
 }[];
@@ -352,7 +348,7 @@ function Scene({
 				/>
 			))}
 
-			{/* Four checks. */}
+			{/* An assertion, then client and server evidence. */}
 			{headline("a-head", copy.agentHead, copy.agentHead)}
 			<Lines
 				name="c-head"
@@ -383,27 +379,27 @@ function Scene({
 						className="wt-panel-shape"
 					/>
 					<text
+						data-f={`chk-label-${check.id}`}
 						x={margin + L.pad}
-						y={L.rowY(i) + L.rowH * (narrow ? 0.6 : 0.4)}
+						y={L.rowY(i) + L.rowH * (narrow ? 0.28 : 0.4)}
 						className="wt-film-type"
 						style={{ fontSize: L.rowText }}
 					>
 						{t(check.label)}
 					</text>
-					{narrow ? null : (
-						<text
-							x={margin + L.pad}
-							y={L.rowY(i) + L.rowH * 0.78}
-							className="wt-film-num wt-film-dim"
-							style={{ fontSize: L.code }}
-						>
-							{check.line}
-						</text>
-					)}
+					<text
+						data-f={`chk-payload-${check.id}`}
+						x={margin + L.pad}
+						y={L.rowY(i) + L.rowH * (narrow ? 0.57 : 0.78)}
+						className="wt-film-num wt-film-dim"
+						style={{ fontSize: L.code }}
+					>
+						{narrow ? check.phoneLine : check.line}
+					</text>
 					<text
 						data-f={`vd-${check.id}`}
 						x={margin + room - L.pad}
-						y={L.rowY(i) + L.rowH * (narrow ? 0.6 : 0.4)}
+						y={L.rowY(i) + L.rowH * (narrow ? 0.86 : 0.4)}
 						textAnchor="end"
 						className={`wt-film-type ${check.tone}`}
 						style={{ fontSize: L.rowText }}
@@ -434,7 +430,6 @@ function Scene({
 				anchor="start"
 			/>
 			<Brackets name="lock-burst" glow />
-			{headline("x-head", copy.revokeHead, copy.revokeHeadShort)}
 			<g data-f="meter">
 				<text
 					x={margin}
@@ -466,7 +461,7 @@ function Scene({
 					data-f="m-over"
 					x={limitX}
 					y={L.meterY}
-					width={meterW - (limitX - margin)}
+					width={0}
 					height={L.meterH}
 					rx={6}
 					className="wt-band-loss"
@@ -484,16 +479,16 @@ function Scene({
 					className="wt-film-num"
 					style={{ fontSize: T.small * 1.1 }}
 				>
-					{String(LIMIT)}
+					{`${LIMIT} ${t(["limit", "上限"])}`}
 				</text>
 				<text
 					data-f="m-refused"
-					x={margin + room}
-					// On the counter's line, clear of the limit's label under the bar.
+					x={margin + T.num * 2.2}
+					// Compact enforcement result, beside the smaller attempt count.
 					y={L.meterY + L.meterH + T.num * 1.4}
-					textAnchor="end"
-					className="wt-film-type wt-film-loss"
-					style={{ fontSize: T.small * 1.1 }}
+					textAnchor="start"
+					className="wt-film-num wt-film-loss"
+					style={{ fontSize: T.num * 1.3 }}
 				>
 					{`${BURST - LIMIT} ${t(copy.refused)}`}
 				</text>
@@ -552,6 +547,55 @@ function Scene({
 					{t(text)}
 				</text>
 			))}
+			<Word
+				name="k-revoke-action"
+				x={margin + room - L.pad}
+				y={L.keyY + L.keyH * 0.76}
+				size={L.rowText}
+				anchor="end"
+				className="wt-film-type wt-film-loss"
+			>
+				{t(copy.revokeAction)}
+			</Word>
+			<g data-f="next-call">
+				<rect
+					x={margin}
+					y={L.meterY}
+					width={room}
+					height={H * 0.17}
+					rx={10}
+					className="wt-panel-shape"
+				/>
+				<Word
+					name="call-window"
+					x={margin + L.pad}
+					y={L.meterY + H * 0.05}
+					size={L.rowText}
+					anchor="start"
+				>
+					{t(copy.nextWindow)}
+				</Word>
+				<Word
+					name="call-request"
+					x={margin + room - L.pad}
+					y={L.meterY + H * 0.05}
+					size={L.rowText}
+					anchor="end"
+					className="wt-film-num"
+				>
+					tools/list →
+				</Word>
+				<Word
+					name="call-rejected"
+					x={margin + L.pad}
+					y={L.meterY + H * 0.125}
+					size={L.rowText}
+					anchor="start"
+					className="wt-film-type wt-film-loss"
+				>
+					{t(copy.rejected)}
+				</Word>
+			</g>
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -608,22 +652,42 @@ function build(context: FilmContext) {
 	const check = (id: string) => one(`chk-${id}`);
 	const verdict = (id: string) => one(`vd-${id}`);
 	const counter = one<SVGTextElement>("m-count");
-	const calls = (value: number) => String(Math.round(value));
-	const fillTo = (n: number) => (Math.min(n, LIMIT) / BURST) * L.room;
+	// One state drives the readouts and both regions, including backwards seeks.
+	const attempt = { value: 0 };
+	const fill = one("m-fill");
+	const over = one("m-over");
+	const refused = one<SVGTextElement>("m-refused");
+	const updateCalls = () => {
+		const n = Math.round(attempt.value);
+		counter.textContent = String(n);
+		fill.setAttribute("width", String((Math.min(n, LIMIT) / BURST) * L.room));
+		over.setAttribute(
+			"width",
+			String((Math.max(0, n - LIMIT) / BURST) * L.room),
+		);
+		refused.textContent = `${Math.max(0, n - LIMIT)} ${d.t(copy.refused)}`;
+	};
+	const countCalls = (from: number, to: number, at: number, duration: number) =>
+		tl.fromTo(
+			attempt,
+			{ value: from },
+			{
+				value: to,
+				duration,
+				ease: "power2.out",
+				immediateRender: false,
+				onUpdate: updateCalls,
+			},
+			at,
+		);
 
 	const lockBurst = one<SVGGraphicsElement>("lock-burst");
 
 	d.hidden([
 		...flat("q"),
-		...[
-			"s-head",
-			"k-head",
-			"a-head",
-			"c-head",
-			"r-head",
-			"b-head",
-			"x-head",
-		].map((name) => one(name)),
+		...["s-head", "k-head", "a-head", "c-head", "r-head", "b-head"].map(
+			(name) => one(name),
+		),
 		lockBurst,
 		...METHODS.flatMap((method) => [way(method), on(method)]),
 		one("panel"),
@@ -638,6 +702,9 @@ function build(context: FilmContext) {
 		one("key"),
 		one("k-active"),
 		one("k-revoked"),
+		one("k-revoke-action"),
+		one("next-call"),
+		one("call-rejected"),
 		...kids("claim"),
 	]);
 
@@ -688,15 +755,14 @@ function build(context: FilmContext) {
 		20.6,
 	);
 	show(one("a-head"), 20.95, "above");
-	show(check("agent"), 21.2);
-	show(verdict("agent"), 21.8, "right");
+	show(check("agent"), 21.1);
+	show(verdict("agent"), 21.1, "right");
+	// Remove the no-key GET detour; both positive payloads land together.
+	// The assertion settles at 21.6, then gets one second before this proof.
 	show(one("c-head"), 22.6);
-	show(check("client"), 22.8);
-	show(verdict("client"), 23.3, "right");
-	show(check("reach"), 23.8);
-	show(verdict("reach"), 24.2, "right");
-	show(check("tools"), 24.6);
-	show(verdict("tools"), 25, "right");
+	show([check("client"), check("tools")], 22.6);
+	show([verdict("client"), verdict("tools")], 23.1, "right");
+	// Settled at 23.6; 2.6 seconds of quiet before the next beat.
 
 	// ——— key: read-only, rate-limited, revocable ———
 	tl.addLabel("key", 26.2);
@@ -710,31 +776,48 @@ function build(context: FilmContext) {
 	);
 	show(one("r-head"), 26.55, "above");
 	show(one("meter"), 26.8);
+	show([one("key"), one("k-active")], 26.8);
 	show(counter, 27);
-	tl.to(
-		one("m-fill"),
-		{ attr: { width: fillTo(LIMIT) }, duration: 1.0, ease: "power2.out" },
-		27.2,
+	countCalls(0, LIMIT, 27, 1.0);
+	// The limit settles at 28; the burst starts after a full second.
+	show([over, refused], 29);
+	countCalls(LIMIT, BURST, 29, 0.6);
+	show(one("b-head"), 29.6);
+	// The hero: the window's limit, enforced. Preserve the accepted stand.
+	d.lock(lockBurst, 30.6, { around: [counter, refused], pad: 6 });
+	tl.addLabel("hero-lock", 30.6);
+	hide([one("b-head"), lockBurst], 34.2);
+	// Brackets are gone at 34.55; only then retire the old burst.
+	hide([one("meter"), counter], 34.55);
+	tl.fromTo(
+		one("k-revoke-action"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		34.55,
 	);
-	d.count(counter, LIMIT, 27.2, calls, 0, 1.0);
-	show([one("key"), one("k-active")], 27.8);
-	show(one("b-head"), 28.8);
-	tl.to(one("m-over"), { opacity: 1, duration: 0.4 }, 29);
-	d.count(counter, BURST, 29, calls, LIMIT, 0.6);
-	show(one("m-refused"), 29.4);
-	// The hero: the window's limit, enforced.
-	d.lock(lockBurst, 30, { around: [counter, one("m-refused")], pad: 6 });
-	tl.addLabel("hero-lock", 30);
-	d.swap([one("r-head"), one("b-head"), lockBurst], one("x-head"), 33.4);
-	d.flip(one("k-active"), one("k-revoked"), 34.1);
-	tl.set(one("k-active"), { opacity: 0 }, 34.4);
-	// Cut: the claim.
+	d.flip(one("k-active"), one("k-revoked"), 34.9);
+	tl.set(one("k-active"), { opacity: 0 }, 35.2);
+	// Revocation settles at 35.55. A fresh window rules out rate limiting.
+	show(one("next-call"), 36.55, "below", 0.3);
+	tl.fromTo(
+		one("call-rejected"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		37,
+	);
+	// Rejection settles at 37.3; 1.3 seconds of quiet before the claim.
 	hide(
-		[one("x-head"), one("meter"), counter, one("key"), one("k-revoked")],
+		[
+			one("r-head"),
+			one("next-call"),
+			one("key"),
+			one("k-revoked"),
+			one("k-revoke-action"),
+		],
 		38.6,
 	);
-	word(one("z-big"), 39);
-	show(one("z-sub"), 39.4);
+	word(one("z-big"), 38.85);
+	show(one("z-sub"), 39.25);
 
 	// ——— next ———
 	tl.addLabel("next", 44);

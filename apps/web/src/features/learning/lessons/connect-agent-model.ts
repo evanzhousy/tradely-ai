@@ -45,3 +45,6 @@ export const GROUPS: readonly {
 
 /** Tool calls per key, or per Claude connection, in each 60-second window. */
 export const LIMIT = 60;
+
+/** Attempts in the film's example burst, within one window. */
+export const BURST = 75;
