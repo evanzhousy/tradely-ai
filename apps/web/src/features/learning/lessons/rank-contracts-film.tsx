@@ -21,6 +21,7 @@ import {
 	peak,
 	SPOT,
 	STRIKES,
+	spreadTrade,
 	total,
 	volume,
 } from "./rank-contracts-model";
@@ -31,21 +32,21 @@ import {
  * ALFA at $100.02 both sit out of the money, side by side, and 500 of each was one spread.
  * The hero is two rows with the same total and peak, 695 and 380, that traded in two
  * strikes and in five; glowing brackets lock on the breadth. Last, a screen's biggest
- * numbers audited: Friday's 1,400 and a put's 900 drop out, leaving the 110 call's 540
+ * numbers audited: Friday's 1,400 and a put's 900 drop out; the observed leader is 540
  * with the 120 call still missing.
  *
  *   open      0–4        "Contract neighborhoods"
  *   question  4–8.6      105 and 110, both over 500: two crowds?
- *   grid      8.6–19     the grid; spot $100.02; one spread across two cells
- *   shape     19–28.6    hero: Sep 20 and Nov 15: 695, peak 380; breadth 2 and 5
- *   audit     28.6–35    1,400 stale; 900 a put; 540 the candidate; 120 missing
- *   claim     35–39.4    a cell needs its neighbors
- *   next      39.4–41.9  Next: backtests
+ *   grid      8.6–21.1   the 10:50 ticket connects buy 105 / sell 110, 500 per leg
+ *   shape     21.1–31.9  mark active cells, then settled 2 vs 5; hero-lock 28.0
+ *   audit     31.9–40.6  one exclusion stage; observed leader 540; 120 missing
+ *   claim     40.6–45    a cell needs its neighbors
+ *   next      45–47.5    Next: backtests
  */
 
-const END = 41.9;
+const END = 47.5;
 const ROWS = Object.keys(volume) as ExpiryKey[];
-const SPREAD = 500;
+const SPREAD = spreadTrade.legs[0].quantity;
 const OCT = volume.oct18;
 const STALE = candidates.find((c) => c.fails === "stale");
 const PUT = candidates.find((c) => c.fails === "scope");
@@ -68,6 +69,12 @@ function layout(width: number) {
 			return margin + labelW + (j + 0.5) * cellW;
 		},
 		statY: H * (narrow ? 0.72 : 0.76),
+		shapeLift: H * (narrow ? 0.06 : 0.08),
+		breadthX: (r: number) =>
+			margin + room * (narrow ? [0.67, 0.87][r] : [0.64, 0.86][r]),
+		breadthLabelY: H * (narrow ? 0.81 : 0.76),
+		breadthY: H * (narrow ? 0.93 : 0.91),
+		breadthSize: frame.type.big * (narrow ? 1.1 : 0.7),
 		candY: (i: number) =>
 			H * (narrow ? 0.27 : 0.28) + i * H * (narrow ? 0.1 : 0.1),
 		candH: H * (narrow ? 0.08 : 0.08),
@@ -89,28 +96,32 @@ const copy = {
 	],
 	g2Head: ["Both out of the money: one spread.", "两者都是虚值：一笔价差。"],
 	itm: ["in the money", "实值"],
+	itmShort: ["ITM", "实值"],
 	otm: ["out of the money", "虚值"],
+	otmShort: ["OTM", "虚值"],
 	spread: [
-		`one spread · ${count(SPREAD)} each`,
-		`一笔价差 · 各 ${count(SPREAD)} 张`,
+		`${spreadTrade.time} · shared trade`,
+		`${spreadTrade.time} · 同一笔成交`,
 	],
-	hHead: ["Sep 20 and Nov 15 look alike.", "9月20日 和 11月15日 看着一样。"],
+	buy: ["Buy", "买入"],
+	sell: ["Sell", "卖出"],
+	hHead: ["Compare two expiry rows.", "比较两个到期日的行。"],
 	h2Head: [
 		`Breadth tells them apart: ${active("sep20")} and ${active("nov15")}.`,
 		`广度把它们分开：${active("sep20")} 对 ${active("nov15")}。`,
 	],
 	totalLabel: ["total", "合计"],
 	peakLabel: ["peak", "峰值"],
-	strikesLabel: ["strikes", "行权价数"],
+	versus: ["vs", "对"],
 	aHead: ["A screen's biggest numbers, checked.", "核查筛选器的最大数字。"],
 	a2Head: [
-		`Left: ${count(LEAD?.value ?? 0)}, with the 120 missing.`,
-		`剩下 ${count(LEAD?.value ?? 0)}，而 120 还缺着。`,
+		`Observed leader: ${count(LEAD?.value ?? 0)}. The 120 is missing.`,
+		`已观测领头值：${count(LEAD?.value ?? 0)}。120 缺失。`,
 	],
 	stale: ["stale", "过时"],
 	scope: ["a put", "看跌"],
 	missing: ["missing", "缺失"],
-	candidate: ["candidate", "候选"],
+	candidate: ["leader", "领头"],
 	claimBig: ["A cell needs its neighbors.", "一个格子要看它的邻居。"],
 	claimSub: ["Report breadth with the total.", "报告合计时也报告广度。"],
 	nextBig: ["Next: backtests", "下一课：回测"],
@@ -191,11 +202,11 @@ function Scene({
 			</g>
 		);
 	};
-	/** A small table: the expiry, then its total, peak and breadth in columns. */
-	const statCols = narrow ? [0.42, 0.66, 0.92] : [0.4, 0.6, 0.85];
+	/** Equality context stays secondary; the counted breadth is the visual payoff. */
+	const statCols = narrow ? [0.3, 0.48] : [0.22, 0.38];
 	const statHead = (
 		<g data-f="stat-head">
-			{[copy.totalLabel, copy.peakLabel, copy.strikesLabel].map((label, k) => (
+			{[copy.totalLabel, copy.peakLabel].map((label, k) => (
 				<text
 					key={t(label)}
 					x={margin + statCols[k] * room}
@@ -210,7 +221,7 @@ function Scene({
 		</g>
 	);
 	const stats = (key: ExpiryKey, r: number) => {
-		const y = L.statY + T.small * 0.8 + (r + 0.6) * text * 1.8;
+		const y = L.statY + T.small * 0.8 + (r + 0.6) * text * 2.2;
 		return (
 			<g data-f={`stats-${key}`}>
 				<text
@@ -221,21 +232,19 @@ function Scene({
 				>
 					{t(expiryLabel[key]).toUpperCase()}
 				</text>
-				{[count(total(key)), count(peak(key)), String(active(key))].map(
-					(value, k) => (
-						<text
-							key={k}
-							data-f={`stat-${key}-${k}`}
-							x={margin + statCols[k] * room}
-							y={y}
-							textAnchor="end"
-							className={`wt-film-num ${k === 2 ? "wt-film-accent" : ""}`}
-							style={{ fontSize: text * 1.1 }}
-						>
-							{value}
-						</text>
-					),
-				)}
+				{[count(total(key)), count(peak(key))].map((value, k) => (
+					<text
+						key={k}
+						data-f={`stat-${key}-${k}`}
+						x={margin + statCols[k] * room}
+						y={y}
+						textAnchor="end"
+						className="wt-film-num"
+						style={{ fontSize: text * 1.1 }}
+					>
+						{value}
+					</text>
+				))}
 			</g>
 		);
 	};
@@ -340,7 +349,7 @@ function Scene({
 			))}
 			<g data-f="spot">
 				<path
-					d={`M${L.cellX(2)} ${L.gridTop - T.small * 3}V${rowY(ROWS.length) + 4}`}
+					d={`M${L.cellX(2)} ${L.gridTop - T.small * 3}V${rowY(2) + L.cellH}`}
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 				/>
 				<text
@@ -350,7 +359,7 @@ function Scene({
 					className="wt-film-tag wt-film-gain"
 					style={{ fontSize: T.small }}
 				>
-					{`← ${t(copy.itm).toUpperCase()}`}
+					{`← ${t(narrow ? copy.itmShort : copy.itm).toUpperCase()}`}
 				</text>
 				<text
 					x={L.cellX(2) + 8}
@@ -358,7 +367,7 @@ function Scene({
 					className="wt-film-tag wt-film-dim"
 					style={{ fontSize: T.small }}
 				>
-					{`${t(copy.otm).toUpperCase()} →`}
+					{`${t(narrow ? copy.otmShort : copy.otm).toUpperCase()} →`}
 				</text>
 				<text
 					x={L.cellX(2)}
@@ -371,32 +380,112 @@ function Scene({
 				</text>
 			</g>
 			<g data-f="spread">
-				<rect
-					x={L.cellX(2) - 2}
-					y={rowY(1) - 4}
-					width={L.cellW * 2 + 4}
-					height={L.cellH + 8}
-					rx={10}
-					style={{
-						fill: "none",
-						stroke: "var(--diagram-accent)",
-						strokeWidth: 2,
-						strokeDasharray: "5 4",
-					}}
-				/>
-				<text
-					x={L.cellX(2) + L.cellW}
-					y={rowY(ROWS.length) + T.small * 3.8}
-					textAnchor="middle"
-					className="wt-film-tag wt-film-accent wt-halo"
-					style={{ fontSize: T.small }}
-				>
-					{t(copy.spread).toUpperCase()}
-				</text>
+				<g data-f="spread-ticket">
+					<rect
+						x={margin}
+						y={rowY(2) + L.cellH + T.small * 4.1}
+						width={room}
+						height={T.small * 5.3}
+						rx={10}
+						className="wt-panel-shape"
+					/>
+					<text
+						x={margin + room / 2}
+						y={rowY(2) + L.cellH + T.small * 5.4}
+						textAnchor="middle"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{t(copy.spread)}
+					</text>
+				</g>
+				{spreadTrade.legs.map((leg, i) => {
+					const j = STRIKES.indexOf(leg.strike);
+					const x = margin + room * (i === 0 ? 0.25 : 0.72);
+					const y = rowY(2) + L.cellH + T.small * 8.3;
+					// Vertical gutters and the 6 px row gap keep the trace off every cell's type.
+					const gutter = L.cellX(j + 1);
+					const outside = i === 0 ? margin + 8 : margin + room - 8;
+					const cellBottom = rowY(1) + L.cellH;
+					const tone = i === 0 ? "var(--diagram-gain)" : "var(--diagram-loss)";
+					return (
+						<g key={leg.side}>
+							<text
+								data-f={`spread-leg-${i}`}
+								x={x}
+								y={y}
+								textAnchor="middle"
+								className={`wt-film-num ${i === 0 ? "wt-film-gain" : "wt-film-loss"}`}
+								style={{ fontSize: text }}
+							>
+								{`${t(i === 0 ? copy.buy : copy.sell)} ${leg.strike} · ${count(leg.quantity)}`}
+							</text>
+							<path
+								data-f={`spread-link-${i}`}
+								d={`M${x} ${y - T.small * 1.5}H${outside}V${rowY(2) + L.cellH + 8}H${gutter}V${cellBottom + 3}H${L.strikeX(leg.strike)}V${cellBottom}`}
+								fill="none"
+								style={{ stroke: tone, strokeWidth: 2 }}
+							/>
+						</g>
+					);
+				})}
+			</g>
+			<g data-f="count-cells">
+				{(["sep20", "nov15"] as const).flatMap((key) =>
+					STRIKES.map((_, j) =>
+						(volume[key][j] ?? 0) > 0 ? (
+							<rect
+								key={`${key}-${j}`}
+								data-f={`counted-${key}-${j}`}
+								x={L.cellX(j) + 3}
+								y={rowY(ROWS.indexOf(key))}
+								width={L.cellW - 6}
+								height={L.cellH}
+								rx={6}
+								fill="none"
+								style={{ stroke: "var(--diagram-accent)", strokeWidth: 2.5 }}
+							/>
+						) : null,
+					),
+				)}
 			</g>
 			{statHead}
 			{stats("sep20", 0)}
 			{stats("nov15", 1)}
+			{/* The settled breadth leaves the equality table and owns a separate area. */}
+			<g data-f="hero-breadth">
+				{(["sep20", "nov15"] as const).map((key, r) => (
+					<g key={key}>
+						<text
+							x={L.breadthX(r)}
+							y={L.breadthLabelY}
+							textAnchor="middle"
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: T.small * 1.1 }}
+						>
+							{t(expiryLabel[key])}
+						</text>
+						<Word
+							name={`breadth-${key}`}
+							x={L.breadthX(r)}
+							y={L.breadthY}
+							size={L.breadthSize}
+							className="wt-film-num wt-film-accent"
+						>
+							{active(key)}
+						</Word>
+					</g>
+				))}
+				<Word
+					name="breadth-vs"
+					x={(L.breadthX(0) + L.breadthX(1)) / 2}
+					y={L.breadthY - L.breadthSize * 0.25}
+					size={T.small * 1.4}
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.versus)}
+				</Word>
+			</g>
 
 			{/* A screen's top numbers, audited. */}
 			{headline("a-head", copy.aHead)}
@@ -434,14 +523,16 @@ function Scene({
 						{t(c.label)}
 					</text>
 					<text
+						data-f={`cand-${i}-source`}
 						x={margin + 14}
 						y={L.candY(i) + L.candH * 0.78}
-						className="wt-film-num wt-film-dim"
+						className="wt-film-num"
 						style={{ fontSize: T.small }}
 					>
 						{t(c.source)}
 					</text>
 					<text
+						data-f={`cand-${i}-value`}
 						x={margin + room * (narrow ? 0.62 : 0.6)}
 						y={L.candY(i) + L.candH / 2 + text * 0.4}
 						textAnchor="end"
@@ -557,13 +648,17 @@ function build(context: FilmContext) {
 		...kids("axes"),
 		...ROWS.map((key) => one(`cells-${key}`)),
 		one("spot"),
-		one("spread"),
+		...kids("spread").flatMap((el) =>
+			el.hasAttribute("data-f") ? [el] : [...el.children],
+		),
+		...kids("count-cells"),
 		one("stat-head"),
 		one("stats-sep20"),
 		one("stats-nov15"),
 		...ROWS.flatMap((key) =>
-			key === "oct18" ? [] : [0, 1, 2].map((k) => statLine(key, k)),
+			key === "oct18" ? [] : [0, 1].map((k) => statLine(key, k)),
 		),
+		one("hero-breadth"),
 		lockBreadth,
 		...cands,
 		...verdicts,
@@ -591,8 +686,8 @@ function build(context: FilmContext) {
 		cells(key).forEach((c, j) => {
 			tl.fromTo(
 				c,
-				{ opacity: 0, scale: 0.85, transformOrigin: "50% 50%" },
-				{ opacity: 1, scale: 1, duration: 0.35 },
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.35 },
 				9.4 + r * 0.15 + j * 0.06,
 			);
 		});
@@ -602,93 +697,130 @@ function build(context: FilmContext) {
 		tl.to(cells(key), { opacity: 0.45, duration: 0.4 }, 10.8);
 	});
 	show(one("spot"), 12.4);
-	word(one("spread"), 14.0);
-	show(heads[1], 14.4);
+	// The shared ticket establishes provenance before the answer names the spread.
+	show(one("spread-ticket"), 14.0, "below", 0.5);
+	show([one("spread-leg-0"), one("spread-leg-1")], 14.5, "below", 0.5);
+	spreadTrade.legs.forEach((_, i) => {
+		d.trace(one<SVGPathElement>(`spread-link-${i}`), 15.0, { duration: 0.5 });
+	});
+	// Both links settle at 15.5; leave a full second before the conclusion.
+	tl.fromTo(heads[1], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 16.5);
 
-	// ——— shape: the hero. Same total and peak, different breadth. ———
-	tl.addLabel("shape", 19);
-	d.swap([heads[0], heads[1]], heads[2], 19.0);
-	hide([one("spot"), one("spread")], 19.0, 0.3);
-	tl.to(allCells, { opacity: 1, duration: 0.4 }, 19.2);
+	// ——— shape: equality context, then count the occupied cells. ———
+	tl.addLabel("shape", 21.1);
+	d.swap([heads[0], heads[1]], heads[2], 21.1);
+	hide([one("spot"), one("spread")], 21.1, 0.3, 0);
+	tl.to(allCells, { opacity: 1, duration: 0.4 }, 21.3);
+	// Lift the grid before any breadth construction; its rows and outlines stay aligned.
+	tl.to(
+		[
+			one("axes"),
+			...ROWS.map((key) => one(`cells-${key}`)),
+			one("count-cells"),
+		],
+		{ y: -L.shapeLift, duration: 0.4 },
+		21.4,
+	);
 	tl.to(
 		[...cells("oct18"), rowLabel("oct18")],
 		{ opacity: 0.25, duration: 0.4 },
-		19.3,
+		21.4,
 	);
-	show([one("stat-head"), one("stats-sep20"), one("stats-nov15")], 19.8);
-	(["sep20", "nov15"] as const).forEach((key, r) => {
-		show(statLine(key, 0), 20.2 + r * 0.2);
-		show(statLine(key, 1), 21.0 + r * 0.2);
-	});
-	(["sep20", "nov15"] as const).forEach((key, r) => {
-		show(statLine(key, 2), 23.4 + r * 0.3);
-		// The traded strikes light up; the silent ones step back.
+	show([one("stat-head"), one("stats-sep20"), one("stats-nov15")], 21.7);
+	// Total and peak are one settled equality comparison, rather than separate proofs.
+	show(
+		(["sep20", "nov15"] as const).flatMap((key) => [
+			statLine(key, 0),
+			statLine(key, 1),
+		]),
+		22.2,
+	);
+	// Equality settles at 22.7; one second of quiet precedes the cell construction.
+	(["sep20", "nov15"] as const).forEach((key) => {
 		STRIKES.forEach((_, j) => {
 			if (!(volume[key][j] ?? 0))
-				tl.to(
-					one(`cell-${key}-${j}`),
-					{ opacity: 0.3, duration: 0.3 },
-					23.4 + r * 0.3,
-				);
+				tl.to(one(`cell-${key}-${j}`), { opacity: 0.3, duration: 0.3 }, 23.7);
+		});
+		const marks = STRIKES.flatMap((_, j) =>
+			(volume[key][j] ?? 0) > 0 ? [one(`counted-${key}-${j}`)] : [],
+		);
+		marks.forEach((mark, i) => {
+			tl.fromTo(
+				mark,
+				{ opacity: 0 },
+				{ opacity: 1, duration: 0.52 },
+				24.2 + i * 0.52,
+			);
 		});
 	});
-	// Round both rows: alike in total and peak, apart in breadth; the column's header
-	// sits clear above them.
-	d.lock(lockBreadth, 25.0, {
-		around: [one("stats-sep20"), one("stats-nov15")],
-		pad: 6,
+	// All outlines settle at 26.8. No numeric count is displayed during construction:
+	// reveal only the model's settled breadth after 1.1 seconds of quiet.
+	tl.fromTo(
+		one("hero-breadth"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		27.9,
+	);
+	show(heads[3], 27.9);
+	d.lock(lockBreadth, 28.0, {
+		around: one("hero-breadth"),
+		pad: 12,
 	});
-	tl.addLabel("hero-lock", 25.0);
-	show(heads[3], 25.0);
+	tl.addLabel("hero-lock", 28.0);
 
-	// ——— audit: the screen's top numbers ———
-	tl.addLabel("audit", 28.6);
-	d.swap([heads[2], heads[3]], heads[4], 28.6);
+	// ——— audit: one exclusion stage, then the observed leader and unknown. ———
+	tl.addLabel("audit", 31.9);
+	d.swap([heads[2], heads[3]], heads[4], 31.9);
 	hide(
 		[
 			...kids("axes"),
 			...ROWS.map((key) => one(`cells-${key}`)),
+			one("count-cells"),
 			one("stat-head"),
 			one("stats-sep20"),
 			one("stats-nov15"),
+			one("hero-breadth"),
 			lockBreadth,
 		],
-		28.6,
+		31.9,
 	);
-	cands.forEach((c, i) => {
-		show(c, 29.4 + i * 0.15, "right");
-	});
+	// A single list reveal avoids making verdicts compete with later-entering rows.
+	show(cands, 32.3, "right", 0.5);
 	const out = candidates.flatMap((c, i) => (c.fails ? [i] : []));
-	out.forEach((i, k) => {
-		word(verdict(i), 30.2 + k * 0.4);
-		tl.to(cands[i], { opacity: 0.4, duration: 0.3 }, 30.5 + k * 0.4);
+	show(out.map(verdict), 33.8, "right", 0.4);
+	out.forEach((i) => {
+		tl.to(one(`cand-${i}-value`), { opacity: 0.4, duration: 0.4 }, 33.8);
+		tl.to(one(`cand-${i}-box`), { opacity: 0.4, duration: 0.4 }, 33.8);
 	});
+	const eligibleVerdicts = candidates.flatMap((c, i) =>
+		!c.fails && verdict(i) ? [verdict(i)] : [],
+	);
+	show(eligibleVerdicts, 35.2, "right", 0.4);
 	candidates.forEach((c, i) => {
-		if (c.fails || !verdict(i)) return;
-		word(verdict(i), 31.0 + (c.value === null ? 0.4 : 0));
 		if (c === LEAD)
-			tl.set(one(`cand-${i}-box`), { attr: { class: "wt-focus-shape" } }, 31.0);
+			tl.set(one(`cand-${i}-box`), { attr: { class: "wt-focus-shape" } }, 35.2);
 	});
-	show(heads[5], 31.4);
+	// Verdicts settle at 35.6, then one second before the qualified answer.
+	show(heads[5], 36.6);
 
 	// ——— claim ———
-	tl.addLabel("claim", 35);
-	hide([heads[4], heads[5], ...cands, ...verdicts], 35.0);
-	word(one("z-big"), 35.3);
-	show(one("z-sub"), 35.7);
+	tl.addLabel("claim", 40.6);
+	hide([heads[4], heads[5], ...cands, ...verdicts], 40.6);
+	word(one("z-big"), 40.9);
+	show(one("z-sub"), 41.3);
 
 	// ——— next ———
-	tl.addLabel("next", 39.4);
-	hide(kids("claim"), 39.4);
-	d.close(39.4);
+	tl.addLabel("next", 45.0);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
 export const rankContractsFilm: Film = {
 	id: "rank-contracts",
 	label: [
-		`Contract neighborhoods, as a short film: Monday's ALFA call volume as a grid of expiries and strikes, where the Oct 18 105 and 110 calls, ${count(OCT[2] ?? 0)} and ${count(OCT[3] ?? 0)}, sit side by side out of the money with ALFA at $${SPOT.toFixed(2)} and share ${count(SPREAD)} from one spread; the Sep 20 and Nov 15 rows, both ${count(total("sep20"))} with a ${count(peak("sep20"))} peak, traded in ${active("sep20")} strikes and in ${active("nov15")}; and a screen's biggest numbers audited, ${count(STALE?.value ?? 0)} stale and ${count(PUT?.value ?? 0)} a put, leaving the 110 call's ${count(LEAD?.value ?? 0)} with the 120 call missing`,
-		`合约邻域短片：周一 ALFA 看涨成交量按到期日和行权价排成网格：ALFA 在 $${SPOT.toFixed(2)}，10月18日 105 和 110 看涨的 ${count(OCT[2] ?? 0)} 和 ${count(OCT[3] ?? 0)} 都是虚值、紧挨着，并各有 ${count(SPREAD)} 张来自同一笔价差；9月20日 和 11月15日 两行都是 ${count(total("sep20"))}、峰值 ${count(peak("sep20"))}，却分别只在 ${active("sep20")} 个和 ${active("nov15")} 个行权价成交；以及核查筛选器的最大数字：${count(STALE?.value ?? 0)} 已过时，${count(PUT?.value ?? 0)} 是看跌，剩下 110 看涨的 ${count(LEAD?.value ?? 0)}，而 120 看涨仍缺失`,
+		`Contract neighborhoods, as a short film: Monday's ALFA call volume as a grid of expiries and strikes, where the Oct 18 105 and 110 calls, ${count(OCT[2] ?? 0)} and ${count(OCT[3] ?? 0)}, sit side by side out of the money with ALFA at $${SPOT.toFixed(2)} and share ${count(SPREAD)} from one spread; the Sep 20 and Nov 15 rows, both ${count(total("sep20"))} with a ${count(peak("sep20"))} peak, traded in ${active("sep20")} strikes and in ${active("nov15")}; and a screen's biggest numbers audited, ${count(STALE?.value ?? 0)} stale and ${count(PUT?.value ?? 0)} a put; the observed leader is the 110 call's ${count(LEAD?.value ?? 0)} with the 120 call missing`,
+		`合约邻域短片：周一 ALFA 看涨成交量按到期日和行权价排成网格：ALFA 在 $${SPOT.toFixed(2)}，10月18日 105 和 110 看涨的 ${count(OCT[2] ?? 0)} 和 ${count(OCT[3] ?? 0)} 都是虚值、紧挨着，并各有 ${count(SPREAD)} 张来自同一笔价差；9月20日 和 11月15日 两行都是 ${count(total("sep20"))}、峰值 ${count(peak("sep20"))}，却分别只在 ${active("sep20")} 个和 ${active("nov15")} 个行权价成交；以及核查筛选器的最大数字：${count(STALE?.value ?? 0)} 已过时，${count(PUT?.value ?? 0)} 是看跌，已观测领头值是 110 看涨的 ${count(LEAD?.value ?? 0)}，而 120 看涨仍缺失`,
 	],
 	stage: "dark",
 	shots: [

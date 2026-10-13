@@ -1,4 +1,4 @@
-import type { Copy } from "@/content/world";
+import { type Copy, oct105CallBlock } from "@/content/world";
 
 export const STRIKES = [95, 100, 105, 110, 115, 120] as const;
 export const SPOT = 100.02;
@@ -18,6 +18,19 @@ export const expiryLabel: Record<ExpiryKey, Copy> = {
 	nov15: ["Nov 15", "11月15日"],
 };
 export const MAX = 540;
+/** The shared execution behind the neighboring Oct 18 calls, not their session totals. */
+export const spreadTrade = {
+	time: oct105CallBlock.time.slice(0, 5),
+	expiry: "oct18",
+	legs: [
+		{ strike: 105, side: "buy", quantity: oct105CallBlock.quantity },
+		{
+			strike: oct105CallBlock.pairedLeg.strike,
+			side: oct105CallBlock.pairedLeg.side,
+			quantity: oct105CallBlock.pairedLeg.quantity,
+		},
+	],
+} as const;
 
 export const total = (key: ExpiryKey) =>
 	volume[key].reduce<number>((sum, value) => sum + (value ?? 0), 0);
