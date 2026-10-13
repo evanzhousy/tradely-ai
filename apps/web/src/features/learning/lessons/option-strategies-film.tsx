@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { type Copy, count, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -13,6 +14,7 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
+	BOUGHT_100,
 	BUY_NOV,
 	CALL_105,
 	CALL_110,
@@ -42,13 +44,13 @@ import {
  *   open      0–4        "Strategies"
  *   question  4–8.6      the 105 call sold at $2.05: a bet ALFA won't rise?
  *   leg       8.6–20.4   alone; covered by shares; capping a spread
- *   add       20.4–29.4  hero: long 105; short 110; together; +$375 after the cost
- *   roll      29.4–35.7  sell October at the bid; buy November at the ask; one roll
- *   claim     35.7–40.4  one leg, many positions
- *   next      40.4–42.9  Next: straddles and condors
+ *   add       20.4–31.7  hero: long 105; short 110; payoff less cost; +$375 profit
+ *   roll      31.7–38.0  sell October at the bid; buy November at the ask; one roll
+ *   claim     38.0–42.7  one leg, many positions
+ *   next      42.7–45.2  Next: straddles and condors
  */
 
-const END = 42.9;
+const END = 45.2;
 const Y = [-2200, 2200] as const;
 const SPOT = 115;
 const COVERED_TOP = structures.covered(RANGE[1]);
@@ -68,12 +70,16 @@ function layout(width: number) {
 	const right = margin + room;
 	const top = H * (narrow ? 0.3 : 0.28);
 	const bottom = H * 0.84;
+	const readoutSize = narrow ? frame.type.small * 1.1 : frame.type.body;
 	return {
 		...frame,
 		left,
 		right,
 		top,
 		bottom,
+		resultX: left + (narrow ? 78 : 110),
+		resultY: top + readoutSize * 5.5,
+		resultSize: frame.type.num * 1.8,
 		x: (spot: number) =>
 			left + ((spot - RANGE[0]) / (RANGE[1] - RANGE[0])) * (right - left),
 		y: (dollars: number) =>
@@ -93,24 +99,29 @@ const copy = {
 	qBig: ["A bet ALFA won't rise?", "押注 ALFA 不涨？"],
 	lHead: ["Alone, its loss has no limit.", "单独卖出：亏损没有上限。"],
 	cHead: ["With 100 shares: a covered call.", "配上 100 股：备兑看涨。"],
-	sHead: ["Beside a 100 call: a spread's cap.", "配上 100 看涨：价差的上限。"],
+	sHead: [
+		"With a long 100 call: a capped spread.",
+		"配上 100 看涨多头：价差封顶。",
+	],
 	sold: ["105 call, sold", "105 看涨，卖出"],
-	stock: ["stock alone", "仅股票"],
+	stock: [`stock · entry $${STOCK_COST}`, `股票 · 买入价 $${STOCK_COST}`],
 	covered: ["covered call", "备兑看涨"],
-	spread: ["bull call spread", "牛市看涨价差"],
-	axis: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
-	aHead: [
-		`Now add a spread's legs at $${SPOT}.`,
-		`把价差的腿在 $${SPOT} 相加。`,
+	spread: [
+		`long 100 cost ${dollars(BOUGHT_100)} · short 105`,
+		`100 多头成本 ${dollars(BOUGHT_100)} · 105 空头`,
 	],
-	a2Head: [
-		`${signedDollars(profit(SPOT))} after its cost.`,
-		`扣除成本后 ${signedDollars(profit(SPOT))}。`,
-	],
+	axisProfit: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
+	axisPayoff: ["Oct 18 payoff · per contract", "10月18日到期价值 · 每张"],
+	axisBoth: ["Oct 18 · payoff / profit", "10月18日 · 到期价值 / 盈亏"],
+	aHead: ["New example: a 105/110 spread.", "新例子：105/110 看涨价差。"],
+	a2Head: ["Profit after entry cost.", "扣除建仓成本后的盈亏。"],
 	long105: ["long 105", "105 多头"],
 	short110: ["short 110", "110 空头"],
-	together: ["together", "合计"],
-	lessCost: [`less $${NET}`, `减 $${NET}`],
+	together: ["payoff", "到期价值"],
+	lessCost: [
+		`payoff ${dollars(spreadPayoff(SPOT))} − cost ${dollars(NET)}`,
+		`到期 ${dollars(spreadPayoff(SPOT))} − 成本 ${dollars(NET)}`,
+	],
 	spot: [`ALFA $${SPOT}`, `ALFA $${SPOT}`],
 	rHead: ["Sold at the bid, bought at the ask.", "买价卖出，卖价买入。"],
 	r2Head: ["Two labels, one decision: a roll.", "两个标签，一个决定：移仓。"],
@@ -126,16 +137,10 @@ const copy = {
 		`buy ${ROLL_QUANTITY} Nov 15 100 calls @ ${usd(BUY_NOV)}`,
 		`买入 ${ROLL_QUANTITY} 张 11月15日 100 看涨 @ ${usd(BUY_NOV)}`,
 	],
-	toClose: [
-		`to close · ${signedUsd(CASH_IN, 0)}`,
-		`平仓 · ${signedUsd(CASH_IN, 0)}`,
-	],
-	toOpen: [
-		`to open · ${signedUsd(-CASH_OUT, 0)}`,
-		`开仓 · ${signedUsd(-CASH_OUT, 0)}`,
-	],
-	bearish: ["BID · bearish", "BID · 看跌"],
-	bullish: ["ASK · bullish", "ASK · 看涨"],
+	toClose: ["to close", "平仓"],
+	toOpen: ["to open", "开仓"],
+	bearish: ["feed: BID · bearish", "数据源：BID · 看跌"],
+	bullish: ["feed: ASK · bullish", "数据源：ASK · 看涨"],
 	roll: [
 		`one roll: same $100 strike, four weeks later · net ${signedUsd(-ROLL_NET, 0)}`,
 		`一次移仓：同一 $100 行权价，晚四周 · 净额 ${signedUsd(-ROLL_NET, 0)}`,
@@ -144,6 +149,8 @@ const copy = {
 		`one roll · net ${signedUsd(-ROLL_NET, 0)}`,
 		`一次移仓 · 净额 ${signedUsd(-ROLL_NET, 0)}`,
 	],
+	rollDates: ["Oct 18 → Nov 15", "10月18日 → 11月15日"],
+	rollWeeks: ["four weeks", "四周"],
 	claimBig: ["One leg, many positions.", "一条腿，多种持仓。"],
 	claimSub: [
 		"A sale can cover, cap or roll.",
@@ -164,6 +171,7 @@ function Scene({
 	height: number;
 	locale: Locale;
 }) {
+	const profitClip = useId().replace(/:/g, "");
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
@@ -221,16 +229,15 @@ function Scene({
 			dollars(spreadPayoff(SPOT)),
 			"var(--diagram-accent)",
 		],
-		[
-			"ro-3",
-			copy.lessCost,
-			signedDollars(profit(SPOT)),
-			"var(--diagram-accent)",
-		],
 	];
 	const rows: [Copy, Copy, Copy, string][] = [
 		[copy.sellOct, copy.toClose, copy.bearish, "wt-film-loss"],
 		[copy.buyNov, copy.toOpen, copy.bullish, "wt-film-gain"],
+	];
+	const axisCaptions: [string, Copy][] = [
+		["axis-profit", copy.axisProfit],
+		["axis-payoff", copy.axisPayoff],
+		["axis-both", copy.axisBoth],
 	];
 	return (
 		<>
@@ -290,9 +297,17 @@ function Scene({
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
-						<text x={L.left} y={L.top - 12} className="wt-small">
-							{t(copy.axis)}
-						</text>
+						{axisCaptions.map(([name, label]) => (
+							<text
+								key={name}
+								data-f={name}
+								x={L.left}
+								y={L.top - 12}
+								className="wt-small"
+							>
+								{t(label)}
+							</text>
+						))}
 						{[-2000, -1000, 0, 1000, 2000].map((v) => (
 							<g key={v}>
 								<path
@@ -326,6 +341,7 @@ function Scene({
 						))}
 						<g data-f="spot">
 							<path
+								data-f="spot-guide"
 								d={`M${L.x(SPOT)} ${L.top}V${L.bottom}`}
 								className="wt-bracket"
 								strokeDasharray="4 3"
@@ -376,6 +392,23 @@ function Scene({
 							d={path(profit)}
 							className="wt-line-position"
 						/>
+						<defs>
+							<clipPath id={profitClip}>
+								<rect
+									data-f="profit-reveal"
+									x={L.x(CALL_105.strike + NET / 100)}
+									y={L.top}
+									width={0}
+									height={L.bottom - L.top}
+								/>
+							</clipPath>
+						</defs>
+						<path
+							data-f="profit-area"
+							clipPath={`url(#${profitClip})`}
+							d={`M${L.x(CALL_105.strike + NET / 100)} ${L.y(0)}L${L.x(CALL_110.strike)} ${L.y(profit(CALL_110.strike))}H${L.right}V${L.y(0)}Z`}
+							style={{ fill: "var(--diagram-accent)", fillOpacity: 0.16 }}
+						/>
 						{tag(
 							"g-alone",
 							82,
@@ -412,14 +445,24 @@ function Scene({
 							"end",
 						)}
 						{[CALL_105, CALL_110].map((c) => (
-							<circle
-								key={c.strike}
-								data-f={`k-${c.strike}`}
-								cx={L.x(c.strike)}
-								cy={L.y(0)}
-								r={3.5}
-								className="wt-film-ghost"
-							/>
+							<g key={c.strike} data-f={`k-${c.strike}`}>
+								<circle
+									cx={L.x(c.strike)}
+									cy={L.y(0)}
+									r={3.5}
+									className="wt-film-ghost"
+								/>
+								<text
+									x={L.x(c.strike)}
+									y={L.bottom + 32}
+									textAnchor={c.strike === CALL_105.strike ? "end" : "start"}
+									className="wt-small"
+								>
+									{t(
+										c.strike === CALL_105.strike ? copy.long105 : copy.short110,
+									)}
+								</text>
+							</g>
 						))}
 					</g>
 				</g>
@@ -441,11 +484,34 @@ function Scene({
 						style={{ fontSize: text }}
 					>
 						{`${t(label)} · `}
-						<tspan className="wt-film-num wt-film-accent">{value}</tspan>
+						<tspan
+							className={`wt-film-num ${i === 1 ? "wt-film-loss" : i === 0 ? "wt-long" : "wt-film-accent"}`}
+						>
+							{value}
+						</tspan>
 					</text>
 				</g>
 			))}
 
+			<Word
+				name="cost"
+				x={L.left + 12}
+				y={L.top + text * 1.2}
+				size={text}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.lessCost)}
+			</Word>
+			<Word
+				name="ro-3"
+				x={L.resultX}
+				y={L.resultY}
+				size={L.resultSize}
+				className="wt-film-num wt-film-accent wt-halo"
+			>
+				{signedDollars(profit(SPOT))}
+			</Word>
 			<Brackets name="lock-profit" glow />
 
 			{/* A roll: two prints, one decision. */}
@@ -498,7 +564,10 @@ function Scene({
 						className="wt-film-type wt-film-dim"
 						style={{ fontSize: T.small * 1.1 }}
 					>
-						{t(sub)}
+						{`${t(sub)} · `}
+						<tspan className={i === 0 ? "wt-film-gain" : "wt-film-loss"}>
+							{signedUsd(i === 0 ? CASH_IN : -CASH_OUT, 0)}
+						</tspan>
 					</text>
 					<text
 						x={margin + room - 14}
@@ -524,8 +593,33 @@ function Scene({
 				size={narrow ? T.body : T.body * 1.2}
 				maxWidth={room}
 				anchor="start"
-				className="wt-film-type wt-film-accent"
+				className="wt-film-type wt-film-loss"
 			/>
+			<path
+				data-f="roll-extension"
+				d={`M${margin} ${L.sumY + T.body * 2.5}H${margin + room * 0.65}l-7 -5m7 5l-7 5`}
+				className="wt-bracket"
+			/>
+			<Word
+				name="roll-dates"
+				x={margin}
+				y={L.sumY + T.body * 2.5 - 8}
+				size={T.small}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.rollDates)}
+			</Word>
+			<Word
+				name="roll-weeks"
+				x={margin + room * 0.65 + 10}
+				y={L.sumY + T.body * 2.5 + T.small * 0.35}
+				size={T.small}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.rollWeeks)}
+			</Word>
 
 			<g data-f="claim">
 				<Lines
@@ -579,18 +673,9 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	/** A line draws itself from its start, then takes back its own dashes, if any. */
-	const draw = (path: SVGPathElement, time: number) => {
-		const dash = path.getAttribute("stroke-dasharray");
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration: 0.7, ease: "power2.out" },
-			time,
-		);
-		if (dash) tl.set(path, { strokeDasharray: dash }, time + 0.7);
-	};
+	/** Masked traces preserve a payoff curve's dashed identity throughout. */
+	const draw = (path: SVGPathElement, time: number) =>
+		d.trace(path, time, { duration: 0.7, ease: "power2.out" });
 	const line = (name: string) => one<SVGPathElement>(`l-${name}`);
 	const heads = [
 		"l-head",
@@ -605,19 +690,25 @@ function build(context: FilmContext) {
 	const lockProfit = one<SVGGraphicsElement>("lock-profit");
 	const rows = [one("row-0"), one("row-1")];
 	const axes = kids("chart").filter(
-		(el) => !el.getAttribute("data-f")?.match(/^(l|g|k)-|^spot$/),
+		(el) =>
+			el.tagName !== "defs" &&
+			!el.getAttribute("data-f")?.match(/^(l|g|k|axis)-|^spot$|^profit-area$/),
 	);
 
 	d.hidden([
 		...flat("q"),
 		...heads,
-		...kids("chart"),
+		...kids("chart").filter((el) => el.tagName !== "defs"),
 		...readouts,
+		one("cost"),
 		lockProfit,
 		one("roll-tag"),
 		...rows,
 		one("bracket"),
 		one("roll"),
+		one("roll-extension"),
+		one("roll-dates"),
+		one("roll-weeks"),
 		...kids("claim"),
 	]);
 
@@ -638,6 +729,7 @@ function build(context: FilmContext) {
 	show(heads[0], 8.8);
 	d.rise(8.9);
 	show(axes, 9.1);
+	show(one("axis-profit"), 9.1);
 	draw(line("alone"), 9.7);
 	show(one("g-alone"), 10.3);
 	d.swap(heads[0], heads[1], 12.4);
@@ -653,58 +745,94 @@ function build(context: FilmContext) {
 		0.3,
 	);
 	draw(line("spread"), 16.8);
-	show(one("g-spread"), 17.4);
+	show(one("g-spread"), L.narrow && context.locale === "en" ? 16.9 : 17.4);
 
 	// ——— add: the hero. Signed legs at $115, then the cost. ———
 	tl.addLabel("add", 20.4);
 	d.swap(heads[2], heads[3], 20.4);
+	d.swap(one("axis-profit"), one("axis-payoff"), 20.4);
 	hide([line("spread"), one("g-spread")], 20.4, 0.3);
 	show(one("spot"), 20.5);
 	show([one("k-105"), one("k-110")], 20.5);
 	draw(line("long"), 20.9);
 	show(readouts[0], 21.4, "right");
-	draw(line("short"), 22.2);
-	show(readouts[1], 22.7, "right");
-	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 23.4);
-	draw(line("sum"), 23.5);
-	show(readouts[2], 24.0, "right");
-	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 24.7);
-	draw(line("profit"), 24.8);
-	show(readouts[3], 25.3, "right");
-	d.lock(lockProfit, 25.8, { around: readouts[3], pad: 5 });
-	tl.addLabel("hero-lock", 25.8);
-	show(heads[4], 25.8);
+	// Each completed readout gets a full second before the next construction.
+	draw(line("short"), 22.9);
+	show(readouts[1], 23.4, "right");
+	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 24.9);
+	draw(line("sum"), 25.0);
+	show(readouts[2], 25.5, "right");
+	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 27.0);
+	hide([line("long"), line("short"), one("spot-guide")], 27.0, 0.35, 0);
+	hide(readouts.slice(0, 3), 27.1, 0.35, 0);
+	d.swap(one("axis-payoff"), one("axis-both"), 27.1);
+	draw(line("profit"), 27.1);
+	show(one("cost"), 27.6);
+	show(readouts[3], 27.6);
+	d.lock(lockProfit, 28.1, { around: readouts[3], pad: 8 });
+	tl.addLabel("hero-lock", 28.1);
+	show(heads[4], 28.1);
+	// After the hero's 1.5-second quiet stand, draw its profitable expiry region.
+	tl.fromTo(
+		one("profit-area"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		30.1,
+	);
+	tl.fromTo(
+		one("profit-reveal"),
+		{ attr: { width: 0 } },
+		{
+			attr: { width: L.right - L.x(CALL_105.strike + NET / 100) },
+			duration: 0.6,
+			ease: "power2.out",
+		},
+		30.1,
+	);
 
 	// ——— roll: two prints, one decision ———
-	tl.addLabel("roll", 29.4);
-	hide([heads[3], heads[4], ...readouts, lockProfit], 29.4);
-	d.sink(29.4);
-	show(heads[5], 29.75);
-	show(one("roll-tag"), 29.8);
-	show(rows[0], 30.0, "right");
-	show(rows[1], 30.8, "right");
+	tl.addLabel("roll", 31.7);
+	hide([heads[3], heads[4], readouts[3], one("cost"), lockProfit], 31.7);
+	d.sink(31.7);
+	show(heads[5], 32.05);
+	show(one("roll-tag"), 32.1);
+	show(rows[0], 32.3, "right");
+	show(rows[1], 33.1, "right");
 	tl.fromTo(
 		one("bracket"),
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 50%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		31.8,
+		34.1,
 	);
-	show(one("roll"), 32.1);
-	show(heads[6], 32.1);
+	show(one("roll"), 34.4);
+	show(heads[6], 34.4);
+	d.trace(one<SVGPathElement>("roll-extension"), 36.3, { duration: 0.7 });
+	show(one("roll-dates"), 36.3);
+	show(one("roll-weeks"), 36.3);
 
 	// ——— claim ———
-	tl.addLabel("claim", 35.7);
+	tl.addLabel("claim", 38.0);
 	hide(
-		[heads[5], heads[6], one("roll-tag"), ...rows, one("bracket"), one("roll")],
-		35.7,
+		[
+			heads[5],
+			heads[6],
+			one("roll-tag"),
+			...rows,
+			one("bracket"),
+			one("roll"),
+			one("roll-extension"),
+			one("roll-dates"),
+			one("roll-weeks"),
+		],
+		38.0,
 	);
-	word(one("z-big"), 36.0);
-	show(one("z-sub"), 36.4);
+	word(one("z-big"), 38.3);
+	show(one("z-sub"), 38.7);
 
 	// ——— next ———
-	tl.addLabel("next", 40.4);
-	hide(kids("claim"), 40.4);
-	d.close(40.4);
+	tl.addLabel("next", 42.7);
+	hide(kids("claim"), 42.7);
+	d.close(42.7);
 	return tl;
 }
 
