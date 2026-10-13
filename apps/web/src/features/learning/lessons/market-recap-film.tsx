@@ -24,6 +24,8 @@ import {
 	type Metric,
 	measureOf,
 	premiumLeader,
+	recapContracts,
+	recapEvidence,
 } from "./market-recap-model";
 
 /*
@@ -37,7 +39,7 @@ import {
  *   question  4–8.6       a premium claim over a contracts chart?
  *   match     8.6–20.55   build contracts, then compare premium
  *   axis      20.55–30.7  hero: from zero, nearly equal; from 480, 2.4 to 1
- *   compose   30.7–41.1   expose intent and scope; rewrite; caption fields
+ *   compose   30.7–41.1   chart and evidence record; repairs; completed recap
  *   claim     41.1–45.4   claims your evidence supports
  *   next      45.4–47.4   Next: audits
  */
@@ -89,24 +91,31 @@ const copy = {
 		`从 ${count(CUT)} 起，柱高之比为 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}。`,
 	],
 	cHead: ["The draft claims more than it shows.", "初稿说的比它显示的多。"],
+	cHeadNarrow: ["The draft overclaims.", "初稿过度推断。"],
 	draftIntent: [
 		`“Call buyers piled into ALFA's ${leader.strike} strike,`,
 		`“看涨买家涌入 ALFA ${leader.strike} 行权价，`,
 	],
-	draftScope: ["Monday's busiest call”", "周一最活跃的看涨”"],
-	intentEvidence: ["Buyer intent unknown", "买方意图未知"],
-	scopeEvidence: [
-		`${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} observed strikes · 120 missing`,
-		`仅 ${ROWS.filter((row) => measureOf(row, "contracts") !== null).length} 个行权价有数据 · 120 缺失`,
+	draftIntentNarrow: [
+		`“Buyers piled into the ${leader.strike} call,`,
+		`“买家涌入 ${leader.strike} 看涨，`,
 	],
-	captionMeasure: ["Measure · traded contracts", "统计量 · 成交张数"],
+	draftScope: ["Monday's busiest call”", "周一最活跃的看涨”"],
+	traded: ["Traded", "成交"],
+	buyerIntent: ["Buyer intent", "买方意图"],
+	missing: ["missing", "缺失"],
+	scopeEvidence: [
+		`${recapContracts.filter((row) => row.contracts !== null).length} strikes with data`,
+		`${recapContracts.filter((row) => row.contracts !== null).length} 个行权价有数据`,
+	],
+	chartMeasure: ["contracts · axis 0", "张数 · 轴从 0 起"],
 	captionScope: [
 		"ALFA Oct 18 calls · Mon Sep 16",
 		"ALFA 10月18日看涨 · 9月16日周一",
 	],
 	captionSource: [
-		"Corrected tape as of 16:05 · P1 · 120: no data yet",
-		"更正后成交记录截至 16:05 · P1 · 120 尚无数据",
+		"Corrected tape as of 16:05 · P1",
+		"更正后成交记录截至 16:05 · P1",
 	],
 	changingScale: ["CHANGING SCALE", "图表刻度调整中"],
 	contracts: ["contracts", "张数"],
@@ -147,27 +156,86 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const draftSize = narrow ? T.body : T.body * 1.2;
-	const intentY = L.cardY + T.head;
+	const composeHead = narrow ? copy.cHeadNarrow : copy.cHead;
+	const intentDraft = narrow ? copy.draftIntentNarrow : copy.draftIntent;
+	const copyWidth = narrow ? room : room * 0.52;
+	const resultWidth = narrow ? room : copyWidth;
+	const captionWidth = narrow ? room : copyWidth;
+	const boundedLines = lineCount(
+		`“${t(drafts.bounded)}”`,
+		resultWidth,
+		draftSize,
+	);
+	const captionSize = T.body;
+	const captionFields = [copy.captionScope, copy.captionSource];
+	const captionLines = captionFields.map((field) =>
+		lineCount(t(field), captionWidth, captionSize),
+	);
+	// Keep the complete desktop copy column inside shorter wide frames too.
+	const columnBottomOffset =
+		lineCount(t(intentDraft), copyWidth, draftSize) * draftSize * 1.35 +
+		T.small * 0.8 +
+		T.body * 1.8 +
+		lineCount(t(copy.draftScope), copyWidth, draftSize) * draftSize * 1.35 +
+		T.small * 0.8 +
+		T.body * 2.1 +
+		boundedLines * draftSize * 1.35 +
+		T.body * 1.1 +
+		captionLines[0] * captionSize * 1.65 +
+		(captionLines[1] - 1) * captionSize * 1.35 +
+		captionSize * 0.3;
+	const intentY = narrow
+		? L.headY +
+			lineCount(t(composeHead), room, T.head) * T.head * 1.35 +
+			T.body * 2.1
+		: Math.min(L.cardY + T.head, H - T.body - columnBottomOffset);
 	const intentNoteY =
 		intentY +
-		lineCount(t(copy.draftIntent), room, draftSize) * draftSize * 1.35 +
+		lineCount(t(intentDraft), copyWidth, draftSize) * draftSize * 1.35 +
 		T.small * 0.8;
 	const scopeY = intentNoteY + T.body * 1.8;
 	const scopeNoteY =
 		scopeY +
-		lineCount(t(copy.draftScope), room, draftSize) * draftSize * 1.35 +
+		lineCount(t(copy.draftScope), copyWidth, draftSize) * draftSize * 1.35 +
 		T.small * 0.8;
 	const boundedY = scopeNoteY + T.body * 2.1;
-	const captionSize = narrow ? T.small : T.small * 1.15;
-	const captionFields = [
-		copy.captionMeasure,
-		copy.captionScope,
-		copy.captionSource,
-	];
-	const captionY =
-		boundedY +
-		lineCount(`“${t(drafts.bounded)}”`, room, draftSize) * draftSize * 1.35 +
-		T.small * 1.5;
+
+	const captionY = narrow
+		? H - 48
+		: boundedY + boundedLines * draftSize * 1.35 + T.body * 1.1;
+	// A separate desktop column reserves space for the complete chart, including labels.
+	const desktopChartBox = {
+		x: margin + room * 0.58,
+		y: H * 0.15,
+		width: room * 0.43,
+		height: H * 0.7,
+	};
+	const chartValueSize = narrow ? T.small * 1.1 : T.body;
+	const chartTickSize = narrow ? T.small * 1.1 : T.body;
+	const chartZeroSize = narrow ? T.small : T.body;
+	const chartMeasureSize = narrow ? T.small : T.body;
+	const chartX = narrow ? margin : desktopChartBox.x + 18;
+	const chartWidth = narrow ? room : desktopChartBox.width - 34;
+	const chartBase = narrow
+		? H * 0.75
+		: desktopChartBox.y + desktopChartBox.height - chartTickSize * 1.5;
+	const boundedBottom =
+		boundedY + (boundedLines - 1) * draftSize * 1.35 + draftSize * 0.3;
+	const chartSpan = narrow
+		? Math.max(
+				0,
+				Math.min(H * 0.116, chartBase - boundedBottom - T.small * 3.1 - 10),
+			)
+		: chartBase -
+			(desktopChartBox.y + chartMeasureSize * 1.8 + chartValueSize + 8);
+	const chartSlot = chartWidth / recapContracts.length;
+	const chartMeasureY = narrow
+		? chartBase - chartSpan - T.small * 2.1
+		: desktopChartBox.y + chartMeasureSize;
+	const chartTickY = narrow
+		? chartBase + T.small * 1.55
+		: chartBase + chartTickSize * 1.2;
+	const colon = locale === "zh" ? "：" : ": ";
 	const h = (value: number, metric: Metric) =>
 		(value / chartMax(metric)) * (L.base - L.top);
 	const label = (value: number | null, metric: Metric) =>
@@ -368,19 +436,97 @@ function Scene({
 			})}
 
 			{/* The headline and its caption. */}
-			{headline("c-head", copy.cHead)}
+			{headline("c-head", composeHead)}
+			<g data-f="recap-chart">
+				<Word
+					name="recap-measure"
+					x={chartX}
+					y={chartMeasureY}
+					size={chartMeasureSize}
+					anchor="start"
+					className="wt-film-tag wt-film-accent"
+				>
+					{t(copy.chartMeasure).toUpperCase()}
+				</Word>
+				<path
+					data-f="recap-axis"
+					d={`M${chartX} ${chartBase}h${chartWidth}`}
+					className="wt-axis"
+				/>
+				<Word
+					name="recap-zero"
+					x={chartX - 6}
+					y={chartBase + chartZeroSize * 0.35}
+					size={chartZeroSize}
+					anchor="end"
+					className="wt-film-num wt-film-dim"
+				>
+					0
+				</Word>
+				{recapContracts.map((row, i) => {
+					const barX = chartX + chartSlot * (i + 0.2);
+					const barHeight =
+						row.contracts === null
+							? chartSpan * 0.25
+							: (row.contracts / CONTRACTS_MAX) * chartSpan;
+					const center = chartX + chartSlot * (i + 0.5);
+					return (
+						<g key={row.id}>
+							{row.contracts === null ? (
+								<rect
+									data-f={`recap-bar-${i}`}
+									x={barX}
+									y={chartBase - barHeight}
+									width={chartSlot * 0.6}
+									height={barHeight}
+									rx={2}
+									style={{
+										fill: "none",
+										stroke: "var(--diagram-unknown)",
+										strokeWidth: 1.2,
+										strokeDasharray: "3 3",
+									}}
+								/>
+							) : (
+								<rect
+									data-f={`recap-bar-${i}`}
+									x={barX}
+									y={chartBase - barHeight}
+									width={chartSlot * 0.6}
+									height={barHeight}
+									rx={2}
+									className="wt-film-bar"
+									data-tone={row.strike === leader.strike ? "total" : "neutral"}
+								/>
+							)}
+							<Word
+								name={`recap-value-${i}`}
+								x={center}
+								y={chartBase - barHeight - 6}
+								size={chartValueSize}
+								className={`wt-film-num ${row.contracts === null ? "wt-film-warn" : ""}`}
+							>
+								{row.contracts === null ? t(copy.noData) : count(row.contracts)}
+							</Word>
+							<Word
+								name={`recap-strike-${i}`}
+								x={center}
+								y={chartTickY}
+								size={chartTickSize}
+								className="wt-film-num wt-film-dim"
+							>
+								{row.strike}
+							</Word>
+						</g>
+					);
+				})}
+			</g>
 			{(
 				[
-					[
-						"intent",
-						copy.draftIntent,
-						intentY,
-						copy.intentEvidence,
-						intentNoteY,
-					],
-					["scope", copy.draftScope, scopeY, copy.scopeEvidence, scopeNoteY],
+					["intent", intentDraft, intentY, intentNoteY],
+					["scope", copy.draftScope, scopeY, scopeNoteY],
 				] as const
-			).map(([id, draft, y, evidence, noteY]) => (
+			).map(([id, draft, y, noteY]) => (
 				<g key={id}>
 					<Lines
 						name={`draft-${id}`}
@@ -388,29 +534,53 @@ function Scene({
 						x={margin}
 						y={y}
 						size={draftSize}
-						maxWidth={room}
+						maxWidth={copyWidth}
 						anchor="start"
 						className="wt-film-type wt-film-loss"
 					/>
 					<path
 						data-f={`repair-${id}`}
-						d={`M${margin} ${y + 5}h${room}`}
+						d={`M${margin} ${y + 5}h${copyWidth}`}
 						style={{
 							fill: "none",
 							stroke: "var(--diagram-loss)",
 							strokeWidth: 1.5,
 						}}
 					/>
-					<Lines
-						name={`evidence-${id}`}
-						text={t(evidence)}
-						x={margin}
-						y={noteY}
-						size={T.small * 1.1}
-						maxWidth={room}
-						anchor="start"
-						className="wt-film-type wt-film-warn"
-					/>
+					{id === "intent" ? (
+						<g data-f="evidence-intent">
+							<Lines
+								name="intent-traded"
+								text={`${t(copy.traded)}${colon}${count(recapEvidence.tradedContracts)}`}
+								x={margin}
+								y={noteY}
+								size={T.body}
+								maxWidth={copyWidth * 0.38}
+								anchor="start"
+							/>
+							<Lines
+								name="intent-buyer"
+								text={`${t(copy.buyerIntent)}${colon}${recapEvidence.buyerIntent ?? t(copy.missing)}`}
+								x={margin + copyWidth * 0.4}
+								y={noteY}
+								size={T.body}
+								maxWidth={copyWidth * 0.6}
+								anchor="start"
+								className="wt-film-type wt-film-warn"
+							/>
+						</g>
+					) : (
+						<Lines
+							name="evidence-scope"
+							text={t(copy.scopeEvidence)}
+							x={margin}
+							y={noteY}
+							size={T.small * 1.1}
+							maxWidth={copyWidth}
+							anchor="start"
+							className="wt-film-type wt-film-warn"
+						/>
+					)}
 				</g>
 			))}
 			<Lines
@@ -419,7 +589,7 @@ function Scene({
 				x={margin}
 				y={boundedY}
 				size={draftSize}
-				maxWidth={room}
+				maxWidth={resultWidth}
 				anchor="start"
 				className="wt-film-type wt-film-gain"
 			/>
@@ -435,16 +605,15 @@ function Scene({
 							.slice(0, i)
 							.reduce(
 								(lines, previous) =>
-									lines + lineCount(t(previous), room, captionSize),
+									lines + lineCount(t(previous), captionWidth, captionSize),
 								0,
 							) *
 							captionSize *
-							1.5
+							1.65
 					}
 					size={captionSize}
-					maxWidth={room}
+					maxWidth={captionWidth}
 					anchor="start"
-					className="wt-film-type wt-film-dim"
 				/>
 			))}
 
@@ -510,7 +679,8 @@ function build(context: FilmContext) {
 		one<SVGPathElement>(`repair-${id}`),
 	);
 	const evidence = ["intent", "scope"].map((id) => one(`evidence-${id}`));
-	const captions = [0, 1, 2].map((i) => one(`caption-${i}`));
+	const captions = [0, 1].map((i) => one(`caption-${i}`));
+	const recapChart = one("recap-chart");
 	const changingUnit = one("unit-changing");
 	/** Keep a morph neutral, then hand over in place once its geometry is true. */
 	const changeUnit = (
@@ -592,6 +762,7 @@ function build(context: FilmContext) {
 		...draftParts,
 		...repairLines,
 		...evidence,
+		recapChart,
 		one("bounded"),
 		...captions,
 		lockBars,
@@ -698,8 +869,11 @@ function build(context: FilmContext) {
 	);
 	// Separate the unsupported intent and unbounded comparison before rewriting.
 	show(draftParts, 31.0);
+	// The old hero is fully gone at 31.05; the restored chart settles at 31.45.
+	tl.fromTo(recapChart, { opacity: 0 }, { opacity: 1, duration: 0.35 }, 31.1);
 	d.trace(repairLines[0], 32.5, { duration: 0.3 });
-	show(evidence[0], 32.8);
+	// Fade the known/unknown record in place, with no flight across the chart.
+	tl.fromTo(evidence[0], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 32.8);
 	// Intent evidence settles at 33.3; scope repair waits one quiet second.
 	d.trace(repairLines[1], 34.3, { duration: 0.3 });
 	show(evidence[1], 34.6);
@@ -712,17 +886,25 @@ function build(context: FilmContext) {
 	);
 	// Both layouts keep the scope qualification readable beside the result until 41.1.
 	tl.to(evidence[1], { opacity: 0.8, duration: 0.4 }, 36.1);
-	show(one("bounded"), 36.1);
+	// The chart is already settled: fade the result in place in its own text lane.
+	tl.fromTo(
+		one("bounded"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		36.1,
+	);
 	// The bounded result settles at 36.6; caption fields wait one quiet second.
 	captions.forEach((field, i) => {
 		const at = 37.6 + i * 0.15;
 		show(field, at);
-		// Stagger the exits too: each field keeps its original 3.5-second hold.
-		hide(field, at + 3.5);
+		// Keep the assembled two-field caption intact for three settled seconds.
+		// The first field gains 0.15 s; the second retains its 3.5-second hold.
+		hide(field, 41.25);
 	});
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.1);
+	hide(recapChart, 41.1, 0.35, 0);
 	hide(
 		[heads[4], ...draftParts, ...repairLines, ...evidence, one("bounded")],
 		41.1,

@@ -47,6 +47,18 @@ export const C105 = (r2 && rowContracts(r2)) ?? 0;
 export const C110 = (r3 && rowContracts(r3)) ?? 0;
 
 export const leader = leaderOf("contracts");
+
+export const recapContracts = mondayPacket.map((row) => ({
+	id: row.id,
+	strike: row.strike,
+	contracts: measureOf(row, "contracts"),
+}));
+
+// P1 records execution quantity and price; it contains no buyer-intent field.
+export const recapEvidence = {
+	tradedContracts: C110,
+	buyerIntent: null,
+} as const;
 export const drafts: Record<"over" | "bounded", Copy> = {
 	over: [
 		`Call buyers piled into ALFA's ${leader.strike} strike, Monday's busiest call`,
