@@ -140,7 +140,7 @@ Every film follows the same arc, so a learner always knows where they are.
 | `question` | 4–about 9 s | The question the lesson answers, set big, with the one number or scene that makes it concrete. Hold its line at least 3.5 s. |
 | 2–3 teaching shots | about 9–40 s | Each shot makes one claim: a headline at the top left, and a chart, table or card below it as proof. Headlines change with `d.swap`; charts rise from the depth (`d.rise`) and sink when the claim is made (`d.sink`). |
 | `claim` | about 40–44 s | Cut to big type: the one sentence to remember and why it holds. Hold it at least 4 s; the line under it is at most 9 words, or held 4.5 s. |
-| `next` | about 44–46.5 s | The end card: the next lesson's name, its subtitle and "Try it in the playground ↓" (`d.close`). |
+| `next` | about 44–46.5 s | The end card: the next lesson's name, its subtitle and "Try it in the playground ↓" (`d.close`). The three lines come in 0.35 s apart; when `END` is less than 2 s after `d.close`, closer (down to 0.2 s), so the last has settled 0.4 s before the end wherever that fits. Give the end card at least 2 s (`END` ≥ close + 2.0). |
 
 At most seven beats (one headline each) and about 45 s played (`END` about 47). Hold every headline at least 3.5 s at 1×. To shorten a film, merge or cut beats; never shorten the holds.
 

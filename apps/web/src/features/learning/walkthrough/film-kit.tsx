@@ -1094,11 +1094,18 @@ export function createDirector(
 	const endKids = kids("end");
 	if (endKids.length) hidden(endKids);
 	const close = (at: number) => {
-		// After the claim has gone (a hide takes 0.35 s), never across it.
+		// After the claim has gone (a hide takes 0.35 s), never across it. The three lines come
+		// 0.35 s apart; when the film ends sooner, closer (down to 0.2 s), so the last has
+		// settled 0.4 s before the end wherever that fits.
+		const gap = clamp(0.2, (end - at - 1.3) / 2, 0.35);
 		show(one("end-next"), at + 0.4);
-		show(one("end-why"), at + 0.75);
-		show(one("end-cta"), at + 1.1);
-		tl.to({}, { duration: Math.max(0, end - (at + 1.1)) }, at + 1.1);
+		show(one("end-why"), at + 0.4 + gap);
+		show(one("end-cta"), at + 0.4 + 2 * gap);
+		tl.to(
+			{},
+			{ duration: Math.max(0, end - (at + 0.4 + 2 * gap)) },
+			at + 0.4 + 2 * gap,
+		);
 		// The title card plays short: everything after it, labels too, comes in sooner.
 		tl.shiftChildren(-TITLE_CUT, true, TITLE_END - 0.01);
 	};
