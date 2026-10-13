@@ -21,7 +21,7 @@ import {
 
 /*
  * One print: calculate its premium, check the matched and then stale quote, and separate
- * linked records from the spread cost. Traces connect the prices to a subtraction; the settled
+ * linked records from the spread cost. One connector links the records to a subtraction; the settled
  * $1.25/share result takes the hero lock. Market records cannot show belief.
  *
  *   open      0–4
@@ -145,6 +145,7 @@ const copy = {
 	lHead: ["Each claim, tagged with its evidence.", "每个结论，标上它的证据。"],
 	gHead: ["Which record could close each gap?", "哪份记录能填补每个缺口？"],
 	g2Head: ["This print was one spread leg.", "这笔成交是价差的一条腿。"],
+	print: ["print", "成交"],
 	quote: ["Matched quote", "匹配报价"],
 	staleQuote: [`${QUOTE_AGE} s old`, `${QUOTE_AGE} 秒前`],
 	bid: ["bid", "买价"],
@@ -361,22 +362,53 @@ function Scene({
 				) : null,
 			)}
 
-			{/* Replace the quote record before changing any classification. */}
+			{/* The trade stays beside the quote; quote and dependent tags change together. */}
 			<rect
 				data-f="quote-panel"
 				x={margin}
-				y={H * 0.79}
+				y={H * 0.77}
 				width={room}
-				height={H * 0.16}
+				height={H * 0.195}
 				rx={12}
 				className="wt-panel-shape"
 			/>
+			<g data-f="quote-print">
+				<Word
+					name="quote-print-tag"
+					x={margin + 14}
+					y={H * 0.815}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.print).toUpperCase()}
+				</Word>
+				<Word
+					name="quote-print-time"
+					x={W * 0.6}
+					y={H * 0.815}
+					size={T.small}
+					className="wt-film-tag"
+				>
+					{BLOCK.time}
+				</Word>
+				<Word
+					name="quote-print-price"
+					x={margin + room - 14}
+					y={H * 0.815}
+					size={T.body}
+					anchor="end"
+					className="wt-film-num"
+				>
+					{usd(BLOCK.price)}
+				</Word>
+			</g>
 			{([BLOCK.quote, BLOCK.staleQuote] as const).map((quote, i) => (
 				<g key={quote.time} data-f={i ? "quote-stale" : "quote-fresh"}>
 					<Word
 						name={`quote-${i}-tag`}
 						x={margin + 14}
-						y={H * 0.83}
+						y={H * 0.875}
 						size={T.small}
 						anchor="start"
 						className="wt-film-tag"
@@ -385,10 +417,10 @@ function Scene({
 					</Word>
 					<Word
 						name={`quote-${i}-time`}
-						x={margin + room - 14}
-						y={H * 0.83}
+						x={W * 0.6}
+						y={H * 0.875}
 						size={T.small}
-						anchor="end"
+						anchor="middle"
 						className="wt-film-tag"
 					>
 						{quote.time}
@@ -396,7 +428,7 @@ function Scene({
 					<Word
 						name={`quote-${i}-bid`}
 						x={margin + 14}
-						y={H * 0.905}
+						y={H * 0.935}
 						size={T.body}
 						anchor="start"
 						className="wt-film-num"
@@ -406,7 +438,7 @@ function Scene({
 					<Word
 						name={`quote-${i}-ask`}
 						x={margin + room - 14}
-						y={H * 0.905}
+						y={H * 0.935}
 						size={T.body}
 						anchor="end"
 						className="wt-film-num"
@@ -568,17 +600,21 @@ function Scene({
 			>
 				{t(copy.spreadCost).toUpperCase()}
 			</Word>
-			{[0, 1].map((i) => (
-				<path
-					key={i}
-					data-f={`cost-link-${i}`}
-					d={`M ${margin + room - 10} ${H * (0.437 + i * 0.045)} H ${W * (i ? 0.937 : 0.953)} V ${H * (0.549 + i * 0.004)} H ${W * (i ? 0.65 : 0.35)}`}
-					className="wt-film-link"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth={1.5}
-				/>
-			))}
+			<path
+				data-f="cost-link"
+				d={`M ${W * 0.8} ${H * 0.545} V ${H * 0.62} H ${W * 0.75} m 6 -4 l -6 4 l 6 4`}
+				className="wt-film-link"
+				style={{ strokeDasharray: "none" }}
+			/>
+
+			<Lines
+				name="belief-head"
+				text={t(gaps[2].needs)}
+				x={W / 2}
+				y={H * 0.46}
+				size={T.title}
+				maxWidth={room}
+			/>
 
 			<Brackets name="lock-leg" glow />
 
@@ -653,9 +689,12 @@ function build(context: FilmContext) {
 		"cost-result",
 		"cost-label",
 	].map((name) => one(name));
-	const quote = ["quote-panel", "quote-fresh", "quote-stale"].map((name) =>
-		one(name),
-	);
+	const quote = [
+		"quote-panel",
+		"quote-fresh",
+		"quote-stale",
+		"quote-print",
+	].map((name) => one(name));
 	const found = [
 		one("found-0"),
 		...records,
@@ -695,8 +734,8 @@ function build(context: FilmContext) {
 		...gapCards,
 		...found,
 		...cost,
-		one("cost-link-0"),
-		one("cost-link-1"),
+		one("cost-link"),
+		one("belief-head"),
 		...quote,
 		lockLeg,
 		...kids("claim"),
@@ -736,7 +775,7 @@ function build(context: FilmContext) {
 	tl.addLabel("claims", 14);
 	hide([heads[0], ...terms, ...times, one("sum")], 14.0);
 	show(heads[1], 14.35);
-	fade([quote[0], quote[1]], 14.2);
+	fade([quote[0], quote[1], quote[3]], 14.2);
 	rows.forEach((row, i) => {
 		show(row, 14.7 + i * 0.5, "right");
 	});
@@ -766,12 +805,9 @@ function build(context: FilmContext) {
 	});
 	close(0, 24.5); // settles 25.15
 	close(1, 26.15); // linked records settle 26.95, one second after OI
-	// Trace from the price records through the clear right gutter into the subtraction.
-	// Records stay readable: no sentence loses its hold to make room for a flight.
+	// One record-to-subtraction connector; the settled proof keeps its full quiet time.
 	fade([one("cost-minus")], 27.95);
-	[0, 1].forEach((i) => {
-		d.trace(one<SVGPathElement>(`cost-link-${i}`), 27.95, { duration: 0.6 });
-	});
+	d.trace(one<SVGPathElement>("cost-link"), 27.95, { duration: 0.6 });
 	tl.fromTo(
 		[one("cost-0"), one("cost-1")],
 		{ opacity: 0 },
@@ -788,33 +824,18 @@ function build(context: FilmContext) {
 	show(heads[3], 31.35);
 	// Brackets settle 31.8; the result remains stationary throughout this after-beat.
 	hide([lockLeg, heads[3]], 35.8);
-	// Once the brackets are gone, the resolved proofs recede; belief remains at full strength.
+	// Clear the proofs instead of leaving ghosts. The incoming line starts after the
+	// outgoing stack is below one quarter; the tails overlap to avoid an empty stage.
 	tl.to(
-		[
-			gapCards[0],
-			gapCards[1],
-			...found,
-			...cost,
-			one("cost-link-0"),
-			one("cost-link-1"),
-		],
-		{ opacity: 0.2, duration: 0.5 },
+		[heads[2], ...gapCards, ...found, ...cost, one("cost-link")],
+		{ opacity: 0, duration: 0.5, ease: "power1.inOut" },
 		36.15,
 	);
+	fade([one("belief-head")], 36.5);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.2);
-	hide(
-		[
-			heads[2],
-			...gapCards,
-			...found,
-			...cost,
-			one("cost-link-0"),
-			one("cost-link-1"),
-		],
-		40.2,
-	);
+	hide(one("belief-head"), 40.2);
 	word(one("z-big"), 40.5);
 	show(one("z-sub"), 40.9);
 
