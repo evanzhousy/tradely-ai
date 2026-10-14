@@ -49,9 +49,9 @@ import {
  *   question  4–8.6      four prints in one second: bullish or bearish?
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
  *   condor    18.2–30    hero: put spread and call spread; together; it sells a range
- *   package   30–40.5    four labels; directional tally; cash groups; one package
- *   claim     40.5–44.9  linked prints, one trade
- *   next      44.9–46.3  Next: checking one trade
+ *   package   30–40.4    four labels; directional tally; cash groups; one package
+ *   claim     40.4–44.7  linked prints, one trade
+ *   next      44.7–46.3  Next: checking one trade
  */
 
 const END = 46.3;
@@ -846,8 +846,8 @@ function build(context: FilmContext) {
 	show(heads.packageAnswer, 36.9);
 
 	// ——— claim ———
-	// Package settles at 37.4; preserve the full 3.1 s result rest.
-	tl.addLabel("claim", 40.5);
+	// Package settles at 37.4 and rests 3 s; its answer keeps a 3.5 s hold.
+	tl.addLabel("claim", 40.4);
 	hide(
 		[
 			heads.package,
@@ -857,15 +857,16 @@ function build(context: FilmContext) {
 			one("pkg"),
 			one("pkg-equation"),
 		],
-		40.5,
+		40.4,
 	);
-	word(one("z-big"), 40.8);
-	show(one("z-sub"), 41.2);
+	word(one("z-big"), 40.7);
+	show(one("z-sub"), 41.1);
 
 	// ——— next ———
-	tl.addLabel("next", 44.9);
-	hide(kids("claim"), 44.9);
-	d.close(44.9);
+	// The claim holds 4 s; the end card keeps the 1.6 s minimum the hero share leaves.
+	tl.addLabel("next", 44.7);
+	hide(kids("claim"), 44.7);
+	d.close(44.7);
 	return tl;
 }
 
