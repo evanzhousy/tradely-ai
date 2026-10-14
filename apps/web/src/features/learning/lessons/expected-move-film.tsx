@@ -33,7 +33,7 @@ import {
  * The expected move, as a film. It starts from a question, how far do ALFA's options
  * price it to move by Oct 18, and builds the answer as type: 35% a year, scaled by the
  * square root of 32 days, ±$10.36. A bell curve then shows what that range is (68% of
- * outcomes, under the model), the straddle's narrower bracket (distance from $100),
+ * outcomes, under the model), the straddle's $8.27 distance measured from $100,
  * its $8.27 ÷ $10.36 ratio built before 0.80 lands, the tails, and twelve past months
  * that jumped past them.
  *
@@ -41,7 +41,7 @@ import {
  *   question  4–9.6      IV 35% → ±$? by Oct 18
  *   scale     9.6–16     $100 × 35% = $35; × √(32 ÷ 365) = × 0.296; ±$10.36
  *   bell      16–23.3    what the range covers: the ±1 SD band grows to 68% of outcomes
- *   straddle  23.3–31.8  hero: the straddle's bracket, $8.27; cut: 0.80 of one SD, locked
+ *   straddle  23.3–31.8  $100 → +$8.27 distance; operands → 0.80 → one SD → lock
  *   outside   31.8–40.5  the tails, 16% each side; twelve past months, 4 outside one SD,
  *                        May's earnings among them
  *   claim     40.5–44.85 "A range is a scale, not a wall."
@@ -54,7 +54,6 @@ const B_TOP = 1.3;
 const M_TOP = 2.4;
 const LOW = SPOT - MOVE;
 const HIGH = SPOT + MOVE;
-const BE_LOW = SPOT - STRADDLE;
 const BE_HIGH = SPOT + STRADDLE;
 const pdf = (price: number) => Math.exp(-0.5 * ((price - SPOT) / MOVE) ** 2);
 const ratio = STRADDLE / MOVE;
@@ -142,12 +141,8 @@ const copy = {
 		`Straddle: distance from $${SPOT}.`,
 		`跨式：距 $${SPOT} 的变动。`,
 	],
-	straddle: [`straddle ${share(STRADDLE)}`, `跨式 ${share(STRADDLE)}`],
+	straddle: [share(STRADDLE), share(STRADDLE)],
 	ratioWord: ["of one SD", "个标准差"],
-	ratioSub: [
-		"Average distance, not 68% coverage.",
-		"平均距离，不是 68% 覆盖区间。",
-	],
 	outsideHead: ["About a third end outside.", "约三分之一收在区间外。"],
 	tail: [
 		`${Math.round(MODEL_OUTSIDE[1] / 2)}%`,
@@ -285,10 +280,10 @@ function Scene({
 						>
 							68%
 						</Word>
-						{[BE_LOW, BE_HIGH].map((price) => (
+						{[SPOT, BE_HIGH].map((price) => (
 							<path
 								key={price}
-								data-f={`s-line-${price < SPOT ? "low" : "high"}`}
+								data-f={`s-line-${price === SPOT ? "spot" : "high"}`}
 								d={`M${L.xB(price)} ${L.yB(0)}V${L.yB(1.12)}`}
 								className="wt-film-tangent"
 								strokeDasharray="4 3"
@@ -296,12 +291,12 @@ function Scene({
 						))}
 						<path
 							data-f="s-bracket"
-							d={`M${L.xB(BE_LOW)} ${L.yB(1.12)}H${L.xB(BE_HIGH)}`}
+							d={`M${L.xB(SPOT)} ${L.yB(1.12)}H${L.xB(BE_HIGH)}`}
 							className="wt-bracket"
 						/>
 						<text
 							data-f="s-label"
-							x={L.xB(SPOT)}
+							x={L.xB((SPOT + BE_HIGH) / 2)}
 							y={L.yB(1.12) - 8}
 							textAnchor="middle"
 							className="wt-halo wt-marker-label wt-accent"
@@ -509,15 +504,6 @@ function Scene({
 				>
 					{t(copy.ratioWord)}
 				</Word>
-				<Lines
-					name="r-sub"
-					text={t(copy.ratioSub)}
-					x={W / 2}
-					y={operandsY + T.body * 1.9}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
 			</g>
 			{headline("o-head", copy.outsideHead, copy.outsideHead)}
 			{/* The answer from real months, a line under the model's third. */}
@@ -592,7 +578,7 @@ function build(context: FilmContext) {
 		one("b-edge-low"),
 		one("b-edge-high"),
 		one("b-inside"),
-		one("s-line-low"),
+		one("s-line-spot"),
 		one("s-line-high"),
 		one("s-bracket"),
 		one("s-label"),
@@ -662,24 +648,20 @@ function build(context: FilmContext) {
 	// The answer, as the share inside lands.
 	show(one("b2-head"), 19.7);
 
-	// ——— straddle: the hero. A narrower bracket, and its ratio. ———
+	// ——— straddle: measure distance from the strike, then resolve its ratio. ———
 	tl.addLabel("straddle", 23.3);
 	d.swap([one("b-head"), one("b2-head")], one("s-head"), 23.3);
 	hide(one("b-inside"), 23.3, 0.35, 0);
-	for (const [i, side] of (["low", "high"] as const).entries())
+	for (const [i, side] of (["spot", "high"] as const).entries())
 		tl.fromTo(
 			one(`s-line-${side}`),
 			{ opacity: 1, scaleY: 0, transformOrigin: "50% 100%" },
 			{ scaleY: 1, duration: 0.6, ease: "power2.out" },
 			23.8 + i * 0.15,
 		);
-	tl.fromTo(
-		one("s-bracket"),
-		{ opacity: 0, scaleX: 0, transformOrigin: "50% 50%" },
-		{ opacity: 1, scaleX: 1, duration: 0.5, ease: "power2.out" },
-		24.5,
-	);
-	show(one("s-label"), 24.8, "below", 0.4);
+	// Trace outward from $100; finish measuring before the settled dollar label appears.
+	d.trace(one<SVGPathElement>("s-bracket"), 24.3, { duration: 0.5 });
+	tl.to(one("s-label"), { opacity: 1, duration: 0.4 }, 24.8);
 	// Complete the comparison with its operands, then preserve its two-second quiet hold.
 	tl.to(one("r-input"), { opacity: 1, duration: 0.4 }, 24.8);
 	// Carry the same operands into the ratio layout only after the chart has gone.
@@ -692,18 +674,17 @@ function build(context: FilmContext) {
 		{ duration: 0.45, arc: "y" },
 	);
 	// The quotient is already true throughout its reveal; never count or scale a result.
-	tl.to(one("r-num"), { opacity: 1, duration: 0.55 }, 27.55);
-	show(one("r-word"), 27.6);
-	d.lock(lockRatio, 28.1, { around: [one("r-num"), one("r-word")], pad: 5 });
-	tl.addLabel("hero-lock", 28.1);
-	show(one("r-sub"), 28.3);
+	tl.to(one("r-num"), { opacity: 1, duration: 0.55 }, 28.05);
+	show(one("r-word"), 28.6);
+	d.lock(lockRatio, 29.1, { around: [one("r-num"), one("r-word")], pad: 5 });
+	tl.addLabel("hero-lock", 29.1);
 
 	// ——— outside: the tails, then real months ———
 	tl.addLabel("outside", 31.8);
 	hide([...kids("r"), lockRatio], 31.8);
 	tl.set(
 		[
-			one("s-line-low"),
+			one("s-line-spot"),
 			one("s-line-high"),
 			one("s-bracket"),
 			one("s-label"),
@@ -727,6 +708,7 @@ function build(context: FilmContext) {
 	rise(35.1);
 	// Establish both reference levels together while the chart rises, before bars settle.
 	show([one("m-line-1"), one("m-line-2")], 35.1, "right", 0.4);
+	// One chart construction: all twelve bars settle at 35.95, then rest until 37.0.
 	PAST.forEach((multiple, i) => {
 		tl.fromTo(
 			one(`m-bar-${i}`),
@@ -736,7 +718,7 @@ function build(context: FilmContext) {
 				duration: 0.45,
 				ease: "power3.out",
 			},
-			35.5 + i * 0.07,
+			35.5,
 		);
 	});
 	show(one("m-head"), 37.0);
@@ -762,8 +744,8 @@ function build(context: FilmContext) {
 export const expectedMoveFilm: Film = {
 	id: "expected-move",
 	label: [
-		"The expected move, as a short film: 35% implied volatility scaled by the square root of 32 days to a one-standard-deviation move of ±$10.36; the range on a bell curve holding 68% of outcomes under the model; the Oct 18 100 straddle's narrower $8.27 bracket, 0.80 of one SD; and the tails, against twelve past months",
-		"预期变动短片：35% 的隐含波动率按 32 天的平方根缩放为 ±$10.36 的一个标准差；钟形曲线上按模型容纳 68% 结果的区间；10月18日 100 跨式更窄的 $8.27 区间，为一个标准差的 0.80；以及尾部与过去 12 个月的对照",
+		"The expected move, as a short film: 35% implied volatility scaled by the square root of 32 days to a one-standard-deviation move of ±$10.36; the range on a bell curve holding 68% of outcomes under the model; the Oct 18 100 straddle's $8.27 distance from $100, 0.80 of one SD; and the tails, against twelve past months",
+		"预期变动短片：35% 的隐含波动率按 32 天的平方根缩放为 ±$10.36 的一个标准差；钟形曲线上按模型容纳 68% 结果的区间；10月18日 100 跨式定价的距 $100 的 $8.27 变动，为一个标准差的 0.80；以及尾部与过去 12 个月的对照",
 	],
 	stage: "dark",
 	shots: [
