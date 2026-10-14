@@ -67,6 +67,11 @@ function layout(width: number) {
 	const { height: H, narrow, margin, room } = frame;
 	const labelW = narrow ? 44 : 60;
 	const answerSize = narrow ? frame.type.body * 1.1 : frame.type.head;
+	const chartSize = narrow ? frame.type.small * 1.1 : frame.type.body;
+	const storySize = chartSize * 1.4;
+	const claimH = H * (narrow ? 0.048 : 0.068);
+	// Reserve the hero's full font extents, underline and padding before any card enters.
+	const storyH = Math.max(claimH, storySize * 1.4 + 14);
 	// Reserve full font extents plus 8 px between the four saved-record rows.
 	const recTop = H * 0.27;
 	const recTitleY = recTop + 12 + frame.type.small;
@@ -94,7 +99,7 @@ function layout(width: number) {
 		barRowY: (i: number) =>
 			H * (narrow ? 0.26 : 0.3) +
 			i * H * (narrow ? 0.055 : 0.06) +
-			// Reserve a label line beneath the 110 segment, before the two lower strikes.
+			// Leave a clear connector route beneath the 110 segment and above the lower strikes.
 			(i > SERIES.indexOf(LEADER) ? frame.type.body * 1.4 : 0),
 		barH: H * (narrow ? 0.036 : 0.04),
 		barX: margin + labelW,
@@ -102,8 +107,11 @@ function layout(width: number) {
 		claimX: narrow ? margin : margin + room * 0.5,
 		claimW: narrow ? room : room * 0.5,
 		claimY: (i: number) =>
-			narrow ? H * 0.58 + i * H * 0.072 : H * 0.28 + i * H * 0.095,
-		claimH: H * (narrow ? 0.048 : 0.068),
+			(narrow ? H * 0.58 + i * H * 0.072 : H * 0.28 + i * H * 0.095) +
+			(i > STORY_CARD ? storyH - claimH : 0),
+		claimH: (i: number) => (i === STORY_CARD ? storyH : claimH),
+		chartSize,
+		storySize,
 		recX: (i: number) => margin + (width >= 900 ? i * room * 0.1 : 0),
 		recW: width >= 900 ? room * 0.82 : room,
 		recY: (i: number) => (i === 0 ? recTop : secondRecY),
@@ -240,15 +248,11 @@ const copy = {
 	title: ["Research questions", "研究问题"],
 	titleSub: ["what evidence can answer", "证据能回答什么"],
 	qTag: ["a research question", "一个研究问题"],
-	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪?」"],
+	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪？」"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	lateDay: ["late · Tue 09:00", "迟到 · 周二 09:00"],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
-	spreadLabel: [
-		`${count(SPREAD_LEG)} · one spread leg`,
-		`${count(SPREAD_LEG)} · 一条价差腿`,
-	],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
 	a2Head: [
@@ -301,7 +305,14 @@ function Scene({
 			anchor="start"
 		/>
 	);
-	const text = narrow ? T.small * 1.1 : T.body;
+	const text = L.chartSize;
+	const claimSize = (i: number) => (i === STORY_CARD ? L.storySize : text);
+	const claimText = (i: number) =>
+		t(
+			narrow || (i === STORY_CARD && locale === "en")
+				? claims[i].short
+				: claims[i].text,
+		);
 	const id = useId().replace(/:/g, "");
 	const leaderRow = SERIES.indexOf(LEADER);
 	const answerSize = L.answerSize;
@@ -355,7 +366,7 @@ function Scene({
 	// On a phone the connector clears the chart, then follows the cards' left gutter.
 	// On desktop, leave the bar below its figures and follow the claim cards' gutter.
 	const segBottom = L.barRowY(leaderRow) + L.barH;
-	const swatchY = L.claimY(SPREAD_CARD) + L.claimH / 2;
+	const swatchY = L.claimY(SPREAD_CARD) + L.claimH(SPREAD_CARD) / 2;
 	const spreadPath = narrow
 		? `M${L.barX + 4} ${segBottom} L${L.barX - 8} ${segBottom + 6} V${L.barRowY(SERIES.length - 1) + L.barH + 8} H${margin - 10} V${swatchY} H${L.claimX + 12}`
 		: `M${L.barX + (SPREAD_LEG / MAX) * L.barMax * 0.7} ${segBottom} V${segBottom + 2} H${L.claimX - 8} V${swatchY} H${L.claimX + 12}`;
@@ -535,16 +546,6 @@ function Scene({
 				stroke="var(--diagram-gain)"
 				strokeWidth={1.5}
 			/>
-			<Word
-				name="spread-label"
-				x={L.barX}
-				y={segBottom + T.body + 6}
-				size={T.body}
-				anchor="start"
-				className="wt-film-type wt-film-gain"
-			>
-				{t(copy.spreadLabel)}
-			</Word>
 			<path
 				data-f="spread-trace"
 				d={spreadPath}
@@ -562,7 +563,9 @@ function Scene({
 							x={L.claimX}
 							y={L.claimY(i)}
 							width={L.claimW}
-							height={i === 0 ? L.claimY(1) - L.claimY(0) + L.claimH : L.claimH}
+							height={
+								i === 0 ? L.claimY(1) - L.claimY(0) + L.claimH(1) : L.claimH(i)
+							}
 							rx={9}
 							className={
 								claim.evidence === "unknown"
@@ -575,7 +578,7 @@ function Scene({
 						<rect
 							data-f="spread-swatch"
 							x={L.claimX + 12}
-							y={L.claimY(i) + L.claimH / 2 - 6}
+							y={L.claimY(i) + L.claimH(i) / 2 - 6}
 							width={12}
 							height={12}
 							rx={2}
@@ -587,11 +590,11 @@ function Scene({
 					<text
 						data-f={`claim-${i}-text`}
 						x={L.claimX + 12 + (i === SPREAD_CARD ? 20 : 0)}
-						y={L.claimY(i) + L.claimH / 2 + text * 0.36}
+						y={L.claimY(i) + L.claimH(i) / 2 + claimSize(i) * 0.36}
 						className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
-						style={{ fontSize: text }}
+						style={{ fontSize: claimSize(i) }}
 					>
-						{t(narrow ? claim.short : claim.text)}
+						{claimText(i)}
 					</text>
 					{i === STORY_CARD ? (
 						<line
@@ -601,12 +604,12 @@ function Scene({
 								L.claimX +
 								14 +
 								textWidth(
-									t(narrow ? claim.short : claim.text),
-									text * (locale === "zh" ? 0.95 : 0.86),
+									claimText(i),
+									claimSize(i) * (locale === "zh" ? 0.95 : 0.86),
 								)
 							}
-							y1={L.claimY(i) + L.claimH - 3}
-							y2={L.claimY(i) + L.claimH - 3}
+							y1={L.claimY(i) + L.claimH(i) - 5}
+							y2={L.claimY(i) + L.claimH(i) - 5}
 							stroke="var(--diagram-unknown)"
 							strokeWidth={2}
 							strokeDasharray="4 4"
@@ -616,7 +619,7 @@ function Scene({
 					<text
 						data-f={`claim-${i}-tag`}
 						x={L.claimX + L.claimW - 12}
-						y={L.claimY(i) + L.claimH / 2 + T.small * 0.36}
+						y={L.claimY(i) + L.claimH(i) / 2 + T.small * 0.36}
 						textAnchor="end"
 						className={`wt-film-tag ${tone[claim.evidence]}`}
 						style={{ fontSize: T.small * 0.95 }}
@@ -930,7 +933,6 @@ function build(context: FilmContext) {
 		// The first pair's tags arrive with their shared evidence panel.
 		...tags.slice(STORY_CARD),
 		one("spread-seg"),
-		one("spread-label"),
 		one("spread-trace"),
 		one("story-strike"),
 		lockClaim,
@@ -1050,9 +1052,8 @@ function build(context: FilmContext) {
 	tl.addLabel("answer", 17.6);
 	hide([heads[0], ...fieldRows], 17.6);
 	show(heads[1], 17.95);
-	strikes.forEach((row, i) => {
-		show(row, 18.4 + i * 0.15, "right");
-	});
+	// One coordinated chart settles at 18.9, leaving 1.3 s before the evidence card.
+	show(strikes, 18.4, "right");
 	// Both tagged results settle at 20.7, leaving 1.9 s before the interpretation.
 	show([claimRows[0], claimRows[1]], 20.2, "right");
 	// The interpretation reads the 110 bar: the bar answers.
@@ -1076,7 +1077,6 @@ function build(context: FilmContext) {
 		},
 		24.4,
 	);
-	show(one("spread-label"), 24.6, "right");
 	show(claimRows[3], 25.05, "right");
 	stamp(tags[3], 25.55);
 	d.trace(one<SVGPathElement>("spread-trace"), 25.6, { duration: 0.5 });
@@ -1112,7 +1112,6 @@ function build(context: FilmContext) {
 			...claimRows,
 			...tags,
 			one("spread-seg"),
-			one("spread-label"),
 			one("story-strike"),
 			lockClaim,
 		],
