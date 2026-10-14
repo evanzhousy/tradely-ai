@@ -42,12 +42,12 @@ import {
  *   open      0–4        "Build your own Rank column"
  *   question  4–9.6      [Total Premium] + [Trades]
  *   units     9.6–19.25  usd + count: refused; ÷: usd, $6,458
- *   rank      19.25–32.0  total premium; per trade; a floor of 20, ALFA locked
- *   view      32.0–43.4   Tuesday recomputes; keep the definition; cut: the claim
- *   next      43.4–45.9   Next: fork or write a recipe with AI
+ *   rank      19.25–32.5  total premium; thin denominator; 20-trade floor, ALFA locked
+ *   view      32.5–43.9   saved formula persists as Tuesday recomputes; cut: the claim
+ *   next      43.9–46.4   Next: fork or write a recipe with AI
  */
 
-const END = 45.9;
+const END = 46.4;
 const TUESDAY = symbolFlowSessions.tuesday.rows;
 const SYMBOLS = MONDAY.map((row) => row.symbol);
 type State = 0 | 1 | 2 | 3;
@@ -135,20 +135,24 @@ const copy = {
 		"周一的五个标的，按总权利金。",
 	],
 	totalHeadShort: ["By total premium.", "按总权利金。"],
-	perHead: ["Premium per trade.", "每笔权利金。"],
-	perHeadShort: ["Premium per trade.", "每笔权利金。"],
+	perHead: [
+		"Few trades can inflate per-trade averages.",
+		"笔数少，每笔均值可能偏高。",
+	],
+	perHeadShort: ["Few trades can inflate averages.", "笔数少，均值可能偏高。"],
 	floorHead: [
-		`Floor ${SAVED_FLOOR}: ALFA leads; GLYN N/A.`,
-		`门槛 ${SAVED_FLOOR}：ALFA 领先，GLYN 为 N/A。`,
+		`${SAVED_FLOOR}-trade floor: ALFA leads; GLYN N/A.`,
+		`${SAVED_FLOOR} 笔门槛：ALFA 领先，GLYN 为 N/A。`,
 	],
 	floorHeadShort: [
-		`Floor ${SAVED_FLOOR}: ALFA leads; GLYN N/A.`,
-		`门槛 ${SAVED_FLOOR}：ALFA 领先，GLYN 为 N/A。`,
+		`${SAVED_FLOOR}-trade floor: ALFA leads; GLYN N/A.`,
+		`${SAVED_FLOOR} 笔门槛：ALFA 领先，GLYN 为 N/A。`,
 	],
 	viewHead: ["Recompute on Tuesday.", "在周二重新计算。"],
 	viewHeadShort: ["Recompute on Tuesday.", "在周二重新计算。"],
 	trades: ["trades", "笔数"],
 	columnTotal: ["column · Total Premium", "列 · Total Premium"],
+	saved: ["Saved", "已保存"],
 	keepHead: [
 		`${TUE_LEADER} leads; the view keeps the definition.`,
 		`${TUE_LEADER} 领先；视图保存定义。`,
@@ -407,7 +411,7 @@ function Scene({
 						className="wt-film-num wt-film-accent"
 						style={{ fontSize: L.rowText }}
 					>
-						{`= ${formula}`}
+						{i === 1 ? `${t(copy.saved)} · ${formula}` : `= ${formula}`}
 					</text>
 				))}
 				<rect
@@ -417,6 +421,17 @@ function Scene({
 					width={0}
 					height={2}
 					fill="var(--diagram-accent)"
+				/>
+				<path
+					data-f="definition-kept"
+					d="M0 0"
+					pathLength={1}
+					fill="none"
+					stroke="var(--diagram-accent)"
+					strokeWidth={2}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					style={{ strokeDasharray: 1, strokeDashoffset: 1 }}
 				/>
 				{(
 					[
@@ -470,7 +485,7 @@ function Scene({
 								x={L.tradesX}
 								y={rowText(y0)}
 								textAnchor="end"
-								className="wt-film-num wt-film-dim"
+								className={`wt-film-num ${symbol === GLYN.symbol && day === "mon" ? "wt-film-loss" : "wt-film-dim"}`}
 								style={{ fontSize: L.rowText }}
 							>
 								{count(rowOf(day === "mon" ? 0 : 3, symbol).trades)}
@@ -621,6 +636,9 @@ function build(context: FilmContext) {
 	};
 
 	const lockFloor = one<SVGGraphicsElement>("lock-floor");
+	const definitionWidth = one<SVGTextElement>("f-2").getComputedTextLength();
+	const checkX = L.margin + definitionWidth + 8;
+	const checkY = L.barY - L.rowText * 0.3;
 
 	d.hidden([
 		...flat("q"),
@@ -646,6 +664,11 @@ function build(context: FilmContext) {
 
 	// Rows start in the total-premium order.
 	for (const symbol of SYMBOLS) tl.set(row(symbol), { y: lift(0, symbol) }, 0);
+	tl.set(
+		one("definition-kept"),
+		{ attr: { d: `M${checkX} ${checkY}l4 4 8 -9` } },
+		0,
+	);
 
 	// ——— open ———
 	tl.addLabel("open", 0);
@@ -703,47 +726,73 @@ function build(context: FilmContext) {
 	});
 	// Per trade.
 	d.swap(one("t-head"), one("p-head"), 23.15);
+	// The thin denominator gets emphasis during construction, before the proof rests.
+	tl.to(
+		one("n-GLYN-mon"),
+		{ fontSize: L.rowText * 1.15, duration: 0.3, ease: "power2.inOut" },
+		23.55,
+	);
 	rank(0, 1, 23.65, 23.55);
 	// A floor. The hero: ALFA back in front.
 	// Per-trade restoration ends at 24.55; the next fold waits a full second.
+	// Return the count to row size before the enlarged hero value arrives.
+	tl.to(
+		one("n-GLYN-mon"),
+		{ fontSize: L.rowText, duration: 0.3, ease: "power2.inOut" },
+		25.55,
+	);
 	rank(1, 2, 25.65, 25.55);
 	d.lock(lockFloor, 26.55, {
 		around: value(ALFA.symbol, 2),
 		pad: 6,
 	});
 	tl.addLabel("hero-lock", 26.55);
-	// Brackets settle at 27.0. Let the proof rest before naming its answer.
-	show(one("f-head"), 28.0);
-
-	// ——— view: the formula recomputes, the numbers don't stay ———
-	tl.addLabel("view", 32.0);
-	hide([one("p-head"), one("f-head"), lockFloor], 32.0);
-	show(one("v-head"), 32.35, "above");
-	rank(2, 3, 33.0, 32.9);
-	// Tuesday settles at 33.9; its leader appears only after a full second of quiet.
-	show(one("w-head"), 34.9);
-	// An after-beat points back to the definition that survived the session change.
-	tl.to(
+	// Brackets settle at 27.0; give the hero 1.5 s of quiet before its answer.
+	show(one("f-head"), 28.5);
+	// The answer settles at 29.0. Establish the saved definition after another second,
+	// then keep both the formula and its underline stationary through Tuesday's fold.
+	tl.fromTo(
 		one("definition-rule"),
+		{ opacity: 0, attr: { width: 0 } },
 		{
 			opacity: 1,
-			attr: {
-				width: Math.min(L.room, `= ${formulas[2]}`.length * L.rowText * 0.62),
-			},
+			attr: { width: definitionWidth },
 			duration: 0.8,
 			ease: "power2.inOut",
+			immediateRender: false,
 		},
-		36.9,
+		30.0,
+	);
+
+	// ——— view: the formula recomputes, the numbers don't stay ———
+	tl.addLabel("view", 32.5);
+	hide([one("p-head"), one("f-head"), lockFloor], 32.5);
+	show(one("v-head"), 32.85, "above");
+	rank(2, 3, 33.5, 33.4);
+	// Tuesday settles at 34.4; its leader appears only after a full second of quiet.
+	show(one("w-head"), 35.4);
+	// Confirm the marked definition survived, preserving the late drawing after-beat.
+	tl.fromTo(
+		one("definition-kept"),
+		{ opacity: 0, strokeDashoffset: 1 },
+		{
+			opacity: 1,
+			strokeDashoffset: 0,
+			duration: 0.8,
+			ease: "power2.inOut",
+			immediateRender: false,
+		},
+		37.4,
 	);
 	// Cut: the claim.
-	hide([one("v-head"), one("w-head"), ...kids("rank")], 38.9);
-	word(one("z-big"), 39.3);
-	show(one("z-sub"), 39.7);
+	hide([one("v-head"), one("w-head"), ...kids("rank")], 39.4);
+	word(one("z-big"), 39.8);
+	show(one("z-sub"), 40.2);
 
 	// ——— next ———
-	tl.addLabel("next", 43.4);
-	hide(kids("claim"), 43.4);
-	d.close(43.4);
+	tl.addLabel("next", 43.9);
+	hide(kids("claim"), 43.9);
+	d.close(43.9);
 	return tl;
 }
 
