@@ -40,7 +40,7 @@ import {
  * Volume and open interest, as a film. A hundred contracts are open; you buy 10 to open and
  * Ben sells 10 to open: does open interest rise by 10 or by 20? Two counters answer, trade
  * by trade: both open, +10; one opens and one closes, ±0; both close, −4. The hero is the
- * clock: the true count, 106, steps aside, not yet published; volume moves at every print
+ * clock: Monday closes with volume 20; the true count, 106, steps aside, not yet published,
  * while the open interest shown holds Friday's 100, until Tuesday's report turns it to 106
  * and glowing brackets lock. Last, a 14–30 day bucket that jumps from 420 to 650: first
  * because a week moved its members, then by the few contracts that opened.
@@ -236,7 +236,7 @@ const copy = {
 		`Both closed: −${TRADES[2].quantity}.`,
 		`双方平仓：−${TRADES[2].quantity}。`,
 	],
-	/** What waits beside the screen while Monday replays: the count Monday ends on. */
+	/** What waits beside the screen at Monday's close: the count Monday ends on. */
 	finalCount: ["Monday's final count", "周一最终统计"],
 	unpublished: ["not published yet", "尚未公布"],
 	volume: ["volume today", "今日成交量"],
@@ -581,6 +581,7 @@ function Scene({
 							className="wt-axis"
 						/>
 						<text
+							data-f={`clock-label-${minute}`}
 							x={L.clockX(minute)}
 							y={L.clockY + T.small * 2.4}
 							textAnchor={anchor}
@@ -601,22 +602,12 @@ function Scene({
 						r={5}
 						className="wt-chip"
 					/>
-					<text
-						data-f={`tick-volume-${i}`}
-						x={L.clockX(minuteOf(trade.time))}
-						y={L.clockY - 14}
-						textAnchor="middle"
-						className="wt-film-num"
-						style={{ fontSize: T.small }}
-					>
-						{`+${trade.quantity}`}
-					</text>
 				</g>
 			))}
 			{/* The playhead spans the track only, so it passes under no label. */}
 			<g data-f="head">
 				<path
-					d={`M${L.clockX(MON_OPEN)} ${L.clockY - 11}V${L.clockY + 11}`}
+					d={`M${L.clockX(MON_CLOSE)} ${L.clockY - 11}V${L.clockY + 11}`}
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 				/>
 			</g>
@@ -628,7 +619,7 @@ function Scene({
 				className="wt-film-num wt-film-dim"
 				style={{ fontSize: T.small * 1.2 }}
 			>
-				{hhmm(MON_OPEN)}
+				{hhmm(MON_CLOSE)}
 			</text>
 			{(
 				[
@@ -670,8 +661,8 @@ function Scene({
 					</text>
 				))}
 			</g>
-			{/* The log keeps trade volume separate from each trade's OI change. Only volume
-			    quantities inherit the replay ticks; OI changes feed the later expression. */}
+			{/* The log keeps trade volume separate from each trade's OI change. The completed
+			    quantities stay in the ledger; OI changes feed the later expression. */}
 			<text
 				data-f="log-volume-tag"
 				x={margin}
@@ -1042,13 +1033,15 @@ function build(context: FilmContext) {
 	const trades = TRADES.map((_, i) => one(`trade-${i}`));
 	const ticks = TRADES.map((_, i) => one(`tick-${i}`));
 	const tickDots = TRADES.map((_, i) => one(`tick-dot-${i}`));
-	const tickVolumes = TRADES.map((_, i) => num(`tick-volume-${i}`));
 	const logVolumes = TRADES.map((_, i) => num(`log-volume-${i}`));
 	const logTags = [one("log-volume-tag"), one("log-oi-tag")];
 	const sumSources = TRADES.map((_, i) => one(`sum-source-${i}`));
 	const sumWaypoints = TRADES.map((_, i) => num(`sum-waypoint-${i}`));
 	const cols = stripExpiries.map((id) => one(`col-${id}`));
 	const changes = stripExpiries.map((id) => one(`colc-${id}`));
+	const memberChanges = AFTER_WEEK.members.map((column) =>
+		one(`colc-${column.id}`),
+	);
 	const membershipSum = one("membership-sum");
 	const membershipTerms = MEMBERSHIP_TERMS.map((_, i) =>
 		one(`membership-term-${i}`),
@@ -1063,6 +1056,11 @@ function build(context: FilmContext) {
 	gsap.set(questionTag, { attr: { x: tagX } });
 	gsap.set(questionStart, { attr: { x: tagX + tagWidth + tagGap } });
 	const clockTime = num("clock-time");
+	const clockLabels = [MON_OPEN, MON_CLOSE, TUE_REPORT].map((minute) =>
+		num(`clock-label-${minute}`),
+	);
+	const clockHead = one("head");
+	const volumeReadout = num("vol-n");
 	const lockOi = one<SVGGraphicsElement>("lock-oi");
 
 	d.hidden([
@@ -1078,7 +1076,6 @@ function build(context: FilmContext) {
 		...kids("clock"),
 		...ticks,
 		...tickDots,
-		...tickVolumes,
 		...logVolumes,
 		...logTags,
 		one("head"),
@@ -1185,12 +1182,11 @@ function build(context: FilmContext) {
 	d.swap([heads[2], heads[3]], heads[4], 22);
 	hide(trades[2], 22);
 	hide(sumSources, 22, 0.35, 0);
-	hide(logTags, 22, 0.3, 0);
-	// Empty tick groups are enabled now; their dot and quantity remain independently hidden.
+	hide([...logTags, ...logVolumes], 22, 0.3, 0);
+	// The completed trades remain as dots, without repeating their quantity flights.
 	tl.set(ticks, { opacity: 1 }, 22);
-	// Back to Monday's open: volume starts again; the true count steps aside, unpublished,
-	// and the figure a screen shows is Friday's.
-	counter("vol-n", 0, FINAL.volume, 22.2);
+	// Keep Monday's completed volume. Its true count steps aside, unpublished,
+	// while the figure a screen shows is still Friday's.
 	d.carry(num("oi-n"), num("ghost-n"), 22.2, {
 		duration: 0.6,
 		arc: L.narrow ? "y" : undefined,
@@ -1205,20 +1201,28 @@ function build(context: FilmContext) {
 	show(one("shown"), 22.6);
 	show(one("oi-fri"), 22.8);
 	show(kids("clock"), 22.3);
-	show(one("head"), 22.5);
+	show(clockHead, 22.5);
 	show(clockTime, 22.5);
-	/** The playhead runs from one minute to another, its time counting with it. */
+	tl.fromTo(tickDots, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 23.1);
+	/** The displayed minute drives the time, playhead and completed-print volume. */
 	const tue = L.narrow ? copy.reportShort : (["Tue", "周二"] as const);
-	const clockState = { minute: MON_OPEN };
+	const clockState = { minute: MON_CLOSE };
 	const renderClock = () => {
-		gsap.set(one("head"), {
-			x: L.clockX(clockState.minute) - L.clockX(MON_OPEN),
+		gsap.set(clockHead, {
+			x: L.clockX(clockState.minute) - L.clockX(MON_CLOSE),
 		});
 		const minute = Math.round(clockState.minute);
 		clockTime.textContent =
 			minute >= 1440
 				? `${pick(tue, context.locale)} ${hhmm(minute)}`
 				: hhmm(minute);
+		volumeReadout.textContent = count(
+			TRADES.reduce(
+				(total, trade) =>
+					total + (minuteOf(trade.time) <= minute ? trade.quantity : 0),
+				0,
+			),
+		);
 	};
 	const clockTo = (to: number, from: number, at: number, duration: number) => {
 		tl.fromTo(
@@ -1234,27 +1238,27 @@ function build(context: FilmContext) {
 			at,
 		);
 	};
-	let volume = 0;
-	let minuteNow = MON_OPEN;
-	TRADES.forEach((t, i) => {
-		const at = 23 + i * 0.8;
-		const minute = minuteOf(t.time);
-		clockTo(minute, minuteNow, at, 0.6);
-		minuteNow = minute;
-		// The log's +6 volume becomes the second tick; OI ±0 feeds the separate calculation.
-		d.carry(logVolumes[i], tickVolumes[i], at, { duration: 0.6 });
-		show(tickDots[i], at + 0.6, "below", 0.3);
-		counter("vol-n", volume + t.quantity, volume, at + 0.6);
-		volume += t.quantity;
-	});
-	clockTo(MON_CLOSE, minuteNow, 25.4, 0.7);
-	still(26.1, "shown");
+	// Initialize through the same state tween, so reverse seeks restore the close too.
+	clockTo(MON_CLOSE, MON_CLOSE, 22, 0.3);
+	// All close-state marks settle at 23.4, then stand for 2.4 s before assembly starts.
 	clockTo(TUE_REPORT, MON_CLOSE, 26.5, 0.8);
 	// Once Monday's prints have landed, their OI changes assemble the calculation.
 	// Step the volume track back first so none of the carries crosses settled tick text.
 	tl.to(
 		[...kids("clock"), ...ticks, one("head")],
 		{ opacity: 0.2, duration: 0.3 },
+		25.8,
+	);
+	// Clear the trade-time lane completely; the explicit start restores labels on reverse seeks.
+	tl.fromTo(
+		clockLabels,
+		{ opacity: 1 },
+		{
+			opacity: 0,
+			duration: 0.3,
+			ease: "power2.out",
+			immediateRender: false,
+		},
 		25.8,
 	);
 	show([one("sum-tag"), num("sum-term-0")], 25.85, "below", 0.3);
@@ -1468,7 +1472,12 @@ function build(context: FilmContext) {
 	// Begin at zero as growth starts; every annotation follows the displayed rounded values.
 	show(one("note-new"), growthAt, "below", 0.3);
 	// In place, without travel: each live change stays over its own column's figure.
-	tl.fromTo(changes, { opacity: 0 }, { opacity: 1, duration: 0.3 }, growthAt);
+	tl.fromTo(
+		memberChanges,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		growthAt,
+	);
 	// Heights, labels and totals all use rounded values. At 0.5 s into the 0.6 s
 	// power2.out growth, the remaining error is under half a contract even for +20:
 	// every displayed value and bar has settled. Start the bridge then, without
