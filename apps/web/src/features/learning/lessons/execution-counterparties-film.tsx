@@ -187,6 +187,8 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const rowText = (y: number) => y + L.rowH / 2 + text * 0.36;
+	const chipLeft = L.chipRight - L.chipW(true);
+	const quantityX = chipLeft + text * 4.55;
 	const level = (
 		name: string,
 		side: "ask" | "bid",
@@ -195,6 +197,7 @@ function Scene({
 	) => (
 		<g key={name} data-f={`lv-${name}`}>
 			<text
+				data-f={`price-${name}`}
 				x={margin + L.priceW}
 				y={rowText(y)}
 				textAnchor="end"
@@ -218,7 +221,11 @@ function Scene({
 				x={margin + L.bookW - 6}
 				y={rowText(y)}
 				textAnchor="end"
-				className="wt-film-num wt-film-dim"
+				className={
+					name === "mine"
+						? "wt-film-num wt-film-accent"
+						: "wt-film-num wt-film-dim"
+				}
 				style={{ fontSize: text }}
 			>
 				{count(lv.size)}
@@ -249,21 +256,44 @@ function Scene({
 			/>
 			<text
 				data-f={`${name}-text`}
-				x={L.chipRight - L.chipW(long) / 2}
+				x={long ? chipLeft + text * 1.2 : L.chipRight - L.chipW(long) / 2}
 				y={rowText(L.chipY)}
-				textAnchor="middle"
+				textAnchor={long ? "start" : "middle"}
 				className="wt-film-type wt-film-accent"
 				style={{ fontSize: text }}
 			>
-				{label}
+				{long ? t(copy.buy) : label}
 			</text>
+			{long && (
+				<text
+					data-f="chip-l-left"
+					x={quantityX}
+					y={rowText(L.chipY)}
+					textAnchor="end"
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{count(SIZE)}
+				</text>
+			)}
+			{long && (
+				<text
+					data-f="chip-l-cap"
+					x={chipLeft + text * 5.05}
+					y={rowText(L.chipY)}
+					className="wt-film-type wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{`· ≤ ${usd(LIMIT)}`}
+				</text>
+			)}
 		</g>
 	);
 	const limitY = L.askY(1) - (L.rowStep - L.rowH) / 2;
 	const stat = (name: string, tag: Copy, value: string, y: number) => (
 		<g data-f={name}>
 			<text
-				x={L.statX + (narrow && name === "rest" ? T.num * 1.4 + 24 : 0)}
+				x={L.statX + (name === "rest" ? T.num * 1.4 + 24 : 0)}
 				y={y + T.small}
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
@@ -302,6 +332,9 @@ function Scene({
 		</>
 	);
 	const printX = margin + (room - L.printW) / 2;
+	/** Each alternative reaches an edge of the same settled print, clear of its label. */
+	const comparisonLink = (i: number) =>
+		`M${L.cardX[i] + L.cardW / 2} ${L.cardY + L.cardH + 8}L${printX + L.printW * (i === 0 ? 0.18 : 0.82)} ${L.printY - 8}`;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -405,6 +438,17 @@ function Scene({
 			{owner("yours", L.bidY(0), RESTS, copy.yours)}
 			{chip("chip-m", t(copy.chipMarket), false)}
 			{chip("chip-l", limitChip(t(copy.buy), SIZE), true)}
+			{/* This proxy starts exactly where the remaining eight finishes its second ride. */}
+			<text
+				data-f="rest-flight"
+				x={quantityX}
+				y={rowText(L.askY(1))}
+				textAnchor="end"
+				className="wt-film-num wt-film-accent"
+				style={{ fontSize: text }}
+			>
+				{count(RESTS)}
+			</text>
 			{/* The limit, between what it can reach and what it can't. */}
 			<path
 				data-f="limit"
@@ -497,6 +541,16 @@ function Scene({
 					{cardText(L.cardX[i], label, line)}
 				</g>
 			))}
+			<path
+				data-f="comparison-link-0"
+				d={comparisonLink(0)}
+				className="wt-film-riser"
+			/>
+			<path
+				data-f="comparison-link-1"
+				d={comparisonLink(1)}
+				className="wt-film-riser"
+			/>
 			<g data-f="print">
 				<text
 					x={W / 2}
@@ -589,7 +643,7 @@ function build(context: FilmContext) {
 			time,
 		);
 	const width = (n: number) => (n / MAX) * L.barMax;
-	/** One state drives the quote, its bar, and every quantity linked to its depletion. */
+	/** Tween-owned width drives every linked readout and restores the bar on backward seeks. */
 	const sizeTo = (
 		name: string,
 		to: number,
@@ -597,20 +651,24 @@ function build(context: FilmContext) {
 		time: number,
 		linked?: (remaining: number) => void,
 	) => {
-		const state = { remaining: from };
 		const bar = one(`bar-${name}`);
 		const size = one<SVGTextElement>(`size-${name}`);
 		tl.fromTo(
-			state,
-			{ remaining: from },
+			bar,
+			{ attr: { width: width(from) } },
 			{
-				remaining: to,
+				attr: { width: width(to) },
 				duration: 0.5,
 				ease: "power2.out",
 				immediateRender: false,
+				modifiers: {
+					width: (pixels: string) =>
+						String(width(Math.round((Number(pixels) / L.barMax) * MAX))),
+				},
 				onUpdate: () => {
-					const remaining = Math.round(state.remaining);
-					bar.setAttribute("width", String(width(remaining)));
+					const remaining = Math.round(
+						(Number(bar.getAttribute("width")) / L.barMax) * MAX,
+					);
 					size.textContent = remaining === 0 ? "—" : count(remaining);
 					linked?.(remaining);
 				},
@@ -619,12 +677,13 @@ function build(context: FilmContext) {
 		);
 	};
 	/** The incoming order rides up to the level it takes. */
-	const ride = (name: string, row: number, time: number) =>
+	const ride = (name: string, row: number, time: number) => {
 		tl.to(
 			one(name),
 			{ y: L.askY(row) - L.chipY, duration: 0.5, ease: "power2.inOut" },
 			time,
 		);
+	};
 	const heads = ["i-head", "o-head", "l-head", "l2-head", "t-head"].map(
 		(name) => one(name),
 	);
@@ -639,11 +698,13 @@ function build(context: FilmContext) {
 		...flat("q"),
 		...heads,
 		...book,
-		one("lv-mine"),
+		...kids("lv-mine"),
 		one("ben"),
 		one("yours"),
 		one("chip-m"),
 		one("chip-l"),
+		one("chip-l-left"),
+		one("rest-flight"),
 		one("limit"),
 		...kids("tape"),
 		one("tape-matching"),
@@ -656,6 +717,8 @@ function build(context: FilmContext) {
 		g("lock-mine"),
 		one("card-0"),
 		one("card-1"),
+		one("comparison-link-0"),
+		one("comparison-link-1"),
 		one("print"),
 		...kids("claim"),
 	]);
@@ -728,19 +791,21 @@ function build(context: FilmContext) {
 	sizeTo(best, BEST.size, 0, 19.95);
 	tl.fromTo(book, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.45);
 	// Its figures land with the alternative headline, before the fresh book arrives.
-	d.pop(one("chip-l"), 19.95);
+	tl.fromTo(
+		[one("chip-l"), one("chip-l-left")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		19.95,
+	);
 	d.trace(one<SVGPathElement>("limit"), 21.15, { duration: 0.6 });
 	// Above the limit: out of reach.
 	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 21.55);
 	show(one("fill"), 21.55);
 	ride("chip-l", bestRow, 22.1);
-	const chipText = one<SVGTextElement>("chip-l-text");
+	const chipQuantity = one<SVGTextElement>("chip-l-left");
 	const filled = one<SVGTextElement>("fill-n");
 	const fillTo = (total: number) => {
-		chipText.textContent = limitChip(
-			pick(copy.buy, context.locale),
-			SIZE - total,
-		);
+		chipQuantity.textContent = count(SIZE - total);
 		filled.textContent = `${count(total)} / ${SIZE}`;
 	};
 	sizeTo(best, 0, BEST.size, 22.6, (remaining) => fillTo(FIRST - remaining));
@@ -758,10 +823,19 @@ function build(context: FilmContext) {
 	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 26.1);
 	tl.to(
 		one("chip-l"),
-		{ y: L.bidY(0) - L.chipY, opacity: 0, duration: 0.5, ease: "power2.inOut" },
+		{ y: L.bidY(0) - L.chipY, duration: 0.5, ease: "power2.inOut" },
 		26.1,
 	);
-	show(one("lv-mine"), 26.6, "right");
+	// The visible eight lifts out of the ticket and becomes the bid's size at arrival.
+	tl.to(chipQuantity, { opacity: 0, duration: 0.3, ease: "power2.out" }, 26.1);
+	d.carry(g("rest-flight"), g("size-mine"), 26.1, { duration: 0.5, arc: "y" });
+	tl.fromTo(
+		[one("price-mine"), one("bar-mine")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		26.6,
+	);
+	hide(one("chip-l"), 26.6, 0.35, 0);
 	show(one("yours"), 27.0, "right");
 	show(one("rest"), 27.5);
 	tl.to(one("fill"), { opacity: 0.35, duration: 0.4 }, 27.5);
@@ -792,10 +866,17 @@ function build(context: FilmContext) {
 	show(one("print"), 33.2);
 	show(one("card-0"), 34.7);
 	show(one("card-1"), 36.2);
+	// Both mutually exclusive instructions connect to the already-settled public print.
+	// Card B has a full second to read first; the completed link proof then stands 1.5 s.
+	const links = [
+		one<SVGPathElement>("comparison-link-0"),
+		one<SVGPathElement>("comparison-link-1"),
+	];
+	for (const link of links) d.trace(link, 37.7, { duration: 0.6 });
 
 	// ——— claim ———
 	tl.addLabel("claim", 39.8);
-	hide([heads[4], one("card-0"), one("card-1"), one("print")], 39.8);
+	hide([heads[4], one("card-0"), one("card-1"), one("print"), ...links], 39.8);
 	word(one("z-big"), 40.1);
 	show(one("z-sub"), 40.4);
 
