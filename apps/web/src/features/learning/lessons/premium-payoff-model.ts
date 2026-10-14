@@ -39,6 +39,9 @@ export const buys: Record<BuyId, Contract> = {
 	p95: oct18(95, "put"),
 };
 
+/** Expiry stock price in the lesson's $200 value / −$220 profit example. */
+export const BUYER_EXAMPLE_SPOT = 102;
+
 /** Price at which a bought option's value at expiry repays its premium, in dollars. */
 export const breakEven = (contract: Contract, paid: number) =>
 	contract.right === "call"

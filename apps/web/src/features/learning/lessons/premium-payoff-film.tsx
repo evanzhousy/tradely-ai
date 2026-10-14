@@ -24,6 +24,7 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
+	BUYER_EXAMPLE_SPOT,
 	breakEven,
 	buys,
 	payoffAt,
@@ -39,8 +40,8 @@ import {
  * Then the buyer of the 100 call: its value line drops by the $420 premium into the profit
  * line, and the marker walks from $102 (−$220) to the break-even of $104.20, where the
  * meter holds $420 and $0, then on to $110 (+$580) as the profit fills in green. Last,
- * the writer of the 95 put keeps $205 above $95 and loses below $92.95; turned over about
- * $100, the same line is the 105 call written for $205, whose loss has no limit.
+ * the writer of the 95 put keeps $205 above $95 and loses below $92.95; the chart then
+ * dips to the 105 call written for $205, whose loss has no limit.
  *
  *   open      0–4        "Premium, payoff and profit"
  *   question  4–8.8      the 95 call at $7.30: worth what on Oct 18?
@@ -60,6 +61,7 @@ const BE = breakEven(CALL, PAID);
 const PUT = writes.p95;
 const GOT = optionQuote(PUT).bid;
 const PUT_BE = PUT.strike - GOT / 100;
+const CALLW_BE = breakEven(writes.c105, optionQuote(writes.c105).bid);
 const MAX_PRICE = Math.max(
 	...STRIKES.map((k) => priceParts(k, "call", "now").price),
 );
@@ -159,6 +161,10 @@ const copy = {
 	valueLine: ["value", "价值"],
 	profitLine: ["profit", "盈亏"],
 	premiumDrop: [`− $${PAID} premium`, `− $${PAID} 权利金`],
+	exampleSpot: [
+		`ALFA ${usd(BUYER_EXAMPLE_SPOT * 100, 0)}`,
+		`ALFA ${usd(BUYER_EXAMPLE_SPOT * 100, 0)}`,
+	],
 	itmLoss: ["in the money, still losing", "实值，仍在亏"],
 	itmLossShort: ["ITM, losing", "实值仍亏"],
 	writerHead: ["Now write the 95 put.", "换成卖出 95 看跌。"],
@@ -446,10 +452,15 @@ function Scene({
 								d={L.path((s) => value(CALL, s))}
 								className="wt-line-position"
 							/>
-							{/* The writer's line: the 95 put, then morphed into the 105 call. */}
+							{/* Each writer's curve comes directly from its own contract's payoff. */}
 							<path
 								data-f="put-line"
 								d={L.path(writerProfit)}
+								className="wt-line-short"
+							/>
+							<path
+								data-f="callw-line"
+								d={L.path(callWriter)}
 								className="wt-line-short"
 							/>
 						</g>
@@ -612,13 +623,20 @@ function Scene({
 						</text>
 						<text
 							data-f="callw-be-label"
-							x={L.x(200 - PUT_BE) + 6}
+							x={L.x(CALLW_BE) + 6}
 							y={L.y(650)}
 							className="wt-halo wt-marker-label"
 							style={{ fill: "var(--wt-short)" }}
 						>
-							{`$${(200 - PUT_BE).toFixed(2)}`}
+							{`$${CALLW_BE.toFixed(2)}`}
 						</text>
+						<path
+							data-f="callw-be"
+							d={`M${L.x(CALLW_BE)} ${L.top}V${L.y(0) + 8}`}
+							className="wt-bracket"
+							strokeDasharray="4 3"
+							style={{ stroke: "var(--wt-short)" }}
+						/>
 						<Brackets
 							name="lock-be"
 							x={beX - 22}
@@ -630,8 +648,8 @@ function Scene({
 						/>
 						<circle
 							data-f="marker"
-							cx={L.x(102)}
-							cy={L.y(buyerProfit(102))}
+							cx={L.x(BUYER_EXAMPLE_SPOT)}
+							cy={L.y(buyerProfit(BUYER_EXAMPLE_SPOT))}
 							r={6}
 							className="wt-chip"
 							stroke="var(--foreground)"
@@ -664,11 +682,17 @@ function Scene({
 			<g data-f="meter">
 				{(
 					[
-						["m-value", copy.valueLine, "$200", "wt-film-num wt-film-dim", 0.8],
+						[
+							"m-value",
+							copy.valueLine,
+							usd(value(CALL, BUYER_EXAMPLE_SPOT) * 100, 0),
+							"wt-film-num wt-film-dim",
+							0.8,
+						],
 						[
 							"m-profit",
 							copy.profitLine,
-							"−$220",
+							signedUsd(buyerProfit(BUYER_EXAMPLE_SPOT) * 100, 0),
 							"wt-film-num wt-film-loss",
 							1,
 						],
@@ -697,6 +721,16 @@ function Scene({
 						</Word>
 					</g>
 				))}
+				<Word
+					name="m-spot"
+					x={margin}
+					y={L.meterNum + T.small * 1.7}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(copy.exampleSpot)}
+				</Word>
 			</g>
 
 			{/* The claims. */}
@@ -845,6 +879,7 @@ function build(context: FilmContext) {
 			"value-line",
 			"profit-line",
 			"put-line",
+			"callw-line",
 			"value-tag",
 			"profit-tag",
 			"put-tag",
@@ -856,6 +891,7 @@ function build(context: FilmContext) {
 			"put-be-label",
 			"no-limit",
 			"callw-be-label",
+			"callw-be",
 			"marker",
 			"lock-be",
 			"put-marker",
@@ -1033,23 +1069,36 @@ function build(context: FilmContext) {
 	const tip = one("tip");
 	d.trace(one<SVGPathElement>("value-line"), 19.0, { tip, duration: 1.3 });
 	show(one("value-tag"), 20.1);
-	// The premium moves the whole line down: value becomes profit.
-	show(one("drop"), 20.5);
-	tl.set(one("profit-line"), { opacity: 1 }, 20.6);
-	d.morph(one("profit-line"), L.path(buyerProfit), 20.6, 0.9);
-	tl.to(one("value-line"), { opacity: 0.45, duration: 0.4 }, 20.8);
-	show(one("profit-tag"), 21.6);
-	hide(one("drop"), 22.0);
-	pop(marker, 22.2);
-	show(kids("meter"), 22.4);
+	// The value tag settles at 20.60 and the pen leaves at 20.65; rest another full second.
+	// Keep the premium measure as context instead of spending another exit here.
+	show(one("drop"), 21.65);
+	tl.set(one("profit-line"), { opacity: 1 }, 21.65);
+	d.morph(one("profit-line"), L.path(buyerProfit), 21.65, 0.9);
+	tl.to(one("value-line"), { opacity: 0.45, duration: 0.4 }, 21.85);
+	// The profit construction settles at 22.55. After 1.00 s, reveal one settled
+	// counterexample in place: its stock price, marker, meter and loss region agree.
+	tl.fromTo(
+		[
+			marker,
+			...kids("meter"),
+			one("profit-tag"),
+			one("itm-band"),
+			one("itm-label"),
+			one("be"),
+		],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		23.55,
+	);
 
 	// Break-even, the hero: the marker walks to it, the meter holds $420 and $0, brackets
 	// lock and $104.20 lands large; held three seconds, then past it the profit line turns
 	// green with the area under it.
-	d.swap(heads[2], heads[3], 22.9);
-	tl.to(one("itm-band"), { opacity: 1, duration: 0.5 }, 23.5);
-	show(one("itm-label"), 23.7);
-	show(one("be"), 23.9);
+	// Ask the break-even question with the walk, after the counterexample has rested.
+	d.swap(heads[2], heads[3], 26.15);
+	// The example settles at 24.05 and keeps the existing 1.75 s of quiet. Then clear
+	// its stock-price context in place before the walk, so it never becomes a stale $102.
+	tl.to(one("m-spot"), { opacity: 0, duration: 0.35 }, 25.8);
 	const place = (spot: number) => {
 		gsap.set(marker, {
 			attr: { cx: L.x(spot), cy: L.y(buyerProfit(spot)) },
@@ -1080,7 +1129,7 @@ function build(context: FilmContext) {
 		);
 	};
 	tl.set([one("win-area"), one("win-line")], { opacity: 1 }, 26.15);
-	walk(102, BE, 26.15, 1.6);
+	walk(BUYER_EXAMPLE_SPOT, BE, 26.15, 1.6);
 	d.lock(one<SVGGraphicsElement>("lock-be"), 27.75);
 	tl.addLabel("hero-lock", 27.75);
 	show(heads[6], 27.75);
@@ -1120,6 +1169,7 @@ function build(context: FilmContext) {
 			one("win-line"),
 			one("value-line"),
 			one("profit-line"),
+			one("drop"),
 		],
 		32.65,
 	);
@@ -1137,16 +1187,35 @@ function build(context: FilmContext) {
 	show([putBe, one("put-be-label")], 34.4);
 	pop(one("put-marker"), 34.5);
 	show(one("put-loss"), 34.6, "right");
-	// The same writer's line, on a call: turned over about $100, its loss side has no end.
+	// Release the complete put proof before the call's headline arrives. The call's
+	// authored geometry and identity fade in with that headline, never a half-flipped put.
 	d.swap(heads[4], heads[5], 36.6);
-	hide(
-		[one("put-marker"), one("put-loss"), one("put-tag"), one("put-be-label")],
+	// One opacity tween keeps the curve, guide, marker and labels together throughout
+	// the dip; its ease also matches the outgoing put headline.
+	tl.to(
+		[
+			putLine,
+			putBe,
+			one("put-marker"),
+			one("put-loss"),
+			one("put-tag"),
+			one("put-be-label"),
+		],
+		{ opacity: 0, duration: 0.35, ease: "power2.in" },
 		36.6,
 	);
-	d.mirror(putLine, L.x(100), 37, 1.2);
-	d.mirror(putBe, L.x(100), 37, 1.2);
-	show(one("callw-be-label"), 38.2);
-	show(one("callw-tag"), 38.4);
+	tl.fromTo(
+		[
+			one("callw-line"),
+			one("callw-be"),
+			one("callw-be-label"),
+			one("callw-tag"),
+		],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		36.95,
+	);
+	// The complete call proof settles at 37.45; the risk tail arrives after 1.15 s.
 	show(one("no-limit"), 38.6);
 
 	// ——— claim ———
@@ -1154,8 +1223,8 @@ function build(context: FilmContext) {
 	hide(
 		[
 			heads[5],
-			putLine,
-			putBe,
+			one("callw-line"),
+			one("callw-be"),
 			one("callw-be-label"),
 			one("callw-tag"),
 			one("no-limit"),
