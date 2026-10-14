@@ -73,7 +73,6 @@ const GAP = SOLD * (MARK - SALE) * 100;
 const GAP_EQ = `${price(MARK - SALE)} × ${SOLD} × 100 =`;
 const FIFO_EQ = `${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 =`;
 const held = split(0, "fifo");
-const BRIDGE_EQ = `${signed(held.unrealized)} − ${dollars(GAP)} = ${signed(fifo.realized + fifo.unrealized)}`;
 /** The surviving cells and their marked P&L, using the same FIFO lots as the model. */
 const remainingLots = lots
 	.map((lot, i) => {
@@ -186,8 +185,6 @@ const copy = {
 		`No: calls’ price P&L ${signed(fifo.realized + fifo.unrealized)} before fees.`,
 		`不：看涨价格盈亏 ${signed(fifo.realized + fifo.unrealized)}，未扣费。`,
 	],
-	// Arithmetic notation is shared by both languages.
-	bridge: [BRIDGE_EQ, BRIDGE_EQ],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
 	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
 	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
@@ -311,7 +308,7 @@ function Scene({
 					),
 			)
 		: room * 0.08;
-	// The operand row stays through the lock; leave room for the gap and its bridge below it.
+	// The operand row stays through the lock; leave room for the drawn gap below it.
 	const operandY = H * 0.3 + T.big * 1.05 + T.num * 1.8 + T.body * 0.6;
 	const gapY = narrow ? H * 0.66 : operandY + T.body * 4.4;
 	const eqX =
@@ -485,6 +482,7 @@ function Scene({
 							cy={markY}
 							r={6}
 							className="wt-chip"
+							style={{ fill: "var(--diagram-loss)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -503,6 +501,7 @@ function Scene({
 							cy={farY}
 							r={6}
 							className="wt-chip"
+							style={{ fill: "var(--wt-short)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -955,15 +954,6 @@ function Scene({
 				>
 					{dollars(GAP)}
 				</text>
-				<Word
-					name="gap-bridge"
-					x={W / 2}
-					y={gapY + gapText * 4.6}
-					size={gapText}
-					className="wt-film-num"
-				>
-					{t(copy.bridge)}
-				</Word>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
 			{headline("x-head", copy.expiryHead, copy.expiryHeadShort)}
@@ -1027,12 +1017,16 @@ function build(context: FilmContext) {
 	const callsSegment = one("seg-calls");
 	const feesSegment = one("seg-fees");
 	const depositSegment = one("seg-deposit");
-	// The exact same contributions set both the bar's boundary and its readout.
+	const stockCaption = one<SVGTextElement>("breakdown-stock");
+	const callsCaption = one<SVGTextElement>("breakdown-calls");
+	const feesCaption = one<SVGTextElement>("breakdown-fees");
+	const depositCaption = one<SVGTextElement>("deposited");
+	// Round each contribution once: captions, boundaries and the account sum all use those cents.
 	const renderAccount = () => {
-		const stock = (stockClose - stockOpen) * accountProgress.stock;
-		const calls = (callsClose - PAID * 100) * accountProgress.calls;
-		const fees = buyFees * accountProgress.fees;
-		const deposit = yourAccount.deposit * accountProgress.deposit;
+		const stock = Math.round((stockClose - stockOpen) * accountProgress.stock);
+		const calls = Math.round((callsClose - PAID * 100) * accountProgress.calls);
+		const fees = Math.round(buyFees * accountProgress.fees);
+		const deposit = Math.round(yourAccount.deposit * accountProgress.deposit);
 		stockSegment.setAttribute(
 			"width",
 			String(L.ax(EARNED_FROM + stock / 100) - L.ax(EARNED_FROM)),
@@ -1052,13 +1046,32 @@ function build(context: FilmContext) {
 			String(L.ax(CLOSE_TO + deposit / 100) - L.ax(CLOSE_TO)),
 		);
 		meter.textContent = dollars(valueOpen + stock + calls - fees + deposit);
+		stockCaption.textContent = `ALFA ${zeroed(stock)}`;
+		callsCaption.textContent = `${d.t(["calls", "看涨"])} ${zeroed(calls)}`;
+		feesCaption.textContent = `${d.t(["fees", "费用"])} ${zeroed(-fees)}`;
+		depositCaption.textContent = d.t([
+			`${zeroed(deposit)} deposited`,
+			`存入 ${zeroed(deposit)}`,
+		]);
 	};
+	renderAccount();
 	const growContribution = (
 		part: keyof typeof accountProgress,
 		at: number,
 		duration: number,
 	) => {
-		if (part !== "fees") tl.set(one(`seg-${part}`), { opacity: 1 }, at);
+		if (part === "fees") {
+			// Fees change a boundary already grown by the calls tween. Track its settled
+			// pre-fee attributes too, so seeking back across this step restores them.
+			tl.set(
+				callsSegment,
+				{ attr: { width: L.ax(CALLS_TO) - L.ax(STOCK_TO) } },
+				at,
+			);
+			tl.set(feesSegment, { opacity: 0, attr: { x: L.ax(CALLS_TO) - 3 } }, at);
+		} else {
+			tl.set(one(`seg-${part}`), { opacity: 1, attr: { width: 0 } }, at);
+		}
 		tl.fromTo(
 			accountProgress,
 			{ [part]: 0 },
@@ -1166,7 +1179,7 @@ function build(context: FilmContext) {
 	rise(10.7);
 	show([one("m-tag"), meter], 11.2, "above");
 	grow("seg-base", 10.5);
-	// Name each contribution before it changes the shared bar and account reading.
+	// Each caption starts at zero, then follows the same rounded contribution as the bar and meter.
 	show(one("breakdown-stock"), 10.7, "below", 0.3);
 	growContribution("stock", 11.0, 0.4);
 	show(one("breakdown-calls"), 11.4, "below", 0.3);
@@ -1284,19 +1297,12 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 29.4);
 	show(one("t-head"), 29.4);
-	// The headline and brackets settle by 29.9. Let the addition read alone until 30.9.
+	// The brackets settle at 29.85, the headline at 29.9; both read alone until 31.4.
 	// Merge the gap into one construction, including its settled result after '='.
-	d.trace(one<SVGPathElement>("gap-rule"), 30.9, { duration: 0.4 });
-	show([one("gap-bid"), one("gap-mid"), one("gap-eq")], 30.9, "below", 0.4);
-	land(one("gap-n"), 30.9, 0.4);
-	// Read the completed gap for a second, then connect the original mark to the actual total.
-	tl.fromTo(
-		one("gap-bridge"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		32.3,
-	);
-	// The settled bridge reads alone 32.6–33.7 (1.1 s); the hero's 3.85 s hold is unchanged.
+	d.trace(one<SVGPathElement>("gap-rule"), 31.4, { duration: 0.4 });
+	show([one("gap-bid"), one("gap-mid"), one("gap-eq")], 31.4, "below", 0.4);
+	land(one("gap-n"), 31.4, 0.4);
+	// The completed gap reads alone 31.8–33.7 (1.9 s); the hero's 3.85 s stand is unchanged.
 
 	// ——— short: the other side of the same calls ———
 	tl.addLabel("short", 33.7);
