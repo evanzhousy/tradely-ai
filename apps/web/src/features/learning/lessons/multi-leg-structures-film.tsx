@@ -49,12 +49,12 @@ import {
  *   question  4–8.6      four prints in one second: bullish or bearish?
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
  *   condor    18.2–30    hero: put spread and call spread; together; it sells a range
- *   package   30–39      four labels; a −$1,400 tally; one package
- *   claim     39–43.4    linked prints, one trade
- *   next      43.4–45.9  Next: checking one trade
+ *   package   30–40.5    four labels; directional tally; cash groups; one package
+ *   claim     40.5–44.9  linked prints, one trade
+ *   next      44.9–46.3  Next: checking one trade
  */
 
-const END = 45.9;
+const END = 46.3;
 const CENTS = (perShare: number) => Math.round(perShare * 100);
 /** Dollars a share as whole dollars a contract: "+$375", "−$283". */
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
@@ -126,8 +126,7 @@ const copy = {
 		"卖出 95 看跌 · 买入 90 看跌 · 卖出 105 看涨 · 买入 110 看涨",
 	],
 	qBig: ["Bullish or bearish?", "看涨还是看跌？"],
-	sHead: ["A straddle: a call plus a put.", "跨式：看涨加看跌。"],
-	s2Head: ["It needs a big move either way.", "它需要大幅变动，方向不限。"],
+	sHead: ["A straddle needs a big move.", "跨式需大幅变动。"],
 	cHead: ["An iron condor: two credit spreads.", "铁鹰：两个收入价差。"],
 	c2Head: ["It sells a range.", "它卖出的是一个区间。"],
 	callLeg: ["100 call", "100 看涨"],
@@ -148,6 +147,8 @@ const copy = {
 	],
 	bullish: ["bullish", "看涨"],
 	bearish: ["bearish", "看跌"],
+	cashSales: ["sold legs", "卖出腿"],
+	cashPurchases: ["bought legs", "买入腿"],
 	tally: [
 		`bullish ${usd(BULLISH, 0)} · bearish ${usd(BEARISH, 0)} · net ${signedUsd(NET_LABELS, 0)}`,
 		`看涨 ${usd(BULLISH, 0)} · 看跌 ${usd(BEARISH, 0)} · 净额 ${signedUsd(NET_LABELS, 0)}`,
@@ -322,21 +323,6 @@ function Scene({
 			</g>
 
 			{headline("s-head", copy.sHead)}
-			{/* The straddle's answer, as its break-evens come up. */}
-			<Lines
-				name="s2-head"
-				text={t(copy.s2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.sHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			{headline("c-head", copy.cHead)}
 			{/* The hero's answer, as the brackets lock on what the condor keeps. */}
 			<Lines
@@ -383,13 +369,6 @@ function Scene({
 						d={path(S_Y, putPay)}
 						className="wt-line-short"
 					/>
-					<g data-f="s-loss-area">
-						<path
-							d={`M${L.x(STRADDLE_LOW)} ${L.y(S_Y, 0)}L${L.x(100)} ${L.y(S_Y, -STRADDLE_COST * 100)}L${L.x(STRADDLE_HIGH)} ${L.y(S_Y, 0)}Z`}
-							className="wt-film-loss"
-							opacity={0.12}
-						/>
-					</g>
 					<path
 						data-f="s-profit"
 						d={path(S_Y, profit)}
@@ -559,12 +538,19 @@ function Scene({
 						className={`wt-film-type ${leg.label === "bullish" ? "wt-film-gain" : "wt-film-loss"}`}
 						style={{ fontSize: text }}
 					>
-						{narrow
-							? `${t(copy[leg.label])} ${usd(legPremium(leg), 0)}`
-							: t(copy[leg.label])}
+						<tspan data-f={`leg-direction-${i}`}>{t(copy[leg.label])}</tspan>
+						{narrow ? (
+							<tspan
+								data-f={`leg-cash-${i}`}
+								className={`wt-film-type ${leg.label === "bullish" ? "wt-film-gain" : "wt-film-loss"}`}
+							>
+								{` ${usd(legPremium(leg), 0)}`}
+							</tspan>
+						) : null}
 					</text>
 					{narrow ? null : (
 						<text
+							data-f={`leg-cash-${i}`}
 							x={margin + room - 14}
 							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 							textAnchor="end"
@@ -576,6 +562,43 @@ function Scene({
 					)}
 				</g>
 			))}
+			{/* A shared outline and cash colour identify the two sides before their sums. */}
+			<g data-f="cash-groups">
+				{LEGS.map((leg, i) => (
+					<rect
+						key={leg.key}
+						x={margin + 2}
+						y={L.rowY(i) + 2}
+						width={room - 4}
+						height={L.rowH - 4}
+						rx={8}
+						fill="none"
+						style={{
+							stroke:
+								leg.side === "sell"
+									? "var(--diagram-gain)"
+									: "var(--diagram-loss)",
+							strokeWidth: 1.75,
+						}}
+					/>
+				))}
+				<text
+					x={margin + 14}
+					y={L.rowY(0) - 12}
+					className="wt-film-tag wt-film-gain"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.cashSales)}
+				</text>
+				<text
+					x={margin + room / 2}
+					y={L.rowY(0) - 12}
+					className="wt-film-tag wt-film-loss"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.cashPurchases)}
+				</text>
+			</g>
 			<Lines
 				name="tally"
 				text={t(narrow ? copy.tallyShort : copy.tally)}
@@ -691,22 +714,22 @@ function build(context: FilmContext) {
 	const fadeIn = (target: Element | Element[], at: number, duration = 0.5) =>
 		tl.fromTo(target, { opacity: 0 }, { opacity: 1, duration }, at);
 	const p = (name: string) => one<SVGPathElement>(name);
-	const heads = [
-		"s-head",
-		"s2-head",
-		"c-head",
-		"c2-head",
-		"p-head",
-		"p2-head",
-	].map((name) => one(name));
+	const heads = {
+		straddle: one("s-head"),
+		condor: one("c-head"),
+		condorAnswer: one("c2-head"),
+		package: one("p-head"),
+		packageAnswer: one("p2-head"),
+	};
 	const legs = LEGS.map((_, i) => one(`leg-${i}`));
 	const lockKeep = one<SVGGraphicsElement>("lock-keep");
 
 	d.hidden([
 		...flat("q"),
-		...heads,
+		...Object.values(heads),
 		...kids("world"),
 		...legs,
+		one("cash-groups"),
 		one("tally"),
 		one("pkg"),
 		one("pkg-equation"),
@@ -728,7 +751,7 @@ function build(context: FilmContext) {
 	// ——— straddle: a V that needs a move ———
 	tl.addLabel("straddle", 8.6);
 	hide(flat("q"), 8.6);
-	show(heads[0], 8.8);
+	show(heads.straddle, 8.8);
 	d.rise(8.9);
 	show(one("axes-s"), 9.1);
 	draw(p("s-call"), 9.6);
@@ -745,18 +768,15 @@ function build(context: FilmContext) {
 	tl.to([p("s-call"), p("s-put")], { opacity: 0.2, duration: 0.4 }, 13.6);
 	hide([one("s-call-tag"), one("s-put-tag")], 13.6, 0.3);
 	draw(p("s-profit"), 13.6);
-	// Break-evens complete the same profit construction, rather than interrupt its rest.
-	fadeIn([one("s-low"), one("s-high")], 13.8);
-	show(heads[1], 13.6);
-	fadeIn(one("s-loss-area"), 16.7);
+	// Profit settles at 14.3, then earns 1 s before its break-even guides.
+	fadeIn([one("s-low"), one("s-high")], 15.3);
 
 	// ——— condor: the hero. Two credit spreads that sell a range. ———
 	tl.addLabel("condor", 18.2);
-	d.swap([heads[0], heads[1]], heads[2], 18.2);
+	d.swap(heads.straddle, heads.condor, 18.2);
 	hide(
 		[
 			one("axes-s"),
-			one("s-loss-area"),
 			one("s-profit-caption"),
 			p("s-call"),
 			p("s-put"),
@@ -773,47 +793,79 @@ function build(context: FilmContext) {
 	fadeIn(one("c-caption"), 18.6);
 	draw(p("c-put"), 19.2);
 	show(one("c-put-tag"), 19.4, "right");
-	draw(p("c-call"), 19.8);
-	show(one("c-call-tag"), 19.9, "right");
-	// The paired component construction settles at 20.5, followed by 1.4 s of quiet.
-	tl.to([p("c-put"), p("c-call")], { opacity: 0.2, duration: 0.4 }, 21.9);
-	hide([one("c-put-tag"), one("c-call-tag")], 21.9, 0.3);
-	draw(p("c-sum"), 21.9);
+	draw(p("c-call"), 20.9);
+	show(one("c-call-tag"), 20.9, "right");
+	// Put settles at 19.9, call at 21.6: each gets 1 s before the next proof.
+	tl.to([p("c-put"), p("c-call")], { opacity: 0.2, duration: 0.4 }, 22.6);
+	hide(one("c-put-tag"), 22.6, 0.3);
+	// Retain the call label's prior 2 s hold while the combined curve finishes.
+	hide(one("c-call-tag"), 22.9, 0.3);
+	draw(p("c-sum"), 22.6);
 	// One result construction: emphasize the plateau, credit and bounded loss.
-	fadeIn([one("c-range"), one("c-keep"), one("c-risk")], 23.6);
-	draw(p("c-plateau"), 23.6);
-	// Settled at 24.3, well before the unchanged hero lock and its 3.15 s stand.
+	fadeIn([one("c-range"), one("c-keep"), one("c-risk")], 24.3);
+	draw(p("c-plateau"), 24.3);
+	// Range settles at 25.0, then stands 1.4 s before the unchanged hero lock.
 	d.lock(lockKeep, 26.4, { around: one("c-keep"), pad: 6 });
 	tl.addLabel("hero-lock", 26.4);
-	show(heads[3], 26.4);
+	show(heads.condorAnswer, 26.4);
 
 	// ——— package: four labels, one trade ———
 	tl.addLabel("package", 30);
-	d.swap([heads[2], heads[3]], heads[4], 30.0);
+	d.swap([heads.condor, heads.condorAnswer], heads.package, 30.0);
 	d.sink(30.0);
 	legs.forEach((leg, i) => {
 		show(leg, 30.5 + i * 0.25, "right");
 	});
 	show(one("tally"), 31.5);
 	hide(one("tally"), 35.0, 0.3);
-	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 35.2);
-	// Cash operands land below the directional tally without displacing its 3.5 s hold.
-	fadeIn(one("pkg-equation"), 33.6);
-	// Arithmetic settles at 34.1; net credit follows after 1.3 s of quiet.
-	fadeIn(one("pkg"), 35.4);
-	fadeIn(one("pkg-result"), 35.4);
-	show(heads[5], 35.4);
+	// Preserve the tally's 1.6 s rest, then identify sale rows 0/2 and purchase rows 1/3.
+	fadeIn(one("cash-groups"), 33.6);
+	tl.to(
+		LEGS.map((_, i) => one(`leg-direction-${i}`)),
+		{ opacity: 0.25, duration: 0.4 },
+		33.6,
+	);
+	LEGS.forEach((leg, i) => {
+		// Timeline-owned classes restore the original directional colours on a backward seek.
+		tl.set(
+			one(`leg-cash-${i}`),
+			{
+				attr: {
+					class: `${L.narrow ? "wt-film-type" : "wt-film-num"} ${leg.side === "sell" ? "wt-film-gain" : "wt-film-loss"}`,
+				},
+			},
+			33.6,
+		);
+	});
+	// Grouping settles at 34.1, then gets 1 s before the settled sums appear.
+	fadeIn(one("pkg-equation"), 35.1);
+	// Cash arithmetic settles at 35.6; preserve its existing 1.3 s quiet interval.
+	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 36.9);
+	fadeIn(one("pkg"), 36.9);
+	fadeIn(one("pkg-result"), 36.9);
+	show(heads.packageAnswer, 36.9);
 
 	// ——— claim ———
-	tl.addLabel("claim", 39);
-	hide([heads[4], heads[5], ...legs, one("pkg"), one("pkg-equation")], 39);
-	word(one("z-big"), 39.3);
-	show(one("z-sub"), 39.7);
+	// Package settles at 37.4; preserve the full 3.1 s result rest.
+	tl.addLabel("claim", 40.5);
+	hide(
+		[
+			heads.package,
+			heads.packageAnswer,
+			...legs,
+			one("cash-groups"),
+			one("pkg"),
+			one("pkg-equation"),
+		],
+		40.5,
+	);
+	word(one("z-big"), 40.8);
+	show(one("z-sub"), 41.2);
 
 	// ——— next ———
-	tl.addLabel("next", 43.4);
-	hide(kids("claim"), 43.4);
-	d.close(43.4);
+	tl.addLabel("next", 44.9);
+	hide(kids("claim"), 44.9);
+	d.close(44.9);
 	return tl;
 }
 
