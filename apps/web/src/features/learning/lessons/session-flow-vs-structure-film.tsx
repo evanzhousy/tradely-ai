@@ -48,7 +48,7 @@ import {
  *   open      0–4        "Volume and open interest"
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
  *   ledger    8.6–22.0   both open +10; changed hands ±0; both closed −4
- *   clock     22.0–31.9  hero: volume all day; the OI terms assemble before Tuesday's count
+ *   clock     22.0–31.9  hero: Monday's volume; the OI terms settle before the overnight move
  *   bucket    31.9–41.85 420 holds 32.2–34.2; → 620 as members change (+500 in, −300 out)
  *                        at Sep 9's figures, held 35.2–37.2; clears before live growth
  *                        → 650 with 620 + 10 + 20 = 650, settled 38.3–41.85
@@ -240,8 +240,7 @@ const copy = {
 	finalCount: ["Monday's final count", "周一最终统计"],
 	unpublished: ["not published yet", "尚未公布"],
 	volume: ["volume today", "今日成交量"],
-	tradeVolume: ["trade volume", "成交量"],
-	oiChange: ["OI change", "未平仓量变化"],
+	mondayVolume: ["Monday's volume", "周一成交量"],
 	openInterest: ["open interest", "未平仓量"],
 	longs: ["longs", "多头"],
 	shorts: ["shorts", "空头"],
@@ -412,6 +411,15 @@ function Scene({
 				anchor="start"
 			/>
 			{stat("vol", copy.volume, "0", 0)}
+			<text
+				data-f="vol-mon-tag"
+				x={L.statX(0)}
+				y={L.statY + T.small}
+				className="wt-film-tag"
+				style={{ fontSize: T.small }}
+			>
+				{t(copy.mondayVolume).toUpperCase()}
+			</text>
 			{stat("oi", copy.openInterest, count(START_OI), 1)}
 			{/* The true count, stepped aside while the screen shows Friday's. */}
 			<g data-f="ghost">
@@ -661,77 +669,6 @@ function Scene({
 					</text>
 				))}
 			</g>
-			{/* The log keeps trade volume separate from each trade's OI change. The completed
-			    quantities stay in the ledger; OI changes feed the later expression. */}
-			<text
-				data-f="log-volume-tag"
-				x={margin}
-				y={L.clockY - T.small * 7}
-				className="wt-film-tag"
-				style={{ fontSize: T.small }}
-			>
-				{t(copy.tradeVolume).toUpperCase()}
-			</text>
-			<text
-				data-f="log-oi-tag"
-				x={margin}
-				y={L.clockY - T.small * 3}
-				className="wt-film-tag"
-				style={{ fontSize: T.small }}
-			>
-				{t(copy.oiChange).toUpperCase()}
-			</text>
-			{TRADES.map((trade, i) => (
-				<text
-					key={trade.id}
-					data-f={`log-volume-${i}`}
-					x={L.clockX(minuteOf(trade.time))}
-					y={L.clockY - T.small * 5}
-					textAnchor="middle"
-					className="wt-film-num"
-					style={{ fontSize: T.small }}
-				>
-					{`+${trade.quantity}`}
-				</text>
-			))}
-			{TRADES.map((trade, i) => (
-				<g key={trade.id} data-f={`sum-source-${i}`}>
-					<text
-						data-f={`sum-change-${i}`}
-						x={L.clockX(minuteOf(trade.time))}
-						y={L.clockY - 14}
-						textAnchor="middle"
-						className="wt-film-num wt-film-accent"
-						style={{ fontSize: T.body }}
-					>
-						{SUM_TERMS[i + 1]}
-					</text>
-					<text
-						x={L.clockX(minuteOf(trade.time))}
-						y={L.clockY + T.small * 2.4}
-						textAnchor="middle"
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: T.small }}
-					>
-						{trade.time}
-					</text>
-				</g>
-			))}
-			{/* Carries move below the expression first. ±0 uses an extra lane to the
-			    right of its slot, so its rise stays clear of the already settled +10. */}
-			{TRADES.map((trade, i) => (
-				<text
-					key={trade.id}
-					data-f={`sum-waypoint-${i}`}
-					x={L.sumX(i + 1) + (i === 1 ? T.body * 1.8 : 0)}
-					y={L.clockY - 14}
-					className="wt-film-num wt-film-accent"
-					style={{ fontSize: T.body }}
-				>
-					{SUM_TERMS[i + 1]}
-				</text>
-			))}
-
 			{/* A bucket defined by days, as the days move. */}
 			{headline("b-head", copy.bHead)}
 			{/* The answer, as the bucket's count lands. */}
@@ -1033,10 +970,7 @@ function build(context: FilmContext) {
 	const trades = TRADES.map((_, i) => one(`trade-${i}`));
 	const ticks = TRADES.map((_, i) => one(`tick-${i}`));
 	const tickDots = TRADES.map((_, i) => one(`tick-dot-${i}`));
-	const logVolumes = TRADES.map((_, i) => num(`log-volume-${i}`));
-	const logTags = [one("log-volume-tag"), one("log-oi-tag")];
-	const sumSources = TRADES.map((_, i) => one(`sum-source-${i}`));
-	const sumWaypoints = TRADES.map((_, i) => num(`sum-waypoint-${i}`));
+	const sumTerms = SUM_TERMS.map((_, i) => num(`sum-term-${i}`));
 	const cols = stripExpiries.map((id) => one(`col-${id}`));
 	const changes = stripExpiries.map((id) => one(`colc-${id}`));
 	const memberChanges = AFTER_WEEK.members.map((column) =>
@@ -1067,6 +1001,7 @@ function build(context: FilmContext) {
 		...flat("q"),
 		...heads,
 		one("vol"),
+		one("vol-mon-tag"),
 		one("oi"),
 		one("oi-tag"),
 		num("oi-n"),
@@ -1076,8 +1011,6 @@ function build(context: FilmContext) {
 		...kids("clock"),
 		...ticks,
 		...tickDots,
-		...logVolumes,
-		...logTags,
 		one("head"),
 		clockTime,
 		one("oi-fri"),
@@ -1087,8 +1020,6 @@ function build(context: FilmContext) {
 		one("ghost-note"),
 		one("shown"),
 		...kids("sum-line"),
-		...sumSources,
-		...sumWaypoints,
 		lockOi,
 		...kids("strip"),
 		...cols,
@@ -1163,26 +1094,19 @@ function build(context: FilmContext) {
 	d.swap([heads[0], heads[1]], heads[2], 14.8);
 	trade(2, 18.3);
 	show(heads[3], 18.45);
-	// Turn the completed balance into a compact trade log during the ledger's hold.
-	// All counters and bars settle at 19.1, then read quietly for a full second.
-	hide([one("bal-long"), one("bal-short")], 20.1, 0.35);
-	tl.fromTo(logTags, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 20.45);
-	sumSources.forEach((source, i) => {
-		tl.fromTo(
-			[source, logVolumes[i]],
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.3 },
-			20.45 + i * 0.125,
-		);
-	});
-	// The complete two-quantity log settles at 21.0; the clock starts at 22.
+	// Keep the completed 106/106 balance: it settles at 19.1 and reads quietly until 22.
 
 	// ——— clock: the hero. Volume live, open interest daily. ———
 	tl.addLabel("clock", 22);
 	d.swap([heads[2], heads[3]], heads[4], 22);
+	d.swap(one("vol-tag"), one("vol-mon-tag"), 22);
 	hide(trades[2], 22);
-	hide(sumSources, 22, 0.35, 0);
-	hide([...logTags, ...logVolumes], 22, 0.3, 0);
+	// Clear the bars before the OI carry reaches the phone's lower stat.
+	tl.to(
+		[one("bal-long"), one("bal-short")],
+		{ opacity: 0, duration: 0.35, ease: "power3.out" },
+		22,
+	);
 	// The completed trades remain as dots, without repeating their quantity flights.
 	tl.set(ticks, { opacity: 1 }, 22);
 	// Keep Monday's completed volume. Its true count steps aside, unpublished,
@@ -1240,16 +1164,15 @@ function build(context: FilmContext) {
 	};
 	// Initialize through the same state tween, so reverse seeks restore the close too.
 	clockTo(MON_CLOSE, MON_CLOSE, 22, 0.3);
-	// All close-state marks settle at 23.4, then stand for 2.4 s before assembly starts.
+	// Close-state marks settle at 23.4 and get a full quiet second before the track dims.
 	clockTo(TUE_REPORT, MON_CLOSE, 26.5, 0.8);
-	// Once Monday's prints have landed, their OI changes assemble the calculation.
-	// Step the volume track back first so none of the carries crosses settled tick text.
+	// Keep the derivation, in one reading lane, before the overnight move and publication.
 	tl.to(
 		[...kids("clock"), ...ticks, one("head")],
 		{ opacity: 0.2, duration: 0.3 },
-		25.8,
+		24.4,
 	);
-	// Clear the trade-time lane completely; the explicit start restores labels on reverse seeks.
+	// The axis labels step out with the track; reverse seeks restore their explicit start.
 	tl.fromTo(
 		clockLabels,
 		{ opacity: 1 },
@@ -1259,35 +1182,23 @@ function build(context: FilmContext) {
 			ease: "power2.out",
 			immediateRender: false,
 		},
-		25.8,
+		24.4,
 	);
-	show([one("sum-tag"), num("sum-term-0")], 25.85, "below", 0.3);
-	TRADES.forEach((_, i) => {
-		// Use 0.1 s of the wait before ±0's sequence: it lands at 27.4, leaving a
-		// clear gap before −4 fades into its slot. The completed expression still settles at 28.1.
-		const at = 25.95 + i * 0.6 - (i === 1 ? 0.1 : 0);
-		// Fade in without moving the source: a carry measures untransformed coordinates.
-		tl.fromTo(sumSources[i], { opacity: 0 }, { opacity: 1, duration: 0.3 }, at);
-		if (i === 2) {
-			// Its tick label dims below; shared colour connects −4 to its settled slot
-			// without a flight past the occupied terms. Fade 27.8–28.1, preserving settlement.
-			tl.fromTo(
-				num(`sum-term-${i + 1}`),
-				{ opacity: 0 },
-				{ opacity: 1, duration: 0.3 },
-				at + 0.65,
-			);
-		} else {
-			// ±0 first reaches the lane right of its slot, then rises before drifting left.
-			d.carry(num(`sum-change-${i}`), sumWaypoints[i], at + 0.35, {
-				duration: 0.3,
-			});
-			d.carry(sumWaypoints[i], num(`sum-term-${i + 1}`), at + 0.65, {
-				duration: 0.3,
-				arc: i === 1 ? "y" : undefined,
-			});
-		}
-		hide(sumSources[i], at + 0.4, 0.3, 0);
+	// Reveal settled operands in place, without repeated dot labels or travel. The complete
+	// 100 + 10 ± 0 − 4 row settles at 25.5 and reads for 1 s before the clock moves at 26.5.
+	tl.fromTo(
+		[one("sum-tag"), ...sumTerms.slice(0, 2)],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		24.6,
+	);
+	sumTerms.slice(2).forEach((term, i) => {
+		tl.fromTo(
+			term,
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3 },
+			24.9 + i * 0.3,
+		);
 	});
 	// Tuesday's report: the shown figure turns to the true count, which is now published.
 	d.flip(one("oi-fri"), one("oi-mon"), 27.3);
@@ -1318,16 +1229,13 @@ function build(context: FilmContext) {
 		heads[4],
 		heads[5],
 		one("vol"),
+		one("vol-mon-tag"),
 		one("shown"),
 		one("ghost"),
 		one("ghost-note"),
 		...kids("sum-line"),
-		...sumSources,
-		...sumWaypoints,
 		...kids("clock"),
 		...ticks,
-		...logVolumes,
-		...logTags,
 		one("head"),
 		clockTime,
 		one("oi-fri"),
