@@ -104,8 +104,8 @@ export const MESSAGES: readonly {
 		id: "proposal",
 		from: "ai",
 		text: [
-			"I'd add an expected-move step before volatility. Nothing is saved; a recipe needs your account's feature and your confirmation.",
-			"建议在波动率前加一步预期波动。不会保存；构建 Recipe 需要账户功能并经你确认。",
+			"Add expected move before volatility. Nothing is saved; recipes need feature access and confirmation.",
+			"在波动率前加预期波动。不会保存；账户有 Recipe 功能且你确认，才会构建。",
 		],
 		at: 2,
 	},

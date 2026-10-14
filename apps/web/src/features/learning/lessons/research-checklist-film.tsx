@@ -32,12 +32,12 @@ import {
  *   open       0–4        "Start from a research checklist"
  *   question   4–9.6      "Before I sell a call, what should I check?"
  *   inspect    9.6–19.75   a friend's three steps; one is a forecast; Home's four
- *   edits      19.75–30.5  add earnings, move flow; copy to notes; restore Home; lock the notes
- *   customize  30.5–44.2    a request, its question, an answer, a proposal; cut: the claim
- *   next       44.2–46.7    Next: ask TradingFlow AI, then verify
+ *   edits      19.75–30.85  add earnings, move flow; copy to notes; restore Home; lock the notes
+ *   customize  30.85–44.55    a request, its question, an answer, a proposal; cut: the claim
+ *   next       44.55–47.05    Next: ask TradingFlow AI, then verify
  */
 
-const END = 46.7;
+const END = 47.05;
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
@@ -50,7 +50,7 @@ const baseSlot = (id: string) =>
 /** Each step as a phone's row can hold it. */
 const shortText: Record<string, Copy> = {
 	vol: ["IV vs realized volatility", "隐含波动率与已实现波动率"],
-	gex: ["GEX and OI structure", "GEX 与未平仓量结构"],
+	gex: ["GEX / OI structure", "GEX / OI 结构"],
 	trade: ["The call's spread, liquidity, OI", "看涨的价差、流动性、未平仓量"],
 	flow: ["Recent call flow", "近期看涨成交流"],
 	earnings: ["Earnings Oct 3, before expiry", "10月3日财报，在到期前"],
@@ -106,15 +106,15 @@ const copy = {
 	friendHeadShort: ["A friend's checklist.", "朋友的清单。"],
 	flagHead: ["“Stays below $105” is a forecast.", "“一直低于 $105”是预测。"],
 	flagHeadShort: ["The last step is a forecast.", "最后一步是预测。"],
-	templateHead: ["Replace the forecast with checks.", "用核查步骤替换预测。"],
+	templateHead: [
+		"Home: replace the forecast with checks.",
+		"Home：用核查步骤替换预测。",
+	],
 	templateHeadShort: [
-		"Replace the forecast with checks.",
-		"用核查步骤替换预测。",
+		"Home: replace the forecast with checks.",
+		"Home：用核查步骤替换预测。",
 	],
-	editHead: [
-		"Add Oct 3 earnings; move call flow up.",
-		"新增 10月3日 财报，上移看涨成交流。",
-	],
+	editHead: ["Add earnings; move call flow up.", "新增财报，上移看涨成交流。"],
 	editHeadShort: ["Add earnings, move flow up.", "加财报，上移成交流。"],
 	refreshHead: ["Copy steps, then refresh Home.", "先抄下步骤，再刷新 Home。"],
 	refreshHeadShort: [
@@ -697,26 +697,48 @@ function build(context: FilmContext) {
 	// ——— edits: Home doesn't keep them ———
 	tl.addLabel("edits", 19.75);
 	d.swap(one("p-head"), one("e-head"), 19.75);
-	// Omit the shifted rows' second appearance. GEX gets 3.55 s fully settled;
-	// trade has already been readable since the friend's checklist.
-	tl.to(row("trade"), { opacity: 0, duration: 0.3 }, 19.9);
-	tl.to(row("gex"), { opacity: 0, duration: 0.3 }, 20.35);
-	hide(num(3), 20.35);
-	move("flow", at(EDITED, "flow"), 20.25);
-	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 20.5);
+	// Preserve every step while reordering. Fade only panels/tool labels, then use
+	// two text lanes so the row labels stay readable and never pass through each other.
+	const reordered = ["gex", "trade", "flow"];
+	const furniture = reordered.flatMap((id) => [
+		one(`panel-${id}`),
+		one(`tool-${id}`),
+	]);
+	tl.to(furniture, { opacity: 0, duration: 0.35 }, 19.75);
+	hide([num(1), num(2), num(3)], 19.75);
+	const textX = L.rowX + 14;
+	const laneX = (id: string, side: "left" | "right") =>
+		(side === "left"
+			? 16
+			: W - 16 - one<SVGTextElement>(`step-${id}`).getBBox().width) - textX;
+	for (const [id, side] of [
+		["gex", "left"],
+		["trade", "right"],
+		["flow", "left"],
+	] as const)
+		tl.to(row(id), { x: laneX(id, side), duration: 0.3 }, 20.1);
+	move("trade", at(EDITED, "trade"), 20.4);
+	move("flow", at(EDITED, "flow"), 20.4);
+	// Flow clears the left lane before GEX reaches its row on the way to slot five.
+	tl.to(row("flow"), { x: laneX("flow", "right"), duration: 0.3 }, 21.0);
+	move("gex", at(EDITED, "gex"), 21.0);
+	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 21.25);
+	for (const id of reordered) tl.to(row(id), { x: 0, duration: 0.3 }, 21.6);
+	tl.to(furniture, { opacity: 1, duration: 0.3 }, 21.9);
+	show([num(1), num(2), num(3), num(4)], 21.9, "below", 0.3);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
 		{ opacity: 1, duration: 0.4 },
-		20.7,
+		21.75,
 	);
 	// Keep the original carried text visible while the surrounding Home UI fades.
-	show(one("r-head"), 22.6);
+	show(one("r-head"), 23.7);
 	tl.to(
 		ROWS.filter((step) => step.id !== EARNINGS.id && step.id !== "flow").map(
 			(step) => row(step.id),
 		),
 		{ opacity: 0, duration: 0.35 },
-		22.8,
+		23.9,
 	);
 	tl.to(
 		[EARNINGS.id, "flow"].flatMap((id) => [
@@ -724,53 +746,55 @@ function build(context: FilmContext) {
 			one(`tool-${id}`),
 		]),
 		{ opacity: 0, duration: 0.35 },
-		22.8,
+		23.9,
 	);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
 		{ opacity: 0, duration: 0.35 },
-		22.8,
+		23.9,
 	);
 	hide(
 		Array.from({ length: SLOTS }, (_, k) => num(k)),
-		22.8,
+		23.9,
 	);
-	// The destination labels the copy; the lower row leaves a clear route for earnings.
-	show(one("notes-tag"), 23.2, "above");
-	carryRow("flow", 1, 23.2);
-	carryRow(EARNINGS.id, 0, 23.95);
-	show(one("notes-expiry"), 24.7, "above", 0.35);
+	// The destination labels the kept fragment before its coordinated transfer.
+	show(one("notes-tag"), 24.3, "above");
+	// Transfer the kept fragment as one ordered pair: both labels share the same
+	// horizontal path, and their vertical separation grows throughout the flight.
+	carryRow("flow", 1, 24.3);
+	carryRow(EARNINGS.id, 0, 24.3);
+	show(one("notes-expiry"), 25.05, "above", 0.35);
 	// One quiet second after the copied fragment, then Home restores independently.
 	tl.fromTo(
 		TEMPLATE.map((step) => one(`reset-${step.id}`)),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.35 },
-		26.05,
+		26.4,
 	);
-	hide(one("e-head"), 26.45);
+	hide(one("e-head"), 26.8);
 	// Label the reset only after its rows have settled and rested for one second.
-	show(one("reset-tag"), 27.4, "above", 0.35);
-	d.lock(lockPlan, 27.6, {
+	show(one("reset-tag"), 27.75, "above", 0.35);
+	d.lock(lockPlan, 27.95, {
 		around: kids("notes"),
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 27.6);
+	tl.addLabel("hero-lock", 27.95);
 
 	// ——— customize: the AI asks before it proposes ———
-	tl.addLabel("customize", 30.5);
-	hide([one("r-head"), ...kids("notes"), ...kids("reset"), lockPlan], 30.5);
-	show(one("a-head"), 30.85, "above");
-	show([one("m-tag"), one("m-0")], 31, "above");
-	show(bubbles[0], 31.3);
-	show(bubbles[1], 32);
-	d.flip(one("m-0"), one("m-1"), 32.2);
-	tl.set(one("m-0"), { opacity: 0 }, 32.5);
-	show(one("o-head"), 35.5);
-	hide([bubbles[0], bubbles[1]], 35.5);
-	show(bubbles[2], 35.8);
-	show(bubbles[3], 36.3);
-	d.flip(one("m-1"), one("m-2"), 36.5);
-	tl.set(one("m-1"), { opacity: 0 }, 36.8);
+	tl.addLabel("customize", 30.85);
+	hide([one("r-head"), ...kids("notes"), ...kids("reset"), lockPlan], 30.85);
+	show(one("a-head"), 31.2, "above");
+	show([one("m-tag"), one("m-0")], 31.35, "above");
+	show(bubbles[0], 31.65);
+	show(bubbles[1], 32.35);
+	d.flip(one("m-0"), one("m-1"), 32.55);
+	tl.set(one("m-0"), { opacity: 0 }, 32.85);
+	show(one("o-head"), 35.85);
+	hide([bubbles[0], bubbles[1]], 35.85);
+	show(bubbles[2], 36.15);
+	show(bubbles[3], 36.65);
+	d.flip(one("m-1"), one("m-2"), 36.85);
+	tl.set(one("m-1"), { opacity: 0 }, 37.15);
 	// Cut: the claim.
 	hide(
 		[
@@ -781,15 +805,15 @@ function build(context: FilmContext) {
 			one("m-tag"),
 			one("m-2"),
 		],
-		39.8,
+		40.15,
 	);
-	word(one("claim-big"), 40.2);
-	show(one("claim-sub"), 40.6);
+	word(one("claim-big"), 40.55);
+	show(one("claim-sub"), 40.95);
 
 	// ——— next ———
-	tl.addLabel("next", 44.2);
-	hide(kids("claim"), 44.2);
-	d.close(44.2);
+	tl.addLabel("next", 44.55);
+	hide(kids("claim"), 44.55);
+	d.close(44.55);
 	return tl;
 }
 
