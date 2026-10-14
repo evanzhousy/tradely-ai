@@ -48,8 +48,8 @@ export const changes: readonly {
 		text: ["Pick Tuesday in the date picker", "在日期选择器中选择周二"],
 		kind: "input",
 		effect: [
-			`Same question, Tuesday's data: ${runScreen(tuesdayScreen, screenDefaults, NEXT_SESSION_DATE).length} contracts`,
-			`同一个问题，周二的数据：${runScreen(tuesdayScreen, screenDefaults, NEXT_SESSION_DATE).length} 份合约`,
+			`Tuesday at defaults: ${runScreen(tuesdayScreen, screenDefaults, NEXT_SESSION_DATE).length} contracts`,
+			`周二默认门槛：${runScreen(tuesdayScreen, screenDefaults, NEXT_SESSION_DATE).length} 份合约`,
 		],
 	},
 	{
