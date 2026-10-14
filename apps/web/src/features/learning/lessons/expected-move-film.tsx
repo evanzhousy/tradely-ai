@@ -134,12 +134,12 @@ const copy = {
 	bellHeadShort: ["68% land inside, in the model.", "按模型，68% 在区间内。"],
 	bellAxis: ["ALFA on Oct 18, model", "10月18日 的 ALFA，模型"],
 	straddleHead: [
-		`The straddle prices distance from $${SPOT}.`,
-		`跨式定价距 $${SPOT} 的变动。`,
+		`The straddle prices average distance from $${SPOT}.`,
+		`跨式定价距 $${SPOT} 的平均变动。`,
 	],
 	straddleHeadShort: [
-		`Straddle: distance from $${SPOT}.`,
-		`跨式：距 $${SPOT} 的变动。`,
+		`Straddle: average distance from $${SPOT}.`,
+		`跨式：距 $${SPOT} 的平均变动。`,
 	],
 	straddle: [share(STRADDLE), share(STRADDLE)],
 	ratioWord: ["of one SD", "个标准差"],
