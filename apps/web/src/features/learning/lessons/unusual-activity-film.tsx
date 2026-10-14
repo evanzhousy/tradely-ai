@@ -40,14 +40,14 @@ import {
  *
  *   open      0–4        "Unusual activity"
  *   question  4–8.6      505 contracts: unusual compared with what?
- *   ratio     8.6–18.9   against typical volume; against open interest
- *   window    18.9–31.65  hero: by 11:00, 14×; by the close, 4.2×
- *   screen    31.65–40.5  a 2× screen flags two; what each one was
- *   claim     40.5–44.9  name the denominator and the window
- *   next      44.9–47.4  Next: data clocks
+ *   ratio     8.6–19.4   against typical volume; against open interest
+ *   window    19.4–31.7  hero: by 11:00, 14×; by the close, 4.2×
+ *   screen    31.7–40.55  a 2× screen flags two; what each one was
+ *   claim     40.55–44.95  name the denominator and the window
+ *   next      44.95–47.45  Next: data clocks
  */
 
-const END = 47.4;
+const END = 47.45;
 const ROWS = (
 	["oct18-105", "dec20-110", "oct18-110", "oct18-100"] as const
 ).map((id) => byId(id));
@@ -104,17 +104,9 @@ const copy = {
 	qBig: ["Unusual compared with what?", "异常，是与什么相比？"],
 	rHead: ["Divide by typical volume.", "除以平常成交量。"],
 	oHead: ["Switch to open interest.", "改用未平仓量比较。"],
-	o2Head: [
-		`A thin series leads: ${ratio(vsOi(THIN))}.`,
-		`稀薄合约居首：${ratio(vsOi(THIN))}。`,
-	],
 	typical: ["÷ typical volume", "÷ 平常成交量"],
 	oi: ["÷ open interest", "÷ 未平仓量"],
-	wHead: ["Today against a typical day.", "今天对比平常一天。"],
-	w2Head: [
-		`By 11:00, typical volume is ${count(typicalBy(ELEVEN))} contracts.`,
-		`截至 11:00，平常成交 ${count(typicalBy(ELEVEN))} 张。`,
-	],
+	wHead: ["Use typical volume by that time.", "对比同一时刻的平常成交量。"],
 	w3Head: [
 		`By the close: ${ratio(AT_CLOSE)}, same trades.`,
 		`到收盘：${ratio(AT_CLOSE)}，同样的成交。`,
@@ -222,21 +214,6 @@ function Scene({
 			{/* Four calls, two denominators. */}
 			{headline("r-head", copy.rHead)}
 			{headline("o-head", copy.oHead)}
-			{/* The answer, after the new denominator has settled and rested. */}
-			<Lines
-				name="o2-head"
-				text={t(copy.o2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.oHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
 			{headline("s-head", copy.sHead)}
 			{(
 				[
@@ -305,7 +282,7 @@ function Scene({
 						: H * 0.91
 				}
 				className="wt-film-num wt-film-accent"
-				style={{ fontSize: narrow ? T.small : T.body }}
+				style={{ fontSize: T.body }}
 			>
 				{`${THIN.volume} ÷ ${THIN.openInterest} = ${ratio(vsOi(THIN))}`}
 			</text>
@@ -377,21 +354,7 @@ function Scene({
 
 			{/* The window. */}
 			{headline("w-head", copy.wHead)}
-			{/* The window's two readings, one after the other in one place. */}
-			<Lines
-				name="w2-head"
-				text={t(copy.w2Head)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.wHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
+			{/* The close answer follows the same-time calculation. */}
 			<Lines
 				name="w3-head"
 				text={t(copy.w3Head)}
@@ -555,15 +518,13 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	const heads = [
-		"r-head",
-		"o-head",
-		"o2-head",
-		"w-head",
-		"w2-head",
-		"w3-head",
-		"s-head",
-	].map((name) => one(name));
+	const heads = {
+		ratio: one("r-head"),
+		oi: one("o-head"),
+		window: one("w-head"),
+		close: one("w3-head"),
+		screen: one("s-head"),
+	};
 	const lockWindow = one<SVGGraphicsElement>("lock-window");
 	const rows = ROWS.map((_, i) => one(`row-${i}`));
 	const lineX = L.barX + L.barW(THRESHOLD);
@@ -634,7 +595,7 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		...flat("q"),
-		...heads,
+		...Object.values(heads),
 		one("base-typical"),
 		one("base-oi"),
 		...rows,
@@ -668,83 +629,81 @@ function build(context: FilmContext) {
 	// ——— ratio: two denominators ———
 	tl.addLabel("ratio", 8.6);
 	hide(flat("q"), 8.6);
-	show(heads[0], 8.8);
+	show(heads.ratio, 8.8);
 	show(one("base-typical"), 9.2);
 	rows.forEach((row, i) => {
 		show(row, 9.4 + i * 0.2, "right");
 	});
 	// The counts under each name explain the key; a phone has no room for either.
 	if (!L.narrow) show(one("key"), 10.2);
-	d.swap(heads[0], heads[1], 12.6);
+	d.swap(heads.ratio, heads.oi, 12.6);
 	// Neither settled denominator describes the interpolating bars.
 	hide(one("base-typical"), 12.85);
 	show(one("base-oi"), 13.9);
 	ratiosTo(vsOi, vsTypical, 13.2);
-	show(heads[2], 14.9);
-	show(one("thin-proof"), 14.9);
+	// The fully labelled OI comparison settles at 14.4, then rests for a second.
+	show(one("thin-proof"), 15.4);
 
 	// ——— window: the hero. The same trades, two windows. ———
-	tl.addLabel("window", 18.9);
+	tl.addLabel("window", 19.4);
+	// The proof leaves with the rows it explains, never alone on an empty stage.
 	hide(
-		[
-			heads[1],
-			heads[2],
-			one("base-oi"),
-			...rows,
-			one("key"),
-			one("thin-proof"),
-		],
-		18.9,
+		[heads.oi, one("base-oi"), ...rows, one("key"), one("thin-proof")],
+		19.4,
 	);
-	show(heads[3], 19.25);
-	d.rise(18.9);
+	show(heads.window, 19.75);
+	d.rise(19.4);
 	show(
 		kids("chart").filter((el) => !el.getAttribute("data-f")),
-		19.25,
+		19.75,
 	);
-	d.trace(one<SVGPathElement>("typical"), 19.3, { duration: 1.2 });
-	show(one("typical-tag"), 20.5);
-	d.trace(one<SVGPathElement>("today"), 19.3, { duration: 1.4 });
-	show(one("today-tag"), 20.7);
-	// The cursor fades in at 11:00 itself: show() would bring it in at x 0, at the open.
+	// A finished reference belongs to the chart setup, rather than a second drawing.
+	show([one("typical"), one("typical-tag")], 19.75);
+	// Build one comparison: today's curve, its cursor, then the calculation.
+	d.trace(one<SVGPathElement>("today"), 20.3, { duration: 1.4 });
+	tl.fromTo(
+		one("today-tag"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		21.2,
+	);
+	// The cursor fades in at 11:00 itself, after today's curve and label settle.
 	tl.fromTo(
 		one("cursor"),
 		{ opacity: 0, x: L.x(ELEVEN) - L.x(0) },
 		{ opacity: 1, x: L.x(ELEVEN) - L.x(0), duration: 0.4 },
-		20.8,
+		21.8,
 	);
-	tl.set(one("cursor-typ"), { attr: { cy: L.y(typicalBy(ELEVEN)) } }, 20.8);
-	word(one("window"), 20.65);
-	show(one("window-proof"), 20.65);
-	show(heads[4], 22.2);
-	// The morning sentence clears completely before the same-minute driver departs.
-	hide(heads[4], 25.8);
-	cursorTo(DAY, ELEVEN, 26.15);
-	d.lock(lockWindow, 28.05, { around: one("window"), pad: 6 });
-	tl.addLabel("hero-lock", 28.05);
-	show(heads[5], 28.05);
+	tl.set(one("cursor-typ"), { attr: { cy: L.y(typicalBy(ELEVEN)) } }, 21.8);
+	word(one("window"), 22.2);
+	show(one("window-proof"), 22.25);
+	// The complete proof settles at 22.75 and keeps its accepted 3.45 s rest.
+	cursorTo(DAY, ELEVEN, 26.2);
+	d.lock(lockWindow, 28.1, { around: one("window"), pad: 6 });
+	tl.addLabel("hero-lock", 28.1);
+	show(heads.close, 28.1);
 
 	// ——— screen: a threshold picks where to look ———
-	tl.addLabel("screen", 31.65);
-	d.swap([heads[3], heads[5]], heads[6], 31.65);
-	hide([one("cursor"), one("window"), one("window-proof"), lockWindow], 31.65);
-	d.sink(31.65);
+	tl.addLabel("screen", 31.7);
+	d.swap([heads.window, heads.close], heads.screen, 31.7);
+	hide([one("cursor"), one("window"), one("window-proof"), lockWindow], 31.7);
+	d.sink(31.7);
 	// Reset while the rows are offstage; bring back the whole settled comparison together.
-	ratiosTo(vsTypical, vsOi, 31.3, true);
-	tl.set(one("base-typical"), { scaleY: 1 }, 32.0);
-	show([one("base-typical"), ...rows], 32.0, "right");
+	ratiosTo(vsTypical, vsOi, 31.35, true);
+	tl.set(one("base-typical"), { scaleY: 1 }, 32.05);
+	show([one("base-typical"), ...rows], 32.05, "right");
 	// The threshold is drawn with its dashes intact; its label fades separately.
-	d.trace(one<SVGPathElement>("threshold-path"), 33.5, { duration: 0.5 });
-	show(one("threshold-label"), 33.5, "above");
+	d.trace(one<SVGPathElement>("threshold-path"), 33.55, { duration: 0.5 });
+	show(one("threshold-label"), 33.55, "above");
 	// Rest after the threshold settles, then a full second after both flags.
-	show([one("flag-0"), one("flag-1")], 35.0);
-	show([one("note-0"), one("note-1")], 36.5);
+	show([one("flag-0"), one("flag-1")], 35.05);
+	show([one("note-0"), one("note-1")], 36.55);
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.5);
+	tl.addLabel("claim", 40.55);
 	hide(
 		[
-			heads[6],
+			heads.screen,
 			one("base-typical"),
 			...rows,
 			one("line"),
@@ -753,15 +712,15 @@ function build(context: FilmContext) {
 			one("note-0"),
 			one("note-1"),
 		],
-		40.5,
+		40.55,
 	);
-	word(one("z-big"), 40.8);
-	show(one("z-sub"), 41.2);
+	word(one("z-big"), 40.85);
+	show(one("z-sub"), 41.25);
 
 	// ——— next ———
-	tl.addLabel("next", 44.9);
-	hide(kids("claim"), 44.9);
-	d.close(44.9);
+	tl.addLabel("next", 44.95);
+	hide(kids("claim"), 44.95);
+	d.close(44.95);
 	return tl;
 }
 
