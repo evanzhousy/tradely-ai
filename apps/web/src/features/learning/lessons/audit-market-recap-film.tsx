@@ -3,6 +3,7 @@ import {
 	count,
 	mondayPacket,
 	pick,
+	rowContracts,
 	rowPremium,
 	usd,
 } from "@/content/world";
@@ -41,15 +42,18 @@ import {
  *
  *   open      0–4        "Audits"
  *   question  4–8.6      $1,655.20 in premium: pass it?
- *   amount    8.6–19.4   source trades × 100; covered subtotal; missing stays missing
- *   claims    19.4–31.0  original claims held; repairs; lock at 27 after 1 s quiet
- *   signoff   31.0–37.4  compact findings, open items, reopening conditions
- *   claim     37.4–41.8  find it, fix it, say what's open
- *   next      41.8–44.3  Next: the module checkpoint
+ *   amount    8.6–21.65  focused 105 proof; remaining rows; covered subtotal
+ *   claims    21.65–33.25 original claims held; active repairs; lock at 29.25 after 1 s quiet
+ *   signoff   33.25–39.65  compact findings, open items, reopening conditions
+ *   claim     39.65–44.05  find it, fix it, say what's open
+ *   next      44.05–46.55  Next: the module checkpoint
  */
 
-const END = 44.3;
+const END = 46.55;
 const ROWS = mondayPacket;
+const POSITION_CONTRACTS = rowContracts(ROWS[2]);
+if (POSITION_CONTRACTS === null)
+	throw new Error("The positions repair needs the covered 110-call row.");
 const statusTone: Record<Status, string> = {
 	supported: "wt-film-gain",
 	repaired: "wt-film-warn",
@@ -139,12 +143,12 @@ const copy = {
 /** Film-only phone summaries; the shared playground copy stays unchanged. */
 const phoneSections: Readonly<Record<string, Copy>> = {
 	supported: [
-		`P1 · ${dollars(PREMIUM)} premium · ${count(CONTRACTS)} contracts · 4/5 strikes`,
-		`P1 · 权利金 ${dollars(PREMIUM)}；成交 ${count(CONTRACTS)} 张；覆盖 4/5 行权价`,
+		`P1 · ALFA Oct18 calls · Mon Sep16 · ${dollars(PREMIUM)} premium · ${count(CONTRACTS)} contracts · 4/5 strikes`,
+		`P1 · ALFA 10/18 看涨 · 9/16 周一 · 权利金 ${dollars(PREMIUM)} · 成交 ${count(CONTRACTS)} 张 · 覆盖 4/5 行权价`,
 	],
 	repaired: [
-		"×100 restored · volume only · 120 missing",
-		"补回 ×100 · 仅成交量 · 120 无数据",
+		"×100 restored · volume ≠ positions · 120 missing · forecast cut",
+		"补回 ×100 · 成交≠持仓 · 120 无数据 · 删除预测",
 	],
 	open: [
 		"120 tape due Tue 09:00; 110 OI change: Tue report",
@@ -154,6 +158,19 @@ const phoneSections: Readonly<Record<string, Copy>> = {
 		"Monday tape corrected, or 120 data changes a claim",
 		"周一成交更正，或 120 数据改变结论",
 	],
+};
+
+/** Compact film repairs carry the same quantities and cutoff as the shared claims. */
+const repairCopy: Readonly<Record<string, Copy>> = {
+	premium: [
+		`${dollars(PREMIUM)} premium · 4/5 strikes`,
+		`权利金 ${dollars(PREMIUM)} · 4/5 行权价`,
+	],
+	positions: [
+		`110 call: ${count(POSITION_CONTRACTS)} traded`,
+		`110 看涨：成交 ${count(POSITION_CONTRACTS)} 张`,
+	],
+	missing: ["120 call: no data at cutoff", "120 看涨：截止时无数据"],
 };
 
 function Scene({
@@ -263,6 +280,7 @@ function Scene({
 					<g key={row.id}>
 						<g data-f={`row-${i}`}>
 							<rect
+								data-f={`row-${i}-box`}
 								x={margin}
 								y={L.rowY(i)}
 								width={room}
@@ -313,7 +331,7 @@ function Scene({
 				y={H * 0.68}
 				size={T.small}
 				anchor="start"
-				className="wt-film-tag"
+				className="wt-film-tag wt-film-accent"
 			>
 				{t([
 					`${premiumProof.strike} call · source trades`,
@@ -337,7 +355,7 @@ function Scene({
 					y={H * 0.735}
 					size={T.body}
 					anchor="start"
-					className="wt-film-num"
+					className="wt-film-num wt-film-accent"
 				>
 					{proofOperands[i]}
 				</Word>
@@ -348,7 +366,7 @@ function Scene({
 				y={H * 0.79}
 				size={T.small}
 				anchor="start"
-				className="wt-film-num"
+				className="wt-film-num wt-film-accent"
 			>
 				{t(copy.multiplier)}
 			</Word>
@@ -484,10 +502,12 @@ function Scene({
 										? narrow
 											? T.head * 1.5
 											: T.num
-										: T.small * 1.1,
+										: T.body,
 							}}
 						>
-							{claim.repair ? `→ ${t(claim.repair)}` : t(copy.removed)}
+							{claim.repair
+								? `→ ${t(repairCopy[claim.id] ?? claim.repair)}`
+								: t(copy.removed)}
 						</text>
 					) : null}
 				</g>
@@ -644,7 +664,15 @@ function build(context: FilmContext) {
 	rows.forEach((row, i) => {
 		show(row, 9.3 + i * 0.12, "right");
 	});
-	show(one("total-report"), 10.1);
+	// The 105 row owns the worked expression; keep the missing-row warning fully visible.
+	tl.set(one("row-1-box"), { attr: { class: "wt-focus-shape" } }, 10.15);
+	tl.to([rows[0], rows[2], rows[3]], { opacity: 0.28, duration: 0.35 }, 10.2);
+	tl.fromTo(
+		one("total-report"),
+		{ opacity: 0, y: 14 },
+		{ opacity: 0.28, y: 0, duration: 0.5 },
+		10.1,
+	);
 	tl.set(one("total-report"), { textDecoration: "none" }, 10.1);
 	show(one("proof-label"), 9.9);
 	// Each operand enters in place; the expression is readable before its result lands.
@@ -664,26 +692,33 @@ function build(context: FilmContext) {
 		10.95,
 	);
 	fixed.forEach((el, i) => {
-		word(el, [11.15, 11.55, 11.4, 11.9][i]);
+		word(el, [13.1, 11.55, 13.35, 13.85][i]);
 	});
 	word(one("proof-result"), 11.55);
-	// The row construction finishes at 12.45, then stands a full second.
-	tl.set(one("total-report"), { textDecoration: "line-through" }, 13.45);
-	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 13.45);
+	// The worked result settles at 12.10, then stands for 1 s before the other rows return.
+	tl.to(
+		[rows[0], rows[2], rows[3], one("total-report")],
+		{ opacity: 1, duration: 0.35 },
+		13.1,
+	);
+	tl.set(one("row-1-box"), { attr: { class: "wt-panel-shape" } }, 13.1);
+	// All corrected rows settle at 14.40; leave another 1 s before the covered subtotal.
+	tl.set(one("total-report"), { textDecoration: "line-through" }, 15.4);
+	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 15.4);
 	// The label is close to the subtotal: enter in place, clear of the figure below.
 	tl.fromTo(
 		one("total-label"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		13.45,
+		15.4,
 	);
-	word(one("total-fixed"), 13.45);
-	// Subtotal settles at 14.0; the scoped answer follows after 1 s quiet.
-	show(heads[1], 15.0);
+	word(one("total-fixed"), 15.4);
+	// Subtotal settles at 15.95; the scoped answer follows after 1.3 s quiet.
+	show(heads[1], 17.25);
 
 	// ——— claims: the hero. All five, audited and repaired. ———
-	tl.addLabel("claims", 19.4);
-	d.swap([heads[0], heads[1]], heads[2], 19.4);
+	tl.addLabel("claims", 21.65);
+	d.swap([heads[0], heads[1]], heads[2], 21.65);
 	hide(
 		[
 			...kids("cols"),
@@ -695,18 +730,18 @@ function build(context: FilmContext) {
 			one("total-report"),
 			one("total-fixed"),
 		],
-		19.4,
+		21.65,
 	);
 	claimRows.forEach((row, i) => {
-		show(row, 20.2 + i * 0.15, "right");
+		show(row, 22.45 + i * 0.15, "right");
 	});
 	tags.forEach((tag, i) => {
-		word(tag, 20.6 + i * 0.3);
+		word(tag, 22.85 + i * 0.3);
 	});
-	tl.set(one("claim-0-box"), { attr: { class: "wt-focus-shape" } }, 20.6);
+	tl.set(one("claim-0-box"), { attr: { class: "wt-focus-shape" } }, 22.85);
 	claims.forEach((claim, i) => {
 		if (claim.status === "supported") return;
-		const at = 24.3 + (i - 1) * 0.3;
+		const at = 26.55 + (i - 1) * 0.3;
 		// Keep every original claim readable for at least 3.5 s before dimming.
 		// The phone defect then clears before its repair enters the same line.
 		if (L.narrow) hide(tags[i], at, 0.3, 0);
@@ -722,9 +757,22 @@ function build(context: FilmContext) {
 			fix,
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.5 },
-			24.6 + i * 0.3,
+			26.85 + i * 0.3,
 		);
 	});
+
+	// The larger repair is the active reading target; every class change is seek-safe.
+	for (let i = 1; i <= 3; i++) {
+		const at = 26.85 + (i - 1) * 0.3;
+		if (i > 1)
+			tl.set(
+				one(`claim-${i - 1}-box`),
+				{ attr: { class: "wt-panel-shape" } },
+				at,
+			);
+		tl.set(one(`claim-${i}-box`), { attr: { class: "wt-focus-shape" } }, at);
+	}
+	tl.set(one("claim-3-box"), { attr: { class: "wt-panel-shape" } }, 28.25);
 
 	// The forecast, cut: the repair that removes a claim outright.
 	const cut = claims.findIndex((claim) => claim.status === "removed");
@@ -755,28 +803,28 @@ function build(context: FilmContext) {
 				(verdictBox.y + verdictBox.height / 2),
 		),
 	);
-	d.lock(lockCut, 27.0, { around: verdict, pad });
-	tl.addLabel("hero-lock", 27.0);
-	show(heads[3], 27.0);
+	d.lock(lockCut, 29.25, { around: verdict, pad });
+	tl.addLabel("hero-lock", 29.25);
+	show(heads[3], 29.25);
 
 	// ——— signoff ———
-	tl.addLabel("signoff", 31.0);
-	d.swap([heads[2], heads[3]], heads[4], 31.0);
-	hide([...claimRows, ...tags, ...fixes, lockCut], 31.0);
+	tl.addLabel("signoff", 33.25);
+	d.swap([heads[2], heads[3]], heads[4], 33.25);
+	hide([...claimRows, ...tags, ...fixes, lockCut], 33.25);
 	secs.forEach((sec, i) => {
-		show(sec, 31.8 + i * 0.6, "right");
+		show(sec, 34.05 + i * 0.6, "right");
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 37.4);
-	hide([heads[4], ...secs], 37.4);
-	word(one("z-big"), 37.7);
-	show(one("z-sub"), 38.1);
+	tl.addLabel("claim", 39.65);
+	hide([heads[4], ...secs], 39.65);
+	word(one("z-big"), 39.95);
+	show(one("z-sub"), 40.35);
 
 	// ——— next ———
-	tl.addLabel("next", 41.8);
-	hide(kids("claim"), 41.8);
-	d.close(41.8);
+	tl.addLabel("next", 44.05);
+	hide(kids("claim"), 44.05);
+	d.close(44.05);
 	return tl;
 }
 
