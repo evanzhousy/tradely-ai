@@ -431,6 +431,7 @@ function Scene({
 						{t(field.label).toUpperCase()}
 					</text>
 					<text
+						data-f={`field-${i}-value`}
 						x={margin + L.labelW}
 						y={L.fieldY(i) + L.fieldH / 2 + text * 0.36}
 						className="wt-film-type"
@@ -555,16 +556,21 @@ function Scene({
 			/>
 			{claims.map((claim, i) => (
 				<g key={t(claim.text)} data-f={`claim-${i}`}>
-					<rect
-						x={L.claimX}
-						y={L.claimY(i)}
-						width={L.claimW}
-						height={L.claimH}
-						rx={9}
-						className={
-							claim.evidence === "unknown" ? "wt-panel-shape" : "wt-focus-shape"
-						}
-					/>
+					{/* The first two evidence lines share one panel and enter together. */}
+					{i !== 1 ? (
+						<rect
+							x={L.claimX}
+							y={L.claimY(i)}
+							width={L.claimW}
+							height={i === 0 ? L.claimY(1) - L.claimY(0) + L.claimH : L.claimH}
+							rx={9}
+							className={
+								claim.evidence === "unknown"
+									? "wt-panel-shape"
+									: "wt-focus-shape"
+							}
+						/>
+					) : null}
 					{i === SPREAD_CARD ? (
 						<rect
 							data-f="spread-swatch"
@@ -921,7 +927,8 @@ function build(context: FilmContext) {
 		...fieldRows,
 		...strikes,
 		...claimRows,
-		...tags,
+		// The first pair's tags arrive with their shared evidence panel.
+		...tags.slice(STORY_CARD),
 		one("spread-seg"),
 		one("spread-label"),
 		one("spread-trace"),
@@ -934,6 +941,7 @@ function build(context: FilmContext) {
 		...kids("universe-change"),
 		...kids("claim"),
 	]);
+	gsap.set(tags.slice(0, STORY_CARD), { opacity: 1 });
 	// A dashed underline qualifies the interpretation without crossing out its words.
 	const story = one<SVGTextElement>("claim-2-text").getBBox();
 	gsap.set(one("story-strike"), {
@@ -1033,20 +1041,20 @@ function build(context: FilmContext) {
 	);
 	fieldRows.forEach((row, i) => {
 		if (i === 0) return;
-		show(row, 9.4 + Math.floor(i / 2) * 2.2 + (i % 2) * 0.5, "right");
+		// Keep the preceding pair's 1.2 s quiet; only the revision enters earlier.
+		const at = i === 5 ? 14.1 : 9.4 + Math.floor(i / 2) * 2.2 + (i % 2) * 0.5;
+		show(row, at, "right");
 	});
 
-	// ——— answer: the hero. Claim by claim, each stamped with its evidence. ———
+	// ——— answer: paired evidence, then the interpretation and its counterevidence. ———
 	tl.addLabel("answer", 17.6);
 	hide([heads[0], ...fieldRows], 17.6);
 	show(heads[1], 17.95);
 	strikes.forEach((row, i) => {
 		show(row, 18.4 + i * 0.15, "right");
 	});
-	show(claimRows[0], 20.2, "right");
-	stamp(tags[0], 20.6);
-	show(claimRows[1], 21.4, "right");
-	stamp(tags[1], 21.8);
+	// Both tagged results settle at 20.7, leaving 1.9 s before the interpretation.
+	show([claimRows[0], claimRows[1]], 20.2, "right");
 	// The interpretation reads the 110 bar: the bar answers.
 	show(claimRows[2], 22.6, "right");
 	tl.fromTo(
@@ -1056,7 +1064,7 @@ function build(context: FilmContext) {
 		22.7,
 	);
 	stamp(tags[2], 23.0);
-	// Against it: 500 of the 540 is one spread leg. The bar splits; the story fades.
+	// Against it: 500 of the 540 is one spread leg. The bar splits before the story is qualified.
 	tl.fromTo(
 		one("spread-seg"),
 		{ opacity: 0, attr: { width: 0 } },
@@ -1081,7 +1089,12 @@ function build(context: FilmContext) {
 		{ scaleX: 1, duration: 0.4, ease: "power2.out" },
 		26.15,
 	);
-	tl.to(one("claim-2-text"), { opacity: 0.75, duration: 0.4 }, 26.15);
+	// Keep the hero fully bright. The surrounding sentences remain readable above 0.6.
+	tl.to(
+		[claimRows[0], claimRows[1], claimRows[SPREAD_CARD]],
+		{ opacity: 0.65, duration: 0.45 },
+		27.95,
+	);
 	d.lock(lockClaim, 27.95, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
 	tl.addLabel("hero-lock", 27.95);
 	show(heads[2], 27.95);
