@@ -12,6 +12,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	coverRows,
 	IV,
@@ -199,6 +200,15 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const oi = sources.findIndex((source) => source.id === "oi");
+	const clockSize = T.small * 1.05;
+	// Leave a clear lane between the Friday clock and its publication, in both languages.
+	const clockWidth =
+		textWidth(t(copy.oiClock), clockSize) * (locale === "en" ? 0.86 : 1);
+	const linkStart = margin + 16 + L.heroNum * 2.1 + clockWidth + 12;
+	const linkEnd =
+		margin + room - 16 - textWidth(t(copy.oiPublished), clockSize) - 12;
+	const linkY = L.srcY(oi) + L.srcH * 0.84 - T.small * 0.35;
 	/** Each field's colour carries onto its marks on the timeline. */
 	const fields: [string, Copy, Copy, string, string][] = [
 		["f-oi", copy.oi, copy.oiShort, count(OI), "wt-film-accent"],
@@ -367,6 +377,18 @@ function Scene({
 					{t(copy.now).toUpperCase()}
 				</text>
 			</g>
+			<path
+				data-f="trade-receipt-link"
+				d={`M${L.stopX(STOPS[2].at) + 6} ${L.lineY}C${L.stopX(0.7)} ${L.lineY} ${L.stopX(0.74)} ${L.lineY - T.small * 1.5} ${L.stopX(STOPS[3].at) - 6} ${L.lineY - T.small * 1.5}`}
+				fill="none"
+				style={{ stroke: "var(--diagram-gain)", strokeWidth: 2 }}
+			/>
+			<path
+				data-f="count-publication-link"
+				d={`M${L.stopX(STOPS[0].at) + 6} ${L.lineY}H${L.stopX(STOPS[1].at) - 6}`}
+				fill="none"
+				style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
+			/>
 			{marks.map(([name, stop, label, tone, tier]) => {
 				const x = L.stopX(STOPS[stop].at);
 				/** Marks that share a moment, or sit close, take two tiers. */
@@ -523,6 +545,12 @@ function Scene({
 				}),
 			)}
 
+			<path
+				data-f="hero-publication-link"
+				d={`M${linkStart} ${linkY}H${linkEnd}M${linkEnd - 5} ${linkY - 3}L${linkEnd} ${linkY}L${linkEnd - 5} ${linkY + 3}`}
+				fill="none"
+				style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
+			/>
 			<Brackets name="lock-verdict" glow />
 
 			{/* Missing, zero and observed. */}
@@ -714,6 +742,25 @@ function build(context: FilmContext) {
 	const marks = ["m-iv", "m-oi", "m-pub", "m-trade", "m-recv"].map((name) =>
 		one(name),
 	);
+	const clockLinks = ["trade-receipt-link", "count-publication-link"].map(
+		(name) => one<SVGPathElement>(name),
+	);
+	const heroLink = one<SVGPathElement>("hero-publication-link");
+	// Each pair is one construction: the connecting stroke and both clock stamps settle together.
+	const connectClocks = (
+		from: Element,
+		to: Element,
+		link: SVGPathElement,
+		at: number,
+	) => {
+		tl.fromTo(
+			[from, to],
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.55, ease: "power3.out" },
+			at,
+		);
+		d.trace(link, at, { duration: 0.55 });
+	};
 	const reqs = REQUIREMENTS.map((req) => one(`req-${req}`));
 	const srcs = sources.map((_, i) => one(`src-${i}`));
 	const verdictsFor = (req: Requirement) =>
@@ -728,6 +775,9 @@ function build(context: FilmContext) {
 		...kids("timeline"),
 		one("now"),
 		...marks,
+		...clockLinks,
+		heroLink,
+		one("oi-publication"),
 		...reqs,
 		...srcs,
 		...REQUIREMENTS.flatMap(verdictsFor),
@@ -762,19 +812,20 @@ function build(context: FilmContext) {
 	word(marks[0], 10.95);
 	// Event and receipt form one proof; it settles at 13.05, then rests for a second.
 	focus("f-last", 12.5);
-	word(marks[3], 12.5);
-	word(marks[4], 12.5);
+	connectClocks(marks[3], marks[4], clockLinks[0], 12.5);
 	// Count and publication form one proof, complete a second before its answer arrives.
 	focus("f-oi", 14.05);
-	word(marks[1], 14.05);
-	word(marks[2], 14.05);
+	connectClocks(marks[1], marks[2], clockLinks[1], 14.05);
 	show(heads[1], 15.6);
 
 	// ——— sources: the hero. Fresh enough for which question? ———
 	tl.addLabel("sources", 19.2);
 	focus(null, 19.2);
 	d.swap([heads[0], heads[1]], heads[2], 19.2);
-	hide([...fields, ...kids("timeline"), one("now"), ...marks], 19.2);
+	hide(
+		[...fields, ...kids("timeline"), one("now"), ...marks, ...clockLinks],
+		19.2,
+	);
 	srcs.forEach((src, i) => {
 		show(src, 19.8 + i * 0.2, "right");
 	});
@@ -793,7 +844,13 @@ function build(context: FilmContext) {
 		}
 		show(r, at);
 		verdictsFor(req).forEach((v, i) => {
-			word(v, at + 0.35 + i * 0.2);
+			// The OI explanation prepares its publication connection before the lock.
+			word(
+				v,
+				req === "positions" && sources[i].id === "oi"
+					? at
+					: at + 0.35 + i * 0.2,
+			);
 		});
 	});
 	const oi = sources.findIndex((source) => source.id === "oi");
@@ -804,6 +861,9 @@ function build(context: FilmContext) {
 		{ fontSize: L.heroNum, duration: 0.55, ease: "power3.out" },
 		25.2,
 	);
+	// Connect the same Friday count to its Monday publication; both settle before the lock.
+	word(one("oi-publication"), 25.55);
+	d.trace(heroLink, 25.55, { duration: 0.55 });
 	// Enclose the constructed count, Friday clock and latest publication evidence together.
 	d.lock(lockVerdict, 26.2, {
 		around: [srcs[oi], verdictsFor("positions")[oi]],
@@ -820,12 +880,16 @@ function build(context: FilmContext) {
 			reqs[REQUIREMENTS.indexOf("positions")],
 			...srcs,
 			...verdictsFor("positions"),
+			heroLink,
 			lockVerdict,
 		],
 		29.8,
 	);
-	// One table construction pays for two quiet proof holds without extending the film.
-	show(covs, 30.5, "right");
+	// Observed, measured zero, then missing: the full table still settles at 31.00.
+	const coverageAt = { observed: 30.15, zero: 30.3, missing: 30.5 };
+	covs.forEach((cov, i) => {
+		show(cov, coverageAt[coverRows[i].state], "right");
+	});
 	show(one("subtotal"), 32.0);
 	show(one("total"), 33.6);
 	show(heads[5], 33.6);
