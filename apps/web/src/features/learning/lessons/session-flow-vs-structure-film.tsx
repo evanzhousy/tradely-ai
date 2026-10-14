@@ -48,7 +48,7 @@ import {
  *   open      0–4        "Volume and open interest"
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
  *   ledger    8.6–22.0   both open +10; changed hands ±0; both closed −4
- *   clock     22.0–31.9  hero: Monday's volume; the OI terms settle before the overnight move
+ *   clock     22.0–31.9  hero: Monday's close holds; the overnight move leads to publication
  *   bucket    31.9–41.85 420 holds 32.2–34.2; → 620 as members change (+500 in, −300 out)
  *                        at Sep 9's figures, held 35.2–37.2; clears before live growth
  *                        → 650 with 620 + 10 + 20 = 650, settled 38.3–41.85
@@ -98,14 +98,6 @@ const GROWTH_TERMS = [
 	count(MOVED),
 	...AFTER_WEEK.members.map((column) => ` + ${count(column.change ?? 0)}`),
 	` = ${count(AFTER_WEEK.total)}`,
-];
-/** Separate terms let each trade's open-interest change assemble the final count. */
-const SUM_TERMS = [
-	count(START_OI),
-	...TRADES.map((trade) => {
-		const change = openInterestChange(trade);
-		return change ? `${change > 0 ? "+" : "−"} ${Math.abs(change)}` : "± 0";
-	}),
 ];
 /** Where a minute of Monday sits on the clock, with the night folded into a short gap. */
 const clockAt = (minute: number, closeAt: number) =>
@@ -161,18 +153,6 @@ function layout(width: number) {
 		barW: room - (narrow ? 58 : 90) - (narrow ? 42 : 60),
 		tradeY: H * (narrow ? 0.76 : 0.77),
 		clockY: H * (narrow ? 0.62 : 0.64),
-		sumY:
-			H * (narrow ? 0.27 : 0.28) +
-			frame.type.small * 6.8 +
-			frame.type.num * 1.68,
-		sumX: (i: number) =>
-			margin +
-			statW +
-			SUM_TERMS.slice(0, i).reduce(
-				(x, term) =>
-					x + term.length * frame.type.body * 0.62 + frame.type.body * 0.75,
-				0,
-			),
 		/** On a phone the night gets more room, so "close" and the report label stay apart. */
 		clockX: (minute: number) =>
 			margin + clockAt(minute, narrow ? 0.64 : 0.74) * room,
@@ -242,6 +222,7 @@ const copy = {
 	volume: ["volume today", "今日成交量"],
 	mondayVolume: ["Monday's volume", "周一成交量"],
 	openInterest: ["open interest", "未平仓量"],
+	ledgerOpenInterest: ["Open interest · ledger", "账本未平仓量"],
 	longs: ["longs", "多头"],
 	shorts: ["shorts", "空头"],
 	cHead: [
@@ -301,6 +282,7 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const ledgerTag = t(copy.ledgerOpenInterest).toUpperCase().split(" · ");
 	const stat = (name: string, tag: Copy, value: string, i: number) => (
 		<g data-f={name}>
 			<text
@@ -310,7 +292,18 @@ function Scene({
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
-				{t(tag).toUpperCase()}
+				{narrow && locale === "en" && name === "oi" ? (
+					<>
+						<tspan x={L.statX(i)} dy={-T.small * 1.35}>
+							{ledgerTag[0]}
+						</tspan>
+						<tspan x={L.statX(i)} dy={T.small * 1.35}>
+							{` · ${ledgerTag[1]}`}
+						</tspan>
+					</>
+				) : (
+					t(tag).toUpperCase()
+				)}
 			</text>
 			<text
 				data-f={`${name}-n`}
@@ -420,7 +413,7 @@ function Scene({
 			>
 				{t(copy.mondayVolume).toUpperCase()}
 			</text>
-			{stat("oi", copy.openInterest, count(START_OI), 1)}
+			{stat("oi", copy.ledgerOpenInterest, count(START_OI), 1)}
 			{/* The true count, stepped aside while the screen shows Friday's. */}
 			<g data-f="ghost">
 				<text
@@ -646,29 +639,6 @@ function Scene({
 					{t(label).toUpperCase()}
 				</text>
 			))}
-			<g data-f="sum-line">
-				<text
-					data-f="sum-tag"
-					x={margin}
-					y={L.sumY}
-					className="wt-film-tag"
-					style={{ fontSize: T.small }}
-				>
-					{t(copy.openInterest).toUpperCase()}
-				</text>
-				{SUM_TERMS.map((term, i) => (
-					<text
-						key={term}
-						data-f={`sum-term-${i}`}
-						x={L.sumX(i)}
-						y={L.sumY}
-						className="wt-film-num wt-film-accent"
-						style={{ fontSize: T.body }}
-					>
-						{term}
-					</text>
-				))}
-			</g>
 			{/* A bucket defined by days, as the days move. */}
 			{headline("b-head", copy.bHead)}
 			{/* The answer, as the bucket's count lands. */}
@@ -970,7 +940,6 @@ function build(context: FilmContext) {
 	const trades = TRADES.map((_, i) => one(`trade-${i}`));
 	const ticks = TRADES.map((_, i) => one(`tick-${i}`));
 	const tickDots = TRADES.map((_, i) => one(`tick-dot-${i}`));
-	const sumTerms = SUM_TERMS.map((_, i) => num(`sum-term-${i}`));
 	const cols = stripExpiries.map((id) => one(`col-${id}`));
 	const changes = stripExpiries.map((id) => one(`colc-${id}`));
 	const memberChanges = AFTER_WEEK.members.map((column) =>
@@ -990,9 +959,6 @@ function build(context: FilmContext) {
 	gsap.set(questionTag, { attr: { x: tagX } });
 	gsap.set(questionStart, { attr: { x: tagX + tagWidth + tagGap } });
 	const clockTime = num("clock-time");
-	const clockLabels = [MON_OPEN, MON_CLOSE, TUE_REPORT].map((minute) =>
-		num(`clock-label-${minute}`),
-	);
 	const clockHead = one("head");
 	const volumeReadout = num("vol-n");
 	const lockOi = one<SVGGraphicsElement>("lock-oi");
@@ -1019,7 +985,6 @@ function build(context: FilmContext) {
 		one("ghost-tag"),
 		one("ghost-note"),
 		one("shown"),
-		...kids("sum-line"),
 		lockOi,
 		...kids("strip"),
 		...cols,
@@ -1164,42 +1129,8 @@ function build(context: FilmContext) {
 	};
 	// Initialize through the same state tween, so reverse seeks restore the close too.
 	clockTo(MON_CLOSE, MON_CLOSE, 22, 0.3);
-	// Close-state marks settle at 23.4 and get a full quiet second before the track dims.
-	clockTo(TUE_REPORT, MON_CLOSE, 26.5, 0.8);
-	// Keep the derivation, in one reading lane, before the overnight move and publication.
-	tl.to(
-		[...kids("clock"), ...ticks, one("head")],
-		{ opacity: 0.2, duration: 0.3 },
-		24.4,
-	);
-	// The axis labels step out with the track; reverse seeks restore their explicit start.
-	tl.fromTo(
-		clockLabels,
-		{ opacity: 1 },
-		{
-			opacity: 0,
-			duration: 0.3,
-			ease: "power2.out",
-			immediateRender: false,
-		},
-		24.4,
-	);
-	// Reveal settled operands in place, without repeated dot labels or travel. The complete
-	// 100 + 10 ± 0 − 4 row settles at 25.5 and reads for 1 s before the clock moves at 26.5.
-	tl.fromTo(
-		[one("sum-tag"), ...sumTerms.slice(0, 2)],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		24.6,
-	);
-	sumTerms.slice(2).forEach((term, i) => {
-		tl.fromTo(
-			term,
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.3 },
-			24.9 + i * 0.3,
-		);
-	});
+	// The completed close tableau keeps its full 2.4 s rest, with the clock at full strength.
+	clockTo(TUE_REPORT, MON_CLOSE, 25.8, 1.5);
 	// Tuesday's report: the shown figure turns to the true count, which is now published.
 	d.flip(one("oi-fri"), one("oi-mon"), 27.3);
 	tl.set(one("oi-fri"), { opacity: 0 }, 27.6);
@@ -1220,8 +1151,12 @@ function build(context: FilmContext) {
 	d.lock(lockOi, 28.3, { around: [one("shown"), one("oi-mon")], pad: 6 });
 	tl.addLabel("hero-lock", 28.3);
 	show(heads[5], 28.3);
-	// The completed expression stays through the lock and its after-beat.
-	tl.to(clockTime, { opacity: 0.2, duration: 0.3 }, 28.65);
+	// After the brackets and answer settle, step back only the clock below the hero.
+	tl.to(
+		[...kids("clock"), ...ticks, clockHead, clockTime],
+		{ opacity: 0.2, duration: 0.3 },
+		28.85,
+	);
 
 	// ——— bucket: a week moves the members ———
 	tl.addLabel("bucket", 31.9);
@@ -1233,7 +1168,6 @@ function build(context: FilmContext) {
 		one("shown"),
 		one("ghost"),
 		one("ghost-note"),
-		...kids("sum-line"),
 		...kids("clock"),
 		...ticks,
 		one("head"),
@@ -1244,7 +1178,7 @@ function build(context: FilmContext) {
 	];
 	// A deliberate cut between beats replaces the outgoing clock's separate fade. The
 	// hero keeps its entire settled hold, and the bucket retains a full 0.3 s entrance.
-	tl.set([...clockShot, one("sum-line"), one("clock")], { opacity: 0 }, 31.9);
+	tl.set([...clockShot, one("clock")], { opacity: 0 }, 31.9);
 	// Establish the comparison together, then give all its settled marks two seconds.
 	show(
 		[
