@@ -34,14 +34,14 @@ import {
  *
  *   open      0–4        "Rankings"
  *   question  4–8.6      most unusual today?
- *   metric    8.6–22.7    contracts divided by the 20-day average; under the floor
- *   sign      22.7–32.55  hero: by size; by signed change
- *   move      32.55–40.5  Monday; Tuesday: ALFA #1, standing still
- *   claim     40.5–44.9   order without prediction
- *   next      44.9–47.4   Next: contract neighborhoods
+ *   metric    8.6–23.1    two successive normalizations; relative-side floor disclosure
+ *   sign      23.1–32.85  hero: by size; by signed change
+ *   move      32.85–40.7  Monday; Tuesday: ALFA #1, standing still
+ *   claim     40.7–45.1   order without prediction
+ *   next      45.1–47.5   Next: contract neighborhoods
  */
 
-const END = 47.4;
+const END = 47.5;
 type Entry = { name: string; value: string; dim?: boolean; tone?: string };
 type Board = { title: Copy; entries: Entry[] };
 
@@ -101,15 +101,16 @@ const PAIRS: [string, Board, Board][] = [
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
-	const colW = narrow ? room * 0.42 : room * 0.34;
+	const colW = narrow ? room * 0.43 : room * 0.34;
 	return {
 		...frame,
 		colX: [margin, margin + room - colW],
 		colW,
-		titleY: H * (narrow ? 0.3 : 0.3),
+		titleY: H * (narrow ? 0.275 : 0.3),
 		rowY: (i: number) =>
-			H * (narrow ? 0.35 : 0.36) + i * H * (narrow ? 0.09 : 0.1),
-		rowH: H * (narrow ? 0.068 : 0.075),
+			H * (narrow ? 0.305 : 0.36) + i * H * (narrow ? 0.107 : 0.1),
+		rowH: H * (narrow ? 0.094 : 0.075),
+		qualificationH: narrow ? 22 : 0,
 		noteY: H * (narrow ? 0.82 : 0.84),
 	};
 }
@@ -135,8 +136,8 @@ const copy = {
 	under: [`under ${count(FLOOR)}`, `低于 ${count(FLOOR)}`],
 	normal: ["Today ÷ 20-day average", "今日张数 ÷ 20日均量"],
 	note: [
-		"#1 of three by contracts · up because a peer fell",
-		"三个中按张数第一 · 因同类下跌而上升",
+		"#1 of three by contracts · CRUX traded fewer",
+		"三个中按张数第一 · CRUX 成交张数减少",
 	],
 	claimBig: ["A rank is an order, not a forecast.", "排名是顺序，不是预测。"],
 	claimSub: [
@@ -170,24 +171,39 @@ function Scene({
 			anchor="start"
 		/>
 	);
-	const text = narrow ? T.small * 1.15 : T.body * 1.05;
+	const text = narrow ? 18 : T.body * 1.05;
+	const nameSize = narrow ? 14 : text;
+	const qualificationSize = narrow ? 14 : T.small;
+	const equationSize = narrow ? 16 : T.body;
+	const rowTop = (key: string, board: Board, side: 0 | 1, i: number) =>
+		L.rowY(i) +
+		(narrow && key === "m" && side === 1
+			? board.entries.slice(0, i).filter((entry) => entry.dim).length *
+				L.qualificationH
+			: 0);
 	/** Entrance wrappers leave each inner row's qualification intact. */
 	const column = (key: string, board: Board, side: 0 | 1) => (
 		<g data-f={`${key}-col${side}`}>
-			<text
-				data-f={`${key}-title${side}`}
+			<Lines
+				name={`${key}-title${side}`}
+				text={narrow ? t(board.title) : t(board.title).toUpperCase()}
 				x={L.colX[side]}
 				y={L.titleY}
-				className="wt-film-tag"
-				style={{ fontSize: T.small }}
-			>
-				{t(board.title).toUpperCase()}
-			</text>
+				size={narrow ? 13 : T.small}
+				maxWidth={L.colW}
+				anchor="start"
+				className={narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"}
+			/>
 			{board.entries.map((entry, i) => {
 				const hero = key === "s" && side === 1 && entry.name === "CRUX";
-				const rowH = L.rowH * (hero ? 1.9 : 1);
+				const top = rowTop(key, board, side, i);
+				const rowH =
+					L.rowH * (hero ? 1.9 : 1) +
+					(narrow && key === "m" && side === 1 && entry.dim
+						? L.qualificationH
+						: 0);
 				const baseline =
-					L.rowY(i) + (hero ? text * 1.4 : rowH / 2 + text * 0.36);
+					top + (narrow ? 18 : hero ? text * 1.4 : rowH / 2 + text * 0.36);
 				const focus =
 					key === "d" ? entry.name === "ALFA" : key !== "s" && i === 0;
 				return (
@@ -195,7 +211,7 @@ function Scene({
 						<g opacity={entry.dim ? 0.45 : 1}>
 							<rect
 								x={L.colX[side]}
-								y={L.rowY(i)}
+								y={top}
 								width={L.colW}
 								height={rowH}
 								rx={9}
@@ -208,7 +224,7 @@ function Scene({
 								x={L.colX[side] + 12}
 								y={baseline}
 								className="wt-film-num wt-film-dim"
-								style={{ fontSize: text * 0.9 }}
+								style={{ fontSize: narrow ? 13 : text * 0.9 }}
 							>
 								{`#${i + 1}`}
 							</text>
@@ -216,13 +232,19 @@ function Scene({
 								x={L.colX[side] + (narrow ? 38 : 52)}
 								y={baseline}
 								className="wt-film-num"
-								style={{ fontSize: text }}
+								style={{ fontSize: nameSize }}
 							>
 								{entry.name}
 							</text>
 							<text
 								x={L.colX[side] + L.colW - 12}
-								y={hero ? L.rowY(i) + rowH - text * 0.55 : baseline}
+								y={
+									hero
+										? top + rowH - text * 0.55
+										: narrow
+											? top + L.rowH - 7
+											: baseline
+								}
 								textAnchor="end"
 								className={`wt-film-num ${entry.tone ?? "wt-film-accent"}`}
 								style={{ fontSize: text * (hero ? 1.7 : 1) }}
@@ -241,8 +263,8 @@ function Scene({
 			const j = to.entries.findIndex((e) => e.name === entry.name);
 			const x0 = L.colX[0] + L.colW + 6;
 			const x1 = L.colX[1] - 6;
-			const y0 = L.rowY(i) + L.rowH / 2;
-			const y1 = L.rowY(j) + L.rowH / 2;
+			const y0 = rowTop(key, from, 0, i) + L.rowH / 2;
+			const y1 = rowTop(key, to, 1, j) + L.rowH / 2;
 			const mid = (x0 + x1) / 2;
 			return (
 				<path
@@ -347,53 +369,65 @@ function Scene({
 				name="normal-label"
 				x={margin}
 				y={H * 0.81}
-				size={T.body}
+				size={narrow ? 14 : T.body}
 				anchor="start"
 				className="wt-film-type wt-film-dim"
 			>
 				{t(copy.normal)}
 			</Word>
 			{["DUNE", "CRUX"].map((name, i) => (
-				<g key={name}>
-					<Word
-						name={`normal-operands-${name}`}
-						x={margin}
-						y={H * (0.865 + i * 0.055)}
-						size={T.body}
-						anchor="start"
-						className="wt-film-num"
-					>
-						{`${name} ${count(volumeOf(name))} ÷ ${count(typical[name])}`}
-					</Word>
-					<Word
-						name={`normal-result-${name}`}
-						x={margin + room}
-						y={H * (0.865 + i * 0.055)}
-						size={T.body}
-						anchor="end"
-						className="wt-film-num wt-film-accent"
-					>
+				<text
+					key={name}
+					data-f={`normal-equation-${name}`}
+					x={margin}
+					y={H * (0.865 + i * 0.055)}
+					className="wt-film-num"
+					style={{ fontSize: equationSize }}
+				>
+					{`${name} ${count(volumeOf(name))} ÷ ${count(typical[name])} `}
+					<tspan className="wt-film-accent">
 						{`${name === "DUNE" ? "=" : "≈"} ${ratio(rel(name))}`}
-					</Word>
-				</g>
+					</tspan>
+				</text>
 			))}
 			<Brackets name="lock-rank" glow />
 			<text
 				data-f="under"
 				x={L.colX[0] + L.colW - 12}
-				y={L.rowY(RAW.entries.length - 1) + L.rowH + T.small * 1.5}
+				y={L.rowY(RAW.entries.length - 1) + L.rowH + qualificationSize * 1.5}
 				textAnchor="end"
 				className="wt-film-tag wt-film-warn"
-				style={{ fontSize: T.small }}
+				style={{ fontSize: qualificationSize }}
 			>
 				{t(copy.under).toUpperCase()}
 			</text>
+			<Word
+				name="under-relative"
+				x={L.colX[1] + (narrow ? 12 : L.colW - 12)}
+				y={
+					narrow
+						? rowTop(
+								"m",
+								RELATIVE,
+								1,
+								RELATIVE.entries.findIndex((entry) => entry.dim),
+							) +
+							L.rowH +
+							16
+						: L.rowY(RAW.entries.length - 1) + L.rowH + T.small * 1.5
+				}
+				size={qualificationSize}
+				anchor={narrow ? "start" : "end"}
+				className="wt-film-tag wt-film-warn"
+			>
+				{narrow ? t(copy.under) : `GLYN · ${t(copy.under)}`}
+			</Word>
 			<Lines
 				name="note"
 				text={t(copy.note)}
 				x={margin}
 				y={L.noteY}
-				size={narrow ? T.small * 1.1 : T.body}
+				size={narrow ? 14 : T.body}
 				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-warn"
@@ -486,13 +520,13 @@ function build(context: FilmContext) {
 		at: number,
 		secondAt: number | ((firstSettled: number) => number),
 	) => {
-		const firstSettled = at + 0.1 + (from.entries.length - 1) * 0.1 + 0.5;
+		const firstSettled = at + (from.entries.length - 1) * 0.1 + 0.5;
 		const second =
 			typeof secondAt === "number" ? secondAt : secondAt(firstSettled);
 		tl.set(col(key, 0), { opacity: 1 }, at);
 		enter(one(`${key}-title0`), at);
 		from.entries.forEach((entry, i) => {
-			enter(row(key, 0, entry.name), at + 0.1 + i * 0.1);
+			enter(row(key, 0, entry.name), at + i * 0.1);
 		});
 		tl.set(col(key, 1), { opacity: 1 }, second);
 		enter(one(`${key}-title1`), second);
@@ -507,10 +541,8 @@ function build(context: FilmContext) {
 	};
 	const normal = [
 		one("normal-label"),
-		...["DUNE", "CRUX"].flatMap((name) => [
-			one(`normal-operands-${name}`),
-			one(`normal-result-${name}`),
-		]),
+		one("normal-equation-DUNE"),
+		one("normal-equation-CRUX"),
 	];
 
 	d.hidden([
@@ -525,6 +557,7 @@ function build(context: FilmContext) {
 		]),
 		...normal,
 		one("under"),
+		one("under-relative"),
 		one("note"),
 		lockRank,
 		...kids("claim"),
@@ -545,35 +578,51 @@ function build(context: FilmContext) {
 	tl.addLabel("metric", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
-	const metric = pair("m", RAW, RELATIVE, 9.2, 15.3);
-	const normalizationAt = metric.firstSettled + 2.7; // 12.80; preserve the raw proof’s rest
+	// Whole compact equations replace separate operands/results; each stays frame-true.
+	const metric = pair(
+		"m",
+		RAW,
+		RELATIVE,
+		9.2,
+		(settled) => settled + 2.7 + 0.5 + 1 + 0.5 + 1,
+	);
+	const normalizationAt = metric.firstSettled + 2.7; // 12.70
+	const duneSettled = normalizationAt + 0.5;
+	const cruxAt = duneSettled + 1;
+	// The raw board still rests for 2.70 s before normalization begins.
 	enter(one("normal-label"), normalizationAt);
 	enter(one("under"), normalizationAt);
-	for (const name of ["DUNE", "CRUX"]) {
-		enter(one(`normal-operands-${name}`), normalizationAt + 0.4);
-		// No counting after an equals sign: each result is revealed settled.
-		enter(one(`normal-result-${name}`), normalizationAt + 1);
-	}
-	// The equations settle at 14.30; the relative chart begins after a quiet second.
-	show(heads[1], metric.secondSettled + 1); // 17.70, held for 5.00 s
+	enter(one("normal-equation-DUNE"), normalizationAt);
+	enter(one("normal-equation-CRUX"), cruxAt);
+	const metricAnswerAt = metric.secondSettled + 1; // 18.10
+	show(heads[1], metricAnswerAt);
+	// A further qualification, after the answer has settled and rested for a second.
+	enter(one("under-relative"), metricAnswerAt + 1.5); // 19.60
 
 	// ——— sign: the hero. Size, or direction? ———
-	tl.addLabel("sign", 22.7);
-	d.swap([heads[0], heads[1]], heads[2], 22.7);
+	tl.addLabel("sign", 23.1);
+	d.swap([heads[0], heads[1]], heads[2], 23.1);
 	hide(
-		[col("m", 0), col("m", 1), ...linksOf("m", RAW), one("under"), ...normal],
-		22.7,
+		[
+			col("m", 0),
+			col("m", 1),
+			...linksOf("m", RAW),
+			one("under"),
+			one("under-relative"),
+			...normal,
+		],
+		23.1,
 	);
-	const sign = pair("s", SIZE, SIGNED, 23.05, (settled) => settled + 2.9);
+	const sign = pair("s", SIZE, SIGNED, 23.45, (settled) => settled + 2.9);
 	// The enlarged, two-line loss row and every connector settle before the lock fits.
-	const heroAt = sign.secondSettled + 1; // 28.95
+	const heroAt = sign.secondSettled + 1; // 29.25
 	d.lock(lockRank, heroAt, { around: row("s", 1, "CRUX"), pad: 4 });
 	tl.addLabel("hero-lock", heroAt);
 	show(heads[3], heroAt);
 
 	// ——— move: a rank that moves while the name doesn't ———
 	// Preserve the 3.15 s stand from bracket settlement and the 3.60 s answer hold.
-	const moveAt = heroAt + 3.6; // 32.55
+	const moveAt = heroAt + 3.6; // 32.85
 	tl.addLabel("move", moveAt);
 	d.swap([heads[2], heads[3]], heads[4], moveAt);
 	hide([col("s", 0), col("s", 1), ...linksOf("s", SIZE), lockRank], moveAt);
@@ -585,12 +634,12 @@ function build(context: FilmContext) {
 		(settled) => settled + 1,
 	);
 	// ALFA's 2,400 stays anchored on Monday as its matching Tuesday row arrives first.
-	const answerAt = move.secondSettled + 1; // 36.90
+	const answerAt = move.secondSettled + 1; // 37.10
 	show(one("note"), answerAt);
 	show(heads[5], answerAt);
 
 	// ——— claim ———
-	const claimAt = answerAt + 3.6; // 40.50
+	const claimAt = answerAt + 3.6; // 40.70
 	tl.addLabel("claim", claimAt);
 	hide(
 		[
@@ -607,7 +656,7 @@ function build(context: FilmContext) {
 	show(one("z-sub"), claimAt + 0.7);
 
 	// ——— next ———
-	const nextAt = claimAt + 4.4; // 44.90
+	const nextAt = claimAt + 4.4; // 45.10; the end card's retained final frame continues
 	tl.addLabel("next", nextAt);
 	hide(kids("claim"), nextAt);
 	d.close(nextAt);
