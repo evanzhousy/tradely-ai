@@ -80,7 +80,9 @@ function layout(width: number) {
 	const left = frame.margin;
 	const right = width * 0.965;
 	const top = height * (narrow ? 0.3 : 0.24);
-	const bottom = height * (narrow ? 0.9 : 0.88);
+	const bottom = height * (narrow ? 0.86 : 0.88);
+	const calculationSize = frame.type.body * (narrow ? 1.35 : 1);
+	const calculationY = bottom + 8 + calculationSize * (narrow ? 1.6 : 1.5);
 	const labelWidth = narrow ? 58 : 128;
 	const cellsLeft = left - (narrow ? 22 : 30) + labelWidth;
 	const cellWidth = (right - cellsLeft) / STRIKES.length;
@@ -101,6 +103,8 @@ function layout(width: number) {
 		right,
 		top,
 		bottom,
+		calculationSize,
+		calculationY,
 		labelLeft: left - (narrow ? 22 : 30),
 		cellsLeft,
 		cellWidth,
@@ -116,7 +120,7 @@ function layout(width: number) {
 			const strike = SMILE_X[0] + ((SMILE_X[1] - SMILE_X[0]) * i) / 60;
 			return `${i ? "L" : "M"}${xS(strike).toFixed(1)} ${yS(smileIv(strike)).toFixed(1)}`;
 		}).join(""),
-		pair: narrow ? [0.27, 0.73] : [0.32, 0.68],
+		pair: narrow ? [0.27, 0.73] : [0.28, 0.72],
 	};
 }
 
@@ -215,9 +219,13 @@ function Scene({
 	const heat = (iv: number) =>
 		0.06 + ((iv - IV_LOW) / (IV_HIGH - IV_LOW)) * 0.42;
 	const qWidth = Math.min(T.big * 0.85, room / (t(copy.qBig).length * 0.62));
-	const operandSize = T.body * 1.05;
+	const tagSize = T.body * 1.2;
+	const operandSize = T.body * 1.3;
+	const answerSize = T.big * 0.76;
 	const signX = (i: number) => W * (narrow ? 0.5 : L.pair[i]);
 	const signY = (i: number) => H * (narrow ? 0.25 + i * 0.27 : 0.32);
+	const operandY = (i: number) => signY(i) + tagSize * 2;
+	const answerY = (i: number) => operandY(i) + answerSize * 1.25;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -345,8 +353,8 @@ function Scene({
 							x={
 								narrow ? W / 2 : L.cellX(STRIKES.indexOf(105)) + L.cellWidth / 2
 							}
-							y={L.bottom + 8 + T.body * 1.5}
-							size={T.body}
+							y={L.calculationY}
+							size={L.calculationSize}
 							className="wt-film-num wt-film-accent"
 						>
 							{`(${ivPoints("dec20", 100)}% + ${ivPoints("dec20", 110)}%) / 2 ≈ ${INTERPOLATED}%`}
@@ -582,8 +590,8 @@ function Scene({
 							name={`s-tag-${i}`}
 							x={signX(i)}
 							y={signY(i)}
-							size={T.small}
-							className="wt-film-tag"
+							size={tagSize}
+							className="wt-film-type"
 						>
 							{t(tag).toUpperCase()}
 						</Word>
@@ -592,8 +600,8 @@ function Scene({
 								<Word
 									key={side}
 									name={`s-iv-${i}-${side}`}
-									x={signX(i) + (side === 0 ? -1 : 1) * operandSize * 2.4}
-									y={signY(i) + T.body * 2.2}
+									x={signX(i) + (side === 0 ? -1 : 1) * operandSize * 2.6}
+									y={operandY(i)}
 									size={operandSize}
 									className="wt-film-num wt-film-accent"
 								>
@@ -604,7 +612,7 @@ function Scene({
 						<Word
 							name={`s-minus-${i}`}
 							x={signX(i)}
-							y={signY(i) + T.body * 2.2}
+							y={operandY(i)}
 							size={operandSize}
 							className="wt-film-num"
 						>
@@ -613,8 +621,8 @@ function Scene({
 						<Word
 							name={`s-num-${i}`}
 							x={signX(i)}
-							y={signY(i) + T.body * 2.2 + T.big * 0.95}
-							size={T.big * 0.85}
+							y={answerY(i)}
+							size={answerSize}
 							className="wt-film-num wt-film-accent"
 						>
 							{`= ${num}`}
@@ -622,7 +630,7 @@ function Scene({
 						<Word
 							name={`s-unit-${i}`}
 							x={signX(i)}
-							y={signY(i) + T.body * 3.7 + T.big * 0.95}
+							y={answerY(i) + T.body * 1.5}
 							size={T.small}
 							className="wt-film-type wt-film-dim"
 						>
@@ -877,51 +885,47 @@ function build(context: FilmContext) {
 	// Spend the wing hold drawing the two unequal, strike-aligned distances.
 	d.trace(one<SVGPathElement>("w-distance-put"), 25.0, { duration: 0.45 });
 	d.trace(one<SVGPathElement>("w-distance-call"), 25.55, { duration: 0.45 });
-	// The numeric glyphs stay on stage as the smile sinks, then become the operands.
-	hide(one("w-head"), 27.4);
-	// The later distance entry keeps its original 3.6-second hold.
-	hide(one("d-head"), 27.5);
-	// Fade the nonnumeric label text in place, clear of the retained IV glyphs.
-	hide([one("w-label-put"), one("w-label-call")], 27.4, 0.3, 0);
-	sink(27.4);
-	show(one("s-tag-0"), 27.8);
-	// Wait until both IVs land, then fade the operator in its settled position.
-	tl.fromTo(
-		one("s-minus-0"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		28.1,
-	);
-	for (const [side, { source }] of carries.entries())
-		d.carry(source, one<SVGTextElement>(`s-iv-0-${side}`), 27.8, {
-			duration: 0.3,
-			arc: "y",
+	// Cut the chart and both headline lines together after the wing proof's quiet hold.
+	// The distance line holds 3.5 seconds; the real IV labels bridge the occupied stage.
+	tl.set([one("depth"), one("w-head"), one("d-head")], { opacity: 0 }, 27.4);
+	// The outgoing headings are fully gone before any new hero mark arrives.
+	show([one("s-tag-0"), one("s-tag-1")], 27.45);
+	// Each original IV becomes the leading operand of its convention.
+	// Moving sideways first clears the operators and the other operands.
+	for (const [i, { source }] of carries.entries())
+		d.carry(source, one<SVGTextElement>(`s-iv-${i}-0`), 27.45, {
+			duration: 0.5,
+			arc: "x",
 		});
-	// RR uses the same settled values in reverse order; neither answer is counted.
-	show(one("s-tag-1"), 28.6);
+	// Both rows form as the carries land, then both answers arrive as one proof.
 	tl.fromTo(
-		[one("s-iv-1-0"), one("s-minus-1"), one("s-iv-1-1")],
+		[one("s-iv-0-1"), one("s-iv-1-1")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		28.5,
+		27.65,
 	);
-	for (const [i, at] of [28.1, 28.8].entries())
-		tl.fromTo(
-			[one(`s-num-${i}`), one(`s-unit-${i}`)],
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.55 },
-			at,
-		);
-	d.lock(lockSigns, 29.5, {
+	tl.fromTo(
+		[one("s-minus-0"), one("s-minus-1")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		27.7,
+	);
+	tl.fromTo(
+		[one("s-num-0"), one("s-num-1"), one("s-unit-0"), one("s-unit-1")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55 },
+		28.0,
+	);
+	d.lock(lockSigns, 29.55, {
 		around: signMarks.filter((el) => el !== one("s-line")),
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 29.5);
-	show(one("s-line"), 29.5);
+	tl.addLabel("hero-lock", 29.55);
+	show(one("s-line"), 29.55);
 
 	// ——— estimates: what the quotes don't cover ———
 	tl.addLabel("estimates", 33);
-	// Preserve the first result's five-second display after its 0.1-second later entry.
+	// Keep the accepted exit: the complete pair gets one second before lock, then stands.
 	hide([...signMarks, lockSigns], 33.1);
 	tl.set(charts.smile, { opacity: 0 }, 33.3);
 	tl.set(charts.grid, { opacity: 1 }, 33.3);
