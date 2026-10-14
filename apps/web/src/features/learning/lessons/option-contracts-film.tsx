@@ -47,7 +47,9 @@ const THREE = 3;
 const SPOT = 100;
 const DOTS = 100;
 const NOTIONAL = THREE * DOTS * SPOT;
+const PREMIUM = ASK * THREE * DOTS;
 const NOTIONAL_EQUATION = `${count(THREE * DOTS)} × $${SPOT} = ${usd(NOTIONAL * 100, 0)}`;
+const SHARE_EQUATION = `${usd(PREMIUM, 0)} ÷ ${usd(NOTIONAL * 100, 0)} = ${((PREMIUM / (NOTIONAL * 100)) * 100).toFixed(1)}%`;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -126,10 +128,7 @@ const copy = {
 		"notional subtotal · not what you pay",
 		"名义价值小计 · 不是你付的钱",
 	],
-	share: [
-		`you pay ${(((ASK * THREE * 100) / (THREE * 100 * SPOT * 100)) * 100).toFixed(1)}% of it`,
-		`你只付其中的 ${(((ASK * THREE * 100) / (THREE * 100 * SPOT * 100)) * 100).toFixed(1)}%`,
-	],
+	share: [SHARE_EQUATION, SHARE_EQUATION],
 	shares: ["shares", "股"],
 	timeHead: [
 		"Same contract, two times, two prices.",
@@ -410,7 +409,7 @@ function Scene({
 				x={figX()}
 				y={figRowY(1) + figSize(1) * 1.35 + T.body * 2.3}
 				size={T.body}
-				className="wt-film-type wt-film-dim"
+				className="wt-film-num wt-film-dim"
 			>
 				{t(copy.share)}
 			</Word>
@@ -669,13 +668,15 @@ function build(context: FilmContext) {
 		],
 		34.65,
 	);
+	// The contract bridges the exit tail; the headline waits until the last one has gone.
+	show(one("o-contract"), 34.95);
 	show(heads[5], 35.0);
-	show(one("o-contract"), 35.0);
 	show(one("obs-morning"), 35.25);
 	// Only the two model observations exist: reveal each with all its values settled.
 	// Morning settles at 35.75, then rests for a second before the closing quote.
 	show(one("obs-close"), 36.75);
-	tl.to(one("obs-morning"), { opacity: 0.45, duration: 0.4 }, 36.75);
+	// Keep the morning timestamp and stock-price context fully readable for comparison.
+	tl.to(one("obs-morning-ask"), { opacity: 0.45, duration: 0.4 }, 36.75);
 	// The comparison finishes at 37.5, preserving 2.75 seconds of quiet before the claim.
 	d.trace(one<SVGPathElement>("obs-link"), 36.75, { duration: 0.75 });
 
