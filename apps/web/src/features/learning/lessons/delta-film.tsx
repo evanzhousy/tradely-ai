@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { Fragment, useId } from "react";
+import { useId } from "react";
 import { type Copy, pick, signedCount, signedUsd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -11,6 +11,7 @@ import {
 	filmFrame,
 	Hatch,
 	Lines,
+	lineCount,
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
@@ -43,9 +44,10 @@ import {
  *   question  4–9.5      ALFA $100 → $101: the call moves by about… ?
  *   slope     9.5–17.7   the chart rises from the depth; push in; the $1 step, the $0.52
  *                        rise; carry 0.52 into its definition, full frame
- *   put       17.7–23.7  the number flips to −0.48 while the curve folds into the put
+ *   put       17.7–23.7  the call proof leaves; its hidden geometry swaps to the put,
+ *                        which returns paired with −0.48
  *   position  23.7–32    hero: 0.52 × 100 × 16 = +832, locked; the two positions and their
- *                        +$0.40 dollar estimates settle together after the lock
+ *                        shared +$0.40 multiplier, then dollar estimates, after the lock
  *   limits    32–41.3    the marker rides the curve, a ghost rides the line; compare their
  *                        settled readings before revealing the gap; cut: "Delta is
  *                        local."
@@ -150,9 +152,10 @@ const copy = {
 		`ALFA 在 ${stock(SPOT)} 时，每变动 $1`,
 	],
 	deltaWord: [
-		`delta at ${stock(SPOT)}, per $1 of ALFA`,
-		`ALFA ${stock(SPOT)} 处的 Delta：每变动 $1`,
+		`delta at ${stock(SPOT)}: per share, per $1`,
+		`${stock(SPOT)} 处的 Delta：每股，每 $1`,
 	],
+	deltaWordShort: ["delta: per share, per $1", "Delta：每股，每 $1"],
 	slopeHead: ["Up $1: what does the call gain?", "ALFA 涨 $1：看涨涨多少？"],
 	putHead: ["Puts slope the other way.", "看跌期权的斜率方向相反。"],
 	putSub: [
@@ -177,7 +180,10 @@ const copy = {
 		`× ${signedCount(ben.contracts)}, Ben`,
 		`× Ben ${signedCount(ben.contracts)} 张`,
 	],
-	chip: [`ALFA +$${MOVE.toFixed(2)}`, `ALFA +$${MOVE.toFixed(2)}`],
+	chip: [
+		`ALFA +$${MOVE.toFixed(2)} → × $${MOVE.toFixed(2)}`,
+		`ALFA +$${MOVE.toFixed(2)} → × $${MOVE.toFixed(2)}`,
+	],
 	equivalents: ["share-equivalents of ALFA", "相当于这么多股 ALFA"],
 	pay: [
 		`If ALFA rises $${MOVE.toFixed(2)}: about ${signedUsd(moveDollars(you.contracts), 0)} for you, ${signedUsd(moveDollars(ben.contracts), 0)} for Ben.`,
@@ -231,6 +237,14 @@ function Scene({
 	const keyY = L.headY + T.head * 1.4;
 	const deltaKeyX = keyX + 34 + textWidth(t(copy.model), T.small) + 18;
 	const proofTypeScale = L.narrow ? 2 / PHONE_PROOF_SCALE : 1;
+	const deltaWord = t(L.narrow ? copy.deltaWordShort : copy.deltaWord);
+	// Keep the definition in the number's lane when it moves beside the chart.
+	const deltaWordWidth = W * (L.narrow ? 0.44 : 0.42);
+	const numWordY = H * 0.5 + T.big * 0.36 + T.head * 1.9;
+	const numSubY =
+		numWordY +
+		(lineCount(deltaWord, deltaWordWidth, T.head) - 1) * T.head * 1.35 +
+		T.body * 1.9;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -592,18 +606,18 @@ function Scene({
 				</Word>
 				<Lines
 					name="num-word"
-					text={t(copy.deltaWord)}
+					text={deltaWord}
 					x={W / 2}
-					y={H * 0.5 + T.big * 0.36 + T.head * 1.9}
+					y={numWordY}
 					size={T.head}
-					maxWidth={L.narrow ? W * 0.44 : room}
+					maxWidth={deltaWordWidth}
 					className="wt-film-type wt-film-accent"
 				/>
 				<Lines
 					name="num-sub"
 					text={t(copy.perDollar)}
 					x={W / 2}
-					y={H * 0.5 + T.big * 0.36 + T.head * 1.9 + T.body * 1.9}
+					y={numSubY}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -701,12 +715,12 @@ function Scene({
 				>
 					{signedCount(positionDelta(ben.contracts))}
 				</Word>
-				{/* Name the common stock move alongside both dollar multipliers. */}
+				{/* One common stock move and multiplier applies to both positions. */}
 				<Word
 					name="ch-chip"
 					x={W / 2}
-					y={L.narrow ? L.chipY + 4 : L.multiplyY}
-					size={T.small}
+					y={L.multiplyY}
+					size={T.body * 1.3}
 					className="wt-film-num wt-film-accent"
 				>
 					{t(copy.chip)}
@@ -717,26 +731,16 @@ function Scene({
 						["ben", L.side, ben.contracts, "wt-film-loss"],
 					] as const
 				).map(([holder, dx, contracts, tone]) => (
-					<Fragment key={holder}>
-						<Word
-							name={`ch-multiply-${holder}`}
-							x={W / 2 + dx}
-							y={L.multiplyY}
-							size={T.body * 1.3}
-							className="wt-film-num wt-film-accent"
-						>
-							{`× $${MOVE.toFixed(2)}`}
-						</Word>
-						<Word
-							name={`ch-usd-${holder}`}
-							x={W / 2 + dx}
-							y={L.payY}
-							size={T.num * (L.narrow ? 1.2 : 1)}
-							className={`wt-film-num ${tone}`}
-						>
-							{`≈ ${signedUsd(moveDollars(contracts), 0)}`}
-						</Word>
-					</Fragment>
+					<Word
+						key={holder}
+						name={`ch-usd-${holder}`}
+						x={W / 2 + dx}
+						y={L.payY}
+						size={T.num * (L.narrow ? 1.2 : 1)}
+						className={`wt-film-num ${tone}`}
+					>
+						{`≈ ${signedUsd(moveDollars(contracts), 0)}`}
+					</Word>
 				))}
 				<Lines
 					name="ch-equiv"
@@ -744,16 +748,7 @@ function Scene({
 					x={W / 2}
 					y={L.equivY}
 					size={T.small}
-					maxWidth={L.narrow ? L.side * 1.8 : room}
-					className="wt-film-type wt-film-dim"
-				/>
-				<Lines
-					name="ch-equiv-ben"
-					text={t(copy.equivalents)}
-					x={W / 2 + L.side}
-					y={L.equivY}
-					size={T.small}
-					maxWidth={L.narrow ? L.side * 1.8 : room}
+					maxWidth={room}
 					className="wt-film-type wt-film-dim"
 				/>
 				<Lines
@@ -1060,7 +1055,7 @@ function build(context: FilmContext) {
 	// The completed number and definition settle at 16.9, a quiet second before the put.
 	show(one("num-word"), 16.4);
 
-	// ——— put: the number flips while the curve folds ———
+	// ——— put: replace the complete proof while hidden ———
 	tl.addLabel("put", 17.7);
 	show(one("put-head"), 17.9, "above");
 	tl.to(
@@ -1076,35 +1071,54 @@ function build(context: FilmContext) {
 	);
 	// The chart comes up once the number has moved aside, clear of its labels.
 	rise(18.8);
+	const chartProof = [one("curve-a"), one("curve-b"), tangentLine, marker];
+	// The number and the geometry it names always leave and arrive as a pair.
 	tl.to(
-		[one("curve-a"), one("curve-b")],
-		{ attr: { d: L.path(put) }, duration: 1.3, ease: "power2.inOut" },
-		19.4,
+		[...chartProof, numCall],
+		{ opacity: 0, duration: 0.3, ease: "power2.in" },
+		19.5,
 	);
-	tl.to(marker, { y: L.y(P0), duration: 1.3, ease: "power2.inOut" }, 19.4);
-	tl.to(
+	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(put) } }, 19.8);
+	tl.set(marker, { x: mx, y: L.y(P0) }, 19.8);
+	tl.set(
 		tangentLine,
 		{
 			attr: {
 				y1: L.y(putTangent(X_RANGE[0])),
 				y2: L.y(putTangent(X_RANGE[1])),
 			},
-			duration: 1.3,
-			ease: "power2.inOut",
 		},
-		19.55,
+		19.8,
 	);
-	d.flip(numCall, numPut, 19.5);
+	tl.to(
+		[...chartProof, numPut],
+		{ opacity: 1, duration: 0.35, ease: "power2.out" },
+		19.8,
+	);
 	tl.to(one("marker-label-put"), { opacity: 1, duration: 0.4 }, 20.5);
 	tl.to(one("curve-label-put"), { opacity: 1, duration: 0.4 }, 20.7);
-	// The unfolded −0.48 settles at 20.15; its sentence then holds a full 3.5 s.
+	// Keep the readout's 20.15 settlement and the sentence's full 3.5 s hold.
 	show(one("put-sub"), 20.2);
 
 	// ——— position: the chain ———
 	tl.addLabel("position", 23.7);
 	hide([one("put-head"), one("put-sub"), one("num-word")], 23.7);
 	sink(23.7);
-	d.flip(numPut, numCall, 23.7);
+	// Clear the put geometry with its folding readout before the call returns.
+	tl.to(chartProof, { opacity: 0, duration: 0.3, ease: "power2.in" }, 23.7);
+	tl.to(numPut, { scaleY: 0, duration: 0.3, ease: "power2.in" }, 23.7);
+	tl.fromTo(
+		numCall,
+		{ opacity: 0, scaleY: 0 },
+		{
+			opacity: 1,
+			scaleY: 1,
+			duration: 0.35,
+			ease: "power2.out",
+			immediateRender: false,
+		},
+		24,
+	);
 	// The number shrinks about its own centre to head the chain; a group would scale about
 	// its box corner.
 	tl.to(
@@ -1135,29 +1149,23 @@ function build(context: FilmContext) {
 	d.lock(lockPos, 27.9, { around: one("ch-pos-you"), pad: 4 });
 	tl.addLabel("hero-lock", 27.9);
 	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 27.9);
-	// The lock's settled 1.95 s hold is unchanged. Merge Ben and the dollar estimates
-	// into one comparison, rather than spending a separate beat on two duplicate $0.40 flights.
+	// The lock's settled 1.95 s hold is unchanged. Keep the shared unit caption still;
+	// construct the exposure pair, then the common multiplier, then the dollar results.
 	hide(lockPos, 30.3, 0.3);
 	tl.to(
-		[one("ch-op-you"), one("ch-pos-you"), one("ch-equiv")],
+		[one("ch-op-you"), one("ch-pos-you")],
 		{ x: -L.side, duration: 0.55, ease: "power2.inOut" },
 		30.35,
 	);
-	show(one("ch-op-ben"), 30.45, "below", 0.55);
-	land(one("ch-pos-ben"), 30.45);
-	show(one("ch-equiv-ben"), 30.45, "below", 0.55);
-	// Multipliers and approximate results fade in together with settled values, never
-	// counted. A stationary entrance keeps the lowest phone figures inside the frame.
+	show(one("ch-op-ben"), 30.35, "below", 0.55);
+	land(one("ch-pos-ben"), 30.35);
+	tl.to(one("ch-chip"), { opacity: 1, duration: 0.35 }, 30.45);
+	// Results follow their shared operation, with settled values. Stationary entrances
+	// keep the lowest phone figures inside the frame and preserve the 31.0 completion.
 	tl.to(
-		[
-			one("ch-chip"),
-			one("ch-multiply-you"),
-			one("ch-multiply-ben"),
-			one("ch-usd-you"),
-			one("ch-usd-ben"),
-		],
-		{ opacity: 1, duration: 0.55 },
-		30.45,
+		[one("ch-usd-you"), one("ch-usd-ben")],
+		{ opacity: 1, duration: 0.35 },
+		30.65,
 	);
 	// Both complete columns settle at 31.0 and get one quiet second before the cut.
 
@@ -1174,7 +1182,7 @@ function build(context: FilmContext) {
 	tl.set(axisText, { opacity: 0 }, 32);
 	tl.set(world, home, 32);
 	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 32);
-	tl.set(marker, { y: my }, 32);
+	tl.set(marker, { x: mx, y: my }, 32);
 	tl.set(
 		tangentLine,
 		{
@@ -1185,6 +1193,7 @@ function build(context: FilmContext) {
 		},
 		32,
 	);
+	tl.set(chartProof, { opacity: 1 }, 32);
 	tl.set([one("marker-label-put"), one("curve-label-put")], { opacity: 0 }, 32);
 	// Omit a second chart zoom: its established geometry fades in at rest while the
 	// upside move is made. The old headline clears before the limits headline enters.
