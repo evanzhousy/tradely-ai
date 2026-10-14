@@ -108,8 +108,8 @@ const copy = {
 	venue: ["venue", "场所"],
 	offered: ["initial", "初始"],
 	order: [
-		`buy ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
-		`买 ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
+		`one order · buy ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
+		`一张订单 · 买 ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
 	],
 	average: [
 		`average ${price4(AVERAGE)} · pre-order best ask ${usd(BEST.price)}`,
@@ -125,6 +125,7 @@ const copy = {
 	why: ["Why", "为何"],
 	opened: ["Opened?", "是否开仓"],
 	pHead: ["Two legs, one net debit.", "两条腿，一个净支出。"],
+	multiLeg: ["multi-leg", "多腿"],
 	buyLeg: [
 		`buy ${count(LEGS.buy.quantity)} · 105 call`,
 		`买 ${count(LEGS.buy.quantity)} · 105 看涨`,
@@ -179,6 +180,8 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const orderW = Math.min(room, textWidth(t(copy.order), text) + 24);
+	const tapeX = margin + room * (narrow ? 0.34 : 0.3);
 	const barMax = room - (narrow ? 56 : room * 0.1);
 	const bars: [string, Copy, number, string][] = [
 		["bar-shown", copy.displayed, SHOWN_SIZE, "neutral"],
@@ -227,7 +230,6 @@ function Scene({
 			{headline("s-head", copy.sHead)}
 			{SWEEP.asks.map((ask, i) => {
 				const cx = L.cardX(i) + L.cardW / 2;
-				const fill = FILLS.find((f) => f.venue === ask.venue);
 				return (
 					<g key={ask.venue} data-f={`venue-${i}`}>
 						<rect
@@ -267,21 +269,14 @@ function Scene({
 						>
 							{`${count(ask.size)} ${t(copy.offered)}`}
 						</text>
-						{fill ? (
-							<path
-								data-f={`route-${i}`}
-								d={`M${W / 2} ${L.chipY + L.chipH + 4}L${cx} ${L.cardY - 6}`}
-								className="wt-film-riser"
-							/>
-						) : null}
 					</g>
 				);
 			})}
 			<g data-f="chip">
 				<rect
-					x={W / 2 - (narrow ? 84 : 120)}
+					x={W / 2 - orderW / 2}
 					y={L.chipY}
-					width={narrow ? 168 : 240}
+					width={orderW}
 					height={L.chipH}
 					rx={narrow ? 13 : 16}
 					className="wt-focus-shape"
@@ -306,13 +301,23 @@ function Scene({
 					>
 						{narrow ? TIME.slice(0, 8) : TIME}
 					</text>
+					<Word
+						name={`fill-${i}-quantity`}
+						x={tapeX}
+						y={L.printY(i)}
+						size={text}
+						anchor="start"
+						className="wt-film-num"
+					>
+						{count(fill.size)}
+					</Word>
 					<text
-						x={margin + room * (narrow ? 0.34 : 0.3)}
+						x={tapeX + textWidth(`${count(fill.size)} `, text)}
 						y={L.printY(i)}
 						className="wt-film-num"
 						style={{ fontSize: text }}
 					>
-						{`${count(fill.size)} @ ${usd(fill.price)} · ${fill.venue}`}
+						{`@ ${usd(fill.price)} · ${fill.venue}`}
 					</text>
 					<text
 						x={margin + room}
@@ -324,6 +329,24 @@ function Scene({
 						ISO
 					</text>
 				</g>
+			))}
+			{/* One order's allocations become the tape quantities, in matching mono type. */}
+			{FILLS.map((fill, i) => (
+				<Word
+					key={fill.venue}
+					name={`allocation-${i}`}
+					x={
+						W / 2 +
+						(i - 1) * (narrow ? 42 : 56) -
+						textWidth(count(fill.size), text) / 2
+					}
+					y={L.chipY + L.chipH + 18}
+					size={text}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{count(fill.size)}
+				</Word>
 			))}
 			<g data-f="avg">
 				<Word
@@ -496,6 +519,16 @@ function Scene({
 					>
 						{usd(i === 0 ? LEGS.buy.price : LEGS.sell.price)}
 					</text>
+					<Word
+						name={`leg-${i}-condition`}
+						x={margin + room - 16}
+						y={L.legY(i) + L.legH * 0.74}
+						size={T.small}
+						anchor="end"
+						className="wt-film-tag wt-film-accent"
+					>
+						{t(copy.multiLeg).toUpperCase()}
+					</Word>
 				</g>
 			))}
 			{legs.map((_, i) => (
@@ -627,22 +660,10 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
 			time,
 		);
-	/** A line draws itself from its start. */
-	const draw = (path: SVGPathElement, time: number) => {
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration: 0.45, ease: "power2.out" },
-			time,
-		);
-	};
 	const heads = ["s-head", "b-head", "p-head"].map((name) => one(name));
 	const venues = SWEEP.asks.map((_, i) => one(`venue-${i}`));
-	const routes = FILLS.map((fill) =>
-		one<SVGPathElement>(
-			`route-${SWEEP.asks.findIndex((ask) => ask.venue === fill.venue)}`,
-		),
+	const allocations = FILLS.map((_, i) =>
+		one<SVGTextElement>(`allocation-${i}`),
 	);
 	const fills = FILLS.map((_, i) => one(`fill-${i}`));
 	const legs = [one("leg-0"), one("leg-1")];
@@ -656,7 +677,7 @@ function build(context: FilmContext) {
 		...flat("q"),
 		...heads,
 		...venues,
-		...routes,
+		...allocations,
 		one("chip"),
 		...fills,
 		one("avg"),
@@ -695,20 +716,63 @@ function build(context: FilmContext) {
 		show(venue, 9.3 + i * 0.2);
 	});
 	show(one("chip"), 11.0);
-	routes.forEach((route, i) => {
-		draw(route, 12.0);
-		show(fills[i], 12.5 + i * 0.25, "right");
+	// The allocation and its order arrive together; only the allocation then travels.
+	tl.fromTo(allocations, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 11.0);
+	// Step the initial-quote context back before the allocations pass through its area.
+	tl.to(venues, { opacity: 0.2, duration: 0.5 }, 11.5);
+	allocations.forEach((allocation, i) => {
+		const quantity = one<SVGTextElement>(`fill-${i}-quantity`);
+		const dx =
+			Number(quantity.getAttribute("x")) - Number(allocation.getAttribute("x"));
+		const dy =
+			Number(quantity.getAttribute("y")) - Number(allocation.getAttribute("y"));
+		const start = 12.0 + i * 0.1;
+		const land = start + 1.0;
+		// Separate vertical lanes avoid other allocations; enter each row horizontally only
+		// after reaching its own baseline, clear of the earlier rows and their timestamps.
+		tl.fromTo(
+			allocation,
+			{ x: 0, y: 0 },
+			{
+				x: 0,
+				y: dy,
+				duration: 0.6,
+				ease: "power2.inOut",
+				immediateRender: false,
+			},
+			start,
+		);
+		tl.fromTo(
+			allocation,
+			{ x: 0 },
+			{
+				x: dx,
+				duration: 0.4,
+				ease: "power2.inOut",
+				immediateRender: false,
+			},
+			start + 0.6,
+		);
+		// Hold the landed copy at full opacity while the resting row fades in underneath.
+		// Only then fade the identical overlaid copy; the visible quantity stays settled.
+		// Opacity and position are timeline tweens, so backward seeking restores them too.
+		tl.fromTo(
+			fills[i],
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3, ease: "none" },
+			land,
+		);
+		tl.to(allocation, { opacity: 0, duration: 0.3, ease: "none" }, land + 0.3);
 	});
 	// Keep the cards explicitly historical: fills are not paired with independent counters.
 	// Last row settles at 13.5; the average follows one quiet second later.
+	// Restore its historical quote context alongside the pre-order benchmark.
+	tl.to(venues, { opacity: 1, duration: 0.5 }, 14.5);
 	show(one("avg"), 14.5);
 
 	// ——— block: the hero. Arranged off-screen; the condition says how. ———
 	tl.addLabel("block", 19.2);
-	hide(
-		[heads[0], ...venues, ...routes, one("chip"), ...fills, one("avg")],
-		19.2,
-	);
+	hide([heads[0], ...venues, one("chip"), ...fills, one("avg")], 19.2);
 	show(heads[1], 19.55);
 	show(one("bar-shown"), 20.0, "right");
 	// Geometry and quantity arrive settled together, with a full second after each proof.
@@ -753,7 +817,9 @@ function build(context: FilmContext) {
 		31.0,
 	);
 	show(heads[2], 31.35);
-	show(legs[0], 31.8, "right");
+	// The first leg stays above the fading hero and settles at 31.8, a full second
+	// before the second leg starts; both matching condition labels enter with their cards.
+	show(legs[0], 31.3, "right");
 	show(legs[1], 32.8, "right");
 	// The second leg settles at 33.3; no new arrival until 34.3.
 	show(one("pkg"), 34.3);
@@ -795,8 +861,8 @@ function build(context: FilmContext) {
 export const executionConditionsFilm: Film = {
 	id: "execution-conditions",
 	label: [
-		`Execution conditions, as a short film: one ${SWEEP.quantity}-contract order for the Oct 18 110 call sent to three venues as ISO orders and printed three times, ${FILLS.map((fill) => `${count(fill.size)} at ${usd(fill.price)}`).join(", ")}, for ${price4(AVERAGE)} on average against the pre-order best ask of ${usd(BEST.price)}; a block of ${count(BLOCK.quantity)} 105 calls printed at ${usd(BLOCK.price)} as an auction while only ${SHOWN_SIZE} were displayed; the auction condition supplies how it matched, but who, why and whether it opened remain unknown; and the block's two legs, a 105 call bought at the ask and a 110 call sold inside its quote, read together: ${usd(LEGS.buy.price)} minus ${usd(LEGS.sell.price)} is a ${usd(PACKAGE.price)} net debit for one 105/110 call spread`,
-		`成交条件短片：一张 ${SWEEP.quantity} 张的 10月18日 110 看涨订单以 ISO 方式同时发往三个场所，成交三次：${FILLS.map((fill) => `${usd(fill.price)} 成交 ${count(fill.size)} 张`).join("，")}，平均 ${price4(AVERAGE)}，而成交前最优卖价是 ${usd(BEST.price)}；一笔 ${count(BLOCK.quantity)} 张的 105 看涨大宗以竞价方式在 ${usd(BLOCK.price)} 成交，而屏幕上只挂出 ${SHOWN_SIZE} 张；竞价条件给出撮合方式，但谁、为何、是否开仓仍未知；以及这笔大单的两条腿：在卖价买入的 105 看涨与在报价之内卖出的 110 看涨，买价 ${usd(LEGS.buy.price)} 减去卖价 ${usd(LEGS.sell.price)}，合起来是一个净支出 ${usd(PACKAGE.price)} 的 105/110 看涨价差`,
+		`Execution conditions, as a short film: one ${SWEEP.quantity}-contract order for the Oct 18 110 call sent to three venues as ISO orders and printed three times, ${FILLS.map((fill) => `${count(fill.size)} at ${usd(fill.price)}`).join(", ")}, for ${price4(AVERAGE)} on average against the pre-order best ask of ${usd(BEST.price)}; a block of ${count(BLOCK.quantity)} 105 calls printed at ${usd(BLOCK.price)} as an auction while only ${SHOWN_SIZE} were displayed; the auction condition supplies how it matched, but who, why and whether it opened remain unknown; and the block's two legs, both marked multi-leg: a 105 call bought at the ask and a 110 call sold inside its quote, read together: ${usd(LEGS.buy.price)} minus ${usd(LEGS.sell.price)} is a ${usd(PACKAGE.price)} net debit for one 105/110 call spread`,
+		`成交条件短片：一张 ${SWEEP.quantity} 张的 10月18日 110 看涨订单以 ISO 方式同时发往三个场所，成交三次：${FILLS.map((fill) => `${usd(fill.price)} 成交 ${count(fill.size)} 张`).join("，")}，平均 ${price4(AVERAGE)}，而成交前最优卖价是 ${usd(BEST.price)}；一笔 ${count(BLOCK.quantity)} 张的 105 看涨大宗以竞价方式在 ${usd(BLOCK.price)} 成交，而屏幕上只挂出 ${SHOWN_SIZE} 张；竞价条件给出撮合方式，但谁、为何、是否开仓仍未知；以及这笔大单的两条腿，均标为多腿：在卖价买入的 105 看涨与在报价之内卖出的 110 看涨，买价 ${usd(LEGS.buy.price)} 减去卖价 ${usd(LEGS.sell.price)}，合起来是一个净支出 ${usd(PACKAGE.price)} 的 105/110 看涨价差`,
 	],
 	stage: "dark",
 	shots: [
