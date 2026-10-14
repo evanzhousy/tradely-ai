@@ -51,14 +51,14 @@ import {
  *   question   4–9.5      ALFA +$1, six days later, IV −3 points; call −$0.19. Why?
  *   theta      9.5–19.55  the value drains to expiry, slowly then fast; cut to −$0.065 a day
  *   vega       19.55–25.45 "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
- *   sum        25.45–31.9 hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
+ *   sum        25.45–31.95 hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
  *                         a subordinate repriced −$0.19, locked
- *   rho        31.9–36    $0.042 a rate point
- *   positions  36–45.4    you −$320, Ben +$200; cut: "A good move can still lose."
- *   next       45.4–47.4  Next: 0DTE
+ *   rho        31.95–36.05    $0.042 a rate point
+ *   positions  36.05–45.45    you −$320, Ben +$200; cut: "A good move can still lose."
+ *   next       45.45–47.45  Next: 0DTE
  */
 
-const END = 47.4;
+const END = 47.45;
 const you = contracts("you");
 const ben = contracts("ben");
 const decay = (elapsed: number) =>
@@ -96,7 +96,7 @@ function layout(width: number) {
 	const { height, narrow } = frame;
 	// A phone's axis labels sit left of the plot: room for them inside the frame's edge.
 	const left = frame.margin + (narrow ? 18 : 0);
-	const right = width * 0.965;
+	const right = Math.min(width * 0.965, width - 12);
 	// Headroom for a two-line headline above the charts' captions.
 	const top = height * (narrow ? 0.3 : 0.25);
 	const bottom = height * 0.8;
@@ -132,6 +132,13 @@ function layout(width: number) {
 		yW,
 		barX,
 		barWidth,
+		inputSize: narrow ? 14 : 11,
+		estimateSize: narrow ? 14 : 11,
+		estimateY: height * (narrow ? 0.82 : 0.8),
+		heroY: height * (narrow ? 0.92 : 0.9),
+		factorSize: narrow ? 15 : frame.type.small,
+		factorGap: frame.type.body * (narrow ? 2 : 1.6),
+		resultGap: frame.type.num * (narrow ? 1.6 : 1.3),
 		cells,
 		path: (points: readonly (readonly [number, number])[]) =>
 			points
@@ -195,6 +202,7 @@ const copy = {
 		`对比：一个波动率点 ${price(VEGA, 3)}`,
 	],
 	sumHead: ["Back to the puzzle: add each part.", "回到开头：逐项相加。"],
+	sumHeadShort: ["Back to the puzzle.", "回到开头：逐项相加。"],
 	sumAnswer: [
 		"Time and IV outweighed the move.",
 		"时间和 IV 拿走的，比上涨带来的多。",
@@ -205,15 +213,13 @@ const copy = {
 	],
 	sumAxis: ["change, $ per share", "每股变化（美元）"],
 	posHead: ["Scale last, with signs.", "最后带符号地放大。"],
-	posYou: [`You · long ${you} calls`, `你 · 多头 ${you} 张看涨`],
-	posBen: [
-		`Ben · short ${Math.abs(ben)} calls`,
-		`Ben · 空头 ${Math.abs(ben)} 张看涨`,
-	],
+	posYou: ["You · long calls", "你 · 多头看涨"],
+	posBen: ["Ben · short calls", "Ben · 空头看涨"],
 	posNote: [
 		"Per share × 100 × signed contracts.",
 		"每股变化 × 100 × 带符号张数。",
 	],
+	repricedLabel: ["repriced", "重定价"],
 	repriced: [
 		`repriced ${signedPrice(scenario.repriced)}`,
 		`重定价 ${signedPrice(scenario.repriced)}`,
@@ -242,7 +248,7 @@ const barLabels: Record<(typeof bars)[number]["id"], readonly [Copy, Copy]> = {
 	],
 	vega: [
 		[`vega · −${-SCENARIO.volPoints} pts`, `Vega · −${-SCENARIO.volPoints} 点`],
-		[`V −${-SCENARIO.volPoints} pts`, `V −${-SCENARIO.volPoints}点`],
+		[`IV −${-SCENARIO.volPoints} pts`, `IV −${-SCENARIO.volPoints}点`],
 	],
 	sum: [
 		["estimate", "估算"],
@@ -262,6 +268,7 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow } = L;
 	const W = width;
+	const sumHeadline = t(narrow ? copy.sumHeadShort : copy.sumHead);
 	const id = useId().replace(/:/g, "");
 	const ticksT = narrow ? [0, 16, DAYS] : [0, 8, 16, 24, DAYS];
 	const cellText = [
@@ -425,7 +432,7 @@ function Scene({
 							const linked = next && !("kind" in steps[i]) && i < 3;
 							const up = bar.to >= bar.from;
 							return (
-								<g key={bar.id}>
+								<g key={bar.id} data-f={`w-step-${bar.id}`}>
 									{linked || bar.id === "vega" ? (
 										<line
 											data-f={`w-link-${bar.id}`}
@@ -443,20 +450,25 @@ function Scene({
 											bar.id === "sum" && bar.value < 0 ? "loss" : bar.tone
 										}
 										x={L.barX(i) - L.barWidth / 2}
-										y={L.yW(bar.from)}
+										y={Math.min(L.yW(bar.from), L.yW(bar.to))}
 										width={L.barWidth}
-										height={0}
+										height={Math.abs(L.yW(bar.to) - L.yW(bar.from))}
 										rx={3}
 									/>
 									<text
 										data-f={`w-value-${bar.id}`}
 										x={bar.id === "sum" ? W / 2 : L.barX(i)}
 										style={{
-											fontSize: bar.id === "sum" ? T.num * 1.4 : undefined,
+											fontSize:
+												bar.id === "sum"
+													? T.num * 1.4
+													: narrow
+														? 14
+														: undefined,
 										}}
 										y={
 											bar.id === "sum"
-												? H * 0.9
+												? L.heroY
 												: up
 													? L.yW(bar.to) - 8
 													: L.yW(bar.to) + 16
@@ -476,9 +488,20 @@ function Scene({
 									</text>
 									<text
 										data-f={`w-label-${bar.id}`}
-										x={bar.id === "sum" ? W / 2 : L.barX(i)}
-										y={bar.id === "sum" ? H * 0.8 : L.waterfallBottom + 18}
-										textAnchor="middle"
+										x={
+											bar.id === "sum"
+												? W / 2
+												: narrow && bar.id === "vega"
+													? L.barX(i) - L.barWidth / 2
+													: L.barX(i)
+										}
+										y={bar.id === "sum" ? L.estimateY : L.waterfallBottom + 18}
+										style={{
+											fontSize: bar.id === "sum" ? L.estimateSize : L.inputSize,
+										}}
+										textAnchor={
+											narrow && bar.id === "vega" ? "start" : "middle"
+										}
 										className="wt-small"
 									>
 										{t(barLabels[bar.id][narrow ? 1 : 0])}
@@ -486,16 +509,41 @@ function Scene({
 								</g>
 							);
 						})}
-						<Word
-							name="w-repriced"
-							x={L.right}
-							y={H * 0.8}
-							anchor="end"
-							size={T.small}
-							className="wt-film-type wt-film-loss"
-						>
-							{t(copy.repriced)}
-						</Word>
+						{narrow ? (
+							<g data-f="w-repriced">
+								<Word
+									name="w-repriced-label"
+									x={L.right}
+									y={L.estimateY}
+									anchor="end"
+									size={T.body}
+									className="wt-film-type wt-film-dim"
+								>
+									{t(copy.repricedLabel)}
+								</Word>
+								<Word
+									name="w-repriced-value"
+									x={L.right}
+									y={L.estimateY + T.body * 1.6}
+									anchor="end"
+									size={T.body}
+									className="wt-film-num wt-film-loss"
+								>
+									{signedPrice(scenario.repriced)}
+								</Word>
+							</g>
+						) : (
+							<Word
+								name="w-repriced"
+								x={L.right}
+								y={L.estimateY}
+								anchor="end"
+								size={T.small}
+								className="wt-film-type wt-film-loss"
+							>
+								{t(copy.repriced)}
+							</Word>
+						)}
 					</g>
 				</g>
 			</g>
@@ -623,7 +671,7 @@ function Scene({
 			</g>
 			<Lines
 				name="s-head"
-				text={t(copy.sumHead)}
+				text={sumHeadline}
 				x={L.margin}
 				y={L.headY}
 				size={T.head}
@@ -635,7 +683,7 @@ function Scene({
 				name="s-answer"
 				text={t(narrow ? copy.sumAnswerShort : copy.sumAnswer)}
 				x={L.margin}
-				y={L.headY + lineCount(t(copy.sumHead), room, T.head) * T.head * 1.35}
+				y={L.headY + lineCount(sumHeadline, room, T.head) * T.head * 1.35}
 				size={T.head}
 				maxWidth={room}
 				anchor="start"
@@ -661,7 +709,7 @@ function Scene({
 							name={`p-who-${i}`}
 							x={W / 2}
 							y={H * f}
-							size={T.body}
+							size={narrow ? 14 : T.body}
 							className="wt-film-type wt-film-dim"
 						>
 							{t(who)}
@@ -669,8 +717,8 @@ function Scene({
 						<Word
 							name={`p-factor-${i}`}
 							x={W / 2}
-							y={H * f + T.body * 1.6}
-							size={T.small}
+							y={H * f + L.factorGap}
+							size={L.factorSize}
 							className="wt-film-num wt-film-dim"
 						>
 							{`${signedPrice(scenario.total)} × 100 × (${quantity > 0 ? "+" : "−"}${Math.abs(quantity)})`}
@@ -678,7 +726,7 @@ function Scene({
 						<Word
 							name={`p-num-${i}`}
 							x={W / 2}
-							y={H * f + T.body * 1.6 + T.num * 1.3}
+							y={H * f + L.factorGap + L.resultGap}
 							size={T.num}
 							className={`wt-film-num ${tone}`}
 						>
@@ -756,13 +804,9 @@ function build(context: FilmContext) {
 		marker,
 		one("t-today"),
 		one("t-last"),
-		one("w-bar-sum"),
-		one("w-label-sum"),
+		one("w-step-vega"),
+		one("w-step-sum"),
 		one("w-repriced"),
-		...bars.flatMap((bar) => [
-			one(`w-value-${bar.id}`),
-			...(one(`w-link-${bar.id}`) ? [one(`w-link-${bar.id}`)] : []),
-		]),
 		...kids("q").flatMap((el) =>
 			el.tagName === "g" ? [...el.children] : [el],
 		),
@@ -848,108 +892,75 @@ function build(context: FilmContext) {
 		kids("v").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
 		25.45,
 	);
-	tl.set(chartTheta, { opacity: 0 }, 25.65);
-	tl.set(chartSum, { opacity: 1 }, 25.65);
-	show(one("s-head"), 25.8);
-	rise(25.85);
-	const grow = (index: number, at: number) => {
-		const bar = bars[index];
-		const top = Math.min(L.yW(bar.from), L.yW(bar.to));
-		const height = Math.abs(L.yW(bar.to) - L.yW(bar.from));
-		tl.fromTo(
-			one(`w-bar-${bar.id}`),
-			{ attr: { y: L.yW(bar.from), height: 0 } },
-			{
-				attr: { y: top, height },
-				duration: 0.55,
-				ease: "power3.out",
-			},
-			at,
-		);
-		// Reveal the settled reading only after its bar reaches the labelled value.
-		tl.fromTo(
-			one(`w-value-${bar.id}`),
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.5 },
-			at + 0.55,
-		);
-		const link = one(`w-link-${bar.id}`);
-		if (link)
-			tl.fromTo(link, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.55);
-	};
-	// Delta and gamma share one stock-move construction. The other two inputs
-	// follow at the original 0.3 s stagger; every bar keeps its 0.55 s growth and
-	// every value keeps its 0.5 s entrance. Repricing is an annotation, not a bar.
-	grow(0, 25.7);
-	grow(1, 25.7);
-	grow(2, 26.0);
-	grow(3, 26.3);
-	const sum = bars[4];
-	gsap.set(one("w-bar-sum"), {
-		attr: {
-			y: Math.min(L.yW(sum.from), L.yW(sum.to)),
-			height: Math.abs(L.yW(sum.to) - L.yW(sum.from)),
-		},
-	});
+	// The already-taught stock terms and the time term enter as one settled
+	// construction. A shared fade replaces independent bar growth, value and link
+	// entrances: every visible label describes its fixed, final geometry.
+	tl.set(chartTheta, { opacity: 0 }, 25.45);
+	tl.set(chartSum, { opacity: 1 }, 25.45);
+	tl.set(one("depth"), { scale: 1 }, 25.45);
 	tl.fromTo(
-		[one("w-value-sum"), one("w-label-sum"), one("w-repriced")],
+		one("depth"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5, ease: "power2.in" },
+		25.45,
+	);
+	show(one("s-head"), 25.45);
+	// Time rests for 1 s after its construction settles at 25.95. IV and the
+	// completed estimate then share one reveal, with another full second of rest.
+	tl.fromTo(
+		[one("w-step-vega"), one("w-step-sum"), one("w-repriced")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		26.9,
+		26.95,
 	);
-	// The result bar keeps the old bar's 0.55 s entrance, revealing its final
-	// geometry only after all four contributions have settled.
-	tl.fromTo(
-		one("w-bar-sum"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.55 },
-		26.85,
-	);
-	// The parts' sum, beside the model's figure: they account for the move.
-	d.lock(lockSum, 28.4, {
+	d.lock(lockSum, 28.45, {
 		around: [one("w-value-sum")],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 28.4);
-	show(one("s-answer"), 28.4);
+	tl.addLabel("hero-lock", 28.45);
+	show(one("s-answer"), 28.45);
 
 	// ——— rho: rates, briefly ———
-	tl.addLabel("rho", 31.9);
-	hide([one("s-head"), one("s-answer"), lockSum], 31.9);
-	sink(31.9);
-	land(one("rh-num"), 32.2);
-	show(one("rh-word"), 32.4);
-	show(one("rh-sub"), 32.5);
-	show(one("rh-compare"), 32.8);
+	tl.addLabel("rho", 31.95);
+	hide([one("s-head"), one("s-answer"), lockSum], 31.95);
+	sink(31.95);
+	land(one("rh-num"), 32.25);
+	show(one("rh-word"), 32.45);
+	show(one("rh-sub"), 32.55);
+	show(one("rh-compare"), 32.85);
 
 	// ——— positions: scale last, with signs ———
-	tl.addLabel("positions", 36.0);
-	hide([...kids("rh"), one("rh-compare")], 36.0);
-	show(one("p-head"), 36.35);
-	show(one("p-factor-0"), 36.3);
-	show(one("p-who-0"), 36.6);
-	land(one("p-num-0"), 36.8);
-	show(one("p-factor-1"), 36.8);
-	show(one("p-who-1"), 37.1);
-	land(one("p-num-1"), 37.3);
-	show(one("p-note"), 37.6);
+	tl.addLabel("positions", 36.05);
+	hide([...kids("rh"), one("rh-compare")], 36.05);
+	show(one("p-head"), 36.4);
+	show(one("p-note"), 36.4);
+	// One holder at a time: identity, signed operands, then a settled result.
+	// Compact holder labels leave the contract count in the enlarged formula.
+	show(one("p-who-0"), 36.05);
+	show(one("p-factor-0"), 36.55);
+	land(one("p-num-0"), 37.05);
+	// The long result settles at 37.6 and stands for 1 s before Ben arrives.
+	show(one("p-who-1"), 38.6);
+	show(one("p-factor-1"), 39.1);
+	land(one("p-num-1"), 39.6);
+	// The short result settles at 40.15, with 1 s of quiet before the claim.
 	// Cut: the claim.
 	hide(
 		kids("p").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		41.1,
+		41.15,
 	);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		41.4,
+		41.45,
 	);
-	show(one("c-sub"), 41.8);
+	show(one("c-sub"), 41.85);
 
 	// ——— next ———
-	tl.addLabel("next", 45.4);
-	hide(kids("claim"), 45.4);
-	d.close(45.4);
+	tl.addLabel("next", 45.45);
+	hide(kids("claim"), 45.45);
+	d.close(45.45);
 	return tl;
 }
 
