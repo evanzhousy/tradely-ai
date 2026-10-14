@@ -16,6 +16,7 @@ import {
 	BEARISH,
 	BULLISH,
 	CALL_100,
+	CALL_CREDIT,
 	CREDIT,
 	callSpread,
 	condor,
@@ -26,6 +27,7 @@ import {
 	PACKAGE_CREDIT,
 	PACKAGE_RISK,
 	PUT_100,
+	PUT_CREDIT,
 	putSpread,
 	RANGE,
 	SIZE,
@@ -33,6 +35,7 @@ import {
 	STRADDLE_HIGH,
 	STRADDLE_LOW,
 	straddle,
+	WIDTH,
 	worth,
 } from "./multi-leg-structures-model";
 
@@ -60,11 +63,12 @@ const CENTS = (perShare: number) => Math.round(perShare * 100);
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
 const share = (dollars: number) => usd(CENTS(dollars));
 const NET_LABELS = BULLISH - BEARISH;
-const SOLD_PREMIUM = LEGS.filter((leg) => leg.side === "sell").reduce(
-	(sum, leg) => sum + legPremium(leg),
-	0,
-);
-const BOUGHT_PREMIUM = LEGS.filter((leg) => leg.side === "buy").reduce(
+// Model curves use a 100-share contract; WIDTH is dollars per share.
+const WING_PAYOUT = CENTS(WIDTH) * 100;
+const SOLD_ROWS = LEGS.filter((leg) => leg.side === "sell");
+const BOUGHT_ROWS = LEGS.filter((leg) => leg.side === "buy");
+const SOLD_PREMIUM = SOLD_ROWS.reduce((sum, leg) => sum + legPremium(leg), 0);
+const BOUGHT_PREMIUM = BOUGHT_ROWS.reduce(
 	(sum, leg) => sum + legPremium(leg),
 	0,
 );
@@ -81,6 +85,9 @@ function layout(width: number) {
 	const right = margin + room;
 	const top = H * (narrow ? 0.3 : 0.28);
 	const bottom = H * 0.84;
+	const cardY = H * (narrow ? 0.63 : 0.64);
+	const cardH = H * (narrow ? 0.32 : 0.28);
+	const compactCard = !narrow && width < 700;
 	return {
 		...frame,
 		left,
@@ -95,8 +102,14 @@ function layout(width: number) {
 			H * (narrow ? 0.26 : 0.27) + i * H * (narrow ? 0.085 : 0.09),
 		rowH: H * (narrow ? 0.07 : 0.075),
 		tallyY: H * (narrow ? 0.67 : 0.68),
-		cardY: H * (narrow ? 0.63 : 0.64),
-		cardH: H * (narrow ? 0.22 : 0.2),
+		cardY,
+		cardH,
+		compactCard,
+		saleSumY: cardY + cardH * (compactCard ? 0.2 : narrow ? 0.32 : 0.34),
+		purchaseSumY: cardY + cardH * (narrow ? 0.48 : compactCard ? 0.2 : 0.34),
+		netY: cardY + cardH * (compactCard ? 0.45 : narrow ? 0.64 : 0.56),
+		resultY: cardY + cardH * (compactCard ? 0.72 : narrow ? 0.8 : 0.77),
+		rangeY: cardY + cardH * (compactCard ? 0.93 : 0.94),
 	};
 }
 
@@ -126,13 +139,19 @@ const copy = {
 		"卖出 95 看跌 · 买入 90 看跌 · 卖出 105 看涨 · 买入 110 看涨",
 	],
 	qBig: ["Bullish or bearish?", "看涨还是看跌？"],
-	sHead: ["A straddle needs a big move.", "跨式需大幅变动。"],
+	sHead: ["A long straddle needs a big move.", "买入跨式需大幅变动。"],
 	cHead: ["An iron condor: two credit spreads.", "铁鹰：两个收入价差。"],
 	c2Head: ["It sells a range.", "它卖出的是一个区间。"],
 	callLeg: ["100 call", "100 看涨"],
 	putLeg: ["100 put", "100 看跌"],
-	putSpread: ["put spread", "看跌价差"],
-	callSpread: ["call spread", "看涨价差"],
+	putSpread: [
+		`put credit ${usd(CENTS(PUT_CREDIT) * 100, 0)}`,
+		`看跌收入 ${usd(CENTS(PUT_CREDIT) * 100, 0)}`,
+	],
+	callSpread: [
+		`call credit ${usd(CENTS(CALL_CREDIT) * 100, 0)}`,
+		`看涨收入 ${usd(CENTS(CALL_CREDIT) * 100, 0)}`,
+	],
 	valueAxis: ["Oct 18 value · 100 shares/leg", "10月18日价值 · 每腿100股"],
 	straddleAxis: ["Oct 18 profit · per straddle", "10月18日盈亏 · 每组跨式"],
 	condorAxis: ["Oct 18 profit · per condor", "10月18日盈亏 · 每组铁鹰"],
@@ -158,6 +177,7 @@ const copy = {
 		`净额 ${signedUsd(NET_LABELS, 0)}：“略偏看跌”`,
 	],
 	pkgTag: [`linked package · ${SIZE} condors`, `关联整体 · ${SIZE} 组铁鹰`],
+	pkgLinked: ["linked", "关联"],
 	pkgCredit: [
 		`${signedUsd(PACKAGE_CREDIT, 0)} collected`,
 		`收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
@@ -431,23 +451,26 @@ function Scene({
 						d={path(C_Y, condor)}
 						className="wt-line-position"
 					/>
-					{label(
-						"c-put-tag",
-						L.x(84) + 6,
-						// Under the line on a phone: above it, the name runs into the rise.
-						L.y(C_Y, putSpread(84) * 100) + (narrow ? 18 : -10),
-						t(copy.putSpread),
-						"wt-film-type",
-						"start",
-					)}
-					{label(
-						"c-call-tag",
-						L.x(116) - 6,
-						L.y(C_Y, callSpread(116) * 100) + (narrow ? 18 : -10),
-						t(copy.callSpread),
-						"wt-film-type",
-						"end",
-					)}
+					<text
+						data-f="c-put-tag"
+						x={L.right - 6}
+						y={L.y(C_Y, PUT_CREDIT * 100) - 16}
+						textAnchor="end"
+						className="wt-film-type wt-halo"
+						style={{ fontSize: T.small * 1.15 }}
+					>
+						{t(copy.putSpread)}
+					</text>
+					<text
+						data-f="c-call-tag"
+						x={L.left + 6}
+						y={L.y(C_Y, CALL_CREDIT * 100) - 16}
+						textAnchor="start"
+						className="wt-film-type wt-halo"
+						style={{ fontSize: T.small * 1.15 }}
+					>
+						{t(copy.callSpread)}
+					</text>
 					<g data-f="c-range">
 						<rect
 							x={L.x(95)}
@@ -484,14 +507,17 @@ function Scene({
 					>
 						{perContract(CREDIT)}
 					</text>
-					{label(
-						"c-risk",
-						L.x(84) + 6,
-						L.y(C_Y, condor(84) * 100) + 22,
-						perContract(-MAX_LOSS),
-						"wt-film-loss",
-						"start",
-					)}
+					<text
+						data-f="c-risk"
+						x={L.left + 6}
+						y={L.y(C_Y, -MAX_LOSS * 100) + 22}
+						className="wt-film-num wt-halo"
+						style={{ fontSize: T.small * 1.15 }}
+					>
+						<tspan className="wt-film-gain">{perContract(CREDIT)}</tspan>
+						<tspan>{` − ${usd(WING_PAYOUT, 0)} = `}</tspan>
+						<tspan className="wt-film-loss">{perContract(-MAX_LOSS)}</tspan>
+					</text>
 					<Brackets name="lock-keep" glow />
 				</g>
 			</g>
@@ -619,17 +645,18 @@ function Scene({
 					className="wt-focus-shape"
 				/>
 				<text
-					x={margin + 16}
-					y={L.cardY + L.cardH * 0.18}
+					x={L.compactCard ? margin + room - 16 : margin + 16}
+					y={L.compactCard ? L.netY : L.cardY + L.cardH * 0.14}
+					textAnchor={L.compactCard ? "end" : "start"}
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
-					{t(copy.pkgTag).toUpperCase()}
+					{t(L.compactCard ? copy.pkgLinked : copy.pkgTag).toUpperCase()}
 				</text>
 				<text
 					data-f="pkg-result"
 					x={margin + 16}
-					y={L.cardY + L.cardH * 0.66}
+					y={L.resultY}
 					className="wt-film-num wt-film-gain"
 					style={{ fontSize: narrow ? T.head : T.body * 1.25 }}
 				>
@@ -637,7 +664,7 @@ function Scene({
 				</text>
 				<text
 					x={margin + 16}
-					y={L.cardY + L.cardH * 0.9}
+					y={L.rangeY}
 					className="wt-film-type wt-film-dim"
 					style={{ fontSize: T.small * 1.1 }}
 				>
@@ -645,10 +672,28 @@ function Scene({
 				</text>
 			</g>
 
+			<g data-f="cash-additions">
+				<text
+					x={margin + 16}
+					y={L.saleSumY}
+					className="wt-film-num wt-film-gain"
+					style={{ fontSize: T.body }}
+				>
+					{`${SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")} = ${usd(SOLD_PREMIUM, 0)}`}
+				</text>
+				<text
+					x={narrow ? margin + 16 : margin + room / 2 + 8}
+					y={L.purchaseSumY}
+					className="wt-film-num wt-film-loss"
+					style={{ fontSize: T.body }}
+				>
+					{`${BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")} = ${usd(BOUGHT_PREMIUM, 0)}`}
+				</text>
+			</g>
 			<text
 				data-f="pkg-equation"
 				x={margin + 16}
-				y={L.cardY + L.cardH * 0.41}
+				y={L.netY}
 				className="wt-film-num"
 				style={{ fontSize: T.body }}
 			>
@@ -732,6 +777,7 @@ function build(context: FilmContext) {
 		one("cash-groups"),
 		one("tally"),
 		one("pkg"),
+		one("cash-additions"),
 		one("pkg-equation"),
 		one("pkg-result"),
 		...kids("claim"),
@@ -792,9 +838,9 @@ function build(context: FilmContext) {
 	show(one("axes-c"), 18.6);
 	fadeIn(one("c-caption"), 18.6);
 	draw(p("c-put"), 19.2);
-	show(one("c-put-tag"), 19.4, "right");
+	fadeIn(one("c-put-tag"), 19.4);
 	draw(p("c-call"), 20.9);
-	show(one("c-call-tag"), 20.9, "right");
+	fadeIn(one("c-call-tag"), 20.9);
 	// Put settles at 19.9, call at 21.6: each gets 1 s before the next proof.
 	tl.to([p("c-put"), p("c-call")], { opacity: 0.2, duration: 0.4 }, 22.6);
 	hide(one("c-put-tag"), 22.6, 0.3);
@@ -837,7 +883,8 @@ function build(context: FilmContext) {
 			33.6,
 		);
 	});
-	// Grouping settles at 34.1, then gets 1 s before the settled sums appear.
+	// Grouping settles at 34.1; each row addition and its result reveal settled at 35.1.
+	fadeIn(one("cash-additions"), 35.1);
 	fadeIn(one("pkg-equation"), 35.1);
 	// Cash arithmetic settles at 35.6; preserve its existing 1.3 s quiet interval.
 	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 36.9);
@@ -855,6 +902,7 @@ function build(context: FilmContext) {
 			...legs,
 			one("cash-groups"),
 			one("pkg"),
+			one("cash-additions"),
 			one("pkg-equation"),
 		],
 		40.4,
