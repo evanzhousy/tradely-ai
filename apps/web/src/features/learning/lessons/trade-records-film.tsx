@@ -20,6 +20,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	aggregate,
 	CONTRACT_MULTIPLIER,
@@ -31,14 +32,14 @@ import {
 /*
  * Two clean 105-call prints become a row. Feed rows persist while only changed counters
  * swap in place, without invented partial trades. The hero is built from both premium contributions,
- * their sum and the 505 × 100 share denominator; its settled quotient is the loudest mark.
+ * carried into their sum, then into the 50,500-share fraction; its settled quotient dominates.
  * The 110-call print stays outside the traced 105-call boundary, with all inputs retained.
  *
  *   open      0–4        Tape rows
  *   question  4–8.6      5 at $2.00, 500 at $2.15: average $2.075?
  *   row       8.6–13.6   two prints; settled 505 contracts and 2 trades
  *   feed      13.6–26    six incremental states; preserve the 3.1 s final inspection hold
- *   average   26–34.4    contributions → numerator / denominator → quotient; lock at 30.8
+ *   average   26–34.4    carried contributions → sum → fraction; lock at 30.8
  *   leg       34.4–40.6 excluded 110 call: 500 at $0.90; trace the 105-call boundary
  *   claim     40.6–45    one row, many prints; one trade, many messages
  *   next      45–47.5    Next: execution conditions
@@ -120,9 +121,10 @@ const copy = {
 	trades: ["trades", "笔数"],
 	average: ["average paid", "平均成交价"],
 	simple: [
-		`Simple ${price4(ROW.simple)} · no weighting`,
-		`简单平均 ${price4(ROW.simple)} · 未加权`,
+		`${CONTRACT_MULTIPLIER} shares per contract · simple ${price4(ROW.simple)}`,
+		`每张 ${CONTRACT_MULTIPLIER} 股 · 简单平均 ${price4(ROW.simple)}`,
 	],
+	shares: ["shares", "股数"],
 	excluded: ["excluded", "不计入"],
 	leg: [
 		`${pick(LEG.contract, "en")} · ${count(LEG.quantity)} at ${usd(LEG.price)}`,
@@ -170,9 +172,16 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const proofText = narrow ? T.body : text;
-	// Leave a full em above the baseline, plus 14 px beyond the card's bottom edge.
-	const sumY = L.printY(1) + L.printH + 14 + proofText;
-	const sumOffset = sumY - H * 0.445;
+	// Equal-size mono operands can travel onto resting copies without a typeface/size jump.
+	const carryText = T.num * 0.8;
+	const cardBottom = L.printY(1) + L.printH;
+	const cardWidth = (room - 12) / 2;
+	const sumY = cardBottom + 14 + carryText;
+	const shareY = sumY + H * 0.065;
+	const premiumLeft = usd(CONTRIBUTIONS[0], 0);
+	const premiumRight = usd(CONTRIBUTIONS[1], 0);
+	const sumX = (prefix: string) => margin + textWidth(prefix, carryText);
+	const sharePrefix = `${count(ROW.contracts)} × ${CONTRACT_MULTIPLIER} = `;
 	const stats: [string, Copy, string, number, number][] = [
 		["s-contracts", copy.contracts, count(ROW.contracts), 0, 0],
 		["s-trades", copy.trades, String(ROW.trades), 1, 0],
@@ -286,56 +295,134 @@ function Scene({
 					</text>
 				</g>
 			))}
-			{/* Each print makes its premium contribution, with the multiplier visible. */}
+			{/* Two side-by-side proofs leave separate, unobstructed lanes for their values. */}
 			{PRINTS.map((print, i) => (
 				<g key={print.trade} data-f={`contribution-${i}`}>
 					<rect
-						x={margin}
-						y={L.printY(i)}
-						width={room}
-						height={L.printH}
+						x={margin + i * (cardWidth + 12)}
+						y={L.printY(0)}
+						width={cardWidth}
+						height={cardBottom - L.printY(0)}
 						rx={10}
 						className="wt-panel-shape"
 					/>
-					<text
-						x={margin + 12}
-						y={L.printY(i) + L.printH / 2 + proofText * 0.36}
+					<Word
+						name={`contribution-${i}-inputs`}
+						x={margin + i * (cardWidth + 12) + 12}
+						y={L.printY(0) + proofText + 2}
+						size={proofText}
+						anchor="start"
 						className="wt-film-num"
-						style={{ fontSize: proofText }}
 					>
-						{`${count(print.quantity)} × ${usd(print.price)} × ${CONTRACT_MULTIPLIER}`}
-					</text>
-					<text
-						x={margin + room - 12}
-						y={L.printY(i) + L.printH / 2 + proofText * 0.36}
-						textAnchor="end"
+						{`${count(print.quantity)} × ${usd(print.price)}`}
+					</Word>
+					<Word
+						name={`contribution-${i}-multiplier`}
+						x={margin + i * (cardWidth + 12) + 12}
+						y={L.printY(0) + proofText * 2.15 + 2}
+						size={proofText}
+						anchor="start"
+						className="wt-film-num"
+					>
+						{`× ${CONTRACT_MULTIPLIER} =`}
+					</Word>
+					<Word
+						name={`contribution-${i}-value`}
+						x={margin + i * (cardWidth + 12) + 12}
+						y={cardBottom - 4}
+						size={carryText}
+						anchor="start"
 						className="wt-film-num wt-film-accent"
-						style={{ fontSize: proofText }}
 					>
-						{`= ${usd(CONTRIBUTIONS[i], 0)}`}
-					</text>
+						{usd(CONTRIBUTIONS[i], 0)}
+					</Word>
 				</g>
 			))}
-			<Word
-				name="premium-sum"
-				x={margin}
-				y={sumY}
-				size={proofText}
-				anchor="start"
-				className="wt-film-num"
-			>
-				{`${usd(CONTRIBUTIONS[0], 0)} + ${usd(CONTRIBUTIONS[1], 0)} = ${usd(ROW.premium, 0)}`}
-			</Word>
-			<Word
-				name="share-product"
-				x={margin}
-				y={H * 0.51 + sumOffset}
-				size={proofText}
-				anchor="start"
-				className="wt-film-num"
-			>
-				{`${count(ROW.contracts)} × ${CONTRACT_MULTIPLIER} = ${count(ROW.shares)}`}
-			</Word>
+			<g data-f="premium-sum">
+				<Word
+					name="sum-left"
+					x={margin}
+					y={sumY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{premiumLeft}
+				</Word>
+				<Word
+					name="sum-plus"
+					x={sumX(`${premiumLeft} `)}
+					y={sumY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					+
+				</Word>
+				<Word
+					name="sum-right"
+					x={sumX(`${premiumLeft} + `)}
+					y={sumY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num wt-film-accent"
+				>
+					{premiumRight}
+				</Word>
+				<Word
+					name="sum-equals"
+					x={sumX(`${premiumLeft} + ${premiumRight} `)}
+					y={sumY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					=
+				</Word>
+				<Word
+					name="premium-total"
+					x={sumX(`${premiumLeft} + ${premiumRight} = `)}
+					y={sumY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{usd(ROW.premium, 0)}
+				</Word>
+			</g>
+			<g data-f="share-product">
+				<Word
+					name="share-prefix"
+					x={margin}
+					y={shareY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{sharePrefix}
+				</Word>
+				<Word
+					name="share-total"
+					x={sumX(sharePrefix)}
+					y={shareY}
+					size={carryText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{count(ROW.shares)}
+				</Word>
+				<Word
+					name="share-product-unit"
+					x={margin}
+					y={shareY + proofText * 1.25}
+					size={proofText}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.shares)}
+				</Word>
+			</g>
+
 			<g data-f="fraction">
 				<Word
 					name="fraction-premium"
@@ -361,6 +448,15 @@ function Scene({
 					{count(ROW.shares)}
 				</Word>
 				<Word
+					name="fraction-unit"
+					x={L.fractionX}
+					y={H * 0.77}
+					size={T.small}
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.shares)}
+				</Word>
+				<Word
 					name="fraction-equals"
 					x={margin + room * 0.44}
 					y={H * 0.715}
@@ -374,7 +470,7 @@ function Scene({
 				<Word
 					name="average-tag"
 					x={L.heroX}
-					y={H * 0.715 - T.num * 1.6 * 1.05}
+					y={narrow ? H * 0.6 : H * 0.715 - T.num * 1.6 * 1.05}
 					size={T.small}
 					anchor="start"
 					className="wt-film-tag"
@@ -395,8 +491,8 @@ function Scene({
 			<Word
 				name="simple"
 				x={margin}
-				y={H * 0.8}
-				size={T.small * 1.1}
+				y={H * 0.815}
+				size={proofText}
 				anchor="start"
 				className="wt-film-type wt-film-dim"
 			>
@@ -491,18 +587,26 @@ function Scene({
 							>
 								{t(kindCopy[message.kind])}
 							</text>
-							<text
-								x={margin + L.msgW - 12}
-								y={L.msgY(i) + L.msgH / 2 + text * 0.36}
-								textAnchor="end"
-								className="wt-film-num"
-								style={{ fontSize: text }}
-							>
-								{message.quantity !== undefined && message.price !== undefined
-									? `${message.trade} · ${count(message.quantity)} @ ${usd(message.price)}`
-									: message.trade}
-							</text>
 						</g>
+						<text
+							data-f={`msg-${i}-values`}
+							opacity={
+								message.kind === "duplicate"
+									? 0.5
+									: message.kind === "cancel"
+										? 0.45
+										: 1
+							}
+							x={margin + L.msgW - 12}
+							y={L.msgY(i) + L.msgH / 2 + text * 0.36}
+							textAnchor="end"
+							className="wt-film-num"
+							style={{ fontSize: text }}
+						>
+							{message.quantity !== undefined && message.price !== undefined
+								? `${message.trade} · ${count(message.quantity)} @ ${usd(message.price)}`
+								: message.trade}
+						</text>
 					</g>
 				))}
 				{COUNTER_NAMES.map((name, col) => (
@@ -597,6 +701,34 @@ function build(context: FilmContext) {
 			{ opacity: 1, duration, immediateRender: false },
 			time,
 		);
+	const carryOnto = (
+		from: string,
+		to: string,
+		at: number,
+		duration: number,
+		arc: "x" | "y" = "x",
+	) => {
+		d.carry(one<SVGGraphicsElement>(from), one<SVGGraphicsElement>(to), at, {
+			duration,
+			arc,
+			fit: false,
+			reveal: false,
+		});
+		const flyer = one("carry-layer").lastElementChild;
+		if (flyer)
+			tl.fromTo(
+				flyer,
+				{ opacity: 1 },
+				{
+					opacity: 0,
+					duration: 0.3,
+					ease: "power3.in",
+					immediateRender: false,
+				},
+				at + duration - 0.3,
+			);
+	};
+
 	const prints = PRINTS.map((_, i) => one(`print-${i}`));
 	const stats = [one("s-contracts"), one("s-trades")];
 	const messages = MESSAGES.map((_, i) => one(`msg-${i}`));
@@ -614,6 +746,7 @@ function build(context: FilmContext) {
 		one("premium-sum"),
 		one("share-product"),
 		one("fraction"),
+		one("fraction-equals"),
 		one("s-average"),
 		one("simple"),
 	];
@@ -684,18 +817,40 @@ function build(context: FilmContext) {
 				{ opacity: 0.45, duration: 0.3, immediateRender: false },
 				time,
 			);
+			tl.fromTo(
+				one(`msg-${target}-values`),
+				{ opacity: 1 },
+				{ opacity: 0.78, duration: 0.3, immediateRender: false },
+				time,
+			);
 		}
 	});
 
 	tl.addLabel("average", 26);
 	hide([one("f-head"), one("feed")], 26);
 	show(one("a-head"), 26.35);
-	// Contributions settle at 26.9. Build the numerator and denominator as one step,
-	// then give the complete operands and the settled division 1 s quiet apiece.
+	// Both proofs retain their original settlement and 1 s quiet intervals.
 	fade(contributions, 26.4);
-	fade([one("premium-sum"), one("share-product")], 27.9, 0.4);
-	fade([one("fraction"), one("s-average"), one("simple")], 29.3);
-	d.trace(one<SVGPathElement>("fraction-rule"), 29.3, { duration: 0.5 });
+	carryOnto("contribution-0-value", "sum-left", 27.9, 0.4);
+	carryOnto("contribution-1-value", "sum-right", 27.9, 0.4);
+	hide(contributions, 27.9, 0.3, 0);
+	// Complete resting equations fade under the arriving copies; every equation is settled.
+	fade([one("premium-sum"), one("share-product")], 28.0, 0.3);
+	fade(one("simple"), 27.9, 0.4);
+	carryOnto("premium-total", "fraction-premium", 29.3, 0.5, "y");
+	carryOnto("share-total", "fraction-shares", 29.3, 0.5, "y");
+	// Clear source glyphs early in the flight, with explicit endpoints for reverse seeks.
+	tl.fromTo(
+		[one("premium-sum"), one("share-product")],
+		{ opacity: 1 },
+		{ opacity: 0, duration: 0.3, ease: "power3.out", immediateRender: false },
+		29.3,
+	);
+	fade([one("fraction"), one("s-average")], 29.5, 0.3);
+	d.trace(one<SVGPathElement>("fraction-rule"), 29.5, { duration: 0.3 });
+	// The numerator's flight crosses the equals sign's column; it joins once both land.
+	fade(one("fraction-equals"), 29.8, 0.3);
+
 	d.lock(lockAverage, 30.8, { around: one("s-average"), pad: 6 });
 	tl.addLabel("hero-lock", 30.8);
 	show(one("a2-head"), 30.8);
