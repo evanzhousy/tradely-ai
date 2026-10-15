@@ -179,12 +179,24 @@ const copy = {
 		`vol ≥ ${screenDefaults.minVolume} · OI ≥ ${screenDefaults.minOpenInterest} · vol/OI ≥ ${screenDefaults.minVolumeToOi}`,
 		`成交量 ≥ ${screenDefaults.minVolume} · OI ≥ ${screenDefaults.minOpenInterest} · 成交量/OI ≥ ${screenDefaults.minVolumeToOi}`,
 	],
-	measure: ["RANK BY", "排名指标"],
-	measureFrom: ["volume/OI", "成交量/OI"],
-	measureTo: ["premium traded", "权利金成交额"],
+	// The premium change's effect contrasts unusual activity against OI with biggest money.
+	measureQuestion: [
+		"Relative to OI → most premium traded",
+		"相对未平仓量 → 权利金成交额最大",
+	],
+	measureFrom: ["Before: volume/OI", "前：成交量/OI"],
+	measureFromShort: ["Before: vol/OI", "前：成交量/OI"],
+	measureTo: ["After: premium traded", "后：权利金成交额"],
+	measureToShort: ["After: premium", "后：权利金成交额"],
 	universe: ["ELIGIBLE EXPIRIES", "纳入的到期日"],
-	sameDay: ["0DTE", "当天到期"],
-	future: [`1–${screenDefaults.maxDte} DTE`, `1–${screenDefaults.maxDte} 天`],
+	expiryFrom: [
+		`Before: 1–${screenDefaults.maxDte} DTE`,
+		`前：1–${screenDefaults.maxDte} 天`,
+	],
+	expiryTo: [
+		`After: 0–${screenDefaults.maxDte} DTE`,
+		`后：0–${screenDefaults.maxDte} 天`,
+	],
 	claimBig: ["Change the inputs, keep the question.", "改输入，不改问题。"],
 	claimSub: [
 		"Run first; keep the floors; fork new methods.",
@@ -578,7 +590,7 @@ function Scene({
 				))}
 			</g>
 
-			{/* Each input example starts from defaults. Methods change a visible control. */}
+			{/* Independent inputs, then explicit before/after method states with stationary outlines. */}
 			{headline("t-head", copy.tuneHead, copy.tuneHeadShort)}
 			<g data-f="changes">
 				<g data-f="pair-input">
@@ -675,14 +687,26 @@ function Scene({
 							key={kind}
 							data-f={i === 0 ? "example-premium" : "example-zeroDte"}
 						>
-							<text
-								x={margin + 14}
-								y={L.cardY(1) + L.cardH * (i === 0 ? 0.33 : 0.67)}
-								className="wt-film-tag"
-								style={{ fontSize: T.small }}
-							>
-								{t(copy[kind])}
-							</text>
+							{i === 0 ? (
+								<Lines
+									name="measure-question"
+									text={t(copy.measureQuestion)}
+									x={margin + 14}
+									y={L.cardY(1) + L.cardH * 0.31}
+									size={T.body}
+									maxWidth={room - 28}
+									anchor="start"
+								/>
+							) : (
+								<text
+									x={margin + 14}
+									y={L.cardY(1) + L.cardH * 0.67}
+									className="wt-film-tag"
+									style={{ fontSize: T.small }}
+								>
+									{t(copy.universe)}
+								</text>
+							)}
 							{[0, 1].map((column) => (
 								<rect
 									key={column}
@@ -696,7 +720,7 @@ function Scene({
 							))}
 							<rect
 								data-f={i === 0 ? "measure-selected" : "expiry-included"}
-								x={L.choiceX(i === 0 ? 0 : 1)}
+								x={L.choiceX(1)}
 								y={L.choiceY(i)}
 								width={L.choiceW}
 								height={L.choiceH}
@@ -704,8 +728,11 @@ function Scene({
 								className="wt-focus-shape"
 							/>
 							{(i === 0
-								? [copy.measureFrom, copy.measureTo]
-								: [copy.sameDay, copy.future]
+								? [
+										narrow ? copy.measureFromShort : copy.measureFrom,
+										narrow ? copy.measureToShort : copy.measureTo,
+									]
+								: [copy.expiryFrom, copy.expiryTo]
 							).map((text, column) => (
 								<Word
 									key={column}
@@ -891,31 +918,8 @@ function build(context: FilmContext) {
 	show(one("t-head"), 32.35, "above");
 	show(cards[0], 32.6);
 	show(cards[1], 34.6);
-	// Two independent method edits: move the selected measure and expand the categorical
-	// expiry set. No premium result is invented. Attr tweens restore both states on rewind.
-	tl.fromTo(
-		one("measure-selected"),
-		{ attr: { x: L.choiceX(0) } },
-		{
-			attr: { x: L.choiceX(1) },
-			duration: 0.8,
-			ease: "power2.inOut",
-			immediateRender: false,
-		},
-		35.5,
-	);
-	tl.fromTo(
-		one("expiry-included"),
-		{ attr: { x: L.choiceX(1), width: L.choiceW } },
-		{
-			attr: { x: L.choiceX(0), width: L.choiceW * 2 + 12 },
-			duration: 0.8,
-			ease: "power2.inOut",
-			immediateRender: false,
-		},
-		35.5,
-	);
-	// Defaults settle first; the edits settle at 36.3 with 3.8 s of quiet before the exit.
+	// Both labelled control states remain visible: no moving selector or rushed baseline.
+	// The comparison settles at 35.1 and reads undisturbed for 5 s, through the 40.1 exit.
 	hide([one("t-head"), ...cards], 40.1);
 	word(one("claim-big"), 40.5);
 	show(one("claim-sub"), 40.9);
