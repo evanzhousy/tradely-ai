@@ -141,7 +141,6 @@ const copy = {
 	buy: ["buy", "买"],
 	tape: ["time and sales", "逐笔成交"],
 	empty: ["no trades yet", "尚无成交"],
-	matching: ["matching…", "撮合中…"],
 	volume: ["volume", "成交量"],
 	filled: ["filled", "已成交"],
 	resting: ["resting", "挂单等待"],
@@ -189,6 +188,21 @@ function Scene({
 	const rowText = (y: number) => y + L.rowH / 2 + text * 0.36;
 	const chipLeft = L.chipRight - L.chipW(true);
 	const quantityX = chipLeft + text * 4.55;
+	const trade = at(T1.quantity, T1.price);
+	const tradeQuantity = count(T1.quantity);
+	const tradeDetails = ` @ ${usd(T1.price)}`;
+	const tradeX = L.chipRight - L.chipW(false) / 2;
+	const tradeY = narrow
+		? rowText(L.bidY(BIDS.length))
+		: (rowText(L.askY(LADDER.length - 2)) +
+				rowText(L.askY(LADDER.length - 1))) /
+			2;
+	const tradeStart = tradeX - trade.length * text * 0.3;
+	const tapeY = L.sideY + T.small + text * 1.9;
+	const tapeTime = `${T1.time} · `;
+	const tapeTradeX = L.sideX + tapeTime.length * text * 0.6;
+	// A short field fits between the phone's tape heading and volume heading.
+	const tradeLane = L.statX - tradeDetails.length * text * 0.3 - 8;
 	const level = (
 		name: string,
 		side: "ask" | "bid",
@@ -438,6 +452,51 @@ function Scene({
 			{owner("yours", L.bidY(0), RESTS, copy.yours)}
 			{chip("chip-m", t(copy.chipMarket), false)}
 			{chip("chip-l", limitChip(t(copy.buy), SIZE), true)}
+			{/* A completed trade, never a count: the phone routes its fields through one lane. */}
+			<text
+				data-f="trade-source"
+				x={tradeX}
+				y={tradeY}
+				textAnchor="middle"
+				className="wt-film-num wt-film-accent"
+				style={{ fontSize: text }}
+			>
+				{trade}
+			</text>
+			{(
+				[
+					["qty", tradeQuantity, tradeStart],
+					[
+						"details",
+						tradeDetails,
+						tradeStart + tradeQuantity.length * text * 0.6,
+					],
+				] as const
+			).map(([name, value, x]) => (
+				<g key={name}>
+					<text
+						data-f={`trade-source-${name}`}
+						x={x}
+						y={tradeY}
+						xmlSpace="preserve"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{value}
+					</text>
+					<text
+						data-f={`trade-via-${name}`}
+						x={tradeLane}
+						y={tapeY}
+						textAnchor="middle"
+						xmlSpace="preserve"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{value}
+					</text>
+				</g>
+			))}
 			{/* This proxy starts exactly where the remaining eight finishes its second ride. */}
 			<text
 				data-f="rest-flight"
@@ -477,24 +536,54 @@ function Scene({
 					{t(copy.empty)}
 				</text>
 			</g>
-			<text
-				data-f="tape-matching"
-				x={L.sideX}
-				y={L.sideY + T.small + text * 1.9}
-				className="wt-film-type wt-film-dim"
-				style={{ fontSize: text }}
-			>
-				{t(copy.matching)}
-			</text>
-			<text
-				data-f="tape-print"
-				x={L.sideX}
-				y={L.sideY + T.small + text * 1.9}
-				className="wt-film-num wt-film-accent"
-				style={{ fontSize: text }}
-			>
-				{`${T1.time} · ${at(T1.quantity, T1.price)}`}
-			</text>
+			<g data-f="tape-print">
+				<text
+					data-f="tape-time"
+					x={L.sideX}
+					y={tapeY}
+					xmlSpace="preserve"
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: text }}
+				>
+					{tapeTime}
+				</text>
+				{narrow ? (
+					<g data-f="tape-trade">
+						{(
+							[
+								["qty", tradeQuantity, tapeTradeX],
+								[
+									"details",
+									tradeDetails,
+									tapeTradeX + tradeQuantity.length * text * 0.6,
+								],
+							] as const
+						).map(([name, value, x]) => (
+							<text
+								key={name}
+								data-f={`tape-trade-${name}`}
+								x={x}
+								y={tapeY}
+								xmlSpace="preserve"
+								className="wt-film-num wt-film-accent"
+								style={{ fontSize: text }}
+							>
+								{value}
+							</text>
+						))}
+					</g>
+				) : (
+					<text
+						data-f="tape-trade"
+						x={tapeTradeX}
+						y={tapeY}
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{trade}
+					</text>
+				)}
+			</g>
 			{stat("vol", copy.volume, "0", L.statY)}
 			{stat("fill", copy.filled, `0 / ${SIZE}`, L.sideY)}
 			{stat(
@@ -705,10 +794,17 @@ function build(context: FilmContext) {
 		one("chip-l"),
 		one("chip-l-left"),
 		one("rest-flight"),
+		one("trade-source"),
+		one("trade-source-qty"),
+		one("trade-source-details"),
+		one("trade-via-qty"),
+		one("trade-via-details"),
 		one("limit"),
 		...kids("tape"),
-		one("tape-matching"),
-		one("tape-print"),
+		one("tape-time"),
+		...(L.narrow
+			? [one("tape-trade-qty"), one("tape-trade-details")]
+			: [one("tape-trade")]),
 		one("vol"),
 		one("fill"),
 		one("rest"),
@@ -745,29 +841,55 @@ function build(context: FilmContext) {
 	show(one("ben"), 10.0, "right");
 	show(kids("tape"), 10.2);
 	show(one("vol"), 10.4);
-	d.pop(one("chip-m"), 13.2);
-	ride("chip-m", bestRow, 13.6);
-	// A matching state replaces the empty tape before any contracts execute.
+	// The fixed instruction is readable for 0.9 s before it retires in place.
+	tl.fromTo(one("chip-m"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 13.2);
+	hide(one("chip-m"), 14.4, 0.3, 0);
 	hide(one("tape-empty"), 13.85, 0.3, 0);
-	tl.fromTo(
-		one("tape-matching"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		14.15,
-	);
 	// Depletion and volume are complementary at every frame, not separate counts.
-	hide([one("chip-m"), one("ben")], 14.15, 0.3);
+	hide(one("ben"), 14.15, 0.3);
 	sizeTo(best, 0, BEST.size, 14.2, (remaining) => {
 		one<SVGTextElement>("vol-n").textContent = count(BEST.size - remaining);
 	});
-	// Only the settled execution earns a fixed public print and the answer.
-	hide(one("tape-matching"), 14.7, 0.3, 0);
+	// Only the settled execution earns the trade that becomes its public print.
+	const tradeSources = L.narrow
+		? [one("trade-source-qty"), one("trade-source-details")]
+		: [one("trade-source")];
+	tl.fromTo(tradeSources, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 14.7);
 	tl.fromTo(
-		one("tape-print"),
+		one("tape-time"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		15.0,
+		L.narrow
+			? { opacity: 1, duration: 0.5 }
+			: { opacity: 1, duration: 0.3, ease: "power2.in" },
+		L.narrow ? 15.0 : 15.2,
 	);
+	if (L.narrow) {
+		// Both fields land at 15.5. The shorter field clears the shared lane first.
+		for (const [name, firstLeg] of [
+			["qty", 0.2],
+			["details", 0.3],
+		] as const) {
+			d.carry(g(`trade-source-${name}`), g(`trade-via-${name}`), 15.0, {
+				duration: firstLeg,
+				arc: "x",
+				reveal: false,
+			});
+			d.carry(
+				g(`trade-via-${name}`),
+				g(`tape-trade-${name}`),
+				15.0 + firstLeg,
+				{
+					duration: 0.5 - firstLeg,
+					arc: "x",
+				},
+			);
+		}
+	} else {
+		d.carry(g("trade-source"), g("tape-trade"), 15.0, {
+			duration: 0.5,
+			arc: "x",
+		});
+	}
 	show(heads[1], 14.7);
 	show(one("role-b"), 16.5);
 	show(one("role-s"), 16.9);
@@ -778,7 +900,6 @@ function build(context: FilmContext) {
 	hide(
 		[
 			...kids("tape"),
-			one("tape-matching"),
 			one("tape-print"),
 			one("vol"),
 			one("role-b"),
@@ -823,7 +944,7 @@ function build(context: FilmContext) {
 	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 26.1);
 	tl.to(
 		one("chip-l"),
-		{ y: L.bidY(0) - L.chipY, duration: 0.5, ease: "power2.inOut" },
+		{ y: L.bidY(0) - L.chipY, opacity: 0, duration: 0.5, ease: "power2.inOut" },
 		26.1,
 	);
 	// The visible eight lifts out of the ticket and becomes the bid's size at arrival.
@@ -835,7 +956,6 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5 },
 		26.6,
 	);
-	hide(one("chip-l"), 26.6, 0.35, 0);
 	show(one("yours"), 27.0, "right");
 	show(one("rest"), 27.5);
 	tl.to(one("fill"), { opacity: 0.35, duration: 0.4 }, 27.5);
@@ -872,7 +992,9 @@ function build(context: FilmContext) {
 		one<SVGPathElement>("comparison-link-0"),
 		one<SVGPathElement>("comparison-link-1"),
 	];
-	for (const link of links) d.trace(link, 37.7, { duration: 0.6 });
+	links.forEach((link, i) => {
+		d.trace(link, 37.7 + i * 0.1, { duration: 0.5 });
+	});
 
 	// ——— claim ———
 	tl.addLabel("claim", 39.8);
