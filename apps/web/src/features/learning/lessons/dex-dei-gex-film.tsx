@@ -69,6 +69,14 @@ const rowLabel = (index: number, locale: Locale) => {
 		: `${print.time} ${print.strike}C ×${print.contracts}`;
 };
 
+const rowValue = (index: number, signed = false) => {
+	const print = prints[index];
+	const sign = signOf(print.lean);
+	return signed && sign !== 0
+		? signedCount(sign * magnitude(print))
+		: count(magnitude(print));
+};
+
 function layout(width: number, locale: Locale = "en") {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
@@ -86,12 +94,20 @@ function layout(width: number, locale: Locale = "en") {
 	// Room right of each bar for its value and its side, measured in this locale.
 	const unit = Math.min(
 		...prints.map(
-			(print) =>
+			(print, i) =>
 				(right -
 					zero -
 					16 -
-					textWidth(count(magnitude(print)), labelSize + 1) -
-					textWidth(pick(leanTag[print.lean], locale), labelSize) -
+					textWidth(rowValue(i, narrow), labelSize + 1) -
+					Math.max(
+						textWidth(pick(leanTag[print.lean], locale), labelSize),
+						!narrow && print === spreadSoldLeg
+							? textWidth(
+									`${pick(copy.soldLeg, locale)} · ${pick(leanTag[print.lean], locale)}`,
+									labelSize,
+								)
+							: 0,
+					) -
 					12) /
 				magnitude(print),
 		),
@@ -261,6 +277,9 @@ function Scene({
 						{prints.map((print, i) => {
 							const width = magnitude(print) * L.unit;
 							const y = L.rowY(i);
+							const valueRoom = textWidth(rowValue(i, narrow), labelSize + 1);
+							const valueX = L.zero + width + 8;
+							const sideX = valueX + valueRoom + 8;
 							return (
 								<g key={print.id} data-f={`row-${i}`}>
 									<text
@@ -283,22 +302,29 @@ function Scene({
 									/>
 									<text
 										data-f={`value-${i}`}
-										x={L.zero + width + 8}
+										x={valueX + (narrow ? valueRoom : 0)}
+										textAnchor={narrow ? "end" : "start"}
 										y={y + 4}
 										className="wt-film-num"
 										style={{ fontSize: labelSize + 1 }}
 									>
-										{count(magnitude(print))}
+										{rowValue(i)}
 									</text>
+									{narrow && signOf(print.lean) !== 0 && (
+										<text
+											data-f={`signed-value-${i}`}
+											x={valueX + valueRoom}
+											y={y + 4}
+											textAnchor="end"
+											className={`wt-film-num ${print.lean === "bearish" ? "wt-film-loss" : "wt-film-gain"}`}
+											style={{ fontSize: labelSize + 1 }}
+										>
+											{rowValue(i, true)}
+										</text>
+									)}
 									<text
 										data-f={`tag-${i}`}
-										x={
-											L.zero +
-											width +
-											8 +
-											textWidth(count(magnitude(print)), labelSize + 1) +
-											8
-										}
+										x={sideX}
 										y={y + 4}
 										className={`wt-small ${
 											print.lean === "bullish"
@@ -311,6 +337,17 @@ function Scene({
 									>
 										{t(leanTag[print.lean])}
 									</text>
+									{!narrow && print === spreadSoldLeg && (
+										<text
+											data-f="spread-leg-side"
+											x={sideX}
+											y={y + 4}
+											className="wt-small"
+											style={{ fontSize: labelSize }}
+										>
+											{`${t(copy.soldLeg)} · ${t(leanTag[print.lean])}`}
+										</text>
+									)}
 								</g>
 							);
 						})}
@@ -389,16 +426,6 @@ function Scene({
 					{count(printwise.gross)}
 				</Word>
 				<Word
-					name="meter-printwise"
-					x={L.right}
-					y={L.headY + T.head * 1.25 + T.num * 1.05}
-					size={T.num}
-					anchor="end"
-					className="wt-film-num wt-film-accent"
-				>
-					{signedCount(printwise.net)}
-				</Word>
-				<Word
 					name="meter-value"
 					x={L.right}
 					y={L.headY + T.head * 1.25 + T.num * 1.05}
@@ -418,6 +445,49 @@ function Scene({
 				className="wt-film-num"
 			>
 				{`${deltaOf(prints[0].strike).toFixed(2)} × ${prints[0].contracts} × 100 = ${count(magnitude(prints[0]))}`}
+			</Word>
+			<Word
+				name="net-equation"
+				x={narrow ? W / 2 : L.left}
+				y={narrow ? H * 0.34 : L.top - T.body * 1.8}
+				size={T.body}
+				anchor={narrow ? "middle" : "start"}
+				className="wt-film-num"
+			>
+				{`${count(printwise.bullish)} − ${count(printwise.bearish)} = `}
+				<tspan
+					className="wt-film-accent"
+					style={{ fontSize: Math.min(T.num, T.body * 1.5) }}
+				>
+					{signedCount(printwise.net)}
+				</tspan>
+			</Word>
+			<Word
+				name="net-equation-label"
+				x={
+					narrow
+						? W / 2
+						: L.left +
+							textWidth(
+								`${count(printwise.bullish)} − ${count(printwise.bearish)} = `,
+								T.body,
+							) +
+							textWidth(
+								signedCount(printwise.net),
+								Math.min(T.num, T.body * 1.5),
+							) +
+							12
+				}
+				y={
+					narrow
+						? H * 0.34 - Math.min(T.num, T.body * 1.5) - 10
+						: L.top - T.body * 1.8
+				}
+				size={T.small}
+				anchor={narrow ? "middle" : "start"}
+				className="wt-film-tag"
+			>
+				{t(copy.net).toUpperCase()}
 			</Word>
 			{narrow && spreadSoldLeg && (
 				<>
@@ -638,7 +708,6 @@ function build(context: FilmContext) {
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const meter = one<SVGTextElement>("meter-value");
 	const grossMeter = one("meter-gross");
-	const printwiseMeter = one("meter-printwise");
 	const lockTwo = one<SVGGraphicsElement>("lock-two");
 
 	d.hidden([
@@ -647,10 +716,16 @@ function build(context: FilmContext) {
 			one(`row-${i}`),
 			one(`value-${i}`),
 			one(`tag-${i}`),
+			...(L.narrow && signOf(prints[i].lean) !== 0
+				? [one(`signed-value-${i}`)]
+				: []),
 		]),
 		one("spread"),
 		one("spread-row"),
 		one("weight-example"),
+		one("net-equation"),
+		one("net-equation-label"),
+		...(!L.narrow && spreadSoldLeg ? [one("spread-leg-side")] : []),
 		...(L.narrow && spreadSoldLeg
 			? [one("spread-sold-leg"), one("spread-equation")]
 			: []),
@@ -727,11 +802,42 @@ function build(context: FilmContext) {
 			);
 		} else tl.to(one(`row-${i}`), { opacity: 0.45, duration: 0.5 }, signAt);
 	});
-	show([one("meter-tag-net"), printwiseMeter], 15.8, "above", 0.3);
+	// Signed phone values settle first at 16.1. The labelled equation follows
+	// at 16.2, settles at 16.5, then has 1.3 s of quiet before DEI.
+	if (L.narrow) {
+		const classified = prints.flatMap((print, i) =>
+			signOf(print.lean) !== 0 ? [i] : [],
+		);
+		tl.to(
+			classified.map((i) => one(`value-${i}`)),
+			{ opacity: 0, duration: 0.3, ease: "power2.out" },
+			15.8,
+		);
+		tl.fromTo(
+			classified.map((i) => one(`signed-value-${i}`)),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3, ease: "power2.in" },
+			15.8,
+		);
+	}
+	tl.fromTo(
+		[one("net-equation"), one("net-equation-label")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		16.2,
+	);
 
 	// ——— dei: one numerator, two full-day denominators ———
 	tl.addLabel("dei", 17.8);
-	hide([one("g-head"), ...kids("meter")], 17.8);
+	hide(
+		[
+			one("g-head"),
+			one("net-equation"),
+			one("net-equation-label"),
+			...kids("meter"),
+		],
+		17.8,
+	);
 	sink(17.8);
 	show(one("d-head"), 18.15, "above");
 	land(one("d-net"), 18.5);
@@ -752,6 +858,20 @@ function build(context: FilmContext) {
 	// The old printwise total is unnecessary here. Hold the highlighted legs
 	// for a full second, replace them, then reveal only the new net.
 	tl.fromTo(one("spread"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
+	if (!L.narrow && spreadSoldLeg) {
+		const soldIndex = prints.indexOf(spreadSoldLeg);
+		tl.to(
+			one(`tag-${soldIndex}`),
+			{ opacity: 0, duration: 0.4, ease: "power2.out" },
+			24.9,
+		);
+		tl.fromTo(
+			one("spread-leg-side"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.4, ease: "power2.in" },
+			24.9,
+		);
+	}
 	if (L.narrow && spreadSoldLeg) {
 		const phoneProof = [one("spread-sold-leg"), one("spread-equation")];
 		tl.fromTo(phoneProof, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
