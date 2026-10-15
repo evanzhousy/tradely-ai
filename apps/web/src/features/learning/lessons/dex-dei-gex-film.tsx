@@ -38,9 +38,9 @@ import {
  *
  *   open      0–4        "DEX and DEI"
  *   question  4–9.6      gross 27,425; net ?
- *   tape      9.6–17.8   seven prints, delta-weighted; signed by side: net +17,532
- *   dei       17.8–24.4  +17,532 ÷ 1.2M, 1.5M: 1.46%, 1.17%
- *   spread    24.4–34.3  the 10:50 block as one spread: +7,500, net +8,532; cut: two
+ *   tape      9.6–18.5   seven prints, delta-weighted; signed by side: net +17,532
+ *   dei       18.5–25.1  +17,532 ÷ 1.2M, 1.5M: 1.46%, 1.17%
+ *   spread    25.1–34.3  the 10:50 block as one spread: +7,500, net +8,532; cut: two
  *                        answers, carrying the net into the lock
  *   source    34.3–44.9  another site's "DEX" −89,800: OI × delta, dealers assumed short;
  *                        cut: "Same label, different numerator."
@@ -164,7 +164,7 @@ const copy = {
 		"DEI: net flow ÷ ALFA's share volume.",
 		"DEI：净成交流 ÷ ALFA 的股票成交量。",
 	],
-	deiHeadShort: ["DEI: net ÷ share volume.", "DEI：净额 ÷ 成交量。"],
+	deiHeadShort: ["DEI: net ÷ share volume.", "DEI：净额 ÷ 股票成交量。"],
 	deiLine: [
 		"Same flow, two full-day benchmarks: state the denominator.",
 		"同一成交流，两个全日基准：要说明分母。",
@@ -435,6 +435,16 @@ function Scene({
 				>
 					{signedCount(netted.net)}
 				</Word>
+				<Word
+					name="meter-correction"
+					x={L.right - textWidth(signedCount(netted.net), T.num) - 18}
+					y={L.headY + T.head * 1.25 + T.num * 1.05}
+					size={T.body}
+					anchor="end"
+					className="wt-film-num"
+				>
+					{`${count(printwise.net)} − ${count(printwise.net - netted.net)} =`}
+				</Word>
 			</g>
 			<Word
 				name="weight-example"
@@ -613,7 +623,11 @@ function Scene({
 						size={deiSize}
 						className="wt-film-num"
 					>
-						{`÷ ${count(denominator.shares)} = `}
+						{`÷ ${count(denominator.shares)} `}
+						<tspan style={{ fontSize: T.small }}>
+							{locale === "zh" ? "股" : "shares"}
+						</tspan>
+						{" = "}
 						<tspan className="wt-film-accent">{`${dei(denominator.shares).toFixed(2)}%`}</tspan>
 					</Word>
 				))}
@@ -784,9 +798,12 @@ function build(context: FilmContext) {
 	// The net's tag comes down from above: from below it would cross the figure.
 	hide(one("weight-example"), 13.8);
 	hide([one("meter-tag"), grossMeter], 14.8);
-	prints.forEach((_, i) => {
-		show(one(`tag-${i}`), 14.2 + i * 0.12, "right", 0.3);
-	});
+	show(
+		prints.map((_, i) => one(`tag-${i}`)),
+		14.0,
+		"right",
+		0.3,
+	);
 	const signAt = 15.2;
 	prints.forEach((print, i) => {
 		const sign = signOf(print.lean);
@@ -803,7 +820,7 @@ function build(context: FilmContext) {
 		} else tl.to(one(`row-${i}`), { opacity: 0.45, duration: 0.5 }, signAt);
 	});
 	// Signed phone values settle first at 16.1. The labelled equation follows
-	// at 16.2, settles at 16.5, then has 1.3 s of quiet before DEI.
+	// at 16.2, settles at 16.5, then has 2.0 s of quiet before DEI.
 	if (L.narrow) {
 		const classified = prints.flatMap((print, i) =>
 			signOf(print.lean) !== 0 ? [i] : [],
@@ -828,7 +845,7 @@ function build(context: FilmContext) {
 	);
 
 	// ——— dei: one numerator, two full-day denominators ———
-	tl.addLabel("dei", 17.8);
+	tl.addLabel("dei", 18.5);
 	hide(
 		[
 			one("g-head"),
@@ -836,75 +853,104 @@ function build(context: FilmContext) {
 			one("net-equation-label"),
 			...kids("meter"),
 		],
-		17.8,
+		18.5,
 	);
-	sink(17.8);
-	show(one("d-head"), 18.15, "above");
-	land(one("d-net"), 18.5);
-	// Both benchmarks form one comparison, settled by 19.8; its explanation
+	sink(18.5);
+	show(one("d-head"), 18.85, "above");
+	land(one("d-net"), 19.2);
+	// Both benchmarks form one comparison, settled by 20.5; its explanation
 	// follows only after 1.1 seconds of quiet.
 	show(
 		filmDenominators.flatMap((_, i) => [one(`d-row-${i}`), one(`d-tag-${i}`)]),
-		19.3,
+		20.0,
 	);
-	show(one("d-line"), 20.9);
+	show(one("d-line"), 21.6);
 
 	// ——— spread: one trade, not two prints ———
-	tl.addLabel("spread", 24.4);
-	hide(kids("dei"), 24.4);
-	rise(24.6);
-	show(one("p-head"), 24.75, "above");
-	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 24.9);
+	tl.addLabel("spread", 25.1);
+	hide(kids("dei"), 25.1);
+	rise(25.3);
+	show(one("p-head"), 25.45, "above");
+	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 25.6);
 	// The old printwise total is unnecessary here. Hold the highlighted legs
 	// for a full second, replace them, then reveal only the new net.
-	tl.fromTo(one("spread"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
+	tl.fromTo(one("spread"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 25.6);
 	if (!L.narrow && spreadSoldLeg) {
 		const soldIndex = prints.indexOf(spreadSoldLeg);
 		tl.to(
 			one(`tag-${soldIndex}`),
 			{ opacity: 0, duration: 0.4, ease: "power2.out" },
-			24.9,
+			25.6,
 		);
 		tl.fromTo(
 			one("spread-leg-side"),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.4, ease: "power2.in" },
-			24.9,
+			25.6,
 		);
 	}
 	if (L.narrow && spreadSoldLeg) {
 		const phoneProof = [one("spread-sold-leg"), one("spread-equation")];
-		tl.fromTo(phoneProof, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 24.9);
-		hide(phoneProof, 28.3);
+		tl.fromTo(phoneProof, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 25.6);
+		hide(phoneProof, 29.0);
 	}
-	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 26.3);
+	tl.to([one("row-4"), one("row-5")], { opacity: 0, duration: 0.4 }, 27.0);
 	tl.fromTo(
 		one("spread-row"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		26.7,
+		27.4,
 	);
-	show(one("meter-tag-net"), 27.0, "above", 0.3);
+	show(one("meter-tag-net"), 27.7, "above", 0.3);
 	// Fade in place, fully settled and untransformed before the carry.
 	tl.fromTo(
 		meter,
 		{ opacity: 0, x: 0, y: 0 },
 		{ opacity: 1, x: 0, y: 0, duration: 0.3 },
-		27.0,
+		27.7,
+	);
+	tl.fromTo(
+		one("meter-correction"),
+		{ opacity: 0, x: 0, y: 0 },
+		{ opacity: 1, x: 0, y: 0, duration: 0.3 },
+		27.7,
 	);
 	// Carry the constructed answer into the hero instead of reintroducing it.
-	hide([one("p-head"), one("meter-tag-net")], 28.3);
-	sink(28.3);
-	d.carry(meter, one("w-num-1"), 28.3, { duration: 0.9, arc: "x" });
-	show(one("w-tag-0"), 28.6);
-	land(one("w-num-0"), 28.8);
+	hide([one("p-head"), one("meter-tag-net")], 29.0);
+	sink(29.0);
+	d.carry(meter, one("w-num-1"), 29.0, { duration: 0.9, arc: "x" });
+	// The prefix follows its answer while fading, keeping their spacing clear
+	// throughout the handover and preserving the complete proof's quiet second.
+	const from = meter.getBBox();
+	const to = one<SVGGraphicsElement>("w-num-1").getBBox();
+	tl.to(
+		one("meter-correction"),
+		{
+			x: to.x + to.width / 2 - (from.x + from.width / 2),
+			duration: 0.9,
+			ease: "power3.out",
+		},
+		29.0,
+	);
+	tl.to(
+		one("meter-correction"),
+		{
+			y: to.y + to.height / 2 - (from.y + from.height / 2),
+			duration: 0.9,
+			ease: "power2.inOut",
+		},
+		29.0,
+	);
+	tl.to(one("meter-correction"), { opacity: 0, duration: 0.3 }, 29.0);
+	show(one("w-tag-0"), 29.3);
+	land(one("w-num-0"), 29.5);
 	// This label enters after the flight passes its lane.
-	show(one("w-tag-1"), 29.25, "above", 0.5);
-	d.lock(lockTwo, 29.9, {
+	show(one("w-tag-1"), 29.95, "above", 0.5);
+	d.lock(lockTwo, 30.6, {
 		around: [one("w-tag-0"), one("w-num-0"), one("w-tag-1"), one("w-num-1")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 29.9);
+	tl.addLabel("hero-lock", 30.6);
 
 	// ——— source: a number with the same name ———
 	tl.addLabel("source", 34.3);
