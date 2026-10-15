@@ -12,13 +12,7 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
-import {
-	BURST,
-	ENDPOINT,
-	GROUPS,
-	LIMIT,
-	type Method,
-} from "./connect-agent-model";
+import { BURST, GROUPS, LIMIT, type Method } from "./connect-agent-model";
 
 /*
  * Connecting an agent, as a film. It opens on the choice an agent makes, sign in or a key.
@@ -89,7 +83,11 @@ const copy = {
 		"Cursor, Codex and OpenClaw use an API key.",
 		"Cursor、Codex 和 OpenClaw 用 API 密钥连接。",
 	],
-	keyHeadShort: ["Other agents: a key.", "其他智能体：密钥。"],
+	keyHeadShort: [
+		"Other supported agents: a key.",
+		"其他受支持的智能体：密钥。",
+	],
+	signinProcess: ["Register → sign in", "注册 → 登录"],
 	keyNote: [
 		"Copy prompt creates a key and puts it in the prompt you paste to your agent.",
 		"Copy prompt 会创建一把密钥，并放进你粘贴给智能体的提示里。",
@@ -110,7 +108,8 @@ const copy = {
 		"Read-only. Every call is checked.",
 		"只读，每次调用都检查。",
 	],
-	meter: ["tool calls · this 60-second window", "工具调用 · 当前 60 秒窗口"],
+	meter: ["This key's calls · 60-second window", "本密钥调用 · 60 秒窗口"],
+	meterShort: ["This key · 60-second window", "本密钥 · 60 秒窗口"],
 	refused: ["refused", "被拒"],
 	keyCard: ["Cursor key", "Cursor 密钥"],
 	active: ["active · read-only data tools", "有效 · 只读数据工具"],
@@ -152,9 +151,12 @@ const CHECKS = [
 	},
 	{
 		id: "tools",
-		label: ["Keyed tools/list", "带密钥的 tools/list"],
+		label: [
+			"Keyed tools/list · find tickers",
+			"带密钥 tools/list · 查找股票代码",
+		],
 		line: '{"result":{"tools":[{"name":"symbol_search"},…]}}',
-		phoneLine: 'result.tools: [{name:"symbol_search"},…]',
+		phoneLine: "result.tools → symbol_search",
 		verdict: ["your key works", "密钥有效"],
 		tone: "wt-film-gain",
 	},
@@ -191,12 +193,6 @@ function Scene({
 		/>
 	);
 	const panelLine = (k: number) => L.panelY + L.pad + (k + 0.8) * L.code * 1.6;
-	const commands = narrow
-		? ["claude mcp add … tradingflow", "claude mcp login tradingflow"]
-		: [
-				`claude mcp add --transport http tradingflow ${ENDPOINT}`,
-				"claude mcp login tradingflow",
-			];
 	const meterW = room;
 	const fill = (calls: number) => (Math.min(calls, LIMIT) / BURST) * meterW;
 	const limitX = margin + (LIMIT / BURST) * meterW;
@@ -305,19 +301,15 @@ function Scene({
 				rx={12}
 				className="wt-panel-shape"
 			/>
-			<g data-f="cmd">
-				{commands.map((command, k) => (
-					<text
-						key={command}
-						x={margin + L.pad}
-						y={panelLine(k)}
-						className="wt-film-num"
-						style={{ fontSize: L.code }}
-					>
-						{`$ ${command}`}
-					</text>
-				))}
-			</g>
+			<Word
+				name="cmd"
+				x={margin + L.pad}
+				y={panelLine(0)}
+				size={L.rowText}
+				anchor="start"
+			>
+				{t(copy.signinProcess)}
+			</Word>
 			<Lines
 				name="note-key"
 				text={t(narrow ? copy.keyNoteShort : copy.keyNote)}
@@ -400,7 +392,7 @@ function Scene({
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
-					{t(copy.meter).toUpperCase()}
+					{t(narrow ? copy.meterShort : copy.meter).toUpperCase()}
 				</text>
 				<rect
 					x={margin}
@@ -689,9 +681,10 @@ function build(context: FilmContext) {
 		show(way(method), 10.1 + i * 0.2);
 	});
 	tl.to(on("signin"), { opacity: 1, duration: 0.3 }, 10.9);
-	tl.to([way("key"), way("none")], { opacity: 0.4, duration: 0.3 }, 10.9);
-	show(one("panel"), 11.1);
-	show(one("cmd"), 11.4);
+	// Unsupported clients remain fully readable beside the supported routes.
+	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 10.9);
+	show([one("panel"), one("cmd")], 11.1);
+	// The compact process settles at 11.6; 1.2 seconds before the key swap.
 	show(one("k-head"), 12.8);
 	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 12.8);
 	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 12.8);
