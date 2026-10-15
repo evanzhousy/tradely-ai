@@ -90,8 +90,8 @@ const copy = {
 		`From ${count(CUT)}, the bars' height ratio is ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}.`,
 		`从 ${count(CUT)} 起，柱高之比为 ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}。`,
 	],
-	cHead: ["The draft claims more than it shows.", "初稿说的比它显示的多。"],
-	cHeadNarrow: ["The draft overclaims.", "初稿过度推断。"],
+	cHead: ["Bound the claim to its evidence.", "把结论限定在证据范围内。"],
+	cHeadNarrow: ["Bound the claim to its evidence.", "把结论限定在证据范围内。"],
 	draftIntent: [
 		`“Call buyers piled into ALFA's ${leader.strike} strike,`,
 		`“看涨买家涌入 ALFA ${leader.strike} 行权价，`,
@@ -117,7 +117,6 @@ const copy = {
 		"Corrected tape as of 16:05 · P1",
 		"更正后成交记录截至 16:05 · P1",
 	],
-	changingScale: ["CHANGING SCALE", "图表刻度调整中"],
 	contracts: ["contracts", "张数"],
 	premium: ["premium", "权利金"],
 	noData: ["no data", "无数据"],
@@ -200,9 +199,26 @@ function Scene({
 		T.small * 0.8;
 	const boundedY = scopeNoteY + T.body * 2.1;
 
+	const boundedBottom =
+		boundedY + (boundedLines - 1) * draftSize * 1.35 + draftSize * 0.3;
+	const rowMeasureY = boundedBottom + T.small * 2;
+	const rowFirst = rowMeasureY + T.small * 1.6;
+	const rowMinimumLast =
+		rowFirst + (recapContracts.length - 1) * T.small * 1.25;
 	const captionY = narrow
-		? H - 48
+		? Math.min(
+				H -
+					12 -
+					captionLines[0] * captionSize * 1.65 -
+					(captionLines[1] - 1) * captionSize * 1.35 -
+					captionSize * 0.3,
+				Math.max(H - 48, rowMinimumLast + captionSize + T.small * 3),
+			)
 		: boundedY + boundedLines * draftSize * 1.35 + T.body * 1.1;
+	const rowLast = captionY - captionSize - T.small * 3;
+	const rowStep = (rowLast - rowFirst) / (recapContracts.length - 1);
+	const rowBarX = margin + T.small * 3.6;
+	const rowSpan = room - T.small * 9.4;
 	// A separate desktop column reserves space for the complete chart, including labels.
 	const desktopChartBox = {
 		x: margin + room * 0.58,
@@ -219,18 +235,12 @@ function Scene({
 	const chartBase = narrow
 		? H * 0.75
 		: desktopChartBox.y + desktopChartBox.height - chartTickSize * 1.5;
-	const boundedBottom =
-		boundedY + (boundedLines - 1) * draftSize * 1.35 + draftSize * 0.3;
-	const chartSpan = narrow
-		? Math.max(
-				0,
-				Math.min(H * 0.116, chartBase - boundedBottom - T.small * 3.1 - 10),
-			)
-		: chartBase -
-			(desktopChartBox.y + chartMeasureSize * 1.8 + chartValueSize + 8);
+	const chartSpan =
+		chartBase -
+		(desktopChartBox.y + chartMeasureSize * 1.8 + chartValueSize + 8);
 	const chartSlot = chartWidth / recapContracts.length;
 	const chartMeasureY = narrow
-		? chartBase - chartSpan - T.small * 2.1
+		? rowMeasureY
 		: desktopChartBox.y + chartMeasureSize;
 	const chartTickY = narrow
 		? chartBase + T.small * 1.55
@@ -367,15 +377,7 @@ function Scene({
 					{t(copy[metric]).toUpperCase()}
 				</text>
 			))}
-			<text
-				data-f="unit-changing"
-				x={margin}
-				y={L.top - T.small * 2.4}
-				className="wt-film-tag wt-film-dim"
-				style={{ fontSize: T.small * 1.1 }}
-			>
-				{t(copy.changingScale)}
-			</text>
+
 			<text
 				data-f="unit-cut"
 				x={margin}
@@ -448,78 +450,165 @@ function Scene({
 				>
 					{t(copy.chartMeasure).toUpperCase()}
 				</Word>
-				<path
-					data-f="recap-axis"
-					d={`M${chartX} ${chartBase}h${chartWidth}`}
-					className="wt-axis"
-				/>
-				<Word
-					name="recap-zero"
-					x={chartX - 6}
-					y={chartBase + chartZeroSize * 0.35}
-					size={chartZeroSize}
-					anchor="end"
-					className="wt-film-num wt-film-dim"
-				>
-					0
-				</Word>
-				{recapContracts.map((row, i) => {
-					const barX = chartX + chartSlot * (i + 0.2);
-					const barHeight =
-						row.contracts === null
-							? chartSpan * 0.25
-							: (row.contracts / CONTRACTS_MAX) * chartSpan;
-					const center = chartX + chartSlot * (i + 0.5);
-					return (
-						<g key={row.id}>
-							{row.contracts === null ? (
-								<rect
-									data-f={`recap-bar-${i}`}
-									x={barX}
-									y={chartBase - barHeight}
-									width={chartSlot * 0.6}
-									height={barHeight}
-									rx={2}
-									style={{
-										fill: "none",
-										stroke: "var(--diagram-unknown)",
-										strokeWidth: 1.2,
-										strokeDasharray: "3 3",
-									}}
-								/>
-							) : (
-								<rect
-									data-f={`recap-bar-${i}`}
-									x={barX}
-									y={chartBase - barHeight}
-									width={chartSlot * 0.6}
-									height={barHeight}
-									rx={2}
-									className="wt-film-bar"
-									data-tone={row.strike === leader.strike ? "total" : "neutral"}
-								/>
-							)}
-							<Word
-								name={`recap-value-${i}`}
-								x={center}
-								y={chartBase - barHeight - 6}
-								size={chartValueSize}
-								className={`wt-film-num ${row.contracts === null ? "wt-film-warn" : ""}`}
-							>
-								{row.contracts === null ? t(copy.noData) : count(row.contracts)}
-							</Word>
-							<Word
-								name={`recap-strike-${i}`}
-								x={center}
-								y={chartTickY}
-								size={chartTickSize}
-								className="wt-film-num wt-film-dim"
-							>
-								{row.strike}
-							</Word>
-						</g>
-					);
-				})}
+				{narrow ? (
+					<>
+						<path
+							data-f="recap-axis"
+							d={`M${rowBarX} ${rowFirst - 6}V${rowLast + 6}`}
+							className="wt-axis"
+						/>
+						<Word
+							name="recap-zero"
+							x={rowBarX}
+							y={rowLast + T.small * 1.5}
+							size={T.small}
+							className="wt-film-num wt-film-dim"
+						>
+							0
+						</Word>
+						{recapContracts.map((row, i) => {
+							const y = rowFirst + i * rowStep;
+							const length =
+								row.contracts === null
+									? T.small * 1.1
+									: (row.contracts / CONTRACTS_MAX) * rowSpan;
+							return (
+								<g key={row.id}>
+									<Word
+										name={`recap-strike-${i}`}
+										x={margin}
+										y={y + chartValueSize * 0.35}
+										size={chartTickSize}
+										anchor="start"
+										className="wt-film-num wt-film-dim"
+									>
+										{row.strike}
+									</Word>
+									{row.contracts === null ? (
+										<rect
+											data-f={`recap-bar-${i}`}
+											x={rowBarX}
+											y={y - 4}
+											width={length}
+											height={8}
+											rx={2}
+											style={{
+												fill: "none",
+												stroke: "var(--diagram-unknown)",
+												strokeWidth: 1.2,
+												strokeDasharray: "3 3",
+											}}
+										/>
+									) : (
+										<rect
+											data-f={`recap-bar-${i}`}
+											x={rowBarX}
+											y={y - 4}
+											width={length}
+											height={8}
+											rx={2}
+											className="wt-film-bar"
+											data-tone={
+												row.strike === leader.strike ? "total" : "neutral"
+											}
+										/>
+									)}
+									<Word
+										name={`recap-value-${i}`}
+										x={margin + room}
+										y={y + chartValueSize * 0.35}
+										size={chartValueSize}
+										anchor="end"
+										className={`wt-film-num ${row.contracts === null ? "wt-film-warn" : ""}`}
+									>
+										{row.contracts === null
+											? t(copy.noData)
+											: count(row.contracts)}
+									</Word>
+								</g>
+							);
+						})}
+					</>
+				) : (
+					<>
+						<path
+							data-f="recap-axis"
+							d={`M${chartX} ${chartBase}h${chartWidth}`}
+							className="wt-axis"
+						/>
+						<Word
+							name="recap-zero"
+							x={chartX - 6}
+							y={chartBase + chartZeroSize * 0.35}
+							size={chartZeroSize}
+							anchor="end"
+							className="wt-film-num wt-film-dim"
+						>
+							0
+						</Word>
+						{recapContracts.map((row, i) => {
+							const barX = chartX + chartSlot * (i + 0.2);
+							const barHeight =
+								row.contracts === null
+									? chartSpan * 0.25
+									: (row.contracts / CONTRACTS_MAX) * chartSpan;
+							const center = chartX + chartSlot * (i + 0.5);
+							return (
+								<g key={row.id}>
+									{row.contracts === null ? (
+										<rect
+											data-f={`recap-bar-${i}`}
+											x={barX}
+											y={chartBase - barHeight}
+											width={chartSlot * 0.6}
+											height={barHeight}
+											rx={2}
+											style={{
+												fill: "none",
+												stroke: "var(--diagram-unknown)",
+												strokeWidth: 1.2,
+												strokeDasharray: "3 3",
+											}}
+										/>
+									) : (
+										<rect
+											data-f={`recap-bar-${i}`}
+											x={barX}
+											y={chartBase - barHeight}
+											width={chartSlot * 0.6}
+											height={barHeight}
+											rx={2}
+											className="wt-film-bar"
+											data-tone={
+												row.strike === leader.strike ? "total" : "neutral"
+											}
+										/>
+									)}
+									<Word
+										name={`recap-value-${i}`}
+										x={center}
+										y={chartBase - barHeight - 6}
+										size={chartValueSize}
+										className={`wt-film-num ${row.contracts === null ? "wt-film-warn" : ""}`}
+									>
+										{row.contracts === null
+											? t(copy.noData)
+											: count(row.contracts)}
+									</Word>
+									<Word
+										name={`recap-strike-${i}`}
+										x={center}
+										y={chartTickY}
+										size={chartTickSize}
+										className="wt-film-num wt-film-dim"
+									>
+										{row.strike}
+									</Word>
+								</g>
+							);
+						})}
+					</>
+				)}
 			</g>
 			{(
 				[
@@ -681,8 +770,7 @@ function build(context: FilmContext) {
 	const evidence = ["intent", "scope"].map((id) => one(`evidence-${id}`));
 	const captions = [0, 1].map((i) => one(`caption-${i}`));
 	const recapChart = one("recap-chart");
-	const changingUnit = one("unit-changing");
-	/** Keep a morph neutral, then hand over in place once its geometry is true. */
+	/** Fade the incoming unit in place, reaching full contrast at geometry settlement. */
 	const changeUnit = (
 		from: Element,
 		to: Element,
@@ -691,14 +779,16 @@ function build(context: FilmContext) {
 	) => {
 		hide(from, at, 0.3, 0);
 		tl.fromTo(
-			changingUnit,
+			to,
 			{ opacity: 0 },
-			{ opacity: 1, duration: 0.3 },
-			at + 0.3,
+			{
+				opacity: 1,
+				duration: 0.3,
+				ease: "power2.out",
+				immediateRender: false,
+			},
+			settled - 0.3,
 		);
-		// This is an in-place text handover, with both marks on the same baseline.
-		tl.set(changingUnit, { opacity: 0 }, settled);
-		tl.set(to, { opacity: 1 }, settled);
 	};
 	// Fit each drawn underline beneath its wrapped phrase, never through the glyphs.
 	draftParts.forEach((part, i) => {
@@ -754,7 +844,6 @@ function build(context: FilmContext) {
 		one("unit-premium"),
 		one("premium-leader-rule"),
 		one("unit-cut"),
-		changingUnit,
 		...bars,
 		...vals("contracts"),
 		...vals("premium"),
@@ -895,11 +984,10 @@ function build(context: FilmContext) {
 	);
 	// The bounded result settles at 36.6; caption fields wait one quiet second.
 	captions.forEach((field, i) => {
-		const at = 37.6 + i * 0.15;
+		const at = i === 0 ? 37.6 : 37.7;
 		show(field, at);
-		// Keep the assembled two-field caption intact for three settled seconds.
-		// The first field gains 0.15 s; the second retains its 3.5-second hold.
-		hide(field, 41.25);
+		// Clear provenance early in the unchanged exit window, before the closing claim.
+		tl.to(field, { opacity: 0, duration: 0.35, ease: "power2.out" }, 41.25);
 	});
 
 	// ——— claim ———
