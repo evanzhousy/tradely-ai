@@ -14,7 +14,14 @@ import {
 	TitleCard,
 	Word,
 } from "../walkthrough/film-kit";
-import { atExpiry, costFacts, curve, PAID, value } from "./options-risks-model";
+import {
+	atExpiry,
+	costFacts,
+	curve,
+	DAYS,
+	PAID,
+	value,
+} from "./options-risks-model";
 
 /*
  * Risk first, as a film. It opens on a right call that still lost: ALFA up $2, the call
@@ -41,8 +48,9 @@ const TAIL_X = [80, 140] as const;
 const TAIL_Y = [-4_000, 4_000] as const;
 const DAYS_GONE = 20;
 const UP = 102;
-const START = value(100, 0, 35);
-const AFTER = value(UP, DAYS_GONE, 35);
+const START_IV = 35;
+const START = value(100, 0, START_IV);
+const AFTER = value(UP, DAYS_GONE, START_IV);
 const CRUSH = value(UP, DAYS_GONE, 25);
 /** Per contract, in cents: 100 shares. */
 const LOSS_AFTER = Math.round((AFTER * 100 - PAID) * 100);
@@ -112,8 +120,11 @@ const copy = {
 		"Right about the direction, and still down. How?",
 		"方向判断对了，却还在亏。为什么？",
 	],
-	boughtHead: ["Bought with 32 days to go.", "距到期 32 天时买入。"],
-	boughtHeadShort: ["Bought, 32 days out.", "距到期 32 天买入。"],
+	boughtHead: ["Start with the call you bought.", "先看买入时的看涨期权。"],
+	boughtHeadShort: [
+		"Start with the call you bought.",
+		"先看买入时的看涨期权。",
+	],
 	timeHead: ["Time wears the call down.", "时间磨损看涨期权。"],
 	timeHeadShort: ["Time wears it down.", "时间磨损它。"],
 	crushHead: [
@@ -124,7 +135,10 @@ const copy = {
 	axis: ["modeled call value / share", "看涨模型价值 / 股"],
 	spotAxis: ["ALFA price", "ALFA 股价"],
 	paid: ["paid $4.20", "买价 $4.20"],
-	today: ["Sep 16", "9月16日"],
+	today: [
+		`Sep 16 · ${DAYS} days · IV ${START_IV}%`,
+		`9月16日 · ${DAYS} 天 · IV ${START_IV}%`,
+	],
 	later: ["+20 days", "+20 天"],
 	lowIv: ["+20 days, IV 25%", "+20 天，IV 25%"],
 	lowIvShort: ["IV 25%", "IV 25%"],
@@ -271,12 +285,12 @@ function Scene({
 						</text>
 						<path
 							data-f="c-today"
-							d={L.decayPath(0, 35)}
+							d={L.decayPath(0, START_IV)}
 							className="wt-line-reference"
 						/>
 						<path
 							data-f="c-later"
-							d={L.decayPath(DAYS_GONE, 35)}
+							d={L.decayPath(DAYS_GONE, START_IV)}
 							className="wt-line-position"
 						/>
 						{/* A value under a changed assumption: the caution colour, not a short leg. */}
@@ -621,65 +635,79 @@ function Scene({
 					] as const
 				).map(([name, tag, facts], i) => (
 					<g key={name}>
-						<Word
-							name={`k-${name}-tag`}
-							x={W * L.pair[i]}
-							y={H * 0.32}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`k-${name}-ask`}
-							x={W * L.pair[i]}
-							y={H * 0.32 + T.body * 1.8}
-							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{`${t(copy.buyAsk)} ${usd(facts.quote.ask)}`}
-						</Word>
-						<Word
-							name={`k-${name}-bid`}
-							x={W * L.pair[i]}
-							y={H * 0.32 + T.body * 3.2}
-							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{`${t(copy.sellBid)} ${usd(facts.quote.bid)}`}
-						</Word>
-						<Word
-							name={`k-${name}-spread-tag`}
-							x={W * L.pair[i]}
-							y={H * 0.32 + T.body * 5}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(copy.spread).toUpperCase()}
-						</Word>
-						<Word
-							name={`k-${name}-spread`}
-							x={W * L.pair[i]}
-							y={H * 0.32 + T.body * 6.4}
-							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{`${usd(facts.quote.ask - facts.quote.bid)} × ${COST_SHARES} = ${usd(facts.spread, 0)}`}
-						</Word>
-						<Word
-							name={`k-${name}-fees`}
-							x={W * L.pair[i]}
-							y={H * 0.32 + T.body * 8}
-							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{`+ ${t(copy.fees)} ${usd(facts.fees)}`}
-						</Word>
+						<g data-f={`k-${name}-card`}>
+							<Word
+								name={`k-${name}-tag`}
+								x={W * L.pair[i]}
+								y={H * 0.32}
+								size={T.small}
+								className="wt-film-tag"
+							>
+								{t(tag).toUpperCase()}
+							</Word>
+							<Word
+								name={`k-${name}-ask`}
+								x={W * L.pair[i]}
+								y={H * 0.32 + T.body * 1.8}
+								size={T.body}
+								className={
+									name === "active" ? "wt-film-num wt-film-dim" : "wt-film-num"
+								}
+							>
+								{`${t(copy.buyAsk)} ${usd(facts.quote.ask)}`}
+							</Word>
+							<Word
+								name={`k-${name}-bid`}
+								x={W * L.pair[i]}
+								y={H * 0.32 + T.body * 3.2}
+								size={T.body}
+								className={
+									name === "active" ? "wt-film-num wt-film-dim" : "wt-film-num"
+								}
+							>
+								{`${t(copy.sellBid)} ${usd(facts.quote.bid)}`}
+							</Word>
+							<Word
+								name={`k-${name}-spread-tag`}
+								x={W * L.pair[i]}
+								y={H * 0.32 + T.body * 5}
+								size={T.small}
+								className="wt-film-tag"
+							>
+								{t(copy.spread).toUpperCase()}
+							</Word>
+							<Word
+								name={`k-${name}-spread`}
+								x={W * L.pair[i]}
+								y={H * 0.32 + T.body * 6.4}
+								size={T.body}
+								className={
+									name === "active" ? "wt-film-num wt-film-dim" : "wt-film-num"
+								}
+							>
+								{`${usd(facts.quote.ask - facts.quote.bid)} × ${COST_SHARES} = ${usd(facts.spread, 0)}`}
+							</Word>
+							<Word
+								name={`k-${name}-fees`}
+								x={W * L.pair[i]}
+								y={H * 0.32 + T.body * 8}
+								size={T.body}
+								className={
+									name === "active" ? "wt-film-num wt-film-dim" : "wt-film-num"
+								}
+							>
+								{`+ ${t(copy.fees)} ${usd(facts.fees)}`}
+							</Word>
+						</g>
 						<Word
 							name={`k-${name}-loss`}
 							x={W * L.pair[i]}
 							y={H * 0.32 + T.body * 11 + T.big * 0.2}
-							size={T.big * 0.7}
+							size={
+								narrow && name === "active"
+									? Math.max(T.num, T.big * 0.55)
+									: T.big * 0.7
+							}
 							className="wt-film-num wt-film-loss"
 						>
 							<tspan style={{ fontSize: T.body }}>= </tspan>
@@ -697,15 +725,63 @@ function Scene({
 					{t(narrow ? copy.beOnStageShort : copy.beOnStage)}
 				</Word>
 				<Brackets name="lock-be" />
-				<Word
-					name="k-be-proof"
-					x={W / 2}
-					y={H * 0.87}
-					size={T.body}
-					className="wt-film-num wt-film-dim"
-				>
-					{`${usd(THIN.quote.ask)} + ${usd(THIN.fees / COST_SHARES, 3)} = ${usd(THIN.breakeven, 3)}`}
-				</Word>
+				{narrow ? (
+					<g data-f="k-be-proof">
+						<Word
+							name="k-be-ask"
+							x={W / 2 - T.body * 2.8}
+							y={H * 0.87}
+							size={T.body}
+							anchor="end"
+							className="wt-film-num wt-film-dim"
+						>
+							{`${usd(THIN.quote.ask)} +`}
+						</Word>
+						<Word
+							name="k-be-fees"
+							x={W / 2}
+							y={H * 0.87 - T.body * 0.7}
+							size={T.body}
+							className="wt-film-num wt-film-dim"
+						>
+							{usd(THIN.fees)}
+						</Word>
+						<path
+							data-f="k-be-fraction"
+							d={`M${W / 2 - T.body * 2} ${H * 0.87 - T.body * 0.23}h${T.body * 4}`}
+							className="wt-axis"
+						/>
+						<Word
+							name="k-be-shares"
+							x={W / 2}
+							y={H * 0.87 + T.body}
+							size={T.body}
+							className="wt-film-num wt-film-dim"
+						>
+							{COST_SHARES}
+						</Word>
+						<Word
+							name="k-be-result"
+							x={W / 2 + T.body * 2.8}
+							y={H * 0.87}
+							size={T.body}
+							anchor="start"
+							className="wt-film-num wt-film-dim"
+						>
+							{`= ${usd(THIN.breakeven, 3)}`}
+						</Word>
+					</g>
+				) : (
+					<Word
+						name="k-be-proof"
+						x={W / 2}
+						y={H * 0.87}
+						size={T.body}
+						className="wt-film-num wt-film-dim"
+					>
+						{`${usd(THIN.quote.ask)} + (${usd(THIN.fees)} ÷ ${COST_SHARES}) = ${usd(THIN.breakeven, 3)}`}
+					</Word>
+				)}
 			</g>
 			<g data-f="claim">
 				<Lines
@@ -973,34 +1049,27 @@ function build(context: FilmContext) {
 	show(heads[5], 32.9);
 	show(one("k-shares"), 32.9);
 	(["active", "thin"] as const).forEach((name) => {
-		show(
-			[one(`k-${name}-tag`), one(`k-${name}-ask`), one(`k-${name}-bid`)],
-			33.15,
-		);
-		show(
-			[
-				one(`k-${name}-spread-tag`),
-				one(`k-${name}-spread`),
-				one(`k-${name}-fees`),
-			],
-			33.95,
-		);
-		// Operands settle before their sum arrives; no false intermediate equations.
+		// The labelled quotes, multiplication and both fees arrive as one complete card.
+		show(one(`k-${name}-card`), 32.9);
+		// Cards settle at 33.4; leave 1.25 seconds before the already-correct totals.
 		word(one(`k-${name}-loss`), 34.65);
 	});
 	// Both totals settle at 35.2, leaving 1.35 seconds before the headline transition.
 	d.swap(heads[5], heads[6], 36.55);
 	tl.to(
-		["tag", "ask", "bid", "spread-tag", "spread", "fees", "loss"].map((n) =>
-			one(`k-active-${n}`),
-		),
+		[one("k-active-card"), one("k-active-loss")],
 		{ opacity: 0.35, duration: 0.4 },
 		37.25,
 	);
 	show(one("k-thin-be"), 37.0);
 	d.lock(g("lock-be"), 37.2, { around: g("k-thin-be"), pad: 5 });
 	// Make the per-share fee hurdle visible after a full second of rest.
-	show(one("k-be-proof"), 38.65);
+	tl.fromTo(
+		one("k-be-proof"),
+		{ opacity: 0, x: 0, y: 0 },
+		{ opacity: 1, duration: 0.5 },
+		38.65,
+	);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.5);
