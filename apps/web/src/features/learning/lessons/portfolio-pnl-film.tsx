@@ -70,7 +70,8 @@ const OFF_FLOOR = 100 + (RECEIVED / 100 - BEN_Y[0]) / (BEN * 100);
 const fifo = split(SOLD, "fifo");
 /** What selling at the bid, not the mid, takes off: six contracts × $0.125 × 100. */
 const GAP = SOLD * (MARK - SALE) * 100;
-const GAP_EQ = `${price(MARK - SALE)} × ${SOLD} × 100 =`;
+const GAP_EQ = `−${price(MARK - SALE)} × ${SOLD} × 100 =`;
+const GAP_RESULT = `−${dollars(GAP)}`;
 const FIFO_EQ = `${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 =`;
 const held = split(0, "fifo");
 /** The surviving cells and their marked P&L, using the same FIFO lots as the model. */
@@ -150,8 +151,10 @@ function layout(width: number) {
 const copy = {
 	title: ["P&L", "盈亏"],
 	titleSub: ["positions, cost and cash", "持仓、成本与现金"],
-	qOpen: ["Your account · Monday open", "你的账户 · 周一开盘"],
-	qTue: ["Your account · Tuesday", "你的账户 · 周二"],
+	qOpen: [
+		`Monday open ${dollars(valueOpen)} → Tuesday`,
+		`周一开盘 ${dollars(valueOpen)} → 周二`,
+	],
 	qUp: [
 		`up ${dollars(afterDeposit - valueOpen)}`,
 		`增加 ${dollars(afterDeposit - valueOpen)}`,
@@ -169,7 +172,7 @@ const copy = {
 		`+${dollars(yourAccount.deposit)} deposited`,
 		`存入 +${dollars(yourAccount.deposit)}`,
 	],
-	bpTag: ["buying power", "购买力"],
+	bpTag: ["buying power · ½ credit", "购买力 · 一半授信"],
 	lotsHead: [
 		`Sell ${SOLD} at the bid: still ${signed(held.unrealized)}?`,
 		`以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
@@ -313,8 +316,7 @@ function Scene({
 	const gapY = narrow ? H * 0.66 : operandY + T.body * 4.4;
 	const eqX =
 		W / 2 -
-		(textWidth(GAP_EQ, gapText) + 8 + textWidth(dollars(GAP), gapText * 1.3)) /
-			2;
+		(textWidth(GAP_EQ, gapText) + 8 + textWidth(GAP_RESULT, gapText * 1.3)) / 2;
 	/** Separate operands use the second amount's sign for addition. */
 	const operandGap = T.num * 0.85;
 	/** Buying power has its own slot, below the account's settled value. */
@@ -603,15 +605,6 @@ function Scene({
 					className="wt-film-tag"
 				>
 					{t(copy.qOpen).toUpperCase()}
-				</Word>
-				<Word
-					name="q-tue"
-					x={W / 2}
-					y={H * 0.3}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(copy.qTue).toUpperCase()}
 				</Word>
 				<Word
 					name="q-num"
@@ -952,7 +945,7 @@ function Scene({
 					className="wt-film-num wt-film-loss"
 					style={{ fontSize: gapText * 1.3 }}
 				>
-					{dollars(GAP)}
+					{GAP_RESULT}
 				</text>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
@@ -1160,7 +1153,6 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-open"), 4.6);
 	land(one("q-num"), 4.8);
-	d.swap(one("q-open"), one("q-tue"), 5.5);
 	d.count(
 		one<SVGTextElement>("q-num"),
 		afterDeposit,
