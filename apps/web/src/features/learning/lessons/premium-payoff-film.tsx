@@ -132,7 +132,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Premium, payoff and profit", "权利金、到期价值与盈亏"],
-	titleSub: ["both sides of the trade", "交易的两方"],
+	titleSub: ["buyer and writer", "交易的两方"],
 	qTag: ["Oct 18 95 call · ALFA $100", "10月18日 95 看涨 · ALFA $100"],
 	qLine: [
 		"If ALFA is still $100 on Oct 18, what is it worth?",
@@ -152,7 +152,7 @@ const copy = {
 	profitHeadShort: ["Buy the 100 call.", "买入 100 看涨。"],
 	beHead: ["Profit doesn't start at $100.", "盈利不是从 $100 开始。"],
 	beHeadShort: ["Profit after $100?", "过了 $100 就盈利？"],
-	beHead2: [`It starts at $${BE.toFixed(2)}.`, `从 $${BE.toFixed(2)} 开始。`],
+	beHead2: [`Break-even is $${BE.toFixed(2)}.`, `盈亏平衡 $${BE.toFixed(2)}。`],
 	beHead2Short: [
 		`Break-even $${BE.toFixed(2)}.`,
 		`盈亏平衡 $${BE.toFixed(2)}。`,
@@ -182,12 +182,12 @@ const copy = {
 	profitFrom: ["profit from here →", "从这里开始盈利 →"],
 	profitFromShort: ["profit →", "盈利 →"],
 	callWriter: [
-		`105 call, sold at the $${(optionQuote(writes.c105).bid / 100).toFixed(2)} bid`,
-		`105 看涨，以买价 $${(optionQuote(writes.c105).bid / 100).toFixed(2)} 卖出`,
+		`105 call, written: ${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
+		`105 看涨，卖出：${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
 	],
 	callWriterShort: [
-		`105 call, sold at $${(optionQuote(writes.c105).bid / 100).toFixed(2)}`,
-		`105 看涨，$${(optionQuote(writes.c105).bid / 100).toFixed(2)} 卖出`,
+		`105 call, written: ${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
+		`105 看涨，卖出：${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
 	],
 	claimBig: ["In the money isn't the same as profitable.", "实值不等于盈利。"],
 	claimSub: [
@@ -510,7 +510,7 @@ function Scene({
 								{t(copy.premiumDrop)}
 							</text>
 						</g>
-						<PenTip name="tip" />
+						<PenTip name="tip" color="var(--muted-foreground)" />
 						<PenTip name="tip-short" color="var(--wt-short)" />
 						{/* Line names at the lines' far ends: value above its line, profit below. */}
 						<text
@@ -1077,6 +1077,8 @@ function build(context: FilmContext) {
 	tl.to(one("value-line"), { opacity: 0.45, duration: 0.4 }, 21.85);
 	// The profit construction settles at 22.55. After 1.00 s, reveal one settled
 	// counterexample in place: its stock price, marker, meter and loss region agree.
+	// Record the resting class on the timeline so a reverse seek restores the accent.
+	tl.set(marker, { attr: { class: "wt-chip" } }, 23.55);
 	tl.fromTo(
 		[
 			marker,
@@ -1100,12 +1102,16 @@ function build(context: FilmContext) {
 	// its stock-price context in place before the walk, so it never becomes a stale $102.
 	tl.to(one("m-spot"), { opacity: 0, duration: 0.35 }, 25.8);
 	const place = (spot: number) => {
+		const profit = Math.round(buyerProfit(spot));
 		gsap.set(marker, {
-			attr: { cx: L.x(spot), cy: L.y(buyerProfit(spot)) },
+			attr: {
+				cx: L.x(spot),
+				cy: L.y(buyerProfit(spot)),
+				class: profit > 0 ? "wt-chip wt-film-gain" : "wt-chip",
+			},
 		});
 		gsap.set(winClip, { attr: { width: Math.max(0, L.x(spot) - beX) } });
 		meterValue.textContent = whole(value(CALL, spot));
-		const profit = Math.round(buyerProfit(spot));
 		meterProfit.textContent = signed(profit);
 		meterProfit.setAttribute(
 			"class",
