@@ -43,14 +43,14 @@ import {
  *
  *   open      0–4        "Strategies"
  *   question  4–8.6      the 105 call sold at $2.05: a bet ALFA won't rise?
- *   leg       8.6–20.4   alone; covered by shares; capping a spread
- *   add       20.4–31.7  hero: long 105; short 110; payoff less cost; +$375 profit
- *   roll      31.7–38.0  sell October at the bid; buy November at the ask; one roll
- *   claim     38.0–42.7  one leg, many positions
- *   next      42.7–45.2  Next: straddles and condors
+ *   leg       8.6–21.35   alone; covered by shares; capping a spread
+ *   add       21.35–34.0  hero: long 105; short 110; payoff less cost; +$375 profit
+ *   roll      34.0–40.3  sell October at the bid; buy November at the ask; one roll
+ *   claim     40.3–45.0  one leg, many positions
+ *   next      45.0–47.5  Next: straddles and condors
  */
 
-const END = 45.2;
+const END = 47.5;
 const Y = [-2200, 2200] as const;
 const SPOT = 115;
 const COVERED_TOP = structures.covered(RANGE[1]);
@@ -112,7 +112,8 @@ const copy = {
 	],
 	axisProfit: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
 	axisPayoff: ["Oct 18 payoff · per contract", "10月18日到期价值 · 每张"],
-	axisBoth: ["Oct 18 · payoff / profit", "10月18日 · 到期价值 / 盈亏"],
+	axisBoth: ["Oct 18", "10月18日"],
+	profitLabel: ["profit", "盈亏"],
 	aHead: ["New example: a 105/110 spread.", "新例子：105/110 看涨价差。"],
 	a2Head: ["Profit after entry cost.", "扣除建仓成本后的盈亏。"],
 	long105: ["long 105", "105 多头"],
@@ -145,12 +146,11 @@ const copy = {
 		`one roll: same $100 strike, four weeks later · net ${signedUsd(-ROLL_NET, 0)}`,
 		`一次移仓：同一 $100 行权价，晚四周 · 净额 ${signedUsd(-ROLL_NET, 0)}`,
 	],
-	rollShort: [
+	rollNet: [
 		`one roll · net ${signedUsd(-ROLL_NET, 0)}`,
 		`一次移仓 · 净额 ${signedUsd(-ROLL_NET, 0)}`,
 	],
-	rollDates: ["Oct 18 → Nov 15", "10月18日 → 11月15日"],
-	rollWeeks: ["four weeks", "四周"],
+	rollShort: ["Oct 18 → Nov 15 · four weeks", "10月18日 → 11月15日 · 四周"],
 	claimBig: ["One leg, many positions.", "一条腿，多种持仓。"],
 	claimSub: [
 		"A sale can cover, cap or roll.",
@@ -237,7 +237,6 @@ function Scene({
 	const axisCaptions: [string, Copy][] = [
 		["axis-profit", copy.axisProfit],
 		["axis-payoff", copy.axisPayoff],
-		["axis-both", copy.axisBoth],
 	];
 	return (
 		<>
@@ -308,6 +307,26 @@ function Scene({
 								{t(label)}
 							</text>
 						))}
+						<g data-f="axis-both">
+							<text x={L.left} y={L.top - 12} className="wt-small">
+								{t(copy.axisBoth)}
+							</text>
+							{[copy.together, copy.profitLabel].map((label, i) => {
+								const x = L.left + (i === 0 ? 60 : 132);
+								return (
+									<g key={i === 0 ? "payoff" : "profit"}>
+										<path
+											d={`M${x} ${L.top - 16}h14`}
+											className="wt-line-position"
+											strokeDasharray={i === 0 ? "4 3" : undefined}
+										/>
+										<text x={x + 20} y={L.top - 12} className="wt-small">
+											{t(label)}
+										</text>
+									</g>
+								);
+							})}
+						</g>
 						{[-2000, -1000, 0, 1000, 2000].map((v) => (
 							<g key={v}>
 								<path
@@ -435,15 +454,36 @@ function Scene({
 							22,
 							"end",
 						)}
-						{tag(
-							"g-spread",
-							119,
-							structures.spread,
-							copy.spread,
-							"wt-film-accent",
-							-10,
-							"end",
-						)}
+						<Word
+							name="g-spread"
+							x={L.left}
+							y={L.top + text * 1.5}
+							size={T.small * 1.1}
+							anchor="start"
+							className="wt-film-type wt-film-dim"
+						>
+							{t(copy.spread)}
+						</Word>
+						<Word
+							name="g-spread-low"
+							x={L.left + 8}
+							y={L.y(SPREAD_LOW) + T.body * 1.8}
+							size={T.body}
+							anchor="start"
+							className="wt-film-num wt-film-loss"
+						>
+							{signedDollars(SPREAD_LOW)}
+						</Word>
+						<Word
+							name="g-spread-high"
+							x={L.right - 8}
+							y={L.y(SPREAD_HIGH) - T.body}
+							size={T.body}
+							anchor="end"
+							className="wt-film-num wt-film-accent"
+						>
+							{signedDollars(SPREAD_HIGH)}
+						</Word>
 						{[CALL_105, CALL_110].map((c) => (
 							<g key={c.strike} data-f={`k-${c.strike}`}>
 								<circle
@@ -585,41 +625,36 @@ function Scene({
 				d={`M${margin - 8} ${L.rowY(0) + 8}h-6V${L.rowY(1) + L.rowH - 8}h6`}
 				className="wt-film-riser"
 			/>
-			<Lines
-				name="roll"
-				text={t(narrow ? copy.rollShort : copy.roll)}
-				x={margin}
-				y={L.sumY}
-				size={narrow ? T.body : T.body * 1.2}
-				maxWidth={room}
-				anchor="start"
-				className="wt-film-type wt-film-loss"
-			/>
+			<g data-f="roll">
+				<Lines
+					name="roll-net"
+					text={t(narrow ? copy.rollNet : copy.roll)}
+					x={margin}
+					y={L.sumY}
+					size={narrow ? T.body : T.body * 1.2}
+					maxWidth={room}
+					anchor="start"
+					className="wt-film-type wt-film-loss"
+				/>
+				{narrow && (
+					<Lines
+						name="roll-expiry"
+						text={t(copy.rollShort)}
+						x={margin}
+						y={L.sumY + T.body * 1.6}
+						size={T.body}
+						maxWidth={room}
+						anchor="start"
+						className="wt-film-type wt-film-dim"
+					/>
+				)}
+			</g>
+			{/* Keep the accepted drawn after-beat; the dates are already readable above. */}
 			<path
 				data-f="roll-extension"
-				d={`M${margin} ${L.sumY + T.body * 2.5}H${margin + room * 0.65}l-7 -5m7 5l-7 5`}
+				d={`M${margin} ${L.sumY + T.body * (narrow ? 3.1 : 2.5)}H${margin + room * 0.65}l-7 -5m7 5l-7 5`}
 				className="wt-bracket"
 			/>
-			<Word
-				name="roll-dates"
-				x={margin}
-				y={L.sumY + T.body * 2.5 - 8}
-				size={T.small}
-				anchor="start"
-				className="wt-film-type wt-film-dim"
-			>
-				{t(copy.rollDates)}
-			</Word>
-			<Word
-				name="roll-weeks"
-				x={margin + room * 0.65 + 10}
-				y={L.sumY + T.body * 2.5 + T.small * 0.35}
-				size={T.small}
-				anchor="start"
-				className="wt-film-type wt-film-dim"
-			>
-				{t(copy.rollWeeks)}
-			</Word>
 
 			<g data-f="claim">
 				<Lines
@@ -707,8 +742,6 @@ function build(context: FilmContext) {
 		one("bracket"),
 		one("roll"),
 		one("roll-extension"),
-		one("roll-dates"),
-		one("roll-weeks"),
 		...kids("claim"),
 	]);
 
@@ -727,57 +760,75 @@ function build(context: FilmContext) {
 	tl.addLabel("leg", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
-	d.rise(8.9);
+	d.rise(8.85);
 	show(axes, 9.1);
 	show(one("axis-profit"), 9.1);
-	draw(line("alone"), 9.7);
-	show(one("g-alone"), 10.3);
-	d.swap(heads[0], heads[1], 12.4);
-	hide([line("alone"), one("g-alone")], 12.4, 0.3);
-	draw(line("stock"), 12.8);
-	show(one("g-stock"), 13.3);
-	draw(line("covered"), 13.4);
-	show(one("g-covered"), 14.0);
-	d.swap(heads[1], heads[2], 16.4);
+	draw(line("alone"), 10.65);
+	show(one("g-alone"), 11.25);
+	d.swap(heads[0], heads[1], 13.35);
+	hide([line("alone"), one("g-alone")], 13.35, 0.3);
+	draw(line("stock"), 13.75);
+	show(one("g-stock"), 14.25);
+	draw(line("covered"), 14.35);
+	show(one("g-covered"), 14.95);
+	d.swap(heads[1], heads[2], 17.35);
 	hide(
 		[line("stock"), line("covered"), one("g-stock"), one("g-covered")],
-		16.4,
+		17.35,
 		0.3,
 	);
-	draw(line("spread"), 16.8);
-	show(one("g-spread"), L.narrow && context.locale === "en" ? 16.9 : 17.4);
+	draw(line("spread"), 17.75);
+	const spreadLabelAt = L.narrow && context.locale === "en" ? 17.85 : 18.35;
+	show(one("g-spread"), spreadLabelAt);
+	// Fade the endpoint values in place, without taking time from the settled proof.
+	tl.fromTo(
+		[one("g-spread-low"), one("g-spread-high")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		spreadLabelAt,
+	);
 
 	// ——— add: the hero. Signed legs at $115, then the cost. ———
-	tl.addLabel("add", 20.4);
-	d.swap(heads[2], heads[3], 20.4);
-	d.swap(one("axis-profit"), one("axis-payoff"), 20.4);
-	hide([line("spread"), one("g-spread")], 20.4, 0.3);
-	show(one("spot"), 20.5);
-	show([one("k-105"), one("k-110")], 20.5);
-	draw(line("long"), 20.9);
-	show(readouts[0], 21.4, "right");
+	tl.addLabel("add", 21.35);
+	d.swap(heads[2], heads[3], 21.35);
+	d.swap(one("axis-profit"), one("axis-payoff"), 21.35);
+	hide(
+		[
+			line("spread"),
+			one("g-spread"),
+			one("g-spread-low"),
+			one("g-spread-high"),
+		],
+		21.35,
+		0.3,
+	);
+	show(one("spot"), 21.45);
+	show([one("k-105"), one("k-110")], 21.45);
+	draw(line("long"), 23.2);
+	show(readouts[0], 23.7, "right");
 	// Each completed readout gets a full second before the next construction.
-	draw(line("short"), 22.9);
-	show(readouts[1], 23.4, "right");
-	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 24.9);
-	draw(line("sum"), 25.0);
-	show(readouts[2], 25.5, "right");
-	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 27.0);
-	hide([line("long"), line("short"), one("spot-guide")], 27.0, 0.35, 0);
-	hide(readouts.slice(0, 3), 27.1, 0.35, 0);
-	d.swap(one("axis-payoff"), one("axis-both"), 27.1);
-	draw(line("profit"), 27.1);
-	show(one("cost"), 27.6);
-	show(readouts[3], 27.6);
-	d.lock(lockProfit, 28.1, { around: readouts[3], pad: 8 });
-	tl.addLabel("hero-lock", 28.1);
-	show(heads[4], 28.1);
+	tl.to(line("long"), { opacity: 0.3, duration: 0.4 }, 25.2);
+	draw(line("short"), 25.2);
+	show(readouts[1], 25.7, "right");
+	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 27.2);
+	draw(line("sum"), 27.3);
+	show(readouts[2], 27.8, "right");
+	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 29.3);
+	hide([line("long"), line("short"), one("spot-guide")], 29.3, 0.35, 0);
+	hide(readouts.slice(0, 3), 29.4, 0.35, 0);
+	d.swap(one("axis-payoff"), one("axis-both"), 29.4);
+	show(heads[4], 29.4);
+	draw(line("profit"), 29.4);
+	show(one("cost"), 29.9);
+	show(readouts[3], 29.9);
+	d.lock(lockProfit, 30.4, { around: readouts[3], pad: 8 });
+	tl.addLabel("hero-lock", 30.4);
 	// After the hero's 1.5-second quiet stand, draw its profitable expiry region.
 	tl.fromTo(
 		one("profit-area"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		30.1,
+		32.4,
 	);
 	tl.fromTo(
 		one("profit-reveal"),
@@ -787,31 +838,28 @@ function build(context: FilmContext) {
 			duration: 0.6,
 			ease: "power2.out",
 		},
-		30.1,
+		32.4,
 	);
 
 	// ——— roll: two prints, one decision ———
-	tl.addLabel("roll", 31.7);
-	hide([heads[3], heads[4], readouts[3], one("cost"), lockProfit], 31.7);
-	d.sink(31.7);
-	show(heads[5], 32.05);
-	show(one("roll-tag"), 32.1);
-	show(rows[0], 32.3, "right");
-	show(rows[1], 33.1, "right");
+	tl.addLabel("roll", 34.0);
+	hide([heads[3], heads[4], readouts[3], one("cost"), lockProfit], 34.0);
+	d.sink(34.0);
+	show(heads[5], 34.35);
+	show(one("roll-tag"), 34.4);
+	show(rows, 34.6, "right");
 	tl.fromTo(
 		one("bracket"),
 		{ opacity: 0, scaleY: 0, transformOrigin: "50% 50%" },
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
-		34.1,
+		36.4,
 	);
-	show(one("roll"), 34.4);
-	show(heads[6], 34.4);
-	d.trace(one<SVGPathElement>("roll-extension"), 36.3, { duration: 0.7 });
-	show(one("roll-dates"), 36.3);
-	show(one("roll-weeks"), 36.3);
+	show(one("roll"), 36.7);
+	show(heads[6], 36.7);
+	d.trace(one<SVGPathElement>("roll-extension"), 38.6, { duration: 0.7 });
 
 	// ——— claim ———
-	tl.addLabel("claim", 38.0);
+	tl.addLabel("claim", 40.3);
 	hide(
 		[
 			heads[5],
@@ -821,18 +869,16 @@ function build(context: FilmContext) {
 			one("bracket"),
 			one("roll"),
 			one("roll-extension"),
-			one("roll-dates"),
-			one("roll-weeks"),
 		],
-		38.0,
+		40.3,
 	);
-	word(one("z-big"), 38.3);
-	show(one("z-sub"), 38.7);
+	word(one("z-big"), 40.6);
+	show(one("z-sub"), 41.0);
 
 	// ——— next ———
-	tl.addLabel("next", 42.7);
-	hide(kids("claim"), 42.7);
-	d.close(42.7);
+	tl.addLabel("next", 45.0);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
