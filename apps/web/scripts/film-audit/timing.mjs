@@ -4,7 +4,8 @@
 // the runtime, class names, and headlines stacked on one another. Then its motion: entrances
 // and exits of at least 0.3 s, a hero that stands 1.5 s, no empty or faint stage between beats,
 // and no crossfade printing one line over another. Warns when a headline states a figure the
-// stage doesn't show yet ("made, not stated").
+// stage doesn't show yet ("made, not stated"), and when a line is up for less than its reading
+// time at timed-text rates (20 characters a second in English, 9 in Chinese).
 // env: SPACE, LESSON, SIZE, LOCALE, PORT
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
@@ -168,10 +169,19 @@ const out = await page.evaluate(() => {
 			el.getAttribute("data-f") !== "title-sub"
 		);
 	});
-	const seen = new Map(prose.map((el) => [el, []]));
+	// Every other text mark (tags, figures, labels) is sampled too, for its reading time only.
+	const others = [...svg.querySelectorAll("text[data-f]")].filter(
+		(el) =>
+			!prose.includes(el) &&
+			!el.closest(
+				'[data-f="end"], [data-f="title-group"], [data-f="carry-layer"]',
+			) &&
+			!/^title/.test(el.getAttribute("data-f") || ""),
+	);
+	const seen = new Map([...prose, ...others].map((el) => [el, []]));
 	for (let t = 0; t <= duration + 0.001; t += 0.1) {
 		tl.seek(t, false);
-		for (const el of prose) {
+		for (const el of seen.keys()) {
 			const runs = seen.get(el);
 			const on = alpha(el) >= 0.6;
 			const last = runs.at(-1);
@@ -180,6 +190,28 @@ const out = await page.evaluate(() => {
 			else if (last && last.to === null) last.to = t;
 		}
 	}
+	// A run that begins or ends with another mark of the same text in its place (a proxy set
+	// over the mark it carries, a carry's landing copy handing over to the mark it became), or
+	// that ends as a carried copy of it takes flight, is a hand-over, not a short reading.
+	const marksOf = [...seen.keys()];
+	const flyers = () => [...svg.querySelectorAll('[data-f="carry-layer"] text')];
+	const twin = (el, at) => {
+		tl.seek(at, false);
+		const box = el.getBoundingClientRect();
+		const text = norm(textOf(el));
+		return (
+			marksOf.some(
+				(o) =>
+					o !== el &&
+					norm(textOf(o)) === text &&
+					alpha(o) >= 0.6 &&
+					meet(o.getBoundingClientRect(), box),
+			) || flyers().some((o) => norm(textOf(o)) === text && alpha(o) >= 0.3)
+		);
+	};
+	for (const [el, runs] of seen)
+		for (const r of runs)
+			if (r.to !== null) r.handover = twin(el, r.to) || twin(el, r.from);
 	// The kit's type scale, from the frame's width: a sentence is set at body size or larger
 	// (halfway between small and body), so labels and tags aren't held as sentences.
 	const width = svg.viewBox.baseVal.width || svg.getBoundingClientRect().width;
@@ -190,9 +222,23 @@ const out = await page.evaluate(() => {
 	const floor = (bodySize + smallSize) / 2;
 	const typeHead = clamp(narrow ? 16 : 15, width * 0.027, 25);
 	const sentences = [];
+	const marks = [];
 	for (const [el, runs] of seen) {
 		const text = textOf(el);
 		const size = Number.parseFloat(getComputedStyle(el).fontSize) || 0;
+		if (!prose.includes(el)) {
+			for (const r of runs)
+				if (r.from > 0.05 && text)
+					marks.push({
+						name: el.getAttribute("data-f"),
+						text,
+						size,
+						from: Math.round(r.from * 10) / 10,
+						hold: Math.round(((r.to ?? duration) - r.from) * 10) / 10,
+						handover: r.handover === true,
+					});
+			continue;
+		}
 		const long = (words(text) >= 4 || cjk(text) >= 8) && size >= floor;
 		for (const r of runs)
 			if (r.from > 0.05)
@@ -207,6 +253,7 @@ const out = await page.evaluate(() => {
 					top: el.getBBox().y,
 					from: Math.round(r.from * 10) / 10,
 					hold: Math.round(((r.to ?? duration) - r.from) * 10) / 10,
+					handover: r.handover === true,
 				});
 	}
 	// The claim: the last named claim to come up (z-big, c-big, claim-big…), or failing
@@ -710,6 +757,7 @@ const out = await page.evaluate(() => {
 		heroLock: tl.labels["hero-lock"],
 		glow,
 		sentences,
+		marks,
 		claim: claimRun ?? null,
 		beats: [...beatNames],
 		still,
@@ -852,6 +900,25 @@ for (const x of out.dips)
 			`${x.kind === "empty" ? "empty stage" : "faint stage (nothing above 0.3)"} for ${x.span.toFixed(2)} s from ${x.at.toFixed(2)}`,
 		);
 for (const c of out.crossfades) if (c.span >= 0.15) fails.push(c.text);
+// Reading time, at timed-text rates (Netflix): English 20 characters a second with spaces
+// counted, Chinese 9 a second with half-width characters a half, and never under 0.83 s. The
+// clock starts once a line is at full contrast and still, about 0.2 s into its entrance. Lines
+// the hold rules above already cover (headlines, the question, the claim) are left out.
+const readChars = (t) =>
+	zh
+		? [...t].reduce((n, c) => n + (/[⺀-鿿＀-￯]/.test(c) ? 1 : 0.5), 0)
+		: t.length;
+const reads = [];
+for (const x of [...out.sentences, ...out.marks]) {
+	if (named.test(x.name) || isClaim(x) || x.handover) continue;
+	const chars = readChars(x.text);
+	const need = Math.max(0.83, chars / (zh ? 9 : 20));
+	const settled = x.hold - 0.2;
+	if (settled < need - 0.05)
+		reads.push(
+			`read ${x.name} at ${x.from.toFixed(1)}: ${zh ? chars : `${chars} chars`} needs ${need.toFixed(2)} s, settled ${settled.toFixed(2)} s${x.size < out.headSize * 0.6 ? " (small)" : ""} "${x.text.slice(0, 40)}"`,
+		);
+}
 console.log(
 	JSON.stringify({
 		lesson: env.LESSON,
@@ -861,6 +928,7 @@ console.log(
 		fails,
 		warnings: [
 			...out.stated,
+			...reads,
 			...out.still.map(
 				([at, length]) => `still ${length.toFixed(1)} s at ${at.toFixed(1)}`,
 			),
