@@ -34,8 +34,8 @@ import {
  * Stocks and prices, as a film. It opens on ALFA's last trade, $100.02, and asks what 10
  * shares cost right now. First what a share is: one of 50 million slices of a $5 billion
  * company, so each $1 move is $10 on your 10 shares and $50 million on ALFA. Then the
- * quote: buy 10 and its ticket fades into what you pay, $1,000.50 at the $100.05 ask;
- * sell 10 and its ticket fades into what you get, $1,000.00 at the $100.00 bid: 50¢ apart,
+ * quote: buy 10 and reveal what you pay, $1,000.50 at the $100.05 ask;
+ * sell 10 and reveal what you get, $1,000.00 at the $100.00 bid: 50¢ apart,
  * neither is the last trade. Those trades stay done. The hero: 1,000 shares at once climb
  * the offers that are left, one level after another, to an average of $100.061. Last, a
  * stock, an ETF and an index.
@@ -154,10 +154,7 @@ const copy = {
 		`Buy ${count(BIG)}: you climb the book.`,
 		`买 ${count(BIG)} 股：逐档往上买。`,
 	],
-	diff: [
-		`${Math.round(BUY10.notional - SELL10.notional)}¢ more to buy.`,
-		`买比卖多付 ${Math.round(BUY10.notional - SELL10.notional)} 美分。`,
-	],
+	diff: ["Last trade isn’t an offer.", "最新成交不是报价。"],
 	asks: ["asks · sellers", "卖价 · 卖方"],
 	bids: ["bids · buyers", "买价 · 买方"],
 	last: ["last", "最新"],
@@ -281,9 +278,13 @@ function Scene({
 	};
 	// What you pay and what you get, in two slots: side by side under the book on a phone,
 	// stacked beside it on a desktop. The hero's average takes the second slot.
-	const fig = narrow ? T.num * 0.8 : T.num;
-	const heroFig = narrow ? T.num * 1.25 : T.num * 1.3;
-	const slotX = (k: number) => (narrow ? margin + k * room * 0.5 : L.panelX);
+	const fig = T.num;
+	const heroFig = T.num * 1.3;
+	// Separate the phone numerator and its label from the hero's left bracket.
+	const slotX = (k: number) =>
+		narrow
+			? Math.max(12, margin - (k === 0 ? 20 : 0)) + k * room * 0.5
+			: L.panelX;
 	const tagY = (k: number) =>
 		L.panelY + T.small * 1.4 + (narrow ? 0 : k * (fig * 1.25 + T.small * 2.4));
 	const valY = (k: number, size = fig) => tagY(k) + size * 1.15;
@@ -342,16 +343,7 @@ function Scene({
 				>
 					{t(["ALFA · open", "ALFA · 开盘"]).toUpperCase()}
 				</Word>
-				{/* Once the price moves it is no longer the open. */}
-				<Word
-					name="px-tag-moving"
-					x={W / 2}
-					y={H * 0.3}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(["ALFA · price", "ALFA · 股价"]).toUpperCase()}
-				</Word>
+				{/* Name the completed rise after the moving price settles. */}
 				<Word
 					name="px-tag-up"
 					x={W / 2}
@@ -390,7 +382,7 @@ function Scene({
 							name={`${name}-val`}
 							x={W * L.pair[i]}
 							y={H * 0.58 + T.num * 1.3}
-							size={narrow ? T.num * 0.8 : T.num}
+							size={T.num}
 							className="wt-film-num"
 						>
 							{name === "mine"
@@ -413,7 +405,7 @@ function Scene({
 			{/* The book. */}
 			{headline("b-head", copy.bookHead, copy.bookHeadShort)}
 			{headline("y-head", copy.buyHead, copy.buyHeadShort)}
-			{/* The answer, made by the two tickets side by side. */}
+			{/* The qualification beside the numeric buy/sell comparison. */}
 			<Lines
 				name="y2-head"
 				text={t(copy.diff)}
@@ -643,27 +635,6 @@ function Scene({
 			>
 				{t(copy.overLast).toUpperCase()}
 			</text>
-			{/* The highlighted fill's ticket reads in its payment slot, then turns into the total. */}
-			{(
-				[
-					["chip-buy", 0, BUY10.fills[0]?.price ?? 0],
-					["chip-sell", 1, SELL10.fills[0]?.price ?? 0],
-				] as const
-			).map(([name, slot, cents]) => {
-				return (
-					<text
-						key={name}
-						data-f={name}
-						x={slotX(slot)}
-						y={valY(slot)}
-						textAnchor="start"
-						className="wt-film-num wt-film-accent wt-halo"
-						style={{ fontSize: rowText }}
-					>
-						{`10 @ ${usd(cents)}`}
-					</text>
-				);
-			})}
 			{/* Fitted when they lock: the level an order takes, the index column. */}
 			<Brackets name="lock-row" />
 			<Brackets name="lock-avg" glow />
@@ -936,8 +907,6 @@ function build(context: FilmContext) {
 		one("p-sell"),
 		one("p-avg"),
 		one("lock-avg"),
-		one("chip-buy"),
-		one("chip-sell"),
 		lockRow,
 		one("lock-index"),
 		...kindOrder.flatMap((kind) => [one(`col-${kind}`), one(`colbg-${kind}`)]),
@@ -965,7 +934,7 @@ function build(context: FilmContext) {
 	show([one("co-tag"), coVal], 10.5);
 	// Each $1 move, under its own headline.
 	d.swap(heads[0], heads[1], 12.7);
-	d.swap(one("px-tag"), one("px-tag-moving"), 12.4);
+	hide(one("px-tag"), 12.4);
 	show([mineChg, coChg], 12.7);
 	tl.set(
 		[mineChg, coChg],
@@ -978,7 +947,7 @@ function build(context: FilmContext) {
 	d.count(mineChg, MINE * 100, 12.75, signed, 0, 0.6);
 	d.count(coChg, SHARES * 100, 12.75, signedMillions, 0, 0.6);
 	// Only name the completed dollar rise once all five figures have settled.
-	d.swap(one("px-tag-moving"), one("px-tag-up"), 13.35);
+	show(one("px-tag-up"), 13.7);
 
 	// ——— quote: you trade against the book ———
 	tl.addLabel("quote", 16.55);
@@ -993,20 +962,9 @@ function build(context: FilmContext) {
 		show(one(`lv-${key("bid", at.price)}`), 17.45 + i * 0.1, "right");
 	});
 	show(one("bids-tag"), 17.65);
-	// Buy 10, then sell 10: each highlighted level supplies a ticket in its payment slot.
+	// Buy 10, then sell 10: each highlighted level explains the settled payment.
 	// The trades stay done: the levels keep what they lost.
 	const sell = one<SVGTextElement>("p-sell");
-	// The desktop journey was short and the phone lane crowded. Fade in place instead of
-	// compressing either flight to fit the cap; content and size change only after clearing.
-	const ticket = (
-		name: "chip-buy" | "chip-sell",
-		to: SVGTextElement,
-		at: number,
-	) => {
-		const from = one<SVGTextElement>(name);
-		hide(from, at, 0.3, 0);
-		tl.fromTo(to, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.3);
-	};
 	const measured = (el: SVGTextElement, text: string) => {
 		const was = el.textContent;
 		el.textContent = text;
@@ -1087,23 +1045,11 @@ function build(context: FilmContext) {
 	d.swap(heads[2], heads[3], 21.55);
 	// The book settles at 18.15, then reads for a full second before the first trade.
 	take("ask", BUY10.fills, 19.15, null);
-	tl.fromTo(
-		one("chip-buy"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		19.15,
-	);
-	ticket("chip-buy", total, 19.55);
+	tl.fromTo(total, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 19.85);
 	show(one("p-pay"), 19.15, "above", 0.3);
 	// The correct payment settles at 20.15; the bid and headline wait until 21.55 (1.4 s).
 	take("bid", SELL10.fills, 21.55, null);
-	tl.fromTo(
-		one("chip-sell"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		21.55,
-	);
-	ticket("chip-sell", sell, 21.95);
+	tl.fromTo(sell, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 22.25);
 	show(one("p-get"), 21.55, "above", 0.3);
 	// Reveal the sale and its 50¢ comparison as one result, then leave the completed proof
 	// quiet until the hero. No second calculation competes with the landed sale.
@@ -1227,15 +1173,15 @@ function build(context: FilmContext) {
 		"below",
 		0.3,
 	);
-	kindOrder.forEach((kind) => {
-		show(one(`col-${kind}`), 37.35, "below", 0.3);
+	kindOrder.forEach((kind, i) => {
+		show(one(`col-${kind}`), 37.35 + 0.12 * i, "below", 0.3);
 	});
 	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 39.45);
 	d.lock(one<SVGGraphicsElement>("lock-index"), 39.45, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
-	// All three columns retain full contrast from 37.65 to 41.45 (3.8 s).
+	// The last column settles at 37.89: 3.56 s to exit, 1.56 s to index focus.
 	// The headline retains 4.1 s and settles at 37.85, 1.6 s before the index focus.
 	// That focus settles at 39.9, leaving another 1.55 s of quiet comparison.
 
