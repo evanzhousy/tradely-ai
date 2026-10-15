@@ -44,9 +44,9 @@ import {
  *   open      0–4        "0DTE"
  *   question  4–9.6      9:30, $0.36 → the 4:00 pm close, ?
  *   hours     9.6–21.0   one continuous clock/value walk; $0 at the close, time value gone
- *   swing     21.0–33.05 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
+ *   swing     21.0–34.45 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
  *                        carried into the hero; conditional hedge arithmetic after the lock
- *   oi        33.05–41.0 headline above the standing hero; chart hand-over at 34.1,
+ *   oi        34.45–41.0 headline with the OI hand-over after the hero exits,
  *                        3,400 open Thursday, 12,000 traded Friday; Monday absent, expired
  *   claim     41.0–45.4  "Little time. Large hedge changes."
  *   next      45.4–47.4  Next: implied and realized volatility
@@ -156,7 +156,7 @@ const copy = {
 		`Delta，ALFA $${LOW.toFixed(2)} → $${HIGH.toFixed(2)}，${LATE}:00`,
 	],
 	hedge: [
-		"Short calls, already hedged? Buy more shares on this rise. Actual holdings unknown.",
+		"Hedged short calls: buy on rise. Actual holdings unknown.",
 		"看涨空头已对冲？此次上涨需再买股。实际持仓未知。",
 	],
 	sharesPerCall: ["shares/call", "股/张"],
@@ -319,6 +319,53 @@ function Scene({
 								strokeDasharray="6 5"
 								d={L.path(hoursCurve, L.xH, L.yH)}
 							/>
+						</g>
+						<g data-f="h-loss-guides">
+							{[
+								{ id: "first", from: OPEN, to: OPEN + 3, below: true },
+								{ id: "last", from: CLOSE - 1, to: CLOSE, below: false },
+							].map((interval) => {
+								const x1 = L.xH(interval.from);
+								const x2 = L.xH(interval.to);
+								const y1 = L.yH(sep20(interval.from).price);
+								const y2 = L.yH(sep20(interval.to).price);
+								const y = interval.below
+									? Math.max(y1, y2) + 14
+									: Math.min(y1, y2) - 14;
+								return (
+									<g key={interval.id}>
+										<path
+											data-f={`h-loss-${interval.id}-guide`}
+											d={`M${x1} ${y1 + (interval.below ? 4 : -4)}V${y}H${x2}V${y2 + (interval.below ? 4 : -8)}`}
+											fill="none"
+											stroke="var(--diagram-loss)"
+											strokeWidth={0.75}
+											opacity={0.55}
+										/>
+										<circle cx={x1} cy={y1} r={2} fill="var(--diagram-loss)" />
+										{interval.below && (
+											<circle
+												cx={x2}
+												cy={y2}
+												r={2}
+												fill="var(--diagram-loss)"
+											/>
+										)}
+										{!narrow && (
+											<Word
+												name={`h-loss-${interval.id}-range`}
+												x={interval.below ? (x1 + x2) / 2 : L.right - 4}
+												y={y + (interval.below ? 14 : -8)}
+												size={T.small}
+												anchor={interval.below ? "middle" : "end"}
+												className="wt-film-num wt-film-dim wt-halo"
+											>
+												{`${clockFace(interval.from)}–${clockFace(interval.to)}`}
+											</Word>
+										)}
+									</g>
+								);
+							})}
 						</g>
 						<circle
 							data-f="h-marker"
@@ -634,7 +681,7 @@ function Scene({
 						x={W / 2}
 						y={mathY}
 						size={T.head}
-						className="wt-film-num"
+						className="wt-film-num wt-film-dim"
 					>
 						{`${fixed2(sep20(LATE, HIGH).delta)} − ${fixed2(sep20(LATE, LOW).delta)} ≈ ${fixed2(swingAt(LATE))}`}
 					</Word>
@@ -643,7 +690,7 @@ function Scene({
 						x={W / 2}
 						y={mathY + mathGap}
 						size={T.head}
-						className="wt-film-num"
+						className="wt-film-num wt-film-dim"
 					>
 						{`×${SHARES_PER_CALL} ${t(copy.sharesPerCall)} ×${count(HEDGE_CONTRACTS)} ${t(copy.calls)}`}
 					</Word>
@@ -652,7 +699,7 @@ function Scene({
 						x={W / 2}
 						y={mathY + mathGap * 2}
 						size={T.head}
-						className="wt-film-num"
+						className="wt-film-num wt-film-accent"
 					>
 						{`≈ ${count(hedgeShares(LATE))} ${t(copy.moreShares)}`}
 					</Word>
@@ -756,6 +803,7 @@ function build(context: FilmContext) {
 		one("h-head"),
 		one("h2-head"),
 		one("h-loss-comparison"),
+		one("h-loss-guides"),
 		clockText,
 		one("h-value"),
 		swingClock,
@@ -803,7 +851,11 @@ function build(context: FilmContext) {
 	// The endpoint settles at 16.4; the answer follows a full second of quiet.
 	show(one("h2-head"), 17.4);
 	// Settled loss windows substantiate the curve's accelerating decay, without new stops.
-	tl.to(one("h-loss-comparison"), { opacity: 1, duration: 0.5 }, 17.4);
+	tl.to(
+		[one("h-loss-comparison"), one("h-loss-guides")],
+		{ opacity: 1, duration: 0.5 },
+		17.4,
+	);
 
 	// ——— swing: the hero. Delta near the strike as the close nears. ———
 	tl.addLabel("swing", 21.0);
@@ -925,9 +977,9 @@ function build(context: FilmContext) {
 	show(one("w-hedge"), 30.45);
 
 	// ——— oi: the day's flow and open interest ———
-	tl.addLabel("oi", 33.05);
-	// A new headline arrives above the hero without moving through its brackets.
-	show(one("o-head"), 33.05);
+	tl.addLabel("oi", 34.45);
+	// Let the hedge finish reading and exit before the next topic arrives.
+	show(one("o-head"), 34.45);
 	hide([...kids("w"), lockSwing], 34.1);
 	tl.set(charts.swing, { opacity: 0 }, 34.45);
 	tl.set(charts.oi, { opacity: 1 }, 34.45);
