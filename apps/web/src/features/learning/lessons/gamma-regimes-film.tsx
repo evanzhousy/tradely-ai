@@ -44,7 +44,7 @@ import {
  *   question  4–9.6      ALFA +$1: buy or sell?
  *   regime    9.6–22.7   net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip
  *                        $102.3
- *   shortcut  22.7–33.35 a separate fixed-spot strike sum draws high to low; carry
+ *   shortcut  22.7–33.35 a fixed-spot subtotal plus the final strike contribution; carry
  *                        $102.3 against $94.1, the flip locked
  *   target    33.35–44.85  buy 5,121 if…; the tape; the book: 1,600 offered;
  *                        cut: "A regime describes a response, not a forecast."
@@ -80,26 +80,37 @@ const zeroAt = (points: readonly (readonly [number, number])[]) => {
 };
 const flipSpot = zeroAt(curve);
 const sumStrike = zeroAt(strikeSum);
-// The shared model accumulates from the highest strike down, including $115 and $120.
+// Focus the final addition: the subtotal includes every strike from $120 through $95.
 const sumSteps = [...strikeSum].reverse();
+const sumBefore = sumSteps[sumSteps.length - 2];
+const sumAfter = sumSteps[sumSteps.length - 1];
+const sumContribution = sumAfter[1] - sumBefore[1];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height, narrow } = frame;
 	const left = Math.max(frame.margin, narrow ? 46 : 0);
 	const right = width * 0.965;
-	const top = height * (narrow ? 0.34 : 0.27);
+	const top = height * (narrow ? 0.26 : 0.27);
 	const bottom = height * (narrow ? 0.64 : 0.62);
 	const sumTop = height * 0.76;
 	const sumBottom = height * 0.9;
+	// The decisive $95-to-$90 step gets its own strike and GEX scales, not the spot axis.
+	const sumRight = left + (right - left) * (narrow ? 0.48 : 0.62);
 	const sumX = (strike: number) =>
-		left + ((strike - 88) / (122 - 88)) * (right - left);
+		left + ((strike - 88) / (98 - 88)) * (sumRight - left);
 	const sumY = (dollars: number) =>
-		(sumTop + sumBottom) / 2 - (dollars / Y) * ((sumBottom - sumTop) / 2);
+		sumTop + ((200_000 - dollars) / 800_000) * (sumBottom - sumTop);
 	const x = (spot: number) =>
 		left + ((spot - X[0]) / (X[1] - X[0])) * (right - left);
 	const y = (dollars: number) =>
 		(top + bottom) / 2 - (dollars / Y) * ((bottom - top) / 2);
+	// Leave the raised phone chart's label below the hero tag's eventual flight lane.
+	const flipLabelY = narrow
+		? Math.max(top + 34, y(0) - frame.type.body * 2.5)
+		: top + 34;
+	const sumLabelY = sumY(0) + frame.type.body + 26;
+	const sumOperandY = sumTop + frame.type.body * 0.5;
 	const path = (points: readonly (readonly [number, number])[]) =>
 		points
 			.map(
@@ -115,6 +126,10 @@ function layout(width: number) {
 		bottom,
 		sumTop,
 		sumBottom,
+		sumRight,
+		flipLabelY,
+		sumLabelY,
+		sumOperandY,
 		sumX,
 		sumY,
 		x,
@@ -168,7 +183,7 @@ const copy = {
 	flip: ["flip", "转折"],
 	sumAxis: ["Strike sum · ALFA fixed at $100", "行权价累加 · ALFA 固定 $100"],
 	strikeAxis: ["strike", "行权价"],
-	sum: ["sum", "累加"],
+	sum: ["zero", "穿零"],
 	shortcutHead: [
 		"Sum strike bars at a fixed spot.",
 		"固定现价，按行权价累加。",
@@ -197,7 +212,7 @@ const copy = {
 		"在 $100，上涨 $1；须做市商持有此账户且连续对冲",
 	],
 	cardModelShort: [
-		"at $100, +$1 rise; dealers hold this book, hedging nonstop",
+		"at $100, +$1 rise; if dealers hold this book and hedge nonstop",
 		"在 $100，上涨 $1；须做市商持有此账户且连续对冲",
 	],
 	cardTape: ["the tape", "成交记录"],
@@ -291,7 +306,7 @@ function Scene({
 				<clipPath id={`sum-draw-${id}`}>
 					<rect
 						data-f="sum-draw"
-						x={L.right}
+						x={L.sumX(sumBefore[0]) - 4}
 						y={L.sumTop - 4}
 						width={0}
 						height={L.sumBottom - L.sumTop + 8}
@@ -442,7 +457,7 @@ function Scene({
 							{t(copy.sumAxis)}
 						</text>
 						<path
-							d={`M${L.left} ${L.sumY(0)}H${L.right}`}
+							d={`M${L.left} ${L.sumY(0)}H${L.sumRight}`}
 							className="wt-axis"
 						/>
 						<text
@@ -453,7 +468,7 @@ function Scene({
 						>
 							0
 						</text>
-						{[90, 100, 110, 120].map((tick) => (
+						{[90, 95].map((tick) => (
 							<text
 								key={tick}
 								x={L.sumX(tick)}
@@ -463,7 +478,7 @@ function Scene({
 							>{`$${tick}`}</text>
 						))}
 						<text
-							x={L.right}
+							x={L.sumRight}
 							y={L.sumBottom + 30}
 							textAnchor="end"
 							className="wt-small"
@@ -474,35 +489,74 @@ function Scene({
 							<path
 								data-f="sum-line"
 								className="wt-line-reference"
-								d={sumSteps
-									.map(
-										([strike, value], i) =>
-											`${i ? "L" : "M"}${L.sumX(strike)} ${L.sumY(value)}`,
-									)
-									.join("")}
+								d={`M${L.sumX(sumBefore[0])} ${L.sumY(sumBefore[1])}L${L.sumX(sumAfter[0])} ${L.sumY(sumAfter[1])}`}
 							/>
 						</g>
+						<g data-f="sum-operands">
+							<path
+								d={`M${L.sumX(sumBefore[0])} ${L.sumY(sumBefore[1])}H${L.sumX(sumAfter[0])}`}
+								className="wt-line-reference"
+								style={{ strokeWidth: 1, opacity: 0.45 }}
+							/>
+							<circle
+								cx={L.sumX(sumBefore[0])}
+								cy={L.sumY(sumBefore[1])}
+								r={4}
+								fill="var(--diagram-gain)"
+							/>
+							<Word
+								name="sum-subtotal"
+								x={L.right}
+								y={L.sumOperandY}
+								size={T.body}
+								anchor="end"
+								className="wt-film-num wt-film-gain"
+							>{`Σ ≥$${sumBefore[0]}: ${money(sumBefore[1])}`}</Word>
+							<Word
+								name="sum-contribution"
+								x={L.right}
+								y={L.sumOperandY + T.body * 1.5}
+								size={T.body}
+								anchor="end"
+								className="wt-film-num wt-film-loss"
+							>{`$${sumAfter[0]}: ${money(sumContribution)}`}</Word>
+							<Word
+								name="sum-running"
+								x={L.right}
+								y={L.sumOperandY + T.body * 3}
+								size={T.body}
+								anchor="end"
+								className="wt-film-num wt-film-gain"
+							>{`Σ ${money(sumBefore[1])}`}</Word>
+						</g>
+						<path
+							data-f="sum-drop"
+							d={`M${L.sumX(sumAfter[0])} ${L.sumY(sumBefore[1])}V${L.sumY(sumBefore[1])}`}
+							fill="none"
+							stroke="var(--diagram-loss)"
+							strokeWidth={4}
+						/>
 						<circle
 							data-f="sum-pen"
-							cx={L.sumX(sumSteps[0][0])}
-							cy={L.sumY(sumSteps[0][1])}
+							cx={L.sumX(sumBefore[0])}
+							cy={L.sumY(sumBefore[1])}
 							r={4}
 							className="wt-film-ghost"
 						/>
-						<circle
-							data-f="sum-dot"
-							cx={sx}
-							cy={L.sumY(0)}
-							r={6}
-							className="wt-film-ghost"
-						/>
+						<g data-f="sum-dot">
+							<circle cx={sx} cy={L.sumY(0)} r={6} className="wt-film-ghost" />
+							<path
+								d={`M${sx} ${L.sumY(0)}v11h6`}
+								className="wt-line-reference"
+							/>
+						</g>
 					</g>
 				</g>
 			</g>
 			<Word
 				name="flip-tag"
 				x={fx - 8}
-				y={L.top + 16}
+				y={L.flipLabelY - 18}
 				size={T.small}
 				anchor="end"
 				className="wt-film-tag wt-film-accent"
@@ -512,7 +566,7 @@ function Scene({
 			<Word
 				name="flip-num"
 				x={fx - 8}
-				y={L.top + 34}
+				y={L.flipLabelY}
 				size={T.body}
 				anchor="end"
 				className="wt-film-num wt-film-accent"
@@ -522,7 +576,7 @@ function Scene({
 			<Word
 				name="sum-tag"
 				x={sx + 12}
-				y={L.sumY(0) - T.body - 14}
+				y={L.sumLabelY - T.body - 5}
 				size={T.small}
 				anchor="start"
 				className="wt-film-tag"
@@ -532,7 +586,7 @@ function Scene({
 			<Word
 				name="sum-num"
 				x={sx + 12}
-				y={L.sumY(0) - 12}
+				y={L.sumLabelY}
 				size={T.body}
 				anchor="start"
 				className="wt-film-num"
@@ -687,11 +741,17 @@ function Scene({
 							x={narrow ? L.margin : W * 0.5}
 							y={
 								narrow
-									? cardY(i) + T.num * 1.1 + T.small * 1.6
+									? cardY(i) + T.num * 1.1 + T.body * 1.6
 									: cardY(i) + T.num * 0.75
 							}
-							size={narrow ? T.small : T.body}
-							maxWidth={narrow ? room : W * 0.5 - L.margin}
+							size={T.body}
+							maxWidth={
+								narrow
+									? i === 0
+										? Math.min(room, 270)
+										: room
+									: W * 0.5 - L.margin
+							}
 							anchor="start"
 							className="wt-film-type wt-film-dim"
 						/>
@@ -756,6 +816,8 @@ function build(context: FilmContext) {
 		one("zone-long-label"),
 		one("sum-chart"),
 		one("sum-line"),
+		one("sum-operands"),
+		one("sum-drop"),
 		one("sum-pen"),
 		one("flip-seeker"),
 		one("flip"),
@@ -871,43 +933,75 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		22.7,
 	);
-	// Reveal in the model's high-to-low accumulation order. One state drives pen and clip.
-	const accumulation = { step: 0 };
+	// Keep the existing 23.05–25.10 construction, but explain the decisive addition.
+	// The positive subtotal and negative input enter together, then the last strike is added.
+	const subtotalX = L.sumX(sumBefore[0]);
+	const finalX = L.sumX(sumAfter[0]);
+	const sumPen = one<SVGCircleElement>("sum-pen");
+	const running = one<SVGTextElement>("sum-running");
+	const accumulation = { step: sumSteps.length - 2 };
 	tl.fromTo(
-		one("sum-line"),
+		[one("sum-line"), one("sum-operands")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.6 },
 		23.05,
 	);
 	tl.fromTo(
-		one("sum-pen"),
+		[sumPen, one("sum-drop")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		23.05,
 	);
+	const addition = { duration: 0.9, ease: "none", immediateRender: false };
+	// Geometry is explicitly tweened, so a reverse seek restores every position and clip.
 	tl.fromTo(
-		accumulation,
-		{ step: 0 },
+		one("sum-draw"),
+		{ attr: { x: subtotalX - 4, width: L.sumRight - subtotalX + 8 } },
 		{
-			step: sumSteps.length - 1,
-			duration: 1.5,
-			ease: "none",
-			immediateRender: false,
+			attr: { x: finalX - 4, width: L.sumRight - finalX + 8 },
+			...addition,
+		},
+		23.65,
+	);
+	tl.fromTo(
+		one("sum-drop"),
+		{
+			attr: { d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumBefore[1])}` },
+		},
+		{
+			attr: { d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumAfter[1])}` },
+			...addition,
+		},
+		23.65,
+	);
+	// The pen's actual position drives accumulation.step and the readout, never a second count.
+	tl.fromTo(
+		sumPen,
+		{ attr: { cx: subtotalX, cy: L.sumY(sumBefore[1]) } },
+		{
+			attr: { cx: finalX, cy: L.sumY(sumAfter[1]) },
+			...addition,
 			onUpdate: () => {
-				const i = Math.min(Math.floor(accumulation.step), sumSteps.length - 2);
-				const mix = accumulation.step - i;
-				const [k0, v0] = sumSteps[i];
-				const [k1, v1] = sumSteps[i + 1];
-				const x = L.sumX(k0 + (k1 - k0) * mix);
-				const y = L.sumY(v0 + (v1 - v0) * mix);
-				gsap.set(one("sum-pen"), { attr: { cx: x, cy: y } });
-				gsap.set(one("sum-draw"), {
-					attr: { x: x - 4, width: L.right - x + 8 },
-				});
+				const mix =
+					(subtotalX - Number(sumPen.getAttribute("cx"))) /
+					(subtotalX - finalX);
+				accumulation.step = sumSteps.length - 2 + mix;
+				const value =
+					sumBefore[1] +
+					sumContribution * (accumulation.step - (sumSteps.length - 2));
+				running.textContent = `Σ ${money(value)}`;
 			},
 		},
-		23.05,
+		23.65,
 	);
+	// A timeline-owned class change restores the correct sign colour when scrubbing back.
+	tl.set(running, { attr: { class: "wt-film-num wt-film-gain" } }, 23.05);
+	tl.set(
+		running,
+		{ attr: { class: "wt-film-num wt-film-loss" } },
+		23.65 + addition.duration * (sumBefore[1] / -sumContribution),
+	);
+
 	tl.to(one("sum-pen"), { opacity: 0, duration: 0.3 }, 24.55);
 	tl.fromTo(
 		[one("sum-dot"), one("sum-tag"), one("sum-num")],
