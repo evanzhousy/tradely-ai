@@ -18,6 +18,7 @@ import {
 	AFTER_BOTH,
 	AFTER_WEEK,
 	CHARM_DAY,
+	CHARM_DAYS_PER_YEAR,
 	delta,
 	fixed3,
 	LONG,
@@ -44,11 +45,11 @@ import {
  *   question  4–9.6      0.177 — a week passes, ALFA stays at $100, nobody trades
  *   charm     9.6–22.4   delta across days; a week: 0.177 → 0.144; cut: Charm, −0.004 a
  *                        day, +1.46 per year left
- *   vanna     22.4–32.7  IV −3: 0.144 → 0.120; carry −0.024, divide by −3, lock ≈ +0.008
- *   spread    32.7–45.0  reset to today, IV unchanged; +16,600 and −8,850 →
+ *   vanna     22.4–33.4  IV −3: 0.144 → 0.120; carry −0.024, divide by −3, lock ≈ +0.008
+ *   spread    33.4–45.7  reset to today, IV unchanged; +16,600 and −8,850 →
  *                        +15,350 and −7,200: net +400;
  *                        cut: "Delta can change while nothing trades."
- *   next      45.0–47.5  Next: the module checkpoint
+ *   next      45.7–47.5  Next: the module checkpoint
  */
 
 const END = 47.5;
@@ -132,16 +133,14 @@ const copy = {
 		`today: about ${fixed3(CHARM_DAY)}/day`,
 		`今天：约 ${fixed3(CHARM_DAY)}/天`,
 	],
-	charmAlt: [
-		`today's estimate: ${PER_YEAR} per year of time left`,
-		`今天的估计：按每一年剩余期限为 ${PER_YEAR}`,
-	],
+	charmAlt: ["per year of time remaining", "每一年剩余期限"],
 	vannaWord: ["Vanna", "Vanna"],
 	vannaDef: [
 		"how delta changes with implied volatility",
 		"Delta 随隐含波动率的变化",
 	],
-	vannaUnit: ["average per IV point", "本次平均：每个 IV 点"],
+	vannaDeltaLabel: ["Δdelta", "Delta 变化"],
+	vannaUnit: ["average delta per IV point", "平均 Delta／IV 点"],
 	spreadToday: [`Today · ALFA $${SPOT}`, `今天 · ALFA $${SPOT}`],
 	spreadTransition: [
 		`Today → +7 days · ALFA $${SPOT}`,
@@ -247,21 +246,42 @@ function Scene({
 				{t(figure)}
 			</Word>
 			{alt ? (
-				<Lines
-					name={`${name}-alt`}
-					text={t(alt)}
-					x={W / 2}
-					y={
-						H * 0.42 +
-						T.big * 0.62 +
-						lineCount(t(definition), room, T.body) * T.body * 1.35 +
-						T.head * 1.6 +
-						T.body * 2
-					}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
+				<g data-f={`${name}-alt`}>
+					<Word
+						name={`${name}-conversion`}
+						x={W / 2}
+						y={
+							H * 0.42 +
+							T.big * 0.62 +
+							lineCount(t(definition), room, T.body) * T.body * 1.35 +
+							T.head * 1.6 +
+							T.body * 2
+						}
+						size={T.body}
+						className="wt-film-num wt-film-dim"
+					>
+						<tspan className="wt-film-loss">{fixed3(CHARM_DAY)}</tspan>
+						{" × "}
+						<tspan className="wt-film-loss">{`−${CHARM_DAYS_PER_YEAR}`}</tspan>
+						{" ≈ "}
+						<tspan className="wt-film-accent">{PER_YEAR}</tspan>
+					</Word>
+					<Lines
+						name={`${name}-conversion-unit`}
+						text={t(alt)}
+						x={W / 2}
+						y={
+							H * 0.42 +
+							T.big * 0.62 +
+							lineCount(t(definition), room, T.body) * T.body * 1.35 +
+							T.head * 1.6 +
+							T.body * 3.65
+						}
+						size={T.body}
+						maxWidth={room}
+						className="wt-film-type wt-film-dim"
+					/>
+				</g>
 			) : null}
 		</g>
 	);
@@ -463,6 +483,15 @@ function Scene({
 			>
 				{fixed3(AFTER_BOTH - AFTER_WEEK)}
 			</Word>
+			<Word
+				name="vanna-waypoint"
+				x={L.margin + T.small * 2}
+				y={H * 0.4}
+				size={T.small}
+				className="wt-film-num wt-film-loss"
+			>
+				{fixed3(AFTER_BOTH - AFTER_WEEK)}
+			</Word>
 			<g data-f="vanna">
 				<Word name="vanna-word" x={W / 2} y={H * 0.25} size={T.head * 1.05}>
 					{t(copy.vannaWord)}
@@ -484,6 +513,16 @@ function Scene({
 					className="wt-film-num wt-film-loss"
 				>
 					{fixed3(AFTER_BOTH - AFTER_WEEK)}
+				</Word>
+				<Word
+					name="vanna-delta-label"
+					x={W / 2 + T.head * 3}
+					y={H * 0.43}
+					size={T.body}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.vannaDeltaLabel)}
 				</Word>
 				<path
 					data-f="vanna-divide"
@@ -516,15 +555,6 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				>
 					{t(copy.vannaUnit)}
-				</Word>
-				<Word
-					name="vanna-sign"
-					x={W / 2}
-					y={H * 0.88}
-					size={T.body}
-					className="wt-film-num wt-film-dim"
-				>
-					− ÷ − = +
 				</Word>
 			</g>
 			<Brackets name="lock-vanna" glow />
@@ -711,6 +741,7 @@ function build(context: FilmContext) {
 		...kids("charm"),
 		...kids("vanna"),
 		one("vanna-input"),
+		one("vanna-waypoint"),
 		lockVanna,
 		...flat("spread"),
 		...kids("claim"),
@@ -799,57 +830,64 @@ function build(context: FilmContext) {
 	tl.set(one("vanna-change"), { opacity: 0, immediateRender: false }, 27.15);
 	tl.set(one("vanna-input"), { opacity: 1, immediateRender: false }, 27.15);
 	sink(27.15);
-	d.carry(one("vanna-input"), one("vanna-delta"), 27.55, {
-		duration: 0.55,
+	// Route around the left edge of the assembling fraction. The waypoint stays
+	// hidden; the two carried copies hand over at the same resting coordinates.
+	d.carry(one("vanna-input"), one("vanna-waypoint"), 27.5, {
+		duration: 0.3,
+		arc: "x",
+		reveal: false,
+	});
+	d.carry(one("vanna-waypoint"), one("vanna-delta"), 27.8, {
+		duration: 0.3,
 		arc: "x",
 	});
 	word("vanna-word", 27.55);
-	show(one("vanna-def"), 27.75);
-	// Two negative changes construct the positive average sensitivity. No count
-	// follows an equals sign: the approximate result enters already settled.
+	tl.fromTo(
+		[one("vanna-def"), one("vanna-delta-label")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.55 },
+		27.55,
+	);
+	// Assemble both negative operands and the rule with the carry, then leave
+	// the complete fraction quiet from 28.10 to 29.10 before revealing its answer.
 	tl.fromTo(
 		one("vanna-iv"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		28.1,
+		{ opacity: 1, duration: 0.55 },
+		27.55,
 	);
-	draw(one<SVGPathElement>("vanna-divide"), 28.1, 0.3);
-	land(one("vanna-num"), 28.4);
+	draw(one<SVGPathElement>("vanna-divide"), 27.55, 0.55);
+	land(one("vanna-num"), 29.1);
 	tl.fromTo(
 		one("vanna-unit"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		28.4,
+		29.1,
 	);
-	d.lock(lockVanna, 29.95, { around: one("vanna-num"), pad: 8 });
-	tl.addLabel("hero-lock", 29.95);
-	// Outside the brackets, after a full second of quiet from their settlement.
-	tl.fromTo(
-		one("vanna-sign"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		31.4,
-	);
+	// The signed fraction already explains the positive result. No late sign
+	// arrival interrupts the 2.30 s of quiet after bracket settlement at 31.10.
+	d.lock(lockVanna, 30.65, { around: one("vanna-num"), pad: 8 });
+	tl.addLabel("hero-lock", 30.65);
 
 	// ——— spread: a signed position turns it into shares ———
-	tl.addLabel("spread", 32.7);
-	hide([...kids("vanna"), lockVanna], 32.7);
-	show(one("s-head"), 33.05, "above");
-	show([one("s-spreadToday"), one("s-iv")], 33.3);
-	show(one("s-shares"), 33.3);
+	tl.addLabel("spread", 33.4);
+	hide([...kids("vanna"), lockVanna], 33.4);
+	show(one("s-head"), 33.75, "above");
+	show([one("s-spreadToday"), one("s-iv")], 34.0);
+	show(one("s-shares"), 34.0);
 	LEGS.forEach((leg, i) => {
-		show(one(`s-label-${leg}`), 33.5 + i * 0.4);
-		show(one(`s-value-${leg}`), 33.7 + i * 0.4, "right");
+		show(one(`s-label-${leg}`), 34.2 + i * 0.4);
+		show(one(`s-value-${leg}`), 34.4 + i * 0.4, "right");
 	});
-	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 34.4);
+	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 35.1);
 	// A week later: each leg's delta moves, and the short leg's move is a gain.
-	d.swap(one("s-head"), one("l-head"), 36.6);
-	d.swap(one("s-spreadToday"), one("s-spreadTransition"), 36.6);
+	d.swap(one("s-head"), one("l-head"), 37.3);
+	d.swap(one("s-spreadToday"), one("s-spreadTransition"), 37.3);
 	// Changes enter at zero before the walk. All six values then update together,
 	// so both the net and its change are sums of the displayed signed legs.
-	show(one("s-change"), 36.5);
-	show([one("s-delta-long"), one("s-delta-short")], 36.5, "right");
-	land(one("s-delta-net"), 36.45);
+	show(one("s-change"), 37.2);
+	show([one("s-delta-long"), one("s-delta-short")], 37.2, "right");
+	land(one("s-delta-net"), 37.15);
 	const spread = { progress: 0 };
 	const spreadValues = LEGS.map((leg) => one<SVGTextElement>(`s-value-${leg}`));
 	const spreadChanges = LEGS.map((leg) =>
@@ -879,19 +917,20 @@ function build(context: FilmContext) {
 				});
 			},
 		},
-		37.0,
+		37.7,
 	);
 	// Give the completed table one second of quiet, then identify its settled date.
-	d.swap(one("s-spreadTransition"), one("s-spreadLater"), 38.9);
+	d.swap(one("s-spreadTransition"), one("s-spreadLater"), 39.6);
 	// Cut: the claim.
-	hide([one("l-head"), ...flat("spread")], 40.5);
-	word("z-big", 40.9);
-	show(one("z-sub"), 41.3);
+	hide([one("l-head"), ...flat("spread")], 41.2);
+	word("z-big", 41.6);
+	show(one("z-sub"), 42.0);
 
 	// ——— next ———
-	tl.addLabel("next", 45.0);
-	hide(kids("claim"), 45.0);
-	d.close(45.0);
+	// Pay for the added fraction quiet with the end card alone: 2.50 → 1.80 s.
+	tl.addLabel("next", 45.7);
+	hide(kids("claim"), 45.7);
+	d.close(45.7);
 	return tl;
 }
 

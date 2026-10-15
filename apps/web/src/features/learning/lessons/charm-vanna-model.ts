@@ -31,13 +31,14 @@ export const STRIKE = 110;
 export const TODAY = delta(STRIKE);
 export const AFTER_WEEK = delta(STRIKE, WEEK);
 export const AFTER_BOTH = delta(STRIKE, WEEK, -VOL_DROP);
-export const CHARM_DAY = delta(STRIKE, 1) - TODAY;
+export const CHARM_DAY = Math.round((delta(STRIKE, 1) - TODAY) * 1000) / 1000;
+export const CHARM_DAYS_PER_YEAR = 365;
 export const VANNA_POINT =
 	Math.round((delta(STRIKE, 0, 1) - TODAY) * 10_000) / 10_000;
 /** Average sensitivity across the film's settled, week-later IV comparison. */
 export const VANNA_COMPARISON_POINT = (AFTER_BOTH - AFTER_WEEK) / -VOL_DROP;
 /** The same charm quoted per year of time remaining: time left runs the other way. */
-export const PER_YEAR = `${-CHARM_DAY * 365 > 0 ? "+" : "−"}${Math.abs(CHARM_DAY * 365).toFixed(2)}`;
+export const PER_YEAR = `${-CHARM_DAY * CHARM_DAYS_PER_YEAR > 0 ? "+" : "−"}${Math.abs(CHARM_DAY * CHARM_DAYS_PER_YEAR).toFixed(2)}`;
 
 export const LONG = oct105BlockLegs.buy;
 export const SHORT = oct105BlockLegs.sell;
