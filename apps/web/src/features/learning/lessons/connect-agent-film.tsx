@@ -89,7 +89,7 @@ const copy = {
 	],
 	signinProcess: ["Register → sign in", "注册 → 登录"],
 	keyNote: [
-		"Copy prompt creates a key and puts it in the prompt you paste to your agent.",
+		"Copy prompt → a key → paste to your agent",
 		"Copy prompt 会创建一把密钥，并放进你粘贴给智能体的提示里。",
 	],
 	keyNoteShort: [
@@ -110,6 +110,7 @@ const copy = {
 	],
 	meter: ["This key's calls · 60-second window", "本密钥调用 · 60 秒窗口"],
 	meterShort: ["This key · 60-second window", "本密钥 · 60 秒窗口"],
+	attempts: ["attempts", "尝试次数"],
 	refused: ["refused", "被拒"],
 	keyCard: ["Cursor key", "Cursor 密钥"],
 	active: ["active · read-only data tools", "有效 · 只读数据工具"],
@@ -132,6 +133,13 @@ const copy = {
 	],
 } as const satisfies Record<string, Copy>;
 
+// The MCP adapter exposes the registered symbol.search primitive as symbol_search.
+// Keep its meaning beside the returned identifier, separate from tools/list.
+const TOOL_RESULT = [
+	"symbol_search · find tickers",
+	"symbol_search · 查找股票代码",
+] as const satisfies Copy;
+
 const CHECKS = [
 	{
 		id: "agent",
@@ -152,19 +160,19 @@ const CHECKS = [
 	{
 		id: "tools",
 		label: [
-			"Keyed tools/list · find tickers",
-			"带密钥 tools/list · 查找股票代码",
+			"Keyed tools/list → result.tools",
+			"带密钥 tools/list → result.tools",
 		],
-		line: '{"result":{"tools":[{"name":"symbol_search"},…]}}',
-		phoneLine: "result.tools → symbol_search",
+		line: TOOL_RESULT,
+		phoneLine: TOOL_RESULT,
 		verdict: ["your key works", "密钥有效"],
 		tone: "wt-film-gain",
 	},
 ] as const satisfies readonly {
 	id: string;
 	label: Copy;
-	line: string;
-	phoneLine: string;
+	line: string | Copy;
+	phoneLine: string | Copy;
 	verdict: Copy;
 	tone: string;
 }[];
@@ -181,6 +189,10 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
+	const checkLine = (check: (typeof CHECKS)[number]) => {
+		const value = narrow ? check.phoneLine : check.line;
+		return typeof value === "string" ? value : t(value);
+	};
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
 			name={name}
@@ -367,7 +379,7 @@ function Scene({
 						className="wt-film-num wt-film-dim"
 						style={{ fontSize: L.code }}
 					>
-						{narrow ? check.phoneLine : check.line}
+						{checkLine(check)}
 					</text>
 					<text
 						data-f={`vd-${check.id}`}
@@ -448,6 +460,15 @@ function Scene({
 					{`${BURST - LIMIT} ${t(copy.refused)}`}
 				</text>
 			</g>
+			<Word
+				name="m-attempts"
+				x={margin}
+				y={L.barY + L.meterH + T.small * 1.8}
+				size={T.small}
+				anchor="start"
+			>
+				{t(copy.attempts)}
+			</Word>
 			<Word
 				name="m-count"
 				x={margin}
@@ -607,6 +628,7 @@ function build(context: FilmContext) {
 	const check = (id: string) => one(`chk-${id}`);
 	const verdict = (id: string) => one(`vd-${id}`);
 	const counter = one<SVGTextElement>("m-count");
+	const attemptsLabel = one("m-attempts");
 	// One state drives the readouts and both regions, including backwards seeks.
 	const attempt = { value: 0 };
 	const fill = one("m-fill");
@@ -653,6 +675,7 @@ function build(context: FilmContext) {
 		one("m-over"),
 		one("m-refused"),
 		counter,
+		attemptsLabel,
 		one("key"),
 		one("k-active"),
 		one("k-revoked"),
@@ -733,7 +756,7 @@ function build(context: FilmContext) {
 	show(one("r-head"), 26.55, "above");
 	show(one("meter"), 26.8);
 	show([one("key"), one("k-active")], 26.8);
-	show(counter, 27);
+	show([counter, attemptsLabel], 27);
 	countCalls(0, LIMIT, 27, 1.0);
 	// The limit settles at 28; the burst starts after a full second.
 	show([over, refused], 29);
@@ -743,7 +766,7 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 30.6);
 	hide(lockBurst, 34.2);
 	// Brackets are gone at 34.55; only then retire the old burst.
-	hide([one("meter"), counter], 34.55);
+	hide([one("meter"), counter, attemptsLabel], 34.55);
 	tl.fromTo(
 		one("k-revoke-action"),
 		{ opacity: 0 },
