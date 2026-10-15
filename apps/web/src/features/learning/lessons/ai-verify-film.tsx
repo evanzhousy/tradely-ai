@@ -24,6 +24,7 @@ import {
 	COST,
 	CRUX,
 	INSIGHT_BODY,
+	INSIGHT_BODY_SHORT,
 	NAMES,
 	NEAR,
 	PASSED,
@@ -255,10 +256,11 @@ function Scene({
 			/>
 		</g>
 	);
+	const insightBody = narrow ? INSIGHT_BODY_SHORT : INSIGHT_BODY;
 	const panelH =
 		L.panelPad * 2 +
 		T.body * 2.7 +
-		lineCount(t(INSIGHT_BODY), L.panelW - 2 * L.panelPad, L.panelText) *
+		lineCount(t(insightBody), L.panelW - 2 * L.panelPad, L.panelText) *
 			L.panelText *
 			1.35;
 	const recipeField: Copy = [
@@ -473,7 +475,9 @@ function Scene({
 									data-f={`result-${proof.id}`}
 									x={margin + 14}
 									y={resultY}
-									className="wt-film-num"
+									className={
+										proof.id === "bet" ? "wt-film-type" : "wt-film-num"
+									}
 									style={{ fontSize: resultSize, fill: proof.color }}
 								>
 									{t(proof.result)}
@@ -626,7 +630,7 @@ function Scene({
 					</Word>
 					<Lines
 						name="p-insight-body"
-						text={t(INSIGHT_BODY)}
+						text={t(insightBody)}
 						x={margin + L.panelPad}
 						y={L.panelY + L.panelPad + T.body * 2.7}
 						size={L.panelText}
@@ -775,12 +779,12 @@ function build(context: FilmContext) {
 	d.swap(one("s-head"), one("b-head"), 13.4);
 	hide([row("count"), row("ratio")], 13.65, 0.35, 0);
 	fade(row("bet"), 14.0);
-	// Check in order; all missing statuses settle before the rejection begins.
+	// Check each missing input deliberately before the settled rejection.
 	MISSING_FIELDS.forEach((field, i) => {
-		fade(one(`bet-missing-${field.id}`), 14.0 + i * 0.15, 0.3);
+		fade(one(`bet-missing-${field.id}`), 14.5 + i * 1.3, 0.3);
 	});
-	fade(result("bet"), 14.6);
-	// The completed missing-evidence proof rests from 15.1 to 19.4.
+	fade(result("bet"), 17.4);
+	// The completed missing-evidence proof rests from 17.9 to 19.4.
 	d.swap(one("b-head"), one("r-head"), 19.4);
 	hide(row("bet"), 19.4, 0.35, 0);
 	fade([row("near"), row("fall")], 19.75);
@@ -845,7 +849,29 @@ function build(context: FilmContext) {
 	d.trace(one<SVGPathElement>("draft-branch"), L.narrow ? 36.25 : 35.85, {
 		duration: 0.6,
 	});
-	fade([one("draft-title"), one("draft-field")], 36.45);
+	fade(one("draft-title"), 36.45);
+	// The matching field inherits its source's emphasis, then both settle together.
+	const officialField = one("official-field");
+	const draftField = one("draft-field");
+	const fieldInk = getComputedStyle(officialField).fill;
+	const fieldAccent = getComputedStyle(one("draft-owner")).fill;
+	tl.fromTo(
+		officialField,
+		{ fill: fieldInk },
+		{ fill: fieldAccent, duration: 0.3, ease: "power1.out" },
+		36.35,
+	);
+	tl.fromTo(
+		draftField,
+		{ opacity: 0, fill: fieldAccent },
+		{ opacity: 1, duration: 0.5 },
+		36.45,
+	);
+	tl.to(
+		[officialField, draftField],
+		{ fill: fieldInk, duration: 0.3, ease: "power1.out" },
+		36.65,
+	);
 	// Cut: the claim.
 	hide(
 		[

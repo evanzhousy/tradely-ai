@@ -91,6 +91,10 @@ export const INSIGHT_BODY: Copy = [
 	"Explains this run: why five contracts passed, and what volume/OI can't tell you. The recipe is untouched.",
 	"解释这次运行：为什么有五份合约通过，以及成交量/OI 不能告诉你什么。Recipe 不受影响。",
 ];
+export const INSIGHT_BODY_SHORT: Copy = [
+	"Explains this run and its limits. Recipe unchanged.",
+	"解释本次运行及局限；Recipe 不变。",
+];
 export const EDIT_BODY: Copy = [
 	"Opens a private working draft you can change, review, undo and save. The official recipe stays as it is.",
 	"打开一份可修改、审阅、撤销和保存的私有工作草稿。官方 Recipe 保持原样。",
