@@ -61,12 +61,12 @@ export const INPUTS: readonly { id: string; label: Copy; short: Copy }[] = [
 	{
 		id: "volOi",
 		label: ["Min volume / OI", "最低成交量/OI"],
-		short: ["Min vol/OI", "成交量/OI"],
+		short: ["Min vol/OI", "最低量/OI"],
 	},
 	{
 		id: "relVol",
 		label: ["Min relative volume", "最低相对成交量"],
-		short: ["Min rel vol", "相对成交量"],
+		short: ["Min rel vol", "最低相对量"],
 	},
 	{
 		id: "volume",

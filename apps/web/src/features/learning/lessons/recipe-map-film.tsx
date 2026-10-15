@@ -20,7 +20,6 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
-	bottomLine,
 	CELLS,
 	INPUTS,
 	MONDAY,
@@ -38,15 +37,15 @@ import {
  * contracts by volume/OI, the key figures count five, and two passed without being loaded.
  *
  *   open        0–4        "Read a recipe like an auditor"
- *   question    4–9.6      "Mon Sep 16: 5 contracts flagged…" — where does it come from?
+ *   question    4–9.6      "Monday: 5 contracts flagged." — where does it come from?
  *   map         9.6–19.6   inputs, live data, cells; trace the Bottom line; the Takeaways
- *   content     19.6–31.9  Monday's two cells; Tuesday flips only the result; assemble both
+ *   content     19.6–32.3  Monday's two cells; Tuesday replaces only the result; assemble both
  *                          session counts above the unchanged Takeaways, locked
- *   population  31.9–44.2  top three; five counted, two not loaded; cut: the claim
- *   next        44.2–46.7  Next: change the inputs, keep the question
+ *   population  32.3–44.6  top three; five counted, two not loaded; cut: the claim
+ *   next        44.6–47.1  Next: change the inputs, keep the question
  */
 
-const END = 46.7;
+const END = 47.1;
 const TOP_N = 3;
 const BOTTOM = CELLS.findIndex((cell) => cell.id === "bottom");
 const TAKE = CELLS.findIndex((cell) => cell.id === "takeaways");
@@ -116,15 +115,13 @@ const copy = {
 	qTag: ["Bottom line · Monday's run", "核心结论 · 周一的运行"],
 	qLine: ["Where does this sentence come from?", "这句话从哪里来？"],
 	mapHead: [
-		"The recipe map: inputs, live data, cells.",
-		"Recipe 地图：输入、实时数据、单元格。",
+		"Trace inputs through live data to cells.",
+		"追溯输入经实时数据到单元格。",
 	],
-	mapHeadShort: ["The recipe map.", "Recipe 地图。"],
-	traceHead: [
-		"Trace the Bottom line back to its inputs.",
-		"把核心结论追溯到它的输入。",
+	mapHeadShort: [
+		"Trace inputs through live data to cells.",
+		"追溯输入经实时数据到单元格。",
 	],
-	traceHeadShort: ["Trace the Bottom line.", "追溯核心结论。"],
 	takeHead: ["The Takeaways have no line in.", "要点没有任何输入线。"],
 	takeHeadShort: ["Takeaways: no line in.", "要点：没有输入线。"],
 	inputs: ["Inputs", "输入"],
@@ -184,10 +181,14 @@ const copy = {
 	],
 } as const satisfies Record<string, Copy>;
 
-// An unchanged excerpt of the recipe's warning, rather than a second phone paragraph.
-const TAKE_EXCERPT: Copy = [
-	TAKEAWAYS[0].slice(0, TAKEAWAYS[0].indexOf(",")),
-	TAKEAWAYS[1].slice(0, TAKEAWAYS[1].indexOf("、")),
+// Preserve the warning's uncertainty on the phone, unchanged across both sessions.
+const TAKE_WARNING: Copy = [
+	"High volume/OI: intent remains unknown.",
+	"高成交量/OI：交易意图仍未知。",
+];
+const MONDAY_EXCERPT: Copy = [
+	`Monday: ${MONDAY.passed.length} contracts flagged.`,
+	`周一：${MONDAY.passed.length} 份合约入选。`,
 ];
 
 function Scene({
@@ -277,7 +278,7 @@ function Scene({
 	const mid = (y: number) => y + L.nodeH / 2;
 	// The two text cells.
 	const bottomH = 2 * L.pad + T.small * 3.3 + T.big + T.body * 1.5;
-	const takeText = narrow ? TAKE_EXCERPT : TAKEAWAYS;
+	const takeText = narrow ? TAKE_WARNING : TAKEAWAYS;
 	const takeH = L.boxHeight([takeText], locale);
 	const boxGap = H * (narrow ? 0.025 : 0.035);
 	const takeTop = L.boxTop + bottomH + boxGap;
@@ -554,7 +555,7 @@ function Scene({
 				</Word>
 				<Lines
 					name="q-big"
-					text={t(bottomLine(MONDAY))}
+					text={t(MONDAY_EXCERPT)}
 					x={W / 2}
 					y={H * 0.3 + T.head * 2}
 					size={T.head * 1.15}
@@ -567,7 +568,7 @@ function Scene({
 					y={
 						H * 0.3 +
 						T.head * 2 +
-						lineCount(t(bottomLine(MONDAY)), room, T.head * 1.15) *
+						lineCount(t(MONDAY_EXCERPT), room, T.head * 1.15) *
 							T.head *
 							1.15 *
 							1.35 +
@@ -579,7 +580,6 @@ function Scene({
 				/>
 			</g>
 			{headline("m-head", copy.mapHead, copy.mapHeadShort)}
-			{headline("b-head", copy.traceHead, copy.traceHeadShort)}
 			<Lines
 				name="t-head"
 				text={t(narrow ? copy.takeHeadShort : copy.takeHead)}
@@ -587,7 +587,7 @@ function Scene({
 				y={
 					L.headY +
 					lineCount(
-						t(narrow ? copy.traceHeadShort : copy.traceHead),
+						t(narrow ? copy.mapHeadShort : copy.mapHead),
 						room,
 						T.head,
 					) *
@@ -820,7 +820,6 @@ function build(context: FilmContext) {
 		one("tk-tag"),
 		...[
 			"m-head",
-			"b-head",
 			"t-head",
 			"r-head",
 			"u-head",
@@ -863,7 +862,6 @@ function build(context: FilmContext) {
 	tl.to(one("edges"), { opacity: 1, duration: 0.6 }, 11.0);
 	// The overview settles at 11.6, retaining its original 1.5 s rest before focus.
 	// The Bottom line, back to its inputs.
-	d.swap(one("m-head"), one("b-head"), 13.4);
 	const dim = [
 		...SOURCES.filter((_, j) => j !== LIVE).flatMap((s) => nodes(s.id)),
 		...CELLS.filter((_, i) => i !== BOTTOM).flatMap((c) => nodes(c.id)),
@@ -898,7 +896,7 @@ function build(context: FilmContext) {
 
 	// ——— content: computed and written ———
 	tl.addLabel("content", 19.6);
-	hide([one("b-head"), one("t-head")], 19.6);
+	hide([one("m-head"), one("t-head")], 19.6);
 	sink(19.6);
 	show(one("r-head"), 19.95, "above");
 	show(one("run-mon"), 20.2);
@@ -914,12 +912,20 @@ function build(context: FilmContext) {
 	);
 	show([one("tk-box"), one("tk-title")], 20.9);
 	show(one("tk-text"), 21.1);
-	// Tuesday's run: the Bottom line flips, the Takeaways hold still. The map's labels.
+	// All session fields share one fixed-position handover; Takeaways holds still.
 	show(one("u-head"), 23.7);
-	["run", "bl", "names", "ratio", "leader"].forEach((name) => {
-		d.flip(one(`${name}-mon`), one(`${name}-tue`), 24.1);
-		tl.set(one(`${name}-mon`), { opacity: 0 }, 24.4);
-	});
+	const sessionFields = ["run", "bl", "names", "ratio", "leader"];
+	tl.to(
+		sessionFields.map((name) => one(`${name}-mon`)),
+		{ opacity: 0, duration: 0.3, ease: "power2.in" },
+		24.1,
+	);
+	tl.fromTo(
+		sessionFields.map((name) => one(`${name}-tue`)),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.35, ease: "power2.out", immediateRender: false },
+		24.4,
+	);
 	tl.to(one("bl-focus"), { opacity: 1, duration: 0.4 }, 24.3);
 	show(one("bl-tag"), 24.7, "right");
 	show(one("tk-tag"), 25.1, "right");
@@ -933,7 +939,7 @@ function build(context: FilmContext) {
 		],
 		27.8,
 	);
-	// Its synchronized unfold starts 0.2 s later, so retain the day label 0.2 s longer.
+	// Retain the accepted day-label hold before the comparison replaces it.
 	hide(one("run-tue"), 28.0);
 	const heroX = (i: number) => L.margin + L.room * (i === 0 ? 0.25 : 0.75);
 	tl.to(
@@ -941,76 +947,74 @@ function build(context: FilmContext) {
 		{
 			attr: { x: heroX(1) },
 			fontSize: L.type.big,
-			duration: 0.5,
-			ease: "power2.inOut",
+			duration: 0.9,
+			ease: "sine.inOut",
 		},
 		28.15,
 	);
 	// Restore Monday's already-demonstrated value beside Tuesday, rather than counting a result.
-	tl.set(
-		one("bl-mon"),
-		{ attr: { x: heroX(0) }, fontSize: L.type.big, scaleY: 1 },
-		28.15,
-	);
+	tl.set(one("bl-mon"), { attr: { x: heroX(0) }, fontSize: L.type.big }, 28.15);
 	// Tuesday has cleared Monday's lane before the historical value fades back in.
 	tl.fromTo(
 		one("bl-mon"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.35, immediateRender: false },
-		28.45,
+		28.85,
 	);
 	tl.fromTo(
 		[one("hero-mon-day"), one("hero-tue-day")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.45 },
-		28.35,
+		28.75,
 	);
 	tl.fromTo(
 		one("hero-unit"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		28.3,
+		28.7,
 	);
-	// The figures settle at 28.8; the lock completes this construction at 29.25.
-	d.lock(lockEvidence, 28.8, {
+	// The figures settle at 29.2; the lock completes this construction at 29.65.
+	d.lock(lockEvidence, 29.2, {
 		around: [one("bl-box"), one("tk-box")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 28.8);
+	tl.addLabel("hero-lock", 29.2);
 
 	// ——— population: the table and the count ———
-	tl.addLabel("population", 31.9);
-	hide([one("r-head"), one("u-head"), ...flat("cells"), lockEvidence], 31.9);
-	tl.set(one("map"), { opacity: 0 }, 32);
-	tl.set(one("screen"), { opacity: 1 }, 32);
-	show(one("p-head"), 32.25, "above");
-	rise(32.3);
-	show(one("table-head"), 32.8);
+	tl.addLabel("population", 32.3);
+	hide([one("r-head"), one("u-head"), ...flat("cells"), lockEvidence], 32.3);
+	tl.set(one("map"), { opacity: 0 }, 32.4);
+	tl.set(one("screen"), { opacity: 1 }, 32.4);
+	show(one("p-head"), 32.65, "above");
+	rise(32.7);
+	show(one("table-head"), 33.2);
 	rows.slice(0, TOP_N).forEach((row, i) => {
-		show(row, 33 + i * 0.25);
+		show(row, 33.4 + i * 0.25);
 	});
-	// The third row settles at 34.0; retain its full 1.8 s rest before naming the ranking.
-	show(one("top-three"), 35.8);
+	// The third row settles at 34.4; retain its full 1.8 s rest before naming the ranking.
+	show(one("top-three"), 36.2);
 	// The key figures count every contract that passed; two never reached the table.
-	d.swap(one("p-head"), one("x-head"), 35.8);
+	d.swap(one("p-head"), one("x-head"), 36.2);
 	rows.slice(TOP_N).forEach((row, i) => {
-		show(row, 35.85 + i * 0.2);
+		show(row, 36.25 + i * 0.2);
 	});
-	kids("screen")
-		.filter((el) => el.getAttribute("data-f")?.startsWith("kpi-"))
-		.forEach((kpi, i) => {
-			show(kpi, 36.2 + i * 0.2, "above");
-		});
+	show(
+		kids("screen").filter((el) =>
+			el.getAttribute("data-f")?.startsWith("kpi-"),
+		),
+		36.6,
+		"above",
+	);
 	// Cut: the claim.
-	hide([one("x-head"), one("top-three")], 39.7);
-	sink(39.7);
-	word(one("claim-big"), 40.1);
-	show(one("claim-sub"), 40.5);
+	hide([one("x-head"), one("top-three")], 40.1);
+	sink(40.1);
+	word(one("claim-big"), 40.5);
+	show(one("claim-sub"), 40.9);
 
 	// ——— next ———
-	tl.addLabel("next", 44.2);
-	hide(kids("claim"), 44.2);
-	d.close(44.2);
+	tl.addLabel("next", 44.6);
+	hide(kids("claim"), 44.6);
+	d.close(44.6);
 	return tl;
 }
 
