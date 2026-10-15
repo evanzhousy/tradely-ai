@@ -908,13 +908,20 @@ const readChars = (t) =>
 	zh
 		? [...t].reduce((n, c) => n + (/[⺀-鿿＀-￯]/.test(c) ? 1 : 0.5), 0)
 		: t.length;
+// A text already read for long enough on an earlier run of the same mark (it dimmed and came
+// back, or returned after a flight) needs no second reading interval.
 const reads = [];
-for (const x of [...out.sentences, ...out.marks]) {
+const read = new Map();
+for (const x of [...out.sentences, ...out.marks].sort(
+	(a, b) => a.from - b.from,
+)) {
 	if (named.test(x.name) || isClaim(x) || x.handover) continue;
 	const chars = readChars(x.text);
 	const need = Math.max(0.83, chars / (zh ? 9 : 20));
 	const settled = x.hold - 0.2;
-	if (settled < need - 0.05)
+	const key = `${x.name}\u0000${x.text.replace(/\s+/g, " ")}`;
+	if (settled >= need - 0.05) read.set(key, true);
+	else if (!read.has(key))
 		reads.push(
 			`read ${x.name} at ${x.from.toFixed(1)}: ${zh ? chars : `${chars} chars`} needs ${need.toFixed(2)} s, settled ${settled.toFixed(2)} s${x.size < out.headSize * 0.6 ? " (small)" : ""} "${x.text.slice(0, 40)}"`,
 		);
