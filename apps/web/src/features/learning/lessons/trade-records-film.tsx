@@ -182,6 +182,47 @@ function Scene({
 	const premiumRight = usd(CONTRIBUTIONS[1], 0);
 	const sumX = (prefix: string) => margin + textWidth(prefix, carryText);
 	const sharePrefix = `${count(ROW.contracts)} × ${CONTRACT_MULTIPLIER} = `;
+	const averageTagY = narrow ? H * 0.6 : H * 0.715 - T.num * 1.6 * 1.05;
+	const proofTop =
+		Math.min(averageTagY - T.small * 1.2, H * 0.66 - carryText) - 10;
+	const proofRight = Math.min(
+		W - 14,
+		L.heroX + textWidth(price4(ROW.weighted), T.num * 1.6) + 8,
+	);
+	const landingMarks = [
+		{
+			name: "sum-left",
+			x: margin,
+			y: sumY,
+			anchor: "start",
+			value: premiumLeft,
+			accent: true,
+		},
+		{
+			name: "sum-right",
+			x: sumX(`${premiumLeft} + `),
+			y: sumY,
+			anchor: "start",
+			value: premiumRight,
+			accent: true,
+		},
+		{
+			name: "fraction-premium",
+			x: L.fractionX,
+			y: H * 0.66,
+			anchor: "middle",
+			value: usd(ROW.premium, 0),
+			accent: false,
+		},
+		{
+			name: "fraction-shares",
+			x: L.fractionX,
+			y: H * 0.735,
+			anchor: "middle",
+			value: count(ROW.shares),
+			accent: false,
+		},
+	] as const;
 	const stats: [string, Copy, string, number, number][] = [
 		["s-contracts", copy.contracts, count(ROW.contracts), 0, 0],
 		["s-trades", copy.trades, String(ROW.trades), 1, 0],
@@ -470,7 +511,7 @@ function Scene({
 				<Word
 					name="average-tag"
 					x={L.heroX}
-					y={narrow ? H * 0.6 : H * 0.715 - T.num * 1.6 * 1.05}
+					y={averageTagY}
 					size={T.small}
 					anchor="start"
 					className="wt-film-tag"
@@ -498,15 +539,32 @@ function Scene({
 			>
 				{t(copy.simple)}
 			</Word>
+			{/* These stationary copies continue the carried image at its exact landing point.
+			    Resting text fades in underneath, then each landing copy fades out in place. */}
+			<g data-f="landing-covers">
+				{landingMarks.map((mark) => (
+					<Word
+						key={mark.name}
+						name={`${mark.name}-landing`}
+						x={mark.x}
+						y={mark.y}
+						size={carryText}
+						anchor={mark.anchor}
+						className={`wt-film-num ${mark.accent ? "wt-film-accent" : ""}`}
+					>
+						{mark.value}
+					</Word>
+				))}
+			</g>
 			<path
 				data-f="proof-boundary"
-				d={`M${margin - 8} ${H * 0.235}H${margin + room + 8}V${H * 0.835}H${margin - 8}Z`}
+				d={`M${margin - 8} ${proofTop}H${proofRight}V${H * 0.835}H${margin - 8}Z`}
 				className="wt-film-link"
 			/>
 			<Word
 				name="proof-contract"
-				x={margin + room - 6}
-				y={H * 0.235 - 8}
+				x={proofRight - 8}
+				y={proofTop - 8}
 				size={T.small}
 				anchor="end"
 				className="wt-film-tag"
@@ -708,25 +766,25 @@ function build(context: FilmContext) {
 		duration: number,
 		arc: "x" | "y" = "x",
 	) => {
-		d.carry(one<SVGGraphicsElement>(from), one<SVGGraphicsElement>(to), at, {
+		const landing = one<SVGGraphicsElement>(`${to}-landing`);
+		d.carry(one<SVGGraphicsElement>(from), landing, at, {
 			duration,
 			arc,
-			fit: false,
-			reveal: false,
 		});
-		const flyer = one("carry-layer").lastElementChild;
-		if (flyer)
-			tl.fromTo(
-				flyer,
-				{ opacity: 1 },
-				{
-					opacity: 0,
-					duration: 0.3,
-					ease: "power3.in",
-					immediateRender: false,
-				},
-				at + duration - 0.3,
-			);
+		// The image is fully settled at arrival. These identical, stationary handoffs
+		// introduce no new figure or motion during its one-second quiet interval.
+		fade(one(to), at + duration, 0.3);
+		tl.fromTo(
+			landing,
+			{ opacity: 1 },
+			{
+				opacity: 0,
+				duration: 0.3,
+				ease: "power2.inOut",
+				immediateRender: false,
+			},
+			at + duration + 0.3,
+		);
 	};
 
 	const prints = PRINTS.map((_, i) => one(`print-${i}`));
@@ -746,7 +804,6 @@ function build(context: FilmContext) {
 		one("premium-sum"),
 		one("share-product"),
 		one("fraction"),
-		one("fraction-equals"),
 		one("s-average"),
 		one("simple"),
 	];
@@ -765,6 +822,11 @@ function build(context: FilmContext) {
 		...counterTags,
 		...changedReadouts,
 		...calculation,
+		...kids("landing-covers"),
+		one("sum-left"),
+		one("sum-right"),
+		one("fraction-premium"),
+		one("fraction-shares"),
 		lockAverage,
 		one("excluded-row"),
 		one("proof-boundary"),
@@ -834,10 +896,12 @@ function build(context: FilmContext) {
 	carryOnto("contribution-0-value", "sum-left", 27.9, 0.4);
 	carryOnto("contribution-1-value", "sum-right", 27.9, 0.4);
 	hide(contributions, 27.9, 0.3, 0);
-	// Complete resting equations fade under the arriving copies; every equation is settled.
+	// Surrounding operators/results arrive first; carried operands stay hidden until landing.
 	fade([one("premium-sum"), one("share-product")], 28.0, 0.3);
 	fade(one("simple"), 27.9, 0.4);
-	carryOnto("premium-total", "fraction-premium", 29.3, 0.5, "y");
+	// The numerator goes across at its source height, then down, clearing the equals-sign
+	// column; the denominator drops first, passing the rule's height before it is drawn.
+	carryOnto("premium-total", "fraction-premium", 29.3, 0.5, "x");
 	carryOnto("share-total", "fraction-shares", 29.3, 0.5, "y");
 	// Clear source glyphs early in the flight, with explicit endpoints for reverse seeks.
 	tl.fromTo(
@@ -847,9 +911,11 @@ function build(context: FilmContext) {
 		29.3,
 	);
 	fade([one("fraction"), one("s-average")], 29.5, 0.3);
-	d.trace(one<SVGPathElement>("fraction-rule"), 29.5, { duration: 0.3 });
-	// The numerator's flight crosses the equals sign's column; it joins once both land.
-	fade(one("fraction-equals"), 29.8, 0.3);
+	// Draw from the left after the descending denominator clears that part of the rule.
+	d.trace(one<SVGPathElement>("fraction-rule"), 29.5, {
+		duration: 0.3,
+		ease: "power3.in",
+	});
 
 	d.lock(lockAverage, 30.8, { around: one("s-average"), pad: 6 });
 	tl.addLabel("hero-lock", 30.8);
