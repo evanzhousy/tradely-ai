@@ -43,9 +43,9 @@ import {
  *
  *   open      0–4        "Charm and vanna"
  *   question  4–9.6      0.177 — a week passes, ALFA stays at $100, nobody trades
- *   charm     9.6–22.4   delta across days; a week: 0.177 → 0.144; cut: Charm, −0.004 a
+ *   charm     9.6–21.2   one question across the curve and week: 0.177 → 0.144; Charm, −0.004 a
  *                        day, +1.46 per year left
- *   vanna     22.4–33.4  IV −3: 0.144 → 0.120; carry −0.024, divide by −3, lock ≈ +0.008
+ *   vanna     21.2–33.4  IV −3: 0.144 → 0.120; fraction, ≈ +0.008, lock, then − ÷ − = +
  *   spread    33.4–45.7  reset to today, IV unchanged; +16,600 and −8,850 →
  *                        +15,350 and −7,200: net +400;
  *                        cut: "Delta can change while nothing trades."
@@ -104,17 +104,8 @@ const copy = {
 	q0: ["a week passes", "一周过去"],
 	q1: [`ALFA stays at $${SPOT}`, `ALFA 停在 $${SPOT}`],
 	q2: ["nobody trades", "没人交易"],
-	curveHead: ["The call's delta, day by day.", "看涨的 Delta，逐日变化。"],
-	curveHeadShort: ["Delta as days pass.", "Delta 随天数变化。"],
-	weekHead: [
-		"A week, no trade: delta falls anyway.",
-		"一周，没有成交：Delta 照样下降。",
-	],
-	weekHeadShort: ["A week, no trade: it falls.", "一周无成交：照样下降。"],
-	volHead: [
-		`Now IV falls ${VOL_DROP} points as well.`,
-		`现在 IV 也下降 ${VOL_DROP} 个点。`,
-	],
+	curveHead: ["Can delta change without a trade?", "没有成交，Delta 会变吗？"],
+	volHead: ["What if IV falls too?", "如果 IV 也下降呢？"],
 	axis: [
 		`Oct 18 ${STRIKE} call · model delta`,
 		`10月18日 ${STRIKE} 看涨 · 模型 Delta`,
@@ -463,8 +454,7 @@ function Scene({
 					</Word>
 				))}
 			</g>
-			{headline("c-head", copy.curveHead, copy.curveHeadShort)}
-			{headline("w-head", copy.weekHead, copy.weekHeadShort)}
+			{headline("c-head", copy.curveHead, copy.curveHead)}
 			{headline("v-head", copy.volHead, copy.volHead)}
 			{card(
 				"charm",
@@ -555,6 +545,19 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				>
 					{t(copy.vannaUnit)}
+				</Word>
+				<Word
+					name="vanna-sign"
+					x={W / 2}
+					y={H * 0.88}
+					size={T.body * 1.25}
+					className="wt-film-num wt-film-dim"
+				>
+					<tspan className="wt-film-loss">−</tspan>
+					{" ÷ "}
+					<tspan className="wt-film-loss">−</tspan>
+					{" = "}
+					<tspan className="wt-film-accent">+</tspan>
 				</Word>
 			</g>
 			<Brackets name="lock-vanna" glow />
@@ -735,9 +738,7 @@ function build(context: FilmContext) {
 		marker,
 		...kids("meter"),
 		...flat("q"),
-		...["c-head", "w-head", "v-head", "s-head", "l-head"].map((name) =>
-			one(name),
-		),
+		...["c-head", "v-head", "s-head", "l-head"].map((name) => one(name)),
 		...kids("charm"),
 		...kids("vanna"),
 		one("vanna-input"),
@@ -763,11 +764,13 @@ function build(context: FilmContext) {
 	hide(flat("q"), 9.6);
 	show(one("c-head"), 9.8, "above");
 	rise(9.9);
-	reveal("draw-same", 10.3, 1.6);
-	show(kids("meter"), 11.9, "above");
-	land(marker, 12.1);
-	tl.to(one("level"), { opacity: 1, duration: 0.4 }, 12.3);
-	d.swap(one("c-head"), one("w-head"), 13.4);
+	// One question covers the curve and its walk. Assemble the meter, marker and
+	// reference with the chart instead of a separate post-curve entrance sequence.
+	// The curve settles at 11.50; preserve 1.10 s of quiet before the walk at 12.60.
+	reveal("draw-same", 9.9, 1.6);
+	show(kids("meter"), 9.9, "above");
+	land(marker, 9.9);
+	tl.to(one("level"), { opacity: 1, duration: 0.4 }, 9.9);
 	const walk = { day: 0 };
 	tl.fromTo(
 		walk,
@@ -785,26 +788,26 @@ function build(context: FilmContext) {
 				meter.textContent = plain3(value);
 			},
 		},
-		13.8,
+		12.6,
 	);
-	draw(one<SVGPathElement>("charm-step"), 15.0);
-	show(one("charm-change"), 15.2, "right");
+	draw(one<SVGPathElement>("charm-step"), 13.8);
+	show(one("charm-change"), 14.0, "right");
 	// Cut: the word, and the same charm in its other unit.
-	hide([one("w-head"), ...kids("meter")], 17.3);
-	sink(17.3);
-	word("charm-word", 17.7);
-	show(one("charm-def"), 17.9);
-	land(one("charm-num"), 18.3);
-	show(one("charm-alt"), 18.8);
+	hide([one("c-head"), ...kids("meter")], 16.1);
+	sink(16.1);
+	word("charm-word", 16.5);
+	show(one("charm-def"), 16.7);
+	land(one("charm-num"), 17.1);
+	show(one("charm-alt"), 17.6);
 
 	// ——— vanna: and implied volatility moves it too ———
-	tl.addLabel("vanna", 22.4);
-	hide(kids("charm"), 22.4);
-	show(one("v-head"), 22.75, "above");
-	rise(22.8);
-	show(kids("meter"), 23.1, "above");
-	reveal("draw-low", 23.2, 1.4);
-	show([one("same-label"), one("low-label")], 24.6);
+	tl.addLabel("vanna", 21.2);
+	hide(kids("charm"), 21.2);
+	show(one("v-head"), 21.55, "above");
+	rise(21.6);
+	show(kids("meter"), 21.9, "above");
+	reveal("draw-low", 22.0, 1.4);
+	show([one("same-label"), one("low-label")], 23.4);
 	const iv = { volPoints: 0 };
 	tl.fromTo(
 		iv,
@@ -820,54 +823,71 @@ function build(context: FilmContext) {
 				meter.textContent = plain3(value);
 			},
 		},
-		24.9,
+		23.7,
 	);
-	draw(one<SVGPathElement>("vanna-step"), 25.4);
-	show(one("vanna-change"), 25.6);
-	// The proof settles at 26.10; keep it quiet until 27.15. Hand over the loss
+	tl.fromTo(
+		marker,
+		{ fill: "var(--diagram-accent)" },
+		{
+			fill: "var(--wt-short)",
+			duration: 0.6,
+			ease: "power2.inOut",
+			immediateRender: false,
+		},
+		23.7,
+	);
+	draw(one<SVGPathElement>("vanna-step"), 24.2);
+	show(one("vanna-change"), 24.4);
+	// The proof settles at 24.90; keep it quiet until 25.95. Hand over the loss
 	// in place before the chart sinks, then carry it through the cleared lane.
-	hide([one("v-head"), ...kids("meter")], 27.15);
-	tl.set(one("vanna-change"), { opacity: 0, immediateRender: false }, 27.15);
-	tl.set(one("vanna-input"), { opacity: 1, immediateRender: false }, 27.15);
-	sink(27.15);
+	hide([one("v-head"), ...kids("meter")], 25.95);
+	tl.set(one("vanna-change"), { opacity: 0, immediateRender: false }, 25.95);
+	tl.set(one("vanna-input"), { opacity: 1, immediateRender: false }, 25.95);
+	sink(25.95);
 	// Route around the left edge of the assembling fraction. The waypoint stays
 	// hidden; the two carried copies hand over at the same resting coordinates.
-	d.carry(one("vanna-input"), one("vanna-waypoint"), 27.5, {
+	d.carry(one("vanna-input"), one("vanna-waypoint"), 26.3, {
 		duration: 0.3,
 		arc: "x",
 		reveal: false,
 	});
-	d.carry(one("vanna-waypoint"), one("vanna-delta"), 27.8, {
+	d.carry(one("vanna-waypoint"), one("vanna-delta"), 26.6, {
 		duration: 0.3,
 		arc: "x",
 	});
-	word("vanna-word", 27.55);
+	word("vanna-word", 26.35);
 	tl.fromTo(
 		[one("vanna-def"), one("vanna-delta-label")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.55 },
-		27.55,
+		26.35,
 	);
 	// Assemble both negative operands and the rule with the carry, then leave
-	// the complete fraction quiet from 28.10 to 29.10 before revealing its answer.
+	// the complete fraction quiet from 26.90 to 27.90 before revealing its answer.
 	tl.fromTo(
 		one("vanna-iv"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.55 },
-		27.55,
+		26.35,
 	);
-	draw(one<SVGPathElement>("vanna-divide"), 27.55, 0.55);
-	land(one("vanna-num"), 29.1);
+	draw(one<SVGPathElement>("vanna-divide"), 26.35, 0.55);
+	land(one("vanna-num"), 27.9);
 	tl.fromTo(
 		one("vanna-unit"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		29.1,
+		27.9,
 	);
-	// The signed fraction already explains the positive result. No late sign
-	// arrival interrupts the 2.30 s of quiet after bracket settlement at 31.10.
-	d.lock(lockVanna, 30.65, { around: one("vanna-num"), pad: 8 });
-	tl.addLabel("hero-lock", 30.65);
+	d.lock(lockVanna, 29.45, { around: one("vanna-num"), pad: 8 });
+	tl.addLabel("hero-lock", 29.45);
+	// Brackets settle at 29.90. After 1.55 s of hero quiet, explain the quotient's
+	// positive sign outside them; its settled line then has 1.45 s before the cut.
+	tl.fromTo(
+		one("vanna-sign"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		31.45,
+	);
 
 	// ——— spread: a signed position turns it into shares ———
 	tl.addLabel("spread", 33.4);
@@ -927,7 +947,7 @@ function build(context: FilmContext) {
 	show(one("z-sub"), 42.0);
 
 	// ——— next ———
-	// Pay for the added fraction quiet with the end card alone: 2.50 → 1.80 s.
+	// The restored after-beat is funded before the lock; keep this 1.80 s end card.
 	tl.addLabel("next", 45.7);
 	hide(kids("claim"), 45.7);
 	d.close(45.7);
