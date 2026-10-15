@@ -51,6 +51,11 @@ const REPLIES = [
 ] as const;
 const TOTAL = REPLIES.reduce((sum, reply) => sum + reply.cost, 0);
 const expiryDays = PASSED.map((row) => contractDte(row, SESSION_DATE));
+const MISSING_FIELDS = [
+	{ id: "trader", label: ["Trader", "交易者"] },
+	{ id: "motive", label: ["Motive", "动机"] },
+	{ id: "open-close", label: ["Open/close", "开仓/平仓"] },
+] as const;
 const proofs: {
 	id: string;
 	tag: Copy;
@@ -77,7 +82,10 @@ const proofs: {
 			`${CRUX.symbol} · ${expiries[CRUX.expiry].label[0]} · ${CRUX.strike} put`,
 			`${CRUX.symbol} · ${expiries[CRUX.expiry].label[1]} · ${CRUX.strike} 看跌`,
 		],
-		basis: ["Volume ÷ open interest", "成交量 ÷ 未平仓量"],
+		basis: [
+			`Volume ${CRUX.volume.toLocaleString("en-US")} · OI ${CRUX.openInterest.toLocaleString("en-US")}`,
+			`成交量 ${CRUX.volume.toLocaleString("en-US")} · 未平仓量 ${CRUX.openInterest.toLocaleString("en-US")}`,
+		],
 		result: [
 			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}×`,
 			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}倍`,
@@ -97,7 +105,7 @@ const proofs: {
 	},
 	{
 		id: "near",
-		tag: ["Calculate · expiry", "计算 · 到期日"],
+		tag: ["Calculate · days to expiry", "计算 · 距到期天数"],
 		source: ["Within 30 days?", "30 天内到期？"],
 		basis: [`${expiryDays.join(" · ")} days`, `${expiryDays.join(" · ")} 天`],
 		result: [
@@ -313,9 +321,11 @@ function Scene({
 						lineCount(t(proof.source), room - 28, T.body) * T.body * 1.35 +
 						T.body * (proof.id === "bet" ? 1.1 : 0.4);
 					const resultY = Math.min(
-						basisY +
-							lineCount(t(proof.basis), room - 28, T.body) * T.body * 1.35 +
-							T.head * 1.1,
+						proof.id === "bet"
+							? basisY + T.body * 4.6
+							: basisY +
+									lineCount(t(proof.basis), room - 28, T.body) * T.body * 1.35 +
+									T.head * 1.1,
 						y + L.proofH(proof.id) - Math.max(8, T.head * 0.35),
 					);
 					const resultSize =
@@ -370,6 +380,46 @@ function Scene({
 											)}
 										</Word>
 									))}
+								</g>
+							) : proof.id === "bet" ? (
+								<g data-f="basis-bet">
+									{MISSING_FIELDS.map((field, i) => {
+										const gap = 10;
+										const fieldW = (room - 28 - gap * 2) / 3;
+										const x = margin + 14 + i * (fieldW + gap);
+										return (
+											<g key={field.id} data-f={`bet-field-${field.id}`}>
+												<rect
+													x={x}
+													y={basisY - T.body * 1.2}
+													width={fieldW}
+													height={T.body * 3.8}
+													rx={6}
+													className="wt-panel-shape"
+												/>
+												<Word
+													name={`bet-label-${field.id}`}
+													x={x + 6}
+													y={basisY}
+													size={T.body}
+													anchor="start"
+													className="wt-film-type wt-film-dim"
+												>
+													{t(field.label)}
+												</Word>
+												<Word
+													name={`bet-missing-${field.id}`}
+													x={x + 6}
+													y={basisY + T.body * 1.6}
+													size={T.body}
+													anchor="start"
+													className="wt-film-type wt-film-loss"
+												>
+													{t(["Missing", "缺失"])}
+												</Word>
+											</g>
+										);
+									})}
 								</g>
 							) : proof.id === "near" ? (
 								<text
@@ -685,6 +735,7 @@ function build(context: FilmContext) {
 			(name) => one(name),
 		),
 		...proofs.flatMap((proof) => [row(proof.id), result(proof.id)]),
+		...MISSING_FIELDS.map((field) => one(`bet-missing-${field.id}`)),
 		one("billing"),
 		...replies,
 		...costs,
@@ -724,6 +775,10 @@ function build(context: FilmContext) {
 	d.swap(one("s-head"), one("b-head"), 13.4);
 	hide([row("count"), row("ratio")], 13.65, 0.35, 0);
 	fade(row("bet"), 14.0);
+	// Check in order; all missing statuses settle before the rejection begins.
+	MISSING_FIELDS.forEach((field, i) => {
+		fade(one(`bet-missing-${field.id}`), 14.0 + i * 0.15, 0.3);
+	});
 	fade(result("bet"), 14.6);
 	// The completed missing-evidence proof rests from 15.1 to 19.4.
 	d.swap(one("b-head"), one("r-head"), 19.4);
