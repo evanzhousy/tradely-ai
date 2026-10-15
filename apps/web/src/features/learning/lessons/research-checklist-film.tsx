@@ -17,6 +17,8 @@ import {
 	EDITED,
 	FRIEND,
 	MESSAGES,
+	PROPOSAL_INSERT,
+	RECIPE_STATUS,
 	type Step,
 	TEMPLATE,
 } from "./research-checklist-model";
@@ -38,6 +40,11 @@ import {
  */
 
 const END = 47.05;
+// The film keeps creation conditions on stage across both pages, rather than
+// asking the viewer to read them again inside the insertion proposal.
+const FILM_MESSAGES = MESSAGES.map((message) =>
+	message.id === "proposal" ? { ...message, text: PROPOSAL_INSERT } : message,
+);
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
@@ -211,18 +218,24 @@ function Scene({
 	const textY = narrow ? y0 + L.rowH * 0.4 : y0 + L.rowH / 2 + L.rowText * 0.36;
 	const toolY = narrow ? y0 + L.rowH * 0.78 : textY;
 	// The chat, in two pages of two bubbles.
-	const bubbleH = (text: Copy) =>
+	const proposalSize = T.body * (narrow ? 1.1 : 1.15);
+	const bubbleH = (text: Copy, size = L.bubbleText) =>
 		L.bubblePad * 2 +
 		T.small * 1.5 +
-		lineCount(t(text), L.bubbleW - 2 * L.bubblePad, L.bubbleText) *
-			L.bubbleText *
-			1.35;
+		lineCount(t(text), L.bubbleW - 2 * L.bubblePad, size) * size * 1.35;
 	const bubbleY = (i: number) => {
-		const first = MESSAGES[i - (i % 2)];
+		const first = FILM_MESSAGES[i - (i % 2)];
 		return i % 2 === 0
 			? L.bubbleTop
 			: L.bubbleTop + bubbleH(first.text) + H * 0.03;
 	};
+	const statusY =
+		Math.max(
+			bubbleY(1) + bubbleH(FILM_MESSAGES[1].text),
+			bubbleY(3) + bubbleH(PROPOSAL_INSERT, proposalSize),
+		) +
+		H * 0.055 +
+		T.body;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -439,9 +452,11 @@ function Scene({
 						name={`reset-${step.id}`}
 						x={margin}
 						y={L.resetY(k)}
-						size={L.rowText}
+						size={step.id === "flow" ? L.rowText * 1.08 : L.rowText}
 						anchor="start"
-						className="wt-film-type wt-film-dim"
+						className={
+							step.id === "flow" ? "wt-film-type" : "wt-film-type wt-film-dim"
+						}
 					>
 						{t(shortText[step.id])}
 					</Word>
@@ -449,10 +464,10 @@ function Scene({
 				<Word
 					name="reset-tag"
 					x={margin}
-					y={L.resetY(0) - T.small * 1.5}
-					size={T.small}
+					y={L.resetY(0) - T.body - 10}
+					size={T.body}
 					anchor="start"
-					className="wt-film-tag"
+					className="wt-film-type"
 				>
 					{t(copy.homeReset)}
 				</Word>
@@ -505,8 +520,9 @@ function Scene({
 				))}
 			</g>
 			<g data-f="chat">
-				{MESSAGES.map((message, i) => {
+				{FILM_MESSAGES.map((message, i) => {
 					const ai = message.from === "ai";
+					const size = message.id === "proposal" ? proposalSize : L.bubbleText;
 					const x = ai ? margin : margin + room - L.bubbleW;
 					const y = bubbleY(i);
 					return (
@@ -515,7 +531,7 @@ function Scene({
 								x={x}
 								y={y}
 								width={L.bubbleW}
-								height={bubbleH(message.text)}
+								height={bubbleH(message.text, size)}
 								rx={14}
 								className={ai ? "wt-focus-shape" : "wt-panel-shape"}
 							/>
@@ -531,8 +547,8 @@ function Scene({
 								name={`bt-${message.id}`}
 								text={t(message.text)}
 								x={x + L.bubblePad}
-								y={y + L.bubblePad + T.small * 1.5 + L.bubbleText}
-								size={L.bubbleText}
+								y={y + L.bubblePad + T.small * 1.5 + size}
+								size={size}
 								maxWidth={L.bubbleW - 2 * L.bubblePad}
 								anchor="start"
 							/>
@@ -540,6 +556,15 @@ function Scene({
 					);
 				})}
 			</g>
+			<Lines
+				name="ai-status"
+				text={t(RECIPE_STATUS)}
+				x={margin}
+				y={statusY}
+				size={T.body}
+				maxWidth={room}
+				anchor="start"
+			/>
 			{claim("claim", copy.claimBig, copy.claimSub)}
 			<EndCard
 				frame={L}
@@ -636,7 +661,7 @@ function build(context: FilmContext) {
 		tl.set(row(id), { opacity: 0 }, time + duration);
 		tl.set(one(`note-${id}`), { opacity: 1 }, time + duration);
 	};
-	const bubbles = MESSAGES.map((message) => one(`b-${message.id}`));
+	const bubbles = FILM_MESSAGES.map((message) => one(`b-${message.id}`));
 
 	const lockPlan = one<SVGGraphicsElement>("lock-plan");
 
@@ -659,6 +684,7 @@ function build(context: FilmContext) {
 		lockPlan,
 		...kids("meter"),
 		...bubbles,
+		one("ai-status"),
 		...kids("claim"),
 	]);
 
@@ -697,34 +723,20 @@ function build(context: FilmContext) {
 	// ——— edits: Home doesn't keep them ———
 	tl.addLabel("edits", 19.75);
 	d.swap(one("p-head"), one("e-head"), 19.75);
-	// Preserve every step while reordering. Fade only panels/tool labels, then use
-	// two text lanes so the row labels stay readable and never pass through each other.
-	const reordered = ["gex", "trade", "flow"];
-	const furniture = reordered.flatMap((id) => [
-		one(`panel-${id}`),
-		one(`tool-${id}`),
-	]);
-	tl.to(furniture, { opacity: 0, duration: 0.35 }, 19.75);
+	// Flow is the visible move. The other two rows fade in place, change slots
+	// only after reaching zero opacity, then return without an edge detour.
+	const shifted = [row("gex"), row("trade")];
+	hide(shifted, 19.85, 0.35, 0);
 	hide([num(1), num(2), num(3)], 19.75);
-	const textX = L.rowX + 14;
-	const laneX = (id: string, side: "left" | "right") =>
-		(side === "left"
-			? 16
-			: W - 16 - one<SVGTextElement>(`step-${id}`).getBBox().width) - textX;
-	for (const [id, side] of [
-		["gex", "left"],
-		["trade", "right"],
-		["flow", "left"],
-	] as const)
-		tl.to(row(id), { x: laneX(id, side), duration: 0.3 }, 20.1);
-	move("trade", at(EDITED, "trade"), 20.4);
-	move("flow", at(EDITED, "flow"), 20.4);
-	// Flow clears the left lane before GEX reaches its row on the way to slot five.
-	tl.to(row("flow"), { x: laneX("flow", "right"), duration: 0.3 }, 21.0);
-	move("gex", at(EDITED, "gex"), 21.0);
+	for (const id of ["gex", "trade"])
+		tl.set(
+			row(id),
+			{ x: 0, y: lift(at(EDITED, id)) - lift(baseSlot(id)) },
+			20.2,
+		);
+	move("flow", at(EDITED, "flow"), 20.1);
+	tl.fromTo(shifted, { opacity: 0 }, { opacity: 1, duration: 0.35 }, 20.4);
 	enter(EARNINGS.id, at(EDITED, EARNINGS.id), 21.25);
-	for (const id of reordered) tl.to(row(id), { x: 0, duration: 0.3 }, 21.6);
-	tl.to(furniture, { opacity: 1, duration: 0.3 }, 21.9);
 	show([num(1), num(2), num(3), num(4)], 21.9, "below", 0.3);
 	tl.to(
 		[focus(EARNINGS.id), focus("flow")],
@@ -737,7 +749,7 @@ function build(context: FilmContext) {
 		ROWS.filter((step) => step.id !== EARNINGS.id && step.id !== "flow").map(
 			(step) => row(step.id),
 		),
-		{ opacity: 0, duration: 0.35 },
+		{ opacity: 0, duration: 0.35, ease: "power2.in" },
 		23.9,
 	);
 	tl.to(
@@ -784,7 +796,8 @@ function build(context: FilmContext) {
 	tl.addLabel("customize", 30.85);
 	hide([one("r-head"), ...kids("notes"), ...kids("reset"), lockPlan], 30.85);
 	show(one("a-head"), 31.2, "above");
-	show([one("m-tag"), one("m-0")], 31.35, "above");
+	show([one("m-tag"), one("m-0")], 31.2, "above");
+	show(one("ai-status"), 31.2, "above");
 	show(bubbles[0], 31.65);
 	show(bubbles[1], 32.35);
 	d.flip(one("m-0"), one("m-1"), 32.55);
@@ -804,6 +817,7 @@ function build(context: FilmContext) {
 			bubbles[3],
 			one("m-tag"),
 			one("m-2"),
+			one("ai-status"),
 		],
 		40.15,
 	);

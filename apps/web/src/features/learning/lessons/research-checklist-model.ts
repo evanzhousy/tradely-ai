@@ -69,6 +69,16 @@ export const EDITED: readonly Step[] = [
 	TEMPLATE[1],
 ];
 
+/** The proposed insertion and its conditions are shared by chat and film. */
+export const PROPOSAL_INSERT = [
+	"Add expected move before volatility.",
+	"在波动率前加预期波动。",
+] as const satisfies Copy;
+export const RECIPE_STATUS = [
+	"Nothing is saved; recipes need feature access and confirmation.",
+	"不会保存；账户有 Recipe 功能且你确认，才会构建。",
+] as const satisfies Copy;
+
 /** The Customize with AI conversation: a request, one clarifying question, an answer, a proposal. */
 export const MESSAGES: readonly {
 	id: string;
@@ -104,8 +114,8 @@ export const MESSAGES: readonly {
 		id: "proposal",
 		from: "ai",
 		text: [
-			"Add expected move before volatility. Nothing is saved; recipes need feature access and confirmation.",
-			"在波动率前加预期波动。不会保存；账户有 Recipe 功能且你确认，才会构建。",
+			`${PROPOSAL_INSERT[0]} ${RECIPE_STATUS[0]}`,
+			`${PROPOSAL_INSERT[1]}${RECIPE_STATUS[1]}`,
 		],
 		at: 2,
 	},
