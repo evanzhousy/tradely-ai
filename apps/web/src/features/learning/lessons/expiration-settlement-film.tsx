@@ -1,4 +1,3 @@
-import { gsap } from "gsap";
 import { type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -52,7 +51,6 @@ const END = 47.5;
 const OCT4 = exitValues("oct4");
 const OCT18 = exitValues("oct18");
 const PAYS = indexPayout(INDEX_SETTLES);
-const PIN = [99.9, 100.7] as const;
 const HOLDER_CLOSE = 100.02;
 const WRITER_CLOSE = 99.98;
 const WRITER_AFTER = 100.6;
@@ -63,25 +61,35 @@ function layout(width: number) {
 	const barTop = H * (narrow ? 0.34 : 0.32);
 	const barBottom = H * (narrow ? 0.72 : 0.74);
 	const top = OCT4.bid;
+	const barH = (cents: number) => (cents / top) * (barBottom - barTop);
+	const barX = (i: number) =>
+		width / 2 + (i === 0 ? -1 : 1) * room * (narrow ? 0.2 : 0.16);
+	const barW = Math.min(room * 0.22, 120);
+	const capY = (time: number) => barBottom - barH(OCT4.intrinsic + time / 2);
+	const capLabelY = (time: number) =>
+		narrow
+			? H * 0.23 + frame.type.small * 1.3
+			: capY(time) + frame.type.body * 0.35;
+	const capLink = (time: number) => {
+		const left = barX(0) - barW / 2;
+		return narrow
+			? `M${left - 10} ${capLabelY(time) + 7}V${capY(time)}H${left}`
+			: `M${margin + room * 0.2} ${capY(time)}H${left}`;
+	};
 	return {
 		...frame,
 		barBottom,
-		barH: (cents: number) => (cents / top) * (barBottom - barTop),
-		barX: (i: number) =>
-			width / 2 + (i === 0 ? -1 : 1) * room * (narrow ? 0.2 : 0.16),
-		barW: Math.min(room * 0.22, 120),
-		lineY: H * 0.5,
+		barH,
+		barX,
+		barW,
+		capLabelY,
+		capLink,
 		dayX: (day: number) => margin + (day / WINDOW_DAYS) * room,
-		pinX: (price: number) =>
-			margin + ((price - PIN[0]) / (PIN[1] - PIN[0])) * room,
-		pinY: H * 0.37,
+		dayY: (row: number) => H * (row === 0 ? 0.39 : 0.64),
 		priceX: width * 0.64,
 		priceY: H * 0.3,
 		heroSize: frame.type.big * (narrow ? 0.9 : 0.78),
-		heroY:
-			H * 0.51 +
-			frame.type.big * (narrow ? 0.9 : 0.78) * 1.15 +
-			(narrow ? 28 : 0),
+		heroY: narrow ? H * 0.54 : H * 0.51 + frame.type.big * 0.78 * 1.15,
 		partyY: H * (narrow ? 0.36 : 0.34),
 		partyH: H * (narrow ? 0.14 : 0.13),
 		partyW: room * (narrow ? 0.34 : 0.28),
@@ -145,6 +153,7 @@ const copy = {
 	sharesUnit: ["shares", "股"],
 	due: ["due", "应付"],
 	monday: ["Monday", "周一"],
+	mondayAccount: ["Monday account", "周一账户"],
 	mondayAssigned: ["Monday · assigned", "周一 · 被指派"],
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: [
@@ -343,24 +352,54 @@ function Scene({
 				>
 					{t(copy.exitBasis)}
 				</Word>
-				{(
-					[
-						["component-in", copy.intrinsic, OCT4.intrinsic, margin],
-						["component-tv", copy.time, OCT4.time, margin + room * 0.54],
-					] as const
-				).map(([name, label, cents, x]) => (
-					<Word
-						key={name}
-						name={name}
-						x={x}
-						y={H * 0.95}
-						size={T.body}
-						anchor="start"
+				<text
+					data-f="component-in"
+					x={L.barX(0)}
+					y={
+						L.barBottom -
+						L.barH(OCT4.intrinsic) * 0.5 -
+						(narrow ? T.small : T.body) * 0.3
+					}
+					textAnchor="middle"
+					className="wt-film-type"
+					style={{
+						fontSize: narrow ? T.small : T.body,
+						fill: "var(--film-bg, #0b0f18)",
+					}}
+				>
+					<tspan x={L.barX(0)}>{usd(OCT4.intrinsic)}</tspan>
+					<tspan x={L.barX(0)} dy={(narrow ? T.small : T.body) * 1.35}>
+						{t(copy.intrinsic)}
+					</tspan>
+				</text>
+				<g data-f="component-tv">
+					<path
+						data-f="component-tv-link"
+						d={L.capLink(OCT4.time)}
+						className="wt-film-link"
+						style={{ stroke: "var(--diagram-accent)" }}
+					/>
+					{narrow && (
+						<text
+							data-f="component-tv-label"
+							x={margin}
+							y={H * 0.23}
+							className="wt-film-type wt-film-accent"
+							style={{ fontSize: T.small }}
+						>
+							{t(copy.time)}
+						</text>
+					)}
+					<text
+						data-f="component-tv-amount"
+						x={margin}
+						y={L.capLabelY(OCT4.time)}
 						className="wt-film-type wt-film-accent"
+						style={{ fontSize: narrow ? T.small : T.body }}
 					>
-						{`${usd(cents)} ${t(label)}`}
-					</Word>
-				))}
+						{narrow ? usd(OCT4.time) : `${usd(OCT4.time)} ${t(copy.time)}`}
+					</text>
+				</g>
 				{(
 					[
 						["d-oct4", copy.oct4],
@@ -517,28 +556,46 @@ function Scene({
 			{/* When exercise is allowed. */}
 			{headline("w-head", copy.windowHead, copy.windowHead)}
 			<g data-f="window">
-				<path
-					d={`M${L.dayX(0)} ${L.lineY}H${L.dayX(WINDOW_DAYS)}`}
-					className="wt-axis"
-					strokeWidth={2}
-				/>
-				{windowTicks.map((tick) => (
-					<text
-						key={tick.day}
-						x={L.dayX(tick.day)}
-						y={L.lineY + text * 2.2}
-						textAnchor={
-							tick.day === 0
-								? "start"
-								: tick.day === WINDOW_DAYS
-									? "end"
-									: "middle"
-						}
-						className="wt-small"
-					>
-						{t(tick.label)}
-					</text>
-				))}
+				<g data-f="window-scaffold">
+					{([copy.american, copy.european] as const).map((label, row) => (
+						<g key={label[0]}>
+							<Word
+								name={row === 0 ? "am-tag" : "eu-tag"}
+								x={margin}
+								y={L.dayY(row) - T.head * 1.7}
+								size={T.head}
+								anchor="start"
+								className="wt-film-type wt-film-accent"
+							>
+								{t(label)}
+							</Word>
+							<path
+								d={`M${L.dayX(0)} ${L.dayY(row)}H${L.dayX(WINDOW_DAYS)}`}
+								className="wt-axis"
+								strokeWidth={2}
+							/>
+							{windowTicks
+								.filter((_, i) => !narrow || i % 2 === 0)
+								.map((tick) => (
+									<text
+										key={tick.day}
+										x={L.dayX(tick.day)}
+										y={L.dayY(row) + text * 2.2}
+										textAnchor={
+											tick.day === 0
+												? "start"
+												: tick.day === WINDOW_DAYS
+													? "end"
+													: "middle"
+										}
+										className="wt-small"
+									>
+										{t(tick.label)}
+									</text>
+								))}
+						</g>
+					))}
+				</g>
 				<g data-f="am-days">
 					{Array.from({ length: WINDOW_DAYS + 1 }, (_, day) => day)
 						.filter((day) => {
@@ -549,7 +606,7 @@ function Scene({
 							<circle
 								key={day}
 								cx={L.dayX(day)}
-								cy={L.lineY}
+								cy={L.dayY(0)}
 								r={narrow ? 3.5 : 5}
 								className="wt-chip"
 							/>
@@ -558,29 +615,12 @@ function Scene({
 				<circle
 					data-f="eu-day"
 					cx={L.dayX(WINDOW_DAYS)}
-					cy={L.lineY}
+					cy={L.dayY(1)}
 					r={narrow ? 6 : 8}
 					className="wt-chip"
 					stroke="var(--foreground)"
 					strokeWidth={1.5}
 				/>
-				{(
-					[
-						["am-tag", copy.american],
-						["eu-tag", copy.european],
-					] as const
-				).map(([name, label]) => (
-					<text
-						key={name}
-						data-f={name}
-						x={L.dayX(0)}
-						y={L.lineY - text * 1.8}
-						className="wt-film-type wt-film-accent"
-						style={{ fontSize: T.head }}
-					>
-						{t(label)}
-					</text>
-				))}
 			</g>
 
 			{/* A few cents at the close. */}
@@ -601,50 +641,15 @@ function Scene({
 				anchor="start"
 			/>
 			{headline("p3-head", copy.writerHead, copy.writerHead)}
-			<g data-f="pin">
-				<path
-					d={`M${L.pinX(PIN[0])} ${L.pinY}H${L.pinX(PIN[1])}`}
-					className="wt-axis"
-					strokeWidth={2}
-				/>
-				{/* On a phone a dime is too narrow for two labels: start at the strike. */}
-				{(narrow
-					? [100, 100.2, 100.4, 100.6]
-					: [99.9, 100, 100.2, 100.4, 100.6]
-				).map((v) => (
-					<text
-						key={v}
-						x={L.pinX(v)}
-						y={L.pinY + text * 2.2}
-						textAnchor="middle"
-						className="wt-small"
-					>
-						{`$${v.toFixed(2)}`}
-					</text>
-				))}
-				<path
-					data-f="pin-strike"
-					d={`M${L.pinX(100)} ${L.pinY - 30}V${L.pinY + 8}`}
-					className="wt-bracket"
-				/>
-				<text
-					x={L.pinX(100)}
-					y={L.pinY - 36}
-					textAnchor="middle"
-					className="wt-small wt-halo"
-				>
-					{t(copy.strike)}
-				</text>
-			</g>
-			<circle
-				data-f="pin-dot"
-				cx={L.pinX(CALL_100.strike)}
-				cy={L.pinY}
-				r={7}
-				className="wt-chip"
-				stroke="var(--foreground)"
-				strokeWidth={1.5}
-			/>
+			<Word
+				name="pin-reference"
+				x={margin + room * 0.25}
+				y={L.priceY}
+				size={T.body}
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.strike)}
+			</Word>
 			<Word
 				name="pin-price"
 				x={L.priceX}
@@ -652,7 +657,7 @@ function Scene({
 				size={T.num}
 				className="wt-film-num"
 			>
-				{usd(CALL_100.strike * 100)}
+				{usd(HOLDER_CLOSE * 100)}
 			</Word>
 			<Word
 				name="holder-close"
@@ -704,7 +709,7 @@ function Scene({
 			<Word
 				name="pin-equation"
 				x={W / 2}
-				y={H * 0.51 - (narrow ? 6 : 0)}
+				y={H * (narrow ? 0.39 : 0.51)}
 				size={T.body}
 				className="wt-film-num wt-film-dim"
 			>
@@ -722,7 +727,7 @@ function Scene({
 			<Word
 				name="pin-unit"
 				x={W / 2}
-				y={L.heroY + text * 1.7 + (narrow ? 34 : 0)}
+				y={L.heroY + text * 1.7 + (narrow ? 40 : 0)}
 				size={T.small}
 				className="wt-film-tag"
 			>
@@ -732,7 +737,7 @@ function Scene({
 				name="pin-default"
 				text={t(copy.defaultAction)}
 				x={W / 2}
-				y={H * 0.82 + (narrow ? 12 : 0)}
+				y={H * (narrow ? 0.74 : 0.82)}
 				size={T.body}
 				maxWidth={room}
 				className="wt-film-type wt-film-dim"
@@ -748,11 +753,21 @@ function Scene({
 			</Word>
 			{/* The existing answer supplies exercise; this after-beat supplies the account. */}
 			<g data-f="pin-ex">
+				{narrow && (
+					<rect
+						x={margin}
+						y={H * 0.79}
+						width={room}
+						height={H * 0.18}
+						rx={12}
+						className="wt-panel-shape"
+					/>
+				)}
 				<Word
 					name="holder-shares"
-					x={margin + room * 0.2}
-					y={H * 0.93}
-					size={narrow ? T.body : T.head}
+					x={margin + room * (narrow ? 0.25 : 0.2)}
+					y={H * (narrow ? 0.91 : 0.93)}
+					size={T.head * (narrow ? 1.15 : 1)}
 					className="wt-film-num wt-film-gain"
 				>
 					{`${count(CALL_100_DELIVERY.shares)} ${t(copy.sharesUnit)}`}
@@ -760,17 +775,17 @@ function Scene({
 				<Word
 					name="holder-monday"
 					x={W / 2}
-					y={H * 0.93}
+					y={H * (narrow ? 0.83 : 0.93)}
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{t(copy.monday)}
+					{t(narrow ? copy.mondayAccount : copy.monday)}
 				</Word>
 				<Word
 					name="holder-due"
-					x={margin + room * 0.8}
-					y={H * 0.93}
-					size={narrow ? T.body : T.head}
+					x={margin + room * (narrow ? 0.75 : 0.8)}
+					y={H * (narrow ? 0.91 : 0.93)}
+					size={T.head * (narrow ? 1.15 : 1)}
 					className="wt-film-num wt-film-loss"
 				>
 					{`${usd(CALL_100_DELIVERY.cashCents, 0)} ${t(copy.due)}`}
@@ -843,7 +858,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop } = d;
+	const { tl, one, kids, show, hide } = d;
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -872,7 +887,7 @@ function build(context: FilmContext) {
 		"p3-head",
 	].map((name) => one(name));
 	const holderMarks = [
-		"pin-dot",
+		"pin-reference",
 		"pin-price",
 		"holder-close",
 		"pin-equation",
@@ -884,32 +899,6 @@ function build(context: FilmContext) {
 	const writerMarks = ["writer-prices", "writer-exercise", "pin-as"].map(
 		(name) => one(name),
 	);
-	const moveDot = (
-		name: string,
-		from: number,
-		to: number,
-		at: number,
-		duration: number,
-	) => {
-		const state = { price: from };
-		const dot = one(`${name}-dot`);
-		const price = one(`${name}-price`);
-		tl.fromTo(
-			state,
-			{ price: from },
-			{
-				price: to,
-				duration,
-				ease: "power2.inOut",
-				immediateRender: false,
-				onUpdate: () => {
-					gsap.set(dot, { attr: { cx: L.pinX(state.price) } });
-					price.textContent = usd(Math.round(state.price * 100));
-				},
-			},
-			at,
-		);
-	};
 
 	d.hidden([
 		...flat("q"),
@@ -918,7 +907,6 @@ function build(context: FilmContext) {
 		...kids("shares"),
 		...kids("cash"),
 		...flat("window"),
-		...flat("pin"),
 		...holderMarks,
 		...writerMarks,
 		g("lock-pin"),
@@ -936,7 +924,7 @@ function build(context: FilmContext) {
 	word(one("q-ex-num"), 5.0);
 	show(one("q-line"), 5.3);
 
-	// The two carried figures keep their original paths and landing times.
+	// Scaffold settles at 9.7, then stays still for a full second before data flies.
 	tl.addLabel("exit", 8.8);
 	hide([one("q-tag"), one("q-line"), one("q-sell-tag"), one("q-ex-tag")], 8.8);
 	show(heads[0], 9.0);
@@ -946,71 +934,63 @@ function build(context: FilmContext) {
 	);
 	show([one("d-oct4"), one("exit-basis")], 9.1);
 	show([one("l-sell"), one("l-ex")], 9.2);
-	d.carry(g("q-sell-num"), g("v-sell"), 9.3, { duration: 1, arc: "y" });
-	d.carry(g("q-ex-num"), g("v-ex"), 9.7, { duration: 1, arc: "y" });
-	const grow = (name: string, from: number, cents: number, at: number) =>
-		tl.fromTo(
-			one(name),
-			{ attr: { y: L.barBottom - L.barH(from), height: 0 } },
-			{
-				attr: { y: L.barBottom - L.barH(from + cents), height: L.barH(cents) },
-				duration: 0.5,
-				ease: "power2.out",
-				immediateRender: false,
-			},
-			at,
-		);
-	tl.set([one("b-sell"), one("b-sell-in")], { opacity: 1 }, 10.3);
-	grow("b-sell-in", 0, OCT4.intrinsic, 10.3);
-	// The cap starts at zero height and only enters after its supporting bar settles.
-	fade(one("b-sell-tv"), 10.8);
+	d.carry(g("q-sell-num"), g("v-sell"), 10.7, { duration: 0.4, arc: "y" });
+	d.carry(g("q-ex-num"), g("v-ex"), 10.8, { duration: 0.4, arc: "y" });
 	const cap = one("b-sell-tv");
 	const sale = one("v-sell");
-	const timeLabel = one("component-tv");
-	const comparison = { elapsed: 0 };
-	const growthEase = gsap.parseEase("power2.out");
-	const expiryEase = gsap.parseEase("power2.inOut");
-	// One clock owns the cap for growth, rest and expiry, including reverse seeks.
-	tl.fromTo(
-		comparison,
-		{ elapsed: 0 },
+	const timeLabel = one("component-tv-amount");
+	const timeLink = one("component-tv-link");
+	// The zero-height authored cap is prepared while its whole bar is still hidden.
+	// Timeline-owned attributes restore both directions when the film is scrubbed.
+	tl.set(
+		cap,
 		{
-			elapsed: 2.8,
-			duration: 2.8,
-			ease: "none",
-			immediateRender: false,
-			onUpdate: () => {
-				const expiring = comparison.elapsed >= 2;
-				const time = expiring
-					? OCT4.time +
-						(OCT18.time - OCT4.time) *
-							expiryEase(Math.min(1, (comparison.elapsed - 2) / 0.8))
-					: OCT4.time * growthEase(Math.min(1, comparison.elapsed / 0.5));
-				gsap.set(cap, {
-					attr: {
-						y: L.barBottom - L.barH(OCT4.intrinsic + time),
-						height: L.barH(time),
-					},
-				});
-				// During construction this is the known bid carried from the question;
-				// at expiry the cap, its component amount and the total change together.
-				const cents = expiring ? Math.round(time) : OCT4.time;
-				gsap.set(sale, {
-					attr: {
-						y:
-							L.barBottom -
-							L.barH(OCT4.intrinsic + (expiring ? time : OCT4.time)) -
-							10,
-					},
-				});
-				sale.textContent = usd(OCT4.intrinsic + cents);
-				timeLabel.textContent = `${usd(cents)} ${d.t(copy.time)}`;
+			attr: {
+				y: L.barBottom - L.barH(OCT4.bid),
+				height: L.barH(OCT4.time),
 			},
 		},
-		10.8,
+		11.2,
 	);
-	tl.set([one("b-ex"), one("b-ex-in")], { opacity: 1 }, 10.7);
-	grow("b-ex-in", 0, OCT4.intrinsic, 10.7);
+	fade([one("b-sell"), one("b-ex")], 11.2);
+	const comparisonMarks = [cap, sale, timeLabel, timeLink];
+	const comparisonAttributes = (time: number) => {
+		const attributes = (_: number, target: Element) => {
+			if (target === cap)
+				return {
+					y: L.barBottom - L.barH(OCT4.intrinsic + time),
+					height: L.barH(time),
+				};
+			if (target === sale)
+				return { y: L.barBottom - L.barH(OCT4.intrinsic + time) - 10 };
+			if (target === timeLabel) return { y: L.capLabelY(time) };
+			return { d: L.capLink(time) };
+		};
+		// GSAP processes function-valued plugin vars per target; AttrVars omits this form.
+		return attributes as unknown as gsap.TweenVars["attr"];
+	};
+	// One attribute tween owns every changing position, including the connector.
+	// Amounts are read from the cap's actual height, never from a separate counter.
+	tl.fromTo(
+		comparisonMarks,
+		{ attr: comparisonAttributes(OCT4.time) },
+		{
+			attr: comparisonAttributes(OCT18.time),
+			duration: 0.8,
+			ease: "power2.inOut",
+			immediateRender: false,
+			onUpdate: () => {
+				const time =
+					(Number(cap.getAttribute("height")) / L.barH(OCT4.time)) * OCT4.time;
+				const cents = Math.round(time);
+				sale.textContent = usd(OCT4.intrinsic + cents);
+				timeLabel.textContent = L.narrow
+					? usd(cents)
+					: `${usd(cents)} ${d.t(copy.time)}`;
+			},
+		},
+		12.8,
+	);
 	fade([one("component-in"), one("component-tv")], 11.3);
 	// Construction and component labels settle at 11.8; quiet until 12.8.
 	hide(one("d-oct4"), 12.8);
@@ -1044,45 +1024,29 @@ function build(context: FilmContext) {
 	tl.addLabel("window", 25.3);
 	hide([heads[3], ...kids("cash")], 25.3);
 	show(heads[4], 25.65);
-	show(
-		flat("window").filter(
-			(el) =>
-				!["am-days", "eu-day", "am-tag", "eu-tag"].includes(
-					el.getAttribute("data-f") ?? "",
-				),
-		),
-		25.8,
-	);
-	show(one("am-tag"), 25.8);
-	// All eligible days light together, replacing the nonessential 0.03 s ripple.
-	fade(one("am-days"), 26.2, 0.3);
-	// American proof rests from 26.5 to 27.5.
-	d.swap(one("am-tag"), one("eu-tag"), 27.5);
-	tl.to(one("am-days"), { opacity: 0.12, duration: 0.4 }, 27.5);
-	pop(one("eu-day"), 27.9);
+	fade(one("window-scaffold"), 25.65);
+	// Both rows are still by 26.15, one second before either eligibility set enters.
+	fade([one("am-days"), one("eu-day")], 27.15, 0.3);
+	// Both completed proofs rest from 27.45 to 29.7 (2.25 s).
 
 	tl.addLabel("pin", 29.7);
 	hide([heads[4], ...flat("window")], 29.7);
 	show(heads[5], 30.05);
-	// The calendar is entirely gone before a dollar scale occupies its lane.
-	fade(flat("pin"), 30.05);
-	fade(
-		[one("pin-dot"), one("pin-price"), one("holder-close"), one("pin-default")],
-		30.45,
-	);
-	moveDot("pin", CALL_100.strike, HOLDER_CLOSE, 30.45, 0.5);
+	// A known close is compared exactly; no ruler or transient closing prices.
+	fade(one("pin-reference"), 30.05);
+	fade([one("pin-price"), one("holder-close"), one("pin-default")], 30.45);
 	// The settled operands and result are revealed, never counted after an equals sign.
-	fade([one("pin-equation"), one("pin-unit")], 30.95);
-	fade(one("pin-value"), 30.95);
-	d.lock(g("lock-pin"), 31.45, { around: one("pin-value"), pad: 8 });
-	tl.addLabel("hero-lock", 31.45);
-	show(heads[6], 31.45);
-	// Answer settles at 31.95 (the lock at 31.9), then a full second of quiet.
+	fade([one("pin-equation"), one("pin-unit")], 30.45);
+	fade(one("pin-value"), 30.45);
+	d.lock(g("lock-pin"), 30.95, { around: one("pin-value"), pad: 8 });
+	tl.addLabel("hero-lock", 30.95);
+	fade(heads[6], 30.95);
+	// Answer settles at 31.45 (lock at 31.4), then 1.5 s of undivided quiet.
 	fade(one("pin-ex"), 32.95);
 
 	tl.addLabel("writer", 35.05);
 	d.swap([heads[5], heads[6]], heads[7], 35.05);
-	hide([...holderMarks, ...flat("pin"), g("lock-pin")], 35.05, 0.35, 0);
+	hide([...holderMarks, g("lock-pin")], 35.05, 0.35, 0);
 	// The writer comparison arrives as two explicitly labelled, settled states.
 	// Remove the walk, its axis and the repeated close snapshot to fund cause → account.
 	fade(one("writer-prices"), 35.4);
@@ -1093,7 +1057,7 @@ function build(context: FilmContext) {
 	// Monday's account settles at 39.0, then rests for 1.6 s before the claim.
 
 	tl.addLabel("claim", 40.6);
-	hide([heads[7], ...flat("pin"), ...writerMarks], 40.6);
+	hide([heads[7], ...writerMarks], 40.6);
 	word(one("z-big"), 40.9);
 	show(one("z-sub"), 41.2);
 
