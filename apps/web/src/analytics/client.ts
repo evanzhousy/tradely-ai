@@ -9,6 +9,7 @@ import {
 import type { ExceptionContext } from "./context";
 import {
 	ANALYTICS_EVENT_SCHEMA_VERSION,
+	type AnalyticsEventMap,
 	type AnalyticsEventName,
 	analyticsEnvironment,
 	isRegisteredAnalyticsEvent,
@@ -183,6 +184,18 @@ export async function capturePostHogExceptionWhenReady(
 		if (!client || client.has_opted_out_capturing()) return false;
 		client.captureException(safeAnalyticsError(error), context);
 		return true;
+	} catch {
+		return false;
+	}
+}
+
+/** Operational reads use the same initialized, consent-gated client as exceptions. */
+export function captureLearningReadOutcome(
+	properties: AnalyticsEventMap["learning_read_finished"],
+) {
+	try {
+		if (!activeClient || activeClient.has_opted_out_capturing()) return false;
+		return Boolean(activeClient.capture("learning_read_finished", properties));
 	} catch {
 		return false;
 	}

@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { capturePostHogExceptionWhenReady } from "@/analytics/client";
 import { analyticsRouteName } from "@/analytics/events";
 import { useI18nOrDefault } from "@/i18n/provider";
+import { learningReadFailureContext } from "@/lib/learning-read";
 import { isStaleBuildError, reloadForStaleBuild } from "@/lib/stale-build";
 
 export default function ErrorPage({ error, reset }: ErrorComponentProps) {
@@ -24,6 +25,7 @@ export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 	useEffect(() => {
 		void capturePostHogExceptionWhenReady(error, {
 			source: "route_boundary",
+			...learningReadFailureContext(error),
 			route_name: analyticsRouteName(window.location.pathname),
 		});
 		// Code from before a deploy can't load its files; the current build can.

@@ -13,9 +13,20 @@ export type ExceptionContext = {
 		| "route_boundary"
 		| "lesson_completion"
 		| "billing_action"
-		| "client_unhandled";
+		| "client_unhandled"
+		| "learning_read";
 	route_name?: AnalyticsRouteName;
 	lesson_id?: string;
+	operation?:
+		| "lesson_page_read"
+		| "course_progress_read"
+		| "lesson_progress_start"
+		| "lesson_progress_save"
+		| "visual_lesson_import";
+	failure_category?: "network" | "offline" | "timeout" | "http" | "unexpected";
+	attempt?: number;
+	duration_ms?: number;
+	http_status?: number;
 	action?: BillingAction;
 };
 

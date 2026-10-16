@@ -76,6 +76,19 @@ const labPropertyKeys = [
 ] as const;
 
 export type AnalyticsEventMap = {
+	learning_read_finished: {
+		operation: "lesson_page_read" | "course_progress_read";
+		outcome: "ok" | "recovered" | "unavailable";
+		attempt: number;
+		duration_ms: number;
+		failure_category?:
+			| "network"
+			| "offline"
+			| "timeout"
+			| "http"
+			| "unexpected";
+		http_status?: number;
+	};
 	tradingflow_lab_viewed: LabEventProperties;
 	tradingflow_lab_sample_viewed: LabEventProperties;
 	guest_signup_prompt_shown: { lesson_id: string };
@@ -240,6 +253,7 @@ export type AnalyticsEventMap = {
 export type AnalyticsEventName = keyof AnalyticsEventMap;
 
 export const ANALYTICS_EVENT_NAMES = {
+	learning_read_finished: true,
 	tradingflow_lab_viewed: true,
 	tradingflow_lab_sample_viewed: true,
 	guest_signup_prompt_shown: true,
@@ -288,6 +302,14 @@ export const ANALYTICS_EVENT_NAMES = {
 } satisfies Record<AnalyticsEventName, true>;
 
 export const ANALYTICS_EVENT_PROPERTY_KEYS = {
+	learning_read_finished: [
+		"operation",
+		"outcome",
+		"attempt",
+		"duration_ms",
+		"failure_category",
+		"http_status",
+	],
 	tradingflow_lab_viewed: labPropertyKeys,
 	tradingflow_lab_sample_viewed: labPropertyKeys,
 	guest_signup_prompt_shown: ["lesson_id"],

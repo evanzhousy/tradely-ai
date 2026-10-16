@@ -15,6 +15,7 @@ import {
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { captureLearningReadOutcome } from "@/analytics/client";
 import { useAnalytics } from "@/analytics/context";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
@@ -37,6 +38,7 @@ import { CheckYourself } from "@/features/learning/check-yourself";
 import { VisualLesson } from "@/features/learning/visual-lesson";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
+import { readLearningData } from "@/lib/learning-read";
 import { pageHead } from "@/seo/pages";
 import { getLessonPageData } from "@/server/lesson";
 import { getCourseProgress, saveLessonProgress } from "@/server/progress";
@@ -49,10 +51,21 @@ const LearningHistory = lazy(() =>
 
 export const Route = createFileRoute("/learn/$lessonSlug")({
 	validateSearch: parseLearningSearch,
-	loader: async ({ params }) => {
+	loader: async ({ params, abortController }) => {
 		const [page, progress] = await Promise.all([
-			getLessonPageData({ data: { slug: params.lessonSlug } }),
-			getCourseProgress(),
+			readLearningData({
+				operation: "lesson_page_read",
+				signal: abortController.signal,
+				onOutcome: captureLearningReadOutcome,
+				run: (options) =>
+					getLessonPageData({ ...options, data: { slug: params.lessonSlug } }),
+			}),
+			readLearningData({
+				operation: "course_progress_read",
+				signal: abortController.signal,
+				onOutcome: captureLearningReadOutcome,
+				run: (options) => getCourseProgress(options),
+			}),
 		]);
 		if (!page.found) throw notFound();
 		return { page, progress };
@@ -111,6 +124,7 @@ function LessonPage() {
 		}).catch((error) =>
 			captureException(error, {
 				source: "lesson_completion",
+				operation: "lesson_progress_start",
 				lesson_id: lessonSlug,
 			}),
 		);

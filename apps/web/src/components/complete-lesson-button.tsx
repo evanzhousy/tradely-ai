@@ -70,6 +70,7 @@ export function CompleteLessonButton({
 						await router.invalidate().catch((error: unknown) => {
 							captureException(error, {
 								source: "lesson_completion",
+								operation: "lesson_progress_save",
 								lesson_id: lesson.id,
 							});
 						});
@@ -80,6 +81,7 @@ export function CompleteLessonButton({
 						});
 						captureException(error, {
 							source: "lesson_completion",
+							operation: "lesson_progress_save",
 							lesson_id: lesson.id,
 						});
 						toast.error(t("complete.unavailable"));
