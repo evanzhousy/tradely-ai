@@ -1110,20 +1110,8 @@ function build(context: FilmContext) {
 		37.0,
 	);
 	tl.to(
-		[
-			one("f-label-call-vega"),
-			one("f-value-call-vega"),
-			one("f-unit-call-vega"),
-			one("f-label-put-vega"),
-			one("f-value-put-vega-point"),
-			one("f-unit-put-vega-point"),
-			one("f-time-put-vega-point"),
-			one("f-vega-weights"),
-			one("f-vega-total-label"),
-			one("f-vega-total-unit"),
-			one("f-vega-total"),
-		],
-		{ opacity: 0.3, duration: 0.4 },
+		[one("f-label-call-vega"), one("f-label-put-vega")],
+		{ opacity: 0.4, duration: 0.4 },
 		37.0,
 	);
 	// Friday's value stays known; current delta settles at 37.5 and rests for 3 s.
