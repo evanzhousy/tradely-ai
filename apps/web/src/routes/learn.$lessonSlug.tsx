@@ -441,35 +441,36 @@ function LessonPage() {
 							</nav>
 						) : null}
 					</section>
-					<DisclosurePanel
-						id="lesson-notes"
-						className="lesson-notes"
-						headingLevel={2}
-						summary={locale === "zh" ? "笔记与来源" : "Notes & sources"}
-						isExpanded={notesExpanded}
-						onExpandedChange={setNotesExpanded}
-					>
-						{notesExpanded ? (
-							<LessonSurfaceBoundary
-								key={`${lesson.id}:notes`}
-								lessonId={lesson.id}
-								locale={locale}
-								surface="notes"
-							>
-								<Suspense
-									fallback={
-										<p role="status">
-											{locale === "zh" ? "正在加载笔记…" : "Loading notes…"}
-										</p>
-									}
+					<section id="lesson-notes" className="scroll-mt-24">
+						<DisclosurePanel
+							className="lesson-notes"
+							headingLevel={2}
+							summary={locale === "zh" ? "笔记与来源" : "Notes & sources"}
+							isExpanded={notesExpanded}
+							onExpandedChange={setNotesExpanded}
+						>
+							{notesExpanded ? (
+								<LessonSurfaceBoundary
+									key={`${lesson.id}:notes`}
+									lessonId={lesson.id}
+									locale={locale}
+									surface="notes"
 								>
-									<LessonNotes
-										body={(locale === "zh" ? page.bodyZh : page.body) ?? ""}
-									/>
-								</Suspense>
-							</LessonSurfaceBoundary>
-						) : null}
-					</DisclosurePanel>
+									<Suspense
+										fallback={
+											<p role="status">
+												{locale === "zh" ? "正在加载笔记…" : "Loading notes…"}
+											</p>
+										}
+									>
+										<LessonNotes
+											body={(locale === "zh" ? page.bodyZh : page.body) ?? ""}
+										/>
+									</Suspense>
+								</LessonSurfaceBoundary>
+							) : null}
+						</DisclosurePanel>
+					</section>
 					{getTradingFlowLab(lesson.id) ? (
 						<DisclosurePanel
 							className="lesson-notes"
