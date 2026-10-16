@@ -11,32 +11,33 @@ for deeper incident triage.
 
 ## Agent Handoff
 
-Last updated: 2026-10-06
+Last updated: 2026-10-16
 
-The read-only run verified project `582920`, its timezone, live taxonomy, and
-production host evidence. Connector transport failures required an authenticated
-browser query fallback. The report, native query configurations/results, and
-reviewed UI GIF are outside the repository at
-`/tmp/tradely-posthog-analysis/2026-10-06/`. No PostHog objects/settings or
-production application records were changed.
+The fresh read-only analysis verified project `582920` after correcting an initial
+connector context mismatch. The report and native aggregate evidence are external
+at `/tmp/tradely-posthog-analysis/2026-10-16-greenfield/`. This was a live data-only
+run: no application changes, production test records, browser session, PostHog
+object/settings edits, or deployment occurred.
 
-The subsequent local implementation added schema-2 surface/interaction signals,
-capture-acceptance deduplication, sign-in outcome recovery, a confirmed guest-save
-fallback, responsive loading frames, and clearer interactive-entry copy. Local
-browser/component checks and builds passed; no deployment or live delivery proof
-of these changes was performed. Implementation captures are external at
-`/tmp/tradely-posthog-implementation/2026-10-06/`.
+Schema-2 page views and film starts are now observed in production. Captured
+October 8 and October 15 releases contain the earlier five implementation commits
+by verified Git ancestry. Do not retain the blanket assumption that those fixes
+are still undeployed; today's serving deployment and every outcome emitter still
+need their own proof.
 
-- [ ] After an authorized deployment, verify the serving release's schema-2
-  surface/interaction, sign-in, task/prediction,
-  and guest-import emitters. Historical captured visual activity does not prove
-  current local films are deployed; required outcome coverage remains incomplete.
-- [ ] Reconcile Web Analytics view/session totals with event aggregates and the
-  session funnel before mixing their denominators. The independent visitor
-  aggregate matched; missing session properties did not explain other differences.
-- [ ] Investigate the lesson-to-playground handoff and route/device performance
-  with a larger eligible sample; one observed explorer is insufficient to infer
-  prevalence, causality, or a general retention result. See the external report.
+- [ ] Triage the October 15 `TypeError: Failed to fetch` on `/learn/symbol-drawer`
+  using bounded request/serving evidence. Five production browser occurrences
+  affect one observed person; the request and cause remain unknown.
+- [ ] Verify interaction/task, sign-in, and guest-import outcome coverage in an
+  authorized preview or naturally observed journey. Only two schema-2 visitors
+  are included, one with mature seven-day follow-up; zero captured outcomes do
+  not prove failed product actions or final conversion rates.
+- [ ] Profile matched route/device rendering, starting with the homepage's small
+  measured sample. LCP/CLS warrant investigation, but pooled percentiles do not
+  establish causality or an effect from the earlier loading-frame change.
+- [ ] Reconcile the prior window's native/event differences (125 versus 133 views,
+  33 versus 34 sessions) before mixing denominators. Current views, visitors, and
+  sessions reconcile; that does not resolve the historical discrepancy.
 
 ## Recommended Invocation
 
@@ -123,8 +124,12 @@ query configuration and preserve normal authentication/CSRF checks. A read-only
 query POST does not authorize saving an insight or editing settings. Keep
 session credentials runtime-only and save only aggregate results/configurations.
 
-Verify organization, project ID/name, timezone, and a bounded recent aggregate
-of hosts/routes/events. The source reference is
+Before taxonomy and metric reads, verify organization, project ID/name, timezone,
+and the caller's active project (`project-get` without an ID). Compare the active
+context with the requested project, correct an authorized selection mismatch,
+and verify the next aggregate's project provenance. A mismatched taxonomy is not
+evidence of zero traffic in the requested project. Then inspect a bounded recent
+aggregate of hosts/routes/events. The source reference is
 [Tradely project 582920](https://us.posthog.com/project/582920). Check the actual
 query's returned project context (such as its `_posthogUrl`), not just metadata
 or a successful project-switch response. An explicitly selected project's
@@ -187,6 +192,10 @@ Preserve these interpretation rules:
   (such as `ActionsTable`) and inspect its `aggregated_value`. In that shape,
   `count=0` with empty daily data does not mean the aggregate is zero. Verify
   result shape before extracting any headline number.
+- Connector versions can return JSON, CSV, or TOON. Preserve the executed input
+  and full column mapping. Duplicate headers for different metric series must
+  be interpreted in input-series order, not collapsed into a dictionary. Use
+  only CLI output options supported by the current interface.
 - Registry entries and saved insight names do not prove an active emitter,
   deployed delivery, or a trustworthy business outcome.
 
@@ -217,6 +226,12 @@ Route errors coinciding with drop-off justify investigation, not a causal claim.
 Zero errors with absent/sparse exposure does not establish health. Route deeper
 error investigation to the error runbook.
 
+Query non-null sample counts separately for each vital and breakdown. A percentile
+cell rendered as zero with no metric observations means unknown, not zero latency
+or a healthy route. Keep first-page-of-session native vitals distinct from pooled
+event-property percentiles, and avoid causal release comparisons across different
+routes, devices, people, and immature samples.
+
 SEO impressions, rankings, ad costs, and total customer acquisition are outside
 PostHog-only evidence. Do not use search clicks as a consented-person denominator.
 
@@ -236,7 +251,7 @@ journeys below are source-based starting points, not live measurement proof:
 | Journey | Candidate steps and interpretation |
 | --- | --- |
 | Guide discovery | Guide `page_viewed` → `guide_demo_started` → `guide_demo_completed` → `guide_next_step_clicked`; match guide/demo IDs and inspect the linked destination. |
-| Visual learning | Allowed `lesson_opened` → `visual_lesson_scene_started` → `visual_lesson_explored` or `visual_lesson_task_completed`; match lesson/scene where the step relationship permits. |
+| Visual learning | Allowed `lesson_opened` → `visual_lesson_scene_started` → verified `visual_lesson_interacted` or `visual_lesson_task_completed` for schema 2; legacy `visual_lesson_explored` is an entry proxy. Match lesson/scene where the step relationship permits. |
 | Film consumption | Film shot starts → final-shot completion; resolve shot IDs from the deployed lesson film, separate from playground scene completion. |
 | Prediction/task engagement | `visual_lesson_predicted` and `visual_lesson_task_completed`, by supported scene/kind; report counts and repeat-attempt limits, not independent mastery. |
 | Guest work to saved work | `guest_work_save_requested` → `auth_sign_in_completed` → `guest_work_import_succeeded`; match lesson/intent on work events, check import failures, identity continuity, and property availability. |
