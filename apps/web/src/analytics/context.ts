@@ -14,7 +14,8 @@ export type ExceptionContext = {
 		| "lesson_completion"
 		| "billing_action"
 		| "client_unhandled"
-		| "learning_read";
+		| "learning_read"
+		| "lesson_surface";
 	route_name?: AnalyticsRouteName;
 	lesson_id?: string;
 	operation?:
@@ -22,7 +23,12 @@ export type ExceptionContext = {
 		| "course_progress_read"
 		| "lesson_progress_start"
 		| "lesson_progress_save"
-		| "visual_lesson_import";
+		| "visual_lesson_import"
+		| "visual_lesson_render"
+		| "lesson_notes_import"
+		| "lesson_notes_render"
+		| "lesson_recap_import"
+		| "lesson_recap_render";
 	failure_category?: "network" | "offline" | "timeout" | "http" | "unexpected";
 	attempt?: number;
 	duration_ms?: number;

@@ -13,14 +13,11 @@ import {
 	PanelLeftOpenIcon,
 } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { captureLearningReadOutcome } from "@/analytics/client";
 import { useAnalytics } from "@/analytics/context";
 import { CompleteLessonButton } from "@/components/complete-lesson-button";
 import { CourseList } from "@/components/course-list";
 import { CourseProgress } from "@/components/course-progress";
-import { LessonInfographic } from "@/components/lesson-infographic";
 import { LessonNavigation } from "@/components/lesson-navigation";
 import { SignInLink } from "@/components/sign-in-link";
 import { TradingFlowLab } from "@/components/tradingflow-lab";
@@ -36,13 +33,28 @@ import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
 import { CheckYourself } from "@/features/learning/check-yourself";
 import { useCourseProgress } from "@/features/learning/course-progress";
-import { VisualLesson } from "@/features/learning/visual-lesson";
+import { LessonSurfaceBoundary } from "@/features/learning/lesson-surface-boundary";
+import {
+	preloadVisualLesson,
+	VisualLesson,
+} from "@/features/learning/visual-lesson";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { readLearningData } from "@/lib/learning-read";
 import { pageHead } from "@/seo/pages";
 import { getLessonPageData } from "@/server/lesson";
 import { saveLessonProgress } from "@/server/progress";
+
+const LessonNotes = lazy(() =>
+	import("@/features/learning/lesson-notes").then((m) => ({
+		default: m.LessonNotes,
+	})),
+);
+const LessonRecap = lazy(() =>
+	import("@/features/learning/lesson-recap").then((m) => ({
+		default: m.LessonRecap,
+	})),
+);
 
 const LearningHistory = lazy(() =>
 	import("@/features/learning/learning-history").then((m) => ({
@@ -53,6 +65,7 @@ const LearningHistory = lazy(() =>
 export const Route = createFileRoute("/learn/$lessonSlug")({
 	validateSearch: parseLearningSearch,
 	loader: async ({ params, abortController }) => {
+		preloadVisualLesson(params.lessonSlug);
 		const page = await readLearningData({
 			operation: "lesson_page_read",
 			signal: abortController.signal,
@@ -86,6 +99,7 @@ function LessonPage() {
 	const started = useRef<string | null>(null);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 	const [notesExpanded, setNotesExpanded] = useState(false);
+	const [recapExpanded, setRecapExpanded] = useState(false);
 	useEffect(() => {
 		if (!isCapturing) {
 			tracked.current = null;
@@ -302,15 +316,32 @@ function LessonPage() {
 						className="lesson-notes"
 						headingLevel={2}
 						summary={locale === "zh" ? "快速回顾" : "Quick recap"}
+						isExpanded={recapExpanded}
+						onExpandedChange={setRecapExpanded}
 					>
-						<div className="mx-auto max-w-md py-4">
-							<LessonInfographic
-								subject={lesson.id}
+						{recapExpanded ? (
+							<LessonSurfaceBoundary
+								key={`${lesson.id}:recap`}
+								lessonId={lesson.id}
 								locale={locale}
-								motionEnabled={false}
-							/>
-							<p className="text-muted-foreground text-sm">{lesson.summary}</p>
-						</div>
+								surface="recap"
+							>
+								<Suspense
+									fallback={
+										<p role="status">
+											{locale === "zh" ? "正在加载回顾…" : "Loading recap…"}
+										</p>
+									}
+								>
+									<LessonRecap
+										key={lesson.id}
+										lessonId={lesson.id}
+										summary={lesson.summary}
+										locale={locale}
+									/>
+								</Suspense>
+							</LessonSurfaceBoundary>
+						) : null}
 					</DisclosurePanel>
 					<section id="study-mark" className="flex flex-col gap-4">
 						{progress.pending || progress.unavailable ? (
@@ -418,11 +449,26 @@ function LessonPage() {
 						isExpanded={notesExpanded}
 						onExpandedChange={setNotesExpanded}
 					>
-						<article className="lesson-prose max-w-[72ch]">
-							<ReactMarkdown remarkPlugins={[remarkGfm]}>
-								{(locale === "zh" ? page.bodyZh : page.body) ?? ""}
-							</ReactMarkdown>
-						</article>
+						{notesExpanded ? (
+							<LessonSurfaceBoundary
+								key={`${lesson.id}:notes`}
+								lessonId={lesson.id}
+								locale={locale}
+								surface="notes"
+							>
+								<Suspense
+									fallback={
+										<p role="status">
+											{locale === "zh" ? "正在加载笔记…" : "Loading notes…"}
+										</p>
+									}
+								>
+									<LessonNotes
+										body={(locale === "zh" ? page.bodyZh : page.body) ?? ""}
+									/>
+								</Suspense>
+							</LessonSurfaceBoundary>
+						) : null}
 					</DisclosurePanel>
 					{getTradingFlowLab(lesson.id) ? (
 						<DisclosurePanel
