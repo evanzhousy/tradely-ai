@@ -46,7 +46,7 @@ import {
  *   legs      8.8–13.6   $0 and −$1,000 at $90, then one second of rest
  *   sum       13.6–22.55  combine the legs, then subtract the premium debit
  *   debit     17.6–22.55  $4.20 − $4.05 = $0.15/share; zero moves to $100.15
- *   identity  22.55–30.3 hero: read $97 for one second, then walk to $102
+ *   identity  22.55–30.3 hero: read $97 for 1.25 seconds, then walk to $102
  *   prints    30.3–34.3      a 14:12 print looks $0.65 off
  *   late      34.3–39.5    it executed at 13:58: in line
  *   claim     39.5–43.9  parity links prices from the same moment
@@ -62,6 +62,7 @@ const signedShare = (dollars: number) => signedUsd(Math.round(dollars * 100));
 /** Where the identity's walk ends, and so how it is drawn at rest. */
 const BAL = [102] as const;
 const LATE_TIME = "13:58";
+const ZOOM_RANGE = NET_DEBIT * 2;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -74,6 +75,9 @@ function layout(width: number) {
 		left + ((spot - RANGE[0]) / (RANGE[1] - RANGE[0])) * (right - left);
 	const y = (dollars: number) =>
 		bottom - ((dollars - Y[0]) / (Y[1] - Y[0])) * (bottom - top);
+	const zoomWidth = narrow ? Math.min(156, (right - left) / 2) : 220;
+	const zoomX = (debit: number) =>
+		left + 12 + (debit / ZOOM_RANGE) * (zoomWidth - 24);
 	return {
 		...frame,
 		left,
@@ -82,6 +86,10 @@ function layout(width: number) {
 		bottom,
 		x,
 		y,
+		zoomWidth,
+		zoomX,
+		zoomTop: top,
+		zoomAxisY: top + 53,
 		sumX: narrow ? right - 4 : x(104),
 		// Keep both phone caption lines below the zero axis and clear of the rising curve.
 		sumY: (debit: number) => y(-per(debit)) + (narrow ? 21 : 30),
@@ -93,8 +101,8 @@ function layout(width: number) {
 				)
 				.join(""),
 		rowY: (i: number) =>
-			H * (narrow ? 0.28 : 0.3) + i * H * (narrow ? 0.29 : 0.15),
-		rowH: H * (narrow ? 0.25 : 0.12),
+			H * (narrow ? 0.28 : 0.3) + i * H * (narrow ? 0.29 : 0.25),
+		rowH: H * (narrow ? 0.25 : 0.2),
 	};
 }
 
@@ -115,7 +123,8 @@ const copy = {
 		"Combine the legs, then subtract premiums.",
 		"合并两条腿，再扣除权利金。",
 	],
-	axis: ["Oct 18 · 100 shares/pair", "10月18日 · 每组 100 股"],
+	axis: ["Oct 18 expiry result · per pair", "10月18日到期结果 · 每组"],
+	zoom: ["break-even zoom", "盈亏平衡点放大"],
 	premiumCost: [
 		`ask ${usd(CALL_PAID)} − bid ${usd(PUT_RECEIVED)}`,
 		`买看涨 ${usd(CALL_PAID)} − 卖看跌 ${usd(PUT_RECEIVED)}`,
@@ -133,8 +142,8 @@ const copy = {
 	],
 	balHead: ["C − P = S − K at every price.", "每个价格下，C − P = S − K。"],
 	modelScope: [
-		"Model mids · no interest/dividends",
-		"模型中间价 · 无利息、股息",
+		"Model mids/share\nno interest/dividends",
+		"模型中间价/股\n无利息、股息",
 	],
 	call: ["call", "看涨"],
 	put: ["put", "看跌"],
@@ -154,8 +163,8 @@ const copy = {
 		"平价连接的是同一时刻的价格。",
 	],
 	claimSub: [
-		"Check each print with prices from its own moment.",
-		"检验成交，要用它那一刻的价格。",
+		"For late reports, use execution time, not arrival time.",
+		"延迟报告看成交时刻，而非接收时刻。",
 	],
 	nextBig: ["Next: expiration", "下一课：到期"],
 	nextSub: ["exercise, assignment and settlement", "行权、指派与结算"],
@@ -359,25 +368,60 @@ function Scene({
 								{signedUsd(per(synthetic(90)) * 100, 0)}
 							</text>
 						</g>
+						{/* A local price ruler makes the small break-even shift visible. */}
+						<g data-f="debit-zoom">
+							<rect
+								x={L.left}
+								y={L.zoomTop}
+								width={L.zoomWidth}
+								height={82}
+								rx={8}
+								className="wt-panel-shape"
+							/>
+							<text x={L.left + 12} y={L.zoomTop + 15} className="wt-small">
+								{t(copy.zoom)}
+							</text>
+							<path
+								d={`M${L.zoomX(0)} ${L.zoomAxisY}H${L.zoomX(ZOOM_RANGE)}`}
+								className="wt-axis"
+							/>
+							{[0, ZOOM_RANGE].map((debit, i) => (
+								<g key={debit}>
+									<path
+										d={`M${L.zoomX(debit)} ${L.zoomAxisY - 4}v8`}
+										className="wt-axis"
+									/>
+									<text
+										x={L.zoomX(debit)}
+										y={L.zoomTop + 73}
+										textAnchor={i === 0 ? "start" : "end"}
+										className="wt-small"
+									>
+										{share(STRIKE + debit)}
+									</text>
+								</g>
+							))}
+						</g>
 						<g data-f="debit">
 							<path
 								data-f="debit-guide"
-								d={`M${L.x(STRIKE)} ${L.y(-1500)}V${L.y(1500)}`}
+								d={`M${L.zoomX(0)} ${L.zoomAxisY - 5}v10`}
 								className="wt-bracket"
-								strokeDasharray="4 3"
 							/>
 							<text
 								data-f="debit-entry"
-								x={L.x(STRIKE) + 6}
-								y={L.y(-1500)}
-								className="wt-halo wt-accent wt-marker-label"
+								x={L.left + L.zoomWidth / 2}
+								y={L.zoomTop + 37}
+								textAnchor="middle"
+								className="wt-film-num wt-film-accent"
+								style={{ fontSize: T.body }}
 							>
 								{`$${STRIKE.toFixed(2)}`}
 							</text>
 							<circle
 								data-f="debit-zero"
-								cx={L.x(STRIKE)}
-								cy={L.y(0)}
+								cx={L.zoomX(0)}
+								cy={L.zoomAxisY}
 								r={4}
 								fill="var(--diagram-accent)"
 							/>
@@ -436,11 +480,17 @@ function Scene({
 				<Word
 					name="b-alfa"
 					x={W / 2}
-					y={H * (narrow ? 0.27 : 0.2)}
+					y={H * (narrow ? 0.27 : 0.2) - T.small * 1.4}
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{t(copy.modelScope)}
+					{t(copy.modelScope)
+						.split("\n")
+						.map((line, i) => (
+							<tspan key={line} x={W / 2} dy={i === 0 ? 0 : T.small * 1.4}>
+								{line}
+							</tspan>
+						))}
 				</Word>
 				<text
 					data-f="b-spot"
@@ -522,7 +572,7 @@ function Scene({
 						<text
 							data-f={`r1-${suffix}`}
 							x={margin + 14}
-							y={L.rowY(i) + L.rowH * (narrow ? 0.22 : 0.4)}
+							y={L.rowY(i) + L.rowH * (narrow ? 0.22 : 0.24)}
 							className="wt-film-num"
 							style={{ fontSize: text }}
 						>
@@ -531,35 +581,42 @@ function Scene({
 						<text
 							data-f={`r2-${suffix}`}
 							x={margin + 14}
-							y={L.rowY(i) + L.rowH * (narrow ? 0.45 : 0.76)}
+							y={L.rowY(i) + L.rowH * (narrow ? 0.45 : 0.5)}
 							className="wt-film-num wt-film-dim"
 							style={{ fontSize: text }}
 						>
-							{narrow
-								? detail
-								: `${detail} · ${check.join(suffix === "morning" ? " · " : " ")}`}
+							{detail}
+						</text>
+						<text
+							data-f={`r3-${suffix}`}
+							x={margin + 14}
+							y={L.rowY(i) + L.rowH * (narrow ? 0.68 : 0.78)}
+							className="wt-film-num wt-film-dim"
+							style={{ fontSize: text }}
+						>
+							{check[0]}
+							{!narrow && (
+								<>
+									{suffix === "morning" ? " · " : " "}
+									<tspan
+										className="wt-film-accent"
+										style={{ fontSize: text * 1.2 }}
+									>
+										{check[1]}
+									</tspan>
+								</>
+							)}
 						</text>
 						{narrow && (
-							<>
-								<text
-									data-f={`r3-${suffix}`}
-									x={margin + 14}
-									y={L.rowY(i) + L.rowH * 0.68}
-									className="wt-film-num wt-film-dim"
-									style={{ fontSize: text }}
-								>
-									{check[0]}
-								</text>
-								<text
-									data-f={`r4-${suffix}`}
-									x={margin + 14}
-									y={L.rowY(i) + L.rowH * 0.9}
-									className="wt-film-num wt-film-dim"
-									style={{ fontSize: text }}
-								>
-									{check[1]}
-								</text>
-							</>
+							<text
+								data-f={`r4-${suffix}`}
+								x={margin + 14}
+								y={L.rowY(i) + L.rowH * 0.9}
+								className="wt-film-num wt-film-accent"
+								style={{ fontSize: text }}
+							>
+								{check[1]}
+							</text>
 						)}
 					</>
 				);
@@ -597,7 +654,7 @@ function Scene({
 						<text
 							data-f={`v-${print.id}`}
 							x={margin + room - 14}
-							y={L.rowY(i) + L.rowH * (narrow ? 0.9 : 0.4)}
+							y={L.rowY(i) + L.rowH * (narrow ? 0.9 : 0.24)}
 							textAnchor="end"
 							className={`wt-film-type ${print.ok ? "wt-film-gain" : "wt-film-loss"}`}
 							style={{ fontSize: text }}
@@ -610,7 +667,7 @@ function Scene({
 							<text
 								data-f="v-late"
 								x={margin + room - 14}
-								y={L.rowY(i) + L.rowH * (narrow ? 0.9 : 0.4)}
+								y={L.rowY(i) + L.rowH * (narrow ? 0.9 : 0.24)}
 								textAnchor="end"
 								className="wt-film-type wt-film-gain"
 								style={{ fontSize: text }}
@@ -740,13 +797,9 @@ function build(context: FilmContext) {
 			context.locale,
 		).entries())
 			one(`sum-label-${i}`).textContent = line;
-		const entryX = L.x(STRIKE + debit);
-		one("debit-guide").setAttribute(
-			"d",
-			`M${entryX} ${L.y(-1500)}V${L.y(1500)}`,
-		);
+		const entryX = L.zoomX(debit);
+		one("debit-guide").setAttribute("d", `M${entryX} ${L.zoomAxisY - 5}v10`);
 		one("debit-zero").setAttribute("cx", String(entryX));
-		one("debit-entry").setAttribute("x", String(entryX + 6));
 		one("debit-entry").textContent = `$${(STRIKE + debit).toFixed(2)}`;
 	};
 
@@ -761,6 +814,7 @@ function build(context: FilmContext) {
 			"put-tag",
 			"sum-tag",
 			"debit",
+			"debit-zoom",
 			"premium-cost",
 			"premium-debit",
 			"tip-long",
@@ -773,7 +827,8 @@ function build(context: FilmContext) {
 		...[
 			"r1-late",
 			"r2-late",
-			...(L.narrow ? ["r3-late", "r4-late"] : []),
+			"r3-late",
+			...(L.narrow ? ["r4-late"] : []),
 			"v-late",
 		].map((name) => one(name)),
 		g("lock-off"),
@@ -796,10 +851,16 @@ function build(context: FilmContext) {
 	hide(flat("q"), 8.8);
 	show(heads[0], 9.0);
 	rise(9.0);
-	d.trace(one<SVGPathElement>("call-line"), 9.4, { tip: one("tip-long") });
-	show(one("call-tag"), 10.3);
-	d.trace(one<SVGPathElement>("put-line"), 10.6, { tip: one("tip-short") });
-	show(one("put-tag"), 11.5);
+	// Let the chart settle for one second, then draw the paired legs together.
+	d.trace(one<SVGPathElement>("call-line"), 10.8, {
+		tip: one("tip-long"),
+		duration: 0.8,
+	});
+	d.trace(one<SVGPathElement>("put-line"), 10.8, {
+		tip: one("tip-short"),
+		duration: 0.8,
+	});
+	show([one("call-tag"), one("put-tag")], 11.6);
 	pop(one("dot-call"), 11.8);
 	show(one("lab-call"), 11.9);
 	pop(one("dot-put"), 12.0);
@@ -809,17 +870,17 @@ function build(context: FilmContext) {
 	tl.addLabel("sum", 13.6);
 	d.swap(heads[0], heads[1], 13.6);
 	hide([one("lab-call"), one("call-tag"), one("put-tag")], 13.8);
-	d.morph(callLine, L.path(synthetic), 14.2, 1.0);
-	d.morph(putLine, L.path(synthetic), 14.2, 1.0);
+	d.morph(callLine, L.path(synthetic), 14.7, 0.5);
+	d.morph(putLine, L.path(synthetic), 14.7, 0.5);
 	// The call's $0 at $90 comes down to the put's −$1,000: the sum.
 	tl.to(
 		one("dot-call"),
 		{
 			attr: { cy: L.y(per(synthetic(90))) },
-			duration: 1.0,
+			duration: 0.5,
 			ease: "power2.inOut",
 		},
-		14.2,
+		14.7,
 	);
 	tl.set(one("sum-line"), { opacity: 1 }, 15.2);
 	tl.set([callLine, putLine], { opacity: 0 }, 15.2);
@@ -835,13 +896,32 @@ function build(context: FilmContext) {
 	tl.addLabel("debit", 17.6);
 	// Fade in place: the cost stays clear of the chart's caption on both layouts.
 	tl.fromTo(
-		[one("premium-cost"), one("premium-debit")],
+		[one("premium-cost"), one("premium-debit"), one("debit-zoom")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
 		17.6,
 	);
-	// In-place entrance keeps the zero marker on its line throughout the adjustment.
+	// The zoom ruler settles at 18.1, a full second before its break-even marker moves.
 	tl.fromTo(one("debit"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 19.15);
+	// Explicit attribute baselines let backward seeks restore the pre-debit chart.
+	tl.set(one("sum-line"), { attr: { d: L.path(synthetic) } }, 19.15);
+	tl.set(
+		[one("dot-call"), one("dot-put")],
+		{ attr: { cy: L.y(per(synthetic(90))) } },
+		19.15,
+	);
+	tl.set(
+		one("lab-put"),
+		{ attr: { y: L.y(per(synthetic(90))) + (L.narrow ? 5 : 18) } },
+		19.15,
+	);
+	tl.set(one("sum-tag"), { attr: { y: L.sumY(0) } }, 19.15);
+	tl.set(
+		one("debit-guide"),
+		{ attr: { d: `M${L.zoomX(0)} ${L.zoomAxisY - 5}v10` } },
+		19.15,
+	);
+	tl.set(one("debit-zero"), { attr: { cx: L.zoomX(0) } }, 19.15);
 	const premium = { offset: 0 };
 	tl.fromTo(
 		premium,
@@ -865,9 +945,9 @@ function build(context: FilmContext) {
 	show([one("b-alfa"), spot], 23.25);
 	show(one("b-c"), 23.45);
 	word(one("eq-cp"), 23.55);
-	show(one("b-s"), 23.85);
-	word(one("eq-sk"), 23.95);
-	// The initial equations settle at 24.5; give them one quiet second before walking.
+	show(one("b-s"), 23.6);
+	word(one("eq-sk"), 23.7);
+	// The initial equations settle at 24.25; give them 1.25 quiet seconds before walking.
 	walk(97, 102, 25.5, 1.8);
 	d.lock(g("lock-eq"), 27.4, { around: [g("eq-cp"), g("eq-sk")], pad: 12 });
 	tl.addLabel("hero-lock", 27.4);
@@ -884,7 +964,8 @@ function build(context: FilmContext) {
 	tl.addLabel("late", 34.3);
 	d.swap(heads[3], heads[4], 34.3);
 	fade(g("lock-off"), 34.3);
-	for (const prefix of ["r1", "r2", ...(L.narrow ? ["r3", "r4"] : []), "v"]) {
+	fade(rows[0], 34.3, 0.3);
+	for (const prefix of ["r1", "r2", "r3", ...(L.narrow ? ["r4"] : []), "v"]) {
 		d.flip(one(`${prefix}-afternoon`), one(`${prefix}-late`), 35.3);
 		tl.set(one(`${prefix}-afternoon`), { opacity: 0 }, 35.6);
 	}
