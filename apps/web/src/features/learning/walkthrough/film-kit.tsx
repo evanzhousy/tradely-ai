@@ -20,7 +20,7 @@ export const clamp = (low: number, value: number, high: number) =>
 /**
  * Films are written on a 4 s title card: `director.tag` runs at 4 s. Playing, the card lasts
  * 2 s: `director.close` moves everything after it 2 s earlier, so the question comes in at
- * 2 s (1 s at the default 2×) and a film runs 2 s shorter than its `end`.
+ * 2 s (about 1.3 s at the default 1.5×) and a film runs 2 s shorter than its `end`.
  */
 const TITLE_END = 4;
 const TITLE_CUT = 2;

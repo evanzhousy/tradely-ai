@@ -48,8 +48,8 @@ import { FrameContext, copy as walkthroughCopy } from "./walkthrough";
 const RATES = [1, 1.5, 2] as const;
 type Rate = (typeof RATES)[number];
 const rateKey = "tradely:player-rate:v1";
-/** Films play at 2× until a learner picks another speed. */
-const DEFAULT_RATE: Rate = 2;
+/** Films play at 1.5× until a learner picks another speed. */
+const DEFAULT_RATE: Rate = 1.5;
 const isRate = (value: number): value is Rate =>
 	(RATES as readonly number[]).includes(value);
 function readRate(): Rate {
