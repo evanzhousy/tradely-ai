@@ -42,14 +42,14 @@ import {
  *
  *   open      0–4        "Audits"
  *   question  4–8.6      $1,655.20 in premium: pass it?
- *   amount    8.6–21.65  focused 105 proof; remaining rows; covered subtotal
- *   claims    21.65–33.25 original claims held; active repairs; lock at 29.25 after 1 s quiet
- *   signoff   33.25–39.65  compact findings, open items, reopening conditions
- *   claim     39.65–44.05  find it, fix it, say what's open
- *   next      44.05–46.55  Next: the module checkpoint
+ *   amount    8.6–22.60  headers, focused 105 proof, comparison group, subtotal
+ *   claims    22.60–34.20 original inventory; stable repairs; lock at 30.20 after 1 s quiet
+ *   signoff   34.20–40.60  compact findings, open items, reopening conditions
+ *   claim     40.60–45.00  find it, fix it, say what's open
+ *   next      45.00–47.50  Next: the module checkpoint
  */
 
-const END = 46.55;
+const END = 47.5;
 const ROWS = mondayPacket;
 const POSITION_CONTRACTS = rowContracts(ROWS[2]);
 if (POSITION_CONTRACTS === null)
@@ -150,15 +150,17 @@ const phoneSections: Readonly<Record<string, Copy>> = {
 		"×100 restored · volume ≠ positions · 120 missing · forecast cut",
 		"补回 ×100 · 成交≠持仓 · 120 无数据 · 删除预测",
 	],
-	open: [
-		"120 tape due Tue 09:00; 110 OI change: Tue report",
-		"120 成交：周二 09:00；110 未平仓量变化：周二报告",
-	],
 	reopen: [
 		"Monday tape corrected, or 120 data changes a claim",
 		"周一成交更正，或 120 数据改变结论",
 	],
 };
+
+/** Each phone open item owns its complete evidence deadline. */
+const phoneOpenLines: readonly Copy[] = [
+	["120 tape due Tue 09:00", "120 成交：周二09:00"],
+	["110 OI change: Tue report", "110 未平仓量变化：周二报告"],
+];
 
 /** Compact film repairs carry the same quantities and cutoff as the shared claims. */
 const repairCopy: Readonly<Record<string, Copy>> = {
@@ -167,8 +169,8 @@ const repairCopy: Readonly<Record<string, Copy>> = {
 		`权利金 ${dollars(PREMIUM)} · 4/5 行权价`,
 	],
 	positions: [
-		`110 call: ${count(POSITION_CONTRACTS)} traded`,
-		`110 看涨：成交 ${count(POSITION_CONTRACTS)} 张`,
+		`110: ${count(POSITION_CONTRACTS)} traded; new positions unknown`,
+		`110：成交 ${count(POSITION_CONTRACTS)} 张；新增仓位未知`,
 	],
 	missing: ["120 call: no data at cutoff", "120 看涨：截止时无数据"],
 };
@@ -534,20 +536,37 @@ function Scene({
 					>
 						{t(section.label).toUpperCase()}
 					</text>
-					<Lines
-						name={`sec-${i}-text`}
-						text={t(
-							narrow
-								? (phoneSections[section.id] ?? section.text)
-								: section.text,
-						)}
-						x={margin + 14}
-						y={L.secY(i) + T.small * 1.7 + T.small * (narrow ? 1.35 : 1.6)}
-						size={T.body}
-						maxWidth={room - 28}
-						anchor="start"
-						className="wt-film-type"
-					/>
+					{narrow && section.id === "open" ? (
+						<text
+							data-f={`sec-${i}-text`}
+							x={margin + 14}
+							y={L.secY(i) + T.small * 3.05}
+							textAnchor="start"
+							className="wt-film-type"
+							style={{ fontSize: T.body }}
+						>
+							{phoneOpenLines.map((line, j) => (
+								<tspan key={j} x={margin + 14} dy={j === 0 ? 0 : T.body * 1.35}>
+									{`${j === 0 ? "" : " "}${t(line)}`}
+								</tspan>
+							))}
+						</text>
+					) : (
+						<Lines
+							name={`sec-${i}-text`}
+							text={t(
+								narrow
+									? (phoneSections[section.id] ?? section.text)
+									: section.text,
+							)}
+							x={margin + 14}
+							y={L.secY(i) + T.small * 1.7 + T.small * (narrow ? 1.35 : 1.6)}
+							size={T.body}
+							maxWidth={room - 28}
+							anchor="start"
+							className="wt-film-type"
+						/>
+					)}
 				</g>
 			))}
 
@@ -660,28 +679,35 @@ function build(context: FilmContext) {
 	tl.addLabel("amount", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
-	show(kids("cols"), 9.2);
+	show(kids("cols"), 8.95, "below", 0.3);
 	rows.forEach((row, i) => {
-		show(row, 9.3 + i * 0.12, "right");
+		const at = 10.25 + i * 0.12;
+		if (i === 1 || i === 4) show(row, at, "right");
+		else
+			tl.fromTo(
+				row,
+				{ opacity: 0, x: 18, y: 0 },
+				{ opacity: 0.28, x: 0, y: 0, duration: 0.5 },
+				at,
+			);
 	});
-	// The 105 row owns the worked expression; keep the missing-row warning fully visible.
-	tl.set(one("row-1-box"), { attr: { class: "wt-focus-shape" } }, 10.15);
-	tl.to([rows[0], rows[2], rows[3]], { opacity: 0.28, duration: 0.35 }, 10.2);
+	// Context enters subdued; the 105 subject and missing-row warning stay fully emphasized.
+	tl.set(one("row-1-box"), { attr: { class: "wt-focus-shape" } }, 11.1);
 	tl.fromTo(
 		one("total-report"),
 		{ opacity: 0, y: 14 },
 		{ opacity: 0.28, y: 0, duration: 0.5 },
-		10.1,
+		11.05,
 	);
-	tl.set(one("total-report"), { textDecoration: "none" }, 10.1);
-	show(one("proof-label"), 9.9);
+	tl.set(one("total-report"), { textDecoration: "none" }, 11.05);
+	show(one("proof-label"), 10.85);
 	// Each operand enters in place; the expression is readable before its result lands.
 	premiumProof.trades.forEach((_, i) => {
 		tl.fromTo(
 			one(`proof-trade-${i}`),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.5 },
-			10.15 + i * 0.4,
+			11.1 + i * 0.4,
 		);
 	});
 	show(one("col-fixed"), 11.0);
@@ -689,36 +715,36 @@ function build(context: FilmContext) {
 		one("proof-multiplier"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		10.95,
+		11.9,
 	);
 	fixed.forEach((el, i) => {
-		word(el, [13.1, 11.55, 13.35, 13.85][i]);
+		word(el, i === 1 ? 12.5 : 14.05);
 	});
-	word(one("proof-result"), 11.55);
-	// The worked result settles at 12.10, then stands for 1 s before the other rows return.
+	word(one("proof-result"), 12.5);
+	// The worked result settles at 13.05, then stands for 1 s before the other rows return.
 	tl.to(
 		[rows[0], rows[2], rows[3], one("total-report")],
 		{ opacity: 1, duration: 0.35 },
-		13.1,
+		14.05,
 	);
-	tl.set(one("row-1-box"), { attr: { class: "wt-panel-shape" } }, 13.1);
-	// All corrected rows settle at 14.40; leave another 1 s before the covered subtotal.
-	tl.set(one("total-report"), { textDecoration: "line-through" }, 15.4);
-	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 15.4);
+	tl.set(one("row-1-box"), { attr: { class: "wt-panel-shape" } }, 14.05);
+	// The comparison group settles at 14.60; preserve the full 15.35–16.35 table rest.
+	tl.set(one("total-report"), { textDecoration: "line-through" }, 16.35);
+	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 16.35);
 	// The label is close to the subtotal: enter in place, clear of the figure below.
 	tl.fromTo(
 		one("total-label"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		15.4,
+		16.35,
 	);
-	word(one("total-fixed"), 15.4);
-	// Subtotal settles at 15.95; the scoped answer follows after 1.3 s quiet.
-	show(heads[1], 17.25);
+	word(one("total-fixed"), 16.35);
+	// Subtotal settles at 16.90; the scoped answer follows after 1.3 s quiet.
+	show(heads[1], 18.2);
 
 	// ——— claims: the hero. All five, audited and repaired. ———
-	tl.addLabel("claims", 21.65);
-	d.swap([heads[0], heads[1]], heads[2], 21.65);
+	tl.addLabel("claims", 22.6);
+	d.swap([heads[0], heads[1]], heads[2], 22.6);
 	hide(
 		[
 			...kids("cols"),
@@ -730,18 +756,18 @@ function build(context: FilmContext) {
 			one("total-report"),
 			one("total-fixed"),
 		],
-		21.65,
+		22.6,
 	);
 	claimRows.forEach((row, i) => {
-		show(row, 22.45 + i * 0.15, "right");
+		show(row, 23.4 + i * 0.125, "right");
 	});
 	tags.forEach((tag, i) => {
-		word(tag, 22.85 + i * 0.3);
+		word(tag, 23.8 + i * 0.3);
 	});
-	tl.set(one("claim-0-box"), { attr: { class: "wt-focus-shape" } }, 22.85);
+	tl.set(one("claim-0-box"), { attr: { class: "wt-focus-shape" } }, 23.8);
 	claims.forEach((claim, i) => {
 		if (claim.status === "supported") return;
-		const at = 26.55 + (i - 1) * 0.3;
+		const at = 27.5 + (i - 1) * 0.3;
 		// Keep every original claim readable for at least 3.5 s before dimming.
 		// The phone defect then clears before its repair enters the same line.
 		if (L.narrow) hide(tags[i], at, 0.3, 0);
@@ -757,22 +783,12 @@ function build(context: FilmContext) {
 			fix,
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.5 },
-			26.85 + i * 0.3,
+			27.8 + i * 0.3,
 		);
 	});
 
-	// The larger repair is the active reading target; every class change is seek-safe.
-	for (let i = 1; i <= 3; i++) {
-		const at = 26.85 + (i - 1) * 0.3;
-		if (i > 1)
-			tl.set(
-				one(`claim-${i - 1}-box`),
-				{ attr: { class: "wt-panel-shape" } },
-				at,
-			);
-		tl.set(one(`claim-${i}-box`), { attr: { class: "wt-focus-shape" } }, at);
-	}
-	tl.set(one("claim-3-box"), { attr: { class: "wt-panel-shape" } }, 28.25);
+	// Keep the repairs as one stable group; only the scope background steps back.
+	tl.set(one("claim-0-box"), { attr: { class: "wt-panel-shape" } }, 27.8);
 
 	// The forecast, cut: the repair that removes a claim outright.
 	const cut = claims.findIndex((claim) => claim.status === "removed");
@@ -803,28 +819,28 @@ function build(context: FilmContext) {
 				(verdictBox.y + verdictBox.height / 2),
 		),
 	);
-	d.lock(lockCut, 29.25, { around: verdict, pad });
-	tl.addLabel("hero-lock", 29.25);
-	show(heads[3], 29.25);
+	d.lock(lockCut, 30.2, { around: verdict, pad });
+	tl.addLabel("hero-lock", 30.2);
+	show(heads[3], 30.2);
 
 	// ——— signoff ———
-	tl.addLabel("signoff", 33.25);
-	d.swap([heads[2], heads[3]], heads[4], 33.25);
-	hide([...claimRows, ...tags, ...fixes, lockCut], 33.25);
+	tl.addLabel("signoff", 34.2);
+	d.swap([heads[2], heads[3]], heads[4], 34.2);
+	hide([...claimRows, ...tags, ...fixes, lockCut], 34.2);
 	secs.forEach((sec, i) => {
-		show(sec, 34.05 + i * 0.6, "right");
+		show(sec, 35.0 + i * 0.6, "right");
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.65);
-	hide([heads[4], ...secs], 39.65);
-	word(one("z-big"), 39.95);
-	show(one("z-sub"), 40.35);
+	tl.addLabel("claim", 40.6);
+	hide([heads[4], ...secs], 40.6);
+	word(one("z-big"), 40.9);
+	show(one("z-sub"), 41.3);
 
 	// ——— next ———
-	tl.addLabel("next", 44.05);
-	hide(kids("claim"), 44.05);
-	d.close(44.05);
+	tl.addLabel("next", 45.0);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
