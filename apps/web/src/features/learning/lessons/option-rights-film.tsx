@@ -36,8 +36,8 @@ import {
  *   rights    8.8–16.6   holders may, writers must; yours: buy at $95
  *   track     16.6–23.6  flat → long; separately, short → flat
  *   assign    23.6–27.6  a holder exercises a put from Ben
- *   pick      27.6–34.35  neutral search; hero-lock 29.2; answer 29.7
- *   settle    34.35–40.05  100 × strike/close → totals → gain → net
+ *   pick      27.6–33.7  neutral search; hero-lock 29.2; answer 29.7
+ *   settle    33.7–40.05  cash inputs → valuation inputs → totals → gain → net
  *   claim     40.05–44.9  the holder decides; a writer is assigned
  *   next      44.9–47.4  Next: premium, payoff and profit
  */
@@ -182,6 +182,7 @@ function Scene({
 		label: string,
 		sub: string,
 		focus = false,
+		labelSize = text,
 	) => (
 		<g data-f={name}>
 			<rect
@@ -195,10 +196,10 @@ function Scene({
 			/>
 			<text
 				x={x + L.nodeW / 2}
-				y={y + L.nodeH * 0.45}
+				y={y + L.nodeH * (labelSize > text ? 0.5 : 0.45)}
 				textAnchor="middle"
 				className="wt-film-type"
-				style={{ fontSize: text }}
+				style={{ fontSize: labelSize }}
 			>
 				{label}
 			</text>
@@ -341,7 +342,13 @@ function Scene({
 					}),
 				)}
 			</g>
-			<Brackets name="lock-cell" />
+			<Brackets
+				name="lock-cell"
+				x={L.cellX(0) - 5}
+				y={L.cellY(0) - 5}
+				width={L.cellW * 2 + 22}
+				height={L.cellH + 10}
+			/>
 			<Brackets name="lock-you" />
 
 			{/* Open or close. */}
@@ -436,6 +443,8 @@ function Scene({
 							w.id === "ben" && !narrow
 								? `${t(copy.shortN(w.short))} · ${t(copy.sold)}`
 								: t(copy.shortN(w.short)),
+							false,
+							T.head * 1.3,
 						)}
 
 						<path
@@ -471,7 +480,7 @@ function Scene({
 							<Word
 								name={`${name}-tag`}
 								x={x}
-								y={H * 0.32}
+								y={H * (narrow ? 0.32 : 0.29)}
 								size={T.small}
 								className="wt-film-tag"
 							>
@@ -480,7 +489,7 @@ function Scene({
 							<Word
 								name={`${name}-input`}
 								x={x}
-								y={H * 0.41}
+								y={H * (narrow ? 0.39 : 0.37)}
 								size={T.body * 1.1}
 								className="wt-film-num wt-film-dim"
 							>
@@ -660,12 +669,26 @@ function build(context: FilmContext) {
 		flat("matrix").filter((el) => el.tagName === "text"),
 		9.2,
 	);
-	order.forEach((key, i) => {
-		show(cell(key), 9.3 + i * 0.15);
-	});
-	// Brackets read the grid: the holders' row, then the writers'.
-	order.forEach((key, i) => {
-		d.lock(lockCell, 10.2 + i * 0.7, { around: box(key), pad: 5 });
+	// Headers settle at 9.7. All four static cells and the holder-row focus arrive as
+	// one construction, without travelling type; everything settles together at 10.2.
+	tl.fromTo(
+		order.map(cell),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5, ease: "power3.out" },
+		9.7,
+	);
+	// Explicit unit scale also restores this first row after a backwards seek from
+	// the later lock, whose fromTo initializes its enlarged path at build time.
+	tl.fromTo(
+		lockCell,
+		{ opacity: 0, scale: 1 },
+		{ opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" },
+		9.7,
+	);
+	// 1.05 s quiet for the holder row, then 1 s for the writer row before y-head.
+	d.lock(lockCell, 11.25, {
+		around: [box("call-short"), box("put-short")],
+		pad: 5,
 	});
 	// Yours: the short put. The others step back.
 	d.swap(heads[0], heads[1], 12.7);
@@ -685,22 +708,20 @@ function build(context: FilmContext) {
 		16.6,
 	);
 	show(heads[2], 16.95);
-	show(tracks[0], 17.0);
-	MOVES.forEach((move, i) => {
-		const at = [17.6, 19.7][i];
-		// The first buy settles at 18.6; the next arrival waits until 19.7.
-		if (i > 0) show(tracks[i], at);
-		word(moves[i], at);
+	show(tracks, 17.0);
+	MOVES.forEach((_, i) => {
+		// Both scaffolds settle at 17.5. Each label is still before its dot moves.
+		word(moves[i], [17.95, 20.3][i]);
 		tl.to(
 			one(`dot-${i}`),
 			{ attr: { cx: L.stopX(1) }, duration: 0.7, ease: "power2.inOut" },
-			at + (move.from === 0 ? 0.3 : 0.6),
+			[18.5, 20.85][i],
 		);
 	});
 
 	// ——— assign: the exercise goes to the clearinghouse ———
 	tl.addLabel("assign", 23.6);
-	// Both results remain on separate rows. The second settles at 21.0, with 2.6 s quiet.
+	// First buy: 19.2–20.3 quiet (1.1 s). Second: 21.55–23.6 quiet (2.05 s).
 	hide([heads[2], ...tracks, ...moves], 23.6);
 	show(heads[3], 23.95);
 	show(nodes[0], 23.95);
@@ -740,10 +761,11 @@ function build(context: FilmContext) {
 	);
 	writers.forEach((w) => {
 		if (w.id !== ASSIGNED)
-			fade([one(`arrow-${w.id}`), one(`n-${w.id}`)], heroAt + 0.3, 0.3);
+			fade([one(`arrow-${w.id}`), one(`n-${w.id}`)], heroAt + 0.15, 0.3);
 	});
-	tl.to(one(`arrow-${ASSIGNED}`), { opacity: 1, duration: 0.3 }, heroAt + 0.3);
-	// The lock settles at 29.65. The fully revealed answer holds 30.2–34.35 (4.15 s).
+	tl.to(one(`arrow-${ASSIGNED}`), { opacity: 1, duration: 0.3 }, heroAt + 0.15);
+	// Branches finish with the lock at 29.65. Answer entrance stays at 29.7; the
+	// fully revealed answer holds 30.2–33.7 (3.5 s), funding the input rests below.
 	tl.fromTo(
 		one("p-answer"),
 		{ opacity: 0 },
@@ -752,8 +774,8 @@ function build(context: FilmContext) {
 	);
 
 	// ——— settle: Eli pays the strike for shares worth less ———
-	tl.addLabel("settle", 34.35);
-	d.swap(heads[4], heads[5], 34.35);
+	tl.addLabel("settle", 33.7);
+	d.swap(heads[4], heads[5], 33.7);
 	hide(
 		[
 			...nodes,
@@ -761,35 +783,27 @@ function build(context: FilmContext) {
 			...writers.map((w) => one(`arrow-${w.id}`)),
 			one("p-answer"),
 		],
-		34.35,
+		33.7,
 	);
-	fade(lockPick, 34.35);
+	fade(lockPick, 33.7);
 	// The assignment is gone before any settlement mark enters its footprint.
-	const inputs = [
-		"s-pays-tag",
-		"s-worth-tag",
-		"s-pays-input",
-		"s-worth-input",
-		"s-gain-tag",
-		"s-premium-tag",
-	].map(one);
-	tl.fromTo(inputs, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 34.7);
-	word(one("s-pays-num"), 35.65);
-	word(one("s-worth-num"), 35.65);
-	// Settled totals rest for 1.05 s. Equations reveal correct, complete values.
-	tl.fromTo(
-		one("s-gain-num"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.35 },
-		37.25,
-	);
-	// The gain rests another 1.05 s before subtracting the already staged premium.
-	tl.fromTo(
-		[one("s-net-tag"), one("s-net-num")],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.35 },
-		38.65,
-	);
+	const reveal = (names: string[], at: number) =>
+		tl.fromTo(
+			names.map(one),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3, ease: "power3.out" },
+			at,
+		);
+	reveal(["s-pays-tag", "s-pays-input"], 34.05);
+	reveal(["s-worth-tag", "s-worth-input"], 34.35);
+	// Inputs rest for 1.3 s (cash) and 1 s (valuation). Reveal exact totals together,
+	// in place: they form the comparison, with neither scale motion nor counting.
+	reveal(["s-pays-num", "s-worth-num"], 35.65);
+	// Preserve 1.05 s quiet after the totals and another 1.05 s after the gain.
+	reveal(["s-gain-tag", "s-gain-num"], 37.0);
+	// Premium belongs to this net construction. All three marks settle at 38.65,
+	// leaving 1.4 s for reading (including the bilingual premium) before the claim.
+	reveal(["s-premium-tag", "s-net-tag", "s-net-num"], 38.35);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.05);
