@@ -23,11 +23,13 @@ import { LessonInfographic } from "./lesson-infographic";
 export function LandingCurriculum({
 	lessons,
 	completedIds = [],
+	progressStatus = "ready",
 	caption,
 	groupByModule = false,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
+	progressStatus?: "loading" | "unavailable" | "ready";
 	caption: string;
 	groupByModule?: boolean;
 	learning?: CourseEvidenceProgress;
@@ -54,7 +56,13 @@ export function LandingCurriculum({
 					? t("progress.studied")
 					: visualProgress[lesson.id]
 						? t("progress.viewedOnDevice")
-						: t("progress.notStarted");
+						: progressStatus === "loading"
+							? locale === "zh"
+								? "正在加载进度…"
+								: "Loading progress…"
+							: progressStatus === "unavailable"
+								? t("complete.unavailable")
+								: t("progress.notStarted");
 				const titleId = `${id}-${lesson.id}-title`;
 				const detailId = `${id}-${lesson.id}-detail`;
 				const accessLabel = t("common.free");

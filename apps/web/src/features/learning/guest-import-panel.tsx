@@ -11,6 +11,7 @@ import { useAnalytics } from "@/analytics/context";
 import type { GuestImportFailure } from "@/domain/guest-learning";
 import { useI18n } from "@/i18n/provider";
 import { importGuestLearning } from "@/server/learning";
+import { useInvalidateCourseProgress } from "./course-progress";
 import {
 	clearGuestHandoff,
 	type GuestHandoff,
@@ -41,6 +42,7 @@ export function GuestImportPanel({
 	const [handoff, setHandoff] = useState<GuestHandoff | null>(null);
 	const [failure, setFailure] = useState<Failure | null>(null);
 	const [busy, setBusy] = useState(false);
+	const invalidateProgress = useInvalidateCourseProgress();
 	const [saved, setSaved] = useState<{
 		attemptId: string;
 		completed: boolean;
@@ -100,6 +102,7 @@ export function GuestImportPanel({
 					});
 					return;
 				}
+				void invalidateProgress();
 				setSaved({
 					attemptId: result.view.attemptId,
 					completed: result.completed,
@@ -137,7 +140,16 @@ export function GuestImportPanel({
 				if (active.current) setBusy(false);
 			}
 		},
-		[capture, captureException, handoff, lessonId, onSaved, submit, userId],
+		[
+			capture,
+			captureException,
+			handoff,
+			lessonId,
+			onSaved,
+			submit,
+			userId,
+			invalidateProgress,
+		],
 	);
 	useEffect(() => {
 		if (handoff && !failure && !attempted.current) {

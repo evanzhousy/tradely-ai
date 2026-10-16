@@ -4,10 +4,10 @@ import { Button } from "@tradely/ui/components/button";
 import { toast } from "@tradely/ui/components/toast";
 import { CheckIcon } from "lucide-react";
 import { useState } from "react";
-
 import { useAnalytics } from "@/analytics/context";
 import { BrandOwl } from "@/components/brand-owl";
 import type { Lesson } from "@/content/course";
+import { useInvalidateCourseProgress } from "@/features/learning/course-progress";
 import { useI18n } from "@/i18n/provider";
 import { saveLessonProgress } from "@/server/progress";
 
@@ -20,6 +20,7 @@ export function CompleteLessonButton({
 }) {
 	const saveProgress = useServerFn(saveLessonProgress);
 	const router = useRouter();
+	const invalidateProgress = useInvalidateCourseProgress();
 	const { t } = useI18n();
 	const { capture, captureException } = useAnalytics();
 	const [pending, setPending] = useState(false);
@@ -67,7 +68,10 @@ export function CompleteLessonButton({
 						toast.success(t("complete.success"));
 						// The save is already confirmed. A failed refresh is a diagnostic
 						// error, not a failed lesson completion.
-						await router.invalidate().catch((error: unknown) => {
+						await Promise.all([
+							router.invalidate(),
+							invalidateProgress(),
+						]).catch((error: unknown) => {
 							captureException(error, {
 								source: "lesson_completion",
 								operation: "lesson_progress_save",

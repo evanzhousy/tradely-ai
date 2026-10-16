@@ -54,6 +54,8 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 	const [moduleId, setModuleId] = useState("all");
 	const [filter, setFilter] = useState<CatalogFilter>("all");
 	const completedIds = props.completedIds ?? [];
+	const progressUnknown =
+		props.progressStatus !== undefined && props.progressStatus !== "ready";
 	const lessons = filterCatalog(
 		props.lessons,
 		query,
@@ -87,15 +89,26 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 						className="h-9 bg-default"
 					>
 						{filters.map((item) => (
-							<TabsTrigger key={item.value} value={item.value} className="h-7">
+							<TabsTrigger
+								key={item.value}
+								value={item.value}
+								isDisabled={item.value === "completed" && progressUnknown}
+								className="h-7"
+							>
 								{item.label}
 							</TabsTrigger>
 						))}
 					</TabsList>
 					<p className="catalog-count" role="status">
-						{locale === "zh"
-							? `显示 ${lessons.length} / ${props.lessons.length} 节课`
-							: `${lessons.length} of ${props.lessons.length} lessons`}
+						{filter === "completed" && progressUnknown
+							? props.progressStatus === "loading"
+								? locale === "zh"
+									? "正在加载进度…"
+									: "Loading progress…"
+								: t("complete.unavailable")
+							: locale === "zh"
+								? `显示 ${lessons.length} / ${props.lessons.length} 节课`
+								: `${lessons.length} of ${props.lessons.length} lessons`}
 					</p>
 				</div>
 				<Field className="catalog-module-field">
@@ -164,7 +177,15 @@ export function CourseCatalog(props: ComponentProps<typeof LandingCurriculum>) {
 			{filters.map((item) => (
 				<TabsContent key={item.value} value={item.value}>
 					{item.value === filter ? (
-						lessons.length ? (
+						filter === "completed" && progressUnknown ? (
+							<p role="status">
+								{props.progressStatus === "loading"
+									? locale === "zh"
+										? "正在加载进度…"
+										: "Loading progress…"
+									: t("complete.unavailable")}
+							</p>
+						) : lessons.length ? (
 							<div className="flex flex-col gap-8">
 								<nav
 									className="module-navigation"

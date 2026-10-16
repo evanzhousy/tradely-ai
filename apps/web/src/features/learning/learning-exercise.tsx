@@ -16,6 +16,7 @@ import type {
 	LearningFailure,
 	LearningView,
 } from "@/domain/learning/types";
+import { useInvalidateCourseProgress } from "@/features/learning/course-progress";
 import { useI18n } from "@/i18n/provider";
 import { getCoaching, updateCoaching } from "@/server/coaching";
 import {
@@ -49,6 +50,7 @@ function LearningSession({
 	const { locale } = useI18n();
 	const { capture, captureException } = useAnalytics();
 	const router = useRouter();
+	const invalidateProgress = useInvalidateCourseProgress();
 	const open = useServerFn(openLearning);
 	const update = useServerFn(updateLearning);
 	const readCoach = useServerFn(getCoaching);
@@ -167,11 +169,12 @@ function LearningSession({
 					capturedResult.current !== response.view.attemptId
 				) {
 					capturedResult.current = response.view.attemptId;
-					void router.invalidate().catch((error: unknown) =>
-						captureException(error, {
-							source: "route_boundary",
-							lesson_id: lessonId,
-						}),
+					void Promise.all([router.invalidate(), invalidateProgress()]).catch(
+						(error: unknown) =>
+							captureException(error, {
+								source: "route_boundary",
+								lesson_id: lessonId,
+							}),
 					);
 					capture("lesson_exercise_submitted", {
 						...properties,
@@ -199,6 +202,7 @@ function LearningSession({
 			attemptId,
 			capture,
 			captureException,
+			invalidateProgress,
 			router,
 			lessonId,
 			onSelectAttempt,

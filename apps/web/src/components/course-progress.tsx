@@ -1,3 +1,4 @@
+import { Button } from "@tradely/ui/components/button";
 import { CircularProgress } from "@tradely/ui/components/circular-progress";
 import { Progress } from "@tradely/ui/components/progress";
 import type { CourseEvidenceProgress } from "@/domain/learning-progress";
@@ -9,20 +10,38 @@ export function CourseProgress({
 	percentage,
 	compact = false,
 	unavailable = false,
+	pending = false,
+	onRetry,
 }: {
 	completed: number;
 	total: number;
 	percentage: number;
 	compact?: boolean;
 	unavailable?: boolean;
+	pending?: boolean;
+	onRetry?: () => void;
 	learning?: CourseEvidenceProgress;
 }) {
-	const { t } = useI18n();
-	if (unavailable)
+	const { t, locale } = useI18n();
+	if (pending || unavailable)
 		return (
-			<p role="status" className="text-muted-foreground text-sm">
-				{t("complete.unavailable")}
-			</p>
+			<div
+				className="flex min-h-14 flex-col items-start gap-1 text-muted-foreground text-sm"
+				aria-busy={pending}
+			>
+				<p role="status">
+					{pending
+						? locale === "zh"
+							? "正在加载进度…"
+							: "Loading progress…"
+						: t("complete.unavailable")}
+				</p>
+				{!pending && onRetry ? (
+					<Button variant="ghost" size="sm" onClick={onRetry}>
+						{t("common.retry")}
+					</Button>
+				) : null}
+			</div>
 		);
 	if (!compact)
 		return (
@@ -32,7 +51,7 @@ export function CourseProgress({
 			>
 				<div className="course-progress-summary">
 					<CircularProgress value={percentage} label={t("progress.course")} />
-					<div className="flex flex-col gap-2">
+					<div className="flex min-h-14 flex-col gap-2">
 						<p className="font-medium text-sm">{t("progress.course")}</p>
 						<p className="font-mono text-muted-foreground text-xs">
 							{completed} / {total} {t("common.completed")}
@@ -43,7 +62,7 @@ export function CourseProgress({
 		);
 	return (
 		<section
-			className="flex flex-col gap-2"
+			className="flex min-h-14 flex-col gap-2"
 			aria-label={t("progress.completedLabel", { completed, total })}
 		>
 			<div className="flex items-center justify-between gap-4 text-sm">

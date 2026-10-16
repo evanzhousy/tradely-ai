@@ -6,6 +6,7 @@ import { type ReactNode, useState } from "react";
 import { AuthAnalyticsIdentity } from "@/analytics/auth-identity";
 import { AnalyticsProvider } from "@/analytics/provider";
 import { authIsConfigured } from "@/auth/client";
+import { CourseProgressProvider } from "@/features/learning/course-progress";
 import type { Locale } from "@/i18n/messages";
 import { LocaleProvider } from "@/i18n/provider";
 
@@ -30,7 +31,7 @@ export function AppProviders({
 							enableSystem
 							disableTransitionOnChange
 						>
-							{children}
+							<CourseProgressProvider>{children}</CourseProgressProvider>
 						</ThemeProvider>
 					</AnalyticsProvider>
 				</LocaleProvider>

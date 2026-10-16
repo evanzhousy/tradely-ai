@@ -9,19 +9,18 @@ import { PageIntro } from "@/components/page-intro";
 import { PlacementCheck } from "@/components/placement-check";
 import { TradingFlowLabs } from "@/components/tradingflow-lab";
 import { courseModules } from "@/content/syllabus";
+import { useCourseProgress } from "@/features/learning/course-progress";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
-import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/courses/tradingflow-foundations")({
-	loader: () => getCourseProgress(),
 	head: () => pageHead("/courses/tradingflow-foundations"),
 	component: CoursePage,
 });
 
 function CoursePage() {
-	const progress = Route.useLoaderData();
+	const progress = useCourseProgress();
 	const { locale, t } = useI18n();
 	const course = getLocalizedCourse(locale);
 	const freeLessons = course.lessons;
@@ -65,12 +64,14 @@ function CoursePage() {
 						</div>
 						<CourseProgress
 							learning={progress.learning}
+							pending={progress.pending}
+							onRetry={progress.retry}
 							unavailable={progress.unavailable}
 							completed={progress.completed}
 							total={progress.total}
 							percentage={progress.percentage}
 						/>
-						{progress.unavailable ? null : (
+						{progress.pending || progress.unavailable ? null : (
 							<p className="text-muted-foreground text-xs leading-6">
 								{progress.signedIn
 									? t("progress.accountCurrent")
@@ -137,6 +138,7 @@ function CoursePage() {
 			</div>
 			<PlacementCheck />
 			<CourseCatalog
+				progressStatus={progress.status}
 				learning={progress.learning}
 				groupByModule
 				caption={t("course.curriculumDescription")}

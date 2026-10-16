@@ -19,14 +19,13 @@ import { LearningProgressCounts } from "@/components/learning-progress";
 import { TradingFlowLabs } from "@/components/tradingflow-lab";
 import { getLearningPath } from "@/content/course";
 import { courseModules } from "@/content/syllabus";
+import { useCourseProgress } from "@/features/learning/course-progress";
 import { getLocalizedCourse } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
 import { organizationStructuredData } from "@/seo/structured-data";
-import { getCourseProgress } from "@/server/progress";
 
 export const Route = createFileRoute("/")({
-	loader: () => getCourseProgress(),
 	head: () => ({ ...pageHead("/"), scripts: [organizationStructuredData()] }),
 	component: HomeComponent,
 });
@@ -64,7 +63,7 @@ const stages = [
 
 function HomeComponent() {
 	const landingRef = useLandingMotion();
-	const progress = Route.useLoaderData();
+	const progress = useCourseProgress();
 	const { locale, t } = useI18n();
 	const course = getLocalizedCourse(locale);
 	const freeLessons = course.lessons;
@@ -135,18 +134,31 @@ function HomeComponent() {
 						</div>
 						<div className="desk-stat">
 							<p className="desk-stat-value">
-								{progress.unavailable
+								{progress.pending || progress.unavailable
 									? "—"
 									: `${progress.completed}/${progress.total}`}
 								<span>{t("home.statProgress")}</span>
 							</p>
-							<p className="landing-progress-note">
-								{progress.unavailable
-									? t("complete.unavailable")
+							<p className="landing-progress-note min-h-10">
+								{progress.pending || progress.unavailable
+									? progress.pending
+										? locale === "zh"
+											? "正在加载进度…"
+											: "Loading progress…"
+										: t("complete.unavailable")
 									: progress.signedIn
 										? t("progress.synced")
 										: t("progress.signInToSync")}
 							</p>
+							{progress.unavailable ? (
+								<button
+									type="button"
+									className="text-sm underline"
+									onClick={progress.retry}
+								>
+									{t("common.retry")}
+								</button>
+							) : null}
 						</div>
 					</div>
 					{progress.signedIn && !progress.unavailable ? (
@@ -249,15 +261,24 @@ function HomeComponent() {
 					<p>{t("home.curriculumIntro", { count: course.lessons.length })}</p>
 				</div>
 				<LandingCurriculum
+					progressStatus={progress.status}
 					learning={progress.learning}
 					lessons={course.lessons}
 					completedIds={progress.records
 						.filter((record) => record.completedAt)
 						.map((record) => record.lessonId)}
-					caption={t("progress.completedLabel", {
-						completed: progress.completed,
-						total: progress.total,
-					})}
+					caption={
+						progress.pending
+							? locale === "zh"
+								? "正在加载进度…"
+								: "Loading progress…"
+							: progress.unavailable
+								? t("complete.unavailable")
+								: t("progress.completedLabel", {
+										completed: progress.completed,
+										total: progress.total,
+									})
+					}
 				/>
 				<div className="observatory-access">
 					<div>

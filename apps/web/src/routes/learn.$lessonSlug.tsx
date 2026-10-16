@@ -35,13 +35,14 @@ import { buildsOn, coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
 import { CheckYourself } from "@/features/learning/check-yourself";
+import { useCourseProgress } from "@/features/learning/course-progress";
 import { VisualLesson } from "@/features/learning/visual-lesson";
 import { getLocalizedCourse, getLocalizedLesson } from "@/i18n/course";
 import { useI18n } from "@/i18n/provider";
 import { readLearningData } from "@/lib/learning-read";
 import { pageHead } from "@/seo/pages";
 import { getLessonPageData } from "@/server/lesson";
-import { getCourseProgress, saveLessonProgress } from "@/server/progress";
+import { saveLessonProgress } from "@/server/progress";
 
 const LearningHistory = lazy(() =>
 	import("@/features/learning/learning-history").then((m) => ({
@@ -52,23 +53,15 @@ const LearningHistory = lazy(() =>
 export const Route = createFileRoute("/learn/$lessonSlug")({
 	validateSearch: parseLearningSearch,
 	loader: async ({ params, abortController }) => {
-		const [page, progress] = await Promise.all([
-			readLearningData({
-				operation: "lesson_page_read",
-				signal: abortController.signal,
-				onOutcome: captureLearningReadOutcome,
-				run: (options) =>
-					getLessonPageData({ ...options, data: { slug: params.lessonSlug } }),
-			}),
-			readLearningData({
-				operation: "course_progress_read",
-				signal: abortController.signal,
-				onOutcome: captureLearningReadOutcome,
-				run: (options) => getCourseProgress(options),
-			}),
-		]);
+		const page = await readLearningData({
+			operation: "lesson_page_read",
+			signal: abortController.signal,
+			onOutcome: captureLearningReadOutcome,
+			run: (options) =>
+				getLessonPageData({ ...options, data: { slug: params.lessonSlug } }),
+		});
 		if (!page.found) throw notFound();
-		return { page, progress };
+		return { page };
 	},
 	head: ({ params }) => pageHead(`/learn/${params.lessonSlug}`),
 	component: LessonPage,
@@ -77,7 +70,8 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 function LessonPage() {
 	const { lessonSlug } = Route.useParams();
 	const { attempt, saveGuest } = Route.useSearch();
-	const { page, progress } = Route.useLoaderData();
+	const { page } = Route.useLoaderData();
+	const progress = useCourseProgress();
 	const { locale, t } = useI18n();
 	const { capture, isCapturing, captureException } = useAnalytics();
 	const saveProgress = useServerFn(saveLessonProgress);
@@ -181,7 +175,9 @@ function LessonPage() {
 						{sidebarCollapsed ? null : (
 							<div className="min-w-0 flex-1">
 								<CourseProgress
+									pending={progress.pending}
 									unavailable={progress.unavailable}
+									onRetry={progress.retry}
 									completed={progress.completed}
 									total={progress.total}
 									percentage={progress.percentage}
@@ -227,6 +223,7 @@ function LessonPage() {
 						<CourseList
 							lessons={course.lessons}
 							completedIds={completedIds}
+							progressStatus={progress.status}
 							currentLessonId={lesson.id}
 						/>
 					</ScrollShadow>
@@ -316,7 +313,17 @@ function LessonPage() {
 						</div>
 					</DisclosurePanel>
 					<section id="study-mark" className="flex flex-col gap-4">
-						{progress.signedIn ? (
+						{progress.pending || progress.unavailable ? (
+							<CourseProgress
+								pending={progress.pending}
+								unavailable={progress.unavailable}
+								onRetry={progress.retry}
+								completed={0}
+								total={progress.total}
+								percentage={0}
+								compact
+							/>
+						) : progress.signedIn ? (
 							<CompleteLessonButton
 								lesson={lesson}
 								studied={!!record?.completedAt}

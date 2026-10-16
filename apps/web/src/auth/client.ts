@@ -11,12 +11,13 @@ export const authClient = createAuthClient("", {
 export const authIsConfigured = env.VITE_AUTH_ENABLED === true;
 
 export function useAuth() {
-	const { data, isPending, error } = authClient.useSession();
+	const { data, isPending, error, refetch } = authClient.useSession();
 	return {
 		isLoaded: !isPending,
 		isSignedIn: Boolean(data?.user?.emailVerified),
 		userId: data?.user?.emailVerified ? data.user.id : null,
 		email: data?.user?.email ?? null,
 		error,
+		refresh: refetch,
 	};
 }

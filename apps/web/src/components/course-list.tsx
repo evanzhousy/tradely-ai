@@ -23,10 +23,12 @@ const startsPath = (moduleId: string) => {
 export function CourseList({
 	lessons,
 	completedIds = [],
+	progressStatus = "ready",
 	currentLessonId,
 }: {
 	lessons: readonly Lesson[];
 	completedIds?: string[];
+	progressStatus?: "loading" | "unavailable" | "ready";
 	currentLessonId?: string;
 	learning?: CourseEvidenceProgress;
 }) {
@@ -64,7 +66,13 @@ export function CourseList({
 					? t("progress.studied")
 					: visualProgress[lesson.id]
 						? t("progress.viewedOnDevice")
-						: t("progress.notStarted");
+						: progressStatus === "loading"
+							? locale === "zh"
+								? "正在加载进度…"
+								: "Loading progress…"
+							: progressStatus === "unavailable"
+								? t("complete.unavailable")
+								: t("progress.notStarted");
 				return (
 					<li
 						key={lesson.id}
@@ -98,13 +106,13 @@ export function CourseList({
 									}
 								</h3>
 								<span className="font-mono text-muted-foreground text-xs">
-									{
-										lessons.filter(
-											(item) =>
-												item.moduleId === lesson.moduleId &&
-												completed.has(item.id),
-										).length
-									}
+									{progressStatus !== "ready"
+										? "—"
+										: lessons.filter(
+												(item) =>
+													item.moduleId === lesson.moduleId &&
+													completed.has(item.id),
+											).length}
 									/
 									{
 										lessons.filter((item) => item.moduleId === lesson.moduleId)
