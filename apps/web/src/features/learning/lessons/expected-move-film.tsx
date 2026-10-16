@@ -211,6 +211,7 @@ function Scene({
 		},
 	];
 	const tailAt = 1.9 * MOVE;
+	const [yearBeforeIv, yearAfterIv] = equations[0].split(`${IV}%`);
 	const operands = `${share(STRADDLE)} ÷ ${share(MOVE)}`;
 	const ratioY = H * 0.4 + T.big * 0.36;
 	const ratioWordY = ratioY + T.head * 1.9;
@@ -248,7 +249,7 @@ function Scene({
 							d={L.area(HIGH, B_X[1])}
 						/>
 						<g clipPath={`url(#bell-${id})`}>
-							<path className="wt-line-position" d={L.bell} />
+							<path data-f="b-curve" className="wt-line-position" d={L.bell} />
 						</g>
 						<text
 							data-f="b-center"
@@ -280,6 +281,20 @@ function Scene({
 						>
 							68%
 						</Word>
+						<path
+							data-f="sd-measure"
+							d={`M${L.xB(SPOT)} ${L.yB(1.12) + 6}V${L.yB(1.12)}H${L.xB(HIGH)}V${L.yB(1.12) + 6}`}
+							className="wt-bracket"
+						/>
+						<text
+							data-f="sd-label"
+							x={L.xB((SPOT + HIGH) / 2)}
+							y={L.yB(1.12) - 8}
+							textAnchor="middle"
+							className="wt-halo wt-marker-label wt-accent"
+						>
+							{share(MOVE)}
+						</text>
 						{[SPOT, BE_HIGH].map((price) => (
 							<path
 								key={price}
@@ -437,7 +452,15 @@ function Scene({
 							size={row.size}
 							className={`wt-film-num ${row.tone}`}
 						>
-							{equations[i]}
+							{i === 0 ? (
+								<>
+									<tspan>{yearBeforeIv}</tspan>
+									<tspan>{`${IV}%`}</tspan>
+									<tspan>{yearAfterIv}</tspan>
+								</>
+							) : (
+								equations[i]
+							)}
 						</Word>
 					</g>
 				))}
@@ -578,6 +601,8 @@ function build(context: FilmContext) {
 		one("b-edge-low"),
 		one("b-edge-high"),
 		one("b-inside"),
+		one("sd-measure"),
+		one("sd-label"),
 		one("s-line-spot"),
 		one("s-line-high"),
 		one("s-bracket"),
@@ -612,11 +637,22 @@ function build(context: FilmContext) {
 
 	// ——— scale: a year's move, scaled by the square root of time ———
 	tl.addLabel("scale", 9.6);
-	hide(flat("q"), 9.6);
+	const ivQuestion = one<SVGGraphicsElement>("q-num-0");
+	hide(
+		flat("q").filter((el) => el !== ivQuestion),
+		9.6,
+	);
 	for (const i of [0, 1, 2]) {
 		show(one(`e-tag-${i}`), 9.9 + i * 1.0);
-		land(one(`e-num-${i}`), 10.1 + i * 1.0);
+		if (i > 0) land(one(`e-num-${i}`), 10.1 + i * 1.0);
 	}
+	// The equation fades in around its hidden 35% slot; the question supplies that term.
+	tl.to(one("e-num-0"), { opacity: 1, duration: 0.55 }, 10.1);
+	d.carry(ivQuestion, one<SVGGraphicsElement>("e-num-0"), 10.1, {
+		duration: 0.55,
+		match: `${IV}%`,
+		arc: "x",
+	});
 	show(one("e-note"), 12.5);
 
 	// ——— bell: what the range covers ———
@@ -624,6 +660,12 @@ function build(context: FilmContext) {
 	hide(flat("e"), 16);
 	show(one("b-head"), 16.2);
 	rise(16.3);
+	// Price ticks belong to the scaffold: all are still when the rise settles at 17.1.
+	tl.to(
+		[one("b-center"), one("b-edge-low"), one("b-edge-high")],
+		{ opacity: 1, duration: 0.4 },
+		16.3,
+	);
 	tl.to(
 		one("bell-clip"),
 		{
@@ -631,9 +673,8 @@ function build(context: FilmContext) {
 			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		16.9,
+		18.1,
 	);
-	show(one("b-center"), 17.6, "above", 0.4);
 	const spread = { half: 0 };
 	const grow = () => {
 		band.setAttribute("d", L.area(SPOT - spread.half, SPOT + spread.half));
@@ -643,15 +684,20 @@ function build(context: FilmContext) {
 		{ half: MOVE, duration: 1.0, ease: "power2.out", onUpdate: grow },
 		18.2,
 	);
-	show([one("b-edge-low"), one("b-edge-high")], 19, "above", 0.4);
 	land(one("b-inside"), 19.4);
 	// The answer, as the share inside lands.
 	show(one("b2-head"), 19.7);
+	// Make the denominator a measured distance, with 1.2 s of quiet after its label settles.
+	d.trace(one<SVGPathElement>("sd-measure"), 21.2, { duration: 0.5 });
+	tl.to(one("sd-label"), { opacity: 1, duration: 0.4 }, 21.7);
 
 	// ——— straddle: measure distance from the strike, then resolve its ratio. ———
 	tl.addLabel("straddle", 23.3);
 	d.swap([one("b-head"), one("b2-head")], one("s-head"), 23.3);
 	hide(one("b-inside"), 23.3, 0.35, 0);
+	hide([one("sd-measure"), one("sd-label")], 23.3, 0.35, 0);
+	// Keep the former coverage proof subdued through the tails; no restoration during rest.
+	tl.to([one("b-curve"), band], { opacity: 0.3, duration: 0.3 }, 23.8);
 	for (const [i, side] of (["spot", "high"] as const).entries())
 		tl.fromTo(
 			one(`s-line-${side}`),
@@ -722,7 +768,7 @@ function build(context: FilmContext) {
 		);
 	});
 	show(one("m-head"), 37.0);
-	show(one("m-may"), 37.0, "below", 0.4);
+	show(one("m-may"), 38.0, "below", 0.4);
 	// Cut: the claim.
 	hide([one("o-head"), one("m-head")], 40.5);
 	sink(40.5);
