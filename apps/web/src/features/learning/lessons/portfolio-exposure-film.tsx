@@ -132,8 +132,8 @@ const copy = {
 	title: ["Portfolio Greeks", "组合希腊值"],
 	titleSub: ["adding up exposure", "汇总敞口"],
 	qTag: [
-		"Portfolio delta, shares · Monday's close",
-		"组合 Delta（股） · 周一收盘",
+		"Reported delta, shares · Monday's close",
+		"已报送 Delta（股） · 周一收盘",
 	],
 	qLine: [
 		`Short ${count(SUBTOTAL)} shares and you're hedged. Or are you?`,
@@ -171,15 +171,18 @@ const copy = {
 	walkPrice: [`ALFA $${SPOT.toFixed(2)}`, `ALFA $${SPOT.toFixed(2)}`],
 	walkTarget: [`→ $${(SPOT + UP).toFixed(2)}`, `→ $${(SPOT + UP).toFixed(2)}`],
 	weekRest: ["7 days, unchanged", "7 天后，不变"],
-	heldHedge: [`Short ${count(HEDGE)} shares`, `做空 ${count(HEDGE)} 股`],
+	heldHedge: [
+		`Short ${count(HEDGE)} shares · initial Δ ≈ ${TOTAL - HEDGE}`,
+		`做空 ${count(HEDGE)} 股 · 初始 Δ ≈ ${TOTAL - HEDGE}`,
+	],
 	heldIv: ["IV fixed", "隐含波动率不变"],
 	weekScenario: [
 		`ALFA unchanged $${SPOT.toFixed(2)} · 7 days later`,
 		`ALFA $${SPOT.toFixed(2)} 不变 · 7 天后`,
 	],
 	fixedIv: [
-		`Short ${count(HEDGE)} shares · IV fixed`,
-		`做空 ${count(HEDGE)} 股 · 隐含波动率不变`,
+		`Short ${count(HEDGE)} shares · initial Δ ≈ ${TOTAL - HEDGE} · IV fixed`,
+		`做空 ${count(HEDGE)} 股 · 初始 Δ ≈ ${TOTAL - HEDGE} · 隐含波动率不变`,
 	],
 	pnlAxis: [
 		`hedged book · P&L from Monday's close`,
@@ -200,7 +203,10 @@ const copy = {
 	staleHeadShort: [`The put delta is Friday's.`, "看跌 Delta 是周五的。"],
 	callVega: ["Call vega · main broker", "看涨 Vega · 主券商"],
 	putVega: ["Put vega · 2nd broker", "看跌 Vega · 第二券商"],
-	portfolioVega: ["Portfolio vega / vol point", "组合 Vega / 波动率点"],
+	portfolioVega: ["Portfolio vega", "组合 Vega"],
+	portfolioVegaUnit: ["/ vol point", "/ 波动率点"],
+	perPointUnit: ["per vol point", "每个波动率点"],
+	mondayStamp: ["· Mon 16:00", "· 周一 16:00"],
 	putDelta: ["Put delta · Friday", "看跌 Delta · 周五历史值"],
 	currentDelta: ["Current delta: unknown", "当前 Delta：未知"],
 	perPoint: ["per vol point · Mon 16:00", "每个波动率点 · 周一 16:00"],
@@ -735,18 +741,33 @@ function Scene({
 					anchor="start"
 					className="wt-film-type wt-film-accent"
 				>
-					{t(copy.perPoint)}
+					{t(copy.perPointUnit)}
 				</Word>
 				<Word
-					name="f-vega-weights"
-					x={L.margin}
-					y={L.vegaWeightsY}
+					name="f-time-put-vega-point"
+					x={L.sharesX}
+					y={L.feedY(1) + T.body * 1.7}
 					size={T.body}
-					anchor="start"
-					className="wt-film-num"
+					anchor="end"
+					className="wt-film-type wt-film-accent"
 				>
-					{`${CALLS} × 100 × ${CALL_VEGA.toFixed(3)} + ${PUTS} × 100 × ${PUT_VEGA.toFixed(3)}`}
+					{t(copy.mondayStamp)}
 				</Word>
+				<g data-f="f-vega-weights">
+					{([CALLS, PUTS] as const).map((contracts, i) => (
+						<Word
+							key={i === 0 ? "call" : "put"}
+							name={i === 0 ? "f-call-weight" : "f-put-weight"}
+							x={L.margin}
+							y={L.feedY(i) + T.body * 3.3}
+							size={T.body}
+							anchor="start"
+							className="wt-film-num"
+						>
+							{`${i === 0 ? "" : "+ "}${contracts} × 100 × ${(i === 0 ? CALL_VEGA : PUT_VEGA).toFixed(3)}`}
+						</Word>
+					))}
+				</g>
 				<Word
 					name="f-vega-total-label"
 					x={L.margin}
@@ -756,6 +777,16 @@ function Scene({
 					className="wt-film-type"
 				>
 					{t(copy.portfolioVega)}
+				</Word>
+				<Word
+					name="f-vega-total-unit"
+					x={L.margin + T.body * 8}
+					y={L.vegaTotalY}
+					size={T.body}
+					anchor="start"
+					className="wt-film-type"
+				>
+					{t(copy.portfolioVegaUnit)}
 				</Word>
 				<Word
 					name="f-vega-total"
@@ -893,21 +924,34 @@ function build(context: FilmContext) {
 	tl.addLabel("holdings", 9.6);
 	hide(flat("q"), 9.6);
 	show(one("b-head"), 9.8, "above");
-	show([one("col-per"), one("col-shares")], 10.1);
-	holdings.forEach((row, i) => {
-		const at = 10.4 + i * 0.5;
-		show(one(`h-label-${row.key}`), at);
-		if (row.key === "puts") show(one("h-missing"), at + 0.2, "right");
-		else {
-			show(one(`h-per-${row.key}`), at + 0.15, "right");
-			show(one(`h-shares-${row.key}`), at + 0.25, "right");
-		}
-	});
+	show([one("col-per"), one("col-shares")], 9.95, "below", 0.3);
+	// Headers stand for 1.05 s; the holdings are one comparison, not an ordered list.
+	tl.fromTo(
+		holdings.flatMap((row) => [
+			one(`h-label-${row.key}`),
+			...(row.key === "puts"
+				? [one("h-missing")]
+				: [one(`h-per-${row.key}`), one(`h-shares-${row.key}`)]),
+		]),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		11.3,
+	);
 	tl.to(one("h-rule"), { opacity: 1, duration: 0.4 }, 11.7);
 	show(one("h-sub-label"), 11.8);
-	land(sum, 12.0);
+	land(sum, 11.8);
 	// The second account reports.
 	d.swap(one("b-head"), one("r-head"), 13.4);
+	// Preserve the newly synchronized call label's sentence hold before dimming context.
+	tl.to(
+		["stock", "calls"].flatMap((key) => [
+			one(`h-label-${key}`),
+			one(`h-per-${key}`),
+			one(`h-shares-${key}`),
+		]),
+		{ opacity: 0.3, duration: 0.35 },
+		14.95,
+	);
 	// Fold the subtotal and its label together; all three settled contributions
 	// unfold with the total. There is never a counted sum over fixed operands.
 	hide(one("h-missing"), 15.3, 0.3, 0);
@@ -1023,6 +1067,12 @@ function build(context: FilmContext) {
 	// Number and unit fold together: every visible input has its correct convention.
 	d.flip(one("f-value-put-vega"), one("f-value-put-vega-point"), 33.45);
 	d.flip(one("f-unit-put-vega"), one("f-unit-put-vega-point"), 33.45);
+	tl.fromTo(
+		one("f-time-put-vega-point"),
+		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
+		{ scaleY: 1, duration: 0.35, ease: "power2.out" },
+		33.75,
+	);
 	tl.set(
 		[one("f-value-put-vega"), one("f-unit-put-vega")],
 		{ opacity: 0 },
@@ -1031,7 +1081,12 @@ function build(context: FilmContext) {
 	// Conversion settles at 34.10. Preserve its 1.05-second quiet interval, then
 	// reveal the position weights and the model's rounded total intact, never counted.
 	tl.fromTo(
-		[one("f-vega-weights"), one("f-vega-total-label"), one("f-vega-total")],
+		[
+			one("f-vega-weights"),
+			one("f-vega-total-label"),
+			one("f-vega-total-unit"),
+			one("f-vega-total"),
+		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
 		35.15,
@@ -1055,8 +1110,20 @@ function build(context: FilmContext) {
 		37.0,
 	);
 	tl.to(
-		[one("f-label-call-vega"), one("f-label-put-vega")],
-		{ opacity: 0.4, duration: 0.4 },
+		[
+			one("f-label-call-vega"),
+			one("f-value-call-vega"),
+			one("f-unit-call-vega"),
+			one("f-label-put-vega"),
+			one("f-value-put-vega-point"),
+			one("f-unit-put-vega-point"),
+			one("f-time-put-vega-point"),
+			one("f-vega-weights"),
+			one("f-vega-total-label"),
+			one("f-vega-total-unit"),
+			one("f-vega-total"),
+		],
+		{ opacity: 0.3, duration: 0.4 },
 		37.0,
 	);
 	// Friday's value stays known; current delta settles at 37.5 and rests for 3 s.
