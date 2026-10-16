@@ -93,12 +93,15 @@ export function useCourseProgress() {
 		retry: false, // The read transport owns the single retry; queries must not multiply it.
 		refetchOnWindowFocus: false,
 		queryFn: async ({ signal }) => {
+			const expectedUserId = identity.userId;
+			if (!expectedUserId) throw new Error("Progress reads require an account");
 			try {
 				return await readLearningData({
 					operation: "course_progress_read",
 					signal,
 					onOutcome: captureLearningReadOutcome,
-					run: (options) => getCourseProgress(options),
+					run: (options) =>
+						getCourseProgress({ ...options, data: { expectedUserId } }),
 				});
 			} catch (error) {
 				if (!signal.aborted)

@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { performance } from "node:perf_hooks";
+import { setResponseHeader } from "@tanstack/react-start/server";
 
 import { createDb, lessonAttempt, lessonProgress } from "@tradely/db";
 import { and, eq } from "drizzle-orm";
@@ -22,7 +23,10 @@ import {
 import type { SaveLessonProgressInput } from "./progress";
 import { ensureAppUser } from "./users.server";
 
-export async function getCourseProgressImpl() {
+/** The server identity must match the account owning this private client cache entry. */
+export async function getCourseProgressImpl(expectedUserId: string) {
+	setResponseHeader("Cache-Control", "private, no-store");
+	setResponseHeader("Vary", "Cookie");
 	const lessonIds = tradingFlowCourse.lessons.map((lesson) => lesson.id);
 	const scenarios = lessonIds.flatMap(getLessonScenarios);
 	const emptyLearning = summarizeLearningEvidence(lessonIds, scenarios, []);
@@ -42,9 +46,14 @@ export async function getCourseProgressImpl() {
 		});
 	};
 	const identity = await getLearningIdentity();
-	const userId = identity.userId;
+	const identityMismatch =
+		identity.userId !== null && identity.userId !== expectedUserId;
+	const userId = identityMismatch ? null : identity.userId;
 	if (!userId) {
-		await captureSlowTiming(identity.unavailable ? "unavailable" : "ok", false);
+		await captureSlowTiming(
+			identity.unavailable || identityMismatch ? "unavailable" : "ok",
+			false,
+		);
 		return {
 			signedIn: false as const,
 			completed: 0,
@@ -52,7 +61,7 @@ export async function getCourseProgressImpl() {
 			percentage: 0,
 			records: [],
 			learning: emptyLearning,
-			unavailable: identity.unavailable,
+			unavailable: identity.unavailable || identityMismatch,
 		};
 	}
 	try {

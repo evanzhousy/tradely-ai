@@ -9,12 +9,12 @@ const saveLessonProgressSchema = z.object({
 
 export type SaveLessonProgressInput = z.infer<typeof saveLessonProgressSchema>;
 
-export const getCourseProgress = createServerFn({ method: "GET" }).handler(
-	async () => {
+export const getCourseProgress = createServerFn({ method: "GET" })
+	.validator(z.object({ expectedUserId: z.string().min(1).max(200) }))
+	.handler(async ({ data }) => {
 		const { getCourseProgressImpl } = await import("./progress.server");
-		return getCourseProgressImpl();
-	},
-);
+		return getCourseProgressImpl(data.expectedUserId);
+	});
 
 export const saveLessonProgress = createServerFn({ method: "POST" })
 	.validator(saveLessonProgressSchema)
