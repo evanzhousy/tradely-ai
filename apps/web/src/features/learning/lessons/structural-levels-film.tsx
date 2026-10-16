@@ -40,7 +40,7 @@ import {
  *
  *   open      0–4        "Walls and max pain"
  *   question  4–9.6      $90 or $95?
- *   walls     9.6–21.7   OI picks $110/$90; neutral gamma prompt, then the $95 answer
+ *   walls     9.6–21.7   OI picks $110/$90; gamma weights near spot, then the $95 answer
  *   pain      21.7–32.55 put, call and total curves, each with 1 s quiet; $100 hero
  *                        locks at 28.4 and stands 3.7 s after bracket settlement
  *   distance  32.55–45.4 −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
@@ -142,8 +142,14 @@ const copy = {
 		`Most contracts: ${stock(CALL_ANY)} and ${stock(PUT_OI)}.`,
 		`合约最多：${stock(CALL_ANY)} 与 ${stock(PUT_OI)}。`,
 	],
-	gexWallHead: ["Weight contracts by gamma.", "按 Gamma 加权合约。"],
-	gexWallHeadShort: ["Weight contracts by gamma.", "按 Gamma 加权合约。"],
+	gexWallHead: [
+		"Gamma weights strikes near spot more.",
+		"现价附近的 Gamma 权重更高。",
+	],
+	gexWallHeadShort: [
+		"Gamma favors strikes near spot.",
+		"现价附近的 Gamma 权重更高。",
+	],
 	gexAnswer: [
 		`Put wall: ${stock(PUT_GEX)} by gamma.`,
 		`Gamma 看跌墙：${stock(PUT_GEX)}。`,
@@ -153,8 +159,8 @@ const copy = {
 		"10月18日 未平仓量，周五收盘",
 	],
 	axisGex: [
-		"Oct 18 |GEX| by strike, $ per 1%",
-		"10月18日 各行权价 |GEX|，每 1%",
+		"Oct 18 modeled |GEX| by strike, $/1%",
+		"10月18日 模型各行权价 |GEX|，每 1%",
 	],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
@@ -185,7 +191,7 @@ const copy = {
 		`每格 = $1 = ${stock(SPOT)} 的 1%`,
 	],
 	noteAtr: [
-		`one tick = 1 ATR = $${ALFA_ATR_14.toFixed(2)}, a typical day's range, not a direction`,
+		`1 ATR = $${ALFA_ATR_14.toFixed(2)}: typical range, not direction.`,
 		`每格 = 1 ATR = $${ALFA_ATR_14.toFixed(2)}，典型一天的波幅，不是方向`,
 	],
 	noteAtrShort: [
@@ -811,7 +817,7 @@ function build(context: FilmContext) {
 	hide(flat("q"), 9.6);
 	show(one("o-head"), 9.8, "above");
 	rise(9.9);
-	SIDES.forEach((side, s) => {
+	SIDES.forEach((side) => {
 		STRIKES.forEach((strike, i) => {
 			tl.to(
 				bar(strike, side),
@@ -820,12 +826,19 @@ function build(context: FilmContext) {
 					duration: 0.5,
 					ease: "power3.out",
 				},
-				10.3 + s * 0.9 + i * 0.1,
+				10.2 + i * 0.1,
 			);
 		});
 	});
 	// The most contracts on each side.
 	show(one("w-head"), 12.3);
+	// The completed distribution rests for 1 s; emphasize its winners by dimming peers.
+	SIDES.forEach((side) => {
+		for (const strike of STRIKES) {
+			if (strike !== wallOf("oi", side))
+				tl.to(bar(strike, side), { opacity: 0.3, duration: 0.4 }, 12.3);
+		}
+	});
 	tl.to(
 		[one("hi-call"), one("hi-put-oi")],
 		{ opacity: 1, duration: 0.4 },
@@ -843,6 +856,8 @@ function build(context: FilmContext) {
 				bar(strike, side),
 				{
 					attr: shape("gex", strike, side),
+					// Reset the old OI emphasis while the neutral weighting explanation is up.
+					opacity: 1,
 					duration: 0.9,
 					ease: "power2.inOut",
 				},
@@ -872,6 +887,12 @@ function build(context: FilmContext) {
 	tl.to(one("hi-put-gex"), { opacity: 1, duration: 0.5 }, 16.7);
 	// The winning bar settles at 17.20; give the proof a full second before its answer.
 	show([one("wl-call-gex"), one("wl-put-gex"), one("g-answer")], 18.2);
+	SIDES.forEach((side) => {
+		for (const strike of STRIKES) {
+			if (strike !== wallOf("gex", side))
+				tl.to(bar(strike, side), { opacity: 0.3, duration: 0.4 }, 18.2);
+		}
+	});
 
 	// ——— pain: build each component before adding the total ———
 	tl.addLabel("pain", 21.7);
@@ -885,6 +906,11 @@ function build(context: FilmContext) {
 	draw(one<SVGPathElement>("pay-call"), 23.8, 0.8);
 	show(one("pay-call-label"), 23.8);
 	draw(one<SVGPathElement>("pay-total"), 25.6, 1.0);
+	tl.to(
+		[one("pay-put"), one("pay-call")],
+		{ opacity: 0.3, duration: 0.4 },
+		25.6,
+	);
 	// Fade in place above the phone plot so the label never travels through its axis.
 	tl.to(one("pay-total-label"), { opacity: 1, duration: 0.5 }, 25.6);
 	land(one("min-dot"), 27.6);
@@ -908,7 +934,7 @@ function build(context: FilmContext) {
 	show(one("note-dollars"), 33.65);
 	// Percent of $100 is a dollar a tick: the same marks, new numbers, the same note.
 	for (const side of SIDES)
-		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 34.75);
+		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 35.15);
 	// ATR: wider ticks, smaller numbers.
 	for (const side of SIDES)
 		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.15);
