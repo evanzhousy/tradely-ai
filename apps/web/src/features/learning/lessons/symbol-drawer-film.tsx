@@ -38,13 +38,18 @@ import {
  *   question  4–8.6      10:30 Monday, open interest 100: true when?
  *   clocks    8.6–19.2   the drawer; IV at Fri 16:00; a trade at 10:05, received 10:20;
  *                        OI counted Fri 16:00, published 06:30
- *   sources   19.2–29.8  hero: today's volume; contracts outstanding
- *   cover     29.8–37.2  Monday close volume; covered subtotal; unknown whole total
- *   claim     37.2–41.9  every value has its own clock
- *   next      41.9–44.4  Next: the module checkpoint
+ *   sources   19.2–32.95  hero: today's volume; contracts outstanding
+ *   cover     32.95–40.25 Monday close volume; covered subtotal; unknown whole total
+ *   claim     40.25–44.95 every value has its own clock
+ *   next      44.95–47.45 Next: the module checkpoint
  */
 
-const END = 44.4;
+const PROOF_SHIFT = 1.5;
+const PUBLICATION_DELAY = 1.65;
+const PUBLICATION_SHIFT = PROOF_SHIFT + PUBLICATION_DELAY;
+const COVERAGE_SHIFT = PUBLICATION_SHIFT + 1.5;
+const CLOSING_SHIFT = COVERAGE_SHIFT - 1.6;
+const END = 47.45;
 const IV_PCT = Math.round(IV * 100);
 const REQUIREMENTS = [
 	"today",
@@ -78,6 +83,8 @@ function layout(width: number) {
 	return {
 		...frame,
 		heroNum: Math.max(frame.type.num, frame.type.head * 1.3),
+		clockSize: narrow ? frame.type.body : frame.type.small * 1.05,
+		clockLift: narrow ? frame.type.body * 1.65 : frame.type.small * 1.5,
 		cardY: H * (narrow ? 0.27 : 0.27),
 		cardH: H * (narrow ? 0.17 : 0.2),
 		fieldX: (i: number) => margin + i * (fieldW + (narrow ? 6 : 12)),
@@ -122,6 +129,14 @@ const copy = {
 	published: ["published", "发布"],
 	happened: ["happened", "发生"],
 	receivedLate: ["received +15 min", "到达 +15 分钟"],
+	received: ["received", "到达"],
+	delay: ["+15 min", "+15 分钟"],
+	phoneClock: {
+		"m-iv": ["model", "模型"],
+		"m-oi": ["count", "统计"],
+		"m-pub": ["published", "发布"],
+		"m-trade": ["trade", "成交"],
+	} as Record<string, Copy>,
 	oiShort: ["OI", "未平仓"],
 	ivShort: ["IV", "IV"],
 	lastShort: ["last", "最新"],
@@ -142,7 +157,7 @@ const copy = {
 		today: {
 			friday: ["wrong session", "时段不对"],
 			delayed: ["only to 10:15", "仅到 10:15"],
-			oi: ["positions, not volume", "持仓数，非成交量"],
+			oi: ["positions, not volume", "持仓，非成交量"],
 		},
 		positions: {
 			friday: ["trades, not positions", "成交，非持仓"],
@@ -201,14 +216,17 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const oi = sources.findIndex((source) => source.id === "oi");
-	const clockSize = T.small * 1.05;
+	const clockSize = L.clockSize;
+	const nowY = narrow
+		? L.lineY - 14 - L.clockLift - clockSize * 2.8
+		: L.lineY - 14 - T.small * 3.2;
 	// Leave a clear lane between the Friday clock and its publication, in both languages.
 	const clockWidth =
 		textWidth(t(copy.oiClock), clockSize) * (locale === "en" ? 0.86 : 1);
 	const linkStart = margin + 16 + L.heroNum * 2.1 + clockWidth + 12;
 	const linkEnd =
 		margin + room - 16 - textWidth(t(copy.oiPublished), clockSize) - 12;
-	const linkY = L.srcY(oi) + L.srcH * 0.84 - T.small * 0.35;
+	const linkY = L.srcY(oi) + L.srcH * 0.84 - clockSize * 0.35;
 	/** Each field's colour carries onto its marks on the timeline. */
 	const fields: [string, Copy, Copy, string, string][] = [
 		["f-oi", copy.oi, copy.oiShort, count(OI), "wt-film-accent"],
@@ -292,24 +310,26 @@ function Scene({
 						rx={12}
 						className="wt-panel-shape"
 					/>
-					<text
-						x={L.fieldX(i) + L.fieldW / 2}
-						y={L.cardY + L.cardH * 0.32}
-						textAnchor="middle"
-						className={`wt-film-tag ${tone}`}
-						style={{ fontSize: T.small }}
-					>
-						{t(narrow ? short : label).toUpperCase()}
-					</text>
-					<text
-						x={L.fieldX(i) + L.fieldW / 2}
-						y={L.cardY + L.cardH * 0.72}
-						textAnchor="middle"
-						className="wt-film-num"
-						style={{ fontSize: narrow ? T.body : T.head * 1.1 }}
-					>
-						{value}
-					</text>
+					<g data-f={`${name}-content`}>
+						<text
+							x={L.fieldX(i) + L.fieldW / 2}
+							y={L.cardY + L.cardH * 0.32}
+							textAnchor="middle"
+							className={`wt-film-tag ${tone}`}
+							style={{ fontSize: T.small }}
+						>
+							{t(narrow ? short : label).toUpperCase()}
+						</text>
+						<text
+							x={L.fieldX(i) + L.fieldW / 2}
+							y={L.cardY + L.cardH * 0.72}
+							textAnchor="middle"
+							className="wt-film-num"
+							style={{ fontSize: narrow ? T.body : T.head * 1.1 }}
+						>
+							{value}
+						</text>
+					</g>
 				</g>
 			))}
 			<g data-f="timeline">
@@ -348,14 +368,14 @@ function Scene({
 							x={L.stopX(stop.at)}
 							y={
 								L.lineY +
-								T.small * 2.2 +
-								(narrow && (i === 3 || i === 1) ? T.small * 1.4 : 0)
+								(narrow ? clockSize : T.small) * 2.2 +
+								(narrow && (i === 3 || i === 1) ? clockSize * 1.7 : 0)
 							}
 							textAnchor={
 								i === 0 ? "start" : i === STOPS.length - 1 ? "end" : "middle"
 							}
 							className="wt-film-num wt-film-dim"
-							style={{ fontSize: T.small }}
+							style={{ fontSize: narrow ? clockSize : T.small }}
 						>
 							{t(stop.label)}
 						</text>
@@ -364,22 +384,22 @@ function Scene({
 			</g>
 			<g data-f="now">
 				<path
-					d={`M${L.stopX(STOPS[4].at)} ${L.lineY - 14 - T.small * 2.6}V${L.lineY + 8}`}
+					d={`M${L.stopX(STOPS[4].at)} ${nowY + clockSize * 0.65}V${L.lineY + 8}`}
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 				/>
 				<text
 					x={L.stopX(STOPS[4].at)}
-					y={L.lineY - 14 - T.small * 3.2}
+					y={nowY}
 					textAnchor="end"
 					className="wt-film-tag wt-film-accent"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: narrow ? clockSize : T.small }}
 				>
 					{t(copy.now).toUpperCase()}
 				</text>
 			</g>
 			<path
 				data-f="trade-receipt-link"
-				d={`M${L.stopX(STOPS[2].at) + 6} ${L.lineY}C${L.stopX(0.7)} ${L.lineY} ${L.stopX(0.74)} ${L.lineY - T.small * 1.5} ${L.stopX(STOPS[3].at) - 6} ${L.lineY - T.small * 1.5}`}
+				d={`M${L.stopX(STOPS[2].at) + 6} ${L.lineY}C${L.stopX(narrow ? 0.74 : 0.7)} ${L.lineY + (narrow ? 6 : 0)} ${L.stopX(narrow ? 0.78 : 0.74)} ${L.lineY - L.clockLift} ${L.stopX(STOPS[3].at) - 6} ${L.lineY - L.clockLift}`}
 				fill="none"
 				style={{ stroke: "var(--diagram-gain)", strokeWidth: 2 }}
 			/>
@@ -393,18 +413,33 @@ function Scene({
 				const x = L.stopX(STOPS[stop].at);
 				/** Marks that share a moment, or sit close, take two tiers. */
 				const lift = tier;
-				const markY = L.lineY - (lift - 1) * T.small * 1.5;
+				const markY = L.lineY - (lift - 1) * L.clockLift;
+				const captions = narrow
+					? name === "m-recv"
+						? [copy.received, copy.delay]
+						: [copy.phoneClock[name]]
+					: [label];
+				const captionX = x + (name === "m-oi" ? 12 : 0);
 				return (
 					<g key={name} data-f={name}>
 						<circle cx={x} cy={markY} r={6} className={tone} />
 						<text
-							x={x + (name === "m-oi" ? 12 : 0)}
-							y={L.lineY - 14 - (lift - 1) * T.small * 1.5}
+							data-f={`${name}-caption`}
+							x={captionX}
+							y={markY - 14 - (captions.length - 1) * clockSize * 1.2}
 							textAnchor={stop === 0 ? "start" : "middle"}
 							className={`wt-film-type wt-halo ${tone}`}
-							style={{ fontSize: T.small * 1.05 }}
+							style={{ fontSize: clockSize }}
 						>
-							{t(label)}
+							{captions.map((caption, j) => (
+								<tspan
+									key={j === 0 ? "event" : "delay"}
+									x={captionX}
+									dy={j === 0 ? 0 : clockSize * 1.2}
+								>
+									{t(caption)}
+								</tspan>
+							))}
 						</text>
 					</g>
 				);
@@ -473,7 +508,7 @@ function Scene({
 								name="src-oi-clock"
 								x={margin + 16 + L.heroNum * 2.1}
 								y={L.srcY(i) + L.srcH * 0.84}
-								size={T.small * 1.05}
+								size={clockSize}
 								anchor="start"
 								className="wt-film-type wt-film-accent"
 							>
@@ -522,7 +557,7 @@ function Scene({
 									L.srcY(i) +
 									L.srcH * (source.id === "oi" ? 0.55 : narrow ? 0.84 : 0.74)
 								}
-								size={T.small * 1.05}
+								size={narrow ? T.body : T.small * 1.05}
 								maxWidth={narrow ? room - 32 : room * 0.46}
 								anchor="end"
 								className="wt-film-type wt-film-dim"
@@ -533,7 +568,7 @@ function Scene({
 									name="oi-publication"
 									x={margin + room - 16}
 									y={L.srcY(i) + L.srcH * 0.84}
-									size={T.small * 1.05}
+									size={clockSize}
 									anchor="end"
 									className="wt-film-num wt-film-accent"
 								>
@@ -547,7 +582,7 @@ function Scene({
 
 			<path
 				data-f="hero-publication-link"
-				d={`M${linkStart} ${linkY}H${linkEnd}M${linkEnd - 5} ${linkY - 3}L${linkEnd} ${linkY}L${linkEnd - 5} ${linkY + 3}`}
+				d={`M${linkStart} ${linkY}H${linkEnd}L${linkEnd - 5} ${linkY - 3}L${linkEnd} ${linkY}L${linkEnd - 5} ${linkY + 3}`}
 				fill="none"
 				style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 			/>
@@ -614,6 +649,12 @@ function Scene({
 					</text>
 				</g>
 			))}
+			<path
+				data-f="covered-group"
+				d={`M${margin - 2} ${L.rowY(0) - 4}H${margin - 9}V${L.rowY(3) + L.rowH + 4}H${margin - 2}`}
+				fill="none"
+				style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
+			/>
 			<g data-f="subtotal">
 				<Word
 					name="subtotal-label"
@@ -718,13 +759,15 @@ function build(context: FilmContext) {
 			},
 			time,
 		);
-	/** One field lights up while its clock is told. */
-	const focus = (name: string | null, time: number) => {
+	/** Content dims as a unit; the selected field keeps its original colour and full contrast. */
+	const focus = (name: string, time: number) => {
 		for (const field of ["f-oi", "f-iv", "f-last"]) {
-			tl.set(
-				one(`${field}-box`),
+			tl.to(
+				one(`${field}-content`),
 				{
-					attr: { class: field === name ? "wt-focus-shape" : "wt-panel-shape" },
+					opacity: field === name ? 1 : 0.3,
+					duration: 0.3,
+					ease: "power2.out",
 				},
 				time,
 			);
@@ -783,6 +826,7 @@ function build(context: FilmContext) {
 		...REQUIREMENTS.flatMap(verdictsFor),
 		lockVerdict,
 		...covs,
+		one("covered-group"),
 		one("subtotal"),
 		one("total"),
 		...kids("claim"),
@@ -806,7 +850,7 @@ function build(context: FilmContext) {
 	fields.forEach((field, i) => {
 		show(field, 9.2 + i * 0.2);
 	});
-	show(kids("timeline"), 9.8);
+	show(kids("timeline"), 9.45);
 	word(one("now"), 9.8);
 	focus("f-iv", 10.95);
 	word(marks[0], 10.95);
@@ -820,7 +864,6 @@ function build(context: FilmContext) {
 
 	// ——— sources: the hero. Fresh enough for which question? ———
 	tl.addLabel("sources", 19.2);
-	focus(null, 19.2);
 	d.swap([heads[0], heads[1]], heads[2], 19.2);
 	hide(
 		[...fields, ...kids("timeline"), one("now"), ...marks, ...clockLinks],
@@ -829,52 +872,54 @@ function build(context: FilmContext) {
 	srcs.forEach((src, i) => {
 		show(src, 19.8 + i * 0.2, "right");
 	});
-	// One question at a time; contracts outstanding, the drawer's own question, comes last.
-	const order = REQUIREMENTS;
-	order.forEach((req, k) => {
-		const at = 21.2 + k * 4.0;
-		const r = reqs[REQUIREMENTS.indexOf(req)];
-		if (k) {
-			const last = order[k - 1];
-			hide(
-				[reqs[REQUIREMENTS.indexOf(last)], ...verdictsFor(last)],
-				at - 0.35,
-				0.3,
-			);
-		}
-		show(r, at);
-		verdictsFor(req).forEach((v, i) => {
-			// The OI explanation prepares its publication connection before the lock.
-			word(
-				v,
-				req === "positions" && sources[i].id === "oi"
-					? at
-					: at + 0.35 + i * 0.2,
-			);
-		});
+	// Questions settle and rest for a second before their verdict constructions begin.
+	show(reqs[REQUIREMENTS.indexOf("today")], 20.05);
+	verdictsFor("today").forEach((v, i) => {
+		word(v, 21.55 + i * 0.2);
 	});
+	hide(
+		[reqs[REQUIREMENTS.indexOf("today")], ...verdictsFor("today")],
+		24.85,
+		0.3,
+	);
+	show(reqs[REQUIREMENTS.indexOf("positions")], 25.2);
+	verdictsFor("positions").forEach((v) => {
+		word(v, 25.2 + PROOF_SHIFT);
+	});
+	// Read all verdicts together before dimming the tapes; the OI card stays at full strength.
+	tl.to(
+		[
+			...srcs.slice(0, 2),
+			...verdictsFor("positions")
+				.slice(0, 2)
+				.flatMap((v) => [...v.children]),
+		],
+		{ opacity: 0.3, duration: 0.3, ease: "power2.out" },
+		25.2 + PROOF_SHIFT + PUBLICATION_DELAY,
+	);
 	const oi = sources.findIndex((source) => source.id === "oi");
-	// Promote the count itself as the question changes; its value and clock never change.
+	// After the question rests, promote the count; its value and clock never change.
 	tl.fromTo(
 		one("src-oi-count"),
-		{ fontSize: L.type.small * 1.05 },
+		{ fontSize: L.clockSize },
 		{ fontSize: L.heroNum, duration: 0.55, ease: "power3.out" },
-		25.2,
+		25.2 + PROOF_SHIFT,
 	);
 	// Connect the same Friday count to its Monday publication; both settle before the lock.
-	word(one("oi-publication"), 25.55);
-	d.trace(heroLink, 25.55, { duration: 0.55 });
+	word(one("oi-publication"), 25.55 + PUBLICATION_SHIFT);
+	d.trace(heroLink, 25.55 + PUBLICATION_SHIFT, { duration: 0.55 });
 	// Enclose the constructed count, Friday clock and latest publication evidence together.
-	d.lock(lockVerdict, 26.2, {
+	d.lock(lockVerdict, 26.2 + PUBLICATION_SHIFT, {
 		around: [srcs[oi], verdictsFor("positions")[oi]],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 26.2);
-	show(heads[3], 26.2);
+	tl.addLabel("hero-lock", 26.2 + PUBLICATION_SHIFT);
+	// Settle the answer with the brackets, so the complete stand has no secondary motion.
+	show(heads[3], 26.2 + PUBLICATION_SHIFT, "below", 0.45);
 
 	// ——— cover: blank is not zero ———
-	tl.addLabel("cover", 29.8);
-	d.swap([heads[2], heads[3]], heads[4], 29.8);
+	tl.addLabel("cover", 29.8 + PUBLICATION_SHIFT);
+	d.swap([heads[2], heads[3]], heads[4], 29.8 + PUBLICATION_SHIFT);
 	hide(
 		[
 			reqs[REQUIREMENTS.indexOf("positions")],
@@ -883,27 +928,41 @@ function build(context: FilmContext) {
 			heroLink,
 			lockVerdict,
 		],
-		29.8,
+		29.8 + PUBLICATION_SHIFT,
 	);
-	// Observed, measured zero, then missing: the full table still settles at 31.00.
+	// The coverage heading settles at 33.80; its units stand a second before any row enters.
 	const coverageAt = { observed: 30.15, zero: 30.3, missing: 30.5 };
 	covs.forEach((cov, i) => {
-		show(cov, coverageAt[coverRows[i].state], "right");
+		show(cov, coverageAt[coverRows[i].state] + COVERAGE_SHIFT, "right");
 	});
-	show(one("subtotal"), 32.0);
-	show(one("total"), 33.6);
-	show(heads[5], 33.6);
+	d.trace(one<SVGPathElement>("covered-group"), 32.0 + COVERAGE_SHIFT, {
+		duration: 0.5,
+	});
+	show(one("subtotal"), 32.0 + COVERAGE_SHIFT);
+	show(one("total"), 33.6 + COVERAGE_SHIFT);
+	// The missing row already proves this qualification; preserve its hold as the bound rest shrinks.
+	show(heads[5], 33.6 + CLOSING_SHIFT);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37.2);
-	hide([heads[4], heads[5], ...covs, one("subtotal"), one("total")], 37.2);
-	word(one("z-big"), 37.5);
-	show(one("z-sub"), 37.9);
+	tl.addLabel("claim", 37.2 + CLOSING_SHIFT);
+	hide(
+		[
+			heads[4],
+			heads[5],
+			...covs,
+			one("covered-group"),
+			one("subtotal"),
+			one("total"),
+		],
+		37.2 + CLOSING_SHIFT,
+	);
+	word(one("z-big"), 37.5 + CLOSING_SHIFT);
+	show(one("z-sub"), 37.9 + CLOSING_SHIFT);
 
 	// ——— next ———
-	tl.addLabel("next", 41.9);
-	hide(kids("claim"), 41.9);
-	d.close(41.9);
+	tl.addLabel("next", 41.9 + CLOSING_SHIFT);
+	hide(kids("claim"), 41.9 + CLOSING_SHIFT);
+	d.close(41.9 + CLOSING_SHIFT);
 	return tl;
 }
 
