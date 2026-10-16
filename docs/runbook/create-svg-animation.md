@@ -1,6 +1,6 @@
 # Runbook: create a lesson film (SVG animation)
 
-Updated October 5, 2026. Every lesson in the course (53 of them) opens with a short film, then hands the learner to its interactive playground. This runbook explains how those films are built, the rules they follow, how to verify one, and which ideas from outside references we use or plan to use.
+Updated October 15, 2026. Every lesson in the course (53 of them) opens with a short film, then hands the learner to its interactive playground. This runbook explains how those films are built, the rules they follow, how to verify one, and which ideas from outside references we use or plan to use.
 
 ## 1. What a lesson film is
 
@@ -144,7 +144,7 @@ Every film follows the same arc, so a learner always knows where they are.
 
 At most seven beats (one headline each) and about 45 s played (`END` about 47). Hold every headline at least 3.5 s at 1×. To shorten a film, merge or cut beats; never shorten the holds.
 
-**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. Mark the moment the hero's brackets lock with `tl.addLabel("hero-lock", t)`; the timing audit measures it. A hero the learner passes through in half a second isn't one: from the glow at full strength, nothing the brackets hold moves, fades or is carried away for at least 1.5 s at 1×. While the hero shows (above 0.25), nothing that was not already inside its brackets comes into them: not a label, not a bar, not an axis drawn across it. A hairline zero line drawn through a fading hero cost a review score; let the hero go first, then draw what follows.
+**The hero moment.** Each film has one visual peak at 55–65 % of its runtime, where the lesson's key number is made rather than stated: the marker walking to break-even while the meter reads $420 and $0, brackets locking on and the profit filling in behind it; a trade leaving the book as a chip and landing as a print. Build it from the kit's `trace`, `lock`, `carry` and `morph`, and give it room: hold the key value at least 2 s at 1× (1 s at the default 2×), then an after-beat (the filled area, the landed print) before the cut. The hero's figure is the loudest mark on screen, at least 1.3 times any meter figure. Stagger its payoff about 0.4 s a step (land, then count, then turn over only what changed, then lock), never four changes inside 0.3 s. Mark the moment the hero's brackets lock with `tl.addLabel("hero-lock", t)`; the timing audit measures it. A hero the learner passes through in half a second isn't one: from the glow at full strength, nothing the brackets hold moves, fades or is carried away for at least 1.5 s at 1×. While the hero shows (above 0.25), nothing that was not already inside its brackets comes into them: not a label, not a bar, not an axis drawn across it. A hairline zero line drawn through a fading hero cost a review score; let the hero go first, then draw what follows. **The hero is frozen:** while it stands, nothing else on the stage moves either, no secondary pulse, no count, no camera move; the after-beat comes after the stand. (The kit's grid keeps drifting through the stand; whether it should pause is an open decision, section 9.)
 
 **Made, not stated.** A headline's figure appears no earlier than the event that makes it. When the answer is the hero's, split the headline: the question half goes up with the beat ("Profit doesn't start at $100."), the answer half appears as a second line under it, at the lock ("It starts at $104.20."). A second half is a headline too: hold it 3.5 s.
 
@@ -218,12 +218,19 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 **Type and layout**
 - A headline sits at `L.headY`, left-aligned at `margin`, with `maxWidth: room * 0.74` on the wide frame so it never meets the corner tag. On a phone it uses its short variant and the full `room`.
 - One idea per headline, at most 8 words on the wide frame. At the default 2× a headline is read in half its hold, so hold each one at least 3.5 s at 1× and put the numbers on the stage rather than in the sentence. If it doesn't fit two lines, shorten it.
+- **Reading time.** Every other line, label, tag and figure the learner must read is still and at full contrast for at least its reading time at 1×: 20 characters a second in English with spaces counted, 9 a second in Chinese, never under 0.83 s, counted from 0.2 s after its entrance begins. A line that hands over to an identical mark in its place, or that was already read for long enough on an earlier run of the same mark, needs no second interval. The timing audit warns on every other short line (section 7); treat the warning as a fail. A line that cannot have its time goes: an unreadable tag teaches nothing.
+- **No restating sub-line.** A second line under a headline adds a qualification or a figure; it never says the headline again in other words.
+- **Words with the motion.** The headline that names a change stays up through the change: never swap a headline in the middle of a carry, a count or a draw, and never animate a change after its headline has gone.
 - Tape notation (`10 @ $4.10`) belongs on tapes and tickets, never in a headline. In a sentence, write "10 at $4.10" or "10 张 $4.10".
 - Keep text off the frame edges: anchor the last tick label of an axis to its end, and leave a right margin on the phone for labels near the edge.
 - On a phone, prefer short labels and stacked layouts over shrinking type below the frame's minimums.
 
 **Motion**
-- One thing moves at a time; stagger a group by 0.1–0.3 s.
+- One thing moves at a time. Marks that are one thing (the bars of one histogram, the rows of one table, the legs of one structure) move together, or with a stagger spread over at most 0.5 s in total; a stagger of 0.3 s or more between items is only for an order that is itself the lesson.
+- **Scaffold before data.** Axes, tick labels, table headers and the question are up and still at least 1 s before the first data mark moves or counts; a chart never draws while its labels are still fading in.
+- **A scale change is its own stage.** When a scale, range or camera changes, it changes alone with the grid up, and values move only after it has settled. A line that morphs and moves at once breaks this too.
+- **Highlight by dimming.** When one series, row or term becomes the subject, the others dim to about 0.3 and keep their labels readable: one callout per beat, after its mark exists, pointed at it; never two cues (a pulse, a new colour, an arrow, a moving label) at once.
+- **Text entrance.** Type reaches full contrast early, by an ease-out fade or a wipe; a scale reveal of type starts at 0.92 or larger (`pop` is for chips only), and no type is read while it is still travelling.
 - **The motion floor.** A text, a figure or a panel comes on and goes off over at least 0.3 s at 1× (0.15 s at the default 2×). Nothing appears or vanishes in one frame mid-beat: a `tl.set` that shows or hides a mark is only for a hand-over (a carry, a proxy taking over in place, a value set anew where the old one stood) or a cut, where the whole stage changes at once. Entrances of 0.15 s bought to fit a beat read as pops.
 - **Quiet time.** When a proof completes (a count settles, a carry lands, a lock snaps on), leave it alone at least 1 s at 1× before anything else competes for the eye, and the hero 1.5 s. Check this at every step a change moves time from, not only where it lands: a fix that shortens the gap after an earlier proof breaks that proof's rest.
 - **Simplify instead of squeezing.** When a change needs time, remove a mark the lesson can do without rather than compressing other steps. Never shorten an interval a review has accepted: list every interval you shorten, before → after, and check it. Never cut shared structure (the end card's `d.close`, untouched after it) or a qualification the learner needs ("4 of 5 series").
@@ -231,12 +238,12 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 - **Fade in place where a lane is crowded.** A short flight beside a crowded expression keeps touching it; a value that only changes where it stands fades or flips there instead of flying.
 - Numbers, bars and lines never overshoot: data lands exactly, a big figure included (`power3.out`). Overshoot (`pop`, `slam`) is for chips and tags only.
 - Carry, don't cut, where an element has somewhere to go: the question's numbers fly to their places in the first teaching shot; a trade flies from the book to the tape.
-- A carry starts clear of other marks, keeps 6 px clear of every settled label and never crosses a bar, line or bracket on its way, nor another flight. Its target appears only as it lands, and it keeps its colour: colour the target the way the source is coloured (asks red, bids green, in the book and on the cards). Where no straight path is clear, give it two legs through an invisible waypoint (a phone's trade drops down a clear lane, stops level with the tape's top row, then slides in), or let what it must pass step back to 0.3 first.
+- A carry starts clear of other marks, keeps 6 px clear of every settled label and never crosses a bar, line or bracket on its way, nor another flight. Its target appears only as it lands, and it keeps its colour: colour the target the way the source is coloured (asks red, bids green, in the book and on the cards). Where no straight path is clear, give it two legs through an invisible waypoint (a phone's trade drops down a clear lane, stops level with the tape's top row, then slides in), or let what it must pass step back to 0.3 first. Its duration follows its distance: about 0.3 s for 100 px, 0.45–0.55 s for 400 px, 0.7–0.9 s for 1000 px at 1× on the 1440 frame; a long carry done in 0.5 s smears, a short one done in 1 s drags.
 - Make room first: a stack shifts down, then the new item arrives.
 - Headlines run at most 8 words (18 characters in Chinese) with at most two figures, and every figure in a headline is on the stage while it is up. Name the event exactly ("bought", not "gone"; "Add 5, cancel 5"), and reveal a headline's second half only when its event happens.
 - Lines draw on with `getTotalLength()` dash drawing, or are revealed by a clip rectangle that starts at width 0.
 - Cut to big type rather than overlaying a claim on a chart.
-- Every count names its `from`, so scrubbing backwards never jumps.
+- **Counts.** A figure counts only when the change is the point, for at least 0.7 s at 1×, ease-out, one figure at a time; a figure the learner must compare exactly cuts to its final value. Figures that must add up still count together (Honesty wins). Every count names its `from`, so scrubbing backwards never jumps.
 
 - Keep every mark at least 12 px from a phone frame's sides, brackets as they scale in included.
 - One colour per meaning: a line, its label, its marker and its pen share one colour, and a loss figure is red even on a writer's orange line.
@@ -325,6 +332,8 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
 
    It warns (without failing) when a headline names a dollar figure or a percentage that no stage text shows 0.3 s after the headline appears: made, not stated.
 
+   It also warns on **reading time** (`read …` lines): a sentence, label, tag or figure outside the headline rules above that is still and at full contrast for less than its reading time, 20 characters a second in English with spaces counted, 9 a second in Chinese, never under 0.83 s, counted from 0.2 s after its entrance begins. Exempt: a line that hands over to an identical mark in its place, and a text already read for long enough on an earlier run of the same mark (it dimmed and came back, or returned after a flight). Treat every other warning as a fail: confirm it on the frames, then give the line its time or remove it.
+
    The flight check also fails a carry whose target shows before the copy that becomes it lands (the kit tags each copy with `data-to`, `data-mode` and `data-match` for this), a line whose entrance rises through settled text, sampled every 0.05 s, anything (a mark or a text, arriving or in flight) that comes into the hero's glowing brackets while the hero shows above 0.25 and was not inside them when the glow reached full strength, and **brackets painted over**: a filled shape later in the document than the glowing brackets (so on top of them), at an effective fill opacity of 0.5 or more, that covers a fifth or more of their stroke for 0.1 s or more while they show above 0.25. A card, a row's background or a meter drawn after its own lock hides the lock even though the timeline says it is at full strength: give the brackets room clear of what they sit beside, rather than drawing them over it.
 
    Quiet time after a proof is judged by eye and by the jury: what counts as a completed proof is the lesson's, not the timeline's.
@@ -369,7 +378,7 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
 
 In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-styles-15) (MIT), fifteen 10-second motion-design styles, each made by an AI from one prompt. Its films are rendered to MP4 with synthesised sound, so its pipeline does not apply to us, but several techniques and its review process do.
 
-**Status:** "In use" is in the film kit today. "Piloted" is built and used in premium-payoff and quotes-orders-trades (October 5, 2026) and is being rolled out module by module. "Planned" is agreed direction, not yet built.
+**Status:** "In use" is in the film kit today. "Piloted" is built and used in premium-payoff and quotes-orders-trades (October 5, 2026) and is being rolled out module by module; since then every film has been built on the kit, and the piloted techniques are in use across the course (October 2026). "Planned" is agreed direction, not yet built.
 
 | Source style | What we take | Where | Status |
 |---|---|---|---|
@@ -396,7 +405,11 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 
 **The pilots' reviews.** Five jury rounds on October 5–6 took premium-payoff from 5.3 to 7.2 and quotes from 4.9 to 6.6 before the last round of fixes. Each round's findings are now kit behaviour (carry, lock, mirror, line breaks, phone headline exits) or rules in sections 4, 6 and 7 and the checklist below.
 
-**Review by an independent jury (in use).** After a film passes section 7, give a separate AI session its frames (a contact sheet every 0.5 s, plus full frames at the key moments) and ask it to judge harshly, score 1–10 on the dimensions below (5 = competent student work, 7 = solid professional, 8 = high-end agency, 9 = award shortlist), and list 5–10 fixes ordered by impact, each with times, what is wrong, why it matters and a concrete fix. Apply the fixes, then review once more.
+**Review by an independent jury (in use).** After a film passes section 7, give a separate AI session its frames (a contact sheet every 0.5 s, plus full frames at the key moments) and ask it to judge harshly, score 1–10 on the dimensions below (5 = competent student work, 7 = solid professional, 8 = high-end agency, 9 = award shortlist), and list 5–10 fixes ordered by impact, each with times, what is wrong, why it matters and a concrete fix. Apply the fixes, then review once more. A re-score after a round of fixes first marks each earlier fix FIXED, PARTLY, NOT FIXED or REGRESSED with the frame that shows it, and a fix earns credit only if it reads on screen.
+
+**Read-aloud at the default rate (in use).** Besides its score, a jury lists every line, label, tag and figure it cannot read aloud at a normal pace in the time the line is still at 2× (frames 0.25 s apart, the time halved), under a heading "Read-aloud at 2×", and ends the list with one line `READ <lesson> <count>`. The list does not move the score, which keeps one round comparable with the last; it is evidence for the open decision on the default rate below.
+
+**From review to fix (in use).** A review item is applied only as part of a numbered work package, and each item carries four fields: where (the marks and source times), what is wrong, the concrete fix in the kit's moves, and **what must stay fixed** while it is done: the exact marks, holds, rests and quiet intervals next to the fix (the hero stand, an accepted rest, a neighbouring line's hold, a figure's copy). "Everything else" is not a keep field. The package is the whole job: kit notes, a review's "already right" list and anything outside a numbered item are never applied, and the implementer's report confirms every keep field unchanged. Items go in this order: the jury's own fixes, then what the learner cannot read or is not told, then timing, then visual detail; within a class, by impact on the learner. Two rounds taught this: implementers who read a whole review applied its kit-level notes, and one shortened an accepted interval to pay for new work.
 
 | Dimension | What the jury checks |
 |---|---|
@@ -407,6 +420,30 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 | design_typography | Hierarchy, alignment, negative space, CJK setting |
 | phone_legibility | The 4:5 frame reads on its own terms |
 | technical | No console errors, no spills, no overlaps, no clipped labels |
+
+**From a motion and multimedia-learning research pass (October 15, 2026).** Sources: Material and Carbon motion guidance, Heer and Robertson (2007) on animated transitions, Tversky, Morrison and Bétrancourt (2002) on animation and comprehension, Mayer's multimedia principles, Netflix's timed-text reading rates and 3Blue1Brown's conventions. Twelve rules came out of it, numbered as the reviews cite them; each now lives in the section named.
+
+| Rule | Where it lives |
+|---|---|
+| R1, R3 A scale change (a rescale, a camera move, a morph) is its own stage | Section 6, motion |
+| R2 Scaffold before data | Section 6, motion |
+| R4 Highlight by dimming | Section 6, motion |
+| R5 Words with the motion | Section 6, type |
+| R6 No restating sub-line | Section 6, type |
+| R7 Common fate against order | Section 6, motion (one thing moves at a time) |
+| R8 Counts only where the change is the point, 0.7 s or more | Section 6, motion |
+| R9 Carry duration by distance | Section 6, motion (the carry rule) |
+| R10 Hero frozen | Section 4, the hero moment |
+| R11 Text entrance at full contrast, scale from 0.92 | Section 6, motion |
+| R12 Reading time, warned by the timing audit | Section 6, type; section 7 |
+
+**From two launch-clip posts (October 2026).** [A tool list with a 20-second poster clip](https://x.com/beamnxw/status/2110408774737432738) and [a motion-engineering article on launch clips built with Remotion](https://x.com/beamnxw/status/2108616740846420354). Their pipeline (rendered video, Remotion, Three.js, Lottie, Rive, motion blur, sound, seeded randomness) does not apply to live SVG, and their holds (about 2 s on the settled opening layout, 6 s on the result, 5 s on the closing card at 1×) are one author's numbers for a 20-second commercial, not a measurement. Three process rules did apply and are in use above: the four-field correction (its keep field), the fix order, and the read-aloud check at the default rate. The clip's own structure, the whole layout up and readable from the first frame and one guide touring it in reading order, is a stronger form of scaffold before data: worth a trial on one dense film, not a rule.
+
+**Open decisions (October 15, 2026).** Recorded here so that no single film settles them:
+
+- **The default rate.** At 2× every 1× timing halves: a 3.5 s hold is read in 1.75 s, a 0.7 s count takes 0.35 s, the 1.5 s hero stand 0.75 s. In the first read-aloud pass the juries listed 18 to 50 lines per film they could not finish at 2× (a model reading from frames, not a person). The choice is between 2× and 1.5× as the default, to be judged by watching.
+- **The grid's drift during the hero stand.** `Backdrop`'s grid drifts for the whole film, and the hero-frozen rule says nothing else moves while the hero stands. Whether the drift pauses for the stand, stops altogether or stays is a kit decision for every film at once; no film removes the drift on its own.
+- **The count floor.** The research pass puts a count at 0.7 s or more at 1× (practitioners cluster at 0.6–1.5 s; Heer and Robertson tween a value over a stage of about 1 s) and proposed raising the floor to 1 s, so that a count lasts 0.5 s at the default 2× rather than 0.35 s. Today's films already sit under the written floor in places: stocks-and-prices' five opening counts run 0.6 s. This is a rule for films, not a kit default: nothing relies on `count`'s default duration (its twelve calls all pass their own, from 0 to 1 s), and about two dozen films drive their own counters with an `onUpdate` tween, mostly 0.6 to 1.2 s at 1×. Raising the floor means changing those calls film by film.
 
 ## 10. Checklist
 
@@ -420,6 +457,10 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - [ ] One hero moment at 55–65 %, named in the treatment, its figure the loudest mark, held 2 s with an after-beat (never under 1.5 s); its payoff staggered; nothing comes into its brackets while it shows
 - [ ] Every entrance and exit of a text, figure or panel 0.3 s or longer; no set that shows or hides a mark except a hand-over or a whole-stage cut
 - [ ] At least 1 s of quiet after each proof; beats dip into each other with no empty or faint stage and no line printed over another
+- [ ] Scaffold (axes, headers, the question) still at least 1 s before the first data mark moves; a scale change alone; the subject highlighted by dimming the rest
+- [ ] Every line, label, tag and figure readable in its time (20 English characters a second, 9 Chinese, never under 0.83 s); no `read` warning left unjudged; no restating sub-line; a headline stays up through the change it names
+- [ ] Counts only where the change is the point, 0.7 s or more, one at a time; carries timed by distance; type enters at full contrast; nothing else moves while the hero stands
+- [ ] Review fixes applied as a numbered work package in fix order, each with its keep field re-checked afterwards
 - [ ] Every carry: top layer, starts clear, path clear of marks and flights, slows on both axes, target shown on arrival, colour kept
 - [ ] Numbers carry across shots; nothing that happened un-happens
 - [ ] Next card matches the syllabus (or "the module checkpoint")
