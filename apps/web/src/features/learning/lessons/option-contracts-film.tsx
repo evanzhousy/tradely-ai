@@ -48,7 +48,7 @@ const SPOT = 100;
 const DOTS = 100;
 const NOTIONAL = THREE * DOTS * SPOT;
 const PREMIUM = ASK * THREE * DOTS;
-const NOTIONAL_EQUATION = `${count(THREE * DOTS)} × $${SPOT} = ${usd(NOTIONAL * 100, 0)}`;
+const NOTIONAL_VALUE = usd(NOTIONAL * 100, 0);
 const SHARE_EQUATION = `${usd(PREMIUM, 0)} ÷ ${usd(NOTIONAL * 100, 0)} = ${((PREMIUM / (NOTIONAL * 100)) * 100).toFixed(1)}%`;
 
 function layout(width: number) {
@@ -57,8 +57,9 @@ function layout(width: number) {
 	const chars = 21;
 	const sym = Math.min(T.title * 1.1, room / (chars * 0.62));
 	const symW = sym * 0.6;
-	const dot = narrow ? 3 : 3.2;
+	const dot = narrow ? 2.7 : 3;
 	const gap = narrow ? 7.5 : 8.5;
+	const rowGap = narrow ? 6.5 : 7.5;
 	const block = gap * 10;
 	return {
 		...frame,
@@ -68,8 +69,10 @@ function layout(width: number) {
 		symX: (W: number) => (W - chars * symW) / 2,
 		dot,
 		gap,
+		rowGap,
 		block,
-		gridY: H * (narrow ? 0.36 : 0.34),
+		blockHeight: rowGap * 10,
+		gridY: H * (narrow ? 0.36 : 0.34) - 14,
 		blockX: (i: number) =>
 			width / 2 -
 			(THREE * block + (THREE - 1) * block * 0.3) / 2 +
@@ -94,7 +97,7 @@ const copy = {
 		"Change the date: a different contract.",
 		"换个到期日：就是另一份合约。",
 	],
-	novHeadShort: ["Nov 15: a different contract.", "11月15日：另一份合约。"],
+	novHeadShort: ["Change expiry: another contract.", "换到期日，就换了合约。"],
 	parts: {
 		root: ["underlying", "标的"],
 		date: ["expiry", "到期日"],
@@ -129,7 +132,10 @@ const copy = {
 		"名义价值小计 · 不是你付的钱",
 	],
 	share: [SHARE_EQUATION, SHARE_EQUATION],
-	shares: ["shares", "股"],
+	valuedShares: [
+		`${count(THREE * DOTS)} shares · stock valued at $${SPOT}`,
+		`${count(THREE * DOTS)} 股 · 股票按每股 $${SPOT} 计值`,
+	],
 	timeHead: [
 		"Same contract, two times, two prices.",
 		"同一份合约，两个时点，两个价格。",
@@ -183,19 +189,22 @@ function Scene({
 			<circle
 				key={`d-${i}-${k}`}
 				cx={L.blockX(i) + (k % 10) * L.gap + L.gap / 2}
-				cy={L.gridY + Math.floor(k / 10) * L.gap + L.gap / 2}
+				cy={L.gridY + Math.floor(k / 10) * L.rowGap + L.rowGap / 2}
 				r={L.dot}
 				className="wt-film-bar"
 				data-tone="neutral"
 			/>
 		));
-	const figY = L.gridY + L.block + T.body * 2.4;
-	// Premium above, notional under it: the hero's figure is 1.3 times the premium's.
+	const figY = L.gridY + L.blockHeight + T.body * (narrow ? 1.6 : 1.3);
+	// Premium above, standalone notional below; the result is the loudest figure.
 	const figX = () => W / 2;
 	// A phone's rows leave room for the notional's brackets under the premium.
-	const figRowY = (row: number) => figY + row * T.num * (narrow ? 2.3 : 1.9);
+	const figRowY = (row: number) => figY + row * T.num * (narrow ? 2.1 : 1.7);
 	const figSize = (row: number) =>
-		narrow ? T.head * (row ? 1.25 : 0.95) : T.num * 0.8 * (row ? 1.3 : 1);
+		row ? T.num * 1.3 : narrow ? T.head * 0.95 : T.num * 0.8;
+	// Keep the qualifier clear of brackets growing around the result alone.
+	const figNumY = (row: number) =>
+		figRowY(row) + figSize(row) * 1.35 + (row ? T.small * 1.3 : 0);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -359,7 +368,7 @@ function Scene({
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{`${count(THREE * 100)} ${t(copy.shares).toUpperCase()}`}
+					{t(copy.valuedShares).toUpperCase()}
 				</Word>
 			</g>
 			{(
@@ -378,7 +387,7 @@ function Scene({
 						"wt-film-accent",
 						0,
 					],
-					["f-notional", copy.notional, NOTIONAL_EQUATION, "wt-film-accent", 1],
+					["f-notional", copy.notional, NOTIONAL_VALUE, "wt-film-accent", 1],
 				] as const
 			).map(([name, tag, text, tone, row]) => (
 				<g key={name} data-f={name}>
@@ -394,7 +403,7 @@ function Scene({
 					<text
 						data-f={`${name}-num`}
 						x={figX()}
-						y={figRowY(row) + figSize(row) * 1.35}
+						y={figNumY(row)}
 						textAnchor="middle"
 						className={`wt-film-num ${tone}`}
 						style={{ fontSize: figSize(row) }}
@@ -407,7 +416,7 @@ function Scene({
 			<Word
 				name="f-share"
 				x={figX()}
-				y={figRowY(1) + figSize(1) * 1.35 + T.body * 2.3}
+				y={figNumY(1) + T.body * 3.5}
 				size={T.body}
 				className="wt-film-num wt-film-dim"
 			>
@@ -418,15 +427,6 @@ function Scene({
 			{/* One contract, two observations. */}
 			{headline("o-head", copy.timeHead, copy.timeHeadShort)}
 			<g data-f="times">
-				<Word
-					name="o-contract"
-					x={W / 2}
-					y={L.timeY - T.body * 2}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(copy.contract)}
-				</Word>
 				<path
 					data-f="obs-link"
 					d={`M${W * 0.44} ${L.timeY + T.big * 0.77}H${W * 0.56}m-6 -5l6 5-6 5`}
@@ -551,7 +551,6 @@ function build(context: FilmContext) {
 		one("f-notional"),
 		one("f-share"),
 		g("lock-notional"),
-		one("o-contract"),
 		one("obs-link"),
 		one("obs-morning"),
 		one("obs-close"),
@@ -575,7 +574,7 @@ function build(context: FilmContext) {
 	hide([one("q-tag"), one("q-line"), one("q-nov")], 8.8);
 	show(heads[0], 9.0);
 	// Along its row first, clear of the fading Nov 15, then down into the date's slot.
-	d.carry(g("q-oct"), g("sym-date"), 9.2, { duration: 1.1, arc: "x" });
+	d.carry(g("q-oct"), g("sym-date"), 9.9, { duration: 0.4, arc: "x" });
 	// The other parts join the date once it has landed, so nothing enters under its flight.
 	const joins = { date: 10.3, root: 10.4, right: 10.7, strike: 11.0 } as const;
 	PARTS.forEach((part) => {
@@ -587,12 +586,18 @@ function build(context: FilmContext) {
 	show(one("terms"), 12.0);
 	// Change the date to Nov 15: a different symbol, a different contract.
 	d.swap(heads[0], heads[1], 13.2);
+	const unchangedTerms = ["root", "right", "strike"].map((part) =>
+		one(`sym-${part}`),
+	);
+	tl.to(unchangedTerms, { opacity: 0.3, duration: 0.4 }, 13.2);
 	d.flip(one("sym-date"), one("sym-date-nov"), 13.9);
 	tl.set(one("sym-date"), { opacity: 0 }, 14.2);
 
 	// ——— units: per share, per contract ———
 	tl.addLabel("units", 17.2);
-	hide([heads[1], ...flat("symbol"), one("terms")], 17.2);
+	hide([heads[1], one("symbol")], 17.2);
+	// Restore under the fully hidden symbol so neither playback nor a reverse seek flashes it.
+	tl.to(unchangedTerms, { opacity: 1, duration: 0.3 }, 17.55);
 	show(heads[2], 17.55);
 	show(one("u-contract"), 17.55);
 	tl.fromTo(
@@ -612,39 +617,35 @@ function build(context: FilmContext) {
 			21.6 + i * 0.3,
 		);
 	});
-	d.swap(one("u-shares"), one("u-shares-3"), 21.6);
+	hide(one("u-shares"), 21.6);
+	// The wider valuation label fades in place, clear of the dot rows below it.
+	tl.fromTo(
+		one("u-shares-3"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		21.95,
+	);
 	d.swap(one("f-one"), one("f-three"), 22.2);
 	// The hero: the 300 shares light up a block at a time as their notional counts up, to
-	// $30,000 against the $1,260 paid, which steps back. Only a standalone subtotal
-	// counts; the complete equation replaces it in place once it is exactly true.
+	// $30,000 against the $1,260 paid, which steps back. The stock valuation basis
+	// stays with the share label; the subtotal settles as the standalone hero.
 	d.swap(heads[3], heads[4], 25.2);
 	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 25.4);
 	show(one("f-notional"), 25.8);
 	blocks.forEach((block, i) => {
 		const at = 25.8 + i * 0.8;
 		tl.set(block.children, { attr: { "data-tone": "total" } }, at);
-		tl.fromTo(
-			block.children,
-			{ attr: { r: L.dot * 1.06 } },
-			{
-				attr: { r: L.dot },
-				duration: 0.45,
-				ease: "power3.out",
-				immediateRender: false,
-			},
-			at,
-		);
 		d.count(
 			notional,
 			(i + 1) * 100 * SPOT,
 			at,
-			(v) => (v >= NOTIONAL ? NOTIONAL_EQUATION : usd(Math.round(v) * 100, 0)),
+			(v) => usd(Math.round(v) * 100, 0),
 			i * 100 * SPOT,
 			0.7,
 		);
 	});
-	// Count / equation settled at 28.1; a full second of rest before the lock.
-	d.lock(g("lock-notional"), 29.1, { around: g("f-notional"), pad: 8 });
+	// Count settled at 28.1; a full second of rest before the lock.
+	d.lock(g("lock-notional"), 29.1, { around: g("f-notional-num"), pad: 6 });
 	tl.addLabel("hero-lock", 29.1);
 	show(heads[6], 29.1);
 	// After the lock: what you pay comes back beside what it controls.
@@ -659,7 +660,6 @@ function build(context: FilmContext) {
 			heads[4],
 			heads[6],
 			...blocks,
-			one("u-contract"),
 			one("u-shares-3"),
 			one("f-three"),
 			one("f-notional"),
@@ -668,8 +668,8 @@ function build(context: FilmContext) {
 		],
 		34.65,
 	);
-	// The contract bridges the exit tail; the headline waits until the last one has gone.
-	show(one("o-contract"), 34.95);
+	// The same identifier stays fully visible in its clear lane throughout the handoff.
+	// Keep the full 0.35 s headline exit, and the accepted proof quiet time before it.
 	show(heads[5], 35.0);
 	show(one("obs-morning"), 35.25);
 	// Only the two model observations exist: reveal each with all its values settled.
@@ -685,7 +685,7 @@ function build(context: FilmContext) {
 	hide(
 		[
 			heads[5],
-			one("o-contract"),
+			one("u-contract"),
 			one("obs-link"),
 			one("obs-morning"),
 			one("obs-close"),
