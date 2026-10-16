@@ -34,7 +34,7 @@ import {
  * chain answers with both asks held together: $4.20 for Oct 18, $5.45 for Nov 15;
  * one contract is
  * 100 shares, $545. Then a thin contract with a 45-cent spread:
- * a market buy's ticket takes the $2.65 ask at once. The hero: a limit buy at $2.40 leaves
+ * a stationary $2.65 × 100 construction makes the $265 market premium. The hero: a limit buy at $2.40 leaves
  * the panel as a ticket and drops into the book as the new best bid, then waits, until a
  * seller accepts it: the resting bid disappears into an execution record. Last, a new
  * example, the Nov 15 105 call: sell for cash, expire worthless or buy 100 shares.
@@ -42,13 +42,15 @@ import {
  *   open      0–4        "Trading an option"
  *   question  4–8.8      Oct 18 or Nov 15: which 100 call costs more?
  *   chain     8.8–18     the dates fly to the tabs; Oct 18; Nov 15: $5.45, $545
- *   order     18–34      a thin book; market at the ask; hero: a limit joins, waits, fills
- *   end       34–38.6    sell, expire, exercise
- *   claim     38.6–42.9  pick the row, name your price, know how it ends
- *   next      42.9–45.4  Next: risk first
+ *   order     18–34.55  a thin book; market at the ask; hero: a limit joins, waits, fills
+ *   end       34.55–39.15 sell, expire, exercise
+ *   claim     39.15–43.45 pick the row, name your price, know how it ends
+ *   next      43.45–45.95 Next: risk first
  */
 
-const END = 45.4;
+/** Pay for the book's scaffold preview without taking time from any settled proof. */
+const BOOK_PREVIEW = 0.55;
+const END = 45.4 + BOOK_PREVIEW;
 const TABS = ["oct18", "nov15"] as const;
 const ROWS = Object.fromEntries(
 	TABS.map((id) => [id, chainRows(id)]),
@@ -134,7 +136,10 @@ const copy = {
 	limitHeadShort: ["Set a limit, then wait.", "设好限价，等待成交。"],
 	fillHead: ["It fills only when a seller comes.", "有卖方来才成交。"],
 	fillHeadShort: ["Fills only if a seller comes.", "有卖方才成交。"],
-	chipMarket: [`1 @ ${usd(ASK)}`, `1 @ ${usd(ASK)}`],
+	chipMarket: [
+		`${usd(ASK)} × ${ALFA.multiplier}`,
+		`${usd(ASK)} × ${ALFA.multiplier}`,
+	],
 	chipLimit: [usd(LIMIT), usd(LIMIT)],
 	chipSell: [`seller: 1 @ ${usd(LIMIT)}`, `卖方：1 @ ${usd(LIMIT)}`],
 	asks: ["asks", "卖价"],
@@ -169,7 +174,10 @@ const copy = {
 			name: ["exercise", "行权"],
 			short: ["exercise", "行权"],
 			when: ["ALFA at $112: pay $10,500", "ALFA 在 $112：付 $10,500"],
-			whenShort: ["ALFA $112, pay $10,500", "ALFA $112，付 $10,500"],
+			whenShort: [
+				`Pay ${usd(nov105.strike * 100 * ALFA.multiplier, 0)}`,
+				`付 ${usd(nov105.strike * 100 * ALFA.multiplier, 0)}`,
+			],
 			outcome: [`${ALFA.multiplier} shares`, `${ALFA.multiplier} 股`],
 		},
 	},
@@ -210,6 +218,8 @@ function Scene({
 	);
 	const rowText = narrow ? T.small * 1.1 : T.body;
 	const heroText = rowText * 1.4;
+	const contractText = T.body * 1.15;
+	const [contractOperands, contractTotal] = t(copy.contract).split(" = ");
 	const center = (i: number) => L.rowY(i) + L.rowStep * 0.36 + rowText * 0.36;
 	const bookText = (y: number) => y + L.rowH / 2 + rowText * 0.36;
 	const quote = (q: { bid: number; ask: number }) =>
@@ -323,7 +333,7 @@ function Scene({
 							x={margin + i * (narrow ? 96 : 150) + (narrow ? 44 : 70)}
 							y={L.tabY}
 							textAnchor="middle"
-							className="wt-film-type"
+							className="wt-film-num"
 							style={{ fontSize: rowText }}
 						>
 							{t(expiries[id].label)}
@@ -366,6 +376,7 @@ function Scene({
 				{CHAIN_STRIKES.map((strike, i) => (
 					<g key={strike}>
 						<rect
+							data-f={`chain-surface-${strike}`}
 							x={margin}
 							y={L.rowY(i)}
 							width={room}
@@ -395,19 +406,24 @@ function Scene({
 				/>
 				<text
 					data-f="contract-tag"
-					x={margin}
-					y={L.rowY(strikes.length) + T.body * 0.6}
+					x={margin + room * 0.75}
+					y={L.rowY(strikes.length) + T.body * 1.1}
+					textAnchor="middle"
 					className="wt-film-num wt-film-accent"
-					style={{ fontSize: rowText }}
+					style={{ fontSize: contractText }}
 				>
-					{t(copy.contract)}
+					<tspan x={margin + room * 0.75}>{contractOperands}</tspan>
+					<tspan
+						x={margin + room * 0.75}
+						dy={contractText * 1.35}
+					>{` = ${contractTotal}`}</tspan>
 				</text>
 				{TABS.map((id) => (
 					<g key={id} data-f={`cells-${id}`}>
 						{ROWS[id]
 							.filter((row) => CHAIN_STRIKES.includes(row.strike))
 							.map((row, i) => (
-								<g key={row.strike}>
+								<g key={row.strike} data-f={`cells-${id}-${row.strike}`}>
 									<text
 										x={margin + room / 5}
 										y={center(i)}
@@ -583,7 +599,7 @@ function Scene({
 						L.panelY +
 						T.small * 1.4 +
 						T.num * 1.25 +
-						T.body * (narrow ? 2.3 : 1.8)
+						T.body * (narrow ? 4.1 : 3.6)
 					}
 					className="wt-film-type"
 					style={{ fontSize: T.body }}
@@ -601,14 +617,17 @@ function Scene({
 				</text>
 			</g>
 
-			{/* Two carried buys; the seller cue stays outside the book's hero row. */}
+			{/* A stationary market conversion, a carried limit, and an external seller. */}
 			{(
 				[
 					[
 						"chip-market",
 						copy.chipMarket,
-						margin + L.bookW + 8,
-						bookText(L.askY(ASKS.length - 1)),
+						L.panelX,
+						L.panelY +
+							T.small * 1.4 +
+							T.num * 1.25 +
+							T.body * (narrow ? 2.3 : 1.8),
 						"start",
 					],
 					[
@@ -680,14 +699,21 @@ function Scene({
 							text={t(narrow ? r.whenShort : r.when)}
 							x={cardX(i) + (narrow ? 12 : L.cardW / 2)}
 							y={cardY(i) + L.cardH * (narrow ? 0.64 : 0.42)}
-							size={narrow ? T.small : T.body}
+							size={narrow && route !== "exercise" ? T.small : T.body}
 							maxWidth={narrow ? L.cardW * 0.61 : L.cardW - 12}
 							anchor={narrow ? "start" : "middle"}
-							className="wt-film-type wt-film-dim"
+							className={
+								narrow && route === "exercise"
+									? "wt-film-type"
+									: "wt-film-type wt-film-dim"
+							}
 						/>
 						<text
 							x={cardX(i) + (narrow ? L.cardW - 12 : L.cardW / 2)}
-							y={cardY(i) + L.cardH * (narrow ? 0.44 : 0.8)}
+							y={
+								cardY(i) +
+								L.cardH * (narrow ? (route === "exercise" ? 0.64 : 0.44) : 0.8)
+							}
 							textAnchor={narrow ? "end" : "middle"}
 							className={`wt-film-num ${route === "expire" ? "wt-film-loss" : "wt-film-accent"}`}
 							style={{ fontSize: narrow ? T.body : T.body * 1.5 }}
@@ -735,6 +761,8 @@ function build(context: FilmContext) {
 	const L = layout(W);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
+	/** Every event from the market beat onward moves together; their intervals stay intact. */
+	const afterBook = (source: number) => source + BOOK_PREVIEW;
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -753,6 +781,18 @@ function build(context: FilmContext) {
 	const fade = (target: Element | Element[], time: number, to = 0) =>
 		tl.to(target, { opacity: to, duration: 0.3 }, time);
 	const otherBids = BIDS.map((at) => one(`bid-${at.price}`));
+	const nonFocusChain = CHAIN_STRIKES.filter(
+		(strike) => strike !== FOCUS,
+	).flatMap((strike) => [
+		one(`chain-surface-${strike}`),
+		...TABS.map((id) => one(`cells-${id}-${strike}`)),
+	]);
+	const nonExecutingRows = [
+		...ASKS.filter((at) => at.price !== ASK).map((at) =>
+			one(`ask-${at.price}`),
+		),
+		...otherBids,
+	];
 	const cards = ROUTES.map((route) => one(`card-${route}`));
 	const heads = [
 		"c-head",
@@ -804,7 +844,10 @@ function build(context: FilmContext) {
 
 	// ——— chain: the two dates become its tabs ———
 	tl.addLabel("chain", 8.8);
-	hide([one("q-tag"), one("q-line")], 8.8);
+	// Clear the centred contract tag before the earlier date flights cross its lane.
+	// The question itself keeps its accepted exit and reading interval.
+	hide(one("q-tag"), 8.1, 0.3);
+	hide(one("q-line"), 8.8);
 	show(
 		flat("chain").filter(
 			(el) =>
@@ -815,14 +858,22 @@ function build(context: FilmContext) {
 				el.getAttribute("data-f") !== "ask-comparison",
 		),
 		// Once the dates have landed on their tabs, clear of the rows below.
-		10.2,
+		9.1,
+		"below",
+		0.3,
 	);
-	d.carry(g("q-oct18"), g("tab-label-oct18"), 9.0, { duration: 1 });
-	d.carry(g("q-nov15"), g("tab-label-nov15"), 9.15, { duration: 1 });
-	tl.to(one("tab-oct18"), { opacity: 1, duration: 0.3 }, 10.0);
-	show(one("cells-oct18"), 10.2);
-	show(heads[0], 10.3);
+	d.carry(g("q-oct18"), g("tab-label-oct18"), 8.45, { duration: 0.5 });
+	d.carry(g("q-nov15"), g("tab-label-nov15"), 8.5, { duration: 0.6 });
+	tl.to(one("tab-oct18"), { opacity: 1, duration: 0.3 }, 9.1);
+	show(one("cells-oct18"), 10.4, "below", 0.3);
+	show(heads[0], 9.1, "below", 0.3);
 	tl.to(one("focus-cell"), { opacity: 1, duration: 0.3 }, 11.4);
+	tl.fromTo(
+		nonFocusChain,
+		{ opacity: 1 },
+		{ opacity: 0.3, duration: 0.3, ease: "power2.in", immediateRender: false },
+		11.4,
+	);
 	// The selection and its quotes leave together, then arrive together. The table's
 	// scaffold stays up, but no Nov selection ever describes the outgoing Oct quotes.
 	d.swap(heads[0], heads[1], 14.0);
@@ -848,35 +899,31 @@ function build(context: FilmContext) {
 	hide([heads[1], ...chainParts], 18.0);
 	show(heads[2], 18.35);
 	fade(one("thin-contract"), 18.5, 1);
-	show(one("asks-tag"), 18.5);
-	ASKS.forEach((at, i) => {
-		show(one(`ask-${at.price}`), 18.6 + i * 0.1, "right");
-	});
-	show(one("spread"), 18.9);
-	otherBids.forEach((bid, i) => {
-		tl.fromTo(
-			bid,
-			{ opacity: 0, x: 18 },
-			{ opacity: 1, x: 0, duration: 0.45 },
-			19.0 + i * 0.1,
-		);
-	});
-	show(one("bids-tag"), 19.3);
-	// Market: the ticket leaves the ask and lands on what you pay.
-	d.swap(heads[2], heads[3], 22.0);
-	fade(one("ask-hit"), 22.4, 1);
-	d.lock(g("lock-ask"), 22.4, { around: one("ask-hit"), pad: 4 });
+	show([one("asks-tag"), one("bids-tag"), one("spread")], 18.35);
+	// Scaffold (including the headline) settles at 18.85, followed by a full second.
+	// All six rows share one entrance; initial bid y offsets are deliberately retained.
 	tl.fromTo(
-		g("chip-market"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		22.45,
+		[...ASKS.map((level) => one(`ask-${level.price}`)), ...otherBids],
+		{ opacity: 0, x: 18 },
+		{ opacity: 1, x: 0, duration: 0.5 },
+		19.85,
 	);
-	show(one("p-tag"), 22.8);
-	d.carry(g("chip-market"), g("p-market"), 22.75, { duration: 1, fit: false });
-	// The quantity settles with the premium. Its stationary reveal starts after the
-	// carried ticket has cleared this label's lane, preserving the execution's quiet time.
-	fade(one("p-quantity"), 23.45, 1);
+	// Market: the per-share price and multiplier construct the settled premium.
+	d.swap(heads[2], heads[3], afterBook(22.0));
+	fade(one("ask-hit"), afterBook(22.4), 1);
+	tl.fromTo(
+		nonExecutingRows,
+		{ opacity: 1 },
+		{ opacity: 0.3, duration: 0.3, immediateRender: false },
+		afterBook(22.4),
+	);
+	d.lock(g("lock-ask"), afterBook(22.4), { around: one("ask-hit"), pad: 4 });
+	// Per-share quote and multiplier stay still; the settled premium is revealed,
+	// rather than replacing a differently sized ticket at the end of a flight.
+	fade(g("chip-market"), afterBook(22.75), 1);
+	show(one("p-tag"), afterBook(22.8));
+	fade(one("p-market"), afterBook(23.45), 1);
+	fade(one("p-quantity"), afterBook(23.45), 1);
 	// The one-contract execution and its settled premium land at the same instant.
 	// These in-place value replacements are reversible when the film is scrubbed.
 	tl.fromTo(
@@ -887,7 +934,7 @@ function build(context: FilmContext) {
 			duration: 0,
 			immediateRender: false,
 		},
-		23.75,
+		afterBook(23.75),
 	);
 	tl.fromTo(
 		one(`ask-${ASK}-bar`),
@@ -897,60 +944,70 @@ function build(context: FilmContext) {
 			duration: 0,
 			immediateRender: false,
 		},
-		23.75,
+		afterBook(23.75),
 	);
 	// The hero: a limit at $2.40 leaves the panel as a ticket and drops into the book as
 	// the best bid; the other bids step down for it, and it waits.
-	d.swap(heads[3], heads[4], 26.0);
+	d.swap(heads[3], heads[4], afterBook(26.0));
 	tl.to(
-		one("p-quantity"),
+		[one("p-quantity"), one("chip-market")],
 		{ opacity: 0, duration: 0.35, ease: "power2.in" },
-		26.0,
+		afterBook(26.0),
 	);
-	fade([one("ask-hit"), g("lock-ask")], 26.0);
-	d.flip(one("p-market"), one("p-limit"), 26.2);
-	tl.set(one("p-market"), { opacity: 0 }, 26.5);
+	fade([one("ask-hit"), g("lock-ask")], afterBook(26.0));
+	tl.fromTo(
+		[one(`ask-${ASK}`), one("spread")],
+		{ opacity: 1 },
+		{ opacity: 0.3, duration: 0.5, immediateRender: false },
+		afterBook(26.0),
+	);
+	d.flip(one("p-market"), one("p-limit"), afterBook(26.2));
+	tl.set(one("p-market"), { opacity: 0 }, afterBook(26.5));
 	tl.fromTo(
 		g("chip-limit"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		26.35,
+		afterBook(26.35),
 	);
 	// Room first: the bids step down before the ticket sets off.
-	tl.to(otherBids, { y: 0, duration: 0.5, ease: "power2.inOut" }, 26.0);
+	tl.to(
+		otherBids,
+		{ y: 0, duration: 0.5, ease: "power2.inOut" },
+		afterBook(26.0),
+	);
 	// The row appears as the ticket lands on it: it never slides across the row's own marks.
 	tl.fromTo(
 		one("bid-you"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		27.55,
+		afterBook(27.55),
 	);
 	// Down beside the book first, then along the empty row to its price.
-	d.carry(g("chip-limit"), g("bid-you-px"), 26.65, {
+	d.carry(g("chip-limit"), g("bid-you-px"), afterBook(26.65), {
 		duration: 1,
 		arc: "y",
 	});
-	d.lock(g("lock-bid"), 27.7, { around: one("bid-hit"), pad: 4 });
-	tl.addLabel("hero-lock", 27.7);
-	// The lock and row settle at 28.15, then stand undisturbed until 30.3.
+	d.lock(g("lock-bid"), afterBook(27.7), { around: one("bid-hit"), pad: 4 });
+	tl.addLabel("hero-lock", afterBook(27.7));
+	// Shifted lock settles at 28.70, then stands undisturbed until 30.85.
 	// A seller accepts the bid. Their cue stays below the book, clear of the hero.
-	d.swap(heads[4], heads[5], 30.0);
+	d.swap(heads[4], heads[5], afterBook(30.0));
 	tl.fromTo(
 		g("chip-sell"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		30.15,
+		afterBook(30.15),
 	);
-	fade(g("lock-bid"), 30.3);
+	fade(g("lock-bid"), afterBook(30.3));
 	// Consume the entire one-contract bid before the separate filled record unfolds.
-	fade(one("bid-you"), 31.45);
-	d.flip(one("p-limit"), one("p-filled"), 31.5);
-	tl.set(one("p-limit"), { opacity: 0 }, 31.8);
-	show(one("s-filled"), 31.85);
-	fade(g("chip-sell"), 31.8);
+	fade(one("bid-you"), afterBook(31.45));
+	d.flip(one("p-limit"), one("p-filled"), afterBook(31.5));
+	tl.set(one("p-limit"), { opacity: 0 }, afterBook(31.8));
+	show(one("s-filled"), afterBook(31.85));
+	fade(g("chip-sell"), afterBook(31.8));
 
 	// ——— end: three ways out ———
-	tl.addLabel("end", 34);
+	tl.addLabel("end", afterBook(34));
 	hide(
 		[
 			heads[5],
@@ -961,24 +1018,24 @@ function build(context: FilmContext) {
 			one("p-filled"),
 			one("s-filled"),
 		],
-		34.0,
+		afterBook(34.0),
 	);
-	show(heads[6], 34.35);
-	fade(one("end-contract"), 34.4, 1);
+	show(heads[6], afterBook(34.35));
+	fade(one("end-contract"), afterBook(34.4), 1);
 	cards.forEach((card, i) => {
-		show(card, 34.6 + i * 0.25);
+		show(card, afterBook(34.6 + i * 0.25));
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 38.6);
-	hide([heads[6], one("end-contract"), ...cards], 38.6);
-	word(one("z-big"), 38.9);
-	show(one("z-sub"), 39.4);
+	tl.addLabel("claim", afterBook(38.6));
+	hide([heads[6], one("end-contract"), ...cards], afterBook(38.6));
+	word(one("z-big"), afterBook(38.9));
+	show(one("z-sub"), afterBook(39.4));
 
 	// ——— next ———
-	tl.addLabel("next", 42.9);
-	hide(kids("claim"), 42.9);
-	d.close(42.9);
+	tl.addLabel("next", afterBook(42.9));
+	hide(kids("claim"), afterBook(42.9));
+	d.close(afterBook(42.9));
 	return tl;
 }
 
