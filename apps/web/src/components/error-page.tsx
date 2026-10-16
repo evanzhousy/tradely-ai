@@ -1,5 +1,5 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { env } from "@tradely/env/web";
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
@@ -22,6 +22,7 @@ import { isStaleBuildError, reloadForStaleBuild } from "@/lib/stale-build";
 
 export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 	const { t } = useI18nOrDefault();
+	const router = useRouter();
 	useEffect(() => {
 		void capturePostHogExceptionWhenReady(error, {
 			source: "route_boundary",
@@ -52,7 +53,16 @@ export default function ErrorPage({ error, reset }: ErrorComponentProps) {
 					<EmptyDescription>{t("common.errorDescription")}</EmptyDescription>
 				</EmptyHeader>
 				<EmptyContent>
-					<Button onClick={reset}>
+					<Button
+						onClick={() => {
+							// Loader errors remain cached until invalidated; resetting the
+							// render boundary alone cannot recover a failed server read.
+							void router
+								.invalidate()
+								.then(reset)
+								.catch(() => {});
+						}}
+					>
 						<RefreshCwIcon data-icon="inline-start" aria-hidden="true" />
 						{t("common.retry")}
 					</Button>
