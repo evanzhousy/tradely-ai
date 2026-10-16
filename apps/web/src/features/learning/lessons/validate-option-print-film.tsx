@@ -21,7 +21,7 @@ import {
 
 /*
  * One print: calculate its premium, check the matched and then stale quote, and separate
- * linked records from the spread cost. One connector links the records to a subtraction; the settled
+ * linked records from the spread cost. The recorded prices form a subtraction; the settled
  * $1.25/share result takes the hero lock. Market records cannot show belief.
  *
  *   open      0–4
@@ -118,7 +118,7 @@ const gaps: { id: string; question: Copy; needs: Copy }[] = [
 	{
 		id: "belief",
 		question: ["Belief", "观点"],
-		needs: ["No market record shows belief.", "市场记录无法显示观点。"],
+		needs: ["What would show belief?", "什么能显示观点？"],
 	},
 ];
 
@@ -147,6 +147,7 @@ const copy = {
 	g2Head: ["This print was one spread leg.", "这笔成交是价差的一条腿。"],
 	print: ["print", "成交"],
 	quote: ["Matched quote", "匹配报价"],
+	quoteShort: ["Matched", "匹配报价"],
 	staleQuote: [`${QUOTE_AGE} s old`, `${QUOTE_AGE} 秒前`],
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
@@ -160,9 +161,10 @@ const copy = {
 		"先事实，再推断，最后是未知。",
 	],
 	claimSub: [
-		"Say what the record shows, then what follows.",
-		"先说记录显示了什么，再说能推出什么。",
+		"Inferring a buyer needs a fresh quote.",
+		"推断买方发起，需要及时报价。",
 	],
+	beliefAnswer: ["No market record shows belief.", "市场记录无法显示观点。"],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
 		"quotes, executions and sentiment, on a new day",
@@ -219,7 +221,7 @@ function Scene({
 			y={y}
 			textAnchor="end"
 			className={`wt-film-tag ${tone(evidence)}`}
-			style={{ fontSize: T.small }}
+			style={{ fontSize: T.body }}
 		>
 			{t(copy[evidence]).toUpperCase()}
 		</text>
@@ -344,7 +346,7 @@ function Scene({
 					{evidenceTag(
 						`ev-${i}`,
 						margin + room - 14,
-						L.rowY(i) + L.rowH / 2 + T.small * 0.36,
+						L.rowY(i) + L.rowH / 2 + T.body * 0.36,
 						claim.evidence,
 					)}
 				</g>
@@ -355,7 +357,7 @@ function Scene({
 						{evidenceTag(
 							`ev-${i}-stale`,
 							margin + room - 14,
-							L.rowY(i) + L.rowH / 2 + T.small * 0.36,
+							L.rowY(i) + L.rowH / 2 + T.body * 0.36,
 							"unknown",
 						)}
 					</g>
@@ -377,7 +379,7 @@ function Scene({
 					name="quote-print-tag"
 					x={margin + 14}
 					y={H * 0.815}
-					size={T.small}
+					size={T.body}
 					anchor="start"
 					className="wt-film-tag"
 				>
@@ -387,7 +389,7 @@ function Scene({
 					name="quote-print-time"
 					x={W * 0.6}
 					y={H * 0.815}
-					size={T.small}
+					size={T.body}
 					className="wt-film-tag"
 				>
 					{BLOCK.time}
@@ -398,7 +400,7 @@ function Scene({
 					y={H * 0.815}
 					size={T.body}
 					anchor="end"
-					className="wt-film-num"
+					className="wt-film-num wt-film-accent"
 				>
 					{usd(BLOCK.price)}
 				</Word>
@@ -409,17 +411,19 @@ function Scene({
 						name={`quote-${i}-tag`}
 						x={margin + 14}
 						y={H * 0.875}
-						size={T.small}
+						size={T.body}
 						anchor="start"
 						className="wt-film-tag"
 					>
-						{t(i ? copy.staleQuote : copy.quote).toUpperCase()}
+						{t(
+							i ? copy.staleQuote : narrow ? copy.quoteShort : copy.quote,
+						).toUpperCase()}
 					</Word>
 					<Word
 						name={`quote-${i}-time`}
 						x={W * 0.6}
 						y={H * 0.875}
-						size={T.small}
+						size={T.body}
 						anchor="middle"
 						className="wt-film-tag"
 					>
@@ -431,7 +435,7 @@ function Scene({
 						y={H * 0.935}
 						size={T.body}
 						anchor="start"
-						className="wt-film-num"
+						className="wt-film-num wt-film-dim"
 					>
 						{t(copy.bid)} {usd(quote.bid)}
 					</Word>
@@ -441,7 +445,7 @@ function Scene({
 						y={H * 0.935}
 						size={T.body}
 						anchor="end"
-						className="wt-film-num"
+						className={i === 0 ? "wt-film-num wt-film-accent" : "wt-film-num"}
 					>
 						{t(copy.ask)} {usd(quote.ask)}
 					</Word>
@@ -487,8 +491,8 @@ function Scene({
 						data-f={`needs-${i}`}
 						x={margin + 16}
 						y={gapPromptY(i)}
-						className={i === 2 ? "wt-film-type wt-film-dim" : "wt-film-tag"}
-						style={{ fontSize: i === 2 ? T.body : T.small }}
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: T.body }}
 					>
 						{t(gap.needs)}
 					</text>
@@ -594,22 +598,16 @@ function Scene({
 			<Word
 				name="cost-label"
 				x={W / 2}
-				y={H * 0.845}
-				size={T.small}
+				y={H * 0.84}
+				size={T.body}
 				className="wt-film-tag"
 			>
 				{t(copy.spreadCost).toUpperCase()}
 			</Word>
-			<path
-				data-f="cost-link"
-				d={`M ${W * 0.8} ${H * 0.545} V ${H * 0.62} H ${W * 0.75} m 6 -4 l -6 4 l 6 4`}
-				className="wt-film-link"
-				style={{ strokeDasharray: "none" }}
-			/>
 
 			<Lines
 				name="belief-head"
-				text={t(gaps[2].needs)}
+				text={t(copy.beliefAnswer)}
 				x={W / 2}
 				y={H * 0.46}
 				size={T.title}
@@ -703,6 +701,55 @@ function build(context: FilmContext) {
 		one("gf-1"),
 	];
 	const lockLeg = one<SVGGraphicsElement>("lock-leg");
+	// Fit the unit label to the actual font ink, keeping the figure itself fixed.
+	// Initial layout is a timeline set so reverse seeks preserve the fitted geometry.
+	const label = one<SVGTextElement>("cost-label");
+	const result = one<SVGTextElement>("cost-result");
+	const question = gapCards[2].querySelector<SVGTextElement>("text");
+	const paint = document.createElement("canvas").getContext("2d");
+	if (paint && question) {
+		const measureInk = (mark: SVGTextElement, size: number) => {
+			const style = getComputedStyle(mark);
+			paint.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+			return paint.measureText(mark.textContent ?? "");
+		};
+		const fontSize = (mark: SVGTextElement) =>
+			Number.parseFloat(getComputedStyle(mark).fontSize);
+		const baseline = (mark: SVGTextElement) => Number(mark.getAttribute("y"));
+		const resultBottom =
+			baseline(result) +
+			measureInk(result, fontSize(result)).actualBoundingBoxDescent;
+		const labelTop = resultBottom + 8;
+		const questionTop =
+			baseline(question) -
+			measureInk(question, fontSize(question)).actualBoundingBoxAscent;
+		const initialSize = fontSize(label);
+		const labelInk = measureInk(label, initialSize);
+		const labelBox = label.getBBox();
+		const ascentRatio = labelInk.actualBoundingBoxAscent / initialSize;
+		const descentRatio =
+			(labelBox.y + labelBox.height - baseline(label)) / initialSize;
+		const availableHeight = questionTop - 12 - labelTop;
+		const fittedSize = Math.max(
+			L.type.small,
+			Math.min(
+				L.type.body,
+				(initialSize * (L.room - 24)) / label.getComputedTextLength(),
+				availableHeight / (ascentRatio + descentRatio),
+			),
+		);
+		const fittedInk = measureInk(label, fittedSize);
+		tl.set(
+			label,
+			{
+				fontSize: fittedSize,
+				attr: { y: labelTop + fittedInk.actualBoundingBoxAscent },
+				immediateRender: true,
+			},
+			0,
+		);
+	}
+
 	const fade = (targets: Element[], at: number, opacity = 1) =>
 		tl.fromTo(targets, { opacity: 0 }, { opacity, duration: 0.5 }, at);
 	const close = (i: number, at: number) => {
@@ -734,7 +781,6 @@ function build(context: FilmContext) {
 		...gapCards,
 		...found,
 		...cost,
-		one("cost-link"),
 		one("belief-head"),
 		...quote,
 		lockLeg,
@@ -756,25 +802,23 @@ function build(context: FilmContext) {
 	tl.addLabel("amount", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
-	terms.forEach((term, i) => {
-		word(term.firstElementChild as Element, 9.4 + i * 0.7);
-		show(term.lastElementChild as Element, 9.4 + i * 0.7, "below", 0.55);
-		if (i) show(times[i - 1], 9.2 + i * 0.7);
+	terms.forEach((term) => {
+		word(term.firstElementChild as Element, 9.4);
+		show(term.lastElementChild as Element, 9.4, "below", 0.55);
 	});
+	show(times, 9.4, "below", 0.55);
+	// Fixed factors make a fixed product: reveal the settled premium, never count it.
 	show(one("sum"), 11.6);
-	d.count(
-		one<SVGTextElement>("sum-n"),
-		PREMIUM,
-		11.7,
-		(v) => usd(Math.round(v / 100) * 100, 0),
-		0,
-		1.0,
-	);
 
 	// ——— claims: each with its evidence ———
 	tl.addLabel("claims", 14);
 	hide([heads[0], ...terms, ...times, one("sum")], 14.0);
 	show(heads[1], 14.35);
+	tl.set(
+		one("quote-print-price"),
+		{ attr: { class: "wt-film-num wt-film-accent" } },
+		14.2,
+	);
 	fade([quote[0], quote[1], quote[3]], 14.2);
 	rows.forEach((row, i) => {
 		show(row, 14.7 + i * 0.5, "right");
@@ -782,6 +826,7 @@ function build(context: FilmContext) {
 	// The six-row ladder settles at 17.7; inspect it intact for 1.6 seconds.
 	// Quote and dependent classifications are one scenario: no stale quote with fresh tags.
 	hide([quote[1], ...staleRows.map((i) => one(`ev-${i}`))], 19.3, 0.35, 0);
+	tl.set(one("quote-print-price"), { attr: { class: "wt-film-num" } }, 19.65);
 	fade([quote[2], ...staleRows.map((i) => one(`ev-${i}-stale`))], 19.65);
 	staleRows.forEach((i) => {
 		tl.set(one(`row-${i}-box`), { attr: { class: "wt-panel-shape" } }, 19.65);
@@ -805,11 +850,17 @@ function build(context: FilmContext) {
 	});
 	close(0, 24.5); // settles 25.15
 	close(1, 26.15); // linked records settle 26.95, one second after OI
-	// One record-to-subtraction connector; the settled proof keeps its full quiet time.
-	fade([one("cost-minus")], 27.95);
-	d.trace(one<SVGPathElement>("cost-link"), 27.95, { duration: 0.6 });
+	// The unresolved question has had 4.6 seconds settled. OI's sentence reaches its
+	// audit-counted hold before 28.2; both step back before the operands finish settling.
+	tl.to(gapCards[2], { opacity: 0.3, duration: 0.5 }, 27.95);
+	tl.to(
+		[gapCards[0], one("found-0"), one("gf-0")],
+		{ opacity: 0.3, duration: 0.5 },
+		28.2,
+	);
+	// The subtraction enters as one expression directly beneath its price records.
 	tl.fromTo(
-		[one("cost-0"), one("cost-1")],
+		[one("cost-0"), one("cost-minus"), one("cost-1")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		28.55,
@@ -827,7 +878,7 @@ function build(context: FilmContext) {
 	// Clear the proofs instead of leaving ghosts. The incoming line starts after the
 	// outgoing stack is below one quarter; the tails overlap to avoid an empty stage.
 	tl.to(
-		[heads[2], ...gapCards, ...found, ...cost, one("cost-link")],
+		[heads[2], ...gapCards, ...found, ...cost],
 		{ opacity: 0, duration: 0.5, ease: "power1.inOut" },
 		36.15,
 	);
