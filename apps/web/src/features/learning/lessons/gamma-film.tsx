@@ -1033,8 +1033,7 @@ function build(context: FilmContext) {
 			at + 0.1,
 		);
 	}
-	// The definition stays readable; its big number steps back for the worked positions.
-	tl.to([one("g-num"), one("g-word")], { opacity: 0.45, duration: 0.3 }, 21.5);
+	// Keep the definition at full contrast through its read; the group fades into the hedge beat.
 
 	// ——— hedge: the same delta, carried onto a position ———
 	tl.addLabel("hedge", 22.15);
