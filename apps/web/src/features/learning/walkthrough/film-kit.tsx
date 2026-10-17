@@ -608,14 +608,6 @@ export function createDirector(
 			{ opacity: 1, scale: 1, duration, ease: "back.out(1.8)" },
 			at,
 		);
-	/** A headline number lands slightly large and settles, the film's loudest move. */
-	const slam = (target: Element, at: number) =>
-		tl.fromTo(
-			target,
-			{ opacity: 0, scale: 1.12, y: 6, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, y: 0, duration: 0.55, ease: "back.out(2)" },
-			at,
-		);
 	/** One value swaps for another by folding shut and opening again. */
 	const flip = (from: Element, to: Element, at: number) => {
 		tl.to(
@@ -1153,7 +1145,6 @@ export function createDirector(
 		hide,
 		swap,
 		pop,
-		slam,
 		flip,
 		count,
 		trace,
