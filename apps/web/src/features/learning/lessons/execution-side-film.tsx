@@ -27,7 +27,6 @@ import {
 } from "../walkthrough/film-kit";
 import {
 	OUTSIDE,
-	PRINT_TIME,
 	quoteAt,
 	references,
 	TRADES,
@@ -147,7 +146,7 @@ const copy = {
 		`${count(PRINT.quantity)} contracts print at ${usd(PRINT.price)}.`,
 		`${count(PRINT.quantity)} 张以 ${usd(PRINT.price)} 成交。`,
 	],
-	qBig: ["At the bid, the ask, or between?", "在买价、卖价，还是之间？"],
+	qBig: ["Bid, ask, or between?", "买价、卖价，还是中间？"],
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
 	pHead: ["Five places against the quote.", "对照报价，共有五个位置。"],
@@ -155,15 +154,18 @@ const copy = {
 		`Same ${PRINT.time} print, other quotes.`,
 		`同一笔 ${PRINT.time} 成交，换个报价。`,
 	],
-	r2Head: ["Only the quote in force counts.", "只有成交时有效的报价才算数。"],
+	r2Head: ["Only valid quotes count.", "只看成交时有效的报价。"],
 	side: ["side", "位置"],
 	conditional: ["would say", "仅作对照"],
 	test: [`test ${usd(OUTSIDE)}`, `测试 ${usd(OUTSIDE)}`],
 	tape: ["time and sales", "逐笔成交"],
 	reference: ["reference quote", "参考报价"],
-	usable: ["in force at the print: usable", "成交时有效：可用"],
-	stale: ["90s before: withheld", "早了 90 秒：不作判断"],
-	later: ["after print: withheld", "成交后：不作判断"],
+	atPrint: ["at print", "成交时"],
+	beforePrint: ["90 s before", "提前 90 秒"],
+	afterPrint: ["after print", "成交后"],
+	usable: ["usable", "可用"],
+	stale: ["too old: withheld", "报价过旧：不作判断"],
+	later: ["arrived too late: withheld", "成交后才到：不作判断"],
 	missing: ["no quote: unknown", "无报价：未知"],
 	none: ["none", "无"],
 	cHead: [
@@ -178,8 +180,8 @@ const copy = {
 	calculated: ["calculated", "计算"],
 	inferred: ["inferred", "推断"],
 	unknown: ["unknown", "未知"],
-	claimBig: ["A side is a place, not a reason.", "位置只是位置，不是理由。"],
-	claimSub: ["Use the quote effective at the print.", "用成交时有效的报价。"],
+	claimBig: ["Side shows location, not motive.", "成交位置，不代表动机。"],
+	claimSub: ["Use the quote in force.", "只用成交时有效的报价。"],
 	nextBig: ["Next: sentiment labels", "下一课：情绪标签"],
 	nextSub: ["when bullish or bearish is justified", "何时能称为看涨或看跌"],
 } as const satisfies Record<string, Copy>;
@@ -249,27 +251,27 @@ function Scene({
 		</g>
 	);
 	const prints: [string, number, string][] = [
-		["pl-t1", TRADES[0].price, printText(TRADES[0].quantity, TRADES[0].price)],
-		["pl-t2", PRINT.price, printText(PRINT.quantity, PRINT.price)],
-		["pl-t3", LAST.price, printText(LAST.quantity, LAST.price)],
+		["pl-t1", TRADES[0].price, `${TRADES[0].time} · ${usd(TRADES[0].price)}`],
+		["pl-t2", PRINT.price, `${PRINT.time} · ${usd(PRINT.price)}`],
+		["pl-t3", LAST.price, `${LAST.time} · ${usd(LAST.price)}`],
 		["pl-test", OUTSIDE, t(copy.test)],
 	];
 	const cards: [string, string, Copy, "up" | "down" | "caution"][] = [
 		[
 			"ref-0",
-			`${quoteAt("t2").time} · ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}`,
+			`${t(copy.atPrint)} · ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}`,
 			copy.usable,
 			"up",
 		],
 		[
 			"ref-1",
-			`${STALE.time} · ${pair(STALE.bid ?? 0, STALE.ask ?? 0)}`,
+			`${t(copy.beforePrint)} · ${pair(STALE.bid ?? 0, STALE.ask ?? 0)}`,
 			copy.stale,
 			"down",
 		],
 		[
 			"ref-2",
-			`${LATER.time} · ${pair(LATER.bid ?? 0, LATER.ask ?? 0)}`,
+			`${t(copy.afterPrint)} · ${pair(LATER.bid ?? 0, LATER.ask ?? 0)}`,
 			copy.later,
 			"down",
 		],
@@ -570,7 +572,7 @@ function Scene({
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
-					{`${narrow ? t(["QUOTE", "报价"]) : t(copy.reference).toUpperCase()} · ${locale === "zh" ? "成交" : "PRINT"} ${PRINT_TIME}`}
+					{narrow ? t(["QUOTE", "报价"]) : t(copy.reference).toUpperCase()}
 				</text>
 			</g>
 			{cards.map(([name, line, verdict, tone]) => (
