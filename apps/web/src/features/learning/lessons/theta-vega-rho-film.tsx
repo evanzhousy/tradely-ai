@@ -954,8 +954,8 @@ function build(context: FilmContext) {
 		25.45,
 	);
 	show(one("s-head"), 25.45);
-	// Vega settles for 0.3 s before the estimate arrives. The estimate then rests
-	// for a full second before the brackets lock.
+	// Vega settles at 27.1 and rests a full second before the estimate arrives. The
+	// estimate then rests for a full second before the brackets lock.
 	tl.fromTo(
 		one("w-step-vega"),
 		{ opacity: 0 },
@@ -966,13 +966,14 @@ function build(context: FilmContext) {
 		[one("w-step-sum"), one("w-repriced")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "none" },
-		27.4,
+		28.1,
 	);
-	d.lock(lockSum, 28.7, {
+	d.lock(lockSum, 29.4, {
 		around: [one("w-value-sum")],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 28.7);
+	tl.addLabel("hero-lock", 29.4);
+	// The answer follows the settled estimate and keeps its 3.5 s until the cut at 31.95.
 	show(one("s-answer"), 28.45);
 
 	// ——— positions: the sum, scaled with signs ———
@@ -1053,8 +1054,8 @@ export const thetaVegaRhoFilm: Film = {
 		{ id: "theta", label: ["Theta", "Theta"] },
 		{ id: "vega", label: ["Vega", "Vega"] },
 		{ id: "sum", label: ["Add them up", "逐项相加"] },
-		{ id: "rho", label: ["Rho", "Rho"] },
 		{ id: "positions", label: ["Positions", "持仓"] },
+		{ id: "rho", label: ["Rho", "Rho"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
