@@ -189,6 +189,7 @@ const copy = {
 		"周一收盘前，最近时段仍是周五。",
 	],
 	fridayHeadShort: ["Friday until close.", "周一收盘前仍是周五。"],
+	closeLine: ["Latest session: Monday", "最新时段：周一"],
 	editChip: ["Edit with AI", "Edit with AI"],
 	forkHead: [
 		"Edit with AI forks a private copy.",
@@ -562,6 +563,16 @@ function Scene({
 								</g>
 							);
 						})}
+						<Lines
+							name="close-line"
+							text={t(copy.closeLine)}
+							x={margin}
+							y={L.headY}
+							size={T.body}
+							maxWidth={room}
+							anchor="start"
+							className="wt-film-type"
+						/>
 						{/* Monday at 10:00: the part that has traded, and the rest still to come. */}
 						<defs>
 							<Hatch id={`hatch-${id}`} />
@@ -976,6 +987,7 @@ function build(context: FilmContext) {
 			"t-head",
 			"m-head",
 			"m2-head",
+			"close-line",
 			"f-head",
 			"c-head",
 		].map((name) => one(name)),
@@ -1199,11 +1211,13 @@ function build(context: FilmContext) {
 
 	// ——— session continuation: Monday closes ———
 	// The bracket settles at 29.3 and stands through 30.8. Release its first headline,
-	// keep the Friday line through the change, then crossfade into the 16:30 snapshot.
+	// then fade the Friday line out before the 16:30 close snapshot arrives.
 	hide(lockSession, 30.8, 0.3, 0);
 	hide(one("m-head"), 30.8);
 	const afterCloseAt = 31.4;
-	hide(one("m2-head"), afterCloseAt, 0.3, 0);
+	// The Friday sentence remains true through its fade, then the concise close
+	// result enters with the Monday 16:30 snapshot.
+	hide(one("m2-head"), afterCloseAt - 0.3, 0.3, 0);
 	const afterCloseX = L.nowX(AFTER_CLOSE);
 	// The 10:00 marks leave over the motion floor, gone as the calendar cuts to
 	// 16:30; the 16:30 marks come on over the same 0.3 s after it.
@@ -1232,7 +1246,12 @@ function build(context: FilmContext) {
 	tl.set(one("now-dot"), { attr: { cx: afterCloseX } }, afterCloseAt);
 	tl.set(one("completion-clock"), { attr: { x: afterCloseX } }, afterCloseAt);
 	tl.fromTo(
-		[one("completion-clock"), one("ran-close"), one("sess-close")],
+		[
+			one("completion-clock"),
+			one("ran-close"),
+			one("sess-close"),
+			one("close-line"),
+		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
 		afterCloseAt,
@@ -1258,21 +1277,19 @@ function build(context: FilmContext) {
 		{ attr: { class: "wt-small wt-accent" } },
 		afterCloseAt,
 	);
-	// The synchronized 16:30 snapshot settles at 31.7, then remains as quiet
-	// proof for one second before the cut to the official baseline at 32.7.
+	// The synchronized 16:30 snapshot settles at 31.7 and remains for 2.25 s
+	// (1.5 s at the default rate) before the cut to the official baseline.
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 32.7);
+	tl.addLabel("fork", 33.95);
 	// One deliberate beat cut replaces the session calendar with the whole
-	// official baseline after the 16:30 proof's one-second quiet interval.
-	tl.set(one("calendar"), { opacity: 0 }, 32.7);
-	tl.set(one("fork"), { opacity: 1 }, 32.7);
-	tl.set(one("fork-official"), { opacity: 1 }, 32.7);
-	// The recipe card gets a readable preview before the colleague caption and
-	// action chip fade in; both settle at 35.7, then read
-	// quietly for a full second. Activate the action and draw its provenance
-	// through the empty gutter; the populated copy fades at rest, without a
-	// tiny flight that could cross the link or the original's visible text.
+	// official baseline after the 16:30 proof's 2.25 s settled interval. The
+	// official card gets 1.45 s before the colleague caption and action chip
+	// fade in. Both settle at 35.7, then read quietly for a full second before
+	// the action activates and provenance draws through the empty gutter.
+	tl.set(one("calendar"), { opacity: 0 }, 33.95);
+	tl.set(one("fork"), { opacity: 1 }, 33.95);
+	tl.set(one("fork-official"), { opacity: 1 }, 33.95);
 	tl.to(
 		[one("edit-chip"), one("c-head")],
 		{ opacity: 1, duration: 0.3, ease: "power3.out" },
@@ -1300,10 +1317,10 @@ function build(context: FilmContext) {
 	// Ownership is part of the populated copy's existing fade, rather than
 	// another construction step after it. The caption lands with the copy.
 	show(one("f-head"), 36.85, "above", 0.3);
-	// All inherited-copy marks settle at 37.15, then hold unchanged for 1 s.
-	// ALFA settles at 38.8; a direct claim cut preserves 2.6 settled seconds.
-	d.flip(one("spot-copy-was"), one("spot-copy"), 38.15);
-	tl.set(one("spot-copy-was"), { opacity: 0 }, 38.45);
+	// All inherited-copy marks settle at 37.15; keep Spotlight legible for
+	// 2.25 s before it flips. ALFA settles at 40.05, then holds for 1.35 s.
+	d.flip(one("spot-copy-was"), one("spot-copy"), 39.4);
+	tl.set(one("spot-copy-was"), { opacity: 0 }, 39.7);
 	// Replace the whole proof with the settled claim in one deliberate beat cut.
 	// Removing its scale entrance preserves four fully settled reading seconds
 	// without borrowing from ALFA's payoff or the supporting sentence's hold.
