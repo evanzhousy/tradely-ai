@@ -92,11 +92,11 @@ function layout(width: number) {
 const copy = {
 	title: ["Strategies", "策略"],
 	titleSub: ["one leg, many possible positions", "一条腿，多种可能的持仓"],
-	qTag: ["Oct 18 105 call · at the bid", "10月18日 105 看涨 · 买价成交"],
-	qLine: [`Someone sells it at ${usd(SOLD)}.`, `有人以 ${usd(SOLD)} 卖出它。`],
+	qTag: ["Oct 18 105C · BID", "10/18 105C · 买价成交"],
+	qLine: [`Sold for ${usd(SOLD)}.`, `以 ${usd(SOLD)} 卖出。`],
 	qBig: ["A bet ALFA won't rise?", "押注 ALFA 不涨？"],
 	lHead: ["Alone, its loss has no limit.", "单独卖出：亏损没有上限。"],
-	cHead: ["With 100 shares: a covered call.", "配上 100 股：备兑看涨。"],
+	cHead: ["100 shares: a covered call.", "100 股：备兑看涨。"],
 	sHead: ["Long 100 call: capped spread.", "加上 100 看涨多头：价差封顶。"],
 	sold: ["105 call, sold", "105 看涨，卖出"],
 	stock: [`stock · entry $${STOCK_COST}`, `股票 · 买入价 $${STOCK_COST}`],
@@ -138,10 +138,7 @@ const copy = {
 	rollNet: ["net", "净额"],
 	rollShort: ["same strike · four weeks later", "同一行权价 · 延后四周"],
 	claimBig: ["One leg, many positions.", "一条腿，多种持仓。"],
-	claimSub: [
-		"A sale can cover, cap or roll.",
-		"一笔卖出可以是备兑、封顶或移仓。",
-	],
+	claimSub: ["A sale can cover, cap or roll.", "卖出可备兑、封顶或移仓。"],
 	nextBig: ["Next: straddles and condors", "下一课：跨式与铁鹰"],
 	nextSub: [
 		"four prints in one second, one package",
@@ -857,7 +854,8 @@ function build(context: FilmContext) {
 		27.2,
 	);
 	draw(line("sum"), 27.3);
-	show(readouts[2], 27.8, "right");
+	// Reveal the exact total only once its trace has settled, then keep it readable into the handoff.
+	show(readouts[2], 28.0, "right");
 	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 29.3);
 	hide(
 		[
@@ -871,7 +869,8 @@ function build(context: FilmContext) {
 		0.35,
 		0,
 	);
-	hide(readouts.slice(0, 3), 29.4, 0.35, 0);
+	hide(readouts.slice(0, 2), 29.4, 0.35, 0);
+	hide(readouts[2], 29.7, 0.35, 0);
 	d.swap(one("axis-payoff"), one("axis-both"), 29.4);
 	show(heads[4], 29.4);
 	draw(line("profit"), 29.4);
@@ -910,8 +909,9 @@ function build(context: FilmContext) {
 		{ opacity: 1, scaleY: 1, duration: 0.5 },
 		36.4,
 	);
-	show(one("roll"), 36.7);
-	show(heads[6], 36.7);
+	// Reveal the net as the bracket joins the settled rows, then hold before the after-beat.
+	show(one("roll"), 36.4);
+	show(heads[6], 36.4);
 	d.trace(one<SVGPathElement>("roll-extension"), 38.6, { duration: 0.7 });
 
 	// ——— claim ———
