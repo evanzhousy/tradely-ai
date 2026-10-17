@@ -2,7 +2,6 @@ import { gsap } from "gsap";
 import { useId } from "react";
 import {
 	type Copy,
-	optionQuote,
 	pick,
 	signedUsd,
 	usd,
@@ -47,14 +46,14 @@ import {
  *   open      0–4        "Options"
  *   question  4–8.6      $420 for the Oct 18 100 call; ALFA ends at $95?
  *   right     8.6–21.6   the call: $0 at $95, $1,000 at $110; the put at $90
- *   uses      21.6–35.4  hero: shares, then with a 95 put as ALFA falls, the floor at −$715;
+ *   uses      21.6–36.0  hero: shares, then with a 95 put as ALFA falls, the floor at −$715;
  *                        a purchased 105 call, costing $215
- *   sides     35.4–40.5  you +$580, Ben −$580
- *   claim     40.5–44.9  a right for you, an obligation for someone else
- *   next      44.9–46.9  Next: trading an option
+ *   sides     36.0–41.1  you +$580, Ben −$580
+ *   claim     41.1–45.5  a right for you, an obligation for someone else
+ *   next      45.5–47.5  Next: trading an option
  */
 
-const END = 46.9;
+const END = 47.5;
 const X = [80, 120] as const;
 const VALUE_TOP = 2_100;
 const USE_Y = [-2_000, 2_000] as const;
@@ -67,8 +66,6 @@ const LOW = 95;
 const HIGH = 110;
 const PUT_AT = 90;
 const NET_HIGH = callValue(HIGH) - PREMIUM;
-/** The 100 put's own premium: the meter nets each right against what it cost. */
-const PUT_COST = optionQuote(put100).ask;
 /** Where the 95 put starts to pay for itself: below it, the shares with the put lose less. */
 const SAVES_BELOW = 95 - putCost / 100;
 const FALL_TO = 80;
@@ -121,37 +118,33 @@ function layout(width: number) {
 const copy = {
 	title: ["Options", "期权"],
 	titleSub: ["a paid right with a deadline", "有期限的付费权利"],
-	qTag: [
-		"ALFA Oct 18 100 call · $4.20 a share",
-		"ALFA 10月18日 100 看涨 · 每股 $4.20",
-	],
+	qTag: ["ALFA Oct 18 100 call", "ALFA 10月18日 100 看涨"],
 	qLine: [
-		`On Oct 18 ALFA ends at $${LOW}. What is the call worth?`,
-		`10月18日 ALFA 收于 $${LOW}。这张看涨值多少？`,
+		`Expiry: ALFA $${LOW}. Call value?`,
+		`到期 ALFA $${LOW}，看涨值多少？`,
 	],
-	rightHead: [
-		"The right to buy 100 ALFA at $100.",
-		"以 $100 买入 100 股 ALFA 的权利。",
+	rightHead: ["Right: buy ALFA at $100.", "以 $100 买入 ALFA 的权利。"],
+	rightHeadShort: ["Right: buy at $100.", "$100 买入的权利。"],
+	callHead: ["Worth ALFA above $100.", "价值看 ALFA 高出 $100 多少。"],
+	callHeadShort: ["Worth ALFA above $100.", "价值看 ALFA 高出 $100 多少。"],
+	putHead: ["Put: right to sell at $100.", "看跌：$100 卖出的权利。"],
+	putHeadShort: ["Put: right to sell at $100.", "看跌：$100 卖出的权利。"],
+	axis: [
+		"Oct 18 value · 1 contract = 100 shares",
+		"10月18日价值 · 1 张合约 = 100 股",
 	],
-	rightHeadShort: ["The right to buy at $100.", "以 $100 买入的权利。"],
-	callHead: [
-		"Worth what ALFA is above $100.",
-		"价值 = ALFA 高出 $100 的部分。",
+	axisShort: [
+		"expiry value · 1 contract = 100 shares",
+		"到期价值 · 1 张合约 = 100 股",
 	],
-	callHeadShort: ["Worth ALFA above $100.", "价值 = ALFA 高出 $100 的部分。"],
-	putHead: ["A put: the right to sell at $100.", "看跌：以 $100 卖出的权利。"],
-	putHeadShort: ["A put: sell at $100.", "看跌：以 $100 卖出。"],
-	axis: ["value at Oct 18, one contract", "10月18日 的价值，一张合约"],
-	axisShort: ["value at expiry", "到期价值"],
 	premium: [
-		`premium ${usd(PREMIUM * 100, 0)}`,
-		`权利金 ${usd(PREMIUM * 100, 0)}`,
+		`premium ${usd(PREMIUM)}/share × 100 = ${usd(PREMIUM * 100, 0)}`,
+		`权利金：每股 ${usd(PREMIUM)} × 100 = ${usd(PREMIUM * 100, 0)}`,
 	],
 	strike: ["strike $100", "行权价 $100"],
 	callLabel: ["call", "看涨"],
 	putLabel: ["put", "看跌"],
 	value: ["value", "价值"],
-	net: ["after premium", "扣除权利金"],
 	sharesAlone: ["100 shares", "100 股"],
 	sharesEntry: ["bought at $100", "$100 买入"],
 	withPut: ["with 95 put", "加 95 看跌"],
@@ -164,32 +157,23 @@ const copy = {
 	protectHeadShort: ["Protect the shares.", "保护持股。"],
 	moreHead: ["Buy a call alone.", "单独买入看涨。"],
 	moreHeadShort: ["Buy a call alone.", "单独买入看涨。"],
-	viewContract: ["Buy ALFA Oct 18 105 call", "买入 ALFA 10月18日 105 看涨"],
+	viewContract: ["ALFA 105 call", "ALFA 105 看涨"],
 	viewPremium: [
 		`Premium ${usd(viewCost * 100, 0)}`,
 		`权利金 ${usd(viewCost * 100, 0)}`,
 	],
 	sharesLabel: ["100 shares", "100 股"],
 	floor: ["loss floor", "亏损下限"],
-	most: [
-		`Max loss ${usd(viewCost * 100, 0)}`,
-		`最多亏 ${usd(viewCost * 100, 0)}`,
-	],
+	most: ["Max loss: premium", "最多亏权利金"],
 	profitAxis: ["profit at Oct 18", "10月18日的盈亏"],
-	result: [
-		"Original 100 call · ALFA $110 · Oct 18",
-		"原 100 看涨 · ALFA $110 · 10月18日",
-	],
+	result: ["100 call · Oct 18: $110", "100 看涨 · 10月18日 $110"],
 	holderBasis: ["value − premium", "价值 − 权利金"],
 	writerBasis: ["premium − value", "权利金 − 价值"],
 	sidesHead: ["The call has two sides.", "看涨合约的双方。"],
 	sidesHeadShort: ["The call has two sides.", "看涨合约的双方。"],
 	you: ["you · holder", "你 · 持有人"],
 	ben: ["Ben · writer", "Ben · 义务方"],
-	claimBig: [
-		"A right for you, an obligation for someone else.",
-		"你的权利，就是别人的义务。",
-	],
+	claimBig: ["Your right. Their obligation.", "你有权利，对方有义务。"],
 	claimSub: ["The buyer can lose only the premium.", "买方最多只亏权利金。"],
 	nextBig: ["Next: trading an option", "下一课：交易期权"],
 	nextSub: ["from chain to order", "从期权链到下单"],
@@ -413,6 +397,7 @@ function Scene({
 							false,
 							true,
 						)}
+						{/* Under the flat floor it names; on a phone it ends at the kink, clear of the edge. */}
 						{useLabel(
 							"most-tag",
 							copy.most,
@@ -420,6 +405,7 @@ function Scene({
 							positionPayoff.view(104),
 							toneClass.focus,
 							true,
+							!narrow,
 						)}
 						{/* What the put saves: between the two lines, filled as ALFA falls. */}
 						<clipPath id={`save-${id}`}>
@@ -476,15 +462,7 @@ function Scene({
 				[
 					[
 						"meter",
-						[
-							["m-value", copy.value, "$0", `wt-film-num ${toneClass.call}`],
-							[
-								"m-net",
-								copy.net,
-								signedUsd(-PREMIUM * 100, 0),
-								"wt-film-num wt-film-loss",
-							],
-						],
+						[["m-value", copy.value, "$0", `wt-film-num ${toneClass.call}`]],
 					],
 					[
 						"umeter",
@@ -727,7 +705,6 @@ function build(context: FilmContext) {
 	const line = (name: string) => one<SVGPathElement>(name);
 	const marker = one("marker");
 	const value = one<SVGTextElement>("m-value");
-	const net = one<SVGTextElement>("m-net");
 	const uShares = one<SVGTextElement>("u-shares");
 	const uPut = one<SVGTextElement>("u-put");
 	uShares.style.fill = "var(--tone-dim)";
@@ -769,13 +746,10 @@ function build(context: FilmContext) {
 		);
 	};
 	/** The marker on a right's value line, and the meter read from the marker. */
-	const onRight =
-		(f: (spot: number) => number, cost: number) => (spot: number) => {
-			gsap.set(marker, { attr: { cx: L.x(spot), cy: L.y(f(spot)) } });
-			value.textContent = dollars(f(spot));
-			net.textContent = signed(f(spot) - cost);
-			signColor(net, f(spot) - cost);
-		};
+	const onRight = (f: (spot: number) => number) => (spot: number) => {
+		gsap.set(marker, { attr: { cx: L.x(spot), cy: L.y(f(spot)) } });
+		value.textContent = dollars(f(spot));
+	};
 	/** Both positions as ALFA falls: the markers, the readouts and the saving behind them. */
 	const onFall = (spot: number) => {
 		gsap.set(sMarker, { attr: { cx: L.x(spot), cy: L.u(shares(spot)) } });
@@ -828,6 +802,7 @@ function build(context: FilmContext) {
 		...kids("view-ticket"),
 		...kids("meter"),
 		...kids("umeter"),
+		uPut,
 		...flat("q"),
 		...heads,
 		...flat("sides"),
@@ -865,30 +840,32 @@ function build(context: FilmContext) {
 	d.swap(heads[0], heads[1], 13.5);
 	pop(marker, 13.9);
 	show(kids("meter"), 14.0);
-	walk(HIGH, HIGH, 13.89, 0.01, () => onRight(callValue, PREMIUM)(LOW));
-	walk(LOW, HIGH, 15.5, 1.2, onRight(callValue, PREMIUM));
+	walk(HIGH, HIGH, 13.89, 0.01, () => onRight(callValue)(LOW));
+	walk(LOW, HIGH, 15.5, 1.2, onRight(callValue));
 	// The call rests a full second after its 16.7 settlement. With the put's
 	// walking demonstration removed, the curve and a settled $90 example each
 	// get their own quiet time without compressing either entrance.
 	d.swap(heads[1], heads[2], 17.7);
-	hide([marker, ...kids("meter")], 17.7);
+	// Keep the identical $1,000 value readable across both examples. The call's
+	// marker stays with its dimmed curve until the put's $90 example takes over.
+	tl.to(marker, { opacity: 0.3, duration: 0.4 }, 17.7);
 	tl.to(
 		[one("call-line"), one("call-tag")],
 		{ opacity: 0.3, duration: 0.4 },
 		17.7,
 	);
-	// Position and identity changes belong to the timeline, so reversing past
-	// this handoff restores the call's $110 point and call tone.
+	// Position and identity change with the put example, not its curve. Until
+	// this handoff, the retained $1,000 still belongs to the call at $110.
 	tl.set(
 		marker,
 		{
 			attr: { cx: L.x(PUT_AT), cy: L.y(putValue(PUT_AT)) },
 		},
-		18.1,
+		19.6,
 	);
-	tl.set(marker, { attr: { class: `wt-chip ${toneClass.put}` } }, 18.1);
-	tl.set(value, { attr: { class: `wt-film-num ${toneClass.put}` } }, 18.1);
-	walk(PUT_AT, PUT_AT, 18.1, 0.01, onRight(putValue, PUT_COST));
+	tl.set(marker, { attr: { class: `wt-chip ${toneClass.put}` } }, 19.6);
+	tl.set(value, { attr: { class: `wt-film-num ${toneClass.put}` } }, 19.6);
+	walk(PUT_AT, PUT_AT, 19.6, 0.01, onRight(putValue));
 	tl.fromTo(
 		[one("put-line"), one("put-tag")],
 		{ opacity: 0 },
@@ -898,7 +875,7 @@ function build(context: FilmContext) {
 	// Curve settles at 18.6; the settled example arrives after 1 s of quiet,
 	// then rests 1.5 s after its 20.1 settlement before the uses cut at 21.6.
 	tl.fromTo(
-		[marker, ...kids("meter"), one("put-spot")],
+		[marker, one("put-spot")],
 		{ opacity: 0, y: 0 },
 		{ opacity: 1, duration: 0.5, immediateRender: false },
 		19.6,
@@ -911,31 +888,36 @@ function build(context: FilmContext) {
 	tl.set(one("value-chart"), { opacity: 0 }, 22);
 	tl.set(one("use-chart"), { opacity: 1 }, 22);
 	show(heads[3], 22);
-	rise(22.1);
+	// Cut to settled axes after the old chart clears. No rescale shares time
+	// with the data; the scaffold stands for 1 s before the traces start.
+	tl.set(one("depth"), { opacity: 1, scale: 1 }, 22.0);
 	// Build one comparison, rather than two successive proofs. The reference and
 	// protected position settle together; labels land with that construction.
-	d.trace(line("shares-line"), 22.4, { duration: 1.2 });
-	d.trace(line("protect-line"), 22.4, { tip, duration: 1.2 });
-	show([one("shares-tag"), ...kids("umeter")], 23.6);
-	// Everything settles by 24.1. The paired markers fade in only after 1.15 s
+	d.trace(line("shares-line"), 23.0, { duration: 1.2 });
+	d.trace(line("protect-line"), 23.0, { tip, duration: 1.2 });
+	show([one("shares-tag"), ...kids("umeter")], 24.2);
+	// Everything settles by 24.7. The paired markers fade in only after 1.15 s
 	// of quiet, then the same 1.6 s walk constructs the −$715 loss floor.
+	// The premium tag supplies the initial $215; reveal the protected readout
+	// with its walk, rather than requiring another brief static result to read.
 	tl.to(
 		[sMarker, pMarker, one("save-area")],
 		{ opacity: 1, duration: 0.35 },
-		25.25,
+		25.85,
 	);
-	walk(100, FALL_TO, 25.7, 1.6, onFall);
-	show(one("floor-tag"), 27.1);
-	d.lock(one<SVGGraphicsElement>("lock-floor"), 27.3, {
+	tl.to(uPut, { opacity: 1, duration: 0.35 }, 26.3);
+	walk(100, FALL_TO, 26.3, 1.6, onFall);
+	show(one("floor-tag"), 27.7);
+	d.lock(one<SVGGraphicsElement>("lock-floor"), 27.9, {
 		around: uPut,
 		pad: 5,
 	});
-	tl.addLabel("hero-lock", 27.3);
+	tl.addLabel("hero-lock", 27.9);
 	// The enlarged loss meter and brackets keep their full 3.55 s settled stand.
-	d.swap(heads[3], heads[4], 30.9);
+	d.swap(heads[3], heads[4], 31.5);
 	hide(
 		[one("u-shares-tag"), uShares, one("u-put-tag"), sMarker, pMarker],
-		30.9,
+		31.5,
 	);
 	tl.to(
 		[
@@ -948,22 +930,22 @@ function build(context: FilmContext) {
 			one("lock-floor"),
 		],
 		{ opacity: 0, duration: 0.4 },
-		31.3,
+		31.9,
 	);
 	// One identified transaction owns the whole extra-use beat. No old curves
 	// remain under the purchased call, and the bound explicitly names loss.
-	show(kids("view-ticket"), 31.7);
-	d.trace(line("view-line"), 32.1, { tip: one("view-tip"), duration: 1.2 });
-	show(one("most-tag"), 33.3);
-	// Label and pen settle by 33.8; the result rests 1.6 s before the cut.
+	show(kids("view-ticket"), 32.3);
+	d.trace(line("view-line"), 32.7, { tip: one("view-tip"), duration: 1.2 });
+	show(one("most-tag"), 33.9);
+	// Label and pen settle by 34.4; the result rests 1.6 s before the cut.
 
 	// ——— sides: holder and writer ———
-	tl.addLabel("sides", 35.4);
-	hide([heads[4], ...kids("view-ticket")], 35.4);
-	sink(35.4);
-	show(heads[5], 35.75);
-	show(one("sides-line"), 35.75);
-	show([one("you-tag"), one("ben-tag")], 35.75);
+	tl.addLabel("sides", 36.0);
+	hide([heads[4], ...kids("view-ticket")], 36.0);
+	sink(36.0);
+	show(heads[5], 36.35);
+	show(one("sides-line"), 36.35);
+	show([one("you-tag"), one("ben-tag")], 36.35);
 	// Build the two mirrored bases as one proof. After a full second of quiet,
 	// reveal both settled results together; the original 2.7 s result rest remains.
 	show(
@@ -973,21 +955,21 @@ function build(context: FilmContext) {
 			one("you-basis"),
 			one("ben-basis"),
 		],
-		35.75,
+		36.35,
 	);
-	word(one("you-after"), 37.25);
-	word(one("ben-after"), 37.25);
+	word(one("you-after"), 37.85);
+	word(one("ben-after"), 37.85);
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.5);
-	hide([heads[5], ...flat("sides")], 40.5);
-	word(one("z-big"), 40.8);
-	show(one("z-sub"), 41.1);
+	tl.addLabel("claim", 41.1);
+	hide([heads[5], ...flat("sides")], 41.1);
+	word(one("z-big"), 41.4);
+	show(one("z-sub"), 41.7);
 
 	// ——— next ———
-	tl.addLabel("next", 44.9);
-	hide(kids("claim"), 44.9);
-	d.close(44.9);
+	tl.addLabel("next", 45.5);
+	hide(kids("claim"), 45.5);
+	d.close(45.5);
 	return tl;
 }
 
