@@ -30,8 +30,8 @@ import {
  *   open      0–4
  *   question  4–8.6
  *   amount    8.6–14
- *   claims    14–22.1    matched quote, then its 90-second-old replacement
- *   gaps      22.1–40.2  OI, linked records, subtraction, hero, belief limitation
+ *   claims    14–22.1    quote scaffold, matched ask, location, buyer, stale replacement
+ *   gaps      22.1–40.2  OI, linked-time records, subtraction, hero, belief limitation
  *   claim     40.2–45
  *   next      45–47.5
  */
@@ -146,6 +146,7 @@ const copy = {
 	quote: ["Matched quote", "匹配报价"],
 	quoteShort: ["Matched", "匹配报价"],
 	staleQuote: [`${QUOTE_AGE} s old`, `${QUOTE_AGE} 秒前`],
+	sameInstant: [`Same instant · ${BLOCK.time}`, `同一时刻 · ${BLOCK.time}`],
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
 	spreadCost: ["calculated · per share", "计算 · 每股成本"],
@@ -225,21 +226,28 @@ function Scene({
 				{t(copy[evidence]).toUpperCase()}
 			</text>
 			{/* Evidence uses a line code, independent of the label's hue. */}
-			<rect
-				data-f={`${name}-line`}
-				x={x - 24}
-				y={y + T.body * 0.25}
-				width={24}
-				height={evidence === "observed" || evidence === "calculated" ? 2 : 4}
-				fill={
-					evidence === "unknown"
-						? `url(#${hatchId})`
-						: evidence === "inferred"
-							? "none"
-							: "var(--tone-ink)"
-				}
-				stroke={evidence === "inferred" ? "var(--tone-ink)" : "none"}
-			/>
+			{evidence === "observed" || evidence === "calculated" ? (
+				<line
+					data-f={`${name}-line`}
+					x1={x - 30}
+					y1={y + T.body * 0.25}
+					x2={x}
+					y2={y + T.body * 0.25}
+					stroke="var(--tone-ink)"
+					strokeWidth={3}
+					strokeDasharray={evidence === "calculated" ? "5 3" : undefined}
+				/>
+			) : (
+				<rect
+					data-f={`${name}-line`}
+					x={x - 24}
+					y={y + T.body * 0.25}
+					width={24}
+					height={4}
+					fill={evidence === "unknown" ? `url(#${hatchId})` : "none"}
+					stroke={evidence === "inferred" ? "var(--tone-ink)" : "none"}
+				/>
+			)}
 		</g>
 	);
 	return (
@@ -379,6 +387,20 @@ function Scene({
 						claim.evidence,
 					)}
 				</g>
+			))}
+			{([2, 3] as const).map((i) => (
+				<rect
+					key={i}
+					data-f={`row-focus-${i}`}
+					x={margin}
+					y={L.rowY(i)}
+					width={room}
+					height={L.rowH}
+					rx={10}
+					fill="none"
+					stroke="var(--tone-focus)"
+					strokeWidth={2}
+				/>
 			))}
 			{claims.map((claim, i) =>
 				claim.stale ? (
@@ -593,6 +615,16 @@ function Scene({
 						</Word>
 					</g>
 				))}
+				<Word
+					name="found-1-time"
+					x={margin + 16}
+					y={gapPromptY(1)}
+					size={T.body}
+					anchor="start"
+					className="wt-film-type wt-film-tag"
+				>
+					{t(copy.sameInstant)}
+				</Word>
 			</g>
 
 			{evidenceTag("gf-1", margin + room - 16, gapHeadingY(1), "observed")}
@@ -705,6 +737,7 @@ function build(context: FilmContext) {
 	const terms = ["f-price", "f-qty", "f-mult"].map((name) => one(name));
 	const times = [one("times-0"), one("times-1")];
 	const rows = claims.map((_, i) => one(`row-${i}`));
+	const rowFocus = [one("row-focus-2"), one("row-focus-3")];
 	const staleRows = claims.flatMap((claim, i) => (claim.stale ? [i] : []));
 	const gapCards = gaps.map((_, i) => one(`gap-${i}`));
 	const records = ["buy", "sell"].map((id) => one(`leg-${id}-record`));
@@ -728,6 +761,7 @@ function build(context: FilmContext) {
 		one("found-0"),
 		...records,
 		...prices,
+		one("found-1-time"),
 		one("gf-0"),
 		one("gf-1"),
 	];
@@ -787,8 +821,9 @@ function build(context: FilmContext) {
 		if (i === 0) {
 			fade([one("found-0")], at);
 		} else {
-			fade([...records, ...prices], at + 0.3);
+			fade([...records, ...prices, one("found-1-time")], at + 0.3);
 			hide(one("gq-1"), at, 0.3, 0);
+			hide(one("needs-1"), at, 0.3, 0);
 			tl.fromTo(
 				one("gf-1"),
 				{ opacity: 0 },
@@ -818,6 +853,7 @@ function build(context: FilmContext) {
 		...times,
 		one("sum"),
 		...rows,
+		...rowFocus,
 		...staleRows.map((i) => one(`ev-${i}-stale`)),
 		...gapCards,
 		...found,
@@ -861,14 +897,20 @@ function build(context: FilmContext) {
 		14.2,
 	);
 	fade([quote[0], quote[1], quote[3]], 14.2);
-	rows.forEach((row, i) => {
-		show(row, 14.7 + i * 0.5, "right");
-	});
-	// The six-row ladder settles at 17.7; inspect it intact for 1.6 seconds.
+	// The quote and headline settle by 14.85; hold that scaffold for a full second.
+	show(rows, 15.85, "right", 0.35);
+	// Read the whole ladder, then tour location and buyer inferences from the matched print.
+	tl.to([rows[1], rows[4], rows[5]], { opacity: 0.3, duration: 0.3 }, 17.2);
+	tl.fromTo(rowFocus[0], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 17.2);
+	tl.to(rowFocus[0], { opacity: 0, duration: 0.3 }, 17.7);
+	tl.fromTo(rowFocus[1], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.0);
+	tl.to(rowFocus[1], { opacity: 0, duration: 0.3 }, 19.0);
 	// Quote and dependent classifications are one scenario: no stale quote with fresh tags.
 	hide([quote[1], ...staleRows.map((i) => one(`ev-${i}`))], 19.3, 0.35, 0);
 	tl.set(one("quote-print-price"), { attr: { class: "wt-film-num" } }, 19.65);
 	fade([quote[2], ...staleRows.map((i) => one(`ev-${i}-stale`))], 19.65);
+	// The premium remains known when the old quote makes location and buyer unknown.
+	tl.to(rows[1], { opacity: 1, duration: 0.3 }, 19.65);
 	staleRows.forEach((i) => {
 		tl.set(
 			one(`row-${i}-box`),
@@ -884,6 +926,7 @@ function build(context: FilmContext) {
 		[
 			heads[1],
 			...rows,
+			...rowFocus,
 			...quote,
 			...staleRows.map((i) => one(`ev-${i}-stale`)),
 		],
