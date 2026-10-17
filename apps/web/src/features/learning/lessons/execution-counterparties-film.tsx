@@ -32,14 +32,14 @@ import {
  *
  *   open      0–4        "Counterparties"
  *   question  4–8.8      Ben offers 10 at $4.10, you buy them: volume +10 or +20?
- *   match     8.8–19.6   resting; incoming; one trade, one print, volume +10
- *   limit     19.6–32.6  alternative: buy 30, limit $4.15; 10 and 12 fill; 8 rest
- *   print     32.6–39.8  possible market buy OR limit buy; one line on the tape
- *   claim     39.8–44.2  one trade, two sides, one print
- *   next      44.2–46.7  Next: execution side
+ *   match     8.8–19.2   resting; incoming; one trade, one print, volume +10
+ *   limit     19.2–33.2  alternative: buy 30, limit $4.15; 10 and 12 fill; 8 rest
+ *   print     33.2–40.4  possible market buy OR limit buy; one line on the tape
+ *   claim     40.4–44.8  one trade, two sides, one print
+ *   next      44.8–47.3  Next: execution side
  */
 
-const END = 46.7;
+const END = 47.3;
 /** Asks from the top of the book down to the best, as a ladder reads. */
 const LADDER = [...ASKS].reverse();
 const BEST = ASKS[0];
@@ -747,7 +747,7 @@ function build(context: FilmContext) {
 			{ attr: { width: width(from) } },
 			{
 				attr: { width: width(to) },
-				duration: 0.5,
+				duration: 1.0,
 				ease: "power2.out",
 				immediateRender: false,
 				modifiers: {
@@ -854,22 +854,22 @@ function build(context: FilmContext) {
 	const tradeSources = L.narrow
 		? [one("trade-source-qty"), one("trade-source-details")]
 		: [one("trade-source")];
-	tl.fromTo(tradeSources, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 14.7);
+	tl.fromTo(tradeSources, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 15.2);
 	tl.fromTo(
 		one("tape-time"),
 		{ opacity: 0 },
 		L.narrow
 			? { opacity: 1, duration: 0.5 }
 			: { opacity: 1, duration: 0.3, ease: "power2.in" },
-		L.narrow ? 15.0 : 15.2,
+		L.narrow ? 15.5 : 15.7,
 	);
 	if (L.narrow) {
-		// Both fields land at 15.5. The shorter field clears the shared lane first.
+		// Both fields land at 16.0. The shorter field clears the shared lane first.
 		for (const [name, firstLeg] of [
 			["qty", 0.2],
 			["details", 0.3],
 		] as const) {
-			d.carry(g(`trade-source-${name}`), g(`trade-via-${name}`), 15.0, {
+			d.carry(g(`trade-source-${name}`), g(`trade-via-${name}`), 15.5, {
 				duration: firstLeg,
 				arc: "x",
 				reveal: false,
@@ -877,7 +877,7 @@ function build(context: FilmContext) {
 			d.carry(
 				g(`trade-via-${name}`),
 				g(`tape-trade-${name}`),
-				15.0 + firstLeg,
+				15.5 + firstLeg,
 				{
 					duration: 0.5 - firstLeg,
 					arc: "x",
@@ -885,18 +885,18 @@ function build(context: FilmContext) {
 			);
 		}
 	} else {
-		d.carry(g("trade-source"), g("tape-trade"), 15.0, {
+		d.carry(g("trade-source"), g("tape-trade"), 15.5, {
 			duration: 0.5,
 			arc: "x",
 		});
 	}
-	show(heads[1], 14.7);
-	show(one("role-b"), 16.5);
-	show(one("role-s"), 16.9);
+	show(heads[1], 15.2);
+	show(one("role-b"), 17.0);
+	show(one("role-s"), 17.4);
 
 	// ——— limit: the hero. Buy 30, at most $4.15: best price first, and the rest waits. ———
-	tl.addLabel("limit", 19.6);
-	d.swap([heads[0], heads[1]], heads[2], 19.6);
+	tl.addLabel("limit", 19.2);
+	d.swap([heads[0], heads[1]], heads[2], 19.2);
 	hide(
 		[
 			...kids("tape"),
@@ -905,69 +905,70 @@ function build(context: FilmContext) {
 			one("role-b"),
 			one("role-s"),
 		],
-		19.6,
+		19.2,
 	);
-	// Explicit alternative: dip the book, reset it while hidden, then reveal it afresh.
-	hide(book, 19.6, 0.35, 0);
-	sizeTo(best, BEST.size, 0, 19.95);
-	tl.fromTo(book, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.45);
+	// Reset the book instantly while hidden; this is setup, not a visible depletion.
+	hide(book, 19.2, 0.35, 0);
+	tl.set(one(`bar-${best}`), { attr: { width: width(BEST.size) } }, 19.55);
+	tl.set(one(`size-${best}`), { textContent: count(BEST.size) }, 19.55);
+	tl.fromTo(book, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.05);
 	// Its figures land with the alternative headline, before the fresh book arrives.
 	tl.fromTo(
 		[one("chip-l"), one("chip-l-left")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		19.95,
+		19.55,
 	);
-	d.trace(one<SVGPathElement>("limit"), 21.15, { duration: 0.6 });
+	d.trace(one<SVGPathElement>("limit"), 20.75, { duration: 0.6 });
 	// Above the limit: out of reach.
-	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 21.55);
-	show(one("fill"), 21.55);
-	ride("chip-l", bestRow, 22.1);
+	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 21.15);
+	show(one("fill"), 21.15);
+	ride("chip-l", bestRow, 21.7);
 	const chipQuantity = one<SVGTextElement>("chip-l-left");
 	const filled = one<SVGTextElement>("fill-n");
 	const fillTo = (total: number) => {
 		chipQuantity.textContent = count(SIZE - total);
 		filled.textContent = `${count(total)} / ${SIZE}`;
 	};
-	sizeTo(best, 0, BEST.size, 22.6, (remaining) => fillTo(FIRST - remaining));
+	sizeTo(best, 0, BEST.size, 22.2, (remaining) => fillTo(FIRST - remaining));
 	// Each completed fill stands for a full second before the next construction.
-	ride("chip-l", bestRow - 1, 24.1);
-	sizeTo(second, 0, TAKEN[1].size, 24.6, (remaining) =>
+	ride("chip-l", bestRow - 1, 24.2);
+	sizeTo(second, 0, TAKEN[1].size, 24.7, (remaining) =>
 		fillTo(DONE.filled - remaining),
 	);
 	tl.to(
 		[one(`lv-${best}`), one(`lv-${second}`)],
 		{ opacity: 0.3, duration: 0.4 },
-		26.1,
+		26.7,
 	);
 	// The rest drops into the bids as the new best bid, and the old ones step down.
-	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 26.1);
+	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 26.7);
 	tl.to(
 		one("chip-l"),
 		{ y: L.bidY(0) - L.chipY, opacity: 0, duration: 0.5, ease: "power2.inOut" },
-		26.1,
+		26.7,
 	);
 	// The visible eight lifts out of the ticket and becomes the bid's size at arrival.
-	tl.to(chipQuantity, { opacity: 0, duration: 0.3, ease: "power2.out" }, 26.1);
-	d.carry(g("rest-flight"), g("size-mine"), 26.1, { duration: 0.5, arc: "y" });
+	tl.to(chipQuantity, { opacity: 0, duration: 0.3, ease: "power2.out" }, 26.7);
+	d.carry(g("rest-flight"), g("size-mine"), 26.7, { duration: 0.5, arc: "y" });
 	tl.fromTo(
 		[one("price-mine"), one("bar-mine")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		26.6,
+		27.2,
 	);
-	show(one("yours"), 27.0, "right");
-	show(one("rest"), 27.5);
-	tl.to(one("fill"), { opacity: 0.35, duration: 0.4 }, 27.5);
-	d.lock(g("lock-mine"), 29.0, { around: one("rest-n"), pad: 6 });
-	tl.addLabel("hero-lock", 29.0);
-	show(heads[3], 29.0);
+	show(one("yours"), 27.6, "right");
+	show(one("rest"), 28.1);
+	tl.to(one("fill"), { opacity: 0.35, duration: 0.4 }, 28.1);
+	d.lock(g("lock-mine"), 29.6, { around: one("rest-n"), pad: 6 });
+	tl.addLabel("hero-lock", 29.6);
+	show(heads[3], 29.6);
 	// After the hero stands, the older book recedes around the earned resting bid.
-	tl.to(book, { opacity: 0.25, duration: 0.4 }, 31.0);
-	tl.to(one("limit"), { opacity: 0.25, duration: 0.4 }, 31.0);
+	tl.to(book, { opacity: 0.25, duration: 0.4 }, 31.6);
+	tl.to(one("limit"), { opacity: 0.25, duration: 0.4 }, 31.6);
 
 	// ——— print: two orders, one line on the tape ———
-	tl.addLabel("print", 32.6);
+	tl.addLabel("print", 33.2);
 	hide(
 		[
 			heads[2],
@@ -980,12 +981,12 @@ function build(context: FilmContext) {
 			one("rest"),
 			g("lock-mine"),
 		],
-		32.6,
+		33.2,
 	);
-	show(heads[4], 32.95);
-	show(one("print"), 33.2);
-	show(one("card-0"), 34.7);
-	show(one("card-1"), 36.2);
+	show(heads[4], 33.55);
+	show(one("print"), 33.8);
+	show(one("card-0"), 35.3);
+	show(one("card-1"), 36.8);
 	// Both mutually exclusive instructions connect to the already-settled public print.
 	// Card B has a full second to read first; the completed link proof then stands 1.5 s.
 	const links = [
@@ -993,19 +994,19 @@ function build(context: FilmContext) {
 		one<SVGPathElement>("comparison-link-1"),
 	];
 	links.forEach((link, i) => {
-		d.trace(link, 37.7 + i * 0.1, { duration: 0.5 });
+		d.trace(link, 38.3 + i * 0.1, { duration: 0.5 });
 	});
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.8);
-	hide([heads[4], one("card-0"), one("card-1"), one("print"), ...links], 39.8);
-	word(one("z-big"), 40.1);
-	show(one("z-sub"), 40.4);
+	tl.addLabel("claim", 40.4);
+	hide([heads[4], one("card-0"), one("card-1"), one("print"), ...links], 40.4);
+	word(one("z-big"), 40.7);
+	show(one("z-sub"), 41.0);
 
 	// ——— next ———
-	tl.addLabel("next", 44.2);
-	hide(kids("claim"), 44.2);
-	d.close(44.2);
+	tl.addLabel("next", 44.8);
+	hide(kids("claim"), 44.8);
+	d.close(44.8);
 	return tl;
 }
 
