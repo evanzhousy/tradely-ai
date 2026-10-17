@@ -887,7 +887,7 @@ function build(context: FilmContext) {
 			match,
 		});
 	}
-	show(one("o-head"), 9.6, "above", 0.3);
+	show(one("o-head"), 9.6, "below", 0.3);
 	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 9.6);
 	// Scaffold and question settle at 9.90; wait 1 s, then grow one distribution.
 	SIDES.forEach((side) => {
@@ -985,7 +985,7 @@ function build(context: FilmContext) {
 	hide([one("o-head"), one("g-head"), one("g-answer"), one("bars")], 21.7);
 	// The existing chart depth stays on stage through this handover.
 	show(one("pain"), 22.0);
-	show(one("p-head"), 22.05, "above");
+	show(one("p-head"), 22.05);
 	show([one("pay-put-label"), one("pay-call-label")], 22.0);
 	// The scaffold/question settle by 22.55. Build the two operands as one pair,
 	// after 1.25 s of stillness, preserving the 24.60–25.60 proof rest.
