@@ -252,8 +252,8 @@ function Scene({
 					x={margin + L.priceW}
 					y={rowText(y)}
 					textAnchor="end"
-					// Asks red, bids green, as on the question's screen and on the venue cards.
-					className={`wt-film-num ${side === "ask" ? "wt-film-loss" : "wt-film-gain"}`}
+					// Prices are levels; the labels and row order identify the sides.
+					className="wt-film-num"
 					style={{ fontSize: text }}
 				>
 					{usd(at.price)}
@@ -266,7 +266,7 @@ function Scene({
 					height={L.rowH * 0.6}
 					rx={3}
 					className="wt-film-bar"
-					data-tone={side === "ask" ? "loss" : "gain"}
+					data-tone="neutral"
 				/>
 				<text
 					data-f={`size-${key}`}
@@ -332,8 +332,8 @@ function Scene({
 				</Word>
 				{(
 					[
-						["q-bid", copy.bid, usd(BID.price), "wt-film-gain"],
-						["q-ask", copy.ask, usd(ASK.price), "wt-film-loss"],
+						["q-bid", copy.bid, usd(BID.price), ""],
+						["q-ask", copy.ask, usd(ASK.price), ""],
 						["q-last", copy.last, usd(oct105CallLast.price), "wt-film-dim"],
 					] as const
 				).map(([name, tag, num, tone], i) => (
@@ -446,7 +446,7 @@ function Scene({
 					x={midX - textWidth(midText, text) / 2 - text * 1.2}
 					y={spreadAt - 4}
 					textAnchor="end"
-					className="wt-film-num wt-film-gain wt-halo"
+					className="wt-film-num wt-halo"
 					style={{ fontSize: text }}
 				>
 					{usd(BID.price)}
@@ -455,7 +455,7 @@ function Scene({
 					data-f="mid-hi"
 					x={midX + textWidth(midText, text) / 2 + text * 1.2}
 					y={spreadAt - 4}
-					className="wt-film-num wt-film-loss wt-halo"
+					className="wt-film-num wt-halo"
 					style={{ fontSize: text }}
 				>
 					{usd(ASK.price)}
@@ -627,9 +627,9 @@ function Scene({
 							className="wt-film-tag"
 							style={{ fontSize: T.small }}
 						>
-							{`${t(copy.venue).toUpperCase()} ${v.venue}`}
+							{`${v.venue} · ${t(copy.ask)}/${t(copy.bid)}`.toUpperCase()}
 						</text>
-						{/* Price · size, the ask in red above the bid in green, as in the book. */}
+						{/* Price · size: ask above bid, named in the card header. */}
 						{v.venue === BEST.ask.venue && (
 							<text
 								data-f="va-gone"
@@ -647,7 +647,7 @@ function Scene({
 							x={L.venueX(i) + L.venueW / 2}
 							y={L.venueLine(1)}
 							textAnchor="middle"
-							className="wt-film-num wt-film-loss"
+							className="wt-film-num"
 							style={{ fontSize: cardText }}
 						>
 							{`${usd(v.ask.price)} · `}
@@ -660,7 +660,7 @@ function Scene({
 							x={L.venueX(i) + L.venueW / 2}
 							y={L.venueLine(2)}
 							textAnchor="middle"
-							className="wt-film-num wt-film-gain"
+							className="wt-film-num"
 							style={{ fontSize: cardText }}
 						>
 							{`${usd(v.bid.price)} · `}
@@ -675,10 +675,10 @@ function Scene({
 			<g data-f="nbsrc">
 				{(
 					[
-						["nbsrc-bid", BEST.bid, 2, "wt-film-gain"],
-						["nbsrc-ask", BEST.ask, 1, "wt-film-loss"],
+						["nbsrc-bid", BEST.bid, 2],
+						["nbsrc-ask", BEST.ask, 1],
 					] as const
-				).map(([name, best, line, tone]) => {
+				).map(([name, best, line]) => {
 					const i = venueAt(best.venue);
 					const v = VENUES[i];
 					const full =
@@ -691,7 +691,7 @@ function Scene({
 							data-f={name}
 							x={L.venueX(i) + L.venueW / 2 - textWidth(full, cardText) / 2}
 							y={L.venueLine(line)}
-							className={`wt-film-num ${tone}`}
+							className="wt-film-num"
 							style={{ fontSize: cardText }}
 						>
 							{usd(best.price)}
@@ -713,7 +713,7 @@ function Scene({
 					data-f="nbbo-bid"
 					x={L.nbboX}
 					y={L.nbboY + L.nbboSize * 1.3}
-					className="wt-film-num wt-film-gain"
+					className="wt-film-num"
 					style={{ fontSize: L.nbboSize }}
 				>
 					{`${usd(BEST.bid.price)} ×`}
@@ -729,7 +729,7 @@ function Scene({
 						data-f={name}
 						x={L.nbboX + textWidth(`${usd(BEST.bid.price)} × `, L.nbboSize)}
 						y={L.nbboY + L.nbboSize * 1.3}
-						className="wt-film-num wt-film-loss"
+						className="wt-film-num"
 						style={{ fontSize: L.nbboSize }}
 					>
 						{usd(ask)}
