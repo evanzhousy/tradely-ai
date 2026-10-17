@@ -103,7 +103,7 @@ const copy = {
 		`成交：${FILLS.map((fill) => `${fill.venue} ${count(fill.size)} 张`).join("，")}。`,
 	],
 	qBig: ["Three buyers?", "三个买方？"],
-	sHead: ["Initial quotes for the 110 call.", "下单前的 110 看涨报价。"],
+	sHead: ["Initial call quotes.", "初始看涨报价。"],
 	venue: ["venue", "场所"],
 	offered: ["initial", "初始"],
 	order: [
@@ -111,10 +111,9 @@ const copy = {
 		`一张订单 · 买 ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
 	],
 	sAnswer: ["Three prints, one order.", "三笔成交，一张订单。"],
-	average: [`average ${price4(AVERAGE)}`, `均价 ${price4(AVERAGE)}`],
-	benchmark: [
-		`pre-order best ask ${usd(BEST.price)}`,
-		`成交前最优卖价 ${usd(BEST.price)}`,
+	averageComparison: [
+		`average ${price4(AVERAGE)} vs best ask ${usd(BEST.price)}`,
+		`均价 ${price4(AVERAGE)}，高于最优卖价 ${usd(BEST.price)}`,
 	],
 	bHead: ["What does this block reveal?", "这笔大宗能说明什么？"],
 	bContract: ["Oct 18 105 call", "10月18日 105 看涨"],
@@ -360,26 +359,16 @@ function Scene({
 					anchor="start"
 					className="wt-film-type wt-film-accent"
 				/>
-				<Word
-					name="avg-price"
+				<Lines
+					name="avg-comparison"
+					text={t(copy.averageComparison)}
 					x={margin}
 					y={H * 0.895}
 					size={T.body}
-					anchor="start"
-					className="wt-film-num"
-				>
-					{t(copy.average)}
-				</Word>
-				<Word
-					name="avg-benchmark"
-					x={margin}
-					y={H * 0.945}
-					size={T.small}
+					maxWidth={room}
 					anchor="start"
 					className="wt-film-type"
-				>
-					{t(copy.benchmark)}
-				</Word>
+				/>
 			</g>
 
 			{/* A block: arranged off-screen. */}
@@ -812,11 +801,11 @@ function build(context: FilmContext) {
 	show(one("bar-printed"), 21.5);
 	show(one("auction"), 23.0);
 	show(one("known-label"), 23.0);
-	// Reduce the comparison before the condition travels into its known field.
+	// Leave the printed-price label readable; fade at the motion floor before the carry.
 	tl.to(
 		[one("bar-shown"), one("bar-printed")],
-		{ opacity: 0.2, duration: 0.5 },
-		23.0,
+		{ opacity: 0.2, duration: 0.3 },
+		23.3,
 	);
 	d.carry(
 		one<SVGGraphicsElement>("auction-value"),
