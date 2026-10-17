@@ -135,10 +135,10 @@ const copy = {
 	title: ["Premium, payoff and profit", "权利金、到期价值与盈亏"],
 	titleSub: ["buyer and writer", "交易的两方"],
 	qTag: ["Oct 18 95 call · ALFA $100", "10月18日 95 看涨 · ALFA $100"],
-	qLine: ["If ALFA stays $100: Oct 18 value?", "若ALFA仍$100，10月18日价值？"],
+	qLine: ["ALFA unchanged. Expiry value?", "若ALFA不变，到期价值？"],
 	partsHead: [
-		"Its parts: $5.00 intrinsic + $2.30 time.",
-		"拆开：内在价值 $5.00 + 时间价值 $2.30。",
+		"$5 intrinsic + $2.30 time value.",
+		"$5 内在价值 + $2.30 时间价值。",
 	],
 	partsHeadShort: ["Its parts: $5.00 + $2.30.", "拆开：$5.00 + $2.30。"],
 	expiryHead: ["At expiry, the time value is gone.", "到期时，时间价值归零。"],
@@ -176,11 +176,8 @@ const copy = {
 	],
 	profitFrom: ["profit from here →", "从这里开始盈利 →"],
 	profitFromShort: ["profit →", "盈利 →"],
-	claimBig: ["In the money isn't the same as profitable.", "实值不等于盈利。"],
-	claimSub: [
-		"A writer's best case is the premium.",
-		"义务方最好的结果就是权利金。",
-	],
+	claimBig: ["In the money can still lose.", "实值仍可能亏损。"],
+	claimSub: ["Writers gain at most the premium.", "卖方最多赚取权利金。"],
 	nextBig: ["Next: put-call parity", "下一课：看涨看跌平价"],
 	nextSub: ["how calls, puts and shares line up", "看涨、看跌与股票如何对齐"],
 } as const satisfies Record<string, Copy>;
@@ -790,6 +787,7 @@ function build(context: FilmContext) {
 	const marker = one("marker");
 	const meterValue = one<SVGTextElement>("m-value");
 	const meterProfit = one<SVGTextElement>("m-profit");
+	const meterSpot = one<SVGTextElement>("m-spot");
 	const whole = (v: number) => usd(Math.round(v) * 100, 0);
 	const signed = (v: number) =>
 		Math.round(v) === 0 ? "$0" : signedUsd(Math.round(v) * 100, 0);
@@ -986,12 +984,7 @@ function build(context: FilmContext) {
 	show(heads[2], 18.75);
 	// No camera or pen: the fixed scaffold settles at 19.00, before the value line.
 	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 18.7);
-	tl.fromTo(
-		one("value-line"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		20.15,
-	);
+	d.trace(one<SVGPathElement>("value-line"), 20.15, { duration: 0.5 });
 	show(one("value-tag"), 20.1);
 	// The tag settles at 20.60 and the line at 20.65; keep the same full second of rest.
 	// Keep the premium measure as context instead of spending another exit here.
@@ -1022,9 +1015,8 @@ function build(context: FilmContext) {
 	// green with the area under it.
 	// Ask the break-even question with the walk, after the counterexample has rested.
 	d.swap(heads[2], heads[3], 26.15);
-	// The example settles at 24.05 and keeps the existing 1.75 s of quiet. Then clear
-	// its stock-price context in place before the walk, so it never becomes a stale $102.
-	tl.to(one("m-spot"), { opacity: 0, duration: 0.35 }, 25.8);
+	// The example settles at 24.05 and keeps the existing 1.75 s of quiet. Keep its
+	// stock-price context tied to the same value that drives the marker and meter.
 	const place = (spot: number) => {
 		const profit = Math.round(buyerProfit(spot));
 		gsap.set(marker, {
@@ -1037,6 +1029,10 @@ function build(context: FilmContext) {
 		gsap.set(winClip, { attr: { width: Math.max(0, L.x(spot) - beX) } });
 		meterValue.textContent = whole(value(CALL, spot));
 		meterProfit.textContent = signed(profit);
+		meterSpot.textContent = pick(copy.exampleSpot, context.locale).replace(
+			usd(BUYER_EXAMPLE_SPOT * 100, 0),
+			usd(spot * 100, 2),
+		);
 		const profitTone = signTone(profit);
 		meterProfit.setAttribute(
 			"class",
