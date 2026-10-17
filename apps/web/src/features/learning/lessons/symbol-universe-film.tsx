@@ -38,14 +38,14 @@ import {
  *
  *   open      0–4        "Comparison groups"
  *   question  4–8.6      FJOR's volume never arrived: in or out?
- *   rules     8.6–22.4   facts first, then stocks; Monday; data; ≥ 500
- *   leader    22.4–31.4  compare the board; FJOR arrives with 7,300
- *   past      31.4–36.8  Sep 2 on today's list: CRUX; on Sep 2's list: HALO
- *   claim     36.8–41.2  who belongs comes from the facts
- *   next      41.2–43.7  Next: rankings
+ *   rules     8.6–23.26  facts first, then stocks; Monday; data; ≥ 500
+ *   leader    23.26–32.26 compare the board; FJOR arrives with 7,300
+ *   past      32.26–37.66 Sep 2 on today's list: CRUX; on Sep 2's list: HALO
+ *   claim     37.66–42.06 who belongs comes from the facts
+ *   next      42.06–44.56 Next: rankings
  */
 
-const END = 43.7;
+const END = 44.56;
 const ROWS = CANDIDATES;
 const ELIGIBLE = ROWS.filter((row) => firstFail(row, CHECKS.length) === null);
 const OBSERVED = ELIGIBLE.filter((row) => row.optionVolume !== null).sort(
@@ -124,10 +124,7 @@ const copy = {
 	rHead: ["Four rules, applied in order.", "四条规则，依次套用。"],
 	r2Head: ["FJOR stays in, as an unknown.", "FJOR 留下，作为未知。"],
 	lHead: ["Compare the observed names.", "比较已观测的代码。"],
-	l2Head: [
-		`Then FJOR's ${count(FJOR_LATE)} arrive: a new leader.`,
-		`FJOR 的 ${count(FJOR_LATE)} 张到了：领先者换了。`,
-	],
+	l2Head: ["FJOR arrives: a new leader.", "FJOR 到了：领先者换了。"],
 	pHead: ["Compare Sep 2's two lists.", "比较9月2日的两份名单。"],
 	todayList: ["today's list", "今天的名单"],
 	sep2List: ["Sep 2's list", "9月2日的名单"],
@@ -585,26 +582,26 @@ function build(context: FilmContext) {
 	syms.forEach((sym, i) => {
 		show(sym, 9.2 + i * 0.08, "right");
 	});
-	apply(0, 10.4);
-	apply(1, 12.6);
-	apply(2, 14.6);
+	apply(0, 11.26);
+	apply(1, 13.46);
+	apply(2, 15.46);
 	ROWS.forEach((row, i) => {
 		if (row.optionVolume === null)
-			tl.set(one(`sym-${i}-box`), { attr: { class: "wt-focus-shape" } }, 15.0);
+			tl.set(one(`sym-${i}-box`), { attr: { class: "wt-focus-shape" } }, 15.86);
 	});
-	apply(3, 16.6);
-	show(heads[1], 18.6);
+	apply(3, 17.46);
+	show(heads[1], 19.46);
 
 	// ——— leader: the hero. The observed, then the complete set. ———
-	tl.addLabel("leader", 22.4);
-	d.swap([heads[0], heads[1]], heads[2], 22.4);
+	tl.addLabel("leader", 23.26);
+	d.swap([heads[0], heads[1]], heads[2], 23.26);
 	hide(
 		[...cols, ...syms, ...CHECKS.flatMap((_, c) => [...facts(c), ...marks(c)])],
-		22.4,
+		23.26,
 	);
 	// One comparison, rather than four competing row arrivals; retain a full quiet hold.
-	show(board, 23.2, "right");
-	hide([one("fjor-ghost"), one("fjor-q")], 25.7, 0.3);
+	show(board, 24.06, "right");
+	hide([one("fjor-ghost"), one("fjor-q")], 26.56, 0.3);
 	const fjorBar = one("fjor-bar");
 	const fjorNumber = one<SVGTextElement>("fjor-n");
 	const cruxBar = one("board-0-bar");
@@ -627,7 +624,7 @@ function build(context: FilmContext) {
 		[fjorBar, fjorNumber],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		25.8,
+		26.66,
 	);
 	tl.fromTo(
 		arrival,
@@ -640,33 +637,33 @@ function build(context: FilmContext) {
 			immediateRender: false,
 			onUpdate: renderArrival,
 		},
-		25.8,
+		26.66,
 	);
-	d.lock(lockFjor, 27.8, {
+	d.lock(lockFjor, 28.66, {
 		around: [board[OBSERVED.length], fjorBar, fjorNumber],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 27.8);
-	show(heads[3], 27.8);
+	tl.addLabel("hero-lock", 28.66);
+	show(heads[3], 28.66);
 
 	// ——— past: the day's own list ———
-	tl.addLabel("past", 31.4);
-	d.swap([heads[2], heads[3]], heads[4], 31.4);
-	hide([...board, fjorBar, fjorNumber, lockFjor], 31.4);
+	tl.addLabel("past", 32.26);
+	d.swap([heads[2], heads[3]], heads[4], 32.26);
+	hide([...board, fjorBar, fjorNumber, lockFjor], 32.26);
 	// The two lists are the proof; omit the redundant answer headline.
-	show(one("sep-today"), 32.0, "right");
-	show(one("sep-then"), 33.6, "right");
+	show(one("sep-today"), 32.86, "right");
+	show(one("sep-then"), 34.46, "right");
 
 	// ——— claim ———
-	tl.addLabel("claim", 36.8);
-	hide([heads[4], one("sep-today"), one("sep-then")], 36.8);
-	word(one("z-big"), 37.1);
-	show(one("z-sub"), 37.5);
+	tl.addLabel("claim", 37.66);
+	hide([heads[4], one("sep-today"), one("sep-then")], 37.66);
+	word(one("z-big"), 37.96);
+	show(one("z-sub"), 38.36);
 
 	// ——— next ———
-	tl.addLabel("next", 41.2);
-	hide(kids("claim"), 41.2);
-	d.close(41.2);
+	tl.addLabel("next", 42.06);
+	hide(kids("claim"), 42.06);
+	d.close(42.06);
 	return tl;
 }
 
