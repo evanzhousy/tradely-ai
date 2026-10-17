@@ -114,11 +114,8 @@ const copy = {
 	title: ["Expected move", "预期变动"],
 	titleSub: ["how far the options price ALFA to go", "期权定价的变动幅度"],
 	qTagIv: ["implied volatility", "隐含波动率"],
-	qTagMove: [`by Oct 18, ${DAYS} days`, `到 10月18日，${DAYS} 天`],
-	qLine: [
-		`ALFA is $${SPOT}. How far do its options price it to move by Oct 18?`,
-		`ALFA 为 $${SPOT}。它的期权定价了到 10月18日 多大的变动？`,
-	],
+	qTagMove: ["ALFA $100", "ALFA $100"],
+	qLine: ["What move is priced by Oct 18?", "到10月18日，定价多大变动？"],
 	eYear: ["a year", "一年"],
 	eTime: [
 		`${DAYS} days: by the square root of time`,
@@ -648,9 +645,10 @@ function build(context: FilmContext) {
 		flat("q").filter((el) => el !== ivQuestion),
 		9.6,
 	);
-	for (const i of [0, 1, 2]) {
-		show(one(`e-tag-${i}`), 9.9 + i * 1.0);
-		if (i > 0) land(one(`e-num-${i}`), 10.1 + i * 1.0);
+	const rowAt = [10.1, 11.65, 13.2] as const;
+	for (const [i, at] of rowAt.entries()) {
+		show(one(`e-tag-${i}`), at, "below", 0.55);
+		if (i > 0) land(one(`e-num-${i}`), at);
 	}
 	// The equation fades in around its hidden 35% slot; the question supplies that term.
 	tl.to(one("e-num-0"), { opacity: 1, duration: 0.55 }, 10.1);
@@ -659,11 +657,17 @@ function build(context: FilmContext) {
 		match: `${IV}%`,
 		arc: "x",
 	});
-	show(one("e-note"), 12.5);
+	// Leave a full second after the completed calculation before its qualification.
+	show(one("e-note"), 14.75);
 
 	// ——— bell: what the range covers ———
 	tl.addLabel("bell", 16);
-	hide(flat("e"), 16);
+	hide(
+		flat("e").filter((el) => el !== one("e-note")),
+		16,
+	);
+	// Keep the formula note readable through the chart handoff, then clear it before the curve.
+	hide(one("e-note"), 18.25);
 	show(one("b-head"), 16.2);
 	rise(16.3);
 	// Price ticks belong to the scaffold: all are still when the rise settles at 17.1.
@@ -679,7 +683,7 @@ function build(context: FilmContext) {
 			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		18.1,
+		18.6,
 	);
 	const spread = { half: 0 };
 	const grow = () => {
@@ -688,9 +692,9 @@ function build(context: FilmContext) {
 	tl.to(
 		spread,
 		{ half: MOVE, duration: 1.0, ease: "power2.out", onUpdate: grow },
-		18.2,
+		18.6,
 	);
-	land(one("b-inside"), 19.4);
+	land(one("b-inside"), 19.6);
 	// The answer, as the share inside lands.
 	show(one("b2-head"), 19.7);
 	// Make the denominator a measured distance, with 1.2 s of quiet after its label settles.
@@ -755,13 +759,10 @@ function build(context: FilmContext) {
 		32.8,
 	);
 	show([one("b-tail-label-low"), one("b-tail-label-high")], 33.2, "below", 0.4);
-	// The two tails settle at 33.6 and rest for one full second.
-	sink(34.6);
-	tl.set(charts.bell, { opacity: 0 }, 35.0);
-	tl.set(charts.months, { opacity: 1 }, 35.0);
-	rise(35.1);
-	// Establish both reference levels together while the chart rises, before bars settle.
-	show([one("m-line-1"), one("m-line-2")], 35.1, "right", 0.4);
+	// After the tails' one-second rest, cut to the empty monthly scaffold and hold it for 1 s.
+	tl.set(charts.bell, { opacity: 0 }, 34.6);
+	tl.set(charts.months, { opacity: 1 }, 34.6);
+	tl.set([one("m-line-1"), one("m-line-2")], { opacity: 1 }, 34.6);
 	// One chart construction: all twelve bars settle at 35.95, then rest until 37.0.
 	PAST.forEach((multiple, i) => {
 		tl.fromTo(
@@ -769,10 +770,10 @@ function build(context: FilmContext) {
 			{ attr: { y: L.yM(0), height: 0 } },
 			{
 				attr: { y: L.yM(multiple), height: L.yM(0) - L.yM(multiple) },
-				duration: 0.45,
+				duration: 0.35,
 				ease: "power3.out",
 			},
-			35.5,
+			35.6,
 		);
 	});
 	show(one("m-head"), 37.0);
