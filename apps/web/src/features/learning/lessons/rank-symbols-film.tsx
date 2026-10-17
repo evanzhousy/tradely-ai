@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -218,7 +219,7 @@ function Scene({
 								className={
 									focus && !entry.dim ? "wt-focus-shape" : "wt-panel-shape"
 								}
-								style={hero ? { stroke: "var(--diagram-loss)" } : undefined}
+								style={hero ? { stroke: toneColor("down") } : undefined}
 							/>
 							<text
 								x={L.colX[side] + 12}
@@ -430,7 +431,7 @@ function Scene({
 				size={narrow ? 14 : T.body}
 				maxWidth={room}
 				anchor="start"
-				className="wt-film-type wt-film-warn"
+				className="wt-film-type"
 			/>
 
 			<g data-f="claim">
