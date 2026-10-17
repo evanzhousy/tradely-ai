@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import { useId } from "react";
 import {
 	type Copy,
 	count,
@@ -16,9 +17,12 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -192,6 +196,7 @@ function Scene({
 	locale: Locale;
 }) {
 	const t = (value: Copy) => pick(value, locale);
+	const hatchId = `execution-side-unknown-${useId().replace(/:/g, "")}`;
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
@@ -210,26 +215,38 @@ function Scene({
 	const ticks = narrow
 		? []
 		: [390, 395, 400, 405, 410, 415, 420, 425, 430, 435];
-	const tick = (name: string, tone: "gain" | "loss") => (
+	const tick = (name: "bid-m" | "ask-m") => (
 		<g data-f={name}>
 			<path
 				d={`M0 ${L.rulerY - 16}V${L.rulerY + 16}`}
 				style={{
-					stroke: `var(--diagram-${tone})`,
+					stroke: "var(--tone-ink)",
 					strokeWidth: 2.5,
 					strokeLinecap: "round",
 				}}
 			/>
+			{!narrow && (
+				<text
+					data-f={`${name}-label`}
+					x={name === "bid-m" ? -8 : 8}
+					y={L.rulerY + T.small * 1.2}
+					textAnchor={name === "bid-m" ? "end" : "start"}
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(name === "bid-m" ? copy.bid : copy.ask).toUpperCase()}
+				</text>
+			)}
 			{narrow && (
 				<text
 					data-f={`${name}-price`}
 					x={name === "bid-m" ? -4 : 4}
 					y={L.rulerY + T.small * 2.6}
 					textAnchor={name === "bid-m" ? "end" : "start"}
-					className={`wt-film-num wt-film-${tone}`}
+					className="wt-film-num"
 					style={{ fontSize: T.small }}
 				>
-					{usd(name === "bid-m" ? quoteAt("t1").bid : quoteAt("t1").ask)}
+					{`${t(name === "bid-m" ? copy.bid : copy.ask)} ${usd(name === "bid-m" ? quoteAt("t1").bid : quoteAt("t1").ask)}`}
 				</text>
 			)}
 		</g>
@@ -240,38 +257,41 @@ function Scene({
 		["pl-t3", LAST.price, printText(LAST.quantity, LAST.price)],
 		["pl-test", OUTSIDE, t(copy.test)],
 	];
-	const cards: [string, string, Copy, "gain" | "loss" | "dim"][] = [
+	const cards: [string, string, Copy, "up" | "down" | "caution"][] = [
 		[
 			"ref-0",
 			`${quoteAt("t2").time} · ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}`,
 			copy.usable,
-			"gain",
+			"up",
 		],
 		[
 			"ref-1",
 			`${STALE.time} · ${pair(STALE.bid ?? 0, STALE.ask ?? 0)}`,
 			copy.stale,
-			"loss",
+			"down",
 		],
 		[
 			"ref-2",
 			`${LATER.time} · ${pair(LATER.bid ?? 0, LATER.ask ?? 0)}`,
 			copy.later,
-			"loss",
+			"down",
 		],
-		["ref-3", t(copy.none), copy.missing, "dim"],
+		["ref-3", t(copy.none), copy.missing, "caution"],
 	];
-	const claims: [Copy, Copy, string][] = [
-		[copy.c1, copy.calculated, "wt-film-gain"],
-		[copy.c2, copy.inferred, "wt-film-warn"],
-		[copy.c3, copy.unknown, "wt-film-dim"],
-		[copy.c4, copy.unknown, "wt-film-dim"],
+	const claims: [Copy, Copy, "observed" | "inferred" | "unknown"][] = [
+		[copy.c1, copy.calculated, "observed"],
+		[copy.c2, copy.inferred, "inferred"],
+		[copy.c3, copy.unknown, "unknown"],
+		[copy.c4, copy.unknown, "unknown"],
 	];
 	const seller = holders[LAST.seller].name;
 	const buyer = holders[LAST.buyer].name;
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<Hatch id={hatchId} />
+			</defs>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -287,10 +307,10 @@ function Scene({
 				</Word>
 				{(
 					[
-						["q-bid", copy.bid, usd(quoteAt("t2").bid), "wt-film-gain", -1],
-						["q-ask", copy.ask, usd(quoteAt("t2").ask), "wt-film-loss", 1],
+						["q-bid", copy.bid, usd(quoteAt("t2").bid), -1],
+						["q-ask", copy.ask, usd(quoteAt("t2").ask), 1],
 					] as const
-				).map(([name, tag, num, tone, side]) => (
+				).map(([name, tag, num, side]) => (
 					<g key={name}>
 						<Word
 							name={`${name}-tag`}
@@ -306,7 +326,7 @@ function Scene({
 							x={W / 2 + side * W * 0.16}
 							y={H * 0.33 + T.num * 1.3}
 							size={T.num * 1.1}
-							className={`wt-film-num ${tone}`}
+							className="wt-film-num"
 						>
 							{num}
 						</Word>
@@ -376,17 +396,22 @@ function Scene({
 				height={16}
 				rx={3}
 				className="wt-film-bar"
-				data-tone="model"
+				data-tone="total"
+				style={{
+					fill: `color-mix(in oklab, ${toneColor("focus")} 18%, transparent)`,
+					stroke: toneColor("focus"),
+					strokeWidth: 1.5,
+				}}
 			/>
-			{tick("bid-m", "gain")}
-			{tick("ask-m", "loss")}
+			{tick("bid-m")}
+			{tick("ask-m")}
 			{/* MID is attached to the quote interior, above the separate fixed legend. */}
 			<g data-f="mid-range">
 				<path
 					data-f="mid-span"
 					d="M0 0H0"
 					fill="none"
-					stroke="var(--diagram-model)"
+					stroke={toneColor("focus")}
 					strokeWidth={2}
 				/>
 				<text
@@ -487,7 +512,7 @@ function Scene({
 					x={W / 2}
 					y={L.sideY}
 					textAnchor="middle"
-					className={`wt-film-num ${WITHHELD[i] || code === null ? "wt-film-dim" : "wt-film-accent"}`}
+					className={`wt-film-num ${code === null ? toneClass.caution : WITHHELD[i] ? "wt-film-dim" : toneClass.focus}`}
 					style={{
 						fontSize: T.num * 1.15,
 					}}
@@ -526,7 +551,7 @@ function Scene({
 						x={L.tapeX + L.tapeW}
 						y={L.tapeY + T.small + (i + 1) * L.rowStep}
 						textAnchor="end"
-						className="wt-film-num wt-film-accent"
+						className="wt-film-num"
 						style={{ fontSize: text }}
 					>
 						{codeOf(trade.id as TradeId)}
@@ -553,6 +578,17 @@ function Scene({
 			</g>
 			{cards.map(([name, line, verdict, tone]) => (
 				<g key={name} data-f={name}>
+					{tone === "caution" && (
+						<rect
+							data-f="ref-3-unknown"
+							x={L.tapeX}
+							y={L.tapeY + T.small * 1.2}
+							width={L.tapeW}
+							height={L.cardH - T.small * 2.4}
+							rx={12}
+							fill={`url(#${hatchId})`}
+						/>
+					)}
 					<text
 						x={L.tapeX + 14}
 						y={L.tapeY + T.small * 0.6 + L.cardH * 0.32}
@@ -564,10 +600,10 @@ function Scene({
 					<text
 						x={L.tapeX + 14}
 						y={L.tapeY + T.small * 0.6 + L.cardH * 0.58}
-						className={`wt-film-type wt-film-${tone}`}
+						className={`wt-film-type ${toneClass[tone]}`}
 						style={{ fontSize: text }}
 					>
-						{t(verdict)}
+						{`${tone === "up" ? "✓ " : tone === "down" ? "✗ " : ""}${t(verdict)}`}
 					</text>
 				</g>
 			))}
@@ -589,7 +625,7 @@ function Scene({
 				maxWidth={narrow ? room : room * 0.74}
 				anchor="start"
 			/>
-			{claims.map(([claim, evidence, tone], i) => (
+			{claims.map(([claim, evidence, kind], i) => (
 				<g key={t(claim)} data-f={`claim-${i}`}>
 					<rect
 						x={margin}
@@ -598,6 +634,13 @@ function Scene({
 						height={L.claimH}
 						rx={10}
 						className={i === 0 ? "wt-focus-shape" : "wt-panel-shape"}
+						style={
+							kind === "inferred"
+								? { fill: "none", stroke: "var(--tone-ink)" }
+								: kind === "unknown"
+									? { fill: `url(#${hatchId})`, stroke: toneColor("caution") }
+									: undefined
+						}
 					/>
 					<text
 						x={margin + 14}
@@ -611,8 +654,12 @@ function Scene({
 						x={margin + room - 14}
 						y={L.claimY(i) + L.claimH / 2 + T.small * 0.36}
 						textAnchor="end"
-						className={`wt-film-tag ${tone}`}
-						style={{ fontSize: T.small }}
+						className="wt-film-tag"
+						style={{
+							fontSize: T.small,
+							fill:
+								kind === "unknown" ? toneColor("caution") : "var(--tone-ink)",
+						}}
 					>
 						{t(evidence).toUpperCase()}
 					</text>
@@ -626,7 +673,7 @@ function Scene({
 				size={text}
 				maxWidth={room}
 				anchor="start"
-				className="wt-film-type wt-film-accent"
+				className="wt-film-type"
 			/>
 
 			<g data-f="claim">
@@ -723,8 +770,16 @@ function build(context: FilmContext) {
 		tl.set(midLabel, { ...p.interiorLabel, immediateRender: false }, time);
 		// These readouts share their ticks' hidden update and parent fade/reveal.
 		if (bidPrice && askPrice) {
-			tl.set(bidPrice, { textContent: usd(bid), immediateRender: false }, time);
-			tl.set(askPrice, { textContent: usd(ask), immediateRender: false }, time);
+			tl.set(
+				bidPrice,
+				{ textContent: `${d.t(copy.bid)} ${usd(bid)}`, immediateRender: false },
+				time,
+			);
+			tl.set(
+				askPrice,
+				{ textContent: `${d.t(copy.ask)} ${usd(ask)}`, immediateRender: false },
+				time,
+			);
 		}
 	};
 	const dotTo = (cents: number, time: number) =>
