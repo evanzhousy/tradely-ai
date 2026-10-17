@@ -644,6 +644,9 @@ function build(context: FilmContext) {
 	d.swap(heads[3], heads[4], 25.2);
 	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 25.4);
 	show(one("f-notional"), 25.8);
+	// The figure appears only as it counts, from $0: its settled $30,000 never shows early.
+	tl.set(notional, { opacity: 0 }, 25.8);
+	tl.to(notional, { opacity: 1, duration: 0.3 }, 27.4);
 	blocks.forEach((block, i) => {
 		const at = i === 2 ? 27.1 : 25.8 + i * 0.6;
 		tl.to(block.children, { opacity: 0, duration: 0.3 }, at - 0.3);
