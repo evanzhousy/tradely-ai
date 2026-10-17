@@ -138,8 +138,8 @@ const copy = {
 		"已报送 Delta（股） · 周一收盘",
 	],
 	qLine: [
-		`Short ${count(SUBTOTAL)} shares and you're hedged. Or are you?`,
-		`做空 ${count(SUBTOTAL)} 股就对冲好了。真的吗？`,
+		`Short ${count(SUBTOTAL)} shares. Fully hedged?`,
+		`做空 ${count(SUBTOTAL)} 股，就完全对冲了吗？`,
 	],
 	bookHead: [
 		"Your book at Monday's close: puts missing.",
@@ -225,8 +225,8 @@ const copy = {
 		"统一单位与时点，覆盖每项持仓。",
 	],
 	claimSub: [
-		"Missing or stale inputs cannot establish current exposure.",
-		"缺失或过时数据无法确定当前敞口。",
+		"Missing or stale inputs: current exposure unknown.",
+		"数据缺失或过时：当前敞口未知。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
@@ -337,12 +337,17 @@ function Scene({
 							data-f="curve-today"
 							d={L.path(today)}
 							className="wt-line-position"
+							style={{ strokeDasharray: "8 6" }}
 						/>
 						<path
 							data-f="curve-week"
 							d={L.path(weekOn)}
 							className="wt-line-position"
-							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
+							style={{
+								stroke: "var(--tone-ink)",
+								strokeDasharray: "8 6",
+								strokeWidth: 2.5,
+							}}
 						/>
 						<text
 							data-f="today-label"
@@ -849,13 +854,13 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, rise, sink } = d;
+	const { tl, one, kids, show, hide, sink, trace } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
-	const land = (target: Element, time: number) =>
+	const land = (target: Element, time: number, duration = 0.55) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
 			time,
 		);
 	/** A group's marks, opening unnamed row groups but keeping named ones whole. */
@@ -868,15 +873,6 @@ function build(context: FilmContext) {
 	const marker = one("marker");
 	const meter = one<SVGTextElement>("m-value");
 	const sum = one<SVGTextElement>("h-sum");
-	const draw = (path: SVGPathElement, at: number, duration: number) => {
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration, ease: "power2.inOut" },
-			at,
-		);
-	};
 	const word = (target: Element, at: number) =>
 		tl.fromTo(
 			target,
@@ -972,15 +968,21 @@ function build(context: FilmContext) {
 	tl.addLabel("hedge", 17.3);
 	hide([one("r-head"), ...flat("book")], 17.3);
 	show(one("g-head"), 17.65, "above");
-	rise(17.7);
-	draw(one<SVGPathElement>("curve-today"), 18.0, 1.2);
-	land(marker, 18.6);
-	show([one("m-tag"), meter], 18.8, "above");
+	// Bring the scaffold in at its final scale, then leave it alone for one second.
+	tl.set(one("depth"), { scale: 1 }, 17.7);
+	tl.to(one("depth"), { opacity: 1, duration: 0.3, ease: "power2.out" }, 17.7);
+	// Reveal the settled scenario as one data beat after the scaffold hold.
+	trace(one<SVGPathElement>("curve-today"), 19.0, {
+		duration: 0.3,
+		ease: "power1.inOut",
+	});
+	land(marker, 19.0, 0.3);
+	show([one("m-tag"), meter], 19.0, "above", 0.3);
 	tl.fromTo(
 		[one("walk-scenario"), one("scenario-iv"), one("today-label")],
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		18.8,
+		{ opacity: 1, duration: 0.3 },
+		19.0,
 	);
 	// One state drives both the dot and its dollar readout, including loss colour.
 	const walk = { spot: SPOT };
