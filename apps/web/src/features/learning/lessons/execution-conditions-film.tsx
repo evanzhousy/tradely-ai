@@ -36,7 +36,7 @@ import {
  * a block: 8 contracts displayed at $2.15, 500 printed there, marked as an auction; the
  * auction condition fills How; Who, Why and Opened? remain unknown and receive the lock.
  * Last, the block's two legs, a call bought at the ask and one sold inside its quote, that
- * are one $1.25 call spread.
+ * are one $1.25 call spread against a $1.12 / $1.30 market.
  *
  *   open      0–4        "Execution conditions"
  *   question  4–8.6      three prints, three venues, one instant: three buyers?
@@ -97,7 +97,7 @@ function layout(width: number) {
 const copy = {
 	title: ["Execution conditions", "成交条件"],
 	titleSub: ["sweeps, blocks and complex orders", "扫单、大宗与复杂订单"],
-	qTag: [`Oct 18 110 call · ${TIME}`, `10月18日 110 看涨 · ${TIME}`],
+	qTag: ["Oct 18 110 call", "10月18日 110 看涨"],
 	qLine: [
 		`Prints: ${FILLS.map((fill) => `${fill.venue} ${count(fill.size)}`).join(", ")}.`,
 		`成交：${FILLS.map((fill) => `${fill.venue} ${count(fill.size)} 张`).join("，")}。`,
@@ -145,15 +145,12 @@ const copy = {
 		`报价 ${usd(LEGS.sell.bid)} / ${usd(LEGS.sell.ask)} · 价差之内`,
 	],
 	pkgTag: ["one 105/110 call spread", "一个 105/110 看涨价差"],
-	pkgDebit: ["net debit", "净支出"],
-	claimBig: [
-		"A condition says how a trade executed.",
-		"成交条件说明成交是怎么发生的。",
+	pkgMarket: [
+		`market: bid ${price4(PACKAGE.bid)} / ask ${price4(PACKAGE.ask)}`,
+		`价差市场：买价 ${price4(PACKAGE.bid)} ／ 卖价 ${price4(PACKAGE.ask)}`,
 	],
-	claimSub: [
-		"Sweeps, blocks and packages: how, not who.",
-		"扫单、大宗与组合：怎么成交，不是谁。",
-	],
+	claimBig: ["Conditions describe execution.", "成交条件说明成交方式。"],
+	claimSub: ["They do not identify the trader.", "不能识别交易者。"],
 	nextBig: ["Next: unusual activity", "下一课：异常成交"],
 	nextSub: ["compared with what?", "与什么相比？"],
 } as const satisfies Record<string, Copy>;
@@ -295,14 +292,6 @@ function Scene({
 			</g>
 			{FILLS.map((fill, i) => (
 				<g key={fill.venue} data-f={`fill-${i}`}>
-					<text
-						x={margin}
-						y={L.printY(i)}
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: text }}
-					>
-						{narrow ? TIME.slice(0, 8) : TIME}
-					</text>
 					<Word
 						name={`fill-${i}-quantity`}
 						x={tapeX}
@@ -332,6 +321,16 @@ function Scene({
 					</text>
 				</g>
 			))}
+			<Word
+				name="tape-time"
+				x={margin}
+				y={L.printY(0) - text * 1.7}
+				size={text}
+				anchor="start"
+				className="wt-film-num wt-film-dim"
+			>
+				{TIME}
+			</Word>
 			{/* One order's allocations become the tape quantities, in matching mono type. */}
 			{FILLS.map((fill, i) => (
 				<Word
@@ -587,14 +586,14 @@ function Scene({
 					{t(copy.pkgTag).toUpperCase()}
 				</text>
 				<Word
-					name="pkg-debit"
+					name="pkg-market"
 					x={margin + 16}
 					y={L.pkgY + L.pkgH * 0.85}
-					size={T.body}
+					size={narrow ? T.small * 1.1 : T.body}
 					anchor="start"
-					className="wt-film-type wt-film-dim"
+					className="wt-film-num"
 				>
-					{t(copy.pkgDebit)}
+					{t(copy.pkgMarket)}
 				</Word>
 			</g>
 			<Word
@@ -708,6 +707,7 @@ function build(context: FilmContext) {
 		...allocations,
 		one("chip"),
 		...fills,
+		one("tape-time"),
 		one("avg"),
 		one("bar-shown"),
 		one("bar-printed"),
@@ -744,6 +744,8 @@ function build(context: FilmContext) {
 		show(venue, 9.3 + i * 0.2);
 	});
 	show(one("chip"), 11.0);
+	// One shared timestamp scaffolds the tape before its first allocation moves.
+	show(one("tape-time"), 10.5);
 	// The allocation and its order arrive together; only the allocation then travels.
 	tl.fromTo(allocations, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 11.0);
 	// Step the initial-quote context back before the allocations pass through its area.
@@ -757,7 +759,7 @@ function build(context: FilmContext) {
 		const start = 12.0 + i * 0.1;
 		const land = start + 1.0;
 		// Separate vertical lanes avoid other allocations; enter each row horizontally only
-		// after reaching its own baseline, clear of the earlier rows and their timestamps.
+		// after reaching its own baseline, clear of the earlier rows and their values.
 		tl.fromTo(
 			allocation,
 			{ x: 0, y: 0 },
@@ -800,7 +802,10 @@ function build(context: FilmContext) {
 
 	// ——— block: the hero. Arranged off-screen; the condition says how. ———
 	tl.addLabel("block", 19.2);
-	hide([heads[0], ...venues, one("chip"), ...fills, one("avg")], 19.2);
+	hide(
+		[heads[0], ...venues, one("chip"), ...fills, one("avg"), one("tape-time")],
+		19.2,
+	);
 	show(heads[1], 19.55);
 	show(one("bar-shown"), 20.0, "right");
 	// Geometry and quantity arrive settled together, with a full second after each proof.
