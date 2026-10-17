@@ -123,12 +123,12 @@ const copy = {
 		`Expiry: ALFA $${LOW}. Call value?`,
 		`到期 ALFA $${LOW}，看涨值多少？`,
 	],
-	rightHead: ["Right: buy ALFA at $100.", "以 $100 买入 ALFA 的权利。"],
-	rightHeadShort: ["Right: buy at $100.", "$100 买入的权利。"],
+	rightHead: ["Right: buy ALFA at strike.", "看涨：有权按行权价买入 ALFA。"],
+	rightHeadShort: ["Right: buy at strike.", "看涨：按行权价买入。"],
 	callHead: ["Worth ALFA above $100.", "价值看 ALFA 高出 $100 多少。"],
 	callHeadShort: ["Worth ALFA above $100.", "价值看 ALFA 高出 $100 多少。"],
-	putHead: ["Put: right to sell at $100.", "看跌：$100 卖出的权利。"],
-	putHeadShort: ["Put: right to sell at $100.", "看跌：$100 卖出的权利。"],
+	putHead: ["Put: right to sell at strike.", "看跌：有权按行权价卖出。"],
+	putHeadShort: ["Put: sell at strike.", "看跌：按行权价卖出。"],
 	axis: [
 		"Oct 18 value · 1 contract = 100 shares",
 		"10月18日价值 · 1 张合约 = 100 股",
@@ -153,10 +153,14 @@ const copy = {
 		`权利金 ${usd(putCost * 100, 0)}`,
 	],
 	putSpot: [`ALFA $${PUT_AT}`, `ALFA $${PUT_AT}`],
-	protectHead: ["Protect the shares.", "保护持股。"],
-	protectHeadShort: ["Protect the shares.", "保护持股。"],
-	moreHead: ["Buy a call alone.", "单独买入看涨。"],
-	moreHeadShort: ["Buy a call alone.", "单独买入看涨。"],
+	protectHead: [
+		"Two uses: protect shares; buy a call alone.",
+		"两种用途：保护持股，或单独买入看涨。",
+	],
+	protectHeadShort: [
+		"Protect shares; buy a call alone.",
+		"保护持股；单独买入看涨。",
+	],
 	viewContract: ["ALFA 105 call", "ALFA 105 看涨"],
 	viewPremium: [
 		`Premium ${usd(viewCost * 100, 0)}`,
@@ -171,6 +175,10 @@ const copy = {
 	writerBasis: ["premium − value", "权利金 − 价值"],
 	sidesHead: ["The call has two sides.", "看涨合约的双方。"],
 	sidesHeadShort: ["The call has two sides.", "看涨合约的双方。"],
+	sidesObligation: [
+		"If exercised, Ben delivers 100 shares.",
+		"若被行权，Ben 必须交付 100 股。",
+	],
 	you: ["you · holder", "你 · 持有人"],
 	ben: ["Ben · writer", "Ben · 义务方"],
 	claimBig: ["Your right. Their obligation.", "你有权利，对方有义务。"],
@@ -551,7 +559,6 @@ function Scene({
 			{headline("p-head", copy.putHead, copy.putHeadShort)}
 
 			{headline("v-head", copy.protectHead, copy.protectHeadShort)}
-			{headline("e-head", copy.moreHead, copy.moreHeadShort)}
 			{headline("d-head", copy.sidesHead, copy.sidesHeadShort)}
 			<g data-f="view-ticket">
 				<Lines
@@ -643,6 +650,15 @@ function Scene({
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
+				/>
+				<Lines
+					name="sides-obligation"
+					text={t(copy.sidesObligation)}
+					x={W / 2}
+					y={H * 0.78}
+					size={T.body}
+					maxWidth={room}
+					className="wt-film-type"
 				/>
 			</g>
 			<g data-f="claim">
@@ -765,14 +781,9 @@ function build(context: FilmContext) {
 			attr: { x: left, width: L.x(SAVES_BELOW) - left },
 		});
 	};
-	const heads = [
-		"r-head",
-		"c-head",
-		"p-head",
-		"v-head",
-		"e-head",
-		"d-head",
-	].map((name) => one(name));
+	const heads = ["r-head", "c-head", "p-head", "v-head", "d-head"].map((name) =>
+		one(name),
+	);
 
 	d.hidden([
 		one("use-chart"),
@@ -913,11 +924,11 @@ function build(context: FilmContext) {
 		pad: 5,
 	});
 	tl.addLabel("hero-lock", 27.9);
-	// The enlarged loss meter and brackets keep their full 3.55 s settled stand.
-	d.swap(heads[3], heads[4], 31.5);
+	// Keep one headline across both uses. The loss meter and brackets keep their
+	// full 3.55 s settled stand before the comparison marks leave with the hero.
 	hide(
 		[one("u-shares-tag"), uShares, one("u-put-tag"), sMarker, pMarker],
-		31.5,
+		31.9,
 	);
 	tl.to(
 		[
@@ -941,10 +952,11 @@ function build(context: FilmContext) {
 
 	// ——— sides: holder and writer ———
 	tl.addLabel("sides", 36.0);
-	hide([heads[4], ...kids("view-ticket")], 36.0);
+	hide([heads[3], ...kids("view-ticket")], 36.0);
 	sink(36.0);
-	show(heads[5], 36.35);
+	show(heads[4], 36.35);
 	show(one("sides-line"), 36.35);
+	show(one("sides-obligation"), 36.35);
 	show([one("you-tag"), one("ben-tag")], 36.35);
 	// Build the two mirrored bases as one proof. After a full second of quiet,
 	// reveal both settled results together; the original 2.7 s result rest remains.
@@ -962,7 +974,7 @@ function build(context: FilmContext) {
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.1);
-	hide([heads[5], ...flat("sides")], 41.1);
+	hide([heads[4], ...flat("sides")], 41.1);
 	word(one("z-big"), 41.4);
 	show(one("z-sub"), 41.7);
 
