@@ -335,11 +335,11 @@ function Scene({
 					<text
 						key={name}
 						data-f={name}
-						// Ink on both parts; the halo keeps it clear of the solid focus fill.
+						// Card-coloured type on the solid part, ink on the soft time value.
 						x={L.barX(ASKED_AT)}
 						y={y + T.small * 0.36}
 						textAnchor="middle"
-						className={`wt-film-num ${name === "part-in" ? "wt-halo" : ""}`}
+						className={`wt-film-num ${name === "part-in" ? "wt-on-solid" : ""}`}
 						style={{ fontSize: T.small }}
 					>
 						{label}
@@ -988,7 +988,7 @@ function build(context: FilmContext) {
 	tl.to(
 		STRIKES.flatMap((k) => [...bars(k), one(`p-${k}`)]),
 		{ opacity: 1, duration: 0.3 },
-		14.8,
+		14.6,
 	);
 	// One eased state drives every shrinking bar and its readout, including the other
 	// contracts' prices while they fade away. Scrubbing back restores the same state.
@@ -1003,7 +1003,7 @@ function build(context: FilmContext) {
 		{ progress: 0 },
 		{
 			progress: 1,
-			duration: 0.8,
+			duration: 1,
 			ease: "power2.inOut",
 			immediateRender: false,
 			onUpdate: () => {
@@ -1017,14 +1017,15 @@ function build(context: FilmContext) {
 				}
 			},
 		},
-		15.1,
+		14.9,
 	);
 	STRIKES.forEach((k) => {
 		if (k === ASKED) {
 			tl.set(asked, { attr: { class: "wt-film-num wt-film-accent" } }, 15.9);
 		} else {
 			hide(one(`p-${k}`), 15.1, 0.3);
-			show(one(`e-${k}`), 15.8);
+			// Reveal only at expiry; keep the existing 16.30 settlement and following rest.
+			show(one(`e-${k}`), 15.9, "below", 0.4);
 		}
 	});
 	// Fitted to the bar and its price where they end up: the price has moved down by then.
