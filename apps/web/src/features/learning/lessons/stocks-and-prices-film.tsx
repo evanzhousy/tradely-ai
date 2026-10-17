@@ -19,7 +19,9 @@ import {
 	filmFrame,
 	Lines,
 	lineCount,
+	signTone,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -261,7 +263,7 @@ function Scene({
 					height={L.rowH * 0.6}
 					rx={3}
 					className="wt-film-bar"
-					data-tone={side === "ask" ? "loss" : "gain"}
+					data-tone="neutral"
 				/>
 				<text
 					data-f={`size-${key}`}
@@ -394,7 +396,7 @@ function Scene({
 							x={W * L.pair[i]}
 							y={H * 0.58 + T.num * 1.3 + T.body * 1.9}
 							size={T.body}
-							className="wt-film-num"
+							className="wt-film-num wt-film-dim"
 						>
 							{signedUsd(0, 0)}
 						</Word>
@@ -540,10 +542,14 @@ function Scene({
 			</Word>
 			{/* The 50¢ between what you pay and what you get: drawn when the build has measured
 			    both figures as they will read. */}
-			<path data-f="diff-gap" className="wt-film-gap" />
+			<path
+				data-f="diff-gap"
+				className="wt-film-gap"
+				style={{ stroke: "var(--tone-ink)" }}
+			/>
 			<text
 				data-f="diff-label"
-				className="wt-film-num wt-film-loss"
+				className="wt-film-num"
 				style={{ fontSize: narrow ? T.small * 1.15 : T.body }}
 			>
 				{`${Math.round(BUY10.notional - SELL10.notional)}¢`}
@@ -611,6 +617,7 @@ function Scene({
 						: `M${mathX} ${subtractionY + T.body * 0.45}h${T.body * 13.7}`
 				}
 				className="wt-film-gap"
+				style={{ stroke: "var(--tone-ink)" }}
 			/>
 			<Word
 				name="p-over"
@@ -618,7 +625,7 @@ function Scene({
 				y={narrow ? subtractionY + T.body * 3.7 : subtractionY}
 				size={T.body}
 				anchor="start"
-				className="wt-film-num wt-film-loss"
+				className={`wt-film-num ${toneClass.up}`}
 			>
 				{`= ${signedUsd(OVER_LAST, 2)}`}
 			</Word>
@@ -808,12 +815,14 @@ function build(context: FilmContext) {
 		{
 			step = 0.4,
 			duration = Math.min(step, 0.4),
+			fillDelay = 0,
 			bracket = true,
 			paid,
 			from = alfaStockBook,
 		}: {
 			step?: number;
 			duration?: number;
+			fillDelay?: number;
 			bracket?: boolean;
 			paid?: { from: number };
 			from?: { asks: readonly Level[]; bids: readonly Level[] };
@@ -856,7 +865,7 @@ function build(context: FilmContext) {
 					onStart: renderFill,
 					onUpdate: renderFill,
 				},
-				when,
+				when + fillDelay,
 			);
 			if (paid) sum += fill.price * fill.size;
 			if (restore === null) return;
@@ -938,14 +947,43 @@ function build(context: FilmContext) {
 	show([mineChg, coChg], 12.7);
 	tl.set(
 		[mineChg, coChg],
-		{ attr: { class: "wt-film-num wt-film-gain" } },
+		{ attr: { class: "wt-film-num wt-film-dim" } },
 		12.7,
 	);
 	d.count(px, OPEN + 100, 12.75, dollars, OPEN, 0.6);
 	d.count(mineVal, MINE * (OPEN + 100), 12.75, whole, MINE * OPEN, 0.6);
 	d.count(coVal, SHARES * (OPEN + 100), 12.75, company, SHARES * OPEN, 0.6);
-	d.count(mineChg, MINE * 100, 12.75, signed, 0, 0.6);
-	d.count(coChg, SHARES * 100, 12.75, signedMillions, 0, 0.6);
+	// A rounded zero stays dim; the sign colour follows the figure actually being read.
+	[
+		{ target: mineChg, to: MINE * 100, format: signed, unit: 100 },
+		{
+			target: coChg,
+			to: SHARES * 100,
+			format: signedMillions,
+			unit: 100_000_000,
+		},
+	].forEach(({ target, to, format, unit }) => {
+		const state = { value: 0 };
+		tl.fromTo(
+			state,
+			{ value: 0 },
+			{
+				value: to,
+				duration: 0.6,
+				ease: "power2.out",
+				immediateRender: false,
+				onUpdate: () => {
+					const tone = signTone(Math.round(Math.round(state.value) / unit));
+					target.textContent = format(state.value);
+					target.setAttribute(
+						"class",
+						`wt-film-num ${tone ? toneClass[tone] : "wt-film-dim"}`,
+					);
+				},
+			},
+			12.75,
+		);
+	});
 	// Only name the completed dollar rise once all five figures have settled.
 	show(one("px-tag-up"), 13.7);
 
@@ -1044,11 +1082,12 @@ function build(context: FilmContext) {
 	// The next headline joins the sale only after the complete purchase's quiet window.
 	d.swap(heads[2], heads[3], 21.55);
 	// The book settles at 18.15, then reads for a full second before the first trade.
-	take("ask", BUY10.fills, 19.15, null);
+	// These exact-price comparisons cut to the depleted size at the original settlement.
+	take("ask", BUY10.fills, 19.15, null, { duration: 0, fillDelay: 0.4 });
 	tl.fromTo(total, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 19.85);
 	show(one("p-pay"), 19.15, "above", 0.3);
 	// The correct payment settles at 20.15; the bid and headline wait until 21.55 (1.4 s).
-	take("bid", SELL10.fills, 21.55, null);
+	take("bid", SELL10.fills, 21.55, null, { duration: 0, fillDelay: 0.4 });
 	tl.fromTo(sell, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 22.25);
 	show(one("p-get"), 21.55, "above", 0.3);
 	// Reveal the sale and its 50¢ comparison as one result, then leave the completed proof
