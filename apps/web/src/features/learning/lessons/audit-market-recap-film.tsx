@@ -61,7 +61,7 @@ const statusTone: Record<Status, string> = {
 	removed: toneClass.caution,
 };
 const sectionTone: Readonly<Record<string, string>> = {
-	supported: toneClass.focus,
+	supported: "wt-film-dim",
 	repaired: "wt-film-dim",
 	open: toneClass.caution,
 	reopen: "wt-film-dim",
@@ -126,13 +126,10 @@ const copy = {
 		"Sign off with gaps and reopening conditions.",
 		"签核，写明缺口与重审条件。",
 	],
-	claimBig: [
-		"Find it, fix it, say what's open.",
-		"找到它，修好它，说明未解决的。",
-	],
+	claimBig: ["Find. Fix. Disclose gaps.", "找出问题，修正错误，说明待核事项。"],
 	claimSub: [
-		"Recompute from the source; check every claim.",
-		"从源头重算；检查每一个结论。",
+		"Keep the source, cutoff, and open items visible.",
+		"标明来源、截止时间和待核事项。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
@@ -169,12 +166,18 @@ const repairCopy: Readonly<Record<string, Copy>> = {
 		`${dollars(PREMIUM)} premium · 4/5 strikes`,
 		`权利金 ${dollars(PREMIUM)} · 4/5 行权价`,
 	],
-	positions: [
-		`110: ${count(POSITION_CONTRACTS)} traded; new positions unknown`,
-		`110：成交 ${count(POSITION_CONTRACTS)} 张；新增仓位未知`,
-	],
 	missing: ["120 call: no data at cutoff", "120 看涨：截止时无数据"],
 };
+
+const positionsRepairParts = {
+	lead: ["→ 110: ", "→ 110："],
+	traded: [
+		`${count(POSITION_CONTRACTS)} traded`,
+		`成交 ${count(POSITION_CONTRACTS)} 张`,
+	],
+	separator: ["; ", "；"],
+	unknown: ["new positions unknown", "新增仓位未知"],
+} as const satisfies Record<string, Copy>;
 
 function Scene({
 	width,
@@ -188,6 +191,37 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
+	const totalReportFontSize = narrow ? T.body * 1.1 : T.head;
+	const totalReportX = margin + room * L.colReport;
+	const totalReportWidth = textWidth(usd(REPORTED), totalReportFontSize);
+	const totalStrikeStartX = totalReportX - totalReportWidth - 3;
+	const totalStrikeEndX = totalReportX + 2;
+	const totalStrikeY = L.totalY - totalReportFontSize * 0.35;
+	const positionsRepairX = margin + 14;
+	const positionsRepairY = L.claimY(2) + L.claimH * 0.78;
+	const positionsRepairFontSize = T.body;
+	const positionsMeasureSize =
+		positionsRepairFontSize * (locale === "zh" ? 0.95 : 0.86);
+	const positionsLeadWidth = textWidth(
+		t(positionsRepairParts.lead),
+		positionsMeasureSize,
+	);
+	const positionsTradedWidth = textWidth(
+		t(positionsRepairParts.traded),
+		positionsMeasureSize,
+	);
+	const positionsSeparatorWidth = textWidth(
+		t(positionsRepairParts.separator),
+		positionsMeasureSize,
+	);
+	const positionsUnknownWidth = textWidth(
+		t(positionsRepairParts.unknown),
+		positionsMeasureSize,
+	);
+	const positionsTradedStartX = positionsRepairX + positionsLeadWidth;
+	const positionsUnknownStartX =
+		positionsTradedStartX + positionsTradedWidth + positionsSeparatorWidth;
+	const positionsEvidenceY = positionsRepairY + positionsRepairFontSize * 0.28;
 	const headline = (name: string, text: Copy) => (
 		<Lines
 			name={name}
@@ -395,17 +429,24 @@ function Scene({
 			</Word>
 			<text
 				data-f="total-report"
-				x={margin + room * L.colReport}
+				x={totalReportX}
 				y={L.totalY}
 				textAnchor="end"
 				className="wt-film-num"
 				style={{
-					fontSize: narrow ? T.body * 1.1 : T.head,
-					textDecoration: "line-through",
+					fontSize: totalReportFontSize,
 				}}
 			>
 				{usd(REPORTED)}
 			</text>
+			<path
+				data-f="total-strike"
+				d={`M ${totalStrikeStartX} ${totalStrikeY + 1} L ${totalStrikeEndX} ${totalStrikeY - 1}`}
+				fill="none"
+				stroke="var(--tone-caution)"
+				strokeLinecap="round"
+				strokeWidth={narrow ? 1.5 : 2}
+			/>
 			<text
 				data-f="total-fixed"
 				x={margin + room - 12}
@@ -498,7 +539,7 @@ function Scene({
 								L.claimY(i) +
 								(claim.status === "removed" ? H * 0.12 : L.claimH * 0.78)
 							}
-							className={`wt-film-type ${claim.status === "removed" ? toneClass.focus : claim.id === "premium" ? "" : toneClass.caution}`}
+							className={`wt-film-type ${claim.status === "removed" ? toneClass.focus : claim.id === "premium" || claim.id === "positions" ? "" : toneClass.caution}`}
 							style={{
 								fontSize:
 									claim.status === "removed"
@@ -508,10 +549,51 @@ function Scene({
 										: T.body,
 							}}
 						>
-							{claim.repair
-								? `→ ${t(repairCopy[claim.id] ?? claim.repair)}`
-								: t(copy.removed)}
+							{claim.repair ? (
+								claim.id === "positions" ? (
+									<>
+										<tspan>{t(positionsRepairParts.lead)}</tspan>
+										<tspan>{t(positionsRepairParts.traded)}</tspan>
+										<tspan>{t(positionsRepairParts.separator)}</tspan>
+										<tspan className={toneClass.caution}>
+											{t(positionsRepairParts.unknown)}
+										</tspan>
+									</>
+								) : (
+									`→ ${t(repairCopy[claim.id] ?? claim.repair)}`
+								)
+							) : (
+								t(copy.removed)
+							)}
 						</text>
+					) : null}
+					{claim.id === "positions" ? (
+						<g data-f="positions-evidence" fill="none">
+							<circle
+								cx={positionsTradedStartX - 2}
+								cy={positionsEvidenceY}
+								r={narrow ? 1.8 : 2.2}
+								fill="var(--tone-ink)"
+							/>
+							<line
+								x1={positionsTradedStartX + 3}
+								x2={positionsTradedStartX + positionsTradedWidth}
+								y1={positionsEvidenceY}
+								y2={positionsEvidenceY}
+								stroke="var(--tone-ink)"
+								strokeLinecap="round"
+								strokeWidth={narrow ? 1.2 : 1.7}
+							/>
+							<rect
+								x={positionsUnknownStartX - 3}
+								y={positionsRepairY - positionsRepairFontSize * 0.9 - 3}
+								width={positionsUnknownWidth + 6}
+								height={positionsRepairFontSize * 1.2 + 6}
+								rx={3}
+								stroke="var(--tone-caution)"
+								strokeWidth={narrow ? 1 : 1.4}
+							/>
+						</g>
 					) : null}
 				</g>
 			))}
@@ -527,7 +609,9 @@ function Scene({
 						width={room}
 						height={L.secH}
 						rx={12}
-						className={i === 0 ? "wt-focus-shape" : "wt-panel-shape"}
+						className={
+							section.id === "open" ? "wt-focus-shape" : "wt-panel-shape"
+						}
 					/>
 					<text
 						x={margin + 14}
@@ -608,7 +692,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide } = d;
+	const { tl, one, kids, show, hide, trace } = d;
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -644,6 +728,8 @@ function build(context: FilmContext) {
 		const el = one(`fix-${i}`);
 		return el ? [el] : [];
 	});
+	const totalStrike = one<SVGPathElement>("total-strike");
+	const positionsEvidence = one("positions-evidence");
 	const secs = sections.map((_, i) => one(`sec-${i}`));
 
 	d.hidden([
@@ -656,10 +742,12 @@ function build(context: FilmContext) {
 		...proof,
 		one("total-label"),
 		one("total-report"),
+		totalStrike,
 		one("total-fixed"),
 		...claimRows,
 		...tags,
 		...fixes,
+		positionsEvidence,
 		...secs,
 		lockCut,
 		...kids("claim"),
@@ -700,7 +788,6 @@ function build(context: FilmContext) {
 		{ opacity: 0.28, y: 0, duration: 0.5 },
 		11.05,
 	);
-	tl.set(one("total-report"), { textDecoration: "none" }, 11.05);
 	show(one("proof-label"), 10.85);
 	// Each operand enters in place; the expression is readable before its result lands.
 	premiumProof.trades.forEach((_, i) => {
@@ -729,16 +816,15 @@ function build(context: FilmContext) {
 		14.05,
 	);
 	tl.set(one("row-1-box"), { attr: { class: "wt-panel-shape" } }, 14.05);
-	// The comparison group settles at 14.60; preserve the full 15.35–16.35 table rest.
-	tl.set(one("total-report"), { textDecoration: "line-through" }, 16.35);
-	tl.to(one("total-report"), { opacity: 0.5, duration: 0.3 }, 16.35);
-	// The label is close to the subtotal: enter in place, clear of the figure below.
+	// After the comparison settles at 14.60, scaffold the subtotal label at 15.60.
 	tl.fromTo(
 		one("total-label"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		16.35,
+		{ opacity: 1, duration: 0.3 },
+		15.6,
 	);
+	// Strike the false report by itself, then let the corrected figure land on its own.
+	trace(totalStrike, 15.95, { duration: 0.4, ease: "none" });
 	word(one("total-fixed"), 16.35);
 	// Subtotal settles at 16.90; the scoped answer follows after 1.3 s quiet.
 	show(heads[1], 18.2);
@@ -755,6 +841,7 @@ function build(context: FilmContext) {
 			...proof,
 			one("total-label"),
 			one("total-report"),
+			totalStrike,
 			one("total-fixed"),
 		],
 		22.6,
@@ -787,6 +874,18 @@ function build(context: FilmContext) {
 			27.8 + i * 0.3,
 		);
 	});
+	const positionsClaimIndex = claims.findIndex(
+		(claim) => claim.id === "positions",
+	);
+	const positionsFixOrder = claims
+		.slice(0, positionsClaimIndex)
+		.filter((claim) => claim.repair || claim.status === "removed").length;
+	tl.fromTo(
+		positionsEvidence,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		27.8 + positionsFixOrder * 0.3,
+	);
 
 	// Keep the repairs as one stable group; only the scope background steps back.
 	tl.set(one("claim-0-box"), { attr: { class: "wt-panel-shape" } }, 27.8);
@@ -827,7 +926,7 @@ function build(context: FilmContext) {
 	// ——— signoff ———
 	tl.addLabel("signoff", 34.2);
 	d.swap([heads[2], heads[3]], heads[4], 34.2);
-	hide([...claimRows, ...tags, ...fixes, lockCut], 34.2);
+	hide([...claimRows, ...tags, ...fixes, positionsEvidence, lockCut], 34.2);
 	secs.forEach((sec, i) => {
 		show(sec, 35.0 + i * 0.6, "right");
 	});
