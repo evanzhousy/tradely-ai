@@ -17,6 +17,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -129,7 +130,7 @@ const copy = {
 	],
 	divideHeadShort: ["Divide: usd per trade.", "相除：每笔 usd。"],
 	output: ["output unit · usd", "输出单位 · usd"],
-	refused: [REFUSED, "usd 不能与 count 相加。"],
+	refused: [`✗ ${REFUSED}`, "✗ usd 不能与 count 相加。"],
 	totalHead: [
 		"Monday's five names, by total premium.",
 		"周一的五个标的，按总权利金。",
@@ -473,7 +474,7 @@ function Scene({
 						<text
 							x={margin}
 							y={rowText(y0)}
-							className={`wt-film-type ${symbol === "GLYN" ? "wt-film-loss" : ""}`}
+							className="wt-film-type"
 							style={{ fontSize: L.rowText }}
 						>
 							{symbol}
@@ -485,7 +486,7 @@ function Scene({
 								x={L.tradesX}
 								y={rowText(y0)}
 								textAnchor="end"
-								className={`wt-film-num ${symbol === GLYN.symbol && day === "mon" ? "wt-film-loss" : "wt-film-dim"}`}
+								className={`wt-film-num ${symbol === GLYN.symbol ? "wt-film-warn" : "wt-film-dim"}`}
 								style={{ fontSize: L.rowText }}
 							>
 								{count(rowOf(day === "mon" ? 0 : 3, symbol).trades)}
@@ -498,8 +499,12 @@ function Scene({
 							width={0}
 							height={L.rowH * 0.64}
 							rx={3}
-							className="wt-film-bar"
-							data-tone={symbol === "GLYN" ? "loss" : "total"}
+							className={
+								symbol === GLYN.symbol
+									? `wt-film-bar ${toneClass.focus}`
+									: "wt-film-bar"
+							}
+							data-tone={symbol === GLYN.symbol ? undefined : "total"}
 						/>
 						{STATES.map((k) => {
 							const row = rowOf(k, symbol);
@@ -518,7 +523,7 @@ function Scene({
 											0.36
 									}
 									textAnchor="end"
-									className={`wt-film-num ${na ? "wt-film-dim" : symbol === "GLYN" && k === 1 ? "wt-film-loss" : ""}`}
+									className={`wt-film-num ${na ? "wt-film-dim" : symbol === "GLYN" && k === 1 ? "wt-film-warn" : ""}`}
 									style={{
 										fontSize:
 											symbol === ALFA.symbol && k === 2
@@ -625,6 +630,13 @@ function build(context: FilmContext) {
 			const bar = one(`bar-${symbol}`);
 			tl.to(bar, { opacity: 0, duration: 0.3, ease: "power2.in" }, foldAt);
 			tl.set(bar, { attr: { width: width(k, symbol) } }, handoff);
+			if (symbol === GLYN.symbol && k === 1) {
+				tl.set(
+					bar,
+					{ attr: { class: `wt-film-bar ${toneClass.caution}` } },
+					handoff,
+				);
+			}
 			tl.to(bar, { opacity: 1, duration: 0.35, ease: "power2.out" }, handoff);
 			d.flip(value(symbol, from), value(symbol, k), foldAt);
 			tl.set(value(symbol, from), { opacity: 0 }, handoff);
