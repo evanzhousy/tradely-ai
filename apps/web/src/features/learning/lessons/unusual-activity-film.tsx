@@ -693,7 +693,12 @@ function build(context: FilmContext) {
 		21.8,
 	);
 	tl.set(one("cursor-typ"), { attr: { cy: L.y(typicalBy(ELEVEN)) } }, 21.8);
-	word(one("window"), 22.2);
+	tl.fromTo(
+		one("window"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		22.2,
+	);
 	show(one("window-proof"), 22.25);
 	// The complete proof settles at 22.75 and keeps its accepted 3.45 s rest.
 	cursorTo(DAY, ELEVEN, 26.2);
