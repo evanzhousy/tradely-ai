@@ -19,7 +19,9 @@ import {
 	Hatch,
 	Lines,
 	lineCount,
+	signTone,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -339,7 +341,8 @@ function Scene({
 						<path
 							data-f="curve-week"
 							d={L.path(weekOn)}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
 						/>
 						<text
 							data-f="today-label"
@@ -356,7 +359,7 @@ function Scene({
 							y={L.py(WEEK_PNL) + 20}
 							textAnchor="end"
 							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							style={{ fill: "var(--tone-ink)" }}
 						>
 							{t(copy.weekLabel)}
 						</text>
@@ -365,7 +368,7 @@ function Scene({
 							cx={L.px(SPOT)}
 							cy={L.py(WEEK_PNL)}
 							r={6}
-							className="wt-film-loss"
+							fill="var(--tone-ink)"
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -471,7 +474,7 @@ function Scene({
 					y={L.headY + T.head * 1.25 + T.num * 1.05}
 					size={T.num}
 					anchor="end"
-					className="wt-film-num wt-film-accent"
+					className="wt-film-num wt-film-dim"
 				>
 					$0
 				</Word>
@@ -588,7 +591,7 @@ function Scene({
 						x={L.sharesX}
 						y={putsY}
 						textAnchor="end"
-						className="wt-film-num wt-film-accent wt-halo"
+						className={`wt-film-num ${toneClass.caution} wt-halo`}
 						style={{ fontSize: figure }}
 					>
 						{t(copy.missing)}
@@ -641,7 +644,7 @@ function Scene({
 				</Word>
 			</g>
 			{headline("g-head", copy.hedgeHead, copy.hedgeHeadShort)}
-			<Brackets name="lock-risk" glow />
+			<Brackets name="lock-risk" tone="loss" glow />
 			<g data-f="risk">
 				<Word
 					name="risk-tag"
@@ -985,9 +988,10 @@ function build(context: FilmContext) {
 		const pnl = hedgedPnl(walk.spot, 0);
 		gsap.set(marker, { attr: { cx: L.px(walk.spot), cy: L.py(pnl) } });
 		meter.textContent = usd(pnl);
+		const tone = signTone(Math.round(pnl));
 		meter.setAttribute(
 			"class",
-			`wt-film-num ${pnl < 0 ? "wt-film-loss" : "wt-film-accent"}`,
+			`wt-film-num ${tone ? toneClass[tone] : "wt-film-dim"}`,
 		);
 	};
 	tl.fromTo(
@@ -1104,9 +1108,9 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5 },
 		37.0,
 	);
-	tl.to(
+	tl.set(
 		one("f-unit-put-delta"),
-		{ attr: { class: "wt-film-type wt-film-warn" }, duration: 0.2 },
+		{ attr: { class: `wt-film-type ${toneClass.caution}` } },
 		37.0,
 	);
 	tl.to(
