@@ -11,6 +11,8 @@ import {
 	lineCount,
 	PenTip,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -275,12 +277,12 @@ function Scene({
 						<path
 							data-f="call-line"
 							d={L.path(callLeg)}
-							className="wt-line-long"
+							className="wt-line-call"
 						/>
 						<path
 							data-f="put-line"
 							d={L.path(putLeg)}
-							className="wt-line-short"
+							className="wt-line-put"
 						/>
 						<path
 							data-f="sum-line"
@@ -293,8 +295,7 @@ function Scene({
 							x={L.x(117)}
 							y={L.y(per(callLeg(117))) - 10}
 							textAnchor="end"
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-long)" }}
+							className={`wt-small wt-halo ${toneClass.call}`}
 						>
 							{t(copy.callTag)}
 						</text>
@@ -302,8 +303,7 @@ function Scene({
 							data-f="put-tag"
 							x={L.x(84)}
 							y={L.y(per(putLeg(84))) + 18}
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-small wt-halo ${toneClass.put}`}
 						>
 							{t(copy.putTag)}
 						</text>
@@ -325,8 +325,8 @@ function Scene({
 								</tspan>
 							))}
 						</text>
-						<PenTip name="tip-long" color="var(--wt-long)" />
-						<PenTip name="tip-short" color="var(--wt-short)" />
+						<PenTip name="tip-long" color={toneColor("call")} />
+						<PenTip name="tip-short" color={toneColor("put")} />
 						{/* At $90: the call's $0 above its flat line, the put's −$1,000. */}
 						<g data-f="at90">
 							<circle
@@ -334,8 +334,7 @@ function Scene({
 								cx={L.x(90)}
 								cy={L.y(per(callLeg(90)))}
 								r={6}
-								className="wt-chip"
-								style={{ fill: "var(--wt-long)" }}
+								className={`wt-chip ${toneClass.call}`}
 								stroke="var(--foreground)"
 								strokeWidth={1.5}
 							/>
@@ -343,8 +342,7 @@ function Scene({
 								data-f="lab-call"
 								x={L.x(90) + 10}
 								y={L.y(per(callLeg(90))) - 10}
-								className="wt-halo wt-marker-label"
-								style={{ fill: "var(--wt-long)" }}
+								className="wt-halo wt-marker-label wt-film-dim"
 							>
 								$0
 							</text>
@@ -353,8 +351,7 @@ function Scene({
 								cx={L.x(90)}
 								cy={L.y(per(putLeg(90)))}
 								r={6}
-								className="wt-chip"
-								style={{ fill: "var(--wt-short)" }}
+								className={`wt-chip ${toneClass.put}`}
 								stroke="var(--foreground)"
 								strokeWidth={1.5}
 							/>
@@ -519,11 +516,11 @@ function Scene({
 					className="wt-film-num"
 					style={{ fontSize: eq }}
 				>
-					<tspan data-f="cp-c" className="wt-film-gain">
+					<tspan data-f="cp-c" className={toneClass.call}>
 						{share(callMid(BAL[0]))}
 					</tspan>
 					{" − "}
-					<tspan data-f="cp-p" className="wt-film-loss">
+					<tspan data-f="cp-p" className={toneClass.put}>
 						{share(putMid(BAL[0]))}
 					</tspan>
 					{" = "}
@@ -656,7 +653,7 @@ function Scene({
 							x={margin + room - 14}
 							y={L.rowY(i) + L.rowH * (narrow ? 0.9 : 0.24)}
 							textAnchor="end"
-							className={`wt-film-type ${print.ok ? "wt-film-gain" : "wt-film-loss"}`}
+							className={`wt-film-type ${print.ok ? "" : toneClass.caution}`}
 							style={{ fontSize: text }}
 						>
 							{print.ok
@@ -669,7 +666,7 @@ function Scene({
 								x={margin + room - 14}
 								y={L.rowY(i) + L.rowH * (narrow ? 0.9 : 0.24)}
 								textAnchor="end"
-								className="wt-film-type wt-film-gain"
+								className="wt-film-type"
 								style={{ fontSize: text }}
 							>
 								{t(copy.inLine)}
@@ -678,8 +675,8 @@ function Scene({
 					</g>
 				);
 			})}
-			<Brackets name="lock-off" tone="loss" />
-			<Brackets name="lock-row" tone="gain" />
+			<Brackets name="lock-off" tone="caution" />
+			<Brackets name="lock-row" />
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -761,7 +758,11 @@ function build(context: FilmContext) {
 		for (const result of [cpR, skR])
 			result.setAttribute(
 				"class",
-				s < STRIKE ? "wt-film-loss" : "wt-film-accent",
+				s < STRIKE
+					? toneClass.down
+					: s === STRIKE
+						? "wt-film-dim"
+						: toneClass.focus,
 			);
 	};
 	const walk = (from: number, to: number, at: number, duration: number) => {
@@ -887,7 +888,7 @@ function build(context: FilmContext) {
 	// The merged dot takes the one line's colour.
 	tl.set(
 		[one("dot-call"), one("dot-put")],
-		{ fill: "var(--diagram-accent)" },
+		{ attr: { class: `wt-chip ${toneClass.focus}` } },
 		15.2,
 	);
 	show(one("sum-tag"), 15.4);
