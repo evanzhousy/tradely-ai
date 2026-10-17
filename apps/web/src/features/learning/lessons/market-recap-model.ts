@@ -65,8 +65,8 @@ export const drafts: Record<"over" | "bounded", Copy> = {
 		`看涨买家涌入 ALFA ${leader.strike} 行权价，周一最活跃的看涨`,
 	],
 	bounded: [
-		`ALFA's ${leader.strike} call traded ${count(rowContracts(leader) ?? 0)} contracts, most among four covered strikes.`,
-		`ALFA ${leader.strike} 看涨成交 ${count(rowContracts(leader) ?? 0)} 张，在四个有数据的行权价中最多。`,
+		`${leader.strike} call led: ${count(rowContracts(leader) ?? 0)} contracts (${recapContracts.filter((row) => row.contracts !== null).length} covered strikes).`,
+		`${recapContracts.filter((row) => row.contracts !== null).length}个有数据的行权价：${leader.strike}看涨居首，${count(rowContracts(leader) ?? 0)}张。`,
 	],
 };
 export const caption: Copy = [
