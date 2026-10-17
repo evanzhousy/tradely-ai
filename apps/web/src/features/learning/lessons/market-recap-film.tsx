@@ -71,13 +71,10 @@ function layout(width: number) {
 const copy = {
 	title: ["Recaps", "复盘"],
 	titleSub: ["claims your evidence supports", "证据支持的结论"],
-	qTag: [
-		"a recap · ALFA Oct 18 calls · Monday",
-		"一篇复盘 · ALFA 10月18日 看涨 · 周一",
-	],
+	qTag: ["ALFA Oct 18 · Monday", "ALFA 10月18日 · 周一"],
 	qLine: [
-		`“The ${premiumLeader.strike} call drew the most premium.”`,
-		`“${premiumLeader.strike} 看涨吸引了最多权利金。”`,
+		`“The ${premiumLeader.strike} call led in premium.”`,
+		`“${premiumLeader.strike} 看涨的权利金最高。”`,
 	],
 	qBig: ["Does its chart back that?", "它的图表支持这句话吗？"],
 	mHead: ["Compare contracts and premium.", "比较张数与权利金。"],
@@ -91,8 +88,8 @@ const copy = {
 	],
 	aHead: ["Earlier, the axis started at zero.", "之前的轴从零开始。"],
 	a2Head: [
-		`Bar heights: ${((C110 - CUT) / (C105 - CUT)).toFixed(1)} to 1.`,
-		`柱高比：${((C110 - CUT) / (C105 - CUT)).toFixed(1)}∶1。`,
+		`Bars: ${((C110 - CUT) / (C105 - CUT)).toFixed(1)}×.`,
+		`柱高比：${((C110 - CUT) / (C105 - CUT)).toFixed(1)}倍。`,
 	],
 	cHead: ["Bound the claim to its evidence.", "把结论限定在证据范围内。"],
 	cHeadNarrow: ["Bound the claim to its evidence.", "把结论限定在证据范围内。"],
@@ -114,16 +111,13 @@ const copy = {
 	],
 	chartMeasure: ["contracts · axis 0", "张数 · 轴从 0 起"],
 	captionScope: ["ALFA 10/18 calls · 9/16", "ALFA 10/18 看涨 · 9/16"],
-	captionSource: ["Corrected tape · 16:05 · P1", "更正记录 · 16:05 · P1"],
+	captionSource: ["P1 · corrected 16:05", "P1 · 更正 · 16:05"],
 	contracts: ["contracts", "张数"],
 	premium: ["premium", "权利金"],
 	noData: ["no data", "无数据"],
 	axisFrom: [`axis from ${count(CUT)}`, `轴从 ${count(CUT)} 开始`],
 	claimBig: ["Claim only what your evidence shows.", "只说证据能显示的。"],
-	claimSub: [
-		"Chart what you claim; zero-based bars.",
-		"图表对应结论；柱从零起。",
-	],
+	claimSub: ["Zero-based bars.", "柱从零起。"],
 	nextBig: ["Next: audits", "下一课：审核"],
 	nextSub: ["finding and repairing a flawed recap", "发现并修复有缺陷的复盘"],
 } as const satisfies Record<string, Copy>;
@@ -778,12 +772,11 @@ function build(context: FilmContext) {
 	const captions = [0, 1].map((i) => one(`caption-${i}`));
 	const recapChart = one("recap-chart");
 	/** Fade the incoming unit in place, reaching full contrast at geometry settlement. */
-	const changeUnit = (
-		from: Element,
-		to: Element,
-		at: number,
-		settled: number,
-	) => {
+	/**
+	 * One unit label hands over to the next in place, the old gone before the new arrives;
+	 * returns when the new one has settled and the bars may move.
+	 */
+	const changeUnit = (from: Element, to: Element, at: number) => {
 		hide(from, at, 0.3, 0);
 		tl.fromTo(
 			to,
@@ -794,8 +787,9 @@ function build(context: FilmContext) {
 				ease: "power2.out",
 				immediateRender: false,
 			},
-			settled - 0.3,
+			at + 0.3,
 		);
+		return at + 0.6;
 	};
 	// Fit each drawn underline beneath its wrapped phrase, never through the glyphs.
 	draftParts.forEach((part, i) => {
@@ -895,14 +889,22 @@ function build(context: FilmContext) {
 	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 10.7);
 	show(vals("contracts"), 10.7);
 	show(matchAnswer, 12.2);
-	changeUnit(one("unit-contracts"), one("unit-premium"), 13.5, 14.6);
+	const premiumAt = changeUnit(
+		one("unit-contracts"),
+		one("unit-premium"),
+		13.5,
+	);
 	hide(vals("contracts"), 13.5, 0.3);
-	barsTo("premium", 0, chartMax("premium"), 13.8, vals("premium"));
-	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "neutral" } }, 13.8);
+	barsTo("premium", 0, chartMax("premium"), premiumAt, vals("premium"));
+	tl.set(
+		bars[leadIndex(leader)],
+		{ attr: { "data-tone": "neutral" } },
+		premiumAt,
+	);
 	tl.set(
 		bars[leadIndex(premiumLeader)],
 		{ attr: { "data-tone": "total" } },
-		14.6,
+		premiumAt + 0.8,
 	);
 	ROWS.forEach((_, i) => {
 		tl.set(
@@ -910,10 +912,10 @@ function build(context: FilmContext) {
 			{
 				attr: { y: Number(one(`val-contracts-${i}`).getAttribute("y")) },
 			},
-			13.8,
+			premiumAt,
 		);
 	});
-	show(vals("premium"), 14.65);
+	show(vals("premium"), premiumAt + 0.85);
 	show(heads[1], 16.15);
 	// An after-beat draws attention to the premium leader during the reading hold.
 	d.trace(one<SVGPathElement>("premium-leader-rule"), 17.65, { duration: 0.5 });
@@ -923,21 +925,30 @@ function build(context: FilmContext) {
 	d.swap([heads[0], matchAnswer, heads[1]], heads[2], 20.55);
 	hide(vals("premium"), 20.55, 0.3);
 	hide(one("premium-leader-rule"), 20.55);
-	changeUnit(one("unit-premium"), one("unit-contracts"), 20.55, 21.65);
-	barsTo("contracts", 0, CONTRACTS_MAX, 20.85, vals("contracts"));
+	const contractsAt = changeUnit(
+		one("unit-premium"),
+		one("unit-contracts"),
+		20.55,
+	);
+	barsTo("contracts", 0, CONTRACTS_MAX, contractsAt, vals("contracts"));
 	tl.set(
 		bars[leadIndex(premiumLeader)],
 		{ attr: { "data-tone": "neutral" } },
-		20.85,
+		contractsAt,
 	);
-	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 21.65);
-	show(vals("contracts"), 21.75);
-	changeUnit(one("unit-contracts"), one("unit-cut"), 24.85, 25.95);
+	tl.set(
+		bars[leadIndex(leader)],
+		{ attr: { "data-tone": "total" } },
+		contractsAt + 0.8,
+	);
+	show(vals("contracts"), contractsAt + 0.9);
+	// The cut axis settles 1.05 s before the lock.
+	const cutAt = changeUnit(one("unit-contracts"), one("unit-cut"), 24.75);
 	barsTo(
 		"contracts",
 		CUT,
 		CUT + (CONTRACTS_MAX - CUT) * 0.55,
-		25.15,
+		cutAt,
 		vals("contracts"),
 	);
 	// Round the two bars the cut axis pulls apart, with their figures.
