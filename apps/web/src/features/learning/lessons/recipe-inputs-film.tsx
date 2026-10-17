@@ -58,10 +58,10 @@ const STRICT = run({ minVolumeToOi: 2 });
 /** Independent input edits: neither example inherits the preceding example's draft. */
 const changeShort: Record<string, Copy> = {
 	volOi: [
-		`Default · Min vol/OI ${screenDefaults.minVolumeToOi} → 2`,
-		`默认 · 最低成交量/OI ${screenDefaults.minVolumeToOi} → 2`,
+		`Min vol/OI ${screenDefaults.minVolumeToOi} → 2`,
+		`最低成交量/OI ${screenDefaults.minVolumeToOi} → 2`,
 	],
-	date: ["Default · Tuesday", "默认 · 周二"],
+	date: ["Tuesday", "周二"],
 };
 
 function layout(width: number) {
@@ -130,10 +130,7 @@ const copy = {
 		"重跑会做什么，不会做什么",
 	],
 	qTag: ["Screener · Min OI", "筛选器 · 最低未平仓量"],
-	qLine: [
-		"You haven't pressed Run. How many contracts does the report show?",
-		"你还没点“运行”。报告显示多少份合约？",
-	],
+	qLine: ["Before Run: how many contracts?", "运行前：报告显示多少份合约？"],
 	runHead: ["The report remembers the last run.", "报告保留上次运行结果。"],
 	runHeadShort: ["The last completed run.", "上次完成的运行。"],
 	draftHead: [
@@ -189,7 +186,11 @@ const copy = {
 	measureFromShort: ["Before: vol/OI", "前：成交量/OI"],
 	measureTo: ["After: premium traded", "后：权利金成交额"],
 	measureToShort: ["After: premium", "后：权利金成交额"],
-	universe: ["ELIGIBLE EXPIRIES", "纳入的到期日"],
+	universe: [
+		"ELIGIBLE EXPIRIES · SAME-DAY NOW INCLUDED",
+		"纳入的到期日 · 现含当天到期",
+	],
+	universeShort: ["EXPIRIES · SAME-DAY ADDED", "到期日 · 现含当天"],
 	expiryFrom: [
 		`Before: 1–${screenDefaults.maxDte} DTE`,
 		`前：1–${screenDefaults.maxDte} 天`,
@@ -200,8 +201,8 @@ const copy = {
 	],
 	claimBig: ["Change the inputs, keep the question.", "改输入，不改问题。"],
 	claimSub: [
-		"Run first; keep the floors; fork new methods.",
-		"先运行再读；守住门槛；新方法就分叉。",
+		"Run first; keep floors; fork new methods.",
+		"先运行；守住门槛；新方法另起分支。",
 	],
 	nextBig: ["Next: start from a research checklist", "下一课：从研究清单开始"],
 	nextSub: ["steps a tool can check", "工具能核查的步骤"],
@@ -269,9 +270,9 @@ function Scene({
 		`Last run · Min OI ${count(oi)}`,
 		`上次运行 · 最低未平仓量 ${count(oi)}`,
 	];
-	const top = (row: ScreenContract): Copy => [
-		`top: ${label(row, "en")}`,
-		`第一：${label(row, "zh")}`,
+	const top = (row: ScreenContract, includeOi = false): Copy => [
+		`top: ${label(row, "en")}${includeOi ? ` · OI ${count(row.openInterest)}` : ""}`,
+		`第一：${label(row, "zh")}${includeOi ? ` · OI ${count(row.openInterest)}` : ""}`,
 	];
 	const rankRows = OPEN;
 	return (
@@ -585,7 +586,7 @@ function Scene({
 							className="wt-film-type wt-film-dim"
 							style={{ fontSize: T.body }}
 						>
-							{t(top(rows[0]))}
+							{t(top(rows[0], name === "report-to"))}
 						</text>
 					</g>
 				))}
@@ -706,7 +707,7 @@ function Scene({
 									className="wt-film-tag"
 									style={{ fontSize: T.small }}
 								>
-									{t(copy.universe)}
+									{t(narrow ? copy.universeShort : copy.universe)}
 								</text>
 							)}
 							{[0, 1].map((column) => (
