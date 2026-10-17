@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { type Copy, count, mondayPacket, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -7,9 +8,12 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -138,6 +142,7 @@ function Scene({
 	height: number;
 	locale: Locale;
 }) {
+	const missingHatch = `market-recap-missing-${useId().replace(/:/g, "")}`;
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
@@ -260,6 +265,9 @@ function Scene({
 					: dollars(value);
 	return (
 		<>
+			<defs>
+				<Hatch id={missingHatch} />
+			</defs>
 			<Backdrop frame={L} />
 
 			{/* The claims. */}
@@ -382,7 +390,7 @@ function Scene({
 				data-f="unit-cut"
 				x={margin}
 				y={L.top - T.small * 2.4}
-				className="wt-film-tag wt-film-loss"
+				className={`wt-film-tag ${toneClass.caution}`}
 				style={{ fontSize: T.small * 1.1 }}
 			>
 				{`${t(copy.contracts).toUpperCase()} · ${t(copy.axisFrom).toUpperCase()}`}
@@ -399,7 +407,12 @@ function Scene({
 								width={L.barW}
 								height={(L.base - L.top) * 0.25}
 								rx={4}
-								className="wt-film-ghost"
+								style={{
+									fill: `url(#${missingHatch})`,
+									stroke: toneColor("caution"),
+									strokeWidth: 1.75,
+									strokeDasharray: "3 2",
+								}}
 							/>
 						) : (
 							<rect
@@ -426,7 +439,7 @@ function Scene({
 											: L.base - h(v, metric)) - 8
 									}
 									textAnchor="middle"
-									className={`wt-film-num ${v === null ? "wt-film-warn" : ""}`}
+									className={`wt-film-num ${v === null ? toneClass.caution : v === 0 ? "wt-film-dim" : ""}`}
 									style={{ fontSize: text }}
 								>
 									{label(v, metric)}
@@ -493,8 +506,8 @@ function Scene({
 											height={8}
 											rx={2}
 											style={{
-												fill: "none",
-												stroke: "var(--diagram-unknown)",
+												fill: `url(#${missingHatch})`,
+												stroke: toneColor("caution"),
 												strokeWidth: 1.2,
 												strokeDasharray: "3 3",
 											}}
@@ -519,7 +532,7 @@ function Scene({
 										y={y + chartValueSize * 0.35}
 										size={chartValueSize}
 										anchor="end"
-										className={`wt-film-num ${row.contracts === null ? "wt-film-warn" : ""}`}
+										className={`wt-film-num ${row.contracts === null ? toneClass.caution : row.contracts === 0 ? "wt-film-dim" : ""}`}
 									>
 										{row.contracts === null
 											? t(copy.noData)
@@ -564,8 +577,8 @@ function Scene({
 											height={barHeight}
 											rx={2}
 											style={{
-												fill: "none",
-												stroke: "var(--diagram-unknown)",
+												fill: `url(#${missingHatch})`,
+												stroke: toneColor("caution"),
 												strokeWidth: 1.2,
 												strokeDasharray: "3 3",
 											}}
@@ -589,7 +602,7 @@ function Scene({
 										x={center}
 										y={chartBase - barHeight - 6}
 										size={chartValueSize}
-										className={`wt-film-num ${row.contracts === null ? "wt-film-warn" : ""}`}
+										className={`wt-film-num ${row.contracts === null ? toneClass.caution : row.contracts === 0 ? "wt-film-dim" : ""}`}
 									>
 										{row.contracts === null
 											? t(copy.noData)
@@ -625,14 +638,14 @@ function Scene({
 						size={draftSize}
 						maxWidth={copyWidth}
 						anchor="start"
-						className="wt-film-type wt-film-loss"
+						className={`wt-film-type ${toneClass.caution}`}
 					/>
 					<path
 						data-f={`repair-${id}`}
 						d={`M${margin} ${y + 5}h${copyWidth}`}
 						style={{
 							fill: "none",
-							stroke: "var(--diagram-loss)",
+							stroke: toneColor("caution"),
 							strokeWidth: 1.5,
 						}}
 					/>
@@ -667,7 +680,7 @@ function Scene({
 							size={T.small * 1.1}
 							maxWidth={copyWidth}
 							anchor="start"
-							className="wt-film-type wt-film-warn"
+							className="wt-film-type"
 						/>
 					)}
 				</g>
@@ -680,7 +693,7 @@ function Scene({
 				size={draftSize}
 				maxWidth={resultWidth}
 				anchor="start"
-				className="wt-film-type wt-film-gain"
+				className={`wt-film-type ${toneClass.focus}`}
 			/>
 			{captionFields.map((field, i) => (
 				<Lines
