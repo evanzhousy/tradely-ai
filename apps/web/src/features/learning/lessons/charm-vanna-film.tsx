@@ -11,7 +11,9 @@ import {
 	filmFrame,
 	Lines,
 	lineCount,
+	signTone,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -255,7 +257,7 @@ function Scene({
 						{" × "}
 						<tspan className="wt-film-loss">{`−${CHARM_DAYS_PER_YEAR}`}</tspan>
 						{" ≈ "}
-						<tspan className="wt-film-accent">{PER_YEAR}</tspan>
+						<tspan className={toneClass.up}>{PER_YEAR}</tspan>
 					</Word>
 					<Lines
 						name={`${name}-conversion-unit`}
@@ -329,16 +331,28 @@ function Scene({
 							</text>
 						))}
 						<g clipPath={`url(#draw-same-${id})`}>
-							<path className="wt-line-position" d={L.path(0)} />
+							<path
+								data-f="same-curve"
+								className="wt-line-position"
+								d={L.path(0)}
+								strokeDasharray="5 4"
+								style={{ strokeWidth: 3, strokeLinejoin: "round" }}
+							/>
 						</g>
 						<g clipPath={`url(#draw-low-${id})`}>
-							<path className="wt-line-short" d={L.path(-VOL_DROP)} />
+							<path
+								className="wt-line-position"
+								d={L.path(-VOL_DROP)}
+								strokeDasharray="5 4"
+								style={{ strokeWidth: 2.5 }}
+							/>
 						</g>
 						<text
 							data-f="same-label"
 							x={L.x(LABEL_DAY) + 6}
 							y={L.y(delta(STRIKE, LABEL_DAY)) - 6}
-							className="wt-small wt-halo wt-accent"
+							className="wt-small wt-halo"
+							style={{ fontWeight: 600 }}
 						>
 							{t(copy.sameIv)}
 						</text>
@@ -347,10 +361,10 @@ function Scene({
 							x={L.x(LABEL_DAY) - 6}
 							y={L.y(delta(STRIKE, LABEL_DAY, -VOL_DROP)) + 16}
 							textAnchor="end"
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-small wt-halo ${toneClass.focus}`}
 						>
-							{t(copy.lowIv)}
+							{"IV "}
+							<tspan className={toneClass.down}>{t(copy.lowIv).slice(3)}</tspan>
 						</text>
 						<path
 							data-f="level"
@@ -360,7 +374,7 @@ function Scene({
 						<path
 							data-f="charm-step"
 							d={`M${x7} ${L.y(TODAY)}V${L.y(AFTER_WEEK)}`}
-							className="wt-film-riser"
+							className="wt-film-gap"
 						/>
 						<path
 							data-f="vanna-step"
@@ -533,7 +547,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.68}
 					size={T.num * 1.6}
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.up}`}
 				>
 					{`≈ ${fixed3(VANNA_COMPARISON_POINT)}`}
 				</Word>
@@ -557,10 +571,10 @@ function Scene({
 					{" ÷ "}
 					<tspan className="wt-film-loss">−</tspan>
 					{" = "}
-					<tspan className="wt-film-accent">+</tspan>
+					<tspan className={toneClass.up}>+</tspan>
 				</Word>
 			</g>
-			<Brackets name="lock-vanna" glow />
+			<Brackets name="lock-vanna" tone="gain" glow />
 			{headline("s-head", copy.spreadHead, copy.spreadHeadShort)}
 			{headline("l-head", copy.laterHead, copy.laterHeadShort)}
 			<g data-f="spread">
@@ -615,8 +629,9 @@ function Scene({
 					className="wt-axis"
 				/>
 				{LEGS.map((leg, i) => {
-					const change = SPREAD[1][leg] - SPREAD[0][leg];
 					const net = leg === "net";
+					const valueTone = signTone(SPREAD[0][leg]);
+					const [quantity, contract] = t(copy[leg]).split(" × ");
 					return (
 						<g key={leg}>
 							<Word
@@ -627,7 +642,16 @@ function Scene({
 								anchor="start"
 								className={`wt-film-type ${net ? "wt-film-accent" : "wt-film-dim"}`}
 							>
-								{t(copy[leg])}
+								{net ? (
+									t(copy[leg])
+								) : (
+									<>
+										<tspan className={valueTone && toneClass[valueTone]}>
+											{quantity}
+										</tspan>
+										{` × ${contract}`}
+									</>
+								)}
 							</Word>
 							<Word
 								name={`s-value-${leg}`}
@@ -635,7 +659,7 @@ function Scene({
 								y={L.rowY(i)}
 								size={net ? T.head * 1.2 : T.head}
 								anchor="end"
-								className={`wt-film-num ${net ? "wt-film-accent" : ""}`}
+								className={`wt-film-num ${valueTone ? toneClass[valueTone] : "wt-film-dim"}`}
 							>
 								{signedCount(SPREAD[0][leg])}
 							</Word>
@@ -645,7 +669,7 @@ function Scene({
 								y={L.rowY(i)}
 								size={net ? T.head * 1.2 : T.head}
 								anchor="end"
-								className={`wt-film-num ${change > 0 ? "wt-film-gain" : "wt-film-loss"}`}
+								className="wt-film-num wt-film-dim"
 							>
 								{signedCount(0)}
 							</Word>
@@ -778,7 +802,7 @@ function build(context: FilmContext) {
 		{
 			day: WEEK,
 			duration: 1.2,
-			ease: "power2.inOut",
+			ease: "none",
 			immediateRender: false,
 			onUpdate: () => {
 				const value = delta(STRIKE, walk.day);
@@ -805,16 +829,27 @@ function build(context: FilmContext) {
 	hide(kids("charm"), 21.2);
 	show(one("v-head"), 21.55, "above");
 	rise(21.6);
+	tl.set(
+		one("same-curve"),
+		{ attr: { class: "wt-line-reference" }, immediateRender: false },
+		21.6,
+	);
+	tl.set(
+		marker,
+		{ attr: { class: "wt-chip wt-film-dim" }, immediateRender: false },
+		21.6,
+	);
 	show(kids("meter"), 21.9, "above");
 	reveal("draw-low", 22.0, 1.4);
 	show([one("same-label"), one("low-label")], 23.4);
+	tl.set(marker, { attr: { class: "wt-chip" }, immediateRender: false }, 23.4);
 	const iv = { volPoints: 0 };
 	tl.fromTo(
 		iv,
 		{ volPoints: 0 },
 		{
 			volPoints: -VOL_DROP,
-			duration: 0.6,
+			duration: 1,
 			ease: "power2.inOut",
 			immediateRender: false,
 			onUpdate: () => {
@@ -823,18 +858,7 @@ function build(context: FilmContext) {
 				meter.textContent = plain3(value);
 			},
 		},
-		23.7,
-	);
-	tl.fromTo(
-		marker,
-		{ fill: "var(--diagram-accent)" },
-		{
-			fill: "var(--wt-short)",
-			duration: 0.6,
-			ease: "power2.inOut",
-			immediateRender: false,
-		},
-		23.7,
+		23.4,
 	);
 	draw(one<SVGPathElement>("vanna-step"), 24.2);
 	show(one("vanna-change"), 24.4);
@@ -918,8 +942,8 @@ function build(context: FilmContext) {
 		{ progress: 0 },
 		{
 			progress: 1,
-			duration: 0.9,
-			ease: "power2.out",
+			duration: 1,
+			ease: "none",
 			immediateRender: false,
 			onUpdate: () => {
 				const long = Math.round(
@@ -930,14 +954,18 @@ function build(context: FilmContext) {
 						(SPREAD[1].short - SPREAD[0].short) * spread.progress,
 				);
 				[long, short, long + short].forEach((value, i) => {
+					const change = value - SPREAD[0][LEGS[i]];
+					const tone = signTone(change);
 					spreadValues[i].textContent = signedCount(value);
-					spreadChanges[i].textContent = signedCount(
-						value - SPREAD[0][LEGS[i]],
+					spreadChanges[i].textContent = signedCount(change);
+					spreadChanges[i].setAttribute(
+						"class",
+						`wt-film-num ${tone ? toneClass[tone] : "wt-film-dim"}`,
 					);
 				});
 			},
 		},
-		37.7,
+		37.6,
 	);
 	// Give the completed table one second of quiet, then identify its settled date.
 	d.swap(one("s-spreadTransition"), one("s-spreadLater"), 39.6);
