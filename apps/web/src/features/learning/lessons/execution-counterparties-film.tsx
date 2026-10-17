@@ -931,6 +931,8 @@ function build(context: FilmContext) {
 	sizeTo(best, 0, BEST.size, 13.2, (remaining) => {
 		one<SVGTextElement>("vol-n").textContent = count(BEST.size - remaining);
 	});
+	// Step the emptied best-ask dash back before the phone's print passes its row.
+	tl.to(one("size-a410"), { opacity: 0.3, duration: 0.3 }, 15.2);
 	// Only the settled execution earns the trade that becomes its public print.
 	const tradeSources = L.narrow
 		? [one("trade-source-qty"), one("trade-source-details")]
@@ -985,6 +987,8 @@ function build(context: FilmContext) {
 	hide(book, 19.2, 0.35, 0);
 	tl.set(one(`bar-${best}`), { attr: { width: width(BEST.size) } }, 19.55);
 	tl.set(one(`size-${best}`), { textContent: count(BEST.size) }, 19.55);
+	// The first-print dash was dimmed; restore this reused quote while its book is hidden.
+	tl.set(one("size-a410"), { opacity: 1 }, 19.55);
 	tl.fromTo(book, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.05);
 	// The tagged order settles just before its headline names the cap.
 	tl.fromTo(
@@ -1006,6 +1010,8 @@ function build(context: FilmContext) {
 	sizeTo(best, 0, BEST.size, 22.2, (remaining) => fillTo(FIRST - remaining));
 	show(one("fill"), 23.2);
 	// Each completed fill stands for a full second before the next construction.
+	// The second ride leaves the emptied $4.10 ask as context, dimmed before it moves through.
+	tl.to(one("lv-a410"), { opacity: 0.3, duration: 0.3 }, 24.2);
 	ride("chip-l", bestRow - 1, 24.45);
 	sizeTo(second, 0, TAKEN[1].size, 24.95, (remaining) =>
 		fillTo(DONE.filled - remaining),
