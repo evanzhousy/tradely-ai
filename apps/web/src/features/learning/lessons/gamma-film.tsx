@@ -431,7 +431,8 @@ function Scene({
 								x={(mx + sx) / 2}
 								y={my + 16}
 								textAnchor="middle"
-								className={`wt-small wt-halo wt-accent ${toneClass.up}`}
+								className={`wt-small wt-halo ${toneClass.up}`}
+								style={{ fontWeight: 600 }}
 							>
 								{`+$${MOVE}`}
 							</text>
@@ -449,7 +450,7 @@ function Scene({
 							<text
 								x={sx + 8}
 								y={(my + L.yD(NEW_DELTA)) / 2 + 4}
-								className={`wt-halo wt-accent wt-marker-label ${toneClass.up}`}
+								className={`wt-halo wt-marker-label ${toneClass.up}`}
 							>
 								{`+${fixed2(NEW_DELTA - DELTA)}`}
 							</text>
@@ -1244,7 +1245,7 @@ function build(context: FilmContext) {
 	tl.to(rest, { opacity: 0.45, duration: 0.4 }, 28.0);
 	// After the lock, both drifts lit side by side: Ben's goes the other way, and the rule
 	// is named while the two stand together. Then the trades, one step at a time.
-	show(one("h-trade-you"), 28.4);
+	show(one("h-trade-you"), 29.95);
 	// Brackets settle at 28.45; the first fold/exit waits until 29.95 (1.5 s).
 	hide(lockHedge, 29.95, 0.3);
 	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.95);
