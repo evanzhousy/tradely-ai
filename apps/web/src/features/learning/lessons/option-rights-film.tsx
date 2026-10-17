@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -271,7 +272,7 @@ function Scene({
 						key={side}
 						x={margin}
 						y={L.cellY(r) + L.cellH / 2 + T.small * 0.36}
-						className={`wt-film-type ${side === "long" ? "wt-film-accent" : "wt-film-warn"}`}
+						className="wt-film-type"
 						style={{ fontSize: narrow ? T.small : T.body }}
 					>
 						{t(
@@ -313,7 +314,7 @@ function Scene({
 										x={L.cellX(c) + L.cellW / 2}
 										y={cellLine(r, 0)}
 										textAnchor="middle"
-										className={`wt-film-type ${side === "long" ? "wt-film-accent" : "wt-film-warn"}`}
+										className="wt-film-type"
 										style={{ fontSize: text * 1.1 }}
 									>
 										{t(cell.duty)}
@@ -373,7 +374,7 @@ function Scene({
 									x={L.stopX(end)}
 									y={L.trackY(i) + T.body * 1.7}
 									textAnchor="middle"
-									className={`wt-film-type ${pos > 0 ? "wt-film-accent" : pos < 0 ? "wt-film-warn" : "wt-film-dim"}`}
+									className={`wt-film-type ${pos === 0 ? "wt-film-dim" : toneClass.focus}`}
 									style={{ fontSize: text }}
 								>
 									{t(positionCopy(pos))}
@@ -464,16 +465,10 @@ function Scene({
 			<g data-f="settle">
 				{(
 					[
-						[
-							"s-pays",
-							copy.paysTag,
-							PUT.contract.strike,
-							PUT.cash,
-							"wt-film-loss",
-						],
-						["s-worth", copy.worthTag, PUT.close, PUT.close * 100 * 100, ""],
+						["s-pays", copy.paysTag, PUT.contract.strike, PUT.cash],
+						["s-worth", copy.worthTag, PUT.close, PUT.close * 100 * 100],
 					] as const
-				).map(([name, tag, price, total, tone], i) => {
+				).map(([name, tag, price, total], i) => {
 					const x = W * (narrow ? [0.27, 0.73][i] : [0.3, 0.7][i]);
 					return (
 						<g key={name}>
@@ -503,7 +498,7 @@ function Scene({
 								x={x}
 								y={H * 0.52}
 								size={T.big * 0.75}
-								className={`wt-film-num ${tone}`}
+								className="wt-film-num"
 							>
 								{usd(total, 0)}
 							</Word>
@@ -524,9 +519,10 @@ function Scene({
 					x={W / 2}
 					y={H * 0.69}
 					size={T.body * (narrow ? 1.15 : 1.35)}
-					className="wt-film-num wt-film-gain"
+					className="wt-film-num"
 				>
-					{`${usd(PUT.cash, 0)} − ${usd(PUT.close * 100 * 100, 0)} = ${usd(PUT.gain, 0)}`}
+					{`${usd(PUT.cash, 0)} − ${usd(PUT.close * 100 * 100, 0)} = `}
+					<tspan className={toneClass.up}>{signedUsd(PUT.gain, 0)}</tspan>
 				</Word>
 				<Word
 					name="s-premium-tag"
@@ -551,9 +547,10 @@ function Scene({
 					x={W / 2}
 					y={H * 0.9}
 					size={T.body * (narrow ? 1.25 : 1.5)}
-					className="wt-film-num wt-film-gain"
+					className="wt-film-num"
 				>
-					{`${usd(PUT.gain, 0)} − ${usd(PUT.premium, 0)} = ${usd(PUT.net, 0)}`}
+					{`${usd(PUT.gain, 0)} − ${usd(PUT.premium, 0)} = `}
+					<tspan className={toneClass.up}>{signedUsd(PUT.net, 0)}</tspan>
 				</Word>
 			</g>
 			<g data-f="claim">
