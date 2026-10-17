@@ -45,9 +45,9 @@ import {
  *
  *   open      0–4        "Charm and vanna"
  *   question  4–9.6      0.177 — a week passes, ALFA stays at $100, nobody trades
- *   charm     9.6–21.2   one question across the curve and week: 0.177 → 0.144; Charm, −0.004 a
- *                        day, +1.46 per year left
- *   vanna     21.2–33.4  IV −3: 0.144 → 0.120; fraction, ≈ +0.008, lock, then − ÷ − = +
+ *   charm     9.6–20.5   one question across the curve and week: 0.177 → 0.144; Charm's
+ *                        definition sits on the chart, then −0.004/day and +1.46 per year left
+ *   vanna     20.5–33.4  IV −3: 0.144 → 0.120; fraction, ≈ +0.008, lock, then − ÷ − = +
  *   spread    33.4–45.7  reset to today, IV unchanged; +16,600 and −8,850 →
  *                        +15,350 and −7,200: net +400;
  *                        cut: "Delta can change while nothing trades."
@@ -67,8 +67,8 @@ function layout(width: number) {
 	const { height, narrow } = frame;
 	const left = Math.max(frame.margin, narrow ? 46 : 0);
 	const right = width * 0.965;
-	const top = height * (narrow ? 0.42 : 0.3);
-	const bottom = height * 0.84;
+	const top = height * (narrow ? 0.54 : 0.5);
+	const bottom = height * (narrow ? 0.9 : 0.93);
 	const x = (day: number) => left + (day / DAYS_SHOWN) * (right - left);
 	const y = (value: number) => bottom - (value / Y_TOP) * (bottom - top);
 	const path = (volPoints: number) =>
@@ -119,14 +119,14 @@ const copy = {
 	lowIv: [`IV −${VOL_DROP} points`, `IV −${VOL_DROP} 点`],
 	charmWord: ["Charm", "Charm"],
 	charmDef: [
-		"how delta changes as days pass, with price and IV held still",
-		"价格与 IV 不变时，Delta 随天数流逝的变化",
+		"Delta changes with time; price and IV stay fixed.",
+		"价格、IV 保持不变，Delta 随时间变化",
 	],
 	charmNum: [
 		`today: about ${fixed3(CHARM_DAY)}/day`,
 		`今天：约 ${fixed3(CHARM_DAY)}/天`,
 	],
-	charmAlt: ["per year of time remaining", "每一年剩余期限"],
+	charmAlt: ["per remaining year", "每一年剩余期限"],
 	vannaWord: ["Vanna", "Vanna"],
 	vannaDef: [
 		"how delta changes with implied volatility",
@@ -139,7 +139,6 @@ const copy = {
 		`Today → +7 days · ALFA $${SPOT}`,
 		`今天 → +7天 · ALFA $${SPOT}`,
 	],
-	spreadLater: [`+7 days · ALFA $${SPOT}`, `+7天 · ALFA $${SPOT}`],
 	spreadHead: ["The 10:50 call spread, two legs.", "10:50 看涨价差，两条腿。"],
 	spreadHeadShort: ["The 10:50 call spread.", "10:50 看涨价差。"],
 	laterHead: [
@@ -197,91 +196,82 @@ function Scene({
 			anchor="start"
 		/>
 	);
-	/** A cut to one word: the name, what it measures, and its size here. */
+	/** A compact chart annotation: the name, definition, daily estimate and annualization. */
 	const card = (
 		name: string,
 		word: Copy,
 		definition: Copy,
 		figure: Copy,
 		alt?: Copy,
-	) => (
-		<g data-f={name}>
-			<Word
-				name={`${name}-word`}
-				x={W / 2}
-				y={H * 0.42}
-				size={T.big}
-				className="wt-film-type"
-			>
-				{t(word)}
-			</Word>
-			<Lines
-				name={`${name}-def`}
-				text={t(definition)}
-				x={W / 2}
-				y={H * 0.42 + T.big * 0.62}
-				size={T.body}
-				maxWidth={room}
-				className="wt-film-type wt-film-dim"
-			/>
-			<Word
-				name={`${name}-num`}
-				x={W / 2}
-				y={
-					H * 0.42 +
-					T.big * 0.62 +
-					lineCount(t(definition), room, T.body) * T.body * 1.35 +
-					T.head * 1.6
-				}
-				size={T.head}
-				className="wt-film-num wt-film-loss"
-			>
-				{t(figure)}
-			</Word>
-			{alt ? (
-				<g data-f={`${name}-alt`}>
-					<Word
-						name={`${name}-conversion`}
-						x={W / 2}
-						y={
-							H * 0.42 +
-							T.big * 0.62 +
-							lineCount(t(definition), room, T.body) * T.body * 1.35 +
-							T.head * 1.6 +
-							T.body * 2
-						}
-						size={T.body}
-						className="wt-film-num wt-film-dim"
-					>
-						<tspan style={{ fill: "var(--tone-ink)" }}>
-							{fixed3(CHARM_DAY)}
-						</tspan>
-						{" × "}
-						<tspan
-							style={{ fill: "var(--tone-ink)" }}
-						>{`−${CHARM_DAYS_PER_YEAR}`}</tspan>
-						{" ≈ "}
-						<tspan className={toneClass.up}>{PER_YEAR}</tspan>
-					</Word>
-					<Lines
-						name={`${name}-conversion-unit`}
-						text={t(alt)}
-						x={W / 2}
-						y={
-							H * 0.42 +
-							T.big * 0.62 +
-							lineCount(t(definition), room, T.body) * T.body * 1.35 +
-							T.head * 1.6 +
-							T.body * 3.65
-						}
-						size={T.body}
-						maxWidth={room}
-						className="wt-film-type wt-film-dim"
-					/>
-				</g>
-			) : null}
-		</g>
-	);
+	) => {
+		const definitionWidth = room * (narrow ? 0.72 : 0.84);
+		const wordY = H * (narrow ? 0.17 : 0.22);
+		const definitionY = wordY + T.head * 1.3;
+		const definitionLines = lineCount(t(definition), definitionWidth, T.body);
+		const figureY =
+			definitionY + definitionLines * T.body * 1.35 + T.head * 1.6;
+		return (
+			<g data-f={name}>
+				<Word
+					name={`${name}-word`}
+					x={W / 2}
+					y={wordY}
+					size={T.head * 1.05}
+					className="wt-film-type"
+				>
+					{t(word)}
+				</Word>
+				<Lines
+					name={`${name}-def`}
+					text={t(definition)}
+					x={W / 2}
+					y={definitionY}
+					size={T.body}
+					maxWidth={definitionWidth}
+					className="wt-film-type wt-film-dim"
+				/>
+				<Word
+					name={`${name}-num`}
+					x={W / 2}
+					y={figureY}
+					size={T.head}
+					className="wt-film-num wt-film-loss"
+				>
+					{t(figure)}
+				</Word>
+				{alt ? (
+					<g data-f={`${name}-alt`}>
+						<Word
+							name={`${name}-conversion`}
+							x={W / 2}
+							y={figureY + T.body * 2}
+							size={T.body}
+							className="wt-film-num wt-film-dim"
+						>
+							<tspan style={{ fill: "var(--tone-ink)" }}>
+								{fixed3(CHARM_DAY)}
+							</tspan>
+							{" × "}
+							<tspan
+								style={{ fill: "var(--tone-ink)" }}
+							>{`−${CHARM_DAYS_PER_YEAR}`}</tspan>
+							{" ≈ "}
+							<tspan className={toneClass.up}>{PER_YEAR}</tspan>
+						</Word>
+						<Lines
+							name={`${name}-conversion-unit`}
+							text={t(alt)}
+							x={W / 2}
+							y={figureY + T.body * 3.65}
+							size={T.body}
+							maxWidth={definitionWidth}
+							className="wt-film-type wt-film-dim"
+						/>
+					</g>
+				) : null}
+			</g>
+		);
+	};
 	const x7 = L.x(WEEK);
 	return (
 		<>
@@ -345,6 +335,7 @@ function Scene({
 						</g>
 						<g clipPath={`url(#draw-low-${id})`}>
 							<path
+								data-f="low-curve"
 								className="wt-line-position"
 								d={L.path(-VOL_DROP)}
 								strokeDasharray="5 4"
@@ -453,7 +444,7 @@ function Scene({
 				<Word
 					name="q-big"
 					x={W / 2}
-					y={H * 0.27 + T.big * 1.05}
+					y={H * 0.27 + T.big * 1.3}
 					size={T.big}
 					className="wt-film-num wt-film-accent"
 				>
@@ -582,21 +573,19 @@ function Scene({
 			{headline("s-head", copy.spreadHead, copy.spreadHeadShort)}
 			{headline("l-head", copy.laterHead, copy.laterHeadShort)}
 			<g data-f="spread">
-				{(["spreadToday", "spreadTransition", "spreadLater"] as const).map(
-					(state) => (
-						<Word
-							key={state}
-							name={`s-${state}`}
-							x={L.margin}
-							y={L.rowY(0) - T.head * 3.4}
-							size={T.small}
-							anchor="start"
-							className="wt-film-tag"
-						>
-							{t(copy[state])}
-						</Word>
-					),
-				)}
+				{(["spreadToday", "spreadTransition"] as const).map((state) => (
+					<Word
+						key={state}
+						name={`s-${state}`}
+						x={L.margin}
+						y={L.rowY(0) - T.head * 3.4}
+						size={T.small}
+						anchor="start"
+						className="wt-film-tag"
+					>
+						{t(copy[state])}
+					</Word>
+				))}
 				<Word
 					name="s-iv"
 					x={L.margin}
@@ -758,6 +747,7 @@ function build(context: FilmContext) {
 	d.hidden([
 		one("same-label"),
 		one("low-label"),
+		one("low-curve"),
 		one("level"),
 		one("charm-step"),
 		one("vanna-step"),
@@ -789,16 +779,21 @@ function build(context: FilmContext) {
 
 	// ——— charm: time alone moves delta ———
 	tl.addLabel("charm", 9.6);
-	hide(flat("q"), 9.6);
+	hide([one("q-tag"), one("q-0"), one("q-1"), one("q-2")], 9.6);
+	d.carry(one("q-big"), meter, 9.6, {
+		duration: 0.8,
+		arc: "x",
+	});
+	rise(9.6);
 	show(one("c-head"), 9.8, "above");
-	rise(9.9);
-	// One question covers the curve and its walk. Assemble the meter, marker and
-	// reference with the chart instead of a separate post-curve entrance sequence.
-	// The curve settles at 11.50; preserve 1.10 s of quiet before the walk at 12.60.
-	reveal("draw-same", 9.9, 1.6);
-	show(kids("meter"), 9.9, "above");
-	land(marker, 9.9);
-	tl.to(one("level"), { opacity: 1, duration: 0.4 }, 9.9);
+	show(one("m-tag"), 10.4, "above");
+	word("charm-word", 10.9);
+	show(one("charm-def"), 10.9);
+	// Axes and labels settle at 10.90; leave them still for 1.10 s before the
+	// curve starts. The line then settles at 13.60, with the accepted 1.10 s rest.
+	reveal("draw-same", 12.0, 1.6);
+	land(marker, 12.0);
+	tl.to(one("level"), { opacity: 1, duration: 0.4 }, 12.0);
 	const walk = { day: 0 };
 	tl.fromTo(
 		walk,
@@ -816,47 +811,77 @@ function build(context: FilmContext) {
 				meter.textContent = plain3(value);
 			},
 		},
-		12.6,
+		14.7,
 	);
-	draw(one<SVGPathElement>("charm-step"), 13.8);
-	show(one("charm-change"), 14.0, "right");
-	// Cut: the word, and the same charm in its other unit.
-	hide([one("c-head"), ...kids("meter")], 16.1);
-	sink(16.1);
-	word("charm-word", 16.5);
-	show(one("charm-def"), 16.7);
-	land(one("charm-num"), 17.1);
-	show(one("charm-alt"), 17.6);
+	draw(one<SVGPathElement>("charm-step"), 15.9);
+	show(one("charm-change"), 16.3, "right");
+	// Keep the chart beneath its definition and estimate; the definition now
+	// belongs to this proof instead of replacing it with a second presentation.
+	hide(one("c-head"), 17.0);
+	land(one("charm-num"), 18.4);
+	show(one("charm-alt"), 18.95);
 	tl.set(
 		one("charm-num"),
 		{ attr: { class: "wt-film-num" }, immediateRender: false },
-		17.6,
+		18.95,
 	);
 
 	// ——— vanna: and implied volatility moves it too ———
-	tl.addLabel("vanna", 21.2);
+	tl.addLabel("vanna", 20.5);
 	hide(kids("charm"), 21.2);
-	show(one("v-head"), 21.55, "above");
-	rise(21.6);
+	show(one("v-head"), 20.5, "above");
+	show([one("same-label"), one("low-label")], 20.5);
+	// Dim the unchanged-IV evidence, then restyle it as a reference in place.
+	tl.to(
+		one("same-curve"),
+		{ opacity: 0, duration: 0.3, ease: "power2.in" },
+		21.3,
+	);
+	tl.to(marker, { opacity: 0, duration: 0.3, ease: "power2.in" }, 21.3);
 	tl.set(
 		one("same-curve"),
 		{
 			attr: { class: "wt-line-reference" },
 			strokeWidth: 1.75,
 			strokeOpacity: 0.3,
+			opacity: 0,
 			immediateRender: false,
 		},
 		21.6,
 	);
 	tl.set(
 		marker,
-		{ attr: { class: "wt-chip wt-film-dim" }, immediateRender: false },
+		{
+			attr: { class: "wt-chip wt-film-dim" },
+			opacity: 0,
+			immediateRender: false,
+		},
 		21.6,
 	);
-	show(kids("meter"), 21.9, "above");
+	tl.to(
+		one("same-curve"),
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		21.6,
+	);
+	tl.to(marker, { opacity: 1, duration: 0.3, ease: "power3.out" }, 21.6);
 	reveal("draw-low", 22.0, 1.4);
-	show([one("same-label"), one("low-label")], 23.4);
-	tl.set(marker, { attr: { class: "wt-chip" }, immediateRender: false }, 23.4);
+	tl.fromTo(
+		one("low-curve"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		22.0,
+	);
+	tl.to(marker, { opacity: 0, duration: 0.3, ease: "power2.in" }, 23.1);
+	tl.set(
+		marker,
+		{
+			attr: { class: "wt-chip" },
+			opacity: 0,
+			immediateRender: false,
+		},
+		23.4,
+	);
+	tl.to(marker, { opacity: 1, duration: 0.3, ease: "power3.out" }, 23.4);
 	const iv = { volPoints: 0 };
 	tl.fromTo(
 		iv,
@@ -932,20 +957,22 @@ function build(context: FilmContext) {
 	hide([...kids("vanna"), lockVanna], 33.4);
 	show(one("s-head"), 33.75, "above");
 	show([one("s-spreadToday"), one("s-iv")], 34.0);
-	show(one("s-shares"), 34.0);
+	show([one("s-shares"), one("s-change")], 34.0);
+	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 34.0);
+	// The complete table scaffold settles at 34.50. Reveal each row together
+	// after one second, with the three rows staggered across exactly 0.50 s.
 	LEGS.forEach((leg, i) => {
-		show(one(`s-label-${leg}`), 34.2 + i * 0.4);
-		show(one(`s-value-${leg}`), 34.4 + i * 0.4, "right");
+		const at = 35.5 + i * 0.25;
+		show(
+			[one(`s-label-${leg}`), one(`s-value-${leg}`), one(`s-delta-${leg}`)],
+			at,
+		);
 	});
-	tl.to(one("s-rule"), { opacity: 1, duration: 0.4 }, 35.1);
 	// A week later: each leg's delta moves, and the short leg's move is a gain.
 	d.swap(one("s-head"), one("l-head"), 37.3);
 	d.swap(one("s-spreadToday"), one("s-spreadTransition"), 37.3);
-	// Changes enter at zero before the walk. All six values then update together,
-	// so both the net and its change are sums of the displayed signed legs.
-	show(one("s-change"), 37.2);
-	show([one("s-delta-long"), one("s-delta-short")], 37.2, "right");
-	land(one("s-delta-net"), 37.15);
+	// Every row starts with a zero change; all six values then update together,
+	// so both the net and its change remain sums of the displayed signed legs.
 	const spread = { progress: 0 };
 	const spreadValues = LEGS.map((leg) => one<SVGTextElement>(`s-value-${leg}`));
 	const spreadChanges = LEGS.map((leg) =>
@@ -979,14 +1006,14 @@ function build(context: FilmContext) {
 				});
 			},
 		},
-		37.6,
+		39.15,
 	);
-	// Give the completed table one second of quiet, then identify its settled date.
-	d.swap(one("s-spreadTransition"), one("s-spreadLater"), 39.6);
+	// Keep the transition label through the completed table; a second date label
+	// would repeat the same qualification just before the claim.
 	// Cut: the claim.
 	hide([one("l-head"), ...flat("spread")], 41.2);
-	word("z-big", 41.6);
-	show(one("z-sub"), 42.0);
+	word("z-big", 41.55);
+	show(one("z-sub"), 41.55);
 
 	// ——— next ———
 	// The restored after-beat is funded before the lock; keep this 1.80 s end card.
