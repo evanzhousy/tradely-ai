@@ -25,16 +25,7 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
-import {
-	COST,
-	CRUX,
-	INSIGHT_BODY,
-	INSIGHT_BODY_SHORT,
-	NAMES,
-	NEAR,
-	PASSED,
-	STATEMENTS,
-} from "./ai-verify-model";
+import { COST, CRUX, NAMES, NEAR, PASSED, STATEMENTS } from "./ai-verify-model";
 
 /*
  * Verify an answer against focused source/result proofs, then add the actual reply
@@ -42,7 +33,7 @@ import {
  *
  *   open      0–4          Ask TradingFlow AI, then verify
  *   question  4–9.6        The unsupported bearish-bet sentence
- *   sort      9.6–24.3     Paired results; missing evidence; identify three near expiries
+ *   sort      9.6–24.3     One source/result card; missing evidence; identify three near expiries
  *   credits   24.3–31.1    1 + 1 + 2 → 4 credits; lock at 28.9, settle at 29.35
  *   insight   31.1–44.65   Explain the run; branch a private draft; closing claim
  *   next      44.65–47.05  Build your own Rank column
@@ -62,6 +53,15 @@ const MISSING_FIELDS = [
 	{ id: "motive", label: ["Motive", "动机"] },
 	{ id: "open-close", label: ["Open/close", "开仓/平仓"] },
 ] as const;
+const reportTag: Copy = ["Report key figures · Monday", "报告关键数字 · 周一"];
+const ratioSource: Copy = [
+	`${CRUX.symbol} · ${expiries[CRUX.expiry].label[0]} · ${CRUX.strike} put`,
+	`${CRUX.symbol} · ${expiries[CRUX.expiry].label[1]} · ${CRUX.strike} 看跌`,
+];
+const ratioResult: Copy = [
+	`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}×`,
+	`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}倍`,
+];
 const proofs: {
 	id: string;
 	tag: Copy;
@@ -70,33 +70,6 @@ const proofs: {
 	result: Copy;
 	tone?: Tone;
 }[] = [
-	{
-		id: "count",
-		tag: ["Report · Monday", "报告 · 周一"],
-		source: ["Report key figures", "报告关键数字"],
-		basis: ["Key figures", "关键数字"],
-		result: [
-			`${PASSED.length} contracts · ${NAMES} names`,
-			`${PASSED.length} 份合约 · ${NAMES} 个标的`,
-		],
-	},
-	{
-		id: "ratio",
-		tag: ["Calculate · volume/OI", "计算 · 成交量/未平仓量"],
-		source: [
-			`${CRUX.symbol} · ${expiries[CRUX.expiry].label[0]} · ${CRUX.strike} put`,
-			`${CRUX.symbol} · ${expiries[CRUX.expiry].label[1]} · ${CRUX.strike} 看跌`,
-		],
-		basis: [
-			`Volume ${CRUX.volume.toLocaleString("en-US")} · OI ${CRUX.openInterest.toLocaleString("en-US")}`,
-			`成交量 ${CRUX.volume.toLocaleString("en-US")} · 未平仓量 ${CRUX.openInterest.toLocaleString("en-US")}`,
-		],
-		result: [
-			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}×`,
-			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}倍`,
-		],
-		tone: "focus",
-	},
 	{
 		id: "bet",
 		tag: ["Check · the bet", "核查 · 押注"],
@@ -134,7 +107,7 @@ function layout(width: number) {
 	const { height: H, narrow, room, type: T } = frame;
 	return {
 		...frame,
-		proofY: (id: string) => H * (id === "ratio" || id === "fall" ? 0.57 : 0.27),
+		proofY: (id: string) => H * (id === "fall" ? 0.57 : 0.27),
 		proofH: (id: string) => H * (id === "bet" ? 0.4 : 0.28),
 		rowText: narrow ? T.small * 1.1 : T.body,
 		ledgerW: narrow ? room : room * 0.46,
@@ -163,6 +136,10 @@ const copy = {
 		"TradingFlow AI · about Monday's screen",
 		"TradingFlow AI · 关于周一的筛选",
 	],
+	qQuote: [
+		"Someone opened a large bearish CRUX bet before news.",
+		"有人在消息公布前对 CRUX 开了大额看空押注。",
+	],
 	qLine: [
 		"What does Monday's screen actually support?",
 		"周一的筛选到底支持哪部分？",
@@ -184,13 +161,14 @@ const copy = {
 	official: ["Official recipe · unchanged", "官方 Recipe · 未改动"],
 	private: ["Your private draft", "你的私有草稿"],
 	draftTools: ["Review · Undo · Save", "审阅 · 撤销 · 保存"],
-	insightHead: [
-		"AI Insight explains a run; nothing changes.",
-		"AI Insight 解释一次运行；什么都不变。",
+	actionHead: [
+		"AI Insight explains; Edit with AI drafts.",
+		"AI Insight 解释，AI 编辑起草。",
 	],
-	insightHeadShort: ["AI Insight explains.", "AI Insight 只解释。"],
-	editHead: ["Where does Edit with AI work?", "Edit with AI 会改哪里？"],
-	editHeadShort: ["Edit with AI: where?", "Edit with AI：改哪里？"],
+	insightBody: [
+		"Explains this run's results and limits.",
+		"解释本次运行的结果与局限。",
+	],
 	claimBig: ["The AI drafts; you verify.", "AI 起草，你来核查。"],
 	claimSub: [
 		"Sort sentences, count credits, edit only in drafts.",
@@ -261,7 +239,7 @@ function Scene({
 			/>
 		</g>
 	);
-	const insightBody = narrow ? INSIGHT_BODY_SHORT : INSIGHT_BODY;
+	const insightBody = copy.insightBody;
 	const panelH =
 		L.panelPad * 2 +
 		T.body * 2.7 +
@@ -272,7 +250,7 @@ function Scene({
 		`Volume/OI ≥ ${screenDefaults.minVolumeToOi}`,
 		`成交量/OI ≥ ${screenDefaults.minVolumeToOi}`,
 	];
-	const quote = `“${t(BET.text)}”`;
+	const quote = `“${t(copy.qQuote)}”`;
 	const quoteSize = narrow ? T.head * 1.2 : T.title;
 	const quoteY = H * 0.28 + quoteSize * 1.5;
 	const draftX = narrow ? margin : margin + L.panelW + 20;
@@ -321,6 +299,87 @@ function Scene({
 			{headline("b-head", copy.betHead, copy.betHeadShort)}
 			{headline("r-head", copy.restHead, copy.restHeadShort)}
 
+			{/* One proof card: compact report context above the row calculation. */}
+			<g data-f="opening-proof">
+				<rect
+					x={margin}
+					y={H * 0.27}
+					width={room}
+					height={H * 0.55}
+					rx={12}
+					className="wt-panel-shape"
+				/>
+				<Word
+					name="source-tag-count"
+					x={margin + 14}
+					y={H * 0.27 + T.small * 1.6}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(reportTag).toUpperCase()}
+				</Word>
+				{(["contracts", "names"] as const).map((kind, i) => (
+					<Word
+						key={kind}
+						name={`count-label-${kind}`}
+						x={margin + 14 + (i * (room - 28)) / 2}
+						y={H * 0.27 + T.small * 1.6 + T.body * 1.6}
+						size={T.body}
+						anchor="start"
+						className="wt-film-type wt-film-dim"
+					>
+						{t(
+							kind === "contracts" ? ["Contracts", "合约"] : ["Names", "标的"],
+						)}
+					</Word>
+				))}
+				<g data-f="result-count">
+					{[PASSED.length, NAMES].map((value, i) => (
+						<Word
+							key={i === 0 ? "contracts" : "names"}
+							name={i === 0 ? "count-contracts" : "count-names"}
+							x={margin + 14 + (i * (room - 28)) / 2}
+							y={H * 0.27 + T.small * 1.6 + T.body * 3.2}
+							size={T.body * 1.1}
+							anchor="start"
+							className="wt-film-num"
+						>
+							{value}
+						</Word>
+					))}
+				</g>
+				<Word
+					name="source-tag-ratio"
+					x={margin + 14}
+					y={H * 0.5 + T.small * 1.6}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(["Calculate · volume/OI", "计算 · 成交量/未平仓量"]).toUpperCase()}
+				</Word>
+				<Lines
+					name="source-ratio"
+					text={t(ratioSource)}
+					x={margin + 14}
+					y={H * 0.5 + T.small * 1.6 + T.body * 1.6}
+					size={T.body}
+					maxWidth={room - 28}
+					anchor="start"
+				/>
+				<Word
+					name="result-ratio"
+					x={margin + 14}
+					y={H * 0.75}
+					size={T.head}
+					anchor="start"
+					className={`wt-film-num ${toneClass.focus}`}
+				>
+					{t(ratioResult)}
+				</Word>
+			</g>
+
 			{/* A focused source and its settled result, in both frame shapes. */}
 			<g data-f="rows">
 				{proofs.map((proof) => {
@@ -339,7 +398,7 @@ function Scene({
 						y + L.proofH(proof.id) - Math.max(8, T.head * 0.35),
 					);
 					const resultSize =
-						proof.id === "count" || proof.id === "near"
+						proof.id === "near"
 							? Math.min(T.body * 1.1, T.head * 0.85)
 							: T.head;
 					return (
@@ -381,27 +440,7 @@ function Scene({
 								maxWidth={room - 28}
 								anchor="start"
 							/>
-							{proof.id === "count" ? (
-								<g data-f="basis-count">
-									{(["contracts", "names"] as const).map((kind, i) => (
-										<Word
-											key={kind}
-											name={`count-label-${kind}`}
-											x={margin + 14 + (i * (room - 28)) / 2}
-											y={basisY}
-											size={T.body}
-											anchor="start"
-											className="wt-film-type wt-film-dim"
-										>
-											{t(
-												kind === "contracts"
-													? ["Contracts", "合约"]
-													: ["Names", "标的"],
-											)}
-										</Word>
-									))}
-								</g>
-							) : proof.id === "bet" ? (
+							{proof.id === "bet" ? (
 								<g data-f="basis-bet">
 									{MISSING_FIELDS.map((field, i) => {
 										const gap = 10;
@@ -487,32 +526,15 @@ function Scene({
 									className="wt-film-type wt-film-dim"
 								/>
 							)}
-							{proof.id === "count" ? (
-								<g data-f="result-count">
-									{[PASSED.length, NAMES].map((value, i) => (
-										<text
-											key={i === 0 ? "contracts" : "names"}
-											data-f={i === 0 ? "count-contracts" : "count-names"}
-											x={margin + 14 + (i * (room - 28)) / 2}
-											y={resultY}
-											className="wt-film-num"
-											style={{ fontSize: T.head }}
-										>
-											{value}
-										</text>
-									))}
-								</g>
-							) : (
-								<text
-									data-f={`result-${proof.id}`}
-									x={margin + 14}
-									y={resultY}
-									className={`${proof.id === "bet" ? "wt-film-type" : "wt-film-num"} ${proof.tone ? toneClass[proof.tone] : ""}`}
-									style={{ fontSize: resultSize }}
-								>
-									{t(proof.result)}
-								</text>
-							)}
+							<text
+								data-f={`result-${proof.id}`}
+								x={margin + 14}
+								y={resultY}
+								className={`${proof.id === "bet" ? "wt-film-type" : "wt-film-num"} ${proof.tone ? toneClass[proof.tone] : ""}`}
+								style={{ fontSize: resultSize }}
+							>
+								{t(proof.result)}
+							</text>
 						</g>
 					);
 				})}
@@ -600,8 +622,7 @@ function Scene({
 			<Brackets name="lock-total" glow />
 
 			{/* Insight leaves the official object intact; Edit branches a new object. */}
-			{headline("i-head", copy.insightHead, copy.insightHeadShort)}
-			{headline("e-head", copy.editHead, copy.editHeadShort)}
+			{headline("i-head", copy.actionHead, copy.actionHead)}
 			<g data-f="recipe">
 				<rect
 					data-f="bar"
@@ -765,9 +786,12 @@ function build(context: FilmContext) {
 	const lockTotal = one<SVGGraphicsElement>("lock-total");
 	d.hidden([
 		...flat("q"),
-		...["s-head", "b-head", "r-head", "c-head", "i-head", "e-head"].map(
-			(name) => one(name),
+		...["s-head", "b-head", "r-head", "c-head", "i-head"].map((name) =>
+			one(name),
 		),
+		one("opening-proof"),
+		result("count"),
+		result("ratio"),
 		...proofs.flatMap((proof) => [row(proof.id), result(proof.id)]),
 		...MISSING_FIELDS.map((field) => one(`bet-missing-${field.id}`)),
 		one("billing"),
@@ -801,13 +825,13 @@ function build(context: FilmContext) {
 
 	// ——— sort: what backs each sentence ———
 	tl.addLabel("sort", 9.6);
-	hide(flat("q"), 9.6);
-	show(one("s-head"), 9.8, "above");
-	fade([row("count"), row("ratio")], 10.1);
+	// Full scene cut: the scaffold is still for 1 s before results move.
+	tl.set(flat("q"), { opacity: 0 }, 9.6);
+	tl.set([one("s-head"), one("opening-proof")], { opacity: 1 }, 9.6);
 	fade([result("count"), result("ratio")], 10.6);
 	// Related proofs settle at 11.1; preserve the original headline holds.
 	d.swap(one("s-head"), one("b-head"), 13.4);
-	hide([row("count"), row("ratio")], 13.65, 0.35, 0);
+	hide(one("opening-proof"), 13.65, 0.35, 0);
 	fade(row("bet"), 14.0);
 	// Check each missing input deliberately before the settled rejection.
 	MISSING_FIELDS.forEach((field, i) => {
@@ -872,7 +896,7 @@ function build(context: FilmContext) {
 	show([one("bar"), one("bar-title")], 31.7);
 	show([one("st-official"), one("official-field")], 31.9);
 	show(one("p-insight"), 32.3);
-	d.swap(one("i-head"), one("e-head"), 35.3);
+	// One continuing headline covers explanation and private editing.
 	// Keep the official recipe visible while a separate private card is built.
 	if (L.narrow) hide(one("p-insight"), 35.9, 0.35, 0);
 	fade(one("p-edit"), 36.25);
@@ -902,7 +926,7 @@ function build(context: FilmContext) {
 	// Cut: the claim.
 	hide(
 		[
-			one("e-head"),
+			one("i-head"),
 			one("bar"),
 			one("bar-title"),
 			one("st-official"),
