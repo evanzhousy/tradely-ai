@@ -152,6 +152,7 @@ const copy = {
 	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
 	inTheMoney: ["in the money · per share", "实值 · 每股"],
 	defaultAction: ["No action; threshold met.", "未操作；门槛已达。"],
+	modelThreshold: ["model threshold", "模型门槛"],
 	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
 		"A writer can be assigned after hours.",
@@ -348,6 +349,15 @@ function Scene({
 						{label}
 					</text>
 				))}
+				<Word
+					name="equality-mark"
+					x={W / 2}
+					y={L.barBottom - L.barH(OCT18.bid) - 10}
+					size={T.num}
+					className="wt-film-num wt-film-dim"
+				>
+					=
+				</Word>
 				<Word
 					name="exit-basis"
 					x={W / 2}
@@ -740,6 +750,17 @@ function Scene({
 			>
 				{t(copy.inTheMoney)}
 			</Word>
+			{/* The threshold comparison sits with the default-action line it explains, clear of
+			    the hero's figure and unit. */}
+			<Word
+				name="pin-threshold"
+				x={narrow ? W / 2 : L.priceX}
+				y={narrow ? H * 0.78 : L.priceY + T.num * 1.05 + T.body * 1.6}
+				size={narrow ? T.small : T.body}
+				className="wt-film-num"
+			>
+				{`${usd(HOLDER_MONEYNESS_CENTS)} > ${usd(Math.round(AUTO_EXERCISE_THRESHOLD * 100))} ${t(copy.modelThreshold)}`}
+			</Word>
 			<Lines
 				name="pin-default"
 				text={t(copy.defaultAction)}
@@ -900,6 +921,7 @@ function build(context: FilmContext) {
 		"pin-equation",
 		"pin-value",
 		"pin-unit",
+		"pin-threshold",
 		"pin-default",
 		"pin-ex",
 	].map((name) => one(name));
@@ -1008,6 +1030,12 @@ function build(context: FilmContext) {
 	fade(one("d-oct18"), 13.6, 0.3);
 	// Final comparison settles at 13.6, then the date at 13.9. Equality is true first.
 	show(heads[1], 13.9);
+	tl.fromTo(
+		one("equality-mark"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
+		14.4,
+	);
 
 	tl.addLabel("settle", 17.5);
 	hide([heads[0], heads[1], ...flat("exit")], 17.5);
@@ -1023,13 +1051,10 @@ function build(context: FilmContext) {
 	tl.addLabel("cash", 21.4);
 	d.swap(heads[2], heads[3], 21.4);
 	hide(kids("shares"), 21.4);
-	// One calculation replaces the duplicated official quote. Both inputs settle at
-	// 22.2; the excluded close gets a full second before focus moves to the payout.
-	fade([one("c-official"), one("c-thursday")], 21.7);
-	tl.to(one("c-thursday"), { opacity: 0.3, duration: 0.4 }, 23.2);
-	// Keep the accepted payout settlement/quiet interval: 23.75–25.3. Its calculation
-	// is already still and stays readable for 3.1 s, from 22.2 until the cut.
-	fade(one("c-pays"), 23.2, 0.55);
+	// Keep the official calculation and result together; compare Thursday's close only
+	// after the combined proof has settled for a full second.
+	fade([one("c-official"), one("c-pays")], 21.7);
+	fade(one("c-thursday"), 23.2, 0.3);
 
 	tl.addLabel("window", 25.3);
 	hide([heads[3], ...kids("cash")], 25.3);
@@ -1044,15 +1069,22 @@ function build(context: FilmContext) {
 	show(heads[5], 30.05);
 	// A known close is compared exactly; no ruler or transient closing prices.
 	fade(one("pin-reference"), 30.05);
-	// Build the comparison in order; each mark keeps the 0.3 s motion floor.
-	fade([one("pin-price"), one("holder-close"), one("pin-default")], 30.45, 0.3);
-	fade(one("pin-equation"), 30.55, 0.3);
-	fade([one("pin-value"), one("pin-unit")], 30.65, 0.3);
-	// The settled operands and result are revealed, never counted after an equals sign.
-	d.lock(g("lock-pin"), 30.95, { around: one("pin-value"), pad: 8 });
-	tl.addLabel("hero-lock", 30.95);
-	fade(heads[6], 30.95);
-	// Answer settles at 31.45 (lock at 31.4), then 1.5 s of undivided quiet.
+	// Build the comparison in order; the result and model comparator arrive together,
+	// then the brackets and answer land 0.35 s later.
+	fade([one("pin-price"), one("holder-close")], 29.7, 0.3);
+	fade(one("pin-equation"), 30.05, 0.3);
+	fade([one("pin-value"), one("pin-unit")], 30.4, 0.3);
+	tl.fromTo(
+		one("pin-threshold"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
+		30.4,
+	);
+	fade(one("pin-default"), 30.75, 0.3);
+	d.lock(g("lock-pin"), 30.75, { around: one("pin-value"), pad: 8 });
+	tl.addLabel("hero-lock", 30.75);
+	fade(heads[6], 30.9, 0.3);
+	// The lock settles at 31.2; 1.75 s of undivided quiet precedes the account.
 	fade(one("pin-ex"), 32.95, 0.3);
 
 	tl.addLabel("writer", 35.05);
