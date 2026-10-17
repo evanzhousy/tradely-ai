@@ -69,10 +69,6 @@ const settles = Array.from(
 );
 const RULER = [92, 113] as const;
 const UNITS = ["dollars", "percent", "atr"] as const satisfies readonly Unit[];
-const ATR_TICKS = Array.from(
-	{ length: 14 },
-	(_, i) => SPOT + (i - 5) * ALFA_ATR_14,
-);
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -129,19 +125,16 @@ const copy = {
 	titleSub: ["reference levels, not targets", "参考位置，不是目标"],
 	qTag: ["ALFA Oct 18 put wall", "ALFA 10月18日 看跌墙"],
 	qOr: ["or", "还是"],
-	qLine: [
-		"Same chain, same close. Which put wall?",
-		"同一条链、同一次收盘，哪个看跌墙？",
-	],
+	qLine: ["Same chain, same close: which wall?", "同链同收盘，哪个墙位？"],
 	oiHead: ["The rule picks the wall.", "规则选出墙位。"],
 	oiHeadShort: ["The rule picks the wall.", "规则选出墙位。"],
 	oiWallHead: [
-		`Most contracts: calls ${stock(CALL_ANY)}, puts ${stock(PUT_OI)}.`,
-		`合约最多：看涨${stock(CALL_ANY)}，看跌${stock(PUT_OI)}。`,
+		`Most: calls ${stock(CALL_ANY)}, puts ${stock(PUT_OI)}.`,
+		`最多：看涨${stock(CALL_ANY)}、看跌${stock(PUT_OI)}。`,
 	],
 	oiWallHeadShort: [
-		`Most contracts: ${stock(CALL_ANY)}, ${stock(PUT_OI)}.`,
-		`合约最多：${stock(CALL_ANY)}、${stock(PUT_OI)}。`,
+		`Most: calls ${stock(CALL_ANY)}, puts ${stock(PUT_OI)}.`,
+		`最多：看涨${stock(CALL_ANY)}、看跌${stock(PUT_OI)}。`,
 	],
 	gexWallHead: [
 		"Gamma weights strikes near spot more.",
@@ -199,10 +192,10 @@ const copy = {
 		`1 ATR = $${ALFA_ATR_14.toFixed(2)}: range, not direction.`,
 		`1 ATR = $${ALFA_ATR_14.toFixed(2)}：波幅，非方向。`,
 	],
-	claimBig: ["A level is a reference, not a target.", "位置是参考，不是目标。"],
+	claimBig: ["Levels are references, not targets.", "位置只作参考，不作目标。"],
 	claimSub: [
-		"Label each level: rule, scope, date, unit.",
-		"每个位置标明规则、范围、日期、单位。",
+		"Per level: rule, scope, date, unit.",
+		"逐个标注：规则、范围、日期、单位。",
 	],
 	nextBig: ["Next: charm and vanna", "下一课：Charm 与 Vanna"],
 	nextSub: ["exposure that changes without a trade", "没有成交也会变化的敞口"],
@@ -523,15 +516,6 @@ function Scene({
 								);
 							})}
 						</g>
-						<g data-f="ticks-atr">
-							{ATR_TICKS.map((price) => (
-								<path
-									key={price}
-									d={`M${L.rx(price)} ${R - 7}V${R + 7}`}
-									className="wt-film-riser"
-								/>
-							))}
-						</g>
 						<path
 							d={`M${L.rx(SPOT)} ${R - T.body * 4.4}V${R + 8}`}
 							className="wt-bracket"
@@ -805,7 +789,6 @@ function build(context: FilmContext) {
 		one("min-link"),
 		one("min-label"),
 		lockPain,
-		one("ticks-atr"),
 		one("atr-span"),
 		...SIDES.flatMap((side) => UNITS.map((unit) => one(`d-${side}-${unit}`))),
 		...flat("q"),
@@ -863,48 +846,61 @@ function build(context: FilmContext) {
 		12.3,
 	);
 	show([one("wl-call-oi"), one("wl-put-oi")], 12.5);
-	// Weighted by gamma: the bars near the money grow, and the put wall moves.
-	// Keep one walls headline; only the evidence/answer beneath it changes rule.
+	// Cut the OI evidence into a clean GEX scaffold at the end of the OI answer
+	// hold. The distribution, highlights, wall labels and OI captions leave
+	// together, changing over 60% of the visible chart marks; the shared price
+	// scaffold stays. Its new caption is up for a full second before GEX data.
+	const allBars = STRIKES.flatMap((strike) =>
+		SIDES.map((side) => bar(strike, side)),
+	);
+	// The OI marks leave over the motion floor, gone at 15.8; the GEX scaffold comes on
+	// over the same 0.3 s from there (a part of the stage changing is not a cut).
+	hide(
+		[
+			...allBars,
+			one("hi-call"),
+			one("hi-put-oi"),
+			one("hi-put-gex"),
+			...wallLabels.map(({ name }) => one(name)),
+			one("axis-oi"),
+		],
+		15.5,
+		0.3,
+		0,
+	);
+	for (const mark of allBars)
+		tl.set(mark, { attr: { y: L.middle, height: 0 } }, 15.8);
+	// The headline keeps its full hold and hands over in place at the change.
 	d.swap(one("w-head"), one("g-head"), 15.8);
-	d.swap(one("axis-oi"), one("axis-gex"), 15.8);
-	hide([one("wl-call-oi"), one("wl-put-oi")], 15.8);
+	tl.fromTo(
+		one("axis-gex"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
+		15.8,
+	);
+	tl.set(one("hi-call"), { attr: shape("gex", CALL_ANY, "call") }, 15.8);
+	// After the 1 s scaffold hold, all bars move together in 0.4 s.
 	SIDES.forEach((side) => {
 		STRIKES.forEach((strike) => {
+			tl.set(bar(strike, side), { opacity: 1 }, 16.8);
 			tl.to(
 				bar(strike, side),
 				{
 					attr: shape("gex", strike, side),
-					// Reset the old OI emphasis while the neutral weighting explanation is up.
-					opacity: 1,
-					duration: 0.9,
-					ease: "power2.inOut",
+					duration: 0.4,
+					ease: "power3.out",
 				},
-				16.1,
+				16.8,
 			);
 		});
 	});
-	tl.to(
-		one("hi-call"),
-		{
-			attr: shape("gex", CALL_ANY, "call"),
-			duration: 0.9,
-			ease: "power2.inOut",
-		},
-		16.1,
-	);
-	tl.to(
-		one("hi-put-oi"),
-		{
-			attr: shape("gex", PUT_OI, "put"),
-			opacity: 0,
-			duration: 0.9,
-			ease: "power2.inOut",
-		},
-		16.1,
-	);
-	tl.to(one("hi-put-gex"), { opacity: 1, duration: 0.5 }, 16.7);
-	// The winning bar settles at 17.20; give the proof a full second before its answer.
+	// The winner outlines settle with the bars, leaving 1 s before the answer.
 	show([one("wl-call-gex"), one("wl-put-gex"), one("g-answer")], 18.2);
+	tl.to(
+		[one("hi-call"), one("hi-put-gex")],
+		{ opacity: 1, duration: 0.3 },
+		16.9,
+	);
 	SIDES.forEach((side) => {
 		for (const strike of STRIKES) {
 			if (strike !== wallOf("gex", side))
@@ -952,12 +948,10 @@ function build(context: FilmContext) {
 	// Percent of $100 is a dollar a tick: the same marks, new numbers, the same note.
 	for (const side of SIDES)
 		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 35.15);
-	// ATR: wider ticks, smaller numbers.
+	// Convert the readouts while preserving the price ruler.
 	for (const side of SIDES)
 		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.15);
 	d.swap(one("note-dollars"), one("note-atr"), 37.15);
-	tl.to(one("ticks-unit"), { opacity: 0.25, duration: 0.4 }, 37.15);
-	tl.to(one("ticks-atr"), { opacity: 1, duration: 0.5 }, 37.35);
 	// After 1 s of quiet, retrace the measured span without changing its value.
 	draw(one<SVGPathElement>("atr-span"), 38.85, 0.6);
 	tl.to(one("atr-span"), { opacity: 1, duration: 0.5 }, 38.85);
