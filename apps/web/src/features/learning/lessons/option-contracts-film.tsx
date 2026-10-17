@@ -23,21 +23,21 @@ import {
 /*
  * Option contracts, as a film. It opens on two ALFA 100 calls, Oct 18 and Nov 15, and
  * asks whether they are the same contract. "Oct 18" flies into the symbol and becomes its
- * date, and the symbol is built part by part: the underlying, the expiry, call or put, the
+ * date, and the symbol is built field by field: the underlying, the expiry, call or put, the
  * strike; change the date and it is a different contract. Then units: a $4.20 quote is
  * per share, one contract is 100 shares, three are $1,260 of premium. The hero: the 300
- * shares light up block by block, then their notional counts once to $30,000, and the $1,260
- * paid comes back beside it: 4.2% of it. Last, a price belongs to a time: two settled
- * observations of the October call, $4.20 at 10:30 and $4.90 at 15:59.
+ * shares light up block by block, then $30,000 appears only when all 300 are lit; after the
+ * stand, $1,260 premium returns beside it: 4.2% of notional. Last, a price belongs to a time:
+ * two settled observations of the October call, $4.20 at 10:30 and $4.90 at 15:59.
  *
  *   open      0–4        "Option contracts"
  *   question  4–8.8      Oct 18 100 call, Nov 15 100 call: the same contract?
- *   symbol    8.8–17.2   ALFA · 301018 · C · 00100000; Nov 15 changes it
- *   units     17.2–34.95 $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000; you
- *                        pay 4.2% of it
- *   time      34.95–40.55 10:30 $4.20 → 15:59 $4.90
- *   claim     40.55–44.95 name the contract, count shares, stamp the time
- *   next      44.95–47.45 Next: holders and writers
+ *   symbol    8.8–18.05  ALFA · 301018 · C · 00100000; Nov 15 changes it
+ *   units     18.05–35.85 $4.20 × 100 = $420; × 3 = $1,260; hero: notional $30,000; you
+ *                         pay 4.2% of it
+ *   time      35.85–41.45 10:30 $4.20 → 15:59 $4.90
+ *   claim     41.45–45.85 name the contract, count shares, stamp the time
+ *   next      45.85–47.45 Next: holders and writers
  */
 
 const END = 47.45;
@@ -89,16 +89,10 @@ const copy = {
 	oct: ["Oct 18", "10月18日"],
 	nov: ["Nov 15", "11月15日"],
 	qLine: ["The same contract?", "是同一份合约吗？"],
-	symHead: [
-		"Four facts name a contract, and its symbol.",
-		"四个事实确定合约，也确定它的代码。",
-	],
-	symHeadShort: ["Four facts name it.", "四个事实确定它。"],
-	novHead: [
-		"Change the date: a different contract.",
-		"换个到期日：就是另一份合约。",
-	],
-	novHeadShort: ["Change expiry: another contract.", "换到期日，就换了合约。"],
+	symHead: ["Four fields, one contract.", "四项信息，确定合约。"],
+	symHeadShort: ["Four fields, one contract.", "四项信息，确定合约。"],
+	novHead: ["New date, new contract.", "换到期日，就换了合约。"],
+	novHeadShort: ["New date, new contract.", "换到期日，就换了合约。"],
 	parts: {
 		root: ["underlying", "标的"],
 		date: ["expiry", "到期日"],
@@ -116,11 +110,8 @@ const copy = {
 		`ALFA 10月18日 $${call100.strike} 看涨`,
 	],
 	contractShares: ["100 shares per contract", "每张合约 100 股"],
-	threeHead: [
-		"Three contracts, three times the premium.",
-		"三张合约，三倍权利金。",
-	],
-	threeHeadShort: ["Three contracts: three times.", "三张：三倍。"],
+	threeHead: ["3 contracts, 3× premium.", "三张合约，三倍权利金。"],
+	threeHeadShort: ["3 contracts, 3× premium.", "三张合约，三倍权利金。"],
 	notionalHead: ["And the shares behind them?", "那背后的股票呢？"],
 	notionalHeadShort: ["And the shares behind?", "背后的股票呢？"],
 	notionalHead2: [
@@ -145,7 +136,6 @@ const copy = {
 		"同一份合约，两个时点，两个价格。",
 	],
 	timeHeadShort: ["Two times, two prices.", "两个时点，两个价格。"],
-	alfaAt: ["ALFA", "ALFA"],
 	ask: ["ask", "卖价"],
 	claimBig: [
 		"Name the contract, count shares, stamp the time.",
@@ -381,7 +371,7 @@ function Scene({
 						"f-one",
 						copy.premium,
 						<>
-							$4.20 × 100 ={" "}
+							100×{usd(ASK)} ={" "}
 							<tspan className={toneClass.focus}>{usd(ASK * 100, 0)}</tspan>
 						</>,
 						"",
@@ -391,7 +381,7 @@ function Scene({
 						"f-three",
 						copy.premium,
 						<>
-							3 × {usd(ASK * 100, 0)} ={" "}
+							3×{usd(ASK * 100, 0)} ={" "}
 							<tspan className={toneClass.focus}>
 								{usd(THREE * ASK * 100, 0)}
 							</tspan>
@@ -424,6 +414,27 @@ function Scene({
 					</text>
 				</g>
 			))}
+			<g data-f="f-paid">
+				<text
+					x={figX()}
+					y={figRowY(0)}
+					textAnchor="middle"
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.premium).toUpperCase()}
+				</text>
+				<text
+					data-f="f-paid-num"
+					x={figX()}
+					y={figNumY(0)}
+					textAnchor="middle"
+					className={`wt-film-num ${toneClass.focus}`}
+					style={{ fontSize: figSize(0) }}
+				>
+					{usd(PREMIUM, 0)}
+				</text>
+			</g>
 
 			<Word
 				name="f-share"
@@ -478,7 +489,7 @@ function Scene({
 								className="wt-film-type wt-film-dim"
 								style={{ fontSize: T.body }}
 							>
-								{`${t(copy.ask)} · ${t(copy.alfaAt)} ${usd(o.spot)}`}
+								{t(copy.ask).toUpperCase()}
 							</text>
 						</g>
 					);
@@ -560,6 +571,7 @@ function build(context: FilmContext) {
 		one("u-shares-3"),
 		one("f-one"),
 		one("f-three"),
+		one("f-paid"),
 		one("f-notional"),
 		one("f-share"),
 		g("lock-notional"),
@@ -581,7 +593,7 @@ function build(context: FilmContext) {
 	word(one("q-nov"), 5.0);
 	show(one("q-line"), 5.2);
 
-	// ——— symbol: four facts. "Oct 18" flies in and becomes the symbol's date. ———
+	// ——— symbol: four fields. "Oct 18" flies in and becomes the symbol's date. ———
 	tl.addLabel("symbol", 8.8);
 	hide([one("q-tag"), one("q-line"), one("q-nov")], 8.8);
 	show(heads[0], 9.0);
@@ -596,59 +608,59 @@ function build(context: FilmContext) {
 		show(one(`part-${part}`), at + 0.5);
 	});
 	show(one("terms"), 12.0);
-	// Change the date to Nov 15: a different symbol, a different contract.
-	d.swap(heads[0], heads[1], 13.2);
+	// Change the date to Nov 15 after its headline lands: a different symbol and contract.
+	d.swap(heads[0], heads[1], 13.75);
 	const unchangedTerms = ["root", "right", "strike"].map((part) =>
 		one(`sym-${part}`),
 	);
-	tl.to(unchangedTerms, { opacity: 0.3, duration: 0.4 }, 13.2);
-	d.flip(one("sym-date"), one("sym-date-nov"), 13.9);
-	tl.set(one("sym-date"), { opacity: 0 }, 14.2);
+	tl.to(unchangedTerms, { opacity: 0.3, duration: 0.4 }, 13.75);
+	d.flip(one("sym-date"), one("sym-date-nov"), 14.6);
+	tl.set(one("sym-date"), { opacity: 0 }, 14.9);
 
 	// ——— units: per share, per contract ———
-	tl.addLabel("units", 17.2);
-	hide([heads[1], one("symbol")], 17.2);
+	tl.addLabel("units", 18.05);
+	hide([heads[1], one("symbol")], 18.05);
 	// Restore under the fully hidden symbol so neither playback nor a reverse seek flashes it.
-	tl.to(unchangedTerms, { opacity: 1, duration: 0.3 }, 17.55);
-	show(heads[2], 17.55);
-	show(one("u-contract"), 17.55);
+	tl.to(unchangedTerms, { opacity: 1, duration: 0.3 }, 18.4);
+	show(heads[2], 18.4);
+	show(one("u-contract"), 18.4);
 	tl.fromTo(
 		blocks[0],
 		{ opacity: 0, y: 10 },
 		{ opacity: 1, y: 0, duration: 0.5 },
-		17.8,
+		18.65,
 	);
-	show(one("u-shares"), 18.0);
-	show(one("f-one"), 18.6);
-	d.swap(heads[2], heads[3], 21.2);
+	show(one("u-shares"), 18.85);
+	show(one("f-one"), 18.75);
+	d.swap(heads[2], heads[3], 22.05);
 	blocks.slice(1).forEach((block, i) => {
 		tl.fromTo(
 			block,
 			{ opacity: 0, x: 18 },
 			{ opacity: 1, x: 0, duration: 0.45 },
-			21.6 + i * 0.3,
+			22.45 + i * 0.3,
 		);
 	});
-	hide(one("u-shares"), 21.6);
+	hide(one("u-shares"), 22.45);
 	// The wider valuation label fades in place, clear of the dot rows below it.
 	tl.fromTo(
 		one("u-shares-3"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		21.95,
+		22.8,
 	);
-	d.swap(one("f-one"), one("f-three"), 22.2);
-	// The hero: the 300 shares light up block by block, then their notional counts once to
+	d.swap(one("f-one"), one("f-three"), 22.75);
+	// The hero: the 300 shares light up block by block, then their notional appears once to
 	// $30,000 against the $1,260 paid, which steps back. The stock valuation basis
 	// stays with the share label; the subtotal settles as the standalone hero.
-	d.swap(heads[3], heads[4], 25.2);
-	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 25.4);
-	show(one("f-notional"), 25.8);
+	d.swap(heads[3], heads[4], 26.1);
+	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 26.3);
+	show(one("f-notional"), 26.7);
 	// The figure appears only once all three blocks are lit, never before its basis.
-	tl.set(notional, { opacity: 0 }, 25.8);
-	tl.to(notional, { opacity: 1, duration: 0.3 }, 27.4);
+	tl.set(notional, { opacity: 0 }, 26.7);
+	tl.to(notional, { opacity: 1, duration: 0.3 }, 28.3);
 	blocks.forEach((block, i) => {
-		const at = i === 2 ? 27.1 : 25.8 + i * 0.6;
+		const at = i === 2 ? 28.0 : 26.7 + i * 0.6;
 		tl.to(block.children, { opacity: 0, duration: 0.3 }, at - 0.3);
 		tl.set(block.children, { attr: { "data-tone": "total" } }, at);
 		tl.to(
@@ -657,18 +669,19 @@ function build(context: FilmContext) {
 			at,
 		);
 	});
-	// The final block is fully lit at 27.4: the notional lands as its exact value (a count's
+	// The final block is fully lit at 28.3: the notional lands as its exact value (a count's
 	// passing figures would contradict the 300 lit shares), then rests before the lock.
-	d.lock(g("lock-notional"), 29.4, { around: g("f-notional-num"), pad: 6 });
-	tl.addLabel("hero-lock", 29.4);
-	show(heads[6], 29.4);
-	// After the lock: what you pay comes back beside what it controls.
-	// Brackets settle at 29.85 and stand quietly for 1.5 seconds first.
-	tl.to(one("f-three"), { opacity: 1, duration: 0.4 }, 31.35);
-	show(one("f-share"), 31.45);
+	d.lock(g("lock-notional"), 30.3, { around: g("f-notional-num"), pad: 6 });
+	tl.addLabel("hero-lock", 30.3);
+	show(heads[6], 30.3);
+	// After the lock: the premium value comes back beside what it controls.
+	// Brackets settle at 30.75 and stand quietly for 1.5 seconds first.
+	hide(one("f-three"), 32.25, 0.3);
+	show(one("f-paid"), 32.55, "below", 0.3);
+	show(one("f-share"), 32.35);
 
 	// ——— time: a price is an observation ———
-	tl.addLabel("time", 34.95);
+	tl.addLabel("time", 35.85);
 	hide(
 		[
 			heads[4],
@@ -676,26 +689,27 @@ function build(context: FilmContext) {
 			...blocks,
 			one("u-shares-3"),
 			one("f-three"),
+			one("f-paid"),
 			one("f-notional"),
 			one("f-share"),
 			g("lock-notional"),
 		],
-		34.95,
+		35.85,
 	);
 	// The same identifier stays fully visible in its clear lane throughout the handoff.
 	// Keep the full 0.35 s headline exit, and the accepted proof quiet time before it.
-	show(heads[5], 35.3);
-	show(one("obs-morning"), 35.55);
+	show(heads[5], 36.2);
+	show(one("obs-morning"), 36.45);
 	// Only the two model observations exist: reveal each with all its values settled.
-	// Morning settles at 36.05, then rests for a second before the closing quote.
-	show(one("obs-close"), 37.05);
-	// Keep the morning timestamp and stock-price context fully readable for comparison.
-	tl.to(one("obs-morning-ask"), { opacity: 0.45, duration: 0.4 }, 37.05);
-	// The comparison finishes at 37.8, preserving 2.75 seconds of quiet before the claim.
-	d.trace(one<SVGPathElement>("obs-link"), 37.05, { duration: 0.75 });
+	// Morning settles at 36.95, then rests for a second before the closing quote.
+	show(one("obs-close"), 37.95);
+	// Keep the morning price and its ask label visible while the closing quote arrives.
+	tl.to(one("obs-morning-ask"), { opacity: 0.45, duration: 0.4 }, 37.95);
+	// The comparison finishes at 38.7, preserving 2.75 seconds of quiet before the claim.
+	d.trace(one<SVGPathElement>("obs-link"), 37.95, { duration: 0.75 });
 
 	// ——— claim ———
-	tl.addLabel("claim", 40.55);
+	tl.addLabel("claim", 41.45);
 	hide(
 		[
 			heads[5],
@@ -704,15 +718,15 @@ function build(context: FilmContext) {
 			one("obs-morning"),
 			one("obs-close"),
 		],
-		40.55,
+		41.45,
 	);
-	word(one("z-big"), 40.85);
-	show(one("z-sub"), 41.25);
+	word(one("z-big"), 41.75);
+	show(one("z-sub"), 42.15);
 
 	// ——— next ———
-	tl.addLabel("next", 44.95);
-	hide(kids("claim"), 44.95);
-	d.close(44.95);
+	tl.addLabel("next", 45.85);
+	hide(kids("claim"), 45.85);
+	d.close(45.85);
 	return tl;
 }
 
