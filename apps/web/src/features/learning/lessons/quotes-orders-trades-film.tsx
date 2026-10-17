@@ -70,6 +70,27 @@ const PRIOR = oct105CallLast.size;
 const NEXT_ASK = [...VENUES]
 	.filter((v) => v.venue !== BEST.ask.venue)
 	.sort((a, b) => a.ask.price - b.ask.price)[0];
+/** The three quotes that establish the next ask, best bid and best ask. */
+const VENUE_PROOF = [
+	{
+		venue: NEXT_ASK.venue,
+		side: "ask" as const,
+		level: NEXT_ASK.ask,
+		size: NEXT_ASK.ask.size,
+	},
+	{
+		venue: BEST.bid.venue,
+		side: "bid" as const,
+		level: BEST.bid,
+		size: BEST.bid.size,
+	},
+	{
+		venue: BEST.ask.venue,
+		side: "ask" as const,
+		level: BEST.ask,
+		size: LEFT,
+	},
+];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -133,10 +154,8 @@ function layout(width: number) {
 		text,
 		cardText,
 		venueX: (i: number) => (narrow ? margin : margin + i * (venueW + gap)),
-		venueValueX: (i: number, side: "ask" | "bid") =>
-			narrow
-				? margin + bookW * (side === "bid" ? 0.39 : 0.79)
-				: margin + i * (venueW + gap) + venueW / 2,
+		venueValueX: (i: number) =>
+			narrow ? margin + bookW * 0.8 : margin + i * (venueW + gap) + venueW / 2,
 		venueRowStep,
 		venueW,
 		venueY,
@@ -162,7 +181,7 @@ function layout(width: number) {
 const copy = {
 	title: ["Quotes, orders and trades", "报价、订单与成交"],
 	titleSub: ["three different events", "三种不同的事件"],
-	qTag: ["ALFA Oct 18 105 call · 10:30", "ALFA 10月18日 105 看涨 · 10:30"],
+	qTag: ["ALFA 105C · OCT 18", "ALFA 105C · 10月18日"],
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
 	atAsk: ["at ask", "卖价"],
@@ -184,6 +203,7 @@ const copy = {
 	volume: ["volume", "成交量"],
 	mid: ["mid", "中间价"],
 	venueHead: ["The book was three venues.", "这本订单簿来自三个场所。"],
+	quote: ["quote", "报价"],
 	nbboHead: ["Their best: the NBBO.", "最优价合起来：NBBO。"],
 	goneHead: [
 		`${BEST.ask.venue}'s last ${LEFT} are bought.`,
@@ -235,8 +255,9 @@ function Scene({
 	const rowText = (y: number) => y + L.rowH / 2 + text * 0.36;
 	const spreadAt = L.spreadY + L.rowStep * 0.2;
 	const midText = price(MID);
-	const midPrefix = `(${usd(BID.price)} + ${usd(ASK.price)}) ÷ 2 = `;
-	const midX = margin + (L.bookW - textWidth(midPrefix + midText, text)) / 2;
+	const midPrefix = `(${usd(BID.price)}+${usd(ASK.price)})÷2`;
+	const midEquals = `${midPrefix}=`;
+	const midX = margin + (L.bookW - textWidth(midEquals + midText, text)) / 2;
 	const midAt = (prefix: string) => midX + textWidth(prefix, text);
 	const level = (
 		side: "ask" | "bid",
@@ -450,14 +471,21 @@ function Scene({
 					style={{ fontSize: text }}
 				>
 					<tspan x={midX}>(</tspan>
-					<tspan x={midAt(`(${usd(BID.price)}`)}> + </tspan>
-					<tspan x={midAt(`(${usd(BID.price)} + ${usd(ASK.price)}`)}>
-						) ÷ 2 ={" "}
-					</tspan>
+					<tspan x={midAt(`(${usd(BID.price)}`)}>+</tspan>
+					<tspan x={midAt(`(${usd(BID.price)}+${usd(ASK.price)}`)}>)÷2</tspan>
+				</text>
+				<text
+					data-f="mid-eq"
+					x={midAt(midPrefix)}
+					y={spreadAt - 4}
+					className="wt-film-num wt-halo"
+					style={{ fontSize: text }}
+				>
+					=
 				</text>
 				<text
 					data-f="mid-label"
-					x={midAt(midPrefix)}
+					x={midAt(midEquals)}
 					y={spreadAt - 4}
 					className="wt-film-num wt-film-accent wt-halo"
 					style={{ fontSize: text }}
@@ -475,7 +503,7 @@ function Scene({
 				</text>
 				<text
 					data-f="mid-hi"
-					x={midAt(`(${usd(BID.price)} + `)}
+					x={midAt(`(${usd(BID.price)}+`)}
 					y={spreadAt - 4}
 					className="wt-film-num wt-halo"
 					style={{ fontSize: text }}
@@ -661,8 +689,7 @@ function Scene({
 						{(
 							[
 								["venue", margin + 4, copy.venue],
-								["bid", L.venueValueX(0, "bid"), copy.bid],
-								["ask", L.venueValueX(0, "ask"), copy.ask],
+								["quote", L.venueValueX(0), copy.quote],
 							] as const
 						).map(([key, x, label]) => (
 							<text
@@ -678,66 +705,55 @@ function Scene({
 						))}
 					</g>
 				)}
-				{VENUES.map((v, i) => (
-					<g key={v.venue} data-f={`venue-${v.venue}`}>
-						<rect
-							x={L.venueX(i)}
-							y={narrow ? L.venueLine(0, i) - cardText * 1.25 : L.venueY}
-							width={narrow ? L.bookW : L.venueW}
-							height={narrow ? L.venueRowStep * 0.9 : L.venueH}
-							rx={12}
-							className="wt-panel-shape"
-						/>
-						<text
-							x={narrow ? margin + 8 : L.venueX(i) + L.venueW / 2}
-							y={L.venueLine(0, i)}
-							textAnchor={narrow ? "start" : "middle"}
-							className="wt-film-tag"
-							style={{ fontSize: T.small }}
-						>
-							{narrow
-								? v.venue
-								: `${v.venue} · ${t(copy.ask)}/${t(copy.bid)}`.toUpperCase()}
-						</text>
-						{/* Price · quantity; named columns on phone, ask above bid on desktop. */}
-						{v.venue === BEST.ask.venue && (
+				{VENUES.map((v, i) => {
+					const proof = VENUE_PROOF.find((quote) => quote.venue === v.venue);
+					if (!proof) return null;
+					const side = proof.side === "ask" ? copy.ask : copy.bid;
+					return (
+						<g key={v.venue} data-f={`venue-${v.venue}`}>
+							<rect
+								x={L.venueX(i)}
+								y={narrow ? L.venueLine(0, i) - cardText * 1.25 : L.venueY}
+								width={narrow ? L.bookW : L.venueW}
+								height={narrow ? L.venueRowStep * 0.9 : L.venueH}
+								rx={12}
+								className="wt-panel-shape"
+							/>
 							<text
-								data-f="va-gone"
-								x={L.venueValueX(i, "ask")}
+								x={narrow ? margin + 8 : L.venueX(i) + L.venueW / 2}
+								y={L.venueLine(0, i)}
+								textAnchor={narrow ? "start" : "middle"}
+								className="wt-film-tag"
+								style={{ fontSize: T.small }}
+							>
+								{`${v.venue} · ${t(side)}`.toUpperCase()}
+							</text>
+							{v.venue === BEST.ask.venue && (
+								<text
+									data-f="va-gone"
+									x={L.venueValueX(i)}
+									y={L.venueLine(1, i)}
+									textAnchor="middle"
+									className="wt-film-num wt-film-dim"
+									style={{ fontSize: cardText }}
+								>
+									—
+								</text>
+							)}
+							<text
+								data-f={`${proof.side === "ask" ? "va" : "vb"}-${v.venue}`}
+								x={L.venueValueX(i)}
 								y={L.venueLine(1, i)}
 								textAnchor="middle"
-								className="wt-film-num wt-film-dim"
+								className="wt-film-num"
 								style={{ fontSize: cardText }}
 							>
-								—
+								{`${usd(proof.level.price)} · `}
+								<tspan className="wt-film-num">{proof.size}</tspan>
 							</text>
-						)}
-						<text
-							data-f={`va-${v.venue}`}
-							x={L.venueValueX(i, "ask")}
-							y={L.venueLine(1, i)}
-							textAnchor="middle"
-							className="wt-film-num"
-							style={{ fontSize: cardText }}
-						>
-							{`${usd(v.ask.price)} · `}
-							<tspan className="wt-film-num">
-								{v.venue === BEST.ask.venue ? LEFT : v.ask.size}
-							</tspan>
-						</text>
-						<text
-							data-f={`vb-${v.venue}`}
-							x={L.venueValueX(i, "bid")}
-							y={L.venueLine(2, i)}
-							textAnchor="middle"
-							className="wt-film-num"
-							style={{ fontSize: cardText }}
-						>
-							{`${usd(v.bid.price)} · `}
-							<tspan className="wt-film-num">{v.bid.size}</tspan>
-						</text>
-					</g>
-				))}
+						</g>
+					);
+				})}
 				<Brackets name="hero-nbbo" arm={8} glow />
 			</g>
 			{/* Copies of the best bid and ask, over their figures on B's and C's cards: they fly
@@ -745,25 +761,20 @@ function Scene({
 			<g data-f="nbsrc">
 				{(
 					[
-						["nbsrc-bid", BEST.bid, 2],
-						["nbsrc-ask", BEST.ask, 1],
+						["nbsrc-bid", BEST.bid],
+						["nbsrc-ask", BEST.ask],
 					] as const
-				).map(([name, best, line]) => {
+				).map(([name, best]) => {
 					const i = venueAt(best.venue);
-					const v = VENUES[i];
-					const full =
-						line === 1
-							? `${usd(v.ask.price)} · ${v.venue === BEST.ask.venue ? LEFT : v.ask.size}`
-							: `${usd(v.bid.price)} · ${v.bid.size}`;
+					const proof = VENUE_PROOF.find((quote) => quote.venue === best.venue);
+					if (!proof) return null;
+					const full = `${usd(proof.level.price)} · ${proof.size}`;
 					return (
 						<text
 							key={name}
 							data-f={name}
-							x={
-								L.venueValueX(i, line === 1 ? "ask" : "bid") -
-								textWidth(full, cardText) / 2
-							}
-							y={L.venueLine(line, i)}
+							x={L.venueValueX(i) - textWidth(full, cardText) / 2}
+							y={L.venueLine(1, i)}
 							className="wt-film-num"
 							style={{ fontSize: cardText }}
 						>
@@ -1017,10 +1028,9 @@ function build(context: FilmContext) {
 	const bestSizes = [one(`size-${askKey}`), one(`size-${bidKey}`)];
 	const otherRows = levels.filter((lv) => !bestRows.includes(lv));
 	const last = g("pr-last");
-	const cardLines = VENUES.flatMap((v) => [
-		one(`va-${v.venue}`),
-		one(`vb-${v.venue}`),
-	]);
+	const cardLines = VENUE_PROOF.map(({ venue, side }) =>
+		one(`${side === "ask" ? "va" : "vb"}-${venue}`),
+	);
 	const venueHeaders = L.narrow ? kids("venue-headers") : [];
 	const cardFrames = VENUES.map((v) =>
 		[...one(`venue-${v.venue}`).children].filter(
@@ -1180,7 +1190,7 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5, immediateRender: false },
 		15.85,
 	);
-	word(one("mid-label"), 15.95);
+	fade([one("mid-eq"), one("mid-label")], 16.2, 1);
 	// The tape makes room, then execution updates the ask as its ticket appears and lands.
 	d.swap(heads[1], heads[2], 18.3);
 	hide(kids("mid"), 18.3);
@@ -1221,8 +1231,13 @@ function build(context: FilmContext) {
 		28.65,
 	);
 	VENUES.forEach((v, i) => {
+		const proof = VENUE_PROOF.find((quote) => quote.venue === v.venue);
+		if (!proof) return;
 		tl.to(
-			[...cardFrames[i], one(`va-${v.venue}`), one(`vb-${v.venue}`)],
+			[
+				...cardFrames[i],
+				one(`${proof.side === "ask" ? "va" : "vb"}-${v.venue}`),
+			],
 			{
 				opacity: 1,
 				duration: 0.3,
