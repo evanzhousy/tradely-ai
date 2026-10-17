@@ -838,11 +838,7 @@ function build(context: FilmContext) {
 		{ opacity: 0.3, duration: 0.3, ease: "power2.in" },
 		22.85,
 	);
-	tl.set(
-		one("draw-low"),
-		{ attr: { width: L.right - L.left + 8 }, immediateRender: false },
-		22.85,
-	);
+	reveal("draw-low", 22.85, 0.3);
 	tl.fromTo(
 		one("low-curve"),
 		{ opacity: 0 },
