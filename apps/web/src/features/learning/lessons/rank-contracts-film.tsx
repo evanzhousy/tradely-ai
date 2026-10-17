@@ -42,7 +42,7 @@ import {
  *   open      0–4        "Contract neighborhoods"
  *   question  4–8.6      105 and 110, both over 500: two crowds?
  *   grid      8.6–21.1   the 10:50 ticket connects buy 105 / sell 110, 500 per leg
- *   shape     21.1–31.9  mark active cells, then settled 2 vs 5; hero-lock 28.0
+ *   shape     21.1–31.9  mark active cells, then settled 2 vs 5; hero-lock 28.9
  *   audit     31.9–40.6  one exclusion stage; observed leader 540; 120 missing
  *   claim     40.6–45    a cell needs its neighbors
  *   next      45–47.5    Next: backtests
@@ -98,7 +98,10 @@ const copy = {
 		"Monday's ALFA calls, by expiry and strike.",
 		"周一 ALFA 看涨，按到期日和行权价。",
 	],
-	g2Head: ["Both out of the money: one spread.", "两者都是虚值：一笔价差。"],
+	g2Head: [
+		`${count(SPREAD)} in each came from one spread.`,
+		`各有 ${count(SPREAD)} 张来自同一笔价差。`,
+	],
 	itm: ["in the money", "实值"],
 	itmShort: ["ITM", "实值"],
 	otm: ["out of the money", "虚值"],
@@ -116,6 +119,7 @@ const copy = {
 	],
 	totalLabel: ["total", "合计"],
 	peakLabel: ["peak", "峰值"],
+	breadthLabel: ["active strikes", "成交行权价数"],
 	versus: ["vs", "对"],
 	aHead: ["A screen's biggest numbers, checked.", "核查筛选器的最大数字。"],
 	a2Head: [
@@ -466,6 +470,15 @@ function Scene({
 			{stats("nov15", 1)}
 			{/* The settled breadth leaves the equality table and owns a separate area. */}
 			<g data-f="hero-breadth">
+				<Word
+					name="breadth-unit"
+					x={(L.breadthX(0) + L.breadthX(1)) / 2}
+					y={L.breadthLabelY - T.small * 2}
+					size={T.small}
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.breadthLabel)}
+				</Word>
 				{(["sep20", "nov15"] as const).map((key, r) => (
 					<g key={key}>
 						<text
@@ -693,21 +706,18 @@ function build(context: FilmContext) {
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
 	show(kids("axes"), 9.2);
-	ROWS.forEach((key, r) => {
-		tl.set(one(`cells-${key}`), { opacity: 1 }, 9.3);
-		cells(key).forEach((c, j) => {
-			tl.fromTo(
-				c,
-				{ opacity: 0 },
-				{ opacity: 1, duration: 0.35 },
-				9.4 + r * 0.15 + j * 0.06,
-			);
-		});
-	});
+	// Scaffold settles at 9.7, then stands alone for one second. Reveal the grid
+	// together in its focused state instead of adding a separate row-dimming cue.
 	ROWS.forEach((key) => {
-		if (key === "oct18") return;
-		tl.to(cells(key), { opacity: 0.45, duration: 0.4 }, 10.8);
+		tl.set(one(`cells-${key}`), { opacity: 1 }, 10.7);
+		tl.fromTo(
+			cells(key),
+			{ opacity: 0 },
+			{ opacity: key === "oct18" ? 1 : 0.45, duration: 0.35 },
+			10.7,
+		);
 	});
+	// All cells settle at 11.05; retain 1.35 seconds of quiet before the spot.
 	show(one("spot"), 12.4);
 	// The shared ticket establishes provenance before the answer names the spread.
 	show(one("spread-ticket"), 14.0, "below", 0.5);
@@ -774,11 +784,11 @@ function build(context: FilmContext) {
 		27.9,
 	);
 	show(heads[3], 27.9);
-	d.lock(lockBreadth, 28.0, {
+	d.lock(lockBreadth, 28.9, {
 		around: one("hero-breadth"),
 		pad: 12,
 	});
-	tl.addLabel("hero-lock", 28.0);
+	tl.addLabel("hero-lock", 28.9);
 
 	// ——— audit: one exclusion stage, then the observed leader and unknown. ———
 	tl.addLabel("audit", 31.9);
