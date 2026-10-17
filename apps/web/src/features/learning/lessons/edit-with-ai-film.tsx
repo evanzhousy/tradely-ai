@@ -672,6 +672,27 @@ function build(context: FilmContext) {
 			if (b) show(status(id, b), time + (a ? 0.35 : 0), "right", 0.35);
 		}
 	};
+	/** Status labels hand over in place around one change point. */
+	const crossfadeStatuses = (
+		from: Partial<Record<BlockId, Status>>,
+		to: Partial<Record<BlockId, Status>>,
+		changeAt: number,
+	) => {
+		for (const id of ids) {
+			const a = from[id];
+			const b = to[id];
+			if (a === b) continue;
+			if (a) hide(status(id, a), changeAt - 0.3, 0.3, 0);
+			if (b) {
+				tl.fromTo(
+					status(id, b),
+					{ opacity: 0 },
+					{ opacity: 1, duration: 0.3 },
+					changeAt,
+				);
+			}
+		}
+	};
 	const every = (s: Status) =>
 		Object.fromEntries(ids.map((id) => [id, s])) as Record<BlockId, Status>;
 	const pill = (i: number, on: boolean, time: number) =>
@@ -781,11 +802,18 @@ function build(context: FilmContext) {
 		spotlight: "changed",
 		gex: "removed",
 	} as const;
-	set(bounded, edited, 19.5);
-	hide(one("symbol-fixed"), 19.5, 0.35, 0);
-	show(one("symbol-input"), 19.85, "right", 0.35);
-	tl.to(one("gone-gex"), { opacity: 1, duration: 0.3 }, 19.9);
-	show(one("e-head"), 20.25);
+	const editChangeAt = 20.75;
+	// The headline settles at 20.4, before any part of the edit begins to change.
+	show(one("e-head"), editChangeAt - 0.85);
+	crossfadeStatuses(bounded, edited, editChangeAt);
+	hide(one("symbol-fixed"), editChangeAt - 0.3, 0.3, 0);
+	tl.fromTo(
+		one("symbol-input"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		editChangeAt,
+	);
+	tl.to(one("gone-gex"), { opacity: 1, duration: 0.3 }, editChangeAt);
 	// The first-edit claim leaves with its evidence, before Undo restores the draft.
 	hide(one("e-head"), 23.8);
 	pill(1, false, 23.8);
