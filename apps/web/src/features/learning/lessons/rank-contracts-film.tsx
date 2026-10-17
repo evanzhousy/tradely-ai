@@ -432,11 +432,10 @@ function Scene({
 					x={L.cellX(2)}
 					y={spotLabelY}
 					textAnchor="middle"
-					className="wt-film-num wt-film-accent"
+					className="wt-film-num"
 					style={{ fontSize: T.small * 1.1 }}
 				>
-					<tspan style={{ fill: "var(--tone-ink)" }}>ALFA</tspan>
-					{` ${spotText}`}
+					{`ALFA ${spotText}`}
 				</text>
 			</g>
 			<g data-f="spread">
