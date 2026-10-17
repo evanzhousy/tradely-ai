@@ -324,12 +324,14 @@ function Scene({
 		16 +
 		textWidth(t(LATE_PREFIX), T.body * (locale === "zh" ? 0.95 : 0.86)) +
 		10;
+	// A tag's 0.12 em letter-spacing makes it 1.2 × the mono measure; the stamp grows 1.25 ×
+	// from the tag's right edge, so the gap leaves room for that too.
 	const unknownTagX =
 		L.barX +
 		L.barMax * 0.3 +
 		8 +
-		textWidth(t(copy.missing).toUpperCase(), T.small) +
-		16;
+		textWidth(t(copy.missing).toUpperCase(), T.small) * 1.2 +
+		24;
 	const unknownTagY =
 		L.barRowY(SERIES.length - 1) + L.barH / 2 + T.small * 0.38;
 	const proofX = margin + 16;
