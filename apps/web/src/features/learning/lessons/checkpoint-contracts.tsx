@@ -367,12 +367,14 @@ function ParityView({
 					id: "call",
 					label: t(["Call", "看涨"]),
 					value: share(call),
+					tone: "call",
 					evidence: "modeled",
 				},
 				{
 					id: "put",
 					label: t(["Put", "看跌"]),
 					value: share(put),
+					tone: "put",
 					evidence: "modeled",
 				},
 			]}

@@ -63,6 +63,12 @@ function PacketView({
 				"—",
 				shown.r3 === "zero" ? "$0" : t(["no data", "无数据"]),
 			],
+			cellClass: [
+				undefined,
+				undefined,
+				undefined,
+				shown.r3 === "missing" ? "wt-film-warn" : undefined,
+			],
 			muted: true,
 		},
 	];

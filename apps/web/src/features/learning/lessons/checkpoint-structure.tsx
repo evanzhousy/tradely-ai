@@ -34,6 +34,8 @@ const row = (key: string, label: string, value: string): TapeRow => ({
 const SPOT = CHECKPOINT_ALFA / 100;
 const signed = (value: number, places: number) =>
 	`${value < 0 ? "−" : "+"}${Math.abs(value).toFixed(places)}`;
+const signedCellClass = (value: number) =>
+	value > 0 ? "wt-gain" : value < 0 ? "wt-loss" : "wt-muted";
 /** "+$3.02M", "−$28k". */
 const money = (dollars: number) => {
 	const sign = dollars < 0 ? "−" : "+";
@@ -223,11 +225,14 @@ function RegimeView({
 			]),
 			usd(ZERO),
 		),
-		row(
-			"c",
-			t(["Book gamma (modeled)", "账户 Gamma（模型）"]),
-			t([`${signedCount(g)} / $1`, `每 $1 ${signedCount(g)}`]),
-		),
+		{
+			key: "c",
+			cells: [
+				t(["Book gamma (modeled)", "账户 Gamma（模型）"]),
+				t([`${signedCount(g)} / $1`, `每 $1 ${signedCount(g)}`]),
+			],
+			cellClass: [undefined, signedCellClass(g)],
+		},
 	];
 	const lines: SheetLine[] = [];
 	if (shown.stage >= 1)
@@ -485,14 +490,17 @@ function CharmView({
 			]),
 			delta.toFixed(4),
 		),
-		row(
-			"b",
-			t([
-				narrow ? "Charm per year left" : "Charm, per year of time left",
-				"Charm，每一年剩余期限",
-			]),
-			signed(charm, 2),
-		),
+		{
+			key: "b",
+			cells: [
+				t([
+					narrow ? "Charm per year left" : "Charm, per year of time left",
+					"Charm，每一年剩余期限",
+				]),
+				signed(charm, 2),
+			],
+			cellClass: [undefined, signedCellClass(charm)],
+		},
 		row(
 			"c",
 			t(["Implied volatility", "隐含波动率"]),
@@ -549,6 +557,7 @@ function CharmView({
 					label: t(["Position delta today", "今天的持仓 Delta"]),
 					value: signedCount(now),
 					note: t(["share-equivalents", "股等价"]),
+					tone: "focus",
 					evidence: "modeled",
 				},
 				{

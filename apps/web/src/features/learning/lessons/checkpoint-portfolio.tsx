@@ -23,6 +23,8 @@ import {
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
 const pnlTone = (value: number): ResultItem["tone"] =>
 	value > 0 ? "gain" : value < 0 ? "loss" : "neutral";
+const signedCellClass = (value: number) =>
+	value > 0 ? "wt-gain" : value < 0 ? "wt-loss" : "wt-muted";
 const dollars = (value: number) => usd(value * 100, 0);
 const signedDollars = (value: number) => signedUsd(value * 100, 0);
 
@@ -225,6 +227,7 @@ function ReturnView({
 		{
 			key: "c",
 			cells: [t(["Wed deposit", "周三存款"]), signedDollars(shown.deposit)],
+			cellClass: [undefined, signedCellClass(shown.deposit)],
 		},
 		{ key: "d", cells: [t(["Fri close", "周五收盘"]), dollars(friday)] },
 	];
@@ -371,6 +374,7 @@ function TradesView({
 			signedDollars(value),
 			signedDollars(running[i]),
 		],
+		cellClass: [undefined, signedCellClass(value), signedCellClass(running[i])],
 	}));
 	const sums = tally(shown.shown);
 	const net = running[shown.shown - 1];

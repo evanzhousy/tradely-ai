@@ -66,6 +66,10 @@ function UniverseView({
 				name.volume === null ? "—" : count(name.volume),
 				shown.stage >= 1 ? t(reason(name, shown.floor, narrow)) : "",
 			],
+			cellClass:
+				name.volume === null
+					? [undefined, undefined, "wt-film-warn"]
+					: undefined,
 			muted: shown.stage >= 1 && !qualifies(name, shown.floor),
 		}));
 	const lines: SheetLine[] = [];
