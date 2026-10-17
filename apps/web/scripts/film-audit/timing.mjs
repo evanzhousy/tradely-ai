@@ -745,11 +745,107 @@ const out = await page.evaluate(() => {
 	}
 	if (to - reach > 2) still.push([reach, to - reach]);
 	const bad = new Set();
+	// Colours (runbook §5): only the stage's roles. A retired class, a data-tone outside the
+	// roles, or a fill, stroke or stop colour that is a literal or a token the stage doesn't
+	// define fails; so does a colour tween caught midway, which shows as a literal.
+	const retired =
+		/^wt-(long|short|long-soft|short-soft|line-long|line-short|label-long|label-short|arrow-shares|stack-time|ev-observed|ev-calculated|ev-modeled|ev-inferred)$/;
+	const roleTones = new Set([
+		"gain",
+		"loss",
+		"call",
+		"put",
+		"caution",
+		"neutral",
+		"total",
+		"model",
+	]);
+	const stageTokens = new Set([
+		"film-bg",
+		"background",
+		"card",
+		"muted",
+		"border",
+		"foreground",
+		"muted-foreground",
+		"primary",
+		"ring",
+		"diagram-accent",
+		"diagram-gain",
+		"diagram-loss",
+		"diagram-unknown",
+		"diagram-model",
+		"tone-focus",
+		"tone-up",
+		"tone-down",
+		"tone-call",
+		"tone-put",
+		"tone-caution",
+		"tone-ink",
+		"tone-dim",
+		"pen",
+	]);
+	const colours = new Set();
+	const paint = (el, prop, value) => {
+		const v = value.trim();
+		if (!v) return;
+		const where = `${el.closest("[data-f]")?.getAttribute("data-f") ?? el.tagName} ${prop}`;
+		for (const [, name] of v.matchAll(/var\(--([\w-]+)/g))
+			if (!stageTokens.has(name)) colours.add(`${where}: --${name}`);
+		// What is left once tokens are taken out must be a keyword; a mix may lean toward white.
+		const rest = v
+			.replace(/var\(--[\w-]+(,[^()]*(\([^()]*\))?[^()]*)?\)/g, "")
+			.replace(/url\([^)]*\)/g, "")
+			.replace(/\bin (oklab|oklch|srgb)\b|[\d.]+%/g, "");
+		const mix = /^color-mix\(/.test(v);
+		const words =
+			rest.match(/#[\da-f]{3,8}\b|[a-z][\w-]*\(|[a-z][\w-]*/gi) ?? [];
+		for (const word of words) {
+			const w = word.toLowerCase();
+			if (w === "color-mix(") continue;
+			if (["none", "transparent", "currentcolor", "inherit"].includes(w))
+				continue;
+			if (mix && (w === "white" || w === "black")) continue;
+			// A tween of fill or stroke leaves its value behind as a literal rgb().
+			colours.add(
+				`${where}: ${v.slice(0, 60)}${/^rgba?\(/.test(v) ? " (a colour tween or a literal)" : ""}`,
+			);
+			break;
+		}
+	};
 	for (let t = 0; t <= duration; t += 1) {
 		tl.seek(t, false);
 		for (const el of svg.querySelectorAll("[class]"))
-			for (const c of (el.getAttribute("class") || "").split(/\s+/))
+			for (const c of (el.getAttribute("class") || "").split(/\s+/)) {
 				if (/wt-.+wt-/.test(c)) bad.add(c);
+				if (retired.test(c))
+					colours.add(
+						`${el.closest("[data-f]")?.getAttribute("data-f") ?? el.tagName} class ${c} (retired)`,
+					);
+			}
+		for (const el of svg.querySelectorAll("*")) {
+			// A mask or a clip is drawn in luminance, not on the stage.
+			if (el.closest("mask, clipPath, filter")) continue;
+			const tone = el.getAttribute("data-tone");
+			if (tone && !roleTones.has(tone))
+				colours.add(
+					`${el.closest("[data-f]")?.getAttribute("data-f") ?? el.tagName} data-tone "${tone}"${tone === "short" ? " (retired)" : ""}`,
+				);
+			for (const prop of ["fill", "stroke", "stop-color"]) {
+				const v = el.getAttribute(prop);
+				if (v) paint(el, prop, v);
+			}
+			for (const decl of (el.getAttribute("style") || "").split(";")) {
+				const at = decl.indexOf(":");
+				if (at < 0) continue;
+				const prop = decl.slice(0, at).trim().toLowerCase();
+				if (
+					["fill", "stroke", "stop-color", "color"].includes(prop) ||
+					prop.startsWith("--")
+				)
+					paint(el, prop, decl.slice(at + 1));
+			}
+		}
 	}
 	return {
 		duration,
@@ -763,6 +859,7 @@ const out = await page.evaluate(() => {
 		still,
 		rows,
 		badClasses: [...bad],
+		colours: [...colours],
 		stacked,
 		stated,
 		pops,
@@ -882,6 +979,7 @@ else if (out.heroLock !== undefined && out.glow.held < 1)
 		`glow: the hero lock holds ${out.glow.held.toFixed(2)} s at full strength (< 1 s)`,
 	);
 for (const c of out.badClasses) fails.push(`class "${c}"`);
+for (const c of out.colours) fails.push(`colour ${c}`);
 for (const s of out.stacked) fails.push(`stacked: ${s}`);
 // The motion rules: entrances and exits of at least 0.3 s, a hero that stands 1.5 s, dips
 // rather than cuts to nothing between beats, and crossfades that never print one line over
