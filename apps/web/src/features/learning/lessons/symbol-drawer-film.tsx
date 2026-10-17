@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { type Copy, count, pick, usd } from "@/content/world";
+import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -43,7 +43,8 @@ import {
  *   sources   19.2–31.85 source layout; today's tape checks together, then OI's measure;
  *                        positions question rests before its verdict tour;
  *                        the same guide glows on Friday's latest published count
- *   cover     31.85–40.7 all rows and both readouts stay readable throughout the tour
+ *   cover     31.85–40.7 header first; rows and both readouts arrive at 33.7
+ *                        missing and lower-bound proofs; one zero tour stop removed
  *   claim     40.7–45.4  every value has its own clock
  *   next      45.4–47.45 Next: the module checkpoint
  */
@@ -107,19 +108,13 @@ const copy = {
 	title: ["Data clocks", "数据时钟"],
 	titleSub: ["when each source was true", "每个来源在何时成立"],
 	qTag: ["ALFA drawer · Mon 10:30", "ALFA 抽屉 · 周一 10:30"],
-	qLine: [
-		`Oct 18 100 call: open interest ${OI}.`,
-		`10月18日 100 看涨：未平仓量 ${OI}。`,
-	],
+	qLine: [`Open interest: ${OI}.`, `未平仓量：${OI}。`],
 	qBig: ["True as of when?", "这是何时的数？"],
 	cHead: [
 		"Three values in one drawer, 10:30.",
 		"同一个抽屉里的三个值，10:30。",
 	],
-	c2Head: [
-		`Open interest ${OI}: Friday's close.`,
-		`未平仓量 ${OI}：周五收盘的数。`,
-	],
+	c2Head: ["Counted at Friday's close.", "周五收盘时统计。"],
 	oi: ["open interest", "未平仓量"],
 	iv: ["model IV", "模型 IV"],
 	last: ["last trade", "最新成交"],
@@ -152,10 +147,13 @@ const copy = {
 	oiClock: ["Fri close", "周五收盘"],
 	oiLatest: ["Latest published count", "最新已发布统计"],
 	oiPublished: ["Mon 06:30", "周一 06:30"],
-	tourDay: ["Day / cutoff", "日期 / 截止时间"],
+	// Each tape's reason for today's question, beside its verdict in its own row.
+	todayReason: {
+		friday: ["not today", "不是今天"],
+		delayed: ["only to 10:15", "只到 10:15"],
+	} as Record<string, Copy>,
 	tourMeasure: ["Positions ≠ volume", "持仓 ≠ 成交量"],
 	tourTapes: ["Trades ≠ positions", "成交 ≠ 持仓"],
-	tourZero: ["Covered, including zero", "已覆盖，含零"],
 	tourMissing: ["Missing ≠ zero", "缺失 ≠ 零"],
 	req: {
 		today: ["Today's volume so far?", "今天到目前的成交量？"],
@@ -186,11 +184,9 @@ const copy = {
 } as const;
 
 const TOUR_CAPTIONS = {
-	day: copy.tourDay,
 	measure: copy.tourMeasure,
 	tapes: copy.tourTapes,
 	latest: copy.oiLatest,
-	zero: copy.tourZero,
 	missing: copy.tourMissing,
 } satisfies Record<string, Copy>;
 
@@ -238,7 +234,7 @@ function Scene({
 			"f-last",
 			copy.last,
 			copy.lastShort,
-			`${T1.quantity} @ ${usd(T1.price)}`,
+			`${count(T1.quantity)} ${locale === "en" ? "contracts" : "张"}`,
 			"wt-film-dim",
 		],
 		["f-oi", copy.oi, copy.oiShort, count(OI), "wt-film-accent"],
@@ -561,6 +557,18 @@ function Scene({
 							>
 								{`${check}${t(verdictCopy[v.verdict]).toUpperCase()}`}
 							</text>
+							{req === "today" && copy.todayReason[source.id] ? (
+								<Word
+									name={`today-reason-${i}`}
+									x={margin + room - 16}
+									y={L.srcY(i) + L.srcH * 0.84}
+									size={clockSize}
+									anchor="end"
+									className="wt-film-type"
+								>
+									{t(copy.todayReason[source.id])}
+								</Word>
+							) : null}
 							{req === "positions" && source.id === "oi" ? (
 								<Word
 									name="oi-publication"
@@ -896,8 +904,8 @@ function build(context: FilmContext) {
 	focusSources([0, 1], 21.05);
 	d.lock(guide, 21.05, { around: srcs.slice(0, 2), pad: 6 });
 	still(today.slice(0, 2), 21.05, 0.3);
-	still(one("tour-day"), 21.05, 0.3);
-	d.swap(one("tour-day"), one("tour-measure"), 22.5);
+	// Each tape's reason arrives with its verdict, in its own row; the caption lane waits for OI.
+	still(one("tour-measure"), 22.5, 0.3);
 	focusSources([2], 22.75);
 	d.lock(guide, 22.75, { around: [srcs[2]], pad: 6 });
 	still(today[2], 22.75, 0.3);
@@ -939,12 +947,12 @@ function build(context: FilmContext) {
 	hide([reqs[1], ...srcs, ...positions, heroLink, one("tour-latest")], 31.85);
 	hide(guide, 31.85, 0.35, 0);
 	tl.set(guide, { filter: "none" }, 32.2);
-	still([...covs, one("cover-series"), one("subtotal"), one("total")], 32.2);
-	// Whole layout still at 32.70; tour starts one second later.
-	// Comparisons need their evidence: all rows and both readouts stay at full contrast.
-	d.lock(guide, 33.7, { around: covs.slice(0, 4), pad: 6 });
-	still(one("tour-zero"), 33.7, 0.3);
-	d.swap(one("tour-zero"), one("tour-missing"), 35.35);
+	still(one("cover-series"), 32.2);
+	// The header settles at 32.70 and rests for one second before rows and readouts arrive.
+	// Keep the measured zero in its row; remove its redundant first tour stop.
+	still([...covs, one("subtotal"), one("total")], 33.7);
+	// Let the data settle before explaining the missing row in the existing caption lane.
+	still(one("tour-missing"), 35.35, 0.3);
 	d.lock(guide, 35.7, { around: [covs[4]], pad: 6 });
 	show(heads[5], 35.7, "below", 0.45);
 	d.lock(guide, 37.25, { around: [one("total")], pad: 6 });
