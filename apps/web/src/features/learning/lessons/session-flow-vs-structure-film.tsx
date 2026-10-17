@@ -18,7 +18,9 @@ import {
 	filmFrame,
 	Lines,
 	lineCount,
+	signTone,
 	TitleCard,
+	toneClass,
 } from "../walkthrough/film-kit";
 import {
 	MON_CLOSE,
@@ -131,9 +133,13 @@ const shortDate = (date: string) => {
 const hhmm = (minute: number) =>
 	`${String(Math.floor((minute % 1440) / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
 const newContracts = (quantity: number): Copy => [
-	`+${count(quantity)} new contracts`,
-	`新增 ${count(quantity)} 张`,
+	`${signedCount(quantity)} new contracts`,
+	`新增 ${signedCount(quantity)} 张`,
 ];
+const changeClass = (value: number) => {
+	const tone = signTone(value);
+	return tone ? toneClass[tone] : "wt-film-dim";
+};
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -475,10 +481,10 @@ function Scene({
 			<Brackets name="lock-oi" glow />
 			{(
 				[
-					["long", copy.longs, "gain"],
-					["short", copy.shorts, "loss"],
+					["long", copy.longs],
+					["short", copy.shorts],
 				] as const
-			).map(([name, label, tone], i) => (
+			).map(([name, label], i) => (
 				<g key={name} data-f={`bal-${name}`}>
 					<text
 						x={margin}
@@ -496,7 +502,7 @@ function Scene({
 						height={L.barH}
 						rx={4}
 						className="wt-film-bar"
-						data-tone={tone}
+						data-tone="neutral"
 					/>
 					<text
 						data-f={`bar-${name}-n`}
@@ -534,10 +540,15 @@ function Scene({
 						x={margin + room}
 						y={L.tradeY}
 						textAnchor="end"
-						className="wt-film-num wt-film-accent"
+						className="wt-film-num"
 						style={{ fontSize: text }}
 					>
-						{`${t(copy.openInterest)} ${openInterestChange(trade) ? signedCount(openInterestChange(trade)) : "±0"}`}
+						{`${t(copy.openInterest)} `}
+						<tspan className={changeClass(openInterestChange(trade))}>
+							{openInterestChange(trade)
+								? signedCount(openInterestChange(trade))
+								: "±0"}
+						</tspan>
 					</text>
 				</g>
 			))}
@@ -747,7 +758,7 @@ function Scene({
 								x={L.dayX(column.days)}
 								y={L.floor - barHeight(column.value) - 6 - T.small * 1.4}
 								textAnchor="middle"
-								className={`wt-film-num ${moved(column.id) === "in" ? "wt-film-accent" : "wt-film-dim"}`}
+								className={`wt-film-num ${toneClass[moved(column.id) === "in" ? "up" : "down"]}`}
 								style={{ fontSize: T.small * 1.05 }}
 							>
 								{moved(column.id) === "in"
@@ -760,7 +771,7 @@ function Scene({
 							x={L.dayX(column.days)}
 							y={L.floor - barHeight(column.value) - 6 - T.small * 1.4}
 							textAnchor="middle"
-							className={`wt-film-num ${AFTER_WEEK.columns.find((c) => c.id === column.id)?.member ? "wt-film-gain" : "wt-film-dim"}`}
+							className="wt-film-num wt-film-dim"
 							style={{ fontSize: T.small * 1.05 }}
 						>
 							{signedCount(0)}
@@ -803,7 +814,7 @@ function Scene({
 					x={margin + room}
 					y={L.bucketY + T.small + T.body * 1.5}
 					textAnchor="end"
-					className="wt-film-type"
+					className={`wt-film-type ${name === "note-new" ? "wt-film-dim" : ""}`}
 					style={{ fontSize: T.body }}
 				>
 					{t(label)}
@@ -820,7 +831,7 @@ function Scene({
 					<tspan
 						key={term}
 						data-f={`membership-term-${i}`}
-						className={i === 1 || i === 3 ? "wt-film-accent" : undefined}
+						className={i === 3 ? toneClass.focus : undefined}
 					>
 						{term}
 					</tspan>
@@ -838,11 +849,7 @@ function Scene({
 					<tspan
 						key={`${i}-${term}`}
 						className={
-							i === GROWTH_TERMS.length - 1
-								? "wt-film-accent"
-								: i > 0
-									? "wt-film-gain"
-									: undefined
+							i === GROWTH_TERMS.length - 1 ? toneClass.focus : undefined
 						}
 					>
 						{term}
@@ -903,20 +910,31 @@ function build(context: FilmContext) {
 			time,
 		);
 	const num = (name: string) => one<SVGTextElement>(name);
-	const counter = (name: string, to: number, from: number, time: number) =>
-		d.count(num(name), to, time, (v) => count(Math.round(v)), from, 0.5);
-	const balanceTo = (to: number, from: number, time: number) => {
+	const counter = (
+		name: string,
+		to: number,
+		from: number,
+		time: number,
+		duration: number,
+	) =>
+		d.count(num(name), to, time, (v) => count(Math.round(v)), from, duration);
+	const balanceTo = (
+		to: number,
+		from: number,
+		time: number,
+		duration: number,
+	) => {
 		for (const side of ["long", "short"]) {
 			tl.to(
 				one(`bar-${side}`),
 				{
 					attr: { width: (to / OI_MAX) * L.barW },
-					duration: 0.5,
+					duration,
 					ease: "power2.out",
 				},
 				time,
 			);
-			counter(`bar-${side}-n`, to, from, time);
+			counter(`bar-${side}-n`, to, from, time, duration);
 		}
 	};
 	/** Open interest doesn't move: its figure shakes its head. */
@@ -1032,28 +1050,39 @@ function build(context: FilmContext) {
 		// The closing row gets a full entrance; its counters follow its settlement.
 		const closing = i === TRADES.length - 1;
 		const oiAt = at + (closing ? 0.3 : 0.65);
+		// Count the opening volume, OI and both sides together. Later prints compare
+		// exact snapshots and cut at their original settlement, preserving every rest.
+		const duration = i === 0 ? 1 : 0.01;
 		if (i) hide(trades[i - 1], at - 0.35, 0.3);
 		show(trades[i], at, "right", closing ? 0.3 : 0.5);
 		counter(
 			"vol-n",
 			beat.volume,
 			beat.volumeBefore ?? 0,
-			at + (closing ? 0.3 : 0.45),
+			i === 0 ? oiAt - 0.5 : at + (closing ? 0.3 : 0.45) + 0.49,
+			duration,
 		);
 		if (beat.openInterest === beat.openInterestBefore) {
 			still(oiAt);
 			return;
 		}
+		const start = oiAt + 0.5 - duration;
 		counter(
 			"oi-n",
 			beat.openInterest,
 			beat.openInterestBefore ?? START_OI,
-			oiAt,
+			start,
+			duration,
 		);
-		balanceTo(beat.openInterest, beat.openInterestBefore ?? START_OI, oiAt);
+		balanceTo(
+			beat.openInterest,
+			beat.openInterestBefore ?? START_OI,
+			start,
+			duration,
+		);
 	};
 	trade(0, 10.6);
-	// The answer comes up with open interest's count.
+	// The answer finishes entering with the opening count's settlement.
 	show(heads[1], 11.25);
 	trade(1, 14.45);
 	d.swap([heads[0], heads[1]], heads[2], 14.8);
@@ -1120,7 +1149,7 @@ function build(context: FilmContext) {
 			{
 				minute: to,
 				duration,
-				ease: "power1.inOut",
+				ease: "none",
 				immediateRender: false,
 				onUpdate: renderClock,
 			},
@@ -1240,6 +1269,10 @@ function build(context: FilmContext) {
 				String(L.floor - height - 6 - L.type.small * 1.4),
 			);
 			column.change.textContent = signedCount(value - column.before.value);
+			column.change.setAttribute(
+				"class",
+				`wt-film-num ${member ? changeClass(value - column.before.value) : "wt-film-dim"}`,
+			);
 			if (member) total += value;
 		}
 		num("bucket-n").textContent =
@@ -1248,6 +1281,10 @@ function build(context: FilmContext) {
 			newContracts(bucketState.week === 1 ? total - MOVED : 0),
 			context.locale,
 		);
+		num("note-new").setAttribute(
+			"class",
+			`wt-film-type ${changeClass(bucketState.week === 1 ? total - MOVED : 0)}`,
+		);
 	};
 	tl.fromTo(
 		bucketState,
@@ -1255,7 +1292,7 @@ function build(context: FilmContext) {
 		{
 			week: 1,
 			duration: slideDuration,
-			ease: "power2.inOut",
+			ease: "none",
 			immediateRender: false,
 			onUpdate: renderBucket,
 		},
@@ -1304,12 +1341,12 @@ function build(context: FilmContext) {
 		{ week: 1, growth: 0 },
 		{
 			growth: 1,
-			duration: 0.6,
+			duration: 0.01,
 			ease: "power2.out",
 			immediateRender: false,
 			onUpdate: renderBucket,
 		},
-		growthAt,
+		growthAt + 0.49,
 	);
 	// Begin at zero as growth starts; every annotation follows the displayed rounded values.
 	show(one("note-new"), growthAt, "below", 0.3);
@@ -1320,10 +1357,9 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		growthAt,
 	);
-	// Heights, labels and totals all use rounded values. At 0.5 s into the 0.6 s
-	// power2.out growth, the remaining error is under half a contract even for +20:
-	// every displayed value and bar has settled. Start the bridge then, without
-	// shortening the growth tween or exposing an equality beside changing figures.
+	// Compare the exact weekly snapshots with a cut, not a short count. The shared
+	// state settles every bar, label and total before the unchanged equation entrance;
+	// neither the membership rest nor the completed growth-proof hold loses time.
 	tl.fromTo(
 		growthSum,
 		{ opacity: 0 },
