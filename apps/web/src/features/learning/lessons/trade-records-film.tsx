@@ -68,13 +68,6 @@ const kindCopy: Record<FeedMessage["kind"], Copy> = {
 	cancel: ["cancel", "撤销"],
 	correct: ["correct", "更正"],
 };
-const kindTone: Record<FeedMessage["kind"], string> = {
-	new: "wt-film-accent",
-	duplicate: "wt-film-dim",
-	cancel: "wt-film-loss",
-	correct: "wt-film-warn",
-};
-
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
@@ -586,7 +579,7 @@ function Scene({
 					y={L.legY - proofText * 0.4}
 					size={T.small}
 					anchor="start"
-					className="wt-film-tag wt-film-loss"
+					className="wt-film-tag wt-film-warn"
 				>
 					{t(copy.excluded).toUpperCase()}
 				</Word>
@@ -640,7 +633,11 @@ function Scene({
 							<text
 								x={margin + (narrow ? 62 : L.msgW * 0.28)}
 								y={L.msgY(i) + L.msgH / 2 + text * 0.36}
-								className={`wt-film-type ${kindTone[message.kind]}`}
+								className={
+									message.kind === "duplicate"
+										? "wt-film-type wt-film-dim"
+										: "wt-film-type"
+								}
 								style={{ fontSize: text }}
 							>
 								{t(kindCopy[message.kind])}
