@@ -44,7 +44,8 @@ import {
  *   walls     9.6–21.7   OI picks $110/$90; gamma weights near spot, then the $95 answer
  *   pain      21.7–32.55 paired put/call curves, then total, each with 1 s quiet; $100 hero
  *                        locks at 28.4 and stands 3.7 s after bracket settlement
- *   distance  32.55–45.4 −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
+ *   distance  32.55–45.4 stacked −$5 / −5.0% / −3.1 ATR
+ *                        cut: "A level is a reference, not a target."
  *   next      45.4–47.4  Next: charm and vanna
  */
 
@@ -152,10 +153,11 @@ const copy = {
 		"Oct 18 open interest, Friday's close",
 		"10月18日 未平仓量，周五收盘",
 	],
-	axisGex: [
-		"Oct 18 modeled |GEX| by strike, $/1%",
-		"10月18日 模型各行权价 |GEX|，每 1%",
+	axisGexScope: [
+		"Oct 18 modeled |GEX| by strike",
+		"10月18日 模型 |GEX| 按行权价",
 	],
+	axisGexUnit: ["USD per 1% move", "美元 / 每 1% 变动"],
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
 	painHead: ["Which settlement pays holders least?", "哪个结算价赔付最少？"],
@@ -184,13 +186,13 @@ const copy = {
 		`one tick = $1 = 1% of ${stock(SPOT)}`,
 		`每格 = $1 = ${stock(SPOT)} 的 1%`,
 	],
-	noteAtr: [
-		`1 ATR = $${ALFA_ATR_14.toFixed(2)}: typical range, not direction.`,
-		`每格 = 1 ATR = $${ALFA_ATR_14.toFixed(2)}，典型一天的波幅，不是方向`,
+	noteAtrValue: [
+		`1 ATR = $${ALFA_ATR_14.toFixed(2)}`,
+		`1 ATR = $${ALFA_ATR_14.toFixed(2)}`,
 	],
-	noteAtrShort: [
-		`1 ATR = $${ALFA_ATR_14.toFixed(2)}: range, not direction.`,
-		`1 ATR = $${ALFA_ATR_14.toFixed(2)}：波幅，非方向。`,
+	noteAtrQualification: [
+		"Typical range, not direction.",
+		"典型波幅，不代表方向。",
 	],
 	claimBig: ["Levels are references, not targets.", "位置只作参考，不作目标。"],
 	claimSub: [
@@ -255,6 +257,8 @@ function Scene({
 		);
 	};
 	const R = L.rulerY;
+	// The lowest readout row sits clear above the measured span's link at R − 26.
+	const readoutBase = R - 26 - T.head * 0.45;
 	const minX = L.px(MAX_PAIN);
 	const minY = L.py(payout(MAX_PAIN));
 	// Leave room for the lock's expanded entrance below the phone headline.
@@ -287,14 +291,14 @@ function Scene({
 						>
 							{t(copy.axisOi)}
 						</text>
-						<text
-							data-f="axis-gex"
-							x={L.left}
-							y={L.top - 12}
-							className="wt-small"
-						>
-							{t(copy.axisGex)}
-						</text>
+						<g data-f="axis-gex">
+							<text x={L.left} y={L.top - 12} className="wt-small">
+								{t(copy.axisGexScope)}
+							</text>
+							<text x={L.left} y={L.top + 14} className="wt-small">
+								{t(copy.axisGexUnit)}
+							</text>
+						</g>
 						<text
 							x={L.left - 6}
 							y={L.middle - 8}
@@ -315,10 +319,16 @@ function Scene({
 						{STRIKES.map((strike, i) => (
 							<text
 								key={strike}
+								data-f={`strike-${strike}`}
 								x={L.barX(i)}
 								y={L.bottom + 16}
 								textAnchor="middle"
-								className="wt-small"
+								className={
+									strike === PUT_OI || strike === PUT_GEX
+										? "wt-film-num"
+										: "wt-small"
+								}
+								style={{ fontSize: T.small }}
 							>
 								{strike === SPOT ? (
 									narrow ? (
@@ -517,13 +527,13 @@ function Scene({
 							})}
 						</g>
 						<path
-							d={`M${L.rx(SPOT)} ${R - T.body * 4.4}V${R + 8}`}
+							d={`M${L.rx(SPOT)} ${readoutBase - T.head * 3.05}V${R + 8}`}
 							className="wt-bracket"
 						/>
 						<Word
 							name="r-alfa"
 							x={L.rx(SPOT)}
-							y={R - T.body * 4.9}
+							y={readoutBase - T.head * 3.9}
 							size={T.body}
 							className="wt-film-num wt-film-accent"
 						>
@@ -553,7 +563,7 @@ function Scene({
 									d={`M${L.rx(SPOT)} ${R - 26}H${L.rx(price)}`}
 									className="wt-film-link"
 								/>
-								{UNITS.map((unit) => (
+								{UNITS.map((unit, index) => (
 									<Word
 										key={unit}
 										name={`d-${side}-${unit}`}
@@ -562,7 +572,7 @@ function Scene({
 												? L.rx(SPOT) + (side === "put" ? -8 : 8)
 												: (L.rx(SPOT) + L.rx(price)) / 2
 										}
-										y={R - 34}
+										y={readoutBase - T.head * 1.3 * (UNITS.length - 1 - index)}
 										size={T.head}
 										anchor={
 											narrow ? (side === "put" ? "end" : "start") : "middle"
@@ -613,6 +623,24 @@ function Scene({
 					x={W * L.pair[1]}
 					y={H * 0.3 + T.big * 1.15}
 					size={T.big}
+					className="wt-film-num"
+				>
+					{stock(PUT_GEX)}
+				</Word>
+				<Word
+					name="q-a-waypoint"
+					x={L.barX(STRIKES.indexOf(PUT_OI))}
+					y={L.middle + 16}
+					size={T.small}
+					className="wt-film-num"
+				>
+					{stock(PUT_OI)}
+				</Word>
+				<Word
+					name="q-b-waypoint"
+					x={L.barX(STRIKES.indexOf(PUT_GEX))}
+					y={L.middle + 16}
+					size={T.small}
 					className="wt-film-num"
 				>
 					{stock(PUT_GEX)}
@@ -680,23 +708,35 @@ function Scene({
 			{headline("p-head", copy.painHead, copy.painHeadShort)}
 			<Brackets name="lock-pain" glow />
 			{headline("u-head", copy.rulerHead, copy.rulerHead)}
-			{(
-				[
-					["note-dollars", copy.noteDollars],
-					["note-atr", narrow ? copy.noteAtrShort : copy.noteAtr],
-				] as const
-			).map(([name, text]) => (
+			<Word
+				name="note-dollars"
+				x={W / 2}
+				y={R + 18 + T.body * 1.5 + T.body * 3}
+				size={T.body}
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.noteDollars)}
+			</Word>
+			<g data-f="note-atr">
 				<Word
-					key={name}
-					name={name}
+					name="note-atr-value"
 					x={W / 2}
-					y={R + 18 + T.body * 1.5 + T.body * 3}
+					y={R + 18 + T.body * 1.5 + T.body * 4.5}
+					size={T.body}
+					className="wt-film-num wt-film-dim"
+				>
+					{t(copy.noteAtrValue)}
+				</Word>
+				<Word
+					name="note-atr-qualification"
+					x={W / 2}
+					y={R + 18 + T.body * 1.5 + T.body * 5.85}
 					size={T.body}
 					className="wt-film-type wt-film-dim"
 				>
-					{t(text)}
+					{t(copy.noteAtrQualification)}
 				</Word>
-			))}
+			</g>
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -767,11 +807,6 @@ function build(context: FilmContext) {
 			at,
 		);
 	};
-	const fold = (from: Element, to: Element, at: number) => {
-		d.flip(from, to, at);
-		tl.set(from, { opacity: 0 }, at + 0.3);
-	};
-
 	const lockPain = one<SVGGraphicsElement>("lock-pain");
 
 	d.hidden([
@@ -795,7 +830,8 @@ function build(context: FilmContext) {
 		...["o-head", "w-head", "g-head", "g-answer", "p-head", "u-head"].map(
 			(name) => one(name),
 		),
-		...UNITS.map((unit) => one(`note-${unit}`)),
+		one("note-dollars"),
+		one("note-atr"),
 		...kids("claim"),
 	]);
 
@@ -815,6 +851,42 @@ function build(context: FilmContext) {
 	// ——— walls: open interest picks one pair, gamma another ———
 	tl.addLabel("walls", 9.6);
 	hide(flat("q"), 9.6);
+	// Carry the two candidate prices to their named strike ticks after the question fades.
+	const questionCarries = [
+		{
+			from: "q-a",
+			waypoint: "q-a-waypoint",
+			strike: PUT_OI,
+			firstDuration: L.narrow ? 0.3 : 0.5,
+		},
+		{
+			from: "q-b",
+			waypoint: "q-b-waypoint",
+			strike: PUT_GEX,
+			firstDuration: L.narrow ? 0.35 : 0.6,
+		},
+	] as const;
+	// The two named strikes' labels are what the question's prices become: each stays hidden
+	// until its copy lands on it.
+	tl.set(
+		questionCarries.map(({ strike }) => one(`strike-${strike}`)),
+		{ opacity: 0 },
+		0,
+	);
+	for (const { from, waypoint, strike, firstDuration } of questionCarries) {
+		const match = stock(strike);
+		d.carry(one(from), one(waypoint), 9.95, {
+			duration: firstDuration,
+			arc: "x",
+			match,
+			reveal: false,
+		});
+		d.carry(one(waypoint), one(`strike-${strike}`), 9.95 + firstDuration, {
+			duration: 0.3,
+			arc: "x",
+			match,
+		});
+	}
 	show(one("o-head"), 9.6, "above", 0.3);
 	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 9.6);
 	// Scaffold and question settle at 9.90; wait 1 s, then grow one distribution.
@@ -942,21 +1014,22 @@ function build(context: FilmContext) {
 	// question together. No scaling; 1 s of stillness before either value moves.
 	tl.set([one("pain"), one("p-head"), lockPain], { opacity: 0 }, 32.55);
 	tl.set([one("ruler"), one("u-head")], { opacity: 1 }, 32.55);
-	// The paired readouts still settle at 33.95, keeping every following rest.
-	show([one("d-put-dollars"), one("d-call-dollars")], 33.55, "below", 0.4);
-	show(one("note-dollars"), 33.65);
-	// Percent of $100 is a dollar a tick: the same marks, new numbers, the same note.
-	for (const side of SIDES)
-		fold(one(`d-${side}-dollars`), one(`d-${side}-percent`), 35.15);
-	// Convert the readouts while preserving the price ruler.
-	for (const side of SIDES)
-		fold(one(`d-${side}-percent`), one(`d-${side}-atr`), 37.15);
-	d.swap(one("note-dollars"), one("note-atr"), 37.15);
+	// The six readouts and their unit notes settle together as a stacked comparison.
+	show(
+		[
+			...SIDES.flatMap((side) => UNITS.map((unit) => one(`d-${side}-${unit}`))),
+			one("note-dollars"),
+			one("note-atr"),
+		],
+		33.55,
+		"below",
+		0.4,
+	);
 	// After 1 s of quiet, retrace the measured span without changing its value.
 	draw(one<SVGPathElement>("atr-span"), 38.85, 0.6);
 	tl.to(one("atr-span"), { opacity: 1, duration: 0.5 }, 38.85);
 	// Cut: the claim.
-	hide([one("u-head"), one("note-atr")], 41);
+	hide([one("u-head"), one("note-dollars"), one("note-atr")], 41);
 	sink(41);
 	tl.fromTo(
 		one("z-big"),
