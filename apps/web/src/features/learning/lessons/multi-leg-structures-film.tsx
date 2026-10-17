@@ -52,13 +52,13 @@ import {
  *   open      0–4        "Straddles and condors"
  *   question  4–8.6      four prints in one second: bullish or bearish?
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
- *   condor    18.2–30    hero: put spread and call spread; together; it sells a range
- *   package   30–40.4    four labels; directional tally; cash groups; one package
- *   claim     40.4–44.7  linked prints, one trade
- *   next      44.7–46.3  Next: checking one trade
+ *   condor    18.2–30.5  hero: put spread and call spread; together; it sells a range
+ *   package   30.5–41.3  four labels; directional tally; cash groups; one package
+ *   claim     41.3–45.6  linked prints, one trade
+ *   next      45.6–47.2  Next: checking one trade
  */
 
-const END = 46.3;
+const END = 47.2;
 const CENTS = (perShare: number) => Math.round(perShare * 100);
 /** Dollars a share as whole dollars a contract: "+$375", "−$283". */
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
@@ -147,8 +147,8 @@ const copy = {
 		`看跌收入 ${usd(CENTS(PUT_CREDIT) * 100, 0)}`,
 	],
 	callSpread: [
-		`call credit ${usd(CENTS(CALL_CREDIT) * 100, 0)}`,
-		`看涨收入 ${usd(CENTS(CALL_CREDIT) * 100, 0)}`,
+		`call +${usd(CENTS(CALL_CREDIT) * 100, 0)}`,
+		`看涨 +${usd(CENTS(CALL_CREDIT) * 100, 0)}`,
 	],
 	valueAxis: ["Oct 18 value · 100 shares/leg", "10月18日价值 · 每腿100股"],
 	straddleAxis: ["Oct 18 profit · per straddle", "10月18日盈亏 · 每组跨式"],
@@ -174,10 +174,7 @@ const copy = {
 		`net ${signedUsd(NET_LABELS, 0)}: "slightly bearish"`,
 		`净额 ${signedUsd(NET_LABELS, 0)}：“略偏看跌”`,
 	],
-	pkgCredit: [
-		`${signedUsd(PACKAGE_CREDIT, 0)} collected`,
-		`收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
-	],
+	pkgCredit: [signedUsd(PACKAGE_CREDIT, 0), signedUsd(PACKAGE_CREDIT, 0)],
 	pkgRange: [
 		`Oct 18: $95–$105 · ${usd(PACKAGE_RISK, 0)} at risk`,
 		`10月18日 $95–$105 · 风险 ${usd(PACKAGE_RISK, 0)}`,
@@ -847,25 +844,29 @@ function build(context: FilmContext) {
 	// One result construction: emphasize the plateau, credit and bounded loss.
 	fadeIn([one("c-range"), one("c-keep"), one("c-risk")], 24.3);
 	draw(p("c-plateau"), 24.3);
-	// Range settles at 25.0, then stands 1.4 s before the unchanged hero lock.
-	d.lock(lockKeep, 26.4, { around: one("c-keep"), pad: 6 });
-	tl.addLabel("hero-lock", 26.4);
-	show(heads.condorAnswer, 26.4);
+	// Range settles at 25.0 and stands 2.0 s before the hero lock.
+	d.lock(lockKeep, 26.9, { around: one("c-keep"), pad: 6 });
+	tl.addLabel("hero-lock", 26.9);
+	show(heads.condorAnswer, 26.9);
 
 	// ——— package: four labels, one trade ———
-	tl.addLabel("package", 30);
-	d.swap([heads.condor, heads.condorAnswer], heads.package, 30.0);
-	d.sink(30.0);
-	legs.forEach((leg, i) => {
-		show(leg, 30.5 + i * 0.25, "right");
-	});
-	show(one("tally"), 31.5);
-	hide(one("tally"), 35.0, 0.3);
+	tl.addLabel("package", 30.5);
+	// Whole-stage cut: the condor heading and chart fade out together; the package heading
+	// fades in after they clear. It then stands for 1 s before all four linked rows arrive.
+	tl.to(
+		[heads.condor, heads.condorAnswer, one("depth")],
+		{ opacity: 0, duration: 0.3, ease: "power2.in" },
+		30.5,
+	);
+	fadeIn(heads.package, 30.8, 0.3);
+	show(legs, 32.1, "right", 0.3);
+	show(one("tally"), 32.4);
+	hide(one("tally"), 35.9, 0.3);
 	// Preserve the tally's 1.6 s rest, then bring the cash amounts into focus.
 	tl.to(
 		LEGS.map((_, i) => one(`leg-direction-${i}`)),
 		{ opacity: 0.25, duration: 0.4 },
-		33.6,
+		34.5,
 	);
 	LEGS.forEach((_, i) => {
 		// Timeline-owned classes restore the dim desktop amounts on a backward seek.
@@ -876,22 +877,22 @@ function build(context: FilmContext) {
 					class: L.narrow ? "wt-film-type" : "wt-film-num",
 				},
 			},
-			33.6,
+			34.5,
 		);
 	});
-	// Cash emphasis settles at 34.0; the named row additions reveal settled at 35.1.
-	fadeIn(one("cash-additions"), 35.1);
-	// The cash amounts settle at 35.6; preserve their existing 1.3 s quiet interval.
-	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 36.9);
-	fadeIn(one("pkg"), 36.9);
-	fadeIn(one("pkg-equation"), 36.9);
-	show(heads.packageAnswer, 36.9);
-	// The subtraction settles at 37.4; leave a quiet second before revealing its credit.
-	fadeIn(one("pkg-result"), 38.4);
+	// Cash emphasis settles at 34.9; the named row additions reveal settled at 36.5.
+	fadeIn(one("cash-additions"), 36.0);
+	// The cash amounts settle at 36.5; preserve their existing 1.3 s quiet interval.
+	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 37.8);
+	fadeIn(one("pkg"), 37.8);
+	fadeIn(one("pkg-equation"), 37.8);
+	show(heads.packageAnswer, 37.8);
+	// The subtraction settles at 38.3; leave a quiet second before revealing its credit.
+	fadeIn(one("pkg-result"), 39.3);
 
 	// ——— claim ———
-	// Credit settles at 38.9 and rests 1.5 s before departure; its answer keeps a 3.5 s hold.
-	tl.addLabel("claim", 40.4);
+	// Credit settles at 39.8 and rests 1.5 s before departure; its answer keeps a 3.5 s hold.
+	tl.addLabel("claim", 41.3);
 	hide(
 		[
 			heads.package,
@@ -901,16 +902,16 @@ function build(context: FilmContext) {
 			one("cash-additions"),
 			one("pkg-equation"),
 		],
-		40.4,
+		41.3,
 	);
-	word(one("z-big"), 40.7);
-	show(one("z-sub"), 41.1);
+	word(one("z-big"), 41.6);
+	show(one("z-sub"), 42.0);
 
 	// ——— next ———
 	// The claim holds 4 s; the end card keeps the 1.6 s minimum the hero share leaves.
-	tl.addLabel("next", 44.7);
-	hide(kids("claim"), 44.7);
-	d.close(44.7);
+	tl.addLabel("next", 45.6);
+	hide(kids("claim"), 45.6);
+	d.close(45.6);
 	return tl;
 }
 
