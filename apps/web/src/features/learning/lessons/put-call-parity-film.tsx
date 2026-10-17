@@ -46,16 +46,16 @@ import {
  *   open      0–4        "Put-call parity"
  *   question  4–8.8      long call + short put; ALFA at $90?
  *   legs      8.8–13.6   $0 and −$1,000 at $90, then one second of rest
- *   sum       13.6–22.75  combine the legs, then subtract the premium debit
- *   debit     17.6–22.75  $4.20 − $4.05 = $0.15/share; zero moves to $100.15
- *   identity  22.75–30.5 hero: read $97 for 1.25 seconds, then walk to $102
- *   prints    30.5–34.5      a 14:12 print looks $0.65 off
- *   late      34.5–39.7    it executed at 13:58: in line
- *   claim     39.7–44.1  parity links prices from the same moment
- *   next      44.1–46.6  Next: expiration
+ *   sum       13.6–22.55  combine the legs, then subtract the premium debit
+ *   debit     17.6–22.55  $4.20 − $4.05 = $0.15/share; zero moves to $100.15
+ *   identity  22.55–30.3 hero: read $97 for 1.25 seconds, then walk to $102
+ *   prints    30.3–34.3      a 14:12 print looks $0.65 off
+ *   late      34.3–39.5    it executed at 13:58: in line
+ *   claim     39.5–43.9  parity links prices from the same moment
+ *   next      43.9–46.4  Next: expiration
  */
 
-const END = 46.6;
+const END = 46.4;
 const Y = [-2_000, 2_000] as const;
 const spots = [RANGE[0], STRIKE, RANGE[1]];
 const per = (dollars: number) => dollars * 100;
@@ -149,7 +149,6 @@ const copy = {
 	],
 	call: ["call", "看涨"],
 	put: ["put", "看跌"],
-	skLabel: ["stock − strike", "股价 − 行权价"],
 	offHead: ["One 14:12 print looks off.", "14:12 有一笔成交看似偏离。"],
 	lateHead: [
 		"Late report: check its execution time.",
@@ -166,8 +165,8 @@ const copy = {
 		"平价连接的是同一时刻的价格。",
 	],
 	claimSub: [
-		"Late reports: use execution time, not arrival time.",
-		"延迟报告按成交时刻核对，不按接收时刻。",
+		"For late reports, use execution time, not arrival time.",
+		"延迟报告看成交时刻，而非接收时刻。",
 	],
 	nextBig: ["Next: expiration", "下一课：到期"],
 	nextSub: ["exercise, assignment and settlement", "行权、指派与结算"],
@@ -196,7 +195,7 @@ const PRINTS = [
 		id: "afternoon",
 		time: "14:12",
 		spot: AFTERNOON.spot,
-		text: `P ${share(AFTERNOON.put)} ·`,
+		text: `P $${AFTERNOON.put.toFixed(2)} · C $${LATE.call.toFixed(2)}`,
 		check: [
 			`${share(AFTERNOON.put)} + ${share(AFTERNOON.spot - STRIKE)}`,
 			`= ${share(AFTERNOON_PARITY)}`,
@@ -536,7 +535,7 @@ function Scene({
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{t(copy.skLabel)}
+					S − K
 				</Word>
 				<text
 					data-f="eq-sk"
@@ -565,7 +564,6 @@ function Scene({
 					spot: number,
 					detail: string,
 					check: readonly string[],
-					observedCall?: string,
 				) => (
 					<>
 						<text
@@ -585,26 +583,6 @@ function Scene({
 							style={{ fontSize: text }}
 						>
 							{detail}
-							{observedCall && (
-								<>
-									<tspan
-										x={margin + room - 76}
-										textAnchor="end"
-										className={toneClass.call}
-										style={{ fontSize: text * 1.05 }}
-									>
-										C
-									</tspan>
-									<tspan
-										x={margin + room - 14}
-										textAnchor="end"
-										className={toneClass.call}
-										style={{ fontSize: text * 1.05 }}
-									>
-										{observedCall}
-									</tspan>
-								</>
-							)}
 						</text>
 						<text
 							data-f={`r3-${suffix}`}
@@ -614,17 +592,14 @@ function Scene({
 							style={{ fontSize: text }}
 						>
 							{check[0]}
-							{observedCall ? " =" : null}
 							{!narrow && (
 								<>
-									{observedCall ? null : suffix === "morning" ? " · " : " "}
+									{suffix === "morning" ? " · " : " "}
 									<tspan
-										x={observedCall ? margin + room - 14 : undefined}
-										textAnchor={observedCall ? "end" : undefined}
-										className={observedCall ? toneClass.call : "wt-film-accent"}
-										style={{ fontSize: text * 1.05 }}
+										className="wt-film-accent"
+										style={{ fontSize: text * 1.2 }}
 									>
-										{observedCall ? check[1].replace(/^=\s*/, "") : check[1]}
+										{check[1]}
 									</tspan>
 								</>
 							)}
@@ -632,13 +607,12 @@ function Scene({
 						{narrow && (
 							<text
 								data-f={`r4-${suffix}`}
-								x={observedCall ? margin + room - 14 : margin + 14}
+								x={margin + 14}
 								y={L.rowY(i) + L.rowH * 0.9}
-								textAnchor={observedCall ? "end" : undefined}
-								className={`wt-film-num ${observedCall ? toneClass.call : "wt-film-accent"}`}
-								style={{ fontSize: text * (observedCall ? 1.2 : 1) }}
+								className="wt-film-num wt-film-accent"
+								style={{ fontSize: text }}
 							>
-								{observedCall ? check[1].replace(/^=\s*/, "") : check[1]}
+								{check[1]}
 							</text>
 						)}
 					</>
@@ -662,19 +636,17 @@ function Scene({
 							print.ok
 								? print.check
 								: [`${t(copy.parity)} C = ${print.check[0]}`, print.check[1]],
-							print.id === "afternoon" ? share(LATE.call) : undefined,
 						)}
 						{print.id === "afternoon" &&
 							lines(
 								"late",
 								LATE_TIME,
 								LATE.spot,
-								`${t(copy.modelPut)} ${share(LATE_PUT)} ·`,
+								`${t(copy.modelPut)} ${share(LATE_PUT)} · C ${share(LATE.call)}`,
 								[
 									`${t(copy.parity)} C = ${share(LATE_PUT)} + ${share(LATE.spot - STRIKE)}`,
 									`= ${share(LATE_PUT + (LATE.spot - STRIKE))}`,
 								],
-								share(LATE.call),
 							)}
 						<text
 							data-f={`v-${print.id}`}
@@ -957,8 +929,8 @@ function build(context: FilmContext) {
 		{ offset: 0 },
 		{
 			offset: NET_DEBIT,
-			duration: 1.0,
-			ease: "power2.out",
+			duration: 0.8,
+			ease: "power2.inOut",
 			immediateRender: false,
 			onUpdate: () => adjustPremium(premium.offset),
 		},
@@ -966,51 +938,51 @@ function build(context: FilmContext) {
 	);
 
 	// ——— identity: the hero. ALFA walks from $97 to $102 and both sides move together. ———
-	tl.addLabel("identity", 22.75);
-	hide(heads[1], 22.75);
-	sink(22.75);
-	show(heads[2], 23.1);
-	walk(97, 97, 23.35, 0.01);
-	show([one("b-alfa"), spot], 23.45);
-	show(one("b-c"), 23.65);
-	word(one("eq-cp"), 23.75);
-	show(one("b-s"), 23.8);
-	word(one("eq-sk"), 23.9);
-	// The initial equations settle at 24.45; give them 1.25 quiet seconds before walking.
-	walk(97, 102, 25.7, 1.8);
-	d.lock(g("lock-eq"), 27.6, { around: [g("eq-cp"), g("eq-sk")], pad: 12 });
-	tl.addLabel("hero-lock", 27.6);
+	tl.addLabel("identity", 22.55);
+	hide(heads[1], 22.55);
+	sink(22.55);
+	show(heads[2], 22.9);
+	walk(97, 97, 23.15, 0.01);
+	show([one("b-alfa"), spot], 23.25);
+	show(one("b-c"), 23.45);
+	word(one("eq-cp"), 23.55);
+	show(one("b-s"), 23.6);
+	word(one("eq-sk"), 23.7);
+	// The initial equations settle at 24.25; give them 1.25 quiet seconds before walking.
+	walk(97, 102, 25.5, 1.8);
+	d.lock(g("lock-eq"), 27.4, { around: [g("eq-cp"), g("eq-sk")], pad: 12 });
+	tl.addLabel("hero-lock", 27.4);
 
 	// ——— prints: one looks off ———
-	tl.addLabel("prints", 30.5);
-	hide([heads[2], ...kids("balance"), g("lock-eq")], 30.5);
-	show(heads[3], 30.85);
-	show(rows[0], 31.1);
-	show(rows[1], 31.6);
-	d.lock(g("lock-off"), 32.3, { around: gap, pad: 5 });
+	tl.addLabel("prints", 30.3);
+	hide([heads[2], ...kids("balance"), g("lock-eq")], 30.3);
+	show(heads[3], 30.65);
+	show(rows[0], 30.9);
+	show(rows[1], 31.4);
+	d.lock(g("lock-off"), 32.1, { around: gap, pad: 5 });
 
 	// ——— late: replace the execution-time prices, calculation and verdict together ———
-	tl.addLabel("late", 34.5);
-	d.swap(heads[3], heads[4], 34.5);
-	fade(g("lock-off"), 34.5);
-	fade(rows[0], 34.5, 0.3);
+	tl.addLabel("late", 34.3);
+	d.swap(heads[3], heads[4], 34.3);
+	fade(g("lock-off"), 34.3);
+	fade(rows[0], 34.3, 0.3);
 	for (const prefix of ["r1", "r2", "r3", ...(L.narrow ? ["r4"] : []), "v"]) {
-		d.flip(one(`${prefix}-afternoon`), one(`${prefix}-late`), 35.5);
-		tl.set(one(`${prefix}-afternoon`), { opacity: 0 }, 35.8);
+		d.flip(one(`${prefix}-afternoon`), one(`${prefix}-late`), 35.3);
+		tl.set(one(`${prefix}-afternoon`), { opacity: 0 }, 35.6);
 	}
-	// All corrected figures settle at 36.15; rest 1.05 s before the row locks.
-	d.lock(g("lock-row"), 37.2, { around: g("box-afternoon"), pad: 4 });
+	// All corrected figures settle at 35.95; rest 1.05 s before the row locks.
+	d.lock(g("lock-row"), 37.0, { around: g("box-afternoon"), pad: 4 });
 
 	// ——— claim ———
-	tl.addLabel("claim", 39.7);
-	hide([heads[4], ...rows, g("lock-row")], 39.7);
-	word(one("z-big"), 40.0);
-	show(one("z-sub"), 40.3);
+	tl.addLabel("claim", 39.5);
+	hide([heads[4], ...rows, g("lock-row")], 39.5);
+	word(one("z-big"), 39.8);
+	show(one("z-sub"), 40.1);
 
 	// ——— next ———
-	tl.addLabel("next", 44.1);
-	hide(kids("claim"), 44.1);
-	d.close(44.1);
+	tl.addLabel("next", 43.9);
+	hide(kids("claim"), 43.9);
+	d.close(43.9);
 	return tl;
 }
 
