@@ -11,6 +11,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -216,23 +218,18 @@ function Scene({
 		</text>
 	);
 	const readouts: [string, Copy, string, string][] = [
-		["ro-0", copy.long105, signedDollars(longLeg(SPOT)), "var(--wt-long)"],
+		["ro-0", copy.long105, signedDollars(longLeg(SPOT)), "var(--tone-ink)"],
 		[
 			"ro-1",
 			copy.short110,
 			signedDollars(shortLeg110(SPOT)),
-			"var(--wt-short)",
+			"var(--tone-ink)",
 		],
-		[
-			"ro-2",
-			copy.together,
-			dollars(spreadPayoff(SPOT)),
-			"var(--diagram-accent)",
-		],
+		["ro-2", copy.together, dollars(spreadPayoff(SPOT)), toneColor("focus")],
 	];
-	const rows: [Copy, Copy, Copy, string][] = [
-		[copy.sellOct, copy.toClose, copy.bearish, "wt-film-loss"],
-		[copy.buyNov, copy.toOpen, copy.bullish, "wt-film-gain"],
+	const rows: [Copy, Copy, Copy][] = [
+		[copy.sellOct, copy.toClose, copy.bearish],
+		[copy.buyNov, copy.toOpen, copy.bullish],
 	];
 	const axisCaptions: [string, Copy][] = [
 		["axis-profit", copy.axisProfit],
@@ -377,7 +374,8 @@ function Scene({
 						<path
 							data-f="l-alone"
 							d={path(structures.alone)}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ strokeWidth: 2.5 }}
 						/>
 						<path
 							data-f="l-stock"
@@ -394,11 +392,17 @@ function Scene({
 							d={path(structures.spread)}
 							className="wt-line-position"
 						/>
-						<path data-f="l-long" d={path(longLeg)} className="wt-line-long" />
+						<path
+							data-f="l-long"
+							d={path(longLeg)}
+							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
+						/>
 						<path
 							data-f="l-short"
 							d={path(shortLeg110)}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
 						/>
 						<path
 							data-f="l-sum"
@@ -433,7 +437,7 @@ function Scene({
 							82,
 							structures.alone,
 							copy.sold,
-							"wt-film-dim",
+							`wt-film-dim ${toneClass.focus}`,
 							-10,
 						)}
 						{tag(
@@ -460,7 +464,7 @@ function Scene({
 							y={L.top + text * 1.5}
 							size={T.small * 1.1}
 							anchor="start"
-							className="wt-film-type wt-film-dim"
+							className={`wt-film-type wt-film-dim ${toneClass.focus}`}
 						>
 							{t(copy.spread)}
 						</Word>
@@ -480,7 +484,7 @@ function Scene({
 							y={L.y(SPREAD_HIGH) - T.body}
 							size={T.body}
 							anchor="end"
-							className="wt-film-num wt-film-accent"
+							className={`wt-film-num ${toneClass.up}`}
 						>
 							{signedDollars(SPREAD_HIGH)}
 						</Word>
@@ -497,6 +501,7 @@ function Scene({
 									y={L.bottom + 32}
 									textAnchor={c.strike === CALL_105.strike ? "end" : "start"}
 									className="wt-small"
+									style={{ fill: "var(--tone-ink)" }}
 								>
 									{t(
 										c.strike === CALL_105.strike ? copy.long105 : copy.short110,
@@ -525,7 +530,7 @@ function Scene({
 					>
 						{`${t(label)} · `}
 						<tspan
-							className={`wt-film-num ${i === 1 ? "wt-film-loss" : i === 0 ? "wt-long" : "wt-film-accent"}`}
+							className={`wt-film-num ${i === 1 ? toneClass.down : i === 0 ? toneClass.up : toneClass.focus}`}
 						>
 							{value}
 						</tspan>
@@ -548,11 +553,11 @@ function Scene({
 				x={L.resultX}
 				y={L.resultY}
 				size={L.resultSize}
-				className="wt-film-num wt-film-accent wt-halo"
+				className={`wt-film-num ${toneClass.up} wt-halo`}
 			>
 				{signedDollars(profit(SPOT))}
 			</Word>
-			<Brackets name="lock-profit" glow />
+			<Brackets name="lock-profit" tone="gain" glow />
 
 			{/* A roll: two prints, one decision. */}
 			{headline("r-head", copy.rHead)}
@@ -580,7 +585,7 @@ function Scene({
 			>
 				{t(copy.rollTag).toUpperCase()}
 			</text>
-			{rows.map(([line, sub, label, tone], i) => (
+			{rows.map(([line, sub, label], i) => (
 				<g key={t(line)} data-f={`row-${i}`}>
 					<rect
 						x={margin}
@@ -613,7 +618,7 @@ function Scene({
 						x={margin + room - 14}
 						y={L.rowY(i) + L.rowH * 0.76}
 						textAnchor="end"
-						className={`wt-film-type ${tone}`}
+						className="wt-film-type"
 						style={{ fontSize: T.small * 1.1 }}
 					>
 						{t(label)}
@@ -723,6 +728,8 @@ function build(context: FilmContext) {
 	].map((name) => one(name));
 	const readouts = [0, 1, 2, 3].map((i) => one(`ro-${i}`));
 	const lockProfit = one<SVGGraphicsElement>("lock-profit");
+	// The kit's glow uses this local alias too, so it matches the signed gain's brackets.
+	lockProfit.style.setProperty("--diagram-accent", toneColor("up"));
 	const rows = [one("row-0"), one("row-1")];
 	const axes = kids("chart").filter(
 		(el) =>
