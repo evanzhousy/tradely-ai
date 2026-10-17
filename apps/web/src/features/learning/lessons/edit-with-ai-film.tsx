@@ -118,7 +118,7 @@ const copy = {
 		"Edit with AI · Daily Market Recap",
 		"Edit with AI · Daily Market Recap",
 	],
-	qLine: ["Which blocks do you now have to check?", "现在你得检查哪些区块？"],
+	qLine: ["Which blocks need checking?", "哪些区块要检查？"],
 	vagueHead: [
 		"No boundary: every block may have changed.",
 		"没有范围的提示：每个区块都可能被改过。",
@@ -130,47 +130,41 @@ const copy = {
 	],
 	boundedHeadShort: ["Bounded: review one.", "划定范围：审阅一个。"],
 	boundedRequest: [
-		"Keep all blocks. Only Spotlight: choose a symbol, default ALFA.",
-		"保留所有区块。仅改 Spotlight：可选标的，默认 ALFA。",
+		"Only Spotlight: symbol input, default ALFA; all else unchanged.",
+		"仅改 Spotlight：标的输入，默认 ALFA；其余不变。",
 	],
 	boundedShort: [
 		"Only Spotlight: symbol input, default ALFA.",
 		"仅改 Spotlight：标的输入，默认 ALFA。",
 	],
 	editHead: [
-		"Edit 1 changed Spotlight and removed Index GEX.",
-		"修改 1 改了 Spotlight，删了 Index GEX。",
+		"Edit 1: Spotlight changed; Index GEX removed.",
+		"Spotlight改；GEX移除。",
 	],
-	editHeadShort: ["Edit 1 removed Index GEX.", "修改 1 删了 Index GEX。"],
+	editHeadShort: [
+		"Spotlight changed; Index GEX removed.",
+		"Spotlight改；GEX移除。",
+	],
 	undoHead: ["Undo: all five blocks are back.", "撤销：五个区块全部恢复。"],
 	firstRequestTag: ["First edit request", "第一次修改请求"],
 	firstRequest: [
 		"Spotlight: symbol input, default ALFA.",
 		"Spotlight：标的输入，默认 ALFA。",
 	],
-	secondRequest: [
-		"Keep others. Spotlight: symbol input, default ALFA.",
-		"其余不变。Spotlight：标的输入，默认 ALFA。",
-	],
-	secondRequestShort: [
-		"Only Spotlight: symbol input, default ALFA.",
-		"仅改 Spotlight：标的输入，默认 ALFA。",
-	],
-	againHead: [
-		"Ask again, bounded: only Spotlight differs.",
-		"带上范围再问：只有 Spotlight 不同。",
-	],
-	againHeadShort: ["Ask again: only Spotlight.", "再问：只有 Spotlight。"],
+	secondRequest: ["Spotlight only; rest stays.", "Spotlight外不变"],
+	secondRequestShort: ["Spotlight only; rest stays.", "Spotlight外不变"],
+	againHead: ["Only Spotlight changed.", "仅 Spotlight 有变化。"],
+	againHeadShort: ["Only Spotlight changed.", "仅 Spotlight 有变化。"],
 	previewHead: ["A preview isn't a save.", "预览不是保存。"],
-	draft: ["Your draft · private", "你的草稿 · 私有"],
-	unsaved: ["Unsaved changes", "有未保存的修改"],
+	draft: ["Private draft", "私有草稿"],
+	unsaved: ["Unsaved", "未保存"],
 	closed: ["Draft gone · not listed", "草稿丢失 · 未列入列表"],
 	closeChoice: ["Close without saving", "不保存，直接关闭"],
 	saveChoice: [
 		"Save instead · My recipes · only you",
 		"改选保存 · 我的 Recipe · 仅你可见",
 	],
-	branchUnsaved: ["Same preview · unsaved", "同一预览 · 未保存"],
+	branchUnsaved: ["Same · unsaved", "同一预览未保存"],
 	fixedSymbol: ["Fixed symbol", "固定标的"],
 	readerSymbol: ["Reader chooses · default", "读者可选 · 默认值"],
 	saved: ["✓ Saved · validated", "✓ 已保存 · 校验通过"],
@@ -187,8 +181,8 @@ const copy = {
 		"划定范围，逐次审阅，有意保存。",
 	],
 	claimSub: [
-		"Undo the unasked; the official recipe never changes.",
-		"撤销没要求的改动；官方 Recipe 从不改变。",
+		"Undo the unasked; official recipe never changes.",
+		"撤销未要求改动；官方Recipe永不变。",
 	],
 	nextBig: [
 		"Next: connect your own AI agent",
@@ -766,7 +760,7 @@ function build(context: FilmContext) {
 	set(every("recheck"), bounded, 14.45);
 	tl.to(one("hl-spotlight"), { opacity: 1, duration: 0.3 }, 14.85);
 	// Name the bounded workload only once its five statuses have settled.
-	hide(one("v-head"), 14.8);
+	hide(one("v-head"), 13.55);
 	show(one("b-head"), 15.15);
 	show(one("symbol-fixed"), 10.8);
 
@@ -873,7 +867,7 @@ function build(context: FilmContext) {
 	);
 	d.flip(one("m-unsaved"), one("m-saved"), 37.4);
 	tl.set(one("m-unsaved"), { opacity: 0 }, 37.7);
-	hide(one("m-none"), 37.7, 0.35, 0);
+	hide(one("m-none"), 37.05, 0.35, 0);
 	// Saved settles first; only then can the named recipe enter My recipes.
 	tl.fromTo(
 		one("m-entry"),
