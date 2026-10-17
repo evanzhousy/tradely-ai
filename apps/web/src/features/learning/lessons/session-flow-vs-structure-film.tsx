@@ -218,9 +218,10 @@ const copy = {
 		"Every contract: one long, one short.",
 		"每张合约：一个多头，一个空头。",
 	],
+	// The question's +20 has left the stage by now: the answer names only what happened.
 	l2Head: [
-		`Both open: +${TRADES[0].quantity}, not +${TRADES[0].quantity * 2}.`,
-		`双方开仓：+${TRADES[0].quantity}，不是 +${TRADES[0].quantity * 2}。`,
+		`Both open: +${TRADES[0].quantity}.`,
+		`双方开仓：+${TRADES[0].quantity}。`,
 	],
 	l3Head: ["Changed hands: ±0.", "换手：±0。"],
 	l4Head: [
