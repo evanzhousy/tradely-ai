@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -364,7 +365,7 @@ function Scene({
 					className="wt-film-type"
 					style={{
 						fontSize: narrow ? T.small : T.body,
-						fill: "var(--film-bg, #0b0f18)",
+						fill: "var(--film-bg)",
 					}}
 				>
 					<tspan x={L.barX(0)}>{usd(OCT4.intrinsic)}</tspan>
@@ -447,10 +448,10 @@ function Scene({
 				))}
 				{(
 					[
-						[0, copy.cash, "wt-film-loss", 1],
-						[1, copy.shares, "wt-film-gain", -1],
+						[0, copy.cash, 1],
+						[1, copy.shares, -1],
 					] as const
-				).map(([k, label, tone, dir]) => {
+				).map(([k, label, dir]) => {
 					const x0 = margin + L.partyW + 8;
 					const x1 = margin + room - L.partyW - 8;
 					return (
@@ -475,7 +476,7 @@ function Scene({
 								x={(x0 + x1) / 2}
 								y={flowY(k) - 8}
 								textAnchor="middle"
-								className={`wt-film-num ${tone}`}
+								className="wt-film-num"
 								style={{ fontSize: text }}
 							>
 								{t(label)}
@@ -487,12 +488,7 @@ function Scene({
 			<g data-f="cash">
 				{(
 					[
-						[
-							"c-official",
-							copy.official,
-							count(INDEX_SETTLES),
-							"wt-film-accent",
-						],
+						["c-official", copy.official, count(INDEX_SETTLES), ""],
 						[
 							"c-thursday",
 							narrow ? copy.thursdayShort : copy.thursday,
@@ -536,7 +532,7 @@ function Scene({
 						x={W / 2}
 						y={H * 0.6 + T.big * 0.9}
 						textAnchor="middle"
-						className="wt-film-num wt-film-gain"
+						className={`wt-film-num ${toneClass.focus}`}
 						style={{ fontSize: T.big * 0.8 }}
 					>
 						{usd(PAYS, 0)}
@@ -768,7 +764,7 @@ function Scene({
 					x={margin + room * (narrow ? 0.25 : 0.2)}
 					y={H * (narrow ? 0.91 : 0.93)}
 					size={T.head * (narrow ? 1.15 : 1)}
-					className="wt-film-num wt-film-gain"
+					className={`wt-film-num ${toneClass.focus}`}
 				>
 					{`${count(CALL_100_DELIVERY.shares)} ${t(copy.sharesUnit)}`}
 				</Word>
@@ -786,7 +782,7 @@ function Scene({
 					x={margin + room * (narrow ? 0.75 : 0.8)}
 					y={H * (narrow ? 0.91 : 0.93)}
 					size={T.head * (narrow ? 1.15 : 1)}
-					className="wt-film-num wt-film-loss"
+					className="wt-film-num"
 				>
 					{`${usd(CALL_100_DELIVERY.cashCents, 0)} ${t(copy.due)}`}
 				</Word>
@@ -806,7 +802,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.88}
 					size={T.title}
-					className="wt-film-num wt-film-loss"
+					className={`wt-film-num ${toneClass.focus}`}
 				>
 					{`−${count(CALL_100_DELIVERY.shares)}`}
 				</Word>
@@ -815,7 +811,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.88 + T.small * 2.2 + T.title * 0.15}
 					size={T.small}
-					className="wt-film-tag wt-film-loss"
+					className={`wt-film-tag ${toneClass.focus}`}
 				>
 					{t(copy.shortShares)}
 				</Word>
