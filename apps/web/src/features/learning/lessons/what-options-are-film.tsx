@@ -145,6 +145,7 @@ const copy = {
 	callLabel: ["call", "看涨"],
 	putLabel: ["put", "看跌"],
 	value: ["value", "价值"],
+	net: ["net", "净盈亏"],
 	sharesAlone: ["100 shares", "100 股"],
 	sharesEntry: ["bought at $100", "$100 买入"],
 	withPut: ["with 95 put", "加 95 看跌"],
@@ -465,12 +466,20 @@ function Scene({
 				</g>
 			</g>
 			<Brackets name="lock-floor" tone="loss" glow />
-			{/* Readouts under the headline: the right's value, then each use's two positions. */}
+			{/* Readouts under the headline: the call's value and net, then each use's two positions. */}
 			{(
 				[
 					[
 						"meter",
-						[["m-value", copy.value, "$0", `wt-film-num ${toneClass.call}`]],
+						[
+							["m-value", copy.value, "$0", `wt-film-num ${toneClass.call}`],
+							[
+								"m-net",
+								copy.net,
+								signedUsd((callValue(LOW) - PREMIUM) * 100, 0),
+								"wt-film-num wt-film-loss",
+							],
+						],
 					],
 					[
 						"umeter",
@@ -522,6 +531,16 @@ function Scene({
 					))}
 				</g>
 			))}
+			<Word
+				name="m-net-next"
+				x={margin + L.meterCol}
+				y={L.meterNum}
+				size={T.head * 1.15}
+				anchor="start"
+				className="wt-film-num wt-film-gain"
+			>
+				{signedUsd(NET_HIGH * 100, 0)}
+			</Word>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -721,6 +740,8 @@ function build(context: FilmContext) {
 	const line = (name: string) => one<SVGPathElement>(name);
 	const marker = one("marker");
 	const value = one<SVGTextElement>("m-value");
+	const netResult = one<SVGTextElement>("m-net");
+	const netResultNext = one<SVGTextElement>("m-net-next");
 	const uShares = one<SVGTextElement>("u-shares");
 	const uPut = one<SVGTextElement>("u-put");
 	uShares.style.fill = "var(--tone-dim)";
@@ -762,10 +783,19 @@ function build(context: FilmContext) {
 		);
 	};
 	/** The marker on a right's value line, and the meter read from the marker. */
-	const onRight = (f: (spot: number) => number) => (spot: number) => {
-		gsap.set(marker, { attr: { cx: L.x(spot), cy: L.y(f(spot)) } });
-		value.textContent = dollars(f(spot));
-	};
+	const onRight =
+		(f: (spot: number) => number, netAt?: (spot: number) => number) =>
+		(spot: number) => {
+			gsap.set(marker, { attr: { cx: L.x(spot), cy: L.y(f(spot)) } });
+			value.textContent = dollars(f(spot));
+			if (netAt) {
+				const net = netAt(spot);
+				netResult.textContent = signed(net);
+				signColor(netResult, net);
+				netResultNext.textContent = signed(net);
+				signColor(netResultNext, net);
+			}
+		};
 	/** Both positions as ALFA falls: the markers, the readouts and the saving behind them. */
 	const onFall = (spot: number) => {
 		gsap.set(sMarker, { attr: { cx: L.x(spot), cy: L.u(shares(spot)) } });
@@ -812,6 +842,7 @@ function build(context: FilmContext) {
 		one("lock-floor"),
 		...kids("view-ticket"),
 		...kids("meter"),
+		one("m-net-next"),
 		...kids("umeter"),
 		uPut,
 		...flat("q"),
@@ -851,12 +882,16 @@ function build(context: FilmContext) {
 	d.swap(heads[0], heads[1], 13.5);
 	pop(marker, 13.9);
 	show(kids("meter"), 14.0);
-	walk(HIGH, HIGH, 13.89, 0.01, () => onRight(callValue)(LOW));
-	walk(LOW, HIGH, 15.5, 1.2, onRight(callValue));
+	const onCallRight = onRight(callValue, (spot) => callValue(spot) - PREMIUM);
+	walk(HIGH, HIGH, 13.89, 0.01, () => onCallRight(LOW));
+	walk(LOW, HIGH, 15.5, 1.2, onCallRight);
+	d.flip(netResult, netResultNext, 16.05);
+	tl.set(netResult, { opacity: 0 }, 16.35);
 	// The call rests a full second after its 16.7 settlement. With the put's
 	// walking demonstration removed, the curve and a settled $90 example each
 	// get their own quiet time without compressing either entrance.
 	d.swap(heads[1], heads[2], 17.7);
+	hide([one("m-net-tag"), netResultNext], 17.7);
 	// Keep the identical $1,000 value readable across both examples. The call's
 	// marker stays with its dimmed curve until the put's $90 example takes over.
 	tl.to(marker, { opacity: 0.3, duration: 0.4 }, 17.7);
@@ -877,12 +912,8 @@ function build(context: FilmContext) {
 	tl.set(marker, { attr: { class: `wt-chip ${toneClass.put}` } }, 19.6);
 	tl.set(value, { attr: { class: `wt-film-num ${toneClass.put}` } }, 19.6);
 	walk(PUT_AT, PUT_AT, 19.6, 0.01, onRight(putValue));
-	tl.fromTo(
-		[one("put-line"), one("put-tag")],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5, immediateRender: false },
-		18.1,
-	);
+	d.trace(line("put-line"), 18.1, { duration: 0.5 });
+	show(one("put-tag"), 18.1);
 	// Curve settles at 18.6; the settled example arrives after 1 s of quiet,
 	// then rests 1.5 s after its 20.1 settlement before the uses cut at 21.6.
 	tl.fromTo(
