@@ -38,8 +38,8 @@ import {
  *   open      0–4        Tape rows
  *   question  4–8.6      5 at $2.00, 500 at $2.15: average $2.075?
  *   row       8.6–13.6   two prints; settled 505 contracts and 2 trades
- *   feed      13.6–26    six incremental states; preserve the 3.1 s final inspection hold
- *   average   26–34.4    carried contributions → sum → fraction; lock at 30.8
+ *   feed      13.6–25    six incremental states; preserve the 2.1 s final inspection hold
+ *   average   25–34.4    carried contributions → sum → fraction; lock at 31.0
  *   leg       34.4–40.6 excluded 110 call: 500 at $0.90; trace the 105-call boundary
  *   claim     40.6–45    one row, many prints; one trade, many messages
  *   next      45–47.5    Next: execution conditions
@@ -129,12 +129,12 @@ const copy = {
 	],
 	messages: ["messages", "消息"],
 	claimBig: [
-		"A row is a sum; a message is not a trade.",
-		"一行是加总；一条消息不是一笔成交。",
+		"Rows sum prints; messages are not trades.",
+		"一行汇总成交；消息不是成交。",
 	],
 	claimSub: [
-		"Sum one contract's prints; count by trade ID.",
-		"只加总同一合约；按成交编号计数。",
+		"Per-contract print sums; count trades by ID.",
+		"逐合约汇总成交；按成交编号计笔数。",
 	],
 	nextBig: ["Next: execution conditions", "下一课：成交条件"],
 	nextSub: ["sweeps, blocks and complex orders", "扫单、大宗与复杂订单"],
@@ -885,17 +885,17 @@ function build(context: FilmContext) {
 		}
 	});
 
-	tl.addLabel("average", 26);
-	hide([one("f-head"), one("feed")], 26);
-	show(one("a-head"), 26.35);
+	tl.addLabel("average", 25);
+	hide([one("f-head"), one("feed")], 25);
+	show(one("a-head"), 25.35);
 	// Both proofs retain their original settlement and 1 s quiet intervals.
-	fade(contributions, 26.4);
+	fade(contributions, 25.4, 0.3);
 	carryOnto("contribution-0-value", "sum-left", 27.9, 0.4);
 	carryOnto("contribution-1-value", "sum-right", 27.9, 0.4);
 	hide(contributions, 27.9, 0.3, 0);
 	// Surrounding operators/results arrive first; carried operands stay hidden until landing.
-	fade([one("premium-sum"), one("share-product")], 28.0, 0.3);
-	fade(one("simple"), 27.9, 0.4);
+	fade([one("premium-sum"), one("share-product")], 27.0, 0.3);
+	fade(one("simple"), 25.4, 0.3);
 	// The numerator goes across at its source height, then down, clearing the equals-sign
 	// column; the denominator drops first, passing the rule's height before it is drawn.
 	carryOnto("premium-total", "fraction-premium", 29.3, 0.5, "x");
@@ -907,22 +907,23 @@ function build(context: FilmContext) {
 		{ opacity: 0, duration: 0.3, ease: "power3.out", immediateRender: false },
 		29.3,
 	);
-	fade([one("fraction"), one("s-average")], 29.5, 0.3);
+	fade(one("fraction"), 29.5, 0.3);
+	fade(one("s-average"), 30.2, 0.3);
 	// Draw from the left after the descending denominator clears that part of the rule.
 	d.trace(one<SVGPathElement>("fraction-rule"), 29.5, {
 		duration: 0.3,
 		ease: "power3.in",
 	});
 
-	d.lock(lockAverage, 30.8, { around: one("s-average"), pad: 6 });
-	tl.addLabel("hero-lock", 30.8);
-	show(one("a2-head"), 30.8);
+	d.lock(lockAverage, 31.0, { around: one("s-average"), pad: 6 });
+	tl.addLabel("hero-lock", 31.0);
+	show(one("a2-head"), 30.5);
 
 	// The 105-call calculation stays intact; the other call sits outside its boundary.
-	// Brackets settle at 31.25 and stand for the original 3.15 s before leaving.
+	// Brackets settle at 31.45 and stand for the original 3.15 s before leaving.
 	tl.addLabel("leg", 34.4);
 	d.swap([one("a-head"), one("a2-head")], one("x-head"), 34.4);
-	hide(lockAverage, 34.4);
+	hide(lockAverage, 34.6);
 	fade(one("excluded-row"), 35.5);
 	d.trace(one<SVGPathElement>("proof-boundary"), 37.0, { duration: 0.8 });
 	fade(one("proof-contract"), 37.0);
