@@ -253,9 +253,13 @@ function Scene({
 						size={T.body}
 						className="wt-film-num wt-film-dim"
 					>
-						<tspan className="wt-film-loss">{fixed3(CHARM_DAY)}</tspan>
+						<tspan style={{ fill: "var(--tone-ink)" }}>
+							{fixed3(CHARM_DAY)}
+						</tspan>
 						{" × "}
-						<tspan className="wt-film-loss">{`−${CHARM_DAYS_PER_YEAR}`}</tspan>
+						<tspan
+							style={{ fill: "var(--tone-ink)" }}
+						>{`−${CHARM_DAYS_PER_YEAR}`}</tspan>
 						{" ≈ "}
 						<tspan className={toneClass.up}>{PER_YEAR}</tspan>
 					</Word>
@@ -483,7 +487,7 @@ function Scene({
 				x={x7}
 				y={L.y(AFTER_BOTH) + 26}
 				size={T.small}
-				className="wt-film-num wt-film-loss"
+				className="wt-film-num"
 			>
 				{fixed3(AFTER_BOTH - AFTER_WEEK)}
 			</Word>
@@ -492,7 +496,7 @@ function Scene({
 				x={L.margin + T.small * 2}
 				y={H * 0.4}
 				size={T.small}
-				className="wt-film-num wt-film-loss"
+				className="wt-film-num"
 			>
 				{fixed3(AFTER_BOTH - AFTER_WEEK)}
 			</Word>
@@ -514,7 +518,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.43}
 					size={T.head}
-					className="wt-film-num wt-film-loss"
+					className="wt-film-num"
 				>
 					{fixed3(AFTER_BOTH - AFTER_WEEK)}
 				</Word>
@@ -538,7 +542,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.53}
 					size={T.head}
-					className="wt-film-num wt-film-loss"
+					className="wt-film-num"
 				>
 					{`ΔIV −${VOL_DROP}`}
 				</Word>
@@ -567,9 +571,9 @@ function Scene({
 					size={T.body * 1.25}
 					className="wt-film-num wt-film-dim"
 				>
-					<tspan className="wt-film-loss">−</tspan>
+					<tspan style={{ fill: "var(--tone-ink)" }}>−</tspan>
 					{" ÷ "}
-					<tspan className="wt-film-loss">−</tspan>
+					<tspan style={{ fill: "var(--tone-ink)" }}>−</tspan>
 					{" = "}
 					<tspan className={toneClass.up}>+</tspan>
 				</Word>
@@ -630,7 +634,7 @@ function Scene({
 				/>
 				{LEGS.map((leg, i) => {
 					const net = leg === "net";
-					const valueTone = signTone(SPREAD[0][leg]);
+					const valueTone = net ? signTone(SPREAD[0][leg]) : undefined;
 					const [quantity, contract] = t(copy[leg]).split(" × ");
 					return (
 						<g key={leg}>
@@ -646,7 +650,7 @@ function Scene({
 									t(copy[leg])
 								) : (
 									<>
-										<tspan className={valueTone && toneClass[valueTone]}>
+										<tspan style={{ fill: "var(--tone-ink)" }}>
 											{quantity}
 										</tspan>
 										{` × ${contract}`}
@@ -659,7 +663,7 @@ function Scene({
 								y={L.rowY(i)}
 								size={net ? T.head * 1.2 : T.head}
 								anchor="end"
-								className={`wt-film-num ${valueTone ? toneClass[valueTone] : "wt-film-dim"}`}
+								className={`wt-film-num ${valueTone ? toneClass[valueTone] : ""}`}
 							>
 								{signedCount(SPREAD[0][leg])}
 							</Word>
@@ -823,6 +827,11 @@ function build(context: FilmContext) {
 	show(one("charm-def"), 16.7);
 	land(one("charm-num"), 17.1);
 	show(one("charm-alt"), 17.6);
+	tl.set(
+		one("charm-num"),
+		{ attr: { class: "wt-film-num" }, immediateRender: false },
+		17.6,
+	);
 
 	// ——— vanna: and implied volatility moves it too ———
 	tl.addLabel("vanna", 21.2);
@@ -960,12 +969,12 @@ function build(context: FilmContext) {
 				);
 				[long, short, long + short].forEach((value, i) => {
 					const change = value - SPREAD[0][LEGS[i]];
-					const tone = signTone(change);
+					const tone = LEGS[i] === "net" ? signTone(change) : undefined;
 					spreadValues[i].textContent = signedCount(value);
 					spreadChanges[i].textContent = signedCount(change);
 					spreadChanges[i].setAttribute(
 						"class",
-						`wt-film-num ${tone ? toneClass[tone] : "wt-film-dim"}`,
+						`wt-film-num ${change === 0 ? "wt-film-dim" : tone ? toneClass[tone] : ""}`,
 					);
 				});
 			},
