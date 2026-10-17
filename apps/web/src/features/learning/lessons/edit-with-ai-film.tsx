@@ -137,14 +137,8 @@ const copy = {
 		"Only Spotlight: symbol input, default ALFA.",
 		"仅改 Spotlight：标的输入，默认 ALFA。",
 	],
-	editHead: [
-		"Edit 1: Spotlight changed; Index GEX removed.",
-		"Spotlight改；GEX移除。",
-	],
-	editHeadShort: [
-		"Spotlight changed; Index GEX removed.",
-		"Spotlight改；GEX移除。",
-	],
+	editHead: ["Spotlight changed; GEX removed.", "Spotlight改；GEX移除。"],
+	editHeadShort: ["Spotlight changed; GEX removed.", "Spotlight改；GEX移除。"],
 	undoHead: ["Undo: all five blocks are back.", "撤销：五个区块全部恢复。"],
 	firstRequestTag: ["First edit request", "第一次修改请求"],
 	firstRequest: [
@@ -181,8 +175,8 @@ const copy = {
 		"划定范围，逐次审阅，有意保存。",
 	],
 	claimSub: [
-		"Undo the unasked; official recipe never changes.",
-		"撤销未要求改动；官方Recipe永不变。",
+		"Undo unasked edits; official stays.",
+		"撤销未要求的改动；官方配方不变。",
 	],
 	nextBig: [
 		"Next: connect your own AI agent",
@@ -852,33 +846,44 @@ function build(context: FilmContext) {
 		34.25,
 	);
 	// Separate labeled branches: the closed draft never becomes the saved draft.
-	d.flip(one("card-draft-title"), one("card-draft-choice"), 35.75);
-	tl.set(one("card-draft-title"), { opacity: 0 }, 36.05);
-	d.flip(one("card-mine-title"), one("card-mine-choice"), 35.75);
-	tl.set(one("card-mine-title"), { opacity: 0 }, 36.05);
-	d.flip(one("d-unsaved"), one("d-closed"), 35.75);
-	tl.set(one("d-unsaved"), { opacity: 0 }, 36.05);
+	d.flip(one("card-draft-title"), one("card-draft-choice"), 36.1);
+	tl.set(one("card-draft-title"), { opacity: 0 }, 36.4);
+	d.flip(one("card-mine-title"), one("card-mine-choice"), 36.1);
+	tl.set(one("card-mine-title"), { opacity: 0 }, 36.4);
+	d.flip(one("d-unsaved"), one("d-closed"), 36.1);
+	tl.set(one("d-unsaved"), { opacity: 0 }, 36.4);
 	// The alternative begins from its own unsaved preview, after the close proof rests.
 	tl.fromTo(
 		one("m-unsaved"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.35 },
-		36.05,
+		36.4,
 	);
-	d.flip(one("m-unsaved"), one("m-saved"), 37.4);
-	tl.set(one("m-unsaved"), { opacity: 0 }, 37.7);
-	hide(one("m-none"), 37.05, 0.35, 0);
-	// Saved settles first; only then can the named recipe enter My recipes.
+	// Give the Chinese unsaved label its full read at 1.5x, then hand over in place.
+	// The staggered eases keep the two labels above 0.25 together for less than 0.15 s.
+	tl.to(
+		one("m-unsaved"),
+		{ opacity: 0, duration: 0.3, ease: "power2.out" },
+		38.1,
+	);
+	tl.fromTo(
+		one("m-saved"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		38.1,
+	);
+	hide(one("m-none"), 37.65, 0.35, 0);
+	// The name reaches full contrast just after the saved state settles.
 	tl.fromTo(
 		one("m-entry"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.35 },
+		{ opacity: 1, duration: 0.4 },
 		38.05,
 	);
-	// The list settles at 38.4; retain the full 2.4 s of quiet before the claim.
+	// The list settles at 38.45; retain the full 2.4 s of quiet before the claim.
 	hide(
 		[one("p-head"), one("card-draft"), one("card-mine"), one("card-official")],
-		40.8,
+		40.85,
 	);
 	word(one("z-big"), 41.2);
 	show(one("z-sub"), 41.6);
