@@ -135,10 +135,7 @@ const copy = {
 		`ALFA · linked legs · ${SIZE} each`,
 		`ALFA · 关联腿 · 每腿 ${SIZE} 张`,
 	],
-	qLegs: [
-		"sold/bought: 95/90 puts · 105/110 calls",
-		"卖出/买入：95/90 看跌 · 105/110 看涨",
-	],
+	qLegs: ["Four linked legs", "四条关联腿"],
 	qBig: ["Bullish or bearish?", "看涨还是看跌？"],
 	sHead: ["A long straddle needs a big move.", "买入跨式需大幅变动。"],
 	cHead: ["An iron condor: two credit spreads.", "铁鹰：两个收入价差。"],
@@ -186,10 +183,7 @@ const copy = {
 		`10月18日 $95–$105 · 风险 ${usd(PACKAGE_RISK, 0)}`,
 	],
 	claimBig: ["Linked prints, one trade.", "关联成交，一笔交易。"],
-	claimSub: [
-		"Same-second timing alone cannot prove linkage.",
-		"仅凭同秒成交不能证明关联。",
-	],
+	claimSub: ["Same second does not prove linkage.", "同秒成交不证明关联。"],
 	nextBig: ["Next: checking one trade", "下一课：核查一笔成交"],
 	nextSub: ["facts, inferences and unknowns", "事实、推断与未知"],
 } as const satisfies Record<string, Copy>;
@@ -218,7 +212,6 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
-	const cashEquals = narrow && locale === "en" ? "=" : " = ";
 	const KNOTS = [RANGE[0], 90, 95, 100, 105, 110, RANGE[1]];
 	const path = (range: readonly [number, number], f: (s: number) => number) =>
 		KNOTS.map(
@@ -646,7 +639,7 @@ function Scene({
 						x={L.compactCard ? margin + 16 : undefined}
 						dy={L.compactCard ? T.small * 1.25 : 0}
 					>
-						{`${SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}${cashEquals}${usd(SOLD_PREMIUM, 0)}`}
+						{SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}
 					</tspan>
 				</text>
 				<text
@@ -666,7 +659,7 @@ function Scene({
 						x={L.compactCard ? margin + room / 2 + 8 : undefined}
 						dy={L.compactCard ? T.small * 1.25 : 0}
 					>
-						{`${BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}${cashEquals}${usd(BOUGHT_PREMIUM, 0)}`}
+						{BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}
 					</tspan>
 				</text>
 			</g>
@@ -888,15 +881,16 @@ function build(context: FilmContext) {
 	});
 	// Cash emphasis settles at 34.0; the named row additions reveal settled at 35.1.
 	fadeIn(one("cash-additions"), 35.1);
-	// Cash arithmetic settles at 35.6; preserve its existing 1.3 s quiet interval.
+	// The cash amounts settle at 35.6; preserve their existing 1.3 s quiet interval.
 	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 36.9);
 	fadeIn(one("pkg"), 36.9);
 	fadeIn(one("pkg-equation"), 36.9);
-	fadeIn(one("pkg-result"), 36.9);
 	show(heads.packageAnswer, 36.9);
+	// The subtraction settles at 37.4; leave a quiet second before revealing its credit.
+	fadeIn(one("pkg-result"), 38.4);
 
 	// ——— claim ———
-	// Package settles at 37.4 and rests 3 s; its answer keeps a 3.5 s hold.
+	// Credit settles at 38.9 and rests 1.5 s before departure; its answer keeps a 3.5 s hold.
 	tl.addLabel("claim", 40.4);
 	hide(
 		[
