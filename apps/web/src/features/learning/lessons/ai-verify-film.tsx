@@ -58,9 +58,13 @@ const ratioSource: Copy = [
 	`${CRUX.symbol} · ${expiries[CRUX.expiry].label[0]} · ${CRUX.strike} put`,
 	`${CRUX.symbol} · ${expiries[CRUX.expiry].label[1]} · ${CRUX.strike} 看跌`,
 ];
+const ratioInputs: Copy = [
+	`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")}`,
+	`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")}`,
+];
 const ratioResult: Copy = [
-	`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}×`,
-	`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}倍`,
+	`${volumeToOi(CRUX).toFixed(2)}×`,
+	`${volumeToOi(CRUX).toFixed(2)}倍`,
 ];
 const proofs: {
 	id: string;
@@ -87,8 +91,8 @@ const proofs: {
 		source: ["Within 30 days?", "30 天内到期？"],
 		basis: [`${expiryDays.join(" · ")} days`, `${expiryDays.join(" · ")} 天`],
 		result: [
-			`${NEAR} of ${PASSED.length} ≤ 30 days`,
-			`${PASSED.length} 份中 ${NEAR} 份 ≤ 30 天`,
+			`${NEAR} of ${PASSED.length} qualify`,
+			`${PASSED.length} 份中 ${NEAR} 份符合`,
 		],
 		tone: "focus",
 	},
@@ -137,15 +141,12 @@ const copy = {
 		"TradingFlow AI · 关于周一的筛选",
 	],
 	qQuote: [
-		"Someone opened a large bearish CRUX bet before news.",
-		"有人在消息公布前对 CRUX 开了大额看空押注。",
+		"Someone opened large CRUX puts before news.",
+		"消息前，有人建立了大额 CRUX 看跌仓位。",
 	],
-	qLine: [
-		"What does Monday's screen actually support?",
-		"周一的筛选到底支持哪部分？",
-	],
-	sortHead: ["Sort every sentence by what backs it.", "按依据给每句话分类。"],
-	sortHeadShort: ["Sort each sentence.", "给每句话分类。"],
+	qLine: ["What does Monday's data support?", "周一的数据支持什么？"],
+	sortHead: ["Sort claims by evidence.", "按依据给每句话分类。"],
+	sortHeadShort: ["Sort by evidence.", "按依据分类。"],
 	betHead: ["Check what the bet would require.", "核查押注需要什么依据。"],
 	betHeadShort: ["What backs the bet?", "押注的依据呢？"],
 	restHead: ["Check expiry and forecast.", "核查到期日与预测。"],
@@ -159,20 +160,17 @@ const copy = {
 	],
 	screenerShort: ["UOA Screener", "UOA Screener"],
 	official: ["Official recipe · unchanged", "官方 Recipe · 未改动"],
-	private: ["Your private draft", "你的私有草稿"],
+	private: ["Private draft", "私有草稿"],
 	draftTools: ["Review · Undo · Save", "审阅 · 撤销 · 保存"],
 	actionHead: [
 		"AI Insight explains; Edit with AI drafts.",
 		"AI Insight 解释，AI 编辑起草。",
 	],
-	insightBody: [
-		"Explains this run's results and limits.",
-		"解释本次运行的结果与局限。",
-	],
+	insightBody: ["Run results and limits.", "本次运行的结果与局限。"],
 	claimBig: ["The AI drafts; you verify.", "AI 起草，你来核查。"],
 	claimSub: [
-		"Sort sentences, count credits, edit only in drafts.",
-		"给句子分类，算清积分，只在草稿里修改。",
+		"Sort, count credits, edit drafts.",
+		"分类、核算积分，只在草稿中编辑。",
 	],
 	nextBig: ["Next: build your own Rank column", "下一课：构建你自己的 Rank 列"],
 	nextSub: [
@@ -247,8 +245,8 @@ function Scene({
 			L.panelText *
 			1.35;
 	const recipeField: Copy = [
-		`Volume/OI ≥ ${screenDefaults.minVolumeToOi}`,
-		`成交量/OI ≥ ${screenDefaults.minVolumeToOi}`,
+		`Volume/OI ≥${screenDefaults.minVolumeToOi}`,
+		`成交量/OI ≥${screenDefaults.minVolumeToOi}`,
 	];
 	const quote = `“${t(copy.qQuote)}”`;
 	const quoteSize = narrow ? T.head * 1.2 : T.title;
@@ -368,6 +366,16 @@ function Scene({
 					maxWidth={room - 28}
 					anchor="start"
 				/>
+				<Word
+					name="ratio-inputs"
+					x={margin + 14}
+					y={H * 0.66}
+					size={T.body}
+					anchor="start"
+					className="wt-film-num"
+				>
+					{t(ratioInputs)}
+				</Word>
 				<Word
 					name="result-ratio"
 					x={margin + 14}
@@ -604,7 +612,7 @@ function Scene({
 						className="wt-film-num"
 						style={{ fontSize: T.head }}
 					>
-						{`${REPLIES.map((reply) => reply.cost).join(" + ")} = ${TOTAL}`}
+						{REPLIES.map((reply) => reply.cost).join(" + ")}
 					</text>
 				</g>
 				<text
@@ -790,7 +798,6 @@ function build(context: FilmContext) {
 			one(name),
 		),
 		one("opening-proof"),
-		result("count"),
 		result("ratio"),
 		...proofs.flatMap((proof) => [row(proof.id), result(proof.id)]),
 		...MISSING_FIELDS.map((field) => one(`bet-missing-${field.id}`)),
@@ -828,7 +835,7 @@ function build(context: FilmContext) {
 	// Full scene cut: the scaffold is still for 1 s before results move.
 	tl.set(flat("q"), { opacity: 0 }, 9.6);
 	tl.set([one("s-head"), one("opening-proof")], { opacity: 1 }, 9.6);
-	fade([result("count"), result("ratio")], 10.6);
+	fade(result("ratio"), 10.6);
 	// Related proofs settle at 11.1; preserve the original headline holds.
 	d.swap(one("s-head"), one("b-head"), 13.4);
 	hide(one("opening-proof"), 13.65, 0.35, 0);
@@ -898,12 +905,14 @@ function build(context: FilmContext) {
 	show(one("p-insight"), 32.3);
 	// One continuing headline covers explanation and private editing.
 	// Keep the official recipe visible while a separate private card is built.
+	// On a phone the private card takes the insight's place, so the insight keeps its full
+	// sentence hold there and the card follows it; the desktop builds the card beside it sooner.
 	if (L.narrow) hide(one("p-insight"), 35.9, 0.35, 0);
-	fade(one("p-edit"), 36.25);
-	d.trace(one<SVGPathElement>("draft-branch"), L.narrow ? 36.25 : 35.85, {
+	fade(one("p-edit"), L.narrow ? 36.25 : 35.25);
+	d.trace(one<SVGPathElement>("draft-branch"), L.narrow ? 36.25 : 34.65, {
 		duration: 0.6,
 	});
-	fade(one("draft-title"), 36.45);
+	fade(one("draft-title"), L.narrow ? 36.45 : 35.45);
 	// The matching field inherits its source's emphasis, then both settle together.
 	const officialField = one("official-field");
 	const draftField = one("draft-field");
