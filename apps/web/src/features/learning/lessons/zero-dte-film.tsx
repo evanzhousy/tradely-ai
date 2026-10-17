@@ -43,9 +43,10 @@ import {
  *   open      0–4        "0DTE"
  *   question  4–9.6      9:30, $0.36 → the 4:00 pm close, ?
  *   hours     9.6–21.0   one continuous clock/value walk; $0 at the close, time value gone
- *   swing     21.0–34.45 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
- *                        carried into the hero; conditional hedge arithmetic after the lock
- *   oi        34.45–41.0 headline with the OI hand-over after the hero exits,
+ *   swing     21.0–35.45 28-day delta 0.51 → 0.53; last-day 0.29 → 0.72 at 15:00,
+ *                        carried into the hero; the lock clears, then the hedge arithmetic
+ *                        arrives one mark at a time
+ *   oi        35.45–41.0 headline with the OI hand-over after the hero exits,
  *                        3,400 open Thursday, 12,000 traded Friday; Monday absent, expired
  *   claim     41.0–45.4  "Little time. Large hedge changes."
  *   next      45.4–47.4  Next: implied and realized volatility
@@ -972,33 +973,30 @@ function build(context: FilmContext) {
 		pad: 8,
 	});
 	tl.addLabel("hero-lock", 28.5);
-	// Brackets settle at 28.95; arithmetic follows 1.5 seconds of hero quiet.
-	show(one("w-multiplier"), 30.45, undefined, 0.3);
-	show(one("w-additional"), 30.65, undefined, 0.3);
-	show(one("w-hedge"), 30.45);
+	// Brackets settle at 28.95 and stand 1.5 s. The lock clears before the arithmetic, which
+	// arrives one mark at a time: multiplier, result, caveat.
+	hide(lockSwing, 30.45, 0.3, 0);
+	show(one("w-multiplier"), 30.75, undefined, 0.3);
+	show(one("w-additional"), 31.3, undefined, 0.3);
+	show(one("w-hedge"), 31.6);
 
 	// ——— oi: the day's flow and open interest ———
-	tl.addLabel("oi", 34.45);
+	tl.addLabel("oi", 35.45);
 	// Let the hedge finish reading and exit before the next topic arrives.
-	show(one("o-head"), 34.45);
+	show(one("o-head"), 35.45);
 	hide(
-		[
-			...kids("w").filter(
-				(mark) => mark.getAttribute("data-f") !== "w-additional",
-			),
-			lockSwing,
-		],
-		34.1,
+		kids("w").filter((mark) => mark.getAttribute("data-f") !== "w-additional"),
+		35.1,
 	);
-	hide(one("w-additional"), 34.15);
-	tl.set(charts.swing, { opacity: 0 }, 34.45);
-	tl.set(charts.oi, { opacity: 1 }, 34.45);
-	rise(34.5);
+	hide(one("w-additional"), 35.15);
+	tl.set(charts.swing, { opacity: 0 }, 35.45);
+	tl.set(charts.oi, { opacity: 1 }, 35.45);
+	rise(35.5);
 	// Missing Monday OI is part of the panel, not a third numerical observation.
 	tl.to(
 		[one("o-absent-mon"), one("o-expired")],
 		{ opacity: 1, duration: 0.55 },
-		34.5,
+		35.5,
 	);
 	const reveal = (index: number, at: number) => {
 		const bar = bars[index];
@@ -1023,9 +1021,9 @@ function build(context: FilmContext) {
 		tl.to([rect, value], { opacity: 1, duration: 0.7 }, at);
 	};
 	// These exact amounts are for comparison, so reveal each settled value after a full rest.
-	reveal(0, 36.3);
-	reveal(1, 38.0);
-	// Friday settles at 38.7; keep the completed tableau for 2.3 seconds.
+	reveal(0, 37.3);
+	reveal(1, 39.0);
+	// Friday settles at 39.7; the completed tableau holds 1.3 seconds.
 	// Cut: the claim.
 	tl.addLabel("claim", 41.0);
 	hide(one("o-head"), 41.0);
