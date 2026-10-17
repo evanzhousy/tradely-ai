@@ -52,13 +52,13 @@ import {
  *   question  4–8.6      puts bought at the ask: bullish?
  *   matrix    8.6–15.7   call bought, call sold, put bought, put sold
  *   tally     15.7–24.7  call contract, 10/6/4 tally, unknown direction, account ledger
- *   hedge     24.7–33.6  scaffold; stock/hedge comparison and stock loss; premium and floor
- *   close     33.6–38.7  short-put reference, then a flat closed position
- *   claim     38.7–44.4  a label describes a print, not a person
- *   next      44.4–46.9  Next: strategies
+ *   hedge     24.7–34.3  scaffold; stock/hedge comparison and stock loss; premium and floor
+ *   close     34.3–39.5  short-put reference, close arithmetic, then a flat position
+ *   claim     39.5–45.0  a label describes a print, not a person
+ *   next      45.0–47.5  Next: strategies
  */
 
-const END = 46.9;
+const END = 47.5;
 const RIGHTS: Right[] = ["call", "put"];
 const ACTIONS: Action[] = ["buy", "sell"];
 const FLOWS: Flow[] = ["bullish", "neutral", "bearish"];
@@ -169,6 +169,10 @@ const copy = {
 	after: [
 		`closed: ${signedUsd(REALIZED * 100, 0)} realized`,
 		`已平仓：已实现 ${signedUsd(REALIZED * 100, 0)}`,
+	],
+	closeMath: [
+		`${usd(PUT_BID * 100, 0)} received − ${usd(PUT_ASK * 100, 0)} buyback = `,
+		`${usd(PUT_BID * 100, 0)} 入账 − 回购 ${usd(PUT_ASK * 100, 0)} = `,
 	],
 	floor: [STOCK_CALC, STOCK_CALC],
 	claimBig: [
@@ -306,15 +310,15 @@ function Scene({
 						{t(label).toUpperCase()}
 					</text>
 				))}
-				{[copy.call, copy.put].map((label, row) => (
+				{RIGHTS.map((right, row) => (
 					<text
-						key={t(label)}
+						key={right}
 						x={margin}
 						y={L.cellY(row) + L.cellH / 2 + T.small * 0.4}
-						className="wt-film-tag"
+						className={`wt-film-tag ${toneClass[right]}`}
 						style={{ fontSize: T.small * 1.1 }}
 					>
-						{t(label).toUpperCase()}
+						{t(copy[right]).toUpperCase()}
 					</text>
 				))}
 				{RIGHTS.flatMap((right, row) =>
@@ -373,7 +377,7 @@ function Scene({
 								x={x}
 								y={y + L.cellH * 0.82}
 								textAnchor="middle"
-								className="wt-film-type wt-film-dim"
+								className={`wt-film-type ${toneClass[right]}`}
 								style={{ fontSize: T.small }}
 							>
 								{t(legs[`${right}-${action}`])}
@@ -666,6 +670,19 @@ function Scene({
 						)}
 					</g>
 				</g>
+				<text
+					data-f="close-math"
+					x={W / 2}
+					y={H * 0.82}
+					textAnchor="middle"
+					className="wt-film-num"
+					style={{ fontSize: narrow ? T.small * 1.1 : T.body }}
+				>
+					{t(copy.closeMath)}
+					<tspan className={toneClass.down}>
+						{signedUsd(REALIZED * 100, 0)}
+					</tspan>
+				</text>
 			</g>
 			<g data-f="feed">
 				<rect
@@ -786,6 +803,7 @@ function build(context: FilmContext) {
 		one("t-contract"),
 		one("hedge-inputs"),
 		...kids("chart"),
+		one("close-math"),
 		one("feed"),
 		...kids("claim"),
 	]);
@@ -808,9 +826,9 @@ function build(context: FilmContext) {
 	show(kids("grid"), 9.1);
 	// Grid settles at 9.6, then stands a full second before its data arrives.
 	show(cells, 10.6);
-	// The complete matrix settles at 11.1. One second later, the answer and its
-	// emphasis form one cue; alternatives finish dimming before the answer settles.
-	tl.to([cells[0], cells[1], cells[3]], { opacity: 0.3, duration: 0.3 }, 12.1);
+	// The complete matrix settles at 11.1. Alternatives stay at full contrast through
+	// the comparison, then step back after the answer has had time to land.
+	tl.to([cells[0], cells[1], cells[3]], { opacity: 0.3, duration: 0.3 }, 13.6);
 	show(heads[1], 12.1);
 
 	// ——— tally: one label per print, and what the labels can't see ———
@@ -860,26 +878,22 @@ function build(context: FilmContext) {
 	);
 	tl.fromTo(one("feed"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 25.5);
 	// Scaffold and inputs settle at 25.8, then remain still for a full second.
-	// Both curves and the stock-loss derivation make one comparison construction.
+	// The stock curve lands first; leave a full second before showing the hedge.
 	draw(chartLines[0], 26.8);
-	draw(chartLines[1], 26.8);
-	// Curve labels fade in place so their entrances do not travel through the lines.
-	tl.fromTo(
-		[tags[0], tags[1]],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		26.8,
-	);
+	draw(chartLines[1], 28.5);
+	// Curve labels fade in place with their own lines.
+	tl.fromTo(tags[0], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 26.8);
+	tl.fromTo(tags[1], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 28.5);
 	show(one("floor-caption"), 26.8);
-	// Comparison settles at 27.5; preserve the accepted premium reveal at 29.5.
-	tl.fromTo(floor, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 29.5);
-	d.lock(lockFloor, 30.0, { around: one("floor-label"), pad: 10 });
-	tl.addLabel("hero-lock", 30.0);
-	show(heads[5], 30.0);
+	// The hedge settles at 29.2; let its contribution form before the floor appears.
+	tl.fromTo(floor, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 30.2);
+	d.lock(lockFloor, 30.7, { around: one("floor-label"), pad: 10 });
+	tl.addLabel("hero-lock", 30.7);
+	show(heads[5], 30.7, "below", 0.3);
 
 	// ——— close: buying back a short put ———
-	tl.addLabel("close", 33.6);
-	d.swap([heads[4], heads[5]], heads[6], 33.6);
+	tl.addLabel("close", 34.3);
+	d.swap([heads[4], heads[5]], heads[6], 34.3);
 	hide(
 		[
 			chartLines[0],
@@ -891,7 +905,7 @@ function build(context: FilmContext) {
 			floor,
 			lockFloor,
 		],
-		33.6,
+		34.3,
 		0.3,
 	);
 	// The settled reference fades in as context; only the closed result draws on.
@@ -899,24 +913,31 @@ function build(context: FilmContext) {
 		[chartLines[2], tags[2]],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.7 },
-		34.1,
+		34.8,
 	);
-	// One second of quiet after the reference, before the flat closed position.
-	draw(chartLines[3], 35.8);
+	// The reference settles at 35.5; give it a second, then show the model-derived close math.
+	tl.fromTo(
+		one("close-math"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		36.5,
+	);
+	// The calculation settles at 36.8; after a second, the flat line proves the close.
+	draw(chartLines[3], 37.8);
 	// Retain the accepted in-place loss annotation beside the flat/reference lines.
-	tl.fromTo(tags[3], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 35.8);
+	tl.fromTo(tags[3], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 37.8);
 
 	// ——— claim ———
-	tl.addLabel("claim", 38.7);
-	hide([heads[6], one("feed")], 38.7);
-	tl.to(one("depth"), { opacity: 0, duration: 0.4, ease: "power2.in" }, 38.7);
-	word(one("z-big"), 39.0);
-	show(one("z-sub"), 39.4);
+	tl.addLabel("claim", 39.5);
+	hide([heads[6], one("feed")], 39.5);
+	tl.to(one("depth"), { opacity: 0, duration: 0.4, ease: "power2.in" }, 39.5);
+	word(one("z-big"), 39.8);
+	show(one("z-sub"), 40.2);
 
 	// ——— next ———
-	tl.addLabel("next", 44.4);
-	hide(kids("claim"), 44.4);
-	d.close(44.4);
+	tl.addLabel("next", 45.0);
+	hide(kids("claim"), 45.0);
+	d.close(45.0);
 	return tl;
 }
 
