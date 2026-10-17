@@ -140,8 +140,8 @@ const copy = {
 	qTagGrossShort: ["traded", "成交"],
 	qTagNetShort: ["one way", "指向一边"],
 	qLine: [
-		"Monday's Oct 18 call prints, weighted by delta. How much leaned one way?",
-		"周一 10月18日 看涨的成交，用 Delta 加权。有多少偏向一边？",
+		"Monday Oct 18 call prints: delta-weighted net?",
+		"周一10/18看涨成交按Δ加权，偏向多少？",
 	],
 	tapeHead: [
 		"Weight each print by delta and contracts.",
@@ -167,10 +167,13 @@ const copy = {
 	],
 	deiHeadShort: ["DEI: net ÷ share volume.", "DEI：净额 ÷ 股票成交量。"],
 	deiLine: [
-		"Same flow, two full-day benchmarks: state the denominator.",
-		"同一成交流，两个全日基准：要说明分母。",
+		"Two full-day benchmarks; state both denominators.",
+		"两种全日成交量基准，标明各自分母。",
 	],
-	deiLineShort: ["State the denominator.", "要说明分母。"],
+	deiLineShort: [
+		"Full-day benchmarks; state both denominators.",
+		"全日基准，标明两种分母。",
+	],
 	sourceHead: [
 		`Another site shows an ALFA "DEX" too.`,
 		"另一个网站也显示了 ALFA 的“DEX”。",
@@ -178,14 +181,14 @@ const copy = {
 	sourceHeadShort: [`Another site's "DEX".`, "另一网站的“DEX”。"],
 	flowCard: ["flow DEX · this lesson", "成交流 DEX · 本课"],
 	siteCard: ["“DEX” · another site", "“DEX” · 另一网站"],
-	flowFrom: ["Monday's prints, by side", "周一的成交，按方向"],
-	siteFrom: ["Friday's OI × delta", "周五的 OI × Delta"],
-	flowSign: ["which way the tape leaned", "成交偏向哪边"],
-	siteSign: ["dealers assumed short calls", "假设做市商做空看涨"],
+	flowFrom: ["Monday prints", "周一成交"],
+	siteFrom: ["Friday OI × delta", "周五 OI × Delta"],
+	flowSign: ["ask +, bid −", "卖价＋，买价−"],
+	siteSign: ["assumes dealers short calls", "假设做市商做空看涨"],
 	claimBig: ["Same label, different numerator.", "同样的标签，不同的分子。"],
 	claimSub: [
-		"Name the source, sign rule and denominator first.",
-		"比较之前，先说明来源、符号规则和分母。",
+		"Name source, sign rule and denominator first.",
+		"先说明来源、赋号规则和分母。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
@@ -772,7 +775,7 @@ function build(context: FilmContext) {
 	// Work one print, then reveal the other weighted rows together. Values never
 	// describe a partly grown bar; totals appear only after construction settles.
 	prints.forEach((_, i) => {
-		const at = i === 0 ? 10.5 : 11.85;
+		const at = i === 0 ? 11.7 : 12.1;
 		tl.fromTo(
 			one(`row-${i}`),
 			{ opacity: 0 },
@@ -786,7 +789,6 @@ function build(context: FilmContext) {
 			at,
 		);
 	});
-	show([one("meter-tag"), grossMeter], 12.2, "above", 0.3);
 	// Sign by side: mid and unquoted prints drop out.
 	d.swap(one("t-head"), one("g-head"), 13.6);
 	// The net's tag comes down from above: from below it would cross the figure.
@@ -907,11 +909,11 @@ function build(context: FilmContext) {
 		27.7,
 	);
 	// Carry the constructed answer into the hero instead of reintroducing it.
-	hide([one("p-head"), one("meter-tag-net")], 29.0);
-	sink(29.0);
-	d.carry(meter, one("w-num-1"), 29.0, { duration: 0.9, arc: "x" });
+	hide([one("p-head"), one("meter-tag-net")], 29.5);
+	sink(29.5);
+	d.carry(meter, one("w-num-1"), 29.5, { duration: 0.9, arc: "x" });
 	// The prefix follows its answer while fading, keeping their spacing clear
-	// throughout the handover and preserving the complete proof's quiet second.
+	// throughout the handover and preserving 1.5 settled seconds for the proof.
 	const from = meter.getBBox();
 	const to = one<SVGGraphicsElement>("w-num-1").getBBox();
 	tl.to(
@@ -921,7 +923,7 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power3.out",
 		},
-		29.0,
+		29.5,
 	);
 	tl.to(
 		one("meter-correction"),
@@ -930,18 +932,18 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		29.0,
+		29.5,
 	);
-	tl.to(one("meter-correction"), { opacity: 0, duration: 0.3 }, 29.0);
-	show(one("w-tag-0"), 29.3);
-	land(one("w-num-0"), 29.5);
+	tl.to(one("meter-correction"), { opacity: 0, duration: 0.3 }, 29.5);
+	show(one("w-tag-0"), 29.8);
+	land(one("w-num-0"), 30.0);
 	// This label enters after the flight passes its lane.
-	show(one("w-tag-1"), 29.95, "above", 0.5);
-	d.lock(lockTwo, 30.6, {
+	show(one("w-tag-1"), 30.45, "above", 0.5);
+	d.lock(lockTwo, 31.1, {
 		around: [one("w-tag-0"), one("w-num-0"), one("w-tag-1"), one("w-num-1")],
 		pad: 10,
 	});
-	tl.addLabel("hero-lock", 30.6);
+	tl.addLabel("hero-lock", 31.1);
 
 	// ——— source: a number with the same name ———
 	tl.addLabel("source", 34.3);
