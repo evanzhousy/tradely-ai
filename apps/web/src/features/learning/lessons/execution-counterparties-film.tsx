@@ -131,6 +131,9 @@ const copy = {
 		`Instead: buy ${SIZE}, capped at ${usd(LIMIT)}.`,
 		`另一种情况：买 ${SIZE} 张，限价 ${usd(LIMIT)}。`,
 	],
+	limitTag: [`limit ${usd(LIMIT)}`, `限价 ${usd(LIMIT)}`],
+	/** On a phone the ticket has room for the cap's sign, not its word. */
+	limitTagShort: [`≤ ${usd(LIMIT)}`, `限价 ${usd(LIMIT)}`],
 	restsHead: [
 		`Last ${RESTS} rest as your bid.`,
 		`剩余 ${RESTS} 张成为你的买单。`,
@@ -199,20 +202,34 @@ function Scene({
 	const tradeQuantity = count(T1.quantity);
 	const tradeDetails = ` @ ${usd(T1.price)}`;
 	const tradeSide = t(copy.atAsk);
-	const tradeX = L.chipRight - L.chipW(false) / 2 - (narrow ? 68 : 0);
+	const tapeTime = `${T1.time} · `;
+	const tapeTradeX = narrow ? L.sideX : L.sideX + tapeTime.length * text * 0.6;
+	const tradeSourceWidth =
+		trade.length * text * 0.6 + ` · ${tradeSide}`.length * T.small * 0.6;
+	// On wide frames, start in the clear tape column and center above the final print.
+	const tradeX = narrow
+		? L.chipRight - L.chipW(false) / 2 - 68
+		: tapeTradeX + tradeSourceWidth / 2;
+	// Preserve 12 px at the right edge while lifting the phone source clear of the size dash.
+	const phoneTradeNudge = Math.min(16, Math.max(0, margin - 12));
 	const tradeY = rowText(L.askY(LADDER.length - 1));
 	const tradeStart = narrow
-		? W - margin - trade.length * tradeText * 0.6
+		? W - margin - trade.length * tradeText * 0.6 + phoneTradeNudge
 		: tradeX - trade.length * text * 0.3;
 	const tapeY = L.sideY + T.small + text * 1.9;
 	const tradeTapeY = narrow ? tapeY + T.num * 1.5 : tapeY;
-	const tapeTime = `${T1.time} · `;
-	const tapeTradeX = narrow ? L.sideX : L.sideX + tapeTime.length * text * 0.6;
-	// The phone carries through the clear right gutter, then lands below volume.
+	// The phone takes off just clear of the emptied size, then drops to the tape lane.
 	const tradeDetailsWidth =
 		tradeDetails.length * tradeText * 0.6 +
 		(narrow ? 0 : ` · ${tradeSide}`.length * T.small * 0.6);
 	const tradeLane = narrow ? tradeStart : L.statX - tradeDetailsWidth / 2 - 8;
+	const limitLabel = t(
+		narrow ? copy.limitTagShort : copy.limitTag,
+	).toUpperCase();
+	const limitLabelW = Math.max(
+		narrow ? 68 : 112,
+		limitLabel.length * T.small * 0.62 + 18,
+	);
 	const level = (
 		name: string,
 		y: number,
@@ -289,16 +306,30 @@ function Scene({
 						L.chipW(false)
 					: L.chipRight + 16
 				: L.chipRight;
+		const amountLeft = right - L.chipW(long);
+		const ticketLeft = long ? amountLeft - limitLabelW - 8 : amountLeft;
 		return (
 			<g data-f={name}>
 				<rect
-					x={right - L.chipW(long)}
+					x={ticketLeft}
 					y={L.chipY}
-					width={L.chipW(long)}
+					width={right - ticketLeft}
 					height={L.rowH}
 					rx={L.rowH / 2}
 					className="wt-focus-shape"
 				/>
+				{long && (
+					<text
+						data-f="chip-l-cap"
+						x={ticketLeft + limitLabelW / 2}
+						y={rowText(L.chipY)}
+						textAnchor="middle"
+						className="wt-film-type wt-film-accent"
+						style={{ fontSize: T.small }}
+					>
+						{limitLabel}
+					</text>
+				)}
 				{!long && (
 					<text
 						data-f={`${name}-text`}
@@ -451,7 +482,7 @@ function Scene({
 				</text>
 				{/* The spread, open where an incoming order waits. */}
 				<path
-					d={`M${margin} ${L.chipY + L.rowH / 2}H${L.chipRight - L.chipW(true) - 8}M${L.chipRight + 8} ${L.chipY + L.rowH / 2}H${margin + L.bookW}`}
+					d={`M${margin} ${L.chipY + L.rowH / 2}H${L.chipRight - L.chipW(true) - limitLabelW - 16}M${L.chipRight + 8} ${L.chipY + L.rowH / 2}H${margin + L.bookW}`}
 					className="wt-film-link"
 				/>
 				<text
@@ -836,7 +867,6 @@ function build(context: FilmContext) {
 		one("yours"),
 		one("chip-m"),
 		one("chip-l"),
-		one("chip-l-left"),
 		one("rest-flight"),
 		one("trade-source"),
 		one("trade-source-qty"),
@@ -915,7 +945,7 @@ function build(context: FilmContext) {
 		L.narrow ? 15.5 : 15.7,
 	);
 	if (L.narrow) {
-		// Drop through the right gutter, then slide beneath volume into the tape.
+		// Drop into a clear lane, then slide across the tape row.
 		for (const name of ["qty", "details"] as const) {
 			d.carry(g(`trade-source-${name}`), g(`trade-via-${name}`), 15.5, {
 				duration: 0.4,
@@ -928,9 +958,10 @@ function build(context: FilmContext) {
 			});
 		}
 	} else {
+		// Rise vertically into the tape, clear of the quote rows and emptied-size dash.
 		d.carry(g("trade-source"), g("tape-trade"), 15.5, {
 			duration: 0.5,
-			arc: "x",
+			arc: "y",
 		});
 	}
 	show(heads[1], 15.2);
@@ -955,12 +986,12 @@ function build(context: FilmContext) {
 	tl.set(one(`bar-${best}`), { attr: { width: width(BEST.size) } }, 19.55);
 	tl.set(one(`size-${best}`), { textContent: count(BEST.size) }, 19.55);
 	tl.fromTo(book, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 20.05);
-	// Its figures land with the alternative headline, before the fresh book arrives.
+	// The tagged order settles just before its headline names the cap.
 	tl.fromTo(
-		[one("chip-l"), one("chip-l-left")],
+		one("chip-l"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		19.55,
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
+		19.2,
 	);
 	d.trace(one<SVGPathElement>("limit"), 20.75, { duration: 0.6 });
 	// Above the limit: out of reach.
