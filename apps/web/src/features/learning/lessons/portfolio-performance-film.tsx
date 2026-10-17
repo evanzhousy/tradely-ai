@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -222,7 +223,7 @@ function Scene({
 	const days = narrow ? copy.daysShort : copy.days;
 	const question = [
 		[narrow ? copy.qGrowthShort : copy.qGrowth, pct(GROWTH, 1), "wt-film-gain"],
-		[copy.qWin, `${Math.round(WIN_RATE * 100)}%`, "wt-film-gain"],
+		[copy.qWin, `${Math.round(WIN_RATE * 100)}%`, toneClass.focus],
 		[
 			narrow ? copy.qReturnShort : copy.qReturn,
 			pct(totalReturn(deep), 0),
@@ -437,18 +438,21 @@ function Scene({
 							data-f="line-a"
 							d={L.ddPath(steady)}
 							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)" }}
 						/>
 						<path
 							data-f="line-b"
 							d={L.ddPath(deep)}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ strokeWidth: 2.5 }}
 						/>
 						<text
 							data-f="label-a"
 							x={L.mx(5)}
 							y={L.my(steady[5]) - 12}
 							textAnchor="middle"
-							className="wt-small wt-halo wt-accent"
+							className="wt-small wt-halo wt-marker-label"
+							style={{ fill: "var(--tone-ink)" }}
 						>
 							{t(copy.accountA)}
 						</text>
@@ -456,8 +460,7 @@ function Scene({
 							data-f="label-b"
 							x={L.mx(5) + 8}
 							y={L.my(deep[5]) + 18}
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-small wt-halo ${toneClass.focus}`}
 						>
 							{t(copy.accountB)}
 						</text>
@@ -467,7 +470,6 @@ function Scene({
 							cy={L.my(deep[worstB.peakAt])}
 							r={5}
 							className="wt-chip"
-							style={{ fill: "var(--wt-short)" }}
 						/>
 						<circle
 							data-f="trough"
@@ -475,7 +477,6 @@ function Scene({
 							cy={L.my(deep[worstB.troughAt])}
 							r={6}
 							className="wt-chip"
-							style={{ fill: "var(--wt-short)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -494,12 +495,12 @@ function Scene({
 			<g data-f="meter">
 				{(
 					[
-						["growth", copy.growthTag, pct(GROWTH, 1), "wt-film-accent"],
+						["growth", copy.growthTag, pct(GROWTH, 1), toneClass.up],
 						[
 							"rate",
 							copy.winRate,
 							`${Math.round(WIN_RATE * 100)}%`,
-							"wt-film-gain",
+							toneClass.focus,
 						],
 					] as const
 				).map(([name, tag, value, tone]) => (
