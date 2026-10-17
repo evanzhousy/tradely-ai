@@ -20,6 +20,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -328,6 +330,10 @@ function Scene({
 								rx={narrow ? 3 : 6}
 								className="wt-film-bar"
 								data-tone="model"
+								style={{
+									fill: "color-mix(in oklab, var(--tone-caution) 18%, transparent)",
+									stroke: toneColor("caution"),
+								}}
 							/>
 							<text
 								x={L.cellX(STRIKES.indexOf(105)) + L.cellWidth / 2}
@@ -337,7 +343,7 @@ function Scene({
 									cellSize * 0.36
 								}
 								textAnchor="middle"
-								className="wt-film-num wt-film-accent"
+								className={`wt-film-num ${toneClass.caution}`}
 								style={{ fontSize: cellSize }}
 							>
 								{`≈${INTERPOLATED}%`}
@@ -355,7 +361,7 @@ function Scene({
 							}
 							y={L.calculationY}
 							size={L.calculationSize}
-							className="wt-film-num wt-film-accent"
+							className={`wt-film-num ${toneClass.caution}`}
 						>
 							{`(${ivPoints("dec20", 100)}% + ${ivPoints("dec20", 110)}%) / 2 ≈ ${INTERPOLATED}%`}
 						</Word>
@@ -381,13 +387,14 @@ function Scene({
 							<path
 								d={`M${L.labelLeft} ${L.cellY(AFTER_EARNINGS)}H${L.right}`}
 								className="wt-film-gap"
+								style={{ stroke: "var(--tone-dim)" }}
 								strokeDasharray="5 4"
 							/>
 							<text
 								x={L.right}
 								y={L.cellY(AFTER_EARNINGS) - 4}
 								textAnchor="end"
-								className="wt-small wt-halo wt-loss"
+								className="wt-small wt-halo"
 							>
 								{t(copy.earnings)}
 							</text>
@@ -481,14 +488,14 @@ function Scene({
 									cx={L.xS(strike)}
 									cy={L.yS(iv)}
 									r={6}
-									className={name === "atm" ? "wt-film-ghost" : "wt-chip"}
+									className={name === "atm" ? "wt-film-ghost" : toneClass[name]}
 								/>
 								<text
 									data-f={`w-label-${name}`}
 									x={L.xS(strike) + (side === "below-left" ? -10 : 10)}
 									y={L.yS(iv) + (side.startsWith("below") ? 20 : -12)}
 									textAnchor={side === "below-left" ? "end" : "start"}
-									className={`wt-halo wt-marker-label wt-film-num ${name === "atm" ? "wt-small" : "wt-accent"}`}
+									className={`wt-halo wt-marker-label wt-film-num ${name === "atm" ? "wt-small" : toneClass[name]}`}
 								>
 									{name === "atm"
 										? t(label)
@@ -521,7 +528,10 @@ function Scene({
 					y1={H * 0.44 - qWidth * 0.32}
 					y2={H * 0.44 - qWidth * 0.32}
 					className="wt-film-gap"
-					style={{ strokeWidth: Math.max(3, qWidth * 0.06) }}
+					style={{
+						stroke: toneColor("caution"),
+						strokeWidth: Math.max(3, qWidth * 0.06),
+					}}
 				/>
 				<Lines
 					name="q-line"
@@ -572,7 +582,7 @@ function Scene({
 					y={0}
 					size={11}
 					anchor="start"
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass[name]}`}
 				>
 					{`${name === "put" ? PUT_IV : CALL_IV}%`}
 				</Word>
@@ -603,7 +613,7 @@ function Scene({
 									x={signX(i) + (side === 0 ? -1 : 1) * operandSize * 2.6}
 									y={operandY(i)}
 									size={operandSize}
-									className="wt-film-num wt-film-accent"
+									className={`wt-film-num ${toneClass[(i === 0) === (side === 0) ? "put" : "call"]}`}
 								>
 									{`${iv}%`}
 								</Word>
@@ -623,7 +633,7 @@ function Scene({
 							x={signX(i)}
 							y={answerY(i)}
 							size={answerSize}
-							className="wt-film-num wt-film-accent"
+							className={`wt-film-num ${i === 0 ? toneClass.up : toneClass.down}`}
 						>
 							{`= ${num}`}
 						</Word>
