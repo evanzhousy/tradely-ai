@@ -44,9 +44,9 @@ import {
  * Theta, vega and rho, as a film. It opens on a puzzle: ALFA rose $1 and the call still
  * lost money. Theta and vega each take a shot in their own unit (per day, per vol point);
  * then the waterfall adds the parts up to answer the puzzle, and glowing brackets lock on
- * its sum beside the model's figure. Rho, per rate point, follows briefly. Subject: the
- * call's value, per share. Type carries the claims; a decay chart and a waterfall take
- * turns as the proof.
+ * its sum beside the model's figure. That sum then scales to two positions, and rho, per
+ * rate point, follows briefly. Subject: the call's value, per share. Type carries the
+ * claims; a decay chart and a waterfall take turns as the proof.
  *
  *   open       0–4        "Theta, vega and rho"
  *   question   4–9.5      ALFA +$1, six days later, IV −3 points; call −$0.19. Why?
@@ -54,8 +54,8 @@ import {
  *   vega       19.55–25.45 "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
  *   sum        25.45–31.95 hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
  *                         a subordinate repriced −$0.19, locked
- *   rho        31.95–36.05    $0.042 a rate point
- *   positions  36.05–45.45    you −$320, Ben +$200; cut: "A good move can still lose."
+ *   positions  31.95–37.05    the −$0.20 shrinks in place and feeds you −$320, Ben +$200
+ *   rho        37.05–45.45    $0.042 a rate point; cut: "A good move can still lose."
  *   next       45.45–47.45  Next: 0DTE
  */
 
@@ -209,6 +209,7 @@ const copy = {
 		"Time and IV outweighed the move.",
 		"时间和 IV 抵消了上涨。",
 	],
+	waterfallTotal: ["Waterfall total", "瀑布总计"],
 	sumAxis: ["change, $ per share", "每股变化（美元）"],
 	posHead: ["Scale last, with signs.", "最后带符号地放大。"],
 	posYou: ["You · long calls", "你 · 多头看涨"],
@@ -267,6 +268,10 @@ function Scene({
 	const { height: H, type: T, room, narrow } = L;
 	const W = width;
 	const sumHeadline = t(narrow ? copy.sumHeadShort : copy.sumHead);
+	// The stage that holds the sum's shrunk copy shares the hero's glyph centre.
+	const stageY = L.heroY - 0.33 * (T.num * 1.4 - L.factorSize);
+	const stageHalf =
+		(signedPrice(scenario.total).length * L.factorSize * 0.6) / 2;
 	const id = useId().replace(/:/g, "");
 	const ticksT = narrow ? [0, 16, DAYS] : [0, 8, 16, 24, DAYS];
 	const cellText = [
@@ -676,7 +681,7 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
-			{/* The hero's answer, a line under the puzzle, as the brackets lock. */}
+			{/* The answer settles just before the brackets lock. */}
 			<Lines
 				name="s-answer"
 				text={t(narrow ? copy.sumAnswerShort : copy.sumAnswer)}
@@ -701,46 +706,88 @@ function Scene({
 						[copy.posYou, pnl(you), "wt-film-loss", 0.31, you],
 						[copy.posBen, pnl(ben), "wt-film-gain", 0.56, ben],
 					] as const
-				).map(([who, num, tone, f, quantity], i) => (
-					<g key={who[0]}>
-						<Word
-							name={`p-who-${i}`}
-							x={W / 2}
-							y={H * f}
-							size={narrow ? 14 : T.body}
-							className="wt-film-type wt-film-dim"
-						>
-							{t(who)}
-						</Word>
-						<Word
-							name={`p-factor-${i}`}
-							x={W / 2}
-							y={H * f + L.factorGap}
-							size={L.factorSize}
-							className="wt-film-num wt-film-dim"
-						>
-							{`${signedPrice(scenario.total)} × 100 × (${quantity > 0 ? "+" : "−"}${Math.abs(quantity)})`}
-						</Word>
-						<Word
-							name={`p-num-${i}`}
-							x={W / 2}
-							y={H * f + L.factorGap + L.resultGap}
-							size={T.num}
-							className={`wt-film-num ${tone}`}
-						>
-							{`≈ ${num}`}
-						</Word>
-					</g>
-				))}
+				).map(([who, num, tone, f, quantity], i) => {
+					const totalText = signedPrice(scenario.total);
+					const factorRest = `× 100 × (${quantity > 0 ? "+" : "−"}${Math.abs(quantity)})`;
+					const charWidth = L.factorSize * 0.6;
+					const totalWidth = totalText.length * charWidth;
+					const factorGap = L.factorSize * 0.35;
+					const factorWidth =
+						totalWidth + factorGap + factorRest.length * charWidth;
+					const factorStart = W / 2 - factorWidth / 2;
+					return (
+						<g key={who[0]}>
+							<Word
+								name={`p-who-${i}`}
+								x={W / 2}
+								y={H * f}
+								size={narrow ? 14 : T.body}
+								className="wt-film-type wt-film-dim"
+							>
+								{t(who)}
+							</Word>
+							<g data-f={`p-factor-${i}`}>
+								<Word
+									name={`p-total-${i}`}
+									x={factorStart + totalWidth / 2}
+									y={H * f + L.factorGap}
+									size={L.factorSize}
+									className="wt-film-num"
+								>
+									{totalText}
+								</Word>
+								<Word
+									name={`p-factor-rest-${i}`}
+									x={factorStart + totalWidth + factorGap}
+									y={H * f + L.factorGap}
+									size={L.factorSize}
+									anchor="start"
+									className="wt-film-num"
+								>
+									{factorRest}
+								</Word>
+							</g>
+							<Word
+								name={`p-num-${i}`}
+								x={W / 2}
+								y={H * f + L.factorGap + L.resultGap}
+								size={T.num}
+								className={`wt-film-num ${tone}`}
+							>
+								{`≈ ${num}`}
+							</Word>
+						</g>
+					);
+				})}
 				<Lines
 					name="p-note"
 					text={t(copy.posNote)}
 					x={W / 2}
-					y={H * 0.86}
+					y={H * 0.17 + T.head * 1.35}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
 				/>
+				{/* The waterfall's sum, shrunk where the hero stood: both positions take it from here. */}
+				<Word
+					name="p-total-label"
+					x={W / 2 - stageHalf - T.small}
+					y={stageY}
+					size={T.small}
+					anchor="end"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.waterfallTotal)}
+				</Word>
+				<Word
+					name="p-total-stage"
+					x={W / 2}
+					y={stageY}
+					size={L.factorSize}
+					className="wt-film-num"
+				>
+					{signedPrice(scenario.total)}
+				</Word>
 			</g>
 			<g data-f="claim">
 				<Lines
@@ -805,6 +852,10 @@ function build(context: FilmContext) {
 		one("w-step-vega"),
 		one("w-step-sum"),
 		one("w-repriced"),
+		one("p-total-0"),
+		one("p-total-1"),
+		one("p-factor-rest-0"),
+		one("p-factor-rest-1"),
 		...kids("q").flatMap((el) =>
 			el.tagName === "g" ? [...el.children] : [el],
 		),
@@ -903,56 +954,77 @@ function build(context: FilmContext) {
 		25.45,
 	);
 	show(one("s-head"), 25.45);
-	// Time rests for 1 s after its construction settles at 25.95. The IV loss
-	// arrives first; the estimate follows, then rests for a full second.
+	// Vega settles for 0.3 s before the estimate arrives. The estimate then rests
+	// for a full second before the brackets lock.
 	tl.fromTo(
 		one("w-step-vega"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "none" },
-		26.95,
+		26.8,
 	);
 	tl.fromTo(
 		[one("w-step-sum"), one("w-repriced")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "none" },
-		27.15,
+		27.4,
 	);
-	d.lock(lockSum, 28.45, {
+	d.lock(lockSum, 28.7, {
 		around: [one("w-value-sum")],
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 28.45);
+	tl.addLabel("hero-lock", 28.7);
 	show(one("s-answer"), 28.45);
 
-	// ——— rho: rates, briefly ———
-	tl.addLabel("rho", 31.95);
+	// ——— positions: the sum, scaled with signs ———
+	tl.addLabel("positions", 31.95);
 	hide([one("s-head"), one("s-answer"), lockSum], 31.95);
 	sink(31.95);
-	land(one("rh-num"), 32.25);
-	show(one("rh-word"), 32.45);
-	show(one("rh-sub"), 32.55);
-	show(one("rh-compare"), 32.85);
+	// The sum shrinks where it stands while the waterfall sinks: nothing lies on its way.
+	d.carry(one("w-value-sum"), one("p-total-stage"), 31.95, { duration: 0.4 });
+	show([one("p-head"), one("p-note")], 32.35);
+	tl.fromTo(
+		one("p-total-label"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "none" },
+		32.35,
+	);
+	// One holder at a time: identity, the sum carried into its formula, then a settled result.
+	const formula = (i: 0 | 1, at: number, last: boolean) => {
+		show(one(`p-who-${i}`), at);
+		tl.set(one(`p-factor-${i}`), { opacity: 1 }, at);
+		const duration = last ? 0.4 : 0.55;
+		d.carry(one("p-total-stage"), one(`p-total-${i}`), at, {
+			duration,
+			arc: "y",
+			keep: !last,
+		});
+		tl.fromTo(
+			one(`p-factor-rest-${i}`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3, ease: "none" },
+			at + duration,
+		);
+		land(one(`p-num-${i}`), at + duration + 0.3);
+	};
+	formula(0, 32.35, false);
+	// The long result settles at 33.75 and stands for 1 s before Ben arrives; the stage's
+	// copy then leaves for good, with its label.
+	formula(1, 34.75, true);
+	hide(one("p-total-label"), 34.75);
+	// The short result settles at 36.0 and holds 1.05 s before the cut.
 
-	// ——— positions: scale last, with signs ———
-	tl.addLabel("positions", 36.05);
-	hide([...kids("rh"), one("rh-compare")], 36.05);
-	show(one("p-head"), 36.4);
-	show(one("p-note"), 36.4);
-	// One holder at a time: identity, signed operands, then a settled result.
-	// Compact holder labels leave the contract count in the enlarged formula.
-	show(one("p-who-0"), 36.05);
-	show(one("p-factor-0"), 36.55);
-	land(one("p-num-0"), 37.05);
-	// The long result settles at 37.6 and stands for 1 s before Ben arrives.
-	show(one("p-who-1"), 38.6);
-	show(one("p-factor-1"), 38.6);
-	land(one("p-num-1"), 39.1);
-	// The short result settles at 39.65 and holds 1.5 s before its exit.
-	// Cut: the claim.
+	// ——— rho: rates, briefly ———
+	tl.addLabel("rho", 37.05);
 	hide(
 		kids("p").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
-		41.15,
+		37.05,
 	);
+	land(one("rh-num"), 37.35);
+	show(one("rh-word"), 37.55);
+	show(one("rh-sub"), 37.65);
+	show(one("rh-compare"), 37.95);
+	// Cut: the claim.
+	hide([...kids("rh"), one("rh-compare")], 41.15);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
@@ -971,8 +1043,8 @@ function build(context: FilmContext) {
 export const thetaVegaRhoFilm: Film = {
 	id: "theta-vega-rho",
 	label: [
-		"Theta, vega and rho, as a short film: ALFA rises $1 and the call still loses; the call's value draining to expiry, slowly then fast; volatility points against percent; a waterfall that estimates the loss from delta, gamma, theta and vega; rho; and scaling to two positions",
-		"Theta、Vega 与 Rho 短片：ALFA 上涨 $1，看涨却仍然亏损；看涨价值随到期流失，先慢后快；波动率点与百分比；把 Delta、Gamma、Theta、Vega 相加估算亏损的瀑布图；Rho；再放大到两个持仓",
+		"Theta, vega and rho, as a short film: ALFA rises $1 and the call still loses; the call's value draining to expiry, slowly then fast; volatility points against percent; a waterfall that estimates the loss from delta, gamma, theta and vega; scaling it to two positions; and rho",
+		"Theta、Vega 与 Rho 短片：ALFA 上涨 $1，看涨却仍然亏损；看涨价值随到期流失，先慢后快；波动率点与百分比；把 Delta、Gamma、Theta、Vega 相加估算亏损的瀑布图；再放大到两个持仓；以及 Rho",
 	],
 	stage: "dark",
 	shots: [
