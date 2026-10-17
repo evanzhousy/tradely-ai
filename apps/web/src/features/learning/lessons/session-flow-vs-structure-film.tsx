@@ -202,8 +202,8 @@ const copy = {
 	qTag: ["Oct 18 100 call · open interest", "10月18日 100 看涨 · 未平仓量"],
 	qTagShort: ["10/18 100 call · open interest", "10/18 100 看涨 · 未平仓量"],
 	qLine: [
-		`You buy ${TRADES[0].quantity} to open; Ben sells ${TRADES[0].quantity} to open.`,
-		`你买 ${TRADES[0].quantity} 张开仓；Ben 卖 ${TRADES[0].quantity} 张开仓。`,
+		`You buy ${TRADES[0].quantity}; Ben sells ${TRADES[0].quantity}. Both open.`,
+		`你买${TRADES[0].quantity}张；Ben 卖${TRADES[0].quantity}张；都开仓。`,
 	],
 	qBig: [
 		`Open interest +${TRADES[0].quantity} or +${TRADES[0].quantity * 2}?`,
@@ -937,14 +937,6 @@ function build(context: FilmContext) {
 			counter(`bar-${side}-n`, to, from, time, duration);
 		}
 	};
-	/** Open interest doesn't move: its figure shakes its head. */
-	const still = (time: number, name = "oi") =>
-		tl.fromTo(
-			one(name),
-			{ x: 0 },
-			{ x: 6, duration: 0.08, yoyo: true, repeat: 3 },
-			time,
-		);
 	const heads = [
 		"l-head",
 		"l2-head",
@@ -1027,7 +1019,7 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	show(one("q-line"), 4.8);
+	show(one("q-line"), 4.6);
 	word(one("q-big"), 5.1);
 
 	// ——— ledger: three trades, two counters ———
@@ -1063,7 +1055,7 @@ function build(context: FilmContext) {
 			duration,
 		);
 		if (beat.openInterest === beat.openInterestBefore) {
-			still(oiAt);
+			// The unchanged figure and its ±0 row already show that open interest stayed put.
 			return;
 		}
 		const start = oiAt + 0.5 - duration;
@@ -1184,7 +1176,7 @@ function build(context: FilmContext) {
 	tl.to(
 		[...kids("clock"), ...ticks, clockHead, clockTime],
 		{ opacity: 0.2, duration: 0.3 },
-		28.85,
+		30.3,
 	);
 
 	// ——— bucket: a week moves the members ———
@@ -1304,6 +1296,8 @@ function build(context: FilmContext) {
 	const marks = stripExpiries
 		.filter((id) => moved(id))
 		.map((id) => one(`colm-${id}`));
+	const growthAt = 37.5;
+	const growthCompleteAt = growthAt + 0.5;
 	show(marks, 34.9, "above", 0.3);
 	// Read the spatial membership changes as one settled calculation. The equals/result
 	// pair lands only after its operands, and disappears before live growth changes them.
@@ -1322,13 +1316,11 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		slideAt + slideDuration,
 	);
-	// Membership and its colours have already changed before the slide's final 0.1 s.
-	// Start the answer there to retain its full reading hold; evidence settles at 35.2.
-	show(heads[7], 34.8, "below", 0.3);
+	// The complete member-growth comparison now arrives with its concluding headline.
+	show(heads[7], growthCompleteAt, "below", 0.3);
 	// All membership evidence settles by 35.2, then keeps the full 2 s quiet hold.
 	// Then the week's new contracts: each series grows by tens.
 	const membershipExit = 37.2;
-	const growthAt = 37.5;
 	// Clear the historical basis smoothly while its figures are still true. Live growth
 	// waits until the whole counterfactual has gone, so no fading equality becomes false.
 	tl.to(
@@ -1349,13 +1341,13 @@ function build(context: FilmContext) {
 		growthAt + 0.49,
 	);
 	// Begin at zero as growth starts; every annotation follows the displayed rounded values.
-	show(one("note-new"), growthAt, "below", 0.3);
+	show(one("note-new"), growthCompleteAt, "below", 0.3);
 	// In place, without travel: each live change stays over its own column's figure.
 	tl.fromTo(
 		memberChanges,
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		growthAt,
+		growthCompleteAt,
 	);
 	// Compare the exact weekly snapshots with a cut, not a short count. The shared
 	// state settles every bar, label and total before the unchanged equation entrance;
@@ -1364,7 +1356,7 @@ function build(context: FilmContext) {
 		growthSum,
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		growthAt + 0.5,
+		growthCompleteAt,
 	);
 
 	// ——— claim ———
