@@ -16,6 +16,7 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	assumedSign,
 	CALLS,
@@ -146,7 +147,7 @@ const copy = {
 	],
 	qTag: ["ALFA GEX, on a dashboard", "ALFA GEX，某个面板"],
 	qLine: ["Which sign? Which contracts?", "哪个符号？哪些合约？"],
-	sidesHead: ["How big are the two sides?", "两边各有多大？"],
+	sidesHead: ["Sum all calls; sum all puts.", "汇总所有看涨；汇总所有看跌。"],
 	share: [
 		`≈${Math.round((-NET / GROSS) * 100)}% of gross`,
 		`总幅度的 ≈${Math.round((-NET / GROSS) * 100)}%`,
@@ -159,18 +160,24 @@ const copy = {
 	contract: [`Oct 18 ${FOCUS_STRIKE} call`, `10月18日 ${FOCUS_STRIKE} 看涨`],
 	sameInputs: ["same inputs", "相同输入"],
 	included: ["Outlined: included", "描边：计入"],
-	trackGross: [`${money(GROSS, false)} gross`, `总幅度 ${money(GROSS, false)}`],
+	trackGross: [
+		`≈${money(GROSS, false)} gross`,
+		`总幅度 ≈${money(GROSS, false)}`,
+	],
 	tGamma: ["gamma, model, per $1", "Gamma（模型），每 $1"],
 	tOi: ["× open interest, Friday's close", "× 未平仓量（周五收盘）"],
 	tShares: ["× 100 shares", "× 100 股"],
-	tSpot: [`× $${SPOT}² × 1%: per 1% move`, `× $${SPOT}² × 1%：每 1% 变动`],
+	tSpot: [
+		`Spot $${SPOT}/share × 1% move ($1/share)`,
+		`现价 $${SPOT}/股 × 变动 1%（$1/股）`,
+	],
 	tLong: ["dealers assumed long", "假设做市商做多"],
 	tShort: ["dealers assumed short", "假设做市商做空"],
-	signHead: [
-		"The sign is an assumption, not a reading.",
-		"符号是假设，不是读数。",
+	signHead: ["Sign: an assumption, not a reading.", "符号是假设，非读数。"],
+	signHeadShort: [
+		"Sign: an assumption, not a reading.",
+		"符号是假设，非读数。",
 	],
-	signHeadShort: ["The sign is an assumption.", "符号是假设。"],
 	profileHead: [
 		"The whole Oct 18 chain, by strike.",
 		"完整的 10月18日 期权链，按行权价。",
@@ -227,6 +234,8 @@ function Scene({
 	const { height: H, type: T, room, narrow } = L;
 	const W = width;
 	const id = useId().replace(/:/g, "");
+	const callsLabel = t(copy.calls).toUpperCase();
+	const putsLabel = t(copy.puts).toUpperCase();
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
 			name={name}
@@ -680,14 +689,24 @@ function Scene({
 						rx={2}
 					/>
 					<Word
-						name="two-calls-tag"
+						name="two-calls-name"
 						x={L.two.x0}
 						y={L.two.y1 - 8}
 						size={T.body}
 						anchor="start"
 						className={`wt-film-num ${toneClass.call}`}
 					>
-						{`${t(copy.calls).toUpperCase()} ${money(CALLS)}`}
+						{callsLabel}
+					</Word>
+					<Word
+						name="two-calls-value"
+						x={L.two.x0 + textWidth(`${callsLabel} `, T.body)}
+						y={L.two.y1 - 8}
+						size={T.body}
+						anchor="start"
+						className={`wt-film-num ${toneClass.up}`}
+					>
+						{`≈${money(CALLS)}`}
 					</Word>
 				</g>
 				<g data-f="two-puts">
@@ -702,14 +721,24 @@ function Scene({
 						rx={2}
 					/>
 					<Word
-						name="two-puts-tag"
+						name="two-puts-name"
 						x={L.two.x0}
 						y={L.two.tagY}
 						size={T.body}
 						anchor="start"
 						className={`wt-film-num ${toneClass.put}`}
 					>
-						{`${t(copy.puts).toUpperCase()} ${money(PUTS)}`}
+						{putsLabel}
+					</Word>
+					<Word
+						name="two-puts-value"
+						x={L.two.x0 + textWidth(`${putsLabel} `, T.body)}
+						y={L.two.tagY}
+						size={T.body}
+						anchor="start"
+						className={`wt-film-num ${toneClass.down}`}
+					>
+						{`≈${money(PUTS)}`}
 					</Word>
 				</g>
 				<g data-f="two-gross">
@@ -724,7 +753,7 @@ function Scene({
 						size={T.body}
 						className="wt-film-num"
 					>
-						{`${t(copy.gross).toUpperCase()} ${money(GROSS, false)}`}
+						{`${t(copy.gross).toUpperCase()} ≈${money(GROSS, false)}`}
 					</Word>
 				</g>
 				<rect
