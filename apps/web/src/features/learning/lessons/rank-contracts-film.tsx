@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { type Copy, count, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -7,9 +8,12 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -136,6 +140,7 @@ function Scene({
 	height: number;
 	locale: Locale;
 }) {
+	const missingHatch = useId().replace(/:/g, "");
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
@@ -168,6 +173,10 @@ function Scene({
 						height={L.cellH}
 						rx={6}
 						className="wt-film-ghost"
+						style={{
+							fill: `url(#${missingHatch})`,
+							stroke: toneColor("caution"),
+						}}
 					/>
 				) : value === 0 ? (
 					<rect
@@ -194,7 +203,7 @@ function Scene({
 					x={x + w / 2}
 					y={y + L.cellH / 2 + text * 0.36}
 					textAnchor="middle"
-					className={`wt-film-num ${value ? "" : "wt-film-dim"}`}
+					className={`wt-film-num ${value === null ? toneClass.caution : value === 0 ? "wt-film-dim" : ""}`}
 					style={{ fontSize: text }}
 				>
 					{value === null ? "—" : count(value)}
@@ -251,6 +260,9 @@ function Scene({
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<Hatch id={missingHatch} />
+			</defs>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -356,7 +368,7 @@ function Scene({
 					x={L.cellX(2) - 8}
 					y={rowY(ROWS.length) + T.small * 1.8}
 					textAnchor="end"
-					className="wt-film-tag wt-film-gain"
+					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
 					{`← ${t(narrow ? copy.itmShort : copy.itm).toUpperCase()}`}
@@ -376,7 +388,8 @@ function Scene({
 					className="wt-film-num wt-film-accent"
 					style={{ fontSize: T.small * 1.1 }}
 				>
-					{`ALFA $${SPOT.toFixed(2)}`}
+					<tspan style={{ fill: "var(--tone-ink)" }}>ALFA</tspan>
+					{` $${SPOT.toFixed(2)}`}
 				</text>
 			</g>
 			<g data-f="spread">
@@ -407,7 +420,6 @@ function Scene({
 					const gutter = L.cellX(j + 1);
 					const outside = i === 0 ? margin + 8 : margin + room - 8;
 					const cellBottom = rowY(1) + L.cellH;
-					const tone = i === 0 ? "var(--diagram-gain)" : "var(--diagram-loss)";
 					return (
 						<g key={leg.side}>
 							<text
@@ -415,7 +427,7 @@ function Scene({
 								x={x}
 								y={y}
 								textAnchor="middle"
-								className={`wt-film-num ${i === 0 ? "wt-film-gain" : "wt-film-loss"}`}
+								className="wt-film-num"
 								style={{ fontSize: text }}
 							>
 								{`${t(i === 0 ? copy.buy : copy.sell)} ${leg.strike} · ${count(leg.quantity)}`}
@@ -424,7 +436,7 @@ function Scene({
 								data-f={`spread-link-${i}`}
 								d={`M${x} ${y - T.small * 1.5}H${outside}V${rowY(2) + L.cellH + 8}H${gutter}V${cellBottom + 3}H${L.strikeX(leg.strike)}V${cellBottom}`}
 								fill="none"
-								style={{ stroke: tone, strokeWidth: 2 }}
+								style={{ stroke: "var(--tone-ink)", strokeWidth: 2 }}
 							/>
 						</g>
 					);
@@ -536,7 +548,7 @@ function Scene({
 						x={margin + room * (narrow ? 0.62 : 0.6)}
 						y={L.candY(i) + L.candH / 2 + text * 0.4}
 						textAnchor="end"
-						className="wt-film-num"
+						className={`wt-film-num ${c.value === null ? toneClass.caution : ""}`}
 						style={{ fontSize: text * 1.15 }}
 					>
 						{c.value === null ? "—" : count(c.value)}
@@ -546,13 +558,13 @@ function Scene({
 			{candidates.map((c, i) => {
 				const verdict: [Copy, string] | null =
 					c.fails === "stale"
-						? [copy.stale, "wt-film-loss"]
+						? [copy.stale, toneClass.down]
 						: c.fails === "scope"
-							? [copy.scope, "wt-film-loss"]
+							? [copy.scope, toneClass.down]
 							: c.value === null
-								? [copy.missing, "wt-film-warn"]
+								? [copy.missing, toneClass.caution]
 								: c === LEAD
-									? [copy.candidate, "wt-film-gain"]
+									? [copy.candidate, toneClass.focus]
 									: null;
 				return verdict ? (
 					<text
@@ -564,7 +576,7 @@ function Scene({
 						className={`wt-film-tag ${verdict[1]}`}
 						style={{ fontSize: T.small }}
 					>
-						{t(verdict[0]).toUpperCase()}
+						{`${c.fails ? "✗ " : ""}${t(verdict[0]).toUpperCase()}`}
 					</text>
 				) : null;
 			})}
