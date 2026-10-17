@@ -130,17 +130,11 @@ const copy = {
 	title: ["The volatility surface", "波动率曲面"],
 	titleSub: ["IV by strike and by expiry", "按行权价与到期日的 IV"],
 	qBig: ["ALFA's IV: 35%", "ALFA 的 IV：35%"],
-	qLine: ["Which strike? Which expiry?", "哪个行权价？哪个到期日？"],
-	gridHead: [
-		"Modeled IV for each strike and expiry.",
-		"模型 IV：每个行权价与到期日。",
-	],
-	gridHeadShort: ["Modeled IV per strike and expiry.", "每格一个模型 IV。"],
-	rowHead: ["A row across strikes is the skew.", "横向（各行权价）是偏斜。"],
-	colHead: [
-		"Down a column: the term structure.",
-		"纵向（各到期日）是期限结构。",
-	],
+	qLine: ["Which strike? Expiry?", "哪个行权价？何时到期？"],
+	gridHead: ["Model IV by strike and expiry.", "行权价与到期日的模型 IV。"],
+	gridHeadShort: ["Model IV by strike and expiry.", "每格模型 IV。"],
+	rowHead: ["Across strikes: skew.", "横向看偏斜。"],
+	colHead: ["Down columns: term structure.", "沿到期日看期限结构。"],
 	strike: ["strike", "行权价"],
 	expiry: ["expiry", "到期日"],
 	earnings: ["earnings Oct 3", "10月3日 财报"],
@@ -153,15 +147,9 @@ const copy = {
 	smileAxis: ["Oct 18 implied volatility, model", "10月18日 隐含波动率，模型"],
 	strikeAxis: ["strike", "行权价"],
 	atm: [`at the money ${ATM_IV}%`, `平值 ${ATM_IV}%`],
-	putWing: [
-		`25Δ put $${PUT_WING.toFixed(2)} · ${PUT_IV}%`,
-		`25Δ 看跌 $${PUT_WING.toFixed(2)} · ${PUT_IV}%`,
-	],
+	putWing: [`25Δ put · ${PUT_IV}%`, `25Δ 看跌 · ${PUT_IV}%`],
 	putWingShort: [`25Δ put ${PUT_IV}%`, `25Δ 看跌 ${PUT_IV}%`],
-	callWing: [
-		`25Δ call $${CALL_WING.toFixed(2)} · ${CALL_IV}%`,
-		`25Δ 看涨 $${CALL_WING.toFixed(2)} · ${CALL_IV}%`,
-	],
+	callWing: [`25Δ call · ${CALL_IV}%`, `25Δ 看涨 · ${CALL_IV}%`],
 	callWingShort: [`25Δ call ${CALL_IV}%`, `25Δ 看涨 ${CALL_IV}%`],
 	skewTag: ["skew: put − call", "偏斜：看跌 − 看涨"],
 	rrTag: ["RR: call − put", "风险逆转：看涨 − 看跌"],
@@ -175,7 +163,7 @@ const copy = {
 	claimBig: ["A surface, not a number.", "是一个曲面，不是一个数。"],
 	claimSub: [
 		"Strike, expiry, convention. Flag estimates.",
-		"行权价、到期日、约定；标明估计。",
+		"行权价、到期、口径；估值需标注。",
 	],
 	nextBig: ["Next: IV rank and IV percentile", "下一课：IV Rank 与 IV 百分位"],
 	nextSub: [
@@ -411,19 +399,17 @@ function Scene({
 								</text>
 							</g>
 						))}
-						{(narrow ? [PUT_WING, 100, CALL_WING] : [90, 100, 110]).map(
-							(tick) => (
-								<text
-									key={tick}
-									x={L.xS(tick)}
-									y={L.smileBottom + 18}
-									textAnchor="middle"
-									className="wt-small"
-								>
-									{`$${Number.isInteger(tick) ? tick : tick.toFixed(2)}`}
-								</text>
-							),
-						)}
+						{[PUT_WING, 100, CALL_WING].map((tick) => (
+							<text
+								key={tick}
+								x={L.xS(tick)}
+								y={L.smileBottom + 18}
+								textAnchor="middle"
+								className="wt-small"
+							>
+								{`$${Number.isInteger(tick) ? tick : tick.toFixed(2)}`}
+							</text>
+						))}
 						{[
 							["put", PUT_WING, 100, 28],
 							["call", 100, CALL_WING, 43],
@@ -831,24 +817,22 @@ function build(context: FilmContext) {
 	tl.to(one("g-row-frame"), { opacity: 0, duration: 0.3 }, 16.0);
 	show(one("g-col-frame"), 16.2, "below", 0.4);
 	show(one("c-head"), 16.2);
-	show(one("g-earnings"), 17.0, "right", 0.4);
 
 	// ——— wings: the Oct 18 smile ———
 	tl.addLabel("wings", 19.8);
 	hide([one("r-head"), one("c-head")], 19.8);
-	sink(19.8);
-	tl.set(charts.grid, { opacity: 0 }, 20.1);
-	tl.set(charts.smile, { opacity: 1 }, 20.1);
+	tl.to(charts.grid, { opacity: 0, duration: 0.3, ease: "none" }, 19.9);
 	show(one("w-head"), 20.15);
-	rise(20.2);
-	tl.to(
+	tl.set(
 		one("smile-clip"),
-		{
-			attr: { width: L.right - L.smileLeft + 8 },
-			duration: 1.1,
-			ease: "power2.inOut",
-		},
-		20.8,
+		{ attr: { width: L.right - L.smileLeft + 8 } },
+		20.2,
+	);
+	tl.fromTo(
+		charts.smile,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "none" },
+		20.2,
 	);
 	for (const [i, name] of (["atm", "put", "call"] as const).entries()) {
 		const at = 21.9 + i * 0.7;
@@ -873,7 +857,6 @@ function build(context: FilmContext) {
 				0.4,
 			);
 	}
-	show(one("d-head"), 23.9);
 	// Spend the wing hold drawing the two unequal, strike-aligned distances.
 	d.trace(one<SVGPathElement>("w-distance-put"), 25.0, { duration: 0.45 });
 	d.trace(one<SVGPathElement>("w-distance-call"), 25.55, { duration: 0.45 });
