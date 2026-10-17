@@ -24,7 +24,6 @@ import {
 	NET,
 	RANGE,
 	ROLL_QUANTITY,
-	ROLL_SPOT,
 	SOLD,
 	STOCK_COST,
 	shortLeg110,
@@ -106,6 +105,7 @@ const copy = {
 		`net cost ${dollars(-SPREAD_LOW)}`,
 		`净成本 ${dollars(-SPREAD_LOW)}`,
 	],
+	spreadShort: ["short 105", "105 空头"],
 	axisProfit: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
 	axisPayoff: ["Oct 18 payoff · per contract", "10月18日到期价值 · 每张"],
 	axisBoth: ["Oct 18", "10月18日"],
@@ -114,17 +114,20 @@ const copy = {
 	a2Head: ["Profit after entry cost.", "扣除建仓成本后的盈亏。"],
 	long105: ["long 105", "105 多头"],
 	short110: ["short 110", "110 空头"],
+	readoutLong: ["long", "多头"],
+	readoutShort: ["short", "空头"],
+	readoutTotal: ["total", "合计"],
 	together: ["payoff", "到期价值"],
 	lessCost: [
-		`payoff ${dollars(spreadPayoff(SPOT))} − cost ${dollars(NET)}`,
-		`到期 ${dollars(spreadPayoff(SPOT))} − 成本 ${dollars(NET)}`,
+		`${dollars(spreadPayoff(SPOT))} − ${dollars(NET)}`,
+		`${dollars(spreadPayoff(SPOT))} − ${dollars(NET)}`,
 	],
 	spot: [`ALFA $${SPOT}`, `ALFA $${SPOT}`],
 	rHead: ["Sold at the bid, bought at the ask.", "买价卖出，卖价买入。"],
 	r2Head: ["Two labels, one decision: a roll.", "两个标签，一个决定：移仓。"],
 	rollTag: [
-		`Fri Oct 4 · ALFA ${usd(ROLL_SPOT)}`,
-		`10月4日 周五 · ALFA ${usd(ROLL_SPOT)}`,
+		`Fri Oct 4 · ${count(ROLL_QUANTITY)} contracts per leg`,
+		`10月4日 周五 · 每腿 ${count(ROLL_QUANTITY)} 张合约`,
 	],
 	sellOct: ["sell Oct 18 · 100 call", "卖出 10月18日 · 100 看涨"],
 	buyNov: ["buy Nov 15 · 100 call", "买入 11月15日 · 100 看涨"],
@@ -199,14 +202,19 @@ function Scene({
 		</text>
 	);
 	const readouts: [string, Copy, string, string][] = [
-		["ro-0", copy.long105, signedDollars(longLeg(SPOT)), "var(--tone-ink)"],
+		["ro-0", copy.readoutLong, signedDollars(longLeg(SPOT)), "var(--tone-ink)"],
 		[
 			"ro-1",
-			copy.short110,
+			copy.readoutShort,
 			signedDollars(shortLeg110(SPOT)),
 			"var(--tone-ink)",
 		],
-		["ro-2", copy.together, dollars(spreadPayoff(SPOT)), toneColor("focus")],
+		[
+			"ro-2",
+			copy.readoutTotal,
+			dollars(spreadPayoff(SPOT)),
+			toneColor("focus"),
+		],
 	];
 	const rows: [Copy, Copy, Copy][] = [
 		[copy.sellOct, copy.toClose, copy.bearish],
@@ -486,6 +494,16 @@ function Scene({
 							className={`wt-film-num ${toneClass.up}`}
 						>
 							{signedDollars(SPREAD_HIGH)}
+						</Word>
+						<Word
+							name="g-spread-short"
+							x={L.x(CALL_105.strike + 2)}
+							y={L.y(SPREAD_HIGH) + T.small * 1.5}
+							size={T.small * 1.1}
+							anchor="start"
+							className="wt-film-type wt-film-dim"
+						>
+							{t(copy.spreadShort)}
 						</Word>
 						{[CALL_105, CALL_110].map((c) => (
 							<g key={c.strike} data-f={`k-${c.strike}`}>
@@ -796,6 +814,12 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5 },
 		spreadLabelAt,
 	);
+	tl.fromTo(
+		one("g-spread-short"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.35, ease: "power3.out" },
+		18.35,
+	);
 
 	// ——— add: the hero. Signed legs at $115, then the cost. ———
 	tl.addLabel("add", 21.35);
@@ -807,6 +831,7 @@ function build(context: FilmContext) {
 			one("g-spread"),
 			one("g-spread-low"),
 			one("g-spread-high"),
+			one("g-spread-short"),
 		],
 		21.35,
 		0.3,
