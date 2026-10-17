@@ -66,6 +66,10 @@ const ratioResult: Copy = [
 	`${volumeToOi(CRUX).toFixed(2)}×`,
 	`${volumeToOi(CRUX).toFixed(2)}倍`,
 ];
+const betAssertion: Copy = [
+	"Someone opened large CRUX puts before news.",
+	"消息前，有人建立了大额 CRUX 看跌仓位。",
+];
 const proofs: {
 	id: string;
 	tag: Copy;
@@ -77,7 +81,7 @@ const proofs: {
 	{
 		id: "bet",
 		tag: ["Check · the bet", "核查 · 押注"],
-		source: ["A large bearish bet on CRUX", "CRUX 上的大额看空押注"],
+		source: betAssertion,
 		basis: [
 			"No trader, motive, or open/close data.",
 			"缺少交易者、动机与开平仓数据。",
@@ -127,6 +131,8 @@ function layout(width: number) {
 		barY: H * 0.26,
 		barH: H * 0.18,
 		panelY: H * 0.53,
+		draftY: H * (narrow ? 0.72 : 0.53),
+		draftH: H * (narrow ? 0.25 : 0.28),
 		panelW: narrow ? room : (room - 20) / 2,
 		panelText: T.body,
 		panelPad: narrow ? 12 : 16,
@@ -140,10 +146,7 @@ const copy = {
 		"TradingFlow AI · about Monday's screen",
 		"TradingFlow AI · 关于周一的筛选",
 	],
-	qQuote: [
-		"Someone opened large CRUX puts before news.",
-		"消息前，有人建立了大额 CRUX 看跌仓位。",
-	],
+	qQuote: betAssertion,
 	qLine: ["What does Monday's data support?", "周一的数据支持什么？"],
 	sortHead: ["Sort claims by evidence.", "按依据给每句话分类。"],
 	sortHeadShort: ["Sort by evidence.", "按依据分类。"],
@@ -700,7 +703,11 @@ function Scene({
 				</g>
 				<path
 					data-f="draft-branch"
-					d={`M ${margin + room * 0.75} ${L.barY + L.barH} V ${L.panelY - 7} m -4 -4 l 4 4 l 4 -4`}
+					d={
+						L.narrow
+							? `M ${margin + room} ${L.barY + L.barH} H ${W - 14} V ${L.draftY - 7} H ${margin + room * 0.75} m -4 -4 l 4 4 l 4 -4`
+							: `M ${margin + room * 0.75} ${L.barY + L.barH} V ${L.panelY - 7} m -4 -4 l 4 4 l 4 -4`
+					}
 					fill="none"
 					stroke={toneColor("focus")}
 					strokeWidth={2}
@@ -708,16 +715,16 @@ function Scene({
 				<g data-f="p-edit">
 					<rect
 						x={draftX}
-						y={L.panelY}
+						y={L.draftY}
 						width={L.panelW}
-						height={H * 0.28}
+						height={L.draftH}
 						rx={12}
 						className="wt-focus-shape"
 					/>
 					<Word
 						name="draft-owner"
 						x={draftX + L.panelPad}
-						y={L.panelY + L.panelPad + T.body}
+						y={L.draftY + L.panelPad + T.body}
 						size={T.body * 1.05}
 						anchor="start"
 						className="wt-film-type wt-film-accent"
@@ -727,7 +734,7 @@ function Scene({
 					<Word
 						name="draft-tools"
 						x={draftX + L.panelPad}
-						y={L.panelY + L.panelPad + T.body * 2.7}
+						y={L.draftY + L.panelPad + T.body * 2.7}
 						size={T.body}
 						anchor="start"
 						className="wt-film-type wt-film-dim"
@@ -737,7 +744,7 @@ function Scene({
 					<Word
 						name="draft-title"
 						x={draftX + L.panelPad}
-						y={L.panelY + L.panelPad + T.body * 4.1}
+						y={L.draftY + L.panelPad + T.body * 4.1}
 						size={T.body}
 						anchor="start"
 					>
@@ -746,7 +753,7 @@ function Scene({
 					<Word
 						name="draft-field"
 						x={draftX + L.panelPad}
-						y={L.panelY + L.panelPad + T.body * 5.5}
+						y={L.draftY + L.panelPad + T.body * 5.5}
 						size={T.body}
 						anchor="start"
 					>
@@ -905,32 +912,37 @@ function build(context: FilmContext) {
 	show(one("p-insight"), 32.3);
 	// One continuing headline covers explanation and private editing.
 	// Keep the official recipe visible while a separate private card is built.
-	// On a phone the private card takes the insight's place, so the insight keeps its full
-	// sentence hold there and the card follows it; the desktop builds the card beside it sooner.
+	// On a phone, the private card stacks below Insight during its full sentence hold; the
+	// connector routes around Insight. Desktop keeps the side-by-side card and earlier branch.
 	if (L.narrow) hide(one("p-insight"), 35.9, 0.35, 0);
-	fade(one("p-edit"), L.narrow ? 36.25 : 35.25);
-	d.trace(one<SVGPathElement>("draft-branch"), L.narrow ? 36.25 : 34.65, {
-		duration: 0.6,
+	fade(one("p-edit"), L.narrow ? 35.3 : 35.25);
+	d.trace(one<SVGPathElement>("draft-branch"), L.narrow ? 35.3 : 34.65, {
+		duration: L.narrow ? 0.8 : 0.6,
 	});
-	fade(one("draft-title"), L.narrow ? 36.45 : 35.45);
+	fade(one("draft-title"), L.narrow ? 35.5 : 35.45);
 	// The matching field inherits its source's emphasis, then both settle together.
 	const officialField = one("official-field");
 	const draftField = one("draft-field");
 	tl.set(
 		officialField,
 		{ attr: { class: `wt-film-type ${toneClass.focus}` } },
-		36.35,
+		L.narrow ? 35.4 : 36.35,
 	);
 	tl.set(
 		draftField,
 		{ attr: { class: `wt-film-type ${toneClass.focus}` } },
-		36.45,
+		L.narrow ? 35.5 : 36.45,
 	);
-	tl.fromTo(draftField, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 36.45);
+	tl.fromTo(
+		draftField,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		L.narrow ? 35.5 : 36.45,
+	);
 	tl.set(
 		[officialField, draftField],
 		{ attr: { class: "wt-film-type" } },
-		36.95,
+		L.narrow ? 36.0 : 36.95,
 	);
 	// Cut: the claim.
 	hide(
