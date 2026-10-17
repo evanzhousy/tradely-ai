@@ -953,7 +953,8 @@ function build(context: FilmContext) {
 
 	// ——— claims: the hero. All five, audited and repaired. ———
 	tl.addLabel("claims", 22.6);
-	d.swap([heads[0], heads[1]], heads[2], 22.6);
+	// The headline leads the cut: it changes while the table is still in place.
+	d.swap([heads[0], heads[1]], heads[2], 22.3);
 	hide(
 		[
 			...kids("cols"),
