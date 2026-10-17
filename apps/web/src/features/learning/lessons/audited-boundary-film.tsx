@@ -43,9 +43,9 @@ import {
  *   frame     8.6–17.6   subject, universe; measure, interval; evidence, revision
  *   answer    17.6–32.05  hero: five strikes; observed; calculated; interpretation; the
  *                        split, labelled and connected; qualified; locked; then the gap
- *   log       32.05–41.6  record 1; Tuesday's 120 call builds 1,065 + 30 = 1,095, then
- *                        ≤ 51% → 540 ÷ 1,095 ≈ 49%; read the revision, then calls → puts
- *                        opens record 2 and clears the calls proof
+ *   log       32.05–41.6  record 1; Tuesday's 120 call updates the total to 1,095; the
+ *                        revised answer records 540 ÷ 1,095 ≈ 49% and keeps Monday's
+ *                        bound; then calls → puts opens record 2 and clears the calls proof
  *   claim     41.6–45.9 a question someone else can check
  *   next      45.9–47.5 Next: comparison groups
  */
@@ -55,6 +55,7 @@ const MAX = 560;
 /** The claim cards: the interpretation, and the observed spread leg that undercuts it. */
 const STORY_CARD = 2;
 const SPREAD_CARD = 3;
+const UNKNOWN_CARD = 4;
 const LEAD = LEADER.volume ?? 0;
 type Evidence = "observed" | "calculated" | "interpretation" | "unknown";
 const tone: Record<Evidence, string> = {
@@ -217,8 +218,8 @@ const records: { title: Copy; question: Copy; answer: Copy; tag: Copy }[] = [
 			"10月18日 看涨：各行权价成交量",
 		],
 		answer: [
-			`110 leads what's covered · ≤ ${share(LEAD, COVERED)} of all`,
-			`110 在已覆盖中领先 · 占全部 ≤ ${share(LEAD, COVERED)}`,
+			`≤${share(LEAD, COVERED)} of all; 110 leads known volume.`,
+			`占全部≤${share(LEAD, COVERED)}；已覆盖成交中 110 领先。`,
 		],
 		tag: ["kept", "保留"],
 	},
@@ -240,8 +241,8 @@ const revised = {
 		`周一 16:05 · ≤${share(LEAD, COVERED)} · 保留`,
 	],
 	shortAnswer: [
-		`110 leads · ${share(LEAD, WITH_LATE)}`,
-		`110 领先 · 占 ${share(LEAD, WITH_LATE)}`,
+		`110 leads · ${count(LEAD)}÷${count(WITH_LATE)}≈${share(LEAD, WITH_LATE)}`,
+		`110 领先 · ${count(LEAD)}÷${count(WITH_LATE)}≈${share(LEAD, WITH_LATE)}`,
 	],
 	tag: ["revised", "已修订"],
 } as const satisfies Record<string, Copy>;
@@ -250,7 +251,7 @@ const copy = {
 	title: ["Research questions", "研究问题"],
 	titleSub: ["what evidence can answer", "证据能回答什么"],
 	qTag: ["a research question", "一个研究问题"],
-	qLine: ["“Where’s the action in ALFA?”", "「ALFA 的热点在哪？」"],
+	qLine: ["Where’s ALFA most active?", "ALFA 哪里交易最活跃？"],
 	qBig: ["Can anyone check the answer?", "答案有人能核对吗？"],
 	lateDay: ["late · Tue 09:00", "迟到 · 周二 09:00"],
 	calls: ["calls", "看涨"],
@@ -258,8 +259,8 @@ const copy = {
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
 	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
 	a2Head: [
-		"“Favor 110” is a story, not a fact.",
-		"“偏好 110”是叙事，不是事实。",
+		"“Favor 110” is interpretation, not fact.",
+		"“偏好 110”是解读，不是事实。",
 	],
 	missing: ["not delivered", "未送达"],
 	spreadLeg: ["one spread leg", "一条价差腿"],
@@ -269,16 +270,16 @@ const copy = {
 	unknown: ["unknown", "未知"],
 	gHead: ["Keep a record of every answer.", "为每个答案留一份记录。"],
 	g2Head: [
-		"Same question: revise. New one: new record.",
-		"同一问题：修订；新问题：新记录。",
+		"Revise in place; new question, new record.",
+		"原题修订；新题新建记录。",
 	],
 	claimBig: [
 		"Ask a question someone else can check.",
 		"提一个别人能核对的问题。",
 	],
 	claimSub: [
-		"Name what counts; tag each claim's evidence.",
-		"说清什么算数；标明每个结论的证据。",
+		"Define scope; tag each claim's evidence.",
+		"说清范围；标明每条结论的证据。",
 	],
 	nextBig: ["Next: comparison groups", "下一课：比较范围"],
 	nextSub: ["who belongs and who is missing", "谁该纳入，谁缺失"],
@@ -323,6 +324,14 @@ function Scene({
 		16 +
 		textWidth(t(LATE_PREFIX), T.body * (locale === "zh" ? 0.95 : 0.86)) +
 		10;
+	const unknownTagX =
+		L.barX +
+		L.barMax * 0.3 +
+		8 +
+		textWidth(t(copy.missing).toUpperCase(), T.small) +
+		16;
+	const unknownTagY =
+		L.barRowY(SERIES.length - 1) + L.barH / 2 + T.small * 0.38;
 	const proofX = margin + 16;
 	const proofParts = [count(COVERED), "+", count(LATE), "=", count(WITH_LATE)];
 	const proofNames = [
@@ -340,31 +349,6 @@ function Scene({
 				(x, part) => x + textWidth(part, L.proofSize) + L.proofSize * 0.5,
 				0,
 			);
-	const shareParts = [
-		`≤ ${share(LEAD, COVERED)}`,
-		"→",
-		count(LEAD),
-		"÷",
-		count(WITH_LATE),
-		"≈",
-		share(LEAD, WITH_LATE),
-	];
-	const shareNames = [
-		"rev-bound",
-		"rev-share-arrow",
-		"rev-numerator",
-		"rev-divide",
-		"rev-denominator",
-		"rev-approx",
-		"rev-share",
-	];
-	// Fit the complete bound-to-division line without reducing the phone's type.
-	const shareGap = L.proofSize * (narrow ? 0.35 : 0.5);
-	const shareAt = (i: number) =>
-		proofX +
-		shareParts
-			.slice(0, i)
-			.reduce((x, part) => x + textWidth(part, L.proofSize) + shareGap, 0);
 	// On a phone the connector clears the chart, then follows the cards' left gutter.
 	// On desktop, leave the bar below its figures and follow the claim cards' gutter.
 	const segBottom = L.barRowY(leaderRow) + L.barH;
@@ -560,7 +544,7 @@ function Scene({
 			{claims.map((claim, i) => (
 				<g key={t(claim.text)} data-f={`claim-${i}`}>
 					{/* The first two evidence lines share one panel and enter together. */}
-					{i !== 1 ? (
+					{i !== 1 && i !== UNKNOWN_CARD ? (
 						<rect
 							x={L.claimX}
 							y={L.claimY(i)}
@@ -588,15 +572,17 @@ function Scene({
 							strokeWidth={1.5}
 						/>
 					) : null}
-					<text
-						data-f={`claim-${i}-text`}
-						x={L.claimX + 12 + (i === SPREAD_CARD ? 20 : 0)}
-						y={L.claimY(i) + L.claimH(i) / 2 + claimSize(i) * 0.36}
-						className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
-						style={{ fontSize: claimSize(i) }}
-					>
-						{claimText(i)}
-					</text>
+					{i !== UNKNOWN_CARD ? (
+						<text
+							data-f={`claim-${i}-text`}
+							x={L.claimX + 12 + (i === SPREAD_CARD ? 20 : 0)}
+							y={L.claimY(i) + L.claimH(i) / 2 + claimSize(i) * 0.36}
+							className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
+							style={{ fontSize: claimSize(i) }}
+						>
+							{claimText(i)}
+						</text>
+					) : null}
 					{i === STORY_CARD ? (
 						<line
 							data-f="story-strike"
@@ -619,9 +605,13 @@ function Scene({
 					) : null}
 					<text
 						data-f={`claim-${i}-tag`}
-						x={L.claimX + L.claimW - 12}
-						y={L.claimY(i) + L.claimH(i) / 2 + T.small * 0.36}
-						textAnchor="end"
+						x={i === UNKNOWN_CARD ? unknownTagX : L.claimX + L.claimW - 12}
+						y={
+							i === UNKNOWN_CARD
+								? unknownTagY
+								: L.claimY(i) + L.claimH(i) / 2 + T.small * 0.36
+						}
+						textAnchor={i === UNKNOWN_CARD ? "start" : "end"}
 						className={`wt-film-tag ${tone[claim.evidence]}`}
 						style={{
 							fontSize: T.small * 0.95,
@@ -739,7 +729,7 @@ function Scene({
 					{t(copy.lateDay).toUpperCase()}
 				</text>
 			</g>
-			{/* The late series changes the denominator first, then resolves the bound. */}
+			{/* The late series updates the total before the saved answer is revised. */}
 			<g data-f="rev-proof">
 				{proofParts.map((part, i) => (
 					<Word
@@ -750,19 +740,6 @@ function Scene({
 						size={L.proofSize}
 						anchor="start"
 						className={`wt-film-num ${i === 2 || i === 4 ? "wt-film-accent" : ""}`}
-					>
-						{part}
-					</Word>
-				))}
-				{shareParts.map((part, i) => (
-					<Word
-						key={shareNames[i]}
-						name={shareNames[i]}
-						x={shareAt(i)}
-						y={L.proofY(1)}
-						size={L.proofSize}
-						anchor="start"
-						className={`wt-film-num ${i === 4 || i === 6 ? "wt-film-accent" : ""}`}
 					>
 						{part}
 					</Word>
@@ -937,9 +914,10 @@ function build(context: FilmContext) {
 		...heads,
 		...fieldRows,
 		...strikes,
-		...claimRows,
+		...claimRows.filter((_, i) => i !== UNKNOWN_CARD),
+		tags[UNKNOWN_CARD],
 		// The first pair's tags arrive with their shared evidence panel.
-		...tags.slice(STORY_CARD),
+		...tags.slice(STORY_CARD, UNKNOWN_CARD),
 		one("spread-seg"),
 		one("spread-trace"),
 		one("story-strike"),
@@ -1109,8 +1087,8 @@ function build(context: FilmContext) {
 	show(heads[2], 27.95);
 	// After the lock, once it has been seen: what the data doesn't hold.
 	// Both the lock and its answer settle by 28.45: leave 1.5 s exclusively for them.
-	show(claimRows[4], 29.95, "right");
-	stamp(tags[4], 30.35);
+	// Put the unknown evidence tag beside the hatched, undelivered 120 row.
+	stamp(tags[UNKNOWN_CARD], 30.35);
 
 	// ——— log: revise, or start anew ———
 	tl.addLabel("log", 32.05);
@@ -1141,23 +1119,8 @@ function build(context: FilmContext) {
 		{ opacity: 0.2, duration: 0.3, ease: "power3.out" },
 		33.95,
 	);
-	// The completed 1,095 settles at 34.25 and stands alone until 35.25.
-	// Matching colour then connects it to a settled, truthful division; no crowded flight.
-	tl.fromTo(
-		[
-			one("rev-bound"),
-			one("rev-share-arrow"),
-			one("rev-numerator"),
-			one("rev-divide"),
-			one("rev-denominator"),
-			one("rev-approx"),
-			one("rev-share"),
-		],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		35.25,
-	);
-	// The complete derivation settles at 35.55, then gets its full quiet second.
+	// The completed total settles at 34.25 and remains as the only free-standing calculation.
+	// The record receives the revised share with its answer at 36.55.
 	const reviseAt = 36.55;
 	tl.set(one("rec-0-box"), { attr: { class: "wt-focus-shape" } }, reviseAt);
 	// Save in place: the crowded lane needs no flight or folded timestamp.
