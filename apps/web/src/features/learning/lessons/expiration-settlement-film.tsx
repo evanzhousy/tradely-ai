@@ -123,8 +123,7 @@ const copy = {
 	cash: ["$9,500", "$9,500"],
 	shares: ["100 ALFA", "100 股 ALFA"],
 	official: ["official settlement", "官方结算值"],
-	thursday: ["Thursday's close, ignored", "周四收盘，不算"],
-	thursdayShort: ["Thu close · ignored", "周四收盘 · 不算"],
+	thursday: ["Thu close · ignored", "周四收盘 · 不算"],
 	payout: ["writer pays", "义务方支付"],
 	windowHead: [
 		"American: any trading day. European: at expiry.",
@@ -486,38 +485,47 @@ function Scene({
 				})}
 			</g>
 			<g data-f="cash">
-				{(
-					[
-						["c-official", copy.official, count(INDEX_SETTLES), ""],
-						[
-							"c-thursday",
-							narrow ? copy.thursdayShort : copy.thursday,
-							count(INDEX_LAST),
-							"wt-film-dim",
-						],
-					] as const
-				).map(([name, tag, num, tone], i) => (
-					<g key={name} data-f={name}>
-						<text
-							x={W * (narrow ? [0.27, 0.73][i] : [0.32, 0.68][i])}
-							y={H * 0.34}
-							textAnchor="middle"
-							className="wt-film-tag"
-							style={{ fontSize: T.small }}
-						>
-							{t(tag).toUpperCase()}
-						</text>
-						<text
-							x={W * (narrow ? [0.27, 0.73][i] : [0.32, 0.68][i])}
-							y={H * 0.34 + T.num * 1.3}
-							textAnchor="middle"
-							className={`wt-film-num ${tone}`}
-							style={{ fontSize: T.num }}
-						>
-							{num}
-						</text>
-					</g>
-				))}
+				{/* The official input lives only in this calculation, never in a duplicate quote. */}
+				<g data-f="c-official">
+					<Word
+						name="c-official-label"
+						x={W / 2}
+						y={H * 0.34}
+						size={T.small}
+						className="wt-film-tag"
+					>
+						{t(copy.official).toUpperCase()}
+					</Word>
+					<Word
+						name="c-calculation"
+						x={W / 2}
+						y={H * 0.34 + T.num * 1.3}
+						size={T.head}
+						className="wt-film-num"
+					>
+						{`(${count(INDEX_SETTLES)} − ${count(INDEX_STRIKE)}) × $100`}
+					</Word>
+				</g>
+				<g data-f="c-thursday">
+					<Word
+						name="c-thursday-label"
+						x={W / 2}
+						y={H * 0.85}
+						size={T.small}
+						className="wt-film-tag"
+					>
+						{t(copy.thursday).toUpperCase()}
+					</Word>
+					<Word
+						name="c-thursday-value"
+						x={W / 2}
+						y={H * 0.85 + T.num * 1.3}
+						size={T.num}
+						className="wt-film-num"
+					>
+						{count(INDEX_LAST)}
+					</Word>
+				</g>
 				<g data-f="c-pays">
 					<text
 						x={W / 2}
@@ -536,15 +544,6 @@ function Scene({
 						style={{ fontSize: T.big * 0.8 }}
 					>
 						{usd(PAYS, 0)}
-					</text>
-					<text
-						x={W / 2}
-						y={H * 0.6 + T.big * 0.9 + T.body * 2}
-						textAnchor="middle"
-						className="wt-film-num wt-film-dim"
-						style={{ fontSize: text }}
-					>
-						{`(${count(INDEX_SETTLES)} − ${count(INDEX_STRIKE)}) × $100`}
 					</text>
 				</g>
 			</g>
@@ -965,56 +964,55 @@ function build(context: FilmContext) {
 		// GSAP processes function-valued plugin vars per target; AttrVars omits this form.
 		return attributes as unknown as gsap.TweenVars["attr"];
 	};
-	// One attribute tween owns every changing position, including the connector.
-	// Amounts are read from the cap's actual height, never from a separate counter.
-	tl.fromTo(
+	// There is no spare second between the accepted rests for a readable count.
+	// Compare two settled states instead: fade out the Oct 4 marks, replace all
+	// geometry and amounts together while invisible, then fade in expiry's state.
+	// No eased clock or intermediate arithmetic is implied; the exercise bar stays up.
+	tl.to(
 		comparisonMarks,
-		{ attr: comparisonAttributes(OCT4.time) },
-		{
-			attr: comparisonAttributes(OCT18.time),
-			duration: 0.8,
-			ease: "power2.inOut",
-			immediateRender: false,
-			onUpdate: () => {
-				const time =
-					(Number(cap.getAttribute("height")) / L.barH(OCT4.time)) * OCT4.time;
-				const cents = Math.round(time);
-				sale.textContent = usd(OCT4.intrinsic + cents);
-				timeLabel.textContent = L.narrow
-					? usd(cents)
-					: `${usd(cents)} ${d.t(copy.time)}`;
-			},
-		},
+		{ opacity: 0, duration: 0.4, ease: "power2.in" },
 		12.8,
 	);
+	tl.set(comparisonMarks, { attr: comparisonAttributes(OCT18.time) }, 13.2);
+	tl.set(sale, { textContent: usd(OCT18.bid) }, 13.2);
+	tl.set(
+		timeLabel,
+		{
+			textContent: L.narrow
+				? usd(OCT18.time)
+				: `${usd(OCT18.time)} ${d.t(copy.time)}`,
+		},
+		13.2,
+	);
+	fade(comparisonMarks, 13.2, 0.4);
 	fade([one("component-in"), one("component-tv")], 11.3);
 	// Construction and component labels settle at 11.8; quiet until 12.8.
 	hide(one("d-oct4"), 12.8);
 	// A final-date label must not describe a cap that still contains time value.
 	fade(one("d-oct18"), 13.6, 0.3);
-	// Cap/total settle at 13.6, then the final date at 13.9. Equality is true first.
+	// Final comparison settles at 13.6, then the date at 13.9. Equality is true first.
 	show(heads[1], 13.9);
 
 	tl.addLabel("settle", 17.5);
 	hide([heads[0], heads[1], ...flat("exit")], 17.5);
 	show(heads[2], 17.85);
-	show(
+	fade(
 		kids("shares").filter((el) => !el.getAttribute("data-f")),
-		18.3,
+		17.8,
 	);
-	kids("shares")
-		.filter((el) => el.getAttribute("data-f")?.startsWith("flow-"))
-		.forEach((flow, i) => {
-			show(flow, 18.8 + i * 0.5, i ? "below" : "right");
-		});
+	// Parties settle at 18.3, then stand for 1 s. Cash and shares are one exchange;
+	// reveal both in place, keeping the completed proof's 19.8–21.4 rest intact.
+	fade([one("flow-0"), one("flow-1")], 19.3);
 
 	tl.addLabel("cash", 21.4);
 	d.swap(heads[2], heads[3], 21.4);
 	hide(kids("shares"), 21.4);
-	show(one("c-official"), 21.9);
-	show(one("c-thursday"), 22.3);
-	tl.to(one("c-thursday"), { opacity: 0.4, duration: 0.4 }, 23.1);
-	// Fade the settled formula and payout as a group; never scale an SVG group.
+	// One calculation replaces the duplicated official quote. Both inputs settle at
+	// 22.2; the excluded close gets a full second before focus moves to the payout.
+	fade([one("c-official"), one("c-thursday")], 21.7);
+	tl.to(one("c-thursday"), { opacity: 0.3, duration: 0.4 }, 23.2);
+	// Keep the accepted payout settlement/quiet interval: 23.75–25.3. Its calculation
+	// is already still and stays readable for 3.1 s, from 22.2 until the cut.
 	fade(one("c-pays"), 23.2, 0.55);
 
 	tl.addLabel("window", 25.3);
