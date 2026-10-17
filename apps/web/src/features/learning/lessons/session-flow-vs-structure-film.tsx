@@ -49,9 +49,9 @@ import {
  *
  *   open      0–4        "Volume and open interest"
  *   question  4–8.6      100 open; 10 bought to open, 10 sold to open: +10 or +20?
- *   ledger    8.6–22.0   both open +10; changed hands ±0; both closed −4
- *   clock     22.0–31.9  hero: Monday's close holds; the overnight move leads to publication
- *   bucket    31.9–41.85 420 holds 32.2–34.2; → 620 as members change (+500 in, −300 out)
+ *   ledger    8.6–22.65  both open +10; changed hands ±0; both closed −4
+ *   clock     22.65–32.55 hero: Monday's close holds; the overnight move leads to publication
+ *   bucket    32.55–41.85 420 holds 32.85–34.2; → 620 as members change (+500 in, −300 out)
  *                        at Sep 9's figures, held 35.2–37.2; clears before live growth
  *                        → 650 with 620 + 10 + 20 = 650, settled 38.3–41.85
  *   claim     41.85–45.9 volume counts trading; open interest, positions
@@ -129,6 +129,11 @@ const monthDay = (date: string): Copy => {
 const shortDate = (date: string) => {
 	const [, month, dayOf] = date.split("-").map(Number);
 	return `${month}/${dayOf}`;
+};
+const bucketRange = (locale: Locale) => {
+	const start = pick(monthDay(earlier.date), locale).toUpperCase();
+	const end = pick(monthDay(later.date), locale).toUpperCase();
+	return locale === "zh" ? `${start}→${end}` : `${start} → ${end}`;
 };
 const hhmm = (minute: number) =>
 	`${String(Math.floor((minute % 1440) / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
@@ -246,20 +251,17 @@ const copy = {
 	friday: [`Friday's count`, "周五的统计"],
 	monday: [`Monday's count`, "周一的统计"],
 	bHead: ["A bucket by days to expiry.", "按距到期天数划分的到期桶。"],
-	b2Head: [
-		"Mostly new members, not new positions.",
-		"主要是换了成员，不是新开仓。",
-	],
+	b2Head: ["Mostly turnover, not new positions.", "成员更替为主，非新开仓。"],
 	/** 620 is Sep 16's members counted at Sep 9's figures: say so while it stands. */
 	wasNote: ["at Sep 9 figures", "按9月9日数据"],
 	bucket: ["14–30 days", "14–30 天"],
 	inBucket: ["in the bucket", "桶内合计"],
 	days: ["days to expiry", "距到期天数"],
 	claimBig: [
-		"Volume counts trading; open interest, positions.",
-		"成交量数交易，未平仓量数持仓。",
+		"Volume is flow; open interest is stock.",
+		"交易是流量，持仓是存量。",
 	],
-	claimSub: ["Compare a series with itself.", "要把同一序列与自己比较。"],
+	claimSub: ["Compare each to itself.", "同一序列，前后对照。"],
 	nextBig: ["Next: tape rows", "下一课：成交记录"],
 	nextSub: ["what one record represents", "一行代表什么"],
 } as const satisfies Record<string, Copy>;
@@ -779,18 +781,24 @@ function Scene({
 					</g>
 				);
 			})}
-			{[earlier.date, later.date].map((date, i) => (
-				<text
-					key={date}
-					data-f={`bt-${i}`}
-					x={margin}
-					y={L.bucketY + T.small}
-					className="wt-film-tag"
-					style={{ fontSize: T.small }}
-				>
-					{`${t(copy.inBucket).toUpperCase()} · ${t(monthDay(date)).toUpperCase()}`}
-				</text>
-			))}
+			{[earlier.date, later.date].map((date, i) => {
+				const label =
+					i === 0
+						? `${t(copy.inBucket).toUpperCase()} · ${t(monthDay(date)).toUpperCase()}`
+						: bucketRange(locale);
+				return (
+					<text
+						key={date}
+						data-f={`bt-${i}`}
+						x={margin}
+						y={L.bucketY + T.small}
+						className="wt-film-tag"
+						style={{ fontSize: T.small }}
+					>
+						{label}
+					</text>
+				);
+			})}
 			<text
 				data-f="bucket-n"
 				x={margin + room}
@@ -1041,7 +1049,8 @@ function build(context: FilmContext) {
 		const beat = AFTER[i];
 		// The closing row gets a full entrance; its counters follow its settlement.
 		const closing = i === TRADES.length - 1;
-		const oiAt = at + (closing ? 0.3 : 0.65);
+		// The opening counts start only once their row has settled (at + 0.5).
+		const oiAt = at + (closing ? 0.3 : i === 0 ? 1 : 0.65);
 		// Count the opening volume, OI and both sides together. Later prints compare
 		// exact snapshots and cut at their original settlement, preserving every rest.
 		const duration = i === 0 ? 1 : 0.01;
@@ -1074,46 +1083,48 @@ function build(context: FilmContext) {
 		);
 	};
 	trade(0, 10.6);
-	// The answer finishes entering with the opening count's settlement.
-	show(heads[1], 11.25);
-	trade(1, 14.45);
-	d.swap([heads[0], heads[1]], heads[2], 14.8);
-	trade(2, 18.3);
-	show(heads[3], 18.45);
-	// Keep the completed 106/106 balance: it settles at 19.1 and reads quietly until 22.
+	// The row settles at 11.1 and its counts run to 12.1; the answer enters after them.
+	show(heads[1], 12.1);
+	// Each trade row and headline keeps 3.5 s: the answer until 15.6, row 1 until 18.75,
+	// row 2 and its headline until the clock at 22.65.
+	trade(1, 15.25);
+	d.swap([heads[0], heads[1]], heads[2], 15.6);
+	trade(2, 19.1);
+	show(heads[3], 19.15);
+	// Keep the completed 106/106 balance: it settles at 19.9 and reads quietly until 22.65.
 
 	// ——— clock: the hero. Volume live, open interest daily. ———
-	tl.addLabel("clock", 22);
-	d.swap([heads[2], heads[3]], heads[4], 22);
-	d.swap(one("vol-tag"), one("vol-mon-tag"), 22);
-	hide(trades[2], 22);
+	tl.addLabel("clock", 22.65);
+	d.swap([heads[2], heads[3]], heads[4], 22.65);
+	d.swap(one("vol-tag"), one("vol-mon-tag"), 22.65);
+	hide(trades[2], 22.65);
 	// Clear the bars before the OI carry reaches the phone's lower stat.
 	tl.to(
 		[one("bal-long"), one("bal-short")],
 		{ opacity: 0, duration: 0.35, ease: "power3.out" },
-		22,
+		22.65,
 	);
 	// The completed trades remain as dots, without repeating their quantity flights.
-	tl.set(ticks, { opacity: 1 }, 22);
+	tl.set(ticks, { opacity: 1 }, 22.65);
 	// Keep Monday's completed volume. Its true count steps aside, unpublished,
 	// while the figure a screen shows is still Friday's.
-	d.carry(num("oi-n"), num("ghost-n"), 22.2, {
+	d.carry(num("oi-n"), num("ghost-n"), 22.85, {
 		duration: 0.6,
 		arc: L.narrow ? "y" : undefined,
 		reveal: false,
 	});
-	hide(one("oi"), 22.2, 0.3);
+	hide(one("oi"), 22.85, 0.3);
 	// Unpublished, it steps back.
-	tl.set(one("ghost"), { opacity: 1 }, 22.8);
-	show(one("ghost-tag"), 22.8, "above", 0.3);
-	tl.to(one("ghost"), { opacity: 0.7, duration: 0.4 }, 22.9);
-	show(one("ghost-note"), 22.9);
-	show(one("shown"), 22.6);
-	show(one("oi-fri"), 22.8);
-	show(kids("clock"), 22.3);
-	show(clockHead, 22.5);
-	show(clockTime, 22.5);
-	tl.fromTo(tickDots, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 23.1);
+	tl.set(one("ghost"), { opacity: 1 }, 23.45);
+	show(one("ghost-tag"), 23.45, "above", 0.3);
+	tl.to(one("ghost"), { opacity: 0.7, duration: 0.4 }, 23.55);
+	show(one("ghost-note"), 23.55);
+	show(one("shown"), 23.25);
+	show(one("oi-fri"), 23.45);
+	show(kids("clock"), 22.95);
+	show(clockHead, 23.15);
+	show(clockTime, 23.15);
+	tl.fromTo(tickDots, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 23.75);
 	/** The displayed minute drives the time, playhead and completed-print volume. */
 	const tue = L.narrow ? copy.reportShort : (["Tue", "周二"] as const);
 	const clockState = { minute: MON_CLOSE };
@@ -1149,38 +1160,42 @@ function build(context: FilmContext) {
 		);
 	};
 	// Initialize through the same state tween, so reverse seeks restore the close too.
-	clockTo(MON_CLOSE, MON_CLOSE, 22, 0.3);
+	clockTo(MON_CLOSE, MON_CLOSE, 22.65, 0.3);
 	// The completed close tableau keeps its full 2.4 s rest, with the clock at full strength.
-	clockTo(TUE_REPORT, MON_CLOSE, 25.8, 1.5);
+	clockTo(TUE_REPORT, MON_CLOSE, 26.45, 1.5);
 	// Tuesday's report: the shown figure turns to the true count, which is now published.
-	d.flip(one("oi-fri"), one("oi-mon"), 27.3);
-	tl.set(one("oi-fri"), { opacity: 0 }, 27.6);
+	d.flip(one("oi-fri"), one("oi-mon"), 27.95);
+	tl.set(one("oi-fri"), { opacity: 0 }, 28.25);
 	// The true count, published, travels from where it waited to the screen; the screen's
 	// Friday figure makes way for it.
-	tl.to(num("shown-n"), { opacity: 0, duration: 0.3 }, 27.4);
+	tl.to(num("shown-n"), { opacity: 0, duration: 0.3 }, 28.05);
 	d.count(
 		num("shown-n"),
 		FINAL.openInterest,
-		27.95,
+		28.6,
 		(v) => count(Math.round(v)),
 		START_OI,
 		0.01,
 	);
-	d.carry(num("ghost-n"), num("shown-n"), 27.4, { duration: 0.6 });
-	tl.to([one("ghost"), one("ghost-note")], { opacity: 0, duration: 0.3 }, 27.5);
+	d.carry(num("ghost-n"), num("shown-n"), 28.05, { duration: 0.6 });
+	tl.to(
+		[one("ghost"), one("ghost-note")],
+		{ opacity: 0, duration: 0.3 },
+		28.15,
+	);
 	// Round the whole stat, its tag too, so no arm runs through the tag.
-	d.lock(lockOi, 28.3, { around: [one("shown"), one("oi-mon")], pad: 6 });
-	tl.addLabel("hero-lock", 28.3);
-	show(heads[5], 28.3);
+	d.lock(lockOi, 28.95, { around: [one("shown"), one("oi-mon")], pad: 6 });
+	tl.addLabel("hero-lock", 28.95);
+	show(heads[5], 28.95);
 	// After the brackets and answer settle, step back only the clock below the hero.
 	tl.to(
 		[...kids("clock"), ...ticks, clockHead, clockTime],
 		{ opacity: 0.2, duration: 0.3 },
-		30.3,
+		30.95,
 	);
 
 	// ——— bucket: a week moves the members ———
-	tl.addLabel("bucket", 31.9);
+	tl.addLabel("bucket", 32.55);
 	const clockShot = [
 		heads[4],
 		heads[5],
@@ -1199,8 +1214,8 @@ function build(context: FilmContext) {
 	];
 	// A deliberate cut between beats replaces the outgoing clock's separate fade. The
 	// hero keeps its entire settled hold, and the bucket retains a full 0.3 s entrance.
-	tl.set([...clockShot, one("clock")], { opacity: 0 }, 31.9);
-	// Establish the comparison together, then give all its settled marks two seconds.
+	tl.set([...clockShot, one("clock")], { opacity: 0 }, 32.55);
+	// Establish the comparison together, then give all its settled marks 1.35 seconds.
 	show(
 		[
 			heads[6],
@@ -1210,7 +1225,7 @@ function build(context: FilmContext) {
 			one("bucket-n"),
 			one("note-was"),
 		],
-		31.9,
+		32.55,
 		"below",
 		0.3,
 	);
