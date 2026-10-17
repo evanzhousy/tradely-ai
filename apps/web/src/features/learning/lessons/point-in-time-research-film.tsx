@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -264,7 +265,7 @@ function Scene({
 						x={margin + room - 14}
 						y={L.arrY(i) + L.arrH * 0.42}
 						textAnchor="end"
-						className={`wt-film-tag ${state === "known" ? "wt-film-gain" : "wt-film-dim"}`}
+						className={`wt-film-tag ${state === "known" ? toneClass.focus : "wt-film-dim"}`}
 						style={{ fontSize: T.small }}
 					>
 						{t(copy[state]).toUpperCase()}
@@ -418,7 +419,7 @@ function Scene({
 				x={L.misreadingRight}
 				y={L.heroY + T.num * 1.3 + 32}
 				textAnchor="end"
-				className="wt-film-type wt-film-loss"
+				className={`wt-film-type ${toneClass.caution}`}
 				style={{ fontSize: text, textDecoration: "line-through" }}
 			>
 				{`${PERCENTILE}% ${t(["chance of a rise", "上涨概率"])}`}
