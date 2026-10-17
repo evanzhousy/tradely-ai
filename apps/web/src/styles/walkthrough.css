@@ -1043,6 +1043,11 @@
 .wt-drag-ring[data-dragging] {
 	fill: color-mix(in oklab, var(--diagram-accent) 24%, transparent);
 }
+.wt-solved-pulse {
+	fill: none;
+	stroke: var(--tone-focus);
+	stroke-width: 1.5;
+}
 .wt-drag-chevron {
 	fill: none;
 	stroke: var(--diagram-accent);

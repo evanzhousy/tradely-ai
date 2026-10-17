@@ -48,7 +48,12 @@ import { VisualLessonIdentity } from "../visual-lesson-identity";
 import { formatEntry, judge, parseEntry, seededOrder } from "./answers";
 import { TaskPanel } from "./explore-task";
 import { ReviewSummary } from "./review-summary";
-import { CountTo, useTeachMotion } from "./stage";
+import {
+	CountTo,
+	TeachMotionProvider,
+	useMotionFollow,
+	useTeachMotion,
+} from "./stage";
 import type { ExploreTask, Phase, ResultItem, WalkthroughScene } from "./types";
 
 /** Reading time at about 200 words a minute, plus time to look at the diagram. */
@@ -146,6 +151,12 @@ export function Walkthrough({
 	const [draft, setDraft] = useState("");
 	const [invalid, setInvalid] = useState(false);
 	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
+	const {
+		following,
+		reset: resetMotionFollow,
+		noteChange: noteExploreChange,
+		setPointerDragging,
+	} = useMotionFollow();
 	const entryId = useId();
 	const restored = useRef(false);
 	/**
@@ -161,6 +172,12 @@ export function Walkthrough({
 	const current = scene.beats[Math.min(beat, last)];
 	const prediction = predictions[scene.id];
 	const revealAt = scene.predict?.revealAt ?? 1;
+	const task = scene.explore?.task as ExploreTask<unknown> | undefined;
+	const reachSolved =
+		task?.kind === "reach" &&
+		explore !== null &&
+		task.reached(explore) &&
+		solved.has(scene.id);
 
 	const record = useCallback(
 		(
@@ -180,6 +197,7 @@ export function Walkthrough({
 
 	const openScene = useCallback(
 		(next: WalkthroughScene) => {
+			resetMotionFollow();
 			setSceneId(next.id);
 			setBeat(0);
 			setPhase(next.predict && !predictions[next.id] ? "predict" : "watch");
@@ -189,7 +207,7 @@ export function Walkthrough({
 			setInvalid(false);
 			if (lessonId) saveVisualBookmark(lessonId, next.id);
 		},
-		[lessonId, predictions],
+		[lessonId, predictions, resetMotionFollow],
 	);
 
 	useEffect(() => {
@@ -211,6 +229,7 @@ export function Walkthrough({
 
 	const goTo = useCallback(
 		(target: number, mode: VisualLessonPlaybackMode = "manual") => {
+			resetMotionFollow();
 			const next = Math.max(0, Math.min(last, target));
 			// Next and Play are disabled on the last step; if one had focus, hand it to the scene's
 			// first action rather than drop it on the page.
@@ -227,7 +246,7 @@ export function Walkthrough({
 			setBeat(next);
 			if (next === last) finish(mode);
 		},
-		[finish, last, record],
+		[finish, last, record, resetMotionFollow],
 	);
 
 	const advance = useCallback(
@@ -244,6 +263,7 @@ export function Walkthrough({
 
 	const startExplore = () => {
 		if (!scene.explore) return;
+		resetMotionFollow();
 		focusNext.current = "controls";
 		record("visual_lesson_scene_started", "manual", "playground");
 		record("visual_lesson_explored", undefined, "playground");
@@ -269,6 +289,7 @@ export function Walkthrough({
 	};
 
 	const restart = () => {
+		resetMotionFollow();
 		setDraft("");
 		setInvalid(false);
 		setPredictions((all) => {
@@ -757,42 +778,49 @@ export function Walkthrough({
 							<ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
 						</Button>
 					</fieldset>
-					<FrameContext
-						value={{
-							locale,
-							phase,
-							panel,
-							task:
-								phase === "explore" && scene.explore?.task ? (
-									<TaskPanel
-										key={scene.id}
-										task={scene.explore.task as ExploreTask<unknown>}
-										explore={explore}
-										locale={locale}
-										seed={scene.id}
-										solved={solved.has(scene.id)}
-										onSolved={onSolved}
-									/>
-								) : null,
-						}}
+					<TeachMotionProvider
+						following={following}
+						solvedReach={reachSolved}
+						setPointerDragging={setPointerDragging}
 					>
-						<View
-							locale={locale}
-							phase={phase}
-							beat={beat}
-							state={current.state}
-							explore={phase === "explore" ? explore : null}
-							setExplore={(next: unknown) => {
-								record("visual_lesson_explored", undefined, "playground");
-								recordVisual(
-									"visual_lesson_interacted",
-									scene.id,
-									"playground",
-								);
-								setExplore(next);
+						<FrameContext
+							value={{
+								locale,
+								phase,
+								panel,
+								task:
+									phase === "explore" && scene.explore?.task ? (
+										<TaskPanel
+											key={scene.id}
+											task={scene.explore.task as ExploreTask<unknown>}
+											explore={explore}
+											locale={locale}
+											seed={scene.id}
+											solved={solved.has(scene.id)}
+											onSolved={onSolved}
+										/>
+									) : null,
 							}}
-						/>
-					</FrameContext>
+						>
+							<View
+								locale={locale}
+								phase={phase}
+								beat={beat}
+								state={current.state}
+								explore={phase === "explore" ? explore : null}
+								setExplore={(next: unknown) => {
+									noteExploreChange();
+									record("visual_lesson_explored", undefined, "playground");
+									recordVisual(
+										"visual_lesson_interacted",
+										scene.id,
+										"playground",
+									);
+									setExplore(next);
+								}}
+							/>
+						</FrameContext>
+					</TeachMotionProvider>
 				</TabsContent>
 			</Tabs>
 			<p className="sr-only">{t(label)}</p>

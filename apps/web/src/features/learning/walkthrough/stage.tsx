@@ -3,6 +3,7 @@ import * as m from "motion/react-m";
 import {
 	createContext,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
 	useId,
@@ -56,6 +57,79 @@ const none: Transition = { duration: 0 };
 const move: Transition = { type: "tween", duration: 0.55, ease };
 const fade: Transition = { type: "tween", duration: 0.35, ease };
 const follow: Transition = { type: "tween", duration: 0.12, ease: "easeOut" };
+const pulse: Transition = { type: "tween", duration: 0.7, ease: "easeOut" };
+
+type TeachMotionScopeValue = {
+	following: boolean;
+	solvedReach: boolean;
+	setPointerDragging: (dragging: boolean) => void;
+};
+const TeachMotionScope = createContext<TeachMotionScopeValue>({
+	following: false,
+	solvedReach: false,
+	setPointerDragging: () => {},
+});
+
+/**
+ * The pace a scene's marker and its readout share: the move for a step; follow while a handle is
+ * dragged or changes come less than 350 ms apart (a slider being scrubbed).
+ */
+export function useMotionFollow() {
+	const [following, setFollowing] = useState(false);
+	const pointerDragging = useRef(false);
+	const lastChange = useRef(Number.NEGATIVE_INFINITY);
+	const timer = useRef<number | null>(null);
+	const clear = useCallback(() => {
+		if (timer.current !== null) window.clearTimeout(timer.current);
+		timer.current = null;
+	}, []);
+	const reset = useCallback(() => {
+		clear();
+		lastChange.current = Number.NEGATIVE_INFINITY;
+		pointerDragging.current = false;
+		setFollowing(false);
+	}, [clear]);
+	const noteChange = useCallback(() => {
+		const now = performance.now();
+		const rapid = now - lastChange.current < 350;
+		lastChange.current = now;
+		clear();
+		setFollowing(pointerDragging.current || rapid);
+		if (rapid)
+			timer.current = window.setTimeout(() => {
+				timer.current = null;
+				setFollowing(pointerDragging.current);
+			}, 350);
+	}, [clear]);
+	const setPointerDragging = useCallback(
+		(dragging: boolean) => {
+			pointerDragging.current = dragging;
+			clear();
+			if (dragging) {
+				setFollowing(true);
+				return;
+			}
+			const remaining = 350 - (performance.now() - lastChange.current);
+			setFollowing(remaining > 0);
+			if (remaining > 0)
+				timer.current = window.setTimeout(() => {
+					timer.current = null;
+					setFollowing(pointerDragging.current);
+				}, remaining);
+		},
+		[clear],
+	);
+	useEffect(() => clear, [clear]);
+	return { following, reset, noteChange, setPointerDragging };
+}
+
+/** Shares the current interaction pace across a scene's marker and result readout. */
+export function TeachMotionProvider({
+	children,
+	...value
+}: TeachMotionScopeValue & { children: ReactNode }) {
+	return <TeachMotionScope value={value}>{children}</TeachMotionScope>;
+}
 
 /**
  * Teaching motion: long enough to follow a cause to its effect, and off when the reader
@@ -63,14 +137,18 @@ const follow: Transition = { type: "tween", duration: 0.12, ease: "easeOut" };
  */
 export function useTeachMotion() {
 	const reduced = usePrefersReducedMotion();
+	const scope = useContext(TeachMotionScope);
 	return {
 		enabled: !reduced,
-		move: reduced ? none : move,
+		move: reduced ? none : scope.following ? follow : move,
 		fade: reduced ? none : fade,
 		after: (delay: number): Transition =>
 			reduced ? none : { type: "tween", duration: 0.45, ease, delay },
 		/** Tracks a drag: quick enough to stay under the pointer, smooth across snapped steps. */
 		follow: reduced ? none : follow,
+		pulse: reduced ? none : pulse,
+		solvedReach: scope.solvedReach,
+		setPointerDragging: scope.setPointerDragging,
 	};
 }
 
@@ -85,29 +163,24 @@ export function CountTo({
 	value: number;
 	format: (value: number) => string;
 }) {
-	const { enabled, fade } = useTeachMotion();
+	const { enabled, move } = useTeachMotion();
 	const [shown, setShown] = useState(value);
 	const current = useRef(value);
-	const changed = useRef(Number.NEGATIVE_INFINITY);
 	useEffect(() => {
-		// A figure that changes again within a count is being scrubbed; it shows the live value.
-		const now = performance.now();
-		const scrubbing = now - changed.current < 350;
-		changed.current = now;
-		if (!enabled || scrubbing) {
+		if (!enabled) {
 			current.current = value;
 			setShown(value);
 			return;
 		}
 		const controls = animate(current.current, value, {
-			...fade,
+			...move,
 			onUpdate: (latest) => {
 				current.current = latest;
 				setShown(latest);
 			},
 		});
 		return () => controls.stop();
-	}, [value, enabled, fade]);
+	}, [value, enabled, move]);
 	return format(shown);
 }
 

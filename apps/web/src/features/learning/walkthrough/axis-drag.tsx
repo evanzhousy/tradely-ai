@@ -1,6 +1,7 @@
 import type { Transition } from "motion/react";
 import * as m from "motion/react-m";
-import { type PointerEvent, useRef, useState } from "react";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { useTeachMotion } from "./stage";
 
 /**
  * Lets the reader drag a marker along a price axis by pressing anywhere on the drawing.
@@ -22,6 +23,7 @@ export function useAxisDrag(
 	drag: AxisDrag | undefined,
 	toValue: (x: number) => number,
 ) {
+	const motion = useTeachMotion();
 	const [dragging, setDragging] = useState(false);
 	const reported = useRef<number | null>(null);
 	/** Where a touch began, until it moves sideways enough to be a drag rather than a scroll. */
@@ -45,6 +47,7 @@ export function useAxisDrag(
 		reported.current = null;
 		touchFrom.current = null;
 		setDragging(false);
+		motion.setPointerDragging(false);
 	};
 	return {
 		dragging,
@@ -56,6 +59,7 @@ export function useAxisDrag(
 				if (event.button !== 0) return;
 				event.currentTarget.setPointerCapture(event.pointerId);
 				setDragging(true);
+				motion.setPointerDragging(true);
 				if (event.pointerType === "touch")
 					touchFrom.current = { x: event.clientX, y: event.clientY };
 				else report(event);
@@ -91,8 +95,38 @@ export function DragHandle({
 	dragging: boolean;
 	transition: Transition;
 }) {
+	const motion = useTeachMotion();
+	const [pulse, setPulse] = useState<
+		{ id: number; cx: number; cy: number } | undefined
+	>();
+	const pulseSequence = useRef(0);
+	const reached = useRef(false);
+	useEffect(() => {
+		if (!motion.solvedReach) {
+			reached.current = false;
+			setPulse(undefined);
+			return;
+		}
+		if (reached.current) return;
+		reached.current = true;
+		if (motion.enabled) {
+			pulseSequence.current += 1;
+			setPulse({ id: pulseSequence.current, cx, cy });
+		}
+	}, [cx, cy, motion.enabled, motion.solvedReach]);
 	return (
 		<>
+			{pulse && motion.enabled ? (
+				<m.circle
+					key={pulse.id}
+					cx={pulse.cx}
+					cy={pulse.cy}
+					className="wt-solved-pulse"
+					initial={{ r: 6, opacity: 0.6 }}
+					animate={{ r: 26, opacity: 0 }}
+					transition={motion.pulse}
+				/>
+			) : null}
 			<m.circle
 				r={r}
 				className="wt-drag-ring"

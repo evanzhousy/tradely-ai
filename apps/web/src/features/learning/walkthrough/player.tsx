@@ -41,7 +41,11 @@ import { VisualLessonIdentity } from "../visual-lesson-identity";
 import { TaskPanel } from "./explore-task";
 import { type Film, FilmStage } from "./film";
 import { playerCopy as copy } from "./player-copy";
-import { usePrefersReducedMotion } from "./stage";
+import {
+	TeachMotionProvider,
+	useMotionFollow,
+	usePrefersReducedMotion,
+} from "./stage";
 import type { ExploreTask, WalkthroughScene } from "./types";
 import { FrameContext, copy as walkthroughCopy } from "./walkthrough";
 
@@ -113,6 +117,8 @@ export function Player({
 	const [playScene, setPlayScene] = useState(0);
 	const [explore, setExplore] = useState<unknown>(null);
 	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
+	// The playground's marker and its readout keep one pace (stage.tsx).
+	const motionFollow = useMotionFollow();
 	const focusNext = useRef<"heading" | "play" | null>(null);
 	const shots = film.shots;
 	const last = shots.length - 1;
@@ -327,6 +333,7 @@ export function Player({
 		if (!chosen.explore) return;
 		setPlaying(false);
 		setPlayScene(target);
+		motionFollow.reset();
 		setExplore(
 			chosen.explore.start(chosen.beats[chosen.beats.length - 1].state),
 		);
@@ -379,6 +386,13 @@ export function Player({
 		const allDone =
 			tasks.length > 0 && tasks.every((index) => solved.has(scenes[index].id));
 		const View = chosen.View;
+		const playTask = chosen.explore?.task as ExploreTask<unknown> | undefined;
+		// A reach task just solved sends one ring out from the drag handle (axis-drag.tsx).
+		const reachSolved =
+			playTask?.kind === "reach" &&
+			explore !== null &&
+			playTask.reached(explore) &&
+			solved.has(chosen.id);
 		body = (
 			<Tabs
 				className="gap-[inherit]"
@@ -433,49 +447,56 @@ export function Player({
 							})}
 						</div>
 					</div>
-					<FrameContext
-						value={{
-							locale,
-							phase: "explore",
-							panel: allDone ? (
-								<div className="wt-panel wt-done" data-kind="right">
-									<p className="wt-panel-title flex items-center gap-1.5">
-										<CheckIcon className="size-4" aria-hidden="true" />
-										{t(copy.allDone)}
-									</p>
-									<p className="wt-panel-note">{t(copy.allDoneNote)}</p>
-									<div className="wt-panel-actions">{checkYourself}</div>
-								</div>
-							) : null,
-							task: chosen.explore?.task ? (
-								<TaskPanel
-									key={chosen.id}
-									task={chosen.explore.task as ExploreTask<unknown>}
-									explore={explore}
-									locale={locale}
-									seed={chosen.id}
-									solved={solved.has(chosen.id)}
-									onSolved={onSolved}
-								/>
-							) : null,
-						}}
+					<TeachMotionProvider
+						following={motionFollow.following}
+						solvedReach={reachSolved}
+						setPointerDragging={motionFollow.setPointerDragging}
 					>
-						<View
-							locale={locale}
-							phase="explore"
-							beat={chosen.beats.length - 1}
-							state={lastBeat.state}
-							explore={explore}
-							setExplore={(next: unknown) => {
-								recordVisual(
-									"visual_lesson_interacted",
-									chosen.id,
-									"playground",
-								);
-								setExplore(next);
+						<FrameContext
+							value={{
+								locale,
+								phase: "explore",
+								panel: allDone ? (
+									<div className="wt-panel wt-done" data-kind="right">
+										<p className="wt-panel-title flex items-center gap-1.5">
+											<CheckIcon className="size-4" aria-hidden="true" />
+											{t(copy.allDone)}
+										</p>
+										<p className="wt-panel-note">{t(copy.allDoneNote)}</p>
+										<div className="wt-panel-actions">{checkYourself}</div>
+									</div>
+								) : null,
+								task: chosen.explore?.task ? (
+									<TaskPanel
+										key={chosen.id}
+										task={chosen.explore.task as ExploreTask<unknown>}
+										explore={explore}
+										locale={locale}
+										seed={chosen.id}
+										solved={solved.has(chosen.id)}
+										onSolved={onSolved}
+									/>
+								) : null,
 							}}
-						/>
-					</FrameContext>
+						>
+							<View
+								locale={locale}
+								phase="explore"
+								beat={chosen.beats.length - 1}
+								state={lastBeat.state}
+								explore={explore}
+								setExplore={(next: unknown) => {
+									recordVisual(
+										"visual_lesson_interacted",
+										chosen.id,
+										"playground",
+									);
+									motionFollow.noteChange();
+									setExplore(next);
+								}}
+							/>
+						</FrameContext>
+					</TeachMotionProvider>
 				</TabsContent>
 			</Tabs>
 		);
