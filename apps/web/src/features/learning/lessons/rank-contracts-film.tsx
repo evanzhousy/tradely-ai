@@ -106,7 +106,7 @@ const copy = {
 	otm: ["out of the money", "虚值"],
 	otmShort: ["OTM", "虚值"],
 	spread: [
-		`${spreadTrade.time} · shared trade`,
+		`${spreadTrade.time} · one trade`,
 		`${spreadTrade.time} · 同一笔成交`,
 	],
 	buy: ["Buy", "买入"],
@@ -160,12 +160,16 @@ function Scene({
 	const rowY = (r: number) => L.gridTop + r * (L.cellH + 6);
 	const q105Label = t(copy.q105);
 	const q110Label = t(copy.q110);
+	const qLabelGap = T.small * 0.6;
 	const qCarryOffset = narrow ? 40 : 60;
 	const q105ValueX = L.strikeX(105) - qCarryOffset;
 	const q110ValueX = L.strikeX(110) + qCarryOffset;
 	const q105Value = count(OCT[2] ?? 0);
 	const q110Value = count(OCT[3] ?? 0);
 	const qLineY = H * 0.45;
+	const spotText = `$${SPOT.toFixed(2)}`;
+	const spotHalf = textWidth(`ALFA ${spotText}`, T.small * 1.1) / 2;
+	const spotLabelY = L.gridTop - T.small * 3.4;
 	const cell = (key: ExpiryKey, r: number, j: number) => {
 		const value = volume[key][j];
 		const x = L.cellX(j) + 3;
@@ -288,7 +292,7 @@ function Scene({
 				<g data-f="q-line">
 					<Word
 						name="q-105-label"
-						x={q105ValueX - textWidth(q105Label, T.head)}
+						x={q105ValueX - textWidth(q105Label, T.head) - qLabelGap}
 						y={qLineY}
 						size={T.head}
 						anchor="start"
@@ -308,7 +312,7 @@ function Scene({
 					</Word>
 					<Word
 						name="q-110-label"
-						x={q110ValueX - textWidth(q110Label, T.head)}
+						x={q110ValueX - textWidth(q110Label, T.head) - qLabelGap}
 						y={qLineY}
 						size={T.head}
 						anchor="start"
@@ -406,9 +410,10 @@ function Scene({
 					d={`M${L.cellX(2)} ${L.gridTop - T.small * 3}V${rowY(2) + L.cellH}`}
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 				/>
+				{/* The moneyness tags flank the spot label, clear of the spread's links below the grid. */}
 				<text
-					x={L.cellX(2) - 8}
-					y={rowY(ROWS.length) + T.small * 1.8}
+					x={L.cellX(2) - spotHalf - T.small * 1.2}
+					y={spotLabelY}
 					textAnchor="end"
 					className="wt-film-tag"
 					style={{ fontSize: T.small }}
@@ -416,8 +421,8 @@ function Scene({
 					{`← ${t(narrow ? copy.itmShort : copy.itm).toUpperCase()}`}
 				</text>
 				<text
-					x={L.cellX(2) + 8}
-					y={rowY(ROWS.length) + T.small * 1.8}
+					x={L.cellX(2) + spotHalf + T.small * 1.2}
+					y={spotLabelY}
 					className="wt-film-tag wt-film-dim"
 					style={{ fontSize: T.small }}
 				>
@@ -425,13 +430,13 @@ function Scene({
 				</text>
 				<text
 					x={L.cellX(2)}
-					y={L.gridTop - T.small * 3.4}
+					y={spotLabelY}
 					textAnchor="middle"
 					className="wt-film-num wt-film-accent"
 					style={{ fontSize: T.small * 1.1 }}
 				>
 					<tspan style={{ fill: "var(--tone-ink)" }}>ALFA</tspan>
-					{` $${SPOT.toFixed(2)}`}
+					{` ${spotText}`}
 				</text>
 			</g>
 			<g data-f="spread">
@@ -456,11 +461,12 @@ function Scene({
 				</g>
 				{spreadTrade.legs.map((leg, i) => {
 					const j = STRIKES.indexOf(leg.strike);
-					const x = margin + room * (i === 0 ? 0.25 : 0.72);
-					const y = rowY(2) + L.cellH + T.small * 8.3;
-					// Vertical gutters and the 6 px row gap keep the trace off every cell's type.
+					// Enter each cell from its column gutter. The sold leg sits under its gutter and rises
+					// straight; the bought leg rises beside the ticket's title, then turns under the grid.
 					const gutter = L.cellX(j + 1);
-					const outside = i === 0 ? margin + 8 : margin + room - 8;
+					const x = i === 0 ? margin + room * 0.25 : gutter;
+					const y = rowY(2) + L.cellH + T.small * 8.3;
+					const underGrid = rowY(2) + L.cellH + T.small * 2;
 					const cellBottom = rowY(1) + L.cellH;
 					return (
 						<g key={leg.side}>
@@ -476,7 +482,7 @@ function Scene({
 							</text>
 							<path
 								data-f={`spread-link-${i}`}
-								d={`M${x} ${y - T.small * 1.5}H${outside}V${rowY(2) + L.cellH + 8}H${gutter}V${cellBottom + 3}H${L.strikeX(leg.strike)}V${cellBottom}`}
+								d={`M${x} ${y - text * 1.05}V${underGrid}H${gutter}V${cellBottom + 3}H${L.strikeX(leg.strike)}V${cellBottom}`}
 								fill="none"
 								style={{ stroke: "var(--tone-ink)", strokeWidth: 2 }}
 							/>
@@ -757,6 +763,12 @@ function build(context: FilmContext) {
 			10.7,
 		);
 	});
+	// Clear the source labels before their values fly; the question pairs keep a visible gutter.
+	tl.to(
+		[one("q-105-label"), one("q-110-label")],
+		{ opacity: 0, duration: 0.35 },
+		10.3,
+	);
 	// The named question values become the matching grid cells as the row settles.
 	d.carry(one("q-105-value"), one("cell-value-oct18-2"), 10.7, {
 		duration: 0.35,
@@ -766,11 +778,6 @@ function build(context: FilmContext) {
 		duration: 0.35,
 		arc: "x",
 	});
-	tl.to(
-		[one("q-105-label"), one("q-110-label")],
-		{ opacity: 0, duration: 0.35 },
-		10.7,
-	);
 	// All cells settle at 11.05; retain 1.35 seconds of quiet before the spot.
 	show(one("spot"), 12.4);
 	// The shared ticket establishes provenance before the answer names the spread.
