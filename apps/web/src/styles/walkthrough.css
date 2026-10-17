@@ -918,6 +918,10 @@
 .wt-band-neutral {
 	fill: color-mix(in oklab, var(--diagram-accent) 10%, transparent);
 }
+/* A region named but not the subject: told apart from the one in focus by tint alone. */
+.wt-band-quiet {
+	fill: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
 .wt-stack-time {
 	stroke: var(--wt-long);
 	stroke-width: 1.5;
