@@ -9,7 +9,7 @@ export function textWidth(text: string, size: number) {
 }
 
 /** Closing punctuation that may not start a line in CJK text. */
-export const NO_LINE_START = /^[、。，．：；！？）」』》〉】〕”’]$/;
+export const NO_LINE_START = /^[、。，．：；！？）」』》〉】〕”’的了吗呢吧]$/;
 
 /** Chinese words, where the runtime can find them (see `tokenize`'s `words`). */
 const segmenter =
