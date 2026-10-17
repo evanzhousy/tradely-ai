@@ -20,7 +20,10 @@ import {
 	Lines,
 	lineCount,
 	PenTip,
+	signTone,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -293,7 +296,7 @@ function Scene({
 								x={L.barX(i)}
 								y={L.barBottom - L.barH(now.intrinsic) - 8}
 								textAnchor="middle"
-								className="wt-film-num wt-film-accent"
+								className={`wt-film-num ${now.intrinsic ? toneClass.focus : "wt-film-dim"}`}
 								style={{ fontSize: text }}
 							>
 								{now.intrinsic ? usd(now.intrinsic) : "$0"}
@@ -332,15 +335,12 @@ function Scene({
 					<text
 						key={name}
 						data-f={name}
-						// On the bar: dark on the solid part, light on the time value.
+						// Ink on both parts; the halo keeps it clear of the solid focus fill.
 						x={L.barX(ASKED_AT)}
 						y={y + T.small * 0.36}
 						textAnchor="middle"
-						className="wt-film-num"
-						style={{
-							fontSize: T.small,
-							fill: name === "part-in" ? "var(--background)" : undefined,
-						}}
+						className={`wt-film-num ${name === "part-in" ? "wt-halo" : ""}`}
+						style={{ fontSize: T.small }}
 					>
 						{label}
 					</text>
@@ -456,12 +456,14 @@ function Scene({
 							<path
 								data-f="put-line"
 								d={L.path(writerProfit)}
-								className="wt-line-short"
+								className="wt-line-position"
+								style={{ strokeWidth: 2.5 }}
 							/>
 							<path
 								data-f="callw-line"
 								d={L.path(callWriter)}
-								className="wt-line-short"
+								className="wt-line-position"
+								style={{ strokeWidth: 2.5 }}
 							/>
 						</g>
 						{/* The profit area, filled from break-even. */}
@@ -511,7 +513,7 @@ function Scene({
 							</text>
 						</g>
 						<PenTip name="tip" color="var(--muted-foreground)" />
-						<PenTip name="tip-short" color="var(--wt-short)" />
+						<PenTip name="tip-short" color={toneColor("focus")} />
 						{/* Line names at the lines' far ends: value above its line, profit below. */}
 						<text
 							data-f="value-tag"
@@ -543,10 +545,10 @@ function Scene({
 							x={narrow ? L.right - 8 : L.x(108)}
 							y={L.y(GOT) - 10}
 							textAnchor={narrow ? "end" : "start"}
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-small wt-halo ${toneClass.focus}`}
 						>
-							{t(copy.putWriter)}
+							{t(copy.putWriter).slice(0, -signedUsd(GOT * 100, 0).length)}
+							<tspan className={toneClass.up}>{signedUsd(GOT * 100, 0)}</tspan>
 						</text>
 						<text
 							data-f="callw-tag"
@@ -554,10 +556,15 @@ function Scene({
 							x={L.x(104)}
 							y={L.y(callWriter(104)) - 10}
 							textAnchor="end"
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-small wt-halo ${toneClass.focus}`}
 						>
-							{t(narrow ? copy.callWriterShort : copy.callWriter)}
+							{t(narrow ? copy.callWriterShort : copy.callWriter).slice(
+								0,
+								-signedUsd(optionQuote(writes.c105).bid * 100, 0).length,
+							)}
+							<tspan className={toneClass.up}>
+								{signedUsd(optionQuote(writes.c105).bid * 100, 0)}
+							</tspan>
 						</text>
 						<path
 							data-f="be"
@@ -608,7 +615,6 @@ function Scene({
 							d={`M${L.x(PUT_BE)} ${L.top}V${L.y(0) + 8}`}
 							className="wt-bracket"
 							strokeDasharray="4 3"
-							style={{ stroke: "var(--wt-short)" }}
 						/>
 						<text
 							data-f="put-be-label"
@@ -616,8 +622,7 @@ function Scene({
 							x={L.x(PUT_BE) - 6}
 							y={L.y(650)}
 							textAnchor="end"
-							className="wt-halo wt-marker-label"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-halo wt-marker-label ${toneClass.focus}`}
 						>
 							{`$${PUT_BE.toFixed(2)}`}
 						</text>
@@ -625,8 +630,7 @@ function Scene({
 							data-f="callw-be-label"
 							x={L.x(CALLW_BE) + 6}
 							y={L.y(650)}
-							className="wt-halo wt-marker-label"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-halo wt-marker-label ${toneClass.focus}`}
 						>
 							{`$${CALLW_BE.toFixed(2)}`}
 						</text>
@@ -635,7 +639,6 @@ function Scene({
 							d={`M${L.x(CALLW_BE)} ${L.top}V${L.y(0) + 8}`}
 							className="wt-bracket"
 							strokeDasharray="4 3"
-							style={{ stroke: "var(--wt-short)" }}
 						/>
 						<Brackets
 							name="lock-be"
@@ -661,7 +664,6 @@ function Scene({
 							cy={L.y(writerProfit(90))}
 							r={6}
 							className="wt-chip"
-							style={{ fill: "var(--wt-short)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -1113,9 +1115,10 @@ function build(context: FilmContext) {
 		gsap.set(winClip, { attr: { width: Math.max(0, L.x(spot) - beX) } });
 		meterValue.textContent = whole(value(CALL, spot));
 		meterProfit.textContent = signed(profit);
+		const profitTone = signTone(profit);
 		meterProfit.setAttribute(
 			"class",
-			`wt-film-num ${profit > 0 ? "wt-film-gain" : profit < 0 ? "wt-film-loss" : "wt-film-accent"}`,
+			`wt-film-num ${profitTone ? toneClass[profitTone] : "wt-film-dim"}`,
 		);
 	};
 	const walk = (from: number, to: number, at: number, duration: number) => {
