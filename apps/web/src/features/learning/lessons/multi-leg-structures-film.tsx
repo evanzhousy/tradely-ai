@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -382,13 +383,9 @@ function Scene({
 					<path
 						data-f="s-call"
 						d={path(S_Y, callPay)}
-						className="wt-line-long"
+						className="wt-line-call"
 					/>
-					<path
-						data-f="s-put"
-						d={path(S_Y, putPay)}
-						className="wt-line-short"
-					/>
+					<path data-f="s-put" d={path(S_Y, putPay)} className="wt-line-put" />
 					<path
 						data-f="s-profit"
 						d={path(S_Y, profit)}
@@ -399,7 +396,7 @@ function Scene({
 						L.x(116) - 6,
 						L.y(S_Y, callPay(116) * 100) - 10,
 						t(copy.callLeg),
-						"wt-film-type",
+						toneClass.call,
 						"end",
 					)}
 					{label(
@@ -407,7 +404,7 @@ function Scene({
 						L.x(84) + 6,
 						L.y(S_Y, putPay(84) * 100) - 10,
 						t(copy.putLeg),
-						"wt-film-type",
+						toneClass.put,
 						"start",
 					)}
 					{label(
@@ -439,12 +436,12 @@ function Scene({
 					<path
 						data-f="c-put"
 						d={path(C_Y, putSpread)}
-						className="wt-line-short"
+						className="wt-line-put"
 					/>
 					<path
 						data-f="c-call"
 						d={path(C_Y, callSpread)}
-						className="wt-line-long"
+						className="wt-line-call"
 					/>
 					<path
 						data-f="c-sum"
@@ -456,7 +453,7 @@ function Scene({
 						x={L.right - 6}
 						y={L.y(C_Y, PUT_CREDIT * 100) - 16}
 						textAnchor="end"
-						className="wt-film-type wt-halo"
+						className={`wt-film-type wt-halo ${toneClass.put}`}
 						style={{ fontSize: T.small * 1.15 }}
 					>
 						{t(copy.putSpread)}
@@ -466,7 +463,7 @@ function Scene({
 						x={L.left + 6}
 						y={L.y(C_Y, CALL_CREDIT * 100) - 16}
 						textAnchor="start"
-						className="wt-film-type wt-halo"
+						className={`wt-film-type wt-halo ${toneClass.call}`}
 						style={{ fontSize: T.small * 1.15 }}
 					>
 						{t(copy.callSpread)}
@@ -485,7 +482,7 @@ function Scene({
 							x={L.x(100)}
 							y={(L.y(C_Y, CREDIT * 100) + L.y(C_Y, 0)) / 2 + T.small * 0.35}
 							textAnchor="middle"
-							className="wt-film-num wt-film-gain"
+							className="wt-film-num"
 							style={{ fontSize: T.small }}
 						>
 							$95–$105
@@ -561,15 +558,12 @@ function Scene({
 						x={margin + room - (narrow ? 14 : room * 0.2)}
 						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 						textAnchor="end"
-						className={`wt-film-type ${leg.label === "bullish" ? "wt-film-gain" : "wt-film-loss"}`}
+						className="wt-film-type"
 						style={{ fontSize: text }}
 					>
 						<tspan data-f={`leg-direction-${i}`}>{t(copy[leg.label])}</tspan>
 						{narrow ? (
-							<tspan
-								data-f={`leg-cash-${i}`}
-								className={`wt-film-type ${leg.label === "bullish" ? "wt-film-gain" : "wt-film-loss"}`}
-							>
+							<tspan data-f={`leg-cash-${i}`} className="wt-film-type">
 								{` ${usd(legPremium(leg), 0)}`}
 							</tspan>
 						) : null}
@@ -588,7 +582,7 @@ function Scene({
 					)}
 				</g>
 			))}
-			{/* A shared outline and cash colour identify the two sides before their sums. */}
+			{/* The row labels name the sides; neutral outlines group the cash before its sums. */}
 			<g data-f="cash-groups">
 				{LEGS.map((leg, i) => (
 					<rect
@@ -600,10 +594,7 @@ function Scene({
 						rx={8}
 						fill="none"
 						style={{
-							stroke:
-								leg.side === "sell"
-									? "var(--diagram-gain)"
-									: "var(--diagram-loss)",
+							stroke: "var(--tone-dim)",
 							strokeWidth: 1.75,
 						}}
 					/>
@@ -611,7 +602,7 @@ function Scene({
 				<text
 					x={margin + 14}
 					y={L.rowY(0) - 12}
-					className="wt-film-tag wt-film-gain"
+					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
 					{t(copy.cashSales)}
@@ -619,7 +610,7 @@ function Scene({
 				<text
 					x={margin + room / 2}
 					y={L.rowY(0) - 12}
-					className="wt-film-tag wt-film-loss"
+					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
 					{t(copy.cashPurchases)}
@@ -676,7 +667,7 @@ function Scene({
 				<text
 					x={margin + 16}
 					y={L.saleSumY}
-					className="wt-film-num wt-film-gain"
+					className="wt-film-num"
 					style={{ fontSize: T.body }}
 				>
 					{`${SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")} = ${usd(SOLD_PREMIUM, 0)}`}
@@ -684,7 +675,7 @@ function Scene({
 				<text
 					x={narrow ? margin + 16 : margin + room / 2 + 8}
 					y={L.purchaseSumY}
-					className="wt-film-num wt-film-loss"
+					className="wt-film-num"
 					style={{ fontSize: T.body }}
 				>
 					{`${BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")} = ${usd(BOUGHT_PREMIUM, 0)}`}
@@ -697,9 +688,9 @@ function Scene({
 				className="wt-film-num"
 				style={{ fontSize: T.body }}
 			>
-				<tspan className="wt-film-gain">{`${pick(["sold", "卖出"], locale)} ${usd(SOLD_PREMIUM, 0)}`}</tspan>
+				<tspan>{`${pick(["sold", "卖出"], locale)} ${usd(SOLD_PREMIUM, 0)}`}</tspan>
 				<tspan>{" − "}</tspan>
-				<tspan className="wt-film-loss">{`${pick(["bought", "买入"], locale)} ${usd(BOUGHT_PREMIUM, 0)}`}</tspan>
+				<tspan>{`${pick(["bought", "买入"], locale)} ${usd(BOUGHT_PREMIUM, 0)}`}</tspan>
 			</text>
 
 			<g data-f="claim">
@@ -768,6 +759,24 @@ function build(context: FilmContext) {
 	};
 	const legs = LEGS.map((_, i) => one(`leg-${i}`));
 	const lockKeep = one<SVGGraphicsElement>("lock-keep");
+	// Keep the wrapped copy and positions; only the signed net takes its loss tone.
+	for (const line of one("tally").querySelectorAll("tspan")) {
+		const text = line.textContent ?? "";
+		const net = signedUsd(NET_LABELS, 0);
+		const at = text.indexOf(net);
+		if (at < 0) continue;
+		const amount = line.ownerDocument.createElementNS(
+			"http://www.w3.org/2000/svg",
+			"tspan",
+		);
+		amount.setAttribute("class", toneClass.down);
+		amount.textContent = net;
+		line.replaceChildren(
+			text.slice(0, at),
+			amount,
+			text.slice(at + net.length),
+		);
+	}
 
 	d.hidden([
 		...flat("q"),
@@ -871,13 +880,13 @@ function build(context: FilmContext) {
 		{ opacity: 0.25, duration: 0.4 },
 		33.6,
 	);
-	LEGS.forEach((leg, i) => {
-		// Timeline-owned classes restore the original directional colours on a backward seek.
+	LEGS.forEach((_, i) => {
+		// Timeline-owned classes restore the dim desktop amounts on a backward seek.
 		tl.set(
 			one(`leg-cash-${i}`),
 			{
 				attr: {
-					class: `${L.narrow ? "wt-film-type" : "wt-film-num"} ${leg.side === "sell" ? "wt-film-gain" : "wt-film-loss"}`,
+					class: L.narrow ? "wt-film-type" : "wt-film-num",
 				},
 			},
 			33.6,
