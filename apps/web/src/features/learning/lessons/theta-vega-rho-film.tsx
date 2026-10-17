@@ -163,8 +163,8 @@ const copy = {
 		`看涨 ${signedPrice(scenario.repriced)}`,
 	],
 	qLine: [
-		`Delta alone said ${signedPrice(DELTA * SCENARIO.move)}. Where did the rest go?`,
-		`仅用 Delta 是 ${signedPrice(DELTA * SCENARIO.move)}。剩下的去哪了？`,
+		`Delta alone: ${signedPrice(DELTA * SCENARIO.move)}. Where's the rest?`,
+		`仅 Delta：${signedPrice(DELTA * SCENARIO.move)}。剩余去哪了？`,
 	],
 	thetaHead: ["Theta: the daily decay rate.", "Theta：每日损耗速率。"],
 	valueAxis: ["value, per share", "每股价值"],
@@ -174,33 +174,30 @@ const copy = {
 	],
 	today: [`today ${price(TODAY.price)}`, `今天 ${price(TODAY.price)}`],
 	lastDay: [
-		`Theta, 1 day left: ${signedPrice(lastDay.theta)}/day`,
-		`剩 1 天的 Theta：${signedPrice(lastDay.theta)}/天`,
+		`Last day: ${signedPrice(lastDay.theta)}/day`,
+		`最后一天：${signedPrice(lastDay.theta)}/天`,
 	],
 	thetaWord: ["theta", "theta"],
-	thetaSub: [
-		"a share, per calendar day, today. It grows as expiry nears.",
-		"每股、每个自然日（今天）。越临近到期越大。",
-	],
+	thetaSub: ["Today: per share, per calendar day.", "今天：每股、每自然日。"],
 	vegaHead: ["“IV up 3%” can mean two things.", "“IV 上涨 3%”有两种理解。"],
 	cellPoints: ["3 vol points", "3 个波动率点"],
 	cellPercent: [`3% of ${points(IV)}`, `${points(IV)} 的 3%`],
 	vegaLine: [
-		`Vega is ${price(VEGA, 3)} per vol point. Count points, not percent.`,
-		`Vega 是每个波动率点 ${price(VEGA, 3)}。数点数，不是百分比。`,
+		`Vega: ${price(VEGA, 3)}/vol point, not percent.`,
+		`Vega：每波动率点 ${price(VEGA, 3)}，不是百分比。`,
 	],
 	vegaLineShort: [
-		`Vega: ${price(VEGA, 3)} per vol point. Count points.`,
-		`Vega：每个波动率点 ${price(VEGA, 3)}。数点数。`,
+		`Vega: ${price(VEGA, 3)}/vol point, not percent.`,
+		`Vega：每波动率点 ${price(VEGA, 3)}，不是百分比。`,
 	],
 	rhoWord: ["rho", "rho"],
 	rhoSub: [
-		"per rate point. Small for a one-month option.",
-		"每个利率点。对一个月期的期权很小。",
+		"Per rate point; small in 1-month calls.",
+		"每个利率点；一个月期权影响小。",
 	],
 	rhoCompare: [
-		`one vol point, for comparison: ${price(VEGA, 3)}`,
-		`对比：一个波动率点 ${price(VEGA, 3)}`,
+		`Compare: one vol point = ${price(VEGA, 3)}`,
+		`对比：一个波动率点 = ${price(VEGA, 3)}`,
 	],
 	sumHead: ["Back to the puzzle: add each part.", "回到开头：逐项相加。"],
 	sumHeadShort: ["Back to the puzzle.", "回到开头：逐项相加。"],
@@ -227,8 +224,8 @@ const copy = {
 	],
 	claimBig: ["A good move can still lose.", "上涨也可能亏钱。"],
 	claimSub: [
-		"Time and volatility count, each in its own unit.",
-		"时间和波动率同样算数，各有各的单位。",
+		"Time and volatility use separate units.",
+		"时间和波动率各用各的单位。",
 	],
 	nextBig: ["Next: 0DTE", "下一课：0DTE"],
 	nextSub: ["an option's last day, hour by hour", "期权的最后一天，逐小时看"],
@@ -906,13 +903,19 @@ function build(context: FilmContext) {
 		25.45,
 	);
 	show(one("s-head"), 25.45);
-	// Time rests for 1 s after its construction settles at 25.95. IV and the
-	// completed estimate then share one reveal, with another full second of rest.
+	// Time rests for 1 s after its construction settles at 25.95. The IV loss
+	// arrives first; the estimate follows, then rests for a full second.
 	tl.fromTo(
-		[one("w-step-vega"), one("w-step-sum"), one("w-repriced")],
+		one("w-step-vega"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
+		{ opacity: 1, duration: 0.3, ease: "none" },
 		26.95,
+	);
+	tl.fromTo(
+		[one("w-step-sum"), one("w-repriced")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "none" },
+		27.15,
 	);
 	d.lock(lockSum, 28.45, {
 		around: [one("w-value-sum")],
@@ -942,9 +945,9 @@ function build(context: FilmContext) {
 	land(one("p-num-0"), 37.05);
 	// The long result settles at 37.6 and stands for 1 s before Ben arrives.
 	show(one("p-who-1"), 38.6);
-	show(one("p-factor-1"), 39.1);
-	land(one("p-num-1"), 39.6);
-	// The short result settles at 40.15, with 1 s of quiet before the claim.
+	show(one("p-factor-1"), 38.6);
+	land(one("p-num-1"), 39.1);
+	// The short result settles at 39.65 and holds 1.5 s before its exit.
 	// Cut: the claim.
 	hide(
 		kids("p").flatMap((el) => (el.tagName === "g" ? [...el.children] : [el])),
