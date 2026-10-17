@@ -29,15 +29,15 @@ import {
  * assigned means. The grid of four positions answers, brackets reading it row by row: a
  * holder may, a writer must; your short put must buy at $95. Two separate buys open a
  * long or close a short. A holder exercises a put bought from Ben; the clearinghouse
- * searches neutral writers, then the only glowing lock settles on Eli. Only then does
- * the answer appear. Settlement builds the cash and share values, then the holder's net.
+ * searches neutral writers, then the only glowing lock settles on Eli; that lock carries
+ * the answer. Settlement builds the cash and share values, then the holder's net.
  *
  *   open      0–4        "Holders and writers"
  *   question  4–8.8      short 1 Oct 18 95 put: if assigned?
- *   rights    8.8–16.6   holders may, writers must; yours: buy at $95
+ *   rights    8.8–16.6   holders may, writers must; focus the short put
  *   track     16.6–23.6  flat → long; separately, short → flat
  *   assign    23.6–27.6  a holder exercises a put from Ben
- *   pick      27.6–33.7  neutral search; hero-lock 29.2; answer 29.7
+ *   pick      27.6–33.7  neutral search; hero-lock 29.2
  *   settle    33.7–40.05  cash inputs → valuation inputs → totals → gain → net
  *   claim     40.05–44.9  the holder decides; a writer is assigned
  *   next      44.9–47.4  Next: premium, payoff and profit
@@ -94,7 +94,6 @@ const copy = {
 		"A holder may; a writer must.",
 		"持有人可以选择；义务方必须履约。",
 	],
-	yoursHead: ["Your short put: buy at $95.", "你的看跌空头：按 $95 买入。"],
 	trackHead: ["The same buy opens or closes.", "同样买入，可开仓也可平仓。"],
 	assignHead: [
 		"A holder exercises a put from Ben.",
@@ -105,7 +104,6 @@ const copy = {
 		"持有人对从 Ben 买的看跌行权。",
 	],
 	pickHead: ["Clearinghouse selects a writer.", "清算所随机选择一位义务方。"],
-	pickAnswer: ["Assigned: Eli, not Ben.", "指派给 Eli，而非 Ben。"],
 	settleHead: [
 		"Assignment settles in shares and cash.",
 		"指派以股票和现金交割。",
@@ -253,7 +251,6 @@ function Scene({
 
 			{/* Four positions. */}
 			{headline("a-head", copy.rightsHead, copy.rightsHead)}
-			{headline("y-head", copy.yoursHead, copy.yoursHead)}
 			<g data-f="matrix">
 				{RIGHTS.map((right, c) => (
 					<text
@@ -406,21 +403,6 @@ function Scene({
 			{/* Exercise and assignment. */}
 			{headline("e-head", copy.assignHead, copy.assignHeadShort)}
 			{headline("p-head", copy.pickHead, copy.pickHead)}
-			<Lines
-				name="p-answer"
-				text={t(copy.pickAnswer)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(t(copy.pickHead), narrow ? room : room * 0.74, T.head) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-				className="wt-film-type wt-film-accent"
-			/>
 			{headline("s-head", copy.settleHead, copy.settleHead)}
 			<g data-f="assign">
 				{node("n-you", youX, youY, t(copy.holder), t(copy.put95), true)}
@@ -611,14 +593,9 @@ function build(context: FilmContext) {
 	const order = ["call-long", "put-long", "call-short", "put-short"] as const;
 	const cell = (key: string) => one(`cell-${key}`);
 	const box = (key: string) => g(`cellb-${key}`);
-	const heads = [
-		"a-head",
-		"y-head",
-		"k-head",
-		"e-head",
-		"p-head",
-		"s-head",
-	].map((name) => one(name));
+	const heads = ["a-head", "k-head", "e-head", "p-head", "s-head"].map((name) =>
+		one(name),
+	);
 	const tracks = MOVES.map((_, i) => one(`track-${i}`));
 	const moves = MOVES.map((_, i) => one(`move-${i}`));
 	const nodes = ["n-you", "n-clear", ...writers.map((w) => `n-${w.id}`)].map(
@@ -642,7 +619,6 @@ function build(context: FilmContext) {
 		...writers.map((w) => one(`arrow-${w.id}`)),
 		lockSearch,
 		lockPick,
-		one("p-answer"),
 		...flat("settle"),
 		...kids("claim"),
 	]);
@@ -666,13 +642,12 @@ function build(context: FilmContext) {
 		flat("matrix").filter((el) => el.tagName === "text"),
 		9.2,
 	);
-	// Headers settle at 9.7. All four static cells and the holder-row focus arrive as
-	// one construction, without travelling type; everything settles together at 10.2.
+	// Headers settle at 9.7; give that scaffold one full second before data arrives.
 	tl.fromTo(
 		order.map(cell),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5, ease: "power3.out" },
-		9.7,
+		10.7,
 	);
 	// Explicit unit scale also restores this first row after a backwards seek from
 	// the later lock, whose fromTo initializes its enlarged path at build time.
@@ -680,31 +655,30 @@ function build(context: FilmContext) {
 		lockCell,
 		{ opacity: 0, scale: 1 },
 		{ opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" },
-		9.7,
+		10.7,
 	);
-	// 1.05 s quiet for the holder row, then 1 s for the writer row before y-head.
-	d.lock(lockCell, 11.25, {
+	// Preserve the 1.05 s holder-row quiet and 1.2 s writer-row quiet before dimming.
+	d.lock(lockCell, 12.25, {
 		around: [box("call-short"), box("put-short")],
 		pad: 5,
 	});
 	// Yours: the short put. The others step back.
-	d.swap(heads[0], heads[1], 12.7);
-	fade(lockCell, 12.9);
-	fade(order.filter((key) => key !== "put-short").map(cell), 13, 0.35);
-	d.lock(g("lock-you"), 13.2, { around: box("put-short"), pad: 5 });
+	fade(lockCell, 13.9);
+	fade(order.filter((key) => key !== "put-short").map(cell), 14, 0.35);
+	d.lock(g("lock-you"), 14.2, { around: box("put-short"), pad: 5 });
 
 	// ——— track: the same trade opens or closes ———
 	tl.addLabel("track", 16.6);
 	hide(
 		[
-			heads[1],
+			heads[0],
 			...flat("matrix").filter((el) => el.tagName === "text"),
 			...order.map((key) => cell(key)),
 			g("lock-you"),
 		],
 		16.6,
 	);
-	show(heads[2], 16.95);
+	show(heads[1], 16.95);
 	show(tracks, 17.0);
 	MOVES.forEach((_, i) => {
 		// Both scaffolds settle at 17.5. Each label is still before its dot moves.
@@ -719,8 +693,8 @@ function build(context: FilmContext) {
 	// ——— assign: the exercise goes to the clearinghouse ———
 	tl.addLabel("assign", 23.6);
 	// First buy: 19.2–20.3 quiet (1.1 s). Second: 21.55–23.6 quiet (2.05 s).
-	hide([heads[2], ...tracks, ...moves], 23.6);
-	show(heads[3], 23.95);
+	hide([heads[1], ...tracks, ...moves], 23.6);
+	show(heads[2], 23.95);
 	show(nodes[0], 23.95);
 	show(one("n-ben"), 24.2, L.narrow ? "below" : "right");
 	tl.fromTo(
@@ -742,7 +716,7 @@ function build(context: FilmContext) {
 
 	// ——— pick: two neutral candidates, then the only glowing lock on Eli. ———
 	tl.addLabel("pick", 27.6);
-	d.swap(heads[3], heads[4], 27.6);
+	d.swap(heads[2], heads[3], 27.6);
 	["ben", "cara"].forEach((id, i) => {
 		const at = 27.6 + i * 0.8;
 		d.lock(lockSearch, at, { around: g(`n-${id}-box`), pad: 5 });
@@ -761,25 +735,11 @@ function build(context: FilmContext) {
 			fade([one(`arrow-${w.id}`), one(`n-${w.id}`)], heroAt + 0.15, 0.3);
 	});
 	tl.to(one(`arrow-${ASSIGNED}`), { opacity: 1, duration: 0.3 }, heroAt + 0.15);
-	// Branches finish with the lock at 29.65. Answer entrance stays at 29.7; the
-	// fully revealed answer holds 30.2–33.7 (3.5 s), funding the input rests below.
-	tl.fromTo(
-		one("p-answer"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		29.7,
-	);
-
 	// ——— settle: Eli pays the strike for shares worth less ———
 	tl.addLabel("settle", 33.7);
-	d.swap(heads[4], heads[5], 33.7);
+	d.swap(heads[3], heads[4], 33.7);
 	hide(
-		[
-			...nodes,
-			one("arrow-in"),
-			...writers.map((w) => one(`arrow-${w.id}`)),
-			one("p-answer"),
-		],
+		[...nodes, one("arrow-in"), ...writers.map((w) => one(`arrow-${w.id}`))],
 		33.7,
 	);
 	fade(lockPick, 33.7);
@@ -792,19 +752,18 @@ function build(context: FilmContext) {
 			at,
 		);
 	reveal(["s-pays-tag", "s-pays-input"], 34.05);
-	reveal(["s-worth-tag", "s-worth-input"], 34.35);
-	// Inputs rest for 1.3 s (cash) and 1 s (valuation). Reveal exact totals together,
-	// in place: they form the comparison, with neither scale motion nor counting.
+	// Inputs rest for 1.3 s (cash) and 1 s (valuation). Premium is an input too;
+	// reveal it with the valuation, then reveal exact totals together, without counting.
+	reveal(["s-worth-tag", "s-worth-input", "s-premium-tag"], 34.35);
 	reveal(["s-pays-num", "s-worth-num"], 35.65);
 	// Preserve 1.05 s quiet after the totals and another 1.05 s after the gain.
 	reveal(["s-gain-tag", "s-gain-num"], 37.0);
-	// Premium belongs to this net construction. All three marks settle at 38.65,
-	// leaving 1.4 s for reading (including the bilingual premium) before the claim.
-	reveal(["s-premium-tag", "s-net-tag", "s-net-num"], 38.35);
+	// Only the net conclusion arrives after the gain's quiet interval.
+	reveal(["s-net-tag", "s-net-num"], 38.35);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.05);
-	hide([heads[5], ...flat("settle")], 40.05);
+	hide([heads[4], ...flat("settle")], 40.05);
 	word(one("z-big"), 40.4);
 	show(one("z-sub"), 40.65);
 
