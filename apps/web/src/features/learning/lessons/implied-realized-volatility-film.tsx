@@ -57,8 +57,8 @@ import {
  *   rv        22.25–31.55  hero: twenty daily returns, ±1.52% a day, 24% a year; the last
  *                        ten only, 15%, locked
  *   horizons  31.55–40.65  RV behind today, IV ahead with earnings; cut: +11 vol points
- *   claim     40.65–44.95  "IV looks ahead. RV looks back."
- *   next      44.95–47.45  Next: the expected move
+ *   claim     40.65–45.45  "IV looks ahead. RV looks back."
+ *   next      45.45–47.45  Next: the expected move
  */
 
 const END = 47.45;
@@ -140,10 +140,7 @@ const copy = {
 	qTagIv: ["from a price", "来自价格"],
 	qTagRv: ["from closes", "来自收盘价"],
 	zoomAxis: ["the same curve, zoomed in", "放大后的同一条曲线"],
-	qLine: [
-		"Same stock, same day. Which volatility?",
-		"同股同日，哪个波动率对？",
-	],
+	qLine: ["Same day. Which volatility?", "同一天，哪个波动率？"],
 	fitHead: [
 		"IV: the input that reproduces a price.",
 		"IV：让模型重现价格的输入。",
@@ -151,19 +148,19 @@ const copy = {
 	fitHeadShort: ["IV reproduces a price.", "IV：重现价格的输入。"],
 	fitAxis: ["Oct 18 100 call, model value", "10月18日 100 看涨，模型价值"],
 	volAxis: ["volatility put into the model", "代入模型的波动率"],
-	mid: [`market mid ${price(prices.mid)}`, `市场中间价 ${price(prices.mid)}`],
+	mid: [`mid ${price(prices.mid)}`, `中间价 ${price(prices.mid)}`],
 	fitDependency: ["IV needs price and model.", "价格、模型决定 IV。"],
 	rvHead: ["RV: measured from past closes.", "RV：由过去的收盘价测得。"],
 	rvTenHead: ["Twenty returns become ten.", "二十个日收益率变为十个。"],
 	returnsAxis: ["ALFA daily returns", "ALFA 每日收益"],
 	perDay20: [
-		`±${percent(DAILY_SD, 2)} a day · ${points(RV20)} a year`,
-		`每天 ±${percent(DAILY_SD, 2)} · 年化 ${points(RV20)}`,
+		`±${percent(DAILY_SD, 2)}/day · ${points(RV20)}/yr`,
+		`±${percent(DAILY_SD, 2)}/日 · ${points(RV20)}/年`,
 	],
 	heroPeriod: ["annualized RV10", "年化 RV10"],
-	dailySd: ["daily SD", "每日标准差"],
 	/** A phone's band readings: the yearly figure only, clear of the chart's caption. */
-	perYear20: [`${points(RV20)} a year`, `年化 ${points(RV20)}`],
+	perYear20: [`RV20 ${points(RV20)}/yr`, `RV20 ${points(RV20)}/年`],
+	sessionsPerYear: ["252 trading sessions/year", "每年252个交易日"],
 	horizonHead: ["They look in opposite directions.", "它们朝相反的方向看。"],
 	horizonHeadShort: ["Opposite directions.", "方向相反。"],
 	rvBlock: [`RV20 ${RV_POINTS}%`, `RV20 ${RV_POINTS}%`],
@@ -260,7 +257,8 @@ function Scene({
 						</text>
 						<line
 							data-f="f-line-mid"
-							className="wt-line-reference"
+							className="wt-axis"
+							style={{ strokeWidth: 1.75 }}
 							x1={L.left}
 							x2={L.left}
 							y1={L.yF(prices.mid)}
@@ -290,14 +288,6 @@ function Scene({
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
-						<text
-							data-f="f-marker-label"
-							x={L.xF(GUESS) + 10}
-							y={L.yF(callAt(GUESS)) + 20}
-							className="wt-halo wt-accent wt-marker-label"
-						>
-							{`${percent(GUESS)} → ${price(callAt(GUESS))}`}
-						</text>
 					</g>
 
 					{/* Twenty daily returns and their spread. */}
@@ -460,7 +450,8 @@ function Scene({
 						<g key={source}>
 							<line
 								data-f={`z-line-${source}`}
-								className="wt-line-reference"
+								className="wt-axis"
+								style={{ strokeWidth: 1.75 }}
 								x1={L.left}
 								x2={L.right}
 								y1={L.yQ(prices[source])}
@@ -588,18 +579,18 @@ function Scene({
 				className="wt-small wt-accent"
 				style={{ fontSize: T.body, fill: "var(--tone-ink)" }}
 			>
-				{`${t(copy.dailySd)} ${percent(SD10, 2)} × `}
-				<tspan data-f="r-convention">√252</tspan>
+				{`${percent(SD10, 2)} × √252 `}
 				<tspan className={toneClass.focus}>{` ≈ ${points(RV10)}`}</tspan>
 			</text>
-			<line
-				data-f="r-convention-underline"
-				x1={0}
-				x2={0}
-				y1={0}
-				y2={0}
-				className="wt-bracket"
-			/>
+			<text
+				data-f="r-convention-label"
+				x={W / 2}
+				y={H * 0.95}
+				textAnchor="middle"
+				className="wt-small wt-film-dim"
+			>
+				{t(copy.sessionsPerYear)}
+			</text>
 			{/* Name the selection while the band closes in on the last ten returns. */}
 			<Lines
 				name="r2-head"
@@ -700,13 +691,22 @@ function build(context: FilmContext) {
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const marker = one("f-marker");
-	const markerLabel = one<SVGTextElement>("f-marker-label");
 	const charts = {
 		fit: one("chart-fit"),
 		rv: one("chart-rv"),
 		horizon: one("chart-horizon"),
 	};
 	const zoom = one("chart-zoom");
+	const zoomCurve = one<SVGPathElement>("z-curve");
+	const quoteLevels = SOURCES.map((source) =>
+		one<SVGLineElement>(`z-line-${source}`),
+	);
+	const quoteMarks = SOURCES.flatMap((source) => [
+		one(`z-price-${source}`),
+		one(`z-drop-${source}`),
+		one(`z-iv-${source}`),
+		one(`z-dot-${source}`),
+	]);
 	const today = dayIndex(SESSION_DATE);
 
 	gsap.set([charts.rv, charts.horizon, zoom], { opacity: 0 });
@@ -724,13 +724,12 @@ function build(context: FilmContext) {
 		one("f-mid-label"),
 		one("f-dependency"),
 		marker,
-		markerLabel,
 		one("r-band"),
 		one("r-sd-20"),
 		one("r-sd-10"),
 		one("r-period-10"),
 		one("r-annualize"),
-		one("r-convention-underline"),
+		one("r-convention-label"),
 		one("z-rv-label"),
 		one("z-today"),
 		one("z-today-label"),
@@ -761,16 +760,11 @@ function build(context: FilmContext) {
 	hide(flat("q"), 9.6);
 	show(one("f-head"), 9.8);
 	rise(9.9);
-	// The axes settle at 10.7, then get one second before the proof appears.
-	tl.to(
-		one("f-curve"),
-		{
-			opacity: 1,
-			duration: 0.7,
-			ease: "power2.out",
-		},
-		11.7,
-	);
+	// The axes settle at 10.7, then get one second before the model is drawn.
+	d.trace(one<SVGPathElement>("f-curve"), 11.7, {
+		duration: 0.7,
+		ease: "power2.out",
+	});
 	tl.to(one("f-line-mid"), { opacity: 1, duration: 0.3 }, 11.7);
 	tl.to(
 		one("f-line-mid"),
@@ -779,9 +773,8 @@ function build(context: FilmContext) {
 	);
 	show(one("f-mid-label"), 12.1, "below", 0.4);
 	land(marker, 12.6);
-	show(markerLabel, 12.8, "right", 0.4);
 	// GSAP rounds plain numeric properties. A 0→1 progress endpoint stays exact,
-	// so the IV, marker and price all derive from the same seekable state.
+	// so the marker's price lands exactly on the observed mid level.
 	const fit = { progress: 0 };
 	const slide = () => {
 		const iv = GUESS + fit.progress * (fitted.mid - GUESS);
@@ -789,9 +782,6 @@ function build(context: FilmContext) {
 		const x = L.xF(iv);
 		const y = L.yF(dollars);
 		gsap.set(marker, { attr: { cx: x, cy: y } });
-		markerLabel.setAttribute("x", String(x + 10));
-		markerLabel.setAttribute("y", String(y + 20));
-		markerLabel.textContent = `${percent(iv)} → ${price(dollars)}`;
 	};
 	tl.to(
 		fit,
@@ -803,27 +793,23 @@ function build(context: FilmContext) {
 	tl.fromTo(
 		zoom,
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.6, ease: "power2.out" },
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
 		16.45,
 	);
-	// The detail scaffold settles at 17.05; compare all three finished constructions
-	// together with their dependency after its orientation second. No later arrival
-	// interrupts the completed comparison before the RV beat.
+	// The detail scaffold settles at 16.75, then holds for one second. Draw the model
+	// curve first; the three observed levels and their paired readings finish at 18.65.
+	d.trace(zoomCurve, 17.75, { duration: 0.6, ease: "power2.out" });
 	tl.fromTo(
-		[
-			one("z-curve"),
-			one("f-dependency"),
-			...SOURCES.flatMap((source) => [
-				one(`z-line-${source}`),
-				one(`z-price-${source}`),
-				one(`z-dot-${source}`),
-				one(`z-drop-${source}`),
-				one(`z-iv-${source}`),
-			]),
-		],
+		quoteLevels,
+		{ opacity: 0, attr: { x2: L.left } },
+		{ opacity: 1, attr: { x2: L.right }, duration: 0.3, ease: "power2.out" },
+		18.35,
+	);
+	tl.fromTo(
+		[...quoteMarks, one("f-dependency")],
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.6, ease: "power2.out" },
-		18.05,
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
+		18.35,
 	);
 
 	// ——— rv: the hero. Measured from past closes, and the window changes it. ———
@@ -847,9 +833,9 @@ function build(context: FilmContext) {
 		);
 	});
 	tl.to(one("r-band"), { opacity: 1, duration: 0.6 }, 24.45);
-	show(one("r-sd-20"), 24.65, "below", 0.4);
+	show(one("r-sd-20"), 24.45, "below", 0.4);
 	// Clear the old statistic completely before the band's geometry changes.
-	hide(one("r-sd-20"), 26.45, 0.35, 0);
+	hide(one("r-sd-20"), 26.5, 0.35, 0);
 	// Keep the accepted 1.4 s rest, then name the selection before it changes.
 	tl.fromTo(
 		one("r2-head"),
@@ -895,27 +881,11 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		27.65,
 	);
-	// Preserve the post-lock stand, then underline the convention outside the hero.
-	const convention = one<SVGGraphicsElement>("r-convention").getBBox();
-	const underlineY = convention.y + convention.height + 3;
+	// Name the annualization basis after the full 1.5 s hero stand.
 	tl.fromTo(
-		one("r-convention-underline"),
-		{
-			opacity: 0,
-			attr: {
-				x1: convention.x,
-				x2: convention.x,
-				y1: underlineY,
-				y2: underlineY,
-			},
-		},
-		{
-			opacity: 1,
-			attr: { x2: convention.x + convention.width },
-			duration: 0.3,
-			ease: "power2.out",
-			immediateRender: false,
-		},
+		one("r-convention-label"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
 		30,
 	);
 
@@ -923,17 +893,9 @@ function build(context: FilmContext) {
 	tl.addLabel("horizons", 31.55);
 	d.swap([one("r-head"), one("r2-head")], one("z-head"), 31.55);
 	hide(lockRv, 31.55);
-	hide(
-		[
-			one("r-sd-10"),
-			one("r-period-10"),
-			one("r-annualize"),
-			one("r-convention-underline"),
-		],
-		31.55,
-		0.35,
-		0,
-	);
+	hide([one("r-sd-10"), one("r-period-10")], 31.55, 0.35, 0);
+	// Keep the formula and its basis together long enough to read across the handover.
+	hide([one("r-annualize"), one("r-convention-label")], 32.2, 0.35, 0);
 	sink(31.55);
 	tl.set(charts.rv, { opacity: 0 }, 31.95);
 	tl.set(charts.horizon, { opacity: 1 }, 31.95);
@@ -976,7 +938,7 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5 },
 		34.75,
 	);
-	show(one("z-earnings"), 35.05);
+	show(one("z-earnings"), 34.75);
 	// Cut: the gap, and what it isn't, held to be read.
 	hide(one("z-head"), 36.55);
 	sink(36.55);
@@ -988,7 +950,7 @@ function build(context: FilmContext) {
 	);
 	land(one("g-num"), 36.65);
 	show(one("g-word"), 36.95);
-	show(one("g-sub"), 37.15);
+	show(one("g-sub"), 36.95);
 	hide(kids("gap"), 40.65);
 	tl.addLabel("claim", 40.65);
 	tl.fromTo(
@@ -1000,9 +962,9 @@ function build(context: FilmContext) {
 	show(one("c-sub"), 41.35);
 
 	// ——— next ———
-	tl.addLabel("next", 44.95);
-	hide(kids("claim"), 44.95);
-	d.close(44.95);
+	tl.addLabel("next", 45.45);
+	hide(kids("claim"), 45.45);
+	d.close(45.45);
 	return tl;
 }
 
