@@ -12,6 +12,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -50,7 +52,7 @@ import {
  *   question  4–8.9      "ALFA GEX: −$512k": which sign? which contracts?
  *   chain     8.9–18.65  0.0266 × 2,500 × 100 = 6,650 a $1; × $100² × 1% = $665k; × sign
  *   profile   18.65–33.75 +$665k carries to the outlined 110 call; focus settled
- *                        19.85–20.85, then the whole profile; grey components / purple net;
+ *                        19.85–20.85, then the whole profile; call/put components / focus net;
  *                        meter settled 21.55–24.05; cut: the sides end to end,
  *                        $4.10M settled 26.05–27.95; side by side, the −$512k sliver,
  *                        locked at 29.75; quiet until 31.25, then 12% of gross;
@@ -259,7 +261,7 @@ function Scene({
 			height={L.y(0) - L.y(contribution(strike, "call")) + 4}
 			rx={3}
 			fill="none"
-			stroke="var(--diagram-accent)"
+			stroke={toneColor("focus")}
 			strokeWidth={1.5}
 		/>
 	);
@@ -327,7 +329,7 @@ function Scene({
 									key={key(strike, side)}
 									data-f={`bar-${key(strike, side)}`}
 									className="wt-film-bar"
-									data-tone="neutral"
+									data-tone={side}
 									x={L.barX(i) - L.barWidth / 2}
 									y={L.y(0)}
 									width={L.barWidth}
@@ -384,7 +386,7 @@ function Scene({
 				y={rowY(4) + figure * 2}
 				size={figure * 1.5}
 				anchor="end"
-				className="wt-film-num wt-film-dim"
+				className={`wt-film-num ${toneClass.up}`}
 			>
 				{money(LONG)}
 			</Word>
@@ -394,7 +396,7 @@ function Scene({
 				y={L.y(LONG) - 14}
 				size={T.small}
 				anchor="end"
-				className="wt-film-num wt-film-dim"
+				className={`wt-film-num ${toneClass.call}`}
 			>
 				{`${FOCUS_STRIKE}${locale === "zh" ? "看涨" : "C"}`}
 			</Word>
@@ -404,7 +406,7 @@ function Scene({
 				y={L.y(LONG) - 14}
 				size={T.small}
 				anchor="start"
-				className="wt-film-num wt-film-dim"
+				className={`wt-film-num ${toneClass.up}`}
 			>
 				{money(LONG)}
 			</Word>
@@ -412,10 +414,19 @@ function Scene({
 				<rect
 					x={L.left}
 					y={L.bottom + T.small + 18}
-					width={12}
+					width={6}
 					height={10}
 					className="wt-film-bar"
-					data-tone="neutral"
+					data-tone="call"
+					opacity={COMPONENT_OPACITY}
+				/>
+				<rect
+					x={L.left + 6}
+					y={L.bottom + T.small + 18}
+					width={6}
+					height={10}
+					className="wt-film-bar"
+					data-tone="put"
 					opacity={COMPONENT_OPACITY}
 				/>
 				<Word
@@ -442,7 +453,7 @@ function Scene({
 					y={L.bottom + T.small + 28}
 					size={T.small}
 					anchor="start"
-					className="wt-film-tag"
+					className={`wt-film-tag ${toneClass.focus}`}
 				>
 					{t(copy.net)}
 				</Word>
@@ -507,11 +518,13 @@ function Scene({
 						{t(copy[name]).toUpperCase()}
 					</Word>
 				))}
-				{[
-					{ name: "m-value", value: NET },
-					{ name: "m-value-traded", value: tradedOnly },
-					{ name: "m-value-known", value: withGap },
-				].map(({ name, value }) => (
+				{(
+					[
+						{ name: "m-value", value: NET, tone: "down" },
+						{ name: "m-value-traded", value: tradedOnly, tone: "up" },
+						{ name: "m-value-known", value: withGap, tone: "up" },
+					] as const
+				).map(({ name, value, tone }) => (
 					<Word
 						key={name}
 						name={name}
@@ -519,7 +532,7 @@ function Scene({
 						y={L.headY + T.head * 1.25 + T.num * 1.05}
 						size={T.num}
 						anchor="end"
-						className="wt-film-num wt-film-accent"
+						className={`wt-film-num ${toneClass[tone]}`}
 					>
 						{money(value)}
 					</Word>
@@ -543,7 +556,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.27 + T.big * 1.05}
 					size={T.big}
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.down}`}
 				>
 					{money(NET)}
 				</Word>
@@ -601,7 +614,7 @@ function Scene({
 					size={T.body}
 					maxWidth={room * (narrow ? 0.55 : 0.45)}
 					anchor="end"
-					className="wt-film-type wt-film-dim"
+					className={`wt-film-type ${toneClass.caution}`}
 				/>
 				<Lines
 					name="c-tag-short"
@@ -611,7 +624,7 @@ function Scene({
 					size={T.body}
 					maxWidth={room * (narrow ? 0.55 : 0.45)}
 					anchor="end"
-					className="wt-film-type wt-film-accent"
+					className={`wt-film-type ${toneClass.caution}`}
 				/>
 				<Word
 					name="c-long"
@@ -619,7 +632,7 @@ function Scene({
 					y={rowY(4) + figure * 0.3}
 					size={figure * 1.5}
 					anchor="end"
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.up}`}
 				>
 					{money(LONG)}
 				</Word>
@@ -629,7 +642,7 @@ function Scene({
 					y={rowY(4) + figure * 2}
 					size={figure * 1.5}
 					anchor="end"
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.down}`}
 				>
 					{money(-LONG)}
 				</Word>
@@ -659,7 +672,7 @@ function Scene({
 					<rect
 						data-f="two-calls-bar"
 						className="wt-film-bar"
-						data-tone="neutral"
+						data-tone="call"
 						x={L.two.x0}
 						y={L.two.y1}
 						width={L.two.calls}
@@ -672,7 +685,7 @@ function Scene({
 						y={L.two.y1 - 8}
 						size={T.body}
 						anchor="start"
-						className="wt-film-num"
+						className={`wt-film-num ${toneClass.call}`}
 					>
 						{`${t(copy.calls).toUpperCase()} ${money(CALLS)}`}
 					</Word>
@@ -681,7 +694,7 @@ function Scene({
 					<rect
 						data-f="two-puts-bar"
 						className="wt-film-bar"
-						data-tone="neutral"
+						data-tone="put"
 						x={L.two.x0}
 						y={L.two.y2}
 						width={L.two.puts}
@@ -694,7 +707,7 @@ function Scene({
 						y={L.two.tagY}
 						size={T.body}
 						anchor="start"
-						className="wt-film-num"
+						className={`wt-film-num ${toneClass.put}`}
 					>
 						{`${t(copy.puts).toUpperCase()} ${money(PUTS)}`}
 					</Word>
@@ -717,7 +730,7 @@ function Scene({
 				<rect
 					data-f="two-sliver"
 					className="wt-film-bar"
-					data-tone="total"
+					data-tone="loss"
 					x={L.two.x0 + L.two.calls}
 					y={L.two.y2}
 					width={L.two.puts - L.two.calls}
@@ -735,7 +748,7 @@ function Scene({
 					y={L.two.netY}
 					size={L.two.netSize}
 					anchor="start"
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.down}`}
 				>
 					{money(NET)}
 				</Word>
@@ -924,8 +937,12 @@ function build(context: FilmContext) {
 	land(one("c-long"), 11.6);
 	// The other sign: same inputs, opposite number.
 	show(one("s-head"), 14.9);
-	// Move the first result with its own label; mute its colour, not its opacity.
-	tl.set(one("c-long"), { attr: { class: "wt-film-num wt-film-dim" } }, 14.9);
+	// Keep the positive result in its sign colour as it moves into the comparison.
+	tl.set(
+		one("c-long"),
+		{ attr: { class: `wt-film-num ${toneClass.up}` } },
+		14.9,
+	);
 	const longResult = [one("c-long"), one("c-tag-long")];
 	tl.to(longResult, { y: figure * 1.7, duration: 0.3 }, 14.9);
 	tl.to(
