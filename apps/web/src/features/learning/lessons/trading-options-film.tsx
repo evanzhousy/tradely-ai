@@ -17,6 +17,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -516,7 +517,7 @@ function Scene({
 						L.askY(i),
 						at.price,
 						at.size,
-						"loss",
+						"neutral",
 					),
 				)}
 				<path
@@ -541,7 +542,7 @@ function Scene({
 						L.bidY(i + 1),
 						at.price,
 						at.size,
-						"gain",
+						"neutral",
 					),
 				)}
 				<text
@@ -568,7 +569,7 @@ function Scene({
 					[
 						["p-market", usd(ASK * ALFA.multiplier, 0), "wt-film-accent"],
 						["p-limit", t(copy.capPremium), "wt-film-dim"],
-						["p-filled", usd(LIMIT * 100, 0), "wt-film-gain"],
+						["p-filled", usd(LIMIT * 100, 0), toneClass.focus],
 					] as const
 				).map(([name, text, tone]) => (
 					<text
@@ -610,7 +611,7 @@ function Scene({
 					data-f="s-filled"
 					x={L.panelX}
 					y={L.panelY + T.small * 1.4 + T.num * 1.25 + T.body * 1.8}
-					className="wt-film-type wt-film-gain"
+					className="wt-film-type"
 					style={{ fontSize: T.body }}
 				>
 					{t(copy.filled)}
@@ -652,7 +653,7 @@ function Scene({
 					x={x}
 					y={y}
 					textAnchor={anchor}
-					className="wt-film-num wt-film-accent wt-halo"
+					className={`wt-film-num ${name === "chip-sell" ? "" : toneClass.focus} wt-halo`}
 					style={{ fontSize: rowText }}
 				>
 					{t(label)}
@@ -715,7 +716,7 @@ function Scene({
 								L.cardH * (narrow ? (route === "exercise" ? 0.64 : 0.44) : 0.8)
 							}
 							textAnchor={narrow ? "end" : "middle"}
-							className={`wt-film-num ${route === "expire" ? "wt-film-loss" : "wt-film-accent"}`}
+							className={`wt-film-num ${route === "expire" ? "wt-film-dim" : toneClass.focus}`}
 							style={{ fontSize: narrow ? T.body : T.body * 1.5 }}
 						>
 							{t(r.outcome)}
