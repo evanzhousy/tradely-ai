@@ -870,7 +870,8 @@ function build(context: FilmContext) {
 		0,
 	);
 	hide(readouts.slice(0, 2), 29.4, 0.35, 0);
-	hide(readouts[2], 29.7, 0.35, 0);
+	// The total fades where it is and is gone as the profit readout starts to rise.
+	hide(readouts[2], 29.55, 0.35, 0);
 	d.swap(one("axis-payoff"), one("axis-both"), 29.4);
 	show(heads[4], 29.4);
 	draw(line("profit"), 29.4);
