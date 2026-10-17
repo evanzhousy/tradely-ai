@@ -36,19 +36,15 @@ import {
  *
  *   open      0–4        "Data clocks"
  *   question  4–8.6      10:30 Monday, open interest 100: true when?
- *   clocks    8.6–19.2   the drawer; IV at Fri 16:00; a trade at 10:05, received 10:20;
- *                        OI counted Fri 16:00, published 06:30
- *   sources   19.2–32.95  hero: today's volume; contracts outstanding
- *   cover     32.95–40.25 Monday close volume; covered subtotal; unknown whole total
- *   claim     40.25–44.95 every value has its own clock
- *   next      44.95–47.45 Next: the module checkpoint
+ *   clocks    8.6–19.2   scaffold, then IV, event/receipt and count/publication proofs
+ *   sources   19.2–31.85 source layout; today's tape checks together, then OI's measure;
+ *                        positions question rests before its verdict tour;
+ *                        the same guide glows on Friday's latest published count
+ *   cover     31.85–40.7 all rows and both readouts stay readable throughout the tour
+ *   claim     40.7–45.4  every value has its own clock
+ *   next      45.4–47.45 Next: the module checkpoint
  */
 
-const PROOF_SHIFT = 1.5;
-const PUBLICATION_DELAY = 1.65;
-const PUBLICATION_SHIFT = PROOF_SHIFT + PUBLICATION_DELAY;
-const COVERAGE_SHIFT = PUBLICATION_SHIFT + 1.5;
-const CLOSING_SHIFT = COVERAGE_SHIFT - 1.6;
 const END = 47.45;
 const IV_PCT = Math.round(IV * 100);
 const REQUIREMENTS = [
@@ -153,17 +149,11 @@ const copy = {
 	oiClock: ["Fri close", "周五收盘"],
 	oiLatest: ["Latest published count", "最新已发布统计"],
 	oiPublished: ["Mon 06:30", "周一 06:30"],
-	phoneWhy: {
-		today: {
-			friday: ["wrong session", "时段不对"],
-			delayed: ["only to 10:15", "仅到 10:15"],
-			oi: ["positions, not volume", "持仓，非成交量"],
-		},
-		positions: {
-			friday: ["trades, not positions", "成交，非持仓"],
-			delayed: ["trades, not positions", "成交，非持仓"],
-		},
-	} as Record<"today" | "positions", Record<string, Copy>>,
+	tourDay: ["Day / cutoff", "日期 / 截止时间"],
+	tourMeasure: ["Positions ≠ volume", "持仓 ≠ 成交量"],
+	tourTapes: ["Trades ≠ positions", "成交 ≠ 持仓"],
+	tourZero: ["Covered, including zero", "已覆盖，含零"],
+	tourMissing: ["Missing ≠ zero", "缺失 ≠ 零"],
 	req: {
 		today: ["Today's volume so far?", "今天到目前的成交量？"],
 		positions: ["Contracts outstanding?", "存续合约有多少？"],
@@ -177,6 +167,7 @@ const copy = {
 	observed: ["observed", "观测"],
 	zero: ["zero", "零"],
 	missing: ["missing", "缺失"],
+	coverSeries: ["Oct 18 calls · strike", "10月18日看涨 · 行权价"],
 	subtotal: [
 		`Covered subtotal · ${COVERED.length}/${coverRows.length} series`,
 		`覆盖小计 · ${COVERED.length}/${coverRows.length} 序列`,
@@ -190,6 +181,15 @@ const copy = {
 		"在新的一天里运用成交流、持仓与数据质量",
 	],
 } as const;
+
+const TOUR_CAPTIONS = {
+	day: copy.tourDay,
+	measure: copy.tourMeasure,
+	tapes: copy.tourTapes,
+	latest: copy.oiLatest,
+	zero: copy.tourZero,
+	missing: copy.tourMissing,
+} satisfies Record<string, Copy>;
 
 function Scene({
 	width,
@@ -229,7 +229,6 @@ function Scene({
 	const linkY = L.srcY(oi) + L.srcH * 0.84 - clockSize * 0.35;
 	/** Each field's colour carries onto its marks on the timeline. */
 	const fields: [string, Copy, Copy, string, string][] = [
-		["f-oi", copy.oi, copy.oiShort, count(OI), "wt-film-accent"],
 		["f-iv", copy.iv, copy.ivShort, `${IV_PCT}%`, "wt-film-warn"],
 		[
 			"f-last",
@@ -238,6 +237,7 @@ function Scene({
 			`${T1.quantity} @ ${usd(T1.price)}`,
 			"wt-film-gain",
 		],
+		["f-oi", copy.oi, copy.oiShort, count(OI), "wt-film-accent"],
 	];
 	/** Each mark on the timeline: where it sits, what happened there, and in which field. */
 	const marks: [string, number, Copy, string, number][] = [
@@ -487,7 +487,7 @@ function Scene({
 					/>
 					<text
 						x={margin + 16}
-						y={L.srcY(i) + L.srcH * (narrow || source.id === "oi" ? 0.3 : 0.4)}
+						y={L.srcY(i) + L.srcH * 0.3}
 						className="wt-film-type"
 						style={{ fontSize: narrow ? T.body : T.head * 0.9 }}
 					>
@@ -518,11 +518,21 @@ function Scene({
 					) : (
 						<text
 							x={margin + 16}
-							y={L.srcY(i) + L.srcH * (narrow ? 0.55 : 0.74)}
+							y={L.srcY(i) + L.srcH * 0.55}
 							className="wt-film-num wt-film-dim"
 							style={{ fontSize: T.small * 1.05 }}
 						>
-							{t(source.detail)}
+							{t(source.detail)
+								.split(" · ")
+								.map((line, j) => (
+									<tspan
+										key={j === 0 ? "quantity" : "session"}
+										x={margin + 16}
+										dy={j === 0 ? 0 : L.srcH * 0.29}
+									>
+										{line}
+									</tspan>
+								))}
 						</text>
 					)}
 				</g>
@@ -530,39 +540,17 @@ function Scene({
 			{REQUIREMENTS.flatMap((req) =>
 				sources.map((source, i) => {
 					const v = verdicts[req][source.id];
-					const why =
-						req === "positions" && source.id === "oi"
-							? copy.oiLatest
-							: narrow
-								? copy.phoneWhy[req][source.id]
-								: v.why;
 					return (
 						<g key={`${req}-${source.id}`} data-f={`v-${req}-${i}`}>
 							<text
 								x={margin + room - 16}
-								y={
-									L.srcY(i) +
-									L.srcH * (narrow || source.id === "oi" ? 0.3 : 0.4)
-								}
+								y={L.srcY(i) + L.srcH * 0.3}
 								textAnchor="end"
 								className={`wt-film-tag ${verdictTone[v.verdict]}`}
 								style={{ fontSize: T.small * 1.05 }}
 							>
 								{t(verdictCopy[v.verdict]).toUpperCase()}
 							</text>
-							<Lines
-								name={`v-${req}-${i}-why`}
-								x={margin + room - 16}
-								y={
-									L.srcY(i) +
-									L.srcH * (source.id === "oi" ? 0.55 : narrow ? 0.84 : 0.74)
-								}
-								size={narrow ? T.body : T.small * 1.05}
-								maxWidth={narrow ? room - 32 : room * 0.46}
-								anchor="end"
-								className="wt-film-type wt-film-dim"
-								text={t(why)}
-							/>
 							{req === "positions" && source.id === "oi" ? (
 								<Word
 									name="oi-publication"
@@ -586,7 +574,21 @@ function Scene({
 				fill="none"
 				style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
 			/>
-			<Brackets name="lock-verdict" glow />
+			{/* One guide for the entire film; only its hero stop uses the glow. */}
+			<Brackets name="tour-guide" glow />
+			{Object.entries(TOUR_CAPTIONS).map(([id, caption]) => (
+				<Word
+					key={id}
+					name={`tour-${id}`}
+					x={margin}
+					y={H * 0.955}
+					size={T.body}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(caption)}
+				</Word>
+			))}
 
 			{/* Missing, zero and observed. */}
 			{headline("k-head", copy.kHead)}
@@ -605,6 +607,16 @@ function Scene({
 				maxWidth={narrow ? room : room * 0.74}
 				anchor="start"
 			/>
+			<Word
+				name="cover-series"
+				x={margin + 14}
+				y={L.rowY(0) - 14}
+				size={T.small}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			>
+				{t(copy.coverSeries)}
+			</Word>
 			{coverRows.map((row, i) => (
 				<g key={row.id} data-f={`cov-${i}`}>
 					<rect
@@ -626,7 +638,7 @@ function Scene({
 						className="wt-film-type"
 						style={{ fontSize: text }}
 					>
-						{t(row.label)}
+						{row.id}
 					</text>
 					<text
 						x={margin + room * (narrow ? 0.62 : 0.6)}
@@ -649,12 +661,6 @@ function Scene({
 					</text>
 				</g>
 			))}
-			<path
-				data-f="covered-group"
-				d={`M${margin - 2} ${L.rowY(0) - 4}H${margin - 9}V${L.rowY(3) + L.rowH + 4}H${margin - 2}`}
-				fill="none"
-				style={{ stroke: "var(--diagram-accent)", strokeWidth: 2 }}
-			/>
 			<g data-f="subtotal">
 				<Word
 					name="subtotal-label"
@@ -734,8 +740,7 @@ function Scene({
 }
 
 function build(context: FilmContext) {
-	const { width: W } = context;
-	const L = layout(W);
+	const L = layout(context.width);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
 	const flat = (name: string) =>
@@ -744,35 +749,21 @@ function build(context: FilmContext) {
 				? [...el.children]
 				: [el],
 		);
-	/** Scale single text only; a panel or a grouped clock proof fades in place. */
-	const word = (target: Element, time: number) =>
+	/** A complete layout fades in at rest, with no stagger or grouped scaling. */
+	const still = (targets: Element | Element[], at: number, duration = 0.5) =>
+		tl.fromTo(
+			targets,
+			{ opacity: 0 },
+			{ opacity: 1, duration, ease: "power3.out" },
+			at,
+		);
+	const word = (target: Element, at: number) =>
 		tl.fromTo(
 			target,
-			target.tagName === "text"
-				? { opacity: 0, scale: 1.08, transformOrigin: "50% 50%" }
-				: { opacity: 0 },
-			{
-				opacity: 1,
-				...(target.tagName === "text" ? { scale: 1 } : {}),
-				duration: 0.55,
-				ease: "power3.out",
-			},
-			time,
+			{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
+			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			at,
 		);
-	/** Content dims as a unit; the selected field keeps its original colour and full contrast. */
-	const focus = (name: string, time: number) => {
-		for (const field of ["f-oi", "f-iv", "f-last"]) {
-			tl.to(
-				one(`${field}-content`),
-				{
-					opacity: field === name ? 1 : 0.3,
-					duration: 0.3,
-					ease: "power2.out",
-				},
-				time,
-			);
-		}
-	};
 	const heads = [
 		"c-head",
 		"c2-head",
@@ -781,36 +772,54 @@ function build(context: FilmContext) {
 		"k-head",
 		"k2-head",
 	].map((name) => one(name));
-	const fields = ["f-oi", "f-iv", "f-last"].map((name) => one(name));
-	const marks = ["m-iv", "m-oi", "m-pub", "m-trade", "m-recv"].map((name) =>
-		one(name),
-	);
+	const fieldNames = ["f-iv", "f-last", "f-oi"];
+	const fields = fieldNames.map((name) => one(name));
+	const markNames = ["m-iv", "m-oi", "m-pub", "m-trade", "m-recv"];
+	const marks = markNames.map((name) => one(name));
 	const clockLinks = ["trade-receipt-link", "count-publication-link"].map(
 		(name) => one<SVGPathElement>(name),
 	);
-	const heroLink = one<SVGPathElement>("hero-publication-link");
-	// Each pair is one construction: the connecting stroke and both clock stamps settle together.
+	/** Event/receipt and count/publication are built as paired clock proofs. */
 	const connectClocks = (
 		from: Element,
 		to: Element,
 		link: SVGPathElement,
 		at: number,
 	) => {
-		tl.fromTo(
-			[from, to],
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.55, ease: "power3.out" },
-			at,
-		);
+		still([from, to], at, 0.55);
 		d.trace(link, at, { duration: 0.55 });
 	};
+	const heroLink = one<SVGPathElement>("hero-publication-link");
 	const reqs = REQUIREMENTS.map((req) => one(`req-${req}`));
 	const srcs = sources.map((_, i) => one(`src-${i}`));
 	const verdictsFor = (req: Requirement) =>
 		sources.map((_, i) => one(`v-${req}-${i}`));
 	const covs = coverRows.map((_, i) => one(`cov-${i}`));
-	const lockVerdict = one<SVGGraphicsElement>("lock-verdict");
-
+	const guide = one<SVGGraphicsElement>("tour-guide");
+	const heroGlow = getComputedStyle(guide).filter;
+	const captions = Object.keys(TOUR_CAPTIONS).map((id) => one(`tour-${id}`));
+	// One bracket path throughout; its existing glow is enabled only at the hero.
+	tl.set(guide, { filter: "none" }, 0);
+	const dim = (targets: Element[], opacity: number, at: number) =>
+		tl.to(targets, { opacity, duration: 0.3, ease: "power2.out" }, at);
+	const focusClocks = (field: number, at: number) => {
+		fieldNames.forEach((name, i) => {
+			dim([one(`${name}-content`)], field === i ? 1 : 0.3, at);
+		});
+	};
+	const focusSources = (selected: number[], at: number) => {
+		srcs.forEach((_, i) => {
+			const opacity = selected.includes(i) ? 1 : 0.3;
+			// Dim children so each whole row still leaves as a unit at the cut.
+			dim(kids(`src-${i}`), opacity, at);
+			for (const req of REQUIREMENTS)
+				dim(
+					kids(`v-${req}-${i}`).filter((el) => el !== one("oi-publication")),
+					opacity,
+					at,
+				);
+		});
+	};
 	d.hidden([
 		...flat("q"),
 		...heads,
@@ -824,26 +833,23 @@ function build(context: FilmContext) {
 		...reqs,
 		...srcs,
 		...REQUIREMENTS.flatMap(verdictsFor),
-		lockVerdict,
+		guide,
+		...captions,
 		...covs,
-		one("covered-group"),
+		one("cover-series"),
 		one("subtotal"),
 		one("total"),
 		...kids("claim"),
 	]);
-
-	// ——— open ———
 	tl.addLabel("open", 0);
 	d.open(0);
-
-	// ——— question ———
 	tl.addLabel("question", 4);
-	d.tag(4.0);
+	d.tag(4);
 	show(one("q-tag"), 4.6);
 	show(one("q-line"), 4.8);
 	word(one("q-big"), 5.1);
 
-	// ——— clocks: each field's own time, open interest last ———
+	// Restore the pre-trial scaffold and the clock relationships it supports.
 	tl.addLabel("clocks", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
@@ -851,118 +857,105 @@ function build(context: FilmContext) {
 		show(field, 9.2 + i * 0.2);
 	});
 	show(kids("timeline"), 9.45);
-	word(one("now"), 9.8);
-	focus("f-iv", 10.95);
-	word(marks[0], 10.95);
-	// Event and receipt form one proof; it settles at 13.05, then rests for a second.
-	focus("f-last", 12.5);
+	still(one("now"), 9.8, 0.55);
+	// Axis labels settle at 9.95, one second before the first data stamp.
+	focusClocks(0, 10.95);
+	still(marks[0], 10.95, 0.55);
+	focusClocks(1, 12.5);
 	connectClocks(marks[3], marks[4], clockLinks[0], 12.5);
-	// Count and publication form one proof, complete a second before its answer arrives.
-	focus("f-oi", 14.05);
+	// Each pair settles for one second before the next construction or answer.
+	focusClocks(2, 14.05);
 	connectClocks(marks[1], marks[2], clockLinks[1], 14.05);
 	show(heads[1], 15.6);
 
-	// ——— sources: the hero. Fresh enough for which question? ———
+	// Complete source layout settles at 20.05, one second before the first stop.
 	tl.addLabel("sources", 19.2);
 	d.swap([heads[0], heads[1]], heads[2], 19.2);
 	hide(
 		[...fields, ...kids("timeline"), one("now"), ...marks, ...clockLinks],
 		19.2,
 	);
-	srcs.forEach((src, i) => {
-		show(src, 19.8 + i * 0.2, "right");
-	});
-	// Questions settle and rest for a second before their verdict constructions begin.
-	show(reqs[REQUIREMENTS.indexOf("today")], 20.05);
-	verdictsFor("today").forEach((v, i) => {
-		word(v, 21.55 + i * 0.2);
-	});
-	hide(
-		[reqs[REQUIREMENTS.indexOf("today")], ...verdictsFor("today")],
-		24.85,
-		0.3,
-	);
-	show(reqs[REQUIREMENTS.indexOf("positions")], 25.2);
-	verdictsFor("positions").forEach((v) => {
-		word(v, 25.2 + PROOF_SHIFT);
-	});
-	// Read all verdicts together before dimming the tapes; the OI card stays at full strength.
-	tl.to(
-		[
-			...srcs.slice(0, 2),
-			...verdictsFor("positions")
-				.slice(0, 2)
-				.flatMap((v) => [...v.children]),
-		],
-		{ opacity: 0.3, duration: 0.3, ease: "power2.out" },
-		25.2 + PROOF_SHIFT + PUBLICATION_DELAY,
-	);
-	const oi = sources.findIndex((source) => source.id === "oi");
-	// After the question rests, promote the count; its value and clock never change.
+	still(srcs, 19.55);
+	show(reqs[0], 19.55);
+	const today = verdictsFor("today");
+	const positions = verdictsFor("positions");
+	// Compare the tapes' named days and cutoff clocks together; their verdicts differ.
+	focusSources([0, 1], 21.05);
+	d.lock(guide, 21.05, { around: srcs.slice(0, 2), pad: 6 });
+	still(today.slice(0, 2), 21.05, 0.3);
+	still(one("tour-day"), 21.05, 0.3);
+	d.swap(one("tour-day"), one("tour-measure"), 22.5);
+	focusSources([2], 22.75);
+	d.lock(guide, 22.75, { around: [srcs[2]], pad: 6 });
+	still(today[2], 22.75, 0.3);
+
+	// Positions question enters at 24.65, settles at 25.15, then rests a full second.
+	d.swap(reqs[0], reqs[1], 24.3);
+	hide(today, 24.3, 0.3);
+	focusSources([0, 1, 2], 24.3);
+	hide(guide, 24.3, 0.35, 0);
+	hide(one("tour-measure"), 24.3);
+	d.swap(one("tour-measure"), one("tour-tapes"), 25.8);
+	focusSources([0, 1], 26.15);
+	d.lock(guide, 26.15, { around: srcs.slice(0, 2), pad: 6 });
+	still(positions.slice(0, 2), 26.15, 0.3);
+
+	// Same Friday count, same Monday publication: construct the link before locking.
+	d.swap(one("tour-tapes"), one("tour-latest"), 27.65);
+	focusSources([2], 27.65);
+	d.lock(guide, 27.65, { around: [srcs[2], positions[2]], pad: 6 });
+	still(positions[2], 27.8);
 	tl.fromTo(
 		one("src-oi-count"),
 		{ fontSize: L.clockSize },
 		{ fontSize: L.heroNum, duration: 0.55, ease: "power3.out" },
-		25.2 + PROOF_SHIFT,
+		27.65,
 	);
-	// Connect the same Friday count to its Monday publication; both settle before the lock.
-	word(one("oi-publication"), 25.55 + PUBLICATION_SHIFT);
-	d.trace(heroLink, 25.55 + PUBLICATION_SHIFT, { duration: 0.55 });
-	// Enclose the constructed count, Friday clock and latest publication evidence together.
-	d.lock(lockVerdict, 26.2 + PUBLICATION_SHIFT, {
-		around: [srcs[oi], verdictsFor("positions")[oi]],
-		pad: 6,
-	});
-	tl.addLabel("hero-lock", 26.2 + PUBLICATION_SHIFT);
-	// Settle the answer with the brackets, so the complete stand has no secondary motion.
-	show(heads[3], 26.2 + PUBLICATION_SHIFT, "below", 0.45);
+	still(one("oi-publication"), 27.65, 0.55);
+	d.trace(heroLink, 27.65, { duration: 0.55 });
+	tl.set(guide, { filter: heroGlow }, 28.25);
+	d.lock(guide, 28.25, { around: [srcs[2], positions[2]], pad: 6 });
+	tl.addLabel("hero-lock", 28.25);
+	show(heads[3], 28.25, "below", 0.45);
+	// Frozen from 28.70 through 31.85: the accepted 3.15 s hero stand.
 
-	// ——— cover: blank is not zero ———
-	tl.addLabel("cover", 29.8 + PUBLICATION_SHIFT);
-	d.swap([heads[2], heads[3]], heads[4], 29.8 + PUBLICATION_SHIFT);
-	hide(
-		[
-			reqs[REQUIREMENTS.indexOf("positions")],
-			...srcs,
-			...verdictsFor("positions"),
-			heroLink,
-			lockVerdict,
-		],
-		29.8 + PUBLICATION_SHIFT,
-	);
-	// The coverage heading settles at 33.80; its units stand a second before any row enters.
-	const coverageAt = { observed: 30.15, zero: 30.3, missing: 30.5 };
-	covs.forEach((cov, i) => {
-		show(cov, coverageAt[coverRows[i].state] + COVERAGE_SHIFT, "right");
-	});
-	d.trace(one<SVGPathElement>("covered-group"), 32.0 + COVERAGE_SHIFT, {
-		duration: 0.5,
-	});
-	show(one("subtotal"), 32.0 + COVERAGE_SHIFT);
-	show(one("total"), 33.6 + COVERAGE_SHIFT);
-	// The missing row already proves this qualification; preserve its hold as the bound rest shrinks.
-	show(heads[5], 33.6 + CLOSING_SHIFT);
+	// All rows and both settled results arrive together, not result-by-result.
+	tl.addLabel("cover", 31.85);
+	d.swap([heads[2], heads[3]], heads[4], 31.85);
+	focusSources([0, 1, 2], 31.85);
+	hide([reqs[1], ...srcs, ...positions, heroLink, one("tour-latest")], 31.85);
+	hide(guide, 31.85, 0.35, 0);
+	tl.set(guide, { filter: "none" }, 32.2);
+	still([...covs, one("cover-series"), one("subtotal"), one("total")], 32.2);
+	// Whole layout still at 32.70; tour starts one second later.
+	// Comparisons need their evidence: all rows and both readouts stay at full contrast.
+	d.lock(guide, 33.7, { around: covs.slice(0, 4), pad: 6 });
+	still(one("tour-zero"), 33.7, 0.3);
+	d.swap(one("tour-zero"), one("tour-missing"), 35.35);
+	d.lock(guide, 35.7, { around: [covs[4]], pad: 6 });
+	show(heads[5], 35.7, "below", 0.45);
+	d.lock(guide, 37.25, { around: [one("total")], pad: 6 });
+	hide(one("tour-missing"), 37.25);
+	// The lower bound remains beside its subtotal and all five rows until the cut.
 
-	// ——— claim ———
-	tl.addLabel("claim", 37.2 + CLOSING_SHIFT);
+	tl.addLabel("claim", 40.7);
 	hide(
 		[
 			heads[4],
 			heads[5],
 			...covs,
-			one("covered-group"),
+			one("cover-series"),
 			one("subtotal"),
 			one("total"),
 		],
-		37.2 + CLOSING_SHIFT,
+		40.7,
 	);
-	word(one("z-big"), 37.5 + CLOSING_SHIFT);
-	show(one("z-sub"), 37.9 + CLOSING_SHIFT);
-
-	// ——— next ———
-	tl.addLabel("next", 41.9 + CLOSING_SHIFT);
-	hide(kids("claim"), 41.9 + CLOSING_SHIFT);
-	d.close(41.9 + CLOSING_SHIFT);
+	hide(guide, 40.7, 0.35, 0);
+	word(one("z-big"), 41);
+	show(one("z-sub"), 41.4);
+	tl.addLabel("next", 45.4);
+	hide(kids("claim"), 45.4);
+	d.close(45.4);
 	return tl;
 }
 
