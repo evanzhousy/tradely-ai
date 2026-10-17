@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -326,13 +327,7 @@ function Scene({
 										data-f={`tag-${i}`}
 										x={sideX}
 										y={y + 4}
-										className={`wt-small ${
-											print.lean === "bullish"
-												? "wt-gain"
-												: print.lean === "bearish"
-													? "wt-loss"
-													: ""
-										}`}
+										className="wt-small"
 										style={{ fontSize: labelSize }}
 									>
 										{t(leanTag[print.lean])}
@@ -383,12 +378,12 @@ function Scene({
 							<text
 								x={L.zero + SPREAD * L.unit + 8}
 								y={spreadY + 4}
-								className="wt-film-num wt-film-gain"
+								className="wt-film-num"
 								style={{ fontSize: labelSize + 1 }}
 							>
-								{narrow
-									? signedCount(SPREAD)
-									: `${count(magnitude(prints[4]))} − ${count(magnitude(prints[5]))} = ${signedCount(SPREAD)}`}
+								{!narrow &&
+									`${count(magnitude(prints[4]))} − ${count(magnitude(prints[5]))} = `}
+								<tspan className={toneClass.up}>{signedCount(SPREAD)}</tspan>
 							</text>
 						</g>
 					</g>
@@ -431,7 +426,7 @@ function Scene({
 					y={L.headY + T.head * 1.25 + T.num * 1.05}
 					size={T.num}
 					anchor="end"
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.up}`}
 				>
 					{signedCount(netted.net)}
 				</Word>
@@ -466,7 +461,7 @@ function Scene({
 			>
 				{`${count(printwise.bullish)} − ${count(printwise.bearish)} = `}
 				<tspan
-					className="wt-film-accent"
+					className={toneClass.up}
 					style={{ fontSize: Math.min(T.num, T.body * 1.5) }}
 				>
 					{signedCount(printwise.net)}
@@ -515,9 +510,10 @@ function Scene({
 						x={W / 2}
 						y={H * 0.34}
 						size={T.body}
-						className="wt-film-num wt-film-gain"
+						className="wt-film-num"
 					>
-						{`${count(magnitude(prints[4]))} − ${count(magnitude(spreadSoldLeg))} = ${signedCount(SPREAD)}`}
+						{`${count(magnitude(prints[4]))} − ${count(magnitude(spreadSoldLeg))} = `}
+						<tspan className={toneClass.up}>{signedCount(SPREAD)}</tspan>
 					</Word>
 				</>
 			)}
@@ -532,7 +528,7 @@ function Scene({
 							count(printwise.gross),
 							"",
 						],
-						[narrow ? copy.qTagNetShort : copy.qTagNet, "?", "wt-film-accent"],
+						[narrow ? copy.qTagNetShort : copy.qTagNet, "?", toneClass.caution],
 					] as const
 				).map(([tag, num, tone], i) => (
 					<g key={tag[0]}>
@@ -573,8 +569,8 @@ function Scene({
 			<g data-f="two">
 				{(
 					[
-						[copy.twoPrints, printwise.net, ""],
-						[copy.oneTrade, netted.net, "wt-film-accent"],
+						[copy.twoPrints, printwise.net, toneClass.up],
+						[copy.oneTrade, netted.net, toneClass.up],
 					] as const
 				).map(([tag, num, tone], i) => (
 					<g key={tag[0]}>
@@ -809,15 +805,14 @@ function build(context: FilmContext) {
 		const sign = signOf(print.lean);
 		const bar = one(`bar-${i}`);
 		const width = magnitude(print) * L.unit;
-		if (sign > 0) tl.set(bar, { attr: { "data-tone": "gain" } }, signAt);
-		else if (sign < 0) {
-			tl.set(bar, { attr: { "data-tone": "loss" } }, signAt + 0.3);
+		if (sign < 0) {
 			tl.to(
 				bar,
 				{ attr: { x: L.zero - width }, duration: 0.6, ease: "power2.inOut" },
 				signAt,
 			);
-		} else tl.to(one(`row-${i}`), { opacity: 0.45, duration: 0.5 }, signAt);
+		} else if (sign === 0)
+			tl.to(one(`row-${i}`), { opacity: 0.45, duration: 0.5 }, signAt);
 	});
 	// Signed phone values settle first at 16.1. The labelled equation follows
 	// at 16.2, settles at 16.5, then has 2.0 s of quiet before DEI.
