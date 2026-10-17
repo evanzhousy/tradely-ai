@@ -847,6 +847,24 @@ const out = await page.evaluate(() => {
 			}
 		}
 	}
+	// Counts (runbook §6): a figure that counts takes at least 1 s at 1×. A count is a tween of
+	// a plain object that writes on every update (the kit's `count`, or a film's own counter);
+	// one shorter than 0.05 s is a set.
+	const shortCounts = tweens
+		.filter(
+			(tw) =>
+				typeof tw.vars?.onUpdate === "function" &&
+				// The kit's pen (`{ done }`) follows a trace; it counts nothing.
+				tw
+					.targets()
+					.some((x) => x && !(x instanceof Element) && !("done" in x)) &&
+				tw.duration() >= 0.05 &&
+				tw.duration() < 1 - 1e-6,
+		)
+		.map(
+			(tw) =>
+				`count at ${tw.startTime().toFixed(2)} lasts ${tw.duration().toFixed(2)} s (< 1 s at 1×)`,
+		);
 	return {
 		duration,
 		headSize: typeHead,
@@ -860,6 +878,7 @@ const out = await page.evaluate(() => {
 		rows,
 		badClasses: [...bad],
 		colours: [...colours],
+		shortCounts,
 		stacked,
 		stated,
 		pops,
@@ -1034,6 +1053,7 @@ console.log(
 		warnings: [
 			...out.stated,
 			...reads,
+			...out.shortCounts,
 			...out.still.map(
 				([at, length]) => `still ${length.toFixed(1)} s at ${at.toFixed(1)}`,
 			),
