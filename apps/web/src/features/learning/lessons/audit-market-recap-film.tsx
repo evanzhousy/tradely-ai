@@ -91,10 +91,8 @@ const copy = {
 	title: ["Audits", "审核"],
 	titleSub: ["finding and repairing a flawed recap", "发现并修复有缺陷的复盘"],
 	qTag: ["a colleague's recap · Monday", "同事的复盘 · 周一"],
-	qLine: [
-		`Premium: ${usd(REPORTED)}. Contracts and prices match the tape.`,
-		`权利金：${usd(REPORTED)}。张数和价格都和成交记录一致。`,
-	],
+	qLabel: ["Reported premium", "所报权利金"],
+	qMatch: ["Contracts and prices match tape.", "张数和价格与成交记录一致。"],
 	qBig: ["Pass it?", "通过吗？"],
 	mHead: ["Recompute from the trades.", "按成交重算。"],
 	m2Head: [
@@ -118,18 +116,18 @@ const copy = {
 	scopeShort: ["Oct 18 calls, 100–120, Mon", "10月18日 看涨 100–120，周一"],
 	repaired: ["repaired", "已修复"],
 	removed: ["Forecast removed", "预测已删除"],
-	forecastShort: ["Traders expect", "交易者预期"],
-	forecastScope: ["ALFA >$110 by Oct18", "ALFA 10/18前>$110"],
-	forecastPhoneLead: ["Traders expect ALFA", "交易者预期 ALFA"],
-	forecastPhoneScope: ["above $110 by Oct 18", "10/18前>$110"],
+	forecastLead: ["Traders expect", "交易者预期"],
+	forecastLabel: ["ALFA above", "ALFA 在10月18日前高于"],
+	forecastFigure: ["$110", "$110"],
+	forecastDeadline: ["by Oct 18", ""],
 	sHead: [
 		"Sign off with gaps and reopening conditions.",
 		"签核，写明缺口与重审条件。",
 	],
 	claimBig: ["Find. Fix. Disclose gaps.", "找出问题，修正错误，说明待核事项。"],
 	claimSub: [
-		"Keep the source, cutoff, and open items visible.",
-		"标明来源、截止时间和待核事项。",
+		"Show source, cutoff, and open items.",
+		"标明来源、截止与待核项。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
@@ -141,16 +139,36 @@ const copy = {
 /** Film-only phone summaries; the shared playground copy stays unchanged. */
 const phoneSections: Readonly<Record<string, Copy>> = {
 	supported: [
-		`P1 · ALFA Oct18 calls · Mon Sep16 · ${dollars(PREMIUM)} premium · ${count(CONTRACTS)} contracts · 4/5 strikes`,
-		`P1 · ALFA 10/18 看涨 · 9/16 周一 · 权利金 ${dollars(PREMIUM)} · 成交 ${count(CONTRACTS)} 张 · 覆盖 4/5 行权价`,
+		`P1 · ${dollars(PREMIUM)} premium · ${count(CONTRACTS)} contracts traded · 4/5 strikes`,
+		`P1 · 权利金 ${dollars(PREMIUM)} · 成交 ${count(CONTRACTS)} 张 · 覆盖 4/5 行权价`,
 	],
 	repaired: [
-		"×100 restored · volume ≠ positions · 120 missing · forecast cut",
-		"补回 ×100 · 成交≠持仓 · 120 无数据 · 删除预测",
+		"×100 restored · volume, not positions · 120 missing · forecast cut",
+		"补回 ×100 · 成交≠持仓 · 120 缺失 · 删除预测",
 	],
 	reopen: [
-		"Monday tape corrected, or 120 data changes a claim",
+		"Mon tape corrected or 120 data changes a claim",
 		"周一成交更正，或 120 数据改变结论",
+	],
+};
+
+/** Film-only signoff copy; the model's shared playground wording stays unchanged. */
+const signoffCopy: Readonly<Record<string, Copy>> = {
+	supported: [
+		`P1 · ${dollars(PREMIUM)} premium · ${count(CONTRACTS)} contracts traded · 4/5 strikes.`,
+		`P1 · 权利金 ${dollars(PREMIUM)} · 成交 ${count(CONTRACTS)} 张 · 覆盖 4/5 行权价。`,
+	],
+	repaired: [
+		"×100 restored · volume, not positions · 120 missing · forecast cut.",
+		"补回 ×100 · 成交≠持仓 · 120 缺失 · 删除预测。",
+	],
+	open: [
+		"120 Monday tape · Tue 09:00; 110 open-interest change · Tuesday report.",
+		"120 周一成交 · 周二 09:00；110 未平仓量变化 · 周二报告。",
+	],
+	reopen: [
+		"Monday tape corrected or 120 data changes a claim.",
+		"周一成交记录更正，或 120 数据改变结论。",
 	],
 };
 
@@ -178,6 +196,23 @@ const positionsRepairParts = {
 	separator: ["; ", "；"],
 	unknown: ["new positions unknown", "新增仓位未知"],
 } as const satisfies Record<string, Copy>;
+
+/** False claims show their reported figures as separate marks beside compact labels. */
+const falseClaimFacts: Readonly<Record<string, { label: Copy; figure: Copy }>> =
+	{
+		premium: {
+			label: ["reported premium", "原报权利金"],
+			figure: [usd(REPORTED), usd(REPORTED)],
+		},
+		positions: {
+			label: ["new positions · 110 call", "新增仓位 · 110 看涨"],
+			figure: [count(POSITION_CONTRACTS), count(POSITION_CONTRACTS)],
+		},
+		missing: {
+			label: ["120 call · traded", "120 看涨 · 成交"],
+			figure: ["0", "0"],
+		},
+	};
 
 function Scene({
 	width,
@@ -248,26 +283,47 @@ function Scene({
 				<Word
 					name="q-tag"
 					x={W / 2}
-					y={H * 0.32}
+					y={H * 0.27}
 					size={T.small}
 					className="wt-film-tag"
 				>
 					{t(copy.qTag).toUpperCase()}
 				</Word>
-				<Lines
-					name="q-line"
-					text={t(copy.qLine)}
-					x={W / 2}
-					y={H * 0.43}
-					size={T.head}
-					maxWidth={room}
-					className="wt-film-type wt-film-accent"
-				/>
+				{/* Label, figure and note stack with room between them; the question sits clear below. */}
+				<g data-f="q-copy">
+					<Word
+						name="q-label"
+						x={W / 2}
+						y={H * 0.345}
+						size={T.body}
+						className="wt-film-tag"
+					>
+						{t(copy.qLabel)}
+					</Word>
+					<Word
+						name="q-amount"
+						x={W / 2}
+						y={H * 0.455}
+						size={T.title}
+						className={`wt-film-num ${toneClass.focus}`}
+					>
+						{usd(REPORTED)}
+					</Word>
+					<Lines
+						name="q-match"
+						text={t(copy.qMatch)}
+						x={W / 2}
+						y={H * 0.53}
+						size={narrow ? T.small : T.body}
+						maxWidth={room}
+						className="wt-film-type wt-film-dim"
+					/>
+				</g>
 				<Lines
 					name="q-big"
 					text={t(copy.qBig)}
 					x={W / 2}
-					y={H * 0.62}
+					y={H * 0.66}
 					size={T.title}
 					maxWidth={room}
 				/>
@@ -486,39 +542,100 @@ function Scene({
 							rx={10}
 							className="wt-panel-shape"
 						/>
-						<text
-							data-f={`claim-${i}-text`}
-							x={
-								narrow && claim.status === "removed"
-									? margin + room / 2
-									: margin + 14
-							}
-							textAnchor={
-								narrow && claim.status === "removed" ? "middle" : "start"
-							}
-							y={
-								L.claimY(i) +
-								(narrow && claim.status === "removed" ? text : L.claimH * 0.42)
-							}
-							className="wt-film-type"
-							style={{ fontSize: text }}
-						>
-							{claim.status === "removed" ? (
-								<>
-									<tspan x={narrow ? margin + room / 2 : margin + 14}>
-										{t(narrow ? copy.forecastPhoneLead : copy.forecastShort)}
-									</tspan>
-									<tspan
-										x={narrow ? margin + room / 2 : margin + 14}
-										dy={text * 1.15}
+						{claim.status === "removed" ? (
+							<g data-f={`claim-${i}-text`}>
+								<text
+									x={margin + 14}
+									y={L.claimY(i) + (narrow ? text : L.claimH * 0.42)}
+									className="wt-film-type"
+									style={{ fontSize: text }}
+								>
+									{t(copy.forecastLead)}
+								</text>
+								<text
+									x={margin + 14}
+									y={
+										L.claimY(i) +
+										(narrow ? text : L.claimH * 0.42) +
+										text * 1.15
+									}
+									className="wt-film-type"
+									style={{ fontSize: text }}
+								>
+									{t(copy.forecastLabel)}
+								</text>
+								<text
+									data-f={`claim-${i}-figure`}
+									x={margin + 14 + textWidth(t(copy.forecastLabel), text) + 6}
+									y={
+										L.claimY(i) +
+										(narrow ? text : L.claimH * 0.42) +
+										text * 1.15
+									}
+									className="wt-film-num"
+									style={{ fontSize: T.body }}
+								>
+									{t(copy.forecastFigure)}
+								</text>
+								{t(copy.forecastDeadline) ? (
+									<text
+										x={
+											margin +
+											14 +
+											textWidth(t(copy.forecastLabel), text) +
+											textWidth(t(copy.forecastFigure), T.body) +
+											12
+										}
+										y={
+											L.claimY(i) +
+											(narrow ? text : L.claimH * 0.42) +
+											text * 1.15
+										}
+										className="wt-film-type"
+										style={{ fontSize: text }}
 									>
-										{` ${t(narrow ? copy.forecastPhoneScope : copy.forecastScope)}`}
-									</tspan>
-								</>
-							) : (
-								t(narrow && claim.id === "scope" ? copy.scopeShort : claim.text)
-							)}
-						</text>
+										{t(copy.forecastDeadline)}
+									</text>
+								) : null}
+							</g>
+						) : falseClaimFacts[claim.id] ? (
+							<g data-f={`claim-${i}-text`}>
+								<text
+									data-f={`claim-${i}-figure`}
+									x={margin + 14}
+									y={L.claimY(i) + L.claimH * 0.42}
+									className="wt-film-num"
+									style={{ fontSize: T.body }}
+								>
+									{t(falseClaimFacts[claim.id].figure)}
+								</text>
+								<text
+									x={
+										margin +
+										14 +
+										textWidth(t(falseClaimFacts[claim.id].figure), T.body) +
+										8
+									}
+									y={L.claimY(i) + L.claimH * 0.42}
+									className="wt-film-type"
+									style={{ fontSize: text }}
+								>
+									{t(falseClaimFacts[claim.id].label)}
+								</text>
+							</g>
+						) : (
+							<text
+								data-f={`claim-${i}-text`}
+								x={margin + 14}
+								y={L.claimY(i) + L.claimH * 0.42}
+								className="wt-film-type"
+								style={{ fontSize: text }}
+							>
+								{t(
+									narrow && claim.id === "scope" ? copy.scopeShort : claim.text,
+								)}
+							</text>
+						)}
 					</g>
 					<text
 						data-f={`tag-${i}`}
@@ -641,8 +758,8 @@ function Scene({
 							name={`sec-${i}-text`}
 							text={t(
 								narrow
-									? (phoneSections[section.id] ?? section.text)
-									: section.text,
+									? (phoneSections[section.id] ?? signoffCopy[section.id])
+									: signoffCopy[section.id],
 							)}
 							x={margin + 14}
 							y={L.secY(i) + T.small * 1.7 + T.small * (narrow ? 1.35 : 1.6)}
@@ -761,7 +878,12 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
-	show(one("q-line"), 4.8);
+	tl.fromTo(
+		one("q-copy"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5, ease: "power2.out" },
+		4.8,
+	);
 	word(one("q-big"), 5.1);
 
 	// ——— amount: recompute from the rows ———
@@ -847,7 +969,7 @@ function build(context: FilmContext) {
 		22.6,
 	);
 	claimRows.forEach((row, i) => {
-		show(row, 23.4 + i * 0.125, "right");
+		show(row, 23.1 + i * 0.125, "right");
 	});
 	tags.forEach((tag, i) => {
 		word(tag, 23.8 + i * 0.3);
