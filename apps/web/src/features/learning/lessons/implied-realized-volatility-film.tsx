@@ -52,16 +52,16 @@ import {
  *
  *   open      0–4        "IV and RV"
  *   question  4–9.6      IV 35%, RV 24%: which is ALFA's volatility?
- *   fit       9.6–22.1   the model's price against its volatility input; slide to the
+ *   fit       9.6–22.25   the model's price against its volatility input; slide to the
  *                        mid; cut to the bid, mid and ask: same option, three IVs
- *   rv        22.1–31.4  hero: twenty daily returns, ±1.52% a day, 24% a year; the last
+ *   rv        22.25–31.55  hero: twenty daily returns, ±1.52% a day, 24% a year; the last
  *                        ten only, 15%, locked
- *   horizons  31.4–40.5  RV behind today, IV ahead with earnings; cut: +11 vol points
- *   claim     40.5–44.8  "IV looks ahead. RV looks back."
- *   next      44.8–47.3  Next: the expected move
+ *   horizons  31.55–40.65  RV behind today, IV ahead with earnings; cut: +11 vol points
+ *   claim     40.65–44.95  "IV looks ahead. RV looks back."
+ *   next      44.95–47.45  Next: the expected move
  */
 
-const END = 47.3;
+const END = 47.45;
 const F_X = [0.2, 0.5] as const;
 const F_Y = [2, 6] as const;
 const R_RANGE = 0.03;
@@ -141,8 +141,8 @@ const copy = {
 	qTagRv: ["from closes", "来自收盘价"],
 	zoomAxis: ["the same curve, zoomed in", "放大后的同一条曲线"],
 	qLine: [
-		"Two volatilities for one stock, on one day. Which is right?",
-		"同一只股票、同一天，两个波动率。哪个对？",
+		"Same stock, same day. Which volatility?",
+		"同股同日，哪个波动率对？",
 	],
 	fitHead: [
 		"IV: the input that reproduces a price.",
@@ -152,8 +152,7 @@ const copy = {
 	fitAxis: ["Oct 18 100 call, model value", "10月18日 100 看涨，模型价值"],
 	volAxis: ["volatility put into the model", "代入模型的波动率"],
 	mid: [`market mid ${price(prices.mid)}`, `市场中间价 ${price(prices.mid)}`],
-	threeHead: ["Same option, three IVs.", "同一张期权，三个 IV。"],
-	fitDependency: ["Price and model set the IV.", "价格和模型决定 IV。"],
+	fitDependency: ["IV needs price and model.", "价格、模型决定 IV。"],
 	rvHead: ["RV: measured from past closes.", "RV：由过去的收盘价测得。"],
 	rvTenHead: ["Twenty returns become ten.", "二十个日收益率变为十个。"],
 	returnsAxis: ["ALFA daily returns", "ALFA 每日收益"],
@@ -173,14 +172,11 @@ const copy = {
 	earnings: ["earnings", "财报"],
 	gapWord: ["vol points", "个波动率点"],
 	gapSub: [
-		"Not a return forecast or proof of mispricing.",
-		"不是收益预测，也不能证明定价错误。",
+		"No return forecast. No mispricing proof.",
+		"不预测收益，不证明错价。",
 	],
 	claimBig: ["IV looks ahead. RV looks back.", "IV 向前看，RV 向后看。"],
-	claimSub: [
-		"Name the price, the window and the convention.",
-		"说明价格、窗口和约定。",
-	],
+	claimSub: ["Specify price, window, convention.", "注明价格、窗口、约定。"],
 	nextBig: ["Next: the expected move", "下一课：预期波动幅度"],
 	nextSub: [
 		"the size of move an option's price implies",
@@ -555,25 +551,6 @@ function Scene({
 				/>
 			</g>
 			{headline("f-head", copy.fitHead, copy.fitHeadShort)}
-			{/* The answer, a line under the fit's headline, as the third IV lands. */}
-			<Lines
-				name="f2-head"
-				text={t(copy.threeHead)}
-				x={L.margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.fitHeadShort : copy.fitHead),
-						room,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={room}
-				anchor="start"
-			/>
 			{headline("r-head", copy.rvHead)}
 			<Lines
 				name="f-dependency"
@@ -761,9 +738,7 @@ function build(context: FilmContext) {
 		one("z-earnings"),
 		...flat("q"),
 		lockRv,
-		...["f-head", "f2-head", "r-head", "r2-head", "z-head"].map((name) =>
-			one(name),
-		),
+		...["f-head", "r-head", "r2-head", "z-head"].map((name) => one(name)),
 		...kids("gap"),
 		...kids("claim"),
 	]);
@@ -820,22 +795,24 @@ function build(context: FilmContext) {
 	};
 	tl.to(
 		fit,
-		{ progress: 1, duration: 0.85, ease: "power2.out", onUpdate: slide },
+		{ progress: 1, duration: 1, ease: "power2.out", onUpdate: slide },
 		14.05,
 	);
 	// A full second on the fitted price, then the separately laid-out detail chart.
-	tl.to(charts.fit, { opacity: 0, duration: 0.4 }, 15.9);
+	tl.to(charts.fit, { opacity: 0, duration: 0.4 }, 16.05);
 	tl.fromTo(
 		zoom,
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.6, ease: "power2.out" },
-		16.3,
+		16.45,
 	);
-	// The detail scaffold settles at 16.9; compare all three finished constructions
-	// together after its orientation second, with no chronological implication.
+	// The detail scaffold settles at 17.05; compare all three finished constructions
+	// together with their dependency after its orientation second. No later arrival
+	// interrupts the completed comparison before the RV beat.
 	tl.fromTo(
 		[
 			one("z-curve"),
+			one("f-dependency"),
 			...SOURCES.flatMap((source) => [
 				one(`z-line-${source}`),
 				one(`z-price-${source}`),
@@ -846,28 +823,16 @@ function build(context: FilmContext) {
 		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.6, ease: "power2.out" },
-		17.9,
-	);
-	// The answer, as the three-IV comparison settles.
-	show(one("f2-head"), 18.5);
-	tl.fromTo(
-		one("f-dependency"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3, ease: "power2.out" },
-		18.6,
+		18.05,
 	);
 
 	// ——— rv: the hero. Measured from past closes, and the window changes it. ———
-	tl.addLabel("rv", 22.1);
-	d.swap(
-		[one("f-head"), one("f2-head"), one("f-dependency")],
-		one("r-head"),
-		22.1,
-	);
-	sink(22.1);
-	tl.set(zoom, { opacity: 0 }, 22.5);
-	tl.set(charts.rv, { opacity: 1 }, 22.5);
-	rise(22.5);
+	tl.addLabel("rv", 22.25);
+	d.swap([one("f-head"), one("f-dependency")], one("r-head"), 22.25);
+	sink(22.25);
+	tl.set(zoom, { opacity: 0 }, 22.65);
+	tl.set(charts.rv, { opacity: 1 }, 22.65);
+	rise(22.65);
 	returns.forEach((value, i) => {
 		const top = Math.min(L.yR(value), L.yR(0));
 		tl.fromTo(
@@ -878,25 +843,25 @@ function build(context: FilmContext) {
 				duration: 0.35,
 				ease: "power3.out",
 			},
-			24.3,
+			24.45,
 		);
 	});
-	tl.to(one("r-band"), { opacity: 1, duration: 0.6 }, 24.3);
-	show(one("r-sd-20"), 24.5, "below", 0.4);
+	tl.to(one("r-band"), { opacity: 1, duration: 0.6 }, 24.45);
+	show(one("r-sd-20"), 24.65, "below", 0.4);
 	// Clear the old statistic completely before the band's geometry changes.
-	hide(one("r-sd-20"), 26.3, 0.35, 0);
+	hide(one("r-sd-20"), 26.45, 0.35, 0);
 	// Keep the accepted 1.4 s rest, then name the selection before it changes.
 	tl.fromTo(
 		one("r2-head"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power2.out" },
-		26.3,
+		26.45,
 	);
 	// The last ten sessions only: the calmer half.
 	tl.to(
 		Array.from({ length: 10 }, (_, i) => one(`r-bar-${i}`)),
 		{ opacity: 0.25, duration: 0.5 },
-		26.6,
+		26.75,
 	);
 	tl.to(
 		one("r-band"),
@@ -910,25 +875,25 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.inOut",
 		},
-		26.7,
+		26.85,
 	);
 	tl.fromTo(
 		[one("r-sd-10"), one("r-period-10")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		27.5,
+		27.65,
 	);
-	d.lock(lockRv, 27.8, {
+	d.lock(lockRv, 27.95, {
 		around: [one("r-sd-10"), one("r-period-10")],
 		pad: 12,
 	});
-	tl.addLabel("hero-lock", 27.8);
+	tl.addLabel("hero-lock", 27.95);
 	// Name the daily input as the completed band and its annualized result arrive.
 	tl.fromTo(
 		one("r-annualize"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		27.5,
+		27.65,
 	);
 	// Preserve the post-lock stand, then underline the convention outside the hero.
 	const convention = one<SVGGraphicsElement>("r-convention").getBBox();
@@ -951,13 +916,13 @@ function build(context: FilmContext) {
 			ease: "power2.out",
 			immediateRender: false,
 		},
-		29.85,
+		30,
 	);
 
 	// ——— horizons: two windows on one timeline ———
-	tl.addLabel("horizons", 31.4);
-	d.swap([one("r-head"), one("r2-head")], one("z-head"), 31.4);
-	hide(lockRv, 31.4);
+	tl.addLabel("horizons", 31.55);
+	d.swap([one("r-head"), one("r2-head")], one("z-head"), 31.55);
+	hide(lockRv, 31.55);
 	hide(
 		[
 			one("r-sd-10"),
@@ -965,21 +930,21 @@ function build(context: FilmContext) {
 			one("r-annualize"),
 			one("r-convention-underline"),
 		],
-		31.4,
+		31.55,
 		0.35,
 		0,
 	);
-	sink(31.4);
-	tl.set(charts.rv, { opacity: 0 }, 31.8);
-	tl.set(charts.horizon, { opacity: 1 }, 31.8);
-	rise(31.9);
+	sink(31.55);
+	tl.set(charts.rv, { opacity: 0 }, 31.95);
+	tl.set(charts.horizon, { opacity: 1 }, 31.95);
+	rise(32.05);
 	tl.fromTo(
 		[one("z-today"), one("z-today-label")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.8, ease: "power2.out" },
-		31.9,
+		32.05,
 	);
-	// Today and the timeline are still from 32.7 to 33.7 before either window grows.
+	// Today and the timeline are still from 32.85 to 33.85 before either window grows.
 	const rvEnd = dayIndex(alfaCloses[alfaCloses.length - 1].date);
 	tl.to(
 		one("z-rv"),
@@ -988,7 +953,7 @@ function build(context: FilmContext) {
 			duration: 0.8,
 			ease: "power2.out",
 		},
-		33.7,
+		33.85,
 	);
 	tl.to(
 		one("z-iv"),
@@ -997,47 +962,47 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.out",
 		},
-		33.7,
+		33.85,
 	);
 	tl.fromTo(
 		one("z-rv-label"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		34.5,
+		34.65,
 	);
 	tl.fromTo(
 		one("z-iv-label"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		34.6,
+		34.75,
 	);
-	show(one("z-earnings"), 34.9);
+	show(one("z-earnings"), 35.05);
 	// Cut: the gap, and what it isn't, held to be read.
-	hide(one("z-head"), 36.4);
-	sink(36.4);
+	hide(one("z-head"), 36.55);
+	sink(36.55);
 	tl.fromTo(
 		one("g-formula"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.55 },
-		36.5,
+		36.65,
 	);
-	land(one("g-num"), 36.5);
-	show(one("g-word"), 36.8);
-	show(one("g-sub"), 37.0);
-	hide(kids("gap"), 40.5);
-	tl.addLabel("claim", 40.5);
+	land(one("g-num"), 36.65);
+	show(one("g-word"), 36.95);
+	show(one("g-sub"), 37.15);
+	hide(kids("gap"), 40.65);
+	tl.addLabel("claim", 40.65);
 	tl.fromTo(
 		one("c-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.8,
+		40.95,
 	);
-	show(one("c-sub"), 41.2);
+	show(one("c-sub"), 41.35);
 
 	// ——— next ———
-	tl.addLabel("next", 44.8);
-	hide(kids("claim"), 44.8);
-	d.close(44.8);
+	tl.addLabel("next", 44.95);
+	hide(kids("claim"), 44.95);
+	d.close(44.95);
 	return tl;
 }
 
