@@ -623,20 +623,20 @@ function build(context: FilmContext) {
 		[fjorBar, fjorNumber],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		26.0,
+		25.8,
 	);
 	tl.fromTo(
 		arrival,
 		{ volume: 0 },
 		{
 			volume: FJOR_LATE,
-			duration: 0.8,
+			duration: 1.0,
 			ease: "power2.out",
 			// Keep the rest geometry intact while lock() measures the settled hero.
 			immediateRender: false,
 			onUpdate: renderArrival,
 		},
-		26.0,
+		25.8,
 	);
 	d.lock(lockFjor, 27.8, {
 		around: [board[OBSERVED.length], fjorBar, fjorNumber],
