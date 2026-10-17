@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { useId } from "react";
 import {
+	ALFA,
 	type Contract,
 	type Copy,
 	optionQuote,
@@ -43,14 +44,14 @@ import {
  * Then the buyer of the 100 call: its value line drops by the $420 premium into the profit
  * line, and the marker walks from $102 (−$220) to the break-even of $104.20, where the
  * meter holds $420 and $0, then on to $110 (+$580) as the profit fills in green. Last,
- * the writer of the 95 put keeps $205 above $95 and loses below $92.95; the chart then
- * dips to the 105 call written for $205, whose loss has no limit.
+ * the writer of the 95 put keeps $205 above $95 and loses below $92.95, with separate
+ * readings for the credit, break-even and loss.
  *
  *   open      0–4        "Premium, payoff and profit"
  *   question  4–8.8      the 95 call at $7.30: worth what on Oct 18?
  *   parts     8.8–18.4   $7.30 lands on the 95 bar: $5.00 + $2.30; at expiry, $5.00
  *   profit    18.4–32.65 value drops into profit; $102; hero: break-even $104.20; $110
- *   writer    32.65–40.6 the 95 put written: +$205, a loss below $92.95; as a call, no limit
+ *   writer    32.65–40.6 the 95 put written: +$205, break-even $92.95, and a loss at $90
  *   claim     40.6–44.95 in the money isn't the same as profitable
  *   next      44.95–47.45 Next: put-call parity
  */
@@ -64,7 +65,6 @@ const BE = breakEven(CALL, PAID);
 const PUT = writes.p95;
 const GOT = optionQuote(PUT).bid;
 const PUT_BE = PUT.strike - GOT / 100;
-const CALLW_BE = breakEven(writes.c105, optionQuote(writes.c105).bid);
 const MAX_PRICE = Math.max(
 	...STRIKES.map((k) => priceParts(k, "call", "now").price),
 );
@@ -76,8 +76,6 @@ const spots = Array.from(
 const value = (contract: Contract, spot: number) => payoffAt(contract, spot);
 const buyerProfit = (spot: number) => value(CALL, spot) - PAID;
 const writerProfit = (spot: number) => GOT - value(PUT, spot);
-const callWriter = (spot: number) =>
-	optionQuote(writes.c105).bid - value(writes.c105, spot);
 /** The call the question asks about, and where it stands among the five. */
 const ASKED = 95;
 const ASKED_AT = STRIKES.indexOf(ASKED);
@@ -137,10 +135,7 @@ const copy = {
 	title: ["Premium, payoff and profit", "权利金、到期价值与盈亏"],
 	titleSub: ["buyer and writer", "交易的两方"],
 	qTag: ["Oct 18 95 call · ALFA $100", "10月18日 95 看涨 · ALFA $100"],
-	qLine: [
-		"If ALFA is still $100 on Oct 18, what is it worth?",
-		"如果 10月18日 ALFA 仍是 $100，它值多少？",
-	],
+	qLine: ["If ALFA stays $100: Oct 18 value?", "若ALFA仍$100，10月18日价值？"],
 	partsHead: [
 		"Its parts: $5.00 intrinsic + $2.30 time.",
 		"拆开：内在价值 $5.00 + 时间价值 $2.30。",
@@ -163,7 +158,10 @@ const copy = {
 	axis: ["one contract at Oct 18", "一张合约，10月18日"],
 	valueLine: ["value", "价值"],
 	profitLine: ["profit", "盈亏"],
-	premiumDrop: [`− $${PAID} premium`, `− $${PAID} 权利金`],
+	premiumDrop: [
+		`${usd(-PAID)} × ${ALFA.multiplier} = `,
+		`${usd(-PAID)} × ${ALFA.multiplier} = `,
+	],
 	exampleSpot: [
 		`ALFA ${usd(BUYER_EXAMPLE_SPOT * 100, 0)}`,
 		`ALFA ${usd(BUYER_EXAMPLE_SPOT * 100, 0)}`,
@@ -172,26 +170,12 @@ const copy = {
 	itmLossShort: ["ITM, losing", "实值仍亏"],
 	writerHead: ["Now write the 95 put.", "换成卖出 95 看跌。"],
 	writerHeadShort: ["Now write the 95 put.", "换成卖出 95 看跌。"],
-	callHead: [
-		"A written call: losses without limit.",
-		"卖出看涨：亏损没有上限。",
-	],
-	callHeadShort: ["Written call: no limit.", "卖出看涨：亏损无上限。"],
 	putWriter: [
 		`95 put, written: ${signedUsd(GOT * 100, 0)}`,
 		`95 看跌，卖出：${signedUsd(GOT * 100, 0)}`,
 	],
-	noLimit: ["no limit ↘", "亏损无上限 ↘"],
 	profitFrom: ["profit from here →", "从这里开始盈利 →"],
 	profitFromShort: ["profit →", "盈利 →"],
-	callWriter: [
-		`105 call, written: ${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
-		`105 看涨，卖出：${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
-	],
-	callWriterShort: [
-		`105 call, written: ${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
-		`105 看涨，卖出：${signedUsd(optionQuote(writes.c105).bid * 100, 0)}`,
-	],
 	claimBig: ["In the money isn't the same as profitable.", "实值不等于盈利。"],
 	claimSub: [
 		"A writer's best case is the premium.",
@@ -452,16 +436,10 @@ function Scene({
 								d={L.path((s) => value(CALL, s))}
 								className="wt-line-position"
 							/>
-							{/* Each writer's curve comes directly from its own contract's payoff. */}
+							{/* The writer's curve comes directly from its contract's payoff. */}
 							<path
 								data-f="put-line"
 								d={L.path(writerProfit)}
-								className="wt-line-position"
-								style={{ strokeWidth: 2.5 }}
-							/>
-							<path
-								data-f="callw-line"
-								d={L.path(callWriter)}
 								className="wt-line-position"
 								style={{ strokeWidth: 2.5 }}
 							/>
@@ -507,12 +485,15 @@ function Scene({
 								x={L.x(90)}
 								y={L.y(0) - 9}
 								textAnchor="middle"
-								className="wt-small wt-halo wt-loss"
+								className="wt-small wt-halo"
+								style={{ fill: "var(--tone-ink)" }}
 							>
 								{t(copy.premiumDrop)}
+								<tspan className={toneClass.down}>
+									{usd(-PAID * ALFA.multiplier, 0)}
+								</tspan>
 							</text>
 						</g>
-						<PenTip name="tip" color="var(--muted-foreground)" />
 						<PenTip name="tip-short" color={toneColor("focus")} />
 						{/* Line names at the lines' far ends: value above its line, profit below. */}
 						<text
@@ -550,22 +531,6 @@ function Scene({
 							{t(copy.putWriter).slice(0, -signedUsd(GOT * 100, 0).length)}
 							<tspan className={toneClass.up}>{signedUsd(GOT * 100, 0)}</tspan>
 						</text>
-						<text
-							data-f="callw-tag"
-							// Above the flat side, clear of the falling one.
-							x={L.x(104)}
-							y={L.y(callWriter(104)) - 10}
-							textAnchor="end"
-							className={`wt-small wt-halo ${toneClass.focus}`}
-						>
-							{t(narrow ? copy.callWriterShort : copy.callWriter).slice(
-								0,
-								-signedUsd(optionQuote(writes.c105).bid * 100, 0).length,
-							)}
-							<tspan className={toneClass.up}>
-								{signedUsd(optionQuote(writes.c105).bid * 100, 0)}
-							</tspan>
-						</text>
 						<path
 							data-f="be"
 							d={`M${beX} ${L.top}V${L.bottom}`}
@@ -599,16 +564,6 @@ function Scene({
 						>
 							{t(narrow ? copy.profitFromShort : copy.profitFrom)}
 						</text>
-						{/* Turned into a call, it has no worst case. */}
-						<text
-							data-f="no-limit"
-							x={L.right - 4}
-							y={L.y(callWriter(X[1])) + 18}
-							textAnchor="end"
-							className="wt-small wt-halo wt-loss"
-						>
-							{t(copy.noLimit)}
-						</text>
 						{/* Down to just under the axis, where the writer's line crosses it. */}
 						<path
 							data-f="put-be"
@@ -626,20 +581,6 @@ function Scene({
 						>
 							{`$${PUT_BE.toFixed(2)}`}
 						</text>
-						<text
-							data-f="callw-be-label"
-							x={L.x(CALLW_BE) + 6}
-							y={L.y(650)}
-							className={`wt-halo wt-marker-label ${toneClass.focus}`}
-						>
-							{`$${CALLW_BE.toFixed(2)}`}
-						</text>
-						<path
-							data-f="callw-be"
-							d={`M${L.x(CALLW_BE)} ${L.top}V${L.y(0) + 8}`}
-							className="wt-bracket"
-							strokeDasharray="4 3"
-						/>
 						<Brackets
 							name="lock-be"
 							x={beX - 22}
@@ -760,7 +701,8 @@ function Scene({
 					name="q-line"
 					text={t(copy.qLine)}
 					x={W / 2}
-					y={H * 0.72}
+					// Clear the large opening price and keep the scaffold below the question.
+					y={H * (narrow ? 0.55 : 0.64)}
 					size={T.head}
 					maxWidth={room}
 					className="wt-film-type"
@@ -791,7 +733,6 @@ function Scene({
 			/>
 			{headline("w-head", copy.writerHead, copy.writerHeadShort)}
 
-			{headline("c-head", copy.callHead, copy.callHeadShort)}
 			<g data-f="claim">
 				<Lines
 					name="z-big"
@@ -829,7 +770,9 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, pop, rise, sink } = d;
+	const { tl, one, kids, show, hide, pop, sink } = d;
+	// Keep the scaffold at its final geometry even while it is hidden.
+	gsap.set(one("depth"), { scale: 1 });
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
 			el.tagName === "g" && !el.hasAttribute("data-f")
@@ -856,7 +799,6 @@ function build(context: FilmContext) {
 		"p-head",
 		"b-head",
 		"w-head",
-		"c-head",
 		"b2-head",
 	].map((name) => one(name));
 	const bars = (k: number) => [one(`in-${k}`), one(`tv-${k}`)];
@@ -881,19 +823,14 @@ function build(context: FilmContext) {
 			"value-line",
 			"profit-line",
 			"put-line",
-			"callw-line",
 			"value-tag",
 			"profit-tag",
 			"put-tag",
-			"callw-tag",
 			"be",
 			"be-label",
 			"profit-from",
 			"put-be",
 			"put-be-label",
-			"no-limit",
-			"callw-be-label",
-			"callw-be",
 			"marker",
 			"lock-be",
 			"put-marker",
@@ -901,7 +838,6 @@ function build(context: FilmContext) {
 			"win-area",
 			"win-line",
 			"drop",
-			"tip",
 			"tip-short",
 		].map((name) => one(name)),
 		...kids("meter"),
@@ -919,52 +855,32 @@ function build(context: FilmContext) {
 	show(one("q-tag"), 4.4);
 	word(one("q-big"), 4.6);
 	show(one("q-line"), 5.2);
+	// The question and scaffold settle together at 5.70, with no data until 9.20.
+	tl.to(one("bars"), { opacity: 1, duration: 0.5 }, 5.2);
+	show(
+		flat("bars").filter(
+			(el) => el.tagName === "text" && !el.hasAttribute("data-f"),
+		),
+		5.2,
+	);
 
 	// ——— parts: the $7.30 lands on its bar, then the time value goes ———
 	tl.addLabel("parts", 8.8);
 	hide([one("q-tag"), one("q-line")], 8.8);
-	// After the question has gone: the bars' axis never crosses its last line.
-	tl.set(one("bars"), { opacity: 1 }, 9.2);
-	show(
-		// The strike labels and the caption; the prices come in with their bars.
-		flat("bars").filter(
-			(el) => el.tagName === "text" && !el.hasAttribute("data-f"),
-		),
+	// One histogram, one entrance: reveal its settled parts together, without a stagger
+	// or a second growth of the time-value caps. Its headline and parts keep their times.
+	tl.fromTo(
+		STRIKES.flatMap(bars),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
 		9.2,
 	);
-	STRIKES.forEach((k, i) => {
-		const now = priceParts(k, "call", "now");
-		const at = 9.2 + i * 0.15;
-		tl.fromTo(
-			one(`in-${k}`),
-			{ opacity: 1, attr: { y: L.barBottom, height: 0 } },
-			{
-				attr: {
-					y: L.barBottom - L.barH(now.intrinsic),
-					height: L.barH(now.intrinsic),
-				},
-				duration: 0.5,
-				ease: "power2.out",
-			},
-			at,
-		);
-		tl.fromTo(
-			one(`tv-${k}`),
-			{
-				opacity: 1,
-				attr: { y: L.barBottom - L.barH(now.intrinsic), height: 0 },
-			},
-			{
-				attr: { y: L.barBottom - L.barH(now.price), height: L.barH(now.time) },
-				duration: 0.5,
-				ease: "power2.out",
-			},
-			at + 0.3,
-		);
-		if (k !== ASKED) show(one(`p-${k}`), at + 0.6);
-	});
-	// The question's $7.30 drops onto its own bar, then the headline names its parts, and
-	// so does the bar.
+	// Keep the earliest price's reading; the other comparisons gain time together.
+	show(
+		STRIKES.filter((k) => k !== ASKED).map((k) => one(`p-${k}`)),
+		9.8,
+	);
+	// Carry only after the scaffold's quiet interval, over the same accepted path.
 	d.carry(one<SVGTextElement>("q-big"), asked, 9.2, {
 		duration: 1.2,
 		arc: "y",
@@ -1068,11 +984,16 @@ function build(context: FilmContext) {
 		18.4,
 	);
 	show(heads[2], 18.75);
-	rise(18.7);
-	const tip = one("tip");
-	d.trace(one<SVGPathElement>("value-line"), 19.0, { tip, duration: 1.3 });
+	// No camera or pen: the fixed scaffold settles at 19.00, before the value line.
+	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 18.7);
+	tl.fromTo(
+		one("value-line"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		20.15,
+	);
 	show(one("value-tag"), 20.1);
-	// The value tag settles at 20.60 and the pen leaves at 20.65; rest another full second.
+	// The tag settles at 20.60 and the line at 20.65; keep the same full second of rest.
 	// Keep the premium measure as context instead of spending another exit here.
 	show(one("drop"), 21.65);
 	tl.set(one("profit-line"), { opacity: 1 }, 21.65);
@@ -1142,7 +1063,7 @@ function build(context: FilmContext) {
 	walk(BUYER_EXAMPLE_SPOT, BE, 26.15, 1.6);
 	d.lock(one<SVGGraphicsElement>("lock-be"), 27.75);
 	tl.addLabel("hero-lock", 27.75);
-	show(heads[6], 27.75);
+	show(heads[5], 27.75);
 	word(one("be-label"), 27.85);
 	// The brackets settle at 28.20 and stand for 1.85 s before this release. Clear them
 	// completely before the marker-driven green reveal begins at 30.45.
@@ -1156,14 +1077,8 @@ function build(context: FilmContext) {
 
 	// ——— writer: the premium is the best case, and the loss below break-even ———
 	tl.addLabel("writer", 32.65);
-	d.swap([heads[3], heads[6]], heads[4], 32.65);
-	// On a phone the chart rises into the room the meter leaves.
-	if (L.narrow)
-		tl.to(
-			one("world"),
-			{ y: -L.height * 0.12, duration: 0.8, ease: "power2.inOut" },
-			32.65,
-		);
+	d.swap([heads[3], heads[5]], heads[4], 32.65);
+
 	hide(
 		[
 			...kids("meter"),
@@ -1192,52 +1107,24 @@ function build(context: FilmContext) {
 	);
 	const pen = one("tip-short");
 	d.trace(one<SVGPathElement>("put-line"), 33.05, { tip: pen });
-	// One compact risk proof, without a second lock or off-chart worst-case footnote.
-	// Its last label settles at 35.10, leaving 1.50 s before the call conversion.
-	show([putBe, one("put-be-label")], 34.4);
-	pop(one("put-marker"), 34.5);
-	show(one("put-loss"), 34.6, "right");
-	// Release the complete put proof before the call's headline arrives. The call's
-	// authored geometry and identity fade in with that headline, never a half-flipped put.
-	d.swap(heads[4], heads[5], 36.6);
-	// One opacity tween keeps the curve, guide, marker and labels together throughout
-	// the dip; its ease also matches the outgoing put headline.
-	tl.to(
+	// Spend the removed call coda on three existing readings. The credit and curve
+	// settle by 34.40, then break-even reads alone before the loss example arrives.
+	show([putBe, one("put-be-label")], 36.4);
+	pop(one("put-marker"), 38.5);
+	show(one("put-loss"), 38.6, "right");
+	// The complete proof settles at 39.10 and retains its accepted 1.50 s of quiet.
+
+	// ——— claim ———
+	tl.addLabel("claim", 40.6);
+	hide(
 		[
+			heads[4],
 			putLine,
 			putBe,
 			one("put-marker"),
 			one("put-loss"),
 			one("put-tag"),
 			one("put-be-label"),
-		],
-		{ opacity: 0, duration: 0.35, ease: "power2.in" },
-		36.6,
-	);
-	tl.fromTo(
-		[
-			one("callw-line"),
-			one("callw-be"),
-			one("callw-be-label"),
-			one("callw-tag"),
-		],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		36.95,
-	);
-	// The complete call proof settles at 37.45; the risk tail arrives after 1.15 s.
-	show(one("no-limit"), 38.6);
-
-	// ——— claim ———
-	tl.addLabel("claim", 40.6);
-	hide(
-		[
-			heads[5],
-			one("callw-line"),
-			one("callw-be"),
-			one("callw-be-label"),
-			one("callw-tag"),
-			one("no-limit"),
 		],
 		40.6,
 	);
@@ -1255,8 +1142,8 @@ function build(context: FilmContext) {
 export const premiumPayoffFilm: Film = {
 	id: "premium-payoff",
 	label: [
-		`Premium, payoff and profit, as a short film: the Oct 18 95 call at ${usd(priceParts(95, "call", "now").price)} and what it is worth on Oct 18 if ALFA hasn't moved; five calls split into intrinsic and time value, with all the time value gone at expiry; the buyer of the 100 call, whose $200 of value at $102 is −$220 after the $420 premium, breaking even at $${BE.toFixed(2)} and keeping $580 at $110; and the writer of the 95 put, who keeps $205 above $95 and loses below $${PUT_BE.toFixed(2)}, and whose line, on a call, loses without limit`,
-		`权利金、到期价值与盈亏短片：售价 ${usd(priceParts(95, "call", "now").price)} 的 10月18日 95 看涨，若 ALFA 不动，到期值多少；五张看涨拆成内在价值与时间价值，到期时时间价值全部归零；100 看涨的买方，在 $102 时价值 $200，扣除 $420 权利金后亏 $220，在 $${BE.toFixed(2)} 盈亏平衡，在 $110 赚 $580；以及 95 看跌的义务方，$95 以上保留 $205，低于 $${PUT_BE.toFixed(2)} 开始亏损；换成卖出看涨，亏损没有上限`,
+		`Premium, payoff and profit, as a short film: the Oct 18 95 call at ${usd(priceParts(95, "call", "now").price)} and what it is worth on Oct 18 if ALFA hasn't moved; five calls split into intrinsic and time value, with all the time value gone at expiry; the buyer of the 100 call, whose $200 of value at $102 is −$220 after the $420 premium, breaking even at $${BE.toFixed(2)} and keeping $580 at $110; and the writer of the 95 put, who keeps $205 above $95 and loses below $${PUT_BE.toFixed(2)}`,
+		`权利金、到期价值与盈亏短片：售价 ${usd(priceParts(95, "call", "now").price)} 的 10月18日 95 看涨，若 ALFA 不动，到期值多少；五张看涨拆成内在价值与时间价值，到期时时间价值全部归零；100 看涨的买方，在 $102 时价值 $200，扣除 $420 权利金后亏 $220，在 $${BE.toFixed(2)} 盈亏平衡，在 $110 赚 $580；以及 95 看跌的义务方，$95 以上保留 $205，低于 $${PUT_BE.toFixed(2)} 开始亏损`,
 	],
 	stage: "dark",
 	shots: [
