@@ -847,9 +847,10 @@ const out = await page.evaluate(() => {
 			}
 		}
 	}
-	// Counts (runbook §6): a figure that counts takes at least 1 s at 1×. A count is a tween of
-	// a plain object that writes on every update (the kit's `count`, or a film's own counter);
-	// one shorter than 0.05 s is a set.
+	// Counts (runbook §6): a figure that counts takes at least 1 s at 1×. A count is any tween
+	// with an onUpdate that changes stage text while it runs (the kit's `count`, a film's own
+	// counter of a plain object, or a tween of a mark that rewrites its readout); one shorter
+	// than 0.05 s is a set.
 	const shortCounts = [];
 	const texts = () =>
 		[...svg.querySelectorAll("text")]
@@ -861,8 +862,13 @@ const out = await page.evaluate(() => {
 			typeof tw.vars?.onUpdate !== "function" ||
 			d < 0.05 ||
 			d >= 1 - 1e-6 ||
-			// The kit's pen (`{ done }`) follows a trace; it counts nothing.
-			!tw.targets().some((x) => x && !(x instanceof Element) && !("done" in x))
+			// The kit's pen (`{ done }`) follows a trace and a carry's flyer moves a copy; neither counts.
+			tw.targets().some((x) => x && typeof x === "object" && "done" in x) ||
+			tw
+				.targets()
+				.some(
+					(x) => x instanceof Element && x.closest("[data-f='carry-layer']"),
+				)
 		)
 			continue;
 		// A count changes a readout while it runs; a tween that only moves a mark is not one.
