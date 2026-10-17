@@ -47,12 +47,12 @@ import {
  *                        $102.3
  *   shortcut  22.7–33.35 a fixed-spot subtotal plus the final strike contribution; carry
  *                        $102.3 against $94.1, the flip locked
- *   target    33.35–44.85  buy 5,121 if…; the tape; the book: 1,600 offered;
+ *   target    33.35–45     buy 5,121 if…; the tape; the book: 1,600 offered;
  *                        cut: "A regime describes a response, not a forecast."
- *   next      44.85–47.35  Next: walls and max pain
+ *   next      45–47.5     Next: walls and max pain
  */
 
-const END = 47.35;
+const END = 47.5;
 const X = [88, 112] as const;
 const Y = 2_000_000;
 const curve = Array.from({ length: (X[1] - X[0]) * 2 + 1 }, (_, i) => {
@@ -147,7 +147,7 @@ const copy = {
 	qBuy: ["buy?", "买？"],
 	qSell: ["sell?", "卖？"],
 	qLine: [
-		"Do the hedgers of the modeled book buy or sell? It depends where ALFA is.",
+		"Modeled book: hedgers’ response depends on ALFA’s price.",
 		"模型账户的对冲者会买还是卖？取决于 ALFA 在哪里。",
 	],
 	curveHead: [
@@ -193,14 +193,10 @@ const copy = {
 		"Sum strikes at ALFA $100.",
 		"ALFA 固定 $100，按行权价累加。",
 	],
-	repriced: ["repriced across spot", "沿现价重定价"],
-	repricedShort: ["repriced", "重定价"],
-	summed: ["summed across strikes", "按行权价累加"],
-	summedShort: ["strike sum", "行权价累加"],
-	twoLine: [
-		"Two calculations, two answers. Only the repriced one is the flip.",
-		"两种计算，两个答案。只有重定价得到的才是转折点。",
-	],
+	repriced: ["flip · repriced across spot", "转折 · 沿现价重定价"],
+	repricedShort: ["flip · repriced", "转折 · 重定价"],
+	summed: ["strike zero · summed", "行权价累加 · 穿零"],
+	summedShort: ["strike zero · sum", "行权价累加穿零"],
 	targetHead: [
 		"A hedge target is not a market outcome.",
 		"对冲目标不是市场结果。",
@@ -241,7 +237,7 @@ const copy = {
 		"状态描述的是响应，不是预测。",
 	],
 	claimSub: [
-		"A modeled flip; hedging depends on who holds what.",
+		"Modeled flip; hedging depends on who holds what.",
 		"转折点是模型得出的；对冲取决于谁持有什么。",
 	],
 	nextBig: ["Next: walls and max pain", "下一课：墙位与最大痛点"],
@@ -523,28 +519,21 @@ function Scene({
 								anchor="end"
 								className="wt-film-num wt-film-loss"
 							>{`$${sumAfter[0]}: ${money(sumContribution)}`}</Word>
-							<Word
-								name="sum-running"
-								x={L.right}
-								y={L.sumOperandY + T.body * 3}
-								size={T.body}
-								anchor="end"
-								className="wt-film-num wt-film-gain"
-							>{`Σ ${money(sumBefore[1])}`}</Word>
 						</g>
+						<Word
+							name="sum-result"
+							x={L.right}
+							y={L.sumOperandY + T.body * 3}
+							size={T.body}
+							anchor="end"
+							className="wt-film-num wt-film-loss"
+						>{`Σ ${money(sumAfter[1])}`}</Word>
 						<path
 							data-f="sum-drop"
 							d={`M${L.sumX(sumAfter[0])} ${L.sumY(sumBefore[1])}V${L.sumY(sumBefore[1])}`}
 							fill="none"
 							stroke="var(--diagram-loss)"
 							strokeWidth={4}
-						/>
-						<circle
-							data-f="sum-pen"
-							cx={L.sumX(sumBefore[0])}
-							cy={L.sumY(sumBefore[1])}
-							r={4}
-							className="wt-film-ghost"
 						/>
 						<g data-f="sum-dot">
 							<circle cx={sx} cy={L.sumY(0)} r={6} className="wt-film-ghost" />
@@ -697,15 +686,6 @@ function Scene({
 						</Word>
 					</g>
 				))}
-				<Lines
-					name="w-line"
-					text={t(copy.twoLine)}
-					x={W / 2}
-					y={H * 0.72}
-					size={T.body}
-					maxWidth={room}
-					className="wt-film-type wt-film-dim"
-				/>
 			</g>
 			<g data-f="target">
 				{headline("t-head", copy.targetHead, copy.targetHeadShort)}
@@ -822,7 +802,7 @@ function build(context: FilmContext) {
 		one("sum-line"),
 		one("sum-operands"),
 		one("sum-drop"),
-		one("sum-pen"),
+		one("sum-result"),
 		one("flip-seeker"),
 		one("flip"),
 		one("flip-tag"),
@@ -851,7 +831,8 @@ function build(context: FilmContext) {
 	land(one("q-move"), 4.7);
 	land(one("q-buy"), 5.3);
 	land(one("q-sell"), 5.6);
-	show(one("q-line"), 6.0);
+	// The buy/sell question above supplies the choice; this line qualifies whose response.
+	show(one("q-line"), 5.6);
 
 	// ——— regime: the curve answers by where ALFA is ———
 	tl.addLabel("regime", 9.6);
@@ -956,9 +937,6 @@ function build(context: FilmContext) {
 	// The positive subtotal and negative input enter together, then the last strike is added.
 	const subtotalX = L.sumX(sumBefore[0]);
 	const finalX = L.sumX(sumAfter[0]);
-	const sumPen = one<SVGCircleElement>("sum-pen");
-	const running = one<SVGTextElement>("sum-running");
-	const accumulation = { step: sumSteps.length - 2 };
 	tl.fromTo(
 		[one("sum-line"), one("sum-operands")],
 		{ opacity: 0 },
@@ -966,7 +944,7 @@ function build(context: FilmContext) {
 		23.05,
 	);
 	tl.fromTo(
-		[sumPen, one("sum-drop")],
+		one("sum-drop"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		23.05,
@@ -994,37 +972,9 @@ function build(context: FilmContext) {
 		},
 		additionAt,
 	);
-	// The pen's actual position drives accumulation.step and the readout, never a second count.
+	// Reveal the exact total only once the bar has finished; there is no live counter or pen.
 	tl.fromTo(
-		sumPen,
-		{ attr: { cx: subtotalX, cy: L.sumY(sumBefore[1]) } },
-		{
-			attr: { cx: finalX, cy: L.sumY(sumAfter[1]) },
-			...addition,
-			onUpdate: () => {
-				const mix =
-					(subtotalX - Number(sumPen.getAttribute("cx"))) /
-					(subtotalX - finalX);
-				accumulation.step = sumSteps.length - 2 + mix;
-				const value =
-					sumBefore[1] +
-					sumContribution * (accumulation.step - (sumSteps.length - 2));
-				running.textContent = `Σ ${money(value)}`;
-			},
-		},
-		additionAt,
-	);
-	// A timeline-owned class change restores the correct sign colour when scrubbing back.
-	tl.set(running, { attr: { class: "wt-film-num wt-film-gain" } }, 23.05);
-	tl.set(
-		running,
-		{ attr: { class: "wt-film-num wt-film-loss" } },
-		additionAt + addition.duration * (sumBefore[1] / -sumContribution),
-	);
-
-	tl.to(one("sum-pen"), { opacity: 0, duration: 0.3 }, 24.55);
-	tl.fromTo(
-		[one("sum-dot"), one("sum-tag"), one("sum-num")],
+		[one("sum-result"), one("sum-dot"), one("sum-tag"), one("sum-num")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.55 },
 		24.55,
@@ -1057,33 +1007,35 @@ function build(context: FilmContext) {
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 29.35);
-	show(one("w-line"), 29.75);
 
 	// ——— target: what the model's number isn't ———
 	tl.addLabel("target", 33.35);
 	hide([...flat("two"), lockFlip], 33.35);
 	show(one("t-head"), 33.7, "above");
-	[0, 1, 2].forEach((i) => {
-		const at = 34.15 + i * 1.0;
-		show(one(`t-tag-${i}`), at);
-		land(one(`t-value-${i}`), at + 0.2);
-		// The returning target and its $100 / +$1 conditions arrive together.
-		show(one(`t-note-${i}`), at + (i === 0 ? 0.2 : 0.6));
+	// Preserve the model's entrance and its conditions, then let it rest for a full second.
+	show(one("t-tag-0"), 34.15);
+	land(one("t-value-0"), 34.35);
+	show(one("t-note-0"), 34.35);
+	// Tape and book are evidence to compare: each note enters beside its value, together.
+	[1, 2].forEach((i) => {
+		show([one(`t-tag-${i}`), one(`t-note-${i}`)], 35.9);
+		land(one(`t-value-${i}`), 35.9);
 	});
-	// Cut: the claim.
-	hide(flat("target"), 40.25);
+	// Use the final 0.15 s of runtime headroom to preserve the tape note's 4.5 s reading interval.
+	// The claim and end card move together, retaining their full holds.
+	hide(flat("target"), 40.4);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
 		{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
-		40.65,
+		40.8,
 	);
-	show(one("z-sub"), 41.05);
+	show(one("z-sub"), 41.2);
 
 	// ——— next ———
-	tl.addLabel("next", 44.85);
-	hide(kids("claim"), 44.85);
-	d.close(44.85);
+	tl.addLabel("next", 45);
+	hide(kids("claim"), 45);
+	d.close(45);
 	return tl;
 }
 
