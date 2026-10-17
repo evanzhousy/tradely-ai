@@ -17,6 +17,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -304,7 +305,7 @@ function Scene({
 							x={margin + room - 12}
 							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 							textAnchor="end"
-							className={`wt-film-num ${premium === null ? "wt-film-warn" : ""}`}
+							className={`wt-film-num ${premium === null ? toneClass.caution : premium === 0 ? "wt-film-dim" : ""}`}
 							style={{ fontSize: text }}
 						>
 							{premium === null ? t(copy.noData) : dollars(premium)}
@@ -318,7 +319,7 @@ function Scene({
 						key={trade.id}
 						x={margin}
 						y={L.traceY + i * T.body * 1.4}
-						className="wt-film-num wt-film-accent"
+						className="wt-film-num"
 						style={{ fontSize: T.body }}
 					>
 						{`${i === 0 ? "R2 =" : "+"} ${count(trade.quantity)} × ${usd(trade.price)} × 100`}
@@ -397,7 +398,7 @@ function Scene({
 				maxWidth={narrow ? room : room * 0.74}
 				anchor="start"
 			/>
-			<Brackets name="lock-rerun" glow />
+			<Brackets name="lock-rerun" tone="caution" glow />
 			{fields.map((field, i) => (
 				<g key={field.id} data-f={`field-${field.id}`}>
 					<rect
@@ -448,7 +449,7 @@ function Scene({
 					data-f={name}
 					x={margin}
 					y={L.rerunY + rerunSize * 1.3}
-					className={`wt-film-num ${removed ? "wt-film-loss" : "wt-film-gain"}`}
+					className={`wt-film-num ${removed ? toneClass.caution : toneClass.focus}`}
 					style={{ fontSize: rerunSize }}
 				>
 					{rerunText(removed)}
@@ -474,7 +475,7 @@ function Scene({
 					data-f={name}
 					x={margin}
 					y={L.rerunY + rerunSize * 1.3 + text * 1.9}
-					className="wt-film-type wt-film-loss"
+					className={`wt-film-type ${name === "why-exclusions" ? toneClass.up : toneClass.caution}`}
 					style={{ fontSize: text }}
 				>
 					{t(why)}
@@ -503,7 +504,7 @@ function Scene({
 					<text
 						x={x}
 						y={y}
-						className="wt-film-num wt-film-loss"
+						className="wt-film-num"
 						style={{ fontSize: extraSize }}
 					>
 						{value}
@@ -511,7 +512,7 @@ function Scene({
 					<text
 						x={x + textWidth(value, extraSize) + 12}
 						y={y}
-						className="wt-film-tag wt-film-loss"
+						className="wt-film-tag"
 						style={{ fontSize: T.small, letterSpacing: 0 }}
 					>
 						{t(label)}
@@ -522,7 +523,7 @@ function Scene({
 				data-f="extra-total"
 				x={extraTotalX}
 				y={repeatedY}
-				className="wt-film-num wt-film-loss"
+				className="wt-film-num"
 				style={{ fontSize: extraSize }}
 			>{`= ${dollars(extra(cancelled) + extra(repeated))}`}</text>
 			<path
@@ -530,7 +531,7 @@ function Scene({
 				d={`M ${margin + room} ${L.fieldY(3) + L.fieldH} H ${margin + room + 4} V ${repeatedY + extraSize} H ${extraTotalX + textWidth(`= ${dollars(extra(cancelled) + extra(repeated))}`, extraSize) / 2}`}
 				fill="none"
 				className="wt-film-link"
-				style={{ stroke: "var(--diagram-loss)", strokeWidth: 1.5 }}
+				style={{ stroke: "var(--tone-ink)", strokeWidth: 1.5 }}
 			/>
 
 			{/* The log. */}
@@ -560,7 +561,7 @@ function Scene({
 					data-f={name}
 					x={margin + 16}
 					y={L.recY(i) - H * 0.009}
-					className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+					className={`wt-film-num ${i === 1 ? toneClass.up : "wt-film-dim"}`}
 					style={{ fontSize: T.small }}
 				>
 					{t(value)}
@@ -626,7 +627,7 @@ function Scene({
 							x={margin + room - 16}
 							y={L.recY(i) + L.recH * 0.6}
 							textAnchor="end"
-							className="wt-film-tag wt-film-accent"
+							className="wt-film-tag"
 							style={{ fontSize: T.small }}
 						>
 							{t(record.tag).toUpperCase()}
@@ -647,7 +648,7 @@ function Scene({
 						<text
 							x={margin + 16}
 							y={spreadProofY + i * spreadProofStep}
-							className="wt-film-type wt-film-loss"
+							className="wt-film-type"
 							style={{ fontSize: spreadProofSize }}
 						>
 							{t(label)}
@@ -656,7 +657,7 @@ function Scene({
 							x={margin + room - 16}
 							y={spreadProofY + i * spreadProofStep}
 							textAnchor="end"
-							className="wt-film-num wt-film-loss"
+							className="wt-film-num"
 							style={{ fontSize: spreadProofSize }}
 						>
 							{dollars(cents)}
@@ -692,7 +693,7 @@ function Scene({
 								data-f="log-spread-total-label"
 								x={margin + 16}
 								y={equationY}
-								className="wt-film-type wt-film-loss"
+								className="wt-film-type"
 								style={{ fontSize: equationSize }}
 							>
 								{t(copy.spreadTotal)}
@@ -702,7 +703,7 @@ function Scene({
 							data-f={`log-${i}-expression`}
 							x={margin + 16}
 							y={equationY}
-							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+							className="wt-film-num"
 							style={{ fontSize: equationSize }}
 						>
 							{expression}
@@ -711,7 +712,7 @@ function Scene({
 							data-f={`log-${i}-operand`}
 							x={operandX}
 							y={equationY}
-							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+							className="wt-film-num"
 							style={{ fontSize: equationSize }}
 						>
 							{dollars(contribution)}
@@ -722,7 +723,7 @@ function Scene({
 								operandX + textWidth(`${dollars(contribution)} `, equationSize)
 							}
 							y={equationY}
-							className={`wt-film-num ${i === 1 ? "wt-film-gain" : "wt-film-loss"}`}
+							className="wt-film-num"
 							style={{ fontSize: equationSize }}
 						>
 							=
@@ -917,17 +918,13 @@ function build(context: FilmContext) {
 	// The trace comes to R2's figure, which lights with it.
 	// Both body-sized terms and their settled result read together for 10.4–12.4.
 	show(one("trace-result"), 10.1, "below", 0.3);
-	tl.to(
+	tl.set(
 		one(`row-${r2}-premium`),
-		{ attr: { class: "wt-film-num wt-film-accent" }, duration: 0.2 },
+		{ attr: { class: `wt-film-num ${toneClass.focus}` } },
 		10.2,
 	);
 	tl.set(one(`row-${r2}-box`), { attr: { class: "wt-panel-shape" } }, 12.4);
-	tl.to(
-		one(`row-${r2}-premium`),
-		{ attr: { class: "wt-film-num" }, duration: 0.2 },
-		12.4,
-	);
+	tl.set(one(`row-${r2}-premium`), { attr: { class: "wt-film-num" } }, 12.4);
 	// Kept premiums travel down the right lane. Neighboring premiums step back while
 	// the copy passes; series labels and contract counts stay outside that lane.
 	// The missing series is already visible: this is a floor throughout its construction.
@@ -949,7 +946,7 @@ function build(context: FilmContext) {
 		tl.set(one(`row-${i}-premium`), { opacity: 1 }, at);
 		tl.set(figure, { attr: { class: "wt-film-num wt-film-accent" } }, at);
 		const ticket = one<SVGGraphicsElement>(`sum-ticket-${i}`);
-		// Land above the subtotal, then fold the ticket shut as its contribution counts.
+		// Land above the subtotal, then fold the ticket shut before the exact total cuts in.
 		d.carry(figure, ticket, at, {
 			duration: 0.45,
 			arc: "y",
@@ -970,10 +967,10 @@ function build(context: FilmContext) {
 		d.count(
 			one<SVGTextElement>("sum-ge"),
 			total + premium,
-			at + 0.57,
+			at + 0.77,
 			(v) => `≥ ${dollars(Math.round(v / 100) * 100)}`,
 			total,
-			0.2,
+			0,
 		);
 		tl.set(figure, { attr: { class: "wt-film-num" } }, at + 0.8);
 		total += premium;
@@ -1081,7 +1078,7 @@ function build(context: FilmContext) {
 	fold(rerunMarks[1], 29.9);
 	restore("exclusions", 30.2);
 	unfold(one("rerun-back"), 30.2);
-	// The field, comparison and green match are intact and quiet for 30.55–31.55.
+	// The field, comparison and focus figure are intact and quiet for 30.55–31.55.
 
 	// ——— log: rerun, or a new question ———
 	tl.addLabel("log", 31.55);
