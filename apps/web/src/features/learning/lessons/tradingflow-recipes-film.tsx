@@ -511,7 +511,7 @@ function Scene({
 																	rx={1}
 																	fill={
 																		name === "volume"
-																			? "var(--diagram-observed)"
+																			? "var(--tone-ink)"
 																			: "var(--muted-foreground)"
 																	}
 																/>
@@ -578,7 +578,7 @@ function Scene({
 							rx={3}
 							className="wt-panel-shape"
 							style={{
-								fill: "var(--diagram-observed)",
+								fill: "var(--tone-ink)",
 							}}
 						/>
 						<rect
@@ -635,7 +635,7 @@ function Scene({
 							size={T.small}
 							className="wt-film-type"
 						>
-							<tspan fill="var(--diagram-observed)">
+							<tspan>
 								{t([
 									`${MINUTES_TRADED} min traded`,
 									`已交易${MINUTES_TRADED}分钟`,
@@ -1336,19 +1336,19 @@ function build(context: FilmContext) {
 		},
 		29.8,
 	);
-	// A full second at the exact close: time, marker, fill and hatch all stop.
-	// Only then does time advance beyond the completed session to the new run.
+	// Keep the exact-close hold, then cut to the new run at the existing endpoint:
+	// the post-close half hour is context, not a change the learner needs to count.
 	tl.fromTo(
 		clock,
 		{ at: CLOSE },
 		{
 			at: AFTER_CLOSE.at,
-			duration: 0.2,
+			duration: 0,
 			ease: "none",
 			immediateRender: false,
 			onUpdate: updateClock,
 		},
-		31.4,
+		31.6,
 	);
 	// Read the finished clock, update the run and report date, then move latest.
 	// The two lines have identical stationary prefixes. Only their named dates fade;
