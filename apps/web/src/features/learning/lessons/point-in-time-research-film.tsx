@@ -25,6 +25,9 @@ import {
 	REPORTED,
 	SESSIONS,
 	TODAY,
+	TODAY_LABEL,
+	TODAY_VOLUME,
+	TYPICAL_VOLUME,
 	tried,
 } from "./point-in-time-research-model";
 
@@ -40,12 +43,12 @@ import {
  *   question  4–8.6      a decision at 10:50:01: which price?
  *   cutoff    8.6–20.2   arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
  *   rank      20.2–29.3  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
- *   holdout   29.3–37.9  ten thresholds; the winner 70%; the holdout 52%
- *   claim     37.9–42.3  only what was known, and test once
- *   next      42.3–44.8  Next: the module checkpoint
+ *   holdout   29.3–38.0  ten thresholds; the winner 70%; the holdout 52%
+ *   claim     38.0–42.4  only what was known, and test once
+ *   next      42.4–44.9  Next: the module checkpoint
  */
 
-const END = 44.8;
+const END = 44.9;
 const MAX_DAYS = Math.max(...history.map((b) => b.days));
 const BEST_INDEX = tried.indexOf(best);
 const HERO_PAD = 10;
@@ -87,8 +90,8 @@ const copy = {
 	titleSub: ["testing a pattern without hindsight", "不带后见之明地检验模式"],
 	qTag: ["a backtest · Mon 10:50:01", "回测 · 周一 10:50:01"],
 	qLine: [
-		"It replays a decision just after the 500-lot block.",
-		"它重放 500 张大单之后一刻的决策。",
+		"Decision is replayed just after the 500-lot block.",
+		"它重放 500 张大单后的即时决策。",
 	],
 	qBig: ["Which price may it use?", "它可以用哪个价格？"],
 	cHead: ["Monday's facts, in order of arrival.", "周一的事实，按到达顺序。"],
@@ -102,22 +105,26 @@ const copy = {
 	decision: ["decision", "决策时刻"],
 	rHead: ["Compare today with past sessions.", "把今天与过去的交易日比较。"],
 	lower: [
-		`${LOWER} / ${SESSIONS} sessions lower`,
-		`${SESSIONS} 个交易日中，${LOWER} 个更低`,
+		`${LOWER} / ${SESSIONS} ≈ ${PERCENTILE}% of sessions lower`,
+		`${LOWER} / ${SESSIONS} ≈ ${PERCENTILE}% 的交易日成交量更低`,
 	],
 	pct: [`${PERCENTILE}th`, `第 ${PERCENTILE}`],
 	r2Head: [
-		`The ${PERCENTILE}th percentile: a rank, not a chance.`,
-		`第 ${PERCENTILE} 百分位：是排名，不是概率。`,
+		`${PERCENTILE}th percentile: rank, not probability.`,
+		`第 ${PERCENTILE} 百分位：排名，不是概率。`,
 	],
 	today: [`today ${TODAY}×`, `今天 ${TODAY}×`],
+	todayContext: [
+		`${TODAY_LABEL[0]} · ${TODAY_VOLUME} ÷ ${TYPICAL_VOLUME} ≈ ${TODAY}×`,
+		`${TODAY_LABEL[1]} · ${TODAY_VOLUME} ÷ ${TYPICAL_VOLUME} ≈ ${TODAY}×`,
+	],
 	axis: ["volume ÷ typical", "成交量 ÷ 常态"],
 	hHead: ["Thresholds tried on Jan–Jun.", "在上半年数据上试验门槛。"],
 	h2Head: [
 		`Frozen, then run once: ${HOLDOUT}%.`,
 		`冻结后只跑一次：${HOLDOUT}%。`,
 	],
-	rose: ["rose next day", "次日上涨"],
+	rose: ["rose next day · 40–80%", "次日上涨 · 40–80%"],
 	best: [
 		`above ${best.threshold}× typical · ${best.rose}%`,
 		`超过常态 ${best.threshold}× · ${best.rose}%`,
@@ -126,7 +133,7 @@ const copy = {
 		`Frozen rule: volume above ${best.threshold}× typical.`,
 		`冻结规则：成交量超过常态的 ${best.threshold}×。`,
 	],
-	holdout: [`Jul–Aug holdout ${HOLDOUT}%`, `7–8 月样本外 ${HOLDOUT}%`],
+	holdout: [`Jul–Aug observed ${HOLDOUT}%`, `7–8 月样本外实测：${HOLDOUT}%`],
 	claimBig: [
 		"Use only what was known, and test once.",
 		"只用当时已知的，并且只检验一次。",
@@ -235,7 +242,7 @@ function Scene({
 						x={margin + 14}
 						y={L.arrY(i) + L.arrH * (narrow ? 0.76 : 0.42)}
 						className="wt-film-num wt-film-dim"
-						style={{ fontSize: narrow ? T.small : text }}
+						style={{ fontSize: text }}
 					>
 						{t(a.arrived)}
 					</text>
@@ -265,7 +272,7 @@ function Scene({
 						x={margin + room - 14}
 						y={L.arrY(i) + L.arrH * 0.42}
 						textAnchor="end"
-						className={`wt-film-tag ${state === "known" ? toneClass.focus : "wt-film-dim"}`}
+						className="wt-film-tag wt-film-dim"
 						style={{ fontSize: T.small }}
 					>
 						{t(copy[state]).toUpperCase()}
@@ -375,10 +382,19 @@ function Scene({
 				name="lower"
 				text={t(copy.lower)}
 				x={W / 2}
-				y={H * 0.89}
+				y={H * 0.93}
 				size={T.body}
 				maxWidth={room}
 				className="wt-film-type wt-film-accent"
+			/>
+			<Lines
+				name="today-context"
+				text={t(copy.todayContext)}
+				x={W / 2}
+				y={H * 0.86}
+				size={T.small}
+				maxWidth={room}
+				className="wt-film-type wt-film-dim"
 			/>
 			<g data-f="today">
 				<path
@@ -524,7 +540,7 @@ function Scene({
 			<g data-f="hold">
 				<path
 					d={`M${L.barX(BEST_INDEX) - L.barSlot * 0.6} ${L.pctY(HOLDOUT)}H${L.barX(BEST_INDEX) + L.barSlot * 1.6}`}
-					style={{ stroke: "var(--diagram-unknown)", strokeWidth: 3 }}
+					style={{ stroke: "var(--diagram-accent)", strokeWidth: 3 }}
 				/>
 				<text
 					x={
@@ -534,8 +550,8 @@ function Scene({
 					}
 					y={L.pctY(HOLDOUT) + T.small * 0.4}
 					textAnchor={narrow ? "end" : "start"}
-					className="wt-film-num wt-film-warn wt-halo"
-					style={{ fontSize: text }}
+					className="wt-film-num wt-film-accent wt-halo"
+					style={{ fontSize: narrow ? T.small : text }}
 				>
 					{t(copy.holdout)}
 				</text>
@@ -645,6 +661,7 @@ function build(context: FilmContext) {
 		...bins,
 		one("lower-counts"),
 		one("lower"),
+		one("today-context"),
 		one("today"),
 		one("pct"),
 		lockPct,
@@ -729,7 +746,7 @@ function build(context: FilmContext) {
 		22.9,
 	);
 	tl.fromTo(
-		[one("lower-counts"), one("lower")],
+		[one("lower-counts"), one("lower"), one("today-context")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
 		22.9,
@@ -751,6 +768,7 @@ function build(context: FilmContext) {
 			...bins,
 			one("lower-counts"),
 			one("lower"),
+			one("today-context"),
 			one("today"),
 			one("pct"),
 			lockPct,
@@ -779,11 +797,19 @@ function build(context: FilmContext) {
 		{ opacity: 0.55, duration: 0.4 },
 		31.4,
 	);
-	tl.fromTo(one("hold"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 32.8);
-	show(heads[6], 34.3);
+	// Let the in-sample result rest for 1 s, then hand focus to the observed holdout: the bar
+	// steps back and its label turns ink, staying readable as the claim it is checked against.
+	tl.to(
+		one(`try-${BEST_INDEX}-bar`),
+		{ opacity: 0.3, duration: 0.3, ease: "power2.in" },
+		32.8,
+	);
+	tl.set(one("best"), { attr: { class: "wt-film-num" } }, 32.8);
+	tl.fromTo(one("hold"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 33.1);
+	show(heads[6], 34.4);
 
 	// ——— claim ———
-	tl.addLabel("claim", 37.9);
+	tl.addLabel("claim", 38.0);
 	hide(
 		[
 			heads[5],
@@ -794,15 +820,15 @@ function build(context: FilmContext) {
 			one("frozen-rule"),
 			one("hold"),
 		],
-		37.9,
+		38.0,
 	);
-	word(one("z-big"), 38.2);
-	show(one("z-sub"), 38.6);
+	word(one("z-big"), 38.3);
+	show(one("z-sub"), 38.7);
 
 	// ——— next ———
-	tl.addLabel("next", 42.3);
-	hide(kids("claim"), 42.3);
-	d.close(42.3);
+	tl.addLabel("next", 42.4);
+	hide(kids("claim"), 42.4);
+	d.close(42.4);
 	return tl;
 }
 
