@@ -16,8 +16,6 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
-	BOUGHT_100,
-	BUY_NOV,
 	CALL_105,
 	CALL_110,
 	CASH_IN,
@@ -27,7 +25,6 @@ import {
 	RANGE,
 	ROLL_QUANTITY,
 	ROLL_SPOT,
-	SELL_OCT,
 	SOLD,
 	STOCK_COST,
 	shortLeg110,
@@ -101,16 +98,13 @@ const copy = {
 	qBig: ["A bet ALFA won't rise?", "押注 ALFA 不涨？"],
 	lHead: ["Alone, its loss has no limit.", "单独卖出：亏损没有上限。"],
 	cHead: ["With 100 shares: a covered call.", "配上 100 股：备兑看涨。"],
-	sHead: [
-		"With a long 100 call: a capped spread.",
-		"配上 100 看涨多头：价差封顶。",
-	],
+	sHead: ["Long 100 call: capped spread.", "加上 100 看涨多头：价差封顶。"],
 	sold: ["105 call, sold", "105 看涨，卖出"],
 	stock: [`stock · entry $${STOCK_COST}`, `股票 · 买入价 $${STOCK_COST}`],
 	covered: ["covered call", "备兑看涨"],
 	spread: [
-		`long 100 cost ${dollars(BOUGHT_100)} · short 105`,
-		`100 多头成本 ${dollars(BOUGHT_100)} · 105 空头`,
+		`net cost ${dollars(-SPREAD_LOW)}`,
+		`净成本 ${dollars(-SPREAD_LOW)}`,
 	],
 	axisProfit: ["profit at Oct 18, per contract", "10月18日盈亏，每张合约"],
 	axisPayoff: ["Oct 18 payoff · per contract", "10月18日到期价值 · 每张"],
@@ -132,27 +126,14 @@ const copy = {
 		`Fri Oct 4 · ALFA ${usd(ROLL_SPOT)}`,
 		`10月4日 周五 · ALFA ${usd(ROLL_SPOT)}`,
 	],
-	sellOct: [
-		`sell ${ROLL_QUANTITY} Oct 18 100 calls @ ${usd(SELL_OCT)}`,
-		`卖出 ${ROLL_QUANTITY} 张 10月18日 100 看涨 @ ${usd(SELL_OCT)}`,
-	],
-	buyNov: [
-		`buy ${ROLL_QUANTITY} Nov 15 100 calls @ ${usd(BUY_NOV)}`,
-		`买入 ${ROLL_QUANTITY} 张 11月15日 100 看涨 @ ${usd(BUY_NOV)}`,
-	],
+	sellOct: ["sell Oct 18 · 100 call", "卖出 10月18日 · 100 看涨"],
+	buyNov: ["buy Nov 15 · 100 call", "买入 11月15日 · 100 看涨"],
 	toClose: ["to close", "平仓"],
 	toOpen: ["to open", "开仓"],
 	bearish: ["feed: BID · bearish", "数据源：BID · 看跌"],
 	bullish: ["feed: ASK · bullish", "数据源：ASK · 看涨"],
-	roll: [
-		`one roll: same $100 strike, four weeks later · net ${signedUsd(-ROLL_NET, 0)}`,
-		`一次移仓：同一 $100 行权价，晚四周 · 净额 ${signedUsd(-ROLL_NET, 0)}`,
-	],
-	rollNet: [
-		`one roll · net ${signedUsd(-ROLL_NET, 0)}`,
-		`一次移仓 · 净额 ${signedUsd(-ROLL_NET, 0)}`,
-	],
-	rollShort: ["Oct 18 → Nov 15 · four weeks", "10月18日 → 11月15日 · 四周"],
+	rollNet: ["net", "净额"],
+	rollShort: ["same strike · four weeks later", "同一行权价 · 延后四周"],
 	claimBig: ["One leg, many positions.", "一条腿，多种持仓。"],
 	claimSub: [
 		"A sale can cover, cap or roll.",
@@ -458,6 +439,24 @@ function Scene({
 							22,
 							"end",
 						)}
+						{tag(
+							"g-long",
+							narrow ? SPOT - 2 : RANGE[1],
+							longLeg,
+							copy.long105,
+							"wt-halo",
+							-T.small * 1.2,
+							"end",
+						)}
+						{tag(
+							"g-short",
+							narrow ? SPOT - 2 : RANGE[1],
+							shortLeg110,
+							copy.short110,
+							"wt-halo",
+							T.small * 1.8,
+							"end",
+						)}
 						<Word
 							name="g-spread"
 							x={L.left}
@@ -514,14 +513,16 @@ function Scene({
 			</g>
 			{readouts.map(([name, label, value, color], i) => (
 				<g key={name} data-f={name}>
-					<path
-						d={`M${L.left + 12} ${L.top + 14 + i * text * 1.7}h${narrow ? 14 : 20}`}
-						style={{
-							stroke: color,
-							strokeWidth: 2.5,
-							strokeDasharray: i === 2 ? "4 3" : undefined,
-						}}
-					/>
+					{i === 2 && (
+						<path
+							d={`M${L.left + 12} ${L.top + 14 + i * text * 1.7}h${narrow ? 14 : 20}`}
+							style={{
+								stroke: color,
+								strokeWidth: 2.5,
+								strokeDasharray: i === 2 ? "4 3" : undefined,
+							}}
+						/>
+					)}
 					<text
 						x={L.left + (narrow ? 32 : 40)}
 						y={L.top + 14 + i * text * 1.7 + text * 0.36}
@@ -631,28 +632,29 @@ function Scene({
 				className="wt-film-riser"
 			/>
 			<g data-f="roll">
-				<Lines
+				<Word
 					name="roll-net"
-					text={t(narrow ? copy.rollNet : copy.roll)}
 					x={margin}
 					y={L.sumY}
 					size={narrow ? T.body : T.body * 1.2}
+					anchor="start"
+					className="wt-film-type"
+				>
+					{`${t(copy.rollNet)} · `}
+					<tspan className="wt-film-num wt-film-loss">
+						{signedUsd(-ROLL_NET, 0)}
+					</tspan>
+				</Word>
+				<Lines
+					name="roll-expiry"
+					text={t(copy.rollShort)}
+					x={margin}
+					y={L.sumY + T.body * 1.6}
+					size={T.body}
 					maxWidth={room}
 					anchor="start"
-					className="wt-film-type wt-film-loss"
+					className="wt-film-type wt-film-dim"
 				/>
-				{narrow && (
-					<Lines
-						name="roll-expiry"
-						text={t(copy.rollShort)}
-						x={margin}
-						y={L.sumY + T.body * 1.6}
-						size={T.body}
-						maxWidth={room}
-						anchor="start"
-						className="wt-film-type wt-film-dim"
-					/>
-				)}
 			</g>
 			{/* Keep the accepted drawn after-beat; the dates are already readable above. */}
 			<path
@@ -813,15 +815,37 @@ function build(context: FilmContext) {
 	show([one("k-105"), one("k-110")], 21.45);
 	draw(line("long"), 23.2);
 	show(readouts[0], 23.7, "right");
+	tl.fromTo(one("g-long"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 23.7);
 	// Each completed readout gets a full second before the next construction.
-	tl.to(line("long"), { opacity: 0.3, duration: 0.4 }, 25.2);
+	tl.to([line("long"), one("g-long")], { opacity: 0.3, duration: 0.4 }, 25.2);
 	draw(line("short"), 25.2);
 	show(readouts[1], 25.7, "right");
-	tl.to([line("long"), line("short")], { opacity: 0.3, duration: 0.4 }, 27.2);
+	tl.fromTo(
+		one("g-short"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		25.7,
+	);
+	tl.to(
+		[line("long"), one("g-long"), line("short"), one("g-short")],
+		{ opacity: 0.3, duration: 0.4 },
+		27.2,
+	);
 	draw(line("sum"), 27.3);
 	show(readouts[2], 27.8, "right");
 	tl.to(line("sum"), { opacity: 0.35, duration: 0.4 }, 29.3);
-	hide([line("long"), line("short"), one("spot-guide")], 29.3, 0.35, 0);
+	hide(
+		[
+			line("long"),
+			one("g-long"),
+			line("short"),
+			one("g-short"),
+			one("spot-guide"),
+		],
+		29.3,
+		0.35,
+		0,
+	);
 	hide(readouts.slice(0, 3), 29.4, 0.35, 0);
 	d.swap(one("axis-payoff"), one("axis-both"), 29.4);
 	show(heads[4], 29.4);
