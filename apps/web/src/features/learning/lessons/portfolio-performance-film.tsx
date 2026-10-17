@@ -77,11 +77,22 @@ function layout(width: number) {
 	const top = height * (narrow ? 0.38 : 0.3);
 	const bottom = height * 0.84;
 	const span = right - left;
+	const periodTop = narrow
+		? Math.max(
+				height * 0.22,
+				frame.headY + frame.type.head * 1.35 + frame.type.small * 1.8,
+			)
+		: height * 0.23;
+	const periodStep = Math.max(height * 0.09, frame.type.small * 3.5);
+	// At the minimum phone width, reserve room for the two balance/rate pairs.
+	const weekTop = narrow
+		? Math.max(top, periodTop + periodStep + frame.type.small * 2.7)
+		: top;
 	// The week: four moments, padded at both ends.
 	const vx = (i: number) => left + ((i + 0.35) / 3.7) * span;
 	const vy = (dollars: number) =>
 		bottom -
-		((dollars - VALUE_Y[0]) / (VALUE_Y[1] - VALUE_Y[0])) * (bottom - top);
+		((dollars - VALUE_Y[0]) / (VALUE_Y[1] - VALUE_Y[0])) * (bottom - weekTop);
 	// The trades: wins up, the loss down, on one scale.
 	const slot = span / trades.length;
 	// On a phone the bars start lower, clear of the meter in the corner.
@@ -97,6 +108,9 @@ function layout(width: number) {
 		left,
 		right,
 		top,
+		weekTop,
+		periodTop,
+		periodStep,
 		bottom,
 		vx,
 		vy,
@@ -131,19 +145,13 @@ const copy = {
 	qWin: ["win rate", "胜率"],
 	qReturn: ["return, Jan–Aug", "收益，1–8月"],
 	qReturnShort: ["return", "收益"],
-	qLine: [
-		"Three good numbers. Each one hides something.",
-		"三个好看的数字，每个都藏着一些东西。",
-	],
+	qLine: ["Each number has blind spots.", "每个数字都有盲点。"],
 	weekHead: [
 		"Your week, with your own deposit in it.",
 		"你的这一周，含你自己的存入。",
 	],
 	weekHeadShort: ["Your week, deposit included.", "这一周，含存入。"],
-	cutHead: [
-		"Cut at the deposit; measure each piece.",
-		"在存入处切开，每段从起点算起。",
-	],
+	cutHead: ["Cut at the deposit.", "在存入处切开。"],
 	cutHeadShort: ["Cut at the deposit.", "在存入处切开。"],
 	growthTag: ["balance growth", "余额增长"],
 	days: [
@@ -164,8 +172,8 @@ const copy = {
 	],
 	twrTag: ["time-weighted return", "时间加权收益"],
 	twrLine: [
-		"Deposits removed. Only the return remains.",
-		"剔除存入，只衡量资金的收益。",
+		"Multiply period growth, excluding deposits.",
+		"各段增长相乘，剔除存入。",
 	],
 	tradesHead: [
 		`Your last ${trades.length} trades.`,
@@ -181,17 +189,14 @@ const copy = {
 	total: ["total", "合计"],
 	ddHead: ["Two accounts, January to August.", "两个账户，一月到八月。"],
 	ddHeadShort: ["Two accounts, eight months.", "两个账户，八个月。"],
-	fallHead: [
-		`Both ${pct(totalReturn(steady), 0)}; B fell ${pct(-worstB.fall, 0).replace("+", "")}, A barely dipped.`,
-		`均涨 ${pct(totalReturn(steady), 0)}；B 跌 ${pct(-worstB.fall, 0).replace("+", "")}，A 小幅回撤。`,
-	],
+	fallHead: ["Same return. Different drawdowns.", "收益相同，回撤不同。"],
 	ddAxis: ["month-end values", "月末价值"],
 	accountA: ["account A", "账户 A"],
 	accountB: ["account B", "账户 B"],
 	claimBig: ["Each measure answers one question.", "每个度量只回答一个问题。"],
 	claimSub: [
-		"Remove deposits, weigh trades by size, watch the path.",
-		"剔除存入，按金额衡量交易，看路径。",
+		"Exclude deposits; compare trade amounts; inspect paths.",
+		"剔除存入，比金额，看路径。",
 	],
 	nextBig: ["Next: portfolio Greeks", "下一课：组合希腊值"],
 	nextSub: ["adding up exposure", "汇总敞口"],
@@ -269,28 +274,51 @@ function Scene({
 						))}
 						{(
 							[
-								["band-1", 0, 1, pct(R1)],
-								["band-2", 2, 3, pct(R2)],
+								["band-1", 0, 1],
+								["band-2", 2, 3],
 							] as const
-						).map(([name, from, to, label]) => (
+						).map(([name, from, to]) => (
 							<g key={name} data-f={name}>
 								<rect
 									x={L.vx(from)}
-									y={L.top}
+									y={L.weekTop}
 									width={L.vx(to) - L.vx(from)}
-									height={L.bottom - L.top}
+									height={L.bottom - L.weekTop}
 									className="wt-band-gain"
 								/>
-								<text
-									x={(L.vx(from) + L.vx(to)) / 2}
-									y={L.top + 18}
-									textAnchor="middle"
-									className="wt-halo wt-gain wt-marker-label"
-								>
-									{label}
-								</text>
 							</g>
 						))}
+						{/* End/start uses each period's own opening balance.
+						    The rate and its growth factor stay paired before they multiply. */}
+						{[
+							{ start: OPEN, end: CLOSE, rate: R1, from: 0, to: 1 },
+							{ start: AFTER_DEPOSIT, end: WEEK_END, rate: R2, from: 2, to: 3 },
+						].map(({ start, end, rate, from, to }, i) => {
+							const x = narrow ? W / 2 : (L.vx(from) + L.vx(to)) / 2;
+							const y = L.periodTop + (narrow ? i * L.periodStep : 0);
+							return (
+								<g key={from} data-f={`period-${i + 1}`}>
+									<Word
+										name={`period-balances-${i + 1}`}
+										x={x}
+										y={y}
+										size={T.small}
+										className="wt-film-num"
+									>
+										{`${dollars(end)} ÷ ${dollars(start)} − 1`}
+									</Word>
+									<Word
+										name={`period-rate-${i + 1}`}
+										x={x}
+										y={y + T.small * 1.85}
+										size={T.small}
+										className="wt-film-num wt-film-gain"
+									>
+										{`1 + (${pct(rate)}) ≈ ${(1 + rate).toFixed(4)}`}
+									</Word>
+								</g>
+							);
+						})}
 						<path
 							data-f="value-line"
 							d={L.valuePath}
@@ -420,11 +448,12 @@ function Scene({
 						<text
 							data-f="dd-end"
 							x={L.mx(MONTHS.length - 1)}
-							y={L.my(steady[steady.length - 1]) - 14}
+							y={L.my(steady[steady.length - 1]) - 28}
 							textAnchor="end"
 							className="wt-small wt-halo"
 						>
 							{dollars(steady[steady.length - 1] * 100)}
+							<tspan className="wt-gain">{` · ${pct(totalReturn(steady), 0)}`}</tspan>
 						</text>
 						<rect
 							data-f="fall-band"
@@ -737,7 +766,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, rise, sink } = d;
+	const { tl, one, kids, show, hide } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const land = (target: Element, time: number, duration = 0.55) =>
 		tl.fromTo(
@@ -754,15 +783,15 @@ function build(context: FilmContext) {
 		one("dot-2-high"),
 		one("dot-3-high"),
 	];
-	const draw = (path: SVGPathElement, at: number, duration: number) => {
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration, ease: "power2.inOut" },
-			at,
-		);
-	};
+	// These are comparisons of completed histories, not walks through elapsed time.
+	// Fade scaffolds at their final scale, then reveal the complete data together.
+	const chartIn = (at: number) =>
+		tl.to(one("depth"), { opacity: 1, duration: 0.3 }, at);
+	const chartOut = (at: number) =>
+		tl.to(one("depth"), { opacity: 0, duration: 0.4, ease: "power2.in" }, at);
+	const reveal = (targets: Element[], at: number, duration: number) =>
+		tl.to(targets, { opacity: 1, duration }, at);
+	tl.set(one("depth"), { scale: 1 }, 0);
 
 	const lockTotal = one<SVGGraphicsElement>("lock-total");
 
@@ -771,6 +800,8 @@ function build(context: FilmContext) {
 		one("dd"),
 		one("band-1"),
 		one("band-2"),
+		one("period-1"),
+		one("period-2"),
 		one("value-line"),
 		one("jump"),
 		one("jump-label"),
@@ -818,23 +849,19 @@ function build(context: FilmContext) {
 	tl.addLabel("returns", 9.4);
 	hide(flat("q"), 9.4);
 	show(one("w-head"), 9.6, "above");
-	rise(9.7);
-	draw(one<SVGPathElement>("value-line"), 10.1, 1.4);
-	// Endpoints arrive only once the complete trace supports them.
-	land(dots[0], 10.1, 0.35);
-	dots.slice(1).forEach((dot) => {
-		land(dot, 11.5, 0.35);
-	});
+	chartIn(9.7);
+	// Scaffold settled at 10.0; headline at 10.1. Preserve the 11.85 proof finish.
+	reveal([one("value-line"), ...dots], 11.3, 0.55);
 	// A full second after the final dot, focus on the deposit without repeating growth.
 	tl.to(one("jump"), { opacity: 1, duration: 0.4 }, 12.85);
 	show(one("jump-label"), 13.05);
 	// Cut at the flow: two periods, each from its own start.
 	show(one("c-head"), 12.9);
-	tl.to(one("band-1"), { opacity: 1, duration: 0.5 }, 13.0);
-	tl.to(one("band-2"), { opacity: 1, duration: 0.5 }, 13.5);
+	reveal([one("band-1"), one("period-1")], 13.0, 0.5);
+	reveal([one("band-2"), one("period-2")], 13.5, 0.5);
 	// Cut: the chained return.
 	hide([one("w-head"), one("c-head"), ...flat("meter")], 16.4);
-	sink(16.4);
+	chartOut(16.4);
 	show(one("twr-tag"), 16.7);
 	show(one("twr-sum"), 16.9);
 	land(one("twr-num"), 17.2);
@@ -846,29 +873,20 @@ function build(context: FilmContext) {
 	tl.set(one("week"), { opacity: 0 }, 21.1);
 	tl.set(one("bars"), { opacity: 1 }, 21.1);
 	show(one("t-head"), 21.35, "above");
-	rise(21.4);
-	trades.forEach((trade, i) => {
-		const at = 21.5 + i * 0.3;
-		const y = L.barY(trade.pnl);
-		tl.fromTo(
-			one(`bar-${i}`),
-			{ opacity: 1, attr: { y: L.zero, height: 0 } },
-			{
-				attr: { y: Math.min(y, L.zero), height: Math.abs(y - L.zero) },
-				duration: 0.45,
-				ease: "power3.out",
-			},
-			at,
-		);
-		// Fade in place: a date must not travel through the zero axis.
-		tl.fromTo(
-			[one(`bar-value-${i}`), one(`bar-date-${i}`)],
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.3 },
-			at + 0.45,
-		);
-	});
-	// Fifth bar and its labels are settled before the answer appears.
+	chartIn(21.4);
+	reveal(
+		trades.map((_, i) => one(`bar-date-${i}`)),
+		21.4,
+		0.3,
+	);
+	// Axes/dates settle at 21.7, headline at 21.85; no serial histogram stagger.
+	// All five comparisons settle at the original 23.45, preserving the quiet second.
+	reveal(
+		trades.flatMap((_, i) => [one(`bar-${i}`), one(`bar-value-${i}`)]),
+		22.9,
+		0.55,
+	);
+	// The complete histogram rests for a second before the answer appears.
 	show([one("m-rate"), one("m-rate-value")], 24.45, "above", 0.35);
 	show(one("t-answer"), 24.45, "above", 0.35);
 	// Preserve the actual bars: the wins stack on one common scale beside the loss.
@@ -945,26 +963,34 @@ function build(context: FilmContext) {
 	// ——— drawdown: the same return, two paths ———
 	tl.addLabel("drawdown", 33.95);
 	hide([...flat("two"), lockTotal], 33.95);
-	sink(33.95);
+	chartOut(33.95);
 	tl.set(one("bars"), { opacity: 0 }, 34.35);
 	tl.set(one("dd"), { opacity: 1 }, 34.35);
-	show(one("d-head"), 34.3, "above");
-	rise(34.35);
-	// Both histories draw together; exact endpoints and B's fall finish the proof.
-	draw(one<SVGPathElement>("line-a"), 34.4, 1.0);
-	draw(one<SVGPathElement>("line-b"), 34.5, 1.0);
-	show(one("dd-start"), 34.4);
-	show(one("label-a"), 35.2);
-	show([one("label-b"), one("dd-end")], 35.5, "above");
-	tl.to(one("fall-band"), { opacity: 1, duration: 0.5 }, 35.5);
-	land(one("peak"), 35.5, 0.35);
-	land(one("trough"), 35.5);
-	show(one("fall-label"), 35.5);
+	show(one("d-head"), 34.0, "above");
+	chartIn(34.35);
+	// Scaffold settles at 34.65. The complete comparison, including its exact
+	// endpoints and signed proof, arrives only after a full settled second.
+	reveal(
+		[
+			one("line-a"),
+			one("line-b"),
+			one("dd-start"),
+			one("dd-end"),
+			one("label-a"),
+			one("label-b"),
+			one("fall-band"),
+			one("peak"),
+			one("trough"),
+			one("fall-label"),
+		],
+		35.65,
+		0.4,
+	);
 	// All proof marks settle at 36.05, followed by one second of quiet.
 	show(one("f-head"), 37.05, "above");
 	// Cut: the claim.
 	hide([one("d-head"), one("f-head")], 41.05);
-	sink(41.05);
+	chartOut(41.05);
 	tl.fromTo(
 		one("z-big"),
 		{ opacity: 0, scale: 1.08, transformOrigin: "50% 50%" },
