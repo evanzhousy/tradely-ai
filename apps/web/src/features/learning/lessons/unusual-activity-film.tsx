@@ -281,10 +281,11 @@ function Scene({
 						? L.rowY(1) + L.rowH / 2 + text * 0.36 + T.small * 1.5
 						: H * 0.91
 				}
-				className="wt-film-num wt-film-accent"
+				className="wt-film-num"
 				style={{ fontSize: T.body }}
 			>
-				{`${THIN.volume} ÷ ${THIN.openInterest} = ${ratio(vsOi(THIN))}`}
+				{`${THIN.volume} ÷ ${THIN.openInterest} = `}
+				<tspan className="wt-film-accent">{ratio(vsOi(THIN))}</tspan>
 			</text>
 			<text
 				data-f="key"
@@ -460,9 +461,14 @@ function Scene({
 				x={W / 2}
 				y={H * 0.94}
 				size={T.body}
-				className="wt-film-num wt-film-accent"
+				className="wt-film-num"
 			>
-				{`${count(todayBy(ELEVEN))} ÷ ${typicalBy(ELEVEN)} ≈ ${ratio(AT_ELEVEN)}`}
+				<tspan data-f="window-proof-operands">
+					{`${count(todayBy(ELEVEN))} ÷ ${typicalBy(ELEVEN)} ≈ `}
+				</tspan>
+				<tspan data-f="window-proof-result" className="wt-film-accent">
+					{ratio(AT_ELEVEN)}
+				</tspan>
 			</Word>
 			<Brackets name="lock-window" glow />
 
@@ -557,7 +563,7 @@ function build(context: FilmContext) {
 				{ value: from(row) },
 				{
 					value: f(row),
-					duration: 0.7,
+					duration: 1,
 					ease: "power2.inOut",
 					immediateRender: false,
 					onUpdate: render,
@@ -576,8 +582,9 @@ function build(context: FilmContext) {
 			gsap.set(one("cursor"), { x: L.x(state.minute) - L.x(0) });
 			one("cursor-typ").setAttribute("cy", String(L.y(typical)));
 			one("window").textContent = ratio(value);
-			one("window-proof").textContent =
-				`${count(today)} ÷ ${Number(typical.toFixed(1))} ≈ ${ratio(value)}`;
+			one("window-proof-operands").textContent =
+				`${count(today)} ÷ ${Number(typical.toFixed(1))} ≈ `;
+			one("window-proof-result").textContent = ratio(value);
 		};
 		tl.fromTo(
 			state,
@@ -585,7 +592,7 @@ function build(context: FilmContext) {
 			{
 				minute,
 				duration: 0.9,
-				ease: "power2.inOut",
+				ease: "none",
 				immediateRender: false,
 				onUpdate: render,
 			},
@@ -689,7 +696,7 @@ function build(context: FilmContext) {
 	hide([one("cursor"), one("window"), one("window-proof"), lockWindow], 31.7);
 	d.sink(31.7);
 	// Reset while the rows are offstage; bring back the whole settled comparison together.
-	ratiosTo(vsTypical, vsOi, 31.35, true);
+	ratiosTo(vsTypical, vsOi, 31.05, true);
 	tl.set(one("base-typical"), { scaleY: 1 }, 32.05);
 	show([one("base-typical"), ...rows], 32.05, "right");
 	// The threshold is drawn with its dashes intact; its label fades separately.
