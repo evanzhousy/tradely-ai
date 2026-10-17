@@ -44,12 +44,12 @@ import {
  *   open      0–4        "Build your own Rank column"
  *   question  4–9.6      [Total Premium] + [Trades]
  *   units     9.6–19.25  usd + count: refused; ÷: usd, $6,458
- *   rank      19.25–33.0  total premium; thin denominator; 20-trade floor, ALFA locked
- *   view      33.0–44.4   saved formula persists as Tuesday recomputes; cut: the claim
- *   next      44.4–46.9   Next: fork or write a recipe with AI
+ *   rank      19.25–33.57  total premium; thin denominator; 20-trade floor, ALFA locked
+ *   view      33.57–44.97  saved formula persists as Tuesday recomputes; cut: the claim
+ *   next      44.97–47.47  Next: fork or write a recipe with AI
  */
 
-const END = 46.9;
+const END = 47.47;
 const TUESDAY = symbolFlowSessions.tuesday.rows;
 const SYMBOLS = MONDAY.map((row) => row.symbol);
 type State = 0 | 1 | 2 | 3;
@@ -688,6 +688,7 @@ function build(context: FilmContext) {
 		L.barY + (L.narrow ? L.rowText * DEFINITION_LINE_HEIGHT : 0);
 	const checkX = L.margin + definitionWidth + 8;
 	const checkY = definitionLastBaseline - L.rowText * 0.3;
+	const afterTable = (time: number) => time + 0.57;
 
 	d.hidden([
 		...flat("q"),
@@ -758,46 +759,47 @@ function build(context: FilmContext) {
 	// ——— rank: totals, per trade, a floor ———
 	tl.addLabel("rank", 19.25);
 	hide([one("d-head"), ...kids("editor")], 19.25);
-	show(one("t-head"), 19.6, "above");
-	show([one("f-0"), one("day-mon"), one("col-trades")], 19.85);
+	// Let the editor clear, then hold the complete table scaffold for one second.
+	show([one("f-0"), one("day-mon"), one("col-trades")], 19.6, "below", 0.3);
+	show(one("t-head"), afterTable(19.6), "above");
 	SYMBOLS.forEach((symbol) => {
 		const i = order(0).indexOf(symbol);
+		const rowAt = 20.9 + i * 0.1;
 		tl.fromTo(
 			row(symbol),
 			{ opacity: 0, x: 24 },
 			{ opacity: 1, x: 0, duration: 0.45 },
-			20.05 + i * 0.12,
+			rowAt,
 		);
-		const barAt = 20.25 + i * 0.12;
-		tl.set(one(`bar-${symbol}`), { attr: { width: width(0, symbol) } }, barAt);
-		tl.to(one(`bar-${symbol}`), { opacity: 1, duration: 0.6 }, barAt);
-		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, 20.45 + i * 0.12);
+		tl.set(one(`bar-${symbol}`), { attr: { width: width(0, symbol) } }, rowAt);
+		tl.to(one(`bar-${symbol}`), { opacity: 1, duration: 0.6 }, rowAt);
+		tl.to(value(symbol, 0), { opacity: 1, duration: 0.3 }, rowAt);
 	});
 	// Per trade.
-	d.swap(one("t-head"), one("p-head"), 23.15);
+	d.swap(one("t-head"), one("p-head"), afterTable(23.15));
 	// The thin denominator gets emphasis during construction, before the proof rests.
 	tl.to(
 		one("n-GLYN-mon"),
 		{ fontSize: L.rowText * 1.15, duration: 0.3, ease: "power2.inOut" },
-		23.55,
+		afterTable(23.55),
 	);
-	rank(0, 1, 23.65, 23.55);
+	rank(0, 1, afterTable(23.65), afterTable(23.55));
 	// A floor. The hero: ALFA back in front.
 	// The count returns to row size as the floor fold starts.
 	tl.to(
 		one("n-GLYN-mon"),
 		{ fontSize: L.rowText, duration: 0.3, ease: "power2.inOut" },
-		26.05,
+		afterTable(26.05),
 	);
-	rank(1, 2, 26.15, 26.05);
-	d.lock(lockFloor, 27.05, {
+	rank(1, 2, afterTable(26.15), afterTable(26.05));
+	d.lock(lockFloor, afterTable(27.05), {
 		around: value(ALFA.symbol, 2),
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 27.05);
-	// Brackets settle at 27.5; give the hero 1.5 s of quiet before its answer.
-	show(one("f-head"), 29.0);
-	// The answer settles at 29.5. Establish the saved definition after another second,
+	tl.addLabel("hero-lock", afterTable(27.05));
+	// Brackets settle at 28.07; give the hero 1.5 s of quiet before its answer.
+	show(one("f-head"), afterTable(29.0));
+	// The answer settles at 30.07. Establish the saved definition after another second,
 	// then keep both the formula and its underline stationary through Tuesday's fold.
 	tl.fromTo(
 		one("definition-rule"),
@@ -809,16 +811,16 @@ function build(context: FilmContext) {
 			ease: "power2.inOut",
 			immediateRender: false,
 		},
-		30.5,
+		afterTable(30.5),
 	);
 
 	// ——— view: the formula recomputes, the numbers don't stay ———
-	tl.addLabel("view", 33.0);
-	hide([one("p-head"), one("f-head"), lockFloor], 33.0);
-	show(one("v-head"), 33.35, "above");
-	rank(2, 3, 34.0, 33.9);
-	// Tuesday settles at 34.9; its leader appears only after a full second of quiet.
-	show(one("w-head"), 35.9);
+	tl.addLabel("view", afterTable(33.0));
+	hide([one("p-head"), one("f-head"), lockFloor], afterTable(33.0));
+	show(one("v-head"), afterTable(33.35), "above");
+	rank(2, 3, afterTable(34.0), afterTable(33.9));
+	// Tuesday settles at 35.47; its leader appears only after a full second of quiet.
+	show(one("w-head"), afterTable(35.9));
 	// Confirm the marked definition survived, preserving the late drawing after-beat.
 	tl.fromTo(
 		one("definition-kept"),
@@ -830,17 +832,17 @@ function build(context: FilmContext) {
 			ease: "power2.inOut",
 			immediateRender: false,
 		},
-		37.9,
+		afterTable(37.9),
 	);
 	// Cut: the claim.
-	hide([one("v-head"), one("w-head"), ...kids("rank")], 39.9);
-	word(one("z-big"), 40.3);
-	show(one("z-sub"), 40.7);
+	hide([one("v-head"), one("w-head"), ...kids("rank")], afterTable(39.9));
+	word(one("z-big"), afterTable(40.3));
+	show(one("z-sub"), afterTable(40.7));
 
 	// ——— next ———
-	tl.addLabel("next", 44.4);
-	hide(kids("claim"), 44.4);
-	d.close(44.4);
+	tl.addLabel("next", afterTable(44.4));
+	hide(kids("claim"), afterTable(44.4));
+	d.close(afterTable(44.4));
 	return tl;
 }
 
