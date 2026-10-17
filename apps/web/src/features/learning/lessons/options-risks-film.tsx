@@ -194,8 +194,8 @@ const copy = {
 	shares: ["5 contracts × 100 = 500 shares", "5 张 × 100 = 500 股"],
 	claimBig: ["Being right isn't enough.", "判断对了还不够。"],
 	claimSub: [
-		"Time, volatility, open shorts, spread and fees can cost.",
-		"时间、波动率、裸卖、价差与手续费都能致亏。",
+		"Risk: time, IV, uncovered shorts, spread, fees.",
+		"风险：时间、波动率、裸卖、价差、手续费。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["Start here, on a new day", "在新的一天里运用“从这里开始”"],
@@ -643,7 +643,11 @@ function Scene({
 							<Word
 								name={`k-${name}-tag`}
 								x={W * L.pair[i]}
-								y={name === "active" ? H * 0.32 + T.body * 9.2 : H * 0.32}
+								y={
+									name === "active"
+										? H * 0.32 + T.body * (narrow ? 9.2 : 7.2)
+										: H * 0.32
+								}
 								size={T.small}
 								className="wt-film-tag"
 							>
@@ -965,9 +969,9 @@ function build(context: FilmContext) {
 	show(heads[0], 9.0);
 	rise(9.0); // Settles at 9.8, a full second before the initial trace and marker.
 	d.trace(one<SVGPathElement>("c-today"), 10.8, { tip, duration: 1.2 });
-	show(one("l-today"), 10.4);
-	tl.to(one("paid"), { opacity: 1, duration: 0.4 }, 10.6);
-	show(one("paid-label"), 10.7);
+	show(one("l-today"), 9.3);
+	tl.to(one("paid"), { opacity: 1, duration: 0.4 }, 9.4);
+	show(one("paid-label"), 9.3);
 	pop(marker, 10.8);
 	show(kids("meter"), 11.0);
 	// 20 days later: the marker rides to $102 on the worn curve.
