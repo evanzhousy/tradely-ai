@@ -53,6 +53,8 @@ import {
 } from "./portfolio-pnl-model";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
+const pnlTone = (value: number): ResultItem["tone"] =>
+	value > 0 ? "gain" : value < 0 ? "loss" : "neutral";
 
 // ——— Scene 1: realized and unrealized ———
 
@@ -117,7 +119,7 @@ function LotSquares({
 						? "wt-focus-shape"
 						: square.lot === 0
 							? "wt-chip"
-							: "wt-long-soft";
+							: "wt-panel-shape";
 				return (
 					<m.rect
 						key={square.key}
@@ -149,7 +151,7 @@ function LotSquares({
 							width={12}
 							height={12}
 							rx={3}
-							className={l === 0 ? "wt-chip" : "wt-long-soft"}
+							className={l === 0 ? "wt-chip" : "wt-panel-shape"}
 						/>
 						<Label x={left + l * 150 + 18} y={legendY} tone="small">
 							{`${lot.time} · ${lot.quantity} @ ${price(lot.price)}`}
@@ -201,6 +203,7 @@ function LotView({
 							`against the ${AVERAGE_TEXT} average`,
 							`按平均成本 ${AVERAGE_TEXT}`,
 						]),
+			tone: pnlTone(now.realized),
 			evidence: "calculated",
 		});
 	result.push(
@@ -212,6 +215,7 @@ function LotView({
 				`${HELD - (shown.sold ? SOLD : 0)} marked at the ${price(MARK)} mid`,
 				`${HELD - (shown.sold ? SOLD : 0)} 张按中间价 ${price(MARK)} 估值`,
 			]),
+			tone: pnlTone(now.unrealized),
 			evidence: "calculated",
 		},
 		{
@@ -222,6 +226,7 @@ function LotView({
 				`fees ${dollars((HELD + (shown.sold ? SOLD : 0)) * CONTRACT_FEE)}`,
 				`费用 ${dollars((HELD + (shown.sold ? SOLD : 0)) * CONTRACT_FEE)}`,
 			]),
+			tone: pnlTone(now.realized + now.unrealized),
 			evidence: "calculated",
 		},
 	);
@@ -393,7 +398,13 @@ function AccountTable({
 									textAnchor="middle"
 									style={{ fontSize: width < 520 ? 11 : 13 }}
 									className={
-										row.id === "pnl" && col.pnl !== 0 ? "wt-gain" : undefined
+										row.id !== "pnl"
+											? undefined
+											: col.pnl > 0
+												? "wt-gain"
+												: col.pnl < 0
+													? "wt-loss"
+													: "wt-muted"
 									}
 								>
 									{row.id === "pnl" ? signed(col.pnl) : dollars(col[row.id])}
@@ -427,6 +438,7 @@ function AccountView({
 			id: "pnl",
 			label: t(["Trading P&L", "交易盈亏"]),
 			value: signed(shown.stage === 0 ? 0 : PNL),
+			tone: pnlTone(shown.stage === 0 ? 0 : PNL),
 			note:
 				shown.stage === 0
 					? t(["before Monday's trades", "周一交易之前"])
@@ -544,7 +556,7 @@ function ShortView({
 				[100, benAtExpiry(100) / 100],
 				[140, benAtExpiry(140) / 100],
 			],
-			tone: "short",
+			tone: "position",
 		});
 	const markers: PayoffMarker[] = [];
 	if (shown.stage >= 1)

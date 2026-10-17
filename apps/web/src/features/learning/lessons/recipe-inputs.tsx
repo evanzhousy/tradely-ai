@@ -366,7 +366,6 @@ function ChangeStage({
 								y={top + h / 2 + 4}
 								anchor="end"
 								tone="small"
-								className={item.kind === "method" ? "wt-accent" : undefined}
 							>
 								{item.kind === "input"
 									? t(["same question", "同一个问题"])
@@ -552,8 +551,7 @@ function FloorView({
 						`成交 ${count(top.volume)} 张，未平仓量 ${count(top.openInterest)}`,
 					])
 				: undefined,
-			tone: top?.id === "dune-oct11-40c" ? "loss" : undefined,
-			evidence: "calculated",
+			evidence: top?.id === "dune-oct11-40c" ? "unknown" : "calculated",
 		},
 		{
 			id: "floors",

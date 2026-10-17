@@ -96,11 +96,10 @@ export function StrikeGrid({
 				<m.rect
 					y={HEAD - 4}
 					height={bottom - HEAD + 4}
-					className="wt-long-soft"
-					opacity={0.35}
+					className="wt-band-quiet"
 					// The band fades in where it stands; without a starting width it has none to draw.
 					initial={motion.enabled ? { opacity: 0, ...band } : false}
-					animate={{ opacity: 0.35, ...band }}
+					animate={band}
 					transition={motion.move}
 				/>
 			) : null}
@@ -180,7 +179,7 @@ export function StrikeGrid({
 											width={cellWidth - 4}
 											height={CELL - 8}
 											rx={5}
-											className="wt-chip"
+											style={{ fill: "var(--tone-ink)" }}
 											initial={false}
 											animate={{
 												opacity:
@@ -229,8 +228,7 @@ export function StrikeGrid({
 							x={colX(j) + 2 + (cellWidth - 4) / 2}
 							y={HEAD + i * CELL + CELL / 2 + 3}
 							anchor="middle"
-							tone={value === null ? "accent" : undefined}
-							className="wt-halo"
+							className={value === null ? "wt-film-warn wt-halo" : "wt-halo"}
 						>
 							{value === null
 								? "?"
@@ -251,13 +249,13 @@ export function StrikeGrid({
 							width={cellWidth}
 							height={bottom - HEAD}
 							rx={7}
-							className="wt-bracket"
+							className="wt-line-reference"
 						/>
 					</Appear>
 				);
 			})}
 			{spotX !== null ? (
-				<Label x={spotX} y={bottom + 20} anchor="middle" tone="accent">
+				<Label x={spotX} y={bottom + 20} anchor="middle" tone="muted">
 					{spotLabel}
 				</Label>
 			) : null}

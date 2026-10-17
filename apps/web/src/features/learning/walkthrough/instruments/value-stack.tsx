@@ -28,12 +28,12 @@ export function stackHeight(rows: number) {
 }
 
 const kindClass: Record<StackPart["kind"], string> = {
-	intrinsic: "wt-long",
-	time: "wt-long-soft ev-modeled wt-stack-time",
-	cost: "wt-short",
-	gain: "wt-long",
-	loss: "wt-short",
-	neutral: "wt-panel-shape",
+	intrinsic: "wt-bar-neutral",
+	time: "wt-bar-neutral ev-modeled",
+	cost: "wt-bar-neutral",
+	gain: "wt-gain",
+	loss: "wt-loss",
+	neutral: "wt-bar-neutral",
 	forfeit: "wt-ghost",
 };
 
@@ -123,7 +123,9 @@ export function ValueStack({
 												y={barY + 16}
 												textAnchor="middle"
 												className={`wt-small ${
+													part.kind === "intrinsic" ||
 													part.kind === "time" ||
+													part.kind === "cost" ||
 													part.kind === "neutral" ||
 													part.kind === "forfeit"
 														? "wt-on-soft"

@@ -102,16 +102,22 @@ export function ExpiryStrip({
 							{count(column.value)}
 						</m.text>
 						{column.change !== undefined ? (
-							<Label x={cx} y={y + 68} anchor="middle" tone="accent">
+							<Label
+								x={cx}
+								y={y + 68}
+								anchor="middle"
+								tone={
+									column.change > 0
+										? "gain"
+										: column.change < 0
+											? "loss"
+											: "muted"
+								}
+							>
 								{signedCount(column.change)}
 							</Label>
 						) : null}
-						<Label
-							x={cx}
-							y={base + 20}
-							anchor="middle"
-							tone={column.member ? "accent" : "small"}
-						>
+						<Label x={cx} y={base + 20} anchor="middle" tone="small">
 							{daysLabel(column.days)}
 						</Label>
 					</g>

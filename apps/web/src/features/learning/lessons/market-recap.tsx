@@ -11,7 +11,7 @@ import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import { type Bar, BarChart } from "../walkthrough/instruments/bar-chart";
 import { Player } from "../walkthrough/player";
-import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
+import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { wrapText } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame } from "../walkthrough/walkthrough";
@@ -128,7 +128,7 @@ function MatchStage({
 				width={width - 8}
 				height={cardHeight - 4}
 				rx={10}
-				className={backed ? "wt-panel-shape" : "wt-focus-shape"}
+				className="wt-panel-shape"
 			/>
 			<Label x={16} y={22} tone="small">
 				{t(["Recap headline", "复盘标题"])}
@@ -152,7 +152,7 @@ function MatchStage({
 					y={layout.verdictY + i * 17}
 					tone={backed ? "gain" : "loss"}
 				>
-					{line}
+					{i === 0 ? `${backed ? "✓" : "✗"} ${line}` : line}
 				</Label>
 			))}
 			<g transform={`translate(0 ${cardHeight + 8})`}>
@@ -303,24 +303,25 @@ function AxisView({
 		{
 			id: "visual",
 			label: t(["Bar heights", "柱高之比"]),
-			value: visual === null ? "—" : `${visual.toFixed(visual < 2 ? 2 : 1)}×`,
+			value:
+				visual === null
+					? "—"
+					: `${visual > 1.2 ? "⚠ " : ""}${visual.toFixed(visual < 2 ? 2 : 1)}×`,
 			note: t([
 				`axis starts at ${count(shown.min)}`,
 				`轴从 ${count(shown.min)} 开始`,
 			]),
-			tone: visual !== null && visual > 1.2 ? "loss" : undefined,
 		},
 	];
 	if (hidden.length)
 		result.push({
 			id: "hidden",
 			label: t(["No visible bar", "没有可见柱"]),
-			value: hidden.map((row) => row.strike).join(", "),
+			value: `⚠ ${hidden.map((row) => row.strike).join(", ")}`,
 			note: t([
 				`${hidden.map((row) => count(rowContracts(row) ?? 0)).join(" and ")} contracts look the same`,
 				`${hidden.map((row) => count(rowContracts(row) ?? 0)).join(" 张与 ")} 张看起来一样`,
 			]),
-			tone: "loss",
 		});
 	return (
 		<SceneFrame
@@ -414,7 +415,6 @@ function RecapCard({
 }) {
 	const t = tr(locale);
 	const motion = useTeachMotion();
-	const { hatch } = useStage();
 	const layout = composeLayout(width, locale, state.step);
 	const height = composeHeight(width, locale);
 	return (
@@ -443,7 +443,7 @@ function RecapCard({
 						key={line}
 						x={16}
 						y={44 + i * 17}
-						tone={state.step >= 1 ? undefined : "loss"}
+						className={state.step >= 1 ? undefined : "wt-film-warn"}
 					>
 						{line}
 					</Label>
@@ -485,14 +485,12 @@ function RecapCard({
 						height={Math.max(layout.note.length * 15, 18)}
 						rx={5}
 						className="wt-ghost"
-						style={{ fill: hatch }}
 					/>
 					<Label
 						x={width / 2}
 						y={layout.captionY + Math.max(layout.note.length * 15, 18) / 2 + 4}
 						anchor="middle"
-						tone="accent"
-						className="wt-halo"
+						className="wt-halo wt-film-warn"
 					>
 						{t(["no caption yet", "尚无图注"])}
 					</Label>
@@ -529,7 +527,6 @@ function ComposeView({
 							"the 10:50 block sold 500 of the 540",
 							"10:50 的大单卖出了 540 张中的 500 张",
 						]),
-						tone: "loss",
 						evidence: "unknown",
 					},
 					{
@@ -540,14 +537,14 @@ function ComposeView({
 							"only Oct 18 calls; the 120 had no data",
 							"只含 10月18日 看涨；120 尚无数据",
 						]),
-						tone: "loss",
+						evidence: "unknown",
 					},
 				]
 			: [
 					{
 						id: "headline",
 						label: t(["Headline", "标题"]),
-						value: t(["supported", "有依据"]),
+						value: `✓ ${t(["supported", "有依据"])}`,
 						note: t([
 							`packet P1, R3: ${count(rowContracts(leader) ?? 0)} of ${count(covered)}`,
 							`研究包 P1，R3：${count(covered)} 张中的 ${count(rowContracts(leader) ?? 0)} 张`,
@@ -558,10 +555,7 @@ function ComposeView({
 					{
 						id: "caption",
 						label: t(["Caption", "图注"]),
-						value:
-							shown.step >= 2
-								? t(["attached", "已附上"])
-								: t(["missing", "缺失"]),
+						value: `${shown.step >= 2 ? "✓" : "✗"} ${shown.step >= 2 ? t(["attached", "已附上"]) : t(["missing", "缺失"])}`,
 						note:
 							shown.step >= 2
 								? t([

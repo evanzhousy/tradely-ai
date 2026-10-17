@@ -6,8 +6,9 @@ import {
 	tapeHeight,
 	tapeTitle,
 } from "../walkthrough/instruments/trade-tape";
-import { Working, workingHeight } from "../walkthrough/instruments/working";
-import { Stage } from "../walkthrough/stage";
+import { workingHeight } from "../walkthrough/instruments/working";
+import { Label, Stage, useStage } from "../walkthrough/stage";
+import { twoRows } from "../walkthrough/text-measure";
 
 /** Checkpoints happen on a day the lessons never showed: two weeks on, ALFA near $104. */
 export const CHECKPOINT_DATE = "2030-10-02";
@@ -17,8 +18,61 @@ export const CHECKPOINT_ALFA = 10_413;
 
 export type SheetLine = {
 	text: string;
-	tone?: "gain" | "loss" | "accent" | "strong";
+	tone?: "gain" | "loss" | "accent" | "strong" | "caution";
 };
+
+const WORKING_LINE = 20;
+const WORKING_WRAP = 15;
+
+function SheetWorking({
+	x,
+	y,
+	width,
+	lines,
+}: {
+	x: number;
+	y: number;
+	width: number;
+	lines: readonly SheetLine[];
+}) {
+	const { width: stageWidth } = useStage();
+	let baseline = y + 14 - WORKING_LINE;
+	const placed = lines.flatMap((line) => {
+		const labelTone: "small" | "gain" | "loss" | "accent" | undefined =
+			line.tone === "strong"
+				? undefined
+				: line.tone === undefined
+					? "small"
+					: line.tone === "caution"
+						? undefined
+						: line.tone;
+		const rows =
+			stageWidth < 520
+				? twoRows(line.text, width, line.tone === undefined ? 11 : 13)
+				: [line.text];
+		return rows.map((text, row) => {
+			baseline += row === 0 ? WORKING_LINE : WORKING_WRAP;
+			return { line, text, row, y: baseline, labelTone };
+		});
+	});
+
+	return (
+		<g>
+			{placed.map(({ line, text, row, y, labelTone }) => (
+				<Label
+					key={`${line.text}-${row}`}
+					x={x}
+					y={y}
+					maxWidth={width}
+					tone={labelTone}
+					className={line.tone === "caution" ? "wt-film-warn" : undefined}
+				>
+					{text}
+				</Label>
+			))}
+		</g>
+	);
+}
 
 /** Where the working starts under the table. */
 const linesTop = (
@@ -64,19 +118,11 @@ function CaseSheet({
 				empty={empty}
 				stacked={stacked}
 			/>
-			<Working
+			<SheetWorking
 				x={14}
 				y={linesTop(width, title, maxRows, stacked)}
 				width={width - 28}
-				lines={lines.map((line) => ({
-					text: line.text,
-					tone:
-						line.tone === "strong"
-							? undefined
-							: line.tone === undefined
-								? "small"
-								: line.tone,
-				}))}
+				lines={lines}
 			/>
 		</g>
 	);

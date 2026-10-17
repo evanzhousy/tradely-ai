@@ -55,7 +55,6 @@ function metricColumns(state: MetricState, locale: Locale): RankColumn[] {
 		id: peer,
 		label: peer,
 		value: ratio(volumeOf(peer) / typical[peer]),
-		tone: "accent" as const,
 	}));
 	if (state.floor)
 		relative.push({

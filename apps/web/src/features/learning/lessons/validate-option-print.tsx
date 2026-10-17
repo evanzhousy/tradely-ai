@@ -420,6 +420,7 @@ function GapView({
 			label: t(["Open interest, 105 call", "105 看涨未平仓量"]),
 			value: `+${BLOCK.openInterestChange}`,
 			note: t(["published Tuesday before the open", "周二开盘前公布"]),
+			tone: "gain",
 		});
 	if (shown.stage >= 2)
 		result.push({

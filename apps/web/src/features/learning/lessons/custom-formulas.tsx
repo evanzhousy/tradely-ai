@@ -104,7 +104,7 @@ function UnitStage({
 	const output = def.output;
 	const warning =
 		state.reveal && output === "ratio" && state.format === "currency"
-			? wrapText(CURRENCY_WARNING, inner, 11)
+			? wrapText(`✗ ${CURRENCY_WARNING}`, inner, 11)
 			: [];
 	const preview = !state.reveal
 		? ["ALFA: …"]
@@ -239,7 +239,7 @@ function UnitStage({
 						tone={state.reveal ? undefined : "muted"}
 						className={state.reveal && output === null ? "wt-loss" : undefined}
 					>
-						{line}
+						{state.reveal && output === null ? `✗ ${line}` : line}
 					</Label>
 				))}
 			</m.g>
@@ -250,7 +250,7 @@ function UnitStage({
 function formatNote(
 	state: UnitState,
 	locale: Locale,
-): { text: string; loss?: boolean } {
+): { text: string; loss?: boolean; caution?: boolean } {
 	const t = tr(locale);
 	const output = FORMULAS[state.formula].output;
 	if (!state.reveal || output === null)
@@ -261,7 +261,7 @@ function formatNote(
 		if (state.format === "percent")
 			return {
 				text: t(["not checked: dollars with a %", "不检查：美元带上 % 号"]),
-				loss: true,
+				caution: true,
 			};
 		return { text: t(["a plain number", "普通数字"]) };
 	}
@@ -296,7 +296,7 @@ function UnitView({
 		{
 			id: "unit",
 			label: t(["Output unit", "输出单位"]),
-			value: !shown.reveal ? "?" : (output ?? t(["Refused", "被拒绝"])),
+			value: !shown.reveal ? "?" : (output ?? t(["✗ Refused", "✗ 被拒绝"])),
 			note: !shown.reveal
 				? t(["not checked yet", "尚未检查"])
 				: output === null
@@ -309,9 +309,10 @@ function UnitView({
 		{
 			id: "format",
 			label: t(["Value format", "数值格式"]),
-			value: t(FORMATS[shown.format]),
+			value: note.loss ? t(["✗ Currency", "✗ 货币"]) : t(FORMATS[shown.format]),
 			note: note.text,
 			tone: note.loss ? "loss" : undefined,
+			evidence: note.caution ? "unknown" : undefined,
 		},
 	];
 	return (
@@ -400,7 +401,6 @@ function guardColumns(
 		id: row.symbol,
 		label: row.symbol,
 		value: narrow ? short(perTrade(row)) : dollars(perTrade(row)),
-		tone: row.symbol === "GLYN" ? "loss" : undefined,
 	}));
 	for (const row of MONDAY)
 		if (row.trades < state.floor)
@@ -458,8 +458,8 @@ function GuardView({
 						`${compact(leader.totalPremium)} total premium`,
 						`总权利金 ${compact(leader.totalPremium)}`,
 					]),
-			tone: shown.perTrade && leader.symbol === "GLYN" ? "loss" : undefined,
-			evidence: "calculated",
+			evidence:
+				shown.perTrade && leader.symbol === "GLYN" ? "unknown" : "calculated",
 		},
 		{
 			id: "blank",

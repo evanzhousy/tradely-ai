@@ -178,19 +178,18 @@ function LedgerView({
 							`was ${count(shown.openInterestBefore)}`,
 							`原为 ${count(shown.openInterestBefore)}`,
 						]),
-			tone:
-				shown.openInterestBefore === undefined
-					? undefined
-					: shown.openInterest > shown.openInterestBefore
-						? "gain"
-						: shown.openInterest < shown.openInterestBefore
-							? "loss"
-							: "neutral",
 		},
 		{
 			id: "trade",
 			label: t(["This trade", "这笔成交"]),
 			value: trade ? t(tradeEffect(trade)) : "—",
+			tone: trade
+				? openInterestChange(trade) > 0
+					? "gain"
+					: openInterestChange(trade) < 0
+						? "loss"
+						: "neutral"
+				: undefined,
 			note: trade
 				? `${trade.quantity} @ ${usd(trade.price)}`
 				: t(["no trade yet", "尚无成交"]),
@@ -527,6 +526,7 @@ function BucketView({
 	]);
 	const titleLines = (width: number) =>
 		textWidth(title, 12) > width - 16 ? title.split(" · ") : [title];
+	const bucketChange = facts.total - first.total;
 	const result: ResultItem[] = [
 		{
 			id: "bucket",
@@ -538,10 +538,17 @@ function BucketView({
 		{
 			id: "change",
 			label: t(["Bucket change", "到期桶变化"]),
-			value: shown.later ? signedCount(facts.total - first.total) : "—",
+			value: shown.later ? signedCount(bucketChange) : "—",
 			note: shown.later
 				? t(["includes new members", "包含成员变化"])
 				: t(["first date", "起始日期"]),
+			tone: shown.later
+				? bucketChange > 0
+					? "gain"
+					: bucketChange < 0
+						? "loss"
+						: "neutral"
+				: undefined,
 		},
 		{
 			id: "series",

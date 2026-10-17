@@ -101,7 +101,14 @@ function RightView({
 				value === null
 					? undefined
 					: { to: value - paid, format: (v) => signedUsd(v, 0) },
-			tone: value === null ? undefined : value - paid > 0 ? "gain" : "loss",
+			tone:
+				value === null
+					? undefined
+					: value - paid > 0
+						? "gain"
+						: value - paid < 0
+							? "loss"
+							: "neutral",
 			note: t(["value minus premium", "价值减权利金"]),
 		},
 	];
@@ -146,7 +153,7 @@ function RightView({
 											`10月18日 ${usd(spot * 100, 0)}`,
 										])
 									: t(["ALFA today $100", "ALFA 今天 $100"]),
-								tone: value === null ? "neutral" : value > 0 ? "gain" : "loss",
+								tone: "focus",
 							}}
 							note={worth}
 							drag={
@@ -270,7 +277,7 @@ function UsesView({
 	};
 	const lines: PayoffLine[] =
 		shown.use === "shares"
-			? [{ ...sharesLine, tone: "long" }]
+			? [{ ...sharesLine, tone: "position" }]
 			: shown.use === "view"
 				? [
 						{

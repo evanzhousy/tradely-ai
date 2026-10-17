@@ -86,7 +86,7 @@ function StraddleView({
 			label: t(["long 100 call", "100 看涨多头"]),
 			shortLabel: t(["call", "看涨"]),
 			points: curve((spot) => worth(CALL_100, spot), [100]),
-			tone: shown.stage >= 2 ? "reference" : "long",
+			tone: shown.stage === 0 ? "position" : "call",
 		},
 	];
 	if (shown.stage >= 1)
@@ -95,7 +95,7 @@ function StraddleView({
 			label: t(["long 100 put", "100 看跌多头"]),
 			shortLabel: t(["put", "看跌"]),
 			points: curve((spot) => worth(PUT_100, spot), [100]),
-			tone: shown.stage >= 2 ? "reference" : "long",
+			tone: "put",
 		});
 	if (shown.stage >= 2)
 		lines.push({
@@ -135,7 +135,7 @@ function StraddleView({
 			x: shown.spot,
 			y: value * 100,
 			label: perContract(value),
-			tone: value >= 0 ? "gain" : "loss",
+			tone: value > 0 ? "gain" : value < 0 ? "loss" : "neutral",
 			// Near the strike the V rises on both sides of the point.
 			labelBelow: Math.abs(shown.spot - 100) <= 8,
 		});
@@ -167,7 +167,13 @@ function StraddleView({
 						`扣除每股已付 ${share(STRADDLE_COST)}`,
 					])
 				: undefined,
-			tone: costed ? (value >= 0 ? "gain" : "loss") : undefined,
+			tone: costed
+				? value > 0
+					? "gain"
+					: value < 0
+						? "loss"
+						: "neutral"
+				: undefined,
 			evidence: "calculated",
 		});
 	return (
@@ -261,7 +267,7 @@ function CondorView({
 			label: t(["95/90 put spread", "95/90 看跌价差"]),
 			shortLabel: t(["puts", "看跌"]),
 			points: curve(putSpread, STRIKES),
-			tone: shown.stage >= 2 ? "reference" : "short",
+			tone: shown.stage === 0 ? "position" : "put",
 		},
 	];
 	if (shown.stage >= 1)
@@ -270,7 +276,7 @@ function CondorView({
 			label: t(["105/110 call spread", "105/110 看涨价差"]),
 			shortLabel: t(["calls", "看涨"]),
 			points: curve(callSpread, STRIKES),
-			tone: shown.stage >= 2 ? "reference" : "short",
+			tone: "call",
 		});
 	if (shown.stage >= 2)
 		lines.push({
@@ -299,7 +305,7 @@ function CondorView({
 			x: shown.spot,
 			y: value * 100,
 			label: perContract(value),
-			tone: value >= 0 ? "gain" : "loss",
+			tone: value > 0 ? "gain" : value < 0 ? "loss" : "neutral",
 		});
 	const bands: PayoffBand[] =
 		shown.stage >= 3 ? [{ id: "keeps", from: 95, to: 105, tone: "gain" }] : [];
@@ -330,7 +336,12 @@ function CondorView({
 				`best ${perContract(CREDIT)} · worst ${perContract(-MAX_LOSS)}`,
 				`最好 ${perContract(CREDIT)} · 最坏 ${perContract(-MAX_LOSS)}`,
 			]),
-			tone: condor(shown.spot) >= 0 ? "gain" : "loss",
+			tone:
+				condor(shown.spot) > 0
+					? "gain"
+					: condor(shown.spot) < 0
+						? "loss"
+						: "neutral",
 			evidence: "calculated",
 		});
 	return (
@@ -488,7 +499,6 @@ function PackageView({
 							`${share(CREDIT)} × 100 × ${SIZE}`,
 							`${share(CREDIT)} × 100 × ${SIZE}`,
 						]),
-						tone: "gain",
 						evidence: "calculated",
 					},
 					{

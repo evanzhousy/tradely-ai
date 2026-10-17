@@ -148,9 +148,12 @@ function ExitView({
 							</Label>
 							{/* Each key sits a fixed gap after the one before, so the three fit a phone. */}
 							{[
-								{ className: "wt-long", text: t(["intrinsic", "内在价值"]) },
 								{
-									className: "wt-long-soft ev-modeled wt-stack-time",
+									className: "wt-panel-shape",
+									text: t(["intrinsic", "内在价值"]),
+								},
+								{
+									className: "wt-panel-shape ev-modeled",
 									text: t(["time value", "时间价值"]),
 								},
 								{ className: "wt-ghost", text: t(["given up", "被放弃"]) },
@@ -377,7 +380,6 @@ function SettleView({
 					note: settled
 						? `(${count(level)} − ${count(INDEX_STRIKE)}) × $100`
 						: undefined,
-					tone: settled && payout > 0 ? "gain" : undefined,
 					evidence: settled ? "calculated" : undefined,
 				},
 			];
@@ -545,7 +547,7 @@ function WindowStage({
 							y={y}
 							height={layout.laneHeight}
 							rx={6}
-							className="wt-long-soft"
+							className="wt-focus-shape"
 							initial={false}
 							animate={{
 								x: x(lane.from),
@@ -613,7 +615,7 @@ function WindowStage({
 						cx={x(EARLY_DAY)}
 						cy={layout.lanes[1] + layout.laneHeight / 2}
 						r={7}
-						className="wt-short"
+						className="wt-chip"
 						stroke="var(--foreground)"
 						strokeWidth={1.5}
 					/>
@@ -686,7 +688,6 @@ function WindowView({
 						value: american
 							? t(["any day, without warning", "任何一天，毫无预警"])
 							: t(["only at expiry", "仅在到期时"]),
-						tone: american ? "loss" : undefined,
 					},
 				];
 	return (
@@ -819,7 +820,7 @@ function ExpiryStage({
 									`after hours ${usd(state.after * 100)}`,
 									`盘后 ${usd(state.after * 100)}`,
 								]),
-					tone: "neutral",
+					tone: "focus",
 				}}
 				drag={state.after === null ? drag : undefined}
 			/>
@@ -918,7 +919,6 @@ function ExpiryView({
 					: shown.decline && gap > 0
 						? t(["you told your broker", "你已通知券商"])
 						: undefined,
-			tone: exercised && !holder ? "loss" : undefined,
 			evidence: known ? undefined : "unknown",
 		},
 		{

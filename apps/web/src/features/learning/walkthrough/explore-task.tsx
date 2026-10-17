@@ -1,5 +1,5 @@
 import { Button } from "@tradely/ui/components/button";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -67,9 +67,23 @@ export function TaskPanel({
 		<section
 			className="wt-panel wt-task"
 			data-kind={solved ? "right" : revealed ? "wrong" : "task"}
+			style={
+				revealed && !solved
+					? {
+							borderColor:
+								"color-mix(in oklab, var(--tone-down) 60%, var(--border))",
+						}
+					: undefined
+			}
 		>
-			<p className="wt-panel-title flex items-center gap-1.5">
+			<p
+				className="wt-panel-title flex items-center gap-1.5"
+				style={revealed && !solved ? { color: "var(--tone-down)" } : undefined}
+			>
 				{solved ? <CheckIcon className="size-4" aria-hidden="true" /> : null}
+				{revealed && !solved ? (
+					<XIcon className="size-4" aria-hidden="true" />
+				) : null}
 				{solved ? t(copy.right) : t(copy.task)}
 			</p>
 			<p>{t(task.prompt)}</p>
@@ -94,13 +108,30 @@ export function TaskPanel({
 							else setMisses((all) => [...all, choice.id]);
 						}}
 					>
-						{t(choice.label)}
+						<span className="flex items-center gap-2">
+							{revealed && choice.id === task.answer ? (
+								<CheckIcon className="size-4" aria-hidden="true" />
+							) : misses.includes(choice.id) ? (
+								<XIcon
+									className="size-4"
+									aria-hidden="true"
+									style={{ color: "var(--tone-down)" }}
+								/>
+							) : null}
+							<span>{t(choice.label)}</span>
+						</span>
 					</Button>
 				))}
 			</div>
 			<div aria-live="polite" className="flex flex-col gap-1">
 				{misses.length > 0 && !revealed ? (
-					<p className="wt-panel-note">{t(copy.miss)}</p>
+					<p
+						className="wt-panel-note flex items-center gap-1.5"
+						style={{ color: "var(--tone-down)" }}
+					>
+						<XIcon className="size-4" aria-hidden="true" />
+						{t(copy.miss)}
+					</p>
 				) : null}
 				{revealed ? (
 					<>

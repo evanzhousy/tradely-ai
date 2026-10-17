@@ -107,8 +107,8 @@ function MirrorBars({
 											isWall
 												? "wt-chip"
 												: side === "call"
-													? "wt-long-soft"
-													: "wt-short-soft"
+													? "wt-call-soft"
+													: "wt-put-soft"
 										}
 										initial={false}
 										animate={{
@@ -249,7 +249,7 @@ function PainView({
 			points: CANDIDATES.map(
 				(settle) => [settle, payout(settle, "call") / 1_000_000] as const,
 			),
-			tone: "long",
+			tone: "call",
 		},
 		{
 			id: "puts",
@@ -257,7 +257,7 @@ function PainView({
 			points: CANDIDATES.map(
 				(settle) => [settle, payout(settle, "put") / 1_000_000] as const,
 			),
-			tone: "short",
+			tone: "put",
 		},
 	];
 	if (shown.stage >= 1)
@@ -436,9 +436,9 @@ function DistanceRuler({
 			))}
 			<path
 				d={`M${x(SPOT)} ${axisY - 44}V${axisY + 8}`}
-				className="wt-bracket"
+				className="wt-line-reference"
 			/>
-			<Label x={x(SPOT)} y={axisY - 50} anchor="middle" tone="accent">
+			<Label x={x(SPOT)} y={axisY - 50} anchor="middle">
 				{`ALFA ${stock(SPOT)}`}
 			</Label>
 			{levels.map((level) => (
@@ -459,8 +459,19 @@ function DistanceRuler({
 						x={(x(SPOT) + x(level.price)) / 2}
 						y={axisY - 28}
 						anchor="middle"
-						tone="accent"
-						className="wt-halo"
+						tone={
+							level.price < SPOT
+								? "loss"
+								: level.price > SPOT
+									? "gain"
+									: undefined
+						}
+						className={[
+							"wt-halo",
+							level.price === SPOT ? "wt-muted" : undefined,
+						]
+							.filter(Boolean)
+							.join(" ")}
 					>
 						{distanceText(level.price, state.unit)}
 					</Label>

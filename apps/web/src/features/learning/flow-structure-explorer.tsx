@@ -151,7 +151,8 @@ export function FlowStructureExplorer({
 						</p>
 						<svg
 							viewBox="0 0 640 210"
-							className="w-full text-chart-1"
+							className="w-full"
+							style={{ color: "var(--tone-focus)" }}
 							role="img"
 							aria-label={text("chart")}
 						>

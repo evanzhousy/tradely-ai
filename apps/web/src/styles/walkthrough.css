@@ -552,6 +552,18 @@
 .wt-result[data-tone="loss"] .wt-result-value {
 	color: var(--diagram-loss);
 }
+.wt-result[data-tone="caution"] .wt-result-value {
+	color: var(--tone-caution);
+}
+.wt-result[data-tone="focus"] .wt-result-value {
+	color: var(--tone-focus);
+}
+.wt-result[data-tone="call"] .wt-result-value {
+	color: var(--tone-call);
+}
+.wt-result[data-tone="put"] .wt-result-value {
+	color: var(--tone-put);
+}
 .wt-result[data-evidence="modeled"] {
 	border-style: dashed;
 }
@@ -701,11 +713,10 @@
 	fill: var(--muted-foreground);
 	font-weight: 400;
 }
-/* Colour changes ease; opacity and position belong to Motion and never take a CSS transition. */
+/* A colour changes by state, never by a fade from one meaning to another (runbook section 5); only a mark's
+   strength eases. Opacity and position belong to Motion and never take a CSS transition. */
 .wt-svg :is(rect, path, circle, text, tspan) {
 	transition:
-		fill 0.3s ease,
-		stroke 0.3s ease,
 		fill-opacity 0.3s ease,
 		stroke-opacity 0.3s ease;
 }
@@ -779,6 +790,17 @@
 }
 .wt-short-soft {
 	fill: color-mix(in oklab, var(--wt-short) 35%, transparent);
+}
+/* A quantity drawn in no role (a book's sizes, the bars beside the one in focus): visible, never a meaning.
+   A card is wt-panel-shape; a data bar is this. */
+.wt-bar-neutral {
+	fill: color-mix(in oklab, var(--muted-foreground) 45%, transparent);
+}
+/* A modelled part of a quantity (an option's time value): a light fill inside a dashed outline. */
+.wt-bar-neutral.ev-modeled {
+	fill: color-mix(in oklab, var(--muted-foreground) 16%, transparent);
+	stroke: var(--muted-foreground);
+	stroke-width: 1.25;
 }
 /* Calls and puts, only where a view compares the two (runbook section 5). */
 .wt-call {
@@ -981,10 +1003,6 @@
 /* A region named but not the subject: told apart from the one in focus by tint alone. */
 .wt-band-quiet {
 	fill: color-mix(in oklab, var(--foreground) 5%, transparent);
-}
-.wt-stack-time {
-	stroke: var(--wt-long);
-	stroke-width: 1.5;
 }
 /* Text on a solid bar takes the card colour; on a soft bar, the text colour. */
 .wt-svg .wt-on-solid {

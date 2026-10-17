@@ -318,6 +318,7 @@ function CandidateRows({
 						</Label>
 						{out ? (
 							<Label x={width - 18} y={y + 32} anchor="end" tone="loss">
+								✗{" "}
 								{candidate.fails === "stale"
 									? t(["wrong session", "时段不对"])
 									: t(["not a call", "不是看涨"])}
@@ -327,8 +328,7 @@ function CandidateRows({
 								x={width - 18}
 								y={y + 32}
 								anchor="end"
-								tone="accent"
-								className="wt-halo"
+								className="wt-halo wt-film-warn"
 								maxWidth={width - 48 - textWidth(source, 11)}
 							>
 								{t(["unknown, not zero", "未知，不是零"])}

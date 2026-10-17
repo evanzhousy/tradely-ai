@@ -268,14 +268,14 @@ function TrackStage({
 				y={axis - 18}
 				width={x(0) - x(-2)}
 				height={36}
-				className="wt-short-soft"
+				className="wt-band-quiet"
 			/>
 			<rect
 				x={x(0)}
 				y={axis - 18}
 				width={x(2) - x(0)}
 				height={36}
-				className="wt-long-soft"
+				className="wt-band-quiet"
 			/>
 			<Label x={x(-1)} y={axis - 28} anchor="middle" tone="small">
 				{t(["short: you owe", "空头：你承担义务"])}

@@ -67,13 +67,12 @@ function cellLines(right: Right, action: Action, locale: Locale): GridLine[] {
 	return [
 		{
 			text: t(flow === "bullish" ? ["Bullish", "看涨"] : ["Bearish", "看跌"]),
-			tone: flow === "bullish" ? "gain" : "loss",
 		},
 		{
 			text:
 				flow === "bullish"
-					? t(["ALFA ↑ helps", "ALFA ↑ 有利"])
-					: t(["ALFA ↓ helps", "ALFA ↓ 有利"]),
+					? t(["ALFA ▲ helps", "ALFA ▲ 有利"])
+					: t(["ALFA ▼ helps", "ALFA ▼ 有利"]),
 			tone: "small",
 		},
 		{
@@ -163,7 +162,6 @@ function MatrixView({
 					id: "label",
 					label: t(["Flow label", "成交流标签"]),
 					value: t(flowCopy[flow]),
-					tone: flow === "bullish" ? "gain" : "loss",
 					evidence: "inferred",
 				},
 				{
@@ -215,9 +213,9 @@ type TallyState = { shown: number; ledger: boolean };
 
 const TALLY_HEIGHT = 74;
 const flowClass: Record<Flow, string> = {
-	bullish: "wt-long",
+	bullish: "wt-panel-shape",
 	neutral: "wt-panel-shape",
-	bearish: "wt-short",
+	bearish: "wt-panel-shape",
 };
 
 function Tally({
@@ -321,8 +319,6 @@ function TallyView({ locale, state }: { locale: Locale; state: TallyState }) {
 					: flow === "bullish"
 						? t(["call bought at the ask", "在卖价买入看涨"])
 						: t(["call sold at the bid", "在买价卖出看涨"]),
-			tone:
-				flow === "bullish" ? "gain" : flow === "bearish" ? "loss" : undefined,
 			evidence: flow === "neutral" ? "unknown" : "inferred",
 		};
 	});
@@ -456,7 +452,7 @@ function PutView({
 							`floor ${signedUsd(floor * 100, 0)}`,
 							`下限 ${signedUsd(floor * 100, 0)}`,
 						]),
-						tone: "neutral",
+						tone: "loss",
 					},
 				]
 			: [];
@@ -468,9 +464,12 @@ function PutView({
 				: ["nothing: short put closed", "无：看跌空头已平仓"];
 	const exposure: Copy =
 		shown.context === "alone"
-			? ["gains as ALFA falls", "ALFA 下跌时获利"]
+			? ["gains as ALFA falls ▼", "ALFA 下跌 ▼ 时获利"]
 			: shown.context === "stock"
-				? ["gains as ALFA rises, with a floor", "ALFA 上涨时获利，并有下限"]
+				? [
+						"gains as ALFA rises ▲, with a floor",
+						"ALFA 上涨 ▲ 时获利，并有下限",
+					]
 				: ["none left", "已无敞口"];
 	return (
 		<SceneFrame
@@ -507,7 +506,6 @@ function PutView({
 					label: t(["Flow label", "成交流标签"]),
 					value: t(flowCopy.bearish),
 					note: t(["put bought at the ask", "在卖价买入看跌"]),
-					tone: "loss",
 					evidence: "inferred",
 				},
 				{
@@ -520,11 +518,9 @@ function PutView({
 					label: t(["Exposure to ALFA", "对 ALFA 的敞口"]),
 					value: t(exposure),
 					tone:
-						shown.context === "stock"
+						shown.context === "stock" || shown.context === "alone"
 							? "gain"
-							: shown.context === "alone"
-								? "loss"
-								: undefined,
+							: undefined,
 				},
 			]}
 			controls={

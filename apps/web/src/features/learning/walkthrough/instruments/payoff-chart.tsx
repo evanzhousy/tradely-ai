@@ -38,7 +38,8 @@ export type PayoffLine = {
 	shortLabel?: string;
 	/** Price in dollars, profit or loss in dollars. */
 	points: readonly (readonly [number, number])[];
-	tone: "position" | "reference" | "long" | "short";
+	/** Focus, neutral reference, or the right when the view compares calls and puts. */
+	tone: "position" | "reference" | "call" | "put";
 	/** Modeled curves are dashed; realized payoffs are solid. */
 	dashed?: boolean;
 	/** Drawn invisibly where it rests, so it can later fade in while it moves. */
@@ -274,11 +275,19 @@ export function PayoffChart({
 	const className = (tone: PayoffLine["tone"]) =>
 		tone === "position"
 			? "wt-line-position"
-			: tone === "long"
-				? "wt-line-long"
-				: tone === "short"
-					? "wt-line-short"
+			: tone === "call"
+				? "wt-line-call"
+				: tone === "put"
+					? "wt-line-put"
 					: "wt-line-reference";
+	const labelClass = (tone: PayoffLine["tone"]) =>
+		tone === "position"
+			? "wt-label-position"
+			: tone === "call"
+				? "wt-film-call"
+				: tone === "put"
+					? "wt-film-put"
+					: "wt-muted";
 	// Line labels prefer the line's right end, above or below it, then a point further left.
 	const lineLabels = new Map<string, LabelSpot>();
 	const endY = (line: PayoffLine) => y(line.points[line.points.length - 1][1]);
@@ -351,7 +360,7 @@ export function PayoffChart({
 					<m.rect
 						y={top}
 						height={bottom - top}
-						className={`wt-band-${band.tone ?? "neutral"}`}
+						className={`wt-band-${band.tone === "gain" || band.tone === "loss" ? band.tone : "quiet"}`}
 						initial={false}
 						animate={{ x: x(band.from), width: x(band.to) - x(band.from) }}
 						transition={move}
@@ -421,7 +430,7 @@ export function PayoffChart({
 						/>
 						<m.text
 							textAnchor="start"
-							className={`wt-small wt-halo wt-label-${line.tone}`}
+							className={`wt-small wt-halo ${labelClass(line.tone)}`}
 							initial={false}
 							data-tx={startOf(lineLabels.get(line.id))}
 							animate={{
@@ -452,9 +461,9 @@ export function PayoffChart({
 						r={6}
 						className={
 							marker.tone === "gain"
-								? "wt-long"
+								? "wt-gain"
 								: marker.tone === "loss"
-									? "wt-short"
+									? "wt-loss"
 									: "wt-chip"
 						}
 						stroke="var(--foreground)"
@@ -467,11 +476,13 @@ export function PayoffChart({
 						<m.text
 							textAnchor="start"
 							className={`wt-halo ${
-								marker.tone === "gain"
-									? "wt-gain wt-marker-label"
-									: marker.tone === "loss"
-										? "wt-loss wt-marker-label"
-										: "wt-accent"
+								marker.y === 0
+									? "wt-muted"
+									: marker.tone === "gain"
+										? "wt-gain wt-marker-label"
+										: marker.tone === "loss"
+											? "wt-loss wt-marker-label"
+											: "wt-accent"
 							}`}
 							initial={false}
 							data-tx={startOf(markerLabels.get(marker.id))}

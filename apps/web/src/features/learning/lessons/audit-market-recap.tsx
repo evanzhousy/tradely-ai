@@ -38,7 +38,8 @@ type AmountExplore = { row: string };
 type WorkLine = {
 	text: string;
 	lead?: string;
-	tone?: "accent" | "small" | "loss";
+	tone?: "accent" | "small";
+	className?: string;
 };
 
 const TABLE_TOP = 48;
@@ -86,7 +87,6 @@ function rowLines(row: PacketRow, locale: Locale): WorkLine[] {
 				`= ${dollars(premium)} · report ${usd(premium / 100)}`,
 				`= ${dollars(premium)} · 报告 ${usd(premium / 100)}`,
 			]),
-			tone: "accent",
 		},
 	];
 }
@@ -97,7 +97,7 @@ function amountLines(state: AmountState, locale: Locale): WorkLine[] {
 	if (state.repaired === "row" && focus) return rowLines(focus, locale);
 	if (state.repaired === "all")
 		return [
-			{ text: t(["R1–R4, each × 100", "R1–R4，各乘 100"]), tone: "accent" },
+			{ text: t(["R1–R4, each × 100", "R1–R4，各乘 100"]) },
 			{
 				text: `= ${mondayPacket
 					.filter((row) => row.trades !== null)
@@ -109,7 +109,6 @@ function amountLines(state: AmountState, locale: Locale): WorkLine[] {
 					`= ${dollars(PREMIUM)} · report ${usd(REPORTED)}`,
 					`= ${dollars(PREMIUM)} · 报告 ${usd(REPORTED)}`,
 				]),
-				tone: "accent",
 			},
 			{
 				text: t([
@@ -123,7 +122,7 @@ function amountLines(state: AmountState, locale: Locale): WorkLine[] {
 		{ text: t(["the report's working", "报告的算法"]), tone: "small" },
 		{
 			text: t(["price × contracts, summed", "价格 × 张数，求和"]),
-			tone: "loss",
+			className: "wt-film-warn",
 		},
 		{ text: `= ${usd(REPORTED)}` },
 	];
@@ -201,7 +200,8 @@ function AuditTable({
 							x={reportX}
 							y={y + 18}
 							anchor="end"
-							tone={premium === null ? "small" : "loss"}
+							tone={premium === null ? "small" : undefined}
+							className={premium === null ? undefined : "wt-film-warn"}
 						>
 							{premium === null ? "—" : usd(premium / 100)}
 						</Label>
@@ -220,8 +220,7 @@ function AuditTable({
 									x={fixedX - 22}
 									y={y + 17}
 									anchor="middle"
-									tone="accent"
-									className="wt-halo"
+									className="wt-halo wt-film-warn"
 								>
 									?
 								</Label>
@@ -231,7 +230,7 @@ function AuditTable({
 								x={fixedX}
 								y={y + 18}
 								textAnchor="end"
-								className="wt-gain"
+								className="wt-accent"
 								initial={motion.enabled ? { opacity: 0 } : false}
 								animate={{ opacity: 1 }}
 								transition={motion.after(0.05 * i)}
@@ -250,7 +249,12 @@ function AuditTable({
 			<Label x={12} y={TABLE_BOTTOM + 24} tone="muted">
 				{t(["total", "合计"])}
 			</Label>
-			<Label x={reportX} y={TABLE_BOTTOM + 24} anchor="end" tone="loss">
+			<Label
+				x={reportX}
+				y={TABLE_BOTTOM + 24}
+				anchor="end"
+				className="wt-film-warn"
+			>
 				{usd(REPORTED)}
 			</Label>
 			<Label
@@ -286,6 +290,7 @@ function AuditTable({
 							x={line.lead ? 64 : 16}
 							y={WORK_TOP + 22 + i * WORK_LINE}
 							tone={line.tone}
+							className={line.className}
 						>
 							{line.text}
 						</Label>
@@ -319,7 +324,7 @@ function AmountView({
 		{
 			id: "report",
 			label: t(["Report says", "报告写的是"]),
-			value: usd(REPORTED),
+			value: `✗ ${usd(REPORTED)}`,
 			note: t(["price × contracts", "价格 × 张数"]),
 			tone: "loss",
 		},
@@ -347,7 +352,6 @@ function AmountView({
 				label: t(["Recomputed", "重算结果"]),
 				value: dollars(PREMIUM),
 				note: t(["× 100 shares per contract", "× 每张 100 股"]),
-				tone: "gain",
 				evidence: "calculated",
 			},
 			{
@@ -446,15 +450,23 @@ function tagFor(
 	defect: Copy | undefined,
 ): {
 	text: Copy;
-	tone: "muted" | "gain" | "loss" | "accent";
+	tone?: "muted" | "gain" | "loss";
+	className?: string;
 } {
 	if (stage === 0) return { text: ["unchecked", "未检查"], tone: "muted" };
 	if (status === "supported")
-		return { text: ["supported", "有依据"], tone: "gain" };
-	if (stage === 1) return { text: defect ?? ["defect", "缺陷"], tone: "loss" };
-	return status === "removed"
-		? { text: ["removed", "已删除"], tone: "loss" }
-		: { text: ["repaired", "已修复"], tone: "accent" };
+		return { text: ["✓ supported", "✓ 有依据"], tone: "gain" };
+	if (stage === 1) {
+		const label = defect ?? ["defect", "缺陷"];
+		return {
+			text: [`✗ ${label[0]}`, `✗ ${label[1]}`],
+			tone: "loss",
+		};
+	}
+	return {
+		text: status === "removed" ? ["removed", "已删除"] : ["repaired", "已修复"],
+		className: "wt-film-warn",
+	};
 }
 
 function ClaimAudit({
@@ -492,11 +504,7 @@ function ClaimAudit({
 							width={width - 8}
 							height={row.height}
 							rx={9}
-							className={
-								state.stage === 1 && row.claim.status !== "supported"
-									? "wt-focus-shape"
-									: "wt-panel-shape"
-							}
+							className="wt-panel-shape"
 						/>
 						{row.original.map((line, i) => (
 							<g key={line}>
@@ -520,7 +528,7 @@ function ClaimAudit({
 								key={line}
 								x={16}
 								y={textTop + (row.original.length + i) * 17}
-								className="wt-gain"
+								className="wt-accent"
 								initial={motion.enabled ? { opacity: 0 } : false}
 								animate={{ opacity: 1 }}
 								transition={motion.fade}
@@ -537,6 +545,7 @@ function ClaimAudit({
 							}
 							anchor={narrow ? "start" : "end"}
 							tone={tag.tone}
+							className={tag.className}
 						>
 							{t(tag.text)}
 						</Label>
@@ -581,7 +590,7 @@ function ClaimsView({
 					{
 						id: "supported",
 						label: t(["Supported", "有依据"]),
-						value: String(tally("supported")),
+						value: `✓ ${String(tally("supported"))}`,
 						note: t(["kept as written", "按原文保留"]),
 						tone: "gain",
 					},
@@ -591,9 +600,7 @@ function ClaimsView({
 							shown.stage >= 2
 								? t(["Repaired", "已修复"])
 								: t(["Defects", "缺陷"]),
-						value: String(
-							tally("repaired") + (shown.stage >= 2 ? 0 : tally("removed")),
-						),
+						value: `${shown.stage >= 2 ? "" : "✗ "}${String(tally("repaired") + (shown.stage >= 2 ? 0 : tally("removed")))}`,
 						note:
 							shown.stage >= 2
 								? t(["rewritten to what P1 shows", "改写为 P1 显示的内容"])
@@ -610,7 +617,6 @@ function ClaimsView({
 			label: t(["Removed", "已删除"]),
 			value: String(tally("removed")),
 			note: t(["the forecast has no evidence here", "这里没有支持预测的证据"]),
-			tone: "loss",
 		});
 	return (
 		<SceneFrame
@@ -687,7 +693,6 @@ function SignoffCard({
 }) {
 	const t = tr(locale);
 	const motion = useTeachMotion();
-	const { hatch } = useStage();
 	return (
 		<g>
 			<Label x={8} y={16} tone="muted">
@@ -710,7 +715,20 @@ function SignoffCard({
 								i === state.shown - 1 ? "wt-focus-shape" : "wt-panel-shape"
 							}
 						/>
-						<Label x={16} y={block.y + 20} tone={block.section.tone}>
+						<Label
+							x={16}
+							y={block.y + 20}
+							tone={
+								block.section.id === "open"
+									? undefined
+									: i === state.shown - 1
+										? "accent"
+										: "muted"
+							}
+							className={
+								block.section.id === "open" ? "wt-film-warn" : undefined
+							}
+						>
 							{t(block.section.label)}
 						</Label>
 						{visible ? (
@@ -738,7 +756,6 @@ function SignoffCard({
 								height={block.lines.length * 16}
 								rx={4}
 								className="wt-ghost"
-								style={{ fill: hatch }}
 							/>
 						)}
 					</g>
@@ -769,7 +786,7 @@ function SignoffView({
 			label: t(["Signoff", "签核"]),
 			value:
 				shown.shown >= 3
-					? t(["pass, with open items", "通过，附未解决事项"])
+					? `✓ ${t(["pass, with open items", "通过，附未解决事项"])}`
 					: t(["in progress", "进行中"]),
 			tone: shown.shown >= 3 ? "gain" : undefined,
 		},

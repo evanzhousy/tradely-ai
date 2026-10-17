@@ -73,7 +73,6 @@ function HourView({
 			x: shown.time,
 			y: now.price,
 			label: share(now.price),
-			tone: shown.time === OPEN ? "neutral" : "loss",
 		},
 	];
 	const result: ResultItem[] = [
@@ -95,7 +94,12 @@ function HourView({
 				`${Math.round(((AT_OPEN - now.price) / AT_OPEN) * 100)}% of its opening value`,
 				`开盘价值的 ${Math.round(((AT_OPEN - now.price) / AT_OPEN) * 100)}%`,
 			]),
-			tone: "loss",
+			tone:
+				now.price - AT_OPEN < 0
+					? "loss"
+					: now.price - AT_OPEN > 0
+						? "gain"
+						: "neutral",
 			evidence: "modeled",
 		},
 	];
@@ -261,7 +265,6 @@ function SwingView({
 				`买入约 ${count(Math.round(((high - low) * 100 * HEDGE_CONTRACTS) / 1_000) * 1_000)} 股`,
 			]),
 			note: t(["over a 40-cent rise", "在 40 美分的上涨中"]),
-			tone: "loss",
 			evidence: "modeled",
 		});
 	return (
@@ -388,7 +391,7 @@ function DayView({
 							"closed before the bell: nothing left",
 							"收盘前平仓：什么都不剩",
 						]),
-			tone: "loss",
+			tone: "neutral",
 		});
 	return (
 		<SceneFrame

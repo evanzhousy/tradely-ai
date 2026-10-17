@@ -266,7 +266,11 @@ export function ContractExplorer({
 				/>
 			) : null}
 			<div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-				<span className="size-2 rounded-full bg-chart-1" aria-hidden="true" />
+				<span
+					className="size-2 rounded-full"
+					style={{ backgroundColor: "var(--tone-focus)" }}
+					aria-hidden="true"
+				/>
 				{text("comparable")}
 				<span
 					className="ml-2 size-2 rounded-full bg-muted-foreground"
@@ -316,8 +320,17 @@ export function ContractExplorer({
 											selected &&
 												(selected.strike === strike ||
 													selected.days === days) &&
-												"outline outline-1 outline-primary/40 -outline-offset-1",
+												"outline outline-1 -outline-offset-1",
 										)}
+										style={
+											selected &&
+											(selected.strike === strike || selected.days === days)
+												? {
+														outlineColor:
+															"color-mix(in oklab, var(--tone-focus) 40%, transparent)",
+													}
+												: undefined
+										}
 									>
 										<Button
 											className="relative min-h-11 w-full min-w-0 gap-1 px-1 tabular-nums"
@@ -343,7 +356,7 @@ export function ContractExplorer({
 														transformOrigin: "left",
 														backgroundColor:
 															status === "comparable"
-																? "var(--chart-1)"
+																? "var(--tone-focus)"
 																: "var(--muted-foreground)",
 													}}
 												/>

@@ -108,6 +108,8 @@ export type ResultItem = {
 	tween?: { to: number; format: (value: number) => string };
 	/** Extra line under the value, such as "was 100". */
 	note?: string;
-	tone?: "gain" | "loss" | "neutral";
+	/** A sign (gain, loss); caution for a value off target or not to be trusted as shown; focus for the
+	 * learner's own figure; call or put where the panel compares the two. */
+	tone?: "gain" | "loss" | "neutral" | "caution" | "focus" | "call" | "put";
 	evidence?: EvidenceKind;
 };

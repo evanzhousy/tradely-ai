@@ -54,6 +54,8 @@ const dateAfter = (days: number): Copy => {
 /** ALFA's move since you bought: "+$2.00 (2.0%)". */
 const sinceBuy = (spot: number) =>
 	`${signedUsd((spot - 100) * 100)} (${percent((spot - 100) / 100)})`;
+const stockMove = (spot: number) =>
+	`${spot > 100 ? "▲ " : spot < 100 ? "▼ " : ""}${sinceBuy(spot)}`;
 /** The call's value per share and its change on the premium: "$3.10 (−26.2%)". */
 const callValue = (dollars: number) =>
 	`${usd(dollars * 100)} (${percent((dollars * 100 - PAID) / PAID)})`;
@@ -93,7 +95,7 @@ function DecayView({
 				[90, PAID / 100],
 				[110, PAID / 100],
 			],
-			tone: "short",
+			tone: "reference",
 			dashed: true,
 		},
 		{
@@ -129,7 +131,7 @@ function DecayView({
 									x: shown.spot,
 									y: now,
 									label: usd(now * 100),
-									tone: result < 0 ? "loss" : "gain",
+									tone: "neutral",
 								},
 							]}
 							drag={
@@ -157,8 +159,8 @@ function DecayView({
 				{
 					id: "stock",
 					label: t(["ALFA since Sep 16", "9月16日 以来 ALFA"]),
-					value: sinceBuy(shown.spot),
-					tween: { to: shown.spot, format: sinceBuy },
+					value: stockMove(shown.spot),
+					tween: { to: shown.spot, format: stockMove },
 					tone:
 						shown.spot > 100 ? "gain" : shown.spot < 100 ? "loss" : undefined,
 				},
@@ -279,7 +281,7 @@ function TailView({
 									x: shown.spot,
 									y: result,
 									label: signedUsd(result * 100, 0),
-									tone: result < 0 ? "loss" : "gain",
+									tone: result > 0 ? "gain" : result < 0 ? "loss" : "neutral",
 								},
 							]}
 							drag={
@@ -331,7 +333,7 @@ function TailView({
 									`${signedUsd(-PAID * 100, 0)}，即权利金`,
 								])
 							: t(["No fixed limit", "没有固定上限"]),
-					tone: "loss",
+					tone: shown.side === "buyer" ? "loss" : undefined,
 				},
 			]}
 			controls={

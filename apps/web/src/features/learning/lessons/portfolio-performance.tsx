@@ -111,7 +111,7 @@ function FlowView({
 				`${dollars(OPEN)} → ${dollars(WEEK_END)}`,
 				`${dollars(OPEN)} → ${dollars(WEEK_END)}`,
 			]),
-			tone: "loss",
+			tone: "gain",
 			evidence: "calculated",
 		});
 	if (shown.stage >= 2)
@@ -243,7 +243,7 @@ function TradeView({
 			{
 				id: "factor",
 				label: t(["Profit factor", "盈利因子"]),
-				value: PROFIT_FACTOR.toFixed(2),
+				value: `✗ ${PROFIT_FACTOR.toFixed(2)}`,
 				note: t(["gross wins ÷ gross losses", "总盈利 ÷ 总亏损"]),
 				tone: "loss",
 				evidence: "calculated",
@@ -335,7 +335,7 @@ function DrawdownView({
 			id: "steady",
 			label: t(["account A", "账户 A"]),
 			points: steady.map((value, i) => [i, value] as const),
-			tone: "position",
+			tone: "reference",
 		},
 	];
 	if (shown.stage >= 1)
@@ -343,7 +343,7 @@ function DrawdownView({
 			id: "deep",
 			label: t(["account B", "账户 B"]),
 			points: deep.map((value, i) => [i, value] as const),
-			tone: "short",
+			tone: "position",
 		});
 	const worst = maxDrawdown(deep);
 	const markers: PayoffMarker[] =
@@ -377,6 +377,7 @@ function DrawdownView({
 							`最大跌幅 ${pct(maxDrawdown(steady).fall, 1)}`,
 						])
 					: t(["Jan to Aug", "1月至8月"]),
+			tone: "gain",
 			evidence: "calculated",
 		},
 	];
@@ -392,7 +393,7 @@ function DrawdownView({
 							`最大跌幅 ${pct(worst.fall, 0)}`,
 						])
 					: t(["Jan to Aug", "1月至8月"]),
-			tone: shown.stage >= 2 ? "loss" : undefined,
+			tone: "gain",
 			evidence: "calculated",
 		});
 	return (

@@ -201,7 +201,7 @@ function AddView({
 			id: "long",
 			label: t(["long 105 call", "105 看涨多头"]),
 			points: kinks(longLeg, [105, 110]),
-			tone: shown.stage >= 2 ? "reference" : "long",
+			tone: "reference",
 		},
 	];
 	if (shown.stage >= 1)
@@ -209,7 +209,7 @@ function AddView({
 			id: "short",
 			label: t(["short 110 call", "110 看涨空头"]),
 			points: kinks(shortLeg110, [105, 110]),
-			tone: shown.stage >= 2 ? "reference" : "short",
+			tone: "reference",
 		});
 	if (shown.stage >= 2)
 		lines.push({
@@ -235,7 +235,13 @@ function AddView({
 						y: shown.stage >= 3 ? profit : value,
 						label: shown.stage >= 3 ? signedDollars(profit) : dollars(value),
 						tone:
-							shown.stage >= 3 ? (profit >= 0 ? "gain" : "loss") : "neutral",
+							shown.stage >= 3
+								? profit > 0
+									? "gain"
+									: profit < 0
+										? "loss"
+										: "neutral"
+								: "neutral",
 					},
 				]
 			: [];
@@ -279,7 +285,14 @@ function AddView({
 							`到期价值 − 已付 ${usd(NET * 100, 0)}`,
 						])
 					: t(["add the signed legs", "把带符号的各腿相加"]),
-			tone: shown.stage >= 3 ? (profit >= 0 ? "gain" : "loss") : undefined,
+			tone:
+				shown.stage >= 3
+					? profit > 0
+						? "gain"
+						: profit < 0
+							? "loss"
+							: "neutral"
+					: undefined,
 			evidence: "calculated",
 		});
 	return (
@@ -410,7 +423,7 @@ function Positions({
 							y={barY}
 							height={18}
 							rx={3}
-							className="wt-long"
+							className="wt-accent"
 							initial={false}
 							animate={{ width: row.size * k }}
 							transition={motion.move}

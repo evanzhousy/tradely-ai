@@ -113,7 +113,7 @@ export function ChainGrid({
 							width={cellWidth}
 							height={ROW - 6}
 							rx={6}
-							className={callIn ? "wt-long-soft" : "wt-panel-shape"}
+							className={callIn ? "wt-call-soft" : "wt-panel-shape"}
 							opacity={callIn ? 0.6 : 1}
 						/>
 						<rect
@@ -122,7 +122,7 @@ export function ChainGrid({
 							width={cellWidth}
 							height={ROW - 6}
 							rx={6}
-							className={putIn ? "wt-short-soft" : "wt-panel-shape"}
+							className={putIn ? "wt-put-soft" : "wt-panel-shape"}
 							opacity={putIn ? 0.6 : 1}
 						/>
 						<Label

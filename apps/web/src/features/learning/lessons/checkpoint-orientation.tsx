@@ -256,7 +256,7 @@ function CallView({
 						points: [RANGE[0], 105, RANGE[1]].map(
 							(spot) => [spot, f(spot) * 100] as const,
 						),
-						tone: side === "buyer" ? "long" : "short",
+						tone: "position",
 					},
 				]
 			: [];
@@ -268,7 +268,12 @@ function CallView({
 						x: shown.spot,
 						y: f(shown.spot) * 100,
 						label: perContract(f(shown.spot)),
-						tone: f(shown.spot) >= 0 ? "gain" : "loss",
+						tone:
+							f(shown.spot) > 0
+								? "gain"
+								: f(shown.spot) < 0
+									? "loss"
+									: "neutral",
 					},
 				]
 			: [];
@@ -293,7 +298,7 @@ function CallView({
 				`call worth ${usd(Math.round(worth(shown.spot) * 100))} a share`,
 				`看涨每股值 ${usd(Math.round(worth(shown.spot) * 100))}`,
 			]),
-			tone: f(shown.spot) >= 0 ? "gain" : "loss",
+			tone: f(shown.spot) > 0 ? "gain" : f(shown.spot) < 0 ? "loss" : "neutral",
 			evidence: "calculated",
 		});
 	return (
@@ -429,8 +434,7 @@ function OrderView({
 									`your limit ${usd(shown.limit)}`,
 									`你的限价 ${usd(shown.limit)}`,
 								]),
-								tone:
-									shown.stage >= 1 ? (fills ? "gain" : "neutral") : "neutral",
+								tone: "focus",
 							}}
 							note={
 								shown.stage >= 1
@@ -457,7 +461,6 @@ function OrderView({
 						fills ? "2 of 2" : "0 of 2",
 						fills ? "2 张中 2 张" : "2 张中 0 张",
 					]),
-					tone: fills ? "gain" : "neutral",
 				},
 			]}
 			controls={

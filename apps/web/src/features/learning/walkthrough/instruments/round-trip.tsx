@@ -1,5 +1,5 @@
 import * as m from "motion/react-m";
-import { count, usd } from "@/content/world";
+import { count, signedUsd, usd } from "@/content/world";
 import { Label, useTeachMotion } from "../stage";
 import { startAt, textWidth } from "../text-measure";
 
@@ -56,7 +56,7 @@ export function RoundTrip({
 				y={52}
 				height={24}
 				rx={4}
-				className="wt-short-soft"
+				className="wt-band-loss"
 				initial={false}
 				animate={{ x: x(bid), width: x(ask) - x(bid) }}
 				transition={motion.move}
@@ -142,7 +142,7 @@ export function RoundTrip({
 			<m.rect
 				y={150}
 				height={32}
-				className="wt-short"
+				className="wt-loss"
 				initial={false}
 				animate={{ x: split, width: barLeft + barWidth - split }}
 				transition={motion.move}
@@ -150,8 +150,13 @@ export function RoundTrip({
 			<Label x={barLeft} y={206}>
 				{labels.back} {usd(back)}
 			</Label>
-			<Label x={barLeft + barWidth} y={206} anchor="end" tone="strong">
-				{labels.lost} {usd(lost)}
+			<Label
+				x={barLeft + barWidth}
+				y={206}
+				anchor="end"
+				tone={lost === 0 ? "muted" : "loss"}
+			>
+				{labels.lost} {signedUsd(-lost)}
 			</Label>
 			<Label x={width / 2} y={236} anchor="middle" tone="muted">
 				{labels.share(`${((lost / (ask * shares)) * 100).toFixed(1)}%`)}

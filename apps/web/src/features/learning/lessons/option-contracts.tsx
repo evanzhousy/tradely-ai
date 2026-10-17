@@ -306,7 +306,7 @@ function UnitStage({
 								width={dot}
 								height={dot}
 								rx={1}
-								className="wt-long"
+								className="wt-panel-shape"
 							/>
 						))}
 						<Label

@@ -269,8 +269,9 @@ function QuoteComparison({
 						{text("trade")} {price(quote.trade)}
 					</div>
 					<span
-						className="absolute -top-1 size-3 rounded-full bg-primary"
+						className="absolute -top-1 size-3 rounded-full"
 						style={{
+							backgroundColor: "var(--tone-focus)",
 							left: `${fraction * 100}%`,
 							transform: "translateX(-50%)",
 						}}

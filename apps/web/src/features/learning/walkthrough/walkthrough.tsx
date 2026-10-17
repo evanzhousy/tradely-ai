@@ -16,6 +16,7 @@ import {
 	PauseIcon,
 	PlayIcon,
 	RotateCcwIcon,
+	XIcon,
 } from "lucide-react";
 import * as m from "motion/react-m";
 import {
@@ -518,12 +519,30 @@ export function Walkthrough({
 						className="wt-panel"
 						data-kind={verdict.correct ? "right" : "wrong"}
 						data-focus="feedback"
+						style={
+							verdict.correct
+								? undefined
+								: {
+										borderColor:
+											"color-mix(in oklab, var(--tone-down) 60%, var(--border))",
+									}
+						}
 						tabIndex={-1}
 						initial={motion.enabled ? { opacity: 0, y: 6 } : false}
 						animate={{ opacity: 1, y: 0 }}
 						transition={motion.fade}
 					>
-						<p className="wt-panel-title">
+						<p
+							className="wt-panel-title flex items-center gap-1.5"
+							style={{
+								color: verdict.correct ? "var(--tone-up)" : "var(--tone-down)",
+							}}
+						>
+							{verdict.correct ? (
+								<CheckIcon className="size-4" aria-hidden="true" />
+							) : (
+								<XIcon className="size-4" aria-hidden="true" />
+							)}
 							{verdict.correct ? t(copy.right) : t(copy.wrong)}
 						</p>
 						<p className="wt-panel-note">
@@ -866,6 +885,7 @@ function ResultCard({ item }: { item: ResultItem }) {
 			className="wt-result"
 			data-tone={item.tone}
 			data-evidence={item.evidence}
+			style={{ backgroundColor: "var(--card)" }}
 		>
 			<dt>{item.label}</dt>
 			<dd>

@@ -142,7 +142,13 @@ function PartsView({
 											`10月18日 ${name}到期时，ALFA $100`,
 										])}
 							</Label>
-							<rect x={14} y={32} width={14} height={10} className="wt-long" />
+							<rect
+								x={14}
+								y={32}
+								width={14}
+								height={10}
+								className="wt-panel-shape"
+							/>
 							<Label x={34} y={41} tone="small">
 								{t(["intrinsic value", "内在价值"])}
 							</Label>
@@ -151,7 +157,7 @@ function PartsView({
 								y={32}
 								width={14}
 								height={10}
-								className="wt-long-soft ev-modeled wt-stack-time"
+								className="wt-panel-shape ev-modeled"
 							/>
 							<Label x={170} y={41} tone="small">
 								{t(["time value", "时间价值"])}
@@ -294,7 +300,7 @@ function ProfitView({
 			id: "value",
 			label: t(["value at expiry", "到期价值"]),
 			points: kinks(0),
-			tone: shown.profit ? "reference" : "long",
+			tone: shown.profit ? "reference" : "position",
 		},
 	];
 	const bands: PayoffBand[] = shown.band
@@ -561,7 +567,7 @@ function WriterView({
 					note: put
 						? t(["if ALFA goes to $0", "若 ALFA 跌至 $0"])
 						: t(["grows as ALFA rises", "随 ALFA 上涨而扩大"]),
-					tone: "loss",
+					tone: put ? "loss" : undefined,
 				},
 			]}
 			controls={

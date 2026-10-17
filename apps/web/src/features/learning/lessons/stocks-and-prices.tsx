@@ -58,6 +58,7 @@ function SliceStage({
 	const gridLeft = narrow ? 14 : Math.round(width * 0.46);
 	const gridTop = narrow ? 118 : 30;
 	const value = state.shares * state.price;
+	const priceChange = state.price - (state.before ?? state.price);
 	const change =
 		state.before === undefined
 			? 0
@@ -73,9 +74,14 @@ function SliceStage({
 				{ALFA.symbol} {usd(state.price)}
 			</Label>
 			{change !== 0 ? (
-				<Label x={14} y={46} tone="accent">
+				<Label
+					x={14}
+					y={46}
+					tone={priceChange > 0 ? "gain" : priceChange < 0 ? "loss" : undefined}
+				>
 					{t(["price ", "价格 "])}
-					{signedUsd(state.price - (state.before ?? state.price))}
+					{priceChange > 0 ? "▲ " : "▼ "}
+					{signedUsd(priceChange)}
 				</Label>
 			) : null}
 			<Label x={14} y={70} tone="muted">
@@ -104,7 +110,7 @@ function SliceStage({
 					width={size}
 					height={size}
 					rx={3}
-					className="wt-long"
+					className="wt-accent"
 					initial={motion.enabled ? { opacity: 0 } : false}
 					animate={{ opacity: 1 }}
 					transition={motion.after(Math.min(i, 40) * 0.01)}
@@ -342,7 +348,6 @@ function QuoteView({
 						(shown.side === "buy" ? 1 : -1) *
 							(trade.notional - alfaStockBook.last * trade.filled),
 					),
-					tone: "loss",
 					note: usd(alfaStockBook.last),
 				},
 			]
@@ -486,11 +491,7 @@ function KindStage({
 								<Label x={x + 14} y={y + 122} tone="small">
 									{t(["Buy it directly?", "能否直接买入？"])}
 								</Label>
-								<Label
-									x={x + 14}
-									y={y + 142}
-									tone={card.buy[0] === "No" ? "loss" : "gain"}
-								>
+								<Label x={x + 14} y={y + 142}>
 									{t(card.buy)}
 								</Label>
 								<Label x={x + 14} y={y + 166} tone="small">
@@ -544,7 +545,6 @@ function KindView({
 					id: "buy",
 					label: t(["Buy it directly?", "能否直接买入？"]),
 					value: t(card.buy),
-					tone: card.buy[0] === "No" ? "loss" : "gain",
 				},
 				{
 					id: "own",

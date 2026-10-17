@@ -145,9 +145,7 @@ export function OrderBook({
 						y={7}
 						height={ROW - 14}
 						rx={3}
-						className={
-							level.mine ? "wt-chip" : side === "bid" ? "wt-long" : "wt-short"
-						}
+						className={level.mine ? "wt-chip" : "wt-bar-neutral"}
 						initial={false}
 						animate={
 							side === "bid" ? { x: x - bar, width: bar } : { x, width: bar }
@@ -165,12 +163,7 @@ export function OrderBook({
 					>
 						{count(level.size)}
 					</Label>
-					<Label
-						x={center}
-						y={ROW / 2 + 4.5}
-						anchor="middle"
-						tone={isBest ? "accent" : undefined}
-					>
+					<Label x={center} y={ROW / 2 + 4.5} anchor="middle">
 						{usd(level.price)}
 					</Label>
 					{level.venue ? (

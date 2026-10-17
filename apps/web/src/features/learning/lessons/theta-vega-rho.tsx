@@ -153,10 +153,11 @@ function TimeView({
 					id: "theta",
 					label: t(["Theta", "Theta"]),
 					value: t([
-						`${price(round(now.theta, 3), 3)} a day`,
-						`每天 ${price(round(now.theta, 3), 3)}`,
+						`${signedUsd(now.theta * 100, 3)} a day`,
+						`每天 ${signedUsd(now.theta * 100, 3)}`,
 					]),
 					note: t([`${dayCount(left)} left`, `剩 ${left} 天`]),
+					tone: now.theta < 0 ? "loss" : now.theta > 0 ? "gain" : "neutral",
 					evidence: "modeled",
 				},
 			]}
@@ -230,7 +231,10 @@ function VolView({
 						x: shown.iv * 100,
 						y: now.price,
 						label: signedPrice(change),
-						tone: change >= 0 ? ("gain" as const) : ("loss" as const),
+						tone: (change > 0 ? "gain" : change < 0 ? "loss" : "neutral") as
+							| "gain"
+							| "loss"
+							| "neutral",
 					},
 				]
 			: []),
@@ -295,7 +299,7 @@ function VolView({
 								`vega ${price(VEGA, 3)} × ${signedPoints} = ${signedPrice(VEGA * pointsMoved)}`,
 								`Vega ${price(VEGA, 3)} × ${signedPoints} = ${signedPrice(VEGA * pointsMoved)}`,
 							]),
-							tone: change > 0 ? "gain" : "loss",
+							tone: change > 0 ? "gain" : change < 0 ? "loss" : "neutral",
 							evidence: "modeled",
 						}
 					: {
@@ -444,7 +448,7 @@ function SumView({
 				`model: ${signedPrice(c.repriced)}`,
 				`模型：${signedPrice(c.repriced)}`,
 			]),
-			tone: c.total >= 0 ? "gain" : "loss",
+			tone: c.total > 0 ? "gain" : c.total < 0 ? "loss" : "neutral",
 			evidence: "calculated",
 		});
 	if (shown.shown >= 3)
@@ -454,7 +458,8 @@ function SumView({
 				label: t([`You, long ${you}`, `你，多头 ${you} 张`]),
 				value: `≈ ${signedUsd(Math.round(c.total * 100 * you * 100), 0)}`,
 				note: t(["× 100 shares × contracts", "× 100 股 × 张数"]),
-				tone: c.total * you >= 0 ? "gain" : "loss",
+				tone:
+					c.total * you > 0 ? "gain" : c.total * you < 0 ? "loss" : "neutral",
 				evidence: "calculated",
 			},
 			{
@@ -465,7 +470,8 @@ function SumView({
 				]),
 				value: `≈ ${signedUsd(Math.round(c.total * 100 * ben * 100), 0)}`,
 				note: t(["every sign reversed", "所有符号都反过来"]),
-				tone: c.total * ben >= 0 ? "gain" : "loss",
+				tone:
+					c.total * ben > 0 ? "gain" : c.total * ben < 0 ? "loss" : "neutral",
 				evidence: "calculated",
 			},
 		);

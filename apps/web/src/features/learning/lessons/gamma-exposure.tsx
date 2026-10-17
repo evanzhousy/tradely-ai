@@ -299,10 +299,10 @@ function StrikeBars({
 			))}
 			<path
 				d={`M${spotX} ${BARS_TOP - 6}V${BARS_BOTTOM}`}
-				className="wt-bracket"
+				className="wt-line-reference"
 				strokeDasharray="4 4"
 			/>
-			<Label x={spotX} y={BARS_TOP - 10} anchor="middle" tone="accent">
+			<Label x={spotX} y={BARS_TOP - 10} anchor="middle">
 				{t([`ALFA $${SPOT}`, `ALFA $${SPOT}`])}
 			</Label>
 			{STRIKES.map((strike, i) => {
@@ -337,7 +337,7 @@ function StrikeBars({
 									x={cx - barWidth / 2}
 									width={barWidth}
 									rx={3}
-									className={side === "call" ? "wt-long-soft" : "wt-short-soft"}
+									className={side === "call" ? "wt-call-soft" : "wt-put-soft"}
 									initial={false}
 									animate={{
 										y: shown ? top : zero,
@@ -410,7 +410,7 @@ function DistributionView({
 			label: t(["Puts", "看跌"]),
 			value: money(PUTS),
 			note: t(["assumed dealer short", "假设做市商做空"]),
-			tone: "loss",
+			tone: PUTS > 0 ? "gain" : PUTS < 0 ? "loss" : "neutral",
 			evidence: "modeled",
 		});
 	if (shown.stage >= 2)
@@ -419,6 +419,7 @@ function DistributionView({
 				id: "net",
 				label: t(["Net", "净值"]),
 				value: money(NET),
+				tone: NET < 0 ? "loss" : NET > 0 ? "gain" : "neutral",
 				evidence: "calculated",
 			},
 			{
@@ -502,6 +503,7 @@ function CoverageView({
 			id: "chain",
 			label: t(["Full chain", "完整期权链"]),
 			value: money(NET),
+			tone: NET < 0 ? "loss" : NET > 0 ? "gain" : "neutral",
 			note: t([
 				`${STRIKES.length * 2} contracts, every open interest`,
 				`${STRIKES.length * 2} 个合约，全部未平仓量`,
@@ -515,7 +517,7 @@ function CoverageView({
 			label: t(["Traded-only sample", "仅成交样本"]),
 			value: money(tradedOnly),
 			note: t(["Monday's 100, 105, 110 calls", "周一的 100、105、110 看涨"]),
-			tone: "loss",
+			tone: tradedOnly > 0 ? "gain" : tradedOnly < 0 ? "loss" : "neutral",
 			evidence: "modeled",
 		});
 	if (shown.stage === 2)

@@ -132,8 +132,7 @@ export function SpreadRuler({
 						x={(left + right) / 2}
 						y={axis - 9}
 						anchor="middle"
-						tone="accent"
-						className="wt-halo"
+						className="wt-film-warn wt-halo"
 					>
 						{unusable ?? "?"}
 					</Label>
@@ -156,7 +155,7 @@ export function SpreadRuler({
 			</m.g>
 			{bid !== null ? (
 				<m.g initial={false} animate={{ x: x(bid) }} transition={motion.move}>
-					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-long" />
+					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-reference" />
 					<Label
 						x={0}
 						y={axis + 22}
@@ -173,7 +172,7 @@ export function SpreadRuler({
 			) : null}
 			{ask !== null ? (
 				<m.g initial={false} animate={{ x: x(ask) }} transition={motion.move}>
-					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-short" />
+					<path d={`M0 ${lineTop}V${axis + 6}`} className="wt-line-reference" />
 					<Label x={0} y={axis + 22} tone="small" className="wt-halo">
 						{askLabel}
 					</Label>

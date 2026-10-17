@@ -96,8 +96,7 @@ function EvidenceMark({
 					x={x + size / 2}
 					y={y + 15}
 					anchor="middle"
-					tone="accent"
-					className="wt-halo"
+					className="wt-film-warn wt-halo"
 				>
 					?
 				</Label>
@@ -111,15 +110,16 @@ function EvidenceMark({
 				width={size}
 				height={size}
 				rx={4}
-				className={`wt-ev-${evidence}`}
+				className={
+					evidence === "modeled"
+						? "wt-panel-shape ev-modeled"
+						: evidence === "inferred"
+							? "wt-panel-shape ev-inferred"
+							: "wt-panel-shape"
+				}
 			/>
 			{evidence === "calculated" ? (
-				<Label
-					x={x + size / 2}
-					y={y + 15}
-					anchor="middle"
-					className="wt-on-solid"
-				>
+				<Label x={x + size / 2} y={y + 15} anchor="middle">
 					=
 				</Label>
 			) : null}

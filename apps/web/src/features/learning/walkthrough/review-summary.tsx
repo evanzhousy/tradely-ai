@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CheckIcon, MinusIcon, RotateCcwIcon } from "lucide-react";
+import { CheckIcon, MinusIcon, XIcon } from "lucide-react";
 import { syllabus } from "@/content/syllabus";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
@@ -64,11 +64,21 @@ export function ReviewSummary({
 			<ul className="wt-review-list">
 				{rows.map(({ scene, status, lesson }) => (
 					<li key={scene.id} data-status={status}>
-						<span className="wt-review-status">
+						<span
+							className="wt-review-status"
+							style={{
+								color:
+									status === "right"
+										? "var(--tone-up)"
+										: status === "wrong"
+											? "var(--tone-down)"
+											: "var(--tone-dim)",
+							}}
+						>
 							{status === "right" ? (
 								<CheckIcon aria-hidden="true" />
 							) : status === "wrong" ? (
-								<RotateCcwIcon aria-hidden="true" />
+								<XIcon aria-hidden="true" />
 							) : (
 								<MinusIcon aria-hidden="true" />
 							)}

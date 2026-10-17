@@ -337,13 +337,7 @@ function TextBlock({
 				{t(title)}
 			</Label>
 			{tag ? (
-				<Label
-					x={x + width - BLOCK_PAD}
-					y={y + 18}
-					anchor="end"
-					tone="small"
-					className="wt-accent"
-				>
+				<Label x={x + width - BLOCK_PAD} y={y + 18} anchor="end" tone="small">
 					{t(tag)}
 				</Label>
 			) : null}

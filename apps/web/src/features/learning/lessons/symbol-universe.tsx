@@ -75,7 +75,7 @@ function EligibilityTable({
 					x={8 + nameWidth + j * cellWidth + cellWidth / 2}
 					y={TABLE_TOP - 6}
 					anchor="middle"
-					tone={j < state.applied ? "accent" : "small"}
+					tone="small"
 				>
 					{t(headers[check])}
 				</Label>
@@ -83,10 +83,6 @@ function EligibilityTable({
 			{CANDIDATES.map((row, i) => {
 				const y = TABLE_TOP + i * TABLE_ROW;
 				const failed = firstFail(row, state.applied);
-				const eligible =
-					state.applied === CHECKS.length &&
-					failed === null &&
-					CHECKS.every((check) => checkResult(row, check) === "pass");
 				const unknown =
 					state.applied >= 3 && failed === null && row.optionVolume === null;
 				return (
@@ -101,13 +97,12 @@ function EligibilityTable({
 							width={width - 16}
 							height={TABLE_ROW - 4}
 							rx={6}
-							className={eligible ? "wt-focus-shape" : "wt-panel-shape"}
+							className="wt-panel-shape"
 							style={unknown ? { fill: hatch } : undefined}
 						/>
 						<Label
 							x={16}
 							y={y + 18}
-							tone={eligible ? "accent" : undefined}
 							className={unknown ? "wt-halo" : undefined}
 						>
 							{row.symbol}
@@ -127,9 +122,11 @@ function EligibilityTable({
 											? "gain"
 											: result === "fail"
 												? "loss"
-												: "accent"
+												: undefined
 									}
-									className="wt-halo"
+									className={
+										result === "unknown" ? "wt-halo wt-film-warn" : "wt-halo"
+									}
 								>
 									{result === "pass" ? "✓" : result === "fail" ? "✗" : "?"}
 								</Label>
@@ -277,7 +274,7 @@ function VolumeBars({
 						animate={{ opacity: row.hidden ? 0 : 1 }}
 						transition={motion.fade}
 					>
-						<Label x={8} y={y + 19} tone={row.focus ? "accent" : undefined}>
+						<Label x={8} y={y + 19}>
 							{row.label}
 						</Label>
 						{row.value === null ? (
@@ -295,8 +292,7 @@ function VolumeBars({
 									x={left + span / 2}
 									y={y + 19}
 									anchor="middle"
-									tone="accent"
-									className="wt-halo"
+									className="wt-halo wt-film-warn"
 								>
 									{t(["not observed", "未观测到"])}
 								</Label>
@@ -308,7 +304,7 @@ function VolumeBars({
 									y={y + 6}
 									height={18}
 									rx={3}
-									className={row.focus ? "wt-chip" : "wt-long-soft"}
+									className={row.focus ? "wt-chip" : "wt-panel-shape"}
 									initial={false}
 									animate={{ width: (row.value / max) * span }}
 									transition={motion.move}
@@ -522,7 +518,7 @@ function MembershipView({
 				{
 					id: "leader",
 					label: t(["Sep 2 leader", "9月2日 领先者"]),
-					value: leader ?? "—",
+					value: leader && !shown.pointInTime ? `✗ ${leader}` : (leader ?? "—"),
 					note: shown.pointInTime
 						? t(["HALO left the market on Sep 6", "HALO 于 9月6日 退市"])
 						: t(["HALO silently missing", "HALO 被悄悄遗漏"]),

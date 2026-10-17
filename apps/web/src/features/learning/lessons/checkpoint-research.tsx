@@ -75,7 +75,7 @@ function UniverseView({
 				`${inCount} qualify; FJOR is unknown, not zero`,
 				`${inCount} 个合格；FJOR 未知，不是零`,
 			]),
-			tone: "strong",
+			tone: "caution",
 		});
 	return (
 		<SceneFrame

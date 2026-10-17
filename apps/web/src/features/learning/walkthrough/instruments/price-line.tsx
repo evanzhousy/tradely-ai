@@ -34,7 +34,8 @@ export function PriceLine({
 	marker: {
 		value: number;
 		label: string;
-		tone?: "gain" | "loss" | "neutral";
+		/** Focus for the learner's own price; otherwise a neutral market level. */
+		tone?: "focus" | "neutral";
 		before?: number;
 	};
 	note?: string;
@@ -187,13 +188,7 @@ export function PriceLine({
 			<m.circle
 				cy={axis}
 				r={9}
-				className={
-					marker.tone === "gain"
-						? "wt-long"
-						: marker.tone === "loss"
-							? "wt-short"
-							: "wt-chip"
-				}
+				className={marker.tone === "focus" ? "wt-chip" : "wt-panel-shape"}
 				stroke="var(--foreground)"
 				strokeWidth={2}
 				initial={false}
@@ -203,7 +198,6 @@ export function PriceLine({
 			<m.text
 				y={40}
 				textAnchor="middle"
-				className="wt-accent"
 				initial={false}
 				data-tx={labelX}
 				animate={{ x: labelX }}

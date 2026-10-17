@@ -76,7 +76,7 @@ function SortView({
 			note: unsupported
 				? t(["leave them out or label them", "删掉或加以标注"])
 				: t(["so far", "目前为止"]),
-			tone: unsupported ? "loss" : undefined,
+			evidence: unsupported ? "unknown" : undefined,
 		},
 	];
 	return (

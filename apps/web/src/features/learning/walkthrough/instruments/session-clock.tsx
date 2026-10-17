@@ -121,7 +121,7 @@ export function SessionClock({
 						{mark.kind === "report" ? (
 							<path
 								d={`M${markX} ${axis - 8}l8 8-8 8-8-8z`}
-								className={reached ? "wt-chip" : "wt-ghost"}
+								className="wt-panel-shape"
 							/>
 						) : (
 							<path

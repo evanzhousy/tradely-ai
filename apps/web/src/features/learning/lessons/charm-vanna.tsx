@@ -73,7 +73,7 @@ function DriftView({
 			id: "drop",
 			label: "",
 			points: path(-VOL_DROP),
-			tone: "short",
+			tone: "reference",
 			dashed: true,
 		});
 	const markers: PayoffMarker[] = [
@@ -90,7 +90,6 @@ function DriftView({
 						x: shown.elapsed,
 						y: now,
 						label: plain3(now),
-						tone: "loss" as const,
 					},
 				]
 			: []),
@@ -116,7 +115,6 @@ function DriftView({
 				`${fixed3(now - TODAY)} with no trade${shown.volDrop ? ` · IV −${VOL_DROP}` : ""}`,
 				`${fixed3(now - TODAY)}，没有成交${shown.volDrop ? ` · IV −${VOL_DROP}` : ""}`,
 			]),
-			tone: "loss",
 			evidence: "modeled",
 		});
 	return (
@@ -189,10 +187,16 @@ function DriftView({
 
 type UnitState = { shown: 1 | 2 | 3 };
 
-const unitRows: readonly { label: Copy; value: string; note: Copy }[] = [
+const unitRows: readonly {
+	label: Copy;
+	value: string;
+	note: Copy;
+	sign: number;
+}[] = [
 	{
 		label: ["Charm, per day passed", "Charm，每经过一天"],
 		value: fixed3(CHARM_DAY),
+		sign: CHARM_DAY,
 		note: [
 			"delta per calendar day that elapses",
 			"每经过一个自然日的 Delta 变化",
@@ -201,6 +205,7 @@ const unitRows: readonly { label: Copy; value: string; note: Copy }[] = [
 	{
 		label: ["Charm, per year of time left", "Charm，每一年剩余期限"],
 		value: PER_YEAR,
+		sign: -CHARM_DAY * 365,
 		note: [
 			"the same event: time left shrinks as days pass, so the sign flips",
 			"同一件事：日子过去，剩余期限变短，所以符号相反",
@@ -209,6 +214,7 @@ const unitRows: readonly { label: Copy; value: string; note: Copy }[] = [
 	{
 		label: ["Vanna, per vol point", "Vanna，每个波动率点"],
 		value: fixed3(VANNA_POINT),
+		sign: VANNA_POINT,
 		note: [
 			`or ${fixed3(VANNA_POINT * 100).replace(/0$/, "")} per 1.00 of volatility`,
 			`或每 1.00 的波动率 ${fixed3(VANNA_POINT * 100).replace(/0$/, "")}`,
@@ -282,7 +288,19 @@ function UnitTable({
 					<Label x={16} y={block.y + 20} tone="small">
 						{t(block.row.label)}
 					</Label>
-					<Label x={width - 16} y={block.y + 21} anchor="end" tone="strong">
+					<Label
+						x={width - 16}
+						y={block.y + 21}
+						anchor="end"
+						tone="strong"
+						className={
+							block.row.sign < 0
+								? "wt-loss"
+								: block.row.sign > 0
+									? "wt-gain"
+									: "wt-muted"
+						}
+					>
 						{asking
 							? i === 0
 								? "?"
@@ -325,6 +343,7 @@ function UnitView({
 			label: t(["One day passes", "经过一天"]),
 			value: fixed3(CHARM_DAY),
 			note: t(["delta change", "Delta 变化"]),
+			tone: CHARM_DAY < 0 ? "loss" : CHARM_DAY > 0 ? "gain" : "neutral",
 			evidence: "modeled",
 		},
 	];
@@ -334,6 +353,12 @@ function UnitView({
 			label: t(["Quoted per year left", "按每年剩余期限报价"]),
 			value: unitRows[1].value,
 			note: t(["× −1/365 gives the same day", "× −1/365 得到同一天的变化"]),
+			tone:
+				-CHARM_DAY * 365 < 0
+					? "loss"
+					: -CHARM_DAY * 365 > 0
+						? "gain"
+						: "neutral",
 			evidence: "calculated",
 		});
 	if (shown.shown >= 3)
@@ -341,6 +366,12 @@ function UnitView({
 			id: "vanna",
 			label: t([`IV −${VOL_DROP} points`, `IV −${VOL_DROP} 点`]),
 			value: fixed3(VANNA_POINT * -VOL_DROP),
+			tone:
+				VANNA_POINT * -VOL_DROP < 0
+					? "loss"
+					: VANNA_POINT * -VOL_DROP > 0
+						? "gain"
+						: "neutral",
 			note: t([
 				`vanna ${fixed3(VANNA_POINT)} × −${VOL_DROP}`,
 				`Vanna ${fixed3(VANNA_POINT)} × −${VOL_DROP}`,
@@ -536,7 +567,15 @@ function SpreadTable({
 								x={labelWidth + column * 2.5}
 								y={valueY}
 								anchor="middle"
-								tone={change > 0 ? "gain" : change < 0 ? "loss" : undefined}
+								tone={
+									net
+										? change > 0
+											? "gain"
+											: change < 0
+												? "loss"
+												: "small"
+										: undefined
+								}
 							>
 								{signedCount(change)}
 							</Label>
@@ -592,7 +631,12 @@ function SpreadView({
 				shown.stage === 1
 					? t(["a week of charm", "一周的 Charm"])
 					: t([`a week, and IV −${VOL_DROP}`, `一周，加上 IV −${VOL_DROP}`]),
-			tone: "gain",
+			tone:
+				now.net - today.net > 0
+					? "gain"
+					: now.net - today.net < 0
+						? "loss"
+						: "neutral",
 			evidence: "modeled",
 		});
 	return (

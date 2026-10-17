@@ -75,7 +75,12 @@ function SyntheticView({
 			id: "call",
 			label: t(["long 100 call", "100 看涨多头"]),
 			points: line(callLeg),
-			tone: shown.stage >= 2 ? "reference" : "long",
+			tone:
+				shown.stage >= 2
+					? "reference"
+					: shown.stage === 0
+						? "position"
+						: "call",
 		},
 	];
 	if (shown.stage >= 1)
@@ -83,7 +88,7 @@ function SyntheticView({
 			id: "put",
 			label: t(["short 100 put", "100 看跌空头"]),
 			points: line(putLeg),
-			tone: shown.stage >= 2 ? "reference" : "short",
+			tone: shown.stage >= 2 ? "reference" : "put",
 		});
 	if (shown.stage >= 2)
 		lines.push({
@@ -104,7 +109,7 @@ function SyntheticView({
 						x: shown.spot,
 						y: value * 100,
 						label: signedPerContract(value),
-						tone: value >= 0 ? "gain" : "loss",
+						tone: value > 0 ? "gain" : value < 0 ? "loss" : "neutral",
 					},
 				]
 			: [];
@@ -135,7 +140,7 @@ function SyntheticView({
 						`相当于以 ${share(STRIKE + NET_DEBIT)} 买入 100 股`,
 					])
 				: t(["like 100 shares bought at $100", "相当于以 $100 买入 100 股"]),
-			tone: value >= 0 ? "gain" : "loss",
+			tone: value > 0 ? "gain" : value < 0 ? "loss" : "neutral",
 			evidence: "calculated",
 		});
 	return (
@@ -230,37 +235,43 @@ function Balance({
 	const zero = (left + right) / 2;
 	// The widest value, about $8 either way, keeps room beside its bar for its label.
 	const scale = (Math.min(right - zero, zero - left) - 62) / 8;
+	const signBand = (value: number) =>
+		value > 0 ? "wt-band-gain" : value < 0 ? "wt-band-loss" : "wt-band-quiet";
 	const rows = [
 		{
 			id: "call",
 			label: t(["Call", "看涨"]),
 			value: callMid(spot),
-			className: "wt-long-soft",
+			className: "wt-call-soft",
 		},
 		{
 			id: "put",
 			label: t(["Put", "看跌"]),
 			value: putUnknown ? 0 : putMid(spot),
-			className: "wt-short-soft",
+			className: "wt-put-soft",
 			unknown: putUnknown,
 		},
 		{
 			id: "diff",
 			label: t(["Call − put", "看涨 − 看跌"]),
 			value: callMid(spot) - putMid(spot),
-			className: "wt-long",
+			className: signBand(callMid(spot) - putMid(spot)),
 			hidden: stage < 1,
 		},
 		{
 			id: "stock",
 			label: t(["ALFA − $100", "ALFA − $100"]),
 			value: spot - STRIKE,
-			className: "wt-long",
+			className: signBand(spot - STRIKE),
 			hidden: stage < 1,
 		},
 	];
 	const valueText = (row: (typeof rows)[number]) =>
-		"unknown" in row && row.unknown ? "?" : signedShare(row.value);
+		"unknown" in row && row.unknown
+			? "?"
+			: row.id === "call" || row.id === "put"
+				? share(row.value)
+				: signedShare(row.value);
 	const rowHeight = narrow ? 50 : 40;
 	const [what, how] = [
 		t(["Oct 18 100 call and put", "10月18日 100 看涨与看跌"]),
@@ -298,7 +309,7 @@ function Balance({
 							y={y + 2}
 							height={20}
 							rx={3}
-							className={row.className}
+							className={row.unknown ? "wt-band-quiet" : row.className}
 							initial={false}
 							animate={{ x, width: Math.max(barWidth, 1) }}
 							transition={motion.move}
@@ -307,6 +318,17 @@ function Balance({
 						<m.text
 							y={y + 17}
 							textAnchor="start"
+							className={
+								"unknown" in row && row.unknown
+									? "wt-film-warn"
+									: row.id === "diff" || row.id === "stock"
+										? row.value > 0
+											? "wt-gain"
+											: row.value < 0
+												? "wt-loss"
+												: "wt-muted"
+										: undefined
+							}
 							initial={false}
 							data-tx={startAt(
 								valueText(row),
@@ -374,7 +396,7 @@ function BalanceView({
 				`= ALFA − $100 = ${signedShare(shown.spot - STRIKE)}`,
 				`= ALFA − $100 = ${signedShare(shown.spot - STRIKE)}`,
 			]),
-			tone: "gain",
+			tone: call - put > 0 ? "gain" : call - put < 0 ? "loss" : "neutral",
 			evidence: "calculated",
 		});
 	return (
@@ -622,20 +644,32 @@ function PrintsView({
 									</Label>
 								),
 							)}
-							<Label
-								x={14}
-								y={tapeHeight(4) + (width < 520 ? 70 : 52)}
-								tone={off ? "loss" : "gain"}
-							>
-								{off
-									? t([
-											`${signedShare(check.gap)} from parity: check the print`,
-											`偏离平价 ${signedShare(check.gap)}：核查这笔成交`,
-										])
-									: t([
-											`within ${share(Math.max(Math.abs(check.gap), 0.01))} of parity: in line`,
-											`与平价相差不超过 ${share(Math.max(Math.abs(check.gap), 0.01))}：正常`,
-										])}
+							<Label x={14} y={tapeHeight(4) + (width < 520 ? 70 : 52)}>
+								{off ? (
+									<>
+										{t(["", "偏离平价 "])}
+										<tspan
+											className={
+												check.gap > 0
+													? "wt-gain"
+													: check.gap < 0
+														? "wt-loss"
+														: "wt-muted"
+											}
+										>
+											{signedShare(check.gap)}
+										</tspan>
+										{t([" from parity: ", "："])}
+										<tspan className="wt-film-warn">
+											{t(["check the print", "核查这笔成交"])}
+										</tspan>
+									</>
+								) : (
+									t([
+										`within ${share(Math.max(Math.abs(check.gap), 0.01))} of parity: in line`,
+										`与平价相差不超过 ${share(Math.max(Math.abs(check.gap), 0.01))}：正常`,
+									])
+								)}
 							</Label>
 						</g>
 					)}
@@ -646,7 +680,7 @@ function PrintsView({
 					id: "gap",
 					label: t(["Gap from parity", "偏离平价"]),
 					value: signedShare(check.gap),
-					tone: off ? "loss" : "gain",
+					tone: check.gap > 0 ? "gain" : check.gap < 0 ? "loss" : "neutral",
 					evidence: "calculated",
 				},
 			]}

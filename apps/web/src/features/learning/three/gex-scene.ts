@@ -54,6 +54,11 @@ export function mountGexScene(
 			"width:100%;height:100%;display:block;touch-action:none";
 		canvas.setAttribute("aria-hidden", "true");
 		host.append(canvas);
+		const color = (token: string) =>
+			new THREE.Color(
+				getComputedStyle(host).getPropertyValue(token).trim() ||
+					getComputedStyle(host).color,
+			);
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
 		camera.position.set(10, 8, 15);
@@ -172,12 +177,16 @@ export function mountGexScene(
 				mesh.scale.y =
 					cell.value === null ? 1 : Math.max(0.025, Math.abs(height));
 				mesh.position.y = cell.value === null ? 0.05 : height / 2;
-				mesh.material.color.set(
-					cell.value === null
-						? 0x999999
-						: (cell.value ?? 0) < 0
-							? 0x8070c8
-							: 0xd2a52f,
+				mesh.material.color.copy(
+					color(
+						cell.value === null
+							? "--tone-caution"
+							: cell.value < 0
+								? "--tone-down"
+								: cell.value > 0
+									? "--tone-up"
+									: "--tone-dim",
+					),
 				);
 				mesh.material.opacity =
 					!state.selectedId || state.selectedId === cell.id ? 1 : 0.4;

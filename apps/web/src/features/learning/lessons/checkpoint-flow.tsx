@@ -93,11 +93,12 @@ function OiView({
 					`volume +${count(shown.size)}`,
 					`成交量 +${count(shown.size)}`,
 				]),
+				tone: "gain",
 			},
 			{
 				text: t([
-					`open interest ${change > 0 ? "+" : change < 0 ? "−" : "±"}${count(Math.abs(change))} → ${count(END_OI + change)}`,
-					`未平仓量 ${change > 0 ? "+" : change < 0 ? "−" : "±"}${count(Math.abs(change))} → ${count(END_OI + change)}`,
+					`open interest ${change > 0 ? "+" : change < 0 ? "−" : ""}${count(Math.abs(change))} → ${count(END_OI + change)}`,
+					`未平仓量 ${change > 0 ? "+" : change < 0 ? "−" : ""}${count(Math.abs(change))} → ${count(END_OI + change)}`,
 				]),
 				tone: "strong",
 			},
@@ -145,6 +146,7 @@ function OiView({
 							label: t(["Open interest changes", "未平仓量变化"]),
 							value: `${change > 0 ? "+" : change < 0 ? "−" : ""}${count(Math.abs(change))}`,
 							evidence: "calculated",
+							tone: change > 0 ? "gain" : change < 0 ? "loss" : "neutral",
 						}
 					: {
 							id: "end",
@@ -468,12 +470,12 @@ function ClockView({
 		lines.push({
 			text: fits
 				? t([
-						"flow: Wednesday's session, as required",
-						"成交流：周三时段，符合要求",
+						"✓ flow: Wednesday's session, as required",
+						"✓ 成交流：周三时段，符合要求",
 					])
 				: t([
-						"flow: Tuesday's, not Wednesday's, so it fails",
-						"成交流：周二而不是周三，所以不符合",
+						"✗ flow: Tuesday's, not Wednesday's, so it fails",
+						"✗ 成交流：周二而不是周三，所以不符合",
 					]),
 			tone: fits ? "gain" : "loss",
 		});
@@ -497,7 +499,7 @@ function ClockView({
 				{
 					id: "fits",
 					label: t(["Flow record meets the need", "成交记录符合要求"]),
-					value: t(fits ? ["Yes", "是"] : ["No", "否"]),
+					value: t(fits ? ["✓ Yes", "✓ 是"] : ["✗ No", "✗ 否"]),
 					tone: fits ? "gain" : "loss",
 				},
 			]}

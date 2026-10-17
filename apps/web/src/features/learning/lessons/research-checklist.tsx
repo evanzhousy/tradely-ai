@@ -53,7 +53,8 @@ function StepRow({
 				width={width - 8}
 				height={h}
 				rx={9}
-				className={tone === "plain" ? "wt-panel-shape" : "wt-focus-shape"}
+				className={tone === "focus" ? "wt-focus-shape" : "wt-panel-shape"}
+				stroke={tone === "flag" ? "var(--tone-caution)" : undefined}
 				strokeDasharray={tone === "flag" ? "5 4" : undefined}
 			/>
 			<Label x={16} y={20} tone="small">
@@ -65,7 +66,7 @@ function StepRow({
 					x={42}
 					y={20 + i * 16}
 					tone="muted"
-					className={tone === "flag" ? "wt-loss" : undefined}
+					className={tone === "flag" ? "wt-film-warn" : undefined}
 				>
 					{line}
 				</Label>
@@ -74,7 +75,7 @@ function StepRow({
 				x={42}
 				y={h - 9}
 				tone="small"
-				className={tone === "flag" ? "wt-loss" : undefined}
+				className={tone === "flag" ? "wt-film-warn" : undefined}
 			>
 				{t(note ?? step.tool)}
 			</Label>
@@ -199,7 +200,7 @@ function ForecastView({
 								"no data can confirm a future price",
 								"没有数据能确认未来价格",
 							]),
-							tone: "loss",
+							evidence: "unknown",
 						},
 					]
 				: [
@@ -362,7 +363,7 @@ function EditView({
 								"Home's checklists aren't saved",
 								"Home 的清单不会保存",
 							]),
-							tone: "loss",
+							evidence: "unknown",
 						},
 					]
 				: [
@@ -469,9 +470,7 @@ function ChatStage({
 							width={w}
 							height={h}
 							rx={12}
-							className={
-								msg.from === "ai" ? "wt-focus-shape" : "wt-panel-shape"
-							}
+							className="wt-panel-shape"
 						/>
 						<Label x={x + BUBBLE_PAD} y={top + 18} tone="small">
 							{msg.from === "ai" ? "TradingFlow AI" : t(["You", "你"])}

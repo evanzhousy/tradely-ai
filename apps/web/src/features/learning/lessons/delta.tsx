@@ -335,7 +335,12 @@ function ExposureTable({
 						))}
 						{holders.map((holder, j) => {
 							const text = visible ? block.row.cell(holder.contracts) : "—";
-							const negative = holder.contracts < 0 && i >= 2;
+							const signedValue =
+								i === 2
+									? positionDelta(holder.contracts)
+									: i === 3
+										? moveDollars(holder.contracts)
+										: 0;
 							return (
 								<Label
 									key={holder.id}
@@ -343,7 +348,13 @@ function ExposureTable({
 									y={block.y + block.height / 2 + 5}
 									anchor="middle"
 									tone={
-										visible && i >= 2 ? (negative ? "loss" : "gain") : undefined
+										visible && i >= 2
+											? signedValue > 0
+												? "gain"
+												: signedValue < 0
+													? "loss"
+													: "small"
+											: undefined
 									}
 								>
 									{text}
@@ -407,7 +418,12 @@ function ExposureView({
 								`ALFA +$${MOVE.toFixed(2)} 时约 ${signedUsd(moveDollars(you.contracts), 0)}`,
 							])
 						: t(["share-equivalent", "股票等价"]),
-				tone: "gain",
+				tone:
+					positionDelta(you.contracts) > 0
+						? "gain"
+						: positionDelta(you.contracts) < 0
+							? "loss"
+							: "neutral",
 				evidence: "modeled",
 			},
 			{
@@ -427,7 +443,12 @@ function ExposureView({
 								`ALFA +$${MOVE.toFixed(2)} 时约 ${signedUsd(moveDollars(ben.contracts), 0)}`,
 							])
 						: t(["same option, opposite sign", "同一期权，符号相反"]),
-				tone: "loss",
+				tone:
+					positionDelta(ben.contracts) > 0
+						? "gain"
+						: positionDelta(ben.contracts) < 0
+							? "loss"
+							: "neutral",
 				evidence: "modeled",
 			},
 		);
@@ -523,7 +544,7 @@ function LimitView({
 			x: at,
 			y: repriced,
 			label: signedPrice(repriced - base),
-			tone: repriced >= base ? "gain" : "loss",
+			tone: repriced > base ? "gain" : repriced < base ? "loss" : "neutral",
 		},
 	];
 	return (
@@ -585,8 +606,7 @@ function LimitView({
 					note:
 						Math.abs(gap) < 0.05
 							? t(["small for a small move", "小变动时很小"])
-							: t(["the curve bends away", "曲线弯离了直线"]),
-					tone: Math.abs(gap) < 0.05 ? undefined : "loss",
+							: t(["⚠ the curve bends away", "⚠ 曲线弯离了直线"]),
 					evidence: "calculated",
 				},
 			]}

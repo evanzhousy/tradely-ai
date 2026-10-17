@@ -10,7 +10,7 @@ import {
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import type { TapeRow } from "../walkthrough/instruments/trade-tape";
-import { defineScene, type Phase } from "../walkthrough/types";
+import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame, Walkthrough } from "../walkthrough/walkthrough";
 import {
 	CHECKPOINT_ALFA,
@@ -21,6 +21,8 @@ import {
 } from "./checkpoint-kit";
 
 const tr = (locale: Locale) => (value: Copy) => pick(value, locale);
+const pnlTone = (value: number): ResultItem["tone"] =>
+	value > 0 ? "gain" : value < 0 ? "loss" : "neutral";
 const dollars = (value: number) => usd(value * 100, 0);
 const signedDollars = (value: number) => signedUsd(value * 100, 0);
 
@@ -157,7 +159,7 @@ function LotView({
 					label: t(["Realized", "已实现"]),
 					value: shown.stage >= 2 ? signedDollars(real) : "…",
 					evidence: "calculated",
-					tone: shown.stage >= 2 ? (real >= 0 ? "gain" : "loss") : undefined,
+					tone: shown.stage >= 2 ? pnlTone(real) : undefined,
 				},
 				{
 					id: "unrealized",
@@ -165,6 +167,7 @@ function LotView({
 					value: shown.stage >= 2 ? signedDollars(open) : "…",
 					note: t([`at $${MARK.toFixed(2)}`, `按 $${MARK.toFixed(2)}`]),
 					evidence: "calculated",
+					tone: shown.stage >= 2 ? pnlTone(open) : undefined,
 				},
 			]}
 			controls={
@@ -288,6 +291,7 @@ function ReturnView({
 					value: `+${(growth * 100).toFixed(1)}%`,
 					note: t(["deposit included", "含存款"]),
 					evidence: "calculated",
+					tone: "gain",
 				},
 			]}
 			controls={
@@ -391,7 +395,6 @@ function TradesView({
 				`win rate ${sums.wins} of ${shown.shown}, net ${signedDollars(net)}`,
 				`胜率 ${shown.shown} 中 ${sums.wins}，净值 ${signedDollars(net)}`,
 			]),
-			tone: net < 0 ? "loss" : "gain",
 		});
 	return (
 		<SceneFrame

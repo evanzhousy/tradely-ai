@@ -279,7 +279,7 @@ function SizeCompare({
 				width={Math.max(displayed * k, 3)}
 				height={18}
 				rx={3}
-				className="wt-short"
+				className="wt-band-quiet"
 			/>
 			<Label x={left + Math.max(displayed * k, 3) + 8} y={y + 40}>
 				{t([`${displayed} displayed`, `显示 ${displayed} 张`])}
@@ -460,7 +460,7 @@ function QuoteRow({
 				width={x(ask) - x(bid)}
 				height={14}
 				rx={3}
-				className="wt-long-soft"
+				className="wt-band-quiet"
 			/>
 			<Label x={x(bid) - 4} y={axis + 22} anchor="end" tone="small">
 				{usd(bid)}

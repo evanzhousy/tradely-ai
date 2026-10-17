@@ -288,7 +288,7 @@ export function MetricsExplorer({
 						>
 							<TableCell>
 								<Button
-									variant={selectedId === cell.id ? "secondary" : "ghost"}
+									variant={selectedId === cell.id ? "default" : "ghost"}
 									aria-pressed={selectedId === cell.id}
 									onClick={() => setSelectedId(cell.id)}
 								>
@@ -304,8 +304,14 @@ export function MetricsExplorer({
 									<span className="absolute left-1/2 h-full border-foreground/40 border-l" />
 									{cell.value !== null ? (
 										<span
-											className="absolute top-1 h-1 bg-chart-1"
+											className="absolute top-1 h-1"
 											style={{
+												backgroundColor:
+													cell.value > 0
+														? "var(--tone-up)"
+														: cell.value < 0
+															? "var(--tone-down)"
+															: "var(--tone-dim)",
 												left:
 													cell.value < 0
 														? `${50 - (Math.abs(cell.value) / maximum) * 50}%`

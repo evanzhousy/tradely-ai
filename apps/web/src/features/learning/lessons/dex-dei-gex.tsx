@@ -126,15 +126,7 @@ function FlowRows({
 								y={y + 6}
 								height={ROW - 12}
 								rx={3}
-								className={
-									excluded
-										? "wt-ghost"
-										: !state.signed
-											? "wt-panel-shape"
-											: sign > 0
-												? "wt-long-soft"
-												: "wt-short-soft"
-								}
+								className={excluded ? "wt-ghost" : "wt-panel-shape"}
 								style={excluded ? { fill: hatch } : undefined}
 								initial={false}
 								animate={{ x, width: w }}
@@ -223,7 +215,7 @@ function FlowView({
 				note: shown.spreadAsOne
 					? t(["the spread as one trade", "价差按一笔交易计"])
 					: t(["print by print", "逐笔计算"]),
-				tone: "gain",
+				tone: totals.net > 0 ? "gain" : totals.net < 0 ? "loss" : "neutral",
 				evidence: "inferred",
 			},
 		);
@@ -565,9 +557,8 @@ function SourceView({
 		result.push({
 			id: "verdict",
 			label: t(["Comparable?", "可比吗？"]),
-			value: t(["no", "否"]),
+			value: t(["⚠ no", "⚠ 否"]),
 			note: t(["same name, different numerator", "名字相同，分子不同"]),
-			tone: "loss",
 		});
 	return (
 		<SceneFrame

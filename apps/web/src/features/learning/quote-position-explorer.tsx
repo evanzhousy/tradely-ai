@@ -82,7 +82,7 @@ export function QuotePositionExplorer({
 						cx={x}
 						cy={42}
 						r={7}
-						fill="var(--chart-1)"
+						fill="var(--tone-focus)"
 						initial={false}
 						transition={instantTransition}
 						data-quote-marker
@@ -92,7 +92,7 @@ export function QuotePositionExplorer({
 						cx={24 + target * 272}
 						cy={42}
 						r={7}
-						fill="var(--chart-1)"
+						fill="var(--tone-focus)"
 						data-quote-marker
 					/>
 				)}

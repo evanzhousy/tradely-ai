@@ -226,7 +226,6 @@ function RightsView({
 				`${puts ? "pay" : "receive"} $${strike} × 100 × ${ASSIGNED} = ${usd(cash * 100, 0)} for ${count(ASSIGNED * 100)} shares`,
 				`${puts ? "支付" : "收到"} $${strike} × 100 × ${ASSIGNED} = ${usd(cash * 100, 0)}，对应 ${count(ASSIGNED * 100)} 股`,
 			]),
-			tone: puts ? "loss" : "gain",
 		});
 	return (
 		<SceneFrame
@@ -260,7 +259,6 @@ function RightsView({
 									`并交付 ${count(ASSIGNED * 100)} 股`,
 								],
 					),
-					tone: puts ? "loss" : "gain",
 					evidence: "calculated",
 				},
 			]}
@@ -451,8 +449,8 @@ function SettleView({
 	if (shown.stage >= 2)
 		lines.push({
 			text: t([
-				`${count(INDEX_STRIKE - level)} × $${PER_POINT} = ${usd(paid * 100, 0)} in cash, no shares`,
-				`${count(INDEX_STRIKE - level)} × $${PER_POINT} = 现金 ${usd(paid * 100, 0)}，不交付股票`,
+				`${count(INDEX_STRIKE - level)} × $${PER_POINT} = ${usd(paid * 100, 0)} in cash, no shares ${shown.against === "official" ? "✓" : "✗"}`,
+				`${count(INDEX_STRIKE - level)} × $${PER_POINT} = 现金 ${usd(paid * 100, 0)}，不交付股票 ${shown.against === "official" ? "✓" : "✗"}`,
 			]),
 			tone: shown.against === "official" ? "gain" : "loss",
 		});
@@ -477,10 +475,10 @@ function SettleView({
 					id: "paid",
 					label:
 						shown.against === "official"
-							? t(["Paid, against the official value", "按官方结算值支付"])
+							? t(["Paid, against the official value ✓", "按官方结算值支付 ✓"])
 							: t([
-									"Against the last level: not how it settles",
-									"按最近指数：并非结算方式",
+									"Against the last level: not how it settles ✗",
+									"按最近指数：并非结算方式 ✗",
 								]),
 					value: usd(paid * 100, 0),
 					tone: shown.against === "official" ? "gain" : "loss",

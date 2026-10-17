@@ -85,13 +85,11 @@ export const claims: readonly {
 export const sections: readonly {
 	id: string;
 	label: Copy;
-	tone: "gain" | "accent" | "loss" | "muted";
 	text: Copy;
 }[] = [
 	{
 		id: "supported",
 		label: ["Supported", "有依据"],
-		tone: "gain",
 		text: [
 			`P1 · ALFA Oct 18 calls · Mon Sep 16: ${dollars(PREMIUM)} premium; ${count(CONTRACTS)} traded; 4/5 strikes.`,
 			`P1 · ALFA 10月18日看涨 · 9月16日周一：权利金 ${dollars(PREMIUM)}；成交 ${count(CONTRACTS)} 张；覆盖 4/5 行权价。`,
@@ -100,7 +98,6 @@ export const sections: readonly {
 	{
 		id: "repaired",
 		label: ["Repaired", "已修复"],
-		tone: "accent",
 		text: [
 			"×100 restored; new positions → volume; 120: no data; forecast removed.",
 			"补回 ×100；新增仓位 → 成交；120：无数据；删除预测。",
@@ -109,7 +106,6 @@ export const sections: readonly {
 	{
 		id: "open",
 		label: ["Open", "未解决"],
-		tone: "loss",
 		text: [
 			"120 Monday tape: Tue 09:00; 110 open-interest change: Tuesday report.",
 			"120 周一成交：周二 09:00；110 未平仓变化：周二报告。",
@@ -118,7 +114,6 @@ export const sections: readonly {
 	{
 		id: "reopen",
 		label: ["Reopen if", "重新审查的条件"],
-		tone: "muted",
 		text: [
 			"Corrected Monday tape, or 120 data changes a claim.",
 			"周一成交记录更正，或 120 数据改变结论。",

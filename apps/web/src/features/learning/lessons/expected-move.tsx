@@ -3,7 +3,7 @@ import { type Copy, dayCount, modelValue, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import { Player } from "../walkthrough/player";
-import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
+import { Label, Stage, useStage, useTeachMotion } from "../walkthrough/stage";
 import { packParts, twoRows } from "../walkthrough/text-measure";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame } from "../walkthrough/walkthrough";
@@ -99,7 +99,9 @@ function RangeAxis({
 							y={top}
 							height={height}
 							rx={4}
-							className={range.tone === "sd" ? "wt-long-soft" : "wt-short-soft"}
+							className={
+								range.tone === "sd" ? "wt-band-neutral" : "wt-band-quiet"
+							}
 							initial={false}
 							animate={{ x: from, width: Math.max(to - from, 1) }}
 							transition={motion.move}
@@ -120,7 +122,6 @@ function RangeAxis({
 								key={side}
 								y={axis + (range.tone === "sd" ? 34 : 50)}
 								textAnchor="middle"
-								className={range.tone === "sd" ? "wt-accent" : "wt-small"}
 								initial={false}
 								data-tx={Math.min(Math.max(ends[side], left + 22), right - 22)}
 								animate={{
@@ -143,7 +144,7 @@ function RangeAxis({
 					</Label>
 				</g>
 			))}
-			<circle cx={x(SPOT)} cy={axis} r={5} className="wt-long" />
+			<circle cx={x(SPOT)} cy={axis} r={5} className="wt-panel-shape" />
 			{rows.map(({ line, text, row, y }) => (
 				<Label
 					key={`${line.text}-${row}`}
@@ -238,7 +239,6 @@ function SdView({
 				`${share(SPOT - move)} to ${share(SPOT + move)}`,
 				`${share(SPOT - move)} 至 ${share(SPOT + move)}`,
 			]),
-			tone: "gain",
 			evidence: "modeled",
 		},
 	];
@@ -458,6 +458,7 @@ function Months({
 }) {
 	const t = tr(locale);
 	const motion = useTeachMotion();
+	const { hatch } = useStage();
 	const left = 46;
 	const right = width - 12;
 	// The title breaks at its " · " on a phone, and the chart starts under it.
@@ -510,7 +511,8 @@ function Months({
 							x={cx - barWidth / 2}
 							width={barWidth}
 							rx={2}
-							className={beyond ? "wt-short" : "wt-long-soft"}
+							className={beyond ? "wt-ghost" : "wt-panel-shape"}
+							style={beyond ? { fill: hatch } : undefined}
 							initial={false}
 							animate={{
 								y: shownBars ? y(ratio) : bottom,
@@ -573,11 +575,10 @@ function OutsideView({
 			id: "past",
 			label: t(["Outside, 12 past expiries", "过去 12 个到期日中落在区间外"]),
 			value: t([
-				`${outside(shown.band)} of 12`,
-				`12 个中有 ${outside(shown.band)} 个`,
+				`⚠ ${outside(shown.band)} of 12`,
+				`⚠ 12 个中有 ${outside(shown.band)} 个`,
 			]),
 			note: `${Math.round((outside(shown.band) / 12) * 100)}%`,
-			tone: "loss",
 			evidence: "calculated",
 		});
 	return (

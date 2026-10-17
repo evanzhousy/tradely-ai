@@ -131,7 +131,7 @@ export function BarChart({
 									x={cx}
 									y={bottom - MISSING_HEIGHT - 6}
 									anchor="middle"
-									tone="accent"
+									className="wt-film-warn"
 								>
 									?
 								</Label>
@@ -148,7 +148,7 @@ export function BarChart({
 							x={x}
 							width={barWidth}
 							rx={3}
-							className={on ? "wt-chip" : "wt-long-soft"}
+							className={on ? "wt-chip" : "wt-bar-neutral"}
 							initial={false}
 							animate={{ y: barTop, height: bottom - barTop }}
 							transition={motion.move}

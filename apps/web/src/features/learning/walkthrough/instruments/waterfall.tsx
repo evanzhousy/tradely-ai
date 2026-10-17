@@ -87,7 +87,8 @@ export function Waterfall({
 			))}
 			{bars.map(({ step, from, to }, i) => {
 				const cx = left + slot * (i + 0.5);
-				const up = to >= from;
+				const up = to > from;
+				const down = to < from;
 				const barTop = y(Math.max(from, to));
 				const barHeight = Math.max(Math.abs(y(from) - y(to)), 1.5);
 				const className =
@@ -96,8 +97,10 @@ export function Waterfall({
 						: step.kind === "total"
 							? "wt-chip"
 							: up
-								? "wt-long-soft"
-								: "wt-short-soft";
+								? "wt-band-gain"
+								: down
+									? "wt-band-loss"
+									: "wt-bar-neutral";
 				const next = bars[i + 1];
 				return (
 					<m.g
@@ -143,7 +146,9 @@ export function Waterfall({
 											? "wt-small"
 											: up
 												? "wt-gain"
-												: "wt-loss"
+												: down
+													? "wt-loss"
+													: "wt-muted"
 								}
 								style={{ fontSize: valueSize }}
 							>

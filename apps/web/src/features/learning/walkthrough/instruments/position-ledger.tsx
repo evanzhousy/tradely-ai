@@ -16,6 +16,8 @@ export type LedgerRow = {
 	tag?: string;
 	/** Aggregates such as "everyone else" are drawn quieter. */
 	muted?: boolean;
+	/** The learner's own holder, in focus. The teaching-world "you" id is the default. */
+	focus?: boolean;
 };
 
 export type LedgerLabels = {
@@ -88,8 +90,13 @@ export function PositionLedger({
 			<text x={PAD} y={42}>
 				<tspan className="wt-strong">{count(openInterest)}</tspan>
 				{oiDelta !== 0 || openInterestBefore !== undefined ? (
-					<tspan dx="8" className="wt-accent">
-						{oiDelta === 0 ? "±0" : signedCount(oiDelta)}
+					<tspan
+						dx="8"
+						className={
+							oiDelta > 0 ? "wt-gain" : oiDelta < 0 ? "wt-loss" : "wt-muted"
+						}
+					>
+						{oiDelta === 0 ? "0" : signedCount(oiDelta)}
 					</tspan>
 				) : null}
 			</text>
@@ -99,7 +106,7 @@ export function PositionLedger({
 			<text x={g.right} y={42} textAnchor="end">
 				<tspan className="wt-strong">{count(volume)}</tspan>
 				{volumeDelta !== 0 ? (
-					<tspan dx="8" className="wt-accent">
+					<tspan dx="8" className={volumeDelta > 0 ? "wt-gain" : "wt-loss"}>
 						{signedCount(volumeDelta)}
 					</tspan>
 				) : null}
@@ -127,7 +134,7 @@ export function PositionLedger({
 				y={56}
 				height={14}
 				rx={3}
-				className="wt-short-soft"
+				className="wt-bar-neutral"
 				initial={false}
 				animate={{ x: g.center - openInterest * k, width: openInterest * k }}
 				transition={motion.move}
@@ -137,7 +144,7 @@ export function PositionLedger({
 				y={56}
 				height={14}
 				rx={3}
-				className="wt-long-soft"
+				className="wt-bar-neutral"
 				initial={false}
 				animate={{ width: openInterest * k }}
 				transition={motion.move}
@@ -180,6 +187,7 @@ function LedgerRowShape({
 	const barY = g.narrow ? y + 20 : y + 6;
 	const barHeight = g.narrow ? 14 : 18;
 	const { long, short } = row.holding;
+	const focus = row.focus ?? row.id === "you";
 	const before = row.before;
 	const longChanged = before && before.long !== long;
 	const shortChanged = before && before.short !== short;
@@ -189,16 +197,16 @@ function LedgerRowShape({
 			{g.narrow ? (
 				// Across the centre line on a narrow stage; the halo parts it.
 				<text x={PAD} y={y + 12} className="wt-halo">
-					<tspan>{row.name}</tspan>
+					<tspan className={focus ? "wt-accent" : undefined}>{row.name}</tspan>
 					{row.tag ? (
-						<tspan dx="8" className="wt-accent">
+						<tspan dx="8" className={focus ? "wt-accent" : "wt-muted"}>
 							{row.tag}
 						</tspan>
 					) : null}
 				</text>
 			) : (
 				<>
-					<Label x={PAD} y={y + 20}>
+					<Label x={PAD} y={y + 20} tone={focus ? "accent" : undefined}>
 						{row.name}
 					</Label>
 					<AnimatePresence>
@@ -207,7 +215,7 @@ function LedgerRowShape({
 								key={row.tag}
 								x={PAD}
 								y={y + 37}
-								className="wt-accent"
+								className={focus ? "wt-accent" : "wt-muted"}
 								style={{ fontSize: 11 }}
 								initial={motion.enabled ? { opacity: 0 } : false}
 								animate={{ opacity: 1 }}
@@ -246,7 +254,7 @@ function LedgerRowShape({
 				y={barY}
 				height={barHeight}
 				rx={3}
-				className="wt-short"
+				className="wt-bar-neutral"
 				initial={false}
 				animate={{ x: g.center - short * k, width: short * k }}
 				transition={motion.move}
@@ -256,7 +264,7 @@ function LedgerRowShape({
 				y={barY}
 				height={barHeight}
 				rx={3}
-				className="wt-long"
+				className="wt-bar-neutral"
 				initial={false}
 				animate={{ width: long * k }}
 				transition={motion.move}

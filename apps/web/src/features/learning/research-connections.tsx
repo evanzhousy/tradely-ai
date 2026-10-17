@@ -56,9 +56,9 @@ export function ResearchConnections({
 									stroke={
 										feedback
 											? feedback.met
-												? "var(--success)"
-												: "var(--warning)"
-											: "var(--chart-1)"
+												? "var(--tone-up)"
+												: "var(--tone-down)"
+											: "var(--tone-focus)"
 									}
 									strokeWidth="2"
 									initial={false}
@@ -69,6 +69,18 @@ export function ResearchConnections({
 									transition={enabled ? lessonTransition : instantTransition}
 									data-draft-link={question.id}
 								/>
+								{feedback ? (
+									<text
+										x="24"
+										y="18"
+										textAnchor="middle"
+										fill={feedback.met ? "var(--tone-up)" : "var(--tone-down)"}
+										fontSize="12"
+										fontWeight="600"
+									>
+										{feedback.met ? "✓" : "✗"}
+									</text>
+								) : null}
 							</svg>
 							<div className="min-w-0 rounded-xl bg-muted/50 p-3 text-xs">
 								<p className="font-medium">{question.prompt[locale]}</p>

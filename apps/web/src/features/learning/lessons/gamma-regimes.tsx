@@ -301,8 +301,7 @@ function FlipView({
 			id: "shortcut",
 			label: t(["Strike-sum crossing", "行权价累加的穿零点"]),
 			value: level(SHORTCUT),
-			note: t(["a different calculation", "另一种计算"]),
-			tone: "loss",
+			note: t(["⚠ a different calculation", "⚠ 另一种计算"]),
 			evidence: "calculated",
 		});
 	return (
@@ -450,7 +449,12 @@ function EvidenceCards({
 						width={width - 8}
 						height={block.height}
 						rx={10}
-						className={i === state.stage ? "wt-focus-shape" : "wt-panel-shape"}
+						className={[
+							i === 0 ? "ev-modeled" : undefined,
+							i === state.stage ? "wt-focus-shape" : "wt-panel-shape",
+						]
+							.filter(Boolean)
+							.join(" ")}
 					/>
 					<Label x={16} y={block.y + 20} tone="small">
 						{t(block.card.title)}

@@ -53,8 +53,11 @@ export function Worksheet({
 								<div className="h-5 rounded bg-muted">
 									{known ? (
 										<div
-											className="h-full rounded bg-primary"
-											style={{ width: `${(Math.max(0, value) / max) * 100}%` }}
+											className="h-full rounded"
+											style={{
+												width: `${(Math.max(0, value) / max) * 100}%`,
+												backgroundColor: "var(--muted-foreground)",
+											}}
 										/>
 									) : (
 										<span className="px-2 text-xs">

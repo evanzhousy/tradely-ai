@@ -380,7 +380,6 @@ function EventView({
 						shown.event === "trade"
 							? t([`+${TAKEN} from one print`, `一笔成交 +${TAKEN}`])
 							: t(["no new print", "没有新成交"]),
-					tone: shown.event === "trade" ? "gain" : undefined,
 				},
 				{
 					id: "last",

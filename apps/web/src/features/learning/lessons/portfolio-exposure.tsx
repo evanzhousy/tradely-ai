@@ -167,7 +167,9 @@ function HoldingsTable({
 							x={valueX}
 							y={y + ROW / 2 + 5}
 							textAnchor="end"
-							className={row.value === null ? "wt-accent wt-halo" : undefined}
+							className={
+								row.value === null ? "wt-film-warn wt-halo" : undefined
+							}
 							initial={motion.enabled ? { opacity: 0 } : false}
 							animate={{ opacity: 1 }}
 							transition={motion.fade}
@@ -278,7 +280,6 @@ function CoverView({
 					`short ${count(SUBTOTAL)} leaves you net short`,
 					`做空 ${count(SUBTOTAL)} 股会变成净空头`,
 				]),
-				tone: "loss",
 				evidence: "calculated",
 			},
 		);
@@ -361,7 +362,7 @@ function HedgeView({
 			id: "week",
 			label: "",
 			points: curve(week ? WEEK : 0),
-			tone: "short",
+			tone: "reference",
 			dashed: true,
 			hidden: !week,
 		},
@@ -592,7 +593,7 @@ function FeedTable({
 							width={width - 8}
 							height={rowHeight}
 							rx={8}
-							className={row.flag ? "wt-focus-shape" : "wt-panel-shape"}
+							className="wt-panel-shape"
 						/>
 						<Label x={14} y={y + 18} tone="small">
 							{t(row.label)}
@@ -601,7 +602,7 @@ function FeedTable({
 							x={width - 14}
 							y={y + 19}
 							anchor="end"
-							tone={row.flag ? "accent" : undefined}
+							className={row.flag ? "wt-film-warn" : undefined}
 						>
 							{row.value}
 						</Label>
@@ -640,9 +641,9 @@ function FeedView({
 		result.push({
 			id: "raw",
 			label: t(["Added as sent", "按原样相加"]),
-			value: RAW_SUM,
+			value: `⚠ ${RAW_SUM}`,
 			note: t(["two units mixed: meaningless", "混用两种单位：没有意义"]),
-			tone: "loss",
+			tone: "caution",
 			evidence: "calculated",
 		});
 	if (shown.stage >= 1)
@@ -664,14 +665,14 @@ function FeedView({
 			id: "stale",
 			label: t(["The puts' delta, Friday's", "看跌 Delta，周五的"]),
 			value: t([
-				`${signedCount(PUT_DELTA_FRIDAY)} shares`,
-				`${signedCount(PUT_DELTA_FRIDAY)} 股`,
+				`⚠ ${signedCount(PUT_DELTA_FRIDAY)} shares`,
+				`⚠ ${signedCount(PUT_DELTA_FRIDAY)} 股`,
 			]),
 			note: t([
 				`Monday's is ${signedCount(PUT_DELTA)}`,
 				`周一的是 ${signedCount(PUT_DELTA)}`,
 			]),
-			tone: "loss",
+			tone: "caution",
 			evidence: "modeled",
 		});
 	return (

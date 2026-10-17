@@ -500,7 +500,7 @@ function ScreenBars({
 							y={barY}
 							height={16}
 							rx={3}
-							className={pass ? "wt-chip" : "wt-long-soft"}
+							className={pass ? "wt-chip" : "wt-band-quiet"}
 							initial={false}
 							animate={{ width: x(value) - left }}
 							transition={motion.move}

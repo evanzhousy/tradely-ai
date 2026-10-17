@@ -171,7 +171,7 @@ function QuestionView({
 				{
 					id: "checkable",
 					label: t(["Could someone check the answer?", "别人能核查答案吗？"]),
-					value: complete ? t(["yes", "能"]) : t(["not yet", "还不能"]),
+					value: complete ? t(["✓ yes", "✓ 能"]) : t(["not yet", "还不能"]),
 					note: complete
 						? shown.forecast
 							? t(["a forecast: needs held-out dates", "预测：需要样本外日期"])

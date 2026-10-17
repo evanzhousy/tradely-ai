@@ -120,7 +120,7 @@ function SlopeScene({
 			id: "with-gamma",
 			label: t(["delta + gamma", "Delta + Gamma"]),
 			points: series((spot) => base + withGamma(spot - SPOT)),
-			tone: "long",
+			tone: "reference",
 		},
 	];
 	const markers: PayoffMarker[] =
@@ -398,7 +398,13 @@ function HedgeTable({
 										y={y + HEDGE_ROW / 2 + 5}
 										anchor="middle"
 										tone={
-											net && value !== 0 ? "loss" : net ? "gain" : undefined
+											net
+												? value > 0
+													? "gain"
+													: value < 0
+														? "loss"
+														: "small"
+												: undefined
 										}
 									>
 										{value === 0 ? "0" : signedCount(value)}
@@ -455,7 +461,7 @@ function HedgeScene({
 				`delta ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`,
 				`Delta ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`,
 			]),
-			tone: "loss",
+			tone: drift > 0 ? "gain" : drift < 0 ? "loss" : "neutral",
 			evidence: "calculated",
 		});
 	if (shown.stage >= 2)
@@ -577,14 +583,12 @@ function ExpiryScene({
 				X_RANGE[1],
 				0.25,
 			),
-			tone: "long",
+			tone: "reference",
 			dashed: true,
 		});
 	const markers: PayoffMarker[] = [
 		{ id: "oct", x: shown.spot, y: oct },
-		...(shown.near
-			? [{ id: "sep", x: shown.spot, y: sep, tone: "gain" as const }]
-			: []),
+		...(shown.near ? [{ id: "sep", x: shown.spot, y: sep }] : []),
 	];
 	const result: ResultItem[] = [
 		{
@@ -611,11 +615,10 @@ function ExpiryScene({
 			note:
 				sep > oct
 					? t([
-							`${(sep / oct).toFixed(1)}× the Oct 18`,
-							`是 10月18日 的 ${(sep / oct).toFixed(1)} 倍`,
+							`⚠ ${(sep / oct).toFixed(1)}× the Oct 18`,
+							`⚠ 是 10月18日 的 ${(sep / oct).toFixed(1)} 倍`,
 						])
 					: t(["less than the Oct 18", "小于 10月18日"]),
-			tone: sep > oct ? "loss" : undefined,
 			evidence: "modeled",
 		});
 	return (

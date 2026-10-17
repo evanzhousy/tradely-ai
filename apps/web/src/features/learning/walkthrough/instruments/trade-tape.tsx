@@ -11,6 +11,8 @@ export type TapeColumn = {
 export type TapeRow = {
 	key: string;
 	cells: readonly string[];
+	/** A class per cell, for a cell that carries a role: a signed value's up or down, an unknown's caution. */
+	cellClass?: readonly (string | undefined)[];
 	muted?: boolean;
 };
 
@@ -164,6 +166,7 @@ export function TradeTape({
 								y={y + head + 18 + lineOf(i) * STACKED_LINE}
 								anchor={columns[i].align === "end" ? "end" : "start"}
 								maxWidth={room(row.cells, i)}
+								className={row.cellClass?.[i]}
 							>
 								{cell}
 							</Label>

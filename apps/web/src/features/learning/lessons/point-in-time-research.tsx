@@ -176,7 +176,6 @@ function CutoffView({
 										`corrected at ${CORRECTED_AT}`,
 										`已于 ${CORRECTED_AT} 更正`,
 									]),
-						tone: shown.cutoff === 0 ? "loss" : undefined,
 					},
 					{
 						id: "late",
@@ -271,7 +270,7 @@ function DecayView({
 				const minute = i * 5;
 				return [minute, weightAt(minute, shown.halfLife)] as const;
 			}),
-			tone: "position",
+			tone: "reference",
 		},
 	];
 	const markers: PayoffMarker[] = [
@@ -433,7 +432,6 @@ function Histogram({
 				{history.map((bucket) => {
 					if (!bucket.days) return null;
 					const h = (bucket.days / most) * (HIST_BOTTOM - HIST_TOP);
-					const lower = state.reading >= 1 && bucket.from + BUCKET <= TODAY;
 					return (
 						<g key={bucket.from}>
 							<rect
@@ -442,7 +440,7 @@ function Histogram({
 								width={x(bucket.from + BUCKET) - x(bucket.from) - 4}
 								height={h}
 								rx={3}
-								className={lower ? "wt-focus-shape" : "wt-panel-shape"}
+								className="wt-panel-shape"
 							/>
 							<Label
 								x={x(bucket.from + BUCKET / 2)}
@@ -685,8 +683,8 @@ function SearchBars({
 				x={hx + boxWidth / 2}
 				y={opened ? y(HOLDOUT) - 6 : (SEARCH_TOP + SEARCH_BOTTOM) / 2 + 4}
 				anchor="middle"
-				tone="accent"
-				className="wt-halo"
+				tone={opened ? "accent" : undefined}
+				className={opened ? "wt-halo" : "wt-halo wt-film-warn"}
 			>
 				{opened ? `${HOLDOUT}%` : t(["sealed", "封存"])}
 			</Label>
@@ -740,9 +738,8 @@ function HoldoutView({
 		result.push({
 			id: "holdout",
 			label: t(["Same rule on Jul–Aug", "同一规则用于 7–8 月"]),
-			value: `${HOLDOUT}%`,
+			value: `⚠ ${HOLDOUT}%`,
 			note: t(["frozen first, run once", "先冻结，只运行一次"]),
-			tone: "loss",
 			evidence: "calculated",
 		});
 	return (

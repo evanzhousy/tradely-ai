@@ -402,7 +402,6 @@ function CloseView({
 				`${usd(value)} a share${value > 0 ? ": exercised, 100 shares" : ": expires"}`,
 				`每股 ${usd(value)}${value > 0 ? "：行权，100 股" : "：到期作废"}`,
 			]),
-			tone: value > 0 ? "gain" : "loss",
 		});
 	return (
 		<SceneFrame
@@ -426,7 +425,7 @@ function CloseView({
 					label: t(["Worth at the close", "收盘时价值"]),
 					value: shown.stage >= 2 ? usd(value) : "…",
 					note: t(["per share", "每股"]),
-					tone: shown.stage >= 2 ? (value > 0 ? "gain" : "loss") : undefined,
+					tone: shown.stage >= 2 && value === 0 ? "neutral" : undefined,
 				},
 			]}
 			controls={

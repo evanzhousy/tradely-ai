@@ -301,7 +301,9 @@ function RefView({
 								width={width - 16}
 								height={86}
 								rx={12}
-								className={usable ? "wt-focus-shape" : "wt-panel-shape"}
+								className={
+									ref.time !== null ? "wt-focus-shape" : "wt-panel-shape"
+								}
 							/>
 							<Label x={22} y={SPREAD_RULER_HEIGHT + 28} tone="muted">
 								{t(["Reference quote", "参考报价"])}
@@ -318,11 +320,7 @@ function RefView({
 										: `${t(ref.contract)} · ${ref.time}`}
 								</Label>
 								{ref.bid !== null && ref.ask !== null ? (
-									<Label
-										x={22}
-										y={SPREAD_RULER_HEIGHT + 72}
-										tone={usable ? "accent" : undefined}
-									>
+									<Label x={22} y={SPREAD_RULER_HEIGHT + 72} tone="accent">
 										{`${usd(ref.bid)} / ${usd(ref.ask)}`}
 									</Label>
 								) : null}
@@ -341,7 +339,9 @@ function RefView({
 				{
 					id: "reference",
 					label: t(["Reference", "参考报价"]),
-					value: usable ? t(["usable", "可用"]) : t(ref.problem ?? ["", ""]),
+					value: usable
+						? t(["✓ usable", "✓ 可用"])
+						: `✗ ${t(ref.problem ?? ["", ""])}`,
 					note: ref.time ? ref.time : undefined,
 					tone: usable ? "gain" : "loss",
 				},

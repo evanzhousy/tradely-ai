@@ -244,7 +244,13 @@ export function ExecutionLab({
 						opacity: phase === 1 ? 1 : 0,
 					}}
 				>
-					<span className="rounded bg-primary px-2 font-mono text-primary-foreground text-sm">
+					<span
+						className="rounded px-2 font-mono text-sm"
+						style={{
+							backgroundColor: "var(--tone-focus)",
+							color: "var(--card)",
+						}}
+					>
 						{orderSize} {text("contracts", "张")}
 					</span>
 				</div>

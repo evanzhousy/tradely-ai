@@ -87,9 +87,9 @@ function AggregateCard({
 				},
 				{
 					id: "simple",
-					label: t(["Simple average ✗", "简单平均 ✗"]),
+					label: t(["Simple average", "简单平均"]),
 					value: price4(result.simple),
-					tone: "loss",
+					tone: "small",
 					from: 3,
 				},
 			]
@@ -102,7 +102,7 @@ function AggregateCard({
 				width={cardWidth}
 				height={CARD_ROWS * CARD_ROW + 40}
 				rx={14}
-				className={result.valid ? "wt-panel-shape" : "wt-focus-shape"}
+				className="wt-panel-shape"
 			/>
 			<Label x={x + 16} y={y + 24} tone="muted">
 				{t(["Aggregate row", "聚合行"])}
@@ -120,7 +120,17 @@ function AggregateCard({
 							y={y + 50 + i * CARD_ROW}
 							tone={row.id === "simple" ? "small" : undefined}
 						>
-							{row.label}
+							{row.id === "weighted" ? (
+								<>
+									{row.label} <tspan className="wt-gain">✓</tspan>
+								</>
+							) : row.id === "simple" ? (
+								<>
+									{row.label} <tspan className="wt-loss">✗</tspan>
+								</>
+							) : (
+								row.label
+							)}
 						</Label>
 						<Label
 							x={x + cardWidth - 16}
@@ -134,8 +144,8 @@ function AggregateCard({
 				))
 			) : (
 				<g>
-					<Label x={x + 16} y={y + 56} tone="accent">
-						{t(["Refused: different contracts", "拒绝：合约不同"])}
+					<Label x={x + 16} y={y + 56} tone="loss">
+						{t(["Refused: different contracts ✗", "拒绝：合约不同 ✗"])}
 					</Label>
 					<Label x={x + 16} y={y + 80} tone="small">
 						{t([
@@ -189,7 +199,7 @@ function AggregateView({
 				{
 					id: "refused",
 					label: t(["Aggregate", "聚合"]),
-					value: t(["refused", "拒绝"]),
+					value: t(["refused ✗", "拒绝 ✗"]),
 					note: t(["mixes two contracts", "混合了两张合约"]),
 					tone: "loss",
 				},

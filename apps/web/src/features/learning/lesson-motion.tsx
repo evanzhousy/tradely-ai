@@ -125,7 +125,11 @@ export function ChangeHighlight({
 			<m.span
 				key={value}
 				aria-hidden="true"
-				className="pointer-events-none absolute -inset-x-1 inset-y-0 -z-10 rounded bg-primary/25"
+				className="pointer-events-none absolute -inset-x-1 inset-y-0 -z-10 rounded"
+				style={{
+					backgroundColor:
+						"color-mix(in oklab, var(--tone-focus) 25%, transparent)",
+				}}
 				initial={{ opacity: enabled ? 1 : 0 }}
 				animate={{ opacity: 0 }}
 				transition={enabled ? lessonTransition : instantTransition}

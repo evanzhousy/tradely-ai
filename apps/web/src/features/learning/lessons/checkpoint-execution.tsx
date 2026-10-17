@@ -183,6 +183,7 @@ function PrintsView({
 								"张，价差内成交不计",
 							]),
 							evidence: "inferred",
+							tone: "gain",
 						}
 					: {
 							id: "ask",

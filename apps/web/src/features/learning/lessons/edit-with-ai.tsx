@@ -64,8 +64,13 @@ function Outline({
 							height={row.h}
 							rx={8}
 							className={
-								FOCUS.has(status) ? "wt-focus-shape" : "wt-panel-shape"
+								status === "recheck"
+									? "wt-panel-shape"
+									: FOCUS.has(status)
+										? "wt-focus-shape"
+										: "wt-panel-shape"
 							}
+							stroke={status === "recheck" ? "var(--tone-caution)" : undefined}
 							strokeDasharray={removed ? "5 4" : undefined}
 						/>
 						<Label
@@ -83,15 +88,17 @@ function Outline({
 							className={
 								removed
 									? "wt-small wt-loss"
-									: FOCUS.has(status)
-										? "wt-small wt-accent"
-										: "wt-small"
+									: status === "recheck"
+										? "wt-small wt-film-warn"
+										: FOCUS.has(status)
+											? "wt-small wt-accent"
+											: "wt-small"
 							}
 							initial={motion.enabled ? { opacity: 0 } : false}
 							animate={{ opacity: 1 }}
 							transition={motion.fade}
 						>
-							{t(STATUS[status])}
+							{removed ? `✗ ${t(STATUS[status])}` : t(STATUS[status])}
 						</m.text>
 					</m.g>
 				);
@@ -200,7 +207,8 @@ function ScopeView({
 				: shown.prompt === "bounded"
 					? t(["the rest only needs confirming", "其余只需确认没有改动"])
 					: t(["any block may differ", "任何区块都可能不同"]),
-			tone: shown.reveal && review === BLOCKS.length ? "loss" : undefined,
+			evidence:
+				shown.reveal && review === BLOCKS.length ? "unknown" : undefined,
 		},
 		{
 			id: "boundary",
@@ -306,7 +314,7 @@ function reviewMessage(step: ReviewStep): { text: Copy; loss?: Copy } {
 				"AI edit applied to the preview",
 				"AI edit applied to the preview",
 			],
-			loss: ["Index GEX is gone", "Index GEX 不见了"],
+			loss: ["Index GEX is gone ✗", "Index GEX 不见了 ✗"],
 		};
 	if (step === 2)
 		return {
@@ -466,7 +474,7 @@ function ReviewView({
 			id: "removed",
 			label: t(["Removed", "已删除"]),
 			value: removed.length
-				? removed.map((block) => t(block.label)).join(", ")
+				? `✗ ${removed.map((block) => t(block.label)).join(", ")}`
 				: t(["Nothing", "无"]),
 			note: removed.length
 				? t(["you didn't ask for this", "这不是你要求的"])
@@ -576,16 +584,16 @@ function SaveStage({
 				y={66}
 				className={
 					saved
-						? "wt-small wt-accent"
+						? "wt-small wt-gain"
 						: closed
 							? "wt-small wt-loss"
-							: "wt-small"
+							: "wt-small wt-film-warn"
 				}
 				initial={motion.enabled ? { opacity: 0 } : false}
 				animate={{ opacity: 1 }}
 				transition={motion.fade}
 			>
-				{status}
+				{saved ? `✓ ${status}` : closed ? `✗ ${status}` : `⚠ ${status}`}
 			</m.text>
 			<rect
 				x={4}
@@ -658,9 +666,9 @@ function SaveView({
 			label: t(["Your edits", "你的修改"]),
 			value:
 				shown.action === "saved"
-					? t(["Saved", "已保存"])
+					? t(["✓ Saved", "✓ 已保存"])
 					: shown.action === "closed"
-						? t(["Not kept", "没有保留"])
+						? t(["✗ Not kept", "✗ 没有保留"])
 						: t(["Unsaved", "未保存"]),
 			note:
 				shown.action === "saved"
@@ -668,7 +676,12 @@ function SaveView({
 					: shown.action === "closed"
 						? t(["a preview isn't a save", "预览不等于保存"])
 						: t(["the preview looks right", "预览看起来没问题"]),
-			tone: shown.action === "closed" ? "loss" : undefined,
+			tone:
+				shown.action === "saved"
+					? "gain"
+					: shown.action === "closed"
+						? "loss"
+						: undefined,
 		},
 		{
 			id: "official",

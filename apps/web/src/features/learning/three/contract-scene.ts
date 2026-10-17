@@ -69,6 +69,11 @@ export function mountContractScene(
 		canvas.style.cssText =
 			"display:block;width:100%;height:100%;touch-action:none;";
 		host.appendChild(canvas);
+		const color = (token: string) =>
+			new THREE.Color(
+				getComputedStyle(host).getPropertyValue(token).trim() ||
+					getComputedStyle(host).color,
+			);
 		const labelsHost = document.createElement("div");
 		labelsHost.setAttribute("aria-hidden", "true");
 		labelsHost.style.cssText =
@@ -169,7 +174,7 @@ export function mountContractScene(
 				]),
 			);
 			const spotMaterial = track(
-				new THREE.LineBasicMaterial({ color: 0xb58c26 }),
+				new THREE.LineBasicMaterial({ color: color("--tone-ink") }),
 			);
 			scene.add(new THREE.Line(spotGeometry, spotMaterial));
 			addLabel(
@@ -323,11 +328,6 @@ export function mountContractScene(
 			forceDraw = true;
 			queueRender();
 		};
-		const color = (token: string) =>
-			new THREE.Color(
-				getComputedStyle(host).getPropertyValue(token).trim() ||
-					getComputedStyle(host).color,
-			);
 		const updateAppearance = () => {
 			const shown = new Set(
 				visibleContracts(data, state).map((contract) => contract.id),
@@ -346,11 +346,11 @@ export function mountContractScene(
 				const material = mesh.material as THREE.MeshStandardMaterial;
 				material.color.copy(
 					color(
-						selected
-							? "--primary"
-							: comparable
-								? "--chart-1"
-								: "--muted-foreground",
+						contract.volume === null
+							? "--tone-caution"
+							: selected || comparable
+								? "--tone-focus"
+								: "--tone-dim",
 					),
 				);
 				material.opacity =
@@ -371,10 +371,10 @@ export function mountContractScene(
 					shown.has(contract.id) &&
 					(selected || contractStatus(data, contract) === "comparable");
 				label.element.style.background = selected
-					? "var(--primary)"
+					? "var(--tone-focus)"
 					: "color-mix(in srgb,var(--card) 86%,transparent)";
 				label.element.style.color = selected
-					? "var(--primary-foreground)"
+					? "var(--card)"
 					: "var(--foreground)";
 			}
 			const priority = (label: (typeof labels)[number]) =>

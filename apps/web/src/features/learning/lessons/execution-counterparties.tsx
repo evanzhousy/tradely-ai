@@ -499,7 +499,7 @@ function OriginStage({
 										x={x + 12}
 										y={layout.cardTop + 56}
 										tone="strong"
-										className="wt-halo"
+										className="wt-film-warn wt-halo"
 									>
 										?
 									</Label>

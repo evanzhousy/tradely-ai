@@ -221,7 +221,9 @@ function AuditRows({
 				const v = state.requirement
 					? verdicts[state.requirement][source.id]
 					: null;
-				const good = v?.verdict === "meets";
+				const verdictText = v
+					? `${v.verdict === "meets" ? "✓ " : v.verdict === "fails" ? "✗ " : ""}${t(verdictCopy[v.verdict])}`
+					: "";
 				return (
 					<g key={source.id}>
 						<rect
@@ -230,7 +232,7 @@ function AuditRows({
 							width={width - 16}
 							height={row - 8}
 							rx={10}
-							className={good ? "wt-focus-shape" : "wt-panel-shape"}
+							className="wt-panel-shape"
 						/>
 						<Label x={20} y={y + 20}>
 							{t(source.name)}
@@ -247,22 +249,22 @@ function AuditRows({
 							>
 								{/* The pill fits its word, so it stays clear of a long source name. */}
 								<rect
-									x={width - 20 - pillWidth(t(verdictCopy[v.verdict]))}
+									x={width - 20 - pillWidth(verdictText)}
 									y={y + 8}
-									width={pillWidth(t(verdictCopy[v.verdict]))}
+									width={pillWidth(verdictText)}
 									height={20}
 									rx={10}
 									className={
 										v.verdict === "meets"
-											? "wt-long"
+											? "wt-gain"
 											: v.verdict === "fails"
-												? "wt-short"
+												? "wt-loss"
 												: "wt-panel-shape"
 									}
 									style={v.verdict === "partial" ? { fill: hatch } : undefined}
 								/>
 								<Label
-									x={width - 20 - pillWidth(t(verdictCopy[v.verdict])) / 2}
+									x={width - 20 - pillWidth(verdictText) / 2}
 									y={y + 22}
 									anchor="middle"
 									tone="small"
@@ -272,14 +274,13 @@ function AuditRows({
 											: "wt-on-soft wt-halo"
 									}
 								>
-									{t(verdictCopy[v.verdict])}
+									{verdictText}
 								</Label>
 								<Label
 									x={narrow ? 20 : width - 20}
 									y={narrow ? y + 60 : y + 44}
 									anchor={narrow ? "start" : "end"}
 									tone="small"
-									className="wt-accent"
 								>
 									{t(v.why)}
 								</Label>
@@ -442,8 +443,13 @@ function CoverTable({
 							x={width - 20}
 							y={y + 19}
 							anchor="end"
-							tone={row.state === "missing" ? "accent" : undefined}
-							className={row.state === "missing" ? "wt-halo" : undefined}
+							className={
+								row.state === "missing"
+									? "wt-film-warn wt-halo"
+									: row.state === "zero" && state.stage >= 1
+										? "wt-muted"
+										: undefined
+							}
 						>
 							{row.state === "missing"
 								? t(["missing", "缺失"])
@@ -530,7 +536,7 @@ function CoverView({
 						{
 							id: "not",
 							label: t(["Not", "而不是"]),
-							value: count(total),
+							value: `${count(total)} ✗`,
 							note: t(["as if the gap were zero", "好像缺口是零一样"]),
 							tone: "loss",
 						},

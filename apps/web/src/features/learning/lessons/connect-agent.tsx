@@ -179,7 +179,7 @@ function WayStage({
 									: on
 										? "wt-accent"
 										: group.method === "none"
-											? "wt-loss"
+											? "wt-film-warn"
 											: undefined
 							}
 							initial={motion.enabled ? { opacity: 0 } : false}
@@ -269,7 +269,7 @@ function WayView({
 					: method === "key"
 						? t(["one per agent, revocable", "每个智能体一把，可撤销"])
 						: t(["hosted chat sites", "托管的聊天网站"]),
-			tone: shown.reveal && method === "none" ? "loss" : undefined,
+			evidence: shown.reveal && method === "none" ? "unknown" : undefined,
 		},
 		{
 			id: "credits",
@@ -365,8 +365,8 @@ function checks(state: ProveState): {
 			],
 			line: "tradingflow · connected · tools listed",
 			verdict: [
-				"your client registered it and can see its tools",
-				"你的客户端已注册它，并能看到它的工具",
+				"your client registered it and can see its tools ✓",
+				"你的客户端已注册它，并能看到它的工具 ✓",
 			],
 			kind: "proof",
 		},
@@ -376,8 +376,8 @@ function checks(state: ProveState): {
 			label: [`curl -s ${ENDPOINT}`, `curl -s ${ENDPOINT}`],
 			line: '{"name":"tradingflow-mcp","status":"ok",…}',
 			verdict: [
-				"the endpoint is up; it needs no key, so it says nothing about yours",
-				"端点在线；它不需要密钥，所以说明不了你的密钥",
+				"the endpoint is up ✓; it needs no key, so it says nothing about yours",
+				"端点在线 ✓；它不需要密钥，所以说明不了你的密钥",
 			],
 			kind: "partial",
 		},
@@ -390,12 +390,12 @@ function checks(state: ProveState): {
 				: '{"jsonrpc":"2.0","id":1,"error":{…}} · HTTP 200',
 			verdict: state.keyWorks
 				? [
-						"your key works, and these are the tools it reaches",
-						"你的密钥有效，这些就是它能用的工具",
+						"your key works ✓, and these are the tools it reaches",
+						"你的密钥有效 ✓，这些就是它能用的工具",
 					]
 				: [
-						"still HTTP 200, but an error: look the code up in the reference",
-						"仍是 HTTP 200，但这是错误：去参考文档里查这个代码",
+						"still HTTP 200, but an error ✗: look the code up in the reference",
+						"仍是 HTTP 200，但这是错误 ✗：去参考文档里查这个代码",
 					],
 			kind: state.keyWorks ? "proof" : "fail",
 		},
@@ -469,9 +469,11 @@ function ProveStage({
 							height={height}
 							rx={10}
 							className={
-								check.kind === "proof" && check.at <= state.stage
-									? "wt-focus-shape"
-									: "wt-panel-shape"
+								check.kind === "proof"
+									? "wt-panel-shape wt-band-gain"
+									: check.kind === "fail"
+										? "wt-panel-shape wt-band-loss"
+										: "wt-panel-shape"
 							}
 						/>
 						{label.map((text, k) => (
@@ -509,10 +511,10 @@ function ProveStage({
 									y={verdictTop + k * 15}
 									tone="small"
 									className={
-										check.kind === "proof"
-											? "wt-accent"
-											: check.kind === "partial"
-												? undefined
+										check.kind === "proof" || check.kind === "partial"
+											? "wt-gain"
+											: check.kind === "none"
+												? "wt-film-warn"
 												: "wt-loss"
 									}
 								>
@@ -550,28 +552,33 @@ function ProveView({
 				shown.stage === 0
 					? t(["Nothing yet", "还没有"])
 					: shown.stage === 1
-						? t(["Registered", "已注册"])
+						? t(["✓ Registered", "✓ 已注册"])
 						: shown.keyWorks
-							? t(["Key works", "密钥有效"])
-							: t(["Key fails", "密钥无效"]),
+							? t(["✓ Key works", "✓ 密钥有效"])
+							: t(["✗ Key fails", "✗ 密钥无效"]),
 			note:
 				shown.stage === 0
 					? t(["only the agent's reply", "只有智能体的回复"])
 					: shown.stage === 1
 						? t(["by your client's own check", "由客户端自己的检查证明"])
 						: t(["and the endpoint is up", "且端点在线"]),
-			tone: shown.stage === 2 && !shown.keyWorks ? "loss" : undefined,
+			tone:
+				shown.stage === 0
+					? undefined
+					: shown.stage === 1 || shown.keyWorks
+						? "gain"
+						: "loss",
 		},
 	];
 	if (shown.stage === 2)
 		result.push({
 			id: "http",
 			label: t(["tools/list status", "tools/list 状态"]),
-			value: "HTTP 200",
+			value: shown.keyWorks ? "HTTP 200 ✓" : "HTTP 200 ✗",
 			note: shown.keyWorks
 				? t(["with result.tools", "带 result.tools"])
 				: t(["with an error object: not success", "带错误对象：不是成功"]),
-			tone: shown.keyWorks ? undefined : "loss",
+			tone: shown.keyWorks ? "gain" : "loss",
 		});
 	return (
 		<SceneFrame
@@ -651,10 +658,10 @@ function KeyStage({
 	];
 	const nextLabel = t(["Next tool call", "下一次工具调用"]);
 	const nextOutcome = state.revoked
-		? t(["refused: key revoked", "被拒绝：密钥已撤销"])
+		? t(["✗ refused: key revoked", "✗ 被拒绝：密钥已撤销"])
 		: full
-			? t(["stopped by the limit", "被限额挡住"])
-			: t(["accepted", "接受"]);
+			? t(["✗ stopped by the limit", "✗ 被限额挡住"])
+			: t(["✓ accepted", "✓ 已接受"]);
 	const stackNext =
 		textWidth(nextLabel, 12) + textWidth(nextOutcome, 11) + 40 > barW;
 	return (
@@ -707,7 +714,7 @@ function KeyStage({
 					y={130}
 					height={14}
 					rx={7}
-					className={over ? "wt-short" : "wt-chip"}
+					className={over ? "wt-band-loss" : "wt-chip"}
 					initial={false}
 					animate={{ width: (barW * used) / LIMIT }}
 					transition={motion.move}
@@ -725,7 +732,7 @@ function KeyStage({
 					animate={{ opacity: over ? 1 : 0 }}
 					transition={motion.fade}
 				>
-					{t([`+${over} over the limit`, `超出限额 ${over} 次`])}
+					{t([`${over} refused ✗`, `${over} 次被拒绝 ✗`])}
 				</m.text>
 			</m.g>
 			<rect
@@ -734,7 +741,11 @@ function KeyStage({
 				width={barW}
 				height={36}
 				rx={8}
-				className={state.revoked ? "wt-focus-shape" : "wt-panel-shape"}
+				className={
+					state.revoked || full
+						? "wt-panel-shape wt-band-loss"
+						: "wt-panel-shape"
+				}
 			/>
 			<Label x={28} y={stackNext ? 198 : 205} tone="muted">
 				{nextLabel}
@@ -746,7 +757,7 @@ function KeyStage({
 				y={stackNext ? 212 : 205}
 				textAnchor={stackNext ? "start" : "end"}
 				className={
-					state.revoked || full ? "wt-small wt-loss" : "wt-small wt-accent"
+					state.revoked || full ? "wt-small wt-loss" : "wt-small wt-gain"
 				}
 				initial={motion.enabled ? { opacity: 0 } : false}
 				animate={{ opacity: 1 }}
@@ -786,20 +797,25 @@ function KeyView({
 			label: t(["Calls this window", "本窗口调用次数"]),
 			value: `${Math.min(shown.calls, LIMIT)} / ${LIMIT}`,
 			note: over
-				? t([`${over} more stopped by the limit`, `另有 ${over} 次被限额挡住`])
+				? t([
+						`${over} more stopped by the limit ✗`,
+						`另有 ${over} 次被限额挡住 ✗`,
+					])
 				: shown.calls >= LIMIT
 					? t(["the window is full", "本窗口已满"])
 					: t(["per key, per 60 seconds", "每把密钥，每 60 秒"]),
-			tone: shown.calls >= LIMIT ? "loss" : undefined,
+			tone: over ? "loss" : undefined,
 		},
 		{
 			id: "access",
 			label: t(["Access", "访问权限"]),
-			value: shown.revoked ? t(["Revoked", "已撤销"]) : t(["Active", "有效"]),
+			value: shown.revoked
+				? t(["✗ Revoked", "✗ 已撤销"])
+				: t(["✓ Active", "✓ 有效"]),
 			note: shown.revoked
 				? t(["checked on every call", "每次调用都会检查"])
 				: t(["your other keys are independent", "你的其他密钥互不影响"]),
-			tone: shown.revoked ? "loss" : undefined,
+			tone: shown.revoked ? "loss" : "gain",
 		},
 	];
 	return (

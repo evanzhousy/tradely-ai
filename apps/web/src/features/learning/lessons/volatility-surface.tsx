@@ -219,14 +219,12 @@ function WingsView({
 						x: PUT_WING,
 						y: PUT_IV,
 						label: t([`25Δ put ${PUT_IV}%`, `25Δ 看跌 ${PUT_IV}%`]),
-						tone: "loss" as const,
 					},
 					{
 						id: "call",
 						x: CALL_WING,
 						y: CALL_IV,
 						label: t([`25Δ call ${CALL_IV}%`, `25Δ 看涨 ${CALL_IV}%`]),
-						tone: "gain" as const,
 					},
 				]
 			: []),
@@ -266,6 +264,7 @@ function WingsView({
 				id: "skew",
 				label: t(["Skew, put − call", "偏斜，看跌 − 看涨"]),
 				value: t([`${signedPoints(SKEW)} points`, `${signedPoints(SKEW)} 点`]),
+				tone: SKEW > 0 ? "gain" : SKEW < 0 ? "loss" : "neutral",
 				evidence: "calculated",
 			},
 			{
@@ -276,6 +275,7 @@ function WingsView({
 					`${signedPoints(-SKEW)} 点`,
 				]),
 				note: t(["same wings, other sign", "同样的两翼，符号相反"]),
+				tone: -SKEW > 0 ? "gain" : -SKEW < 0 ? "loss" : "neutral",
 				evidence: "calculated",
 			},
 		);

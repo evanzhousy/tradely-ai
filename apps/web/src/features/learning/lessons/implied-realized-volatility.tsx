@@ -102,6 +102,7 @@ function FitView({
 			}),
 		),
 	];
+	const fittedGuess = Math.abs(model - target) < 0.005;
 	const markers: PayoffMarker[] = shown.all
 		? sources.map((source) => ({
 				id: source,
@@ -115,7 +116,6 @@ function FitView({
 					x: shown.guess * 100,
 					y: model,
 					label: price(model),
-					tone: Math.abs(model - target) < 0.005 ? "gain" : "loss",
 				},
 			];
 	const result: ResultItem[] = shown.all
@@ -136,12 +136,12 @@ function FitView({
 						`Model at ${percent(shown.guess)}`,
 						`IV ${percent(shown.guess)} 时的模型`,
 					]),
-					value: price(model),
+					value: fittedGuess ? "✓" : "⚠",
 					note: t([
-						`${pick(sourceName[shown.source], "en")} ${price(target)}`,
-						`${pick(sourceName[shown.source], "zh")} ${price(target)}`,
+						`model ${price(model)} · ${pick(sourceName[shown.source], "en")} ${price(target)}`,
+						`模型 ${price(model)} · ${pick(sourceName[shown.source], "zh")} ${price(target)}`,
 					]),
-					tone: Math.abs(model - target) < 0.005 ? "gain" : "loss",
+					tone: fittedGuess ? "gain" : undefined,
 					evidence: "modeled",
 				},
 				...(phase === "explore" || Math.abs(model - target) < 0.005
@@ -321,7 +321,13 @@ function ReturnsChart({
 						width={slot * 0.64}
 						height={Math.abs(y(value) - y(0))}
 						rx={2}
-						className={value >= 0 ? "wt-long-soft" : "wt-short-soft"}
+						className={
+							value > 0
+								? "wt-band-gain"
+								: value < 0
+									? "wt-band-loss"
+									: "wt-band-quiet"
+						}
 						initial={false}
 						animate={{ opacity: inWindow ? 1 : 0.25 }}
 						transition={motion.fade}
@@ -504,7 +510,7 @@ function Horizons({
 				width={rvTo - rvFrom}
 				height={24}
 				rx={6}
-				className="wt-long-soft"
+				className="wt-panel-shape"
 			/>
 			<Label
 				x={(rvFrom + rvTo) / 2}
@@ -553,7 +559,7 @@ function Horizons({
 				</Label>
 				<path
 					d={`M${earnings} ${axisY - 8}V${axisY + 8}`}
-					className="wt-bracket"
+					className="wt-line-reference"
 				/>
 				<Label x={earnings} y={axisY + 42} anchor="middle" tone="small">
 					{t(["earnings", "财报"])}
@@ -568,7 +574,7 @@ function Horizons({
 					x={width / 2}
 					y={axisY - 76}
 					anchor="middle"
-					tone="accent"
+					tone="gain"
 					className="wt-halo"
 				>
 					{t([`gap: +${GAP} vol points`, `差距：+${GAP} 个波动率点`])}

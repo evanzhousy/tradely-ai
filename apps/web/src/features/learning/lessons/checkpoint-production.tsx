@@ -80,14 +80,14 @@ function PacketView({
 			text:
 				shown.r3 === "zero"
 					? t([
-							"R3 as $0 claims an exact total: unsupported",
-							"把 R3 当作 $0 就成了确切总额：没有依据",
+							"R3 as $0 claims an exact total: unsupported · ?",
+							"把 R3 当作 $0 就成了确切总额：没有依据 · ?",
 						])
 					: t([
 							`chain total: at least ${usd(SUBTOTAL, 0)}; R3 unknown`,
 							`全链合计：至少 ${usd(SUBTOTAL, 0)}；R3 未知`,
 						]),
-			tone: shown.r3 === "zero" ? "loss" : undefined,
+			tone: "caution",
 		});
 	return (
 		<SceneFrame
@@ -212,7 +212,7 @@ function AxisView({
 				{
 					id: "drawn",
 					label: t(["As drawn", "画出来的比例"]),
-					value: `${drawnRatio(shown.start).toFixed(2)}×`,
+					value: `${shown.start === 0 ? "✓" : "✗"} ${drawnRatio(shown.start).toFixed(2)}×`,
 					note: t([
 						`(${R1_CONTRACTS} − ${shown.start}) ÷ (${R2_CONTRACTS} − ${shown.start})`,
 						`(${R1_CONTRACTS} − ${shown.start}) ÷ (${R2_CONTRACTS} − ${shown.start})`,
@@ -318,8 +318,8 @@ function AuditView({
 				{
 					id: "claims",
 					label: t(["Claims that hold as written", "原样成立的结论"]),
-					value: shown.stage >= 1 ? "0 / 3" : "?",
-					tone: "loss",
+					value: shown.stage >= 1 ? "✗ 0 / 3" : "?",
+					tone: shown.stage >= 1 ? "loss" : undefined,
 				},
 			]}
 		/>

@@ -53,8 +53,7 @@ function Unknown({ x, y, width }: { x: number; y: number; width: number }) {
 				x={x + width / 2}
 				y={y + 14}
 				anchor="middle"
-				tone="accent"
-				className="wt-halo"
+				className="wt-halo wt-film-warn"
 			>
 				?
 			</Label>
@@ -69,7 +68,12 @@ type TraceState = { reveal: 0 | 1 | 2 | 3; work: Work; row: string | null };
 type TraceExplore = { row: string };
 
 /** `lead` is a trade time, drawn in its own column. */
-type WorkLine = { text: string; lead?: string; tone?: "accent" | "small" };
+type WorkLine = {
+	text: string;
+	lead?: string;
+	tone?: "accent" | "small";
+	className?: string;
+};
 
 const TABLE_TOP = 48;
 const TABLE_ROW = 30;
@@ -125,7 +129,7 @@ function workLines(state: TraceState, locale: Locale): WorkLine[] {
 	if (state.work === "trace" && focus) return traceLines(focus, locale);
 	if (state.work === "sum")
 		return [
-			{ text: "R1 + R2 + R3 + R4", tone: "accent" },
+			{ text: "R1 + R2 + R3 + R4" },
 			{
 				text: `= ${mondayPacket
 					.filter((row) => row.trades !== null)
@@ -138,7 +142,7 @@ function workLines(state: TraceState, locale: Locale): WorkLine[] {
 		return [
 			{
 				text: t(["R5 · 120 call: no data yet", "R5 · 120 看涨：尚无数据"]),
-				tone: "accent",
+				className: "wt-film-warn",
 			},
 			{
 				text: t([
@@ -151,6 +155,7 @@ function workLines(state: TraceState, locale: Locale): WorkLine[] {
 					`chain total: at least ${dollars(MONDAY)}`,
 					`全链合计：至少 ${dollars(MONDAY)}`,
 				]),
+				className: "wt-film-warn",
 			},
 		];
 	return [
@@ -271,7 +276,8 @@ function PacketTable({
 				<Label
 					x={12}
 					y={TABLE_BOTTOM + 24}
-					tone={state.reveal >= 3 ? "accent" : "muted"}
+					tone={state.reveal >= 3 ? undefined : "muted"}
+					className={state.reveal >= 3 ? "wt-film-warn" : undefined}
 				>
 					{state.reveal >= 3
 						? t([
@@ -312,6 +318,7 @@ function PacketTable({
 							x={line.lead ? 64 : 16}
 							y={WORK_TOP + 22 + i * WORK_LINE}
 							tone={line.tone}
+							className={line.className}
 						>
 							{line.text}
 						</Label>
@@ -469,7 +476,6 @@ function PacketFields({
 }) {
 	const t = tr(locale);
 	const motion = useTeachMotion();
-	const { hatch } = useStage();
 	const layout = fieldsLayout(width, locale);
 	const cellWidth = (width - 8 - (layout.columns - 1) * 8) / layout.columns;
 	const rerun = reruns[state.removed ?? "none"];
@@ -509,9 +515,9 @@ function PacketFields({
 									width={56}
 									height={16}
 									rx={4}
-									style={{ fill: hatch }}
+									className="wt-ghost"
 								/>
-								<Label x={x + 78} y={y + 36} tone="accent">
+								<Label x={x + 78} y={y + 36} className="wt-film-warn">
 									{t(["removed", "已移除"])}
 								</Label>
 							</g>
@@ -549,7 +555,7 @@ function PacketFields({
 				animate={{ opacity: 1, y: 0 }}
 				transition={motion.fade}
 			>
-				{rerunText(state.removed)}
+				{`${matches ? "✓" : "✗"} ${rerunText(state.removed)}`}
 			</m.text>
 		</g>
 	);
@@ -598,7 +604,7 @@ function FieldsView({
 				{
 					id: "rerun",
 					label: t(["A reader's rerun", "读者重跑"]),
-					value: rerunText(shown.removed),
+					value: `${matches ? "✓" : "✗"} ${rerunText(shown.removed)}`,
 					note: matches
 						? t(["matches", "一致"])
 						: t([
@@ -686,7 +692,7 @@ function RecordLog({
 							width={5}
 							height={RECORD_H}
 							rx={2}
-							className={record.method === 1 ? "wt-chip" : "wt-short"}
+							className="wt-panel-shape"
 						/>
 						<Label x={20} y={y + 20} tone="small">
 							{t(record.head)}
@@ -698,7 +704,8 @@ function RecordLog({
 							x={width - 16}
 							y={y + 42}
 							anchor="end"
-							tone={record.method === 1 ? (i ? "accent" : "muted") : "loss"}
+							tone={record.method === 2 ? undefined : "muted"}
+							className={record.method === 2 ? "wt-film-warn" : undefined}
 						>
 							{t(record.tag)}
 						</Label>
@@ -754,9 +761,8 @@ function RecordsView({
 		result.push({
 			id: "P3",
 			label: "P3",
-			value: dollars(WITHOUT_SPREAD),
+			value: `⚠ ${dollars(WITHOUT_SPREAD)}`,
 			note: t(["method v2: a different question", "方法 v2：另一个问题"]),
-			tone: "loss",
 			evidence: "calculated",
 		});
 	return (
