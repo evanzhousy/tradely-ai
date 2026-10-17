@@ -13,6 +13,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -56,10 +58,10 @@ const SPREAD_CARD = 3;
 const LEAD = LEADER.volume ?? 0;
 type Evidence = "observed" | "calculated" | "interpretation" | "unknown";
 const tone: Record<Evidence, string> = {
-	observed: "wt-film-gain",
-	calculated: "wt-film-gain",
-	interpretation: "wt-film-warn",
-	unknown: "wt-film-dim",
+	observed: "",
+	calculated: "",
+	interpretation: toneClass.caution,
+	unknown: toneClass.caution,
 };
 
 function layout(width: number) {
@@ -416,7 +418,7 @@ function Scene({
 				y={H * 0.44}
 				size={T.title * 0.9}
 				anchor="start"
-				className="wt-film-type wt-film-accent"
+				className="wt-film-type"
 			>
 				ALFA
 			</Word>
@@ -450,9 +452,7 @@ function Scene({
 					>
 						{i === 0 ? (
 							<>
-								<tspan data-f="field-0-subject" className="wt-film-accent">
-									ALFA
-								</tspan>
+								<tspan data-f="field-0-subject">ALFA</tspan>
 								<tspan data-f="field-0-detail">{t(field.value).slice(4)}</tspan>
 							</>
 						) : (
@@ -499,13 +499,15 @@ function Scene({
 								width={L.barMax * 0.3}
 								height={L.barH}
 								rx={3}
-								className="wt-film-ghost"
+								fill={`url(#hatch-${id})`}
+								stroke={toneColor("caution")}
+								strokeWidth={1.75}
 							/>
 							<text
 								data-f="missing-series-state"
 								x={L.barX + L.barMax * 0.3 + 8}
 								y={L.barRowY(i) + L.barH / 2 + T.small * 0.38}
-								className="wt-film-tag wt-film-loss"
+								className={`wt-film-tag ${toneClass.caution}`}
 								style={{ fontSize: T.small }}
 							>
 								{t(copy.missing).toUpperCase()}
@@ -542,15 +544,15 @@ function Scene({
 				width={(SPREAD_LEG / MAX) * L.barMax}
 				height={L.barH}
 				rx={3}
-				fill={`url(#hatch-${id})`}
-				stroke="var(--diagram-gain)"
+				fill="var(--tone-dim)"
+				stroke="var(--tone-dim)"
 				strokeWidth={1.5}
 			/>
 			<path
 				data-f="spread-trace"
 				d={spreadPath}
 				fill="none"
-				stroke="var(--diagram-gain)"
+				stroke="var(--tone-dim)"
 				strokeWidth={1.5}
 				strokeLinecap="round"
 				strokeLinejoin="round"
@@ -567,10 +569,9 @@ function Scene({
 								i === 0 ? L.claimY(1) - L.claimY(0) + L.claimH(1) : L.claimH(i)
 							}
 							rx={9}
-							className={
-								claim.evidence === "unknown"
-									? "wt-panel-shape"
-									: "wt-focus-shape"
+							className={i === STORY_CARD ? "wt-focus-shape" : "wt-panel-shape"}
+							style={
+								claim.evidence === "observed" ? { strokeWidth: 1.5 } : undefined
 							}
 						/>
 					) : null}
@@ -582,8 +583,8 @@ function Scene({
 							width={12}
 							height={12}
 							rx={2}
-							fill={`url(#hatch-${id})`}
-							stroke="var(--diagram-gain)"
+							fill="var(--tone-dim)"
+							stroke="var(--tone-dim)"
 							strokeWidth={1.5}
 						/>
 					) : null}
@@ -610,7 +611,7 @@ function Scene({
 							}
 							y1={L.claimY(i) + L.claimH(i) - 5}
 							y2={L.claimY(i) + L.claimH(i) - 5}
-							stroke="var(--diagram-unknown)"
+							stroke={toneColor("caution")}
 							strokeWidth={2}
 							strokeDasharray="4 4"
 							strokeLinecap="round"
@@ -768,6 +769,7 @@ function Scene({
 					x={margin + room * 0.22}
 					y={L.universeY(0)}
 					size={L.proofSize}
+					className={`wt-film-type ${toneClass.call}`}
 				>
 					{t(copy.calls)}
 				</Word>
@@ -785,7 +787,7 @@ function Scene({
 					x={margin + room * 0.74}
 					y={L.universeY(0)}
 					size={L.proofSize}
-					className="wt-film-type wt-film-accent"
+					className={`wt-film-type ${toneClass.put}`}
 				>
 					{t(copy.puts)}
 				</Word>
@@ -991,7 +993,8 @@ function build(context: FilmContext) {
 			line.replaceChildren(prefix, subjectGlyphs, suffix);
 		}
 	}
-	if (subjectGlyphs) gsap.set(subjectGlyphs, { opacity: 1 });
+	if (subjectGlyphs)
+		gsap.set(subjectGlyphs, { opacity: 1, attr: { fill: "var(--tone-ink)" } });
 	const questionRemainder = [...question.querySelectorAll("tspan")].filter(
 		(part) => part !== subjectGlyphs && !part.querySelector("tspan"),
 	);
