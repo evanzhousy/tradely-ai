@@ -154,6 +154,7 @@ const copy = {
 	qTag: ["ALFA Oct 18 105 call · 10:30", "ALFA 10月18日 105 看涨 · 10:30"],
 	bid: ["bid", "买价"],
 	ask: ["ask", "卖价"],
+	atAsk: ["at ask", "卖价"],
 	last: ["last", "最新"],
 	unit: ["quotes per share", "报价：每股"],
 	qLine: [
@@ -286,6 +287,13 @@ function Scene({
 		["pr-take", `10:31 · ${TAKEN} @ ${usd(ASK.price)}`],
 		["pr-gone", `10:32 · ${LEFT} @ ${usd(BEST.ask.price)}`],
 	] as const;
+	// Only landed prints name the side; compact tickets keep their clear flight lanes.
+	const executionLabel = (label: string) => (
+		<>
+			{label}
+			<tspan className="wt-film-dim">{` ${t(copy.atAsk)}`}</tspan>
+		</>
+	);
 	/** The best ask's row: where a market buy trades. */
 	const bestRow = ASKS.length - 1;
 	const venueAt = (venue: string) => VENUES.findIndex((v) => v.venue === venue);
@@ -572,7 +580,7 @@ function Scene({
 					className="wt-film-num wt-film-accent"
 					style={{ fontSize: text }}
 				>
-					{label}
+					{executionLabel(label)}
 				</text>
 			))}
 
@@ -868,6 +876,9 @@ function build(context: FilmContext) {
 			);
 		});
 		const chip = g(`carry-${name}`);
+		// Land on the compact execution text; the whole print, including its side,
+		// is revealed by carry only when the copy arrives.
+		const match = chip.textContent ?? undefined;
 		const born = time + 0.4;
 		// Execution is one event: size and bar hand over in place as its ticket is born.
 		// The zero-duration fromTo supplies both states so reverse seeking restores them.
@@ -898,7 +909,7 @@ function build(context: FilmContext) {
 					arc: "x",
 					reveal: false,
 				});
-				d.carry(via, g(name), leave + 0.6, { duration: 0.4, arc: "y" });
+				d.carry(via, g(name), leave + 0.6, { duration: 0.4, arc: "y", match });
 				return leave + 1;
 			}
 			// Other tickets descend through the book lane, then travel along the row.
@@ -906,14 +917,14 @@ function build(context: FilmContext) {
 				duration: 0.55,
 				reveal: false,
 			});
-			d.carry(via, g(name), leave + 0.55, { duration: 0.45, arc: "x" });
+			d.carry(via, g(name), leave + 0.55, { duration: 0.45, arc: "x", match });
 			if (name !== "pr-gone") {
 				fade(bidRows, born, 0.25);
 				fade(bidRows, leave + 0.55, 1);
 			}
 			return leave + 1.0;
 		}
-		d.carry(chip, g(name), leave, { duration: 1, arc });
+		d.carry(chip, g(name), leave, { duration: 1, arc, match });
 		return leave + 1;
 	};
 	const heads = [
@@ -1080,9 +1091,10 @@ function build(context: FilmContext) {
 	tl.addLabel("orders", 22.2);
 	d.swap(heads[2], heads[3], 22.2);
 	fade(hit, 22.2, 0.45);
-	sizeTo(ASK.size - 1 + ADDED, ASK.size - 1, 22.2);
-	// Each changed size stands for a full second while the tape stays unchanged.
-	sizeTo(ASK.size - 1, ASK.size - 1 + ADDED, 23.7);
+	// The headline settles first; reversible hand-overs set bar and size together.
+	sizeTo(ASK.size - 1 + ADDED, ASK.size - 1, 23.05, 0);
+	// Each changed size stands for at least a full second; the tape stays unchanged.
+	sizeTo(ASK.size - 1, ASK.size - 1 + ADDED, 24.05, 0);
 	// Only now the take, and its half of the headline.
 	show(heads[4], 25.2);
 	volumeTo("vol-take", "vol-buy", print("pr-take", 25.6));
