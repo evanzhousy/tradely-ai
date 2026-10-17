@@ -42,7 +42,7 @@ import {
  *   open      0–4        "Walls and max pain"
  *   question  4–9.6      $90 or $95?
  *   walls     9.6–21.7   OI picks $110/$90; gamma weights near spot, then the $95 answer
- *   pain      21.7–32.55 put, call and total curves, each with 1 s quiet; $100 hero
+ *   pain      21.7–32.55 paired put/call curves, then total, each with 1 s quiet; $100 hero
  *                        locks at 28.4 and stands 3.7 s after bracket settlement
  *   distance  32.55–45.4 −$5 → −5.0% → −3.1 ATR; cut: "A level is a reference, not a target."
  *   next      45.4–47.4  Next: charm and vanna
@@ -130,18 +130,18 @@ const copy = {
 	qTag: ["ALFA Oct 18 put wall", "ALFA 10月18日 看跌墙"],
 	qOr: ["or", "还是"],
 	qLine: [
-		"One chain, one close, two put walls. Which is it?",
-		"同一条链，同一个收盘，两个看跌墙。到底是哪个？",
+		"Same chain, same close. Which put wall?",
+		"同一条链、同一次收盘，哪个看跌墙？",
 	],
 	oiHead: ["The rule picks the wall.", "规则选出墙位。"],
 	oiHeadShort: ["The rule picks the wall.", "规则选出墙位。"],
 	oiWallHead: [
-		`Most contracts: call wall ${stock(CALL_ANY)}, put wall ${stock(PUT_OI)}.`,
-		`合约最多：看涨墙 ${stock(CALL_ANY)}，看跌墙 ${stock(PUT_OI)}。`,
+		`Most contracts: calls ${stock(CALL_ANY)}, puts ${stock(PUT_OI)}.`,
+		`合约最多：看涨${stock(CALL_ANY)}，看跌${stock(PUT_OI)}。`,
 	],
 	oiWallHeadShort: [
-		`Most contracts: ${stock(CALL_ANY)} and ${stock(PUT_OI)}.`,
-		`合约最多：${stock(CALL_ANY)} 与 ${stock(PUT_OI)}。`,
+		`Most contracts: ${stock(CALL_ANY)}, ${stock(PUT_OI)}.`,
+		`合约最多：${stock(CALL_ANY)}、${stock(PUT_OI)}。`,
 	],
 	gexWallHead: [
 		"Gamma weights strikes near spot more.",
@@ -196,13 +196,13 @@ const copy = {
 		`每格 = 1 ATR = $${ALFA_ATR_14.toFixed(2)}，典型一天的波幅，不是方向`,
 	],
 	noteAtrShort: [
-		`one tick = 1 ATR = $${ALFA_ATR_14.toFixed(2)}, a typical day`,
-		`每格 = 1 ATR = $${ALFA_ATR_14.toFixed(2)}，典型一天`,
+		`1 ATR = $${ALFA_ATR_14.toFixed(2)}: range, not direction.`,
+		`1 ATR = $${ALFA_ATR_14.toFixed(2)}：波幅，非方向。`,
 	],
 	claimBig: ["A level is a reference, not a target.", "位置是参考，不是目标。"],
 	claimSub: [
-		"Give each level its rule, scope, date and unit.",
-		"每个位置都要说明规则、范围、日期和单位。",
+		"Label each level: rule, scope, date, unit.",
+		"每个位置标明规则、范围、日期、单位。",
 	],
 	nextBig: ["Next: charm and vanna", "下一课：Charm 与 Vanna"],
 	nextSub: ["exposure that changes without a trade", "没有成交也会变化的敞口"],
@@ -327,7 +327,23 @@ function Scene({
 								textAnchor="middle"
 								className="wt-small"
 							>
-								{`$${strike}`}
+								{strike === SPOT ? (
+									narrow ? (
+										<>
+											{/* Keep the price on its tick baseline, clear of adjacent ticks. */}
+											<tspan x={L.barX(i)} y={L.bottom + 3}>
+												{locale === "zh" ? "现价 " : "spot "}
+											</tspan>
+											<tspan x={L.barX(i)} y={L.bottom + 16}>
+												{stock(SPOT)}
+											</tspan>
+										</>
+									) : (
+										`${locale === "zh" ? "现价" : "spot"} ${stock(SPOT)}`
+									)
+								) : (
+									stock(strike)
+								)}
 							</text>
 						))}
 						{STRIKES.map((strike, i) =>
@@ -734,7 +750,9 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, rise, sink } = d;
+	const { tl, one, kids, show, hide, sink } = d;
+	// Establish charts at their final geometry; no outer scale competes with data.
+	tl.set(one("depth"), { scale: 1 }, 0);
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const land = (target: Element, time: number) =>
 		tl.fromTo(
@@ -814,18 +832,19 @@ function build(context: FilmContext) {
 	// ——— walls: open interest picks one pair, gamma another ———
 	tl.addLabel("walls", 9.6);
 	hide(flat("q"), 9.6);
-	show(one("o-head"), 9.8, "above");
-	rise(9.9);
+	show(one("o-head"), 9.6, "above", 0.3);
+	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 9.6);
+	// Scaffold and question settle at 9.90; wait 1 s, then grow one distribution.
 	SIDES.forEach((side) => {
-		STRIKES.forEach((strike, i) => {
+		STRIKES.forEach((strike) => {
 			tl.to(
 				bar(strike, side),
 				{
 					attr: shape("oi", strike, side),
-					duration: 0.5,
+					duration: 0.4,
 					ease: "power3.out",
 				},
-				10.2 + i * 0.1,
+				10.9,
 			);
 		});
 	});
@@ -899,11 +918,11 @@ function build(context: FilmContext) {
 	// The existing chart depth stays on stage through this handover.
 	show(one("pain"), 22.0);
 	show(one("p-head"), 22.05, "above");
-	draw(one<SVGPathElement>("pay-put"), 22.0, 0.8);
-	show(one("pay-put-label"), 22.0);
-	// Each curve and its label settle at least one second before the next step.
+	show([one("pay-put-label"), one("pay-call-label")], 22.0);
+	// The scaffold/question settle by 22.55. Build the two operands as one pair,
+	// after 1.25 s of stillness, preserving the 24.60–25.60 proof rest.
+	draw(one<SVGPathElement>("pay-put"), 23.8, 0.8);
 	draw(one<SVGPathElement>("pay-call"), 23.8, 0.8);
-	show(one("pay-call-label"), 23.8);
 	draw(one<SVGPathElement>("pay-total"), 25.6, 1.0);
 	tl.to(
 		[one("pay-put"), one("pay-call")],
@@ -923,13 +942,12 @@ function build(context: FilmContext) {
 
 	// ——— distance: one level, three units ———
 	tl.addLabel("distance", 32.55);
-	hide([one("p-head"), lockPain], 32.55);
-	sink(32.55);
-	tl.set(one("pain"), { opacity: 0 }, 32.95);
-	tl.set(one("ruler"), { opacity: 1 }, 32.95);
-	show(one("u-head"), 32.9, "above");
-	rise(33);
-	show([one("d-put-dollars"), one("d-call-dollars")], 33.45);
+	// A whole-stage cut after the full hero stand establishes the ruler and its
+	// question together. No scaling; 1 s of stillness before either value moves.
+	tl.set([one("pain"), one("p-head"), lockPain], { opacity: 0 }, 32.55);
+	tl.set([one("ruler"), one("u-head")], { opacity: 1 }, 32.55);
+	// The paired readouts still settle at 33.95, keeping every following rest.
+	show([one("d-put-dollars"), one("d-call-dollars")], 33.55, "below", 0.4);
 	show(one("note-dollars"), 33.65);
 	// Percent of $100 is a dollar a tick: the same marks, new numbers, the same note.
 	for (const side of SIDES)
