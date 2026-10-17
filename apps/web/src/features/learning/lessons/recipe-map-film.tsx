@@ -17,6 +17,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -717,6 +718,7 @@ function Scene({
 					size={L.boxText}
 					maxWidth={L.textWidth}
 					anchor="start"
+					className={`wt-film-type ${toneClass.caution}`}
 				/>
 			</g>
 			{headline("r-head", copy.runHead, copy.runHeadShort)}
