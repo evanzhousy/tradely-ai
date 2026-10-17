@@ -171,13 +171,10 @@ const copy = {
 	qLine: ["Market buy: one contract. What price?", "市价买 1 张，付多少？"],
 	bookHead: ["The book: offers, not trades.", "订单簿：挂单，不是成交。"],
 	bookHeadShort: ["The book: offers, not trades.", "订单簿：挂单，不是成交。"],
-	mlHead: ["Mid: math. Last: history.", "中间价是算的，最新价是历史。"],
-	mlHeadShort: ["Mid: math. Last: history.", "中间价是算的，最新价是历史。"],
-	buyHead: [
-		"A market buy takes $2.15: a print.",
-		"市价买单吃掉 $2.15 的卖单：成交。",
-	],
-	buyHeadShort: ["Market buy at $2.15: a print.", "市价买入，按 $2.15 成交。"],
+	mlHead: ["Mid: math. Last: history.", "中间价要算，最新属历史。"],
+	mlHeadShort: ["Mid: math. Last: history.", "中间价要算，最新属历史。"],
+	buyHead: ["Market buy: $2.15 prints.", "市价买：$2.15 成交。"],
+	buyHeadShort: ["Market buy: $2.15 prints.", "市价买：$2.15 成交。"],
 	acHead: [
 		`Add ${ADDED}, cancel ${ADDED}: no print.`,
 		`挂 ${ADDED} 张、撤 ${ADDED} 张：无成交。`,
@@ -206,7 +203,7 @@ const copy = {
 		"Quotes are offers; only trades print.",
 		"报价是挂单；只有成交才留记录。",
 	],
-	claimSub: ["Buy at the ask, sell at the bid.", "按卖价买，按买价卖。"],
+	claimSub: ["Buy at ask; sell at bid.", "卖价买入，买价卖出。"],
 	nextBig: ["Next: counterparties", "下一课：交易对手"],
 	nextSub: ["who buys and who sells in one trade", "一笔成交里谁买谁卖"],
 } as const satisfies Record<string, Copy>;
@@ -298,10 +295,12 @@ function Scene({
 		["pr-gone", `10:32 · ${LEFT} @ ${usd(BEST.ask.price)}`],
 	] as const;
 	// Only landed prints name the side; compact tickets keep their clear flight lanes.
-	const executionLabel = (label: string) => (
+	const executionLabel = (label: string, conciseSide = false) => (
 		<>
 			{label}
-			<tspan className="wt-film-dim">{` ${t(copy.atAsk)}`}</tspan>
+			<tspan className="wt-film-dim">
+				{` ${t(conciseSide ? copy.ask : copy.atAsk)}`}
+			</tspan>
 		</>
 	);
 	/** The best ask's row: where a market buy trades. */
@@ -607,7 +606,7 @@ function Scene({
 					className="wt-film-num wt-film-accent"
 					style={{ fontSize: text }}
 				>
-					{executionLabel(label)}
+					{executionLabel(label, name === "pr-gone")}
 				</text>
 			))}
 
@@ -1212,8 +1211,7 @@ function build(context: FilmContext) {
 		tl.to(
 			[...cardFrames[i], one(`va-${v.venue}`), one(`vb-${v.venue}`)],
 			{
-				opacity: (_: number, el: Element) =>
-					el === one(`vb-${BEST.ask.venue}`) ? 0.25 : 1,
+				opacity: 1,
 				duration: 0.3,
 				immediateRender: false,
 			},
@@ -1230,18 +1228,14 @@ function build(context: FilmContext) {
 		duration: 0.9,
 		arc: "y",
 	});
-	// The winning prices keep their provenance. All other comparison values step back
-	// as construction starts; C's bid is already clear of the descending source copy.
-	fade(
-		cardLines.filter(
-			(el) =>
-				el !== g(`vb-${BEST.bid.venue}`) &&
-				el !== g(`va-${BEST.ask.venue}`) &&
-				el !== g(`vb-${BEST.ask.venue}`),
-		),
-		30.35,
-		0.3,
+	// The venue values stay readable while the best prices travel; after the hero locks,
+	// only the winning bid and ask keep full contrast.
+	const otherVenueValues = cardLines.filter(
+		(el) =>
+			el !== g(`vb-${BEST.bid.venue}`) && el !== g(`va-${BEST.ask.venue}`),
 	);
+	fade(otherVenueValues, 30.35, 0.7);
+	fade(otherVenueValues, 31.5, 0.3);
 	show(nbbo[0], 31.4);
 	show(heads[8], 31.5);
 	d.lock(g("hero-nbbo"), 31.5, { around: nbbo.slice(1), pad: 5 });
