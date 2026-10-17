@@ -72,10 +72,9 @@ const OFF_FLOOR = 100 + (RECEIVED / 100 - BEN_Y[0]) / (BEN * 100);
 const fifo = split(SOLD, "fifo");
 /** What selling at the bid, not the mid, takes off: six contracts × $0.125 × 100. */
 const GAP = SOLD * (MARK - SALE) * 100;
-const GAP_EQ = `−${price(MARK - SALE)} × ${SOLD} × 100 =`;
-const GAP_RESULT = `−${dollars(GAP)}`;
 const FIFO_EQ = `${SOLD} × (${price(SALE)} − ${price(lots[0].price)}) × 100 =`;
 const held = split(0, "fifo");
+const GAP_PROOF = `${signed(held.unrealized)} − ${dollars(GAP)} = ${signed(fifo.realized + fifo.unrealized)}`;
 /** The surviving cells and their marked P&L, using the same FIFO lots as the model. */
 const remainingLots = lots
 	.map((lot, i) => {
@@ -226,10 +225,7 @@ const copy = {
 		`$120：${signed(benAtExpiry(120))}`,
 	],
 	claimBig: ["P&L is what your positions earned.", "盈亏是持仓赚到的。"],
-	claimSub: [
-		"Deposits, buying power excluded; short-call losses uncapped.",
-		"盈亏不计存入和购买力；卖出看涨亏损无上限。",
-	],
+	claimSub: ["Deposits and buying power excluded.", "不计存入和购买力。"],
 	nextBig: ["Next: performance", "下一课：绩效"],
 	nextSub: ["returns, win rate and drawdown", "收益、胜率与回撤"],
 } as const satisfies Record<string, Copy>;
@@ -313,9 +309,7 @@ function Scene({
 	// The operand row stays through the lock; leave room for the drawn gap below it.
 	const operandY = H * 0.3 + T.big * 1.05 + T.num * 1.8 + T.body * 0.6;
 	const gapY = narrow ? H * 0.66 : operandY + T.body * 4.4;
-	const eqX =
-		W / 2 -
-		(textWidth(GAP_EQ, gapText) + 8 + textWidth(GAP_RESULT, gapText * 1.3)) / 2;
+	const eqX = W / 2 - textWidth(GAP_PROOF, gapText) / 2;
 	/** Separate operands use the second amount's sign for addition. */
 	const operandGap = T.num * 0.85;
 	/** Buying power has its own slot, below the account's settled value. */
@@ -689,7 +683,10 @@ function Scene({
 				<g data-f="held-proof">
 					{/* The formula is the phone's: on the wide frame the rows say it themselves, and
 					    the line would sit where the realized and unrealized totals land. */}
-					<g style={narrow ? undefined : { display: "none" }}>
+					<g
+						data-f="held-formula-wrap"
+						style={narrow ? undefined : { display: "none" }}
+					>
 						<Lines
 							name="held-formula"
 							text={t(copy.heldFormula)}
@@ -845,6 +842,15 @@ function Scene({
 						</Word>
 					</g>
 				))}
+				<Word
+					name="initial-unrealized"
+					x={W * L.pair[1]}
+					y={H * (narrow ? 0.76 : 0.68) + T.num * 1.15}
+					size={T.num}
+					className="wt-film-num wt-film-gain"
+				>
+					{signed(held.unrealized)}
+				</Word>
 			</g>
 			{headline("l-head", copy.lotsHead, copy.lotsHeadShort)}
 			<Lines
@@ -937,19 +943,13 @@ function Scene({
 					data-f="gap-eq"
 					x={eqX}
 					y={gapY + gapText * 2.6}
-					className="wt-film-num wt-film-dim"
+					className="wt-film-num"
 					style={{ fontSize: gapText }}
 				>
-					{GAP_EQ}
-				</text>
-				<text
-					data-f="gap-n"
-					x={eqX + textWidth(GAP_EQ, gapText) + 8}
-					y={gapY + gapText * 2.6}
-					className="wt-film-num wt-film-loss"
-					style={{ fontSize: gapText * 1.3 }}
-				>
-					{GAP_RESULT}
+					{`${signed(held.unrealized)} − ${dollars(GAP)} = `}
+					<tspan className={toneClass.up}>
+						{signed(fifo.realized + fifo.unrealized)}
+					</tspan>
 				</text>
 			</g>
 			{headline("b-head", copy.benHead, copy.benHeadShort)}
@@ -1005,6 +1005,7 @@ function build(context: FilmContext) {
 	const meter = one<SVGTextElement>("m-value");
 	const realized = one<SVGTextElement>("r-val");
 	const unrealized = one<SVGTextElement>("u-val");
+	const initialUnrealized = one<SVGTextElement>("initial-unrealized");
 	const squares = Array.from({ length: HELD }, (_, i) => one(`sq-${i}`));
 	const heldBraces = kids("lots").filter((el) =>
 		el.getAttribute("data-f")?.startsWith("held-brace-"),
@@ -1136,6 +1137,7 @@ function build(context: FilmContext) {
 		one("mark-input"),
 		one("r-tag"),
 		one("u-tag"),
+		initialUnrealized,
 		one("fifo-eq"),
 		one("fifo-result"),
 		...kids("held-proof"),
@@ -1209,11 +1211,14 @@ function build(context: FilmContext) {
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.0);
 	hide(one("e-head"), 19.1);
-	hide([...kids("meter"), one("bp"), ...kids("answer")], 19.0);
-	sink(19.0);
+	// The account leaves before the calls arrive: its readouts and chart are gone at 19.0,
+	// where the unrealized +$1,050 comes in (a partial cut fades out, then in).
+	hide([...kids("meter"), one("bp"), ...kids("answer")], 18.65);
+	sink(18.65);
+	show([one("u-tag"), initialUnrealized], 19.0, "below", 0.3);
 	// The repeated cells arrive as one lot diagram; omit the decorative sixteen-cell ripple.
 	for (const square of squares) land(square, 21.0, 0.4);
-	show([one("r-tag"), one("u-tag")], 19.4);
+	show(one("r-tag"), 19.4);
 	show(one("legend-lots"), 19.4);
 	show(one("mark-input"), 19.4, "below", 0.3);
 	show(one("sale-input"), 19.4, "below", 0.3);
@@ -1221,13 +1226,18 @@ function build(context: FilmContext) {
 	// The question and lot scaffold settle by 20.0, then stay still for a second before the cells enter at 21.0.
 	show(one("fifo-tag"), 19.7, "below", 0.3);
 	show(one("fifo-eq"), 19.7, "above", 0.3);
+	tl.to(
+		initialUnrealized,
+		{ opacity: 0.3, duration: 0.3, ease: "power2.out" },
+		21.4,
+	);
 	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 21.4);
 	show([realized, one("fifo-result")], 21.8, "below", 0.3);
 	// Preserve the realized proof's full second of quiet before its footer leaves.
 	hide([one("fifo-eq"), one("fifo-result")], 23.1, 0.3, 0);
 	// The shared formula precedes the compact contribution rows; the accepted row times stay fixed.
 	tl.fromTo(
-		one("held-formula"),
+		one("held-formula-wrap"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power2.out" },
 		23.1,
@@ -1248,9 +1258,28 @@ function build(context: FilmContext) {
 			at,
 		);
 	});
-	// Reveal the settled sum and its reading together; never count after '='.
+	// Replace the dim initial total in place once the surviving contribution rows have settled.
+	tl.to(
+		initialUnrealized,
+		{ scaleY: 0, duration: 0.3, ease: "power2.in", transformOrigin: "50% 50%" },
+		25.2,
+	);
+	tl.set(initialUnrealized, { opacity: 0 }, 25.5);
 	tl.fromTo(
-		[one("held-sum"), unrealized],
+		unrealized,
+		{ opacity: 0, scaleY: 0.92, transformOrigin: "50% 50%" },
+		{
+			opacity: 1,
+			scaleY: 1,
+			duration: 0.3,
+			ease: "power2.out",
+			immediateRender: false,
+		},
+		25.5,
+	);
+	// Reveal the settled sum after both surviving contribution rows are on the stage.
+	tl.fromTo(
+		one("held-sum"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		26.0,
@@ -1265,6 +1294,7 @@ function build(context: FilmContext) {
 			one("mark-input"),
 			one("r-tag"),
 			one("u-tag"),
+			initialUnrealized,
 			...kids("held-proof"),
 			...heldBraces,
 		],
@@ -1283,8 +1313,8 @@ function build(context: FilmContext) {
 	});
 	tl.fromTo(
 		total,
-		{ opacity: 1, scaleY: 0, transformOrigin: "50% 50%" },
-		{ scaleY: 1, duration: 0.3, ease: "power2.out", immediateRender: false },
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.out", immediateRender: false },
 		29.1,
 	);
 	d.lock(lockTotal, 29.4, {
@@ -1296,13 +1326,18 @@ function build(context: FilmContext) {
 	// The brackets settle at 29.85, the headline at 29.9; both read alone until 31.4.
 	// Merge the gap into one construction, including its settled result after '='.
 	d.trace(one<SVGPathElement>("gap-rule"), 31.4, { duration: 0.4 });
-	show([one("gap-bid"), one("gap-mid"), one("gap-eq")], 31.4, "below", 0.4);
-	land(one("gap-n"), 31.4, 0.4);
+	show([one("gap-bid"), one("gap-mid")], 31.4, "below", 0.4);
+	tl.fromTo(
+		one("gap-eq"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
+		31.5,
+	);
 	// The completed gap reads alone 31.8–33.7 (1.9 s); the hero's 3.85 s stand is unchanged.
 
 	// ——— short: the other side of the same calls ———
 	tl.addLabel("short", 33.7);
-	hide(
+	tl.set(
 		[
 			...flat("total"),
 			...kids("gapdraw"),
@@ -1310,14 +1345,15 @@ function build(context: FilmContext) {
 			one("l-head"),
 			one("t-head"),
 		],
+		{ opacity: 0 },
 		33.7,
 	);
-	tl.set(one("acct"), { opacity: 0 }, 33.8);
-	tl.set(one("ben"), { opacity: 1 }, 33.8);
-	// Ben's scaffold arrives once the gap has gone (no crossfade over it) and stands a second
-	// before his premium.
-	show(one("ben-scaffold"), 34.0, "below", 0.3);
-	show(one("b-head"), 34.05, "above");
+	tl.set(one("acct"), { opacity: 0 }, 33.7);
+	tl.set(one("ben"), { opacity: 1 }, 33.7);
+	// Ben's scaffold comes in at the cut itself (the gap is gone at once, so nothing crosses
+	// it and the stage is never empty) and stands a second before his premium.
+	show(one("ben-scaffold"), 33.7, "below", 0.3);
+	show(one("b-head"), 33.75, "above");
 	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 35.3);
 	show(one("premium-label"), 35.3);
 	land(one("mark-dot"), 35.6);
