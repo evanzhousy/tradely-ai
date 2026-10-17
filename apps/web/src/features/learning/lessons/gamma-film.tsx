@@ -188,14 +188,14 @@ const copy = {
 	qLabel: ["delta", "Delta"],
 	qTo: ["→ ?", "→ ?"],
 	qLine: [
-		`ALFA +$${MOVE}: does the call's delta change?`,
-		`ALFA 涨 $${MOVE}，看涨 Delta 会不变吗？`,
+		`ALFA +$${MOVE}: does delta change?`,
+		`ALFA 涨 $${MOVE}，Delta 变吗？`,
 	],
 	deltaAxis: ["call delta", "看涨 Delta"],
 	gammaAxis: ["gamma per $1", "每 $1 的 Gamma"],
 	priceAxis: ["ALFA price today", "ALFA 今天的价格"],
 	gammaWord: ["gamma", "Gamma"],
-	gammaSub: ["delta's change per $1 of ALFA", "ALFA 每变动 $1，Delta 的变化"],
+	gammaSub: ["Delta change per $1", "每 $1 Delta 变动"],
 	curveHead: ["Delta climbs as ALFA rises.", "ALFA 上涨，Delta 随之上升。"],
 	colCallsShort: ["calls' Δ", "看涨 Δ"],
 	colSharesShort: ["shares", "股票"],
@@ -237,7 +237,7 @@ const copy = {
 	sepShort: [`${SEP_DAYS} days`, `${SEP_DAYS} 天`],
 	claimBig: ["Gamma lives near the strike.", "Gamma 集中在行权价。"],
 	claimSub: [
-		"Sharper near expiry; weaker farther from strike.",
+		"Sharper near expiry; weaker off strike.",
 		"临近到期更尖；远离行权价更弱。",
 	],
 	nextBig: ["Next: theta, vega and rho", "下一课：Theta、Vega 与 Rho"],
@@ -324,17 +324,7 @@ function Scene({
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
 	const deltaChange = `Δ ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`;
-	const revisedRows = [["you", you, hedgeAfter.options]] as const;
-	const cueWidth = Math.max(
-		...revisedRows.map(([, quantity, result]) =>
-			textWidth(
-				`${exposureExpression(quantity, NEW_DELTA)} = ${shares(result)}`,
-				T.body,
-			),
-		),
-	);
-	const cueGap = 14;
-	const tableChipX = (W - tableChipW - cueGap - cueWidth) / 2 + tableChipW / 2;
+	const tableChipX = W / 2;
 	const hedgeRows = {
 		chip: H * (narrow ? 0.27 : 0.28),
 		labels: H * 0.36,
@@ -479,15 +469,14 @@ function Scene({
 									d={L.path(octCurve, L.yG)}
 									style={{ stroke: "var(--tone-ink)" }}
 								/>
+								<path
+									className="wt-line-position"
+									strokeDasharray="6 5"
+									d={L.path(sepCurve, L.yG)}
+									style={{ stroke: toneColor("focus"), strokeWidth: 2.5 }}
+								/>
 							</g>
 						))}
-						<path
-							data-f="g-sep"
-							className="wt-line-position"
-							style={{ strokeWidth: 2.5 }}
-							strokeDasharray="6 5"
-							d={L.path(octCurve, L.yG)}
-						/>
 						{(
 							[
 								["g-oct-label", false, narrow ? copy.octShort : copy.octLabel],
@@ -516,24 +505,6 @@ function Scene({
 									{t(text)}
 								</text>
 							</g>
-						))}
-						{(
-							[
-								["g-oct-height", -12, octAtStrike, false],
-								["g-sep-height", 12, sepAtStrike, true],
-							] as const
-						).map(([name, offset, gamma, focus]) => (
-							<path
-								key={name}
-								data-f={name}
-								d={`M${L.x(SPOT) + offset - 4} ${L.bottom}h8M${L.x(SPOT) + offset} ${L.bottom}V${L.yG(gamma)}M${L.x(SPOT) + offset + Math.sign(offset) * 4} ${L.yG(gamma)}H${L.x(SPOT)}`}
-								className="wt-line-position"
-								style={{
-									stroke: focus ? toneColor("focus") : "var(--tone-ink)",
-									strokeWidth: focus ? 2.5 : 3,
-								}}
-								strokeWidth={2}
-							/>
 						))}
 						<Word
 							name="g-times"
@@ -808,35 +779,6 @@ function Scene({
 					>
 						{deltaChange}
 					</Word>
-					{revisedRows.map(([who, quantity, result], i) => {
-						const expression = exposureExpression(quantity, NEW_DELTA);
-						const x = tableChipX + tableChipW / 2 + cueGap;
-						const y = hedgeRows.chip + (i ? 0.95 : -0.55) * T.body;
-						return (
-							<g key={who}>
-								<Word
-									name={`h-revised-${who}-calc`}
-									x={x}
-									y={y}
-									size={T.body}
-									anchor="start"
-									className="wt-film-num wt-film-dim"
-								>
-									{expression}
-								</Word>
-								<Word
-									name={`h-revised-${who}-result`}
-									x={x + textWidth(`${expression} `, T.body)}
-									y={y}
-									size={T.body}
-									anchor="start"
-									className="wt-film-num"
-								>
-									{`= ${shares(result)}`}
-								</Word>
-							</g>
-						);
-					})}
 				</g>
 				{(
 					[
@@ -866,15 +808,6 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
-			<Word
-				name="g-calc"
-				x={W / 2}
-				y={L.gammaCardY - T.big * (narrow ? 0.75 : 0.55)}
-				size={T.head}
-				className="wt-film-num wt-film-dim"
-			>
-				{`+${fixed2(NEW_DELTA - DELTA)} ÷ $${MOVE}`}
-			</Word>
 			<Lines
 				name="e-head"
 				text={t(narrow ? copy.expiryHeadShort : copy.expiryHead)}
@@ -986,22 +919,17 @@ function build(context: FilmContext) {
 		value,
 		one("d-step"),
 		one("d-riser"),
-		one("g-sep"),
 		one("g-oct-label"),
 		one("g-sep-label"),
 		one("g-times"),
-		one("g-oct-height"),
-		one("g-sep-height"),
 		...kids("q"),
 		...kids("g"),
 		one<SVGGraphicsElement>("lock-hedge"),
 		...kids("hedge"),
-		one("h-revised-you-result"),
 		...kids("h-derive-you"),
 		...kids("h-holder-you"),
 		...kids("h-holder-ben"),
 		one("k-head"),
-		one("g-calc"),
 		one("e-head"),
 		...kids("claim"),
 	]);
@@ -1080,17 +1008,16 @@ function build(context: FilmContext) {
 		{ spot: SPOT + MOVE, duration: 1.1, ease: "power2.inOut", onUpdate: place },
 		14.8,
 	);
-	// Cut: the slope gets its name, worked out: +0.08 over $2.
-	// The completed delta settles at 15.9, 1.5 s before the cut. Stagger the definition:
-	// the definition settles at 18.4, a second before the first application at 19.4.
+	// The curve ends with the +$2 and +0.08 already visible; keep one worked equation.
 	hide(one("k-head"), 17.4);
 	sink(17.4);
-	show(one("g-calc"), 17.8, "below", 0.3);
-	land(one("g-num"), 17.95, 0.4);
-	show(one("g-word"), 18.1, "below", 0.3);
-	// Fade the caption in place, clear of the worked label on both frames.
+	land(one("g-num"), 20.2, 0.4);
+	show(one("g-word"), 20.3, "below", 0.3);
+	// The caption names what the worked equation measures, so it comes with the equation and
+	// holds through the definition (a sentence is held 3.5 s); it fades in place, clear of the
+	// worked label on both frames.
 	tl.fromTo(one("g-sub"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.1);
-	for (const [who, at] of [["you", 19.4]] as const) {
+	for (const [who, at] of [["you", 17.8]] as const) {
 		// Fade the worked rows in place, so neither label nor equation travels across text.
 		tl.fromTo(
 			[one(`h-derive-${who}-label`), one(`h-derive-${who}-calc`)],
@@ -1107,17 +1034,12 @@ function build(context: FilmContext) {
 		);
 	}
 	// The definition stays readable; its big number steps back for the worked positions.
-	tl.to(
-		[one("g-num"), one("g-word"), one("g-calc")],
-		{ opacity: 0.45, duration: 0.3 },
-		21.0,
-	);
+	tl.to([one("g-num"), one("g-word")], { opacity: 0.45, duration: 0.3 }, 21.5);
 
 	// ——— hedge: the same delta, carried onto a position ———
 	tl.addLabel("hedge", 22.15);
-	// Complete rows settle at 19.8/20.1 and hold 2.35/2.05 s before their lanes clear.
-	// Spend the spare worked-position hold on the baseline table's quiet second.
-	hide([...kids("g"), one("g-calc")], 22.15, 0.3, 0);
+	// The worked equation holds from source 17.8 until its result carries to the table.
+	hide(kids("g"), 22.15, 0.3, 0);
 	// Clear the learner's calculation before its result flies into the table.
 	hide([one("h-derive-you-label"), one("h-derive-you-calc")], 22.15, 0.3, 0);
 	d.carry(
@@ -1136,8 +1058,7 @@ function build(context: FilmContext) {
 	land(one("h-ben-2"), 23.95);
 	land(one("h-ben-0"), 23.8);
 	// Ben's final baseline cell settles at 24.5; nothing new arrives until 25.5.
-	// ALFA rises $2, once, for both. The learner's revised expression appears only
-	// after the table's two updated rows agree with it.
+	// ALFA rises $2, once, for both; the table stays the proof of the revised exposure.
 	show(one("h-chip"), 25.5);
 	tl.fromTo(
 		one("h-delta"),
@@ -1147,15 +1068,7 @@ function build(context: FilmContext) {
 	);
 	settleHedge("you", hedgeBefore, hedgeAfter, 26.6);
 	settleHedge("ben", benColumns[0], benColumns[1], 26.7);
-	// Both table rows settle by 26.7. The learner's worked equality completes at
-	// the unchanged 27.0, a full second before the hero lock.
-	tl.fromTo(
-		one("h-revised-you-result"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		26.7,
-	);
-	// The revised expression and exposures stand quietly for a second before the lock.
+	// Both table rows settle by 26.7; the table and delta cue stand quietly before the lock.
 	// The hero: your hedge's drift, locked once its row has settled; the rest steps back.
 	// The brackets are fitted now, so measure the figure with its settled text.
 	const youNet = one<SVGTextElement>("h-you-2");
@@ -1210,6 +1123,7 @@ function build(context: FilmContext) {
 	tl.set(world, home, 35.6);
 	tl.set(chartDelta, { opacity: 0 }, 35.6);
 	tl.set(chartGamma, { opacity: 1 }, 35.6);
+	show([one("g-oct-label"), one("g-sep-label")], 35.4, "below", 0.3);
 	show(one("e-head"), 35.8, "above");
 	rise(35.8);
 	tl.to(
@@ -1219,30 +1133,15 @@ function build(context: FilmContext) {
 			duration: 0.9,
 			ease: "power2.inOut",
 		},
-		36.1,
+		37.6,
 	);
 	tl.to(
 		one("clip-gr"),
 		{ attr: { width: L.right - mx + 4 }, duration: 0.9, ease: "power2.inOut" },
-		36.1,
+		37.6,
 	);
-	tl.to(one("g-oct-label"), { opacity: 1, duration: 0.4 }, 36.9);
-	// The 4-day call starts as the same hill, then rises into a spike at the strike.
-	tl.to(one("g-sep"), { opacity: 1, duration: 0.3 }, 37.1);
-	tl.to(
-		one("g-sep"),
-		{
-			attr: { d: L.path(sepCurve, L.yG) },
-			duration: 1.0,
-			ease: "power3.inOut",
-		},
-		37.1,
-	);
-	tl.to(one("g-sep-label"), { opacity: 1, duration: 0.4 }, 37.9);
-	// Both measures start at zero: the complete September height is about three Octobers.
-	d.trace(one<SVGPathElement>("g-oct-height"), 37.7, { duration: 0.35 });
-	d.trace(one<SVGPathElement>("g-sep-height"), 38.1, { duration: 0.4 });
-	// Both zero-based heights are complete; the ratio settles for 2.25 s before the cut.
+	// Both expiries reveal as one comparison; the curves carry their own height.
+	// The ratio arrives when they settle, then keeps its original 2.25 s quiet hold.
 	tl.fromTo(
 		one("g-times"),
 		{ opacity: 0 },
