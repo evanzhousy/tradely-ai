@@ -75,27 +75,16 @@ const copy = {
 	qTag: ["Your agent → TradingFlow", "你的智能体 → TradingFlow"],
 	qBig: ["Sign in, or an API key?", "登录，还是 API 密钥？"],
 	qLine: ["It depends on the agent.", "取决于是哪个智能体。"],
-	signinHead: [
-		"Claude signs in with your account: no key.",
-		"Claude 用你的账户登录：不需要密钥。",
-	],
-	signinHeadShort: ["Claude: sign in, no key.", "Claude：登录，无需密钥。"],
-	keyHead: [
-		"Cursor, Codex and OpenClaw use an API key.",
-		"Cursor、Codex 和 OpenClaw 用 API 密钥连接。",
-	],
-	keyHeadShort: [
-		"Other supported agents: a key.",
-		"其他受支持的智能体：密钥。",
-	],
+	wayHead: ["Choose how to connect.", "选择连接方式。"],
+	wayHeadShort: ["Sign-in or API key.", "登录或 API 密钥。"],
 	signinProcess: ["Register → sign in", "注册 → 登录"],
 	keyNote: [
-		"Copy prompt → a key → paste to your agent",
-		"Copy prompt 会创建一把密钥，并放进你粘贴给智能体的提示里。",
+		"Copy prompt → key → paste to agent.",
+		"复制提示词 → 密钥 → 粘贴给智能体",
 	],
 	keyNoteShort: [
-		"Copy prompt → a key → paste to your agent",
-		"Copy prompt → 密钥 → 粘贴给智能体",
+		"Copy prompt → key → paste to agent.",
+		"复制提示词 → 密钥 → 粘贴给智能体",
 	],
 	agentHead: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
 	agentHeadShort: ["“Connected!” proves nothing.", "“已连接！”证明不了什么。"],
@@ -119,13 +108,10 @@ const copy = {
 	revokeAction: ["Revoke key", "撤销密钥"],
 	nextWindow: ["Next window", "下一窗口"],
 	rejected: ["✗ refused: key revoked", "✗ 被拒：密钥已撤销"],
-	claimBig: [
-		"Connect it, prove it, know the key's reach.",
-		"连接它，亲自证明，弄清密钥能做什么。",
-	],
+	claimBig: ["Connect. Verify access.", "连接，验证访问权限。"],
 	claimSub: [
-		"An agent's word isn't proof; every call is checked.",
-		"智能体说的不算证明；每次调用都会检查访问权限。",
+		"Revocation blocks the next call.",
+		"撤销密钥后，下次调用即被拒。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
@@ -243,25 +229,7 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
-			{headline("s-head", copy.signinHead, copy.signinHeadShort)}
-			<Lines
-				name="k-head"
-				text={t(narrow ? copy.keyHeadShort : copy.keyHead)}
-				x={margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.signinHeadShort : copy.signinHead),
-						narrow ? room : room * 0.74,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={narrow ? room : room * 0.74}
-				anchor="start"
-			/>
+			{headline("way-head", copy.wayHead, copy.wayHeadShort)}
 
 			{/* Three ways in. */}
 			{METHODS.map((method, i) => {
@@ -663,9 +631,7 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		...flat("q"),
-		...["s-head", "k-head", "a-head", "c-head", "r-head"].map((name) =>
-			one(name),
-		),
+		...["way-head", "a-head", "c-head", "r-head"].map((name) => one(name)),
 		lockBurst,
 		...METHODS.flatMap((method) => [way(method), on(method)]),
 		one("panel"),
@@ -700,7 +666,7 @@ function build(context: FilmContext) {
 	// ——— way: sign in, a key, or not yet ———
 	tl.addLabel("way", 9.6);
 	hide(flat("q"), 9.6);
-	show(one("s-head"), 9.8, "above");
+	show(one("way-head"), 9.8, "above");
 	METHODS.forEach((method, i) => {
 		show(way(method), 10.1 + i * 0.2);
 	});
@@ -708,8 +674,7 @@ function build(context: FilmContext) {
 	// Unsupported clients remain fully readable beside the supported routes.
 	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 10.9);
 	show([one("panel"), one("cmd")], 11.1);
-	// The compact process settles at 11.6; 1.2 seconds before the key swap.
-	show(one("k-head"), 12.8);
+	// The compact process settles at 11.6, before the key route takes focus.
 	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 12.8);
 	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 12.8);
 	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 12.8);
@@ -721,13 +686,7 @@ function build(context: FilmContext) {
 	// ——— prove: check it yourself ———
 	tl.addLabel("prove", 16.7);
 	hide(
-		[
-			one("s-head"),
-			one("k-head"),
-			...METHODS.map(way),
-			one("panel"),
-			one("note-key"),
-		],
+		[one("way-head"), ...METHODS.map(way), one("panel"), one("note-key")],
 		16.7,
 	);
 	show(one("a-head"), 17.05, "above");
