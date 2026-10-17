@@ -222,7 +222,20 @@ In the kit: `Tone` (`"focus" | "up" | "down" | "call" | "put" | "caution"`), `to
 - **At most one pair of categories in colour per shot** (call and put) besides sign, focus and caution. A second split (two expiries, two lots, IV and RV) is told apart by focus and ink, by line style and by labels.
 - **Never decoration.** A colour that names nothing goes.
 
-Retired from the films, still defined and failed by the timing audit (section 7): teal and orange sides (`--wt-long`, `--wt-short`, `wt-long`, `wt-short`, `wt-line-long`, `wt-line-short`, `wt-label-long`, `wt-label-short`, `Brackets tone="short"`) and blue and lavender evidence (`--diagram-observed`, `--diagram-estimated`, `wt-ev-*`). The playground diagrams on the page keep their own palette for now: a light page needs darker call and put values than the stage.
+Retired from the films, still defined and failed by the timing audit (section 7): teal and orange sides (`--wt-long`, `--wt-short`, `wt-long`, `wt-short`, `wt-line-long`, `wt-line-short`, `wt-label-long`, `wt-label-short`, `Brackets tone="short"`) and blue and lavender evidence (`--diagram-observed`, `--diagram-estimated`, `wt-ev-*`).
+
+**On the page.** The playground under each film takes the same roles, defined on `.walkthrough` in `walkthrough.css`, so a colour means the same in the film and in its playground. Dark pages use the stage's values. Light pages need darker ones, each reading at 4.5:1 or better on every light surface (`--muted` #f0ecf4 is the darkest):
+
+| Role | Light page | Dark page |
+|---|---|---|
+| Focus | #6d28d9 | #a78bfa |
+| Up | #147535 | #4ade80 |
+| Down | #be123c | #fb7185 |
+| Call | #0369a1 | #7dd3fc |
+| Put | #b04e00 | #f48206 |
+| Caution | #6f5a00 | #fbbf24 |
+
+Caution turns olive on a light page because a yellow dark enough to read is the put's orange. The closest light pairs are down and put (ΔE 10.9) and up and caution (11.3); for deuteranopes those two pairs fall to 4.8 and 4.0, so a signed figure shows its sign, a put its name and an unknown its hatch. Inside `.walkthrough` the page's older names point at the roles (`--diagram-accent` and `--diagram-model` are focus, `--diagram-gain` up, `--diagram-loss` down, `--diagram-unknown` caution), so every playground has one violet focus whatever the lesson page's palette. Page fills for the rights are `wt-call`, `wt-put`, `wt-call-soft` and `wt-put-soft`. The review list's right and wrong are a check (up with ✓, down with ✗), and cash and shares arrows are ink.
 
 ### Numbers
 
