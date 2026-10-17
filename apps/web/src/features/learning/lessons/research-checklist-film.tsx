@@ -20,13 +20,14 @@ import {
 	FRIEND,
 	MESSAGES,
 	PROPOSAL_INSERT,
+	RECIPE_STATUS,
 	type Step,
 	TEMPLATE,
 } from "./research-checklist-model";
 
 /*
- * Research checklists, as a film. It opens on Home's question, "Before I sell a call, what
- * should I check?", and a friend's three-step answer whose last step, "Confirm ALFA stays
+ * Research checklists, as a film. It opens on Home's question, "What do I check before
+ * selling a call?", and a friend's three-step answer whose last step, "Confirm ALFA stays
  * below $105", no tool can check: a forecast. Home's template has four steps, each opening
  * a tool. Add an earnings step and move call flow up, then refresh: the template is back,
  * because Home doesn't save. Last, Customize with AI asks one question before it proposes,
@@ -48,26 +49,23 @@ const FILM_MESSAGES = MESSAGES.map((message) => {
 		return {
 			...message,
 			text: [
-				"Adapt this checklist for ALFA's Oct 3 earnings.",
-				"为 ALFA 10月3日财报调整清单。",
+				"Adapt this for ALFA's Oct 3 earnings.",
+				"按 ALFA 10月3日财报改清单。",
 			] as const satisfies Copy,
 		};
 	if (message.id === "clarify")
 		return {
 			...message,
 			text: [
-				"Pre-earnings pricing or call positioning?",
-				"聚焦财报前的波动定价，还是看涨持仓？",
+				"Priced move or call positioning?",
+				"财报前波动定价，还是看涨持仓？",
 			] as const satisfies Copy,
 		};
 	return message.id === "proposal"
 		? { ...message, text: PROPOSAL_INSERT }
 		: message;
 });
-const FILM_RECIPE_STATUS: Copy = [
-	"Not saved; members need Recipe access and must confirm.",
-	"未保存；会员需 Recipe 权限并由你确认后创建。",
-];
+const FILM_RECIPE_STATUS = RECIPE_STATUS;
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
@@ -127,28 +125,19 @@ const copy = {
 	title: ["Start from a research checklist", "从研究清单开始"],
 	titleSub: ["steps a tool can check", "工具能核查的步骤"],
 	qTag: ["TradingFlow Home", "TradingFlow Home"],
-	qBig: [
-		"Before I sell a call, what should I check?",
-		"卖出看涨前，应该检查什么？",
-	],
-	qLine: [
-		"A friend's 3-step list: one doesn't belong.",
-		"朋友的三步清单：有一步不该入列。",
-	],
+	qBig: ["What do I check before selling a call?", "卖出看涨前，查什么？"],
+	qLine: ["A friend's list has one odd step.", "朋友清单里有一步不合适。"],
 	friendHead: [
 		"A friend's checklist for selling an ALFA call.",
 		"朋友列的卖出 ALFA 看涨清单。",
 	],
 	friendHeadShort: ["A friend's checklist.", "朋友的清单。"],
-	flagHead: ["“Stays below $105” is a forecast.", "“一直低于 $105”是预测。"],
+	flagHead: ["Below $105 is a forecast.", "低于 $105 是预测。"],
 	flagHeadShort: ["The last step is a forecast.", "最后一步是预测。"],
-	templateHead: [
-		"Home: replace the forecast with checks.",
-		"Home：用核查步骤替换预测。",
-	],
+	templateHead: ["Home swaps forecast for checks.", "Home：用核查替换预测。"],
 	templateHeadShort: [
-		"Home: replace the forecast with checks.",
-		"Home：用核查步骤替换预测。",
+		"Home swaps forecast for checks.",
+		"Home：用核查替换预测。",
 	],
 	editHead: ["Add earnings; move call flow up.", "新增财报，上移看涨成交流。"],
 	editHeadShort: ["Add earnings, move flow up.", "加财报，上移成交流。"],
@@ -175,10 +164,7 @@ const copy = {
 	meter: ["AI replies", "AI 回复"],
 	you: ["You", "你"],
 	claimBig: ["Checklists verify; they don't predict.", "清单核查，不做预测。"],
-	claimSub: [
-		"Today's evidence: check steps and AI ideas.",
-		"用今天的证据核查每一步和 AI 建议。",
-	],
+	claimSub: ["Steps and AI ideas need evidence.", "步骤与 AI 建议都要有依据。"],
 	nextBig: [
 		"Next: ask TradingFlow AI, then verify",
 		"下一课：问 TradingFlow AI，然后核查",
