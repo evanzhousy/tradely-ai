@@ -623,7 +623,13 @@ function Scene({
 						y={L.claimY(i) + L.claimH(i) / 2 + T.small * 0.36}
 						textAnchor="end"
 						className={`wt-film-tag ${tone[claim.evidence]}`}
-						style={{ fontSize: T.small * 0.95 }}
+						style={{
+							fontSize: T.small * 0.95,
+							fill:
+								claim.evidence === "observed" || claim.evidence === "calculated"
+									? "var(--tone-ink)"
+									: undefined,
+						}}
 					>
 						{t(copy[claim.evidence]).toUpperCase()}
 					</text>
