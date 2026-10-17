@@ -16,6 +16,7 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	active,
 	candidates,
@@ -88,19 +89,17 @@ function layout(width: number) {
 const copy = {
 	title: ["Contract neighborhoods", "合约邻域"],
 	titleSub: ["strikes and expiries in context", "结合行权价与到期日来看"],
-	qTag: ["ALFA calls · Monday", "ALFA 看涨 · 周一"],
-	qLine: [
-		`Oct 18 105: ${count(OCT[2] ?? 0)}. Oct 18 110: ${count(OCT[3] ?? 0)}.`,
-		`10月18日 105：${count(OCT[2] ?? 0)}。10月18日 110：${count(OCT[3] ?? 0)}。`,
-	],
-	qBig: ["Two crowds betting on a rise?", "两群人在押注上涨？"],
+	qTag: ["ALFA Oct 18 calls · Monday", "ALFA 10月18日看涨 · 周一"],
+	q105: ["105: ", "105："],
+	q110: ["110: ", "110："],
+	qBig: ["Two crowds or one spread?", "两群人，还是同一笔价差？"],
 	gHead: [
 		"Monday's ALFA calls, by expiry and strike.",
 		"周一 ALFA 看涨，按到期日和行权价。",
 	],
 	g2Head: [
-		`${count(SPREAD)} in each came from one spread.`,
-		`各有 ${count(SPREAD)} 张来自同一笔价差。`,
+		`${count(SPREAD)} per leg, one spread.`,
+		`每腿 ${count(SPREAD)} 张，同一笔价差。`,
 	],
 	itm: ["in the money", "实值"],
 	itmShort: ["ITM", "实值"],
@@ -113,25 +112,22 @@ const copy = {
 	buy: ["Buy", "买入"],
 	sell: ["Sell", "卖出"],
 	hHead: ["Compare two expiry rows.", "比较两个到期日的行。"],
-	h2Head: [
-		`Breadth tells them apart: ${active("sep20")} and ${active("nov15")}.`,
-		`广度把它们分开：${active("sep20")} 对 ${active("nov15")}。`,
-	],
+	h2Head: ["Same totals, different breadth.", "合计相同，广度不同。"],
 	totalLabel: ["total", "合计"],
 	peakLabel: ["peak", "峰值"],
 	breadthLabel: ["active strikes", "成交行权价数"],
 	versus: ["vs", "对"],
 	aHead: ["A screen's biggest numbers, checked.", "核查筛选器的最大数字。"],
 	a2Head: [
-		`Observed leader: ${count(LEAD?.value ?? 0)}. The 120 is missing.`,
-		`已观测领头值：${count(LEAD?.value ?? 0)}。120 缺失。`,
+		`Leader: ${count(LEAD?.value ?? 0)}. 120 missing.`,
+		`领头值 ${count(LEAD?.value ?? 0)}；120 缺失。`,
 	],
 	stale: ["stale", "过时"],
 	scope: ["a put", "看跌"],
 	missing: ["missing", "缺失"],
 	candidate: ["leader", "领头"],
 	claimBig: ["A cell needs its neighbors.", "一个格子要看它的邻居。"],
-	claimSub: ["Report breadth with the total.", "报告合计时也报告广度。"],
+	claimSub: ["Report total and breadth.", "合计与广度都要报告。"],
 	nextBig: ["Next: backtests", "下一课：回测"],
 	nextSub: ["testing a pattern without hindsight", "不带后见之明地检验模式"],
 } as const satisfies Record<string, Copy>;
@@ -162,6 +158,14 @@ function Scene({
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
 	const rowY = (r: number) => L.gridTop + r * (L.cellH + 6);
+	const q105Label = t(copy.q105);
+	const q110Label = t(copy.q110);
+	const qCarryOffset = narrow ? 40 : 60;
+	const q105ValueX = L.strikeX(105) - qCarryOffset;
+	const q110ValueX = L.strikeX(110) + qCarryOffset;
+	const q105Value = count(OCT[2] ?? 0);
+	const q110Value = count(OCT[3] ?? 0);
+	const qLineY = H * 0.45;
 	const cell = (key: ExpiryKey, r: number, j: number) => {
 		const value = volume[key][j];
 		const x = L.cellX(j) + 3;
@@ -204,6 +208,7 @@ function Scene({
 					/>
 				)}
 				<text
+					data-f={`cell-value-${key}-${j}`}
 					x={x + w / 2}
 					y={y + L.cellH / 2 + text * 0.36}
 					textAnchor="middle"
@@ -280,15 +285,48 @@ function Scene({
 				>
 					{t(copy.qTag).toUpperCase()}
 				</Word>
-				<Lines
-					name="q-line"
-					text={t(copy.qLine)}
-					x={W / 2}
-					y={H * 0.43}
-					size={T.head}
-					maxWidth={room}
-					className="wt-film-type wt-film-accent"
-				/>
+				<g data-f="q-line">
+					<Word
+						name="q-105-label"
+						x={q105ValueX - textWidth(q105Label, T.head)}
+						y={qLineY}
+						size={T.head}
+						anchor="start"
+						className="wt-film-num wt-film-dim"
+					>
+						{q105Label}
+					</Word>
+					<Word
+						name="q-105-value"
+						x={q105ValueX}
+						y={qLineY}
+						size={T.head}
+						anchor="start"
+						className="wt-film-num"
+					>
+						{q105Value}
+					</Word>
+					<Word
+						name="q-110-label"
+						x={q110ValueX - textWidth(q110Label, T.head)}
+						y={qLineY}
+						size={T.head}
+						anchor="start"
+						className="wt-film-num wt-film-dim"
+					>
+						{q110Label}
+					</Word>
+					<Word
+						name="q-110-value"
+						x={q110ValueX}
+						y={qLineY}
+						size={T.head}
+						anchor="start"
+						className="wt-film-num"
+					>
+						{q110Value}
+					</Word>
+				</g>
 				<Lines
 					name="q-big"
 					text={t(copy.qBig)}
@@ -672,6 +710,8 @@ function build(context: FilmContext) {
 		...heads,
 		...kids("axes"),
 		...ROWS.map((key) => one(`cells-${key}`)),
+		one("cell-value-oct18-2"),
+		one("cell-value-oct18-3"),
 		one("spot"),
 		...kids("spread").flatMap((el) =>
 			el.hasAttribute("data-f") ? [el] : [...el.children],
@@ -703,7 +743,7 @@ function build(context: FilmContext) {
 
 	// ——— grid: the neighborhood ———
 	tl.addLabel("grid", 8.6);
-	hide(flat("q"), 8.6);
+	hide([one("q-tag"), one("q-big")], 8.6);
 	show(heads[0], 8.8);
 	show(kids("axes"), 9.2);
 	// Scaffold settles at 9.7, then stands alone for one second. Reveal the grid
@@ -717,6 +757,20 @@ function build(context: FilmContext) {
 			10.7,
 		);
 	});
+	// The named question values become the matching grid cells as the row settles.
+	d.carry(one("q-105-value"), one("cell-value-oct18-2"), 10.7, {
+		duration: 0.35,
+		arc: "x",
+	});
+	d.carry(one("q-110-value"), one("cell-value-oct18-3"), 10.7, {
+		duration: 0.35,
+		arc: "x",
+	});
+	tl.to(
+		[one("q-105-label"), one("q-110-label")],
+		{ opacity: 0, duration: 0.35 },
+		10.7,
+	);
 	// All cells settle at 11.05; retain 1.35 seconds of quiet before the spot.
 	show(one("spot"), 12.4);
 	// The shared ticket establishes provenance before the answer names the spread.
@@ -755,27 +809,25 @@ function build(context: FilmContext) {
 			statLine(key, 0),
 			statLine(key, 1),
 		]),
-		22.2,
+		23.2,
 	);
-	// Equality settles at 22.7; one second of quiet precedes the cell construction.
+	// Equality settles at 23.7; one second of quiet precedes the cell construction.
 	(["sep20", "nov15"] as const).forEach((key) => {
 		STRIKES.forEach((_, j) => {
 			if (!(volume[key][j] ?? 0))
-				tl.to(one(`cell-${key}-${j}`), { opacity: 0.3, duration: 0.3 }, 23.7);
-		});
-		const marks = STRIKES.flatMap((_, j) =>
-			(volume[key][j] ?? 0) > 0 ? [one(`counted-${key}-${j}`)] : [],
-		);
-		marks.forEach((mark, i) => {
-			tl.fromTo(
-				mark,
-				{ opacity: 0 },
-				{ opacity: 1, duration: 0.52 },
-				24.2 + i * 0.52,
-			);
+				tl.to(one(`cell-${key}-${j}`), { opacity: 0.3, duration: 0.3 }, 24.7);
 		});
 	});
-	// All outlines settle at 26.8. No numeric count is displayed during construction:
+	const sepMarks = STRIKES.flatMap((_, j) =>
+		(volume.sep20[j] ?? 0) > 0 ? [one(`counted-sep20-${j}`)] : [],
+	);
+	const novMarks = STRIKES.flatMap((_, j) =>
+		(volume.nov15[j] ?? 0) > 0 ? [one(`counted-nov15-${j}`)] : [],
+	);
+	// Each expiry's occupied cells share one reveal; the two rows settle at 26.8.
+	tl.fromTo(sepMarks, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 26.1);
+	tl.fromTo(novMarks, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 26.5);
+	// No numeric count is displayed during construction:
 	// reveal only the model's settled breadth after 1.1 seconds of quiet.
 	tl.fromTo(
 		one("hero-breadth"),
@@ -811,7 +863,6 @@ function build(context: FilmContext) {
 	const out = candidates.flatMap((c, i) => (c.fails ? [i] : []));
 	show(out.map(verdict), 33.8, "right", 0.4);
 	out.forEach((i) => {
-		tl.to(one(`cand-${i}-value`), { opacity: 0.4, duration: 0.4 }, 33.8);
 		tl.to(one(`cand-${i}-box`), { opacity: 0.4, duration: 0.4 }, 33.8);
 	});
 	const eligibleVerdicts = candidates.flatMap((c, i) =>
