@@ -18,6 +18,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -55,15 +56,15 @@ const POSITION_CONTRACTS = rowContracts(ROWS[2]);
 if (POSITION_CONTRACTS === null)
 	throw new Error("The positions repair needs the covered 110-call row.");
 const statusTone: Record<Status, string> = {
-	supported: "wt-film-gain",
-	repaired: "wt-film-warn",
-	removed: "wt-film-loss",
+	supported: "wt-film-dim",
+	repaired: toneClass.caution,
+	removed: toneClass.caution,
 };
-const sectionTone = {
-	gain: "wt-film-gain",
-	accent: "wt-film-accent",
-	loss: "wt-film-loss",
-	muted: "wt-film-dim",
+const sectionTone: Readonly<Record<string, string>> = {
+	supported: toneClass.focus,
+	repaired: "wt-film-dim",
+	open: toneClass.caution,
+	reopen: "wt-film-dim",
 } as const;
 
 function layout(width: number) {
@@ -260,7 +261,7 @@ function Scene({
 					x={margin + room * L.colReport}
 					y={L.rowY(0) - T.small * 0.9}
 					textAnchor="end"
-					className="wt-film-tag wt-film-loss"
+					className="wt-film-tag"
 					style={{ fontSize: T.small }}
 				>
 					{t(copy.report).toUpperCase()}
@@ -271,7 +272,7 @@ function Scene({
 				x={margin + room - 12}
 				y={L.rowY(0) - T.small * 0.9}
 				textAnchor="end"
-				className="wt-film-tag wt-film-gain"
+				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
 				{t(copy.recomputed).toUpperCase()}
@@ -305,7 +306,7 @@ function Scene({
 								x={margin + room * L.colReport}
 								y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 								textAnchor="end"
-								className={`wt-film-num ${premium === null ? "wt-film-warn" : "wt-film-loss"}`}
+								className={`wt-film-num ${premium === null ? toneClass.caution : premium === 0 ? "wt-film-dim" : ""}`}
 								style={{ fontSize: text }}
 							>
 								{premium === null ? t(copy.noData) : usd(premium / 100)}
@@ -317,7 +318,7 @@ function Scene({
 								x={margin + room - 12}
 								y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 								textAnchor="end"
-								className="wt-film-num wt-film-gain"
+								className={`wt-film-num ${premium === 0 ? "wt-film-dim" : ""}`}
 								style={{ fontSize: text }}
 							>
 								{dollars(premium)}
@@ -357,7 +358,7 @@ function Scene({
 					y={H * 0.735}
 					size={T.body}
 					anchor="start"
-					className="wt-film-num wt-film-accent"
+					className="wt-film-num"
 				>
 					{proofOperands[i]}
 				</Word>
@@ -368,7 +369,7 @@ function Scene({
 				y={H * 0.79}
 				size={T.small}
 				anchor="start"
-				className="wt-film-num wt-film-accent"
+				className="wt-film-num"
 			>
 				{t(copy.multiplier)}
 			</Word>
@@ -378,7 +379,7 @@ function Scene({
 				y={H * 0.79}
 				size={T.body}
 				anchor="start"
-				className="wt-film-num wt-film-gain"
+				className={`wt-film-num ${toneClass.focus}`}
 			>
 				{dollars(premiumProof.premium)}
 			</Word>
@@ -388,7 +389,7 @@ function Scene({
 				y={H * 0.83}
 				size={T.small}
 				anchor="end"
-				className="wt-film-tag wt-film-gain"
+				className={`wt-film-tag ${toneClass.focus}`}
 			>
 				{t(copy.covered)}
 			</Word>
@@ -397,7 +398,7 @@ function Scene({
 				x={margin + room * L.colReport}
 				y={L.totalY}
 				textAnchor="end"
-				className="wt-film-num wt-film-loss"
+				className="wt-film-num"
 				style={{
 					fontSize: narrow ? T.body * 1.1 : T.head,
 					textDecoration: "line-through",
@@ -410,7 +411,7 @@ function Scene({
 				x={margin + room - 12}
 				y={L.totalY}
 				textAnchor="end"
-				className="wt-film-num wt-film-gain"
+				className={`wt-film-num ${toneClass.focus}`}
 				style={{ fontSize: narrow ? T.head : T.num }}
 			>
 				{dollars(PREMIUM)}
@@ -497,7 +498,7 @@ function Scene({
 								L.claimY(i) +
 								(claim.status === "removed" ? H * 0.12 : L.claimH * 0.78)
 							}
-							className={`wt-film-type ${claim.status === "removed" ? "wt-film-loss" : "wt-film-gain"}`}
+							className={`wt-film-type ${claim.status === "removed" ? toneClass.focus : claim.id === "premium" ? "" : toneClass.caution}`}
 							style={{
 								fontSize:
 									claim.status === "removed"
@@ -531,7 +532,7 @@ function Scene({
 					<text
 						x={margin + 14}
 						y={L.secY(i) + T.small * 1.7}
-						className={`wt-film-tag ${sectionTone[section.tone]}`}
+						className={`wt-film-tag ${sectionTone[section.id]}`}
 						style={{ fontSize: T.small }}
 					>
 						{t(section.label).toUpperCase()}
