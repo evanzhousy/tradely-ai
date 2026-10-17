@@ -831,7 +831,12 @@ function build(context: FilmContext) {
 	rise(21.6);
 	tl.set(
 		one("same-curve"),
-		{ attr: { class: "wt-line-reference" }, immediateRender: false },
+		{
+			attr: { class: "wt-line-reference" },
+			strokeWidth: 1.75,
+			strokeOpacity: 0.3,
+			immediateRender: false,
+		},
 		21.6,
 	);
 	tl.set(
