@@ -18,6 +18,9 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	type Tone,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -63,7 +66,7 @@ const proofs: {
 	source: Copy;
 	basis: Copy;
 	result: Copy;
-	color: string;
+	tone?: Tone;
 }[] = [
 	{
 		id: "count",
@@ -74,7 +77,6 @@ const proofs: {
 			`${PASSED.length} contracts · ${NAMES} names`,
 			`${PASSED.length} 份合约 · ${NAMES} 个标的`,
 		],
-		color: "var(--diagram-observed)",
 	},
 	{
 		id: "ratio",
@@ -91,7 +93,7 @@ const proofs: {
 			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}×`,
 			`${CRUX.volume.toLocaleString("en-US")} ÷ ${CRUX.openInterest.toLocaleString("en-US")} → ${volumeToOi(CRUX).toFixed(2)}倍`,
 		],
-		color: "var(--diagram-accent)",
+		tone: "focus",
 	},
 	{
 		id: "bet",
@@ -102,7 +104,7 @@ const proofs: {
 			"缺少交易者、动机与开平仓数据。",
 		],
 		result: ["Not supported", "无依据"],
-		color: "var(--diagram-loss)",
+		tone: "caution",
 	},
 	{
 		id: "near",
@@ -113,7 +115,7 @@ const proofs: {
 			`${NEAR} of ${PASSED.length} ≤ 30 days`,
 			`${PASSED.length} 份中 ${NEAR} 份 ≤ 30 天`,
 		],
-		color: "var(--diagram-accent)",
+		tone: "focus",
 	},
 	{
 		id: "fall",
@@ -121,7 +123,7 @@ const proofs: {
 		source: STATEMENTS.find((item) => item.id === "fall")?.text ?? BET.text,
 		basis: ["No price-path evidence", "数据不含价格预测"],
 		result: ["Not supported", "无依据"],
-		color: "var(--diagram-loss)",
+		tone: "caution",
 	},
 ];
 
@@ -415,7 +417,7 @@ function Scene({
 													y={basisY + T.body * 1.6}
 													size={T.body}
 													anchor="start"
-													className="wt-film-type wt-film-loss"
+													className={`wt-film-type ${toneClass.caution}`}
 												>
 													{t(["Missing", "缺失"])}
 												</Word>
@@ -428,8 +430,12 @@ function Scene({
 									data-f="basis-near"
 									x={margin + 14}
 									y={basisY}
-									className="wt-film-num wt-film-dim"
-									style={{ fontSize: T.body }}
+									className="wt-film-num"
+									style={{
+										fontSize: T.body,
+										fontWeight: 500,
+										letterSpacing: 0,
+									}}
 								>
 									{expiryDays.map((days, i) => (
 										<tspan
@@ -464,7 +470,7 @@ function Scene({
 											x={margin + 14 + (i * (room - 28)) / 2}
 											y={resultY}
 											className="wt-film-num"
-											style={{ fontSize: T.head, fill: proof.color }}
+											style={{ fontSize: T.head }}
 										>
 											{value}
 										</text>
@@ -475,10 +481,8 @@ function Scene({
 									data-f={`result-${proof.id}`}
 									x={margin + 14}
 									y={resultY}
-									className={
-										proof.id === "bet" ? "wt-film-type" : "wt-film-num"
-									}
-									style={{ fontSize: resultSize, fill: proof.color }}
+									className={`${proof.id === "bet" ? "wt-film-type" : "wt-film-num"} ${proof.tone ? toneClass[proof.tone] : ""}`}
+									style={{ fontSize: resultSize }}
 								>
 									{t(proof.result)}
 								</text>
@@ -527,7 +531,7 @@ function Scene({
 							x={margin + L.ledgerW - 14}
 							y={L.ledgerY(i) + L.ledgerH / 2 + L.rowText * 0.36}
 							textAnchor="end"
-							className={`wt-film-num ${reply.kind === "chart" ? "wt-film-accent" : ""}`}
+							className="wt-film-num"
 							style={{ fontSize: L.rowText }}
 						>
 							{t(creditText(reply.cost))}
@@ -643,7 +647,7 @@ function Scene({
 					data-f="draft-branch"
 					d={`M ${margin + room * 0.75} ${L.barY + L.barH} V ${L.panelY - 7} m -4 -4 l 4 4 l 4 -4`}
 					fill="none"
-					stroke="var(--diagram-accent)"
+					stroke={toneColor("focus")}
 					strokeWidth={2}
 				/>
 				<g data-f="p-edit">
@@ -792,15 +796,24 @@ function build(context: FilmContext) {
 	const qualifyingExpiries = expiryDays.flatMap((days, i) =>
 		days <= 30 ? [one(`expiry-day-${i}`)] : [],
 	);
+	const otherExpiries = expiryDays.flatMap((days, i) =>
+		days > 30 ? [one(`expiry-day-${i}`)] : [],
+	);
+	tl.set(qualifyingExpiries, { attr: { class: toneClass.focus } }, 20.25);
 	tl.fromTo(
 		qualifyingExpiries,
-		{ fill: getComputedStyle(one("basis-near")).fill, fontWeight: 500 },
+		{ fontWeight: 500 },
 		{
-			fill: getComputedStyle(result("near")).fill,
 			fontWeight: 600,
 			duration: 0.3,
 			ease: "none",
 		},
+		20.25,
+	);
+	tl.fromTo(
+		otherExpiries,
+		{ opacity: 1 },
+		{ opacity: 0.3, duration: 0.3, ease: "none" },
 		20.25,
 	);
 	fade([result("near"), result("fall")], 20.55);
@@ -853,24 +866,21 @@ function build(context: FilmContext) {
 	// The matching field inherits its source's emphasis, then both settle together.
 	const officialField = one("official-field");
 	const draftField = one("draft-field");
-	const fieldInk = getComputedStyle(officialField).fill;
-	const fieldAccent = getComputedStyle(one("draft-owner")).fill;
-	tl.fromTo(
+	tl.set(
 		officialField,
-		{ fill: fieldInk },
-		{ fill: fieldAccent, duration: 0.3, ease: "power1.out" },
+		{ attr: { class: `wt-film-type ${toneClass.focus}` } },
 		36.35,
 	);
-	tl.fromTo(
+	tl.set(
 		draftField,
-		{ opacity: 0, fill: fieldAccent },
-		{ opacity: 1, duration: 0.5 },
+		{ attr: { class: `wt-film-type ${toneClass.focus}` } },
 		36.45,
 	);
-	tl.to(
+	tl.fromTo(draftField, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 36.45);
+	tl.set(
 		[officialField, draftField],
-		{ fill: fieldInk, duration: 0.3, ease: "power1.out" },
-		36.65,
+		{ attr: { class: "wt-film-type" } },
+		36.95,
 	);
 	// Cut: the claim.
 	hide(
