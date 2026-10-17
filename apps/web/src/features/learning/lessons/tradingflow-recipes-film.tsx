@@ -1,4 +1,3 @@
-import { gsap } from "gsap";
 import { useId } from "react";
 import {
 	type Copy,
@@ -46,16 +45,16 @@ import {
  * the session screen that answers it. Then the session a report shows: opened at 8:00 on
  * Tuesday, before the open, the screener shows Monday, the latest completed session; opened
  * at 10:00 on Monday, with most of Monday's session still to trade, the "latest" marker jumps
- * back to Friday, whose date comes down into the report's header. After the
+ * back to Friday. The Friday session stays latest until Monday's close at 16:30. After the
  * lock releases, Monday finishes and becomes the latest session. Last, Edit with AI copies
  * Daily Market Recap into a private copy linked to its action chip
  * and changes: you open your copy, and a colleague still opens the official one.
  *
  *   open      0–4        "Recipes"
  *   question  4–9.6      "Which contracts trade well above open interest Monday?"
- *   catalog   9.6–15.8   three kinds; the screen
- *   session   15.8–35.7  Tue 8:00 → Monday; Mon 10:00 → Friday; Mon 16:30 → Monday
- *   fork      35.7–41.4  official + colleague; linked inherited copy; your edit
+ *   catalog   9.6–16.8   three kinds; the screen
+ *   session   16.8–32.7  Tue 8:00 → Monday; Mon 10:00 → Friday; Mon 16:30 → Monday
+ *   fork      32.7–41.4  official + colleague; linked inherited copy; your edit
  *   claim     41.4–45.4 Pick by the question; read the session
  *   next      45.4–47.4  Next: read a recipe like an auditor
  */
@@ -185,7 +184,11 @@ const copy = {
 		"Monday at 10:00: still trading.",
 		"周一 10:00：仍在交易。",
 	],
-	fridayHead: ["It shows Friday.", "它显示周五。"],
+	fridayHead: [
+		"Friday remains latest until Monday closes.",
+		"周一收盘前，最近时段仍是周五。",
+	],
+	fridayHeadShort: ["Friday until close.", "周一收盘前仍是周五。"],
 	editChip: ["Edit with AI", "Edit with AI"],
 	forkHead: [
 		"Edit with AI forks a private copy.",
@@ -593,18 +596,6 @@ function Scene({
 							rx={6}
 							className="wt-focus-shape"
 						/>
-						{/* Friday's date in the header's own type, read off Friday's box: what travels
-						    into the report's header, so it lands in its own face and width. */}
-						<text
-							data-f="fri-date"
-							x={L.dayX(PREVIOUS_SESSION_DATE) + L.colW / 2}
-							y={statusY}
-							textAnchor="middle"
-							className="wt-film-type wt-film-accent"
-							style={{ fontSize: T.small * 1.1 }}
-						>
-							{t(dayLabel(PREVIOUS_SESSION_DATE))}
-						</text>
 						{(
 							[
 								["latest-mon", SESSION_DATE, copy.latest, "wt-accent"],
@@ -679,8 +670,7 @@ function Scene({
 								{t(narrow ? copy.screenerShort : copy.screener)}
 							</text>
 						</g>
-						{/* Each session line's date is a part of its own: Monday's fades out of its line,
-						    and the calendar's Friday lands in Friday's. */}
+						{/* The report's session follows the run: Monday at 8:00 shows Monday; Monday at 10:00 shows Friday. */}
 						{(
 							[
 								["sess-mon", t(dayLabel(SESSION_DATE)), "wt-film-accent"],
@@ -703,15 +693,6 @@ function Scene({
 								<tspan data-f={`${name}-date`}>{date}</tspan>
 							</text>
 						))}
-						<text
-							data-f="sess-pending"
-							x={margin + 16}
-							y={headerLine(1)}
-							className="wt-film-type wt-film-dim"
-							style={{ fontSize: T.head * 1.3 }}
-						>
-							…
-						</text>
 						<text
 							data-f="sess-fri"
 							x={margin + 16}
@@ -875,7 +856,7 @@ function Scene({
 			{headline("m-head", copy.mondayHead, copy.mondayHeadShort)}
 			<Lines
 				name="m2-head"
-				text={t(copy.fridayHead)}
+				text={t(narrow ? copy.fridayHeadShort : copy.fridayHead)}
 				x={L.margin}
 				y={
 					L.headY +
@@ -968,7 +949,6 @@ function build(context: FilmContext) {
 		one("mon-rest"),
 		one("mon-elapsed"),
 		one("completion-clock"),
-		one("fri-date"),
 		one("latest-box"),
 		one("latest-mon"),
 		one("trading-mon"),
@@ -976,7 +956,6 @@ function build(context: FilmContext) {
 		one("now-dot"),
 		one("header"),
 		one("sess-mon"),
-		one("sess-pending"),
 		one("sess-fri"),
 		one("sess-close"),
 		one("ran-tue"),
@@ -1003,14 +982,6 @@ function build(context: FilmContext) {
 		lockSession,
 		...kids("claim"),
 	]);
-	// Measure the actual date slot in either language, using its own type.
-	gsap.set(one("sess-pending"), {
-		attr: {
-			x: one<SVGTextContentElement>("sess-mon-date").getStartPositionOfChar(0)
-				.x,
-		},
-	});
-
 	// ——— open ———
 	tl.addLabel("open", 0);
 	d.open(0);
@@ -1030,13 +1001,13 @@ function build(context: FilmContext) {
 		flat("q").filter((el) => el !== one("q-signal")),
 		9.6,
 	);
-	// All six cards settle at 10.75; nothing new begins before 11.75.
+	// All six cards settle at 10.75; the full classification stays readable for 2 s.
 	// The phrase waits in the gap above UOA, clear of the catalog, and both
-	// marks stay untransformed. Its 0.7 s flight settles at 12.45.
+	// marks stay untransformed. Its 0.7 s flight settles at 13.45.
 	d.carry(
 		one<SVGGraphicsElement>("q-signal"),
 		one<SVGGraphicsElement>("screen-signal"),
-		11.75,
+		12.75,
 		{ duration: 0.7, arc: "y" },
 	);
 	show(one("k-head"), 9.8, "above");
@@ -1065,32 +1036,32 @@ function build(context: FilmContext) {
 		one("uoa-contract"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		11.75,
+		12.75,
 	);
 	["uoa-volume", "uoa-oi"].forEach((name, i) => {
 		tl.fromTo(
 			one(name),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.3 },
-			11.9 + i * 0.1,
+			12.9 + i * 0.1,
 		);
 	});
-	show(one("s-head"), 12.2);
-	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 12.05);
+	show(one("s-head"), 13.2);
+	tl.to(focus(SCREEN), { opacity: 1, duration: 0.4 }, 13.05);
 	if (L.narrow) {
 		// Step the neighbour below 0.25 before the selected panel widens. Both rows use one
-		// scale and settle at 12.3, preserving the full 3.5 s comparison hold.
+		// scale and settle at 13.3, preserving the full 3.5 s comparison hold.
 		const neighbour = one("card-sweeps-vs-blocks");
 		tl.to(
 			others(SCREEN).filter((card) => card !== neighbour),
 			{ opacity: 0.2, duration: 0.3 },
-			11.75,
+			12.75,
 		);
-		tl.to(neighbour, { opacity: 0, duration: 0.3 }, 11.75);
+		tl.to(neighbour, { opacity: 0, duration: 0.3 }, 12.75);
 		tl.to(
 			KINDS.map((kind) => one(`kind-${kind}`)),
 			{ opacity: 0.25, duration: 0.3 },
-			11.75,
+			12.75,
 		);
 		tl.fromTo(
 			[one(`panel-${SCREEN}`), focus(SCREEN)],
@@ -1100,7 +1071,7 @@ function build(context: FilmContext) {
 				duration: 0.35,
 				ease: "power2.out",
 			},
-			11.95,
+			12.95,
 		);
 		["volume", "oi"].forEach((name, i) => {
 			const y = L.screenProof.volumeY + i * L.screenProof.size * 1.25;
@@ -1118,7 +1089,7 @@ function build(context: FilmContext) {
 					duration: 0.35,
 					ease: "power2.out",
 				},
-				11.95,
+				12.95,
 			);
 			tl.fromTo(
 				one(`uoa-${name}-bar`),
@@ -1140,51 +1111,52 @@ function build(context: FilmContext) {
 					duration: 0.35,
 					ease: "power2.out",
 				},
-				11.95,
+				12.95,
 			);
 		});
 	} else {
-		tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 12.4);
+		tl.to(others(SCREEN), { opacity: 0.35, duration: 0.4 }, 13.4);
 	}
 
 	// ——— session: the calendar, not the clock ———
-	tl.addLabel("session", 15.8);
-	hide([one("k-head"), one("s-head")], 15.8);
+	tl.addLabel("session", 16.8);
+	hide([one("k-head"), one("s-head")], 16.8);
 	// Preserve the phrase's 3.75 s landed hold after delaying its carry.
 	// Its proof sinks with it; Tuesday arrives only after both have left.
-	hide(one("screen-signal"), 16.2, 0.35, 0);
-	sink(16.2);
-	tl.set(one("catalog"), { opacity: 0 }, 16.6);
-	tl.set(one("calendar"), { opacity: 1 }, 16.6);
-	show(one("o-head"), 16.6, "above");
-	rise(16.6);
+	hide(one("screen-signal"), 17.2, 0.35, 0);
+	sink(17.2);
+	tl.set(one("catalog"), { opacity: 0 }, 17.6);
+	tl.set(one("calendar"), { opacity: 1 }, 17.6);
+	show(one("o-head"), 17.6, "above");
+	rise(17.6);
 	// At Tuesday 8:00 Friday and Monday are done; Tuesday hasn't opened.
-	tl.to(sessions.slice(0, 2), { opacity: 1, duration: 0.4 }, 16.8);
-	tl.to(sessions[2], { opacity: 0.35, duration: 0.4 }, 16.8);
-	tl.to(one("now-line"), { opacity: 1, duration: 0.3 }, 17.3);
-	land(one("now-dot"), 17.3, 0.35);
-	show(one("header"), 17.7);
-	show(one("ran-tue"), 17.9);
-	show(one("t-head"), 18.8);
-	tl.to(one("latest-box"), { opacity: 1, duration: 0.4 }, 18.8);
-	show(one("latest-mon"), 18.9);
+	tl.to(sessions.slice(0, 2), { opacity: 1, duration: 0.4 }, 17.8);
+	tl.to(sessions[2], { opacity: 0.35, duration: 0.4 }, 17.8);
+	tl.to(one("now-line"), { opacity: 1, duration: 0.3 }, 18.3);
+	land(one("now-dot"), 18.3, 0.35);
+	show(one("header"), 18.7);
+	show(one("ran-tue"), 18.9);
+	show(one("t-head"), 19.8);
+	tl.to(one("latest-box"), { opacity: 1, duration: 0.4 }, 19.8);
+	show(one("latest-mon"), 19.9);
 	// Reveal the settled session with its evidence, without an unknown or a flip.
-	show(one("sess-mon"), 19.0);
+	show(one("sess-mon"), 20.0);
 	// Opened on Monday morning instead: Monday is trading, so "latest" goes back over the
 	// weekend to Friday.
-	d.swap([one("o-head"), one("t-head")], one("m-head"), 22.4);
+	d.swap([one("o-head"), one("t-head")], one("m-head"), 23.4);
 	// Cut the dependent marks together at the new run: no clock movement can
 	// disagree with its run label, session date, elapsed time, or latest day.
 	const mondayX = L.nowX(MONDAY);
 	const mondayDoneWidth = (dayFraction(MONDAY.at) - dayFraction(OPEN)) * L.colW;
 	const fridayBoxX = L.dayX(PREVIOUS_SESSION_DATE) + dayFraction(OPEN) * L.colW;
 	const friday = one(`day-${PREVIOUS_SESSION_DATE}`);
-	tl.set(one("now-line"), { attr: { x1: mondayX, x2: mondayX } }, 23.35);
-	tl.set(one("now-dot"), { attr: { cx: mondayX } }, 23.35);
+	tl.set(one("now-line"), { attr: { x1: mondayX, x2: mondayX } }, 24.35);
+	tl.set(one("now-dot"), { attr: { cx: mondayX } }, 24.35);
 	// The old run's marks leave over the motion floor, gone at the cut; the new run's
 	// come on over the same 0.3 s after it, so nothing pops.
-	hide(one("ran-tue"), 23.05, 0.3, 0);
-	tl.set(one("mon-done"), { attr: { width: mondayDoneWidth } }, 23.35);
+	hide(one("ran-tue"), 24.05, 0.3, 0);
+	hide(one("sess-mon"), 24.05, 0.3, 0);
+	tl.set(one("mon-done"), { attr: { width: mondayDoneWidth } }, 24.35);
 	tl.fromTo(
 		[
 			one("ran-mon"),
@@ -1192,70 +1164,46 @@ function build(context: FilmContext) {
 			one("mon-rest"),
 			one("mon-elapsed"),
 			one("mon-done"),
-			one("sess-pending"),
 		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
-		23.35,
+		24.35,
 	);
-	tl.set(
-		one("sess-mon-date"),
-		{ attr: { "fill-opacity": 0 }, display: "none" },
-		23.35,
+	tl.fromTo(
+		one("sess-fri"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
+		24.35,
 	);
-	tl.set(one("latest-box"), { attr: { x: fridayBoxX } }, 23.35);
+	tl.set(one("latest-box"), { attr: { x: fridayBoxX } }, 24.35);
 	tl.set(
 		one("latest-mon"),
 		{ attr: { x: L.dayX(PREVIOUS_SESSION_DATE) + L.colW / 2 } },
-		23.35,
+		24.35,
 	);
-	tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 23.35);
+	tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 24.35);
 	// The prior latest cue steps aside before the new report snapshot appears.
-	hide(one("latest-mon"), 22.75, 0.3, 0);
-	// Friday is the latest: its date lights, is read off its box, and comes down into the
-	// header in the header's own type. The pending date already occupies the same slot, so
-	// Friday's line takes its place without moving "Session · ".
-	const title = one("header").querySelector("text");
-	// In before the carry takes it: a show would still be fading in when it flies.
-	tl.fromTo(
-		one("fri-date"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		24.75,
-	);
-	tl.set(one("sess-mon"), { opacity: 0 }, 25.3);
-	tl.set(one("sess-fri"), { opacity: 1 }, 25.3);
-	if (title) {
-		tl.to(title, { opacity: 0.25, duration: 0.3 }, 24.8);
-		tl.to(title, { opacity: 1, duration: 0.3 }, 25.85);
-	}
-	d.carry(
-		one<SVGGraphicsElement>("fri-date"),
-		one<SVGGraphicsElement>("sess-fri"),
-		25.1,
-		{ duration: 0.7, match: d.t(dayLabel(PREVIOUS_SESSION_DATE)) },
-	);
-	// Clear pending in place during the first leg, before Friday reaches the slot.
-	hide(one("sess-pending"), 25.1, 0.3, 0);
-	show(one("latest-mon"), 25.8);
+	hide(one("latest-mon"), 23.75, 0.3, 0);
+	// Friday is already known when the Monday 10:00 run and calendar state change together.
+	show(one("latest-mon"), 24.65);
 	// The hero: Monday morning's report shows Friday.
-	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
-	// The lock settles at 28.3; the 10:00 calendar stands for 1.5 s before
-	// its crossfade into the close snapshot starts at 29.8.
+	d.lock(lockSession, 29.0, { around: one("sess-fri"), pad: 10 });
+	// The lock settles at 29.3; the 10:00 calendar stands for 1.5 s before
+	// its crossfade into the close snapshot starts at 31.1.
 	for (const tween of tl.getTweensOf(lockSession)) {
-		if (tween.startTime() === 28.0 && tween.duration() > 0) tween.duration(0.3);
+		if (tween.startTime() === 29.0 && tween.duration() > 0) tween.duration(0.3);
 	}
-	tl.addLabel("hero-lock", 28.0);
-	show(one("m2-head"), 26.1);
-	tl.to(one("ran-mon"), { opacity: 0.85, duration: 0.4 }, 26.5);
+	tl.addLabel("hero-lock", 29.0);
+	show(one("m2-head"), 24.65);
+	tl.to(one("ran-mon"), { opacity: 0.85, duration: 0.4 }, 27.5);
 
 	// ——— session continuation: Monday closes ———
-	// The bracket settles at 28.3 and stands through 29.8. Release it and its
-	// headlines, then crossfade the 10:00 calendar into the 16:30 snapshot.
-	hide(lockSession, 29.8, 0.3, 0);
-	hide(one("m-head"), 29.8);
-	hide(one("m2-head"), 29.8);
-	const afterCloseAt = 30.4;
+	// The bracket settles at 29.3 and stands through 30.8. Release its first headline,
+	// keep the Friday line through the change, then crossfade into the 16:30 snapshot.
+	hide(lockSession, 30.8, 0.3, 0);
+	hide(one("m-head"), 30.8);
+	const afterCloseAt = 31.4;
+	hide(one("m2-head"), afterCloseAt, 0.3, 0);
 	const afterCloseX = L.nowX(AFTER_CLOSE);
 	// The 10:00 marks leave over the motion floor, gone as the calendar cuts to
 	// 16:30; the 16:30 marks come on over the same 0.3 s after it.
@@ -1310,21 +1258,26 @@ function build(context: FilmContext) {
 		{ attr: { class: "wt-small wt-accent" } },
 		afterCloseAt,
 	);
-	// The synchronized 16:30 snapshot settles at 30.7, then remains as quiet
-	// proof through the session beat's cut to the official baseline at 35.7.
+	// The synchronized 16:30 snapshot settles at 31.7, then remains as quiet
+	// proof for one second before the cut to the official baseline at 32.7.
 
 	// ——— fork: official and yours ———
-	tl.addLabel("fork", 35.7);
+	tl.addLabel("fork", 32.7);
 	// One deliberate beat cut replaces the session calendar with the whole
-	// official baseline after the 16:30 proof's quiet interval.
-	tl.set(one("calendar"), { opacity: 0 }, 35.7);
-	tl.set(one("fork"), { opacity: 1 }, 35.7);
-	tl.set(one("fork-official"), { opacity: 1 }, 35.7);
-	tl.set([one("edit-chip"), one("c-head")], { opacity: 1 }, 35.7);
-	// The official card, colleague caption and chip settle at 35.7, then read
+	// official baseline after the 16:30 proof's one-second quiet interval.
+	tl.set(one("calendar"), { opacity: 0 }, 32.7);
+	tl.set(one("fork"), { opacity: 1 }, 32.7);
+	tl.set(one("fork-official"), { opacity: 1 }, 32.7);
+	// The recipe card gets a readable preview before the colleague caption and
+	// action chip fade in; both settle at 35.7, then read
 	// quietly for a full second. Activate the action and draw its provenance
 	// through the empty gutter; the populated copy fades at rest, without a
 	// tiny flight that could cross the link or the original's visible text.
+	tl.to(
+		[one("edit-chip"), one("c-head")],
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		35.4,
+	);
 	tl.to(one("edit-active"), { opacity: 1, duration: 0.3 }, 36.7);
 	const forkLink = one<SVGPathElement>("fork-link");
 	const linkLength = forkLink.getTotalLength();
@@ -1354,6 +1307,7 @@ function build(context: FilmContext) {
 	// Replace the whole proof with the settled claim in one deliberate beat cut.
 	// Removing its scale entrance preserves four fully settled reading seconds
 	// without borrowing from ALFA's payoff or the supporting sentence's hold.
+	tl.addLabel("claim", 41.4);
 	tl.set([one("fork"), one("f-head"), one("c-head")], { opacity: 0 }, 41.4);
 	tl.set(one("z-big"), { opacity: 1 }, 41.4);
 	// The supporting sentence settles at 41.9, leaving 3.5 reading seconds.
@@ -1379,6 +1333,7 @@ export const tradingflowRecipesFilm: Film = {
 		{ id: "catalog", label: ["Three kinds", "三种类型"] },
 		{ id: "session", label: ["The session", "交易时段"] },
 		{ id: "fork", label: ["Official vs yours", "官方与你的"] },
+		{ id: "claim", label: ["The takeaway", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
 	height: (width) => layout(width).height,
