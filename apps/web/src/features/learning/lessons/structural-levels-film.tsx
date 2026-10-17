@@ -41,9 +41,9 @@ import {
  *
  *   open      0–4        "Walls and max pain"
  *   question  4–9.6      $90 or $95?
- *   walls     9.6–21.7   OI picks $110/$90; gamma weights near spot, then the $95 answer
- *   pain      21.7–32.55 paired put/call curves, then total, each with 1 s quiet; $100 hero
- *                        locks at 28.4 and stands 3.7 s after bracket settlement
+ *   walls     9.6–22.35  OI picks $110/$90; gamma weights near spot, then the $95 answer
+ *   pain      22.35–32.55 paired put/call curves, then total, each with 1 s quiet; $100 hero
+ *                        locks at 29.05 and stands 3.05 s after bracket settlement
  *   distance  32.55–45.4 stacked −$5 / −5.0% / −3.1 ATR
  *                        cut: "A level is a reference, not a target."
  *   next      45.4–47.4  Next: charm and vanna
@@ -942,19 +942,20 @@ function build(context: FilmContext) {
 	);
 	for (const mark of allBars)
 		tl.set(mark, { attr: { y: L.middle, height: 0 } }, 15.8);
-	// The headline keeps its full hold and hands over in place at the change.
+	// The headline keeps its full hold and hands over in place at the change; the GEX
+	// caption comes on once the OI headline has gone, a full second before GEX data.
 	d.swap(one("w-head"), one("g-head"), 15.8);
 	tl.fromTo(
 		one("axis-gex"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
-		15.8,
+		16.15,
 	);
 	tl.set(one("hi-call"), { attr: shape("gex", CALL_ANY, "call") }, 15.8);
 	// After the 1 s scaffold hold, all bars move together in 0.4 s.
 	SIDES.forEach((side) => {
 		STRIKES.forEach((strike) => {
-			tl.set(bar(strike, side), { opacity: 1 }, 16.8);
+			tl.set(bar(strike, side), { opacity: 1 }, 17.45);
 			tl.to(
 				bar(strike, side),
 				{
@@ -962,51 +963,51 @@ function build(context: FilmContext) {
 					duration: 0.4,
 					ease: "power3.out",
 				},
-				16.8,
+				17.45,
 			);
 		});
 	});
 	// The winner outlines settle with the bars, leaving 1 s before the answer.
-	show([one("wl-call-gex"), one("wl-put-gex"), one("g-answer")], 18.2);
+	show([one("wl-call-gex"), one("wl-put-gex"), one("g-answer")], 18.85);
 	tl.to(
 		[one("hi-call"), one("hi-put-gex")],
 		{ opacity: 1, duration: 0.3 },
-		16.9,
+		17.55,
 	);
 	SIDES.forEach((side) => {
 		for (const strike of STRIKES) {
 			if (strike !== wallOf("gex", side))
-				tl.to(bar(strike, side), { opacity: 0.3, duration: 0.4 }, 18.2);
+				tl.to(bar(strike, side), { opacity: 0.3, duration: 0.4 }, 18.85);
 		}
 	});
 
 	// ——— pain: build each component before adding the total ———
-	tl.addLabel("pain", 21.7);
-	hide([one("o-head"), one("g-head"), one("g-answer"), one("bars")], 21.7);
+	tl.addLabel("pain", 22.35);
+	hide([one("o-head"), one("g-head"), one("g-answer"), one("bars")], 22.35);
 	// The existing chart depth stays on stage through this handover.
-	show(one("pain"), 22.0);
-	show(one("p-head"), 22.05);
-	show([one("pay-put-label"), one("pay-call-label")], 22.0);
+	show(one("pain"), 22.65);
+	show(one("p-head"), 22.7);
+	show([one("pay-put-label"), one("pay-call-label")], 22.65);
 	// The scaffold/question settle by 22.55. Build the two operands as one pair,
-	// after 1.25 s of stillness, preserving the 24.60–25.60 proof rest.
-	draw(one<SVGPathElement>("pay-put"), 23.8, 0.8);
-	draw(one<SVGPathElement>("pay-call"), 23.8, 0.8);
-	draw(one<SVGPathElement>("pay-total"), 25.6, 1.0);
+	// after 1.25 s of stillness, preserving the 25.25–26.25 proof rest.
+	draw(one<SVGPathElement>("pay-put"), 24.45, 0.8);
+	draw(one<SVGPathElement>("pay-call"), 24.45, 0.8);
+	draw(one<SVGPathElement>("pay-total"), 26.25, 1.0);
 	tl.to(
 		[one("pay-put"), one("pay-call")],
 		{ opacity: 0.3, duration: 0.4 },
-		25.6,
+		26.25,
 	);
 	// Fade in place above the phone plot so the label never travels through its axis.
-	tl.to(one("pay-total-label"), { opacity: 1, duration: 0.5 }, 25.6);
-	land(one("min-dot"), 27.6);
-	draw(one<SVGPathElement>("min-link"), 27.6, 0.55);
-	tl.to(one("min-link"), { opacity: 1, duration: 0.55 }, 27.6);
+	tl.to(one("pay-total-label"), { opacity: 1, duration: 0.5 }, 26.25);
+	land(one("min-dot"), 28.25);
+	draw(one<SVGPathElement>("min-link"), 28.25, 0.55);
+	tl.to(one("min-link"), { opacity: 1, duration: 0.55 }, 28.25);
 	// Fade the readout in place, clear of the chart and its settled curves.
-	tl.to(one("min-label"), { opacity: 1, duration: 0.5 }, 27.8);
-	d.lock(lockPain, 28.4, { around: one("min-label"), pad: 8 });
-	tl.addLabel("hero-lock", 28.4);
-	// No new mark enters the readout: 3.70 s of quiet after the brackets settle.
+	tl.to(one("min-label"), { opacity: 1, duration: 0.5 }, 28.45);
+	d.lock(lockPain, 29.05, { around: one("min-label"), pad: 8 });
+	tl.addLabel("hero-lock", 29.05);
+	// No new mark enters the readout: 3.05 s of quiet after the brackets settle.
 
 	// ——— distance: one level, three units ———
 	tl.addLabel("distance", 32.55);
