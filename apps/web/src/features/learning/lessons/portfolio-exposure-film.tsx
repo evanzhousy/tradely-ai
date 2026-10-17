@@ -29,7 +29,6 @@ import {
 	CALL_DELTA,
 	CALL_VEGA,
 	CALLS,
-	FRIDAY_SPOT,
 	fixed3,
 	HEDGE,
 	hedgedPnl,
@@ -137,14 +136,8 @@ const copy = {
 		"Reported delta, shares · Monday's close",
 		"已报送 Delta（股） · 周一收盘",
 	],
-	qLine: [
-		`Short ${count(SUBTOTAL)} shares. Fully hedged?`,
-		`做空 ${count(SUBTOTAL)} 股，就完全对冲了吗？`,
-	],
-	bookHead: [
-		"Your book at Monday's close: puts missing.",
-		"你在周一收盘的持仓：看跌缺失。",
-	],
+	qLine: ["Fully hedged?", "完全对冲了吗？"],
+	bookHead: ["Monday close: puts missing.", "周一收盘：看跌缺失。"],
 	bookHeadShort: ["Your book: puts missing.", "你的持仓：看跌缺失。"],
 	reportHead: ["Then the second account reports.", "然后第二个账户报送了。"],
 	reportHeadShort: ["The puts report.", "看跌报送了。"],
@@ -152,7 +145,7 @@ const copy = {
 	sharesTag: ["shares", "股"],
 	stock: [`${yourAccount.shares} ALFA shares`, `${yourAccount.shares} 股 ALFA`],
 	stockShort: [`${yourAccount.shares} ALFA`, `${yourAccount.shares} 股`],
-	calls: [`${CALLS} Oct 18 100 calls`, `${CALLS} 张 10月18日 100 看涨`],
+	calls: [`${CALLS} Oct 18 calls`, `${CALLS} 张 10月18日看涨`],
 	callsShort: [`${CALLS} calls`, `${CALLS} 张看涨`],
 	puts: [
 		`${PUTS} Oct 18 ${PUT_STRIKE} puts, 2nd account`,
@@ -166,24 +159,18 @@ const copy = {
 	totalShort: ["total", "合计"],
 	hedgeHead: ["A share hedge is local.", "股票对冲只在当前价附近有效。"],
 	hedgeHeadShort: ["A share hedge is local.", "股票对冲只在当前价附近有效。"],
-	walkScenario: [
-		`ALFA $${SPOT.toFixed(2)} → $${(SPOT + UP).toFixed(2)}`,
-		`ALFA $${SPOT.toFixed(2)} → $${(SPOT + UP).toFixed(2)}`,
-	],
+	walkScenario: [`ALFA +$${UP}`, `ALFA +$${UP}`],
 	walkPrice: [`ALFA $${SPOT.toFixed(2)}`, `ALFA $${SPOT.toFixed(2)}`],
-	walkTarget: [`→ $${(SPOT + UP).toFixed(2)}`, `→ $${(SPOT + UP).toFixed(2)}`],
-	weekRest: ["7 days, unchanged", "7 天后，不变"],
+	walkTarget: [`+$${UP}`, `+$${UP}`],
+	weekRest: ["7 days · flat", "价格不变 · 7天后"],
 	heldHedge: [
-		`Short ${count(HEDGE)} shares · initial Δ ≈ ${TOTAL - HEDGE}`,
+		`Short ${count(HEDGE)} shares · Δ ≈ ${TOTAL - HEDGE}`,
 		`做空 ${count(HEDGE)} 股 · 初始 Δ ≈ ${TOTAL - HEDGE}`,
 	],
 	heldIv: ["IV fixed", "隐含波动率不变"],
-	weekScenario: [
-		`ALFA unchanged $${SPOT.toFixed(2)} · 7 days later`,
-		`ALFA $${SPOT.toFixed(2)} 不变 · 7 天后`,
-	],
+	weekScenario: ["7 days · flat", "价格不变 · 7天后"],
 	fixedIv: [
-		`Short ${count(HEDGE)} shares · initial Δ ≈ ${TOTAL - HEDGE} · IV fixed`,
+		`Short ${count(HEDGE)} shares · Δ ≈ ${TOTAL - HEDGE} · IV fixed`,
 		`做空 ${count(HEDGE)} 股 · 初始 Δ ≈ ${TOTAL - HEDGE} · 隐含波动率不变`,
 	],
 	pnlAxis: [
@@ -195,38 +182,27 @@ const copy = {
 	weekLabel: ["a week on", "一周后"],
 	meter: ["hedged P&L", "对冲后盈亏"],
 	riskBig: ["Zero delta is not zero risk.", "Delta 为零，不等于没有风险。"],
-	decayTag: ["7-day time decay · theta", "7 天时间衰减 · Theta"],
+	decayTag: ["7-day theta", "7 天 Theta"],
 	feedHead: ["Check the broker units.", "先核对券商的报价单位。"],
 	feedHeadShort: ["Check the broker units.", "先核对券商的报价单位。"],
-	staleHead: [
-		"The put delta is Friday's, not Monday's.",
-		"看跌 Delta 是周五的，不是周一的。",
-	],
-	staleHeadShort: [`The put delta is Friday's.`, "看跌 Delta 是周五的。"],
 	callVega: ["Call vega · main broker", "看涨 Vega · 主券商"],
 	putVega: ["Put vega · 2nd broker", "看跌 Vega · 第二券商"],
 	portfolioVega: ["Portfolio vega", "组合 Vega"],
-	portfolioVegaUnit: ["/ vol point", "/ 波动率点"],
+	portfolioVegaUnit: ["/ vol point · Mon", "/ 波动率点 · 周一"],
 	perPointUnit: ["per vol point", "每个波动率点"],
 	mondayStamp: ["· Mon 16:00", "· 周一 16:00"],
 	putDelta: ["Put delta · Friday", "看跌 Delta · 周五历史值"],
 	currentDelta: ["Current delta: unknown", "当前 Delta：未知"],
 	perPoint: ["per vol point · Mon 16:00", "每个波动率点 · 周一 16:00"],
-	perUnit: [
-		"per 1.00 of vol · ÷ 100 · Mon 16:00",
-		"每 1.00 波动率 · ÷ 100 · 周一 16:00",
-	],
-	perShareFriday: [
-		`per share · Fri 16:00, ALFA $${FRIDAY_SPOT.toFixed(2)}`,
-		`每股 · 周五 16:00，ALFA $${FRIDAY_SPOT.toFixed(2)}`,
-	],
+	perUnit: ["per 1.00 vol · ÷100 · Mon", "每 1.00 波动率 · ÷100 · 周一"],
+	perShareFriday: ["per share", "每股"],
 	claimBig: [
 		"Align units and time; count every holding.",
 		"统一单位与时点，覆盖每项持仓。",
 	],
 	claimSub: [
-		"Missing or stale inputs: current exposure unknown.",
-		"数据缺失或过时：当前敞口未知。",
+		"Stale or missing: current exposure unknown.",
+		"缺失或过时：当前敞口未知。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: [
@@ -254,7 +230,7 @@ const holdings = [
 		key: "puts",
 		label: copy.puts,
 		short: copy.putsShort,
-		per: fixed3(round3(PUT.delta)),
+		per: `${PUT.delta < 0 ? "−" : "+"}${Math.abs(round3(PUT.delta)).toFixed(2)}`,
 		shares: PUT_DELTA,
 	},
 ] as const;
@@ -679,7 +655,6 @@ function Scene({
 				/>
 			</g>
 			{headline("f-head", copy.feedHead, copy.feedHeadShort)}
-			{headline("s-head", copy.staleHead, copy.staleHeadShort)}
 			<g data-f="feeds">
 				{(
 					[
@@ -897,9 +872,7 @@ function build(context: FilmContext) {
 		one("scenario-iv"),
 		...kids("meter"),
 		...flat("q"),
-		...["b-head", "r-head", "g-head", "f-head", "s-head"].map((name) =>
-			one(name),
-		),
+		...["b-head", "r-head", "g-head", "f-head"].map((name) => one(name)),
 		...flat("book"),
 		one("h-missing"),
 		...flat("risk"),
@@ -1085,20 +1058,22 @@ function build(context: FilmContext) {
 		33.75,
 	);
 	// Conversion settles at 34.10. Preserve its 1.05-second quiet interval, then
-	// reveal the position weights and the model's rounded total intact, never counted.
+	// reveal the weights before the rounded total, intact and never counted.
 	tl.fromTo(
-		[
-			one("f-vega-weights"),
-			one("f-vega-total-label"),
-			one("f-vega-total-unit"),
-			one("f-vega-total"),
-		],
+		one("f-vega-weights"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
 		35.15,
 	);
-	// The portfolio result settles at 35.65 and rests until the next beat at 36.65.
-	d.swap(one("f-head"), one("s-head"), 36.65);
+	tl.fromTo(
+		[one("f-vega-total-label"), one("f-vega-total-unit"), one("f-vega-total")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5 },
+		36.15,
+	);
+	// The broker-units headline leaves after the total's quiet interval. The
+	// Friday rows are self-labeled, so the repeated headline is omitted.
+	hide(one("f-head"), 37.65);
 	tl.fromTo(
 		[
 			one("f-label-put-delta"),
@@ -1108,20 +1083,47 @@ function build(context: FilmContext) {
 		],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		37.0,
+		38.0,
 	);
 	tl.set(
 		one("f-unit-put-delta"),
 		{ attr: { class: `wt-film-type ${toneClass.caution}` } },
-		37.0,
+		38.0,
 	);
 	tl.to(
 		[one("f-label-call-vega"), one("f-label-put-vega")],
 		{ opacity: 0.4, duration: 0.4 },
-		37.0,
+		38.0,
 	);
-	// Friday's value stays known; current delta settles at 37.5 and rests for 3 s.
-	hide([one("s-head"), ...flat("feeds")], 40.5);
+	// Clear the inputs before the claim; the dated subtotal and Friday data stay readable
+	// beside the claim's headline and leave before its sub-line arrives.
+	hide(
+		[
+			one("f-label-call-vega"),
+			one("f-value-call-vega"),
+			one("f-unit-call-vega"),
+			one("f-label-put-vega"),
+			one("f-value-put-vega"),
+			one("f-unit-put-vega"),
+			one("f-value-put-vega-point"),
+			one("f-unit-put-vega-point"),
+			one("f-time-put-vega-point"),
+			one("f-vega-weights"),
+		],
+		40.5,
+	);
+	hide(
+		[
+			one("f-vega-total-label"),
+			one("f-vega-total-unit"),
+			one("f-vega-total"),
+			one("f-label-put-delta"),
+			one("f-value-put-delta"),
+			one("f-unit-put-delta"),
+			one("f-current-delta"),
+		],
+		40.95,
+	);
 	word(one("z-big"), 40.9);
 	show(one("z-sub"), 41.3);
 
