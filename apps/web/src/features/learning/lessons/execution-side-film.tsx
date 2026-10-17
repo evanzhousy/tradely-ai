@@ -82,7 +82,6 @@ const STALE_SAYS = sideCode(PRINT.price, STALE.bid, STALE.ask);
 const LATER_SAYS = sideCode(PRINT.price, LATER.bid, LATER.ask);
 const codeOf = (id: TradeId) =>
 	sideCode(tradeById(id).price, quoteAt(id).bid, quoteAt(id).ask);
-const pair = (bid: number, ask: number) => `${usd(bid)} / ${usd(ask)}`;
 const printText = (size: number, cents: number) =>
 	`${count(size)} @ ${usd(cents)}`;
 /**
@@ -106,7 +105,7 @@ function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room, type: T } = frame;
 	const rulerY = H * (narrow ? 0.42 : 0.5);
-	const tapeW = narrow ? room : room * 0.62;
+	const tapeW = room;
 	return {
 		...frame,
 		rulerY,
@@ -161,12 +160,10 @@ const copy = {
 	tape: ["time and sales", "逐笔成交"],
 	reference: ["reference quote", "参考报价"],
 	atPrint: ["at print", "成交时"],
-	beforePrint: ["90 s before", "提前 90 秒"],
-	afterPrint: ["after print", "成交后"],
 	usable: ["usable", "可用"],
-	stale: ["too old: withheld", "报价过旧：不作判断"],
-	later: ["arrived too late: withheld", "成交后才到：不作判断"],
-	missing: ["no quote: unknown", "无报价：未知"],
+	stale: ["90 s before · withheld", "提前 90 秒，不作判断"],
+	later: ["after print · withheld", "成交后，不作判断"],
+	missing: ["unknown", "未知"],
 	none: ["none", "无"],
 	cHead: [
 		`${LAST.time} at the bid: what follows?`,
@@ -251,30 +248,15 @@ function Scene({
 		</g>
 	);
 	const prints: [string, number, string][] = [
-		["pl-t1", TRADES[0].price, `${TRADES[0].time} · ${usd(TRADES[0].price)}`],
-		["pl-t2", PRINT.price, `${PRINT.time} · ${usd(PRINT.price)}`],
-		["pl-t3", LAST.price, `${LAST.time} · ${usd(LAST.price)}`],
+		["pl-t1", TRADES[0].price, TRADES[0].time],
+		["pl-t2", PRINT.price, PRINT.time],
+		["pl-t3", LAST.price, LAST.time],
 		["pl-test", OUTSIDE, t(copy.test)],
 	];
 	const cards: [string, string, Copy, "up" | "down" | "caution"][] = [
-		[
-			"ref-0",
-			`${t(copy.atPrint)} · ${pair(quoteAt("t2").bid, quoteAt("t2").ask)}`,
-			copy.usable,
-			"up",
-		],
-		[
-			"ref-1",
-			`${t(copy.beforePrint)} · ${pair(STALE.bid ?? 0, STALE.ask ?? 0)}`,
-			copy.stale,
-			"down",
-		],
-		[
-			"ref-2",
-			`${t(copy.afterPrint)} · ${pair(LATER.bid ?? 0, LATER.ask ?? 0)}`,
-			copy.later,
-			"down",
-		],
+		["ref-0", `${quoteAt("t2").time} · ${t(copy.atPrint)}`, copy.usable, "up"],
+		["ref-1", STALE.time ?? "", copy.stale, "down"],
+		["ref-2", LATER.time ?? "", copy.later, "down"],
 		["ref-3", t(copy.none), copy.missing, "caution"],
 	];
 	const claims: [Copy, Copy, "observed" | "inferred" | "unknown"][] = [
@@ -472,19 +454,41 @@ function Scene({
 				stroke="var(--foreground)"
 				strokeWidth={1.5}
 			/>
-			{prints.map(([name, cents, label]) => (
-				<text
-					key={name}
-					data-f={name}
-					x={L.x(cents)}
-					y={L.rulerY - 22}
-					textAnchor={cents >= HI - 10 ? "end" : "middle"}
-					className="wt-film-num wt-film-accent"
-					style={{ fontSize: text }}
-				>
-					{label}
-				</text>
-			))}
+			{prints.map(([name, cents, label]) => {
+				// The 14:18 time sits above the leftward handoff from 11:42.
+				const y = L.rulerY - (name === "pl-t3" ? 46 : 22);
+				return (
+					<text
+						key={name}
+						data-f={name}
+						x={L.x(cents)}
+						y={y}
+						textAnchor={cents >= HI - 10 ? "end" : "middle"}
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{label}
+					</text>
+				);
+			})}
+			{TRADES.map((trade, i) => {
+				const labelWidth = trade.time.length * text * 0.6;
+				// Route around the ruler and legend, clear of the phone's 12 px edge.
+				const routeX = Math.max(12 + labelWidth / 2, margin - 12);
+				return (
+					<text
+						key={trade.id}
+						data-f={`route-${trade.id}`}
+						x={routeX}
+						y={L.tapeY + T.small + (i + 1) * L.rowStep}
+						textAnchor="middle"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{trade.time}
+					</text>
+				);
+			})}
 			<text
 				data-f="side-tag"
 				x={W / 2}
@@ -536,27 +540,40 @@ function Scene({
 					className="wt-film-link"
 				/>
 			</g>
-			{TRADES.map((trade, i) => (
-				<g key={trade.id} data-f={`row-${trade.id}`}>
-					<text
-						x={L.tapeX}
-						y={L.tapeY + T.small + (i + 1) * L.rowStep}
-						className="wt-film-num"
-						style={{ fontSize: text }}
-					>
-						{`${trade.time} · ${printText(trade.quantity, trade.price)}`}
-					</text>
-					<text
-						x={L.tapeX + L.tapeW}
-						y={L.tapeY + T.small + (i + 1) * L.rowStep}
-						textAnchor="end"
-						className="wt-film-num"
-						style={{ fontSize: text }}
-					>
-						{codeOf(trade.id as TradeId)}
-					</text>
-				</g>
-			))}
+			{TRADES.map((trade, i) => {
+				const y = L.tapeY + T.small + (i + 1) * L.rowStep;
+				const timeWidth = trade.time.length * text * 0.6;
+				return (
+					<g key={trade.id} data-f={`row-${trade.id}`}>
+						<text
+							data-f={`row-${trade.id}-time`}
+							x={L.tapeX}
+							y={y}
+							className="wt-film-num wt-film-accent"
+							style={{ fontSize: text }}
+						>
+							{trade.time}
+						</text>
+						<text
+							x={L.tapeX + timeWidth + text * 0.6}
+							y={y}
+							className="wt-film-num"
+							style={{ fontSize: text }}
+						>
+							{`· ${printText(trade.quantity, trade.price)}`}
+						</text>
+						<text
+							x={L.tapeX + L.tapeW}
+							y={y}
+							textAnchor="end"
+							className="wt-film-num"
+							style={{ fontSize: text }}
+						>
+							{codeOf(trade.id as TradeId)}
+						</text>
+					</g>
+				);
+			})}
 			<g data-f="card">
 				<rect
 					x={L.tapeX}
@@ -580,11 +597,11 @@ function Scene({
 					{tone === "caution" && (
 						<rect
 							data-f="ref-3-unknown"
-							x={L.tapeX}
-							y={L.tapeY + T.small * 1.2}
-							width={L.tapeW}
-							height={L.cardH - T.small * 2.4}
-							rx={12}
+							x={L.tapeX + 3}
+							y={L.tapeY + T.small * 1.2 + 4}
+							width={8}
+							height={L.cardH - T.small * 2.4 - 8}
+							rx={2}
 							fill={`url(#${hatchId})`}
 						/>
 					)}
@@ -821,17 +838,53 @@ function build(context: FilmContext) {
 		});
 	};
 	const sides = SIDES.map((_, i) => one(`side-${i}`));
-	const sideTo = (i: number, time: number) => {
-		fade(sides[i - 1], 0, time);
-		word(sides[i], time + 0.35);
+	const sideTo = (
+		i: number,
+		time: number,
+		{
+			exitAt = time,
+			enterAt = time + 0.35,
+		}: { exitAt?: number; enterAt?: number } = {},
+	) => {
+		fade(sides[i - 1], 0, exitAt);
+		word(sides[i], enterAt);
 	};
 	const heads = ["p-head", "r-head", "r2-head", "c-head", "c2-head"].map(
 		(name) => one(name),
 	);
 	const rows = TRADES.map((trade) => one(`row-${trade.id}`));
+	const rowTimes = TRADES.map((trade) =>
+		one<SVGTextElement>(`row-${trade.id}-time`),
+	);
+	const routes = TRADES.map((trade) =>
+		one<SVGTextElement>(`route-${trade.id}`),
+	);
 	const refs = [0, 1, 2, 3].map((i) => one(`ref-${i}`));
 	const claimRows = [0, 1, 2, 3].map((i) => one(`claim-${i}`));
 	const lockSide = one<SVGGraphicsElement>("lock-side");
+	const carryPrintToTape = (id: TradeId, at: number) => {
+		const trade = tradeById(id);
+		const firstLeg = L.narrow ? 0.5 : 0.6;
+		const handoff = 0.1;
+		// The first leg stays left of the ruler; the short second leg enters its time cell.
+		d.carry(
+			one<SVGGraphicsElement>(`pl-${id}`),
+			one<SVGGraphicsElement>(`route-${id}`),
+			at,
+			{
+				duration: firstLeg,
+				arc: "x",
+				match: trade.time,
+				reveal: false,
+			},
+		);
+		d.carry(
+			one<SVGGraphicsElement>(`route-${id}`),
+			one<SVGGraphicsElement>(`row-${id}-time`),
+			at + firstLeg,
+			{ duration: handoff, arc: "x", match: trade.time },
+		);
+	};
 	const first = quoteAt("t1");
 	const start = quoteProps(first.bid, first.ask);
 	gsap.set(bidM, start.bid);
@@ -851,12 +904,14 @@ function build(context: FilmContext) {
 		one("pl-t2"),
 		one("pl-t3"),
 		one("pl-test"),
+		...routes,
 		one("side-tag"),
 		one("side-conditional"),
 		...sides,
 		lockSide,
 		...kids("tape"),
 		...rows,
+		...rowTimes,
 		...kids("card"),
 		...refs,
 		...claimRows,
@@ -893,7 +948,8 @@ function build(context: FilmContext) {
 	light(codeOf("t1"), 11.3);
 	word(sides[0], 11.3);
 	show(kids("tape"), 11.5);
-	show(rows[0], 11.7, "right");
+	reveal(rows[0], 11.7);
+	carryPrintToTape("t1", 11.7);
 
 	const steps: [TradeId | "test", number, number][] = [
 		["t2", 13.8, 1],
@@ -903,18 +959,27 @@ function build(context: FilmContext) {
 	steps.forEach(([id, time, i]) => {
 		const quote = quoteAt(id === "test" ? "t2" : id);
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
-		const before = ["pl-t1", "pl-t2", "pl-t3"][i - 1];
-		// The tape and definitions persist while only changing evidence fades.
-		fade([...geometry, dot, one(before)], 0, time);
-		sideTo(i, time);
-		const ready = time + 0.35;
-		quoteTo(quote.bid, quote.ask, ready);
-		dotTo(cents, ready);
-		light(SIDES[i], ready);
-		reveal([...geometry, dot], ready);
-		reveal(one(id === "test" ? "pl-test" : `pl-${id}`), ready, 0.5);
-		if (id !== "test") show(rows[i], ready, "right");
-		// Last settlement is time + 0.9; the next example waits at least 1.15 s.
+		// Keep the ruler and legend in place. The quote changes at the boundary;
+		// this print's time carries from the point into its tape row.
+		fade([...geometry, dot], 0, time - 0.35);
+		sideTo(i, time, { exitAt: time - 0.35, enterAt: time });
+		tl.set(
+			rowTimes[i - 1],
+			{
+				attr: { class: "wt-film-num wt-film-dim" },
+				immediateRender: false,
+			},
+			time,
+		);
+		quoteTo(quote.bid, quote.ask, time);
+		dotTo(cents, time);
+		light(SIDES[i], time);
+		reveal([...geometry, dot], time);
+		if (id === "test") reveal(one("pl-test"), time, 0.5);
+		else {
+			reveal(rows[i], time);
+			carryPrintToTape(id, time);
+		}
 	});
 
 	// ——— quote: the hero. The 11:42 print stays; the quote under it changes. ———
