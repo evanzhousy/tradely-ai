@@ -230,12 +230,27 @@
 	--muted-foreground: #98a1bb;
 	--primary: #a78bfa;
 	--ring: #a78bfa;
-	--diagram-accent: #a78bfa;
-	--diagram-gain: #4ade80;
-	--diagram-loss: #fb7185;
+	/* One colour, one meaning (runbook §5): the shot's subject, the sign of a change or a
+	   result, the two rights where a shot compares them, and an estimate or unknown. Every
+	   one reads at 7:1 or better on the stage. Sides (bid, ask, buyer, writer) have none. */
+	--tone-focus: #a78bfa;
+	--tone-up: #4ade80;
+	--tone-down: #fb7185;
+	--tone-call: #7dd3fc;
+	--tone-put: #f48206;
+	--tone-caution: #fbbf24;
+	--tone-ink: var(--foreground);
+	--tone-dim: var(--muted-foreground);
+	/* The older names, kept for the films that still use them. */
+	--diagram-accent: var(--tone-focus);
+	--diagram-gain: var(--tone-up);
+	--diagram-loss: var(--tone-down);
+	--diagram-unknown: var(--tone-caution);
+	--diagram-model: var(--tone-focus);
+	/* Retired from the films: blue and lavender evidence, teal and orange sides. The audit
+	   fails a film that still uses them. */
 	--diagram-observed: #60a5fa;
 	--diagram-estimated: #c4b5fd;
-	--diagram-unknown: #fbbf24;
 	--wt-long: #2dd4bf;
 	--wt-short: #fb923c;
 	border-color: #1b1f2e;
@@ -294,6 +309,12 @@
 .wt-film-bar[data-tone="loss"] {
 	fill: color-mix(in oklab, var(--diagram-loss) 80%, transparent);
 }
+.wt-film-bar[data-tone="call"] {
+	fill: color-mix(in oklab, var(--tone-call) 80%, transparent);
+}
+.wt-film-bar[data-tone="put"] {
+	fill: color-mix(in oklab, var(--tone-put) 80%, transparent);
+}
 .wt-film-bar[data-tone="neutral"] {
 	fill: color-mix(in oklab, var(--muted-foreground) 55%, transparent);
 }
@@ -318,7 +339,7 @@
 	font-weight: 500;
 	letter-spacing: 0.12em;
 }
-/* A tag keeps its tone: evidence, sides and records are told apart by colour. */
+/* A tag keeps its tone. */
 .wt-svg .wt-film-tag.wt-film-accent {
 	fill: var(--diagram-accent);
 }
@@ -349,9 +370,9 @@
 	stroke-width: 2;
 	stroke-linecap: round;
 }
-/* The core of a pen tip (`PenTip`); its halo is a gradient in the accent. */
+/* The core of a pen tip (`PenTip`), in its line's colour (`--pen`) mixed toward white. */
 .wt-svg .wt-film-tip {
-	fill: color-mix(in oklab, var(--diagram-accent) 35%, white);
+	fill: color-mix(in oklab, var(--pen, var(--diagram-accent)) 35%, white);
 }
 /* Corner brackets (`Brackets`) that snap onto the thing in focus. */
 .wt-film-lock {
@@ -367,7 +388,16 @@
 .wt-film-lock[data-tone="loss"] {
 	stroke: var(--diagram-loss);
 }
-/* A writer's brackets, in the writer's colour. */
+.wt-film-lock[data-tone="call"] {
+	stroke: var(--tone-call);
+}
+.wt-film-lock[data-tone="put"] {
+	stroke: var(--tone-put);
+}
+.wt-film-lock[data-tone="caution"] {
+	stroke: var(--tone-caution);
+}
+/* Retired: a writer's orange brackets. Writers are named, not coloured. */
 .wt-film-lock[data-tone="short"] {
 	stroke: var(--wt-short);
 }
@@ -662,6 +692,27 @@
 	fill: var(--diagram-accent);
 	font-weight: 600;
 }
+/* A film's calls and puts where a shot compares the two: the word, its marks, its labels.
+   After the label classes above, so a small or dim label still takes its right's colour. */
+.wt-svg .wt-film-call {
+	fill: var(--tone-call);
+}
+.wt-svg .wt-film-put {
+	fill: var(--tone-put);
+}
+/* A small or dim label keeps a film tone set on it (`toneClass`). */
+.wt-svg :is(.wt-small, .wt-muted, .wt-film-dim).wt-film-accent {
+	fill: var(--tone-focus);
+}
+.wt-svg :is(.wt-small, .wt-muted, .wt-film-dim).wt-film-gain {
+	fill: var(--tone-up);
+}
+.wt-svg :is(.wt-small, .wt-muted, .wt-film-dim).wt-film-loss {
+	fill: var(--tone-down);
+}
+.wt-svg :is(.wt-small, .wt-muted, .wt-film-dim).wt-film-warn {
+	fill: var(--tone-caution);
+}
 .wt-axis {
 	stroke: color-mix(in oklab, var(--foreground) 35%, transparent);
 	stroke-width: 1;
@@ -824,6 +875,18 @@
 	stroke: var(--wt-short);
 	stroke-width: 2.5;
 	stroke-linejoin: round;
+}
+.wt-line-call,
+.wt-line-put {
+	fill: none;
+	stroke-width: 2.5;
+	stroke-linejoin: round;
+}
+.wt-line-call {
+	stroke: var(--tone-call);
+}
+.wt-line-put {
+	stroke: var(--tone-put);
 }
 .wt-line-reference {
 	fill: none;

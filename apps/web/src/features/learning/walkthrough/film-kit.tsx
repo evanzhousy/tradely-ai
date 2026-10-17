@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { type ReactNode, useId } from "react";
+import { type CSSProperties, type ReactNode, useId } from "react";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { FilmContext } from "./film";
@@ -16,6 +16,32 @@ import { NO_LINE_START, textWidth, tokenize, wrapText } from "./text-measure";
 
 export const clamp = (low: number, value: number, high: number) =>
 	Math.max(low, Math.min(high, value));
+
+/**
+ * What a coloured mark means; each tone is one colour on the stage (runbook §5). `focus` is
+ * the figure or term the shot is about; `up` and `down` the sign of a change or a result,
+ * always written with its sign; `call` and `put` the right, where a shot compares the two;
+ * `caution` an estimate, an unknown or a value off target. Sides (bid, ask, buyer, writer)
+ * have no tone: they are placed and named, and the one the shot is about is the focus.
+ */
+export type Tone = "focus" | "up" | "down" | "call" | "put" | "caution";
+
+/** The class that sets stage type, or a label in a chart, in a tone. */
+export const toneClass: Record<Tone, string> = {
+	focus: "wt-film-accent",
+	up: "wt-film-gain",
+	down: "wt-film-loss",
+	call: "wt-film-call",
+	put: "wt-film-put",
+	caution: "wt-film-warn",
+};
+
+/** A tone's colour as a stage token, for a stroke, a gradient or a `PenTip`. */
+export const toneColor = (tone: Tone) => `var(--tone-${tone})`;
+
+/** The tone of a signed value: up above zero, down below, none at zero (it stays dim). */
+export const signTone = (value: number): Tone | undefined =>
+	value > 0 ? "up" : value < 0 ? "down" : undefined;
 
 /**
  * Films are written on a 4 s title card: `director.tag` runs at 4 s. Playing, the card lasts
@@ -415,28 +441,32 @@ export function EndCard({
 export function PenTip({
 	name,
 	r = 4,
-	color = "var(--diagram-accent)",
+	color = toneColor("focus"),
 }: {
 	name: string;
 	r?: number;
-	/** The line's own colour: a writer's orange line gets an orange pen. */
+	/** The line's own colour, a `var(--…)` (see `toneColor`): a put's line gets a put's pen. */
 	color?: string;
 }) {
 	const id = useId().replace(/:/g, "");
+	// The colour rides on `--pen`, so the halo's stops and the core's mix (in the stylesheet)
+	// both read it, and every colour the film sets inline stays a stage token.
 	return (
-		<g data-f={name}>
+		<g data-f={name} style={{ "--pen": color } as CSSProperties}>
 			<defs>
 				<radialGradient id={`tip-${id}`}>
-					<stop offset="0%" style={{ stopColor: color, stopOpacity: 0.5 }} />
-					<stop offset="100%" style={{ stopColor: color, stopOpacity: 0 }} />
+					<stop
+						offset="0%"
+						style={{ stopColor: "var(--pen)", stopOpacity: 0.5 }}
+					/>
+					<stop
+						offset="100%"
+						style={{ stopColor: "var(--pen)", stopOpacity: 0 }}
+					/>
 				</radialGradient>
 			</defs>
 			<circle r={r * 4} fill={`url(#tip-${id})`} />
-			<circle
-				r={r}
-				className="wt-film-tip"
-				style={{ fill: `color-mix(in oklab, ${color} 35%, white)` }}
-			/>
+			<circle r={r} className="wt-film-tip" />
 		</g>
 	);
 }
@@ -474,8 +504,11 @@ export function Brackets({
 	width?: number;
 	height?: number;
 	arm?: number;
-	/** The accent by default; a bid or an ask can lock in its own colour. */
-	tone?: "gain" | "loss" | "short";
+	/**
+	 * The focus colour by default; a figure the shot reads by its sign or its right can lock
+	 * in that colour. `short` (a writer's orange) is retired: writers are named, not coloured.
+	 */
+	tone?: "gain" | "loss" | "call" | "put" | "caution" | "short";
 	/** A tight and a wide glow, for the film's one hero lock. */
 	glow?: boolean;
 }) {
