@@ -44,15 +44,16 @@ import {
  * "ALFA's IV: 35%", and answers with a cut to the labelled grid: one IV per strike and
  * expiry. A row is the skew, a column the term structure peaking where earnings
  * fall. Then the Oct 18 smile with its 25Δ wings, picked by delta, and the two signs the
- * same wings can carry. Last, the cells with no quote: interpolate between quotes, never
- * past them.
+ * same wings can carry. Last, the cells with no quote: show the supported Sep 20 range and
+ * interpolate Dec 20 between quotes, never past them.
  *
  *   open       0–4        "The volatility surface"
  *   question   4–9.6      "ALFA's IV: 35%", underlined: which strike, which expiry?
  *   grid       9.6–19.8   the grid; a row, the skew; a column, the term structure
  *   wings      19.8–33    the Oct 18 smile, ATM 35%, the 25Δ put and call, not the same
- *                         distance; hero: carry the IVs into opposite subtractions, locked
- *   estimates  33–40.4    no quote in three cells; interpolate between quotes, never past
+ *                         distance; hero: carry one put/call pair into both conventions
+ *   estimates  33–40.4    show the supported range; interpolate the Dec 20 hole between
+ *                         quotes, never past
  *   claim      40.4–44.8  "A surface, not a number."
  *   next       44.8–46.8  Next: IV rank and IV percentile
  */
@@ -65,7 +66,9 @@ const SMILE_Y = [31, 39] as const;
 const smileIv = (strike: number) => modelVolatility("oct18", strike) * 100;
 const OCT18 = EXPIRIES.indexOf("oct18");
 const ATM = STRIKES.indexOf(100);
+const SEP20 = EXPIRIES.indexOf("sep20");
 const DEC20 = EXPIRIES.indexOf("dec20");
+const SUPPORTED_RANGE = [STRIKES.indexOf(95), STRIKES.indexOf(105)] as const;
 const INTERPOLATION_COLS = [STRIKES.indexOf(100), STRIKES.indexOf(110)];
 /** The first expiry after earnings: the line between rows sits just above it. */
 const AFTER_EARNINGS = EXPIRIES.findIndex(
@@ -153,11 +156,15 @@ const copy = {
 	callWingShort: [`25Δ call ${CALL_IV}%`, `25Δ 看涨 ${CALL_IV}%`],
 	skewTag: ["skew: put − call", "偏斜：看跌 − 看涨"],
 	rrTag: ["RR: call − put", "风险逆转：看涨 − 看跌"],
-	signsLine: ["Order sets the sign.", "顺序决定正负。"],
-	missingHead: ["Three cells have no usable quote.", "有三格没有可用报价。"],
-	missingHeadShort: ["Three cells lack usable quotes.", "三格没有可用报价。"],
+	missingHead: [
+		"Three unquoted cells; interpolate only between quotes.",
+		"三格无报价；只在报价间插值。",
+	],
+	missingHeadShort: [
+		"Three gaps; interpolate only between quotes.",
+		"三格无报价；只在报价间插值。",
+	],
 	volPoints: ["volatility points", "波动率点"],
-	interpolateHead: ["Interpolate only between quotes.", "只在报价之间插值。"],
 	interpolationMean: [`Mean ≈ ${INTERPOLATED}%`, `均值 ≈ ${INTERPOLATED}%`],
 	interpolated: ["interpolated", "插值"],
 	claimBig: ["A surface, not a number.", "是一个曲面，不是一个数。"],
@@ -206,8 +213,11 @@ function Scene({
 	const answerSize = T.big * 0.76;
 	const signX = (i: number) => W * (narrow ? 0.5 : L.pair[i]);
 	const signY = (i: number) => H * (narrow ? 0.25 + i * 0.27 : 0.32);
-	const operandY = (i: number) => signY(i) + tagSize * 2;
-	const answerY = (i: number) => operandY(i) + answerSize * 1.25;
+	const inputX = (i: number) =>
+		W * (narrow ? [0.37, 0.63][i] : [0.42, 0.58][i]);
+	const inputY = H * (narrow ? 0.15 : 0.2);
+	const answerY = (i: number) => H * (narrow ? 0.38 + i * 0.27 : 0.52);
+	const unitY = H * (narrow ? 0.75 : 0.66);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -301,6 +311,19 @@ function Scene({
 								) : null,
 							),
 						)}
+						<rect
+							data-f="g-supported-range"
+							x={L.cellX(SUPPORTED_RANGE[0]) + 1}
+							y={L.cellY(SEP20) + 1}
+							width={
+								L.cellWidth * (SUPPORTED_RANGE[1] - SUPPORTED_RANGE[0] + 1) - 2
+							}
+							height={L.rowHeight - 2}
+							rx={narrow ? 4 : 8}
+							fill="none"
+							stroke="var(--tone-dim)"
+							strokeWidth={narrow ? 1.5 : 2}
+						/>
 						<g data-f="g-estimate">
 							<rect
 								x={L.cellX(STRIKES.indexOf(105)) + 2}
@@ -583,29 +606,6 @@ function Scene({
 						>
 							{t(tag).toUpperCase()}
 						</Word>
-						{[i === 0 ? PUT_IV : CALL_IV, i === 0 ? CALL_IV : PUT_IV].map(
-							(iv, side) => (
-								<Word
-									key={side}
-									name={`s-iv-${i}-${side}`}
-									x={signX(i) + (side === 0 ? -1 : 1) * operandSize * 2.6}
-									y={operandY(i)}
-									size={operandSize}
-									className={`wt-film-num ${toneClass[(i === 0) === (side === 0) ? "put" : "call"]}`}
-								>
-									{`${iv}%`}
-								</Word>
-							),
-						)}
-						<Word
-							name={`s-minus-${i}`}
-							x={signX(i)}
-							y={operandY(i)}
-							size={operandSize}
-							className="wt-film-num"
-						>
-							−
-						</Word>
 						<Word
 							name={`s-num-${i}`}
 							x={signX(i)}
@@ -615,46 +615,37 @@ function Scene({
 						>
 							{`= ${num}`}
 						</Word>
-						<Word
-							name={`s-unit-${i}`}
-							x={signX(i)}
-							y={answerY(i) + T.body * 1.5}
-							size={T.small}
-							className="wt-film-type wt-film-dim"
-						>
-							{t(copy.volPoints)}
-						</Word>
 					</g>
 				))}
-				<Lines
-					name="s-line"
-					text={t(copy.signsLine)}
+				<Word
+					name="s-input-put"
+					x={inputX(0)}
+					y={inputY}
+					size={operandSize}
+					className={`wt-film-num ${toneClass.put}`}
+				>
+					{`${PUT_IV}%`}
+				</Word>
+				<Word
+					name="s-input-call"
+					x={inputX(1)}
+					y={inputY}
+					size={operandSize}
+					className={`wt-film-num ${toneClass.call}`}
+				>
+					{`${CALL_IV}%`}
+				</Word>
+				<Word
+					name="s-unit"
 					x={W / 2}
-					y={H * (narrow ? 0.86 : 0.76)}
-					size={T.body}
-					maxWidth={room}
+					y={unitY}
+					size={T.small}
 					className="wt-film-type wt-film-dim"
-				/>
+				>
+					{t(copy.volPoints)}
+				</Word>
 			</g>
 			{headline("m-head", copy.missingHead, copy.missingHeadShort)}
-			<Lines
-				name="i-head"
-				text={t(copy.interpolateHead)}
-				x={L.margin}
-				y={
-					L.headY +
-					lineCount(
-						t(narrow ? copy.missingHeadShort : copy.missingHead),
-						room,
-						T.head,
-					) *
-						T.head *
-						1.35
-				}
-				size={T.head}
-				maxWidth={room}
-				anchor="start"
-			/>
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -723,7 +714,7 @@ function build(context: FilmContext) {
 			source.setAttribute("x", String(x + label.getComputedTextLength() + gap));
 		}
 		source.setAttribute("y", label.getAttribute("y") ?? "0");
-		return { source };
+		return { name, source };
 	});
 	const signMarks = kids("s").flatMap((el) =>
 		el.tagName === "g" && !el.hasAttribute("data-f") ? [...el.children] : [el],
@@ -735,7 +726,6 @@ function build(context: FilmContext) {
 		"w-head",
 		"d-head",
 		"m-head",
-		"i-head",
 	].map((name) => one(name));
 
 	gsap.set(charts.smile, { opacity: 0 });
@@ -748,6 +738,7 @@ function build(context: FilmContext) {
 		...STRIKES.map((_, col) => one(`g-col-${col}`)),
 		...EXPIRIES.map((_, row) => one(`g-row-${row}`)),
 		...missing.map((cell) => one(`g-missing-${cell.row}-${cell.col}`)),
+		one("g-supported-range"),
 		one("g-estimate"),
 		one("g-between"),
 		one("g-calculation"),
@@ -865,38 +856,24 @@ function build(context: FilmContext) {
 	tl.set([one("depth"), one("w-head"), one("d-head")], { opacity: 0 }, 27.4);
 	// The outgoing headings are fully gone before any new hero mark arrives.
 	show([one("s-tag-0"), one("s-tag-1")], 27.45);
-	// Each original IV becomes the leading operand of its convention.
-	// Moving sideways first clears the operators and the other operands.
-	for (const [i, { source }] of carries.entries())
-		d.carry(source, one<SVGTextElement>(`s-iv-${i}-0`), 27.45, {
+	// Carry each original IV into one shared pair used by both reverse conventions.
+	for (const { name, source } of carries)
+		d.carry(source, one<SVGTextElement>(`s-input-${name}`), 27.45, {
 			duration: 0.5,
 			arc: "x",
 		});
-	// Both rows form as the carries land, then both answers arrive as one proof.
+	// The shared put/call pair feeds both reverse conventions without duplicating operands.
 	tl.fromTo(
-		[one("s-iv-0-1"), one("s-iv-1-1")],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		27.65,
-	);
-	tl.fromTo(
-		[one("s-minus-0"), one("s-minus-1")],
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		27.7,
-	);
-	tl.fromTo(
-		[one("s-num-0"), one("s-num-1"), one("s-unit-0"), one("s-unit-1")],
+		[one("s-num-0"), one("s-num-1"), one("s-unit")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.55 },
 		28.0,
 	);
 	d.lock(lockSigns, 29.55, {
-		around: signMarks.filter((el) => el !== one("s-line")),
+		around: signMarks,
 		pad: 10,
 	});
 	tl.addLabel("hero-lock", 29.55);
-	show(one("s-line"), 29.55);
 
 	// ——— estimates: what the quotes don't cover ———
 	tl.addLabel("estimates", 33);
@@ -917,6 +894,12 @@ function build(context: FilmContext) {
 		tl.set(one(`g-value-${cell.row}-${cell.col}`), { opacity: 0 }, 33.3);
 		tl.set(one(`g-missing-${cell.row}-${cell.col}`), { opacity: 1 }, 33.3);
 	}
+	tl.fromTo(
+		one("g-supported-range"),
+		{ opacity: 0 },
+		{ opacity: 0.75, duration: 0.3, ease: "none" },
+		34.3,
+	);
 	tl.to(
 		cells
 			.filter(
@@ -926,18 +909,17 @@ function build(context: FilmContext) {
 			)
 			.map((cell) => cell.el),
 		{ opacity: 0.35, duration: 0.4 },
-		36,
+		35.5,
 	);
-	d.trace(one<SVGPathElement>("g-between"), 36.4, { duration: 0.4 });
+	d.trace(one<SVGPathElement>("g-between"), 35.9, { duration: 0.4 });
 	tl.fromTo(
 		[one("g-estimate"), one("g-calculation")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.55, ease: "power3.out" },
 		37.3,
 	);
-	show(one("i-head"), 36.8);
 	// Cut: the claim.
-	hide([one("m-head"), one("i-head")], 40.4);
+	hide(one("m-head"), 40.4);
 	sink(40.4);
 	tl.fromTo(
 		one("c-big"),
