@@ -41,14 +41,14 @@ import {
 
 /*
  * The volatility surface, as a film. It opens on a number that can't be right on its own,
- * "ALFA's IV: 35%", and answers with the grid: one IV per strike and expiry, cascading in
- * as a heat map. A row is the skew, a column the term structure peaking where earnings
+ * "ALFA's IV: 35%", and answers with a cut to the labelled grid: one IV per strike and
+ * expiry. A row is the skew, a column the term structure peaking where earnings
  * fall. Then the Oct 18 smile with its 25Δ wings, picked by delta, and the two signs the
  * same wings can carry. Last, the cells with no quote: interpolate between quotes, never
  * past them.
  *
  *   open       0–4        "The volatility surface"
- *   question   4–9.6      "ALFA's IV: 35%", struck out: which strike, which expiry?
+ *   question   4–9.6      "ALFA's IV: 35%", underlined: which strike, which expiry?
  *   grid       9.6–19.8   the grid; a row, the skew; a column, the term structure
  *   wings      19.8–33    the Oct 18 smile, ATM 35%, the 25Δ put and call, not the same
  *                         distance; hero: carry the IVs into opposite subtractions, locked
@@ -149,10 +149,7 @@ const copy = {
 		"10月18日：两翼按 Delta 选取。",
 	],
 	wingsHeadShort: ["Wings are picked by delta.", "两翼按 Delta 选取。"],
-	distanceHead: [
-		"Not the same distance from $100.",
-		"离 $100 的距离并不相同。",
-	],
+	distanceHead: ["Unequal distances from $100.", "距 $100 不等远。"],
 	smileAxis: ["Oct 18 implied volatility, model", "10月18日 隐含波动率，模型"],
 	strikeAxis: ["strike", "行权价"],
 	atm: [`at the money ${ATM_IV}%`, `平值 ${ATM_IV}%`],
@@ -168,22 +165,17 @@ const copy = {
 	callWingShort: [`25Δ call ${CALL_IV}%`, `25Δ 看涨 ${CALL_IV}%`],
 	skewTag: ["skew: put − call", "偏斜：看跌 − 看涨"],
 	rrTag: ["RR: call − put", "风险逆转：看涨 − 看跌"],
-	signsLine: [
-		"Same wings, opposite signs. Say which one you mean.",
-		"同样的两翼，符号相反。要说明你指的是哪一个。",
-	],
+	signsLine: ["Order sets the sign.", "顺序决定正负。"],
 	missingHead: ["Three cells have no usable quote.", "有三格没有可用报价。"],
 	missingHeadShort: ["Three cells lack usable quotes.", "三格没有可用报价。"],
 	volPoints: ["volatility points", "波动率点"],
-	interpolateHead: [
-		"Interpolate between quotes; never past them.",
-		"报价之间可插值；超出范围不行。",
-	],
+	interpolateHead: ["Interpolate only between quotes.", "只在报价之间插值。"],
+	interpolationMean: [`Mean ≈ ${INTERPOLATED}%`, `均值 ≈ ${INTERPOLATED}%`],
 	interpolated: ["interpolated", "插值"],
 	claimBig: ["A surface, not a number.", "是一个曲面，不是一个数。"],
 	claimSub: [
-		"Name the strike, expiry and convention; mark estimates.",
-		"说明行权价、到期日和约定；标出估计值。",
+		"Strike, expiry, convention. Flag estimates.",
+		"行权价、到期日、约定；标明估计。",
 	],
 	nextBig: ["Next: IV rank and IV percentile", "下一课：IV Rank 与 IV 百分位"],
 	nextSub: [
@@ -363,7 +355,7 @@ function Scene({
 							size={L.calculationSize}
 							className={`wt-film-num ${toneClass.caution}`}
 						>
-							{`(${ivPoints("dec20", 100)}% + ${ivPoints("dec20", 110)}%) / 2 ≈ ${INTERPOLATED}%`}
+							{t(copy.interpolationMean)}
 						</Word>
 						<rect
 							data-f="g-row-frame"
@@ -522,11 +514,11 @@ function Scene({
 					{t(copy.qBig)}
 				</Word>
 				<line
-					data-f="q-strike"
+					data-f="q-underline"
 					x1={W / 2 - (t(copy.qBig).length * qWidth * 0.62) / 2}
 					x2={W / 2 + (t(copy.qBig).length * qWidth * 0.62) / 2}
-					y1={H * 0.44 - qWidth * 0.32}
-					y2={H * 0.44 - qWidth * 0.32}
+					y1={H * 0.44 + qWidth * 0.18}
+					y2={H * 0.44 + qWidth * 0.18}
 					className="wt-film-gap"
 					style={{
 						stroke: toneColor("caution"),
@@ -800,38 +792,28 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	land(one("q-big"), 4.8);
 	tl.fromTo(
-		one("q-strike"),
+		one("q-underline"),
 		{ opacity: 1, scaleX: 0, transformOrigin: "0% 50%" },
 		{ scaleX: 1, duration: 0.45, ease: "power2.out" },
 		5.4,
 	);
-	tl.to(one("q-big"), { opacity: 0.45, duration: 0.4 }, 5.6);
 	show(one("q-line"), 6.0);
 
 	// ——— grid: one IV per strike and expiry ———
 	tl.addLabel("grid", 9.6);
 	hide(kids("q"), 9.6);
 	show(one("g-head"), 9.8);
-	rise(9.9);
-	show(
-		STRIKES.map((_, col) => one(`g-col-${col}`)),
-		10.3,
-		"above",
-		0.4,
+	// A whole-table cut: labels and exact values arrive settled, with no data cascade.
+	tl.set(one("depth"), { opacity: 1, scale: 1 }, 9.95);
+	tl.set(
+		[
+			...cells.map((cell) => cell.el),
+			...STRIKES.map((_, col) => one(`g-col-${col}`)),
+			...EXPIRIES.map((_, row) => one(`g-row-${row}`)),
+		],
+		{ opacity: 1 },
+		9.95,
 	);
-	show(
-		EXPIRIES.map((_, row) => one(`g-row-${row}`)),
-		10.4,
-		"right",
-		0.4,
-	);
-	for (const cell of cells)
-		tl.fromTo(
-			cell.el,
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.35, ease: "power3.out" },
-			10.8 + (cell.row + cell.col) * 0.07,
-		);
 	// A row: the skew.
 	d.swap(one("g-head"), one("r-head"), 13.4);
 	tl.to(
