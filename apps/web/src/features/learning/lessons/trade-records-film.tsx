@@ -71,6 +71,7 @@ const kindCopy: Record<FeedMessage["kind"], Copy> = {
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
+	const proofLift = H * (narrow ? 0.055 : 0);
 	return {
 		...frame,
 		printY: (i: number) =>
@@ -81,9 +82,20 @@ function layout(width: number) {
 			margin + (narrow ? i * (room / 2) : [0, 0.19, 0.38, 0.7][i] * room),
 		statY: (row: number) =>
 			H * (narrow ? 0.46 : 0.5) + row * H * (narrow ? 0.17 : 0),
-		legY: H * 0.88,
+		legY: H * (narrow ? 0.835 : 0.88),
+		proofLift,
 		heroX: margin + room * (narrow ? 0.49 : 0.53),
 		fractionX: margin + room * 0.23,
+		fractionPremiumY: H * 0.66 - proofLift,
+		fractionRuleY: H * 0.68 - proofLift,
+		fractionSharesY: H * 0.735 - proofLift,
+		fractionUnitY: H * 0.77 - proofLift,
+		fractionEqualsY: H * 0.715 - proofLift,
+		averageY: H * 0.715 - proofLift,
+		averageTagY:
+			(narrow ? H * 0.6 : H * 0.715 - frame.type.num * 1.6 * 1.05) - proofLift,
+		simpleY: H * 0.815 - proofLift,
+		proofBottom: H * 0.835 - proofLift,
 		msgW: narrow ? room : room * 0.62,
 		msgY: (i: number) =>
 			H * (narrow ? 0.25 : 0.26) + i * H * (narrow ? 0.068 : 0.085),
@@ -99,8 +111,8 @@ const copy = {
 	titleSub: ["what one record represents", "一行代表什么"],
 	qTag: ["Oct 18 105 call · Monday", "10月18日 105 看涨 · 周一"],
 	qLine: [
-		`${count(PRINTS[0].quantity)} at ${usd(PRINTS[0].price)}, ${count(PRINTS[1].quantity)} at ${usd(PRINTS[1].price)}.`,
-		`${count(PRINTS[0].quantity)} 张 ${usd(PRINTS[0].price)}，${count(PRINTS[1].quantity)} 张 ${usd(PRINTS[1].price)}。`,
+		`${count(PRINTS[0].quantity)} at ${usd(PRINTS[0].price, 0)}; ${count(PRINTS[1].quantity)} at ${usd(PRINTS[1].price)}.`,
+		`${count(PRINTS[0].quantity)} 张 ${usd(PRINTS[0].price, 0)}，${count(PRINTS[1].quantity)} 张 ${usd(PRINTS[1].price)}。`,
 	],
 	qBig: [`Average ${price4(ROW.simple)}?`, `平均 ${price4(ROW.simple)}？`],
 	rHead: ["One row can hold several prints.", "一行可以包含多笔成交。"],
@@ -113,6 +125,7 @@ const copy = {
 	contracts: ["contracts", "张数"],
 	trades: ["trades", "笔数"],
 	average: ["average paid", "平均成交价"],
+	premium: ["premium total", "权利金合计"],
 	simple: [
 		`${CONTRACT_MULTIPLIER} shares per contract · simple ${price4(ROW.simple)}`,
 		`每张 ${CONTRACT_MULTIPLIER} 股 · 简单平均 ${price4(ROW.simple)}`,
@@ -171,38 +184,21 @@ function Scene({
 	const cardWidth = (room - 12) / 2;
 	const sumY = cardBottom + 14 + carryText;
 	const shareY = sumY + H * 0.065;
-	const premiumLeft = usd(CONTRIBUTIONS[0], 0);
-	const premiumRight = usd(CONTRIBUTIONS[1], 0);
-	const sumX = (prefix: string) => margin + textWidth(prefix, carryText);
-	const sharePrefix = `${count(ROW.contracts)} × ${CONTRACT_MULTIPLIER} = `;
-	const averageTagY = narrow ? H * 0.6 : H * 0.715 - T.num * 1.6 * 1.05;
+	const premiumLabel = t(copy.premium).toUpperCase();
+	// A tag's 0.12 em letter-spacing widens the mono's 0.6 em glyph to 0.72 em.
+	const premiumTotalX = margin + textWidth(premiumLabel, T.small) * 1.2 + 14;
 	const proofTop =
-		Math.min(averageTagY - T.small * 1.2, H * 0.66 - carryText) - 10;
+		Math.min(L.averageTagY - T.small * 1.2, L.fractionPremiumY - carryText) -
+		10;
 	const proofRight = Math.min(
 		W - 14,
 		L.heroX + textWidth(price4(ROW.weighted), T.num * 1.6) + 8,
 	);
 	const landingMarks = [
 		{
-			name: "sum-left",
-			x: margin,
-			y: sumY,
-			anchor: "start",
-			value: premiumLeft,
-			accent: true,
-		},
-		{
-			name: "sum-right",
-			x: sumX(`${premiumLeft} + `),
-			y: sumY,
-			anchor: "start",
-			value: premiumRight,
-			accent: true,
-		},
-		{
 			name: "fraction-premium",
 			x: L.fractionX,
-			y: H * 0.66,
+			y: L.fractionPremiumY,
 			anchor: "middle",
 			value: usd(ROW.premium, 0),
 			accent: false,
@@ -210,7 +206,7 @@ function Scene({
 		{
 			name: "fraction-shares",
 			x: L.fractionX,
-			y: H * 0.735,
+			y: L.fractionSharesY,
 			anchor: "middle",
 			value: count(ROW.shares),
 			accent: false,
@@ -374,48 +370,18 @@ function Scene({
 			))}
 			<g data-f="premium-sum">
 				<Word
-					name="sum-left"
+					name="premium-tag"
 					x={margin}
 					y={sumY}
-					size={carryText}
+					size={T.small}
 					anchor="start"
-					className="wt-film-num wt-film-accent"
+					className="wt-film-tag"
 				>
-					{premiumLeft}
-				</Word>
-				<Word
-					name="sum-plus"
-					x={sumX(`${premiumLeft} `)}
-					y={sumY}
-					size={carryText}
-					anchor="start"
-					className="wt-film-num"
-				>
-					+
-				</Word>
-				<Word
-					name="sum-right"
-					x={sumX(`${premiumLeft} + `)}
-					y={sumY}
-					size={carryText}
-					anchor="start"
-					className="wt-film-num wt-film-accent"
-				>
-					{premiumRight}
-				</Word>
-				<Word
-					name="sum-equals"
-					x={sumX(`${premiumLeft} + ${premiumRight} `)}
-					y={sumY}
-					size={carryText}
-					anchor="start"
-					className="wt-film-num"
-				>
-					=
+					{premiumLabel}
 				</Word>
 				<Word
 					name="premium-total"
-					x={sumX(`${premiumLeft} + ${premiumRight} = `)}
+					x={premiumTotalX}
 					y={sumY}
 					size={carryText}
 					anchor="start"
@@ -426,18 +392,8 @@ function Scene({
 			</g>
 			<g data-f="share-product">
 				<Word
-					name="share-prefix"
-					x={margin}
-					y={shareY}
-					size={carryText}
-					anchor="start"
-					className="wt-film-num"
-				>
-					{sharePrefix}
-				</Word>
-				<Word
 					name="share-total"
-					x={sumX(sharePrefix)}
+					x={margin}
 					y={shareY}
 					size={carryText}
 					anchor="start"
@@ -461,7 +417,7 @@ function Scene({
 				<Word
 					name="fraction-premium"
 					x={L.fractionX}
-					y={H * 0.66}
+					y={L.fractionPremiumY}
 					size={T.num * 0.8}
 					className="wt-film-num"
 				>
@@ -469,13 +425,13 @@ function Scene({
 				</Word>
 				<path
 					data-f="fraction-rule"
-					d={`M${L.fractionX - room * 0.16} ${H * 0.68}h${room * 0.32}`}
+					d={`M${L.fractionX - room * 0.16} ${L.fractionRuleY}h${room * 0.32}`}
 					className="wt-film-link"
 				/>
 				<Word
 					name="fraction-shares"
 					x={L.fractionX}
-					y={H * 0.735}
+					y={L.fractionSharesY}
 					size={T.num * 0.8}
 					className="wt-film-num"
 				>
@@ -484,7 +440,7 @@ function Scene({
 				<Word
 					name="fraction-unit"
 					x={L.fractionX}
-					y={H * 0.77}
+					y={L.fractionUnitY}
 					size={T.small}
 					className="wt-film-type wt-film-dim"
 				>
@@ -493,7 +449,7 @@ function Scene({
 				<Word
 					name="fraction-equals"
 					x={margin + room * 0.44}
-					y={H * 0.715}
+					y={L.fractionEqualsY}
 					size={T.num}
 					className="wt-film-num"
 				>
@@ -504,7 +460,7 @@ function Scene({
 				<Word
 					name="average-tag"
 					x={L.heroX}
-					y={averageTagY}
+					y={L.averageTagY}
 					size={T.small}
 					anchor="start"
 					className="wt-film-tag"
@@ -514,7 +470,7 @@ function Scene({
 				<Word
 					name="s-average-n"
 					x={L.heroX}
-					y={H * 0.715}
+					y={L.averageY}
 					size={T.num * 1.6}
 					anchor="start"
 					className="wt-film-num wt-film-accent"
@@ -525,7 +481,7 @@ function Scene({
 			<Word
 				name="simple"
 				x={margin}
-				y={H * 0.815}
+				y={L.simpleY}
 				size={proofText}
 				anchor="start"
 				className="wt-film-type wt-film-dim"
@@ -551,7 +507,7 @@ function Scene({
 			</g>
 			<path
 				data-f="proof-boundary"
-				d={`M${margin - 8} ${proofTop}H${proofRight}V${H * 0.835}H${margin - 8}Z`}
+				d={`M${margin - 8} ${proofTop}H${proofRight}V${L.proofBottom}H${margin - 8}Z`}
 				className="wt-film-link"
 			/>
 			<Word
@@ -820,8 +776,6 @@ function build(context: FilmContext) {
 		...changedReadouts,
 		...calculation,
 		...kids("landing-covers"),
-		one("sum-left"),
-		one("sum-right"),
 		one("fraction-premium"),
 		one("fraction-shares"),
 		lockAverage,
@@ -890,10 +844,8 @@ function build(context: FilmContext) {
 	show(one("a-head"), 25.35);
 	// Both proofs retain their original settlement and 1 s quiet intervals.
 	fade(contributions, 25.4, 0.3);
-	carryOnto("contribution-0-value", "sum-left", 27.9, 0.4);
-	carryOnto("contribution-1-value", "sum-right", 27.9, 0.4);
 	hide(contributions, 27.9, 0.3, 0);
-	// Surrounding operators/results arrive first; carried operands stay hidden until landing.
+	// Totals replace the parallel equations, then carry into the weighted fraction.
 	fade([one("premium-sum"), one("share-product")], 27.0, 0.3);
 	fade(one("simple"), 25.4, 0.3);
 	// The numerator goes across at its source height, then down, clearing the equals-sign
