@@ -73,7 +73,7 @@ const MAX_SIZE = Math.max(
 /** Cents to "$100.05"; a fraction of a cent keeps three places. */
 const price = (cents: number) =>
 	Number.isInteger(cents) ? usd(cents) : `$${(cents / 100).toFixed(3)}`;
-const ROWS = ["holds", "buy", "settle"] as const;
+const ROWS = ["buy", "settle"] as const;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -118,10 +118,7 @@ const copy = {
 	title: ["Stocks and prices", "股票与价格"],
 	titleSub: ["what options are built on", "期权的基础"],
 	qTag: ["ALFA · last trade", "ALFA · 最新成交"],
-	qLine: [
-		`You buy ${MINE} shares right now. What do they cost?`,
-		"你现在立即买入 10 股。要花多少？",
-	],
+	qLine: [`Cost to buy ${MINE} shares now?`, "现在买 10 股要花多少？"],
 	sliceHead: ["A share is one slice of ALFA.", "一股是 ALFA 的一份。"],
 	sliceHeadShort: ["A share: one slice of ALFA.", "一股：ALFA 的一份。"],
 	moveHead: [
@@ -179,22 +176,22 @@ const copy = {
 		"Stock, ETF, index: how options settle.",
 		"股票、ETF、指数：期权如何交割？",
 	],
+	buyableBoth: ["Yes, both", "两者均可"],
+	indexNumber: ["a number", "一个数"],
 	rowLabels: {
-		holds: ["holds", "持有"],
 		buy: ["buy it?", "能买吗"],
 		settle: ["options settle in", "期权交割"],
 	},
 	/** On a phone the row labels have 64 px beside the columns. */
 	rowLabelsShort: {
-		holds: ["holds", "持有"],
 		buy: ["buy it?", "能买吗"],
 		settle: ["settles in", "交割"],
 	},
 	claimBig: [
-		"You trade against the quote, not the last price.",
-		"你按报价成交，而不是按最新成交价。",
+		"Trades execute at quotes, not last prices.",
+		"成交按报价，不按最新成交价。",
 	],
-	claimSub: ["Buy at the ask, sell at the bid.", "按卖价买，按买价卖。"],
+	claimSub: ["Buy at ask; sell at bid.", "按卖价买，按买价卖。"],
 	nextBig: ["Next: options, a paid right", "下一课：期权，付费的权利"],
 	nextSub: ["what a call and a put give you", "看涨与看跌赋予你什么"],
 } as const;
@@ -571,9 +568,9 @@ function Scene({
 						className="wt-film-num wt-film-dim"
 						style={{ fontSize: T.body }}
 					>
-						{`${count(BIG)} × `}
-						<tspan className="wt-film-accent">{`${t(copy.last)} ${usd(alfaStockBook.last)}`}</tspan>
-						{` = ${usd(AT_LAST, 0)}`}
+						{locale === "zh"
+							? `${count(BIG)} 股 × 最新价 ${usd(alfaStockBook.last)}`
+							: `${count(BIG)} shares × last price ${usd(alfaStockBook.last)}`}
 					</text>
 				)}
 			</g>
@@ -669,25 +666,33 @@ function Scene({
 						>
 							{kinds[kind].name}
 						</text>
-						{ROWS.map((row, r) => (
+						{kind === "index" ? (
 							<text
-								key={row}
-								data-f={`cell-${kind}-${row}`}
+								data-f="index-note"
 								x={L.colX(i) + L.colW / 2}
-								y={H * (0.52 + r * 0.13)}
+								y={H * 0.27 + T.small * 2.2 + T.head * 1.5 + T.small * 1.6}
 								textAnchor="middle"
-								className="wt-film-type"
-								style={{ fontSize: rowText }}
+								className="wt-film-tag"
+								style={{ fontSize: T.small }}
 							>
-								{t(
-									row === "holds"
-										? kind === "index"
-											? ["a number", "一个数"]
-											: kinds[kind].holds
-										: kinds[kind][row],
-								)}
+								{t(copy.indexNumber).toUpperCase()}
 							</text>
-						))}
+						) : null}
+						{ROWS.map((row, r) =>
+							row === "buy" && kind !== "index" ? null : (
+								<text
+									key={row}
+									data-f={`cell-${kind}-${row}`}
+									x={L.colX(i) + L.colW / 2}
+									y={H * (0.52 + r * 0.13)}
+									textAnchor="middle"
+									className="wt-film-type"
+									style={{ fontSize: rowText }}
+								>
+									{t(kinds[kind][row])}
+								</text>
+							),
+						)}
 					</g>
 				))}
 				{ROWS.map((row, r) => (
@@ -701,6 +706,16 @@ function Scene({
 						{t(narrow ? copy.rowLabelsShort[row] : copy.rowLabels[row])}
 					</text>
 				))}
+				<text
+					data-f="cell-buyable-both"
+					x={(L.colX(0) + L.colW / 2 + L.colX(1) + L.colW / 2) / 2}
+					y={H * 0.52}
+					textAnchor="middle"
+					className="wt-film-type"
+					style={{ fontSize: rowText }}
+				>
+					{t(copy.buyableBoth)}
+				</text>
 			</g>
 			<g data-f="claim">
 				<Lines
@@ -791,6 +806,18 @@ function build(context: FilmContext) {
 		"g-head",
 		"k-head",
 	].map((name) => one(name));
+	const kindText = [
+		...flat("kinds").filter((el) => el.tagName === "text"),
+		one("index-note"),
+		one("cell-buyable-both"),
+	].filter((el, i, all) => all.indexOf(el) === i);
+	const fadeIn = (targets: Element | Element[], at: number, duration = 0.3) =>
+		tl.fromTo(
+			targets,
+			{ opacity: 0 },
+			{ opacity: 1, duration, ease: "power3.out" },
+			at,
+		);
 	/**
 	 * Takes `fills` off one side of the book, one level after another: brackets lock on the
 	 * level, it lights and shrinks, and with `paid` one filled-quantity state drives the
@@ -909,7 +936,7 @@ function build(context: FilmContext) {
 		lockRow,
 		one("lock-index"),
 		...kindOrder.flatMap((kind) => [one(`col-${kind}`), one(`colbg-${kind}`)]),
-		...flat("kinds").filter((el) => el.tagName === "text"),
+		...kindText,
 		...kids("claim"),
 	]);
 
@@ -980,15 +1007,9 @@ function build(context: FilmContext) {
 	tl.addLabel("quote", 16.55);
 	hide([heads[1], ...flat("slice")], 16.55);
 	show(heads[2], 16.9);
-	show(one("asks-tag"), 16.95);
-	ASKS.forEach((at, i) => {
-		show(one(`lv-${key("ask", at.price)}`), 17.05 + i * 0.1, "right");
-	});
-	show([one("spread"), one("last")], 17.35);
-	BIDS.forEach((at, i) => {
-		show(one(`lv-${key("bid", at.price)}`), 17.45 + i * 0.1, "right");
-	});
-	show(one("bids-tag"), 17.65);
+	// Bring the full book scaffold in together, then give it a full second before the rows.
+	fadeIn([one("asks-tag"), one("bids-tag"), one("spread"), one("last")], 16.55);
+	fadeIn(levels, 17.85);
 	// Buy 10, then sell 10: each highlighted level explains the settled payment.
 	// The trades stay done: the levels keep what they lost.
 	const sell = one<SVGTextElement>("p-sell");
@@ -1196,12 +1217,7 @@ function build(context: FilmContext) {
 		37.0,
 	);
 	show(heads[6], 37.35);
-	show(
-		flat("kinds").filter((el) => el.tagName === "text"),
-		37.35,
-		"below",
-		0.3,
-	);
+	show(kindText, 37.35, "below", 0.3);
 	kindOrder.forEach((kind, i) => {
 		show(one(`col-${kind}`), 37.35 + 0.12 * i, "below", 0.3);
 	});
