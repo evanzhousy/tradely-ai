@@ -160,6 +160,7 @@ const copy = {
 	modelPut: ["model P", "模型 P"],
 	off: ["off", "偏离"],
 	parity: ["parity", "平价"],
+	skLabel: ["stock − strike", "股价 − 行权价"],
 	claimBig: [
 		"Parity links prices from the same moment.",
 		"平价连接的是同一时刻的价格。",
@@ -179,6 +180,26 @@ const sumLabel = (basis: number, narrow: boolean, locale: Locale) =>
 		.split("\n");
 
 /** Two prints, each with its parity check; the afternoon one also has its late version. */
+/** A signed value takes its sign's colour; zero is dim. */
+const signTone = (value: number) =>
+	value > 0 ? toneClass.up : value < 0 ? toneClass.down : "wt-film-dim";
+/** A check line's result after its last "= ": signed, it takes its sign's colour. */
+const result = (line: string, unsigned?: string) => {
+	const at = line.lastIndexOf("= ");
+	const value = at < 0 ? line : line.slice(at + 2);
+	const tone = value.startsWith("+")
+		? toneClass.up
+		: value.startsWith("−")
+			? toneClass.down
+			: unsigned;
+	return (
+		<>
+			{at < 0 ? "" : line.slice(0, at + 2)}
+			<tspan className={tone}>{value}</tspan>
+		</>
+	);
+};
+
 const PRINTS = [
 	{
 		id: "morning",
@@ -524,7 +545,7 @@ function Scene({
 						{share(putMid(BAL[0]))}
 					</tspan>
 					{" = "}
-					<tspan data-f="cp-r" className="wt-film-accent">
+					<tspan data-f="cp-r" className={signTone(BAL[0] - STRIKE)}>
 						{signedShare(callMid(BAL[0]) - putMid(BAL[0]))}
 					</tspan>
 				</text>
@@ -535,7 +556,7 @@ function Scene({
 					size={T.small}
 					className="wt-film-tag"
 				>
-					S − K
+					{t(copy.skLabel).toUpperCase()}
 				</Word>
 				<text
 					data-f="eq-sk"
@@ -547,7 +568,7 @@ function Scene({
 				>
 					<tspan data-f="sk-s">{`$${BAL[0].toFixed(2)}`}</tspan>
 					{` − $${STRIKE} = `}
-					<tspan data-f="sk-r" className="wt-film-accent">
+					<tspan data-f="sk-r" className={signTone(BAL[0] - STRIKE)}>
 						{signedShare(BAL[0] - STRIKE)}
 					</tspan>
 				</text>
@@ -591,15 +612,12 @@ function Scene({
 							className="wt-film-num wt-film-dim"
 							style={{ fontSize: text }}
 						>
-							{check[0]}
+							{result(check[0])}
 							{!narrow && (
 								<>
 									{suffix === "morning" ? " · " : " "}
-									<tspan
-										className="wt-film-accent"
-										style={{ fontSize: text * 1.2 }}
-									>
-										{check[1]}
+									<tspan style={{ fontSize: text * 1.2 }}>
+										{result(check[1], "wt-film-accent")}
 									</tspan>
 								</>
 							)}
@@ -609,10 +627,10 @@ function Scene({
 								data-f={`r4-${suffix}`}
 								x={margin + 14}
 								y={L.rowY(i) + L.rowH * 0.9}
-								className="wt-film-num wt-film-accent"
+								className="wt-film-num"
 								style={{ fontSize: text }}
 							>
-								{check[1]}
+								{result(check[1], "wt-film-accent")}
 							</text>
 						)}
 					</>
@@ -756,14 +774,7 @@ function build(context: FilmContext) {
 		skS.textContent = `$${s.toFixed(2)}`;
 		skR.textContent = signedShare(s - STRIKE);
 		for (const result of [cpR, skR])
-			result.setAttribute(
-				"class",
-				s < STRIKE
-					? toneClass.down
-					: s === STRIKE
-						? "wt-film-dim"
-						: toneClass.focus,
-			);
+			result.setAttribute("class", signTone(s - STRIKE));
 	};
 	const walk = (from: number, to: number, at: number, duration: number) => {
 		const state = { at: from };
@@ -902,34 +913,35 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5 },
 		17.6,
 	);
-	// The zoom ruler settles at 18.1, a full second before its break-even marker moves.
-	tl.fromTo(one("debit"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 19.15);
+	// The zoom ruler settles at 18.1; the break-even marker arrives at $100.00 and reads
+	// for half a second before it moves at 19.15.
+	tl.fromTo(one("debit"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 18.15);
 	// Explicit attribute baselines let backward seeks restore the pre-debit chart.
-	tl.set(one("sum-line"), { attr: { d: L.path(synthetic) } }, 19.15);
+	tl.set(one("sum-line"), { attr: { d: L.path(synthetic) } }, 18.15);
 	tl.set(
 		[one("dot-call"), one("dot-put")],
 		{ attr: { cy: L.y(per(synthetic(90))) } },
-		19.15,
+		18.15,
 	);
 	tl.set(
 		one("lab-put"),
 		{ attr: { y: L.y(per(synthetic(90))) + (L.narrow ? 5 : 18) } },
-		19.15,
+		18.15,
 	);
-	tl.set(one("sum-tag"), { attr: { y: L.sumY(0) } }, 19.15);
+	tl.set(one("sum-tag"), { attr: { y: L.sumY(0) } }, 18.15);
 	tl.set(
 		one("debit-guide"),
 		{ attr: { d: `M${L.zoomX(0)} ${L.zoomAxisY - 5}v10` } },
-		19.15,
+		18.15,
 	);
-	tl.set(one("debit-zero"), { attr: { cx: L.zoomX(0) } }, 19.15);
+	tl.set(one("debit-zero"), { attr: { cx: L.zoomX(0) } }, 18.15);
 	const premium = { offset: 0 };
 	tl.fromTo(
 		premium,
 		{ offset: 0 },
 		{
 			offset: NET_DEBIT,
-			duration: 0.8,
+			duration: 1,
 			ease: "power2.inOut",
 			immediateRender: false,
 			onUpdate: () => adjustPremium(premium.offset),
