@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
 import { useId } from "react";
-import { type Copy, pick, signedCount, signedUsd } from "@/content/world";
+import { type Copy, pick, signedCount } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -23,8 +23,6 @@ import {
 	curve,
 	fixed2,
 	holders,
-	MOVE,
-	moveDollars,
 	PUT_DELTA,
 	perContract,
 	positionDelta,
@@ -48,8 +46,8 @@ import {
  *                        rise; carry 0.52 into its definition, full frame
  *   put       17.7–23.7  the call proof leaves; its hidden geometry swaps to the put,
  *                        which returns paired with −0.48
- *   position  23.7–32    hero: 0.52 × 100 × 16 = +832, locked; the two positions and their
- *                        shared +$0.40 multiplier, then dollar estimates, after the lock
+ *   position  23.7–32    hero: 0.52 × 100 × 16 = +832, locked; the two positions follow
+ *                        after the lock
  *   limits    32–41.3    the marker rides the curve, a ghost rides the line; compare their
  *                        settled readings before revealing the gap; cut: "Delta is
  *                        local."
@@ -98,29 +96,18 @@ function layout(width: number) {
 			: [0.25, 0.34, 0.43, 0.52, 0.61]
 	).map((f) => height * f);
 	const T = frame.type;
-	// Reserve a descender allowance and 10 px between each desktop payoff line.
-	const multiplierSize = T.body * 1.3;
-	const captionToMultiplier = T.small * 0.35 + multiplierSize + 10;
-	const multiplierToPayoff = multiplierSize * 0.35 + T.num + 10;
-	const payoffTail =
-		T.num * 0.45 + T.small * 2.2 + captionToMultiplier + multiplierToPayoff;
+	// Keep the signed position and its share-equivalents caption inside the desktop frame.
+	const captionTail = T.num * 0.45 + T.small * 2.2;
 	if (!narrow) {
 		const lift = Math.max(
 			0,
-			rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95 + payoffTail - height * 0.9,
+			rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95 + captionTail - height * 0.9,
 		);
 		for (let i = 0; i < rows.length; i++) rows[i] -= lift;
 	}
 	const posY = rows[3] + T.body * 1.2 + T.num * 1.35 * 0.95;
 	// The caption clears the locked figure's brackets by more than the arms' own width.
 	const equivY = posY + T.num * 0.45 + T.small * 2.2;
-	// On a phone the move's chip sits under the two positions, not between them.
-	const chipY = narrow ? equivY + T.num * 1.3 : posY - T.num * 0.35;
-	const phonePayY = Math.min(chipY + T.num * 1.9, height - 20);
-	const multiplyY = narrow
-		? phonePayY - T.num * 1.35
-		: equivY + captionToMultiplier;
-	const payY = narrow ? phonePayY : multiplyY + multiplierToPayoff;
 	return {
 		...frame,
 		left,
@@ -135,9 +122,6 @@ function layout(width: number) {
 		rows,
 		posY,
 		equivY,
-		chipY,
-		payY,
-		multiplyY,
 		/** How far the two positions stand from the middle once both are on stage. */
 		side: width * (narrow ? 0.25 : 0.2),
 	};
@@ -157,14 +141,20 @@ const copy = {
 		`delta at ${stock(SPOT)}: per share, per $1`,
 		`${stock(SPOT)} 处的 Delta：每股，每 $1`,
 	],
-	deltaWordShort: ["delta: per share, per $1", "Delta：每股，每 $1"],
-	slopeHead: ["Up $1: what does the call gain?", "ALFA 涨 $1：看涨涨多少？"],
+	deltaWordShort: [
+		`delta at ${stock(SPOT)}: per share, per $1`,
+		`${stock(SPOT)} 处的 Delta：每股，每 $1`,
+	],
+	slopeHead: ["What does the call gain?", "看涨期权价值会增加多少？"],
 	putHead: ["Puts slope the other way.", "看跌期权的斜率方向相反。"],
 	putSub: [
 		`+$1 in ALFA takes about ${price(Math.abs(PUT_DELTA))} off the put.`,
 		`ALFA 涨 $1，看跌约减少 ${price(Math.abs(PUT_DELTA))}。`,
 	],
-	chainHead: ["Keep the sign and the multiplier attached.", "保留符号与乘数。"],
+	chainHead: [
+		"Same ALFA 100 call: keep sign and multiplier.",
+		"同一 ALFA 100 看涨：保留符号与乘数。",
+	],
 	op100: ["× 100 shares per contract", "× 每张 100 股"],
 	opYou: [
 		`× ${signedCount(you.contracts)} contracts, you`,
@@ -182,15 +172,7 @@ const copy = {
 		`× ${signedCount(ben.contracts)}, Ben`,
 		`× Ben ${signedCount(ben.contracts)} 张`,
 	],
-	chip: [
-		`ALFA +$${MOVE.toFixed(2)} → × $${MOVE.toFixed(2)}`,
-		`ALFA +$${MOVE.toFixed(2)} → × $${MOVE.toFixed(2)}`,
-	],
 	equivalents: ["share-equivalents of ALFA", "相当于这么多股 ALFA"],
-	pay: [
-		`If ALFA rises $${MOVE.toFixed(2)}: about ${signedUsd(moveDollars(you.contracts), 0)} for you, ${signedUsd(moveDollars(ben.contracts), 0)} for Ben.`,
-		`ALFA 涨 $${MOVE.toFixed(2)}：你约 ${signedUsd(moveDollars(you.contracts), 0)}，Ben 约 ${signedUsd(moveDollars(ben.contracts), 0)}。`,
-	],
 	/** A phone's headline must stay on one line above the chart. */
 	limitHeadShort: ["Where the straight line stops.", "直线在哪里不再成立。"],
 	limitHead: [
@@ -198,7 +180,7 @@ const copy = {
 		"直线在哪里不再成立。",
 	],
 	model: ["model", "模型"],
-	deltaAlone: ["delta alone", "仅用 delta"],
+	deltaEstimate: ["delta estimate", "Delta 估算"],
 	missed: ["missed by", "相差"],
 	below: ["no option is worth less than zero", "期权不可能为负"],
 	belowShort: ["can't go below zero", "不会低于零"],
@@ -237,7 +219,18 @@ function Scene({
 	const stepW = textWidth("+$1", T.small) + 14;
 	const keyX = L.left + 12;
 	const keyY = L.headY + T.head * 1.4;
-	const deltaKeyX = keyX + 34 + textWidth(t(copy.model), T.small) + 18;
+	// The two keys share a line. The labels are set in the sans, near 0.52 em a Latin glyph and
+	// a full em a CJK one (textWidth measures the mono's 0.6): on a phone the gap follows the
+	// sans, keeping the second key clear of the edge.
+	const sansWidth = (text: string, size: number) =>
+		[...text].reduce(
+			(w, c) => w + ((c.codePointAt(0) ?? 0) > 0x2e80 ? size : size * 0.52),
+			0,
+		);
+	const deltaKeyX = L.narrow
+		? keyX + 34 + sansWidth(t(copy.callLabel), T.small) + 14
+		: keyX + 34 + textWidth(t(copy.callLabel), T.small) + 18;
+	const deltaKeyY = keyY;
 	const proofTypeScale = L.narrow ? 2 / PHONE_PROOF_SCALE : 1;
 	const deltaWord = t(L.narrow ? copy.deltaWordShort : copy.deltaWord);
 	// Keep the definition in the number's lane when it moves beside the chart.
@@ -337,15 +330,6 @@ function Scene({
 							d={L.path(call)}
 						/>
 					</g>
-					<text
-						data-f="curve-label-call"
-						x={L.right - 4}
-						y={L.y(call[call.length - 1][1]) - 8}
-						textAnchor="end"
-						className="wt-small wt-halo wt-label-position"
-					>
-						{t(copy.callLabel)}
-					</text>
 					{/* At the put's high left end: to its right the curve falls away from it. */}
 					<text
 						data-f="curve-label-put"
@@ -359,6 +343,7 @@ function Scene({
 					<line
 						data-f="tangent"
 						className="wt-film-tangent"
+						strokeDasharray="2 4"
 						x1={mx}
 						y1={my}
 						x2={mx}
@@ -511,22 +496,23 @@ function Scene({
 					className="wt-small wt-label-position"
 					style={{ fontSize: T.small }}
 				>
-					{t(copy.model)}
+					{t(copy.callLabel)}
 				</text>
 				<line
 					x1={deltaKeyX}
 					x2={deltaKeyX + 26}
-					y1={keyY - T.small * 0.35}
-					y2={keyY - T.small * 0.35}
+					y1={deltaKeyY - T.small * 0.35}
+					y2={deltaKeyY - T.small * 0.35}
 					className="wt-film-tangent"
+					strokeDasharray="2 4"
 				/>
 				<text
 					x={deltaKeyX + 34}
-					y={keyY}
+					y={deltaKeyY}
 					className="wt-small"
 					style={{ fontSize: T.small }}
 				>
-					{t(copy.deltaAlone)}
+					{t(copy.deltaEstimate)}
 				</text>
 			</g>
 			{/* Replaced at build with the pushed-in riser's exact numeric position. */}
@@ -723,33 +709,6 @@ function Scene({
 				>
 					{signedCount(positionDelta(ben.contracts))}
 				</Word>
-				{/* One common stock move and multiplier applies to both positions. */}
-				<Word
-					name="ch-chip"
-					x={W / 2}
-					y={L.multiplyY}
-					size={T.body * 1.3}
-					className="wt-film-num wt-film-accent"
-				>
-					{t(copy.chip)}
-				</Word>
-				{(
-					[
-						["you", -L.side, you.contracts, "wt-film-gain"],
-						["ben", L.side, ben.contracts, "wt-film-loss"],
-					] as const
-				).map(([holder, dx, contracts, tone]) => (
-					<Word
-						key={holder}
-						name={`ch-usd-${holder}`}
-						x={W / 2 + dx}
-						y={L.payY}
-						size={T.num * (L.narrow ? 1.2 : 1)}
-						className={`wt-film-num ${tone}`}
-					>
-						{`≈ ${signedUsd(moveDollars(contracts), 0)}`}
-					</Word>
-				))}
 				<Lines
 					name="ch-equiv"
 					text={t(copy.equivalents)}
@@ -758,14 +717,6 @@ function Scene({
 					size={T.small}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
-				/>
-				<Lines
-					name="ch-pay"
-					text={t(copy.pay)}
-					x={W / 2}
-					y={L.payY}
-					size={T.body}
-					maxWidth={room}
 				/>
 			</g>
 			<Lines
@@ -837,6 +788,7 @@ function build(context: FilmContext) {
 	const gap = one<SVGLineElement>("gap");
 	const gapLabel = one<SVGTextElement>("gap-label");
 	const tangentLine = one<SVGLineElement>("tangent");
+	const axisText = [...one("axes").querySelectorAll("text")];
 	const callTangent = (spot: number) => V0 + CALL_DELTA * (spot - SPOT);
 	const putTangent = (spot: number) => P0 + PUT_DELTA * (spot - SPOT);
 	const riserX = L.x(SPOT + 1);
@@ -871,7 +823,6 @@ function build(context: FilmContext) {
 		lockPos,
 		one("marker-label-call"),
 		one("marker-label-put"),
-		one("curve-label-call"),
 		one("curve-label-put"),
 		tangentLine,
 		one("step"),
@@ -956,9 +907,10 @@ function build(context: FilmContext) {
 		{ opacity: 1, attr: { y: my - (narrow ? 22 : 14) }, duration: 0.5 },
 		10.9,
 	);
-	tl.to(one("curve-label-call"), { opacity: 1, duration: 0.3 }, 11.2);
 	tl.to(one("line-key"), { opacity: 1, duration: 0.3 }, 11.2);
-	tl.to(one("curve-label-call"), { opacity: 0, duration: 0.3 }, 12.1);
+	// Clear tick labels first, leaving the grid as a scaffold for the camera move.
+	tl.to(axisText, { opacity: 0, duration: 0.3 }, 11.5);
+	show(one("s-head"), 11.8, "above", 0.3);
 	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.1);
 	if (narrow) {
 		// Enlarge the geometry without enlarging its labels; retain the establishment size.
@@ -968,10 +920,7 @@ function build(context: FilmContext) {
 			12.1,
 		);
 	}
-	show(one("s-head"), 12.5, "above");
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
-	const axisText = [...one("axes").querySelectorAll("text")];
-	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.1);
 	tl.set(axisText, { opacity: 1 }, 18);
 	if (narrow) {
 		// Keep the aside's type at an actual 11 px instead of shrinking it to 6.8 px.
@@ -1016,7 +965,7 @@ function build(context: FilmContext) {
 		}
 		tl.set(one("dot"), { attr: { r: 3 } }, 32);
 	}
-	tl.to(tangentLine, { opacity: 1, duration: 0.3 }, 13);
+	tl.to(tangentLine, { opacity: 1, duration: 0.3 }, 13.4);
 	tl.to(
 		tangentLine,
 		{
@@ -1029,13 +978,13 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power2.inOut",
 		},
-		13,
+		13.4,
 	);
-	// The $1 leg is already present when the headline names it.
-	tl.to(one("step"), { opacity: 1, duration: 0.3 }, 12.2);
+	// Build the $1 leg and tangent only after the camera settles.
+	tl.to(one("step"), { opacity: 1, duration: 0.3 }, 13.4);
 	// The labelled $1 leg is revealed complete, so its length always agrees with its label.
-	tl.set(one("step-line"), { attr: { x2: riserX } }, 12.2);
-	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 12.2);
+	tl.set(one("step-line"), { attr: { x2: riserX } }, 13.4);
+	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 13.4);
 	tl.to(one("riser"), { opacity: 1, duration: 0.3 }, 13.9);
 	tl.to(
 		one("riser-line"),
@@ -1173,8 +1122,7 @@ function build(context: FilmContext) {
 	d.lock(lockPos, 27.9, { around: one("ch-pos-you"), pad: 4 });
 	tl.addLabel("hero-lock", 27.9);
 	tl.to([numCall, one("ch-per")], { opacity: 0.5, duration: 0.4 }, 27.9);
-	// The lock's settled 1.95 s hold is unchanged. Keep the shared unit caption still;
-	// construct the exposure pair, then the common multiplier, then the dollar results.
+	// The lock's settled 1.95 s hold is unchanged; the exposure pair follows it alone.
 	hide(lockPos, 30.3, 0.3);
 	tl.to(
 		[one("ch-op-you"), one("ch-pos-you")],
@@ -1183,15 +1131,7 @@ function build(context: FilmContext) {
 	);
 	show(one("ch-op-ben"), 30.35, "below", 0.55);
 	land(one("ch-pos-ben"), 30.35);
-	tl.to(one("ch-chip"), { opacity: 1, duration: 0.35 }, 30.45);
-	// Results follow their shared operation, with settled values. Stationary entrances
-	// keep the lowest phone figures inside the frame and preserve the 31.0 completion.
-	tl.to(
-		[one("ch-usd-you"), one("ch-usd-ben")],
-		{ opacity: 1, duration: 0.35 },
-		30.65,
-	);
-	// Both complete columns settle at 31.0 and get one quiet second before the cut.
+	// The exposure pair settles at 30.9, then keeps its quiet second before the cut.
 
 	// ——— limits: the marker rides the curve, a ghost rides the line ———
 	tl.addLabel("limits", 32);
@@ -1263,7 +1203,7 @@ function build(context: FilmContext) {
 		ghostLabel.setAttribute("x", String(readX));
 		ghostLabel.setAttribute("y", String(readY(1)));
 		ghostLabel.setAttribute("text-anchor", "start");
-		ghostLabel.textContent = `${t(copy.deltaAlone)} ${signedPrice(estimate - V0)}`;
+		ghostLabel.textContent = `${t(copy.deltaEstimate)} ${signedPrice(estimate - V0)}`;
 		gap.setAttribute("x1", String(px));
 		gap.setAttribute("x2", String(px));
 		const gapPad = Math.min(8, Math.abs(py - gy) / 2);
