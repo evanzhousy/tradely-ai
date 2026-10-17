@@ -17,6 +17,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -636,13 +637,14 @@ function Scene({
 										size={T.body}
 										maxWidth={room - 28}
 										anchor="start"
+										className={`wt-film-type ${toneClass.focus}`}
 									/>
 									{change.id === "volOi" ? (
 										<text
 											x={margin + room - 14}
 											y={y + T.body * 1.45}
 											textAnchor="end"
-											className="wt-film-num wt-film-accent"
+											className="wt-film-num"
 											style={{ fontSize: L.rowText }}
 										>
 											{STRICT.map((row) => volumeToOi(row).toFixed(2)).join(
