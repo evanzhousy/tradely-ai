@@ -179,10 +179,7 @@ const copy = {
 	inferred: ["inferred", "推断"],
 	unknown: ["unknown", "未知"],
 	claimBig: ["A side is a place, not a reason.", "位置只是位置，不是理由。"],
-	claimSub: [
-		"Use the quote in force at the print.",
-		"以成交时有效的报价为准。",
-	],
+	claimSub: ["Use the quote effective at the print.", "用成交时有效的报价。"],
 	nextBig: ["Next: sentiment labels", "下一课：情绪标签"],
 	nextSub: ["when bullish or bearish is justified", "何时能称为看涨或看跌"],
 } as const satisfies Record<string, Copy>;
@@ -638,12 +635,22 @@ function Scene({
 							kind === "inferred"
 								? { fill: "none", stroke: "var(--tone-ink)" }
 								: kind === "unknown"
-									? { fill: `url(#${hatchId})`, stroke: toneColor("caution") }
+									? { stroke: toneColor("caution") }
 									: undefined
 						}
 					/>
+					{kind === "unknown" && (
+						<rect
+							x={margin + 3}
+							y={L.claimY(i) + 4}
+							width={8}
+							height={L.claimH - 8}
+							rx={2}
+							fill={`url(#${hatchId})`}
+						/>
+					)}
 					<text
-						x={margin + 14}
+						x={margin + (kind === "unknown" ? 18 : 14)}
 						y={L.claimY(i) + L.claimH / 2 + text * 0.36}
 						className="wt-film-type"
 						style={{ fontSize: text }}
@@ -665,16 +672,28 @@ function Scene({
 					</text>
 				</g>
 			))}
-			<Lines
-				name="ledger"
-				text={`${t(seller)} ${t(verb(LAST.sellerEffect, false))} · ${t(buyer)} ${t(verb(LAST.buyerEffect, true))}`}
-				x={margin}
-				y={L.claimY(4) + T.body}
-				size={text}
-				maxWidth={room}
-				anchor="start"
-				className="wt-film-type"
-			/>
+			<g data-f="ledger">
+				<Word
+					name="ledger-source"
+					x={margin}
+					y={L.claimY(4) + T.body}
+					size={T.small}
+					anchor="start"
+					className="wt-film-tag"
+				>
+					{t(["Teaching ledger", "教学账本"])}
+				</Word>
+				<Lines
+					name="ledger-facts"
+					text={`${t(seller)} ${t(verb(LAST.sellerEffect, false))} · ${t(buyer)} ${t(verb(LAST.buyerEffect, true))}`}
+					x={margin}
+					y={L.claimY(4) + T.body + T.small * 1.6}
+					size={text}
+					maxWidth={room}
+					anchor="start"
+					className="wt-film-type"
+				/>
+			</g>
 
 			<g data-f="claim">
 				<Lines
@@ -883,14 +902,14 @@ function build(context: FilmContext) {
 		const quote = quoteAt(id === "test" ? "t2" : id);
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
 		const before = ["pl-t1", "pl-t2", "pl-t3"][i - 1];
-		// The tape persists while every changing mark fades in place together.
-		fade([...geometry, ...legend, dot, one(before)], 0, time);
+		// The tape and definitions persist while only changing evidence fades.
+		fade([...geometry, dot, one(before)], 0, time);
 		sideTo(i, time);
 		const ready = time + 0.35;
 		quoteTo(quote.bid, quote.ask, ready);
 		dotTo(cents, ready);
 		light(SIDES[i], ready);
-		reveal([...geometry, ...legend, dot], ready);
+		reveal([...geometry, dot], ready);
 		reveal(one(id === "test" ? "pl-test" : `pl-${id}`), ready, 0.5);
 		if (id !== "test") show(rows[i], ready, "right");
 		// Last settlement is time + 0.9; the next example waits at least 1.15 s.
@@ -900,11 +919,7 @@ function build(context: FilmContext) {
 	tl.addLabel("quote", 20.35);
 	d.swap(heads[0], heads[1], 20.35);
 	hide([...kids("tape"), ...rows], 20.35);
-	fade(
-		[...geometry, ...legend, dot, one("pl-test"), one("side-tag")],
-		0,
-		20.35,
-	);
+	fade([...geometry, dot, one("pl-test"), one("side-tag")], 0, 20.35);
 	sideTo(4, 20.35);
 	show(kids("card"), 20.7);
 	show(refs[1], 20.7);
@@ -912,14 +927,14 @@ function build(context: FilmContext) {
 	quoteTo(STALE.bid ?? 0, STALE.ask ?? 0, 20.7);
 	dotTo(PRINT.price, 20.7);
 	light(SIDES[4], 20.7);
-	reveal([...geometry, ...legend, dot, one("side-conditional")], 20.7);
+	reveal([...geometry, dot, one("side-conditional")], 20.7);
 	reveal(one("pl-t2"), 20.7, 0.5);
 	// A later reference: fixed print, hidden quote update, then coherent reveal.
-	fade([refs[1], ...geometry, ...legend], 0, 23.1);
+	fade([refs[1], ...geometry], 0, 23.1);
 	sideTo(5, 23.1);
 	quoteTo(LATER.bid ?? 0, LATER.ask ?? 0, 23.45);
 	light(SIDES[5], 23.45);
-	reveal([...geometry, ...legend], 23.45);
+	reveal([...geometry], 23.45);
 	show(refs[2], 23.45);
 	// No quote at all: nothing to measure against.
 	fade([refs[2], ...geometry, ...legend, one("side-conditional")], 0, 25.35);
