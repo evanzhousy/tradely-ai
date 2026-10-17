@@ -188,8 +188,8 @@ const copy = {
 	qLabel: ["delta", "Delta"],
 	qTo: ["→ ?", "→ ?"],
 	qLine: [
-		`If ALFA rises $${MOVE}, does the call's delta stay put?`,
-		`ALFA 上涨 $${MOVE}，看涨的 Delta 会保持不变吗？`,
+		`ALFA +$${MOVE}: does the call's delta change?`,
+		`ALFA 涨 $${MOVE}，看涨 Delta 会不变吗？`,
 	],
 	deltaAxis: ["call delta", "看涨 Delta"],
 	gammaAxis: ["gamma per $1", "每 $1 的 Gamma"],
@@ -214,7 +214,6 @@ const copy = {
 	youCalls: [`${you} calls`, `${you} 张看涨`],
 	benCalls: [`−${Math.abs(ben)} calls`, `−${Math.abs(ben)} 张看涨`],
 	youExposure: ["You · share-equivalents", "你 · 等效股数"],
-	benExposure: ["Ben · share-equivalents", "Ben · 等效股数"],
 	colCalls: ["calls' delta", "看涨 Delta"],
 	colShares: ["shares held", "持有股票"],
 	colNet: ["net", "净额"],
@@ -238,8 +237,8 @@ const copy = {
 	sepShort: [`${SEP_DAYS} days`, `${SEP_DAYS} 天`],
 	claimBig: ["Gamma lives near the strike.", "Gamma 集中在行权价。"],
 	claimSub: [
-		"Sharper near expiry; weaker away from the strike.",
-		"越近到期越尖；远离行权价则减弱。",
+		"Sharper near expiry; weaker farther from strike.",
+		"临近到期更尖；远离行权价更弱。",
 	],
 	nextBig: ["Next: theta, vega and rho", "下一课：Theta、Vega 与 Rho"],
 	nextSub: [
@@ -325,10 +324,7 @@ function Scene({
 	const chipW = textWidth(`+$${MOVE}`, T.small) + 14;
 	const tableChipW = textWidth(t(copy.chip), T.body) + 20;
 	const deltaChange = `Δ ${fixed2(DELTA)} → ${fixed2(NEW_DELTA)}`;
-	const revisedRows = [
-		["you", you, hedgeAfter.options],
-		["ben", ben, benColumns[1].options],
-	] as const;
+	const revisedRows = [["you", you, hedgeAfter.options]] as const;
 	const cueWidth = Math.max(
 		...revisedRows.map(([, quantity, result]) =>
 			textWidth(
@@ -409,14 +405,6 @@ function Scene({
 								/>
 							</g>
 						))}
-						<line
-							data-f="d-tangent"
-							className="wt-film-tangent"
-							x1={mx}
-							y1={my}
-							x2={mx}
-							y2={my}
-						/>
 						<g data-f="d-step">
 							<line
 								data-f="d-step-line"
@@ -456,7 +444,6 @@ function Scene({
 							</text>
 						</g>
 						<g data-f="d-marker">
-							<circle data-f="d-ripple" r={6} className="wt-film-ripple" />
 							<circle
 								data-f="d-dot"
 								r={6}
@@ -653,7 +640,7 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
-			{/* Worked position deltas; the settled results become the table's first column. */}
+			{/* The learner's worked exposure; its result becomes the table's first cell. */}
 			{(
 				[
 					[
@@ -662,13 +649,6 @@ function Scene({
 						hedgeBefore.options,
 						copy.youExposure,
 						L.exposureRows.you,
-					],
-					[
-						"ben",
-						ben,
-						benColumns[0].options,
-						copy.benExposure,
-						L.exposureRows.ben,
 					],
 				] as const
 			).map(([who, quantity, result, label, y]) => {
@@ -990,7 +970,6 @@ function build(context: FilmContext) {
 	const my = L.yD(DELTA);
 	const marker = one("d-marker");
 	const value = one<SVGTextElement>("d-value");
-	const tangent = one<SVGLineElement>("d-tangent");
 	const chartDelta = one("chart-delta");
 	const chartGamma = one("chart-gamma");
 	const pushIn = cam(
@@ -998,17 +977,13 @@ function build(context: FilmContext) {
 		{ x: L.x(SPOT + 1), y: L.yD(DELTA + 0.04) },
 		{ x: W * 0.46, y: H * 0.54 },
 	);
-	const tangentAt = (spot: number) => DELTA + GAMMA * (spot - SPOT);
 
 	// Everything at rest: hidden until its shot needs it.
-	gsap.set(marker, { x: mx, y: my - 90, opacity: 0 });
-	gsap.set(one("d-dot"), { transformOrigin: "50% 100%" });
-	gsap.set(one("d-ripple"), { opacity: 0, attr: { r: 6 } });
+	gsap.set(marker, { x: mx, y: my, opacity: 0 });
 	gsap.set(one("d-step-line"), { attr: { x2: mx } });
 	gsap.set(chartGamma, { opacity: 0 });
 	d.hidden([
 		value,
-		tangent,
 		one("d-step"),
 		one("d-riser"),
 		one("g-sep"),
@@ -1022,9 +997,7 @@ function build(context: FilmContext) {
 		one<SVGGraphicsElement>("lock-hedge"),
 		...kids("hedge"),
 		one("h-revised-you-result"),
-		one("h-revised-ben-result"),
 		...kids("h-derive-you"),
-		...kids("h-derive-ben"),
 		...kids("h-holder-you"),
 		...kids("h-holder-ben"),
 		one("k-head"),
@@ -1048,28 +1021,15 @@ function build(context: FilmContext) {
 	// ——— curve: delta has a slope of its own ———
 	tl.addLabel("curve", 9.4);
 	hide([one("q-label"), one("q-to"), one("q-chip"), one("q-line")], 9.4);
-	// The question's numeral becomes the chart readout as the marker lands. The
-	// chart finishes rising before handoff, and the camera does not push in until 12.2.
+	// The question's numeral becomes the chart readout as the marker lands.
 	d.carry(one<SVGGraphicsElement>("q-value"), value, 9.4, {
 		duration: 1.55,
 		arc: "y",
 	});
 	rise(9.6);
-	tl.to(marker, { opacity: 1, duration: 0.3 }, 10.4);
-	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.4);
-	tl.fromTo(
-		one("d-dot"),
-		{ scale: 1.3 },
-		{ scale: 1, duration: 0.45, ease: "power3.out" },
-		10.95,
-	);
-	tl.fromTo(
-		one("d-ripple"),
-		{ opacity: 0.6, attr: { r: 6 } },
-		{ opacity: 0, attr: { r: 26 }, duration: 0.7, ease: "power2.out" },
-		11,
-	);
-	// The curve grows out of the marker: low and flat to the left, up toward 1 on the right.
+	// The axes settle, then stand alone for a second before the marker appears.
+	tl.to(marker, { opacity: 1, duration: 0.3 }, 11.4);
+	// The curve grows from the settled marker, low and flat left, then up toward 1.
 	tl.to(
 		one("clip-dl"),
 		{
@@ -1077,48 +1037,35 @@ function build(context: FilmContext) {
 			duration: 1.3,
 			ease: "power2.inOut",
 		},
-		11.2,
+		11.7,
 	);
 	tl.to(
 		one("clip-dr"),
 		{ attr: { width: L.right - mx + 4 }, duration: 1.3, ease: "power2.inOut" },
-		11.2,
+		11.7,
 	);
 	show(one("k-head"), 11.4, "above");
-	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.2);
+	// The camera has its own interval after the curve settles.
+	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 13.0);
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
 	const axisText = [
 		...(chartDelta.firstElementChild as Element).querySelectorAll("text"),
 	];
-	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.2);
-	tl.to(tangent, { opacity: 1, duration: 0.3 }, 13.1);
-	tl.to(
-		tangent,
-		{
-			attr: {
-				x1: L.x(X_RANGE[0]),
-				y1: L.yD(tangentAt(X_RANGE[0])),
-				x2: L.x(X_RANGE[1]),
-				y2: L.yD(tangentAt(X_RANGE[1])),
-			},
-			duration: 1.0,
-			ease: "power2.inOut",
-		},
-		13.1,
-	);
-	tl.to(one("d-step"), { opacity: 1, duration: 0.3 }, 14.2);
+	tl.to(axisText, { opacity: 0, duration: 0.3 }, 13.0);
+	// Both legs form one measured move, after the camera settles.
+	tl.to(one("d-step"), { opacity: 1, duration: 0.3 }, 14.3);
 	tl.to(
 		one("d-step-line"),
 		{ attr: { x2: L.x(SPOT + MOVE) }, duration: 0.5, ease: "power2.out" },
-		14.2,
+		14.3,
 	);
-	tl.to(one("d-riser"), { opacity: 1, duration: 0.3 }, 14.8);
+	tl.to(one("d-riser"), { opacity: 1, duration: 0.3 }, 14.3);
 	tl.to(
 		one("d-riser-line"),
 		{ attr: { y2: L.yD(NEW_DELTA) }, duration: 0.5, ease: "power3.out" },
-		14.8,
+		14.3,
 	);
-	// Then the marker climbs the curve to the top of the rise, its delta counting with it.
+	// Then the marker climbs the curve, with its readout driven from the same model value.
 	const slide = { spot: SPOT };
 	const place = () => {
 		const px = L.x(slide.spot);
@@ -1131,10 +1078,10 @@ function build(context: FilmContext) {
 	tl.to(
 		slide,
 		{ spot: SPOT + MOVE, duration: 1.1, ease: "power2.inOut", onUpdate: place },
-		15.3,
+		14.8,
 	);
 	// Cut: the slope gets its name, worked out: +0.08 over $2.
-	// The curve settles at 16.4, a second before the cut. Stagger the definition:
+	// The completed delta settles at 15.9, 1.5 s before the cut. Stagger the definition:
 	// the definition settles at 18.4, a second before the first application at 19.4.
 	hide(one("k-head"), 17.4);
 	sink(17.4);
@@ -1143,10 +1090,7 @@ function build(context: FilmContext) {
 	show(one("g-word"), 18.1, "below", 0.3);
 	// Fade the caption in place, clear of the worked label on both frames.
 	tl.fromTo(one("g-sub"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.1);
-	for (const [who, at] of [
-		["you", 19.4],
-		["ben", 19.7],
-	] as const) {
+	for (const [who, at] of [["you", 19.4]] as const) {
 		// Fade the worked rows in place, so neither label nor equation travels across text.
 		tl.fromTo(
 			[one(`h-derive-${who}-label`), one(`h-derive-${who}-calc`)],
@@ -1174,28 +1118,12 @@ function build(context: FilmContext) {
 	// Complete rows settle at 19.8/20.1 and hold 2.35/2.05 s before their lanes clear.
 	// Spend the spare worked-position hold on the baseline table's quiet second.
 	hide([...kids("g"), one("g-calc")], 22.15, 0.3, 0);
-	// Clear the calculation lanes before either result flies across, then upward.
-	hide(
-		[
-			one("h-derive-you-label"),
-			one("h-derive-you-calc"),
-			one("h-derive-ben-label"),
-			one("h-derive-ben-calc"),
-		],
-		22.15,
-		0.3,
-		0,
-	);
+	// Clear the learner's calculation before its result flies into the table.
+	hide([one("h-derive-you-label"), one("h-derive-you-calc")], 22.15, 0.3, 0);
 	d.carry(
 		one<SVGGraphicsElement>("h-derive-you-result"),
 		one<SVGGraphicsElement>("h-you-0"),
 		22.45,
-		{ duration: 0.75, arc: "x" },
-	);
-	d.carry(
-		one<SVGGraphicsElement>("h-derive-ben-result"),
-		one<SVGGraphicsElement>("h-ben-0"),
-		22.85,
 		{ duration: 0.75, arc: "x" },
 	);
 	show(one("h-head"), 22.35, "above");
@@ -1206,9 +1134,10 @@ function build(context: FilmContext) {
 	show(one("h-who-ben"), 23.5, "above");
 	land(one("h-ben-1"), 23.8);
 	land(one("h-ben-2"), 23.95);
+	land(one("h-ben-0"), 23.8);
 	// Ben's final baseline cell settles at 24.5; nothing new arrives until 25.5.
-	// ALFA rises $2, once, for both. The revised operands land first; equality and
-	// settled results appear together only after both table rows agree with them.
+	// ALFA rises $2, once, for both. The learner's revised expression appears only
+	// after the table's two updated rows agree with it.
 	show(one("h-chip"), 25.5);
 	tl.fromTo(
 		one("h-delta"),
@@ -1218,15 +1147,15 @@ function build(context: FilmContext) {
 	);
 	settleHedge("you", hedgeBefore, hedgeAfter, 26.6);
 	settleHedge("ben", benColumns[0], benColumns[1], 26.7);
-	// Both rows settle by 26.7. Only then may their settled equalities fade in,
-	// completing at the unchanged 27.0, a full second before the hero lock.
+	// Both table rows settle by 26.7. The learner's worked equality completes at
+	// the unchanged 27.0, a full second before the hero lock.
 	tl.fromTo(
-		[one("h-revised-you-result"), one("h-revised-ben-result")],
+		one("h-revised-you-result"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		26.7,
 	);
-	// Complete revised equations and exposures stand quietly for a second before the lock.
+	// The revised expression and exposures stand quietly for a second before the lock.
 	// The hero: your hedge's drift, locked once its row has settled; the rest steps back.
 	// The brackets are fitted now, so measure the figure with its settled text.
 	const youNet = one<SVGTextElement>("h-you-2");
