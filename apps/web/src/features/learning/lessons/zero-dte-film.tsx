@@ -517,7 +517,7 @@ function Scene({
 							x={L.barX(2)}
 							y={L.yO(0) - 10 - T.head * 1.2}
 							textAnchor="middle"
-							className="wt-small wt-loss"
+							className="wt-small"
 						>
 							{t(copy.expired)}
 						</text>
@@ -840,8 +840,10 @@ function build(context: FilmContext) {
 		gsap.set(marker, { attr: { cx: x, cy: L.yH(sep20(day.time).price) } });
 		gsap.set(clip, { attr: { width: x - L.left + 6 } });
 		clockText.textContent = clockFace(day.time);
-		priceText.textContent = share(sep20(day.time).price);
-		priceText.classList.toggle("wt-film-loss", day.time >= CLOSE);
+		const currentPrice = sep20(day.time).price;
+		priceText.textContent = share(currentPrice);
+		priceText.classList.toggle("wt-film-accent", currentPrice > 0);
+		priceText.classList.toggle("wt-film-dim", currentPrice === 0);
 	};
 	tl.to(
 		day,
@@ -990,39 +992,31 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.55 },
 		34.5,
 	);
-	const grow = (index: number, at: number) => {
+	const reveal = (index: number, at: number) => {
 		const bar = bars[index];
 		if (bar.value === null) return;
 		const rect = one(`o-bar-${bar.id}`);
 		const value = one<SVGTextElement>(`o-value-${bar.id}`);
-		const state = { value: 0 };
-		const draw = () => {
-			// One modeled count drives the bar and its readout, including while scrubbing.
-			const contracts = Math.round(state.value);
-			const y = L.yO(contracts);
-			rect.setAttribute("y", String(y));
-			rect.setAttribute("height", String(L.yO(0) - y));
-			value.setAttribute("y", String(y - 10));
-			value.textContent = count(contracts);
-		};
-		tl.fromTo(
-			state,
-			{ value: 0 },
+		const y = L.yO(bar.value);
+		tl.set(
+			rect,
 			{
-				value: bar.value,
-				duration: 0.7,
-				ease: "power2.out",
+				attr: { y, height: L.yO(0) - y },
+				opacity: 0,
 				immediateRender: false,
-				onUpdate: draw,
 			},
 			at,
 		);
-		tl.to(value, { opacity: 1, duration: 0.3 }, at);
+		tl.set(
+			value,
+			{ textContent: count(bar.value), immediateRender: false },
+			at,
+		);
+		tl.to([rect, value], { opacity: 1, duration: 0.7 }, at);
 	};
-	// The panel settles at 35.3, then has a full second of quiet before Thursday grows.
-	grow(0, 36.3);
-	// Thursday settles at 37.0; Friday starts after one second of quiet.
-	grow(1, 38.0);
+	// These exact amounts are for comparison, so reveal each settled value after a full rest.
+	reveal(0, 36.3);
+	reveal(1, 38.0);
 	// Friday settles at 38.7; keep the completed tableau for 2.3 seconds.
 	// Cut: the claim.
 	tl.addLabel("claim", 41.0);
