@@ -59,6 +59,22 @@ export function FilmStage({
 	const stage = useRef<HTMLDivElement>(null);
 	const svg = useRef<SVGSVGElement>(null);
 	const [width, setWidth] = useState<number | null>(null);
+	// Carries, locks and the title wipe measure real glyphs when the timeline is built. On a
+	// first visit the web fonts may arrive after that: build once more when they do.
+	const [fonts, setFonts] = useState(
+		() =>
+			typeof document === "undefined" || document.fonts?.status !== "loading",
+	);
+	useEffect(() => {
+		if (fonts || !document.fonts) return;
+		let live = true;
+		document.fonts.ready.then(() => {
+			if (live) setFonts(true);
+		});
+		return () => {
+			live = false;
+		};
+	}, [fonts]);
 	const latest = useRef(onTimeline);
 	useEffect(() => {
 		latest.current = onTimeline;
@@ -75,6 +91,7 @@ export function FilmStage({
 		observer.observe(element);
 		return () => observer.disconnect();
 	}, []);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `fonts` rebuilds the timeline once the web fonts are in; the player seeks back as after a resize.
 	useLayoutEffect(() => {
 		const stageElement = stage.current;
 		const svgElement = svg.current;
@@ -94,7 +111,7 @@ export function FilmStage({
 			latest.current(null);
 			context.revert();
 		};
-	}, [film, locale, width]);
+	}, [film, locale, width, fonts]);
 	const { Scene } = film;
 	const height = width === null ? 0 : film.height(width);
 	return (

@@ -173,7 +173,7 @@ At most seven beats (one headline each) and about 45 s played (`END` about 47). 
 | `TitleCard` | The opening name and subtitle |
 | `EndCard` | The closing next card and the call to the playground |
 | `PenTip` | A glowing pen tip for `trace`: a bright core in a wide, faint halo, in its line's colour (`color`, a `toneColor`). Put it in the same group as the line it leads. |
-| `Brackets` | Corner brackets around a box, for `lock`: in focus by default, or in the colour of a figure the shot reads by its sign or right (`tone` `"gain"`, `"loss"`, `"call"`, `"put"`, `"caution"`); `glow` for the hero's |
+| `Brackets` | Corner brackets around a box, for `lock`: in focus by default, or in the colour of a figure the shot reads by its sign or right (`tone` `"gain"`, `"loss"`, `"call"`, `"put"`, `"caution"`); `glow` for the hero's, in the brackets' own colour |
 
 ### Director moves: `createDirector(context, frame, end)`
 
@@ -185,7 +185,6 @@ At most seven beats (one headline each) and about 45 s played (`END` about 47). 
 | `hide(targets, at, duration?)` | Leave up and away |
 | `swap(from, to, at)` | Replace one line of type with the next, never both at once: the old one leaves upwards and the new one comes up from below, clear of the corner tag on a phone. Enter a shot's first headline with the default `show` too, not `"above"`. |
 | `pop(target, at)` | A chip lands with a little overshoot |
-| `slam(target, at)` | A headline number lands large and settles, the film's loudest move |
 | `flip(from, to, at)` | One value folds shut and the next opens; follow it with `tl.set(from, { opacity: 0 }, at + 0.3)` |
 | `count(target, to, at, format, from, duration)` | A figure counts from `from` to `to` |
 | `trace(path, at, { tip, duration, ease })` | A line draws itself from its start; with a `PenTip` the tip leads it and goes out at the end. Dashed lines get their dashes back. |
@@ -406,6 +405,7 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
 - **Two sets at one time on one mark fight.** A carry that reveals a waypoint at the moment the next carry hides it left the waypoint showing; pass `reveal: false` to the first leg.
 - **A class built by template needs its space, outside the expression.** `` `wt-film-num${tone}` `` gave `wt-film-numwt-film-loss`, and the best ask and bid lost their colour at landing. Writing the space inside the expression's string (`` `wt-a${on ? " wt-b" : ""}` ``) doesn't survive either: Biome's class sorter trims it on every save. Write `` `wt-a ${on ? "wt-b" : ""}` ``. The timing audit fails any class token with two `wt-` names in it.
 - **`hide()` once lifted every mark to −12 px.** Prints stepped down the tape all slid into the top row as they faded at the cut. It now fades a mark that already sits on an offset where it is.
+- **Glyphs measured before the fonts arrive.** Carries, locks fitted `around` marks and the title wipe measure real glyphs when the timeline is built, and on a learner's first, uncached visit Inter and JetBrains Mono can arrive after that, so a carry landed beside its text and brackets sat off their figure. The audits never saw it: their fonts are cached. `FilmStage` now builds the timeline once more when `document.fonts.ready` resolves after the first build, and the player seeks back as after a resize.
 - **Time bought with pops.** Fixes that needed time took it from entrances (0.15 s) and swaps (a set): reviews read them as pops and scored the film down. Simplify instead (section 6).
 - **Time taken from an accepted step.** An implementer shortened a payoff a review had marked fixed, three times, to pay for new work. Every package lists the intervals it shortens, and each is checked against the last review.
 - **A crossing the review saw and the scan didn't.** Bars, a gross track and finally a hairline zero axis were drawn across a fading hero; each cost a review score. The flight check now fails anything coming into the hero's brackets.
