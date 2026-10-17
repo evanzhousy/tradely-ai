@@ -14,9 +14,13 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
+	ALFA_AT,
+	AUTO_EXERCISE_THRESHOLD,
 	CALL_100,
 	CALL_100_DELIVERY,
+	EXPIRY_SCENARIOS,
 	exitValues,
+	expiryOutcome,
 	INDEX_LAST,
 	INDEX_SETTLES,
 	INDEX_STRIKE,
@@ -31,10 +35,10 @@ import {
  * intrinsic value and $0.40 of time value, and the "?" becomes exercise's $7.00; on Oct 18
  * the time value melts and the two are equal. Then settlement: ALFA delivers 100 shares for
  * $9,500; an index pays cash, $2,500 at the official 5,025, not Thursday's 5,030. Then the
- * window: American any trading day, European only at expiry. The hero: ALFA closes at
- * $100.02, two cents above the strike, and glowing brackets lock as the call is exercised
- * automatically, then the Monday account shows shares and strike cash due. Last, a writer:
- * $99.98 at the close, $100.60 after hours; holder exercise precedes Monday assignment.
+ * window: American any trading day, European only at expiry. The hero: a near-strike close
+ * leaves the call in the money, and glowing brackets lock as it is exercised automatically;
+ * the Monday account shows shares and strike cash due. Last, a writer:
+ * a close just below the strike, then an after-hours rise; holder exercise precedes Monday assignment.
  *
  *   open      0–4        "Expiration"
  *   question  4–8.8      Oct 4: sell at $7.40, or exercise?
@@ -42,7 +46,7 @@ import {
  *   settle    17.5–21.4  ALFA: 100 shares for $9,500
  *   cash      21.4–25.3  IDX 500: $2,500 at the official 5,025
  *   window    25.3–29.7  American trading days; European at expiry
- *   pin       29.7–35.05  $100.02 − $100.00 makes the bracketed $0.02
+ *   pin       29.7–35.05  the close minus strike makes a bracketed expiry value
  *   writer    35.05–40.6 settled close/after-hours pair, exercise, then Monday short shares
  *   claim     40.6–45.0 check exercise instructions and the broker's cutoff
  *   next      45.0–47.5 Next: the module checkpoint
@@ -52,9 +56,19 @@ const END = 47.5;
 const OCT4 = exitValues("oct4");
 const OCT18 = exitValues("oct18");
 const PAYS = indexPayout(INDEX_SETTLES);
-const HOLDER_CLOSE = 100.02;
-const WRITER_CLOSE = 99.98;
-const WRITER_AFTER = 100.6;
+const HOLDER_CLOSE = EXPIRY_SCENARIOS.holder.close;
+const WRITER_CLOSE = EXPIRY_SCENARIOS.writer.close;
+const WRITER_AFTER = EXPIRY_SCENARIOS.writer.after;
+const HOLDER_MONEYNESS_CENTS = Math.round(
+	(HOLDER_CLOSE - CALL_100.strike) * 100,
+);
+const HOLDER_OUTCOME = expiryOutcome({
+	role: "holder",
+	close: HOLDER_CLOSE,
+	after: null,
+	decline: false,
+	reveal: true,
+});
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -110,7 +124,7 @@ const copy = {
 	qLine: ["Which gets you more?", "哪个拿到的更多？"],
 	exitHead: ["Exercise gives up the time value.", "行权会放弃时间价值。"],
 	exitHeadShort: ["Exercise drops the time value.", "行权丢掉时间价值。"],
-	sameHead: ["On Oct 18, both are $7.00.", "10月18日，两者都是 $7.00。"],
+	sameHead: ["By Oct 18: both $7.00.", "10月18日：两者均为 $7.00。"],
 	intrinsic: ["intrinsic", "内在价值"],
 	time: ["time value", "时间价值"],
 	exitBasis: ["ALFA $102 · per share", "ALFA $102 · 每股"],
@@ -123,27 +137,21 @@ const copy = {
 	cash: ["$9,500", "$9,500"],
 	shares: ["100 ALFA", "100 股 ALFA"],
 	official: ["official settlement", "官方结算值"],
-	thursday: ["Thu close · ignored", "周四收盘 · 不算"],
+	thursday: ["Not Thu close", "不计周四收盘"],
 	payout: ["writer pays", "义务方支付"],
 	windowHead: [
-		"American: any session. European: at expiry.",
+		"American: any session; European: expiry.",
 		"美式：交易日；欧式：仅到期日。",
 	],
 	american: ["American", "美式"],
 	european: ["European", "欧式"],
 	pinHead: ["At expiry: a $100-strike call.", "到期：$100 行权价看涨。"],
-	autoHead: [
-		"Broker thresholds govern auto-exercise.",
-		"自动行权取决于券商门槛。",
-	],
+	autoHead: ["Broker threshold sets auto-exercise.", "券商门槛决定自动行权。"],
 	holderClose: ["holder · Oct 18 close", "持有人 · 10月18日收盘"],
 	writerClose: ["ALFA · close", "ALFA · 收盘"],
 	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
 	inTheMoney: ["in the money · per share", "实值 · 每股"],
-	defaultAction: [
-		"Threshold met; no action or opt-out.",
-		"达到门槛；未操作、未放弃行权。",
-	],
+	defaultAction: ["No action; threshold met.", "未操作；门槛已达。"],
 	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
 		"A writer can be assigned after hours.",
@@ -154,15 +162,12 @@ const copy = {
 	due: ["due", "应付"],
 	monday: ["Monday", "周一"],
 	mondayAccount: ["Monday account", "周一账户"],
-	mondayAssigned: ["Monday · assigned", "周一 · 被指派"],
+	mondayAssigned: ["Assigned Monday", "周一被指派"],
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
-	claimBig: [
-		"A tiny expiry value can create shares.",
-		"到期的几美分，也能变成股票。",
-	],
+	claimBig: ["A few cents can mean shares.", "几美分也能变成股票。"],
 	claimSub: [
-		"Check exercise instructions and your broker’s cutoff.",
-		"检查行权指示与券商截止时间。",
+		"Send exercise instructions before cutoff.",
+		"券商截止前确认行权指示。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["contracts and money, on a new day", "在新的一天里运用合约与金额"],
@@ -461,7 +466,10 @@ function Scene({
 										? `M${x0} ${flowY(k)}H${x1}`
 										: `M${x1} ${flowY(k)}H${x0}`
 								}
-								className="wt-film-riser"
+								fill="none"
+								stroke="var(--tone-ink)"
+								strokeWidth={2}
+								strokeLinecap="round"
 							/>
 							<path
 								d={
@@ -469,7 +477,11 @@ function Scene({
 										? `M${x1 - 8} ${flowY(k) - 5}L${x1} ${flowY(k)}L${x1 - 8} ${flowY(k) + 5}`
 										: `M${x0 + 8} ${flowY(k) - 5}L${x0} ${flowY(k)}L${x0 + 8} ${flowY(k) + 5}`
 								}
-								className="wt-film-riser"
+								fill="none"
+								stroke="var(--tone-ink)"
+								strokeWidth={2}
+								strokeLinecap="round"
+								strokeLinejoin="round"
 							/>
 							<text
 								x={(x0 + x1) / 2}
@@ -731,8 +743,9 @@ function Scene({
 			<Lines
 				name="pin-default"
 				text={t(copy.defaultAction)}
-				x={W / 2}
-				y={H * (narrow ? 0.74 : 0.82)}
+				// Under the holder's close it follows from; on a phone, below the hero.
+				x={narrow ? W / 2 : L.priceX}
+				y={narrow ? H * 0.74 : L.priceY + T.num * 1.05}
 				size={T.body}
 				maxWidth={room}
 				className="wt-film-type wt-film-dim"
@@ -748,20 +761,19 @@ function Scene({
 			</Word>
 			{/* The existing answer supplies exercise; this after-beat supplies the account. */}
 			<g data-f="pin-ex">
-				{narrow && (
-					<rect
-						x={margin}
-						y={H * 0.79}
-						width={room}
-						height={H * 0.18}
-						rx={12}
-						className="wt-panel-shape"
-					/>
-				)}
+				<rect
+					data-f="pin-ex-panel"
+					x={margin + room * (narrow ? 0 : 0.12)}
+					y={H * 0.79}
+					width={room * (narrow ? 1 : 0.76)}
+					height={H * 0.18}
+					rx={12}
+					className="wt-panel-shape"
+				/>
 				<Word
 					name="holder-shares"
-					x={margin + room * (narrow ? 0.25 : 0.2)}
-					y={H * (narrow ? 0.91 : 0.93)}
+					x={margin + room * (narrow ? 0.25 : 0.3)}
+					y={H * 0.91}
 					size={T.head * (narrow ? 1.15 : 1)}
 					className={`wt-film-num ${toneClass.focus}`}
 				>
@@ -770,16 +782,16 @@ function Scene({
 				<Word
 					name="holder-monday"
 					x={W / 2}
-					y={H * (narrow ? 0.83 : 0.93)}
+					y={H * 0.83}
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{t(narrow ? copy.mondayAccount : copy.monday)}
+					{t(copy.mondayAccount)}
 				</Word>
 				<Word
 					name="holder-due"
-					x={margin + room * (narrow ? 0.75 : 0.8)}
-					y={H * (narrow ? 0.91 : 0.93)}
+					x={margin + room * (narrow ? 0.75 : 0.7)}
+					y={H * 0.91}
 					size={T.head * (narrow ? 1.15 : 1)}
 					className="wt-film-num"
 				>
@@ -1032,15 +1044,16 @@ function build(context: FilmContext) {
 	show(heads[5], 30.05);
 	// A known close is compared exactly; no ruler or transient closing prices.
 	fade(one("pin-reference"), 30.05);
-	fade([one("pin-price"), one("holder-close"), one("pin-default")], 30.45);
+	// Build the comparison in order; each mark keeps the 0.3 s motion floor.
+	fade([one("pin-price"), one("holder-close"), one("pin-default")], 30.45, 0.3);
+	fade(one("pin-equation"), 30.55, 0.3);
+	fade([one("pin-value"), one("pin-unit")], 30.65, 0.3);
 	// The settled operands and result are revealed, never counted after an equals sign.
-	fade([one("pin-equation"), one("pin-unit")], 30.45);
-	fade(one("pin-value"), 30.45);
 	d.lock(g("lock-pin"), 30.95, { around: one("pin-value"), pad: 8 });
 	tl.addLabel("hero-lock", 30.95);
 	fade(heads[6], 30.95);
 	// Answer settles at 31.45 (lock at 31.4), then 1.5 s of undivided quiet.
-	fade(one("pin-ex"), 32.95);
+	fade(one("pin-ex"), 32.95, 0.3);
 
 	tl.addLabel("writer", 35.05);
 	d.swap([heads[5], heads[6]], heads[7], 35.05);
@@ -1068,8 +1081,8 @@ function build(context: FilmContext) {
 export const expirationSettlementFilm: Film = {
 	id: "expiration-settlement",
 	label: [
-		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at $102, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement in 100 ALFA shares for $9,500, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; and a call exercised automatically at $100.02 when the holder takes no action and has not declined exercise, creating ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due on Monday, beside a separate writer whose call is exercised after ALFA closed at $99.98 and traded to $100.60`,
-		`到期短片：10月4日 ALFA 为 $102，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：ALFA 以 $9,500 交收 100 股，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；以及 $100.02 时，持有人未操作且未指示放弃行权，于是默认自动行权，周一得到 ${count(CALL_100_DELIVERY.shares)} 股且应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}；另一位义务方面对收盘 $99.98、盘后涨到 $100.60，持有人选择行权而被指派`,
+		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement in ${count(CALL_100_DELIVERY.shares)} ALFA shares for ${usd(CALL_100_DELIVERY.cashCents, 0)}, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours`,
+		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：ALFA 以 ${usd(CALL_100_DELIVERY.cashCents, 0)} 交收 ${count(CALL_100_DELIVERY.shares)} 股，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，持有人行权后可能导致周一被指派`,
 	],
 	stage: "dark",
 	shots: [
