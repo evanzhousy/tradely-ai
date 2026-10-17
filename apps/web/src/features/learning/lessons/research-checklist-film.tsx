@@ -10,6 +10,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -352,11 +354,13 @@ function Scene({
 								width={L.rowW}
 								height={L.rowH}
 								rx={9}
-								className={forecast ? "wt-band-loss" : "wt-focus-shape"}
+								className={forecast ? undefined : "wt-focus-shape"}
 								style={
 									forecast
 										? {
-												stroke: "var(--diagram-loss)",
+												fill: toneColor("caution"),
+												fillOpacity: 0.14,
+												stroke: toneColor("caution"),
 												strokeWidth: 1.5,
 												strokeDasharray: "5 4",
 											}
@@ -367,7 +371,11 @@ function Scene({
 								data-f={`step-${row.id}`}
 								x={L.rowX + 14}
 								y={textY + offset}
-								className={`wt-film-type ${forecast ? "wt-film-loss" : ""}`}
+								className={
+									forecast
+										? `wt-film-type ${toneClass.caution}`
+										: "wt-film-type"
+								}
 								style={{ fontSize: L.rowText }}
 							>
 								{t(
@@ -384,7 +392,7 @@ function Scene({
 									x={narrow ? L.rowX + 14 : L.rowX + L.rowW - 14}
 									y={toolY + offset}
 									textAnchor={narrow ? "start" : "end"}
-									className="wt-film-type wt-film-loss"
+									className={`wt-film-type ${toneClass.caution}`}
 									style={{ fontSize: L.toolText }}
 								>
 									{t(copy.forecastNote)}
