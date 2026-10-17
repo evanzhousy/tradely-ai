@@ -20,7 +20,6 @@ import {
 	FRIEND,
 	MESSAGES,
 	PROPOSAL_INSERT,
-	RECIPE_STATUS,
 	type Step,
 	TEMPLATE,
 } from "./research-checklist-model";
@@ -44,9 +43,31 @@ import {
 const END = 47.05;
 // The film keeps creation conditions on stage across both pages, rather than
 // asking the viewer to read them again inside the insertion proposal.
-const FILM_MESSAGES = MESSAGES.map((message) =>
-	message.id === "proposal" ? { ...message, text: PROPOSAL_INSERT } : message,
-);
+const FILM_MESSAGES = MESSAGES.map((message) => {
+	if (message.id === "ask")
+		return {
+			...message,
+			text: [
+				"Adapt this checklist for ALFA's Oct 3 earnings.",
+				"为 ALFA 10月3日财报调整清单。",
+			] as const satisfies Copy,
+		};
+	if (message.id === "clarify")
+		return {
+			...message,
+			text: [
+				"Pre-earnings pricing or call positioning?",
+				"聚焦财报前的波动定价，还是看涨持仓？",
+			] as const satisfies Copy,
+		};
+	return message.id === "proposal"
+		? { ...message, text: PROPOSAL_INSERT }
+		: message;
+});
+const FILM_RECIPE_STATUS: Copy = [
+	"Not saved; members need Recipe access and must confirm.",
+	"未保存；会员需 Recipe 权限并由你确认后创建。",
+];
 const FORECAST = FRIEND[FRIEND.length - 1];
 const ROWS: readonly Step[] = [...TEMPLATE, EARNINGS, FORECAST];
 const SLOTS = 5;
@@ -56,14 +77,20 @@ const at = (steps: readonly Step[], id: string) =>
 // therefore return to zero translation before the notes hand-over.
 const baseSlot = (id: string) =>
 	id === EARNINGS.id || id === "flow" ? at(EDITED, id) : 0;
-/** Each step as a phone's row can hold it. */
+/** Concise row copy, kept the same as checklist rows move into notes. */
 const shortText: Record<string, Copy> = {
-	vol: ["IV vs realized volatility", "隐含波动率与已实现波动率"],
+	vol: ["ALFA IV vs realized volatility", "ALFA 隐含与已实现波动率"],
 	gex: ["GEX / OI structure", "GEX / OI 结构"],
-	trade: ["The call's spread, liquidity, OI", "看涨的价差、流动性、未平仓量"],
+	trade: [
+		"Call spread, liquidity, open interest",
+		"看涨价差、流动性、未平仓量",
+	],
 	flow: ["Recent call flow", "近期看涨成交流"],
 	earnings: ["Earnings Oct 3, before expiry", "10月3日财报，在到期前"],
-	forecast: ["Confirm ALFA stays below $105", "确认 ALFA 一直低于 $105"],
+	forecast: [
+		"ALFA below $105 through Oct 18",
+		"ALFA 在10月18日前一直低于 $105",
+	],
 };
 
 function layout(width: number) {
@@ -105,8 +132,8 @@ const copy = {
 		"卖出看涨前，应该检查什么？",
 	],
 	qLine: [
-		"A friend lists three steps. One doesn't belong.",
-		"朋友列了三步，其中一步不该在清单上。",
+		"A friend's 3-step list: one doesn't belong.",
+		"朋友的三步清单：有一步不该入列。",
 	],
 	friendHead: [
 		"A friend's checklist for selling an ALFA call.",
@@ -147,13 +174,10 @@ const copy = {
 	proposeHeadShort: ["A proposal; nothing saved.", "提出建议；未保存。"],
 	meter: ["AI replies", "AI 回复"],
 	you: ["You", "你"],
-	claimBig: [
-		"A checklist inspects; it doesn't forecast.",
-		"清单是核查，不是预测。",
-	],
+	claimBig: ["Checklists verify; they don't predict.", "清单核查，不做预测。"],
 	claimSub: [
-		"Each step opens today's evidence; test AI proposals too.",
-		"每一步都打开今天的证据；AI 建议也照此检验。",
+		"Today's evidence: check steps and AI ideas.",
+		"用今天的证据核查每一步和 AI 建议。",
 	],
 	nextBig: [
 		"Next: ask TradingFlow AI, then verify",
@@ -381,9 +405,7 @@ function Scene({
 								{t(
 									row.id === EARNINGS.id
 										? copy.noteEarnings
-										: narrow
-											? shortText[row.id]
-											: row.text,
+										: shortText[row.id],
 								)}
 							</text>
 							{forecast ? (
@@ -428,13 +450,7 @@ function Scene({
 					<Lines
 						key={`note-${step.id}`}
 						name={`note-${step.id}`}
-						text={t(
-							k === 0
-								? copy.noteEarnings
-								: narrow
-									? shortText[step.id]
-									: step.text,
-						)}
+						text={t(k === 0 ? copy.noteEarnings : shortText[step.id])}
 						x={L.noteX}
 						y={L.noteY(k)}
 						size={L.noteSize}
@@ -566,7 +582,7 @@ function Scene({
 			</g>
 			<Lines
 				name="ai-status"
-				text={t(RECIPE_STATUS)}
+				text={t(FILM_RECIPE_STATUS)}
 				x={margin}
 				y={statusY}
 				size={T.body}
