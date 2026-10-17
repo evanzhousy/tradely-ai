@@ -11,6 +11,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -305,7 +306,7 @@ function Scene({
 							x={L.left - 6}
 							y={L.middle - 8}
 							textAnchor="end"
-							className="wt-small wt-gain"
+							className={`wt-small ${toneClass.call}`}
 						>
 							{t(copy.calls)}
 						</text>
@@ -313,7 +314,7 @@ function Scene({
 							x={L.left - 6}
 							y={L.middle + 16}
 							textAnchor="end"
-							className="wt-small wt-loss"
+							className={`wt-small ${toneClass.put}`}
 						>
 							{t(copy.puts)}
 						</text>
@@ -335,7 +336,7 @@ function Scene({
 									key={`${strike}-${side}`}
 									data-f={`bar-${strike}-${side}`}
 									className="wt-film-bar"
-									data-tone={side === "call" ? "gain" : "loss"}
+									data-tone={side}
 									x={L.barX(i) - L.barWidth / 2}
 									y={L.middle}
 									width={L.barWidth}
@@ -400,12 +401,12 @@ function Scene({
 						<g clipPath={`url(#pay-${id})`}>
 							<path
 								data-f="pay-put"
-								className="wt-line-short"
+								className="wt-line-put"
 								d={L.payPath("put")}
 							/>
 							<path
 								data-f="pay-call"
-								className="wt-line-long"
+								className="wt-line-call"
 								d={L.payPath("call")}
 							/>
 							<path
@@ -418,8 +419,7 @@ function Scene({
 							data-f="pay-put-label"
 							x={L.px(PAY_X[0]) + 10}
 							y={L.py(payout(PAY_X[0], "put")) + 4}
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-small wt-halo ${toneClass.put}`}
 						>
 							{t(copy.paidPuts)}
 						</text>
@@ -428,8 +428,7 @@ function Scene({
 							x={L.px(PAY_X[1]) - 10}
 							y={L.py(payout(PAY_X[1], "call")) + 4}
 							textAnchor="end"
-							className="wt-small wt-halo"
-							style={{ fill: "var(--wt-long)" }}
+							className={`wt-small wt-halo ${toneClass.call}`}
 						>
 							{t(copy.paidCalls)}
 						</text>
