@@ -11,7 +11,10 @@ import {
 	Lines,
 	lineCount,
 	PenTip,
+	signTone,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -292,13 +295,15 @@ function Scene({
 							data-f="c-later"
 							d={L.decayPath(DAYS_GONE, START_IV)}
 							className="wt-line-position"
+							strokeDasharray="5 4"
 						/>
 						{/* A value under a changed assumption: the caution colour, not a short leg. */}
 						<path
 							data-f="c-crush"
 							d={L.decayPath(DAYS_GONE, 25)}
 							className="wt-line-position"
-							style={{ stroke: "var(--diagram-unknown)" }}
+							style={{ stroke: toneColor("caution") }}
+							strokeDasharray="5 4"
 						/>
 						<text
 							data-f="l-today"
@@ -323,8 +328,7 @@ function Scene({
 							// A legend in the plot's empty top-left: the curves are low there.
 							x={L.left + 8}
 							y={L.top + T.small * (1.3 + 2 * 1.45)}
-							className="wt-small wt-halo"
-							style={{ fill: "var(--diagram-unknown)" }}
+							className={`wt-small wt-halo ${toneClass.caution}`}
 						>
 							{t(narrow ? copy.lowIvShort : copy.lowIv)}
 						</text>
@@ -333,13 +337,13 @@ function Scene({
 							cx={L.dx(100)}
 							cy={L.dy(START)}
 							r={6}
-							className="wt-chip"
+							className="wt-chip wt-film-dim"
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
 					</g>
-					<PenTip name="tip" />
-					<PenTip name="tip-short" color="var(--wt-short)" />
+					<PenTip name="tip" tone="dim" />
+					<PenTip name="tip-short" color="var(--tone-ink)" />
 
 					{/* Each side at expiry. */}
 					<g data-f="tail">
@@ -388,7 +392,8 @@ function Scene({
 						<path
 							data-f="writer-line"
 							d={L.tailPath("writer")}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
 						/>
 						<path
 							data-f="buyer-line"
@@ -400,7 +405,7 @@ function Scene({
 							x={L.tx(84)}
 							y={L.ty(atExpiry("writer", 84)) - 10}
 							className="wt-halo wt-marker-label"
-							style={{ fill: "var(--wt-short)" }}
+							style={{ fill: "var(--tone-ink)" }}
 						>
 							{t(copy.writer)}
 						</text>
@@ -418,8 +423,7 @@ function Scene({
 							cx={L.tx(FAR)}
 							cy={L.ty(atExpiry("writer", FAR))}
 							r={6}
-							className="wt-chip"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-chip ${toneClass.down}`}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -444,7 +448,7 @@ function Scene({
 							cy={L.ty(atExpiry("writer", 100))}
 							r={6}
 							className="wt-chip"
-							style={{ fill: "var(--wt-short)" }}
+							style={{ fill: "var(--tone-ink)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -457,7 +461,7 @@ function Scene({
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
-						<Brackets name="lock-far" tone="short" />
+						<Brackets name="lock-far" tone="loss" />
 					</g>
 				</g>
 			</g>
@@ -544,7 +548,7 @@ function Scene({
 			>
 				{signedUsd(atExpiry("buyer", 80) * 100, 0)}
 			</Word>
-			<Brackets name="lock-floor" glow />
+			<Brackets name="lock-floor" tone="loss" glow />
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
 			<g data-f="q">
@@ -562,7 +566,7 @@ function Scene({
 						[
 							"q-alfa",
 							copy.alfa,
-							signedUsd((UP - 100) * 100, 0),
+							`▲${usd((UP - 100) * 100, 0)}`,
 							"wt-film-gain",
 						],
 						["q-call", copy.call, signedUsd(LOSS_AFTER, 0), "wt-film-loss"],
@@ -708,7 +712,7 @@ function Scene({
 									? Math.max(T.num, T.big * 0.55)
 									: T.big * 0.7
 							}
-							className="wt-film-num wt-film-loss"
+							className="wt-film-num"
 						>
 							<tspan style={{ fontSize: T.body }}>= </tspan>
 							{usd(facts.loss)}
@@ -848,8 +852,10 @@ function build(context: FilmContext) {
 	const dollars = (cents: number) => Math.round(cents / 100);
 	const perContract = (cents: number) =>
 		dollars(cents) === 0 ? "$0" : signedUsd(dollars(cents) * 100, 0);
-	const tone = (cents: number) =>
-		`wt-film-num ${dollars(cents) > 0 ? "wt-film-gain" : dollars(cents) < 0 ? "wt-film-loss" : ""}`;
+	const tone = (cents: number) => {
+		const sign = signTone(dollars(cents));
+		return `wt-film-num ${sign ? toneClass[sign] : "wt-film-dim"}`;
+	};
 	/**
 	 * A tween that walks a value from `from` to `to` and draws everything from it each frame.
 	 * Not rendered up front, so nothing reads the walk's end before it begins.
@@ -970,19 +976,27 @@ function build(context: FilmContext) {
 	show(kids("meter"), 11.2);
 	// 20 days later: the marker rides to $102 on the worn curve.
 	d.swap(heads[0], heads[1], 12.55);
+	// The pen switches role with an attribute set, which a backward seek restores exactly.
+	const penTo = (tone: string, at: number) =>
+		tl.set(tip, { attr: { "data-pen": tone } }, at);
+	penTo("focus", 12.95);
 	d.trace(one<SVGPathElement>("c-later"), 12.95, { tip, duration: 1.0 });
 	show(one("l-later"), 13.75);
+	tl.set(marker, { attr: { class: `wt-chip ${toneClass.focus}` } }, 13.95);
 	walk(
 		0,
 		1,
 		13.95,
 		1.2,
 		decayMove({ spot: 100, v: START }, { spot: UP, v: AFTER }),
+		"none",
 	);
 	// IV falls after earnings.
 	d.swap(heads[1], heads[2], 16.5);
+	penTo("caution", 16.9);
 	d.trace(one<SVGPathElement>("c-crush"), 16.9, { tip, duration: 1.0 });
 	show(one("l-crush"), 17.7);
+	tl.set(marker, { attr: { class: `wt-chip ${toneClass.caution}` } }, 17.9);
 	walk(
 		0,
 		1,
@@ -1030,6 +1044,7 @@ function build(context: FilmContext) {
 		{ opacity: 0.25, duration: 0.3 },
 		26.05,
 	);
+	penTo("focus", 26.45);
 	d.trace(one<SVGPathElement>("buyer-line"), 26.45, { tip, duration: 1.0 });
 	show(one("buyer-tag"), 27.25);
 	show(one("s-buyer-cell"), 27.45);
