@@ -18,6 +18,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -80,13 +81,6 @@ const lines = {
 	flat: () => REALIZED,
 };
 const Y = [-2200, 2200] as const;
-const tone = (flow: Flow) =>
-	flow === "bullish"
-		? "wt-film-gain"
-		: flow === "bearish"
-			? "wt-film-loss"
-			: "wt-film-dim";
-
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
@@ -350,13 +344,18 @@ function Scene({
 								width={L.cellW}
 								height={L.cellH}
 								rx={12}
-								className="wt-focus-shape"
+								className={
+									right === "put" && action === "buy"
+										? "wt-focus-shape"
+										: "wt-panel-shape"
+								}
+								style={{ strokeWidth: 1.5 }}
 							/>
 							<text
 								x={x}
 								y={y + L.cellH * 0.42}
 								textAnchor="middle"
-								className={`wt-film-type ${tone(flow)}`}
+								className={`wt-film-type ${right === "put" && action === "buy" ? toneClass.focus : ""}`}
 								style={{ fontSize: narrow ? T.body * 1.15 : T.head * 1.2 }}
 							>
 								{t(copy[flow])}
@@ -436,7 +435,7 @@ function Scene({
 							x={margin + room}
 							y={L.rowY(i)}
 							textAnchor="end"
-							className={`wt-film-type ${tone(flow)}`}
+							className={`wt-film-type ${flow === "neutral" ? "wt-film-dim" : ""}`}
 							style={{ fontSize: text }}
 						>
 							{`${t(copy[flow])} ${trade.quantity}`}
@@ -458,19 +457,13 @@ function Scene({
 							height={L.barH}
 							rx={4}
 							className="wt-film-bar"
-							data-tone={
-								flow === "bullish"
-									? "gain"
-									: flow === "bearish"
-										? "loss"
-										: "neutral"
-							}
+							data-tone="neutral"
 						/>
 						<text
 							x={x + w / 2}
 							y={L.barY + L.barH + T.small * 1.6}
 							textAnchor="middle"
-							className={`wt-film-type ${tone(flow)}`}
+							className={`wt-film-type ${flow === "neutral" ? "wt-film-dim" : ""}`}
 							style={{ fontSize: T.small * 1.1 }}
 						>
 							{`${t(copy[flow])} ${TOTALS[i]}`}
@@ -486,7 +479,7 @@ function Scene({
 				size={text}
 				maxWidth={room}
 				anchor="start"
-				className="wt-film-type wt-film-dim"
+				className={`wt-film-type wt-film-dim ${toneClass.caution}`}
 			/>
 			<Word
 				name="ledger-tag"
@@ -507,7 +500,7 @@ function Scene({
 					size={text}
 					maxWidth={room}
 					anchor="start"
-					className="wt-film-type wt-film-loss"
+					className="wt-film-type"
 				/>
 			) : null}
 
@@ -602,9 +595,12 @@ function Scene({
 							y={L.floorCaptionY}
 							size={T.small * 1.1}
 							anchor="start"
-							className="wt-film-num wt-film-loss"
+							className="wt-film-num"
 						>
-							{t(copy.floor)}
+							{`${t(copy.floor).split(" = ")[0]} = `}
+							<tspan className={toneClass.down}>
+								{signedUsd(STOCK_LOSS * 100, 0)}
+							</tspan>
 						</Word>
 						<g data-f="floor">
 							<path
@@ -618,7 +614,7 @@ function Scene({
 								y={L.floorY}
 								size={T.body}
 								anchor="end"
-								className="wt-film-num wt-film-loss"
+								className="wt-film-num"
 							>
 								{`${signedUsd(STOCK_LOSS * 100, 0)} − ${usd(PUT_ASK * 100, 0)} =`}
 							</Word>
@@ -684,7 +680,7 @@ function Scene({
 					x={margin + room - (narrow ? 75 : 100)}
 					y={L.top - (narrow ? 44 : 40) + (narrow ? 16 : 19)}
 					textAnchor="middle"
-					className="wt-film-type wt-film-loss"
+					className="wt-film-type"
 					style={{ fontSize: T.small * 1.1 }}
 				>
 					{t(copy.feed)}
@@ -838,6 +834,8 @@ function build(context: FilmContext) {
 	show(ledger[1], 20.3);
 	show(ledger[2], 20.7);
 	show(heads[3], 20.7);
+	// The headline names the bearish 4: their segment takes the focus, by a set.
+	tl.set(one("bar-bearish"), { attr: { "data-tone": "total" } }, 20.7);
 
 	// ——— hedge: the same put, beside stock, protects a floor. ———
 	tl.addLabel("hedge", 24.7);
