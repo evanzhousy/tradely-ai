@@ -1,7 +1,24 @@
 /* Walkthrough player: predict, watch, explore. The stage and its result share the first screen. */
 .walkthrough {
+	/* Retired with the side colours (sides are placed and named); kept until no playground mark uses them. */
 	--wt-long: #0f766e;
 	--wt-short: #b23c0a;
+	/* The films' colour roles on the page, so a colour means the same in the film and its playground.
+	   Each reads at 4.5:1 or better on the light surfaces (--muted the darkest); dark takes the stage's. */
+	--tone-focus: #6d28d9;
+	--tone-up: #147535;
+	--tone-down: #be123c;
+	--tone-call: #0369a1;
+	--tone-put: #b04e00;
+	--tone-caution: #6f5a00;
+	--tone-ink: var(--foreground);
+	--tone-dim: var(--muted-foreground);
+	/* One focus colour on every playground, whatever the lesson page's palette. */
+	--diagram-accent: var(--tone-focus);
+	--diagram-model: var(--tone-focus);
+	--diagram-gain: var(--tone-up);
+	--diagram-loss: var(--tone-down);
+	--diagram-unknown: var(--tone-caution);
 	/* Layout follows the walkthrough's own width, not the window's: the lesson column caps it. */
 	container: walkthrough / inline-size;
 	display: flex;
@@ -12,6 +29,12 @@
 .dark .walkthrough {
 	--wt-long: #2dd4bf;
 	--wt-short: #fb923c;
+	--tone-focus: #a78bfa;
+	--tone-up: #4ade80;
+	--tone-down: #fb7185;
+	--tone-call: #7dd3fc;
+	--tone-put: #f48206;
+	--tone-caution: #fbbf24;
 }
 .wt-head {
 	display: flex;
@@ -757,6 +780,19 @@
 .wt-short-soft {
 	fill: color-mix(in oklab, var(--wt-short) 35%, transparent);
 }
+/* Calls and puts, only where a view compares the two (runbook section 5). */
+.wt-call {
+	fill: var(--tone-call);
+}
+.wt-put {
+	fill: var(--tone-put);
+}
+.wt-call-soft {
+	fill: color-mix(in oklab, var(--tone-call) 35%, transparent);
+}
+.wt-put-soft {
+	fill: color-mix(in oklab, var(--tone-put) 35%, transparent);
+}
 .wt-ghost {
 	fill: none;
 	stroke: var(--muted-foreground);
@@ -922,11 +958,13 @@
 	stroke-linecap: round;
 	stroke-linejoin: round;
 }
+/* Cash and shares changing hands are not a gain or a side: ink, the shares dashed. */
 .wt-arrow-cash {
-	stroke: var(--diagram-gain);
+	stroke: var(--foreground);
 }
 .wt-arrow-shares {
-	stroke: var(--wt-long);
+	stroke: var(--foreground);
+	stroke-dasharray: 6 4;
 }
 .wt-arrow-contract {
 	stroke: var(--diagram-accent);
@@ -1042,13 +1080,14 @@
 	width: 0.8rem;
 	height: 0.8rem;
 }
+/* A check: right is up with its tick, wrong is down with its cross. */
 .wt-review-list li[data-status="right"] .wt-review-status {
-	background: color-mix(in oklab, var(--wt-long) 18%, transparent);
-	color: var(--wt-long);
+	background: color-mix(in oklab, var(--tone-up) 18%, transparent);
+	color: var(--tone-up);
 }
 .wt-review-list li[data-status="wrong"] .wt-review-status {
-	background: color-mix(in oklab, var(--wt-short) 18%, transparent);
-	color: var(--wt-short);
+	background: color-mix(in oklab, var(--tone-down) 18%, transparent);
+	color: var(--tone-down);
 }
 .wt-review-list li[data-status="skipped"] .wt-review-status {
 	background: var(--muted);
