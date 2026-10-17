@@ -128,8 +128,8 @@ const copy = {
 	qTagOpen: ["Fri Sep 20, 9:30", "9月20日 周五 9:30"],
 	qTagClose: ["4:00 pm close", "下午 4:00 收盘"],
 	qLine: [
-		"ALFA holds $100. 100 call at expiry?",
-		"ALFA 始终在$100。9月20日$100行权价看涨期权到期值多少？",
+		"ALFA stays at $100. What's its $100 call worth at close?",
+		"ALFA仍$100；$100看涨期权到期值多少？",
 	],
 	hoursHead: [
 		"Every hour costs more than the last.",
@@ -689,7 +689,7 @@ function Scene({
 					x={W / 2}
 					y={mathY}
 					size={T.head}
-					className="wt-film-num wt-film-dim"
+					className="wt-film-num"
 				>
 					{`×${SHARES_PER_CALL} ${t(copy.sharesPerCall)} ×${count(HEDGE_CONTRACTS)} ${t(copy.calls)}`}
 				</Word>
