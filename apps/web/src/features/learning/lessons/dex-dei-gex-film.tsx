@@ -147,7 +147,10 @@ const copy = {
 		"Weight each print by delta and contracts.",
 		"每笔按 Delta 和张数加权。",
 	],
-	tapeHeadShort: ["Delta × contracts × 100.", "Delta × 张数 × 100。"],
+	tapeHeadShort: [
+		"Weight by delta and contracts.",
+		"每笔按 Delta 和张数加权。",
+	],
 	signHead: [
 		"Sign by side: ask right, bid left.",
 		"按方向赋号：卖价向右，买价向左。",
