@@ -20,6 +20,15 @@ export const CALL_100_DELIVERY = {
 	shares: ALFA.multiplier,
 	cashCents: Math.round(CALL_100.strike * 100) * ALFA.multiplier,
 };
+/** Fixed reference prices for the lesson's expiration examples, in dollars. */
+export const EXPIRY_SCENARIOS = {
+	holder: { close: CALL_100.strike + 0.02 },
+	writer: {
+		close: CALL_100.strike - 0.02,
+		after: CALL_100.strike + 0.6,
+	},
+} as const;
+export const AUTO_EXERCISE_THRESHOLD = 0.01;
 /** ALFA's price in the close-or-exercise and settlement scenes, in cents. */
 export const ALFA_AT = 10_200;
 export const INDEX = instruments.index;
@@ -82,7 +91,8 @@ export function expiryOutcome(state: ExpiryState) {
 	const finalPrice = state.after ?? state.close;
 	const exercised =
 		state.role === "holder"
-			? state.close >= CALL_100.strike + 0.01 && !state.decline
+			? state.close >= CALL_100.strike + AUTO_EXERCISE_THRESHOLD &&
+				!state.decline
 			: state.after !== null && finalPrice > CALL_100.strike;
 	const known =
 		state.reveal && (state.role === "holder" || state.after !== null);

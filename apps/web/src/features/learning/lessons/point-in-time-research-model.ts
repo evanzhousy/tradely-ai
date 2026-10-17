@@ -1,5 +1,6 @@
 import {
 	type Copy,
+	mondayActivity,
 	oct105CallBlock,
 	oct105CallMessages,
 	usd,
@@ -82,8 +83,13 @@ export const history: readonly { from: number; days: number }[] = [
 	{ from: 4.5, days: 2 },
 ];
 export const BUCKET = 0.5;
-/** Monday: 505 contracts against a typical 120. */
-export const TODAY = 4.2;
+const today105 = mondayActivity.find((activity) => activity.id === "oct18-105");
+if (!today105) throw new Error("Missing Monday's Oct 18 105 call activity");
+export const TODAY_LABEL = today105.label;
+export const TODAY_VOLUME = today105.volume;
+export const TYPICAL_VOLUME = today105.typical;
+/** Monday's Oct 18 105 call volume against its 20-day typical level. */
+export const TODAY = Number((TODAY_VOLUME / TYPICAL_VOLUME).toFixed(1));
 export const SESSIONS = history.reduce((sum, bucket) => sum + bucket.days, 0);
 export const LOWER = history
 	.filter((bucket) => bucket.from + BUCKET <= TODAY)
