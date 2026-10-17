@@ -27,10 +27,10 @@ import {
 
 /*
  * Rankings, as a film. Which of ALFA's peers is most unusual today? Two columns answer
- * with lines between them: by contracts CRUX leads; against each name's own normal DUNE
- * leads and CRUX falls to last, and GLYN sits under the floor. The hero is a ranking by
- * size of open-interest change, which puts CRUX's −900 first; signed, it is last, and
- * glowing brackets lock on it. Last, ALFA rises from #2 to #1 on the same 2,400
+ * with lines between them: by contracts CRUX leads; against each name's own normal, DUNE
+ * leads and CRUX is last among qualified names, while GLYN sits under the floor. The hero
+ * is a ranking by size of open-interest change, which puts CRUX's −900 first; signed, it is
+ * last, and glowing brackets lock on it. Last, ALFA rises from #2 to #1 on the same 2,400
  * contracts, because CRUX fell.
  *
  *   open      0–4        "Rankings"
@@ -43,7 +43,13 @@ import {
  */
 
 const END = 47.5;
-type Entry = { name: string; value: string; dim?: boolean; tone?: string };
+type Entry = {
+	name: string;
+	value: string;
+	rankLabel?: string;
+	dim?: boolean;
+	tone?: string;
+};
 type Board = { title: Copy; entries: Entry[] };
 
 const rel = (name: string) => volumeOf(name) / typical[name];
@@ -55,13 +61,25 @@ const RAW: Board = {
 		dim: volumeOf(name) < FLOOR,
 	})),
 };
+const qualifiedRelativeNames = byDesc(
+	PEERS.filter((name) => volumeOf(name) >= FLOOR),
+	rel,
+);
+const belowFloorRelativeNames = PEERS.filter((name) => volumeOf(name) < FLOOR);
 const RELATIVE: Board = {
 	title: ["vs 20-day avg", "对比20日均量"],
-	entries: byDesc([...PEERS], rel).map((name) => ({
-		name,
-		value: ratio(rel(name)),
-		dim: volumeOf(name) < FLOOR,
-	})),
+	entries: [
+		...qualifiedRelativeNames.map((name) => ({
+			name,
+			value: ratio(rel(name)),
+		})),
+		...belowFloorRelativeNames.map((name) => ({
+			name,
+			value: ratio(rel(name)),
+			rankLabel: "N/R",
+			dim: true,
+		})),
+	],
 };
 const NAMES = Object.keys(oiChange);
 const SIZE: Board = {
@@ -124,8 +142,8 @@ const copy = {
 	qBig: ["Rank them.", "排个名。"],
 	mHead: ["Contracts, or multiples of normal?", "按张数，还是常态的倍数？"],
 	m2Head: [
-		`Against normal: ${RELATIVE.entries[0].name} first, ${RAW.entries[0].name} last.`,
-		`对比常态：${RELATIVE.entries[0].name} 第一，${RAW.entries[0].name} 最后。`,
+		`Among qualified names: ${qualifiedRelativeNames[0]} first, ${qualifiedRelativeNames[qualifiedRelativeNames.length - 1]} last.`,
+		`合格标的中：${qualifiedRelativeNames[0]} 第一，${qualifiedRelativeNames[qualifiedRelativeNames.length - 1]} 最后。`,
 	],
 	sHead: ["Magnitude, or signed OI change?", "按变化大小，还是带符号？"],
 	s2Head: ["Signed: CRUX’s fall puts it last.", "带符号：CRUX 的减少排最后。"],
@@ -136,15 +154,9 @@ const copy = {
 	d2Head: ["Tuesday: #1, without trading more.", "周二：第一，成交量没变。"],
 	under: [`under ${count(FLOOR)}`, `低于 ${count(FLOOR)}`],
 	normal: ["Today ÷ 20-day average", "今日张数 ÷ 20日均量"],
-	note: [
-		"#1 of three by contracts · CRUX traded fewer",
-		"三个中按张数第一 · CRUX 成交张数减少",
-	],
+	note: ["CRUX traded fewer contracts.", "CRUX 成交张数更少。"],
 	claimBig: ["A rank is an order, not a forecast.", "排名是顺序，不是预测。"],
-	claimSub: [
-		"Say what it ranks by, and which way.",
-		"说清按什么排，以及朝哪个方向。",
-	],
+	claimSub: ["Say its basis and direction.", "说明排名依据和方向。"],
 	nextBig: ["Next: contract neighborhoods", "下一课：合约邻域"],
 	nextSub: ["strikes and expiries in context", "结合行权价与到期日来看"],
 } as const satisfies Record<string, Copy>;
@@ -227,7 +239,7 @@ function Scene({
 								className="wt-film-num wt-film-dim"
 								style={{ fontSize: narrow ? 13 : text * 0.9 }}
 							>
-								{`#${i + 1}`}
+								{entry.rankLabel ?? `#${i + 1}`}
 							</text>
 							<text
 								x={L.colX[side] + (narrow ? 38 : 52)}
@@ -667,8 +679,8 @@ function build(context: FilmContext) {
 export const rankSymbolsFilm: Film = {
 	id: "rank-symbols",
 	label: [
-		`Rankings, as a short film: ALFA's peers ranked by contracts, where ${RAW.entries[0].name} leads, and against their own normal volume, where ${RELATIVE.entries[0].name} leads and ${RAW.entries[0].name} is last, with GLYN under a ${count(FLOOR)}-contract floor; Monday's open-interest change ranked by size, where CRUX's ${signedCount(oiChange.CRUX)} comes first, and signed, where it comes last; and ALFA rising from second to first on the same ${count(tuesday.ALFA)} contracts because CRUX fell`,
-		`排名短片：ALFA 的同类按张数排名，${RAW.entries[0].name} 领先；对比各自的常态成交量，${RELATIVE.entries[0].name} 领先而 ${RAW.entries[0].name} 垫底，GLYN 低于 ${count(FLOOR)} 张门槛；周一未平仓量变化按大小排名，CRUX 的 ${signedCount(oiChange.CRUX)} 排第一，带符号则排最后；以及 ALFA 成交量仍为 ${count(tuesday.ALFA)} 张，却因 CRUX 下跌而从第二升到第一`,
+		`Rankings, as a short film: ALFA's peers ranked by contracts, where ${RAW.entries[0].name} leads, and against their own normal volume, where ${qualifiedRelativeNames[0]} leads and ${qualifiedRelativeNames[qualifiedRelativeNames.length - 1]} is last among names at or above the ${count(FLOOR)}-contract floor, with GLYN below it; Monday's open-interest change ranked by size, where CRUX's ${signedCount(oiChange.CRUX)} comes first, and signed, where it comes last; and ALFA rising from second to first on the same ${count(tuesday.ALFA)} contracts because CRUX fell`,
+		`排名短片：ALFA 的同类按张数排名，${RAW.entries[0].name} 领先；对比各自的常态成交量，在达到 ${count(FLOOR)} 张门槛的标的中，${qualifiedRelativeNames[0]} 领先、${qualifiedRelativeNames[qualifiedRelativeNames.length - 1]} 垫底，GLYN 低于门槛；周一未平仓量变化按大小排名，CRUX 的 ${signedCount(oiChange.CRUX)} 排第一，带符号则排最后；以及 ALFA 成交量仍为 ${count(tuesday.ALFA)} 张，却因 CRUX 下跌而从第二升到第一`,
 	],
 	stage: "dark",
 	shots: [
