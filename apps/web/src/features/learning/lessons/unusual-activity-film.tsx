@@ -63,11 +63,12 @@ const vsOi = (row: (typeof mondayActivity)[number]) =>
 const AT_ELEVEN = CALL_105.volume / typicalBy(ELEVEN);
 const AT_CLOSE = CALL_105.volume / CALL_105.typical;
 const THIN = byId("dec20-110");
-const LEG = byId("oct18-105");
 
 function layout(width: number) {
 	const frame = filmFrame(width);
-	const { height: H, narrow, margin, room } = frame;
+	const { height: H, narrow, margin, room, type: T } = frame;
+	const rowY = (i: number) => H * 0.3 + i * H * (narrow ? 0.12 : 0.13);
+	const rowH = H * (narrow ? 0.055 : 0.06);
 	const labelW = narrow ? room * 0.36 : room * 0.24;
 	const barX = margin + labelW;
 	const barMax = room - labelW - (narrow ? 44 : 70);
@@ -77,9 +78,8 @@ function layout(width: number) {
 	const bottom = H * (narrow ? 0.8 : 0.82);
 	return {
 		...frame,
-		rowY: (i: number) =>
-			H * (narrow ? 0.3 : 0.3) + i * H * (narrow ? 0.12 : 0.13),
-		rowH: H * (narrow ? 0.055 : 0.06),
+		rowY,
+		rowH,
 		barX,
 		barW: (value: number) => (Math.min(value, RATIO_MAX) / RATIO_MAX) * barMax,
 		baseY: H * (narrow ? 0.24 : 0.23),
@@ -89,7 +89,7 @@ function layout(width: number) {
 		bottom,
 		x: (minute: number) => left + (minute / DAY) * (right - left),
 		y: (contracts: number) => bottom - (contracts / Y_MAX) * (bottom - top),
-		noteY: (i: number) => H * (narrow ? 0.82 : 0.84) + i * H * 0.06,
+		noteY: (i: number) => rowY(i) + rowH + T.small * 1.7,
 	};
 }
 
@@ -107,6 +107,7 @@ const copy = {
 	typical: ["÷ typical volume", "÷ 平常成交量"],
 	oi: ["÷ open interest", "÷ 未平仓量"],
 	wHead: ["Use typical volume by that time.", "对比同一时刻的平常成交量。"],
+	chartContract: ["Oct 18 105 call · Monday", "10月18日 105 看涨 · 周一"],
 	w3Head: [
 		`By the close: ${ratio(AT_CLOSE)}, same trades.`,
 		`到收盘：${ratio(AT_CLOSE)}，同样的成交。`,
@@ -117,17 +118,17 @@ const copy = {
 	sHead: ["Screen against typical volume.", "按平常成交量筛选。"],
 	flag: ["flag", "标记"],
 	legNote: [
-		`${LEG.label[0]}: one ${count(500)}-lot spread leg`,
-		`${LEG.label[1]}：一笔 ${count(500)} 张价差的一条腿`,
+		`One ${count(500)}-contract spread leg`,
+		`${count(500)} 张价差中的一条腿`,
 	],
 	thinNote: [
-		`${THIN.label[0]}: ${THIN.volume} contracts, ${THIN.openInterest} open`,
-		`${THIN.label[1]}：成交 ${THIN.volume} 张，未平仓 ${THIN.openInterest} 张`,
+		`${THIN.volume} contracts; open interest ${THIN.openInterest}`,
+		`成交 ${THIN.volume} 张，未平仓 ${THIN.openInterest} 张`,
 	],
 	claimBig: ["Name the denominator and the window.", "说清分母，也说清窗口。"],
 	claimSub: [
-		"A flag says where to look, not why.",
-		"标记只说去哪看，不说为什么。",
+		"Flags show where to look, not why.",
+		"标出该看哪里，不解释原因。",
 	],
 	nextBig: ["Next: data clocks", "下一课：数据时钟"],
 	nextSub: ["when each source was true", "每个来源在何时成立"],
@@ -373,6 +374,15 @@ function Scene({
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
+						<text
+							data-f="chart-contract"
+							x={L.left}
+							y={L.top - T.small * 2.4}
+							className="wt-film-tag"
+							style={{ fontSize: T.small }}
+						>
+							{t(copy.chartContract).toUpperCase()}
+						</text>
 						<text x={L.left} y={L.top - 12} className="wt-small">
 							{t(copy.axis)}
 						</text>
@@ -423,7 +433,7 @@ function Scene({
 						<text
 							data-f="typical-tag"
 							x={L.x(DAY) - 4}
-							y={L.y(CALL_105.typical) - 10}
+							y={L.top + 16}
 							textAnchor="end"
 							className="wt-small wt-halo"
 						>
@@ -591,7 +601,7 @@ function build(context: FilmContext) {
 			{ minute: from },
 			{
 				minute,
-				duration: 0.9,
+				duration: 1.0,
 				ease: "none",
 				immediateRender: false,
 				onUpdate: render,
@@ -664,6 +674,7 @@ function build(context: FilmContext) {
 		kids("chart").filter((el) => !el.getAttribute("data-f")),
 		19.75,
 	);
+	show(one("chart-contract"), 19.75, "above");
 	// A finished reference belongs to the chart setup, rather than a second drawing.
 	show([one("typical"), one("typical-tag")], 19.75);
 	// Build one comparison: today's curve, its cursor, then the calculation.
@@ -686,9 +697,17 @@ function build(context: FilmContext) {
 	show(one("window-proof"), 22.25);
 	// The complete proof settles at 22.75 and keeps its accepted 3.45 s rest.
 	cursorTo(DAY, ELEVEN, 26.2);
-	d.lock(lockWindow, 28.1, { around: one("window"), pad: 6 });
-	tl.addLabel("hero-lock", 28.1);
-	show(heads.close, 28.1);
+	const heroLockAt = 28.2;
+	d.lock(lockWindow, heroLockAt, { around: one("window"), pad: 6 });
+	const heroLockTween = tl
+		.getTweensOf(lockWindow)
+		.find((tween) => tween.startTime() === heroLockAt && tween.duration() > 0);
+	if (!heroLockTween)
+		throw new Error("Expected the hero lock tween at source 28.20.");
+	// Keep the accepted bracket-settlement time and hero stand fixed after moving its start.
+	heroLockTween.duration(0.35);
+	tl.addLabel("hero-lock", heroLockAt);
+	show(heads.close, heroLockAt);
 
 	// ——— screen: a threshold picks where to look ———
 	tl.addLabel("screen", 31.7);
