@@ -134,7 +134,7 @@ const copy = {
 	delisted: ["delisted Sep 6", "9月6日退市"],
 	unknown: ["unknown", "未知"],
 	claimBig: ["Who belongs comes from the facts.", "谁该纳入，由事实决定。"],
-	claimSub: ["Use the list that was true that day.", "用当天成立的那份名单。"],
+	claimSub: ["Use that day's valid list.", "用当天有效的名单。"],
 	nextBig: ["Next: rankings", "下一课：排名"],
 	nextSub: ["order without prediction", "排序不等于预测"],
 } as const satisfies Record<string, Copy>;
@@ -542,24 +542,27 @@ function build(context: FilmContext) {
 
 	/** Inspect the facts first; the column settles as one proof before the next rule. */
 	const apply = (c: number, time: number) => {
-		show(cols[c], time, "above", 0.3);
+		const showRawValue = !(L.narrow && CHECKS[c] === "threshold");
 		ROWS.forEach((row, i) => {
 			if (firstFail(row, c) !== null) return;
 			// Fade in place: the fact and verdict share a compact phone cell.
-			tl.fromTo(
-				one(`fact-${i}-${c}`),
-				{ opacity: 0 },
-				{ opacity: 1, duration: 0.3 },
-				time,
-			);
+			// The threshold column repeats the data column's value on a phone; keep its verdict.
+			if (showRawValue) {
+				tl.fromTo(
+					one(`fact-${i}-${c}`),
+					{ opacity: 0 },
+					{ opacity: 1, duration: 0.3 },
+					time,
+				);
+			}
 			tl.fromTo(
 				one(`mark-${i}-${c}`),
 				{ opacity: 0 },
 				{ opacity: 1, duration: 0.4 },
-				time + 0.4,
+				time + 0.6,
 			);
 			if (firstFail(row, c + 1) === c)
-				tl.to(syms[i], { opacity: 0.35, duration: 0.4 }, time + 0.4);
+				tl.to(syms[i], { opacity: 0.35, duration: 0.4 }, time + 0.6);
 		});
 	};
 
@@ -578,6 +581,7 @@ function build(context: FilmContext) {
 	tl.addLabel("rules", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
+	show(cols, 9.1, "above", 0.3);
 	syms.forEach((sym, i) => {
 		show(sym, 9.2 + i * 0.08, "right");
 	});
@@ -650,7 +654,8 @@ function build(context: FilmContext) {
 	d.swap([heads[2], heads[3]], heads[4], 31.4);
 	hide([...board, fjorBar, fjorNumber, lockFjor], 31.4);
 	// The two lists are the proof; omit the redundant answer headline.
-	show([one("sep-today"), one("sep-then")], 32.0, "right");
+	show(one("sep-today"), 32.0, "right");
+	show(one("sep-then"), 33.6, "right");
 
 	// ——— claim ———
 	tl.addLabel("claim", 36.8);
