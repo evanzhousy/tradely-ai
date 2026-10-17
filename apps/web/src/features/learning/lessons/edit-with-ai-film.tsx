@@ -173,7 +173,7 @@ const copy = {
 	branchUnsaved: ["Same preview · unsaved", "同一预览 · 未保存"],
 	fixedSymbol: ["Fixed symbol", "固定标的"],
 	readerSymbol: ["Reader chooses · default", "读者可选 · 默认值"],
-	saved: ["Saved · validated", "已保存 · 校验通过"],
+	saved: ["✓ Saved · validated", "✓ 已保存 · 校验通过"],
 	mine: ["My recipes", "我的 Recipe"],
 	none: ["No recipes yet", "还没有 Recipe"],
 	mineEntry: ["Daily Market Recap", "Daily Market Recap"],
@@ -318,7 +318,7 @@ function Scene({
 								x={badgeX + badgeW / 2}
 								y={baseline}
 								size={size}
-								className="wt-film-type wt-film-accent"
+								className="wt-film-type"
 							>
 								ALFA
 							</Word>
@@ -568,7 +568,7 @@ function Scene({
 										x={L.symbolField.centerX}
 										y={L.symbolField.baseline}
 										size={T.num}
-										className="wt-film-type wt-film-accent"
+										className="wt-film-type"
 									>
 										ALFA
 									</Word>
@@ -585,6 +585,7 @@ function Scene({
 								className={`wt-film-type ${TONE[status]}`}
 								style={{ fontSize: L.rowText }}
 							>
+								{status === "removed" && "✗ "}
 								{t(narrow ? STATUS_SHORT[status] : STATUS[status])}
 							</text>
 						))}
