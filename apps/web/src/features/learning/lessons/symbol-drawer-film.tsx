@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -7,9 +8,11 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -66,9 +69,9 @@ const STOPS = [
 	{ id: "now", at: 0.96, label: ["10:30", "10:30"] as Copy },
 ];
 const verdictTone: Record<Verdict, string> = {
-	meets: "wt-film-gain",
-	partial: "wt-film-warn",
-	fails: "wt-film-loss",
+	meets: toneClass.up,
+	partial: toneClass.caution,
+	fails: toneClass.down,
 	context: "wt-film-dim",
 };
 
@@ -200,6 +203,7 @@ function Scene({
 	locale: Locale;
 }) {
 	const t = (value: Copy) => pick(value, locale);
+	const missingHatch = `symbol-drawer-missing-${useId().replace(/:/g, "")}`;
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
@@ -235,7 +239,7 @@ function Scene({
 			copy.last,
 			copy.lastShort,
 			`${T1.quantity} @ ${usd(T1.price)}`,
-			"wt-film-gain",
+			"wt-film-dim",
 		],
 		["f-oi", copy.oi, copy.oiShort, count(OI), "wt-film-accent"],
 	];
@@ -244,12 +248,16 @@ function Scene({
 		["m-iv", 0, copy.modeled, "wt-film-warn", 2],
 		["m-oi", 0, copy.counted, "wt-film-accent", 1],
 		["m-pub", 1, copy.published, "wt-film-accent", 1],
-		["m-trade", 2, copy.happened, "wt-film-gain", 1],
-		["m-recv", 3, copy.receivedLate, "wt-film-gain", 2],
+		["m-trade", 2, copy.happened, "wt-film-dim", 1],
+		// A delay is a measurement, not a gain: ink, like the trade it follows.
+		["m-recv", 3, copy.receivedLate, "wt-film-type", 2],
 	];
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<Hatch id={missingHatch} />
+			</defs>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -401,7 +409,7 @@ function Scene({
 				data-f="trade-receipt-link"
 				d={`M${L.stopX(STOPS[2].at) + 6} ${L.lineY}C${L.stopX(narrow ? 0.74 : 0.7)} ${L.lineY + (narrow ? 6 : 0)} ${L.stopX(narrow ? 0.78 : 0.74)} ${L.lineY - L.clockLift} ${L.stopX(STOPS[3].at) - 6} ${L.lineY - L.clockLift}`}
 				fill="none"
-				style={{ stroke: "var(--diagram-gain)", strokeWidth: 2 }}
+				style={{ stroke: "var(--tone-ink)", strokeWidth: 2 }}
 			/>
 			<path
 				data-f="count-publication-link"
@@ -540,6 +548,8 @@ function Scene({
 			{REQUIREMENTS.flatMap((req) =>
 				sources.map((source, i) => {
 					const v = verdicts[req][source.id];
+					const check =
+						v.verdict === "meets" ? "✓ " : v.verdict === "fails" ? "✗ " : "";
 					return (
 						<g key={`${req}-${source.id}`} data-f={`v-${req}-${i}`}>
 							<text
@@ -549,7 +559,7 @@ function Scene({
 								className={`wt-film-tag ${verdictTone[v.verdict]}`}
 								style={{ fontSize: T.small * 1.05 }}
 							>
-								{t(verdictCopy[v.verdict]).toUpperCase()}
+								{`${check}${t(verdictCopy[v.verdict]).toUpperCase()}`}
 							</text>
 							{req === "positions" && source.id === "oi" ? (
 								<Word
@@ -628,7 +638,10 @@ function Scene({
 						className="wt-panel-shape"
 						style={
 							row.state === "missing"
-								? { strokeDasharray: "4 3", fillOpacity: 0.3 }
+								? {
+										fill: `url(#${missingHatch})`,
+										strokeDasharray: "4 3",
+									}
 								: undefined
 						}
 					/>
@@ -644,7 +657,7 @@ function Scene({
 						x={margin + room * (narrow ? 0.62 : 0.6)}
 						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 						textAnchor="end"
-						className={`wt-film-num ${row.value === null ? "wt-film-dim" : ""}`}
+						className={`wt-film-num ${row.value === null || row.value === 0 ? "wt-film-dim" : ""}`}
 						style={{ fontSize: text }}
 					>
 						{row.value === null ? "—" : count(row.value)}
@@ -654,7 +667,7 @@ function Scene({
 						x={margin + room - 14}
 						y={L.rowY(i) + L.rowH / 2 + T.small * 0.36}
 						textAnchor="end"
-						className={`wt-film-tag ${row.state === "missing" ? "wt-film-loss" : row.state === "zero" ? "wt-film-warn" : "wt-film-gain"}`}
+						className={`wt-film-tag ${row.state === "missing" ? toneClass.caution : "wt-film-dim"}`}
 						style={{ fontSize: T.small }}
 					>
 						{t(copy[row.state]).toUpperCase()}
