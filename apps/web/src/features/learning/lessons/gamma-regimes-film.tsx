@@ -12,6 +12,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -326,7 +327,7 @@ function Scene({
 							y={L.top}
 							width={fx - L.left}
 							height={L.bottom - L.top}
-							className="wt-band-loss"
+							className="wt-band-quiet"
 						/>
 						<rect
 							data-f="zone-long"
@@ -334,14 +335,14 @@ function Scene({
 							y={L.top}
 							width={L.right - fx}
 							height={L.bottom - L.top}
-							className="wt-band-gain"
+							className="wt-band-quiet"
 						/>
 						<text
 							data-f="zone-short-label"
 							x={fx - 8}
 							y={L.bottom - 8}
 							textAnchor="end"
-							className="wt-small wt-loss"
+							className="wt-small"
 						>
 							{t(copy.shortZone)}
 						</text>
@@ -349,7 +350,7 @@ function Scene({
 							data-f="zone-long-label"
 							x={fx + 8}
 							y={L.bottom - 8}
-							className="wt-small wt-gain"
+							className="wt-small"
 						>
 							{t(copy.longZone)}
 						</text>
@@ -396,7 +397,11 @@ function Scene({
 							{t(copy.axis)}
 						</text>
 						<g clipPath={`url(#draw-${id})`}>
-							<path className="wt-line-position" d={L.path(curve)} />
+							<path
+								className="wt-line-position"
+								d={L.path(curve)}
+								strokeDasharray="5 4"
+							/>
 						</g>
 						<circle
 							data-f="flip-seeker"
@@ -424,12 +429,9 @@ function Scene({
 						/>
 						{/* Each response sits in its own regime: buy above-left, sell below-right. */}
 						<g data-f="buy" textAnchor="end">
-							<text
-								x={mx - 12}
-								y={my - 24}
-								className="wt-halo wt-loss wt-marker-label"
-							>
-								{t(narrow ? copy.buyShort : copy.buy)}
+							<text x={mx - 12} y={my - 24} className="wt-halo wt-marker-label">
+								{!narrow && <tspan className={toneClass.up}>+$1</tspan>}
+								{narrow ? t(copy.buyShort) : t(copy.buy).slice(3)}
 							</text>
 							<text x={mx - 12} y={my - 10} className="wt-halo wt-small">
 								{t(copy.withMove)}
@@ -439,9 +441,10 @@ function Scene({
 							<text
 								x={narrow ? L.right - 4 : ax + 10}
 								y={ay + 22}
-								className="wt-halo wt-gain wt-marker-label"
+								className="wt-halo wt-marker-label"
 							>
-								{t(narrow ? copy.sellShort : copy.sell)}
+								{!narrow && <tspan className={toneClass.up}>+$1</tspan>}
+								{narrow ? t(copy.sellShort) : t(copy.sell).slice(3)}
 							</text>
 							<text
 								x={narrow ? L.right - 4 : ax + 10}
@@ -604,7 +607,8 @@ function Scene({
 					size={T.big}
 					className="wt-film-num"
 				>
-					{t(copy.qMove)}
+					{t(copy.qMove).slice(0, -3)}
+					<tspan className={toneClass.up}>{t(copy.qMove).slice(-3)}</tspan>
 				</Word>
 				<Word
 					name="q-buy"
@@ -869,8 +873,21 @@ function build(context: FilmContext) {
 		11.9,
 	);
 	show([one("zone-short-label"), one("zone-long-label")], 12.1, "below", 0.4);
-	// At $100: short gamma, the hedge buys a rise.
+	// At $100: short gamma, the hedge buys a rise. The zone the headline names is the focus;
+	// the other stays a quiet tint, so the two regimes read apart without gain and loss colours.
+	const focusZone = (on: "short" | "long", at: number) => {
+		const off = on === "short" ? "long" : "short";
+		tl.set(one(`zone-${on}`), { attr: { class: "wt-band-neutral" } }, at);
+		tl.set(one(`zone-${off}`), { attr: { class: "wt-band-quiet" } }, at);
+		tl.set(
+			one(`zone-${on}-label`),
+			{ attr: { class: `wt-small ${toneClass.focus}` } },
+			at,
+		);
+		tl.set(one(`zone-${off}-label`), { attr: { class: "wt-small" } }, at);
+	};
 	d.swap(one("c-head"), one("s-head"), 13.4);
+	focusZone("short", 13.75);
 	tl.fromTo(marker, { opacity: 0 }, { opacity: 1, duration: 0.55 }, 13.9);
 	show(one("buy"), 14.3, "right");
 	// At $105: long gamma, it sells.
@@ -892,6 +909,8 @@ function build(context: FilmContext) {
 		17.2,
 	);
 	show(one("l-head"), 17.6);
+	// The marker crosses the flip near 17.8 on its way to $105: the focus moves with it.
+	focusZone("long", 17.8);
 	show(one("sell"), 18.5, "right");
 	// The sell response settles at 19.0; leave a full second before seeking the zero.
 	const seeker = one("flip-seeker");
@@ -952,7 +971,8 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		23.05,
 	);
-	const addition = { duration: 0.9, ease: "none", immediateRender: false };
+	const additionAt = 23.55;
+	const addition = { duration: 1, ease: "none", immediateRender: false };
 	// Geometry is explicitly tweened, so a reverse seek restores every position and clip.
 	tl.fromTo(
 		one("sum-draw"),
@@ -961,7 +981,7 @@ function build(context: FilmContext) {
 			attr: { x: finalX - 4, width: L.sumRight - finalX + 8 },
 			...addition,
 		},
-		23.65,
+		additionAt,
 	);
 	tl.fromTo(
 		one("sum-drop"),
@@ -972,7 +992,7 @@ function build(context: FilmContext) {
 			attr: { d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumAfter[1])}` },
 			...addition,
 		},
-		23.65,
+		additionAt,
 	);
 	// The pen's actual position drives accumulation.step and the readout, never a second count.
 	tl.fromTo(
@@ -992,14 +1012,14 @@ function build(context: FilmContext) {
 				running.textContent = `Σ ${money(value)}`;
 			},
 		},
-		23.65,
+		additionAt,
 	);
 	// A timeline-owned class change restores the correct sign colour when scrubbing back.
 	tl.set(running, { attr: { class: "wt-film-num wt-film-gain" } }, 23.05);
 	tl.set(
 		running,
 		{ attr: { class: "wt-film-num wt-film-loss" } },
-		23.65 + addition.duration * (sumBefore[1] / -sumContribution),
+		additionAt + addition.duration * (sumBefore[1] / -sumContribution),
 	);
 
 	tl.to(one("sum-pen"), { opacity: 0, duration: 0.3 }, 24.55);
