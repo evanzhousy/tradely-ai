@@ -110,8 +110,8 @@ const copy = {
 	titleSub: ["who buys and who sells in one trade", "同一笔成交中谁买谁卖"],
 	qTag: [`Oct 18 100 call · ${BOOK.time}`, `10月18日 100 看涨 · ${BOOK.time}`],
 	qLine: [
-		`Ben offers ${count(BEST.size)} at ${usd(BEST.price)}. You buy all ${count(BEST.size)}.`,
-		`Ben 以 ${usd(BEST.price)} 挂出 ${count(BEST.size)} 张，你全部买下。`,
+		`Ben offers ${count(BEST.size)} at ${usd(BEST.price)}. You buy all.`,
+		`Ben 以 ${usd(BEST.price)} 挂出 ${count(BEST.size)} 张，你全买下。`,
 	],
 	qBig: [
 		`Volume +${BEST.size} or +${BEST.size * 2}?`,
