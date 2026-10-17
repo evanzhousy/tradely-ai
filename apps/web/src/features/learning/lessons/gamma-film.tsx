@@ -18,7 +18,10 @@ import {
 	filmFrame,
 	Lines,
 	lineCount,
+	signTone,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -87,6 +90,10 @@ const youCols = [hedgeBefore, hedgeAfter] as const;
 const times = Math.round(sepAtStrike / octAtStrike);
 const shares = (value: number) =>
 	Math.round(value) === 0 ? "0" : signedCount(Math.round(value));
+const signedClass = (value: number) => {
+	const tone = signTone(value);
+	return `wt-film-num ${tone ? toneClass[tone] : "wt-film-dim"}`;
+};
 const exposureExpression = (quantity: number, delta: number) =>
 	`${quantity < 0 ? `−${Math.abs(quantity)}` : quantity} × ${ALFA.multiplier} × ${fixed2(delta)}`;
 
@@ -340,16 +347,18 @@ function Scene({
 	};
 	const column = (values: readonly number[], who: "you" | "ben") =>
 		values.map((value, i) => (
-			<Word
+			<text
 				key={L.columns[i]}
-				name={`h-${who}-${i}`}
+				data-f={`h-${who}-${i}`}
 				x={L.columns[i]}
 				y={hedgeRows[who]}
-				size={i === 2 ? T.num * 1.35 : T.num}
-				className="wt-film-num"
+				textAnchor="middle"
+				// Operands stay ink; only the net, the row's result, shows its sign's colour.
+				className={i === 2 ? signedClass(value) : "wt-film-num"}
+				style={{ fontSize: i === 2 ? T.num * 1.35 : T.num, fontWeight: 600 }}
 			>
 				{shares(value)}
-			</Word>
+			</text>
 		));
 	return (
 		<>
@@ -412,6 +421,7 @@ function Scene({
 							<line
 								data-f="d-step-line"
 								className="wt-film-step"
+								style={{ stroke: toneColor("up") }}
 								x1={mx}
 								y1={my}
 								x2={sx}
@@ -421,7 +431,7 @@ function Scene({
 								x={(mx + sx) / 2}
 								y={my + 16}
 								textAnchor="middle"
-								className="wt-small wt-halo wt-accent"
+								className={`wt-small wt-halo wt-accent ${toneClass.up}`}
 							>
 								{`+$${MOVE}`}
 							</text>
@@ -430,6 +440,7 @@ function Scene({
 							<line
 								data-f="d-riser-line"
 								className="wt-film-riser"
+								style={{ stroke: toneColor("up") }}
 								x1={sx}
 								y1={my}
 								x2={sx}
@@ -438,7 +449,7 @@ function Scene({
 							<text
 								x={sx + 8}
 								y={(my + L.yD(NEW_DELTA)) / 2 + 4}
-								className="wt-halo wt-accent wt-marker-label"
+								className={`wt-halo wt-accent wt-marker-label ${toneClass.up}`}
 							>
 								{`+${fixed2(NEW_DELTA - DELTA)}`}
 							</text>
@@ -478,42 +489,41 @@ function Scene({
 									className="wt-line-position"
 									strokeDasharray="6 5"
 									d={L.path(octCurve, L.yG)}
+									style={{ stroke: "var(--tone-ink)" }}
 								/>
 							</g>
 						))}
 						<path
 							data-f="g-sep"
-							className="wt-line-long"
+							className="wt-line-position"
+							style={{ strokeWidth: 2.5 }}
 							strokeDasharray="6 5"
 							d={L.path(octCurve, L.yG)}
 						/>
 						{(
 							[
-								[
-									"g-oct-label",
-									"wt-line-position",
-									"wt-label-position",
-									narrow ? copy.octShort : copy.octLabel,
-								],
-								[
-									"g-sep-label",
-									"wt-line-long",
-									"wt-label-long",
-									narrow ? copy.sepShort : copy.sepLabel,
-								],
+								["g-oct-label", false, narrow ? copy.octShort : copy.octLabel],
+								["g-sep-label", true, narrow ? copy.sepShort : copy.sepLabel],
 							] as const
-						).map(([name, line, label, text], i) => (
+						).map(([name, focus, text], i) => (
 							<g key={name} data-f={name}>
 								<path
 									d={`M${L.legend.x} ${L.legend.y + i * L.legend.row - 4}h18`}
-									className={line}
+									className="wt-line-position"
+									style={{
+										stroke: focus ? toneColor("focus") : "var(--tone-ink)",
+										strokeWidth: focus ? 2.5 : 3,
+									}}
 									strokeDasharray="6 5"
 								/>
 								<text
 									x={L.legend.x + 24}
 									y={L.legend.y + i * L.legend.row}
-									className={`wt-small ${label}`}
-									style={{ fontSize: L.legend.size }}
+									className="wt-small"
+									style={{
+										fontSize: L.legend.size,
+										fill: focus ? toneColor("focus") : "var(--tone-ink)",
+									}}
 								>
 									{t(text)}
 								</text>
@@ -521,15 +531,19 @@ function Scene({
 						))}
 						{(
 							[
-								["g-oct-height", -12, octAtStrike, "wt-line-position"],
-								["g-sep-height", 12, sepAtStrike, "wt-line-long"],
+								["g-oct-height", -12, octAtStrike, false],
+								["g-sep-height", 12, sepAtStrike, true],
 							] as const
-						).map(([name, offset, gamma, color]) => (
+						).map(([name, offset, gamma, focus]) => (
 							<path
 								key={name}
 								data-f={name}
 								d={`M${L.x(SPOT) + offset - 4} ${L.bottom}h8M${L.x(SPOT) + offset} ${L.bottom}V${L.yG(gamma)}M${L.x(SPOT) + offset + Math.sign(offset) * 4} ${L.yG(gamma)}H${L.x(SPOT)}`}
-								className={color}
+								className="wt-line-position"
+								style={{
+									stroke: focus ? toneColor("focus") : "var(--tone-ink)",
+									strokeWidth: focus ? 2.5 : 3,
+								}}
 								strokeWidth={2}
 							/>
 						))}
@@ -539,7 +553,7 @@ function Scene({
 							y={L.yG(sepAtStrike) + T.num * 0.3}
 							size={T.num}
 							anchor="start"
-							className="wt-film-num wt-label-long"
+							className={`wt-film-num ${toneClass.focus}`}
 						>
 							{`${times}×`}
 						</Word>
@@ -576,7 +590,7 @@ function Scene({
 					y={H * 0.4}
 					size={T.num}
 					anchor="start"
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.caution}`}
 				>
 					{t(copy.qTo)}
 				</Word>
@@ -588,6 +602,7 @@ function Scene({
 						height={T.small + 10}
 						rx={6}
 						className="wt-chip"
+						style={{ fill: toneColor("up") }}
 					/>
 					<text
 						x={chipX}
@@ -687,6 +702,7 @@ function Scene({
 							x={start + prefixW + T.small + resultW / 2}
 							y={y}
 							size={T.num}
+							// A share count to hold is a position, not a result: ink, like the cell it flies to.
 							className="wt-film-num"
 						>
 							{shares(result)}
@@ -694,7 +710,7 @@ function Scene({
 					</g>
 				);
 			})}
-			<Brackets name="lock-hedge" glow />
+			<Brackets name="lock-hedge" tone="gain" glow />
 			<g data-f="hedge">
 				<Lines
 					name="h-head"
@@ -789,6 +805,7 @@ function Scene({
 						height={T.body + 13}
 						rx={7}
 						className="wt-chip"
+						style={{ fill: toneColor("up") }}
 					/>
 					<text
 						x={tableChipX}
@@ -832,7 +849,7 @@ function Scene({
 									y={y}
 									size={T.body}
 									anchor="start"
-									className="wt-film-num wt-film-accent"
+									className="wt-film-num"
 								>
 									{`= ${shares(result)}`}
 								</Word>
@@ -853,7 +870,7 @@ function Scene({
 						y={y + T.body * 1.75}
 						size={T.body}
 						anchor={narrow ? "start" : "middle"}
-						className="wt-film-type wt-film-accent"
+						className={`wt-film-type ${name === "h-trade-you" ? toneClass.focus : ""}`}
 					>
 						{t(label)}
 					</Word>
@@ -933,34 +950,38 @@ function build(context: FilmContext) {
 			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
 			time,
 		);
-	// One rounded state writes each row: its net is always the displayed parts' sum.
-	const countHedge = (
+	// These rows compare exact, settled exposures, not intermediate share counts.
+	// Cut each whole row at its original settlement: no hold or quiet second is spent.
+	// The explicit start state also restores values on backward seeks.
+	const settleHedge = (
 		who: "you" | "ben",
 		from: { options: number; shares: number },
 		to: { options: number; shares: number },
-		at: number,
-		duration = 0.7,
+		settledAt: number,
 	) => {
-		const state = { options: from.options, shares: from.shares };
+		const state = { settled: 0 };
 		const marks = [0, 1, 2].map((i) => one<SVGTextElement>(`h-${who}-${i}`));
 		tl.fromTo(
 			state,
-			{ options: from.options, shares: from.shares },
+			{ settled: 0 },
 			{
-				options: to.options,
-				shares: to.shares,
-				duration,
-				ease: "power2.out",
+				settled: 1,
+				duration: 0.01,
+				ease: "none",
 				immediateRender: false,
 				onUpdate: () => {
-					const options = Math.round(state.options);
-					const held = Math.round(state.shares);
-					marks[0].textContent = shares(options);
-					marks[1].textContent = shares(held);
-					marks[2].textContent = shares(options + held);
+					const row = state.settled === 1 ? to : from;
+					const values = [row.options, row.shares, row.options + row.shares];
+					marks.forEach((mark, i) => {
+						mark.textContent = shares(values[i]);
+						mark.setAttribute(
+							"class",
+							i === 2 ? signedClass(values[i]) : "wt-film-num",
+						);
+					});
 				},
 			},
-			at,
+			settledAt - 0.01,
 		);
 	};
 	const lockHedge = one<SVGGraphicsElement>("lock-hedge");
@@ -1194,11 +1215,8 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		25.8,
 	);
-	countHedge("you", hedgeBefore, hedgeAfter, 26.1, 0.5);
-	const warn = { attr: { class: "wt-film-num wt-film-warn" }, duration: 0.2 };
-	const flat = { attr: { class: "wt-film-num" }, duration: 0.2 };
-	tl.to(one("h-you-2"), warn, 26.1);
-	countHedge("ben", benColumns[0], benColumns[1], 26.2, 0.5);
+	settleHedge("you", hedgeBefore, hedgeAfter, 26.6);
+	settleHedge("ben", benColumns[0], benColumns[1], 26.7);
 	// Both rows settle by 26.7. Only then may their settled equalities fade in,
 	// completing at the unchanged 27.0, a full second before the hero lock.
 	tl.fromTo(
@@ -1208,8 +1226,8 @@ function build(context: FilmContext) {
 		26.7,
 	);
 	// Complete revised equations and exposures stand quietly for a second before the lock.
-	// The hero: your hedge's drift, locked once its count has landed; the rest steps back.
-	// The brackets are fitted now, so measure the figure with the text its count ends on.
+	// The hero: your hedge's drift, locked once its row has settled; the rest steps back.
+	// The brackets are fitted now, so measure the figure with its settled text.
 	const youNet = one<SVGTextElement>("h-you-2");
 	const youNetText = youNet.textContent;
 	youNet.textContent = shares(youDrift);
@@ -1230,7 +1248,6 @@ function build(context: FilmContext) {
 	// Brackets settle at 28.45; the first fold/exit waits until 29.95 (1.5 s).
 	hide(lockHedge, 29.95, 0.3);
 	tl.to(rest, { opacity: 1, duration: 0.4 }, 29.95);
-	tl.to(one("h-ben-2"), warn, 30.0);
 	// Fade in place: its phone lines never travel through the departing cue/chip lane.
 	tl.fromTo(
 		one("h-claim"),
@@ -1242,13 +1259,11 @@ function build(context: FilmContext) {
 	hide(one("h-delta"), 29.95, 0.3, 0);
 	// On a phone the rule's second line needs the move chip's lane too.
 	if (narrow) hide(one("h-chip"), 29.95, 0.3, 0);
-	countHedge("you", hedgeAfter, hedgeFixed, 31.7);
-	tl.to(one("h-you-2"), flat, 32.4);
+	settleHedge("you", hedgeAfter, hedgeFixed, 32.4);
 	show(one("h-trade-ben"), 31.85);
-	countHedge("ben", benColumns[1], benColumns[2], 32.5);
-	tl.to(one("h-ben-2"), flat, 33.2);
+	settleHedge("ben", benColumns[1], benColumns[2], 33.2);
 	// Bind signs before trading: both tags, signed quantities and rule settle by 30.7,
-	// then stand quietly for a full second before the unchanged first trade at 31.7.
+	// then stand quietly; the trades cut to flat at their unchanged settlement times.
 	for (const [who, at] of [
 		["you", 29.95],
 		["ben", 30.05],
