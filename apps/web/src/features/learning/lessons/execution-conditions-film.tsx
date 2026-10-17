@@ -187,9 +187,9 @@ function Scene({
 		["bar-shown", copy.displayed, SHOWN_SIZE, "neutral"],
 		["bar-printed", copy.printed, BLOCK.quantity, "total"],
 	];
-	const legs: [Copy, Copy, string][] = [
-		[copy.buyLeg, copy.buyQuote, "wt-film-gain"],
-		[copy.sellLeg, copy.sellQuote, "wt-film-loss"],
+	const legs: [Copy, Copy][] = [
+		[copy.buyLeg, copy.buyQuote],
+		[copy.sellLeg, copy.sellQuote],
 	];
 	return (
 		<>
@@ -482,7 +482,7 @@ function Scene({
 
 			{/* Two legs, one package. */}
 			{headline("p-head", copy.pHead)}
-			{legs.map(([line, quote, tone], i) => (
+			{legs.map(([line, quote], i) => (
 				<g key={t(line)} data-f={`leg-${i}`}>
 					<rect
 						data-f={`leg-${i}-box`}
@@ -496,7 +496,7 @@ function Scene({
 					<text
 						x={margin + 16}
 						y={L.legY(i) + L.legH * 0.4}
-						className={`wt-film-num ${tone}`}
+						className="wt-film-num"
 						style={{ fontSize: narrow ? T.small * 1.15 : T.body * 1.1 }}
 					>
 						{t(line)}
@@ -514,7 +514,7 @@ function Scene({
 						x={margin + room - 16}
 						y={L.legY(i) + L.legH * 0.4}
 						textAnchor="end"
-						className={`wt-film-num ${tone}`}
+						className="wt-film-num"
 						style={{ fontSize: narrow ? T.small * 1.15 : T.body * 1.1 }}
 					>
 						{usd(i === 0 ? LEGS.buy.price : LEGS.sell.price)}
@@ -575,7 +575,7 @@ function Scene({
 				y={L.pkgY + L.pkgH * 0.58}
 				size={narrow ? T.head : T.num * 0.65}
 				anchor="start"
-				className="wt-film-num wt-film-gain"
+				className="wt-film-num"
 			>
 				{usd(LEGS.buy.price)}
 			</Word>
@@ -595,7 +595,7 @@ function Scene({
 				y={L.pkgY + L.pkgH * 0.58}
 				size={narrow ? T.head : T.num * 0.65}
 				anchor="start"
-				className="wt-film-num wt-film-loss"
+				className="wt-film-num"
 			>
 				{usd(LEGS.sell.price)}
 			</Word>
