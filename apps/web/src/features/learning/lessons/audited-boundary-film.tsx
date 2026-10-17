@@ -466,58 +466,62 @@ function Scene({
 			<Brackets name="lock-claim" glow />
 			{SERIES.map((row, i) => (
 				<g key={row.strike} data-f={`strike-${i}`}>
-					<text
-						x={margin}
-						y={L.barRowY(i) + L.barH / 2 + text * 0.36}
-						className="wt-film-num"
-						style={{ fontSize: text }}
-					>
-						{row.strike}
-					</text>
-					{row.volume === null ? (
-						<>
-							<rect
-								data-f="missing-series-ghost"
-								x={L.barX}
-								y={L.barRowY(i)}
-								width={L.barMax * 0.3}
-								height={L.barH}
-								rx={3}
-								fill={`url(#hatch-${id})`}
-								stroke={toneColor("caution")}
-								strokeWidth={1.75}
-							/>
-							<text
-								data-f="missing-series-state"
-								x={L.barX + L.barMax * 0.3 + 8}
-								y={L.barRowY(i) + L.barH / 2 + T.small * 0.38}
-								className={`wt-film-tag ${toneClass.caution}`}
-								style={{ fontSize: T.small }}
-							>
-								{t(copy.missing).toUpperCase()}
-							</text>
-						</>
-					) : (
-						<>
-							<rect
-								x={L.barX}
-								y={L.barRowY(i)}
-								width={Math.max(2, (row.volume / MAX) * L.barMax)}
-								height={L.barH}
-								rx={3}
-								className="wt-film-bar"
-								data-tone={row === LEADER ? "total" : "neutral"}
-							/>
-							<text
-								x={L.barX + Math.max(2, (row.volume / MAX) * L.barMax) + 8}
-								y={L.barRowY(i) + L.barH / 2 + text * 0.36}
-								className="wt-film-num"
-								style={{ fontSize: text }}
-							>
-								{count(row.volume)}
-							</text>
-						</>
-					)}
+					<g data-f={`strike-label-${i}`}>
+						<text
+							x={margin}
+							y={L.barRowY(i) + L.barH / 2 + text * 0.36}
+							className="wt-film-num"
+							style={{ fontSize: text }}
+						>
+							{row.strike}
+						</text>
+					</g>
+					<g data-f={`strike-data-${i}`}>
+						{row.volume === null ? (
+							<>
+								<rect
+									data-f="missing-series-ghost"
+									x={L.barX}
+									y={L.barRowY(i)}
+									width={L.barMax * 0.3}
+									height={L.barH}
+									rx={3}
+									fill={`url(#hatch-${id})`}
+									stroke={toneColor("caution")}
+									strokeWidth={1.75}
+								/>
+								<text
+									data-f="missing-series-state"
+									x={L.barX + L.barMax * 0.3 + 8}
+									y={L.barRowY(i) + L.barH / 2 + T.small * 0.38}
+									className={`wt-film-tag ${toneClass.caution}`}
+									style={{ fontSize: T.small }}
+								>
+									{t(copy.missing).toUpperCase()}
+								</text>
+							</>
+						) : (
+							<>
+								<rect
+									x={L.barX}
+									y={L.barRowY(i)}
+									width={Math.max(2, (row.volume / MAX) * L.barMax)}
+									height={L.barH}
+									rx={3}
+									className="wt-film-bar"
+									data-tone={row === LEADER ? "total" : "neutral"}
+								/>
+								<text
+									x={L.barX + Math.max(2, (row.volume / MAX) * L.barMax) + 8}
+									y={L.barRowY(i) + L.barH / 2 + text * 0.36}
+									className="wt-film-num"
+									style={{ fontSize: text }}
+								>
+									{count(row.volume)}
+								</text>
+							</>
+						)}
+					</g>
 				</g>
 			))}
 			{/* The 110 bar's 500 that is one spread leg, laid over the bar when it splits. */}
@@ -892,7 +896,9 @@ function build(context: FilmContext) {
 		(name) => one(name),
 	);
 	const fieldRows = fields.map((_, i) => one(`field-${i}`));
-	const strikes = SERIES.map((_, i) => one(`strike-${i}`));
+	const strikeRows = SERIES.map((_, i) => one(`strike-${i}`));
+	const strikeLabels = SERIES.map((_, i) => one(`strike-label-${i}`));
+	const strikeData = SERIES.map((_, i) => one(`strike-data-${i}`));
 	const claimRows = claims.map((_, i) => one(`claim-${i}`));
 	const recs = records.map((_, i) => one(`rec-${i}`));
 	const lockClaim = one<SVGGraphicsElement>("lock-claim");
@@ -913,7 +919,8 @@ function build(context: FilmContext) {
 		one("field-0-detail"),
 		...heads,
 		...fieldRows,
-		...strikes,
+		...strikeLabels,
+		...strikeData,
 		...claimRows.filter((_, i) => i !== UNKNOWN_CARD),
 		tags[UNKNOWN_CARD],
 		// The first pair's tags arrive with their shared evidence panel.
@@ -1039,14 +1046,16 @@ function build(context: FilmContext) {
 	tl.addLabel("answer", 17.6);
 	hide([heads[0], ...fieldRows], 17.6);
 	show(heads[1], 17.95);
-	// One coordinated chart settles at 18.9, leaving 1.3 s before the evidence card.
-	show(strikes, 18.4, "right");
-	// Both tagged results settle at 20.7, leaving 1.9 s before the interpretation.
-	show([claimRows[0], claimRows[1]], 20.2, "right");
+	// Strike labels settle at 18.45 and stay still for 1 s before any data moves.
+	show(strikeLabels, 17.95, "right");
+	// The bars, values, and missing treatment move together and settle at 19.95.
+	show(strikeData, 19.45, "right");
+	// Leave 1 s after the chart settles before the paired evidence cards arrive.
+	show([claimRows[0], claimRows[1]], 20.95, "right");
 	// The interpretation reads the 110 bar: the bar answers.
 	show(claimRows[2], 22.6, "right");
 	tl.fromTo(
-		strikes[SERIES.indexOf(LEADER)],
+		strikeRows[SERIES.indexOf(LEADER)],
 		{ x: 0 },
 		{ x: 6, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" },
 		22.7,
@@ -1095,7 +1104,7 @@ function build(context: FilmContext) {
 	d.swap([heads[1], heads[2]], heads[3], 32.05);
 	hide(
 		[
-			...strikes,
+			...strikeRows,
 			...claimRows,
 			...tags,
 			one("spread-seg"),
