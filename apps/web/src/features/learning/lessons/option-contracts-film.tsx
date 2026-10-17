@@ -644,7 +644,7 @@ function build(context: FilmContext) {
 	d.swap(heads[3], heads[4], 25.2);
 	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 25.4);
 	show(one("f-notional"), 25.8);
-	// The figure appears only as it counts, from $0: its settled $30,000 never shows early.
+	// The figure appears only once all three blocks are lit, never before its basis.
 	tl.set(notional, { opacity: 0 }, 25.8);
 	tl.to(notional, { opacity: 1, duration: 0.3 }, 27.4);
 	blocks.forEach((block, i) => {
@@ -657,15 +657,8 @@ function build(context: FilmContext) {
 			at,
 		);
 	});
-	// The final block is fully lit at 27.4. Count once for a second, then rest for a second.
-	d.count(
-		notional,
-		THREE * DOTS * SPOT,
-		27.4,
-		(v) => usd(Math.round(v) * 100, 0),
-		0,
-		1.0,
-	);
+	// The final block is fully lit at 27.4: the notional lands as its exact value (a count's
+	// passing figures would contradict the 300 lit shares), then rests before the lock.
 	d.lock(g("lock-notional"), 29.4, { around: g("f-notional-num"), pad: 6 });
 	tl.addLabel("hero-lock", 29.4);
 	show(heads[6], 29.4);
