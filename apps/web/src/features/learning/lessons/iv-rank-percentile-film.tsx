@@ -89,14 +89,11 @@ const copy = {
 	qTagRank: ["IV rank", "IV Rank"],
 	qTagPct: ["IV percentile", "IV 百分位"],
 	qLine: [
-		`ALFA's IV30 is ${TODAY}% today. Same day, same history: low or high?`,
-		`ALFA 今天的 IV30 为 ${TODAY}%。同一天、同一段历史：低还是高？`,
+		"Same day, same history: low or high?",
+		"同一天、同一段历史：低还是高？",
 	],
-	yearHead: [
-		"A year of ALFA's IV30, week by week.",
-		"ALFA 一年来每周的 IV30。",
-	],
-	yearHeadShort: ["A year of weekly IV30.", "一年的每周 IV30。"],
+	yearHead: ["A year of ALFA's weekly IV30.", "ALFA 一年来每周的 IV30。"],
+	yearHeadShort: ["A year of ALFA's weekly IV30.", "ALFA 一年来每周的 IV30。"],
 	today: [`today ${TODAY}%`, `今天 ${TODAY}%`],
 	rankHead: [
 		"Rank: today's place between low and high.",
@@ -473,7 +470,7 @@ function Scene({
 				y={H * 0.79}
 				size={T.body}
 				className="wt-film-num"
-			>{`${year.below}/${year.n} → ${noShock.below}/${noShock.n}`}</Word>
+			>{`${year.below}/${year.n} → /${noShock.n}`}</Word>
 			{headline("s-head", copy.sampleHead, copy.sampleHeadShort)}
 			{formula(
 				"s-proof",
@@ -770,26 +767,25 @@ function build(context: FilmContext) {
 	tl.set(one("o-carry"), { opacity: 1 }, 26.6);
 	sink(26.6);
 	show(one("o-tag-0"), 26.9);
-	d.carry(
-		one<SVGGraphicsElement>("o-carry"),
-		one<SVGGraphicsElement>("o-num-0"),
-		27.0,
-		{ duration: 0.65, arc: "y", match: pct(noShock.rank) },
-	);
-	show(one("o-tag-1"), 27.6);
-	land(one("o-num-1"), 27.8);
-	d.lock(lockRank, 28.5, {
-		around: [one("o-tag-0"), one("o-num-0")],
-		pad: 10,
-	});
-	tl.addLabel("hero-lock", 28.5);
-	// After the hero's quiet stand, draw the unchanged numerator and smaller denominator.
+	show(one("o-tag-1"), 26.9);
+	land(one("o-num-1"), 27.0);
 	tl.fromTo(
 		one("o-coverage"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		30.45,
+		27.0,
 	);
+	d.carry(
+		one<SVGGraphicsElement>("o-carry"),
+		one<SVGGraphicsElement>("o-num-0"),
+		27.55,
+		{ duration: 0.65, arc: "y", match: pct(noShock.rank) },
+	);
+	d.lock(lockRank, 29.9, {
+		around: [one("o-tag-0"), one("o-num-0")],
+		pad: 10,
+	});
+	tl.addLabel("hero-lock", 29.9);
 
 	// ——— sample: the history itself ———
 	tl.addLabel("sample", 31.85);
