@@ -15,9 +15,11 @@ import {
 } from "../walkthrough/film-kit";
 import {
 	arrivals,
+	BLOCK,
 	BUCKET,
 	best,
 	CORRECTED,
+	cutoffs,
 	HOLDOUT,
 	history,
 	LOWER,
@@ -32,16 +34,16 @@ import {
 } from "./point-in-time-research-model";
 
 /*
- * Backtests, as a film. A backtest replays a decision at 10:50:01 on Monday: which price
- * may it use for the 500-lot? The arrivals answer: only the first report, $2.51; the
+ * Backtests, as a film. A backtest replays a decision after a reported block: which price
+ * may it use for the block? The arrivals answer: only the first report, $2.51; the
  * correction to $2.15 arrives later, and the 120 call's volume not until Tuesday. The hero
  * is a percentile: today's 4.2× beats 58 of 60 sessions, the 97th percentile, and glowing
  * brackets lock on a rank that is not a probability. Last, ten thresholds tried on
  * Jan–Jun, the best at 70%, and the same rule frozen and run once on Jul–Aug: 52%.
  *
  *   open      0–4        "Backtests"
- *   question  4–8.6      a decision at 10:50:01: which price?
- *   cutoff    8.6–20.2   arrivals; at 10:50:01, $2.51; at 10:51, $2.15; Tuesday's data
+ *   question  4–8.6      a decision at the first cutoff: which price?
+ *   cutoff    8.6–20.2   arrivals; first report, correction at the next cutoff; Tuesday's data
  *   rank      20.2–29.3  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
  *   holdout   29.3–38.0  ten thresholds; the winner 70%; the holdout 52%
  *   claim     38.0–42.4  only what was known, and test once
@@ -52,6 +54,19 @@ const END = 44.9;
 const MAX_DAYS = Math.max(...history.map((b) => b.days));
 const BEST_INDEX = tried.indexOf(best);
 const HERO_PAD = 10;
+const openingCutoff = cutoffs[0];
+const correctionCutoff = cutoffs[1];
+if (!openingCutoff || !correctionCutoff) {
+	throw new Error("Missing point-in-time decision cutoffs");
+}
+const timeOnly = ([en, zh]: Copy): Copy => [
+	en.slice(en.lastIndexOf(" ") + 1),
+	zh.slice(zh.lastIndexOf(" ") + 1),
+];
+const openingDecisionTime = timeOnly(openingCutoff.time);
+const decisionCutoffs = [openingCutoff, correctionCutoff].map(
+	({ before, time }) => ({ before, time: timeOnly(time) }),
+);
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -88,16 +103,19 @@ function layout(width: number) {
 const copy = {
 	title: ["Backtests", "回测"],
 	titleSub: ["testing a pattern without hindsight", "不带后见之明地检验模式"],
-	qTag: ["a backtest · Mon 10:50:01", "回测 · 周一 10:50:01"],
+	qTag: [
+		`a backtest · ${openingCutoff.time[0]}`,
+		`回测 · ${openingCutoff.time[1]}`,
+	],
 	qLine: [
-		"Decision is replayed just after the 500-lot block.",
-		"它重放 500 张大单后的即时决策。",
+		`Decision is replayed just after the ${BLOCK}-lot block.`,
+		`它重放 ${BLOCK} 张大单后的即时决策。`,
 	],
 	qBig: ["Which price may it use?", "它可以用哪个价格？"],
 	cHead: ["Monday's facts, in order of arrival.", "周一的事实，按到达顺序。"],
 	c2Head: [
-		`At 10:50:01 it may use only ${usd(REPORTED)}.`,
-		`10:50:01 时只能用 ${usd(REPORTED)}。`,
+		`At ${openingDecisionTime[0]} it may use only ${usd(REPORTED)}.`,
+		`${openingDecisionTime[1]} 时只能用 ${usd(REPORTED)}。`,
 	],
 	c3Head: ["Later facts count once they arrive.", "后来的事实，到了才算数。"],
 	known: ["known", "已知"],
@@ -280,10 +298,10 @@ function Scene({
 				)),
 			)}
 			{/* The decision time, a rule across the list between what had arrived and what hadn't. */}
-			{[2, 3].map((k) => (
-				<g key={k} data-f={`cut-${k}`}>
+			{decisionCutoffs.map(({ before, time }) => (
+				<g key={before} data-f={`cut-${before}`}>
 					<path
-						d={`M${margin - 6} ${L.arrY(k) - 5}H${margin + room + 6}`}
+						d={`M${margin - 6} ${L.arrY(before) - 5}H${margin + room + 6}`}
 						style={{
 							stroke: "var(--diagram-accent)",
 							strokeWidth: 2,
@@ -292,12 +310,12 @@ function Scene({
 					/>
 					<text
 						x={margin + room}
-						y={L.arrY(k) - 10}
+						y={L.arrY(before) - 10}
 						textAnchor="end"
 						className="wt-film-tag wt-film-accent"
 						style={{ fontSize: T.small }}
 					>
-						{`${t(copy.decision).toUpperCase()} · ${k === 2 ? "10:50:01" : "10:51"}`}
+						{`${t(copy.decision).toUpperCase()} · ${t(time)}`}
 					</text>
 				</g>
 			))}
@@ -835,8 +853,8 @@ function build(context: FilmContext) {
 export const pointInTimeResearchFilm: Film = {
 	id: "point-in-time-research",
 	label: [
-		`Backtests, as a short film: Monday's facts about the Oct 18 105 call in the order they arrived, where a decision replayed at 10:50:01 may use only the block's first report at ${usd(REPORTED)}, one at 10:51 the corrected ${usd(CORRECTED)}, and none the 120 call's volume that arrives Tuesday; today's ${TODAY}× against ${SESSIONS} past sessions, the ${PERCENTILE}th percentile, which is a rank and not a ${PERCENTILE}% chance of a rise; and ${tried.length} thresholds tried on Jan–Jun, the best followed by a rise ${best.rose}% of the time, and the same rule frozen and run once on Jul–Aug at ${HOLDOUT}%`,
-		`回测短片：周一关于 10月18日 105 看涨的事实按到达顺序排列：在 10:50:01 重放的决策只能用大单首次报告的 ${usd(REPORTED)}，10:51 的决策可以用更正后的 ${usd(CORRECTED)}，而周二才到的 120 看涨成交量哪个都不能用；今天的 ${TODAY}× 对照过去 ${SESSIONS} 个交易日，是第 ${PERCENTILE} 百分位，这是排名而不是 ${PERCENTILE}% 的上涨概率；以及在 1–6 月数据上试验的 ${tried.length} 个门槛，最好的一个之后上涨比例 ${best.rose}%，同一规则冻结后在 7–8 月只跑一次，结果为 ${HOLDOUT}%`,
+		`Backtests, as a short film: Monday's facts about the Oct 18 105 call in the order they arrived, where a decision replayed at ${openingDecisionTime[0]} may use only the block's first report at ${usd(REPORTED)}, one at ${timeOnly(correctionCutoff.time)[0]} the corrected ${usd(CORRECTED)}, and none the 120 call's volume that arrives Tuesday; today's ${TODAY}× against ${SESSIONS} past sessions, the ${PERCENTILE}th percentile, which is a rank and not a ${PERCENTILE}% chance of a rise; and ${tried.length} thresholds tried on Jan–Jun, the best followed by a rise ${best.rose}% of the time, and the same rule frozen and run once on Jul–Aug at ${HOLDOUT}%`,
+		`回测短片：周一关于 10月18日 105 看涨的事实按到达顺序排列：在 ${openingDecisionTime[1]} 重放的决策只能用大单首次报告的 ${usd(REPORTED)}，${timeOnly(correctionCutoff.time)[1]} 的决策可以用更正后的 ${usd(CORRECTED)}，而周二才到的 120 看涨成交量哪个都不能用；今天的 ${TODAY}× 对照过去 ${SESSIONS} 个交易日，是第 ${PERCENTILE} 百分位，这是排名而不是 ${PERCENTILE}% 的上涨概率；以及在 1–6 月数据上试验的 ${tried.length} 个门槛，最好的一个之后上涨比例 ${best.rose}%，同一规则冻结后在 7–8 月只跑一次，结果为 ${HOLDOUT}%`,
 	],
 	stage: "dark",
 	shots: [
