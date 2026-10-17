@@ -47,7 +47,7 @@ import {
  *   question  4–9.6      0.177 — a week passes, ALFA stays at $100, nobody trades
  *   charm     9.6–20.5   one question across the curve and week: 0.177 → 0.144; Charm's
  *                        definition sits on the chart, then −0.004/day and +1.46 per year left
- *   vanna     20.5–33.4  IV −3: 0.144 → 0.120; fraction, ≈ +0.008, lock, then − ÷ − = +
+ *   vanna     21.55–33.4 IV −3: 0.144 → 0.120; fraction, ≈ +0.008, lock, then − ÷ − = +
  *   spread    33.4–45.7  reset to today, IV unchanged; +16,600 and −8,850 →
  *                        +15,350 and −7,200: net +400;
  *                        cut: "Delta can change while nothing trades."
@@ -827,61 +827,28 @@ function build(context: FilmContext) {
 	);
 
 	// ——— vanna: and implied volatility moves it too ———
-	tl.addLabel("vanna", 20.5);
+	tl.addLabel("vanna", 21.55);
 	hide(kids("charm"), 21.2);
-	show(one("v-head"), 20.5, "above");
-	show([one("same-label"), one("low-label")], 20.5);
-	// Dim the unchanged-IV evidence, then restyle it as a reference in place.
+	show(one("v-head"), 21.55, "above", 0.3);
+	show([one("same-label"), one("low-label")], 21.55, "below", 0.3);
+	// The Charm card is fully gone at 21.55. Let this question and its IV labels
+	// settle for a second before the alternate curve starts to move.
 	tl.to(
 		one("same-curve"),
-		{ opacity: 0, duration: 0.3, ease: "power2.in" },
-		21.3,
-	);
-	tl.to(marker, { opacity: 0, duration: 0.3, ease: "power2.in" }, 21.3);
-	tl.set(
-		one("same-curve"),
-		{
-			attr: { class: "wt-line-reference" },
-			strokeWidth: 1.75,
-			strokeOpacity: 0.3,
-			opacity: 0,
-			immediateRender: false,
-		},
-		21.6,
+		{ opacity: 0.3, duration: 0.3, ease: "power2.in" },
+		22.85,
 	);
 	tl.set(
-		marker,
-		{
-			attr: { class: "wt-chip wt-film-dim" },
-			opacity: 0,
-			immediateRender: false,
-		},
-		21.6,
+		one("draw-low"),
+		{ attr: { width: L.right - L.left + 8 }, immediateRender: false },
+		22.85,
 	);
-	tl.to(
-		one("same-curve"),
-		{ opacity: 1, duration: 0.3, ease: "power3.out" },
-		21.6,
-	);
-	tl.to(marker, { opacity: 1, duration: 0.3, ease: "power3.out" }, 21.6);
-	reveal("draw-low", 22.0, 1.4);
 	tl.fromTo(
 		one("low-curve"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
-		22.0,
+		22.85,
 	);
-	tl.to(marker, { opacity: 0, duration: 0.3, ease: "power2.in" }, 23.1);
-	tl.set(
-		marker,
-		{
-			attr: { class: "wt-chip" },
-			opacity: 0,
-			immediateRender: false,
-		},
-		23.4,
-	);
-	tl.to(marker, { opacity: 1, duration: 0.3, ease: "power3.out" }, 23.4);
 	const iv = { volPoints: 0 };
 	tl.fromTo(
 		iv,
@@ -889,7 +856,7 @@ function build(context: FilmContext) {
 		{
 			volPoints: -VOL_DROP,
 			duration: 1,
-			ease: "power2.inOut",
+			ease: "power2.out",
 			immediateRender: false,
 			onUpdate: () => {
 				const value = delta(STRIKE, WEEK, iv.volPoints);
@@ -897,11 +864,11 @@ function build(context: FilmContext) {
 				meter.textContent = plain3(value);
 			},
 		},
-		23.4,
+		23.15,
 	);
-	draw(one<SVGPathElement>("vanna-step"), 24.2);
+	draw(one<SVGPathElement>("vanna-step"), 24.4);
 	show(one("vanna-change"), 24.4);
-	// The proof settles at 24.90; keep it quiet until 25.95. Hand over the loss
+	// The proof settles at 24.90; keep its full 1.05 s rest. Hand over the loss
 	// in place before the chart sinks, then carry it through the cleared lane.
 	hide([one("v-head"), ...kids("meter")], 25.95);
 	tl.set(one("vanna-change"), { opacity: 0, immediateRender: false }, 25.95);
