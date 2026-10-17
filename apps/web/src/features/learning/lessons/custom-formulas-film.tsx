@@ -26,6 +26,7 @@ import {
 	compact,
 	dollars,
 	GLYN,
+	guardFormula,
 	MONDAY,
 	perTrade,
 	REFUSED,
@@ -43,12 +44,12 @@ import {
  *   open      0–4        "Build your own Rank column"
  *   question  4–9.6      [Total Premium] + [Trades]
  *   units     9.6–19.25  usd + count: refused; ÷: usd, $6,458
- *   rank      19.25–32.5  total premium; thin denominator; 20-trade floor, ALFA locked
- *   view      32.5–43.9   saved formula persists as Tuesday recomputes; cut: the claim
- *   next      43.9–46.4   Next: fork or write a recipe with AI
+ *   rank      19.25–33.0  total premium; thin denominator; 20-trade floor, ALFA locked
+ *   view      33.0–44.4   saved formula persists as Tuesday recomputes; cut: the claim
+ *   next      44.4–46.9   Next: fork or write a recipe with AI
  */
 
-const END = 46.4;
+const END = 46.9;
 const TUESDAY = symbolFlowSessions.tuesday.rows;
 const SYMBOLS = MONDAY.map((row) => row.symbol);
 type State = 0 | 1 | 2 | 3;
@@ -83,6 +84,13 @@ const valueText = (k: State, row: SymbolFlowRow) => {
 };
 const TUE_LEADER = order(3)[0];
 const TOKENS = ["[Total Premium]", " + ", "[Trades]"] as const;
+const SAVED_EXPRESSION = guardFormula(SAVED_FLOOR);
+const savedExpressionBreak = SAVED_EXPRESSION.indexOf(",");
+const SAVED_EXPRESSION_LINES = [
+	SAVED_EXPRESSION.slice(0, savedExpressionBreak + 1),
+	SAVED_EXPRESSION.slice(savedExpressionBreak + 1).trimStart(),
+] as const;
+const DEFINITION_LINE_HEIGHT = 1.35;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -162,7 +170,10 @@ const copy = {
 		`${TUE_LEADER} leads; definition kept.`,
 		`${TUE_LEADER} 领先；保存定义。`,
 	],
-	claimBig: ["A Rank column is yours to define.", "Rank 列由你来定义。"],
+	claimBig: [
+		"Save the formula; recompute each session.",
+		"保存公式；每个交易时段重新计算。",
+	],
 	claimSub: [
 		"Descriptive and yours, not a TradingFlow metric.",
 		"描述性的、由你定义，不是 TradingFlow 指标。",
@@ -177,7 +188,7 @@ const copy = {
 const formulas = [
 	"[Total Premium]",
 	"[Total Premium] / [Trades]",
-	`IF([Trades] >= ${SAVED_FLOOR}, …, NA())`,
+	SAVED_EXPRESSION,
 ] as const;
 
 function Scene({
@@ -403,22 +414,45 @@ function Scene({
 				>
 					{t(copy.columnTotal)}
 				</text>
-				{formulas.slice(1).map((formula, i) => (
-					<text
-						key={formula}
-						data-f={`f-${i + 1}`}
-						x={margin}
-						y={L.barY}
-						className="wt-film-num wt-film-accent"
-						style={{ fontSize: L.rowText }}
-					>
-						{i === 1 ? `${t(copy.saved)} · ${formula}` : `= ${formula}`}
-					</text>
-				))}
+				{formulas.slice(1).map((formula, i) => {
+					const lines =
+						i === 1
+							? narrow
+								? [
+										`${t(copy.saved)} · ${SAVED_EXPRESSION_LINES[0]}`,
+										SAVED_EXPRESSION_LINES[1],
+									]
+								: [`${t(copy.saved)} · ${formula}`]
+							: [`= ${formula}`];
+					return (
+						<text
+							key={formula}
+							data-f={`f-${i + 1}`}
+							x={margin}
+							y={L.barY}
+							className="wt-film-num wt-film-accent"
+							style={{ fontSize: L.rowText }}
+						>
+							{lines.map((line, lineIndex) => (
+								<tspan
+									key={lineIndex}
+									x={margin}
+									dy={lineIndex === 0 ? 0 : L.rowText * DEFINITION_LINE_HEIGHT}
+								>
+									{line}
+								</tspan>
+							))}
+						</text>
+					);
+				})}
 				<rect
 					data-f="definition-rule"
 					x={margin}
-					y={L.barY + L.rowText * 0.5}
+					y={
+						L.barY +
+						(narrow ? L.rowText * DEFINITION_LINE_HEIGHT : 0) +
+						L.rowText * 0.5
+					}
 					width={0}
 					height={2}
 					fill="var(--diagram-accent)"
@@ -648,9 +682,12 @@ function build(context: FilmContext) {
 	};
 
 	const lockFloor = one<SVGGraphicsElement>("lock-floor");
-	const definitionWidth = one<SVGTextElement>("f-2").getComputedTextLength();
+	const definition = one<SVGTextElement>("f-2").getBBox();
+	const definitionWidth = definition.width;
+	const definitionLastBaseline =
+		L.barY + (L.narrow ? L.rowText * DEFINITION_LINE_HEIGHT : 0);
 	const checkX = L.margin + definitionWidth + 8;
-	const checkY = L.barY - L.rowText * 0.3;
+	const checkY = definitionLastBaseline - L.rowText * 0.3;
 
 	d.hidden([
 		...flat("q"),
@@ -746,22 +783,21 @@ function build(context: FilmContext) {
 	);
 	rank(0, 1, 23.65, 23.55);
 	// A floor. The hero: ALFA back in front.
-	// Per-trade restoration ends at 24.55; the next fold waits a full second.
-	// Return the count to row size before the enlarged hero value arrives.
+	// The count returns to row size as the floor fold starts.
 	tl.to(
 		one("n-GLYN-mon"),
 		{ fontSize: L.rowText, duration: 0.3, ease: "power2.inOut" },
-		25.55,
+		26.05,
 	);
-	rank(1, 2, 25.65, 25.55);
-	d.lock(lockFloor, 26.55, {
+	rank(1, 2, 26.15, 26.05);
+	d.lock(lockFloor, 27.05, {
 		around: value(ALFA.symbol, 2),
 		pad: 6,
 	});
-	tl.addLabel("hero-lock", 26.55);
-	// Brackets settle at 27.0; give the hero 1.5 s of quiet before its answer.
-	show(one("f-head"), 28.5);
-	// The answer settles at 29.0. Establish the saved definition after another second,
+	tl.addLabel("hero-lock", 27.05);
+	// Brackets settle at 27.5; give the hero 1.5 s of quiet before its answer.
+	show(one("f-head"), 29.0);
+	// The answer settles at 29.5. Establish the saved definition after another second,
 	// then keep both the formula and its underline stationary through Tuesday's fold.
 	tl.fromTo(
 		one("definition-rule"),
@@ -773,16 +809,16 @@ function build(context: FilmContext) {
 			ease: "power2.inOut",
 			immediateRender: false,
 		},
-		30.0,
+		30.5,
 	);
 
 	// ——— view: the formula recomputes, the numbers don't stay ———
-	tl.addLabel("view", 32.5);
-	hide([one("p-head"), one("f-head"), lockFloor], 32.5);
-	show(one("v-head"), 32.85, "above");
-	rank(2, 3, 33.5, 33.4);
-	// Tuesday settles at 34.4; its leader appears only after a full second of quiet.
-	show(one("w-head"), 35.4);
+	tl.addLabel("view", 33.0);
+	hide([one("p-head"), one("f-head"), lockFloor], 33.0);
+	show(one("v-head"), 33.35, "above");
+	rank(2, 3, 34.0, 33.9);
+	// Tuesday settles at 34.9; its leader appears only after a full second of quiet.
+	show(one("w-head"), 35.9);
 	// Confirm the marked definition survived, preserving the late drawing after-beat.
 	tl.fromTo(
 		one("definition-kept"),
@@ -794,17 +830,17 @@ function build(context: FilmContext) {
 			ease: "power2.inOut",
 			immediateRender: false,
 		},
-		37.4,
+		37.9,
 	);
 	// Cut: the claim.
-	hide([one("v-head"), one("w-head"), ...kids("rank")], 39.4);
-	word(one("z-big"), 39.8);
-	show(one("z-sub"), 40.2);
+	hide([one("v-head"), one("w-head"), ...kids("rank")], 39.9);
+	word(one("z-big"), 40.3);
+	show(one("z-sub"), 40.7);
 
 	// ——— next ———
-	tl.addLabel("next", 43.9);
-	hide(kids("claim"), 43.9);
-	d.close(43.9);
+	tl.addLabel("next", 44.4);
+	hide(kids("claim"), 44.4);
+	d.close(44.4);
 	return tl;
 }
 
