@@ -278,7 +278,7 @@ function Scene({
 						{prints.map((print, i) => {
 							const width = magnitude(print) * L.unit;
 							const y = L.rowY(i);
-							const valueRoom = textWidth(rowValue(i, narrow), labelSize + 1);
+							const valueRoom = textWidth(rowValue(i, true), labelSize + 1);
 							const valueX = L.zero + width + 8;
 							const sideX = valueX + valueRoom + 8;
 							return (
@@ -311,12 +311,12 @@ function Scene({
 									>
 										{rowValue(i)}
 									</text>
-									{narrow && signOf(print.lean) !== 0 && (
+									{signOf(print.lean) !== 0 && (
 										<text
 											data-f={`signed-value-${i}`}
-											x={valueX + valueRoom}
+											x={valueX + (narrow ? valueRoom : 0)}
 											y={y + 4}
-											textAnchor="end"
+											textAnchor={narrow ? "end" : "start"}
 											className={`wt-film-num ${print.lean === "bearish" ? "wt-film-loss" : "wt-film-gain"}`}
 											style={{ fontSize: labelSize + 1 }}
 										>
@@ -426,7 +426,7 @@ function Scene({
 					y={L.headY + T.head * 1.25 + T.num * 1.05}
 					size={T.num}
 					anchor="end"
-					className={`wt-film-num ${toneClass.up}`}
+					className={`wt-film-num ${toneClass.focus}`}
 				>
 					{signedCount(netted.net)}
 				</Word>
@@ -570,7 +570,7 @@ function Scene({
 				{(
 					[
 						[copy.twoPrints, printwise.net, toneClass.up],
-						[copy.oneTrade, netted.net, toneClass.up],
+						[copy.oneTrade, netted.net, toneClass.focus],
 					] as const
 				).map(([tag, num, tone], i) => (
 					<g key={tag[0]}>
@@ -726,9 +726,7 @@ function build(context: FilmContext) {
 			one(`row-${i}`),
 			one(`value-${i}`),
 			one(`tag-${i}`),
-			...(L.narrow && signOf(prints[i].lean) !== 0
-				? [one(`signed-value-${i}`)]
-				: []),
+			...(signOf(prints[i].lean) !== 0 ? [one(`signed-value-${i}`)] : []),
 		]),
 		one("spread"),
 		one("spread-row"),
@@ -814,24 +812,22 @@ function build(context: FilmContext) {
 		} else if (sign === 0)
 			tl.to(one(`row-${i}`), { opacity: 0.45, duration: 0.5 }, signAt);
 	});
-	// Signed phone values settle first at 16.1. The labelled equation follows
+	// Signed row values settle first at 16.1. The labelled equation follows
 	// at 16.2, settles at 16.5, then has 2.0 s of quiet before DEI.
-	if (L.narrow) {
-		const classified = prints.flatMap((print, i) =>
-			signOf(print.lean) !== 0 ? [i] : [],
-		);
-		tl.to(
-			classified.map((i) => one(`value-${i}`)),
-			{ opacity: 0, duration: 0.3, ease: "power2.out" },
-			15.8,
-		);
-		tl.fromTo(
-			classified.map((i) => one(`signed-value-${i}`)),
-			{ opacity: 0 },
-			{ opacity: 1, duration: 0.3, ease: "power2.in" },
-			15.8,
-		);
-	}
+	const classified = prints.flatMap((print, i) =>
+		signOf(print.lean) !== 0 ? [i] : [],
+	);
+	tl.to(
+		classified.map((i) => one(`value-${i}`)),
+		{ opacity: 0, duration: 0.3, ease: "power2.out" },
+		15.8,
+	);
+	tl.fromTo(
+		classified.map((i) => one(`signed-value-${i}`)),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.in" },
+		15.8,
+	);
 	tl.fromTo(
 		[one("net-equation"), one("net-equation-label")],
 		{ opacity: 0 },
