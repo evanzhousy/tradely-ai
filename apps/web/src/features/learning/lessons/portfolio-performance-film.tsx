@@ -78,12 +78,16 @@ function layout(width: number) {
 	const top = height * (narrow ? 0.38 : 0.3);
 	const bottom = height * 0.84;
 	const span = right - left;
+	// The period strips sit under the two-line headline ("Cut at the deposit."), clear of it.
 	const periodTop = narrow
 		? Math.max(
 				height * 0.22,
 				frame.headY + frame.type.head * 1.35 + frame.type.small * 1.8,
 			)
-		: height * 0.18;
+		: Math.max(
+				height * 0.18,
+				frame.headY + frame.type.head * 1.35 + frame.type.small * 2.2,
+			);
 	const periodStep = Math.max(height * 0.09, frame.type.small * 3.5);
 	// At the minimum phone width, reserve room for the two balance/rate pairs.
 	const weekTop = narrow
@@ -195,7 +199,7 @@ const copy = {
 	accountB: ["account B", "账户 B"],
 	claimBig: ["Each measure answers one question.", "每个度量只回答一个问题。"],
 	claimSub: [
-		"Exclude deposits; compare trade amounts; inspect paths.",
+		"Exclude deposits; compare amounts; inspect paths.",
 		"剔除存入，比金额，看路径。",
 	],
 	nextBig: ["Next: portfolio Greeks", "下一课：组合希腊值"],
@@ -236,39 +240,17 @@ function Scene({
 		],
 	] as const;
 	const jumpX = L.vx(2);
-	const twrFactors = [growthFactor(R1), growthFactor(R2)] as const;
-	const periodRates = [R1, R2] as const;
 	const periodIndices = [
 		[0, 1],
 		[2, 3],
 	] as const;
+	const periodCenterX = (i: 0 | 1) =>
+		narrow
+			? W * (i === 0 ? 0.37 : 0.63)
+			: (L.vx(periodIndices[i][0]) + L.vx(periodIndices[i][1])) / 2;
+	const periodRateStrip = (rate: number) => `${pct(rate)} →`;
 	const twrTagY = narrow ? H * 0.28 : H * 0.22;
 	const twrSumY = narrow ? H * 0.39 : H * 0.29;
-	const twrFactorWaypointY = L.weekTop - (T.head * 0.6 + 6);
-	const twrSumCharWidth = T.head * 0.62;
-	const twrSumLength =
-		twrFactors[0].length + " × ".length + twrFactors[1].length + " − 1".length;
-	const twrFactorTargetX = (i: 0 | 1) => {
-		const prefix = i === 0 ? 0 : twrFactors[0].length + " × ".length;
-		return (
-			W / 2 -
-			(twrSumLength * twrSumCharWidth) / 2 +
-			(prefix + twrFactors[i].length / 2) * twrSumCharWidth
-		);
-	};
-	const twrFactorSourceX = (i: 0 | 1) => {
-		const rate = periodRates[i];
-		const [from, to] = periodIndices[i];
-		const x = narrow ? W / 2 : (L.vx(from) + L.vx(to)) / 2;
-		const equation = `1 + (${pct(rate)}) ≈`;
-		const factor = twrFactors[i];
-		const charWidth = T.small * 0.62;
-		const equationX =
-			x - ((equation.length + 1 + factor.length) * charWidth) / 2;
-		return equationX + (equation.length + 1 + factor.length / 2) * charWidth;
-	};
-	const twrWaypointX = (i: 0 | 1) =>
-		(twrFactorSourceX(i) + twrFactorTargetX(i)) / 2;
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -321,44 +303,35 @@ function Scene({
 								/>
 							</g>
 						))}
-						{/* End/start uses each period's own opening balance.
-						    The rate and its growth factor stay paired before they multiply. */}
+						{/* Each modelled period rate stays paired with its growth factor before they multiply. */}
 						{[
-							{ start: OPEN, end: CLOSE, rate: R1, from: 0, to: 1 },
-							{ start: AFTER_DEPOSIT, end: WEEK_END, rate: R2, from: 2, to: 3 },
-						].map(({ start, end, rate, from, to }, i) => {
-							const x = narrow ? W / 2 : (L.vx(from) + L.vx(to)) / 2;
+							{ rate: R1, from: 0 },
+							{ rate: R2, from: 2 },
+						].map(({ rate, from }, i) => {
+							const index = i as 0 | 1;
+							const x = periodCenterX(index);
 							const y = L.periodTop + (narrow ? i * L.periodStep : 0);
-							const equation = `1 + (${pct(rate)}) ≈`;
+							const strip = periodRateStrip(rate);
 							const factor = growthFactor(rate);
 							const charWidth = T.small * 0.62;
-							const equationX =
-								x - ((equation.length + 1 + factor.length) * charWidth) / 2;
+							const stripX =
+								x - ((strip.length + factor.length) * charWidth) / 2;
 							return (
 								<g key={from} data-f={`period-${i + 1}`}>
 									<Word
-										name={`period-balances-${i + 1}`}
-										x={x}
-										y={y}
-										size={T.small}
-										className="wt-film-num"
-									>
-										{`${dollars(end)} ÷ ${dollars(start)} − 1`}
-									</Word>
-									<Word
 										name={`period-rate-${i + 1}`}
-										x={equationX}
-										y={y + T.small * 1.85}
+										x={stripX}
+										y={y}
 										size={T.small}
 										anchor="start"
 										className="wt-film-num"
 									>
-										{equation}
+										{strip}
 									</Word>
 									<Word
 										name={`period-factor-${i + 1}`}
-										x={equationX + (equation.length + 1) * charWidth}
-										y={y + T.small * 1.85}
+										x={stripX + strip.length * charWidth}
+										y={y}
 										size={T.small}
 										anchor="start"
 										className="wt-film-num"
@@ -697,20 +670,6 @@ function Scene({
 					className="wt-film-type wt-film-dim"
 				/>
 			</g>
-			<g data-f="twr-waypoints">
-				{twrFactors.map((factor, i) => (
-					<Word
-						key={factor}
-						name={`twr-factor-waypoint-${i + 1}`}
-						x={twrWaypointX(i as 0 | 1)}
-						y={twrFactorWaypointY}
-						size={T.head}
-						className="wt-film-num"
-					>
-						{factor}
-					</Word>
-				))}
-			</g>
 			{headline("t-head", copy.tradesHead, copy.tradesHead)}
 			<Lines
 				name="t-answer"
@@ -809,7 +768,6 @@ function Scene({
 function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
-	const { narrow } = L;
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
@@ -906,34 +864,17 @@ function build(context: FilmContext) {
 	show(one("c-head"), 12.9);
 	reveal([one("band-1"), one("period-1")], 13.0, 0.5);
 	reveal([one("band-2"), one("period-2")], 13.5, 0.5);
-	// The factors finish their in-place reveal before the carry begins, leaving a
-	// clear 1× reading interval at full contrast.
+	// Keep the accepted factor reveal and carry beats; the compact strips now read at 1.5×.
 	tl.to(one("period-factor-1"), { opacity: 1, duration: 0.3 }, 14.0);
 	tl.to(one("period-factor-2"), { opacity: 1, duration: 0.3 }, 14.25);
-	// The two growth factors travel together into the product; balances and inputs
-	// remain complete until the chart and its headline leave at the handover.
-	const factorLegDurations = narrow ? [0.3, 0.3] : [0.4, 0.35];
-	const factorCarryDuration = factorLegDurations[0] + factorLegDurations[1];
-	const factorCarryGap = 0.25;
-	const firstFactorCarryAt = 16.4 - factorCarryDuration - factorCarryGap;
-	[R1, R2].forEach((rate, i) => {
-		const at = firstFactorCarryAt + i * factorCarryGap;
-		const factor = growthFactor(rate);
-		const waypoint = one<SVGTextElement>(`twr-factor-waypoint-${i + 1}`);
-		const firstLegEnd = at + factorLegDurations[0];
-		d.carry(one<SVGTextElement>(`period-factor-${i + 1}`), waypoint, at, {
-			arc: "y",
-			duration: factorLegDurations[0],
-			keep: true,
-			match: factor,
-		});
-		d.carry(waypoint, one<SVGTextElement>("twr-sum"), firstLegEnd, {
-			arc: "y",
-			duration: factorLegDurations[1],
-			match: factor,
-			reveal: i === 1,
-		});
-	});
+	// The product appears in place once both factors have been read in their strips: a carry
+	// across the strips' own text crossed it on every route tried.
+	tl.fromTo(
+		one("twr-sum"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.4, ease: "power3.out", immediateRender: false },
+		15.9,
+	);
 	// Cut: the chained return.
 	hide([one("w-head"), one("c-head"), ...flat("meter")], 16.4);
 	chartOut(16.4);
