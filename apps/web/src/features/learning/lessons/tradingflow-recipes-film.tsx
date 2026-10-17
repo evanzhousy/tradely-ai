@@ -55,7 +55,7 @@ import {
  *   question  4–9.6      "Which contracts traded far above their open interest?"
  *   catalog   9.6–15.8   three kinds; the screen
  *   session   15.8–29.8  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
- *   completed 29.8–35.7  Mon 16:00 holds, then 16:30 → Monday: the latest completed session
+ *   completed 29.8–35.7  whole-calendar cut to Mon 16:30 → Monday at 30.4
  *   fork      35.7–41.4  official + colleague; linked inherited copy; your edit
  *   claim     41.4–45.4 Pick by the question; read the session
  *   next      45.4–47.4  Next: read a recipe like an auditor
@@ -64,7 +64,7 @@ import {
 const END = 47.4;
 const KINDS: readonly RecipeKind[] = ["lookup", "screen", "report"];
 const SCREEN = "unusual-options-activity";
-/** Titles that fit half a phone's width. */
+/** Concise catalog names on both frames, fitting half a phone's width. */
 const shortTitles: Record<string, string> = {
 	"ticker-snapshot": "Ticker Snapshot",
 	"gamma-levels": "Gamma Levels",
@@ -76,6 +76,11 @@ const shortTitles: Record<string, string> = {
 const TUESDAY = moments["tue-0800"];
 const MONDAY = moments["mon-1000"];
 const AFTER_CLOSE = moments["mon-1630"];
+const AFTER_CLOSE_TIME = `${Math.floor(AFTER_CLOSE.at * 24)}:${Math.round(
+	(AFTER_CLOSE.at * 24 * 60) % 60,
+)
+	.toString()
+	.padStart(2, "0")}`;
 const MINUTES_TRADED = Math.round((MONDAY.at - OPEN) * 24 * 60);
 const SCREEN_EXAMPLE = runScreen(mondayScreen, screenDefaults, SESSION_DATE)[0];
 
@@ -153,10 +158,7 @@ const copy = {
 		"Six official recipes, three kinds.",
 		"六个官方 Recipe，三种类型。",
 	],
-	screenHead: [
-		"The whole market, one session: a screen.",
-		"整个市场的一个时段：筛选。",
-	],
+	screenHead: ["A screen compares the whole market.", "筛选比较整个市场。"],
 	screenHeadShort: ["Across the market: a screen.", "覆盖整个市场：筛选。"],
 	openHead: [
 		"You open it Tuesday, 8:00, before the open.",
@@ -164,8 +166,8 @@ const copy = {
 	],
 	openHeadShort: ["Tuesday, 8:00, before the open.", "周二 8:00，开盘前。"],
 	latestHead: [
-		"It shows Monday: the latest completed session.",
-		"它显示周一：最近一个完整的交易时段。",
+		"It shows Monday’s completed session.",
+		"它显示周一已完成的时段。",
 	],
 	latestHeadShort: ["It shows Monday.", "它显示周一。"],
 	closed: ["closed", "休市"],
@@ -213,10 +215,7 @@ const copy = {
 		"Pick by the question; read the session.",
 		"按问题挑选，读清时段。",
 	],
-	claimSub: [
-		"Edit a private copy; the official one stays.",
-		"改私有副本；官方版本保持不变。",
-	],
+	claimSub: ["Edit your copy; the official stays.", "只改私有副本，官方不变。"],
 	nextBig: [
 		"Next: read a recipe like an auditor",
 		"下一课：像审计员一样读 Recipe",
@@ -460,7 +459,7 @@ function Scene({
 												className="wt-film-type"
 												style={{ fontSize: T.body }}
 											>
-												{narrow ? shortTitles[recipe.id] : recipe.title}
+												{shortTitles[recipe.id]}
 											</text>
 											{recipe.id === SCREEN ? (
 												<g data-f="uoa-proof">
@@ -649,7 +648,7 @@ function Scene({
 							size={T.body}
 							className="wt-film-num wt-film-accent"
 						>
-							10:00
+							{AFTER_CLOSE_TIME}
 						</Word>
 						<line
 							data-f="now-line"
@@ -689,7 +688,6 @@ function Scene({
 						    and the calendar's Friday lands in Friday's. */}
 						{(
 							[
-								["sess-unknown", "?", "wt-film-dim"],
 								["sess-mon", t(dayLabel(SESSION_DATE)), "wt-film-accent"],
 								[
 									"sess-close",
@@ -983,7 +981,6 @@ function build(context: FilmContext) {
 		one("now-line"),
 		one("now-dot"),
 		one("header"),
-		one("sess-unknown"),
 		one("sess-mon"),
 		one("sess-pending"),
 		one("sess-fri"),
@@ -1174,11 +1171,12 @@ function build(context: FilmContext) {
 	tl.to(one("now-line"), { opacity: 1, duration: 0.3 }, 17.3);
 	land(one("now-dot"), 17.3, 0.35);
 	show(one("header"), 17.7);
-	show([one("sess-unknown"), one("ran-tue")], 17.9);
+	show(one("ran-tue"), 17.9);
 	show(one("t-head"), 18.8);
 	tl.to(one("latest-box"), { opacity: 1, duration: 0.4 }, 18.8);
 	show(one("latest-mon"), 18.9);
-	d.flip(one("sess-unknown"), one("sess-mon"), 19.0);
+	// Reveal the settled session with its evidence, without an unknown or a flip.
+	show(one("sess-mon"), 19.0);
 	// Opened on Monday morning instead: Monday is trading, so "latest" goes back over the
 	// weekend to Friday.
 	d.swap([one("o-head"), one("t-head")], one("m-head"), 22.4);
@@ -1195,7 +1193,7 @@ function build(context: FilmContext) {
 		},
 		22.75,
 	);
-	// Monday's date has had 3.7 settled seconds. Clear it before the new run
+	// Monday's date has had 3.85 settled seconds. Clear it before the new run
 	// enters at 23.7: a report run Monday morning cannot name Monday's session.
 	tl.to(
 		one("sess-mon-date"),
@@ -1282,7 +1280,7 @@ function build(context: FilmContext) {
 	// The hero: Monday morning's report shows Friday.
 	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
 	// A film-local lock settles at 28.3, leaving 1.5 quiet seconds before
-	// the completion beat. The coordinated clock shifts together without changing its ramps.
+	// the completion beat. The calendar cut follows the bracket's full release.
 	for (const tween of tl.getTweensOf(lockSession)) {
 		if (tween.startTime() === 28.0 && tween.duration() > 0) tween.duration(0.3);
 	}
@@ -1292,113 +1290,69 @@ function build(context: FilmContext) {
 
 	// ——— completed: Monday closes ———
 	tl.addLabel("completed", 29.8);
-	// The lock releases before its Friday result changes. All the original Friday
-	// headlines have their full holds; the moving clock fills only traded minutes.
-	// The bracket settles at 28.3; no mark exits or arrives before 29.8.
+	// The bracket settles at 28.3 and stands until 29.8, unchanged. Release
+	// it and its headlines first; keep the entire 10:00 calendar true until
+	// the old ramp's settlement at 30.4, then cut every dependent mark together.
 	hide(lockSession, 29.8, 0.3, 0);
 	hide(one("m-head"), 29.8);
 	hide(one("m2-head"), 29.8);
-	// Clear the elapsed label before the moving clock fades into the same lane.
-	hide(one("mon-elapsed"), 29.8, 0.3, 0);
-	hide([one("trading-mon"), one("latest-mon")], 29.8, 0.3, 0);
-	const clock = { at: MONDAY.at };
-	const readout = one<SVGTextElement>("completion-clock");
-	// The clock replaces the elapsed label without crossing it. Its position
-	// and HH:MM are written by the same state that moves the line and traded fill.
-	const updateClock = () => {
-		const now = L.dayX(AFTER_CLOSE.day) + dayFraction(clock.at) * L.colW;
-		const minutes = Math.round(clock.at * 24 * 60);
-		readout.textContent = `${Math.floor(minutes / 60)
-			.toString()
-			.padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`;
-		gsap.set(readout, { attr: { x: now } });
-		const traded = dayFraction(Math.min(clock.at, CLOSE));
-		const end = L.dayX(AFTER_CLOSE.day) + traded * L.colW;
-		gsap.set(one("now-line"), { attr: { x1: now, x2: now } });
-		gsap.set(one("now-dot"), { attr: { cx: now } });
-		gsap.set(one("mon-done"), {
-			attr: { width: (traded - dayFraction(OPEN)) * L.colW },
-		});
-		gsap.set(one("mon-rest"), {
-			attr: { x: end, width: (dayFraction(CLOSE) - traded) * L.colW },
-		});
-	};
-	tl.fromTo(readout, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 30.1);
+	const completedAt = 30.4;
+	const completedX = L.nowX(AFTER_CLOSE);
+	// The 10:00 marks leave over the motion floor, gone as the calendar cuts to
+	// 16:30; the 16:30 marks come on over the same 0.3 s after it.
+	hide(
+		[
+			one("mon-elapsed"),
+			one("mon-rest"),
+			one("trading-mon"),
+			one("sess-fri"),
+			one("ran-mon"),
+		],
+		completedAt - 0.3,
+		0.3,
+		0,
+	);
+	tl.set(
+		one("mon-done"),
+		{ attr: { width: (dayFraction(CLOSE) - dayFraction(OPEN)) * L.colW } },
+		completedAt,
+	);
+	tl.set(
+		one("now-line"),
+		{ attr: { x1: completedX, x2: completedX } },
+		completedAt,
+	);
+	tl.set(one("now-dot"), { attr: { cx: completedX } }, completedAt);
+	tl.set(one("completion-clock"), { attr: { x: completedX } }, completedAt);
 	tl.fromTo(
-		clock,
-		{ at: MONDAY.at },
-		{
-			at: CLOSE,
-			duration: 0.6,
-			ease: "none",
-			immediateRender: false,
-			onUpdate: updateClock,
-		},
-		29.8,
+		[one("completion-clock"), one("ran-close"), one("sess-close")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
+		completedAt,
 	);
-	// Keep the exact-close hold, then cut to the new run at the existing endpoint:
-	// the post-close half hour is context, not a change the learner needs to count.
-	tl.fromTo(
-		clock,
-		{ at: CLOSE },
-		{
-			at: AFTER_CLOSE.at,
-			duration: 0,
-			ease: "none",
-			immediateRender: false,
-			onUpdate: updateClock,
-		},
-		31.6,
-	);
-	// Read the finished clock, update the run and report date, then move latest.
-	// The two lines have identical stationary prefixes. Only their named dates fade;
-	// an atomic line handoff keeps "Session · " visible throughout, as in Friday's carry.
-	hide(one("ran-mon"), 31.6, 0.3, 0);
-	show(one("ran-close"), 31.9, "below", 0.3);
-	gsap.set(one("sess-close-date"), { attr: { "fill-opacity": 0 } });
-	tl.to(
-		one("sess-fri-date"),
-		{ attr: { "fill-opacity": 0 }, duration: 0.3 },
-		31.6,
-	);
-	tl.set(one("sess-fri"), { opacity: 0 }, 31.9);
-	tl.set(one("sess-close"), { opacity: 1 }, 31.9);
-	tl.to(
-		one("sess-close-date"),
-		{ attr: { "fill-opacity": 1 }, duration: 0.3 },
-		31.9,
-	);
-	tl.to(closed, { opacity: 0.25, duration: 0.3 }, 32.05);
-	tl.to(closed, { opacity: 1, duration: 0.3 }, 32.95);
-	tl.to(
+	tl.set(
 		one("latest-box"),
-		{
-			attr: { x: L.dayX(AFTER_CLOSE.latest) + dayFraction(OPEN) * L.colW },
-			duration: 0.5,
-			ease: "power2.inOut",
-		},
-		32.35,
+		{ attr: { x: L.dayX(AFTER_CLOSE.latest) + dayFraction(OPEN) * L.colW } },
+		completedAt,
 	);
 	tl.set(
 		one("latest-mon"),
 		{
+			opacity: 1,
+			x: 0,
+			y: 0,
 			attr: { x: L.dayX(AFTER_CLOSE.latest) + L.colW / 2 },
 		},
-		32.85,
+		completedAt,
 	);
-	// Keep latest in its own row: a below entrance would cross the 16:30 clock.
-	tl.fromTo(
-		one("latest-mon"),
-		{ opacity: 0, x: 0, y: 0 },
-		{ opacity: 1, duration: 0.3 },
-		32.85,
-	);
-	tl.set(friday, { attr: { class: "wt-small" } }, 32.85);
+	tl.set(friday, { attr: { class: "wt-small" } }, completedAt);
 	tl.set(
 		one(`day-${AFTER_CLOSE.latest}`),
 		{ attr: { class: "wt-small wt-accent" } },
-		32.85,
+		completedAt,
 	);
+	// The synchronized 16:30 snapshot reads quietly for 1.8 s before the
+	// existing headline entrance; the headline and fork cut keep their times.
 	show(one("after-close-head"), 32.2, "above");
 
 	// ——— fork: official and yours ———
