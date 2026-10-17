@@ -86,6 +86,9 @@ function layout(width: number) {
 		legY: (i: number) =>
 			H * (narrow ? 0.27 : 0.27) + i * H * (narrow ? 0.17 : 0.17),
 		legH: H * (narrow ? 0.14 : 0.14),
+		// Separate price lanes let both copies descend without crossing another leg.
+		priceX: (i: number) =>
+			margin + room - 16 - (i === 0 ? (narrow ? 50 : room * 0.12) : 0),
 		pkgY: H * (narrow ? 0.63 : 0.64),
 		pkgH: H * (narrow ? 0.2 : 0.2),
 	};
@@ -96,12 +99,8 @@ const copy = {
 	titleSub: ["sweeps, blocks and complex orders", "扫单、大宗与复杂订单"],
 	qTag: [`Oct 18 110 call · ${TIME}`, `10月18日 110 看涨 · ${TIME}`],
 	qLine: [
-		FILLS.map((fill) => `${count(fill.size)} at ${fill.venue}`)
-			.join(", ")
-			.concat("."),
-		FILLS.map((fill) => `${fill.venue} 成交 ${count(fill.size)} 张`)
-			.join("，")
-			.concat("。"),
+		`Prints: ${FILLS.map((fill) => `${fill.venue} ${count(fill.size)}`).join(", ")}.`,
+		`成交：${FILLS.map((fill) => `${fill.venue} ${count(fill.size)} 张`).join("，")}。`,
 	],
 	qBig: ["Three buyers?", "三个买方？"],
 	sHead: ["Initial quotes for the 110 call.", "下单前的 110 看涨报价。"],
@@ -111,11 +110,14 @@ const copy = {
 		`one order · buy ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
 		`一张订单 · 买 ${SWEEP.quantity} · ≤ ${usd(SWEEP.limit)} · ISO`,
 	],
-	average: [
-		`average ${price4(AVERAGE)} · pre-order best ask ${usd(BEST.price)}`,
-		`均价 ${price4(AVERAGE)} · 成交前最优卖价 ${usd(BEST.price)}`,
+	sAnswer: ["Three prints, one order.", "三笔成交，一张订单。"],
+	average: [`average ${price4(AVERAGE)}`, `均价 ${price4(AVERAGE)}`],
+	benchmark: [
+		`pre-order best ask ${usd(BEST.price)}`,
+		`成交前最优卖价 ${usd(BEST.price)}`,
 	],
 	bHead: ["What does this block reveal?", "这笔大宗能说明什么？"],
+	bContract: ["Oct 18 105 call", "10月18日 105 看涨"],
 	displayed: [`displayed at ${usd(BLOCK.price)}`, `${usd(BLOCK.price)} 挂出`],
 	printed: [`printed at ${usd(BLOCK.price)}`, `${usd(BLOCK.price)} 成交`],
 	auction: ["auction", "竞价"],
@@ -142,7 +144,7 @@ const copy = {
 		`${usd(LEGS.sell.bid)} / ${usd(LEGS.sell.ask)} · inside`,
 		`报价 ${usd(LEGS.sell.bid)} / ${usd(LEGS.sell.ask)} · 价差之内`,
 	],
-	pkgTag: ["one package · 105/110 call spread", "一个整体 · 105/110 看涨价差"],
+	pkgTag: ["one 105/110 call spread", "一个 105/110 看涨价差"],
 	pkgDebit: ["net debit", "净支出"],
 	claimBig: [
 		"A condition says how a trade executed.",
@@ -349,25 +351,35 @@ function Scene({
 				</Word>
 			))}
 			<g data-f="avg">
+				<Lines
+					name="s-answer"
+					text={t(copy.sAnswer)}
+					x={margin}
+					y={H * 0.835}
+					size={narrow ? T.head : T.head * 1.1}
+					maxWidth={narrow ? room : room * 0.74}
+					anchor="start"
+					className="wt-film-type wt-film-accent"
+				/>
 				<Word
 					name="avg-price"
 					x={margin}
-					y={H * 0.85}
-					size={narrow ? T.head : T.head * 1.1}
+					y={H * 0.895}
+					size={T.body}
 					anchor="start"
-					className="wt-film-num wt-film-warn"
+					className="wt-film-num"
 				>
-					{t(copy.average).split(" · ")[0]}
+					{t(copy.average)}
 				</Word>
 				<Word
 					name="avg-benchmark"
 					x={margin}
-					y={H * 0.92}
-					size={T.body}
+					y={H * 0.945}
+					size={T.small}
 					anchor="start"
-					className="wt-film-type wt-film-dim"
+					className="wt-film-type"
 				>
-					{t(copy.average).split(" · ")[1]}
+					{t(copy.benchmark)}
 				</Word>
 			</g>
 
@@ -376,6 +388,18 @@ function Scene({
 			<Brackets name="lock-know" glow />
 			{bars.map(([name, label, size, tone], i) => (
 				<g key={name} data-f={name}>
+					{i === 0 && (
+						<Word
+							name="block-contract"
+							x={margin}
+							y={L.barY(0) - T.small * 2.6}
+							size={T.small}
+							anchor="start"
+							className="wt-film-tag"
+						>
+							{t(copy.bContract).toUpperCase()}
+						</Word>
+					)}
 					<text
 						x={margin}
 						y={L.barY(i) - T.small * 0.8}
@@ -511,7 +535,7 @@ function Scene({
 					</text>
 					<text
 						data-f={`leg-${i}-price`}
-						x={margin + room - 16}
+						x={L.priceX(i)}
 						y={L.legY(i) + L.legH * 0.4}
 						textAnchor="end"
 						className="wt-film-num"
@@ -521,10 +545,10 @@ function Scene({
 					</text>
 					<Word
 						name={`leg-${i}-condition`}
-						x={margin + room - 16}
-						y={L.legY(i) + L.legH * 0.74}
+						x={margin + 16}
+						y={L.legY(i) + L.legH * 0.95}
 						size={T.small}
-						anchor="end"
+						anchor="start"
 						className="wt-film-tag wt-film-accent"
 					>
 						{t(copy.multiLeg).toUpperCase()}
@@ -532,12 +556,17 @@ function Scene({
 				</g>
 			))}
 			{legs.map((_, i) => (
-				<path
+				<Word
 					key={i}
-					data-f={`price-link-${i}`}
-					d={`M${margin + room - 12} ${L.legY(i) + L.legH * 0.4}H${margin + room - 6 + i * 4}V${L.pkgY - 18 + i * 8}H${margin + 16 + (i === 0 ? 0 : narrow ? 78 : room * 0.23) + (narrow ? T.head : T.num * 0.65) * 1.5}V${L.pkgY - 6}`}
-					className="wt-film-link"
-				/>
+					name={`price-route-${i}`}
+					x={L.priceX(i)}
+					y={L.pkgY + L.pkgH * 0.58}
+					size={narrow ? T.small * 1.15 : T.body * 1.1}
+					anchor="end"
+					className="wt-film-num"
+				>
+					{usd(i === 0 ? LEGS.buy.price : LEGS.sell.price)}
+				</Word>
 			))}
 			<g data-f="pkg">
 				<rect
@@ -548,16 +577,15 @@ function Scene({
 					rx={14}
 					className="wt-focus-shape"
 				/>
-				<Word
-					name="pkg-tag"
+				<text
+					data-f="pkg-tag"
 					x={margin + 16}
 					y={L.pkgY + L.pkgH * 0.23}
-					size={T.small}
-					anchor="start"
 					className="wt-film-tag"
+					style={{ fontSize: T.small, letterSpacing: 0 }}
 				>
 					{t(copy.pkgTag).toUpperCase()}
-				</Word>
+				</text>
 				<Word
 					name="pkg-debit"
 					x={margin + 16}
@@ -690,8 +718,8 @@ function build(context: FilmContext) {
 		...unknowns,
 		lockKnow,
 		...legs,
-		one("price-link-0"),
-		one("price-link-1"),
+		one("price-route-0"),
+		one("price-route-1"),
 		...packageValues,
 		one("pkg"),
 		...kids("claim"),
@@ -828,26 +856,41 @@ function build(context: FilmContext) {
 		{ opacity: 0.2, duration: 0.5 },
 		34.3,
 	);
-	// Routes run in the clear right-hand lane and stop above the package, away from its type.
-	d.trace(one<SVGPathElement>("price-link-0"), 34.8, { duration: 0.6 });
-	d.trace(one<SVGPathElement>("price-link-1"), 34.8, { duration: 0.6 });
-	show(packageValues.slice(0, 3), 35.4);
+	// Each price descends in its own clear lane, at its original size, then crosses
+	// the empty equation baseline. Invisible waypoints hand over matching glyphs;
+	// the second flight grows into the operand, with no separately entering copy.
+	[0, 1].forEach((i) => {
+		const route = one<SVGGraphicsElement>(`price-route-${i}`);
+		const turn = 35.25 + i * 0.1;
+		d.carry(one<SVGGraphicsElement>(`leg-${i}-price`), route, 34.8, {
+			duration: turn - 34.8,
+			arc: "y",
+			reveal: false,
+		});
+		d.carry(
+			route,
+			one<SVGGraphicsElement>(i === 0 ? "pkg-buy" : "pkg-sell"),
+			turn,
+			{
+				duration: 35.9 - turn,
+				arc: "x",
+			},
+		);
+	});
+	// The buy price has passed the operator's slot before it fades in, in place.
+	// All three terms still settle together at 35.9, leaving the same quiet second.
+	tl.fromTo(
+		one("pkg-minus"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		35.6,
+	);
 	// Never count after an equals sign; the equation becomes true as a settled result.
 	show(one("pkg-result"), 36.9);
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.2);
-	hide(
-		[
-			heads[2],
-			...legs,
-			one("pkg"),
-			...packageValues,
-			one("price-link-0"),
-			one("price-link-1"),
-		],
-		40.2,
-	);
+	hide([heads[2], ...legs, one("pkg"), ...packageValues], 40.2);
 	word(one("z-big"), 40.5);
 	show(one("z-sub"), 40.9);
 
