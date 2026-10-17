@@ -31,7 +31,6 @@ import {
 	SHARES_PER_CALL,
 	sep20,
 	share,
-	swingAt,
 	THURSDAY_OI,
 } from "./zero-dte-model";
 
@@ -129,8 +128,8 @@ const copy = {
 	qTagOpen: ["Fri Sep 20, 9:30", "9月20日 周五 9:30"],
 	qTagClose: ["4:00 pm close", "下午 4:00 收盘"],
 	qLine: [
-		"ALFA stays at $100. What is the Sep 20 $100-strike call worth at expiry?",
-		"ALFA 全天保持 $100。9月20日 $100 行权价看涨到期值多少？",
+		"ALFA holds $100. 100 call at expiry?",
+		"ALFA 始终在$100。9月20日$100行权价看涨期权到期值多少？",
 	],
 	hoursHead: [
 		"Every hour costs more than the last.",
@@ -141,7 +140,9 @@ const copy = {
 	heldAxis: ["Fri Sep 20 · ALFA held at $100", "9月20日 周五 · ALFA 保持 $100"],
 	closeHead: ["At the close: time value is gone.", "收盘时：时间价值归零。"],
 	firstHours: ["First 3 hours", "前3小时"],
+	firstHoursShort: ["9:30–12:30", "9:30–12:30"],
 	lastHour: ["Last hour", "最后1小时"],
+	lastHourShort: ["15:00–16:00", "15:00–16:00"],
 	swingHead: [
 		"Near the strike, delta swings on cents.",
 		"在行权价附近，Delta 随几美分摆动。",
@@ -614,8 +615,16 @@ function Scene({
 			/>
 			<g data-f="h-loss-comparison">
 				{[
-					{ id: "first", label: copy.firstHours, loss: FIRST_THREE_HOURS_LOSS },
-					{ id: "last", label: copy.lastHour, loss: LAST_HOUR_LOSS },
+					{
+						id: "first",
+						label: narrow ? copy.firstHoursShort : copy.firstHours,
+						loss: FIRST_THREE_HOURS_LOSS,
+					},
+					{
+						id: "last",
+						label: narrow ? copy.lastHourShort : copy.lastHour,
+						loss: LAST_HOUR_LOSS,
+					},
 				].map((window, i) => {
 					const y = L.bottom - T.head * 3.4 + i * T.head * 1.7;
 					return (
@@ -675,40 +684,29 @@ function Scene({
 					maxWidth={room}
 					className="wt-film-type wt-film-accent"
 				/>
-				<g data-f="w-math">
-					<Word
-						name="w-difference"
-						x={W / 2}
-						y={mathY}
-						size={T.head}
-						className="wt-film-num wt-film-dim"
-					>
-						{`${fixed2(sep20(LATE, HIGH).delta)} − ${fixed2(sep20(LATE, LOW).delta)} ≈ ${fixed2(swingAt(LATE))}`}
-					</Word>
-					<Word
-						name="w-multiplier"
-						x={W / 2}
-						y={mathY + mathGap}
-						size={T.head}
-						className="wt-film-num wt-film-dim"
-					>
-						{`×${SHARES_PER_CALL} ${t(copy.sharesPerCall)} ×${count(HEDGE_CONTRACTS)} ${t(copy.calls)}`}
-					</Word>
-					<Word
-						name="w-additional"
-						x={W / 2}
-						y={mathY + mathGap * 2}
-						size={T.head}
-						className="wt-film-num wt-film-accent"
-					>
-						{`≈ ${count(hedgeShares(LATE))} ${t(copy.moreShares)}`}
-					</Word>
-				</g>
+				<Word
+					name="w-multiplier"
+					x={W / 2}
+					y={mathY}
+					size={T.head}
+					className="wt-film-num wt-film-dim"
+				>
+					{`×${SHARES_PER_CALL} ${t(copy.sharesPerCall)} ×${count(HEDGE_CONTRACTS)} ${t(copy.calls)}`}
+				</Word>
+				<Word
+					name="w-additional"
+					x={W / 2}
+					y={mathY + mathGap}
+					size={T.head}
+					className="wt-film-num wt-film-accent"
+				>
+					{`≈ ${count(hedgeShares(LATE))} ${t(copy.moreShares)}`}
+				</Word>
 				<Lines
 					name="w-hedge"
 					text={t(copy.hedge)}
 					x={W / 2}
-					y={mathY + mathGap * 2 + T.head * 1.6}
+					y={mathY + mathGap + T.head * 1.6}
 					size={T.body}
 					maxWidth={room}
 				/>
@@ -932,7 +930,7 @@ function build(context: FilmContext) {
 	show(swingClock, 23.2, "right");
 	tl.to(
 		swing,
-		{ time: LATE, duration: 3.5, ease: "power1.in", onUpdate: steepen },
+		{ time: LATE, duration: 3.5, ease: "none", onUpdate: steepen },
 		23.2,
 	);
 	// The curve settles at 26.7. Rest one second, then carry its actual endpoints.
@@ -975,14 +973,24 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 28.5);
 	// Brackets settle at 28.95; arithmetic follows 1.5 seconds of hero quiet.
-	tl.to(one("w-math"), { opacity: 1, duration: 0.5 }, 30.45);
+	show(one("w-multiplier"), 30.45, undefined, 0.3);
+	show(one("w-additional"), 30.65, undefined, 0.3);
 	show(one("w-hedge"), 30.45);
 
 	// ——— oi: the day's flow and open interest ———
 	tl.addLabel("oi", 34.45);
 	// Let the hedge finish reading and exit before the next topic arrives.
 	show(one("o-head"), 34.45);
-	hide([...kids("w"), lockSwing], 34.1);
+	hide(
+		[
+			...kids("w").filter(
+				(mark) => mark.getAttribute("data-f") !== "w-additional",
+			),
+			lockSwing,
+		],
+		34.1,
+	);
+	hide(one("w-additional"), 34.15);
 	tl.set(charts.swing, { opacity: 0 }, 34.45);
 	tl.set(charts.oi, { opacity: 1 }, 34.45);
 	rise(34.5);
