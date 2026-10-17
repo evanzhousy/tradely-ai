@@ -43,9 +43,9 @@ import {
  *
  *   open      0–4        "Gamma regimes"
  *   question  4–9.6      ALFA +$1: buy or sell?
- *   regime    9.6–22.7   net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip
+ *   regime    9.6–22.75  net GEX across spot; at $100 buy 5,121; at $105 sell 5,470; flip
  *                        $102.3
- *   shortcut  22.7–33.35 a fixed-spot subtotal plus the final strike contribution; carry
+ *   shortcut  22.75–33.35 a fixed-spot subtotal plus the final strike contribution; carry
  *                        $102.3 against $94.1, the flip locked
  *   target    33.35–45     buy 5,121 if…; the tape; the book: 1,600 offered;
  *                        cut: "A regime describes a response, not a forecast."
@@ -92,10 +92,10 @@ function layout(width: number) {
 	const { height, narrow } = frame;
 	const left = Math.max(frame.margin, narrow ? 46 : 0);
 	const right = width * 0.965;
-	const top = height * (narrow ? 0.26 : 0.27);
-	const bottom = height * (narrow ? 0.64 : 0.62);
-	const sumTop = height * 0.76;
-	const sumBottom = height * 0.9;
+	const top = height * (narrow ? 0.26 : 0.24);
+	const bottom = height * (narrow ? 0.64 : 0.68);
+	const sumTop = height * (narrow ? 0.52 : 0.4);
+	const sumBottom = height * (narrow ? 0.72 : 0.66);
 	// The decisive $95-to-$90 step gets its own strike and GEX scales, not the spot axis.
 	const sumRight = left + (right - left) * (narrow ? 0.48 : 0.62);
 	const sumX = (strike: number) =>
@@ -106,12 +106,12 @@ function layout(width: number) {
 		left + ((spot - X[0]) / (X[1] - X[0])) * (right - left);
 	const y = (dollars: number) =>
 		(top + bottom) / 2 - (dollars / Y) * ((bottom - top) / 2);
-	// Leave the raised phone chart's label below the hero tag's eventual flight lane.
+	// Keep the flip label in its proven flight lane as the desktop curve gains height.
 	const flipLabelY = narrow
 		? Math.max(top + 34, y(0) - frame.type.body * 2.5)
-		: top + 34;
+		: height * 0.27 + 34;
 	const sumLabelY = sumY(0) + frame.type.body + 26;
-	const sumOperandY = sumTop + frame.type.body * 0.5;
+	const sumOperandY = sumTop + frame.type.body * 1.25;
 	const path = (points: readonly (readonly [number, number])[]) =>
 		points
 			.map(
@@ -156,40 +156,28 @@ const copy = {
 	priceAxis: ["ALFA price", "ALFA 价格"],
 	shortZone: ["short gamma", "空 Gamma"],
 	longZone: ["long gamma", "多 Gamma"],
-	shortHead: [
-		`At ${stock(SPOT)}: short-gamma hedge buys.`,
-		`${stock(SPOT)}：空 Gamma 对冲买入。`,
-	],
+	shortHead: [`At ${stock(SPOT)}: short gamma.`, `${stock(SPOT)}：空 Gamma。`],
 	shortHeadShort: [
-		`${stock(SPOT)}: short-gamma hedge buys.`,
-		`${stock(SPOT)}：空 Gamma 对冲买入。`,
+		`At ${stock(SPOT)}: short gamma.`,
+		`${stock(SPOT)}：空 Gamma。`,
 	],
-	longHead: [
-		`At ${stock(ABOVE)}: long gamma, the hedge sells.`,
-		`在 ${stock(ABOVE)} 是多 Gamma：同样的上涨让它卖出。`,
-	],
+	longHead: [`At ${stock(ABOVE)}: long gamma.`, `${stock(ABOVE)}：多 Gamma。`],
 	longHeadShort: [
-		"Long gamma: the hedge sells a rise.",
-		"多 Gamma：上涨时卖出。",
+		`${stock(ABOVE)}: long gamma.`,
+		`${stock(ABOVE)}：多 Gamma。`,
 	],
-	buy: [`+$1 → buy ${count(-BOOK)}`, `+$1 → 买入 ${count(-BOOK)}`],
-	sell: [`+$1 → sell ${count(SELL)}`, `+$1 → 卖出 ${count(SELL)}`],
+	buy: [`+$1 buy ${count(-BOOK)}`, `+$1 买入 ${count(-BOOK)}`],
+	sell: [`+$1 sell ${count(SELL)}`, `+$1 卖出 ${count(SELL)}`],
 	buyShort: [`buy ${count(-BOOK)}`, `买入 ${count(-BOOK)}`],
 	sellShort: [`sell ${count(SELL)}`, `卖出 ${count(SELL)}`],
-	withMove: ["with the move", "顺着变动"],
-	againstMove: ["against the move", "逆着变动"],
+	withMove: ["with a rise", "顺势"],
+	againstMove: ["against a rise", "逆势"],
 	flip: ["flip", "转折"],
-	sumAxis: ["Strike sum · ALFA fixed at $100", "行权价累加 · ALFA 固定 $100"],
+	sumAxis: ["Cumulative GEX by strike", "按行权价累计净 GEX"],
 	strikeAxis: ["strike", "行权价"],
 	sum: ["zero", "穿零"],
-	shortcutHead: [
-		"Sum strike bars at a fixed spot.",
-		"固定现价，按行权价累加。",
-	],
-	shortcutHeadShort: [
-		"Sum strikes at ALFA $100.",
-		"ALFA 固定 $100，按行权价累加。",
-	],
+	shortcutHead: ["Sum strikes at ALFA $100.", "ALFA $100；按行权价累加。"],
+	shortcutHeadShort: ["Sum at ALFA $100.", "ALFA $100；按行权价累加。"],
 	repriced: ["flip · repriced across spot", "转折 · 沿现价重定价"],
 	repricedShort: ["flip · repriced", "转折 · 重定价"],
 	summed: ["strike zero · summed", "行权价累加 · 穿零"],
@@ -506,7 +494,7 @@ function Scene({
 								y={L.sumOperandY}
 								size={T.body}
 								anchor="end"
-								className="wt-film-num wt-film-gain"
+								className="wt-film-num"
 							>{`Σ ≥$${sumBefore[0]}: ${money(sumBefore[1])}`}</Word>
 							<Word
 								name="sum-contribution"
@@ -514,7 +502,7 @@ function Scene({
 								y={L.sumOperandY + T.body * 1.5}
 								size={T.body}
 								anchor="end"
-								className="wt-film-num wt-film-loss"
+								className="wt-film-num"
 							>{`$${sumAfter[0]}: ${money(sumContribution)}`}</Word>
 						</g>
 						<Word
@@ -924,53 +912,57 @@ function build(context: FilmContext) {
 		20.9,
 	);
 
-	// The flip settles at 21.45; preserve its original 1.25 s quiet before the shortcut.
+	// The flip settles at 21.45; leave it undisturbed for a full second before the plot clears.
 	// ——— shortcut: a separate strike axis, with gamma priced at the fixed $100 spot ———
-	tl.addLabel("shortcut", 22.7);
+	tl.addLabel("shortcut", 22.75);
 	hide([one("s-head"), one("l-head")], 22.7);
 	show(one("k-head"), 23.05, "above");
-	tl.to([one("buy"), one("sell")], { opacity: 0, duration: 0.3 }, 22.7);
+	// Clear the regime chart, then let only the strike scaffold return for its proof.
+	tl.to(d.depth, { opacity: 0, duration: 0.3, ease: "none" }, 22.45);
+	tl.set(one("chart"), { opacity: 0 }, 22.75);
+	tl.set(d.depth, { opacity: 1 }, 22.75);
 	tl.fromTo(
 		one("sum-chart"),
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		22.7,
+		{ opacity: 1, duration: 0.3, ease: "none" },
+		22.75,
 	);
-	// Keep the existing 23.05–25.10 construction, but explain the decisive addition.
+	// Let the strike scaffold settle before the two-step subtotal-plus-$90 proof begins.
 	// The positive subtotal and negative input enter together, then the last strike is added.
 	const subtotalX = L.sumX(sumBefore[0]);
 	const finalX = L.sumX(sumAfter[0]);
 	tl.fromTo(
 		[one("sum-line"), one("sum-operands")],
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.6 },
-		23.05,
+		{ opacity: 1, duration: 0.3 },
+		24.05,
 	);
 	tl.fromTo(
 		one("sum-drop"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		23.05,
+		{
+			opacity: 0,
+			attr: {
+				d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumBefore[1])}`,
+			},
+		},
+		{
+			opacity: 1,
+			attr: {
+				d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumAfter[1])}`,
+			},
+			duration: 0.5,
+			ease: "none",
+		},
+		24.05,
 	);
-	const additionAt = 23.55;
-	const addition = { duration: 1, ease: "none", immediateRender: false };
+	const additionAt = 24.05;
+	const addition = { duration: 0.5, ease: "none", immediateRender: false };
 	// Geometry is explicitly tweened, so a reverse seek restores every position and clip.
 	tl.fromTo(
 		one("sum-draw"),
 		{ attr: { x: subtotalX - 4, width: L.sumRight - subtotalX + 8 } },
 		{
 			attr: { x: finalX - 4, width: L.sumRight - finalX + 8 },
-			...addition,
-		},
-		additionAt,
-	);
-	tl.fromTo(
-		one("sum-drop"),
-		{
-			attr: { d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumBefore[1])}` },
-		},
-		{
-			attr: { d: `M${finalX} ${L.sumY(sumBefore[1])}V${L.sumY(sumAfter[1])}` },
 			...addition,
 		},
 		additionAt,
