@@ -370,6 +370,28 @@
 	stroke-width: 2;
 	stroke-linecap: round;
 }
+/* A pen tip's colour (`PenTip` tone), read by its halo and its core. */
+[data-pen="focus"] {
+	--pen: var(--tone-focus);
+}
+[data-pen="up"] {
+	--pen: var(--tone-up);
+}
+[data-pen="down"] {
+	--pen: var(--tone-down);
+}
+[data-pen="call"] {
+	--pen: var(--tone-call);
+}
+[data-pen="put"] {
+	--pen: var(--tone-put);
+}
+[data-pen="caution"] {
+	--pen: var(--tone-caution);
+}
+[data-pen="dim"] {
+	--pen: var(--tone-dim);
+}
 /* The core of a pen tip (`PenTip`), in its line's colour (`--pen`) mixed toward white. */
 .wt-svg .wt-film-tip {
 	fill: color-mix(in oklab, var(--pen, var(--diagram-accent)) 35%, white);

@@ -172,7 +172,7 @@ At most seven beats (one headline each) and about 45 s played (`END` about 47). 
 | `Hatch` | A diagonal hatch pattern for regions no value can reach |
 | `TitleCard` | The opening name and subtitle |
 | `EndCard` | The closing next card and the call to the playground |
-| `PenTip` | A glowing pen tip for `trace`: a bright core in a wide, faint halo, in its line's colour (`color`, a `toneColor`). Put it in the same group as the line it leads. |
+| `PenTip` | A glowing pen tip for `trace`: a bright core in a wide, faint halo, in its line's role (`tone`, or `color` for a line without one). Put it in the same group as the line it leads. A pen that changes role mid-film switches with `tl.set(pen, { attr: { "data-pen": tone } })`: GSAP resolves a tweened `--pen` to a literal colour, which the audit fails and a backward seek would restore. |
 | `Brackets` | Corner brackets around a box, for `lock`: in focus by default, or in the colour of a figure the shot reads by its sign or right (`tone` `"gain"`, `"loss"`, `"call"`, `"put"`, `"caution"`); `glow` for the hero's, in the brackets' own colour |
 
 ### Director moves: `createDirector(context, frame, end)`

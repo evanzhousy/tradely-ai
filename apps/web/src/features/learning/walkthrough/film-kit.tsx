@@ -441,18 +441,29 @@ export function EndCard({
 export function PenTip({
 	name,
 	r = 4,
-	color = toneColor("focus"),
+	tone,
+	color,
 }: {
 	name: string;
 	r?: number;
-	/** The line's own colour, a `var(--…)` (see `toneColor`): a put's line gets a put's pen. */
+	/**
+	 * The line's role (a put's line gets a put's pen; `dim` for a context line). A pen that
+	 * changes colour on the timeline switches this with `tl.set(pen, { attr: { "data-pen": … } })`,
+	 * which a backward seek restores exactly; GSAP would resolve a tweened `--pen` to a literal.
+	 */
+	tone?: Tone | "dim";
+	/** A `var(--…)` colour for a pen whose line has no role (see `toneColor`). */
 	color?: string;
 }) {
 	const id = useId().replace(/:/g, "");
-	// The colour rides on `--pen`, so the halo's stops and the core's mix (in the stylesheet)
-	// both read it, and every colour the film sets inline stays a stage token.
+	// The colour rides on `--pen` (set from `data-pen` in the stylesheet, or `color`), so the
+	// halo's stops and the core's mix both read it and every colour stays a stage token.
 	return (
-		<g data-f={name} style={{ "--pen": color } as CSSProperties}>
+		<g
+			data-f={name}
+			data-pen={tone ?? (color ? undefined : "focus")}
+			style={color ? ({ "--pen": color } as CSSProperties) : undefined}
+		>
 			<defs>
 				<radialGradient id={`tip-${id}`}>
 					<stop
