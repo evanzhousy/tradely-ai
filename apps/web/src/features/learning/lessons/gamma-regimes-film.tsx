@@ -147,25 +147,22 @@ const copy = {
 	qBuy: ["buy?", "买？"],
 	qSell: ["sell?", "卖？"],
 	qLine: [
-		"Modeled book: hedgers’ response depends on ALFA’s price.",
-		"模型账户的对冲者会买还是卖？取决于 ALFA 在哪里。",
+		"Modeled hedging depends on ALFA price.",
+		"模型对冲取决于 ALFA 价格。",
 	],
-	curveHead: [
-		"Net GEX, repriced at every ALFA price.",
-		"在每个 ALFA 价格上重新定价的净 GEX。",
-	],
-	curveHeadShort: ["Net GEX, repriced across spot.", "沿现价重定价的净 GEX。"],
+	curveHead: ["Net GEX, repriced across spot.", "各价位净 GEX。"],
+	curveHeadShort: ["Net GEX across spot.", "各价位净 GEX。"],
 	axis: ["modeled book, $ of delta per 1%", "模型账户，每 1% 的 Delta 金额"],
 	priceAxis: ["ALFA price", "ALFA 价格"],
 	shortZone: ["short gamma", "空 Gamma"],
 	longZone: ["long gamma", "多 Gamma"],
 	shortHead: [
-		`At ${stock(SPOT)}: short gamma, the hedge buys.`,
-		`在 ${stock(SPOT)} 是空 Gamma：上涨时对冲买入。`,
+		`At ${stock(SPOT)}: short-gamma hedge buys.`,
+		`${stock(SPOT)}：空 Gamma 对冲买入。`,
 	],
 	shortHeadShort: [
-		"Short gamma: the hedge buys a rise.",
-		"空 Gamma：上涨时买入。",
+		`${stock(SPOT)}: short-gamma hedge buys.`,
+		`${stock(SPOT)}：空 Gamma 对冲买入。`,
 	],
 	longHead: [
 		`At ${stock(ABOVE)}: long gamma, the hedge sells.`,
@@ -205,40 +202,40 @@ const copy = {
 	cardModel: ["model target", "模型目标"],
 	cardModelValue: [`buy ${count(TARGET)} shares`, `买入 ${count(TARGET)} 股`],
 	cardModelNote: [
-		"at $100, for a +$1 rise; only if dealers hold this book and hedge continuously",
-		"在 $100，上涨 $1；须做市商持有此账户且连续对冲",
+		"At $100, +$1; dealers must hold the book and hedge nonstop.",
+		"$100 +$1；做市商持此仓才连续对冲。",
 	],
 	cardModelShort: [
-		"at $100, +$1 rise; if dealers hold this book and hedge nonstop",
-		"在 $100，上涨 $1；须做市商持有此账户且连续对冲",
+		"At $100, +$1; dealer-held book, hedged nonstop.",
+		"$100 +$1；做市商持此仓才连续对冲。",
 	],
 	cardTape: ["the tape", "成交记录"],
 	cardTapeValue: ["no names", "无身份"],
 	cardTapeNote: [
-		"prints show price, size and time, never who traded or why",
-		"成交显示价格、数量和时间，不显示谁交易或为什么",
+		"Price, size, time; no names or motives.",
+		"价量时间；不示身份与动机。",
 	],
 	cardTapeShort: [
 		"price, size, time; never who or why",
-		"价格、数量、时间；不显示谁或为何",
+		"价量时间；不示谁交易、为何。",
 	],
 	cardBook: ["the book, 10:30", "10:30 挂单簿"],
 	cardBookValue: [`${count(offered)} offered`, `挂出 ${count(offered)} 股`],
 	cardBookNote: [
-		`across three levels to ${stock(lastAsk.price / 100)}; depth beyond isn't shown`,
-		`三个价位，最高 ${stock(lastAsk.price / 100)}；更深的挂单看不到`,
+		`Three levels to ${stock(lastAsk.price / 100)}; deeper book omitted.`,
+		`仅示三档至 ${stock(lastAsk.price / 100)}。`,
 	],
 	cardBookShort: [
 		"three levels; depth beyond isn't shown",
 		"三个价位；更深的挂单未显示",
 	],
 	claimBig: [
-		"A regime describes a response, not a forecast.",
-		"状态描述的是响应，不是预测。",
+		"Regimes describe responses, not forecasts.",
+		"状态描述响应，不作预测。",
 	],
 	claimSub: [
-		"Modeled flip; hedging depends on who holds what.",
-		"转折点是模型得出的；对冲取决于谁持有什么。",
+		"Model flip; holdings shape the hedge.",
+		"模型转折；持仓决定对冲。",
 	],
 	nextBig: ["Next: walls and max pain", "下一课：墙位与最大痛点"],
 	nextSub: ["reference levels, not targets", "参考位置，不是目标"],
@@ -779,7 +776,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
-	const { tl, one, kids, show, hide, rise } = d;
+	const { tl, one, kids, show, hide } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
 	const land = (target: Element, time: number) =>
 		tl.fromTo(
@@ -838,15 +835,21 @@ function build(context: FilmContext) {
 	tl.addLabel("regime", 9.6);
 	hide(kids("q"), 9.6);
 	show(one("c-head"), 9.8, "above");
-	rise(9.9);
+	// Reveal the axes at their final scale, then let the static scaffold sit for a full second.
+	tl.fromTo(
+		d.depth,
+		{ opacity: 0, scale: 1 },
+		{ opacity: 1, scale: 1, duration: 0.3 },
+		9.9,
+	);
 	tl.to(
 		one("draw"),
 		{
 			attr: { width: L.right - L.left + 8 },
-			duration: 1.6,
+			duration: 0.7,
 			ease: "power2.inOut",
 		},
-		10.3,
+		11.2,
 	);
 	tl.to(
 		[one("zone-short"), one("zone-long")],
