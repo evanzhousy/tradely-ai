@@ -126,23 +126,23 @@ const copy = {
 	thursday: ["Thu close · ignored", "周四收盘 · 不算"],
 	payout: ["writer pays", "义务方支付"],
 	windowHead: [
-		"American: any trading day. European: at expiry.",
-		"美式：任一交易日；欧式：到期日。",
+		"American: any session. European: at expiry.",
+		"美式：交易日；欧式：仅到期日。",
 	],
 	american: ["American", "美式"],
 	european: ["European", "欧式"],
 	pinHead: ["At expiry: a $100-strike call.", "到期：$100 行权价看涨。"],
 	autoHead: [
-		"Two cents in: automatic exercise.",
-		"实值 2 美分：默认自动行权。",
+		"Broker thresholds govern auto-exercise.",
+		"自动行权取决于券商门槛。",
 	],
 	holderClose: ["holder · Oct 18 close", "持有人 · 10月18日收盘"],
 	writerClose: ["ALFA · close", "ALFA · 收盘"],
 	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
 	inTheMoney: ["in the money · per share", "实值 · 每股"],
 	defaultAction: [
-		"No action · no decline instruction.",
-		"未操作，也未通知券商放弃行权。",
+		"Threshold met; no action or opt-out.",
+		"达到门槛；未操作、未放弃行权。",
 	],
 	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
@@ -984,7 +984,11 @@ function build(context: FilmContext) {
 		},
 		13.2,
 	);
-	fade(comparisonMarks, 13.2, 0.4);
+	tl.to(
+		comparisonMarks,
+		{ opacity: 1, duration: 0.4, ease: "power2.out" },
+		13.2,
+	);
 	fade([one("component-in"), one("component-tv")], 11.3);
 	// Construction and component labels settle at 11.8; quiet until 12.8.
 	hide(one("d-oct4"), 12.8);
