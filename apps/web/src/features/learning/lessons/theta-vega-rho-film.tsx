@@ -12,6 +12,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -641,7 +642,7 @@ function Scene({
 							x={L.cells[i].x}
 							y={L.cells[i].y + T.num * 2.5}
 							size={T.num}
-							className={`wt-film-num ${i === 0 ? "wt-film-gain" : "wt-film-dim"}`}
+							className={`wt-film-num ${toneClass.up}`}
 						>
 							{cell.result}
 						</Word>
@@ -860,7 +861,7 @@ function build(context: FilmContext) {
 	// local sensitivity settles at 13.8, leaving 1.5 s of quiet before the cut.
 	tl.to(
 		walk,
-		{ elapsed: LAST, duration: 1.9, ease: "power2.in", onUpdate: place },
+		{ elapsed: LAST, duration: 1.9, ease: "none", onUpdate: place },
 		11.4,
 	);
 	hide(one("t-today"), 12.3, 0.3);
