@@ -19,6 +19,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -389,7 +390,8 @@ function Scene({
 							width={0}
 							height={block}
 							rx={6}
-							className="wt-long-soft"
+							className="wt-film-bar"
+							data-tone="neutral"
 						/>
 						<text
 							data-f="z-rv-label"
@@ -405,6 +407,7 @@ function Scene({
 							data-f="z-today"
 							d={`M${L.xZ(today)} ${L.axisZ - block - 34}V${L.axisZ + 6}`}
 							className="wt-bracket"
+							style={{ stroke: "var(--tone-dim)" }}
 						/>
 						<text
 							data-f="z-today-label"
@@ -412,6 +415,7 @@ function Scene({
 							y={L.axisZ + 34}
 							textAnchor="middle"
 							className="wt-small wt-accent"
+							style={{ fill: "var(--tone-dim)" }}
 						>
 							{t(copy.today)}
 						</text>
@@ -438,6 +442,7 @@ function Scene({
 							<path
 								d={`M${L.xZ(earnings)} ${L.axisZ - 8}V${L.axisZ + 8}`}
 								className="wt-bracket"
+								style={{ stroke: "var(--tone-dim)" }}
 							/>
 							<text
 								x={L.xZ(earnings)}
@@ -604,11 +609,11 @@ function Scene({
 				y={H * 0.9}
 				textAnchor="middle"
 				className="wt-small wt-accent"
-				style={{ fontSize: T.body }}
+				style={{ fontSize: T.body, fill: "var(--tone-ink)" }}
 			>
 				{`${t(copy.dailySd)} ${percent(SD10, 2)} × `}
 				<tspan data-f="r-convention">√252</tspan>
-				{` ≈ ${points(RV10)}`}
+				<tspan className={toneClass.focus}>{` ≈ ${points(RV10)}`}</tspan>
 			</text>
 			<line
 				data-f="r-convention-underline"
@@ -636,7 +641,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.3}
 					size={T.body}
-					className="wt-film-num wt-film-dim"
+					className="wt-film-num"
 				>
 					{`IV ${IV_POINTS}% − RV20 ${RV_POINTS}%`}
 				</Word>
@@ -645,7 +650,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.4 + T.num * 0.36}
 					size={T.num}
-					className="wt-film-num wt-film-accent"
+					className={`wt-film-num ${toneClass.up}`}
 				>
 					{`= +${GAP}`}
 				</Word>
@@ -654,7 +659,7 @@ function Scene({
 					x={W / 2}
 					y={H * 0.4 + T.num * 0.36 + T.head * 1.9}
 					size={T.head}
-					className="wt-film-type wt-film-accent"
+					className="wt-film-type wt-film-dim"
 				>
 					{t(copy.gapWord)}
 				</Word>
