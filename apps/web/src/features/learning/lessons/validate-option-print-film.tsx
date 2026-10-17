@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
@@ -10,6 +11,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -39,12 +42,6 @@ const LEG = BLOCK.pairedLeg;
 const seconds = (time: string) =>
 	time.split(":").reduce((total, part) => total * 60 + Number(part), 0);
 const QUOTE_AGE = seconds(BLOCK.time) - seconds(BLOCK.staleQuote.time);
-const tone = (evidence: Evidence) =>
-	evidence === "unknown"
-		? "wt-film-dim"
-		: evidence === "inferred"
-			? "wt-film-warn"
-			: "wt-film-gain";
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -184,6 +181,7 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
+	const hatchId = `evidence-${useId().replace(/:/g, "")}`;
 	const gapHeadingY = (i: number) =>
 		i === 0 ? H * 0.2494 : L.gapY(i) + L.gapH(i) * (i === 1 ? 0.22 : 0.38);
 	const gapPromptY = (i: number) =>
@@ -215,19 +213,51 @@ function Scene({
 		y: number,
 		evidence: Evidence,
 	) => (
-		<text
-			data-f={name}
-			x={x}
-			y={y}
-			textAnchor="end"
-			className={`wt-film-tag ${tone(evidence)}`}
-			style={{ fontSize: T.body }}
-		>
-			{t(copy[evidence]).toUpperCase()}
-		</text>
+		<g data-f={name}>
+			<text
+				data-f={`${name}-label`}
+				x={x}
+				y={y}
+				textAnchor="end"
+				className={`wt-film-tag ${evidence === "unknown" ? toneClass.caution : ""}`}
+				style={{ fontSize: T.body }}
+			>
+				{t(copy[evidence]).toUpperCase()}
+			</text>
+			{/* Evidence uses a line code, independent of the label's hue. */}
+			<rect
+				data-f={`${name}-line`}
+				x={x - 24}
+				y={y + T.body * 0.25}
+				width={24}
+				height={evidence === "observed" || evidence === "calculated" ? 2 : 4}
+				fill={
+					evidence === "unknown"
+						? `url(#${hatchId})`
+						: evidence === "inferred"
+							? "none"
+							: "var(--tone-ink)"
+				}
+				stroke={evidence === "inferred" ? "var(--tone-ink)" : "none"}
+			/>
+		</g>
 	);
 	return (
 		<>
+			<defs>
+				<pattern
+					id={hatchId}
+					width={4}
+					height={4}
+					patternUnits="userSpaceOnUse"
+				>
+					<path
+						d="M-1 1 1-1 M0 4 4 0 M3 5 5 3"
+						fill="none"
+						stroke={toneColor("caution")}
+					/>
+				</pattern>
+			</defs>
 			<Backdrop frame={L} />
 
 			{/* The claims. */}
@@ -331,9 +361,8 @@ function Scene({
 						width={room}
 						height={L.rowH}
 						rx={10}
-						className={
-							claim.evidence === "unknown" ? "wt-panel-shape" : "wt-focus-shape"
-						}
+						className="wt-panel-shape"
+						style={{ strokeWidth: claim.evidence === "unknown" ? 1 : 1.5 }}
 					/>
 					<text
 						x={margin + 14}
@@ -445,9 +474,12 @@ function Scene({
 						y={H * 0.935}
 						size={T.body}
 						anchor="end"
-						className={i === 0 ? "wt-film-num wt-film-accent" : "wt-film-num"}
+						className="wt-film-num"
 					>
-						{t(copy.ask)} {usd(quote.ask)}
+						{t(copy.ask)}{" "}
+						<tspan className={i === 0 ? toneClass.focus : undefined}>
+							{usd(quote.ask)}
+						</tspan>
 					</Word>
 				</g>
 			))}
@@ -512,10 +544,9 @@ function Scene({
 				anchor="start"
 				className="wt-film-type wt-film-accent"
 			>
-				{t([
-					`Tuesday OI +${BLOCK.openInterestChange}: mostly opening`,
-					`周二未平仓量 +${BLOCK.openInterestChange}：多为开仓`,
-				])}
+				{t(["Tuesday OI ", "周二未平仓量 "])}
+				<tspan className={toneClass.up}>+{BLOCK.openInterestChange}</tspan>
+				{t([": mostly opening", "：多为开仓"])}
 			</Word>
 			{evidenceTag("gf-0", margin + room - 16, gapHeadingY(0), "inferred")}
 			<g data-f="found-1">
@@ -766,7 +797,17 @@ function build(context: FilmContext) {
 			);
 			return;
 		}
-		d.flip(one(`gq-${i}`), one(`gf-${i}`), at);
+		// Fold only the text; its line code fades within the same existing swap.
+		const to = one(`gf-${i}`);
+		d.flip(one(`gq-${i}-label`), one(`gf-${i}-label`), at);
+		tl.to(one(`gq-${i}-line`), { opacity: 0, duration: 0.3 }, at);
+		tl.set(to, { opacity: 1 }, at + 0.3);
+		tl.fromTo(
+			one(`gf-${i}-line`),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.35 },
+			at + 0.3,
+		);
 		tl.set(one(`gq-${i}`), { opacity: 0 }, at + 0.3);
 	};
 
@@ -829,7 +870,11 @@ function build(context: FilmContext) {
 	tl.set(one("quote-print-price"), { attr: { class: "wt-film-num" } }, 19.65);
 	fade([quote[2], ...staleRows.map((i) => one(`ev-${i}-stale`))], 19.65);
 	staleRows.forEach((i) => {
-		tl.set(one(`row-${i}-box`), { attr: { class: "wt-panel-shape" } }, 19.65);
+		tl.set(
+			one(`row-${i}-box`),
+			{ attr: { class: "wt-panel-shape" }, strokeWidth: 1 },
+			19.65,
+		);
 		tl.to(rows[i], { opacity: 0.6, duration: 0.3 }, 19.65);
 	});
 
