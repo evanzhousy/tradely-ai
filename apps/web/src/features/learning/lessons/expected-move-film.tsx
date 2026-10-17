@@ -238,18 +238,24 @@ function Scene({
 							className="wt-band-neutral"
 							d={L.area(SPOT, SPOT)}
 						/>
+						{/* The tails are a size, not a direction: one tint, the shot's focus. */}
 						<path
 							data-f="b-tail-low"
-							className="wt-band-loss"
+							className="wt-band-neutral"
 							d={L.area(B_X[0], LOW)}
 						/>
 						<path
 							data-f="b-tail-high"
-							className="wt-band-loss"
+							className="wt-band-neutral"
 							d={L.area(HIGH, B_X[1])}
 						/>
 						<g clipPath={`url(#bell-${id})`}>
-							<path data-f="b-curve" className="wt-line-position" d={L.bell} />
+							<path
+								data-f="b-curve"
+								className="wt-line-position"
+								d={L.bell}
+								strokeDasharray="4 3"
+							/>
 						</g>
 						<text
 							data-f="b-center"
@@ -325,7 +331,7 @@ function Scene({
 								x={L.xB(price)}
 								y={L.yB(pdf(price) + 0.14)}
 								textAnchor="middle"
-								className="wt-halo wt-marker-label wt-loss"
+								className="wt-halo wt-marker-label wt-film-accent"
 							>
 								{t(copy.tail)}
 							</text>
@@ -343,7 +349,7 @@ function Scene({
 								<rect
 									data-f={`m-bar-${i}`}
 									className="wt-film-bar"
-									data-tone={multiple > 1 ? "loss" : "neutral"}
+									data-tone={multiple > 1 ? "total" : "neutral"}
 									x={L.barX(i) - L.barWidth / 2}
 									y={L.yM(0)}
 									width={L.barWidth}
@@ -374,7 +380,7 @@ function Scene({
 									x={L.left - 6}
 									y={L.yM(band) + 4}
 									textAnchor="end"
-									className="wt-small wt-accent"
+									className="wt-small"
 								>
 									{`${band}σ`}
 								</text>
@@ -385,7 +391,7 @@ function Scene({
 							x={L.barX(MAY)}
 							y={L.yM(PAST[MAY]) - 8}
 							textAnchor="middle"
-							className="wt-halo wt-marker-label wt-loss"
+							className="wt-halo wt-marker-label wt-film-accent"
 						>
 							{`${t(copy.earnings)} ${PAST[MAY]}×`}
 						</text>
@@ -741,6 +747,8 @@ function build(context: FilmContext) {
 	);
 	show(one("o-head"), 32.55);
 	rise(32.2);
+	// The inside steps back to a quiet tint as the tails take the focus.
+	tl.set(band, { attr: { class: "wt-band-quiet" } }, 32.8);
 	tl.to(
 		[one("b-tail-low"), one("b-tail-high")],
 		{ opacity: 1, duration: 0.6 },
