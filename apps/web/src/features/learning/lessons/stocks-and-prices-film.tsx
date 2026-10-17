@@ -345,16 +345,6 @@ function Scene({
 				>
 					{t(["ALFA · open", "ALFA · 开盘"]).toUpperCase()}
 				</Word>
-				{/* Name the completed rise after the moving price settles. */}
-				<Word
-					name="px-tag-up"
-					x={W / 2}
-					y={H * 0.3}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(["ALFA · up $1", "ALFA · 涨 $1"]).toUpperCase()}
-				</Word>
 				<Word
 					name="px"
 					x={W / 2}
@@ -950,9 +940,10 @@ function build(context: FilmContext) {
 		{ attr: { class: "wt-film-num wt-film-dim" } },
 		12.7,
 	);
-	d.count(px, OPEN + 100, 12.75, dollars, OPEN, 0.6);
-	d.count(mineVal, MINE * (OPEN + 100), 12.75, whole, MINE * OPEN, 0.6);
-	d.count(coVal, SHARES * (OPEN + 100), 12.75, company, SHARES * OPEN, 0.6);
+	// Start together once the explanatory headline has settled; each count lasts one second.
+	d.count(px, OPEN + 100, 13.55, dollars, OPEN, 1);
+	d.count(mineVal, MINE * (OPEN + 100), 13.55, whole, MINE * OPEN, 1);
+	d.count(coVal, SHARES * (OPEN + 100), 13.55, company, SHARES * OPEN, 1);
 	// A rounded zero stays dim; the sign colour follows the figure actually being read.
 	[
 		{ target: mineChg, to: MINE * 100, format: signed, unit: 100 },
@@ -969,7 +960,7 @@ function build(context: FilmContext) {
 			{ value: 0 },
 			{
 				value: to,
-				duration: 0.6,
+				duration: 1,
 				ease: "power2.out",
 				immediateRender: false,
 				onUpdate: () => {
@@ -981,11 +972,9 @@ function build(context: FilmContext) {
 					);
 				},
 			},
-			12.75,
+			13.55,
 		);
 	});
-	// Only name the completed dollar rise once all five figures have settled.
-	show(one("px-tag-up"), 13.7);
 
 	// ——— quote: you trade against the book ———
 	tl.addLabel("quote", 16.55);
@@ -1101,7 +1090,7 @@ function build(context: FilmContext) {
 		{ opacity: 0, duration: 0.3 },
 		22.25,
 	);
-	// The hero: each 0.3 s fill has a full 1 s settled dwell before the next operation.
+	// The hero: each exact fill cuts at its original settlement, then rests for a full second.
 	// Steady row highlights locate the fills without spending that dwell on moving brackets.
 	hide([heads[3], heads[4]], 26.15);
 	show(heads[5], 26.5, "below", 0.3);
@@ -1113,7 +1102,8 @@ function build(context: FilmContext) {
 	tl.to(total, { opacity: 1, duration: 0.3 }, 26.45);
 	take("ask", BUY_BIG.fills, 26.5, null, {
 		step: 1.3,
-		duration: 0.3,
+		duration: 0,
+		fillDelay: 0.3,
 		bracket: false,
 		paid: { from: 0 },
 		from: BUY10,
