@@ -1,3 +1,4 @@
+import { useId } from "react";
 import {
 	type Copy,
 	count,
@@ -14,6 +15,7 @@ import {
 	Brackets,
 	createDirector,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
@@ -57,7 +59,19 @@ import {
 
 const END = 47.5;
 const R2 = rowById("R2");
+const R3 = rowById("R3");
 const R2_TRADES = R2?.trades ?? [];
+const tradePremium = (row: typeof R2, tradeId: string) => {
+	const trade = row?.trades?.find((item) => item.id === tradeId);
+	return trade ? trade.price * trade.quantity * 100 : 0;
+};
+const spreadProof: readonly [Copy, Copy] = [
+	[
+		`R2 ${dollars(tradePremium(R2, "T-3"))} + R3 ${dollars(tradePremium(R3, "leg"))}`,
+		`R2 ${dollars(tradePremium(R2, "T-3"))} + R3 ${dollars(tradePremium(R3, "leg"))}`,
+	],
+	[`= ${dollars(spreadLegs)}`, `= ${dollars(spreadLegs)}`],
+];
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -95,8 +109,8 @@ const copy = {
 		"研究包 P1 · 10月18日 看涨 · 周一",
 	],
 	qLine: [
-		`It says premium traded: ${dollars(MONDAY)}.`,
-		`它说成交的权利金是 ${dollars(MONDAY)}。`,
+		`P1 reports at least ${dollars(MONDAY)}.`,
+		`P1 报告至少 ${dollars(MONDAY)}。`,
 	],
 	qBig: ["Would someone else get the same?", "别人重跑会得到同样的数吗？"],
 	pHead: [
@@ -127,7 +141,6 @@ const copy = {
 		`+${dollars(TUESDAY - MONDAY)} · R5: late Monday data`,
 		`+${dollars(TUESDAY - MONDAY)} · R5：周一数据延迟`,
 	],
-	spreadSummary: ["R2 + R3 spread", "R2 + R3 价差"],
 	fHead: ["A reader reruns it from its fields.", "读者按它的字段重跑。"],
 	f2Head: ["Drop a field, and the number breaks.", "少一个字段，数字就错了。"],
 	reader: ["a reader's rerun", "读者重跑"],
@@ -154,6 +167,7 @@ function Scene({
 	height: number;
 	locale: Locale;
 }) {
+	const unknownHatch = `cookbook-r5-${useId().replace(/:/g, "")}`;
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
@@ -177,6 +191,9 @@ function Scene({
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<Hatch id={unknownHatch} />
+			</defs>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -238,8 +255,17 @@ function Scene({
 							height={L.rowH}
 							rx={9}
 							className="wt-panel-shape"
-							style={premium === null ? { strokeDasharray: "4 3" } : undefined}
 						/>
+						{premium === null && (
+							<rect
+								x={margin}
+								y={L.rowY(i)}
+								width={room}
+								height={L.rowH}
+								rx={9}
+								fill={`url(#${unknownHatch})`}
+							/>
+						)}
 						<text
 							x={margin + 12}
 							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
@@ -521,24 +547,24 @@ function Scene({
 				</g>
 			))}
 
-			{/* One compact line names the combined spread removed from P3. */}
-			<g data-f="log-spread-summary">
+			{/* A compact two-leg proof shows the combined spread removed from P3. */}
+			<g data-f="log-spread-proof">
 				<text
 					x={margin + 16}
 					y={spreadProofY}
-					className="wt-film-type"
+					className="wt-film-num"
 					style={{ fontSize: spreadProofSize }}
 				>
-					{t(copy.spreadSummary)}
+					{t(spreadProof[0])}
 				</text>
 				<text
 					x={margin + room - 16}
-					y={spreadProofY}
+					y={spreadProofY + spreadProofSize * 1.25}
 					textAnchor="end"
 					className="wt-film-num"
 					style={{ fontSize: spreadProofSize }}
 				>
-					{dollars(spreadLegs)}
+					{t(spreadProof[1])}
 				</text>
 			</g>
 
@@ -730,7 +756,7 @@ function build(context: FilmContext) {
 		one("rerun-back"),
 		one("rec-0-n"),
 		one("rec-0-note"),
-		one("log-spread-summary"),
+		one("log-spread-proof"),
 		...[1, 2].flatMap((i) => [
 			one(`log-${i}-expression`),
 			one(`log-${i}-operand`),
@@ -911,7 +937,7 @@ function build(context: FilmContext) {
 	show(
 		[
 			recs[2],
-			one("log-spread-summary"),
+			one("log-spread-proof"),
 			one("log-2-expression"),
 			one("log-2-operand"),
 			one("log-2-equals"),
@@ -926,7 +952,7 @@ function build(context: FilmContext) {
 		{ opacity: 0.45, duration: 0.3 },
 		37.25,
 	);
-	// The concise P3 spread total and subtraction hold through the claim handoff.
+	// P3's two-leg proof and subtraction hold through the claim handoff.
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.4);
@@ -941,7 +967,7 @@ function build(context: FilmContext) {
 			one("log-2-equals"),
 			one("log-2-result"),
 			one("log-r5-cause"),
-			one("log-spread-summary"),
+			one("log-spread-proof"),
 		],
 		41.4,
 	);
