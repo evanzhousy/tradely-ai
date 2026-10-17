@@ -374,39 +374,39 @@
 .wt-svg .wt-film-tip {
 	fill: color-mix(in oklab, var(--pen, var(--diagram-accent)) 35%, white);
 }
-/* Corner brackets (`Brackets`) that snap onto the thing in focus. */
+/* Corner brackets (`Brackets`) that snap onto the thing in focus, in focus or in the colour of
+   the figure they hold; a glowing set glows in its own colour, one cue in one colour. */
 .wt-film-lock {
+	--lock: var(--diagram-accent);
 	fill: none;
-	stroke: var(--diagram-accent);
+	stroke: var(--lock);
 	stroke-width: 2;
 	stroke-linecap: round;
 	stroke-linejoin: round;
 }
 .wt-film-lock[data-tone="gain"] {
-	stroke: var(--diagram-gain);
+	--lock: var(--diagram-gain);
 }
 .wt-film-lock[data-tone="loss"] {
-	stroke: var(--diagram-loss);
+	--lock: var(--diagram-loss);
 }
 .wt-film-lock[data-tone="call"] {
-	stroke: var(--tone-call);
+	--lock: var(--tone-call);
 }
 .wt-film-lock[data-tone="put"] {
-	stroke: var(--tone-put);
+	--lock: var(--tone-put);
 }
 .wt-film-lock[data-tone="caution"] {
-	stroke: var(--tone-caution);
+	--lock: var(--tone-caution);
 }
 /* Retired: a writer's orange brackets. Writers are named, not coloured. */
 .wt-film-lock[data-tone="short"] {
-	stroke: var(--wt-short);
+	--lock: var(--wt-short);
 }
 .wt-film-lock[data-glow] {
 	stroke-width: 2.5;
-	filter: drop-shadow(0 0 2px var(--diagram-accent))
-		drop-shadow(
-			0 0 9px color-mix(in oklab, var(--diagram-accent) 60%, transparent)
-		);
+	filter: drop-shadow(0 0 2px var(--lock))
+		drop-shadow(0 0 9px color-mix(in oklab, var(--lock) 60%, transparent));
 }
 .wt-film-ghost {
 	fill: var(--muted);
