@@ -568,9 +568,7 @@ function Scene({
 						className="wt-film-num wt-film-dim"
 						style={{ fontSize: T.body }}
 					>
-						{locale === "zh"
-							? `${count(BIG)} 股 × 最新价 ${usd(alfaStockBook.last)}`
-							: `${count(BIG)} shares × last price ${usd(alfaStockBook.last)}`}
+						{`${usd(alfaStockBook.last)} × ${count(BIG)}`}
 					</text>
 				)}
 			</g>
@@ -841,7 +839,7 @@ function build(context: FilmContext) {
 			duration?: number;
 			fillDelay?: number;
 			bracket?: boolean;
-			paid?: { from: number };
+			paid?: { from: number; finalOnly?: boolean };
 			from?: { asks: readonly Level[]; bids: readonly Level[] };
 		} = {},
 	) => {
@@ -866,7 +864,8 @@ function build(context: FilmContext) {
 			};
 			const renderFill = () => {
 				const filled = renderBook();
-				if (paid) total.textContent = dollars(priorPaid + fill.price * filled);
+				if (paid && (!paid.finalOnly || i === fills.length - 1))
+					total.textContent = dollars(priorPaid + fill.price * filled);
 			};
 			if (bracket)
 				d.lock(lockRow, when, { around: hit(side, fill.price), pad: 4 });
@@ -1112,6 +1111,7 @@ function build(context: FilmContext) {
 		22.25,
 	);
 	// The hero: each exact fill cuts at its original settlement, then rests for a full second.
+	// Keep the paid total hidden until the last fill, so only the final numerator is read.
 	// Steady row highlights locate the fills without spending that dwell on moving brackets.
 	hide([heads[3], heads[4]], 26.15);
 	show(heads[5], 26.5, "below", 0.3);
@@ -1120,15 +1120,22 @@ function build(context: FilmContext) {
 	hide(total, 26.15, 0.3);
 	// Reset the desktop exit translation before this mark becomes a later carry source.
 	tl.set(total, { x: 0, y: 0, textContent: dollars(0) }, 26.45);
-	tl.to(total, { opacity: 1, duration: 0.3 }, 26.45);
-	take("ask", BUY_BIG.fills, 26.5, null, {
-		step: 1.3,
+	const heroTakeAt = 26.5;
+	const heroFillStep = 1.3;
+	const heroFillDelay = 0.3;
+	take("ask", BUY_BIG.fills, heroTakeAt, null, {
+		step: heroFillStep,
 		duration: 0,
-		fillDelay: 0.3,
+		fillDelay: heroFillDelay,
 		bracket: false,
-		paid: { from: 0 },
+		paid: { from: 0, finalOnly: true },
 		from: BUY10,
 	});
+	tl.to(
+		total,
+		{ opacity: 1, duration: 0.3 },
+		heroTakeAt + (BUY_BIG.fills.length - 1) * heroFillStep + heroFillDelay,
+	);
 	// Register the already-settled shared-state total for the director's carry measurement.
 	// This is a constant, zero-duration handoff, never a second animated counter.
 	d.count(total, BUY_BIG.notional, 29.4, dollars, BUY_BIG.notional, 0);
