@@ -472,7 +472,8 @@ function Scene({
 					[
 						"meter",
 						[
-							["m-value", copy.value, "$0", `wt-film-num ${toneClass.call}`],
+							// Worth nothing at the start: zero reads dim until the call has value.
+							["m-value", copy.value, "$0", "wt-film-num wt-film-dim"],
 							[
 								"m-net",
 								copy.net,
@@ -784,10 +785,19 @@ function build(context: FilmContext) {
 	};
 	/** The marker on a right's value line, and the meter read from the marker. */
 	const onRight =
-		(f: (spot: number) => number, netAt?: (spot: number) => number) =>
+		(
+			f: (spot: number) => number,
+			netAt?: (spot: number) => number,
+			role: string = toneClass.call,
+		) =>
 		(spot: number) => {
 			gsap.set(marker, { attr: { cx: L.x(spot), cy: L.y(f(spot)) } });
 			value.textContent = dollars(f(spot));
+			// A right worth nothing reads dim; any value takes its right's colour.
+			value.setAttribute(
+				"class",
+				`wt-film-num ${Math.round(f(spot)) === 0 ? "wt-film-dim" : role}`,
+			);
 			if (netAt) {
 				const net = netAt(spot);
 				netResult.textContent = signed(net);
@@ -911,7 +921,7 @@ function build(context: FilmContext) {
 	);
 	tl.set(marker, { attr: { class: `wt-chip ${toneClass.put}` } }, 19.6);
 	tl.set(value, { attr: { class: `wt-film-num ${toneClass.put}` } }, 19.6);
-	walk(PUT_AT, PUT_AT, 19.6, 0.01, onRight(putValue));
+	walk(PUT_AT, PUT_AT, 19.6, 0.01, onRight(putValue, undefined, toneClass.put));
 	d.trace(line("put-line"), 18.1, { duration: 0.5 });
 	show(one("put-tag"), 18.1);
 	// Curve settles at 18.6; the settled example arrives after 1 s of quiet,
