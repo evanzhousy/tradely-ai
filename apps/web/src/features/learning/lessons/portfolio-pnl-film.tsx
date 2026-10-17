@@ -22,7 +22,6 @@ import {
 	benAtExpiry,
 	benMarked,
 	buyFees,
-	buyingPower,
 	CLOSE_SPOT,
 	callsClose,
 	dollars,
@@ -56,7 +55,7 @@ import {
  *   open      0–4        "P&L"
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
  *   account   10.4–19.0  +$160, +$1,050, −$10.40: +$1,199.60 earned; +$5,000 deposited;
- *                        buying power $36,799.20
+ *                        buying power at 2 × cash, including 50% credit
  *   calls     19.0–33.7  16 contracts, +$1,050 unrealized; sell 6, oldest first; +$330
  *                        and +$645 become +$975, locked; then the $75, drawn: bid to mid
  *   short     33.7–45.8  Ben: +$4,100 received, −$675 marked, −$15,900 at $120;
@@ -175,7 +174,7 @@ const copy = {
 		`+${dollars(yourAccount.deposit)} deposited`,
 		`存入 +${dollars(yourAccount.deposit)}`,
 	],
-	bpTag: ["buying power · ½ credit", "购买力 · 一半授信"],
+	bpTag: ["buying power", "购买力"],
 	lotsHead: [
 		`Sell ${SOLD} at the bid: still ${signed(held.unrealized)}?`,
 		`以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
@@ -195,13 +194,13 @@ const copy = {
 	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
 	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
 	markInput: [`mark: mid ${price(MARK)}`, `估值：中间价 ${price(MARK)}`],
-	heldFormula: ["(mid − cost) × 100", "(中间价 − 成本) × 100"],
+	heldFormula: [
+		"P&L = contracts × (mid − cost per share) × 100 shares",
+		"盈亏 = 张数 × (中间价 − 每股成本) × 100 股",
+	],
 	bid: ["bid", "买价"],
 	mid: ["mid", "中间价"],
-	bpNote: [
-		`2 × cash ${dollars(buyingPower / 2)}`,
-		`现金 ${dollars(buyingPower / 2)} × 2`,
-	],
+	bpNote: ["includes 50% credit", "含 50% 授信"],
 	benHead: [
 		`Ben wrote ${BEN} of these calls.`,
 		`Ben 卖出了 ${BEN} 张同样的看涨。`,
@@ -228,8 +227,8 @@ const copy = {
 	],
 	claimBig: ["P&L is what your positions earned.", "盈亏是持仓赚到的。"],
 	claimSub: [
-		"Not deposits, not buying power; short-call losses are uncapped.",
-		"不是存入或购买力；卖出看涨的亏损没有上限。",
+		"Deposits, buying power excluded; short-call losses uncapped.",
+		"盈亏不计存入和购买力；卖出看涨亏损无上限。",
 	],
 	nextBig: ["Next: performance", "下一课：绩效"],
 	nextSub: ["returns, win rate and drawdown", "收益、胜率与回撤"],
@@ -276,9 +275,6 @@ function Scene({
 		`${t(["calls", "看涨"])} ${signed(callsClose - PAID * 100)}`,
 		`${t(["fees", "费用"])} ${signed(-buyFees)}`,
 	];
-	// A brace connects the calculation to the six oldest cells in the first row.
-	const fifoFirst = L.cell(0);
-	const fifoLast = L.cell(SOLD - 1);
 	// A tight outline per grid row links each surviving lot without crossing adjacent cells.
 	const remainingBraces = remainingLots.flatMap((lot, lotIndex) => {
 		const rows = new Map<number, { left: number; right: number }>();
@@ -430,107 +426,109 @@ function Scene({
 							{t(copy.deposited)}
 						</text>
 					</g>
-
-					{/* Ben's short calls. */}
-					<g data-f="ben">
-						<text x={L.left} y={L.bTop - 12} className="wt-small">
-							{t(copy.benAxis)}
-						</text>
-						{[0, -10_000, -20_000].map((tick) => (
-							<g key={tick}>
-								<path
-									d={`M${L.left} ${L.by(tick)}H${L.right}`}
-									className={tick === 0 ? "wt-axis" : "wt-grid"}
-								/>
-								<text
-									x={L.left - 8}
-									y={L.by(tick) + 4}
-									textAnchor="end"
-									className="wt-small"
-								>
-									{tick === 0 ? "$0" : `−$${-tick / 1000}k`}
-								</text>
-							</g>
-						))}
-						{[90, 100, 110, 120, 130, 140].map((tick) => (
-							<text
-								key={tick}
-								x={L.bx(tick)}
-								y={L.bBottom + 16}
-								textAnchor={tick === 140 ? "end" : "middle"}
-								className="wt-small"
-							>
-								{`$${tick}`}
-							</text>
-						))}
+				</g>
+			</g>
+			{/* Ben's chart scaffold appears before its line and point data. */}
+			<g data-f="ben-scaffold">
+				<text x={L.left} y={L.bTop - 12} className="wt-small">
+					{t(copy.benAxis)}
+				</text>
+				{[0, -10_000, -20_000].map((tick) => (
+					<g key={tick}>
 						<path
-							data-f="premium"
-							d={`M${L.bx(90)} ${L.by(RECEIVED / 100)}H${L.bx(140)}`}
-							className="wt-line-reference"
-							style={{ stroke: toneColor("up"), strokeDasharray: "none" }}
+							d={`M${L.left} ${L.by(tick)}H${L.right}`}
+							className={tick === 0 ? "wt-axis" : "wt-grid"}
 						/>
 						<text
-							data-f="premium-label"
-							x={L.bx(140) - 4}
-							y={L.by(RECEIVED / 100) - 8}
+							x={L.left - 8}
+							y={L.by(tick) + 4}
 							textAnchor="end"
-							className={`wt-small wt-halo ${toneClass.up}`}
+							className="wt-small"
 						>
-							{t(copy.received)}
-						</text>
-						<path
-							data-f="expiry"
-							strokeDasharray="5 4"
-							d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${offX} ${offY}`}
-							className="wt-line-position"
-							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
-						/>
-						<path
-							data-f="expiry-arrow"
-							d={`M${offX - arrow.dx * 9 - arrow.dy * 6} ${offY - arrow.dy * 9 + arrow.dx * 6}L${offX} ${offY}L${offX - arrow.dx * 9 + arrow.dy * 6} ${offY - arrow.dy * 9 - arrow.dx * 6}`}
-							className="wt-line-position"
-							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
-						/>
-						<circle
-							data-f="mark-dot"
-							cx={markX}
-							cy={markY}
-							r={6}
-							className="wt-chip"
-							style={{ fill: "var(--diagram-loss)" }}
-							stroke="var(--foreground)"
-							strokeWidth={1.5}
-						/>
-						<text
-							data-f="mark-label"
-							x={narrow ? Math.max(markX + 24, L.bx(110) + 12) : markX - 10}
-							y={markY + 20}
-							textAnchor={narrow ? "start" : "end"}
-							className="wt-halo wt-loss wt-marker-label"
-						>
-							{t(copy.benMark)}
-						</text>
-						<circle
-							data-f="far-dot"
-							cx={farX}
-							cy={farY}
-							r={6}
-							className="wt-chip"
-							style={{ fill: toneColor("down") }}
-							stroke="var(--foreground)"
-							strokeWidth={1.5}
-						/>
-						<text
-							data-f="far-label"
-							x={narrow ? farX - 10 : farX + 10}
-							y={narrow ? farY + 20 : farY - 8}
-							textAnchor={narrow ? "end" : "start"}
-							className="wt-halo wt-loss wt-marker-label"
-						>
-							{t(copy.far)}
+							{tick === 0 ? "$0" : `−$${-tick / 1000}k`}
 						</text>
 					</g>
-				</g>
+				))}
+				{[90, 100, 110, 120, 130, 140].map((tick) => (
+					<text
+						key={tick}
+						x={L.bx(tick)}
+						y={L.bBottom + 16}
+						textAnchor={tick === 140 ? "end" : "middle"}
+						className="wt-small"
+					>
+						{`$${tick}`}
+					</text>
+				))}
+			</g>
+			{/* Ben's short-call data. */}
+			<g data-f="ben">
+				<path
+					data-f="premium"
+					d={`M${L.bx(90)} ${L.by(RECEIVED / 100)}H${L.bx(140)}`}
+					className="wt-line-reference"
+					style={{ stroke: toneColor("up"), strokeDasharray: "none" }}
+				/>
+				<text
+					data-f="premium-label"
+					x={L.bx(140) - 4}
+					y={L.by(RECEIVED / 100) - 8}
+					textAnchor="end"
+					className={`wt-small wt-halo ${toneClass.up}`}
+				>
+					{t(copy.received)}
+				</text>
+				<path
+					data-f="expiry"
+					strokeDasharray="5 4"
+					d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${offX} ${offY}`}
+					className="wt-line-position"
+					style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
+				/>
+				<path
+					data-f="expiry-arrow"
+					d={`M${offX - arrow.dx * 9 - arrow.dy * 6} ${offY - arrow.dy * 9 + arrow.dx * 6}L${offX} ${offY}L${offX - arrow.dx * 9 + arrow.dy * 6} ${offY - arrow.dy * 9 - arrow.dx * 6}`}
+					className="wt-line-position"
+					style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
+				/>
+				<circle
+					data-f="mark-dot"
+					cx={markX}
+					cy={markY}
+					r={6}
+					className="wt-chip"
+					style={{ fill: "var(--diagram-loss)" }}
+					stroke="var(--foreground)"
+					strokeWidth={1.5}
+				/>
+				<text
+					data-f="mark-label"
+					x={narrow ? Math.max(markX + 24, L.bx(110) + 12) : markX - 10}
+					y={markY + 20}
+					textAnchor={narrow ? "start" : "end"}
+					className="wt-halo wt-loss wt-marker-label"
+				>
+					{t(copy.benMark)}
+				</text>
+				<circle
+					data-f="far-dot"
+					cx={farX}
+					cy={farY}
+					r={6}
+					className="wt-chip"
+					style={{ fill: toneColor("down") }}
+					stroke="var(--foreground)"
+					strokeWidth={1.5}
+				/>
+				<text
+					data-f="far-label"
+					x={narrow ? farX - 10 : farX + 10}
+					y={narrow ? farY + 20 : farY - 8}
+					textAnchor={narrow ? "end" : "start"}
+					className="wt-halo wt-loss wt-marker-label"
+				>
+					{t(copy.far)}
+				</text>
 			</g>
 			<g data-f="meter">
 				<Word
@@ -553,6 +551,8 @@ function Scene({
 				>
 					{dollars(valueOpen)}
 				</Word>
+			</g>
+			<g data-f="bp">
 				<Word
 					name="m-tag-bp"
 					x={L.right}
@@ -571,19 +571,19 @@ function Scene({
 					anchor="end"
 					className="wt-film-num wt-film-accent"
 				>
-					{dollars(buyingPower)}
+					{t(["2 × cash", "现金 × 2"])}
+				</Word>
+				<Word
+					name="m-bp-note"
+					x={L.right}
+					y={bpY + T.num * 1.05 + T.body * 1.9}
+					size={T.body}
+					anchor="end"
+					className="wt-film-num"
+				>
+					{t(copy.bpNote)}
 				</Word>
 			</g>
-			<Word
-				name="m-bp-note"
-				x={L.right}
-				y={bpY + T.num * 1.05 + T.body * 1.9}
-				size={T.body}
-				anchor="end"
-				className="wt-film-num wt-film-dim"
-			>
-				{t(copy.bpNote)}
-			</Word>
 			<g data-f="answer">
 				<Word
 					name="earned-tag"
@@ -651,12 +651,6 @@ function Scene({
 			{headline("e-head", copy.earnedHead, copy.earnedHead)}
 			{/* Sixteen contracts in two lots. */}
 			<g data-f="lots">
-				<path
-					data-f="fifo-brace"
-					d={`M${fifoFirst.x} ${fifoFirst.y - 6}V${fifoFirst.y - 12}H${fifoLast.x + L.square}V${fifoFirst.y - 6}`}
-					className="wt-film-link"
-					style={{ strokeDasharray: "none", stroke: "var(--diagram-accent)" }}
-				/>
 				<Word
 					name="fifo-eq"
 					x={fifoX}
@@ -693,28 +687,29 @@ function Scene({
 					/>
 				))}
 				<g data-f="held-proof">
-					{narrow && (
-						<Word
+					{/* The formula is the phone's: on the wide frame the rows say it themselves, and
+					    the line would sit where the realized and unrealized totals land. */}
+					<g style={narrow ? undefined : { display: "none" }}>
+						<Lines
 							name="held-formula"
+							text={t(copy.heldFormula)}
 							x={W / 2}
-							y={fifoY - T.body * 7.5}
+							y={H * 0.7}
 							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{t(copy.heldFormula)}
-						</Word>
-					)}
+							maxWidth={room}
+							className="wt-film-num"
+						/>
+					</g>
 					{remainingLots.map((lot, i) => {
-						// The shared phone caption supplies the per-contract arithmetic once.
-						// Keep each lot's quantity, cost and contribution in its short row.
-						const equation = narrow
-							? `${lot.quantity} @ ${price(lot.price)} →`
-							: `${lot.quantity} × (${price(MARK)} − ${price(lot.price)}) × 100 =`;
+						// One shared formula explains these compact quantity, cost and result rows.
+						const lotLabel = t([
+							`${lot.quantity} contracts · ${price(lot.price)}/share`,
+							`${lot.quantity} 张看涨 · 每股 ${price(lot.price)}`,
+						]);
+						const contribution = signed(lot.pnl);
+						const labelWidth = textWidth(lotLabel, T.body);
 						const rowWidth =
-							20 +
-							textWidth(equation, T.body) +
-							8 +
-							textWidth(signed(lot.pnl), T.body);
+							20 + labelWidth + 8 + textWidth(contribution, T.body);
 						const x = (W - rowWidth) / 2;
 						const y = fifoY + (i - 1) * T.body * 1.5;
 						return (
@@ -729,15 +724,24 @@ function Scene({
 									data-tone={lot.tone}
 								/>
 								<Word
-									name={`held-eq-${i}`}
+									name={`held-lot-${i}`}
 									x={x + 20}
 									y={y}
 									size={T.body}
 									anchor="start"
 									className="wt-film-num"
 								>
-									{equation}{" "}
-									<tspan className={toneClass.up}>{signed(lot.pnl)}</tspan>
+									{lotLabel}
+								</Word>
+								<Word
+									name={`held-contribution-${i}`}
+									x={x + 20 + labelWidth + 8}
+									y={y}
+									size={T.body}
+									anchor="start"
+									className="wt-film-num wt-film-gain"
+								>
+									{contribution}
 								</Word>
 							</g>
 						);
@@ -816,15 +820,10 @@ function Scene({
 				))}
 				{(
 					[
-						["r", copy.realized, zeroed(0), signed(fifo.realized)],
-						[
-							"u",
-							copy.unrealized,
-							signed(held.unrealized),
-							signed(fifo.unrealized),
-						],
+						["r", copy.realized, signed(fifo.realized)],
+						["u", copy.unrealized, signed(fifo.unrealized)],
 					] as const
-				).map(([key, tag, value, settled], i) => (
+				).map(([key, tag, settled], i) => (
 					<g key={key}>
 						<Word
 							name={`${key}-tag`}
@@ -834,15 +833,6 @@ function Scene({
 							className="wt-film-tag"
 						>
 							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`${key}-open`}
-							x={W * L.pair[i]}
-							y={H * (narrow ? 0.76 : 0.68) + T.num * 1.15}
-							size={T.num}
-							className={`wt-film-num ${i === 0 ? "wt-film-dim" : toneClass.up}`}
-						>
-							{value}
 						</Word>
 						<Word
 							name={`${key}-val`}
@@ -1119,6 +1109,7 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		one("ben"),
+		one("ben-scaffold"),
 		...segments.map(({ name }) => one(name)),
 		one("earned"),
 		...["stock", "calls", "fees"].map((part) => one(`breakdown-${part}`)),
@@ -1127,7 +1118,7 @@ function build(context: FilmContext) {
 		one("premium-label"),
 		one("expiry"),
 		one("expiry-arrow"),
-		one("m-bp-note"),
+		one("bp"),
 		one("mark-dot"),
 		one("mark-label"),
 		one("far-dot"),
@@ -1145,9 +1136,6 @@ function build(context: FilmContext) {
 		one("mark-input"),
 		one("r-tag"),
 		one("u-tag"),
-		one("r-open"),
-		one("u-open"),
-		one("fifo-brace"),
 		one("fifo-eq"),
 		one("fifo-result"),
 		...kids("held-proof"),
@@ -1184,7 +1172,8 @@ function build(context: FilmContext) {
 	tl.addLabel("account", 10.4);
 	hide(flat("q"), 10.4);
 	show(one("a-head"), 10.6, "above");
-	rise(10.7);
+	// The axis and ticks settle before the first account segment enters at 10.5.
+	rise(8.7);
 	show([one("m-tag"), meter], 11.2, "above");
 	grow("seg-base", 10.5);
 	// Each caption starts at zero, then follows the same rounded contribution as the bar and meter.
@@ -1215,33 +1204,34 @@ function build(context: FilmContext) {
 	settleContribution("deposit", 16.0);
 	show(one("deposited"), 15.5);
 	// The deposit headline settles at 16.1; read the whole beat for a quiet second.
-	show(one("m-tag-bp"), 17.1, "above", 0.3);
-	show(one("m-bp"), 17.1, "below", 0.3);
-	show(one("m-bp-note"), 17.4, "below", 0.3);
+	show(one("bp"), 17.1, "below", 0.3);
 
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.0);
 	hide(one("e-head"), 19.1);
-	hide([...kids("meter"), one("m-bp-note"), ...kids("answer")], 19.0);
+	hide([...kids("meter"), one("bp"), ...kids("answer")], 19.0);
 	sink(19.0);
 	// The repeated cells arrive as one lot diagram; omit the decorative sixteen-cell ripple.
-	for (const square of squares) land(square, 19.4, 0.4);
+	for (const square of squares) land(square, 21.0, 0.4);
 	show([one("r-tag"), one("u-tag")], 19.4);
-	show([one("r-open"), one("u-open")], 19.5);
 	show(one("legend-lots"), 19.4);
 	show(one("mark-input"), 19.4, "below", 0.3);
 	show(one("sale-input"), 19.4, "below", 0.3);
-	show(one("l-head"), 19.6, "above");
-	// Establish FIFO and its inputs, then read the complete setup for a second (20.1–21.1).
-	show(one("fifo-tag"), 19.8, "below", 0.3);
-	d.trace(one<SVGPathElement>("fifo-brace"), 19.8, { duration: 0.3 });
-	show(one("fifo-eq"), 19.8, "above", 0.3);
-	// Clear stale readings before membership changes; results after '=' arrive settled.
-	hide([one("r-open"), one("u-open")], 21.1, 0.3, 0);
+	show(one("l-head"), 19.5, "above");
+	// The question and lot scaffold settle by 20.0, then stay still for a second before the cells enter at 21.0.
+	show(one("fifo-tag"), 19.7, "below", 0.3);
+	show(one("fifo-eq"), 19.7, "above", 0.3);
 	tl.to(squares.slice(0, SOLD), { opacity: 0.2, duration: 0.4 }, 21.4);
 	show([realized, one("fifo-result")], 21.8, "below", 0.3);
 	// Preserve the realized proof's full second of quiet before its footer leaves.
-	hide([one("fifo-eq"), one("fifo-result"), one("fifo-brace")], 23.1, 0.3, 0);
+	hide([one("fifo-eq"), one("fifo-result")], 23.1, 0.3, 0);
+	// The shared formula precedes the compact contribution rows; the accepted row times stay fixed.
+	tl.fromTo(
+		one("held-formula"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power2.out" },
+		23.1,
+	);
 	// Each outlined lot gets its own row and a second to read before the next contribution.
 	remainingLots.forEach((_, i) => {
 		const at = 23.4 + i * 1.3;
@@ -1252,9 +1242,7 @@ function build(context: FilmContext) {
 		}
 		// Fade in place: moving the footer would cross the phone's result row.
 		tl.fromTo(
-			L.narrow && i === 0
-				? [one("held-formula"), one(`held-row-${i}`)]
-				: one(`held-row-${i}`),
+			one(`held-row-${i}`),
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.3 },
 			at,
@@ -1326,12 +1314,14 @@ function build(context: FilmContext) {
 	);
 	tl.set(one("acct"), { opacity: 0 }, 33.8);
 	tl.set(one("ben"), { opacity: 1 }, 33.8);
+	// Ben's scaffold arrives once the gap has gone (no crossfade over it) and stands a second
+	// before his premium.
+	show(one("ben-scaffold"), 34.0, "below", 0.3);
 	show(one("b-head"), 34.05, "above");
-	rise(34.1);
-	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 34.6);
-	show(one("premium-label"), 34.9);
-	land(one("mark-dot"), 35.3);
-	show(one("mark-label"), 35.5);
+	tl.to(one("premium"), { opacity: 1, duration: 0.5 }, 35.3);
+	show(one("premium-label"), 35.3);
+	land(one("mark-dot"), 35.6);
+	show(one("mark-label"), 35.8);
 	d.swap(one("b-head"), one("x-head"), 37.6);
 	d.trace(one<SVGPathElement>("expiry"), 37.7, {
 		duration: 1.4,
@@ -1347,6 +1337,7 @@ function build(context: FilmContext) {
 	show(one("far-label"), 39.1);
 	// Cut: the claim.
 	hide(one("x-head"), 41.45);
+	hide([one("ben-scaffold"), one("ben")], 41.45, 0.4, 0);
 	sink(41.45);
 	tl.fromTo(
 		one("z-big"),
@@ -1366,8 +1357,8 @@ function build(context: FilmContext) {
 export const portfolioPnlFilm: Film = {
 	id: "portfolio-pnl",
 	label: [
-		`P&L, as a short film: your account rising from ${dollars(valueOpen)} at Monday's open to ${dollars(afterDeposit)} on Tuesday; ALFA ${signed(stockClose - stockOpen)}, the calls ${signed(callsClose - PAID * 100)} and fees ${signed(-buyFees)} making ${signed(PNL)} earned, and a ${dollars(yourAccount.deposit)} deposit that is not profit; buying power of ${dollars(buyingPower)}, half of it credit; ${HELD} calls in two lots, ${signed(held.unrealized)} unrealized until ${SOLD} are sold at the bid, split ${signed(fifo.realized)} realized and ${signed(fifo.unrealized)} unrealized first in, first out, ${signed(fifo.realized + fifo.unrealized)} in all; and Ben's ${BEN} short calls, ${dollars(RECEIVED)} received and ${signed(benAtExpiry(120))} if ALFA settles at $120`,
-		`盈亏短片：你的账户从周一开盘的 ${dollars(valueOpen)} 升到周二的 ${dollars(afterDeposit)}；ALFA ${signed(stockClose - stockOpen)}、看涨 ${signed(callsClose - PAID * 100)}、费用 ${signed(-buyFees)}，合计赚了 ${signed(PNL)}，而 ${dollars(yourAccount.deposit)} 的存入不是利润；购买力 ${dollars(buyingPower)}，一半是授信；${HELD} 张看涨分两批，卖出 ${SOLD} 张之前都是未实现的 ${signed(held.unrealized)}，按买价卖出后先进先出分为已实现 ${signed(fifo.realized)} 和未实现 ${signed(fifo.unrealized)}，合计 ${signed(fifo.realized + fifo.unrealized)}；以及 Ben 的 ${BEN} 张看涨空头：收到 ${dollars(RECEIVED)}，若 ALFA 结算于 $120 则为 ${signed(benAtExpiry(120))}`,
+		`P&L, as a short film: your account rising from ${dollars(valueOpen)} at Monday's open to ${dollars(afterDeposit)} on Tuesday; ALFA ${signed(stockClose - stockOpen)}, the calls ${signed(callsClose - PAID * 100)} and fees ${signed(-buyFees)} making ${signed(PNL)} earned, and a ${dollars(yourAccount.deposit)} deposit that is not profit; buying power at 2 × cash, including 50% credit; ${HELD} calls in two lots, ${signed(held.unrealized)} unrealized until ${SOLD} are sold at the bid, split ${signed(fifo.realized)} realized and ${signed(fifo.unrealized)} unrealized first in, first out, ${signed(fifo.realized + fifo.unrealized)} in all; and Ben's ${BEN} short calls, ${dollars(RECEIVED)} received and ${signed(benAtExpiry(120))} if ALFA settles at $120`,
+		`盈亏短片：你的账户从周一开盘的 ${dollars(valueOpen)} 升到周二的 ${dollars(afterDeposit)}；ALFA ${signed(stockClose - stockOpen)}、看涨 ${signed(callsClose - PAID * 100)}、费用 ${signed(-buyFees)}，合计赚了 ${signed(PNL)}，而 ${dollars(yourAccount.deposit)} 的存入不是利润；购买力为现金的 2 倍，含 50% 授信；${HELD} 张看涨分两批，卖出 ${SOLD} 张之前都是未实现的 ${signed(held.unrealized)}，按买价卖出后先进先出分为已实现 ${signed(fifo.realized)} 和未实现 ${signed(fifo.unrealized)}，合计 ${signed(fifo.realized + fifo.unrealized)}；以及 Ben 的 ${BEN} 张看涨空头：收到 ${dollars(RECEIVED)}，若 ALFA 结算于 $120 则为 ${signed(benAtExpiry(120))}`,
 	],
 	stage: "dark",
 	shots: [
