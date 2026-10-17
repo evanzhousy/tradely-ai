@@ -172,8 +172,8 @@ At most seven beats (one headline each) and about 45 s played (`END` about 47). 
 | `Hatch` | A diagonal hatch pattern for regions no value can reach |
 | `TitleCard` | The opening name and subtitle |
 | `EndCard` | The closing next card and the call to the playground |
-| `PenTip` | A glowing pen tip for `trace`: a bright core in a wide, faint halo. Put it in the same group as the line it leads. |
-| `Brackets` | Corner brackets around a box, for `lock`; `tone="gain"` or `"loss"` for a bid or an ask, `"short"` for a writer; `glow` for the hero's |
+| `PenTip` | A glowing pen tip for `trace`: a bright core in a wide, faint halo, in its line's colour (`color`, a `toneColor`). Put it in the same group as the line it leads. |
+| `Brackets` | Corner brackets around a box, for `lock`: in focus by default, or in the colour of a figure the shot reads by its sign or right (`tone` `"gain"`, `"loss"`, `"call"`, `"put"`, `"caution"`); `glow` for the hero's |
 
 ### Director moves: `createDirector(context, frame, end)`
 
@@ -197,21 +197,54 @@ At most seven beats (one headline each) and about 45 s played (`END` about 47). 
 | `cam(scale, focus, target)`, `home` | Camera props for the `world` group: scale about the chart so `focus` lands on `target` |
 | `open(at)`, `tag(at)`, `close(at)` | The title wipe, the title shrinking to the corner tag, the end card |
 
-### Colours mean something
+### Colours: one colour, one meaning
 
-| Class | Meaning |
+The stage names six colours by what they mean (`--tone-*` on `.wt-film[data-stage="dark"]`); everything else is ink or dim. Each role reads at 7:1 or better on the stage. Call and put are far apart for every viewer (ΔE in OKLab ×100 of 29.6, and 25 for deuteranopia); for red–green colour-blind viewers up and down (7.5) and put and down (9.9) come close, which is why a signed figure always shows its sign and a put its name. This set replaced, on October 16, 2026, a palette in which an inventory of all 53 films found green carrying eleven meanings and rose twelve (section 9).
+
+| Role | Token | Classes | Means | Never |
+|---|---|---|---|---|
+| Focus | `--tone-focus` #a78bfa | `wt-film-accent`, `wt-accent`, `data-tone="total"`, `Brackets`, `wt-line-position` | The figure or term the shot is about, its brackets and pen, the learner's own position | A category or a sign |
+| Up | `--tone-up` #4ade80 | `wt-film-gain`, `wt-gain`, `data-tone="gain"` | A rise or a gain: the sign of a change or a result | A call, a buyer, a bid |
+| Down | `--tone-down` #fb7185 | `wt-film-loss`, `wt-loss`, `data-tone="loss"` | A fall or a loss | A put, a seller, an ask |
+| Call | `--tone-call` #7dd3fc | `wt-film-call`, `data-tone="call"`, `wt-line-call` | Calls, where a shot compares calls with puts | A rise or a bullish view |
+| Put | `--tone-put` #f48206 | `wt-film-put`, `data-tone="put"`, `wt-line-put` | Puts, the same way | A fall or a bearish view |
+| Caution | `--tone-caution` #fbbf24 | `wt-film-warn`, `data-tone="caution"` on brackets, `Hatch` | An estimate, an unknown, a value off target | A loss |
+| Ink | `--tone-ink` | `wt-film-type`, `wt-film-num` | Words, figures and money: a price is a level, so it stays ink | |
+| Dim | `--tone-dim` | `wt-film-dim`, `wt-film-tag`, `wt-small`, `data-tone="neutral"` | Labels, axes, units, context | Anything the learner must compare exactly |
+
+In the kit: `Tone` (`"focus" | "up" | "down" | "call" | "put" | "caution"`), `toneClass[tone]` for stage type and chart labels (a small or dim label keeps it), `toneColor(tone)` for a stroke, a gradient or a `PenTip`, and `signTone(value)` for a signed figure (none at zero).
+
+- **Sides have no colour.** A bid, an ask, a buyer, a seller, a holder and a writer are placed and named, never coloured: bids below asks, the side named on every row and print ("at the ask"), the learner's own order or position in focus and the other side in ink. A signed amount keeps its sign: net flow of +7,500 contracts is up, premium paid of −$4.20 is down.
+- **A right is coloured only where the shot compares calls with puts**: a chain, exposure by strike, parity, a straddle, flow split by right. In a shot with one right, the contract is named in a label and its marks take their own meaning. Where a chart splits by right and by sign at once (call gamma above zero, put gamma below), the right takes the colour and the sign is carried by the side of the axis and the figure's own sign.
+- **Up and down are the sign, written.** A figure in up or down carries + or − (a true minus, U+2212), and a price move ▲ or ▼, so no meaning rests on colour alone; zero is dim. Green is up in English and in Chinese alike: the course teaches US markets, and the lesson page around the film uses green for a gain.
+- **Checks are the one shared use.** A passed check is up with ✓, a failed one down with ✗, never in a shot that also shows a signed value.
+- **Evidence is drawn by line, not hue**: observed solid, modelled dashed, inferred outlined, unknown hatched in caution.
+- **At most one pair of categories in colour per shot** (call and put) besides sign, focus and caution. A second split (two expiries, two lots, IV and RV) is told apart by focus and ink, by line style and by labels.
+- **Never decoration.** A colour that names nothing goes.
+
+Retired from the films, still defined and failed by the timing audit (section 7): teal and orange sides (`--wt-long`, `--wt-short`, `wt-long`, `wt-short`, `wt-line-long`, `wt-line-short`, `wt-label-long`, `wt-label-short`, `Brackets tone="short"`) and blue and lavender evidence (`--diagram-observed`, `--diagram-estimated`, `wt-ev-*`). The playground diagrams on the page keep their own palette for now: a light page needs darker call and put values than the stage.
+
+### Numbers
+
+| Token | How |
 |---|---|
-| `wt-film-gain`, `data-tone="gain"` | Gain, a buyer, a pass |
-| `wt-film-loss`, `data-tone="loss"` | Loss, a seller, a failure, something removed |
-| `wt-film-accent`, `data-tone="total"` | The figure the shot is about |
-| `wt-film-warn` | Caution, an inference, a value that depends on something unknown |
-| `wt-film-dim`, `data-tone="neutral"` | Context and secondary detail |
-| `wt-film-tag` | Small capitals for labels and axes |
-| `wt-film-link`, `wt-film-riser`, `wt-film-ghost` | Dashed guides, accent rules, the outline of something missing |
-| `wt-line-position`, `-long`, `-short`, `-reference` | Payoff and profit lines: the position, a long leg, a short leg, a reference |
-| `wt-panel-shape`, `wt-focus-shape` | A card at rest, and the card in focus |
+| Figure | Mono (`wt-film-num`), ink. Sizes come from the frame: `type.big` for the one hero figure, `type.num` for figures, `type.body` and `type.small` in charts |
+| Money | `usd(cents)` and `signedUsd(cents)` from `@/content/world`: "$4.15", "$400" (digits 0), "−$53.00", "+$6.00". A plus sign only on a change |
+| Counts and percents | `count`, `signedCount`, `contractCount`, `percent`, all with a true minus |
+| Units | Say what a figure is per: "$4.20 a share", "$420 a contract (×100)" |
+| Symbol | A ticker in mono capitals, neutral: a symbol never takes a meaning colour. A symbol shown as an entity (a ranked list, a portfolio row) gets a mark, a monogram tile beside the ticker; the kit adds `Ticker` with the first film that needs one |
+| Contract | "ALFA Oct 18 105 call" in a sentence, "ALFA 105C · OCT 18" on a tag or a tape |
+| Highlight | Focus colour and one cue, `Brackets` or `wt-focus-shape`; everything else steps back to 0.3 |
+| Change | A value changes where it stands with `flip`, and counts only when the change is the point (section 6). A change chip in its sign's colour may follow once the value has landed. A value that crosses zero flips into its new colour; a colour never fades from one meaning to another |
 
-Never use a colour as decoration: a learner reads green as gain and red as loss everywhere in the course.
+### Other classes
+
+| Class | Use |
+|---|---|
+| `wt-film-tag` | Small capitals for labels and axes |
+| `wt-film-link`, `wt-film-riser`, `wt-film-ghost` | Dashed guides, focus rules, the outline of something missing |
+| `wt-line-position`, `wt-line-call`, `wt-line-put`, `wt-line-reference` | Payoff and profit lines: the learner's position, a call, a put, a reference |
+| `wt-panel-shape`, `wt-focus-shape` | A card at rest, and the card in focus |
 
 ## 6. Design rules
 
@@ -238,7 +271,7 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 - **Fade in place where a lane is crowded.** A short flight beside a crowded expression keeps touching it; a value that only changes where it stands fades or flips there instead of flying.
 - Numbers, bars and lines never overshoot: data lands exactly, a big figure included (`power3.out`). Overshoot (`pop`, `slam`) is for chips and tags only.
 - Carry, don't cut, where an element has somewhere to go: the question's numbers fly to their places in the first teaching shot; a trade flies from the book to the tape.
-- A carry starts clear of other marks, keeps 6 px clear of every settled label and never crosses a bar, line or bracket on its way, nor another flight. Its target appears only as it lands, and it keeps its colour: colour the target the way the source is coloured (asks red, bids green, in the book and on the cards). Where no straight path is clear, give it two legs through an invisible waypoint (a phone's trade drops down a clear lane, stops level with the tape's top row, then slides in), or let what it must pass step back to 0.3 first. Its duration follows its distance: about 0.3 s for 100 px, 0.45–0.55 s for 400 px, 0.7–0.9 s for 1000 px at 1× on the 1440 frame; a long carry done in 0.5 s smears, a short one done in 1 s drags.
+- A carry starts clear of other marks, keeps 6 px clear of every settled label and never crosses a bar, line or bracket on its way, nor another flight. Its target appears only as it lands, and it keeps its colour: colour the target the way the source is coloured (a put's orange on its chip and on its row). Where no straight path is clear, give it two legs through an invisible waypoint (a phone's trade drops down a clear lane, stops level with the tape's top row, then slides in), or let what it must pass step back to 0.3 first. Its duration follows its distance: about 0.3 s for 100 px, 0.45–0.55 s for 400 px, 0.7–0.9 s for 1000 px at 1× on the 1440 frame; a long carry done in 0.5 s smears, a short one done in 1 s drags.
 - Make room first: a stack shifts down, then the new item arrives.
 - Headlines run at most 8 words (18 characters in Chinese) with at most two figures, and every figure in a headline is on the stage while it is up. Name the event exactly ("bought", not "gone"; "Add 5, cancel 5"), and reveal a headline's second half only when its event happens.
 - Lines draw on with `getTotalLength()` dash drawing, or are revealed by a clip rectangle that starts at width 0.
@@ -246,7 +279,7 @@ Never use a colour as decoration: a learner reads green as gain and red as loss 
 - **Counts.** A figure counts only when the change is the point, for at least 0.7 s at 1×, ease-out, one figure at a time; a figure the learner must compare exactly cuts to its final value. Figures that must add up still count together (Honesty wins). Every count names its `from`, so scrubbing backwards never jumps.
 
 - Keep every mark at least 12 px from a phone frame's sides, brackets as they scale in included.
-- One colour per meaning: a line, its label, its marker and its pen share one colour, and a loss figure is red even on a writer's orange line.
+- One colour per meaning (section 5): a line, its label, its marker and its pen share one colour, and a figure's sign wins inside a mark of another colour: a loss is red even on a put's orange line.
 - Never strike out a true statement; a value that stops being true turns over (`flip`) or steps back.
 
 **Honesty**
@@ -322,6 +355,7 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
    - a headline over 8 words (18 Chinese characters) or with more than two figures;
    - a runtime over 45.5 s, or a `hero-lock` label missing or outside 55–65 % of it;
    - a class token with two `wt-` names run together;
+   - a colour off the stage's roles (section 5), checked every second of the timeline: a retired class (`wt-long`, `wt-line-short`, `wt-ev-observed` …), a `data-tone` that isn't a role (`"short"` included), or a `fill`, `stroke` or `stop-color`, set as an attribute or inline, that is a literal colour or a `var(--…)` the stage doesn't define. A colour tween caught midway shows as a literal and fails too: a colour changes by a set or a flip, never by fading between meanings;
    - two headlines on stage at once where their boxes overlap, counting the 0.35 s an outgoing one takes to fade: after a cut's `hide`, show the next headline 0.35 s later (as `swap` does), not 0.2 s.
 
    It also fails the motion rules, measured by what the stage shows rather than by tween lengths alone:
@@ -455,6 +489,7 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - **The grid's drift during the hero stand: open.** `Backdrop`'s grid drifts for the whole film, and the hero-frozen rule says nothing else moves while the hero stands. Whether the drift pauses for the stand, stops altogether or stays is a kit decision for every film at once; no film removes the drift on its own. The dictionary's `ambient-hold`, `layers3` and `lp-holdcycle` keep one background element moving through every hold (small amplitude, long period, never the subject) and warn only against ambient motion large enough to notice. The drift is that layer: 6 % of the frame's width over the film, about 1.2 px a second at 1× on a 900 px frame, on grid lines drawn at 7 % of the foreground colour. That is evidence for keeping it through the stand.
 - **The count floor: open.** The research pass puts a count at 0.7 s or more at 1× (practitioners cluster at 0.6–1.5 s; Heer and Robertson tween a value over a stage of about 1 s) and proposed raising the floor to 1 s, so that a count lasts 0.67 s at the default 1.5× rather than 0.47 s (0.5 s rather than 0.35 s at 2×). Today's films already sit under the written floor in places: stocks-and-prices' five opening counts run 0.6 s. This is a rule for films, not a kit default: nothing relies on `count`'s default duration (its twelve calls all pass their own, from 0 to 1 s), and about two dozen films drive their own counters with an `onUpdate` tween, mostly 0.6 to 1.2 s at 1×. Raising the floor means changing those calls film by film. The dictionary's counts run 0.6–1.2 s as seen (`dv-stat`; an odometer roll takes 0.75 s): at the default 1.5× the 0.7 s floor plays in 0.47 s, under all of them, and a 1 s floor in 0.67 s, inside them.
 - **The title card's subtitle: decided October 16, 2026, kept as a hook.** Every film shows it at 0.5 s and lifts it with the tag at 2.0 s as played, so it is still for 1.3 s at 1× (0.87 s at the default 1.5×), and the timing audit leaves the title card out of its reading check on purpose. By the reading rule in section 6, 30 of the 53 English subtitles are short even at 1×: the line is a preview, not something the learner must read there. The lesson title in the card heading above the film carries the text (38 subtitles repeat it word for word), and whatever a subtitle adds is taught in the film's own shots: on October 16 all 15 that differ from the heading were checked, and each detail has its shot (premium-payoff's "buyer and writer" is "Buy the 100 call" and "Now write the 95 put"; recipe-map's subtitle is its closing claim). Keep it so: a subtitle never says something only it says.
+- **The colour roles: decided October 16, 2026** (section 5). An inventory recorded every coloured mark in the 53 films by what it means, 1,909 marks: green carried eleven meanings and rose twelve (a gain, a pass, a price rise, a buyer, a bid, observed evidence among them), calls and puts were each drawn five ways, and films contradicted each other (multi-leg-structures coloured bought legs rose and rank-contracts green; dex-dei-gex coloured "ask" green while the book films drew asks rose). Candidate colours were measured on the stage for contrast and for distance under simulated colour blindness (Machado 2009): once focus, up, down and caution are placed, one more pair fits well and a second does not. Three choices were made: **calls sky and puts orange**, neither of which reads as up or down in either language; **green rises in Chinese too**, as on US platforms and on the lesson page around the film, rather than red as on mainland brokers; **sides carry no colour**, since no pair was left for them and the films disagreed on which convention to follow (a book's ask side or a buyer's trade at the ask). Films move to the roles in rounds; until a film has moved, the timing audit fails it on its retired colours.
 
 ## 10. Checklist
 
@@ -463,7 +498,7 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - [ ] Treatment and shot table at the top of `<id>-film.tsx`; shot ids match the timeline labels
 - [ ] Every headline has a phone variant; copy is idiomatic in both languages; no tape notation in headlines
 - [ ] Every moving mark has a unique `data-f`; counts name their `from`
-- [ ] Colours follow their meanings; data never overshoots
+- [ ] Colours follow the roles (section 5) and the timing audit's colour check passes; sides are named, not coloured; every signed figure shows its sign; data never overshoots
 - [ ] At most seven beats and about 45 s played; headlines of at most 8 words (18 Chinese characters) and two figures, held at least 3.5 s; the question line 3.5 s; the claim 4 s
 - [ ] One hero moment at 55–65 %, named in the treatment, its figure the loudest mark, held 2 s with an after-beat (never under 1.5 s); its payoff staggered; nothing comes into its brackets while it shows
 - [ ] Every entrance and exit of a text, figure or panel 0.3 s or longer; no set that shows or hides a mark except a hand-over or a whole-stage cut
