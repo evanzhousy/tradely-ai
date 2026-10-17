@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import { BURST, GROUPS, LIMIT, type Method } from "./connect-agent-model";
@@ -111,13 +112,13 @@ const copy = {
 	meter: ["This key's calls · 60-second window", "本密钥调用 · 60 秒窗口"],
 	meterShort: ["This key · 60-second window", "本密钥 · 60 秒窗口"],
 	attempts: ["attempts", "尝试次数"],
-	refused: ["refused", "被拒"],
+	refused: ["refused ✗", "被拒 ✗"],
 	keyCard: ["Cursor key", "Cursor 密钥"],
-	active: ["active · read-only data tools", "有效 · 只读数据工具"],
-	revoked: ["revoked", "已撤销"],
+	active: ["✓ active · read-only data tools", "✓ 有效 · 只读数据工具"],
+	revoked: ["✗ revoked", "✗ 已撤销"],
 	revokeAction: ["Revoke key", "撤销密钥"],
 	nextWindow: ["Next window", "下一窗口"],
-	rejected: ["refused: key revoked", "被拒：密钥已撤销"],
+	rejected: ["✗ refused: key revoked", "✗ 被拒：密钥已撤销"],
 	claimBig: [
 		"Connect it, prove it, know the key's reach.",
 		"连接它，亲自证明，弄清密钥能做什么。",
@@ -147,15 +148,15 @@ const CHECKS = [
 		line: '"Connected!"',
 		phoneLine: '"Connected!"',
 		verdict: ["proves nothing", "证明不了"],
-		tone: "wt-film-loss",
+		tone: toneClass.caution,
 	},
 	{
 		id: "client",
 		label: ["Claude Code: /mcp", "Claude Code：/mcp"],
 		line: "tradingflow · connected · tools listed",
 		phoneLine: "connected · tools listed",
-		verdict: ["proof", "证据"],
-		tone: "wt-film-gain",
+		verdict: ["✓ proof", "✓ 证据"],
+		tone: toneClass.up,
 	},
 	{
 		id: "tools",
@@ -165,8 +166,8 @@ const CHECKS = [
 		],
 		line: TOOL_RESULT,
 		phoneLine: TOOL_RESULT,
-		verdict: ["your key works", "密钥有效"],
-		tone: "wt-film-gain",
+		verdict: ["✓ your key works", "✓ 密钥有效"],
+		tone: toneClass.up,
 	},
 ] as const satisfies readonly {
 	id: string;
@@ -529,7 +530,7 @@ function Scene({
 				y={L.keyY + L.keyH * 0.76}
 				size={L.rowText}
 				anchor="end"
-				className="wt-film-type wt-film-loss"
+				className={`wt-film-type ${toneClass.focus}`}
 			>
 				{t(copy.revokeAction)}
 			</Word>
@@ -760,7 +761,10 @@ function build(context: FilmContext) {
 	countCalls(0, LIMIT, 27, 1.0);
 	// The limit settles at 28; the burst starts after a full second.
 	show([over, refused], 29);
-	countCalls(LIMIT, BURST, 29, 0.6);
+	// The burst cuts to its exact result as the refused readout appears, so the
+	// readout never shows a "0 refused"; a longer count would take time from the
+	// one-second rests before or after this result.
+	countCalls(LIMIT, BURST, 29, 0.01);
 	// The hero: the window's limit, enforced. Preserve the accepted stand.
 	d.lock(lockBurst, 30.6, { around: [counter, refused], pad: 6 });
 	tl.addLabel("hero-lock", 30.6);
