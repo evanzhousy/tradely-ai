@@ -136,8 +136,8 @@ const copy = {
 		`ALFA · 关联腿 · 每腿 ${SIZE} 张`,
 	],
 	qLegs: [
-		"sold 95 puts · bought 90 puts · sold 105 calls · bought 110 calls",
-		"卖出 95 看跌 · 买入 90 看跌 · 卖出 105 看涨 · 买入 110 看涨",
+		"sold/bought: 95/90 puts · 105/110 calls",
+		"卖出/买入：95/90 看跌 · 105/110 看涨",
 	],
 	qBig: ["Bullish or bearish?", "看涨还是看跌？"],
 	sHead: ["A long straddle needs a big move.", "买入跨式需大幅变动。"],
@@ -177,8 +177,6 @@ const copy = {
 		`net ${signedUsd(NET_LABELS, 0)}: "slightly bearish"`,
 		`净额 ${signedUsd(NET_LABELS, 0)}：“略偏看跌”`,
 	],
-	pkgTag: [`linked package · ${SIZE} condors`, `关联整体 · ${SIZE} 组铁鹰`],
-	pkgLinked: ["linked", "关联"],
 	pkgCredit: [
 		`${signedUsd(PACKAGE_CREDIT, 0)} collected`,
 		`收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
@@ -505,17 +503,26 @@ function Scene({
 					>
 						{perContract(CREDIT)}
 					</text>
-					<text
-						data-f="c-risk"
-						x={L.left + 6}
-						y={L.y(C_Y, -MAX_LOSS * 100) + 22}
-						className="wt-film-num wt-halo"
-						style={{ fontSize: T.small * 1.15 }}
-					>
-						<tspan className="wt-film-gain">{perContract(CREDIT)}</tspan>
-						<tspan>{` − ${usd(WING_PAYOUT, 0)} = `}</tspan>
-						<tspan className="wt-film-loss">{perContract(-MAX_LOSS)}</tspan>
-					</text>
+					<g data-f="c-risk">
+						<text
+							x={L.left + 6}
+							y={L.y(C_Y, -MAX_LOSS * 100) + 22}
+							className="wt-film-num wt-halo"
+							style={{ fontSize: T.small * 1.15 }}
+						>
+							{`${pick(["wing", "翼宽"], locale)} ${usd(CENTS(WIDTH), 0)} × ${pick(["100 shares", "100股"], locale)} = ${usd(WING_PAYOUT, 0)}`}
+						</text>
+						<text
+							x={L.left + 6}
+							y={L.y(C_Y, -MAX_LOSS * 100) + 22 + T.small * 1.5}
+							className="wt-film-num wt-halo"
+							style={{ fontSize: T.small * 1.15 }}
+						>
+							<tspan className="wt-film-gain">{perContract(CREDIT)}</tspan>
+							<tspan>{` − ${usd(WING_PAYOUT, 0)} = `}</tspan>
+							<tspan className="wt-film-loss">{perContract(-MAX_LOSS)}</tspan>
+						</text>
+					</g>
 					<Brackets name="lock-keep" glow />
 				</g>
 			</g>
@@ -602,15 +609,6 @@ function Scene({
 					rx={14}
 					className="wt-focus-shape"
 				/>
-				<text
-					x={L.compactCard ? margin + room - 16 : margin + 16}
-					y={L.compactCard ? L.netY : L.cardY + L.cardH * 0.14}
-					textAnchor={L.compactCard ? "end" : "start"}
-					className="wt-film-tag"
-					style={{ fontSize: T.small }}
-				>
-					{t(L.compactCard ? copy.pkgLinked : copy.pkgTag).toUpperCase()}
-				</text>
 				<text
 					data-f="pkg-result"
 					x={margin + 16}
@@ -795,15 +793,18 @@ function build(context: FilmContext) {
 
 	// ——— straddle: a V that needs a move ———
 	tl.addLabel("straddle", 8.6);
-	hide(flat("q"), 8.6);
-	show(heads.straddle, 8.8);
-	d.rise(8.9);
-	show(one("axes-s"), 9.1);
+	// Whole-beat cut: the settled scaffold stands 1 s before the first trace.
+	tl.set(flat("q"), { opacity: 0 }, 8.6);
+	tl.set(one("depth"), { opacity: 1, scale: 1 }, 8.6);
+	tl.set(
+		[heads.straddle, one("axes-s"), one("s-value-caption")],
+		{ opacity: 1, x: 0, y: 0 },
+		8.6,
+	);
 	draw(p("s-call"), 9.6);
 	show(one("s-call-tag"), 9.6);
 	draw(p("s-put"), 10.4);
 	show(one("s-put-tag"), 10.4);
-	fadeIn(one("s-value-caption"), 9.1);
 	// The component value V settles at 11.1; deduction begins after 1 s of quiet.
 	fadeIn(one("s-cost"), 12.1);
 	d.trace(p("s-deduct"), 12.1, { duration: 0.5, ease: "power2.out" });
@@ -818,9 +819,10 @@ function build(context: FilmContext) {
 
 	// ——— condor: the hero. Two credit spreads that sell a range. ———
 	tl.addLabel("condor", 18.2);
-	d.swap(heads.straddle, heads.condor, 18.2);
-	hide(
+	// Cut the whole chart and headline together, then keep the new scale still 1 s.
+	tl.set(
 		[
+			heads.straddle,
 			one("axes-s"),
 			one("s-profit-caption"),
 			p("s-call"),
@@ -831,11 +833,14 @@ function build(context: FilmContext) {
 			one("s-low"),
 			one("s-high"),
 		],
+		{ opacity: 0 },
 		18.2,
-		0.3,
 	);
-	show(one("axes-c"), 18.6);
-	fadeIn(one("c-caption"), 18.6);
+	tl.set(
+		[heads.condor, one("axes-c"), one("c-caption")],
+		{ opacity: 1, x: 0, y: 0 },
+		18.2,
+	);
 	draw(p("c-put"), 19.2);
 	fadeIn(one("c-put-tag"), 19.4);
 	draw(p("c-call"), 20.9);
@@ -883,10 +888,10 @@ function build(context: FilmContext) {
 	});
 	// Cash emphasis settles at 34.0; the named row additions reveal settled at 35.1.
 	fadeIn(one("cash-additions"), 35.1);
-	fadeIn(one("pkg-equation"), 35.1);
 	// Cash arithmetic settles at 35.6; preserve its existing 1.3 s quiet interval.
 	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 36.9);
 	fadeIn(one("pkg"), 36.9);
+	fadeIn(one("pkg-equation"), 36.9);
 	fadeIn(one("pkg-result"), 36.9);
 	show(heads.packageAnswer, 36.9);
 
