@@ -160,7 +160,7 @@ const copy = {
 	heroPeriod: ["annualized RV10", "年化 RV10"],
 	/** A phone's band readings: the yearly figure only, clear of the chart's caption. */
 	perYear20: [`RV20 ${points(RV20)}/yr`, `RV20 ${points(RV20)}/年`],
-	sessionsPerYear: ["252 trading sessions/year", "每年252个交易日"],
+	sessionsPerYear: ["252 sessions/year", "每年252个交易日"],
 	horizonHead: ["They look in opposite directions.", "它们朝相反的方向看。"],
 	horizonHeadShort: ["Opposite directions.", "方向相反。"],
 	rvBlock: [`RV20 ${RV_POINTS}%`, `RV20 ${RV_POINTS}%`],
@@ -886,7 +886,7 @@ function build(context: FilmContext) {
 		one("r-convention-label"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power2.out" },
-		30,
+		29.9,
 	);
 
 	// ——— horizons: two windows on one timeline ———
@@ -894,8 +894,8 @@ function build(context: FilmContext) {
 	d.swap([one("r-head"), one("r2-head")], one("z-head"), 31.55);
 	hide(lockRv, 31.55);
 	hide([one("r-sd-10"), one("r-period-10")], 31.55, 0.35, 0);
-	// Keep the formula and its basis together long enough to read across the handover.
-	hide([one("r-annualize"), one("r-convention-label")], 32.2, 0.35, 0);
+	// Clear the formula and its basis before the horizon chart enters.
+	hide([one("r-annualize"), one("r-convention-label")], 31.2, 0.35, 0);
 	sink(31.55);
 	tl.set(charts.rv, { opacity: 0 }, 31.95);
 	tl.set(charts.horizon, { opacity: 1 }, 31.95);
@@ -940,8 +940,8 @@ function build(context: FilmContext) {
 	);
 	show(one("z-earnings"), 34.75);
 	// Cut: the gap, and what it isn't, held to be read.
-	hide(one("z-head"), 36.55);
-	sink(36.55);
+	hide(one("z-head"), 36.25);
+	sink(36.25);
 	tl.fromTo(
 		one("g-formula"),
 		{ opacity: 0 },
