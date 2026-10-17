@@ -13,6 +13,8 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -321,6 +323,7 @@ function Scene({
 						<path
 							data-f="curve-a"
 							className="wt-line-position"
+							style={{ strokeWidth: 3 }}
 							strokeDasharray="6 5"
 							d={L.path(call)}
 						/>
@@ -329,6 +332,7 @@ function Scene({
 						<path
 							data-f="curve-b"
 							className="wt-line-position"
+							style={{ strokeWidth: 3 }}
 							strokeDasharray="6 5"
 							d={L.path(call)}
 						/>
@@ -348,7 +352,7 @@ function Scene({
 						x={L.left + 4}
 						y={L.y(put[0][1]) - 16}
 						textAnchor="start"
-						className="wt-small wt-halo wt-label-position"
+						className={`wt-small wt-halo ${toneClass.put}`}
 					>
 						{t(L.narrow ? copy.putShort : copy.putLabel)}
 					</text>
@@ -434,10 +438,14 @@ function Scene({
 						className="wt-halo"
 						style={{ fontSize: T.body }}
 					/>
-					<line data-f="gap" className="wt-film-gap" />
+					<line
+						data-f="gap"
+						className="wt-film-gap"
+						style={{ stroke: toneColor("caution") }}
+					/>
 					<text
 						data-f="gap-label"
-						className="wt-halo wt-loss wt-marker-label"
+						className={`wt-halo wt-marker-label ${toneClass.caution}`}
 						style={{ fontSize: T.body * 1.15 }}
 					/>
 					<g data-f="marker">
@@ -1057,6 +1065,15 @@ function build(context: FilmContext) {
 
 	// ——— put: replace the complete proof while hidden ———
 	tl.addLabel("put", 17.7);
+	// Only this shot compares the rights; the solo-call shots keep their focus colour.
+	const curves = [one("curve-a"), one("curve-b")];
+	tl.set(curves, { attr: { class: "wt-line-call" } }, 17.9);
+	tl.set(one("dot"), { attr: { class: `wt-chip ${toneClass.call}` } }, 17.9);
+	tl.set(
+		one("marker-label-call"),
+		{ attr: { class: `wt-halo wt-marker-label ${toneClass.call}` } },
+		17.9,
+	);
 	show(one("put-head"), 17.9, "above");
 	tl.to(
 		num,
@@ -1079,6 +1096,13 @@ function build(context: FilmContext) {
 		19.5,
 	);
 	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(put) } }, 19.8);
+	tl.set(curves, { attr: { class: "wt-line-put" } }, 19.8);
+	tl.set(one("dot"), { attr: { class: `wt-chip ${toneClass.put}` } }, 19.8);
+	tl.set(
+		one("marker-label-put"),
+		{ attr: { class: `wt-halo wt-marker-label ${toneClass.put}` } },
+		19.8,
+	);
 	tl.set(marker, { x: mx, y: L.y(P0) }, 19.8);
 	tl.set(
 		tangentLine,
@@ -1182,6 +1206,13 @@ function build(context: FilmContext) {
 	tl.set(axisText, { opacity: 0 }, 32);
 	tl.set(world, home, 32);
 	tl.set([one("curve-a"), one("curve-b")], { attr: { d: L.path(call) } }, 32);
+	tl.set(curves, { attr: { class: "wt-line-position" } }, 32);
+	tl.set(one("dot"), { attr: { class: "wt-chip" } }, 32);
+	tl.set(
+		one("marker-label-call"),
+		{ attr: { class: `wt-halo wt-marker-label ${toneClass.focus}` } },
+		32,
+	);
 	tl.set(marker, { x: mx, y: my }, 32);
 	tl.set(
 		tangentLine,
@@ -1244,30 +1275,23 @@ function build(context: FilmContext) {
 		gapLabel.textContent = `${t(copy.missed)} ${price(Math.abs(repriced - estimate))}`;
 	};
 	place();
-	tl.to(
-		slide,
-		{ spot: SPOT + UP, duration: 0.6, ease: "power2.inOut", onUpdate: place },
-		32.2,
-	);
+	// Compare exact endpoint readings: cut instead of taking time from the quiet holds.
+	tl.set(slide, { spot: SPOT + UP, onUpdate: place }, 32.2);
 	// Reveal the live readings with the move, never during the preceding zero-value setup.
 	tl.to(
 		[limitMove, moveLabel, ghostLabel],
 		{ opacity: 1, duration: 0.3 },
 		32.2,
 	);
-	// Model and estimate settle at 32.8, then stand alone for a full second.
+	// Model and estimate finish entering at 32.5; their old 32.8–33.8 rest is intact.
 	// The complete upside comparison settles at 34.2 and remains quiet for 2.3 s.
 	tl.to([gap, gapLabel], { opacity: 1, duration: 0.4 }, 33.8);
 	// Clear the discrepancy before travel, so the downside also begins as two readings.
 	tl.to([gap, gapLabel], { opacity: 0, duration: 0.3 }, 36.5);
-	tl.to(
-		slide,
-		{ spot: SPOT + DOWN, duration: 0.8, ease: "power2.inOut", onUpdate: place },
-		36.8,
-	);
+	tl.set(slide, { spot: SPOT + DOWN, onUpdate: place }, 36.8);
 	tl.to(one("below"), { opacity: 1, duration: 0.4 }, 36.8);
 	tl.to(one("below-label"), { opacity: 1, duration: 0.3 }, 37);
-	// The downside readings settle at 37.6; reveal its gap only after another quiet second.
+	// The endpoint cuts at 36.8; keep the old 37.6–38.6 quiet second before its gap.
 	// Its complete comparison settles at 39.0, retaining the same 2.3 s endpoint hold.
 	tl.to([gap, gapLabel], { opacity: 1, duration: 0.4 }, 38.6);
 	// Cut: the claim, held to be read.
