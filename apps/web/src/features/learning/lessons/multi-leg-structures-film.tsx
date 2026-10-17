@@ -106,8 +106,8 @@ function layout(width: number) {
 		cardY,
 		cardH,
 		compactCard,
-		saleSumY: cardY + cardH * (compactCard ? 0.2 : narrow ? 0.32 : 0.34),
-		purchaseSumY: cardY + cardH * (narrow ? 0.48 : compactCard ? 0.2 : 0.34),
+		saleSumY: cardY + cardH * (compactCard ? 0.26 : narrow ? 0.32 : 0.34),
+		purchaseSumY: cardY + cardH * (narrow ? 0.48 : compactCard ? 0.26 : 0.34),
 		netY: cardY + cardH * (compactCard ? 0.45 : narrow ? 0.64 : 0.56),
 		resultY: cardY + cardH * (compactCard ? 0.72 : narrow ? 0.8 : 0.77),
 		rangeY: cardY + cardH * (compactCard ? 0.93 : 0.94),
@@ -167,8 +167,8 @@ const copy = {
 	],
 	bullish: ["bullish", "看涨"],
 	bearish: ["bearish", "看跌"],
-	cashSales: ["sold legs", "卖出腿"],
-	cashPurchases: ["bought legs", "买入腿"],
+	cashSales: ["sold", "卖出"],
+	cashPurchases: ["bought", "买入"],
 	tally: [
 		`bullish ${usd(BULLISH, 0)} · bearish ${usd(BEARISH, 0)} · net ${signedUsd(NET_LABELS, 0)}`,
 		`看涨 ${usd(BULLISH, 0)} · 看跌 ${usd(BEARISH, 0)} · 净额 ${signedUsd(NET_LABELS, 0)}`,
@@ -220,6 +220,7 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const cashEquals = narrow && locale === "en" ? "=" : " = ";
 	const KNOTS = [RANGE[0], 90, 95, 100, 105, 110, RANGE[1]];
 	const path = (range: readonly [number, number], f: (s: number) => number) =>
 		KNOTS.map(
@@ -582,40 +583,6 @@ function Scene({
 					)}
 				</g>
 			))}
-			{/* The row labels name the sides; neutral outlines group the cash before its sums. */}
-			<g data-f="cash-groups">
-				{LEGS.map((leg, i) => (
-					<rect
-						key={leg.key}
-						x={margin + 2}
-						y={L.rowY(i) + 2}
-						width={room - 4}
-						height={L.rowH - 4}
-						rx={8}
-						fill="none"
-						style={{
-							stroke: "var(--tone-dim)",
-							strokeWidth: 1.75,
-						}}
-					/>
-				))}
-				<text
-					x={margin + 14}
-					y={L.rowY(0) - 12}
-					className="wt-film-tag"
-					style={{ fontSize: T.small }}
-				>
-					{t(copy.cashSales)}
-				</text>
-				<text
-					x={margin + room / 2}
-					y={L.rowY(0) - 12}
-					className="wt-film-tag"
-					style={{ fontSize: T.small }}
-				>
-					{t(copy.cashPurchases)}
-				</text>
-			</g>
 			<Lines
 				name="tally"
 				text={t(narrow ? copy.tallyShort : copy.tally)}
@@ -670,7 +637,19 @@ function Scene({
 					className="wt-film-num"
 					style={{ fontSize: T.body }}
 				>
-					{`${SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")} = ${usd(SOLD_PREMIUM, 0)}`}
+					<tspan
+						className="wt-film-tag"
+						dy={L.compactCard ? -T.small * 1.25 : 0}
+						style={{ fontSize: T.small, letterSpacing: narrow ? 0 : undefined }}
+					>
+						{`${t(copy.cashSales)} `}
+					</tspan>
+					<tspan
+						x={L.compactCard ? margin + 16 : undefined}
+						dy={L.compactCard ? T.small * 1.25 : 0}
+					>
+						{`${SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}${cashEquals}${usd(SOLD_PREMIUM, 0)}`}
+					</tspan>
 				</text>
 				<text
 					x={narrow ? margin + 16 : margin + room / 2 + 8}
@@ -678,7 +657,19 @@ function Scene({
 					className="wt-film-num"
 					style={{ fontSize: T.body }}
 				>
-					{`${BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")} = ${usd(BOUGHT_PREMIUM, 0)}`}
+					<tspan
+						className="wt-film-tag"
+						dy={L.compactCard ? -T.small * 1.25 : 0}
+						style={{ fontSize: T.small, letterSpacing: narrow ? 0 : undefined }}
+					>
+						{`${t(copy.cashPurchases)} `}
+					</tspan>
+					<tspan
+						x={L.compactCard ? margin + room / 2 + 8 : undefined}
+						dy={L.compactCard ? T.small * 1.25 : 0}
+					>
+						{`${BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}${cashEquals}${usd(BOUGHT_PREMIUM, 0)}`}
+					</tspan>
 				</text>
 			</g>
 			<text
@@ -783,7 +774,6 @@ function build(context: FilmContext) {
 		...Object.values(heads),
 		...kids("world"),
 		...legs,
-		one("cash-groups"),
 		one("tally"),
 		one("pkg"),
 		one("cash-additions"),
@@ -873,8 +863,7 @@ function build(context: FilmContext) {
 	});
 	show(one("tally"), 31.5);
 	hide(one("tally"), 35.0, 0.3);
-	// Preserve the tally's 1.6 s rest, then identify sale rows 0/2 and purchase rows 1/3.
-	fadeIn(one("cash-groups"), 33.6);
+	// Preserve the tally's 1.6 s rest, then bring the cash amounts into focus.
 	tl.to(
 		LEGS.map((_, i) => one(`leg-direction-${i}`)),
 		{ opacity: 0.25, duration: 0.4 },
@@ -892,7 +881,7 @@ function build(context: FilmContext) {
 			33.6,
 		);
 	});
-	// Grouping settles at 34.1; each row addition and its result reveal settled at 35.1.
+	// Cash emphasis settles at 34.0; the named row additions reveal settled at 35.1.
 	fadeIn(one("cash-additions"), 35.1);
 	fadeIn(one("pkg-equation"), 35.1);
 	// Cash arithmetic settles at 35.6; preserve its existing 1.3 s quiet interval.
@@ -909,7 +898,6 @@ function build(context: FilmContext) {
 			heads.package,
 			heads.packageAnswer,
 			...legs,
-			one("cash-groups"),
 			one("pkg"),
 			one("cash-additions"),
 			one("pkg-equation"),
