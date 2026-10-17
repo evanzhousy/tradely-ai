@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -205,7 +206,6 @@ function Scene({
 	const tradeLane = L.statX - tradeDetails.length * text * 0.3 - 8;
 	const level = (
 		name: string,
-		side: "ask" | "bid",
 		y: number,
 		lv: { price: number; size: number },
 	) => (
@@ -228,7 +228,7 @@ function Scene({
 				height={L.rowH * 0.6}
 				rx={3}
 				className="wt-film-bar"
-				data-tone={side === "ask" ? "loss" : "gain"}
+				data-tone={name === "mine" ? "total" : "neutral"}
 			/>
 			<text
 				data-f={`size-${name}`}
@@ -252,7 +252,7 @@ function Scene({
 			data-f={name}
 			x={L.barX + (size / MAX) * L.barMax + 8}
 			y={rowText(y)}
-			className="wt-film-type wt-film-accent"
+			className={`wt-film-type ${name === "yours" ? toneClass.focus : ""}`}
 			style={{ fontSize: text }}
 		>
 			{t(label)}
@@ -441,12 +441,12 @@ function Scene({
 				</text>
 			</g>
 			<g data-f="asks">
-				{LADDER.map((lv, i) => level(`a${lv.price}`, "ask", L.askY(i), lv))}
+				{LADDER.map((lv, i) => level(`a${lv.price}`, L.askY(i), lv))}
 			</g>
 			<g data-f="bids">
-				{BIDS.map((lv, i) => level(`b${lv.price}`, "bid", L.bidY(i), lv))}
+				{BIDS.map((lv, i) => level(`b${lv.price}`, L.bidY(i), lv))}
 			</g>
-			{level("mine", "bid", L.bidY(0), { price: LIMIT, size: RESTS })}
+			{level("mine", L.bidY(0), { price: LIMIT, size: RESTS })}
 			{owner("ben", L.askY(LADDER.length - 1), BEST.size, copy.ben)}
 			<Brackets name="lock-mine" glow />
 			{owner("yours", L.bidY(0), RESTS, copy.yours)}
