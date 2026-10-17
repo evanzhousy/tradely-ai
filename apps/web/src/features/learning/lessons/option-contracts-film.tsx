@@ -110,8 +110,11 @@ const copy = {
 		`ALFA 10月18日 $${call100.strike} 看涨`,
 	],
 	contractShares: ["100 shares per contract", "每张合约 100 股"],
-	threeHead: ["3 contracts, 3× premium.", "三张合约，三倍权利金。"],
-	threeHeadShort: ["3 contracts, 3× premium.", "三张合约，三倍权利金。"],
+	threeHead: ["More contracts mean more premium.", "合约越多，权利金越高。"],
+	threeHeadShort: [
+		"More contracts mean more premium.",
+		"合约越多，权利金越高。",
+	],
 	notionalHead: ["And the shares behind them?", "那背后的股票呢？"],
 	notionalHeadShort: ["And the shares behind?", "背后的股票呢？"],
 	notionalHead2: [
