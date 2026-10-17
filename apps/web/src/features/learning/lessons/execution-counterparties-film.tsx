@@ -52,10 +52,6 @@ const FIRST = TAKEN[0].size;
 const RESTS = DONE.rests;
 /** Tape rows read in whole cents. */
 const at = (size: number, cents: number) => `${count(size)} @ ${usd(cents)}`;
-/** The limit order as it waits in the spread, with what is still to fill. */
-const limitChip = (buy: string, left: number) =>
-	`${buy} ${count(left)} · ≤ ${usd(LIMIT)}`;
-
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
@@ -64,7 +60,7 @@ function layout(width: number) {
 	const bookTop = H * (narrow ? 0.25 : 0.27);
 	const gapTop = bookTop + LADDER.length * rowStep;
 	const gap = rowStep * 1.3;
-	const bookW = narrow ? room : room * 0.56;
+	const bookW = narrow ? room * 0.82 : room * 0.56;
 	// Wide enough for the side tag and the price on one row, on both frames.
 	const priceW = narrow
 		? 72
@@ -87,7 +83,13 @@ function layout(width: number) {
 		barMax: bookW - priceW - 10 - (narrow ? 34 : 48),
 		/** The incoming orders' widths: a market buy's short label, a limit's longer one. */
 		chipW: (long: boolean) =>
-			narrow ? (long ? 128 : 86) : Math.min(bookW * (long ? 0.42 : 0.32), 190),
+			long
+				? narrow
+					? 72
+					: Math.min(bookW * 0.2, 96)
+				: narrow
+					? 64
+					: Math.min(bookW * 0.32, 190),
 		/** An incoming order stops short of the sizes, so they stay readable as they run down. */
 		chipRight: margin + bookW - (narrow ? 30 : 44),
 		sideX,
@@ -110,7 +112,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Counterparties", "交易对手"],
-	titleSub: ["who buys and who sells in one trade", "同一笔成交中谁买谁卖"],
+	titleSub: ["Buyer and seller", "买方与卖方"],
 	qTag: [`Oct 18 100 call · ${BOOK.time}`, `10月18日 100 看涨 · ${BOOK.time}`],
 	qLine: [
 		`Ben offers ${count(BEST.size)} at ${usd(BEST.price)}. You buy all.`,
@@ -130,8 +132,8 @@ const copy = {
 		`另一种情况：买 ${SIZE} 张，限价 ${usd(LIMIT)}。`,
 	],
 	restsHead: [
-		`The last ${RESTS} wait as your bid.`,
-		`最后 ${RESTS} 张作为你的买单等待。`,
+		`Last ${RESTS} rest as your bid.`,
+		`剩余 ${RESTS} 张成为你的买单。`,
 	],
 	tapeHead: [
 		"Two possible buys, the same print.",
@@ -141,15 +143,14 @@ const copy = {
 	bid: ["bid", "买单"],
 	ben: ["Ben", "Ben"],
 	yours: ["yours", "你的"],
-	chipMarket: [`you: buy ${BEST.size}`, `你：买 ${BEST.size}`],
-	buy: ["buy", "买"],
+	chipMarket: [`buy ${BEST.size}`, `买 ${BEST.size}`],
 	tape: ["time and sales", "逐笔成交"],
 	empty: ["no trades yet", "尚无成交"],
 	volume: ["volume", "成交量"],
 	filled: ["filled", "已成交"],
 	resting: ["resting", "挂单等待"],
-	buyer: ["buyer: you, incoming", "买方：你，主动到来"],
-	seller: ["seller: Ben, resting", "卖方：Ben，挂单"],
+	buyer: ["buyer: you", "买方：你"],
+	seller: ["seller: Ben", "卖方：Ben"],
 	recordA: ["possible A", "可能 A"],
 	recordB: ["or: B", "或 B"],
 	market: [`buy ${T1.quantity} · market`, `买 ${T1.quantity} · 市价`],
@@ -160,8 +161,8 @@ const copy = {
 	publicTape: ["public tape", "公开成交记录"],
 	atAsk: ["at ask", "成交于卖价"],
 	printSub: ["at ask · price, size, time", "成交于卖价 · 价格、数量、时间"],
-	claimBig: ["One trade, two sides, one print.", "一笔成交，两方，一条记录。"],
-	claimSub: ["The tape never shows the orders.", "成交记录从不显示订单。"],
+	claimBig: ["A trade: two sides, one print.", "一笔成交，两方，一条记录。"],
+	claimSub: ["The tape omits orders.", "成交记录不显示订单。"],
 	nextBig: ["Next: execution side", "下一课：成交位置"],
 	nextSub: ["where a trade printed against the quote", "成交价相对报价的位置"],
 } as const satisfies Record<string, Copy>;
@@ -190,23 +191,28 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	const tradeText = narrow ? T.small : text;
 	const rowText = (y: number) => y + L.rowH / 2 + text * 0.36;
 	const chipLeft = L.chipRight - L.chipW(true);
-	const quantityX = chipLeft + text * 4.55;
+	const quantityX = chipLeft + L.chipW(true) / 2;
 	const trade = at(T1.quantity, T1.price);
 	const tradeQuantity = count(T1.quantity);
 	const tradeDetails = ` @ ${usd(T1.price)}`;
 	const tradeSide = t(copy.atAsk);
 	const tradeX = L.chipRight - L.chipW(false) / 2 - (narrow ? 68 : 0);
 	const tradeY = rowText(L.askY(LADDER.length - 1));
-	const tradeStart = tradeX - trade.length * text * 0.3;
+	const tradeStart = narrow
+		? W - margin - trade.length * tradeText * 0.6
+		: tradeX - trade.length * text * 0.3;
 	const tapeY = L.sideY + T.small + text * 1.9;
+	const tradeTapeY = narrow ? tapeY + T.num * 1.5 : tapeY;
 	const tapeTime = `${T1.time} · `;
-	const tapeTradeX = L.sideX + tapeTime.length * text * 0.6;
-	// Keep the full print, including its neutral side label, clear of the phone's volume readout.
+	const tapeTradeX = narrow ? L.sideX : L.sideX + tapeTime.length * text * 0.6;
+	// The phone carries through the clear right gutter, then lands below volume.
 	const tradeDetailsWidth =
-		tradeDetails.length * text * 0.6 + ` · ${tradeSide}`.length * T.small * 0.6;
-	const tradeLane = L.statX - tradeDetailsWidth / 2 - 8;
+		tradeDetails.length * tradeText * 0.6 +
+		(narrow ? 0 : ` · ${tradeSide}`.length * T.small * 0.6);
+	const tradeLane = narrow ? tradeStart : L.statX - tradeDetailsWidth / 2 - 8;
 	const level = (
 		name: string,
 		y: number,
@@ -271,51 +277,55 @@ function Scene({
 			{t(label)}
 		</text>
 	);
-	const chip = (name: string, label: string, long: boolean) => (
-		<g data-f={name}>
-			<rect
-				x={L.chipRight - L.chipW(long)}
-				y={L.chipY}
-				width={L.chipW(long)}
-				height={L.rowH}
-				rx={L.rowH / 2}
-				className="wt-focus-shape"
-			/>
-			<text
-				data-f={`${name}-text`}
-				x={long ? chipLeft + text * 1.2 : L.chipRight - L.chipW(long) / 2}
-				y={rowText(L.chipY)}
-				textAnchor={long ? "start" : "middle"}
-				className="wt-film-type wt-film-accent"
-				style={{ fontSize: text }}
-			>
-				{long ? t(copy.buy) : label}
-			</text>
-			{long && (
-				<text
-					data-f="chip-l-left"
-					x={quantityX}
-					y={rowText(L.chipY)}
-					textAnchor="end"
-					className="wt-film-num wt-film-accent"
-					style={{ fontSize: text }}
-				>
-					{count(SIZE)}
-				</text>
-			)}
-			{long && (
-				<text
-					data-f="chip-l-cap"
-					x={chipLeft + text * 5.05}
-					y={rowText(L.chipY)}
-					className="wt-film-type wt-film-accent"
-					style={{ fontSize: text }}
-				>
-					{`· ≤ ${usd(LIMIT)}`}
-				</text>
-			)}
-		</g>
-	);
+	const chip = (name: string, label: string, long: boolean) => {
+		const right =
+			name === "chip-m"
+				? narrow
+					? L.barX +
+						(BEST.size / MAX) * L.barMax +
+						8 +
+						"Ben".length * text * 0.56 +
+						8 +
+						L.chipW(false)
+					: L.chipRight + 16
+				: L.chipRight;
+		return (
+			<g data-f={name}>
+				<rect
+					x={right - L.chipW(long)}
+					y={L.chipY}
+					width={L.chipW(long)}
+					height={L.rowH}
+					rx={L.rowH / 2}
+					className="wt-focus-shape"
+				/>
+				{!long && (
+					<text
+						data-f={`${name}-text`}
+						x={right - L.chipW(long) / 2}
+						y={rowText(L.chipY)}
+						textAnchor="middle"
+						className="wt-film-type wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{label}
+					</text>
+				)}
+				{long && (
+					<text
+						data-f="chip-l-left"
+						x={quantityX}
+						y={rowText(L.chipY)}
+						textAnchor="middle"
+						className="wt-film-num wt-film-accent"
+						style={{ fontSize: text }}
+					>
+						{count(SIZE)}
+					</text>
+				)}
+			</g>
+		);
+	};
 	const limitY = L.askY(1) - (L.rowStep - L.rowH) / 2;
 	const stat = (name: string, tag: Copy, value: string, y: number) => (
 		<g data-f={name}>
@@ -464,7 +474,7 @@ function Scene({
 			<Brackets name="lock-mine" glow />
 			{owner("yours", L.bidY(0), RESTS, copy.yours)}
 			{chip("chip-m", t(copy.chipMarket), false)}
-			{chip("chip-l", limitChip(t(copy.buy), SIZE), true)}
+			{chip("chip-l", "", true)}
 			{/* A completed trade, never a count: the phone routes its fields through one lane. */}
 			<text
 				data-f="trade-source"
@@ -483,7 +493,7 @@ function Scene({
 					[
 						"details",
 						tradeDetails,
-						tradeStart + tradeQuantity.length * text * 0.6,
+						tradeStart + tradeQuantity.length * tradeText * 0.6,
 					],
 				] as const
 			).map(([name, value, x]) => (
@@ -494,24 +504,28 @@ function Scene({
 						y={tradeY}
 						xmlSpace="preserve"
 						className="wt-film-num wt-film-accent"
-						style={{ fontSize: text }}
+						style={{ fontSize: tradeText }}
 					>
 						{value}
-						{name === "details" && (
+						{name === "details" && !narrow && (
 							<tspan className="wt-film-tag"> · {tradeSide}</tspan>
 						)}
 					</text>
 					<text
 						data-f={`trade-via-${name}`}
-						x={tradeLane}
-						y={tapeY}
-						textAnchor="middle"
+						x={
+							narrow && name === "details"
+								? tradeLane + tradeQuantity.length * tradeText * 0.6
+								: tradeLane
+						}
+						y={narrow ? tradeTapeY : tapeY}
+						textAnchor={narrow ? "start" : "middle"}
 						xmlSpace="preserve"
 						className="wt-film-num wt-film-accent"
-						style={{ fontSize: text }}
+						style={{ fontSize: tradeText }}
 					>
 						{value}
-						{name === "details" && (
+						{name === "details" && !narrow && (
 							<tspan className="wt-film-tag"> · {tradeSide}</tspan>
 						)}
 					</text>
@@ -522,7 +536,7 @@ function Scene({
 				data-f="rest-flight"
 				x={quantityX}
 				y={rowText(L.askY(1))}
-				textAnchor="end"
+				textAnchor="middle"
 				className="wt-film-num wt-film-accent"
 				style={{ fontSize: text }}
 			>
@@ -575,7 +589,7 @@ function Scene({
 								[
 									"details",
 									tradeDetails,
-									tapeTradeX + tradeQuantity.length * text * 0.6,
+									tapeTradeX + tradeQuantity.length * tradeText * 0.6,
 								],
 							] as const
 						).map(([name, value, x]) => (
@@ -583,14 +597,20 @@ function Scene({
 								key={name}
 								data-f={`tape-trade-${name}`}
 								x={x}
-								y={tapeY}
+								y={tradeTapeY}
 								xmlSpace="preserve"
 								className="wt-film-num wt-film-accent"
-								style={{ fontSize: text }}
+								style={{ fontSize: tradeText }}
 							>
 								{value}
 								{name === "details" && (
-									<tspan className="wt-film-tag"> · {tradeSide}</tspan>
+									<tspan
+										className="wt-film-tag"
+										x={narrow ? tapeTradeX : undefined}
+										dy={narrow ? tradeText * 1.25 : undefined}
+									>
+										· {tradeSide}
+									</tspan>
 								)}
 							</text>
 						))}
@@ -609,7 +629,7 @@ function Scene({
 				)}
 			</g>
 			{stat("vol", copy.volume, "0", L.statY)}
-			{stat("fill", copy.filled, `0 / ${SIZE}`, L.sideY)}
+			{stat("fill", copy.filled, "", L.sideY)}
 			{stat(
 				"rest",
 				copy.resting,
@@ -625,7 +645,7 @@ function Scene({
 				<text
 					key={name}
 					data-f={name}
-					x={L.sideX}
+					x={narrow ? L.statX : L.sideX}
 					y={L.roleY(i)}
 					className="wt-film-type"
 					style={{ fontSize: text }}
@@ -849,10 +869,11 @@ function build(context: FilmContext) {
 
 	// ——— question: one offer, one buyer ———
 	tl.addLabel("question", 4);
-	d.tag(4.0);
-	show(one("q-tag"), 4.6);
-	show(one("q-line"), 5.0);
-	word(one("q-big"), 5.3);
+	d.tag(4.35);
+	// The question enters once the title has flown into its corner (about 4.75), never across it.
+	show(one("q-tag"), 4.8);
+	show(one("q-line"), 4.8);
+	word(one("q-big"), 5.1);
 
 	// ——— match: Ben's offer rests; your market buy takes it; one trade ———
 	tl.addLabel("match", 8.8);
@@ -867,17 +888,17 @@ function build(context: FilmContext) {
 	show(kids("tape"), 10.2);
 	show(one("vol"), 10.4);
 	// The incoming buy reaches Ben's ask before the linked depletion starts.
-	tl.fromTo(one("chip-m"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 13.2);
+	tl.fromTo(one("chip-m"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 11.2);
 	tl.to(
 		one("chip-m"),
 		{ y: L.askY(bestRow) - L.chipY, duration: 0.35, ease: "power2.inOut" },
-		13.5,
+		11.5,
 	);
-	hide(one("chip-m"), 14.9, 0.3, 0);
+	hide(one("chip-m"), 13.9, 0.3, 0);
 	hide(one("tape-empty"), 13.85, 0.3, 0);
 	// Depletion and volume are complementary at every frame, not separate counts.
-	hide(one("ben"), 14.9, 0.3, 0);
-	sizeTo(best, 0, BEST.size, 14.2, (remaining) => {
+	hide(one("ben"), 13.9, 0.3, 0);
+	sizeTo(best, 0, BEST.size, 13.2, (remaining) => {
 		one<SVGTextElement>("vol-n").textContent = count(BEST.size - remaining);
 	});
 	// Only the settled execution earns the trade that becomes its public print.
@@ -894,25 +915,17 @@ function build(context: FilmContext) {
 		L.narrow ? 15.5 : 15.7,
 	);
 	if (L.narrow) {
-		// Both fields land at 16.0. The shorter field clears the shared lane first.
-		for (const [name, firstLeg] of [
-			["qty", 0.2],
-			["details", 0.3],
-		] as const) {
+		// Drop through the right gutter, then slide beneath volume into the tape.
+		for (const name of ["qty", "details"] as const) {
 			d.carry(g(`trade-source-${name}`), g(`trade-via-${name}`), 15.5, {
-				duration: firstLeg,
-				arc: "x",
+				duration: 0.4,
+				arc: "y",
 				reveal: false,
 			});
-			d.carry(
-				g(`trade-via-${name}`),
-				g(`tape-trade-${name}`),
-				15.5 + firstLeg,
-				{
-					duration: 0.5 - firstLeg,
-					arc: "x",
-				},
-			);
+			d.carry(g(`trade-via-${name}`), g(`tape-trade-${name}`), 15.9, {
+				duration: 0.45,
+				arc: "x",
+			});
 		}
 	} else {
 		d.carry(g("trade-source"), g("tape-trade"), 15.5, {
@@ -921,7 +934,7 @@ function build(context: FilmContext) {
 		});
 	}
 	show(heads[1], 15.2);
-	show(one("role-b"), 17.0);
+	show(one("role-b"), 17.4);
 	show(one("role-s"), 17.4);
 
 	// ——— limit: the hero. Buy 30, at most $4.15: best price first, and the rest waits. ———
@@ -952,43 +965,43 @@ function build(context: FilmContext) {
 	d.trace(one<SVGPathElement>("limit"), 20.75, { duration: 0.6 });
 	// Above the limit: out of reach.
 	tl.to(one(`lv-a${LADDER[0].price}`), { opacity: 0.4, duration: 0.4 }, 21.15);
-	show(one("fill"), 21.15);
 	ride("chip-l", bestRow, 21.7);
 	const chipQuantity = one<SVGTextElement>("chip-l-left");
 	const filled = one<SVGTextElement>("fill-n");
 	const fillTo = (total: number) => {
 		chipQuantity.textContent = count(SIZE - total);
-		filled.textContent = `${count(total)} / ${SIZE}`;
+		filled.textContent = total > 0 ? `${count(total)}/${SIZE}` : "";
 	};
 	sizeTo(best, 0, BEST.size, 22.2, (remaining) => fillTo(FIRST - remaining));
+	show(one("fill"), 23.2);
 	// Each completed fill stands for a full second before the next construction.
-	ride("chip-l", bestRow - 1, 24.2);
-	sizeTo(second, 0, TAKEN[1].size, 24.7, (remaining) =>
+	ride("chip-l", bestRow - 1, 24.45);
+	sizeTo(second, 0, TAKEN[1].size, 24.95, (remaining) =>
 		fillTo(DONE.filled - remaining),
 	);
 	tl.to(
 		[one(`lv-${best}`), one(`lv-${second}`)],
 		{ opacity: 0.3, duration: 0.4 },
-		26.7,
+		27.2,
 	);
 	// The rest drops into the bids as the new best bid, and the old ones step down.
-	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 26.7);
+	tl.to(bids, { y: L.rowStep, duration: 0.5, ease: "power2.inOut" }, 27.2);
 	tl.to(
 		one("chip-l"),
 		{ y: L.bidY(0) - L.chipY, opacity: 0, duration: 0.5, ease: "power2.inOut" },
-		26.7,
+		27.2,
 	);
 	// The visible eight lifts out of the ticket and becomes the bid's size at arrival.
-	tl.to(chipQuantity, { opacity: 0, duration: 0.3, ease: "power2.out" }, 26.7);
-	d.carry(g("rest-flight"), g("size-mine"), 26.7, { duration: 0.5, arc: "y" });
+	tl.to(chipQuantity, { opacity: 0, duration: 0.3, ease: "power2.out" }, 27.2);
+	d.carry(g("rest-flight"), g("size-mine"), 27.2, { duration: 0.5, arc: "y" });
 	tl.fromTo(
 		[one("price-mine"), one("bar-mine")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		27.2,
+		27.7,
 	);
-	show(one("yours"), 27.6, "right");
-	show(one("rest"), 28.1);
+	show(one("rest"), 27.7);
+	show(one("yours"), 28.2, "right");
 	tl.to(one("fill"), { opacity: 0.35, duration: 0.4 }, 28.1);
 	d.lock(g("lock-mine"), 29.6, { around: one("rest-n"), pad: 6 });
 	tl.addLabel("hero-lock", 29.6);
