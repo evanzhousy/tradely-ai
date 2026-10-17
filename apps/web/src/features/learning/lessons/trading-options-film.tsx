@@ -158,14 +158,14 @@ const copy = {
 			name: ["sell to close", "卖出平仓"],
 			short: ["sell", "卖出"],
 			when: ["Oct 11, at the $3.70 bid", "10月11日，买价 $3.70"],
-			whenShort: ["Oct 11 · bid $3.70", "10月11日 · 买价 $3.70"],
+			whenShort: ["Oct 11 bid: $3.70", "10月11日：买价 $3.70"],
 			outcome: ["cash", "现金"],
 		},
 		expire: {
 			name: ["let it expire", "任其到期"],
 			short: ["expire", "到期"],
 			when: ["Nov 15, ALFA at $103", "11月15日，ALFA 在 $103"],
-			whenShort: ["Nov 15 · ALFA $103", "11月15日 · ALFA $103"],
+			whenShort: ["ALFA $103 at expiry", "到期时，ALFA $103"],
 			outcome: [
 				`${usd(routeFacts("expire").cash, 0)} value`,
 				`价值 ${usd(routeFacts("expire").cash, 0)}`,
@@ -182,14 +182,8 @@ const copy = {
 			outcome: [`${ALFA.multiplier} shares`, `${ALFA.multiplier} 股`],
 		},
 	},
-	claimBig: [
-		"Pick the row, name your price, know how it ends.",
-		"选对那一行，定好价格，弄清怎么结束。",
-	],
-	claimSub: [
-		"A limit caps the price, not the time.",
-		"限价控制价格，控制不了时间。",
-	],
+	claimBig: ["Choose the contract. Set the price.", "选好合约，设定价格。"],
+	claimSub: ["A limit cannot promise a fill.", "限价单不保证成交。"],
 	nextBig: ["Next: risk first", "下一课：先看风险"],
 	nextSub: ["how options lose money", "期权如何亏钱"],
 } as const;
@@ -585,7 +579,7 @@ function Scene({
 						className={`wt-film-num ${tone}`}
 						style={{
 							fontSize:
-								name === "p-market"
+								name === "p-market" || name === "p-filled"
 									? T.num * (narrow ? 1 : 0.85)
 									: rowText * 0.95,
 						}}
@@ -700,7 +694,7 @@ function Scene({
 							text={t(narrow ? r.whenShort : r.when)}
 							x={cardX(i) + (narrow ? 12 : L.cardW / 2)}
 							y={cardY(i) + L.cardH * (narrow ? 0.64 : 0.42)}
-							size={narrow && route !== "exercise" ? T.small : T.body}
+							size={T.body}
 							maxWidth={narrow ? L.cardW * 0.61 : L.cardW - 12}
 							anchor={narrow ? "start" : "middle"}
 							className={
