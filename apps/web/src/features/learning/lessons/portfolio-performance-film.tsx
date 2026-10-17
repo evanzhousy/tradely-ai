@@ -438,7 +438,7 @@ function Scene({
 							data-f="line-a"
 							d={L.ddPath(steady)}
 							className="wt-line-position"
-							style={{ stroke: "var(--tone-ink)" }}
+							style={{ stroke: "var(--tone-dim)", strokeWidth: 2.5 }}
 						/>
 						<path
 							data-f="line-b"
@@ -452,7 +452,7 @@ function Scene({
 							y={L.my(steady[5]) - 12}
 							textAnchor="middle"
 							className="wt-small wt-halo wt-marker-label"
-							style={{ fill: "var(--tone-ink)" }}
+							style={{ fill: "var(--tone-dim)" }}
 						>
 							{t(copy.accountA)}
 						</text>
