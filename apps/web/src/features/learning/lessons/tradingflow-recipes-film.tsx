@@ -41,21 +41,20 @@ import {
 } from "./tradingflow-recipes-model";
 
 /*
- * Recipes, as a film. It opens on a question, "Which contracts traded far above their open
- * interest on Monday?", and the six official recipes in three kinds: the question lights
+ * Recipes, as a film. It opens on a question, "Which contracts trade well above open
+ * interest Monday?", and the six official recipes in three kinds: the question lights
  * the session screen that answers it. Then the session a report shows: opened at 8:00 on
  * Tuesday, before the open, the screener shows Monday, the latest completed session; opened
- * at 10:00 on Monday, with most of Monday's session still to trade, "latest" slides back over
- * the weekend and it shows Friday, whose date comes down into the report's header. After the
+ * at 10:00 on Monday, with most of Monday's session still to trade, the "latest" marker jumps
+ * back to Friday, whose date comes down into the report's header. After the
  * lock releases, Monday finishes and becomes the latest session. Last, Edit with AI copies
  * Daily Market Recap into a private copy linked to its action chip
  * and changes: you open your copy, and a colleague still opens the official one.
  *
  *   open      0–4        "Recipes"
- *   question  4–9.6      "Which contracts traded far above their open interest?"
+ *   question  4–9.6      "Which contracts trade well above open interest Monday?"
  *   catalog   9.6–15.8   three kinds; the screen
- *   session   15.8–29.8  Tue 8:00 → Monday; Mon 10:00 → Friday, locked at 28
- *   completed 29.8–35.7  whole-calendar cut to Mon 16:30 → Monday at 30.4
+ *   session   15.8–35.7  Tue 8:00 → Monday; Mon 10:00 → Friday; Mon 16:30 → Monday
  *   fork      35.7–41.4  official + colleague; linked inherited copy; your edit
  *   claim     41.4–45.4 Pick by the question; read the session
  *   next      45.4–47.4  Next: read a recipe like an auditor
@@ -150,10 +149,10 @@ const copy = {
 	title: ["Recipes", "Recipe"],
 	titleSub: ["research that re-runs on fresh data", "在新数据上重跑的研究"],
 	qTag: ["your question", "你的问题"],
-	qBig: ["Which contracts traded", "周一哪些合约的成交"],
-	qSignal: ["far above their open interest", "远超其未平仓量？"],
-	qTail: ["on Monday?", ""],
-	qLine: ["One official recipe answers it.", "只有一个官方 Recipe 回答它。"],
+	qBig: ["Which contracts trade", "周一哪些合约"],
+	qSignal: ["well above open interest", "成交超未平仓量？"],
+	qTail: ["Monday?", ""],
+	qLine: ["One official recipe answers it.", "唯一的官方 Recipe 回答。"],
 	kindsHead: [
 		"Six official recipes, three kinds.",
 		"六个官方 Recipe，三种类型。",
@@ -187,10 +186,6 @@ const copy = {
 		"周一 10:00：仍在交易。",
 	],
 	fridayHead: ["It shows Friday.", "它显示周五。"],
-	afterCloseHead: [
-		"After the close, it shows Monday.",
-		"收盘后，报告显示周一。",
-	],
 	editChip: ["Edit with AI", "Edit with AI"],
 	forkHead: [
 		"Edit with AI forks a private copy.",
@@ -896,7 +891,6 @@ function Scene({
 				maxWidth={room}
 				anchor="start"
 			/>
-			{headline("after-close-head", copy.afterCloseHead, copy.afterCloseHead)}
 			<Brackets name="lock-session" glow />
 			{headline("f-head", copy.forkHead, copy.forkHeadShort)}
 			<Lines
@@ -1003,7 +997,6 @@ function build(context: FilmContext) {
 			"t-head",
 			"m-head",
 			"m2-head",
-			"after-close-head",
 			"f-head",
 			"c-head",
 		].map((name) => one(name)),
@@ -1180,81 +1173,49 @@ function build(context: FilmContext) {
 	// Opened on Monday morning instead: Monday is trading, so "latest" goes back over the
 	// weekend to Friday.
 	d.swap([one("o-head"), one("t-head")], one("m-head"), 22.4);
-	tl.to(
-		[one("now-line"), one("now-dot")],
-		{
-			attr: {
-				x1: L.nowX(MONDAY),
-				x2: L.nowX(MONDAY),
-				cx: L.nowX(MONDAY),
-			},
-			duration: 0.9,
-			ease: "power2.inOut",
-		},
-		22.75,
-	);
-	// Monday's date has had 3.85 settled seconds. Clear it before the new run
-	// enters at 23.7: a report run Monday morning cannot name Monday's session.
-	tl.to(
-		one("sess-mon-date"),
-		{ attr: { "fill-opacity": 0 }, duration: 0.3 },
-		23.35,
-	);
-	// Remove the faded date from the line's box; seeking back restores its layout.
-	tl.set(one("sess-mon-date"), { display: "none" }, 23.65);
-	// The old date is below 0.25 opacity before pending fades into its slot.
+	// Cut the dependent marks together at the new run: no clock movement can
+	// disagree with its run label, session date, elapsed time, or latest day.
+	const mondayX = L.nowX(MONDAY);
+	const mondayDoneWidth = (dayFraction(MONDAY.at) - dayFraction(OPEN)) * L.colW;
+	const fridayBoxX = L.dayX(PREVIOUS_SESSION_DATE) + dayFraction(OPEN) * L.colW;
+	const friday = one(`day-${PREVIOUS_SESSION_DATE}`);
+	tl.set(one("now-line"), { attr: { x1: mondayX, x2: mondayX } }, 23.35);
+	tl.set(one("now-dot"), { attr: { cx: mondayX } }, 23.35);
+	// The old run's marks leave over the motion floor, gone at the cut; the new run's
+	// come on over the same 0.3 s after it, so nothing pops.
+	hide(one("ran-tue"), 23.05, 0.3, 0);
+	tl.set(one("mon-done"), { attr: { width: mondayDoneWidth } }, 23.35);
 	tl.fromTo(
-		one("sess-pending"),
+		[
+			one("ran-mon"),
+			one("trading-mon"),
+			one("mon-rest"),
+			one("mon-elapsed"),
+			one("mon-done"),
+			one("sess-pending"),
+		],
 		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		23.5,
-	);
-	d.swap(one("ran-tue"), one("ran-mon"), 23.35);
-	// "latest" steps out from under Monday, and Monday shows it is trading.
-	hide(one("latest-mon"), 22.75, 0.3, 0);
-	show(one("trading-mon"), 23.05);
-	// Monday is not done: the half hour it has traded, and the rest of its session hatched.
-	tl.set(one("mon-done"), { opacity: 1 }, 23.35);
-	tl.fromTo(
-		one("mon-done"),
-		{ attr: { width: 0 } },
-		{
-			attr: { width: (dayFraction(MONDAY.at) - dayFraction(OPEN)) * L.colW },
-			duration: 0.3,
-			ease: "power2.out",
-		},
+		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
 		23.35,
 	);
-	tl.to(one("mon-rest"), { opacity: 1, duration: 0.45 }, 23.5);
-	show(one("mon-elapsed"), 23.65, "above");
-	const back = L.dayX(PREVIOUS_SESSION_DATE) - L.dayX(SESSION_DATE);
-	// The weekend's labels step back while the box passes over them.
-	const closed = days
-		.filter((date) => !sessionDays.has(date))
-		.map((date) => one(`closed-${date}`));
-	tl.to(closed, { opacity: 0.25, duration: 0.3 }, 24);
-	tl.to(closed, { opacity: 1, duration: 0.3 }, 25.05);
-	tl.to(
-		one("latest-box"),
-		{
-			attr: { x: L.dayX(PREVIOUS_SESSION_DATE) + dayFraction(OPEN) * L.colW },
-			duration: 0.8,
-			ease: "power2.inOut",
-		},
-		24.2,
+	tl.set(
+		one("sess-mon-date"),
+		{ attr: { "fill-opacity": 0 }, display: "none" },
+		23.35,
 	);
-	// …and comes back under Friday once the box has arrived.
+	tl.set(one("latest-box"), { attr: { x: fridayBoxX } }, 23.35);
 	tl.set(
 		one("latest-mon"),
-		{ attr: { x: L.dayX(SESSION_DATE) + L.colW / 2 + back } },
-		23.1,
+		{ attr: { x: L.dayX(PREVIOUS_SESSION_DATE) + L.colW / 2 } },
+		23.35,
 	);
+	tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 23.35);
+	// The prior latest cue steps aside before the new report snapshot appears.
+	hide(one("latest-mon"), 22.75, 0.3, 0);
 	// Friday is the latest: its date lights, is read off its box, and comes down into the
-	// header in the header's own type. Monday's date fades out of its line first; Friday's
-	// line takes the place with its date held back for the carry, so "Session · " never moves.
+	// header in the header's own type. The pending date already occupies the same slot, so
+	// Friday's line takes its place without moving "Session · ".
 	const title = one("header").querySelector("text");
-	const friday = one(`day-${PREVIOUS_SESSION_DATE}`);
-	tl.set(friday, { attr: { class: "wt-small wt-accent" } }, 24.85);
 	// In before the carry takes it: a show would still be fading in when it flies.
 	tl.fromTo(
 		one("fri-date"),
@@ -1279,8 +1240,8 @@ function build(context: FilmContext) {
 	show(one("latest-mon"), 25.8);
 	// The hero: Monday morning's report shows Friday.
 	d.lock(lockSession, 28.0, { around: one("sess-fri"), pad: 10 });
-	// A film-local lock settles at 28.3, leaving 1.5 quiet seconds before
-	// the completion beat. The calendar cut follows the bracket's full release.
+	// The lock settles at 28.3; the 10:00 calendar stands for 1.5 s before
+	// its crossfade into the close snapshot starts at 29.8.
 	for (const tween of tl.getTweensOf(lockSession)) {
 		if (tween.startTime() === 28.0 && tween.duration() > 0) tween.duration(0.3);
 	}
@@ -1288,16 +1249,14 @@ function build(context: FilmContext) {
 	show(one("m2-head"), 26.1);
 	tl.to(one("ran-mon"), { opacity: 0.85, duration: 0.4 }, 26.5);
 
-	// ——— completed: Monday closes ———
-	tl.addLabel("completed", 29.8);
-	// The bracket settles at 28.3 and stands until 29.8, unchanged. Release
-	// it and its headlines first; keep the entire 10:00 calendar true until
-	// the old ramp's settlement at 30.4, then cut every dependent mark together.
+	// ——— session continuation: Monday closes ———
+	// The bracket settles at 28.3 and stands through 29.8. Release it and its
+	// headlines, then crossfade the 10:00 calendar into the 16:30 snapshot.
 	hide(lockSession, 29.8, 0.3, 0);
 	hide(one("m-head"), 29.8);
 	hide(one("m2-head"), 29.8);
-	const completedAt = 30.4;
-	const completedX = L.nowX(AFTER_CLOSE);
+	const afterCloseAt = 30.4;
+	const afterCloseX = L.nowX(AFTER_CLOSE);
 	// The 10:00 marks leave over the motion floor, gone as the calendar cuts to
 	// 16:30; the 16:30 marks come on over the same 0.3 s after it.
 	hide(
@@ -1308,32 +1267,32 @@ function build(context: FilmContext) {
 			one("sess-fri"),
 			one("ran-mon"),
 		],
-		completedAt - 0.3,
+		afterCloseAt - 0.3,
 		0.3,
 		0,
 	);
 	tl.set(
 		one("mon-done"),
 		{ attr: { width: (dayFraction(CLOSE) - dayFraction(OPEN)) * L.colW } },
-		completedAt,
+		afterCloseAt,
 	);
 	tl.set(
 		one("now-line"),
-		{ attr: { x1: completedX, x2: completedX } },
-		completedAt,
+		{ attr: { x1: afterCloseX, x2: afterCloseX } },
+		afterCloseAt,
 	);
-	tl.set(one("now-dot"), { attr: { cx: completedX } }, completedAt);
-	tl.set(one("completion-clock"), { attr: { x: completedX } }, completedAt);
+	tl.set(one("now-dot"), { attr: { cx: afterCloseX } }, afterCloseAt);
+	tl.set(one("completion-clock"), { attr: { x: afterCloseX } }, afterCloseAt);
 	tl.fromTo(
 		[one("completion-clock"), one("ran-close"), one("sess-close")],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3, ease: "power3.out", immediateRender: false },
-		completedAt,
+		afterCloseAt,
 	);
 	tl.set(
 		one("latest-box"),
 		{ attr: { x: L.dayX(AFTER_CLOSE.latest) + dayFraction(OPEN) * L.colW } },
-		completedAt,
+		afterCloseAt,
 	);
 	tl.set(
 		one("latest-mon"),
@@ -1343,24 +1302,21 @@ function build(context: FilmContext) {
 			y: 0,
 			attr: { x: L.dayX(AFTER_CLOSE.latest) + L.colW / 2 },
 		},
-		completedAt,
+		afterCloseAt,
 	);
-	tl.set(friday, { attr: { class: "wt-small" } }, completedAt);
+	tl.set(friday, { attr: { class: "wt-small" } }, afterCloseAt);
 	tl.set(
 		one(`day-${AFTER_CLOSE.latest}`),
 		{ attr: { class: "wt-small wt-accent" } },
-		completedAt,
+		afterCloseAt,
 	);
-	// The synchronized 16:30 snapshot reads quietly for 1.8 s before the
-	// existing headline entrance; the headline and fork cut keep their times.
-	show(one("after-close-head"), 32.2, "above");
+	// The synchronized 16:30 snapshot settles at 30.7, then remains as quiet
+	// proof through the session beat's cut to the official baseline at 35.7.
 
 	// ——— fork: official and yours ———
 	tl.addLabel("fork", 35.7);
-	// One deliberate beat cut replaces the completed calendar with the whole
-	// official baseline. No outgoing headline or baseline entrance competes
-	// with its quiet second; every previous sentence keeps its original hold.
-	tl.set(one("after-close-head"), { opacity: 0 }, 35.7);
+	// One deliberate beat cut replaces the session calendar with the whole
+	// official baseline after the 16:30 proof's quiet interval.
 	tl.set(one("calendar"), { opacity: 0 }, 35.7);
 	tl.set(one("fork"), { opacity: 1 }, 35.7);
 	tl.set(one("fork-official"), { opacity: 1 }, 35.7);
@@ -1413,7 +1369,7 @@ function build(context: FilmContext) {
 export const tradingflowRecipesFilm: Film = {
 	id: "tradingflow-recipes",
 	label: [
-		"Recipes, as a short film: the question of which contracts traded far above their open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday, then Monday after its close at 16:30; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
+		"Recipes, as a short film: the question of which contracts trade well above open interest Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday, then Monday after its close at 16:30; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
 		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00、盘中打开则显示周五，收盘后 16:30 则显示周一；以及 Edit with AI 把 Daily Market Recap 复制成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
 	],
 	stage: "dark",
@@ -1422,7 +1378,6 @@ export const tradingflowRecipesFilm: Film = {
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "catalog", label: ["Three kinds", "三种类型"] },
 		{ id: "session", label: ["The session", "交易时段"] },
-		{ id: "completed", label: ["After the close", "收盘后"] },
 		{ id: "fork", label: ["Official vs yours", "官方与你的"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],
