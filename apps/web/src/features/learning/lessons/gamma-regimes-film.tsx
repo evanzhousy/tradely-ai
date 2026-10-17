@@ -174,6 +174,7 @@ const copy = {
 	againstMove: ["against a rise", "逆势"],
 	flip: ["flip", "转折"],
 	sumAxis: ["Cumulative GEX by strike", "按行权价累计净 GEX"],
+	spotFixed: [" fixed at ", " 固定在 "],
 	strikeAxis: ["strike", "行权价"],
 	sum: ["zero", "穿零"],
 	shortcutHead: ["Sum strikes at ALFA $100.", "ALFA $100；按行权价累加。"],
@@ -439,6 +440,16 @@ function Scene({
 					<g data-f="sum-chart">
 						<text x={L.left} y={L.sumTop - 10} className="wt-small">
 							{t(copy.sumAxis)}
+						</text>
+						{/* The condition sits above the caption, outside the plot the sum line crosses. */}
+						<text
+							x={L.left}
+							y={L.sumTop - 10 - T.small * 1.45}
+							className="wt-small"
+						>
+							<tspan className="wt-film-tag">ALFA</tspan>
+							{t(copy.spotFixed)}
+							<tspan className="wt-film-num">{stock(SPOT)}</tspan>
 						</text>
 						<path
 							d={`M${L.left} ${L.sumY(0)}H${L.sumRight}`}
