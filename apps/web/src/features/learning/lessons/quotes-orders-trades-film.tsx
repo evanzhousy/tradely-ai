@@ -86,16 +86,18 @@ function layout(width: number) {
 		bookTop + (ASKS.length + i) * rowStep + rowStep * 0.5;
 	const bookBottom = bidY(BIDS.length - 1) + rowH;
 	const text = narrow ? T.small * 1.1 : T.body;
-	const cardText = narrow ? text * 1.05 : text * 1.2;
+	const cardText = narrow ? T.body * 1.2 : text * 1.2;
 	const rowText = (y: number) => y + rowH / 2 + text * 0.36;
-	// The venue cards hold three lines, the venue, its ask and its bid, centred on the book's
-	// middle on the wide frame; on a phone they sit at the book's top, leaving room for the
-	// NBBO between them and the tape.
+	// Desktop cards centre on the book; the phone uses three venue rows with named
+	// bid/ask columns. The accepted NBBO position remains fixed below either layout.
 	const gap = narrow ? 8 : 12;
 	const venueW = (bookW - 2 * gap) / 3;
 	// Lines 1.8 apart, so brackets on the ask clear the bid under it.
 	const cardGap = cardText * 1.8;
-	const venueH = T.small * 1.7 + cardText * 1.6 + cardGap + cardText * 0.9;
+	const cardH = T.small * 1.7 + cardText * 1.6 + cardGap + cardText * 0.9;
+	const nbboCardH = narrow ? T.small * 1.7 + text * 1.05 * 4.3 : cardH;
+	const venueRowStep = cardText * 1.9;
+	const venueH = narrow ? T.small * 2.8 + venueRowStep * 3 : cardH;
 	// On the wide frame C's ask line is level with the tape's top row, so C's last trade
 	// flies straight across into it.
 	const tapeTop = rowText(askY(ASKS.length - 1)) - rowH * 0.6 - T.small * 1.6;
@@ -130,20 +132,29 @@ function layout(width: number) {
 		tapeStep,
 		text,
 		cardText,
-		venueX: (i: number) => margin + i * (venueW + gap),
+		venueX: (i: number) => (narrow ? margin : margin + i * (venueW + gap)),
+		venueValueX: (i: number, side: "ask" | "bid") =>
+			narrow
+				? margin + bookW * (side === "bid" ? 0.39 : 0.79)
+				: margin + i * (venueW + gap) + venueW / 2,
+		venueRowStep,
 		venueW,
 		venueY,
 		venueH,
-		/** A card's lines: its name, its ask, its bid. */
-		venueLine: (k: number) =>
-			venueY + T.small * 1.7 + [0, cardText * 1.6, cardText * 1.6 + cardGap][k],
+		/** Desktop card lines; on the phone all three cells share their venue row. */
+		venueLine: (k: number, i = 0) =>
+			narrow
+				? venueY + T.small * 2.8 + venueRowStep * (i + 0.5)
+				: venueY +
+					T.small * 1.7 +
+					[0, cardText * 1.6, cardText * 1.6 + cardGap][k],
 		/**
 		 * The NBBO, under the cards its figures come from: on a phone between the cards and the
 		 * tape, 1.3 times the volume.
 		 */
 		nbboX: margin,
 		nbboY: narrow
-			? (venueY + venueH + tapeY) / 2 - T.head * 0.6
+			? (venueY + nbboCardH + tapeY) / 2 - T.head * 0.6
 			: venueY + venueH + T.small * 2.6,
 		nbboSize: narrow ? T.head * 1.3 : T.num,
 	};
@@ -157,10 +168,7 @@ const copy = {
 	atAsk: ["at ask", "卖价"],
 	last: ["last", "最新"],
 	unit: ["quotes per share", "报价：每股"],
-	qLine: [
-		"You buy one at market. What do you pay?",
-		"你用市价单买 1 张。要付多少？",
-	],
+	qLine: ["Market buy: one contract. What price?", "市价买 1 张，付多少？"],
 	bookHead: ["The book: offers, not trades.", "订单簿：挂单，不是成交。"],
 	bookHeadShort: ["The book: offers, not trades.", "订单簿：挂单，不是成交。"],
 	mlHead: ["Mid: math. Last: history.", "中间价是算的，最新价是历史。"],
@@ -195,8 +203,8 @@ const copy = {
 	venue: ["venue", "场所"],
 	nbbo: ["NBBO · bid × ask", "NBBO · 买价 × 卖价"],
 	claimBig: [
-		"A quote is an offer; only a trade prints.",
-		"报价只是挂单；只有成交才会留下记录。",
+		"Quotes are offers; only trades print.",
+		"报价是挂单；只有成交才留记录。",
 	],
 	claimSub: ["Buy at the ask, sell at the bid.", "按卖价买，按买价卖。"],
 	nextBig: ["Next: counterparties", "下一课：交易对手"],
@@ -229,8 +237,10 @@ function Scene({
 	const { text, cardText } = L;
 	const rowText = (y: number) => y + L.rowH / 2 + text * 0.36;
 	const spreadAt = L.spreadY + L.rowStep * 0.2;
-	const midX = L.barX + L.barMax / 2;
-	const midText = `${t(copy.mid)} ${price(MID)}`;
+	const midText = price(MID);
+	const midPrefix = `(${usd(BID.price)} + ${usd(ASK.price)}) ÷ 2 = `;
+	const midX = margin + (L.bookW - textWidth(midPrefix + midText, text)) / 2;
+	const midAt = (prefix: string) => midX + textWidth(prefix, text);
 	const level = (
 		side: "ask" | "bid",
 		y: number,
@@ -349,7 +359,7 @@ function Scene({
 						<Word
 							name={`${name}-tag`}
 							x={W * (0.2 + i * 0.3)}
-							y={H * 0.44}
+							y={H * (narrow ? 0.37 : 0.44)}
 							size={T.small}
 							className="wt-film-tag"
 						>
@@ -358,7 +368,7 @@ function Scene({
 						<Word
 							name={`${name}-num`}
 							x={W * (0.2 + i * 0.3)}
-							y={H * 0.44 + T.num * 1.4}
+							y={H * (narrow ? 0.37 : 0.44) + T.num * 1.4}
 							size={T.num * 1.2}
 							className={`wt-film-num ${tone}`}
 						>
@@ -434,16 +444,22 @@ function Scene({
 			</g>
 			{/* The midpoint, made from the bid and the ask on the spread line between them. */}
 			<g data-f="mid">
-				<path
+				<text
 					data-f="mid-line"
-					d={`M${L.barX} ${spreadAt}H${L.barX + L.barMax}`}
-					className="wt-film-riser"
-				/>
+					y={spreadAt - 4}
+					className="wt-film-num wt-halo"
+					style={{ fontSize: text }}
+				>
+					<tspan x={midX}>(</tspan>
+					<tspan x={midAt(`(${usd(BID.price)}`)}> + </tspan>
+					<tspan x={midAt(`(${usd(BID.price)} + ${usd(ASK.price)}`)}>
+						) ÷ 2 ={" "}
+					</tspan>
+				</text>
 				<text
 					data-f="mid-label"
-					x={midX}
+					x={midAt(midPrefix)}
 					y={spreadAt - 4}
-					textAnchor="middle"
 					className="wt-film-num wt-film-accent wt-halo"
 					style={{ fontSize: text }}
 				>
@@ -451,9 +467,8 @@ function Scene({
 				</text>
 				<text
 					data-f="mid-lo"
-					x={midX - textWidth(midText, text) / 2 - text * 1.2}
+					x={midAt("(")}
 					y={spreadAt - 4}
-					textAnchor="end"
 					className="wt-film-num wt-halo"
 					style={{ fontSize: text }}
 				>
@@ -461,7 +476,7 @@ function Scene({
 				</text>
 				<text
 					data-f="mid-hi"
-					x={midX + textWidth(midText, text) / 2 + text * 1.2}
+					x={midAt(`(${usd(BID.price)} + `)}
 					y={spreadAt - 4}
 					className="wt-film-num wt-halo"
 					style={{ fontSize: text }}
@@ -541,6 +556,18 @@ function Scene({
 			<g data-f="vias">
 				{narrow && (
 					<text
+						data-f="via-last"
+						x={margin + L.bookW * 0.56}
+						y={L.tapeY - text}
+						textAnchor="middle"
+						className="wt-film-num wt-film-dim"
+						style={{ fontSize: text }}
+					>
+						{usd(oct105CallLast.price)}
+					</text>
+				)}
+				{narrow && (
+					<text
 						data-f="via-gone-right"
 						x={margin + L.bookW - 6}
 						y={L.tapeY - text}
@@ -618,31 +645,55 @@ function Scene({
 				anchor="start"
 			/>
 			<g data-f="venues">
+				{narrow && (
+					<g data-f="venue-headers">
+						{(
+							[
+								["venue", margin + 4, copy.venue],
+								["bid", L.venueValueX(0, "bid"), copy.bid],
+								["ask", L.venueValueX(0, "ask"), copy.ask],
+							] as const
+						).map(([key, x, label]) => (
+							<text
+								key={key}
+								x={x}
+								y={L.venueY + T.small * 1.2}
+								textAnchor={key === "venue" ? "start" : "middle"}
+								className="wt-film-tag"
+								style={{ fontSize: T.small * 1.15 }}
+							>
+								{t(label).toUpperCase()}
+							</text>
+						))}
+					</g>
+				)}
 				{VENUES.map((v, i) => (
 					<g key={v.venue} data-f={`venue-${v.venue}`}>
 						<rect
 							x={L.venueX(i)}
-							y={L.venueY}
-							width={L.venueW}
-							height={L.venueH}
+							y={narrow ? L.venueLine(0, i) - cardText * 1.25 : L.venueY}
+							width={narrow ? L.bookW : L.venueW}
+							height={narrow ? L.venueRowStep * 0.9 : L.venueH}
 							rx={12}
 							className="wt-panel-shape"
 						/>
 						<text
-							x={L.venueX(i) + L.venueW / 2}
-							y={L.venueLine(0)}
-							textAnchor="middle"
+							x={narrow ? margin + 8 : L.venueX(i) + L.venueW / 2}
+							y={L.venueLine(0, i)}
+							textAnchor={narrow ? "start" : "middle"}
 							className="wt-film-tag"
 							style={{ fontSize: T.small }}
 						>
-							{`${v.venue} · ${t(copy.ask)}/${t(copy.bid)}`.toUpperCase()}
+							{narrow
+								? v.venue
+								: `${v.venue} · ${t(copy.ask)}/${t(copy.bid)}`.toUpperCase()}
 						</text>
-						{/* Price · size: ask above bid, named in the card header. */}
+						{/* Price · quantity; named columns on phone, ask above bid on desktop. */}
 						{v.venue === BEST.ask.venue && (
 							<text
 								data-f="va-gone"
-								x={L.venueX(i) + L.venueW / 2}
-								y={L.venueLine(1)}
+								x={L.venueValueX(i, "ask")}
+								y={L.venueLine(1, i)}
 								textAnchor="middle"
 								className="wt-film-num wt-film-dim"
 								style={{ fontSize: cardText }}
@@ -652,8 +703,8 @@ function Scene({
 						)}
 						<text
 							data-f={`va-${v.venue}`}
-							x={L.venueX(i) + L.venueW / 2}
-							y={L.venueLine(1)}
+							x={L.venueValueX(i, "ask")}
+							y={L.venueLine(1, i)}
 							textAnchor="middle"
 							className="wt-film-num"
 							style={{ fontSize: cardText }}
@@ -665,8 +716,8 @@ function Scene({
 						</text>
 						<text
 							data-f={`vb-${v.venue}`}
-							x={L.venueX(i) + L.venueW / 2}
-							y={L.venueLine(2)}
+							x={L.venueValueX(i, "bid")}
+							y={L.venueLine(2, i)}
 							textAnchor="middle"
 							className="wt-film-num"
 							style={{ fontSize: cardText }}
@@ -697,8 +748,11 @@ function Scene({
 						<text
 							key={name}
 							data-f={name}
-							x={L.venueX(i) + L.venueW / 2 - textWidth(full, cardText) / 2}
-							y={L.venueLine(line)}
+							x={
+								L.venueValueX(i, line === 1 ? "ask" : "bid") -
+								textWidth(full, cardText) / 2
+							}
+							y={L.venueLine(line, i)}
 							className="wt-film-num"
 							style={{ fontSize: cardText }}
 						>
@@ -956,6 +1010,7 @@ function build(context: FilmContext) {
 		one(`va-${v.venue}`),
 		one(`vb-${v.venue}`),
 	]);
+	const venueHeaders = L.narrow ? kids("venue-headers") : [];
 	const cardFrames = VENUES.map((v) =>
 		[...one(`venue-${v.venue}`).children].filter(
 			(el) => !el.getAttribute("data-f"),
@@ -983,6 +1038,7 @@ function build(context: FilmContext) {
 		...kids("vias"),
 		lockVol,
 		...cardFrames.flat(),
+		...venueHeaders,
 		...cardLines,
 		g("va-gone"),
 		g("hero-nbbo"),
@@ -1006,7 +1062,7 @@ function build(context: FilmContext) {
 	show(one("q-line"), 5.2);
 	show(one("q-unit"), 5.2);
 
-	// ——— quote: the three numbers fly to their places, and the book forms after them ———
+	// ——— quote: establish the scaffold, then carry the three numbers into it ———
 	tl.addLabel("quote", 8.9);
 	hide(
 		[
@@ -1017,58 +1073,85 @@ function build(context: FilmContext) {
 		],
 		8.9,
 	);
-	// The bid first, then the ask, so their paths never cross; the last goes to the tape.
-	d.carry(g("q-bid-num"), pxBid, 9.1);
-	d.carry(g("q-ask-num"), pxAsk, 9.5);
-	d.carry(g("q-last-num"), last, 9.8);
-	// The best rows appear under their numbers as they land; the others, once all have.
-	tl.set(bestRows[1], { opacity: 1 }, 10.0);
-	tl.set(bestRows[0], { opacity: 1 }, 10.4);
-	show(
-		kids("tape").filter(
-			(el) => el !== last && !el.getAttribute("data-f")?.startsWith("vol-"),
+	// Let the question clear before the fixed book/tape scaffold fades in. It settles
+	// at 9.55, a full second before any carried price moves. Bars enter at their real
+	// widths with their rows; there is no decorative growth or independent size count.
+	const scaffold = [
+		...flat("book").filter(
+			(el) => !el.getAttribute("data-f")?.startsWith("lv-"),
 		),
-		10.6,
+		...kids("tape").filter(
+			(el) => el !== last && !el.getAttribute("data-f")?.startsWith("vol"),
+		),
+		one("vol-tag"),
+	];
+	tl.fromTo(
+		scaffold,
+		{ opacity: 0 },
+		{
+			opacity: (_: number, el: Element) =>
+				!L.narrow && el.tagName === "path" ? 0.25 : 1,
+			duration: 0.3,
+			immediateRender: false,
+		},
+		9.25,
 	);
-	show(one("vol-tag"), 10.6);
+	// The phone question's prices sit above the divider; on desktop it starts dim
+	// behind the waiting prices. Step the phone rule back too while
+	// the bid crosses it, then restore it within the original construction window.
+	const divider = flat("book").filter((el) => el.tagName === "path");
+	fade(divider, 10.55, 0.25);
+	fade(divider, 11.45, 1);
+	// The two book prices diverge vertically; last stays in the separate tape lane.
+	d.carry(g("q-bid-num"), pxBid, 10.55, { duration: 0.7 });
+	d.carry(g("q-ask-num"), pxAsk, 10.75, { duration: 0.7 });
+	if (L.narrow) {
+		// Descend out of the ask's horizontal flight lane before moving left toward
+		// the header gap, then descend through it. The landing stays at 11.75.
+		d.carry(g("q-last-num"), g("via-last"), 10.75, {
+			duration: 0.6,
+			arc: "y",
+			reveal: false,
+		});
+		d.carry(g("via-last"), last, 11.35, { duration: 0.4, arc: "y" });
+	} else {
+		d.carry(g("q-last-num"), last, 10.75);
+	}
+	tl.set(bestRows[1], { opacity: 1 }, 11.25);
+	tl.set(bestRows[0], { opacity: 1 }, 11.45);
 	otherRows.forEach((lv, i) => {
 		tl.fromTo(
 			lv,
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.4, immediateRender: false },
-			10.8 + i * 0.05,
+			11.2 + i * 0.05,
 		);
 	});
 	tl.fromTo(
-		bestSizes,
+		one(`size-${bidKey}`),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.4, immediateRender: false },
-		10.8,
+		11.35,
 	);
+	// Its row becomes visible at 11.45: start the size's fade then, so the parent
+	// cannot expose an already-fading child in one frame. Settlement stays at 11.75.
+	tl.fromTo(
+		size,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, immediateRender: false },
+		11.45,
+	);
+	show(one("vol"), 11.25);
+	// Restore the authored widths on rebuild as well as during reverse seeking.
 	bars.forEach((key, i) => {
-		const at = [...ASKS, ...BIDS][i];
-		const rowBar = one(`bar-${key}`);
-		// Explicit entrance state; future fromTo tweens never initialize an earlier frame.
-		rowBar.setAttribute("width", "0");
-		tl.fromTo(
-			rowBar,
-			{ attr: { width: 0 } },
-			{
-				attr: { width: width(at.size) },
-				duration: 0.5,
-				ease: "power2.out",
-				immediateRender: false,
-			},
-			11.0 + i * 0.05,
+		one(`bar-${key}`).setAttribute(
+			"width",
+			String(width([...ASKS, ...BIDS][i].size)),
 		);
 	});
-	show(
-		flat("book").filter((el) => !el.getAttribute("data-f")?.startsWith("lv-")),
-		11.0,
-	);
 	show(heads[0], 10.7);
 	// Mid is arithmetic on two prices: the sizes step back, copies of the bid and the ask
-	// lift off and land on the spread line, and the midpoint appears between them. The
+	// lift off into a static averaging expression, then its settled result appears. The
 	// timestamped print remains on the tape as history, without a competing flourish.
 	d.swap(heads[0], heads[1], 14.35);
 	const sizes = [
@@ -1080,7 +1163,12 @@ function build(context: FilmContext) {
 	fade(sizes, 18.3, 1);
 	d.carry(pxBid, g("mid-lo"), 14.85, { duration: 1, keep: true, fit: false });
 	d.carry(pxAsk, g("mid-hi"), 14.85, { duration: 1, keep: true, fit: false });
-	show(one("mid-line"), 15.85);
+	tl.fromTo(
+		one("mid-line"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.5, immediateRender: false },
+		15.85,
+	);
 	word(one("mid-label"), 15.95);
 	// The tape makes room, then execution updates the ask as its ticket appears and lands.
 	d.swap(heads[1], heads[2], 18.3);
@@ -1115,6 +1203,11 @@ function build(context: FilmContext) {
 		],
 		28.75,
 	);
+	tl.to(
+		venueHeaders,
+		{ opacity: 1, duration: 0.3, immediateRender: false },
+		29.05,
+	);
 	VENUES.forEach((v, i) => {
 		tl.to(
 			[...cardFrames[i], one(`va-${v.venue}`), one(`vb-${v.venue}`)],
@@ -1137,8 +1230,18 @@ function build(context: FilmContext) {
 		duration: 0.9,
 		arc: "y",
 	});
-	// C's bid stays dim while the ask copy drops past it, then returns at landing.
-	fade(g(`vb-${BEST.ask.venue}`), 31.4, 1);
+	// The winning prices keep their provenance. All other comparison values step back
+	// as construction starts; C's bid is already clear of the descending source copy.
+	fade(
+		cardLines.filter(
+			(el) =>
+				el !== g(`vb-${BEST.bid.venue}`) &&
+				el !== g(`va-${BEST.ask.venue}`) &&
+				el !== g(`vb-${BEST.ask.venue}`),
+		),
+		30.35,
+		0.3,
+	);
 	show(nbbo[0], 31.4);
 	show(heads[8], 31.5);
 	d.lock(g("hero-nbbo"), 31.5, { around: nbbo.slice(1), pad: 5 });
@@ -1151,6 +1254,7 @@ function build(context: FilmContext) {
 	// The glow has stood 2.35 s after settlement and clears before the ticket's path.
 	fade(g("hero-nbbo"), 34.3);
 	// A's unchanged $2.20 offer becomes the clear source of the replacement NBBO ask.
+	fade(g(`va-${NEXT_ASK.venue}`), 34.3, 1);
 	fade(
 		cardLines.filter(
 			(el) =>
