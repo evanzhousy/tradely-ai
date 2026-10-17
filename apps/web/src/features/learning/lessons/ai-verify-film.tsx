@@ -1,3 +1,4 @@
+import { useId } from "react";
 import {
 	type Copy,
 	contractDte,
@@ -15,6 +16,7 @@ import {
 	createDirector,
 	EndCard,
 	filmFrame,
+	Hatch,
 	Lines,
 	lineCount,
 	TitleCard,
@@ -218,6 +220,7 @@ function Scene({
 	height: number;
 	locale: Locale;
 }) {
+	const unknownHatch = useId().replace(/:/g, "");
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
@@ -276,6 +279,9 @@ function Scene({
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<Hatch id={unknownHatch} />
+			</defs>
 
 			{/* The claims. */}
 			<TitleCard frame={L} title={t(copy.title)} sub={t(copy.titleSub)} />
@@ -346,6 +352,16 @@ function Scene({
 								rx={12}
 								className="wt-panel-shape"
 							/>
+							{proof.id === "fall" && (
+								<rect
+									data-f="forecast-unknown-hatch"
+									x={margin + room - 12}
+									y={y + 12}
+									width={6}
+									height={L.proofH(proof.id) - 24}
+									fill={`url(#${unknownHatch})`}
+								/>
+							)}
 							<Word
 								name={`source-tag-${proof.id}`}
 								x={margin + 14}
@@ -411,16 +427,26 @@ function Scene({
 												>
 													{t(field.label)}
 												</Word>
-												<Word
-													name={`bet-missing-${field.id}`}
-													x={x + 6}
-													y={basisY + T.body * 1.6}
-													size={T.body}
-													anchor="start"
-													className={`wt-film-type ${toneClass.caution}`}
-												>
-													{t(["Missing", "缺失"])}
-												</Word>
+												<g data-f={`bet-missing-${field.id}`}>
+													<Word
+														name={`bet-missing-label-${field.id}`}
+														x={x + 6}
+														y={basisY + T.body * 1.6}
+														size={T.body}
+														anchor="start"
+														className={`wt-film-type ${toneClass.caution}`}
+													>
+														{t(["Missing", "缺失"])}
+													</Word>
+													<rect
+														data-f={`bet-missing-hatch-${field.id}`}
+														x={x + 6}
+														y={basisY + T.body * 2.05}
+														width={fieldW - 12}
+														height={T.body * 0.35}
+														fill={`url(#${unknownHatch})`}
+													/>
+												</g>
 											</g>
 										);
 									})}
@@ -796,9 +822,6 @@ function build(context: FilmContext) {
 	const qualifyingExpiries = expiryDays.flatMap((days, i) =>
 		days <= 30 ? [one(`expiry-day-${i}`)] : [],
 	);
-	const otherExpiries = expiryDays.flatMap((days, i) =>
-		days > 30 ? [one(`expiry-day-${i}`)] : [],
-	);
 	tl.set(qualifyingExpiries, { attr: { class: toneClass.focus } }, 20.25);
 	tl.fromTo(
 		qualifyingExpiries,
@@ -808,12 +831,6 @@ function build(context: FilmContext) {
 			duration: 0.3,
 			ease: "none",
 		},
-		20.25,
-	);
-	tl.fromTo(
-		otherExpiries,
-		{ opacity: 1 },
-		{ opacity: 0.3, duration: 0.3, ease: "none" },
 		20.25,
 	);
 	fade([result("near"), result("fall")], 20.55);
