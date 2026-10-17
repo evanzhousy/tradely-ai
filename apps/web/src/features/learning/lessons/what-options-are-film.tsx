@@ -20,6 +20,8 @@ import {
 	lineCount,
 	PenTip,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -38,7 +40,7 @@ import {
  * buy at $100 is worthless at $95 and worth $1,000 at $110, the meter reading from the
  * marker itself; a put is the opposite right, $1,000 at $90. Then two uses next to owning
  * the shares. The hero is the first: as ALFA falls to $80 the shares lose $2,000 while the
- * shares with a 95 put stop at the −$715 floor, the difference filling in green. Then a
+ * shares with a 95 put stop at the −$715 floor, the difference filling in focus. Then a
  * purchased 105 call bought for $215 is the only extra example: its maximum loss is $215.
  * Last, the other side: at $110 you are up $580 and Ben, who wrote the call, is down $580.
  *
@@ -297,6 +299,7 @@ function Scene({
 							data-f="strike"
 							d={`M${L.x(100)} ${L.top}V${L.bottom}`}
 							className="wt-bracket"
+							style={{ stroke: "var(--tone-dim)" }}
 							strokeDasharray="4 3"
 						/>
 						<text
@@ -326,19 +329,19 @@ function Scene({
 						<path
 							data-f="call-line"
 							d={L.path(callValue, L.y)}
-							className="wt-line-position"
+							className="wt-line-call"
+							style={{ strokeWidth: 3 }}
 						/>
 						<path
 							data-f="put-line"
 							d={L.path(putValue, L.y)}
-							className="wt-line-short"
+							className="wt-line-put"
 						/>
 						<text
 							data-f="put-tag"
 							x={L.x(83)}
 							y={L.y(putValue(83)) - 10}
-							className="wt-halo wt-marker-label"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-halo wt-marker-label ${toneClass.put}`}
 						>
 							{t(copy.putLabel)}
 						</text>
@@ -347,7 +350,7 @@ function Scene({
 							// Low on the line, clear of the meter in the corner.
 							x={L.x(113) + 10}
 							y={L.y(callValue(113)) + 16}
-							className="wt-halo wt-accent wt-marker-label"
+							className={`wt-halo wt-marker-label ${toneClass.call}`}
 						>
 							{t(copy.callLabel)}
 						</text>
@@ -355,8 +358,7 @@ function Scene({
 							data-f="put-spot"
 							x={L.x(PUT_AT) + 10}
 							y={L.y(putValue(PUT_AT)) - 10}
-							className="wt-halo wt-marker-label"
-							style={{ fill: "var(--wt-short)" }}
+							className={`wt-halo wt-marker-label ${toneClass.put}`}
 						>
 							{t(copy.putSpot)}
 						</text>
@@ -365,7 +367,7 @@ function Scene({
 							cx={L.x(LOW)}
 							cy={L.y(0)}
 							r={6}
-							className="wt-chip"
+							className={`wt-chip ${toneClass.call}`}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -390,7 +392,8 @@ function Scene({
 						<path
 							data-f="view-line"
 							d={L.path(positionPayoff.view, L.u)}
-							className="wt-line-long"
+							className="wt-line-position"
+							style={{ strokeWidth: 2.5 }}
 						/>
 						{useLabel(
 							"shares-tag",
@@ -415,7 +418,7 @@ function Scene({
 							copy.most,
 							104,
 							positionPayoff.view(104),
-							"wt-film-loss",
+							toneClass.focus,
 							true,
 						)}
 						{/* What the put saves: between the two lines, filled as ALFA falls. */}
@@ -437,7 +440,9 @@ function Scene({
 										`L${L.x(spot).toFixed(1)} ${L.u(shares(spot)).toFixed(1)}`,
 								)
 								.join("")}Z`}
-							className="wt-band-gain"
+							style={{
+								fill: `color-mix(in oklab, ${toneColor("focus")} 14%, transparent)`,
+							}}
 							clipPath={`url(#save-${id})`}
 						/>
 						<circle
@@ -446,6 +451,7 @@ function Scene({
 							cy={L.u(shares(100))}
 							r={5}
 							className="wt-chip"
+							style={{ fill: "var(--tone-dim)" }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -459,8 +465,9 @@ function Scene({
 							strokeWidth={1.5}
 						/>
 					</g>
+					<PenTip name="call-tip" color={toneColor("call")} />
 					<PenTip name="tip" />
-					<PenTip name="view-tip" color="var(--wt-long)" />
+					<PenTip name="view-tip" color={toneColor("focus")} />
 				</g>
 			</g>
 			<Brackets name="lock-floor" tone="loss" glow />
@@ -470,7 +477,7 @@ function Scene({
 					[
 						"meter",
 						[
-							["m-value", copy.value, "$0", "wt-film-num wt-film-accent"],
+							["m-value", copy.value, "$0", `wt-film-num ${toneClass.call}`],
 							[
 								"m-net",
 								copy.net,
@@ -723,6 +730,7 @@ function build(context: FilmContext) {
 	const net = one<SVGTextElement>("m-net");
 	const uShares = one<SVGTextElement>("u-shares");
 	const uPut = one<SVGTextElement>("u-put");
+	uShares.style.fill = "var(--tone-dim)";
 	const sMarker = one("s-marker");
 	const pMarker = one("p-marker");
 	const saveClip = one("save-clip");
@@ -731,6 +739,10 @@ function build(context: FilmContext) {
 		Math.round(v) === 0 ? "$0" : signedUsd(Math.round(v) * 100, 0);
 	const tone = (v: number) =>
 		`wt-film-num ${Math.round(v) > 0 ? "wt-film-gain" : Math.round(v) < 0 ? "wt-film-loss" : ""}`;
+	const signColor = (target: SVGTextElement, v: number) => {
+		target.setAttribute("class", tone(v));
+		target.style.fill = Math.round(v) === 0 ? "var(--tone-dim)" : "";
+	};
 	/**
 	 * A tween that walks a spot from one price to another and draws everything from it each
 	 * frame. Not rendered up front, so nothing reads the walk's end before it begins.
@@ -762,7 +774,7 @@ function build(context: FilmContext) {
 			gsap.set(marker, { attr: { cx: L.x(spot), cy: L.y(f(spot)) } });
 			value.textContent = dollars(f(spot));
 			net.textContent = signed(f(spot) - cost);
-			net.setAttribute("class", tone(f(spot) - cost));
+			signColor(net, f(spot) - cost);
 		};
 	/** Both positions as ALFA falls: the markers, the readouts and the saving behind them. */
 	const onFall = (spot: number) => {
@@ -771,9 +783,9 @@ function build(context: FilmContext) {
 			attr: { cx: L.x(spot), cy: L.u(positionPayoff.protect(spot)) },
 		});
 		uShares.textContent = signed(shares(spot));
-		uShares.setAttribute("class", tone(shares(spot)));
+		signColor(uShares, shares(spot));
 		uPut.textContent = signed(positionPayoff.protect(spot));
-		uPut.setAttribute("class", tone(positionPayoff.protect(spot)));
+		signColor(uPut, positionPayoff.protect(spot));
 		const left = Math.min(L.x(spot), L.x(SAVES_BELOW));
 		gsap.set(saveClip, {
 			attr: { x: left, width: L.x(SAVES_BELOW) - left },
@@ -809,6 +821,7 @@ function build(context: FilmContext) {
 		one("save-area"),
 		sMarker,
 		pMarker,
+		one("call-tip"),
 		tip,
 		one("view-tip"),
 		one("lock-floor"),
@@ -846,7 +859,7 @@ function build(context: FilmContext) {
 	);
 	tl.to(one("premium"), { opacity: 1, duration: 0.4 }, 9.7);
 	show(heads[0], 10.0);
-	d.trace(line("call-line"), 10.4, { tip, duration: 1.2 });
+	d.trace(line("call-line"), 10.4, { tip: one("call-tip"), duration: 1.2 });
 	show(one("call-tag"), 11.4);
 	// The call at $95, then at $110: the meter reads from the marker.
 	d.swap(heads[0], heads[1], 13.5);
@@ -865,7 +878,7 @@ function build(context: FilmContext) {
 		17.7,
 	);
 	// Position and identity changes belong to the timeline, so reversing past
-	// this handoff restores the call's $110 point and purple fill.
+	// this handoff restores the call's $110 point and call tone.
 	tl.set(
 		marker,
 		{
@@ -873,7 +886,8 @@ function build(context: FilmContext) {
 		},
 		18.1,
 	);
-	tl.set([marker, value], { fill: "var(--wt-short)" }, 18.1);
+	tl.set(marker, { attr: { class: `wt-chip ${toneClass.put}` } }, 18.1);
+	tl.set(value, { attr: { class: `wt-film-num ${toneClass.put}` } }, 18.1);
 	walk(PUT_AT, PUT_AT, 18.1, 0.01, onRight(putValue, PUT_COST));
 	tl.fromTo(
 		[one("put-line"), one("put-tag")],
