@@ -9,7 +9,10 @@ import {
 	filmFrame,
 	Lines,
 	lineCount,
+	signTone,
 	TitleCard,
+	toneClass,
+	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -156,8 +159,8 @@ const copy = {
 		`周一开盘 ${dollars(valueOpen)} → 周二`,
 	],
 	qUp: [
-		`up ${dollars(afterDeposit - valueOpen)}`,
-		`增加 ${dollars(afterDeposit - valueOpen)}`,
+		`up ${signed(afterDeposit - valueOpen)}`,
+		`增加 ${signed(afterDeposit - valueOpen)}`,
 	],
 	qLine: ["How much of that did you earn?", "其中有多少是你赚的？"],
 	mondayHead: [
@@ -297,7 +300,7 @@ function Scene({
 	const fifoY = H * 0.9;
 	const fifoWidth = textWidth(FIFO_EQ, T.body);
 	const fifoX =
-		W / 2 - (fifoWidth + 8 + textWidth(dollars(fifo.realized), T.body)) / 2;
+		W / 2 - (fifoWidth + 8 + textWidth(signed(fifo.realized), T.body)) / 2;
 	// The drawn gap, under the mid line.
 	const gapText = T.body;
 	const gapHalf = narrow
@@ -408,7 +411,13 @@ function Scene({
 								className="wt-film-num wt-halo wt-film-dim"
 								style={{ fontSize: T.body }}
 							>
-								{row}
+								{row.slice(0, row.lastIndexOf(" ") + 1)}
+								<tspan
+									data-f={`breakdown-${["stock", "calls", "fees"][i]}-value`}
+									className={i === 2 ? toneClass.down : toneClass.up}
+								>
+									{row.slice(row.lastIndexOf(" ") + 1)}
+								</tspan>
 							</text>
 						))}
 						<text
@@ -416,7 +425,7 @@ function Scene({
 							x={(x1 + L.ax(TUESDAY)) / 2}
 							y={(L.barTop + L.barBottom) / 2 + 4}
 							textAnchor="middle"
-							className="wt-marker-label wt-halo"
+							className={`wt-marker-label wt-halo wt-film-dim ${toneClass.up}`}
 						>
 							{t(copy.deposited)}
 						</text>
@@ -458,25 +467,29 @@ function Scene({
 							data-f="premium"
 							d={`M${L.bx(90)} ${L.by(RECEIVED / 100)}H${L.bx(140)}`}
 							className="wt-line-reference"
+							style={{ stroke: toneColor("up"), strokeDasharray: "none" }}
 						/>
 						<text
 							data-f="premium-label"
 							x={L.bx(140) - 4}
 							y={L.by(RECEIVED / 100) - 8}
 							textAnchor="end"
-							className="wt-small wt-halo"
+							className={`wt-small wt-halo ${toneClass.up}`}
 						>
 							{t(copy.received)}
 						</text>
 						<path
 							data-f="expiry"
+							strokeDasharray="5 4"
 							d={`M${L.bx(90)} ${L.by(benAtExpiry(90) / 100)}L${L.bx(100)} ${L.by(benAtExpiry(100) / 100)}L${offX} ${offY}`}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
 						/>
 						<path
 							data-f="expiry-arrow"
 							d={`M${offX - arrow.dx * 9 - arrow.dy * 6} ${offY - arrow.dy * 9 + arrow.dx * 6}L${offX} ${offY}L${offX - arrow.dx * 9 + arrow.dy * 6} ${offY - arrow.dy * 9 - arrow.dx * 6}`}
-							className="wt-line-short"
+							className="wt-line-position"
+							style={{ stroke: "var(--tone-ink)", strokeWidth: 2.5 }}
 						/>
 						<circle
 							data-f="mark-dot"
@@ -503,7 +516,7 @@ function Scene({
 							cy={farY}
 							r={6}
 							className="wt-chip"
-							style={{ fill: "var(--wt-short)" }}
+							style={{ fill: toneColor("down") }}
 							stroke="var(--foreground)"
 							strokeWidth={1.5}
 						/>
@@ -662,7 +675,7 @@ function Scene({
 					anchor="start"
 					className="wt-film-num wt-film-gain"
 				>
-					{dollars(fifo.realized)}
+					{signed(fifo.realized)}
 				</Word>
 				{remainingBraces.map((brace) => (
 					<path
@@ -701,7 +714,7 @@ function Scene({
 							20 +
 							textWidth(equation, T.body) +
 							8 +
-							textWidth(dollars(lot.pnl), T.body);
+							textWidth(signed(lot.pnl), T.body);
 						const x = (W - rowWidth) / 2;
 						const y = fifoY + (i - 1) * T.body * 1.5;
 						return (
@@ -724,7 +737,7 @@ function Scene({
 									className="wt-film-num"
 								>
 									{equation}{" "}
-									<tspan className="wt-film-gain">{dollars(lot.pnl)}</tspan>
+									<tspan className={toneClass.up}>{signed(lot.pnl)}</tspan>
 								</Word>
 							</g>
 						);
@@ -734,9 +747,10 @@ function Scene({
 						x={W / 2}
 						y={fifoY + T.body * 1.5}
 						size={T.body}
-						className="wt-film-num wt-film-gain"
+						className="wt-film-num"
 					>
-						{`${remainingLots.map((lot) => dollars(lot.pnl)).join(" + ")} = ${dollars(fifo.unrealized)}`}
+						{`${remainingLots.map((lot) => dollars(lot.pnl)).join(" + ")} = `}
+						<tspan className={toneClass.up}>{signed(fifo.unrealized)}</tspan>
 					</Word>
 				</g>
 				{Array.from({ length: HELD }, (_, i) => {
@@ -826,7 +840,7 @@ function Scene({
 							x={W * L.pair[i]}
 							y={H * (narrow ? 0.76 : 0.68) + T.num * 1.15}
 							size={T.num}
-							className="wt-film-num wt-film-gain"
+							className={`wt-film-num ${i === 0 ? "wt-film-dim" : toneClass.up}`}
 						>
 							{value}
 						</Word>
@@ -1010,9 +1024,9 @@ function build(context: FilmContext) {
 	const callsSegment = one("seg-calls");
 	const feesSegment = one("seg-fees");
 	const depositSegment = one("seg-deposit");
-	const stockCaption = one<SVGTextElement>("breakdown-stock");
-	const callsCaption = one<SVGTextElement>("breakdown-calls");
-	const feesCaption = one<SVGTextElement>("breakdown-fees");
+	const stockCaption = one<SVGTSpanElement>("breakdown-stock-value");
+	const callsCaption = one<SVGTSpanElement>("breakdown-calls-value");
+	const feesCaption = one<SVGTSpanElement>("breakdown-fees-value");
 	const depositCaption = one<SVGTextElement>("deposited");
 	// Round each contribution once: captions, boundaries and the account sum all use those cents.
 	const renderAccount = () => {
@@ -1039,19 +1053,30 @@ function build(context: FilmContext) {
 			String(L.ax(CLOSE_TO + deposit / 100) - L.ax(CLOSE_TO)),
 		);
 		meter.textContent = dollars(valueOpen + stock + calls - fees + deposit);
-		stockCaption.textContent = `ALFA ${zeroed(stock)}`;
-		callsCaption.textContent = `${d.t(["calls", "看涨"])} ${zeroed(calls)}`;
-		feesCaption.textContent = `${d.t(["fees", "费用"])} ${zeroed(-fees)}`;
+		stockCaption.textContent = zeroed(stock);
+		callsCaption.textContent = zeroed(calls);
+		feesCaption.textContent = zeroed(-fees);
 		depositCaption.textContent = d.t([
 			`${zeroed(deposit)} deposited`,
 			`存入 ${zeroed(deposit)}`,
 		]);
+		for (const [caption, amount] of [
+			[stockCaption, stock],
+			[callsCaption, calls],
+			[feesCaption, -fees],
+			[depositCaption, deposit],
+		] as const) {
+			caption.classList.remove(toneClass.up, toneClass.down);
+			const tone = signTone(amount);
+			if (tone) caption.classList.add(toneClass[tone]);
+		}
 	};
 	renderAccount();
-	const growContribution = (
+	// Exact contribution cuts preserve the former settlement times and every quiet interval.
+	// Each cut updates the segment, its caption and the account sum together, in either seek direction.
+	const settleContribution = (
 		part: keyof typeof accountProgress,
 		at: number,
-		duration: number,
 	) => {
 		if (part === "fees") {
 			// Fees change a boundary already grown by the calls tween. Track its settled
@@ -1070,7 +1095,7 @@ function build(context: FilmContext) {
 			{ [part]: 0 },
 			{
 				[part]: 1,
-				duration,
+				duration: 0,
 				ease: "power2.out",
 				immediateRender: false,
 				onUpdate: renderAccount,
@@ -1086,15 +1111,6 @@ function build(context: FilmContext) {
 			el,
 			{ opacity: 1, attr: { width: 0 } },
 			{ attr: { width }, duration, ease: "power2.out" },
-			at,
-		);
-	};
-	const draw = (path: SVGPathElement, at: number, duration: number) => {
-		const length = path.getTotalLength();
-		tl.fromTo(
-			path,
-			{ opacity: 0, strokeDasharray: length, strokeDashoffset: length },
-			{ opacity: 1, strokeDashoffset: 0, duration, ease: "power2.inOut" },
 			at,
 		);
 	};
@@ -1173,11 +1189,11 @@ function build(context: FilmContext) {
 	grow("seg-base", 10.5);
 	// Each caption starts at zero, then follows the same rounded contribution as the bar and meter.
 	show(one("breakdown-stock"), 10.7, "below", 0.3);
-	growContribution("stock", 11.0, 0.4);
+	settleContribution("stock", 11.4);
 	show(one("breakdown-calls"), 11.4, "below", 0.3);
-	growContribution("calls", 11.7, 0.5);
+	settleContribution("calls", 12.2);
 	show(one("breakdown-fees"), 12.2, "below", 0.3);
-	growContribution("fees", 12.5, 0.3);
+	settleContribution("fees", 12.8);
 	// The completed rows and net account read alone for a second (12.8–13.8).
 	// Merge the bracket and enlarged answer into one reveal, rather than another transport step.
 	// All three settle at 14.3 and read untouched for a full second before the deposit beat.
@@ -1196,7 +1212,7 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5, ease: "power2.out" },
 		15.6,
 	);
-	growContribution("deposit", 15.3, 0.7);
+	settleContribution("deposit", 16.0);
 	show(one("deposited"), 15.5);
 	// The deposit headline settles at 16.1; read the whole beat for a quiet second.
 	show(one("m-tag-bp"), 17.1, "above", 0.3);
@@ -1317,7 +1333,10 @@ function build(context: FilmContext) {
 	land(one("mark-dot"), 35.3);
 	show(one("mark-label"), 35.5);
 	d.swap(one("b-head"), one("x-head"), 37.6);
-	draw(one<SVGPathElement>("expiry"), 37.7, 1.4);
+	d.trace(one<SVGPathElement>("expiry"), 37.7, {
+		duration: 1.4,
+		ease: "power2.inOut",
+	});
 	tl.fromTo(
 		one("expiry-arrow"),
 		{ opacity: 0 },
