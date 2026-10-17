@@ -10,6 +10,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import {
@@ -234,7 +235,7 @@ function Scene({
 						y={H * 0.3 + T.big * 1.05}
 						size={T.big * (locale === "zh" ? 0.6 : 0.8)}
 						// As they will be in the symbol: Oct 18 its date, Nov 15 the one that changes it.
-						className={`wt-film-num ${i ? "wt-film-warn" : "wt-film-accent"}`}
+						className={`wt-film-num ${i ? "" : toneClass.focus}`}
 					>
 						{t(label)}
 					</Word>
@@ -298,7 +299,7 @@ function Scene({
 					data-f="sym-date-nov"
 					x={x0 + offset.date * L.symW}
 					y={L.symY}
-					className="wt-film-num wt-film-warn"
+					className={`wt-film-num ${toneClass.focus}`}
 					style={{ fontSize: L.sym }}
 				>
 					{NOV.date}
@@ -376,18 +377,26 @@ function Scene({
 					[
 						"f-one",
 						copy.premium,
-						`$4.20 × 100 = ${usd(ASK * 100, 0)}`,
-						"wt-film-accent",
+						<>
+							$4.20 × 100 ={" "}
+							<tspan className={toneClass.focus}>{usd(ASK * 100, 0)}</tspan>
+						</>,
+						"",
 						0,
 					],
 					[
 						"f-three",
 						copy.premium,
-						`3 × ${usd(ASK * 100, 0)} = ${usd(THREE * ASK * 100, 0)}`,
-						"wt-film-accent",
+						<>
+							3 × {usd(ASK * 100, 0)} ={" "}
+							<tspan className={toneClass.focus}>
+								{usd(THREE * ASK * 100, 0)}
+							</tspan>
+						</>,
+						"",
 						0,
 					],
-					["f-notional", copy.notional, NOTIONAL_VALUE, "wt-film-accent", 1],
+					["f-notional", copy.notional, NOTIONAL_VALUE, toneClass.focus, 1],
 				] as const
 			).map(([name, tag, text, tone, row]) => (
 				<g key={name} data-f={name}>
