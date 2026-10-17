@@ -577,6 +577,18 @@ function Scene({
 						{prints[2][1].split(" · ")[1]}
 					</text>
 				)}
+				{narrow && (
+					<text
+						data-f="via-nbbo-bid"
+						x={margin + 16}
+						y={L.venueY + L.venueH + cardText * 1.2}
+						textAnchor="start"
+						className="wt-film-num"
+						style={{ fontSize: cardText }}
+					>
+						{usd(BEST.bid.price)}
+					</text>
+				)}
 				{(narrow ? prints : []).map(([name, label]) => (
 					<text
 						key={`via-${name}`}
@@ -1089,17 +1101,17 @@ function build(context: FilmContext) {
 		{ opacity: 0 },
 		{
 			opacity: (_: number, el: Element) =>
-				!L.narrow && el.tagName === "path" ? 0.25 : 1,
+				!L.narrow && el.tagName === "path" ? 0 : 1,
 			duration: 0.3,
 			immediateRender: false,
 		},
 		9.25,
 	);
-	// The phone question's prices sit above the divider; on desktop it starts dim
-	// behind the waiting prices. Step the phone rule back too while
-	// the bid crosses it, then restore it within the original construction window.
+	// Keep the desktop divider out of the waiting question prices; it returns only
+	// after both carries land. On the phone it sits below the prices, but steps back
+	// while the bid crosses it.
 	const divider = flat("book").filter((el) => el.tagName === "path");
-	fade(divider, 10.55, 0.25);
+	if (L.narrow) fade(divider, 10.55, 0.25);
 	fade(divider, 11.45, 1);
 	// The two book prices diverge vertically; last stays in the separate tape lane.
 	d.carry(g("q-bid-num"), pxBid, 10.55, { duration: 0.7 });
@@ -1191,7 +1203,8 @@ function build(context: FilmContext) {
 	hide(heads[3], 28.75, 0.35, L.narrow ? 0 : 12);
 	d.swap(heads[4], heads[5], 28.75);
 	// The six book-to-card flights are replaced by an in-place scene handover. Only the
-	// two best prices travel, so the completed take keeps its quiet time.
+	// two best prices travel, so the completed take keeps its quiet time. The book clears
+	// first; the venue comparison then gets a full-contrast read before its best prices move.
 	fade(
 		[
 			hit,
@@ -1200,12 +1213,12 @@ function build(context: FilmContext) {
 				(el) => !el.getAttribute("data-f")?.startsWith("lv-"),
 			),
 		],
-		28.75,
+		28.35,
 	);
 	tl.to(
 		venueHeaders,
 		{ opacity: 1, duration: 0.3, immediateRender: false },
-		29.05,
+		28.65,
 	);
 	VENUES.forEach((v, i) => {
 		tl.to(
@@ -1215,15 +1228,30 @@ function build(context: FilmContext) {
 				duration: 0.3,
 				immediateRender: false,
 			},
-			29.05,
+			28.65,
 		);
 	});
-	// Cards settle at 29.35 and stand for one second before their best prices combine.
-	d.carry(g("nbsrc-bid"), nbbo[1] as SVGGraphicsElement, 30.35, {
-		duration: 0.9,
-		arc: "y",
-		match: usd(BEST.bid.price),
-	});
+	// Cards settle at 28.95. Keep every comparison value at full contrast for a full
+	// default-rate reading before the non-winning values dim.
+	if (L.narrow) {
+		const viaBid = g("via-nbbo-bid");
+		d.carry(g("nbsrc-bid"), viaBid, 30.35, {
+			duration: 0.6,
+			arc: "x",
+			reveal: false,
+		});
+		d.carry(viaBid, nbbo[1] as SVGGraphicsElement, 30.95, {
+			duration: 0.3,
+			arc: "y",
+			match: usd(BEST.bid.price),
+		});
+	} else {
+		d.carry(g("nbsrc-bid"), nbbo[1] as SVGGraphicsElement, 30.35, {
+			duration: 0.9,
+			arc: "y",
+			match: usd(BEST.bid.price),
+		});
+	}
 	d.carry(g("nbsrc-ask"), nbbo[2] as SVGGraphicsElement, 30.5, {
 		duration: 0.9,
 		arc: "y",
@@ -1234,7 +1262,7 @@ function build(context: FilmContext) {
 		(el) =>
 			el !== g(`vb-${BEST.bid.venue}`) && el !== g(`va-${BEST.ask.venue}`),
 	);
-	fade(otherVenueValues, 30.35, 0.7);
+	fade(otherVenueValues, 30.45, 0.7);
 	fade(otherVenueValues, 31.5, 0.3);
 	show(nbbo[0], 31.4);
 	show(heads[8], 31.5);
