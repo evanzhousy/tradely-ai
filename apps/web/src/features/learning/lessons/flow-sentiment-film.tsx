@@ -171,8 +171,8 @@ const copy = {
 		`已平仓：已实现 ${signedUsd(REALIZED * 100, 0)}`,
 	],
 	closeMath: [
-		`${usd(PUT_BID * 100, 0)} received − ${usd(PUT_ASK * 100, 0)} buyback = `,
-		`${usd(PUT_BID * 100, 0)} 入账 − 回购 ${usd(PUT_ASK * 100, 0)} = `,
+		`${usd(PUT_BID * 100, 0)} − ${usd(PUT_ASK * 100, 0)} = `,
+		`${usd(PUT_BID * 100, 0)}−${usd(PUT_ASK * 100, 0)}=`,
 	],
 	floor: [STOCK_CALC, STOCK_CALC],
 	claimBig: [
@@ -498,7 +498,11 @@ function Scene({
 			{BEAR ? (
 				<Lines
 					name="ledger-bear"
-					text={`${t(copy.bearish)} ${BEAR.quantity}: ${t(holders[BEAR.buyer].name)} ${t(verb(BEAR.buyerEffect, true))} · ${t(holders[BEAR.seller].name)} ${t(verb(BEAR.sellerEffect, false))}`}
+					text={
+						locale === "zh"
+							? `${t(holders[BEAR.buyer].name)}${t(verb(BEAR.buyerEffect, true))}；${t(holders[BEAR.seller].name)}${t(verb(BEAR.sellerEffect, false))}`
+							: `${t(holders[BEAR.buyer].name)} ${t(verb(BEAR.buyerEffect, true))} · ${t(holders[BEAR.seller].name)} ${t(verb(BEAR.sellerEffect, false))}`
+					}
 					x={margin}
 					y={L.ledgerY}
 					size={text}
@@ -908,21 +912,21 @@ function build(context: FilmContext) {
 		34.3,
 		0.3,
 	);
-	// The settled reference fades in as context; only the closed result draws on.
+	// The short-put reference settles at 35.5; keep its accepted one-second rest.
 	tl.fromTo(
 		[chartLines[2], tags[2]],
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.7 },
 		34.8,
 	);
-	// The reference settles at 35.5; give it a second, then show the model-derived close math.
+	// The shorter equation arrives after that rest; its compact formula is readable at 1.5×.
 	tl.fromTo(
 		one("close-math"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.3 },
 		36.5,
 	);
-	// The calculation settles at 36.8; after a second, the flat line proves the close.
+	// It settles at 36.8; keep its accepted one-second rest before l-flat at 37.8.
 	draw(chartLines[3], 37.8);
 	// Retain the accepted in-place loss annotation beside the flat/reference lines.
 	tl.fromTo(tags[3], { opacity: 0 }, { opacity: 1, duration: 0.5 }, 37.8);
