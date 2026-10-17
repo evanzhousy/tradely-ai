@@ -104,9 +104,17 @@ function layout(width: number) {
 	};
 }
 
+const spotPrice = `$${SPOT}`;
+/** Preserve the question's operand order so the two carries stay in separate lanes. */
+const yearEquation = [
+	`${IV}%`,
+	" × ",
+	spotPrice,
+	` = $${(SPOT * IV) / 100}`,
+] as const;
 const equations = [
-	`$${SPOT} × ${IV}% = $${(SPOT * IV) / 100}`,
-	`× √(${DAYS} ÷ 365) = × ${Math.sqrt(DAYS / 365).toFixed(3)}`,
+	yearEquation.join(""),
+	`× √(${DAYS} ÷ 365)`,
 	plusMinus(MOVE),
 ] as const;
 
@@ -114,7 +122,7 @@ const copy = {
 	title: ["Expected move", "预期变动"],
 	titleSub: ["how far the options price ALFA to go", "期权定价的变动幅度"],
 	qTagIv: ["implied volatility", "隐含波动率"],
-	qTagMove: ["ALFA $100", "ALFA $100"],
+	qTagSpot: ["ALFA spot", "ALFA 现价"],
 	qLine: ["What move is priced by Oct 18?", "到10月18日，定价多大变动？"],
 	eYear: ["a year", "一年"],
 	eTime: [
@@ -123,8 +131,8 @@ const copy = {
 	],
 	eResult: ["one SD to Oct 18", "到 10月18日 的一个标准差"],
 	eNote: [
-		`Not × ${DAYS}/365: that would give ${share(((SPOT * IV) / 100) * (DAYS / 365))}.`,
-		`不是乘以 ${DAYS}/365：那样只有 ${share(((SPOT * IV) / 100) * (DAYS / 365))}。`,
+		`Linear: ${share(((SPOT * IV) / 100) * (DAYS / 365))}.`,
+		`线性：${share(((SPOT * IV) / 100) * (DAYS / 365))}`,
 	],
 	bellQuestion: ["What does that range cover?", "这个区间覆盖多少？"],
 	bellHead: ["Under the model, 68% land inside.", "按模型，68% 落在区间内。"],
@@ -159,10 +167,7 @@ const copy = {
 	],
 	earnings: ["earnings", "财报"],
 	claimBig: ["A range is a scale, not a wall.", "区间是一把尺子，不是一堵墙。"],
-	claimSub: [
-		"IV × √time sets one SD; jumps fatten the tails.",
-		"IV × √时间 给出一个标准差；跳空让尾部更厚。",
-	],
+	claimSub: ["Jumps can exceed the model's range.", "跳空可能超出模型区间。"],
 	nextBig: ["Next: the volatility surface", "下一课：波动率曲面"],
 	nextSub: [
 		"implied volatility across strikes and expiries",
@@ -208,7 +213,6 @@ function Scene({
 		},
 	];
 	const tailAt = 1.9 * MOVE;
-	const [yearBeforeIv, yearAfterIv] = equations[0].split(`${IV}%`);
 	const operands = `${share(STRADDLE)} ÷ ${share(MOVE)}`;
 	const ratioY = H * 0.4 + T.big * 0.36;
 	const ratioWordY = ratioY + T.head * 1.9;
@@ -402,7 +406,7 @@ function Scene({
 				{(
 					[
 						[copy.qTagIv, `${IV}%`, ""],
-						[copy.qTagMove, "±$?", "wt-film-accent"],
+						[copy.qTagSpot, spotPrice, ""],
 					] as const
 				).map(([tag, num, tone], i) => (
 					<g key={tag[0]}>
@@ -416,7 +420,7 @@ function Scene({
 							{t(tag).toUpperCase()}
 						</Word>
 						<Word
-							name={`q-num-${i}`}
+							name={i === 1 ? "q-spot" : `q-num-${i}`}
 							x={W * L.pair[i]}
 							y={H * 0.3 + T.big * 0.95}
 							size={T.big * 0.85}
@@ -457,9 +461,10 @@ function Scene({
 						>
 							{i === 0 ? (
 								<>
-									<tspan>{yearBeforeIv}</tspan>
-									<tspan>{`${IV}%`}</tspan>
-									<tspan>{yearAfterIv}</tspan>
+									<tspan>{yearEquation[0]}</tspan>
+									<tspan>{yearEquation[1]}</tspan>
+									<tspan>{yearEquation[2]}</tspan>
+									<tspan>{yearEquation[3]}</tspan>
 								</>
 							) : (
 								equations[i]
@@ -583,11 +588,11 @@ function build(context: FilmContext) {
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide, rise, sink } = d;
 	/** A figure lands slightly large and settles, without overshoot: it is data. */
-	const land = (target: Element, time: number) =>
+	const land = (target: Element, time: number, duration = 0.55) =>
 		tl.fromTo(
 			target,
 			{ opacity: 0, scale: 1.12, transformOrigin: "50% 50%" },
-			{ opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+			{ opacity: 1, scale: 1, duration, ease: "power3.out" },
 			time,
 		);
 	const lockRatio = one<SVGGraphicsElement>("lock-ratio");
@@ -635,30 +640,37 @@ function build(context: FilmContext) {
 	show(one("q-tag-0"), 4.6);
 	land(one("q-num-0"), 4.8);
 	show(one("q-tag-1"), 5.3);
-	land(one("q-num-1"), 5.5);
+	land(one("q-spot"), 5.5);
 	show(one("q-line"), 6.0);
 
 	// ——— scale: a year's move, scaled by the square root of time ———
 	tl.addLabel("scale", 9.6);
 	const ivQuestion = one<SVGGraphicsElement>("q-num-0");
+	const spotQuestion = one<SVGGraphicsElement>("q-spot");
 	hide(
-		flat("q").filter((el) => el !== ivQuestion),
+		flat("q").filter((el) => el !== ivQuestion && el !== spotQuestion),
 		9.6,
 	);
 	const rowAt = [10.1, 11.65, 13.2] as const;
 	for (const [i, at] of rowAt.entries()) {
 		show(one(`e-tag-${i}`), at, "below", 0.55);
-		if (i > 0) land(one(`e-num-${i}`), at);
+		if (i > 0) land(one(`e-num-${i}`), at, i === 2 ? 0.3 : 0.55);
 	}
-	// The equation fades in around its hidden 35% slot; the question supplies that term.
+	// Both question operands land in their own equation spans.
 	tl.to(one("e-num-0"), { opacity: 1, duration: 0.55 }, 10.1);
-	d.carry(ivQuestion, one<SVGGraphicsElement>("e-num-0"), 10.1, {
+	const yearLine = one<SVGGraphicsElement>("e-num-0");
+	d.carry(ivQuestion, yearLine, 10.1, {
 		duration: 0.55,
 		match: `${IV}%`,
 		arc: "x",
 	});
+	d.carry(spotQuestion, yearLine, 10.1, {
+		duration: 0.55,
+		match: yearEquation[2],
+		arc: "y",
+	});
 	// Leave a full second after the completed calculation before its qualification.
-	show(one("e-note"), 14.75);
+	show(one("e-note"), 14.5, "below", 0.3);
 
 	// ——— bell: what the range covers ———
 	tl.addLabel("bell", 16);
@@ -666,9 +678,9 @@ function build(context: FilmContext) {
 		flat("e").filter((el) => el !== one("e-note")),
 		16,
 	);
-	// Keep the formula note readable through the chart handoff, then clear it before the curve.
-	hide(one("e-note"), 18.25);
-	show(one("b-head"), 16.2);
+	// Finish the formula note before the bell headline and scaffold enter.
+	hide(one("e-note"), 15.9, 0.3);
+	show(one("b-head"), 16.2, "below", 0.3);
 	rise(16.3);
 	// Price ticks belong to the scaffold: all are still when the rise settles at 17.1.
 	tl.to(
