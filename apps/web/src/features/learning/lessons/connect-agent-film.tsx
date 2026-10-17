@@ -144,17 +144,6 @@ const CHECKS = [
 		verdict: ["✓ proof", "✓ 证据"],
 		tone: toneClass.up,
 	},
-	{
-		id: "tools",
-		label: [
-			"Keyed tools/list → result.tools",
-			"带密钥 tools/list → result.tools",
-		],
-		line: TOOL_RESULT,
-		phoneLine: TOOL_RESULT,
-		verdict: ["✓ your key works", "✓ 密钥有效"],
-		tone: toneClass.up,
-	},
 ] as const satisfies readonly {
 	id: string;
 	label: Copy;
@@ -192,6 +181,8 @@ function Scene({
 		/>
 	);
 	const panelLine = (k: number) => L.panelY + L.pad + (k + 0.8) * L.code * 1.6;
+	const toolsRowY = L.rowY(2);
+	const toolsCardH = L.rowH * 0.42;
 	const meterW = room;
 	const fill = (calls: number) => (Math.min(calls, LIMIT) / BURST) * meterW;
 	const limitX = margin + (LIMIT / BURST) * meterW;
@@ -362,6 +353,73 @@ function Scene({
 					</text>
 				</g>
 			))}
+			<g data-f="tools-request-card">
+				<rect
+					x={margin}
+					y={toolsRowY + L.rowH * 0.02}
+					width={room}
+					height={L.rowH * 0.47}
+					rx={10}
+					className="wt-panel-shape"
+				/>
+				<text
+					x={margin + L.pad}
+					y={toolsRowY + L.rowH * 0.24}
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(["KEYED REQUEST", "带密钥请求"])}
+				</text>
+				<Word
+					name="tools-list-request"
+					x={margin + L.pad}
+					y={toolsRowY + L.rowH * 0.42}
+					size={L.rowText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					tools/list
+				</Word>
+			</g>
+			<g data-f="tools-result-card">
+				<rect
+					x={margin}
+					y={toolsRowY + L.rowH * 0.55}
+					width={room}
+					height={toolsCardH}
+					rx={10}
+					className="wt-panel-shape"
+				/>
+				<Word
+					name="tools-result-name"
+					x={margin + L.pad}
+					y={toolsRowY + L.rowH * 0.72}
+					size={L.rowText}
+					anchor="start"
+					className="wt-film-num"
+				>
+					result.tools
+				</Word>
+				<text
+					data-f="vd-tools"
+					x={margin + room - L.pad}
+					y={toolsRowY + L.rowH * 0.72}
+					textAnchor="end"
+					className={`wt-film-type ${toneClass.up}`}
+					style={{ fontSize: L.rowText }}
+				>
+					{t(["✓ your key works", "✓ 密钥有效"])}
+				</text>
+				<text
+					data-f="tools-result-payload"
+					x={margin + L.pad}
+					y={toolsRowY + L.rowH * 0.88}
+					className="wt-film-num wt-film-dim"
+					style={{ fontSize: L.code }}
+				>
+					{t(TOOL_RESULT)}
+				</text>
+			</g>
 
 			{/* What a key allows. */}
 			{headline("r-head", copy.rateHead, copy.rateHeadShort)}
@@ -649,6 +707,9 @@ function build(context: FilmContext) {
 		one("k-revoke-action"),
 		one("next-call"),
 		one("call-rejected"),
+		one("tools-request-card"),
+		one("tools-result-card"),
+		verdict("tools"),
 		...kids("claim"),
 	]);
 
@@ -675,10 +736,11 @@ function build(context: FilmContext) {
 	tl.to(way("key"), { opacity: 0.4, duration: 0.3 }, 10.9);
 	show([one("panel"), one("cmd")], 11.1);
 	// The compact process settles at 11.6, before the key route takes focus.
-	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 12.8);
-	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 12.8);
-	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 12.8);
-	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 12.8);
+	tl.to(on("signin"), { opacity: 0, duration: 0.3 }, 13.6);
+	tl.to(way("signin"), { opacity: 0.4, duration: 0.3 }, 13.6);
+	tl.to(way("key"), { opacity: 1, duration: 0.3 }, 13.6);
+	tl.to(on("key"), { opacity: 1, duration: 0.3 }, 13.6);
+	// Keep the key note's original hold while the sign-in roster stays in focus.
 	d.swap(one("cmd"), one("note-key"), 12.8);
 	// Cut the Slack-credit aside. The unsupported-client card stays visible
 	// throughout the choice; no client capability qualification is removed.
@@ -693,15 +755,25 @@ function build(context: FilmContext) {
 	show(check("agent"), 17.1);
 	show(verdict("agent"), 17.1, "right");
 	// The assertion settles at 17.6; one second before the client proof.
-	show(one("c-head"), 18.6);
-	show(check("client"), 18.6);
+	show([one("c-head"), check("client"), one("tools-request-card")], 18.6);
 	// Client payload settles at 19.1; let it read before its verdict.
 	show(verdict("client"), 20.1, "right");
-	// Client verdict settles at 20.6; one second before the server proof.
-	show(check("tools"), 21.6);
-	// Server payload settles at 22.1; one second before its verdict.
-	show(verdict("tools"), 23.1, "right");
-	// Settled at 23.6; preserve the accepted 2.6-second final proof rest.
+	// The keyed request is already readable. After the client proof's one-second rest,
+	// carry it into the separate result card; the returned tools settle at 22.2.
+	hide(one("tools-request-card"), 21.6, 0.3);
+	d.carry(one("tools-list-request"), one("tools-result-name"), 21.6, {
+		duration: 0.3,
+		arc: "y",
+	});
+	tl.fromTo(
+		one("tools-result-card"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		21.9,
+	);
+	// Give the completed response one second before its verdict; preserve its full rest.
+	show(verdict("tools"), 23.2, "right", 0.4);
+	// Settled at 23.6; keep the accepted 2.6-second final proof rest.
 
 	// ——— key: read-only, rate-limited, revocable ———
 	tl.addLabel("key", 26.2);
@@ -710,12 +782,13 @@ function build(context: FilmContext) {
 			one("a-head"),
 			one("c-head"),
 			...CHECKS.flatMap((item) => [check(item.id), verdict(item.id)]),
+			one("tools-result-card"),
 		],
 		26.2,
 	);
 	show(one("r-head"), 26.55, "above");
 	show(one("meter"), 26.8);
-	show([one("key"), one("k-active")], 26.8);
+	show([one("key"), one("k-active"), one("k-revoke-action")], 26.8);
 	show([counter, attemptsLabel], 27);
 	countCalls(0, LIMIT, 27, 1.0);
 	// The limit settles at 28; the burst starts after a full second.
@@ -728,16 +801,10 @@ function build(context: FilmContext) {
 	d.lock(lockBurst, 30.6, { around: [counter, refused], pad: 6 });
 	tl.addLabel("hero-lock", 30.6);
 	hide(lockBurst, 34.2);
+	hide(one("k-revoke-action"), 34.2, 0.3);
 	// Brackets are gone at 34.55; only then retire the old burst.
 	hide([one("meter"), counter, attemptsLabel], 34.55);
-	tl.fromTo(
-		one("k-revoke-action"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		34.2,
-	);
-	// Start the action as the protected stand ends. Its entrance and the
-	// status fold are one event; their existing durations are unchanged.
+	// The action remains available only while the key is active.
 	d.flip(one("k-active"), one("k-revoked"), 34.2);
 	tl.set(one("k-active"), { opacity: 0 }, 34.5);
 	// Revocation settles at 34.85. A fresh window rules out rate limiting.
@@ -749,16 +816,7 @@ function build(context: FilmContext) {
 		36.3,
 	);
 	// Rejection settles at 36.6; two seconds of quiet before the claim.
-	hide(
-		[
-			one("r-head"),
-			one("next-call"),
-			one("key"),
-			one("k-revoked"),
-			one("k-revoke-action"),
-		],
-		38.6,
-	);
+	hide([one("r-head"), one("next-call"), one("key"), one("k-revoked")], 38.6);
 	word(one("z-big"), 38.85);
 	show(one("z-sub"), 39.25);
 
