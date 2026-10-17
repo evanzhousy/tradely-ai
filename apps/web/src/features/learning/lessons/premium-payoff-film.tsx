@@ -50,8 +50,8 @@ import {
  *   open      0–4        "Premium, payoff and profit"
  *   question  4–8.8      the 95 call at $7.30: worth what on Oct 18?
  *   parts     8.8–18.4   $7.30 lands on the 95 bar: $5.00 + $2.30; at expiry, $5.00
- *   profit    18.4–32.65 value drops into profit; $102; hero: break-even $104.20; $110
- *   writer    32.65–40.6 the 95 put written: +$205, break-even $92.95, and a loss at $90
+ *   profit    18.4–33.65 value drops into profit; $102; hero: break-even $104.20; $110
+ *   writer    33.65–40.6 the 95 put written: +$205, break-even $92.95, and a loss at $90
  *   claim     40.6–44.95 in the money isn't the same as profitable
  *   next      44.95–47.45 Next: put-call parity
  */
@@ -141,7 +141,7 @@ const copy = {
 		"$5 内在价值 + $2.30 时间价值。",
 	],
 	partsHeadShort: ["Its parts: $5.00 + $2.30.", "拆开：$5.00 + $2.30。"],
-	expiryHead: ["At expiry, the time value is gone.", "到期时，时间价值归零。"],
+	expiryHead: ["At expiry: time value gone.", "到期时，时间价值归零。"],
 	expiryHeadShort: ["At expiry: time value gone.", "到期：时间价值归零。"],
 	intrinsic: ["intrinsic", "内在价值"],
 	time: ["time value", "时间价值"],
@@ -1068,12 +1068,12 @@ function build(context: FilmContext) {
 	tl.to(one("itm-label"), { opacity: 0.55, duration: 0.3 }, 30.65);
 	// On a phone the green fill says it: no room for the note by the brackets.
 	if (!L.narrow) show(one("profit-from"), 30.85);
-	// The marker and green construction settle together at 31.65: one full second of
+	// The marker and green construction settle together at 31.65: two full seconds of
 	// quiet before the writer arrives, with no second expansion beyond the marker.
 
 	// ——— writer: the premium is the best case, and the loss below break-even ———
-	tl.addLabel("writer", 32.65);
-	d.swap([heads[3], heads[5]], heads[4], 32.65);
+	tl.addLabel("writer", 33.65);
+	d.swap([heads[3], heads[5]], heads[4], 33.65);
 
 	hide(
 		[
@@ -1092,23 +1092,23 @@ function build(context: FilmContext) {
 			one("profit-line"),
 			one("drop"),
 		],
-		32.65,
+		33.65,
 	);
 	// Identify the new contract before its headline lands; fade in place in this lane.
 	tl.fromTo(
 		one("put-tag"),
 		{ opacity: 0 },
 		{ opacity: 1, duration: 0.5 },
-		32.65,
+		33.65,
 	);
 	const pen = one("tip-short");
-	d.trace(one<SVGPathElement>("put-line"), 33.05, { tip: pen });
+	d.trace(one<SVGPathElement>("put-line"), 34.05, { tip: pen });
 	// Spend the removed call coda on three existing readings. The credit and curve
-	// settle by 34.40, then break-even reads alone before the loss example arrives.
+	// settle by 35.40, then break-even reads alone for one second before the loss example.
 	show([putBe, one("put-be-label")], 36.4);
-	pop(one("put-marker"), 38.5);
-	show(one("put-loss"), 38.6, "right");
-	// The complete proof settles at 39.10 and retains its accepted 1.50 s of quiet.
+	pop(one("put-marker"), 37.9);
+	show(one("put-loss"), 38.0, "right");
+	// The complete proof settles at 38.50 and retains 2.10 s of quiet before the claim.
 
 	// ——— claim ———
 	tl.addLabel("claim", 40.6);
