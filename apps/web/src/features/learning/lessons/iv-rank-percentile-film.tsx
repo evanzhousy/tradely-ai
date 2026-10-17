@@ -17,6 +17,7 @@ import {
 	Lines,
 	lineCount,
 	TitleCard,
+	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
 import { textWidth } from "../walkthrough/text-measure";
@@ -171,8 +172,12 @@ function Scene({
 			anchor="start"
 		/>
 	);
-	const formula = (name: string, text: string, tone: string) => {
+	const formula = (name: string, text: string, focusTone: string) => {
 		const size = Math.min(T.head * 1.2, (room / (text.length * 0.6)) * 0.98);
+		const labelAt = text.indexOf(":");
+		const equalsAt = text.lastIndexOf("=");
+		const label = labelAt >= 0 ? text.slice(0, labelAt + 1) : "";
+		const operands = text.slice(labelAt >= 0 ? labelAt + 1 : 0, equalsAt + 1);
 		return (
 			<Word
 				name={name}
@@ -180,9 +185,11 @@ function Scene({
 				y={L.headY + T.head * 1.1 + size}
 				size={size}
 				anchor="start"
-				className={`wt-film-num ${tone}`}
+				className="wt-film-num"
 			>
-				{text}
+				{label && <tspan className={focusTone}>{label}</tspan>}
+				{operands}
+				<tspan className={focusTone}>{text.slice(equalsAt + 1)}</tspan>
 			</Word>
 		);
 	};
@@ -386,7 +393,7 @@ function Scene({
 			</g>
 			{headline("y-head", copy.yearHead, copy.yearHeadShort)}
 			{headline("r-head", copy.rankHead, copy.rankHeadShort)}
-			{formula("r-formula", t(copy.rankFormula), "wt-film-accent")}
+			{formula("r-formula", t(copy.rankFormula), toneClass.focus)}
 			{headline("p-head", copy.pctHead, copy.pctHeadShort)}
 			<Word
 				name="p-tally"
@@ -394,7 +401,7 @@ function Scene({
 				y={proofY}
 				size={tallySize}
 				anchor="start"
-				className="wt-film-num wt-film-accent"
+				className="wt-film-num"
 			>{`0 / ${year.n}`}</Word>
 			<Word
 				name="p-result"
@@ -402,9 +409,10 @@ function Scene({
 				y={proofY}
 				size={tallySize}
 				anchor="start"
-				className="wt-film-num wt-film-accent"
+				className="wt-film-num"
 			>
-				{`= ${pct(year.percentile)}`}
+				<tspan>= </tspan>
+				<tspan className={toneClass.focus}>{pct(year.percentile)}</tspan>
 			</Word>
 			<g data-f="o-proof">
 				<Word
@@ -464,13 +472,13 @@ function Scene({
 				x={W / 2}
 				y={H * 0.79}
 				size={T.body}
-				className="wt-film-num wt-film-dim"
+				className="wt-film-num"
 			>{`${year.below}/${year.n} → ${noShock.below}/${noShock.n}`}</Word>
 			{headline("s-head", copy.sampleHead, copy.sampleHeadShort)}
 			{formula(
 				"s-proof",
 				`${t(copy.pctWas)}: ${recent.below}/${recent.n} = ${pct(recent.percentile)}`,
-				"wt-film-accent",
+				toneClass.focus,
 			)}
 			<Word
 				name="s-note"
@@ -486,7 +494,7 @@ function Scene({
 			{formula(
 				"g-proof",
 				`${t(copy.pctWas)}: ${gapped.below}/${gapped.n} = ${pct(gapped.percentile)}`,
-				"wt-film-accent",
+				toneClass.focus,
 			)}
 			<g data-f="claim">
 				<Lines
@@ -584,9 +592,30 @@ function build(context: FilmContext) {
 				low: to.low,
 				high: to.high,
 				duration,
-				ease: "power2.inOut",
+				ease: "power2.out",
 				immediateRender: false,
 				onUpdate: renderRange,
+			},
+			at,
+		);
+	};
+	const bracketSet = (
+		to: { low: number; high: number },
+		at: number,
+		nameRank = false,
+	) => {
+		tl.set(
+			rank,
+			{ attr: { y: L.y(TODAY) - (nameRank && L.narrow ? 24 : 8) } },
+			at,
+		);
+		tl.set(
+			range,
+			{
+				low: to.low,
+				high: to.high,
+				named: nameRank ? 1 : 0,
+				onComplete: renderRange,
 			},
 			at,
 		);
@@ -725,7 +754,8 @@ function build(context: FilmContext) {
 		},
 		23.6,
 	);
-	bracketTo(year, noShock, 24.2);
+	// Count the range under the hidden bracket; reveal it when the 1 s change settles.
+	bracketTo(year, noShock, 23.9, 1.0);
 	tl.to(one("bracket"), { opacity: 1, duration: 0.3 }, 24.9);
 	tl.fromTo(
 		one("o-proof"),
@@ -766,7 +796,7 @@ function build(context: FilmContext) {
 	hide([...flat("o"), one("o-coverage"), lockRank], 31.85);
 	// The old sample never resurfaces: prepare exclusions and the entire range under the cut.
 	tl.set(bars.slice(0, WEEKS - RECENT), { opacity: 0 }, 31.0);
-	bracketTo(noShock, recent, 31.0, 0.7, true);
+	bracketTo(noShock, recent, 30.7, 1.0, true);
 	tl.set(rank, { opacity: 1 }, 31.7);
 	// Final samples fade in place; data and camera are settled before their quiet second.
 	tl.set(one("depth"), { scale: 1 }, 31.7);
@@ -787,7 +817,8 @@ function build(context: FilmContext) {
 	tl.set(observed, { opacity: 1 }, 36.25);
 	tl.set(bars.slice(GAP.from, GAP.to + 1), { opacity: 0 }, 36.25);
 	tl.set([one("gap"), one("gap-label")], { opacity: 1 }, 36.25);
-	bracketTo(recent, gapped, 36.25, 0.3, true);
+	// The history window is replaced under the cut; the range itself is not the lesson.
+	bracketSet(gapped, 36.25, true);
 	tl.set(one("depth"), { scale: 1 }, 36.25);
 	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 36.55);
 	tl.fromTo(
