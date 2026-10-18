@@ -3,9 +3,10 @@
 // line, headline length and figures, the hero lock's share of the runtime (label "hero-lock"),
 // the runtime, class names, and headlines stacked on one another. Then its motion: entrances
 // and exits of at least 0.3 s, a hero that stands 1.5 s, no empty or faint stage between beats,
-// and no crossfade printing one line over another. Warns when a headline states a figure the
-// stage doesn't show yet ("made, not stated"), and when a line is up for less than its reading
-// time at timed-text rates (20 characters a second in English, 9 in Chinese).
+// and no crossfade printing one line over another, and the title card's name and subtitle each
+// shown in full for its reading time before the tag lifts them. Warns when a headline states a
+// figure the stage doesn't show yet ("made, not stated"), and when a line is up for less than
+// its reading time at timed-text rates (20 characters a second in English, 9 in Chinese).
 // env: SPACE, LESSON, SIZE, LOCALE, PORT
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
@@ -881,8 +882,42 @@ const out = await page.evaluate(() => {
 				`count at ${at.toFixed(2)} lasts ${d.toFixed(2)} s (< 1 s at 1×)`,
 			);
 	}
+	// The title card: its name, shown in full once the wipe has passed the last letter (the
+	// wipe runs on past the name, for a web font that lands wide), and its subtitle, at full
+	// strength. Each is read until the tag lifts it.
+	const titleCard = [];
+	const titleEl = svg.querySelector("[data-f='title']");
+	const wipeEl = svg.querySelector("[data-f='wipe']");
+	const subEl = svg.querySelector("[data-f='title-sub']");
+	const lift = tweens.find(
+		(tw) => tw.targets().includes(titleEl?.parentNode) && "x" in tw.vars,
+	);
+	if (titleEl && wipeEl && lift) {
+		const lifted = Math.round(lift.startTime() * 100) / 100;
+		tl.seek(lifted - 0.05, false);
+		const box = titleEl.getBBox();
+		const wiped = () =>
+			Number(wipeEl.getAttribute("x")) + Number(wipeEl.getAttribute("width")) >=
+			box.x + box.width;
+		const cardLines = [[titleEl, wiped]];
+		if (subEl) cardLines.push([subEl, () => alpha(subEl) >= 0.98]);
+		for (const [el, full] of cardLines) {
+			let shown = null;
+			for (let t = 0; t <= lifted + 1e-6 && shown === null; t += 0.01) {
+				tl.seek(t, false);
+				if (full()) shown = Math.round(t * 100) / 100;
+			}
+			titleCard.push({
+				name: el.getAttribute("data-f"),
+				text: textOf(el),
+				shown,
+				lifted,
+			});
+		}
+	}
 	return {
 		duration,
+		titleCard,
 		headSize: typeHead,
 		heroLock: tl.labels["hero-lock"],
 		glow,
@@ -1041,6 +1076,18 @@ const readChars = (t) =>
 	zh
 		? [...t].reduce((n, c) => n + (/[⺀-鿿＀-￯]/.test(c) ? 1 : 0.5), 0)
 		: t.length;
+// The title card's two lines get the same reading time, from the frame each is shown in full
+// to the tag. A line that can't be read there is shortened in the film: the heading above the
+// film keeps the lesson's full name and subtitle.
+for (const { name, text, shown, lifted } of out.titleCard) {
+	const chars = readChars(text);
+	const need = Math.max(0.83, chars / (zh ? 9 : 20));
+	const held = shown === null ? 0 : lifted - shown;
+	if (held < need - 0.05)
+		fails.push(
+			`${name} "${text}" ${zh ? chars : `${chars} chars`} needs ${need.toFixed(2)} s, shown in full ${held.toFixed(2)} s (${shown ?? "never"}–${lifted})`,
+		);
+}
 // A text already read for long enough on an earlier run of the same mark (it dimmed and came
 // back, or returned after a flight) needs no second reading interval.
 const reads = [];
@@ -1065,6 +1112,7 @@ console.log(
 		config: `${env.SIZE}:${env.LOCALE}`,
 		runtime: Math.round(play * 10) / 10,
 		heroLock: out.heroLock,
+		titleCard: out.titleCard,
 		fails,
 		warnings: [
 			...out.stated,
