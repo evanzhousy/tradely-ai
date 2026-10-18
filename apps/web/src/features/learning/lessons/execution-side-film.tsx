@@ -834,6 +834,36 @@ function build(context: FilmContext) {
 			);
 		}
 	};
+	/**
+	 * Between examples the ruler is shared and the market's quote moves: its markers, band and
+	 * mid span slide to the next quote rather than vanishing and being rebuilt.
+	 */
+	const quoteGo = (
+		bid: number,
+		ask: number,
+		time: number,
+		duration: number,
+	) => {
+		const p = quoteProps(bid, ask);
+		const move = { duration, ease: "power2.inOut", immediateRender: false };
+		tl.to(bidM, { ...p.bid, ...move }, time);
+		tl.to(askM, { ...p.ask, ...move }, time);
+		tl.to(band, { ...p.band, ...move }, time);
+		tl.to(midSpan, { ...p.interior, ...move }, time);
+		tl.to(midLabel, { ...p.interiorLabel, ...move }, time);
+		if (bidPrice && askPrice) {
+			tl.set(
+				bidPrice,
+				{ textContent: `${d.t(copy.bid)} ${usd(bid)}`, immediateRender: false },
+				time,
+			);
+			tl.set(
+				askPrice,
+				{ textContent: `${d.t(copy.ask)} ${usd(ask)}`, immediateRender: false },
+				time,
+			);
+		}
+	};
 	const dotTo = (cents: number, time: number) =>
 		tl.set(dot, { attr: { cx: L.x(cents) }, immediateRender: false }, time);
 	/** One place lights up; the others step back. */
@@ -981,9 +1011,12 @@ function build(context: FilmContext) {
 	steps.forEach(([id, time, i]) => {
 		const quote = quoteAt(id === "test" ? "t2" : id);
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
-		// Keep the ruler and legend in place. The quote changes at the boundary;
+		// Keep the ruler and legend in place. The quote slides to this print's quote; the
+		// previous print's dot leaves and this one arrives at its price (a different print);
 		// this print's time carries from the point into its tape row.
-		fade([...geometry, dot], 0, time - 0.35);
+		fade(dot, 0, time - 0.35);
+		// The quote has finished moving when the new print's dot arrives at `time`.
+		quoteGo(quote.bid, quote.ask, time - 0.35, 0.35);
 		sideTo(i, time, { exitAt: time - 0.35, enterAt: time });
 		tl.set(
 			rowTimes[i - 1],
@@ -993,10 +1026,9 @@ function build(context: FilmContext) {
 			},
 			time,
 		);
-		quoteTo(quote.bid, quote.ask, time);
 		dotTo(cents, time);
 		light(SIDES[i], time);
-		reveal([...geometry, dot], time);
+		reveal(dot, time);
 		if (id === "test") reveal(one("pl-test"), time, 0.5);
 		else {
 			reveal(rows[i], time);
