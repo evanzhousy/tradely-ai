@@ -1,4 +1,4 @@
-import { type Copy, count, pick, usd } from "@/content/world";
+import { ALFA, type Copy, count, pick, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -13,9 +13,12 @@ import {
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
+import { IsoSolid } from "../walkthrough/iso-art";
+import { benchOf } from "./expiration-settlement-bench";
 import {
 	ALFA_AT,
 	AUTO_EXERCISE_THRESHOLD,
+	CALL_95,
 	CALL_100,
 	CALL_100_DELIVERY,
 	EXPIRY_SCENARIOS,
@@ -33,8 +36,10 @@ import {
  * Expiration, as a film. It opens on Oct 4: the 95 call bids $7.40 with ALFA at $102, and
  * the question is what exercising gets instead. The $7.40 flies onto its bar, $7.00 of
  * intrinsic value and $0.40 of time value, and the "?" becomes exercise's $7.00; on Oct 18
- * the time value melts and the two are equal. Then settlement: ALFA delivers 100 shares for
- * $9,500; an index pays cash, $2,500 at the official 5,025, not Thursday's 5,030. Then the
+ * the time value melts and the two are equal. Then settlement, on an isometric bench: your
+ * tray, the clearing house's gate and the writer's tray. ALFA's $9,500 and 100 shares cross
+ * through the gate at once; an index sends only cash, $2,500 at the official 5,025, not
+ * Thursday's 5,030, from the writer to you. Then the
  * window: American any trading day, European only at expiry. The hero: a near-strike close
  * leaves the call in the money, and glowing brackets lock as it is exercised automatically;
  * the Monday account shows shares and strike cash due. Last, a writer:
@@ -43,9 +48,9 @@ import {
  *   open      0–4        "Expiration"
  *   question  4–8.8      Oct 4: sell at $7.40, or exercise?
  *   exit      8.8–17.5   labelled parts; Oct 18 equality before the answer
- *   settle    17.5–21.4  ALFA: 100 shares for $9,500
- *   cash      21.4–25.3  IDX 500: $2,500 at the official 5,025
- *   window    25.3–29.7  American trading days; European at expiry
+ *   settle    17.5–21.4  the bench; ALFA's $9,500 and 100 shares cross at once
+ *   cash      21.4–25.85 IDX 500: $2,500 at the official 5,025 crosses, writer to you
+ *   window    25.85–29.7 American trading days; European at expiry
  *   pin       29.7–35.05  the close minus strike makes a bracketed expiry value
  *   writer    35.05–40.6 settled close/after-hours pair, exercise, then Monday short shares
  *   claim     40.6–45.0 check exercise instructions and the broker's cutoff
@@ -105,9 +110,13 @@ function layout(width: number) {
 		priceY: H * 0.3,
 		heroSize: frame.type.big * (narrow ? 0.9 : 0.78),
 		heroY: narrow ? H * 0.54 : H * 0.51 + frame.type.big * 0.78 * 1.15,
-		partyY: H * (narrow ? 0.36 : 0.34),
-		partyH: H * (narrow ? 0.14 : 0.13),
-		partyW: room * (narrow ? 0.34 : 0.28),
+		/**
+		 * The settlement bench's box. It runs from your tray at the top left down to the
+		 * writer's at the bottom right, which leaves the top right for the cash readouts.
+		 */
+		bench: narrow
+			? { x: width * 0.02, y: H * 0.25, w: width * 0.96, h: H * 0.36 }
+			: { x: margin, y: H * 0.3, w: room, h: H * 0.56 },
 	};
 }
 
@@ -134,6 +143,7 @@ const copy = {
 	cashHead: ["An index settles in cash.", "指数以现金结算。"],
 	you: ["you · holder", "你 · 持有人"],
 	writer: ["writer", "义务方"],
+	clearing: ["clearing house", "清算所"],
 	cash: ["$9,500", "$9,500"],
 	shares: ["100 ALFA", "100 股 ALFA"],
 	official: ["official settlement", "官方结算值"],
@@ -229,8 +239,23 @@ function Scene({
 			</g>
 		);
 	};
-	const partyX = (i: number) => (i === 0 ? margin : margin + room - L.partyW);
-	const flowY = (k: number) => L.partyY + L.partyH * (0.3 + k * 0.4);
+	// The 95 call exercised: $9,500 for 100 shares; the index call pays its cash only.
+	const B = benchOf(L.bench, {
+		alfa: CALL_95.strike * ALFA.multiplier,
+		index: PAYS / 100,
+	});
+	// The readouts: over the writer's end of the bench on a wide stage, under it on a phone.
+	const read = narrow
+		? {
+				official: [W / 2, H * 0.69] as const,
+				pays: [W * 0.3, H * 0.86] as const,
+				thursday: [W * 0.7, H * 0.86] as const,
+			}
+		: {
+				official: [W * 0.775, H * 0.13] as const,
+				pays: [W * 0.69, H * 0.29] as const,
+				thursday: [W * 0.88, H * 0.29] as const,
+			};
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -435,84 +460,97 @@ function Scene({
 				))}
 			</g>
 
-			{/* Shares or cash. */}
+			{/* Shares or cash: the settlement bench, your tray, the clearing house, the writer's. */}
 			{headline("s1-head", copy.sharesHead, copy.sharesHead)}
 			{headline("s2-head", copy.cashHead, copy.cashHead)}
-			<g data-f="shares">
-				{[copy.you, copy.writer].map((label, i) => (
-					<g key={label[0]}>
-						<rect
-							x={partyX(i)}
-							y={L.partyY}
-							width={L.partyW}
-							height={L.partyH}
-							rx={12}
-							className={i === 0 ? "wt-focus-shape" : "wt-panel-shape"}
-						/>
-						<text
-							x={partyX(i) + L.partyW / 2}
-							y={L.partyY + L.partyH / 2 + text * 0.36}
-							textAnchor="middle"
-							className="wt-film-type"
-							style={{ fontSize: text }}
-						>
-							{t(label)}
-						</text>
-					</g>
+			<g data-f="bench">
+				<path className="wt-iso-halo" d={B.halo} />
+				{B.back.map((part, i) => (
+					<IsoSolid key={i} paths={part.paths} lit={part.lit} />
 				))}
-				{(
-					[
-						[0, copy.cash, 1],
-						[1, copy.shares, -1],
-					] as const
-				).map(([k, label, dir]) => {
-					const x0 = margin + L.partyW + 8;
-					const x1 = margin + room - L.partyW - 8;
-					return (
-						<g key={label[0]} data-f={`flow-${k}`}>
-							<path
-								d={
-									dir > 0
-										? `M${x0} ${flowY(k)}H${x1}`
-										: `M${x1} ${flowY(k)}H${x0}`
-								}
-								fill="none"
-								stroke="var(--tone-ink)"
-								strokeWidth={2}
-								strokeLinecap="round"
-							/>
-							<path
-								d={
-									dir > 0
-										? `M${x1 - 8} ${flowY(k) - 5}L${x1} ${flowY(k)}L${x1 - 8} ${flowY(k) + 5}`
-										: `M${x0 + 8} ${flowY(k) - 5}L${x0} ${flowY(k)}L${x0 + 8} ${flowY(k) + 5}`
-								}
-								fill="none"
-								stroke="var(--tone-ink)"
-								strokeWidth={2}
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-							<text
-								x={(x0 + x1) / 2}
-								y={flowY(k) - 8}
-								textAnchor="middle"
-								className="wt-film-num"
-								style={{ fontSize: text }}
-							>
-								{t(label)}
-							</text>
-						</g>
-					);
-				})}
+				<path
+					className="wt-iso-line wt-iso-mark"
+					d={B.ruler.minor + B.screws}
+				/>
+				<path className="wt-iso-line" d={B.ruler.major} />
+				<path className="wt-iso-line wt-iso-crease" d={B.grooves} />
 			</g>
+			{(["alfaCash", "indexCash", "middle", "shares"] as const).map((key) =>
+				key === "middle" ? (
+					<g key={key} data-f="bench-mid">
+						{B.middle.map((part, i) => (
+							<IsoSolid key={i} paths={part.paths} />
+						))}
+						<path className="wt-iso-line wt-iso-mark" d={B.windows} />
+					</g>
+				) : (
+					<g key={key} data-f={`tok-${key}`}>
+						{B.tokens[key].parts.map((part, i) => (
+							<IsoSolid key={i} paths={part.paths} />
+						))}
+						<path className="wt-iso-line wt-iso-mark" d={B.tokens[key].lines} />
+					</g>
+				),
+			)}
+			<g data-f="bench-front">
+				{B.front.map((part, i) => (
+					<IsoSolid key={i} paths={part.paths} lit={part.lit} />
+				))}
+			</g>
+			{(
+				[
+					["bench-holder", B.anchors.holderBelow, copy.you, "wt-film-accent"],
+					["bench-writer", B.anchors.writerBelow, copy.writer, "wt-film-dim"],
+				] as const
+			).map(([name, [x, y], label, tone]) => (
+				<text
+					key={name}
+					data-f={name}
+					x={x}
+					y={y + text * 1.45}
+					textAnchor="middle"
+					className={`wt-film-type ${tone}`}
+					style={{ fontSize: text }}
+				>
+					{t(label)}
+				</text>
+			))}
+			<Word
+				name="bench-gate"
+				x={B.anchors.gate[0]}
+				y={B.anchors.gate[1] - T.small * 0.9}
+				size={T.small}
+				className="wt-film-tag"
+			>
+				{t(copy.clearing).toUpperCase()}
+			</Word>
+			{(
+				[
+					["lab-cash-from", B.anchors.holderAbove, copy.cash],
+					["lab-shares-from", B.anchors.writerAbove, copy.shares],
+					["lab-cash-to", B.anchors.writerAbove, copy.cash],
+					["lab-shares-to", B.anchors.holderAbove, copy.shares],
+				] as const
+			).map(([name, [x, y], label]) => (
+				<text
+					key={name}
+					data-f={name}
+					x={x}
+					y={y - text * 0.75}
+					textAnchor="middle"
+					className="wt-film-num"
+					style={{ fontSize: text }}
+				>
+					{t(label)}
+				</text>
+			))}
 			<g data-f="cash">
 				{/* The official input lives only in this calculation, never in a duplicate quote. */}
 				<g data-f="c-official">
 					<Word
 						name="c-official-label"
-						x={W / 2}
-						y={H * 0.34}
+						x={read.official[0]}
+						y={read.official[1]}
 						size={T.small}
 						className="wt-film-tag"
 					>
@@ -520,9 +558,9 @@ function Scene({
 					</Word>
 					<Word
 						name="c-calculation"
-						x={W / 2}
-						y={H * 0.34 + T.num * 1.3}
-						size={T.head}
+						x={read.official[0]}
+						y={read.official[1] + T.num * (narrow ? 1.05 : 1.2)}
+						size={narrow ? T.head : T.head * 0.85}
 						className="wt-film-num"
 					>
 						{`(${count(INDEX_SETTLES)} − ${count(INDEX_STRIKE)}) × $100`}
@@ -531,8 +569,8 @@ function Scene({
 				<g data-f="c-thursday">
 					<Word
 						name="c-thursday-label"
-						x={W / 2}
-						y={H * 0.85}
+						x={read.thursday[0]}
+						y={read.thursday[1]}
 						size={T.small}
 						className="wt-film-tag"
 					>
@@ -540,9 +578,9 @@ function Scene({
 					</Word>
 					<Word
 						name="c-thursday-value"
-						x={W / 2}
-						y={H * 0.85 + T.num * 1.3}
-						size={T.num}
+						x={read.thursday[0]}
+						y={read.thursday[1] + T.num * 1.15}
+						size={T.num * 0.9}
 						className="wt-film-num"
 					>
 						{count(INDEX_LAST)}
@@ -550,8 +588,8 @@ function Scene({
 				</g>
 				<g data-f="c-pays">
 					<text
-						x={W / 2}
-						y={H * 0.6}
+						x={read.pays[0]}
+						y={read.pays[1]}
 						textAnchor="middle"
 						className="wt-film-tag"
 						style={{ fontSize: T.small }}
@@ -559,11 +597,11 @@ function Scene({
 						{t(copy.payout).toUpperCase()}
 					</text>
 					<text
-						x={W / 2}
-						y={H * 0.6 + T.big * 0.9}
+						x={read.pays[0]}
+						y={read.pays[1] + T.num * 1.25}
 						textAnchor="middle"
 						className={`wt-film-num ${toneClass.focus}`}
-						style={{ fontSize: T.big * 0.8 }}
+						style={{ fontSize: T.num * 1.1 }}
 					>
 						{usd(PAYS, 0)}
 					</text>
@@ -929,11 +967,45 @@ function build(context: FilmContext) {
 		(name) => one(name),
 	);
 
+	// The settlement bench: its two static layers, the three tokens, and the type round it.
+	const bench = [one("bench"), one("bench-mid"), one("bench-front")];
+	const parties = [one("bench-holder"), one("bench-writer"), one("bench-gate")];
+	const alfaCash = g("tok-alfaCash");
+	const shares = g("tok-shares");
+	const indexCash = g("tok-indexCash");
+	const holdings = [one("lab-cash-from"), one("lab-shares-from")];
+	const received = [one("lab-cash-to"), one("lab-shares-to")];
+	const benchMarks = [
+		...bench,
+		...parties,
+		alfaCash,
+		shares,
+		indexCash,
+		...holdings,
+		...received,
+	];
+	// The shift from your tray to the writer's, on this stage.
+	const [slideX, slideY] = benchOf(L.bench, {
+		alfa: CALL_95.strike * ALFA.multiplier,
+		index: PAYS / 100,
+	}).slide;
+	const cross = (target: Element, toWriter: boolean, at: number) =>
+		tl.to(
+			target,
+			{
+				x: toWriter ? slideX : -slideX,
+				y: toWriter ? slideY : -slideY,
+				duration: 0.65,
+				ease: "power2.inOut",
+			},
+			at,
+		);
+
 	d.hidden([
 		...flat("q"),
 		...heads,
 		...flat("exit"),
-		...kids("shares"),
+		...benchMarks,
 		...kids("cash"),
 		...flat("window"),
 		...holderMarks,
@@ -1040,29 +1112,35 @@ function build(context: FilmContext) {
 	tl.addLabel("settle", 17.5);
 	hide([heads[0], heads[1], ...flat("exit")], 17.5);
 	show(heads[2], 17.85);
-	fade(
-		kids("shares").filter((el) => !el.getAttribute("data-f")),
-		17.8,
-	);
-	// Parties settle at 18.3, then stand for 1 s. Cash and shares are one exchange;
-	// reveal both in place, keeping the completed proof's 19.8–21.4 rest intact.
-	fade([one("flow-0"), one("flow-1")], 19.3);
+	// The bench rises as the bars leave and settles at 18.1; the parties and both holdings
+	// are labelled by 18.45, and all of it stands a full second before anything moves.
+	show(bench, 17.6);
+	fade([...parties, alfaCash, shares], 17.9);
+	show(holdings, 17.95);
+	// Cash and shares are one exchange: both cross through the clearing house at once, and
+	// their amounts are named again where they land (20.4), a full second before the index.
+	hide(holdings, 19.45, 0.35, 0);
+	cross(alfaCash, true, 19.45);
+	cross(shares, false, 19.45);
+	fade(received, 20.1, 0.3);
 
 	tl.addLabel("cash", 21.4);
 	d.swap(heads[2], heads[3], 21.4);
-	hide(kids("shares"), 21.4);
-	// Keep the official calculation and result together; compare Thursday's close only
-	// after the combined proof has settled for a full second.
-	fade([one("c-official"), one("c-pays")], 21.7);
-	fade(one("c-thursday"), 23.2, 0.3);
+	hide([alfaCash, shares, ...received], 21.4, 0.35, 0);
+	// The official calculation and the writer's payment arrive with that cash in the writer's
+	// tray. No shares to deliver: only the cash crosses, writer to you, landing at 23.1.
+	fade([one("c-official"), one("c-pays"), indexCash], 21.7);
+	cross(indexCash, false, 22.45);
+	// Thursday's close is compared a full second after the payment lands.
+	fade(one("c-thursday"), 24.1, 0.3);
 
-	tl.addLabel("window", 25.3);
-	hide([heads[3], ...kids("cash")], 25.3);
-	show(heads[4], 25.65);
-	fade(one("window-scaffold"), 25.65);
-	// Both rows are still by 26.15, one second before either eligibility set enters.
-	fade([one("am-days"), one("eu-day")], 27.15, 0.3);
-	// Both completed proofs rest from 27.45 to 29.7 (2.25 s).
+	tl.addLabel("window", 25.85);
+	hide([heads[3], ...kids("cash"), ...bench, ...parties, indexCash], 25.85);
+	show(heads[4], 26.2);
+	fade(one("window-scaffold"), 26.2);
+	// Both rows are still by 26.7, one second before either eligibility set enters.
+	fade([one("am-days"), one("eu-day")], 27.7, 0.3);
+	// Both completed proofs rest from 28.0 to 29.7 (1.7 s).
 
 	tl.addLabel("pin", 29.7);
 	hide([heads[4], ...flat("window")], 29.7);
@@ -1113,8 +1191,8 @@ function build(context: FilmContext) {
 export const expirationSettlementFilm: Film = {
 	id: "expiration-settlement",
 	label: [
-		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement of the exercised 95 call in ${copy.shares[0]} shares for ${copy.cash[0]}, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours`,
-		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：行权的 95 看涨以 ${copy.cash[1]} 交收 ${copy.shares[1]}，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，持有人行权后可能导致周一被指派`,
+		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement of the exercised 95 call through the clearing house, ${copy.shares[0]} shares for ${copy.cash[0]} crossing at once, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours`,
+		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：行权的 95 看涨经清算所以 ${copy.cash[1]} 交收 ${copy.shares[1]}，两者同时交换；IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，持有人行权后可能导致周一被指派`,
 	],
 	stage: "dark",
 	shots: [
