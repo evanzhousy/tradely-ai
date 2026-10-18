@@ -375,7 +375,8 @@ function Scene({
 					<text
 						x={margin + 14}
 						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
-						className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
+						// Unknown claims read at full strength; their UNKNOWN tag and hatch carry the status.
+						className="wt-film-type"
 						style={{ fontSize: text }}
 					>
 						{t(claim.text)}
@@ -900,10 +901,12 @@ function build(context: FilmContext) {
 	// The quote and headline settle by 14.85; hold that scaffold for a full second.
 	show(rows, 15.85, "right", 0.35);
 	// Read the whole ladder, then tour location and buyer inferences from the matched print.
-	tl.to([rows[1], rows[4], rows[5]], { opacity: 0.3, duration: 0.3 }, 17.2);
-	tl.fromTo(rowFocus[0], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 17.2);
-	tl.to(rowFocus[0], { opacity: 0, duration: 0.3 }, 17.7);
-	tl.fromTo(rowFocus[1], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.0);
+	// Every claim stays readable until 17.45; the location then the buyer inference take
+	// their turns before the stale quote arrives.
+	tl.to([rows[1], rows[4], rows[5]], { opacity: 0.3, duration: 0.3 }, 17.45);
+	tl.fromTo(rowFocus[0], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 17.45);
+	tl.to(rowFocus[0], { opacity: 0, duration: 0.3 }, 17.95);
+	tl.fromTo(rowFocus[1], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.25);
 	tl.to(rowFocus[1], { opacity: 0, duration: 0.3 }, 19.0);
 	// Quote and dependent classifications are one scenario: no stale quote with fresh tags.
 	hide([quote[1], ...staleRows.map((i) => one(`ev-${i}`))], 19.3, 0.35, 0);
