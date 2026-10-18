@@ -150,7 +150,7 @@ const copy = {
 		"逐合约汇总成交；按成交编号计笔数。",
 	],
 	nextBig: ["Next: execution conditions", "下一课：成交条件"],
-	nextSub: ["sweeps, blocks and complex orders", "扫单、大宗与复杂订单"],
+	nextSub: ["sweeps and blocks", "扫单与大宗"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

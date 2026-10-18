@@ -96,7 +96,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Execution conditions", "成交条件"],
-	titleSub: ["sweeps, blocks and complex orders", "扫单、大宗与复杂订单"],
+	titleSub: ["sweeps and blocks", "扫单与大宗"],
 	qTag: ["Oct 18 110 call", "10月18日 110 看涨"],
 	qLine: [
 		`Prints: ${FILLS.map((fill) => `${fill.venue} ${count(fill.size)}`).join(", ")}.`,
