@@ -834,60 +834,6 @@
 .wt-chip {
 	fill: var(--diagram-accent);
 }
-/* Isometric solids (walkthrough/iso.ts, iso-art.tsx): dark paper, the faces turned to the
-   viewer in four shades, a lighter top and fine ink edges, every tone a mix of the stage's
-   own ink and ground. One lit part takes the focus colour on its edges. */
-.wt-svg .wt-iso-fill {
-	fill: color-mix(in oklab, var(--foreground) 6%, var(--film-bg));
-	stroke: none;
-}
-.wt-svg .wt-iso-shade,
-.wt-svg .wt-iso-top {
-	stroke: none;
-}
-.wt-svg .wt-iso-shade[data-shade="0"] {
-	fill: color-mix(in oklab, var(--foreground) 4%, var(--film-bg));
-}
-.wt-svg .wt-iso-shade[data-shade="1"] {
-	fill: color-mix(in oklab, var(--foreground) 7%, var(--film-bg));
-}
-.wt-svg .wt-iso-shade[data-shade="2"] {
-	fill: color-mix(in oklab, var(--foreground) 10%, var(--film-bg));
-}
-.wt-svg .wt-iso-shade[data-shade="3"] {
-	fill: color-mix(in oklab, var(--foreground) 13%, var(--film-bg));
-}
-.wt-svg .wt-iso-top {
-	fill: color-mix(in oklab, var(--foreground) 16%, var(--film-bg));
-}
-.wt-svg .wt-iso-line {
-	fill: none;
-	stroke: color-mix(in oklab, var(--foreground) 40%, var(--film-bg));
-	stroke-width: 1;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-.wt-svg .wt-iso-edge {
-	stroke: color-mix(in oklab, var(--foreground) 78%, var(--film-bg));
-}
-.wt-svg .wt-iso-crease {
-	stroke: color-mix(in oklab, var(--foreground) 26%, var(--film-bg));
-}
-.wt-svg .wt-iso-mark {
-	stroke: color-mix(in oklab, var(--foreground) 34%, var(--film-bg));
-	stroke-width: 0.8;
-}
-.wt-svg .wt-iso[data-lit] .wt-iso-top {
-	fill: color-mix(in oklab, var(--tone-focus) 16%, var(--film-bg));
-}
-.wt-svg .wt-iso[data-lit] .wt-iso-edge {
-	stroke: var(--tone-focus);
-}
-.wt-svg .wt-iso-halo {
-	fill: color-mix(in oklab, var(--film-bg), black 55%);
-	stroke: none;
-	filter: blur(10px);
-}
 .wt-svg .wt-chip-text {
 	fill: var(--card);
 	font-weight: 600;
