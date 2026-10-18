@@ -146,7 +146,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Recipes", "Recipe"],
-	titleSub: ["research that re-runs on fresh data", "在新数据上重跑的研究"],
+	titleSub: ["research re-run on fresh data", "在新数据上重跑的研究"],
 	qTag: ["your question", "你的问题"],
 	qBig: ["Which contracts trade", "周一哪些合约"],
 	qSignal: ["well above open interest", "成交超未平仓量？"],

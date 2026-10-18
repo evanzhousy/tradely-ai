@@ -120,7 +120,7 @@ const equations = [
 
 const copy = {
 	title: ["Expected move", "预期变动"],
-	titleSub: ["how far the options price ALFA to go", "期权定价的变动幅度"],
+	titleSub: ["how far ALFA is priced to move", "期权定价的变动幅度"],
 	qTagIv: ["implied volatility", "隐含波动率"],
 	qTagSpot: ["ALFA spot", "ALFA 现价"],
 	qLine: ["What move is priced by Oct 18?", "到10月18日，定价多大变动？"],

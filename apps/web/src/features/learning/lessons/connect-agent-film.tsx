@@ -71,7 +71,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Connect your own AI agent", "连接你自己的 AI 智能体"],
-	titleSub: ["read-only tools, a key you control", "只读工具，由你掌控的密钥"],
+	titleSub: ["read-only tools, your own key", "只读工具，由你掌控的密钥"],
 	qTag: ["Your agent → TradingFlow", "你的智能体 → TradingFlow"],
 	qBig: ["Sign in, or an API key?", "登录，还是 API 密钥？"],
 	qLine: ["It depends on the agent.", "取决于是哪个智能体。"],

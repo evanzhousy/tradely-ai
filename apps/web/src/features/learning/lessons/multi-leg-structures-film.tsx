@@ -130,7 +130,7 @@ const legShortCopy: Record<string, Copy> = {
 
 const copy = {
 	title: ["Straddles and condors", "跨式与铁鹰"],
-	titleSub: ["linked legs, printed in one second", "关联腿在同一秒分别成交"],
+	titleSub: ["linked legs in one second", "关联腿在同一秒分别成交"],
 	qTag: [
 		`ALFA · linked legs · ${SIZE} each`,
 		`ALFA · 关联腿 · 每腿 ${SIZE} 张`,

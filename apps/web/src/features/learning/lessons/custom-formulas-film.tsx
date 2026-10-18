@@ -128,7 +128,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Build your own Rank column", "构建你自己的 Rank 列"],
-	titleSub: ["units, a floor, a saved definition", "单位、门槛、保存的定义"],
+	titleSub: ["units, a floor, a saved formula", "单位、门槛、保存的公式"],
 	qTag: ["New column · Rank Symbols", "新列 · Rank Symbols"],
 	qLine: ["What does the editor show for ALFA?", "编辑器对 ALFA 显示什么？"],
 	unitHead: ["Every field carries a unit.", "每个字段都带着单位。"],

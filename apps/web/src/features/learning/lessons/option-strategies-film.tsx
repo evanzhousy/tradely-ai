@@ -91,7 +91,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Strategies", "策略"],
-	titleSub: ["one leg, many possible positions", "一条腿，多种可能的持仓"],
+	titleSub: ["one leg, many positions", "一条腿，多种可能的持仓"],
 	qTag: ["Oct 18 105C · BID", "10/18 105C · 买价成交"],
 	qLine: [`Sold for ${usd(SOLD)}.`, `以 ${usd(SOLD)} 卖出。`],
 	qBig: ["A bet ALFA won't rise?", "押注 ALFA 不涨？"],

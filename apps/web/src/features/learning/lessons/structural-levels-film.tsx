@@ -200,7 +200,7 @@ const copy = {
 		"逐个标注：规则、范围、日期、单位。",
 	],
 	nextBig: ["Next: charm and vanna", "下一课：Charm 与 Vanna"],
-	nextSub: ["exposure that changes without a trade", "没有成交也会变化的敞口"],
+	nextSub: ["exposure moving without a trade", "没有成交也会变化的敞口"],
 } as const satisfies Record<string, Copy>;
 
 /** The wall labels: the value each rule picked, at the bar it picked. */

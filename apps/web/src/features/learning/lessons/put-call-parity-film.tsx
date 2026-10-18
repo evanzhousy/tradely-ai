@@ -110,7 +110,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Put-call parity", "看涨看跌平价"],
-	titleSub: ["how calls, puts and shares line up", "看涨、看跌与股票如何对齐"],
+	titleSub: ["how calls, puts, shares line up", "看涨、看跌与股票如何对齐"],
 	qTag: [
 		"long Oct 18 100 call + short Oct 18 100 put",
 		"多头 10月18日 100 看涨 + 空头 10月18日 100 看跌",
@@ -170,7 +170,7 @@ const copy = {
 		"延迟报告看成交时刻，而非接收时刻。",
 	],
 	nextBig: ["Next: expiration", "下一课：到期"],
-	nextSub: ["exercise, assignment and settlement", "行权、指派与结算"],
+	nextSub: ["from exercise to settlement", "行权、指派与结算"],
 } as const satisfies Record<string, Copy>;
 
 /** The label's basis comes from the same debit as the plotted expiry result. */

@@ -132,7 +132,7 @@ const verb = (effect: "open" | "close", buy: boolean): Copy =>
 
 const copy = {
 	title: ["Sentiment labels", "情绪标签"],
-	titleSub: ["when bullish or bearish is justified", "何时能称为看涨或看跌"],
+	titleSub: ["when bullish or bearish is fair", "何时能称为看涨或看跌"],
 	qTag: ["Oct 18 95 put · at the ask", "10月18日 95 看跌 · 卖价成交"],
 	qLine: ["Someone buys puts, paying the ask.", "有人以卖价买入看跌期权。"],
 	qBig: ["Buying: bullish?", "买入就是看涨？"],
@@ -184,7 +184,7 @@ const copy = {
 		"它看不到账户里已有的持仓。",
 	],
 	nextBig: ["Next: strategies", "下一课：策略"],
-	nextSub: ["one leg, many possible positions", "一条腿，多种可能的持仓"],
+	nextSub: ["one leg, many positions", "一条腿，多种可能的持仓"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

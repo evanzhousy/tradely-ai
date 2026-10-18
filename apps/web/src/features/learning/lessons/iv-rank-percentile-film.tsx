@@ -85,7 +85,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["IV rank and IV percentile", "IV Rank 与 IV 百分位"],
-	titleSub: ["where today sits in its own history", "今天在自身历史中的位置"],
+	titleSub: ["today against its own history", "今天在自身历史中的位置"],
 	qTagRank: ["IV rank", "IV Rank"],
 	qTagPct: ["IV percentile", "IV 百分位"],
 	qLine: [

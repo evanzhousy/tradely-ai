@@ -125,10 +125,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Change the inputs, keep the question", "改输入，不改问题"],
-	titleSub: [
-		"what a re-run does, and what it doesn't",
-		"重跑会做什么，不会做什么",
-	],
+	titleSub: ["what a re-run does and doesn't", "重跑会做什么，不会做什么"],
 	qTag: ["Screener · Min OI", "筛选器 · 最低未平仓量"],
 	qLine: ["Before Run: how many contracts?", "运行前：报告显示多少份合约？"],
 	runHead: ["The report remembers the last run.", "报告保留上次运行结果。"],

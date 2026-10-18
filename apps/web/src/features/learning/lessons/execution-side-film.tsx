@@ -180,7 +180,7 @@ const copy = {
 	claimBig: ["Side shows location, not motive.", "成交位置，不代表动机。"],
 	claimSub: ["Use the quote in force.", "只用成交时有效的报价。"],
 	nextBig: ["Next: sentiment labels", "下一课：情绪标签"],
-	nextSub: ["when bullish or bearish is justified", "何时能称为看涨或看跌"],
+	nextSub: ["when bullish or bearish is fair", "何时能称为看涨或看跌"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

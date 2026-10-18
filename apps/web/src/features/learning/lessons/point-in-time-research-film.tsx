@@ -102,7 +102,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Backtests", "回测"],
-	titleSub: ["testing a pattern without hindsight", "不带后见之明地检验模式"],
+	titleSub: ["testing a pattern, no hindsight", "不带后见之明地检验模式"],
 	qTag: [
 		`a backtest · ${openingCutoff.time[0]}`,
 		`回测 · ${openingCutoff.time[1]}`,

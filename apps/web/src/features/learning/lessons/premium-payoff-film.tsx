@@ -179,7 +179,7 @@ const copy = {
 	claimBig: ["In the money can still lose.", "实值仍可能亏损。"],
 	claimSub: ["Writers gain at most the premium.", "卖方最多赚取权利金。"],
 	nextBig: ["Next: put-call parity", "下一课：看涨看跌平价"],
-	nextSub: ["how calls, puts and shares line up", "看涨、看跌与股票如何对齐"],
+	nextSub: ["how calls, puts, shares line up", "看涨、看跌与股票如何对齐"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

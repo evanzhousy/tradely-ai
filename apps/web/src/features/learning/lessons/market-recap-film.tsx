@@ -119,7 +119,7 @@ const copy = {
 	claimBig: ["Claim only what your evidence shows.", "只说证据能显示的。"],
 	claimSub: ["Zero-based bars.", "柱从零起。"],
 	nextBig: ["Next: audits", "下一课：审核"],
-	nextSub: ["finding and repairing a flawed recap", "发现并修复有缺陷的复盘"],
+	nextSub: ["find and fix a flawed recap", "发现并修复有缺陷的复盘"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

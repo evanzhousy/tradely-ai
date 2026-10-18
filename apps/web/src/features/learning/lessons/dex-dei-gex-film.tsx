@@ -131,10 +131,7 @@ function layout(width: number, locale: Locale = "en") {
 
 const copy = {
 	title: ["DEX and DEI", "DEX 与 DEI"],
-	titleSub: [
-		"delta-weighted flow, and its share of volume",
-		"Delta 加权的成交流，及其占成交量的比例",
-	],
+	titleSub: ["delta-weighted flow and share", "Delta 加权成交流及其占比"],
 	qTagGross: ["traded, share-equivalents", "成交，股票等价"],
 	qTagNet: ["pointed one way", "指向一边的"],
 	qTagGrossShort: ["traded", "成交"],

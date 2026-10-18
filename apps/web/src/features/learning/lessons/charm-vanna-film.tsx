@@ -98,7 +98,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Charm and vanna", "Charm 与 Vanna"],
-	titleSub: ["exposure that changes without a trade", "没有成交也会变化的敞口"],
+	titleSub: ["exposure moving without a trade", "没有成交也会变化的敞口"],
 	qTag: [
 		`ALFA Oct 18 ${STRIKE} call · model delta`,
 		`ALFA 10月18日 ${STRIKE} 看涨 · 模型 Delta`,

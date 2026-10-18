@@ -141,10 +141,7 @@ function signComparison(frame: ReturnType<typeof filmFrame>) {
 
 const copy = {
 	title: ["GEX", "GEX"],
-	titleSub: [
-		"a gamma exposure snapshot, and what it stands on",
-		"Gamma 敞口快照，以及它建立在什么之上",
-	],
+	titleSub: ["a GEX snapshot and its inputs", "Gamma 敞口快照及其依据"],
 	qTag: ["ALFA GEX, on a dashboard", "ALFA GEX，某个面板"],
 	qLine: ["Which sign? Which contracts?", "哪个符号？哪些合约？"],
 	sidesHead: ["Sum all calls; sum all puts.", "汇总所有看涨；汇总所有看跌。"],

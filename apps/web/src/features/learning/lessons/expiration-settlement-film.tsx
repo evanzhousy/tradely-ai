@@ -113,7 +113,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Expiration", "到期"],
-	titleSub: ["exercise, assignment and settlement", "行权、指派与结算"],
+	titleSub: ["from exercise to settlement", "行权、指派与结算"],
 	qTag: [
 		"Fri Oct 4 · Oct 18 95 call · ALFA $102",
 		"10月4日 周五 · 10月18日 95 看涨 · ALFA $102",

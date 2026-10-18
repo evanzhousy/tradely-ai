@@ -89,7 +89,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Audits", "审核"],
-	titleSub: ["finding and repairing a flawed recap", "发现并修复有缺陷的复盘"],
+	titleSub: ["find and fix a flawed recap", "发现并修复有缺陷的复盘"],
 	qTag: ["a colleague's recap · Monday", "同事的复盘 · 周一"],
 	qLabel: ["Reported premium", "所报权利金"],
 	qMatch: ["Contracts and prices match tape.", "张数和价格与成交记录一致。"],

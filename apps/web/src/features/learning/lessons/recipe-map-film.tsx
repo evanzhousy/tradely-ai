@@ -177,10 +177,7 @@ const copy = {
 		"Next: change the inputs, keep the question",
 		"下一课：改输入，不改问题",
 	],
-	nextSub: [
-		"what a re-run does, and what it doesn't",
-		"重跑会做什么，不会做什么",
-	],
+	nextSub: ["what a re-run does and doesn't", "重跑会做什么，不会做什么"],
 } as const satisfies Record<string, Copy>;
 
 // Preserve the warning's uncertainty on the phone, unchanged across both sessions.

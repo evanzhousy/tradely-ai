@@ -129,7 +129,7 @@ const copy = {
 	claimBig: ["A cell needs its neighbors.", "一个格子要看它的邻居。"],
 	claimSub: ["Report total and breadth.", "合计与广度都要报告。"],
 	nextBig: ["Next: backtests", "下一课：回测"],
-	nextSub: ["testing a pattern without hindsight", "不带后见之明地检验模式"],
+	nextSub: ["testing a pattern, no hindsight", "不带后见之明地检验模式"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

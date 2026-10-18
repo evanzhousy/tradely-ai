@@ -182,7 +182,7 @@ const copy = {
 		"Next: connect your own AI agent",
 		"下一课：连接你自己的 AI 智能体",
 	],
-	nextSub: ["read-only tools, a key you control", "只读工具，由你掌控的密钥"],
+	nextSub: ["read-only tools, your own key", "只读工具，由你掌控的密钥"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({
