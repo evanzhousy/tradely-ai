@@ -1007,16 +1007,17 @@ function build(context: FilmContext) {
 	tl.to(world, { opacity: 0.22, duration: 0.3 }, 15.95);
 	tl.to(one("line-key"), { opacity: 0, duration: 0.3 }, 15.95);
 	// The dim chart clears the upward flight across its tangent and price label.
-	hide(one("s-head"), 16.1);
-	sink(16.1);
-	d.carry(slopeNumber, numCall, 16.25, {
+	hide(one("s-head"), 16.05);
+	sink(16.05);
+	d.carry(slopeNumber, numCall, 16.2, {
 		duration: 0.7,
 		arc: "y",
 		match: fixed2(CALL_DELTA),
 	});
-	tl.set(numCall, { scale: 1 }, 16.95);
-	// The completed number and definition settle at 17.0, 0.7 s before the put.
-	show(one("num-word"), 16.5);
+	tl.set(numCall, { scale: 1 }, 16.9);
+	// The completed number and definition settle at 16.9, a full quiet second before the
+	// put's first motion at 17.9.
+	show(one("num-word"), 16.4);
 
 	// ——— put: replace the complete proof while hidden ———
 	tl.addLabel("put", 17.7);
