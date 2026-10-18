@@ -38,7 +38,7 @@ import {
  * a stricter threshold and another session re-run the same question, ranking by premium
  * and admitting same-day expiries ask a new one.
  *
- *   open      0–4        "Change the inputs, keep the question"
+ *   open      0–4        "New inputs, same question"
  *   question  4–9.6      Min OI 200 → 1,000: what does the report show?
  *   draft     9.6–20.9   coherent last-run report; draft edit; Run: 1
  *   floors    20.9–32    defaults; floors at 0; 30 / 5 = 6.00, locked
@@ -124,7 +124,8 @@ function layout(width: number) {
 }
 
 const copy = {
-	title: ["Change the inputs, keep the question", "改输入，不改问题"],
+	// The card's title fits its 1.2 s; the lesson's full name returns as the claim.
+	title: ["New inputs, same question", "改输入，不改问题"],
 	titleSub: ["what a re-run does and doesn't", "重跑会做什么，不会做什么"],
 	qTag: ["Screener · Min OI", "筛选器 · 最低未平仓量"],
 	qLine: ["Before Run: how many contracts?", "运行前：报告显示多少份合约？"],
