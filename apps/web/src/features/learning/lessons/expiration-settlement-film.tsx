@@ -34,7 +34,8 @@ import {
  * the question is what exercising gets instead. The $7.40 flies onto its bar, $7.00 of
  * intrinsic value and $0.40 of time value, and the "?" becomes exercise's $7.00; on Oct 18
  * the time value melts and the two are equal. Then settlement: ALFA delivers 100 shares for
- * $9,500; an index pays cash, $2,500 at the official 5,025, not Thursday's 5,030. Then the
+ * $9,500; an index pays cash only, $2,500 from the writer to you with no shares back, at the
+ * official 5,025, not Thursday's 5,030. Then the
  * window: American any trading day, European only at expiry. The hero: a near-strike close
  * leaves the call in the money, and glowing brackets lock as it is exercised automatically;
  * the Monday account shows shares and strike cash due. Last, a writer:
@@ -44,7 +45,7 @@ import {
  *   question  4–8.8      Oct 4: sell at $7.40, or exercise?
  *   exit      8.8–17.5   labelled parts; Oct 18 equality before the answer
  *   settle    17.5–21.4  ALFA: 100 shares for $9,500
- *   cash      21.4–25.3  IDX 500: $2,500 at the official 5,025
+ *   cash      21.4–25.3  IDX 500: the same parties; $2,500 writer to you, no shares; official 5,025
  *   window    25.3–29.7  American trading days; European at expiry
  *   pin       29.7–35.05  the close minus strike makes a bracketed expiry value
  *   writer    35.05–40.6 settled close/after-hours pair, exercise, then Monday short shares
@@ -138,7 +139,7 @@ const copy = {
 	shares: ["100 ALFA", "100 股 ALFA"],
 	official: ["official settlement", "官方结算值"],
 	thursday: ["Not Thu close", "不计周四收盘"],
-	payout: ["writer pays", "义务方支付"],
+	noShares: ["no shares", "不交收股票"],
 	windowHead: [
 		"American: any session; European: expiry.",
 		"美式：交易日；欧式：仅到期日。",
@@ -462,14 +463,16 @@ function Scene({
 				))}
 				{(
 					[
-						[0, copy.cash, 1],
-						[1, copy.shares, -1],
+						[0, copy.cash, 1, "flow-0"],
+						[1, copy.shares, -1, "flow-1"],
+						// The index's cash only, writer to you: one arrow, no shares back.
+						[0.5, [usd(PAYS, 0), usd(PAYS, 0)], -1, "flow-index"],
 					] as const
-				).map(([k, label, dir]) => {
+				).map(([k, label, dir, name]) => {
 					const x0 = margin + L.partyW + 8;
 					const x1 = margin + room - L.partyW - 8;
 					return (
-						<g key={label[0]} data-f={`flow-${k}`}>
+						<g key={name} data-f={name}>
 							<path
 								d={
 									dir > 0
@@ -497,11 +500,26 @@ function Scene({
 								x={(x0 + x1) / 2}
 								y={flowY(k) - 8}
 								textAnchor="middle"
-								className="wt-film-num"
+								className={
+									name === "flow-index"
+										? `wt-film-num ${toneClass.focus}`
+										: "wt-film-num"
+								}
 								style={{ fontSize: text }}
 							>
 								{t(label)}
 							</text>
+							{name === "flow-index" && (
+								<text
+									x={(x0 + x1) / 2}
+									y={flowY(k) + text * 1.5}
+									textAnchor="middle"
+									className="wt-film-type wt-film-dim"
+									style={{ fontSize: T.small }}
+								>
+									{t(copy.noShares)}
+								</text>
+							)}
 						</g>
 					);
 				})}
@@ -512,7 +530,7 @@ function Scene({
 					<Word
 						name="c-official-label"
 						x={W / 2}
-						y={H * 0.34}
+						y={H * 0.6}
 						size={T.small}
 						className="wt-film-tag"
 					>
@@ -521,7 +539,7 @@ function Scene({
 					<Word
 						name="c-calculation"
 						x={W / 2}
-						y={H * 0.34 + T.num * 1.3}
+						y={H * 0.6 + T.num * 1.3}
 						size={T.head}
 						className="wt-film-num"
 					>
@@ -547,26 +565,6 @@ function Scene({
 					>
 						{count(INDEX_LAST)}
 					</Word>
-				</g>
-				<g data-f="c-pays">
-					<text
-						x={W / 2}
-						y={H * 0.6}
-						textAnchor="middle"
-						className="wt-film-tag"
-						style={{ fontSize: T.small }}
-					>
-						{t(copy.payout).toUpperCase()}
-					</text>
-					<text
-						x={W / 2}
-						y={H * 0.6 + T.big * 0.9}
-						textAnchor="middle"
-						className={`wt-film-num ${toneClass.focus}`}
-						style={{ fontSize: T.big * 0.8 }}
-					>
-						{usd(PAYS, 0)}
-					</text>
 				</g>
 			</g>
 
@@ -1050,14 +1048,15 @@ function build(context: FilmContext) {
 
 	tl.addLabel("cash", 21.4);
 	d.swap(heads[2], heads[3], 21.4);
-	hide(kids("shares"), 21.4);
-	// Keep the official calculation and result together; compare Thursday's close only
-	// after the combined proof has settled for a full second.
-	fade([one("c-official"), one("c-pays")], 21.7);
+	// The same two parties stay; only ALFA's exchange leaves. The index's payment arrives
+	// with its calculation: one arrow, writer to you, and no shares back. Thursday's close
+	// is compared only after that proof has settled for a full second.
+	hide([one("flow-0"), one("flow-1")], 21.4, 0.35, 0);
+	fade([one("c-official"), one("flow-index")], 21.7);
 	fade(one("c-thursday"), 23.2, 0.3);
 
 	tl.addLabel("window", 25.3);
-	hide([heads[3], ...kids("cash")], 25.3);
+	hide([heads[3], ...kids("shares"), ...kids("cash")], 25.3);
 	show(heads[4], 25.65);
 	fade(one("window-scaffold"), 25.65);
 	// Both rows are still by 26.15, one second before either eligibility set enters.
@@ -1113,8 +1112,8 @@ function build(context: FilmContext) {
 export const expirationSettlementFilm: Film = {
 	id: "expiration-settlement",
 	label: [
-		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement of the exercised 95 call in ${copy.shares[0]} shares for ${copy.cash[0]}, or in cash for IDX 500, ${usd(PAYS, 0)} at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours`,
-		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：行权的 95 看涨以 ${copy.cash[1]} 交收 ${copy.shares[1]}，IDX 500 以现金结算，按官方的 ${count(INDEX_SETTLES)} 支付 ${usd(PAYS, 0)}，而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，持有人行权后可能导致周一被指派`,
+		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement of the exercised 95 call in ${copy.shares[0]} shares for ${copy.cash[0]}, or in cash for IDX 500, ${usd(PAYS, 0)} paid by the writer to the holder with no shares delivered, at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours`,
+		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：行权的 95 看涨以 ${copy.cash[1]} 交收 ${copy.shares[1]}，IDX 500 以现金结算，由义务方向持有人支付 ${usd(PAYS, 0)}、不交收股票，按官方的 ${count(INDEX_SETTLES)} 而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，持有人行权后可能导致周一被指派`,
 	],
 	stage: "dark",
 	shots: [
