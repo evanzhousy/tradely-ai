@@ -191,6 +191,19 @@ export type AnalyticsEventMap = {
 		kind: "reach" | "answer";
 		attempts: number;
 	};
+	/** The learner pauses a film; `scene_id` is the shot on screen. */
+	visual_lesson_film_paused: VisualLessonEventProperties & {
+		rate: number;
+	};
+	/** The learner takes a film back, to an earlier shot or the start of this one. */
+	visual_lesson_scene_replayed: VisualLessonEventProperties & {
+		from_scene_id: string;
+	};
+	/** The learner changes a film's speed; `scene_id` is the shot on screen. */
+	visual_lesson_rate_changed: VisualLessonEventProperties & {
+		from_rate: number;
+		to_rate: number;
+	};
 	tradingflow_link_opened: Partial<LabEventProperties> & {
 		surface: "header" | "home_hero" | "lesson_practice" | "lesson_lab";
 		lesson_id?: string;
@@ -287,6 +300,9 @@ export const ANALYTICS_EVENT_NAMES = {
 	visual_lesson_interacted: true,
 	visual_lesson_predicted: true,
 	visual_lesson_task_completed: true,
+	visual_lesson_film_paused: true,
+	visual_lesson_scene_replayed: true,
+	visual_lesson_rate_changed: true,
 	tradingflow_link_opened: true,
 	lesson_opened: true,
 	lesson_video_started: true,
@@ -386,6 +402,28 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 		"surface",
 		"kind",
 		"attempts",
+	],
+	visual_lesson_film_paused: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"surface",
+		"rate",
+	],
+	visual_lesson_scene_replayed: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"surface",
+		"from_scene_id",
+	],
+	visual_lesson_rate_changed: [
+		"lesson_id",
+		"scene_id",
+		"locale",
+		"surface",
+		"from_rate",
+		"to_rate",
 	],
 	tradingflow_link_opened: ["surface", "tool", ...labPropertyKeys],
 	lesson_opened: [

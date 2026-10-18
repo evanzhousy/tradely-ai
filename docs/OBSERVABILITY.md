@@ -117,7 +117,7 @@ The primary learning journey is:
 
 1. `$pageview` and `page_viewed`
 2. `lesson_opened`
-3. `visual_lesson_scene_started`
+3. `visual_lesson_scene_started`, with `visual_lesson_film_paused`, `visual_lesson_scene_replayed` and `visual_lesson_rate_changed` where a learner pauses a film, takes it back or changes its speed
 4. `visual_lesson_predicted` when the learner answers a scene's prediction, by choice or typed number, with whether it was right
 5. `visual_lesson_explored` when the learner directly manipulates a scene
 6. `visual_lesson_task_completed` when the learner reaches or answers a scene's explore task, with the attempts it took

@@ -26,6 +26,7 @@ import {
 } from "react";
 import { useAnalytics } from "@/analytics/context";
 import type {
+	AnalyticsEventMap,
 	VisualLessonPlaybackMode,
 	VisualLessonSurface,
 } from "@/analytics/events";
@@ -153,6 +154,28 @@ export function Player({
 		[lessonId, recordVisual],
 	);
 
+	/**
+	 * Film pacing, for finding the shots learners can't follow: a pause, a replay and a speed
+	 * change. A pause counts once a shot and a replay once a pair of shots, for the visit.
+	 */
+	const paced = useRef(new Set<string>());
+	const pace = useCallback(
+		<
+			Event extends
+				| "visual_lesson_film_paused"
+				| "visual_lesson_scene_replayed"
+				| "visual_lesson_rate_changed",
+		>(
+			event: Event,
+			properties: AnalyticsEventMap[Event],
+			once?: string,
+		) => {
+			if (once && paced.current.has(once)) return;
+			if (capture(event, properties) && once) paced.current.add(once);
+		},
+		[capture],
+	);
+
 	/** The start and end of a shot on the timeline. */
 	const bounds = useCallback(
 		(tl: gsap.core.Timeline, index: number) => {
@@ -237,6 +260,26 @@ export function Player({
 		(index: number, how: VisualLessonPlaybackMode) => {
 			const tl = timeline.current;
 			const next = Math.max(0, Math.min(last, index));
+			// Taken back, to an earlier shot or the start of this one: the film went too fast.
+			if (
+				how === "manual" &&
+				lessonId &&
+				tl &&
+				bounds(tl, next).start < time.current - 0.25
+			) {
+				const from = shots[shotRef.current].id;
+				pace(
+					"visual_lesson_scene_replayed",
+					{
+						lesson_id: lessonId,
+						scene_id: shots[next].id,
+						locale,
+						surface: "film",
+						from_scene_id: from,
+					},
+					`${from}>${shots[next].id}`,
+				);
+			}
 			shotRef.current = next;
 			setShot(next);
 			setEnded(false);
@@ -248,7 +291,7 @@ export function Player({
 			time.current = start;
 			paint(tl, start);
 		},
-		[bounds, last, paint, record, shots],
+		[bounds, last, lessonId, locale, pace, paint, record, shots],
 	);
 
 	// Playing: the timeline runs. Reduced motion: each shot shows its last frame for as
@@ -346,6 +389,15 @@ export function Player({
 
 	const cycleRate = () => {
 		const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
+		if (lessonId)
+			pace("visual_lesson_rate_changed", {
+				lesson_id: lessonId,
+				scene_id: shots[shotRef.current].id,
+				locale,
+				surface: "film",
+				from_rate: rate,
+				to_rate: next,
+			});
 		setRate(next);
 		writeRate(next);
 	};
@@ -525,7 +577,21 @@ export function Player({
 						aria-pressed={!ended && playing}
 						onClick={() => {
 							if (ended) replay();
-							else setPlaying((value) => !value);
+							else {
+								if (playing && lessonId)
+									pace(
+										"visual_lesson_film_paused",
+										{
+											lesson_id: lessonId,
+											scene_id: shots[shot].id,
+											locale,
+											surface: "film",
+											rate,
+										},
+										shots[shot].id,
+									);
+								setPlaying((value) => !value);
+							}
 						}}
 					>
 						{ended ? (

@@ -311,6 +311,15 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 			event: EventName,
 			properties: AnalyticsEventMap[EventName],
 		): boolean => {
+			// In development, every attempted event is kept on the page, before consent, so a
+			// browser check can read what an interaction records without sending anything.
+			if (import.meta.env.DEV) {
+				const page = window as Window & {
+					__tradelyEvents?: { event: string; properties: unknown }[];
+				};
+				page.__tradelyEvents ??= [];
+				page.__tradelyEvents.push({ event, properties: { ...properties } });
+			}
 			if (consentRef.current !== "granted" || doNotTrackEnabled()) return false;
 			const client = clientRef.current;
 			let postHogCaptured =
