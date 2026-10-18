@@ -166,7 +166,7 @@ const copy = {
 		"平价连接的是同一时刻的价格。",
 	],
 	claimSub: [
-		"For late reports, use execution time, not arrival time.",
+		"Late reports: use execution time, not arrival.",
 		"延迟报告看成交时刻，而非接收时刻。",
 	],
 	nextBig: ["Next: expiration", "下一课：到期"],
