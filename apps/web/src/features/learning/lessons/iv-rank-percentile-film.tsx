@@ -120,6 +120,18 @@ const copy = {
 	],
 	gapHead: ["A year with missing history.", "一年中有历史缺失。"],
 	gapHeadShort: ["A year with missing history.", "一年中有历史缺失。"],
+	oCoverage: [
+		`${year.below} of ${year.n} weeks; still ${noShock.below} of ${noShock.n}.`,
+		`${year.n} 周中有 ${year.below} 周；${noShock.n} 周中仍有 ${noShock.below} 周。`,
+	],
+	sProof: [
+		`Percentile: ${recent.n}, ${pct(recent.percentile)}`,
+		`百分位：${recent.n} 周，${pct(recent.percentile)}`,
+	],
+	gProof: [
+		`Percentile: ${gapped.n}, ${pct(gapped.percentile)}`,
+		`百分位：${gapped.n} 周，${pct(gapped.percentile)}`,
+	],
 	rangeLabel: ["IV range · points", "IV 区间 · 百分点"],
 	rankNote: ["Rank: ", "Rank："],
 	rankWas: ["rank", "Rank"],
@@ -171,10 +183,14 @@ function Scene({
 	);
 	const formula = (name: string, text: string, focusTone: string) => {
 		const size = Math.min(T.head * 1.2, (room / (text.length * 0.6)) * 0.98);
-		const labelAt = text.indexOf(":");
-		const equalsAt = text.lastIndexOf("=");
+		const labelAt = Math.max(text.indexOf(":"), text.indexOf("："));
+		const splitAt = Math.max(
+			text.lastIndexOf("="),
+			text.lastIndexOf(","),
+			text.lastIndexOf("，"),
+		);
 		const label = labelAt >= 0 ? text.slice(0, labelAt + 1) : "";
-		const operands = text.slice(labelAt >= 0 ? labelAt + 1 : 0, equalsAt + 1);
+		const operands = text.slice(labelAt >= 0 ? labelAt + 1 : 0, splitAt + 1);
 		return (
 			<Word
 				name={name}
@@ -186,7 +202,7 @@ function Scene({
 			>
 				{label && <tspan className={focusTone}>{label}</tspan>}
 				{operands}
-				<tspan className={focusTone}>{text.slice(equalsAt + 1)}</tspan>
+				<tspan className={focusTone}>{text.slice(splitAt + 1)}</tspan>
 			</Word>
 		);
 	};
@@ -353,10 +369,10 @@ function Scene({
 			<g data-f="q">
 				{(
 					[
-						[copy.qTagRank, pct(year.rank), ""],
-						[copy.qTagPct, pct(year.percentile), "wt-film-accent"],
+						[copy.qTagRank, pct(year.rank)],
+						[copy.qTagPct, pct(year.percentile)],
 					] as const
-				).map(([tag, num, tone], i) => (
+				).map(([tag, num], i) => (
 					<g key={tag[0]}>
 						<Word
 							name={`q-tag-${i}`}
@@ -372,7 +388,7 @@ function Scene({
 							x={W * L.pair[i]}
 							y={H * 0.3 + T.big * 0.95}
 							size={T.big * 0.9}
-							className={`wt-film-num ${tone}`}
+							className="wt-film-num"
 						>
 							{num}
 						</Word>
@@ -464,19 +480,18 @@ function Scene({
 					</g>
 				))}
 			</g>
-			<Word
+			<Lines
 				name="o-coverage"
+				text={t(copy.oCoverage)}
 				x={W / 2}
 				y={H * 0.79}
 				size={T.body}
+				maxWidth={room}
+				anchor="middle"
 				className="wt-film-num"
-			>{`${year.below}/${year.n} → /${noShock.n}`}</Word>
+			/>
 			{headline("s-head", copy.sampleHead, copy.sampleHeadShort)}
-			{formula(
-				"s-proof",
-				`${t(copy.pctWas)}: ${recent.below}/${recent.n} = ${pct(recent.percentile)}`,
-				toneClass.focus,
-			)}
+			{formula("s-proof", t(copy.sProof), toneClass.focus)}
 			<Word
 				name="s-note"
 				x={L.margin}
@@ -488,11 +503,7 @@ function Scene({
 				{`${t(copy.rankNote)}${rankText(recent.rank, locale)}`}
 			</Word>
 			{headline("g-head", copy.gapHead, copy.gapHeadShort)}
-			{formula(
-				"g-proof",
-				`${t(copy.pctWas)}: ${gapped.below}/${gapped.n} = ${pct(gapped.percentile)}`,
-				toneClass.focus,
-			)}
+			{formula("g-proof", t(copy.gProof), toneClass.focus)}
 			<g data-f="claim">
 				<Lines
 					name="c-big"
@@ -542,6 +553,7 @@ function build(context: FilmContext) {
 	const flat = (name: string) =>
 		kids(name).flatMap((el) => (el.tagName === "g" ? [...el.children] : [el]));
 	const bars = alfaIv30Weekly.map((_, i) => one(`bar-${i}`));
+	const barStagger = 0.3 / Math.max(bars.length - 1, 1);
 	const below = bars.filter((_, i) => alfaIv30Weekly[i] < TODAY);
 	const above = bars.filter((_, i) => alfaIv30Weekly[i] >= TODAY);
 	const rank = one<SVGTextElement>("bracket-rank");
@@ -675,14 +687,15 @@ function build(context: FilmContext) {
 				duration: 0.4,
 				ease: "power3.out",
 			},
-			10.3 + i * 0.035,
+			11.7 + i * barStagger,
 		);
 	});
+	// The scaffold settles at 10.7; leave it still for a full second before the bars move.
 	tl.fromTo(
 		one("today"),
 		{ opacity: 0, x: -20 },
-		{ opacity: 1, x: 0, duration: 0.6 },
-		12.0,
+		{ opacity: 1, x: 0, duration: 0.4 },
+		12.4,
 	);
 
 	// ——— rank: between the extremes ———
@@ -804,19 +817,24 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.3 },
 		33.35,
 	);
-	// Cut away before restoring only the observed weeks; the shock remains excluded.
-	// This statement remains true for both samples, so retain its full reading hold.
+	// Keep the shared sample visible through its transition to the gapped year.
 	hide([one("s-head"), one("s-proof")], 35.85);
-	sink(35.85);
-	show(one("g-head"), 36.25, "above");
-	const observed = bars.filter((_, i) => i < GAP.from || i > GAP.to);
-	tl.set(observed, { opacity: 1 }, 36.25);
-	tl.set(bars.slice(GAP.from, GAP.to + 1), { opacity: 0 }, 36.25);
-	tl.set([one("gap"), one("gap-label")], { opacity: 1 }, 36.25);
-	// The history window is replaced under the cut; the range itself is not the lesson.
-	bracketSet(gapped, 36.25, true);
-	tl.set(one("depth"), { scale: 1 }, 36.25);
-	tl.to(one("depth"), { opacity: 1, duration: 0.3 }, 36.55);
+	show(one("g-head"), 36.2, "above");
+	const restored = bars.filter(
+		(_, i) => i < WEEKS - RECENT && (i < GAP.from || i > GAP.to),
+	);
+	// Add the newly observed weeks and hatch the missing span inside the settled chart.
+	tl.to(one("bracket"), { opacity: 0, duration: 0.3 }, 36.25);
+	tl.fromTo(restored, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 36.55);
+	tl.fromTo(
+		[one("gap"), one("gap-label")],
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3 },
+		36.55,
+	);
+	// Set the range at the same moment the missing-history evidence enters.
+	bracketSet(gapped, 36.55, true);
+	tl.to(one("bracket"), { opacity: 1, duration: 0.3 }, 36.55);
 	tl.fromTo(
 		one("g-proof"),
 		{ opacity: 0 },
