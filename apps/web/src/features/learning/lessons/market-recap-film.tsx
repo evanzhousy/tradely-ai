@@ -41,8 +41,8 @@ import {
  *
  *   open      0–4         "Recaps"
  *   question  4–8.6       a premium claim over a contracts chart?
- *   match     8.6–20.55   build contracts, then compare premium
- *   axis      20.55–30.7  hero: from zero, nearly equal; from 480, 2.4 to 1
+ *   match     8.6–20.75   the claim's 105 to its label; build contracts, then compare premium
+ *   axis      20.75–30.7  hero: from zero, nearly equal; from 480, 2.4 to 1
  *   compose   30.7–41.1   chart and evidence record; repairs; completed recap
  *   claim     41.1–45.4   claims your evidence supports
  *   next      45.4–47.4   Next: audits
@@ -916,7 +916,7 @@ function build(context: FilmContext) {
 		kids("frame").filter((el) => el !== claimStrike),
 		9.2,
 	);
-	tl.set(claimStrike, { attr: { class: "wt-film-num wt-film-dim" } }, 10.7);
+	tl.set(claimStrike, { attr: { class: "wt-film-num wt-film-dim" } }, 11.8);
 	show(one("unit-contracts"), 9.4);
 	bars.forEach((bar, i) => {
 		const height = Number(bar.getAttribute("height"));
@@ -925,18 +925,18 @@ function build(context: FilmContext) {
 			bar,
 			{ opacity: 1, attr: { y: L.base, height: 0 } },
 			{ attr: { y, height }, duration: 0.6, ease: "power2.out" },
-			9.6 + i * 0.12,
+			10.7 + i * 0.12,
 		);
 	});
-	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 10.7);
-	show(vals("contracts"), 10.7);
-	show(matchAnswer, 12.2);
+	tl.set(bars[leadIndex(leader)], { attr: { "data-tone": "total" } }, 11.8);
+	show(vals("contracts"), 11.8);
+	show(matchAnswer, 13.3);
 	const premiumAt = changeUnit(
 		one("unit-contracts"),
 		one("unit-premium"),
-		13.5,
+		14.6,
 	);
-	hide(vals("contracts"), 13.5, 0.3);
+	hide(vals("contracts"), 14.6, 0.3);
 	barsTo("premium", 0, chartMax("premium"), premiumAt, vals("premium"));
 	tl.set(
 		bars[leadIndex(leader)],
@@ -958,19 +958,19 @@ function build(context: FilmContext) {
 		);
 	});
 	show(vals("premium"), premiumAt + 0.85);
-	show(heads[1], 16.15);
+	show(heads[1], 17.25);
 	// An after-beat draws attention to the premium leader during the reading hold.
-	d.trace(one<SVGPathElement>("premium-leader-rule"), 17.65, { duration: 0.5 });
+	d.trace(one<SVGPathElement>("premium-leader-rule"), 18.75, { duration: 0.5 });
 
 	// ——— axis: the hero. The same contracts from 0, then from 480. ———
-	tl.addLabel("axis", 20.55);
-	d.swap([heads[0], matchAnswer, heads[1]], heads[2], 20.55);
-	hide(vals("premium"), 20.55, 0.3);
-	hide(one("premium-leader-rule"), 20.55);
+	tl.addLabel("axis", 20.75);
+	d.swap([heads[0], matchAnswer, heads[1]], heads[2], 20.75);
+	hide(vals("premium"), 20.75, 0.3);
+	hide(one("premium-leader-rule"), 20.75);
 	const contractsAt = changeUnit(
 		one("unit-premium"),
 		one("unit-contracts"),
-		20.55,
+		20.75,
 	);
 	barsTo("contracts", 0, CONTRACTS_MAX, contractsAt, vals("contracts"));
 	tl.set(
@@ -985,7 +985,7 @@ function build(context: FilmContext) {
 	);
 	show(vals("contracts"), contractsAt + 0.9);
 	// The cut axis settles 1.05 s before the lock.
-	const cutAt = changeUnit(one("unit-contracts"), one("unit-cut"), 24.75);
+	const cutAt = changeUnit(one("unit-contracts"), one("unit-cut"), 24.95);
 	barsTo(
 		"contracts",
 		CUT,
@@ -995,12 +995,13 @@ function build(context: FilmContext) {
 	);
 	// Round the two bars the cut axis pulls apart, with their figures.
 	const pair = [leadIndex(leader), leadIndex(premiumLeader)];
-	d.lock(lockBars, 27.2, {
+	d.lock(lockBars, 27.4, {
 		around: pair.flatMap((i) => [bars[i], vals("contracts")[i]]),
 		// Close in at the foot, where the strikes are labelled.
 		pad: 3,
 	});
-	tl.addLabel("hero-lock", 27.2);
+	tl.addLabel("hero-lock", 27.4);
+	// The answer arrives just before the lock so it keeps its full 3.5 s before the cut.
 	show(heads[3], 27.2);
 
 	// ——— compose: the headline and caption ———
