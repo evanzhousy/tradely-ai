@@ -39,8 +39,8 @@ import {
  *   question  4–8.6      5 at $2.00, 500 at $2.15: average $2.075?
  *   row       8.6–13.6   two prints; settled 505 contracts and 2 trades
  *   feed      13.6–25    six incremental states; preserve the 2.1 s final inspection hold
- *   average   25–34.4    carried contributions → sum → fraction; lock at 31.0
- *   leg       34.4–40.6 excluded 110 call: 500 at $0.90; trace the 105-call boundary
+ *   average   25–34.6    carried contributions → sum → fraction; lock at 31.0
+ *   leg       34.6–40.6 excluded 110 call: 500 at $0.90; trace the 105-call boundary
  *   claim     40.6–45    one row, many prints; one trade, many messages
  *   next      45–47.5    Next: execution conditions
  */
@@ -873,8 +873,9 @@ function build(context: FilmContext) {
 
 	// The 105-call calculation stays intact; the other call sits outside its boundary.
 	// Brackets settle at 31.45 and stand for the original 3.15 s before leaving.
-	tl.addLabel("leg", 34.4);
-	d.swap([one("a-head"), one("a2-head")], one("x-head"), 34.4);
+	// The headlines leave with the lock, once the hero's stand is over.
+	tl.addLabel("leg", 34.6);
+	d.swap([one("a-head"), one("a2-head")], one("x-head"), 34.6);
 	hide(lockAverage, 34.6);
 	fade(one("excluded-row"), 35.5);
 	d.trace(one<SVGPathElement>("proof-boundary"), 37.0, { duration: 0.8 });
