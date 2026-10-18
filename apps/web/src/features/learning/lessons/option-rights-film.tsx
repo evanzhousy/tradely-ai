@@ -340,13 +340,6 @@ function Scene({
 					}),
 				)}
 			</g>
-			<Brackets
-				name="lock-cell"
-				x={L.cellX(0) - 5}
-				y={L.cellY(0) - 5}
-				width={L.cellW * 2 + 22}
-				height={L.cellH + 10}
-			/>
 			<Brackets name="lock-you" />
 
 			{/* Open or close. */}
@@ -601,7 +594,6 @@ function build(context: FilmContext) {
 	const nodes = ["n-you", "n-clear", ...writers.map((w) => `n-${w.id}`)].map(
 		one,
 	);
-	const lockCell = g("lock-cell");
 	const lockSearch = g("lock-search");
 	const lockPick = g("lock-pick");
 
@@ -610,7 +602,6 @@ function build(context: FilmContext) {
 		...heads,
 		...flat("matrix").filter((el) => el.tagName === "text"),
 		...order.map((key) => cell(key)),
-		lockCell,
 		g("lock-you"),
 		...tracks,
 		...moves,
@@ -649,23 +640,10 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.5, ease: "power3.out" },
 		10.7,
 	);
-	// Explicit unit scale also restores this first row after a backwards seek from
-	// the later lock, whose fromTo initializes its enlarged path at build time.
-	tl.fromTo(
-		lockCell,
-		{ opacity: 0, scale: 1 },
-		{ opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" },
-		10.7,
-	);
-	// Preserve the 1.05 s holder-row quiet and 1.2 s writer-row quiet before dimming.
-	d.lock(lockCell, 12.25, {
-		around: [box("call-short"), box("put-short")],
-		pad: 5,
-	});
-	// Yours: the short put. The others step back.
-	fade(lockCell, 13.9);
-	fade(order.filter((key) => key !== "put-short").map(cell), 14, 0.35);
-	d.lock(g("lock-you"), 14.2, { around: box("put-short"), pad: 5 });
+	// The four cards read together for a second after they settle at 11.2. Then yours, the
+	// short put, is locked directly while the other three step back.
+	fade(order.filter((key) => key !== "put-short").map(cell), 12.25, 0.35);
+	d.lock(g("lock-you"), 12.25, { around: box("put-short"), pad: 5 });
 
 	// ——— track: the same trade opens or closes ———
 	tl.addLabel("track", 16.6);
