@@ -289,6 +289,17 @@ function Scene({
 				/>
 			</g>
 
+			{/* The claim's strike, laid over its place in the question at build time: it carries
+			    to the chart's own label as the scaffold arrives. */}
+			<text
+				data-f="q-strike"
+				x={W / 2}
+				y={H * 0.43}
+				className="wt-film-type wt-film-accent"
+				style={{ fontSize: T.head }}
+			>
+				{premiumLeader.strike}
+			</text>
 			{/* The chart: one quantity, then another, then a cut axis. */}
 			{headline("m-head", copy.mHead)}
 			{/* Historical answers arrive only after their quantity has settled. */}
@@ -342,6 +353,7 @@ function Scene({
 				{ROWS.map((row, i) => (
 					<text
 						key={row.id}
+						data-f={`strike-${row.strike}`}
 						x={L.barX(i) + L.barW / 2}
 						y={L.base + T.small * 1.7}
 						textAnchor="middle"
@@ -839,6 +851,7 @@ function build(context: FilmContext) {
 
 	d.hidden([
 		...flat("q"),
+		one("q-strike"),
 		...heads,
 		...kids("frame"),
 		one("unit-contracts"),
@@ -872,9 +885,38 @@ function build(context: FilmContext) {
 
 	// ——— match: the quantity on the chart ———
 	tl.addLabel("match", 8.6);
-	hide(flat("q"), 8.6);
+	hide(
+		flat("q").filter((el) => el !== one("q-line")),
+		8.6,
+	);
+	tl.to(one("q-line"), { opacity: 0, duration: 0.35, ease: "power2.out" }, 8.6);
 	show(heads[0], 8.8);
-	show(kids("frame"), 9.2);
+	// The question's strike carries to its own label as the scaffold arrives: measured over
+	// the question's own glyphs, it lands as the labels come in, in the claim's colour until
+	// the contracts leader is marked.
+	const qLine = one<SVGTextElement>("q-line");
+	const qStrike = one<SVGTextElement>("q-strike");
+	const claimStrike = one<SVGTextElement>(`strike-${premiumLeader.strike}`);
+	const strikeAt = (qLine.textContent ?? "").indexOf(
+		String(premiumLeader.strike),
+	);
+	if (
+		strikeAt >= 0 &&
+		qLine.getNumberOfChars() === (qLine.textContent ?? "").length
+	) {
+		const start = qLine.getStartPositionOfChar(strikeAt);
+		qStrike.setAttribute("x", String(start.x));
+		qStrike.setAttribute("y", String(start.y));
+	}
+	tl.set(claimStrike, { attr: { class: "wt-film-num wt-film-accent" } }, 0);
+	// The claim's sentence fades fast; its strike leaves it once it is half gone and lands on
+	// its label as the scaffold arrives.
+	d.carry(qStrike, claimStrike, 8.7, { duration: 0.5, arc: "x" });
+	show(
+		kids("frame").filter((el) => el !== claimStrike),
+		9.2,
+	);
+	tl.set(claimStrike, { attr: { class: "wt-film-num wt-film-dim" } }, 10.7);
 	show(one("unit-contracts"), 9.4);
 	bars.forEach((bar, i) => {
 		const height = Number(bar.getAttribute("height"));
