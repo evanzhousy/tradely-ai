@@ -41,7 +41,7 @@ import {
  * a grid that drifts, slowly, the whole way through.
  *
  *   open      0–4        "Delta" wipes on; the title shrinks into the corner as a tag
- *   question  4–9.0      ALFA $100 → $101: the call moves by about… ?
+ *   question  4–9.0      ALFA $100 → $101: the call moves about… ?
  *   slope     9.0–17.7   the chart rises from the depth; push in; the $1 step, the $0.52
  *                        rise; carry 0.52 into its definition, full frame
  *   put       17.7–23.7  the call proof leaves; its hidden geometry swaps to the put,
@@ -132,7 +132,7 @@ const copy = {
 	titleSub: ["a local price sensitivity", "局部的价格敏感度"],
 	qPrice: [`ALFA ${stock(SPOT)}`, `ALFA ${stock(SPOT)}`],
 	qNext: [`→ ${stock(SPOT + 1)}`, `→ ${stock(SPOT + 1)}`],
-	qLine: ["The Oct 18 100 call moves by about", "10月18日 100 看涨约变动"],
+	qLine: ["The Oct 18 100 call moves about", "10月18日 100 看涨约变动"],
 	perDollar: [
 		`per $1 of ALFA, at ${stock(SPOT)}`,
 		`ALFA 在 ${stock(SPOT)} 时，每变动 $1`,
