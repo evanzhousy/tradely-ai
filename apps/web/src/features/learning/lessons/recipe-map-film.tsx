@@ -112,7 +112,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["Read a recipe like an auditor", "像审计员一样读 Recipe"],
-	titleSub: ["trace it, label it, count it", "追溯、标注、计数"],
+	titleSub: ["trace, label, count", "追溯、标注、计数"],
 	qTag: ["Bottom line · Monday's run", "核心结论 · 周一的运行"],
 	qLine: ["Where does this sentence come from?", "这句话从哪里来？"],
 	mapHead: [
