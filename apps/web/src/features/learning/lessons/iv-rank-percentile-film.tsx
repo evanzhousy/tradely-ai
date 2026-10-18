@@ -825,7 +825,9 @@ function build(context: FilmContext) {
 	);
 	// Add the newly observed weeks and hatch the missing span inside the settled chart.
 	tl.to(one("bracket"), { opacity: 0, duration: 0.3 }, 36.25);
-	tl.fromTo(restored, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 36.55);
+	// A `to` from the hidden state set at 31.0: a fromTo would render its start at build time
+	// and hide these weeks through the year, rank and percentile beats.
+	tl.to(restored, { opacity: 1, duration: 0.3 }, 36.55);
 	tl.fromTo(
 		[one("gap"), one("gap-label")],
 		{ opacity: 0 },
