@@ -473,20 +473,34 @@ function Scene({
 			})}
 			{TRADES.map((trade, i) => {
 				const labelWidth = trade.time.length * text * 0.6;
-				// Route around the ruler and legend, clear of the phone's 12 px edge.
-				const routeX = Math.max(12 + labelWidth / 2, margin - 12);
+				// Route down the stage's own edge, 12 px in: clear of the axis labels, the tape's
+				// header and the earlier rows' times, which all start at the margin.
+				const routeX = 12 + labelWidth / 2;
+				// The first waypoint keeps the print label's own height (see the labels above).
+				const labelY = L.rulerY - (trade.id === "t3" ? 46 : 22);
 				return (
-					<text
-						key={trade.id}
-						data-f={`route-${trade.id}`}
-						x={routeX}
-						y={L.tapeY + T.small + (i + 1) * L.rowStep}
-						textAnchor="middle"
-						className="wt-film-num wt-film-accent"
-						style={{ fontSize: text }}
-					>
-						{trade.time}
-					</text>
+					<g key={trade.id}>
+						<text
+							data-f={`route-up-${trade.id}`}
+							x={routeX}
+							y={labelY}
+							textAnchor="middle"
+							className="wt-film-num wt-film-accent"
+							style={{ fontSize: text }}
+						>
+							{trade.time}
+						</text>
+						<text
+							data-f={`route-${trade.id}`}
+							x={routeX}
+							y={L.tapeY + T.small + (i + 1) * L.rowStep}
+							textAnchor="middle"
+							className="wt-film-num wt-film-accent"
+							style={{ fontSize: text }}
+						>
+							{trade.time}
+						</text>
+					</g>
 				);
 			})}
 			<text
@@ -856,33 +870,41 @@ function build(context: FilmContext) {
 	const rowTimes = TRADES.map((trade) =>
 		one<SVGTextElement>(`row-${trade.id}-time`),
 	);
-	const routes = TRADES.map((trade) =>
+	const routes = TRADES.flatMap((trade) => [
+		one<SVGTextElement>(`route-up-${trade.id}`),
 		one<SVGTextElement>(`route-${trade.id}`),
-	);
+	]);
 	const refs = [0, 1, 2, 3].map((i) => one(`ref-${i}`));
 	const claimRows = [0, 1, 2, 3].map((i) => one(`claim-${i}`));
 	const lockSide = one<SVGGraphicsElement>("lock-side");
 	const carryPrintToTape = (id: TradeId, at: number) => {
 		const trade = tradeById(id);
-		const firstLeg = L.narrow ? 0.5 : 0.6;
-		const handoff = 0.1;
-		// The first leg stays left of the ruler; the short second leg enters its time cell.
+		if (L.narrow) {
+			// A phone has no lane clear of the legend and the tape: the row arrives with its
+			// time, and the point's label leaves a second later, once both have been read.
+			reveal(one(`row-${id}-time`), at);
+			tl.to(one(`pl-${id}`), { opacity: 0, duration: 0.3 }, at + 1);
+			return;
+		}
+		// Across at the label's own height, down the stage's edge, then into the time cell:
+		// three straight legs that cross no other type.
 		d.carry(
 			one<SVGGraphicsElement>(`pl-${id}`),
-			one<SVGGraphicsElement>(`route-${id}`),
+			one<SVGGraphicsElement>(`route-up-${id}`),
 			at,
-			{
-				duration: firstLeg,
-				arc: "x",
-				match: trade.time,
-				reveal: false,
-			},
+			{ duration: 0.3, arc: "x", match: trade.time, reveal: false },
+		);
+		d.carry(
+			one<SVGGraphicsElement>(`route-up-${id}`),
+			one<SVGGraphicsElement>(`route-${id}`),
+			at + 0.3,
+			{ duration: 0.3, arc: "y", match: trade.time, reveal: false },
 		);
 		d.carry(
 			one<SVGGraphicsElement>(`route-${id}`),
 			one<SVGGraphicsElement>(`row-${id}-time`),
-			at + firstLeg,
-			{ duration: handoff, arc: "x", match: trade.time },
+			at + 0.6,
+			{ duration: 0.1, arc: "x", match: trade.time },
 		);
 	};
 	const first = quoteAt("t1");
