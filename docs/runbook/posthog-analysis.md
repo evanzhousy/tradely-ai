@@ -39,6 +39,15 @@ need their own proof.
   33 versus 34 sessions) before mixing denominators. Current views, visitors, and
   sessions reconcile; that does not resolve the historical discrepancy.
 
+2026-10-18 film baseline (read-only; the connector opened on project 300646 and
+was switched to `582920` first). Last 30 days, production, internal users
+excluded, unique people: 12 consenting visitors, 8 lesson openers, 2 film viewers,
+1 film finish, 0 playground openers. Five films had one viewer each. The film
+pacing events (`visual_lesson_film_paused`, `visual_lesson_scene_replayed`,
+`visual_lesson_rate_changed`, commit 697ec456) are live in the production bundle
+and had no events yet. Per-shot pacing needs tens of viewers per film; until then
+"Film pacing" reports a measurement gap, not shot rankings.
+
 ## Recommended Invocation
 
 ```text
