@@ -86,7 +86,8 @@ function layout(width: number) {
 	const kpiY = H * 0.27;
 	const kpiH = H * (narrow ? 0.15 : 0.12);
 	const rowH = H * (narrow ? 0.07 : 0.068);
-	const tableY = kpiY + kpiH + H * (narrow ? 0.03 : 0.05);
+	// Room between the key figures and the table for the table's "Top 3" label.
+	const tableY = kpiY + kpiH + H * (narrow ? 0.055 : 0.05);
 	return {
 		...frame,
 		colW,
@@ -116,12 +117,12 @@ const copy = {
 	qTag: ["Bottom line · Monday's run", "核心结论 · 周一的运行"],
 	qLine: ["Where does this sentence come from?", "这句话从哪里来？"],
 	mapHead: [
-		"Trace inputs through live data to cells.",
-		"追溯输入经实时数据到单元格。",
+		"Trace the Bottom line back to its inputs.",
+		"把核心结论追溯回它的输入。",
 	],
 	mapHeadShort: [
-		"Trace inputs through live data to cells.",
-		"追溯输入经实时数据到单元格。",
+		"Trace the Bottom line back to its inputs.",
+		"把核心结论追溯回它的输入。",
 	],
 	takeHead: ["The Takeaways have no line in.", "要点没有任何输入线。"],
 	takeHeadShort: ["Takeaways: no line in.", "要点：没有输入线。"],
@@ -742,10 +743,11 @@ function Scene({
 			/>
 			<Brackets name="lock-evidence" glow />
 			{headline("p-head", copy.tableHead, copy.tableHeadShort)}
+			{/* The table's own label, directly above its head: what the loaded rows are. */}
 			<Word
 				name="top-three"
 				x={margin}
-				y={L.kpiY - T.small * 1.2}
+				y={L.tableY - T.small * 0.5}
 				size={T.small}
 				anchor="start"
 				className="wt-film-tag"
@@ -1000,12 +1002,18 @@ function build(context: FilmContext) {
 	rows.slice(TOP_N).forEach((row, i) => {
 		show(row, 36.25 + i * 0.2);
 	});
-	show(
-		kids("screen").filter((el) =>
-			el.getAttribute("data-f")?.startsWith("kpi-"),
-		),
+	// The count that matters, contracts flagged, comes in at full strength; the screen's other
+	// key figures come in stepped back, so nothing competes with five flagged against three
+	// loaded.
+	const kpiCards = kids("screen").filter((el) =>
+		el.getAttribute("data-f")?.startsWith("kpi-"),
+	);
+	show(kpiCards[0], 36.6, "above");
+	tl.fromTo(
+		kpiCards.slice(1),
+		{ opacity: 0, y: -14 },
+		{ opacity: 0.35, y: 0, duration: 0.5 },
 		36.6,
-		"above",
 	);
 	// Cut: the claim.
 	hide([one("x-head"), one("top-three")], 40.1);
