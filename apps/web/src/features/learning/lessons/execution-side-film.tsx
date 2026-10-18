@@ -136,7 +136,7 @@ const verb = (effect: "open" | "close", buy: boolean): Copy =>
 
 const copy = {
 	title: ["Execution side", "成交位置"],
-	titleSub: ["where a trade printed against the quote", "成交价相对报价的位置"],
+	titleSub: ["a print against its quote", "成交价相对报价的位置"],
 	qTag: [
 		`${quoteAt("t2").time.slice(0, 5)} · Oct 18 100 call`,
 		`${quoteAt("t2").time.slice(0, 5)} · 10月18日 100 看涨`,
@@ -812,7 +812,10 @@ function build(context: FilmContext) {
 		},
 		interiorLabel: { attr: { x: (L.x(bid) + L.x(ask)) / 2 } },
 	});
-	/** Reposition only once the outgoing geometry is fully hidden. */
+	/**
+	 * Set the whole quote state at one instant: markers, band, mid span and prices together,
+	 * either while hidden or as the discrete handoff on the shared ruler between examples.
+	 */
 	const quoteTo = (bid: number, ask: number, time: number) => {
 		const p = quoteProps(bid, ask);
 		tl.set(bidM, { ...p.bid, immediateRender: false }, time);
@@ -821,36 +824,6 @@ function build(context: FilmContext) {
 		tl.set(midSpan, { ...p.interior, immediateRender: false }, time);
 		tl.set(midLabel, { ...p.interiorLabel, immediateRender: false }, time);
 		// These readouts share their ticks' hidden update and parent fade/reveal.
-		if (bidPrice && askPrice) {
-			tl.set(
-				bidPrice,
-				{ textContent: `${d.t(copy.bid)} ${usd(bid)}`, immediateRender: false },
-				time,
-			);
-			tl.set(
-				askPrice,
-				{ textContent: `${d.t(copy.ask)} ${usd(ask)}`, immediateRender: false },
-				time,
-			);
-		}
-	};
-	/**
-	 * Between examples the ruler is shared and the market's quote moves: its markers, band and
-	 * mid span slide to the next quote rather than vanishing and being rebuilt.
-	 */
-	const quoteGo = (
-		bid: number,
-		ask: number,
-		time: number,
-		duration: number,
-	) => {
-		const p = quoteProps(bid, ask);
-		const move = { duration, ease: "power2.inOut", immediateRender: false };
-		tl.to(bidM, { ...p.bid, ...move }, time);
-		tl.to(askM, { ...p.ask, ...move }, time);
-		tl.to(band, { ...p.band, ...move }, time);
-		tl.to(midSpan, { ...p.interior, ...move }, time);
-		tl.to(midLabel, { ...p.interiorLabel, ...move }, time);
 		if (bidPrice && askPrice) {
 			tl.set(
 				bidPrice,
@@ -1011,12 +984,12 @@ function build(context: FilmContext) {
 	steps.forEach(([id, time, i]) => {
 		const quote = quoteAt(id === "test" ? "t2" : id);
 		const cents = id === "test" ? OUTSIDE : tradeById(id).price;
-		// Keep the ruler and legend in place. The quote slides to this print's quote; the
-		// previous print's dot leaves and this one arrives at its price (a different print);
-		// this print's time carries from the point into its tape row.
+		// Keep the ruler and legend in place. The previous print's dot leaves; at `time` the
+		// whole quote state (markers, band, mid span, prices) switches at once, never showing
+		// a quote that did not exist, and this print's dot arrives at its price; its time
+		// carries from the point into its tape row.
 		fade(dot, 0, time - 0.35);
-		// The quote has finished moving when the new print's dot arrives at `time`.
-		quoteGo(quote.bid, quote.ask, time - 0.35, 0.35);
+		quoteTo(quote.bid, quote.ask, time);
 		sideTo(i, time, { exitAt: time - 0.35, enterAt: time });
 		tl.set(
 			rowTimes[i - 1],
