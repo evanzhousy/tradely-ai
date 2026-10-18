@@ -1089,7 +1089,9 @@ export function createDirector(
 			},
 			at + 0.1,
 		);
-		show(titleSub, at + 0.5);
+		// The subtitle comes in with the name and has settled by 0.45 s, so it stands 1.55 s
+		// before the tag lifts it at 2 s as played.
+		show(titleSub, at + 0.15, "below", 0.3);
 	};
 	/**
 	 * The name shrinks into the top-right corner, where it stays as the film's tag, clear of
