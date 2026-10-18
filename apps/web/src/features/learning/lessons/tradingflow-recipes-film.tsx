@@ -40,8 +40,8 @@ import {
 } from "./tradingflow-recipes-model";
 
 /*
- * Recipes, as a film. It opens on a question, "Which contracts trade well above open
- * interest Monday?", and the six official recipes in three kinds: the question lights
+ * Recipes, as a film. It opens on a question, "Which contracts saw volume well above open
+ * interest on Monday?", and the six official recipes in three kinds: the question lights
  * the session screen that answers it. Then the session a report shows: opened at 8:00 on
  * Tuesday, before the open, the screener shows Monday, the latest completed session; opened
  * at 10:00 on Monday, with most of Monday's session still to trade, the "latest" marker jumps
@@ -51,7 +51,7 @@ import {
  * and changes: you open your copy, and a colleague still opens the official one.
  *
  *   open      0–4        "Recipes"
- *   question  4–9.6      "Which contracts trade well above open interest Monday?"
+ *   question  4–9.6      "Which contracts saw volume well above open interest on Monday?"
  *   catalog   9.6–16.8   three kinds; the screen
  *   session   16.8–32.7  Tue 8:00 → Monday; Mon 10:00 → Friday; Mon 16:30 → Monday
  *   fork      32.7–41.4  official + colleague; linked inherited copy; your edit
@@ -148,9 +148,9 @@ const copy = {
 	title: ["Recipes", "Recipe"],
 	titleSub: ["research re-run on fresh data", "在新数据上重跑的研究"],
 	qTag: ["your question", "你的问题"],
-	qBig: ["Which contracts trade", "周一哪些合约"],
+	qBig: ["Which contracts saw volume", "周一哪些合约"],
 	qSignal: ["well above open interest", "成交超未平仓量？"],
-	qTail: ["Monday?", ""],
+	qTail: ["on Monday?", ""],
 	qLine: ["One official recipe answers it.", "唯一的官方 Recipe 回答。"],
 	kindsHead: [
 		"Six official recipes, three kinds.",
@@ -1340,7 +1340,7 @@ function build(context: FilmContext) {
 export const tradingflowRecipesFilm: Film = {
 	id: "tradingflow-recipes",
 	label: [
-		"Recipes, as a short film: the question of which contracts trade well above open interest Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday, then Monday after its close at 16:30; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
+		"Recipes, as a short film: the question of which contracts saw volume well above open interest on Monday; TradingFlow's six official recipes in three kinds, the question lighting the session screen that answers it; the market calendar, where a report opened at 8:00 on Tuesday shows Monday, the latest completed session, and one opened at 10:00 on Monday, while Monday is still trading, shows Friday, then Monday after its close at 16:30; and Edit with AI copying Daily Market Recap into a private copy that only you open, while a colleague opens the official recipe, unchanged",
 		"Recipe 短片：周一哪些合约的成交远超其未平仓量；TradingFlow 的六个官方 Recipe 分三种类型，这个问题点亮回答它的时段筛选；交易日历上，周二 8:00 打开的报告显示周一，即最近一个完整的时段，而周一 10:00、盘中打开则显示周五，收盘后 16:30 则显示周一；以及 Edit with AI 把 Daily Market Recap 复制成只有你会打开的私有副本，而同事打开的仍是未改动的官方 Recipe",
 	],
 	stage: "dark",
