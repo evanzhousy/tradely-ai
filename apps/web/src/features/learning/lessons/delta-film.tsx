@@ -152,8 +152,8 @@ const copy = {
 		`ALFA 涨 $1，看跌约减少 ${price(Math.abs(PUT_DELTA))}。`,
 	],
 	chainHead: [
-		"Same ALFA 100 call: keep sign and multiplier.",
-		"同一 ALFA 100 看涨：保留符号与乘数。",
+		"Same ALFA call: keep sign and multiplier.",
+		"同一 ALFA 看涨：保留符号与乘数。",
 	],
 	op100: ["× 100 shares per contract", "× 每张 100 股"],
 	opYou: [
