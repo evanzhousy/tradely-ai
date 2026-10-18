@@ -182,7 +182,7 @@ const copy = {
 	flowCard: ["flow DEX · this lesson", "成交流 DEX · 本课"],
 	siteCard: ["“DEX” · another site", "“DEX” · 另一网站"],
 	flowFrom: ["Monday prints", "周一成交"],
-	siteFrom: ["Friday OI × delta", "周五 OI × Delta"],
+	siteFrom: ["Friday OI × delta × 100", "周五 OI × Delta × 100"],
 	flowSign: ["ask +, bid −", "卖价＋，买价−"],
 	siteSign: ["assumes dealers short calls", "假设做市商做空看涨"],
 	claimBig: ["Same label, different numerator.", "同样的标签，不同的分子。"],
@@ -768,7 +768,7 @@ function build(context: FilmContext) {
 	// ——— tape: each print, weighted by delta ———
 	tl.addLabel("tape", 9.6);
 	hide(flat("q"), 9.6);
-	show(one("t-head"), 9.8, "above");
+	show(one("t-head"), 9.8);
 	rise(9.9);
 	tl.to(one("zero"), { opacity: 1, duration: 0.4 }, 10.2);
 	show(one("weight-example"), 10.3, "above", 0.3);
@@ -849,7 +849,7 @@ function build(context: FilmContext) {
 		18.5,
 	);
 	sink(18.5);
-	show(one("d-head"), 18.85, "above");
+	show(one("d-head"), 18.85);
 	land(one("d-net"), 19.2);
 	// Both benchmarks form one comparison, settled by 20.5; its explanation
 	// follows only after 1.1 seconds of quiet.
@@ -863,7 +863,7 @@ function build(context: FilmContext) {
 	tl.addLabel("spread", 25.1);
 	hide(kids("dei"), 25.1);
 	rise(25.3);
-	show(one("p-head"), 25.45, "above");
+	show(one("p-head"), 25.45);
 	tl.to([one("row-4"), one("row-5")], { opacity: 1, duration: 0.3 }, 25.6);
 	// The old printwise total is unnecessary here. Hold the highlighted legs
 	// for a full second, replace them, then reveal only the new net.
@@ -948,7 +948,7 @@ function build(context: FilmContext) {
 	// ——— source: a number with the same name ———
 	tl.addLabel("source", 34.3);
 	hide([...flat("two"), lockTwo], 34.3);
-	show(one("s-head"), 34.65, "above");
+	show(one("s-head"), 34.65);
 	show(one("s-title-0"), 35.1);
 	land(one("s-num-0"), 35.3);
 	show(one("s-from-0"), 35.7);
