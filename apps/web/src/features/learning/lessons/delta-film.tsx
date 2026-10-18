@@ -41,8 +41,8 @@ import {
  * a grid that drifts, slowly, the whole way through.
  *
  *   open      0–4        "Delta" wipes on; the title shrinks into the corner as a tag
- *   question  4–9.5      ALFA $100 → $101: the call moves by about… ?
- *   slope     9.5–17.7   the chart rises from the depth; push in; the $1 step, the $0.52
+ *   question  4–9.0      ALFA $100 → $101: the call moves by about… ?
+ *   slope     9.0–17.7   the chart rises from the depth; push in; the $1 step, the $0.52
  *                        rise; carry 0.52 into its definition, full frame
  *   put       17.7–23.7  the call proof leaves; its hidden geometry swaps to the put,
  *                        which returns paired with −0.48
@@ -870,22 +870,28 @@ function build(context: FilmContext) {
 	land(one("q-mark"), 5.45);
 
 	// ——— slope: the chart proves it; cut to the number ———
-	tl.addLabel("slope", 9.5);
-	hide(kids("q"), 9.5);
-	rise(9.7);
-	tl.to(marker, { opacity: 1, duration: 0.3 }, 10.2);
-	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.2);
+	tl.addLabel("slope", 9.0);
+	hide(kids("q"), 9.0);
+	// The chart's scaffold rises once the question has gone and settles at 9.85, a full
+	// second before the marker, the first data, moves.
+	tl.to(
+		one("depth"),
+		{ opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" },
+		9.35,
+	);
+	tl.to(marker, { opacity: 1, duration: 0.3 }, 10.85);
+	tl.to(marker, { y: my, duration: 0.55, ease: "power2.in" }, 10.85);
 	tl.fromTo(
 		one("dot"),
 		{ scale: 1.3 },
 		{ scale: 1, duration: 0.45, ease: "power3.out" },
-		10.75,
+		11.4,
 	);
 	tl.fromTo(
 		one("ripple"),
 		{ opacity: 0.6, attr: { r: narrow ? 3 : 6 } },
 		{ opacity: 0, attr: { r: 26 }, duration: 0.7, ease: "power2.out" },
-		10.8,
+		11.45,
 	);
 	tl.to(
 		one("clip-left"),
@@ -894,30 +900,30 @@ function build(context: FilmContext) {
 			duration: 1.1,
 			ease: "power2.inOut",
 		},
-		10.7,
+		11.35,
 	);
 	tl.to(
 		one("clip-right"),
 		{ attr: { width: L.right - mx + 4 }, duration: 1.1, ease: "power2.inOut" },
-		10.7,
+		11.35,
 	);
 	tl.fromTo(
 		one("marker-label-call"),
 		{ opacity: 0, attr: { y: my - 4 } },
 		{ opacity: 1, attr: { y: my - (narrow ? 22 : 14) }, duration: 0.5 },
-		10.9,
+		11.55,
 	);
-	tl.to(one("line-key"), { opacity: 1, duration: 0.3 }, 11.2);
+	tl.to(one("line-key"), { opacity: 1, duration: 0.3 }, 11.85);
 	// Clear tick labels first, leaving the grid as a scaffold for the camera move.
-	tl.to(axisText, { opacity: 0, duration: 0.3 }, 11.5);
-	show(one("s-head"), 11.8, "above", 0.3);
-	tl.to(world, { ...pushIn, duration: 1.3, ease: "power2.inOut" }, 12.1);
+	tl.to(axisText, { opacity: 0, duration: 0.3 }, 12.15);
+	show(one("s-head"), 12.45, "above", 0.3);
+	tl.to(world, { ...pushIn, duration: 0.8, ease: "power2.inOut" }, 12.75);
 	if (narrow) {
 		// Enlarge the geometry without enlarging its labels; retain the establishment size.
 		tl.to(
 			one("marker-label-call"),
-			{ fontSize: (13 * 2) / PHONE_PROOF_SCALE, duration: 1.3 },
-			12.1,
+			{ fontSize: (13 * 2) / PHONE_PROOF_SCALE, duration: 0.8 },
+			12.75,
 		);
 	}
 	// Pushed in on the slope, the axis labels would crowd the frame's edges: they step out.
@@ -965,7 +971,7 @@ function build(context: FilmContext) {
 		}
 		tl.set(one("dot"), { attr: { r: 3 } }, 32);
 	}
-	tl.to(tangentLine, { opacity: 1, duration: 0.3 }, 13.4);
+	tl.to(tangentLine, { opacity: 1, duration: 0.3 }, 13.55);
 	tl.to(
 		tangentLine,
 		{
@@ -978,39 +984,39 @@ function build(context: FilmContext) {
 			duration: 1.0,
 			ease: "power2.inOut",
 		},
-		13.4,
+		13.55,
 	);
 	// Build the $1 leg and tangent only after the camera settles.
-	tl.to(one("step"), { opacity: 1, duration: 0.3 }, 13.4);
+	tl.to(one("step"), { opacity: 1, duration: 0.3 }, 13.55);
 	// The labelled $1 leg is revealed complete, so its length always agrees with its label.
-	tl.set(one("step-line"), { attr: { x2: riserX } }, 13.4);
-	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 13.4);
-	tl.to(one("riser"), { opacity: 1, duration: 0.3 }, 13.9);
+	tl.set(one("step-line"), { attr: { x2: riserX } }, 13.55);
+	if (narrow) tl.set(one("step-corner"), { opacity: 1 }, 13.55);
+	tl.to(one("riser"), { opacity: 1, duration: 0.3 }, 14.05);
 	tl.to(
 		one("riser-line"),
 		{ attr: { y2: riserTop }, duration: 0.6, ease: "power3.out" },
-		13.9,
+		14.05,
 	);
-	// Name the gain only once the line reaches it; hold the complete proof for 1.05 s.
-	tl.to(one("riser-label"), { opacity: 1, duration: 0.3 }, 14.5);
-	if (narrow) tl.to(one("riser-tip"), { opacity: 1, duration: 0.3 }, 14.5);
+	// Name the gain only once the line reaches it; hold the complete proof for 1.0 s.
+	tl.to(one("riser-label"), { opacity: 1, duration: 0.3 }, 14.65);
+	if (narrow) tl.to(one("riser-tip"), { opacity: 1, duration: 0.3 }, 14.65);
 	// Hand the digits to a root proxy before the chart steps back. The original
 	// digits disappear in the same frame, so there is no blank or doubled number.
-	tl.set(riserNumber, { opacity: 0 }, 15.85);
-	tl.set(slopeNumber, { opacity: 1 }, 15.85);
-	tl.to(world, { opacity: 0.22, duration: 0.3 }, 15.85);
-	tl.to(one("line-key"), { opacity: 0, duration: 0.3 }, 15.85);
+	tl.set(riserNumber, { opacity: 0 }, 15.95);
+	tl.set(slopeNumber, { opacity: 1 }, 15.95);
+	tl.to(world, { opacity: 0.22, duration: 0.3 }, 15.95);
+	tl.to(one("line-key"), { opacity: 0, duration: 0.3 }, 15.95);
 	// The dim chart clears the upward flight across its tangent and price label.
-	hide(one("s-head"), 16);
-	sink(16);
-	d.carry(slopeNumber, numCall, 16.15, {
+	hide(one("s-head"), 16.1);
+	sink(16.1);
+	d.carry(slopeNumber, numCall, 16.25, {
 		duration: 0.7,
 		arc: "y",
 		match: fixed2(CALL_DELTA),
 	});
-	tl.set(numCall, { scale: 1 }, 16.85);
-	// The completed number and definition settle at 16.9, a quiet second before the put.
-	show(one("num-word"), 16.4);
+	tl.set(numCall, { scale: 1 }, 16.95);
+	// The completed number and definition settle at 17.0, 0.7 s before the put.
+	show(one("num-word"), 16.5);
 
 	// ——— put: replace the complete proof while hidden ———
 	tl.addLabel("put", 17.7);
