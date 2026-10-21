@@ -2,6 +2,8 @@
 
 Tradely owns the long-form TradingFlow Academy masters and the options-concept media in this directory. The Landing repository owns short free product-onboarding cards and public marketing cuts.
 
+Since 2026-10-21 Landing also owns its motion series (`videos/tradingflow-motion-series/` there). It covers short primers on single TradingFlow fields, product how-to episodes, and a companion video for each `/digest` edition. Landing's `wiki/ops/agent/media-ownership.md` § Landing and Tradely defines the boundary. Nothing in this directory moves: the Academy, the concept lessons and cards, the GEX paper collage and the market-recap pilot stay here.
+
 ## Private course media
 
 The eight paid lessons in `tradingflow-foundations` are stored in the Tradely-owned `tradely-media` R2 bucket under:
