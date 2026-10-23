@@ -1,3 +1,5 @@
+import type { ConceptId } from "./concepts";
+
 export const courseModules = [
 	{
 		id: "orientation",
@@ -119,7 +121,7 @@ type Entry = {
 	titleZh: string;
 	summary: string;
 	summaryZh: string;
-	concepts: string[];
+	concepts: ConceptId[];
 	prerequisites: string[];
 };
 const lesson = (
@@ -129,7 +131,7 @@ const lesson = (
 	titleZh: string,
 	summary: string,
 	summaryZh: string,
-	concepts: string[],
+	concepts: ConceptId[],
 	prerequisites: string[] = [],
 ): Entry => ({
 	id,
