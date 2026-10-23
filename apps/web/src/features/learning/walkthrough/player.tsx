@@ -40,6 +40,7 @@ import {
 	saveVisualBookmark,
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-lesson-identity";
+import { Announce } from "./announce";
 import { judge } from "./answers";
 import { TaskPanel } from "./explore-task";
 import { type Film, FilmStage } from "./film";
@@ -565,9 +566,9 @@ export function Player({
 									<TermText text={t(captionText)} locale={locale} />
 								)}
 							</p>
-							<p className="sr-only" aria-live="polite">
-								{captionText === undefined ? null : t(captionText)}
-							</p>
+							<Announce
+								text={captionText === undefined ? "" : t(captionText)}
+							/>
 							{playable
 								.flatMap((index) => {
 									const item = scenes[index];

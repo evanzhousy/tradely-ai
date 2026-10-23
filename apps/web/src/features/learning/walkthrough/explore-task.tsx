@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { TermText } from "../term-text";
+import { Announce } from "./announce";
 import { seededOrder } from "./answers";
 import type { ExploreTask } from "./types";
 
@@ -64,9 +65,7 @@ export function TaskPanel({
 						t(copy.notYet)
 					)}
 				</p>
-				<p className="sr-only" aria-live="polite">
-					{solved ? `${t(copy.found)}. ${t(task.done)}` : ""}
-				</p>
+				<Announce text={solved ? `${t(copy.found)}. ${t(task.done)}` : ""} />
 			</section>
 		);
 

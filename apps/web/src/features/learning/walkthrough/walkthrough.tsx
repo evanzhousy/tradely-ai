@@ -43,6 +43,7 @@ import {
 	useVisualBookmarks,
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-lesson-identity";
+import { Announce } from "./announce";
 import { judge } from "./answers";
 import { TaskPanel } from "./explore-task";
 import { PredictionFeedback, PredictPanel, predictionCopy } from "./prediction";
@@ -536,9 +537,7 @@ export function Walkthrough({
 									<TermText text={t(caption)} locale={locale} />
 								)}
 							</p>
-							<p className="sr-only" aria-live={autoplay ? "off" : "polite"}>
-								{t(caption)}
-							</p>
+							<Announce text={t(caption)} off={autoplay} />
 							{[
 								scene.predict?.prompt,
 								scene.explore?.prompt,
