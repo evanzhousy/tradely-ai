@@ -870,12 +870,20 @@ const scenes = [
 						`${usd(REPORTED)}: it matches the tape`,
 						`${usd(REPORTED)}：与成交记录一致`,
 					],
+					why: [
+						"Matching contracts and prices isn't enough: the sum leaves out the 100 shares per contract, so every row is 100 times too small.",
+						"张数和价格一致还不够：加总时漏掉了每张合约对应的 100 股，所以每一行都小了 100 倍。",
+					],
 				},
 				{
 					id: "prices",
 					label: [
 						"Unknown until the 120 call arrives",
 						"要等 120 看涨的数据到了才知道",
+					],
+					why: [
+						"The 120 call is a separate gap. For the four strikes with data, the error can be fixed now: multiply each row by 100.",
+						"120 看涨是另一个缺口。对于有数据的四个行权价，这个错误现在就能修正：每一行乘以 100。",
 					],
 				},
 			],
@@ -959,10 +967,18 @@ const scenes = [
 				{
 					id: "pass",
 					label: ["Yes: the number was the error", "能：错误就在那个数字"],
+					why: [
+						"Fixing one number doesn't clear the rest. Three more claims fail: volume read as new positions, a missing row as zero, and an unsupported forecast.",
+						"修好一个数字并不能让其余部分过关。还有三条不成立：把成交量当作新持仓、把缺失的行当作零，以及没有依据的预测。",
+					],
 				},
 				{
 					id: "reject",
 					label: ["No: throw the recap out", "不能：整篇复盘作废"],
+					why: [
+						"An audit repairs what fails and keeps what holds. The scope line is supported and stays.",
+						"审核是修复不成立的部分，保留成立的部分。范围那一条有依据，应予保留。",
+					],
 				},
 			],
 			answer: "check",
@@ -1059,8 +1075,19 @@ const scenes = [
 				{
 					id: "omit",
 					label: ["Nowhere: they're not in P1", "哪里都不放：不在 P1 里"],
+					why: [
+						"Leaving them out hides a known gap from whoever signs off. List them as open, with when and where they arrived.",
+						"不写会对签核的人隐藏一个已知缺口。把它们列为未解决事项，写明何时、从哪里到达。",
+					],
 				},
-				{ id: "zero", label: ["Supported, as zero", "有依据，记为零"] },
+				{
+					id: "zero",
+					label: ["Supported, as zero", "有依据，记为零"],
+					why: [
+						"Nobody has reviewed those trades, so zero is a claim nobody checked. They belong under open items.",
+						"没人审查过这些成交，所以记为零是一个没人核实的结论。它们应列在未解决事项中。",
+					],
+				},
 			],
 			answer: "open",
 			revealAt: 2,

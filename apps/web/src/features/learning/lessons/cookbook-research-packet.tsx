@@ -830,10 +830,18 @@ const scenes = [
 				{
 					id: "total",
 					label: ["The chain's total premium", "全链的权利金总额"],
+					why: [
+						`${dollars(MONDAY)} covers only ${COVERED} of ${SERIES} series. With R5 missing, the chain's total is unknown: at least ${dollars(MONDAY)}.`,
+						`${dollars(MONDAY)} 只覆盖 ${SERIES} 个序列中的 ${COVERED} 个。R5 缺失时，全链合计未知：至少是 ${dollars(MONDAY)}。`,
+					],
 				},
 				{
 					id: "zero",
 					label: ["The total, with R5 as $0", "总额，把 R5 记为 $0"],
+					why: [
+						"R5 has no data, which isn't the same as $0. Writing it as zero would turn an unknown into a false total.",
+						"R5 没有数据，这不等于 $0。把它记为零，会把未知变成错误的合计。",
+					],
 				},
 			],
 			answer: "subtotal",
@@ -925,8 +933,19 @@ const scenes = [
 				{
 					id: "same",
 					label: [`The same ${dollars(MONDAY)}`, `同样的 ${dollars(MONDAY)}`],
+					why: [
+						"The exclusions line is what drops T-2 and M2's repeat. Without it the reader counts both, so the total comes out higher.",
+						"排除项这一行正是用来剔除 T-2 和 M2 的重复消息。没有它，读者会把两者都算进去，所以合计会更高。",
+					],
 				},
-				{ id: "less", label: ["Less", "更少"] },
+				{
+					id: "less",
+					label: ["Less", "更少"],
+					why: [
+						"Missing exclusions can only add rows back in, a cancelled trade and a repeat, so the total goes up, not down.",
+						"缺少排除项只会把行加回去，即一笔已取消的成交和一条重复消息，所以合计会上升，而不是下降。",
+					],
+				},
 			],
 			answer: "more",
 			revealAt: 2,
@@ -1010,8 +1029,19 @@ const scenes = [
 				{
 					id: "replace",
 					label: ["A rerun that replaces P2", "替换 P2 的重跑"],
+					why: [
+						"A rerun may change only the inputs the packet allows, like the as-of time. Dropping the spread's legs changes the method, so it can't replace P2.",
+						"重跑只能改变研究包允许的输入，比如截至时间。去掉价差的两条腿改变了方法，所以不能替换 P2。",
+					],
 				},
-				{ id: "fix", label: ["A correction of P2", "对 P2 的更正"] },
+				{
+					id: "fix",
+					label: ["A correction of P2", "对 P2 的更正"],
+					why: [
+						"A correction repairs an error in P2's own method. Nothing in P2 was wrong; leaving out the spread asks a different question.",
+						"更正是修复 P2 自身方法中的错误。P2 并没有错；去掉价差是在问另一个问题。",
+					],
+				},
 			],
 			answer: "new",
 			revealAt: 2,

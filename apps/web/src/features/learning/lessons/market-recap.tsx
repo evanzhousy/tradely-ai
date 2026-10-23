@@ -637,10 +637,18 @@ const scenes = [
 						`Yes: the ${premiumLeader.strike} bar is nearly as tall`,
 						`支持：${premiumLeader.strike} 的柱几乎一样高`,
 					],
+					why: [
+						`Bar height on a contracts chart measures contracts. The ${premiumLeader.strike} call does lead on premium, but only a premium chart can show it.`,
+						`张数图上的柱高衡量的是张数。${premiumLeader.strike} 看涨在权利金上确实领先，但只有权利金图才能显示这一点。`,
+					],
 				},
 				{
 					id: "follows",
 					label: ["Yes: premium follows contracts", "支持：权利金跟着张数走"],
+					why: [
+						`Premium is contracts times price, so the two can rank differently: the ${premiumLeader.strike} call leads on premium while the ${leader.strike} leads on contracts.`,
+						`权利金等于张数乘以价格，所以两者排名可能不同：${premiumLeader.strike} 看涨在权利金上领先，而 ${leader.strike} 在张数上领先。`,
+					],
 				},
 			],
 			answer: "no",
@@ -719,8 +727,22 @@ const scenes = [
 						`约多 7%：${C110} 对 ${C105}`,
 					],
 				},
-				{ id: "eight", label: ["8 times as much", "8 倍"] },
-				{ id: "double", label: ["About twice as much", "约 2 倍"] },
+				{
+					id: "eight",
+					label: ["8 times as much", "8 倍"],
+					why: [
+						`The 8-to-1 look comes from starting the axis at 500. The real ratio is ${C110} ÷ ${C105} = ${(C110 / C105).toFixed(2)}.`,
+						`8 比 1 的样子来自把轴的起点设为 500。真实的比例是 ${C110} ÷ ${C105} = ${(C110 / C105).toFixed(2)}。`,
+					],
+				},
+				{
+					id: "double",
+					label: ["About twice as much", "约 2 倍"],
+					why: [
+						`Twice would need about ${C105 * 2} contracts. ${C110} against ${C105} is about 7% more.`,
+						`2 倍需要约 ${C105 * 2} 张。${C110} 对 ${C105} 约多 7%。`,
+					],
+				},
 			],
 			answer: "seven",
 			entry: { answer: 7, unit: ["%", "%"], tolerance: 1 },
@@ -803,12 +825,20 @@ const scenes = [
 						`Call buyers piled into the ${leader.strike} strike`,
 						`看涨买家涌入 ${leader.strike} 行权价`,
 					],
+					why: [
+						"The packet counts contracts, not who bought them, and 500 of the 540 were the sold leg of the 10:50 spread.",
+						"研究包统计的是张数，而不是谁买的；540 张中有 500 张是 10:50 价差卖出的那条腿。",
+					],
 				},
 				{
 					id: "busiest",
 					label: [
 						`The ${leader.strike} call was Monday's busiest ALFA option`,
 						`${leader.strike} 看涨是周一 ALFA 最活跃的期权`,
+					],
+					why: [
+						"The packet covers only Oct 18 calls, with the 120 call missing. Busiest ALFA option reaches past what it measured.",
+						"研究包只覆盖 10月18日 看涨，且 120 看涨缺失。“ALFA 最活跃的期权”超出了它测量的范围。",
 					],
 				},
 			],

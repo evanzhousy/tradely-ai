@@ -179,6 +179,8 @@ export const productionUnits: TeachingUnit[] = [
 								"available",
 								"Yes: the two bars add up to it",
 								"能：两根柱子加起来就是",
+								"The two bars add up only what was observed. R3 is missing, so their sum isn't the total for every strike in the question.",
+								"两根柱子只加总了观测到的部分。R3 缺失，所以它们的和不是问题中全部行权价的合计。",
 							],
 							[
 								"unknown",

@@ -350,12 +350,23 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [usd(SUBTOTAL, 0), usd(SUBTOTAL, 0)] },
-				{ id: "short", label: [usd(SUBTOTAL / 100), usd(SUBTOTAL / 100)] },
+				{
+					id: "short",
+					label: [usd(SUBTOTAL / 100), usd(SUBTOTAL / 100)],
+					why: [
+						`${usd(SUBTOTAL / 100)} leaves out the 100 shares per contract. Each row is price × contracts × 100.`,
+						`${usd(SUBTOTAL / 100)} 漏掉了每张合约对应的 100 股。每一行都是价格 × 张数 × 100。`,
+					],
+				},
 				{
 					id: "r1",
 					label: [
 						usd(premiumOf(TRADES[0]) + premiumOf(TRADES[1]), 0),
 						usd(premiumOf(TRADES[0]) + premiumOf(TRADES[1]), 0),
+					],
+					why: [
+						"That is R1 alone, the 105 call. The subtotal adds every observed row, so R2's 30 at $0.85 belongs in it too.",
+						"这只是 R1，即 105 看涨。小计要加上所有已观测的行，所以 R2 的 30 张 $0.85 也要算进去。",
 					],
 				},
 			],
@@ -443,8 +454,19 @@ const scenes = [
 						`${(R1_CONTRACTS / R2_CONTRACTS).toFixed(1)}×`,
 						`${(R1_CONTRACTS / R2_CONTRACTS).toFixed(1)}×`,
 					],
+					why: [
+						`${(R1_CONTRACTS / R2_CONTRACTS).toFixed(1)}× is how much more it traded, but the question asks how the chart draws it. From an axis at 25 the bars are ${R1_CONTRACTS - 25} and ${R2_CONTRACTS - 25} tall.`,
+						`${(R1_CONTRACTS / R2_CONTRACTS).toFixed(1)}× 是它多成交的倍数，但问题问的是图表怎么画。轴从 25 开始，两根柱子高 ${R1_CONTRACTS - 25} 和 ${R2_CONTRACTS - 25}。`,
+					],
 				},
-				{ id: "diff", label: ["35×", "35×"] },
+				{
+					id: "diff",
+					label: ["35×", "35×"],
+					why: [
+						`35 is the difference in contracts, ${R1_CONTRACTS} − ${R2_CONTRACTS}, not a ratio. The bars are ${R1_CONTRACTS - 25} and ${R2_CONTRACTS - 25} tall.`,
+						`35 是张数之差，${R1_CONTRACTS} − ${R2_CONTRACTS}，不是比例。两根柱子高 ${R1_CONTRACTS - 25} 和 ${R2_CONTRACTS - 25}。`,
+					],
+				},
 			],
 			answer: "drawn",
 			entry: { answer: drawnRatio(25), tolerance: 0.05, unit: ["×", "×"] },
@@ -522,10 +544,21 @@ const scenes = [
 						"115 看涨：截止时无数据",
 					],
 				},
-				{ id: "zero", label: ["Leave it: 0 contracts", "保持原样：0 张"] },
+				{
+					id: "zero",
+					label: ["Leave it: 0 contracts", "保持原样：0 张"],
+					why: [
+						"R3 had no data at the cutoff; that isn't a measured zero. Writing 0 tells readers nothing traded, which nobody knows.",
+						"R3 在截止时没有数据，这不是观测到的零。写 0 等于告诉读者没有成交，而这一点没人知道。",
+					],
+				},
 				{
 					id: "drop",
 					label: ["Delete the 115 call entirely", "完全删掉 115 看涨"],
+					why: [
+						"Deleting it hides a known gap. Keep the 115 call in and say its data was missing at the cutoff.",
+						"删掉它会隐藏一个已知缺口。保留 115 看涨，并写明截止时它的数据缺失。",
+					],
 				},
 			],
 			answer: "nodata",
