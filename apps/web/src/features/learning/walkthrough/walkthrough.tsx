@@ -38,6 +38,7 @@ import type {
 import { useVisualLessonAnalytics } from "@/analytics/visual-lesson";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
+import { TermText } from "../term-text";
 import {
 	initializeVisualBookmark,
 	markVisualBookmarkEngaged,
@@ -581,7 +582,9 @@ export function Walkthrough({
 									: null}
 						</p>
 						{!verdict.correct && choice?.why ? (
-							<p className="wt-panel-why">{t(choice.why)}</p>
+							<p className="wt-panel-why">
+								<TermText text={t(choice.why)} locale={locale} />
+							</p>
 						) : null}
 						{verdict.typed !== undefined && !verdict.correct && entry ? (
 							<p className="wt-panel-note">
@@ -589,7 +592,9 @@ export function Walkthrough({
 								{asEntry(entry.answer)}
 							</p>
 						) : null}
-						<p>{t(scene.predict.explain)}</p>
+						<p>
+							<TermText text={t(scene.predict.explain)} locale={locale} />
+						</p>
 					</m.div>
 				) : null}
 				{phase === "watch" && beat === last ? (
@@ -685,7 +690,14 @@ export function Walkthrough({
 							{t(scene.title)}
 						</h2>
 						<div className="wt-caption-stack">
-							<p className="wt-caption" aria-live={autoplay ? "off" : "polite"}>
+							<p className="wt-caption">
+								{phase === "predict" ? (
+									t(caption)
+								) : (
+									<TermText text={t(caption)} locale={locale} />
+								)}
+							</p>
+							<p className="sr-only" aria-live={autoplay ? "off" : "polite"}>
 								{t(caption)}
 							</p>
 							{[

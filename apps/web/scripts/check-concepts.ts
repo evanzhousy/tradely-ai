@@ -26,6 +26,7 @@ import {
 	conceptIds,
 	concepts,
 } from "../src/content/concepts";
+import { glossary } from "../src/content/glossary";
 import { buildsOn, syllabus } from "../src/content/syllabus";
 import { unitScenarios } from "../src/content/units/authoring.server";
 import { teachingUnits } from "../src/content/units/index.server";
@@ -398,6 +399,55 @@ if (predictionCount.hidden > 0)
 		`${predictionCount.hidden} predictions in ${hiddenFiles.size} lesson files are never shown: those lessons play a film and explore tasks through Player, which doesn't read a scene's predict block`,
 	);
 
+// --- Glossary: one entry per term and form, both languages, a real concept, no ambiguous words ---
+/** English words that double as verbs or carry two senses in the course; never match them. */
+const ambiguous = new Set([
+	"call",
+	"calls",
+	"put",
+	"puts",
+	"bid",
+	"bids",
+	"ask",
+	"asks",
+	"spread",
+	"spreads",
+	"block",
+	"blocks",
+]);
+const glossaryIds = new Set<string>();
+const formsSeen = {
+	en: new Map<string, string>(),
+	zh: new Map<string, string>(),
+};
+for (const term of glossary) {
+	if (glossaryIds.has(term.id)) fail(`glossary ${term.id}: listed twice`);
+	glossaryIds.add(term.id);
+	if (!filled(term.name))
+		fail(`glossary ${term.id}: name is empty in one language`);
+	if (!filled(term.meaning))
+		fail(`glossary ${term.id}: meaning is empty in one language`);
+	if (term.concept && !registered.has(term.concept))
+		fail(`glossary ${term.id}: concept ${term.concept} is not in the register`);
+	for (const locale of ["en", "zh"] as const) {
+		if (term[locale].length === 0)
+			fail(`glossary ${term.id}: no ${locale} forms`);
+		for (const form of term[locale]) {
+			const key = locale === "en" ? form.toLowerCase() : form;
+			const owner = formsSeen[locale].get(key);
+			if (owner)
+				fail(
+					`glossary ${term.id}: ${locale} form "${form}" also belongs to ${owner}`,
+				);
+			formsSeen[locale].set(key, term.id);
+			if (locale === "en" && ambiguous.has(key))
+				fail(
+					`glossary ${term.id}: "${form}" is an everyday English word with another sense here`,
+				);
+		}
+	}
+}
+
 // --- Report -----------------------------------------------------------------------------------
 for (const note of notes) console.log(`note: ${note}`);
 if (failures.length > 0) {
@@ -408,5 +458,5 @@ if (failures.length > 0) {
 const edges = conceptList.flatMap((concept) => concept.prerequisites);
 const hard = edges.filter((edge) => edge.strength === "hard").length;
 console.log(
-	`concepts ok: ${conceptIds.length} concepts, ${edges.length} prerequisite edges (${hard} hard, ${edges.length - hard} soft), ${lessons.length} lessons, ${checkpoints.length} checkpoints, ${teachingUnits.length} units; why on ${caseQuestionsWithWhy.size} of ${caseQuestions.size} case questions, ${predictionCount.shownWithWhy} of ${predictionCount.shown} shown predictions and ${predictionCount.hiddenWithWhy} of ${predictionCount.hidden} unshown ones`,
+	`concepts ok: ${conceptIds.length} concepts, ${edges.length} prerequisite edges (${hard} hard, ${edges.length - hard} soft), ${lessons.length} lessons, ${checkpoints.length} checkpoints, ${teachingUnits.length} units; why on ${caseQuestionsWithWhy.size} of ${caseQuestions.size} case questions, ${predictionCount.shownWithWhy} of ${predictionCount.shown} shown predictions and ${predictionCount.hiddenWithWhy} of ${predictionCount.hidden} unshown ones; ${glossary.length} glossary terms`,
 );

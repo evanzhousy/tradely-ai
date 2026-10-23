@@ -3,6 +3,7 @@ import { CheckIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
+import { TermText } from "../term-text";
 import { seededOrder } from "./answers";
 import type { ExploreTask } from "./types";
 
@@ -48,15 +49,23 @@ export function TaskPanel({
 			<section
 				className="wt-panel wt-task"
 				data-kind={solved ? "right" : "task"}
-				aria-live="polite"
 			>
 				<p className="wt-panel-title flex items-center gap-1.5">
 					{solved ? <CheckIcon className="size-4" aria-hidden="true" /> : null}
 					{solved ? t(copy.found) : t(copy.task)}
 				</p>
-				<p>{t(task.prompt)}</p>
+				<p>
+					<TermText text={t(task.prompt)} locale={locale} />
+				</p>
 				<p className={solved ? undefined : "wt-panel-note"}>
-					{solved ? t(task.done) : t(copy.notYet)}
+					{solved ? (
+						<TermText text={t(task.done)} locale={locale} />
+					) : (
+						t(copy.notYet)
+					)}
+				</p>
+				<p className="sr-only" aria-live="polite">
+					{solved ? `${t(copy.found)}. ${t(task.done)}` : ""}
 				</p>
 			</section>
 		);
@@ -86,7 +95,9 @@ export function TaskPanel({
 				) : null}
 				{solved ? t(copy.right) : t(copy.task)}
 			</p>
-			<p>{t(task.prompt)}</p>
+			<p>
+				<TermText text={t(task.prompt)} locale={locale} />
+			</p>
 			<div className="wt-choices">
 				{seededOrder(task.choices, `${seed}:task`).map((choice) => (
 					<Button

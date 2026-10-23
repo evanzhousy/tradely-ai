@@ -33,6 +33,7 @@ import type {
 import { useVisualLessonAnalytics } from "@/analytics/visual-lesson";
 import { type Copy, pick } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
+import { TermText } from "../term-text";
 import {
 	initializeVisualBookmark,
 	markVisualBookmarkEngaged,
@@ -482,7 +483,12 @@ export function Player({
 							{t(chosen.title)}
 						</h2>
 						<div className="wt-caption-stack">
-							<p className="wt-caption" aria-live="polite">
+							<p className="wt-caption">
+								{chosen.explore ? (
+									<TermText text={t(chosen.explore.prompt)} locale={locale} />
+								) : null}
+							</p>
+							<p className="sr-only" aria-live="polite">
 								{chosen.explore ? t(chosen.explore.prompt) : null}
 							</p>
 							{playable.map((index) => {

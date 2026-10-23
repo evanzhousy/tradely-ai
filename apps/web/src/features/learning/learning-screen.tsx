@@ -124,6 +124,7 @@ import { PremiumExplorer } from "./premium-explorer";
 import { QuotePositionExplorer } from "./quote-position-explorer";
 import { ResearchConnections } from "./research-connections";
 import { ResponseField } from "./response-field";
+import { TermText } from "./term-text";
 import { UniverseExplorer } from "./universe-explorer";
 import { WorkDocument, Worksheet } from "./work-document";
 
@@ -463,7 +464,13 @@ function LearningScreenContent({
 							</h3>
 							{showResultSave ? guestSaveControl : null}
 							<p className="whitespace-pre-line text-muted-foreground text-sm leading-relaxed">
-								{checkIntro ? text("checkReady") : local(view.step.brief)}
+								{checkIntro ? (
+									text("checkReady")
+								) : view.step.kind === "independent" && answering ? (
+									local(view.step.brief)
+								) : (
+									<TermText text={local(view.step.brief)} locale={locale} />
+								)}
 							</p>
 						</LessonReveal>
 						{Concept ? (
@@ -686,11 +693,14 @@ function LearningScreenContent({
 										</p>
 										{criterion.why ? (
 											<p className="border-border border-l-2 pl-3 text-sm leading-relaxed">
-												{local(criterion.why)}
+												<TermText text={local(criterion.why)} locale={locale} />
 											</p>
 										) : null}
 										<p className="whitespace-pre-line text-sm leading-relaxed">
-											{local(criterion.explanation)}
+											<TermText
+												text={local(criterion.explanation)}
+												locale={locale}
+											/>
 										</p>
 									</LessonReveal>
 								))}
