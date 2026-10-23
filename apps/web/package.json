@@ -9,7 +9,7 @@
 		"billing:preflight": "tsx scripts/billing-preflight.ts",
 		"build": "vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && SERVER_ENTRY=$(find ../.. -path '*/.vercel/output/functions/__server.func/index.mjs' -print -quit) && test -n \"$SERVER_ENTRY\" && SERVER_DIR=$(dirname \"$SERVER_ENTRY\") && cp -R \"$SERVER_DIR\"/. dist/server/",
 		"check-types": "tsr generate && tsc --noEmit",
-		"check-concepts": "tsx scripts/check-concepts.ts",
+		"check-concepts": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/check-concepts.ts",
 		"serve": "vite preview",
 		"dev": "vite dev",
 		"learning:preview": "vite --config learning-preview/vite.config.ts",

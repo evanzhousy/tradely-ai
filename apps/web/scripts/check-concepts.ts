@@ -9,11 +9,16 @@
  * concept or an unknown prerequisite lesson; a cycle in the lesson graph; a hard concept
  * prerequisite that neither the lesson nor one of its prerequisite lessons teaches; a
  * `buildsOn` entry naming an unknown lesson; a checkpoint without its lesson file, or a
- * checkpoint `revisit` that names a lesson outside its module. Soft prerequisites that are not
- * taught earlier are listed as notes and do not fail.
+ * checkpoint `revisit` that names a lesson outside its module; a teaching unit whose id is not a
+ * lesson; and, wherever a question gives per-choice feedback (`why`), a wrong choice without it
+ * or a right choice with it, in the units' case questions (run) and in the lessons' predict
+ * blocks (read from the source). Soft prerequisites that are not taught earlier, lessons
+ * without a teaching unit and predict blocks whose choices are not literals are listed as notes
+ * and do not fail.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 import {
 	type Concept,
 	type ConceptId,
@@ -21,6 +26,8 @@ import {
 	concepts,
 } from "../src/content/concepts";
 import { buildsOn, syllabus } from "../src/content/syllabus";
+import { unitScenarios } from "../src/content/units/authoring.server";
+import { teachingUnits } from "../src/content/units/index.server";
 
 const failures: string[] = [];
 const notes: string[] = [];
@@ -218,6 +225,132 @@ for (const name of readdirSync(lessonsDir)) {
 		fail(`${name}: no checkpoint in the syllabus for module ${match[1]}`);
 }
 
+// --- Teaching units match lessons; case questions with a why give one to every wrong choice ---
+const unitIds = new Set(teachingUnits.map((unit) => unit.id));
+for (const unit of teachingUnits) {
+	const lesson = entries.get(unit.id);
+	if (!lesson || lesson.kind === "checkpoint")
+		fail(`unit ${unit.id}: not a lesson in the syllabus`);
+}
+for (const lesson of lessons)
+	if (!unitIds.has(lesson.id)) notes.push(`${lesson.id}: no teaching unit`);
+/** Authored questions, by unit and question id; a scenario variant repeats them. */
+const caseQuestions = new Set<string>();
+const caseQuestionsWithWhy = new Set<string>();
+for (const unit of teachingUnits) {
+	for (const purpose of ["practice", "evaluation"] as const) {
+		for (const scenario of unitScenarios(unit, purpose)) {
+			for (const step of scenario.steps) {
+				for (const question of step.questions) {
+					if (question.choices.length === 0) continue;
+					caseQuestions.add(`${unit.id}/${question.id}`);
+					if (!question.choices.some((choice) => choice.why)) continue;
+					caseQuestionsWithWhy.add(`${unit.id}/${question.id}`);
+					const label = `${scenario.id}/${step.id}/${question.id}`;
+					for (const choice of question.choices) {
+						const accepted = question.accepted.includes(choice.id);
+						if (accepted && choice.why)
+							fail(`${label}: choice "${choice.id}" is accepted and has a why`);
+						if (!accepted && !choice.why)
+							fail(`${label}: wrong choice "${choice.id}" has no why`);
+						if (choice.why && !filled(choice.why))
+							fail(`${label}: choice "${choice.id}" has an empty why`);
+					}
+				}
+			}
+		}
+	}
+}
+
+// --- Predict blocks with a why give one to every wrong choice (read from the lesson source) ---
+let predictions = 0;
+let predictionsWithWhy = 0;
+const isText = (node: ts.Node) =>
+	ts.isStringLiteral(node) ||
+	ts.isNoSubstitutionTemplateLiteral(node) ||
+	ts.isTemplateExpression(node);
+/** A literal `[en, zh]` whose halves are both plain and empty; templates count as filled. */
+const emptyCopy = (node: ts.Node) =>
+	ts.isArrayLiteralExpression(node) &&
+	node.elements.some(
+		(half) =>
+			(ts.isStringLiteral(half) || ts.isNoSubstitutionTemplateLiteral(half)) &&
+			half.text.trim() === "",
+	);
+const property = (object: ts.ObjectLiteralExpression, name: string) =>
+	object.properties.find(
+		(item): item is ts.PropertyAssignment =>
+			ts.isPropertyAssignment(item) &&
+			ts.isIdentifier(item.name) &&
+			item.name.text === name,
+	)?.initializer;
+for (const name of readdirSync(lessonsDir)) {
+	if (!name.endsWith(".tsx")) continue;
+	const path = `${lessonsDir}${name}`;
+	const source = ts.createSourceFile(
+		path,
+		readFileSync(path, "utf8"),
+		ts.ScriptTarget.Latest,
+		true,
+		ts.ScriptKind.TSX,
+	);
+	const visit = (node: ts.Node) => {
+		if (
+			ts.isPropertyAssignment(node) &&
+			ts.isIdentifier(node.name) &&
+			node.name.text === "predict" &&
+			ts.isObjectLiteralExpression(node.initializer)
+		) {
+			predictions++;
+			const line =
+				source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+			const label = `${name}:${line}`;
+			const choices = property(node.initializer, "choices");
+			const answer = property(node.initializer, "answer");
+			if (
+				!choices ||
+				!ts.isArrayLiteralExpression(choices) ||
+				!answer ||
+				!ts.isStringLiteral(answer)
+			) {
+				notes.push(`${label}: predict choices or answer are not literals`);
+			} else {
+				const read = choices.elements.map((element) => {
+					if (!ts.isObjectLiteralExpression(element)) return null;
+					const id = property(element, "id");
+					if (!id || !ts.isStringLiteral(id)) return null;
+					return { id: id.text, why: property(element, "why") };
+				});
+				if (read.some((choice) => choice === null))
+					notes.push(`${label}: a predict choice is not a literal`);
+				else if (read.some((choice) => choice?.why)) {
+					predictionsWithWhy++;
+					for (const choice of read) {
+						if (!choice) continue;
+						const right = choice.id === answer.text;
+						if (right && choice.why)
+							fail(
+								`${label}: choice "${choice.id}" is the answer and has a why`,
+							);
+						if (!right && !choice.why)
+							fail(`${label}: wrong choice "${choice.id}" has no why`);
+						if (
+							choice.why &&
+							!isText(choice.why) &&
+							(emptyCopy(choice.why) ||
+								(ts.isArrayLiteralExpression(choice.why) &&
+									choice.why.elements.length !== 2))
+						)
+							fail(`${label}: choice "${choice.id}" has an empty or odd why`);
+					}
+				}
+			}
+		}
+		ts.forEachChild(node, visit);
+	};
+	visit(source);
+}
+
 // --- Report -----------------------------------------------------------------------------------
 for (const note of notes) console.log(`note: ${note}`);
 if (failures.length > 0) {
@@ -228,5 +361,5 @@ if (failures.length > 0) {
 const edges = conceptList.flatMap((concept) => concept.prerequisites);
 const hard = edges.filter((edge) => edge.strength === "hard").length;
 console.log(
-	`concepts ok: ${conceptIds.length} concepts, ${edges.length} prerequisite edges (${hard} hard, ${edges.length - hard} soft), ${lessons.length} lessons, ${checkpoints.length} checkpoints`,
+	`concepts ok: ${conceptIds.length} concepts, ${edges.length} prerequisite edges (${hard} hard, ${edges.length - hard} soft), ${lessons.length} lessons, ${checkpoints.length} checkpoints, ${teachingUnits.length} units; why on ${caseQuestionsWithWhy.size} of ${caseQuestions.size} case questions and ${predictionsWithWhy} of ${predictions} predictions`,
 );
