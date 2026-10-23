@@ -654,10 +654,21 @@ const scenes = [
 					id: "delta",
 					label: [`About ${price(CALL_DELTA)}`, `约 ${price(CALL_DELTA)}`],
 				},
-				{ id: "full", label: ["$1.00, like the stock", "$1.00，和股票一样"] },
+				{
+					id: "full",
+					label: ["$1.00, like the stock", "$1.00，和股票一样"],
+					why: [
+						`Only a delta of 1.00 moves dollar for dollar with the stock. This call's delta is ${fixed2(CALL_DELTA)}, so it takes about that fraction of each $1.`,
+						`只有 Delta 为 1.00 的期权才会与股票一比一变动。这张看涨的 Delta 是 ${fixed2(CALL_DELTA)}，所以每 $1 的变动它大约只取这一比例。`,
+					],
+				},
 				{
 					id: "none",
 					label: ["Nothing until it's in the money", "在价内之前不会变"],
+					why: [
+						`An option's value responds to the stock before it is in the money: far out, delta is small, but not zero. This call's delta is ${fixed2(CALL_DELTA)}.`,
+						`期权在进入实值之前就会随股价变动：远离行权价时 Delta 很小，但不是零。这张看涨的 Delta 是 ${fixed2(CALL_DELTA)}。`,
+					],
 				},
 			],
 			answer: "delta",

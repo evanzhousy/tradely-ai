@@ -469,8 +469,19 @@ const scenes = [
 						String(Math.round(DELTA * HELD * 100) / 100),
 						String(Math.round(DELTA * HELD * 100) / 100),
 					],
+					why: [
+						`That is ${DELTA.toFixed(2)} × ${HELD}: delta times contracts, without the 100 shares each contract covers.`,
+						`这是 ${DELTA.toFixed(2)} × ${HELD}：Delta 乘以张数，却没有乘上每张合约对应的 100 股。`,
+					],
 				},
-				{ id: "shares", label: [count(HELD * 100), count(HELD * 100)] },
+				{
+					id: "shares",
+					label: [count(HELD * 100), count(HELD * 100)],
+					why: [
+						`${count(HELD * 100)} shares is what ${HELD} contracts control, and what the position's delta would be if each call moved one for one with ALFA. At a delta of ${DELTA.toFixed(2)} it moves ${DELTA.toFixed(2)} of that.`,
+						`${count(HELD * 100)} 股是 ${HELD} 张合约对应的股数，也是每张看涨与 ALFA 一比一变动时持仓的 Delta。Delta 为 ${DELTA.toFixed(2)} 时，它只变动其中的 ${DELTA.toFixed(2)}。`,
+					],
+				},
 			],
 			answer: "right",
 			entry: {

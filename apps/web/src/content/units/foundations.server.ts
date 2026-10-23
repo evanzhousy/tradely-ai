@@ -62,13 +62,25 @@ export const foundationUnits: TeachingUnit[] = [
 						"What does the cancellation tell you?",
 						"这次撤单能说明什么？",
 						[
-							["trade", "The cancelled contracts traded", "被撤销的合约成交了"],
+							[
+								"trade",
+								"The cancelled contracts traded",
+								"被撤销的合约成交了",
+								"A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
+								"撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。",
+							],
 							[
 								"quote",
 								"An order left the book; nothing traded",
 								"一张订单离开了订单簿；没有成交",
 							],
-							["buyer", "A buyer took the offer", "有买方吃掉了这张卖单"],
+							[
+								"buyer",
+								"A buyer took the offer",
+								"有买方吃掉了这张卖单",
+								"Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
+								"如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。",
+							],
 						],
 						"quote",
 						"A cancel is an order event. With no trade message, nothing traded.",
