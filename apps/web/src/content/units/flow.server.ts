@@ -18,6 +18,7 @@ import {
 export const flowUnits: TeachingUnit[] = [
 	{
 		id: "session-flow-vs-structure",
+		version: 3,
 		conceptLab: {
 			kind: "session-flow-vs-structure",
 			intro: t(
@@ -43,6 +44,18 @@ export const flowUnits: TeachingUnit[] = [
 			const closed = [5, 9, 19, 11][v];
 			const transfer = [8, 7, 6, 9][v];
 			const volume = opened + closed + transfer;
+			const ending = 500 + opened - closed;
+			/** What the feed in the third question carries: only the volume (guided), the buyer's open/close flag alone, or both sides' flags. */
+			const feed = (["volume", "buyer", "both", "both"] as const)[v];
+			/** The dashboard row in the last question: one fixed expiry, or a window of days to expiry whose expiries roll. */
+			const rolling = v % 2 === 1;
+			const [rowStart, rowEnd] = [
+				[3120, 3260],
+				[2480, 2610],
+				[4050, 3980],
+				[1940, 2150],
+			][v];
+			const rowChange = rowEnd - rowStart;
 			return {
 				brief: t(
 					`One ALFA call series starts the day with open interest of 500. Today's complete trade record shows ${opened} contracts where both sides opened, ${closed} where both sides closed, and ${transfer} where one side opened and the other closed. Nothing was exercised or expired.`,
@@ -88,40 +101,124 @@ export const flowUnits: TeachingUnit[] = [
 						"ending-oi",
 						"What is open interest at the end of the day?",
 						"收盘时未平仓量是多少？",
-						500 + opened - closed,
+						ending,
 						"contracts",
 						"张",
-						`500 + ${opened} − ${closed} = ${500 + opened - closed}. The ${transfer} transferred contracts changed owners, not the count.`,
-						`500 + ${opened} − ${closed} = ${500 + opened - closed}。换手的 ${transfer} 张只换了持有人，没有改变数量。`,
+						`500 + ${opened} − ${closed} = ${ending}. The ${transfer} transferred contracts changed owners, not the count.`,
+						`500 + ${opened} − ${closed} = ${ending}。换手的 ${transfer} 张只换了持有人，没有改变数量。`,
 					),
 					c(
 						"no-flags",
-						"If you knew only today's volume, could you work out the ending open interest?",
-						"如果只知道今天的成交量，能算出收盘时的未平仓量吗？",
+						feed === "volume"
+							? "If you knew only today's volume, could you work out the ending open interest?"
+							: feed === "buyer"
+								? "Suppose a feed listed each of today's trades with its size and the buyer's open/close flag, but not the seller's. Could you work out the ending open interest from it?"
+								: "Suppose a feed listed each of today's trades with its size and both sides' open/close flags. Could you work out the ending open interest from it?",
+						feed === "volume"
+							? "如果只知道今天的成交量，能算出收盘时的未平仓量吗？"
+							: feed === "buyer"
+								? "假设某个数据源列出今天每笔成交的张数和买方的开平仓标记，但没有卖方的。仅凭它，能算出收盘时的未平仓量吗？"
+								: "假设某个数据源列出今天每笔成交的张数和双方的开平仓标记。仅凭它，能算出收盘时的未平仓量吗？",
 						[
 							[
 								"yes",
 								"Yes: add the volume to 500",
 								"能：把成交量加到 500 上",
-								"Adding volume assumes every trade opened new contracts. Trades that close remove contracts, so you'd need to know which trades opened and which closed.",
-								"加上成交量，就是假设每笔成交都开了新合约。平仓的成交会减少合约，所以你需要知道哪些成交是开仓、哪些是平仓。",
+								feed === "volume"
+									? "Adding volume assumes every trade opened new contracts. Trades that close remove contracts, so you'd need to know which trades opened and which closed."
+									: feed === "buyer"
+										? `Adding all ${volume} assumes both sides opened on every trade. A buyer's opening flag can't rule out a seller who was closing.`
+										: `Adding all ${volume} assumes every trade opened on both sides. The flags would show ${closed} closed on both sides and ${transfer} only changed hands.`,
+								feed === "volume"
+									? "加上成交量，就是假设每笔成交都开了新合约。平仓的成交会减少合约，所以你需要知道哪些成交是开仓、哪些是平仓。"
+									: feed === "buyer"
+										? `加上全部 ${volume} 张，就是假设每笔成交双方都开仓。买方的开仓标记无法排除卖方是在平仓。`
+										: `加上全部 ${volume} 张，就是假设每笔成交双方都开仓。标记会显示 ${closed} 张是双方平仓，${transfer} 张只是换手。`,
 							],
 							[
 								"no",
 								"No: you'd need to know which trades opened and which closed",
 								"不能：需要知道哪些成交是开仓、哪些是平仓",
+								`Both sides' flags tell you exactly that: 500 + ${opened} − ${closed} = ${ending}, and the ${transfer} transfers change nothing.`,
+								`双方的标记正好说明了这一点：500 + ${opened} − ${closed} = ${ending}，换手的 ${transfer} 张不改变数量。`,
 							],
 							[
 								"minus",
 								"Yes: subtract the volume from 500",
 								"能：用 500 减去成交量",
-								"Subtracting volume assumes every trade closed. Some may have opened new contracts, so volume alone can't settle it.",
-								"减去成交量，就是假设每笔成交都是平仓。有些可能开了新合约，所以仅凭成交量无法确定。",
+								feed === "volume"
+									? "Subtracting volume assumes every trade closed. Some may have opened new contracts, so volume alone can't settle it."
+									: feed === "buyer"
+										? `Subtracting all ${volume} assumes every trade closed on both sides. The buyer's flag shows only one side of each trade.`
+										: `Subtracting all ${volume} assumes every trade closed on both sides. The flags would show ${opened} opened on both sides.`,
+								feed === "volume"
+									? "减去成交量，就是假设每笔成交都是平仓。有些可能开了新合约，所以仅凭成交量无法确定。"
+									: feed === "buyer"
+										? `减去全部 ${volume} 张，就是假设每笔成交双方都平仓。买方标记只显示每笔成交的一方。`
+										: `减去全部 ${volume} 张，就是假设每笔成交双方都平仓。标记会显示 ${opened} 张是双方开仓。`,
+							],
+							[
+								"ledger",
+								"Yes: count which trades added contracts and which removed them",
+								"能：分别统计增加合约和减少合约的成交",
+								feed === "volume"
+									? `Sorting the trades needs each one's open/close flags. Knowing only the volume of ${volume}, you can't.`
+									: "The buyer's flag alone can't sort them: a buyer who opens against a seller who closes is a transfer and adds nothing. You'd need the seller's flag too.",
+								feed === "volume"
+									? `区分这些成交需要每笔的开平仓标记。只知道 ${volume} 张的成交量，做不到。`
+									: "仅凭买方标记无法区分：买方开仓、卖方平仓属于换手，不增加合约。你还需要卖方的标记。",
 							],
 						],
-						"no",
-						`A volume of ${volume} fits any ending from ${500 - volume}, if every trade closed, to ${500 + volume}, if every trade opened. Only the open and close record pins it at ${500 + opened - closed}.`,
-						`${volume} 的成交量对应的收盘未平仓量，可以从 ${500 - volume}（全部平仓）到 ${500 + volume}（全部开仓）。只有开平仓记录才能确定它是 ${500 + opened - closed}。`,
+						feed === "both" ? "ledger" : "no",
+						feed === "volume"
+							? `A volume of ${volume} fits any ending from ${500 - volume}, if every trade closed, to ${500 + volume}, if every trade opened. Only the open and close record pins it at ${ending}.`
+							: feed === "buyer"
+								? `When the buyer opens, the seller may be opening too, which adds a contract, or closing, which only transfers one. Without the seller's flag, the ${volume} contracts don't pin the ending; both sides' flags put it at ${ending}.`
+								: `Both sides' flags sort every trade: ${opened} opened on both sides, ${closed} closed on both sides and ${transfer} changed hands. 500 + ${opened} − ${closed} = ${ending}.`,
+						feed === "volume"
+							? `${volume} 的成交量对应的收盘未平仓量，可以从 ${500 - volume}（全部平仓）到 ${500 + volume}（全部开仓）。只有开平仓记录才能确定它是 ${ending}。`
+							: feed === "buyer"
+								? `买方开仓时，卖方可能也在开仓（增加一张），也可能在平仓（只是换手）。没有卖方标记，${volume} 张成交无法确定收盘数；双方的标记才能确定它是 ${ending}。`
+								: `双方的标记能区分每笔成交：${opened} 张双方开仓，${closed} 张双方平仓，${transfer} 张换手。500 + ${opened} − ${closed} = ${ending}。`,
+					),
+					c(
+						"series",
+						`Separately, a dashboard row for ${rolling ? "ALFA calls with 14–30 days to expiry" : "ALFA calls expiring November 20"} shows open interest of ${plain(rowStart)} on September 1 and ${plain(rowEnd)} on September 2. What does the ${signed(rowChange)} change tell you?`,
+						`另外，看板上“${rolling ? "距到期 14–30 天的 ALFA 看涨" : "11 月 20 日到期的 ALFA 看涨"}”这一行显示：9 月 1 日未平仓量为 ${plain(rowStart)}，9 月 2 日为 ${plain(rowEnd)}。${signed(rowChange)} 的变化说明了什么？`,
+						[
+							[
+								"net",
+								"A net change in the open interest of the same contracts",
+								"同一批合约未平仓量的净变化",
+								`A 14–30-day row rolls: from one day to the next, an expiry can enter or leave the window, so ${plain(rowStart)} and ${plain(rowEnd)} may not count the same contracts.`,
+								`14–30 天这一行是滚动的：隔一天就可能有到期日进入或离开这个窗口，所以 ${plain(rowStart)} 和 ${plain(rowEnd)} 统计的可能不是同一批合约。`,
+							],
+							[
+								"rolled",
+								"Nothing firm: the row may count different contracts on each date",
+								"说明不了什么：这一行在两个日期统计的可能是不同的合约",
+								`The row is one fixed expiry, November 20, so both reports count the same contracts and ${signed(rowChange)} is their net change.`,
+								`这一行是一个固定到期日（11 月 20 日），两次报告统计的是同一批合约，${signed(rowChange)} 就是它们的净变化。`,
+							],
+							[
+								"trader",
+								`That one trader ${rowChange > 0 ? "opened" : "closed"} ${plain(Math.abs(rowChange))} contracts`,
+								`有一位交易者${rowChange > 0 ? "开了" : "平了"} ${plain(Math.abs(rowChange))} 张`,
+								rolling
+									? "Open interest is a net count across everyone, and this rolling row may not even count the same contracts on both dates."
+									: `Open interest is a net count across everyone: ${signed(rowChange)} is all traders' opening minus closing, so it can't say who traded or how much any one trader did.`,
+								rolling
+									? "未平仓量是所有人的净计数，而这个滚动的行在两个日期统计的甚至可能不是同一批合约。"
+									: `未平仓量是所有人的净计数：${signed(rowChange)} 是全体交易者开仓减平仓的结果，不能说明谁在交易，也不能说明某一个人做了多少。`,
+							],
+						],
+						rolling ? "rolled" : "net",
+						rolling
+							? `A 14–30-day row holds whichever expiries fall in that window each day, so an expiry can enter or leave between reports. The ${signed(rowChange)} mixes position changes with that turnover; to measure positions, compare one fixed expiry.`
+							: `A fixed expiry keeps the same contracts in the row, so ${signed(rowChange)} is their net change in open interest. It's still a net count: it doesn't say how many opened, or who traded.`,
+						rolling
+							? `14–30 天这一行每天包含落在窗口内的到期日，两次报告之间可能有到期日进入或离开。${signed(rowChange)} 混合了持仓变化与这种更替；要衡量持仓，应比较一个固定到期日。`
+							: `固定到期日让这一行始终是同一批合约，所以 ${signed(rowChange)} 是它们未平仓量的净变化。它仍然是净值：不能说明开了多少，也不能说明是谁在交易。`,
 					),
 				],
 			};
@@ -129,6 +226,7 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "trade-records",
+		version: 3,
 		conceptLab: {
 			kind: "trade-records",
 			intro: t(
@@ -154,10 +252,18 @@ export const flowUnits: TeachingUnit[] = [
 			const b = [30, 10, 45, 15][v];
 			const premium = (a * 2 + b * 3) * 100;
 			const weighted = (a * 2 + b * 3) / (a + b);
+			/** The source's order ID on each report: none (guided), one ID on both, or a different ID on each. */
+			const [first, second] = [
+				[0, 0],
+				[4417, 4417],
+				[5120, 5188],
+				[7302, 7302],
+			][v];
+			const link = first === 0 ? "none" : first === second ? "same" : "apart";
 			return {
 				brief: t(
-					`Two prints in the same ALFA call: ${a} contracts at $2.00 and ${b} at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.`,
-					`同一个 ALFA 看涨有两笔成交：${a} 张成交在 $2.00，${b} 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。`,
+					`Two prints in the same ALFA call: ${a} contracts at $2.00 and ${b} at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.${link === "same" ? ` Both reports carry the source's order ID ${first}.` : link === "apart" ? ` The source tags them with different order IDs: ${first} and ${second}.` : ""}`,
+					`同一个 ALFA 看涨有两笔成交：${a} 张成交在 $2.00，${b} 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。${link === "same" ? `两条报告都带有来源给出的订单编号 ${first}。` : link === "apart" ? `来源给它们标注了不同的订单编号：${first} 和 ${second}。` : ""}`,
 				),
 				questions: [
 					n(
@@ -183,25 +289,69 @@ export const flowUnits: TeachingUnit[] = [
 					),
 					c(
 						"link",
-						"Does adding these prints into one row show they were one strategy?",
-						"把这两笔成交合成一行，能说明它们属于同一个策略吗？",
+						"Going by the records, were these two prints one order?",
+						"根据这些记录，这两笔成交属于同一张订单吗？",
 						[
 							[
 								"yes",
-								"Yes: matching times show one owner",
-								"能：时间一致说明属于同一个人",
-								"Matching times are why you grouped them, not proof of one owner. A link needs a package or order ID.",
-								"时间相同只是你把它们归在一起的理由，并不能证明属于同一人。关联需要组合单或订单编号。",
+								"Yes: grouping them into one row shows it",
+								"是：把它们合成一行就说明了这一点",
+								link === "none"
+									? "Grouping follows your rule, not the source's. A link needs its own evidence, such as an order ID, and these reports carry none."
+									: link === "same"
+										? `They were one order, but the row isn't what shows it: any two prints can be grouped. Both reports carry order ID ${first}.`
+										: `Grouping follows your rule, not the source's. The reports carry different order IDs, ${first} and ${second}.`,
+								link === "none"
+									? "分组遵循的是你的规则，而不是来源的记录。关联需要单独的证据，比如订单编号，而这两条报告都没有。"
+									: link === "same"
+										? `它们确实属于同一张订单，但说明这一点的不是那一行：任何两笔成交都可以分到一组。两条报告都带有订单编号 ${first}。`
+										: `分组遵循的是你的规则，而不是来源的记录。两条报告的订单编号不同：${first} 和 ${second}。`,
+							],
+							[
+								"linked",
+								"Yes: the records tie them to one order",
+								"是：记录把它们连到同一张订单",
+								link === "apart"
+									? `The order IDs differ, ${first} and ${second}, so the source puts them in separate orders.`
+									: "Nothing here ties them together: neither report carries an order ID.",
+								link === "apart"
+									? `订单编号不同（${first} 和 ${second}），来源把它们记为不同的订单。`
+									: "这里没有任何信息把它们连在一起：两条报告都没有订单编号。",
+							],
+							[
+								"apart",
+								"No: the records put them in separate orders",
+								"否：记录显示它们属于不同的订单",
+								link === "same"
+									? `Both reports carry order ID ${first}: the source puts them in the same order.`
+									: "Nothing here separates them either: with no order ID, they could be one order or two.",
+								link === "same"
+									? `两条报告都带有订单编号 ${first}：来源把它们记为同一张订单。`
+									: "这里也没有任何信息把它们分开：没有订单编号，它们可能是一张订单，也可能是两张。",
 							],
 							[
 								"no",
-								"No: grouping prints doesn't show they were linked",
-								"不能：把成交分组不能说明它们有关联",
+								"Can't tell: nothing in the records links or separates them",
+								"无法判断：记录里没有任何信息把它们连起来或分开",
+								link === "same"
+									? `The records do say: both reports carry order ID ${first}.`
+									: `The records do say: the reports carry different order IDs, ${first} and ${second}.`,
+								link === "same"
+									? `记录给出了答案：两条报告都带有订单编号 ${first}。`
+									: `记录给出了答案：两条报告的订单编号不同，分别是 ${first} 和 ${second}。`,
 							],
 						],
-						"no",
-						"Nothing here links the prints to one order or strategy. An aggregate row follows a grouping rule; a link needs its own evidence, such as a multi-leg condition code.",
-						"这里没有任何信息把两笔成交连到同一张订单或同一个策略。聚合行只是遵循分组规则；关联需要单独的证据，比如多腿条件代码。",
+						link === "none" ? "no" : link === "same" ? "linked" : "apart",
+						link === "none"
+							? "Nothing here links the prints to one order or separates them into two. An aggregate row follows a grouping rule; a link needs its own evidence, such as a shared order ID."
+							: link === "same"
+								? `Both reports carry order ID ${first}, so the source ties them to one order. The aggregate row didn't show that; the ID did.`
+								: `Different order IDs, ${first} and ${second}, mean two orders, even though one rule grouped them. Two orders can still come from one trader; the IDs don't say who.`,
+						link === "none"
+							? "这里没有任何信息把两笔成交连到同一张订单，也没有把它们分成两张。聚合行只是遵循分组规则；关联需要单独的证据，比如相同的订单编号。"
+							: link === "same"
+								? `两条报告都带有订单编号 ${first}，来源把它们连到同一张订单。说明这一点的是编号，而不是聚合行。`
+								: `订单编号不同（${first} 和 ${second}），说明是两张订单，尽管同一条规则把它们分到了一组。两张订单仍可能来自同一个交易者；编号不能说明是谁。`,
 					),
 				],
 			};
@@ -209,6 +359,7 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "execution-conditions",
+		version: 3,
 		conceptLab: {
 			kind: "execution-conditions",
 			intro: t(
@@ -238,10 +389,14 @@ export const flowUnits: TeachingUnit[] = [
 			][v];
 			const premium = 210 * a + 211 * b + 212 * d;
 			const average = premium / (100 * (a + b + d));
+			/** The buyer's open/close flag on the fills: none (guided), opening or closing. */
+			const flag = (["none", "opening", "none", "closing"] as const)[v];
+			/** Whether the separate pair of prints in the last question is a priced package. */
+			const packaged = v !== 2;
 			return {
 				brief: t(
-					`One buy order sweeps three venues within milliseconds: ${a} ALFA calls at $2.10, ${b} at $2.11 and ${d} at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.`,
-					`一张买单在几毫秒内扫过三个场所：${a} 张 ALFA 看涨成交在 $2.10，${b} 张在 $2.11，${d} 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。`,
+					`One buy order sweeps three venues within milliseconds: ${a} ALFA calls at $2.10, ${b} at $2.11 and ${d} at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.${flag === "opening" ? " Each fill also carries the buyer's opening flag." : flag === "closing" ? " Each fill also carries the buyer's closing flag." : ""}`,
+					`一张买单在几毫秒内扫过三个场所：${a} 张 ALFA 看涨成交在 $2.10，${b} 张在 $2.11，${d} 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。${flag === "opening" ? "每次成交还带有买方的开仓标记。" : flag === "closing" ? "每次成交还带有买方的平仓标记。" : ""}`,
 				),
 				questions: [
 					n(
@@ -286,8 +441,16 @@ export const flowUnits: TeachingUnit[] = [
 								"opening",
 								"The buyer opened a new bullish position",
 								"买方新开了一个看涨仓位",
-								"Routing says nothing about opening or closing, or about a view. The buyer may have been closing a short call.",
-								"路由方式不能说明开仓还是平仓，也不能说明看法。买方可能是在平掉看涨空头。",
+								flag === "opening"
+									? "The opening flag, not the sweep code, says the buyer opened, and neither shows a bullish view. The sweep code says only how the order was routed."
+									: flag === "closing"
+										? "The sweep code says nothing about opening, and here the closing flag says the buyer was closing calls it had sold."
+										: "Routing says nothing about opening or closing, or about a view. The buyer may have been closing a short call.",
+								flag === "opening"
+									? "说明买方开仓的是开仓标记，而不是扫单代码，两者都不能说明看涨的看法。扫单代码只说明订单如何路由。"
+									: flag === "closing"
+										? "扫单代码不能说明开仓；这里的平仓标记还说明买方是在平掉之前卖出的看涨。"
+										: "路由方式不能说明开仓还是平仓，也不能说明看法。买方可能是在平掉看涨空头。",
 							],
 						],
 						"routing",
@@ -295,19 +458,91 @@ export const flowUnits: TeachingUnit[] = [
 						"扫单描述的是订单如何路由。谁下的单、掌握什么信息、是否开了新仓，都需要其他证据。",
 					),
 					c(
+						"open-close",
+						"Did the buyer open new positions with this order?",
+						"买方用这张订单开了新仓吗？",
+						[
+							[
+								"unknown",
+								"Can't tell: nothing here says whether the buyer opened or closed",
+								"无法判断：这里没有信息说明买方是开仓还是平仓",
+								`Something here does: each fill carries the buyer's ${flag === "closing" ? "closing" : "opening"} flag.`,
+								`这里有信息：每次成交都带有买方的${flag === "closing" ? "平仓" : "开仓"}标记。`,
+							],
+							[
+								"opened",
+								"Yes: the buyer opened new long calls",
+								"是：买方新开了看涨多头",
+								flag === "closing"
+									? "Each fill carries the buyer's closing flag: the buyer was buying back calls it had sold."
+									: "Nothing here says opening: the fills carry a sweep condition but no open/close flag.",
+								flag === "closing"
+									? "每次成交都带有买方的平仓标记：买方是在买回之前卖出的看涨。"
+									: "这里没有信息说明开仓：这些成交带有扫单条件，但没有开平仓标记。",
+							],
+							[
+								"closed",
+								"No: the buyer bought back calls it had sold",
+								"否：买方买回了之前卖出的看涨",
+								flag === "opening"
+									? "Each fill carries the buyer's opening flag: the buyer opened new long calls."
+									: "Nothing here says closing either: with no open/close flag, both are possible.",
+								flag === "opening"
+									? "每次成交都带有买方的开仓标记：买方新开了看涨多头。"
+									: "这里也没有信息说明平仓：没有开平仓标记，两种都有可能。",
+							],
+							[
+								"urgent",
+								"Yes: an urgent sweep means new buying",
+								"是：急迫的扫单说明是新买入",
+								flag === "opening"
+									? "The buyer did open, but the opening flag shows it, not the sweep: an urgent order can close a position just as well."
+									: flag === "closing"
+										? "An urgent order can close a position as well as open one: here each fill carries the buyer's closing flag."
+										: "A sweep says how the order was routed, not whether it opened. That needs an open/close flag, and these fills carry none.",
+								flag === "opening"
+									? "买方确实开了仓，但说明这一点的是开仓标记，而不是扫单：急迫的订单同样可以用来平仓。"
+									: flag === "closing"
+										? "急迫的订单既能开仓也能平仓：这里每次成交都带有买方的平仓标记。"
+										: "扫单说明订单如何路由，而不是是否开仓。那需要开平仓标记，而这些成交都没有。",
+							],
+						],
+						flag === "opening"
+							? "opened"
+							: flag === "closing"
+								? "closed"
+								: "unknown",
+						flag === "opening"
+							? "The buyer's opening flag says these calls opened new long positions. The sweep code alone couldn't show that, and neither says what the buyer expects."
+							: flag === "closing"
+								? "The buyer's closing flag says the buyer was buying back calls it had sold. An urgent buy sweep can close a position rather than start a new bet."
+								: "A sweep code says how the order was routed. Whether the buyer opened or closed needs an open/close flag, and these fills carry none.",
+						flag === "opening"
+							? "买方的开仓标记说明这些看涨是新开的多头。仅凭扫单代码无法说明这一点，两者也都不能说明买方的预期。"
+							: flag === "closing"
+								? "买方的平仓标记说明买方是在买回之前卖出的看涨。急迫的扫单买入可能是在平仓，而不是新下注。"
+								: "扫单代码说明订单如何路由。买方是开仓还是平仓，需要开平仓标记，而这些成交都没有。",
+					),
+					c(
 						"package",
-						"Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?",
-						"另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？",
+						packaged
+							? "Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?"
+							: "Separately, two ALFA calls print in the same second at $4.40 and $1.65, each above its own ask on a valid quote from that moment. Neither print carries a complex-order condition or a package ID. How should you read them?",
+						packaged
+							? "另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？"
+							: "另外，两张 ALFA 看涨在同一秒分别成交在 $4.40 和 $1.65，各自都高于当时有效报价中的卖价。两笔成交都没有复杂订单条件，也没有组合单编号。应该如何解读？",
 						[
 							[
 								"package",
 								"As one package that traded inside its market; where each leg printed isn't evidence of who was aggressive",
 								"作为在组合市场内成交的一个整体；各条腿成交在哪里，并不能说明谁是主动方",
+								"Nothing here makes them a package: no complex-order condition, no package ID and no package price. Read each print against its own quote.",
+								"这里没有任何信息说明它们是一个整体：没有复杂订单条件、没有组合单编号，也没有组合价格。应该把每笔成交与它自己的报价比较。",
 							],
 							[
 								"buys",
-								"As two aggressive buys: both legs printed above the ask",
-								"作为两笔主动买入：两条腿都高于卖价",
+								"As two aggressive buys: both printed above the ask",
+								"作为两笔主动买入：两笔都高于卖价",
 								"A leg's print location means little inside a package: the price that counts is the $3.00 net, which sits inside the spread's own market.",
 								"在组合单里，单条腿的成交位置意义不大：要看的是 $3.00 的净价，它位于价差自身的买卖报价之内。",
 							],
@@ -315,13 +550,21 @@ export const flowUnits: TeachingUnit[] = [
 								"sells",
 								"As two aggressive sells hidden inside a spread",
 								"作为藏在价差里的两笔主动卖出",
-								"Nothing points to selling: the package traded at $3.00, inside its $2.90–$3.30 market. Read it as one package, not hidden aggression.",
-								"没有任何迹象表明是卖出：组合单成交在 $3.00，位于 $2.90–$3.30 的报价之内。应把它当作一个整体来读，而不是隐藏的主动方。",
+								packaged
+									? "Nothing points to selling: the package traded at $3.00, inside its $2.90–$3.30 market. Read it as one package, not hidden aggression."
+									: "Both printed above their asks, which points to buyers, not sellers, and nothing puts them in a spread.",
+								packaged
+									? "没有任何迹象表明是卖出：组合单成交在 $3.00，位于 $2.90–$3.30 的报价之内。应把它当作一个整体来读，而不是隐藏的主动方。"
+									: "两笔都高于各自的卖价，指向的是买方而不是卖方；也没有任何信息说明它们属于一个价差。",
 							],
 						],
-						"package",
-						"A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy.",
-						"复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。",
+						packaged ? "package" : "buys",
+						packaged
+							? "A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy."
+							: "With no complex-order condition or link, each print stands on its own, and a print above its ask points to an aggressive buyer. That still doesn't say who bought or why.",
+						packaged
+							? "复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。"
+							: "没有复杂订单条件或关联，每笔成交各自独立；高于卖价的成交指向主动买方。但这仍然不能说明是谁买的、为什么买。",
 					),
 				],
 			};
@@ -385,6 +628,7 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "option-strategies",
+		version: 3,
 		conceptLab: {
 			kind: "option-strategies",
 			intro: t(
@@ -411,10 +655,14 @@ export const flowUnits: TeachingUnit[] = [
 			const long = Math.max(spot - 100, 0);
 			const short = Math.max(spot - 110, 0);
 			const perShare = long - short - cost;
+			/** How the spread's legs show on the tape: not shown (guided: the 110 sale alone), linked as one package, or side by side with no link. */
+			const tape = (["alone", "linked", "unlinked", "linked"] as const)[v];
+			/** What the second account's statement shows beside its 95 put: 100 shares, nothing in ALFA, or no statement at all. */
+			const holding = (["shares", "shares", "unseen", "none"] as const)[v];
 			return {
 				brief: t(
-					`You bought an ALFA 100/110 call spread for ${money(cost)} a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is ${money(spot)}. One contract covers 100 shares; ignore fees.`,
-					`你以每股净价 ${money(cost)} 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 ${money(spot)}。一张合约对应 100 股，不计费用。`,
+					`You bought an ALFA 100/110 call spread for ${money(cost)} a share net: long the 100 call and short the 110 call, same expiry.${tape === "linked" ? " On the tape, both legs printed in the same second, the same size, each with a multi-leg condition and the same package ID." : tape === "unlinked" ? " On the tape, both legs printed in the same second, the same size, with no condition code or package ID." : ""} At expiry ALFA is ${money(spot)}. One contract covers 100 shares; ignore fees.\n\nSeparately, a second account buys one ALFA 95 put. ${holding === "shares" ? "Its statement shows 100 ALFA shares." : holding === "none" ? "Its statement shows no ALFA shares and no other ALFA options." : "You see that trade, but not the account's statement."}`,
+					`你以每股净价 ${money(cost)} 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。${tape === "linked" ? "在成交记录上，两条腿在同一秒成交，数量相同，都带有多腿条件和同一个组合单编号。" : tape === "unlinked" ? "在成交记录上，两条腿在同一秒成交，数量相同，但都没有条件代码或组合单编号。" : ""}到期时 ALFA 为 ${money(spot)}。一张合约对应 100 股，不计费用。\n\n另外，第二个账户买入一张 ALFA 95 看跌。${holding === "shares" ? "它的账户报表显示持有 100 股 ALFA。" : holding === "none" ? "它的账户报表显示没有 ALFA 股票，也没有其他 ALFA 期权。" : "你只看到这笔成交，看不到该账户的报表。"}`,
 				),
 				questions: [
 					n(
@@ -429,25 +677,113 @@ export const flowUnits: TeachingUnit[] = [
 					),
 					c(
 						"isolated",
-						"If you saw only the 110 call being sold, could you tell it was part of this spread?",
-						"如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？",
+						tape === "alone"
+							? "If you saw only the 110 call being sold, could you tell it was part of this spread?"
+							: "Could someone watching the tape tell your 110 call sale was part of this spread?",
+						tape === "alone"
+							? "如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？"
+							: "旁观成交记录的人，能看出你卖出的 110 看涨属于这组价差吗？",
 						[
 							[
 								"can",
 								"Yes: selling calls always means a spread",
 								"能：卖出看涨总是意味着价差",
-								"Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
-								"卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。",
+								tape === "linked"
+									? "They could tell here, but not because selling calls means a spread: the multi-leg condition and shared package ID tie the two legs together."
+									: tape === "unlinked"
+										? "Selling calls doesn't always mean a spread: with no condition code or package ID, the sale could be a covered call, a close or an uncovered sale."
+										: "Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
+								tape === "linked"
+									? "这里确实能看出来，但不是因为卖出看涨就意味着价差：是多腿条件和同一个组合单编号把两条腿连在一起。"
+									: tape === "unlinked"
+										? "卖出看涨并不总是价差：没有条件代码或组合单编号，这笔卖出可能是备兑看涨、平仓或未备兑卖出。"
+										: "卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。",
 							],
 							[
 								"cannot",
 								"No: you'd need the other leg and a link between them",
 								"不能：需要另一条腿以及两者之间的关联",
+								"The tape has both: the other leg printed beside it, and the multi-leg condition and shared package ID link them.",
+								"成交记录两样都有：另一条腿就在旁边成交，多腿条件和同一个组合单编号把它们连了起来。",
+							],
+							[
+								"linked",
+								"Yes: the tape ties it to the 100 call buy",
+								"能：成交记录把它和 100 看涨的买入连在一起",
+								tape === "unlinked"
+									? "Printing in the same second, at the same size, isn't a link: neither print carries a condition code or package ID, so they could be separate trades."
+									: "With only the 110 call's print in view, there's no other leg to tie it to.",
+								tape === "unlinked"
+									? "同一秒、同样数量成交并不是关联：两笔都没有条件代码或组合单编号，它们可能是各自独立的交易。"
+									: "只看到 110 看涨这一笔成交时，没有另一条腿可以和它连在一起。",
 							],
 						],
-						"cannot",
-						"A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
-						"一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。",
+						tape === "linked" ? "linked" : "cannot",
+						tape === "linked"
+							? "A multi-leg condition and one package ID on two same-size prints tie the short 110 call to the long 100 call. Without them, the sale alone could be a covered call, a close or an outright short."
+							: tape === "unlinked"
+								? "Same second and same size suggest a link but don't prove one. With no condition code or package ID, the sale could be a separate trade; only a linked-leg record settles it."
+								: "A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
+						tape === "linked"
+							? "两笔数量相同的成交带有多腿条件和同一个组合单编号，把 110 看涨空头和 100 看涨多头连在一起。没有这些，单看这笔卖出，可能是备兑、平仓，也可能是单纯做空。"
+							: tape === "unlinked"
+								? "同一秒、数量相同只是提示可能有关联，并不能证明。没有条件代码或组合单编号，这笔卖出可能是独立的交易；只有关联腿记录才能确定。"
+								: "一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。",
+					),
+					c(
+						"put",
+						"What is the second account's 95 put doing?",
+						"第二个账户的 95 看跌起什么作用？",
+						[
+							[
+								"protect",
+								"Protecting shares: the account still gains if ALFA rises",
+								"保护持股：ALFA 上涨时账户仍然获利",
+								holding === "none"
+									? "Its statement shows no ALFA shares, so the put has nothing to protect."
+									: "You can't see the account's statement, so you can't say it holds shares to protect.",
+								holding === "none"
+									? "它的报表显示没有 ALFA 股票，看跌没有可以保护的持股。"
+									: "你看不到该账户的报表，所以不能说它持有需要保护的股票。",
+							],
+							[
+								"bearish",
+								"Betting on a fall: the account gains only if ALFA drops",
+								"押注下跌：只有 ALFA 下跌时账户才获利",
+								holding === "shares"
+									? "Buying a put isn't bearish by itself: with 100 shares, the account gains if ALFA rises, and the put limits the loss below $95."
+									: "A lone put looks bearish, but you can't see the account: it may hold shares the put protects.",
+								holding === "shares"
+									? "买入看跌本身并不代表看空：持有 100 股时，ALFA 上涨账户就获利，看跌只是限制了 $95 以下的亏损。"
+									: "单独一张看跌看起来是看空，但你看不到这个账户：它可能持有这张看跌所保护的股票。",
+							],
+							[
+								"unknown",
+								"Can't tell: nothing here shows what else the account holds",
+								"无法判断：这里看不到账户还持有什么",
+								holding === "shares"
+									? "The statement shows it: 100 ALFA shares."
+									: "The statement shows it: no ALFA shares and no other ALFA options.",
+								holding === "shares"
+									? "报表给出了答案：持有 100 股 ALFA。"
+									: "报表给出了答案：没有 ALFA 股票，也没有其他 ALFA 期权。",
+							],
+						],
+						holding === "shares"
+							? "protect"
+							: holding === "none"
+								? "bearish"
+								: "unknown",
+						holding === "shares"
+							? "Shares plus a long put is a protective put: the account still gains if ALFA rises, and the put caps the loss if ALFA falls below $95. The put's direction alone doesn't show the position."
+							: holding === "none"
+								? "With no ALFA shares or other ALFA options, the put stands alone: the account's ALFA position gains only if ALFA falls."
+								: "A lone put purchase could be a bet on a fall or a hedge on shares. Without the account's holdings, you can't tell which.",
+						holding === "shares"
+							? "股票加看跌多头是保护性看跌：ALFA 上涨时账户仍然获利，ALFA 跌破 $95 时看跌限制亏损。仅看这张看跌的方向，看不出整个持仓。"
+							: holding === "none"
+								? "没有 ALFA 股票，也没有其他 ALFA 期权，这张看跌是单独的：该账户在 ALFA 上的持仓只有 ALFA 下跌时才获利。"
+								: "单独一笔看跌买入，可能是押注下跌，也可能是对持股的对冲。看不到账户持仓，就无法判断。",
 					),
 				],
 			};
@@ -455,6 +791,7 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "symbol-drawer",
+		version: 3,
 		conceptLab: {
 			kind: "symbol-drawer",
 			intro: t(
@@ -477,13 +814,15 @@ export const flowUnits: TeachingUnit[] = [
 		),
 		case: (v) => {
 			const current = v % 2 === 0;
+			/** The flow record's symbol: ALFA's, except in case 2, where another symbol's record has the right session. */
+			const symbol = v === 2 ? "BETA" : "ALFA";
 			const base = [1000, 1200, 1500, 1800][v];
 			const change = [-70, 85, -130, 40][v];
 			const later = base + change;
 			return {
 				brief: t(
-					`You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ALFA's for September ${current ? 3 : 2}. Open-interest reports for one fixed series show ${plain(base)} on September 1 and ${plain(later)} on September 2.`,
-					`你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ALFA 9 月 ${current ? 3 : 2} 日的。同一固定序列的未平仓量报告显示：9 月 1 日 ${plain(base)}，9 月 2 日 ${plain(later)}。`,
+					`You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ${symbol}'s for September ${current ? 3 : 2}. Open-interest reports for one fixed series show ${plain(base)} on September 1 and ${plain(later)} on September 2.`,
+					`你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ${symbol} 9 月 ${current ? 3 : 2} 日的。同一固定序列的未平仓量报告显示：9 月 1 日 ${plain(base)}，9 月 2 日 ${plain(later)}。`,
 				),
 				questions: [
 					c(
@@ -495,31 +834,54 @@ export const flowUnits: TeachingUnit[] = [
 								"yes",
 								"Yes: its session matches",
 								"满足：交易时段一致",
-								"The flow is from September 2, and the requirement is September 3. Its session doesn't match.",
-								"成交流来自 9 月 2 日，而要求是 9 月 3 日。时段并不一致。",
+								symbol === "ALFA"
+									? "The flow is from September 2, and the requirement is September 3. Its session doesn't match."
+									: `The session matches, but the record is ${symbol}'s. You need ALFA's flow, and another symbol can't stand in for it.`,
+								symbol === "ALFA"
+									? "成交流来自 9 月 2 日，而要求是 9 月 3 日。时段并不一致。"
+									: `时段一致，但记录是 ${symbol} 的。你需要的是 ALFA 的成交流，其他标的不能代替。`,
 							],
 							[
 								"no",
 								"No: it's from a different session",
 								"不满足：来自另一个交易时段",
-								"The flow is from September 3, as required. Check each field against its own requirement.",
-								"成交流来自 9 月 3 日，符合要求。每个字段要对照它自己的要求。",
+								symbol === "ALFA"
+									? "The flow is from September 3, as required. Check each field against its own requirement."
+									: `The session is right: September 3. What's wrong is the symbol: the record is ${symbol}'s, not ALFA's.`,
+								symbol === "ALFA"
+									? "成交流来自 9 月 3 日，符合要求。每个字段要对照它自己的要求。"
+									: `时段没问题，是 9 月 3 日。问题在于标的：记录是 ${symbol} 的，不是 ALFA 的。`,
 							],
 							[
 								"oi",
 								"No: the open interest is from an earlier date",
 								"不满足：未平仓量来自更早的日期",
-								"Earlier dated open interest was allowed. The question is about the flow record, and only its session decides it.",
-								"允许使用更早、带日期的未平仓量。问题问的是成交记录，只由它的时段决定。",
+								"Earlier dated open interest was allowed. The question is about the flow record, and only its own symbol and session decide it.",
+								"允许使用更早、带日期的未平仓量。问题问的是成交记录，只由它自己的标的和时段决定。",
+							],
+							[
+								"symbol",
+								"No: it's for a different symbol",
+								"不满足：是另一个标的的记录",
+								current
+									? "The record is ALFA's, the symbol you need, and its session matches."
+									: "The record is ALFA's, the symbol you need. What's wrong is its session: September 2, not September 3.",
+								current
+									? "记录是 ALFA 的，正是你需要的标的，时段也一致。"
+									: "记录是 ALFA 的，正是你需要的标的。问题在于时段：是 9 月 2 日，而不是 9 月 3 日。",
 							],
 						],
-						current ? "yes" : "no",
-						current
-							? "The flow is from September 3, as required, and earlier dated open interest was allowed. Check each field against its own requirement."
-							: "The flow is from September 2, not September 3, so it fails. The open interest was allowed to be earlier; that part is fine.",
-						current
-							? "成交流来自 9 月 3 日，符合要求；更早且带日期的未平仓量也是允许的。每个字段要对照它自己的要求。"
-							: "成交流来自 9 月 2 日而不是 9 月 3 日，所以不满足。未平仓量本来就允许更早，这部分没有问题。",
+						symbol !== "ALFA" ? "symbol" : current ? "yes" : "no",
+						symbol !== "ALFA"
+							? `The record is from September 3, as required, but it's ${symbol}'s flow, not ALFA's. A matching session can't make another symbol's data stand in for ALFA.`
+							: current
+								? "The flow is from September 3, as required, and earlier dated open interest was allowed. Check each field against its own requirement."
+								: "The flow is from September 2, not September 3, so it fails. The open interest was allowed to be earlier; that part is fine.",
+						symbol !== "ALFA"
+							? `记录来自 9 月 3 日，符合要求，但它是 ${symbol} 的成交流，不是 ALFA 的。时段一致，也不能让其他标的的数据代替 ALFA。`
+							: current
+								? "成交流来自 9 月 3 日，符合要求；更早且带日期的未平仓量也是允许的。每个字段要对照它自己的要求。"
+								: "成交流来自 9 月 2 日而不是 9 月 3 日，所以不满足。未平仓量本来就允许更早，这部分没有问题。",
 					),
 					n(
 						"report-delta",
@@ -537,6 +899,7 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "multi-leg-structures",
+		version: 3,
 		conceptLab: {
 			kind: "multi-leg-structures",
 			intro: t(
@@ -580,14 +943,14 @@ export const flowUnits: TeachingUnit[] = [
 					top: 105,
 				},
 				{
-					kind: "strangle" as const,
+					kind: "spread" as const,
 					spot: 100,
 					text: t(
-						"You buy an ALFA 105 call at $2.15 and an ALFA 95 put at $2.15, same expiry: a long strangle.",
-						"你以 $2.15 买入一张 ALFA 105 看涨，并以 $2.15 买入一张同一到期日的 ALFA 95 看跌：宽跨式多头。",
+						"You buy an ALFA 100 call at $4.20 and sell an ALFA 105 call at $2.05, same expiry: a 100/105 call spread.",
+						"你以 $4.20 买入一张 ALFA 100 看涨，并以 $2.05 卖出一张同一到期日的 ALFA 105 看涨：100/105 看涨价差。",
 					),
-					price: 4.3,
-					top: 105,
+					price: 2.15,
+					top: 100,
 				},
 				{
 					kind: "condor" as const,
@@ -601,6 +964,7 @@ export const flowUnits: TeachingUnit[] = [
 				},
 			][v];
 			const condor = cases.kind === "condor";
+			const spread = cases.kind === "spread";
 			const breakEven = cases.top + cases.price;
 			return {
 				brief: t(
@@ -619,10 +983,10 @@ export const flowUnits: TeachingUnit[] = [
 						"美元/股",
 						condor
 							? `Credits from the short legs minus the cost of the wings: ${money(cases.price)} a share. That's also the most the condor can make.`
-							: `${cases.kind === "straddle" ? "$4.20 + $4.20" : "$2.15 + $2.15"} = ${money(cases.price)} a share. That's also the most it can lose.`,
+							: `${spread ? "$4.20 − $2.05" : "$4.20 + $4.20"} = ${money(cases.price)} a share. That's also the most it can lose.`,
 						condor
 							? `卖出各腿的收入减去两翼的成本：每股 ${money(cases.price)}。这也是这组铁鹰最多能赚的。`
-							: `${cases.kind === "straddle" ? "$4.20 + $4.20" : "$2.15 + $2.15"} = 每股 ${money(cases.price)}。这也是它最多会亏的。`,
+							: `${spread ? "$4.20 − $2.05" : "$4.20 + $4.20"} = 每股 ${money(cases.price)}。这也是它最多会亏的。`,
 						0.01,
 					),
 					n(
@@ -634,10 +998,14 @@ export const flowUnits: TeachingUnit[] = [
 						"美元",
 						condor
 							? `The short ${cases.top} call starts costing above ${money(cases.top, 0)}; the ${money(cases.price)} credit covers the first ${money(cases.price)} of that: ${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}.`
-							: `Above ${money(cases.top, 0)} only the call pays, and it must be worth the whole ${money(cases.price)}: ${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}.`,
+							: spread
+								? `Above ${money(cases.top, 0)} the long call starts paying, and it must be worth the whole ${money(cases.price)} before the short 105 call costs anything: ${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}.`
+								: `Above ${money(cases.top, 0)} only the call pays, and it must be worth the whole ${money(cases.price)}: ${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}.`,
 						condor
 							? `卖出的 ${cases.top} 看涨在 ${money(cases.top, 0)} 以上开始亏钱；${money(cases.price)} 的收入抵掉最开始的 ${money(cases.price)}：${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}。`
-							: `在 ${money(cases.top, 0)} 以上只有看涨赚钱，它必须值满 ${money(cases.price)}：${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}。`,
+							: spread
+								? `在 ${money(cases.top, 0)} 以上，买入的看涨开始赚钱；在卖出的 105 看涨开始亏钱之前，它必须值满 ${money(cases.price)}：${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}。`
+								: `在 ${money(cases.top, 0)} 以上只有看涨赚钱，它必须值满 ${money(cases.price)}：${money(cases.top, 0)} + ${money(cases.price)} = ${money(breakEven)}。`,
 						0.01,
 					),
 					c(
@@ -649,31 +1017,47 @@ export const flowUnits: TeachingUnit[] = [
 								"big",
 								"A big move, either way",
 								"大幅变动，方向不限",
-								"A big move is what a long straddle or strangle needs. This short condor loses if the stock breaks out; it needs calm.",
-								"大幅变动是跨式或宽跨式多头需要的。这组铁鹰空头在股价突破时亏损，它需要平稳。",
+								spread
+									? `A fall doesn't help: below $100 both calls expire worthless and the ${money(cases.price)} is lost. Only a rise pays.`
+									: "A big move is what a long straddle or strangle needs. This short condor loses if the stock breaks out; it needs calm.",
+								spread
+									? `下跌没有帮助：低于 $100 时两张看涨都作废，${money(cases.price)} 全部亏掉。只有上涨才赚钱。`
+									: "大幅变动是跨式或宽跨式多头需要的。这组铁鹰空头在股价突破时亏损，它需要平稳。",
 							],
 							[
 								"up",
 								"A rise",
 								"上涨",
-								`${condor ? "A rise past the short call strike loses money for a short condor. It profits only while the stock stays between its short strikes." : "A rise is only half of it: the long put pays if the stock falls far enough too. Either big move works."}`,
-								`${condor ? "对铁鹰空头来说，涨过卖出的看涨行权价会亏钱。只有股价留在两个卖出行权价之间时才获利。" : "上涨只是一半：股价跌得足够多时，看跌多头同样赚钱。向任一方向的大幅变动都可以。"}`,
+								condor
+									? "A rise past the short call strike loses money for a short condor. It profits only while the stock stays between its short strikes."
+									: "A rise is only half of it: the long put pays if the stock falls far enough too. Either big move works.",
+								condor
+									? "对铁鹰空头来说，涨过卖出的看涨行权价会亏钱。只有股价留在两个卖出行权价之间时才获利。"
+									: "上涨只是一半：股价跌得足够多时，看跌多头同样赚钱。向任一方向的大幅变动都可以。",
 							],
 							[
 								"calm",
 								"The stock staying in a range",
 								"股价留在一个区间内",
-								`A long ${cases.kind === "straddle" ? "straddle" : "strangle"} loses most if the stock stays put, because both legs lose value. It needs a move past a break-even.`,
-								`${cases.kind === "straddle" ? "跨式" : "宽跨式"}多头在股价原地不动时亏得最多，因为两条腿都在贬值。它需要越过盈亏平衡点的变动。`,
+								spread
+									? `If ALFA stays at $100, the 100 call expires worthless and the spread loses its ${money(cases.price)}. It needs a rise past ${money(breakEven)}.`
+									: "A long straddle loses most if the stock stays put, because both legs lose value. It needs a move past a break-even.",
+								spread
+									? `如果 ALFA 停在 $100，100 看涨到期作废，价差亏掉 ${money(cases.price)}。它需要涨过 ${money(breakEven)}。`
+									: "跨式多头在股价原地不动时亏得最多，因为两条腿都在贬值。它需要越过盈亏平衡点的变动。",
 							],
 						],
-						condor ? "calm" : "big",
+						condor ? "calm" : spread ? "up" : "big",
 						condor
 							? "A short iron condor keeps its credit while the stock stays between the short strikes and loses if it breaks out either way."
-							: `A long ${cases.kind} pays only once the stock moves past one of its break-evens, up or down. Staying still is its worst case.`,
+							: spread
+								? `The long 100 call gains as ALFA rises, and the short 105 call caps that gain above $105. It makes money only above ${money(breakEven)}.`
+								: "A long straddle pays only once the stock moves past one of its break-evens, up or down. Staying still is its worst case.",
 						condor
 							? "铁鹰空头在股价留在两个卖出行权价之间时保留收入，任一方向突破都会亏损。"
-							: `${cases.kind === "straddle" ? "跨式" : "宽跨式"}多头只有在股价越过某个盈亏平衡点时才赚钱，向上向下都可以。原地不动是它的最坏情况。`,
+							: spread
+								? `100 看涨多头随 ALFA 上涨获利，105 看涨空头把 $105 以上的收益封顶。只有 ALFA 高于 ${money(breakEven)} 时才赚钱。`
+								: "跨式多头只有在股价越过某个盈亏平衡点时才赚钱，向上向下都可以。原地不动是它的最坏情况。",
 					),
 				],
 			};

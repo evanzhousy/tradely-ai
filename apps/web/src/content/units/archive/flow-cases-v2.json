@@ -1,0 +1,2778 @@
+[
+	{
+		"id": "session-flow-vs-structure-practice-1",
+		"lessonId": "session-flow-vs-structure",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "session-flow-vs-structure",
+				"brief": {
+					"en": "Watch trades open, transfer and close contracts, see when the daily open-interest count arrives, and compare one fixed series with a rolling expiry bucket.",
+					"zh": "观察成交如何开仓、换手与平仓，看每日未平仓量统计何时发布，并比较固定序列与滚动到期桶。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+					"zh": "滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One ALFA call series starts the day with open interest of 500. Today's complete trade record shows 12 contracts where both sides opened, 5 where both sides closed, and 8 where one side opened and the other closed. Nothing was exercised or expired.",
+					"zh": "一个 ALFA 看涨序列开盘时未平仓量为 500。今天完整的成交记录显示：12 张是双方都开仓，5 张是双方都平仓，8 张是一方开仓、另一方平仓。没有行权，也没有到期。"
+				},
+				"flowStructure": {
+					"id": "oi-ledger-0",
+					"scope": "ALFA calls · fixed October 16 series",
+					"sessionDate": "2026-09-03",
+					"reportedOi": {
+						"value": 500,
+						"asOf": "2026-09-02",
+						"scope": "ALFA calls · fixed October 16 series"
+					},
+					"previousOi": null,
+					"gex": null,
+					"note": {
+						"en": "Illustrative September 3 volume replay. The displayed OI is the prior report, fixed at 500. Only the complete supplied opening/closing ledger lets you calculate a hypothetical ending OI; the replay does not relabel it as reported.",
+						"zh": "9 月 3 日成交量示意回放，显示 OI 为前期报告 500。只有完整给定的开平仓台账才能算出假设期末 OI，回放不会将其冒称已报告。"
+					},
+					"replay": {
+						"durationMs": 14000,
+						"openMinute": 570,
+						"closeMinute": 960,
+						"frames": [
+							{ "position": 0, "volume": 0 },
+							{ "position": 0.25, "volume": 6 },
+							{ "position": 0.5, "volume": 13 },
+							{ "position": 0.75, "volume": 19 },
+							{ "position": 1, "volume": 25 }
+						]
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts traded today?",
+							"zh": "今天成交了多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["25"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "12 + 5 + 8 = 25. Every trade counts in volume, transfers included.",
+							"zh": "12 + 5 + 8 = 25。每笔成交都计入成交量，包括换手。"
+						}
+					},
+					{
+						"id": "ending-oi",
+						"prompt": {
+							"en": "What is open interest at the end of the day?",
+							"zh": "收盘时未平仓量是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["507"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "500 + 12 − 5 = 507. The 8 transferred contracts changed owners, not the count.",
+							"zh": "500 + 12 − 5 = 507。换手的 8 张只换了持有人，没有改变数量。"
+						}
+					},
+					{
+						"id": "no-flags",
+						"prompt": {
+							"en": "If you knew only today's volume, could you work out the ending open interest?",
+							"zh": "如果只知道今天的成交量，能算出收盘时的未平仓量吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: add the volume to 500",
+									"zh": "能：把成交量加到 500 上"
+								},
+								"why": {
+									"en": "Adding volume assumes every trade opened new contracts. Trades that close remove contracts, so you'd need to know which trades opened and which closed.",
+									"zh": "加上成交量，就是假设每笔成交都开了新合约。平仓的成交会减少合约，所以你需要知道哪些成交是开仓、哪些是平仓。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: you'd need to know which trades opened and which closed",
+									"zh": "不能：需要知道哪些成交是开仓、哪些是平仓"
+								}
+							},
+							{
+								"id": "minus",
+								"label": {
+									"en": "Yes: subtract the volume from 500",
+									"zh": "能：用 500 减去成交量"
+								},
+								"why": {
+									"en": "Subtracting volume assumes every trade closed. Some may have opened new contracts, so volume alone can't settle it.",
+									"zh": "减去成交量，就是假设每笔成交都是平仓。有些可能开了新合约，所以仅凭成交量无法确定。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "A volume of 25 fits any ending from 475, if every trade closed, to 525, if every trade opened. Only the open and close record pins it at 507.",
+							"zh": "25 的成交量对应的收盘未平仓量，可以从 475（全部平仓）到 525（全部开仓）。只有开平仓记录才能确定它是 507。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+					"zh": "滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One ALFA call series starts the day with open interest of 500. Today's complete trade record shows 24 contracts where both sides opened, 9 where both sides closed, and 7 where one side opened and the other closed. Nothing was exercised or expired.",
+					"zh": "一个 ALFA 看涨序列开盘时未平仓量为 500。今天完整的成交记录显示：24 张是双方都开仓，9 张是双方都平仓，7 张是一方开仓、另一方平仓。没有行权，也没有到期。"
+				},
+				"flowStructure": {
+					"id": "oi-ledger-1",
+					"scope": "ALFA calls · fixed October 16 series",
+					"sessionDate": "2026-09-03",
+					"reportedOi": {
+						"value": 500,
+						"asOf": "2026-09-02",
+						"scope": "ALFA calls · fixed October 16 series"
+					},
+					"previousOi": null,
+					"gex": null,
+					"note": {
+						"en": "Illustrative September 3 volume replay. The displayed OI is the prior report, fixed at 500. Only the complete supplied opening/closing ledger lets you calculate a hypothetical ending OI; the replay does not relabel it as reported.",
+						"zh": "9 月 3 日成交量示意回放，显示 OI 为前期报告 500。只有完整给定的开平仓台账才能算出假设期末 OI，回放不会将其冒称已报告。"
+					},
+					"replay": {
+						"durationMs": 14000,
+						"openMinute": 570,
+						"closeMinute": 960,
+						"frames": [
+							{ "position": 0, "volume": 0 },
+							{ "position": 0.25, "volume": 10 },
+							{ "position": 0.5, "volume": 20 },
+							{ "position": 0.75, "volume": 30 },
+							{ "position": 1, "volume": 40 }
+						]
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts traded today?",
+							"zh": "今天成交了多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["40"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "24 + 9 + 7 = 40. Every trade counts in volume, transfers included.",
+							"zh": "24 + 9 + 7 = 40。每笔成交都计入成交量，包括换手。"
+						}
+					},
+					{
+						"id": "ending-oi",
+						"prompt": {
+							"en": "What is open interest at the end of the day?",
+							"zh": "收盘时未平仓量是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["515"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "500 + 24 − 9 = 515. The 7 transferred contracts changed owners, not the count.",
+							"zh": "500 + 24 − 9 = 515。换手的 7 张只换了持有人，没有改变数量。"
+						}
+					},
+					{
+						"id": "no-flags",
+						"prompt": {
+							"en": "If you knew only today's volume, could you work out the ending open interest?",
+							"zh": "如果只知道今天的成交量，能算出收盘时的未平仓量吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: you'd need to know which trades opened and which closed",
+									"zh": "不能：需要知道哪些成交是开仓、哪些是平仓"
+								}
+							},
+							{
+								"id": "minus",
+								"label": {
+									"en": "Yes: subtract the volume from 500",
+									"zh": "能：用 500 减去成交量"
+								},
+								"why": {
+									"en": "Subtracting volume assumes every trade closed. Some may have opened new contracts, so volume alone can't settle it.",
+									"zh": "减去成交量，就是假设每笔成交都是平仓。有些可能开了新合约，所以仅凭成交量无法确定。"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: add the volume to 500",
+									"zh": "能：把成交量加到 500 上"
+								},
+								"why": {
+									"en": "Adding volume assumes every trade opened new contracts. Trades that close remove contracts, so you'd need to know which trades opened and which closed.",
+									"zh": "加上成交量，就是假设每笔成交都开了新合约。平仓的成交会减少合约，所以你需要知道哪些成交是开仓、哪些是平仓。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "A volume of 40 fits any ending from 460, if every trade closed, to 540, if every trade opened. Only the open and close record pins it at 515.",
+							"zh": "40 的成交量对应的收盘未平仓量，可以从 460（全部平仓）到 540（全部开仓）。只有开平仓记录才能确定它是 515。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+					"zh": "滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。"
+				}
+			}
+		]
+	},
+	{
+		"id": "session-flow-vs-structure-practice-2",
+		"lessonId": "session-flow-vs-structure",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "session-flow-vs-structure",
+				"brief": {
+					"en": "Watch trades open, transfer and close contracts, see when the daily open-interest count arrives, and compare one fixed series with a rolling expiry bucket.",
+					"zh": "观察成交如何开仓、换手与平仓，看每日未平仓量统计何时发布，并比较固定序列与滚动到期桶。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+					"zh": "滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One ALFA call series starts the day with open interest of 500. Today's complete trade record shows 12 contracts where both sides opened, 5 where both sides closed, and 8 where one side opened and the other closed. Nothing was exercised or expired.",
+					"zh": "一个 ALFA 看涨序列开盘时未平仓量为 500。今天完整的成交记录显示：12 张是双方都开仓，5 张是双方都平仓，8 张是一方开仓、另一方平仓。没有行权，也没有到期。"
+				},
+				"flowStructure": {
+					"id": "oi-ledger-0",
+					"scope": "ALFA calls · fixed October 16 series",
+					"sessionDate": "2026-09-03",
+					"reportedOi": {
+						"value": 500,
+						"asOf": "2026-09-02",
+						"scope": "ALFA calls · fixed October 16 series"
+					},
+					"previousOi": null,
+					"gex": null,
+					"note": {
+						"en": "Illustrative September 3 volume replay. The displayed OI is the prior report, fixed at 500. Only the complete supplied opening/closing ledger lets you calculate a hypothetical ending OI; the replay does not relabel it as reported.",
+						"zh": "9 月 3 日成交量示意回放，显示 OI 为前期报告 500。只有完整给定的开平仓台账才能算出假设期末 OI，回放不会将其冒称已报告。"
+					},
+					"replay": {
+						"durationMs": 14000,
+						"openMinute": 570,
+						"closeMinute": 960,
+						"frames": [
+							{ "position": 0, "volume": 0 },
+							{ "position": 0.25, "volume": 6 },
+							{ "position": 0.5, "volume": 13 },
+							{ "position": 0.75, "volume": 19 },
+							{ "position": 1, "volume": 25 }
+						]
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts traded today?",
+							"zh": "今天成交了多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["25"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "12 + 5 + 8 = 25. Every trade counts in volume, transfers included.",
+							"zh": "12 + 5 + 8 = 25。每笔成交都计入成交量，包括换手。"
+						}
+					},
+					{
+						"id": "ending-oi",
+						"prompt": {
+							"en": "What is open interest at the end of the day?",
+							"zh": "收盘时未平仓量是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["507"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "500 + 12 − 5 = 507. The 8 transferred contracts changed owners, not the count.",
+							"zh": "500 + 12 − 5 = 507。换手的 8 张只换了持有人，没有改变数量。"
+						}
+					},
+					{
+						"id": "no-flags",
+						"prompt": {
+							"en": "If you knew only today's volume, could you work out the ending open interest?",
+							"zh": "如果只知道今天的成交量，能算出收盘时的未平仓量吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: add the volume to 500",
+									"zh": "能：把成交量加到 500 上"
+								},
+								"why": {
+									"en": "Adding volume assumes every trade opened new contracts. Trades that close remove contracts, so you'd need to know which trades opened and which closed.",
+									"zh": "加上成交量，就是假设每笔成交都开了新合约。平仓的成交会减少合约，所以你需要知道哪些成交是开仓、哪些是平仓。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: you'd need to know which trades opened and which closed",
+									"zh": "不能：需要知道哪些成交是开仓、哪些是平仓"
+								}
+							},
+							{
+								"id": "minus",
+								"label": {
+									"en": "Yes: subtract the volume from 500",
+									"zh": "能：用 500 减去成交量"
+								},
+								"why": {
+									"en": "Subtracting volume assumes every trade closed. Some may have opened new contracts, so volume alone can't settle it.",
+									"zh": "减去成交量，就是假设每笔成交都是平仓。有些可能开了新合约，所以仅凭成交量无法确定。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "A volume of 25 fits any ending from 475, if every trade closed, to 525, if every trade opened. Only the open and close record pins it at 507.",
+							"zh": "25 的成交量对应的收盘未平仓量，可以从 475（全部平仓）到 525（全部开仓）。只有开平仓记录才能确定它是 507。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+					"zh": "滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One ALFA call series starts the day with open interest of 500. Today's complete trade record shows 15 contracts where both sides opened, 19 where both sides closed, and 6 where one side opened and the other closed. Nothing was exercised or expired.",
+					"zh": "一个 ALFA 看涨序列开盘时未平仓量为 500。今天完整的成交记录显示：15 张是双方都开仓，19 张是双方都平仓，6 张是一方开仓、另一方平仓。没有行权，也没有到期。"
+				},
+				"flowStructure": {
+					"id": "oi-ledger-2",
+					"scope": "ALFA calls · fixed October 16 series",
+					"sessionDate": "2026-09-03",
+					"reportedOi": {
+						"value": 500,
+						"asOf": "2026-09-02",
+						"scope": "ALFA calls · fixed October 16 series"
+					},
+					"previousOi": null,
+					"gex": null,
+					"note": {
+						"en": "Illustrative September 3 volume replay. The displayed OI is the prior report, fixed at 500. Only the complete supplied opening/closing ledger lets you calculate a hypothetical ending OI; the replay does not relabel it as reported.",
+						"zh": "9 月 3 日成交量示意回放，显示 OI 为前期报告 500。只有完整给定的开平仓台账才能算出假设期末 OI，回放不会将其冒称已报告。"
+					},
+					"replay": {
+						"durationMs": 14000,
+						"openMinute": 570,
+						"closeMinute": 960,
+						"frames": [
+							{ "position": 0, "volume": 0 },
+							{ "position": 0.25, "volume": 10 },
+							{ "position": 0.5, "volume": 20 },
+							{ "position": 0.75, "volume": 30 },
+							{ "position": 1, "volume": 40 }
+						]
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts traded today?",
+							"zh": "今天成交了多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["40"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "15 + 19 + 6 = 40. Every trade counts in volume, transfers included.",
+							"zh": "15 + 19 + 6 = 40。每笔成交都计入成交量，包括换手。"
+						}
+					},
+					{
+						"id": "ending-oi",
+						"prompt": {
+							"en": "What is open interest at the end of the day?",
+							"zh": "收盘时未平仓量是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["496"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "500 + 15 − 19 = 496. The 6 transferred contracts changed owners, not the count.",
+							"zh": "500 + 15 − 19 = 496。换手的 6 张只换了持有人，没有改变数量。"
+						}
+					},
+					{
+						"id": "no-flags",
+						"prompt": {
+							"en": "If you knew only today's volume, could you work out the ending open interest?",
+							"zh": "如果只知道今天的成交量，能算出收盘时的未平仓量吗？"
+						},
+						"choices": [
+							{
+								"id": "minus",
+								"label": {
+									"en": "Yes: subtract the volume from 500",
+									"zh": "能：用 500 减去成交量"
+								},
+								"why": {
+									"en": "Subtracting volume assumes every trade closed. Some may have opened new contracts, so volume alone can't settle it.",
+									"zh": "减去成交量，就是假设每笔成交都是平仓。有些可能开了新合约，所以仅凭成交量无法确定。"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: add the volume to 500",
+									"zh": "能：把成交量加到 500 上"
+								},
+								"why": {
+									"en": "Adding volume assumes every trade opened new contracts. Trades that close remove contracts, so you'd need to know which trades opened and which closed.",
+									"zh": "加上成交量，就是假设每笔成交都开了新合约。平仓的成交会减少合约，所以你需要知道哪些成交是开仓、哪些是平仓。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: you'd need to know which trades opened and which closed",
+									"zh": "不能：需要知道哪些成交是开仓、哪些是平仓"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "A volume of 40 fits any ending from 460, if every trade closed, to 540, if every trade opened. Only the open and close record pins it at 496.",
+							"zh": "40 的成交量对应的收盘未平仓量，可以从 460（全部平仓）到 540（全部开仓）。只有开平仓记录才能确定它是 496。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rolling expiry bucket can change because different expiries moved into it. A change in reported open interest is a net figure, not a count of one trader's new positions.",
+					"zh": "滚动到期桶的变化，可能只是因为换了一批到期日。报告的未平仓量变化是净值，不是某个交易者新开仓的数量。"
+				}
+			}
+		]
+	},
+	{
+		"id": "trade-records-practice-1",
+		"lessonId": "trade-records",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "trade-records",
+				"brief": {
+					"en": "Build one row from the 105 call's prints, see why the weighted price is the one paid, and replay a feed full of duplicates, cancels and corrections.",
+					"zh": "用 105 看涨的成交建立一行聚合，理解为何加权价格才是实际成交价，再回放充满重复、撤销与更正的数据。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+					"zh": "一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two prints in the same ALFA call: 10 contracts at $2.00 and 30 at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.",
+					"zh": "同一个 ALFA 看涨有两笔成交：10 张成交在 $2.00，30 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium do the two prints add up to?",
+							"zh": "两笔成交的权利金合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["11000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.00 × 10 × 100 = $2,000, and $3.00 × 30 × 100 = $9,000: $11,000 together.",
+							"zh": "$2.00 × 10 × 100 = $2,000，$3.00 × 30 × 100 = $9,000：合计 $11,000。"
+						}
+					},
+					{
+						"id": "weighted",
+						"prompt": {
+							"en": "What is the average price per share, weighted by contracts, to four decimals?",
+							"zh": "按张数加权的每股平均价格是多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.75"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "($2.00 × 10 + $3.00 × 30) ÷ 40 = $2.7500. The simple average, $2.50, ignores that more traded at $3.00.",
+							"zh": "($2.00 × 10 + $3.00 × 30) ÷ 40 = $2.7500。简单平均 $2.50 忽略了更多张数成交在 $3.00。"
+						}
+					},
+					{
+						"id": "link",
+						"prompt": {
+							"en": "Does adding these prints into one row show they were one strategy?",
+							"zh": "把这两笔成交合成一行，能说明它们属于同一个策略吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: grouping prints doesn't show they were linked",
+									"zh": "不能：把成交分组不能说明它们有关联"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: matching times show one owner",
+									"zh": "能：时间一致说明属于同一个人"
+								},
+								"why": {
+									"en": "Matching times are why you grouped them, not proof of one owner. A link needs a package or order ID.",
+									"zh": "时间相同只是你把它们归在一起的理由，并不能证明属于同一人。关联需要组合单或订单编号。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "Nothing here links the prints to one order or strategy. An aggregate row follows a grouping rule; a link needs its own evidence, such as a multi-leg condition code.",
+							"zh": "这里没有任何信息把两笔成交连到同一张订单或同一个策略。聚合行只是遵循分组规则；关联需要单独的证据，比如多腿条件代码。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+					"zh": "一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two prints in the same ALFA call: 20 contracts at $2.00 and 10 at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.",
+					"zh": "同一个 ALFA 看涨有两笔成交：20 张成交在 $2.00，10 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium do the two prints add up to?",
+							"zh": "两笔成交的权利金合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["7000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.00 × 20 × 100 = $4,000, and $3.00 × 10 × 100 = $3,000: $7,000 together.",
+							"zh": "$2.00 × 20 × 100 = $4,000，$3.00 × 10 × 100 = $3,000：合计 $7,000。"
+						}
+					},
+					{
+						"id": "weighted",
+						"prompt": {
+							"en": "What is the average price per share, weighted by contracts, to four decimals?",
+							"zh": "按张数加权的每股平均价格是多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.3333333333333335"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "($2.00 × 20 + $3.00 × 10) ÷ 30 = $2.3333. The simple average, $2.50, ignores that more traded at $2.00.",
+							"zh": "($2.00 × 20 + $3.00 × 10) ÷ 30 = $2.3333。简单平均 $2.50 忽略了更多张数成交在 $2.00。"
+						}
+					},
+					{
+						"id": "link",
+						"prompt": {
+							"en": "Does adding these prints into one row show they were one strategy?",
+							"zh": "把这两笔成交合成一行，能说明它们属于同一个策略吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: matching times show one owner",
+									"zh": "能：时间一致说明属于同一个人"
+								},
+								"why": {
+									"en": "Matching times are why you grouped them, not proof of one owner. A link needs a package or order ID.",
+									"zh": "时间相同只是你把它们归在一起的理由，并不能证明属于同一人。关联需要组合单或订单编号。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: grouping prints doesn't show they were linked",
+									"zh": "不能：把成交分组不能说明它们有关联"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "Nothing here links the prints to one order or strategy. An aggregate row follows a grouping rule; a link needs its own evidence, such as a multi-leg condition code.",
+							"zh": "这里没有任何信息把两笔成交连到同一张订单或同一个策略。聚合行只是遵循分组规则；关联需要单独的证据，比如多腿条件代码。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+					"zh": "一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。"
+				}
+			}
+		]
+	},
+	{
+		"id": "trade-records-practice-2",
+		"lessonId": "trade-records",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "trade-records",
+				"brief": {
+					"en": "Build one row from the 105 call's prints, see why the weighted price is the one paid, and replay a feed full of duplicates, cancels and corrections.",
+					"zh": "用 105 看涨的成交建立一行聚合，理解为何加权价格才是实际成交价，再回放充满重复、撤销与更正的数据。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+					"zh": "一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two prints in the same ALFA call: 10 contracts at $2.00 and 30 at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.",
+					"zh": "同一个 ALFA 看涨有两笔成交：10 张成交在 $2.00，30 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium do the two prints add up to?",
+							"zh": "两笔成交的权利金合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["11000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.00 × 10 × 100 = $2,000, and $3.00 × 30 × 100 = $9,000: $11,000 together.",
+							"zh": "$2.00 × 10 × 100 = $2,000，$3.00 × 30 × 100 = $9,000：合计 $11,000。"
+						}
+					},
+					{
+						"id": "weighted",
+						"prompt": {
+							"en": "What is the average price per share, weighted by contracts, to four decimals?",
+							"zh": "按张数加权的每股平均价格是多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.75"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "($2.00 × 10 + $3.00 × 30) ÷ 40 = $2.7500. The simple average, $2.50, ignores that more traded at $3.00.",
+							"zh": "($2.00 × 10 + $3.00 × 30) ÷ 40 = $2.7500。简单平均 $2.50 忽略了更多张数成交在 $3.00。"
+						}
+					},
+					{
+						"id": "link",
+						"prompt": {
+							"en": "Does adding these prints into one row show they were one strategy?",
+							"zh": "把这两笔成交合成一行，能说明它们属于同一个策略吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: grouping prints doesn't show they were linked",
+									"zh": "不能：把成交分组不能说明它们有关联"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: matching times show one owner",
+									"zh": "能：时间一致说明属于同一个人"
+								},
+								"why": {
+									"en": "Matching times are why you grouped them, not proof of one owner. A link needs a package or order ID.",
+									"zh": "时间相同只是你把它们归在一起的理由，并不能证明属于同一人。关联需要组合单或订单编号。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "Nothing here links the prints to one order or strategy. An aggregate row follows a grouping rule; a link needs its own evidence, such as a multi-leg condition code.",
+							"zh": "这里没有任何信息把两笔成交连到同一张订单或同一个策略。聚合行只是遵循分组规则；关联需要单独的证据，比如多腿条件代码。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+					"zh": "一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two prints in the same ALFA call: 15 contracts at $2.00 and 45 at $3.00. Both are unique, uncorrected reports, and one contract covers 100 shares.",
+					"zh": "同一个 ALFA 看涨有两笔成交：15 张成交在 $2.00，45 张成交在 $3.00。两条都是唯一且未更正的报告，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium do the two prints add up to?",
+							"zh": "两笔成交的权利金合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["16500"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.00 × 15 × 100 = $3,000, and $3.00 × 45 × 100 = $13,500: $16,500 together.",
+							"zh": "$2.00 × 15 × 100 = $3,000，$3.00 × 45 × 100 = $13,500：合计 $16,500。"
+						}
+					},
+					{
+						"id": "weighted",
+						"prompt": {
+							"en": "What is the average price per share, weighted by contracts, to four decimals?",
+							"zh": "按张数加权的每股平均价格是多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.75"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "($2.00 × 15 + $3.00 × 45) ÷ 60 = $2.7500. The simple average, $2.50, ignores that more traded at $3.00.",
+							"zh": "($2.00 × 15 + $3.00 × 45) ÷ 60 = $2.7500。简单平均 $2.50 忽略了更多张数成交在 $3.00。"
+						}
+					},
+					{
+						"id": "link",
+						"prompt": {
+							"en": "Does adding these prints into one row show they were one strategy?",
+							"zh": "把这两笔成交合成一行，能说明它们属于同一个策略吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: grouping prints doesn't show they were linked",
+									"zh": "不能：把成交分组不能说明它们有关联"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: matching times show one owner",
+									"zh": "能：时间一致说明属于同一个人"
+								},
+								"why": {
+									"en": "Matching times are why you grouped them, not proof of one owner. A link needs a package or order ID.",
+									"zh": "时间相同只是你把它们归在一起的理由，并不能证明属于同一人。关联需要组合单或订单编号。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "Nothing here links the prints to one order or strategy. An aggregate row follows a grouping rule; a link needs its own evidence, such as a multi-leg condition code.",
+							"zh": "这里没有任何信息把两笔成交连到同一张订单或同一个策略。聚合行只是遵循分组规则；关联需要单独的证据，比如多腿条件代码。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "One aggregate row isn't necessarily one order. Prints that repeat are a reason to look for a link, not proof of one.",
+					"zh": "一行聚合记录不一定是一张订单。重复出现的成交提示你去找关联，但本身不是关联的证据。"
+				}
+			}
+		]
+	},
+	{
+		"id": "execution-conditions-practice-1",
+		"lessonId": "execution-conditions",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "execution-conditions",
+				"brief": {
+					"en": "Follow one order sweeping three venues, set a 500-contract block against the size that was displayed, and read its two legs as one spread.",
+					"zh": "追踪一张扫过三个场所的订单，把 500 张大单与展示数量对比，再把它的两条腿作为一笔价差来解读。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+					"zh": "急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One buy order sweeps three venues within milliseconds: 20 ALFA calls at $2.10, 15 at $2.11 and 15 at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.",
+					"zh": "一张买单在几毫秒内扫过三个场所：20 张 ALFA 看涨成交在 $2.10，15 张在 $2.11，15 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium did the order pay across its three prints?",
+							"zh": "这张订单在三笔成交中一共支付了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["10545"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.10 × 20 × 100 + $2.11 × 15 × 100 + $2.12 × 15 × 100 = $10,545. Three prints, one order.",
+							"zh": "$2.10 × 20 × 100 + $2.11 × 15 × 100 + $2.12 × 15 × 100 = $10,545。三笔成交，一张订单。"
+						}
+					},
+					{
+						"id": "average",
+						"prompt": {
+							"en": "What average price per share did it pay, weighted by contracts, to four decimals?",
+							"zh": "按张数加权，它平均每股付了多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.109"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "$10,545 ÷ (100 × 50) = $2.1090. The later fills paid more than the best price shown when the order arrived.",
+							"zh": "$10,545 ÷ (100 × 50) = $2.1090。后面的成交付出的价格，高于订单到达时展示的最优价格。"
+						}
+					},
+					{
+						"id": "sweep-meaning",
+						"prompt": {
+							"en": "What does the sweep condition tell you?",
+							"zh": "扫单条件能告诉你什么？"
+						},
+						"choices": [
+							{
+								"id": "routing",
+								"label": {
+									"en": "The order was split across venues to fill fast",
+									"zh": "订单被拆到多个场所以便快速成交"
+								}
+							},
+							{
+								"id": "institution",
+								"label": {
+									"en": "An institution placed it",
+									"zh": "下单的是机构"
+								},
+								"why": {
+									"en": "A sweep code says how the order was routed, not who sent it. Anyone with the right access can sweep.",
+									"zh": "扫单代码说明订单是怎么路由的，而不是谁发出的。任何有相应权限的人都可以扫单。"
+								}
+							},
+							{
+								"id": "opening",
+								"label": {
+									"en": "The buyer opened a new bullish position",
+									"zh": "买方新开了一个看涨仓位"
+								},
+								"why": {
+									"en": "Routing says nothing about opening or closing, or about a view. The buyer may have been closing a short call.",
+									"zh": "路由方式不能说明开仓还是平仓，也不能说明看法。买方可能是在平掉看涨空头。"
+								}
+							}
+						],
+						"accepted": ["routing"],
+						"explanation": {
+							"en": "A sweep describes how the order was routed. Who sent it, what they knew, and whether it opened a position all need other evidence.",
+							"zh": "扫单描述的是订单如何路由。谁下的单、掌握什么信息、是否开了新仓，都需要其他证据。"
+						}
+					},
+					{
+						"id": "package",
+						"prompt": {
+							"en": "Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?",
+							"zh": "另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？"
+						},
+						"choices": [
+							{
+								"id": "buys",
+								"label": {
+									"en": "As two aggressive buys: both legs printed above the ask",
+									"zh": "作为两笔主动买入：两条腿都高于卖价"
+								},
+								"why": {
+									"en": "A leg's print location means little inside a package: the price that counts is the $3.00 net, which sits inside the spread's own market.",
+									"zh": "在组合单里，单条腿的成交位置意义不大：要看的是 $3.00 的净价，它位于价差自身的买卖报价之内。"
+								}
+							},
+							{
+								"id": "sells",
+								"label": {
+									"en": "As two aggressive sells hidden inside a spread",
+									"zh": "作为藏在价差里的两笔主动卖出"
+								},
+								"why": {
+									"en": "Nothing points to selling: the package traded at $3.00, inside its $2.90–$3.30 market. Read it as one package, not hidden aggression.",
+									"zh": "没有任何迹象表明是卖出：组合单成交在 $3.00，位于 $2.90–$3.30 的报价之内。应把它当作一个整体来读，而不是隐藏的主动方。"
+								}
+							},
+							{
+								"id": "package",
+								"label": {
+									"en": "As one package that traded inside its market; where each leg printed isn't evidence of who was aggressive",
+									"zh": "作为在组合市场内成交的一个整体；各条腿成交在哪里，并不能说明谁是主动方"
+								}
+							}
+						],
+						"accepted": ["package"],
+						"explanation": {
+							"en": "A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy.",
+							"zh": "复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+					"zh": "急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One buy order sweeps three venues within milliseconds: 20 ALFA calls at $2.10, 15 at $2.11 and 5 at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.",
+					"zh": "一张买单在几毫秒内扫过三个场所：20 张 ALFA 看涨成交在 $2.10，15 张在 $2.11，5 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium did the order pay across its three prints?",
+							"zh": "这张订单在三笔成交中一共支付了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["8425"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.10 × 20 × 100 + $2.11 × 15 × 100 + $2.12 × 5 × 100 = $8,425. Three prints, one order.",
+							"zh": "$2.10 × 20 × 100 + $2.11 × 15 × 100 + $2.12 × 5 × 100 = $8,425。三笔成交，一张订单。"
+						}
+					},
+					{
+						"id": "average",
+						"prompt": {
+							"en": "What average price per share did it pay, weighted by contracts, to four decimals?",
+							"zh": "按张数加权，它平均每股付了多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.1063"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "$8,425 ÷ (100 × 40) = $2.1063. The later fills paid more than the best price shown when the order arrived.",
+							"zh": "$8,425 ÷ (100 × 40) = $2.1063。后面的成交付出的价格，高于订单到达时展示的最优价格。"
+						}
+					},
+					{
+						"id": "sweep-meaning",
+						"prompt": {
+							"en": "What does the sweep condition tell you?",
+							"zh": "扫单条件能告诉你什么？"
+						},
+						"choices": [
+							{
+								"id": "institution",
+								"label": {
+									"en": "An institution placed it",
+									"zh": "下单的是机构"
+								},
+								"why": {
+									"en": "A sweep code says how the order was routed, not who sent it. Anyone with the right access can sweep.",
+									"zh": "扫单代码说明订单是怎么路由的，而不是谁发出的。任何有相应权限的人都可以扫单。"
+								}
+							},
+							{
+								"id": "opening",
+								"label": {
+									"en": "The buyer opened a new bullish position",
+									"zh": "买方新开了一个看涨仓位"
+								},
+								"why": {
+									"en": "Routing says nothing about opening or closing, or about a view. The buyer may have been closing a short call.",
+									"zh": "路由方式不能说明开仓还是平仓，也不能说明看法。买方可能是在平掉看涨空头。"
+								}
+							},
+							{
+								"id": "routing",
+								"label": {
+									"en": "The order was split across venues to fill fast",
+									"zh": "订单被拆到多个场所以便快速成交"
+								}
+							}
+						],
+						"accepted": ["routing"],
+						"explanation": {
+							"en": "A sweep describes how the order was routed. Who sent it, what they knew, and whether it opened a position all need other evidence.",
+							"zh": "扫单描述的是订单如何路由。谁下的单、掌握什么信息、是否开了新仓，都需要其他证据。"
+						}
+					},
+					{
+						"id": "package",
+						"prompt": {
+							"en": "Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?",
+							"zh": "另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？"
+						},
+						"choices": [
+							{
+								"id": "sells",
+								"label": {
+									"en": "As two aggressive sells hidden inside a spread",
+									"zh": "作为藏在价差里的两笔主动卖出"
+								},
+								"why": {
+									"en": "Nothing points to selling: the package traded at $3.00, inside its $2.90–$3.30 market. Read it as one package, not hidden aggression.",
+									"zh": "没有任何迹象表明是卖出：组合单成交在 $3.00，位于 $2.90–$3.30 的报价之内。应把它当作一个整体来读，而不是隐藏的主动方。"
+								}
+							},
+							{
+								"id": "package",
+								"label": {
+									"en": "As one package that traded inside its market; where each leg printed isn't evidence of who was aggressive",
+									"zh": "作为在组合市场内成交的一个整体；各条腿成交在哪里，并不能说明谁是主动方"
+								}
+							},
+							{
+								"id": "buys",
+								"label": {
+									"en": "As two aggressive buys: both legs printed above the ask",
+									"zh": "作为两笔主动买入：两条腿都高于卖价"
+								},
+								"why": {
+									"en": "A leg's print location means little inside a package: the price that counts is the $3.00 net, which sits inside the spread's own market.",
+									"zh": "在组合单里，单条腿的成交位置意义不大：要看的是 $3.00 的净价，它位于价差自身的买卖报价之内。"
+								}
+							}
+						],
+						"accepted": ["package"],
+						"explanation": {
+							"en": "A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy.",
+							"zh": "复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+					"zh": "急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。"
+				}
+			}
+		]
+	},
+	{
+		"id": "execution-conditions-practice-2",
+		"lessonId": "execution-conditions",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "execution-conditions",
+				"brief": {
+					"en": "Follow one order sweeping three venues, set a 500-contract block against the size that was displayed, and read its two legs as one spread.",
+					"zh": "追踪一张扫过三个场所的订单，把 500 张大单与展示数量对比，再把它的两条腿作为一笔价差来解读。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+					"zh": "急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One buy order sweeps three venues within milliseconds: 20 ALFA calls at $2.10, 15 at $2.11 and 15 at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.",
+					"zh": "一张买单在几毫秒内扫过三个场所：20 张 ALFA 看涨成交在 $2.10，15 张在 $2.11，15 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium did the order pay across its three prints?",
+							"zh": "这张订单在三笔成交中一共支付了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["10545"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.10 × 20 × 100 + $2.11 × 15 × 100 + $2.12 × 15 × 100 = $10,545. Three prints, one order.",
+							"zh": "$2.10 × 20 × 100 + $2.11 × 15 × 100 + $2.12 × 15 × 100 = $10,545。三笔成交，一张订单。"
+						}
+					},
+					{
+						"id": "average",
+						"prompt": {
+							"en": "What average price per share did it pay, weighted by contracts, to four decimals?",
+							"zh": "按张数加权，它平均每股付了多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.109"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "$10,545 ÷ (100 × 50) = $2.1090. The later fills paid more than the best price shown when the order arrived.",
+							"zh": "$10,545 ÷ (100 × 50) = $2.1090。后面的成交付出的价格，高于订单到达时展示的最优价格。"
+						}
+					},
+					{
+						"id": "sweep-meaning",
+						"prompt": {
+							"en": "What does the sweep condition tell you?",
+							"zh": "扫单条件能告诉你什么？"
+						},
+						"choices": [
+							{
+								"id": "routing",
+								"label": {
+									"en": "The order was split across venues to fill fast",
+									"zh": "订单被拆到多个场所以便快速成交"
+								}
+							},
+							{
+								"id": "institution",
+								"label": {
+									"en": "An institution placed it",
+									"zh": "下单的是机构"
+								},
+								"why": {
+									"en": "A sweep code says how the order was routed, not who sent it. Anyone with the right access can sweep.",
+									"zh": "扫单代码说明订单是怎么路由的，而不是谁发出的。任何有相应权限的人都可以扫单。"
+								}
+							},
+							{
+								"id": "opening",
+								"label": {
+									"en": "The buyer opened a new bullish position",
+									"zh": "买方新开了一个看涨仓位"
+								},
+								"why": {
+									"en": "Routing says nothing about opening or closing, or about a view. The buyer may have been closing a short call.",
+									"zh": "路由方式不能说明开仓还是平仓，也不能说明看法。买方可能是在平掉看涨空头。"
+								}
+							}
+						],
+						"accepted": ["routing"],
+						"explanation": {
+							"en": "A sweep describes how the order was routed. Who sent it, what they knew, and whether it opened a position all need other evidence.",
+							"zh": "扫单描述的是订单如何路由。谁下的单、掌握什么信息、是否开了新仓，都需要其他证据。"
+						}
+					},
+					{
+						"id": "package",
+						"prompt": {
+							"en": "Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?",
+							"zh": "另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？"
+						},
+						"choices": [
+							{
+								"id": "buys",
+								"label": {
+									"en": "As two aggressive buys: both legs printed above the ask",
+									"zh": "作为两笔主动买入：两条腿都高于卖价"
+								},
+								"why": {
+									"en": "A leg's print location means little inside a package: the price that counts is the $3.00 net, which sits inside the spread's own market.",
+									"zh": "在组合单里，单条腿的成交位置意义不大：要看的是 $3.00 的净价，它位于价差自身的买卖报价之内。"
+								}
+							},
+							{
+								"id": "sells",
+								"label": {
+									"en": "As two aggressive sells hidden inside a spread",
+									"zh": "作为藏在价差里的两笔主动卖出"
+								},
+								"why": {
+									"en": "Nothing points to selling: the package traded at $3.00, inside its $2.90–$3.30 market. Read it as one package, not hidden aggression.",
+									"zh": "没有任何迹象表明是卖出：组合单成交在 $3.00，位于 $2.90–$3.30 的报价之内。应把它当作一个整体来读，而不是隐藏的主动方。"
+								}
+							},
+							{
+								"id": "package",
+								"label": {
+									"en": "As one package that traded inside its market; where each leg printed isn't evidence of who was aggressive",
+									"zh": "作为在组合市场内成交的一个整体；各条腿成交在哪里，并不能说明谁是主动方"
+								}
+							}
+						],
+						"accepted": ["package"],
+						"explanation": {
+							"en": "A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy.",
+							"zh": "复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+					"zh": "急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。"
+				}
+			},
+			{
+				"brief": {
+					"en": "One buy order sweeps three venues within milliseconds: 10 ALFA calls at $2.10, 15 at $2.11 and 20 at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.",
+					"zh": "一张买单在几毫秒内扫过三个场所：10 张 ALFA 看涨成交在 $2.10，15 张在 $2.11，20 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "What premium did the order pay across its three prints?",
+							"zh": "这张订单在三笔成交中一共支付了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["9505"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.10 × 10 × 100 + $2.11 × 15 × 100 + $2.12 × 20 × 100 = $9,505. Three prints, one order.",
+							"zh": "$2.10 × 10 × 100 + $2.11 × 15 × 100 + $2.12 × 20 × 100 = $9,505。三笔成交，一张订单。"
+						}
+					},
+					{
+						"id": "average",
+						"prompt": {
+							"en": "What average price per share did it pay, weighted by contracts, to four decimals?",
+							"zh": "按张数加权，它平均每股付了多少？保留四位小数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.1122"],
+						"tolerance": 0.0001,
+						"explanation": {
+							"en": "$9,505 ÷ (100 × 45) = $2.1122. The later fills paid more than the best price shown when the order arrived.",
+							"zh": "$9,505 ÷ (100 × 45) = $2.1122。后面的成交付出的价格，高于订单到达时展示的最优价格。"
+						}
+					},
+					{
+						"id": "sweep-meaning",
+						"prompt": {
+							"en": "What does the sweep condition tell you?",
+							"zh": "扫单条件能告诉你什么？"
+						},
+						"choices": [
+							{
+								"id": "opening",
+								"label": {
+									"en": "The buyer opened a new bullish position",
+									"zh": "买方新开了一个看涨仓位"
+								},
+								"why": {
+									"en": "Routing says nothing about opening or closing, or about a view. The buyer may have been closing a short call.",
+									"zh": "路由方式不能说明开仓还是平仓，也不能说明看法。买方可能是在平掉看涨空头。"
+								}
+							},
+							{
+								"id": "routing",
+								"label": {
+									"en": "The order was split across venues to fill fast",
+									"zh": "订单被拆到多个场所以便快速成交"
+								}
+							},
+							{
+								"id": "institution",
+								"label": {
+									"en": "An institution placed it",
+									"zh": "下单的是机构"
+								},
+								"why": {
+									"en": "A sweep code says how the order was routed, not who sent it. Anyone with the right access can sweep.",
+									"zh": "扫单代码说明订单是怎么路由的，而不是谁发出的。任何有相应权限的人都可以扫单。"
+								}
+							}
+						],
+						"accepted": ["routing"],
+						"explanation": {
+							"en": "A sweep describes how the order was routed. Who sent it, what they knew, and whether it opened a position all need other evidence.",
+							"zh": "扫单描述的是订单如何路由。谁下的单、掌握什么信息、是否开了新仓，都需要其他证据。"
+						}
+					},
+					{
+						"id": "package",
+						"prompt": {
+							"en": "Separately, a spread's two legs print at $5.25 and $2.25, each above its own ask, while the spread itself trades at $3.00 net inside its $2.90–$3.30 market. How should you read it?",
+							"zh": "另外，一个价差的两条腿分别成交在 $5.25 和 $2.25，都高于各自的卖价，而价差本身以净价 $3.00 成交，位于 $2.90–$3.30 的组合市场之内。应该如何解读？"
+						},
+						"choices": [
+							{
+								"id": "package",
+								"label": {
+									"en": "As one package that traded inside its market; where each leg printed isn't evidence of who was aggressive",
+									"zh": "作为在组合市场内成交的一个整体；各条腿成交在哪里，并不能说明谁是主动方"
+								}
+							},
+							{
+								"id": "buys",
+								"label": {
+									"en": "As two aggressive buys: both legs printed above the ask",
+									"zh": "作为两笔主动买入：两条腿都高于卖价"
+								},
+								"why": {
+									"en": "A leg's print location means little inside a package: the price that counts is the $3.00 net, which sits inside the spread's own market.",
+									"zh": "在组合单里，单条腿的成交位置意义不大：要看的是 $3.00 的净价，它位于价差自身的买卖报价之内。"
+								}
+							},
+							{
+								"id": "sells",
+								"label": {
+									"en": "As two aggressive sells hidden inside a spread",
+									"zh": "作为藏在价差里的两笔主动卖出"
+								},
+								"why": {
+									"en": "Nothing points to selling: the package traded at $3.00, inside its $2.90–$3.30 market. Read it as one package, not hidden aggression.",
+									"zh": "没有任何迹象表明是卖出：组合单成交在 $3.00，位于 $2.90–$3.30 的报价之内。应把它当作一个整体来读，而不是隐藏的主动方。"
+								}
+							}
+						],
+						"accepted": ["package"],
+						"explanation": {
+							"en": "A complex order is priced as a whole. Read leg by leg, the leg that was sold would look like an aggressive buy.",
+							"zh": "复杂订单是按整体定价的。如果逐条腿去读，被卖出的那条腿会看起来像主动买入。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
+					"zh": "急迫的路由不能证明信心，大宗交易也不能证明是机构或有内幕信息。复杂订单的各条腿要作为一个整体来读。"
+				}
+			}
+		]
+	},
+	{
+		"id": "option-strategies-practice-1",
+		"lessonId": "option-strategies",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "option-strategies",
+				"brief": {
+					"en": "Place one short call inside three different positions, add a spread's signed legs into its payoff, and watch a roll print as two opposite-looking trades.",
+					"zh": "把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再看一次移仓如何打印成两笔看似相反的成交。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+					"zh": "看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA 100/110 call spread for $3.00 a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is $108.00. One contract covers 100 shares; ignore fees.",
+					"zh": "你以每股净价 $3.00 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 $108.00。一张合约对应 100 股，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "spread-profit",
+						"prompt": {
+							"en": "What is your profit or loss on one spread at expiry? Use a minus sign for a loss.",
+							"zh": "到期时一组价差盈亏多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["500"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The 100 call is worth $8.00 and the short 110 call costs $0.00; minus the $3.00 paid, that's +$5.00 a share, or +$500 for the spread.",
+							"zh": "100 看涨价值 $8.00，空头 110 看涨要付 $0.00；再减去支付的 $3.00，每股 +$5.00，整组价差 +$500。"
+						}
+					},
+					{
+						"id": "isolated",
+						"prompt": {
+							"en": "If you saw only the 110 call being sold, could you tell it was part of this spread?",
+							"zh": "如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？"
+						},
+						"choices": [
+							{
+								"id": "can",
+								"label": {
+									"en": "Yes: selling calls always means a spread",
+									"zh": "能：卖出看涨总是意味着价差"
+								},
+								"why": {
+									"en": "Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
+									"zh": "卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。"
+								}
+							},
+							{
+								"id": "cannot",
+								"label": {
+									"en": "No: you'd need the other leg and a link between them",
+									"zh": "不能：需要另一条腿以及两者之间的关联"
+								}
+							}
+						],
+						"accepted": ["cannot"],
+						"explanation": {
+							"en": "A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
+							"zh": "一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+					"zh": "看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA 100/110 call spread for $4.00 a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is $114.00. One contract covers 100 shares; ignore fees.",
+					"zh": "你以每股净价 $4.00 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 $114.00。一张合约对应 100 股，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "spread-profit",
+						"prompt": {
+							"en": "What is your profit or loss on one spread at expiry? Use a minus sign for a loss.",
+							"zh": "到期时一组价差盈亏多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["600"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The 100 call is worth $14.00 and the short 110 call costs $4.00; minus the $4.00 paid, that's +$6.00 a share, or +$600 for the spread.",
+							"zh": "100 看涨价值 $14.00，空头 110 看涨要付 $4.00；再减去支付的 $4.00，每股 +$6.00，整组价差 +$600。"
+						}
+					},
+					{
+						"id": "isolated",
+						"prompt": {
+							"en": "If you saw only the 110 call being sold, could you tell it was part of this spread?",
+							"zh": "如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？"
+						},
+						"choices": [
+							{
+								"id": "cannot",
+								"label": {
+									"en": "No: you'd need the other leg and a link between them",
+									"zh": "不能：需要另一条腿以及两者之间的关联"
+								}
+							},
+							{
+								"id": "can",
+								"label": {
+									"en": "Yes: selling calls always means a spread",
+									"zh": "能：卖出看涨总是意味着价差"
+								},
+								"why": {
+									"en": "Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
+									"zh": "卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。"
+								}
+							}
+						],
+						"accepted": ["cannot"],
+						"explanation": {
+							"en": "A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
+							"zh": "一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+					"zh": "看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。"
+				}
+			}
+		]
+	},
+	{
+		"id": "option-strategies-practice-2",
+		"lessonId": "option-strategies",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "option-strategies",
+				"brief": {
+					"en": "Place one short call inside three different positions, add a spread's signed legs into its payoff, and watch a roll print as two opposite-looking trades.",
+					"zh": "把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再看一次移仓如何打印成两笔看似相反的成交。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+					"zh": "看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA 100/110 call spread for $3.00 a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is $108.00. One contract covers 100 shares; ignore fees.",
+					"zh": "你以每股净价 $3.00 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 $108.00。一张合约对应 100 股，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "spread-profit",
+						"prompt": {
+							"en": "What is your profit or loss on one spread at expiry? Use a minus sign for a loss.",
+							"zh": "到期时一组价差盈亏多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["500"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The 100 call is worth $8.00 and the short 110 call costs $0.00; minus the $3.00 paid, that's +$5.00 a share, or +$500 for the spread.",
+							"zh": "100 看涨价值 $8.00，空头 110 看涨要付 $0.00；再减去支付的 $3.00，每股 +$5.00，整组价差 +$500。"
+						}
+					},
+					{
+						"id": "isolated",
+						"prompt": {
+							"en": "If you saw only the 110 call being sold, could you tell it was part of this spread?",
+							"zh": "如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？"
+						},
+						"choices": [
+							{
+								"id": "can",
+								"label": {
+									"en": "Yes: selling calls always means a spread",
+									"zh": "能：卖出看涨总是意味着价差"
+								},
+								"why": {
+									"en": "Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
+									"zh": "卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。"
+								}
+							},
+							{
+								"id": "cannot",
+								"label": {
+									"en": "No: you'd need the other leg and a link between them",
+									"zh": "不能：需要另一条腿以及两者之间的关联"
+								}
+							}
+						],
+						"accepted": ["cannot"],
+						"explanation": {
+							"en": "A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
+							"zh": "一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+					"zh": "看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA 100/110 call spread for $2.00 a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is $103.00. One contract covers 100 shares; ignore fees.",
+					"zh": "你以每股净价 $2.00 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 $103.00。一张合约对应 100 股，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "spread-profit",
+						"prompt": {
+							"en": "What is your profit or loss on one spread at expiry? Use a minus sign for a loss.",
+							"zh": "到期时一组价差盈亏多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["100"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The 100 call is worth $3.00 and the short 110 call costs $0.00; minus the $2.00 paid, that's +$1.00 a share, or +$100 for the spread.",
+							"zh": "100 看涨价值 $3.00，空头 110 看涨要付 $0.00；再减去支付的 $2.00，每股 +$1.00，整组价差 +$100。"
+						}
+					},
+					{
+						"id": "isolated",
+						"prompt": {
+							"en": "If you saw only the 110 call being sold, could you tell it was part of this spread?",
+							"zh": "如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？"
+						},
+						"choices": [
+							{
+								"id": "can",
+								"label": {
+									"en": "Yes: selling calls always means a spread",
+									"zh": "能：卖出看涨总是意味着价差"
+								},
+								"why": {
+									"en": "Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
+									"zh": "卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。"
+								}
+							},
+							{
+								"id": "cannot",
+								"label": {
+									"en": "No: you'd need the other leg and a link between them",
+									"zh": "不能：需要另一条腿以及两者之间的关联"
+								}
+							}
+						],
+						"accepted": ["cannot"],
+						"explanation": {
+							"en": "A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
+							"zh": "一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+					"zh": "看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。"
+				}
+			}
+		]
+	},
+	{
+		"id": "symbol-drawer-practice-1",
+		"lessonId": "symbol-drawer",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "symbol-drawer",
+				"brief": {
+					"en": "Trace when each value in ALFA's symbol drawer was true, judge three sources against three questions, and keep a missing value apart from a measured zero.",
+					"zh": "追溯 ALFA 标的抽屉中每个数值成立的时刻，用三个问题检验三个数据源，并把缺失值与实测的零区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+					"zh": "数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ALFA's for September 3. Open-interest reports for one fixed series show 1,000 on September 1 and 930 on September 2.",
+					"zh": "你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ALFA 9 月 3 日的。同一固定序列的未平仓量报告显示：9 月 1 日 1,000，9 月 2 日 930。"
+				},
+				"questions": [
+					{
+						"id": "flow-gate",
+						"prompt": {
+							"en": "Does the flow record meet the requirement?",
+							"zh": "这份成交记录满足要求吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: it's from a different session",
+									"zh": "不满足：来自另一个交易时段"
+								},
+								"why": {
+									"en": "The flow is from September 3, as required. Check each field against its own requirement.",
+									"zh": "成交流来自 9 月 3 日，符合要求。每个字段要对照它自己的要求。"
+								}
+							},
+							{
+								"id": "oi",
+								"label": {
+									"en": "No: the open interest is from an earlier date",
+									"zh": "不满足：未平仓量来自更早的日期"
+								},
+								"why": {
+									"en": "Earlier dated open interest was allowed. The question is about the flow record, and only its session decides it.",
+									"zh": "允许使用更早、带日期的未平仓量。问题问的是成交记录，只由它的时段决定。"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: its session matches",
+									"zh": "满足：交易时段一致"
+								}
+							}
+						],
+						"accepted": ["yes"],
+						"explanation": {
+							"en": "The flow is from September 3, as required, and earlier dated open interest was allowed. Check each field against its own requirement.",
+							"zh": "成交流来自 9 月 3 日，符合要求；更早且带日期的未平仓量也是允许的。每个字段要对照它自己的要求。"
+						}
+					},
+					{
+						"id": "report-delta",
+						"prompt": {
+							"en": "By how much did open interest change from September 1 to September 2? Use a minus sign for a fall.",
+							"zh": "从 9 月 1 日到 9 月 2 日，未平仓量变化了多少？下降请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["-70"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "930 − 1,000 = −70. That's the change between two reports; it says nothing about positions during September 3.",
+							"zh": "930 − 1,000 = −70。这是两次报告之间的变化，不能说明 9 月 3 日盘中的持仓。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+					"zh": "数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ALFA's for September 2. Open-interest reports for one fixed series show 1,200 on September 1 and 1,285 on September 2.",
+					"zh": "你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ALFA 9 月 2 日的。同一固定序列的未平仓量报告显示：9 月 1 日 1,200，9 月 2 日 1,285。"
+				},
+				"questions": [
+					{
+						"id": "flow-gate",
+						"prompt": {
+							"en": "Does the flow record meet the requirement?",
+							"zh": "这份成交记录满足要求吗？"
+						},
+						"choices": [
+							{
+								"id": "oi",
+								"label": {
+									"en": "No: the open interest is from an earlier date",
+									"zh": "不满足：未平仓量来自更早的日期"
+								},
+								"why": {
+									"en": "Earlier dated open interest was allowed. The question is about the flow record, and only its session decides it.",
+									"zh": "允许使用更早、带日期的未平仓量。问题问的是成交记录，只由它的时段决定。"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: its session matches",
+									"zh": "满足：交易时段一致"
+								},
+								"why": {
+									"en": "The flow is from September 2, and the requirement is September 3. Its session doesn't match.",
+									"zh": "成交流来自 9 月 2 日，而要求是 9 月 3 日。时段并不一致。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: it's from a different session",
+									"zh": "不满足：来自另一个交易时段"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The flow is from September 2, not September 3, so it fails. The open interest was allowed to be earlier; that part is fine.",
+							"zh": "成交流来自 9 月 2 日而不是 9 月 3 日，所以不满足。未平仓量本来就允许更早，这部分没有问题。"
+						}
+					},
+					{
+						"id": "report-delta",
+						"prompt": {
+							"en": "By how much did open interest change from September 1 to September 2? Use a minus sign for a fall.",
+							"zh": "从 9 月 1 日到 9 月 2 日，未平仓量变化了多少？下降请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["85"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1,285 − 1,200 = +85. That's the change between two reports; it says nothing about positions during September 3.",
+							"zh": "1,285 − 1,200 = +85。这是两次报告之间的变化，不能说明 9 月 3 日盘中的持仓。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+					"zh": "数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。"
+				}
+			}
+		]
+	},
+	{
+		"id": "symbol-drawer-practice-2",
+		"lessonId": "symbol-drawer",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "symbol-drawer",
+				"brief": {
+					"en": "Trace when each value in ALFA's symbol drawer was true, judge three sources against three questions, and keep a missing value apart from a measured zero.",
+					"zh": "追溯 ALFA 标的抽屉中每个数值成立的时刻，用三个问题检验三个数据源，并把缺失值与实测的零区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+					"zh": "数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ALFA's for September 3. Open-interest reports for one fixed series show 1,000 on September 1 and 930 on September 2.",
+					"zh": "你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ALFA 9 月 3 日的。同一固定序列的未平仓量报告显示：9 月 1 日 1,000，9 月 2 日 930。"
+				},
+				"questions": [
+					{
+						"id": "flow-gate",
+						"prompt": {
+							"en": "Does the flow record meet the requirement?",
+							"zh": "这份成交记录满足要求吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: it's from a different session",
+									"zh": "不满足：来自另一个交易时段"
+								},
+								"why": {
+									"en": "The flow is from September 3, as required. Check each field against its own requirement.",
+									"zh": "成交流来自 9 月 3 日，符合要求。每个字段要对照它自己的要求。"
+								}
+							},
+							{
+								"id": "oi",
+								"label": {
+									"en": "No: the open interest is from an earlier date",
+									"zh": "不满足：未平仓量来自更早的日期"
+								},
+								"why": {
+									"en": "Earlier dated open interest was allowed. The question is about the flow record, and only its session decides it.",
+									"zh": "允许使用更早、带日期的未平仓量。问题问的是成交记录，只由它的时段决定。"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: its session matches",
+									"zh": "满足：交易时段一致"
+								}
+							}
+						],
+						"accepted": ["yes"],
+						"explanation": {
+							"en": "The flow is from September 3, as required, and earlier dated open interest was allowed. Check each field against its own requirement.",
+							"zh": "成交流来自 9 月 3 日，符合要求；更早且带日期的未平仓量也是允许的。每个字段要对照它自己的要求。"
+						}
+					},
+					{
+						"id": "report-delta",
+						"prompt": {
+							"en": "By how much did open interest change from September 1 to September 2? Use a minus sign for a fall.",
+							"zh": "从 9 月 1 日到 9 月 2 日，未平仓量变化了多少？下降请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["-70"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "930 − 1,000 = −70. That's the change between two reports; it says nothing about positions during September 3.",
+							"zh": "930 − 1,000 = −70。这是两次报告之间的变化，不能说明 9 月 3 日盘中的持仓。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+					"zh": "数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You need ALFA's option flow for the September 3 session, plus open interest from an earlier report with its date. Your flow record is ALFA's for September 3. Open-interest reports for one fixed series show 1,500 on September 1 and 1,370 on September 2.",
+					"zh": "你需要 ALFA 9 月 3 日交易时段的期权成交流，以及更早一次带日期的未平仓量报告。你手上的成交记录是 ALFA 9 月 3 日的。同一固定序列的未平仓量报告显示：9 月 1 日 1,500，9 月 2 日 1,370。"
+				},
+				"questions": [
+					{
+						"id": "flow-gate",
+						"prompt": {
+							"en": "Does the flow record meet the requirement?",
+							"zh": "这份成交记录满足要求吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: its session matches",
+									"zh": "满足：交易时段一致"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: it's from a different session",
+									"zh": "不满足：来自另一个交易时段"
+								},
+								"why": {
+									"en": "The flow is from September 3, as required. Check each field against its own requirement.",
+									"zh": "成交流来自 9 月 3 日，符合要求。每个字段要对照它自己的要求。"
+								}
+							},
+							{
+								"id": "oi",
+								"label": {
+									"en": "No: the open interest is from an earlier date",
+									"zh": "不满足：未平仓量来自更早的日期"
+								},
+								"why": {
+									"en": "Earlier dated open interest was allowed. The question is about the flow record, and only its session decides it.",
+									"zh": "允许使用更早、带日期的未平仓量。问题问的是成交记录，只由它的时段决定。"
+								}
+							}
+						],
+						"accepted": ["yes"],
+						"explanation": {
+							"en": "The flow is from September 3, as required, and earlier dated open interest was allowed. Check each field against its own requirement.",
+							"zh": "成交流来自 9 月 3 日，符合要求；更早且带日期的未平仓量也是允许的。每个字段要对照它自己的要求。"
+						}
+					},
+					{
+						"id": "report-delta",
+						"prompt": {
+							"en": "By how much did open interest change from September 1 to September 2? Use a minus sign for a fall.",
+							"zh": "从 9 月 1 日到 9 月 2 日，未平仓量变化了多少？下降请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["-130"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1,370 − 1,500 = −130. That's the change between two reports; it says nothing about positions during September 3.",
+							"zh": "1,370 − 1,500 = −130。这是两次报告之间的变化，不能说明 9 月 3 日盘中的持仓。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Whether data is fresh enough depends on the question. Reject the comparison a stale field breaks, not every source on the page.",
+					"zh": "数据是否足够新，取决于你要回答的问题。只否定被过时字段影响的比较，而不是页面上的所有来源。"
+				}
+			}
+		]
+	},
+	{
+		"id": "multi-leg-structures-practice-1",
+		"lessonId": "multi-leg-structures",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "multi-leg-structures",
+				"brief": {
+					"en": "Build the Oct 18 100 straddle from its call and put and find where it breaks even, sell a 90/95/105/110 iron condor and find its worst case, and read its four prints as one package instead of two bullish and two bearish legs.",
+					"zh": "用看涨和看跌组合出 10月18日 100 跨式并找出它的盈亏平衡点，卖出 90/95/105/110 铁鹰并找出它的最坏情况，再把它的四笔成交作为一个整体来读，而不是两条看涨腿和两条看跌腿。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+					"zh": "多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You buy an ALFA 100 call at $4.20 and an ALFA 100 put at $4.20, same expiry: a long straddle. One contract covers 100 shares; work at expiry and ignore fees.",
+					"zh": "你以 $4.20 买入一张 ALFA 100 看涨，并以 $4.20 买入一张同一到期日的 ALFA 100 看跌：跨式多头。一张合约对应 100 股；按到期时计算，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "What does the position cost, per share?",
+							"zh": "这个持仓每股成本多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["8.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$4.20 + $4.20 = $8.40 a share. That's also the most it can lose.",
+							"zh": "$4.20 + $4.20 = 每股 $8.40。这也是它最多会亏的。"
+						}
+					},
+					{
+						"id": "breakeven",
+						"prompt": {
+							"en": "Above the stock's price, where does the position break even at expiry?",
+							"zh": "在股价上方，这个持仓到期的盈亏平衡点在哪里？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["108.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "Above $100 only the call pays, and it must be worth the whole $8.40: $100 + $8.40 = $108.40.",
+							"zh": "在 $100 以上只有看涨赚钱，它必须值满 $8.40：$100 + $8.40 = $108.40。"
+						}
+					},
+					{
+						"id": "view",
+						"prompt": {
+							"en": "What does this position need to make money?",
+							"zh": "这个持仓要赚钱需要什么？"
+						},
+						"choices": [
+							{
+								"id": "big",
+								"label": {
+									"en": "A big move, either way",
+									"zh": "大幅变动，方向不限"
+								}
+							},
+							{
+								"id": "up",
+								"label": { "en": "A rise", "zh": "上涨" },
+								"why": {
+									"en": "A rise is only half of it: the long put pays if the stock falls far enough too. Either big move works.",
+									"zh": "上涨只是一半：股价跌得足够多时，看跌多头同样赚钱。向任一方向的大幅变动都可以。"
+								}
+							},
+							{
+								"id": "calm",
+								"label": {
+									"en": "The stock staying in a range",
+									"zh": "股价留在一个区间内"
+								},
+								"why": {
+									"en": "A long straddle loses most if the stock stays put, because both legs lose value. It needs a move past a break-even.",
+									"zh": "跨式多头在股价原地不动时亏得最多，因为两条腿都在贬值。它需要越过盈亏平衡点的变动。"
+								}
+							}
+						],
+						"accepted": ["big"],
+						"explanation": {
+							"en": "A long straddle pays only once the stock moves past one of its break-evens, up or down. Staying still is its worst case.",
+							"zh": "跨式多头只有在股价越过某个盈亏平衡点时才赚钱，向上向下都可以。原地不动是它的最坏情况。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+					"zh": "多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You sell an ALFA iron condor: sell the 95 put at $2.05 and buy the 90 put at $1.00, sell the 105 call at $2.05 and buy the 110 call at $0.93, all one expiry. One contract covers 100 shares; work at expiry and ignore fees.",
+					"zh": "你卖出一组 ALFA 铁鹰：以 $2.05 卖出 95 看跌、以 $1.00 买入 90 看跌，以 $2.05 卖出 105 看涨、以 $0.93 买入 110 看涨，到期日相同。一张合约对应 100 股；按到期时计算，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "What credit does the condor collect, per share?",
+							"zh": "这组铁鹰每股收入多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.17"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "Credits from the short legs minus the cost of the wings: $2.17 a share. That's also the most the condor can make.",
+							"zh": "卖出各腿的收入减去两翼的成本：每股 $2.17。这也是这组铁鹰最多能赚的。"
+						}
+					},
+					{
+						"id": "breakeven",
+						"prompt": {
+							"en": "Above the stock's price, where does the position break even at expiry?",
+							"zh": "在股价上方，这个持仓到期的盈亏平衡点在哪里？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["107.17"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "The short 105 call starts costing above $105; the $2.17 credit covers the first $2.17 of that: $105 + $2.17 = $107.17.",
+							"zh": "卖出的 105 看涨在 $105 以上开始亏钱；$2.17 的收入抵掉最开始的 $2.17：$105 + $2.17 = $107.17。"
+						}
+					},
+					{
+						"id": "view",
+						"prompt": {
+							"en": "What does this position need to make money?",
+							"zh": "这个持仓要赚钱需要什么？"
+						},
+						"choices": [
+							{
+								"id": "up",
+								"label": { "en": "A rise", "zh": "上涨" },
+								"why": {
+									"en": "A rise past the short call strike loses money for a short condor. It profits only while the stock stays between its short strikes.",
+									"zh": "对铁鹰空头来说，涨过卖出的看涨行权价会亏钱。只有股价留在两个卖出行权价之间时才获利。"
+								}
+							},
+							{
+								"id": "calm",
+								"label": {
+									"en": "The stock staying in a range",
+									"zh": "股价留在一个区间内"
+								}
+							},
+							{
+								"id": "big",
+								"label": {
+									"en": "A big move, either way",
+									"zh": "大幅变动，方向不限"
+								},
+								"why": {
+									"en": "A big move is what a long straddle or strangle needs. This short condor loses if the stock breaks out; it needs calm.",
+									"zh": "大幅变动是跨式或宽跨式多头需要的。这组铁鹰空头在股价突破时亏损，它需要平稳。"
+								}
+							}
+						],
+						"accepted": ["calm"],
+						"explanation": {
+							"en": "A short iron condor keeps its credit while the stock stays between the short strikes and loses if it breaks out either way.",
+							"zh": "铁鹰空头在股价留在两个卖出行权价之间时保留收入，任一方向突破都会亏损。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+					"zh": "多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。"
+				}
+			}
+		]
+	},
+	{
+		"id": "multi-leg-structures-practice-2",
+		"lessonId": "multi-leg-structures",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "multi-leg-structures",
+				"brief": {
+					"en": "Build the Oct 18 100 straddle from its call and put and find where it breaks even, sell a 90/95/105/110 iron condor and find its worst case, and read its four prints as one package instead of two bullish and two bearish legs.",
+					"zh": "用看涨和看跌组合出 10月18日 100 跨式并找出它的盈亏平衡点，卖出 90/95/105/110 铁鹰并找出它的最坏情况，再把它的四笔成交作为一个整体来读，而不是两条看涨腿和两条看跌腿。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+					"zh": "多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You buy an ALFA 100 call at $4.20 and an ALFA 100 put at $4.20, same expiry: a long straddle. One contract covers 100 shares; work at expiry and ignore fees.",
+					"zh": "你以 $4.20 买入一张 ALFA 100 看涨，并以 $4.20 买入一张同一到期日的 ALFA 100 看跌：跨式多头。一张合约对应 100 股；按到期时计算，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "What does the position cost, per share?",
+							"zh": "这个持仓每股成本多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["8.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$4.20 + $4.20 = $8.40 a share. That's also the most it can lose.",
+							"zh": "$4.20 + $4.20 = 每股 $8.40。这也是它最多会亏的。"
+						}
+					},
+					{
+						"id": "breakeven",
+						"prompt": {
+							"en": "Above the stock's price, where does the position break even at expiry?",
+							"zh": "在股价上方，这个持仓到期的盈亏平衡点在哪里？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["108.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "Above $100 only the call pays, and it must be worth the whole $8.40: $100 + $8.40 = $108.40.",
+							"zh": "在 $100 以上只有看涨赚钱，它必须值满 $8.40：$100 + $8.40 = $108.40。"
+						}
+					},
+					{
+						"id": "view",
+						"prompt": {
+							"en": "What does this position need to make money?",
+							"zh": "这个持仓要赚钱需要什么？"
+						},
+						"choices": [
+							{
+								"id": "big",
+								"label": {
+									"en": "A big move, either way",
+									"zh": "大幅变动，方向不限"
+								}
+							},
+							{
+								"id": "up",
+								"label": { "en": "A rise", "zh": "上涨" },
+								"why": {
+									"en": "A rise is only half of it: the long put pays if the stock falls far enough too. Either big move works.",
+									"zh": "上涨只是一半：股价跌得足够多时，看跌多头同样赚钱。向任一方向的大幅变动都可以。"
+								}
+							},
+							{
+								"id": "calm",
+								"label": {
+									"en": "The stock staying in a range",
+									"zh": "股价留在一个区间内"
+								},
+								"why": {
+									"en": "A long straddle loses most if the stock stays put, because both legs lose value. It needs a move past a break-even.",
+									"zh": "跨式多头在股价原地不动时亏得最多，因为两条腿都在贬值。它需要越过盈亏平衡点的变动。"
+								}
+							}
+						],
+						"accepted": ["big"],
+						"explanation": {
+							"en": "A long straddle pays only once the stock moves past one of its break-evens, up or down. Staying still is its worst case.",
+							"zh": "跨式多头只有在股价越过某个盈亏平衡点时才赚钱，向上向下都可以。原地不动是它的最坏情况。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+					"zh": "多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You buy an ALFA 105 call at $2.15 and an ALFA 95 put at $2.15, same expiry: a long strangle. One contract covers 100 shares; work at expiry and ignore fees.",
+					"zh": "你以 $2.15 买入一张 ALFA 105 看涨，并以 $2.15 买入一张同一到期日的 ALFA 95 看跌：宽跨式多头。一张合约对应 100 股；按到期时计算，不计费用。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "What does the position cost, per share?",
+							"zh": "这个持仓每股成本多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["4.3"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$2.15 + $2.15 = $4.30 a share. That's also the most it can lose.",
+							"zh": "$2.15 + $2.15 = 每股 $4.30。这也是它最多会亏的。"
+						}
+					},
+					{
+						"id": "breakeven",
+						"prompt": {
+							"en": "Above the stock's price, where does the position break even at expiry?",
+							"zh": "在股价上方，这个持仓到期的盈亏平衡点在哪里？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["109.3"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "Above $105 only the call pays, and it must be worth the whole $4.30: $105 + $4.30 = $109.30.",
+							"zh": "在 $105 以上只有看涨赚钱，它必须值满 $4.30：$105 + $4.30 = $109.30。"
+						}
+					},
+					{
+						"id": "view",
+						"prompt": {
+							"en": "What does this position need to make money?",
+							"zh": "这个持仓要赚钱需要什么？"
+						},
+						"choices": [
+							{
+								"id": "calm",
+								"label": {
+									"en": "The stock staying in a range",
+									"zh": "股价留在一个区间内"
+								},
+								"why": {
+									"en": "A long strangle loses most if the stock stays put, because both legs lose value. It needs a move past a break-even.",
+									"zh": "宽跨式多头在股价原地不动时亏得最多，因为两条腿都在贬值。它需要越过盈亏平衡点的变动。"
+								}
+							},
+							{
+								"id": "big",
+								"label": {
+									"en": "A big move, either way",
+									"zh": "大幅变动，方向不限"
+								}
+							},
+							{
+								"id": "up",
+								"label": { "en": "A rise", "zh": "上涨" },
+								"why": {
+									"en": "A rise is only half of it: the long put pays if the stock falls far enough too. Either big move works.",
+									"zh": "上涨只是一半：股价跌得足够多时，看跌多头同样赚钱。向任一方向的大幅变动都可以。"
+								}
+							}
+						],
+						"accepted": ["big"],
+						"explanation": {
+							"en": "A long strangle pays only once the stock moves past one of its break-evens, up or down. Staying still is its worst case.",
+							"zh": "宽跨式多头只有在股价越过某个盈亏平衡点时才赚钱，向上向下都可以。原地不动是它的最坏情况。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",
+					"zh": "多腿交易的各条腿本来就指向不同方向。要读整体的到期盈亏，而不是每条腿的标签；也不要把各腿的权利金当作各自独立的观点相加。"
+				}
+			}
+		]
+	}
+]
