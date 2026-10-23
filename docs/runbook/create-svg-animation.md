@@ -1,6 +1,6 @@
 # Runbook: create a lesson film (SVG animation)
 
-Updated October 16, 2026. Every lesson in the course (53 of them) opens with a short film, then hands the learner to its interactive playground. This runbook explains how those films are built, the rules they follow, how to verify one, and which ideas from outside references we use or plan to use.
+Updated October 23, 2026. Every lesson in the course (53 of them) opens with a short film, then hands the learner to its interactive playground. This runbook explains how those films are built, the rules they follow, how to verify one, and which ideas from outside references we use or plan to use.
 
 ## 1. What a lesson film is
 
@@ -403,6 +403,23 @@ A film is done when `check` prints nothing but its stamp, warnings included, or 
 
 **When you change the kit's type** (`Lines`, `wrapText`), every film is affected. Before committing, dump each film's line breaks (every multi-line `text[data-f]` and its `tspan`s) at 1440 and 390 in both languages with the old kit and with the new one, compare, and scan in full every film whose line count changed.
 
+### Check the teaching, not only the motion
+
+The film hands the learner to the playground's predictions and, after them, the lesson's case (Check yourself). Both teach, so they get checks of their own. These came from a review of Marble's open skill taxonomy and its builder skill on October 23, 2026.
+
+- **Per-choice feedback on every wrong choice.** A prediction's wrong choice carries `why: [en, zh]`; a case question's wrong choice carries a fourth and fifth string in its `choose()` tuple. Each says what misreading the choice stands for and the fact in the question that corrects it, in one or two sentences. The right choice has none: the reveal and the case debrief show a why only for a wrong pick. Build a why that quotes a figure from the same variables as the label, so the two can't drift. When a case's right answer changes by variant, give every choice a why that reads the variant's data; `choose()` drops the accepted choice's why for each variant.
+- **No answer in the prompt.** Read each prompt beside its choices and take out wording that gives the answer away, such as describing the setup in the right choice's own words.
+- **No result from a guess or a reveal.** Explore tasks are practice: solving one sends an analytics event and nothing else. A checkpoint's review judges each scene's first answer, so restarting a scene after its reveal and picking again doesn't turn a miss into a result. A case is demonstrated only when every independent check is met with no hint and no unreviewed text.
+- **A fresh case changes the problem, not only its numbers.** The independent case should change at least one condition the idea depends on (the side, the right, a stale quote, a missing field) so the learner applies the idea instead of recalling the guided answer. Two gaps were open on October 23, 2026: 20 of the 53 units keep every multiple-choice answer of the guided case in their independent cases, and a case serves only its two practice scenarios in turn, so a third attempt repeats the first one's independent case after its answers were shown.
+
+Then run the static check:
+
+```bash
+pnpm -C apps/web check-concepts
+```
+
+It fails on a wrong choice without a why, a right choice with one, a concept the syllabus uses but the register doesn't define, and a broken lesson or concept graph. It lists, without failing, the units whose independent cases keep every choice answer of their guided case.
+
 ## 8. Mistakes we have already made
 
 - **Names must be unique.** `one()` returns the first match, so a group and a text that share a `data-f` name break each other.
@@ -546,6 +563,9 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - [ ] Every carry: top layer, starts clear, path clear of marks and flights, slows on both axes, target shown on arrival, colour kept
 - [ ] Numbers carry across shots; nothing that happened un-happens
 - [ ] Next card matches the syllabus (or "the module checkpoint")
+- [ ] Every wrong choice in the lesson's predictions and case questions explains itself in both languages; no right choice has a why; `pnpm -C apps/web check-concepts` passes
+- [ ] No prompt gives its answer away, and no re-answer after a reveal counts as a result
+- [ ] The independent case changes a condition the idea depends on, not only its numbers
 - [ ] `tsc` and `biome` clean
 - [ ] Scan and flight check clean at 1440 and 390, English and Chinese, stamped after the last save; frames read by eye
 - [ ] Phone: every mark 12 px from the sides, brackets included

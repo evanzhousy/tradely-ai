@@ -13,8 +13,9 @@
  * lesson; and, wherever a question gives per-choice feedback (`why`), a wrong choice without it
  * or a right choice with it, in the units' case questions (run) and in the lessons' predict
  * blocks (read from the source). Soft prerequisites that are not taught earlier, lessons
- * without a teaching unit and predict blocks whose choices are not literals are listed as notes
- * and do not fail.
+ * without a teaching unit, predict blocks whose choices are not literals, and units whose
+ * independent cases keep every choice answer of the guided case are listed as notes and do not
+ * fail.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -261,6 +262,33 @@ for (const unit of teachingUnits) {
 		}
 	}
 }
+
+// --- Fresh independent cases: a unit whose independent cases keep every choice answer of its
+// guided case lets a learner answer from memory of the guided feedback. Listed, not failed. ---
+const repeatsGuided: string[] = [];
+for (const unit of teachingUnits) {
+	const practice = unitScenarios(unit, "practice");
+	const guided = practice[0]?.steps.find((step) => step.id === "guided");
+	if (!guided) continue;
+	const choiceQuestions = guided.questions.filter((q) => q.choices.length > 0);
+	if (choiceQuestions.length === 0) continue;
+	const changes = choiceQuestions.some((question) =>
+		practice.some((scenario) => {
+			const independent = scenario.steps
+				.find((step) => step.id === "independent")
+				?.questions.find((q) => q.id === question.id);
+			return (
+				independent !== undefined &&
+				independent.accepted.join() !== question.accepted.join()
+			);
+		}),
+	);
+	if (!changes) repeatsGuided.push(unit.id);
+}
+if (repeatsGuided.length > 0)
+	notes.push(
+		`${repeatsGuided.length} units' independent cases keep every choice answer of the guided case: ${repeatsGuided.join(", ")}`,
+	);
 
 // --- Predict blocks with a why give one to every wrong choice (read from the lesson source) ---
 let predictions = 0;
