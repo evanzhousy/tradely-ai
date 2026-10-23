@@ -27,7 +27,8 @@ const lessonNumber = (id: string) =>
 
 /**
  * A checkpoint's last word: each question's result on the new day, and for anything missed,
- * the lesson that teaches it.
+ * the lesson that teaches it. `predictions` holds each scene's first answer, so restarting a
+ * scene after its reveal and picking again doesn't turn a miss into a result.
  */
 export function ReviewSummary({
 	locale,

@@ -139,6 +139,10 @@ export function Walkthrough({
 	const [sceneId, setSceneId] = useState(scenes[0].id);
 	const [beat, setBeat] = useState(0);
 	const [predictions, setPredictions] = useState<Record<string, string>>({});
+	/** Each scene's first committed answer: a re-answer after the reveal is practice, not a result. */
+	const [firstPredictions, setFirstPredictions] = useState<
+		Record<string, string>
+	>({});
 	const [phase, setPhase] = useState<Phase>(
 		scenes[0].predict ? "predict" : "watch",
 	);
@@ -275,6 +279,9 @@ export function Walkthrough({
 	const choose = (choice: string) => {
 		focusNext.current = "feedback";
 		setPredictions((all) => ({ ...all, [scene.id]: choice }));
+		setFirstPredictions((all) =>
+			Object.hasOwn(all, scene.id) ? all : { ...all, [scene.id]: choice },
+		);
 		if (scene.predict && lessonId)
 			capture("visual_lesson_predicted", {
 				lesson_id: lessonId,
@@ -621,7 +628,7 @@ export function Walkthrough({
 					<ReviewSummary
 						locale={locale}
 						scenes={scenes}
-						predictions={predictions}
+						predictions={firstPredictions}
 					/>
 				) : null}
 			</>
